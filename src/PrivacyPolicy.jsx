@@ -7,7 +7,7 @@ function PrivacyPolicy({ onBack }) {
           Privacy Policy
         </h1>
         <p className="text-lg text-gray-600">
-          AEJaCA – Artisan Elegance Jewelry and Crafted Art
+          AEJaCA – Artisan Elegance Jewelry and Crafted Art - Privacy Policy
         </p>
       </div>
 
