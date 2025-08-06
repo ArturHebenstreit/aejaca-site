@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { cloudflare } from "@cloudflare/vite-plugin";
 
 export default defineConfig({
-  base: "/", // Użyj '/' dla własnej domeny (np. www.aejaca.com)
-  plugins: [react()],
+  plugins: [react(), cloudflare()],
 });
