@@ -23,7 +23,7 @@ function App() {
     },
     {
       icon: <Instagram className="w-5 h-5 inline-block mr-2 text-pink-500" />,
-      label: "Instagram",
+      label: "Instagram EN",
       url: "https://www.instagram.com/aejaca_",
     },
     {
