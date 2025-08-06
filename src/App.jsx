@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
+import PrivacyPolicy from "./PrivacyPolicy";
 import {
   Store,
   Instagram,
@@ -11,9 +12,15 @@ import {
 } from "lucide-react";
 
 function App() {
+  const [showPrivacy, setShowPrivacy] = useState(false);
+
   useEffect(() => {
     document.title = "AEJaCA - Artisan Elegance Jewelry and Crafted Art";
   }, []);
+
+  if (showPrivacy) {
+    return <PrivacyPolicy onBack={() => setShowPrivacy(false)} />;
+  }
 
   const links = [
     {
@@ -61,6 +68,25 @@ function App() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 text-center">
       <div className="max-w-xl text-gray-800 font-serif">
+        {/* Banner */}
+        <div className="flex justify-center mb-6">
+          <img
+            src="/banner.jpg"
+            alt="AEJaCA Banner"
+            className="w-full max-w-3xl rounded-lg shadow-md"
+          />
+        </div>
+
+        {/* Logo */}
+        <div className="flex justify-center mb-4">
+          <img
+            src="/logo.png"
+            alt="AEJaCA Logo"
+            className="w-[300px] h-[300px] object-contain mx-auto"
+          />
+        </div>
+
+        {/* Nagłówek i linki */}
         <h1 className="text-2xl md:text-3xl font-semibold mb-6">
           🌐 AEJaCA Official Links:
         </h1>
@@ -80,9 +106,18 @@ function App() {
             </li>
           ))}
         </ul>
+
+        {/* Przycisk do polityki prywatności */}
+        <div className="mt-8">
+          <button
+            onClick={() => setShowPrivacy(true)}
+            className="text-sm text-gray-600 underline hover:text-black"
+          >
+            Polityka prywatności
+          </button>
+        </div>
       </div>
     </div>
   );
 }
-
 export default App;
