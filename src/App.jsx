@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import PrivacyPolicy from "./PrivacyPolicy";
+import { useEffect, useState } from "react";
 import {
   Store,
   Instagram,
@@ -11,16 +10,15 @@ import {
   Mail,
 } from "lucide-react";
 
+import logo from "./assets/logo.png"; // <-- upewnij się, że istnieje
+import banner from "./assets/banner.jpg"; // <-- upewnij się, że istnieje
+
 function App() {
   const [showPrivacy, setShowPrivacy] = useState(false);
 
   useEffect(() => {
     document.title = "AEJaCA - Artisan Elegance Jewelry and Crafted Art";
   }, []);
-
-  if (showPrivacy) {
-    return <PrivacyPolicy onBack={() => setShowPrivacy(false)} />;
-  }
 
   const links = [
     {
@@ -66,16 +64,28 @@ function App() {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 text-center">
-      <div className="max-w-xl text-gray-800 font-serif">
-        {showPrivacy ? (
-          <div>
-            {/* Tytuł strony z polityką prywatności */}
-            <h1 className="text-2xl md:text-3xl font-semibold mb-6">
-              Privacy Policy
-            </h1>
+    <div className="min-h-screen bg-gray-100 px-4 py-6 flex flex-col items-center">
+      {/* Banner */}
+      <img
+        src={banner}
+        alt="AEJaCA banner"
+        className="w-full max-w-4xl mb-4 rounded shadow-md"
+      />
 
-            {/* Treść polityki */}
+      {/* Logo */}
+      <img
+        src={logo}
+        alt="AEJaCA logo"
+        className="w-[300px] h-[300px] mb-4 rounded-full shadow-lg"
+      />
+
+      {/* Treść strony */}
+      <div className="max-w-xl w-full text-gray-800 font-serif text-center">
+        {showPrivacy ? (
+          <>
+            {/* Nagłówek strony polityki */}
+            <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
+
             <div className="text-left text-sm md:text-base space-y-4">
               <p>
                 This Privacy Policy describes how AEJaCA collects, uses, and
@@ -111,15 +121,12 @@ function App() {
                 ← Back
               </button>
             </div>
-          </div>
+          </>
         ) : (
           <>
-            {/* Tytuł strony głównej */}
             <h1 className="text-2xl md:text-3xl font-semibold mb-6">
               🌐 AEJaCA Official Links:
             </h1>
-
-            {/* Lista linków */}
             <ul className="space-y-3 text-base md:text-lg">
               {links.map(({ icon, label, url }) => (
                 <li key={label}>
@@ -137,7 +144,6 @@ function App() {
               ))}
             </ul>
 
-            {/* Przycisk do polityki prywatności */}
             <div className="mt-8">
               <button
                 onClick={() => setShowPrivacy(true)}
@@ -152,4 +158,5 @@ function App() {
     </div>
   );
 }
+
 export default App;
