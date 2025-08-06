@@ -10,8 +10,8 @@ import {
   Mail,
 } from "lucide-react";
 
-import logo from ".scr/assets/logo.png"; // <-- upewnij się, że istnieje
-import banner from ".scr/assets/banner.jpg"; // <-- upewnij się, że istnieje
+import logo from "./logo.png"; // <-- upewnij się, że istnieje
+import banner from "./banner.jpg"; // <-- upewnij się, że istnieje
 
 function App() {
   const [showPrivacy, setShowPrivacy] = useState(false);
