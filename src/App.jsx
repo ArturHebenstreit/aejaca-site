@@ -1,168 +1,86 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router";
-import { groupByGenre } from "./lib/utils";
-import Breadcrumbs from "./components/Breadcrumbs";
-import Sidebar from "./components/Sidebar";
-import BooksList from "./components/BooksList";
-import BookDetail from "./components/BookDetail";
-import MockDataBanner from "./components/MockDataBanner";
+import { useEffect } from "react";
+import {
+  Store,
+  Instagram,
+  Music2,
+  Globe,
+  Facebook,
+  Youtube,
+  MapPin,
+  Mail,
+} from "lucide-react";
 
 function App() {
-  const navigate = useNavigate();
-  const params = useParams();
-  const [bookDetail, setBookDetail] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [genres, setGenres] = useState([]);
-  const [dataSource, setDataSource] = useState(null);
-
-  // Get route parameters
-  const { bookId } = params;
-  const { genreId } = params;
-  const activeGenre = genreId ? decodeURIComponent(genreId) : null;
-
-  // Load genres for sidebar
   useEffect(() => {
-    const loadGenres = async () => {
-      try {
-        const response = await fetch("/api/books");
-        if (!response.ok) {
-          throw new Error(`API returned status: ${response.status}`);
-        }
-        const data = await response.json();
-
-        if (!data.books?.length) {
-          console.error("No books data found:", typeof data);
-          return;
-        }
-
-        const booksArray = data.books;
-
-        // Check if using mock data or database
-        if (data.source) {
-          setDataSource(data.source);
-        }
-
-        const genreGroups = groupByGenre(booksArray);
-        setGenres(genreGroups);
-      } catch (error) {
-        console.error("Error loading genres:", error);
-      }
-    };
-
-    loadGenres();
+    document.title = "AEJaCA - Artisan Elegance Jewelry and Crafted Art";
   }, []);
 
-  // Load book details when a book is selected via URL
-  useEffect(() => {
-    if (!bookId) return;
-
-    const fetchBookDetail = async () => {
-      setLoading(true);
-      try {
-        // First get basic book details
-        const bookResponse = await fetch(`/api/books/${bookId}`);
-
-        if (!bookResponse.ok) {
-          throw new Error(`API returned status: ${bookResponse.status}`);
-        }
-
-        const bookData = await bookResponse.json();
-
-        // Then get related books data
-        const relatedResponse = await fetch(`/api/books/${bookId}/related`);
-
-        if (!relatedResponse.ok) {
-          throw new Error(`API returned status: ${relatedResponse.status}`);
-        }
-
-        const relatedData = await relatedResponse.json();
-
-        // Combine the data
-        const combinedData = {
-          book: bookData.book,
-          relatedBooks: relatedData.relatedBooks,
-          recentRecommendations: relatedData.recentRecommendations,
-          genreStats: relatedData.genreStats,
-        };
-
-        setBookDetail(combinedData);
-      } catch (error) {
-        console.error("Error fetching book details:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBookDetail();
-  }, [bookId]);
-
-  const handleSelectBook = (bookId) => {
-    navigate(`/book/${bookId}`);
-  };
-
-  const handleSelectGenre = (genre) => {
-    if (genre) {
-      navigate(`/genre/${encodeURIComponent(genre)}`);
-    } else {
-      navigate("/");
-    }
-  };
+  const links = [
+    {
+      icon: <Store className="w-5 h-5 inline-block mr-2 text-pink-700" />,
+      label: "Etsy",
+      url: "https://aejaca.etsy.com",
+    },
+    {
+      icon: <Instagram className="w-5 h-5 inline-block mr-2 text-pink-500" />,
+      label: "Instagram",
+      url: "https://www.instagram.com/aejaca_",
+    },
+    {
+      icon: <Music2 className="w-5 h-5 inline-block mr-2 text-black" />,
+      label: "TikTok (PL)",
+      url: "https://www.tiktok.com/@aejaca_",
+    },
+    {
+      icon: <Music2 className="w-5 h-5 inline-block mr-2 text-black" />,
+      label: "TikTok (EN)",
+      url: "https://www.tiktok.com/@aejaca_us",
+    },
+    {
+      icon: <Facebook className="w-5 h-5 inline-block mr-2 text-blue-700" />,
+      label: "Facebook",
+      url: "https://www.facebook.com/share/1BHNLAy4f2/?mibextid=wwXIfr",
+    },
+    {
+      icon: <Youtube className="w-5 h-5 inline-block mr-2 text-red-600" />,
+      label: "YouTube",
+      url: "https://www.youtube.com/@aejaca",
+    },
+    {
+      icon: <MapPin className="w-5 h-5 inline-block mr-2 text-green-700" />,
+      label: "Google Maps",
+      url: "https://maps.app.goo.gl/D9XHVQD4ufjjA5X18",
+    },
+    {
+      icon: <Mail className="w-5 h-5 inline-block mr-2 text-gray-600" />,
+      label: "✉️ E-mail",
+      url: "mailto:aejaca@gmail.com",
+    },
+  ];
 
   return (
-    <div className="layout">
-      <Sidebar
-        genres={genres}
-        activeGenre={activeGenre}
-        onSelectGenre={handleSelectGenre}
-        counts
-      />
-
-      <main className="main-content">
-        {/* Breadcrumbs for main library page */}
-        {!bookId && (
-          <Breadcrumbs
-            items={[
-              { label: "All Books", value: null },
-              ...(activeGenre
-                ? [{ label: activeGenre, value: activeGenre }]
-                : []),
-            ]}
-            onNavigate={(value) => {
-              if (value === null) {
-                handleSelectGenre(null);
-              }
-            }}
-          />
-        )}
-
-        <div className="page-header">
-          <h1>{activeGenre ? `${activeGenre} Books` : "My Library"}</h1>
-          <p className="text-gray-900">
-            {activeGenre
-              ? `Explore our collection of ${activeGenre.toLowerCase()} books`
-              : "Discover your next favorite book"}
-          </p>
-
-          {/* Show banner only when using mock data */}
-          {dataSource === "mock" && <MockDataBanner />}
-        </div>
-
-        {bookId ? (
-          loading ? (
-            <div className="flex justify-center items-center py-20">
-              <div className="h-10 w-10 border-2 border-blue-800 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          ) : bookDetail ? (
-            <BookDetail bookData={bookDetail} />
-          ) : (
-            <div className="text-center py-20 text-gray-600">
-              Error loading book details
-            </div>
-          )
-        ) : (
-          <BooksList onSelectBook={handleSelectBook} filter={activeGenre} />
-        )}
-      </main>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 text-center">
+      <div className="max-w-xl text-gray-800 font-serif">
+        <h1 className="text-2xl md:text-3xl font-semibold mb-6">
+          🌐 AEJaCA Official Links:
+        </h1>
+        <ul className="space-y-3 text-base md:text-lg">
+          {links.map(({ icon, label, url }) => (
+            <li key={label}>
+              {icon}
+              <strong>{label}:</strong>{" "}
+              <a
+                href={url}
+                className="text-blue-600 hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {url}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
