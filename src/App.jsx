@@ -10,9 +10,6 @@ import {
   Mail,
 } from "lucide-react";
 
-import logo from "./logo.png"; // <-- upewnij się, że istnieje
-import banner from "./banner.jpg"; // <-- upewnij się, że istnieje
-
 function App() {
   const [showPrivacy, setShowPrivacy] = useState(false);
 
@@ -67,14 +64,14 @@ function App() {
     <div className="min-h-screen bg-gray-100 px-4 py-6 flex flex-col items-center">
       {/* Banner */}
       <img
-        src={banner}
+        src="/banner.jpg"
         alt="AEJaCA banner"
         className="w-full max-w-4xl mb-4 rounded shadow-md"
       />
 
       {/* Logo */}
       <img
-        src={logo}
+        src="/logo.png"
         alt="AEJaCA logo"
         className="w-[300px] h-[300px] mb-4 rounded-full shadow-lg"
       />
@@ -118,7 +115,7 @@ function App() {
                 onClick={() => setShowPrivacy(false)}
                 className="text-sm text-gray-600 underline hover:text-black"
               >
-                ← Back
+                ← Back to Main Page
               </button>
             </div>
           </>
