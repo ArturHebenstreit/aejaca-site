@@ -88,7 +88,7 @@ function App() {
     {
       icon: <Mail className="w-5 h-5 inline-block mr-2 text-gray-600" />,
       label: "E-mail",
-      url: "mailto:aejaca@gmail.com",
+      url: "mailto:contact@aejaca.com",
     },
   ];
 
@@ -175,10 +175,10 @@ function App() {
                 gromadzi, wykorzystuje i chroni Twoje dane osobowe. W sprawach
                 szczegółowych pisz na{" "}
                 <a
-                  href="mailto:aejaca@gmail.com"
+                  href="mailto:contact@aejaca.com"
                   className="text-blue-600 underline"
                 >
-                  aejaca@gmail.com
+                  contact@aejaca.com
                 </a>
                 .
               </p>
