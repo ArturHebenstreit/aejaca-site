@@ -155,10 +155,10 @@ function App() {
               <p>
                 For more details, contact us at{" "}
                 <a
-                  href="mailto:aejaca@gmail.com"
+                  href="mailto:contact@aejaca.com"
                   className="text-blue-600 underline"
                 >
-                  aejaca@gmail.com
+                  contact@aejaca.com
                 </a>
                 .
               </p>
