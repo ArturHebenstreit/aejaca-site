@@ -41,7 +41,12 @@ function App() {
     {
       icon: <Store className="w-5 h-5 inline-block mr-2 text-pink-700" />,
       label: "Etsy",
-      url: "https://aejaca.etsy.com",
+      url: "https://aejacashop.etsy.com",
+    },
+    {
+      icon: <Store className="w-5 h-5 inline-block mr-2 text-pink-700" />,
+      label: "Etsy",
+      url: "https://aejaca2studio.etsy.com",
     },
     {
       icon: <Instagram className="w-5 h-5 inline-block mr-2 text-pink-500" />,
