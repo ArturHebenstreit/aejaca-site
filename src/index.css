@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Noto Sans", system-ui, sans-serif;
-  --font-serif: "Noto Serif", serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-serif: "Playfair Display", "Noto Serif", Georgia, serif;
   --color-paper: #fafafa;
   --color-card: #ffffff;
   --radius-DEFAULT: 0.5rem;
@@ -15,18 +15,10 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  @apply bg-gray-50 text-gray-900 font-sans leading-relaxed;
-}
-
-h1 {
-  @apply text-3xl md:text-4xl font-bold text-gray-900 font-serif mb-6 leading-tight;
-}
-
-h2 {
-  @apply text-2xl font-semibold text-gray-900 font-serif mb-4 leading-tight;
-}
-
-p {
-  @apply text-gray-900 leading-relaxed mb-4;
+  @apply bg-neutral-950 text-white;
 }
