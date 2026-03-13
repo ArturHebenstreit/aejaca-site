@@ -1,16 +1,6 @@
 import { useState } from "react";
-import {
-  Store,
-  Instagram,
-  Music2,
-  Facebook,
-  Youtube,
-  MapPin,
-  Mail,
-  MessageCircleMore,
-  Phone,
-  Send,
-} from "lucide-react";
+import { Store, Instagram, Music2, Facebook, Youtube, MapPin, Mail, MessageCircleMore, Phone, Send } from "lucide-react";
+import { useLanguage } from "../i18n/LanguageContext.jsx";
 
 const contactLinks = [
   { icon: Mail, label: "contact@aejaca.com", href: "mailto:contact@aejaca.com" },
@@ -30,12 +20,9 @@ const socialLinks = [
 ];
 
 export default function Contact() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "jewelry",
-    message: "",
-  });
+  const { t } = useLanguage();
+  const c = t.contact;
+  const [formData, setFormData] = useState({ name: "", email: "", subject: "jewelry", message: "" });
   const [submitted, setSubmitted] = useState(false);
 
   function handleSubmit(e) {
@@ -49,136 +36,86 @@ export default function Contact() {
 
   return (
     <div className="pt-16">
-      {/* Header */}
       <section className="py-20 px-4 bg-neutral-950 text-center">
-        <div className="text-neutral-400 text-xs uppercase tracking-[0.25em] mb-3">
-          Get in Touch
-        </div>
-        <h1 className="font-serif text-4xl md:text-5xl font-bold text-white mb-4">
-          Contact Us
-        </h1>
-        <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
-          Custom jewelry, personalized products, technical prototypes, or just a question
-          — we&apos;d love to hear from you.
-        </p>
+        <div className="text-neutral-400 text-xs uppercase tracking-[0.25em] mb-3">{c.tag}</div>
+        <h1 className="font-serif text-4xl md:text-5xl font-bold text-white mb-4">{c.title}</h1>
+        <p className="text-neutral-400 text-lg max-w-2xl mx-auto">{c.desc}</p>
       </section>
 
       <section className="py-16 px-4 bg-neutral-900">
         <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12">
-          {/* Contact Form */}
+          {/* Form */}
           <div>
-            <h2 className="font-serif text-2xl font-semibold text-white mb-6">
-              Send Us a Message
-            </h2>
+            <h2 className="font-serif text-2xl font-semibold text-white mb-6">{c.formTitle}</h2>
             {submitted ? (
               <div className="p-8 rounded-xl bg-neutral-950 border border-emerald-800/30 text-center">
-                <div className="text-emerald-400 text-lg font-semibold mb-2">Thank you!</div>
-                <p className="text-neutral-400 text-sm">
-                  Your email client should open with the message. If it didn&apos;t,
-                  please email us directly at contact@aejaca.com
-                </p>
-                <button
-                  onClick={() => setSubmitted(false)}
-                  className="mt-4 text-sm text-neutral-500 underline hover:text-white"
-                >
-                  Send another message
+                <div className="text-emerald-400 text-lg font-semibold mb-2">{c.thankYou}</div>
+                <p className="text-neutral-400 text-sm">{c.thankYouText}</p>
+                <button onClick={() => setSubmitted(false)} className="mt-4 text-sm text-neutral-500 underline hover:text-white">
+                  {c.sendAnother}
                 </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-sm text-neutral-400 mb-1.5">Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
+                  <label className="block text-sm text-neutral-400 mb-1.5">{c.labelName}</label>
+                  <input type="text" required value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-white/10 text-white placeholder-neutral-600 focus:border-amber-400/50 focus:outline-none transition-colors"
-                    placeholder="Your name"
-                  />
+                    placeholder={c.placeholderName} />
                 </div>
                 <div>
-                  <label className="block text-sm text-neutral-400 mb-1.5">Email</label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.email}
+                  <label className="block text-sm text-neutral-400 mb-1.5">{c.labelEmail}</label>
+                  <input type="email" required value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-white/10 text-white placeholder-neutral-600 focus:border-amber-400/50 focus:outline-none transition-colors"
-                    placeholder="your@email.com"
-                  />
+                    placeholder={c.placeholderEmail} />
                 </div>
                 <div>
-                  <label className="block text-sm text-neutral-400 mb-1.5">I&apos;m interested in</label>
-                  <select
-                    value={formData.subject}
+                  <label className="block text-sm text-neutral-400 mb-1.5">{c.labelInterest}</label>
+                  <select value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-white/10 text-white focus:border-amber-400/50 focus:outline-none transition-colors"
-                  >
-                    <option value="jewelry">Custom Jewelry (AEJaCA)</option>
-                    <option value="studio">Technical Services (AEJaCA sTuDiO)</option>
-                    <option value="both">Both — Jewelry & Studio</option>
-                    <option value="other">Other</option>
+                    className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-white/10 text-white focus:border-amber-400/50 focus:outline-none transition-colors">
+                    <option value="jewelry">{c.optionJewelry}</option>
+                    <option value="studio">{c.optionStudio}</option>
+                    <option value="both">{c.optionBoth}</option>
+                    <option value="other">{c.optionOther}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-neutral-400 mb-1.5">Message</label>
-                  <textarea
-                    required
-                    rows={5}
-                    value={formData.message}
+                  <label className="block text-sm text-neutral-400 mb-1.5">{c.labelMessage}</label>
+                  <textarea required rows={5} value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-white/10 text-white placeholder-neutral-600 focus:border-amber-400/50 focus:outline-none transition-colors resize-none"
-                    placeholder="Tell us about your project or idea..."
-                  />
+                    placeholder={c.placeholderMessage} />
                 </div>
-                <button
-                  type="submit"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-medium rounded-full hover:bg-neutral-200 transition-colors"
-                >
-                  <Send className="w-4 h-4" /> Send Message
+                <button type="submit" className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-medium rounded-full hover:bg-neutral-200 transition-colors">
+                  <Send className="w-4 h-4" /> {c.sendBtn}
                 </button>
               </form>
             )}
           </div>
 
-          {/* Contact Info */}
+          {/* Info */}
           <div className="space-y-10">
-            {/* Direct contact */}
             <div>
-              <h2 className="font-serif text-2xl font-semibold text-white mb-6">
-                Direct Contact
-              </h2>
+              <h2 className="font-serif text-2xl font-semibold text-white mb-6">{c.directTitle}</h2>
               <div className="space-y-4">
                 {contactLinks.map(({ icon: Icon, label, href }) => (
-                  <a
-                    key={href}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-4 p-4 rounded-lg bg-neutral-950 border border-white/5 hover:border-white/15 transition-colors"
-                  >
+                  <a key={href} href={href} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-4 p-4 rounded-lg bg-neutral-950 border border-white/5 hover:border-white/15 transition-colors">
                     <Icon className="w-5 h-5 text-amber-400 shrink-0" />
                     <span className="text-neutral-300 text-sm">{label}</span>
                   </a>
                 ))}
               </div>
             </div>
-
-            {/* Social media */}
             <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">
-                Find Us Online
-              </h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">{c.socialTitle}</h3>
               <div className="grid grid-cols-2 gap-3">
                 {socialLinks.map(({ icon: Icon, label, href }) => (
-                  <a
-                    key={href}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-lg bg-neutral-950 border border-white/5 hover:border-white/15 transition-colors"
-                  >
+                  <a key={href} href={href} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 rounded-lg bg-neutral-950 border border-white/5 hover:border-white/15 transition-colors">
                     <Icon className="w-4 h-4 text-neutral-400 shrink-0" />
                     <span className="text-neutral-300 text-xs">{label}</span>
                   </a>
