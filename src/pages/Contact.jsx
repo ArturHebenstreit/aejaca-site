@@ -36,10 +36,26 @@ export default function Contact() {
 
   return (
     <div className="pt-16">
-      <section className="py-20 px-4 bg-neutral-950 text-center">
-        <div className="text-neutral-400 text-xs uppercase tracking-[0.25em] mb-3">{c.tag}</div>
-        <h1 className="font-serif text-4xl md:text-5xl font-bold text-white mb-4">{c.title}</h1>
-        <p className="text-neutral-400 text-lg max-w-2xl mx-auto">{c.desc}</p>
+      {/* Hero */}
+      <section className="relative py-24 px-4 bg-gradient-to-br from-neutral-950 via-amber-950/20 to-neutral-950 overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-amber-400 blur-[120px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full bg-blue-400 blur-[120px]" />
+        </div>
+        <div className="relative z-10 max-w-3xl mx-auto text-center">
+          <div className="flex items-center justify-center gap-6 mb-8">
+            <div className="w-16 h-16 rounded-full bg-amber-400/10 border border-amber-400/20 flex items-center justify-center">
+              <Phone className="w-7 h-7 text-amber-400" />
+            </div>
+            <div className="w-12 h-px bg-gradient-to-r from-amber-400/40 to-blue-400/40" />
+            <div className="w-16 h-16 rounded-full bg-blue-400/10 border border-blue-400/20 flex items-center justify-center">
+              <MessageCircleMore className="w-7 h-7 text-blue-400" />
+            </div>
+          </div>
+          <div className="text-neutral-400 text-xs uppercase tracking-[0.25em] mb-3">{c.tag}</div>
+          <h1 className="font-serif text-4xl md:text-5xl font-bold text-white mb-4">{c.title}</h1>
+          <p className="text-neutral-400 text-lg max-w-2xl mx-auto">{c.desc}</p>
+        </div>
       </section>
 
       <section className="py-16 px-4 bg-neutral-900">

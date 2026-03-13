@@ -11,15 +11,17 @@ export default function Studio() {
   return (
     <div className="pt-16">
       {/* Hero */}
-      <section className="relative h-[45vh] min-h-[300px] overflow-hidden">
-        <img src="/hero-studio.jpg" alt="AEJaCA sTuDiO" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-black/50 to-transparent" />
-        <div className="relative z-10 flex flex-col items-center justify-end h-full pb-16 px-4 text-center">
-          <div className="text-blue-400 text-xs uppercase tracking-[0.25em] mb-3">{s.heroTag}</div>
-          <h1 className="font-sans text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg tracking-tight">
-            AEJaCA <span className="text-blue-400">{s.heroTitle}</span>
-          </h1>
-          <p className="text-neutral-300 text-lg max-w-2xl">{s.heroDesc}</p>
+      <section className="bg-neutral-950 py-10 px-4">
+        <div className="max-w-5xl mx-auto relative rounded-2xl overflow-hidden h-[40vh] min-h-[280px]">
+          <img src="/hero-studio.jpg" alt="AEJaCA sTuDiO" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-black/40 to-transparent" />
+          <div className="relative z-10 flex flex-col items-center justify-end h-full pb-12 px-4 text-center">
+            <div className="text-blue-400 text-xs uppercase tracking-[0.25em] mb-3">{s.heroTag}</div>
+            <h1 className="font-sans text-3xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight">
+              AEJaCA <span className="text-blue-400">{s.heroTitle}</span>
+            </h1>
+            <p className="text-neutral-300 text-base max-w-2xl">{s.heroDesc}</p>
+          </div>
         </div>
       </section>
 
