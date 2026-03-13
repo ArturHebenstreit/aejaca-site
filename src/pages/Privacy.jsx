@@ -1,0 +1,42 @@
+import { Link } from "react-router-dom";
+import { useLanguage } from "../i18n/LanguageContext.jsx";
+
+export default function Privacy() {
+  const { t } = useLanguage();
+  const p = t.privacy;
+
+  return (
+    <div className="pt-16">
+      <section className="py-20 px-4 bg-neutral-950">
+        <div className="max-w-3xl mx-auto">
+          <h1 className="font-serif text-3xl md:text-4xl font-bold text-white mb-2">{p.title}</h1>
+          <p className="text-neutral-500 mb-10">{p.subtitle}</p>
+
+          <div className="space-y-6 text-neutral-300 text-sm leading-relaxed">
+            {p.paragraphs.map((text, i) => <p key={i}>{text}</p>)}
+            <p>
+              {p.contactLine}{" "}
+              <a href="mailto:contact@aejaca.com" className="text-amber-400 hover:underline">contact@aejaca.com</a>.
+            </p>
+            <p>{p.consent}</p>
+
+            <hr className="border-white/10 my-10" />
+
+            <h2 className="text-xl font-semibold text-white">{p.plTitle}</h2>
+            {p.plParagraphs.map((text, i) => <p key={i}>{text}</p>)}
+            <p>
+              {p.plContactLine}{" "}
+              <a href="mailto:contact@aejaca.com" className="text-amber-400 hover:underline">contact@aejaca.com</a>.
+            </p>
+          </div>
+
+          <div className="mt-12">
+            <Link to="/" className="text-sm text-neutral-500 hover:text-white transition-colors">
+              &larr; {p.backHome}
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
