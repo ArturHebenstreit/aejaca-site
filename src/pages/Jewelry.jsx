@@ -11,7 +11,7 @@ export default function Jewelry() {
   return (
     <div className="pt-16">
       {/* Hero */}
-      <section className="relative h-[60vh] min-h-[400px] overflow-hidden">
+      <section className="relative h-[45vh] min-h-[300px] overflow-hidden">
         <img src="/hero-jewelry.jpg" alt="AEJaCA Jewelry" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-black/50 to-transparent" />
         <div className="relative z-10 flex flex-col items-center justify-end h-full pb-16 px-4 text-center">
