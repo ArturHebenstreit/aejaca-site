@@ -6,7 +6,8 @@ import { useLanguage, LANGUAGES } from "../i18n/LanguageContext.jsx";
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
-  const langRef = useRef(null);
+  const langRefDesktop = useRef(null);
+  const langRefMobile = useRef(null);
   const { pathname } = useLocation();
   const { lang, setLang, t } = useLanguage();
 
@@ -19,7 +20,9 @@ export default function Navbar() {
 
   useEffect(() => {
     function handleClick(e) {
-      if (langRef.current && !langRef.current.contains(e.target)) setLangOpen(false);
+      const inDesktop = langRefDesktop.current && langRefDesktop.current.contains(e.target);
+      const inMobile = langRefMobile.current && langRefMobile.current.contains(e.target);
+      if (!inDesktop && !inMobile) setLangOpen(false);
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -68,7 +71,7 @@ export default function Navbar() {
                 {label}
               </Link>
             ))}
-            <div ref={langRef} className="relative">
+            <div ref={langRefDesktop} className="relative">
               <button
                 onClick={() => setLangOpen(!langOpen)}
                 className="flex items-center gap-1.5 text-sm text-neutral-400 hover:text-white transition-colors px-2 py-1 rounded-md hover:bg-white/5"
@@ -82,7 +85,7 @@ export default function Navbar() {
 
           {/* Mobile */}
           <div className="md:hidden flex items-center gap-2">
-            <div ref={langRef} className="relative">
+            <div ref={langRefMobile} className="relative">
               <button
                 onClick={() => setLangOpen(!langOpen)}
                 className="text-sm text-neutral-400 hover:text-white px-2 py-1"

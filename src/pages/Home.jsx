@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <div className="pt-16">
       {/* Split Hero */}
-      <section className="relative min-h-[calc(100vh-4rem)] flex flex-col md:flex-row">
+      <section className="relative min-h-[calc(75vh-4rem)] flex flex-col md:flex-row">
         {/* Jewelry Panel */}
         <Link to="/jewelry" className="group relative flex-1 min-h-[50vh] md:min-h-full overflow-hidden cursor-pointer">
           <img src="/hero-jewelry.jpg" alt="AEJaCA Jewelry" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
@@ -46,7 +46,7 @@ export default function Home() {
       {/* Brand Statement */}
       <section className="py-20 px-4 text-center bg-neutral-950">
         <div className="max-w-3xl mx-auto">
-          <img src="/brand-sign.png" alt="AEJaCA" className="w-20 h-20 mx-auto mb-8 invert opacity-60" />
+          <img src="/brand-sign.png" alt="AEJaCA" className="w-36 h-36 mx-auto mb-8 invert opacity-60" />
           <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-6">{h.brandHeading}</h2>
           <p className="text-neutral-400 text-lg leading-relaxed">{h.brandText}</p>
         </div>
