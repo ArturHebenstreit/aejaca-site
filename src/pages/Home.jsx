@@ -15,7 +15,6 @@ export default function Home() {
           <img src="/hero-jewelry.jpg" alt="AEJaCA Jewelry" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 group-hover:from-black/70 transition-all duration-500" />
           <div className="relative z-10 flex flex-col items-center justify-end h-full pb-16 px-8 text-center">
-            <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-white drop-shadow-lg">{h.jewelryTitle}</h2>
             <p className="text-amber-300 text-lg md:text-xl font-light tracking-widest uppercase mb-4">{h.jewelrySubtitle}</p>
             <p className="text-neutral-200 max-w-md text-sm md:text-base leading-relaxed mb-8">{h.jewelryDesc}</p>
             <span className="inline-flex items-center gap-2 px-6 py-3 border border-amber-400/60 text-amber-300 rounded-full text-sm tracking-wide group-hover:bg-amber-400 group-hover:text-black transition-all duration-300">
@@ -31,9 +30,6 @@ export default function Home() {
           <img src="/hero-studio.jpg" alt="AEJaCA sTuDiO" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 group-hover:from-black/70 transition-all duration-500" />
           <div className="relative z-10 flex flex-col items-center justify-end h-full pb-16 px-8 text-center">
-            <h2 className="font-sans text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-white drop-shadow-lg tracking-tight">
-              AEJaCA <span className="text-blue-400">{h.studioTitle}</span>
-            </h2>
             <p className="text-blue-300 text-lg md:text-xl font-light tracking-widest uppercase mb-4">{h.studioSubtitle}</p>
             <p className="text-neutral-200 max-w-md text-sm md:text-base leading-relaxed mb-8">{h.studioDesc}</p>
             <span className="inline-flex items-center gap-2 px-6 py-3 border border-blue-400/60 text-blue-300 rounded-full text-sm tracking-wide group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
