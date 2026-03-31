@@ -3,8 +3,8 @@ import { Store, Instagram, Music2, Facebook, Youtube, Mail, MessageCircleMore } 
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 
 const socials = [
-  { icon: Store, href: "https://aejacashop.etsy.com", label: "Etsy" },
-  { icon: Store, href: "https://aejaca2studio.etsy.com", label: "Etsy Studio" },
+  { icon: Store, href: "https://aejacashop.etsy.com", label: "Etsy Jewelry Shop" },
+  { icon: Store, href: "https://aejaca2studio.etsy.com", label: "Etsy Studio Shop" },
   { icon: Instagram, href: "https://www.instagram.com/aejaca_", label: "Instagram" },
   { icon: Music2, href: "https://www.tiktok.com/@aejaca_", label: "TikTok" },
   { icon: Facebook, href: "https://www.facebook.com/people/Artisan-Elegance-Jewelry-and-Crafted-Art/61570057929428/", label: "Facebook" },
@@ -17,18 +17,18 @@ export default function Footer() {
   const { t } = useLanguage();
 
   return (
-    <footer className="bg-neutral-950 border-t border-white/10">
+    <footer className="bg-neutral-950 border-t border-white/10" role="contentinfo">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid md:grid-cols-3 gap-10">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <img src="/brand-sign.png" alt="AEJaCA" className="h-8 w-8 invert" />
+              <img src="/brand-sign.png" alt="AEJaCA" className="h-10 w-10 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
               <span className="font-serif text-lg font-semibold">AEJaCA</span>
             </div>
             <p className="text-neutral-400 text-sm leading-relaxed">{t.footer.tagline}</p>
           </div>
 
-          <div>
+          <nav aria-label="Footer navigation">
             <h4 className="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">{t.footer.quickLinks}</h4>
             <div className="space-y-2">
               <Link to="/jewelry" className="block text-sm text-neutral-300 hover:text-amber-400 transition-colors">{t.nav.jewelry}</Link>
@@ -36,14 +36,14 @@ export default function Footer() {
               <Link to="/contact" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.contact}</Link>
               <Link to="/privacy" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.privacy}</Link>
             </div>
-          </div>
+          </nav>
 
           <div>
             <h4 className="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">{t.footer.followUs}</h4>
             <div className="flex flex-wrap gap-3">
               {socials.map(({ icon: Icon, href, label }) => (
                 <a key={href} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}
-                  className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/10 transition-all">
+                  className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all duration-300">
                   <Icon className="w-4 h-4" />
                 </a>
               ))}

@@ -8,6 +8,12 @@
     <!-- Favicon -->
     <link rel="icon" href="/logo.png" type="image/png" />
 
+    <!-- Hreflang: multi-language support -->
+    <link rel="alternate" hreflang="pl" href="https://www.aejaca.com" />
+    <link rel="alternate" hreflang="en" href="https://www.aejaca.com" />
+    <link rel="alternate" hreflang="de" href="https://www.aejaca.com" />
+    <link rel="alternate" hreflang="x-default" href="https://www.aejaca.com" />
+
     <!-- Preconnect to Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -32,13 +38,19 @@
     />
     <meta
       name="keywords"
-      content="handmade silver jewelry, natural gemstones, mystical jewelry, personalized gifts, artisanal design, AEJaCA, silver rings, gemstone earrings, custom jewelry, 3D printing, laser engraving, prototyping, custom fabrication, AEJaCA Studio, CAD design, NFC devices"
+      content="handmade silver jewelry, natural gemstones, mystical jewelry, personalized gifts, artisanal design, AEJaCA, silver rings, gemstone earrings, custom jewelry, 3D printing, laser engraving, prototyping, custom fabrication, AEJaCA Studio, CAD design, NFC devices, handmade rings, biżuteria ręcznie robiona, srebrna biżuteria, druk 3D, grawerowanie laserowe"
     />
     <meta name="author" content="AEJaCA" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="theme-color" content="#0a0a0a" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.aejaca.com" />
+    <meta property="og:site_name" content="AEJaCA" />
+    <meta property="og:locale" content="pl_PL" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:locale:alternate" content="de_DE" />
     <meta
       property="og:title"
       content="AEJaCA – Handmade Jewelry & Creative Fabrication Studio"
@@ -48,6 +60,8 @@
       content="Two worlds under one brand: luxury handcrafted jewelry and advanced creative fabrication studio. Craft + Technology + Personalization."
     />
     <meta property="og:image" content="https://www.aejaca.com/hero-jewelry.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
@@ -65,7 +79,7 @@
       content="https://www.aejaca.com/hero-jewelry.jpg"
     />
 
-    <!-- Schema.org structured data -->
+    <!-- Schema.org: Organization -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -95,6 +109,60 @@
           "@type": "Person",
           "name": "Artur Hebenstreit"
         }
+      }
+    </script>
+
+    <!-- Schema.org: LocalBusiness (SEO boost for local search) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "AEJaCA – Artisan Elegance Jewelry and Crafted Art",
+        "url": "https://www.aejaca.com",
+        "logo": "https://www.aejaca.com/logo.png",
+        "image": "https://www.aejaca.com/hero-jewelry.jpg",
+        "description": "Luxury handcrafted silver jewelry with natural gemstones and an advanced creative fabrication studio offering 3D printing, laser engraving, and custom fabrication services.",
+        "email": "contact@aejaca.com",
+        "telephone": "+48780737786",
+        "priceRange": "$$",
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "AEJaCA Services",
+          "itemListElement": [
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Handcrafted Jewelry",
+                "description": "Custom handmade silver jewelry with natural gemstones"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "3D Printing & Fabrication",
+                "description": "Advanced 3D printing, laser engraving, and custom fabrication"
+              }
+            }
+          ]
+        },
+        "sameAs": [
+          "https://aejacashop.etsy.com",
+          "https://aejaca2studio.etsy.com",
+          "https://www.instagram.com/aejaca_"
+        ]
+      }
+    </script>
+
+    <!-- Schema.org: WebSite (enables sitelinks search box) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "AEJaCA",
+        "url": "https://www.aejaca.com",
+        "inLanguage": ["pl", "en", "de"]
       }
     </script>
   </head>

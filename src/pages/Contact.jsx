@@ -1,6 +1,8 @@
-import { useState } from "react";
-import { Store, Instagram, Music2, Facebook, Youtube, MapPin, Mail, MessageCircleMore, Phone, Send } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Store, Instagram, Music2, Facebook, Youtube, MapPin, Mail, MessageCircleMore, Phone, Send, ArrowRight } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
+import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 
 const contactLinks = [
   { icon: Mail, label: "contact@aejaca.com", href: "mailto:contact@aejaca.com" },
@@ -24,6 +26,21 @@ export default function Contact() {
   const c = t.contact;
   const [formData, setFormData] = useState({ name: "", email: "", subject: "jewelry", message: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [showFloatingCta, setShowFloatingCta] = useState(false);
+
+  const formRef = useScrollReveal();
+  const infoRef = useScrollReveal();
+  const getContactRef = useStaggerReveal(80);
+  const getSocialRef = useStaggerReveal(60);
+
+  // Floating CTA visibility on mobile
+  useEffect(() => {
+    function onScroll() {
+      setShowFloatingCta(window.scrollY > 400);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -44,11 +61,11 @@ export default function Contact() {
         </div>
         <div className="relative z-10 max-w-3xl mx-auto text-center">
           <div className="flex items-center justify-center gap-6 mb-8">
-            <div className="w-16 h-16 rounded-full bg-amber-400/10 border border-amber-400/20 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full glass-amber flex items-center justify-center">
               <Phone className="w-7 h-7 text-amber-400" />
             </div>
             <div className="w-12 h-px bg-gradient-to-r from-amber-400/40 to-blue-400/40" />
-            <div className="w-16 h-16 rounded-full bg-blue-400/10 border border-blue-400/20 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full glass-blue flex items-center justify-center">
               <MessageCircleMore className="w-7 h-7 text-blue-400" />
             </div>
           </div>
@@ -58,40 +75,42 @@ export default function Contact() {
         </div>
       </section>
 
-      <section className="py-16 px-4 bg-neutral-900">
+      <div className="gradient-divider" />
+
+      <section className="py-16 px-4 bg-neutral-900/50">
         <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12">
           {/* Form */}
-          <div>
+          <div ref={formRef} className="reveal-left">
             <h2 className="font-serif text-2xl font-semibold text-white mb-6">{c.formTitle}</h2>
             {submitted ? (
-              <div className="p-8 rounded-xl bg-neutral-950 border border-emerald-800/30 text-center">
+              <div className="p-8 rounded-xl glass border-emerald-500/20 text-center">
                 <div className="text-emerald-400 text-lg font-semibold mb-2">{c.thankYou}</div>
                 <p className="text-neutral-400 text-sm">{c.thankYouText}</p>
-                <button onClick={() => setSubmitted(false)} className="mt-4 text-sm text-neutral-500 underline hover:text-white">
+                <button onClick={() => setSubmitted(false)} className="mt-4 text-sm text-neutral-500 underline hover:text-white transition-colors">
                   {c.sendAnother}
                 </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-sm text-neutral-400 mb-1.5">{c.labelName}</label>
-                  <input type="text" required value={formData.name}
+                  <label htmlFor="contact-name" className="block text-sm text-neutral-400 mb-1.5">{c.labelName}</label>
+                  <input id="contact-name" type="text" required value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-white/10 text-white placeholder-neutral-600 focus:border-amber-400/50 focus:outline-none transition-colors"
+                    className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-white/10 text-white placeholder-neutral-600 focus:border-amber-400/50 focus:outline-none focus:ring-1 focus:ring-amber-400/30 transition-all"
                     placeholder={c.placeholderName} />
                 </div>
                 <div>
-                  <label className="block text-sm text-neutral-400 mb-1.5">{c.labelEmail}</label>
-                  <input type="email" required value={formData.email}
+                  <label htmlFor="contact-email" className="block text-sm text-neutral-400 mb-1.5">{c.labelEmail}</label>
+                  <input id="contact-email" type="email" required value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-white/10 text-white placeholder-neutral-600 focus:border-amber-400/50 focus:outline-none transition-colors"
+                    className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-white/10 text-white placeholder-neutral-600 focus:border-amber-400/50 focus:outline-none focus:ring-1 focus:ring-amber-400/30 transition-all"
                     placeholder={c.placeholderEmail} />
                 </div>
                 <div>
-                  <label className="block text-sm text-neutral-400 mb-1.5">{c.labelInterest}</label>
-                  <select value={formData.subject}
+                  <label htmlFor="contact-interest" className="block text-sm text-neutral-400 mb-1.5">{c.labelInterest}</label>
+                  <select id="contact-interest" value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-white/10 text-white focus:border-amber-400/50 focus:outline-none transition-colors">
+                    className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-white/10 text-white focus:border-amber-400/50 focus:outline-none focus:ring-1 focus:ring-amber-400/30 transition-all">
                     <option value="jewelry">{c.optionJewelry}</option>
                     <option value="studio">{c.optionStudio}</option>
                     <option value="both">{c.optionBoth}</option>
@@ -99,13 +118,13 @@ export default function Contact() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-neutral-400 mb-1.5">{c.labelMessage}</label>
-                  <textarea required rows={5} value={formData.message}
+                  <label htmlFor="contact-message" className="block text-sm text-neutral-400 mb-1.5">{c.labelMessage}</label>
+                  <textarea id="contact-message" required rows={5} value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-white/10 text-white placeholder-neutral-600 focus:border-amber-400/50 focus:outline-none transition-colors resize-none"
+                    className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-white/10 text-white placeholder-neutral-600 focus:border-amber-400/50 focus:outline-none focus:ring-1 focus:ring-amber-400/30 transition-all resize-none"
                     placeholder={c.placeholderMessage} />
                 </div>
-                <button type="submit" className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-medium rounded-full hover:bg-neutral-200 transition-colors">
+                <button type="submit" className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-medium rounded-full hover:bg-neutral-200 hover:shadow-lg hover:shadow-white/10 transition-all duration-300">
                   <Send className="w-4 h-4" /> {c.sendBtn}
                 </button>
               </form>
@@ -113,14 +132,16 @@ export default function Contact() {
           </div>
 
           {/* Info */}
-          <div className="space-y-10">
+          <div ref={infoRef} className="reveal-right space-y-10">
             <div>
               <h2 className="font-serif text-2xl font-semibold text-white mb-6">{c.directTitle}</h2>
               <div className="space-y-4">
-                {contactLinks.map(({ icon: Icon, label, href }) => (
-                  <a key={href} href={href} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-4 p-4 rounded-lg bg-neutral-950 border border-white/5 hover:border-white/15 transition-colors">
-                    <Icon className="w-5 h-5 text-amber-400 shrink-0" />
+                {contactLinks.map(({ icon: Icon, label, href }, i) => (
+                  <a key={href} ref={getContactRef(i)} href={href} target="_blank" rel="noopener noreferrer"
+                    className="reveal-scale flex items-center gap-4 p-4 rounded-lg glass hover:border-white/20 hover:shadow-md hover:shadow-black/20 transition-all duration-300 group">
+                    <div className="w-10 h-10 rounded-full bg-amber-400/10 flex items-center justify-center shrink-0 group-hover:bg-amber-400/20 transition-colors">
+                      <Icon className="w-5 h-5 text-amber-400" />
+                    </div>
                     <span className="text-neutral-300 text-sm">{label}</span>
                   </a>
                 ))}
@@ -129,9 +150,9 @@ export default function Contact() {
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">{c.socialTitle}</h3>
               <div className="grid grid-cols-2 gap-3">
-                {socialLinks.map(({ icon: Icon, label, href }) => (
-                  <a key={href} href={href} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-lg bg-neutral-950 border border-white/5 hover:border-white/15 transition-colors">
+                {socialLinks.map(({ icon: Icon, label, href }, i) => (
+                  <a key={href} ref={getSocialRef(i)} href={href} target="_blank" rel="noopener noreferrer"
+                    className="reveal-scale flex items-center gap-3 p-3 rounded-lg glass hover:border-white/15 transition-all duration-300">
                     <Icon className="w-4 h-4 text-neutral-400 shrink-0" />
                     <span className="text-neutral-300 text-xs">{label}</span>
                   </a>
@@ -141,6 +162,17 @@ export default function Contact() {
           </div>
         </div>
       </section>
+
+      {/* Floating CTA on mobile */}
+      <div className={`floating-cta md:hidden ${showFloatingCta ? "visible" : ""}`}>
+        <a href="https://wa.me/48780737786" target="_blank" rel="noopener noreferrer"
+          className="flex items-center gap-2 px-5 py-3 bg-green-500 text-white font-medium rounded-full shadow-lg shadow-green-500/30 hover:bg-green-400 transition-colors"
+          aria-label="Contact via WhatsApp"
+        >
+          <MessageCircleMore className="w-5 h-5" />
+          WhatsApp
+        </a>
+      </div>
     </div>
   );
 }
