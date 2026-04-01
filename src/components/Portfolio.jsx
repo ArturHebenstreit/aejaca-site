@@ -23,7 +23,7 @@ const CATEGORY_COLORS_BLUE = {
  * @param {Object} props.data - { tag, title, filterAll, filters, items }
  * @param {"amber"|"blue"} props.accent
  */
-export default function Portfolio({ data, accent = "amber" }) {
+export default function Portfolio({ data, accent = "amber", id }) {
   const [filter, setFilter] = useState("all");
   const sectionRef = useScrollReveal();
   const getCardRef = useStaggerReveal(80);
@@ -39,7 +39,7 @@ export default function Portfolio({ data, accent = "amber" }) {
   const filtered = filter === "all" ? data.items : data.items.filter((item) => item.category === filter);
 
   return (
-    <section className="py-20 px-4 bg-neutral-900/50">
+    <section id={id} className="py-20 px-4 bg-neutral-900/50">
       <div ref={sectionRef} className="reveal max-w-6xl mx-auto">
         <div className="text-center mb-10">
           <div className={`${tagColor} text-xs uppercase tracking-[0.2em] mb-3`}>{data.tag}</div>

@@ -8,7 +8,7 @@ import { useScrollReveal } from "../hooks/useScrollReveal.js";
  * @param {Object} props.data - { tag, title, categories: [{ name, tips: [{ q, a }] }] }
  * @param {"amber"|"blue"} props.accent
  */
-export default function Tips({ data, accent = "amber" }) {
+export default function Tips({ data, accent = "amber", id }) {
   const [activeCat, setActiveCat] = useState(0);
   const [openTip, setOpenTip] = useState(null);
   const sectionRef = useScrollReveal();
@@ -33,7 +33,7 @@ export default function Tips({ data, accent = "amber" }) {
   const tips = data.categories[activeCat]?.tips || [];
 
   return (
-    <section className="py-20 px-4 bg-neutral-950">
+    <section id={id} className="py-20 px-4 bg-neutral-950">
       <div ref={sectionRef} className="reveal max-w-3xl mx-auto">
         <div className="text-center mb-10">
           <div className="flex items-center justify-center gap-2 mb-3">

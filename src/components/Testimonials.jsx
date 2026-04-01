@@ -7,7 +7,7 @@ import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
  * @param {Object} props.data - { tag, title, items: [{ text, author, role }] }
  * @param {"amber"|"blue"} props.accent - Color accent
  */
-export default function Testimonials({ data, accent = "amber" }) {
+export default function Testimonials({ data, accent = "amber", id }) {
   const sectionRef = useScrollReveal();
   const getCardRef = useStaggerReveal(120);
 
@@ -18,7 +18,7 @@ export default function Testimonials({ data, accent = "amber" }) {
   const authorColor = isAmber ? "text-amber-300" : "text-blue-300";
 
   return (
-    <section className="py-20 px-4 bg-neutral-950">
+    <section id={id} className="py-20 px-4 bg-neutral-950">
       <div ref={sectionRef} className="reveal max-w-5xl mx-auto">
         <div className="text-center mb-12">
           <div className={`${tagColor} text-xs uppercase tracking-[0.2em] mb-3`}>{data.tag}</div>

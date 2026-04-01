@@ -8,7 +8,7 @@ import { useScrollReveal } from "../hooks/useScrollReveal.js";
  * @param {Object} props.data - { tag, title, items: [{ q, a }] }
  * @param {"amber"|"blue"} props.accent - Color accent
  */
-export default function FAQ({ data, accent = "amber" }) {
+export default function FAQ({ data, accent = "amber", id }) {
   const [openIndex, setOpenIndex] = useState(null);
   const sectionRef = useScrollReveal();
 
@@ -22,7 +22,7 @@ export default function FAQ({ data, accent = "amber" }) {
   }
 
   return (
-    <section className="py-20 px-4 bg-neutral-900/50">
+    <section id={id} className="py-20 px-4 bg-neutral-900/50">
       <div ref={sectionRef} className="reveal max-w-3xl mx-auto">
         <div className="text-center mb-12">
           <div className={`${tagColor} text-xs uppercase tracking-[0.2em] mb-3`}>{data.tag}</div>

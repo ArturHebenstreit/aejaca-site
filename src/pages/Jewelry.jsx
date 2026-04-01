@@ -38,7 +38,7 @@ export default function Jewelry() {
       </section>
 
       {/* About */}
-      <section className="py-20 px-4 bg-neutral-950">
+      <section id="about" className="py-20 px-4 bg-neutral-950">
         <div ref={aboutRef} className="reveal max-w-4xl mx-auto text-center">
           <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-6 text-white">{j.aboutTitle}</h2>
           <p className="text-neutral-400 text-lg leading-relaxed mb-6">{j.aboutP1}</p>
@@ -49,7 +49,7 @@ export default function Jewelry() {
       <div className="gradient-divider" />
 
       {/* Services */}
-      <section className="py-20 px-4 bg-neutral-900/50">
+      <section id="services" className="py-20 px-4 bg-neutral-900/50">
         <div className="max-w-6xl mx-auto">
           <div ref={servicesHeaderRef} className="reveal text-center mb-14">
             <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{j.servicesTag}</div>
@@ -83,10 +83,10 @@ export default function Jewelry() {
       <div className="gradient-divider" />
 
       {/* Portfolio */}
-      <Portfolio data={j.portfolio} accent="amber" />
+      <Portfolio data={j.portfolio} accent="amber" id="portfolio" />
 
       {/* Values */}
-      <section className="py-20 px-4 bg-gradient-to-b from-emerald-950/20 to-neutral-950">
+      <section id="values" className="py-20 px-4 bg-gradient-to-b from-emerald-950/20 to-neutral-950">
         <div ref={valuesRef} className="reveal max-w-4xl mx-auto text-center">
           <h2 className="font-serif text-3xl font-semibold text-white mb-10">{j.valuesTitle}</h2>
           <div className="grid sm:grid-cols-4 gap-8">
@@ -103,22 +103,22 @@ export default function Jewelry() {
       <div className="gradient-divider" />
 
       {/* Testimonials */}
-      <Testimonials data={j.testimonials} accent="amber" />
+      <Testimonials data={j.testimonials} accent="amber" id="testimonials" />
 
       <div className="gradient-divider" />
 
       {/* FAQ */}
-      <FAQ data={j.faq} accent="amber" />
+      <FAQ data={j.faq} accent="amber" id="faq" />
 
       <div className="gradient-divider" />
 
       {/* Tips & Advice */}
-      <Tips data={j.tips} accent="amber" />
+      <Tips data={j.tips} accent="amber" id="tips" />
 
       <div className="gradient-divider" />
 
       {/* Etsy */}
-      <section className="py-16 px-4 text-center bg-neutral-900/50">
+      <section id="shop" className="py-16 px-4 text-center bg-neutral-900/50">
         <div ref={etsyRef} className="reveal">
           <h2 className="font-serif text-2xl font-semibold text-white mb-3">{j.shopTitle}</h2>
           <p className="text-neutral-400 mb-6">{j.shopText}</p>

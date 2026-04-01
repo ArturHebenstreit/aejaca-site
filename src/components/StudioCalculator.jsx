@@ -90,7 +90,7 @@ export default function StudioCalculator() {
     : null;
 
   return (
-    <section className="py-20 px-4 bg-neutral-950">
+    <section id="calculator" className="py-20 px-4 bg-neutral-950">
       <div ref={sectionRef} className="reveal max-w-2xl mx-auto">
         <div className="text-center mb-10">
           <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-3">{calc.tag}</div>

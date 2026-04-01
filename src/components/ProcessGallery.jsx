@@ -23,7 +23,7 @@ export default function ProcessGallery() {
   function next() { setActive((active + 1) % steps.length); }
 
   return (
-    <section className="py-20 px-4 bg-neutral-900/50">
+    <section id="process" className="py-20 px-4 bg-neutral-900/50">
       <div ref={sectionRef} className="reveal max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{j.processTag}</div>
