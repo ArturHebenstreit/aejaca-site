@@ -130,6 +130,29 @@ export default {
       restart: "Neu Starten",
     },
 
+    portfolio: {
+      tag: "Unsere Kreationen",
+      title: "Portfolio",
+      filterAll: "Alle",
+      filters: [
+        { id: "rings", label: "Ringe" },
+        { id: "earrings", label: "Ohrringe" },
+        { id: "pendants", label: "Anhänger" },
+        { id: "custom", label: "Individuell" },
+        { id: "symbolic", label: "Symbolisch" },
+      ],
+      items: [
+        { title: "Silberring mit Mondstein", category: "rings", desc: "Handgefertigter Ring aus 925er Silber mit natürlichem Mondstein-Cabochon" },
+        { title: "Amethyst-Tropfen-Ohrringe", category: "earrings", desc: "Zarte Silberohrringe mit facettierten Amethyst-Tropfen" },
+        { title: "Keltischer Knoten-Anhänger", category: "pendants", desc: "Aufwendiges keltisches Knotendesign in oxidiertem Sterlingsilber" },
+        { title: "Individueller Verlobungsring", category: "custom", desc: "Maßgeschneiderter Goldring mit Smaragd, gemeinsam mit der Kundin entworfen" },
+        { title: "Lebensbaum-Brosche", category: "symbolic", desc: "Symbolischer Lebensbaum aus Silber mit eingelassenen Granat-Akzenten" },
+        { title: "Statement-Ring mit Labradorit", category: "rings", desc: "Ausdrucksstarker Ring mit großem Labradorit und blauem Schimmer" },
+        { title: "Eheringe-Set", category: "custom", desc: "Passende Eheringe aus 14K Gold mit personalisierter Gravur" },
+        { title: "Runen-Amulett", category: "symbolic", desc: "Von Wikingern inspirierter Runen-Anhänger aus gealtertem Silber" },
+      ],
+    },
+
     gallery: {
       tag: "Von der Skizze zum Meisterwerk",
       title: "Der Herstellungsprozess",

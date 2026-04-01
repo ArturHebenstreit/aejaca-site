@@ -134,6 +134,30 @@ export default {
       restart: "Start Over",
     },
 
+    // Portfolio
+    portfolio: {
+      tag: "Our Creations",
+      title: "Portfolio",
+      filterAll: "All",
+      filters: [
+        { id: "rings", label: "Rings" },
+        { id: "earrings", label: "Earrings" },
+        { id: "pendants", label: "Pendants" },
+        { id: "custom", label: "Custom" },
+        { id: "symbolic", label: "Symbolic" },
+      ],
+      items: [
+        { title: "Moonstone Silver Ring", category: "rings", desc: "Handcrafted sterling silver ring with natural moonstone cabochon" },
+        { title: "Amethyst Drop Earrings", category: "earrings", desc: "Delicate silver earrings with faceted amethyst drops" },
+        { title: "Celtic Knot Pendant", category: "pendants", desc: "Intricate Celtic knot design in oxidized sterling silver" },
+        { title: "Custom Engagement Ring", category: "custom", desc: "Bespoke gold ring with emerald center stone, designed with the client" },
+        { title: "Tree of Life Brooch", category: "symbolic", desc: "Symbolic tree of life in silver with embedded garnet accents" },
+        { title: "Labradorite Statement Ring", category: "rings", desc: "Bold artisan ring showcasing a large labradorite with blue flash" },
+        { title: "Wedding Band Set", category: "custom", desc: "Matching his & hers bands in 14K gold with personalized engraving" },
+        { title: "Rune Amulet Pendant", category: "symbolic", desc: "Viking-inspired rune pendant in aged silver with leather cord" },
+      ],
+    },
+
     // Process Gallery
     gallery: {
       tag: "From Sketch to Masterpiece",

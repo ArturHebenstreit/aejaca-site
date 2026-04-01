@@ -4,6 +4,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import JewelryConfigurator from "../components/JewelryConfigurator.jsx";
 import ProcessGallery from "../components/ProcessGallery.jsx";
+import Portfolio from "../components/Portfolio.jsx";
 import Testimonials from "../components/Testimonials.jsx";
 import FAQ from "../components/FAQ.jsx";
 
@@ -79,6 +80,11 @@ export default function Jewelry() {
 
       {/* Process Gallery */}
       <ProcessGallery />
+
+      <div className="gradient-divider" />
+
+      {/* Portfolio */}
+      <Portfolio data={j.portfolio} accent="amber" />
 
       <div className="gradient-divider" />
 

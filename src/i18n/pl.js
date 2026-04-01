@@ -131,6 +131,30 @@ export default {
       restart: "Zacznij od nowa",
     },
 
+    // Portfolio
+    portfolio: {
+      tag: "Nasze Kreacje",
+      title: "Portfolio",
+      filterAll: "Wszystkie",
+      filters: [
+        { id: "rings", label: "Pierścionki" },
+        { id: "earrings", label: "Kolczyki" },
+        { id: "pendants", label: "Wisiorki" },
+        { id: "custom", label: "Na zamówienie" },
+        { id: "symbolic", label: "Symboliczne" },
+      ],
+      items: [
+        { title: "Srebrny pierścionek z kamieniem księżycowym", category: "rings", desc: "Ręcznie wykonany pierścionek ze srebra próby 925 z naturalnym kamieniem księżycowym" },
+        { title: "Kolczyki z ametystem", category: "earrings", desc: "Delikatne srebrne kolczyki z fasetowanymi kroplami ametystu" },
+        { title: "Wisiorek z węzłem celtyckim", category: "pendants", desc: "Misterny wzór celtyckiego węzła w oksydowanym srebrze" },
+        { title: "Pierścionek zaręczynowy na zamówienie", category: "custom", desc: "Złoty pierścionek ze szmaragdem, zaprojektowany wspólnie z klientką" },
+        { title: "Broszka Drzewo Życia", category: "symbolic", desc: "Symboliczne drzewo życia ze srebra z granatowymi akcentami" },
+        { title: "Pierścionek z labradorytem", category: "rings", desc: "Odważny artystyczny pierścionek z dużym labradorytem o niebieskim blasku" },
+        { title: "Komplet obrączek ślubnych", category: "custom", desc: "Pasujące obrączki ze złota 14K z personalizowanym grawerunkiem" },
+        { title: "Amulet z runami", category: "symbolic", desc: "Wisiorek inspirowany wikingami z postarzanego srebra na skórzanym rzemieniu" },
+      ],
+    },
+
     // Galeria procesu
     gallery: {
       tag: "Od Szkicu do Arcydzieła",

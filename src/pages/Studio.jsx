@@ -3,7 +3,7 @@ import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench } from "lucide-react
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import StudioCalculator from "../components/StudioCalculator.jsx";
-import StudioPortfolio from "../components/StudioPortfolio.jsx";
+import Portfolio from "../components/Portfolio.jsx";
 import Testimonials from "../components/Testimonials.jsx";
 import FAQ from "../components/FAQ.jsx";
 
@@ -81,7 +81,7 @@ export default function Studio() {
       <div className="gradient-divider" />
 
       {/* Portfolio */}
-      <StudioPortfolio />
+      <Portfolio data={s.portfolio} accent="blue" />
 
       <div className="gradient-divider" />
 
