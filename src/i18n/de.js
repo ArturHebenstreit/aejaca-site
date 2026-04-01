@@ -61,10 +61,12 @@ export default {
     processTag: "Unser Ansatz",
     processTitle: "Der Kreativprozess",
     processSteps: [
-      { title: "Konzept", desc: "Ihre Vision, Symbolik und gewünschte Ästhetik verstehen" },
-      { title: "Entwurf", desc: "Handskizzen und 3D-CAD-Modellierung des Stücks" },
-      { title: "Prototyp", desc: "3D-gedrucktes Modell zur Überprüfung und Verfeinerung" },
-      { title: "Handarbeit", desc: "Fertiges Stück in Silber oder Gold mit Edelsteinen gefertigt" },
+      { title: "Beratung", num: "01", desc: "Wir beginnen mit einem Gespräch — Ihre Vision, Symbolik, Lebensstil und Budget. Jedes großartige Stück beginnt damit, die Geschichte zu verstehen, die es erzählen soll.", when: "Jedes Einzelanfertigungsprojekt" },
+      { title: "Design & CAD", num: "02", desc: "Handskizzen werden zu präzisen 3D-CAD-Modellen. Sie sehen realistische digitale Renderings aus jedem Winkel, und wir iterieren, bis das Design perfekt ist.", when: "Jedes Einzelanfertigungsprojekt" },
+      { title: "Wachsmodell / 3D-Druck", num: "03", desc: "Ein physischer Prototyp entsteht — entweder handgeschnitzt in Wachs oder 3D-gedruckt in Harz. Sie können ihn in die Hand nehmen, Proportionen prüfen und freigeben.", when: "Gegossene Stücke (Ringe, Anhänger, komplexe Formen)" },
+      { title: "Wachsausschmelzverfahren", num: "04", desc: "Das freigegebene Modell wird in eine Keramikschale eingebettet, erhitzt, um das Wachs auszubrennen, und geschmolzenes Silber oder Gold wird in den Hohlraum gegossen — das rohe Metallstück entsteht.", when: "Gegossene Stücke; handgefertigte Stücke überspringen diesen Schritt" },
+      { title: "Handarbeit & Finishing", num: "05", desc: "Das gegossene Stück wird gefeilt, gelötet, texturiert und von Hand geformt. Oberflächen werden mit Tripoli- und Rouge-Pasten poliert. Optionale Oxidation oder Patina verleiht Charakter.", when: "Jedes Stück — die Handschrift des Kunsthandwerkers" },
+      { title: "Steinfassung & Qualitätskontrolle", num: "06", desc: "Edelsteine werden von Hand in Krappen-, Zar­gen- oder Kanalfassung gesetzt — jeder Stein präzise platziert und gesichert. Die Endkontrolle unter Vergrößerung bestätigt Steinsicherheit, Metallintegrität und Oberflächenperfektion.", when: "Stücke mit Edelsteinen; reine Metallstücke gehen direkt zur Auslieferung" },
     ],
     valuesTitle: "Was AEJaCA Definiert",
     values: [
@@ -153,18 +155,6 @@ export default {
       ],
     },
 
-    gallery: {
-      tag: "Von der Skizze zum Meisterwerk",
-      title: "Der Herstellungsprozess",
-      items: [
-        { step: "Skizze", desc: "Handgezeichnetes Konzept, das die Essenz des Designs einfängt" },
-        { step: "3D-Modell", desc: "Digitale Modellierung in CAD-Software für Präzision" },
-        { step: "Wachs/Harz-Druck", desc: "3D-gedrucktes Modell zur physischen Überprüfung" },
-        { step: "Metallguss", desc: "Guss in Silber oder Gold aus dem genehmigten Modell" },
-        { step: "Steinfassung", desc: "Sorgfältiges Platzieren und Sichern jedes Edelsteins" },
-        { step: "Endpolitur", desc: "Von Hand poliert bis zur Perfektion, tragefertig" },
-      ],
-    },
 
     testimonials: {
       tag: "Was Unsere Kunden Sagen",

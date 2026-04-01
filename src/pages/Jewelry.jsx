@@ -17,8 +17,6 @@ export default function Jewelry() {
   const aboutRef = useScrollReveal();
   const servicesHeaderRef = useScrollReveal();
   const getServiceRef = useStaggerReveal(100);
-  const processRef = useScrollReveal();
-  const getStepRef = useStaggerReveal(120);
   const valuesRef = useScrollReveal();
   const etsyRef = useScrollReveal();
   const ctaRef = useScrollReveal();
@@ -85,25 +83,6 @@ export default function Jewelry() {
 
       {/* Portfolio */}
       <Portfolio data={j.portfolio} accent="amber" />
-
-      <div className="gradient-divider" />
-
-      {/* Process Steps */}
-      <section className="py-20 px-4 bg-neutral-950">
-        <div ref={processRef} className="reveal max-w-4xl mx-auto text-center">
-          <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{j.processTag}</div>
-          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-white mb-12">{j.processTitle}</h2>
-          <div className="grid sm:grid-cols-4 gap-8">
-            {j.processSteps.map((step, i) => (
-              <div key={i} ref={getStepRef(i)} className="reveal-scale">
-                <div className="text-amber-400 font-mono text-2xl font-bold mb-2">{String(i + 1).padStart(2, "0")}</div>
-                <h3 className="font-serif text-lg font-semibold text-white mb-2">{step.title}</h3>
-                <p className="text-neutral-500 text-sm">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Values */}
       <section className="py-20 px-4 bg-gradient-to-b from-emerald-950/20 to-neutral-950">

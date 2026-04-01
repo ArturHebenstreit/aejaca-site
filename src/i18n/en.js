@@ -61,13 +61,15 @@ export default {
       { title: "3D Design & Prototyping", desc: "Combining traditional craftsmanship with modern 3D modeling to prototype and perfect each piece." },
       { title: "Symbolic Objects", desc: "Artistic objects and symbolic creations that go beyond jewelry — timeless keepsakes and art pieces." },
     ],
-    processTag: "Our Approach",
-    processTitle: "The Creative Process",
+    processTag: "From Idea to Masterpiece",
+    processTitle: "How Your Jewelry Is Made",
     processSteps: [
-      { title: "Concept", desc: "Understanding your vision, symbolism, and desired aesthetic" },
-      { title: "Design", desc: "Hand sketches and 3D CAD modeling of the piece" },
-      { title: "Prototype", desc: "3D printed model for review and refinement" },
-      { title: "Handcraft", desc: "Final piece crafted in silver or gold with gemstones" },
+      { title: "Consultation", num: "01", desc: "We start with a conversation — your vision, symbolism, lifestyle, and budget. Every great piece begins with understanding the story it should tell.", when: "Every custom project" },
+      { title: "Design & CAD", num: "02", desc: "Hand sketches evolve into precise 3D CAD models. You see realistic digital renderings from every angle, and we iterate until the design is perfect.", when: "Every custom project" },
+      { title: "Wax Model / 3D Print", num: "03", desc: "A physical prototype is created — either hand-carved in wax or 3D printed in resin. You can hold it, check proportions, and approve before we proceed.", when: "Cast pieces (rings, pendants, complex forms)" },
+      { title: "Lost-Wax Casting", num: "04", desc: "The approved model is encased in a ceramic shell, heated to burn away the wax, and molten silver or gold is poured into the cavity — creating the raw metal piece.", when: "Cast pieces; hand-fabricated pieces skip this step" },
+      { title: "Hand Fabrication & Finishing", num: "05", desc: "The cast piece is filed, soldered, textured, and shaped by hand. Surfaces are polished with tripoli and rouge compounds. Optional oxidation or patina adds character.", when: "Every piece — the artisan's signature touch" },
+      { title: "Stone Setting & Quality Control", num: "06", desc: "Gemstones are hand-set using prong, bezel, or channel techniques — each stone precisely placed and secured. Final inspection under magnification confirms stone security, metal integrity, and surface perfection.", when: "Pieces with gemstones; plain metal pieces proceed to delivery" },
     ],
     valuesTitle: "What Defines AEJaCA",
     values: [
@@ -155,20 +157,6 @@ export default {
         { title: "Labradorite Statement Ring", category: "rings", desc: "Bold artisan ring showcasing a large labradorite with blue flash" },
         { title: "Wedding Band Set", category: "custom", desc: "Matching his & hers bands in 14K gold with personalized engraving" },
         { title: "Rune Amulet Pendant", category: "symbolic", desc: "Viking-inspired rune pendant in aged silver with leather cord" },
-      ],
-    },
-
-    // Process Gallery
-    gallery: {
-      tag: "From Sketch to Masterpiece",
-      title: "The Making Process",
-      items: [
-        { step: "Sketch", desc: "Hand-drawn concept capturing the essence of the design" },
-        { step: "3D Model", desc: "Digital modeling in CAD software for precision" },
-        { step: "Wax/Resin Print", desc: "3D printed model for physical review" },
-        { step: "Metal Cast", desc: "Casting in silver or gold from the approved model" },
-        { step: "Stone Setting", desc: "Carefully placing and securing each gemstone" },
-        { step: "Final Polish", desc: "Hand-polished to perfection, ready to wear" },
       ],
     },
 

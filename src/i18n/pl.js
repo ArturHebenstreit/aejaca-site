@@ -58,13 +58,15 @@ export default {
       { title: "Projektowanie 3D i Prototypowanie", desc: "Łączenie tradycyjnego rzemiosła z nowoczesnym modelowaniem 3D do prototypowania i doskonalenia każdego elementu." },
       { title: "Obiekty Symboliczne", desc: "Artystyczne obiekty i symboliczne kreacje wykraczające poza biżuterię — ponadczasowe pamiątki i dzieła sztuki." },
     ],
-    processTag: "Nasze Podejście",
-    processTitle: "Proces Twórczy",
+    processTag: "Od Pomysłu do Arcydzieła",
+    processTitle: "Jak Powstaje Twoja Biżuteria",
     processSteps: [
-      { title: "Koncepcja", desc: "Zrozumienie Twojej wizji, symboliki i pożądanej estetyki" },
-      { title: "Projektowanie", desc: "Ręczne szkice i modelowanie 3D CAD elementu" },
-      { title: "Prototyp", desc: "Model drukowany 3D do przeglądu i udoskonalenia" },
-      { title: "Wykonanie", desc: "Gotowy element wykonany ze srebra lub złota z kamieniami" },
+      { title: "Konsultacja", num: "01", desc: "Zaczynamy od rozmowy — Twoja wizja, symbolika, styl życia i budżet. Każde wielkie dzieło zaczyna się od zrozumienia historii, którą ma opowiadać.", when: "Każdy projekt na zamówienie" },
+      { title: "Projekt & CAD", num: "02", desc: "Ręczne szkice przekształcają się w precyzyjne modele 3D CAD. Widzisz realistyczne renderingi z każdego kąta, a my iterujemy, aż projekt będzie idealny.", when: "Każdy projekt na zamówienie" },
+      { title: "Model woskowy / Wydruk 3D", num: "03", desc: "Powstaje fizyczny prototyp — rzeźbiony ręcznie w wosku lub drukowany 3D w żywicy. Możesz go trzymać, sprawdzić proporcje i zatwierdzić przed dalszą realizacją.", when: "Elementy odlewane (pierścionki, wisiorki, złożone formy)" },
+      { title: "Odlew metodą traconego wosku", num: "04", desc: "Zatwierdzony model jest zamykany w ceramicznej formie, podgrzewany, by wypalić wosk, a następnie płynne srebro lub złoto jest wlewane do powstałej wnęki — tworząc surowy metalowy element.", when: "Elementy odlewane; ręcznie kute pomijają ten krok" },
+      { title: "Ręczna obróbka & Wykończenie", num: "05", desc: "Odlany element jest piłowany, lutowany, teksturowany i kształtowany ręcznie. Powierzchnie polerowane pastami tripoli i rouge. Opcjonalna oksydacja lub patyna dodaje charakteru.", when: "Każdy element — autorski dotyk rzemieślnika" },
+      { title: "Osadzanie kamieni & Kontrola jakości", num: "06", desc: "Kamienie szlachetne są osadzane ręcznie techniką krapnową, opaskową lub kanałową — każdy kamień precyzyjnie umieszczony i zabezpieczony. Końcowa inspekcja pod lupą potwierdza bezpieczeństwo kamieni, integralność metalu i perfekcję powierzchni.", when: "Elementy z kamieniami; gładkie metalowe przechodzą do dostawy" },
     ],
     valuesTitle: "Co Definiuje AEJaCA",
     values: [
@@ -155,19 +157,6 @@ export default {
       ],
     },
 
-    // Galeria procesu
-    gallery: {
-      tag: "Od Szkicu do Arcydzieła",
-      title: "Proces Tworzenia",
-      items: [
-        { step: "Szkic", desc: "Ręcznie rysowany koncept oddający esencję projektu" },
-        { step: "Model 3D", desc: "Cyfrowe modelowanie w oprogramowaniu CAD" },
-        { step: "Wydruk wosk/żywica", desc: "Model drukowany 3D do fizycznej oceny" },
-        { step: "Odlew metalowy", desc: "Odlewanie w srebrze lub złocie z zatwierdzonego modelu" },
-        { step: "Osadzanie kamieni", desc: "Staranne umieszczanie i zabezpieczanie kamieni szlachetnych" },
-        { step: "Polerowanie", desc: "Ręcznie polerowane do perfekcji, gotowe do noszenia" },
-      ],
-    },
 
     // Opinie
     testimonials: {

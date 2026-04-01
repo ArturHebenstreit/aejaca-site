@@ -14,24 +14,25 @@ const STEP_COLORS = [
 
 export default function ProcessGallery() {
   const { t } = useLanguage();
-  const g = t.jewelry.gallery;
+  const j = t.jewelry;
+  const steps = j.processSteps;
   const [active, setActive] = useState(0);
   const sectionRef = useScrollReveal();
 
-  function prev() { setActive((active - 1 + g.items.length) % g.items.length); }
-  function next() { setActive((active + 1) % g.items.length); }
+  function prev() { setActive((active - 1 + steps.length) % steps.length); }
+  function next() { setActive((active + 1) % steps.length); }
 
   return (
     <section className="py-20 px-4 bg-neutral-900/50">
       <div ref={sectionRef} className="reveal max-w-4xl mx-auto">
         <div className="text-center mb-12">
-          <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{g.tag}</div>
-          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-white">{g.title}</h2>
+          <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{j.processTag}</div>
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-white">{j.processTitle}</h2>
         </div>
 
         {/* Step cards row */}
         <div className="hidden sm:grid grid-cols-6 gap-3 mb-8">
-          {g.items.map((item, i) => (
+          {steps.map((step, i) => (
             <button
               key={i}
               onClick={() => setActive(i)}
@@ -42,10 +43,10 @@ export default function ProcessGallery() {
               }`}
             >
               <div className={`text-xs font-mono font-bold mb-1 ${i === active ? "text-amber-400" : "text-neutral-500"}`}>
-                {String(i + 1).padStart(2, "0")}
+                {step.num}
               </div>
               <div className={`text-xs font-medium ${i === active ? "text-white" : "text-neutral-400"}`}>
-                {item.step}
+                {step.title}
               </div>
             </button>
           ))}
@@ -54,10 +55,15 @@ export default function ProcessGallery() {
         {/* Active step detail */}
         <div className={`rounded-2xl border border-amber-400/10 bg-gradient-to-b ${STEP_COLORS[active]} p-8 text-center transition-all duration-300`}>
           <div className="text-amber-400 font-mono text-4xl font-bold mb-3">
-            {String(active + 1).padStart(2, "0")}
+            {steps[active].num}
           </div>
-          <h3 className="font-serif text-2xl font-semibold text-white mb-3">{g.items[active].step}</h3>
-          <p className="text-neutral-300 max-w-lg mx-auto">{g.items[active].desc}</p>
+          <h3 className="font-serif text-2xl font-semibold text-white mb-3">{steps[active].title}</h3>
+          <p className="text-neutral-300 max-w-lg mx-auto mb-4">{steps[active].desc}</p>
+          {steps[active].when && (
+            <div className="inline-block px-3 py-1.5 rounded-full border border-amber-400/20 bg-amber-400/5 text-amber-300 text-xs font-medium">
+              {steps[active].when}
+            </div>
+          )}
         </div>
 
         {/* Mobile nav */}
@@ -65,7 +71,7 @@ export default function ProcessGallery() {
           <button onClick={prev} className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-neutral-400 hover:text-white hover:border-amber-400/40 transition-colors">
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <span className="text-neutral-400 text-sm font-mono">{active + 1} / {g.items.length}</span>
+          <span className="text-neutral-400 text-sm font-mono">{active + 1} / {steps.length}</span>
           <button onClick={next} className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-neutral-400 hover:text-white hover:border-amber-400/40 transition-colors">
             <ChevronRight className="w-5 h-5" />
           </button>
