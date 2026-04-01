@@ -82,6 +82,96 @@ export default {
     ctaTitle: "Looking for something unique?",
     ctaText: "Tell us about your dream piece — we'll design and craft it just for you.",
     ctaBtn: "Start a Custom Project",
+
+    // Configurator
+    configurator: {
+      tag: "Design Your Dream Piece",
+      title: "Jewelry Configurator",
+      desc: "Tell us what you envision — step by step. We'll bring your idea to life.",
+      stepType: "Type of Jewelry",
+      stepMetal: "Metal",
+      stepStone: "Gemstone",
+      stepStyle: "Style",
+      types: [
+        { id: "ring", label: "Ring", emoji: "💍" },
+        { id: "earrings", label: "Earrings", emoji: "✨" },
+        { id: "pendant", label: "Pendant", emoji: "📿" },
+        { id: "bracelet", label: "Bracelet", emoji: "⭕" },
+        { id: "brooch", label: "Brooch", emoji: "🌸" },
+        { id: "other", label: "Other", emoji: "🎨" },
+      ],
+      metals: [
+        { id: "silver925", label: "Silver 925" },
+        { id: "gold14k", label: "Gold 14K" },
+        { id: "gold18k", label: "Gold 18K" },
+        { id: "mixed", label: "Mixed metals" },
+      ],
+      stones: [
+        { id: "amethyst", label: "Amethyst" },
+        { id: "emerald", label: "Emerald" },
+        { id: "sapphire", label: "Sapphire" },
+        { id: "ruby", label: "Ruby" },
+        { id: "moonstone", label: "Moonstone" },
+        { id: "labradorite", label: "Labradorite" },
+        { id: "garnet", label: "Garnet" },
+        { id: "none", label: "No stone" },
+      ],
+      styles: [
+        { id: "minimalist", label: "Minimalist" },
+        { id: "artistic", label: "Artistic" },
+        { id: "mystical", label: "Mystical" },
+        { id: "classic", label: "Classic" },
+        { id: "bohemian", label: "Bohemian" },
+      ],
+      back: "Back",
+      next: "Next",
+      summaryTitle: "Your Vision",
+      summaryType: "Type",
+      summaryMetal: "Metal",
+      summaryStone: "Stone",
+      summaryStyle: "Style",
+      sendInquiry: "Send Inquiry",
+      restart: "Start Over",
+    },
+
+    // Process Gallery
+    gallery: {
+      tag: "From Sketch to Masterpiece",
+      title: "The Making Process",
+      items: [
+        { step: "Sketch", desc: "Hand-drawn concept capturing the essence of the design" },
+        { step: "3D Model", desc: "Digital modeling in CAD software for precision" },
+        { step: "Wax/Resin Print", desc: "3D printed model for physical review" },
+        { step: "Metal Cast", desc: "Casting in silver or gold from the approved model" },
+        { step: "Stone Setting", desc: "Carefully placing and securing each gemstone" },
+        { step: "Final Polish", desc: "Hand-polished to perfection, ready to wear" },
+      ],
+    },
+
+    // Testimonials
+    testimonials: {
+      tag: "What Our Clients Say",
+      title: "Stories from Our Clients",
+      items: [
+        { text: "The ring Artur made is exactly what I dreamed of. He understood the symbolism I wanted perfectly — now it's my most treasured piece.", author: "Marta K.", role: "Custom engagement ring" },
+        { text: "I wanted something unique for my mother's birthday. The pendant with moonstone exceeded all expectations. Pure magic.", author: "Jakub W.", role: "Personalized gift" },
+        { text: "As a collector of artisanal jewelry, I can say AEJaCA pieces have a soul that mass-produced jewelry simply doesn't have.", author: "Elena R.", role: "Jewelry collector" },
+      ],
+    },
+
+    // FAQ
+    faq: {
+      tag: "Common Questions",
+      title: "Frequently Asked Questions",
+      items: [
+        { q: "How long does a custom jewelry project take?", a: "Typically 2–4 weeks depending on complexity. We'll give you a precise timeline after discussing your design." },
+        { q: "Can I provide my own gemstone?", a: "Absolutely! We're happy to work with stones you provide. We'll advise on the best setting approach." },
+        { q: "Do you offer resizing or modifications?", a: "Yes. We can resize rings and modify designs. Contact us with your needs and we'll find the best solution." },
+        { q: "What metals do you work with?", a: "Primarily sterling silver (925) and gold (14K, 18K). We also work with mixed metals for unique designs." },
+        { q: "How are prices determined?", a: "Pricing depends on the metal, gemstones, complexity, and labor involved. We provide a detailed quote before starting." },
+        { q: "Do you ship internationally?", a: "Yes! We ship worldwide via tracked and insured postal services. Shipping costs vary by destination." },
+      ],
+    },
   },
 
   // Studio page
@@ -129,6 +219,127 @@ export default {
     ctaTitle: "Have a project in mind?",
     ctaText: "From prototypes to production — let's bring your idea to life.",
     ctaBtn: "Request a Quote",
+
+    // Calculator
+    calculator: {
+      tag: "Estimate Your Project",
+      title: "Project Calculator",
+      desc: "Get an idea of what your project might cost. Select options below for an estimate.",
+      stepTech: "Technology",
+      stepSize: "Size",
+      stepQty: "Quantity",
+      stepMaterial: "Material",
+      techs: [
+        { id: "3dprint", label: "3D Printing", emoji: "🖨️" },
+        { id: "fiber_laser", label: "Fiber Laser", emoji: "⚡" },
+        { id: "co2_laser", label: "CO2 Laser", emoji: "🔆" },
+        { id: "resin", label: "Resin Casting", emoji: "💎" },
+        { id: "nfc", label: "NFC / Smart Tag", emoji: "📡" },
+        { id: "custom", label: "Custom Project", emoji: "🔧" },
+      ],
+      sizes: [
+        { id: "small", label: "Small (up to 5 cm)" },
+        { id: "medium", label: "Medium (5–15 cm)" },
+        { id: "large", label: "Large (15–30 cm)" },
+        { id: "xl", label: "Extra large (30+ cm)" },
+      ],
+      quantities: [
+        { id: "1", label: "1 piece (prototype)" },
+        { id: "5", label: "2–5 pieces" },
+        { id: "20", label: "6–20 pieces" },
+        { id: "50", label: "20–50 pieces" },
+        { id: "100", label: "50+ pieces" },
+      ],
+      materials: {
+        "3dprint": [
+          { id: "pla", label: "PLA" },
+          { id: "petg", label: "PETG" },
+          { id: "abs", label: "ABS" },
+          { id: "resin_print", label: "Resin (SLA)" },
+        ],
+        fiber_laser: [
+          { id: "steel", label: "Steel" },
+          { id: "aluminum", label: "Aluminum" },
+          { id: "brass", label: "Brass" },
+          { id: "silver_metal", label: "Silver" },
+        ],
+        co2_laser: [
+          { id: "wood", label: "Wood" },
+          { id: "acrylic", label: "Acrylic" },
+          { id: "leather", label: "Leather" },
+          { id: "glass", label: "Glass" },
+        ],
+        resin: [
+          { id: "uv_resin", label: "UV Resin" },
+          { id: "epoxy", label: "Epoxy (2-component)" },
+        ],
+        nfc: [
+          { id: "card", label: "NFC Card" },
+          { id: "tag", label: "NFC Tag/Sticker" },
+          { id: "keychain", label: "NFC Keychain" },
+        ],
+        custom: [
+          { id: "mixed", label: "Mixed / Custom" },
+        ],
+      },
+      back: "Back",
+      next: "Next",
+      resultTitle: "Estimated Price Range",
+      resultFrom: "from",
+      resultTo: "to",
+      resultNote: "This is a rough estimate. Final price depends on design complexity and specifications.",
+      sendInquiry: "Request Exact Quote",
+      restart: "Start Over",
+    },
+
+    // Portfolio
+    portfolio: {
+      tag: "Our Work",
+      title: "Portfolio",
+      filterAll: "All",
+      filters: [
+        { id: "3dprint", label: "3D Printing" },
+        { id: "laser", label: "Laser" },
+        { id: "resin", label: "Resin" },
+        { id: "nfc", label: "NFC" },
+        { id: "custom", label: "Custom" },
+      ],
+      items: [
+        { title: "Custom Prototype Housing", category: "3dprint", desc: "3D printed functional enclosure for IoT device" },
+        { title: "Engraved Steel Business Cards", category: "laser", desc: "Fiber laser engraved metal cards with NFC chip" },
+        { title: "Crystal Resin Keycaps", category: "resin", desc: "Custom artisan keycaps with embedded elements" },
+        { title: "NFC Smart Ring", category: "nfc", desc: "Custom NFC ring for contactless authentication" },
+        { title: "Wooden Photo Frame", category: "laser", desc: "CO2 laser cut and engraved personalized frame" },
+        { title: "Miniature Architecture Model", category: "3dprint", desc: "Detailed 3D printed scale model of building" },
+        { title: "Branded Merchandise Set", category: "custom", desc: "Full set of branded gadgets: keychains, pens, cards" },
+        { title: "Resin-Encased Flowers", category: "resin", desc: "Preserved flowers in crystal-clear resin blocks" },
+      ],
+    },
+
+    // Testimonials
+    testimonials: {
+      tag: "What Our Clients Say",
+      title: "Client Feedback",
+      items: [
+        { text: "The prototype was ready in 48 hours. Perfect quality, exactly matching the CAD model. AEJaCA sTuDiO delivers.", author: "Tomasz M.", role: "Product designer" },
+        { text: "We ordered 50 custom NFC business cards. The fiber laser engraving quality is outstanding — every detail is razor-sharp.", author: "Anna S.", role: "Startup founder" },
+        { text: "From a rough sketch to a finished product in one week. The team understood exactly what I needed for my project.", author: "David L.", role: "Architect" },
+      ],
+    },
+
+    // FAQ
+    faq: {
+      tag: "Common Questions",
+      title: "Frequently Asked Questions",
+      items: [
+        { q: "What's the minimum order quantity?", a: "We accept single prototype orders as well as batch production. No minimum quantity required." },
+        { q: "How long does a typical project take?", a: "Simple projects: 1–3 days. Complex prototypes: 1–2 weeks. Batch production timelines depend on quantity." },
+        { q: "Can you work from my own 3D files?", a: "Yes! We accept STL, STEP, OBJ, and most common CAD formats. We can also design from scratch." },
+        { q: "What materials do you work with?", a: "PLA, PETG, ABS, resin for 3D printing. Metals, wood, acrylic, glass, leather for laser work. UV and epoxy resins for casting." },
+        { q: "Do you offer design services?", a: "Absolutely. Our team provides full CAD design services — from concept to manufacturing-ready files." },
+        { q: "How are prices calculated?", a: "Based on technology, material, size, complexity, and quantity. We always provide a detailed quote upfront." },
+      ],
+    },
   },
 
   // Contact page

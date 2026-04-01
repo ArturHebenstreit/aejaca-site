@@ -2,6 +2,10 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
+import StudioCalculator from "../components/StudioCalculator.jsx";
+import StudioPortfolio from "../components/StudioPortfolio.jsx";
+import Testimonials from "../components/Testimonials.jsx";
+import FAQ from "../components/FAQ.jsx";
 
 const techIcons = [Cpu, Printer, Zap, Layers, Box, Wrench];
 
@@ -71,6 +75,16 @@ export default function Studio() {
 
       <div className="gradient-divider" />
 
+      {/* Studio Calculator */}
+      <StudioCalculator />
+
+      <div className="gradient-divider" />
+
+      {/* Portfolio */}
+      <StudioPortfolio />
+
+      <div className="gradient-divider" />
+
       {/* Services */}
       <section className="py-20 px-4 bg-neutral-950">
         <div className="max-w-4xl mx-auto">
@@ -108,6 +122,16 @@ export default function Studio() {
 
       <div className="gradient-divider" />
 
+      {/* Testimonials */}
+      <Testimonials data={s.testimonials} accent="blue" />
+
+      <div className="gradient-divider" />
+
+      {/* FAQ */}
+      <FAQ data={s.faq} accent="blue" />
+
+      <div className="gradient-divider" />
+
       {/* Etsy */}
       <section className="py-16 px-4 text-center bg-neutral-900/50">
         <div ref={etsyRef} className="reveal">
@@ -125,7 +149,7 @@ export default function Studio() {
         <div ref={ctaRef} className="reveal">
           <h2 className="font-sans text-2xl md:text-3xl font-bold text-white mb-4 tracking-tight">{s.ctaTitle}</h2>
           <p className="text-neutral-400 mb-8 max-w-md mx-auto">{s.ctaText}</p>
-          <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-3 glass-blue text-blue-300 rounded-full hover:bg-blue-500/90 hover:text-white hover:border-blue-500 transition-all duration-300">
+          <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-3 border border-blue-400/30 bg-blue-400/5 backdrop-blur-md text-blue-300 rounded-full hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all duration-300">
             {s.ctaBtn} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

@@ -79,6 +79,92 @@ export default {
     ctaTitle: "Suchen Sie etwas Einzigartiges?",
     ctaText: "Erzählen Sie uns von Ihrem Traumstück — wir entwerfen und fertigen es speziell für Sie.",
     ctaBtn: "Individuelles Projekt Starten",
+
+    configurator: {
+      tag: "Gestalten Sie Ihr Traumstück",
+      title: "Schmuck-Konfigurator",
+      desc: "Sagen Sie uns, was Sie sich vorstellen — Schritt für Schritt. Wir erwecken Ihre Idee zum Leben.",
+      stepType: "Schmuckart",
+      stepMetal: "Metall",
+      stepStone: "Edelstein",
+      stepStyle: "Stil",
+      types: [
+        { id: "ring", label: "Ring", emoji: "💍" },
+        { id: "earrings", label: "Ohrringe", emoji: "✨" },
+        { id: "pendant", label: "Anhänger", emoji: "📿" },
+        { id: "bracelet", label: "Armband", emoji: "⭕" },
+        { id: "brooch", label: "Brosche", emoji: "🌸" },
+        { id: "other", label: "Sonstiges", emoji: "🎨" },
+      ],
+      metals: [
+        { id: "silver925", label: "Silber 925" },
+        { id: "gold14k", label: "Gold 14K" },
+        { id: "gold18k", label: "Gold 18K" },
+        { id: "mixed", label: "Mischmetalle" },
+      ],
+      stones: [
+        { id: "amethyst", label: "Amethyst" },
+        { id: "emerald", label: "Smaragd" },
+        { id: "sapphire", label: "Saphir" },
+        { id: "ruby", label: "Rubin" },
+        { id: "moonstone", label: "Mondstein" },
+        { id: "labradorite", label: "Labradorit" },
+        { id: "garnet", label: "Granat" },
+        { id: "none", label: "Ohne Stein" },
+      ],
+      styles: [
+        { id: "minimalist", label: "Minimalistisch" },
+        { id: "artistic", label: "Künstlerisch" },
+        { id: "mystical", label: "Mystisch" },
+        { id: "classic", label: "Klassisch" },
+        { id: "bohemian", label: "Bohemian" },
+      ],
+      back: "Zurück",
+      next: "Weiter",
+      summaryTitle: "Ihre Vision",
+      summaryType: "Art",
+      summaryMetal: "Metall",
+      summaryStone: "Stein",
+      summaryStyle: "Stil",
+      sendInquiry: "Anfrage Senden",
+      restart: "Neu Starten",
+    },
+
+    gallery: {
+      tag: "Von der Skizze zum Meisterwerk",
+      title: "Der Herstellungsprozess",
+      items: [
+        { step: "Skizze", desc: "Handgezeichnetes Konzept, das die Essenz des Designs einfängt" },
+        { step: "3D-Modell", desc: "Digitale Modellierung in CAD-Software für Präzision" },
+        { step: "Wachs/Harz-Druck", desc: "3D-gedrucktes Modell zur physischen Überprüfung" },
+        { step: "Metallguss", desc: "Guss in Silber oder Gold aus dem genehmigten Modell" },
+        { step: "Steinfassung", desc: "Sorgfältiges Platzieren und Sichern jedes Edelsteins" },
+        { step: "Endpolitur", desc: "Von Hand poliert bis zur Perfektion, tragefertig" },
+      ],
+    },
+
+    testimonials: {
+      tag: "Was Unsere Kunden Sagen",
+      title: "Geschichten Unserer Kunden",
+      items: [
+        { text: "Der Ring, den Artur gefertigt hat, ist genau das, wovon ich geträumt habe. Er hat die Symbolik perfekt verstanden — jetzt ist es mein wertvollstes Stück.", author: "Marta K.", role: "Individueller Verlobungsring" },
+        { text: "Ich wollte etwas Einzigartiges zum Geburtstag meiner Mutter. Der Anhänger mit Mondstein hat alle Erwartungen übertroffen. Reine Magie.", author: "Jakub W.", role: "Personalisiertes Geschenk" },
+        { text: "Als Sammlerin handwerklichen Schmucks kann ich sagen: AEJaCA-Stücke haben eine Seele, die Massenware einfach nicht hat.", author: "Elena R.", role: "Schmucksammlerin" },
+      ],
+    },
+
+    faq: {
+      tag: "Häufige Fragen",
+      title: "Häufig Gestellte Fragen",
+      items: [
+        { q: "Wie lange dauert ein individuelles Schmuckprojekt?", a: "Normalerweise 2–4 Wochen, je nach Komplexität. Nach Besprechung Ihres Designs geben wir einen genauen Zeitrahmen an." },
+        { q: "Kann ich meinen eigenen Edelstein mitbringen?", a: "Selbstverständlich! Wir arbeiten gerne mit Steinen, die Sie bereitstellen. Wir beraten zum besten Fassungsansatz." },
+        { q: "Bieten Sie Größenänderungen oder Modifikationen an?", a: "Ja. Wir können Ringe vergrößern/verkleinern und Designs modifizieren. Kontaktieren Sie uns mit Ihren Wünschen." },
+        { q: "Mit welchen Metallen arbeiten Sie?", a: "Hauptsächlich Sterlingsilber (925) und Gold (14K, 18K). Wir arbeiten auch mit Mischmetallen für einzigartige Designs." },
+        { q: "Wie werden die Preise bestimmt?", a: "Der Preis hängt von Metall, Edelsteinen, Komplexität und Arbeitsaufwand ab. Wir erstellen vor Beginn ein detailliertes Angebot." },
+        { q: "Versenden Sie international?", a: "Ja! Wir versenden weltweit per Sendungsverfolgung und versichert. Versandkosten variieren je nach Zielort." },
+      ],
+    },
   },
 
   studio: {
@@ -125,6 +211,123 @@ export default {
     ctaTitle: "Haben Sie ein Projekt im Sinn?",
     ctaText: "Vom Prototyp zur Produktion — lassen Sie uns Ihre Idee zum Leben erwecken.",
     ctaBtn: "Angebot Anfragen",
+
+    calculator: {
+      tag: "Projekt Kalkulieren",
+      title: "Projektkalkulator",
+      desc: "Verschaffen Sie sich einen Überblick über die Kosten Ihres Projekts. Wählen Sie die Optionen unten.",
+      stepTech: "Technologie",
+      stepSize: "Größe",
+      stepQty: "Menge",
+      stepMaterial: "Material",
+      techs: [
+        { id: "3dprint", label: "3D-Druck", emoji: "🖨️" },
+        { id: "fiber_laser", label: "Faserlaser", emoji: "⚡" },
+        { id: "co2_laser", label: "CO2-Laser", emoji: "🔆" },
+        { id: "resin", label: "Harzguss", emoji: "💎" },
+        { id: "nfc", label: "NFC / Smart Tag", emoji: "📡" },
+        { id: "custom", label: "Individuelles Projekt", emoji: "🔧" },
+      ],
+      sizes: [
+        { id: "small", label: "Klein (bis 5 cm)" },
+        { id: "medium", label: "Mittel (5–15 cm)" },
+        { id: "large", label: "Groß (15–30 cm)" },
+        { id: "xl", label: "Sehr groß (30+ cm)" },
+      ],
+      quantities: [
+        { id: "1", label: "1 Stück (Prototyp)" },
+        { id: "5", label: "2–5 Stück" },
+        { id: "20", label: "6–20 Stück" },
+        { id: "50", label: "20–50 Stück" },
+        { id: "100", label: "50+ Stück" },
+      ],
+      materials: {
+        "3dprint": [
+          { id: "pla", label: "PLA" },
+          { id: "petg", label: "PETG" },
+          { id: "abs", label: "ABS" },
+          { id: "resin_print", label: "Harz (SLA)" },
+        ],
+        fiber_laser: [
+          { id: "steel", label: "Stahl" },
+          { id: "aluminum", label: "Aluminium" },
+          { id: "brass", label: "Messing" },
+          { id: "silver_metal", label: "Silber" },
+        ],
+        co2_laser: [
+          { id: "wood", label: "Holz" },
+          { id: "acrylic", label: "Acryl" },
+          { id: "leather", label: "Leder" },
+          { id: "glass", label: "Glas" },
+        ],
+        resin: [
+          { id: "uv_resin", label: "UV-Harz" },
+          { id: "epoxy", label: "Epoxid (Zweikomponenten)" },
+        ],
+        nfc: [
+          { id: "card", label: "NFC-Karte" },
+          { id: "tag", label: "NFC-Tag/Aufkleber" },
+          { id: "keychain", label: "NFC-Schlüsselanhänger" },
+        ],
+        custom: [
+          { id: "mixed", label: "Gemischt / Individuell" },
+        ],
+      },
+      back: "Zurück",
+      next: "Weiter",
+      resultTitle: "Geschätzter Preisbereich",
+      resultFrom: "von",
+      resultTo: "bis",
+      resultNote: "Dies ist eine grobe Schätzung. Der Endpreis hängt von Designkomplexität und Spezifikationen ab.",
+      sendInquiry: "Genaues Angebot Anfragen",
+      restart: "Neu Starten",
+    },
+
+    portfolio: {
+      tag: "Unsere Arbeiten",
+      title: "Portfolio",
+      filterAll: "Alle",
+      filters: [
+        { id: "3dprint", label: "3D-Druck" },
+        { id: "laser", label: "Laser" },
+        { id: "resin", label: "Harz" },
+        { id: "nfc", label: "NFC" },
+        { id: "custom", label: "Individuell" },
+      ],
+      items: [
+        { title: "Individuelles Prototyp-Gehäuse", category: "3dprint", desc: "3D-gedrucktes funktionales Gehäuse für IoT-Gerät" },
+        { title: "Gravierte Stahl-Visitenkarten", category: "laser", desc: "Faserlaser-gravierte Metallkarten mit NFC-Chip" },
+        { title: "Kristallharz-Keycaps", category: "resin", desc: "Handgefertigte Keycaps mit eingebetteten Elementen" },
+        { title: "NFC Smart Ring", category: "nfc", desc: "Individueller NFC-Ring für kontaktlose Authentifizierung" },
+        { title: "Holz-Bilderrahmen", category: "laser", desc: "CO2-lasergeschnittener und -gravierter personalisierter Rahmen" },
+        { title: "Miniatur-Architekturmodell", category: "3dprint", desc: "Detailliertes 3D-gedrucktes Maßstabsmodell" },
+        { title: "Marken-Merchandise-Set", category: "custom", desc: "Komplettes Set: Schlüsselanhänger, Stifte, Karten" },
+        { title: "In Harz eingefasste Blumen", category: "resin", desc: "Konservierte Blumen in kristallklaren Harzblöcken" },
+      ],
+    },
+
+    testimonials: {
+      tag: "Was Unsere Kunden Sagen",
+      title: "Kundenfeedback",
+      items: [
+        { text: "Der Prototyp war in 48 Stunden fertig. Perfekte Qualität, genau passend zum CAD-Modell. AEJaCA sTuDiO liefert.", author: "Tomasz M.", role: "Produktdesigner" },
+        { text: "Wir bestellten 50 individuelle NFC-Visitenkarten. Die Faserlaser-Gravurqualität ist hervorragend — jedes Detail messerscharf.", author: "Anna S.", role: "Startup-Gründerin" },
+        { text: "Von einer groben Skizze zum fertigen Produkt in einer Woche. Das Team verstand genau, was ich für mein Projekt brauchte.", author: "David L.", role: "Architekt" },
+      ],
+    },
+
+    faq: {
+      tag: "Häufige Fragen",
+      title: "Häufig Gestellte Fragen",
+      items: [
+        { q: "Gibt es eine Mindestbestellmenge?", a: "Wir nehmen Einzelprototyp-Aufträge ebenso wie Serienproduktion an. Keine Mindestmenge erforderlich." },
+        { q: "Wie lange dauert ein typisches Projekt?", a: "Einfache Projekte: 1–3 Tage. Komplexe Prototypen: 1–2 Wochen. Serienproduktion je nach Menge." },
+        { q: "Können Sie mit meinen eigenen 3D-Dateien arbeiten?", a: "Ja! Wir akzeptieren STL, STEP, OBJ und die meisten gängigen CAD-Formate. Wir können auch von Grund auf designen." },
+        { q: "Mit welchen Materialien arbeiten Sie?", a: "PLA, PETG, ABS, Harz für 3D-Druck. Metalle, Holz, Acryl, Glas, Leder für Laserarbeiten. UV- und Epoxidharze für Guss." },
+        { q: "Bieten Sie Designdienstleistungen an?", a: "Selbstverständlich. Unser Team bietet vollständige CAD-Design-Services — vom Konzept bis zu fertigungsreifen Dateien." },
+        { q: "Wie werden Preise berechnet?", a: "Basierend auf Technologie, Material, Größe, Komplexität und Menge. Wir erstellen immer vorab ein detailliertes Angebot." },
+      ],
+    },
   },
 
   contact: {

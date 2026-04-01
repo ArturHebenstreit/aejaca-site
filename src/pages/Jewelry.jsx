@@ -2,6 +2,10 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Gem, Sparkles, Palette, Heart, Wand2, Crown } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
+import JewelryConfigurator from "../components/JewelryConfigurator.jsx";
+import ProcessGallery from "../components/ProcessGallery.jsx";
+import Testimonials from "../components/Testimonials.jsx";
+import FAQ from "../components/FAQ.jsx";
 
 const icons = [Gem, Sparkles, Palette, Heart, Wand2, Crown];
 
@@ -68,7 +72,17 @@ export default function Jewelry() {
 
       <div className="gradient-divider" />
 
-      {/* Process */}
+      {/* Jewelry Configurator */}
+      <JewelryConfigurator />
+
+      <div className="gradient-divider" />
+
+      {/* Process Gallery */}
+      <ProcessGallery />
+
+      <div className="gradient-divider" />
+
+      {/* Process Steps */}
       <section className="py-20 px-4 bg-neutral-950">
         <div ref={processRef} className="reveal max-w-4xl mx-auto text-center">
           <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{j.processTag}</div>
@@ -102,6 +116,16 @@ export default function Jewelry() {
 
       <div className="gradient-divider" />
 
+      {/* Testimonials */}
+      <Testimonials data={j.testimonials} accent="amber" />
+
+      <div className="gradient-divider" />
+
+      {/* FAQ */}
+      <FAQ data={j.faq} accent="amber" />
+
+      <div className="gradient-divider" />
+
       {/* Etsy */}
       <section className="py-16 px-4 text-center bg-neutral-900/50">
         <div ref={etsyRef} className="reveal">
@@ -119,7 +143,7 @@ export default function Jewelry() {
         <div ref={ctaRef} className="reveal">
           <h2 className="font-serif text-2xl md:text-3xl font-semibold text-white mb-4">{j.ctaTitle}</h2>
           <p className="text-neutral-400 mb-8 max-w-md mx-auto">{j.ctaText}</p>
-          <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-3 glass-amber text-amber-300 rounded-full hover:bg-amber-400/90 hover:text-black hover:border-amber-400 transition-all duration-300">
+          <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-3 border border-amber-400/30 bg-amber-400/5 backdrop-blur-md text-amber-300 rounded-full hover:bg-amber-400 hover:text-black hover:border-amber-400 transition-all duration-300">
             {j.ctaBtn} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

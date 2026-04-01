@@ -79,6 +79,96 @@ export default {
     ctaTitle: "Szukasz czegoś wyjątkowego?",
     ctaText: "Opowiedz nam o swoim wymarzonym elemencie — zaprojektujemy go i stworzymy specjalnie dla Ciebie.",
     ctaBtn: "Rozpocznij Projekt Na Zamówienie",
+
+    // Konfigurator
+    configurator: {
+      tag: "Zaprojektuj Wymarzoną Biżuterię",
+      title: "Konfigurator Biżuterii",
+      desc: "Powiedz nam, co sobie wyobrażasz — krok po kroku. Ożywimy Twój pomysł.",
+      stepType: "Typ biżuterii",
+      stepMetal: "Metal",
+      stepStone: "Kamień szlachetny",
+      stepStyle: "Styl",
+      types: [
+        { id: "ring", label: "Pierścionek", emoji: "💍" },
+        { id: "earrings", label: "Kolczyki", emoji: "✨" },
+        { id: "pendant", label: "Wisiorek", emoji: "📿" },
+        { id: "bracelet", label: "Bransoletka", emoji: "⭕" },
+        { id: "brooch", label: "Broszka", emoji: "🌸" },
+        { id: "other", label: "Inne", emoji: "🎨" },
+      ],
+      metals: [
+        { id: "silver925", label: "Srebro 925" },
+        { id: "gold14k", label: "Złoto 14K" },
+        { id: "gold18k", label: "Złoto 18K" },
+        { id: "mixed", label: "Mieszane metale" },
+      ],
+      stones: [
+        { id: "amethyst", label: "Ametyst" },
+        { id: "emerald", label: "Szmaragd" },
+        { id: "sapphire", label: "Szafir" },
+        { id: "ruby", label: "Rubin" },
+        { id: "moonstone", label: "Kamień księżycowy" },
+        { id: "labradorite", label: "Labradoryt" },
+        { id: "garnet", label: "Granat" },
+        { id: "none", label: "Bez kamienia" },
+      ],
+      styles: [
+        { id: "minimalist", label: "Minimalistyczny" },
+        { id: "artistic", label: "Artystyczny" },
+        { id: "mystical", label: "Mistyczny" },
+        { id: "classic", label: "Klasyczny" },
+        { id: "bohemian", label: "Boho" },
+      ],
+      back: "Wstecz",
+      next: "Dalej",
+      summaryTitle: "Twoja Wizja",
+      summaryType: "Typ",
+      summaryMetal: "Metal",
+      summaryStone: "Kamień",
+      summaryStyle: "Styl",
+      sendInquiry: "Wyślij Zapytanie",
+      restart: "Zacznij od nowa",
+    },
+
+    // Galeria procesu
+    gallery: {
+      tag: "Od Szkicu do Arcydzieła",
+      title: "Proces Tworzenia",
+      items: [
+        { step: "Szkic", desc: "Ręcznie rysowany koncept oddający esencję projektu" },
+        { step: "Model 3D", desc: "Cyfrowe modelowanie w oprogramowaniu CAD" },
+        { step: "Wydruk wosk/żywica", desc: "Model drukowany 3D do fizycznej oceny" },
+        { step: "Odlew metalowy", desc: "Odlewanie w srebrze lub złocie z zatwierdzonego modelu" },
+        { step: "Osadzanie kamieni", desc: "Staranne umieszczanie i zabezpieczanie kamieni szlachetnych" },
+        { step: "Polerowanie", desc: "Ręcznie polerowane do perfekcji, gotowe do noszenia" },
+      ],
+    },
+
+    // Opinie
+    testimonials: {
+      tag: "Co Mówią Nasi Klienci",
+      title: "Historie Naszych Klientów",
+      items: [
+        { text: "Pierścionek, który Artur wykonał, jest dokładnie taki, o jakim marzyłam. Doskonale zrozumiał symbolikę — teraz to mój najcenniejszy element.", author: "Marta K.", role: "Pierścionek zaręczynowy na zamówienie" },
+        { text: "Chciałem coś wyjątkowego na urodziny mamy. Wisiorek z kamieniem księżycowym przekroczył wszelkie oczekiwania. Czysta magia.", author: "Jakub W.", role: "Prezent personalizowany" },
+        { text: "Jako kolekcjonerka biżuterii rzemieślniczej mogę powiedzieć, że elementy AEJaCA mają duszę, której biżuteria masowa po prostu nie ma.", author: "Elena R.", role: "Kolekcjonerka biżuterii" },
+      ],
+    },
+
+    // FAQ
+    faq: {
+      tag: "Najczęstsze Pytania",
+      title: "Często Zadawane Pytania",
+      items: [
+        { q: "Jak długo trwa projekt biżuterii na zamówienie?", a: "Zazwyczaj 2–4 tygodnie, w zależności od złożoności. Po omówieniu projektu podamy dokładny termin." },
+        { q: "Czy mogę dostarczyć własny kamień szlachetny?", a: "Oczywiście! Chętnie pracujemy z kamieniami dostarczonymi przez klientów. Doradzimy najlepszy sposób osadzenia." },
+        { q: "Czy oferujecie zmianę rozmiaru lub modyfikacje?", a: "Tak. Możemy zmienić rozmiar pierścionków i modyfikować projekty. Skontaktuj się z nami, a znajdziemy najlepsze rozwiązanie." },
+        { q: "Z jakimi metalami pracujecie?", a: "Głównie srebro próby 925 i złoto (14K, 18K). Pracujemy też z mieszanymi metalami przy unikalnych projektach." },
+        { q: "Jak ustalane są ceny?", a: "Cena zależy od metalu, kamieni szlachetnych, złożoności i nakładu pracy. Przed rozpoczęciem podajemy szczegółową wycenę." },
+        { q: "Czy wysyłacie za granicę?", a: "Tak! Wysyłamy na cały świat przesyłkami śledzonymi i ubezpieczonymi. Koszty wysyłki zależą od miejsca docelowego." },
+      ],
+    },
   },
 
   studio: {
@@ -125,6 +215,127 @@ export default {
     ctaTitle: "Masz projekt w głowie?",
     ctaText: "Od prototypów po produkcję — ożywmy Twój pomysł.",
     ctaBtn: "Zapytaj o Wycenę",
+
+    // Kalkulator
+    calculator: {
+      tag: "Oszacuj Swój Projekt",
+      title: "Kalkulator Projektów",
+      desc: "Sprawdź orientacyjny koszt swojego projektu. Wybierz opcje poniżej.",
+      stepTech: "Technologia",
+      stepSize: "Rozmiar",
+      stepQty: "Ilość",
+      stepMaterial: "Materiał",
+      techs: [
+        { id: "3dprint", label: "Druk 3D", emoji: "🖨️" },
+        { id: "fiber_laser", label: "Laser światłowodowy", emoji: "⚡" },
+        { id: "co2_laser", label: "Laser CO2", emoji: "🔆" },
+        { id: "resin", label: "Odlew żywiczny", emoji: "💎" },
+        { id: "nfc", label: "NFC / Smart Tag", emoji: "📡" },
+        { id: "custom", label: "Projekt indywidualny", emoji: "🔧" },
+      ],
+      sizes: [
+        { id: "small", label: "Mały (do 5 cm)" },
+        { id: "medium", label: "Średni (5–15 cm)" },
+        { id: "large", label: "Duży (15–30 cm)" },
+        { id: "xl", label: "Bardzo duży (30+ cm)" },
+      ],
+      quantities: [
+        { id: "1", label: "1 sztuka (prototyp)" },
+        { id: "5", label: "2–5 sztuk" },
+        { id: "20", label: "6–20 sztuk" },
+        { id: "50", label: "20–50 sztuk" },
+        { id: "100", label: "50+ sztuk" },
+      ],
+      materials: {
+        "3dprint": [
+          { id: "pla", label: "PLA" },
+          { id: "petg", label: "PETG" },
+          { id: "abs", label: "ABS" },
+          { id: "resin_print", label: "Żywica (SLA)" },
+        ],
+        fiber_laser: [
+          { id: "steel", label: "Stal" },
+          { id: "aluminum", label: "Aluminium" },
+          { id: "brass", label: "Mosiądz" },
+          { id: "silver_metal", label: "Srebro" },
+        ],
+        co2_laser: [
+          { id: "wood", label: "Drewno" },
+          { id: "acrylic", label: "Akryl" },
+          { id: "leather", label: "Skóra" },
+          { id: "glass", label: "Szkło" },
+        ],
+        resin: [
+          { id: "uv_resin", label: "Żywica UV" },
+          { id: "epoxy", label: "Epoksyd (dwuskładnikowy)" },
+        ],
+        nfc: [
+          { id: "card", label: "Karta NFC" },
+          { id: "tag", label: "Tag/Naklejka NFC" },
+          { id: "keychain", label: "Brelok NFC" },
+        ],
+        custom: [
+          { id: "mixed", label: "Mieszane / Indywidualne" },
+        ],
+      },
+      back: "Wstecz",
+      next: "Dalej",
+      resultTitle: "Szacunkowy Zakres Cenowy",
+      resultFrom: "od",
+      resultTo: "do",
+      resultNote: "To orientacyjna wycena. Ostateczna cena zależy od złożoności projektu i specyfikacji.",
+      sendInquiry: "Zapytaj o Dokładną Wycenę",
+      restart: "Zacznij od nowa",
+    },
+
+    // Portfolio
+    portfolio: {
+      tag: "Nasze Realizacje",
+      title: "Portfolio",
+      filterAll: "Wszystkie",
+      filters: [
+        { id: "3dprint", label: "Druk 3D" },
+        { id: "laser", label: "Laser" },
+        { id: "resin", label: "Żywica" },
+        { id: "nfc", label: "NFC" },
+        { id: "custom", label: "Indywidualne" },
+      ],
+      items: [
+        { title: "Obudowa prototypowa", category: "3dprint", desc: "Funkcjonalna obudowa IoT wydrukowana w 3D" },
+        { title: "Grawerowane wizytówki stalowe", category: "laser", desc: "Metalowe wizytówki grawerowane laserem z chipem NFC" },
+        { title: "Artystyczne keycapy z żywicy", category: "resin", desc: "Ręcznie robione keycapy z osadzonymi elementami" },
+        { title: "Pierścień NFC", category: "nfc", desc: "Pierścień NFC do autoryzacji zbliżeniowej" },
+        { title: "Drewniana ramka na zdjęcia", category: "laser", desc: "Ramka cięta i grawerowana laserem CO2" },
+        { title: "Miniaturowy model architektoniczny", category: "3dprint", desc: "Szczegółowy model budynku w skali wydrukowany 3D" },
+        { title: "Zestaw gadżetów firmowych", category: "custom", desc: "Komplet brandowanych gadżetów: breloki, długopisy, wizytówki" },
+        { title: "Kwiaty w żywicy", category: "resin", desc: "Zakonserwowane kwiaty w krystalicznie przejrzystych blokach żywicy" },
+      ],
+    },
+
+    // Opinie
+    testimonials: {
+      tag: "Co Mówią Nasi Klienci",
+      title: "Opinie Klientów",
+      items: [
+        { text: "Prototyp był gotowy w 48 godzin. Idealna jakość, dokładnie zgodna z modelem CAD. AEJaCA sTuDiO dostarcza.", author: "Tomasz M.", role: "Projektant produktów" },
+        { text: "Zamówiliśmy 50 wizytówek NFC. Jakość grawerunku laserowego jest wybitna — każdy detal ostry jak brzytwa.", author: "Anna S.", role: "Założycielka startupu" },
+        { text: "Od zgrubnego szkicu do gotowego produktu w tydzień. Zespół doskonale zrozumiał, czego potrzebowałem.", author: "David L.", role: "Architekt" },
+      ],
+    },
+
+    // FAQ
+    faq: {
+      tag: "Najczęstsze Pytania",
+      title: "Często Zadawane Pytania",
+      items: [
+        { q: "Jaka jest minimalna ilość zamówienia?", a: "Przyjmujemy zamówienia na pojedyncze prototypy oraz produkcję seryjną. Brak minimalnej ilości." },
+        { q: "Jak długo trwa typowy projekt?", a: "Proste projekty: 1–3 dni. Złożone prototypy: 1–2 tygodnie. Terminy produkcji seryjnej zależą od ilości." },
+        { q: "Czy mogę dostarczyć własne pliki 3D?", a: "Tak! Przyjmujemy STL, STEP, OBJ i większość popularnych formatów CAD. Możemy też zaprojektować od zera." },
+        { q: "Z jakimi materiałami pracujecie?", a: "PLA, PETG, ABS, żywica do druku 3D. Metale, drewno, akryl, szkło, skóra do pracy laserowej. Żywice UV i epoksydowe do odlewów." },
+        { q: "Czy oferujecie usługi projektowania?", a: "Oczywiście. Zapewniamy pełne usługi projektowania CAD — od koncepcji po pliki gotowe do produkcji." },
+        { q: "Jak kalkulowane są ceny?", a: "Na podstawie technologii, materiału, rozmiaru, złożoności i ilości. Zawsze podajemy szczegółową wycenę z góry." },
+      ],
+    },
   },
 
   contact: {
