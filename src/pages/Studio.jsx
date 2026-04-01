@@ -6,6 +6,7 @@ import StudioCalculator from "../components/StudioCalculator.jsx";
 import Portfolio from "../components/Portfolio.jsx";
 import Testimonials from "../components/Testimonials.jsx";
 import FAQ from "../components/FAQ.jsx";
+import Tips from "../components/Tips.jsx";
 
 const techIcons = [Cpu, Printer, Zap, Layers, Box, Wrench];
 
@@ -129,6 +130,11 @@ export default function Studio() {
 
       {/* FAQ */}
       <FAQ data={s.faq} accent="blue" />
+
+      <div className="gradient-divider" />
+
+      {/* Tips & Advice */}
+      <Tips data={s.tips} accent="blue" />
 
       <div className="gradient-divider" />
 

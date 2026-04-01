@@ -7,6 +7,7 @@ import ProcessGallery from "../components/ProcessGallery.jsx";
 import Portfolio from "../components/Portfolio.jsx";
 import Testimonials from "../components/Testimonials.jsx";
 import FAQ from "../components/FAQ.jsx";
+import Tips from "../components/Tips.jsx";
 
 const icons = [Gem, Sparkles, Palette, Heart, Wand2, Crown];
 
@@ -108,6 +109,11 @@ export default function Jewelry() {
 
       {/* FAQ */}
       <FAQ data={j.faq} accent="amber" />
+
+      <div className="gradient-divider" />
+
+      {/* Tips & Advice */}
+      <Tips data={j.tips} accent="amber" />
 
       <div className="gradient-divider" />
 

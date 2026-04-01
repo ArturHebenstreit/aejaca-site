@@ -184,6 +184,48 @@ export default {
         { q: "Do you ship internationally?", a: "Yes! We ship worldwide via tracked and insured postal services. Shipping costs vary by destination." },
       ],
     },
+
+    tips: {
+      tag: "AEJaCA Advises",
+      title: "Jewelry Tips & Know-How",
+      categories: [
+        {
+          name: "Ring Sizing",
+          tips: [
+            { q: "How to measure your ring size at home?", a: "Wrap a thin strip of paper or string around your finger at the widest point (usually the knuckle). Mark where it overlaps, measure the length in mm, and divide by 3.14 to get the inner diameter. Compare with a ring size chart. Measure in the evening when fingers are slightly larger." },
+            { q: "What if my ring size is between two sizes?", a: "Always round up to the larger size — it's easier to make a ring slightly smaller with sizing beads than to stretch it. For wide bands (6mm+), go a half-size up as they fit more snugly." },
+            { q: "Does temperature affect ring fit?", a: "Yes! Fingers swell in heat and shrink in cold. Measure at room temperature, ideally in the evening. If you live in a climate with big seasonal swings, consider a slightly looser fit for comfort year-round." },
+            { q: "Can rings be resized after purchase?", a: "Silver and gold rings can usually be resized 1–2 sizes up or down. Rings with stones all around (eternity bands) or very thin bands are harder to resize. Always ask your jeweler before buying." },
+          ],
+        },
+        {
+          name: "Choosing Jewelry",
+          tips: [
+            { q: "How to choose a necklace length?", a: "14\" (35cm) sits on the collarbone — choker style. 18\" (45cm) is the most universal, resting just below the collarbone. 24\" (60cm) is a matinee length for layering. Consider your neckline: V-necks pair well with pendants, crew necks with shorter chains." },
+            { q: "How to match jewelry to your outfit?", a: "The golden rule: match metals to your clothing's hardware (zippers, buttons, buckles). Silver complements cool tones (blues, greens, grays), while gold pairs with warm tones (reds, browns, earth tones). For a formal look, stick to one metal. For casual — mix freely." },
+            { q: "How to choose gemstones by meaning?", a: "Amethyst — calm and intuition. Emerald — love and rebirth. Sapphire — wisdom and loyalty. Ruby — passion and courage. Moonstone — new beginnings. Labradorite — transformation. Garnet — energy and devotion. Choose a stone that resonates with the wearer's story." },
+            { q: "How to build a jewelry capsule collection?", a: "Start with 5 essentials: simple stud earrings, a delicate chain necklace, a statement ring, a classic bracelet, and one signature piece that reflects your personality. Choose one metal family (silver or gold) for easy mixing." },
+          ],
+        },
+        {
+          name: "Care & Maintenance",
+          tips: [
+            { q: "How to clean silver jewelry at home?", a: "Mix warm water with a drop of mild dish soap. Soak for 5–10 minutes, gently scrub with a soft toothbrush, rinse, and pat dry. For tarnish: use a silver polishing cloth or make a paste of baking soda and water. Avoid harsh chemicals — they can damage stones." },
+            { q: "How to store jewelry properly?", a: "Store each piece separately in soft pouches or a lined jewelry box to prevent scratching. Keep silver away from air and humidity (add silica gel packets). Remove jewelry before swimming, exercising, or applying perfume and lotions." },
+            { q: "When should I take off my jewelry?", a: "Remove rings and bracelets before: washing dishes, cleaning with chemicals, showering (soap buildup dulls stones), exercising (sweat accelerates tarnish), swimming (chlorine damages metals), and sleeping (prevents bending and breakage)." },
+            { q: "How to prevent silver from tarnishing?", a: "Wear it often — skin oils actually slow tarnishing. Store in airtight bags with anti-tarnish strips. Apply a thin coat of clear nail polish on the inside of rings that touch skin. Avoid rubber bands (sulfur content accelerates tarnish)." },
+          ],
+        },
+        {
+          name: "Gemstones",
+          tips: [
+            { q: "How to tell if a gemstone is natural?", a: "Natural stones have tiny inclusions, color variations, and minor imperfections visible under magnification. Perfectly flawless, uniformly colored stones at low prices are likely synthetic. Always ask for a certificate of authenticity for expensive stones." },
+            { q: "Which gemstones are most durable for daily wear?", a: "Use the Mohs hardness scale: diamonds (10), sapphires and rubies (9), and topaz (8) are excellent for daily rings. Emeralds (7.5) need more care. Opals (5.5–6.5) and moonstone (6–6.5) are better for earrings and pendants than rings." },
+            { q: "How to care for gemstone jewelry?", a: "Clean with lukewarm soapy water and a soft brush. Never use ultrasonic cleaners on emeralds, opals, or pearls. Avoid sudden temperature changes (thermal shock can crack stones). Store gemstone pieces separately — harder stones can scratch softer ones." },
+          ],
+        },
+      ],
+    },
   },
 
   // Studio page
@@ -350,6 +392,49 @@ export default {
         { q: "What materials do you work with?", a: "PLA, PETG, ABS, resin for 3D printing. Metals, wood, acrylic, glass, leather for laser work. UV and epoxy resins for casting." },
         { q: "Do you offer design services?", a: "Absolutely. Our team provides full CAD design services — from concept to manufacturing-ready files." },
         { q: "How are prices calculated?", a: "Based on technology, material, size, complexity, and quantity. We always provide a detailed quote upfront." },
+      ],
+    },
+
+    tips: {
+      tag: "sTuDiO Advises",
+      title: "Maker Tips & Know-How",
+      categories: [
+        {
+          name: "3D Printing & Filaments",
+          tips: [
+            { q: "Which filament should I choose for my project?", a: "PLA — easiest to print, great for prototypes, decorative items, and models. Biodegradable but not heat-resistant (softens at ~60°C). PETG — stronger, slightly flexible, food-safe, good chemical resistance. Ideal for functional parts, enclosures, and items exposed to moisture. ABS — heat-resistant (~100°C), tough, but requires an enclosed printer (warps in drafts). Great for automotive parts, tools, and heat-exposed items." },
+            { q: "When should I use resin (SLA) instead of FDM printing?", a: "Resin printing wins for: fine detail (miniatures, jewelry models, dental), smooth surface finish, and dimensional accuracy. FDM wins for: large parts, mechanical strength, faster prints, and lower material cost. Rule of thumb: if appearance and detail matter more than strength — go resin." },
+            { q: "What layer height should I use?", a: "0.1mm — highest detail, slowest print. Use for visible decorative pieces. 0.2mm — best balance of speed and quality, good for most projects. 0.3mm — fast prints for prototypes and functional parts where looks don't matter. For SLA resin: 0.025–0.05mm gives incredible detail." },
+            { q: "How to improve print strength?", a: "Increase wall count (3–4 walls for structural parts). Use 40–60% infill for load-bearing items (grid or gyroid pattern). Print with wider layer lines (0.5mm nozzle). For maximum strength, orient the part so layers are perpendicular to the direction of force — 3D prints are weakest between layers." },
+            { q: "What should I avoid in 3D printing?", a: "Don't print without supports for overhangs >45°. Don't ignore first-layer adhesion (use glue stick or textured PEI sheet). Don't store filament in humid conditions (especially nylon and PETG — use sealed bags with desiccant). Don't use PLA for items left in hot cars or near heat sources." },
+          ],
+        },
+        {
+          name: "Laser Engraving",
+          tips: [
+            { q: "Which laser type for which material?", a: "Fiber laser (1064nm wavelength) — metals (steel, aluminum, brass, silver, gold), hard plastics, and anodized surfaces. CO2 laser (10600nm wavelength) — wood, acrylic, glass, leather, paper, fabric, and rubber. Diode laser (445nm) — budget option for wood and dark materials only. Never use CO2 on bare metal — the beam reflects off." },
+            { q: "How to get the best engraving quality on metal?", a: "Use a fiber laser with galvo scanning head for speed and precision. For dark marks on stainless steel: use low power/high speed for oxide marking. For deep engraving: multiple passes at higher power. Always clean the surface with isopropanol first. Use marking spray (like CerMark) on metals that don't mark well natively." },
+            { q: "Can you laser-engrave glass without breaking it?", a: "Yes, but with a CO2 laser and specific settings: low power, moderate speed, and apply a thin wet paper towel over the surface (prevents micro-fractures from heat shock). Tempered glass is risky — the internal stresses can cause it to shatter. Regular soda-lime glass and borosilicate work best." },
+            { q: "What materials should NEVER be laser-cut or engraved?", a: "PVC and vinyl — releases toxic chlorine gas. Polycarbonate — discolors, burns badly, releases bisphenol A. ABS — melts rather than cuts cleanly, produces toxic fumes. Any material containing chlorine or fluorine. Fiberglass — terrible results plus dangerous particles. Always check Material Safety Data Sheets." },
+          ],
+        },
+        {
+          name: "Resin Casting",
+          tips: [
+            { q: "Which resin for which application?", a: "UV resin — quick curing (minutes), ideal for small pieces, jewelry bezels, thin layers, and coatings. Limited to ~3mm depth per layer. Epoxy resin (two-part) — for larger castings, river tables, encapsulation of objects (flowers, photos), deep pours. Cures in 24–72h. Polyurethane resin — best for rigid functional parts and prototype molds." },
+            { q: "How to create silicone molds for resin casting?", a: "Use platinum-cure silicone (smooth, food-safe) for detailed molds. Build a box around your master model, spray mold release, pour silicone, and let cure 24h. For complex shapes: make a 2-part mold with a parting line. Shore hardness 20A for flexible molds (easy demolding), 40A for rigid molds (better dimensional accuracy)." },
+            { q: "How to avoid bubbles in resin?", a: "Mix slowly and deliberately — fast stirring creates micro-bubbles. Use a heat gun or torch lightly over the surface after pouring (not a hair dryer — too much air). For critical parts: use a vacuum chamber to degas the mixed resin before pouring. Work in a warm room (21–25°C) — cold resin is thicker and traps more air." },
+            { q: "What to avoid when working with resin?", a: "Never skip safety gear — use nitrile gloves (not latex!), safety glasses, and work in a ventilated area. Don't add more than 5% colorant by volume. Don't pour thick layers of UV resin (won't cure properly beyond 3mm). Don't mix brands/types of resin and hardener. Don't work below 18°C — the cure will be incomplete and the piece will remain tacky." },
+          ],
+        },
+        {
+          name: "Materials & Best Practices",
+          tips: [
+            { q: "How to choose the right manufacturing method?", a: "Need 1 piece quickly? → 3D printing. Need permanent marking on metal? → Fiber laser. Need precision cutting of flat materials? → CO2 laser. Need transparent or decorative objects? → Resin casting. Need small batch of identical parts? → 3D print + silicone mold + resin casting combo." },
+            { q: "How to prepare files for production?", a: "For 3D printing: STL or 3MF format, ensure the mesh is watertight (no holes), wall thickness minimum 1.2mm for FDM / 0.5mm for SLA. For laser: vector files (SVG, DXF, AI), convert text to outlines, separate cut lines from engrave fills. For resin molds: account for 0.5–1% shrinkage in your master model." },
+            { q: "What's the most cost-effective approach for small series?", a: "For 5–50 identical parts: 3D-print one master → create a silicone mold → cast copies in resin. Each resin copy costs a fraction of a 3D print, and the mold lasts 20–50 pours. For flat items: laser-cut from sheet material (acrylic, wood) — fast and repeatable. For branded items: laser-engrave a batch in one setup." },
+          ],
+        },
       ],
     },
   },

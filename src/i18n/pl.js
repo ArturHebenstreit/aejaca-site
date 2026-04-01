@@ -182,6 +182,48 @@ export default {
         { q: "Czy wysyłacie za granicę?", a: "Tak! Wysyłamy na cały świat przesyłkami śledzonymi i ubezpieczonymi. Koszty wysyłki zależą od miejsca docelowego." },
       ],
     },
+
+    tips: {
+      tag: "AEJaCA Radzi",
+      title: "Porady Biżuteryjne",
+      categories: [
+        {
+          name: "Rozmiar pierścionka",
+          tips: [
+            { q: "Jak zmierzyć rozmiar pierścionka w domu?", a: "Owiń cienki pasek papieru lub nitkę wokół palca w najszerszym miejscu (zwykle na kostce). Zaznacz punkt nakładania, zmierz długość w mm i podziel przez 3,14 — otrzymasz średnicę wewnętrzną. Porównaj z tabelą rozmiarów. Mierz wieczorem, gdy palce są nieco większe." },
+            { q: "Co jeśli mój rozmiar jest między dwoma numerami?", a: "Zawsze zaokrąglaj w górę — łatwiej jest zmniejszyć pierścionek (np. kulkami dystansowymi) niż go rozciągnąć. Przy szerokich obrączkach (6mm+) wybierz pół rozmiaru więcej, bo siedzą ciaśniej." },
+            { q: "Czy temperatura wpływa na dopasowanie pierścionka?", a: "Tak! Palce puchną w upale i kurczą się na zimnie. Mierz w temperaturze pokojowej, najlepiej wieczorem. Jeśli mieszkasz w klimacie z dużymi wahaniami — wybierz nieco luźniejsze dopasowanie." },
+            { q: "Czy pierścionki można zmieniać rozmiar po zakupie?", a: "Pierścionki ze srebra i złota zwykle da się zmienić o 1–2 rozmiary w górę lub w dół. Pierścionki z kamieniami dookoła (obrączki eternity) lub bardzo cienkie są trudniejsze do zmiany rozmiaru. Zawsze zapytaj jubilera przed zakupem." },
+          ],
+        },
+        {
+          name: "Dobór biżuterii",
+          tips: [
+            { q: "Jak wybrać długość naszyjnika?", a: "35cm — choker, leży na obojczyku. 45cm — najbardziej uniwersalny, tuż pod obojczykiem. 60cm — długość matinée, idealna do layeringu. Dopasuj do dekoltu: dekolty w serek świetnie wyglądają z wisiorkami, okrągłe — z krótszymi łańcuszkami." },
+            { q: "Jak dopasować biżuterię do stroju?", a: "Złota zasada: dopasuj metal do detali ubioru (zamki, guziki, klamry). Srebro uzupełnia chłodne tony (niebieski, zielony, szary), złoto — ciepłe (czerwony, brąz, ziemiste). Na oficjalne okazje — jeden metal. Na co dzień — miksuj śmiało." },
+            { q: "Jak dobierać kamienie szlachetne po znaczeniu?", a: "Ametyst — spokój i intuicja. Szmaragd — miłość i odrodzenie. Szafir — mądrość i lojalność. Rubin — pasja i odwaga. Kamień księżycowy — nowe początki. Labradoryt — transformacja. Granat — energia i oddanie. Wybierz kamień, który rezonuje z historią osoby noszącej." },
+            { q: "Jak zbudować kapsułową kolekcję biżuterii?", a: "Zacznij od 5 elementów: proste kolczyki wkrętki, delikatny łańcuszek, wyrazisty pierścionek, klasyczna bransoletka i jeden firmowy element, który odzwierciedla Twoją osobowość. Trzymaj się jednej rodziny metali (srebro lub złoto) dla łatwego łączenia." },
+          ],
+        },
+        {
+          name: "Pielęgnacja",
+          tips: [
+            { q: "Jak czyścić srebrną biżuterię w domu?", a: "Wymieszaj ciepłą wodę z kroplą łagodnego płynu do naczyń. Mocz 5–10 minut, delikatnie pocieraj miękką szczoteczką do zębów, wypłucz i osusz. Na oksydację: użyj ściereczki do polerowania srebra lub pasty z sody oczyszczonej i wody. Unikaj agresywnych chemikaliów — mogą uszkodzić kamienie." },
+            { q: "Jak prawidłowo przechowywać biżuterię?", a: "Przechowuj każdy element oddzielnie w miękkich saszetkach lub wyłożonej szkatułce, by zapobiec zarysowaniom. Trzymaj srebro z dala od wilgoci (dodaj woreczki z silikaelem). Zdejmuj biżuterię przed pływaniem, ćwiczeniami i nakładaniem perfum." },
+            { q: "Kiedy zdejmować biżuterię?", a: "Zdejmuj pierścionki i bransoletki przed: myciem naczyń, czyszczeniem z chemikaliami, prysznicem (mydło matowi kamienie), ćwiczeniami (pot przyspiesza oksydację), pływaniem (chlor niszczy metale) i snem (zapobiega wygięciom i pęknięciom)." },
+            { q: "Jak zapobiegać czernieniu srebra?", a: "Noś je często — naturalne olejki skóry spowalniają oksydację. Przechowuj w hermetycznych woreczkach z paskami antytarnish. Nałóż cienką warstwę bezbarwnego lakieru do paznokci na wewnętrznej stronie pierścionków. Unikaj gumek recepturek (siarka przyspiesza czernienie)." },
+          ],
+        },
+        {
+          name: "Kamienie szlachetne",
+          tips: [
+            { q: "Jak rozpoznać naturalny kamień szlachetny?", a: "Naturalne kamienie mają drobne inkluzje, wariacje kolorów i drobne niedoskonałości widoczne pod lupą. Idealnie jednolite, bezbłędne kamienie w niskich cenach to prawdopodobnie syntetyki. Przy drogich kamieniach zawsze proś o certyfikat autentyczności." },
+            { q: "Które kamienie szlachetne najlepiej nadają się do codziennego noszenia?", a: "Użyj skali twardości Mohsa: diamenty (10), szafiry i rubiny (9), topaz (8) — doskonałe do codziennych pierścionków. Szmaragdy (7,5) wymagają więcej ostrożności. Opale (5,5–6,5) i kamień księżycowy (6–6,5) lepiej sprawdzą się w kolczykach i wisioreczkach niż w pierścionkach." },
+            { q: "Jak dbać o biżuterię z kamieniami?", a: "Myj letnią wodą z mydłem i miękką szczoteczką. Nigdy nie używaj czyszczarek ultradźwiękowych do szmaragdów, opali czy pereł. Unikaj nagłych zmian temperatury (szok termiczny może spowodować pęknięcie kamieni). Przechowuj elementy z kamieniami oddzielnie — twardsze kamienie rysują miększe." },
+          ],
+        },
+      ],
+    },
   },
 
   studio: {
@@ -347,6 +389,49 @@ export default {
         { q: "Z jakimi materiałami pracujecie?", a: "PLA, PETG, ABS, żywica do druku 3D. Metale, drewno, akryl, szkło, skóra do pracy laserowej. Żywice UV i epoksydowe do odlewów." },
         { q: "Czy oferujecie usługi projektowania?", a: "Oczywiście. Zapewniamy pełne usługi projektowania CAD — od koncepcji po pliki gotowe do produkcji." },
         { q: "Jak kalkulowane są ceny?", a: "Na podstawie technologii, materiału, rozmiaru, złożoności i ilości. Zawsze podajemy szczegółową wycenę z góry." },
+      ],
+    },
+
+    tips: {
+      tag: "sTuDiO Radzi",
+      title: "Porady Makerskie",
+      categories: [
+        {
+          name: "Druk 3D i filamenty",
+          tips: [
+            { q: "Jaki filament wybrać do mojego projektu?", a: "PLA — najłatwiejszy w druku, świetny na prototypy, elementy dekoracyjne i modele. Biodegradowalny, ale nieodporny na ciepło (mięknie w ~60°C). PETG — mocniejszy, lekko elastyczny, bezpieczny dla żywności, dobra odporność chemiczna. Idealny na części funkcjonalne i obudowy. ABS — odporny na ciepło (~100°C), wytrzymały, ale wymaga zamkniętej drukarki (deformuje się w przeciągach). Świetny na części samochodowe i narzędzia." },
+            { q: "Kiedy wybrać druk z żywicy (SLA) zamiast FDM?", a: "Żywica wygrywa przy: drobnych detalach (figurki, modele jubilerskie, stomatologia), gładkiej powierzchni i dokładności wymiarowej. FDM wygrywa przy: dużych częściach, wytrzymałości mechanicznej, szybszym druku i niższym koszcie materiału. Zasada: jeśli wygląd i detale ważniejsze niż siła — wybierz żywicę." },
+            { q: "Jaką wysokość warstwy ustawić?", a: "0,1mm — najwyższy detal, najwolniejszy druk. Na dekoracyjne elementy. 0,2mm — najlepszy balans szybkości i jakości, dobra na większość projektów. 0,3mm — szybki druk na prototypy i części funkcjonalne. Dla żywicy SLA: 0,025–0,05mm daje niewiarygodne detale." },
+            { q: "Jak poprawić wytrzymałość wydruku?", a: "Zwiększ liczbę ścianek (3–4 na części strukturalne). Użyj 40–60% wypełnienia na elementy obciążone (wzór grid lub gyroid). Drukuj z szerszą linią (dysza 0,5mm). Dla maksymalnej wytrzymałości: orientuj część tak, by warstwy były prostopadłe do kierunku siły — wydruki 3D są najsłabsze między warstwami." },
+            { q: "Czego unikać w druku 3D?", a: "Nie drukuj bez podpór przy nawisach >45°. Nie ignoruj przylegania pierwszej warstwy (użyj kleju w sztyfcie lub arkusza PEI). Nie przechowuj filamentu w wilgotnym otoczeniu (szczególnie nylon i PETG — hermetyczne worki z pochłaniaczem). Nie używaj PLA na przedmioty w gorącym samochodzie." },
+          ],
+        },
+        {
+          name: "Grawerowanie laserowe",
+          tips: [
+            { q: "Jaki typ lasera do jakiego materiału?", a: "Laser światłowodowy (1064nm) — metale (stal, aluminium, mosiądz, srebro, złoto), twarde tworzywa i anodowane powierzchnie. Laser CO2 (10600nm) — drewno, akryl, szkło, skóra, papier, tkaniny i guma. Laser diodowy (445nm) — budżetowa opcja tylko na drewno i ciemne materiały. Nigdy nie używaj CO2 na gołym metalu — wiązka się odbija." },
+            { q: "Jak uzyskać najlepszą jakość grawerowania na metalu?", a: "Użyj lasera światłowodowego z głowicą galvo. Na ciemne oznaczenia na stali nierdzewnej: niska moc / wysoka prędkość (znakowanie tlenkowe). Na głębokie grawerowanie: wiele przejść z wyższą mocą. Zawsze oczyść powierzchnię izopropanolem. Użyj sprayu do znakowania (CerMark) na metalach, które nie znakują się natywnie." },
+            { q: "Czy można grawerować szkło laserem bez jego stłuczenia?", a: "Tak, ale laserem CO2 z odpowiednimi ustawieniami: niska moc, umiarkowana prędkość, i nałóż cienki mokry ręcznik papierowy na powierzchnię (zapobiega mikropęknięciom od szoku cieplnego). Szkło hartowane jest ryzykowne — naprężenia wewnętrzne mogą je roztrzaskać. Zwykłe szkło sodowo-wapniowe i borokrzemianowe najlepiej się sprawdzają." },
+            { q: "Jakich materiałów NIGDY nie ciąć ani grawerować laserem?", a: "PVC i winyl — uwalnia toksyczny gaz chlorowy. Poliwęglan — odbarwia się, źle pali, uwalnia bisfenol A. ABS — topi się zamiast ciąć, toksyczne opary. Materiały zawierające chlor lub fluor. Włókno szklane — fatalne rezultaty plus niebezpieczne cząsteczki. Zawsze sprawdzaj karty MSDS." },
+          ],
+        },
+        {
+          name: "Odlewy z żywicy",
+          tips: [
+            { q: "Jaką żywicę do jakiego zastosowania?", a: "Żywica UV — szybkie utwardzanie (minuty), idealna na małe elementy, oprawki biżuteryjne, cienkie warstwy i powłoki. Ograniczona do ~3mm głębokości na warstwę. Żywica epoksydowa (dwuskładnikowa) — do większych odlewów, stolikowych river table, zalewania obiektów (kwiaty, zdjęcia). Utwardza się 24–72h. Żywica poliuretanowa — najlepsza na sztywne części funkcjonalne i formy prototypowe." },
+            { q: "Jak stworzyć formy silikonowe do odlewów?", a: "Użyj silikonu platynowego (gładki, bezpieczny do żywności) na detale. Zbuduj ramkę wokół modelu wzorcowego, spryskaj środkiem antyadhezyjnym, wlej silikon i daj utwardzać 24h. Na złożone kształty: forma dwuczęściowa z linią podziału. Twardość Shore 20A na elastyczne formy (łatwe wyjmowanie), 40A na sztywne (lepsza dokładność wymiarowa)." },
+            { q: "Jak unikać bąbelków w żywicy?", a: "Mieszaj powoli i dokładnie — szybkie mieszanie tworzy mikrobąbelki. Użyj opalarki lub palnika delikatnie nad powierzchnią po wlaniu (nie suszarki — za dużo powietrza). Na krytyczne elementy: komora próżniowa do odgazowania. Pracuj w ciepłym pomieszczeniu (21–25°C) — zimna żywica jest gęstsza i łapie więcej powietrza." },
+            { q: "Czego unikać przy pracy z żywicą?", a: "Nigdy nie pomijaj środków ochrony — rękawice nitrylowe (nie lateksowe!), okulary ochronne, wentylacja. Nie dodawaj barwnika więcej niż 5% objętości. Nie lej grubych warstw żywicy UV (nie utwardzi się powyżej 3mm). Nie mieszaj marek/typów żywicy z utwardzaczem. Nie pracuj poniżej 18°C — utwardzanie będzie niekompletne, element zostanie lepki." },
+          ],
+        },
+        {
+          name: "Materiały i dobre praktyki",
+          tips: [
+            { q: "Jak wybrać odpowiednią metodę wytwarzania?", a: "Potrzebujesz 1 sztuki szybko? → Druk 3D. Trwałe znakowanie metalu? → Laser światłowodowy. Precyzyjne cięcie płaskich materiałów? → Laser CO2. Przezroczyste lub dekoracyjne obiekty? → Odlew żywiczny. Mała seria identycznych części? → Druk 3D + forma silikonowa + odlew żywiczny." },
+            { q: "Jak przygotować pliki do produkcji?", a: "Do druku 3D: format STL lub 3MF, siatka bez dziur (watertight), grubość ścianki min. 1,2mm dla FDM / 0,5mm dla SLA. Do lasera: pliki wektorowe (SVG, DXF, AI), zamień tekst na krzywe, oddziel linie cięcia od wypełnień grawerowania. Do form żywicznych: uwzględnij 0,5–1% skurczu w modelu wzorcowym." },
+            { q: "Jaki jest najbardziej opłacalny sposób na małe serie?", a: "Na 5–50 identycznych części: wydrukuj 3D jeden wzorzec → stwórz formę silikonową → odlewaj kopie z żywicy. Każda kopia kosztuje ułamek wydruku 3D, a forma wytrzymuje 20–50 odlewów. Na płaskie elementy: cięcie laserowe z arkusza (akryl, drewno) — szybkie i powtarzalne. Na markowe gadżety: graweruj laserem partię w jednym ustawieniu." },
+          ],
+        },
       ],
     },
   },
