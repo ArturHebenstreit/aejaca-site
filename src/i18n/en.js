@@ -262,8 +262,8 @@ export default {
     techTag: "Our Capabilities",
     techTitle: "Technologies",
     technologies: [
-      { title: "3D Design (CAD)", desc: "Professional 3D modeling for product design, prototyping, and manufacturing-ready files." },
-      { title: "3D Printing", desc: "FDM & resin 3D printing for rapid prototyping, functional parts, and small batch production." },
+      { title: "3D Design (CAD)", desc: "Professional 3D modeling in Autodesk Fusion & Rhino — product design, prototyping, and manufacturing-ready files." },
+      { title: "3D Printing", desc: "Filament & resin 3D printing for rapid prototyping, functional parts, and small batch production." },
       { title: "Fiber Laser Engraving", desc: "High-precision galvo laser systems for marking metal, jewelry, tools, and technical components." },
       { title: "CO2 Laser Cutting", desc: "Laser cutting and engraving on wood, acrylic, glass, leather, and plastics." },
       { title: "Epoxy Resin Casting", desc: "UV and two-component resin systems for decorative objects, encapsulation, and custom molds." },
@@ -426,7 +426,7 @@ export default {
           name: "3D Printing & Filaments",
           tips: [
             { q: "Which filament should I choose for my project?", a: "PLA — easiest to print, great for prototypes, decorative items, and models. Biodegradable but not heat-resistant (softens at ~60°C). PETG — stronger, slightly flexible, food-safe, good chemical resistance. Ideal for functional parts, enclosures, and items exposed to moisture. ABS — heat-resistant (~100°C), tough, but requires an enclosed printer (warps in drafts). Great for automotive parts, tools, and heat-exposed items." },
-            { q: "When should I use resin (SLA) instead of FDM printing?", a: "Resin printing wins for: fine detail (miniatures, jewelry models, dental), smooth surface finish, and dimensional accuracy. FDM wins for: large parts, mechanical strength, faster prints, and lower material cost. Rule of thumb: if appearance and detail matter more than strength — go resin." },
+            { q: "When should I use resin (SLA) instead of filament printing?", a: "Resin printing wins for: fine detail (miniatures, jewelry models, dental), smooth surface finish, and dimensional accuracy. Filament printing wins for: large parts, mechanical strength, faster prints, and lower material cost. Rule of thumb: if appearance and detail matter more than strength — go resin." },
             { q: "What layer height should I use?", a: "0.1mm — highest detail, slowest print. Use for visible decorative pieces. 0.2mm — best balance of speed and quality, good for most projects. 0.3mm — fast prints for prototypes and functional parts where looks don't matter. For SLA resin: 0.025–0.05mm gives incredible detail." },
             { q: "How to improve print strength?", a: "Increase wall count (3–4 walls for structural parts). Use 40–60% infill for load-bearing items (grid or gyroid pattern). Print with wider layer lines (0.5mm nozzle). For maximum strength, orient the part so layers are perpendicular to the direction of force — 3D prints are weakest between layers." },
             { q: "What should I avoid in 3D printing?", a: "Don't print without supports for overhangs >45°. Don't ignore first-layer adhesion (use glue stick or textured PEI sheet). Don't store filament in humid conditions (especially nylon and PETG — use sealed bags with desiccant). Don't use PLA for items left in hot cars or near heat sources." },
@@ -454,7 +454,7 @@ export default {
           name: "Materials & Best Practices",
           tips: [
             { q: "How to choose the right manufacturing method?", a: "Need 1 piece quickly? → 3D printing. Need permanent marking on metal? → Fiber laser. Need precision cutting of flat materials? → CO2 laser. Need transparent or decorative objects? → Resin casting. Need small batch of identical parts? → 3D print + silicone mold + resin casting combo." },
-            { q: "How to prepare files for production?", a: "For 3D printing: STL or 3MF format, ensure the mesh is watertight (no holes), wall thickness minimum 1.2mm for FDM / 0.5mm for SLA. For laser: vector files (SVG, DXF, AI), convert text to outlines, separate cut lines from engrave fills. For resin molds: account for 0.5–1% shrinkage in your master model." },
+            { q: "How to prepare files for production?", a: "For 3D printing: STL or 3MF format, ensure the mesh is watertight (no holes), wall thickness minimum 1.2mm for filament / 0.5mm for SLA. For laser: vector files (SVG, DXF, AI), convert text to outlines, separate cut lines from engrave fills. For resin molds: account for 0.5–1% shrinkage in your master model." },
             { q: "What's the most cost-effective approach for small series?", a: "For 5–50 identical parts: 3D-print one master → create a silicone mold → cast copies in resin. Each resin copy costs a fraction of a 3D print, and the mold lasts 20–50 pours. For flat items: laser-cut from sheet material (acrylic, wood) — fast and repeatable. For branded items: laser-engrave a batch in one setup." },
           ],
         },

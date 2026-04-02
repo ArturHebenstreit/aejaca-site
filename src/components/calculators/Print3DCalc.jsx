@@ -11,7 +11,7 @@ const PRINT_CONFIG = {
 };
 
 const FILAMENTS = {
-  standard: { label: "FDM Classic", materials: {
+  standard: { label: "Standard", materials: {
     "PLA":        { price_kg: 80,  density: 1.24 },
     "PLA Silk":   { price_kg: 110, density: 1.24 },
     "PLA Matte":  { price_kg: 95,  density: 1.24 },
@@ -168,7 +168,7 @@ export default function Print3DCalc({ lang = "pl" }) {
             <button key={seg} onClick={() => setSegment(seg)}
               className={`p-3.5 rounded-xl border text-left transition-all ${segment === seg ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}>
               <div className={`text-sm font-bold mb-1 ${segment === seg ? "text-blue-300" : "text-white"}`}>
-                {seg === "standard" ? "FDM Classic" : "Engineering"}
+                {seg === "standard" ? "Standard" : "Engineering"}
               </div>
               <div className="text-[11px] text-neutral-500">
                 {seg === "standard" ? "PLA, PETG, TPU, ASA, ABS" : "PA-CF, PPA-CF, PC, PET-CF, PPS"}

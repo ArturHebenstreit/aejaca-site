@@ -4,7 +4,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import JewelryConfigurator from "../components/JewelryConfigurator.jsx";
 import ProcessGallery from "../components/ProcessGallery.jsx";
-import Portfolio from "../components/Portfolio.jsx";
+// import Portfolio from "../components/Portfolio.jsx"; // temporarily disabled
 import Testimonials from "../components/Testimonials.jsx";
 import FAQ from "../components/FAQ.jsx";
 import Tips from "../components/Tips.jsx";
@@ -12,7 +12,7 @@ import Tips from "../components/Tips.jsx";
 const icons = [Gem, Sparkles, Palette, Heart, Wand2, Crown];
 
 export default function Jewelry() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const j = t.jewelry;
 
   const aboutRef = useScrollReveal();
@@ -82,8 +82,20 @@ export default function Jewelry() {
 
       <div className="gradient-divider" />
 
-      {/* Portfolio */}
-      <Portfolio data={j.portfolio} accent="amber" id="portfolio" />
+      {/* Portfolio — temporarily replaced with placeholder */}
+      <section id="portfolio" className="py-20 px-4 bg-neutral-950">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{j.portfolio?.tag || "Portfolio"}</div>
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-white mb-8">{j.portfolio?.title || "Portfolio"}</h2>
+          <div className="py-16 rounded-2xl border border-white/5 bg-white/[0.02]">
+            <div className="text-neutral-500 text-lg">
+              {{ pl: "W trakcie przygotowania", en: "In preparation", de: "In Vorbereitung" }[lang] || "In preparation"}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="gradient-divider" />
 
       {/* Values */}
       <section id="values" className="py-20 px-4 bg-gradient-to-b from-emerald-950/20 to-neutral-950">

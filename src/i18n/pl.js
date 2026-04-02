@@ -259,8 +259,8 @@ export default {
     techTag: "Nasze Możliwości",
     techTitle: "Technologie",
     technologies: [
-      { title: "Projektowanie 3D (CAD)", desc: "Profesjonalne modelowanie 3D do projektowania produktów, prototypowania i plików gotowych do produkcji." },
-      { title: "Druk 3D", desc: "Druk 3D FDM i żywiczny do szybkiego prototypowania, części funkcjonalnych i produkcji małoseryjnej." },
+      { title: "Projektowanie 3D (CAD)", desc: "Profesjonalne modelowanie 3D w Autodesk Fusion i Rhino — projektowanie produktów, prototypowanie i pliki gotowe do produkcji." },
+      { title: "Druk 3D", desc: "Druk 3D filamentem i żywicą do szybkiego prototypowania, części funkcjonalnych i produkcji małoseryjnej." },
       { title: "Grawerowanie Laserem Światłowodowym", desc: "Precyzyjne systemy laserowe galvo do znakowania metalu, biżuterii, narzędzi i komponentów technicznych." },
       { title: "Cięcie Laserem CO2", desc: "Cięcie i grawerowanie laserowe drewna, akrylu, szkła, skóry i tworzyw sztucznych." },
       { title: "Odlewanie z Żywicy Epoksydowej", desc: "Systemy żywic UV i dwuskładnikowych do obiektów dekoracyjnych, kapsułkowania i form na zamówienie." },
@@ -423,7 +423,7 @@ export default {
           name: "Druk 3D i filamenty",
           tips: [
             { q: "Jaki filament wybrać do mojego projektu?", a: "PLA — najłatwiejszy w druku, świetny na prototypy, elementy dekoracyjne i modele. Biodegradowalny, ale nieodporny na ciepło (mięknie w ~60°C). PETG — mocniejszy, lekko elastyczny, bezpieczny dla żywności, dobra odporność chemiczna. Idealny na części funkcjonalne i obudowy. ABS — odporny na ciepło (~100°C), wytrzymały, ale wymaga zamkniętej drukarki (deformuje się w przeciągach). Świetny na części samochodowe i narzędzia." },
-            { q: "Kiedy wybrać druk z żywicy (SLA) zamiast FDM?", a: "Żywica wygrywa przy: drobnych detalach (figurki, modele jubilerskie, stomatologia), gładkiej powierzchni i dokładności wymiarowej. FDM wygrywa przy: dużych częściach, wytrzymałości mechanicznej, szybszym druku i niższym koszcie materiału. Zasada: jeśli wygląd i detale ważniejsze niż siła — wybierz żywicę." },
+            { q: "Kiedy wybrać druk z żywicy (SLA) zamiast filamentu?", a: "Żywica wygrywa przy: drobnych detalach (figurki, modele jubilerskie, stomatologia), gładkiej powierzchni i dokładności wymiarowej. Filament wygrywa przy: dużych częściach, wytrzymałości mechanicznej, szybszym druku i niższym koszcie materiału. Zasada: jeśli wygląd i detale ważniejsze niż siła — wybierz żywicę." },
             { q: "Jaką wysokość warstwy ustawić?", a: "0,1mm — najwyższy detal, najwolniejszy druk. Na dekoracyjne elementy. 0,2mm — najlepszy balans szybkości i jakości, dobra na większość projektów. 0,3mm — szybki druk na prototypy i części funkcjonalne. Dla żywicy SLA: 0,025–0,05mm daje niewiarygodne detale." },
             { q: "Jak poprawić wytrzymałość wydruku?", a: "Zwiększ liczbę ścianek (3–4 na części strukturalne). Użyj 40–60% wypełnienia na elementy obciążone (wzór grid lub gyroid). Drukuj z szerszą linią (dysza 0,5mm). Dla maksymalnej wytrzymałości: orientuj część tak, by warstwy były prostopadłe do kierunku siły — wydruki 3D są najsłabsze między warstwami." },
             { q: "Czego unikać w druku 3D?", a: "Nie drukuj bez podpór przy nawisach >45°. Nie ignoruj przylegania pierwszej warstwy (użyj kleju w sztyfcie lub arkusza PEI). Nie przechowuj filamentu w wilgotnym otoczeniu (szczególnie nylon i PETG — hermetyczne worki z pochłaniaczem). Nie używaj PLA na przedmioty w gorącym samochodzie." },
@@ -451,7 +451,7 @@ export default {
           name: "Materiały i dobre praktyki",
           tips: [
             { q: "Jak wybrać odpowiednią metodę wytwarzania?", a: "Potrzebujesz 1 sztuki szybko? → Druk 3D. Trwałe znakowanie metalu? → Laser światłowodowy. Precyzyjne cięcie płaskich materiałów? → Laser CO2. Przezroczyste lub dekoracyjne obiekty? → Odlew żywiczny. Mała seria identycznych części? → Druk 3D + forma silikonowa + odlew żywiczny." },
-            { q: "Jak przygotować pliki do produkcji?", a: "Do druku 3D: format STL lub 3MF, siatka bez dziur (watertight), grubość ścianki min. 1,2mm dla FDM / 0,5mm dla SLA. Do lasera: pliki wektorowe (SVG, DXF, AI), zamień tekst na krzywe, oddziel linie cięcia od wypełnień grawerowania. Do form żywicznych: uwzględnij 0,5–1% skurczu w modelu wzorcowym." },
+            { q: "Jak przygotować pliki do produkcji?", a: "Do druku 3D: format STL lub 3MF, siatka bez dziur (watertight), grubość ścianki min. 1,2mm dla filamentu / 0,5mm dla SLA. Do lasera: pliki wektorowe (SVG, DXF, AI), zamień tekst na krzywe, oddziel linie cięcia od wypełnień grawerowania. Do form żywicznych: uwzględnij 0,5–1% skurczu w modelu wzorcowym." },
             { q: "Jaki jest najbardziej opłacalny sposób na małe serie?", a: "Na 5–50 identycznych części: wydrukuj 3D jeden wzorzec → stwórz formę silikonową → odlewaj kopie z żywicy. Każda kopia kosztuje ułamek wydruku 3D, a forma wytrzymuje 20–50 odlewów. Na płaskie elementy: cięcie laserowe z arkusza (akryl, drewno) — szybkie i powtarzalne. Na markowe gadżety: graweruj laserem partię w jednym ustawieniu." },
           ],
         },

@@ -3,7 +3,7 @@ import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench } from "lucide-react
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import StudioCalculator from "../components/StudioCalculator.jsx";
-import Portfolio from "../components/Portfolio.jsx";
+// import Portfolio from "../components/Portfolio.jsx"; // temporarily disabled
 import Testimonials from "../components/Testimonials.jsx";
 import FAQ from "../components/FAQ.jsx";
 import Tips from "../components/Tips.jsx";
@@ -11,7 +11,7 @@ import Tips from "../components/Tips.jsx";
 const techIcons = [Cpu, Printer, Zap, Layers, Box, Wrench];
 
 export default function Studio() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const s = t.studio;
 
   const aboutRef = useScrollReveal();
@@ -81,8 +81,18 @@ export default function Studio() {
 
       <div className="gradient-divider" />
 
-      {/* Portfolio */}
-      <Portfolio data={s.portfolio} accent="blue" id="portfolio" />
+      {/* Portfolio — temporarily replaced with placeholder */}
+      <section id="portfolio" className="py-20 px-4 bg-neutral-950">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-3">{s.portfolio?.tag || "Portfolio"}</div>
+          <h2 className="font-sans text-3xl md:text-4xl font-bold text-white tracking-tight mb-8">{s.portfolio?.title || "Portfolio"}</h2>
+          <div className="py-16 rounded-2xl border border-white/5 bg-white/[0.02]">
+            <div className="text-neutral-500 text-lg">
+              {{ pl: "W trakcie przygotowania", en: "In preparation", de: "In Vorbereitung" }[lang] || "In preparation"}
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div className="gradient-divider" />
 

@@ -255,8 +255,8 @@ export default {
     techTag: "Unsere Fähigkeiten",
     techTitle: "Technologien",
     technologies: [
-      { title: "3D-Design (CAD)", desc: "Professionelle 3D-Modellierung für Produktdesign, Prototyping und fertigungsreife Dateien." },
-      { title: "3D-Druck", desc: "FDM- & Harz-3D-Druck für Rapid Prototyping, Funktionsteile und Kleinserienfertigung." },
+      { title: "3D-Design (CAD)", desc: "Professionelle 3D-Modellierung in Autodesk Fusion & Rhino — Produktdesign, Prototyping und fertigungsreife Dateien." },
+      { title: "3D-Druck", desc: "Filament- & Harz-3D-Druck für Rapid Prototyping, Funktionsteile und Kleinserienfertigung." },
       { title: "Faserlaser-Gravur", desc: "Hochpräzise Galvo-Lasersysteme zur Markierung von Metall, Schmuck, Werkzeugen und technischen Bauteilen." },
       { title: "CO2-Laserschneiden", desc: "Laserschneiden und -gravur auf Holz, Acryl, Glas, Leder und Kunststoffen." },
       { title: "Epoxidharzguss", desc: "UV- und Zweikomponenten-Harzsysteme für Dekorationsobjekte, Einkapselung und individuelle Formen." },
@@ -415,7 +415,7 @@ export default {
           name: "3D-Druck & Filamente",
           tips: [
             { q: "Welches Filament soll ich für mein Projekt wählen?", a: "PLA — am einfachsten zu drucken, ideal für Prototypen, Deko und Modelle. Biologisch abbaubar, aber nicht hitzebeständig (erweicht bei ~60°C). PETG — stärker, leicht flexibel, lebensmittelecht, gute chemische Beständigkeit. Ideal für Funktionsteile und Gehäuse. ABS — hitzebeständig (~100°C), robust, benötigt aber geschlossenen Drucker (verzieht sich bei Zugluft). Ideal für Autoteile und Werkzeuge." },
-            { q: "Wann Harz (SLA) statt FDM-Druck?", a: "Harz gewinnt bei: feinen Details (Miniaturen, Schmuckmodelle, Dental), glatter Oberfläche und Maßgenauigkeit. FDM gewinnt bei: großen Teilen, mechanischer Festigkeit, schnellerem Druck und niedrigeren Materialkosten. Faustregel: Wenn Optik und Details wichtiger sind als Stärke — Harz wählen." },
+            { q: "Wann Harz (SLA) statt Filamentdruck?", a: "Harz gewinnt bei: feinen Details (Miniaturen, Schmuckmodelle, Dental), glatter Oberfläche und Maßgenauigkeit. Filamentdruck gewinnt bei: großen Teilen, mechanischer Festigkeit, schnellerem Druck und niedrigeren Materialkosten. Faustregel: Wenn Optik und Details wichtiger sind als Stärke — Harz wählen." },
             { q: "Welche Schichthöhe verwenden?", a: "0,1mm — höchstes Detail, langsamster Druck. Für sichtbare Dekostücke. 0,2mm — beste Balance aus Geschwindigkeit und Qualität, für die meisten Projekte. 0,3mm — schnelle Drucke für Prototypen und Funktionsteile. Für SLA-Harz: 0,025–0,05mm ergibt unglaubliche Details." },
             { q: "Wie verbessere ich die Druckfestigkeit?", a: "Wandstärke erhöhen (3–4 Wände für tragende Teile). 40–60% Füllung für lasttragende Teile (Grid- oder Gyroid-Muster). Mit breiterer Linie drucken (0,5mm-Düse). Für maximale Festigkeit: Teil so ausrichten, dass Schichten senkrecht zur Kraftrichtung stehen — 3D-Drucke sind zwischen den Schichten am schwächsten." },
             { q: "Was beim 3D-Druck vermeiden?", a: "Nie ohne Stützen bei Überhängen >45° drucken. Erste Schichthaftung nicht ignorieren (Klebestift oder PEI-Platte verwenden). Filament nie feucht lagern (besonders Nylon und PETG — luftdichte Beutel mit Trockenmittel). PLA nie für Gegenstände in heißen Autos verwenden." },
@@ -443,7 +443,7 @@ export default {
           name: "Materialien & Best Practices",
           tips: [
             { q: "Wie wähle ich die richtige Fertigungsmethode?", a: "1 Teil schnell benötigt? → 3D-Druck. Dauerhafte Metallmarkierung? → Faserlaser. Präzisionsschnitt flacher Materialien? → CO2-Laser. Transparente oder dekorative Objekte? → Harzguss. Kleine Serie identischer Teile? → 3D-Druck + Silikonform + Harzguss-Kombi." },
-            { q: "Wie bereite ich Dateien für die Produktion vor?", a: "Für 3D-Druck: STL- oder 3MF-Format, wasserdichtes Mesh (keine Löcher), Wandstärke mindestens 1,2mm für FDM / 0,5mm für SLA. Für Laser: Vektordateien (SVG, DXF, AI), Text in Pfade umwandeln, Schnittlinien von Gravurfüllungen trennen. Für Harzformen: 0,5–1% Schrumpfung im Mastermodell einrechnen." },
+            { q: "Wie bereite ich Dateien für die Produktion vor?", a: "Für 3D-Druck: STL- oder 3MF-Format, wasserdichtes Mesh (keine Löcher), Wandstärke mindestens 1,2mm für Filament / 0,5mm für SLA. Für Laser: Vektordateien (SVG, DXF, AI), Text in Pfade umwandeln, Schnittlinien von Gravurfüllungen trennen. Für Harzformen: 0,5–1% Schrumpfung im Mastermodell einrechnen." },
             { q: "Kosteneffektivster Ansatz für Kleinserien?", a: "Für 5–50 identische Teile: 3D-Druck eines Masters → Silikonform erstellen → Kopien in Harz gießen. Jede Harzkopie kostet einen Bruchteil eines 3D-Drucks, die Form hält 20–50 Güsse. Für Flachteile: Laserschnitt aus Plattenmaterial (Acryl, Holz) — schnell und wiederholbar. Für Markenartikel: Lasergravierbatch in einem Setup." },
           ],
         },
