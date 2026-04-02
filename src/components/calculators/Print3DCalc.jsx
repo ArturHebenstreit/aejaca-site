@@ -2,7 +2,7 @@
 // 3D PRINT ESTIMATOR — Bambu Lab H2D  v1.1
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
 
 const PRINT_CONFIG = {
   PRINTER_POWER_KW: 0.35,
@@ -121,13 +121,13 @@ function calculate(params, lang) {
     totalTimeH: qTier.qty > 1 ? totalTimeH : null,
     breakdown: [
       { label: l.mass, value: `${massG.toFixed(1)} g` },
-      { label: l.material, value: `${materialCost.toFixed(2)} PLN` },
+      { label: l.material, value: fmtCost(materialCost, lang) },
       { label: l.printTime, value: `${printTime.toFixed(1)} h` },
       { label: l.timeSetup, value: `${timePerPc.toFixed(1)} h` },
-      { label: l.energy, value: `${energyCost.toFixed(2)} PLN` },
-      { label: l.depreciation, value: `${deprCost.toFixed(2)} PLN` },
+      { label: l.energy, value: fmtCost(energyCost, lang) },
+      { label: l.depreciation, value: fmtCost(deprCost, lang) },
       { divider: true },
-      { label: l.baseCost, value: `${baseCost.toFixed(2)} PLN`, bold: true },
+      { label: l.baseCost, value: fmtCost(baseCost, lang), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
       ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${totalTimeH.toFixed(1)} h`, bold: true }] : []),
     ],

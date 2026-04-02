@@ -2,15 +2,18 @@
 // CO2 LASER ESTIMATOR — xTool P2 55W
 // Work area: 600 × 288 mm (standard), extended with riser
 // ============================================================
-import { useState, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
+import { useState, useEffect, useMemo } from "react";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
 
 const CO2_CONFIG = {
   POWER_KW: 0.80,
   DEPRECIATION_PLN_H: 3.20,
-  EXTENDED_AREA_TIME_MUL: 1.40, // +40% time for extended area setup
-  EXTENDED_AREA_COST_ADD: 15,   // PLN flat surcharge for extended equipment
+  EXTENDED_AREA_TIME_MUL: 1.40,
+  EXTENDED_AREA_COST_ADD: 15,
 };
+
+// Path sizes XS/S/M fit in standard area; L requires extended
+const PATH_NEEDS_EXTENDED = { XS: false, S: false, M: false, L: true, XL: true };
 
 const LBL = {
   pl: { mode: "Tryb pracy", engrave: "Grawerowanie", cut: "Cięcie",
@@ -118,7 +121,7 @@ function calcEngrave({ matId, areaId, detailId, quantityId }, lang) {
   const timeMin = area.area * mat.rateMin * detail.mul;
   const timeH = timeMin / 60;
   const setupH = 0.25 / qTier.qty;
-  const handleH = 0.03; // ~2min load/unload per piece
+  const handleH = 0.03;
   const totalTimeH = timeH + setupH + handleH;
   const energyCost = totalTimeH * CO2_CONFIG.POWER_KW * CONFIG.ENERGY_COST_PLN;
   const deprCost = totalTimeH * CO2_CONFIG.DEPRECIATION_PLN_H;
@@ -133,11 +136,11 @@ function calcEngrave({ matId, areaId, detailId, quantityId }, lang) {
     breakdown: [
       { label: l.engraveTime, value: `${timeMin.toFixed(1)} min` },
       { label: l.timeSetup, value: `${(totalTimeH * 60).toFixed(1)} min` },
-      { label: l.prepMat, value: `${prepCost.toFixed(2)} PLN` },
-      { label: l.energy, value: `${energyCost.toFixed(2)} PLN` },
-      { label: l.depreciation, value: `${deprCost.toFixed(2)} PLN` },
+      { label: l.prepMat, value: fmtCost(prepCost, lang) },
+      { label: l.energy, value: fmtCost(energyCost, lang) },
+      { label: l.depreciation, value: fmtCost(deprCost, lang) },
       { divider: true },
-      { label: l.baseCost, value: `${baseCost.toFixed(2)} PLN`, bold: true },
+      { label: l.baseCost, value: fmtCost(baseCost, lang), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
       ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${batchTimeH.toFixed(1)} h`, bold: true }] : []),
     ],
@@ -176,12 +179,12 @@ function calcCut({ matId, pathId, complexId, quantityId, extended }, lang) {
     totalTimeH: qTier.qty > 1 ? batchTimeH : null,
     breakdown: [
       { label: l.cutTime, value: `${cutTimeMin.toFixed(1)} min` },
-      { label: l.materialCost, value: `${materialCost.toFixed(2)} PLN` },
-      { label: l.energy, value: `${energyCost.toFixed(2)} PLN` },
-      { label: l.depreciation, value: `${deprCost.toFixed(2)} PLN` },
-      ...(extended ? [{ label: l.extSurcharge, value: `+${extCostAdd} PLN` }] : []),
+      { label: l.materialCost, value: fmtCost(materialCost, lang) },
+      { label: l.energy, value: fmtCost(energyCost, lang) },
+      { label: l.depreciation, value: fmtCost(deprCost, lang) },
+      ...(extended ? [{ label: l.extSurcharge, value: `+${fmtCost(extCostAdd, lang)}` }] : []),
       { divider: true },
-      { label: l.baseCost, value: `${baseCost.toFixed(2)} PLN`, bold: true },
+      { label: l.baseCost, value: fmtCost(baseCost, lang), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
       ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${batchTimeH.toFixed(1)} h`, bold: true }] : []),
     ],
@@ -203,10 +206,21 @@ export default function CO2LaserCalc({ lang = "pl" }) {
   const [cQtyId, setCQtyId] = useState("proto");
   const [extended, setExtended] = useState(false);
 
+  // Auto-set work area based on path size
+  useEffect(() => {
+    const needsExtended = PATH_NEEDS_EXTENDED[cPathId];
+    if (needsExtended !== undefined) setExtended(needsExtended);
+  }, [cPathId]);
+
   const result = useMemo(() => {
     if (mode === "engrave") return calcEngrave({ matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId }, lang);
     return calcCut({ matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended }, lang);
   }, [mode, eMatId, eAreaId, eDetailId, eQtyId, cMatId, cPathId, cComplexId, cQtyId, extended, lang]);
+
+  // Determine which work area options are available based on path
+  const pathNeedsExtended = PATH_NEEDS_EXTENDED[cPathId];
+  const stdDisabled = pathNeedsExtended === true;
+  const extDisabled = pathNeedsExtended === false;
 
   return (
     <div>
@@ -238,10 +252,14 @@ export default function CO2LaserCalc({ lang = "pl" }) {
           <CalcCard stepNum="④" label={l.complexity}><Chips options={CUT_COMPLEXITY} value={cComplexId} onChange={setCComplexId} lang={lang} /></CalcCard>
           <CalcCard stepNum="⑤" label={l.workArea}>
             <div className="grid grid-cols-2 gap-3">
-              {[{ ext: false, lbl: l.stdArea, desc: l.stdAreaDesc }, { ext: true, lbl: l.extArea, desc: l.extAreaDesc }].map(a => (
-                <button key={String(a.ext)} onClick={() => setExtended(a.ext)}
-                  className={`p-3 rounded-xl border text-left transition-all ${extended === a.ext ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}>
-                  <div className={`text-sm font-bold mb-1 ${extended === a.ext ? "text-blue-300" : "text-white"}`}>{a.lbl}</div>
+              {[{ ext: false, lbl: l.stdArea, desc: l.stdAreaDesc, dis: stdDisabled }, { ext: true, lbl: l.extArea, desc: l.extAreaDesc, dis: extDisabled }].map(a => (
+                <button key={String(a.ext)} onClick={() => !a.dis && setExtended(a.ext)}
+                  disabled={a.dis}
+                  className={`p-3 rounded-xl border text-left transition-all ${
+                    a.dis ? "border-white/5 bg-white/[0.01] opacity-40 cursor-not-allowed" :
+                    extended === a.ext ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                  }`}>
+                  <div className={`text-sm font-bold mb-1 ${a.dis ? "text-neutral-600" : extended === a.ext ? "text-blue-300" : "text-white"}`}>{a.lbl}</div>
                   <div className="text-[11px] text-neutral-500">{a.desc}</div>
                 </button>
               ))}

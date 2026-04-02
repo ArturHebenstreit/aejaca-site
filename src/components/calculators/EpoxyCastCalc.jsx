@@ -6,7 +6,7 @@
 // Depreciation (UV lamp + tools): ~1.50 PLN/h
 // ============================================================
 import { useState, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
 
 const EPOXY_CONFIG = {
   POWER_KW: 0.15,
@@ -121,16 +121,16 @@ function calculate({ resinId, volumeId, moldId, inclusionId, finishId, quantityI
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     totalTimeH: qTier.qty > 1 ? batchTimeH : null,
     breakdown: [
-      { label: l.resinCost, value: `${resinCost.toFixed(2)} PLN (${vol.vol} ml)` },
-      { label: l.moldAmort, value: `${moldPerPc.toFixed(2)} PLN` },
-      { label: l.inclusionCost, value: `${inclCost.toFixed(2)} PLN` },
-      { label: l.finishCost, value: `${finishCost.toFixed(2)} PLN` },
+      { label: l.resinCost, value: `${fmtCost(resinCost, lang)} (${vol.vol} ml)` },
+      { label: l.moldAmort, value: fmtCost(moldPerPc, lang) },
+      { label: l.inclusionCost, value: fmtCost(inclCost, lang) },
+      { label: l.finishCost, value: fmtCost(finishCost, lang) },
       { label: l.workTime, value: `${(workTimeH * 60).toFixed(0)} min` },
       { label: l.cureTime, value: cureDisplay },
-      { label: l.energy, value: `${energyCost.toFixed(2)} PLN` },
-      { label: l.depreciation, value: `${deprCost.toFixed(2)} PLN` },
+      { label: l.energy, value: fmtCost(energyCost, lang) },
+      { label: l.depreciation, value: fmtCost(deprCost, lang) },
       { divider: true },
-      { label: l.baseCost, value: `${baseCost.toFixed(2)} PLN`, bold: true },
+      { label: l.baseCost, value: fmtCost(baseCost, lang), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
       ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${batchTimeH.toFixed(1)} h`, bold: true }] : []),
     ],
@@ -164,7 +164,7 @@ export default function EpoxyCastCalc({ lang = "pl" }) {
     <div>
       <div className="text-center text-[11px] text-neutral-600 mb-6">UV Resin · Epoxy 2K · Silicone Molds</div>
 
-      <CalcCard stepNum="\u2460" label={l.resinType}>
+      <CalcCard stepNum="①" label={l.resinType}>
         {RESINS.filter(r => !r.custom).map(r => (
           <button key={r.id} onClick={() => setResinId(r.id)}
             className={`w-full mb-2 p-3 rounded-xl border text-left transition-all ${resinId === r.id ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}>
@@ -181,23 +181,23 @@ export default function EpoxyCastCalc({ lang = "pl" }) {
         </button>
       </CalcCard>
 
-      <CalcCard stepNum="\u2461" label={l.volume}>
+      <CalcCard stepNum="②" label={l.volume}>
         <Chips options={VOLUMES} value={volumeId} onChange={setVolumeId} lang={lang} />
       </CalcCard>
 
-      <CalcCard stepNum="\u2462" label={l.mold}>
+      <CalcCard stepNum="③" label={l.mold}>
         <Chips options={MOLD_TYPES} value={moldId} onChange={setMoldId} lang={lang} />
       </CalcCard>
 
-      <CalcCard stepNum="\u2463" label={l.inclusions}>
+      <CalcCard stepNum="④" label={l.inclusions}>
         <Chips options={INCLUSIONS} value={inclusionId} onChange={setInclusionId} lang={lang} />
       </CalcCard>
 
-      <CalcCard stepNum="\u2464" label={l.finish}>
+      <CalcCard stepNum="⑤" label={l.finish}>
         <Chips options={FINISH_OPTIONS} value={finishId} onChange={setFinishId} lang={lang} />
       </CalcCard>
 
-      <CalcCard stepNum="\u2465" label={l.qty}>
+      <CalcCard stepNum="⑥" label={l.qty}>
         <Chips options={QUANTITY_TIERS} value={quantityId} onChange={setQuantityId} lang={lang} />
       </CalcCard>
 

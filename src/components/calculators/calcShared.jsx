@@ -28,6 +28,12 @@ export function t(obj, lang) {
   return obj[lang] || obj.en || obj.pl || "";
 }
 
+/** Format a PLN cost amount in the right currency for the given language */
+export function fmtCost(plnAmount, lang) {
+  if (lang === "pl") return `${plnAmount.toFixed(2)} PLN`;
+  return `${(plnAmount / CONFIG.EUR_PLN_RATE).toFixed(2)} EUR`;
+}
+
 /** Apply margin, discount, tolerance -> price range PLN + EUR */
 export function applyPricing(baseCost, margin, discountRate, qty) {
   const basePrice = baseCost * (1 + margin);
