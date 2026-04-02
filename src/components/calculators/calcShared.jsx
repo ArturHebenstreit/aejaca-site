@@ -20,39 +20,48 @@ export const QUANTITY_TIERS = [
   { id: "custom", label: { pl: "100+ / niestandardowe", en: "100+ / custom", de: "100+ / individuell" }, qty: null, discount: null },
 ];
 
-/** Apply margin, discount, tolerance → price range PLN + EUR */
+/** Lookup helper for multilingual labels */
+export function t(obj, lang) {
+  if (!obj) return "";
+  if (typeof obj === "string") return obj;
+  return obj[lang] || obj.en || obj.pl || "";
+}
+
+/** Apply margin, discount, tolerance -> price range PLN + EUR */
 export function applyPricing(baseCost, margin, discountRate, qty) {
   const basePrice = baseCost * (1 + margin);
   const discounted = basePrice * (1 - discountRate);
   const perMin = Math.round(discounted * (1 - CONFIG.TOLERANCE_LOW));
   const perMax = Math.round(discounted * (1 + CONFIG.TOLERANCE_HIGH));
   return {
-    perPcPLN: { min: perMin, max: perMax },
-    perPcEUR: { min: Math.round(perMin / CONFIG.EUR_PLN_RATE), max: Math.round(perMax / CONFIG.EUR_PLN_RATE) },
-    totalPLN: { min: perMin * qty, max: perMax * qty },
-    totalEUR: { min: Math.round((perMin * qty) / CONFIG.EUR_PLN_RATE), max: Math.round((perMax * qty) / CONFIG.EUR_PLN_RATE) },
+    perPcPLN: { min: Math.max(1, perMin), max: Math.max(1, perMax) },
+    perPcEUR: { min: Math.max(1, Math.round(perMin / CONFIG.EUR_PLN_RATE)), max: Math.max(1, Math.round(perMax / CONFIG.EUR_PLN_RATE)) },
+    totalPLN: { min: Math.max(1, perMin) * qty, max: Math.max(1, perMax) * qty },
+    totalEUR: { min: Math.round((Math.max(1, perMin) * qty) / CONFIG.EUR_PLN_RATE), max: Math.round((Math.max(1, perMax) * qty) / CONFIG.EUR_PLN_RATE) },
   };
 }
 
 // ============================================================
-// SHARED UI COMPONENTS (Tailwind, blue accent for sTuDiO)
+// SHARED UI COMPONENTS
 // ============================================================
 
-/** Chip selector grid */
 export function Chips({ options, value, onChange, lang = "pl" }) {
   return (
     <div className="flex flex-wrap gap-2">
       {options.map((opt) => {
         const active = value === opt.id;
         const isCustom = opt.custom;
+        const disabled = opt.disabled;
         const label = typeof opt.label === "object" ? (opt.label[lang] || opt.label.en) : opt.label;
         const sub = opt.sub;
         return (
           <button
             key={String(opt.id)}
-            onClick={() => onChange(opt.id)}
-            title={opt.note}
+            onClick={() => !disabled && onChange(opt.id)}
+            title={opt.note ? t(opt.note, lang) : undefined}
+            disabled={disabled}
             className={`px-3 py-2 rounded-lg border text-sm transition-all duration-200 ${
+              disabled ? "border-white/5 bg-white/[0.01] text-neutral-700 cursor-not-allowed line-through" :
               isCustom && !active ? "border-dashed border-white/10 text-neutral-500 italic text-xs" :
               isCustom && active ? "border-dashed border-blue-400 bg-blue-400/10 text-blue-300 font-medium" :
               active ? "border-blue-400 bg-blue-400/10 text-blue-300 font-medium" :
@@ -68,7 +77,6 @@ export function Chips({ options, value, onChange, lang = "pl" }) {
   );
 }
 
-/** Section card wrapper */
 export function CalcCard({ stepNum, label, children }) {
   return (
     <div className="rounded-xl border border-white/5 bg-white/[0.02] p-5 mb-4">
@@ -80,7 +88,13 @@ export function CalcCard({ stepNum, label, children }) {
   );
 }
 
-/** Price result display */
+/** Result header — translated */
+export function ResultHeader({ lang }) {
+  const titles = { pl: "Szacowany zakres cenowy", en: "Estimated price range", de: "Geschätzter Preisbereich" };
+  return <div className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-4">{t(titles, lang)}</div>;
+}
+
+/** Price result display — always PLN primary, EUR secondary */
 export function ResultDisplay({ result, lang = "pl" }) {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const labels = RESULT_LABELS[lang] || RESULT_LABELS.en;
@@ -106,15 +120,15 @@ export function ResultDisplay({ result, lang = "pl" }) {
       </div>
       <div className="flex items-baseline justify-center gap-3 mb-1">
         <span className="text-4xl font-extrabold tracking-tight">{r.perPcPLN.min}</span>
-        <span className="text-xl text-neutral-600">—</span>
+        <span className="text-xl text-neutral-600">&mdash;</span>
         <span className="text-4xl font-extrabold tracking-tight">{r.perPcPLN.max}</span>
         <span className="text-base font-semibold text-neutral-500">PLN</span>
       </div>
       <div className="text-center text-sm text-neutral-600 mb-5">
-        {r.perPcEUR.min} — {r.perPcEUR.max} EUR
+        {r.perPcEUR.min} &mdash; {r.perPcEUR.max} EUR
       </div>
 
-      {/* Order total */}
+      {/* Order total (qty > 1) */}
       {r.qty > 1 && (
         <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 mb-4">
           <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">
@@ -122,17 +136,23 @@ export function ResultDisplay({ result, lang = "pl" }) {
           </div>
           <div className="flex items-baseline justify-center gap-3">
             <span className="text-2xl font-extrabold text-blue-400">{r.totalPLN.min}</span>
-            <span className="text-neutral-600">—</span>
+            <span className="text-neutral-600">&mdash;</span>
             <span className="text-2xl font-extrabold text-blue-400">{r.totalPLN.max}</span>
             <span className="text-sm font-semibold text-neutral-500">PLN</span>
           </div>
           <div className="text-center text-xs text-neutral-600 mt-1">
-            {r.totalEUR.min} — {r.totalEUR.max} EUR
+            {r.totalEUR.min} &mdash; {r.totalEUR.max} EUR
           </div>
+          {/* Total production time */}
+          {r.totalTimeH != null && (
+            <div className="text-center text-xs text-neutral-500 mt-2 pt-2 border-t border-white/5">
+              {labels.totalTime}: ~{r.totalTimeH < 1 ? `${Math.round(r.totalTimeH * 60)} min` : `${r.totalTimeH.toFixed(1)} h`}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Breakdown toggle */}
+      {/* Breakdown */}
       {r.breakdown && (
         <>
           <button
@@ -151,7 +171,7 @@ export function ResultDisplay({ result, lang = "pl" }) {
                 </div>
               ))}
               <div className="mt-2 text-[11px] text-neutral-600 italic">
-                {labels.rangeNote.replace("{low}", CONFIG.TOLERANCE_LOW * 100).replace("{high}", CONFIG.TOLERANCE_HIGH * 100)}
+                {labels.rangeNote}
               </div>
             </div>
           )}
@@ -163,36 +183,30 @@ export function ResultDisplay({ result, lang = "pl" }) {
 
 const RESULT_LABELS = {
   pl: {
-    perPiece: "Cena za sztukę",
-    order: "Zamówienie",
-    pcs: "szt.",
-    showDetails: "Pokaż szczegóły kalkulacji",
-    hideDetails: "Ukryj szczegóły",
+    perPiece: "Cena za sztukę", order: "Zamówienie", pcs: "szt.",
+    showDetails: "Pokaż szczegóły kalkulacji", hideDetails: "Ukryj szczegóły",
     customQuote: "Wycena indywidualna",
     customDesc: "Wybrano parametry niestandardowe — skontaktuj się w celu dokładnej wyceny.",
     selectAll: "Wybierz wszystkie parametry",
-    rangeNote: "Zakres: -{low}% / +{high}% · Kurs {rate} PLN/EUR".replace("{rate}", CONFIG.EUR_PLN_RATE),
+    totalTime: "Szacowany czas produkcji",
+    rangeNote: `Zakres: -${CONFIG.TOLERANCE_LOW * 100}% / +${CONFIG.TOLERANCE_HIGH * 100}% · Kurs ${CONFIG.EUR_PLN_RATE} PLN/EUR`,
   },
   en: {
-    perPiece: "Price per piece",
-    order: "Order",
-    pcs: "pcs",
-    showDetails: "Show calculation details",
-    hideDetails: "Hide details",
+    perPiece: "Price per piece", order: "Order", pcs: "pcs",
+    showDetails: "Show calculation details", hideDetails: "Hide details",
     customQuote: "Individual quote",
     customDesc: "Custom parameters selected — contact us for an exact quote.",
     selectAll: "Select all parameters",
-    rangeNote: "Range: -{low}% / +{high}% · Rate {rate} PLN/EUR".replace("{rate}", CONFIG.EUR_PLN_RATE),
+    totalTime: "Estimated production time",
+    rangeNote: `Range: -${CONFIG.TOLERANCE_LOW * 100}% / +${CONFIG.TOLERANCE_HIGH * 100}% · Rate ${CONFIG.EUR_PLN_RATE} PLN/EUR`,
   },
   de: {
-    perPiece: "Preis pro Stück",
-    order: "Bestellung",
-    pcs: "Stk.",
-    showDetails: "Kalkulationsdetails anzeigen",
-    hideDetails: "Details ausblenden",
+    perPiece: "Preis pro Stück", order: "Bestellung", pcs: "Stk.",
+    showDetails: "Kalkulationsdetails anzeigen", hideDetails: "Details ausblenden",
     customQuote: "Individuelle Kalkulation",
     customDesc: "Individuelle Parameter gewählt — kontaktieren Sie uns für ein genaues Angebot.",
     selectAll: "Alle Parameter auswählen",
-    rangeNote: "Bereich: -{low}% / +{high}% · Kurs {rate} PLN/EUR".replace("{rate}", CONFIG.EUR_PLN_RATE),
+    totalTime: "Geschätzte Produktionszeit",
+    rangeNote: `Bereich: -${CONFIG.TOLERANCE_LOW * 100}% / +${CONFIG.TOLERANCE_HIGH * 100}% · Kurs ${CONFIG.EUR_PLN_RATE} PLN/EUR`,
   },
 };
