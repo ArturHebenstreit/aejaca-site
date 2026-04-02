@@ -2,7 +2,7 @@
 // 3D PRINT ESTIMATOR — Bambu Lab H2D  v1.1
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, Chips, CalcCard, ResultHeader, ResultDisplay } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
 
 const PRINT_CONFIG = {
   PRINTER_POWER_KW: 0.35,
@@ -134,6 +134,8 @@ function calculate(params, lang) {
   };
 }
 
+const TECH_LABEL = { pl: "Druk 3D", en: "3D Print", de: "3D-Druck" };
+
 export default function Print3DCalc({ lang = "pl" }) {
   const l = LBL[lang] || LBL.en;
   const [segment, setSegment] = useState("standard");
@@ -189,6 +191,15 @@ export default function Print3DCalc({ lang = "pl" }) {
         <ResultHeader lang={lang} />
         <ResultDisplay result={result} lang={lang} />
       </div>
+
+      <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={[
+        `${FILAMENTS[segment].label}: ${materialKey}`,
+        t(SIZES.find(s => s.id === sizeId)?.label, lang),
+        t(INFILL.find(i => i.id === infillId)?.label, lang),
+        t(COLORS.find(c => c.id === colorId)?.label, lang),
+        t(PRECISION.find(p => p.id === precisionId)?.label, lang),
+        t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
+      ].join(" | ")} />
     </div>
   );
 }

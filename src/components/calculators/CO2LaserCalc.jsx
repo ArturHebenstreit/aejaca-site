@@ -3,7 +3,7 @@
 // Work area: 600 × 288 mm (standard), extended with riser
 // ============================================================
 import { useState, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, Chips, CalcCard, ResultHeader, ResultDisplay } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
 
 const CO2_CONFIG = {
   POWER_KW: 0.80,
@@ -188,6 +188,8 @@ function calcCut({ matId, pathId, complexId, quantityId, extended }, lang) {
   };
 }
 
+const TECH_LABEL = { pl: "Laser CO2", en: "CO2 Laser", de: "CO2-Laser" };
+
 export default function CO2LaserCalc({ lang = "pl" }) {
   const l = LBL[lang] || LBL.en;
   const [mode, setMode] = useState("engrave");
@@ -253,6 +255,12 @@ export default function CO2LaserCalc({ lang = "pl" }) {
         <ResultHeader lang={lang} />
         <ResultDisplay result={result} lang={lang} />
       </div>
+
+      <InquiryForm lang={lang} techLabel={`${t(TECH_LABEL, lang)} — ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={
+        mode === "engrave"
+          ? [t(ENGRAVE_MATERIALS.find(m => m.id === eMatId)?.label, lang), t(ENGRAVE_AREAS.find(a => a.id === eAreaId)?.label, lang), t(ENGRAVE_DETAIL.find(d => d.id === eDetailId)?.label, lang), t(QUANTITY_TIERS.find(q => q.id === eQtyId)?.label, lang)].join(" | ")
+          : [t(CUT_MATERIALS.find(m => m.id === cMatId)?.label, lang), t(CUT_PATHS.find(p => p.id === cPathId)?.label, lang), t(CUT_COMPLEXITY.find(c => c.id === cComplexId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === cQtyId)?.label, lang)].join(" | ")
+      } />
     </div>
   );
 }
