@@ -191,6 +191,10 @@ export function ResultDisplay({ result, lang = "pl" }) {
 // INQUIRY FORM — shared across all calculators
 // ============================================================
 
+const MAX_DESC_LENGTH = 2000;
+const COOLDOWN_MS = 15000; // 15s between sends
+const MAX_FILE_SIZE_MB = 25;
+
 const INQUIRY_LABELS = {
   pl: {
     title: "Zapytanie o wycene",
@@ -201,6 +205,10 @@ const INQUIRY_LABELS = {
     send: "Wyslij zapytanie",
     sending: "Otwieram klienta pocztowego...",
     attachNote: "Plik zostanie wymieniony w wiadomosci — dolacz go do maila recznie",
+    cooldown: "Poczekaj chwile przed ponownym wyslaniem",
+    tooLong: "Opis jest za dlugi (maks. 2000 znakow)",
+    fileTooLarge: "Plik jest za duzy (maks. 25 MB)",
+    charCount: "znakow",
   },
   en: {
     title: "Quote request",
@@ -211,6 +219,10 @@ const INQUIRY_LABELS = {
     send: "Send inquiry",
     sending: "Opening email client...",
     attachNote: "File will be mentioned in the message — please attach it to the email manually",
+    cooldown: "Please wait before sending again",
+    tooLong: "Description is too long (max 2000 characters)",
+    fileTooLarge: "File is too large (max 25 MB)",
+    charCount: "chars",
   },
   de: {
     title: "Angebotsanfrage",
@@ -221,19 +233,53 @@ const INQUIRY_LABELS = {
     send: "Anfrage senden",
     sending: "E-Mail-Client wird geoeffnet...",
     attachNote: "Datei wird in der Nachricht erwaehnt — bitte haengen Sie sie manuell an die E-Mail an",
+    cooldown: "Bitte warten Sie vor dem erneuten Senden",
+    tooLong: "Beschreibung ist zu lang (max. 2000 Zeichen)",
+    fileTooLarge: "Datei ist zu gross (max. 25 MB)",
+    charCount: "Zeichen",
   },
 };
+
+/** Strip control characters and suspicious patterns from user input */
+function sanitizeText(text) {
+  return text
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "") // control chars
+    .replace(/<script[^>]*>.*?<\/script>/gi, "")          // script tags
+    .replace(/<[^>]+>/g, "")                               // all HTML tags
+    .slice(0, MAX_DESC_LENGTH);
+}
 
 export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
   const il = INQUIRY_LABELS[lang] || INQUIRY_LABELS.en;
   const [description, setDescription] = useState("");
   const [fileName, setFileName] = useState("");
   const [sent, setSent] = useState(false);
+  const [cooldown, setCooldown] = useState(false);
+  const [error, setError] = useState("");
+  const [honeypot, setHoneypot] = useState("");  // hidden bot trap
   const fileRef = useRef(null);
+  const lastSendRef = useRef(0);
+
+  function handleDescChange(e) {
+    const val = e.target.value;
+    if (val.length <= MAX_DESC_LENGTH) {
+      setDescription(val);
+      setError("");
+    } else {
+      setError(il.tooLong);
+    }
+  }
 
   function handleFileChange(e) {
     const file = e.target.files?.[0];
+    if (file && file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      setError(il.fileTooLarge);
+      setFileName("");
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
     setFileName(file ? file.name : "");
+    setError("");
   }
 
   function clearFile() {
@@ -242,17 +288,38 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
   }
 
   function handleSend() {
+    // Honeypot check — bots fill hidden fields, humans don't
+    if (honeypot) return;
+
+    // Rate limiting — cooldown between sends
+    const now = Date.now();
+    if (now - lastSendRef.current < COOLDOWN_MS) {
+      setError(il.cooldown);
+      return;
+    }
+
+    // Sanitize
+    const cleanDesc = sanitizeText(description);
+
     const subject = `#${il.title} - ${techLabel}`;
     let body = `${il.title}: ${techLabel}\n\n`;
     body += `--- ${paramsSummary} ---\n\n`;
-    if (description.trim()) body += `${description.trim()}\n\n`;
+    if (cleanDesc.trim()) body += `${cleanDesc.trim()}\n\n`;
     if (fileName) body += `[${il.attachNote}: ${fileName}]\n`;
 
     const mailtoUrl = `mailto:contact@aejaca.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = mailtoUrl;
+
+    lastSendRef.current = now;
     setSent(true);
+    setCooldown(true);
+    setError("");
     setTimeout(() => setSent(false), 3000);
+    setTimeout(() => setCooldown(false), COOLDOWN_MS);
   }
+
+  const descLength = description.length;
+  const descNearLimit = descLength > MAX_DESC_LENGTH * 0.85;
 
   return (
     <div className="mt-6 rounded-2xl border border-blue-400/20 bg-gradient-to-br from-blue-400/[0.03] to-transparent p-5">
@@ -260,16 +327,29 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
         {il.title} — {techLabel}
       </div>
 
+      {/* Honeypot — invisible to humans, bots auto-fill it */}
+      <div className="absolute opacity-0 h-0 w-0 overflow-hidden" aria-hidden="true" tabIndex={-1}>
+        <label htmlFor="inquiry_website">Website</label>
+        <input id="inquiry_website" type="text" name="website" autoComplete="off"
+          value={honeypot} onChange={(e) => setHoneypot(e.target.value)} tabIndex={-1} />
+      </div>
+
       {/* Description */}
       <div className="mb-3">
         <div className="text-[11px] text-neutral-500 mb-1.5">{il.desc}</div>
         <textarea
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={handleDescChange}
           placeholder={il.descPlaceholder}
           rows={3}
+          maxLength={MAX_DESC_LENGTH}
           className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-neutral-600 focus:border-blue-400/40 focus:outline-none resize-none transition-colors"
         />
+        {descNearLimit && (
+          <div className={`text-[10px] text-right mt-0.5 ${descLength >= MAX_DESC_LENGTH ? "text-red-400" : "text-neutral-600"}`}>
+            {descLength}/{MAX_DESC_LENGTH} {il.charCount}
+          </div>
+        )}
       </div>
 
       {/* File */}
@@ -297,17 +377,25 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
         {fileName && <div className="text-[10px] text-amber-400/70 mt-1">{il.attachNote}</div>}
       </div>
 
+      {/* Error message */}
+      {error && (
+        <div className="mb-3 text-[11px] text-red-400 text-center">{error}</div>
+      )}
+
       {/* Send */}
       <button
         onClick={handleSend}
+        disabled={cooldown}
         className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl border font-medium text-sm transition-all duration-300 ${
-          sent
-            ? "border-green-400/30 bg-green-400/10 text-green-400"
-            : "border-blue-400/30 bg-blue-400/10 text-blue-300 hover:bg-blue-400/20 hover:border-blue-400/40"
+          cooldown
+            ? "border-white/5 bg-white/[0.02] text-neutral-600 cursor-not-allowed"
+            : sent
+              ? "border-green-400/30 bg-green-400/10 text-green-400"
+              : "border-blue-400/30 bg-blue-400/10 text-blue-300 hover:bg-blue-400/20 hover:border-blue-400/40"
         }`}
       >
         <Send className="w-4 h-4" />
-        {sent ? il.sending : il.send}
+        {cooldown && !sent ? il.cooldown : sent ? il.sending : il.send}
       </button>
     </div>
   );

@@ -20,7 +20,7 @@ const LBL = {
     quality: "Jakość kamienia", cert: "Certyfikat", qty: "Nakład",
     metalCost: "Kruszec", laborCost: "Robocizna", gemCost: "Kamienie",
     platingCost: "Powłoka galwaniczna", settingCost: "Osadzanie kamieni",
-    baseCost: "Koszt bazowy / szt.", discount: "Rabat",
+    baseCost: "Koszt bazowy / szt.", margin: "Marża warsztatowa", afterMargin: "Po marży / szt.", discount: "Rabat",
     serviceLabel: "Usługi", repairLabel: "Naprawa", repairType: "Rodzaj naprawy",
     renoServices: "Usługi renowacyjne", jewType: "Rodzaj biżuterii", metalType: "Kruszec",
     serviceCost: "Koszt usług", materialCost: "Materiały", total: "Łącznie",
@@ -34,7 +34,7 @@ const LBL = {
     quality: "Stone quality", cert: "Certificate", qty: "Quantity",
     metalCost: "Metal", laborCost: "Labor", gemCost: "Gemstones",
     platingCost: "Galvanic plating", settingCost: "Stone setting",
-    baseCost: "Base cost / pc", discount: "Discount",
+    baseCost: "Base cost / pc", margin: "Workshop margin", afterMargin: "After margin / pc", discount: "Discount",
     serviceLabel: "Services", repairLabel: "Repair", repairType: "Repair type",
     renoServices: "Renovation services", jewType: "Jewelry type", metalType: "Metal",
     serviceCost: "Service cost", materialCost: "Materials", total: "Total",
@@ -48,7 +48,7 @@ const LBL = {
     quality: "Steinqualität", cert: "Zertifikat", qty: "Auflage",
     metalCost: "Metall", laborCost: "Arbeit", gemCost: "Edelsteine",
     platingCost: "Galvanische Beschichtung", settingCost: "Steinfassung",
-    baseCost: "Basiskosten / Stk.", discount: "Rabatt",
+    baseCost: "Basiskosten / Stk.", margin: "Werkstattmarge", afterMargin: "Nach Marge / Stk.", discount: "Rabatt",
     serviceLabel: "Dienstleistungen", repairLabel: "Reparatur", repairType: "Reparaturart",
     renoServices: "Renovierungsleistungen", jewType: "Schmuckart", metalType: "Metall",
     serviceCost: "Servicekosten", materialCost: "Materialien", total: "Gesamt",
@@ -121,6 +121,7 @@ function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
   const platingCost = plat.cost;
 
   const baseCost = metalCost + laborCost + gemCost + settingCost + platingCost;
+  const afterMargin = baseCost * (1 + MARGIN);
   const qty = qTier.qty;
   const pricing = applyJewelryPricing(baseCost, qTier.discount, qty);
 
@@ -133,7 +134,9 @@ function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
       ...(settingCost > 0 ? [{ label: l.settingCost, value: fmtCost(settingCost, lang) }] : []),
       ...(platingCost > 0 ? [{ label: l.platingCost, value: fmtCost(platingCost, lang) }] : []),
       { divider: true },
-      { label: l.baseCost, value: fmtCost(baseCost, lang), bold: true },
+      { label: l.baseCost, value: fmtCost(baseCost, lang) },
+      { label: `${l.margin} (+${MARGIN * 100}%)`, value: fmtCost(baseCost * MARGIN, lang) },
+      { label: l.afterMargin, value: fmtCost(afterMargin, lang), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
     ],
   };
@@ -157,10 +160,18 @@ function calcRenovation({ jewTypeId, metalTypeId, services, qtyId }, lang) {
       rows.push({ label: t(svc.label, lang), value: fmtCost(cost, lang) });
     }
   }
+  const afterMargin = totalService * (1 + MARGIN);
   const pricing = applyJewelryPricing(totalService, qTier.discount, qTier.qty);
   return {
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
-    breakdown: [...rows, { divider: true }, { label: l.total, value: fmtCost(totalService, lang), bold: true }],
+    breakdown: [
+      ...rows,
+      { divider: true },
+      { label: l.serviceCost, value: fmtCost(totalService, lang) },
+      { label: `${l.margin} (+${MARGIN * 100}%)`, value: fmtCost(totalService * MARGIN, lang) },
+      { label: l.afterMargin, value: fmtCost(afterMargin, lang), bold: true },
+      ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
+    ],
   };
 }
 
@@ -174,13 +185,17 @@ function calcRepair({ jewTypeId, metalTypeId, repairId, qtyId }, lang) {
 
   const metalMul = REPAIR_METAL_MUL[gMetal.metalKey] || 1.0;
   const cost = repair.basePLN * metalMul;
+  const afterMargin = cost * (1 + MARGIN);
   const pricing = applyJewelryPricing(cost, qTier.discount, qTier.qty);
   return {
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     breakdown: [
       { label: t(repair.label, lang), value: fmtCost(cost, lang) },
       { divider: true },
-      { label: l.total, value: fmtCost(cost, lang), bold: true },
+      { label: l.baseCost, value: fmtCost(cost, lang) },
+      { label: `${l.margin} (+${MARGIN * 100}%)`, value: fmtCost(cost * MARGIN, lang) },
+      { label: l.afterMargin, value: fmtCost(afterMargin, lang), bold: true },
+      ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
     ],
   };
 }
