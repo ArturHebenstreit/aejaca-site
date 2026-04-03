@@ -16,11 +16,14 @@ const TECHS = [
 
 const LABELS = {
   pl: { tag: "Kalkulatory Projektów", title: "Estymator Kosztów", tab3d: "Druk 3D", tabCO2: "Laser CO2", tabFiber: "Laser Fiber", tabEpoxy: "Odlewy żywiczne",
-    note: 'Kalkulacje są szacunkowe. Rzeczywista cena zależy od geometrii, złożoności i specyfikacji. Opcje "niestandardowe" wymagają indywidualnej wyceny.' },
+    note: 'Kalkulacje są szacunkowe. Rzeczywista cena zależy od geometrii, złożoności i specyfikacji. Opcje "niestandardowe" wymagają indywidualnej wyceny.',
+    vat: "Podane ceny są orientacyjne i nie zawierają stosownych podatków VAT czy ich odpowiedników, które należy doliczyć przy finalizacji zamówienia." },
   en: { tag: "Project Calculators", title: "Cost Estimator", tab3d: "3D Print", tabCO2: "CO2 Laser", tabFiber: "Fiber Laser", tabEpoxy: "Resin Casting",
-    note: "Estimates are approximate. Actual price depends on geometry, complexity, and specifications. Custom options require an individual quote." },
+    note: "Estimates are approximate. Actual price depends on geometry, complexity, and specifications. Custom options require an individual quote.",
+    vat: "Prices shown are indicative and do not include applicable VAT or equivalent taxes, which will be added upon order finalization." },
   de: { tag: "Projektkalkulatoren", title: "Kostenschätzer", tab3d: "3D-Druck", tabCO2: "CO2-Laser", tabFiber: "Faserlaser", tabEpoxy: "Harzguss",
-    note: 'Kalkulationen sind Schätzungen. Der tatsächliche Preis hängt von Geometrie, Komplexität und Spezifikationen ab. "Individuelle" Optionen erfordern ein separates Angebot.' },
+    note: 'Kalkulationen sind Schätzungen. Der tatsächliche Preis hängt von Geometrie, Komplexität und Spezifikationen ab. "Individuelle" Optionen erfordern ein separates Angebot.',
+    vat: "Die angegebenen Preise sind Richtwerte und enthalten keine Mehrwertsteuer oder gleichwertige Abgaben, die bei der Auftragsabwicklung hinzukommen." },
 };
 
 export default function StudioCalculator() {
@@ -63,8 +66,13 @@ export default function StudioCalculator() {
           {activeTech === "epoxy" && <EpoxyCastCalc lang={lang} />}
         </div>
 
+        {/* VAT disclaimer */}
+        <div className="mt-4 p-3 rounded-xl border border-blue-400/10 bg-blue-400/[0.02] text-[11px] text-blue-400/60 leading-relaxed text-center">
+          {l.vat}
+        </div>
+
         {/* Footer note */}
-        <div className="mt-6 p-4 rounded-xl border border-white/5 bg-white/[0.01] text-[11px] text-neutral-600 leading-relaxed">
+        <div className="mt-2 p-4 rounded-xl border border-white/5 bg-white/[0.01] text-[11px] text-neutral-600 leading-relaxed">
           <strong className="text-neutral-500">sTuDiO:</strong> {l.note}
         </div>
       </div>

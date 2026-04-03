@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Gem, Sparkles, Palette, Heart, Wand2, Crown } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
-import JewelryConfigurator from "../components/JewelryConfigurator.jsx";
+import JewelryEstimator from "../components/JewelryEstimator.jsx";
 import ProcessGallery from "../components/ProcessGallery.jsx";
 // import Portfolio from "../components/Portfolio.jsx"; // temporarily disabled
 import Testimonials from "../components/Testimonials.jsx";
@@ -72,8 +72,8 @@ export default function Jewelry() {
 
       <div className="gradient-divider" />
 
-      {/* Jewelry Configurator */}
-      <JewelryConfigurator />
+      {/* Jewelry Calculator */}
+      <JewelryEstimator />
 
       <div className="gradient-divider" />
 
