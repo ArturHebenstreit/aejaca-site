@@ -20,7 +20,7 @@ const LBL = {
     quality: "Jakość kamienia", cert: "Certyfikat", qty: "Nakład",
     metalCost: "Kruszec", laborCost: "Robocizna", gemCost: "Kamienie",
     platingCost: "Powłoka galwaniczna", settingCost: "Osadzanie kamieni",
-    baseCost: "Koszt bazowy / szt.", margin: "Marża warsztatowa", afterMargin: "Po marży / szt.", discount: "Rabat",
+    workshop: "Usługi warsztatowe", estCost: "Koszt szacunkowy / szt.", discount: "Rabat",
     serviceLabel: "Usługi", repairLabel: "Naprawa", repairType: "Rodzaj naprawy",
     renoServices: "Usługi renowacyjne", jewType: "Rodzaj biżuterii", metalType: "Kruszec",
     serviceCost: "Koszt usług", materialCost: "Materiały", total: "Łącznie",
@@ -34,7 +34,7 @@ const LBL = {
     quality: "Stone quality", cert: "Certificate", qty: "Quantity",
     metalCost: "Metal", laborCost: "Labor", gemCost: "Gemstones",
     platingCost: "Galvanic plating", settingCost: "Stone setting",
-    baseCost: "Base cost / pc", margin: "Workshop margin", afterMargin: "After margin / pc", discount: "Discount",
+    workshop: "Workshop services", estCost: "Estimated cost / pc", discount: "Discount",
     serviceLabel: "Services", repairLabel: "Repair", repairType: "Repair type",
     renoServices: "Renovation services", jewType: "Jewelry type", metalType: "Metal",
     serviceCost: "Service cost", materialCost: "Materials", total: "Total",
@@ -48,7 +48,7 @@ const LBL = {
     quality: "Steinqualität", cert: "Zertifikat", qty: "Auflage",
     metalCost: "Metall", laborCost: "Arbeit", gemCost: "Edelsteine",
     platingCost: "Galvanische Beschichtung", settingCost: "Steinfassung",
-    baseCost: "Basiskosten / Stk.", margin: "Werkstattmarge", afterMargin: "Nach Marge / Stk.", discount: "Rabatt",
+    workshop: "Werkstattleistungen", estCost: "Geschätzte Kosten / Stk.", discount: "Rabatt",
     serviceLabel: "Dienstleistungen", repairLabel: "Reparatur", repairType: "Reparaturart",
     renoServices: "Renovierungsleistungen", jewType: "Schmuckart", metalType: "Metall",
     serviceCost: "Servicekosten", materialCost: "Materialien", total: "Gesamt",
@@ -103,7 +103,7 @@ function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
     if (!stoneSize || !stoneCount || !cert || stoneSize.custom || stoneCount.custom) return { type: "custom" };
 
     let qualMul = 1.0;
-    if (gem.hasGrades && gem.id === "diamond") {
+    if (gem.hasGrades && (gem.id === "diamond" || gem.id === "lab_diamond")) {
       const cl = DIAMOND_CLARITY.find(c => c.id === clarityId);
       const co = DIAMOND_COLOR.find(c => c.id === colorId);
       if (cl && co) qualMul = cl.mul * co.mul;
@@ -121,7 +121,8 @@ function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
   const platingCost = plat.cost;
 
   const baseCost = metalCost + laborCost + gemCost + settingCost + platingCost;
-  const afterMargin = baseCost * (1 + MARGIN);
+  const workshopCost = baseCost * MARGIN;
+  const estCost = baseCost + workshopCost;
   const qty = qTier.qty;
   const pricing = applyJewelryPricing(baseCost, qTier.discount, qty);
 
@@ -133,10 +134,9 @@ function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
       ...(gemCost > 0 ? [{ label: l.gemCost, value: fmtCost(gemCost, lang) }] : []),
       ...(settingCost > 0 ? [{ label: l.settingCost, value: fmtCost(settingCost, lang) }] : []),
       ...(platingCost > 0 ? [{ label: l.platingCost, value: fmtCost(platingCost, lang) }] : []),
+      { label: l.workshop, value: fmtCost(workshopCost, lang) },
       { divider: true },
-      { label: l.baseCost, value: fmtCost(baseCost, lang) },
-      { label: `${l.margin} (+${MARGIN * 100}%)`, value: fmtCost(baseCost * MARGIN, lang) },
-      { label: l.afterMargin, value: fmtCost(afterMargin, lang), bold: true },
+      { label: l.estCost, value: fmtCost(estCost, lang), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
     ],
   };
@@ -160,16 +160,16 @@ function calcRenovation({ jewTypeId, metalTypeId, services, qtyId }, lang) {
       rows.push({ label: t(svc.label, lang), value: fmtCost(cost, lang) });
     }
   }
-  const afterMargin = totalService * (1 + REPAIR_MARGIN);
+  const workshopCost = totalService * REPAIR_MARGIN;
+  const estCost = totalService + workshopCost;
   const pricing = applyJewelryPricing(totalService, qTier.discount, qTier.qty, REPAIR_MARGIN);
   return {
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     breakdown: [
       ...rows,
+      { label: l.workshop, value: fmtCost(workshopCost, lang) },
       { divider: true },
-      { label: l.serviceCost, value: fmtCost(totalService, lang) },
-      { label: `${l.margin} (+${REPAIR_MARGIN * 100}%)`, value: fmtCost(totalService * REPAIR_MARGIN, lang) },
-      { label: l.afterMargin, value: fmtCost(afterMargin, lang), bold: true },
+      { label: l.estCost, value: fmtCost(estCost, lang), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
     ],
   };
@@ -185,16 +185,16 @@ function calcRepair({ jewTypeId, metalTypeId, repairId, qtyId }, lang) {
 
   const metalMul = REPAIR_METAL_MUL[gMetal.metalKey] || 1.0;
   const cost = repair.basePLN * metalMul;
-  const afterMargin = cost * (1 + REPAIR_MARGIN);
+  const workshopCost = cost * REPAIR_MARGIN;
+  const estCost = cost + workshopCost;
   const pricing = applyJewelryPricing(cost, qTier.discount, qTier.qty, REPAIR_MARGIN);
   return {
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     breakdown: [
       { label: t(repair.label, lang), value: fmtCost(cost, lang) },
+      { label: l.workshop, value: fmtCost(workshopCost, lang) },
       { divider: true },
-      { label: l.baseCost, value: fmtCost(cost, lang) },
-      { label: `${l.margin} (+${REPAIR_MARGIN * 100}%)`, value: fmtCost(cost * REPAIR_MARGIN, lang) },
-      { label: l.afterMargin, value: fmtCost(afterMargin, lang), bold: true },
+      { label: l.estCost, value: fmtCost(estCost, lang), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
     ],
   };
@@ -297,7 +297,22 @@ export default function JewelryCalc({ lang = "pl" }) {
           </CalcCard>
 
           <CalcCard stepNum={step()} label={l.weight}>
-            <Chips options={WEIGHTS} value={weightId} onChange={setWeightId} lang={lang} />
+            <div className="flex flex-wrap gap-3">
+              {WEIGHTS.map(w => {
+                const active = weightId === w.id;
+                const v = w.visual;
+                return (
+                  <button key={w.id} onClick={() => setWeightId(w.id)}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all min-w-[90px] ${
+                      w.custom && !active ? "border-dashed border-white/10 text-neutral-500 italic text-xs" :
+                      active ? "border-amber-400 bg-amber-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                    }`}>
+                    {v && <div className="rounded-full" style={{ width: v.ringS, height: v.ringS, borderWidth: v.ringW, borderStyle: "solid", borderColor: active ? "rgb(251 191 36 / 0.7)" : "rgb(255 255 255 / 0.25)" }} />}
+                    <span className={`text-xs ${active ? "text-amber-300 font-medium" : "text-neutral-400"}`}>{t(w.label, lang)}</span>
+                  </button>
+                );
+              })}
+            </div>
           </CalcCard>
 
           <CalcCard stepNum={step()} label={l.method}>
@@ -317,20 +332,52 @@ export default function JewelryCalc({ lang = "pl" }) {
           </CalcCard>
 
           <CalcCard stepNum={step()} label={l.gem}>
-            <Chips options={GEMSTONES} value={gemId} onChange={setGemId} lang={lang} />
+            <div className="flex flex-wrap gap-2">
+              {GEMSTONES.map(g => {
+                const active = gemId === g.id;
+                const label = t(g.label, lang);
+                return (
+                  <button key={g.id} onClick={() => setGemId(g.id)}
+                    className={`px-3 py-2 rounded-lg border text-sm transition-all duration-200 ${
+                      g.custom && !active ? "border-dashed border-white/10 text-neutral-500 italic text-xs" :
+                      g.custom && active ? "border-dashed border-amber-400 bg-amber-400/10 text-amber-300 font-medium" :
+                      active ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium" :
+                      "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20 hover:text-neutral-200"
+                    }`}>
+                    {label}
+                    {g.lab && <span className={`ml-1.5 text-[9px] px-1 py-0.5 rounded ${active ? "bg-amber-400/20 text-amber-300" : "bg-white/5 text-neutral-600"}`}>LAB</span>}
+                  </button>
+                );
+              })}
+            </div>
           </CalcCard>
 
           {showGemDetails && (
             <>
               <CalcCard stepNum={step()} label={l.stoneSize}>
-                <Chips options={STONE_SIZES} value={stoneSizeId} onChange={setStoneSizeId} lang={lang} />
+                <div className="flex flex-wrap gap-3">
+                  {STONE_SIZES.map(s => {
+                    const active = stoneSizeId === s.id;
+                    const v = s.visual;
+                    return (
+                      <button key={s.id} onClick={() => setStoneSizeId(s.id)}
+                        className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all min-w-[90px] ${
+                          s.custom && !active ? "border-dashed border-white/10 text-neutral-500 italic text-xs" :
+                          active ? "border-amber-400 bg-amber-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                        }`}>
+                        {v && <div className="rounded-full" style={{ width: v.gemD, height: v.gemD, background: active ? "rgb(251 191 36 / 0.6)" : "rgb(255 255 255 / 0.3)" }} />}
+                        <span className={`text-[11px] text-center leading-tight ${active ? "text-amber-300 font-medium" : "text-neutral-400"}`}>{t(s.label, lang)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </CalcCard>
 
               <CalcCard stepNum={step()} label={l.stoneCount}>
                 <Chips options={STONE_COUNTS} value={stoneCountId} onChange={setStoneCountId} lang={lang} />
               </CalcCard>
 
-              {selectedGem.id === "diamond" && (
+              {(selectedGem.id === "diamond" || selectedGem.id === "lab_diamond") && (
                 <>
                   <CalcCard stepNum={step()} label={l.clarity}>
                     <Chips options={DIAMOND_CLARITY} value={clarityId} onChange={setClarityId} lang={lang} />

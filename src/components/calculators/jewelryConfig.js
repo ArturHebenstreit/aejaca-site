@@ -74,10 +74,11 @@ export const METALS = [
 ];
 
 // --- WEIGHT RANGES ---
+// visual: ringW = border width for ring silhouette, ringS = size
 export const WEIGHTS = [
-  { id: "light",    label: { pl: "Lekka / delikatna", en: "Light / delicate", de: "Leicht / zart" }, mul: 0.6 },
-  { id: "standard", label: { pl: "Klasyczna", en: "Standard", de: "Standard" }, mul: 1.0 },
-  { id: "heavy",    label: { pl: "Masywna", en: "Heavy / bold", de: "Massiv / kräftig" }, mul: 1.8 },
+  { id: "light",    label: { pl: "Lekka / delikatna", en: "Light / delicate", de: "Leicht / zart" }, mul: 0.6, visual: { ringW: 1, ringS: 28 } },
+  { id: "standard", label: { pl: "Klasyczna", en: "Standard", de: "Standard" }, mul: 1.0, visual: { ringW: 3, ringS: 32 } },
+  { id: "heavy",    label: { pl: "Masywna", en: "Heavy / bold", de: "Massiv / kräftig" }, mul: 1.8, visual: { ringW: 6, ringS: 38 } },
   { id: "custom_w", label: { pl: "Niestandardowa", en: "Custom", de: "Individuell" }, mul: null, custom: true },
 ];
 
@@ -103,10 +104,19 @@ export const PLATING = [
 // basePLN = approximate wholesale PLN per carat for medium quality, ~0.5ct
 export const GEMSTONES = [
   { id: "none", label: { pl: "Bez kamienia", en: "No gemstone", de: "Ohne Stein" }, basePLN: 0, precious: false, hasGrades: false },
+  // --- Natural precious ---
   { id: "diamond",   label: { pl: "Diament", en: "Diamond", de: "Diamant" }, basePLN: 12800, precious: true, hasGrades: true },
   { id: "ruby",      label: { pl: "Rubin", en: "Ruby", de: "Rubin" }, basePLN: 6400, precious: true, hasGrades: true },
   { id: "sapphire",  label: { pl: "Szafir", en: "Sapphire", de: "Saphir" }, basePLN: 4300, precious: true, hasGrades: true },
   { id: "emerald",   label: { pl: "Szmaragd", en: "Emerald", de: "Smaragd" }, basePLN: 3400, precious: true, hasGrades: true },
+  // --- Lab-grown (synthetic) ---
+  { id: "lab_diamond",  label: { pl: "Diament lab-grown", en: "Lab-grown diamond", de: "Labor-Diamant" }, basePLN: 1500, precious: false, hasGrades: true, lab: true },
+  { id: "moissanite",   label: { pl: "Mosanit", en: "Moissanite", de: "Moissanit" }, basePLN: 400, precious: false, hasGrades: false, lab: true },
+  { id: "cz",           label: { pl: "Cyrkonia (CZ)", en: "Cubic zirconia (CZ)", de: "Zirkonia (CZ)" }, basePLN: 10, precious: false, hasGrades: false, lab: true },
+  { id: "lab_ruby",     label: { pl: "Rubin lab-grown", en: "Lab-grown ruby", de: "Labor-Rubin" }, basePLN: 800, precious: false, hasGrades: true, lab: true },
+  { id: "lab_sapphire", label: { pl: "Szafir lab-grown", en: "Lab-grown sapphire", de: "Labor-Saphir" }, basePLN: 600, precious: false, hasGrades: true, lab: true },
+  { id: "lab_emerald",  label: { pl: "Szmaragd lab-grown", en: "Lab-grown emerald", de: "Labor-Smaragd" }, basePLN: 500, precious: false, hasGrades: true, lab: true },
+  // --- Natural semi-precious ---
   { id: "tanzanite", label: { pl: "Tanzanit", en: "Tanzanite", de: "Tansanit" }, basePLN: 1700, precious: false, hasGrades: true },
   { id: "aquamarine",label: { pl: "Akwamaryn", en: "Aquamarine", de: "Aquamarin" }, basePLN: 430, precious: false, hasGrades: false },
   { id: "tourmaline",label: { pl: "Turmalin", en: "Tourmaline", de: "Turmalin" }, basePLN: 640, precious: false, hasGrades: false },
@@ -125,11 +135,12 @@ export const GEMSTONES = [
 ];
 
 // --- STONE SIZE categories ---
+// visual: gemD = diameter in px for stone size preview circle
 export const STONE_SIZES = [
-  { id: "accent", label: { pl: "Akcent (0.01-0.05 ct)", en: "Accent (0.01-0.05 ct)", de: "Akzent (0.01-0.05 ct)" }, ct: 0.03, priceMul: 0.15 },
-  { id: "small",  label: { pl: "Mały (0.1-0.3 ct)", en: "Small (0.1-0.3 ct)", de: "Klein (0.1-0.3 ct)" }, ct: 0.2, priceMul: 0.5 },
-  { id: "medium", label: { pl: "Średni (0.3-0.7 ct)", en: "Medium (0.3-0.7 ct)", de: "Mittel (0.3-0.7 ct)" }, ct: 0.5, priceMul: 1.0 },
-  { id: "large",  label: { pl: "Duży (0.7-1.5 ct)", en: "Large (0.7-1.5 ct)", de: "Groß (0.7-1.5 ct)" }, ct: 1.0, priceMul: 2.2 },
+  { id: "accent", label: { pl: "Akcent (0.01-0.05 ct)", en: "Accent (0.01-0.05 ct)", de: "Akzent (0.01-0.05 ct)" }, ct: 0.03, priceMul: 0.15, visual: { gemD: 4 } },
+  { id: "small",  label: { pl: "Mały (0.1-0.3 ct)", en: "Small (0.1-0.3 ct)", de: "Klein (0.1-0.3 ct)" }, ct: 0.2, priceMul: 0.5, visual: { gemD: 8 } },
+  { id: "medium", label: { pl: "Średni (0.3-0.7 ct)", en: "Medium (0.3-0.7 ct)", de: "Mittel (0.3-0.7 ct)" }, ct: 0.5, priceMul: 1.0, visual: { gemD: 14 } },
+  { id: "large",  label: { pl: "Duży (0.7-1.5 ct)", en: "Large (0.7-1.5 ct)", de: "Groß (0.7-1.5 ct)" }, ct: 1.0, priceMul: 2.2, visual: { gemD: 20 } },
   { id: "xl",     label: { pl: "XL (1.5+ ct)", en: "XL (1.5+ ct)", de: "XL (1.5+ ct)" }, ct: null, priceMul: null, custom: true },
 ];
 
