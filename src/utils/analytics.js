@@ -87,18 +87,17 @@ function flush() {
   queue = [];
 
   if (ENDPOINT) {
-    // Send to CF Worker — use Blob with application/json content type
-    // so the Worker can parse it reliably (sendBeacon with string sends text/plain)
+    // Send to CF Worker — use text/plain Blob to avoid CORS preflight
+    // (application/json triggers OPTIONS preflight which complicates credentials)
     const payload = JSON.stringify({ events: batch });
-    const blob = new Blob([payload], { type: "application/json" });
+    const blob = new Blob([payload], { type: "text/plain" });
     if (navigator.sendBeacon) {
       const ok = navigator.sendBeacon(ENDPOINT, blob);
       if (!ok) {
-        // sendBeacon failed (e.g. page already unloading), try fetch
-        fetch(ENDPOINT, { method: "POST", body: payload, headers: { "Content-Type": "application/json" }, keepalive: true }).catch(() => {});
+        fetch(ENDPOINT, { method: "POST", body: payload, headers: { "Content-Type": "text/plain" }, keepalive: true }).catch(() => {});
       }
     } else {
-      fetch(ENDPOINT, { method: "POST", body: payload, headers: { "Content-Type": "application/json" }, keepalive: true }).catch(() => {});
+      fetch(ENDPOINT, { method: "POST", body: payload, headers: { "Content-Type": "text/plain" }, keepalive: true }).catch(() => {});
     }
   } else {
     // Store locally for debugging / manual export

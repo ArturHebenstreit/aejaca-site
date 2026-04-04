@@ -25,6 +25,7 @@ export default {
       "Access-Control-Allow-Origin": corsOrigin,
       "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Credentials": "true",
     };
 
     if (request.method === "OPTIONS") {
