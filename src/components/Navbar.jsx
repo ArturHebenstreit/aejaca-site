@@ -49,21 +49,29 @@ export default function Navbar() {
   }, [pathname]);
 
   function scrollToSection(pagePath, sectionId) {
-    if (pathname === pagePath) {
-      // Already on the page — just scroll
-      const el = document.getElementById(sectionId);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      // Navigate then scroll after render
-      navigate(pagePath);
-      setTimeout(() => {
-        const el = document.getElementById(sectionId);
-        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 300);
-    }
     setOpenDropdown(null);
     setMenuOpen(false);
     setMobileExpanded(null);
+
+    if (pathname === pagePath) {
+      // Already on the page — small delay for mobile menu close animation
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    } else {
+      // Navigate then scroll after render — retry for slow mobile devices
+      navigate(pagePath);
+      const tryScroll = (attempts) => {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else if (attempts > 0) {
+          setTimeout(() => tryScroll(attempts - 1), 300);
+        }
+      };
+      setTimeout(() => tryScroll(5), 200);
+    }
   }
 
   function handleDropdownEnter(key) {
