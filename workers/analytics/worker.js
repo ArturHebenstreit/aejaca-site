@@ -13,9 +13,16 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // CORS headers
+    // CORS headers — accept both www and non-www origins
+    const origin = request.headers.get("Origin") || "";
+    const allowedOrigins = [
+      env.ALLOWED_ORIGIN || "https://www.aejaca.com",
+      "https://aejaca.com",
+      "https://www.aejaca.com",
+    ];
+    const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
     const corsHeaders = {
-      "Access-Control-Allow-Origin": env.ALLOWED_ORIGIN || "*",
+      "Access-Control-Allow-Origin": corsOrigin,
       "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
     };
@@ -66,7 +73,9 @@ export default {
 async function handleEvents(request, env, corsHeaders) {
   let body;
   try {
-    body = await request.json();
+    // sendBeacon sends as text/plain, so request.json() may fail
+    const text = await request.text();
+    body = JSON.parse(text);
   } catch {
     return json({ error: "Invalid JSON" }, 400, corsHeaders);
   }
