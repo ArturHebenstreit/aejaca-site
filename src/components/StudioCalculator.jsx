@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Printer, Zap, Layers, Box } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { trackCalc } from "../utils/analytics.js";
-import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import Print3DCalc from "./calculators/Print3DCalc.jsx";
 import CO2LaserCalc from "./calculators/CO2LaserCalc.jsx";
 import FiberLaserCalc from "./calculators/FiberLaserCalc.jsx";
@@ -30,12 +29,11 @@ const LABELS = {
 export default function StudioCalculator() {
   const [activeTech, setActiveTech] = useState("3dprint");
   const { lang } = useLanguage();
-  const sectionRef = useScrollReveal();
   const l = LABELS[lang] || LABELS.en;
 
   return (
     <section id="calculator" className="py-20 px-4 bg-neutral-950">
-      <div ref={sectionRef} className="reveal max-w-2xl mx-auto">
+      <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-3">{l.tag}</div>
           <h2 className="font-sans text-3xl md:text-4xl font-bold text-white tracking-tight">{l.title}</h2>
