@@ -9,9 +9,7 @@
 // in localStorage for later export / debugging.
 // ============================================================
 
-// Set your CF Worker URL here after deploying workers/analytics/
-// Example: "https://aejaca-analytics.YOUR_SUBDOMAIN.workers.dev/events"
-const ENDPOINT = import.meta.env.VITE_ANALYTICS_URL || window.__AEJACA_ANALYTICS_URL || null;
+const ENDPOINT = import.meta.env.VITE_ANALYTICS_URL || "https://aejaca-analytics.aejaca.workers.dev/events";
 const QUEUE_KEY = "aejaca_events";
 const FLUSH_INTERVAL = 30_000;  // flush every 30s
 const MAX_QUEUE = 200;
