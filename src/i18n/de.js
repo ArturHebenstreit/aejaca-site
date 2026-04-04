@@ -4,6 +4,29 @@ export default {
     jewelry: "AEJaCA Schmuck",
     studio: "AEJaCA sTuDiO",
     contact: "Kontakt",
+    jewelrySections: [
+      { label: "Über uns", id: "about" },
+      { label: "Leistungen", id: "services" },
+      { label: "Konfigurator", id: "configurator" },
+      { label: "Prozess", id: "process" },
+      { label: "Portfolio", id: "portfolio" },
+      { label: "Referenzen", id: "testimonials" },
+      { label: "FAQ", id: "faq" },
+      { label: "Tipps & Wissen", id: "tips" },
+      { label: "Shop", id: "shop" },
+    ],
+    studioSections: [
+      { label: "Über uns", id: "about" },
+      { label: "Technologien", id: "technologies" },
+      { label: "Kalkulator", id: "calculator" },
+      { label: "Portfolio", id: "portfolio" },
+      { label: "Leistungen", id: "services" },
+      { label: "Prozess", id: "process" },
+      { label: "Referenzen", id: "testimonials" },
+      { label: "FAQ", id: "faq" },
+      { label: "Tipps & Wissen", id: "tips" },
+      { label: "Shop", id: "shop" },
+    ],
   },
 
   home: {
@@ -61,10 +84,12 @@ export default {
     processTag: "Unser Ansatz",
     processTitle: "Der Kreativprozess",
     processSteps: [
-      { title: "Konzept", desc: "Ihre Vision, Symbolik und gewünschte Ästhetik verstehen" },
-      { title: "Entwurf", desc: "Handskizzen und 3D-CAD-Modellierung des Stücks" },
-      { title: "Prototyp", desc: "3D-gedrucktes Modell zur Überprüfung und Verfeinerung" },
-      { title: "Handarbeit", desc: "Fertiges Stück in Silber oder Gold mit Edelsteinen gefertigt" },
+      { title: "Beratung", num: "01", desc: "Wir beginnen mit einem Gespräch — Ihre Vision, Symbolik, Lebensstil und Budget. Jedes großartige Stück beginnt damit, die Geschichte zu verstehen, die es erzählen soll.", when: "Jedes Einzelanfertigungsprojekt" },
+      { title: "Design & CAD", num: "02", desc: "Handskizzen werden zu präzisen 3D-CAD-Modellen. Sie sehen realistische digitale Renderings aus jedem Winkel, und wir iterieren, bis das Design perfekt ist.", when: "Jedes Einzelanfertigungsprojekt" },
+      { title: "Wachsmodell / 3D-Druck", num: "03", desc: "Ein physischer Prototyp entsteht — entweder handgeschnitzt in Wachs oder 3D-gedruckt in Harz. Sie können ihn in die Hand nehmen, Proportionen prüfen und freigeben.", when: "Gegossene Stücke (Ringe, Anhänger, komplexe Formen)" },
+      { title: "Wachsausschmelzverfahren", num: "04", desc: "Das freigegebene Modell wird in eine Keramikschale eingebettet, erhitzt, um das Wachs auszubrennen, und geschmolzenes Silber oder Gold wird in den Hohlraum gegossen — das rohe Metallstück entsteht.", when: "Gegossene Stücke; handgefertigte Stücke überspringen diesen Schritt" },
+      { title: "Handarbeit & Finishing", num: "05", desc: "Das gegossene Stück wird gefeilt, gelötet, texturiert und von Hand geformt. Oberflächen werden mit Tripoli- und Rouge-Pasten poliert. Optionale Oxidation oder Patina verleiht Charakter.", when: "Jedes Stück — die Handschrift des Kunsthandwerkers" },
+      { title: "Steinfassung & Qualitätskontrolle", num: "06", desc: "Edelsteine werden von Hand in Krappen-, Zar­gen- oder Kanalfassung gesetzt — jeder Stein präzise platziert und gesichert. Die Endkontrolle unter Vergrößerung bestätigt Steinsicherheit, Metallintegrität und Oberflächenperfektion.", when: "Stücke mit Edelsteinen; reine Metallstücke gehen direkt zur Auslieferung" },
     ],
     valuesTitle: "Was AEJaCA Definiert",
     values: [
@@ -79,6 +104,145 @@ export default {
     ctaTitle: "Suchen Sie etwas Einzigartiges?",
     ctaText: "Erzählen Sie uns von Ihrem Traumstück — wir entwerfen und fertigen es speziell für Sie.",
     ctaBtn: "Individuelles Projekt Starten",
+
+    configurator: {
+      tag: "Gestalten Sie Ihr Traumstück",
+      title: "Schmuck-Konfigurator",
+      desc: "Sagen Sie uns, was Sie sich vorstellen — Schritt für Schritt. Wir erwecken Ihre Idee zum Leben.",
+      stepType: "Schmuckart",
+      stepMetal: "Metall",
+      stepStone: "Edelstein",
+      stepStyle: "Stil",
+      types: [
+        { id: "ring", label: "Ring", emoji: "💍" },
+        { id: "earrings", label: "Ohrringe", emoji: "✨" },
+        { id: "pendant", label: "Anhänger", emoji: "📿" },
+        { id: "bracelet", label: "Armband", emoji: "⭕" },
+        { id: "brooch", label: "Brosche", emoji: "🌸" },
+        { id: "other", label: "Sonstiges", emoji: "🎨" },
+      ],
+      metals: [
+        { id: "silver925", label: "Silber 925" },
+        { id: "gold14k", label: "Gold 14K" },
+        { id: "gold18k", label: "Gold 18K" },
+        { id: "mixed", label: "Mischmetalle" },
+      ],
+      stones: [
+        { id: "amethyst", label: "Amethyst" },
+        { id: "emerald", label: "Smaragd" },
+        { id: "sapphire", label: "Saphir" },
+        { id: "ruby", label: "Rubin" },
+        { id: "moonstone", label: "Mondstein" },
+        { id: "labradorite", label: "Labradorit" },
+        { id: "garnet", label: "Granat" },
+        { id: "none", label: "Ohne Stein" },
+      ],
+      styles: [
+        { id: "minimalist", label: "Minimalistisch" },
+        { id: "artistic", label: "Künstlerisch" },
+        { id: "mystical", label: "Mystisch" },
+        { id: "classic", label: "Klassisch" },
+        { id: "bohemian", label: "Bohemian" },
+      ],
+      back: "Zurück",
+      next: "Weiter",
+      summaryTitle: "Ihre Vision",
+      summaryType: "Art",
+      summaryMetal: "Metall",
+      summaryStone: "Stein",
+      summaryStyle: "Stil",
+      sendInquiry: "Anfrage Senden",
+      restart: "Neu Starten",
+    },
+
+    portfolio: {
+      tag: "Unsere Kreationen",
+      title: "Portfolio",
+      filterAll: "Alle",
+      filters: [
+        { id: "rings", label: "Ringe" },
+        { id: "earrings", label: "Ohrringe" },
+        { id: "pendants", label: "Anhänger" },
+        { id: "custom", label: "Individuell" },
+        { id: "symbolic", label: "Symbolisch" },
+      ],
+      items: [
+        { title: "Silberring mit Mondstein", category: "rings", desc: "Handgefertigter Ring aus 925er Silber mit natürlichem Mondstein-Cabochon" },
+        { title: "Amethyst-Tropfen-Ohrringe", category: "earrings", desc: "Zarte Silberohrringe mit facettierten Amethyst-Tropfen" },
+        { title: "Keltischer Knoten-Anhänger", category: "pendants", desc: "Aufwendiges keltisches Knotendesign in oxidiertem Sterlingsilber" },
+        { title: "Individueller Verlobungsring", category: "custom", desc: "Maßgeschneiderter Goldring mit Smaragd, gemeinsam mit der Kundin entworfen" },
+        { title: "Lebensbaum-Brosche", category: "symbolic", desc: "Symbolischer Lebensbaum aus Silber mit eingelassenen Granat-Akzenten" },
+        { title: "Statement-Ring mit Labradorit", category: "rings", desc: "Ausdrucksstarker Ring mit großem Labradorit und blauem Schimmer" },
+        { title: "Eheringe-Set", category: "custom", desc: "Passende Eheringe aus 14K Gold mit personalisierter Gravur" },
+        { title: "Runen-Amulett", category: "symbolic", desc: "Von Wikingern inspirierter Runen-Anhänger aus gealtertem Silber" },
+      ],
+    },
+
+
+    testimonials: {
+      tag: "Was Unsere Kunden Sagen",
+      title: "Geschichten Unserer Kunden",
+      items: [
+        { text: "Der Ring, den Artur gefertigt hat, ist genau das, wovon ich geträumt habe. Er hat die Symbolik perfekt verstanden — jetzt ist es mein wertvollstes Stück.", author: "Marta K.", role: "Individueller Verlobungsring" },
+        { text: "Ich wollte etwas Einzigartiges zum Geburtstag meiner Mutter. Der Anhänger mit Mondstein hat alle Erwartungen übertroffen. Reine Magie.", author: "Jakub W.", role: "Personalisiertes Geschenk" },
+        { text: "Als Sammlerin handwerklichen Schmucks kann ich sagen: AEJaCA-Stücke haben eine Seele, die Massenware einfach nicht hat.", author: "Elena R.", role: "Schmucksammlerin" },
+      ],
+    },
+
+    faq: {
+      tag: "Häufige Fragen",
+      title: "Häufig Gestellte Fragen",
+      items: [
+        { q: "Wie lange dauert ein individuelles Schmuckprojekt?", a: "Normalerweise 2–4 Wochen, je nach Komplexität. Nach Besprechung Ihres Designs geben wir einen genauen Zeitrahmen an." },
+        { q: "Kann ich meinen eigenen Edelstein mitbringen?", a: "Selbstverständlich! Wir arbeiten gerne mit Steinen, die Sie bereitstellen. Wir beraten zum besten Fassungsansatz." },
+        { q: "Bieten Sie Größenänderungen oder Modifikationen an?", a: "Ja. Wir können Ringe vergrößern/verkleinern und Designs modifizieren. Kontaktieren Sie uns mit Ihren Wünschen." },
+        { q: "Mit welchen Metallen arbeiten Sie?", a: "Hauptsächlich Sterlingsilber (925) und Gold (14K, 18K). Wir arbeiten auch mit Mischmetallen für einzigartige Designs." },
+        { q: "Wie werden die Preise bestimmt?", a: "Der Preis hängt von Metall, Edelsteinen, Komplexität und Arbeitsaufwand ab. Wir erstellen vor Beginn ein detailliertes Angebot." },
+        { q: "Versenden Sie international?", a: "Ja! Wir versenden weltweit per Sendungsverfolgung und versichert. Versandkosten variieren je nach Zielort." },
+      ],
+    },
+
+    tips: {
+      tag: "AEJaCA Empfiehlt",
+      title: "Schmuck-Tipps & Wissen",
+      categories: [
+        {
+          name: "Ringgröße",
+          tips: [
+            { q: "Wie messe ich meine Ringgröße zu Hause?", a: "Wickeln Sie einen dünnen Papierstreifen oder Faden um den Finger an der breitesten Stelle (meist am Knöchel). Markieren Sie die Überlappung, messen Sie die Länge in mm und teilen Sie durch 3,14 für den Innendurchmesser. Vergleichen Sie mit einer Größentabelle. Messen Sie abends, wenn die Finger etwas dicker sind." },
+            { q: "Was tun, wenn meine Größe zwischen zwei Nummern liegt?", a: "Immer aufrunden — einen Ring etwas kleiner zu machen (z.B. mit Kügelchen) ist einfacher als ihn zu dehnen. Bei breiten Ringen (6mm+) eine halbe Größe größer wählen, da sie enger sitzen." },
+            { q: "Beeinflusst die Temperatur die Passform?", a: "Ja! Finger schwellen bei Hitze an und schrumpfen bei Kälte. Messen Sie bei Raumtemperatur, idealerweise abends. Bei großen jahreszeitlichen Schwankungen eine etwas lockere Passform wählen." },
+            { q: "Können Ringe nach dem Kauf geändert werden?", a: "Silber- und Goldringe können meist 1–2 Größen verändert werden. Ringe mit Steinen rundherum (Eternity-Ringe) oder sehr dünne Ringe sind schwieriger zu ändern. Fragen Sie immer vorher Ihren Juwelier." },
+          ],
+        },
+        {
+          name: "Schmuckauswahl",
+          tips: [
+            { q: "Wie wähle ich die richtige Kettenlänge?", a: "35cm — Choker, liegt am Schlüsselbein. 45cm — am universellsten, knapp unter dem Schlüsselbein. 60cm — Matinée-Länge, ideal zum Schichten. Zum Ausschnitt passend: V-Ausschnitte harmonieren mit Anhängern, Rundhalsausschnitte mit kürzeren Ketten." },
+            { q: "Wie passe ich Schmuck zum Outfit an?", a: "Goldene Regel: Metall auf die Beschläge der Kleidung abstimmen (Reißverschlüsse, Knöpfe, Schnallen). Silber ergänzt kühle Töne (Blau, Grün, Grau), Gold warme Töne (Rot, Braun, Erdtöne). Formal: ein Metall. Casual: frei mischen." },
+            { q: "Wie wähle ich Edelsteine nach Bedeutung?", a: "Amethyst — Ruhe und Intuition. Smaragd — Liebe und Neuanfang. Saphir — Weisheit und Treue. Rubin — Leidenschaft und Mut. Mondstein — Neuanfänge. Labradorit — Transformation. Granat — Energie und Hingabe. Wählen Sie einen Stein, der zur Geschichte des Trägers passt." },
+            { q: "Wie baut man eine Schmuck-Capsule-Kollektion auf?", a: "Starten Sie mit 5 Essentials: schlichte Ohrstecker, eine feine Halskette, ein Statement-Ring, ein klassisches Armband und ein Signaturstück, das Ihre Persönlichkeit widerspiegelt. Bleiben Sie bei einer Metallfamilie (Silber oder Gold) für einfaches Kombinieren." },
+          ],
+        },
+        {
+          name: "Pflege & Wartung",
+          tips: [
+            { q: "Wie reinige ich Silberschmuck zu Hause?", a: "Warmes Wasser mit einem Tropfen mildem Spülmittel mischen. 5–10 Minuten einweichen, vorsichtig mit weicher Zahnbürste reinigen, abspülen und trocknen. Bei Anlaufen: Silberpoliertuch oder Paste aus Natron und Wasser. Aggressive Chemikalien vermeiden — sie können Steine beschädigen." },
+            { q: "Wie lagere ich Schmuck richtig?", a: "Jedes Stück separat in weichen Beuteln oder einem gefütterten Schmuckkästchen aufbewahren. Silber vor Luft und Feuchtigkeit schützen (Silikagel-Päckchen hinzufügen). Schmuck vor dem Schwimmen, Sport und Auftragen von Parfüm und Lotionen abnehmen." },
+            { q: "Wann sollte ich Schmuck abnehmen?", a: "Ringe und Armbänder abnehmen vor: Geschirrspülen, Reinigen mit Chemikalien, Duschen (Seifenrückstände machen Steine matt), Sport (Schweiß beschleunigt Anlaufen), Schwimmen (Chlor greift Metalle an) und Schlafen (verhindert Verbiegen und Bruch)." },
+            { q: "Wie verhindere ich das Anlaufen von Silber?", a: "Tragen Sie es oft — natürliche Hautöle verlangsamen das Anlaufen. In luftdichten Beuteln mit Anti-Anlauf-Streifen lagern. Eine dünne Schicht klaren Nagellack auf die Innenseite der Ringe auftragen. Gummibänder vermeiden (Schwefelgehalt beschleunigt Anlaufen)." },
+          ],
+        },
+        {
+          name: "Edelsteine",
+          tips: [
+            { q: "Wie erkenne ich einen natürlichen Edelstein?", a: "Natürliche Steine haben winzige Einschlüsse, Farbvariationen und kleine Unvollkommenheiten unter Vergrößerung. Perfekt gleichmäßige, makellose Steine zu niedrigen Preisen sind wahrscheinlich synthetisch. Bei teuren Steinen immer ein Echtheitszertifikat verlangen." },
+            { q: "Welche Edelsteine eignen sich am besten für den Alltag?", a: "Mohs-Härteskala: Diamanten (10), Saphire und Rubine (9) und Topas (8) sind hervorragend für tägliche Ringe. Smaragde (7,5) brauchen mehr Vorsicht. Opale (5,5–6,5) und Mondstein (6–6,5) eignen sich besser für Ohrringe und Anhänger als für Ringe." },
+            { q: "Wie pflege ich Schmuck mit Edelsteinen?", a: "Mit lauwarmem Seifenwasser und weicher Bürste reinigen. Niemals Ultraschallreiniger für Smaragde, Opale oder Perlen verwenden. Plötzliche Temperaturwechsel vermeiden (Thermoschock kann Steine spalten). Edelsteinstücke getrennt aufbewahren — härtere Steine zerkratzen weichere." },
+          ],
+        },
+      ],
+    },
   },
 
   studio: {
@@ -91,8 +255,8 @@ export default {
     techTag: "Unsere Fähigkeiten",
     techTitle: "Technologien",
     technologies: [
-      { title: "3D-Design (CAD)", desc: "Professionelle 3D-Modellierung für Produktdesign, Prototyping und fertigungsreife Dateien." },
-      { title: "3D-Druck", desc: "FDM- & Harz-3D-Druck für Rapid Prototyping, Funktionsteile und Kleinserienfertigung." },
+      { title: "3D-Design (CAD)", desc: "Professionelle 3D-Modellierung in Autodesk Fusion & Rhino — Produktdesign, Prototyping und fertigungsreife Dateien." },
+      { title: "3D-Druck", desc: "Filament- & Harz-3D-Druck für Rapid Prototyping, Funktionsteile und Kleinserienfertigung." },
       { title: "Faserlaser-Gravur", desc: "Hochpräzise Galvo-Lasersysteme zur Markierung von Metall, Schmuck, Werkzeugen und technischen Bauteilen." },
       { title: "CO2-Laserschneiden", desc: "Laserschneiden und -gravur auf Holz, Acryl, Glas, Leder und Kunststoffen." },
       { title: "Epoxidharzguss", desc: "UV- und Zweikomponenten-Harzsysteme für Dekorationsobjekte, Einkapselung und individuelle Formen." },
@@ -125,6 +289,166 @@ export default {
     ctaTitle: "Haben Sie ein Projekt im Sinn?",
     ctaText: "Vom Prototyp zur Produktion — lassen Sie uns Ihre Idee zum Leben erwecken.",
     ctaBtn: "Angebot Anfragen",
+
+    calculator: {
+      tag: "Projekt Kalkulieren",
+      title: "Projektkalkulator",
+      desc: "Verschaffen Sie sich einen Überblick über die Kosten Ihres Projekts. Wählen Sie die Optionen unten.",
+      stepTech: "Technologie",
+      stepSize: "Größe",
+      stepQty: "Menge",
+      stepMaterial: "Material",
+      techs: [
+        { id: "3dprint", label: "3D-Druck", emoji: "🖨️" },
+        { id: "fiber_laser", label: "Faserlaser", emoji: "⚡" },
+        { id: "co2_laser", label: "CO2-Laser", emoji: "🔆" },
+        { id: "resin", label: "Harzguss", emoji: "💎" },
+        { id: "nfc", label: "NFC / Smart Tag", emoji: "📡" },
+        { id: "custom", label: "Individuelles Projekt", emoji: "🔧" },
+      ],
+      sizes: [
+        { id: "small", label: "Klein (bis 5 cm)" },
+        { id: "medium", label: "Mittel (5–15 cm)" },
+        { id: "large", label: "Groß (15–30 cm)" },
+        { id: "xl", label: "Sehr groß (30+ cm)" },
+      ],
+      quantities: [
+        { id: "1", label: "1 Stück (Prototyp)" },
+        { id: "5", label: "2–5 Stück" },
+        { id: "20", label: "6–20 Stück" },
+        { id: "50", label: "20–50 Stück" },
+        { id: "100", label: "50+ Stück" },
+      ],
+      materials: {
+        "3dprint": [
+          { id: "pla", label: "PLA" },
+          { id: "petg", label: "PETG" },
+          { id: "abs", label: "ABS" },
+          { id: "resin_print", label: "Harz (SLA)" },
+        ],
+        fiber_laser: [
+          { id: "steel", label: "Stahl" },
+          { id: "aluminum", label: "Aluminium" },
+          { id: "brass", label: "Messing" },
+          { id: "silver_metal", label: "Silber" },
+        ],
+        co2_laser: [
+          { id: "wood", label: "Holz" },
+          { id: "acrylic", label: "Acryl" },
+          { id: "leather", label: "Leder" },
+          { id: "glass", label: "Glas" },
+        ],
+        resin: [
+          { id: "uv_resin", label: "UV-Harz" },
+          { id: "epoxy", label: "Epoxid (Zweikomponenten)" },
+        ],
+        nfc: [
+          { id: "card", label: "NFC-Karte" },
+          { id: "tag", label: "NFC-Tag/Aufkleber" },
+          { id: "keychain", label: "NFC-Schlüsselanhänger" },
+        ],
+        custom: [
+          { id: "mixed", label: "Gemischt / Individuell" },
+        ],
+      },
+      back: "Zurück",
+      next: "Weiter",
+      resultTitle: "Geschätzter Preisbereich",
+      resultFrom: "von",
+      resultTo: "bis",
+      resultNote: "Dies ist eine grobe Schätzung. Der Endpreis hängt von Designkomplexität und Spezifikationen ab.",
+      sendInquiry: "Genaues Angebot Anfragen",
+      restart: "Neu Starten",
+    },
+
+    portfolio: {
+      tag: "Unsere Arbeiten",
+      title: "Portfolio",
+      filterAll: "Alle",
+      filters: [
+        { id: "3dprint", label: "3D-Druck" },
+        { id: "laser", label: "Laser" },
+        { id: "resin", label: "Harz" },
+        { id: "nfc", label: "NFC" },
+        { id: "custom", label: "Individuell" },
+      ],
+      items: [
+        { title: "Individuelles Prototyp-Gehäuse", category: "3dprint", desc: "3D-gedrucktes funktionales Gehäuse für IoT-Gerät" },
+        { title: "Gravierte Stahl-Visitenkarten", category: "laser", desc: "Faserlaser-gravierte Metallkarten mit NFC-Chip" },
+        { title: "Kristallharz-Keycaps", category: "resin", desc: "Handgefertigte Keycaps mit eingebetteten Elementen" },
+        { title: "NFC Smart Ring", category: "nfc", desc: "Individueller NFC-Ring für kontaktlose Authentifizierung" },
+        { title: "Holz-Bilderrahmen", category: "laser", desc: "CO2-lasergeschnittener und -gravierter personalisierter Rahmen" },
+        { title: "Miniatur-Architekturmodell", category: "3dprint", desc: "Detailliertes 3D-gedrucktes Maßstabsmodell" },
+        { title: "Marken-Merchandise-Set", category: "custom", desc: "Komplettes Set: Schlüsselanhänger, Stifte, Karten" },
+        { title: "In Harz eingefasste Blumen", category: "resin", desc: "Konservierte Blumen in kristallklaren Harzblöcken" },
+      ],
+    },
+
+    testimonials: {
+      tag: "Was Unsere Kunden Sagen",
+      title: "Kundenfeedback",
+      items: [
+        { text: "Der Prototyp war in 48 Stunden fertig. Perfekte Qualität, genau passend zum CAD-Modell. AEJaCA sTuDiO liefert.", author: "Tomasz M.", role: "Produktdesigner" },
+        { text: "Wir bestellten 50 individuelle NFC-Visitenkarten. Die Faserlaser-Gravurqualität ist hervorragend — jedes Detail messerscharf.", author: "Anna S.", role: "Startup-Gründerin" },
+        { text: "Von einer groben Skizze zum fertigen Produkt in einer Woche. Das Team verstand genau, was ich für mein Projekt brauchte.", author: "David L.", role: "Architekt" },
+      ],
+    },
+
+    faq: {
+      tag: "Häufige Fragen",
+      title: "Häufig Gestellte Fragen",
+      items: [
+        { q: "Gibt es eine Mindestbestellmenge?", a: "Wir nehmen Einzelprototyp-Aufträge ebenso wie Serienproduktion an. Keine Mindestmenge erforderlich." },
+        { q: "Wie lange dauert ein typisches Projekt?", a: "Einfache Projekte: 1–3 Tage. Komplexe Prototypen: 1–2 Wochen. Serienproduktion je nach Menge." },
+        { q: "Können Sie mit meinen eigenen 3D-Dateien arbeiten?", a: "Ja! Wir akzeptieren STL, STEP, OBJ und die meisten gängigen CAD-Formate. Wir können auch von Grund auf designen." },
+        { q: "Mit welchen Materialien arbeiten Sie?", a: "PLA, PETG, ABS, Harz für 3D-Druck. Metalle, Holz, Acryl, Glas, Leder für Laserarbeiten. UV- und Epoxidharze für Guss." },
+        { q: "Bieten Sie Designdienstleistungen an?", a: "Selbstverständlich. Unser Team bietet vollständige CAD-Design-Services — vom Konzept bis zu fertigungsreifen Dateien." },
+        { q: "Wie werden Preise berechnet?", a: "Basierend auf Technologie, Material, Größe, Komplexität und Menge. Wir erstellen immer vorab ein detailliertes Angebot." },
+      ],
+    },
+
+    tips: {
+      tag: "sTuDiO Empfiehlt",
+      title: "Maker-Tipps & Wissen",
+      categories: [
+        {
+          name: "3D-Druck & Filamente",
+          tips: [
+            { q: "Welches Filament soll ich für mein Projekt wählen?", a: "PLA — am einfachsten zu drucken, ideal für Prototypen, Deko und Modelle. Biologisch abbaubar, aber nicht hitzebeständig (erweicht bei ~60°C). PETG — stärker, leicht flexibel, lebensmittelecht, gute chemische Beständigkeit. Ideal für Funktionsteile und Gehäuse. ABS — hitzebeständig (~100°C), robust, benötigt aber geschlossenen Drucker (verzieht sich bei Zugluft). Ideal für Autoteile und Werkzeuge." },
+            { q: "Wann Harz (SLA) statt Filamentdruck?", a: "Harz gewinnt bei: feinen Details (Miniaturen, Schmuckmodelle, Dental), glatter Oberfläche und Maßgenauigkeit. Filamentdruck gewinnt bei: großen Teilen, mechanischer Festigkeit, schnellerem Druck und niedrigeren Materialkosten. Faustregel: Wenn Optik und Details wichtiger sind als Stärke — Harz wählen." },
+            { q: "Welche Schichthöhe verwenden?", a: "0,1mm — höchstes Detail, langsamster Druck. Für sichtbare Dekostücke. 0,2mm — beste Balance aus Geschwindigkeit und Qualität, für die meisten Projekte. 0,3mm — schnelle Drucke für Prototypen und Funktionsteile. Für SLA-Harz: 0,025–0,05mm ergibt unglaubliche Details." },
+            { q: "Wie verbessere ich die Druckfestigkeit?", a: "Wandstärke erhöhen (3–4 Wände für tragende Teile). 40–60% Füllung für lasttragende Teile (Grid- oder Gyroid-Muster). Mit breiterer Linie drucken (0,5mm-Düse). Für maximale Festigkeit: Teil so ausrichten, dass Schichten senkrecht zur Kraftrichtung stehen — 3D-Drucke sind zwischen den Schichten am schwächsten." },
+            { q: "Was beim 3D-Druck vermeiden?", a: "Nie ohne Stützen bei Überhängen >45° drucken. Erste Schichthaftung nicht ignorieren (Klebestift oder PEI-Platte verwenden). Filament nie feucht lagern (besonders Nylon und PETG — luftdichte Beutel mit Trockenmittel). PLA nie für Gegenstände in heißen Autos verwenden." },
+          ],
+        },
+        {
+          name: "Lasergravur",
+          tips: [
+            { q: "Welcher Lasertyp für welches Material?", a: "Faserlaser (1064nm) — Metalle (Stahl, Aluminium, Messing, Silber, Gold), harte Kunststoffe und eloxierte Oberflächen. CO2-Laser (10600nm) — Holz, Acryl, Glas, Leder, Papier, Stoff und Gummi. Diodenlaser (445nm) — Budget-Option nur für Holz und dunkle Materialien. CO2 nie auf blankem Metall verwenden — der Strahl reflektiert." },
+            { q: "Beste Gravurqualität auf Metall erzielen?", a: "Faserlaser mit Galvo-Scankopf für Geschwindigkeit und Präzision. Für dunkle Markierungen auf Edelstahl: niedrige Leistung / hohe Geschwindigkeit (Oxidmarkierung). Für Tiefgravur: mehrere Durchgänge bei höherer Leistung. Oberfläche immer mit Isopropanol reinigen. Markierspray (CerMark) auf Metallen verwenden, die nicht gut nativ markieren." },
+            { q: "Kann man Glas ohne Bruch lasergravieren?", a: "Ja, aber mit CO2-Laser und speziellen Einstellungen: niedrige Leistung, moderate Geschwindigkeit, dünnes nasses Papiertuch auf die Oberfläche (verhindert Mikrorisse durch Hitzeschock). Gehärtetes Glas ist riskant — innere Spannungen können es zerspringen lassen. Normales Kalk-Natron-Glas und Borosilikat funktionieren am besten." },
+            { q: "Welche Materialien NIEMALS laserschneiden oder -gravieren?", a: "PVC und Vinyl — setzt giftiges Chlorgas frei. Polycarbonat — verfärbt sich, brennt schlecht, setzt Bisphenol A frei. ABS — schmilzt statt sauber zu schneiden, giftige Dämpfe. Alle chlor- oder fluorhaltigen Materialien. Glasfaser — schlechte Ergebnisse plus gefährliche Partikel. Immer Sicherheitsdatenblätter prüfen." },
+          ],
+        },
+        {
+          name: "Harzguss",
+          tips: [
+            { q: "Welches Harz für welche Anwendung?", a: "UV-Harz — schnelle Aushärtung (Minuten), ideal für kleine Teile, Schmuckfassungen, dünne Schichten und Beschichtungen. Begrenzt auf ~3mm Tiefe pro Schicht. Epoxidharz (Zweikomponenten) — für größere Güsse, River Tables, Einbettung von Objekten (Blumen, Fotos). Härtet in 24–72h. Polyurethanharz — am besten für starre Funktionsteile und Prototypformen." },
+            { q: "Wie erstellt man Silikonformen für Harzguss?", a: "Platinhärtendes Silikon (glatt, lebensmittelecht) für detaillierte Formen verwenden. Kasten um das Mastermodell bauen, Trennmittel sprühen, Silikon gießen und 24h aushärten lassen. Für komplexe Formen: zweiteilige Form mit Trennlinie. Shore-Härte 20A für flexible Formen (einfaches Entformen), 40A für starre (bessere Maßgenauigkeit)." },
+            { q: "Wie vermeide ich Blasen im Harz?", a: "Langsam und bewusst mischen — schnelles Rühren erzeugt Mikroblasen. Heißluftpistole oder Flamme leicht über die Oberfläche nach dem Gießen führen (keinen Föhn — zu viel Luft). Für kritische Teile: Vakuumkammer zum Entgasen. In warmem Raum arbeiten (21–25°C) — kaltes Harz ist dickflüssiger und fängt mehr Luft ein." },
+            { q: "Was beim Arbeiten mit Harz vermeiden?", a: "Nie Schutzausrüstung weglassen — Nitrilhandschuhe (nicht Latex!), Schutzbrille, Belüftung. Nicht mehr als 5% Farbstoff bezogen auf Volumen. Keine dicken UV-Harzschichten (härtet über 3mm nicht richtig). Nie Marken/Typen von Harz und Härter mischen. Nicht unter 18°C arbeiten — Aushärtung bleibt unvollständig, das Stück bleibt klebrig." },
+          ],
+        },
+        {
+          name: "Materialien & Best Practices",
+          tips: [
+            { q: "Wie wähle ich die richtige Fertigungsmethode?", a: "1 Teil schnell benötigt? → 3D-Druck. Dauerhafte Metallmarkierung? → Faserlaser. Präzisionsschnitt flacher Materialien? → CO2-Laser. Transparente oder dekorative Objekte? → Harzguss. Kleine Serie identischer Teile? → 3D-Druck + Silikonform + Harzguss-Kombi." },
+            { q: "Wie bereite ich Dateien für die Produktion vor?", a: "Für 3D-Druck: STL- oder 3MF-Format, wasserdichtes Mesh (keine Löcher), Wandstärke mindestens 1,2mm für Filament / 0,5mm für SLA. Für Laser: Vektordateien (SVG, DXF, AI), Text in Pfade umwandeln, Schnittlinien von Gravurfüllungen trennen. Für Harzformen: 0,5–1% Schrumpfung im Mastermodell einrechnen." },
+            { q: "Kosteneffektivster Ansatz für Kleinserien?", a: "Für 5–50 identische Teile: 3D-Druck eines Masters → Silikonform erstellen → Kopien in Harz gießen. Jede Harzkopie kostet einen Bruchteil eines 3D-Drucks, die Form hält 20–50 Güsse. Für Flachteile: Laserschnitt aus Plattenmaterial (Acryl, Holz) — schnell und wiederholbar. Für Markenartikel: Lasergravierbatch in einem Setup." },
+          ],
+        },
+      ],
+    },
   },
 
   contact: {

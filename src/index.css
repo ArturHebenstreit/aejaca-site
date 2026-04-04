@@ -23,6 +23,11 @@ body {
   @apply bg-neutral-950 text-white;
 }
 
+/* Offset scroll targets for fixed navbar */
+[id] {
+  scroll-margin-top: 5rem;
+}
+
 /* ─── Skip to content (accessibility) ─── */
 .skip-to-content {
   position: absolute;

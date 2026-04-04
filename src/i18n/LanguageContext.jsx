@@ -1,7 +1,8 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import en from "./en.js";
 import pl from "./pl.js";
 import de from "./de.js";
+import { trackLangChange } from "../utils/analytics.js";
 
 const translations = { en, pl, de };
 
@@ -25,7 +26,16 @@ function detectLanguage() {
 const LanguageContext = createContext();
 
 export function LanguageProvider({ children }) {
-  const [lang, setLang] = useState(detectLanguage);
+  const [lang, setLangRaw] = useState(detectLanguage);
+  const prevLang = useRef(lang);
+
+  const setLang = useCallback((newLang) => {
+    if (newLang !== prevLang.current) {
+      trackLangChange(prevLang.current, newLang);
+      prevLang.current = newLang;
+    }
+    setLangRaw(newLang);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, lang);

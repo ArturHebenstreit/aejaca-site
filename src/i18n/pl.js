@@ -4,6 +4,29 @@ export default {
     jewelry: "AEJaCA Biżuteria",
     studio: "AEJaCA sTuDiO",
     contact: "Kontakt",
+    jewelrySections: [
+      { label: "O nas", id: "about" },
+      { label: "Usługi", id: "services" },
+      { label: "Konfigurator", id: "configurator" },
+      { label: "Proces", id: "process" },
+      { label: "Portfolio", id: "portfolio" },
+      { label: "Opinie", id: "testimonials" },
+      { label: "FAQ", id: "faq" },
+      { label: "Porady", id: "tips" },
+      { label: "Sklep", id: "shop" },
+    ],
+    studioSections: [
+      { label: "O nas", id: "about" },
+      { label: "Technologie", id: "technologies" },
+      { label: "Kalkulator", id: "calculator" },
+      { label: "Portfolio", id: "portfolio" },
+      { label: "Usługi", id: "services" },
+      { label: "Proces", id: "process" },
+      { label: "Opinie", id: "testimonials" },
+      { label: "FAQ", id: "faq" },
+      { label: "Porady", id: "tips" },
+      { label: "Sklep", id: "shop" },
+    ],
   },
 
   home: {
@@ -58,13 +81,15 @@ export default {
       { title: "Projektowanie 3D i Prototypowanie", desc: "Łączenie tradycyjnego rzemiosła z nowoczesnym modelowaniem 3D do prototypowania i doskonalenia każdego elementu." },
       { title: "Obiekty Symboliczne", desc: "Artystyczne obiekty i symboliczne kreacje wykraczające poza biżuterię — ponadczasowe pamiątki i dzieła sztuki." },
     ],
-    processTag: "Nasze Podejście",
-    processTitle: "Proces Twórczy",
+    processTag: "Od Pomysłu do Arcydzieła",
+    processTitle: "Jak Powstaje Twoja Biżuteria",
     processSteps: [
-      { title: "Koncepcja", desc: "Zrozumienie Twojej wizji, symboliki i pożądanej estetyki" },
-      { title: "Projektowanie", desc: "Ręczne szkice i modelowanie 3D CAD elementu" },
-      { title: "Prototyp", desc: "Model drukowany 3D do przeglądu i udoskonalenia" },
-      { title: "Wykonanie", desc: "Gotowy element wykonany ze srebra lub złota z kamieniami" },
+      { title: "Konsultacja", num: "01", desc: "Zaczynamy od rozmowy — Twoja wizja, symbolika, styl życia i budżet. Każde wielkie dzieło zaczyna się od zrozumienia historii, którą ma opowiadać.", when: "Każdy projekt na zamówienie" },
+      { title: "Projekt & CAD", num: "02", desc: "Ręczne szkice przekształcają się w precyzyjne modele 3D CAD. Widzisz realistyczne renderingi z każdego kąta, a my iterujemy, aż projekt będzie idealny.", when: "Każdy projekt na zamówienie" },
+      { title: "Model woskowy / Wydruk 3D", num: "03", desc: "Powstaje fizyczny prototyp — rzeźbiony ręcznie w wosku lub drukowany 3D w żywicy. Możesz go trzymać, sprawdzić proporcje i zatwierdzić przed dalszą realizacją.", when: "Elementy odlewane (pierścionki, wisiorki, złożone formy)" },
+      { title: "Odlew metodą traconego wosku", num: "04", desc: "Zatwierdzony model jest zamykany w ceramicznej formie, podgrzewany, by wypalić wosk, a następnie płynne srebro lub złoto jest wlewane do powstałej wnęki — tworząc surowy metalowy element.", when: "Elementy odlewane; ręcznie kute pomijają ten krok" },
+      { title: "Ręczna obróbka & Wykończenie", num: "05", desc: "Odlany element jest piłowany, lutowany, teksturowany i kształtowany ręcznie. Powierzchnie polerowane pastami tripoli i rouge. Opcjonalna oksydacja lub patyna dodaje charakteru.", when: "Każdy element — autorski dotyk rzemieślnika" },
+      { title: "Osadzanie kamieni & Kontrola jakości", num: "06", desc: "Kamienie szlachetne są osadzane ręcznie techniką krapnową, opaskową lub kanałową — każdy kamień precyzyjnie umieszczony i zabezpieczony. Końcowa inspekcja pod lupą potwierdza bezpieczeństwo kamieni, integralność metalu i perfekcję powierzchni.", when: "Elementy z kamieniami; gładkie metalowe przechodzą do dostawy" },
     ],
     valuesTitle: "Co Definiuje AEJaCA",
     values: [
@@ -79,6 +104,149 @@ export default {
     ctaTitle: "Szukasz czegoś wyjątkowego?",
     ctaText: "Opowiedz nam o swoim wymarzonym elemencie — zaprojektujemy go i stworzymy specjalnie dla Ciebie.",
     ctaBtn: "Rozpocznij Projekt Na Zamówienie",
+
+    // Konfigurator
+    configurator: {
+      tag: "Zaprojektuj Wymarzoną Biżuterię",
+      title: "Konfigurator Biżuterii",
+      desc: "Powiedz nam, co sobie wyobrażasz — krok po kroku. Ożywimy Twój pomysł.",
+      stepType: "Typ biżuterii",
+      stepMetal: "Metal",
+      stepStone: "Kamień szlachetny",
+      stepStyle: "Styl",
+      types: [
+        { id: "ring", label: "Pierścionek", emoji: "💍" },
+        { id: "earrings", label: "Kolczyki", emoji: "✨" },
+        { id: "pendant", label: "Wisiorek", emoji: "📿" },
+        { id: "bracelet", label: "Bransoletka", emoji: "⭕" },
+        { id: "brooch", label: "Broszka", emoji: "🌸" },
+        { id: "other", label: "Inne", emoji: "🎨" },
+      ],
+      metals: [
+        { id: "silver925", label: "Srebro 925" },
+        { id: "gold14k", label: "Złoto 14K" },
+        { id: "gold18k", label: "Złoto 18K" },
+        { id: "mixed", label: "Mieszane metale" },
+      ],
+      stones: [
+        { id: "amethyst", label: "Ametyst" },
+        { id: "emerald", label: "Szmaragd" },
+        { id: "sapphire", label: "Szafir" },
+        { id: "ruby", label: "Rubin" },
+        { id: "moonstone", label: "Kamień księżycowy" },
+        { id: "labradorite", label: "Labradoryt" },
+        { id: "garnet", label: "Granat" },
+        { id: "none", label: "Bez kamienia" },
+      ],
+      styles: [
+        { id: "minimalist", label: "Minimalistyczny" },
+        { id: "artistic", label: "Artystyczny" },
+        { id: "mystical", label: "Mistyczny" },
+        { id: "classic", label: "Klasyczny" },
+        { id: "bohemian", label: "Boho" },
+      ],
+      back: "Wstecz",
+      next: "Dalej",
+      summaryTitle: "Twoja Wizja",
+      summaryType: "Typ",
+      summaryMetal: "Metal",
+      summaryStone: "Kamień",
+      summaryStyle: "Styl",
+      sendInquiry: "Wyślij Zapytanie",
+      restart: "Zacznij od nowa",
+    },
+
+    // Portfolio
+    portfolio: {
+      tag: "Nasze Kreacje",
+      title: "Portfolio",
+      filterAll: "Wszystkie",
+      filters: [
+        { id: "rings", label: "Pierścionki" },
+        { id: "earrings", label: "Kolczyki" },
+        { id: "pendants", label: "Wisiorki" },
+        { id: "custom", label: "Na zamówienie" },
+        { id: "symbolic", label: "Symboliczne" },
+      ],
+      items: [
+        { title: "Srebrny pierścionek z kamieniem księżycowym", category: "rings", desc: "Ręcznie wykonany pierścionek ze srebra próby 925 z naturalnym kamieniem księżycowym" },
+        { title: "Kolczyki z ametystem", category: "earrings", desc: "Delikatne srebrne kolczyki z fasetowanymi kroplami ametystu" },
+        { title: "Wisiorek z węzłem celtyckim", category: "pendants", desc: "Misterny wzór celtyckiego węzła w oksydowanym srebrze" },
+        { title: "Pierścionek zaręczynowy na zamówienie", category: "custom", desc: "Złoty pierścionek ze szmaragdem, zaprojektowany wspólnie z klientką" },
+        { title: "Broszka Drzewo Życia", category: "symbolic", desc: "Symboliczne drzewo życia ze srebra z granatowymi akcentami" },
+        { title: "Pierścionek z labradorytem", category: "rings", desc: "Odważny artystyczny pierścionek z dużym labradorytem o niebieskim blasku" },
+        { title: "Komplet obrączek ślubnych", category: "custom", desc: "Pasujące obrączki ze złota 14K z personalizowanym grawerunkiem" },
+        { title: "Amulet z runami", category: "symbolic", desc: "Wisiorek inspirowany wikingami z postarzanego srebra na skórzanym rzemieniu" },
+      ],
+    },
+
+
+    // Opinie
+    testimonials: {
+      tag: "Co Mówią Nasi Klienci",
+      title: "Historie Naszych Klientów",
+      items: [
+        { text: "Pierścionek, który Artur wykonał, jest dokładnie taki, o jakim marzyłam. Doskonale zrozumiał symbolikę — teraz to mój najcenniejszy element.", author: "Marta K.", role: "Pierścionek zaręczynowy na zamówienie" },
+        { text: "Chciałem coś wyjątkowego na urodziny mamy. Wisiorek z kamieniem księżycowym przekroczył wszelkie oczekiwania. Czysta magia.", author: "Jakub W.", role: "Prezent personalizowany" },
+        { text: "Jako kolekcjonerka biżuterii rzemieślniczej mogę powiedzieć, że elementy AEJaCA mają duszę, której biżuteria masowa po prostu nie ma.", author: "Elena R.", role: "Kolekcjonerka biżuterii" },
+      ],
+    },
+
+    // FAQ
+    faq: {
+      tag: "Najczęstsze Pytania",
+      title: "Często Zadawane Pytania",
+      items: [
+        { q: "Jak długo trwa projekt biżuterii na zamówienie?", a: "Zazwyczaj 2–4 tygodnie, w zależności od złożoności. Po omówieniu projektu podamy dokładny termin." },
+        { q: "Czy mogę dostarczyć własny kamień szlachetny?", a: "Oczywiście! Chętnie pracujemy z kamieniami dostarczonymi przez klientów. Doradzimy najlepszy sposób osadzenia." },
+        { q: "Czy oferujecie zmianę rozmiaru lub modyfikacje?", a: "Tak. Możemy zmienić rozmiar pierścionków i modyfikować projekty. Skontaktuj się z nami, a znajdziemy najlepsze rozwiązanie." },
+        { q: "Z jakimi metalami pracujecie?", a: "Głównie srebro próby 925 i złoto (14K, 18K). Pracujemy też z mieszanymi metalami przy unikalnych projektach." },
+        { q: "Jak ustalane są ceny?", a: "Cena zależy od metalu, kamieni szlachetnych, złożoności i nakładu pracy. Przed rozpoczęciem podajemy szczegółową wycenę." },
+        { q: "Czy wysyłacie za granicę?", a: "Tak! Wysyłamy na cały świat przesyłkami śledzonymi i ubezpieczonymi. Koszty wysyłki zależą od miejsca docelowego." },
+      ],
+    },
+
+    tips: {
+      tag: "AEJaCA Radzi",
+      title: "Porady Biżuteryjne",
+      categories: [
+        {
+          name: "Rozmiar pierścionka",
+          tips: [
+            { q: "Jak zmierzyć rozmiar pierścionka w domu?", a: "Owiń cienki pasek papieru lub nitkę wokół palca w najszerszym miejscu (zwykle na kostce). Zaznacz punkt nakładania, zmierz długość w mm i podziel przez 3,14 — otrzymasz średnicę wewnętrzną. Porównaj z tabelą rozmiarów. Mierz wieczorem, gdy palce są nieco większe." },
+            { q: "Co jeśli mój rozmiar jest między dwoma numerami?", a: "Zawsze zaokrąglaj w górę — łatwiej jest zmniejszyć pierścionek (np. kulkami dystansowymi) niż go rozciągnąć. Przy szerokich obrączkach (6mm+) wybierz pół rozmiaru więcej, bo siedzą ciaśniej." },
+            { q: "Czy temperatura wpływa na dopasowanie pierścionka?", a: "Tak! Palce puchną w upale i kurczą się na zimnie. Mierz w temperaturze pokojowej, najlepiej wieczorem. Jeśli mieszkasz w klimacie z dużymi wahaniami — wybierz nieco luźniejsze dopasowanie." },
+            { q: "Czy pierścionki można zmieniać rozmiar po zakupie?", a: "Pierścionki ze srebra i złota zwykle da się zmienić o 1–2 rozmiary w górę lub w dół. Pierścionki z kamieniami dookoła (obrączki eternity) lub bardzo cienkie są trudniejsze do zmiany rozmiaru. Zawsze zapytaj jubilera przed zakupem." },
+          ],
+        },
+        {
+          name: "Dobór biżuterii",
+          tips: [
+            { q: "Jak wybrać długość naszyjnika?", a: "35cm — choker, leży na obojczyku. 45cm — najbardziej uniwersalny, tuż pod obojczykiem. 60cm — długość matinée, idealna do layeringu. Dopasuj do dekoltu: dekolty w serek świetnie wyglądają z wisiorkami, okrągłe — z krótszymi łańcuszkami." },
+            { q: "Jak dopasować biżuterię do stroju?", a: "Złota zasada: dopasuj metal do detali ubioru (zamki, guziki, klamry). Srebro uzupełnia chłodne tony (niebieski, zielony, szary), złoto — ciepłe (czerwony, brąz, ziemiste). Na oficjalne okazje — jeden metal. Na co dzień — miksuj śmiało." },
+            { q: "Jak dobierać kamienie szlachetne po znaczeniu?", a: "Ametyst — spokój i intuicja. Szmaragd — miłość i odrodzenie. Szafir — mądrość i lojalność. Rubin — pasja i odwaga. Kamień księżycowy — nowe początki. Labradoryt — transformacja. Granat — energia i oddanie. Wybierz kamień, który rezonuje z historią osoby noszącej." },
+            { q: "Jak zbudować kapsułową kolekcję biżuterii?", a: "Zacznij od 5 elementów: proste kolczyki wkrętki, delikatny łańcuszek, wyrazisty pierścionek, klasyczna bransoletka i jeden firmowy element, który odzwierciedla Twoją osobowość. Trzymaj się jednej rodziny metali (srebro lub złoto) dla łatwego łączenia." },
+          ],
+        },
+        {
+          name: "Pielęgnacja",
+          tips: [
+            { q: "Jak czyścić srebrną biżuterię w domu?", a: "Wymieszaj ciepłą wodę z kroplą łagodnego płynu do naczyń. Mocz 5–10 minut, delikatnie pocieraj miękką szczoteczką do zębów, wypłucz i osusz. Na oksydację: użyj ściereczki do polerowania srebra lub pasty z sody oczyszczonej i wody. Unikaj agresywnych chemikaliów — mogą uszkodzić kamienie." },
+            { q: "Jak prawidłowo przechowywać biżuterię?", a: "Przechowuj każdy element oddzielnie w miękkich saszetkach lub wyłożonej szkatułce, by zapobiec zarysowaniom. Trzymaj srebro z dala od wilgoci (dodaj woreczki z silikaelem). Zdejmuj biżuterię przed pływaniem, ćwiczeniami i nakładaniem perfum." },
+            { q: "Kiedy zdejmować biżuterię?", a: "Zdejmuj pierścionki i bransoletki przed: myciem naczyń, czyszczeniem z chemikaliami, prysznicem (mydło matowi kamienie), ćwiczeniami (pot przyspiesza oksydację), pływaniem (chlor niszczy metale) i snem (zapobiega wygięciom i pęknięciom)." },
+            { q: "Jak zapobiegać czernieniu srebra?", a: "Noś je często — naturalne olejki skóry spowalniają oksydację. Przechowuj w hermetycznych woreczkach z paskami antytarnish. Nałóż cienką warstwę bezbarwnego lakieru do paznokci na wewnętrznej stronie pierścionków. Unikaj gumek recepturek (siarka przyspiesza czernienie)." },
+          ],
+        },
+        {
+          name: "Kamienie szlachetne",
+          tips: [
+            { q: "Jak rozpoznać naturalny kamień szlachetny?", a: "Naturalne kamienie mają drobne inkluzje, wariacje kolorów i drobne niedoskonałości widoczne pod lupą. Idealnie jednolite, bezbłędne kamienie w niskich cenach to prawdopodobnie syntetyki. Przy drogich kamieniach zawsze proś o certyfikat autentyczności." },
+            { q: "Które kamienie szlachetne najlepiej nadają się do codziennego noszenia?", a: "Użyj skali twardości Mohsa: diamenty (10), szafiry i rubiny (9), topaz (8) — doskonałe do codziennych pierścionków. Szmaragdy (7,5) wymagają więcej ostrożności. Opale (5,5–6,5) i kamień księżycowy (6–6,5) lepiej sprawdzą się w kolczykach i wisioreczkach niż w pierścionkach." },
+            { q: "Jak dbać o biżuterię z kamieniami?", a: "Myj letnią wodą z mydłem i miękką szczoteczką. Nigdy nie używaj czyszczarek ultradźwiękowych do szmaragdów, opali czy pereł. Unikaj nagłych zmian temperatury (szok termiczny może spowodować pęknięcie kamieni). Przechowuj elementy z kamieniami oddzielnie — twardsze kamienie rysują miększe." },
+          ],
+        },
+      ],
+    },
   },
 
   studio: {
@@ -91,8 +259,8 @@ export default {
     techTag: "Nasze Możliwości",
     techTitle: "Technologie",
     technologies: [
-      { title: "Projektowanie 3D (CAD)", desc: "Profesjonalne modelowanie 3D do projektowania produktów, prototypowania i plików gotowych do produkcji." },
-      { title: "Druk 3D", desc: "Druk 3D FDM i żywiczny do szybkiego prototypowania, części funkcjonalnych i produkcji małoseryjnej." },
+      { title: "Projektowanie 3D (CAD)", desc: "Profesjonalne modelowanie 3D w Autodesk Fusion i Rhino — projektowanie produktów, prototypowanie i pliki gotowe do produkcji." },
+      { title: "Druk 3D", desc: "Druk 3D filamentem i żywicą do szybkiego prototypowania, części funkcjonalnych i produkcji małoseryjnej." },
       { title: "Grawerowanie Laserem Światłowodowym", desc: "Precyzyjne systemy laserowe galvo do znakowania metalu, biżuterii, narzędzi i komponentów technicznych." },
       { title: "Cięcie Laserem CO2", desc: "Cięcie i grawerowanie laserowe drewna, akrylu, szkła, skóry i tworzyw sztucznych." },
       { title: "Odlewanie z Żywicy Epoksydowej", desc: "Systemy żywic UV i dwuskładnikowych do obiektów dekoracyjnych, kapsułkowania i form na zamówienie." },
@@ -125,6 +293,170 @@ export default {
     ctaTitle: "Masz projekt w głowie?",
     ctaText: "Od prototypów po produkcję — ożywmy Twój pomysł.",
     ctaBtn: "Zapytaj o Wycenę",
+
+    // Kalkulator
+    calculator: {
+      tag: "Oszacuj Swój Projekt",
+      title: "Kalkulator Projektów",
+      desc: "Sprawdź orientacyjny koszt swojego projektu. Wybierz opcje poniżej.",
+      stepTech: "Technologia",
+      stepSize: "Rozmiar",
+      stepQty: "Ilość",
+      stepMaterial: "Materiał",
+      techs: [
+        { id: "3dprint", label: "Druk 3D", emoji: "🖨️" },
+        { id: "fiber_laser", label: "Laser światłowodowy", emoji: "⚡" },
+        { id: "co2_laser", label: "Laser CO2", emoji: "🔆" },
+        { id: "resin", label: "Odlew żywiczny", emoji: "💎" },
+        { id: "nfc", label: "NFC / Smart Tag", emoji: "📡" },
+        { id: "custom", label: "Projekt indywidualny", emoji: "🔧" },
+      ],
+      sizes: [
+        { id: "small", label: "Mały (do 5 cm)" },
+        { id: "medium", label: "Średni (5–15 cm)" },
+        { id: "large", label: "Duży (15–30 cm)" },
+        { id: "xl", label: "Bardzo duży (30+ cm)" },
+      ],
+      quantities: [
+        { id: "1", label: "1 sztuka (prototyp)" },
+        { id: "5", label: "2–5 sztuk" },
+        { id: "20", label: "6–20 sztuk" },
+        { id: "50", label: "20–50 sztuk" },
+        { id: "100", label: "50+ sztuk" },
+      ],
+      materials: {
+        "3dprint": [
+          { id: "pla", label: "PLA" },
+          { id: "petg", label: "PETG" },
+          { id: "abs", label: "ABS" },
+          { id: "resin_print", label: "Żywica (SLA)" },
+        ],
+        fiber_laser: [
+          { id: "steel", label: "Stal" },
+          { id: "aluminum", label: "Aluminium" },
+          { id: "brass", label: "Mosiądz" },
+          { id: "silver_metal", label: "Srebro" },
+        ],
+        co2_laser: [
+          { id: "wood", label: "Drewno" },
+          { id: "acrylic", label: "Akryl" },
+          { id: "leather", label: "Skóra" },
+          { id: "glass", label: "Szkło" },
+        ],
+        resin: [
+          { id: "uv_resin", label: "Żywica UV" },
+          { id: "epoxy", label: "Epoksyd (dwuskładnikowy)" },
+        ],
+        nfc: [
+          { id: "card", label: "Karta NFC" },
+          { id: "tag", label: "Tag/Naklejka NFC" },
+          { id: "keychain", label: "Brelok NFC" },
+        ],
+        custom: [
+          { id: "mixed", label: "Mieszane / Indywidualne" },
+        ],
+      },
+      back: "Wstecz",
+      next: "Dalej",
+      resultTitle: "Szacunkowy Zakres Cenowy",
+      resultFrom: "od",
+      resultTo: "do",
+      resultNote: "To orientacyjna wycena. Ostateczna cena zależy od złożoności projektu i specyfikacji.",
+      sendInquiry: "Zapytaj o Dokładną Wycenę",
+      restart: "Zacznij od nowa",
+    },
+
+    // Portfolio
+    portfolio: {
+      tag: "Nasze Realizacje",
+      title: "Portfolio",
+      filterAll: "Wszystkie",
+      filters: [
+        { id: "3dprint", label: "Druk 3D" },
+        { id: "laser", label: "Laser" },
+        { id: "resin", label: "Żywica" },
+        { id: "nfc", label: "NFC" },
+        { id: "custom", label: "Indywidualne" },
+      ],
+      items: [
+        { title: "Obudowa prototypowa", category: "3dprint", desc: "Funkcjonalna obudowa IoT wydrukowana w 3D" },
+        { title: "Grawerowane wizytówki stalowe", category: "laser", desc: "Metalowe wizytówki grawerowane laserem z chipem NFC" },
+        { title: "Artystyczne keycapy z żywicy", category: "resin", desc: "Ręcznie robione keycapy z osadzonymi elementami" },
+        { title: "Pierścień NFC", category: "nfc", desc: "Pierścień NFC do autoryzacji zbliżeniowej" },
+        { title: "Drewniana ramka na zdjęcia", category: "laser", desc: "Ramka cięta i grawerowana laserem CO2" },
+        { title: "Miniaturowy model architektoniczny", category: "3dprint", desc: "Szczegółowy model budynku w skali wydrukowany 3D" },
+        { title: "Zestaw gadżetów firmowych", category: "custom", desc: "Komplet brandowanych gadżetów: breloki, długopisy, wizytówki" },
+        { title: "Kwiaty w żywicy", category: "resin", desc: "Zakonserwowane kwiaty w krystalicznie przejrzystych blokach żywicy" },
+      ],
+    },
+
+    // Opinie
+    testimonials: {
+      tag: "Co Mówią Nasi Klienci",
+      title: "Opinie Klientów",
+      items: [
+        { text: "Prototyp był gotowy w 48 godzin. Idealna jakość, dokładnie zgodna z modelem CAD. AEJaCA sTuDiO dostarcza.", author: "Tomasz M.", role: "Projektant produktów" },
+        { text: "Zamówiliśmy 50 wizytówek NFC. Jakość grawerunku laserowego jest wybitna — każdy detal ostry jak brzytwa.", author: "Anna S.", role: "Założycielka startupu" },
+        { text: "Od zgrubnego szkicu do gotowego produktu w tydzień. Zespół doskonale zrozumiał, czego potrzebowałem.", author: "David L.", role: "Architekt" },
+      ],
+    },
+
+    // FAQ
+    faq: {
+      tag: "Najczęstsze Pytania",
+      title: "Często Zadawane Pytania",
+      items: [
+        { q: "Jaka jest minimalna ilość zamówienia?", a: "Przyjmujemy zamówienia na pojedyncze prototypy oraz produkcję seryjną. Brak minimalnej ilości." },
+        { q: "Jak długo trwa typowy projekt?", a: "Proste projekty: 1–3 dni. Złożone prototypy: 1–2 tygodnie. Terminy produkcji seryjnej zależą od ilości." },
+        { q: "Czy mogę dostarczyć własne pliki 3D?", a: "Tak! Przyjmujemy STL, STEP, OBJ i większość popularnych formatów CAD. Możemy też zaprojektować od zera." },
+        { q: "Z jakimi materiałami pracujecie?", a: "PLA, PETG, ABS, żywica do druku 3D. Metale, drewno, akryl, szkło, skóra do pracy laserowej. Żywice UV i epoksydowe do odlewów." },
+        { q: "Czy oferujecie usługi projektowania?", a: "Oczywiście. Zapewniamy pełne usługi projektowania CAD — od koncepcji po pliki gotowe do produkcji." },
+        { q: "Jak kalkulowane są ceny?", a: "Na podstawie technologii, materiału, rozmiaru, złożoności i ilości. Zawsze podajemy szczegółową wycenę z góry." },
+      ],
+    },
+
+    tips: {
+      tag: "sTuDiO Radzi",
+      title: "Porady Makerskie",
+      categories: [
+        {
+          name: "Druk 3D i filamenty",
+          tips: [
+            { q: "Jaki filament wybrać do mojego projektu?", a: "PLA — najłatwiejszy w druku, świetny na prototypy, elementy dekoracyjne i modele. Biodegradowalny, ale nieodporny na ciepło (mięknie w ~60°C). PETG — mocniejszy, lekko elastyczny, bezpieczny dla żywności, dobra odporność chemiczna. Idealny na części funkcjonalne i obudowy. ABS — odporny na ciepło (~100°C), wytrzymały, ale wymaga zamkniętej drukarki (deformuje się w przeciągach). Świetny na części samochodowe i narzędzia." },
+            { q: "Kiedy wybrać druk z żywicy (SLA) zamiast filamentu?", a: "Żywica wygrywa przy: drobnych detalach (figurki, modele jubilerskie, stomatologia), gładkiej powierzchni i dokładności wymiarowej. Filament wygrywa przy: dużych częściach, wytrzymałości mechanicznej, szybszym druku i niższym koszcie materiału. Zasada: jeśli wygląd i detale ważniejsze niż siła — wybierz żywicę." },
+            { q: "Jaką wysokość warstwy ustawić?", a: "0,1mm — najwyższy detal, najwolniejszy druk. Na dekoracyjne elementy. 0,2mm — najlepszy balans szybkości i jakości, dobra na większość projektów. 0,3mm — szybki druk na prototypy i części funkcjonalne. Dla żywicy SLA: 0,025–0,05mm daje niewiarygodne detale." },
+            { q: "Jak poprawić wytrzymałość wydruku?", a: "Zwiększ liczbę ścianek (3–4 na części strukturalne). Użyj 40–60% wypełnienia na elementy obciążone (wzór grid lub gyroid). Drukuj z szerszą linią (dysza 0,5mm). Dla maksymalnej wytrzymałości: orientuj część tak, by warstwy były prostopadłe do kierunku siły — wydruki 3D są najsłabsze między warstwami." },
+            { q: "Czego unikać w druku 3D?", a: "Nie drukuj bez podpór przy nawisach >45°. Nie ignoruj przylegania pierwszej warstwy (użyj kleju w sztyfcie lub arkusza PEI). Nie przechowuj filamentu w wilgotnym otoczeniu (szczególnie nylon i PETG — hermetyczne worki z pochłaniaczem). Nie używaj PLA na przedmioty w gorącym samochodzie." },
+          ],
+        },
+        {
+          name: "Grawerowanie laserowe",
+          tips: [
+            { q: "Jaki typ lasera do jakiego materiału?", a: "Laser światłowodowy (1064nm) — metale (stal, aluminium, mosiądz, srebro, złoto), twarde tworzywa i anodowane powierzchnie. Laser CO2 (10600nm) — drewno, akryl, szkło, skóra, papier, tkaniny i guma. Laser diodowy (445nm) — budżetowa opcja tylko na drewno i ciemne materiały. Nigdy nie używaj CO2 na gołym metalu — wiązka się odbija." },
+            { q: "Jak uzyskać najlepszą jakość grawerowania na metalu?", a: "Użyj lasera światłowodowego z głowicą galvo. Na ciemne oznaczenia na stali nierdzewnej: niska moc / wysoka prędkość (znakowanie tlenkowe). Na głębokie grawerowanie: wiele przejść z wyższą mocą. Zawsze oczyść powierzchnię izopropanolem. Użyj sprayu do znakowania (CerMark) na metalach, które nie znakują się natywnie." },
+            { q: "Czy można grawerować szkło laserem bez jego stłuczenia?", a: "Tak, ale laserem CO2 z odpowiednimi ustawieniami: niska moc, umiarkowana prędkość, i nałóż cienki mokry ręcznik papierowy na powierzchnię (zapobiega mikropęknięciom od szoku cieplnego). Szkło hartowane jest ryzykowne — naprężenia wewnętrzne mogą je roztrzaskać. Zwykłe szkło sodowo-wapniowe i borokrzemianowe najlepiej się sprawdzają." },
+            { q: "Jakich materiałów NIGDY nie ciąć ani grawerować laserem?", a: "PVC i winyl — uwalnia toksyczny gaz chlorowy. Poliwęglan — odbarwia się, źle pali, uwalnia bisfenol A. ABS — topi się zamiast ciąć, toksyczne opary. Materiały zawierające chlor lub fluor. Włókno szklane — fatalne rezultaty plus niebezpieczne cząsteczki. Zawsze sprawdzaj karty MSDS." },
+          ],
+        },
+        {
+          name: "Odlewy z żywicy",
+          tips: [
+            { q: "Jaką żywicę do jakiego zastosowania?", a: "Żywica UV — szybkie utwardzanie (minuty), idealna na małe elementy, oprawki biżuteryjne, cienkie warstwy i powłoki. Ograniczona do ~3mm głębokości na warstwę. Żywica epoksydowa (dwuskładnikowa) — do większych odlewów, stolikowych river table, zalewania obiektów (kwiaty, zdjęcia). Utwardza się 24–72h. Żywica poliuretanowa — najlepsza na sztywne części funkcjonalne i formy prototypowe." },
+            { q: "Jak stworzyć formy silikonowe do odlewów?", a: "Użyj silikonu platynowego (gładki, bezpieczny do żywności) na detale. Zbuduj ramkę wokół modelu wzorcowego, spryskaj środkiem antyadhezyjnym, wlej silikon i daj utwardzać 24h. Na złożone kształty: forma dwuczęściowa z linią podziału. Twardość Shore 20A na elastyczne formy (łatwe wyjmowanie), 40A na sztywne (lepsza dokładność wymiarowa)." },
+            { q: "Jak unikać bąbelków w żywicy?", a: "Mieszaj powoli i dokładnie — szybkie mieszanie tworzy mikrobąbelki. Użyj opalarki lub palnika delikatnie nad powierzchnią po wlaniu (nie suszarki — za dużo powietrza). Na krytyczne elementy: komora próżniowa do odgazowania. Pracuj w ciepłym pomieszczeniu (21–25°C) — zimna żywica jest gęstsza i łapie więcej powietrza." },
+            { q: "Czego unikać przy pracy z żywicą?", a: "Nigdy nie pomijaj środków ochrony — rękawice nitrylowe (nie lateksowe!), okulary ochronne, wentylacja. Nie dodawaj barwnika więcej niż 5% objętości. Nie lej grubych warstw żywicy UV (nie utwardzi się powyżej 3mm). Nie mieszaj marek/typów żywicy z utwardzaczem. Nie pracuj poniżej 18°C — utwardzanie będzie niekompletne, element zostanie lepki." },
+          ],
+        },
+        {
+          name: "Materiały i dobre praktyki",
+          tips: [
+            { q: "Jak wybrać odpowiednią metodę wytwarzania?", a: "Potrzebujesz 1 sztuki szybko? → Druk 3D. Trwałe znakowanie metalu? → Laser światłowodowy. Precyzyjne cięcie płaskich materiałów? → Laser CO2. Przezroczyste lub dekoracyjne obiekty? → Odlew żywiczny. Mała seria identycznych części? → Druk 3D + forma silikonowa + odlew żywiczny." },
+            { q: "Jak przygotować pliki do produkcji?", a: "Do druku 3D: format STL lub 3MF, siatka bez dziur (watertight), grubość ścianki min. 1,2mm dla filamentu / 0,5mm dla SLA. Do lasera: pliki wektorowe (SVG, DXF, AI), zamień tekst na krzywe, oddziel linie cięcia od wypełnień grawerowania. Do form żywicznych: uwzględnij 0,5–1% skurczu w modelu wzorcowym." },
+            { q: "Jaki jest najbardziej opłacalny sposób na małe serie?", a: "Na 5–50 identycznych części: wydrukuj 3D jeden wzorzec → stwórz formę silikonową → odlewaj kopie z żywicy. Każda kopia kosztuje ułamek wydruku 3D, a forma wytrzymuje 20–50 odlewów. Na płaskie elementy: cięcie laserowe z arkusza (akryl, drewno) — szybkie i powtarzalne. Na markowe gadżety: graweruj laserem partię w jednym ustawieniu." },
+          ],
+        },
+      ],
+    },
   },
 
   contact: {

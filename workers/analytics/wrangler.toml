@@ -1,0 +1,19 @@
+name = "aejaca-analytics"
+main = "worker.js"
+compatibility_date = "2024-12-01"
+
+# After creating D1, paste the database_id below:
+# wrangler d1 create aejaca-analytics
+[[d1_databases]]
+binding = "DB"
+database_name = "aejaca-analytics"
+database_id = "9d07aea3-64ce-4c43-8df9-0af1bae513a4"
+
+[vars]
+DASHBOARD_TOKEN = "rrmCOEuHaSk0AnyUhLrxCEltabLyQht"
+# Allowed origin for CORS
+ALLOWED_ORIGIN = "https://www.aejaca.com"
+
+# Optional: scheduled aggregation (daily at 3am UTC)
+# [triggers]
+# crons = ["0 3 * * *"]

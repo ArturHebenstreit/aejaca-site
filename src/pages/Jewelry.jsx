@@ -2,18 +2,22 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Gem, Sparkles, Palette, Heart, Wand2, Crown } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
+import JewelryEstimator from "../components/JewelryEstimator.jsx";
+import ProcessGallery from "../components/ProcessGallery.jsx";
+// import Portfolio from "../components/Portfolio.jsx"; // temporarily disabled
+import Testimonials from "../components/Testimonials.jsx";
+import FAQ from "../components/FAQ.jsx";
+import Tips from "../components/Tips.jsx";
 
 const icons = [Gem, Sparkles, Palette, Heart, Wand2, Crown];
 
 export default function Jewelry() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const j = t.jewelry;
 
   const aboutRef = useScrollReveal();
   const servicesHeaderRef = useScrollReveal();
   const getServiceRef = useStaggerReveal(100);
-  const processRef = useScrollReveal();
-  const getStepRef = useStaggerReveal(120);
   const valuesRef = useScrollReveal();
   const etsyRef = useScrollReveal();
   const ctaRef = useScrollReveal();
@@ -34,7 +38,7 @@ export default function Jewelry() {
       </section>
 
       {/* About */}
-      <section className="py-20 px-4 bg-neutral-950">
+      <section id="about" className="py-20 px-4 bg-neutral-950">
         <div ref={aboutRef} className="reveal max-w-4xl mx-auto text-center">
           <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-6 text-white">{j.aboutTitle}</h2>
           <p className="text-neutral-400 text-lg leading-relaxed mb-6">{j.aboutP1}</p>
@@ -45,7 +49,7 @@ export default function Jewelry() {
       <div className="gradient-divider" />
 
       {/* Services */}
-      <section className="py-20 px-4 bg-neutral-900/50">
+      <section id="services" className="py-20 px-4 bg-neutral-900/50">
         <div className="max-w-6xl mx-auto">
           <div ref={servicesHeaderRef} className="reveal text-center mb-14">
             <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{j.servicesTag}</div>
@@ -68,25 +72,33 @@ export default function Jewelry() {
 
       <div className="gradient-divider" />
 
-      {/* Process */}
-      <section className="py-20 px-4 bg-neutral-950">
-        <div ref={processRef} className="reveal max-w-4xl mx-auto text-center">
-          <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{j.processTag}</div>
-          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-white mb-12">{j.processTitle}</h2>
-          <div className="grid sm:grid-cols-4 gap-8">
-            {j.processSteps.map((step, i) => (
-              <div key={i} ref={getStepRef(i)} className="reveal-scale">
-                <div className="text-amber-400 font-mono text-2xl font-bold mb-2">{String(i + 1).padStart(2, "0")}</div>
-                <h3 className="font-serif text-lg font-semibold text-white mb-2">{step.title}</h3>
-                <p className="text-neutral-500 text-sm">{step.desc}</p>
-              </div>
-            ))}
+      {/* Jewelry Calculator */}
+      <JewelryEstimator />
+
+      <div className="gradient-divider" />
+
+      {/* Process Gallery */}
+      <ProcessGallery />
+
+      <div className="gradient-divider" />
+
+      {/* Portfolio — temporarily replaced with placeholder */}
+      <section id="portfolio" className="py-20 px-4 bg-neutral-950">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{j.portfolio?.tag || "Portfolio"}</div>
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-white mb-8">{j.portfolio?.title || "Portfolio"}</h2>
+          <div className="py-16 rounded-2xl border border-white/5 bg-white/[0.02]">
+            <div className="text-neutral-500 text-lg">
+              {{ pl: "W trakcie przygotowania", en: "In preparation", de: "In Vorbereitung" }[lang] || "In preparation"}
+            </div>
           </div>
         </div>
       </section>
 
+      <div className="gradient-divider" />
+
       {/* Values */}
-      <section className="py-20 px-4 bg-gradient-to-b from-emerald-950/20 to-neutral-950">
+      <section id="values" className="py-20 px-4 bg-gradient-to-b from-emerald-950/20 to-neutral-950">
         <div ref={valuesRef} className="reveal max-w-4xl mx-auto text-center">
           <h2 className="font-serif text-3xl font-semibold text-white mb-10">{j.valuesTitle}</h2>
           <div className="grid sm:grid-cols-4 gap-8">
@@ -102,8 +114,23 @@ export default function Jewelry() {
 
       <div className="gradient-divider" />
 
+      {/* Testimonials */}
+      <Testimonials data={j.testimonials} accent="amber" id="testimonials" />
+
+      <div className="gradient-divider" />
+
+      {/* FAQ */}
+      <FAQ data={j.faq} accent="amber" id="faq" />
+
+      <div className="gradient-divider" />
+
+      {/* Tips & Advice */}
+      <Tips data={j.tips} accent="amber" id="tips" />
+
+      <div className="gradient-divider" />
+
       {/* Etsy */}
-      <section className="py-16 px-4 text-center bg-neutral-900/50">
+      <section id="shop" className="py-16 px-4 text-center bg-neutral-900/50">
         <div ref={etsyRef} className="reveal">
           <h2 className="font-serif text-2xl font-semibold text-white mb-3">{j.shopTitle}</h2>
           <p className="text-neutral-400 mb-6">{j.shopText}</p>
@@ -119,7 +146,7 @@ export default function Jewelry() {
         <div ref={ctaRef} className="reveal">
           <h2 className="font-serif text-2xl md:text-3xl font-semibold text-white mb-4">{j.ctaTitle}</h2>
           <p className="text-neutral-400 mb-8 max-w-md mx-auto">{j.ctaText}</p>
-          <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-3 glass-amber text-amber-300 rounded-full hover:bg-amber-400/90 hover:text-black hover:border-amber-400 transition-all duration-300">
+          <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-3 border border-amber-400/30 bg-amber-400/5 backdrop-blur-md text-amber-300 rounded-full hover:bg-amber-400 hover:text-black hover:border-amber-400 transition-all duration-300">
             {j.ctaBtn} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

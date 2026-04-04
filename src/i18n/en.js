@@ -5,6 +5,29 @@ export default {
     jewelry: "AEJaCA Jewelry",
     studio: "AEJaCA sTuDiO",
     contact: "Contact",
+    jewelrySections: [
+      { label: "About", id: "about" },
+      { label: "Services", id: "services" },
+      { label: "Configurator", id: "configurator" },
+      { label: "Process", id: "process" },
+      { label: "Portfolio", id: "portfolio" },
+      { label: "Testimonials", id: "testimonials" },
+      { label: "FAQ", id: "faq" },
+      { label: "Tips & Advice", id: "tips" },
+      { label: "Shop", id: "shop" },
+    ],
+    studioSections: [
+      { label: "About", id: "about" },
+      { label: "Technologies", id: "technologies" },
+      { label: "Calculator", id: "calculator" },
+      { label: "Portfolio", id: "portfolio" },
+      { label: "Services", id: "services" },
+      { label: "Process", id: "process" },
+      { label: "Testimonials", id: "testimonials" },
+      { label: "FAQ", id: "faq" },
+      { label: "Tips & Advice", id: "tips" },
+      { label: "Shop", id: "shop" },
+    ],
   },
 
   // Home page
@@ -61,13 +84,15 @@ export default {
       { title: "3D Design & Prototyping", desc: "Combining traditional craftsmanship with modern 3D modeling to prototype and perfect each piece." },
       { title: "Symbolic Objects", desc: "Artistic objects and symbolic creations that go beyond jewelry — timeless keepsakes and art pieces." },
     ],
-    processTag: "Our Approach",
-    processTitle: "The Creative Process",
+    processTag: "From Idea to Masterpiece",
+    processTitle: "How Your Jewelry Is Made",
     processSteps: [
-      { title: "Concept", desc: "Understanding your vision, symbolism, and desired aesthetic" },
-      { title: "Design", desc: "Hand sketches and 3D CAD modeling of the piece" },
-      { title: "Prototype", desc: "3D printed model for review and refinement" },
-      { title: "Handcraft", desc: "Final piece crafted in silver or gold with gemstones" },
+      { title: "Consultation", num: "01", desc: "We start with a conversation — your vision, symbolism, lifestyle, and budget. Every great piece begins with understanding the story it should tell.", when: "Every custom project" },
+      { title: "Design & CAD", num: "02", desc: "Hand sketches evolve into precise 3D CAD models. You see realistic digital renderings from every angle, and we iterate until the design is perfect.", when: "Every custom project" },
+      { title: "Wax Model / 3D Print", num: "03", desc: "A physical prototype is created — either hand-carved in wax or 3D printed in resin. You can hold it, check proportions, and approve before we proceed.", when: "Cast pieces (rings, pendants, complex forms)" },
+      { title: "Lost-Wax Casting", num: "04", desc: "The approved model is encased in a ceramic shell, heated to burn away the wax, and molten silver or gold is poured into the cavity — creating the raw metal piece.", when: "Cast pieces; hand-fabricated pieces skip this step" },
+      { title: "Hand Fabrication & Finishing", num: "05", desc: "The cast piece is filed, soldered, textured, and shaped by hand. Surfaces are polished with tripoli and rouge compounds. Optional oxidation or patina adds character.", when: "Every piece — the artisan's signature touch" },
+      { title: "Stone Setting & Quality Control", num: "06", desc: "Gemstones are hand-set using prong, bezel, or channel techniques — each stone precisely placed and secured. Final inspection under magnification confirms stone security, metal integrity, and surface perfection.", when: "Pieces with gemstones; plain metal pieces proceed to delivery" },
     ],
     valuesTitle: "What Defines AEJaCA",
     values: [
@@ -82,6 +107,148 @@ export default {
     ctaTitle: "Looking for something unique?",
     ctaText: "Tell us about your dream piece — we'll design and craft it just for you.",
     ctaBtn: "Start a Custom Project",
+
+    // Configurator
+    configurator: {
+      tag: "Design Your Dream Piece",
+      title: "Jewelry Configurator",
+      desc: "Tell us what you envision — step by step. We'll bring your idea to life.",
+      stepType: "Type of Jewelry",
+      stepMetal: "Metal",
+      stepStone: "Gemstone",
+      stepStyle: "Style",
+      types: [
+        { id: "ring", label: "Ring", emoji: "💍" },
+        { id: "earrings", label: "Earrings", emoji: "✨" },
+        { id: "pendant", label: "Pendant", emoji: "📿" },
+        { id: "bracelet", label: "Bracelet", emoji: "⭕" },
+        { id: "brooch", label: "Brooch", emoji: "🌸" },
+        { id: "other", label: "Other", emoji: "🎨" },
+      ],
+      metals: [
+        { id: "silver925", label: "Silver 925" },
+        { id: "gold14k", label: "Gold 14K" },
+        { id: "gold18k", label: "Gold 18K" },
+        { id: "mixed", label: "Mixed metals" },
+      ],
+      stones: [
+        { id: "amethyst", label: "Amethyst" },
+        { id: "emerald", label: "Emerald" },
+        { id: "sapphire", label: "Sapphire" },
+        { id: "ruby", label: "Ruby" },
+        { id: "moonstone", label: "Moonstone" },
+        { id: "labradorite", label: "Labradorite" },
+        { id: "garnet", label: "Garnet" },
+        { id: "none", label: "No stone" },
+      ],
+      styles: [
+        { id: "minimalist", label: "Minimalist" },
+        { id: "artistic", label: "Artistic" },
+        { id: "mystical", label: "Mystical" },
+        { id: "classic", label: "Classic" },
+        { id: "bohemian", label: "Bohemian" },
+      ],
+      back: "Back",
+      next: "Next",
+      summaryTitle: "Your Vision",
+      summaryType: "Type",
+      summaryMetal: "Metal",
+      summaryStone: "Stone",
+      summaryStyle: "Style",
+      sendInquiry: "Send Inquiry",
+      restart: "Start Over",
+    },
+
+    // Portfolio
+    portfolio: {
+      tag: "Our Creations",
+      title: "Portfolio",
+      filterAll: "All",
+      filters: [
+        { id: "rings", label: "Rings" },
+        { id: "earrings", label: "Earrings" },
+        { id: "pendants", label: "Pendants" },
+        { id: "custom", label: "Custom" },
+        { id: "symbolic", label: "Symbolic" },
+      ],
+      items: [
+        { title: "Moonstone Silver Ring", category: "rings", desc: "Handcrafted sterling silver ring with natural moonstone cabochon" },
+        { title: "Amethyst Drop Earrings", category: "earrings", desc: "Delicate silver earrings with faceted amethyst drops" },
+        { title: "Celtic Knot Pendant", category: "pendants", desc: "Intricate Celtic knot design in oxidized sterling silver" },
+        { title: "Custom Engagement Ring", category: "custom", desc: "Bespoke gold ring with emerald center stone, designed with the client" },
+        { title: "Tree of Life Brooch", category: "symbolic", desc: "Symbolic tree of life in silver with embedded garnet accents" },
+        { title: "Labradorite Statement Ring", category: "rings", desc: "Bold artisan ring showcasing a large labradorite with blue flash" },
+        { title: "Wedding Band Set", category: "custom", desc: "Matching his & hers bands in 14K gold with personalized engraving" },
+        { title: "Rune Amulet Pendant", category: "symbolic", desc: "Viking-inspired rune pendant in aged silver with leather cord" },
+      ],
+    },
+
+    // Testimonials
+    testimonials: {
+      tag: "What Our Clients Say",
+      title: "Stories from Our Clients",
+      items: [
+        { text: "The ring Artur made is exactly what I dreamed of. He understood the symbolism I wanted perfectly — now it's my most treasured piece.", author: "Marta K.", role: "Custom engagement ring" },
+        { text: "I wanted something unique for my mother's birthday. The pendant with moonstone exceeded all expectations. Pure magic.", author: "Jakub W.", role: "Personalized gift" },
+        { text: "As a collector of artisanal jewelry, I can say AEJaCA pieces have a soul that mass-produced jewelry simply doesn't have.", author: "Elena R.", role: "Jewelry collector" },
+      ],
+    },
+
+    // FAQ
+    faq: {
+      tag: "Common Questions",
+      title: "Frequently Asked Questions",
+      items: [
+        { q: "How long does a custom jewelry project take?", a: "Typically 2–4 weeks depending on complexity. We'll give you a precise timeline after discussing your design." },
+        { q: "Can I provide my own gemstone?", a: "Absolutely! We're happy to work with stones you provide. We'll advise on the best setting approach." },
+        { q: "Do you offer resizing or modifications?", a: "Yes. We can resize rings and modify designs. Contact us with your needs and we'll find the best solution." },
+        { q: "What metals do you work with?", a: "Primarily sterling silver (925) and gold (14K, 18K). We also work with mixed metals for unique designs." },
+        { q: "How are prices determined?", a: "Pricing depends on the metal, gemstones, complexity, and labor involved. We provide a detailed quote before starting." },
+        { q: "Do you ship internationally?", a: "Yes! We ship worldwide via tracked and insured postal services. Shipping costs vary by destination." },
+      ],
+    },
+
+    tips: {
+      tag: "AEJaCA Advises",
+      title: "Jewelry Tips & Know-How",
+      categories: [
+        {
+          name: "Ring Sizing",
+          tips: [
+            { q: "How to measure your ring size at home?", a: "Wrap a thin strip of paper or string around your finger at the widest point (usually the knuckle). Mark where it overlaps, measure the length in mm, and divide by 3.14 to get the inner diameter. Compare with a ring size chart. Measure in the evening when fingers are slightly larger." },
+            { q: "What if my ring size is between two sizes?", a: "Always round up to the larger size — it's easier to make a ring slightly smaller with sizing beads than to stretch it. For wide bands (6mm+), go a half-size up as they fit more snugly." },
+            { q: "Does temperature affect ring fit?", a: "Yes! Fingers swell in heat and shrink in cold. Measure at room temperature, ideally in the evening. If you live in a climate with big seasonal swings, consider a slightly looser fit for comfort year-round." },
+            { q: "Can rings be resized after purchase?", a: "Silver and gold rings can usually be resized 1–2 sizes up or down. Rings with stones all around (eternity bands) or very thin bands are harder to resize. Always ask your jeweler before buying." },
+          ],
+        },
+        {
+          name: "Choosing Jewelry",
+          tips: [
+            { q: "How to choose a necklace length?", a: "14\" (35cm) sits on the collarbone — choker style. 18\" (45cm) is the most universal, resting just below the collarbone. 24\" (60cm) is a matinee length for layering. Consider your neckline: V-necks pair well with pendants, crew necks with shorter chains." },
+            { q: "How to match jewelry to your outfit?", a: "The golden rule: match metals to your clothing's hardware (zippers, buttons, buckles). Silver complements cool tones (blues, greens, grays), while gold pairs with warm tones (reds, browns, earth tones). For a formal look, stick to one metal. For casual — mix freely." },
+            { q: "How to choose gemstones by meaning?", a: "Amethyst — calm and intuition. Emerald — love and rebirth. Sapphire — wisdom and loyalty. Ruby — passion and courage. Moonstone — new beginnings. Labradorite — transformation. Garnet — energy and devotion. Choose a stone that resonates with the wearer's story." },
+            { q: "How to build a jewelry capsule collection?", a: "Start with 5 essentials: simple stud earrings, a delicate chain necklace, a statement ring, a classic bracelet, and one signature piece that reflects your personality. Choose one metal family (silver or gold) for easy mixing." },
+          ],
+        },
+        {
+          name: "Care & Maintenance",
+          tips: [
+            { q: "How to clean silver jewelry at home?", a: "Mix warm water with a drop of mild dish soap. Soak for 5–10 minutes, gently scrub with a soft toothbrush, rinse, and pat dry. For tarnish: use a silver polishing cloth or make a paste of baking soda and water. Avoid harsh chemicals — they can damage stones." },
+            { q: "How to store jewelry properly?", a: "Store each piece separately in soft pouches or a lined jewelry box to prevent scratching. Keep silver away from air and humidity (add silica gel packets). Remove jewelry before swimming, exercising, or applying perfume and lotions." },
+            { q: "When should I take off my jewelry?", a: "Remove rings and bracelets before: washing dishes, cleaning with chemicals, showering (soap buildup dulls stones), exercising (sweat accelerates tarnish), swimming (chlorine damages metals), and sleeping (prevents bending and breakage)." },
+            { q: "How to prevent silver from tarnishing?", a: "Wear it often — skin oils actually slow tarnishing. Store in airtight bags with anti-tarnish strips. Apply a thin coat of clear nail polish on the inside of rings that touch skin. Avoid rubber bands (sulfur content accelerates tarnish)." },
+          ],
+        },
+        {
+          name: "Gemstones",
+          tips: [
+            { q: "How to tell if a gemstone is natural?", a: "Natural stones have tiny inclusions, color variations, and minor imperfections visible under magnification. Perfectly flawless, uniformly colored stones at low prices are likely synthetic. Always ask for a certificate of authenticity for expensive stones." },
+            { q: "Which gemstones are most durable for daily wear?", a: "Use the Mohs hardness scale: diamonds (10), sapphires and rubies (9), and topaz (8) are excellent for daily rings. Emeralds (7.5) need more care. Opals (5.5–6.5) and moonstone (6–6.5) are better for earrings and pendants than rings." },
+            { q: "How to care for gemstone jewelry?", a: "Clean with lukewarm soapy water and a soft brush. Never use ultrasonic cleaners on emeralds, opals, or pearls. Avoid sudden temperature changes (thermal shock can crack stones). Store gemstone pieces separately — harder stones can scratch softer ones." },
+          ],
+        },
+      ],
+    },
   },
 
   // Studio page
@@ -95,8 +262,8 @@ export default {
     techTag: "Our Capabilities",
     techTitle: "Technologies",
     technologies: [
-      { title: "3D Design (CAD)", desc: "Professional 3D modeling for product design, prototyping, and manufacturing-ready files." },
-      { title: "3D Printing", desc: "FDM & resin 3D printing for rapid prototyping, functional parts, and small batch production." },
+      { title: "3D Design (CAD)", desc: "Professional 3D modeling in Autodesk Fusion & Rhino — product design, prototyping, and manufacturing-ready files." },
+      { title: "3D Printing", desc: "Filament & resin 3D printing for rapid prototyping, functional parts, and small batch production." },
       { title: "Fiber Laser Engraving", desc: "High-precision galvo laser systems for marking metal, jewelry, tools, and technical components." },
       { title: "CO2 Laser Cutting", desc: "Laser cutting and engraving on wood, acrylic, glass, leather, and plastics." },
       { title: "Epoxy Resin Casting", desc: "UV and two-component resin systems for decorative objects, encapsulation, and custom molds." },
@@ -129,6 +296,170 @@ export default {
     ctaTitle: "Have a project in mind?",
     ctaText: "From prototypes to production — let's bring your idea to life.",
     ctaBtn: "Request a Quote",
+
+    // Calculator
+    calculator: {
+      tag: "Estimate Your Project",
+      title: "Project Calculator",
+      desc: "Get an idea of what your project might cost. Select options below for an estimate.",
+      stepTech: "Technology",
+      stepSize: "Size",
+      stepQty: "Quantity",
+      stepMaterial: "Material",
+      techs: [
+        { id: "3dprint", label: "3D Printing", emoji: "🖨️" },
+        { id: "fiber_laser", label: "Fiber Laser", emoji: "⚡" },
+        { id: "co2_laser", label: "CO2 Laser", emoji: "🔆" },
+        { id: "resin", label: "Resin Casting", emoji: "💎" },
+        { id: "nfc", label: "NFC / Smart Tag", emoji: "📡" },
+        { id: "custom", label: "Custom Project", emoji: "🔧" },
+      ],
+      sizes: [
+        { id: "small", label: "Small (up to 5 cm)" },
+        { id: "medium", label: "Medium (5–15 cm)" },
+        { id: "large", label: "Large (15–30 cm)" },
+        { id: "xl", label: "Extra large (30+ cm)" },
+      ],
+      quantities: [
+        { id: "1", label: "1 piece (prototype)" },
+        { id: "5", label: "2–5 pieces" },
+        { id: "20", label: "6–20 pieces" },
+        { id: "50", label: "20–50 pieces" },
+        { id: "100", label: "50+ pieces" },
+      ],
+      materials: {
+        "3dprint": [
+          { id: "pla", label: "PLA" },
+          { id: "petg", label: "PETG" },
+          { id: "abs", label: "ABS" },
+          { id: "resin_print", label: "Resin (SLA)" },
+        ],
+        fiber_laser: [
+          { id: "steel", label: "Steel" },
+          { id: "aluminum", label: "Aluminum" },
+          { id: "brass", label: "Brass" },
+          { id: "silver_metal", label: "Silver" },
+        ],
+        co2_laser: [
+          { id: "wood", label: "Wood" },
+          { id: "acrylic", label: "Acrylic" },
+          { id: "leather", label: "Leather" },
+          { id: "glass", label: "Glass" },
+        ],
+        resin: [
+          { id: "uv_resin", label: "UV Resin" },
+          { id: "epoxy", label: "Epoxy (2-component)" },
+        ],
+        nfc: [
+          { id: "card", label: "NFC Card" },
+          { id: "tag", label: "NFC Tag/Sticker" },
+          { id: "keychain", label: "NFC Keychain" },
+        ],
+        custom: [
+          { id: "mixed", label: "Mixed / Custom" },
+        ],
+      },
+      back: "Back",
+      next: "Next",
+      resultTitle: "Estimated Price Range",
+      resultFrom: "from",
+      resultTo: "to",
+      resultNote: "This is a rough estimate. Final price depends on design complexity and specifications.",
+      sendInquiry: "Request Exact Quote",
+      restart: "Start Over",
+    },
+
+    // Portfolio
+    portfolio: {
+      tag: "Our Work",
+      title: "Portfolio",
+      filterAll: "All",
+      filters: [
+        { id: "3dprint", label: "3D Printing" },
+        { id: "laser", label: "Laser" },
+        { id: "resin", label: "Resin" },
+        { id: "nfc", label: "NFC" },
+        { id: "custom", label: "Custom" },
+      ],
+      items: [
+        { title: "Custom Prototype Housing", category: "3dprint", desc: "3D printed functional enclosure for IoT device" },
+        { title: "Engraved Steel Business Cards", category: "laser", desc: "Fiber laser engraved metal cards with NFC chip" },
+        { title: "Crystal Resin Keycaps", category: "resin", desc: "Custom artisan keycaps with embedded elements" },
+        { title: "NFC Smart Ring", category: "nfc", desc: "Custom NFC ring for contactless authentication" },
+        { title: "Wooden Photo Frame", category: "laser", desc: "CO2 laser cut and engraved personalized frame" },
+        { title: "Miniature Architecture Model", category: "3dprint", desc: "Detailed 3D printed scale model of building" },
+        { title: "Branded Merchandise Set", category: "custom", desc: "Full set of branded gadgets: keychains, pens, cards" },
+        { title: "Resin-Encased Flowers", category: "resin", desc: "Preserved flowers in crystal-clear resin blocks" },
+      ],
+    },
+
+    // Testimonials
+    testimonials: {
+      tag: "What Our Clients Say",
+      title: "Client Feedback",
+      items: [
+        { text: "The prototype was ready in 48 hours. Perfect quality, exactly matching the CAD model. AEJaCA sTuDiO delivers.", author: "Tomasz M.", role: "Product designer" },
+        { text: "We ordered 50 custom NFC business cards. The fiber laser engraving quality is outstanding — every detail is razor-sharp.", author: "Anna S.", role: "Startup founder" },
+        { text: "From a rough sketch to a finished product in one week. The team understood exactly what I needed for my project.", author: "David L.", role: "Architect" },
+      ],
+    },
+
+    // FAQ
+    faq: {
+      tag: "Common Questions",
+      title: "Frequently Asked Questions",
+      items: [
+        { q: "What's the minimum order quantity?", a: "We accept single prototype orders as well as batch production. No minimum quantity required." },
+        { q: "How long does a typical project take?", a: "Simple projects: 1–3 days. Complex prototypes: 1–2 weeks. Batch production timelines depend on quantity." },
+        { q: "Can you work from my own 3D files?", a: "Yes! We accept STL, STEP, OBJ, and most common CAD formats. We can also design from scratch." },
+        { q: "What materials do you work with?", a: "PLA, PETG, ABS, resin for 3D printing. Metals, wood, acrylic, glass, leather for laser work. UV and epoxy resins for casting." },
+        { q: "Do you offer design services?", a: "Absolutely. Our team provides full CAD design services — from concept to manufacturing-ready files." },
+        { q: "How are prices calculated?", a: "Based on technology, material, size, complexity, and quantity. We always provide a detailed quote upfront." },
+      ],
+    },
+
+    tips: {
+      tag: "sTuDiO Advises",
+      title: "Maker Tips & Know-How",
+      categories: [
+        {
+          name: "3D Printing & Filaments",
+          tips: [
+            { q: "Which filament should I choose for my project?", a: "PLA — easiest to print, great for prototypes, decorative items, and models. Biodegradable but not heat-resistant (softens at ~60°C). PETG — stronger, slightly flexible, food-safe, good chemical resistance. Ideal for functional parts, enclosures, and items exposed to moisture. ABS — heat-resistant (~100°C), tough, but requires an enclosed printer (warps in drafts). Great for automotive parts, tools, and heat-exposed items." },
+            { q: "When should I use resin (SLA) instead of filament printing?", a: "Resin printing wins for: fine detail (miniatures, jewelry models, dental), smooth surface finish, and dimensional accuracy. Filament printing wins for: large parts, mechanical strength, faster prints, and lower material cost. Rule of thumb: if appearance and detail matter more than strength — go resin." },
+            { q: "What layer height should I use?", a: "0.1mm — highest detail, slowest print. Use for visible decorative pieces. 0.2mm — best balance of speed and quality, good for most projects. 0.3mm — fast prints for prototypes and functional parts where looks don't matter. For SLA resin: 0.025–0.05mm gives incredible detail." },
+            { q: "How to improve print strength?", a: "Increase wall count (3–4 walls for structural parts). Use 40–60% infill for load-bearing items (grid or gyroid pattern). Print with wider layer lines (0.5mm nozzle). For maximum strength, orient the part so layers are perpendicular to the direction of force — 3D prints are weakest between layers." },
+            { q: "What should I avoid in 3D printing?", a: "Don't print without supports for overhangs >45°. Don't ignore first-layer adhesion (use glue stick or textured PEI sheet). Don't store filament in humid conditions (especially nylon and PETG — use sealed bags with desiccant). Don't use PLA for items left in hot cars or near heat sources." },
+          ],
+        },
+        {
+          name: "Laser Engraving",
+          tips: [
+            { q: "Which laser type for which material?", a: "Fiber laser (1064nm wavelength) — metals (steel, aluminum, brass, silver, gold), hard plastics, and anodized surfaces. CO2 laser (10600nm wavelength) — wood, acrylic, glass, leather, paper, fabric, and rubber. Diode laser (445nm) — budget option for wood and dark materials only. Never use CO2 on bare metal — the beam reflects off." },
+            { q: "How to get the best engraving quality on metal?", a: "Use a fiber laser with galvo scanning head for speed and precision. For dark marks on stainless steel: use low power/high speed for oxide marking. For deep engraving: multiple passes at higher power. Always clean the surface with isopropanol first. Use marking spray (like CerMark) on metals that don't mark well natively." },
+            { q: "Can you laser-engrave glass without breaking it?", a: "Yes, but with a CO2 laser and specific settings: low power, moderate speed, and apply a thin wet paper towel over the surface (prevents micro-fractures from heat shock). Tempered glass is risky — the internal stresses can cause it to shatter. Regular soda-lime glass and borosilicate work best." },
+            { q: "What materials should NEVER be laser-cut or engraved?", a: "PVC and vinyl — releases toxic chlorine gas. Polycarbonate — discolors, burns badly, releases bisphenol A. ABS — melts rather than cuts cleanly, produces toxic fumes. Any material containing chlorine or fluorine. Fiberglass — terrible results plus dangerous particles. Always check Material Safety Data Sheets." },
+          ],
+        },
+        {
+          name: "Resin Casting",
+          tips: [
+            { q: "Which resin for which application?", a: "UV resin — quick curing (minutes), ideal for small pieces, jewelry bezels, thin layers, and coatings. Limited to ~3mm depth per layer. Epoxy resin (two-part) — for larger castings, river tables, encapsulation of objects (flowers, photos), deep pours. Cures in 24–72h. Polyurethane resin — best for rigid functional parts and prototype molds." },
+            { q: "How to create silicone molds for resin casting?", a: "Use platinum-cure silicone (smooth, food-safe) for detailed molds. Build a box around your master model, spray mold release, pour silicone, and let cure 24h. For complex shapes: make a 2-part mold with a parting line. Shore hardness 20A for flexible molds (easy demolding), 40A for rigid molds (better dimensional accuracy)." },
+            { q: "How to avoid bubbles in resin?", a: "Mix slowly and deliberately — fast stirring creates micro-bubbles. Use a heat gun or torch lightly over the surface after pouring (not a hair dryer — too much air). For critical parts: use a vacuum chamber to degas the mixed resin before pouring. Work in a warm room (21–25°C) — cold resin is thicker and traps more air." },
+            { q: "What to avoid when working with resin?", a: "Never skip safety gear — use nitrile gloves (not latex!), safety glasses, and work in a ventilated area. Don't add more than 5% colorant by volume. Don't pour thick layers of UV resin (won't cure properly beyond 3mm). Don't mix brands/types of resin and hardener. Don't work below 18°C — the cure will be incomplete and the piece will remain tacky." },
+          ],
+        },
+        {
+          name: "Materials & Best Practices",
+          tips: [
+            { q: "How to choose the right manufacturing method?", a: "Need 1 piece quickly? → 3D printing. Need permanent marking on metal? → Fiber laser. Need precision cutting of flat materials? → CO2 laser. Need transparent or decorative objects? → Resin casting. Need small batch of identical parts? → 3D print + silicone mold + resin casting combo." },
+            { q: "How to prepare files for production?", a: "For 3D printing: STL or 3MF format, ensure the mesh is watertight (no holes), wall thickness minimum 1.2mm for filament / 0.5mm for SLA. For laser: vector files (SVG, DXF, AI), convert text to outlines, separate cut lines from engrave fills. For resin molds: account for 0.5–1% shrinkage in your master model." },
+            { q: "What's the most cost-effective approach for small series?", a: "For 5–50 identical parts: 3D-print one master → create a silicone mold → cast copies in resin. Each resin copy costs a fraction of a 3D print, and the mold lasts 20–50 pours. For flat items: laser-cut from sheet material (acrylic, wood) — fast and repeatable. For branded items: laser-engrave a batch in one setup." },
+          ],
+        },
+      ],
+    },
   },
 
   // Contact page

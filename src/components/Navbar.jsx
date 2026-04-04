@@ -1,21 +1,25 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Globe } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, Globe, ChevronDown } from "lucide-react";
 import { useLanguage, LANGUAGES } from "../i18n/LanguageContext.jsx";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null); // "jewelry" | "studio" | null
+  const [mobileExpanded, setMobileExpanded] = useState(null); // "jewelry" | "studio" | null
   const langRefDesktop = useRef(null);
   const langRefMobile = useRef(null);
+  const dropdownTimeout = useRef(null);
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { lang, setLang, t } = useLanguage();
 
   const navLinks = [
     { to: "/", label: t.nav.home },
-    { to: "/jewelry", label: t.nav.jewelry },
-    { to: "/studio", label: t.nav.studio },
+    { to: "/jewelry", label: t.nav.jewelry, sections: t.nav.jewelrySections },
+    { to: "/studio", label: t.nav.studio, sections: t.nav.studioSections },
     { to: "/contact", label: t.nav.contact },
   ];
 
@@ -41,7 +45,35 @@ export default function Navbar() {
   // Close mobile menu on route change
   useEffect(() => {
     setMenuOpen(false);
+    setMobileExpanded(null);
   }, [pathname]);
+
+  function scrollToSection(pagePath, sectionId) {
+    if (pathname === pagePath) {
+      // Already on the page — just scroll
+      const el = document.getElementById(sectionId);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      // Navigate then scroll after render
+      navigate(pagePath);
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 300);
+    }
+    setOpenDropdown(null);
+    setMenuOpen(false);
+    setMobileExpanded(null);
+  }
+
+  function handleDropdownEnter(key) {
+    clearTimeout(dropdownTimeout.current);
+    setOpenDropdown(key);
+  }
+
+  function handleDropdownLeave() {
+    dropdownTimeout.current = setTimeout(() => setOpenDropdown(null), 200);
+  }
 
   const currentLang = LANGUAGES.find((l) => l.code === lang);
 
@@ -66,6 +98,12 @@ export default function Navbar() {
     );
   }
 
+  function getDropdownKey(to) {
+    if (to === "/jewelry") return "jewelry";
+    if (to === "/studio") return "studio";
+    return null;
+  }
+
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -85,20 +123,63 @@ export default function Navbar() {
 
           {/* Desktop */}
           <div className="hidden md:flex items-center gap-8">
-            {navLinks.map(({ to, label }) => (
-              <Link
-                key={to}
-                to={to}
-                className={`relative text-sm tracking-wide transition-colors hover:text-amber-400 ${
-                  pathname === to ? "text-amber-400" : "text-neutral-300"
-                }`}
-              >
-                {label}
-                {pathname === to && (
-                  <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-amber-400 rounded-full" />
-                )}
-              </Link>
-            ))}
+            {navLinks.map(({ to, label, sections }) => {
+              const dropKey = getDropdownKey(to);
+              const hasSections = sections && sections.length > 0;
+              const isActive = pathname === to;
+              const accentColor = to === "/studio" ? "blue" : "amber";
+
+              return (
+                <div
+                  key={to}
+                  className="relative"
+                  onMouseEnter={() => hasSections && handleDropdownEnter(dropKey)}
+                  onMouseLeave={() => hasSections && handleDropdownLeave()}
+                >
+                  <Link
+                    to={to}
+                    className={`relative text-sm tracking-wide transition-colors hover:text-amber-400 flex items-center gap-1 ${
+                      isActive ? "text-amber-400" : "text-neutral-300"
+                    }`}
+                  >
+                    {label}
+                    {hasSections && (
+                      <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                        openDropdown === dropKey ? "rotate-180" : ""
+                      }`} />
+                    )}
+                    {isActive && (
+                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-amber-400 rounded-full" />
+                    )}
+                  </Link>
+
+                  {/* Desktop dropdown */}
+                  {hasSections && openDropdown === dropKey && (
+                    <div
+                      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-neutral-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
+                      onMouseEnter={() => handleDropdownEnter(dropKey)}
+                      onMouseLeave={handleDropdownLeave}
+                    >
+                      <div className="py-1.5">
+                        {sections.map((sec) => (
+                          <button
+                            key={sec.id}
+                            onClick={() => scrollToSection(to, sec.id)}
+                            className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                              accentColor === "blue"
+                                ? "text-neutral-400 hover:text-blue-300 hover:bg-blue-400/5"
+                                : "text-neutral-400 hover:text-amber-300 hover:bg-amber-400/5"
+                            }`}
+                          >
+                            {sec.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
             <div ref={langRefDesktop} className="relative">
               <button
                 onClick={() => setLangOpen(!langOpen)}
@@ -141,25 +222,67 @@ export default function Navbar() {
       {/* Mobile menu with slide animation */}
       <div
         className={`md:hidden overflow-hidden transition-all duration-300 ${
-          menuOpen ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
+          menuOpen ? "max-h-[80vh] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
-        <div className="bg-neutral-950/95 backdrop-blur-xl border-t border-white/10">
+        <div className="bg-neutral-950/95 backdrop-blur-xl border-t border-white/10 overflow-y-auto max-h-[70vh]">
           <div className="px-4 py-4 space-y-1">
-            {navLinks.map(({ to, label }) => (
-              <Link
-                key={to}
-                to={to}
-                onClick={() => setMenuOpen(false)}
-                className={`block px-3 py-3 rounded-lg text-base tracking-wide transition-all ${
-                  pathname === to
-                    ? "text-amber-400 bg-amber-400/5"
-                    : "text-neutral-300 hover:text-amber-400 hover:bg-white/5"
-                }`}
-              >
-                {label}
-              </Link>
-            ))}
+            {navLinks.map(({ to, label, sections }) => {
+              const dropKey = getDropdownKey(to);
+              const hasSections = sections && sections.length > 0;
+              const isExpanded = mobileExpanded === dropKey;
+              const accentColor = to === "/studio" ? "blue" : "amber";
+
+              return (
+                <div key={to}>
+                  <div className="flex items-center">
+                    <Link
+                      to={to}
+                      onClick={() => { setMenuOpen(false); setMobileExpanded(null); }}
+                      className={`flex-1 px-3 py-3 rounded-lg text-base tracking-wide transition-all ${
+                        pathname === to
+                          ? "text-amber-400 bg-amber-400/5"
+                          : "text-neutral-300 hover:text-amber-400 hover:bg-white/5"
+                      }`}
+                    >
+                      {label}
+                    </Link>
+                    {hasSections && (
+                      <button
+                        onClick={() => setMobileExpanded(isExpanded ? null : dropKey)}
+                        className="p-3 text-neutral-400 hover:text-white transition-colors"
+                        aria-label="Show sections"
+                      >
+                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Mobile sub-sections */}
+                  {hasSections && (
+                    <div className={`overflow-hidden transition-all duration-300 ${
+                      isExpanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                    }`}>
+                      <div className="pl-6 pb-2 space-y-0.5">
+                        {sections.map((sec) => (
+                          <button
+                            key={sec.id}
+                            onClick={() => scrollToSection(to, sec.id)}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                              accentColor === "blue"
+                                ? "text-neutral-500 hover:text-blue-300 hover:bg-blue-400/5"
+                                : "text-neutral-500 hover:text-amber-300 hover:bg-amber-400/5"
+                            }`}
+                          >
+                            {sec.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
