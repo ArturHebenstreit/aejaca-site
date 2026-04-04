@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Printer, Zap, Layers, Box } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
+import { trackCalc } from "../utils/analytics.js";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import Print3DCalc from "./calculators/Print3DCalc.jsx";
 import CO2LaserCalc from "./calculators/CO2LaserCalc.jsx";
@@ -45,7 +46,7 @@ export default function StudioCalculator() {
           {TECHS.map(({ id, icon: Icon, labelKey }) => (
             <button
               key={id}
-              onClick={() => setActiveTech(id)}
+              onClick={() => { setActiveTech(id); trackCalc("studio", "tech_tab", id); }}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200 ${
                 activeTech === id
                   ? "border-blue-400 bg-blue-400/10 text-blue-300"

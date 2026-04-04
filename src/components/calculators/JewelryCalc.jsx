@@ -3,6 +3,7 @@
 // ============================================================
 import { useState, useMemo } from "react";
 import { t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
+import { trackCalc } from "../../utils/analytics.js";
 import {
   METAL_PRICES, EUR_PLN, MARGIN, REPAIR_MARGIN, TOL_LOW, TOL_HIGH,
   SERVICE_TYPES, PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING,
@@ -264,7 +265,7 @@ export default function JewelryCalc({ lang = "pl" }) {
       <CalcCard stepNum={step()} label={l.service}>
         <div className="grid grid-cols-3 gap-3">
           {SERVICE_TYPES.map(s => (
-            <button key={s.id} onClick={() => setServiceId(s.id)}
+            <button key={s.id} onClick={() => { setServiceId(s.id); trackCalc("jewelry", "service", s.id); }}
               className={`p-3 rounded-xl border text-left transition-all ${serviceId === s.id ? "border-amber-400 bg-amber-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}>
               <div className={`text-sm font-bold mb-1 ${serviceId === s.id ? "text-amber-300" : "text-white"}`}>{t(s.label, lang)}</div>
               <div className="text-[10px] text-neutral-500">{t(s.desc, lang)}</div>
@@ -279,7 +280,7 @@ export default function JewelryCalc({ lang = "pl" }) {
           <CalcCard stepNum={step()} label={l.line}>
             <div className="grid grid-cols-3 gap-3">
               {PRODUCT_LINES.map(pl => (
-                <button key={pl.id} onClick={() => { setLineId(pl.id); setTypeId(JEWELRY_TYPES[pl.id]?.[0]?.id || ""); }}
+                <button key={pl.id} onClick={() => { setLineId(pl.id); setTypeId(JEWELRY_TYPES[pl.id]?.[0]?.id || ""); trackCalc("jewelry", "line", pl.id); }}
                   className={`p-3 rounded-xl border text-left transition-all ${lineId === pl.id ? "border-amber-400 bg-amber-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}>
                   <div className={`text-sm font-bold mb-1 ${lineId === pl.id ? "text-amber-300" : "text-white"}`}>{pl.label}</div>
                   <div className="text-[10px] text-neutral-500">{t(pl.desc, lang)}</div>
@@ -293,7 +294,7 @@ export default function JewelryCalc({ lang = "pl" }) {
           </CalcCard>
 
           <CalcCard stepNum={step()} label={l.metal}>
-            <Chips options={METALS} value={metalId} onChange={setMetalId} lang={lang} />
+            <Chips options={METALS} value={metalId} onChange={v => { setMetalId(v); trackCalc("jewelry", "metal", v); }} lang={lang} />
           </CalcCard>
 
           <CalcCard stepNum={step()} label={l.weight}>
@@ -337,7 +338,8 @@ export default function JewelryCalc({ lang = "pl" }) {
                 const active = gemId === g.id;
                 const label = t(g.label, lang);
                 return (
-                  <button key={g.id} onClick={() => setGemId(g.id)}
+                  <button key={g.id}
+                    onClick={() => { setGemId(g.id); trackCalc("jewelry", "gem", g.id); }}
                     className={`px-3 py-2 rounded-lg border text-sm transition-all duration-200 ${
                       g.custom && !active ? "border-dashed border-white/10 text-neutral-500 italic text-xs" :
                       g.custom && active ? "border-dashed border-amber-400 bg-amber-400/10 text-amber-300 font-medium" :

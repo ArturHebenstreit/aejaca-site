@@ -1,8 +1,15 @@
-import { Outlet } from "react-router-dom";
+import { useEffect } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
+import { trackPageView } from "../utils/analytics.js";
 
 export default function Layout() {
+  const location = useLocation();
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
+
   return (
     <div className="min-h-screen flex flex-col bg-neutral-950 text-white">
       {/* Skip to content — accessibility */}

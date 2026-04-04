@@ -3,6 +3,7 @@
 // ============================================================
 import { useState, useRef } from "react";
 import { Send, Paperclip, X } from "lucide-react";
+import { trackInquiry } from "../../utils/analytics.js";
 
 export const CONFIG = {
   EUR_PLN_RATE: 4.28,
@@ -308,6 +309,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
     if (fileName) body += `[${il.attachNote}: ${fileName}]\n`;
 
     const mailtoUrl = `mailto:contact@aejaca.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    trackInquiry(techLabel, paramsSummary);
     window.location.href = mailtoUrl;
 
     lastSendRef.current = now;
