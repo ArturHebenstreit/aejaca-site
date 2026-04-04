@@ -7,7 +7,7 @@ export default {
     jewelrySections: [
       { label: "O nas", id: "about" },
       { label: "Usługi", id: "services" },
-      { label: "Konfigurator", id: "configurator" },
+      { label: "Konfigurator", id: "calculator" },
       { label: "Proces", id: "process" },
       { label: "Portfolio", id: "portfolio" },
       { label: "Opinie", id: "testimonials" },

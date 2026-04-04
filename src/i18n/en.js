@@ -8,7 +8,7 @@ export default {
     jewelrySections: [
       { label: "About", id: "about" },
       { label: "Services", id: "services" },
-      { label: "Configurator", id: "configurator" },
+      { label: "Configurator", id: "calculator" },
       { label: "Process", id: "process" },
       { label: "Portfolio", id: "portfolio" },
       { label: "Testimonials", id: "testimonials" },
