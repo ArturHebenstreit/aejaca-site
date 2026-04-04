@@ -7,11 +7,10 @@ compatibility_date = "2024-12-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "aejaca-analytics"
-database_id = "PASTE_YOUR_D1_DATABASE_ID_HERE"
+database_id = "9d07aea3-64ce-4c43-8df9-0af1bae513a4"
 
 [vars]
-# Dashboard access token — change this to something secret!
-DASHBOARD_TOKEN = "CHANGE_ME_TO_A_RANDOM_SECRET"
+DASHBOARD_TOKEN = "rrmCOEuHaSk0AnyUhLrxCEltabLyQht"
 # Allowed origin for CORS
 ALLOWED_ORIGIN = "https://www.aejaca.com"
 
