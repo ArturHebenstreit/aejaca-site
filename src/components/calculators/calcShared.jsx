@@ -68,9 +68,9 @@ export function Chips({ options, value, onChange, lang = "pl" }) {
             onClick={() => !disabled && onChange(opt.id)}
             title={opt.note ? t(opt.note, lang) : undefined}
             disabled={disabled}
-            className={`px-3 py-2 rounded-lg border text-sm transition-all duration-200 ${
+            className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg border text-xs sm:text-sm transition-all duration-200 max-w-full break-words ${
               disabled ? "border-white/5 bg-white/[0.01] text-neutral-700 cursor-not-allowed line-through" :
-              isCustom && !active ? "border-dashed border-white/10 text-neutral-500 italic text-xs" :
+              isCustom && !active ? "border-dashed border-white/10 text-neutral-500 italic text-[11px] sm:text-xs" :
               isCustom && active ? "border-dashed border-blue-400 bg-blue-400/10 text-blue-300 font-medium" :
               active ? "border-blue-400 bg-blue-400/10 text-blue-300 font-medium" :
               "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20 hover:text-neutral-200"

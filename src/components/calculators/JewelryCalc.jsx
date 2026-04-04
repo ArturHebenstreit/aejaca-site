@@ -263,12 +263,12 @@ export default function JewelryCalc({ lang = "pl" }) {
     <div>
       {/* Step 1: Service Type */}
       <CalcCard stepNum={step()} label={l.service}>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {SERVICE_TYPES.map(s => (
             <button key={s.id} onClick={() => { setServiceId(s.id); trackCalc("jewelry", "service", s.id); }}
               className={`p-3 rounded-xl border text-left transition-all ${serviceId === s.id ? "border-amber-400 bg-amber-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}>
-              <div className={`text-sm font-bold mb-1 ${serviceId === s.id ? "text-amber-300" : "text-white"}`}>{t(s.label, lang)}</div>
-              <div className="text-[10px] text-neutral-500">{t(s.desc, lang)}</div>
+              <div className={`text-xs sm:text-sm font-bold mb-1 ${serviceId === s.id ? "text-amber-300" : "text-white"}`}>{t(s.label, lang)}</div>
+              <div className="text-[10px] text-neutral-500 break-words">{t(s.desc, lang)}</div>
             </button>
           ))}
         </div>
@@ -278,12 +278,12 @@ export default function JewelryCalc({ lang = "pl" }) {
       {serviceId === "new" && (
         <>
           <CalcCard stepNum={step()} label={l.line}>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {PRODUCT_LINES.map(pl => (
                 <button key={pl.id} onClick={() => { setLineId(pl.id); setTypeId(JEWELRY_TYPES[pl.id]?.[0]?.id || ""); trackCalc("jewelry", "line", pl.id); }}
                   className={`p-3 rounded-xl border text-left transition-all ${lineId === pl.id ? "border-amber-400 bg-amber-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}>
-                  <div className={`text-sm font-bold mb-1 ${lineId === pl.id ? "text-amber-300" : "text-white"}`}>{pl.label}</div>
-                  <div className="text-[10px] text-neutral-500">{t(pl.desc, lang)}</div>
+                  <div className={`text-xs sm:text-sm font-bold mb-1 ${lineId === pl.id ? "text-amber-300" : "text-white"}`}>{pl.label}</div>
+                  <div className="text-[10px] text-neutral-500 break-words">{t(pl.desc, lang)}</div>
                 </button>
               ))}
             </div>
@@ -317,12 +317,12 @@ export default function JewelryCalc({ lang = "pl" }) {
           </CalcCard>
 
           <CalcCard stepNum={step()} label={l.method}>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {METHODS.filter(m => !m.custom).map(m => (
                 <button key={m.id} onClick={() => setMethodId(m.id)}
                   className={`p-3 rounded-xl border text-left transition-all ${methodId === m.id ? "border-amber-400 bg-amber-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}>
-                  <div className={`text-sm font-bold mb-1 ${methodId === m.id ? "text-amber-300" : "text-white"}`}>{t(m.label, lang)}</div>
-                  <div className="text-[10px] text-neutral-500">{t(m.desc, lang)}</div>
+                  <div className={`text-xs sm:text-sm font-bold mb-1 ${methodId === m.id ? "text-amber-300" : "text-white"}`}>{t(m.label, lang)}</div>
+                  <div className="text-[10px] text-neutral-500 break-words">{t(m.desc, lang)}</div>
                 </button>
               ))}
             </div>
@@ -419,7 +419,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                 const active = renoServices.includes(svc.id);
                 return (
                   <button key={svc.id} onClick={() => toggleRenoService(svc.id)}
-                    className={`px-3 py-2 rounded-lg border text-sm transition-all duration-200 ${
+                    className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg border text-xs sm:text-sm transition-all duration-200 max-w-full break-words ${
                       active ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
                         : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20 hover:text-neutral-200"
                     }`}>
