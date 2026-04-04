@@ -15,7 +15,8 @@ export const METAL_PRICES = {
 };
 
 export const EUR_PLN = 4.28;
-export const MARGIN = 0.45;
+export const MARGIN = 0.45;          // new creation margin
+export const REPAIR_MARGIN = 0.15;   // repair/renovation margin (labor IS the product)
 export const TOL_LOW = 0.25;
 export const TOL_HIGH = 0.35;
 
@@ -174,27 +175,30 @@ export const CERTIFICATIONS = [
   { id: "none",  label: { pl: "Bez certyfikatu", en: "No certificate", de: "Ohne Zertifikat" }, mul: 1.0 },
 ];
 
-// --- RENOVATION SERVICES ---
+// --- RENOVATION SERVICES (market-verified PLN, 2025-2026) ---
+// Sources: Jubiler Legnica, Fafreto, Slojewski, Stanczyk Warszawa
 export const RENOVATION_SERVICES = [
-  { id: "clean",    label: { pl: "Głębokie czyszczenie i polerowanie", en: "Deep cleaning & polishing", de: "Tiefenreinigung & Politur" }, basePLN: 60 },
-  { id: "rhodium_r",label: { pl: "Rodowanie (replating)", en: "Rhodium replating", de: "Rhodium-Neubeschichtung" }, basePLN: 120 },
-  { id: "gold_r",   label: { pl: "Złocenie (replating)", en: "Gold replating", de: "Neuvergoldung" }, basePLN: 100 },
-  { id: "stone_ck", label: { pl: "Kontrola i dokręcenie kamieni", en: "Stone check & tightening", de: "Steinkontrolle & Nachfassen" }, basePLN: 80 },
-  { id: "engrave",  label: { pl: "Grawerowanie / personalizacja", en: "Engraving / personalization", de: "Gravur / Personalisierung" }, basePLN: 90 },
+  { id: "clean",    label: { pl: "Głębokie czyszczenie i polerowanie", en: "Deep cleaning & polishing", de: "Tiefenreinigung & Politur" }, basePLN: 30 },
+  { id: "rhodium_r",label: { pl: "Rodowanie (replating)", en: "Rhodium replating", de: "Rhodium-Neubeschichtung" }, basePLN: 60 },
+  { id: "gold_r",   label: { pl: "Złocenie (replating)", en: "Gold replating", de: "Neuvergoldung" }, basePLN: 70 },
+  { id: "stone_ck", label: { pl: "Kontrola i dokręcenie kamieni", en: "Stone check & tightening", de: "Steinkontrolle & Nachfassen" }, basePLN: 35 },
+  { id: "engrave",  label: { pl: "Grawerowanie / personalizacja", en: "Engraving / personalization", de: "Gravur / Personalisierung" }, basePLN: 55 },
 ];
 
-// --- REPAIR SERVICES ---
+// --- REPAIR SERVICES (market-verified PLN, 2025-2026) ---
+// Sources: Jubiler Legnica, RAJ Legnica, Markiewicz, cennik-uslug.pl
 export const REPAIR_SERVICES = [
-  { id: "resize",   label: { pl: "Zmiana rozmiaru pierścionka", en: "Ring resizing", de: "Ringgröße ändern" }, basePLN: 120 },
-  { id: "prong",    label: { pl: "Naprawa łapek / oprawki", en: "Prong / setting repair", de: "Krappen- / Fassungsreparatur" }, basePLN: 100 },
-  { id: "stone_rep",label: { pl: "Wymiana kamienia (bez kosztu kamienia)", en: "Stone replacement (excl. stone cost)", de: "Steinersatz (ohne Steinkosten)" }, basePLN: 130 },
-  { id: "clasp",    label: { pl: "Naprawa zapięcia / mechanizmu", en: "Clasp / mechanism repair", de: "Verschluss- / Mechanismus-Reparatur" }, basePLN: 90 },
-  { id: "chain_rep",label: { pl: "Naprawa łańcuszka / ogniwa", en: "Chain / link repair", de: "Ketten- / Gliederreparatur" }, basePLN: 80 },
-  { id: "solder",   label: { pl: "Lutowanie / łączenie", en: "Soldering / joining", de: "Löten / Verbinden" }, basePLN: 100 },
+  { id: "resize",   label: { pl: "Zmiana rozmiaru pierścionka", en: "Ring resizing", de: "Ringgröße ändern" }, basePLN: 80 },
+  { id: "prong",    label: { pl: "Naprawa łapek / oprawki", en: "Prong / setting repair", de: "Krappen- / Fassungsreparatur" }, basePLN: 60 },
+  { id: "stone_rep",label: { pl: "Wymiana kamienia (bez kosztu kamienia)", en: "Stone replacement (excl. stone cost)", de: "Steinersatz (ohne Steinkosten)" }, basePLN: 70 },
+  { id: "clasp",    label: { pl: "Naprawa zapięcia / mechanizmu", en: "Clasp / mechanism repair", de: "Verschluss- / Mechanismus-Reparatur" }, basePLN: 50 },
+  { id: "chain_rep",label: { pl: "Naprawa łańcuszka / ogniwa", en: "Chain / link repair", de: "Ketten- / Gliederreparatur" }, basePLN: 50 },
+  { id: "solder",   label: { pl: "Lutowanie / łączenie", en: "Soldering / joining", de: "Löten / Verbinden" }, basePLN: 50 },
 ];
 
 // Metal multiplier for repair/renovation costs
-export const REPAIR_METAL_MUL = { silver: 1.0, gold: 1.6, platinum: 2.2 };
+// Gold higher due to careful work + risk, platinum highest
+export const REPAIR_METAL_MUL = { silver: 1.0, gold: 1.3, platinum: 1.7 };
 
 // --- QUANTITY TIERS (jewelry-specific) ---
 export const QTY_TIERS = [

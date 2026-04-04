@@ -4,7 +4,7 @@
 import { useState, useMemo } from "react";
 import { t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
 import {
-  METAL_PRICES, EUR_PLN, MARGIN, TOL_LOW, TOL_HIGH,
+  METAL_PRICES, EUR_PLN, MARGIN, REPAIR_MARGIN, TOL_LOW, TOL_HIGH,
   SERVICE_TYPES, PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING,
   GEMSTONES, STONE_SIZES, STONE_COUNTS, DIAMOND_CLARITY, DIAMOND_COLOR,
   GEM_QUALITY, CERTIFICATIONS, RENOVATION_SERVICES, REPAIR_SERVICES,
@@ -56,8 +56,8 @@ const LBL = {
   },
 };
 
-function applyJewelryPricing(baseCost, discountRate, qty) {
-  const basePrice = baseCost * (1 + MARGIN);
+function applyJewelryPricing(baseCost, discountRate, qty, margin = MARGIN) {
+  const basePrice = baseCost * (1 + margin);
   const discounted = basePrice * (1 - discountRate);
   const perMin = Math.round(discounted * (1 - TOL_LOW));
   const perMax = Math.round(discounted * (1 + TOL_HIGH));
@@ -160,15 +160,15 @@ function calcRenovation({ jewTypeId, metalTypeId, services, qtyId }, lang) {
       rows.push({ label: t(svc.label, lang), value: fmtCost(cost, lang) });
     }
   }
-  const afterMargin = totalService * (1 + MARGIN);
-  const pricing = applyJewelryPricing(totalService, qTier.discount, qTier.qty);
+  const afterMargin = totalService * (1 + REPAIR_MARGIN);
+  const pricing = applyJewelryPricing(totalService, qTier.discount, qTier.qty, REPAIR_MARGIN);
   return {
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     breakdown: [
       ...rows,
       { divider: true },
       { label: l.serviceCost, value: fmtCost(totalService, lang) },
-      { label: `${l.margin} (+${MARGIN * 100}%)`, value: fmtCost(totalService * MARGIN, lang) },
+      { label: `${l.margin} (+${REPAIR_MARGIN * 100}%)`, value: fmtCost(totalService * REPAIR_MARGIN, lang) },
       { label: l.afterMargin, value: fmtCost(afterMargin, lang), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
     ],
@@ -185,15 +185,15 @@ function calcRepair({ jewTypeId, metalTypeId, repairId, qtyId }, lang) {
 
   const metalMul = REPAIR_METAL_MUL[gMetal.metalKey] || 1.0;
   const cost = repair.basePLN * metalMul;
-  const afterMargin = cost * (1 + MARGIN);
-  const pricing = applyJewelryPricing(cost, qTier.discount, qTier.qty);
+  const afterMargin = cost * (1 + REPAIR_MARGIN);
+  const pricing = applyJewelryPricing(cost, qTier.discount, qTier.qty, REPAIR_MARGIN);
   return {
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     breakdown: [
       { label: t(repair.label, lang), value: fmtCost(cost, lang) },
       { divider: true },
       { label: l.baseCost, value: fmtCost(cost, lang) },
-      { label: `${l.margin} (+${MARGIN * 100}%)`, value: fmtCost(cost * MARGIN, lang) },
+      { label: `${l.margin} (+${REPAIR_MARGIN * 100}%)`, value: fmtCost(cost * REPAIR_MARGIN, lang) },
       { label: l.afterMargin, value: fmtCost(afterMargin, lang), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
     ],
