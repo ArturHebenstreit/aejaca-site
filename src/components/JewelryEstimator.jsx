@@ -1,5 +1,4 @@
 import { useLanguage } from "../i18n/LanguageContext.jsx";
-import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import JewelryCalc from "./calculators/JewelryCalc.jsx";
 
 const LABELS = {
@@ -25,12 +24,11 @@ const LABELS = {
 
 export default function JewelryEstimator() {
   const { lang } = useLanguage();
-  const sectionRef = useScrollReveal();
   const l = LABELS[lang] || LABELS.en;
 
   return (
     <section id="calculator" className="py-20 px-4 bg-neutral-950">
-      <div ref={sectionRef} className="reveal max-w-2xl mx-auto">
+      <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{l.tag}</div>
           <h2 className="font-serif text-3xl md:text-4xl font-semibold text-white tracking-tight">{l.title}</h2>
