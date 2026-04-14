@@ -333,21 +333,47 @@ export default function JewelryCalc({ lang = "pl" }) {
           </CalcCard>
 
           <CalcCard stepNum={step()} label={l.gem}>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-3">
               {GEMSTONES.map(g => {
                 const active = gemId === g.id;
                 const label = t(g.label, lang);
+                const hasImg = !!g.img;
+                const isSpecial = g.id === "none" || g.custom;
+
                 return (
                   <button key={g.id}
                     onClick={() => { setGemId(g.id); trackCalc("jewelry", "gem", g.id); }}
-                    className={`px-3 py-2 rounded-lg border text-sm transition-all duration-200 ${
-                      g.custom && !active ? "border-dashed border-white/10 text-neutral-500 italic text-xs" :
-                      g.custom && active ? "border-dashed border-amber-400 bg-amber-400/10 text-amber-300 font-medium" :
-                      active ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium" :
-                      "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20 hover:text-neutral-200"
+                    className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
+                      isSpecial && !active ? "border-dashed border-white/10 hover:border-white/20" :
+                      isSpecial && active ? "border-dashed border-amber-400 bg-amber-400/10" :
+                      active ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10" :
+                      "border-white/10 bg-white/[0.02] hover:border-white/20"
                     }`}>
-                    {label}
-                    {g.lab && <span className={`ml-1.5 text-[9px] px-1 py-0.5 rounded ${active ? "bg-amber-400/20 text-amber-300" : "bg-white/5 text-neutral-600"}`}>LAB</span>}
+                    {/* Image or placeholder */}
+                    <div className={`w-full aspect-square rounded-lg overflow-hidden ${
+                      hasImg ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
+                    }`}>
+                      {hasImg ? (
+                        <img src={g.img} alt={label} loading="lazy"
+                          className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+                      ) : (
+                        <span className={`text-2xl ${isSpecial ? "opacity-40" : "opacity-60"}`}>
+                          {g.id === "none" ? "∅" : g.custom ? "?" : "◆"}
+                        </span>
+                      )}
+                    </div>
+                    {/* Label */}
+                    <span className={`text-[10px] sm:text-[11px] text-center leading-tight break-words ${
+                      active ? "text-amber-300 font-medium" : "text-neutral-400"
+                    }`}>
+                      {label}
+                    </span>
+                    {/* LAB badge */}
+                    {g.lab && (
+                      <span className={`absolute top-1 right-1 text-[8px] px-1 py-0.5 rounded font-semibold tracking-wider ${
+                        active ? "bg-amber-400/30 text-amber-200" : "bg-black/60 text-amber-400/80"
+                      }`}>LAB</span>
+                    )}
                   </button>
                 );
               })}
