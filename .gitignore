@@ -26,6 +26,7 @@ dist-ssr
 *.sw?
 
 # Claude Code MCP config (may contain API keys)
+.mcp.json
 .mcp.json.local
 .env
 .env.local
