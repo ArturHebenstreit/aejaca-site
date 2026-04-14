@@ -43,25 +43,25 @@ export const PRODUCT_LINES = [
 // --- JEWELRY TYPES per line ---
 export const JEWELRY_TYPES = {
   woman: [
-    { id: "ring",      label: { pl: "Pierścionek", en: "Ring", de: "Ring" }, baseWeight: 4, laborH: 6, complexity: 1.0 },
-    { id: "bracelet",  label: { pl: "Bransoletka", en: "Bracelet", de: "Armband" }, baseWeight: 15, laborH: 8, complexity: 1.2 },
-    { id: "pendant",   label: { pl: "Wisiorek", en: "Pendant", de: "Anhänger" }, baseWeight: 4, laborH: 4, complexity: 0.8 },
-    { id: "earrings",  label: { pl: "Kolczyki (para)", en: "Earrings (pair)", de: "Ohrringe (Paar)" }, baseWeight: 4, laborH: 7, complexity: 1.1 },
-    { id: "brooch",    label: { pl: "Broszka", en: "Brooch", de: "Brosche" }, baseWeight: 8, laborH: 6, complexity: 1.0 },
-    { id: "necklace",  label: { pl: "Naszyjnik / łańcuszek", en: "Necklace / chain", de: "Halskette / Kette" }, baseWeight: 12, laborH: 5, complexity: 0.9 },
+    { id: "ring",      label: { pl: "Pierścionek", en: "Ring", de: "Ring" }, baseWeight: 4, laborH: 6, complexity: 1.0, img: "/img/calc/types/ring.png" },
+    { id: "bracelet",  label: { pl: "Bransoletka", en: "Bracelet", de: "Armband" }, baseWeight: 15, laborH: 8, complexity: 1.2, img: "/img/calc/types/bracelet.png" },
+    { id: "pendant",   label: { pl: "Wisiorek", en: "Pendant", de: "Anhänger" }, baseWeight: 4, laborH: 4, complexity: 0.8, img: "/img/calc/types/pendant.png" },
+    { id: "earrings",  label: { pl: "Kolczyki (para)", en: "Earrings (pair)", de: "Ohrringe (Paar)" }, baseWeight: 4, laborH: 7, complexity: 1.1, img: "/img/calc/types/earrings.png" },
+    { id: "brooch",    label: { pl: "Broszka", en: "Brooch", de: "Brosche" }, baseWeight: 8, laborH: 6, complexity: 1.0, img: "/img/calc/types/brooch.png" },
+    { id: "necklace",  label: { pl: "Naszyjnik / łańcuszek", en: "Necklace / chain", de: "Halskette / Kette" }, baseWeight: 12, laborH: 5, complexity: 0.9, img: "/img/calc/types/necklace.png" },
   ],
   men: [
-    { id: "signet",    label: { pl: "Sygnet", en: "Signet ring", de: "Siegelring" }, baseWeight: 12, laborH: 7, complexity: 1.1 },
-    { id: "medallion", label: { pl: "Medalik", en: "Medallion", de: "Medaillon" }, baseWeight: 8, laborH: 5, complexity: 0.9 },
-    { id: "bracelet_m",label: { pl: "Bransoletka", en: "Bracelet", de: "Armband" }, baseWeight: 25, laborH: 8, complexity: 1.0 },
-    { id: "cufflinks", label: { pl: "Spinki do mankietów (para)", en: "Cufflinks (pair)", de: "Manschettenknöpfe (Paar)" }, baseWeight: 10, laborH: 6, complexity: 1.0 },
-    { id: "tie_clip",  label: { pl: "Spinka do krawata", en: "Tie clip", de: "Krawattennadel" }, baseWeight: 6, laborH: 4, complexity: 0.7 },
-    { id: "chain_m",   label: { pl: "Łańcuch", en: "Chain", de: "Kette" }, baseWeight: 20, laborH: 5, complexity: 0.8 },
+    { id: "signet",    label: { pl: "Sygnet", en: "Signet ring", de: "Siegelring" }, baseWeight: 12, laborH: 7, complexity: 1.1, img: "/img/calc/types/signet.png" },
+    { id: "medallion", label: { pl: "Medalik", en: "Medallion", de: "Medaillon" }, baseWeight: 8, laborH: 5, complexity: 0.9, img: "/img/calc/types/medallion.png" },
+    { id: "bracelet_m",label: { pl: "Bransoletka", en: "Bracelet", de: "Armband" }, baseWeight: 25, laborH: 8, complexity: 1.0, img: "/img/calc/types/bracelet_m.png" },
+    { id: "cufflinks", label: { pl: "Spinki do mankietów (para)", en: "Cufflinks (pair)", de: "Manschettenknöpfe (Paar)" }, baseWeight: 10, laborH: 6, complexity: 1.0, img: "/img/calc/types/cufflinks.png" },
+    { id: "tie_clip",  label: { pl: "Spinka do krawata", en: "Tie clip", de: "Krawattennadel" }, baseWeight: 6, laborH: 4, complexity: 0.7, img: "/img/calc/types/tie_clip.png" },
+    { id: "chain_m",   label: { pl: "Łańcuch", en: "Chain", de: "Kette" }, baseWeight: 20, laborH: 5, complexity: 0.8, img: "/img/calc/types/chain_m.png" },
   ],
   pet: [
-    { id: "tag",       label: { pl: "Zawieszka / adresówka", en: "Tag / ID pendant", de: "Anhänger / Adressmarke" }, baseWeight: 4, laborH: 3, complexity: 0.6 },
-    { id: "charm",     label: { pl: "Ozdoba na obrożę", en: "Collar charm", de: "Halsbandschmuck" }, baseWeight: 3, laborH: 3, complexity: 0.6 },
-    { id: "pin",       label: { pl: "Spinka na obrożę", en: "Collar pin", de: "Halsbandnadel" }, baseWeight: 2, laborH: 2, complexity: 0.5 },
+    { id: "tag",       label: { pl: "Zawieszka / adresówka", en: "Tag / ID pendant", de: "Anhänger / Adressmarke" }, baseWeight: 4, laborH: 3, complexity: 0.6, img: "/img/calc/types/tag.png" },
+    { id: "charm",     label: { pl: "Ozdoba na obrożę", en: "Collar charm", de: "Halsbandschmuck" }, baseWeight: 3, laborH: 3, complexity: 0.6, img: "/img/calc/types/charm.png" },
+    { id: "pin",       label: { pl: "Spinka na obrożę", en: "Collar pin", de: "Halsbandnadel" }, baseWeight: 2, laborH: 2, complexity: 0.5, img: "/img/calc/types/pin.png" },
   ],
 };
 
