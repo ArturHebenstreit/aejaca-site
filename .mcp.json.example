@@ -1,16 +1,13 @@
 {
   "mcpServers": {
-    "nano-banana": {
+    "nano-banana-pro": {
       "command": "npx",
       "args": [
         "-y",
-        "@daveremy/nano-banana-2-mcp"
+        "@easyuseai/nano-banana-pro-mcp"
       ],
       "env": {
-        "GEMINI_API_KEY": "${GEMINI_API_KEY}",
-        "OUTPUT_DIR": "./public/img/calc",
-        "DEFAULT_MODEL": "gemini-2.5-flash-image",
-        "DEFAULT_ASPECT_RATIO": "1:1"
+        "GEMINI_API_KEY": "${GEMINI_API_KEY}"
       }
     },
     "playwright": {
