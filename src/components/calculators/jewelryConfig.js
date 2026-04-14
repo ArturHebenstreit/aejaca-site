@@ -77,11 +77,10 @@ export const METALS = [
 ];
 
 // --- WEIGHT RANGES ---
-// visual: ringW = border width for ring silhouette, ringS = size
 export const WEIGHTS = [
-  { id: "light",    label: { pl: "Lekka / delikatna", en: "Light / delicate", de: "Leicht / zart" }, mul: 0.6, visual: { ringW: 1, ringS: 28 } },
-  { id: "standard", label: { pl: "Klasyczna", en: "Standard", de: "Standard" }, mul: 1.0, visual: { ringW: 3, ringS: 32 } },
-  { id: "heavy",    label: { pl: "Masywna", en: "Heavy / bold", de: "Massiv / kräftig" }, mul: 1.8, visual: { ringW: 6, ringS: 38 } },
+  { id: "light",    label: { pl: "Lekka / delikatna", en: "Light / delicate", de: "Leicht / zart" },   desc: { pl: "Cienkie druty, delikatne ogniwa, minimalistyczne formy", en: "Thin wires, delicate links, minimalist forms", de: "Dünne Drähte, zarte Glieder, minimalistische Formen" }, mul: 0.6, img: "/img/calc/weights/light.png" },
+  { id: "standard", label: { pl: "Klasyczna", en: "Standard", de: "Standard" },                         desc: { pl: "Zrównoważone proporcje, codzienna elegancja", en: "Balanced proportions, everyday elegance", de: "Ausgewogene Proportionen, alltägliche Eleganz" }, mul: 1.0, img: "/img/calc/weights/standard.png" },
+  { id: "heavy",    label: { pl: "Masywna", en: "Heavy / bold", de: "Massiv / kräftig" },               desc: { pl: "Grube ściany, statement piece, wyraźna obecność", en: "Thick walls, statement piece, strong presence", de: "Dicke Wände, Statement-Piece, starke Präsenz" }, mul: 1.8, img: "/img/calc/weights/heavy.png" },
   { id: "custom_w", label: { pl: "Niestandardowa", en: "Custom", de: "Individuell" }, mul: null, custom: true },
 ];
 
