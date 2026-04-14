@@ -264,13 +264,33 @@ export default function JewelryCalc({ lang = "pl" }) {
       {/* Step 1: Service Type */}
       <CalcCard stepNum={step()} label={l.service}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {SERVICE_TYPES.map(s => (
-            <button key={s.id} onClick={() => { setServiceId(s.id); trackCalc("jewelry", "service", s.id); }}
-              className={`p-3 rounded-xl border text-left transition-all ${serviceId === s.id ? "border-amber-400 bg-amber-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}>
-              <div className={`text-xs sm:text-sm font-bold mb-1 ${serviceId === s.id ? "text-amber-300" : "text-white"}`}>{t(s.label, lang)}</div>
-              <div className="text-[10px] text-neutral-500 break-words">{t(s.desc, lang)}</div>
-            </button>
-          ))}
+          {SERVICE_TYPES.map(s => {
+            const active = serviceId === s.id;
+            return (
+              <button key={s.id} onClick={() => { setServiceId(s.id); trackCalc("jewelry", "service", s.id); }}
+                className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden ${
+                  active ? "border-amber-400 shadow-lg shadow-amber-400/10" : "border-white/10 hover:border-white/20"
+                }`}>
+                {/* Background image */}
+                {s.img && (
+                  <div className="absolute inset-0 overflow-hidden">
+                    <img src={s.img} alt="" loading="lazy"
+                      className={`w-full h-full object-cover transition-all duration-500 ${
+                        active ? "opacity-60 scale-105" : "opacity-35 group-hover:opacity-50 group-hover:scale-105"
+                      }`} />
+                    <div className={`absolute inset-0 bg-gradient-to-t ${
+                      active ? "from-amber-950/80 via-black/60 to-black/40" : "from-black/90 via-black/70 to-black/40"
+                    }`} />
+                  </div>
+                )}
+                {/* Text content */}
+                <div className="relative p-3 min-h-[90px] flex flex-col justify-end">
+                  <div className={`text-xs sm:text-sm font-bold mb-1 ${active ? "text-amber-300" : "text-white"}`}>{t(s.label, lang)}</div>
+                  <div className="text-[10px] text-neutral-300 break-words">{t(s.desc, lang)}</div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </CalcCard>
 
@@ -279,13 +299,33 @@ export default function JewelryCalc({ lang = "pl" }) {
         <>
           <CalcCard stepNum={step()} label={l.line}>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {PRODUCT_LINES.map(pl => (
-                <button key={pl.id} onClick={() => { setLineId(pl.id); setTypeId(JEWELRY_TYPES[pl.id]?.[0]?.id || ""); trackCalc("jewelry", "line", pl.id); }}
-                  className={`p-3 rounded-xl border text-left transition-all ${lineId === pl.id ? "border-amber-400 bg-amber-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}>
-                  <div className={`text-xs sm:text-sm font-bold mb-1 ${lineId === pl.id ? "text-amber-300" : "text-white"}`}>{pl.label}</div>
-                  <div className="text-[10px] text-neutral-500 break-words">{t(pl.desc, lang)}</div>
-                </button>
-              ))}
+              {PRODUCT_LINES.map(pl => {
+                const active = lineId === pl.id;
+                return (
+                  <button key={pl.id} onClick={() => { setLineId(pl.id); setTypeId(JEWELRY_TYPES[pl.id]?.[0]?.id || ""); trackCalc("jewelry", "line", pl.id); }}
+                    className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden ${
+                      active ? "border-amber-400 shadow-lg shadow-amber-400/10" : "border-white/10 hover:border-white/20"
+                    }`}>
+                    {/* Background image */}
+                    {pl.img && (
+                      <div className="absolute inset-0 overflow-hidden">
+                        <img src={pl.img} alt="" loading="lazy"
+                          className={`w-full h-full object-cover transition-all duration-500 ${
+                            active ? "opacity-70 scale-105" : "opacity-40 group-hover:opacity-55 group-hover:scale-105"
+                          }`} />
+                        <div className={`absolute inset-0 bg-gradient-to-t ${
+                          active ? "from-amber-950/80 via-black/50 to-black/20" : "from-black/90 via-black/60 to-black/20"
+                        }`} />
+                      </div>
+                    )}
+                    {/* Text content */}
+                    <div className="relative p-3 min-h-[110px] flex flex-col justify-end">
+                      <div className={`text-xs sm:text-sm font-bold mb-1 ${active ? "text-amber-300" : "text-white"}`}>{pl.label}</div>
+                      <div className="text-[10px] text-neutral-300 break-words">{t(pl.desc, lang)}</div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </CalcCard>
 

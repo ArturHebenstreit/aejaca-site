@@ -23,18 +23,21 @@ export const TOL_HIGH = 0.35;
 // --- SERVICE TYPES ---
 export const SERVICE_TYPES = [
   { id: "new", label: { pl: "Nowe zlecenie", en: "New creation", de: "Neuanfertigung" },
-    desc: { pl: "Projektowanie i wykonanie biżuterii na zamówienie", en: "Custom jewelry design and creation", de: "Individuelles Schmuckdesign und -herstellung" } },
+    desc: { pl: "Projektowanie i wykonanie biżuterii na zamówienie", en: "Custom jewelry design and creation", de: "Individuelles Schmuckdesign und -herstellung" },
+    img: "/img/calc/services/new.png" },
   { id: "renovation", label: { pl: "Renowacja / Odświeżenie", en: "Renovation / Refresh", de: "Renovation / Auffrischung" },
-    desc: { pl: "Czyszczenie, polerowanie, powlekanie, kontrola kamieni", en: "Cleaning, polishing, replating, stone check", de: "Reinigung, Politur, Neubeschichtung, Steinkontrolle" } },
+    desc: { pl: "Czyszczenie, polerowanie, powlekanie, kontrola kamieni", en: "Cleaning, polishing, replating, stone check", de: "Reinigung, Politur, Neubeschichtung, Steinkontrolle" },
+    img: "/img/calc/services/renovation.png" },
   { id: "repair", label: { pl: "Naprawa", en: "Repair", de: "Reparatur" },
-    desc: { pl: "Zmiana rozmiaru, naprawa oprawek, wymiana kamieni, lutowanie", en: "Resizing, prong repair, stone replacement, soldering", de: "Größenanpassung, Fassungsreparatur, Steinersatz, Löten" } },
+    desc: { pl: "Zmiana rozmiaru, naprawa oprawek, wymiana kamieni, lutowanie", en: "Resizing, prong repair, stone replacement, soldering", de: "Größenanpassung, Fassungsreparatur, Steinersatz, Löten" },
+    img: "/img/calc/services/repair.png" },
 ];
 
 // --- PRODUCT LINES ---
 export const PRODUCT_LINES = [
-  { id: "woman", label: "AEJaCA Woman", desc: { pl: "Pierścionki, bransoletki, wisiorki, kolczyki, brosze", en: "Rings, bracelets, pendants, earrings, brooches", de: "Ringe, Armbänder, Anhänger, Ohrringe, Broschen" } },
-  { id: "men", label: "AEJaCA Men", desc: { pl: "Sygnety, medaliki, bransoletki, spinki, łańcuchy", en: "Signet rings, medallions, bracelets, cufflinks, chains", de: "Siegelringe, Medaillons, Armbänder, Manschettenknöpfe, Ketten" } },
-  { id: "pet", label: "AEJaCA Pet", desc: { pl: "Zawieszki, ozdoby na obrożę, spinki", en: "Tags, collar charms, collar pins", de: "Anhänger, Halsbandschmuck, Nadeln" } },
+  { id: "woman", label: "AEJaCA Woman", desc: { pl: "Pierścionki, bransoletki, wisiorki, kolczyki, brosze", en: "Rings, bracelets, pendants, earrings, brooches", de: "Ringe, Armbänder, Anhänger, Ohrringe, Broschen" }, img: "/img/calc/lines/woman.png" },
+  { id: "men", label: "AEJaCA Men", desc: { pl: "Sygnety, medaliki, bransoletki, spinki, łańcuchy", en: "Signet rings, medallions, bracelets, cufflinks, chains", de: "Siegelringe, Medaillons, Armbänder, Manschettenknöpfe, Ketten" }, img: "/img/calc/lines/men.png" },
+  { id: "pet", label: "AEJaCA Pet", desc: { pl: "Zawieszki, ozdoby na obrożę, spinki", en: "Tags, collar charms, collar pins", de: "Anhänger, Halsbandschmuck, Nadeln" }, img: "/img/calc/lines/pet.png" },
 ];
 
 // --- JEWELRY TYPES per line ---
