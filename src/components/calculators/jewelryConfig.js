@@ -67,12 +67,12 @@ export const JEWELRY_TYPES = {
 
 // --- METALS with purity ---
 export const METALS = [
-  { id: "gold_24k", metal: "gold", label: { pl: "Złoto 24k (999)", en: "Gold 24k (999)", de: "Gold 24k (999)" }, purity: 0.999, laborMul: 1.3 },
-  { id: "gold_18k", metal: "gold", label: { pl: "Złoto 18k (750)", en: "Gold 18k (750)", de: "Gold 18k (750)" }, purity: 0.750, laborMul: 1.0 },
-  { id: "gold_14k", metal: "gold", label: { pl: "Złoto 14k (585)", en: "Gold 14k (585)", de: "Gold 14k (585)" }, purity: 0.585, laborMul: 1.0 },
-  { id: "gold_9k",  metal: "gold", label: { pl: "Złoto 9k (375)", en: "Gold 9k (375)", de: "Gold 9k (375)" }, purity: 0.375, laborMul: 0.9 },
-  { id: "silver",   metal: "silver", label: { pl: "Srebro 925", en: "Silver 925", de: "Silber 925" }, purity: 0.925, laborMul: 0.7 },
-  { id: "platinum",  metal: "platinum", label: { pl: "Platyna 950", en: "Platinum 950", de: "Platin 950" }, purity: 0.950, laborMul: 1.5 },
+  { id: "gold_24k", metal: "gold", label: { pl: "Złoto 24k (999)", en: "Gold 24k (999)", de: "Gold 24k (999)" }, purity: 0.999, laborMul: 1.3, img: "/img/calc/metals/gold_24k.png" },
+  { id: "gold_18k", metal: "gold", label: { pl: "Złoto 18k (750)", en: "Gold 18k (750)", de: "Gold 18k (750)" }, purity: 0.750, laborMul: 1.0, img: "/img/calc/metals/gold_18k.png" },
+  { id: "gold_14k", metal: "gold", label: { pl: "Złoto 14k (585)", en: "Gold 14k (585)", de: "Gold 14k (585)" }, purity: 0.585, laborMul: 1.0, img: "/img/calc/metals/gold_14k.png" },
+  { id: "gold_9k",  metal: "gold", label: { pl: "Złoto 9k (375)", en: "Gold 9k (375)", de: "Gold 9k (375)" }, purity: 0.375, laborMul: 0.9, img: "/img/calc/metals/gold_9k.png" },
+  { id: "silver",   metal: "silver", label: { pl: "Srebro 925", en: "Silver 925", de: "Silber 925" }, purity: 0.925, laborMul: 0.7, img: "/img/calc/metals/silver.png" },
+  { id: "platinum",  metal: "platinum", label: { pl: "Platyna 950", en: "Platinum 950", de: "Platin 950" }, purity: 0.950, laborMul: 1.5, img: "/img/calc/metals/platinum.png" },
   { id: "custom_metal", metal: null, label: { pl: "Inny kruszec", en: "Other metal", de: "Anderes Metall" }, purity: null, laborMul: null, custom: true },
 ];
 
@@ -88,18 +88,18 @@ export const WEIGHTS = [
 // --- MANUFACTURING METHODS ---
 export const METHODS = [
   { id: "handmade", label: { pl: "Ręczna (lutowanie + osadzanie)", en: "Handmade (soldering + setting)", de: "Handarbeit (Löten + Fassen)" },
-    desc: { pl: "Najwyższa jakość, unikalne wykonanie", en: "Highest quality, unique craftsmanship", de: "Höchste Qualität, einzigartige Handwerkskunst" }, laborMul: 1.0, laborRate: 150 },
+    desc: { pl: "Najwyższa jakość, unikalne wykonanie", en: "Highest quality, unique craftsmanship", de: "Höchste Qualität, einzigartige Handwerkskunst" }, laborMul: 1.0, laborRate: 150, img: "/img/calc/methods/handmade.png" },
   { id: "cast", label: { pl: "Odlew (lost wax)", en: "Cast (lost wax)", de: "Guss (Wachsausschmelzverfahren)" },
-    desc: { pl: "Precyzyjny odlew, idealne do serii", en: "Precision casting, ideal for series", de: "Präzisionsguss, ideal für Serien" }, laborMul: 0.6, laborRate: 150 },
+    desc: { pl: "Precyzyjny odlew, idealne do serii", en: "Precision casting, ideal for series", de: "Präzisionsguss, ideal für Serien" }, laborMul: 0.6, laborRate: 150, img: "/img/calc/methods/cast.png" },
   { id: "custom_m", label: { pl: "Niestandardowa", en: "Custom", de: "Individuell" }, laborMul: null, custom: true },
 ];
 
 // --- GALVANIC PLATING ---
 export const PLATING = [
   { id: "none",     label: { pl: "Brak", en: "None", de: "Keine" }, cost: 0 },
-  { id: "rhodium",  label: { pl: "Rod (standard dla białego złota/srebra)", en: "Rhodium (standard for white gold/silver)", de: "Rhodium (Standard für Weißgold/Silber)" }, cost: 120 },
-  { id: "gold_pl",  label: { pl: "Złocenie (vermeil)", en: "Gold plating (vermeil)", de: "Vergoldung (Vermeil)" }, cost: 90 },
-  { id: "rose_pl",  label: { pl: "Złocenie różowe", en: "Rose gold plating", de: "Roségold-Beschichtung" }, cost: 90 },
+  { id: "rhodium",  label: { pl: "Rod (standard dla białego złota/srebra)", en: "Rhodium (standard for white gold/silver)", de: "Rhodium (Standard für Weißgold/Silber)" }, cost: 120, img: "/img/calc/plating/rhodium.png" },
+  { id: "gold_pl",  label: { pl: "Złocenie (vermeil)", en: "Gold plating (vermeil)", de: "Vergoldung (Vermeil)" }, cost: 90, img: "/img/calc/plating/gold_pl.png" },
+  { id: "rose_pl",  label: { pl: "Złocenie różowe", en: "Rose gold plating", de: "Roségold-Beschichtung" }, cost: 90, img: "/img/calc/plating/rose_pl.png" },
   { id: "custom_pl",label: { pl: "Inne pokrycie", en: "Other plating", de: "Andere Beschichtung" }, cost: null, custom: true },
 ];
 
