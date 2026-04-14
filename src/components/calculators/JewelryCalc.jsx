@@ -510,7 +510,37 @@ export default function JewelryCalc({ lang = "pl" }) {
       {serviceId === "renovation" && (
         <>
           <CalcCard stepNum={step()} label={l.jewType}>
-            <Chips options={GENERIC_TYPES} value={renoJewType} onChange={setRenoJewType} lang={lang} />
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+              {GENERIC_TYPES.map(jt => {
+                const active = renoJewType === jt.id;
+                const label = t(jt.label, lang);
+                return (
+                  <button key={jt.id} onClick={() => setRenoJewType(jt.id)}
+                    className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
+                      active ? "border-sky-400 bg-sky-400/10 shadow-lg shadow-sky-400/10"
+                        : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                    }`}>
+                    <div className={`w-full aspect-square rounded-lg overflow-hidden relative ${
+                      jt.img ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
+                    }`}>
+                      {jt.img ? (
+                        <>
+                          <img src={jt.img} alt={label} loading="lazy"
+                            className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`}
+                            style={{ filter: "grayscale(30%) sepia(20%)" }} />
+                          <div className="absolute inset-0 bg-sky-900/30 mix-blend-multiply" />
+                        </>
+                      ) : (
+                        <span className="text-2xl opacity-40">?</span>
+                      )}
+                    </div>
+                    <span className={`text-[11px] sm:text-xs text-center leading-tight break-words ${
+                      active ? "text-sky-300 font-medium" : "text-neutral-400"
+                    }`}>{label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </CalcCard>
           <CalcCard stepNum={step()} label={l.metalType}>
             <Chips options={GENERIC_METALS} value={renoMetal} onChange={setRenoMetal} lang={lang} />
@@ -538,7 +568,37 @@ export default function JewelryCalc({ lang = "pl" }) {
       {serviceId === "repair" && (
         <>
           <CalcCard stepNum={step()} label={l.jewType}>
-            <Chips options={GENERIC_TYPES} value={repairJewType} onChange={setRepairJewType} lang={lang} />
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+              {GENERIC_TYPES.map(jt => {
+                const active = repairJewType === jt.id;
+                const label = t(jt.label, lang);
+                return (
+                  <button key={jt.id} onClick={() => setRepairJewType(jt.id)}
+                    className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
+                      active ? "border-orange-400 bg-orange-400/10 shadow-lg shadow-orange-400/10"
+                        : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                    }`}>
+                    <div className={`w-full aspect-square rounded-lg overflow-hidden relative ${
+                      jt.img ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
+                    }`}>
+                      {jt.img ? (
+                        <>
+                          <img src={jt.img} alt={label} loading="lazy"
+                            className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`}
+                            style={{ filter: "grayscale(45%) contrast(110%) sepia(10%)" }} />
+                          <div className="absolute inset-0 bg-orange-900/25 mix-blend-multiply" />
+                        </>
+                      ) : (
+                        <span className="text-2xl opacity-40">?</span>
+                      )}
+                    </div>
+                    <span className={`text-[11px] sm:text-xs text-center leading-tight break-words ${
+                      active ? "text-orange-300 font-medium" : "text-neutral-400"
+                    }`}>{label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </CalcCard>
           <CalcCard stepNum={step()} label={l.metalType}>
             <Chips options={GENERIC_METALS} value={repairMetal} onChange={setRepairMetal} lang={lang} />

@@ -224,11 +224,11 @@ export const QTY_TIERS = [
 
 // --- GENERIC JEWELRY TYPES (for renovation/repair) ---
 export const GENERIC_TYPES = [
-  { id: "ring_g",     label: { pl: "Pierścionek / sygnet", en: "Ring / signet", de: "Ring / Siegelring" } },
-  { id: "bracelet_g", label: { pl: "Bransoletka", en: "Bracelet", de: "Armband" } },
-  { id: "pendant_g",  label: { pl: "Wisiorek / medalik", en: "Pendant / medallion", de: "Anhänger / Medaillon" } },
-  { id: "earrings_g", label: { pl: "Kolczyki", en: "Earrings", de: "Ohrringe" } },
-  { id: "necklace_g", label: { pl: "Naszyjnik / łańcuszek", en: "Necklace / chain", de: "Halskette / Kette" } },
+  { id: "ring_g",     label: { pl: "Pierścionek / sygnet", en: "Ring / signet", de: "Ring / Siegelring" }, img: "/img/calc/types/ring.png" },
+  { id: "bracelet_g", label: { pl: "Bransoletka", en: "Bracelet", de: "Armband" },                         img: "/img/calc/types/bracelet.png" },
+  { id: "pendant_g",  label: { pl: "Wisiorek / medalik", en: "Pendant / medallion", de: "Anhänger / Medaillon" }, img: "/img/calc/types/pendant.png" },
+  { id: "earrings_g", label: { pl: "Kolczyki", en: "Earrings", de: "Ohrringe" },                           img: "/img/calc/types/earrings.png" },
+  { id: "necklace_g", label: { pl: "Naszyjnik / łańcuszek", en: "Necklace / chain", de: "Halskette / Kette" }, img: "/img/calc/types/necklace.png" },
   { id: "other_g",    label: { pl: "Inne", en: "Other", de: "Andere" } },
 ];
 
