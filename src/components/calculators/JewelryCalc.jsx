@@ -268,25 +268,28 @@ export default function JewelryCalc({ lang = "pl" }) {
             const active = serviceId === s.id;
             return (
               <button key={s.id} onClick={() => { setServiceId(s.id); trackCalc("jewelry", "service", s.id); }}
-                className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden ${
-                  active ? "border-amber-400 shadow-lg shadow-amber-400/10" : "border-white/10 hover:border-white/20"
+                className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[160px] ${
+                  active ? "border-amber-400 shadow-lg shadow-amber-400/20" : "border-white/10 hover:border-white/30"
                 }`}>
-                {/* Background image */}
+                {/* Background image (full visibility) */}
                 {s.img && (
                   <div className="absolute inset-0 overflow-hidden">
                     <img src={s.img} alt="" loading="lazy"
-                      className={`w-full h-full object-cover transition-all duration-500 ${
-                        active ? "opacity-60 scale-105" : "opacity-35 group-hover:opacity-50 group-hover:scale-105"
+                      className={`w-full h-full object-cover transition-transform duration-500 ${
+                        active ? "scale-105" : "group-hover:scale-105"
                       }`} />
-                    <div className={`absolute inset-0 bg-gradient-to-t ${
-                      active ? "from-amber-950/80 via-black/60 to-black/40" : "from-black/90 via-black/70 to-black/40"
-                    }`} />
+                    {/* Gradient only at bottom, preserves image visibility */}
+                    <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/95 via-black/70 to-transparent" />
+                    {/* Active state: amber tint */}
+                    {active && (
+                      <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />
+                    )}
                   </div>
                 )}
-                {/* Text content */}
-                <div className="relative p-3 min-h-[90px] flex flex-col justify-end">
-                  <div className={`text-xs sm:text-sm font-bold mb-1 ${active ? "text-amber-300" : "text-white"}`}>{t(s.label, lang)}</div>
-                  <div className="text-[10px] text-neutral-300 break-words">{t(s.desc, lang)}</div>
+                {/* Text content at bottom */}
+                <div className="relative p-3 h-full min-h-[160px] flex flex-col justify-end">
+                  <div className={`text-xs sm:text-sm font-bold mb-1 drop-shadow-lg ${active ? "text-amber-300" : "text-white"}`}>{t(s.label, lang)}</div>
+                  <div className="text-[10px] text-neutral-200 break-words drop-shadow-md">{t(s.desc, lang)}</div>
                 </div>
               </button>
             );
@@ -303,25 +306,28 @@ export default function JewelryCalc({ lang = "pl" }) {
                 const active = lineId === pl.id;
                 return (
                   <button key={pl.id} onClick={() => { setLineId(pl.id); setTypeId(JEWELRY_TYPES[pl.id]?.[0]?.id || ""); trackCalc("jewelry", "line", pl.id); }}
-                    className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden ${
-                      active ? "border-amber-400 shadow-lg shadow-amber-400/10" : "border-white/10 hover:border-white/20"
+                    className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[180px] ${
+                      active ? "border-amber-400 shadow-lg shadow-amber-400/20" : "border-white/10 hover:border-white/30"
                     }`}>
-                    {/* Background image */}
+                    {/* Background image (full visibility) */}
                     {pl.img && (
                       <div className="absolute inset-0 overflow-hidden">
                         <img src={pl.img} alt="" loading="lazy"
-                          className={`w-full h-full object-cover transition-all duration-500 ${
-                            active ? "opacity-70 scale-105" : "opacity-40 group-hover:opacity-55 group-hover:scale-105"
+                          className={`w-full h-full object-cover transition-transform duration-500 ${
+                            active ? "scale-105" : "group-hover:scale-105"
                           }`} />
-                        <div className={`absolute inset-0 bg-gradient-to-t ${
-                          active ? "from-amber-950/80 via-black/50 to-black/20" : "from-black/90 via-black/60 to-black/20"
-                        }`} />
+                        {/* Gradient only at bottom */}
+                        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/95 via-black/65 to-transparent" />
+                        {/* Active state: amber tint */}
+                        {active && (
+                          <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />
+                        )}
                       </div>
                     )}
-                    {/* Text content */}
-                    <div className="relative p-3 min-h-[110px] flex flex-col justify-end">
-                      <div className={`text-xs sm:text-sm font-bold mb-1 ${active ? "text-amber-300" : "text-white"}`}>{pl.label}</div>
-                      <div className="text-[10px] text-neutral-300 break-words">{t(pl.desc, lang)}</div>
+                    {/* Text content at bottom */}
+                    <div className="relative p-3 h-full min-h-[180px] flex flex-col justify-end">
+                      <div className={`text-sm sm:text-base font-bold mb-1 drop-shadow-lg ${active ? "text-amber-300" : "text-white"}`}>{pl.label}</div>
+                      <div className="text-[10px] text-neutral-200 break-words drop-shadow-md">{t(pl.desc, lang)}</div>
                     </div>
                   </button>
                 );
