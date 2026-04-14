@@ -659,7 +659,40 @@ export default function JewelryCalc({ lang = "pl" }) {
             </div>
           </CalcCard>
           <CalcCard stepNum={step()} label={l.metalType}>
-            <Chips options={GENERIC_METALS} value={renoMetal} onChange={setRenoMetal} lang={lang} />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+              {GENERIC_METALS.map(m => {
+                const active = renoMetal === m.id;
+                const label = t(m.label, lang);
+                if (!m.img) {
+                  return (
+                    <button key={m.id} onClick={() => setRenoMetal(m.id)}
+                      className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-dashed border transition-all text-xs ${
+                        active ? "border-sky-400 text-sky-300" : "border-white/10 text-neutral-500 hover:border-white/20 hover:text-neutral-400"
+                      }`}>
+                      <span className="text-lg opacity-50">?</span>
+                      <span className="text-center leading-tight">{label}</span>
+                    </button>
+                  );
+                }
+                return (
+                  <button key={m.id} onClick={() => setRenoMetal(m.id)}
+                    className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
+                      active ? "border-sky-400 bg-sky-400/10 shadow-lg shadow-sky-400/10"
+                        : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                    }`}>
+                    <div className="w-full aspect-square rounded-lg overflow-hidden relative bg-black">
+                      <img src={m.img} alt={label} loading="lazy"
+                        className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`}
+                        style={{ filter: "grayscale(30%) sepia(20%)" }} />
+                      <div className="absolute inset-0 bg-sky-900/30 mix-blend-multiply" />
+                    </div>
+                    <span className={`text-[10px] sm:text-[11px] text-center leading-tight break-words ${
+                      active ? "text-sky-300 font-medium" : "text-neutral-400"
+                    }`}>{label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </CalcCard>
           <CalcCard stepNum={step()} label={l.renoServices}>
             <div className="flex flex-wrap gap-2">
@@ -717,7 +750,40 @@ export default function JewelryCalc({ lang = "pl" }) {
             </div>
           </CalcCard>
           <CalcCard stepNum={step()} label={l.metalType}>
-            <Chips options={GENERIC_METALS} value={repairMetal} onChange={setRepairMetal} lang={lang} />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+              {GENERIC_METALS.map(m => {
+                const active = repairMetal === m.id;
+                const label = t(m.label, lang);
+                if (!m.img) {
+                  return (
+                    <button key={m.id} onClick={() => setRepairMetal(m.id)}
+                      className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-dashed border transition-all text-xs ${
+                        active ? "border-orange-400 text-orange-300" : "border-white/10 text-neutral-500 hover:border-white/20 hover:text-neutral-400"
+                      }`}>
+                      <span className="text-lg opacity-50">?</span>
+                      <span className="text-center leading-tight">{label}</span>
+                    </button>
+                  );
+                }
+                return (
+                  <button key={m.id} onClick={() => setRepairMetal(m.id)}
+                    className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
+                      active ? "border-orange-400 bg-orange-400/10 shadow-lg shadow-orange-400/10"
+                        : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                    }`}>
+                    <div className="w-full aspect-square rounded-lg overflow-hidden relative bg-black">
+                      <img src={m.img} alt={label} loading="lazy"
+                        className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`}
+                        style={{ filter: "grayscale(45%) contrast(110%) sepia(10%)" }} />
+                      <div className="absolute inset-0 bg-orange-900/25 mix-blend-multiply" />
+                    </div>
+                    <span className={`text-[10px] sm:text-[11px] text-center leading-tight break-words ${
+                      active ? "text-orange-300 font-medium" : "text-neutral-400"
+                    }`}>{label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </CalcCard>
           <CalcCard stepNum={step()} label={l.repairType}>
             <Chips options={REPAIR_SERVICES} value={repairId} onChange={setRepairId} lang={lang} />
