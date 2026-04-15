@@ -30,6 +30,8 @@ export default {
   },
 
   home: {
+    h1: "AEJaCA — Handgefertigter Schmuck & Digitales Fabrikations-Studio",
+    heroAria: "AEJaCA — zwei Welten unter einer Marke: Schmuck und sTuDiO",
     jewelryTitle: "AEJaCA",
     jewelrySubtitle: "Schmuck & Kunsthandwerk",
     jewelryDesc: "Handgefertigter Silber- und Goldschmuck mit natürlichen Edelsteinen. Jedes Stück trägt Seele, Symbolik und zeitlose Eleganz.",

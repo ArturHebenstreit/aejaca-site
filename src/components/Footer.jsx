@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Store, Instagram, Music2, Facebook, Youtube, Mail, MessageCircleMore } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
+import NewsletterForm from "./NewsletterForm.jsx";
 
 const socials = [
   { icon: Store, href: "https://aejacashop.etsy.com", label: "Etsy Jewelry Shop" },
@@ -19,6 +20,11 @@ export default function Footer() {
   return (
     <footer className="bg-neutral-950 border-t border-white/10" role="contentinfo">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Lead magnet — email capture before users bounce. Placed above nav for CRO. */}
+        <div className="mb-10 max-w-2xl">
+          <NewsletterForm />
+        </div>
+
         <div className="grid md:grid-cols-3 gap-10">
           <div>
             <div className="flex items-center gap-3 mb-4">

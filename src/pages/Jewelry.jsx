@@ -8,6 +8,14 @@ import ProcessGallery from "../components/ProcessGallery.jsx";
 import Testimonials from "../components/Testimonials.jsx";
 import FAQ from "../components/FAQ.jsx";
 import Tips from "../components/Tips.jsx";
+import SEOHead from "../seo/SEOHead.jsx";
+import {
+  buildServiceSchema,
+  buildFAQSchema,
+  buildBreadcrumbSchema,
+  buildWebPageSchema,
+} from "../seo/schemas.js";
+import { SITE, getSEO } from "../seo/seoData.js";
 
 const icons = [Gem, Sparkles, Palette, Heart, Wand2, Crown];
 
@@ -22,12 +30,44 @@ export default function Jewelry() {
   const etsyRef = useScrollReveal();
   const ctaRef = useScrollReveal();
 
+  // Per-page schemas: Service (jewelry as commissionable craft) + FAQ (AIO gold)
+  // + Breadcrumb (SERP navigation) + WebPage (canonical wrapper).
+  const seo = getSEO("jewelry", lang);
+  const pageUrl = `${SITE.url}/jewelry`;
+  const schemas = [
+    buildWebPageSchema({ title: seo.title, description: seo.description, url: pageUrl, lang }),
+    buildBreadcrumbSchema([
+      { name: "Home", url: SITE.url },
+      { name: "Jewelry", url: pageUrl },
+    ]),
+    buildServiceSchema({
+      name: seo.title,
+      description: seo.description,
+      serviceType: "Custom handcrafted jewelry design and production",
+      url: pageUrl,
+      offers: { price: "150", minPrice: "80", maxPrice: "3500", currency: "EUR" },
+    }),
+    // FAQ schema = direct ranking signal for Google's "People Also Ask" + LLM answers
+    j.faq?.items && buildFAQSchema(j.faq.items),
+  ];
+
   return (
-    <div className="pt-16">
+    <>
+      <SEOHead pageKey="jewelry" path="/jewelry" image={`${SITE.url}/hero-jewelry.jpg`} schemas={schemas} />
+      <div className="pt-16">
       {/* Hero */}
       <section className="bg-neutral-950 py-10 px-4">
         <div className="max-w-5xl mx-auto relative rounded-2xl overflow-hidden h-[40vh] min-h-[280px]">
-          <img src="/hero-jewelry.jpg" alt="AEJaCA Jewelry — handcrafted silver rings, earrings, and gemstone pieces" className="absolute inset-0 w-full h-full object-cover" />
+          <img
+            src="/hero-jewelry.jpg"
+            alt="AEJaCA Jewelry — handcrafted silver rings, earrings, and gemstone pieces"
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+            width="1600"
+            height="640"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-black/40 to-transparent" />
           <div className="relative z-10 flex flex-col items-center justify-end h-full pb-12 px-4 text-center">
             <div className="text-amber-400 text-xs uppercase tracking-[0.25em] mb-3">{j.heroTag}</div>
@@ -151,6 +191,7 @@ export default function Jewelry() {
           </Link>
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 }

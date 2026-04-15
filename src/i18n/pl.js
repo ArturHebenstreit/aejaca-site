@@ -30,6 +30,8 @@ export default {
   },
 
   home: {
+    h1: "AEJaCA — Biżuteria Ręcznie Robiona i sTuDiO Fabrykacji Cyfrowej",
+    heroAria: "AEJaCA — dwa światy pod jedną marką: biżuteria i sTuDiO",
     jewelryTitle: "AEJaCA",
     jewelrySubtitle: "Biżuteria & Rzemiosło Artystyczne",
     jewelryDesc: "Ręcznie tworzona biżuteria ze srebra i złota z naturalnymi kamieniami szlachetnymi. Każdy element niesie duszę, symbolikę i ponadczasową elegancję.",

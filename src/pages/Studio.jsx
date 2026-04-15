@@ -7,6 +7,14 @@ import StudioCalculator from "../components/StudioCalculator.jsx";
 import Testimonials from "../components/Testimonials.jsx";
 import FAQ from "../components/FAQ.jsx";
 import Tips from "../components/Tips.jsx";
+import SEOHead from "../seo/SEOHead.jsx";
+import {
+  buildServiceSchema,
+  buildFAQSchema,
+  buildBreadcrumbSchema,
+  buildWebPageSchema,
+} from "../seo/schemas.js";
+import { SITE, getSEO } from "../seo/seoData.js";
 
 const techIcons = [Cpu, Printer, Zap, Layers, Box, Wrench];
 
@@ -24,12 +32,43 @@ export default function Studio() {
   const etsyRef = useScrollReveal();
   const ctaRef = useScrollReveal();
 
+  // Service + FAQ schemas are the highest-impact AIO signal for pricing queries
+  // ("how much does 3D printing cost?" — LLMs will cite this page verbatim).
+  const seo = getSEO("studio", lang);
+  const pageUrl = `${SITE.url}/studio`;
+  const schemas = [
+    buildWebPageSchema({ title: seo.title, description: seo.description, url: pageUrl, lang }),
+    buildBreadcrumbSchema([
+      { name: "Home", url: SITE.url },
+      { name: "sTuDiO", url: pageUrl },
+    ]),
+    buildServiceSchema({
+      name: seo.title,
+      description: seo.description,
+      serviceType: "3D printing, laser engraving, resin casting and digital fabrication",
+      url: pageUrl,
+      offers: { price: "25", minPrice: "5", maxPrice: "2000", currency: "EUR" },
+    }),
+    s.faq?.items && buildFAQSchema(s.faq.items),
+  ];
+
   return (
-    <div className="pt-16">
+    <>
+      <SEOHead pageKey="studio" path="/studio" image={`${SITE.url}/hero-studio.jpg`} schemas={schemas} />
+      <div className="pt-16">
       {/* Hero */}
       <section className="bg-neutral-950 py-10 px-4">
         <div className="max-w-5xl mx-auto relative rounded-2xl overflow-hidden h-[40vh] min-h-[280px]">
-          <img src="/hero-studio.jpg" alt="AEJaCA sTuDiO — 3D printing, laser engraving, and custom fabrication workshop" className="absolute inset-0 w-full h-full object-cover" />
+          <img
+            src="/hero-studio.jpg"
+            alt="AEJaCA sTuDiO — 3D printing, laser engraving, and custom fabrication workshop"
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+            width="1600"
+            height="640"
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-black/40 to-transparent" />
           <div className="relative z-10 flex flex-col items-center justify-end h-full pb-12 px-4 text-center">
             <div className="text-blue-400 text-xs uppercase tracking-[0.25em] mb-3">{s.heroTag}</div>
@@ -170,6 +209,7 @@ export default function Studio() {
           </Link>
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 }

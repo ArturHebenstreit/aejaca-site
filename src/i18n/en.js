@@ -32,6 +32,8 @@ export default {
 
   // Home page
   home: {
+    h1: "AEJaCA — Handcrafted Jewelry & Digital Fabrication Studio",
+    heroAria: "AEJaCA — two worlds under one brand: jewelry and sTuDiO",
     jewelryTitle: "AEJaCA",
     jewelrySubtitle: "Jewelry & Artistic Craftsmanship",
     jewelryDesc: "Handcrafted silver and gold jewelry with natural gemstones. Each piece carries soul, symbolism, and timeless elegance.",
