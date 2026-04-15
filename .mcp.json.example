@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "nano-banana-pro": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@easyuseai/nano-banana-pro-mcp"
+      ],
+      "env": {
+        "GEMINI_API_KEY": "${GEMINI_API_KEY}"
+      }
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ]
+    }
+  }
+}

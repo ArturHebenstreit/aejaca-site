@@ -39,7 +39,7 @@ const LBL = {
     lens70desc: "Feld ~50×50mm (25 cm²), ultra fein", lens150desc: "Feld ~110×110mm (~121 cm²), Standard" },
 };
 
-const MATERIALS = [
+export const MATERIALS = [
   { id: "stainless",  label: { pl: "Stal nierdzewna", en: "Stainless steel", de: "Edelstahl" },   rateMin: 0.10, precious: false },
   { id: "aluminum",   label: { pl: "Aluminium", en: "Aluminum", de: "Aluminium" },                rateMin: 0.08, precious: false },
   { id: "brass",      label: { pl: "Mosiądz", en: "Brass", de: "Messing" },                      rateMin: 0.12, precious: false },
@@ -51,12 +51,12 @@ const MATERIALS = [
   { id: "custom",     label: { pl: "Inny materiał", en: "Other material", de: "Anderes Material" }, rateMin: null, precious: false, custom: true },
 ];
 
-const LENSES = [
+export const LENSES = [
   { id: "70mm",  label: { pl: "70mm — precyzyjne detale", en: "70mm — precision details", de: "70mm — Präzisionsdetails" }, fieldMm: 50, maxAreaCm2: 25,  speedMul: 1.0 },
   { id: "150mm", label: { pl: "150mm — większe pole", en: "150mm — larger field", de: "150mm — größeres Feld" },           fieldMm: 110, maxAreaCm2: 121, speedMul: 0.85 },
 ];
 
-const MARK_TYPES = [
+export const MARK_TYPES = [
   { id: "surface",  label: { pl: "Znakowanie powierzchniowe", en: "Surface marking", de: "Oberflächenmarkierung" }, depthMul: 1.0 },
   { id: "medium",   label: { pl: "Średnia głębokość", en: "Medium depth", de: "Mittlere Tiefe" },                   depthMul: 2.5 },
   { id: "deep",     label: { pl: "Głębokie grawerowanie", en: "Deep engraving", de: "Tiefgravur" },                 depthMul: 6.0 },
@@ -64,7 +64,7 @@ const MARK_TYPES = [
   { id: "custom",   label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" },                               depthMul: null, custom: true },
 ];
 
-const AREAS = [
+export const AREAS = [
   { id: "XS", label: { pl: "XS — do 5 cm²", en: "XS — up to 5 cm²", de: "XS — bis 5 cm²" },          area: 3 },
   { id: "S",  label: { pl: "S — 5–25 cm²", en: "S — 5–25 cm²", de: "S — 5–25 cm²" },                  area: 15 },
   { id: "M",  label: { pl: "M — 25–60 cm²", en: "M — 25–60 cm²", de: "M — 25–60 cm²" },               area: 40 },
@@ -72,7 +72,7 @@ const AREAS = [
   { id: "XL", label: { pl: "XL — wielokrotne pola", en: "XL — multiple fields", de: "XL — mehrere Felder" }, area: null, custom: true },
 ];
 
-function calculate({ matId, lensId, markId, areaId, quantityId }, lang) {
+export function calculate({ matId, lensId, markId, areaId, quantityId }, lang) {
   const mat = MATERIALS.find(m => m.id === matId);
   const lens = LENSES.find(l => l.id === lensId);
   const mark = MARK_TYPES.find(m => m.id === markId);

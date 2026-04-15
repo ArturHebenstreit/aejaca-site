@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import { Store, Instagram, Music2, Facebook, Youtube, MapPin, Mail, MessageCircleMore, Phone, Send, ArrowRight } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
+import SEOHead from "../seo/SEOHead.jsx";
+import { buildBreadcrumbSchema, buildWebPageSchema, buildOrganizationSchema } from "../seo/schemas.js";
+import { SITE, getSEO } from "../seo/seoData.js";
 
 const contactLinks = [
   { icon: Mail, label: "contact@aejaca.com", href: "mailto:contact@aejaca.com" },
@@ -22,8 +25,20 @@ const socialLinks = [
 ];
 
 export default function Contact() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const c = t.contact;
+  // Contact page: emit ContactPage + Organization (with phone/email) so Google
+  // surfaces "Call" / "Email" action buttons directly in knowledge panel.
+  const seo = getSEO("contact", lang);
+  const pageUrl = `${SITE.url}/contact`;
+  const schemas = [
+    buildWebPageSchema({ title: seo.title, description: seo.description, url: pageUrl, lang }),
+    buildBreadcrumbSchema([
+      { name: "Home", url: SITE.url },
+      { name: "Contact", url: pageUrl },
+    ]),
+    buildOrganizationSchema(),
+  ];
   const [formData, setFormData] = useState({ name: "", email: "", subject: "jewelry", message: "" });
   const [submitted, setSubmitted] = useState(false);
   const [showFloatingCta, setShowFloatingCta] = useState(false);
@@ -52,7 +67,9 @@ export default function Contact() {
   }
 
   return (
-    <div className="pt-16">
+    <>
+      <SEOHead pageKey="contact" path="/contact" schemas={schemas} />
+      <div className="pt-16">
       {/* Hero */}
       <section className="relative py-24 px-4 bg-gradient-to-br from-neutral-950 via-amber-950/20 to-neutral-950 overflow-hidden">
         <div className="absolute inset-0 opacity-10">
@@ -173,6 +190,7 @@ export default function Contact() {
           WhatsApp
         </a>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

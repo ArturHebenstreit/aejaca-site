@@ -23,80 +23,82 @@ export const TOL_HIGH = 0.35;
 // --- SERVICE TYPES ---
 export const SERVICE_TYPES = [
   { id: "new", label: { pl: "Nowe zlecenie", en: "New creation", de: "Neuanfertigung" },
-    desc: { pl: "Projektowanie i wykonanie biżuterii na zamówienie", en: "Custom jewelry design and creation", de: "Individuelles Schmuckdesign und -herstellung" } },
+    desc: { pl: "Projektowanie i wykonanie biżuterii na zamówienie", en: "Custom jewelry design and creation", de: "Individuelles Schmuckdesign und -herstellung" },
+    img: "/img/calc/services/new.png" },
   { id: "renovation", label: { pl: "Renowacja / Odświeżenie", en: "Renovation / Refresh", de: "Renovation / Auffrischung" },
-    desc: { pl: "Czyszczenie, polerowanie, powlekanie, kontrola kamieni", en: "Cleaning, polishing, replating, stone check", de: "Reinigung, Politur, Neubeschichtung, Steinkontrolle" } },
+    desc: { pl: "Czyszczenie, polerowanie, powlekanie, kontrola kamieni", en: "Cleaning, polishing, replating, stone check", de: "Reinigung, Politur, Neubeschichtung, Steinkontrolle" },
+    img: "/img/calc/services/renovation.png" },
   { id: "repair", label: { pl: "Naprawa", en: "Repair", de: "Reparatur" },
-    desc: { pl: "Zmiana rozmiaru, naprawa oprawek, wymiana kamieni, lutowanie", en: "Resizing, prong repair, stone replacement, soldering", de: "Größenanpassung, Fassungsreparatur, Steinersatz, Löten" } },
+    desc: { pl: "Zmiana rozmiaru, naprawa oprawek, wymiana kamieni, lutowanie", en: "Resizing, prong repair, stone replacement, soldering", de: "Größenanpassung, Fassungsreparatur, Steinersatz, Löten" },
+    img: "/img/calc/services/repair.png" },
 ];
 
 // --- PRODUCT LINES ---
 export const PRODUCT_LINES = [
-  { id: "woman", label: "AEJaCA Woman", desc: { pl: "Pierścionki, bransoletki, wisiorki, kolczyki, brosze", en: "Rings, bracelets, pendants, earrings, brooches", de: "Ringe, Armbänder, Anhänger, Ohrringe, Broschen" } },
-  { id: "men", label: "AEJaCA Men", desc: { pl: "Sygnety, medaliki, bransoletki, spinki, łańcuchy", en: "Signet rings, medallions, bracelets, cufflinks, chains", de: "Siegelringe, Medaillons, Armbänder, Manschettenknöpfe, Ketten" } },
-  { id: "pet", label: "AEJaCA Pet", desc: { pl: "Zawieszki, ozdoby na obrożę, spinki", en: "Tags, collar charms, collar pins", de: "Anhänger, Halsbandschmuck, Nadeln" } },
+  { id: "woman", label: "AEJaCA Woman", desc: { pl: "Pierścionki, bransoletki, wisiorki, kolczyki, brosze", en: "Rings, bracelets, pendants, earrings, brooches", de: "Ringe, Armbänder, Anhänger, Ohrringe, Broschen" }, img: "/img/calc/lines/woman.png" },
+  { id: "men", label: "AEJaCA Men", desc: { pl: "Sygnety, medaliki, bransoletki, spinki, łańcuchy", en: "Signet rings, medallions, bracelets, cufflinks, chains", de: "Siegelringe, Medaillons, Armbänder, Manschettenknöpfe, Ketten" }, img: "/img/calc/lines/men.png" },
+  { id: "pet", label: "AEJaCA Pet", desc: { pl: "Zawieszki, ozdoby na obrożę, spinki", en: "Tags, collar charms, collar pins", de: "Anhänger, Halsbandschmuck, Nadeln" }, img: "/img/calc/lines/pet.png" },
 ];
 
 // --- JEWELRY TYPES per line ---
 export const JEWELRY_TYPES = {
   woman: [
-    { id: "ring",      label: { pl: "Pierścionek", en: "Ring", de: "Ring" }, baseWeight: 4, laborH: 6, complexity: 1.0 },
-    { id: "bracelet",  label: { pl: "Bransoletka", en: "Bracelet", de: "Armband" }, baseWeight: 15, laborH: 8, complexity: 1.2 },
-    { id: "pendant",   label: { pl: "Wisiorek", en: "Pendant", de: "Anhänger" }, baseWeight: 4, laborH: 4, complexity: 0.8 },
-    { id: "earrings",  label: { pl: "Kolczyki (para)", en: "Earrings (pair)", de: "Ohrringe (Paar)" }, baseWeight: 4, laborH: 7, complexity: 1.1 },
-    { id: "brooch",    label: { pl: "Broszka", en: "Brooch", de: "Brosche" }, baseWeight: 8, laborH: 6, complexity: 1.0 },
-    { id: "necklace",  label: { pl: "Naszyjnik / łańcuszek", en: "Necklace / chain", de: "Halskette / Kette" }, baseWeight: 12, laborH: 5, complexity: 0.9 },
+    { id: "ring",      label: { pl: "Pierścionek", en: "Ring", de: "Ring" }, baseWeight: 4, laborH: 6, complexity: 1.0, img: "/img/calc/types/ring.png" },
+    { id: "bracelet",  label: { pl: "Bransoletka", en: "Bracelet", de: "Armband" }, baseWeight: 15, laborH: 8, complexity: 1.2, img: "/img/calc/types/bracelet.png" },
+    { id: "pendant",   label: { pl: "Wisiorek", en: "Pendant", de: "Anhänger" }, baseWeight: 4, laborH: 4, complexity: 0.8, img: "/img/calc/types/pendant.png" },
+    { id: "earrings",  label: { pl: "Kolczyki (para)", en: "Earrings (pair)", de: "Ohrringe (Paar)" }, baseWeight: 4, laborH: 7, complexity: 1.1, img: "/img/calc/types/earrings.png" },
+    { id: "brooch",    label: { pl: "Broszka", en: "Brooch", de: "Brosche" }, baseWeight: 8, laborH: 6, complexity: 1.0, img: "/img/calc/types/brooch.png" },
+    { id: "necklace",  label: { pl: "Naszyjnik / łańcuszek", en: "Necklace / chain", de: "Halskette / Kette" }, baseWeight: 12, laborH: 5, complexity: 0.9, img: "/img/calc/types/necklace.png" },
   ],
   men: [
-    { id: "signet",    label: { pl: "Sygnet", en: "Signet ring", de: "Siegelring" }, baseWeight: 12, laborH: 7, complexity: 1.1 },
-    { id: "medallion", label: { pl: "Medalik", en: "Medallion", de: "Medaillon" }, baseWeight: 8, laborH: 5, complexity: 0.9 },
-    { id: "bracelet_m",label: { pl: "Bransoletka", en: "Bracelet", de: "Armband" }, baseWeight: 25, laborH: 8, complexity: 1.0 },
-    { id: "cufflinks", label: { pl: "Spinki do mankietów (para)", en: "Cufflinks (pair)", de: "Manschettenknöpfe (Paar)" }, baseWeight: 10, laborH: 6, complexity: 1.0 },
-    { id: "tie_clip",  label: { pl: "Spinka do krawata", en: "Tie clip", de: "Krawattennadel" }, baseWeight: 6, laborH: 4, complexity: 0.7 },
-    { id: "chain_m",   label: { pl: "Łańcuch", en: "Chain", de: "Kette" }, baseWeight: 20, laborH: 5, complexity: 0.8 },
+    { id: "signet",    label: { pl: "Sygnet", en: "Signet ring", de: "Siegelring" }, baseWeight: 12, laborH: 7, complexity: 1.1, img: "/img/calc/types/signet.png" },
+    { id: "medallion", label: { pl: "Medalik", en: "Medallion", de: "Medaillon" }, baseWeight: 8, laborH: 5, complexity: 0.9, img: "/img/calc/types/medallion.png" },
+    { id: "bracelet_m",label: { pl: "Bransoletka", en: "Bracelet", de: "Armband" }, baseWeight: 25, laborH: 8, complexity: 1.0, img: "/img/calc/types/bracelet_m.png" },
+    { id: "cufflinks", label: { pl: "Spinki do mankietów (para)", en: "Cufflinks (pair)", de: "Manschettenknöpfe (Paar)" }, baseWeight: 10, laborH: 6, complexity: 1.0, img: "/img/calc/types/cufflinks.png" },
+    { id: "tie_clip",  label: { pl: "Spinka do krawata", en: "Tie clip", de: "Krawattennadel" }, baseWeight: 6, laborH: 4, complexity: 0.7, img: "/img/calc/types/tie_clip.png" },
+    { id: "chain_m",   label: { pl: "Łańcuch", en: "Chain", de: "Kette" }, baseWeight: 20, laborH: 5, complexity: 0.8, img: "/img/calc/types/chain_m.png" },
   ],
   pet: [
-    { id: "tag",       label: { pl: "Zawieszka / adresówka", en: "Tag / ID pendant", de: "Anhänger / Adressmarke" }, baseWeight: 4, laborH: 3, complexity: 0.6 },
-    { id: "charm",     label: { pl: "Ozdoba na obrożę", en: "Collar charm", de: "Halsbandschmuck" }, baseWeight: 3, laborH: 3, complexity: 0.6 },
-    { id: "pin",       label: { pl: "Spinka na obrożę", en: "Collar pin", de: "Halsbandnadel" }, baseWeight: 2, laborH: 2, complexity: 0.5 },
+    { id: "tag",       label: { pl: "Zawieszka / adresówka", en: "Tag / ID pendant", de: "Anhänger / Adressmarke" }, baseWeight: 4, laborH: 3, complexity: 0.6, img: "/img/calc/types/tag.png" },
+    { id: "charm",     label: { pl: "Ozdoba na obrożę", en: "Collar charm", de: "Halsbandschmuck" }, baseWeight: 3, laborH: 3, complexity: 0.6, img: "/img/calc/types/charm.png" },
+    { id: "pin",       label: { pl: "Spinka na obrożę", en: "Collar pin", de: "Halsbandnadel" }, baseWeight: 2, laborH: 2, complexity: 0.5, img: "/img/calc/types/pin.png" },
   ],
 };
 
 // --- METALS with purity ---
 export const METALS = [
-  { id: "gold_24k", metal: "gold", label: { pl: "Złoto 24k (999)", en: "Gold 24k (999)", de: "Gold 24k (999)" }, purity: 0.999, laborMul: 1.3 },
-  { id: "gold_18k", metal: "gold", label: { pl: "Złoto 18k (750)", en: "Gold 18k (750)", de: "Gold 18k (750)" }, purity: 0.750, laborMul: 1.0 },
-  { id: "gold_14k", metal: "gold", label: { pl: "Złoto 14k (585)", en: "Gold 14k (585)", de: "Gold 14k (585)" }, purity: 0.585, laborMul: 1.0 },
-  { id: "gold_9k",  metal: "gold", label: { pl: "Złoto 9k (375)", en: "Gold 9k (375)", de: "Gold 9k (375)" }, purity: 0.375, laborMul: 0.9 },
-  { id: "silver",   metal: "silver", label: { pl: "Srebro 925", en: "Silver 925", de: "Silber 925" }, purity: 0.925, laborMul: 0.7 },
-  { id: "platinum",  metal: "platinum", label: { pl: "Platyna 950", en: "Platinum 950", de: "Platin 950" }, purity: 0.950, laborMul: 1.5 },
+  { id: "gold_24k", metal: "gold", label: { pl: "Złoto 24k (999)", en: "Gold 24k (999)", de: "Gold 24k (999)" }, purity: 0.999, laborMul: 1.3, img: "/img/calc/metals/gold_24k.png" },
+  { id: "gold_18k", metal: "gold", label: { pl: "Złoto 18k (750)", en: "Gold 18k (750)", de: "Gold 18k (750)" }, purity: 0.750, laborMul: 1.0, img: "/img/calc/metals/gold_18k.png" },
+  { id: "gold_14k", metal: "gold", label: { pl: "Złoto 14k (585)", en: "Gold 14k (585)", de: "Gold 14k (585)" }, purity: 0.585, laborMul: 1.0, img: "/img/calc/metals/gold_14k.png" },
+  { id: "gold_9k",  metal: "gold", label: { pl: "Złoto 9k (375)", en: "Gold 9k (375)", de: "Gold 9k (375)" }, purity: 0.375, laborMul: 0.9, img: "/img/calc/metals/gold_9k.png" },
+  { id: "silver",   metal: "silver", label: { pl: "Srebro 925", en: "Silver 925", de: "Silber 925" }, purity: 0.925, laborMul: 0.7, img: "/img/calc/metals/silver.png" },
+  { id: "platinum",  metal: "platinum", label: { pl: "Platyna 950", en: "Platinum 950", de: "Platin 950" }, purity: 0.950, laborMul: 1.5, img: "/img/calc/metals/platinum.png" },
   { id: "custom_metal", metal: null, label: { pl: "Inny kruszec", en: "Other metal", de: "Anderes Metall" }, purity: null, laborMul: null, custom: true },
 ];
 
 // --- WEIGHT RANGES ---
-// visual: ringW = border width for ring silhouette, ringS = size
 export const WEIGHTS = [
-  { id: "light",    label: { pl: "Lekka / delikatna", en: "Light / delicate", de: "Leicht / zart" }, mul: 0.6, visual: { ringW: 1, ringS: 28 } },
-  { id: "standard", label: { pl: "Klasyczna", en: "Standard", de: "Standard" }, mul: 1.0, visual: { ringW: 3, ringS: 32 } },
-  { id: "heavy",    label: { pl: "Masywna", en: "Heavy / bold", de: "Massiv / kräftig" }, mul: 1.8, visual: { ringW: 6, ringS: 38 } },
+  { id: "light",    label: { pl: "Lekka / delikatna", en: "Light / delicate", de: "Leicht / zart" },   desc: { pl: "Cienkie druty, delikatne ogniwa, minimalistyczne formy", en: "Thin wires, delicate links, minimalist forms", de: "Dünne Drähte, zarte Glieder, minimalistische Formen" }, mul: 0.6, img: "/img/calc/weights/light.png" },
+  { id: "standard", label: { pl: "Klasyczna", en: "Standard", de: "Standard" },                         desc: { pl: "Zrównoważone proporcje, codzienna elegancja", en: "Balanced proportions, everyday elegance", de: "Ausgewogene Proportionen, alltägliche Eleganz" }, mul: 1.0, img: "/img/calc/weights/standard.png" },
+  { id: "heavy",    label: { pl: "Masywna", en: "Heavy / bold", de: "Massiv / kräftig" },               desc: { pl: "Grube ściany, statement piece, wyraźna obecność", en: "Thick walls, statement piece, strong presence", de: "Dicke Wände, Statement-Piece, starke Präsenz" }, mul: 1.8, img: "/img/calc/weights/heavy.png" },
   { id: "custom_w", label: { pl: "Niestandardowa", en: "Custom", de: "Individuell" }, mul: null, custom: true },
 ];
 
 // --- MANUFACTURING METHODS ---
 export const METHODS = [
   { id: "handmade", label: { pl: "Ręczna (lutowanie + osadzanie)", en: "Handmade (soldering + setting)", de: "Handarbeit (Löten + Fassen)" },
-    desc: { pl: "Najwyższa jakość, unikalne wykonanie", en: "Highest quality, unique craftsmanship", de: "Höchste Qualität, einzigartige Handwerkskunst" }, laborMul: 1.0, laborRate: 150 },
+    desc: { pl: "Najwyższa jakość, unikalne wykonanie", en: "Highest quality, unique craftsmanship", de: "Höchste Qualität, einzigartige Handwerkskunst" }, laborMul: 1.0, laborRate: 150, img: "/img/calc/methods/handmade.png" },
   { id: "cast", label: { pl: "Odlew (lost wax)", en: "Cast (lost wax)", de: "Guss (Wachsausschmelzverfahren)" },
-    desc: { pl: "Precyzyjny odlew, idealne do serii", en: "Precision casting, ideal for series", de: "Präzisionsguss, ideal für Serien" }, laborMul: 0.6, laborRate: 150 },
+    desc: { pl: "Precyzyjny odlew, idealne do serii", en: "Precision casting, ideal for series", de: "Präzisionsguss, ideal für Serien" }, laborMul: 0.6, laborRate: 150, img: "/img/calc/methods/cast.png" },
   { id: "custom_m", label: { pl: "Niestandardowa", en: "Custom", de: "Individuell" }, laborMul: null, custom: true },
 ];
 
 // --- GALVANIC PLATING ---
 export const PLATING = [
   { id: "none",     label: { pl: "Brak", en: "None", de: "Keine" }, cost: 0 },
-  { id: "rhodium",  label: { pl: "Rod (standard dla białego złota/srebra)", en: "Rhodium (standard for white gold/silver)", de: "Rhodium (Standard für Weißgold/Silber)" }, cost: 120 },
-  { id: "gold_pl",  label: { pl: "Złocenie (vermeil)", en: "Gold plating (vermeil)", de: "Vergoldung (Vermeil)" }, cost: 90 },
-  { id: "rose_pl",  label: { pl: "Złocenie różowe", en: "Rose gold plating", de: "Roségold-Beschichtung" }, cost: 90 },
+  { id: "rhodium",  label: { pl: "Rod (standard dla białego złota/srebra)", en: "Rhodium (standard for white gold/silver)", de: "Rhodium (Standard für Weißgold/Silber)" }, cost: 120, img: "/img/calc/plating/rhodium.png" },
+  { id: "gold_pl",  label: { pl: "Złocenie (vermeil)", en: "Gold plating (vermeil)", de: "Vergoldung (Vermeil)" }, cost: 90, img: "/img/calc/plating/gold_pl.png" },
+  { id: "rose_pl",  label: { pl: "Złocenie różowe", en: "Rose gold plating", de: "Roségold-Beschichtung" }, cost: 90, img: "/img/calc/plating/rose_pl.png" },
   { id: "custom_pl",label: { pl: "Inne pokrycie", en: "Other plating", de: "Andere Beschichtung" }, cost: null, custom: true },
 ];
 
@@ -105,32 +107,32 @@ export const PLATING = [
 export const GEMSTONES = [
   { id: "none", label: { pl: "Bez kamienia", en: "No gemstone", de: "Ohne Stein" }, basePLN: 0, precious: false, hasGrades: false },
   // --- Natural precious ---
-  { id: "diamond",   label: { pl: "Diament", en: "Diamond", de: "Diamant" }, basePLN: 12800, precious: true, hasGrades: true },
-  { id: "ruby",      label: { pl: "Rubin", en: "Ruby", de: "Rubin" }, basePLN: 6400, precious: true, hasGrades: true },
-  { id: "sapphire",  label: { pl: "Szafir", en: "Sapphire", de: "Saphir" }, basePLN: 4300, precious: true, hasGrades: true },
-  { id: "emerald",   label: { pl: "Szmaragd", en: "Emerald", de: "Smaragd" }, basePLN: 3400, precious: true, hasGrades: true },
+  { id: "diamond",   label: { pl: "Diament", en: "Diamond", de: "Diamant" }, basePLN: 12800, precious: true, hasGrades: true, img: "/img/calc/gems/diamond.png" },
+  { id: "ruby",      label: { pl: "Rubin", en: "Ruby", de: "Rubin" }, basePLN: 6400, precious: true, hasGrades: true, img: "/img/calc/gems/ruby.png" },
+  { id: "sapphire",  label: { pl: "Szafir", en: "Sapphire", de: "Saphir" }, basePLN: 4300, precious: true, hasGrades: true, img: "/img/calc/gems/sapphire.png" },
+  { id: "emerald",   label: { pl: "Szmaragd", en: "Emerald", de: "Smaragd" }, basePLN: 3400, precious: true, hasGrades: true, img: "/img/calc/gems/emerald.png" },
   // --- Lab-grown (synthetic) ---
-  { id: "lab_diamond",  label: { pl: "Diament lab-grown", en: "Lab-grown diamond", de: "Labor-Diamant" }, basePLN: 1500, precious: false, hasGrades: true, lab: true },
-  { id: "moissanite",   label: { pl: "Mosanit", en: "Moissanite", de: "Moissanit" }, basePLN: 400, precious: false, hasGrades: false, lab: true },
-  { id: "cz",           label: { pl: "Cyrkonia (CZ)", en: "Cubic zirconia (CZ)", de: "Zirkonia (CZ)" }, basePLN: 10, precious: false, hasGrades: false, lab: true },
-  { id: "lab_ruby",     label: { pl: "Rubin lab-grown", en: "Lab-grown ruby", de: "Labor-Rubin" }, basePLN: 800, precious: false, hasGrades: true, lab: true },
-  { id: "lab_sapphire", label: { pl: "Szafir lab-grown", en: "Lab-grown sapphire", de: "Labor-Saphir" }, basePLN: 600, precious: false, hasGrades: true, lab: true },
-  { id: "lab_emerald",  label: { pl: "Szmaragd lab-grown", en: "Lab-grown emerald", de: "Labor-Smaragd" }, basePLN: 500, precious: false, hasGrades: true, lab: true },
+  { id: "lab_diamond",  label: { pl: "Diament lab-grown", en: "Lab-grown diamond", de: "Labor-Diamant" }, basePLN: 1500, precious: false, hasGrades: true, lab: true, img: "/img/calc/gems/diamond.png" },
+  { id: "moissanite",   label: { pl: "Mosanit", en: "Moissanite", de: "Moissanit" }, basePLN: 400, precious: false, hasGrades: false, lab: true, img: "/img/calc/gems/moissanite.png" },
+  { id: "cz",           label: { pl: "Cyrkonia (CZ)", en: "Cubic zirconia (CZ)", de: "Zirkonia (CZ)" }, basePLN: 10, precious: false, hasGrades: false, lab: true, img: "/img/calc/gems/cz.png" },
+  { id: "lab_ruby",     label: { pl: "Rubin lab-grown", en: "Lab-grown ruby", de: "Labor-Rubin" }, basePLN: 800, precious: false, hasGrades: true, lab: true, img: "/img/calc/gems/ruby.png" },
+  { id: "lab_sapphire", label: { pl: "Szafir lab-grown", en: "Lab-grown sapphire", de: "Labor-Saphir" }, basePLN: 600, precious: false, hasGrades: true, lab: true, img: "/img/calc/gems/sapphire.png" },
+  { id: "lab_emerald",  label: { pl: "Szmaragd lab-grown", en: "Lab-grown emerald", de: "Labor-Smaragd" }, basePLN: 500, precious: false, hasGrades: true, lab: true, img: "/img/calc/gems/emerald.png" },
   // --- Natural semi-precious ---
-  { id: "tanzanite", label: { pl: "Tanzanit", en: "Tanzanite", de: "Tansanit" }, basePLN: 1700, precious: false, hasGrades: true },
-  { id: "aquamarine",label: { pl: "Akwamaryn", en: "Aquamarine", de: "Aquamarin" }, basePLN: 430, precious: false, hasGrades: false },
-  { id: "tourmaline",label: { pl: "Turmalin", en: "Tourmaline", de: "Turmalin" }, basePLN: 640, precious: false, hasGrades: false },
-  { id: "topaz",     label: { pl: "Topaz", en: "Topaz", de: "Topas" }, basePLN: 130, precious: false, hasGrades: false },
-  { id: "amethyst",  label: { pl: "Ametyst", en: "Amethyst", de: "Amethyst" }, basePLN: 65, precious: false, hasGrades: false },
-  { id: "citrine",   label: { pl: "Cytryn", en: "Citrine", de: "Citrin" }, basePLN: 55, precious: false, hasGrades: false },
-  { id: "garnet",    label: { pl: "Granat", en: "Garnet", de: "Granat" }, basePLN: 85, precious: false, hasGrades: false },
-  { id: "peridot",   label: { pl: "Perydot", en: "Peridot", de: "Peridot" }, basePLN: 170, precious: false, hasGrades: false },
-  { id: "opal",      label: { pl: "Opal", en: "Opal", de: "Opal" }, basePLN: 430, precious: false, hasGrades: false },
-  { id: "moonstone", label: { pl: "Kamień księżycowy", en: "Moonstone", de: "Mondstein" }, basePLN: 85, precious: false, hasGrades: false },
-  { id: "lapis",     label: { pl: "Lapis lazuli", en: "Lapis lazuli", de: "Lapislazuli" }, basePLN: 55, precious: false, hasGrades: false },
-  { id: "turquoise", label: { pl: "Turkus", en: "Turquoise", de: "Türkis" }, basePLN: 85, precious: false, hasGrades: false },
-  { id: "onyx",      label: { pl: "Onyks", en: "Onyx", de: "Onyx" }, basePLN: 30, precious: false, hasGrades: false },
-  { id: "tiger_eye", label: { pl: "Tygrysie oko", en: "Tiger eye", de: "Tigerauge" }, basePLN: 20, precious: false, hasGrades: false },
+  { id: "tanzanite", label: { pl: "Tanzanit", en: "Tanzanite", de: "Tansanit" }, basePLN: 1700, precious: false, hasGrades: true, img: "/img/calc/gems/tanzanite.png" },
+  { id: "aquamarine",label: { pl: "Akwamaryn", en: "Aquamarine", de: "Aquamarin" }, basePLN: 430, precious: false, hasGrades: false, img: "/img/calc/gems/aquamarine.png" },
+  { id: "tourmaline",label: { pl: "Turmalin", en: "Tourmaline", de: "Turmalin" }, basePLN: 640, precious: false, hasGrades: false, img: "/img/calc/gems/tourmaline.png" },
+  { id: "topaz",     label: { pl: "Topaz", en: "Topaz", de: "Topas" }, basePLN: 130, precious: false, hasGrades: false, img: "/img/calc/gems/topaz.png" },
+  { id: "amethyst",  label: { pl: "Ametyst", en: "Amethyst", de: "Amethyst" }, basePLN: 65, precious: false, hasGrades: false, img: "/img/calc/gems/amethyst.png" },
+  { id: "citrine",   label: { pl: "Cytryn", en: "Citrine", de: "Citrin" }, basePLN: 55, precious: false, hasGrades: false, img: "/img/calc/gems/citrine.png" },
+  { id: "garnet",    label: { pl: "Granat", en: "Garnet", de: "Granat" }, basePLN: 85, precious: false, hasGrades: false, img: "/img/calc/gems/garnet.png" },
+  { id: "peridot",   label: { pl: "Perydot", en: "Peridot", de: "Peridot" }, basePLN: 170, precious: false, hasGrades: false, img: "/img/calc/gems/peridot.png" },
+  { id: "opal",      label: { pl: "Opal", en: "Opal", de: "Opal" }, basePLN: 430, precious: false, hasGrades: false, img: "/img/calc/gems/opal.png" },
+  { id: "moonstone", label: { pl: "Kamień księżycowy", en: "Moonstone", de: "Mondstein" }, basePLN: 85, precious: false, hasGrades: false, img: "/img/calc/gems/moonstone.png" },
+  { id: "lapis",     label: { pl: "Lapis lazuli", en: "Lapis lazuli", de: "Lapislazuli" }, basePLN: 55, precious: false, hasGrades: false, img: "/img/calc/gems/lapis.png" },
+  { id: "turquoise", label: { pl: "Turkus", en: "Turquoise", de: "Türkis" }, basePLN: 85, precious: false, hasGrades: false, img: "/img/calc/gems/turquoise.png" },
+  { id: "onyx",      label: { pl: "Onyks", en: "Onyx", de: "Onyx" }, basePLN: 30, precious: false, hasGrades: false, img: "/img/calc/gems/onyx.png" },
+  { id: "tiger_eye", label: { pl: "Tygrysie oko", en: "Tiger eye", de: "Tigerauge" }, basePLN: 20, precious: false, hasGrades: false, img: "/img/calc/gems/tiger_eye.png" },
   { id: "custom_gem",label: { pl: "Inny kamień", en: "Other stone", de: "Anderer Stein" }, basePLN: null, precious: false, hasGrades: false, custom: true },
 ];
 
@@ -221,18 +223,18 @@ export const QTY_TIERS = [
 
 // --- GENERIC JEWELRY TYPES (for renovation/repair) ---
 export const GENERIC_TYPES = [
-  { id: "ring_g",     label: { pl: "Pierścionek / sygnet", en: "Ring / signet", de: "Ring / Siegelring" } },
-  { id: "bracelet_g", label: { pl: "Bransoletka", en: "Bracelet", de: "Armband" } },
-  { id: "pendant_g",  label: { pl: "Wisiorek / medalik", en: "Pendant / medallion", de: "Anhänger / Medaillon" } },
-  { id: "earrings_g", label: { pl: "Kolczyki", en: "Earrings", de: "Ohrringe" } },
-  { id: "necklace_g", label: { pl: "Naszyjnik / łańcuszek", en: "Necklace / chain", de: "Halskette / Kette" } },
+  { id: "ring_g",     label: { pl: "Pierścionek / sygnet", en: "Ring / signet", de: "Ring / Siegelring" }, img: "/img/calc/types/ring.png" },
+  { id: "bracelet_g", label: { pl: "Bransoletka", en: "Bracelet", de: "Armband" },                         img: "/img/calc/types/bracelet.png" },
+  { id: "pendant_g",  label: { pl: "Wisiorek / medalik", en: "Pendant / medallion", de: "Anhänger / Medaillon" }, img: "/img/calc/types/pendant.png" },
+  { id: "earrings_g", label: { pl: "Kolczyki", en: "Earrings", de: "Ohrringe" },                           img: "/img/calc/types/earrings.png" },
+  { id: "necklace_g", label: { pl: "Naszyjnik / łańcuszek", en: "Necklace / chain", de: "Halskette / Kette" }, img: "/img/calc/types/necklace.png" },
   { id: "other_g",    label: { pl: "Inne", en: "Other", de: "Andere" } },
 ];
 
 // --- GENERIC METALS (for renovation/repair) ---
 export const GENERIC_METALS = [
-  { id: "silver_g",   label: { pl: "Srebro", en: "Silver", de: "Silber" }, metalKey: "silver" },
-  { id: "gold_g",     label: { pl: "Złoto", en: "Gold", de: "Gold" }, metalKey: "gold" },
-  { id: "platinum_g", label: { pl: "Platyna", en: "Platinum", de: "Platin" }, metalKey: "platinum" },
+  { id: "silver_g",   label: { pl: "Srebro", en: "Silver", de: "Silber" }, metalKey: "silver", img: "/img/calc/metals/silver.png" },
+  { id: "gold_g",     label: { pl: "Złoto", en: "Gold", de: "Gold" }, metalKey: "gold", img: "/img/calc/metals/gold_18k.png" },
+  { id: "platinum_g", label: { pl: "Platyna", en: "Platinum", de: "Platin" }, metalKey: "platinum", img: "/img/calc/metals/platinum.png" },
   { id: "other_m",    label: { pl: "Inny / nie wiem", en: "Other / not sure", de: "Anderes / unsicher" }, metalKey: "silver" },
 ];

@@ -43,7 +43,7 @@ const LBL = {
     customResin: "Anderes Harz — individuelle Kalkulation" },
 };
 
-const RESINS = [
+export const RESINS = [
   { id: "uv",          label: { pl: "Zywica UV", en: "UV Resin", de: "UV-Harz" },
     pricePerMl: 0.35, density: 1.10, cureH: 0.1,
     desc: { pl: "Szybkie utwardzanie, cienkie warstwy", en: "Fast curing, thin layers", de: "Schnelle Aushaertung, duenne Schichten" } },
@@ -57,7 +57,7 @@ const RESINS = [
     pricePerMl: null, density: null, cureH: null, custom: true },
 ];
 
-const VOLUMES = [
+export const VOLUMES = [
   { id: "XS", label: { pl: "XS — bizuteria (do 10 ml)", en: "XS — jewelry (up to 10 ml)", de: "XS — Schmuck (bis 10 ml)" }, vol: 7 },
   { id: "S",  label: { pl: "S — brelok / maly (10-50 ml)", en: "S — keychain / small (10-50 ml)", de: "S — Schluesselanhaenger / klein (10-50 ml)" }, vol: 30 },
   { id: "M",  label: { pl: "M — podkladka / deko (50-250 ml)", en: "M — coaster / deco (50-250 ml)", de: "M — Untersetzer / Deko (50-250 ml)" }, vol: 150 },
@@ -65,7 +65,7 @@ const VOLUMES = [
   { id: "XL", label: { pl: "XL — powyzej 1L (river table itp.)", en: "XL — over 1L (river table etc.)", de: "XL — ueber 1L (River Table usw.)" }, vol: null, custom: true },
 ];
 
-const MOLD_TYPES = [
+export const MOLD_TYPES = [
   { id: "existing", label: { pl: "Istniejaca forma", en: "Existing mold", de: "Vorhandene Form" },           moldCost: 0,   pourLife: 1 },
   { id: "new_s",    label: { pl: "Nowa forma — mala", en: "New mold — small", de: "Neue Form — klein" },     moldCost: 60,  pourLife: 40 },
   { id: "new_m",    label: { pl: "Nowa forma — srednia", en: "New mold — medium", de: "Neue Form — mittel" }, moldCost: 150, pourLife: 35 },
@@ -74,7 +74,7 @@ const MOLD_TYPES = [
   { id: "custom",   label: { pl: "Forma niestandardowa", en: "Custom mold", de: "Individuelle Form" },        moldCost: null, pourLife: null, custom: true },
 ];
 
-const INCLUSIONS = [
+export const INCLUSIONS = [
   { id: "none",     label: { pl: "Brak", en: "None", de: "Keine" },                                              cost: 0 },
   { id: "pigment",  label: { pl: "Pigment / brokat", en: "Pigment / glitter", de: "Pigment / Glitzer" },          cost: 3 },
   { id: "object",   label: { pl: "Zalewany obiekt (kwiat, zdjecie)", en: "Embedded object (flower, photo)", de: "Eingebettetes Objekt (Blume, Foto)" }, cost: 8 },
@@ -82,14 +82,14 @@ const INCLUSIONS = [
   { id: "custom",   label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" },                              cost: null, custom: true },
 ];
 
-const FINISH_OPTIONS = [
+export const FINISH_OPTIONS = [
   { id: "raw",      label: { pl: "Surowy (z formy)", en: "Raw (from mold)", de: "Roh (aus Form)" },               timeH: 0,   cost: 0 },
   { id: "sanded",   label: { pl: "Szlifowany + polerowany", en: "Sanded + polished", de: "Geschliffen + poliert" }, timeH: 0.5, cost: 5 },
   { id: "coated",   label: { pl: "Lakierowany / powlekany", en: "Coated / lacquered", de: "Lackiert / beschichtet" }, timeH: 0.3, cost: 8 },
   { id: "custom",   label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" },                              timeH: null, cost: null, custom: true },
 ];
 
-function calculate({ resinId, volumeId, moldId, inclusionId, finishId, quantityId }, lang) {
+export function calculate({ resinId, volumeId, moldId, inclusionId, finishId, quantityId }, lang) {
   const resin = RESINS.find(r => r.id === resinId);
   const vol = VOLUMES.find(v => v.id === volumeId);
   const mold = MOLD_TYPES.find(m => m.id === moldId);
