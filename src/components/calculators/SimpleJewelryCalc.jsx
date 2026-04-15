@@ -21,37 +21,52 @@ import { trackCalc } from "../../utils/analytics.js";
 // ============================================================
 
 const SERVICES = [
-  { id: "new",         icon: Sparkles,   label: { pl: "Nowa biżuteria",          en: "New jewelry",           de: "Neuer Schmuck" } },
-  { id: "renovation",  icon: Wand2,      label: { pl: "Renowacja / odświeżenie", en: "Renovation / refresh",  de: "Renovierung / Auffrischung" } },
-  { id: "repair",      icon: Wrench,     label: { pl: "Naprawa",                 en: "Repair",                de: "Reparatur" } },
+  { id: "new",         icon: Sparkles,   img: "/img/calc/services/new.png",
+    label: { pl: "Nowa biżuteria",          en: "New jewelry",           de: "Neuer Schmuck" } },
+  { id: "renovation",  icon: Wand2,      img: "/img/calc/services/renovation.png",
+    label: { pl: "Renowacja / odświeżenie", en: "Renovation / refresh",  de: "Renovierung / Auffrischung" } },
+  { id: "repair",      icon: Wrench,     img: "/img/calc/services/repair.png",
+    label: { pl: "Naprawa",                 en: "Repair",                de: "Reparatur" } },
   { id: "unsure",      icon: HelpCircle, label: { pl: "Nie jestem pewien",        en: "I'm not sure",          de: "Ich bin mir nicht sicher" } },
 ];
 
 const PIECES = [
-  { id: "ring",     icon: Circle,          label: { pl: "Pierścionek",             en: "Ring",         de: "Ring" } },
-  { id: "signet",   icon: Crown,           label: { pl: "Sygnet",                  en: "Signet ring",  de: "Siegelring" } },
-  { id: "bracelet", icon: Hand,            label: { pl: "Bransoletka",             en: "Bracelet",     de: "Armband" } },
-  { id: "pendant",  icon: GemIcon,         label: { pl: "Wisiorek / medalik",      en: "Pendant",      de: "Anhänger" } },
-  { id: "earrings", icon: Ear,             label: { pl: "Kolczyki",                en: "Earrings",     de: "Ohrringe" } },
-  { id: "necklace", icon: Link2,           label: { pl: "Naszyjnik / łańcuszek",   en: "Necklace / chain", de: "Halskette / Kette" } },
+  { id: "ring",     icon: Circle,          img: "/img/calc/types/ring.png",
+    label: { pl: "Pierścionek",             en: "Ring",         de: "Ring" } },
+  { id: "signet",   icon: Crown,           img: "/img/calc/types/signet.png",
+    label: { pl: "Sygnet",                  en: "Signet ring",  de: "Siegelring" } },
+  { id: "bracelet", icon: Hand,            img: "/img/calc/types/bracelet.png",
+    label: { pl: "Bransoletka",             en: "Bracelet",     de: "Armband" } },
+  { id: "pendant",  icon: GemIcon,         img: "/img/calc/types/pendant.png",
+    label: { pl: "Wisiorek / medalik",      en: "Pendant",      de: "Anhänger" } },
+  { id: "earrings", icon: Ear,             img: "/img/calc/types/earrings.png",
+    label: { pl: "Kolczyki",                en: "Earrings",     de: "Ohrringe" } },
+  { id: "necklace", icon: Link2,           img: "/img/calc/types/necklace.png",
+    label: { pl: "Naszyjnik / łańcuszek",   en: "Necklace / chain", de: "Halskette / Kette" } },
   { id: "other",    icon: MoreHorizontal,  label: { pl: "Inne",                    en: "Other",        de: "Andere" } },
 ];
 
 const METALS = [
-  { id: "silver",   icon: Coins,      label: { pl: "Srebro",    en: "Silver",    de: "Silber" } },
-  { id: "gold",     icon: Coins,      label: { pl: "Złoto",     en: "Gold",      de: "Gold" } },
-  { id: "platinum", icon: Coins,      label: { pl: "Platyna",   en: "Platinum",  de: "Platin" } },
+  { id: "silver",   icon: Coins,      img: "/img/calc/metals/silver.png",
+    label: { pl: "Srebro",    en: "Silver",    de: "Silber" } },
+  { id: "gold",     icon: Coins,      img: "/img/calc/metals/gold_14k.png",
+    label: { pl: "Złoto",     en: "Gold",      de: "Gold" } },
+  { id: "platinum", icon: Coins,      img: "/img/calc/metals/platinum.png",
+    label: { pl: "Platyna",   en: "Platinum",  de: "Platin" } },
   { id: "unsure",   icon: HelpCircle, label: { pl: "Nie wiem",  en: "Not sure",  de: "Unsicher" } },
 ];
 
 // --- Q4 for NEW: gemstone category ---
 const GEM_CATEGORIES = [
   { id: "none",    icon: ZapOff,      label: { pl: "Bez kamienia",                  en: "No stone",         de: "Ohne Stein" } },
-  { id: "accent",  icon: SparkleAlt,  label: { pl: "Delikatny akcent",              en: "Subtle accent",    de: "Feiner Akzent" },
+  { id: "accent",  icon: SparkleAlt,  img: "/img/calc/gems/cz.png",
+    label: { pl: "Delikatny akcent",              en: "Subtle accent",    de: "Feiner Akzent" },
     sub: { pl: "drobne cyrkonie / lab-grown", en: "small CZ / lab-grown", de: "kleine CZ / Labor-Stein" } },
-  { id: "colored", icon: GemIcon,     label: { pl: "Kolorowy kamień",               en: "Colored stone",    de: "Farbstein" },
+  { id: "colored", icon: GemIcon,     img: "/img/calc/gems/sapphire.png",
+    label: { pl: "Kolorowy kamień",               en: "Colored stone",    de: "Farbstein" },
     sub: { pl: "ametyst, topaz, szafir…", en: "amethyst, topaz, sapphire…", de: "Amethyst, Topas, Saphir…" } },
-  { id: "diamond", icon: Award,       label: { pl: "Diament / drogi kamień",        en: "Diamond / precious", de: "Diamant / Edelstein" },
+  { id: "diamond", icon: Award,       img: "/img/calc/gems/diamond.png",
+    label: { pl: "Diament / drogi kamień",        en: "Diamond / precious", de: "Diamant / Edelstein" },
     sub: { pl: "rubin, szmaragd, brylant", en: "ruby, emerald, brilliant", de: "Rubin, Smaragd, Brillant" } },
 ];
 
@@ -75,13 +90,16 @@ const REPAIR_ISSUES = [
   { id: "solder",    icon: Scissors, label: { pl: "Lutowanie / łączenie",        en: "Soldering / joining",    de: "Löten / Verbinden" } },
 ];
 
-// --- Q5 for NEW: quality tier ---
+// --- Q5 for NEW: quality tier (uses weight images — quality→weight mapping: budget=light, standard=standard, premium=heavy) ---
 const QUALITY_TIERS = [
-  { id: "budget",   icon: ZapOff,      label: { pl: "Przystępny",    en: "Affordable", de: "Erschwinglich" },
+  { id: "budget",   icon: ZapOff,      img: "/img/calc/weights/light.png",
+    label: { pl: "Przystępny",    en: "Affordable", de: "Erschwinglich" },
     sub: { pl: "tanio i solidnie", en: "affordable & solid", de: "günstig & solide" } },
-  { id: "standard", icon: ShieldCheck, label: { pl: "Standard",      en: "Standard",   de: "Standard" },
+  { id: "standard", icon: ShieldCheck, img: "/img/calc/weights/standard.png",
+    label: { pl: "Standard",      en: "Standard",   de: "Standard" },
     sub: { pl: "dobra jakość",     en: "good quality",       de: "gute Qualität" } },
-  { id: "premium",  icon: Award,       label: { pl: "Premium",       en: "Premium",    de: "Premium" },
+  { id: "premium",  icon: Award,       img: "/img/calc/weights/heavy.png",
+    label: { pl: "Premium",       en: "Premium",    de: "Premium" },
     sub: { pl: "najwyższa jakość", en: "top quality",        de: "höchste Qualität" } },
 ];
 
@@ -323,20 +341,56 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
       {options.map(opt => {
         const active = value === opt.id;
         const Icon = opt.icon;
+        const label = t(opt.label, lang);
+        const sub = opt.sub ? t(opt.sub, lang) : null;
+        const hasImg = !!opt.img;
+
         return (
           <button key={opt.id} onClick={() => onChange(opt.id)}
-            className={`p-3 sm:p-4 rounded-xl border text-left transition-all duration-200 min-h-[88px] ${
+            className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[120px] sm:min-h-[140px] ${
               active
-                ? "border-rose-400 bg-rose-400/10 shadow-md shadow-rose-400/10"
+                ? "border-rose-400 shadow-lg shadow-rose-400/20"
                 : "border-white/10 bg-white/[0.02] hover:border-white/25"
             }`}>
-            <Icon className={`w-5 h-5 sm:w-6 sm:h-6 mb-1.5 ${active ? "text-rose-300" : "text-neutral-400"}`} />
-            <div className={`text-xs sm:text-sm font-semibold leading-tight ${active ? "text-rose-200" : "text-white"}`}>
-              {t(opt.label, lang)}
-            </div>
-            {opt.sub && (
-              <div className={`text-[10px] sm:text-[11px] mt-0.5 ${active ? "text-rose-400/80" : "text-neutral-500"}`}>
-                {t(opt.sub, lang)}
+            {hasImg ? (
+              <>
+                {/* Background image */}
+                <div className="absolute inset-0 overflow-hidden bg-black">
+                  <img src={opt.img} alt={label} loading="lazy"
+                    className={`w-full h-full object-cover transition-transform duration-500 ${
+                      active ? "scale-105" : "group-hover:scale-105"
+                    }`} />
+                  {/* Bottom gradient for text legibility */}
+                  <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/95 via-black/65 to-transparent" />
+                  {/* Active state tint */}
+                  {active && <div className="absolute inset-0 bg-rose-400/10 mix-blend-overlay" />}
+                </div>
+                {/* Text at bottom */}
+                <div className="relative p-2.5 sm:p-3 h-full min-h-[120px] sm:min-h-[140px] flex flex-col justify-end">
+                  <div className={`text-[11px] sm:text-sm font-bold leading-tight drop-shadow-lg ${active ? "text-rose-300" : "text-white"}`}>
+                    {label}
+                  </div>
+                  {sub && (
+                    <div className={`text-[10px] mt-0.5 drop-shadow-md ${active ? "text-rose-200/90" : "text-neutral-200"}`}>
+                      {sub}
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              /* Icon fallback (no image) */
+              <div className={`p-3 sm:p-4 h-full min-h-[120px] sm:min-h-[140px] flex flex-col ${
+                active ? "bg-rose-400/10" : ""
+              }`}>
+                <Icon className={`w-6 h-6 sm:w-7 sm:h-7 mb-2 ${active ? "text-rose-300" : "text-neutral-400"}`} />
+                <div className={`text-xs sm:text-sm font-semibold leading-tight ${active ? "text-rose-200" : "text-white"}`}>
+                  {label}
+                </div>
+                {sub && (
+                  <div className={`text-[10px] sm:text-[11px] mt-0.5 ${active ? "text-rose-400/80" : "text-neutral-500"}`}>
+                    {sub}
+                  </div>
+                )}
               </div>
             )}
           </button>
