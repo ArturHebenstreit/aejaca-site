@@ -1,28 +1,89 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml"
+  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- Home -->
   <url>
     <loc>https://www.aejaca.com/</loc>
-    <lastmod>2026-03-13</lastmod>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>1.00</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/" />
+    <image:image>
+      <image:loc>https://www.aejaca.com/hero-jewelry.jpg</image:loc>
+      <image:title>AEJaCA Jewelry — handcrafted silver and gold jewelry with natural gemstones</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://www.aejaca.com/hero-studio.jpg</image:loc>
+      <image:title>AEJaCA sTuDiO — 3D printing, laser engraving, resin casting</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://www.aejaca.com/logo.png</image:loc>
+      <image:title>AEJaCA brand logo</image:title>
+    </image:image>
   </url>
+
+  <!-- Jewelry -->
   <url>
     <loc>https://www.aejaca.com/jewelry</loc>
-    <lastmod>2026-03-13</lastmod>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.90</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/jewelry" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/jewelry" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/jewelry" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/jewelry" />
+    <image:image>
+      <image:loc>https://www.aejaca.com/hero-jewelry.jpg</image:loc>
+      <image:title>AEJaCA Jewelry — handmade silver rings, earrings and gemstone pieces</image:title>
+      <image:caption>Handcrafted silver 925 and gold 14k/18k jewelry with natural gemstones</image:caption>
+    </image:image>
   </url>
+
+  <!-- Studio -->
   <url>
     <loc>https://www.aejaca.com/studio</loc>
-    <lastmod>2026-03-13</lastmod>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.90</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/studio" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/studio" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/studio" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/studio" />
+    <image:image>
+      <image:loc>https://www.aejaca.com/hero-studio.jpg</image:loc>
+      <image:title>AEJaCA sTuDiO — 3D printing, laser engraving and custom fabrication</image:title>
+      <image:caption>Multi-material 3D printing, CO2/Fiber laser engraving, UV and 2K resin casting</image:caption>
+    </image:image>
   </url>
+
+  <!-- Contact -->
   <url>
     <loc>https://www.aejaca.com/contact</loc>
-    <lastmod>2026-03-13</lastmod>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/contact" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/contact" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/contact" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/contact" />
   </url>
+
+  <!-- Privacy -->
   <url>
     <loc>https://www.aejaca.com/privacy</loc>
-    <lastmod>2026-03-13</lastmod>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>yearly</changefreq>
     <priority>0.30</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/privacy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/privacy" />
   </url>
+
 </urlset>
