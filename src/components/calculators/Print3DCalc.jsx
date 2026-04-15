@@ -10,7 +10,7 @@ const PRINT_CONFIG = {
   ENGINEERING_PREMIUM: 0.35,
 };
 
-const FILAMENTS = {
+export const FILAMENTS = {
   standard: { label: "Standard", materials: {
     "PLA":        { price_kg: 80,  density: 1.24 },
     "PLA Silk":   { price_kg: 110, density: 1.24 },
@@ -33,7 +33,7 @@ const FILAMENTS = {
   }},
 };
 
-const SIZES = [
+export const SIZES = [
   { id: "XS", label: { pl: "XS — do 5 cm", en: "XS — up to 5 cm", de: "XS — bis 5 cm" }, volumeRef: 30, timeBase: 1.5, pcsPerPlate: 8 },
   { id: "S",  label: { pl: "S — 5–10 cm", en: "S — 5–10 cm", de: "S — 5–10 cm" }, volumeRef: 150, timeBase: 4, pcsPerPlate: 4 },
   { id: "M",  label: { pl: "M — 10–20 cm", en: "M — 10–20 cm", de: "M — 10–20 cm" }, volumeRef: 800, timeBase: 10, pcsPerPlate: 2 },
@@ -41,14 +41,14 @@ const SIZES = [
   { id: "XL", label: { pl: "XL — powyżej 30 cm", en: "XL — over 30 cm", de: "XL — über 30 cm" }, volumeRef: null, timeBase: null, pcsPerPlate: 1, custom: true },
 ];
 
-const INFILL = [
+export const INFILL = [
   { id: "low",    label: { pl: "Niskie (≤15%)", en: "Low (≤15%)", de: "Niedrig (≤15%)" }, avg: 0.12 },
   { id: "medium", label: { pl: "Średnie (15–50%)", en: "Medium (15–50%)", de: "Mittel (15–50%)" }, avg: 0.35 },
   { id: "high",   label: { pl: "Wysokie (>50%)", en: "High (>50%)", de: "Hoch (>50%)" }, avg: 0.70 },
   { id: "custom", label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" }, avg: null, custom: true },
 ];
 
-const COLORS = [
+export const COLORS = [
   { id: 1, label: { pl: "1 kolor", en: "1 color", de: "1 Farbe" }, timeMul: 1.0, wasteMul: 1.0 },
   { id: 2, label: { pl: "2 kolory (dual head)", en: "2 colors (dual head)", de: "2 Farben (dual head)" }, timeMul: 1.08, wasteMul: 1.05 },
   { id: 3, label: { pl: "3 kolory (AMS)", en: "3 colors (AMS)", de: "3 Farben (AMS)" }, timeMul: 1.30, wasteMul: 1.25 },
@@ -57,7 +57,7 @@ const COLORS = [
   { id: 0, label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" }, timeMul: null, wasteMul: null, custom: true },
 ];
 
-const PRECISION = [
+export const PRECISION = [
   { id: "draft_04",    label: "0.4mm Draft (0.28)", speedMul: 0.70 },
   { id: "standard_04", label: "0.4mm Standard (0.20)", speedMul: 1.00 },
   { id: "quality_04",  label: { pl: "0.4mm Jakość (0.12)", en: "0.4mm Quality (0.12)", de: "0.4mm Qualität (0.12)" }, speedMul: 1.50 },
@@ -85,7 +85,7 @@ const LBL = {
     estCost: "Geschätzte Kosten / Stk.", discount: "Serienrabatt", totalProd: "Gesamte Produktionszeit" },
 };
 
-function calculate(params, lang) {
+export function calculate(params, lang) {
   const { segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId } = params;
   const size = SIZES.find(s => s.id === sizeId);
   const infill = INFILL.find(i => i.id === infillId);

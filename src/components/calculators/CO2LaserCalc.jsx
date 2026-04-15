@@ -51,7 +51,7 @@ const LBL = {
     cutTime: "Schnittzeit", materialCost: "Material / Stk.", extSurcharge: "Aufpreis erweiterter Bereich" },
 };
 
-const ENGRAVE_MATERIALS = [
+export const ENGRAVE_MATERIALS = [
   { id: "wood",    label: { pl: "Drewno", en: "Wood", de: "Holz" },               rateMin: 0.07, prepCost: 0.5 },
   { id: "plywood", label: { pl: "Sklejka", en: "Plywood", de: "Sperrholz" },      rateMin: 0.07, prepCost: 0.4 },
   { id: "acrylic", label: { pl: "Akryl", en: "Acrylic", de: "Acryl" },            rateMin: 0.08, prepCost: 0.8 },
@@ -64,7 +64,7 @@ const ENGRAVE_MATERIALS = [
   { id: "custom",  label: { pl: "Inny materiał", en: "Other material", de: "Anderes Material" }, rateMin: null, prepCost: null, custom: true },
 ];
 
-const ENGRAVE_AREAS = [
+export const ENGRAVE_AREAS = [
   { id: "XS", label: { pl: "XS — do 25 cm²", en: "XS — up to 25 cm²", de: "XS — bis 25 cm²" }, area: 15 },
   { id: "S",  label: { pl: "S — 25–100 cm²", en: "S — 25–100 cm²", de: "S — 25–100 cm²" }, area: 60 },
   { id: "M",  label: { pl: "M — 100–400 cm²", en: "M — 100–400 cm²", de: "M — 100–400 cm²" }, area: 250 },
@@ -72,14 +72,14 @@ const ENGRAVE_AREAS = [
   { id: "XL", label: { pl: "XL — powyżej 1000 cm²", en: "XL — over 1000 cm²", de: "XL — über 1000 cm²" }, area: null, custom: true },
 ];
 
-const ENGRAVE_DETAIL = [
+export const ENGRAVE_DETAIL = [
   { id: "simple",   label: { pl: "Prosty (tekst/logo)", en: "Simple (text/logo)", de: "Einfach (Text/Logo)" }, mul: 0.7 },
   { id: "standard", label: { pl: "Średni (grafika)", en: "Standard (graphics)", de: "Standard (Grafik)" }, mul: 1.0 },
   { id: "photo",    label: { pl: "Wysoki (fotograwer)", en: "High (photo engrave)", de: "Hoch (Fotogravur)" }, mul: 2.2 },
   { id: "custom",   label: { pl: "Niestandardowy", en: "Custom", de: "Individuell" }, mul: null, custom: true },
 ];
 
-const CUT_MATERIALS = [
+export const CUT_MATERIALS = [
   { id: "ply3",     label: { pl: "Sklejka 3mm", en: "Plywood 3mm", de: "Sperrholz 3mm" }, cutRate: 0.15, matCost: 0.04 },
   { id: "ply5",     label: { pl: "Sklejka 5mm", en: "Plywood 5mm", de: "Sperrholz 5mm" }, cutRate: 0.25, matCost: 0.06 },
   { id: "ply8",     label: { pl: "Sklejka 8mm", en: "Plywood 8mm", de: "Sperrholz 8mm" }, cutRate: 0.50, matCost: 0.09 },
@@ -94,7 +94,7 @@ const CUT_MATERIALS = [
   { id: "custom",   label: { pl: "Inny materiał", en: "Other material", de: "Anderes Material" }, cutRate: null, matCost: null, custom: true },
 ];
 
-const CUT_PATHS = [
+export const CUT_PATHS = [
   { id: "XS", label: { pl: "XS — do 50 cm", en: "XS — up to 50 cm", de: "XS — bis 50 cm" }, pathCm: 30, sheetCm2: 50 },
   { id: "S",  label: { pl: "S — 50–200 cm", en: "S — 50–200 cm", de: "S — 50–200 cm" }, pathCm: 120, sheetCm2: 200 },
   { id: "M",  label: { pl: "M — 200–500 cm", en: "M — 200–500 cm", de: "M — 200–500 cm" }, pathCm: 350, sheetCm2: 600 },
@@ -102,14 +102,14 @@ const CUT_PATHS = [
   { id: "XL", label: { pl: "XL — powyżej 1500 cm", en: "XL — over 1500 cm", de: "XL — über 1500 cm" }, pathCm: null, sheetCm2: null, custom: true },
 ];
 
-const CUT_COMPLEXITY = [
+export const CUT_COMPLEXITY = [
   { id: "simple",   label: { pl: "Proste kształty", en: "Simple shapes", de: "Einfache Formen" }, mul: 0.8 },
   { id: "moderate", label: { pl: "Średnie (krzywe)", en: "Moderate (curves)", de: "Mittel (Kurven)" }, mul: 1.0 },
   { id: "complex",  label: { pl: "Złożone (fine detail)", en: "Complex (fine detail)", de: "Komplex (Feindetail)" }, mul: 1.5 },
   { id: "custom",   label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" }, mul: null, custom: true },
 ];
 
-function calcEngrave({ matId, areaId, detailId, quantityId }, lang) {
+export function calcEngrave({ matId, areaId, detailId, quantityId }, lang) {
   const mat = ENGRAVE_MATERIALS.find(m => m.id === matId);
   const area = ENGRAVE_AREAS.find(a => a.id === areaId);
   const detail = ENGRAVE_DETAIL.find(d => d.id === detailId);
@@ -148,7 +148,7 @@ function calcEngrave({ matId, areaId, detailId, quantityId }, lang) {
   };
 }
 
-function calcCut({ matId, pathId, complexId, quantityId, extended }, lang) {
+export function calcCut({ matId, pathId, complexId, quantityId, extended }, lang) {
   const mat = CUT_MATERIALS.find(m => m.id === matId);
   const path = CUT_PATHS.find(p => p.id === pathId);
   const cmplx = CUT_COMPLEXITY.find(c => c.id === complexId);
