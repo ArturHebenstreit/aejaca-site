@@ -71,7 +71,7 @@ function applyJewelryPricing(baseCost, discountRate, qty, margin = MARGIN) {
 }
 
 // ---- NEW CREATION CALCULATOR ----
-function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
+export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
   gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId }, lang) {
   const l = LBL[lang] || LBL.en;
   const line = PRODUCT_LINES.find(p => p.id === lineId);
@@ -144,7 +144,7 @@ function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
 }
 
 // ---- RENOVATION CALCULATOR ----
-function calcRenovation({ jewTypeId, metalTypeId, services, qtyId }, lang) {
+export function calcRenovation({ jewTypeId, metalTypeId, services, qtyId }, lang) {
   const l = LBL[lang] || LBL.en;
   const gMetal = GENERIC_METALS.find(m => m.id === metalTypeId);
   const qTier = QTY_TIERS.find(q => q.id === qtyId);
@@ -177,7 +177,7 @@ function calcRenovation({ jewTypeId, metalTypeId, services, qtyId }, lang) {
 }
 
 // ---- REPAIR CALCULATOR ----
-function calcRepair({ jewTypeId, metalTypeId, repairId, qtyId }, lang) {
+export function calcRepair({ jewTypeId, metalTypeId, repairId, qtyId }, lang) {
   const l = LBL[lang] || LBL.en;
   const gMetal = GENERIC_METALS.find(m => m.id === metalTypeId);
   const repair = REPAIR_SERVICES.find(r => r.id === repairId);
