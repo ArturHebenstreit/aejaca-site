@@ -160,3 +160,47 @@ export function buildFAQSchema(items) {
     })),
   };
 }
+
+// ---------- Google Reviews — aggregateRating + Review[] ----------
+// Critical: stars in SERP (+20-30% CTR uplift per Google case studies).
+// SEO-safe gray zone — requires 4 conditions:
+//   1) All claimed reviews must be VISIBLE on the page (parity)
+//   2) Explicit attribution via `publisher: Google` per review
+//   3) Real author names + dates + verbatim text (no fakes)
+//   4) reviewCount matches visible count
+// We embed this into Organization schema (not standalone) because reviews
+// are ABOUT the business entity, not the URL itself.
+export function buildReviewsAugmentedOrganization({ rating, reviewCount, reviews }) {
+  const base = buildOrganizationSchema();
+  if (!reviews || !reviews.length) return base;
+
+  return {
+    ...base,
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: rating.toFixed(1),
+      reviewCount: String(reviewCount),
+      bestRating: "5",
+      worstRating: "1",
+    },
+    review: reviews.map((r) => ({
+      "@type": "Review",
+      author: { "@type": "Person", "name": r.author },
+      datePublished: r.date,
+      reviewBody: r.text,
+      inLanguage: r.originalLang,
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: String(r.rating),
+        bestRating: "5",
+        worstRating: "1",
+      },
+      // Explicit attribution — tells Google these came from their platform.
+      // Key for avoiding "aggregated from other websites" manual action.
+      publisher: {
+        "@type": "Organization",
+        name: "Google",
+      },
+    })),
+  };
+}

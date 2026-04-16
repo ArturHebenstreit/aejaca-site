@@ -4,7 +4,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import StudioCalculator from "../components/StudioCalculator.jsx";
 // import Portfolio from "../components/Portfolio.jsx"; // temporarily disabled
-import Testimonials from "../components/Testimonials.jsx";
+import GoogleReviews from "../components/GoogleReviews.jsx";
 import FAQ from "../components/FAQ.jsx";
 import Tips from "../components/Tips.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -172,8 +172,8 @@ export default function Studio() {
 
       <div className="gradient-divider" />
 
-      {/* Testimonials */}
-      <Testimonials data={s.testimonials} accent="blue" id="testimonials" />
+      {/* Google Reviews — real social proof replaces hardcoded testimonials */}
+      <GoogleReviews id="testimonials" limit={3} compact />
 
       <div className="gradient-divider" />
 

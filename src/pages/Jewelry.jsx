@@ -5,7 +5,7 @@ import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import JewelryEstimator from "../components/JewelryEstimator.jsx";
 import ProcessGallery from "../components/ProcessGallery.jsx";
 // import Portfolio from "../components/Portfolio.jsx"; // temporarily disabled
-import Testimonials from "../components/Testimonials.jsx";
+import GoogleReviews from "../components/GoogleReviews.jsx";
 import FAQ from "../components/FAQ.jsx";
 import Tips from "../components/Tips.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -154,8 +154,8 @@ export default function Jewelry() {
 
       <div className="gradient-divider" />
 
-      {/* Testimonials */}
-      <Testimonials data={j.testimonials} accent="amber" id="testimonials" />
+      {/* Google Reviews — real social proof replaces hardcoded testimonials */}
+      <GoogleReviews id="testimonials" limit={3} compact />
 
       <div className="gradient-divider" />
 

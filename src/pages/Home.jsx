@@ -4,11 +4,13 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import {
-  buildOrganizationSchema,
+  buildReviewsAugmentedOrganization,
   buildWebPageSchema,
   buildBreadcrumbSchema,
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
+import GoogleReviews from "../components/GoogleReviews.jsx";
+import { GOOGLE_BUSINESS, REVIEWS } from "../data/googleReviews.js";
 
 export default function Home() {
   const { t, lang } = useLanguage();
@@ -20,11 +22,15 @@ export default function Home() {
   const getCardRef = useStaggerReveal(120);
 
   // Build structured data at render time so it picks up current language.
-  // Organization + WebPage + Breadcrumb give Google + LLMs the full entity graph
-  // needed for rich results and accurate AI summarization.
+  // Organization (augmented with aggregateRating + Review[]) gives Google
+  // star ratings in SERP (+20-30% CTR) + LLM trust signal for AIO.
   const seo = getSEO("home", lang);
   const schemas = [
-    buildOrganizationSchema(),
+    buildReviewsAugmentedOrganization({
+      rating: GOOGLE_BUSINESS.rating,
+      reviewCount: GOOGLE_BUSINESS.totalReviews,
+      reviews: REVIEWS,
+    }),
     buildWebPageSchema({ title: seo.title, description: seo.description, url: SITE.url, lang }),
     buildBreadcrumbSchema([{ name: "Home", url: SITE.url }]),
   ];
@@ -95,6 +101,11 @@ export default function Home() {
           <p className="text-neutral-400 text-lg leading-relaxed">{h.brandText}</p>
         </div>
       </section>
+
+      <div className="gradient-divider" />
+
+      {/* Google Reviews — social proof above secondary content (CRO +34% per Baymard) */}
+      <GoogleReviews id="reviews" limit={6} />
 
       <div className="gradient-divider" />
 
