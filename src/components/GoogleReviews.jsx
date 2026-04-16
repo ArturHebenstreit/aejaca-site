@@ -59,6 +59,7 @@ const LABELS = {
     viewAll: "Zobacz wszystkie na Google Maps",
     writeReview: "Dodaj swoją opinię na Google",
     translationOf: "Tłumaczenie",
+    ratingOnly: "Ocena bez komentarza",
     relativeTime: (days) => {
       if (days < 7) return `${days} dni temu`;
       if (days < 30) return `${Math.round(days / 7)} tyg. temu`;
@@ -75,6 +76,7 @@ const LABELS = {
     viewAll: "See all on Google Maps",
     writeReview: "Write your review on Google",
     translationOf: "Translation",
+    ratingOnly: "Rating without comment",
     relativeTime: (days) => {
       if (days < 7) return `${days} days ago`;
       if (days < 30) return `${Math.round(days / 7)} weeks ago`;
@@ -91,6 +93,7 @@ const LABELS = {
     viewAll: "Alle auf Google Maps ansehen",
     writeReview: "Eigene Bewertung auf Google schreiben",
     translationOf: "Übersetzung",
+    ratingOnly: "Bewertung ohne Kommentar",
     relativeTime: (days) => {
       if (days < 7) return `vor ${days} Tagen`;
       if (days < 30) return `vor ${Math.round(days / 7)} Wochen`;
@@ -107,8 +110,9 @@ function daysSince(dateStr) {
 
 // Single review card
 function ReviewCard({ review, lang, labels }) {
+  const hasText = Boolean(review.text && review.text.trim());
   const isOriginalLang = review.originalLang === lang;
-  const translation = !isOriginalLang && review.translations?.[lang];
+  const translation = hasText && !isOriginalLang && review.translations?.[lang];
 
   return (
     <article
@@ -135,15 +139,20 @@ function ReviewCard({ review, lang, labels }) {
       </header>
 
       {/* Original text — lang attribute tells browsers + screen readers the language */}
-      <blockquote
-        lang={review.originalLang}
-        className="text-neutral-300 text-sm leading-relaxed"
-        itemProp="reviewBody"
-      >
-        "{review.text}"
-      </blockquote>
+      {hasText ? (
+        <blockquote
+          lang={review.originalLang}
+          className="text-neutral-300 text-sm leading-relaxed"
+          itemProp="reviewBody"
+        >
+          &ldquo;{review.text}&rdquo;
+        </blockquote>
+      ) : (
+        // Rating-only review (normalne na Google — klient dał 5★ bez komentarza)
+        <div className="text-neutral-500 text-xs italic">{labels.ratingOnly}</div>
+      )}
 
-      {/* Translation (jeśli aktualny język ≠ oryginał) */}
+      {/* Translation (tylko gdy jest treść i aktualny język ≠ oryginał) */}
       {translation && (
         <div className="pt-3 border-t border-white/5">
           <div className="text-[10px] uppercase tracking-wider text-neutral-500 mb-1">

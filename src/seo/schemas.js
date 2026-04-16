@@ -174,6 +174,13 @@ export function buildReviewsAugmentedOrganization({ rating, reviewCount, reviews
   const base = buildOrganizationSchema();
   if (!reviews || !reviews.length) return base;
 
+  // Only reviews with actual body text go into JSON-LD Review[] —
+  // Google's structured data guidelines require `reviewBody` to be
+  // meaningful content. Rating-only reviews (5★ bez komentarza) nadal
+  // liczą się w aggregateRating (reviewCount) — to rzeczywista liczba
+  // opinii na Google Business Profile.
+  const textReviews = reviews.filter((r) => r.text && r.text.trim());
+
   return {
     ...base,
     aggregateRating: {
@@ -183,7 +190,7 @@ export function buildReviewsAugmentedOrganization({ rating, reviewCount, reviews
       bestRating: "5",
       worstRating: "1",
     },
-    review: reviews.map((r) => ({
+    review: textReviews.map((r) => ({
       "@type": "Review",
       author: { "@type": "Person", "name": r.author },
       datePublished: r.date,
