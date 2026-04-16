@@ -39,11 +39,24 @@ export default function Home() {
     <>
       <SEOHead pageKey="home" path="/" schemas={schemas} />
       <div className="pt-16">
-        {/* Split Hero — single H1 for SEO hierarchy (only one per page) */}
-        <section className="relative min-h-[calc(75vh-4rem)] flex flex-col md:flex-row" aria-label={h.heroAria || "AEJaCA — two worlds"}>
-          {/* Visually-hidden H1 packs primary keywords above the fold — Googlebot reads DOM order */}
-          <h1 className="sr-only">{h.h1 || "AEJaCA — Handcrafted Jewelry & Digital Fabrication Studio"}</h1>
+        {/* Hero intro — visible StoryBrand tagline (H1 now visible, not sr-only).
+            One H1 per page = SEO rule; value prop is front-and-center for humans + LLMs. */}
+        <section className="bg-neutral-950 pt-10 pb-6 md:pt-14 md:pb-8 px-4 text-center" aria-labelledby="hero-tagline">
+          <h1
+            id="hero-tagline"
+            className="font-serif text-3xl md:text-5xl lg:text-6xl font-semibold text-white tracking-tight max-w-4xl mx-auto leading-[1.1]"
+          >
+            {h.h1}
+          </h1>
+          {h.heroSubtitle && (
+            <p className="mt-4 md:mt-6 text-neutral-300 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+              {h.heroSubtitle}
+            </p>
+          )}
+        </section>
 
+        {/* Split Hero — two equal paths (jewelry / studio) act as primary CTAs */}
+        <section className="relative min-h-[calc(55vh-4rem)] flex flex-col md:flex-row" aria-label={h.heroAria || "AEJaCA — two worlds"}>
           {/* Jewelry Panel */}
           <Link to="/jewelry" className="group relative flex-1 min-h-[50vh] md:min-h-full overflow-hidden cursor-pointer" aria-label={h.jewelryBtn}>
             {/* LCP image: eager + fetchpriority=high tells browser to prioritize — Core Web Vitals (LCP < 2.5s) */}
