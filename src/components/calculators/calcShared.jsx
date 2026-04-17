@@ -29,6 +29,11 @@ export function t(obj, lang) {
   return obj[lang] || obj.en || obj.pl || "";
 }
 
+/** Format integer with non-breaking thin space as thousands separator */
+export function fmtNum(n) {
+  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "\u202F");
+}
+
 /** Format a PLN cost amount in the right currency for the given language */
 export function fmtCost(plnAmount, lang) {
   if (lang === "pl") return `${plnAmount.toFixed(2)} PLN`;
@@ -131,11 +136,11 @@ export function ResultDisplay({ result, lang = "pl" }) {
         {labels.perPiece}
         {r.discount > 0 && <span className="text-green-400 ml-2 font-bold">(-{r.discount * 100}%)</span>}
       </div>
-      <div className="flex items-baseline justify-center gap-3 mb-4">
-        <span className="text-4xl font-extrabold tracking-tight">{mainPc.min}</span>
-        <span className="text-xl text-neutral-600">&mdash;</span>
-        <span className="text-4xl font-extrabold tracking-tight">{mainPc.max}</span>
-        <span className="text-base font-semibold text-neutral-500">{mainCurr}</span>
+      <div className="flex items-baseline justify-center gap-1.5 sm:gap-3 mb-4 flex-wrap">
+        <span className="text-2xl sm:text-4xl font-extrabold tracking-tight">{fmtNum(mainPc.min)}</span>
+        <span className="text-lg sm:text-xl text-neutral-600">&mdash;</span>
+        <span className="text-2xl sm:text-4xl font-extrabold tracking-tight">{fmtNum(mainPc.max)}</span>
+        <span className="text-sm sm:text-base font-semibold text-neutral-500">{mainCurr}</span>
       </div>
 
       {/* Order total (qty > 1) */}
@@ -144,11 +149,11 @@ export function ResultDisplay({ result, lang = "pl" }) {
           <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">
             {labels.order}: ~{r.qty} {labels.pcs}
           </div>
-          <div className="flex items-baseline justify-center gap-3">
-            <span className="text-2xl font-extrabold text-blue-400">{mainTotal.min}</span>
+          <div className="flex items-baseline justify-center gap-1.5 sm:gap-3 flex-wrap">
+            <span className="text-xl sm:text-2xl font-extrabold text-blue-400">{fmtNum(mainTotal.min)}</span>
             <span className="text-neutral-600">&mdash;</span>
-            <span className="text-2xl font-extrabold text-blue-400">{mainTotal.max}</span>
-            <span className="text-sm font-semibold text-neutral-500">{mainCurr}</span>
+            <span className="text-xl sm:text-2xl font-extrabold text-blue-400">{fmtNum(mainTotal.max)}</span>
+            <span className="text-xs sm:text-sm font-semibold text-neutral-500">{mainCurr}</span>
           </div>
           {/* Total production time */}
           {r.totalTimeH != null && (

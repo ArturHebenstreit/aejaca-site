@@ -43,6 +43,12 @@ const PIECES = [
     label: { pl: "Kolczyki",                en: "Earrings",     de: "Ohrringe" } },
   { id: "necklace", icon: Link2,           img: "/img/calc/types/necklace.png",
     label: { pl: "Naszyjnik / łańcuszek",   en: "Necklace / chain", de: "Halskette / Kette" } },
+  { id: "cord_bracelet", icon: Hand,
+    label: { pl: "Bransoletka z kamieni (gumka/rzemyk)", en: "Stone cord bracelet", de: "Edelstein-Kordel-Armband" },
+    sub:   { pl: "kamienie na gumce jubilerskiej lub rzemyku", en: "stones on elastic or leather cord", de: "Steine auf Gummiband oder Lederband" } },
+  { id: "cord_necklace", icon: Link2,
+    label: { pl: "Naszyjnik z kamieni (gumka/rzemyk)", en: "Stone cord necklace", de: "Edelstein-Kordel-Halskette" },
+    sub:   { pl: "kamienie na gumce jubilerskiej lub rzemyku", en: "stones on elastic or leather cord", de: "Steine auf Gummiband oder Lederband" } },
   { id: "other",    icon: MoreHorizontal,  label: { pl: "Inne",                    en: "Other",        de: "Andere" } },
 ];
 
@@ -214,12 +220,31 @@ function mapRenoScope(scope) {
   }
 }
 
+// --- CORD JEWELRY PRICING ---
+const CORD_ITEMS = {
+  cord_bracelet: {
+    materialCostPLN: { budget: 18, standard: 28, premium: 45 },
+    laborCostPLN: 35,
+  },
+  cord_necklace: {
+    materialCostPLN: { budget: 28, standard: 40, premium: 65 },
+    laborCostPLN: 45,
+  },
+};
+
 /** Main engine — given Simple answers, return advanced params + which calc to run */
 export function resolveJewelryParams(state) {
   const { service, piece, metal, gemCategory, renoScope, repairIssue, quality, quantity } = state;
 
   if (!service || service === "unsure") return { custom: true };
   if (!piece || piece === "other") return { custom: true };
+
+  // CORD JEWELRY — fixed pricing, no metal/gem questions needed
+  if (piece === "cord_bracelet" || piece === "cord_necklace") {
+    if (service !== "new") return { custom: true };
+    const tier = quality || "standard";
+    return { flow: "cord", piece, quality: tier };
+  }
 
   // NEW CREATION
   if (service === "new") {
@@ -273,8 +298,44 @@ export function resolveJewelryParams(state) {
   return { custom: true };
 }
 
+function calcCord(resolved, lang) {
+  const cfg = CORD_ITEMS[resolved.piece];
+  if (!cfg) return null;
+  const matCost = cfg.materialCostPLN[resolved.quality] || cfg.materialCostPLN.standard;
+  const laborCost = cfg.laborCostPLN;
+  const baseCost = matCost + laborCost;
+  const margin = 0.45;
+  const basePrice = baseCost * (1 + margin);
+  const tolLow = 0.25, tolHigh = 0.35;
+  const perMin = Math.max(1, Math.round(basePrice * (1 - tolLow)));
+  const perMax = Math.max(1, Math.round(basePrice * (1 + tolHigh)));
+  const eurPln = 4.28;
+  const workshopCost = baseCost * margin;
+  const materialLabel = { pl: "Kamienie i sznurek", en: "Stones & cord", de: "Steine & Kordel" }[lang] || "Stones & cord";
+  const laborLabel = { pl: "Robocizna", en: "Labor", de: "Arbeit" }[lang] || "Labor";
+  const workshopLabel = { pl: "Warsztat i podatki lokalne", en: "Workshop & local taxes", de: "Werkstatt & lokale Steuern" }[lang] || "Workshop & local taxes";
+  const estLabel = { pl: "Koszt szacunkowy", en: "Estimated cost", de: "Geschätzte Kosten" }[lang] || "Estimated cost";
+  const fmtCost = (v) => lang === "pl" ? `${v.toFixed(2)} PLN` : `${(v / eurPln).toFixed(2)} EUR`;
+  return {
+    type: "calculated",
+    perPcPLN: { min: perMin, max: perMax },
+    perPcEUR: { min: Math.max(1, Math.round(perMin / eurPln)), max: Math.max(1, Math.round(perMax / eurPln)) },
+    totalPLN: { min: perMin, max: perMax },
+    totalEUR: { min: Math.max(1, Math.round(perMin / eurPln)), max: Math.max(1, Math.round(perMax / eurPln)) },
+    qty: 1, discount: 0,
+    breakdown: [
+      { label: materialLabel, value: fmtCost(matCost) },
+      { label: laborLabel, value: fmtCost(laborCost) },
+      { label: workshopLabel, value: fmtCost(workshopCost) },
+      { divider: true },
+      { label: estLabel, value: fmtCost(baseCost + workshopCost), bold: true },
+    ],
+  };
+}
+
 function runCalc(resolved, lang) {
   if (!resolved || resolved.custom) return { type: "custom" };
+  if (resolved.flow === "cord")       return calcCord(resolved, lang);
   if (resolved.flow === "new")        return calcNew(resolved.params, lang);
   if (resolved.flow === "renovation") return calcRenovation(resolved.params, lang);
   if (resolved.flow === "repair")     return calcRepair(resolved.params, lang);
@@ -435,11 +496,13 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
   const isNew    = service === "new";
   const isReno   = service === "renovation";
   const isRepair = service === "repair";
+  const isCord   = piece === "cord_bracelet" || piece === "cord_necklace";
 
   const serviceLabel   = t(SERVICES.find(s => s.id === service)?.label, lang);
   const pieceLabel     = t(PIECES.find(p => p.id === piece)?.label, lang);
-  const metalLabel     = t(METALS.find(m => m.id === metal)?.label, lang);
-  const extraLabel     = isNew    ? t(GEM_CATEGORIES.find(g => g.id === gemCategory)?.label, lang)
+  const metalLabel     = isCord ? "" : t(METALS.find(m => m.id === metal)?.label, lang);
+  const extraLabel     = isCord ? ""
+                       : isNew    ? t(GEM_CATEGORIES.find(g => g.id === gemCategory)?.label, lang)
                        : isReno   ? t(RENO_SCOPES.find(r => r.id === renoScope)?.label, lang)
                        : isRepair ? t(REPAIR_ISSUES.find(r => r.id === repairIssue)?.label, lang)
                        : "";
@@ -458,28 +521,30 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
         <TileGrid options={PIECES} value={piece} onChange={handle(setPiece, "piece")} lang={lang} cols={4} />
       </SimpleCard>
 
-      <SimpleCard stepNum="③" label={l.q3}>
-        <TileGrid options={METALS} value={metal} onChange={handle(setMetal, "metal")} lang={lang} cols={4} />
-      </SimpleCard>
+      {!isCord && (
+        <SimpleCard stepNum="③" label={l.q3}>
+          <TileGrid options={METALS} value={metal} onChange={handle(setMetal, "metal")} lang={lang} cols={4} />
+        </SimpleCard>
+      )}
 
-      {isNew && (
-        <SimpleCard stepNum="④" label={l.q4_new}>
+      {isNew && !isCord && (
+        <SimpleCard stepNum={isCord ? "③" : "④"} label={l.q4_new}>
           <TileGrid options={GEM_CATEGORIES} value={gemCategory} onChange={handle(setGemCategory, "gem")} lang={lang} cols={2} />
         </SimpleCard>
       )}
-      {isReno && (
+      {isReno && !isCord && (
         <SimpleCard stepNum="④" label={l.q4_reno}>
           <TileGrid options={RENO_SCOPES} value={renoScope} onChange={handle(setRenoScope, "scope")} lang={lang} cols={2} />
         </SimpleCard>
       )}
-      {isRepair && (
+      {isRepair && !isCord && (
         <SimpleCard stepNum="④" label={l.q4_repair}>
           <TileGrid options={REPAIR_ISSUES} value={repairIssue} onChange={handle(setRepairIssue, "issue")} lang={lang} cols={3} />
         </SimpleCard>
       )}
 
       {isNew ? (
-        <SimpleCard stepNum="⑤" label={l.q5_new}>
+        <SimpleCard stepNum={isCord ? "③" : "⑤"} label={l.q5_new}>
           <TileGrid options={QUALITY_TIERS} value={quality} onChange={handle(setQuality, "quality")} lang={lang} cols={3} />
         </SimpleCard>
       ) : (isReno || isRepair) ? (
