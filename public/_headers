@@ -1,0 +1,25 @@
+# Cloudflare Pages custom headers
+# https://developers.cloudflare.com/pages/configuration/headers/
+
+# Security headers (all pages)
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# Cache immutable hashed assets aggressively (Vite adds content hash)
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Images — cache 30 days (may be updated with new hero shots)
+/*.jpg
+  Cache-Control: public, max-age=2592000
+/*.png
+  Cache-Control: public, max-age=2592000
+/*.webp
+  Cache-Control: public, max-age=2592000
+
+# HTML — no cache (SPA shell must be fresh for route changes)
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate

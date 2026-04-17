@@ -3,9 +3,11 @@ import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
 import { trackPageView } from "../utils/analytics.js";
+import useScrollToTop from "../hooks/useScrollToTop.js";
 
 export default function Layout() {
   const location = useLocation();
+  useScrollToTop();
   useEffect(() => {
     trackPageView(location.pathname);
   }, [location.pathname]);

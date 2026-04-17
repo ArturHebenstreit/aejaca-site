@@ -63,6 +63,8 @@ export default {
       "NFC-Geräte, Smart Tags & individuelle Gadgets",
     ],
     learnMore: "Mehr erfahren",
+    blogTitle: "Wissen & Tipps",
+    blogAllLink: "Alle Artikel",
     ctaHeading: "Haben Sie eine Idee? Lassen Sie uns sie gemeinsam umsetzen.",
     ctaText: "Ob individueller Schmuck oder technischer Prototyp — wir sind hier, um zu helfen.",
     ctaBtn: "Kontakt aufnehmen",

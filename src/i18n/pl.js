@@ -63,6 +63,8 @@ export default {
       "Urządzenia NFC, smart tagi i gadżety na zamówienie",
     ],
     learnMore: "Dowiedz się więcej",
+    blogTitle: "Wiedza i porady",
+    blogAllLink: "Wszystkie artykuły",
     ctaHeading: "Masz pomysł? Stwórzmy go razem.",
     ctaText: "Niezależnie czy potrzebujesz biżuterii na zamówienie, czy prototypu technicznego — jesteśmy tu, żeby pomóc.",
     ctaBtn: "Skontaktuj się",

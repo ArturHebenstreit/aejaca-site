@@ -7,16 +7,17 @@ import "./utils/analytics.js";  // init analytics (side-effect)
 import { LanguageProvider } from "./i18n/LanguageContext.jsx";
 import Layout from "./components/Layout.jsx";
 import Home from "./pages/Home.jsx";
-import Jewelry from "./pages/Jewelry.jsx";
-import Studio from "./pages/Studio.jsx";
 import Contact from "./pages/Contact.jsx";
 
 // Lazy-loaded routes — split into separate chunks to reduce initial bundle.
 // Blog + Privacy are not on critical landing paths; loading them on-demand
 // saves ~70KB from the main chunk (3 article bodies + Prose components).
+const Jewelry = lazy(() => import("./pages/Jewelry.jsx"));
+const Studio = lazy(() => import("./pages/Studio.jsx"));
 const BlogIndex = lazy(() => import("./pages/BlogIndex.jsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.jsx"));
 const Privacy = lazy(() => import("./pages/Privacy.jsx"));
+const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 
 function LazyFallback() {
   return (
@@ -43,6 +44,7 @@ createRoot(document.getElementById("root")).render(
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/privacy" element={<Privacy />} />
+                <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
           </Suspense>

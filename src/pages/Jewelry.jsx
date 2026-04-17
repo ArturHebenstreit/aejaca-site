@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Gem, Sparkles, Palette, Heart, Wand2, Crown } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
+import { getPost } from "../blog/posts.js";
+import BlogCard from "../components/blog/BlogCard.jsx";
 import JewelryEstimator from "../components/JewelryEstimator.jsx";
 import ProcessGallery from "../components/ProcessGallery.jsx";
 // import Portfolio from "../components/Portfolio.jsx"; // temporarily disabled
@@ -166,6 +168,27 @@ export default function Jewelry() {
 
       {/* Tips & Advice */}
       <Tips data={j.tips} accent="amber" id="tips" />
+
+      <div className="gradient-divider" />
+
+      {/* Related blog article — internal linking (SEO signal) */}
+      {(() => {
+        const post = getPost("pierscionek-zareczynowy-na-zamowienie");
+        if (!post) return null;
+        return (
+          <section className="py-16 px-4 bg-neutral-950">
+            <div className="max-w-md mx-auto">
+              <div className="text-center mb-6">
+                <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-2">Blog</div>
+                <h2 className="font-serif text-xl font-semibold text-white">
+                  {{ pl: "Przeczytaj też", en: "Also read", de: "Lies auch" }[lang] || "Also read"}
+                </h2>
+              </div>
+              <BlogCard post={post} />
+            </div>
+          </section>
+        );
+      })()}
 
       <div className="gradient-divider" />
 

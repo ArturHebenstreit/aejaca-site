@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
+import { getSortedPosts } from "../blog/posts.js";
+import BlogCard from "../components/blog/BlogCard.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import {
   buildReviewsAugmentedOrganization,
@@ -119,6 +121,33 @@ export default function Home() {
 
       {/* Google Reviews — social proof above secondary content (CRO +34% per Baymard) */}
       <GoogleReviews id="reviews" limit={6} />
+
+      <div className="gradient-divider" />
+
+      {/* Blog highlights — internal linking + content discovery (SEO + AIO) */}
+      <section className="py-16 px-4 bg-neutral-950">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-10">
+            <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">Blog</div>
+            <h2 className="font-serif text-2xl md:text-3xl font-semibold text-white tracking-tight">
+              {h.blogTitle}
+            </h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {getSortedPosts().slice(0, 3).map((post) => (
+              <BlogCard key={post.slug} post={post} />
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <Link
+              to="/blog"
+              className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors"
+            >
+              {h.blogAllLink} <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
 
       <div className="gradient-divider" />
 

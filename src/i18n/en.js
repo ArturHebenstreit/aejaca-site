@@ -65,6 +65,8 @@ export default {
       "NFC devices, smart tags & custom gadgets",
     ],
     learnMore: "Learn more",
+    blogTitle: "Knowledge & tips",
+    blogAllLink: "All articles",
     ctaHeading: "Have an idea? Let's create it together.",
     ctaText: "Whether you need custom jewelry or a technical prototype — we're here to help.",
     ctaBtn: "Get in Touch",
