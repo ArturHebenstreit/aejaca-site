@@ -1,4 +1,4 @@
-import { H2, H3, P, Lead, UL, LI, Strong, A, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
+import { H2, H3, P, Lead, OL, UL, LI, Strong, A, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
 
 export const meta = {
   slug: "druk-3d-krok-po-kroku",
