@@ -1,6 +1,7 @@
 export default {
   nav: {
     home: "Startseite",
+    blog: "Blog",
     jewelry: "AEJaCA Schmuck",
     studio: "AEJaCA sTuDiO",
     contact: "Kontakt",

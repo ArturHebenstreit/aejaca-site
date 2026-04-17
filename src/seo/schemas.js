@@ -110,6 +110,57 @@ export function buildServiceSchema({ name, description, serviceType, url, offers
   };
 }
 
+// ---------- Article schema (blog posts / pillar content) ----------
+// Critical for both Google (AI Overviews + rich snippets) and LLM ingestion.
+// ChatGPT, Claude, Perplexity heavily weight Article JSON-LD for fact retrieval.
+// Headline ≤ 110 chars (Google requirement). Include both datePublished and
+// dateModified — LLMs privilege recently updated content.
+export function buildArticleSchema({
+  headline,
+  description,
+  url,
+  image,
+  datePublished,
+  dateModified,
+  author = { name: "Artur Hebenstreit", url: "https://www.aejaca.com" },
+  keywords,
+  wordCount,
+  articleSection,
+  inLanguage,
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline,
+    description,
+    image: Array.isArray(image) ? image : [image],
+    author: {
+      "@type": "Person",
+      name: author.name,
+      url: author.url,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: SITE.name,
+      url: SITE.url,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE.url}/logo.png`,
+      },
+    },
+    datePublished,
+    dateModified: dateModified || datePublished,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": url,
+    },
+    ...(keywords && { keywords }),
+    ...(wordCount && { wordCount }),
+    ...(articleSection && { articleSection }),
+    ...(inLanguage && { inLanguage }),
+  };
+}
+
 // ---------- Product schema (for individual jewelry pieces / studio products) ----------
 // Required for Merchant listings + Google Shopping. `aggregateRating` + `offers`
 // combo triggers rich "star review" snippet in SERP — big CTR boost.

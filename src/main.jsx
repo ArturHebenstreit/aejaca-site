@@ -11,6 +11,8 @@ import Jewelry from "./pages/Jewelry.jsx";
 import Studio from "./pages/Studio.jsx";
 import Contact from "./pages/Contact.jsx";
 import Privacy from "./pages/Privacy.jsx";
+import BlogIndex from "./pages/BlogIndex.jsx";
+import BlogPost from "./pages/BlogPost.jsx";
 
 // HelmetProvider enables per-route <head> mutation (title/meta/JSON-LD).
 // Required wrapper — without it Helmet silently no-ops in SPAs.
@@ -24,6 +26,8 @@ createRoot(document.getElementById("root")).render(
               <Route path="/" element={<Home />} />
               <Route path="/jewelry" element={<Jewelry />} />
               <Route path="/studio" element={<Studio />} />
+              <Route path="/blog" element={<BlogIndex />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/privacy" element={<Privacy />} />
             </Route>

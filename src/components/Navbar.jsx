@@ -20,6 +20,7 @@ export default function Navbar() {
     { to: "/", label: t.nav.home },
     { to: "/jewelry", label: t.nav.jewelry, sections: t.nav.jewelrySections },
     { to: "/studio", label: t.nav.studio, sections: t.nav.studioSections },
+    { to: "/blog", label: t.nav.blog || "Blog" },
     { to: "/contact", label: t.nav.contact },
   ];
 

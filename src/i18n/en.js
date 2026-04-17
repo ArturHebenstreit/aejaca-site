@@ -2,6 +2,7 @@ export default {
   // Navbar
   nav: {
     home: "Home",
+    blog: "Blog",
     jewelry: "AEJaCA Jewelry",
     studio: "AEJaCA sTuDiO",
     contact: "Contact",
