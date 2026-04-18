@@ -228,7 +228,7 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
             const isActive = Math.abs(scale - s) < 0.005;
             const disabled = p.maxCm / rawMaxCm > fitScale * 1.001;
             return (
-              <button key={p.id} onClick={() => onScaleChange(sFloor)} disabled={disabled}
+              <button key={p.id} onClick={() => onScaleChange(s)} disabled={disabled}
                 className={`px-2 py-1 rounded text-[10px] border transition-colors ${
                   isActive ? "border-blue-400 bg-blue-400/10 text-blue-300" :
                   disabled ? "border-white/5 text-neutral-700 cursor-not-allowed" :
