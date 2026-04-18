@@ -193,8 +193,10 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
   const b = stlData.bbox;
   const rawMaxCm = Math.max(b.x, b.y, b.z);
   const fitScale = Math.min(BUILD_VOL_CM.x / b.x, BUILD_VOL_CM.y / b.y, BUILD_VOL_CM.z / b.z);
+  const fitFloor = Math.floor(fitScale * 10000) / 10000;
   const scaledB = { x: b.x * scale, y: b.y * scale, z: b.z * scale };
-  const exceeds = scaledB.x > BUILD_VOL_CM.x || scaledB.y > BUILD_VOL_CM.y || scaledB.z > BUILD_VOL_CM.z;
+  const TOL = 0.05;
+  const exceeds = scaledB.x > BUILD_VOL_CM.x + TOL || scaledB.y > BUILD_VOL_CM.y + TOL || scaledB.z > BUILD_VOL_CM.z + TOL;
   const scaledVol = stlData.volumeCm3 * scale * scale * scale;
 
   return (
@@ -210,7 +212,7 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
       </Suspense>
       <div className="grid grid-cols-3 gap-3 text-center text-[11px]">
         <div><div className="text-neutral-500">{sl.volume}</div><div className="font-bold">{scaledVol.toFixed(1)} cm³</div></div>
-        <div><div className="text-neutral-500">{sl.dims}</div><div className="font-bold">{(scaledB.x*10).toFixed(0)}×{(scaledB.y*10).toFixed(0)}×{(scaledB.z*10).toFixed(0)} mm</div></div>
+        <div><div className="text-neutral-500">{sl.dims}</div><div className="font-bold">{(scaledB.x*10).toFixed(1)}×{(scaledB.y*10).toFixed(1)}×{(scaledB.z*10).toFixed(1)} mm</div></div>
         <div><div className="text-neutral-500">{sl.triangles}</div><div className="font-bold">{stlData.triangleCount.toLocaleString()}</div></div>
       </div>
 
@@ -222,11 +224,11 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
         </div>
         <div className="flex flex-wrap gap-1.5">
           {SIZE_PRESETS.map(p => {
-            const s = Math.min(p.maxCm / rawMaxCm, fitScale);
+            const s = Math.floor(Math.min(p.maxCm / rawMaxCm, fitScale) * 10000) / 10000;
             const isActive = Math.abs(scale - s) < 0.005;
             const disabled = p.maxCm / rawMaxCm > fitScale * 1.001;
             return (
-              <button key={p.id} onClick={() => onScaleChange(parseFloat(s.toFixed(4)))} disabled={disabled}
+              <button key={p.id} onClick={() => onScaleChange(sFloor)} disabled={disabled}
                 className={`px-2 py-1 rounded text-[10px] border transition-colors ${
                   isActive ? "border-blue-400 bg-blue-400/10 text-blue-300" :
                   disabled ? "border-white/5 text-neutral-700 cursor-not-allowed" :
@@ -240,10 +242,10 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
             className={`px-2 py-1 rounded text-[10px] border transition-colors ${
               Math.abs(scale - 1) < 0.005 ? "border-blue-400 bg-blue-400/10 text-blue-300" : "border-white/10 text-neutral-400 hover:border-white/20"
             }`}>{sl.original}</button>
-          {fitScale < 0.999 && (
-            <button onClick={() => onScaleChange(parseFloat(fitScale.toFixed(4)))}
+          {fitFloor < 0.999 && (
+            <button onClick={() => onScaleChange(fitFloor)}
               className={`px-2 py-1 rounded text-[10px] border border-amber-400/30 text-amber-400 hover:bg-amber-400/10 transition-colors ${
-                Math.abs(scale - fitScale) < 0.005 ? "bg-amber-400/10" : ""
+                Math.abs(scale - fitFloor) < 0.005 ? "bg-amber-400/10" : ""
               }`}>{sl.fitToPlate}</button>
           )}
         </div>

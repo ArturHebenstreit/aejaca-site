@@ -22,12 +22,13 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
   const sl = SVG_LBL[lang] || SVG_LBL.en;
   const fileRef = useRef(null);
 
-  const fitScale = svgData && workAreaMm
+  const fitScaleRaw = svgData && workAreaMm
     ? Math.min(workAreaMm.x / svgData.bboxMm.x, workAreaMm.y / svgData.bboxMm.y)
     : 1;
+  const fitFloor = Math.floor(fitScaleRaw * 10000) / 10000;
 
   const scaledBbox = svgData ? { x: svgData.bboxMm.x * scale, y: svgData.bboxMm.y * scale } : null;
-  const exceeds = svgData && workAreaMm && (scaledBbox.x > workAreaMm.x || scaledBbox.y > workAreaMm.y);
+  const exceeds = svgData && workAreaMm && (scaledBbox.x > workAreaMm.x + 0.5 || scaledBbox.y > workAreaMm.y + 0.5);
 
   const blobUrl = useMemo(() => {
     if (!svgData?.svgText) return null;
@@ -89,10 +90,10 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
               {Math.round(p * 100)}%
             </button>
           ))}
-          {fitScale < 0.999 && (
-            <button onClick={() => onScaleChange(parseFloat(fitScale.toFixed(4)))}
+          {fitFloor < 0.999 && (
+            <button onClick={() => onScaleChange(fitFloor)}
               className={`px-2 py-1 rounded text-[10px] border border-amber-400/30 text-amber-400 hover:bg-amber-400/10 transition-colors ${
-                Math.abs(scale - fitScale) < 0.005 ? "bg-amber-400/10" : ""
+                Math.abs(scale - fitFloor) < 0.005 ? "bg-amber-400/10" : ""
               }`}>{sl.fitToArea}</button>
           )}
         </div>
