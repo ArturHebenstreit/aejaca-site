@@ -2,7 +2,8 @@
 // SHARED CONFIG, PRICING & UI — ALL STUDIO CALCULATORS
 // ============================================================
 import { useState, useRef } from "react";
-import { Send, Paperclip, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Send, Paperclip, X, MessageCircle } from "lucide-react";
 import { trackInquiry } from "../../utils/analytics.js";
 
 export const CONFIG = {
@@ -18,8 +19,8 @@ export const QUANTITY_TIERS = [
   { id: "micro",  label: { pl: "2-10 szt.", en: "2-10 pcs", de: "2-10 Stk." }, qty: 6, discount: 0.05 },
   { id: "small",  label: { pl: "11-20 szt.", en: "11-20 pcs", de: "11-20 Stk." }, qty: 15, discount: 0.10 },
   { id: "medium", label: { pl: "21-50 szt.", en: "21-50 pcs", de: "21-50 Stk." }, qty: 35, discount: 0.15 },
-  { id: "large",  label: { pl: "51-100 szt.", en: "51-100 pcs", de: "51-100 Stk." }, qty: 75, discount: 0.20 },
-  { id: "custom", label: { pl: "100+ / niestandardowe", en: "100+ / custom", de: "100+ / individuell" }, qty: null, discount: null },
+  { id: "large",  label: { pl: "51-100 szt.", en: "51-100 pcs", de: "51-100 Stk." }, qty: null, discount: null, custom: true },
+  { id: "custom", label: { pl: "100+ / niestandardowe", en: "100+ / custom", de: "100+ / individuell" }, qty: null, discount: null, custom: true },
 ];
 
 /** Lookup helper for multilingual labels */
@@ -116,10 +117,15 @@ export function ResultDisplay({ result, lang = "pl" }) {
   if (!result) return <div className="text-center text-neutral-600 py-4">{labels.selectAll}</div>;
 
   if (result.type === "custom") {
+    const ctaLabel = { pl: "Skontaktuj się", en: "Contact us", de: "Kontaktieren Sie uns" }[lang] || "Contact us";
     return (
       <div className="text-center py-4">
-        <div className="text-lg font-bold text-blue-400 mb-1">{labels.customQuote}</div>
-        <div className="text-sm text-neutral-400">{labels.customDesc}</div>
+        <div className="text-lg font-bold text-blue-400 mb-2">{labels.customQuote}</div>
+        <div className="text-sm text-neutral-400 mb-4">{labels.customDesc}</div>
+        <Link to="/contact" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-blue-400/30 bg-blue-400/10 text-blue-300 text-sm font-medium hover:bg-blue-400/20 transition-colors">
+          <MessageCircle className="w-4 h-4" />
+          {ctaLabel}
+        </Link>
       </div>
     );
   }
@@ -412,8 +418,8 @@ const RESULT_LABELS = {
   pl: {
     perPiece: "Cena za sztuke", order: "Zamowienie", pcs: "szt.",
     showDetails: "Pokaz szczegoly kalkulacji", hideDetails: "Ukryj szczegoly",
-    customQuote: "Wycena indywidualna",
-    customDesc: "Wybrano parametry niestandardowe — skontaktuj sie w celu dokladnej wyceny.",
+    customQuote: "Indywidualne ustalenie warunków",
+    customDesc: "Skontaktuj się z nami — wspólnie ustalimy szczegóły zlecenia i przygotujemy dedykowaną wycenę.",
     selectAll: "Wybierz wszystkie parametry",
     totalTime: "Szacowany czas produkcji",
     rangeNote: `Zakres: -${CONFIG.TOLERANCE_LOW * 100}% / +${CONFIG.TOLERANCE_HIGH * 100}% | Kurs ${CONFIG.EUR_PLN_RATE} PLN/EUR`,
@@ -421,8 +427,8 @@ const RESULT_LABELS = {
   en: {
     perPiece: "Price per piece", order: "Order", pcs: "pcs",
     showDetails: "Show calculation details", hideDetails: "Hide details",
-    customQuote: "Individual quote",
-    customDesc: "Custom parameters selected — contact us for an exact quote.",
+    customQuote: "Individual terms required",
+    customDesc: "Contact us — we'll determine the order details together and prepare a dedicated quote.",
     selectAll: "Select all parameters",
     totalTime: "Estimated production time",
     rangeNote: `Range: -${CONFIG.TOLERANCE_LOW * 100}% / +${CONFIG.TOLERANCE_HIGH * 100}% | Rate ${CONFIG.EUR_PLN_RATE} PLN/EUR`,
@@ -430,8 +436,8 @@ const RESULT_LABELS = {
   de: {
     perPiece: "Preis pro Stueck", order: "Bestellung", pcs: "Stk.",
     showDetails: "Kalkulationsdetails anzeigen", hideDetails: "Details ausblenden",
-    customQuote: "Individuelle Kalkulation",
-    customDesc: "Individuelle Parameter gewaehlt — kontaktieren Sie uns fuer ein genaues Angebot.",
+    customQuote: "Individuelle Konditionen erforderlich",
+    customDesc: "Kontaktieren Sie uns — wir legen die Auftragsdetails gemeinsam fest und erstellen ein dediziertes Angebot.",
     selectAll: "Alle Parameter auswaehlen",
     totalTime: "Geschaetzte Produktionszeit",
     rangeNote: `Bereich: -${CONFIG.TOLERANCE_LOW * 100}% / +${CONFIG.TOLERANCE_HIGH * 100}% | Kurs ${CONFIG.EUR_PLN_RATE} PLN/EUR`,
