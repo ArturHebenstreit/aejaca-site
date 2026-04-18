@@ -1,7 +1,8 @@
 // ============================================================
-// 3D PRINT ESTIMATOR — Bambu Lab H2D  v1.1
+// 3D PRINT ESTIMATOR — Bambu Lab H2D  v1.2
 // ============================================================
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { Upload, X, AlertTriangle } from "lucide-react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
 
 const PRINT_CONFIG = {
@@ -9,6 +10,18 @@ const PRINT_CONFIG = {
   DEPRECIATION_PLN_H: 2.50,
   ENGINEERING_PREMIUM: 0.35,
 };
+
+const BUILD_VOL_CM = { x: 25.6, y: 25.6, z: 25.6 };
+
+function estimateTimeFromVolume(volumeCm3) {
+  return 0.194 * Math.pow(volumeCm3, 0.602);
+}
+
+function estimatePcsPerPlate(bbox) {
+  const partW = bbox.x + 0.5, partD = bbox.y + 0.5;
+  if (partW > BUILD_VOL_CM.x || partD > BUILD_VOL_CM.y) return 1;
+  return Math.max(1, Math.min(Math.floor(BUILD_VOL_CM.x / partW) * Math.floor(BUILD_VOL_CM.y / partD), 8));
+}
 
 export const FILAMENTS = {
   standard: { label: "Standard", materials: {
@@ -85,9 +98,20 @@ const LBL = {
     estCost: "Geschätzte Kosten / Stk.", discount: "Serienrabatt", totalProd: "Gesamte Produktionszeit" },
 };
 
+const STL_LBL = {
+  pl: { upload: "Załaduj plik STL", orManual: "lub wybierz rozmiar ręcznie poniżej", volume: "Objętość", dims: "Wymiary",
+    triangles: "Trójkąty", remove: "Usuń", exceeds: "Model przekracza przestrzeń druku", stlSize: "Rozmiar z pliku STL" },
+  en: { upload: "Upload STL file", orManual: "or select size manually below", volume: "Volume", dims: "Dimensions",
+    triangles: "Triangles", remove: "Remove", exceeds: "Model exceeds build volume", stlSize: "Size from STL file" },
+  de: { upload: "STL-Datei hochladen", orManual: "oder Größe unten manuell wählen", volume: "Volumen", dims: "Abmessungen",
+    triangles: "Dreiecke", remove: "Entfernen", exceeds: "Modell überschreitet Bauraum", stlSize: "Größe aus STL-Datei" },
+};
+
 export function calculate(params, lang) {
-  const { segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId } = params;
-  const size = SIZES.find(s => s.id === sizeId);
+  const { segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, stlData } = params;
+  const size = stlData
+    ? { volumeRef: stlData.volumeCm3, timeBase: estimateTimeFromVolume(stlData.volumeCm3), pcsPerPlate: estimatePcsPerPlate(stlData.bbox) }
+    : SIZES.find(s => s.id === sizeId);
   const infill = INFILL.find(i => i.id === infillId);
   const color = COLORS.find(c => c.id === colorId);
   const prec = PRECISION.find(p => p.id === precisionId);
@@ -103,7 +127,7 @@ export function calculate(params, lang) {
   const materialCost = (massG / 1000) * mat.price_kg * color.wasteMul * 1.05;
   const printTime = size.timeBase * prec.speedMul * color.timeMul;
   const setupPerPc = 0.5 / qTier.qty;
-  const handlePerPc = 0.05; // 3min load/unload per piece
+  const handlePerPc = 0.05;
   const timePerPc = printTime + setupPerPc + handlePerPc;
   const energyCost = timePerPc * PRINT_CONFIG.PRINTER_POWER_KW * CONFIG.ENERGY_COST_PLN;
   const deprCost = timePerPc * PRINT_CONFIG.DEPRECIATION_PLN_H;
@@ -111,7 +135,6 @@ export function calculate(params, lang) {
   let margin = CONFIG.BASE_MARGIN;
   if (segment === "engineering") margin += PRINT_CONFIG.ENGINEERING_PREMIUM;
 
-  // Batch time: account for packing multiple pieces per plate
   const platesNeeded = Math.ceil(qTier.qty / (size.pcsPerPlate || 1));
   const totalTimeH = (printTime * platesNeeded) + (0.5) + (handlePerPc * qTier.qty);
 
@@ -135,10 +158,53 @@ export function calculate(params, lang) {
   };
 }
 
+function STLUploadCard({ stlData, stlFileName, onUpload, onRemove, lang }) {
+  const sl = STL_LBL[lang] || STL_LBL.en;
+  const fileRef = useRef(null);
+  const exceeds = stlData && (stlData.bbox.x > BUILD_VOL_CM.x || stlData.bbox.y > BUILD_VOL_CM.y || stlData.bbox.z > BUILD_VOL_CM.z);
+
+  if (!stlData) {
+    return (
+      <div className="flex flex-col items-center gap-2 mb-3">
+        <button onClick={() => fileRef.current?.click()}
+          className="flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed border-blue-400/30 bg-blue-400/[0.03] text-blue-300 text-sm hover:bg-blue-400/10 hover:border-blue-400/50 transition-all w-full justify-center">
+          <Upload className="w-4 h-4" />
+          {sl.upload}
+        </button>
+        <input ref={fileRef} type="file" accept=".stl" className="hidden" onChange={onUpload} />
+        <div className="text-[10px] text-neutral-600">{sl.orManual}</div>
+      </div>
+    );
+  }
+
+  const b = stlData.bbox;
+  return (
+    <div className="rounded-xl border border-blue-400/20 bg-blue-400/[0.03] p-4 space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="text-sm font-medium text-blue-300 truncate max-w-[70%]">{stlFileName}</div>
+        <button onClick={onRemove} className="text-neutral-500 hover:text-red-400 transition-colors text-xs flex items-center gap-1">
+          <X className="w-3.5 h-3.5" />{sl.remove}
+        </button>
+      </div>
+      <div className="grid grid-cols-3 gap-3 text-center text-[11px]">
+        <div><div className="text-neutral-500">{sl.volume}</div><div className="font-bold">{stlData.volumeCm3.toFixed(1)} cm³</div></div>
+        <div><div className="text-neutral-500">{sl.dims}</div><div className="font-bold">{(b.x*10).toFixed(0)}×{(b.y*10).toFixed(0)}×{(b.z*10).toFixed(0)} mm</div></div>
+        <div><div className="text-neutral-500">{sl.triangles}</div><div className="font-bold">{stlData.triangleCount.toLocaleString()}</div></div>
+      </div>
+      {exceeds && (
+        <div className="flex items-center gap-1.5 text-amber-400 text-[11px]">
+          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />{sl.exceeds} (256×256×256 mm)
+        </div>
+      )}
+    </div>
+  );
+}
+
 const TECH_LABEL = { pl: "Druk 3D", en: "3D Print", de: "3D-Druck" };
 
 export default function Print3DCalc({ lang = "pl" }) {
   const l = LBL[lang] || LBL.en;
+  const sl = STL_LBL[lang] || STL_LBL.en;
   const [segment, setSegment] = useState("standard");
   const [materialKey, setMaterialKey] = useState("PLA");
   const [sizeId, setSizeId] = useState("S");
@@ -146,14 +212,31 @@ export default function Print3DCalc({ lang = "pl" }) {
   const [colorId, setColorId] = useState(1);
   const [precisionId, setPrecisionId] = useState("standard_04");
   const [quantityId, setQuantityId] = useState("proto");
+  const [stlData, setStlData] = useState(null);
+  const [stlFileName, setStlFileName] = useState("");
 
   useEffect(() => {
     const mats = Object.keys(FILAMENTS[segment].materials);
     if (!mats.includes(materialKey)) setMaterialKey(mats[0]);
   }, [segment]);
 
-  const result = useMemo(() => calculate({ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId }, lang),
-    [segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, lang]);
+  async function handleSTLUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const buffer = await file.arrayBuffer();
+    const { parseSTL } = await import("../../utils/stlParser.js");
+    const data = parseSTL(buffer);
+    setStlData(data);
+    setStlFileName(file.name);
+  }
+
+  function handleSTLRemove() {
+    setStlData(null);
+    setStlFileName("");
+  }
+
+  const result = useMemo(() => calculate({ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, stlData }, lang),
+    [segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, stlData, lang]);
 
   const matOptions = Object.entries(FILAMENTS[segment].materials).map(([k, v]) => ({
     id: k, label: k, sub: `${v.price_kg}zł`,
@@ -182,7 +265,12 @@ export default function Print3DCalc({ lang = "pl" }) {
       <CalcCard stepNum="②" label={`${l.filament} — ${FILAMENTS[segment].label}`}>
         <Chips options={matOptions} value={materialKey} onChange={setMaterialKey} lang={lang} />
       </CalcCard>
-      <CalcCard stepNum="③" label={l.size}><Chips options={SIZES} value={sizeId} onChange={setSizeId} lang={lang} /></CalcCard>
+
+      <CalcCard stepNum="③" label={stlData ? sl.stlSize : l.size}>
+        <STLUploadCard stlData={stlData} stlFileName={stlFileName} onUpload={handleSTLUpload} onRemove={handleSTLRemove} lang={lang} />
+        {!stlData && <Chips options={SIZES} value={sizeId} onChange={setSizeId} lang={lang} />}
+      </CalcCard>
+
       <CalcCard stepNum="④" label={l.infill}><Chips options={INFILL} value={infillId} onChange={setInfillId} lang={lang} /></CalcCard>
       <CalcCard stepNum="⑤" label={l.colors}><Chips options={COLORS} value={colorId} onChange={setColorId} lang={lang} /></CalcCard>
       <CalcCard stepNum="⑥" label={l.precision}><Chips options={PRECISION} value={precisionId} onChange={setPrecisionId} lang={lang} /></CalcCard>
@@ -195,7 +283,9 @@ export default function Print3DCalc({ lang = "pl" }) {
 
       <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={[
         `${FILAMENTS[segment].label}: ${materialKey}`,
-        t(SIZES.find(s => s.id === sizeId)?.label, lang),
+        stlData
+          ? `STL: ${stlFileName} (${stlData.volumeCm3.toFixed(1)} cm³)`
+          : t(SIZES.find(s => s.id === sizeId)?.label, lang),
         t(INFILL.find(i => i.id === infillId)?.label, lang),
         t(COLORS.find(c => c.id === colorId)?.label, lang),
         t(PRECISION.find(p => p.id === precisionId)?.label, lang),
