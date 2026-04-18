@@ -215,6 +215,7 @@ export default function CO2LaserCalc({ lang = "pl" }) {
   const [extended, setExtended] = useState(false);
   const [svgData, setSvgData] = useState(null);
   const [svgFileName, setSvgFileName] = useState("");
+  const [svgScale, setSvgScale] = useState(1);
 
   useEffect(() => {
     if (svgData) {
@@ -240,12 +241,19 @@ export default function CO2LaserCalc({ lang = "pl" }) {
   function handleSVGRemove() {
     setSvgData(null);
     setSvgFileName("");
+    setSvgScale(1);
   }
 
+  const scaledSvgData = useMemo(() => {
+    if (!svgData || svgScale === 1) return svgData;
+    const s = svgScale;
+    return { ...svgData, bboxMm: { x: svgData.bboxMm.x * s, y: svgData.bboxMm.y * s }, pathLengthCm: svgData.pathLengthCm * s, engravAreaCm2: svgData.engravAreaCm2 * s * s };
+  }, [svgData, svgScale]);
+
   const result = useMemo(() => {
-    if (mode === "engrave") return calcEngrave({ matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, svgData }, lang);
-    return calcCut({ matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended, svgData }, lang);
-  }, [mode, eMatId, eAreaId, eDetailId, eQtyId, cMatId, cPathId, cComplexId, cQtyId, extended, svgData, lang]);
+    if (mode === "engrave") return calcEngrave({ matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, svgData: scaledSvgData }, lang);
+    return calcCut({ matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended, svgData: scaledSvgData }, lang);
+  }, [mode, eMatId, eAreaId, eDetailId, eQtyId, cMatId, cPathId, cComplexId, cQtyId, extended, scaledSvgData, lang]);
 
   const pathNeedsExtended = svgData ? (svgData.bboxMm.x > WORK_AREA_MM.x || svgData.bboxMm.y > WORK_AREA_MM.y) : PATH_NEEDS_EXTENDED[cPathId];
   const stdDisabled = pathNeedsExtended === true;
@@ -253,8 +261,8 @@ export default function CO2LaserCalc({ lang = "pl" }) {
 
   const svgSummary = svgData
     ? (mode === "engrave"
-      ? `SVG: ${svgFileName} (${svgData.engravAreaCm2.toFixed(1)} cm²)`
-      : `SVG: ${svgFileName} (${svgData.pathLengthCm.toFixed(0)} cm)`)
+      ? `SVG: ${svgFileName} (${(svgData.engravAreaCm2 * svgScale * svgScale).toFixed(1)} cm²${svgScale !== 1 ? ` ${Math.round(svgScale*100)}%` : ""})`
+      : `SVG: ${svgFileName} (${(svgData.pathLengthCm * svgScale).toFixed(0)} cm${svgScale !== 1 ? ` ${Math.round(svgScale*100)}%` : ""})`)
     : null;
 
   return (
@@ -277,7 +285,7 @@ export default function CO2LaserCalc({ lang = "pl" }) {
         <>
           <CalcCard stepNum="②" label={l.material}><Chips options={ENGRAVE_MATERIALS} value={eMatId} onChange={setEMatId} lang={lang} /></CalcCard>
           <CalcCard stepNum="③" label={svgData ? sl.fromSvg : l.area}>
-            <SVGUploadCard svgData={svgData} svgFileName={svgFileName} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} showPathLength={false} lang={lang} />
+            <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} showPathLength={false} lang={lang} />
             {!svgData && <Chips options={ENGRAVE_AREAS} value={eAreaId} onChange={setEAreaId} lang={lang} />}
           </CalcCard>
           <CalcCard stepNum="④" label={l.detail}><Chips options={ENGRAVE_DETAIL} value={eDetailId} onChange={setEDetailId} lang={lang} /></CalcCard>
@@ -287,7 +295,7 @@ export default function CO2LaserCalc({ lang = "pl" }) {
         <>
           <CalcCard stepNum="②" label={l.matThick}><Chips options={CUT_MATERIALS} value={cMatId} onChange={setCMatId} lang={lang} /></CalcCard>
           <CalcCard stepNum="③" label={svgData ? sl.fromSvg : l.pathLen}>
-            <SVGUploadCard svgData={svgData} svgFileName={svgFileName} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} showPathLength={true} lang={lang} />
+            <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} showPathLength={true} lang={lang} />
             {!svgData && <Chips options={CUT_PATHS} value={cPathId} onChange={setCPathId} lang={lang} />}
           </CalcCard>
           <CalcCard stepNum="④" label={l.complexity}><Chips options={CUT_COMPLEXITY} value={cComplexId} onChange={setCComplexId} lang={lang} /></CalcCard>

@@ -136,6 +136,7 @@ export default function FiberLaserCalc({ lang = "pl" }) {
   const [quantityId, setQuantityId] = useState("proto");
   const [svgData, setSvgData] = useState(null);
   const [svgFileName, setSvgFileName] = useState("");
+  const [svgScale, setSvgScale] = useState(1);
 
   const selectedLens = LENSES.find(ln => ln.id === lensId);
   const lensFieldMm = { x: selectedLens.fieldMm, y: selectedLens.fieldMm };
@@ -164,7 +165,14 @@ export default function FiberLaserCalc({ lang = "pl" }) {
   function handleSVGRemove() {
     setSvgData(null);
     setSvgFileName("");
+    setSvgScale(1);
   }
+
+  const scaledSvgData = useMemo(() => {
+    if (!svgData || svgScale === 1) return svgData;
+    const s = svgScale;
+    return { ...svgData, bboxMm: { x: svgData.bboxMm.x * s, y: svgData.bboxMm.y * s }, pathLengthCm: svgData.pathLengthCm * s, engravAreaCm2: svgData.engravAreaCm2 * s * s };
+  }, [svgData, svgScale]);
 
   const areaOptions = useMemo(() =>
     AREAS.map(a => ({
@@ -176,15 +184,15 @@ export default function FiberLaserCalc({ lang = "pl" }) {
     })),
   [lensId]);
 
-  const result = useMemo(() => calculate({ matId, lensId, markId, areaId, quantityId, svgData }, lang),
-    [matId, lensId, markId, areaId, quantityId, svgData, lang]);
+  const result = useMemo(() => calculate({ matId, lensId, markId, areaId, quantityId, svgData: scaledSvgData }, lang),
+    [matId, lensId, markId, areaId, quantityId, scaledSvgData, lang]);
 
   const paramsSummary = [
     t(MATERIALS.find(m => m.id === matId)?.label, lang),
     t(LENSES.find(ln => ln.id === lensId)?.label, lang),
     t(MARK_TYPES.find(m => m.id === markId)?.label, lang),
     svgData
-      ? `SVG: ${svgFileName} (${svgData.engravAreaCm2.toFixed(1)} cm²)`
+      ? `SVG: ${svgFileName} (${(svgData.engravAreaCm2 * svgScale * svgScale).toFixed(1)} cm²${svgScale !== 1 ? ` ${Math.round(svgScale*100)}%` : ""})`
       : t(AREAS.find(a => a.id === areaId)?.label, lang),
     t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
   ].join(" | ");
@@ -214,7 +222,7 @@ export default function FiberLaserCalc({ lang = "pl" }) {
       </CalcCard>
 
       <CalcCard stepNum="④" label={svgData ? sl.fromSvg : l.area}>
-        <SVGUploadCard svgData={svgData} svgFileName={svgFileName} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={lensFieldMm} showPathLength={false} lang={lang} />
+        <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={lensFieldMm} showPathLength={false} lang={lang} />
         {!svgData && <Chips options={areaOptions} value={areaId} onChange={setAreaId} lang={lang} />}
       </CalcCard>
 

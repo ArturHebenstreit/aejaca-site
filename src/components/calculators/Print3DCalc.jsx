@@ -1,5 +1,5 @@
 // ============================================================
-// 3D PRINT ESTIMATOR — Bambu Lab H2D  v1.2
+// 3D PRINT ESTIMATOR — Bambu Lab H2D  v1.3
 // ============================================================
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { Upload, X, AlertTriangle } from "lucide-react";
@@ -13,7 +13,16 @@ const PRINT_CONFIG = {
   ENGINEERING_PREMIUM: 0.35,
 };
 
-const BUILD_VOL_CM = { x: 25.6, y: 25.6, z: 25.6 };
+// Bambu Lab H2D dual-nozzle build volume
+const BUILD_VOL_CM = { x: 30.0, y: 32.0, z: 32.5 };
+
+// Size presets matching manual XS/S/M/L categories (max dimension in cm)
+const SIZE_PRESETS = [
+  { id: "XS", maxCm: 5.0 },
+  { id: "S",  maxCm: 10.0 },
+  { id: "M",  maxCm: 20.0 },
+  { id: "L",  maxCm: 30.0 },
+];
 
 function estimateTimeFromVolume(volumeCm3) {
   return 0.194 * Math.pow(volumeCm3, 0.602);
@@ -102,11 +111,14 @@ const LBL = {
 
 const STL_LBL = {
   pl: { upload: "Załaduj plik STL", orManual: "lub wybierz rozmiar ręcznie poniżej", volume: "Objętość", dims: "Wymiary",
-    triangles: "Trójkąty", remove: "Usuń", exceeds: "Model przekracza przestrzeń druku", stlSize: "Rozmiar z pliku STL" },
+    triangles: "Trójkąty", remove: "Usuń", exceeds: "Model przekracza przestrzeń druku", stlSize: "Rozmiar z pliku STL",
+    scale: "Skala wydruku", fitToPlate: "Dopasuj do płyty", original: "Oryg." },
   en: { upload: "Upload STL file", orManual: "or select size manually below", volume: "Volume", dims: "Dimensions",
-    triangles: "Triangles", remove: "Remove", exceeds: "Model exceeds build volume", stlSize: "Size from STL file" },
+    triangles: "Triangles", remove: "Remove", exceeds: "Model exceeds build volume", stlSize: "Size from STL file",
+    scale: "Print scale", fitToPlate: "Fit to plate", original: "Orig." },
   de: { upload: "STL-Datei hochladen", orManual: "oder Größe unten manuell wählen", volume: "Volumen", dims: "Abmessungen",
-    triangles: "Dreiecke", remove: "Entfernen", exceeds: "Modell überschreitet Bauraum", stlSize: "Größe aus STL-Datei" },
+    triangles: "Dreiecke", remove: "Entfernen", exceeds: "Modell überschreitet Bauraum", stlSize: "Größe aus STL-Datei",
+    scale: "Druckmaßstab", fitToPlate: "An Platte anpassen", original: "Orig." },
 };
 
 export function calculate(params, lang) {
@@ -160,10 +172,9 @@ export function calculate(params, lang) {
   };
 }
 
-function STLUploadCard({ stlData, stlFileName, onUpload, onRemove, lang }) {
+function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, onRemove, lang }) {
   const sl = STL_LBL[lang] || STL_LBL.en;
   const fileRef = useRef(null);
-  const exceeds = stlData && (stlData.bbox.x > BUILD_VOL_CM.x || stlData.bbox.y > BUILD_VOL_CM.y || stlData.bbox.z > BUILD_VOL_CM.z);
 
   if (!stlData) {
     return (
@@ -180,8 +191,14 @@ function STLUploadCard({ stlData, stlFileName, onUpload, onRemove, lang }) {
   }
 
   const b = stlData.bbox;
+  const rawMaxCm = Math.max(b.x, b.y, b.z);
+  const fitScale = Math.min(BUILD_VOL_CM.x / b.x, BUILD_VOL_CM.y / b.y, BUILD_VOL_CM.z / b.z);
+  const scaledB = { x: b.x * scale, y: b.y * scale, z: b.z * scale };
+  const exceeds = scaledB.x > BUILD_VOL_CM.x || scaledB.y > BUILD_VOL_CM.y || scaledB.z > BUILD_VOL_CM.z;
+  const scaledVol = stlData.volumeCm3 * scale * scale * scale;
+
   return (
-    <div className="rounded-xl border border-blue-400/20 bg-blue-400/[0.03] p-4 space-y-2">
+    <div className="rounded-xl border border-blue-400/20 bg-blue-400/[0.03] p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="text-sm font-medium text-blue-300 truncate max-w-[70%]">{stlFileName}</div>
         <button onClick={onRemove} className="text-neutral-500 hover:text-red-400 transition-colors text-xs flex items-center gap-1">
@@ -192,13 +209,50 @@ function STLUploadCard({ stlData, stlFileName, onUpload, onRemove, lang }) {
         <STLViewer triangles={stlData.triangles} bbox={stlData.bbox} />
       </Suspense>
       <div className="grid grid-cols-3 gap-3 text-center text-[11px]">
-        <div><div className="text-neutral-500">{sl.volume}</div><div className="font-bold">{stlData.volumeCm3.toFixed(1)} cm³</div></div>
-        <div><div className="text-neutral-500">{sl.dims}</div><div className="font-bold">{(b.x*10).toFixed(0)}×{(b.y*10).toFixed(0)}×{(b.z*10).toFixed(0)} mm</div></div>
+        <div><div className="text-neutral-500">{sl.volume}</div><div className="font-bold">{scaledVol.toFixed(1)} cm³</div></div>
+        <div><div className="text-neutral-500">{sl.dims}</div><div className="font-bold">{(scaledB.x*10).toFixed(0)}×{(scaledB.y*10).toFixed(0)}×{(scaledB.z*10).toFixed(0)} mm</div></div>
         <div><div className="text-neutral-500">{sl.triangles}</div><div className="font-bold">{stlData.triangleCount.toLocaleString()}</div></div>
       </div>
+
+      {/* Scale controls */}
+      <div className="border-t border-white/5 pt-2 space-y-1.5">
+        <div className="flex items-center justify-between text-[11px]">
+          <span className="text-neutral-500">{sl.scale}</span>
+          <span className="font-bold text-blue-300">{scale === 1 ? "1:1" : `×${scale.toFixed(2)}`}</span>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {SIZE_PRESETS.map(p => {
+            const s = Math.min(p.maxCm / rawMaxCm, fitScale);
+            const isActive = Math.abs(scale - s) < 0.005;
+            const disabled = p.maxCm / rawMaxCm > fitScale * 1.001;
+            return (
+              <button key={p.id} onClick={() => onScaleChange(parseFloat(s.toFixed(4)))} disabled={disabled}
+                className={`px-2 py-1 rounded text-[10px] border transition-colors ${
+                  isActive ? "border-blue-400 bg-blue-400/10 text-blue-300" :
+                  disabled ? "border-white/5 text-neutral-700 cursor-not-allowed" :
+                  "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-200"
+                }`}>
+                {p.id}
+              </button>
+            );
+          })}
+          <button onClick={() => onScaleChange(1)}
+            className={`px-2 py-1 rounded text-[10px] border transition-colors ${
+              Math.abs(scale - 1) < 0.005 ? "border-blue-400 bg-blue-400/10 text-blue-300" : "border-white/10 text-neutral-400 hover:border-white/20"
+            }`}>{sl.original}</button>
+          {fitScale < 0.999 && (
+            <button onClick={() => onScaleChange(parseFloat(fitScale.toFixed(4)))}
+              className={`px-2 py-1 rounded text-[10px] border border-amber-400/30 text-amber-400 hover:bg-amber-400/10 transition-colors ${
+                Math.abs(scale - fitScale) < 0.005 ? "bg-amber-400/10" : ""
+              }`}>{sl.fitToPlate}</button>
+          )}
+        </div>
+      </div>
+
       {exceeds && (
         <div className="flex items-center gap-1.5 text-amber-400 text-[11px]">
-          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />{sl.exceeds} (256×256×256 mm)
+          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+          {sl.exceeds} (300×320×325 mm)
         </div>
       )}
     </div>
@@ -219,6 +273,7 @@ export default function Print3DCalc({ lang = "pl" }) {
   const [quantityId, setQuantityId] = useState("proto");
   const [stlData, setStlData] = useState(null);
   const [stlFileName, setStlFileName] = useState("");
+  const [stlScale, setStlScale] = useState(1);
 
   useEffect(() => {
     const mats = Object.keys(FILAMENTS[segment].materials);
@@ -233,23 +288,39 @@ export default function Print3DCalc({ lang = "pl" }) {
     const data = parseSTL(buffer);
     setStlData(data);
     setStlFileName(file.name);
+    setStlScale(1);
   }
 
   function handleSTLRemove() {
     setStlData(null);
     setStlFileName("");
+    setStlScale(1);
   }
 
-  const result = useMemo(() => calculate({ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, stlData }, lang),
-    [segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, stlData, lang]);
+  const scaledStlData = useMemo(() => {
+    if (!stlData || stlScale === 1) return stlData;
+    const s = stlScale;
+    return {
+      ...stlData,
+      volumeCm3: stlData.volumeCm3 * s * s * s,
+      bbox: { x: stlData.bbox.x * s, y: stlData.bbox.y * s, z: stlData.bbox.z * s },
+    };
+  }, [stlData, stlScale]);
+
+  const result = useMemo(() => calculate({ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, stlData: scaledStlData }, lang),
+    [segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, scaledStlData, lang]);
 
   const matOptions = Object.entries(FILAMENTS[segment].materials).map(([k, v]) => ({
     id: k, label: k, sub: `${v.price_kg}zł`,
   }));
 
+  const stlSummary = stlData
+    ? `STL: ${stlFileName} (${(stlData.volumeCm3 * stlScale ** 3).toFixed(1)} cm³${stlScale !== 1 ? ` ×${stlScale.toFixed(2)}` : ""})`
+    : null;
+
   return (
     <div>
-      <div className="text-center text-[11px] text-neutral-600 mb-6">Bambu Lab H2D · Dual Extruder · AMS 2 Pro</div>
+      <div className="text-center text-[11px] text-neutral-600 mb-6">Bambu Lab H2D · 300×320×325 mm · Dual Extruder · AMS 2 Pro</div>
 
       <CalcCard stepNum="①" label={l.segment}>
         <div className="grid grid-cols-2 gap-3">
@@ -272,7 +343,7 @@ export default function Print3DCalc({ lang = "pl" }) {
       </CalcCard>
 
       <CalcCard stepNum="③" label={stlData ? sl.stlSize : l.size}>
-        <STLUploadCard stlData={stlData} stlFileName={stlFileName} onUpload={handleSTLUpload} onRemove={handleSTLRemove} lang={lang} />
+        <STLUploadCard stlData={stlData} stlFileName={stlFileName} scale={stlScale} onScaleChange={setStlScale} onUpload={handleSTLUpload} onRemove={handleSTLRemove} lang={lang} />
         {!stlData && <Chips options={SIZES} value={sizeId} onChange={setSizeId} lang={lang} />}
       </CalcCard>
 
@@ -288,9 +359,7 @@ export default function Print3DCalc({ lang = "pl" }) {
 
       <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={[
         `${FILAMENTS[segment].label}: ${materialKey}`,
-        stlData
-          ? `STL: ${stlFileName} (${stlData.volumeCm3.toFixed(1)} cm³)`
-          : t(SIZES.find(s => s.id === sizeId)?.label, lang),
+        stlSummary || t(SIZES.find(s => s.id === sizeId)?.label, lang),
         t(INFILL.find(i => i.id === infillId)?.label, lang),
         t(COLORS.find(c => c.id === colorId)?.label, lang),
         t(PRECISION.find(p => p.id === precisionId)?.label, lang),
