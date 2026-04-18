@@ -16,7 +16,7 @@ const CO2_CONFIG = {
 const WORK_AREA_MM = { x: 600, y: 288 };
 
 const PATH_NEEDS_EXTENDED = { XS: false, S: false, M: false, L: true, XL: true };
-const AREA_NEEDS_EXTENDED = { XS: false, S: false, M: false, L: false, XL: true };
+const AREA_NEEDS_EXTENDED = { XS: false, S: false, M: false, L: true, XL: true };
 
 const LBL = {
   pl: { mode: "Tryb pracy", engrave: "Grawerowanie", cut: "Cięcie",
