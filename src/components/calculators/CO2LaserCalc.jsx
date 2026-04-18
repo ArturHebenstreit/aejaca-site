@@ -16,6 +16,7 @@ const CO2_CONFIG = {
 const WORK_AREA_MM = { x: 600, y: 288 };
 
 const PATH_NEEDS_EXTENDED = { XS: false, S: false, M: false, L: true, XL: true };
+const AREA_NEEDS_EXTENDED = { XS: false, S: false, M: false, L: false, XL: true };
 
 const LBL = {
   pl: { mode: "Tryb pracy", engrave: "Grawerowanie", cut: "Cięcie",
@@ -111,7 +112,7 @@ export const CUT_COMPLEXITY = [
   { id: "custom",   label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" }, mul: null, custom: true },
 ];
 
-export function calcEngrave({ matId, areaId, detailId, quantityId, svgData }, lang) {
+export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svgData }, lang) {
   const mat = ENGRAVE_MATERIALS.find(m => m.id === matId);
   const area = svgData
     ? { area: svgData.engravAreaCm2 }
@@ -122,16 +123,21 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, svgData }, la
   if (!mat.rateMin || !area.area || !detail.mul || !qTier.qty) return { type: "custom" };
   const l = LBL[lang] || LBL.en;
 
-  const timeMin = area.area * mat.rateMin * detail.mul;
+  let timeMin = area.area * mat.rateMin * detail.mul;
+  let extCostAdd = 0;
+  if (extended) {
+    timeMin *= CO2_CONFIG.EXTENDED_AREA_TIME_MUL;
+    extCostAdd = CO2_CONFIG.EXTENDED_AREA_COST_ADD;
+  }
   const timeH = timeMin / 60;
-  const setupH = 0.25 / qTier.qty;
+  const setupH = (extended ? 0.5 : 0.25) / qTier.qty;
   const handleH = 0.03;
   const totalTimeH = timeH + setupH + handleH;
   const energyCost = totalTimeH * CO2_CONFIG.POWER_KW * CONFIG.ENERGY_COST_PLN;
   const deprCost = totalTimeH * CO2_CONFIG.DEPRECIATION_PLN_H;
   const prepCost = area.area * mat.prepCost * 0.01;
-  const baseCost = energyCost + deprCost + prepCost;
-  const batchTimeH = (timeH + handleH) * qTier.qty + 0.25;
+  const baseCost = energyCost + deprCost + prepCost + extCostAdd;
+  const batchTimeH = (timeH + handleH) * qTier.qty + (extended ? 0.5 : 0.25);
 
   const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, qTier.discount, qTier.qty);
   return {
@@ -144,6 +150,7 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, svgData }, la
       { label: l.energy, value: fmtCost(energyCost, lang) },
       { label: l.depreciation, value: fmtCost(deprCost, lang) },
       { label: l.workshop, value: fmtCost(baseCost * CONFIG.BASE_MARGIN, lang) },
+      ...(extended ? [{ label: l.extSurcharge, value: `+${fmtCost(extCostAdd, lang)}` }] : []),
       { divider: true },
       { label: l.estCost, value: fmtCost(baseCost * (1 + CONFIG.BASE_MARGIN), lang), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
@@ -229,12 +236,12 @@ export default function CO2LaserCalc({ lang = "pl" }) {
 
   useEffect(() => {
     if (scaledSvgData) {
-      if (mode === "cut") setExtended(svgNeedsExtended);
+      setExtended(svgNeedsExtended);
       return;
     }
-    const needsExtended = PATH_NEEDS_EXTENDED[cPathId];
+    const needsExtended = mode === "engrave" ? AREA_NEEDS_EXTENDED[eAreaId] : PATH_NEEDS_EXTENDED[cPathId];
     if (needsExtended !== undefined) setExtended(needsExtended);
-  }, [cPathId, scaledSvgData, svgNeedsExtended, mode]);
+  }, [cPathId, eAreaId, scaledSvgData, svgNeedsExtended, mode]);
 
   async function handleSVGUpload(e) {
     const file = e.target.files?.[0];
@@ -255,13 +262,14 @@ export default function CO2LaserCalc({ lang = "pl" }) {
   }
 
   const result = useMemo(() => {
-    if (mode === "engrave") return calcEngrave({ matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, svgData: scaledSvgData }, lang);
+    if (mode === "engrave") return calcEngrave({ matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, extended, svgData: scaledSvgData }, lang);
     return calcCut({ matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended, svgData: scaledSvgData }, lang);
   }, [mode, eMatId, eAreaId, eDetailId, eQtyId, cMatId, cPathId, cComplexId, cQtyId, extended, scaledSvgData, lang]);
 
-  const pathNeedsExtended = scaledSvgData ? svgNeedsExtended : PATH_NEEDS_EXTENDED[cPathId];
-  const stdDisabled = pathNeedsExtended === true;
-  const extDisabled = scaledSvgData ? !svgNeedsExtended : pathNeedsExtended === false;
+  const presetNeedsExtended = mode === "engrave" ? AREA_NEEDS_EXTENDED[eAreaId] : PATH_NEEDS_EXTENDED[cPathId];
+  const needsExtended = scaledSvgData ? svgNeedsExtended : presetNeedsExtended;
+  const stdDisabled = needsExtended === true;
+  const extDisabled = scaledSvgData ? !svgNeedsExtended : needsExtended === false;
 
   const svgSummary = svgData
     ? (mode === "engrave"
@@ -293,7 +301,6 @@ export default function CO2LaserCalc({ lang = "pl" }) {
             {!svgData && <Chips options={ENGRAVE_AREAS} value={eAreaId} onChange={setEAreaId} lang={lang} />}
           </CalcCard>
           <CalcCard stepNum="④" label={l.detail}><Chips options={ENGRAVE_DETAIL} value={eDetailId} onChange={setEDetailId} lang={lang} /></CalcCard>
-          <CalcCard stepNum="⑤" label={l.qty}><Chips options={QUANTITY_TIERS} value={eQtyId} onChange={setEQtyId} lang={lang} /></CalcCard>
         </>
       ) : (
         <>
@@ -303,24 +310,30 @@ export default function CO2LaserCalc({ lang = "pl" }) {
             {!svgData && <Chips options={CUT_PATHS} value={cPathId} onChange={setCPathId} lang={lang} />}
           </CalcCard>
           <CalcCard stepNum="④" label={l.complexity}><Chips options={CUT_COMPLEXITY} value={cComplexId} onChange={setCComplexId} lang={lang} /></CalcCard>
-          <CalcCard stepNum="⑤" label={l.workArea}>
-            <div className="grid grid-cols-2 gap-3">
-              {[{ ext: false, lbl: l.stdArea, desc: l.stdAreaDesc, dis: stdDisabled }, { ext: true, lbl: l.extArea, desc: l.extAreaDesc, dis: extDisabled }].map(a => (
-                <button key={String(a.ext)} onClick={() => !a.dis && setExtended(a.ext)}
-                  disabled={a.dis}
-                  className={`p-3 rounded-xl border text-left transition-all ${
-                    a.dis ? "border-white/5 bg-white/[0.01] opacity-40 cursor-not-allowed" :
-                    extended === a.ext ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
-                  }`}>
-                  <div className={`text-sm font-bold mb-1 ${a.dis ? "text-neutral-600" : extended === a.ext ? "text-blue-300" : "text-white"}`}>{a.lbl}</div>
-                  <div className="text-[11px] text-neutral-500">{a.desc}</div>
-                </button>
-              ))}
-            </div>
-          </CalcCard>
-          <CalcCard stepNum="⑥" label={l.qty}><Chips options={QUANTITY_TIERS} value={cQtyId} onChange={setCQtyId} lang={lang} /></CalcCard>
         </>
       )}
+
+      <CalcCard stepNum="⑤" label={l.workArea}>
+        <div className="grid grid-cols-2 gap-3">
+          {[{ ext: false, lbl: l.stdArea, desc: l.stdAreaDesc, dis: stdDisabled }, { ext: true, lbl: l.extArea, desc: l.extAreaDesc, dis: extDisabled }].map(a => (
+            <button key={String(a.ext)} onClick={() => !a.dis && setExtended(a.ext)}
+              disabled={a.dis}
+              className={`p-3 rounded-xl border text-left transition-all ${
+                a.dis ? "border-white/5 bg-white/[0.01] opacity-40 cursor-not-allowed" :
+                extended === a.ext ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
+              }`}>
+              <div className={`text-sm font-bold mb-1 ${a.dis ? "text-neutral-600" : extended === a.ext ? "text-blue-300" : "text-white"}`}>{a.lbl}</div>
+              <div className="text-[11px] text-neutral-500">{a.desc}</div>
+            </button>
+          ))}
+        </div>
+      </CalcCard>
+
+      <CalcCard stepNum="⑥" label={l.qty}>
+        {mode === "engrave"
+          ? <Chips options={QUANTITY_TIERS} value={eQtyId} onChange={setEQtyId} lang={lang} />
+          : <Chips options={QUANTITY_TIERS} value={cQtyId} onChange={setCQtyId} lang={lang} />}
+      </CalcCard>
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} />
@@ -329,7 +342,7 @@ export default function CO2LaserCalc({ lang = "pl" }) {
 
       <InquiryForm lang={lang} techLabel={`${t(TECH_LABEL, lang)} — ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={
         mode === "engrave"
-          ? [t(ENGRAVE_MATERIALS.find(m => m.id === eMatId)?.label, lang), svgSummary || t(ENGRAVE_AREAS.find(a => a.id === eAreaId)?.label, lang), t(ENGRAVE_DETAIL.find(d => d.id === eDetailId)?.label, lang), t(QUANTITY_TIERS.find(q => q.id === eQtyId)?.label, lang)].join(" | ")
+          ? [t(ENGRAVE_MATERIALS.find(m => m.id === eMatId)?.label, lang), svgSummary || t(ENGRAVE_AREAS.find(a => a.id === eAreaId)?.label, lang), t(ENGRAVE_DETAIL.find(d => d.id === eDetailId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === eQtyId)?.label, lang)].join(" | ")
           : [t(CUT_MATERIALS.find(m => m.id === cMatId)?.label, lang), svgSummary || t(CUT_PATHS.find(p => p.id === cPathId)?.label, lang), t(CUT_COMPLEXITY.find(c => c.id === cComplexId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === cQtyId)?.label, lang)].join(" | ")
       } />
     </div>
