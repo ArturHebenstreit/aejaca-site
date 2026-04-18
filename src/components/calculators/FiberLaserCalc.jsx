@@ -1,15 +1,18 @@
 // ============================================================
-// FIBER LASER ESTIMATOR — Raycus 30W Galvo
+// FIBER LASER ESTIMATOR — Raycus 30W Galvo  v1.1
+// Max work area: 150 × 150 mm
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
+import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
 
 const FIBER_CONFIG = {
   POWER_KW: 0.50,
   DEPRECIATION_PLN_H: 2.80,
   PRECIOUS_PREMIUM: 0.25,
   LABOR_PLN_MIN: 1.50,
-  HANDLING_FEE_PLN: 5.0,  // per-piece handling: load, align, focus, unload
+  HANDLING_FEE_PLN: 5.0,
+  MAX_FIELD_MM: 150,
 };
 
 const LBL = {
@@ -72,11 +75,13 @@ export const AREAS = [
   { id: "XL", label: { pl: "XL — wielokrotne pola", en: "XL — multiple fields", de: "XL — mehrere Felder" }, area: null, custom: true },
 ];
 
-export function calculate({ matId, lensId, markId, areaId, quantityId }, lang) {
+export function calculate({ matId, lensId, markId, areaId, quantityId, svgData }, lang) {
   const mat = MATERIALS.find(m => m.id === matId);
   const lens = LENSES.find(l => l.id === lensId);
   const mark = MARK_TYPES.find(m => m.id === markId);
-  const area = AREAS.find(a => a.id === areaId);
+  const area = svgData
+    ? { area: svgData.engravAreaCm2 }
+    : AREAS.find(a => a.id === areaId);
   const qTier = QUANTITY_TIERS.find(q => q.id === quantityId);
   if (!mat || !lens || !mark || !area || !qTier) return null;
   if (!mat.rateMin || !mark.depthMul || !area.area || !qTier.qty) return { type: "custom" };
@@ -123,21 +128,43 @@ const TECH_LABEL = { pl: "Laser Fiber", en: "Fiber Laser", de: "Faserlaser" };
 
 export default function FiberLaserCalc({ lang = "pl" }) {
   const l = LBL[lang] || LBL.en;
+  const sl = SVG_LBL[lang] || SVG_LBL.en;
   const [matId, setMatId] = useState("stainless");
   const [lensId, setLensId] = useState("150mm");
   const [markId, setMarkId] = useState("surface");
   const [areaId, setAreaId] = useState("S");
   const [quantityId, setQuantityId] = useState("proto");
+  const [svgData, setSvgData] = useState(null);
+  const [svgFileName, setSvgFileName] = useState("");
 
   const selectedLens = LENSES.find(ln => ln.id === lensId);
+  const lensFieldMm = { x: selectedLens.fieldMm, y: selectedLens.fieldMm };
 
   useEffect(() => {
+    if (svgData) return;
     const area = AREAS.find(a => a.id === areaId);
     if (area && area.area && selectedLens && area.area > selectedLens.maxAreaCm2) {
       const firstValid = AREAS.find(a => a.area && a.area <= selectedLens.maxAreaCm2);
       if (firstValid) setAreaId(firstValid.id);
     }
   }, [lensId]);
+
+  async function handleSVGUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const { parseSVG } = await import("../../utils/svgParser.js");
+      const data = parseSVG(text);
+      setSvgData(data);
+      setSvgFileName(file.name);
+    } catch {}
+  }
+
+  function handleSVGRemove() {
+    setSvgData(null);
+    setSvgFileName("");
+  }
 
   const areaOptions = useMemo(() =>
     AREAS.map(a => ({
@@ -149,20 +176,22 @@ export default function FiberLaserCalc({ lang = "pl" }) {
     })),
   [lensId]);
 
-  const result = useMemo(() => calculate({ matId, lensId, markId, areaId, quantityId }, lang),
-    [matId, lensId, markId, areaId, quantityId, lang]);
+  const result = useMemo(() => calculate({ matId, lensId, markId, areaId, quantityId, svgData }, lang),
+    [matId, lensId, markId, areaId, quantityId, svgData, lang]);
 
   const paramsSummary = [
     t(MATERIALS.find(m => m.id === matId)?.label, lang),
     t(LENSES.find(ln => ln.id === lensId)?.label, lang),
     t(MARK_TYPES.find(m => m.id === markId)?.label, lang),
-    t(AREAS.find(a => a.id === areaId)?.label, lang),
+    svgData
+      ? `SVG: ${svgFileName} (${svgData.engravAreaCm2.toFixed(1)} cm²)`
+      : t(AREAS.find(a => a.id === areaId)?.label, lang),
     t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
   ].join(" | ");
 
   return (
     <div>
-      <div className="text-center text-[11px] text-neutral-600 mb-6">Raycus 30W Galvo · 70mm / 150mm</div>
+      <div className="text-center text-[11px] text-neutral-600 mb-6">Raycus 30W Galvo · 70mm / 150mm · max 150×150 mm</div>
 
       <CalcCard stepNum="①" label={l.material}>
         <Chips options={MATERIALS} value={matId} onChange={setMatId} lang={lang} />
@@ -184,8 +213,9 @@ export default function FiberLaserCalc({ lang = "pl" }) {
         <Chips options={MARK_TYPES} value={markId} onChange={setMarkId} lang={lang} />
       </CalcCard>
 
-      <CalcCard stepNum="④" label={l.area}>
-        <Chips options={areaOptions} value={areaId} onChange={setAreaId} lang={lang} />
+      <CalcCard stepNum="④" label={svgData ? sl.fromSvg : l.area}>
+        <SVGUploadCard svgData={svgData} svgFileName={svgFileName} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={lensFieldMm} showPathLength={false} lang={lang} />
+        {!svgData && <Chips options={areaOptions} value={areaId} onChange={setAreaId} lang={lang} />}
       </CalcCard>
 
       <CalcCard stepNum="⑤" label={l.qty}>

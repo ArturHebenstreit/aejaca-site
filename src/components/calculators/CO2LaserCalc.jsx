@@ -1,9 +1,10 @@
 // ============================================================
-// CO2 LASER ESTIMATOR — xTool P2 55W
+// CO2 LASER ESTIMATOR — xTool P2 55W  v1.1
 // Work area: 600 × 288 mm (standard), extended with riser
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
+import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
 
 const CO2_CONFIG = {
   POWER_KW: 0.80,
@@ -12,7 +13,8 @@ const CO2_CONFIG = {
   EXTENDED_AREA_COST_ADD: 15,
 };
 
-// Path sizes XS/S/M fit in standard area; L requires extended
+const WORK_AREA_MM = { x: 600, y: 288 };
+
 const PATH_NEEDS_EXTENDED = { XS: false, S: false, M: false, L: true, XL: true };
 
 const LBL = {
@@ -109,9 +111,11 @@ export const CUT_COMPLEXITY = [
   { id: "custom",   label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" }, mul: null, custom: true },
 ];
 
-export function calcEngrave({ matId, areaId, detailId, quantityId }, lang) {
+export function calcEngrave({ matId, areaId, detailId, quantityId, svgData }, lang) {
   const mat = ENGRAVE_MATERIALS.find(m => m.id === matId);
-  const area = ENGRAVE_AREAS.find(a => a.id === areaId);
+  const area = svgData
+    ? { area: svgData.engravAreaCm2 }
+    : ENGRAVE_AREAS.find(a => a.id === areaId);
   const detail = ENGRAVE_DETAIL.find(d => d.id === detailId);
   const qTier = QUANTITY_TIERS.find(q => q.id === quantityId);
   if (!mat || !area || !detail || !qTier) return null;
@@ -148,9 +152,11 @@ export function calcEngrave({ matId, areaId, detailId, quantityId }, lang) {
   };
 }
 
-export function calcCut({ matId, pathId, complexId, quantityId, extended }, lang) {
+export function calcCut({ matId, pathId, complexId, quantityId, extended, svgData }, lang) {
   const mat = CUT_MATERIALS.find(m => m.id === matId);
-  const path = CUT_PATHS.find(p => p.id === pathId);
+  const path = svgData
+    ? { pathCm: svgData.pathLengthCm, sheetCm2: svgData.engravAreaCm2 }
+    : CUT_PATHS.find(p => p.id === pathId);
   const cmplx = CUT_COMPLEXITY.find(c => c.id === complexId);
   const qTier = QUANTITY_TIERS.find(q => q.id === quantityId);
   if (!mat || !path || !cmplx || !qTier) return null;
@@ -196,6 +202,7 @@ const TECH_LABEL = { pl: "Laser CO2", en: "CO2 Laser", de: "CO2-Laser" };
 
 export default function CO2LaserCalc({ lang = "pl" }) {
   const l = LBL[lang] || LBL.en;
+  const sl = SVG_LBL[lang] || SVG_LBL.en;
   const [mode, setMode] = useState("engrave");
   const [eMatId, setEMatId] = useState("wood");
   const [eAreaId, setEAreaId] = useState("S");
@@ -206,22 +213,49 @@ export default function CO2LaserCalc({ lang = "pl" }) {
   const [cComplexId, setCComplexId] = useState("moderate");
   const [cQtyId, setCQtyId] = useState("proto");
   const [extended, setExtended] = useState(false);
+  const [svgData, setSvgData] = useState(null);
+  const [svgFileName, setSvgFileName] = useState("");
 
-  // Auto-set work area based on path size
   useEffect(() => {
+    if (svgData) {
+      if (mode === "cut") setExtended(svgData.bboxMm.x > WORK_AREA_MM.x || svgData.bboxMm.y > WORK_AREA_MM.y);
+      return;
+    }
     const needsExtended = PATH_NEEDS_EXTENDED[cPathId];
     if (needsExtended !== undefined) setExtended(needsExtended);
-  }, [cPathId]);
+  }, [cPathId, svgData, mode]);
+
+  async function handleSVGUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const { parseSVG } = await import("../../utils/svgParser.js");
+      const data = parseSVG(text);
+      setSvgData(data);
+      setSvgFileName(file.name);
+    } catch {}
+  }
+
+  function handleSVGRemove() {
+    setSvgData(null);
+    setSvgFileName("");
+  }
 
   const result = useMemo(() => {
-    if (mode === "engrave") return calcEngrave({ matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId }, lang);
-    return calcCut({ matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended }, lang);
-  }, [mode, eMatId, eAreaId, eDetailId, eQtyId, cMatId, cPathId, cComplexId, cQtyId, extended, lang]);
+    if (mode === "engrave") return calcEngrave({ matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, svgData }, lang);
+    return calcCut({ matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended, svgData }, lang);
+  }, [mode, eMatId, eAreaId, eDetailId, eQtyId, cMatId, cPathId, cComplexId, cQtyId, extended, svgData, lang]);
 
-  // Determine which work area options are available based on path
-  const pathNeedsExtended = PATH_NEEDS_EXTENDED[cPathId];
+  const pathNeedsExtended = svgData ? (svgData.bboxMm.x > WORK_AREA_MM.x || svgData.bboxMm.y > WORK_AREA_MM.y) : PATH_NEEDS_EXTENDED[cPathId];
   const stdDisabled = pathNeedsExtended === true;
-  const extDisabled = pathNeedsExtended === false;
+  const extDisabled = !svgData && pathNeedsExtended === false;
+
+  const svgSummary = svgData
+    ? (mode === "engrave"
+      ? `SVG: ${svgFileName} (${svgData.engravAreaCm2.toFixed(1)} cm²)`
+      : `SVG: ${svgFileName} (${svgData.pathLengthCm.toFixed(0)} cm)`)
+    : null;
 
   return (
     <div>
@@ -242,14 +276,20 @@ export default function CO2LaserCalc({ lang = "pl" }) {
       {mode === "engrave" ? (
         <>
           <CalcCard stepNum="②" label={l.material}><Chips options={ENGRAVE_MATERIALS} value={eMatId} onChange={setEMatId} lang={lang} /></CalcCard>
-          <CalcCard stepNum="③" label={l.area}><Chips options={ENGRAVE_AREAS} value={eAreaId} onChange={setEAreaId} lang={lang} /></CalcCard>
+          <CalcCard stepNum="③" label={svgData ? sl.fromSvg : l.area}>
+            <SVGUploadCard svgData={svgData} svgFileName={svgFileName} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} showPathLength={false} lang={lang} />
+            {!svgData && <Chips options={ENGRAVE_AREAS} value={eAreaId} onChange={setEAreaId} lang={lang} />}
+          </CalcCard>
           <CalcCard stepNum="④" label={l.detail}><Chips options={ENGRAVE_DETAIL} value={eDetailId} onChange={setEDetailId} lang={lang} /></CalcCard>
           <CalcCard stepNum="⑤" label={l.qty}><Chips options={QUANTITY_TIERS} value={eQtyId} onChange={setEQtyId} lang={lang} /></CalcCard>
         </>
       ) : (
         <>
           <CalcCard stepNum="②" label={l.matThick}><Chips options={CUT_MATERIALS} value={cMatId} onChange={setCMatId} lang={lang} /></CalcCard>
-          <CalcCard stepNum="③" label={l.pathLen}><Chips options={CUT_PATHS} value={cPathId} onChange={setCPathId} lang={lang} /></CalcCard>
+          <CalcCard stepNum="③" label={svgData ? sl.fromSvg : l.pathLen}>
+            <SVGUploadCard svgData={svgData} svgFileName={svgFileName} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} showPathLength={true} lang={lang} />
+            {!svgData && <Chips options={CUT_PATHS} value={cPathId} onChange={setCPathId} lang={lang} />}
+          </CalcCard>
           <CalcCard stepNum="④" label={l.complexity}><Chips options={CUT_COMPLEXITY} value={cComplexId} onChange={setCComplexId} lang={lang} /></CalcCard>
           <CalcCard stepNum="⑤" label={l.workArea}>
             <div className="grid grid-cols-2 gap-3">
@@ -277,8 +317,8 @@ export default function CO2LaserCalc({ lang = "pl" }) {
 
       <InquiryForm lang={lang} techLabel={`${t(TECH_LABEL, lang)} — ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={
         mode === "engrave"
-          ? [t(ENGRAVE_MATERIALS.find(m => m.id === eMatId)?.label, lang), t(ENGRAVE_AREAS.find(a => a.id === eAreaId)?.label, lang), t(ENGRAVE_DETAIL.find(d => d.id === eDetailId)?.label, lang), t(QUANTITY_TIERS.find(q => q.id === eQtyId)?.label, lang)].join(" | ")
-          : [t(CUT_MATERIALS.find(m => m.id === cMatId)?.label, lang), t(CUT_PATHS.find(p => p.id === cPathId)?.label, lang), t(CUT_COMPLEXITY.find(c => c.id === cComplexId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === cQtyId)?.label, lang)].join(" | ")
+          ? [t(ENGRAVE_MATERIALS.find(m => m.id === eMatId)?.label, lang), svgSummary || t(ENGRAVE_AREAS.find(a => a.id === eAreaId)?.label, lang), t(ENGRAVE_DETAIL.find(d => d.id === eDetailId)?.label, lang), t(QUANTITY_TIERS.find(q => q.id === eQtyId)?.label, lang)].join(" | ")
+          : [t(CUT_MATERIALS.find(m => m.id === cMatId)?.label, lang), svgSummary || t(CUT_PATHS.find(p => p.id === cPathId)?.label, lang), t(CUT_COMPLEXITY.find(c => c.id === cComplexId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === cQtyId)?.label, lang)].join(" | ")
       } />
     </div>
   );
