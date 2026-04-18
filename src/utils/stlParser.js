@@ -54,6 +54,7 @@ export function parseSTL(buffer) {
     bbox: { x: bboxMm.x / 10, y: bboxMm.y / 10, z: bboxMm.z / 10 },
     surfaceAreaCm2,
     triangleCount: triangles.length,
+    triangles,
   };
 }
 

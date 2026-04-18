@@ -1,9 +1,11 @@
 // ============================================================
 // 3D PRINT ESTIMATOR — Bambu Lab H2D  v1.2
 // ============================================================
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { Upload, X, AlertTriangle } from "lucide-react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
+
+const STLViewer = lazy(() => import("./STLViewer.jsx"));
 
 const PRINT_CONFIG = {
   PRINTER_POWER_KW: 0.35,
@@ -186,6 +188,9 @@ function STLUploadCard({ stlData, stlFileName, onUpload, onRemove, lang }) {
           <X className="w-3.5 h-3.5" />{sl.remove}
         </button>
       </div>
+      <Suspense fallback={<div className="w-full rounded-lg bg-[#0c1222] border border-white/5 animate-pulse" style={{ height: "220px" }} />}>
+        <STLViewer triangles={stlData.triangles} bbox={stlData.bbox} />
+      </Suspense>
       <div className="grid grid-cols-3 gap-3 text-center text-[11px]">
         <div><div className="text-neutral-500">{sl.volume}</div><div className="font-bold">{stlData.volumeCm3.toFixed(1)} cm³</div></div>
         <div><div className="text-neutral-500">{sl.dims}</div><div className="font-bold">{(b.x*10).toFixed(0)}×{(b.y*10).toFixed(0)}×{(b.z*10).toFixed(0)} mm</div></div>
