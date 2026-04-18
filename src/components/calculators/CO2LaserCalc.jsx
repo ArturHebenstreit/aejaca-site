@@ -217,14 +217,24 @@ export default function CO2LaserCalc({ lang = "pl" }) {
   const [svgFileName, setSvgFileName] = useState("");
   const [svgScale, setSvgScale] = useState(1);
 
+  const scaledSvgData = useMemo(() => {
+    if (!svgData || svgScale === 1) return svgData;
+    const s = svgScale;
+    return { ...svgData, bboxMm: { x: svgData.bboxMm.x * s, y: svgData.bboxMm.y * s }, pathLengthCm: svgData.pathLengthCm * s, engravAreaCm2: svgData.engravAreaCm2 * s * s };
+  }, [svgData, svgScale]);
+
+  const svgNeedsExtended = scaledSvgData
+    ? (scaledSvgData.bboxMm.x > WORK_AREA_MM.x + 0.5 || scaledSvgData.bboxMm.y > WORK_AREA_MM.y + 0.5)
+    : false;
+
   useEffect(() => {
-    if (svgData) {
-      if (mode === "cut") setExtended(svgData.bboxMm.x > WORK_AREA_MM.x || svgData.bboxMm.y > WORK_AREA_MM.y);
+    if (scaledSvgData) {
+      if (mode === "cut") setExtended(svgNeedsExtended);
       return;
     }
     const needsExtended = PATH_NEEDS_EXTENDED[cPathId];
     if (needsExtended !== undefined) setExtended(needsExtended);
-  }, [cPathId, svgData, mode]);
+  }, [cPathId, scaledSvgData, svgNeedsExtended, mode]);
 
   async function handleSVGUpload(e) {
     const file = e.target.files?.[0];
@@ -244,20 +254,14 @@ export default function CO2LaserCalc({ lang = "pl" }) {
     setSvgScale(1);
   }
 
-  const scaledSvgData = useMemo(() => {
-    if (!svgData || svgScale === 1) return svgData;
-    const s = svgScale;
-    return { ...svgData, bboxMm: { x: svgData.bboxMm.x * s, y: svgData.bboxMm.y * s }, pathLengthCm: svgData.pathLengthCm * s, engravAreaCm2: svgData.engravAreaCm2 * s * s };
-  }, [svgData, svgScale]);
-
   const result = useMemo(() => {
     if (mode === "engrave") return calcEngrave({ matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, svgData: scaledSvgData }, lang);
     return calcCut({ matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended, svgData: scaledSvgData }, lang);
   }, [mode, eMatId, eAreaId, eDetailId, eQtyId, cMatId, cPathId, cComplexId, cQtyId, extended, scaledSvgData, lang]);
 
-  const pathNeedsExtended = svgData ? (svgData.bboxMm.x > WORK_AREA_MM.x || svgData.bboxMm.y > WORK_AREA_MM.y) : PATH_NEEDS_EXTENDED[cPathId];
+  const pathNeedsExtended = scaledSvgData ? svgNeedsExtended : PATH_NEEDS_EXTENDED[cPathId];
   const stdDisabled = pathNeedsExtended === true;
-  const extDisabled = !svgData && pathNeedsExtended === false;
+  const extDisabled = scaledSvgData ? !svgNeedsExtended : pathNeedsExtended === false;
 
   const svgSummary = svgData
     ? (mode === "engrave"
