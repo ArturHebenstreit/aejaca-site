@@ -5,20 +5,21 @@ export const SVG_LBL = {
   pl: { upload: "Załaduj plik SVG", orManual: "lub wybierz parametry ręcznie poniżej",
     dims: "Wymiary", area: "Powierzchnia", pathLen: "Długość ścieżek", paths: "Ścieżki",
     remove: "Usuń", exceeds: "Projekt przekracza pole robocze", fromSvg: "Parametry z pliku SVG",
-    scale: "Skala", fitToArea: "Dopasuj do pola" },
+    scale: "Skala", fitToArea: "Dopasuj do pola", fitToExt: "Dopasuj do XL" },
   en: { upload: "Upload SVG file", orManual: "or select parameters manually below",
     dims: "Dimensions", area: "Area", pathLen: "Path length", paths: "Paths",
     remove: "Remove", exceeds: "Design exceeds work area", fromSvg: "Parameters from SVG file",
-    scale: "Scale", fitToArea: "Fit to area" },
+    scale: "Scale", fitToArea: "Fit to area", fitToExt: "Fit to XL" },
   de: { upload: "SVG-Datei hochladen", orManual: "oder Parameter unten manuell wählen",
     dims: "Abmessungen", area: "Fläche", pathLen: "Pfadlänge", paths: "Pfade",
     remove: "Entfernen", exceeds: "Design überschreitet Arbeitsbereich", fromSvg: "Parameter aus SVG-Datei",
-    scale: "Maßstab", fitToArea: "An Bereich anpassen" },
+    scale: "Maßstab", fitToArea: "An Bereich anpassen", fitToExt: "An XL anpassen" },
 };
 
-const SCALE_STEPS = [1, 0.75, 0.5, 0.25];
+const SCALE_STEPS_DOWN = [0.25, 0.5, 0.75, 1];
+const SCALE_STEPS_UP = [1.25, 1.5, 2, 3];
 
-export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChange, onUpload, onRemove, workAreaMm, showPathLength, lang }) {
+export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChange, onUpload, onRemove, workAreaMm, extendedAreaMm, showPathLength, lang }) {
   const sl = SVG_LBL[lang] || SVG_LBL.en;
   const fileRef = useRef(null);
 
@@ -27,8 +28,15 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
     : 1;
   const fitFloor = Math.floor(fitScaleRaw * 10000) / 10000;
 
+  const fitExtendedRaw = svgData && extendedAreaMm
+    ? Math.min(extendedAreaMm.x / svgData.bboxMm.x, extendedAreaMm.y / svgData.bboxMm.y)
+    : 0;
+  const fitExtendedFloor = Math.floor(fitExtendedRaw * 10000) / 10000;
+  const maxAllowedScale = extendedAreaMm ? fitExtendedFloor : fitFloor;
+
   const scaledBbox = svgData ? { x: svgData.bboxMm.x * scale, y: svgData.bboxMm.y * scale } : null;
-  const exceeds = svgData && workAreaMm && (scaledBbox.x > workAreaMm.x + 0.5 || scaledBbox.y > workAreaMm.y + 0.5);
+  const maxAreaForExceeds = extendedAreaMm || workAreaMm;
+  const exceeds = svgData && maxAreaForExceeds && (scaledBbox.x > maxAreaForExceeds.x + 0.5 || scaledBbox.y > maxAreaForExceeds.y + 0.5);
 
   const blobUrl = useMemo(() => {
     if (!svgData?.svgText) return null;
@@ -80,7 +88,7 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
           <span className="font-bold text-blue-300">{Math.round(scale * 100)}%</span>
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {SCALE_STEPS.map(p => (
+          {SCALE_STEPS_DOWN.map(p => (
             <button key={p} onClick={() => onScaleChange(p)}
               className={`px-2 py-1 rounded text-[10px] border transition-colors ${
                 Math.abs(scale - p) < 0.005
@@ -90,18 +98,37 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
               {Math.round(p * 100)}%
             </button>
           ))}
+          {extendedAreaMm && SCALE_STEPS_UP.map(p => {
+            const disabled = p > maxAllowedScale + 0.001;
+            return (
+              <button key={p} onClick={() => !disabled && onScaleChange(p)} disabled={disabled}
+                className={`px-2 py-1 rounded text-[10px] border transition-colors ${
+                  Math.abs(scale - p) < 0.005 ? "border-blue-400 bg-blue-400/10 text-blue-300" :
+                  disabled ? "border-white/5 text-neutral-700 cursor-not-allowed" :
+                  "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-200"
+                }`}>
+                {Math.round(p * 100)}%
+              </button>
+            );
+          })}
           {fitFloor < 0.999 && (
             <button onClick={() => onScaleChange(fitFloor)}
               className={`px-2 py-1 rounded text-[10px] border border-amber-400/30 text-amber-400 hover:bg-amber-400/10 transition-colors ${
                 Math.abs(scale - fitFloor) < 0.005 ? "bg-amber-400/10" : ""
               }`}>{sl.fitToArea}</button>
           )}
+          {extendedAreaMm && fitExtendedFloor > 1.001 && (
+            <button onClick={() => onScaleChange(fitExtendedFloor)}
+              className={`px-2 py-1 rounded text-[10px] border border-purple-400/30 text-purple-300 hover:bg-purple-400/10 transition-colors ${
+                Math.abs(scale - fitExtendedFloor) < 0.005 ? "bg-purple-400/10" : ""
+              }`}>{sl.fitToExt}</button>
+          )}
         </div>
       </div>
 
       {exceeds && (
         <div className="flex items-center gap-1.5 text-amber-400 text-[11px]">
-          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />{sl.exceeds} ({workAreaMm.x}×{workAreaMm.y} mm)
+          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />{sl.exceeds} ({maxAreaForExceeds.x}×{maxAreaForExceeds.y} mm)
         </div>
       )}
     </div>

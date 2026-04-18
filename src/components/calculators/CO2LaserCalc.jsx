@@ -14,6 +14,8 @@ const CO2_CONFIG = {
 };
 
 const WORK_AREA_MM = { x: 600, y: 288 };
+// Extended area: xTool P2 with passthrough enables long materials
+const EXTENDED_AREA_MM = { x: 600, y: 3000 };
 
 const PATH_NEEDS_EXTENDED = { XS: false, S: false, M: false, L: true, XL: true };
 const AREA_NEEDS_EXTENDED = { XS: false, S: false, M: false, L: true, XL: true };
@@ -297,7 +299,7 @@ export default function CO2LaserCalc({ lang = "pl" }) {
         <>
           <CalcCard stepNum="②" label={l.material}><Chips options={ENGRAVE_MATERIALS} value={eMatId} onChange={setEMatId} lang={lang} /></CalcCard>
           <CalcCard stepNum="③" label={svgData ? sl.fromSvg : l.area}>
-            <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} showPathLength={false} lang={lang} />
+            <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} extendedAreaMm={EXTENDED_AREA_MM} showPathLength={false} lang={lang} />
             {!svgData && <Chips options={ENGRAVE_AREAS} value={eAreaId} onChange={setEAreaId} lang={lang} />}
           </CalcCard>
           <CalcCard stepNum="④" label={l.detail}><Chips options={ENGRAVE_DETAIL} value={eDetailId} onChange={setEDetailId} lang={lang} /></CalcCard>
@@ -306,7 +308,7 @@ export default function CO2LaserCalc({ lang = "pl" }) {
         <>
           <CalcCard stepNum="②" label={l.matThick}><Chips options={CUT_MATERIALS} value={cMatId} onChange={setCMatId} lang={lang} /></CalcCard>
           <CalcCard stepNum="③" label={svgData ? sl.fromSvg : l.pathLen}>
-            <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} showPathLength={true} lang={lang} />
+            <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} extendedAreaMm={EXTENDED_AREA_MM} showPathLength={true} lang={lang} />
             {!svgData && <Chips options={CUT_PATHS} value={cPathId} onChange={setCPathId} lang={lang} />}
           </CalcCard>
           <CalcCard stepNum="④" label={l.complexity}><Chips options={CUT_COMPLEXITY} value={cComplexId} onChange={setCComplexId} lang={lang} /></CalcCard>
