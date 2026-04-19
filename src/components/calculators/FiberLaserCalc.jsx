@@ -3,7 +3,7 @@
 // Max work area: 150 × 150 mm
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards } from "./calcShared.jsx";
 import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
 
 const FIBER_CONFIG = {
@@ -43,27 +43,39 @@ const LBL = {
 };
 
 export const MATERIALS = [
-  { id: "stainless",  label: { pl: "Stal nierdzewna", en: "Stainless steel", de: "Edelstahl" },   rateMin: 0.10, precious: false },
-  { id: "aluminum",   label: { pl: "Aluminium", en: "Aluminum", de: "Aluminium" },                rateMin: 0.08, precious: false },
-  { id: "brass",      label: { pl: "Mosiądz", en: "Brass", de: "Messing" },                      rateMin: 0.12, precious: false },
-  { id: "copper",     label: { pl: "Miedź", en: "Copper", de: "Kupfer" },                         rateMin: 0.15, precious: false },
-  { id: "titanium",   label: { pl: "Tytan", en: "Titanium", de: "Titan" },                        rateMin: 0.18, precious: false },
-  { id: "silver",     label: { pl: "Srebro", en: "Silver", de: "Silber" },                        rateMin: 0.14, precious: true },
-  { id: "gold",       label: { pl: "Złoto", en: "Gold", de: "Gold" },                             rateMin: 0.16, precious: true },
-  { id: "anodized",   label: { pl: "Aluminium anodowane", en: "Anodized aluminum", de: "Eloxiertes Aluminium" }, rateMin: 0.06, precious: false },
+  { id: "stainless",  label: { pl: "Stal nierdzewna", en: "Stainless steel", de: "Edelstahl" },   rateMin: 0.10, precious: false, img: "/img/calc/fiber_materials/stainless.png" },
+  { id: "aluminum",   label: { pl: "Aluminium", en: "Aluminum", de: "Aluminium" },                rateMin: 0.08, precious: false, img: "/img/calc/fiber_materials/aluminum.png" },
+  { id: "brass",      label: { pl: "Mosiądz", en: "Brass", de: "Messing" },                      rateMin: 0.12, precious: false, img: "/img/calc/fiber_materials/brass.png" },
+  { id: "copper",     label: { pl: "Miedź", en: "Copper", de: "Kupfer" },                         rateMin: 0.15, precious: false, img: "/img/calc/fiber_materials/copper.png" },
+  { id: "titanium",   label: { pl: "Tytan", en: "Titanium", de: "Titan" },                        rateMin: 0.18, precious: false, img: "/img/calc/fiber_materials/titanium.png" },
+  { id: "silver",     label: { pl: "Srebro", en: "Silver", de: "Silber" },                        rateMin: 0.14, precious: true,  img: "/img/calc/fiber_materials/silver.png" },
+  { id: "gold",       label: { pl: "Złoto", en: "Gold", de: "Gold" },                             rateMin: 0.16, precious: true,  img: "/img/calc/fiber_materials/gold.png" },
+  { id: "anodized",   label: { pl: "Aluminium anodowane", en: "Anodized aluminum", de: "Eloxiertes Aluminium" }, rateMin: 0.06, precious: false, img: "/img/calc/fiber_materials/anodized.png" },
   { id: "custom",     label: { pl: "Inny materiał", en: "Other material", de: "Anderes Material" }, rateMin: null, precious: false, custom: true },
 ];
 
 export const LENSES = [
-  { id: "70mm",  label: { pl: "70mm — precyzyjne detale", en: "70mm — precision details", de: "70mm — Präzisionsdetails" }, fieldMm: 50, maxAreaCm2: 25,  speedMul: 1.0 },
-  { id: "150mm", label: { pl: "150mm — większe pole", en: "150mm — larger field", de: "150mm — größeres Feld" },           fieldMm: 110, maxAreaCm2: 121, speedMul: 0.85 },
+  { id: "70mm",  label: { pl: "70mm — precyzyjne detale", en: "70mm — precision details", de: "70mm — Präzisionsdetails" },
+    desc: { pl: "Pole ~50×50mm (25 cm²), ultra fine", en: "Field ~50×50mm (25 cm²), ultra fine", de: "Feld ~50×50mm (25 cm²), ultra fein" },
+    fieldMm: 50, maxAreaCm2: 25, speedMul: 1.0, img: "/img/calc/fiber_lens/lens_70.png" },
+  { id: "150mm", label: { pl: "150mm — większe pole", en: "150mm — larger field", de: "150mm — größeres Feld" },
+    desc: { pl: "Pole ~110×110mm (~121 cm²), standard", en: "Field ~110×110mm (~121 cm²), standard", de: "Feld ~110×110mm (~121 cm²), Standard" },
+    fieldMm: 110, maxAreaCm2: 121, speedMul: 0.85, img: "/img/calc/fiber_lens/lens_150.png" },
 ];
 
 export const MARK_TYPES = [
-  { id: "surface",  label: { pl: "Znakowanie powierzchniowe", en: "Surface marking", de: "Oberflächenmarkierung" }, depthMul: 1.0 },
-  { id: "medium",   label: { pl: "Średnia głębokość", en: "Medium depth", de: "Mittlere Tiefe" },                   depthMul: 2.5 },
-  { id: "deep",     label: { pl: "Głębokie grawerowanie", en: "Deep engraving", de: "Tiefgravur" },                 depthMul: 6.0 },
-  { id: "color",    label: { pl: "Znakowanie kolorowe", en: "Color marking", de: "Farbmarkierung" },                depthMul: 1.8 },
+  { id: "surface",  label: { pl: "Znakowanie powierzchniowe", en: "Surface marking", de: "Oberflächenmarkierung" },
+    desc: { pl: "Ciemny ślad, gładka powierzchnia", en: "Dark mark, smooth surface", de: "Dunkle Markierung, glatte Oberfläche" },
+    depthMul: 1.0, img: "/img/calc/fiber_marks/surface.png" },
+  { id: "medium",   label: { pl: "Średnia głębokość", en: "Medium depth", de: "Mittlere Tiefe" },
+    desc: { pl: "Wyczuwalny rowek ~0,1–0,2 mm", en: "Tactile groove ~0.1–0.2 mm", de: "Fühlbare Rille ~0,1–0,2 mm" },
+    depthMul: 2.5, img: "/img/calc/fiber_marks/medium.png" },
+  { id: "deep",     label: { pl: "Głębokie grawerowanie", en: "Deep engraving", de: "Tiefgravur" },
+    desc: { pl: "Trwały ślad 0,5–1 mm", en: "Permanent mark 0.5–1 mm", de: "Dauerhaft 0,5–1 mm" },
+    depthMul: 6.0, img: "/img/calc/fiber_marks/deep.png" },
+  { id: "color",    label: { pl: "Znakowanie kolorowe", en: "Color marking", de: "Farbmarkierung" },
+    desc: { pl: "Tytan / stal — tęczowe kolory", en: "Titanium / steel — rainbow colors", de: "Titan / Stahl — Regenbogenfarben" },
+    depthMul: 1.8, img: "/img/calc/fiber_marks/color.png" },
   { id: "custom",   label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" },                               depthMul: null, custom: true },
 ];
 
@@ -202,23 +214,15 @@ export default function FiberLaserCalc({ lang = "pl" }) {
       <div className="text-center text-[11px] text-neutral-600 mb-6">Raycus 30W Galvo · 70mm / 150mm · max 150×150 mm</div>
 
       <CalcCard stepNum="①" label={l.material}>
-        <Chips options={MATERIALS} value={matId} onChange={setMatId} lang={lang} />
+        <MaterialCards options={MATERIALS} value={matId} onChange={setMatId} lang={lang} />
       </CalcCard>
 
       <CalcCard stepNum="②" label={l.lens}>
-        <div className="grid grid-cols-2 gap-3">
-          {LENSES.map(ln => (
-            <button key={ln.id} onClick={() => setLensId(ln.id)}
-              className={`p-3.5 rounded-xl border text-left transition-all ${lensId === ln.id ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}>
-              <div className={`text-sm font-bold mb-1 ${lensId === ln.id ? "text-blue-300" : "text-white"}`}>{t(ln.label, lang)}</div>
-              <div className="text-[11px] text-neutral-500">{l[`lens${ln.id.replace("mm","")}desc`]}</div>
-            </button>
-          ))}
-        </div>
+        <HeroCards options={LENSES} value={lensId} onChange={setLensId} lang={lang} cols="grid-cols-2" minH={170} />
       </CalcCard>
 
       <CalcCard stepNum="③" label={l.markType}>
-        <Chips options={MARK_TYPES} value={markId} onChange={setMarkId} lang={lang} />
+        <HeroCards options={MARK_TYPES} value={markId} onChange={setMarkId} lang={lang} cols="grid-cols-2 sm:grid-cols-4" minH={150} />
       </CalcCard>
 
       <CalcCard stepNum="④" label={svgData ? sl.fromSvg : l.area}>
