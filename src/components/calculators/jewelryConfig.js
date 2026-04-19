@@ -49,8 +49,6 @@ export const JEWELRY_TYPES = {
     { id: "earrings",  label: { pl: "Kolczyki (para)", en: "Earrings (pair)", de: "Ohrringe (Paar)" }, baseWeight: 4, laborH: 7, complexity: 1.1, img: "/img/calc/types/earrings.png" },
     { id: "brooch",    label: { pl: "Broszka", en: "Brooch", de: "Brosche" }, baseWeight: 8, laborH: 6, complexity: 1.0, img: "/img/calc/types/brooch.png" },
     { id: "necklace",  label: { pl: "Naszyjnik / łańcuszek", en: "Necklace / chain", de: "Halskette / Kette" }, baseWeight: 12, laborH: 5, complexity: 0.9, img: "/img/calc/types/necklace.png" },
-    { id: "bracelet_stones", label: { pl: "Bransoletka z kamieni (gumka)", en: "Stone bead bracelet (elastic)", de: "Stein-Armband (Gummi)" }, baseWeight: 1, laborH: 1.5, complexity: 0.5, img: "/img/calc/types/bracelet_stones.png" },
-    { id: "necklace_stones", label: { pl: "Naszyjnik z kamieni", en: "Stone bead necklace", de: "Stein-Halskette" }, baseWeight: 3, laborH: 3, complexity: 0.7, img: "/img/calc/types/necklace_stones.png" },
   ],
   men: [
     { id: "signet",    label: { pl: "Sygnet", en: "Signet ring", de: "Siegelring" }, baseWeight: 12, laborH: 7, complexity: 1.1, img: "/img/calc/types/signet.png" },
