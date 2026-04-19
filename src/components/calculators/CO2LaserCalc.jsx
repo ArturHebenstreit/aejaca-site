@@ -3,7 +3,7 @@
 // Work area: 600 × 288 mm (standard), extended with riser
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards } from "./calcShared.jsx";
 import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
 
 const CO2_CONFIG = {
@@ -78,9 +78,12 @@ export const ENGRAVE_AREAS = [
 ];
 
 export const ENGRAVE_DETAIL = [
-  { id: "simple",   label: { pl: "Prosty (tekst/logo)", en: "Simple (text/logo)", de: "Einfach (Text/Logo)" }, mul: 0.7 },
-  { id: "standard", label: { pl: "Średni (grafika)", en: "Standard (graphics)", de: "Standard (Grafik)" }, mul: 1.0 },
-  { id: "photo",    label: { pl: "Wysoki (fotograwer)", en: "High (photo engrave)", de: "Hoch (Fotogravur)" }, mul: 2.2 },
+  { id: "simple",   label: { pl: "Prosty (tekst/logo)", en: "Simple (text/logo)", de: "Einfach (Text/Logo)" },     mul: 0.7, img: "/img/calc/co2_detail/simple.png",
+    desc: { pl: "Tekst, logo, proste linie", en: "Text, logo, simple lines", de: "Text, Logo, einfache Linien" } },
+  { id: "standard", label: { pl: "Średni (grafika)", en: "Standard (graphics)", de: "Standard (Grafik)" },         mul: 1.0, img: "/img/calc/co2_detail/standard.png",
+    desc: { pl: "Ilustracja, ornament, line-art", en: "Illustration, ornament, line-art", de: "Illustration, Ornament, Strichzeichnung" } },
+  { id: "photo",    label: { pl: "Wysoki (fotograwer)", en: "High (photo engrave)", de: "Hoch (Fotogravur)" },     mul: 2.2, img: "/img/calc/co2_detail/photo.png",
+    desc: { pl: "Foto, raster, gradacja tonalna", en: "Photo, raster, tonal gradation", de: "Foto, Raster, Tonabstufung" } },
   { id: "custom",   label: { pl: "Niestandardowy", en: "Custom", de: "Individuell" }, mul: null, custom: true },
 ];
 
@@ -284,28 +287,10 @@ export default function CO2LaserCalc({ lang = "pl" }) {
       <div className="text-center text-[11px] text-neutral-600 mb-6">xTool P2 · 55W CO2 · 600×288 mm</div>
 
       <CalcCard stepNum="①" label={l.mode}>
-        <div className="grid grid-cols-2 gap-3">
-          {[{ id: "engrave", lbl: l.engrave, desc: l.engraveDesc, img: "/img/calc/co2_modes/engrave.png" }, { id: "cut", lbl: l.cut, desc: l.cutDesc, img: "/img/calc/co2_modes/cut.png" }].map(m => {
-            const active = mode === m.id;
-            return (
-              <button key={m.id} onClick={() => setMode(m.id)}
-                className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[160px] ${
-                  active ? "border-blue-400 shadow-lg shadow-blue-400/20" : "border-white/10 hover:border-white/30"
-                }`}>
-                <div className="absolute inset-0 overflow-hidden">
-                  <img src={m.img} alt="" loading="lazy"
-                    className={`w-full h-full object-cover transition-transform duration-500 ${active ? "scale-105" : "group-hover:scale-105"}`} />
-                  <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/95 via-black/70 to-transparent" />
-                  {active && <div className="absolute inset-0 bg-blue-400/10 mix-blend-overlay" />}
-                </div>
-                <div className="relative p-3 h-full min-h-[160px] flex flex-col justify-end">
-                  <div className={`text-sm font-bold mb-1 drop-shadow-lg ${active ? "text-blue-300" : "text-white"}`}>{m.lbl}</div>
-                  <div className="text-[11px] text-neutral-200 drop-shadow-md">{m.desc}</div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
+        <HeroCards value={mode} onChange={setMode} lang={lang} options={[
+          { id: "engrave", label: l.engrave, desc: l.engraveDesc, img: "/img/calc/co2_modes/engrave.png" },
+          { id: "cut",     label: l.cut,     desc: l.cutDesc,     img: "/img/calc/co2_modes/cut.png" },
+        ]} />
       </CalcCard>
 
       {mode === "engrave" ? (
@@ -315,7 +300,9 @@ export default function CO2LaserCalc({ lang = "pl" }) {
             <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} extendedAreaMm={EXTENDED_AREA_MM} showPathLength={false} lang={lang} />
             {!svgData && <Chips options={ENGRAVE_AREAS} value={eAreaId} onChange={setEAreaId} lang={lang} />}
           </CalcCard>
-          <CalcCard stepNum="④" label={l.detail}><Chips options={ENGRAVE_DETAIL} value={eDetailId} onChange={setEDetailId} lang={lang} /></CalcCard>
+          <CalcCard stepNum="④" label={l.detail}>
+            <HeroCards options={ENGRAVE_DETAIL} value={eDetailId} onChange={setEDetailId} lang={lang} cols="grid-cols-2 sm:grid-cols-4" minH={140} />
+          </CalcCard>
         </>
       ) : (
         <>
@@ -329,19 +316,10 @@ export default function CO2LaserCalc({ lang = "pl" }) {
       )}
 
       <CalcCard stepNum="⑤" label={l.workArea}>
-        <div className="grid grid-cols-2 gap-3">
-          {[{ ext: false, lbl: l.stdArea, desc: l.stdAreaDesc, dis: stdDisabled }, { ext: true, lbl: l.extArea, desc: l.extAreaDesc, dis: extDisabled }].map(a => (
-            <button key={String(a.ext)} onClick={() => !a.dis && setExtended(a.ext)}
-              disabled={a.dis}
-              className={`p-3 rounded-xl border text-left transition-all ${
-                a.dis ? "border-white/5 bg-white/[0.01] opacity-40 cursor-not-allowed" :
-                extended === a.ext ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
-              }`}>
-              <div className={`text-sm font-bold mb-1 ${a.dis ? "text-neutral-600" : extended === a.ext ? "text-blue-300" : "text-white"}`}>{a.lbl}</div>
-              <div className="text-[11px] text-neutral-500">{a.desc}</div>
-            </button>
-          ))}
-        </div>
+        <HeroCards value={extended ? "ext" : "std"} onChange={(id) => setExtended(id === "ext")} lang={lang} options={[
+          { id: "std", label: l.stdArea, desc: l.stdAreaDesc, img: "/img/calc/co2_workarea/standard.png", disabled: stdDisabled },
+          { id: "ext", label: l.extArea, desc: l.extAreaDesc, img: "/img/calc/co2_workarea/extended.png", disabled: extDisabled },
+        ]} />
       </CalcCard>
 
       <CalcCard stepNum="⑥" label={l.qty}>

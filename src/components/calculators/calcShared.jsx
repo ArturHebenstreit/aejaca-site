@@ -136,6 +136,50 @@ export function MaterialCards({ options, value, onChange, lang = "pl", cols = "g
   );
 }
 
+export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-cols-2", minH = 160 }) {
+  const lbl = (v) => typeof v === "object" ? (v[lang] || v.en) : v;
+  return (
+    <div className={`grid ${cols} gap-3`}>
+      {options.map(o => {
+        const active = value === o.id;
+        if (o.custom) {
+          return (
+            <button key={String(o.id)} onClick={() => !o.disabled && onChange(o.id)} disabled={o.disabled}
+              className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-dashed border transition-all text-xs ${
+                o.disabled ? "border-white/5 text-neutral-700 cursor-not-allowed" :
+                active ? "border-blue-400 text-blue-300" : "border-white/10 text-neutral-500 hover:border-white/20 hover:text-neutral-400"
+              }`}>
+              <span className="text-lg opacity-50">?</span>
+              <span className="text-center leading-tight">{lbl(o.label)}</span>
+            </button>
+          );
+        }
+        return (
+          <button key={String(o.id)} onClick={() => !o.disabled && onChange(o.id)} disabled={o.disabled}
+            style={{ minHeight: `${minH}px` }}
+            className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden ${
+              o.disabled ? "border-white/5 opacity-40 cursor-not-allowed" :
+              active ? "border-blue-400 shadow-lg shadow-blue-400/20" : "border-white/10 hover:border-white/30"
+            }`}>
+            {o.img && (
+              <div className="absolute inset-0 overflow-hidden">
+                <img src={o.img} alt="" loading="lazy"
+                  className={`w-full h-full object-cover transition-transform duration-500 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+                <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/95 via-black/70 to-transparent" />
+                {active && <div className="absolute inset-0 bg-blue-400/10 mix-blend-overlay" />}
+              </div>
+            )}
+            <div className="relative p-3 h-full flex flex-col justify-end" style={{ minHeight: `${minH}px` }}>
+              <div className={`text-sm font-bold mb-1 drop-shadow-lg ${active ? "text-blue-300" : "text-white"}`}>{lbl(o.label)}</div>
+              {o.desc && <div className="text-[11px] text-neutral-200 drop-shadow-md">{lbl(o.desc)}</div>}
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function CalcCard({ stepNum, label, children }) {
   return (
     <div className="rounded-xl border border-white/5 bg-white/[0.02] p-5 mb-4">
