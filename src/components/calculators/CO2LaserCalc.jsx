@@ -3,7 +3,7 @@
 // Work area: 600 × 288 mm (standard), extended with riser
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards } from "./calcShared.jsx";
 import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
 
 const CO2_CONFIG = {
@@ -57,15 +57,15 @@ const LBL = {
 };
 
 export const ENGRAVE_MATERIALS = [
-  { id: "wood",    label: { pl: "Drewno", en: "Wood", de: "Holz" },               rateMin: 0.07, prepCost: 0.5 },
-  { id: "plywood", label: { pl: "Sklejka", en: "Plywood", de: "Sperrholz" },      rateMin: 0.07, prepCost: 0.4 },
-  { id: "acrylic", label: { pl: "Akryl", en: "Acrylic", de: "Acryl" },            rateMin: 0.08, prepCost: 0.8 },
-  { id: "glass",   label: { pl: "Szkło", en: "Glass", de: "Glas" },               rateMin: 0.20, prepCost: 1.0 },
-  { id: "leather", label: { pl: "Skóra", en: "Leather", de: "Leder" },            rateMin: 0.06, prepCost: 1.2 },
-  { id: "paper",   label: { pl: "Papier / karton", en: "Paper / cardboard", de: "Papier / Karton" }, rateMin: 0.05, prepCost: 0.2 },
-  { id: "fabric",  label: { pl: "Tkanina", en: "Fabric", de: "Stoff" },           rateMin: 0.07, prepCost: 0.6 },
-  { id: "rubber",  label: { pl: "Guma / pieczątki", en: "Rubber / stamps", de: "Gummi / Stempel" }, rateMin: 0.10, prepCost: 0.8 },
-  { id: "stone",   label: { pl: "Kamień / łupek", en: "Stone / slate", de: "Stein / Schiefer" }, rateMin: 0.25, prepCost: 1.5 },
+  { id: "wood",    label: { pl: "Drewno", en: "Wood", de: "Holz" },               rateMin: 0.07, prepCost: 0.5, img: "/img/calc/co2_materials/wood.png" },
+  { id: "plywood", label: { pl: "Sklejka", en: "Plywood", de: "Sperrholz" },      rateMin: 0.07, prepCost: 0.4, img: "/img/calc/co2_materials/plywood.png" },
+  { id: "acrylic", label: { pl: "Akryl", en: "Acrylic", de: "Acryl" },            rateMin: 0.08, prepCost: 0.8, img: "/img/calc/co2_materials/acrylic.png" },
+  { id: "glass",   label: { pl: "Szkło", en: "Glass", de: "Glas" },               rateMin: 0.20, prepCost: 1.0, img: "/img/calc/co2_materials/glass.png" },
+  { id: "leather", label: { pl: "Skóra", en: "Leather", de: "Leder" },            rateMin: 0.06, prepCost: 1.2, img: "/img/calc/co2_materials/leather.png" },
+  { id: "paper",   label: { pl: "Papier / karton", en: "Paper / cardboard", de: "Papier / Karton" }, rateMin: 0.05, prepCost: 0.2, img: "/img/calc/co2_materials/paper.png" },
+  { id: "fabric",  label: { pl: "Tkanina", en: "Fabric", de: "Stoff" },           rateMin: 0.07, prepCost: 0.6, img: "/img/calc/co2_materials/fabric.png" },
+  { id: "rubber",  label: { pl: "Guma / pieczątki", en: "Rubber / stamps", de: "Gummi / Stempel" }, rateMin: 0.10, prepCost: 0.8, img: "/img/calc/co2_materials/rubber.png" },
+  { id: "stone",   label: { pl: "Kamień / łupek", en: "Stone / slate", de: "Stein / Schiefer" }, rateMin: 0.25, prepCost: 1.5, img: "/img/calc/co2_materials/stone.png" },
   { id: "custom",  label: { pl: "Inny materiał", en: "Other material", de: "Anderes Material" }, rateMin: null, prepCost: null, custom: true },
 ];
 
@@ -297,7 +297,7 @@ export default function CO2LaserCalc({ lang = "pl" }) {
 
       {mode === "engrave" ? (
         <>
-          <CalcCard stepNum="②" label={l.material}><Chips options={ENGRAVE_MATERIALS} value={eMatId} onChange={setEMatId} lang={lang} /></CalcCard>
+          <CalcCard stepNum="②" label={l.material}><MaterialCards options={ENGRAVE_MATERIALS} value={eMatId} onChange={setEMatId} lang={lang} /></CalcCard>
           <CalcCard stepNum="③" label={svgData ? sl.fromSvg : l.area}>
             <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} extendedAreaMm={EXTENDED_AREA_MM} showPathLength={false} lang={lang} />
             {!svgData && <Chips options={ENGRAVE_AREAS} value={eAreaId} onChange={setEAreaId} lang={lang} />}

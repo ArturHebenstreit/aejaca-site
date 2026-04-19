@@ -91,6 +91,51 @@ export function Chips({ options, value, onChange, lang = "pl" }) {
   );
 }
 
+export function MaterialCards({ options, value, onChange, lang = "pl", cols = "grid-cols-3 sm:grid-cols-4 md:grid-cols-5" }) {
+  return (
+    <div className={`grid ${cols} gap-2 sm:gap-3`}>
+      {options.filter(o => !o.custom).map(o => {
+        const active = value === o.id;
+        const label = typeof o.label === "object" ? (o.label[lang] || o.label.en) : o.label;
+        return (
+          <button key={String(o.id)} onClick={() => onChange(o.id)}
+            className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
+              active ? "border-blue-400 bg-blue-400/10 shadow-lg shadow-blue-400/10"
+                : "border-white/10 bg-white/[0.02] hover:border-white/20"
+            }`}>
+            <div className={`w-full aspect-square rounded-lg overflow-hidden ${
+              o.img ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
+            }`}>
+              {o.img ? (
+                <img src={o.img} alt={label} loading="lazy"
+                  className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+              ) : (
+                <span className="text-2xl opacity-60">⬡</span>
+              )}
+            </div>
+            <span className={`text-[10px] sm:text-[11px] text-center leading-tight break-words ${
+              active ? "text-blue-300 font-medium" : "text-neutral-400"
+            }`}>{label}</span>
+          </button>
+        );
+      })}
+      {options.filter(o => o.custom).map(o => {
+        const active = value === o.id;
+        const label = typeof o.label === "object" ? (o.label[lang] || o.label.en) : o.label;
+        return (
+          <button key={String(o.id)} onClick={() => onChange(o.id)}
+            className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl border-dashed border transition-all text-xs ${
+              active ? "border-blue-400 text-blue-300" : "border-white/10 text-neutral-500 hover:border-white/20 hover:text-neutral-400"
+            }`}>
+            <span className="text-lg opacity-50">?</span>
+            <span className="text-center leading-tight">{label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function CalcCard({ stepNum, label, children }) {
   return (
     <div className="rounded-xl border border-white/5 bg-white/[0.02] p-5 mb-4">
