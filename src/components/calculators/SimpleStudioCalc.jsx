@@ -26,37 +26,37 @@ import { trackCalc } from "../../utils/analytics.js";
 // ============================================================
 
 const ITEMS = [
-  { id: "keychain", icon: KeyRound,    label: { pl: "Breloczek", en: "Keychain", de: "Schlüsselanhänger" } },
-  { id: "sign",     icon: BookText,    label: { pl: "Tabliczka / szyld", en: "Plate / sign", de: "Schild" } },
-  { id: "figurine", icon: Sparkles,    label: { pl: "Figurka / model", en: "Figurine / model", de: "Figur / Modell" } },
-  { id: "stamp",    icon: Stamp,       label: { pl: "Pieczątka", en: "Stamp", de: "Stempel" } },
-  { id: "gift",     icon: Gift,        label: { pl: "Prezent / dekoracja", en: "Gift / decoration", de: "Geschenk / Deko" } },
-  { id: "part",     icon: Cog,         label: { pl: "Część techniczna", en: "Technical part", de: "Technisches Teil" } },
-  { id: "jewelry",  icon: Gem,         label: { pl: "Biżuteria", en: "Jewelry", de: "Schmuck" } },
+  { id: "keychain", icon: KeyRound,    img: "/img/calc/studio_items/keychain.png", label: { pl: "Breloczek", en: "Keychain", de: "Schlüsselanhänger" } },
+  { id: "sign",     icon: BookText,    img: "/img/calc/studio_items/sign.png",     label: { pl: "Tabliczka / szyld", en: "Plate / sign", de: "Schild" } },
+  { id: "figurine", icon: Sparkles,    img: "/img/calc/studio_items/figurine.png", label: { pl: "Figurka / model", en: "Figurine / model", de: "Figur / Modell" } },
+  { id: "stamp",    icon: Stamp,       img: "/img/calc/studio_items/stamp.png",    label: { pl: "Pieczątka", en: "Stamp", de: "Stempel" } },
+  { id: "gift",     icon: Gift,        img: "/img/calc/studio_items/gift.png",     label: { pl: "Prezent / dekoracja", en: "Gift / decoration", de: "Geschenk / Deko" } },
+  { id: "part",     icon: Cog,         img: "/img/calc/studio_items/part.png",     label: { pl: "Część techniczna", en: "Technical part", de: "Technisches Teil" } },
+  { id: "jewelry",  icon: Gem,         img: "/img/calc/studio_items/jewelry.png",  label: { pl: "Biżuteria", en: "Jewelry", de: "Schmuck" } },
   { id: "other",    icon: HelpCircle,  label: { pl: "Coś innego", en: "Something else", de: "Etwas anderes" } },
 ];
 
 const SIZES = [
-  { id: "coin",   icon: Circle,    label: { pl: "Jak moneta", en: "Coin-sized", de: "Münzgröße" },          sub: { pl: "do 3 cm",      en: "up to 3 cm",  de: "bis 3 cm" } },
-  { id: "palm",   icon: Hand,      label: { pl: "Jak dłoń",    en: "Palm-sized", de: "Handflächengröße" },   sub: { pl: "3–10 cm",      en: "3–10 cm",     de: "3–10 cm" } },
-  { id: "book",   icon: Book,      label: { pl: "Jak książka", en: "Book-sized", de: "Buchgröße" },          sub: { pl: "10–25 cm",     en: "10–25 cm",    de: "10–25 cm" } },
-  { id: "box",    icon: Package,   label: { pl: "Pudełko po butach", en: "Shoebox",  de: "Schuhkarton" },    sub: { pl: "25–40 cm",     en: "25–40 cm",    de: "25–40 cm" } },
-  { id: "bigger", icon: Maximize2, label: { pl: "Większe",     en: "Bigger",     de: "Größer" },             sub: { pl: "powyżej 40 cm", en: "over 40 cm", de: "über 40 cm" } },
+  { id: "coin",   icon: Circle,    img: "/img/calc/studio_sizes/coin.png",   label: { pl: "Jak moneta", en: "Coin-sized", de: "Münzgröße" },          sub: { pl: "do 3 cm",      en: "up to 3 cm",  de: "bis 3 cm" } },
+  { id: "palm",   icon: Hand,      img: "/img/calc/studio_sizes/palm.png",   label: { pl: "Jak dłoń",    en: "Palm-sized", de: "Handflächengröße" },   sub: { pl: "3–10 cm",      en: "3–10 cm",     de: "3–10 cm" } },
+  { id: "book",   icon: Book,      img: "/img/calc/studio_sizes/book.png",   label: { pl: "Jak książka", en: "Book-sized", de: "Buchgröße" },          sub: { pl: "10–25 cm",     en: "10–25 cm",    de: "10–25 cm" } },
+  { id: "box",    icon: Package,   img: "/img/calc/studio_sizes/box.png",    label: { pl: "Pudełko po butach", en: "Shoebox",  de: "Schuhkarton" },    sub: { pl: "25–40 cm",     en: "25–40 cm",    de: "25–40 cm" } },
+  { id: "bigger", icon: Maximize2, img: "/img/calc/studio_sizes/bigger.png", label: { pl: "Większe",     en: "Bigger",     de: "Größer" },             sub: { pl: "powyżej 40 cm", en: "over 40 cm", de: "über 40 cm" } },
 ];
 
 const MATERIALS = [
-  { id: "plastic", icon: Boxes,      label: { pl: "Plastik",       en: "Plastic",        de: "Kunststoff" } },
-  { id: "wood",    icon: TreePine,   label: { pl: "Drewno",        en: "Wood",           de: "Holz" } },
-  { id: "metal",   icon: Wrench,     label: { pl: "Metal",         en: "Metal",          de: "Metall" } },
-  { id: "glass",   icon: GlassWater, label: { pl: "Szkło / kamień", en: "Glass / stone", de: "Glas / Stein" } },
-  { id: "resin",   icon: Droplet,    label: { pl: "Żywica",        en: "Resin",          de: "Harz" } },
+  { id: "plastic", icon: Boxes,      img: "/img/calc/studio_materials/plastic.png", label: { pl: "Plastik",       en: "Plastic",        de: "Kunststoff" } },
+  { id: "wood",    icon: TreePine,   img: "/img/calc/studio_materials/wood.png",    label: { pl: "Drewno",        en: "Wood",           de: "Holz" } },
+  { id: "metal",   icon: Wrench,     img: "/img/calc/studio_materials/metal.png",   label: { pl: "Metal",         en: "Metal",          de: "Metall" } },
+  { id: "glass",   icon: GlassWater, img: "/img/calc/studio_materials/glass.png",   label: { pl: "Szkło / kamień", en: "Glass / stone", de: "Glas / Stein" } },
+  { id: "resin",   icon: Droplet,    img: "/img/calc/studio_materials/resin.png",   label: { pl: "Żywica",        en: "Resin",          de: "Harz" } },
   { id: "idk",     icon: HelpCircle, label: { pl: "Nie wiem — doradźcie", en: "I'm not sure — advise me", de: "Weiß nicht — beraten Sie mich" } },
 ];
 
 const FINISH = [
-  { id: "prototype", icon: ZapOff,      label: { pl: "Prototyp",  en: "Prototype", de: "Prototyp" },  sub: { pl: "tanio i szybko", en: "cheap & fast", de: "günstig & schnell" } },
-  { id: "standard",  icon: ShieldCheck, label: { pl: "Standard",  en: "Standard",  de: "Standard" },  sub: { pl: "dobra jakość",   en: "good quality", de: "gute Qualität" } },
-  { id: "premium",   icon: Award,       label: { pl: "Premium",   en: "Premium",   de: "Premium" },   sub: { pl: "najwyższa jakość", en: "top quality", de: "höchste Qualität" } },
+  { id: "prototype", icon: ZapOff,      img: "/img/calc/studio_finish/prototype.png", label: { pl: "Prototyp",  en: "Prototype", de: "Prototyp" },  sub: { pl: "tanio i szybko", en: "cheap & fast", de: "günstig & schnell" } },
+  { id: "standard",  icon: ShieldCheck, img: "/img/calc/studio_finish/standard.png",  label: { pl: "Standard",  en: "Standard",  de: "Standard" },  sub: { pl: "dobra jakość",   en: "good quality", de: "gute Qualität" } },
+  { id: "premium",   icon: Award,       img: "/img/calc/studio_finish/premium.png",   label: { pl: "Premium",   en: "Premium",   de: "Premium" },   sub: { pl: "najwyższa jakość", en: "top quality", de: "höchste Qualität" } },
 ];
 
 const QUANTITY = [
@@ -282,20 +282,51 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
       {options.map(opt => {
         const active = value === opt.id;
         const Icon = opt.icon;
+        const label = t(opt.label, lang);
+        const sub = opt.sub ? t(opt.sub, lang) : null;
+        const hasImg = !!opt.img;
+
         return (
           <button key={opt.id} onClick={() => onChange(opt.id)}
-            className={`p-3 sm:p-4 rounded-xl border text-left transition-all duration-200 min-h-[88px] ${
+            className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[120px] sm:min-h-[140px] ${
               active
-                ? "border-emerald-400 bg-emerald-400/10 shadow-md shadow-emerald-400/10"
+                ? "border-emerald-400 shadow-lg shadow-emerald-400/20"
                 : "border-white/10 bg-white/[0.02] hover:border-white/25"
             }`}>
-            <Icon className={`w-5 h-5 sm:w-6 sm:h-6 mb-1.5 ${active ? "text-emerald-300" : "text-neutral-400"}`} />
-            <div className={`text-xs sm:text-sm font-semibold leading-tight ${active ? "text-emerald-200" : "text-white"}`}>
-              {t(opt.label, lang)}
-            </div>
-            {opt.sub && (
-              <div className={`text-[10px] sm:text-[11px] mt-0.5 ${active ? "text-emerald-400/80" : "text-neutral-500"}`}>
-                {t(opt.sub, lang)}
+            {hasImg ? (
+              <>
+                <div className="absolute inset-0 overflow-hidden bg-black">
+                  <img src={opt.img} alt={label} loading="lazy"
+                    className={`w-full h-full object-cover transition-transform duration-500 ${
+                      active ? "scale-105" : "group-hover:scale-105"
+                    }`} />
+                  <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/95 via-black/65 to-transparent" />
+                  {active && <div className="absolute inset-0 bg-emerald-400/10 mix-blend-overlay" />}
+                </div>
+                <div className="relative p-2.5 sm:p-3 h-full min-h-[120px] sm:min-h-[140px] flex flex-col justify-end">
+                  <div className={`text-[11px] sm:text-sm font-bold leading-tight drop-shadow-lg ${active ? "text-emerald-300" : "text-white"}`}>
+                    {label}
+                  </div>
+                  {sub && (
+                    <div className={`text-[10px] mt-0.5 drop-shadow-md ${active ? "text-emerald-200/90" : "text-neutral-200"}`}>
+                      {sub}
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className={`p-3 sm:p-4 h-full min-h-[120px] sm:min-h-[140px] flex flex-col ${
+                active ? "bg-emerald-400/10" : ""
+              }`}>
+                <Icon className={`w-6 h-6 sm:w-7 sm:h-7 mb-2 ${active ? "text-emerald-300" : "text-neutral-400"}`} />
+                <div className={`text-xs sm:text-sm font-semibold leading-tight ${active ? "text-emerald-200" : "text-white"}`}>
+                  {label}
+                </div>
+                {sub && (
+                  <div className={`text-[10px] sm:text-[11px] mt-0.5 ${active ? "text-emerald-400/80" : "text-neutral-500"}`}>
+                    {sub}
+                  </div>
+                )}
               </div>
             )}
           </button>
