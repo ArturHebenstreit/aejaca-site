@@ -21,7 +21,7 @@ const LBL = {
     quality: "Jakość kamienia", cert: "Certyfikat", qty: "Nakład",
     metalCost: "Kruszec", laborCost: "Robocizna", gemCost: "Kamienie",
     platingCost: "Powłoka galwaniczna", settingCost: "Osadzanie kamieni",
-    workshop: "Usługi warsztatowe", estCost: "Koszt szacunkowy / szt.", discount: "Rabat",
+    workshop: "Warsztat i podatki lokalne", estCost: "Koszt szacunkowy / szt.", discount: "Rabat",
     serviceLabel: "Usługi", repairLabel: "Naprawa", repairType: "Rodzaj naprawy",
     renoServices: "Usługi renowacyjne", jewType: "Rodzaj biżuterii", metalType: "Kruszec",
     serviceCost: "Koszt usług", materialCost: "Materiały", total: "Łącznie",
@@ -35,7 +35,7 @@ const LBL = {
     quality: "Stone quality", cert: "Certificate", qty: "Quantity",
     metalCost: "Metal", laborCost: "Labor", gemCost: "Gemstones",
     platingCost: "Galvanic plating", settingCost: "Stone setting",
-    workshop: "Workshop services", estCost: "Estimated cost / pc", discount: "Discount",
+    workshop: "Workshop & local taxes", estCost: "Estimated cost / pc", discount: "Discount",
     serviceLabel: "Services", repairLabel: "Repair", repairType: "Repair type",
     renoServices: "Renovation services", jewType: "Jewelry type", metalType: "Metal",
     serviceCost: "Service cost", materialCost: "Materials", total: "Total",
@@ -49,7 +49,7 @@ const LBL = {
     quality: "Steinqualität", cert: "Zertifikat", qty: "Auflage",
     metalCost: "Metall", laborCost: "Arbeit", gemCost: "Edelsteine",
     platingCost: "Galvanische Beschichtung", settingCost: "Steinfassung",
-    workshop: "Werkstattleistungen", estCost: "Geschätzte Kosten / Stk.", discount: "Rabatt",
+    workshop: "Werkstatt & lokale Steuern", estCost: "Geschätzte Kosten / Stk.", discount: "Rabatt",
     serviceLabel: "Dienstleistungen", repairLabel: "Reparatur", repairType: "Reparaturart",
     renoServices: "Renovierungsleistungen", jewType: "Schmuckart", metalType: "Metall",
     serviceCost: "Servicekosten", materialCost: "Materialien", total: "Gesamt",
@@ -91,8 +91,8 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
   const weightG = jType.baseWeight * weight.mul;
   const metalCost = weightG * metalPrice.plnPerG * metal.purity;
 
-  // Labor cost
-  const laborCost = jType.laborH * method.laborRate * method.laborMul * metal.laborMul * jType.complexity;
+  // Labor cost (weight affects labor — lighter pieces need less finishing)
+  const laborCost = jType.laborH * method.laborRate * method.laborMul * metal.laborMul * jType.complexity * (weight.laborMul || 1);
 
   // Gemstone cost
   let gemCost = 0;

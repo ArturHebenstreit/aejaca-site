@@ -2,9 +2,11 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
+import { getPost } from "../blog/posts.js";
+import BlogCard from "../components/blog/BlogCard.jsx";
 import StudioCalculator from "../components/StudioCalculator.jsx";
 // import Portfolio from "../components/Portfolio.jsx"; // temporarily disabled
-import Testimonials from "../components/Testimonials.jsx";
+import GoogleReviews from "../components/GoogleReviews.jsx";
 import FAQ from "../components/FAQ.jsx";
 import Tips from "../components/Tips.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -172,8 +174,8 @@ export default function Studio() {
 
       <div className="gradient-divider" />
 
-      {/* Testimonials */}
-      <Testimonials data={s.testimonials} accent="blue" id="testimonials" />
+      {/* Google Reviews — real social proof replaces hardcoded testimonials */}
+      <GoogleReviews id="testimonials" limit={3} compact />
 
       <div className="gradient-divider" />
 
@@ -184,6 +186,29 @@ export default function Studio() {
 
       {/* Tips & Advice */}
       <Tips data={s.tips} accent="blue" id="tips" />
+
+      <div className="gradient-divider" />
+
+      {/* Related blog articles — internal linking (SEO signal) */}
+      {(() => {
+        const posts = [getPost("druk-3d-krok-po-kroku"), getPost("grawerowanie-laserowe-przewodnik")].filter(Boolean);
+        if (!posts.length) return null;
+        return (
+          <section className="py-16 px-4 bg-neutral-950">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-6">
+                <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-2">Blog</div>
+                <h2 className="font-sans text-xl font-bold text-white tracking-tight">
+                  {{ pl: "Przeczytaj też", en: "Also read", de: "Lies auch" }[lang] || "Also read"}
+                </h2>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-6">
+                {posts.map((p) => <BlogCard key={p.slug} post={p} />)}
+              </div>
+            </div>
+          </section>
+        );
+      })()}
 
       <div className="gradient-divider" />
 

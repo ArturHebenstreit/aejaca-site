@@ -2,13 +2,17 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
+import { getSortedPosts } from "../blog/posts.js";
+import BlogCard from "../components/blog/BlogCard.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import {
-  buildOrganizationSchema,
+  buildReviewsAugmentedOrganization,
   buildWebPageSchema,
   buildBreadcrumbSchema,
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
+import GoogleReviews from "../components/GoogleReviews.jsx";
+import { GOOGLE_BUSINESS, REVIEWS } from "../data/googleReviews.js";
 
 export default function Home() {
   const { t, lang } = useLanguage();
@@ -20,11 +24,15 @@ export default function Home() {
   const getCardRef = useStaggerReveal(120);
 
   // Build structured data at render time so it picks up current language.
-  // Organization + WebPage + Breadcrumb give Google + LLMs the full entity graph
-  // needed for rich results and accurate AI summarization.
+  // Organization (augmented with aggregateRating + Review[]) gives Google
+  // star ratings in SERP (+20-30% CTR) + LLM trust signal for AIO.
   const seo = getSEO("home", lang);
   const schemas = [
-    buildOrganizationSchema(),
+    buildReviewsAugmentedOrganization({
+      rating: GOOGLE_BUSINESS.rating,
+      reviewCount: GOOGLE_BUSINESS.totalReviews,
+      reviews: REVIEWS,
+    }),
     buildWebPageSchema({ title: seo.title, description: seo.description, url: SITE.url, lang }),
     buildBreadcrumbSchema([{ name: "Home", url: SITE.url }]),
   ];
@@ -33,11 +41,24 @@ export default function Home() {
     <>
       <SEOHead pageKey="home" path="/" schemas={schemas} />
       <div className="pt-16">
-        {/* Split Hero — single H1 for SEO hierarchy (only one per page) */}
-        <section className="relative min-h-[calc(75vh-4rem)] flex flex-col md:flex-row" aria-label={h.heroAria || "AEJaCA — two worlds"}>
-          {/* Visually-hidden H1 packs primary keywords above the fold — Googlebot reads DOM order */}
-          <h1 className="sr-only">{h.h1 || "AEJaCA — Handcrafted Jewelry & Digital Fabrication Studio"}</h1>
+        {/* Hero intro — visible StoryBrand tagline (H1 now visible, not sr-only).
+            One H1 per page = SEO rule; value prop is front-and-center for humans + LLMs. */}
+        <section className="bg-neutral-950 pt-10 pb-6 md:pt-14 md:pb-8 px-4 text-center" aria-labelledby="hero-tagline">
+          <h1
+            id="hero-tagline"
+            className="font-serif text-3xl md:text-5xl lg:text-6xl font-semibold text-white tracking-tight max-w-4xl mx-auto leading-[1.1]"
+          >
+            {h.h1}
+          </h1>
+          {h.heroSubtitle && (
+            <p className="mt-4 md:mt-6 text-neutral-300 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+              {h.heroSubtitle}
+            </p>
+          )}
+        </section>
 
+        {/* Split Hero — two equal paths (jewelry / studio) act as primary CTAs */}
+        <section className="relative min-h-[calc(55vh-4rem)] flex flex-col md:flex-row" aria-label={h.heroAria || "AEJaCA — two worlds"}>
           {/* Jewelry Panel */}
           <Link to="/jewelry" className="group relative flex-1 min-h-[50vh] md:min-h-full overflow-hidden cursor-pointer" aria-label={h.jewelryBtn}>
             {/* LCP image: eager + fetchpriority=high tells browser to prioritize — Core Web Vitals (LCP < 2.5s) */}
@@ -93,6 +114,38 @@ export default function Home() {
           <img src="/brand-sign.png" alt="AEJaCA brand mark" loading="lazy" decoding="async" className="w-36 h-36 mx-auto mb-8 brightness-0 invert opacity-80 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]" />
           <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-6">{h.brandHeading}</h2>
           <p className="text-neutral-400 text-lg leading-relaxed">{h.brandText}</p>
+        </div>
+      </section>
+
+      <div className="gradient-divider" />
+
+      {/* Google Reviews — social proof above secondary content (CRO +34% per Baymard) */}
+      <GoogleReviews id="reviews" limit={6} />
+
+      <div className="gradient-divider" />
+
+      {/* Blog highlights — internal linking + content discovery (SEO + AIO) */}
+      <section className="py-16 px-4 bg-neutral-950">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-10">
+            <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">Blog</div>
+            <h2 className="font-serif text-2xl md:text-3xl font-semibold text-white tracking-tight">
+              {h.blogTitle}
+            </h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {getSortedPosts().slice(0, 3).map((post) => (
+              <BlogCard key={post.slug} post={post} />
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <Link
+              to="/blog"
+              className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors"
+            >
+              {h.blogAllLink} <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </section>
 

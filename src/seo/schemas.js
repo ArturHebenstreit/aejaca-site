@@ -110,6 +110,57 @@ export function buildServiceSchema({ name, description, serviceType, url, offers
   };
 }
 
+// ---------- Article schema (blog posts / pillar content) ----------
+// Critical for both Google (AI Overviews + rich snippets) and LLM ingestion.
+// ChatGPT, Claude, Perplexity heavily weight Article JSON-LD for fact retrieval.
+// Headline ≤ 110 chars (Google requirement). Include both datePublished and
+// dateModified — LLMs privilege recently updated content.
+export function buildArticleSchema({
+  headline,
+  description,
+  url,
+  image,
+  datePublished,
+  dateModified,
+  author = { name: "Artur Hebenstreit", url: "https://www.aejaca.com" },
+  keywords,
+  wordCount,
+  articleSection,
+  inLanguage,
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline,
+    description,
+    image: Array.isArray(image) ? image : [image],
+    author: {
+      "@type": "Person",
+      name: author.name,
+      url: author.url,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: SITE.name,
+      url: SITE.url,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE.url}/logo.png`,
+      },
+    },
+    datePublished,
+    dateModified: dateModified || datePublished,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": url,
+    },
+    ...(keywords && { keywords }),
+    ...(wordCount && { wordCount }),
+    ...(articleSection && { articleSection }),
+    ...(inLanguage && { inLanguage }),
+  };
+}
+
 // ---------- Product schema (for individual jewelry pieces / studio products) ----------
 // Required for Merchant listings + Google Shopping. `aggregateRating` + `offers`
 // combo triggers rich "star review" snippet in SERP — big CTR boost.
@@ -156,6 +207,57 @@ export function buildFAQSchema(items) {
       acceptedAnswer: {
         "@type": "Answer",
         text: a,
+      },
+    })),
+  };
+}
+
+// ---------- Google Reviews — aggregateRating + Review[] ----------
+// Critical: stars in SERP (+20-30% CTR uplift per Google case studies).
+// SEO-safe gray zone — requires 4 conditions:
+//   1) All claimed reviews must be VISIBLE on the page (parity)
+//   2) Explicit attribution via `publisher: Google` per review
+//   3) Real author names + dates + verbatim text (no fakes)
+//   4) reviewCount matches visible count
+// We embed this into Organization schema (not standalone) because reviews
+// are ABOUT the business entity, not the URL itself.
+export function buildReviewsAugmentedOrganization({ rating, reviewCount, reviews }) {
+  const base = buildOrganizationSchema();
+  if (!reviews || !reviews.length) return base;
+
+  // Only reviews with actual body text go into JSON-LD Review[] —
+  // Google's structured data guidelines require `reviewBody` to be
+  // meaningful content. Rating-only reviews (5★ bez komentarza) nadal
+  // liczą się w aggregateRating (reviewCount) — to rzeczywista liczba
+  // opinii na Google Business Profile.
+  const textReviews = reviews.filter((r) => r.text && r.text.trim());
+
+  return {
+    ...base,
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: rating.toFixed(1),
+      reviewCount: String(reviewCount),
+      bestRating: "5",
+      worstRating: "1",
+    },
+    review: textReviews.map((r) => ({
+      "@type": "Review",
+      author: { "@type": "Person", "name": r.author },
+      datePublished: r.date,
+      reviewBody: r.text,
+      inLanguage: r.originalLang,
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: String(r.rating),
+        bestRating: "5",
+        worstRating: "1",
+      },
+      // Explicit attribution — tells Google these came from their platform.
+      // Key for avoiding "aggregated from other websites" manual action.
+      publisher: {
+        "@type": "Organization",
+        name: "Google",
       },
     })),
   };

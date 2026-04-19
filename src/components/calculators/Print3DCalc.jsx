@@ -1,14 +1,74 @@
 // ============================================================
-// 3D PRINT ESTIMATOR — Bambu Lab H2D  v1.1
+// 3D PRINT ESTIMATOR — Bambu Lab H2D  v1.3
 // ============================================================
-import { useState, useEffect, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
+import { Upload, X, AlertTriangle } from "lucide-react";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards } from "./calcShared.jsx";
+
+const STLViewer = lazy(() => import("./STLViewer.jsx"));
 
 const PRINT_CONFIG = {
   PRINTER_POWER_KW: 0.35,
   DEPRECIATION_PLN_H: 2.50,
   ENGINEERING_PREMIUM: 0.35,
 };
+
+const FILAMENT_IMG = {
+  "PLA": "/img/calc/3d_filaments/pla.png", "PLA Silk": "/img/calc/3d_filaments/pla_silk.png",
+  "PLA Matte": "/img/calc/3d_filaments/pla_matte.png", "PLA Wood": "/img/calc/3d_filaments/pla_wood.png",
+  "PLA Marble": "/img/calc/3d_filaments/pla_marble.png", "PETG": "/img/calc/3d_filaments/petg.png",
+  "PETG-CF": "/img/calc/3d_filaments/petg_cf.png", "TPU 95A": "/img/calc/3d_filaments/tpu.png",
+  "PVA": "/img/calc/3d_filaments/pva.png", "ASA": "/img/calc/3d_filaments/asa.png",
+  "ABS": "/img/calc/3d_filaments/abs.png",
+  "PA6-CF": "/img/calc/3d_filaments/pa6_cf.png", "PA6-GF": "/img/calc/3d_filaments/pa6_gf.png",
+  "PA12-CF": "/img/calc/3d_filaments/pa12_cf.png", "PPA-CF": "/img/calc/3d_filaments/ppa_cf.png",
+  "PPA-GF": "/img/calc/3d_filaments/ppa_gf.png", "PC": "/img/calc/3d_filaments/pc.png",
+  "PC-ABS": "/img/calc/3d_filaments/pc_abs.png", "PET-CF": "/img/calc/3d_filaments/pet_cf.png",
+  "PPS": "/img/calc/3d_filaments/pps.png", "PPS-CF": "/img/calc/3d_filaments/pps_cf.png",
+};
+
+const SEGMENTS = [
+  { id: "standard", label: "Standard",
+    desc: { pl: "PLA, PETG, TPU, ASA, ABS", en: "PLA, PETG, TPU, ASA, ABS", de: "PLA, PETG, TPU, ASA, ABS" },
+    img: "/img/calc/3d_segments/standard.png" },
+  { id: "engineering", label: "Engineering",
+    desc: { pl: "PA-CF, PPA-CF, PC, PET-CF, PPS", en: "PA-CF, PPA-CF, PC, PET-CF, PPS", de: "PA-CF, PPA-CF, PC, PET-CF, PPS" },
+    img: "/img/calc/3d_segments/engineering.png" },
+];
+
+const INFILL_OPTIONS = [
+  { id: "low", label: { pl: "Niskie (≤15%)", en: "Low (≤15%)", de: "Niedrig (≤15%)" }, avg: 0.12,
+    desc: { pl: "Lekki, oszczędny", en: "Light, economical", de: "Leicht, sparsam" },
+    img: "/img/calc/3d_infill/low.png" },
+  { id: "medium", label: { pl: "Średnie (15–50%)", en: "Medium (15–50%)", de: "Mittel (15–50%)" }, avg: 0.35,
+    desc: { pl: "Dobra wytrzymałość", en: "Good strength", de: "Gute Festigkeit" },
+    img: "/img/calc/3d_infill/medium.png" },
+  { id: "high", label: { pl: "Wysokie (>50%)", en: "High (>50%)", de: "Hoch (>50%)" }, avg: 0.70,
+    desc: { pl: "Maksymalna sztywność", en: "Maximum rigidity", de: "Maximale Steifigkeit" },
+    img: "/img/calc/3d_infill/high.png" },
+  { id: "custom", label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" }, avg: null, custom: true },
+];
+
+// Bambu Lab H2D dual-nozzle build volume
+const BUILD_VOL_CM = { x: 30.0, y: 32.0, z: 32.5 };
+
+// Size presets matching manual XS/S/M/L categories (max dimension in cm)
+const SIZE_PRESETS = [
+  { id: "XS", maxCm: 5.0 },
+  { id: "S",  maxCm: 10.0 },
+  { id: "M",  maxCm: 20.0 },
+  { id: "L",  maxCm: 30.0 },
+];
+
+function estimateTimeFromVolume(volumeCm3) {
+  return 0.194 * Math.pow(volumeCm3, 0.602);
+}
+
+function estimatePcsPerPlate(bbox) {
+  const partW = bbox.x + 0.5, partD = bbox.y + 0.5;
+  if (partW > BUILD_VOL_CM.x || partD > BUILD_VOL_CM.y) return 1;
+  return Math.max(1, Math.min(Math.floor(BUILD_VOL_CM.x / partW) * Math.floor(BUILD_VOL_CM.y / partD), 8));
+}
 
 export const FILAMENTS = {
   standard: { label: "Standard", materials: {
@@ -85,10 +145,24 @@ const LBL = {
     estCost: "Geschätzte Kosten / Stk.", discount: "Serienrabatt", totalProd: "Gesamte Produktionszeit" },
 };
 
+const STL_LBL = {
+  pl: { upload: "Załaduj plik STL", orManual: "lub wybierz rozmiar ręcznie poniżej", volume: "Objętość", dims: "Wymiary",
+    triangles: "Trójkąty", remove: "Usuń", exceeds: "Model przekracza przestrzeń druku", stlSize: "Rozmiar z pliku STL",
+    scale: "Skala wydruku", fitToPlate: "Dopasuj do płyty", original: "Oryg." },
+  en: { upload: "Upload STL file", orManual: "or select size manually below", volume: "Volume", dims: "Dimensions",
+    triangles: "Triangles", remove: "Remove", exceeds: "Model exceeds build volume", stlSize: "Size from STL file",
+    scale: "Print scale", fitToPlate: "Fit to plate", original: "Orig." },
+  de: { upload: "STL-Datei hochladen", orManual: "oder Größe unten manuell wählen", volume: "Volumen", dims: "Abmessungen",
+    triangles: "Dreiecke", remove: "Entfernen", exceeds: "Modell überschreitet Bauraum", stlSize: "Größe aus STL-Datei",
+    scale: "Druckmaßstab", fitToPlate: "An Platte anpassen", original: "Orig." },
+};
+
 export function calculate(params, lang) {
-  const { segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId } = params;
-  const size = SIZES.find(s => s.id === sizeId);
-  const infill = INFILL.find(i => i.id === infillId);
+  const { segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, stlData } = params;
+  const size = stlData
+    ? { volumeRef: stlData.volumeCm3, timeBase: estimateTimeFromVolume(stlData.volumeCm3), pcsPerPlate: estimatePcsPerPlate(stlData.bbox) }
+    : SIZES.find(s => s.id === sizeId);
+  const infill = INFILL_OPTIONS.find(i => i.id === infillId);
   const color = COLORS.find(c => c.id === colorId);
   const prec = PRECISION.find(p => p.id === precisionId);
   const qTier = QUANTITY_TIERS.find(q => q.id === quantityId);
@@ -103,7 +177,7 @@ export function calculate(params, lang) {
   const materialCost = (massG / 1000) * mat.price_kg * color.wasteMul * 1.05;
   const printTime = size.timeBase * prec.speedMul * color.timeMul;
   const setupPerPc = 0.5 / qTier.qty;
-  const handlePerPc = 0.05; // 3min load/unload per piece
+  const handlePerPc = 0.05;
   const timePerPc = printTime + setupPerPc + handlePerPc;
   const energyCost = timePerPc * PRINT_CONFIG.PRINTER_POWER_KW * CONFIG.ENERGY_COST_PLN;
   const deprCost = timePerPc * PRINT_CONFIG.DEPRECIATION_PLN_H;
@@ -111,7 +185,6 @@ export function calculate(params, lang) {
   let margin = CONFIG.BASE_MARGIN;
   if (segment === "engineering") margin += PRINT_CONFIG.ENGINEERING_PREMIUM;
 
-  // Batch time: account for packing multiple pieces per plate
   const platesNeeded = Math.ceil(qTier.qty / (size.pcsPerPlate || 1));
   const totalTimeH = (printTime * platesNeeded) + (0.5) + (handlePerPc * qTier.qty);
 
@@ -135,10 +208,100 @@ export function calculate(params, lang) {
   };
 }
 
+function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, onRemove, lang }) {
+  const sl = STL_LBL[lang] || STL_LBL.en;
+  const fileRef = useRef(null);
+
+  if (!stlData) {
+    return (
+      <div className="flex flex-col items-center gap-2 mb-3">
+        <button onClick={() => fileRef.current?.click()}
+          className="flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed border-blue-400/30 bg-blue-400/[0.03] text-blue-300 text-sm hover:bg-blue-400/10 hover:border-blue-400/50 transition-all w-full justify-center">
+          <Upload className="w-4 h-4" />
+          {sl.upload}
+        </button>
+        <input ref={fileRef} type="file" accept=".stl" className="hidden" onChange={onUpload} />
+        <div className="text-[10px] text-neutral-600">{sl.orManual}</div>
+      </div>
+    );
+  }
+
+  const b = stlData.bbox;
+  const rawMaxCm = Math.max(b.x, b.y, b.z);
+  const fitScale = Math.min(BUILD_VOL_CM.x / b.x, BUILD_VOL_CM.y / b.y, BUILD_VOL_CM.z / b.z);
+  const fitFloor = Math.floor(fitScale * 10000) / 10000;
+  const scaledB = { x: b.x * scale, y: b.y * scale, z: b.z * scale };
+  const TOL = 0.05;
+  const exceeds = scaledB.x > BUILD_VOL_CM.x + TOL || scaledB.y > BUILD_VOL_CM.y + TOL || scaledB.z > BUILD_VOL_CM.z + TOL;
+  const scaledVol = stlData.volumeCm3 * scale * scale * scale;
+
+  return (
+    <div className="rounded-xl border border-blue-400/20 bg-blue-400/[0.03] p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="text-sm font-medium text-blue-300 truncate max-w-[70%]">{stlFileName}</div>
+        <button onClick={onRemove} className="text-neutral-500 hover:text-red-400 transition-colors text-xs flex items-center gap-1">
+          <X className="w-3.5 h-3.5" />{sl.remove}
+        </button>
+      </div>
+      <Suspense fallback={<div className="w-full rounded-lg bg-[#0c1222] border border-white/5 animate-pulse" style={{ height: "220px" }} />}>
+        <STLViewer triangles={stlData.triangles} bbox={stlData.bbox} />
+      </Suspense>
+      <div className="grid grid-cols-3 gap-3 text-center text-[11px]">
+        <div><div className="text-neutral-500">{sl.volume}</div><div className="font-bold">{scaledVol.toFixed(1)} cm³</div></div>
+        <div><div className="text-neutral-500">{sl.dims}</div><div className="font-bold">{(scaledB.x*10).toFixed(1)}×{(scaledB.y*10).toFixed(1)}×{(scaledB.z*10).toFixed(1)} mm</div></div>
+        <div><div className="text-neutral-500">{sl.triangles}</div><div className="font-bold">{stlData.triangleCount.toLocaleString()}</div></div>
+      </div>
+
+      {/* Scale controls */}
+      <div className="border-t border-white/5 pt-2 space-y-1.5">
+        <div className="flex items-center justify-between text-[11px]">
+          <span className="text-neutral-500">{sl.scale}</span>
+          <span className="font-bold text-blue-300">{scale === 1 ? "1:1" : `×${scale.toFixed(2)}`}</span>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {SIZE_PRESETS.map(p => {
+            const s = Math.floor(Math.min(p.maxCm / rawMaxCm, fitScale) * 10000) / 10000;
+            const isActive = Math.abs(scale - s) < 0.005;
+            const disabled = p.maxCm / rawMaxCm > fitScale * 1.001;
+            return (
+              <button key={p.id} onClick={() => onScaleChange(s)} disabled={disabled}
+                className={`px-2 py-1 rounded text-[10px] border transition-colors ${
+                  isActive ? "border-blue-400 bg-blue-400/10 text-blue-300" :
+                  disabled ? "border-white/5 text-neutral-700 cursor-not-allowed" :
+                  "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-200"
+                }`}>
+                {p.id}
+              </button>
+            );
+          })}
+          <button onClick={() => onScaleChange(1)}
+            className={`px-2 py-1 rounded text-[10px] border transition-colors ${
+              Math.abs(scale - 1) < 0.005 ? "border-blue-400 bg-blue-400/10 text-blue-300" : "border-white/10 text-neutral-400 hover:border-white/20"
+            }`}>{sl.original}</button>
+          {fitFloor < 0.999 && (
+            <button onClick={() => onScaleChange(fitFloor)}
+              className={`px-2 py-1 rounded text-[10px] border border-amber-400/30 text-amber-400 hover:bg-amber-400/10 transition-colors ${
+                Math.abs(scale - fitFloor) < 0.005 ? "bg-amber-400/10" : ""
+              }`}>{sl.fitToPlate}</button>
+          )}
+        </div>
+      </div>
+
+      {exceeds && (
+        <div className="flex items-center gap-1.5 text-amber-400 text-[11px]">
+          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+          {sl.exceeds} (300×320×325 mm)
+        </div>
+      )}
+    </div>
+  );
+}
+
 const TECH_LABEL = { pl: "Druk 3D", en: "3D Print", de: "3D-Druck" };
 
 export default function Print3DCalc({ lang = "pl" }) {
   const l = LBL[lang] || LBL.en;
+  const sl = STL_LBL[lang] || STL_LBL.en;
   const [segment, setSegment] = useState("standard");
   const [materialKey, setMaterialKey] = useState("PLA");
   const [sizeId, setSizeId] = useState("S");
@@ -146,44 +309,71 @@ export default function Print3DCalc({ lang = "pl" }) {
   const [colorId, setColorId] = useState(1);
   const [precisionId, setPrecisionId] = useState("standard_04");
   const [quantityId, setQuantityId] = useState("proto");
+  const [stlData, setStlData] = useState(null);
+  const [stlFileName, setStlFileName] = useState("");
+  const [stlScale, setStlScale] = useState(1);
 
   useEffect(() => {
     const mats = Object.keys(FILAMENTS[segment].materials);
     if (!mats.includes(materialKey)) setMaterialKey(mats[0]);
   }, [segment]);
 
-  const result = useMemo(() => calculate({ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId }, lang),
-    [segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, lang]);
+  async function handleSTLUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const buffer = await file.arrayBuffer();
+    const { parseSTL } = await import("../../utils/stlParser.js");
+    const data = parseSTL(buffer);
+    setStlData(data);
+    setStlFileName(file.name);
+    setStlScale(1);
+  }
+
+  function handleSTLRemove() {
+    setStlData(null);
+    setStlFileName("");
+    setStlScale(1);
+  }
+
+  const scaledStlData = useMemo(() => {
+    if (!stlData || stlScale === 1) return stlData;
+    const s = stlScale;
+    return {
+      ...stlData,
+      volumeCm3: stlData.volumeCm3 * s * s * s,
+      bbox: { x: stlData.bbox.x * s, y: stlData.bbox.y * s, z: stlData.bbox.z * s },
+    };
+  }, [stlData, stlScale]);
+
+  const result = useMemo(() => calculate({ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, stlData: scaledStlData }, lang),
+    [segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, scaledStlData, lang]);
 
   const matOptions = Object.entries(FILAMENTS[segment].materials).map(([k, v]) => ({
-    id: k, label: k, sub: `${v.price_kg}zł`,
+    id: k, label: k, sub: `${v.price_kg}zł`, img: FILAMENT_IMG[k],
   }));
+
+  const stlSummary = stlData
+    ? `STL: ${stlFileName} (${(stlData.volumeCm3 * stlScale ** 3).toFixed(1)} cm³${stlScale !== 1 ? ` ×${stlScale.toFixed(2)}` : ""})`
+    : null;
 
   return (
     <div>
-      <div className="text-center text-[11px] text-neutral-600 mb-6">Bambu Lab H2D · Dual Extruder · AMS 2 Pro</div>
+      <div className="text-center text-[11px] text-neutral-600 mb-6">Bambu Lab H2D · 300×320×325 mm · Dual Extruder · AMS 2 Pro</div>
 
       <CalcCard stepNum="①" label={l.segment}>
-        <div className="grid grid-cols-2 gap-3">
-          {["standard", "engineering"].map(seg => (
-            <button key={seg} onClick={() => setSegment(seg)}
-              className={`p-3.5 rounded-xl border text-left transition-all ${segment === seg ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}>
-              <div className={`text-sm font-bold mb-1 ${segment === seg ? "text-blue-300" : "text-white"}`}>
-                {seg === "standard" ? "Standard" : "Engineering"}
-              </div>
-              <div className="text-[11px] text-neutral-500">
-                {seg === "standard" ? "PLA, PETG, TPU, ASA, ABS" : "PA-CF, PPA-CF, PC, PET-CF, PPS"}
-              </div>
-            </button>
-          ))}
-        </div>
+        <HeroCards options={SEGMENTS} value={segment} onChange={setSegment} lang={lang} cols="grid-cols-2" minH={170} />
       </CalcCard>
 
       <CalcCard stepNum="②" label={`${l.filament} — ${FILAMENTS[segment].label}`}>
-        <Chips options={matOptions} value={materialKey} onChange={setMaterialKey} lang={lang} />
+        <MaterialCards options={matOptions} value={materialKey} onChange={setMaterialKey} lang={lang} cols="grid-cols-3 sm:grid-cols-4 md:grid-cols-6" />
       </CalcCard>
-      <CalcCard stepNum="③" label={l.size}><Chips options={SIZES} value={sizeId} onChange={setSizeId} lang={lang} /></CalcCard>
-      <CalcCard stepNum="④" label={l.infill}><Chips options={INFILL} value={infillId} onChange={setInfillId} lang={lang} /></CalcCard>
+
+      <CalcCard stepNum="③" label={stlData ? sl.stlSize : l.size}>
+        <STLUploadCard stlData={stlData} stlFileName={stlFileName} scale={stlScale} onScaleChange={setStlScale} onUpload={handleSTLUpload} onRemove={handleSTLRemove} lang={lang} />
+        {!stlData && <Chips options={SIZES} value={sizeId} onChange={setSizeId} lang={lang} />}
+      </CalcCard>
+
+      <CalcCard stepNum="④" label={l.infill}><HeroCards options={INFILL_OPTIONS} value={infillId} onChange={setInfillId} lang={lang} cols="grid-cols-2 sm:grid-cols-4" minH={150} /></CalcCard>
       <CalcCard stepNum="⑤" label={l.colors}><Chips options={COLORS} value={colorId} onChange={setColorId} lang={lang} /></CalcCard>
       <CalcCard stepNum="⑥" label={l.precision}><Chips options={PRECISION} value={precisionId} onChange={setPrecisionId} lang={lang} /></CalcCard>
       <CalcCard stepNum="⑦" label={l.qty}><Chips options={QUANTITY_TIERS} value={quantityId} onChange={setQuantityId} lang={lang} /></CalcCard>
@@ -195,8 +385,8 @@ export default function Print3DCalc({ lang = "pl" }) {
 
       <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={[
         `${FILAMENTS[segment].label}: ${materialKey}`,
-        t(SIZES.find(s => s.id === sizeId)?.label, lang),
-        t(INFILL.find(i => i.id === infillId)?.label, lang),
+        stlSummary || t(SIZES.find(s => s.id === sizeId)?.label, lang),
+        t(INFILL_OPTIONS.find(i => i.id === infillId)?.label, lang),
         t(COLORS.find(c => c.id === colorId)?.label, lang),
         t(PRECISION.find(p => p.id === precisionId)?.label, lang),
         t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),

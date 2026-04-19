@@ -2,7 +2,8 @@
 // SHARED CONFIG, PRICING & UI — ALL STUDIO CALCULATORS
 // ============================================================
 import { useState, useRef } from "react";
-import { Send, Paperclip, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Send, Paperclip, X, MessageCircle } from "lucide-react";
 import { trackInquiry } from "../../utils/analytics.js";
 
 export const CONFIG = {
@@ -18,8 +19,8 @@ export const QUANTITY_TIERS = [
   { id: "micro",  label: { pl: "2-10 szt.", en: "2-10 pcs", de: "2-10 Stk." }, qty: 6, discount: 0.05 },
   { id: "small",  label: { pl: "11-20 szt.", en: "11-20 pcs", de: "11-20 Stk." }, qty: 15, discount: 0.10 },
   { id: "medium", label: { pl: "21-50 szt.", en: "21-50 pcs", de: "21-50 Stk." }, qty: 35, discount: 0.15 },
-  { id: "large",  label: { pl: "51-100 szt.", en: "51-100 pcs", de: "51-100 Stk." }, qty: 75, discount: 0.20 },
-  { id: "custom", label: { pl: "100+ / niestandardowe", en: "100+ / custom", de: "100+ / individuell" }, qty: null, discount: null },
+  { id: "large",  label: { pl: "51-100 szt.", en: "51-100 pcs", de: "51-100 Stk." }, qty: null, discount: null, custom: true },
+  { id: "custom", label: { pl: "100+ / niestandardowe", en: "100+ / custom", de: "100+ / individuell" }, qty: null, discount: null, custom: true },
 ];
 
 /** Lookup helper for multilingual labels */
@@ -27,6 +28,11 @@ export function t(obj, lang) {
   if (!obj) return "";
   if (typeof obj === "string") return obj;
   return obj[lang] || obj.en || obj.pl || "";
+}
+
+/** Format integer with non-breaking thin space as thousands separator */
+export function fmtNum(n) {
+  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "\u202F");
 }
 
 /** Format a PLN cost amount in the right currency for the given language */
@@ -85,6 +91,95 @@ export function Chips({ options, value, onChange, lang = "pl" }) {
   );
 }
 
+export function MaterialCards({ options, value, onChange, lang = "pl", cols = "grid-cols-3 sm:grid-cols-4 md:grid-cols-5" }) {
+  return (
+    <div className={`grid ${cols} gap-2 sm:gap-3`}>
+      {options.filter(o => !o.custom).map(o => {
+        const active = value === o.id;
+        const label = typeof o.label === "object" ? (o.label[lang] || o.label.en) : o.label;
+        return (
+          <button key={String(o.id)} onClick={() => onChange(o.id)}
+            className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
+              active ? "border-blue-400 bg-blue-400/10 shadow-lg shadow-blue-400/10"
+                : "border-white/10 bg-white/[0.02] hover:border-white/20"
+            }`}>
+            <div className={`w-full aspect-square rounded-lg overflow-hidden ${
+              o.img ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
+            }`}>
+              {o.img ? (
+                <img src={o.img} alt={label} loading="lazy"
+                  className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+              ) : (
+                <span className="text-2xl opacity-60">⬡</span>
+              )}
+            </div>
+            <span className={`text-[10px] sm:text-[11px] text-center leading-tight break-words ${
+              active ? "text-blue-300 font-medium" : "text-neutral-400"
+            }`}>{label}</span>
+          </button>
+        );
+      })}
+      {options.filter(o => o.custom).map(o => {
+        const active = value === o.id;
+        const label = typeof o.label === "object" ? (o.label[lang] || o.label.en) : o.label;
+        return (
+          <button key={String(o.id)} onClick={() => onChange(o.id)}
+            className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl border-dashed border transition-all text-xs ${
+              active ? "border-blue-400 text-blue-300" : "border-white/10 text-neutral-500 hover:border-white/20 hover:text-neutral-400"
+            }`}>
+            <span className="text-lg opacity-50">?</span>
+            <span className="text-center leading-tight">{label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-cols-2", minH = 160 }) {
+  const lbl = (v) => typeof v === "object" ? (v[lang] || v.en) : v;
+  return (
+    <div className={`grid ${cols} gap-3`}>
+      {options.map(o => {
+        const active = value === o.id;
+        if (o.custom) {
+          return (
+            <button key={String(o.id)} onClick={() => !o.disabled && onChange(o.id)} disabled={o.disabled}
+              className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-dashed border transition-all text-xs ${
+                o.disabled ? "border-white/5 text-neutral-700 cursor-not-allowed" :
+                active ? "border-blue-400 text-blue-300" : "border-white/10 text-neutral-500 hover:border-white/20 hover:text-neutral-400"
+              }`}>
+              <span className="text-lg opacity-50">?</span>
+              <span className="text-center leading-tight">{lbl(o.label)}</span>
+            </button>
+          );
+        }
+        return (
+          <button key={String(o.id)} onClick={() => !o.disabled && onChange(o.id)} disabled={o.disabled}
+            style={{ minHeight: `${minH}px` }}
+            className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden ${
+              o.disabled ? "border-white/5 opacity-40 cursor-not-allowed" :
+              active ? "border-blue-400 shadow-lg shadow-blue-400/20" : "border-white/10 hover:border-white/30"
+            }`}>
+            {o.img && (
+              <div className="absolute inset-0 overflow-hidden">
+                <img src={o.img} alt="" loading="lazy"
+                  className={`w-full h-full object-cover transition-transform duration-500 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+                <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/95 via-black/70 to-transparent" />
+                {active && <div className="absolute inset-0 bg-blue-400/10 mix-blend-overlay" />}
+              </div>
+            )}
+            <div className="relative p-3 h-full flex flex-col justify-end" style={{ minHeight: `${minH}px` }}>
+              <div className={`text-sm font-bold mb-1 drop-shadow-lg ${active ? "text-blue-300" : "text-white"}`}>{lbl(o.label)}</div>
+              {o.desc && <div className="text-[11px] text-neutral-200 drop-shadow-md">{lbl(o.desc)}</div>}
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function CalcCard({ stepNum, label, children }) {
   return (
     <div className="rounded-xl border border-white/5 bg-white/[0.02] p-5 mb-4">
@@ -111,10 +206,15 @@ export function ResultDisplay({ result, lang = "pl" }) {
   if (!result) return <div className="text-center text-neutral-600 py-4">{labels.selectAll}</div>;
 
   if (result.type === "custom") {
+    const ctaLabel = { pl: "Skontaktuj się", en: "Contact us", de: "Kontaktieren Sie uns" }[lang] || "Contact us";
     return (
       <div className="text-center py-4">
-        <div className="text-lg font-bold text-blue-400 mb-1">{labels.customQuote}</div>
-        <div className="text-sm text-neutral-400">{labels.customDesc}</div>
+        <div className="text-lg font-bold text-blue-400 mb-2">{labels.customQuote}</div>
+        <div className="text-sm text-neutral-400 mb-4">{labels.customDesc}</div>
+        <Link to="/contact" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-blue-400/30 bg-blue-400/10 text-blue-300 text-sm font-medium hover:bg-blue-400/20 transition-colors">
+          <MessageCircle className="w-4 h-4" />
+          {ctaLabel}
+        </Link>
       </div>
     );
   }
@@ -131,11 +231,11 @@ export function ResultDisplay({ result, lang = "pl" }) {
         {labels.perPiece}
         {r.discount > 0 && <span className="text-green-400 ml-2 font-bold">(-{r.discount * 100}%)</span>}
       </div>
-      <div className="flex items-baseline justify-center gap-3 mb-4">
-        <span className="text-4xl font-extrabold tracking-tight">{mainPc.min}</span>
-        <span className="text-xl text-neutral-600">&mdash;</span>
-        <span className="text-4xl font-extrabold tracking-tight">{mainPc.max}</span>
-        <span className="text-base font-semibold text-neutral-500">{mainCurr}</span>
+      <div className="flex items-baseline justify-center gap-1.5 sm:gap-3 mb-4 flex-wrap">
+        <span className="text-2xl sm:text-4xl font-extrabold tracking-tight">{fmtNum(mainPc.min)}</span>
+        <span className="text-lg sm:text-xl text-neutral-600">&mdash;</span>
+        <span className="text-2xl sm:text-4xl font-extrabold tracking-tight">{fmtNum(mainPc.max)}</span>
+        <span className="text-sm sm:text-base font-semibold text-neutral-500">{mainCurr}</span>
       </div>
 
       {/* Order total (qty > 1) */}
@@ -144,11 +244,11 @@ export function ResultDisplay({ result, lang = "pl" }) {
           <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">
             {labels.order}: ~{r.qty} {labels.pcs}
           </div>
-          <div className="flex items-baseline justify-center gap-3">
-            <span className="text-2xl font-extrabold text-blue-400">{mainTotal.min}</span>
+          <div className="flex items-baseline justify-center gap-1.5 sm:gap-3 flex-wrap">
+            <span className="text-xl sm:text-2xl font-extrabold text-blue-400">{fmtNum(mainTotal.min)}</span>
             <span className="text-neutral-600">&mdash;</span>
-            <span className="text-2xl font-extrabold text-blue-400">{mainTotal.max}</span>
-            <span className="text-sm font-semibold text-neutral-500">{mainCurr}</span>
+            <span className="text-xl sm:text-2xl font-extrabold text-blue-400">{fmtNum(mainTotal.max)}</span>
+            <span className="text-xs sm:text-sm font-semibold text-neutral-500">{mainCurr}</span>
           </div>
           {/* Total production time */}
           {r.totalTimeH != null && (
@@ -407,8 +507,8 @@ const RESULT_LABELS = {
   pl: {
     perPiece: "Cena za sztuke", order: "Zamowienie", pcs: "szt.",
     showDetails: "Pokaz szczegoly kalkulacji", hideDetails: "Ukryj szczegoly",
-    customQuote: "Wycena indywidualna",
-    customDesc: "Wybrano parametry niestandardowe — skontaktuj sie w celu dokladnej wyceny.",
+    customQuote: "Indywidualne ustalenie warunków",
+    customDesc: "Skontaktuj się z nami — wspólnie ustalimy szczegóły zlecenia i przygotujemy dedykowaną wycenę.",
     selectAll: "Wybierz wszystkie parametry",
     totalTime: "Szacowany czas produkcji",
     rangeNote: `Zakres: -${CONFIG.TOLERANCE_LOW * 100}% / +${CONFIG.TOLERANCE_HIGH * 100}% | Kurs ${CONFIG.EUR_PLN_RATE} PLN/EUR`,
@@ -416,8 +516,8 @@ const RESULT_LABELS = {
   en: {
     perPiece: "Price per piece", order: "Order", pcs: "pcs",
     showDetails: "Show calculation details", hideDetails: "Hide details",
-    customQuote: "Individual quote",
-    customDesc: "Custom parameters selected — contact us for an exact quote.",
+    customQuote: "Individual terms required",
+    customDesc: "Contact us — we'll determine the order details together and prepare a dedicated quote.",
     selectAll: "Select all parameters",
     totalTime: "Estimated production time",
     rangeNote: `Range: -${CONFIG.TOLERANCE_LOW * 100}% / +${CONFIG.TOLERANCE_HIGH * 100}% | Rate ${CONFIG.EUR_PLN_RATE} PLN/EUR`,
@@ -425,8 +525,8 @@ const RESULT_LABELS = {
   de: {
     perPiece: "Preis pro Stueck", order: "Bestellung", pcs: "Stk.",
     showDetails: "Kalkulationsdetails anzeigen", hideDetails: "Details ausblenden",
-    customQuote: "Individuelle Kalkulation",
-    customDesc: "Individuelle Parameter gewaehlt — kontaktieren Sie uns fuer ein genaues Angebot.",
+    customQuote: "Individuelle Konditionen erforderlich",
+    customDesc: "Kontaktieren Sie uns — wir legen die Auftragsdetails gemeinsam fest und erstellen ein dediziertes Angebot.",
     selectAll: "Alle Parameter auswaehlen",
     totalTime: "Geschaetzte Produktionszeit",
     rangeNote: `Bereich: -${CONFIG.TOLERANCE_LOW * 100}% / +${CONFIG.TOLERANCE_HIGH * 100}% | Kurs ${CONFIG.EUR_PLN_RATE} PLN/EUR`,

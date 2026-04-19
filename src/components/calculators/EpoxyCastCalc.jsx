@@ -6,7 +6,7 @@
 // Depreciation (UV lamp + tools): ~1.50 PLN/h
 // ============================================================
 import { useState, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards } from "./calcShared.jsx";
 
 const EPOXY_CONFIG = {
   POWER_KW: 0.15,
@@ -46,13 +46,16 @@ const LBL = {
 export const RESINS = [
   { id: "uv",          label: { pl: "Zywica UV", en: "UV Resin", de: "UV-Harz" },
     pricePerMl: 0.35, density: 1.10, cureH: 0.1,
-    desc: { pl: "Szybkie utwardzanie, cienkie warstwy", en: "Fast curing, thin layers", de: "Schnelle Aushaertung, duenne Schichten" } },
+    desc: { pl: "Szybkie utwardzanie, cienkie warstwy", en: "Fast curing, thin layers", de: "Schnelle Aushaertung, duenne Schichten" },
+    img: "/img/calc/resin_types/uv.png" },
   { id: "epoxy_clear", label: { pl: "Epoksyd — transparentny", en: "Epoxy — transparent", de: "Epoxid — transparent" },
     pricePerMl: 0.18, density: 1.15, cureH: 48,
-    desc: { pl: "Krystalicznie czysty, 24-72h utwardzania", en: "Crystal clear, 24-72h curing", de: "Kristallklar, 24-72h Aushaertung" } },
+    desc: { pl: "Krystalicznie czysty, 24-72h utwardzania", en: "Crystal clear, 24-72h curing", de: "Kristallklar, 24-72h Aushaertung" },
+    img: "/img/calc/resin_types/epoxy_clear.png" },
   { id: "epoxy_color", label: { pl: "Epoksyd — kolorowy", en: "Epoxy — colored", de: "Epoxid — farbig" },
     pricePerMl: 0.22, density: 1.15, cureH: 48,
-    desc: { pl: "Z pigmentem, efekty artystyczne", en: "With pigment, artistic effects", de: "Mit Pigment, kuenstlerische Effekte" } },
+    desc: { pl: "Z pigmentem, efekty artystyczne", en: "With pigment, artistic effects", de: "Mit Pigment, kuenstlerische Effekte" },
+    img: "/img/calc/resin_types/epoxy_color.png" },
   { id: "custom", label: { pl: "Inna zywica", en: "Other resin", de: "Anderes Harz" },
     pricePerMl: null, density: null, cureH: null, custom: true },
 ];
@@ -66,26 +69,32 @@ export const VOLUMES = [
 ];
 
 export const MOLD_TYPES = [
-  { id: "existing", label: { pl: "Istniejaca forma", en: "Existing mold", de: "Vorhandene Form" },           moldCost: 0,   pourLife: 1 },
-  { id: "new_s",    label: { pl: "Nowa forma — mala", en: "New mold — small", de: "Neue Form — klein" },     moldCost: 60,  pourLife: 40 },
-  { id: "new_m",    label: { pl: "Nowa forma — srednia", en: "New mold — medium", de: "Neue Form — mittel" }, moldCost: 150, pourLife: 35 },
-  { id: "new_l",    label: { pl: "Nowa forma — duza", en: "New mold — large", de: "Neue Form — gross" },     moldCost: 350, pourLife: 25 },
-  { id: "client",   label: { pl: "Forma klienta", en: "Client mold", de: "Kundenform" },                      moldCost: 0,   pourLife: 1 },
+  { id: "existing", label: { pl: "Istniejaca forma", en: "Existing mold", de: "Vorhandene Form" },           moldCost: 0,   pourLife: 1,  img: "/img/calc/resin_molds/existing.png" },
+  { id: "new_s",    label: { pl: "Nowa forma — mala", en: "New mold — small", de: "Neue Form — klein" },     moldCost: 60,  pourLife: 40, img: "/img/calc/resin_molds/new_s.png" },
+  { id: "new_m",    label: { pl: "Nowa forma — srednia", en: "New mold — medium", de: "Neue Form — mittel" }, moldCost: 150, pourLife: 35, img: "/img/calc/resin_molds/new_m.png" },
+  { id: "new_l",    label: { pl: "Nowa forma — duza", en: "New mold — large", de: "Neue Form — gross" },     moldCost: 350, pourLife: 25, img: "/img/calc/resin_molds/new_l.png" },
+  { id: "client",   label: { pl: "Forma klienta", en: "Client mold", de: "Kundenform" },                      moldCost: 0,   pourLife: 1,  img: "/img/calc/resin_molds/client.png" },
   { id: "custom",   label: { pl: "Forma niestandardowa", en: "Custom mold", de: "Individuelle Form" },        moldCost: null, pourLife: null, custom: true },
 ];
 
 export const INCLUSIONS = [
-  { id: "none",     label: { pl: "Brak", en: "None", de: "Keine" },                                              cost: 0 },
-  { id: "pigment",  label: { pl: "Pigment / brokat", en: "Pigment / glitter", de: "Pigment / Glitzer" },          cost: 3 },
-  { id: "object",   label: { pl: "Zalewany obiekt (kwiat, zdjecie)", en: "Embedded object (flower, photo)", de: "Eingebettetes Objekt (Blume, Foto)" }, cost: 8 },
-  { id: "led",      label: { pl: "LED / elektronika", en: "LED / electronics", de: "LED / Elektronik" },          cost: 15 },
+  { id: "none",     label: { pl: "Brak", en: "None", de: "Keine" },                                              cost: 0,  img: "/img/calc/resin_inclusions/none.png" },
+  { id: "pigment",  label: { pl: "Pigment / brokat", en: "Pigment / glitter", de: "Pigment / Glitzer" },          cost: 3,  img: "/img/calc/resin_inclusions/pigment.png" },
+  { id: "object",   label: { pl: "Zalewany obiekt (kwiat, zdjecie)", en: "Embedded object (flower, photo)", de: "Eingebettetes Objekt (Blume, Foto)" }, cost: 8,  img: "/img/calc/resin_inclusions/object.png" },
+  { id: "led",      label: { pl: "LED / elektronika", en: "LED / electronics", de: "LED / Elektronik" },          cost: 15, img: "/img/calc/resin_inclusions/led.png" },
   { id: "custom",   label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" },                              cost: null, custom: true },
 ];
 
 export const FINISH_OPTIONS = [
-  { id: "raw",      label: { pl: "Surowy (z formy)", en: "Raw (from mold)", de: "Roh (aus Form)" },               timeH: 0,   cost: 0 },
-  { id: "sanded",   label: { pl: "Szlifowany + polerowany", en: "Sanded + polished", de: "Geschliffen + poliert" }, timeH: 0.5, cost: 5 },
-  { id: "coated",   label: { pl: "Lakierowany / powlekany", en: "Coated / lacquered", de: "Lackiert / beschichtet" }, timeH: 0.3, cost: 8 },
+  { id: "raw",      label: { pl: "Surowy (z formy)", en: "Raw (from mold)", de: "Roh (aus Form)" },               timeH: 0,   cost: 0,
+    desc: { pl: "Naturalna faktura formy", en: "Natural mold texture", de: "Natürliche Formtextur" },
+    img: "/img/calc/resin_finish/raw.png" },
+  { id: "sanded",   label: { pl: "Szlifowany + polerowany", en: "Sanded + polished", de: "Geschliffen + poliert" }, timeH: 0.5, cost: 5,
+    desc: { pl: "Lustrzany połysk", en: "Mirror gloss", de: "Spiegelglanz" },
+    img: "/img/calc/resin_finish/sanded.png" },
+  { id: "coated",   label: { pl: "Lakierowany / powlekany", en: "Coated / lacquered", de: "Lackiert / beschichtet" }, timeH: 0.3, cost: 8,
+    desc: { pl: "Głęboki „mokry” efekt", en: "Deep wet-look effect", de: "Tiefer Nass-Effekt" },
+    img: "/img/calc/resin_finish/coated.png" },
   { id: "custom",   label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" },                              timeH: null, cost: null, custom: true },
 ];
 
@@ -166,20 +175,7 @@ export default function EpoxyCastCalc({ lang = "pl" }) {
       <div className="text-center text-[11px] text-neutral-600 mb-6">UV Resin · Epoxy 2K · Silicone Molds</div>
 
       <CalcCard stepNum="①" label={l.resinType}>
-        {RESINS.filter(r => !r.custom).map(r => (
-          <button key={r.id} onClick={() => setResinId(r.id)}
-            className={`w-full mb-2 p-3 rounded-xl border text-left transition-all ${resinId === r.id ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}>
-            <div className="flex justify-between items-center">
-              <span className={`text-sm font-bold ${resinId === r.id ? "text-blue-300" : "text-white"}`}>{t(r.label, lang)}</span>
-              <span className="text-[11px] text-neutral-500">{r.pricePerMl} PLN/ml</span>
-            </div>
-            <div className="text-[11px] text-neutral-500 mt-0.5">{t(r.desc, lang)}</div>
-          </button>
-        ))}
-        <button onClick={() => setResinId("custom")}
-          className={`w-full p-2.5 rounded-xl border border-dashed text-left text-xs transition-all ${resinId === "custom" ? "border-blue-400 bg-blue-400/10 text-blue-300 font-medium" : "border-white/10 text-neutral-500 italic"}`}>
-          {l.customResin}
-        </button>
+        <HeroCards options={RESINS} value={resinId} onChange={setResinId} lang={lang} cols="grid-cols-1 sm:grid-cols-3" minH={170} />
       </CalcCard>
 
       <CalcCard stepNum="②" label={l.volume}>
@@ -187,15 +183,15 @@ export default function EpoxyCastCalc({ lang = "pl" }) {
       </CalcCard>
 
       <CalcCard stepNum="③" label={l.mold}>
-        <Chips options={MOLD_TYPES} value={moldId} onChange={setMoldId} lang={lang} />
+        <MaterialCards options={MOLD_TYPES} value={moldId} onChange={setMoldId} lang={lang} cols="grid-cols-3 sm:grid-cols-5" />
       </CalcCard>
 
       <CalcCard stepNum="④" label={l.inclusions}>
-        <Chips options={INCLUSIONS} value={inclusionId} onChange={setInclusionId} lang={lang} />
+        <MaterialCards options={INCLUSIONS} value={inclusionId} onChange={setInclusionId} lang={lang} cols="grid-cols-2 sm:grid-cols-4" />
       </CalcCard>
 
       <CalcCard stepNum="⑤" label={l.finish}>
-        <Chips options={FINISH_OPTIONS} value={finishId} onChange={setFinishId} lang={lang} />
+        <HeroCards options={FINISH_OPTIONS} value={finishId} onChange={setFinishId} lang={lang} cols="grid-cols-1 sm:grid-cols-3" minH={150} />
       </CalcCard>
 
       <CalcCard stepNum="⑥" label={l.qty}>

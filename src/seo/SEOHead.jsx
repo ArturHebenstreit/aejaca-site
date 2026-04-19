@@ -23,9 +23,22 @@ export default function SEOHead({
   image,           // optional override (e.g. product image)
   schemas = [],    // array of JSON-LD objects (Service / FAQ / Product / Breadcrumb)
   noindex = false, // true for thank-you / draft pages
+  // Dynamic pages (blog posts, products) supply meta directly — bypass seoData map.
+  title,
+  description,
+  keywords,
+  ogAlt,
+  ogType = "website",
+  articleMeta, // { publishedTime, modifiedTime, author, section, tags[] }
 }) {
   const { lang } = useLanguage();
-  const seo = getSEO(pageKey, lang);
+  const base = getSEO(pageKey, lang);
+  const seo = {
+    title: title || base.title,
+    description: description || base.description,
+    keywords: keywords || base.keywords,
+    ogAlt: ogAlt || base.ogAlt,
+  };
   const canonical = `${SITE.url}${path === "/" ? "" : path}`;
   const ogImage = image || SITE.defaultImage;
   const locale = SITE.locales[lang] || SITE.locales.en;
@@ -57,7 +70,22 @@ export default function SEOHead({
       <link rel="alternate" hrefLang="x-default" href={`${SITE.url}${path === "/" ? "" : path}`} />
 
       {/* Open Graph — Facebook, LinkedIn, WhatsApp, Discord previews */}
-      <meta property="og:type" content="website" />
+      <meta property="og:type" content={ogType} />
+      {articleMeta?.publishedTime && (
+        <meta property="article:published_time" content={articleMeta.publishedTime} />
+      )}
+      {articleMeta?.modifiedTime && (
+        <meta property="article:modified_time" content={articleMeta.modifiedTime} />
+      )}
+      {articleMeta?.author && (
+        <meta property="article:author" content={articleMeta.author} />
+      )}
+      {articleMeta?.section && (
+        <meta property="article:section" content={articleMeta.section} />
+      )}
+      {articleMeta?.tags?.map((tag) => (
+        <meta key={tag} property="article:tag" content={tag} />
+      ))}
       <meta property="og:site_name" content={SITE.name} />
       <meta property="og:locale" content={locale} />
       {Object.entries(SITE.locales)

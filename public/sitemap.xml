@@ -74,6 +74,66 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/contact" />
   </url>
 
+  <!-- Blog Index -->
+  <url>
+    <loc>https://www.aejaca.com/blog</loc>
+    <lastmod>2026-04-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/blog" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/blog" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog" />
+  </url>
+
+  <!-- Blog: Pierścionek zaręczynowy na zamówienie -->
+  <url>
+    <loc>https://www.aejaca.com/blog/pierscionek-zareczynowy-na-zamowienie</loc>
+    <lastmod>2026-04-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/pierscionek-zareczynowy-na-zamowienie" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/blog/pierscionek-zareczynowy-na-zamowienie" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/blog/pierscionek-zareczynowy-na-zamowienie" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/pierscionek-zareczynowy-na-zamowienie" />
+    <image:image>
+      <image:loc>https://www.aejaca.com/hero-jewelry.jpg</image:loc>
+      <image:title>Custom engagement ring — cost, process and 7 things to know</image:title>
+    </image:image>
+  </url>
+
+  <!-- Blog: Druk 3D krok po kroku -->
+  <url>
+    <loc>https://www.aejaca.com/blog/druk-3d-krok-po-kroku</loc>
+    <lastmod>2026-04-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/druk-3d-krok-po-kroku" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/blog/druk-3d-krok-po-kroku" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/blog/druk-3d-krok-po-kroku" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/druk-3d-krok-po-kroku" />
+    <image:image>
+      <image:loc>https://www.aejaca.com/hero-studio.jpg</image:loc>
+      <image:title>3D printing step by step — from idea to finished product</image:title>
+    </image:image>
+  </url>
+
+  <!-- Blog: Grawerowanie laserowe -->
+  <url>
+    <loc>https://www.aejaca.com/blog/grawerowanie-laserowe-przewodnik</loc>
+    <lastmod>2026-04-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/grawerowanie-laserowe-przewodnik" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/blog/grawerowanie-laserowe-przewodnik" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/blog/grawerowanie-laserowe-przewodnik" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/grawerowanie-laserowe-przewodnik" />
+    <image:image>
+      <image:loc>https://www.aejaca.com/hero-studio.jpg</image:loc>
+      <image:title>Laser engraving — guide to materials, techniques and applications</image:title>
+    </image:image>
+  </url>
+
   <!-- Privacy -->
   <url>
     <loc>https://www.aejaca.com/privacy</loc>
