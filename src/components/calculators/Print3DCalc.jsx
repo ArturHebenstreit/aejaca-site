@@ -3,7 +3,7 @@
 // ============================================================
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { Upload, X, AlertTriangle } from "lucide-react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards } from "./calcShared.jsx";
 
 const STLViewer = lazy(() => import("./STLViewer.jsx"));
 
@@ -12,6 +12,42 @@ const PRINT_CONFIG = {
   DEPRECIATION_PLN_H: 2.50,
   ENGINEERING_PREMIUM: 0.35,
 };
+
+const FILAMENT_IMG = {
+  "PLA": "/img/calc/3d_filaments/pla.png", "PLA Silk": "/img/calc/3d_filaments/pla_silk.png",
+  "PLA Matte": "/img/calc/3d_filaments/pla_matte.png", "PLA Wood": "/img/calc/3d_filaments/pla_wood.png",
+  "PLA Marble": "/img/calc/3d_filaments/pla_marble.png", "PETG": "/img/calc/3d_filaments/petg.png",
+  "PETG-CF": "/img/calc/3d_filaments/petg_cf.png", "TPU 95A": "/img/calc/3d_filaments/tpu.png",
+  "PVA": "/img/calc/3d_filaments/pva.png", "ASA": "/img/calc/3d_filaments/asa.png",
+  "ABS": "/img/calc/3d_filaments/abs.png",
+  "PA6-CF": "/img/calc/3d_filaments/pa6_cf.png", "PA6-GF": "/img/calc/3d_filaments/pa6_gf.png",
+  "PA12-CF": "/img/calc/3d_filaments/pa12_cf.png", "PPA-CF": "/img/calc/3d_filaments/ppa_cf.png",
+  "PPA-GF": "/img/calc/3d_filaments/ppa_gf.png", "PC": "/img/calc/3d_filaments/pc.png",
+  "PC-ABS": "/img/calc/3d_filaments/pc_abs.png", "PET-CF": "/img/calc/3d_filaments/pet_cf.png",
+  "PPS": "/img/calc/3d_filaments/pps.png", "PPS-CF": "/img/calc/3d_filaments/pps_cf.png",
+};
+
+const SEGMENTS = [
+  { id: "standard", label: "Standard",
+    desc: { pl: "PLA, PETG, TPU, ASA, ABS", en: "PLA, PETG, TPU, ASA, ABS", de: "PLA, PETG, TPU, ASA, ABS" },
+    img: "/img/calc/3d_segments/standard.png" },
+  { id: "engineering", label: "Engineering",
+    desc: { pl: "PA-CF, PPA-CF, PC, PET-CF, PPS", en: "PA-CF, PPA-CF, PC, PET-CF, PPS", de: "PA-CF, PPA-CF, PC, PET-CF, PPS" },
+    img: "/img/calc/3d_segments/engineering.png" },
+];
+
+const INFILL_OPTIONS = [
+  { id: "low", label: { pl: "Niskie (≤15%)", en: "Low (≤15%)", de: "Niedrig (≤15%)" }, avg: 0.12,
+    desc: { pl: "Lekki, oszczędny", en: "Light, economical", de: "Leicht, sparsam" },
+    img: "/img/calc/3d_infill/low.png" },
+  { id: "medium", label: { pl: "Średnie (15–50%)", en: "Medium (15–50%)", de: "Mittel (15–50%)" }, avg: 0.35,
+    desc: { pl: "Dobra wytrzymałość", en: "Good strength", de: "Gute Festigkeit" },
+    img: "/img/calc/3d_infill/medium.png" },
+  { id: "high", label: { pl: "Wysokie (>50%)", en: "High (>50%)", de: "Hoch (>50%)" }, avg: 0.70,
+    desc: { pl: "Maksymalna sztywność", en: "Maximum rigidity", de: "Maximale Steifigkeit" },
+    img: "/img/calc/3d_infill/high.png" },
+  { id: "custom", label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" }, avg: null, custom: true },
+];
 
 // Bambu Lab H2D dual-nozzle build volume
 const BUILD_VOL_CM = { x: 30.0, y: 32.0, z: 32.5 };
@@ -126,7 +162,7 @@ export function calculate(params, lang) {
   const size = stlData
     ? { volumeRef: stlData.volumeCm3, timeBase: estimateTimeFromVolume(stlData.volumeCm3), pcsPerPlate: estimatePcsPerPlate(stlData.bbox) }
     : SIZES.find(s => s.id === sizeId);
-  const infill = INFILL.find(i => i.id === infillId);
+  const infill = INFILL_OPTIONS.find(i => i.id === infillId);
   const color = COLORS.find(c => c.id === colorId);
   const prec = PRECISION.find(p => p.id === precisionId);
   const qTier = QUANTITY_TIERS.find(q => q.id === quantityId);
@@ -313,7 +349,7 @@ export default function Print3DCalc({ lang = "pl" }) {
     [segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, scaledStlData, lang]);
 
   const matOptions = Object.entries(FILAMENTS[segment].materials).map(([k, v]) => ({
-    id: k, label: k, sub: `${v.price_kg}zł`,
+    id: k, label: k, sub: `${v.price_kg}zł`, img: FILAMENT_IMG[k],
   }));
 
   const stlSummary = stlData
@@ -325,23 +361,11 @@ export default function Print3DCalc({ lang = "pl" }) {
       <div className="text-center text-[11px] text-neutral-600 mb-6">Bambu Lab H2D · 300×320×325 mm · Dual Extruder · AMS 2 Pro</div>
 
       <CalcCard stepNum="①" label={l.segment}>
-        <div className="grid grid-cols-2 gap-3">
-          {["standard", "engineering"].map(seg => (
-            <button key={seg} onClick={() => setSegment(seg)}
-              className={`p-3.5 rounded-xl border text-left transition-all ${segment === seg ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}>
-              <div className={`text-sm font-bold mb-1 ${segment === seg ? "text-blue-300" : "text-white"}`}>
-                {seg === "standard" ? "Standard" : "Engineering"}
-              </div>
-              <div className="text-[11px] text-neutral-500">
-                {seg === "standard" ? "PLA, PETG, TPU, ASA, ABS" : "PA-CF, PPA-CF, PC, PET-CF, PPS"}
-              </div>
-            </button>
-          ))}
-        </div>
+        <HeroCards options={SEGMENTS} value={segment} onChange={setSegment} lang={lang} cols="grid-cols-2" minH={170} />
       </CalcCard>
 
       <CalcCard stepNum="②" label={`${l.filament} — ${FILAMENTS[segment].label}`}>
-        <Chips options={matOptions} value={materialKey} onChange={setMaterialKey} lang={lang} />
+        <MaterialCards options={matOptions} value={materialKey} onChange={setMaterialKey} lang={lang} cols="grid-cols-3 sm:grid-cols-4 md:grid-cols-6" />
       </CalcCard>
 
       <CalcCard stepNum="③" label={stlData ? sl.stlSize : l.size}>
@@ -349,7 +373,7 @@ export default function Print3DCalc({ lang = "pl" }) {
         {!stlData && <Chips options={SIZES} value={sizeId} onChange={setSizeId} lang={lang} />}
       </CalcCard>
 
-      <CalcCard stepNum="④" label={l.infill}><Chips options={INFILL} value={infillId} onChange={setInfillId} lang={lang} /></CalcCard>
+      <CalcCard stepNum="④" label={l.infill}><HeroCards options={INFILL_OPTIONS} value={infillId} onChange={setInfillId} lang={lang} cols="grid-cols-2 sm:grid-cols-4" minH={150} /></CalcCard>
       <CalcCard stepNum="⑤" label={l.colors}><Chips options={COLORS} value={colorId} onChange={setColorId} lang={lang} /></CalcCard>
       <CalcCard stepNum="⑥" label={l.precision}><Chips options={PRECISION} value={precisionId} onChange={setPrecisionId} lang={lang} /></CalcCard>
       <CalcCard stepNum="⑦" label={l.qty}><Chips options={QUANTITY_TIERS} value={quantityId} onChange={setQuantityId} lang={lang} /></CalcCard>
@@ -362,7 +386,7 @@ export default function Print3DCalc({ lang = "pl" }) {
       <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={[
         `${FILAMENTS[segment].label}: ${materialKey}`,
         stlSummary || t(SIZES.find(s => s.id === sizeId)?.label, lang),
-        t(INFILL.find(i => i.id === infillId)?.label, lang),
+        t(INFILL_OPTIONS.find(i => i.id === infillId)?.label, lang),
         t(COLORS.find(c => c.id === colorId)?.label, lang),
         t(PRECISION.find(p => p.id === precisionId)?.label, lang),
         t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
