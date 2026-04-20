@@ -6,7 +6,7 @@ export const meta = {
   accent: "blue",
   publishedAt: "2026-04-17",
   updatedAt: "2026-04-17",
-  coverImage: "/hero-studio.jpg",
+  coverImage: "/img/blog/druk-3d-krok-po-kroku.jpg",
   readingTime: { pl: 7, en: 5, de: 5 },
   title: {
     pl: "Druk 3D krok po kroku — jak zamienić pomysł w gotowy produkt",
