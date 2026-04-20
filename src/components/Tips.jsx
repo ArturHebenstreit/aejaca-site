@@ -60,6 +60,18 @@ export default function Tips({ data, accent = "amber", id }) {
           ))}
         </div>
 
+        {/* Category hero image */}
+        {data.categories[activeCat]?.img && (
+          <div className="mb-6 rounded-xl overflow-hidden border border-white/5">
+            <img
+              src={data.categories[activeCat].img}
+              alt={data.categories[activeCat].name}
+              loading="lazy"
+              className="w-full h-auto object-cover"
+            />
+          </div>
+        )}
+
         {/* Tips accordion */}
         <div className="space-y-3">
           {tips.map((tip, i) => {
