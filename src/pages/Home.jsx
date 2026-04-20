@@ -185,10 +185,10 @@ export default function Home() {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
-                { to: "/studio?tab=3dprint#calculator", Icon: Printer, title: h.quickQuote3dTitle, desc: h.quickQuote3dDesc, cta: h.quickQuote3dCta, img: "/img/calc/home/print3d.jpg" },
-                { to: "/studio?tab=co2_laser#calculator", Icon: Flame, title: h.quickQuoteCo2EngTitle, desc: h.quickQuoteCo2EngDesc, cta: h.quickQuoteCo2EngCta, img: "/img/calc/home/co2engrave.jpg" },
-                { to: "/studio?tab=fiber_laser#calculator", Icon: Cpu, title: h.quickQuoteFiberTitle, desc: h.quickQuoteFiberDesc, cta: h.quickQuoteFiberCta, img: "/img/calc/home/fiber.jpg" },
-                { to: "/studio?tab=co2_laser&co2mode=cut#calculator", Icon: Scissors, title: h.quickQuoteCo2CutTitle, desc: h.quickQuoteCo2CutDesc, cta: h.quickQuoteCo2CutCta, img: "/img/calc/home/co2cut.jpg" },
+                { to: "/studio?tab=3dprint", Icon: Printer, title: h.quickQuote3dTitle, desc: h.quickQuote3dDesc, cta: h.quickQuote3dCta, img: "/img/calc/home/print3d.jpg" },
+                { to: "/studio?tab=co2_laser", Icon: Flame, title: h.quickQuoteCo2EngTitle, desc: h.quickQuoteCo2EngDesc, cta: h.quickQuoteCo2EngCta, img: "/img/calc/home/co2engrave.jpg" },
+                { to: "/studio?tab=fiber_laser", Icon: Cpu, title: h.quickQuoteFiberTitle, desc: h.quickQuoteFiberDesc, cta: h.quickQuoteFiberCta, img: "/img/calc/home/fiber.jpg" },
+                { to: "/studio?tab=co2_laser&co2mode=cut", Icon: Scissors, title: h.quickQuoteCo2CutTitle, desc: h.quickQuoteCo2CutDesc, cta: h.quickQuoteCo2CutCta, img: "/img/calc/home/co2cut.jpg" },
               ].map(({ to, Icon, title, desc, cta, img }) => (
                 <Link key={to} to={to} className="group relative rounded-xl overflow-hidden border border-emerald-400/10 hover:border-emerald-400/30 hover:shadow-lg hover:shadow-emerald-900/10 transition-all duration-300 min-h-[180px]">
                   <div className="absolute inset-0">

@@ -56,10 +56,20 @@ export default function StudioCalculator() {
   const urlTab = searchParams.get("tab");
   const urlCo2Mode = searchParams.get("co2mode");
 
-  const [mode, setMode] = useState(urlTab && VALID_TABS.has(urlTab) ? "advanced" : "simple");
-  const [activeTech, setActiveTech] = useState(urlTab && VALID_TABS.has(urlTab) ? urlTab : "3dprint");
+  const deepLinked = urlTab && VALID_TABS.has(urlTab);
+  const [mode, setMode] = useState(deepLinked ? "advanced" : "simple");
+  const [activeTech, setActiveTech] = useState(deepLinked ? urlTab : "3dprint");
   const { lang } = useLanguage();
   const l = LABELS[lang] || LABELS.en;
+
+  useEffect(() => {
+    if (!deepLinked) return;
+    const t = setTimeout(() => {
+      const el = document.getElementById("file-upload");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 150);
+    return () => clearTimeout(t);
+  }, [deepLinked]);
 
   const isSimple = mode === "simple";
   const accentClass = isSimple ? "text-emerald-400" : "text-blue-400";

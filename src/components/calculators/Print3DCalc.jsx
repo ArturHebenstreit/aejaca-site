@@ -379,7 +379,7 @@ export default function Print3DCalc({ lang = "pl" }) {
         <MaterialCards options={matOptions} value={materialKey} onChange={setMaterialKey} lang={lang} cols="grid-cols-3 sm:grid-cols-4 md:grid-cols-6" />
       </CalcCard>
 
-      <CalcCard stepNum="③" label={stlData ? sl.stlSize : l.size}>
+      <CalcCard stepNum="③" label={stlData ? sl.stlSize : l.size} id="file-upload">
         <STLUploadCard stlData={stlData} stlFileName={stlFileName} scale={stlScale} onScaleChange={setStlScale} onUpload={handleSTLUpload} onRemove={handleSTLRemove} lang={lang} />
         {!stlData && <Chips options={SIZES} value={sizeId} onChange={setSizeId} lang={lang} />}
       </CalcCard>

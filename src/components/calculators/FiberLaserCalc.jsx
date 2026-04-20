@@ -225,7 +225,7 @@ export default function FiberLaserCalc({ lang = "pl" }) {
         <HeroCards options={MARK_TYPES} value={markId} onChange={setMarkId} lang={lang} cols="grid-cols-2 sm:grid-cols-4" minH={150} />
       </CalcCard>
 
-      <CalcCard stepNum="④" label={svgData ? sl.fromSvg : l.area}>
+      <CalcCard stepNum="④" label={svgData ? sl.fromSvg : l.area} id="file-upload">
         <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={lensFieldMm} showPathLength={false} lang={lang} />
         {!svgData && <Chips options={areaOptions} value={areaId} onChange={setAreaId} lang={lang} />}
       </CalcCard>

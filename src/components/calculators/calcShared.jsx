@@ -180,9 +180,9 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
   );
 }
 
-export function CalcCard({ stepNum, label, children }) {
+export function CalcCard({ stepNum, label, children, id }) {
   return (
-    <div className="rounded-xl border border-white/5 bg-white/[0.02] p-5 mb-4">
+    <div id={id} className="rounded-xl border border-white/5 bg-white/[0.02] p-5 mb-4">
       <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 mb-3">
         {stepNum && <span className="text-blue-400 mr-1.5">{stepNum}</span>}{label}
       </div>
