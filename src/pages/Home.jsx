@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Zap, Sparkles, Printer, Flame, Cpu, Scissors } from "lucide-react";
+import { ArrowRight, Zap, Sparkles, FileUp, Printer, Flame, Cpu, Scissors } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getSortedPosts } from "../blog/posts.js";
@@ -141,45 +141,71 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Jewelry calculator — full-width */}
-          <Link to="/jewelry#calculator" className="group relative rounded-2xl overflow-hidden border border-amber-400/20 bg-gradient-to-br from-amber-950/20 to-neutral-950 p-6 md:p-8 mb-6 hover:border-amber-400/40 hover:shadow-lg hover:shadow-amber-900/10 transition-all duration-300">
-            <div className="flex items-start justify-between mb-4">
-              <Sparkles className="w-7 h-7 text-amber-400" />
-              <span className="text-amber-400/60 text-xs tracking-wider uppercase">{h.quickQuoteJewelryTag}</span>
-            </div>
-            <h3 className="font-serif text-xl md:text-2xl font-semibold text-white mb-3">{h.quickQuoteJewelryTitle}</h3>
-            <p className="text-neutral-400 text-sm leading-relaxed mb-5">{h.quickQuoteJewelryDesc}</p>
-            <span className="inline-flex items-center gap-2 text-amber-400 text-sm font-medium group-hover:text-amber-300 transition-colors">
-              {h.quickQuoteJewelryCta} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </span>
-          </Link>
+          {/* Two calculator cards — Jewelry + Studio (side by side) */}
+          <div className="grid md:grid-cols-2 gap-6 mb-6">
+            <Link to="/jewelry#calculator" className="group relative rounded-2xl overflow-hidden border border-amber-400/20 bg-gradient-to-br from-amber-950/20 to-neutral-950 p-6 md:p-8 hover:border-amber-400/40 hover:shadow-lg hover:shadow-amber-900/10 transition-all duration-300">
+              <div className="flex items-start justify-between mb-4">
+                <Sparkles className="w-7 h-7 text-amber-400" />
+                <span className="text-amber-400/60 text-xs tracking-wider uppercase">{h.quickQuoteJewelryTag}</span>
+              </div>
+              <h3 className="font-serif text-xl md:text-2xl font-semibold text-white mb-3">{h.quickQuoteJewelryTitle}</h3>
+              <p className="text-neutral-400 text-sm leading-relaxed mb-5">{h.quickQuoteJewelryDesc}</p>
+              <span className="inline-flex items-center gap-2 text-amber-400 text-sm font-medium group-hover:text-amber-300 transition-colors">
+                {h.quickQuoteJewelryCta} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </span>
+            </Link>
 
-          {/* Studio tiles — 2×2 grid linking to specific calculator tabs */}
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-blue-400/60 text-xs tracking-wider uppercase">{h.quickQuoteStudioTag}</span>
+            <Link to="/studio#calculator" className="group relative rounded-2xl overflow-hidden border border-blue-400/20 bg-gradient-to-br from-blue-950/20 to-neutral-950 p-6 md:p-8 hover:border-blue-400/40 hover:shadow-lg hover:shadow-blue-900/10 transition-all duration-300">
+              <div className="flex items-start justify-between mb-4">
+                <FileUp className="w-7 h-7 text-blue-400" />
+                <span className="text-blue-400/60 text-xs tracking-wider uppercase">{h.quickQuoteStudioTag}</span>
+              </div>
+              <h3 className="font-sans text-xl md:text-2xl font-semibold text-white mb-3">{h.quickQuoteStudioTitle}</h3>
+              <p className="text-neutral-400 text-sm leading-relaxed mb-5">{h.quickQuoteStudioDesc}</p>
+              <span className="inline-flex items-center gap-2 text-blue-400 text-sm font-medium group-hover:text-blue-300 transition-colors">
+                {h.quickQuoteStudioCta} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </span>
+            </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { to: "/studio?tab=3dprint#calculator", Icon: Printer, title: h.quickQuote3dTitle, desc: h.quickQuote3dDesc, cta: h.quickQuote3dCta, img: "/img/calc/home/print3d.jpg" },
-              { to: "/studio?tab=co2_laser#calculator", Icon: Flame, title: h.quickQuoteCo2EngTitle, desc: h.quickQuoteCo2EngDesc, cta: h.quickQuoteCo2EngCta, img: "/img/calc/home/co2engrave.jpg" },
-              { to: "/studio?tab=fiber_laser#calculator", Icon: Cpu, title: h.quickQuoteFiberTitle, desc: h.quickQuoteFiberDesc, cta: h.quickQuoteFiberCta, img: "/img/calc/home/fiber.jpg" },
-              { to: "/studio?tab=co2_laser&co2mode=cut#calculator", Icon: Scissors, title: h.quickQuoteCo2CutTitle, desc: h.quickQuoteCo2CutDesc, cta: h.quickQuoteCo2CutCta, img: "/img/calc/home/co2cut.jpg" },
-            ].map(({ to, Icon, title, desc, cta, img }) => (
-              <Link key={to} to={to} className="group relative rounded-xl overflow-hidden border border-blue-400/20 hover:border-blue-400/40 hover:shadow-lg hover:shadow-blue-900/10 transition-all duration-300 min-h-[200px]">
-                <div className="absolute inset-0">
-                  <img src={img} alt="" loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
+
+          {/* Green STL/SVG banner with 4 deep-link tiles inside */}
+          <div className="rounded-2xl overflow-hidden border border-emerald-400/20 bg-gradient-to-r from-emerald-950/20 via-neutral-900/50 to-emerald-950/20 p-6 md:p-8">
+            <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8 mb-6">
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-emerald-400/10 border border-emerald-400/20 flex items-center justify-center">
+                  <FileUp className="w-6 h-6 text-emerald-400" />
                 </div>
-                <div className="relative p-4 h-full min-h-[200px] flex flex-col justify-end">
-                  <Icon className="w-5 h-5 text-blue-400 mb-2 drop-shadow-lg" />
-                  <h3 className="font-sans text-sm md:text-base font-bold text-white mb-1 drop-shadow-lg">{title}</h3>
-                  <p className="text-neutral-300 text-[11px] leading-snug mb-3 drop-shadow-md">{desc}</p>
-                  <span className="inline-flex items-center gap-1 text-blue-400 text-xs font-medium group-hover:text-blue-300 transition-colors">
-                    {cta} <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
-                  </span>
-                </div>
-              </Link>
-            ))}
+                <span className="text-emerald-400/70 text-xs uppercase tracking-wider">{h.quickQuoteStlTag}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-sans text-lg font-semibold text-white mb-1">{h.quickQuoteStlTitle}</h3>
+                <p className="text-neutral-400 text-sm">{h.quickQuoteStlDesc}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { to: "/studio?tab=3dprint#calculator", Icon: Printer, title: h.quickQuote3dTitle, desc: h.quickQuote3dDesc, cta: h.quickQuote3dCta, img: "/img/calc/home/print3d.jpg" },
+                { to: "/studio?tab=co2_laser#calculator", Icon: Flame, title: h.quickQuoteCo2EngTitle, desc: h.quickQuoteCo2EngDesc, cta: h.quickQuoteCo2EngCta, img: "/img/calc/home/co2engrave.jpg" },
+                { to: "/studio?tab=fiber_laser#calculator", Icon: Cpu, title: h.quickQuoteFiberTitle, desc: h.quickQuoteFiberDesc, cta: h.quickQuoteFiberCta, img: "/img/calc/home/fiber.jpg" },
+                { to: "/studio?tab=co2_laser&co2mode=cut#calculator", Icon: Scissors, title: h.quickQuoteCo2CutTitle, desc: h.quickQuoteCo2CutDesc, cta: h.quickQuoteCo2CutCta, img: "/img/calc/home/co2cut.jpg" },
+              ].map(({ to, Icon, title, desc, cta, img }) => (
+                <Link key={to} to={to} className="group relative rounded-xl overflow-hidden border border-emerald-400/10 hover:border-emerald-400/30 hover:shadow-lg hover:shadow-emerald-900/10 transition-all duration-300 min-h-[180px]">
+                  <div className="absolute inset-0">
+                    <img src={img} alt="" loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30" />
+                  </div>
+                  <div className="relative p-3 h-full min-h-[180px] flex flex-col justify-end">
+                    <Icon className="w-5 h-5 text-emerald-400 mb-1.5 drop-shadow-lg" />
+                    <h4 className="font-sans text-sm font-bold text-white mb-0.5 drop-shadow-lg">{title}</h4>
+                    <p className="text-neutral-300 text-[10px] leading-snug mb-2 drop-shadow-md">{desc}</p>
+                    <span className="inline-flex items-center gap-1 text-emerald-400 text-[11px] font-medium group-hover:text-emerald-300 transition-colors">
+                      {cta} <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </section>

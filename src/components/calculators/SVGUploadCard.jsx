@@ -3,14 +3,17 @@ import { Upload, X, AlertTriangle } from "lucide-react";
 
 export const SVG_LBL = {
   pl: { upload: "Załaduj plik SVG", orManual: "lub wybierz parametry ręcznie poniżej",
+    dropHint: "Kliknij lub przeciągnij plik SVG", dropSub: "Automatyczna wycena na podstawie wymiarów i ścieżek",
     dims: "Wymiary", area: "Powierzchnia", pathLen: "Długość ścieżek", paths: "Ścieżki",
     remove: "Usuń", exceeds: "Projekt przekracza pole robocze", fromSvg: "Parametry z pliku SVG",
     scale: "Skala", fitToArea: "Dopasuj do pola", fitToExt: "Dopasuj do XL" },
   en: { upload: "Upload SVG file", orManual: "or select parameters manually below",
+    dropHint: "Click or drag & drop an SVG file", dropSub: "Auto-quote based on dimensions and paths",
     dims: "Dimensions", area: "Area", pathLen: "Path length", paths: "Paths",
     remove: "Remove", exceeds: "Design exceeds work area", fromSvg: "Parameters from SVG file",
     scale: "Scale", fitToArea: "Fit to area", fitToExt: "Fit to XL" },
   de: { upload: "SVG-Datei hochladen", orManual: "oder Parameter unten manuell wählen",
+    dropHint: "Klicken oder SVG-Datei hierher ziehen", dropSub: "Automatische Kalkulation anhand von Maßen und Pfaden",
     dims: "Abmessungen", area: "Fläche", pathLen: "Pfadlänge", paths: "Pfade",
     remove: "Entfernen", exceeds: "Design überschreitet Arbeitsbereich", fromSvg: "Parameter aus SVG-Datei",
     scale: "Maßstab", fitToArea: "An Bereich anpassen", fitToExt: "An XL anpassen" },
@@ -49,9 +52,14 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
     return (
       <div className="flex flex-col items-center gap-2 mb-3">
         <button onClick={() => fileRef.current?.click()}
-          className="flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed border-blue-400/30 bg-blue-400/[0.03] text-blue-300 text-sm hover:bg-blue-400/10 hover:border-blue-400/50 transition-all w-full justify-center">
-          <Upload className="w-4 h-4" />
-          {sl.upload}
+          className="group/upload flex flex-col items-center gap-3 px-6 py-8 rounded-2xl border-2 border-dashed border-blue-400/30 bg-gradient-to-b from-blue-400/[0.04] to-transparent text-blue-300 hover:bg-blue-400/10 hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300 w-full cursor-pointer">
+          <div className="w-14 h-14 rounded-2xl bg-blue-400/10 border border-blue-400/20 flex items-center justify-center group-hover/upload:bg-blue-400/20 group-hover/upload:scale-110 transition-all duration-300">
+            <Upload className="w-7 h-7 text-blue-400" />
+          </div>
+          <div className="text-center">
+            <div className="font-semibold text-sm text-white mb-1">{sl.dropHint}</div>
+            <div className="text-[11px] text-neutral-500">{sl.dropSub}</div>
+          </div>
         </button>
         <input ref={fileRef} type="file" accept=".svg" className="hidden" onChange={onUpload} />
         <div className="text-[10px] text-neutral-600">{sl.orManual}</div>

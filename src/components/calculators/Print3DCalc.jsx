@@ -146,13 +146,19 @@ const LBL = {
 };
 
 const STL_LBL = {
-  pl: { upload: "Załaduj plik STL", orManual: "lub wybierz rozmiar ręcznie poniżej", volume: "Objętość", dims: "Wymiary",
+  pl: { upload: "Załaduj plik STL", orManual: "lub wybierz rozmiar ręcznie poniżej",
+    dropHint: "Kliknij lub przeciągnij plik STL", dropSub: "Automatyczna wycena na podstawie objętości i wymiarów",
+    volume: "Objętość", dims: "Wymiary",
     triangles: "Trójkąty", remove: "Usuń", exceeds: "Model przekracza przestrzeń druku", stlSize: "Rozmiar z pliku STL",
     scale: "Skala wydruku", fitToPlate: "Dopasuj do płyty", original: "Oryg." },
-  en: { upload: "Upload STL file", orManual: "or select size manually below", volume: "Volume", dims: "Dimensions",
+  en: { upload: "Upload STL file", orManual: "or select size manually below",
+    dropHint: "Click or drag & drop an STL file", dropSub: "Auto-quote based on volume and dimensions",
+    volume: "Volume", dims: "Dimensions",
     triangles: "Triangles", remove: "Remove", exceeds: "Model exceeds build volume", stlSize: "Size from STL file",
     scale: "Print scale", fitToPlate: "Fit to plate", original: "Orig." },
-  de: { upload: "STL-Datei hochladen", orManual: "oder Größe unten manuell wählen", volume: "Volumen", dims: "Abmessungen",
+  de: { upload: "STL-Datei hochladen", orManual: "oder Größe unten manuell wählen",
+    dropHint: "Klicken oder STL-Datei hierher ziehen", dropSub: "Automatische Kalkulation anhand von Volumen und Maßen",
+    volume: "Volumen", dims: "Abmessungen",
     triangles: "Dreiecke", remove: "Entfernen", exceeds: "Modell überschreitet Bauraum", stlSize: "Größe aus STL-Datei",
     scale: "Druckmaßstab", fitToPlate: "An Platte anpassen", original: "Orig." },
 };
@@ -216,9 +222,14 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
     return (
       <div className="flex flex-col items-center gap-2 mb-3">
         <button onClick={() => fileRef.current?.click()}
-          className="flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed border-blue-400/30 bg-blue-400/[0.03] text-blue-300 text-sm hover:bg-blue-400/10 hover:border-blue-400/50 transition-all w-full justify-center">
-          <Upload className="w-4 h-4" />
-          {sl.upload}
+          className="group/upload flex flex-col items-center gap-3 px-6 py-8 rounded-2xl border-2 border-dashed border-blue-400/30 bg-gradient-to-b from-blue-400/[0.04] to-transparent text-blue-300 hover:bg-blue-400/10 hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300 w-full cursor-pointer">
+          <div className="w-14 h-14 rounded-2xl bg-blue-400/10 border border-blue-400/20 flex items-center justify-center group-hover/upload:bg-blue-400/20 group-hover/upload:scale-110 transition-all duration-300">
+            <Upload className="w-7 h-7 text-blue-400" />
+          </div>
+          <div className="text-center">
+            <div className="font-semibold text-sm text-white mb-1">{sl.dropHint}</div>
+            <div className="text-[11px] text-neutral-500">{sl.dropSub}</div>
+          </div>
         </button>
         <input ref={fileRef} type="file" accept=".stl" className="hidden" onChange={onUpload} />
         <div className="text-[10px] text-neutral-600">{sl.orManual}</div>
