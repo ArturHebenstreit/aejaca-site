@@ -75,7 +75,6 @@ export default function Home() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 group-hover:from-black/60 transition-all duration-500" />
             <div className="relative z-10 flex flex-col items-center justify-end h-full pb-16 px-8 text-center">
-              <p className="text-amber-300 text-lg md:text-xl font-light tracking-widest uppercase mb-4">{h.jewelrySubtitle}</p>
               <p className="text-neutral-200 max-w-md text-sm md:text-base leading-relaxed mb-8">{h.jewelryDesc}</p>
               <span className="inline-flex items-center gap-2 px-6 py-3 border border-amber-400/30 bg-amber-400/5 backdrop-blur-md text-amber-300 rounded-full text-sm tracking-wide group-hover:bg-amber-400 group-hover:text-black group-hover:border-amber-400 transition-all duration-300">
                 {h.jewelryBtn} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -99,7 +98,6 @@ export default function Home() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 group-hover:from-black/60 transition-all duration-500" />
             <div className="relative z-10 flex flex-col items-center justify-end h-full pb-16 px-8 text-center">
-              <p className="text-blue-300 text-lg md:text-xl font-light tracking-widest uppercase mb-4">{h.studioSubtitle}</p>
               <p className="text-neutral-200 max-w-md text-sm md:text-base leading-relaxed mb-8">{h.studioDesc}</p>
               <span className="inline-flex items-center gap-2 px-6 py-3 border border-blue-400/30 bg-blue-400/5 backdrop-blur-md text-blue-300 rounded-full text-sm tracking-wide group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-500 transition-all duration-300">
                 {h.studioBtn} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
