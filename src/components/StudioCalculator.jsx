@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Zap, SlidersHorizontal } from "lucide-react";
+import { Zap, SlidersHorizontal, Info } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { trackCalc } from "../utils/analytics.js";
 import SimpleStudioCalc from "./calculators/SimpleStudioCalc.jsx";
@@ -21,6 +21,7 @@ const LABELS = {
     modeSimpleDesc: "5 prostych pytań — dla każdego",
     modeAdvanced: "Dla zaawansowanych",
     modeAdvancedDesc: "Pełna kontrola parametrów",
+    modeHint: "Szybka wycena to wstępny koszt w 30 sekund. Tryb zaawansowany pozwala wrzucić plik STL/SVG, wybrać materiał, wymiar i wykończenie — pełna kontrola.",
     tab3d: "Druk 3D", tabCO2: "Laser CO2", tabFiber: "Laser Fiber", tabEpoxy: "Odlewy żywiczne",
     desc3d: "Bambu Lab H2D — FDM i multi-materiał", descCO2: "xTool P2 55W — grawerowanie i cięcie", descFiber: "Raycus 30W — metal, biżuteria, kamień, ceramika", descEpoxy: "Żywica UV/dwukomponentowa — odlewy artystyczne",
     note: 'Kalkulacje są szacunkowe. Rzeczywista cena zależy od geometrii, złożoności i specyfikacji. Opcje "niestandardowe" wymagają indywidualnej wyceny.',
@@ -30,6 +31,7 @@ const LABELS = {
     modeSimpleDesc: "5 simple questions — for everyone",
     modeAdvanced: "For advanced users",
     modeAdvancedDesc: "Full control over parameters",
+    modeHint: "Quick quote gives an upfront estimate in 30 seconds. Advanced mode lets you upload an STL/SVG file, pick material, size, and finish — full control.",
     tab3d: "3D Print", tabCO2: "CO2 Laser", tabFiber: "Fiber Laser", tabEpoxy: "Resin Casting",
     desc3d: "Bambu Lab H2D — FDM & multi-material", descCO2: "xTool P2 55W — engraving & cutting", descFiber: "Raycus 30W — metal, jewelry, stone & ceramics", descEpoxy: "UV/2K resin — artistic casting",
     note: "Estimates are approximate. Actual price depends on geometry, complexity, and specifications. Custom options require an individual quote.",
@@ -39,6 +41,7 @@ const LABELS = {
     modeSimpleDesc: "5 einfache Fragen — für jeden",
     modeAdvanced: "Für Fortgeschrittene",
     modeAdvancedDesc: "Volle Kontrolle über Parameter",
+    modeHint: "Schnellkalkulation liefert einen Vorab-Preis in 30 Sekunden. Der erweiterte Modus erlaubt den Upload von STL/SVG-Dateien, Materialwahl, Maße und Finish — volle Kontrolle.",
     tab3d: "3D-Druck", tabCO2: "CO2-Laser", tabFiber: "Faserlaser", tabEpoxy: "Harzguss",
     desc3d: "Bambu Lab H2D — FDM & Multi-Material", descCO2: "xTool P2 55W — Gravur & Schnitt", descFiber: "Raycus 30W — Metall, Schmuck, Stein & Keramik", descEpoxy: "UV/2K-Harz — Kunstguss",
     note: 'Kalkulationen sind Schätzungen. Der tatsächliche Preis hängt von Geometrie, Komplexität und Spezifikationen ab. "Individuelle" Optionen erfordern ein separates Angebot.',
@@ -90,6 +93,12 @@ export default function StudioCalculator() {
             </div>
             <div className={`text-[11px] ${!isSimple ? "text-blue-400/80" : "text-neutral-500"}`}>{l.modeAdvancedDesc}</div>
           </button>
+        </div>
+
+        {/* Mode hint — clarifies when to use each (audit: UX friction) */}
+        <div className="mb-6 flex items-start gap-2 px-3 text-[11px] text-neutral-500 leading-relaxed">
+          <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-neutral-600" />
+          <span>{l.modeHint}</span>
         </div>
 
         {/* SIMPLE MODE */}
