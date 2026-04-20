@@ -59,9 +59,9 @@ export default function Home() {
         </section>
 
         {/* Split Hero — two equal paths (jewelry / studio) act as primary CTAs */}
-        <section className="relative min-h-[calc(55vh-4rem)] flex flex-col md:flex-row" aria-label={h.heroAria || "AEJaCA — two worlds"}>
+        <section className="relative min-h-[calc(40vh-4rem)] flex flex-col md:flex-row" aria-label={h.heroAria || "AEJaCA — two worlds"}>
           {/* Jewelry Panel */}
-          <Link to="/jewelry" className="group relative flex-1 min-h-[50vh] md:min-h-full overflow-hidden cursor-pointer" aria-label={h.jewelryBtn}>
+          <Link to="/jewelry" className="group relative flex-1 min-h-[35vh] md:min-h-full overflow-hidden cursor-pointer" aria-label={h.jewelryBtn}>
             {/* LCP image: eager + fetchpriority=high tells browser to prioritize — Core Web Vitals (LCP < 2.5s) */}
             <img
               src="/hero-jewelry.jpg"
@@ -74,8 +74,8 @@ export default function Home() {
               height="900"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 group-hover:from-black/60 transition-all duration-500" />
-            <div className="relative z-10 flex flex-col items-center justify-end h-full pb-16 px-8 text-center">
-              <p className="text-neutral-200 max-w-md text-sm md:text-base leading-relaxed mb-8">{h.jewelryDesc}</p>
+            <div className="relative z-10 flex flex-col items-center justify-end h-full pb-10 px-8 text-center">
+              <p className="text-neutral-200 max-w-md text-sm md:text-base leading-relaxed mb-6">{h.jewelryDesc}</p>
               <span className="inline-flex items-center gap-2 px-6 py-3 border border-amber-400/30 bg-amber-400/5 backdrop-blur-md text-amber-300 rounded-full text-sm tracking-wide group-hover:bg-amber-400 group-hover:text-black group-hover:border-amber-400 transition-all duration-300">
                 {h.jewelryBtn} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </span>
@@ -85,7 +85,7 @@ export default function Home() {
           <div className="hidden md:block w-px bg-white/20" />
 
           {/* Studio Panel */}
-          <Link to="/studio" className="group relative flex-1 min-h-[50vh] md:min-h-full overflow-hidden cursor-pointer" aria-label={h.studioBtn}>
+          <Link to="/studio" className="group relative flex-1 min-h-[35vh] md:min-h-full overflow-hidden cursor-pointer" aria-label={h.studioBtn}>
             <img
               src="/hero-studio.jpg"
               alt="AEJaCA sTuDiO — 3D printing, laser engraving, resin casting, and custom fabrication"
@@ -97,8 +97,8 @@ export default function Home() {
               height="900"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 group-hover:from-black/60 transition-all duration-500" />
-            <div className="relative z-10 flex flex-col items-center justify-end h-full pb-16 px-8 text-center">
-              <p className="text-neutral-200 max-w-md text-sm md:text-base leading-relaxed mb-8">{h.studioDesc}</p>
+            <div className="relative z-10 flex flex-col items-center justify-end h-full pb-10 px-8 text-center">
+              <p className="text-neutral-200 max-w-md text-sm md:text-base leading-relaxed mb-6">{h.studioDesc}</p>
               <span className="inline-flex items-center gap-2 px-6 py-3 border border-blue-400/30 bg-blue-400/5 backdrop-blur-md text-blue-300 rounded-full text-sm tracking-wide group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-500 transition-all duration-300">
                 {h.studioBtn} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </span>
