@@ -275,7 +275,7 @@ export function buildReviewsAugmentedOrganization({ rating, reviewCount, reviews
     },
     review: textReviews.map((r) => ({
       "@type": "Review",
-      author: { "@type": "Person", "name": r.author },
+      author: { "@type": "Person", name: r.author },
       datePublished: r.date,
       reviewBody: r.text,
       inLanguage: r.originalLang,
@@ -285,8 +285,10 @@ export function buildReviewsAugmentedOrganization({ rating, reviewCount, reviews
         bestRating: "5",
         worstRating: "1",
       },
-      // Explicit attribution — tells Google these came from their platform.
-      // Key for avoiding "aggregated from other websites" manual action.
+      itemReviewed: {
+        "@type": "Organization",
+        name: SITE.name,
+      },
       publisher: {
         "@type": "Organization",
         name: "Google",
