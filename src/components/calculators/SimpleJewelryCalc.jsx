@@ -44,10 +44,10 @@ const PIECES = [
   { id: "necklace", icon: Link2,           img: "/img/calc/types/necklace.png",
     label: { pl: "Naszyjnik / łańcuszek",   en: "Necklace / chain", de: "Halskette / Kette" } },
   { id: "cord_bracelet", icon: Hand, img: "/img/calc/types/bracelet_stones.png",
-    label: { pl: "Bransoletka z kamieni (gumka/rzemyk)", en: "Stone cord bracelet", de: "Edelstein-Kordel-Armband" },
+    label: { pl: "Bransoletka z kamieni", en: "Stone bracelet", de: "Stein-Armband" },
     sub:   { pl: "kamienie na gumce jubilerskiej lub rzemyku", en: "stones on elastic or leather cord", de: "Steine auf Gummiband oder Lederband" } },
   { id: "cord_necklace", icon: Link2, img: "/img/calc/types/necklace_stones.png",
-    label: { pl: "Naszyjnik z kamieni (gumka/rzemyk)", en: "Stone cord necklace", de: "Edelstein-Kordel-Halskette" },
+    label: { pl: "Naszyjnik z kamieni", en: "Stone necklace", de: "Stein-Halskette" },
     sub:   { pl: "kamienie na gumce jubilerskiej lub rzemyku", en: "stones on elastic or leather cord", de: "Steine auf Gummiband oder Lederband" } },
   { id: "other",    icon: MoreHorizontal,  label: { pl: "Inne",                    en: "Other",        de: "Andere" } },
 ];
@@ -431,8 +431,8 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
                   <div className={`text-[11px] sm:text-sm font-bold leading-tight drop-shadow-lg ${active ? "text-rose-300" : "text-white"}`}>
                     {label}
                   </div>
-                  {sub && (
-                    <div className={`text-[10px] mt-0.5 drop-shadow-md ${active ? "text-rose-200/90" : "text-neutral-200"}`}>
+                  {sub && active && (
+                    <div className="text-[10px] mt-0.5 drop-shadow-md text-rose-200/90">
                       {sub}
                     </div>
                   )}

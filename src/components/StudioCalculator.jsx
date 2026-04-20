@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Zap, SlidersHorizontal } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Zap, SlidersHorizontal, Info } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { trackCalc } from "../utils/analytics.js";
 import SimpleStudioCalc from "./calculators/SimpleStudioCalc.jsx";
@@ -21,6 +22,7 @@ const LABELS = {
     modeSimpleDesc: "5 prostych pytań — dla każdego",
     modeAdvanced: "Dla zaawansowanych",
     modeAdvancedDesc: "Pełna kontrola parametrów",
+    modeHint: "Szybka wycena to wstępny koszt w 30 sekund. Tryb zaawansowany pozwala wrzucić plik STL/SVG, wybrać materiał, wymiar i wykończenie — pełna kontrola.",
     tab3d: "Druk 3D", tabCO2: "Laser CO2", tabFiber: "Laser Fiber", tabEpoxy: "Odlewy żywiczne",
     desc3d: "Bambu Lab H2D — FDM i multi-materiał", descCO2: "xTool P2 55W — grawerowanie i cięcie", descFiber: "Raycus 30W — metal, biżuteria, kamień, ceramika", descEpoxy: "Żywica UV/dwukomponentowa — odlewy artystyczne",
     note: 'Kalkulacje są szacunkowe. Rzeczywista cena zależy od geometrii, złożoności i specyfikacji. Opcje "niestandardowe" wymagają indywidualnej wyceny.',
@@ -30,6 +32,7 @@ const LABELS = {
     modeSimpleDesc: "5 simple questions — for everyone",
     modeAdvanced: "For advanced users",
     modeAdvancedDesc: "Full control over parameters",
+    modeHint: "Quick quote gives an upfront estimate in 30 seconds. Advanced mode lets you upload an STL/SVG file, pick material, size, and finish — full control.",
     tab3d: "3D Print", tabCO2: "CO2 Laser", tabFiber: "Fiber Laser", tabEpoxy: "Resin Casting",
     desc3d: "Bambu Lab H2D — FDM & multi-material", descCO2: "xTool P2 55W — engraving & cutting", descFiber: "Raycus 30W — metal, jewelry, stone & ceramics", descEpoxy: "UV/2K resin — artistic casting",
     note: "Estimates are approximate. Actual price depends on geometry, complexity, and specifications. Custom options require an individual quote.",
@@ -39,17 +42,34 @@ const LABELS = {
     modeSimpleDesc: "5 einfache Fragen — für jeden",
     modeAdvanced: "Für Fortgeschrittene",
     modeAdvancedDesc: "Volle Kontrolle über Parameter",
+    modeHint: "Schnellkalkulation liefert einen Vorab-Preis in 30 Sekunden. Der erweiterte Modus erlaubt den Upload von STL/SVG-Dateien, Materialwahl, Maße und Finish — volle Kontrolle.",
     tab3d: "3D-Druck", tabCO2: "CO2-Laser", tabFiber: "Faserlaser", tabEpoxy: "Harzguss",
     desc3d: "Bambu Lab H2D — FDM & Multi-Material", descCO2: "xTool P2 55W — Gravur & Schnitt", descFiber: "Raycus 30W — Metall, Schmuck, Stein & Keramik", descEpoxy: "UV/2K-Harz — Kunstguss",
     note: 'Kalkulationen sind Schätzungen. Der tatsächliche Preis hängt von Geometrie, Komplexität und Spezifikationen ab. "Individuelle" Optionen erfordern ein separates Angebot.',
     vat: "Die angegebenen Preise sind Richtwerte und enthalten keine Mehrwertsteuer oder gleichwertige Abgaben, die bei der Auftragsabwicklung hinzukommen." },
 };
 
+const VALID_TABS = new Set(TECHS.map(t => t.id));
+
 export default function StudioCalculator() {
-  const [mode, setMode] = useState("simple");
-  const [activeTech, setActiveTech] = useState("3dprint");
+  const [searchParams] = useSearchParams();
+  const urlTab = searchParams.get("tab");
+  const urlCo2Mode = searchParams.get("co2mode");
+
+  const deepLinked = urlTab && VALID_TABS.has(urlTab);
+  const [mode, setMode] = useState(deepLinked ? "advanced" : "simple");
+  const [activeTech, setActiveTech] = useState(deepLinked ? urlTab : "3dprint");
   const { lang } = useLanguage();
   const l = LABELS[lang] || LABELS.en;
+
+  useEffect(() => {
+    if (!deepLinked) return;
+    const t = setTimeout(() => {
+      const el = document.getElementById("file-upload");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 150);
+    return () => clearTimeout(t);
+  }, [deepLinked]);
 
   const isSimple = mode === "simple";
   const accentClass = isSimple ? "text-emerald-400" : "text-blue-400";
@@ -92,6 +112,12 @@ export default function StudioCalculator() {
           </button>
         </div>
 
+        {/* Mode hint — clarifies when to use each (audit: UX friction) */}
+        <div className="mb-6 flex items-start gap-2 px-3 text-[11px] text-neutral-500 leading-relaxed">
+          <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-neutral-600" />
+          <span>{l.modeHint}</span>
+        </div>
+
         {/* SIMPLE MODE */}
         {isSimple && (
           <div className="rounded-2xl p-5 sm:p-6 border border-emerald-400/10 bg-emerald-400/[0.02]">
@@ -131,7 +157,7 @@ export default function StudioCalculator() {
 
             <div className="glass-blue rounded-2xl p-5 sm:p-6">
               {activeTech === "3dprint" && <Print3DCalc lang={lang} />}
-              {activeTech === "co2_laser" && <CO2LaserCalc lang={lang} />}
+              {activeTech === "co2_laser" && <CO2LaserCalc lang={lang} initialMode={urlCo2Mode === "cut" ? "cut" : "engrave"} />}
               {activeTech === "fiber_laser" && <FiberLaserCalc lang={lang} />}
               {activeTech === "epoxy" && <EpoxyCastCalc lang={lang} />}
             </div>

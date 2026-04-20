@@ -193,6 +193,38 @@ export function buildProductSchema({ name, description, image, sku, price, curre
   return schema;
 }
 
+// ---------- HowTo (step-by-step process) ----------
+// Critical for AI assistants answering "how is X made?" / "what's the process for Y?"
+// queries — they cite HowTo schemas verbatim. Google renders HowTo steps directly
+// in SERP (with images & estimated time) for DIY/service/recipe pages.
+// Use for: design → production workflows, service delivery steps, process gallery pages.
+export function buildHowToSchema({ name, description, steps, totalTime, estimatedCost, image }) {
+  if (!steps || !steps.length) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name,
+    ...(description && { description }),
+    ...(totalTime && { totalTime }),
+    ...(estimatedCost && {
+      estimatedCost: {
+        "@type": "MonetaryAmount",
+        currency: estimatedCost.currency || "EUR",
+        value: estimatedCost.value,
+      },
+    }),
+    ...(image && { image: Array.isArray(image) ? image : [image] }),
+    step: steps.map((s, i) => ({
+      "@type": "HowToStep",
+      position: i + 1,
+      name: s.title || s.name,
+      text: s.desc || s.text,
+      ...(s.image && { image: s.image }),
+      ...(s.url && { url: s.url }),
+    })),
+  };
+}
+
 // ---------- FAQPage (primary AIO signal) ----------
 // Critical for AI Search: LLMs (ChatGPT, Gemini, Perplexity) ingest Q&A pairs
 // as direct answers. Google renders expandable FAQ dropdowns in SERP.

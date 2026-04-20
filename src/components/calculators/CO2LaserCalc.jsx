@@ -212,10 +212,10 @@ export function calcCut({ matId, pathId, complexId, quantityId, extended, svgDat
 
 const TECH_LABEL = { pl: "Laser CO2", en: "CO2 Laser", de: "CO2-Laser" };
 
-export default function CO2LaserCalc({ lang = "pl" }) {
+export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
   const l = LBL[lang] || LBL.en;
   const sl = SVG_LBL[lang] || SVG_LBL.en;
-  const [mode, setMode] = useState("engrave");
+  const [mode, setMode] = useState(initialMode);
   const [eMatId, setEMatId] = useState("wood");
   const [eAreaId, setEAreaId] = useState("S");
   const [eDetailId, setEDetailId] = useState("standard");
@@ -296,7 +296,7 @@ export default function CO2LaserCalc({ lang = "pl" }) {
       {mode === "engrave" ? (
         <>
           <CalcCard stepNum="②" label={l.material}><MaterialCards options={ENGRAVE_MATERIALS} value={eMatId} onChange={setEMatId} lang={lang} /></CalcCard>
-          <CalcCard stepNum="③" label={svgData ? sl.fromSvg : l.area}>
+          <CalcCard stepNum="③" label={svgData ? sl.fromSvg : l.area} id="file-upload">
             <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} extendedAreaMm={EXTENDED_AREA_MM} showPathLength={false} lang={lang} />
             {!svgData && <Chips options={ENGRAVE_AREAS} value={eAreaId} onChange={setEAreaId} lang={lang} />}
           </CalcCard>
@@ -307,7 +307,7 @@ export default function CO2LaserCalc({ lang = "pl" }) {
       ) : (
         <>
           <CalcCard stepNum="②" label={l.matThick}><Chips options={CUT_MATERIALS} value={cMatId} onChange={setCMatId} lang={lang} /></CalcCard>
-          <CalcCard stepNum="③" label={svgData ? sl.fromSvg : l.pathLen}>
+          <CalcCard stepNum="③" label={svgData ? sl.fromSvg : l.pathLen} id="file-upload">
             <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} extendedAreaMm={EXTENDED_AREA_MM} showPathLength={true} lang={lang} />
             {!svgData && <Chips options={CUT_PATHS} value={cPathId} onChange={setCPathId} lang={lang} />}
           </CalcCard>

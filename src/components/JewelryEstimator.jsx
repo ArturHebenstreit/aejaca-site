@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Zap, SlidersHorizontal } from "lucide-react";
+import { Zap, SlidersHorizontal, Info } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { trackCalc } from "../utils/analytics.js";
 import JewelryCalc from "./calculators/JewelryCalc.jsx";
@@ -13,6 +13,7 @@ const LABELS = {
     modeSimpleDesc: "Kilka prostych pytań — dla każdego",
     modeAdvanced: "Dla zaawansowanych",
     modeAdvancedDesc: "Pełna kontrola parametrów",
+    modeHint: "Szybka wycena daje orientacyjną cenę w 30 sekund. Tryb zaawansowany pozwala kontrolować każdy parametr (metal, próba, kamienie, praca jubilerska).",
     note: 'Kalkulacje są szacunkowe. Rzeczywista cena zależy od projektu, kamieni i specyfikacji. Opcje "niestandardowe" wymagają indywidualnej wyceny.',
     vat: "Podane ceny są orientacyjne i nie zawierają stosownych podatków VAT czy ich odpowiedników, które należy doliczyć przy finalizacji zamówienia.",
   },
@@ -23,6 +24,7 @@ const LABELS = {
     modeSimpleDesc: "A few simple questions — for everyone",
     modeAdvanced: "For advanced users",
     modeAdvancedDesc: "Full control over parameters",
+    modeHint: "Quick quote gives a rough estimate in 30 seconds. Advanced mode lets you control every parameter (metal, karat, stones, labor).",
     note: "Estimates are approximate. Actual price depends on design, gemstones, and specifications. Custom options require an individual quote.",
     vat: "Prices shown are indicative and do not include applicable VAT or equivalent taxes, which will be added upon order finalization.",
   },
@@ -33,6 +35,7 @@ const LABELS = {
     modeSimpleDesc: "Ein paar einfache Fragen — für jeden",
     modeAdvanced: "Für Fortgeschrittene",
     modeAdvancedDesc: "Volle Kontrolle über Parameter",
+    modeHint: "Schnellkalkulation liefert eine grobe Schätzung in 30 Sekunden. Der erweiterte Modus bietet volle Kontrolle über jeden Parameter (Metall, Karat, Steine, Arbeit).",
     note: 'Kalkulationen sind Schätzungen. Der tatsächliche Preis hängt von Design, Edelsteinen und Spezifikationen ab. "Individuelle" Optionen erfordern ein separates Angebot.',
     vat: "Die angegebenen Preise sind Richtwerte und enthalten keine Mehrwertsteuer oder gleichwertige Abgaben, die bei der Auftragsabwicklung hinzukommen.",
   },
@@ -82,6 +85,12 @@ export default function JewelryEstimator() {
             </div>
             <div className={`text-[11px] ${!isSimple ? "text-amber-400/80" : "text-neutral-500"}`}>{l.modeAdvancedDesc}</div>
           </button>
+        </div>
+
+        {/* Mode hint — clarifies when to use each (audit: UX friction) */}
+        <div className="mb-6 flex items-start gap-2 px-3 text-[11px] text-neutral-500 leading-relaxed">
+          <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-neutral-600" />
+          <span>{l.modeHint}</span>
         </div>
 
         {/* SIMPLE MODE */}

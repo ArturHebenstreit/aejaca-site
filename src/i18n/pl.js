@@ -44,6 +44,7 @@ export default {
     studioBtn: "Zleć projekt studia",
     brandHeading: "Twoja wizja. Nasza precyzja.",
     brandText: "Każdy projekt to rozmowa — nie katalog. Zaczynamy od Twojego pomysłu, szkicu lub inspiracji. Wspólnie dopracowujemy detal, materiał, wymiar. Widzisz render 3D zanim cokolwiek powstanie. Dostajesz przedmiot, który istnieje tylko dla Ciebie.",
+    brandReviewsBadge: "opinii Google",
     artisticLuxury: "Artystyczny & Luksusowy",
     technicalEngineering: "Techniczny & Inżynieryjny",
     jewelryCardTitle: "AEJaCA Biżuteria",
@@ -63,6 +64,33 @@ export default {
       "Urządzenia NFC, smart tagi i gadżety na zamówienie",
     ],
     learnMore: "Dowiedz się więcej",
+    quickQuoteTag: "Wycena w 30 sekund",
+    quickQuoteTitle: "Sprawdź cenę online — bez czekania na e-mail",
+    quickQuoteSubtitle: "Nasze kalkulatory liczą realną wycenę na podstawie Twoich parametrów. Biżuteria lub produkcja cyfrowa — wybierz i zacznij.",
+    quickQuoteJewelryTag: "Biżuteria",
+    quickQuoteJewelryTitle: "Kalkulator biżuterii",
+    quickQuoteJewelryDesc: "Pierścionki, bransoletki, naszyjniki. Tryb uproszczony (szybka szacunkowa cena) lub zaawansowany (metal, próba, kamienie, praca jubilerska).",
+    quickQuoteJewelryCta: "Policz wycenę biżuterii",
+    quickQuoteStudioTag: "sTuDiO",
+    quickQuoteStudioTitle: "Kalkulator druku 3D i grawerowania",
+    quickQuoteStudioDesc: "Wrzu\u0107 plik STL lub SVG \u2014 otrzymasz natychmiastow\u0105 wycen\u0119 druku 3D, grawerowania laserowego i odlewu \u017cywicznego.",
+    quickQuoteStudioCta: "Wyce\u0144 projekt online",
+    quickQuoteStlTag: "STL / SVG \u2192 cena",
+    quickQuoteStlTitle: "Masz gotowy plik 3D lub wektor?",
+    quickQuoteStlDesc: "Prze\u015blij STL albo SVG \u2014 wymiary, materia\u0142 i wyko\u0144czenie liczone automatycznie. Pe\u0142na transparentno\u015b\u0107 koszt\u00f3w.",
+    quickQuoteStlCta: "Prze\u015blij plik i wyce\u0144",
+    quickQuote3dTitle: "Druk 3D",
+    quickQuote3dDesc: "Wrzuć plik STL — natychmiastowa wycena FDM",
+    quickQuote3dCta: "Wyceń wydruk 3D",
+    quickQuoteCo2EngTitle: "Grawerowanie CO2",
+    quickQuoteCo2EngDesc: "Drewno, akryl, skóra — wrzuć SVG",
+    quickQuoteCo2EngCta: "Wyceń grawer CO2",
+    quickQuoteFiberTitle: "Grawerowanie Fiber",
+    quickQuoteFiberDesc: "Metal, biżuteria, kamień — laser fiber",
+    quickQuoteFiberCta: "Wyceń grawer Fiber",
+    quickQuoteCo2CutTitle: "Cięcie laserowe",
+    quickQuoteCo2CutDesc: "Sklejka, akryl, filc — wrzuć SVG",
+    quickQuoteCo2CutCta: "Wyceń cięcie CO2",
     blogTitle: "Wiedza i porady",
     blogAllLink: "Wszystkie artykuły",
     ctaHeading: "Masz pomysł? Stwórzmy go razem.",
@@ -218,6 +246,7 @@ export default {
       categories: [
         {
           name: "Rozmiar pierścionka",
+          img: "/img/calc/tips_jewelry/ring_sizing.png",
           tips: [
             { q: "Jak zmierzyć rozmiar pierścionka w domu?", a: "Owiń cienki pasek papieru lub nitkę wokół palca w najszerszym miejscu (zwykle na kostce). Zaznacz punkt nakładania, zmierz długość w mm i podziel przez 3,14 — otrzymasz średnicę wewnętrzną. Porównaj z tabelą rozmiarów. Mierz wieczorem, gdy palce są nieco większe." },
             { q: "Co jeśli mój rozmiar jest między dwoma numerami?", a: "Zawsze zaokrąglaj w górę — łatwiej jest zmniejszyć pierścionek (np. kulkami dystansowymi) niż go rozciągnąć. Przy szerokich obrączkach (6mm+) wybierz pół rozmiaru więcej, bo siedzą ciaśniej." },
@@ -227,6 +256,7 @@ export default {
         },
         {
           name: "Dobór biżuterii",
+          img: "/img/calc/tips_jewelry/styling.png",
           tips: [
             { q: "Jak wybrać długość naszyjnika?", a: "35cm — choker, leży na obojczyku. 45cm — najbardziej uniwersalny, tuż pod obojczykiem. 60cm — długość matinée, idealna do layeringu. Dopasuj do dekoltu: dekolty w serek świetnie wyglądają z wisiorkami, okrągłe — z krótszymi łańcuszkami." },
             { q: "Jak dopasować biżuterię do stroju?", a: "Złota zasada: dopasuj metal do detali ubioru (zamki, guziki, klamry). Srebro uzupełnia chłodne tony (niebieski, zielony, szary), złoto — ciepłe (czerwony, brąz, ziemiste). Na oficjalne okazje — jeden metal. Na co dzień — miksuj śmiało." },
@@ -236,6 +266,7 @@ export default {
         },
         {
           name: "Pielęgnacja",
+          img: "/img/calc/tips_jewelry/care.png",
           tips: [
             { q: "Jak czyścić srebrną biżuterię w domu?", a: "Wymieszaj ciepłą wodę z kroplą łagodnego płynu do naczyń. Mocz 5–10 minut, delikatnie pocieraj miękką szczoteczką do zębów, wypłucz i osusz. Na oksydację: użyj ściereczki do polerowania srebra lub pasty z sody oczyszczonej i wody. Unikaj agresywnych chemikaliów — mogą uszkodzić kamienie." },
             { q: "Jak prawidłowo przechowywać biżuterię?", a: "Przechowuj każdy element oddzielnie w miękkich saszetkach lub wyłożonej szkatułce, by zapobiec zarysowaniom. Trzymaj srebro z dala od wilgoci (dodaj woreczki z silikaelem). Zdejmuj biżuterię przed pływaniem, ćwiczeniami i nakładaniem perfum." },
@@ -245,6 +276,7 @@ export default {
         },
         {
           name: "Kamienie szlachetne",
+          img: "/img/calc/tips_jewelry/gemstones.png",
           tips: [
             { q: "Jak rozpoznać naturalny kamień szlachetny?", a: "Naturalne kamienie mają drobne inkluzje, wariacje kolorów i drobne niedoskonałości widoczne pod lupą. Idealnie jednolite, bezbłędne kamienie w niskich cenach to prawdopodobnie syntetyki. Przy drogich kamieniach zawsze proś o certyfikat autentyczności." },
             { q: "Które kamienie szlachetne najlepiej nadają się do codziennego noszenia?", a: "Użyj skali twardości Mohsa: diamenty (10), szafiry i rubiny (9), topaz (8) — doskonałe do codziennych pierścionków. Szmaragdy (7,5) wymagają więcej ostrożności. Opale (5,5–6,5) i kamień księżycowy (6–6,5) lepiej sprawdzą się w kolczykach i wisioreczkach niż w pierścionkach." },
@@ -427,6 +459,7 @@ export default {
       categories: [
         {
           name: "Druk 3D i filamenty",
+          img: "/img/calc/tips_studio/3d_printing.png",
           tips: [
             { q: "Jaki filament wybrać do mojego projektu?", a: "PLA — najłatwiejszy w druku, świetny na prototypy, elementy dekoracyjne i modele. Biodegradowalny, ale nieodporny na ciepło (mięknie w ~60°C). PETG — mocniejszy, lekko elastyczny, bezpieczny dla żywności, dobra odporność chemiczna. Idealny na części funkcjonalne i obudowy. ABS — odporny na ciepło (~100°C), wytrzymały, ale wymaga zamkniętej drukarki (deformuje się w przeciągach). Świetny na części samochodowe i narzędzia." },
             { q: "Kiedy wybrać druk z żywicy (SLA) zamiast filamentu?", a: "Żywica wygrywa przy: drobnych detalach (figurki, modele jubilerskie, stomatologia), gładkiej powierzchni i dokładności wymiarowej. Filament wygrywa przy: dużych częściach, wytrzymałości mechanicznej, szybszym druku i niższym koszcie materiału. Zasada: jeśli wygląd i detale ważniejsze niż siła — wybierz żywicę." },
@@ -437,6 +470,7 @@ export default {
         },
         {
           name: "Grawerowanie laserowe",
+          img: "/img/calc/tips_studio/laser_engraving.png",
           tips: [
             { q: "Jaki typ lasera do jakiego materiału?", a: "Laser światłowodowy (1064nm) — metale (stal, aluminium, mosiądz, srebro, złoto), twarde tworzywa i anodowane powierzchnie. Laser CO2 (10600nm) — drewno, akryl, szkło, skóra, papier, tkaniny i guma. Laser diodowy (445nm) — budżetowa opcja tylko na drewno i ciemne materiały. Nigdy nie używaj CO2 na gołym metalu — wiązka się odbija." },
             { q: "Jak uzyskać najlepszą jakość grawerowania na metalu?", a: "Użyj lasera światłowodowego z głowicą galvo. Na ciemne oznaczenia na stali nierdzewnej: niska moc / wysoka prędkość (znakowanie tlenkowe). Na głębokie grawerowanie: wiele przejść z wyższą mocą. Zawsze oczyść powierzchnię izopropanolem. Użyj sprayu do znakowania (CerMark) na metalach, które nie znakują się natywnie." },
@@ -446,6 +480,7 @@ export default {
         },
         {
           name: "Odlewy z żywicy",
+          img: "/img/calc/tips_studio/resin_casting.png",
           tips: [
             { q: "Jaką żywicę do jakiego zastosowania?", a: "Żywica UV — szybkie utwardzanie (minuty), idealna na małe elementy, oprawki biżuteryjne, cienkie warstwy i powłoki. Ograniczona do ~3mm głębokości na warstwę. Żywica epoksydowa (dwuskładnikowa) — do większych odlewów, stolikowych river table, zalewania obiektów (kwiaty, zdjęcia). Utwardza się 24–72h. Żywica poliuretanowa — najlepsza na sztywne części funkcjonalne i formy prototypowe." },
             { q: "Jak stworzyć formy silikonowe do odlewów?", a: "Użyj silikonu platynowego (gładki, bezpieczny do żywności) na detale. Zbuduj ramkę wokół modelu wzorcowego, spryskaj środkiem antyadhezyjnym, wlej silikon i daj utwardzać 24h. Na złożone kształty: forma dwuczęściowa z linią podziału. Twardość Shore 20A na elastyczne formy (łatwe wyjmowanie), 40A na sztywne (lepsza dokładność wymiarowa)." },
@@ -455,6 +490,7 @@ export default {
         },
         {
           name: "Materiały i dobre praktyki",
+          img: "/img/calc/tips_studio/materials.png",
           tips: [
             { q: "Jak wybrać odpowiednią metodę wytwarzania?", a: "Potrzebujesz 1 sztuki szybko? → Druk 3D. Trwałe znakowanie metalu? → Laser światłowodowy. Precyzyjne cięcie płaskich materiałów? → Laser CO2. Przezroczyste lub dekoracyjne obiekty? → Odlew żywiczny. Mała seria identycznych części? → Druk 3D + forma silikonowa + odlew żywiczny." },
             { q: "Jak przygotować pliki do produkcji?", a: "Do druku 3D: format STL lub 3MF, siatka bez dziur (watertight), grubość ścianki min. 1,2mm dla filamentu / 0,5mm dla SLA. Do lasera: pliki wektorowe (SVG, DXF, AI), zamień tekst na krzywe, oddziel linie cięcia od wypełnień grawerowania. Do form żywicznych: uwzględnij 0,5–1% skurczu w modelu wzorcowym." },

@@ -44,6 +44,7 @@ export default {
     studioBtn: "Studio-Projekt beauftragen",
     brandHeading: "Deine Vision. Unsere Präzision.",
     brandText: "Jedes Projekt ist ein Gespräch — kein Katalog. Wir beginnen bei deiner Idee, Skizze oder Inspiration. Gemeinsam verfeinern wir Detail, Material und Maße. Du siehst den 3D-Render, bevor etwas entsteht. Du erhältst ein Objekt, das nur für dich existiert.",
+    brandReviewsBadge: "Google-Bewertungen",
     artisticLuxury: "Künstlerisch & Luxuriös",
     technicalEngineering: "Technisch & Ingenieurwesen",
     jewelryCardTitle: "AEJaCA Schmuck",
@@ -63,6 +64,33 @@ export default {
       "NFC-Geräte, Smart Tags & individuelle Gadgets",
     ],
     learnMore: "Mehr erfahren",
+    quickQuoteTag: "Sofort-Angebot in 30 Sekunden",
+    quickQuoteTitle: "Preis online berechnen — ohne E-Mail-Wartezeit",
+    quickQuoteSubtitle: "Unsere Rechner liefern einen echten Kostenvoranschlag aus deinen Parametern. Schmuck oder digitale Fertigung — einfach starten.",
+    quickQuoteJewelryTag: "Schmuck",
+    quickQuoteJewelryTitle: "Schmuck-Preisrechner",
+    quickQuoteJewelryDesc: "Ringe, Armbänder, Halsketten. Einfacher Modus (schnelle Schätzung) oder erweitert (Metall, Karat, Steine, Arbeit).",
+    quickQuoteJewelryCta: "Schmuckpreis berechnen",
+    quickQuoteStudioTag: "sTuDiO",
+    quickQuoteStudioTitle: "3D-Druck & Lasergravur-Rechner",
+    quickQuoteStudioDesc: "Lade eine STL- oder SVG-Datei hoch \u2014 sofortiger Preis f\u00fcr 3D-Druck, Lasergravur und Harzguss.",
+    quickQuoteStudioCta: "Projekt online kalkulieren",
+    quickQuoteStlTag: "STL / SVG \u2192 Preis",
+    quickQuoteStlTitle: "Du hast bereits eine 3D- oder Vektordatei?",
+    quickQuoteStlDesc: "Lade STL oder SVG hoch \u2014 Ma\u00dfe, Material und Finish werden automatisch berechnet. Volle Kostentransparenz.",
+    quickQuoteStlCta: "Datei hochladen & kalkulieren",
+    quickQuote3dTitle: "3D-Druck",
+    quickQuote3dDesc: "STL hochladen \u2014 sofortige FDM-Kalkulation",
+    quickQuote3dCta: "3D-Druck kalkulieren",
+    quickQuoteCo2EngTitle: "CO2-Gravur",
+    quickQuoteCo2EngDesc: "Holz, Acryl, Leder \u2014 SVG hochladen",
+    quickQuoteCo2EngCta: "CO2-Gravur kalkulieren",
+    quickQuoteFiberTitle: "Faserlaser-Gravur",
+    quickQuoteFiberDesc: "Metall, Schmuck, Stein \u2014 Faserlaser",
+    quickQuoteFiberCta: "Faserlaser kalkulieren",
+    quickQuoteCo2CutTitle: "Laserschnitt",
+    quickQuoteCo2CutDesc: "Sperrholz, Acryl, Filz \u2014 SVG hochladen",
+    quickQuoteCo2CutCta: "CO2-Schnitt kalkulieren",
     blogTitle: "Wissen & Tipps",
     blogAllLink: "Alle Artikel",
     ctaHeading: "Haben Sie eine Idee? Lassen Sie uns sie gemeinsam umsetzen.",
@@ -214,6 +242,7 @@ export default {
       categories: [
         {
           name: "Ringgröße",
+          img: "/img/calc/tips_jewelry/ring_sizing.png",
           tips: [
             { q: "Wie messe ich meine Ringgröße zu Hause?", a: "Wickeln Sie einen dünnen Papierstreifen oder Faden um den Finger an der breitesten Stelle (meist am Knöchel). Markieren Sie die Überlappung, messen Sie die Länge in mm und teilen Sie durch 3,14 für den Innendurchmesser. Vergleichen Sie mit einer Größentabelle. Messen Sie abends, wenn die Finger etwas dicker sind." },
             { q: "Was tun, wenn meine Größe zwischen zwei Nummern liegt?", a: "Immer aufrunden — einen Ring etwas kleiner zu machen (z.B. mit Kügelchen) ist einfacher als ihn zu dehnen. Bei breiten Ringen (6mm+) eine halbe Größe größer wählen, da sie enger sitzen." },
@@ -223,6 +252,7 @@ export default {
         },
         {
           name: "Schmuckauswahl",
+          img: "/img/calc/tips_jewelry/styling.png",
           tips: [
             { q: "Wie wähle ich die richtige Kettenlänge?", a: "35cm — Choker, liegt am Schlüsselbein. 45cm — am universellsten, knapp unter dem Schlüsselbein. 60cm — Matinée-Länge, ideal zum Schichten. Zum Ausschnitt passend: V-Ausschnitte harmonieren mit Anhängern, Rundhalsausschnitte mit kürzeren Ketten." },
             { q: "Wie passe ich Schmuck zum Outfit an?", a: "Goldene Regel: Metall auf die Beschläge der Kleidung abstimmen (Reißverschlüsse, Knöpfe, Schnallen). Silber ergänzt kühle Töne (Blau, Grün, Grau), Gold warme Töne (Rot, Braun, Erdtöne). Formal: ein Metall. Casual: frei mischen." },
@@ -232,6 +262,7 @@ export default {
         },
         {
           name: "Pflege & Wartung",
+          img: "/img/calc/tips_jewelry/care.png",
           tips: [
             { q: "Wie reinige ich Silberschmuck zu Hause?", a: "Warmes Wasser mit einem Tropfen mildem Spülmittel mischen. 5–10 Minuten einweichen, vorsichtig mit weicher Zahnbürste reinigen, abspülen und trocknen. Bei Anlaufen: Silberpoliertuch oder Paste aus Natron und Wasser. Aggressive Chemikalien vermeiden — sie können Steine beschädigen." },
             { q: "Wie lagere ich Schmuck richtig?", a: "Jedes Stück separat in weichen Beuteln oder einem gefütterten Schmuckkästchen aufbewahren. Silber vor Luft und Feuchtigkeit schützen (Silikagel-Päckchen hinzufügen). Schmuck vor dem Schwimmen, Sport und Auftragen von Parfüm und Lotionen abnehmen." },
@@ -241,6 +272,7 @@ export default {
         },
         {
           name: "Edelsteine",
+          img: "/img/calc/tips_jewelry/gemstones.png",
           tips: [
             { q: "Wie erkenne ich einen natürlichen Edelstein?", a: "Natürliche Steine haben winzige Einschlüsse, Farbvariationen und kleine Unvollkommenheiten unter Vergrößerung. Perfekt gleichmäßige, makellose Steine zu niedrigen Preisen sind wahrscheinlich synthetisch. Bei teuren Steinen immer ein Echtheitszertifikat verlangen." },
             { q: "Welche Edelsteine eignen sich am besten für den Alltag?", a: "Mohs-Härteskala: Diamanten (10), Saphire und Rubine (9) und Topas (8) sind hervorragend für tägliche Ringe. Smaragde (7,5) brauchen mehr Vorsicht. Opale (5,5–6,5) und Mondstein (6–6,5) eignen sich besser für Ohrringe und Anhänger als für Ringe." },
@@ -419,6 +451,7 @@ export default {
       categories: [
         {
           name: "3D-Druck & Filamente",
+          img: "/img/calc/tips_studio/3d_printing.png",
           tips: [
             { q: "Welches Filament soll ich für mein Projekt wählen?", a: "PLA — am einfachsten zu drucken, ideal für Prototypen, Deko und Modelle. Biologisch abbaubar, aber nicht hitzebeständig (erweicht bei ~60°C). PETG — stärker, leicht flexibel, lebensmittelecht, gute chemische Beständigkeit. Ideal für Funktionsteile und Gehäuse. ABS — hitzebeständig (~100°C), robust, benötigt aber geschlossenen Drucker (verzieht sich bei Zugluft). Ideal für Autoteile und Werkzeuge." },
             { q: "Wann Harz (SLA) statt Filamentdruck?", a: "Harz gewinnt bei: feinen Details (Miniaturen, Schmuckmodelle, Dental), glatter Oberfläche und Maßgenauigkeit. Filamentdruck gewinnt bei: großen Teilen, mechanischer Festigkeit, schnellerem Druck und niedrigeren Materialkosten. Faustregel: Wenn Optik und Details wichtiger sind als Stärke — Harz wählen." },
@@ -429,6 +462,7 @@ export default {
         },
         {
           name: "Lasergravur",
+          img: "/img/calc/tips_studio/laser_engraving.png",
           tips: [
             { q: "Welcher Lasertyp für welches Material?", a: "Faserlaser (1064nm) — Metalle (Stahl, Aluminium, Messing, Silber, Gold), harte Kunststoffe und eloxierte Oberflächen. CO2-Laser (10600nm) — Holz, Acryl, Glas, Leder, Papier, Stoff und Gummi. Diodenlaser (445nm) — Budget-Option nur für Holz und dunkle Materialien. CO2 nie auf blankem Metall verwenden — der Strahl reflektiert." },
             { q: "Beste Gravurqualität auf Metall erzielen?", a: "Faserlaser mit Galvo-Scankopf für Geschwindigkeit und Präzision. Für dunkle Markierungen auf Edelstahl: niedrige Leistung / hohe Geschwindigkeit (Oxidmarkierung). Für Tiefgravur: mehrere Durchgänge bei höherer Leistung. Oberfläche immer mit Isopropanol reinigen. Markierspray (CerMark) auf Metallen verwenden, die nicht gut nativ markieren." },
@@ -438,6 +472,7 @@ export default {
         },
         {
           name: "Harzguss",
+          img: "/img/calc/tips_studio/resin_casting.png",
           tips: [
             { q: "Welches Harz für welche Anwendung?", a: "UV-Harz — schnelle Aushärtung (Minuten), ideal für kleine Teile, Schmuckfassungen, dünne Schichten und Beschichtungen. Begrenzt auf ~3mm Tiefe pro Schicht. Epoxidharz (Zweikomponenten) — für größere Güsse, River Tables, Einbettung von Objekten (Blumen, Fotos). Härtet in 24–72h. Polyurethanharz — am besten für starre Funktionsteile und Prototypformen." },
             { q: "Wie erstellt man Silikonformen für Harzguss?", a: "Platinhärtendes Silikon (glatt, lebensmittelecht) für detaillierte Formen verwenden. Kasten um das Mastermodell bauen, Trennmittel sprühen, Silikon gießen und 24h aushärten lassen. Für komplexe Formen: zweiteilige Form mit Trennlinie. Shore-Härte 20A für flexible Formen (einfaches Entformen), 40A für starre (bessere Maßgenauigkeit)." },
@@ -447,6 +482,7 @@ export default {
         },
         {
           name: "Materialien & Best Practices",
+          img: "/img/calc/tips_studio/materials.png",
           tips: [
             { q: "Wie wähle ich die richtige Fertigungsmethode?", a: "1 Teil schnell benötigt? → 3D-Druck. Dauerhafte Metallmarkierung? → Faserlaser. Präzisionsschnitt flacher Materialien? → CO2-Laser. Transparente oder dekorative Objekte? → Harzguss. Kleine Serie identischer Teile? → 3D-Druck + Silikonform + Harzguss-Kombi." },
             { q: "Wie bereite ich Dateien für die Produktion vor?", a: "Für 3D-Druck: STL- oder 3MF-Format, wasserdichtes Mesh (keine Löcher), Wandstärke mindestens 1,2mm für Filament / 0,5mm für SLA. Für Laser: Vektordateien (SVG, DXF, AI), Text in Pfade umwandeln, Schnittlinien von Gravurfüllungen trennen. Für Harzformen: 0,5–1% Schrumpfung im Mastermodell einrechnen." },

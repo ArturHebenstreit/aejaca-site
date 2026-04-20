@@ -1,5 +1,6 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Gem, Sparkles, Palette, Heart, Wand2, Crown } from "lucide-react";
+import { ArrowRight, Gem, Sparkles, Palette, Heart, Wand2, Crown, Calculator } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getPost } from "../blog/posts.js";
@@ -16,10 +17,17 @@ import {
   buildFAQSchema,
   buildBreadcrumbSchema,
   buildWebPageSchema,
+  buildHowToSchema,
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 
 const icons = [Gem, Sparkles, Palette, Heart, Wand2, Crown];
+
+const FLOATING_CTA_LABELS = {
+  pl: "Wyceń online",
+  en: "Quick quote",
+  de: "Sofort-Angebot",
+};
 
 export default function Jewelry() {
   const { t, lang } = useLanguage();
@@ -31,6 +39,13 @@ export default function Jewelry() {
   const valuesRef = useScrollReveal();
   const etsyRef = useScrollReveal();
   const ctaRef = useScrollReveal();
+
+  const [showFloatingCta, setShowFloatingCta] = useState(false);
+  useEffect(() => {
+    function onScroll() { setShowFloatingCta(window.scrollY > 600); }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   // Per-page schemas: Service (jewelry as commissionable craft) + FAQ (AIO gold)
   // + Breadcrumb (SERP navigation) + WebPage (canonical wrapper).
@@ -48,6 +63,13 @@ export default function Jewelry() {
       serviceType: "Custom handcrafted jewelry design and production",
       url: pageUrl,
       offers: { price: "150", minPrice: "80", maxPrice: "3500", currency: "EUR" },
+    }),
+    // HowTo schema = step-by-step process (AI assistants cite verbatim for "how is X made?")
+    j.processSteps?.length && buildHowToSchema({
+      name: j.processTitle,
+      description: j.processTag,
+      steps: j.processSteps,
+      image: `${SITE.url}/hero-jewelry.jpg`,
     }),
     // FAQ schema = direct ranking signal for Google's "People Also Ask" + LLM answers
     j.faq?.items && buildFAQSchema(j.faq.items),
@@ -119,6 +141,13 @@ export default function Jewelry() {
 
       <div className="gradient-divider" />
 
+      {/* FAQ — moved right after calculator so users get answers
+          before they need to scroll through portfolio / reviews.
+          AI assistants also rank FAQ above-the-fold higher. */}
+      <FAQ data={j.faq} accent="amber" id="faq" />
+
+      <div className="gradient-divider" />
+
       {/* Process Gallery */}
       <ProcessGallery />
 
@@ -158,11 +187,6 @@ export default function Jewelry() {
 
       {/* Google Reviews — real social proof replaces hardcoded testimonials */}
       <GoogleReviews id="testimonials" limit={3} compact />
-
-      <div className="gradient-divider" />
-
-      {/* FAQ */}
-      <FAQ data={j.faq} accent="amber" id="faq" />
 
       <div className="gradient-divider" />
 
@@ -214,6 +238,18 @@ export default function Jewelry() {
           </Link>
         </div>
       </section>
+
+      {/* Floating Quick Quote CTA — jumps user straight to calculator (conversion driver) */}
+      <a
+        href="#calculator"
+        className={`floating-cta ${showFloatingCta ? "visible" : ""}`}
+        aria-label={FLOATING_CTA_LABELS[lang] || FLOATING_CTA_LABELS.en}
+      >
+        <span className="flex items-center gap-2 px-5 py-3 bg-amber-500 text-black font-medium rounded-full shadow-lg shadow-amber-500/30 hover:bg-amber-400 transition-colors">
+          <Calculator className="w-5 h-5" />
+          {FLOATING_CTA_LABELS[lang] || FLOATING_CTA_LABELS.en}
+        </span>
+      </a>
       </div>
     </>
   );

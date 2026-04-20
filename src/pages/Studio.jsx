@@ -1,5 +1,6 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench } from "lucide-react";
+import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench, Calculator } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getPost } from "../blog/posts.js";
@@ -15,10 +16,17 @@ import {
   buildFAQSchema,
   buildBreadcrumbSchema,
   buildWebPageSchema,
+  buildHowToSchema,
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 
 const techIcons = [Cpu, Printer, Zap, Layers, Box, Wrench];
+
+const FLOATING_CTA_LABELS = {
+  pl: "Wyceń STL/SVG",
+  en: "Quote STL/SVG",
+  de: "STL/SVG kalkulieren",
+};
 
 export default function Studio() {
   const { t, lang } = useLanguage();
@@ -33,6 +41,13 @@ export default function Studio() {
   const getStepRef = useStaggerReveal(120);
   const etsyRef = useScrollReveal();
   const ctaRef = useScrollReveal();
+
+  const [showFloatingCta, setShowFloatingCta] = useState(false);
+  useEffect(() => {
+    function onScroll() { setShowFloatingCta(window.scrollY > 600); }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   // Service + FAQ schemas are the highest-impact AIO signal for pricing queries
   // ("how much does 3D printing cost?" — LLMs will cite this page verbatim).
@@ -50,6 +65,13 @@ export default function Studio() {
       serviceType: "3D printing, laser engraving, resin casting and digital fabrication",
       url: pageUrl,
       offers: { price: "25", minPrice: "5", maxPrice: "2000", currency: "EUR" },
+    }),
+    // HowTo schema: Idea → Design → Prototype → Production (AI citations for "how X works")
+    s.processSteps?.length && buildHowToSchema({
+      name: s.processTitle,
+      description: s.processTag,
+      steps: s.processSteps,
+      image: `${SITE.url}/hero-studio.jpg`,
     }),
     s.faq?.items && buildFAQSchema(s.faq.items),
   ];
@@ -122,6 +144,12 @@ export default function Studio() {
 
       <div className="gradient-divider" />
 
+      {/* FAQ — moved right after calculator (audit recommendation).
+          AI assistants rank FAQ near pricing signals higher. */}
+      <FAQ data={s.faq} accent="blue" id="faq" />
+
+      <div className="gradient-divider" />
+
       {/* Portfolio — temporarily replaced with placeholder */}
       <section id="portfolio" className="py-20 px-4 bg-neutral-950">
         <div className="max-w-4xl mx-auto text-center">
@@ -179,11 +207,6 @@ export default function Studio() {
 
       <div className="gradient-divider" />
 
-      {/* FAQ */}
-      <FAQ data={s.faq} accent="blue" id="faq" />
-
-      <div className="gradient-divider" />
-
       {/* Tips & Advice */}
       <Tips data={s.tips} accent="blue" id="tips" />
 
@@ -234,6 +257,18 @@ export default function Studio() {
           </Link>
         </div>
       </section>
+
+      {/* Floating Quick Quote CTA — emphasize STL/SVG auto-pricing */}
+      <a
+        href="#calculator"
+        className={`floating-cta ${showFloatingCta ? "visible" : ""}`}
+        aria-label={FLOATING_CTA_LABELS[lang] || FLOATING_CTA_LABELS.en}
+      >
+        <span className="flex items-center gap-2 px-5 py-3 bg-blue-500 text-white font-medium rounded-full shadow-lg shadow-blue-500/30 hover:bg-blue-400 transition-colors">
+          <Calculator className="w-5 h-5" />
+          {FLOATING_CTA_LABELS[lang] || FLOATING_CTA_LABELS.en}
+        </span>
+      </a>
       </div>
     </>
   );

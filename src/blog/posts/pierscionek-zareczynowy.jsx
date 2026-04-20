@@ -6,7 +6,7 @@ export const meta = {
   accent: "amber",
   publishedAt: "2026-04-17",
   updatedAt: "2026-04-17",
-  coverImage: "/hero-jewelry.jpg",
+  coverImage: "/img/blog/pierscionek-zareczynowy.jpg",
   readingTime: { pl: 7, en: 5, de: 5 },
   title: {
     pl: "Pierścionek zaręczynowy na zamówienie — koszt, proces i 7 rzeczy, które warto wiedzieć",

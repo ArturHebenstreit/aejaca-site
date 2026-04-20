@@ -52,20 +52,20 @@ export const SEO = {
   jewelry: {
     pl: {
       title: "AEJaCA Biżuteria — Ręcznie Robione Srebro, Złoto, Kamienie",
-      description: "Pierścionki, kolczyki, wisiorki i bransoletki ze srebra 925 i złota 14k/18k z naturalnymi kamieniami. Projekt i wycena w kalkulatorze online.",
-      keywords: "biżuteria srebrna, pierścionki z kamieniami, kolczyki, bransoletki, projektowanie biżuterii, biżuteria na zamówienie",
+      description: "Biżuteria na zamówienie: pierścionki zaręczynowe, kolczyki, wisiorki ze srebra 925 i złota 14k/18k z kamieniami. Natychmiastowy kalkulator online.",
+      keywords: "pierścionek zaręczynowy na zamówienie, kalkulator biżuterii online, biżuteria srebrna, pierścionki z kamieniami, kolczyki, bransoletki, biżuteria na zamówienie, personalizowana biżuteria",
       ogAlt: "Ręcznie robione pierścionki i biżuteria AEJaCA",
     },
     en: {
       title: "AEJaCA Jewelry — Handmade Silver, Gold & Gemstone Pieces",
-      description: "Custom rings, earrings, pendants and bracelets in silver 925 and gold 14k/18k with natural gemstones. Get an online quote with our calculator.",
-      keywords: "silver jewelry, gemstone rings, earrings, bracelets, custom jewelry design, handmade pendants",
+      description: "Custom engagement rings, earrings, pendants in silver 925 & gold 14k/18k with natural gemstones. Instant online jewelry price calculator.",
+      keywords: "engagement rings online, custom jewelry calculator, silver jewelry, gemstone rings, earrings, bracelets, personalized jewelry, custom jewelry design, handmade pendants",
       ogAlt: "AEJaCA handmade rings and jewelry pieces",
     },
     de: {
       title: "AEJaCA Schmuck — Handgefertigte Ringe, Ohrringe, Anhänger",
-      description: "Individuelle Ringe, Ohrringe, Anhänger und Armbänder aus Silber 925 und Gold 14k/18k mit Edelsteinen. Online-Preisrechner verfügbar.",
-      keywords: "Silberschmuck, Ringe mit Edelsteinen, Ohrringe, Armbänder, individuelles Schmuckdesign",
+      description: "Individuelle Verlobungsringe, Ohrringe, Anhänger aus Silber 925 & Gold 14k/18k mit Edelsteinen. Sofort-Preisrechner für Schmuck online.",
+      keywords: "Verlobungsring auf Bestellung, Schmuck-Preisrechner online, Silberschmuck, Ringe mit Edelsteinen, Ohrringe, Armbänder, personalisierter Schmuck, individuelles Schmuckdesign",
       ogAlt: "AEJaCA handgefertigte Ringe und Schmuckstücke",
     },
   },
@@ -73,20 +73,20 @@ export const SEO = {
   studio: {
     pl: {
       title: "AEJaCA sTuDiO — Druk 3D, Laser, Odlewy Żywiczne",
-      description: "Druk 3D multi-materiał, grawerowanie laser CO2/Fiber, odlewy UV i 2K. Prototypy i produkcja małoseryjna. Wycena online w kalkulatorze.",
-      keywords: "druk 3D, grawerowanie laserowe, laser fiber, CO2 laser, odlewy żywiczne, prototypowanie, produkcja małoseryjna, Bambu Lab H2D",
+      description: "Kalkulator wyceny druku 3D online (STL/SVG) + grawerowanie laser CO2/Fiber + odlewy żywiczne. Prototypy i produkcja małoseryjna.",
+      keywords: "kalkulator wyceny druku 3D online, wycena STL online, druk 3D na zamówienie, grawerowanie laserowe cena, laser fiber, CO2 laser, odlewy żywiczne, prototypowanie, Bambu Lab H2D",
       ogAlt: "AEJaCA sTuDiO — warsztat druku 3D i grawerowania laserowego",
     },
     en: {
       title: "AEJaCA sTuDiO — 3D Printing, Laser Engraving & Resin Casting",
-      description: "Multi-material 3D printing, CO2/Fiber laser engraving, UV and 2K resin casting. Prototypes & small batch production. Online pricing calculator.",
-      keywords: "3D printing, laser engraving, fiber laser, CO2 laser, resin casting, prototyping, small batch production, Bambu Lab H2D",
+      description: "3D printing cost calculator online (STL/SVG) + CO2/Fiber laser engraving + UV/2K resin casting. Instant quote for prototypes & custom parts.",
+      keywords: "3D printing cost calculator online, STL upload instant quote, laser engraving price calculator, custom 3D prints, fiber laser, CO2 laser, resin casting, prototyping, Bambu Lab H2D",
       ogAlt: "AEJaCA sTuDiO — 3D printing and laser engraving workshop",
     },
     de: {
       title: "AEJaCA sTuDiO — 3D-Druck, Lasergravur, Harzguss",
-      description: "Multi-Material 3D-Druck, CO2-/Faserlasergravur, UV- und 2K-Harzguss. Prototypen und Kleinserien. Online-Preisrechner verfügbar.",
-      keywords: "3D-Druck, Lasergravur, Faserlaser, CO2-Laser, Harzguss, Prototyping, Kleinserienfertigung",
+      description: "3D-Druck-Preisrechner online (STL/SVG) + CO2-/Faserlasergravur + UV-/2K-Harzguss. Sofort-Angebot für Prototypen & Kleinserien.",
+      keywords: "3D-Druck Preisrechner online, STL Sofort-Angebot, Lasergravur Preis Rechner, individueller 3D-Druck, Faserlaser, CO2-Laser, Harzguss, Prototyping, Bambu Lab H2D",
       ogAlt: "AEJaCA sTuDiO — 3D-Druck- und Lasergravurwerkstatt",
     },
   },
