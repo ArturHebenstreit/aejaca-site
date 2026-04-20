@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Zap, Sparkles, FileUp, Printer, Flame, Cpu, Scissors } from "lucide-react";
+import { ArrowRight, Zap, Sparkles, FileUp, Printer, Flame, Cpu, Scissors, Star } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getSortedPosts } from "../blog/posts.js";
@@ -115,13 +115,14 @@ export default function Home() {
           <img src="/brand-sign.webp" alt="AEJaCA brand mark" loading="lazy" decoding="async" className="w-36 h-36 mx-auto mb-8 brightness-0 invert opacity-80 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]" />
           <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-6">{h.brandHeading}</h2>
           <p className="text-neutral-400 text-lg leading-relaxed">{h.brandText}</p>
+          <a href="#reviews" className="inline-flex items-center gap-2 mt-6 px-4 py-2 rounded-full border border-amber-400/20 bg-amber-400/[0.03] text-sm hover:bg-amber-400/10 hover:border-amber-400/40 transition-all duration-300">
+            <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+            <span className="font-bold text-amber-300">{GOOGLE_BUSINESS.rating}</span>
+            <span className="text-neutral-600">·</span>
+            <span className="text-neutral-400">{GOOGLE_BUSINESS.totalReviews} {h.brandReviewsBadge}</span>
+          </a>
         </div>
       </section>
-
-      <div className="gradient-divider" />
-
-      {/* Google Reviews — social proof above secondary content (CRO +34% per Baymard) */}
-      <GoogleReviews id="reviews" limit={6} />
 
       <div className="gradient-divider" />
 
@@ -275,6 +276,11 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <div className="gradient-divider" />
+
+      {/* Google Reviews — social proof before CTA (trust → action pattern) */}
+      <GoogleReviews id="reviews" limit={6} />
 
       <div className="gradient-divider" />
 

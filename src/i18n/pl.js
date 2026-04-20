@@ -44,6 +44,7 @@ export default {
     studioBtn: "Zleć projekt studia",
     brandHeading: "Twoja wizja. Nasza precyzja.",
     brandText: "Każdy projekt to rozmowa — nie katalog. Zaczynamy od Twojego pomysłu, szkicu lub inspiracji. Wspólnie dopracowujemy detal, materiał, wymiar. Widzisz render 3D zanim cokolwiek powstanie. Dostajesz przedmiot, który istnieje tylko dla Ciebie.",
+    brandReviewsBadge: "opinii Google",
     artisticLuxury: "Artystyczny & Luksusowy",
     technicalEngineering: "Techniczny & Inżynieryjny",
     jewelryCardTitle: "AEJaCA Biżuteria",

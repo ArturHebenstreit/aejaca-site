@@ -46,6 +46,7 @@ export default {
     studioBtn: "Commission a studio project",
     brandHeading: "Your vision. Our precision.",
     brandText: "Every project is a conversation — not a catalog. We start from your idea, sketch, or inspiration. Together we refine the detail, material, and dimensions. You see the 3D render before anything is made. You receive an object that exists only for you.",
+    brandReviewsBadge: "Google reviews",
     artisticLuxury: "Artistic & Luxury",
     technicalEngineering: "Technical & Engineering",
     jewelryCardTitle: "AEJaCA Jewelry",

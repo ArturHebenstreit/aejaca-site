@@ -44,6 +44,7 @@ export default {
     studioBtn: "Studio-Projekt beauftragen",
     brandHeading: "Deine Vision. Unsere Präzision.",
     brandText: "Jedes Projekt ist ein Gespräch — kein Katalog. Wir beginnen bei deiner Idee, Skizze oder Inspiration. Gemeinsam verfeinern wir Detail, Material und Maße. Du siehst den 3D-Render, bevor etwas entsteht. Du erhältst ein Objekt, das nur für dich existiert.",
+    brandReviewsBadge: "Google-Bewertungen",
     artisticLuxury: "Künstlerisch & Luxuriös",
     technicalEngineering: "Technisch & Ingenieurwesen",
     jewelryCardTitle: "AEJaCA Schmuck",
