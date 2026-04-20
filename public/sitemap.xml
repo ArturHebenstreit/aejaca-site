@@ -77,7 +77,7 @@
   <!-- Blog Index -->
   <url>
     <loc>https://www.aejaca.com/blog</loc>
-    <lastmod>2026-04-17</lastmod>
+    <lastmod>2026-04-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog" />
@@ -132,6 +132,126 @@
       <image:loc>https://www.aejaca.com/hero-studio.jpg</image:loc>
       <image:title>Laser engraving — guide to materials, techniques and applications</image:title>
     </image:image>
+  </url>
+
+  <!-- Blog: Jak dbać o biżuterię -->
+  <url>
+    <loc>https://www.aejaca.com/blog/jak-dbac-o-bizuterie</loc>
+    <lastmod>2026-04-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/jak-dbac-o-bizuterie" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/blog/jak-dbac-o-bizuterie" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/blog/jak-dbac-o-bizuterie" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/jak-dbac-o-bizuterie" />
+  </url>
+
+  <!-- Blog: Odlewy żywiczne poradnik -->
+  <url>
+    <loc>https://www.aejaca.com/blog/odlewy-zywiczne-poradnik</loc>
+    <lastmod>2026-04-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/odlewy-zywiczne-poradnik" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/blog/odlewy-zywiczne-poradnik" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/blog/odlewy-zywiczne-poradnik" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/odlewy-zywiczne-poradnik" />
+  </url>
+
+  <!-- Blog: Prezenty personalizowane -->
+  <url>
+    <loc>https://www.aejaca.com/blog/prezenty-personalizowane</loc>
+    <lastmod>2026-04-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/prezenty-personalizowane" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/blog/prezenty-personalizowane" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/blog/prezenty-personalizowane" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/prezenty-personalizowane" />
+  </url>
+
+  <!-- Blog: Jak przygotować plik STL -->
+  <url>
+    <loc>https://www.aejaca.com/blog/jak-przygotowac-plik-stl</loc>
+    <lastmod>2026-04-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/jak-przygotowac-plik-stl" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/blog/jak-przygotowac-plik-stl" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/blog/jak-przygotowac-plik-stl" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/jak-przygotowac-plik-stl" />
+  </url>
+
+  <!-- Blog: Srebro vs złoto -->
+  <url>
+    <loc>https://www.aejaca.com/blog/srebro-vs-zloto</loc>
+    <lastmod>2026-04-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/srebro-vs-zloto" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/blog/srebro-vs-zloto" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/blog/srebro-vs-zloto" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/srebro-vs-zloto" />
+  </url>
+
+  <!-- Blog: Obrączki ślubne -->
+  <url>
+    <loc>https://www.aejaca.com/blog/obraczki-slubne</loc>
+    <lastmod>2026-04-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/obraczki-slubne" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/blog/obraczki-slubne" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/blog/obraczki-slubne" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/obraczki-slubne" />
+  </url>
+
+  <!-- Blog: Materiały laser cutting -->
+  <url>
+    <loc>https://www.aejaca.com/blog/materialy-laser-cutting</loc>
+    <lastmod>2026-04-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/materialy-laser-cutting" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/blog/materialy-laser-cutting" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/blog/materialy-laser-cutting" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/materialy-laser-cutting" />
+  </url>
+
+  <!-- Blog: Biżuteria jako inwestycja -->
+  <url>
+    <loc>https://www.aejaca.com/blog/bizuteria-inwestycja</loc>
+    <lastmod>2026-04-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/bizuteria-inwestycja" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/blog/bizuteria-inwestycja" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/blog/bizuteria-inwestycja" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/bizuteria-inwestycja" />
+  </url>
+
+  <!-- Blog: AI w projektowaniu -->
+  <url>
+    <loc>https://www.aejaca.com/blog/projektowanie-ai</loc>
+    <lastmod>2026-04-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/projektowanie-ai" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/blog/projektowanie-ai" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/blog/projektowanie-ai" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/projektowanie-ai" />
+  </url>
+
+  <!-- Blog: Warsztat od kuchni -->
+  <url>
+    <loc>https://www.aejaca.com/blog/warsztat-od-kuchni</loc>
+    <lastmod>2026-04-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/warsztat-od-kuchni" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/blog/warsztat-od-kuchni" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/blog/warsztat-od-kuchni" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/warsztat-od-kuchni" />
   </url>
 
   <!-- Privacy -->

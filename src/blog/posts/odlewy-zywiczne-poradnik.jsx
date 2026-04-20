@@ -5,7 +5,7 @@ export const meta = {
   category: "studio",
   accent: "blue",
   publishedAt: "2026-04-20",
-  coverImage: "/hero-studio.jpg",
+  coverImage: "/img/blog/odlewy-zywiczne-poradnik.jpg",
   readingTime: { pl: 6, en: 5, de: 5 },
   title: {
     pl: "Odlewy żywiczne — czym są i co można z nich stworzyć",

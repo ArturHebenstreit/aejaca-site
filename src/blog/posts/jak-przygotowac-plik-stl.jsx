@@ -5,7 +5,7 @@ export const meta = {
   category: "studio",
   accent: "blue",
   publishedAt: "2026-04-20",
-  coverImage: "/hero-studio.jpg",
+  coverImage: "/img/blog/jak-przygotowac-plik-stl.jpg",
   readingTime: { pl: 7, en: 5, de: 5 },
   title: {
     pl: "Jak przygotować plik STL do druku 3D — poradnik",

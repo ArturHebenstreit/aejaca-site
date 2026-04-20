@@ -5,7 +5,7 @@ export const meta = {
   category: "jewelry",
   accent: "amber",
   publishedAt: "2026-04-20",
-  coverImage: "/hero-jewelry.jpg",
+  coverImage: "/img/blog/prezenty-personalizowane.jpg",
   readingTime: { pl: 5, en: 4, de: 4 },
   title: {
     pl: "Prezenty personalizowane — pomysły na każdą okazję",
