@@ -126,14 +126,14 @@ export function Body({ lang }) {
           t("Złoto 18k", "Gold 18k", "Gold 18k"),
         ]}
         rows={[
-          [t("Prosty pierścionek", "Simple ring", "Einfacher Ring"), t("od 40 €", "from €40", "ab 40 €"), t("od 180 €", "from €180", "ab 180 €"), t("od 280 €", "from €280", "ab 280 €")],
-          [t("Wisiorek", "Pendant", "Anhänger"), t("od 35 €", "from €35", "ab 35 €"), t("od 150 €", "from €150", "ab 150 €"), t("od 220 €", "from €220", "ab 220 €")],
-          [t("Kolczyki (para)", "Earrings (pair)", "Ohrringe (Paar)"), t("od 50 €", "from €50", "ab 50 €"), t("od 200 €", "from €200", "ab 200 €"), t("od 320 €", "from €320", "ab 320 €")],
-          [t("Pierścionek zaręczynowy", "Engagement ring", "Verlobungsring"), t("od 80 €", "from €80", "ab 80 €"), t("od 350 €", "from €350", "ab 350 €"), t("od 550 €", "from €550", "ab 550 €")],
+          [t("Prosty pierścionek", "Simple ring", "Einfacher Ring"), t("od 170 zł", "from €40", "ab 40 €"), t("od 780 zł", "from €180", "ab 180 €"), t("od 1200 zł", "from €280", "ab 280 €")],
+          [t("Wisiorek", "Pendant", "Anhänger"), t("od 150 zł", "from €35", "ab 35 €"), t("od 650 zł", "from €150", "ab 150 €"), t("od 950 zł", "from €220", "ab 220 €")],
+          [t("Kolczyki (para)", "Earrings (pair)", "Ohrringe (Paar)"), t("od 215 zł", "from €50", "ab 50 €"), t("od 860 zł", "from €200", "ab 200 €"), t("od 1380 zł", "from €320", "ab 320 €")],
+          [t("Pierścionek zaręczynowy", "Engagement ring", "Verlobungsring"), t("od 350 zł", "from €80", "ab 80 €"), t("od 1505 zł", "from €350", "ab 350 €"), t("od 2365 zł", "from €550", "ab 550 €")],
         ]}
       />
       <P>{t(
-        "Ceny nie zawierają kamieni szlachetnych, które dodają od 20 € do 2000 €+ w zależności od rodzaju i wielkości.",
+        "Ceny nie zawierają kamieni szlachetnych, które dodają od 85 zł do 8600 zł+ w zależności od rodzaju i wielkości.",
         "Prices exclude gemstones, which add €20 to €2,000+ depending on type and size.",
         "Preise ohne Edelsteine, die je nach Art und Größe 20 € bis 2.000 €+ hinzufügen."
       )}</P>

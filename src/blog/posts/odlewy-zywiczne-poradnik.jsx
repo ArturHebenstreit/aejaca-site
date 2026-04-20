@@ -149,10 +149,10 @@ export function Body({ lang }) {
           t("Czas realizacji", "Turnaround", "Lieferzeit"),
         ]}
         rows={[
-          [t("Prosty wisiorek / brelok", "Simple pendant / charm", "Einfacher Anhänger / Charm"), "€8", t("1–2 dni", "1–2 days", "1–2 Tage")],
-          [t("Wkładka do biżuterii", "Custom jewelry insert", "Schmuck-Einsatz"), "€15", t("2–3 dni", "2–3 days", "2–3 Tage")],
-          [t("Obiekt dekoracyjny", "Decorative object", "Dekoratives Objekt"), "€25", t("3–5 dni", "3–5 days", "3–5 Tage")],
-          [t("Forma + odlew na zamówienie", "Custom mold + casting", "Individuelle Form + Guss"), "€45", t("5–7 dni", "5–7 days", "5–7 Tage")],
+          [t("Prosty wisiorek / brelok", "Simple pendant / charm", "Einfacher Anhänger / Charm"), t("35 zł", "€8", "8 €"), t("1–2 dni", "1–2 days", "1–2 Tage")],
+          [t("Wkładka do biżuterii", "Custom jewelry insert", "Schmuck-Einsatz"), t("65 zł", "€15", "15 €"), t("2–3 dni", "2–3 days", "2–3 Tage")],
+          [t("Obiekt dekoracyjny", "Decorative object", "Dekoratives Objekt"), t("110 zł", "€25", "25 €"), t("3–5 dni", "3–5 days", "3–5 Tage")],
+          [t("Forma + odlew na zamówienie", "Custom mold + casting", "Individuelle Form + Guss"), t("195 zł", "€45", "45 €"), t("5–7 dni", "5–7 days", "5–7 Tage")],
         ]}
       />
 

@@ -13,7 +13,7 @@ export const meta = {
     de: "Eheringe auf Bestellung — Metall, Profil & Preisguide",
   },
   description: {
-    pl: "Jak wybrać obrączki ślubne? Porównanie metali, profili i wykończeń. Ceny par od €160. Kalkulator online w AEJaCA.",
+    pl: "Jak wybrać obrączki ślubne? Porównanie metali, profili i wykończeń. Ceny par od 690 zł. Kalkulator online w AEJaCA.",
     en: "How to choose wedding bands? Comparing metals, profiles, and finishes. Pair pricing from €160. Online calculator at AEJaCA.",
     de: "Wie wählt man Eheringe? Vergleich von Metallen, Profilen und Oberflächen. Paarpreise ab 160 €. Online-Kalkulator bei AEJaCA.",
   },
@@ -47,7 +47,7 @@ export const meta = {
   },
   faq: {
     pl: [
-      { q: "Ile kosztują obrączki ślubne na zamówienie?", a: "Para obrączek srebrnych od €160, złotych 14k od €600, złotych 18k od €900. Cena zależy od szerokości, profilu i wykończenia." },
+      { q: "Ile kosztują obrączki ślubne na zamówienie?", a: "Para obrączek srebrnych od 690 zł, złotych 14k od 2580 zł, złotych 18k od 3870 zł. Cena zależy od szerokości, profilu i wykończenia." },
       { q: "Jak długo trwa realizacja obrączek?", a: "Standardowo 3–5 tygodni od zatwierdzenia projektu. Ekspres (2 tygodnie) za dopłatą 30%." },
       { q: "Czy mogę zamówić obrączki z różnych metali?", a: "Tak — popularne połączenie to złoto żółte + białe lub złoto + srebro z rodowaniem." },
       { q: "Czy obrączki można później przeskalować?", a: "Tak, oferujemy jednorazowe bezpłatne przeskalowanie do ±2 rozmiarów w ciągu roku od zakupu." },
@@ -91,11 +91,11 @@ export function Body({ lang }) {
           ["Metall", "Farbe", "Haltbarkeit", "Paarpreis ab"]
         )}
         rows={[
-          [t("Srebro 925", "Silver 925", "Silber 925"), t("Jasny biały", "Bright white", "Helles Weiß"), t("Dobra (wymaga polerowania)", "Good (needs polishing)", "Gut (braucht Politur)"), "€160"],
-          [t("Złoto 14k żółte", "14k Yellow Gold", "14k Gelbgold"), t("Ciepły złoty", "Warm gold", "Warmes Gold"), t("Bardzo dobra", "Very good", "Sehr gut"), "€600"],
-          [t("Złoto 14k białe", "14k White Gold", "14k Weißgold"), t("Chłodny biały", "Cool white", "Kühles Weiß"), t("Bardzo dobra", "Very good", "Sehr gut"), "€650"],
-          [t("Złoto 18k", "18k Gold", "18k Gold"), t("Bogaty, intensywny", "Rich, intense", "Satt, intensiv"), t("Dobra", "Good", "Gut"), "€900"],
-          [t("Złoto różowe 14k", "14k Rose Gold", "14k Roségold"), t("Różowo-miedziany", "Pinkish copper", "Rosa-Kupfer"), t("Bardzo dobra", "Very good", "Sehr gut"), "€620"],
+          [t("Srebro 925", "Silver 925", "Silber 925"), t("Jasny biały", "Bright white", "Helles Weiß"), t("Dobra (wymaga polerowania)", "Good (needs polishing)", "Gut (braucht Politur)"), t("690 zł", "€160", "160 €")],
+          [t("Złoto 14k żółte", "14k Yellow Gold", "14k Gelbgold"), t("Ciepły złoty", "Warm gold", "Warmes Gold"), t("Bardzo dobra", "Very good", "Sehr gut"), t("2580 zł", "€600", "600 €")],
+          [t("Złoto 14k białe", "14k White Gold", "14k Weißgold"), t("Chłodny biały", "Cool white", "Kühles Weiß"), t("Bardzo dobra", "Very good", "Sehr gut"), t("2800 zł", "€650", "650 €")],
+          [t("Złoto 18k", "18k Gold", "18k Gold"), t("Bogaty, intensywny", "Rich, intense", "Satt, intensiv"), t("Dobra", "Good", "Gut"), t("3870 zł", "€900", "900 €")],
+          [t("Złoto różowe 14k", "14k Rose Gold", "14k Roségold"), t("Różowo-miedziany", "Pinkish copper", "Rosa-Kupfer"), t("Bardzo dobra", "Very good", "Sehr gut"), t("2670 zł", "€620", "620 €")],
         ]}
       />
 
@@ -140,10 +140,10 @@ export function Body({ lang }) {
           ["Konfiguration", "Paarpreis", "Lieferzeit"]
         )}
         rows={[
-          [t("Srebro 925, klasyczne 4mm", "Silver 925, classic 4mm", "Silber 925, klassisch 4mm"), t("od €160", "from €160", "ab 160 €"), t("2–3 tygodnie", "2–3 weeks", "2–3 Wochen")],
-          [t("Złoto 14k, comfort fit 5mm", "14k Gold, comfort fit 5mm", "14k Gold, Comfort Fit 5mm"), t("od €600", "from €600", "ab 600 €"), t("3–4 tygodnie", "3–4 weeks", "3–4 Wochen")],
-          [t("Złoto 18k, z diamentami", "18k Gold, with diamonds", "18k Gold, mit Diamanten"), t("od €1200", "from €1,200", "ab 1.200 €"), t("4–6 tygodni", "4–6 weeks", "4–6 Wochen")],
-          [t("Mieszane (złoto + srebro)", "Mixed (gold + silver)", "Gemischt (Gold + Silber)"), t("od €400", "from €400", "ab 400 €"), t("3–5 tygodni", "3–5 weeks", "3–5 Wochen")],
+          [t("Srebro 925, klasyczne 4mm", "Silver 925, classic 4mm", "Silber 925, klassisch 4mm"), t("od 690 zł", "from €160", "ab 160 €"), t("2–3 tygodnie", "2–3 weeks", "2–3 Wochen")],
+          [t("Złoto 14k, comfort fit 5mm", "14k Gold, comfort fit 5mm", "14k Gold, Comfort Fit 5mm"), t("od 2580 zł", "from €600", "ab 600 €"), t("3–4 tygodnie", "3–4 weeks", "3–4 Wochen")],
+          [t("Złoto 18k, z diamentami", "18k Gold, with diamonds", "18k Gold, mit Diamanten"), t("od 5160 zł", "from €1,200", "ab 1.200 €"), t("4–6 tygodni", "4–6 weeks", "4–6 Wochen")],
+          [t("Mieszane (złoto + srebro)", "Mixed (gold + silver)", "Gemischt (Gold + Silber)"), t("od 1720 zł", "from €400", "ab 400 €"), t("3–5 tygodni", "3–5 weeks", "3–5 Wochen")],
         ]}
       />
 

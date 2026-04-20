@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Zap, SlidersHorizontal, Info } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { trackCalc } from "../utils/analytics.js";
@@ -48,9 +49,15 @@ const LABELS = {
     vat: "Die angegebenen Preise sind Richtwerte und enthalten keine Mehrwertsteuer oder gleichwertige Abgaben, die bei der Auftragsabwicklung hinzukommen." },
 };
 
+const VALID_TABS = new Set(TECHS.map(t => t.id));
+
 export default function StudioCalculator() {
-  const [mode, setMode] = useState("simple");
-  const [activeTech, setActiveTech] = useState("3dprint");
+  const [searchParams] = useSearchParams();
+  const urlTab = searchParams.get("tab");
+  const urlCo2Mode = searchParams.get("co2mode");
+
+  const [mode, setMode] = useState(urlTab && VALID_TABS.has(urlTab) ? "advanced" : "simple");
+  const [activeTech, setActiveTech] = useState(urlTab && VALID_TABS.has(urlTab) ? urlTab : "3dprint");
   const { lang } = useLanguage();
   const l = LABELS[lang] || LABELS.en;
 
@@ -140,7 +147,7 @@ export default function StudioCalculator() {
 
             <div className="glass-blue rounded-2xl p-5 sm:p-6">
               {activeTech === "3dprint" && <Print3DCalc lang={lang} />}
-              {activeTech === "co2_laser" && <CO2LaserCalc lang={lang} />}
+              {activeTech === "co2_laser" && <CO2LaserCalc lang={lang} initialMode={urlCo2Mode === "cut" ? "cut" : "engrave"} />}
               {activeTech === "fiber_laser" && <FiberLaserCalc lang={lang} />}
               {activeTech === "epoxy" && <EpoxyCastCalc lang={lang} />}
             </div>

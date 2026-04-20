@@ -212,10 +212,10 @@ export function calcCut({ matId, pathId, complexId, quantityId, extended, svgDat
 
 const TECH_LABEL = { pl: "Laser CO2", en: "CO2 Laser", de: "CO2-Laser" };
 
-export default function CO2LaserCalc({ lang = "pl" }) {
+export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
   const l = LBL[lang] || LBL.en;
   const sl = SVG_LBL[lang] || SVG_LBL.en;
-  const [mode, setMode] = useState("engrave");
+  const [mode, setMode] = useState(initialMode);
   const [eMatId, setEMatId] = useState("wood");
   const [eAreaId, setEAreaId] = useState("S");
   const [eDetailId, setEDetailId] = useState("standard");

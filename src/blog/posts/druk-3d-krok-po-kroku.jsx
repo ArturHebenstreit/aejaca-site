@@ -25,7 +25,7 @@ export const meta = {
   },
   faq: {
     pl: [
-      { q: "Ile kosztuje druk 3D na zamówienie?", a: "Cena zależy od materiału, rozmiaru i technologii. W AEJaCA sTuDiO proste wydruki FDM zaczynają się od 5 €, wydruki żywiczne od 10 €. Wycenę dostaniesz w ciągu 24h po przesłaniu pliku .STL lub opisu." },
+      { q: "Ile kosztuje druk 3D na zamówienie?", a: "Cena zależy od materiału, rozmiaru i technologii. W AEJaCA sTuDiO proste wydruki FDM zaczynają się od 20 zł, wydruki żywiczne od 40 zł. Wycenę dostaniesz w ciągu 24h po przesłaniu pliku .STL lub opisu." },
       { q: "Jakie pliki są potrzebne do druku 3D?", a: "Najczęściej .STL lub .3MF. Akceptujemy też .STEP, .OBJ i .FBX. Jeśli nie masz pliku — możemy zaprojektować model 3D (CAD) na podstawie szkicu lub zdjęcia." },
       { q: "Czym różni się FDM od druku żywicznego?", a: "FDM (filament) jest tańszy, szybszy, dobre do prototypów i dużych obiektów. Żywica (MSLA) daje gładką powierzchnię i precyzję do 0.05 mm — idealna do biżuterii, miniatur i detali." },
       { q: "Ile trwa realizacja druku 3D?", a: "Standardowo 2–5 dni roboczych od zatwierdzenia pliku. Ekspres (24–48h) jest możliwy za dopłatą. Czas druku samego modelu to od 1h do 24h+ w zależności od rozmiaru." },
@@ -95,7 +95,7 @@ function BodyPL() {
           ["Powierzchnia", "Widoczne warstwy (można szlifować)", "Gładka, prawie formowa jakość"],
           ["Rozmiar max", "256 × 256 × 256 mm (Bambu Lab)", "218 × 123 × 235 mm (Elegoo Saturn)"],
           ["Najlepsze do", "Prototypy, obudowy, gadżety, duże elementy", "Biżuteria, miniatury, detale, formy odlewnicze"],
-          ["Cena wydruku", "Od 5 €", "Od 10 €"],
+          ["Cena wydruku", "Od 20 zł", "Od 40 zł"],
         ]}
       />
       <P>
@@ -132,12 +132,12 @@ function BodyPL() {
       <Table
         headers={["Kategoria", "Technologia", "Orientacyjna cena"]}
         rows={[
-          ["Mały element (3–5 cm)", "FDM", "5–15 €"],
-          ["Średni prototyp (10–15 cm)", "FDM", "15–40 €"],
-          ["Duży model (20+ cm)", "FDM", "40–120 €"],
-          ["Miniatura / detal biżuteryjny", "Żywica", "10–30 €"],
-          ["Forma odlewnicza", "Żywica wypalana", "20–60 €"],
-          ["Projektowanie CAD (od zera)", "—", "od 30 €/h"],
+          ["Mały element (3–5 cm)", "FDM", "20–65 zł"],
+          ["Średni prototyp (10–15 cm)", "FDM", "65–170 zł"],
+          ["Duży model (20+ cm)", "FDM", "170–520 zł"],
+          ["Miniatura / detal biżuteryjny", "Żywica", "40–130 zł"],
+          ["Forma odlewnicza", "Żywica wypalana", "85–260 zł"],
+          ["Projektowanie CAD (od zera)", "—", "od 130 zł/h"],
         ]}
       />
       <Callout accent="blue" title="Wskazówka">

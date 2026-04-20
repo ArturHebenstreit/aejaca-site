@@ -25,7 +25,7 @@ export const meta = {
   },
   faq: {
     pl: [
-      { q: "Ile kosztuje grawerowanie laserowe?", a: "Cena zależy od materiału, rozmiaru i złożoności grafiki. Prosty grawer na drewnie (10×10 cm) to od 10 €, na metalu od 15 €. Personalizacja biżuterii (np. inskrypcja w pierścionku) od 5 €. Wycena w 24h." },
+      { q: "Ile kosztuje grawerowanie laserowe?", a: "Cena zależy od materiału, rozmiaru i złożoności grafiki. Prosty grawer na drewnie (10×10 cm) to od 40 zł, na metalu od 65 zł. Personalizacja biżuterii (np. inskrypcja w pierścionku) od 20 zł. Wycena w 24h." },
       { q: "Jakie materiały można grawerować laserem?", a: "Laser CO2: drewno, sklejka, akryl, skóra, papier, tkaniny, szkło (powierzchniowo). Laser fiber: stal, aluminium, miedź, mosiądz, tytan, srebro, złoto, ceramika, kamień." },
       { q: "Czym różni się grawerowanie od cięcia laserowego?", a: "Grawerowanie usuwa materiał z powierzchni (tworzy rysunek/tekst). Cięcie przechodzi przez cały materiał. Laser CO2 tnie drewno i akryl do 10 mm grubości, fiber tnie cienkie metale do 1-2 mm." },
       { q: "Czy mogę dostarczyć własny plik graficzny?", a: "Tak — akceptujemy .SVG, .AI, .DXF, .PDF (wektory) oraz .PNG/.JPG (rastry, konwertujemy na wektor). Jeśli nie masz pliku, zaprojektujemy grafikę od zera." },
@@ -135,11 +135,11 @@ function BodyPL() {
       <Table
         headers={["Usługa", "Orientacyjna cena"]}
         rows={[
-          ["Grawer na drewnie / akrylu (do 10×10 cm)", "od 10 €"],
-          ["Grawer na metalu (do 10×10 cm)", "od 15 €"],
-          ["Personalizacja biżuterii (inskrypcja)", "od 5 €"],
-          ["Cięcie laserowe drewna/akrylu (do A4)", "od 8 €"],
-          ["Projekt grafiki wektorowej", "od 20 €"],
+          ["Grawer na drewnie / akrylu (do 10×10 cm)", "od 40 zł"],
+          ["Grawer na metalu (do 10×10 cm)", "od 65 zł"],
+          ["Personalizacja biżuterii (inskrypcja)", "od 20 zł"],
+          ["Cięcie laserowe drewna/akrylu (do A4)", "od 35 zł"],
+          ["Projekt grafiki wektorowej", "od 85 zł"],
         ]}
       />
       <P>

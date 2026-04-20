@@ -160,10 +160,10 @@ export function Body({ lang }) {
           ["Leistung", "Preis ab", "Lieferzeit"]
         )}
         rows={[
-          [t("Grawer CO2 (do A4)", "CO2 engraving (up to A4)", "CO2-Gravur (bis A4)"), t("od €5", "from €5", "ab 5 €"), t("1 dzień roboczy", "1 business day", "1 Werktag")],
-          [t("Cięcie CO2 (do A4)", "CO2 cutting (up to A4)", "CO2-Schnitt (bis A4)"), t("od €8", "from €8", "ab 8 €"), t("1 dzień roboczy", "1 business day", "1 Werktag")],
-          [t("Grawer Fiber na metalu", "Fiber engraving on metal", "Faserlaser-Gravur auf Metall"), t("od €10", "from €10", "ab 10 €"), t("1–2 dni robocze", "1–2 business days", "1–2 Werktage")],
-          [t("Grawer biżuterii (pierścionek)", "Jewelry engraving (ring)", "Schmuckgravur (Ring)"), t("od €15", "from €15", "ab 15 €"), t("1 dzień roboczy", "1 business day", "1 Werktag")],
+          [t("Grawer CO2 (do A4)", "CO2 engraving (up to A4)", "CO2-Gravur (bis A4)"), t("od 20 zł", "from €5", "ab 5 €"), t("1 dzień roboczy", "1 business day", "1 Werktag")],
+          [t("Cięcie CO2 (do A4)", "CO2 cutting (up to A4)", "CO2-Schnitt (bis A4)"), t("od 35 zł", "from €8", "ab 8 €"), t("1 dzień roboczy", "1 business day", "1 Werktag")],
+          [t("Grawer Fiber na metalu", "Fiber engraving on metal", "Faserlaser-Gravur auf Metall"), t("od 40 zł", "from €10", "ab 10 €"), t("1–2 dni robocze", "1–2 business days", "1–2 Werktage")],
+          [t("Grawer biżuterii (pierścionek)", "Jewelry engraving (ring)", "Schmuckgravur (Ring)"), t("od 65 zł", "from €15", "ab 15 €"), t("1 dzień roboczy", "1 business day", "1 Werktag")],
           [t("Seria 50+ sztuk", "Batch 50+ pieces", "Serie 50+ Stück"), t("wycena indywidualna", "individual quote", "individuelles Angebot"), t("2–5 dni roboczych", "2–5 business days", "2–5 Werktage")],
         ]}
       />

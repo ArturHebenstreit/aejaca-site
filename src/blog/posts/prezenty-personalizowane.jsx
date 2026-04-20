@@ -49,7 +49,7 @@ export const meta = {
     pl: [
       { q: "Ile czasu zajmuje wykonanie spersonalizowanego prezentu?", a: "Od 1–2 dni (grawerowanie) do 3–6 tygodni (biżuteria na zamówienie). Proste personalizacje mogą być gotowe w 24h." },
       { q: "Czy mogę dostarczyć własny projekt lub tekst do grawerowania?", a: "Oczywiście — akceptujemy pliki SVG, AI, PDF oraz zwykły tekst. Możemy też zaprojektować grafikę na podstawie Twoich wytycznych." },
-      { q: "Jaka jest najtańsza opcja personalizowanego prezentu?", a: "Grawerowany brelok lub wisiorek od ok. 15 €. Drukowany 3D element od ok. 10 €." },
+      { q: "Jaka jest najtańsza opcja personalizowanego prezentu?", a: "Grawerowany brelok lub wisiorek od ok. 65 zł. Drukowany 3D element od ok. 40 zł." },
       { q: "Czy oferujecie pakowanie prezentowe?", a: "Tak — biżuteria jest dostarczana w eleganckim pudełku AEJaCA. Na życzenie dodajemy kartonik z dedykacją." },
     ],
     en: [
@@ -83,7 +83,7 @@ export function Body({ lang }) {
       <UL>
         <LI><Strong>{t("Unikatowość", "Uniqueness", "Einzigartigkeit")}</Strong> — {t("jedyny taki egzemplarz na świecie", "one-of-a-kind, unique in the world", "ein einzigartiges Stück auf der Welt")}</LI>
         <LI><Strong>{t("Wartość emocjonalna", "Emotional value", "Emotionaler Wert")}</Strong> — {t("wykracza daleko poza wartość materiałową", "goes far beyond material worth", "geht weit über den Materialwert hinaus")}</LI>
-        <LI><Strong>{t("Każdy budżet", "Any budget", "Jedes Budget")}</Strong> — {t("od grawerowanego breloka za 15 € do pierścionka za 500 €+", "from an engraved keychain at €15 to a ring at €500+", "vom gravierten Schlüsselanhänger für 15 € bis zum Ring für 500 €+")}</LI>
+        <LI><Strong>{t("Każdy budżet", "Any budget", "Jedes Budget")}</Strong> — {t("od grawerowanego breloka za 65 zł do pierścionka za 2150 zł+", "from an engraved keychain at €15 to a ring at €500+", "vom gravierten Schlüsselanhänger für 15 € bis zum Ring für 500 €+")}</LI>
       </UL>
       <Callout accent="amber" title={t("Ciekawostka", "Fun fact", "Wussten Sie?")}>{t(
         "Ponad 70% naszych zamówień personalizowanych to klienci powracający — bo takie prezenty naprawdę robią wrażenie.",
@@ -93,18 +93,18 @@ export function Body({ lang }) {
 
       <H2 id={id("dla-niej", "for-her", "fuer-sie")}>{t("Pomysły dla niej", "Gift Ideas for Her", "Geschenkideen für sie")}</H2>
       <UL>
-        <LI><Strong>{t("Wisiorek z inicjałami", "Pendant with initials", "Anhänger mit Initialen")}</Strong> — {t("srebro 925, grawerowanie laserowe, od 35 €", "silver 925, laser engraved, from €35", "Silber 925, lasergraviert, ab 35 €")}</LI>
+        <LI><Strong>{t("Wisiorek z inicjałami", "Pendant with initials", "Anhänger mit Initialen")}</Strong> — {t("srebro 925, grawerowanie laserowe, od 150 zł", "silver 925, laser engraved, from €35", "Silber 925, lasergraviert, ab 35 €")}</LI>
         <LI><Strong>{t("Pierścionek z kamieniem urodzinowym", "Birthstone ring", "Ring mit Geburtsstein")}</Strong> — {t("naturalny kamień dobrany do miesiąca urodzenia", "natural gemstone matched to birth month", "natürlicher Edelstein passend zum Geburtsmonat")}</LI>
-        <LI><Strong>{t("Wisiorek z żywicy z suszonymi kwiatami", "Resin pendant with dried flowers", "Harz-Anhänger mit Trockenblumen")}</Strong> — {t("zakapslowany bukiecik na zawsze, od 20 €", "a tiny bouquet encapsulated forever, from €20", "ein kleines Bouquet für immer eingekapselt, ab 20 €")}</LI>
-        <LI><Strong>{t("Szkatułka z grawerem", "Engraved jewelry box", "Gravierte Schmuckschatulle")}</Strong> — {t("drewno + laser CO2, od 25 €", "wood + CO2 laser, from €25", "Holz + CO2-Laser, ab 25 €")}</LI>
+        <LI><Strong>{t("Wisiorek z żywicy z suszonymi kwiatami", "Resin pendant with dried flowers", "Harz-Anhänger mit Trockenblumen")}</Strong> — {t("zakapslowany bukiecik na zawsze, od 85 zł", "a tiny bouquet encapsulated forever, from €20", "ein kleines Bouquet für immer eingekapselt, ab 20 €")}</LI>
+        <LI><Strong>{t("Szkatułka z grawerem", "Engraved jewelry box", "Gravierte Schmuckschatulle")}</Strong> — {t("drewno + laser CO2, od 110 zł", "wood + CO2 laser, from €25", "Holz + CO2-Laser, ab 25 €")}</LI>
       </UL>
 
       <H2 id={id("dla-niego", "for-him", "fuer-ihn")}>{t("Pomysły dla niego", "Gift Ideas for Him", "Geschenkideen für ihn")}</H2>
       <UL>
-        <LI><Strong>{t("Spinka do mankietu z grawerem", "Engraved cufflinks", "Gravierte Manschettenknöpfe")}</Strong> — {t("fiber laser na metalu, od 40 €", "fiber laser on metal, from €40", "Faserlaser auf Metall, ab 40 €")}</LI>
-        <LI><Strong>{t("Organizer 3D z imieniem", "3D-printed desk organizer with name", "3D-gedruckter Organizer mit Namen")}</Strong> — {t("wydrukowany w wybranym kolorze, od 15 €", "printed in chosen color, from €15", "in Wunschfarbe gedruckt, ab 15 €")}</LI>
-        <LI><Strong>{t("Mapa wycinana laserowo", "Laser-cut wooden map", "Lasergeschnittene Holzkarte")}</Strong> — {t("wyjątkowe miejsce wycięte w drewnie, od 30 €", "a special place cut in wood, from €30", "ein besonderer Ort in Holz geschnitten, ab 30 €")}</LI>
-        <LI><Strong>{t("Sygnet z indywidualnym herbem", "Signet ring with custom seal", "Siegelring mit individuellem Wappen")}</Strong> — {t("srebro 925, ręcznie robiony, od 120 €", "silver 925, handcrafted, from €120", "Silber 925, handgefertigt, ab 120 €")}</LI>
+        <LI><Strong>{t("Spinka do mankietu z grawerem", "Engraved cufflinks", "Gravierte Manschettenknöpfe")}</Strong> — {t("fiber laser na metalu, od 170 zł", "fiber laser on metal, from €40", "Faserlaser auf Metall, ab 40 €")}</LI>
+        <LI><Strong>{t("Organizer 3D z imieniem", "3D-printed desk organizer with name", "3D-gedruckter Organizer mit Namen")}</Strong> — {t("wydrukowany w wybranym kolorze, od 65 zł", "printed in chosen color, from €15", "in Wunschfarbe gedruckt, ab 15 €")}</LI>
+        <LI><Strong>{t("Mapa wycinana laserowo", "Laser-cut wooden map", "Lasergeschnittene Holzkarte")}</Strong> — {t("wyjątkowe miejsce wycięte w drewnie, od 130 zł", "a special place cut in wood, from €30", "ein besonderer Ort in Holz geschnitten, ab 30 €")}</LI>
+        <LI><Strong>{t("Sygnet z indywidualnym herbem", "Signet ring with custom seal", "Siegelring mit individuellem Wappen")}</Strong> — {t("srebro 925, ręcznie robiony, od 520 zł", "silver 925, handcrafted, from €120", "Silber 925, handgefertigt, ab 120 €")}</LI>
       </UL>
 
       <H2 id={id("okazje", "occasions", "anlaesse")}>{t("Poradnik wg okazji", "Occasion Guide", "Anlass-Guide")}</H2>
@@ -116,11 +116,11 @@ export function Body({ lang }) {
           t("Czas realizacji", "Lead time", "Vorlaufzeit"),
         ]}
         rows={[
-          [t("Urodziny", "Birthday", "Geburtstag"), t("wisiorek z grawerem, druk 3D", "engraved pendant, 3D print", "gravierter Anhänger, 3D-Druck"), "€15", t("3–5 dni", "3–5 days", "3–5 Tage")],
-          [t("Rocznica", "Anniversary", "Jubiläum"), t("pierścionek, grawerowany element", "custom ring, engraved piece", "Ring, graviertes Stück"), "€80", t("2–4 tygodnie", "2–4 weeks", "2–4 Wochen")],
-          [t("Ślub", "Wedding", "Hochzeit"), t("obrączki, spinki, biżuteria", "matching bands, cufflinks", "Eheringe, Manschettenknöpfe"), "€200", t("3–6 tygodni", "3–6 weeks", "3–6 Wochen")],
-          [t("Święta", "Holidays", "Feiertage"), t("ozdoby, breloki, szkatułki", "ornaments, keychains, boxes", "Ornamente, Schlüsselanhänger, Boxen"), "€10", t("1–2 tygodnie", "1–2 weeks", "1–2 Wochen")],
-          [t("Zakończenie szkoły", "Graduation", "Abschluss"), t("sygnet, wisiorek, pióro z grawerem", "signet ring, pendant, pen", "Siegelring, Anhänger, Stift"), "€30", t("1–2 tygodnie", "1–2 weeks", "1–2 Wochen")],
+          [t("Urodziny", "Birthday", "Geburtstag"), t("wisiorek z grawerem, druk 3D", "engraved pendant, 3D print", "gravierter Anhänger, 3D-Druck"), t("65 zł", "€15", "15 €"), t("3–5 dni", "3–5 days", "3–5 Tage")],
+          [t("Rocznica", "Anniversary", "Jubiläum"), t("pierścionek, grawerowany element", "custom ring, engraved piece", "Ring, graviertes Stück"), t("350 zł", "€80", "80 €"), t("2–4 tygodnie", "2–4 weeks", "2–4 Wochen")],
+          [t("Ślub", "Wedding", "Hochzeit"), t("obrączki, spinki, biżuteria", "matching bands, cufflinks", "Eheringe, Manschettenknöpfe"), t("860 zł", "€200", "200 €"), t("3–6 tygodni", "3–6 weeks", "3–6 Wochen")],
+          [t("Święta", "Holidays", "Feiertage"), t("ozdoby, breloki, szkatułki", "ornaments, keychains, boxes", "Ornamente, Schlüsselanhänger, Boxen"), t("40 zł", "€10", "10 €"), t("1–2 tygodnie", "1–2 weeks", "1–2 Wochen")],
+          [t("Zakończenie szkoły", "Graduation", "Abschluss"), t("sygnet, wisiorek, pióro z grawerem", "signet ring, pendant, pen", "Siegelring, Anhänger, Stift"), t("130 zł", "€30", "30 €"), t("1–2 tygodnie", "1–2 weeks", "1–2 Wochen")],
         ]}
       />
 
