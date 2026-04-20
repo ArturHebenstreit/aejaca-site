@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Zap, Sparkles, FileUp } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getSortedPosts } from "../blog/posts.js";
@@ -19,6 +19,7 @@ export default function Home() {
   const h = t.home;
 
   const brandRef = useScrollReveal();
+  const quoteRef = useScrollReveal();
   const worldsRef = useScrollReveal();
   const ctaRef = useScrollReveal();
   const getCardRef = useStaggerReveal(120);
@@ -111,7 +112,7 @@ export default function Home() {
       <section className="py-20 px-4 text-center bg-neutral-950">
         <div ref={brandRef} className="reveal max-w-3xl mx-auto">
           {/* Below-the-fold image: lazy loaded to save bandwidth — no LCP impact */}
-          <img src="/brand-sign.png" alt="AEJaCA brand mark" loading="lazy" decoding="async" className="w-36 h-36 mx-auto mb-8 brightness-0 invert opacity-80 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]" />
+          <img src="/brand-sign.webp" alt="AEJaCA brand mark" loading="lazy" decoding="async" className="w-36 h-36 mx-auto mb-8 brightness-0 invert opacity-80 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]" />
           <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-6">{h.brandHeading}</h2>
           <p className="text-neutral-400 text-lg leading-relaxed">{h.brandText}</p>
         </div>
@@ -121,6 +122,70 @@ export default function Home() {
 
       {/* Google Reviews — social proof above secondary content (CRO +34% per Baymard) */}
       <GoogleReviews id="reviews" limit={6} />
+
+      <div className="gradient-divider" />
+
+      {/* Quick Quote — showcase calculators + STL/SVG upload (conversion driver) */}
+      <section className="py-20 px-4 bg-gradient-to-b from-neutral-950 via-neutral-900/30 to-neutral-950">
+        <div ref={quoteRef} className="reveal max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Zap className="w-4 h-4 text-emerald-400" />
+              <span className="text-emerald-400 text-xs uppercase tracking-[0.2em]">{h.quickQuoteTag}</span>
+            </div>
+            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-white tracking-tight mb-4">
+              {h.quickQuoteTitle}
+            </h2>
+            <p className="text-neutral-400 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+              {h.quickQuoteSubtitle}
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 mb-6">
+            <Link to="/jewelry#calculator" className="group relative rounded-2xl overflow-hidden border border-amber-400/20 bg-gradient-to-br from-amber-950/20 to-neutral-950 p-6 md:p-8 hover:border-amber-400/40 hover:shadow-lg hover:shadow-amber-900/10 transition-all duration-300">
+              <div className="flex items-start justify-between mb-4">
+                <Sparkles className="w-7 h-7 text-amber-400" />
+                <span className="text-amber-400/60 text-xs tracking-wider uppercase">{h.quickQuoteJewelryTag}</span>
+              </div>
+              <h3 className="font-serif text-xl md:text-2xl font-semibold text-white mb-3">{h.quickQuoteJewelryTitle}</h3>
+              <p className="text-neutral-400 text-sm leading-relaxed mb-5">{h.quickQuoteJewelryDesc}</p>
+              <span className="inline-flex items-center gap-2 text-amber-400 text-sm font-medium group-hover:text-amber-300 transition-colors">
+                {h.quickQuoteJewelryCta} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </span>
+            </Link>
+
+            <Link to="/studio#calculator" className="group relative rounded-2xl overflow-hidden border border-blue-400/20 bg-gradient-to-br from-blue-950/20 to-neutral-950 p-6 md:p-8 hover:border-blue-400/40 hover:shadow-lg hover:shadow-blue-900/10 transition-all duration-300">
+              <div className="flex items-start justify-between mb-4">
+                <FileUp className="w-7 h-7 text-blue-400" />
+                <span className="text-blue-400/60 text-xs tracking-wider uppercase">{h.quickQuoteStudioTag}</span>
+              </div>
+              <h3 className="font-sans text-xl md:text-2xl font-semibold text-white mb-3">{h.quickQuoteStudioTitle}</h3>
+              <p className="text-neutral-400 text-sm leading-relaxed mb-5">{h.quickQuoteStudioDesc}</p>
+              <span className="inline-flex items-center gap-2 text-blue-400 text-sm font-medium group-hover:text-blue-300 transition-colors">
+                {h.quickQuoteStudioCta} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </span>
+            </Link>
+          </div>
+
+          <Link to="/studio#calculator" className="group block rounded-2xl overflow-hidden border border-emerald-400/20 bg-gradient-to-r from-emerald-950/20 via-neutral-900/50 to-emerald-950/20 p-6 md:p-8 hover:border-emerald-400/40 hover:shadow-lg hover:shadow-emerald-900/10 transition-all duration-300">
+            <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-emerald-400/10 border border-emerald-400/20 flex items-center justify-center">
+                  <FileUp className="w-6 h-6 text-emerald-400" />
+                </div>
+                <span className="text-emerald-400/70 text-xs uppercase tracking-wider">{h.quickQuoteStlTag}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-sans text-lg font-semibold text-white mb-1">{h.quickQuoteStlTitle}</h3>
+                <p className="text-neutral-400 text-sm">{h.quickQuoteStlDesc}</p>
+              </div>
+              <span className="inline-flex items-center gap-2 text-emerald-400 text-sm font-medium shrink-0 group-hover:text-emerald-300 transition-colors">
+                {h.quickQuoteStlCta} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </span>
+            </div>
+          </Link>
+        </div>
+      </section>
 
       <div className="gradient-divider" />
 

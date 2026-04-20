@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
+import SEOHead from "../seo/SEOHead.jsx";
 
 const LABELS = {
-  pl: { title: "Strona nie znaleziona", text: "Wygląda na to, że ta strona nie istnieje lub została przeniesiona.", btn: "Wróć na stronę główną" },
-  en: { title: "Page not found", text: "It looks like this page doesn't exist or has been moved.", btn: "Back to home" },
-  de: { title: "Seite nicht gefunden", text: "Diese Seite existiert nicht oder wurde verschoben.", btn: "Zurück zur Startseite" },
+  pl: { title: "Strona nie znaleziona", text: "Wygląda na to, że ta strona nie istnieje lub została przeniesiona.", btn: "Wróć na stronę główną", metaTitle: "404 — Strona nie znaleziona | AEJaCA" },
+  en: { title: "Page not found", text: "It looks like this page doesn't exist or has been moved.", btn: "Back to home", metaTitle: "404 — Page Not Found | AEJaCA" },
+  de: { title: "Seite nicht gefunden", text: "Diese Seite existiert nicht oder wurde verschoben.", btn: "Zurück zur Startseite", metaTitle: "404 — Seite nicht gefunden | AEJaCA" },
 };
 
 export default function NotFound() {
@@ -13,6 +14,14 @@ export default function NotFound() {
   const l = LABELS[lang] || LABELS.en;
 
   return (
+    <>
+    <SEOHead
+      pageKey="home"
+      path="/404"
+      title={l.metaTitle}
+      description={l.text}
+      noindex={true}
+    />
     <div className="pt-16 min-h-[70vh] flex items-center justify-center px-4 bg-neutral-950">
       <div className="text-center max-w-md">
         <div className="text-8xl font-mono font-bold text-white/10 mb-4">404</div>
@@ -27,5 +36,6 @@ export default function NotFound() {
         </Link>
       </div>
     </div>
+    </>
   );
 }

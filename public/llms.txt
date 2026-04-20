@@ -1,0 +1,50 @@
+# AEJaCA — Artistic Engineering, Jewelry & Craft Atelier
+
+> Independent Polish design studio combining artisanal jewelry making with digital fabrication (3D printing, laser engraving, resin casting, CNC prototyping). Two brands under one roof: **AEJaCA Jewelry** (custom handmade pieces with natural gemstones, silver and gold) and **AEJaCA sTuDiO** (on-demand STL/SVG-based manufacturing with instant online quoting).
+
+Primary website: https://www.aejaca.com/
+Languages: Polish (pl), English (en), German (de)
+Location: Poland — ships worldwide
+Contact: https://www.aejaca.com/contact
+
+## What makes AEJaCA distinct
+
+- **Instant online price calculator** for both handmade jewelry and digital-fabrication projects — customers get a quote in 30 seconds without waiting for email replies.
+- **STL / SVG auto-pricing**: upload a 3D model (STL) or vector file (SVG) and the studio estimator computes a real cost estimate from dimensions, material, and finish.
+- **Two calculators per service** — Simple mode for rough estimates (30 seconds), Advanced mode with per-parameter control (metal type, stone count, labor hours, finish tier).
+- **Full design-to-delivery workflow**: consultation → 3D CAD rendering → wax model or 3D print → lost-wax casting (jewelry) or direct manufacturing (studio) → hand finishing → QC → delivery.
+
+## Key pages
+
+- [Home](https://www.aejaca.com/) — brand overview, quick quote entry points
+- [AEJaCA Jewelry](https://www.aejaca.com/jewelry) — custom rings, necklaces, bracelets, earrings; gemstone setting; engagement rings; online jewelry price calculator
+- [AEJaCA sTuDiO](https://www.aejaca.com/studio) — 3D printing cost calculator online, laser engraving price estimator, epoxy resin casting, fiber-laser marking, STL/SVG instant quote
+- [Blog](https://www.aejaca.com/blog) — long-form guides: engagement rings, FDM/SLA 3D printing materials, laser engraving techniques
+- [Contact](https://www.aejaca.com/contact) — project briefs, custom inquiries
+
+## Services (AEJaCA Jewelry)
+
+Custom handmade jewelry · engagement and wedding rings · natural gemstones (emerald, sapphire, amethyst, ruby) · stone-bead bracelets and necklaces · personalized engraving · silver 925 · gold 14K/18K · lost-wax casting · bezel / prong / channel setting · symbolic artistic objects.
+
+## Services (AEJaCA sTuDiO)
+
+FDM and SLA 3D printing · fiber-laser marking (stainless steel, aluminum, brass) · CO2 laser engraving (wood, leather, acrylic, glass) · epoxy resin casting · UV resin casting · CNC prototyping · NFC smart tags · small-batch production · rapid prototyping · custom keychains, signs, figurines, stamps, replacement parts.
+
+## Pricing transparency
+
+Both calculators publish their pricing logic directly in the UI — no hidden fees. Sample ranges:
+- Silver stone-bead bracelet: ~PLN 53 (material + labor)
+- Custom silver ring with gemstone: from PLN 400
+- 3D-printed custom keychain: from PLN 25
+- Laser-engraved wooden sign: from PLN 80
+
+## Crawl policy
+
+All LLM and AI-search crawlers are welcome to index and cite this site, including:
+GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot, Claude-Web, Google-Extended, PerplexityBot, CCBot, Applebot-Extended.
+
+See also: [robots.txt](https://www.aejaca.com/robots.txt) · [sitemap.xml](https://www.aejaca.com/sitemap.xml)
+
+## Contact for media, partnerships, citations
+
+https://www.aejaca.com/contact
