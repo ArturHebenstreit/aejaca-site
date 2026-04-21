@@ -117,19 +117,16 @@ function ReviewCard({ review, lang, labels }) {
   return (
     <article
       className="relative rounded-2xl border border-white/10 bg-white/[0.02] p-5 flex flex-col gap-3 hover:border-white/20 transition-colors duration-300"
-      itemScope
-      itemType="https://schema.org/Review"
     >
       {/* Header: name + stars + date */}
       <header className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-white font-medium text-sm" itemProp="author">{review.author}</div>
+          <div className="text-white font-medium text-sm">{review.author}</div>
           <div className="flex items-center gap-2 mt-1">
             <Stars rating={review.rating} size="w-3.5 h-3.5" />
             <time
               className="text-[11px] text-neutral-500"
               dateTime={review.date}
-              itemProp="datePublished"
             >
               {labels.relativeTime(daysSince(review.date))}
             </time>
@@ -143,7 +140,6 @@ function ReviewCard({ review, lang, labels }) {
         <blockquote
           lang={review.originalLang}
           className="text-neutral-300 text-sm leading-relaxed"
-          itemProp="reviewBody"
         >
           &ldquo;{review.text}&rdquo;
         </blockquote>
