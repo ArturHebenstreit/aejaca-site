@@ -353,12 +353,12 @@ const LBL = {
 };
 
 /** Emerald-themed tile grid — pure visual, used for all 5 questions. */
-function TileGrid({ options, value, onChange, lang, cols = 4 }) {
+function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false }) {
   const gridCls = cols === 3
     ? "grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3"
     : "grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3";
   return (
-    <div className={gridCls}>
+    <div className={`${gridCls} ${disabled ? "opacity-40 pointer-events-none" : ""}`}>
       {options.map(opt => {
         const active = value === opt.id;
         const Icon = opt.icon;
@@ -367,7 +367,7 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
         const hasImg = !!opt.img;
 
         return (
-          <button key={opt.id} onClick={() => onChange(opt.id)}
+          <button key={opt.id} onClick={() => onChange(opt.id)} disabled={disabled}
             className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[120px] sm:min-h-[140px] ${
               active
                 ? "border-emerald-400 shadow-lg shadow-emerald-400/20"
@@ -460,6 +460,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
       setStlData(parsed);
       setSvgData(null);
       setMaterial("plastic");
+      setItem("other");
       const maxCm = Math.max(parsed.bbox.x, parsed.bbox.y, parsed.bbox.z);
       setSize(autoSizeFromCm(maxCm));
       trackCalc("studio_simple", "file_upload", "stl");
@@ -471,6 +472,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
       setSvgData(parsed);
       setStlData(null);
       setMaterial("wood");
+      setItem("other");
       const maxCm = Math.max(parsed.bboxMm.x, parsed.bboxMm.y) / 10;
       setSize(autoSizeFromCm(maxCm));
       trackCalc("studio_simple", "file_upload", "svg");
@@ -483,6 +485,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
     setFileName("");
     setStlData(null);
     setSvgData(null);
+    setItem("keychain");
   }, []);
 
   const onDrop = useCallback((e) => {
@@ -637,7 +640,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
       </SimpleCard>
 
       <SimpleCard stepNum="①" label={l.q1}>
-        <TileGrid options={ITEMS} value={item} onChange={handleSet(setItem, "item")} lang={lang} cols={4} />
+        <TileGrid options={ITEMS} value={item} onChange={handleSet(setItem, "item")} lang={lang} cols={4} disabled={!!hasFile} />
       </SimpleCard>
 
       {/* Size step — skip when file provides dimensions */}
