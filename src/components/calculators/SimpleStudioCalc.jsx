@@ -122,7 +122,8 @@ const CO2_MODE_FROM_ITEM = {
 export function resolveTechAndParams({ item, size, material, finish, quantity, fileType, stlData, svgData }) {
   // STL always means 3D printing — override material choice
   if (fileType === "stl" && stlData) {
-    if (!item || !finish || !quantity) return { custom: true };
+    if (!size || !finish || !quantity) return { custom: true };
+    const sizeId = SIZE_MAP[size]["3dprint"];
     const quantityId = QTY_MAP[quantity];
     const isEngineering = item === "part" && (finish === "premium" || finish === "standard");
     const segment = isEngineering ? "engineering" : "standard";
@@ -132,7 +133,7 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
     return {
       tech: "3dprint", params: {
         segment, materialKey,
-        sizeId: "M",
+        sizeId,
         infillId: finish === "prototype" ? "low" : "medium",
         colorId: 1,
         precisionId: finish === "prototype" ? "draft_04" : finish === "premium" ? "quality_04" : "standard_04",
@@ -144,36 +145,37 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
 
   // SVG — route based on material (CO2 or Fiber)
   if (fileType === "svg" && svgData) {
-    if (!item || !material || !finish || !quantity) return { custom: true };
-    const tech = material === "idk" ? DEFAULT_TECH_FROM_ITEM[item] : TECH_FROM_MATERIAL[material];
+    if (!size || !material || !finish || !quantity) return { custom: true };
+    const tech = material === "idk" ? (DEFAULT_TECH_FROM_ITEM[item] || "co2") : TECH_FROM_MATERIAL[material];
     if (!tech || tech === "epoxy") return { custom: true };
     const quantityId = QTY_MAP[quantity];
+    const sizeId = SIZE_MAP[size][tech] || SIZE_MAP[size].co2;
 
     if (tech === "3dprint") {
-      // SVG doesn't make sense for 3D print — reroute to CO2
       const mode = CO2_MODE_FROM_ITEM[item] || "engrave";
       if (mode === "engrave") {
-        return { tech: "co2", mode, params: { matId: "wood", areaId: "M", detailId: finish === "prototype" ? "simple" : finish === "premium" ? "photo" : "standard", quantityId, svgData } };
+        return { tech: "co2", mode, params: { matId: "wood", areaId: sizeId, detailId: finish === "prototype" ? "simple" : finish === "premium" ? "photo" : "standard", quantityId, svgData } };
       }
-      return { tech: "co2", mode, params: { matId: "ply3", pathId: "M", complexId: finish === "prototype" ? "simple" : finish === "premium" ? "complex" : "moderate", quantityId, extended: false, svgData } };
+      return { tech: "co2", mode, params: { matId: "ply3", pathId: sizeId, complexId: finish === "prototype" ? "simple" : finish === "premium" ? "complex" : "moderate", quantityId, extended: false, svgData } };
     }
 
     if (tech === "co2") {
       const mode = CO2_MODE_FROM_ITEM[item] || "engrave";
       if (mode === "engrave") {
         const matId = material === "glass" ? "glass" : material === "wood" ? "wood" : item === "stamp" ? "rubber" : "wood";
-        return { tech, mode, params: { matId, areaId: "M", detailId: finish === "prototype" ? "simple" : finish === "premium" ? "photo" : "standard", quantityId, svgData } };
+        return { tech, mode, params: { matId, areaId: sizeId, detailId: finish === "prototype" ? "simple" : finish === "premium" ? "photo" : "standard", quantityId, svgData } };
       }
       const matId = material === "glass" ? "acr3" : finish === "premium" ? "ply5" : "ply3";
-      return { tech, mode, params: { matId, pathId: "M", complexId: finish === "prototype" ? "simple" : finish === "premium" ? "complex" : "moderate", quantityId, extended: false, svgData } };
+      return { tech, mode, params: { matId, pathId: sizeId, complexId: finish === "prototype" ? "simple" : finish === "premium" ? "complex" : "moderate", quantityId, extended: false, svgData } };
     }
 
     if (tech === "fiber") {
       if (material === "glass") {
-        return resolveTechAndParams({ item, size: "palm", material: "wood", finish, quantity, fileType, svgData });
+        return resolveTechAndParams({ item, size, material: "wood", finish, quantity, fileType, svgData });
       }
       const matId = item === "jewelry" ? "silver" : "stainless";
-      return { tech, params: { matId, lensId: "150mm", markId: finish === "prototype" ? "surface" : finish === "premium" ? "medium" : "surface", areaId: "M", quantityId, svgData } };
+      const lensId = (size === "coin") ? "70mm" : "150mm";
+      return { tech, params: { matId, lensId, markId: finish === "prototype" ? "surface" : finish === "premium" ? "medium" : "surface", areaId: sizeId, quantityId, svgData } };
     }
 
     return { custom: true };
@@ -652,25 +654,22 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
         <TileGrid options={ITEMS} value={item} onChange={handleSet(setItem, "item")} lang={lang} cols={4} disabled={!!hasFile} />
       </SimpleCard>
 
-      {/* Size step — skip when file provides dimensions */}
-      {!hasFile && (
-        <SimpleCard stepNum="②" label={l.q2}>
-          <TileGrid options={SIZES} value={size} onChange={handleSet(setSize, "size")} lang={lang} cols={3} />
-        </SimpleCard>
-      )}
+      <SimpleCard stepNum="②" label={l.q2}>
+        <TileGrid options={SIZES} value={size} onChange={handleSet(setSize, "size")} lang={lang} cols={3} />
+      </SimpleCard>
 
       {/* Material — skip for STL (always 3D print), show for SVG (determines CO2/Fiber) */}
       {fileType !== "stl" && (
-        <SimpleCard stepNum={hasFile ? "②" : "③"} label={l.q3}>
+        <SimpleCard stepNum="③" label={l.q3}>
           <TileGrid options={MATERIALS} value={material} onChange={handleSet(setMaterial, "material")} lang={lang} cols={3} />
         </SimpleCard>
       )}
 
-      <SimpleCard stepNum={hasFile ? (fileType === "stl" ? "②" : "③") : "④"} label={l.q4}>
+      <SimpleCard stepNum={fileType === "stl" ? "③" : "④"} label={l.q4}>
         <TileGrid options={FINISH} value={finish} onChange={handleSet(setFinish, "finish")} lang={lang} cols={3} />
       </SimpleCard>
 
-      <SimpleCard stepNum={hasFile ? (fileType === "stl" ? "③" : "④") : "⑤"} label={l.q5}>
+      <SimpleCard stepNum={fileType === "stl" ? "④" : "⑤"} label={l.q5}>
         <TileGrid options={QUANTITY} value={quantity} onChange={handleSet(setQuantity, "quantity")} lang={lang} cols={4} />
       </SimpleCard>
 

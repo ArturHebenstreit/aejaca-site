@@ -9,6 +9,8 @@ import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
 const CO2_CONFIG = {
   POWER_KW: 0.80,
   DEPRECIATION_PLN_H: 3.20,
+  LABOR_PLN_MIN: 1.00,
+  HANDLING_FEE: 5.0,
   EXTENDED_AREA_TIME_MUL: 1.40,
   EXTENDED_AREA_COST_ADD: 15,
 };
@@ -138,10 +140,11 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svg
   const setupH = (extended ? 0.5 : 0.25) / qTier.qty;
   const handleH = 0.03;
   const totalTimeH = timeH + setupH + handleH;
+  const laborCost = timeMin * CO2_CONFIG.LABOR_PLN_MIN;
   const energyCost = totalTimeH * CO2_CONFIG.POWER_KW * CONFIG.ENERGY_COST_PLN;
   const deprCost = totalTimeH * CO2_CONFIG.DEPRECIATION_PLN_H;
   const prepCost = area.area * mat.prepCost * 0.01;
-  const baseCost = energyCost + deprCost + prepCost + extCostAdd;
+  const baseCost = laborCost + energyCost + deprCost + prepCost + CO2_CONFIG.HANDLING_FEE + extCostAdd;
   const batchTimeH = (timeH + handleH) * qTier.qty + (extended ? 0.5 : 0.25);
 
   const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, qTier.discount, qTier.qty);
@@ -151,10 +154,10 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svg
     breakdown: [
       { label: l.engraveTime, value: `${timeMin.toFixed(1)} min` },
       { label: l.timeSetup, value: `${(totalTimeH * 60).toFixed(1)} min` },
+      { label: l.workshop, value: fmtCost(laborCost, lang) },
       { label: l.prepMat, value: fmtCost(prepCost, lang) },
       { label: l.energy, value: fmtCost(energyCost, lang) },
       { label: l.depreciation, value: fmtCost(deprCost, lang) },
-      { label: l.workshop, value: fmtCost(baseCost * CONFIG.BASE_MARGIN, lang) },
       ...(extended ? [{ label: l.extSurcharge, value: `+${fmtCost(extCostAdd, lang)}` }] : []),
       { divider: true },
       { label: l.estCost, value: fmtCost(baseCost * (1 + CONFIG.BASE_MARGIN), lang), bold: true },
@@ -186,10 +189,11 @@ export function calcCut({ matId, pathId, complexId, quantityId, extended, svgDat
   const setupH = (extended ? 0.5 : 0.2) / qTier.qty;
   const handleH = 0.03;
   const totalTimeH = cutTimeH + setupH + handleH;
+  const laborCost = cutTimeMin * CO2_CONFIG.LABOR_PLN_MIN;
   const energyCost = totalTimeH * CO2_CONFIG.POWER_KW * CONFIG.ENERGY_COST_PLN;
   const deprCost = totalTimeH * CO2_CONFIG.DEPRECIATION_PLN_H;
   const materialCost = path.sheetCm2 * mat.matCost * 1.15;
-  const baseCost = materialCost + energyCost + deprCost + extCostAdd;
+  const baseCost = laborCost + materialCost + energyCost + deprCost + CO2_CONFIG.HANDLING_FEE + extCostAdd;
   const batchTimeH = (cutTimeH + handleH) * qTier.qty + (extended ? 0.5 : 0.2);
 
   const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, qTier.discount, qTier.qty);
@@ -198,12 +202,13 @@ export function calcCut({ matId, pathId, complexId, quantityId, extended, svgDat
     totalTimeH: qTier.qty > 1 ? batchTimeH : null,
     breakdown: [
       { label: l.cutTime, value: `${cutTimeMin.toFixed(1)} min` },
+      { label: l.workshop, value: fmtCost(laborCost, lang) },
       { label: l.materialCost, value: fmtCost(materialCost, lang) },
       { label: l.energy, value: fmtCost(energyCost, lang) },
       { label: l.depreciation, value: fmtCost(deprCost, lang) },
       ...(extended ? [{ label: l.extSurcharge, value: `+${fmtCost(extCostAdd, lang)}` }] : []),
       { divider: true },
-      { label: l.baseCost, value: fmtCost(baseCost, lang), bold: true },
+      { label: l.estCost, value: fmtCost(baseCost * (1 + CONFIG.BASE_MARGIN), lang), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
       ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${batchTimeH.toFixed(1)} h`, bold: true }] : []),
     ],
