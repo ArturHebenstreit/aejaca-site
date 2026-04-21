@@ -317,7 +317,7 @@ const LBL = {
     q0skip: "Nie mam pliku — opiszę co potrzebuję",
     q0detected: "Wykryto", q0stl: "Model 3D (STL)", q0svg: "Grafika wektorowa (SVG)",
     q0dims: "Wymiary", q0vol: "Objętość", q0area: "Powierzchnia", q0paths: "Ścieżki",
-    q0remove: "Usuń plik", q0sizeAuto: "Rozmiar obliczony z pliku",
+    q0remove: "Usuń plik", q0sizeAuto: "Rozmiar zbliżony do",
     q1: "Co chcesz wykonać?", q2: "Jak duże?", q3: "Z jakiego materiału?", q4: "Jakość wykonania?", q5: "Ile sztuk?",
     suggestion: "Sugerowana technologia",
     why: "Dlaczego?",
@@ -330,7 +330,7 @@ const LBL = {
     q0skip: "No file — I'll describe what I need",
     q0detected: "Detected", q0stl: "3D model (STL)", q0svg: "Vector graphic (SVG)",
     q0dims: "Dimensions", q0vol: "Volume", q0area: "Area", q0paths: "Paths",
-    q0remove: "Remove file", q0sizeAuto: "Size calculated from file",
+    q0remove: "Remove file", q0sizeAuto: "Size comparable to",
     q1: "What do you want to make?", q2: "How big?", q3: "What material?", q4: "Quality?", q5: "How many?",
     suggestion: "Suggested technology",
     why: "Why?",
@@ -343,7 +343,7 @@ const LBL = {
     q0skip: "Keine Datei — ich beschreibe was ich brauche",
     q0detected: "Erkannt", q0stl: "3D-Modell (STL)", q0svg: "Vektorgrafik (SVG)",
     q0dims: "Maße", q0vol: "Volumen", q0area: "Fläche", q0paths: "Pfade",
-    q0remove: "Datei entfernen", q0sizeAuto: "Größe aus Datei berechnet",
+    q0remove: "Datei entfernen", q0sizeAuto: "Größe vergleichbar mit",
     q1: "Was möchten Sie herstellen?", q2: "Wie groß?", q3: "Welches Material?", q4: "Qualität?", q5: "Wie viele?",
     suggestion: "Empfohlene Technologie",
     why: "Warum?",
@@ -629,12 +629,21 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
             </div>
 
             {/* Auto-detected size badge */}
-            <div className="mt-3 pt-2 border-t border-emerald-400/10 text-[10px] text-emerald-400/50 flex items-center gap-1.5">
-              <Ruler className="w-3 h-3" />
-              {l.q0sizeAuto}: <span className="text-emerald-300 font-semibold">{t(SIZES.find(s => s.id === size)?.label, lang)}</span>
-              {fileType === "stl" && <span className="text-neutral-600">· {t(MATERIALS.find(m => m.id === "plastic")?.label, lang)}</span>}
-              {fileType === "svg" && <span className="text-neutral-600">· {t(MATERIALS.find(m => m.id === material)?.label, lang)}</span>}
-            </div>
+            {(() => {
+              const sizeObj = SIZES.find(s => s.id === size);
+              return (
+                <div className="mt-3 pt-2 border-t border-emerald-400/10 text-[10px] text-emerald-400/50">
+                  <div className="flex items-center gap-1.5">
+                    <Ruler className="w-3 h-3 shrink-0" />
+                    <span>{l.q0sizeAuto}: <span className="text-emerald-300 font-semibold">&ldquo;{t(sizeObj?.label, lang)}&rdquo;</span> <span className="text-neutral-500">({t(sizeObj?.sub, lang)})</span></span>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1 ml-[18px]">
+                    {fileType === "stl" && <span className="text-neutral-500">{t(MATERIALS.find(m => m.id === "plastic")?.label, lang)}</span>}
+                    {fileType === "svg" && <span className="text-neutral-500">{t(MATERIALS.find(m => m.id === material)?.label, lang)}</span>}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
       </SimpleCard>
