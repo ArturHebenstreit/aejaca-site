@@ -120,13 +120,26 @@ const CO2_MODE_FROM_ITEM = {
 
 /** Given Simple-Mode answers, return { tech, mode?, params } or { custom: true } */
 export function resolveTechAndParams({ item, size, material, finish, quantity, fileType, stlData, svgData }) {
-  // STL always means 3D printing — override material choice
-  // Note: we don't pass stlData to the calculator — we use sizeId presets
-  // so that changing size in the UI triggers recalculation at the new size.
+  // STL — route to 3D print (plastic) or epoxy (resin)
+  // Note: we don't pass stlData to the calculator — sizeId presets drive pricing.
   if (fileType === "stl" && stlData) {
-    if (!size || !finish || !quantity) return { custom: true };
-    const sizeId = SIZE_MAP[size]["3dprint"];
+    if (!size || !material || !finish || !quantity) return { custom: true };
     const quantityId = QTY_MAP[quantity];
+
+    if (material === "resin") {
+      return {
+        tech: "epoxy", params: {
+          resinId: finish === "prototype" ? "uv" : "epoxy_clear",
+          volumeId: SIZE_MAP[size].epoxy,
+          moldId: quantity === "one" ? "existing" : "new_s",
+          inclusionId: "none",
+          finishId: finish === "prototype" ? "raw" : finish === "premium" ? "coated" : "sanded",
+          quantityId,
+        },
+      };
+    }
+
+    const sizeId = SIZE_MAP[size]["3dprint"];
     const isEngineering = item === "part" && (finish === "premium" || finish === "standard");
     const segment = isEngineering ? "engineering" : "standard";
     const materialKey = segment === "engineering"
@@ -321,7 +334,7 @@ const LBL = {
     q0skip: "Nie mam pliku — opiszę co potrzebuję",
     q0detected: "Wykryto", q0stl: "Model 3D (STL)", q0svg: "Grafika wektorowa (SVG)",
     q0dims: "Wymiary", q0vol: "Objętość", q0area: "Powierzchnia", q0paths: "Ścieżki",
-    q0remove: "Usuń plik", q0sizeAuto: "Rozmiar zbliżony do",
+    q0remove: "Usuń plik", q0selected: "Wybrano", q0selSize: "Rozmiar", q0selMat: "Materiał",
     q1: "Co chcesz wykonać?", q2: "Jak duże?", q3: "Z jakiego materiału?", q4: "Jakość wykonania?", q5: "Ile sztuk?",
     suggestion: "Sugerowana technologia",
     why: "Dlaczego?",
@@ -334,7 +347,7 @@ const LBL = {
     q0skip: "No file — I'll describe what I need",
     q0detected: "Detected", q0stl: "3D model (STL)", q0svg: "Vector graphic (SVG)",
     q0dims: "Dimensions", q0vol: "Volume", q0area: "Area", q0paths: "Paths",
-    q0remove: "Remove file", q0sizeAuto: "Size comparable to",
+    q0remove: "Remove file", q0selected: "Selected", q0selSize: "Size", q0selMat: "Material",
     q1: "What do you want to make?", q2: "How big?", q3: "What material?", q4: "Quality?", q5: "How many?",
     suggestion: "Suggested technology",
     why: "Why?",
@@ -347,7 +360,7 @@ const LBL = {
     q0skip: "Keine Datei — ich beschreibe was ich brauche",
     q0detected: "Erkannt", q0stl: "3D-Modell (STL)", q0svg: "Vektorgrafik (SVG)",
     q0dims: "Maße", q0vol: "Volumen", q0area: "Fläche", q0paths: "Pfade",
-    q0remove: "Datei entfernen", q0sizeAuto: "Größe vergleichbar mit",
+    q0remove: "Datei entfernen", q0selected: "Ausgewählt", q0selSize: "Größe", q0selMat: "Material",
     q1: "Was möchten Sie herstellen?", q2: "Wie groß?", q3: "Welches Material?", q4: "Qualität?", q5: "Wie viele?",
     suggestion: "Empfohlene Technologie",
     why: "Warum?",
@@ -357,7 +370,7 @@ const LBL = {
 };
 
 /** Emerald-themed tile grid — pure visual, used for all 5 questions. */
-function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false }) {
+function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false, disabledIds }) {
   const gridCls = cols === 3
     ? "grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3"
     : "grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3";
@@ -365,17 +378,20 @@ function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false }
     <div className={`${gridCls} ${disabled ? "opacity-40 pointer-events-none" : ""}`}>
       {options.map(opt => {
         const active = value === opt.id;
+        const optDisabled = disabledIds?.has(opt.id);
         const Icon = opt.icon;
         const label = t(opt.label, lang);
         const sub = opt.sub ? t(opt.sub, lang) : null;
         const hasImg = !!opt.img;
 
         return (
-          <button key={opt.id} onClick={() => onChange(opt.id)} disabled={disabled}
+          <button key={opt.id} onClick={() => !optDisabled && onChange(opt.id)} disabled={disabled || optDisabled}
             className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[120px] sm:min-h-[140px] ${
-              active
-                ? "border-emerald-400 shadow-lg shadow-emerald-400/20"
-                : "border-white/10 bg-white/[0.02] hover:border-white/25"
+              optDisabled
+                ? "opacity-30 pointer-events-none border-white/5"
+                : active
+                  ? "border-emerald-400 shadow-lg shadow-emerald-400/20"
+                  : "border-white/10 bg-white/[0.02] hover:border-white/25"
             }`}>
             {hasImg ? (
               <>
@@ -523,6 +539,14 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
     trackCalc("studio_simple", qid, v);
   };
 
+  const STL_ALLOWED_MATS = useMemo(() => new Set(["plastic", "resin"]), []);
+  const SVG_ALLOWED_MATS = useMemo(() => new Set(["wood", "metal", "glass"]), []);
+  const matDisabledIds = useMemo(() => {
+    if (!hasFile) return undefined;
+    const allowed = fileType === "stl" ? STL_ALLOWED_MATS : SVG_ALLOWED_MATS;
+    return new Set(MATERIALS.filter(m => !allowed.has(m.id)).map(m => m.id));
+  }, [hasFile, fileType, STL_ALLOWED_MATS, SVG_ALLOWED_MATS]);
+
   const techLabel = !resolved?.custom && resolved?.tech
     ? t(TECH_BADGE[resolved.tech], lang)
     : null;
@@ -632,18 +656,20 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
               )}
             </div>
 
-            {/* Auto-detected size badge */}
+            {/* Selected size + material summary */}
             {(() => {
               const sizeObj = SIZES.find(s => s.id === size);
+              const matObj = MATERIALS.find(m => m.id === material);
               return (
-                <div className="mt-3 pt-2 border-t border-emerald-400/10 text-[10px] text-emerald-400/50">
-                  <div className="flex items-center gap-1.5">
-                    <Ruler className="w-3 h-3 shrink-0" />
-                    <span>{l.q0sizeAuto}: <span className="text-emerald-300 font-semibold">&ldquo;{t(sizeObj?.label, lang)}&rdquo;</span> <span className="text-neutral-500">({t(sizeObj?.sub, lang)})</span></span>
+                <div className="mt-3 pt-2 border-t border-emerald-400/10 text-[11px] text-emerald-400/60">
+                  <div className="font-semibold text-emerald-300 mb-1">{l.q0selected}:</div>
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <Ruler className="w-3 h-3 shrink-0 text-emerald-400/50" />
+                    <span>{l.q0selSize}: <span className="text-emerald-200 font-medium">{t(sizeObj?.label, lang)}</span> <span className="text-neutral-500">({t(sizeObj?.sub, lang)})</span></span>
                   </div>
-                  <div className="flex items-center gap-1.5 mt-1 ml-[18px]">
-                    {fileType === "stl" && <span className="text-neutral-500">{t(MATERIALS.find(m => m.id === "plastic")?.label, lang)}</span>}
-                    {fileType === "svg" && <span className="text-neutral-500">{t(MATERIALS.find(m => m.id === material)?.label, lang)}</span>}
+                  <div className="flex items-center gap-1.5">
+                    <Layers className="w-3 h-3 shrink-0 text-emerald-400/50" />
+                    <span>{l.q0selMat}: <span className="text-emerald-200 font-medium">{t(matObj?.label, lang)}</span></span>
                   </div>
                 </div>
               );
@@ -660,18 +686,15 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
         <TileGrid options={SIZES} value={size} onChange={handleSet(setSize, "size")} lang={lang} cols={3} />
       </SimpleCard>
 
-      {/* Material — skip for STL (always 3D print), show for SVG (determines CO2/Fiber) */}
-      {fileType !== "stl" && (
-        <SimpleCard stepNum="③" label={l.q3}>
-          <TileGrid options={MATERIALS} value={material} onChange={handleSet(setMaterial, "material")} lang={lang} cols={3} />
-        </SimpleCard>
-      )}
+      <SimpleCard stepNum="③" label={l.q3}>
+        <TileGrid options={MATERIALS} value={material} onChange={handleSet(setMaterial, "material")} lang={lang} cols={3} disabledIds={matDisabledIds} />
+      </SimpleCard>
 
-      <SimpleCard stepNum={fileType === "stl" ? "③" : "④"} label={l.q4}>
+      <SimpleCard stepNum="④" label={l.q4}>
         <TileGrid options={FINISH} value={finish} onChange={handleSet(setFinish, "finish")} lang={lang} cols={3} />
       </SimpleCard>
 
-      <SimpleCard stepNum={fileType === "stl" ? "④" : "⑤"} label={l.q5}>
+      <SimpleCard stepNum="⑤" label={l.q5}>
         <TileGrid options={QUANTITY} value={quantity} onChange={handleSet(setQuantity, "quantity")} lang={lang} cols={4} />
       </SimpleCard>
 
