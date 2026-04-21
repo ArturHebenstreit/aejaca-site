@@ -3,7 +3,7 @@
 // Maps 5 plain-language questions → advanced calculator params
 // Reuses pricing engines from Print3D / CO2 / Fiber / Epoxy.
 // ============================================================
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, lazy, Suspense } from "react";
 import {
   KeyRound, BookText, Sparkles, Stamp, Gift, Cog, Gem, HelpCircle,
   Circle, Hand, Book, Package, Maximize2,
@@ -20,6 +20,16 @@ import { calcEngrave as calcCO2Engrave, calcCut as calcCO2Cut } from "./CO2Laser
 import { calculate as calcFiber } from "./FiberLaserCalc.jsx";
 import { calculate as calcEpoxy } from "./EpoxyCastCalc.jsx";
 import { trackCalc } from "../../utils/analytics.js";
+
+const STLViewer = lazy(() => import("./STLViewer.jsx"));
+
+function autoSizeFromCm(maxCm) {
+  if (maxCm <= 3) return "coin";
+  if (maxCm <= 10) return "palm";
+  if (maxCm <= 25) return "book";
+  if (maxCm <= 40) return "box";
+  return "bigger";
+}
 
 // ============================================================
 // QUESTIONS & OPTIONS
@@ -449,6 +459,9 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
       setFileType("stl");
       setStlData(parsed);
       setSvgData(null);
+      setMaterial("plastic");
+      const maxCm = Math.max(parsed.bbox.x, parsed.bbox.y, parsed.bbox.z);
+      setSize(autoSizeFromCm(maxCm));
       trackCalc("studio_simple", "file_upload", "stl");
     } else if (ext === "svg") {
       const { parseSVG } = await import("../../utils/svgParser.js");
@@ -457,6 +470,9 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
       setFileType("svg");
       setSvgData(parsed);
       setStlData(null);
+      setMaterial("wood");
+      const maxCm = Math.max(parsed.bboxMm.x, parsed.bboxMm.y) / 10;
+      setSize(autoSizeFromCm(maxCm));
       trackCalc("studio_simple", "file_upload", "svg");
     }
     setFileParsing(false);
@@ -487,6 +503,13 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
     [item, size, material, finish, quantity, fileType, stlData, svgData]
   );
   const result = useMemo(() => runCalc(resolved, lang), [resolved, lang]);
+
+  const svgBlobUrl = useMemo(() => {
+    if (!svgData?.svgText) return null;
+    return URL.createObjectURL(new Blob([svgData.svgText], { type: "image/svg+xml" }));
+  }, [svgData?.svgText]);
+
+  useEffect(() => () => { if (svgBlobUrl) URL.revokeObjectURL(svgBlobUrl); }, [svgBlobUrl]);
 
   const handleSet = (setter, qid) => (v) => {
     setter(v);
@@ -542,20 +565,37 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
           </div>
         ) : (
           <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/[0.04] p-4">
+            {/* Header: filename + type + remove */}
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <FileBox className="w-5 h-5 text-emerald-400" />
-                <div>
-                  <div className="text-sm font-semibold text-white truncate max-w-[200px]">{fileName}</div>
+              <div className="flex items-center gap-2 min-w-0">
+                <FileBox className="w-5 h-5 text-emerald-400 shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-white truncate">{fileName}</div>
                   <div className="text-[11px] text-emerald-400/80">
                     {l.q0detected}: {fileType === "stl" ? l.q0stl : l.q0svg}
                   </div>
                 </div>
               </div>
-              <button onClick={clearFile} className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-white transition-colors" title={l.q0remove}>
+              <button onClick={clearFile} className="p-1.5 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-white transition-colors shrink-0" title={l.q0remove}>
                 <X className="w-4 h-4" />
               </button>
             </div>
+
+            {/* 3D Preview for STL */}
+            {fileType === "stl" && stlData?.triangles && (
+              <div className="mb-3">
+                <Suspense fallback={<div className="w-full rounded-lg bg-[#0c1222] border border-emerald-400/10 animate-pulse" style={{ height: "200px" }} />}>
+                  <STLViewer triangles={stlData.triangles} bbox={stlData.bbox} />
+                </Suspense>
+              </div>
+            )}
+
+            {/* SVG Preview */}
+            {fileType === "svg" && svgBlobUrl && (
+              <div className="mb-3 w-full rounded-lg overflow-hidden bg-[#0c1222] border border-emerald-400/10 flex items-center justify-center" style={{ height: "160px" }}>
+                <img src={svgBlobUrl} alt="SVG" className="max-w-full max-h-full p-3 opacity-90" style={{ filter: "invert(1) hue-rotate(180deg)" }} />
+              </div>
+            )}
 
             {/* File stats */}
             <div className="grid grid-cols-2 gap-2 text-[11px]">
@@ -585,8 +625,12 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
               )}
             </div>
 
-            <div className="mt-3 pt-2 border-t border-emerald-400/10 text-[10px] text-emerald-400/50 flex items-center gap-1">
-              <Ruler className="w-3 h-3" /> {l.q0sizeAuto}
+            {/* Auto-detected size badge */}
+            <div className="mt-3 pt-2 border-t border-emerald-400/10 text-[10px] text-emerald-400/50 flex items-center gap-1.5">
+              <Ruler className="w-3 h-3" />
+              {l.q0sizeAuto}: <span className="text-emerald-300 font-semibold">{t(SIZES.find(s => s.id === size)?.label, lang)}</span>
+              {fileType === "stl" && <span className="text-neutral-600">· {t(MATERIALS.find(m => m.id === "plastic")?.label, lang)}</span>}
+              {fileType === "svg" && <span className="text-neutral-600">· {t(MATERIALS.find(m => m.id === material)?.label, lang)}</span>}
             </div>
           </div>
         )}
