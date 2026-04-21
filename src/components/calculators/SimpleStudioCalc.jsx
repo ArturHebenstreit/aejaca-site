@@ -121,6 +121,8 @@ const CO2_MODE_FROM_ITEM = {
 /** Given Simple-Mode answers, return { tech, mode?, params } or { custom: true } */
 export function resolveTechAndParams({ item, size, material, finish, quantity, fileType, stlData, svgData }) {
   // STL always means 3D printing — override material choice
+  // Note: we don't pass stlData to the calculator — we use sizeId presets
+  // so that changing size in the UI triggers recalculation at the new size.
   if (fileType === "stl" && stlData) {
     if (!size || !finish || !quantity) return { custom: true };
     const sizeId = SIZE_MAP[size]["3dprint"];
@@ -138,12 +140,12 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
         colorId: 1,
         precisionId: finish === "prototype" ? "draft_04" : finish === "premium" ? "quality_04" : "standard_04",
         quantityId,
-        stlData,
       },
     };
   }
 
   // SVG — route based on material (CO2 or Fiber)
+  // Note: we don't pass svgData to the calculator — sizeId presets drive pricing.
   if (fileType === "svg" && svgData) {
     if (!size || !material || !finish || !quantity) return { custom: true };
     const tech = material === "idk" ? (DEFAULT_TECH_FROM_ITEM[item] || "co2") : TECH_FROM_MATERIAL[material];
@@ -154,19 +156,19 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
     if (tech === "3dprint") {
       const mode = CO2_MODE_FROM_ITEM[item] || "engrave";
       if (mode === "engrave") {
-        return { tech: "co2", mode, params: { matId: "wood", areaId: sizeId, detailId: finish === "prototype" ? "simple" : finish === "premium" ? "photo" : "standard", quantityId, svgData } };
+        return { tech: "co2", mode, params: { matId: "wood", areaId: sizeId, detailId: finish === "prototype" ? "simple" : finish === "premium" ? "photo" : "standard", quantityId } };
       }
-      return { tech: "co2", mode, params: { matId: "ply3", pathId: sizeId, complexId: finish === "prototype" ? "simple" : finish === "premium" ? "complex" : "moderate", quantityId, extended: false, svgData } };
+      return { tech: "co2", mode, params: { matId: "ply3", pathId: sizeId, complexId: finish === "prototype" ? "simple" : finish === "premium" ? "complex" : "moderate", quantityId, extended: false } };
     }
 
     if (tech === "co2") {
       const mode = CO2_MODE_FROM_ITEM[item] || "engrave";
       if (mode === "engrave") {
         const matId = material === "glass" ? "glass" : material === "wood" ? "wood" : item === "stamp" ? "rubber" : "wood";
-        return { tech, mode, params: { matId, areaId: sizeId, detailId: finish === "prototype" ? "simple" : finish === "premium" ? "photo" : "standard", quantityId, svgData } };
+        return { tech, mode, params: { matId, areaId: sizeId, detailId: finish === "prototype" ? "simple" : finish === "premium" ? "photo" : "standard", quantityId } };
       }
       const matId = material === "glass" ? "acr3" : finish === "premium" ? "ply5" : "ply3";
-      return { tech, mode, params: { matId, pathId: sizeId, complexId: finish === "prototype" ? "simple" : finish === "premium" ? "complex" : "moderate", quantityId, extended: false, svgData } };
+      return { tech, mode, params: { matId, pathId: sizeId, complexId: finish === "prototype" ? "simple" : finish === "premium" ? "complex" : "moderate", quantityId, extended: false } };
     }
 
     if (tech === "fiber") {
@@ -175,7 +177,7 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
       }
       const matId = item === "jewelry" ? "silver" : "stainless";
       const lensId = (size === "coin") ? "70mm" : "150mm";
-      return { tech, params: { matId, lensId, markId: finish === "prototype" ? "surface" : finish === "premium" ? "medium" : "surface", areaId: sizeId, quantityId, svgData } };
+      return { tech, params: { matId, lensId, markId: finish === "prototype" ? "surface" : finish === "premium" ? "medium" : "surface", areaId: sizeId, quantityId } };
     }
 
     return { custom: true };
