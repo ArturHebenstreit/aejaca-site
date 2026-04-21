@@ -11,6 +11,7 @@ const PRINT_CONFIG = {
   PRINTER_POWER_KW: 0.35,
   DEPRECIATION_PLN_H: 2.50,
   ENGINEERING_PREMIUM: 0.35,
+  HANDLING_FEE: 8.0,
 };
 
 const FILAMENT_IMG = {
@@ -131,17 +132,17 @@ const LBL = {
   pl: { segment: "Segment wydruku", filament: "Filament", size: "Rozmiar modelu", infill: "Wypełnienie (infill)",
     colors: "Liczba kolorów", precision: "Precyzja (nozzle × warstwa)", qty: "Nakład",
     mass: "Masa / szt.", material: "Materiał / szt.", printTime: "Czas druku / szt.", timeSetup: "Czas + setup / szt.",
-    energy: "Energia / szt.", depreciation: "Amortyzacja / szt.", workshop: "Usługi warsztatowe",
+    energy: "Energia / szt.", depreciation: "Amortyzacja / szt.", handling: "Obsługa / szt.", workshop: "Usługi warsztatowe",
     estCost: "Koszt szacunkowy / szt.", discount: "Rabat seryjny", totalProd: "Czas produkcji łącznie" },
   en: { segment: "Print segment", filament: "Filament", size: "Model size", infill: "Infill",
     colors: "Number of colors", precision: "Precision (nozzle × layer)", qty: "Quantity",
     mass: "Mass / pc", material: "Material / pc", printTime: "Print time / pc", timeSetup: "Time + setup / pc",
-    energy: "Energy / pc", depreciation: "Depreciation / pc", workshop: "Workshop services",
+    energy: "Energy / pc", depreciation: "Depreciation / pc", handling: "Handling / pc", workshop: "Workshop services",
     estCost: "Estimated cost / pc", discount: "Series discount", totalProd: "Total production time" },
   de: { segment: "Drucksegment", filament: "Filament", size: "Modellgröße", infill: "Füllung (Infill)",
     colors: "Anzahl Farben", precision: "Präzision (Düse × Schicht)", qty: "Auflage",
     mass: "Masse / Stk.", material: "Material / Stk.", printTime: "Druckzeit / Stk.", timeSetup: "Zeit + Setup / Stk.",
-    energy: "Energie / Stk.", depreciation: "Abschreibung / Stk.", workshop: "Werkstattleistungen",
+    energy: "Energie / Stk.", depreciation: "Abschreibung / Stk.", handling: "Handhabung / Stk.", workshop: "Werkstattleistungen",
     estCost: "Geschätzte Kosten / Stk.", discount: "Serienrabatt", totalProd: "Gesamte Produktionszeit" },
 };
 
@@ -187,14 +188,15 @@ export function calculate(params, lang) {
   const timePerPc = printTime + setupPerPc + handlePerPc;
   const energyCost = timePerPc * PRINT_CONFIG.PRINTER_POWER_KW * CONFIG.ENERGY_COST_PLN;
   const deprCost = timePerPc * PRINT_CONFIG.DEPRECIATION_PLN_H;
-  const baseCost = materialCost + energyCost + deprCost;
+  const baseCost = materialCost + energyCost + deprCost + PRINT_CONFIG.HANDLING_FEE;
   let margin = CONFIG.BASE_MARGIN;
   if (segment === "engineering") margin += PRINT_CONFIG.ENGINEERING_PREMIUM;
 
   const platesNeeded = Math.ceil(qTier.qty / (size.pcsPerPlate || 1));
   const totalTimeH = (printTime * platesNeeded) + (0.5) + (handlePerPc * qTier.qty);
 
-  const pricing = applyPricing(baseCost, margin, qTier.discount, qTier.qty);
+  const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
+  const pricing = applyPricing(baseCost, margin, qTier.discount, qTier.qty, plDiscount);
   return {
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     totalTimeH: qTier.qty > 1 ? totalTimeH : null,
@@ -205,6 +207,7 @@ export function calculate(params, lang) {
       { label: l.timeSetup, value: `${timePerPc.toFixed(1)} h` },
       { label: l.energy, value: fmtCost(energyCost, lang) },
       { label: l.depreciation, value: fmtCost(deprCost, lang) },
+      { label: l.handling, value: fmtCost(PRINT_CONFIG.HANDLING_FEE, lang) },
       { label: l.workshop, value: fmtCost(baseCost * margin, lang) },
       { divider: true },
       { label: l.estCost, value: fmtCost(baseCost * (1 + margin), lang), bold: true },

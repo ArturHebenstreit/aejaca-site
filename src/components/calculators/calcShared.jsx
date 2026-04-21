@@ -12,6 +12,7 @@ export const CONFIG = {
   TOLERANCE_HIGH: 0.40,
   ENERGY_COST_PLN: 1.05,
   BASE_MARGIN: 0.40,
+  PL_MARKET_DISCOUNT: 0.15,
 };
 
 export const QUANTITY_TIERS = [
@@ -42,8 +43,8 @@ export function fmtCost(plnAmount, lang) {
 }
 
 /** Apply margin, discount, tolerance -> price range PLN + EUR */
-export function applyPricing(baseCost, margin, discountRate, qty) {
-  const basePrice = baseCost * (1 + margin);
+export function applyPricing(baseCost, margin, discountRate, qty, localDiscount = 0) {
+  const basePrice = baseCost * (1 + margin) * (1 - localDiscount);
   const discounted = basePrice * (1 - discountRate);
   const perMin = Math.round(discounted * (1 - CONFIG.TOLERANCE_LOW));
   const perMax = Math.round(discounted * (1 + CONFIG.TOLERANCE_HIGH));
