@@ -9,6 +9,7 @@ import {
   buildReviewsAugmentedOrganization,
   buildWebPageSchema,
   buildBreadcrumbSchema,
+  buildLocalBusinessSchema,
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 import GoogleReviews from "../components/GoogleReviews.jsx";
@@ -36,6 +37,7 @@ export default function Home() {
     }),
     buildWebPageSchema({ title: seo.title, description: seo.description, url: SITE.url, lang }),
     buildBreadcrumbSchema([{ name: "Home", url: SITE.url }]),
+    buildLocalBusinessSchema(),
   ];
 
   return (
@@ -191,7 +193,7 @@ export default function Home() {
               ].map(({ to, Icon, title, desc, cta, img }) => (
                 <Link key={to} to={to} className="group relative rounded-xl overflow-hidden border border-emerald-400/10 hover:border-emerald-400/30 hover:shadow-lg hover:shadow-emerald-900/10 transition-all duration-300 min-h-[180px]">
                   <div className="absolute inset-0">
-                    <img src={img} alt="" loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <img src={img} alt={title} loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30" />
                   </div>
                   <div className="relative p-3 h-full min-h-[180px] flex flex-col justify-end">

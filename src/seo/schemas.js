@@ -38,6 +38,86 @@ export function buildOrganizationSchema() {
   };
 }
 
+// ---------- LocalBusiness (map pack + local search + AI place queries) ----------
+// LocalBusiness complements Organization with geo, hours, price range, and offer catalog.
+// Google uses this for local pack rankings; LLMs cite it for "where / when / how much" queries.
+export function buildLocalBusinessSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "@id": `${SITE.url}/#business`,
+    name: SITE.name,
+    alternateName: "Artisan Elegance Jewelry and Crafted Art",
+    url: SITE.url,
+    logo: `${SITE.url}/logo.png`,
+    image: `${SITE.url}/hero-jewelry.jpg`,
+    email: "contact@aejaca.com",
+    telephone: "+48780737786",
+    founder: { "@type": "Person", name: "Artur Hebenstreit" },
+    address: {
+      "@type": "PostalAddress",
+      addressCountry: "PL",
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: "50.0647",
+      longitude: "19.9450",
+    },
+    areaServed: [
+      { "@type": "Country", name: "Poland" },
+      { "@type": "Country", name: "Germany" },
+      { "@type": "Place", name: "European Union" },
+    ],
+    serviceArea: {
+      "@type": "GeoCircle",
+      geoMidpoint: { "@type": "GeoCoordinates", latitude: "50.0647", longitude: "19.9450" },
+      geoRadius: "5000",
+    },
+    priceRange: "€€",
+    currenciesAccepted: "PLN, EUR",
+    paymentAccepted: "Cash, Credit Card, Bank Transfer",
+    openingHoursSpecification: {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      opens: "09:00",
+      closes: "17:00",
+    },
+    sameAs: [
+      "https://aejacashop.etsy.com",
+      "https://aejaca2studio.etsy.com",
+      "https://www.instagram.com/aejaca_",
+      "https://www.tiktok.com/@aejaca_",
+      "https://www.facebook.com/people/Artisan-Elegance-Jewelry-and-Crafted-Art/61570057929428/",
+      "https://www.youtube.com/@aejaca",
+    ],
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "AEJaCA Services",
+      itemListElement: [
+        {
+          "@type": "OfferCatalog",
+          name: "Handcrafted Jewelry",
+          itemListElement: [
+            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Custom jewelry design" } },
+            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Jewelry renovation" } },
+            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Jewelry repair" } },
+          ],
+        },
+        {
+          "@type": "OfferCatalog",
+          name: "Digital Fabrication Studio",
+          itemListElement: [
+            { "@type": "Offer", itemOffered: { "@type": "Service", name: "3D printing (FDM/SLA)" } },
+            { "@type": "Offer", itemOffered: { "@type": "Service", name: "CO2 laser engraving & cutting" } },
+            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Fiber laser marking" } },
+            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Epoxy resin casting" } },
+          ],
+        },
+      ],
+    },
+  };
+}
+
 // ---------- Per-page WebPage wrapper ----------
 // Ties together language, canonical URL, breadcrumbs — signals page-level intent to crawlers.
 export function buildWebPageSchema({ title, description, url, lang }) {

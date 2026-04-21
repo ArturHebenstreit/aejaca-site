@@ -330,7 +330,7 @@ const TECH_RATIONALE = {
 const LBL = {
   pl: {
     q0: "Masz gotowy plik?", q0hint: "Wrzuć plik STL lub SVG — wycenimy automatycznie",
-    q0drop: "Przeciągnij plik tutaj", q0or: "lub kliknij, aby wybrać", q0accept: ".stl, .svg",
+    q0drop: "Przeciągnij plik tutaj", q0tap: "Kliknij, aby wybrać plik", q0or: "lub kliknij, aby wybrać", q0accept: ".stl, .svg",
     q0skip: "Nie mam pliku — opiszę co potrzebuję",
     q0detected: "Wykryto", q0stl: "Model 3D (STL)", q0svg: "Grafika wektorowa (SVG)",
     q0dims: "Wymiary", q0vol: "Objętość", q0area: "Powierzchnia", q0paths: "Ścieżki",
@@ -343,7 +343,7 @@ const LBL = {
   },
   en: {
     q0: "Got a file ready?", q0hint: "Drop an STL or SVG file — we'll quote it automatically",
-    q0drop: "Drag your file here", q0or: "or click to browse", q0accept: ".stl, .svg",
+    q0drop: "Drag your file here", q0tap: "Tap to choose a file", q0or: "or click to browse", q0accept: ".stl, .svg",
     q0skip: "No file — I'll describe what I need",
     q0detected: "Detected", q0stl: "3D model (STL)", q0svg: "Vector graphic (SVG)",
     q0dims: "Dimensions", q0vol: "Volume", q0area: "Area", q0paths: "Paths",
@@ -356,7 +356,7 @@ const LBL = {
   },
   de: {
     q0: "Haben Sie eine Datei?", q0hint: "Laden Sie eine STL- oder SVG-Datei hoch — wir kalkulieren automatisch",
-    q0drop: "Datei hierher ziehen", q0or: "oder klicken zum Auswählen", q0accept: ".stl, .svg",
+    q0drop: "Datei hierher ziehen", q0tap: "Tippen um Datei auszuwählen", q0or: "oder klicken zum Auswählen", q0accept: ".stl, .svg",
     q0skip: "Keine Datei — ich beschreibe was ich brauche",
     q0detected: "Erkannt", q0stl: "3D-Modell (STL)", q0svg: "Vektorgrafik (SVG)",
     q0dims: "Maße", q0vol: "Volumen", q0area: "Fläche", q0paths: "Pfade",
@@ -574,23 +574,27 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
               className={`group relative flex flex-col items-center justify-center gap-3 py-8 px-4 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200 ${
                 dragOver
                   ? "border-emerald-400 bg-emerald-400/10"
-                  : "border-emerald-400/30 hover:border-emerald-400/60 hover:bg-emerald-400/[0.04]"
+                  : "border-emerald-400/30 bg-emerald-400/[0.06] hover:border-emerald-400/60 hover:bg-emerald-400/[0.08]"
               }`}
               onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}
               onDrop={onDrop}
             >
               <div className={`p-3 rounded-full transition-colors ${dragOver ? "bg-emerald-400/20" : "bg-emerald-400/10 group-hover:bg-emerald-400/15"}`}>
-                <Upload className={`w-8 h-8 ${dragOver ? "text-emerald-300" : "text-emerald-400/60 group-hover:text-emerald-400"} transition-colors`} />
+                <Upload className={`w-8 h-8 ${dragOver ? "text-emerald-300" : "text-emerald-400 group-hover:text-emerald-300"} transition-colors`} />
               </div>
               <div className="text-center">
                 <div className={`text-sm font-semibold ${dragOver ? "text-emerald-300" : "text-white"}`}>
-                  {l.q0drop}
+                  <span className="hidden sm:inline">{l.q0drop}</span>
+                  <span className="sm:hidden">{l.q0tap}</span>
                 </div>
-                <div className="text-xs text-neutral-500 mt-1">{l.q0or}</div>
-                <div className="text-[10px] text-emerald-400/50 mt-1">{l.q0accept}</div>
+                <div className="text-xs text-neutral-500 mt-1">
+                  <span className="hidden sm:inline">{l.q0or}</span>
+                  <span className="sm:hidden">{l.q0accept}</span>
+                </div>
+                <div className="text-[10px] text-emerald-400/50 mt-1 hidden sm:block">{l.q0accept}</div>
               </div>
-              <input type="file" accept=".stl,.svg" onChange={onInputChange} className="hidden" />
+              <input type="file" accept=".stl,.svg" onChange={onInputChange} className="sr-only" />
             </label>
             <div className="text-center mt-3 text-[11px] text-neutral-500">{l.q0hint}</div>
           </div>
