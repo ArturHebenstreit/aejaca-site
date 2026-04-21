@@ -259,8 +259,11 @@ export default function Studio() {
       </section>
 
       {/* Floating Quick Quote CTA — emphasize STL/SVG auto-pricing */}
-      <a
-        href="#calculator"
+      <button
+        onClick={() => {
+          const target = document.getElementById("file-upload") || document.getElementById("calculator");
+          if (target) target.scrollIntoView({ behavior: "smooth", block: "center" });
+        }}
         className={`floating-cta ${showFloatingCta ? "visible" : ""}`}
         aria-label={FLOATING_CTA_LABELS[lang] || FLOATING_CTA_LABELS.en}
       >
@@ -268,7 +271,7 @@ export default function Studio() {
           <Calculator className="w-5 h-5" />
           {FLOATING_CTA_LABELS[lang] || FLOATING_CTA_LABELS.en}
         </span>
-      </a>
+      </button>
       </div>
     </>
   );
