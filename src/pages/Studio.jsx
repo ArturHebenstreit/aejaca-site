@@ -17,6 +17,7 @@ import {
   buildBreadcrumbSchema,
   buildWebPageSchema,
   buildHowToSchema,
+  buildProductSchema,
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 
@@ -74,6 +75,31 @@ export default function Studio() {
       image: `${SITE.url}/hero-studio.jpg`,
     }),
     s.faq?.items && buildFAQSchema(s.faq.items),
+    // Product schemas = enable rich results (price) in Google Shopping + AI answers
+    buildProductSchema({
+      name: "Custom 3D Print (FDM) — AEJaCA sTuDiO",
+      description: "Professional FDM 3D printing service using PLA, PETG, ABS, PA6-CF, and PPA-CF. From rapid prototypes to production parts.",
+      image: `${SITE.url}/hero-studio.jpg`,
+      sku: "AEJACA-3DPRINT",
+      price: "25",
+      currency: "EUR",
+    }),
+    buildProductSchema({
+      name: "CO2 Laser Engraving & Cutting — AEJaCA sTuDiO",
+      description: "xTool P2 55W CO2 laser engraving on wood, acrylic, glass, leather. Precision cutting of plywood, MDF, and acrylic sheets.",
+      image: `${SITE.url}/hero-studio.jpg`,
+      sku: "AEJACA-CO2LASER",
+      price: "15",
+      currency: "EUR",
+    }),
+    buildProductSchema({
+      name: "Fiber Laser Marking — AEJaCA sTuDiO",
+      description: "Raycus 30W fiber laser marking on stainless steel, titanium, silver, gold, brass, stone, and ceramics.",
+      image: `${SITE.url}/hero-studio.jpg`,
+      sku: "AEJACA-FIBER",
+      price: "20",
+      currency: "EUR",
+    }),
   ];
 
   return (

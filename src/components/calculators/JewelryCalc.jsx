@@ -274,7 +274,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                 {/* Background image (full visibility) */}
                 {s.img && (
                   <div className="absolute inset-0 overflow-hidden">
-                    <img src={s.img} alt="" loading="lazy"
+                    <img src={s.img} alt={t(s.label, lang)} loading="lazy"
                       className={`w-full h-full object-cover transition-transform duration-500 ${
                         active ? "scale-105" : "group-hover:scale-105"
                       }`} />
@@ -312,7 +312,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     {/* Background image (full visibility) */}
                     {pl.img && (
                       <div className="absolute inset-0 overflow-hidden">
-                        <img src={pl.img} alt="" loading="lazy"
+                        <img src={pl.img} alt={pl.label} loading="lazy"
                           className={`w-full h-full object-cover transition-transform duration-500 ${
                             active ? "scale-105" : "group-hover:scale-105"
                           }`} />
@@ -434,7 +434,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     }`}>
                     {w.img && (
                       <div className="absolute inset-0 overflow-hidden">
-                        <img src={w.img} alt="" loading="lazy"
+                        <img src={w.img} alt={t(w.label, lang)} loading="lazy"
                           className={`w-full h-full object-cover transition-transform duration-500 ${active ? "scale-105" : "group-hover:scale-105"}`} />
                         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/95 via-black/70 to-transparent" />
                         {active && <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />}
@@ -461,7 +461,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     }`}>
                     {m.img && (
                       <div className="absolute inset-0 overflow-hidden">
-                        <img src={m.img} alt="" loading="lazy"
+                        <img src={m.img} alt={t(m.label, lang)} loading="lazy"
                           className={`w-full h-full object-cover transition-transform duration-500 ${active ? "scale-105" : "group-hover:scale-105"}`} />
                         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/95 via-black/70 to-transparent" />
                         {active && <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />}

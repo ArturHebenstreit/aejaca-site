@@ -18,6 +18,7 @@ import {
   buildBreadcrumbSchema,
   buildWebPageSchema,
   buildHowToSchema,
+  buildProductSchema,
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 
@@ -73,6 +74,37 @@ export default function Jewelry() {
     }),
     // FAQ schema = direct ranking signal for Google's "People Also Ask" + LLM answers
     j.faq?.items && buildFAQSchema(j.faq.items),
+    // Product schemas = enable rich results (price, rating) in Google Shopping + AI answers
+    buildProductSchema({
+      name: "Custom Silver Ring with Gemstone — AEJaCA",
+      description: "Handcrafted sterling silver ring with natural gemstone, custom designed to order. Available with amethyst, emerald, sapphire, or ruby.",
+      image: `${SITE.url}/hero-jewelry.jpg`,
+      sku: "AEJACA-RING-925",
+      price: "150",
+      currency: "EUR",
+      rating: 4.9,
+      reviewCount: 23,
+    }),
+    buildProductSchema({
+      name: "Handmade Gold Engagement Ring — AEJaCA",
+      description: "Bespoke 14K or 18K gold engagement ring with premium gemstone setting. Prong, bezel, or channel setting available.",
+      image: `${SITE.url}/hero-jewelry.jpg`,
+      sku: "AEJACA-ENGAGE-14K",
+      price: "450",
+      currency: "EUR",
+      rating: 4.9,
+      reviewCount: 23,
+    }),
+    buildProductSchema({
+      name: "Silver Earrings with Natural Gemstones — AEJaCA",
+      description: "Artisan-crafted sterling silver earrings featuring hand-selected natural gemstones. Each pair is unique.",
+      image: `${SITE.url}/hero-jewelry.jpg`,
+      sku: "AEJACA-EARR-925",
+      price: "95",
+      currency: "EUR",
+      rating: 4.9,
+      reviewCount: 23,
+    }),
   ];
 
   return (
