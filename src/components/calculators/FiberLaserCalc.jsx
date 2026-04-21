@@ -115,7 +115,8 @@ export function calculate({ matId, lensId, markId, areaId, quantityId, svgData }
 
   const batchTimeH = (timeH + handleH) * qTier.qty + 0.2;
 
-  const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, qTier.discount, qTier.qty);
+  const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
+  const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, qTier.discount, qTier.qty, plDiscount);
   return {
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     totalTimeH: qTier.qty > 1 ? batchTimeH : null,

@@ -16,6 +16,7 @@ const LABELS = {
     modeHint: "Szybka wycena daje orientacyjną cenę w 30 sekund. Tryb zaawansowany pozwala kontrolować każdy parametr (metal, próba, kamienie, praca jubilerska).",
     note: 'Kalkulacje są szacunkowe. Rzeczywista cena zależy od projektu, kamieni i specyfikacji. Opcje "niestandardowe" wymagają indywidualnej wyceny.',
     vat: "Podane ceny są orientacyjne i nie zawierają stosownych podatków VAT czy ich odpowiedników, które należy doliczyć przy finalizacji zamówienia.",
+    shipping: "Ceny nie uwzględniają kosztów transportu.",
   },
   en: {
     tag: "Jewelry Calculator",
@@ -27,6 +28,7 @@ const LABELS = {
     modeHint: "Quick quote gives a rough estimate in 30 seconds. Advanced mode lets you control every parameter (metal, karat, stones, labor).",
     note: "Estimates are approximate. Actual price depends on design, gemstones, and specifications. Custom options require an individual quote.",
     vat: "Prices shown are indicative and do not include applicable VAT or equivalent taxes, which will be added upon order finalization.",
+    shipping: "Prices do not include shipping costs.",
   },
   de: {
     tag: "Schmuckkalkulator",
@@ -38,6 +40,7 @@ const LABELS = {
     modeHint: "Schnellkalkulation liefert eine grobe Schätzung in 30 Sekunden. Der erweiterte Modus bietet volle Kontrolle über jeden Parameter (Metall, Karat, Steine, Arbeit).",
     note: 'Kalkulationen sind Schätzungen. Der tatsächliche Preis hängt von Design, Edelsteinen und Spezifikationen ab. "Individuelle" Optionen erfordern ein separates Angebot.',
     vat: "Die angegebenen Preise sind Richtwerte und enthalten keine Mehrwertsteuer oder gleichwertige Abgaben, die bei der Auftragsabwicklung hinzukommen.",
+    shipping: "Preise verstehen sich ohne Versandkosten.",
   },
 };
 
@@ -107,13 +110,13 @@ export default function JewelryEstimator() {
           </div>
         )}
 
-        {/* VAT disclaimer */}
+        {/* VAT + shipping disclaimer */}
         <div className={`mt-4 p-3 rounded-xl border text-[11px] leading-relaxed text-center ${
           isSimple
             ? "border-rose-400/10 bg-rose-400/[0.02] text-rose-400/60"
             : "border-amber-400/10 bg-amber-400/[0.02] text-amber-400/60"
         }`}>
-          {l.vat}
+          {l.vat} {l.shipping}
         </div>
 
         {/* Footer note */}

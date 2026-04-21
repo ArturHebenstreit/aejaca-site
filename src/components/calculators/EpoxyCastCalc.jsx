@@ -11,6 +11,8 @@ import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, Resu
 const EPOXY_CONFIG = {
   POWER_KW: 0.15,
   DEPRECIATION_PLN_H: 1.50,
+  LABOR_PLN_H: 25.0,
+  HANDLING_FEE: 5.0,
 };
 
 const LBL = {
@@ -18,6 +20,7 @@ const LBL = {
     inclusions: "Inkluzje / dodatki", finish: "Wykonczenie", qty: "Naklad",
     resinCost: "Zywica / szt.", moldAmort: "Amortyzacja formy / szt.",
     inclusionCost: "Inkluzje / szt.", finishCost: "Wykonczenie / szt.",
+    laborCost: "Praca reczna / szt.", handling: "Obsluga / szt.",
     workTime: "Czas pracy", cureTime: "Czas utwardzania",
     energy: "Energia / szt.", depreciation: "Amortyzacja narzedzi",
     workshop: "Uslugi warsztatowe", estCost: "Koszt szacunkowy / szt.", discount: "Rabat seryjny",
@@ -27,6 +30,7 @@ const LBL = {
     inclusions: "Inclusions / additives", finish: "Finish", qty: "Quantity",
     resinCost: "Resin / pc", moldAmort: "Mold amortization / pc",
     inclusionCost: "Inclusions / pc", finishCost: "Finish / pc",
+    laborCost: "Manual labor / pc", handling: "Handling / pc",
     workTime: "Work time", cureTime: "Cure time",
     energy: "Energy / pc", depreciation: "Tool depreciation",
     workshop: "Workshop services", estCost: "Estimated cost / pc", discount: "Series discount",
@@ -36,6 +40,7 @@ const LBL = {
     inclusions: "Einschluesse / Zusaetze", finish: "Finish", qty: "Auflage",
     resinCost: "Harz / Stk.", moldAmort: "Formamortisation / Stk.",
     inclusionCost: "Einschluesse / Stk.", finishCost: "Finish / Stk.",
+    laborCost: "Handarbeit / Stk.", handling: "Handhabung / Stk.",
     workTime: "Arbeitszeit", cureTime: "Aushaertezeit",
     energy: "Energie / Stk.", depreciation: "Werkzeugabschreibung",
     workshop: "Werkstattleistungen", estCost: "Geschaetzte Kosten / Stk.", discount: "Serienrabatt",
@@ -116,14 +121,16 @@ export function calculate({ resinId, volumeId, moldId, inclusionId, finishId, qu
   const cureOverheadH = resin.cureH * 0.02;
   const handleH = 0.05;
 
+  const laborCost = workTimeH * EPOXY_CONFIG.LABOR_PLN_H;
   const energyCost = (workTimeH + cureOverheadH) * EPOXY_CONFIG.POWER_KW * CONFIG.ENERGY_COST_PLN;
   const deprCost = (workTimeH + cureOverheadH) * EPOXY_CONFIG.DEPRECIATION_PLN_H;
   const finishCost = fin.cost || 0;
 
-  const baseCost = resinCost + moldPerPc + inclCost + finishCost + energyCost + deprCost;
+  const baseCost = resinCost + moldPerPc + inclCost + finishCost + laborCost + energyCost + deprCost + EPOXY_CONFIG.HANDLING_FEE;
   const batchTimeH = (workTimeH + handleH) * qTier.qty + resin.cureH;
 
-  const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, qTier.discount, qTier.qty);
+  const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
+  const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, qTier.discount, qTier.qty, plDiscount);
   const cureDisplay = resin.cureH < 1 ? `${Math.round(resin.cureH * 60)} min (UV)` : `${resin.cureH} h`;
 
   return {
@@ -134,6 +141,8 @@ export function calculate({ resinId, volumeId, moldId, inclusionId, finishId, qu
       { label: l.moldAmort, value: fmtCost(moldPerPc, lang) },
       { label: l.inclusionCost, value: fmtCost(inclCost, lang) },
       { label: l.finishCost, value: fmtCost(finishCost, lang) },
+      { label: l.laborCost, value: fmtCost(laborCost, lang) },
+      { label: l.handling, value: fmtCost(EPOXY_CONFIG.HANDLING_FEE, lang) },
       { label: l.workTime, value: `${(workTimeH * 60).toFixed(0)} min` },
       { label: l.cureTime, value: cureDisplay },
       { label: l.energy, value: fmtCost(energyCost, lang) },

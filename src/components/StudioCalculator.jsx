@@ -26,7 +26,8 @@ const LABELS = {
     tab3d: "Druk 3D", tabCO2: "Laser CO2", tabFiber: "Laser Fiber", tabEpoxy: "Odlewy żywiczne",
     desc3d: "Bambu Lab H2D — FDM i multi-materiał", descCO2: "xTool P2 55W — grawerowanie i cięcie", descFiber: "Raycus 30W — metal, biżuteria, kamień, ceramika", descEpoxy: "Żywica UV/dwukomponentowa — odlewy artystyczne",
     note: 'Kalkulacje są szacunkowe. Rzeczywista cena zależy od geometrii, złożoności i specyfikacji. Opcje "niestandardowe" wymagają indywidualnej wyceny.',
-    vat: "Podane ceny są orientacyjne i nie zawierają stosownych podatków VAT czy ich odpowiedników, które należy doliczyć przy finalizacji zamówienia." },
+    vat: "Podane ceny są orientacyjne i nie zawierają stosownych podatków VAT czy ich odpowiedników, które należy doliczyć przy finalizacji zamówienia.",
+    shipping: "Ceny nie uwzględniają kosztów transportu." },
   en: { tag: "Project Calculators", title: "Cost Estimator",
     modeSimple: "Quick quote",
     modeSimpleDesc: "5 simple questions — for everyone",
@@ -36,7 +37,8 @@ const LABELS = {
     tab3d: "3D Print", tabCO2: "CO2 Laser", tabFiber: "Fiber Laser", tabEpoxy: "Resin Casting",
     desc3d: "Bambu Lab H2D — FDM & multi-material", descCO2: "xTool P2 55W — engraving & cutting", descFiber: "Raycus 30W — metal, jewelry, stone & ceramics", descEpoxy: "UV/2K resin — artistic casting",
     note: "Estimates are approximate. Actual price depends on geometry, complexity, and specifications. Custom options require an individual quote.",
-    vat: "Prices shown are indicative and do not include applicable VAT or equivalent taxes, which will be added upon order finalization." },
+    vat: "Prices shown are indicative and do not include applicable VAT or equivalent taxes, which will be added upon order finalization.",
+    shipping: "Prices do not include shipping costs." },
   de: { tag: "Projektkalkulatoren", title: "Kostenschätzer",
     modeSimple: "Schnellkalkulation",
     modeSimpleDesc: "5 einfache Fragen — für jeden",
@@ -46,7 +48,8 @@ const LABELS = {
     tab3d: "3D-Druck", tabCO2: "CO2-Laser", tabFiber: "Faserlaser", tabEpoxy: "Harzguss",
     desc3d: "Bambu Lab H2D — FDM & Multi-Material", descCO2: "xTool P2 55W — Gravur & Schnitt", descFiber: "Raycus 30W — Metall, Schmuck, Stein & Keramik", descEpoxy: "UV/2K-Harz — Kunstguss",
     note: 'Kalkulationen sind Schätzungen. Der tatsächliche Preis hängt von Geometrie, Komplexität und Spezifikationen ab. "Individuelle" Optionen erfordern ein separates Angebot.',
-    vat: "Die angegebenen Preise sind Richtwerte und enthalten keine Mehrwertsteuer oder gleichwertige Abgaben, die bei der Auftragsabwicklung hinzukommen." },
+    vat: "Die angegebenen Preise sind Richtwerte und enthalten keine Mehrwertsteuer oder gleichwertige Abgaben, die bei der Auftragsabwicklung hinzukommen.",
+    shipping: "Preise verstehen sich ohne Versandkosten." },
 };
 
 const VALID_TABS = new Set(TECHS.map(t => t.id));
@@ -176,13 +179,13 @@ export default function StudioCalculator() {
           </>
         )}
 
-        {/* VAT disclaimer */}
+        {/* VAT + shipping disclaimer */}
         <div className={`mt-4 p-3 rounded-xl border text-[11px] leading-relaxed text-center ${
           isSimple
             ? "border-emerald-400/10 bg-emerald-400/[0.02] text-emerald-400/60"
             : "border-blue-400/10 bg-blue-400/[0.02] text-blue-400/60"
         }`}>
-          {l.vat}
+          {l.vat} {l.shipping}
         </div>
 
         {/* Footer note */}
