@@ -285,10 +285,6 @@ export function buildReviewsAugmentedOrganization({ rating, reviewCount, reviews
         bestRating: "5",
         worstRating: "1",
       },
-      itemReviewed: {
-        "@type": "Organization",
-        name: SITE.name,
-      },
       publisher: {
         "@type": "Organization",
         name: "Google",
