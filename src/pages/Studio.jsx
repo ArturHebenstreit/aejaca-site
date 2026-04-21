@@ -261,8 +261,7 @@ export default function Studio() {
       {/* Floating Quick Quote CTA — emphasize STL/SVG auto-pricing */}
       <button
         onClick={() => {
-          const target = document.getElementById("file-upload") || document.getElementById("calculator");
-          if (target) target.scrollIntoView({ behavior: "smooth", block: "center" });
+          window.dispatchEvent(new CustomEvent("studio-quick-upload"));
         }}
         className={`floating-cta ${showFloatingCta ? "visible" : ""}`}
         aria-label={FLOATING_CTA_LABELS[lang] || FLOATING_CTA_LABELS.en}

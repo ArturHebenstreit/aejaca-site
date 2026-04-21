@@ -407,9 +407,9 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
 }
 
 /** Overrides CalcCard for emerald theme (step number in green). */
-function SimpleCard({ stepNum, label, children }) {
+function SimpleCard({ stepNum, label, children, id }) {
   return (
-    <div className="rounded-xl border border-emerald-400/10 bg-emerald-400/[0.02] p-4 sm:p-5 mb-4">
+    <div id={id} className="rounded-xl border border-emerald-400/10 bg-emerald-400/[0.02] p-4 sm:p-5 mb-4">
       <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-3">
         {stepNum && <span className="text-emerald-400 mr-1.5">{stepNum}</span>}{label}
       </div>
@@ -513,7 +513,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   return (
     <div>
       {/* Step 0: Smart Upload */}
-      <SimpleCard stepNum="⓪" label={l.q0}>
+      <SimpleCard stepNum="⓪" label={l.q0} id="simple-upload">
         {!hasFile ? (
           <div>
             <label

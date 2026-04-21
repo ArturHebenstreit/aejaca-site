@@ -71,6 +71,18 @@ export default function StudioCalculator() {
     return () => clearTimeout(t);
   }, [deepLinked]);
 
+  useEffect(() => {
+    const handler = () => {
+      setMode("simple");
+      setTimeout(() => {
+        const el = document.getElementById("simple-upload");
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    };
+    window.addEventListener("studio-quick-upload", handler);
+    return () => window.removeEventListener("studio-quick-upload", handler);
+  }, []);
+
   const isSimple = mode === "simple";
   const accentClass = isSimple ? "text-emerald-400" : "text-blue-400";
 
