@@ -4,6 +4,7 @@ export default {
     blog: "Blog",
     jewelry: "AEJaCA Schmuck",
     studio: "AEJaCA sTuDiO",
+    glossary: "Glossar",
     contact: "Kontakt",
     jewelrySections: [
       { label: "Über uns", id: "about" },

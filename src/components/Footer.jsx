@@ -40,6 +40,7 @@ export default function Footer() {
               <Link to="/jewelry" className="block text-sm text-neutral-300 hover:text-amber-400 transition-colors">{t.nav.jewelry}</Link>
               <Link to="/studio" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.nav.studio}</Link>
               <Link to="/blog" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.blog || "Blog"}</Link>
+              <Link to="/glossary" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.glossary}</Link>
               <Link to="/contact" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.contact}</Link>
               <Link to="/privacy" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.privacy}</Link>
             </div>

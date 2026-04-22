@@ -5,6 +5,7 @@ export default {
     blog: "Blog",
     jewelry: "AEJaCA Jewelry",
     studio: "AEJaCA sTuDiO",
+    glossary: "Glossary",
     contact: "Contact",
     jewelrySections: [
       { label: "About", id: "about" },

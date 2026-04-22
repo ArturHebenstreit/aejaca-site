@@ -17,6 +17,7 @@ const Studio = lazy(() => import("./pages/Studio.jsx"));
 const BlogIndex = lazy(() => import("./pages/BlogIndex.jsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.jsx"));
 const Privacy = lazy(() => import("./pages/Privacy.jsx"));
+const Glossary = lazy(() => import("./pages/Glossary.jsx"));
 const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 
 function LazyFallback() {
@@ -43,6 +44,7 @@ createRoot(document.getElementById("root")).render(
                 <Route path="/blog" element={<BlogIndex />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/glossary" element={<Glossary />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
