@@ -9,31 +9,31 @@ import { SITE } from "../seo/seoData.js";
 
 const LABELS = {
   pl: {
-    tag: "Glosariusz",
-    title: "Slownik pojec",
-    description: "Kluczowe pojecia z zakresu bizuterii, druku 3D, grawerowania laserowego i odlewow zywicznych — wyjasnienia w prostych slowach.",
-    search: "Szukaj pojecia...",
+    tag: "Słownik pojęć",
+    title: "Glosariusz biżuterii i fabrykacji",
+    description: "Kluczowe pojęcia ze świata biżuterii, druku 3D, grawerowania laserowego i odlewów żywicznych — wyjaśnione prosto i zwięźle.",
+    search: "Szukaj pojęcia…",
     all: "Wszystkie",
-    readMore: "Czytaj wiecej",
-    noResults: "Brak wynikow dla",
+    readMore: "Czytaj więcej",
+    noResults: "Brak wyników dla",
   },
   en: {
     tag: "Glossary",
-    title: "Key terms explained",
-    description: "Essential terms from jewelry, 3D printing, laser engraving, and resin casting — explained in plain language.",
-    search: "Search terms...",
+    title: "Jewelry & fabrication glossary",
+    description: "Key terms from the world of jewelry, 3D printing, laser engraving, and resin casting — explained simply and concisely.",
+    search: "Search terms…",
     all: "All",
     readMore: "Read more",
     noResults: "No results for",
   },
   de: {
     tag: "Glossar",
-    title: "Fachbegriffe erklaert",
-    description: "Wichtige Begriffe aus Schmuck, 3D-Druck, Lasergravur und Harzguss — einfach erklaert.",
-    search: "Begriff suchen...",
+    title: "Schmuck- & Fertigungs-Glossar",
+    description: "Schlüsselbegriffe aus der Welt des Schmucks, 3D-Drucks, der Lasergravur und des Harzgusses — einfach und prägnant erklärt.",
+    search: "Begriff suchen…",
     all: "Alle",
     readMore: "Mehr lesen",
-    noResults: "Keine Ergebnisse fuer",
+    noResults: "Keine Ergebnisse für",
   },
 };
 
@@ -69,7 +69,7 @@ export default function Glossary() {
         t.term[lang]?.toLowerCase().includes(q) ||
         t.definition[lang]?.toLowerCase().includes(q);
       return matchesCat && matchesQuery;
-    });
+    }).sort((a, b) => (a.term[lang] || "").localeCompare(b.term[lang] || "", lang));
   }, [query, activeCat, lang]);
 
   const pageUrl = `${SITE.url}/glossary`;
@@ -142,7 +142,9 @@ export default function Glossary() {
                     ref={getCardRef(i)}
                     className="reveal-scale bg-neutral-900/60 border border-neutral-800 rounded-xl p-5 hover:border-amber-400/30 transition-colors"
                   >
-                    <div className="text-amber-400/70 text-[10px] uppercase tracking-widest mb-2">
+                    <div className={`text-[10px] uppercase tracking-widest mb-2 ${
+                      term.category === "jewelry" ? "text-amber-400" : term.category === "studio" ? "text-blue-400" : "text-emerald-400"
+                    }`}>
                       {CATEGORIES[term.category]?.[lang] || term.category}
                     </div>
                     <h2 className="text-white font-semibold text-lg mb-2">
