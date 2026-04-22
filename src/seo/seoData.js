@@ -112,6 +112,27 @@ export const SEO = {
     },
   },
 
+  glossary: {
+    pl: {
+      title: "Glosariusz — AEJaCA | Pojecia z bizuterii i druku 3D",
+      description: "Slownik pojec: bizuteria, druk 3D, grawerowanie laserowe, odlewy zywiczne. Kluczowe terminy wyjasnienie w prostych slowach.",
+      keywords: "glosariusz bizuteria, slownik druk 3D, pojecia grawerowanie laserowe, terminologia jubilerska, AEJaCA",
+      ogAlt: "Glosariusz AEJaCA — slownik pojec",
+    },
+    en: {
+      title: "Glossary — AEJaCA | Jewelry & 3D Printing Terms",
+      description: "Key terms from jewelry, 3D printing, laser engraving, and resin casting explained in plain language. Your AEJaCA knowledge base.",
+      keywords: "jewelry glossary, 3D printing terms, laser engraving terminology, resin casting guide, AEJaCA",
+      ogAlt: "AEJaCA Glossary — key terms explained",
+    },
+    de: {
+      title: "Glossar — AEJaCA | Schmuck- & 3D-Druck-Begriffe",
+      description: "Wichtige Begriffe aus Schmuck, 3D-Druck, Lasergravur und Harzguss einfach erklaert. Ihre AEJaCA-Wissensbasis.",
+      keywords: "Schmuck Glossar, 3D-Druck Begriffe, Lasergravur Terminologie, Harzguss Leitfaden, AEJaCA",
+      ogAlt: "AEJaCA Glossar — Fachbegriffe erklaert",
+    },
+  },
+
   privacy: {
     pl: {
       title: "Polityka prywatności — AEJaCA",
