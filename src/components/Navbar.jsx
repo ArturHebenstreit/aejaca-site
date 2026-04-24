@@ -22,6 +22,7 @@ export default function Navbar() {
     { to: "/studio", label: t.nav.studio, sections: t.nav.studioSections },
     { to: "/blog", label: t.nav.blog || "Blog" },
     { to: "/glossary", label: t.nav.glossary },
+    { to: "/about", label: t.nav.about },
     { to: "/contact", label: t.nav.contact },
   ];
 

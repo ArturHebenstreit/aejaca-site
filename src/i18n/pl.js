@@ -5,6 +5,7 @@ export default {
     jewelry: "AEJaCA Biżuteria",
     studio: "AEJaCA sTuDiO",
     glossary: "Słownik",
+    about: "O nas",
     contact: "Kontakt",
     jewelrySections: [
       { label: "O nas", id: "about" },
@@ -238,6 +239,10 @@ export default {
         { q: "Z jakimi metalami pracujecie?", a: "Głównie srebro próby 925 i złoto (14K, 18K). Pracujemy też z mieszanymi metalami przy unikalnych projektach." },
         { q: "Jak ustalane są ceny?", a: "Cena zależy od metalu, kamieni szlachetnych, złożoności i nakładu pracy. Przed rozpoczęciem podajemy szczegółową wycenę." },
         { q: "Czy wysyłacie za granicę?", a: "Tak! Wysyłamy na cały świat przesyłkami śledzonymi i ubezpieczonymi. Koszty wysyłki zależą od miejsca docelowego." },
+        { q: "Ile trwa realizacja zamówienia?", a: "Jeśli posiadamy materiały (kruszec + kamienie), realizacja trwa do 7 dni roboczych. Jeśli materiały wymagają zamówienia, proces wydłuża się o 3–7 dni roboczych." },
+        { q: "Czy mogę zwrócić biżuterię?", a: "Produkty uniwersalne — tak, w ciągu 14 dni. Biżuteria personalizowana wykonana na indywidualne zamówienie nie podlega zwrotowi. Szczegóły na stronie Zwroty." },
+        { q: "Ile kosztuje wysyłka?", a: "Wysyłka InPost od 12 zł. Darmowa przy zamówieniu od 400 zł. Wysyłamy do całej Europy. Szczegóły na stronie Wysyłka." },
+        { q: "Jaka jest gwarancja?", a: "24 miesiące na wady produkcyjne. Bezpłatne pierwsze czyszczenie w ciągu 12 miesięcy. Szczegóły na stronie Gwarancja." },
       ],
     },
 
@@ -451,6 +456,7 @@ export default {
         { q: "Z jakimi materiałami pracujecie?", a: "PLA, PETG, ABS, żywica do druku 3D. Metale, drewno, akryl, szkło, skóra do pracy laserowej. Żywice UV i epoksydowe do odlewów." },
         { q: "Czy oferujecie usługi projektowania?", a: "Oczywiście. Zapewniamy pełne usługi projektowania CAD — od koncepcji po pliki gotowe do produkcji." },
         { q: "Jak kalkulowane są ceny?", a: "Na podstawie technologii, materiału, rozmiaru, złożoności i ilości. Zawsze podajemy szczegółową wycenę z góry." },
+        { q: "Ile trwa realizacja projektu?", a: "Jeśli materiał jest na stanie, realizacja trwa 3–5 dni roboczych (w zależności od ilości). Zamówienie materiałów wydłuża czas o 3–7 dni." },
       ],
     },
 
@@ -553,5 +559,8 @@ export default {
     followUs: "Obserwuj Nas",
     rights: "Wszelkie prawa zastrzeżone.",
     privacy: "Polityka Prywatności",
+    warranty: "Gwarancja",
+    returns: "Zwroty",
+    shipping: "Wysyłka",
   },
 };

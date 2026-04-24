@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench, Calculator } from "lucide-react";
+import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench, Calculator, Tag } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getPost } from "../blog/posts.js";
@@ -22,6 +22,20 @@ import {
 import { SITE, getSEO } from "../seo/seoData.js";
 
 const techIcons = [Cpu, Printer, Zap, Layers, Box, Wrench];
+
+const PRICING_LABELS = {
+  pl: { tag: "Orientacyjne ceny", title: "Ile kosztują usługi studia?", note: "Ceny orientacyjne — dokładna wycena po wgraniu pliku STL/SVG.", cta: "Wyceń swój projekt" },
+  en: { tag: "Indicative pricing", title: "How much do studio services cost?", note: "Indicative prices — upload your STL/SVG for an exact quote.", cta: "Quote your project" },
+  de: { tag: "Richtpreise", title: "Was kosten Studio-Dienste?", note: "Richtpreise — laden Sie Ihre STL/SVG-Datei für ein genaues Angebot hoch.", cta: "Projekt kalkulieren" },
+};
+
+const STUDIO_PRICING = [
+  { pl: "Druk 3D FDM (PLA/PETG)", en: "3D print FDM (PLA/PETG)", de: "3D-Druck FDM (PLA/PETG)", from: "25 PLN" },
+  { pl: "Druk 3D żywica", en: "3D print resin (SLA)", de: "3D-Druck Harz (SLA)", from: "45 PLN" },
+  { pl: "Grawer laserowy CO₂", en: "CO₂ laser engraving", de: "CO₂-Lasergravur", from: "15 PLN" },
+  { pl: "Znakowanie laserem fibrowym", en: "Fiber laser marking", de: "Faserlasermarkierung", from: "20 PLN" },
+  { pl: "Odlew żywiczny (epoksyd/UV)", en: "Resin casting (epoxy/UV)", de: "Harzguss (Epoxid/UV)", from: "40 PLN" },
+];
 
 const FLOATING_CTA_LABELS = {
   pl: "Wyceń STL/SVG",
@@ -159,6 +173,35 @@ export default function Studio() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      <div className="gradient-divider" />
+
+      {/* Indicative Pricing */}
+      <section id="pricing" className="py-20 px-4 bg-neutral-950">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-3">{PRICING_LABELS[lang]?.tag}</div>
+            <h2 className="font-sans text-3xl md:text-4xl font-bold text-white tracking-tight">{PRICING_LABELS[lang]?.title}</h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {STUDIO_PRICING.map((item, i) => (
+              <div key={i} className="flex items-center justify-between p-4 rounded-xl glass-blue">
+                <div className="flex items-center gap-3">
+                  <Tag className="w-4 h-4 text-blue-400 shrink-0" />
+                  <span className="text-neutral-200 text-sm">{item[lang] || item.en}</span>
+                </div>
+                <span className="text-blue-300 font-semibold text-sm whitespace-nowrap ml-3">{{ pl: "od", en: "from", de: "ab" }[lang]} {item.from}</span>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <p className="text-neutral-400 text-sm mb-4">{PRICING_LABELS[lang]?.note}</p>
+            <a href="#calculator" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors">
+              {PRICING_LABELS[lang]?.cta} <ArrowRight className="w-4 h-4" />
+            </a>
           </div>
         </div>
       </section>

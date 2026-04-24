@@ -86,6 +86,54 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary" />
   </url>
 
+  <!-- About -->
+  <url>
+    <loc>https://www.aejaca.com/about</loc>
+    <lastmod>2026-04-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/about" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/about" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/about" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/about" />
+  </url>
+
+  <!-- Warranty -->
+  <url>
+    <loc>https://www.aejaca.com/warranty</loc>
+    <lastmod>2026-04-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/warranty" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/warranty" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/warranty" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/warranty" />
+  </url>
+
+  <!-- Returns -->
+  <url>
+    <loc>https://www.aejaca.com/returns</loc>
+    <lastmod>2026-04-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/returns" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/returns" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/returns" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/returns" />
+  </url>
+
+  <!-- Shipping -->
+  <url>
+    <loc>https://www.aejaca.com/shipping</loc>
+    <lastmod>2026-04-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shipping" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/shipping" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/shipping" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shipping" />
+  </url>
+
   <!-- Blog Index -->
   <url>
     <loc>https://www.aejaca.com/blog</loc>

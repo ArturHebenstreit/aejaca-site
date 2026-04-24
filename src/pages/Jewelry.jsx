@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Gem, Sparkles, Palette, Heart, Wand2, Crown, Calculator } from "lucide-react";
+import { ArrowRight, Gem, Sparkles, Palette, Heart, Wand2, Crown, Calculator, Tag } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getPost } from "../blog/posts.js";
@@ -23,6 +23,21 @@ import {
 import { SITE, getSEO } from "../seo/seoData.js";
 
 const icons = [Gem, Sparkles, Palette, Heart, Wand2, Crown];
+
+const PRICING_LABELS = {
+  pl: { tag: "Orientacyjne ceny", title: "Ile kosztuje biżuteria?", note: "Ceny orientacyjne — dokładna wycena w kalkulatorze poniżej.", cta: "Wyceń w kalkulatorze" },
+  en: { tag: "Indicative pricing", title: "How much does jewelry cost?", note: "Indicative prices — use the calculator below for an exact quote.", cta: "Get a quote" },
+  de: { tag: "Richtpreise", title: "Was kostet Schmuck?", note: "Richtpreise — nutzen Sie den Rechner unten für ein genaues Angebot.", cta: "Zum Rechner" },
+};
+
+const PRICING_ITEMS = [
+  { pl: "Srebrny pierścionek", en: "Silver ring", de: "Silberring", from: "250 PLN" },
+  { pl: "Srebrne kolczyki", en: "Silver earrings", de: "Silberohrringe", from: "180 PLN" },
+  { pl: "Złoty pierścionek 14K", en: "Gold ring 14K", de: "Goldring 14K", from: "900 PLN" },
+  { pl: "Złoty wisiorek 14K", en: "Gold pendant 14K", de: "Goldanhänger 14K", from: "600 PLN" },
+  { pl: "Pierścionek z kamieniem", en: "Ring with gemstone", de: "Ring mit Edelstein", from: "350 PLN" },
+  { pl: "Pierścionek zaręczynowy", en: "Engagement ring", de: "Verlobungsring", from: "1 200 PLN" },
+];
 
 const FLOATING_CTA_LABELS = {
   pl: "Wyceń online",
@@ -162,6 +177,35 @@ export default function Jewelry() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      <div className="gradient-divider" />
+
+      {/* Indicative Pricing */}
+      <section id="pricing" className="py-20 px-4 bg-neutral-950">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{PRICING_LABELS[lang]?.tag}</div>
+            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-white">{PRICING_LABELS[lang]?.title}</h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {PRICING_ITEMS.map((item, i) => (
+              <div key={i} className="flex items-center justify-between p-4 rounded-xl glass-amber">
+                <div className="flex items-center gap-3">
+                  <Tag className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span className="text-neutral-200 text-sm">{item[lang] || item.en}</span>
+                </div>
+                <span className="text-amber-300 font-semibold text-sm whitespace-nowrap ml-3">{{ pl: "od", en: "from", de: "ab" }[lang]} {item.from}</span>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <p className="text-neutral-400 text-sm mb-4">{PRICING_LABELS[lang]?.note}</p>
+            <a href="#calculator" className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 text-sm font-medium transition-colors">
+              {PRICING_LABELS[lang]?.cta} <ArrowRight className="w-4 h-4" />
+            </a>
           </div>
         </div>
       </section>

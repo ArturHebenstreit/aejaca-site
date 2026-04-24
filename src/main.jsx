@@ -18,6 +18,10 @@ const BlogIndex = lazy(() => import("./pages/BlogIndex.jsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.jsx"));
 const Privacy = lazy(() => import("./pages/Privacy.jsx"));
 const Glossary = lazy(() => import("./pages/Glossary.jsx"));
+const About = lazy(() => import("./pages/About.jsx"));
+const Warranty = lazy(() => import("./pages/Warranty.jsx"));
+const Returns = lazy(() => import("./pages/Returns.jsx"));
+const Shipping = lazy(() => import("./pages/Shipping.jsx"));
 const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 
 function LazyFallback() {
@@ -45,6 +49,10 @@ createRoot(document.getElementById("root")).render(
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/glossary" element={<Glossary />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/warranty" element={<Warranty />} />
+                <Route path="/returns" element={<Returns />} />
+                <Route path="/shipping" element={<Shipping />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="*" element={<NotFound />} />
               </Route>

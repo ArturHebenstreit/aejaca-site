@@ -6,6 +6,7 @@ export default {
     jewelry: "AEJaCA Jewelry",
     studio: "AEJaCA sTuDiO",
     glossary: "Glossary",
+    about: "About",
     contact: "Contact",
     jewelrySections: [
       { label: "About", id: "about" },
@@ -240,6 +241,10 @@ export default {
         { q: "What metals do you work with?", a: "Primarily sterling silver (925) and gold (14K, 18K). We also work with mixed metals for unique designs." },
         { q: "How are prices determined?", a: "Pricing depends on the metal, gemstones, complexity, and labor involved. We provide a detailed quote before starting." },
         { q: "Do you ship internationally?", a: "Yes! We ship worldwide via tracked and insured postal services. Shipping costs vary by destination." },
+        { q: "How long does order fulfillment take?", a: "If we have the materials (metal + stones), fulfillment takes up to 7 business days. Custom or engraved pieces — up to 14 days. You'll receive a tracking number as soon as the order ships." },
+        { q: "Can I return jewelry?", a: "Universal products — yes, within 14 days of delivery (unworn, original packaging). Custom-made pieces (engraving, non-standard size) are excluded from returns. Details on our returns page." },
+        { q: "How much does shipping cost?", a: "InPost shipping from 12 PLN. Free shipping on orders over 400 PLN. International: from 35 PLN (EU) via tracked postal service." },
+        { q: "What warranty do you offer?", a: "24 months on manufacturing defects. The warranty covers structural faults — not mechanical damage or normal wear. Full details on our warranty page." },
       ],
     },
 
@@ -454,6 +459,7 @@ export default {
         { q: "What materials do you work with?", a: "PLA, PETG, ABS, resin for 3D printing. Metals, wood, acrylic, glass, leather for laser work. UV and epoxy resins for casting." },
         { q: "Do you offer design services?", a: "Absolutely. Our team provides full CAD design services — from concept to manufacturing-ready files." },
         { q: "How are prices calculated?", a: "Based on technology, material, size, complexity, and quantity. We always provide a detailed quote upfront." },
+        { q: "How long does project fulfillment take?", a: "If material is in stock, fulfillment takes 3–5 business days. Complex multi-technology projects or large batches — we set a timeline individually after consultation." },
       ],
     },
 
@@ -559,5 +565,8 @@ export default {
     followUs: "Follow Us",
     rights: "All rights reserved.",
     privacy: "Privacy Policy",
+    warranty: "Warranty",
+    returns: "Returns",
+    shipping: "Shipping",
   },
 };
