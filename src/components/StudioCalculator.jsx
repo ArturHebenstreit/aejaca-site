@@ -129,7 +129,7 @@ export default function StudioCalculator() {
 
         {/* Mode hint — clarifies when to use each (audit: UX friction) */}
         <div className="mb-6 flex items-start gap-2 px-3 text-[11px] text-neutral-400 leading-relaxed">
-          <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-neutral-600" />
+          <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-neutral-400" />
           <span>{l.modeHint}</span>
         </div>
 
@@ -189,7 +189,7 @@ export default function StudioCalculator() {
         </div>
 
         {/* Footer note */}
-        <div className="mt-2 p-4 rounded-xl border border-white/5 bg-white/[0.01] text-[11px] text-neutral-600 leading-relaxed">
+        <div className="mt-2 p-4 rounded-xl border border-white/5 bg-white/[0.01] text-[11px] text-neutral-400 leading-relaxed">
           <strong className="text-neutral-400">sTuDiO:</strong> {l.note}
         </div>
       </div>

@@ -181,7 +181,7 @@ export default function EpoxyCastCalc({ lang = "pl" }) {
 
   return (
     <div>
-      <div className="text-center text-[11px] text-neutral-600 mb-6">UV Resin · Epoxy 2K · Silicone Molds</div>
+      <div className="text-center text-[11px] text-neutral-400 mb-6">UV Resin · Epoxy 2K · Silicone Molds</div>
 
       <CalcCard stepNum="①" label={l.resinType}>
         <HeroCards options={RESINS} value={resinId} onChange={setResinId} lang={lang} cols="grid-cols-1 sm:grid-cols-3" minH={170} />

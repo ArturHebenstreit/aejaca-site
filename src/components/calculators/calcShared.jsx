@@ -84,7 +84,7 @@ export function Chips({ options, value, onChange, lang = "pl" }) {
             }`}
           >
             {label}
-            {sub && <span className={`text-[10px] ml-1.5 ${active ? "opacity-80" : "text-neutral-600"}`}>{sub}</span>}
+            {sub && <span className={`text-[10px] ml-1.5 ${active ? "opacity-80" : "text-neutral-400"}`}>{sub}</span>}
           </button>
         );
       })}
@@ -204,7 +204,7 @@ export function ResultDisplay({ result, lang = "pl" }) {
   const labels = RESULT_LABELS[lang] || RESULT_LABELS.en;
   const showPLN = lang === "pl";
 
-  if (!result) return <div className="text-center text-neutral-600 py-4">{labels.selectAll}</div>;
+  if (!result) return <div className="text-center text-neutral-400 py-4">{labels.selectAll}</div>;
 
   if (result.type === "custom") {
     const ctaLabel = { pl: "Skontaktuj się", en: "Contact us", de: "Kontaktieren Sie uns" }[lang] || "Contact us";
@@ -234,7 +234,7 @@ export function ResultDisplay({ result, lang = "pl" }) {
       </div>
       <div className="flex items-baseline justify-center gap-1.5 sm:gap-3 mb-4 flex-wrap">
         <span className="text-2xl sm:text-4xl font-extrabold tracking-tight">{fmtNum(mainPc.min)}</span>
-        <span className="text-lg sm:text-xl text-neutral-600">&mdash;</span>
+        <span className="text-lg sm:text-xl text-neutral-400">&mdash;</span>
         <span className="text-2xl sm:text-4xl font-extrabold tracking-tight">{fmtNum(mainPc.max)}</span>
         <span className="text-sm sm:text-base font-semibold text-neutral-400">{mainCurr}</span>
       </div>
@@ -247,7 +247,7 @@ export function ResultDisplay({ result, lang = "pl" }) {
           </div>
           <div className="flex items-baseline justify-center gap-1.5 sm:gap-3 flex-wrap">
             <span className="text-xl sm:text-2xl font-extrabold text-blue-400">{fmtNum(mainTotal.min)}</span>
-            <span className="text-neutral-600">&mdash;</span>
+            <span className="text-neutral-400">&mdash;</span>
             <span className="text-xl sm:text-2xl font-extrabold text-blue-400">{fmtNum(mainTotal.max)}</span>
             <span className="text-xs sm:text-sm font-semibold text-neutral-400">{mainCurr}</span>
           </div>
@@ -278,7 +278,7 @@ export function ResultDisplay({ result, lang = "pl" }) {
                   <span>{row.value}</span>
                 </div>
               ))}
-              <div className="mt-2 text-[11px] text-neutral-600 italic">
+              <div className="mt-2 text-[11px] text-neutral-400 italic">
                 {labels.rangeNote}
               </div>
             </div>
@@ -446,10 +446,10 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
           placeholder={il.descPlaceholder}
           rows={3}
           maxLength={MAX_DESC_LENGTH}
-          className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-neutral-600 focus:border-blue-400/40 focus:outline-none resize-none transition-colors"
+          className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-neutral-400 focus:border-blue-400/40 focus:outline-none resize-none transition-colors"
         />
         {descNearLimit && (
-          <div className={`text-[10px] text-right mt-0.5 ${descLength >= MAX_DESC_LENGTH ? "text-red-400" : "text-neutral-600"}`}>
+          <div className={`text-[10px] text-right mt-0.5 ${descLength >= MAX_DESC_LENGTH ? "text-red-400" : "text-neutral-400"}`}>
             {descLength}/{MAX_DESC_LENGTH} {il.charCount}
           </div>
         )}
@@ -467,7 +467,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
             {fileName || il.file}
           </button>
           {fileName && (
-            <button onClick={clearFile} className="text-neutral-600 hover:text-red-400 transition-colors">
+            <button onClick={clearFile} className="text-neutral-400 hover:text-red-400 transition-colors">
               <X className="w-4 h-4" />
             </button>
           )}
@@ -476,7 +476,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
             onChange={handleFileChange}
           />
         </div>
-        <div className="text-[10px] text-neutral-600 mt-1">{il.fileHint}</div>
+        <div className="text-[10px] text-neutral-400 mt-1">{il.fileHint}</div>
         {fileName && <div className="text-[10px] text-amber-400/70 mt-1">{il.attachNote}</div>}
       </div>
 
@@ -491,7 +491,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
         disabled={cooldown}
         className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl border font-medium text-sm transition-all duration-300 ${
           cooldown
-            ? "border-white/5 bg-white/[0.02] text-neutral-600 cursor-not-allowed"
+            ? "border-white/5 bg-white/[0.02] text-neutral-400 cursor-not-allowed"
             : sent
               ? "border-green-400/30 bg-green-400/10 text-green-400"
               : "border-blue-400/30 bg-blue-400/10 text-blue-300 hover:bg-blue-400/20 hover:border-blue-400/40"

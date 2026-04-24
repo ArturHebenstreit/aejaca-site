@@ -235,7 +235,7 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
           </div>
         </button>
         <input ref={fileRef} type="file" accept=".stl" className="hidden" onChange={onUpload} />
-        <div className="text-[10px] text-neutral-600">{sl.orManual}</div>
+        <div className="text-[10px] text-neutral-400">{sl.orManual}</div>
       </div>
     );
   }
@@ -372,7 +372,7 @@ export default function Print3DCalc({ lang = "pl" }) {
 
   return (
     <div>
-      <div className="text-center text-[11px] text-neutral-600 mb-6">Bambu Lab H2D · 300×320×325 mm · Dual Extruder · AMS 2 Pro</div>
+      <div className="text-center text-[11px] text-neutral-400 mb-6">Bambu Lab H2D · 300×320×325 mm · Dual Extruder · AMS 2 Pro</div>
 
       <CalcCard stepNum="①" label={l.segment}>
         <HeroCards options={SEGMENTS} value={segment} onChange={setSegment} lang={lang} cols="grid-cols-2" minH={170} />

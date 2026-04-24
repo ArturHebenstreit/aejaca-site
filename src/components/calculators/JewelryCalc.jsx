@@ -800,7 +800,7 @@ export default function JewelryCalc({ lang = "pl" }) {
       <div className="rounded-2xl border-2 border-amber-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} />
         <ResultDisplay result={result} lang={lang} />
-        <div className="mt-3 text-[10px] text-neutral-600 text-center italic">{l.priceSource}</div>
+        <div className="mt-3 text-[10px] text-neutral-400 text-center italic">{l.priceSource}</div>
       </div>
 
       <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={

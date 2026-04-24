@@ -155,7 +155,7 @@ export default function JewelryConfigurator() {
                 className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all ${
                   canNext
                     ? "bg-amber-400 text-black hover:bg-amber-300"
-                    : "bg-white/5 text-neutral-600 cursor-not-allowed"
+                    : "bg-white/5 text-neutral-400 cursor-not-allowed"
                 }`}
               >
                 {cfg.next} <ArrowRight className="w-4 h-4" />

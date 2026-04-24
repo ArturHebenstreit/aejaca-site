@@ -124,7 +124,7 @@ export default function Home() {
           <a href="#reviews" className="inline-flex items-center gap-2 mt-6 px-4 py-2 rounded-full border border-amber-400/20 bg-amber-400/[0.03] text-sm hover:bg-amber-400/10 hover:border-amber-400/40 transition-all duration-300">
             <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
             <span className="font-bold text-amber-300">{GOOGLE_BUSINESS.rating}</span>
-            <span className="text-neutral-500">·</span>
+            <span className="text-neutral-400">·</span>
             <span className="text-neutral-400">{GOOGLE_BUSINESS.totalReviews} {h.brandReviewsBadge}</span>
           </a>
         </div>

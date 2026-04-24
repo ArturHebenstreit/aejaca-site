@@ -62,7 +62,7 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
           </div>
         </button>
         <input ref={fileRef} type="file" accept=".svg" className="hidden" onChange={onUpload} />
-        <div className="text-[10px] text-neutral-600">{sl.orManual}</div>
+        <div className="text-[10px] text-neutral-400">{sl.orManual}</div>
       </div>
     );
   }

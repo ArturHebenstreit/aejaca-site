@@ -212,7 +212,7 @@ export default function FiberLaserCalc({ lang = "pl" }) {
 
   return (
     <div>
-      <div className="text-center text-[11px] text-neutral-600 mb-6">Raycus 30W Galvo · 70mm / 150mm · max 150×150 mm</div>
+      <div className="text-center text-[11px] text-neutral-400 mb-6">Raycus 30W Galvo · 70mm / 150mm · max 150×150 mm</div>
 
       <CalcCard stepNum="①" label={l.material}>
         <MaterialCards options={MATERIALS} value={matId} onChange={setMatId} lang={lang} />

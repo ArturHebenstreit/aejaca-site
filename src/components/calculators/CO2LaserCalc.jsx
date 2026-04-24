@@ -291,7 +291,7 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
 
   return (
     <div>
-      <div className="text-center text-[11px] text-neutral-600 mb-6">xTool P2 · 55W CO2 · 600×288 mm</div>
+      <div className="text-center text-[11px] text-neutral-400 mb-6">xTool P2 · 55W CO2 · 600×288 mm</div>
 
       <CalcCard stepNum="①" label={l.mode}>
         <HeroCards value={mode} onChange={setMode} lang={lang} options={[
