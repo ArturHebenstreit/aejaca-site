@@ -42,7 +42,7 @@ export default function ProcessGallery() {
                   : "border-white/5 bg-white/[0.02] hover:border-amber-400/20"
               }`}
             >
-              <div className={`text-xs font-mono font-bold mb-1 ${i === active ? "text-amber-400" : "text-neutral-500"}`}>
+              <div className={`text-xs font-mono font-bold mb-1 ${i === active ? "text-amber-400" : "text-neutral-400"}`}>
                 {step.num}
               </div>
               <div className={`text-xs font-medium ${i === active ? "text-white" : "text-neutral-400"}`}>

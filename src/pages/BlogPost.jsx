@@ -1,5 +1,5 @@
 import { useParams, Link, Navigate } from "react-router-dom";
-import { ArrowLeft, Clock, Calendar, Tag } from "lucide-react";
+import { Clock, Calendar, Tag } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { getPost, getSortedPosts } from "../blog/posts.js";
 import Prose from "../components/blog/Prose.jsx";
@@ -12,6 +12,7 @@ import {
   buildBreadcrumbSchema,
 } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
+import Breadcrumb from "../components/Breadcrumb.jsx";
 
 const CATEGORY_LABELS = {
   jewelry: { pl: "Biżuteria", en: "Jewelry", de: "Schmuck" },
@@ -30,7 +31,7 @@ function TOC({ items, lang }) {
   if (!items || !items.length) return null;
   return (
     <nav className="mb-10 rounded-xl border border-white/10 bg-white/[0.02] p-5" aria-label={label}>
-      <div className="text-xs uppercase tracking-[0.2em] text-neutral-500 mb-3 font-semibold">{label}</div>
+      <div className="text-xs uppercase tracking-[0.2em] text-neutral-400 mb-3 font-semibold">{label}</div>
       <ol className="space-y-1.5">
         {items.map((item) => (
           <li key={item.id}>
@@ -88,7 +89,6 @@ export default function BlogPost() {
     .filter((p) => p.slug !== slug)
     .slice(0, 2);
 
-  const backLabel = { pl: "Wszystkie artykuły", en: "All articles", de: "Alle Artikel" }[lang] || "All articles";
   const relatedLabel = { pl: "Przeczytaj też", en: "Also read", de: "Lies auch" }[lang] || "Also read";
 
   return (
@@ -114,15 +114,13 @@ export default function BlogPost() {
         {/* Hero */}
         <section className="bg-neutral-950 py-10 px-4">
           <div className="max-w-3xl mx-auto">
-            <Link
-              to="/blog"
-              className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors mb-6"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              {backLabel}
-            </Link>
+            <Breadcrumb items={[
+              { href: "/", label: "Home" },
+              { href: "/blog", label: "Blog" },
+              { label: title },
+            ]} />
 
-            <div className="flex items-center gap-3 mb-4 text-xs text-neutral-500">
+            <div className="flex flex-wrap items-center gap-3 mb-4 text-xs text-neutral-400">
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border ${
                 accent === "blue" ? "border-blue-400/30 text-blue-400" : "border-amber-400/30 text-amber-400"
               }`}>
@@ -133,6 +131,12 @@ export default function BlogPost() {
                 <Calendar className="w-3 h-3" />
                 <time dateTime={post.publishedAt}>{formatDate(post.publishedAt, lang)}</time>
               </span>
+              {post.updatedAt && post.updatedAt !== post.publishedAt && (
+                <span className="inline-flex items-center gap-1 text-neutral-400">
+                  ·
+                  <time dateTime={post.updatedAt}>{formatDate(post.updatedAt, lang)}</time>
+                </span>
+              )}
               <span className="inline-flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 {readTime} min

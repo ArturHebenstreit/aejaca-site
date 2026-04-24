@@ -73,7 +73,7 @@ export default function JewelryEstimator() {
               <Zap className={`w-4 h-4 ${isSimple ? "text-rose-300" : "text-neutral-400"}`} />
               <div className={`text-sm font-bold ${isSimple ? "text-rose-300" : "text-white"}`}>{l.modeSimple}</div>
             </div>
-            <div className={`text-[11px] ${isSimple ? "text-rose-400/80" : "text-neutral-500"}`}>{l.modeSimpleDesc}</div>
+            <div className={`text-[11px] ${isSimple ? "text-rose-400/80" : "text-neutral-400"}`}>{l.modeSimpleDesc}</div>
           </button>
           <button
             onClick={() => { setMode("advanced"); trackCalc("jewelry", "mode", "advanced"); }}
@@ -86,12 +86,12 @@ export default function JewelryEstimator() {
               <SlidersHorizontal className={`w-4 h-4 ${!isSimple ? "text-amber-300" : "text-neutral-400"}`} />
               <div className={`text-sm font-bold ${!isSimple ? "text-amber-300" : "text-white"}`}>{l.modeAdvanced}</div>
             </div>
-            <div className={`text-[11px] ${!isSimple ? "text-amber-400/80" : "text-neutral-500"}`}>{l.modeAdvancedDesc}</div>
+            <div className={`text-[11px] ${!isSimple ? "text-amber-400/80" : "text-neutral-400"}`}>{l.modeAdvancedDesc}</div>
           </button>
         </div>
 
         {/* Mode hint — clarifies when to use each (audit: UX friction) */}
-        <div className="mb-6 flex items-start gap-2 px-3 text-[11px] text-neutral-500 leading-relaxed">
+        <div className="mb-6 flex items-start gap-2 px-3 text-[11px] text-neutral-400 leading-relaxed">
           <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-neutral-600" />
           <span>{l.modeHint}</span>
         </div>
@@ -121,7 +121,7 @@ export default function JewelryEstimator() {
 
         {/* Footer note */}
         <div className="mt-2 p-4 rounded-xl border border-white/5 bg-white/[0.01] text-[11px] text-neutral-600 leading-relaxed">
-          <strong className="text-neutral-500">AEJaCA Jewelry:</strong> {l.note}
+          <strong className="text-neutral-400">AEJaCA Jewelry:</strong> {l.note}
         </div>
       </div>
     </section>

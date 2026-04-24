@@ -26,7 +26,7 @@ export default function Privacy() {
         <section className="py-20 px-4 bg-neutral-950">
           <div className="max-w-3xl mx-auto">
             <h1 className="font-serif text-3xl md:text-4xl font-bold text-white mb-2">{p.title}</h1>
-            <p className="text-neutral-500 mb-10">{p.subtitle}</p>
+            <p className="text-neutral-400 mb-10">{p.subtitle}</p>
 
             <div className="space-y-6 text-neutral-300 text-sm leading-relaxed">
               {p.paragraphs.map((text, i) => <p key={i}>{text}</p>)}
@@ -47,7 +47,7 @@ export default function Privacy() {
             </div>
 
             <div className="mt-12">
-              <Link to="/" className="text-sm text-neutral-500 hover:text-white transition-colors">
+              <Link to="/" className="text-sm text-neutral-400 hover:text-white transition-colors">
                 &larr; {p.backHome}
               </Link>
             </div>

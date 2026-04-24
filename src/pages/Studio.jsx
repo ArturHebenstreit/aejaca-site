@@ -182,7 +182,7 @@ export default function Studio() {
           <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-3">{s.portfolio?.tag || "Portfolio"}</div>
           <h2 className="font-sans text-3xl md:text-4xl font-bold text-white tracking-tight mb-8">{s.portfolio?.title || "Portfolio"}</h2>
           <div className="py-16 rounded-2xl border border-white/5 bg-white/[0.02]">
-            <div className="text-neutral-500 text-lg">
+            <div className="text-neutral-400 text-lg">
               {{ pl: "W trakcie przygotowania", en: "In preparation", de: "In Vorbereitung" }[lang] || "In preparation"}
             </div>
           </div>
@@ -219,7 +219,7 @@ export default function Studio() {
               <div key={i} ref={getStepRef(i)} className="reveal-scale">
                 <div className="text-blue-400 font-mono text-2xl font-bold mb-2">{String(i + 1).padStart(2, "0")}</div>
                 <h3 className="font-sans text-lg font-semibold text-white mb-2">{step.title}</h3>
-                <p className="text-neutral-500 text-sm">{step.desc}</p>
+                <p className="text-neutral-400 text-sm">{step.desc}</p>
               </div>
             ))}
           </div>

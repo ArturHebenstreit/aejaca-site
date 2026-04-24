@@ -423,7 +423,7 @@ function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false, 
                   {label}
                 </div>
                 {sub && (
-                  <div className={`text-[10px] sm:text-[11px] mt-0.5 ${active ? "text-emerald-400/80" : "text-neutral-500"}`}>
+                  <div className={`text-[10px] sm:text-[11px] mt-0.5 ${active ? "text-emerald-400/80" : "text-neutral-400"}`}>
                     {sub}
                   </div>
                 )}
@@ -588,7 +588,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
                   <span className="hidden sm:inline">{l.q0drop}</span>
                   <span className="sm:hidden">{l.q0tap}</span>
                 </div>
-                <div className="text-xs text-neutral-500 mt-1">
+                <div className="text-xs text-neutral-400 mt-1">
                   <span className="hidden sm:inline">{l.q0or}</span>
                   <span className="sm:hidden">{l.q0accept}</span>
                 </div>
@@ -596,7 +596,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
               </div>
               <input type="file" accept=".stl,.svg" onChange={onInputChange} className="sr-only" />
             </label>
-            <div className="text-center mt-3 text-[11px] text-neutral-500">{l.q0hint}</div>
+            <div className="text-center mt-3 text-[11px] text-neutral-400">{l.q0hint}</div>
           </div>
         ) : (
           <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/[0.04] p-4">
@@ -669,7 +669,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
                   <div className="font-semibold text-emerald-300 mb-1">{l.q0selected}:</div>
                   <div className="flex items-center gap-1.5 mb-0.5">
                     <Ruler className="w-3 h-3 shrink-0 text-emerald-400/50" />
-                    <span>{l.q0selSize}: <span className="text-emerald-200 font-medium">{t(sizeObj?.label, lang)}</span> <span className="text-neutral-500">({t(sizeObj?.sub, lang)})</span></span>
+                    <span>{l.q0selSize}: <span className="text-emerald-200 font-medium">{t(sizeObj?.label, lang)}</span> <span className="text-neutral-400">({t(sizeObj?.sub, lang)})</span></span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Layers className="w-3 h-3 shrink-0 text-emerald-400/50" />

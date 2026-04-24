@@ -48,7 +48,7 @@ export default function FAQ({ data, accent = "amber", id }) {
                 >
                   <span className="text-white text-sm font-medium pr-4">{item.q}</span>
                   <ChevronDown className={`w-5 h-5 shrink-0 transition-transform duration-300 ${
-                    isOpen ? `rotate-180 ${chevronColor}` : "text-neutral-500"
+                    isOpen ? `rotate-180 ${chevronColor}` : "text-neutral-400"
                   }`} />
                 </button>
                 <div

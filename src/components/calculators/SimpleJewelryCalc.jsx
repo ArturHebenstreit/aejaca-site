@@ -448,7 +448,7 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
                   {label}
                 </div>
                 {sub && (
-                  <div className={`text-[10px] sm:text-[11px] mt-0.5 ${active ? "text-rose-400/80" : "text-neutral-500"}`}>
+                  <div className={`text-[10px] sm:text-[11px] mt-0.5 ${active ? "text-rose-400/80" : "text-neutral-400"}`}>
                     {sub}
                   </div>
                 )}

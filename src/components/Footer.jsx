@@ -59,7 +59,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-white/5 text-center text-neutral-500 text-xs">
+        <div className="mt-10 pt-6 border-t border-white/5 text-center text-neutral-400 text-xs">
           &copy; {new Date().getFullYear()} AEJaCA &mdash; {t.footer.rights}
         </div>
       </div>

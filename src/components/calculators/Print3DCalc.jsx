@@ -231,7 +231,7 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
           </div>
           <div className="text-center">
             <div className="font-semibold text-sm text-white mb-1">{sl.dropHint}</div>
-            <div className="text-[11px] text-neutral-500">{sl.dropSub}</div>
+            <div className="text-[11px] text-neutral-400">{sl.dropSub}</div>
           </div>
         </button>
         <input ref={fileRef} type="file" accept=".stl" className="hidden" onChange={onUpload} />
@@ -253,7 +253,7 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
     <div className="rounded-xl border border-blue-400/20 bg-blue-400/[0.03] p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="text-sm font-medium text-blue-300 truncate max-w-[70%]">{stlFileName}</div>
-        <button onClick={onRemove} className="text-neutral-500 hover:text-red-400 transition-colors text-xs flex items-center gap-1">
+        <button onClick={onRemove} className="text-neutral-400 hover:text-red-400 transition-colors text-xs flex items-center gap-1">
           <X className="w-3.5 h-3.5" />{sl.remove}
         </button>
       </div>
@@ -261,15 +261,15 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
         <STLViewer triangles={stlData.triangles} bbox={stlData.bbox} />
       </Suspense>
       <div className="grid grid-cols-3 gap-3 text-center text-[11px]">
-        <div><div className="text-neutral-500">{sl.volume}</div><div className="font-bold">{scaledVol.toFixed(1)} cm³</div></div>
-        <div><div className="text-neutral-500">{sl.dims}</div><div className="font-bold">{(scaledB.x*10).toFixed(1)}×{(scaledB.y*10).toFixed(1)}×{(scaledB.z*10).toFixed(1)} mm</div></div>
-        <div><div className="text-neutral-500">{sl.triangles}</div><div className="font-bold">{stlData.triangleCount.toLocaleString()}</div></div>
+        <div><div className="text-neutral-400">{sl.volume}</div><div className="font-bold">{scaledVol.toFixed(1)} cm³</div></div>
+        <div><div className="text-neutral-400">{sl.dims}</div><div className="font-bold">{(scaledB.x*10).toFixed(1)}×{(scaledB.y*10).toFixed(1)}×{(scaledB.z*10).toFixed(1)} mm</div></div>
+        <div><div className="text-neutral-400">{sl.triangles}</div><div className="font-bold">{stlData.triangleCount.toLocaleString()}</div></div>
       </div>
 
       {/* Scale controls */}
       <div className="border-t border-white/5 pt-2 space-y-1.5">
         <div className="flex items-center justify-between text-[11px]">
-          <span className="text-neutral-500">{sl.scale}</span>
+          <span className="text-neutral-400">{sl.scale}</span>
           <span className="font-bold text-blue-300">{scale === 1 ? "1:1" : `×${scale.toFixed(2)}`}</span>
         </div>
         <div className="flex flex-wrap gap-1.5">

@@ -6,6 +6,7 @@ import { GLOSSARY, CATEGORIES } from "../data/glossary.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
+import Breadcrumb from "../components/Breadcrumb.jsx";
 
 const LABELS = {
   pl: {
@@ -96,6 +97,10 @@ export default function Glossary() {
       <div className="pt-16">
         <section className="py-20 px-4 bg-neutral-950">
           <div className="max-w-6xl mx-auto">
+            <Breadcrumb items={[
+              { href: "/", label: "Home" },
+              { label: l.tag },
+            ]} />
             <div ref={headerRef} className="reveal text-center mb-10">
               <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{l.tag}</div>
               <h1 className="font-serif text-3xl md:text-5xl font-semibold text-white tracking-tight mb-4">
@@ -131,7 +136,7 @@ export default function Glossary() {
             </div>
 
             {filtered.length === 0 ? (
-              <p className="text-center text-neutral-500">
+              <p className="text-center text-neutral-400">
                 {l.noResults} &ldquo;{query}&rdquo;
               </p>
             ) : (

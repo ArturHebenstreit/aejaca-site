@@ -103,7 +103,7 @@ export default function Contact() {
               <div className="p-8 rounded-xl glass border-emerald-500/20 text-center">
                 <div className="text-emerald-400 text-lg font-semibold mb-2">{c.thankYou}</div>
                 <p className="text-neutral-400 text-sm">{c.thankYouText}</p>
-                <button onClick={() => setSubmitted(false)} className="mt-4 text-sm text-neutral-500 underline hover:text-white transition-colors">
+                <button onClick={() => setSubmitted(false)} className="mt-4 text-sm text-neutral-400 underline hover:text-white transition-colors">
                   {c.sendAnother}
                 </button>
               </div>

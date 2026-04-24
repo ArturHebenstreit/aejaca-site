@@ -58,7 +58,7 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
           </div>
           <div className="text-center">
             <div className="font-semibold text-sm text-white mb-1">{sl.dropHint}</div>
-            <div className="text-[11px] text-neutral-500">{sl.dropSub}</div>
+            <div className="text-[11px] text-neutral-400">{sl.dropSub}</div>
           </div>
         </button>
         <input ref={fileRef} type="file" accept=".svg" className="hidden" onChange={onUpload} />
@@ -75,7 +75,7 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
     <div className="rounded-xl border border-blue-400/20 bg-blue-400/[0.03] p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="text-sm font-medium text-blue-300 truncate max-w-[70%]">{svgFileName}</div>
-        <button onClick={onRemove} className="text-neutral-500 hover:text-red-400 transition-colors text-xs flex items-center gap-1">
+        <button onClick={onRemove} className="text-neutral-400 hover:text-red-400 transition-colors text-xs flex items-center gap-1">
           <X className="w-3.5 h-3.5" />{sl.remove}
         </button>
       </div>
@@ -83,16 +83,16 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
         <img src={blobUrl} alt="SVG" className="max-w-full max-h-full p-3 opacity-90" style={{ filter: "invert(1) hue-rotate(180deg)" }} />
       </div>
       <div className={`grid ${cols} gap-3 text-center text-[11px]`}>
-        <div><div className="text-neutral-500">{sl.dims}</div><div className="font-bold">{scaledBbox.x.toFixed(1)}×{scaledBbox.y.toFixed(1)} mm</div></div>
-        <div><div className="text-neutral-500">{sl.area}</div><div className="font-bold">{scaledAreaCm2.toFixed(1)} cm²</div></div>
-        {showPathLength && <div><div className="text-neutral-500">{sl.pathLen}</div><div className="font-bold">{scaledPathCm.toFixed(0)} cm</div></div>}
-        <div><div className="text-neutral-500">{sl.paths}</div><div className="font-bold">{svgData.pathCount}</div></div>
+        <div><div className="text-neutral-400">{sl.dims}</div><div className="font-bold">{scaledBbox.x.toFixed(1)}×{scaledBbox.y.toFixed(1)} mm</div></div>
+        <div><div className="text-neutral-400">{sl.area}</div><div className="font-bold">{scaledAreaCm2.toFixed(1)} cm²</div></div>
+        {showPathLength && <div><div className="text-neutral-400">{sl.pathLen}</div><div className="font-bold">{scaledPathCm.toFixed(0)} cm</div></div>}
+        <div><div className="text-neutral-400">{sl.paths}</div><div className="font-bold">{svgData.pathCount}</div></div>
       </div>
 
       {/* Scale controls */}
       <div className="border-t border-white/5 pt-2 space-y-1.5">
         <div className="flex items-center justify-between text-[11px]">
-          <span className="text-neutral-500">{sl.scale}</span>
+          <span className="text-neutral-400">{sl.scale}</span>
           <span className="font-bold text-blue-300">{Math.round(scale * 100)}%</span>
         </div>
         <div className="flex flex-wrap gap-1.5">

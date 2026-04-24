@@ -191,7 +191,7 @@ export default function Jewelry() {
           <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{j.portfolio?.tag || "Portfolio"}</div>
           <h2 className="font-serif text-3xl md:text-4xl font-semibold text-white mb-8">{j.portfolio?.title || "Portfolio"}</h2>
           <div className="py-16 rounded-2xl border border-white/5 bg-white/[0.02]">
-            <div className="text-neutral-500 text-lg">
+            <div className="text-neutral-400 text-lg">
               {{ pl: "W trakcie przygotowania", en: "In preparation", de: "In Vorbereitung" }[lang] || "In preparation"}
             </div>
           </div>
@@ -208,7 +208,7 @@ export default function Jewelry() {
             {j.values.map((v, i) => (
               <div key={i}>
                 <div className="text-amber-300 font-serif text-xl font-semibold mb-1">{v.word}</div>
-                <p className="text-neutral-500 text-sm">{v.desc}</p>
+                <p className="text-neutral-400 text-sm">{v.desc}</p>
               </div>
             ))}
           </div>

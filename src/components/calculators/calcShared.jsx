@@ -77,7 +77,7 @@ export function Chips({ options, value, onChange, lang = "pl" }) {
             disabled={disabled}
             className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg border text-xs sm:text-sm transition-all duration-200 max-w-full break-words ${
               disabled ? "border-white/5 bg-white/[0.01] text-neutral-700 cursor-not-allowed line-through" :
-              isCustom && !active ? "border-dashed border-white/10 text-neutral-500 italic text-[11px] sm:text-xs" :
+              isCustom && !active ? "border-dashed border-white/10 text-neutral-400 italic text-[11px] sm:text-xs" :
               isCustom && active ? "border-dashed border-blue-400 bg-blue-400/10 text-blue-300 font-medium" :
               active ? "border-blue-400 bg-blue-400/10 text-blue-300 font-medium" :
               "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20 hover:text-neutral-200"
@@ -126,7 +126,7 @@ export function MaterialCards({ options, value, onChange, lang = "pl", cols = "g
         return (
           <button key={String(o.id)} onClick={() => onChange(o.id)}
             className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl border-dashed border transition-all text-xs ${
-              active ? "border-blue-400 text-blue-300" : "border-white/10 text-neutral-500 hover:border-white/20 hover:text-neutral-400"
+              active ? "border-blue-400 text-blue-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
             }`}>
             <span className="text-lg opacity-50">?</span>
             <span className="text-center leading-tight">{label}</span>
@@ -148,7 +148,7 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
             <button key={String(o.id)} onClick={() => !o.disabled && onChange(o.id)} disabled={o.disabled}
               className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-dashed border transition-all text-xs ${
                 o.disabled ? "border-white/5 text-neutral-700 cursor-not-allowed" :
-                active ? "border-blue-400 text-blue-300" : "border-white/10 text-neutral-500 hover:border-white/20 hover:text-neutral-400"
+                active ? "border-blue-400 text-blue-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
               }`}>
               <span className="text-lg opacity-50">?</span>
               <span className="text-center leading-tight">{lbl(o.label)}</span>
@@ -184,7 +184,7 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
 export function CalcCard({ stepNum, label, children, id }) {
   return (
     <div id={id} className="rounded-xl border border-white/5 bg-white/[0.02] p-5 mb-4">
-      <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 mb-3">
+      <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-3">
         {stepNum && <span className="text-blue-400 mr-1.5">{stepNum}</span>}{label}
       </div>
       {children}
@@ -228,7 +228,7 @@ export function ResultDisplay({ result, lang = "pl" }) {
   return (
     <>
       {/* Per piece */}
-      <div className="text-center text-[11px] uppercase tracking-wide text-neutral-500 mb-1">
+      <div className="text-center text-[11px] uppercase tracking-wide text-neutral-400 mb-1">
         {labels.perPiece}
         {r.discount > 0 && <span className="text-green-400 ml-2 font-bold">(-{r.discount * 100}%)</span>}
       </div>
@@ -236,24 +236,24 @@ export function ResultDisplay({ result, lang = "pl" }) {
         <span className="text-2xl sm:text-4xl font-extrabold tracking-tight">{fmtNum(mainPc.min)}</span>
         <span className="text-lg sm:text-xl text-neutral-600">&mdash;</span>
         <span className="text-2xl sm:text-4xl font-extrabold tracking-tight">{fmtNum(mainPc.max)}</span>
-        <span className="text-sm sm:text-base font-semibold text-neutral-500">{mainCurr}</span>
+        <span className="text-sm sm:text-base font-semibold text-neutral-400">{mainCurr}</span>
       </div>
 
       {/* Order total (qty > 1) */}
       {r.qty > 1 && (
         <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 mb-4">
-          <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">
+          <div className="text-[11px] uppercase tracking-wide text-neutral-400 mb-2">
             {labels.order}: ~{r.qty} {labels.pcs}
           </div>
           <div className="flex items-baseline justify-center gap-1.5 sm:gap-3 flex-wrap">
             <span className="text-xl sm:text-2xl font-extrabold text-blue-400">{fmtNum(mainTotal.min)}</span>
             <span className="text-neutral-600">&mdash;</span>
             <span className="text-xl sm:text-2xl font-extrabold text-blue-400">{fmtNum(mainTotal.max)}</span>
-            <span className="text-xs sm:text-sm font-semibold text-neutral-500">{mainCurr}</span>
+            <span className="text-xs sm:text-sm font-semibold text-neutral-400">{mainCurr}</span>
           </div>
           {/* Total production time */}
           {r.totalTimeH != null && (
-            <div className="text-center text-xs text-neutral-500 mt-2 pt-2 border-t border-white/5">
+            <div className="text-center text-xs text-neutral-400 mt-2 pt-2 border-t border-white/5">
               {labels.totalTime}: ~{r.totalTimeH < 1 ? `${Math.round(r.totalTimeH * 60)} min` : `${r.totalTimeH.toFixed(1)} h`}
             </div>
           )}
@@ -265,7 +265,7 @@ export function ResultDisplay({ result, lang = "pl" }) {
         <>
           <button
             onClick={() => setShowBreakdown(!showBreakdown)}
-            className="w-full py-2.5 rounded-lg border border-white/5 bg-white/[0.02] text-neutral-500 text-xs hover:text-neutral-300 transition-colors"
+            className="w-full py-2.5 rounded-lg border border-white/5 bg-white/[0.02] text-neutral-400 text-xs hover:text-neutral-300 transition-colors"
           >
             {showBreakdown ? "▲ " + labels.hideDetails : "▼ " + labels.showDetails}
           </button>
@@ -274,7 +274,7 @@ export function ResultDisplay({ result, lang = "pl" }) {
               {r.breakdown.map((row, i) => (
                 row.divider ? <div key={i} className="border-t border-white/5 my-2" /> :
                 <div key={i} className={`flex justify-between ${row.bold ? "font-bold" : ""} ${row.accent ? "text-blue-400" : ""}`}>
-                  <span className="text-neutral-500">{row.label}</span>
+                  <span className="text-neutral-400">{row.label}</span>
                   <span>{row.value}</span>
                 </div>
               ))}
@@ -439,7 +439,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
 
       {/* Description */}
       <div className="mb-3">
-        <div className="text-[11px] text-neutral-500 mb-1.5">{il.desc}</div>
+        <div className="text-[11px] text-neutral-400 mb-1.5">{il.desc}</div>
         <textarea
           value={description}
           onChange={handleDescChange}
@@ -457,7 +457,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
 
       {/* File */}
       <div className="mb-4">
-        <div className="text-[11px] text-neutral-500 mb-1.5">{il.file}</div>
+        <div className="text-[11px] text-neutral-400 mb-1.5">{il.file}</div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => fileRef.current?.click()}

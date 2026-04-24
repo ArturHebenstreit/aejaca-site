@@ -93,7 +93,7 @@ export default function Tips({ data, accent = "amber", id }) {
                     <span className="text-white text-sm font-medium">{tip.q}</span>
                   </div>
                   <ChevronDown className={`w-5 h-5 shrink-0 transition-transform duration-300 ${
-                    isOpen ? `rotate-180 ${chevronColor}` : "text-neutral-500"
+                    isOpen ? `rotate-180 ${chevronColor}` : "text-neutral-400"
                   }`} />
                 </button>
                 <div

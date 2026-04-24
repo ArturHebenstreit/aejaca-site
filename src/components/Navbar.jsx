@@ -290,8 +290,8 @@ export default function Navbar() {
                             onClick={() => scrollToSection(to, sec.id)}
                             className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                               accentColor === "blue"
-                                ? "text-neutral-500 hover:text-blue-300 hover:bg-blue-400/5"
-                                : "text-neutral-500 hover:text-amber-300 hover:bg-amber-400/5"
+                                ? "text-neutral-400 hover:text-blue-300 hover:bg-blue-400/5"
+                                : "text-neutral-400 hover:text-amber-300 hover:bg-amber-400/5"
                             }`}
                           >
                             {sec.label}

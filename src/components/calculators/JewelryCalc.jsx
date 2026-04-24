@@ -402,7 +402,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                 return (
                   <button key={m.id} onClick={() => { setMetalId(m.id); trackCalc("jewelry", "metal", m.id); }}
                     className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl border-dashed border transition-all text-xs ${
-                      active ? "border-amber-400 text-amber-300" : "border-white/10 text-neutral-500 hover:border-white/20 hover:text-neutral-400"
+                      active ? "border-amber-400 text-amber-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
                     }`}>
                     <span className="text-lg opacity-50">?</span>
                     <span className="text-center leading-tight">{t(m.label, lang)}</span>
@@ -420,7 +420,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                   return (
                     <button key={w.id} onClick={() => setWeightId(w.id)}
                       className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-dashed border transition-all text-xs ${
-                        active ? "border-amber-400 text-amber-300" : "border-white/10 text-neutral-500 hover:border-white/20 hover:text-neutral-400"
+                        active ? "border-amber-400 text-amber-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
                       }`}>
                       <span className="text-lg opacity-50">?</span>
                       <span className="text-center leading-tight">{t(w.label, lang)}</span>
@@ -498,7 +498,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                   return (
                     <button key={pl.id} onClick={() => setPlatingId(pl.id)}
                       className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-dashed border transition-all text-xs ${
-                        active ? "border-amber-400 text-amber-300" : "border-white/10 text-neutral-500 hover:border-white/20 hover:text-neutral-400"
+                        active ? "border-amber-400 text-amber-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
                       }`}>
                       <span className="text-lg opacity-50">?</span>
                       <span className="text-center leading-tight">{label}</span>
@@ -582,7 +582,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     return (
                       <button key={s.id} onClick={() => setStoneSizeId(s.id)}
                         className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all min-w-[90px] ${
-                          s.custom && !active ? "border-dashed border-white/10 text-neutral-500 italic text-xs" :
+                          s.custom && !active ? "border-dashed border-white/10 text-neutral-400 italic text-xs" :
                           active ? "border-amber-400 bg-amber-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
                         }`}>
                         {v && <div className="rounded-full" style={{ width: v.gemD, height: v.gemD, background: active ? "rgb(251 191 36 / 0.6)" : "rgb(255 255 255 / 0.3)" }} />}
@@ -667,7 +667,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                   return (
                     <button key={m.id} onClick={() => setRenoMetal(m.id)}
                       className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-dashed border transition-all text-xs ${
-                        active ? "border-sky-400 text-sky-300" : "border-white/10 text-neutral-500 hover:border-white/20 hover:text-neutral-400"
+                        active ? "border-sky-400 text-sky-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
                       }`}>
                       <span className="text-lg opacity-50">?</span>
                       <span className="text-center leading-tight">{label}</span>
@@ -758,7 +758,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                   return (
                     <button key={m.id} onClick={() => setRepairMetal(m.id)}
                       className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-dashed border transition-all text-xs ${
-                        active ? "border-orange-400 text-orange-300" : "border-white/10 text-neutral-500 hover:border-white/20 hover:text-neutral-400"
+                        active ? "border-orange-400 text-orange-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
                       }`}>
                       <span className="text-lg opacity-50">?</span>
                       <span className="text-center leading-tight">{label}</span>

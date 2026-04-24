@@ -68,7 +68,7 @@ export default function StudioPortfolio() {
                   {p.filters.find((f) => f.id === item.category)?.label || item.category}
                 </div>
                 <h3 className="text-white font-medium text-sm mb-2 group-hover:text-blue-300 transition-colors">{item.title}</h3>
-                <p className="text-neutral-500 text-xs leading-relaxed">{item.desc}</p>
+                <p className="text-neutral-400 text-xs leading-relaxed">{item.desc}</p>
               </div>
             );
           })}

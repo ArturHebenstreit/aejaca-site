@@ -125,7 +125,7 @@ function ReviewCard({ review, lang, labels }) {
           <div className="flex items-center gap-2 mt-1">
             <Stars rating={review.rating} size="w-3.5 h-3.5" />
             <time
-              className="text-[11px] text-neutral-500"
+              className="text-[11px] text-neutral-400"
               dateTime={review.date}
             >
               {labels.relativeTime(daysSince(review.date))}
@@ -145,13 +145,13 @@ function ReviewCard({ review, lang, labels }) {
         </blockquote>
       ) : (
         // Rating-only review (normalne na Google — klient dał 5★ bez komentarza)
-        <div className="text-neutral-500 text-xs italic">{labels.ratingOnly}</div>
+        <div className="text-neutral-400 text-xs italic">{labels.ratingOnly}</div>
       )}
 
       {/* Translation (tylko gdy jest treść i aktualny język ≠ oryginał) */}
       {translation && (
         <div className="pt-3 border-t border-white/5">
-          <div className="text-[10px] uppercase tracking-wider text-neutral-500 mb-1">
+          <div className="text-[10px] uppercase tracking-wider text-neutral-400 mb-1">
             {labels.translationOf} ({lang.toUpperCase()})
           </div>
           <p lang={lang} className="text-neutral-400 text-xs leading-relaxed italic">
