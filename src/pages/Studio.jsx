@@ -30,11 +30,11 @@ const PRICING_LABELS = {
 };
 
 const STUDIO_PRICING = [
-  { pl: "Druk 3D FDM (PLA/PETG)", en: "3D print FDM (PLA/PETG)", de: "3D-Druck FDM (PLA/PETG)", from: "25 PLN" },
-  { pl: "Druk 3D żywica", en: "3D print resin (SLA)", de: "3D-Druck Harz (SLA)", from: "45 PLN" },
-  { pl: "Grawer laserowy CO₂", en: "CO₂ laser engraving", de: "CO₂-Lasergravur", from: "15 PLN" },
-  { pl: "Znakowanie laserem fibrowym", en: "Fiber laser marking", de: "Faserlasermarkierung", from: "20 PLN" },
-  { pl: "Odlew żywiczny (epoksyd/UV)", en: "Resin casting (epoxy/UV)", de: "Harzguss (Epoxid/UV)", from: "40 PLN" },
+  { pl: "Druk 3D FDM (PLA/PETG)", en: "3D print FDM (PLA/PETG)", de: "3D-Druck FDM (PLA/PETG)", pln: 25, eur: 6 },
+  { pl: "Druk 3D żywica", en: "3D print resin (SLA)", de: "3D-Druck Harz (SLA)", pln: 45, eur: 10 },
+  { pl: "Grawer laserowy CO₂", en: "CO₂ laser engraving", de: "CO₂-Lasergravur", pln: 15, eur: 4 },
+  { pl: "Znakowanie laserem fibrowym", en: "Fiber laser marking", de: "Faserlasermarkierung", pln: 20, eur: 5 },
+  { pl: "Odlew żywiczny (epoksyd/UV)", en: "Resin casting (epoxy/UV)", de: "Harzguss (Epoxid/UV)", pln: 40, eur: 10 },
 ];
 
 const FLOATING_CTA_LABELS = {
@@ -193,7 +193,12 @@ export default function Studio() {
                   <Tag className="w-4 h-4 text-blue-400 shrink-0" />
                   <span className="text-neutral-200 text-sm">{item[lang] || item.en}</span>
                 </div>
-                <span className="text-blue-300 font-semibold text-sm whitespace-nowrap ml-3">{{ pl: "od", en: "from", de: "ab" }[lang]} {item.from}</span>
+                <span className="text-blue-300 font-semibold text-sm whitespace-nowrap ml-3">
+                  {{ pl: "od", en: "from", de: "ab" }[lang]}{" "}
+                  {lang === "pl"
+                    ? `${item.pln.toLocaleString("pl-PL")} zł`
+                    : `€${item.eur.toLocaleString("de-DE")}`}
+                </span>
               </div>
             ))}
           </div>

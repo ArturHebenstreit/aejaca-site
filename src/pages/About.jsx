@@ -216,7 +216,7 @@ export default function About() {
               <img
                 src="/img/DSC05225.JPEG"
                 alt="Artur Hebenstreit — founder of AEJaCA"
-                className="rounded-2xl aspect-square object-cover w-full max-w-xs md:max-w-sm shadow-2xl shadow-black/50"
+                className="rounded-2xl aspect-[3/4] object-cover object-top w-full max-w-[220px] md:max-w-[260px] shadow-2xl shadow-black/50"
                 loading="lazy"
                 decoding="async"
               />

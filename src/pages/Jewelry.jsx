@@ -31,12 +31,12 @@ const PRICING_LABELS = {
 };
 
 const PRICING_ITEMS = [
-  { pl: "Srebrny pierścionek", en: "Silver ring", de: "Silberring", from: "250 PLN" },
-  { pl: "Srebrne kolczyki", en: "Silver earrings", de: "Silberohrringe", from: "180 PLN" },
-  { pl: "Złoty pierścionek 14K", en: "Gold ring 14K", de: "Goldring 14K", from: "900 PLN" },
-  { pl: "Złoty wisiorek 14K", en: "Gold pendant 14K", de: "Goldanhänger 14K", from: "600 PLN" },
-  { pl: "Pierścionek z kamieniem", en: "Ring with gemstone", de: "Ring mit Edelstein", from: "350 PLN" },
-  { pl: "Pierścionek zaręczynowy", en: "Engagement ring", de: "Verlobungsring", from: "1 200 PLN" },
+  { pl: "Srebrny pierścionek", en: "Silver ring", de: "Silberring", pln: 250, eur: 60 },
+  { pl: "Srebrne kolczyki", en: "Silver earrings", de: "Silberohrringe", pln: 180, eur: 40 },
+  { pl: "Złoty pierścionek 14K", en: "Gold ring 14K", de: "Goldring 14K", pln: 900, eur: 210 },
+  { pl: "Złoty wisiorek 14K", en: "Gold pendant 14K", de: "Goldanhänger 14K", pln: 600, eur: 140 },
+  { pl: "Pierścionek z kamieniem", en: "Ring with gemstone", de: "Ring mit Edelstein", pln: 350, eur: 80 },
+  { pl: "Pierścionek zaręczynowy", en: "Engagement ring", de: "Verlobungsring", pln: 1200, eur: 280 },
 ];
 
 const FLOATING_CTA_LABELS = {
@@ -197,7 +197,12 @@ export default function Jewelry() {
                   <Tag className="w-4 h-4 text-amber-400 shrink-0" />
                   <span className="text-neutral-200 text-sm">{item[lang] || item.en}</span>
                 </div>
-                <span className="text-amber-300 font-semibold text-sm whitespace-nowrap ml-3">{{ pl: "od", en: "from", de: "ab" }[lang]} {item.from}</span>
+                <span className="text-amber-300 font-semibold text-sm whitespace-nowrap ml-3">
+                  {{ pl: "od", en: "from", de: "ab" }[lang]}{" "}
+                  {lang === "pl"
+                    ? `${item.pln.toLocaleString("pl-PL")} zł`
+                    : `€${item.eur.toLocaleString("de-DE")}`}
+                </span>
               </div>
             ))}
           </div>
