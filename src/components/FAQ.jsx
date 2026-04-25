@@ -1,6 +1,21 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
+
+function renderWithLinks(text) {
+  const parts = text.split(/(\[[^\]]+\]\([^)]+\))/g);
+  if (parts.length === 1) return text;
+  return parts.map((part, i) => {
+    const match = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (!match) return part;
+    return (
+      <Link key={i} to={match[2]} className="text-amber-400/80 hover:text-amber-300 underline underline-offset-2 transition-colors">
+        {match[1]}
+      </Link>
+    );
+  });
+}
 
 /**
  * Reusable FAQ accordion.
@@ -56,7 +71,7 @@ export default function FAQ({ data, accent = "amber", id }) {
                     isOpen ? "max-h-48 opacity-100" : "max-h-0 opacity-0"
                   }`}
                 >
-                  <p className="px-5 pb-5 text-neutral-400 text-sm leading-relaxed">{item.a}</p>
+                  <p className="px-5 pb-5 text-neutral-400 text-sm leading-relaxed">{renderWithLinks(item.a)}</p>
                 </div>
               </div>
             );

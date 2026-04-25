@@ -242,9 +242,9 @@ export default {
         { q: "How are prices determined?", a: "Pricing depends on the metal, gemstones, complexity, and labor involved. We provide a detailed quote before starting." },
         { q: "Do you ship internationally?", a: "Yes! We ship worldwide via tracked and insured postal services. Shipping costs vary by destination." },
         { q: "How long does order fulfillment take?", a: "If we have the materials (metal + stones), fulfillment takes up to 7 business days. Custom or engraved pieces — up to 14 days. You'll receive a tracking number as soon as the order ships." },
-        { q: "Can I return jewelry?", a: "Universal products — yes, within 14 days of delivery (unworn, original packaging). Custom-made pieces (engraving, non-standard size) are excluded from returns. Details on our returns page." },
-        { q: "How much does shipping cost?", a: "InPost shipping from 12 PLN. Free shipping on orders over 400 PLN. International: from 35 PLN (EU) via tracked postal service." },
-        { q: "What warranty do you offer?", a: "24 months on manufacturing defects. The warranty covers structural faults — not mechanical damage or normal wear. Full details on our warranty page." },
+        { q: "Can I return jewelry?", a: "Universal products — yes, within 14 days of delivery (unworn, original packaging). Custom-made pieces (engraving, non-standard size) are excluded from returns. Details on our [Returns](/returns) page." },
+        { q: "How much does shipping cost?", a: "InPost shipping from 12 PLN. Free shipping on orders over 400 PLN. International: from 35 PLN (EU) via tracked postal service. Details on our [Shipping](/shipping) page." },
+        { q: "What warranty do you offer?", a: "24 months on manufacturing defects. The warranty covers structural faults — not mechanical damage or normal wear. Full details on our [Warranty](/warranty) page." },
       ],
     },
 

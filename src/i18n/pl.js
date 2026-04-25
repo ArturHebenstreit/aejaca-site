@@ -240,9 +240,9 @@ export default {
         { q: "Jak ustalane są ceny?", a: "Cena zależy od metalu, kamieni szlachetnych, złożoności i nakładu pracy. Przed rozpoczęciem podajemy szczegółową wycenę." },
         { q: "Czy wysyłacie za granicę?", a: "Tak! Wysyłamy na cały świat przesyłkami śledzonymi i ubezpieczonymi. Koszty wysyłki zależą od miejsca docelowego." },
         { q: "Ile trwa realizacja zamówienia?", a: "Jeśli posiadamy materiały (kruszec + kamienie), realizacja trwa do 7 dni roboczych. Jeśli materiały wymagają zamówienia, proces wydłuża się o 3–7 dni roboczych." },
-        { q: "Czy mogę zwrócić biżuterię?", a: "Produkty uniwersalne — tak, w ciągu 14 dni. Biżuteria personalizowana wykonana na indywidualne zamówienie nie podlega zwrotowi. Szczegóły na stronie Zwroty." },
-        { q: "Ile kosztuje wysyłka?", a: "Wysyłka InPost od 12 zł. Darmowa przy zamówieniu od 400 zł. Wysyłamy do całej Europy. Szczegóły na stronie Wysyłka." },
-        { q: "Jaka jest gwarancja?", a: "24 miesiące na wady produkcyjne. Bezpłatne pierwsze czyszczenie w ciągu 12 miesięcy. Szczegóły na stronie Gwarancja." },
+        { q: "Czy mogę zwrócić biżuterię?", a: "Produkty uniwersalne — tak, w ciągu 14 dni. Biżuteria personalizowana wykonana na indywidualne zamówienie nie podlega zwrotowi. Szczegóły na stronie [Zwroty](/returns)." },
+        { q: "Ile kosztuje wysyłka?", a: "Wysyłka InPost od 12 zł. Darmowa przy zamówieniu od 400 zł. Wysyłamy do całej Europy. Szczegóły na stronie [Wysyłka](/shipping)." },
+        { q: "Jaka jest gwarancja?", a: "24 miesiące na wady produkcyjne. Bezpłatne pierwsze czyszczenie w ciągu 12 miesięcy. Szczegóły na stronie [Gwarancja](/warranty)." },
       ],
     },
 

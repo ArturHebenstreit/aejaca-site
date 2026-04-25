@@ -236,9 +236,9 @@ export default {
         { q: "Wie werden die Preise bestimmt?", a: "Der Preis hängt von Metall, Edelsteinen, Komplexität und Arbeitsaufwand ab. Wir erstellen vor Beginn ein detailliertes Angebot." },
         { q: "Versenden Sie international?", a: "Ja! Wir versenden weltweit per Sendungsverfolgung und versichert. Versandkosten variieren je nach Zielort." },
         { q: "Wie lange dauert die Auftragsabwicklung?", a: "Bei vorhandenen Materialien (Metall + Steine) bis zu 7 Werktage. Individuell gefertigte oder gravierte Stücke — bis zu 14 Tage. Sie erhalten eine Sendungsverfolgungsnummer, sobald die Bestellung versandt wird." },
-        { q: "Kann ich Schmuck zurückgeben?", a: "Universalprodukte — ja, innerhalb von 14 Tagen nach Lieferung (ungetragen, Originalverpackung). Maßanfertigungen (Gravur, Sondergröße) sind vom Umtausch ausgeschlossen. Details auf unserer Rückgabeseite." },
-        { q: "Was kostet der Versand?", a: "InPost-Versand ab 12 PLN. Kostenloser Versand ab 400 PLN Bestellwert. International: ab 35 PLN (EU) per Sendungsverfolgung." },
-        { q: "Welche Garantie bieten Sie?", a: "24 Monate auf Herstellungsfehler. Die Garantie deckt strukturelle Mängel — nicht mechanische Beschädigungen oder normalen Verschleiß. Vollständige Details auf unserer Garantieseite." },
+        { q: "Kann ich Schmuck zurückgeben?", a: "Universalprodukte — ja, innerhalb von 14 Tagen nach Lieferung (ungetragen, Originalverpackung). Maßanfertigungen (Gravur, Sondergröße) sind vom Umtausch ausgeschlossen. Details auf unserer [Rückgabeseite](/returns)." },
+        { q: "Was kostet der Versand?", a: "InPost-Versand ab 12 PLN. Kostenloser Versand ab 400 PLN Bestellwert. International: ab 35 PLN (EU) per Sendungsverfolgung. Details auf unserer [Versandseite](/shipping)." },
+        { q: "Welche Garantie bieten Sie?", a: "24 Monate auf Herstellungsfehler. Die Garantie deckt strukturelle Mängel — nicht mechanische Beschädigungen oder normalen Verschleiß. Vollständige Details auf unserer [Garantieseite](/warranty)." },
       ],
     },
 
