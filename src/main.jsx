@@ -1,5 +1,5 @@
 import { StrictMode, lazy, Suspense } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import "./index.css";
@@ -32,9 +32,7 @@ function LazyFallback() {
   );
 }
 
-// HelmetProvider enables per-route <head> mutation (title/meta/JSON-LD).
-// Required wrapper — without it Helmet silently no-ops in SPAs.
-createRoot(document.getElementById("root")).render(
+const app = (
   <StrictMode>
     <HelmetProvider>
       <LanguageProvider>
@@ -63,3 +61,10 @@ createRoot(document.getElementById("root")).render(
     </HelmetProvider>
   </StrictMode>
 );
+
+const root = document.getElementById("root");
+if (root.innerHTML.trim() && root.innerHTML !== "<!--ssr-outlet-->") {
+  hydrateRoot(root, app);
+} else {
+  createRoot(root).render(app);
+}

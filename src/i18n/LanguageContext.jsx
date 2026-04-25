@@ -9,7 +9,7 @@ const translations = { en, pl, de };
 const STORAGE_KEY = "aejaca-lang";
 
 function detectLanguage() {
-  // Check localStorage first
+  if (typeof window === "undefined") return "pl";
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved && translations[saved]) return saved;
 
