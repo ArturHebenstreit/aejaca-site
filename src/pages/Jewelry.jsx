@@ -19,6 +19,7 @@ import {
   buildWebPageSchema,
   buildHowToSchema,
   buildProductSchema,
+  buildItemListSchema,
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 
@@ -89,7 +90,18 @@ export default function Jewelry() {
     }),
     // FAQ schema = direct ranking signal for Google's "People Also Ask" + LLM answers
     j.faq?.items && buildFAQSchema(j.faq.items),
-    // Product schemas = enable rich results (price, rating) in Google Shopping + AI answers
+    buildItemListSchema({
+      name: "AEJaCA Handcrafted Jewelry Collection",
+      url: pageUrl,
+      items: [
+        { name: "Custom Silver Ring with Gemstone", url: `${pageUrl}#rings`, image: `${SITE.url}/hero-jewelry.jpg`, description: "Handcrafted sterling silver ring with natural gemstone setting" },
+        { name: "Gold Engagement Ring", url: `${pageUrl}#engagement`, image: `${SITE.url}/hero-jewelry.jpg`, description: "Bespoke 14K/18K gold engagement ring with premium gemstone" },
+        { name: "Silver Earrings with Gemstones", url: `${pageUrl}#earrings`, image: `${SITE.url}/hero-jewelry.jpg`, description: "Artisan sterling silver earrings with natural gemstones" },
+        { name: "Gemstone Bracelet", url: `${pageUrl}#bracelets`, image: `${SITE.url}/hero-jewelry.jpg`, description: "Natural stone bead bracelet with silver elements" },
+        { name: "Wedding Bands", url: `${pageUrl}#wedding`, image: `${SITE.url}/hero-jewelry.jpg`, description: "Personalized wedding ring pairs with custom engraving" },
+        { name: "Personalized Pendant", url: `${pageUrl}#pendants`, image: `${SITE.url}/hero-jewelry.jpg`, description: "Custom pendant with gemstone or engraved design" },
+      ],
+    }),
     buildProductSchema({
       name: "Custom Silver Ring with Gemstone — AEJaCA",
       description: "Handcrafted sterling silver ring with natural gemstone, custom designed to order. Available with amethyst, emerald, sapphire, or ruby.",
@@ -136,8 +148,8 @@ export default function Jewelry() {
             loading="eager"
             fetchpriority="high"
             decoding="async"
-            width="1600"
-            height="640"
+            width="1024"
+            height="572"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-black/40 to-transparent" />
           <div className="relative z-10 flex flex-col items-center justify-end h-full pb-12 px-4 text-center">

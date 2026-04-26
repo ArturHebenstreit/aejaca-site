@@ -6,7 +6,7 @@ export const meta = {
   accent: "blue",
   publishedAt: "2026-04-17",
   updatedAt: "2026-04-17",
-  coverImage: "/img/blog/grawerowanie-laserowe.jpg",
+  coverImage: "/img/blog/grawerowanie-laserowe.webp",
   readingTime: { pl: 6, en: 5, de: 5 },
   title: {
     pl: "Grawerowanie laserowe — przewodnik po materiałach, technikach i zastosowaniach",

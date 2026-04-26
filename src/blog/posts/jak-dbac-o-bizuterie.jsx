@@ -5,7 +5,7 @@ export const meta = {
   category: "jewelry",
   accent: "amber",
   publishedAt: "2026-04-20",
-  coverImage: "/img/blog/jak-dbac-o-bizuterie.jpg",
+  coverImage: "/img/blog/jak-dbac-o-bizuterie.webp",
   readingTime: { pl: 6, en: 5, de: 5 },
   title: {
     pl: "Jak dbać o biżuterię srebrną i złotą — poradnik AEJaCA",

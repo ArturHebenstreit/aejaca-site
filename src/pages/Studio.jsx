@@ -18,6 +18,7 @@ import {
   buildWebPageSchema,
   buildHowToSchema,
   buildProductSchema,
+  buildItemListSchema,
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 
@@ -89,7 +90,17 @@ export default function Studio() {
       image: `${SITE.url}/hero-studio.jpg`,
     }),
     s.faq?.items && buildFAQSchema(s.faq.items),
-    // Product schemas = enable rich results (price) in Google Shopping + AI answers
+    buildItemListSchema({
+      name: "AEJaCA sTuDiO Digital Fabrication Services",
+      url: pageUrl,
+      items: [
+        { name: "FDM 3D Printing", url: `${pageUrl}#3dprint`, image: `${SITE.url}/hero-studio.jpg`, description: "Professional FDM 3D printing in PLA, PETG, ABS, PA6-CF, PPA-CF" },
+        { name: "CO2 Laser Engraving & Cutting", url: `${pageUrl}#co2laser`, image: `${SITE.url}/hero-studio.jpg`, description: "xTool P2 55W CO2 laser on wood, acrylic, glass, leather" },
+        { name: "Fiber Laser Marking", url: `${pageUrl}#fiber`, image: `${SITE.url}/hero-studio.jpg`, description: "Raycus 30W fiber laser on stainless steel, titanium, brass, stone" },
+        { name: "Epoxy Resin Casting", url: `${pageUrl}#resin`, image: `${SITE.url}/hero-studio.jpg`, description: "Custom epoxy and UV resin casting for decorative objects and prototypes" },
+        { name: "Rapid Prototyping", url: `${pageUrl}#prototyping`, image: `${SITE.url}/hero-studio.jpg`, description: "From CAD design to functional prototype in 24-48 hours" },
+      ],
+    }),
     buildProductSchema({
       name: "Custom 3D Print (FDM) — AEJaCA sTuDiO",
       description: "Professional FDM 3D printing service using PLA, PETG, ABS, PA6-CF, and PPA-CF. From rapid prototypes to production parts.",
@@ -130,8 +141,8 @@ export default function Studio() {
             loading="eager"
             fetchpriority="high"
             decoding="async"
-            width="1600"
-            height="640"
+            width="1024"
+            height="572"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-black/40 to-transparent" />
           <div className="relative z-10 flex flex-col items-center justify-end h-full pb-12 px-4 text-center">

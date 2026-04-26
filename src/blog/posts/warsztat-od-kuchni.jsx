@@ -5,7 +5,7 @@ export const meta = {
   category: "studio",
   accent: "blue",
   publishedAt: "2026-04-20",
-  coverImage: "/img/blog/warsztat-od-kuchni.jpg",
+  coverImage: "/img/blog/warsztat-od-kuchni.webp",
   readingTime: { pl: 6, en: 5, de: 5 },
   title: {
     pl: "AEJaCA od kuchni — sprzęt, materiały i proces tworzenia",

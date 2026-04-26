@@ -5,7 +5,7 @@ export const meta = {
   category: "jewelry",
   accent: "amber",
   publishedAt: "2026-04-20",
-  coverImage: "/img/blog/projektowanie-ai.jpg",
+  coverImage: "/img/blog/projektowanie-ai.webp",
   readingTime: { pl: 6, en: 5, de: 5 },
   title: {
     pl: "AI w projektowaniu biżuterii — jak wykorzystujemy sztuczną inteligencję",

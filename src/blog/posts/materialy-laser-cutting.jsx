@@ -5,7 +5,7 @@ export const meta = {
   category: "studio",
   accent: "blue",
   publishedAt: "2026-04-20",
-  coverImage: "/img/blog/materialy-laser-cutting.jpg",
+  coverImage: "/img/blog/materialy-laser-cutting.webp",
   readingTime: { pl: 7, en: 5, de: 5 },
   title: {
     pl: "Materiały do grawerowania i cięcia laserowego — co się nadaje?",

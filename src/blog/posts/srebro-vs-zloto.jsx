@@ -5,7 +5,7 @@ export const meta = {
   category: "jewelry",
   accent: "amber",
   publishedAt: "2026-04-20",
-  coverImage: "/img/blog/srebro-vs-zloto.jpg",
+  coverImage: "/img/blog/srebro-vs-zloto.webp",
   readingTime: { pl: 6, en: 5, de: 5 },
   title: {
     pl: "Srebro vs złoto — jaki metal wybrać na biżuterię?",

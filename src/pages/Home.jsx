@@ -78,8 +78,8 @@ export default function Home() {
               loading="eager"
               fetchpriority="high"
               decoding="async"
-              width="1200"
-              height="900"
+              width="1024"
+              height="572"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 group-hover:from-black/60 transition-all duration-500" />
             <div className="relative z-10 flex flex-col items-center justify-end h-full pb-10 px-8 text-center">
@@ -101,8 +101,8 @@ export default function Home() {
               loading="eager"
               fetchpriority="high"
               decoding="async"
-              width="1200"
-              height="900"
+              width="1024"
+              height="572"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 group-hover:from-black/60 transition-all duration-500" />
             <div className="relative z-10 flex flex-col items-center justify-end h-full pb-10 px-8 text-center">

@@ -5,7 +5,7 @@ export const meta = {
   category: "jewelry",
   accent: "amber",
   publishedAt: "2026-04-20",
-  coverImage: "/img/blog/bizuteria-inwestycja.jpg",
+  coverImage: "/img/blog/bizuteria-inwestycja.webp",
   readingTime: { pl: 6, en: 5, de: 5 },
   title: {
     pl: "Biżuteria jako inwestycja \u2014 kiedy warto, a kiedy nie?",
