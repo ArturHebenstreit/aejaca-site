@@ -13,6 +13,7 @@ import BlogPost from "./pages/BlogPost.jsx";
 import Contact from "./pages/Contact.jsx";
 import Privacy from "./pages/Privacy.jsx";
 import Glossary from "./pages/Glossary.jsx";
+import GlossaryTerm from "./pages/GlossaryTerm.jsx";
 import About from "./pages/About.jsx";
 import Warranty from "./pages/Warranty.jsx";
 import Returns from "./pages/Returns.jsx";
@@ -35,6 +36,7 @@ export function render(url) {
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/glossary" element={<Glossary />} />
+              <Route path="/glossary/:id" element={<GlossaryTerm />} />
               <Route path="/about" element={<About />} />
               <Route path="/warranty" element={<Warranty />} />
               <Route path="/returns" element={<Returns />} />

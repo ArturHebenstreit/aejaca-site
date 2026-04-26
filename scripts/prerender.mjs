@@ -23,6 +23,33 @@ const STATIC_ROUTES = [
   "/privacy",
 ];
 
+const GLOSSARY_IDS = [
+  "srebro-925",
+  "zloto-probowane",
+  "pierscionek-zareczynowy",
+  "obraczki-slubne",
+  "kamien-szlachetny",
+  "rodowanie",
+  "moissanit",
+  "rozmiar-pierscionka",
+  "personalizowany-grawer",
+  "bizuteria-inwestycyjna",
+  "druk-3d-fdm",
+  "plik-stl",
+  "pla",
+  "petg",
+  "zywica-uv",
+  "laser-co2",
+  "laser-fiber",
+  "plik-svg",
+  "odlew-zywiczny",
+  "prototypowanie",
+  "cad",
+  "personalizacja",
+  "projektowanie-ai",
+  "wycena-online",
+];
+
 const BLOG_SLUGS = [
   "pierscionek-zareczynowy-na-zamowienie",
   "druk-3d-krok-po-kroku",
@@ -42,6 +69,7 @@ const BLOG_SLUGS = [
 const routes = [
   ...STATIC_ROUTES,
   ...BLOG_SLUGS.map((s) => `/blog/${s}`),
+  ...GLOSSARY_IDS.map((id) => `/glossary/${id}`),
 ];
 
 let success = 0;

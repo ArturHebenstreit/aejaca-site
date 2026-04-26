@@ -18,6 +18,7 @@ const BlogIndex = lazy(() => import("./pages/BlogIndex.jsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.jsx"));
 const Privacy = lazy(() => import("./pages/Privacy.jsx"));
 const Glossary = lazy(() => import("./pages/Glossary.jsx"));
+const GlossaryTerm = lazy(() => import("./pages/GlossaryTerm.jsx"));
 const About = lazy(() => import("./pages/About.jsx"));
 const Warranty = lazy(() => import("./pages/Warranty.jsx"));
 const Returns = lazy(() => import("./pages/Returns.jsx"));
@@ -47,6 +48,7 @@ const app = (
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/glossary" element={<Glossary />} />
+                <Route path="/glossary/:id" element={<GlossaryTerm />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/warranty" element={<Warranty />} />
                 <Route path="/returns" element={<Returns />} />

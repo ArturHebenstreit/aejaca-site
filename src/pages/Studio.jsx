@@ -287,6 +287,44 @@ export default function Studio() {
       <div className="gradient-divider" />
 
       {/* Related blog articles — internal linking (SEO signal) */}
+      {/* Glossary terms */}
+      <section className="py-16 px-4 bg-neutral-900/30">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-8">
+            <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-2">
+              {{ pl: "Słownik", en: "Glossary", de: "Glossar" }[lang] || "Glossary"}
+            </div>
+            <h2 className="font-sans text-xl font-bold text-white tracking-tight">
+              {{ pl: "Kluczowe pojęcia", en: "Key terms", de: "Schlüsselbegriffe" }[lang] || "Key terms"}
+            </h2>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            {[
+              { id: "druk-3d-fdm", pl: "Druk 3D FDM", en: "FDM 3D Printing", de: "FDM 3D-Druck" },
+              { id: "zywica-uv", pl: "Żywica UV", en: "UV Resin", de: "UV-Harz" },
+              { id: "laser-co2", pl: "Laser CO₂", en: "CO₂ Laser", de: "CO₂-Laser" },
+              { id: "laser-fiber", pl: "Laser Fiber", en: "Fiber Laser", de: "Faserlaser" },
+              { id: "plik-stl", pl: "Plik STL", en: "STL File", de: "STL-Datei" },
+              { id: "plik-svg", pl: "Plik SVG", en: "SVG File", de: "SVG-Datei" },
+              { id: "odlew-zywiczny", pl: "Odlew żywiczny", en: "Resin Casting", de: "Harzguss" },
+              { id: "prototypowanie", pl: "Prototypowanie", en: "Prototyping", de: "Prototyping" },
+            ].map((term) => (
+              <Link key={term.id} to={`/glossary/${term.id}`}
+                className="px-4 py-2 rounded-full text-sm bg-neutral-800/60 text-neutral-300 hover:bg-blue-400/10 hover:text-blue-300 border border-neutral-700/50 hover:border-blue-400/30 transition-all">
+                {term[lang] || term.en}
+              </Link>
+            ))}
+          </div>
+          <div className="text-center mt-5">
+            <Link to="/glossary" className="text-blue-400/70 text-xs hover:text-blue-300 hover:underline transition-colors">
+              {{ pl: "Zobacz pełny glosariusz →", en: "View full glossary →", de: "Vollständiges Glossar →" }[lang] || "View full glossary →"}
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <div className="gradient-divider" />
+
       {(() => {
         const posts = [getPost("druk-3d-krok-po-kroku"), getPost("grawerowanie-laserowe-przewodnik")].filter(Boolean);
         if (!posts.length) return null;

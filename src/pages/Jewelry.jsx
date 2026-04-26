@@ -277,6 +277,44 @@ export default function Jewelry() {
       <div className="gradient-divider" />
 
       {/* Related blog article — internal linking (SEO signal) */}
+      {/* Glossary terms */}
+      <section className="py-16 px-4 bg-neutral-900/30">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-8">
+            <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-2">
+              {{ pl: "Słownik", en: "Glossary", de: "Glossar" }[lang] || "Glossary"}
+            </div>
+            <h2 className="font-serif text-xl font-semibold text-white">
+              {{ pl: "Kluczowe pojęcia", en: "Key terms", de: "Schlüsselbegriffe" }[lang] || "Key terms"}
+            </h2>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            {[
+              { id: "srebro-925", pl: "Srebro 925", en: "Sterling Silver", de: "Sterlingsilber" },
+              { id: "zloto-probowane", pl: "Złoto 14K/18K", en: "Gold 14K/18K", de: "Gold 14K/18K" },
+              { id: "moissanit", pl: "Moissanit", en: "Moissanite", de: "Moissanit" },
+              { id: "kamien-szlachetny", pl: "Kamienie szlachetne", en: "Gemstones", de: "Edelsteine" },
+              { id: "rodowanie", pl: "Rodowanie", en: "Rhodium plating", de: "Rhodinierung" },
+              { id: "personalizowany-grawer", pl: "Grawer", en: "Engraving", de: "Gravur" },
+              { id: "pierscionek-zareczynowy", pl: "Pierścionek zaręczynowy", en: "Engagement ring", de: "Verlobungsring" },
+              { id: "obraczki-slubne", pl: "Obrączki ślubne", en: "Wedding bands", de: "Eheringe" },
+            ].map((term) => (
+              <Link key={term.id} to={`/glossary/${term.id}`}
+                className="px-4 py-2 rounded-full text-sm bg-neutral-800/60 text-neutral-300 hover:bg-amber-400/10 hover:text-amber-300 border border-neutral-700/50 hover:border-amber-400/30 transition-all">
+                {term[lang] || term.en}
+              </Link>
+            ))}
+          </div>
+          <div className="text-center mt-5">
+            <Link to="/glossary" className="text-amber-400/70 text-xs hover:text-amber-300 hover:underline transition-colors">
+              {{ pl: "Zobacz pełny glosariusz →", en: "View full glossary →", de: "Vollständiges Glossar →" }[lang] || "View full glossary →"}
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <div className="gradient-divider" />
+
       {(() => {
         const post = getPost("pierscionek-zareczynowy-na-zamowienie");
         if (!post) return null;
