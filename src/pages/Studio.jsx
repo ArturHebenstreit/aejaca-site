@@ -25,14 +25,14 @@ import { SITE, getSEO } from "../seo/seoData.js";
 const techIcons = [Cpu, Printer, Zap, Layers, Box, Wrench];
 
 const PRICING_LABELS = {
-  pl: { tag: "Orientacyjne ceny", title: "Ile kosztują usługi studia?", note: "Ceny orientacyjne — dokładna wycena po wgraniu pliku STL/SVG.", cta: "Wyceń swój projekt" },
-  en: { tag: "Indicative pricing", title: "How much do studio services cost?", note: "Indicative prices — upload your STL/SVG for an exact quote.", cta: "Quote your project" },
-  de: { tag: "Richtpreise", title: "Was kosten Studio-Dienste?", note: "Richtpreise — laden Sie Ihre STL/SVG-Datei für ein genaues Angebot hoch.", cta: "Projekt kalkulieren" },
+  pl: { tag: "Orientacyjne ceny", title: "Ile kosztują usługi AEJaCA sTuDiO?", note: "Ceny orientacyjne — dokładna wycena po wgraniu pliku STL/SVG.", cta: "Wyceń swój projekt" },
+  en: { tag: "Indicative pricing", title: "How much do AEJaCA sTuDiO services cost?", note: "Indicative prices — upload your STL/SVG for an exact quote.", cta: "Quote your project" },
+  de: { tag: "Richtpreise", title: "Was kosten AEJaCA sTuDiO-Dienste?", note: "Richtpreise — laden Sie Ihre STL/SVG-Datei für ein genaues Angebot hoch.", cta: "Projekt kalkulieren" },
 };
 
 const STUDIO_PRICING = [
   { pl: "Druk 3D FDM (PLA/PETG)", en: "3D print FDM (PLA/PETG)", de: "3D-Druck FDM (PLA/PETG)", pln: 25, eur: 6 },
-  { pl: "Druk 3D żywica", en: "3D print resin (SLA)", de: "3D-Druck Harz (SLA)", pln: 45, eur: 10 },
+  { pl: "Wycinanie laserem CO₂", en: "CO₂ laser cutting", de: "CO₂-Laserschneiden", pln: 30, eur: 7 },
   { pl: "Grawer laserowy CO₂", en: "CO₂ laser engraving", de: "CO₂-Lasergravur", pln: 15, eur: 4 },
   { pl: "Znakowanie laserem fibrowym", en: "Fiber laser marking", de: "Faserlasermarkierung", pln: 20, eur: 5 },
   { pl: "Odlew żywiczny (epoksyd/UV)", en: "Resin casting (epoxy/UV)", de: "Harzguss (Epoxid/UV)", pln: 40, eur: 10 },

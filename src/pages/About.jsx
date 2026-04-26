@@ -15,7 +15,16 @@ const LABELS = {
     description: "AEJaCA to marka łącząca rzemiosło jubilerskie z technologią. Ponad 3 lata doświadczenia, 150+ projektów, 5.0 na Google.",
     bioTitle: "Artur Hebenstreit",
     bioSubtitle: "Założyciel AEJaCA",
-    bioText: "Pasja do pięknych przedmiotów z formą, detalem i charakterem. Połączenie technologii — AI, druku 3D, lasera CO₂ i fiber — z klasycznymi metodami rzemieślniczymi. Każdy projekt to rozmowa, nie katalog.",
+    bioText: "Wizjoner, twórca i rzemieślnik. Fascynacja biżuterią i kamieniami szlachetnymi towarzyszyła mu od najmłodszych lat — z czasem przerodziła się w głęboką pasję, która stała się sensem pracy twórczej. To, co tworzy, nie jest produktem — to manifestacja wizji, w której technologia spotyka się z duszą rzemiosła. AI, druk 3D, laser CO₂, laser fiber — to narzędzia w rękach kogoś, kto wie, dlaczego tworzy. Efekty mówią same za siebie.",
+    philosophyTitle: "Filozofia marki",
+    philosophyText: "AEJaCA nie jest marką dla każdego. To marka premium, stworzona dla wymagających, wyjątkowych klientów, którzy poszukują tego, czego nie znajdą w żadnej galerii handlowej. Dla tych, którzy cenią unikatowość, personalizację i niepowtarzalność — którzy pragną przedmiotów uduchowionych, z historią, nawet z nutą ezoteryki. Nie każdy zrozumie tę filozofię — i tak ma być. AEJaCA istnieje dla wybranych. Dla tych, którzy wiedzą, że prawdziwy luksus nie jest seryjny.",
+    policyTitle: "Informacje",
+    policyLinks: [
+      { label: "Gwarancja", to: "/warranty" },
+      { label: "Polityka zwrotów", to: "/returns" },
+      { label: "Wysyłka", to: "/shipping" },
+      { label: "Polityka prywatności", to: "/privacy" },
+    ],
     twoLinesTitle: "Dwie linie — jedna filozofia",
     jewelryLine: "AEJaCA Biżuteria",
     jewelryLineDesc: "Ręcznie robiona biżuteria ze srebra 925, złota 14k/18k i kamieni naturalnych. Pierścionki zaręczynowe, obrączki, wisiorki — każdy projekt indywidualny.",
@@ -45,7 +54,16 @@ const LABELS = {
     description: "AEJaCA combines jewelry craft with technology. Over 3 years of experience, 150+ projects, 5.0 on Google.",
     bioTitle: "Artur Hebenstreit",
     bioSubtitle: "Founder of AEJaCA",
-    bioText: "A passion for beautiful objects with form, detail, and character. Combining technology — AI, 3D printing, CO₂ and fiber laser — with classical craft methods. Every project is a conversation, not a catalog.",
+    bioText: "Visionary, creator, and craftsman. A fascination with jewelry and gemstones has accompanied him since his earliest years — growing into a deep passion that became the driving force of his creative work. What he creates is not a product — it's a manifestation of vision where technology meets the soul of craftsmanship. AI, 3D printing, CO₂ laser, fiber laser — these are tools in the hands of someone who knows why he creates. The results speak for themselves.",
+    philosophyTitle: "Brand Philosophy",
+    philosophyText: "AEJaCA is not a brand for everyone. It is a premium brand, created for discerning, exceptional clients who seek what no shopping mall can offer. For those who value uniqueness, personalization, and originality — who desire objects with soul, with story, even with a touch of the esoteric. Not everyone will understand this philosophy — and that is by design. AEJaCA exists for the chosen few. For those who know that true luxury is never mass-produced.",
+    policyTitle: "Information",
+    policyLinks: [
+      { label: "Warranty", to: "/warranty" },
+      { label: "Returns Policy", to: "/returns" },
+      { label: "Shipping", to: "/shipping" },
+      { label: "Privacy Policy", to: "/privacy" },
+    ],
     twoLinesTitle: "Two lines — one philosophy",
     jewelryLine: "AEJaCA Jewelry",
     jewelryLineDesc: "Handmade jewelry from 925 silver, 14k/18k gold, and natural gemstones. Engagement rings, wedding bands, pendants — every design is unique.",
@@ -75,7 +93,16 @@ const LABELS = {
     description: "AEJaCA verbindet Schmuckhandwerk mit Technologie. Über 3 Jahre Erfahrung, 150+ Projekte, 5,0 auf Google.",
     bioTitle: "Artur Hebenstreit",
     bioSubtitle: "Gründer von AEJaCA",
-    bioText: "Eine Leidenschaft für schöne Objekte mit Form, Detail und Charakter. Verbindung von Technologie — KI, 3D-Druck, CO₂- und Faserlaser — mit klassischen Handwerksmethoden. Jedes Projekt ist ein Gespräch, kein Katalog.",
+    bioText: "Visionär, Schöpfer und Handwerker. Eine Faszination für Schmuck und Edelsteine begleitet ihn seit frühester Kindheit — sie wurde zu einer tiefen Leidenschaft und zur treibenden Kraft seines kreativen Schaffens. Was er erschafft, ist kein Produkt — es ist die Manifestation einer Vision, in der Technologie auf die Seele des Handwerks trifft. KI, 3D-Druck, CO₂-Laser, Faserlaser — das sind Werkzeuge in den Händen eines Menschen, der weiß, warum er schafft. Die Ergebnisse sprechen für sich.",
+    philosophyTitle: "Markenphilosophie",
+    philosophyText: "AEJaCA ist keine Marke für jedermann. Es ist eine Premium-Marke, geschaffen für anspruchsvolle, außergewöhnliche Kunden, die suchen, was kein Kaufhaus bieten kann. Für jene, die Einzigartigkeit, Personalisierung und Originalität schätzen — die nach Objekten mit Seele verlangen, mit Geschichte, vielleicht sogar mit einem Hauch von Esoterik. Nicht jeder wird diese Philosophie verstehen — und genau so soll es sein. AEJaCA existiert für die Auserwählten. Für jene, die wissen, dass wahrer Luxus nie in Serie geht.",
+    policyTitle: "Informationen",
+    policyLinks: [
+      { label: "Garantie", to: "/warranty" },
+      { label: "Rückgaberecht", to: "/returns" },
+      { label: "Versand", to: "/shipping" },
+      { label: "Datenschutz", to: "/privacy" },
+    ],
     twoLinesTitle: "Zwei Linien — eine Philosophie",
     jewelryLine: "AEJaCA Schmuck",
     jewelryLineDesc: "Handgefertigter Schmuck aus 925 Silber, 14k/18k Gold und natürlichen Edelsteinen. Verlobungsringe, Eheringe, Anhänger — jedes Design ist einzigartig.",
@@ -150,6 +177,8 @@ export default function About() {
   const workshopRef = useScrollReveal();
   const equipRef = useScrollReveal();
   const ctaRef = useScrollReveal();
+  const philosophyRef = useScrollReveal();
+  const policyRef = useScrollReveal();
 
   // Stagger refs
   const getLineCardRef = useStaggerReveal(120);
@@ -214,7 +243,7 @@ export default function About() {
         <section className="py-20 px-4 bg-neutral-950">
           <div ref={bioRef} className="reveal max-w-4xl mx-auto grid md:grid-cols-2 gap-10 items-center">
             {/* Portrait */}
-            <div className="flex justify-center md:justify-start">
+            <div className="flex flex-col gap-3 items-center md:items-start">
               <img
                 src="/img/DSC05225.webp"
                 alt="Artur Hebenstreit — founder of AEJaCA"
@@ -224,6 +253,26 @@ export default function About() {
                 width="1200"
                 height="675"
               />
+              <div className="flex gap-3">
+                <img
+                  src="/img/founder-workshop-1.webp"
+                  alt="Artur Hebenstreit at the jeweler's workbench"
+                  className="rounded-xl aspect-[3/4] object-cover w-[105px] md:w-[124px] shadow-xl shadow-black/40"
+                  loading="lazy"
+                  decoding="async"
+                  width="600"
+                  height="800"
+                />
+                <img
+                  src="/img/founder-workshop-2.webp"
+                  alt="Artur Hebenstreit crafting jewelry"
+                  className="rounded-xl aspect-[3/4] object-cover w-[105px] md:w-[124px] shadow-xl shadow-black/40"
+                  loading="lazy"
+                  decoding="async"
+                  width="600"
+                  height="800"
+                />
+              </div>
             </div>
             {/* Text */}
             <div>
@@ -233,6 +282,20 @@ export default function About() {
               </h2>
               <p className="text-neutral-300 text-lg leading-relaxed">{L.bioText}</p>
             </div>
+          </div>
+        </section>
+
+        <div className="gradient-divider" />
+
+        {/* ── Brand Philosophy ── */}
+        <section className="py-20 px-4 bg-neutral-900/50">
+          <div ref={philosophyRef} className="reveal max-w-3xl mx-auto text-center">
+            <h2 className="font-sans text-3xl md:text-4xl font-bold text-white tracking-tight mb-6">
+              {L.philosophyTitle}
+            </h2>
+            <p className="text-neutral-300 text-lg leading-relaxed italic">
+              {L.philosophyText}
+            </p>
           </div>
         </section>
 
@@ -367,6 +430,28 @@ export default function About() {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        </section>
+
+        <div className="gradient-divider" />
+
+        {/* ── Policy links ── */}
+        <section className="py-16 px-4 bg-neutral-900/50">
+          <div ref={policyRef} className="reveal max-w-2xl mx-auto text-center">
+            <h2 className="font-sans text-2xl font-bold text-white tracking-tight mb-8">
+              {L.policyTitle}
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {L.policyLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className="p-4 rounded-xl glass hover:border-amber-500/20 transition-all duration-300 text-neutral-300 text-sm hover:text-amber-400"
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
           </div>
         </section>

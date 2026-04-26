@@ -20,9 +20,9 @@ export default function Navbar() {
     { to: "/", label: t.nav.home },
     { to: "/jewelry", label: t.nav.jewelry, sections: t.nav.jewelrySections },
     { to: "/studio", label: t.nav.studio, sections: t.nav.studioSections },
+    { to: "/about", label: t.nav.about, sections: t.nav.aboutSections },
     { to: "/blog", label: t.nav.blog || "Blog" },
     { to: "/glossary", label: t.nav.glossary },
-    { to: "/about", label: t.nav.about },
     { to: "/contact", label: t.nav.contact },
   ];
 
@@ -126,6 +126,7 @@ export default function Navbar() {
   function getDropdownKey(to) {
     if (to === "/jewelry") return "jewelry";
     if (to === "/studio") return "studio";
+    if (to === "/about") return "about";
     return null;
   }
 
@@ -185,19 +186,34 @@ export default function Navbar() {
                       onMouseLeave={handleDropdownLeave}
                     >
                       <div className="py-1.5">
-                        {sections.map((sec) => (
-                          <button
-                            key={sec.id}
-                            onClick={() => scrollToSection(to, sec.id)}
-                            className={`w-full text-left px-4 py-2 text-sm transition-colors ${
-                              accentColor === "blue"
-                                ? "text-neutral-400 hover:text-blue-300 hover:bg-blue-400/5"
-                                : "text-neutral-400 hover:text-amber-300 hover:bg-amber-400/5"
-                            }`}
-                          >
-                            {sec.label}
-                          </button>
-                        ))}
+                        {sections.map((sec) =>
+                          sec.to ? (
+                            <Link
+                              key={sec.to}
+                              to={sec.to}
+                              onClick={() => setOpenDropdown(null)}
+                              className={`block px-4 py-2 text-sm transition-colors ${
+                                accentColor === "blue"
+                                  ? "text-neutral-400 hover:text-blue-300 hover:bg-blue-400/5"
+                                  : "text-neutral-400 hover:text-amber-300 hover:bg-amber-400/5"
+                              }`}
+                            >
+                              {sec.label}
+                            </Link>
+                          ) : (
+                            <button
+                              key={sec.id}
+                              onClick={() => scrollToSection(to, sec.id)}
+                              className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                                accentColor === "blue"
+                                  ? "text-neutral-400 hover:text-blue-300 hover:bg-blue-400/5"
+                                  : "text-neutral-400 hover:text-amber-300 hover:bg-amber-400/5"
+                              }`}
+                            >
+                              {sec.label}
+                            </button>
+                          )
+                        )}
                       </div>
                     </div>
                   )}
@@ -288,19 +304,34 @@ export default function Navbar() {
                       isExpanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
                     }`}>
                       <div className="pl-6 pb-2 space-y-0.5">
-                        {sections.map((sec) => (
-                          <button
-                            key={sec.id}
-                            onClick={() => scrollToSection(to, sec.id)}
-                            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                              accentColor === "blue"
-                                ? "text-neutral-400 hover:text-blue-300 hover:bg-blue-400/5"
-                                : "text-neutral-400 hover:text-amber-300 hover:bg-amber-400/5"
-                            }`}
-                          >
-                            {sec.label}
-                          </button>
-                        ))}
+                        {sections.map((sec) =>
+                          sec.to ? (
+                            <Link
+                              key={sec.to}
+                              to={sec.to}
+                              onClick={() => { setMenuOpen(false); setMobileExpanded(null); }}
+                              className={`block px-3 py-2 rounded-lg text-sm transition-colors ${
+                                accentColor === "blue"
+                                  ? "text-neutral-400 hover:text-blue-300 hover:bg-blue-400/5"
+                                  : "text-neutral-400 hover:text-amber-300 hover:bg-amber-400/5"
+                              }`}
+                            >
+                              {sec.label}
+                            </Link>
+                          ) : (
+                            <button
+                              key={sec.id}
+                              onClick={() => scrollToSection(to, sec.id)}
+                              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                                accentColor === "blue"
+                                  ? "text-neutral-400 hover:text-blue-300 hover:bg-blue-400/5"
+                                  : "text-neutral-400 hover:text-amber-300 hover:bg-amber-400/5"
+                              }`}
+                            >
+                              {sec.label}
+                            </button>
+                          )
+                        )}
                       </div>
                     </div>
                   )}
