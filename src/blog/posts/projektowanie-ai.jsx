@@ -62,6 +62,7 @@ export const meta = {
       { q: "Welche KI-Tools nutzen Sie?", a: "Bildgeneratoren für Konzepte, 3D-Netz-Optimierungsalgorithmen und unseren eigenen KI-gestützten Kostenkalkulator." },
     ],
   },
+  relatedPosts: ["prezenty-personalizowane", "druk-3d-krok-po-kroku"],
 };
 
 export function Body({ lang }) {

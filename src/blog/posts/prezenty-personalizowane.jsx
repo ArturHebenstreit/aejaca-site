@@ -65,6 +65,7 @@ export const meta = {
       { q: "Bieten Sie Geschenkverpackung an?", a: "Ja — Schmuck wird in einer eleganten AEJaCA-Box geliefert. Auf Wunsch fügen wir eine Karte mit persönlicher Widmung bei." },
     ],
   },
+  relatedPosts: ["pierscionek-zareczynowy-na-zamowienie", "obraczki-slubne-na-zamowienie", "projektowanie-ai"],
 };
 
 export function Body({ lang }) {

@@ -65,6 +65,7 @@ export const meta = {
       { q: "Wie exportiere ich STL aus Fusion 360 / Blender?", a: "Fusion 360: Datei → Exportieren → STL, Genauigkeit auf ‚Hoch'. Blender: Datei → Exportieren → STL, ‚Modifikatoren anwenden' aktivieren." },
     ],
   },
+  relatedPosts: ["druk-3d-krok-po-kroku", "odlewy-zywiczne-poradnik"],
 };
 
 export function Body({ lang }) {

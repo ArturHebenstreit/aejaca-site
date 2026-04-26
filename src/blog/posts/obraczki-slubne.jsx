@@ -65,6 +65,7 @@ export const meta = {
       { q: "Können Eheringe nachträglich angepasst werden?", a: "Ja, wir bieten eine kostenlose Größenanpassung um ±2 Größen innerhalb eines Jahres nach Kauf." },
     ],
   },
+  relatedPosts: ["pierscionek-zareczynowy-na-zamowienie", "jak-dbac-o-bizuterie", "prezenty-personalizowane"],
 };
 
 export function Body({ lang }) {

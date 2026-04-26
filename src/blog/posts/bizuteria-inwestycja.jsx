@@ -65,6 +65,7 @@ export const meta = {
       { q: "Wie viel verliert Schmuck beim Wiederverkauf?", a: "Massenware: 50\u201370 % des Werts. Handgefertigt mit Zertifikat: 20\u201340 %. Antiquit\u00e4ten/Vintage: k\u00f6nnen steigen." },
     ],
   },
+  relatedPosts: ["srebro-vs-zloto", "pierscionek-zareczynowy-na-zamowienie"],
 };
 
 export function Body({ lang }) {

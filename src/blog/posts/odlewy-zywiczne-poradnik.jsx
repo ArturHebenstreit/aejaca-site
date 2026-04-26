@@ -65,6 +65,7 @@ export const meta = {
       { q: "Wie groß kann ein Harzguss maximal sein?", a: "Bis ca. 30 × 30 × 10 cm in einem Guss. Größere Objekte erfordern Segmentierung oder mehrteilige Formen." },
     ],
   },
+  relatedPosts: ["druk-3d-krok-po-kroku", "jak-przygotowac-plik-stl", "warsztat-od-kuchni"],
 };
 
 export function Body({ lang }) {

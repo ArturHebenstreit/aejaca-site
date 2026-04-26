@@ -85,9 +85,10 @@ export default function BlogPost() {
     faqItems?.length && buildFAQSchema(faqItems),
   ];
 
-  const related = getSortedPosts()
-    .filter((p) => p.slug !== slug)
-    .slice(0, 2);
+  const allPosts = getSortedPosts();
+  const explicit = post.relatedPosts?.map((s) => allPosts.find((p) => p.slug === s)).filter(Boolean);
+  const sameCat = allPosts.filter((p) => p.slug !== slug && p.category === post.category);
+  const related = (explicit?.length ? explicit : sameCat).slice(0, 3);
 
   const relatedLabel = { pl: "Przeczytaj też", en: "Also read", de: "Lies auch" }[lang] || "Also read";
 
@@ -197,7 +198,7 @@ export default function BlogPost() {
           <section className="py-16 px-4 bg-neutral-900/50">
             <div className="max-w-6xl mx-auto">
               <h2 className="font-serif text-2xl font-semibold text-white mb-8 text-center">{relatedLabel}</h2>
-              <div className="grid sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
                 {related.map((p) => (
                   <BlogCard key={p.slug} post={p} />
                 ))}

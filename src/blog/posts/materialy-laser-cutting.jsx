@@ -65,6 +65,7 @@ export const meta = {
       { q: "Welche Dateien brauche ich zum Schneiden?", a: "Vektor: SVG, AI, DXF. Für Rastergravur: PNG, JPG (min. 300 DPI)." },
     ],
   },
+  relatedPosts: ["grawerowanie-laserowe-przewodnik", "druk-3d-krok-po-kroku", "warsztat-od-kuchni"],
 };
 
 export function Body({ lang }) {

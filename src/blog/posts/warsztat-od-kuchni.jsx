@@ -65,6 +65,7 @@ export const meta = {
       { q: "Nehmen Sie Firmenaufträge an?", a: "Ja — Kleinserienproduktion, Prototypen, Markenartikel, Firmenschmuck. Mengenrabatte ab 20 Stück." },
     ],
   },
+  relatedPosts: ["grawerowanie-laserowe-przewodnik", "druk-3d-krok-po-kroku", "odlewy-zywiczne-poradnik"],
 };
 
 export function Body({ lang }) {

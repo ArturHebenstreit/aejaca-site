@@ -69,6 +69,7 @@ export const meta = {
       { id: "faq", label: "FAQ" },
     ],
   },
+  relatedPosts: ["obraczki-slubne-na-zamowienie", "srebro-vs-zloto", "bizuteria-inwestycja"],
 };
 
 // ======================= PL =======================

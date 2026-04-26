@@ -69,6 +69,7 @@ export const meta = {
       { id: "faq", label: "FAQ" },
     ],
   },
+  relatedPosts: ["jak-przygotowac-plik-stl", "materialy-laser-cutting", "odlewy-zywiczne-poradnik"],
 };
 
 // ======================= PL =======================

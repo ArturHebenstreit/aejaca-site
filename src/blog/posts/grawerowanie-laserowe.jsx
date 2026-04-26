@@ -69,6 +69,7 @@ export const meta = {
       { id: "faq", label: "FAQ" },
     ],
   },
+  relatedPosts: ["materialy-laser-cutting", "warsztat-od-kuchni", "druk-3d-krok-po-kroku"],
 };
 
 // ======================= PL =======================

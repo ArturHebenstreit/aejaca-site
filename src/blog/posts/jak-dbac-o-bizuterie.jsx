@@ -65,6 +65,7 @@ export const meta = {
       { q: "Braucht 14-Karat-Gold Pflege?", a: "Ja, aber seltener als Silber. Sanftes Polieren mit weichem Tuch und Vermeidung von Chemikalien reicht aus." },
     ],
   },
+  relatedPosts: ["srebro-vs-zloto", "obraczki-slubne-na-zamowienie"],
 };
 
 export function Body({ lang }) {

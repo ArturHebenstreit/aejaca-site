@@ -65,6 +65,7 @@ export const meta = {
       { q: "Kann man Silber- und Goldschmuck kombinieren?", a: "Selbstverständlich — Metallmix ist ein beliebter Trend. Entscheidend ist ein stimmiger Stil, nicht identisches Metall." },
     ],
   },
+  relatedPosts: ["bizuteria-inwestycja", "jak-dbac-o-bizuterie", "pierscionek-zareczynowy-na-zamowienie"],
 };
 
 export function Body({ lang }) {
