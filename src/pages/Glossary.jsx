@@ -115,6 +115,7 @@ export default function Glossary() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={l.search}
+                aria-label={l.search}
                 className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400/50 transition-colors"
               />
             </div>

@@ -60,6 +60,7 @@ export default function FAQ({ data, accent = "amber", id }) {
                   onClick={() => toggle(i)}
                   className="w-full flex items-center justify-between p-5 text-left"
                   aria-expanded={isOpen}
+                  aria-controls={`faq-panel-${i}`}
                 >
                   <span className="text-white text-sm font-medium pr-4">{item.q}</span>
                   <ChevronDown className={`w-5 h-5 shrink-0 transition-transform duration-300 ${
@@ -67,6 +68,9 @@ export default function FAQ({ data, accent = "amber", id }) {
                   }`} />
                 </button>
                 <div
+                  id={`faq-panel-${i}`}
+                  role="region"
+                  aria-labelledby={`faq-q-${i}`}
                   className={`overflow-hidden transition-all duration-300 ${
                     isOpen ? "max-h-48 opacity-100" : "max-h-0 opacity-0"
                   }`}

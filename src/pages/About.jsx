@@ -105,7 +105,7 @@ const equipIcons = [Printer, Flame, Cpu];
 
 const GALLERY_PHOTOS = [
   {
-    src: "/img/IMG_6808.JPEG",
+    src: "/img/IMG_6808.webp",
     alt: {
       pl: "Mikroskop jubilerski w warsztacie AEJaCA",
       en: "Jeweler's microscope at AEJaCA workshop",
@@ -113,7 +113,7 @@ const GALLERY_PHOTOS = [
     },
   },
   {
-    src: "/img/36E156EB-83B4-4663-9348-3D281BE1C95F.JPEG",
+    src: "/img/36E156EB-83B4-4663-9348-3D281BE1C95F.webp",
     alt: {
       pl: "Stół jubilerski z narzędziami AEJaCA",
       en: "AEJaCA jeweler's workbench with tools",
@@ -121,7 +121,7 @@ const GALLERY_PHOTOS = [
     },
   },
   {
-    src: "/img/IMG_5387.JPEG",
+    src: "/img/IMG_5387.webp",
     alt: {
       pl: "Galwanizacja biżuterii w warsztacie AEJaCA",
       en: "Jewelry electroplating at AEJaCA",
@@ -129,7 +129,7 @@ const GALLERY_PHOTOS = [
     },
   },
   {
-    src: "/img/AF21E4BF-6C3A-463E-AA8B-E9EE397A9180.JPEG",
+    src: "/img/AF21E4BF-6C3A-463E-AA8B-E9EE397A9180.webp",
     alt: {
       pl: "Narzędzia i imadło grawerskie AEJaCA",
       en: "AEJaCA tools and engraving vise",
@@ -180,7 +180,7 @@ export default function About() {
         {/* ── Hero ── */}
         <section className="relative min-h-[50vh] flex items-end overflow-hidden">
           <img
-            src="/img/IMG_5145.JPEG"
+            src="/img/IMG_5145.webp"
             alt="AEJaCA workshop — jewelry and digital fabrication studio"
             className="absolute inset-0 w-full h-full object-cover"
             loading="eager"
@@ -216,7 +216,7 @@ export default function About() {
             {/* Portrait */}
             <div className="flex justify-center md:justify-start">
               <img
-                src="/img/DSC05225.JPEG"
+                src="/img/DSC05225.webp"
                 alt="Artur Hebenstreit — founder of AEJaCA"
                 className="rounded-2xl aspect-[3/4] object-cover object-top w-full max-w-[220px] md:max-w-[260px] shadow-2xl shadow-black/50"
                 loading="lazy"

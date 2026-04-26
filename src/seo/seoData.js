@@ -17,7 +17,7 @@
 export const SITE = {
   url: "https://www.aejaca.com",
   name: "AEJaCA",
-  defaultImage: "https://www.aejaca.com/hero-jewelry.jpg",
+  defaultImage: "https://www.aejaca.com/og-default.jpg",
   twitterHandle: "@aejaca_",
   locales: {
     pl: "pl_PL",

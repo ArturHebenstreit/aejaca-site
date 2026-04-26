@@ -226,7 +226,7 @@ export function ResultDisplay({ result, lang = "pl" }) {
   const mainCurr = showPLN ? "PLN" : "EUR";
 
   return (
-    <>
+    <div aria-live="polite" aria-atomic="true">
       {/* Per piece */}
       <div className="text-center text-[11px] uppercase tracking-wide text-neutral-400 mb-1">
         {labels.perPiece}
@@ -285,7 +285,7 @@ export function ResultDisplay({ result, lang = "pl" }) {
           )}
         </>
       )}
-    </>
+    </div>
   );
 }
 
@@ -439,14 +439,15 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
 
       {/* Description */}
       <div className="mb-3">
-        <div className="text-[11px] text-neutral-400 mb-1.5">{il.desc}</div>
+        <label htmlFor="inquiry-desc" className="block text-[11px] text-neutral-400 mb-1.5">{il.desc}</label>
         <textarea
+          id="inquiry-desc"
           value={description}
           onChange={handleDescChange}
           placeholder={il.descPlaceholder}
           rows={3}
           maxLength={MAX_DESC_LENGTH}
-          className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-neutral-400 focus:border-blue-400/40 focus:outline-none resize-none transition-colors"
+          className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-neutral-400 focus:border-blue-400/50 focus:outline-none focus:ring-1 focus:ring-blue-400/30 resize-none transition-colors"
         />
         {descNearLimit && (
           <div className={`text-[10px] text-right mt-0.5 ${descLength >= MAX_DESC_LENGTH ? "text-red-400" : "text-neutral-400"}`}>
@@ -461,6 +462,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
         <div className="flex items-center gap-2">
           <button
             onClick={() => fileRef.current?.click()}
+            aria-label={fileName ? `${il.file}: ${fileName}` : il.file}
             className="flex items-center gap-2 px-3 py-2 rounded-lg border border-white/10 bg-white/[0.02] text-neutral-400 text-sm hover:border-white/20 hover:text-neutral-200 transition-all"
           >
             <Paperclip className="w-3.5 h-3.5" />

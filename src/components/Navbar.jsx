@@ -41,8 +41,12 @@ export default function Navbar() {
       const inMobile = langRefMobile.current && langRefMobile.current.contains(e.target);
       if (!inDesktop && !inMobile) setLangOpen(false);
     }
+    function handleKeyDown(e) {
+      if (e.key === "Escape") { setLangOpen(false); setOpenDropdown(null); }
+    }
     document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => { document.removeEventListener("mousedown", handleClick); document.removeEventListener("keydown", handleKeyDown); };
   }, []);
 
   // Close mobile menu on route change
@@ -132,7 +136,6 @@ export default function Navbar() {
           ? "bg-neutral-950/95 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20"
           : "bg-neutral-950/80 backdrop-blur-md border-b border-white/5"
       }`}
-      role="navigation"
       aria-label="Main navigation"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

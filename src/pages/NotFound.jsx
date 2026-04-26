@@ -70,7 +70,7 @@ export default function NotFound() {
           <p className="text-neutral-400 mb-10">{l.text}</p>
 
           <div className="mb-10">
-            <div className="text-neutral-500 text-xs uppercase tracking-widest mb-5">{l.explore}</div>
+            <div className="text-neutral-400 text-xs uppercase tracking-widest mb-5">{l.explore}</div>
             <div className="grid sm:grid-cols-2 gap-3 text-left">
               {l.links.map((link) => {
                 const Icon = ICONS[link.icon];
@@ -83,7 +83,7 @@ export default function NotFound() {
                     <Icon className="w-5 h-5 text-amber-400/60 group-hover:text-amber-400 mt-0.5 shrink-0 transition-colors" />
                     <div>
                       <div className="text-white font-medium text-sm group-hover:text-amber-300 transition-colors">{link.label}</div>
-                      <div className="text-neutral-500 text-xs mt-0.5">{link.desc}</div>
+                      <div className="text-neutral-400 text-xs mt-0.5">{link.desc}</div>
                     </div>
                   </Link>
                 );

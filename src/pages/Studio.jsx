@@ -129,7 +129,7 @@ export default function Studio() {
 
   return (
     <>
-      <SEOHead pageKey="studio" path="/studio" image={`${SITE.url}/hero-studio.jpg`} schemas={schemas} />
+      <SEOHead pageKey="studio" path="/studio" image={`${SITE.url}/og-studio.jpg`} schemas={schemas} />
       <div className="pt-16">
       {/* Hero */}
       <section className="bg-neutral-950 py-10 px-4">

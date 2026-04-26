@@ -122,7 +122,7 @@ export default function GlossaryTerm() {
 
               {term.relatedBlog && (
                 <div className="mb-10 p-5 rounded-xl bg-neutral-900/60 border border-neutral-800">
-                  <div className="text-neutral-500 text-xs uppercase tracking-widest mb-2">{l.relatedArticle}</div>
+                  <div className="text-neutral-400 text-xs uppercase tracking-widest mb-2">{l.relatedArticle}</div>
                   <Link
                     to={`/blog/${term.relatedBlog}`}
                     className={`${catColorClass} hover:underline font-medium`}

@@ -136,7 +136,7 @@ export default function Jewelry() {
 
   return (
     <>
-      <SEOHead pageKey="jewelry" path="/jewelry" image={`${SITE.url}/hero-jewelry.jpg`} schemas={schemas} />
+      <SEOHead pageKey="jewelry" path="/jewelry" image={`${SITE.url}/og-jewelry.jpg`} schemas={schemas} />
       <div className="pt-16">
       {/* Hero */}
       <section className="bg-neutral-950 py-10 px-4">
