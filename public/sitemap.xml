@@ -15,11 +15,11 @@
     <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/" />
     <image:image>
-      <image:loc>https://www.aejaca.com/hero-jewelry.jpg</image:loc>
+      <image:loc>https://www.aejaca.com/hero-jewelry.webp</image:loc>
       <image:title>AEJaCA Jewelry — handcrafted silver and gold jewelry with natural gemstones</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://www.aejaca.com/hero-studio.jpg</image:loc>
+      <image:loc>https://www.aejaca.com/hero-studio.webp</image:loc>
       <image:title>AEJaCA sTuDiO — 3D printing, laser engraving, resin casting</image:title>
     </image:image>
     <image:image>
@@ -39,7 +39,7 @@
     <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/jewelry" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/jewelry" />
     <image:image>
-      <image:loc>https://www.aejaca.com/hero-jewelry.jpg</image:loc>
+      <image:loc>https://www.aejaca.com/hero-jewelry.webp</image:loc>
       <image:title>AEJaCA Jewelry — handmade silver rings, earrings and gemstone pieces</image:title>
       <image:caption>Handcrafted silver 925 and gold 14k/18k jewelry with natural gemstones</image:caption>
     </image:image>
@@ -56,7 +56,7 @@
     <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/studio" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/studio" />
     <image:image>
-      <image:loc>https://www.aejaca.com/hero-studio.jpg</image:loc>
+      <image:loc>https://www.aejaca.com/hero-studio.webp</image:loc>
       <image:title>AEJaCA sTuDiO — 3D printing, laser engraving and custom fabrication</image:title>
       <image:caption>Multi-material 3D printing, CO2/Fiber laser engraving, UV and 2K resin casting</image:caption>
     </image:image>
@@ -157,7 +157,7 @@
     <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/blog/pierscionek-zareczynowy-na-zamowienie" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/pierscionek-zareczynowy-na-zamowienie" />
     <image:image>
-      <image:loc>https://www.aejaca.com/img/blog/pierscionek-zareczynowy.jpg</image:loc>
+      <image:loc>https://www.aejaca.com/img/blog/pierscionek-zareczynowy.webp</image:loc>
       <image:title>Custom engagement ring — cost, process and 7 things to know</image:title>
     </image:image>
   </url>
@@ -173,7 +173,7 @@
     <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/blog/druk-3d-krok-po-kroku" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/druk-3d-krok-po-kroku" />
     <image:image>
-      <image:loc>https://www.aejaca.com/img/blog/druk-3d-krok-po-kroku.jpg</image:loc>
+      <image:loc>https://www.aejaca.com/img/blog/druk-3d-krok-po-kroku.webp</image:loc>
       <image:title>3D printing step by step — from idea to finished product</image:title>
     </image:image>
   </url>
@@ -189,7 +189,7 @@
     <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/blog/grawerowanie-laserowe-przewodnik" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/grawerowanie-laserowe-przewodnik" />
     <image:image>
-      <image:loc>https://www.aejaca.com/img/blog/grawerowanie-laserowe.jpg</image:loc>
+      <image:loc>https://www.aejaca.com/img/blog/grawerowanie-laserowe.webp</image:loc>
       <image:title>Laser engraving — guide to materials, techniques and applications</image:title>
     </image:image>
   </url>

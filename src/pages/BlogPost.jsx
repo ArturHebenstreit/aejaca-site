@@ -161,6 +161,9 @@ export default function BlogPost() {
               className="w-full rounded-2xl object-cover max-h-[400px]"
               loading="eager"
               fetchpriority="high"
+              decoding="async"
+              width="1200"
+              height="509"
             />
           </div>
         </section>

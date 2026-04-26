@@ -28,7 +28,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-3 gap-10">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <img src="/brand-sign.webp" alt="AEJaCA" className="h-10 w-10 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
+              <img src="/brand-sign.webp" alt="AEJaCA" width="40" height="40" className="h-10 w-10 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
               <span className="font-serif text-lg font-semibold">AEJaCA</span>
             </div>
             <p className="text-neutral-400 text-sm leading-relaxed">{t.footer.tagline}</p>

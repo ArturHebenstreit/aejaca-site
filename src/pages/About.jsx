@@ -186,6 +186,8 @@ export default function About() {
             loading="eager"
             fetchpriority="high"
             decoding="async"
+            width="1200"
+            height="900"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-black/50 to-black/20" />
           <div ref={heroRef} className="reveal relative z-10 w-full max-w-4xl mx-auto px-4 pb-14 text-center">
@@ -219,6 +221,8 @@ export default function About() {
                 className="rounded-2xl aspect-[3/4] object-cover object-top w-full max-w-[220px] md:max-w-[260px] shadow-2xl shadow-black/50"
                 loading="lazy"
                 decoding="async"
+                width="1200"
+                height="675"
               />
             </div>
             {/* Text */}
@@ -329,6 +333,8 @@ export default function About() {
                     className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                     loading="lazy"
                     decoding="async"
+                    width="1200"
+                    height="1200"
                   />
                 </div>
               ))}
