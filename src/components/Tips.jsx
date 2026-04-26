@@ -87,6 +87,7 @@ export default function Tips({ data, accent = "amber", id }) {
                   onClick={() => toggleTip(i)}
                   className="w-full flex items-center justify-between p-5 text-left gap-3"
                   aria-expanded={isOpen}
+                  aria-controls={`tip-panel-${i}`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <Lightbulb className={`w-4 h-4 shrink-0 ${isOpen ? chevronColor : iconColor}`} />
@@ -97,6 +98,8 @@ export default function Tips({ data, accent = "amber", id }) {
                   }`} />
                 </button>
                 <div
+                  id={`tip-panel-${i}`}
+                  role="region"
                   className={`overflow-hidden transition-all duration-300 ${
                     isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
                   }`}
