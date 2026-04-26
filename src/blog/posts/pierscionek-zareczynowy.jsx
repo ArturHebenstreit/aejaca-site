@@ -87,8 +87,8 @@ function BodyPL() {
         Pytanie, które zadaje każdy. Szczera odpowiedź: <Strong>od ~800 zł do 20 000 zł+</Strong>, w zależności od trzech zmiennych:
       </P>
       <UL>
-        <LI><Strong>Metal</Strong> — srebro 925 jest najtańsze (~800–2 000 zł), złoto 585 (14K) to środek (~2 500–8 000 zł), złoto 750 (18K) i platyna to segment premium (~5 000–20 000 zł).</LI>
-        <LI><Strong>Kamień</Strong> — moissanit wygląda jak diament, ale kosztuje 3–5× mniej. Naturalny diament 0.5 ct to ~3 000–6 000 zł. Szafiry i szmaragdy mają własną skalę cenową.</LI>
+        <LI><Strong>Metal</Strong> — <A href="/glossary/srebro-925">srebro 925</A> jest najtańsze (~800–2 000 zł), złoto 585 (14K) to środek (~2 500–8 000 zł), złoto 750 (18K) i platyna to segment premium (~5 000–20 000 zł).</LI>
+        <LI><Strong>Kamień</Strong> — <A href="/glossary/moissanit">moissanit</A> wygląda jak diament, ale kosztuje 3–5× mniej. Naturalny diament 0.5 ct to ~3 000–6 000 zł. Szafiry i szmaragdy mają własną skalę cenową.</LI>
         <LI><Strong>Robocizna i złożoność</Strong> — prosty solitaire to mniej pracy niż ażurowy vintage z 12 kamieniami bocznymi. Odlew metodą traconego wosku + ręczne osadzenie = najwyższy koszt ręcznej pracy.</LI>
       </UL>
       <Callout accent="amber" title="Wskazówka">
@@ -102,7 +102,7 @@ function BodyPL() {
       </P>
       <OL>
         <LI><Strong>Konsultacja</Strong> — opowiadasz o swojej wizji, stylu życia partnerki/partnera, budżecie. Możesz przesłać szkic, zdjęcie inspiracji albo po prostu opisać słowami.</LI>
-        <LI><Strong>Projekt CAD + render 3D</Strong> — tworzymy precyzyjny model komputerowy. Widzisz pierścionek z każdego kąta na fotorealistycznym renderze. Zmiany na tym etapie są bezpłatne.</LI>
+        <LI><Strong>Projekt <A href="/glossary/cad">CAD</A> + render 3D</Strong> — tworzymy precyzyjny model komputerowy. Widzisz pierścionek z każdego kąta na fotorealistycznym renderze. Zmiany na tym etapie są bezpłatne.</LI>
         <LI><Strong>Model woskowy lub druk 3D</Strong> — fizyczny prototyp w skali 1:1. Możesz go trzymać w ręce i sprawdzić proporcje.</LI>
         <LI><Strong>Odlew</Strong> — model woskowy jest zamykany w ceramicznej formie, wosk wypala się, a płynny metal (srebro lub złoto) wypełnia pustą przestrzeń. Klasyczna metoda „traconego wosku" używana od 5000 lat.</LI>
         <LI><Strong>Ręczna obróbka</Strong> — odlany pierścionek jest piłowany, szlifowany, polerowany pastami. Opcjonalnie: tekstury, oksydacja, satynowanie.</LI>
@@ -168,7 +168,7 @@ function BodyEN() {
 
       <H2 id="cost">How much does a custom engagement ring cost?</H2>
       <P>
-        Honest answer: <Strong>from ~€180 to €5,000+</Strong>, depending on three variables: metal, stone, and complexity. Silver 925 is the most accessible, 14K gold hits the sweet spot, 18K gold and platinum are premium. Moissanite looks like diamond but costs 3–5× less.
+        Honest answer: <Strong>from ~€180 to €5,000+</Strong>, depending on three variables: metal, stone, and complexity. <A href="/glossary/srebro-925">Silver 925</A> is the most accessible, 14K gold hits the sweet spot, 18K gold and platinum are premium. <A href="/glossary/moissanit">Moissanite</A> looks like diamond but costs 3–5× less.
       </P>
       <Callout accent="amber" title="Tip">
         At AEJaCA, you'll receive a detailed quote within 24h — no commitment. Just describe your idea or send an inspiration photo.
@@ -178,7 +178,7 @@ function BodyEN() {
       <H2 id="process">Step-by-step: from idea to finished ring</H2>
       <OL>
         <LI><Strong>Consultation</Strong> — tell us about your vision, your partner's style, and your budget.</LI>
-        <LI><Strong>CAD design + 3D render</Strong> — a photorealistic preview from every angle. Changes are free at this stage.</LI>
+        <LI><Strong><A href="/glossary/cad">CAD</A> design + 3D render</Strong> — a photorealistic preview from every angle. Changes are free at this stage.</LI>
         <LI><Strong>Wax model or 3D print</Strong> — a 1:1 physical prototype you can hold.</LI>
         <LI><Strong>Lost-wax casting</Strong> — molten metal fills the cavity left by the burned-out wax. A 5,000-year-old technique.</LI>
         <LI><Strong>Hand finishing</Strong> — filing, polishing, texturing. Optional oxidation or satin finish.</LI>
@@ -202,7 +202,7 @@ function BodyEN() {
       <H2 id="stone">Diamond, moissanite, or colored gemstone?</H2>
       <UL>
         <LI><Strong>Natural diamond</Strong> — hardest stone (10 Mohs), highest prestige, highest price. Graded by 4C (carat, cut, color, clarity).</LI>
-        <LI><Strong>Moissanite</Strong> — 9.25 Mohs, more fire than diamond, 3–5× cheaper. Visually identical to the naked eye.</LI>
+        <LI><Strong><A href="/glossary/moissanit">Moissanite</A></Strong> — 9.25 Mohs, more fire than diamond, 3–5× cheaper. Visually identical to the naked eye.</LI>
         <LI><Strong>Sapphire / emerald / ruby</Strong> — color adds character. Blue and pink sapphires are an engagement hit. Emeralds (7.5 Mohs) need a protective setting.</LI>
       </UL>
 
@@ -235,7 +235,7 @@ function BodyDE() {
 
       <H2 id="kosten">Was kostet ein individueller Verlobungsring?</H2>
       <P>
-        Ehrliche Antwort: <Strong>von ca. 180 € bis 5.000 €+</Strong>, abhängig von Metall, Stein und Komplexität. Silber 925 ist am günstigsten, 14K Gold bietet das beste Preis-Leistungs-Verhältnis, 18K Gold und Platin sind Premium.
+        Ehrliche Antwort: <Strong>von ca. 180 € bis 5.000 €+</Strong>, abhängig von Metall, Stein und Komplexität. <A href="/glossary/srebro-925">Silber 925</A> ist am günstigsten, 14K Gold bietet das beste Preis-Leistungs-Verhältnis, 18K Gold und Platin sind Premium.
       </P>
       <Callout accent="amber" title="Tipp">
         Bei AEJaCA erhalten Sie innerhalb von 24 Stunden ein Angebot — unverbindlich. Beschreiben Sie Ihre Idee oder senden Sie ein Inspirationsfoto.
@@ -245,7 +245,7 @@ function BodyDE() {
       <H2 id="prozess">Schritt für Schritt: von der Idee zum fertigen Ring</H2>
       <OL>
         <LI><Strong>Beratung</Strong> — erzählen Sie uns von Ihrer Vision, dem Stil Ihres Partners und Ihrem Budget.</LI>
-        <LI><Strong>CAD-Design + 3D-Render</Strong> — fotorealistische Vorschau aus jedem Winkel. Änderungen sind in dieser Phase kostenlos.</LI>
+        <LI><Strong><A href="/glossary/cad">CAD</A>-Design + 3D-Render</Strong> — fotorealistische Vorschau aus jedem Winkel. Änderungen sind in dieser Phase kostenlos.</LI>
         <LI><Strong>Wachsmodell oder 3D-Druck</Strong> — ein physischer 1:1-Prototyp zum Anfassen.</LI>
         <LI><Strong>Wachsausschmelzguss</Strong> — flüssiges Metall füllt den Hohlraum. Eine 5.000 Jahre alte Technik.</LI>
         <LI><Strong>Handfinish</Strong> — Feilen, Polieren, Texturieren.</LI>
@@ -266,7 +266,7 @@ function BodyDE() {
       <H2 id="stein">Diamant, Moissanit oder farbiger Edelstein?</H2>
       <UL>
         <LI><Strong>Natürlicher Diamant</Strong> — härtester Stein (10 Mohs), höchstes Prestige, höchster Preis.</LI>
-        <LI><Strong>Moissanit</Strong> — 9,25 Mohs, mehr Feuer als Diamant, 3–5× günstiger. Mit bloßem Auge nicht unterscheidbar.</LI>
+        <LI><Strong><A href="/glossary/moissanit">Moissanit</A></Strong> — 9,25 Mohs, mehr Feuer als Diamant, 3–5× günstiger. Mit bloßem Auge nicht unterscheidbar.</LI>
         <LI><Strong>Saphir / Smaragd / Rubin</Strong> — Farbe verleiht Charakter. Smaragde (7,5 Mohs) brauchen eine schützende Fassung.</LI>
       </UL>
 

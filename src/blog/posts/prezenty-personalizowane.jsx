@@ -1,4 +1,4 @@
-import { H2, P, Lead, UL, LI, Strong, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
+import { H2, P, Lead, UL, LI, Strong, Callout, Table, CTABox, A } from "../../components/blog/Prose.jsx";
 
 export const meta = {
   slug: "prezenty-personalizowane",
@@ -94,7 +94,7 @@ export function Body({ lang }) {
 
       <H2 id={id("dla-niej", "for-her", "fuer-sie")}>{t("Pomysły dla niej", "Gift Ideas for Her", "Geschenkideen für sie")}</H2>
       <UL>
-        <LI><Strong>{t("Wisiorek z inicjałami", "Pendant with initials", "Anhänger mit Initialen")}</Strong> — {t("srebro 925, grawerowanie laserowe, od 150 zł", "silver 925, laser engraved, from €35", "Silber 925, lasergraviert, ab 35 €")}</LI>
+        <LI><Strong>{t("Wisiorek z inicjałami", "Pendant with initials", "Anhänger mit Initialen")}</Strong> — {t(<><A href="/glossary/srebro-925">srebro 925</A>, <A href="/glossary/personalizowany-grawer">grawerowanie laserowe</A>, od 150 zł</>, <><A href="/glossary/srebro-925">silver 925</A>, <A href="/glossary/personalizowany-grawer">laser engraved</A>, from €35</>, <><A href="/glossary/srebro-925">Silber 925</A>, <A href="/glossary/personalizowany-grawer">lasergraviert</A>, ab 35 €</>)}</LI>
         <LI><Strong>{t("Pierścionek z kamieniem urodzinowym", "Birthstone ring", "Ring mit Geburtsstein")}</Strong> — {t("naturalny kamień dobrany do miesiąca urodzenia", "natural gemstone matched to birth month", "natürlicher Edelstein passend zum Geburtsmonat")}</LI>
         <LI><Strong>{t("Wisiorek z żywicy z suszonymi kwiatami", "Resin pendant with dried flowers", "Harz-Anhänger mit Trockenblumen")}</Strong> — {t("zakapslowany bukiecik na zawsze, od 85 zł", "a tiny bouquet encapsulated forever, from €20", "ein kleines Bouquet für immer eingekapselt, ab 20 €")}</LI>
         <LI><Strong>{t("Szkatułka z grawerem", "Engraved jewelry box", "Gravierte Schmuckschatulle")}</Strong> — {t("drewno + laser CO2, od 110 zł", "wood + CO2 laser, from €25", "Holz + CO2-Laser, ab 25 €")}</LI>
@@ -103,7 +103,7 @@ export function Body({ lang }) {
       <H2 id={id("dla-niego", "for-him", "fuer-ihn")}>{t("Pomysły dla niego", "Gift Ideas for Him", "Geschenkideen für ihn")}</H2>
       <UL>
         <LI><Strong>{t("Spinka do mankietu z grawerem", "Engraved cufflinks", "Gravierte Manschettenknöpfe")}</Strong> — {t("fiber laser na metalu, od 170 zł", "fiber laser on metal, from €40", "Faserlaser auf Metall, ab 40 €")}</LI>
-        <LI><Strong>{t("Organizer 3D z imieniem", "3D-printed desk organizer with name", "3D-gedruckter Organizer mit Namen")}</Strong> — {t("wydrukowany w wybranym kolorze, od 65 zł", "printed in chosen color, from €15", "in Wunschfarbe gedruckt, ab 15 €")}</LI>
+        <LI><Strong>{t(<>Organizer <A href="/glossary/druk-3d-fdm">3D</A> z imieniem</>, <><A href="/glossary/druk-3d-fdm">3D-printed</A> desk organizer with name</>, <><A href="/glossary/druk-3d-fdm">3D-gedruckter</A> Organizer mit Namen</>)}</Strong> — {t("wydrukowany w wybranym kolorze, od 65 zł", "printed in chosen color, from €15", "in Wunschfarbe gedruckt, ab 15 €")}</LI>
         <LI><Strong>{t("Mapa wycinana laserowo", "Laser-cut wooden map", "Lasergeschnittene Holzkarte")}</Strong> — {t("wyjątkowe miejsce wycięte w drewnie, od 130 zł", "a special place cut in wood, from €30", "ein besonderer Ort in Holz geschnitten, ab 30 €")}</LI>
         <LI><Strong>{t("Sygnet z indywidualnym herbem", "Signet ring with custom seal", "Siegelring mit individuellem Wappen")}</Strong> — {t("srebro 925, ręcznie robiony, od 520 zł", "silver 925, handcrafted, from €120", "Silber 925, handgefertigt, ab 120 €")}</LI>
       </UL>

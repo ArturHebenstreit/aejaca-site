@@ -1,4 +1,4 @@
-import { H2, P, Lead, UL, LI, Strong, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
+import { H2, P, Lead, UL, LI, Strong, A, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
 
 export const meta = {
   slug: "bizuteria-inwestycja",
@@ -108,9 +108,9 @@ export function Body({ lang }) {
 
       <H2 id={t("kamienie", "gemstones", "edelsteine")}>{t("Kamienie szlachetne", "Gemstones", "Edelsteine")}</H2>
       <P>{t(
-        "Tylko nieliczne kamienie mają potencjał inwestycyjny \u2014 i to pod bardzo konkretnymi warunkami:",
-        "Only a few gemstones have investment potential \u2014 and only under very specific conditions:",
-        "Nur wenige Edelsteine haben Anlagepotenzial \u2014 und nur unter sehr spezifischen Bedingungen:"
+        <>Tylko nieliczne <A href="/glossary/kamien-szlachetny">kamienie szlachetne</A> mają potencjał inwestycyjny \u2014 i to pod bardzo konkretnymi warunkami:</>,
+        <>Only a few <A href="/glossary/kamien-szlachetny">gemstones</A> have investment potential \u2014 and only under very specific conditions:</>,
+        <>Nur wenige <A href="/glossary/kamien-szlachetny">Edelsteine</A> haben Anlagepotenzial \u2014 und nur unter sehr spezifischen Bedingungen:</>
       )}</P>
       <Table
         headers={t(
@@ -130,7 +130,7 @@ export function Body({ lang }) {
       <H2 id={t("co-zyskuje", "appreciates", "wertsteigerung")}>{t("Co zyskuje na wartości", "What Appreciates", "Was an Wert gewinnt")}</H2>
       <UL>
         <LI><Strong>{t("Biżuteria vintage/antyk", "Vintage/antique jewelry", "Vintage-/Antikschmuck")}</Strong> {t("\u2014 ponad 50 lat, z proweniencją", "\u2014 over 50 years, with provenance", "\u2014 \u00fcber 50 Jahre, mit Provenienz")}</LI>
-        <LI><Strong>{t("Złoto o wysokiej próbie", "High-karat gold", "Hochkar\u00e4tiges Gold")}</Strong> {t("\u2014 18k+ śledzące cenę złota", "\u2014 18k+ tracks gold price", "\u2014 18k+ folgt dem Goldpreis")}</LI>
+        <LI><Strong>{t(<A href="/glossary/zloto-probowane">Złoto o wysokiej próbie</A>, <A href="/glossary/zloto-probowane">High-karat gold</A>, <A href="/glossary/zloto-probowane">Hochkar\u00e4tiges Gold</A>)}</Strong> {t("\u2014 18k+ śledzące cenę złota", "\u2014 18k+ tracks gold price", "\u2014 18k+ folgt dem Goldpreis")}</LI>
         <LI><Strong>{t("Certyfikowane kamienie >1ct", "Certified stones >1ct", "Zertifizierte Steine >1ct")}</Strong> {t("\u2014 z niezależnym certyfikatem (GIA)", "\u2014 with independent certification (GIA)", "\u2014 mit unabh\u00e4ngigem Zertifikat (GIA)")}</LI>
         <LI><Strong>{t("Limitowane edycje znanych jubilerów", "Limited editions by known jewelers", "Limitierte Editionen bekannter Juweliere")}</Strong> {t("\u2014 kolekcjonerska wartość dodana", "\u2014 collector value added", "\u2014 Sammlerwert")}</LI>
       </UL>
@@ -138,7 +138,7 @@ export function Body({ lang }) {
       <H2 id={t("co-traci", "depreciates", "wertverlust")}>{t("Co traci na wartości", "What Depreciates", "Was an Wert verliert")}</H2>
       <UL>
         <LI><Strong>{t("Biżuteria masowa", "Mass-produced jewelry", "Massenschmuck")}</Strong> {t("\u2014 ogromna marża, niska wartość odsprzedaży", "\u2014 huge markup, low resale value", "\u2014 hoher Aufschlag, niedriger Wiederverkaufswert")}</LI>
-        <LI><Strong>{t("Kamienie syntetyczne", "Synthetic stones", "Synthetische Steine")}</Strong> {t("\u2014 moissanit, lab-grown diamenty: piękne, ale bez potencjału wzrostu", "\u2014 moissanite, lab-grown diamonds: beautiful but no appreciation potential", "\u2014 Moissanit, Lab-Diamanten: sch\u00f6n, aber kein Wertsteigerungspotenzial")}</LI>
+        <LI><Strong>{t("Kamienie syntetyczne", "Synthetic stones", "Synthetische Steine")}</Strong> {t(<>\u2014 <A href="/glossary/moissanit">moissanit</A>, lab-grown diamenty: piękne, ale bez potencjału wzrostu</>, <>\u2014 <A href="/glossary/moissanit">moissanite</A>, lab-grown diamonds: beautiful but no appreciation potential</>, <>\u2014 <A href="/glossary/moissanit">Moissanit</A>, Lab-Diamanten: sch\u00f6n, aber kein Wertsteigerungspotenzial</>)}</LI>
         <LI><Strong>{t("Biżuteria pozłacana", "Gold-plated jewelry", "Vergoldeter Schmuck")}</Strong> {t("\u2014 warstwa złota < 1 mikron, znika z użytkowaniem", "\u2014 gold layer < 1 micron, wears off with use", "\u2014 Goldschicht < 1 Mikron, verschwindet mit Gebrauch")}</LI>
         <LI><Strong>{t("Modowa biżuteria", "Fashion jewelry", "Modeschmuck")}</Strong> {t("\u2014 trendy mijają, wartość spada do zera", "\u2014 trends pass, value drops to zero", "\u2014 Trends vergehen, Wert sinkt auf null")}</LI>
       </UL>

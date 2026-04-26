@@ -1,4 +1,4 @@
-import { H2, P, Lead, UL, LI, Strong, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
+import { H2, P, Lead, UL, LI, Strong, A, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
 
 export const meta = {
   slug: "obraczki-slubne",
@@ -81,9 +81,9 @@ export function Body({ lang }) {
 
       <H2 id={t("metale", "metals", "metalle")}>{t("Wybór metalu", "Choosing the Metal", "Metallwahl")}</H2>
       <P>{t(
-        "Metal obrączki wpływa na trwałość, kolor i cenę. Oto najczęściej wybierane opcje:",
-        "The metal affects durability, color, and price. Here are the most popular options:",
-        "Das Metall beeinflusst Haltbarkeit, Farbe und Preis. Hier die beliebtesten Optionen:"
+        <>Metal obrączki wpływa na trwałość, kolor i cenę. <A href="/glossary/srebro-925">Srebro 925</A> to najprzystępniejsza opcja, złoto 14k i 18k to wybór na całe życie. Oto najczęściej wybierane opcje:</>,
+        <>The metal affects durability, color, and price. <A href="/glossary/srebro-925">Silver 925</A> is the most accessible option; 14k and 18k gold are lifelong choices. Here are the most popular options:</>,
+        <>Das Metall beeinflusst Haltbarkeit, Farbe und Preis. <A href="/glossary/srebro-925">Silber 925</A> ist die zugänglichste Option; 14k und 18k Gold sind lebenslange Entscheidungen. Hier die beliebtesten Optionen:</>
       )}</P>
       <Table
         headers={t(
@@ -157,7 +157,7 @@ export function Body({ lang }) {
       <UL>
         <LI><Strong>1.</Strong> {t("Konsultacja — omawiamy metal, profil, wykończenie i budżet", "Consultation — we discuss metal, profile, finish, and budget", "Beratung — wir besprechen Metall, Profil, Oberfläche und Budget")}</LI>
         <LI><Strong>2.</Strong> {t("Wycena — otrzymujesz dokładną cenę (lub użyj kalkulatora online)", "Quote — you receive an exact price (or use the online calculator)", "Angebot — Sie erhalten einen genauen Preis (oder nutzen den Online-Kalkulator)")}</LI>
-        <LI><Strong>3.</Strong> {t("Produkcja — ręczne formowanie, lutowanie, wykańczanie", "Production — hand shaping, soldering, finishing", "Produktion — Handformung, Löten, Endbearbeitung")}</LI>
+        <LI><Strong>3.</Strong> {t(<>Produkcja — ręczne formowanie, lutowanie, wykańczanie. Dla modeli <A href="/glossary/cad">CAD</A> — druk 3D + odlew.</>, <>Production — hand shaping, soldering, finishing. For <A href="/glossary/cad">CAD</A> designs — 3D print + casting.</>, <>Produktion — Handformung, Löten, Endbearbeitung. Für <A href="/glossary/cad">CAD</A>-Modelle — 3D-Druck + Guss.</>)}</LI>
         <LI><Strong>4.</Strong> {t("Kontrola jakości — wymiary, waga, próba metalu", "Quality control — dimensions, weight, metal assay", "Qualitätskontrolle — Maße, Gewicht, Metallprüfung")}</LI>
         <LI><Strong>5.</Strong> {t("Odbiór — w eleganckim pudełku, z certyfikatem", "Delivery — in an elegant box, with certificate", "Lieferung — in eleganter Box, mit Zertifikat")}</LI>
       </UL>

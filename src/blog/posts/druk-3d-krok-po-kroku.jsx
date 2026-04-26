@@ -100,12 +100,12 @@ function BodyPL() {
         ]}
       />
       <P>
-        <Strong>Krótko:</Strong> FDM = szybciej, taniej, większe. Żywica = precyzyjniej, gładziej, mniejsze. W AEJaCA sTuDiO masz obie technologie pod jednym dachem.
+        <Strong>Krótko:</Strong> <A href="/glossary/druk-3d-fdm">FDM</A> = szybciej, taniej, większe. <A href="/glossary/zywica-uv">Żywica</A> = precyzyjniej, gładziej, mniejsze. W AEJaCA sTuDiO masz obie technologie pod jednym dachem.
       </P>
 
       <H2 id="proces">Od pliku do wydruku — 5 etapów</H2>
       <OL>
-        <LI><Strong>Przesłanie pliku</Strong> — .STL, .3MF, .STEP, .OBJ. Nie masz pliku? Możemy zaprojektować model CAD na podstawie szkicu, zdjęcia lub opisu.</LI>
+        <LI><Strong>Przesłanie pliku</Strong> — <A href="/glossary/plik-stl">.STL</A>, .3MF, .STEP, .OBJ. Nie masz pliku? Możemy zaprojektować model <A href="/glossary/cad">CAD</A> na podstawie szkicu, zdjęcia lub opisu.</LI>
         <LI><Strong>Analiza i wycena</Strong> — sprawdzamy geometrię, dobieramy technologię (FDM/żywica), materiał, orientację wydruku. Wycena w 24h.</LI>
         <LI><Strong>Slicing i przygotowanie</Strong> — model jest cięty na warstwy w oprogramowaniu (Bambu Studio / Lychee). Ustawiamy podpory, wypełnienie, parametry.</LI>
         <LI><Strong>Druk</Strong> — drukarka buduje obiekt warstwa po warstwie. Czas: od 1h (mały element) do 24h+ (duży, gęsty model).</LI>
@@ -182,12 +182,12 @@ function BodyEN() {
         ]}
       />
       <P>
-        <Strong>Summary:</Strong> FDM = faster, cheaper, bigger. Resin = more precise, smoother, smaller. At AEJaCA sTuDiO, you get both under one roof.
+        <Strong>Summary:</Strong> <A href="/glossary/druk-3d-fdm">FDM</A> = faster, cheaper, bigger. <A href="/glossary/zywica-uv">Resin</A> = more precise, smoother, smaller. At AEJaCA sTuDiO, you get both under one roof.
       </P>
 
       <H2 id="process">From file to print — 5 steps</H2>
       <OL>
-        <LI><Strong>Submit your file</Strong> — .STL, .3MF, .STEP, .OBJ. No file? We can design a CAD model from a sketch or photo.</LI>
+        <LI><Strong>Submit your file</Strong> — <A href="/glossary/plik-stl">.STL</A>, .3MF, .STEP, .OBJ. No file? We can design a <A href="/glossary/cad">CAD</A> model from a sketch or photo.</LI>
         <LI><Strong>Analysis & quote</Strong> — we check geometry, choose technology and material. Quote within 24h.</LI>
         <LI><Strong>Slicing</Strong> — the model is sliced into layers, supports and parameters are configured.</LI>
         <LI><Strong>Printing</Strong> — the printer builds the object layer by layer. Time: 1h to 24h+ depending on size.</LI>
@@ -247,7 +247,7 @@ function BodyDE() {
 
       <H2 id="prozess">Von der Datei zum Druck — 5 Schritte</H2>
       <OL>
-        <LI><Strong>Datei einreichen</Strong> — .STL, .3MF, .STEP, .OBJ. Keine Datei? Wir erstellen ein CAD-Modell nach Skizze oder Foto.</LI>
+        <LI><Strong>Datei einreichen</Strong> — <A href="/glossary/plik-stl">.STL</A>, .3MF, .STEP, .OBJ. Keine Datei? Wir erstellen ein <A href="/glossary/cad">CAD</A>-Modell nach Skizze oder Foto.</LI>
         <LI><Strong>Analyse & Angebot</Strong> — Geometrieprüfung, Technologie- und Materialauswahl. Angebot innerhalb von 24h.</LI>
         <LI><Strong>Slicing</Strong> — das Modell wird in Schichten geschnitten, Stützen und Parameter konfiguriert.</LI>
         <LI><Strong>Druck</Strong> — der Drucker baut das Objekt Schicht für Schicht auf.</LI>
@@ -262,7 +262,7 @@ function BodyDE() {
 
       <H2 id="preise">Preise</H2>
       <P>
-        Einfache FDM-Drucke ab 5 €, Harz ab 10 €, große Modelle 40–120 €. CAD-Design: ab 30 €/h.
+        Einfache <A href="/glossary/druk-3d-fdm">FDM</A>-Drucke ab 5 €, <A href="/glossary/zywica-uv">Harz</A> ab 10 €, große Modelle 40–120 €. CAD-Design: ab 30 €/h.
       </P>
 
       <CTABox

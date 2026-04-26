@@ -1,4 +1,4 @@
-import { H2, H3, P, Lead, UL, LI, Strong, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
+import { H2, H3, P, Lead, UL, LI, Strong, A, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
 
 export const meta = {
   slug: "materialy-laser-cutting",
@@ -81,9 +81,9 @@ export function Body({ lang }) {
 
       <H2 id="co2">{t("Materiały do lasera CO2", "CO2 Laser Materials", "CO2-Laser-Materialien")}</H2>
       <P>{t(
-        "Laser CO2 (xTool P2, 55W) to maszyna do materiałów organicznych i niemetalowych. Grawer + cięcie.",
-        "The CO2 laser (xTool P2, 55W) is designed for organic and non-metal materials. Engraving + cutting.",
-        "Der CO2-Laser (xTool P2, 55W) ist für organische und nichtmetallische Materialien ausgelegt. Gravur + Schnitt."
+        <><A href="/glossary/laser-co2">Laser CO2</A> (xTool P2, 55W) to maszyna do materiałów organicznych i niemetalowych. Grawer + cięcie.</>,
+        <>The <A href="/glossary/laser-co2">CO2 laser</A> (xTool P2, 55W) is designed for organic and non-metal materials. Engraving + cutting.</>,
+        <>Der <A href="/glossary/laser-co2">CO2-Laser</A> (xTool P2, 55W) ist für organische und nichtmetallische Materialien ausgelegt. Gravur + Schnitt.</>
       )}</P>
       <Table
         headers={t(
@@ -104,9 +104,9 @@ export function Body({ lang }) {
 
       <H2 id="fiber">{t("Materiały do lasera Fiber", "Fiber Laser Materials", "Faserlaser-Materialien")}</H2>
       <P>{t(
-        "Fiber laser (Raycus 30W) to precyzyjne narzędzie do metali i twardych materiałów. Tylko grawer — nie tnie.",
-        "The fiber laser (Raycus 30W) is a precision tool for metals and hard materials. Engraving only — no cutting.",
-        "Der Faserlaser (Raycus 30W) ist ein Präzisionswerkzeug für Metalle und harte Materialien. Nur Gravur — kein Schnitt."
+        <><A href="/glossary/laser-fiber">Fiber laser</A> (Raycus 30W) to precyzyjne narzędzie do metali i twardych materiałów. Tylko grawer — nie tnie.</>,
+        <>The <A href="/glossary/laser-fiber">fiber laser</A> (Raycus 30W) is a precision tool for metals and hard materials. Engraving only — no cutting.</>,
+        <>Der <A href="/glossary/laser-fiber">Faserlaser</A> (Raycus 30W) ist ein Präzisionswerkzeug für Metalle und harte Materialien. Nur Gravur — kein Schnitt.</>
       )}</P>
       <Table
         headers={t(
