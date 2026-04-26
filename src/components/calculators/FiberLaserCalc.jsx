@@ -43,39 +43,39 @@ const LBL = {
 };
 
 export const MATERIALS = [
-  { id: "stainless",  label: { pl: "Stal nierdzewna", en: "Stainless steel", de: "Edelstahl" },   rateMin: 0.10, precious: false, img: "/img/calc/fiber_materials/stainless.png" },
-  { id: "aluminum",   label: { pl: "Aluminium", en: "Aluminum", de: "Aluminium" },                rateMin: 0.08, precious: false, img: "/img/calc/fiber_materials/aluminum.png" },
-  { id: "brass",      label: { pl: "Mosiądz", en: "Brass", de: "Messing" },                      rateMin: 0.12, precious: false, img: "/img/calc/fiber_materials/brass.png" },
-  { id: "copper",     label: { pl: "Miedź", en: "Copper", de: "Kupfer" },                         rateMin: 0.15, precious: false, img: "/img/calc/fiber_materials/copper.png" },
-  { id: "titanium",   label: { pl: "Tytan", en: "Titanium", de: "Titan" },                        rateMin: 0.18, precious: false, img: "/img/calc/fiber_materials/titanium.png" },
-  { id: "silver",     label: { pl: "Srebro", en: "Silver", de: "Silber" },                        rateMin: 0.14, precious: true,  img: "/img/calc/fiber_materials/silver.png" },
-  { id: "gold",       label: { pl: "Złoto", en: "Gold", de: "Gold" },                             rateMin: 0.16, precious: true,  img: "/img/calc/fiber_materials/gold.png" },
-  { id: "anodized",   label: { pl: "Aluminium anodowane", en: "Anodized aluminum", de: "Eloxiertes Aluminium" }, rateMin: 0.06, precious: false, img: "/img/calc/fiber_materials/anodized.png" },
+  { id: "stainless",  label: { pl: "Stal nierdzewna", en: "Stainless steel", de: "Edelstahl" },   rateMin: 0.10, precious: false, img: "/img/calc/fiber_materials/stainless.webp" },
+  { id: "aluminum",   label: { pl: "Aluminium", en: "Aluminum", de: "Aluminium" },                rateMin: 0.08, precious: false, img: "/img/calc/fiber_materials/aluminum.webp" },
+  { id: "brass",      label: { pl: "Mosiądz", en: "Brass", de: "Messing" },                      rateMin: 0.12, precious: false, img: "/img/calc/fiber_materials/brass.webp" },
+  { id: "copper",     label: { pl: "Miedź", en: "Copper", de: "Kupfer" },                         rateMin: 0.15, precious: false, img: "/img/calc/fiber_materials/copper.webp" },
+  { id: "titanium",   label: { pl: "Tytan", en: "Titanium", de: "Titan" },                        rateMin: 0.18, precious: false, img: "/img/calc/fiber_materials/titanium.webp" },
+  { id: "silver",     label: { pl: "Srebro", en: "Silver", de: "Silber" },                        rateMin: 0.14, precious: true,  img: "/img/calc/fiber_materials/silver.webp" },
+  { id: "gold",       label: { pl: "Złoto", en: "Gold", de: "Gold" },                             rateMin: 0.16, precious: true,  img: "/img/calc/fiber_materials/gold.webp" },
+  { id: "anodized",   label: { pl: "Aluminium anodowane", en: "Anodized aluminum", de: "Eloxiertes Aluminium" }, rateMin: 0.06, precious: false, img: "/img/calc/fiber_materials/anodized.webp" },
   { id: "custom",     label: { pl: "Inny materiał", en: "Other material", de: "Anderes Material" }, rateMin: null, precious: false, custom: true },
 ];
 
 export const LENSES = [
   { id: "70mm",  label: { pl: "70mm — precyzyjne detale", en: "70mm — precision details", de: "70mm — Präzisionsdetails" },
     desc: { pl: "Pole ~50×50mm (25 cm²), ultra fine", en: "Field ~50×50mm (25 cm²), ultra fine", de: "Feld ~50×50mm (25 cm²), ultra fein" },
-    fieldMm: 50, maxAreaCm2: 25, speedMul: 1.0, img: "/img/calc/fiber_lens/lens_70.png" },
+    fieldMm: 50, maxAreaCm2: 25, speedMul: 1.0, img: "/img/calc/fiber_lens/lens_70.webp" },
   { id: "150mm", label: { pl: "150mm — większe pole", en: "150mm — larger field", de: "150mm — größeres Feld" },
     desc: { pl: "Pole ~110×110mm (~121 cm²), standard", en: "Field ~110×110mm (~121 cm²), standard", de: "Feld ~110×110mm (~121 cm²), Standard" },
-    fieldMm: 110, maxAreaCm2: 121, speedMul: 0.85, img: "/img/calc/fiber_lens/lens_150.png" },
+    fieldMm: 110, maxAreaCm2: 121, speedMul: 0.85, img: "/img/calc/fiber_lens/lens_150.webp" },
 ];
 
 export const MARK_TYPES = [
   { id: "surface",  label: { pl: "Znakowanie powierzchniowe", en: "Surface marking", de: "Oberflächenmarkierung" },
     desc: { pl: "Ciemny ślad, gładka powierzchnia", en: "Dark mark, smooth surface", de: "Dunkle Markierung, glatte Oberfläche" },
-    depthMul: 1.0, img: "/img/calc/fiber_marks/surface.png" },
+    depthMul: 1.0, img: "/img/calc/fiber_marks/surface.webp" },
   { id: "medium",   label: { pl: "Średnia głębokość", en: "Medium depth", de: "Mittlere Tiefe" },
     desc: { pl: "Wyczuwalny rowek ~0,1–0,2 mm", en: "Tactile groove ~0.1–0.2 mm", de: "Fühlbare Rille ~0,1–0,2 mm" },
-    depthMul: 2.5, img: "/img/calc/fiber_marks/medium.png" },
+    depthMul: 2.5, img: "/img/calc/fiber_marks/medium.webp" },
   { id: "deep",     label: { pl: "Głębokie grawerowanie", en: "Deep engraving", de: "Tiefgravur" },
     desc: { pl: "Trwały ślad 0,5–1 mm", en: "Permanent mark 0.5–1 mm", de: "Dauerhaft 0,5–1 mm" },
-    depthMul: 6.0, img: "/img/calc/fiber_marks/deep.png" },
+    depthMul: 6.0, img: "/img/calc/fiber_marks/deep.webp" },
   { id: "color",    label: { pl: "Znakowanie kolorowe", en: "Color marking", de: "Farbmarkierung" },
     desc: { pl: "Tytan / stal — tęczowe kolory", en: "Titanium / steel — rainbow colors", de: "Titan / Stahl — Regenbogenfarben" },
-    depthMul: 1.8, img: "/img/calc/fiber_marks/color.png" },
+    depthMul: 1.8, img: "/img/calc/fiber_marks/color.webp" },
   { id: "custom",   label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" },                               depthMul: null, custom: true },
 ];
 
@@ -212,7 +212,7 @@ export default function FiberLaserCalc({ lang = "pl" }) {
 
   return (
     <div>
-      <div className="text-center text-[11px] text-neutral-600 mb-6">Raycus 30W Galvo · 70mm / 150mm · max 150×150 mm</div>
+      <div className="text-center text-[11px] text-neutral-400 mb-6">Raycus 30W Galvo · 70mm / 150mm · max 150×150 mm</div>
 
       <CalcCard stepNum="①" label={l.material}>
         <MaterialCards options={MATERIALS} value={matId} onChange={setMatId} lang={lang} />

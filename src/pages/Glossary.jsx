@@ -6,6 +6,7 @@ import { GLOSSARY, CATEGORIES } from "../data/glossary.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
+import Breadcrumb from "../components/Breadcrumb.jsx";
 
 const LABELS = {
   pl: {
@@ -96,6 +97,10 @@ export default function Glossary() {
       <div className="pt-16">
         <section className="py-20 px-4 bg-neutral-950">
           <div className="max-w-6xl mx-auto">
+            <Breadcrumb items={[
+              { href: "/", label: "Home" },
+              { label: l.tag },
+            ]} />
             <div ref={headerRef} className="reveal text-center mb-10">
               <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{l.tag}</div>
               <h1 className="font-serif text-3xl md:text-5xl font-semibold text-white tracking-tight mb-4">
@@ -110,6 +115,7 @@ export default function Glossary() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={l.search}
+                aria-label={l.search}
                 className="w-full px-4 py-3 rounded-lg bg-neutral-900 border border-neutral-800 text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400/50 transition-colors"
               />
             </div>
@@ -131,16 +137,17 @@ export default function Glossary() {
             </div>
 
             {filtered.length === 0 ? (
-              <p className="text-center text-neutral-500">
+              <p className="text-center text-neutral-400">
                 {l.noResults} &ldquo;{query}&rdquo;
               </p>
             ) : (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {filtered.map((term, i) => (
-                  <div
+                  <Link
                     key={term.id}
+                    to={`/glossary/${term.id}`}
                     ref={getCardRef(i)}
-                    className="reveal-scale bg-neutral-900/60 border border-neutral-800 rounded-xl p-5 hover:border-amber-400/30 transition-colors"
+                    className="reveal-scale block bg-neutral-900/60 border border-neutral-800 rounded-xl p-5 hover:border-amber-400/30 transition-colors"
                   >
                     <div className={`text-[10px] uppercase tracking-widest mb-2 ${
                       term.category === "jewelry" ? "text-amber-400" : term.category === "studio" ? "text-blue-400" : "text-emerald-400"
@@ -153,15 +160,10 @@ export default function Glossary() {
                     <p className="text-neutral-400 text-sm leading-relaxed mb-3">
                       {term.definition[lang] || term.definition.en}
                     </p>
-                    {term.relatedBlog && (
-                      <Link
-                        to={`/blog/${term.relatedBlog}`}
-                        className="text-amber-400 text-xs hover:underline"
-                      >
-                        {l.readMore} &rarr;
-                      </Link>
-                    )}
-                  </div>
+                    <span className="text-amber-400 text-xs">
+                      {l.readMore} &rarr;
+                    </span>
+                  </Link>
                 ))}
               </div>
             )}

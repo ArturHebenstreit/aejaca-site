@@ -5,29 +5,43 @@ export default {
     jewelry: "AEJaCA Schmuck",
     studio: "AEJaCA sTuDiO",
     glossary: "Glossar",
+    about: "Über AEJaCA",
     contact: "Kontakt",
     jewelrySections: [
-      { label: "Über uns", id: "about" },
-      { label: "Leistungen", id: "services" },
-      { label: "Konfigurator", id: "calculator" },
+      { label: "Über AEJaCA Schmuck", id: "about" },
+      { label: "Produkte & Leistungen", id: "services" },
+      { label: "Richtpreise", id: "pricing" },
+      { label: "Preiskalkulator", id: "calculator" },
+      { label: "FAQ", id: "faq" },
       { label: "Prozess", id: "process" },
       { label: "Portfolio", id: "portfolio" },
-      { label: "Referenzen", id: "testimonials" },
-      { label: "FAQ", id: "faq" },
       { label: "Tipps & Wissen", id: "tips" },
+      { label: "Glossar", to: "/glossary" },
+      { label: "Blog", to: "/blog" },
+      { label: "Referenzen", id: "testimonials" },
       { label: "Shop", id: "shop" },
     ],
     studioSections: [
-      { label: "Über uns", id: "about" },
+      { label: "Über AEJaCA sTuDiO", id: "about" },
       { label: "Technologien", id: "technologies" },
-      { label: "Kalkulator", id: "calculator" },
+      { label: "Richtpreise", id: "pricing" },
+      { label: "Preiskalkulator", id: "calculator" },
+      { label: "FAQ", id: "faq" },
       { label: "Portfolio", id: "portfolio" },
       { label: "Leistungen", id: "services" },
-      { label: "Prozess", id: "process" },
-      { label: "Referenzen", id: "testimonials" },
-      { label: "FAQ", id: "faq" },
+      { label: "Wie Wir Arbeiten", id: "process" },
       { label: "Tipps & Wissen", id: "tips" },
+      { label: "Glossar", to: "/glossary" },
+      { label: "Blog", to: "/blog" },
+      { label: "Referenzen", id: "testimonials" },
       { label: "Shop", id: "shop" },
+    ],
+    aboutSections: [
+      { label: "Über uns", to: "/about" },
+      { label: "Garantie", to: "/warranty" },
+      { label: "Rückgaberecht", to: "/returns" },
+      { label: "Versand", to: "/shipping" },
+      { label: "Datenschutz", to: "/privacy" },
     ],
   },
 
@@ -38,11 +52,11 @@ export default {
     jewelryTitle: "AEJaCA",
     jewelrySubtitle: "AEJaCA Schmuck",
     jewelryDesc: "Ringe, Anhänger und Trauringe mit Geschichte — statt der fünfzehnten Kopie aus dem Kaufhaus. Silber, Gold, natürliche Edelsteine.",
-    jewelryBtn: "Schmuck gestalten",
+    jewelryBtn: "Kollektion ansehen",
     studioTitle: "sTuDiO",
     studioSubtitle: "AEJaCA sTuDiO",
     studioDesc: "3D-Druck, Lasergravur, CNC-Prototypen. Verwandle deine Idee in ein echtes, greifbares Produkt.",
-    studioBtn: "Studio-Projekt beauftragen",
+    studioBtn: "Online-Angebot einholen",
     brandHeading: "Deine Vision. Unsere Präzision.",
     brandText: "Jedes Projekt ist ein Gespräch — kein Katalog. Wir beginnen bei deiner Idee, Skizze oder Inspiration. Gemeinsam verfeinern wir Detail, Material und Maße. Du siehst den 3D-Render, bevor etwas entsteht. Du erhältst ein Objekt, das nur für dich existiert.",
     brandReviewsBadge: "Google-Bewertungen",
@@ -234,6 +248,10 @@ export default {
         { q: "Mit welchen Metallen arbeiten Sie?", a: "Hauptsächlich Sterlingsilber (925) und Gold (14K, 18K). Wir arbeiten auch mit Mischmetallen für einzigartige Designs." },
         { q: "Wie werden die Preise bestimmt?", a: "Der Preis hängt von Metall, Edelsteinen, Komplexität und Arbeitsaufwand ab. Wir erstellen vor Beginn ein detailliertes Angebot." },
         { q: "Versenden Sie international?", a: "Ja! Wir versenden weltweit per Sendungsverfolgung und versichert. Versandkosten variieren je nach Zielort." },
+        { q: "Wie lange dauert die Auftragsabwicklung?", a: "Bei vorhandenen Materialien (Metall + Steine) bis zu 7 Werktage. Individuell gefertigte oder gravierte Stücke — bis zu 14 Tage. Sie erhalten eine Sendungsverfolgungsnummer, sobald die Bestellung versandt wird." },
+        { q: "Kann ich Schmuck zurückgeben?", a: "Universalprodukte — ja, innerhalb von 14 Tagen nach Lieferung (ungetragen, Originalverpackung). Maßanfertigungen (Gravur, Sondergröße) sind vom Umtausch ausgeschlossen. Details auf unserer [Rückgabeseite](/returns)." },
+        { q: "Was kostet der Versand?", a: "InPost-Versand ab 12 PLN. Kostenloser Versand ab 400 PLN Bestellwert. International: ab 35 PLN (EU) per Sendungsverfolgung. Details auf unserer [Versandseite](/shipping)." },
+        { q: "Welche Garantie bieten Sie?", a: "24 Monate auf Herstellungsfehler. Die Garantie deckt strukturelle Mängel — nicht mechanische Beschädigungen oder normalen Verschleiß. Vollständige Details auf unserer [Garantieseite](/warranty)." },
       ],
     },
 
@@ -243,7 +261,7 @@ export default {
       categories: [
         {
           name: "Ringgröße",
-          img: "/img/calc/tips_jewelry/ring_sizing.png",
+          img: "/img/calc/tips_jewelry/ring_sizing.webp",
           tips: [
             { q: "Wie messe ich meine Ringgröße zu Hause?", a: "Wickeln Sie einen dünnen Papierstreifen oder Faden um den Finger an der breitesten Stelle (meist am Knöchel). Markieren Sie die Überlappung, messen Sie die Länge in mm und teilen Sie durch 3,14 für den Innendurchmesser. Vergleichen Sie mit einer Größentabelle. Messen Sie abends, wenn die Finger etwas dicker sind." },
             { q: "Was tun, wenn meine Größe zwischen zwei Nummern liegt?", a: "Immer aufrunden — einen Ring etwas kleiner zu machen (z.B. mit Kügelchen) ist einfacher als ihn zu dehnen. Bei breiten Ringen (6mm+) eine halbe Größe größer wählen, da sie enger sitzen." },
@@ -253,7 +271,7 @@ export default {
         },
         {
           name: "Schmuckauswahl",
-          img: "/img/calc/tips_jewelry/styling.png",
+          img: "/img/calc/tips_jewelry/styling.webp",
           tips: [
             { q: "Wie wähle ich die richtige Kettenlänge?", a: "35cm — Choker, liegt am Schlüsselbein. 45cm — am universellsten, knapp unter dem Schlüsselbein. 60cm — Matinée-Länge, ideal zum Schichten. Zum Ausschnitt passend: V-Ausschnitte harmonieren mit Anhängern, Rundhalsausschnitte mit kürzeren Ketten." },
             { q: "Wie passe ich Schmuck zum Outfit an?", a: "Goldene Regel: Metall auf die Beschläge der Kleidung abstimmen (Reißverschlüsse, Knöpfe, Schnallen). Silber ergänzt kühle Töne (Blau, Grün, Grau), Gold warme Töne (Rot, Braun, Erdtöne). Formal: ein Metall. Casual: frei mischen." },
@@ -263,7 +281,7 @@ export default {
         },
         {
           name: "Pflege & Wartung",
-          img: "/img/calc/tips_jewelry/care.png",
+          img: "/img/calc/tips_jewelry/care.webp",
           tips: [
             { q: "Wie reinige ich Silberschmuck zu Hause?", a: "Warmes Wasser mit einem Tropfen mildem Spülmittel mischen. 5–10 Minuten einweichen, vorsichtig mit weicher Zahnbürste reinigen, abspülen und trocknen. Bei Anlaufen: Silberpoliertuch oder Paste aus Natron und Wasser. Aggressive Chemikalien vermeiden — sie können Steine beschädigen." },
             { q: "Wie lagere ich Schmuck richtig?", a: "Jedes Stück separat in weichen Beuteln oder einem gefütterten Schmuckkästchen aufbewahren. Silber vor Luft und Feuchtigkeit schützen (Silikagel-Päckchen hinzufügen). Schmuck vor dem Schwimmen, Sport und Auftragen von Parfüm und Lotionen abnehmen." },
@@ -273,7 +291,7 @@ export default {
         },
         {
           name: "Edelsteine",
-          img: "/img/calc/tips_jewelry/gemstones.png",
+          img: "/img/calc/tips_jewelry/gemstones.webp",
           tips: [
             { q: "Wie erkenne ich einen natürlichen Edelstein?", a: "Natürliche Steine haben winzige Einschlüsse, Farbvariationen und kleine Unvollkommenheiten unter Vergrößerung. Perfekt gleichmäßige, makellose Steine zu niedrigen Preisen sind wahrscheinlich synthetisch. Bei teuren Steinen immer ein Echtheitszertifikat verlangen." },
             { q: "Welche Edelsteine eignen sich am besten für den Alltag?", a: "Mohs-Härteskala: Diamanten (10), Saphire und Rubine (9) und Topas (8) sind hervorragend für tägliche Ringe. Smaragde (7,5) brauchen mehr Vorsicht. Opale (5,5–6,5) und Mondstein (6–6,5) eignen sich besser für Ohrringe und Anhänger als für Ringe." },
@@ -295,7 +313,7 @@ export default {
     techTitle: "Technologien",
     technologies: [
       { title: "3D-Design (CAD)", desc: "Professionelle 3D-Modellierung in Autodesk Fusion & Rhino — Produktdesign, Prototyping und fertigungsreife Dateien." },
-      { title: "3D-Druck", desc: "Filament- & Harz-3D-Druck für Rapid Prototyping, Funktionsteile und Kleinserienfertigung." },
+      { title: "3D-Druck", desc: "FDM-3D-Druck für Rapid Prototyping, Funktionsteile und Kleinserienfertigung." },
       { title: "Faserlaser-Gravur", desc: "Hochpräzise Galvo-Lasersysteme zur Markierung von Metall, Schmuck, Werkzeugen und technischen Bauteilen." },
       { title: "CO2-Laserschneiden", desc: "Laserschneiden und -gravur auf Holz, Acryl, Glas, Leder und Kunststoffen." },
       { title: "Epoxidharzguss", desc: "UV- und Zweikomponenten-Harzsysteme für Dekorationsobjekte, Einkapselung und individuelle Formen." },
@@ -443,6 +461,7 @@ export default {
         { q: "Mit welchen Materialien arbeiten Sie?", a: "PLA, PETG, ABS, Harz für 3D-Druck. Metalle, Holz, Acryl, Glas, Leder für Laserarbeiten. UV- und Epoxidharze für Guss." },
         { q: "Bieten Sie Designdienstleistungen an?", a: "Selbstverständlich. Unser Team bietet vollständige CAD-Design-Services — vom Konzept bis zu fertigungsreifen Dateien." },
         { q: "Wie werden Preise berechnet?", a: "Basierend auf Technologie, Material, Größe, Komplexität und Menge. Wir erstellen immer vorab ein detailliertes Angebot." },
+        { q: "Wie lange dauert die Projektabwicklung?", a: "Bei vorhandenem Material 3–5 Werktage (je nach Menge). Materialbestellung verlängert die Zeit um 3–7 Tage. Wenn die Auftragsausführung die Beschaffung spezialisierter Komponenten gemäß der Spezifikation erfordert (z. B. bestimmte Edelsteine, Spezialfilamente, elektronische Bauteile), kann sich die Lieferzeit um weitere 7–14 Werktage verlängern." },
       ],
     },
 
@@ -452,7 +471,7 @@ export default {
       categories: [
         {
           name: "3D-Druck & Filamente",
-          img: "/img/calc/tips_studio/3d_printing.png",
+          img: "/img/calc/tips_studio/3d_printing.webp",
           tips: [
             { q: "Welches Filament soll ich für mein Projekt wählen?", a: "PLA — am einfachsten zu drucken, ideal für Prototypen, Deko und Modelle. Biologisch abbaubar, aber nicht hitzebeständig (erweicht bei ~60°C). PETG — stärker, leicht flexibel, lebensmittelecht, gute chemische Beständigkeit. Ideal für Funktionsteile und Gehäuse. ABS — hitzebeständig (~100°C), robust, benötigt aber geschlossenen Drucker (verzieht sich bei Zugluft). Ideal für Autoteile und Werkzeuge." },
             { q: "Wann Harz (SLA) statt Filamentdruck?", a: "Harz gewinnt bei: feinen Details (Miniaturen, Schmuckmodelle, Dental), glatter Oberfläche und Maßgenauigkeit. Filamentdruck gewinnt bei: großen Teilen, mechanischer Festigkeit, schnellerem Druck und niedrigeren Materialkosten. Faustregel: Wenn Optik und Details wichtiger sind als Stärke — Harz wählen." },
@@ -463,7 +482,7 @@ export default {
         },
         {
           name: "Lasergravur",
-          img: "/img/calc/tips_studio/laser_engraving.png",
+          img: "/img/calc/tips_studio/laser_engraving.webp",
           tips: [
             { q: "Welcher Lasertyp für welches Material?", a: "Faserlaser (1064nm) — Metalle (Stahl, Aluminium, Messing, Silber, Gold), harte Kunststoffe und eloxierte Oberflächen. CO2-Laser (10600nm) — Holz, Acryl, Glas, Leder, Papier, Stoff und Gummi. Diodenlaser (445nm) — Budget-Option nur für Holz und dunkle Materialien. CO2 nie auf blankem Metall verwenden — der Strahl reflektiert." },
             { q: "Beste Gravurqualität auf Metall erzielen?", a: "Faserlaser mit Galvo-Scankopf für Geschwindigkeit und Präzision. Für dunkle Markierungen auf Edelstahl: niedrige Leistung / hohe Geschwindigkeit (Oxidmarkierung). Für Tiefgravur: mehrere Durchgänge bei höherer Leistung. Oberfläche immer mit Isopropanol reinigen. Markierspray (CerMark) auf Metallen verwenden, die nicht gut nativ markieren." },
@@ -473,7 +492,7 @@ export default {
         },
         {
           name: "Harzguss",
-          img: "/img/calc/tips_studio/resin_casting.png",
+          img: "/img/calc/tips_studio/resin_casting.webp",
           tips: [
             { q: "Welches Harz für welche Anwendung?", a: "UV-Harz — schnelle Aushärtung (Minuten), ideal für kleine Teile, Schmuckfassungen, dünne Schichten und Beschichtungen. Begrenzt auf ~3mm Tiefe pro Schicht. Epoxidharz (Zweikomponenten) — für größere Güsse, River Tables, Einbettung von Objekten (Blumen, Fotos). Härtet in 24–72h. Polyurethanharz — am besten für starre Funktionsteile und Prototypformen." },
             { q: "Wie erstellt man Silikonformen für Harzguss?", a: "Platinhärtendes Silikon (glatt, lebensmittelecht) für detaillierte Formen verwenden. Kasten um das Mastermodell bauen, Trennmittel sprühen, Silikon gießen und 24h aushärten lassen. Für komplexe Formen: zweiteilige Form mit Trennlinie. Shore-Härte 20A für flexible Formen (einfaches Entformen), 40A für starre (bessere Maßgenauigkeit)." },
@@ -483,7 +502,7 @@ export default {
         },
         {
           name: "Materialien & Best Practices",
-          img: "/img/calc/tips_studio/materials.png",
+          img: "/img/calc/tips_studio/materials.webp",
           tips: [
             { q: "Wie wähle ich die richtige Fertigungsmethode?", a: "1 Teil schnell benötigt? → 3D-Druck. Dauerhafte Metallmarkierung? → Faserlaser. Präzisionsschnitt flacher Materialien? → CO2-Laser. Transparente oder dekorative Objekte? → Harzguss. Kleine Serie identischer Teile? → 3D-Druck + Silikonform + Harzguss-Kombi." },
             { q: "Wie bereite ich Dateien für die Produktion vor?", a: "Für 3D-Druck: STL- oder 3MF-Format, wasserdichtes Mesh (keine Löcher), Wandstärke mindestens 1,2mm für Filament / 0,5mm für SLA. Für Laser: Vektordateien (SVG, DXF, AI), Text in Pfade umwandeln, Schnittlinien von Gravurfüllungen trennen. Für Harzformen: 0,5–1% Schrumpfung im Mastermodell einrechnen." },
@@ -545,5 +564,8 @@ export default {
     followUs: "Folgen Sie Uns",
     rights: "Alle Rechte vorbehalten.",
     privacy: "Datenschutzrichtlinie",
+    warranty: "Garantie",
+    returns: "Rückgabe",
+    shipping: "Versand",
   },
 };

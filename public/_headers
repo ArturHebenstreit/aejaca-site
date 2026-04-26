@@ -7,18 +7,24 @@
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://aejaca-analytics.aejaca.workers.dev; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self' mailto:
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 
 # Cache immutable hashed assets aggressively (Vite adds content hash)
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
-# Images — cache 30 days (may be updated with new hero shots)
+# Images — cache 30 days + stale-while-revalidate for instant loads during refresh
 /*.jpg
-  Cache-Control: public, max-age=2592000
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
 /*.png
-  Cache-Control: public, max-age=2592000
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
 /*.webp
-  Cache-Control: public, max-age=2592000
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
+
+# Fonts — cache 1 year (woff2 from self-hosted or CDN fallback)
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
 
 # HTML — no cache (SPA shell must be fresh for route changes)
 /index.html

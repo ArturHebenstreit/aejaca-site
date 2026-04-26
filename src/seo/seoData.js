@@ -17,7 +17,7 @@
 export const SITE = {
   url: "https://www.aejaca.com",
   name: "AEJaCA",
-  defaultImage: "https://www.aejaca.com/hero-jewelry.jpg",
+  defaultImage: "https://www.aejaca.com/og-default.jpg",
   twitterHandle: "@aejaca_",
   locales: {
     pl: "pl_PL",
@@ -130,6 +130,90 @@ export const SEO = {
       description: "Wichtige Begriffe aus Schmuck, 3D-Druck, Lasergravur und Harzguss einfach erklärt. Ihre AEJaCA-Wissensbasis.",
       keywords: "Schmuck Glossar, 3D-Druck Begriffe, Lasergravur Terminologie, Harzguss Leitfaden, AEJaCA",
       ogAlt: "AEJaCA Glossar — Fachbegriffe erklärt",
+    },
+  },
+
+  about: {
+    pl: {
+      title: "O AEJaCA — Rzemiosło i technologia od ponad 3 lat",
+      description: "AEJaCA to marka łącząca rzemiosło jubilerskie z technologią. Artur Hebenstreit — ponad 3 lata doświadczenia, 150+ projektów, ocena 5.0 na Google.",
+      keywords: "o AEJaCA, Artur Hebenstreit, biżuteria ręcznie robiona, druk 3D, laser, Bambu Lab H2D, xTool P2, Raycus fiber",
+      ogAlt: "Warsztat AEJaCA — biżuteria i studio fabrykacji cyfrowej",
+    },
+    en: {
+      title: "About AEJaCA — Craft and technology for 3+ years",
+      description: "AEJaCA combines jewelry craft with technology. Artur Hebenstreit — over 3 years of experience, 150+ projects, 5.0 rating on Google.",
+      keywords: "about AEJaCA, Artur Hebenstreit, handmade jewelry, 3D printing, laser engraving, Bambu Lab H2D, xTool P2, Raycus fiber",
+      ogAlt: "AEJaCA workshop — jewelry and digital fabrication studio",
+    },
+    de: {
+      title: "Über AEJaCA — Handwerk und Technologie seit 3+ Jahren",
+      description: "AEJaCA verbindet Schmuckhandwerk mit Technologie. Artur Hebenstreit — über 3 Jahre Erfahrung, 150+ Projekte, 5,0 auf Google.",
+      keywords: "über AEJaCA, Artur Hebenstreit, handgefertigter Schmuck, 3D-Druck, Lasergravur, Bambu Lab H2D, xTool P2, Raycus Faser",
+      ogAlt: "AEJaCA Werkstatt — Schmuck und digitale Fertigung",
+    },
+  },
+
+  warranty: {
+    pl: {
+      title: "Gwarancja 24 miesiące — AEJaCA",
+      description: "Gwarancja AEJaCA: 24 miesiące na wady produkcyjne, bezpłatny serwis w pierwszym roku, reklamacja w 14 dni roboczych.",
+      keywords: "gwarancja biżuteria, reklamacja AEJaCA, serwis biżuterii, wady produkcyjne",
+      ogAlt: "Gwarancja AEJaCA — 24 miesiące",
+    },
+    en: {
+      title: "24-Month Warranty — AEJaCA",
+      description: "AEJaCA warranty: 24 months on manufacturing defects, complimentary first-year service, claims handled within 14 business days.",
+      keywords: "jewelry warranty, AEJaCA claim, jewelry service, manufacturing defects",
+      ogAlt: "AEJaCA 24-month warranty",
+    },
+    de: {
+      title: "24 Monate Garantie — AEJaCA",
+      description: "AEJaCA Garantie: 24 Monate auf Herstellungsfehler, kostenloser Service im ersten Jahr, Bearbeitung innerhalb von 14 Werktagen.",
+      keywords: "Schmuck Garantie, AEJaCA Reklamation, Schmuckservice, Herstellungsfehler",
+      ogAlt: "AEJaCA 24 Monate Garantie",
+    },
+  },
+
+  returns: {
+    pl: {
+      title: "Zwroty i wymiany — AEJaCA",
+      description: "Polityka zwrotów AEJaCA: 14-dniowe prawo odstąpienia dla produktów niespersonalizowanych. Biżuteria na zamówienie wyłączona.",
+      keywords: "zwrot biżuteria, polityka zwrotów AEJaCA, prawo odstąpienia, wymiana produktów",
+      ogAlt: "Polityka zwrotów AEJaCA",
+    },
+    en: {
+      title: "Returns & Exchanges — AEJaCA",
+      description: "AEJaCA return policy: 14-day withdrawal right for non-personalized products. Custom jewelry orders are excluded from returns.",
+      keywords: "return policy jewelry, AEJaCA returns, right of withdrawal, product exchange",
+      ogAlt: "AEJaCA returns and exchanges policy",
+    },
+    de: {
+      title: "Rückgabe & Umtausch — AEJaCA",
+      description: "AEJaCA Rückgabebedingungen: 14-tägiges Widerrufsrecht für nicht personalisierte Produkte. Individuelle Bestellungen ausgeschlossen.",
+      keywords: "Rückgabe Schmuck, AEJaCA Rückgabebedingungen, Widerrufsrecht, Produktumtausch",
+      ogAlt: "AEJaCA Rückgabe- und Umtauschrichtlinien",
+    },
+  },
+
+  shipping: {
+    pl: {
+      title: "Wysyłka i dostawa — AEJaCA",
+      description: "Koszty i czasy dostawy AEJaCA: kurier InPost, paczkomat, odbiór osobisty. Darmowa wysyłka od 400 zł. Europa i świat na zamówienie.",
+      keywords: "wysyłka biżuteria, koszty dostawy AEJaCA, InPost, czas realizacji, darmowa wysyłka",
+      ogAlt: "Wysyłka i dostawa AEJaCA",
+    },
+    en: {
+      title: "Shipping & Delivery — AEJaCA",
+      description: "AEJaCA shipping: InPost courier, parcel locker, personal pickup. Free shipping over 400 PLN. Europe & worldwide on request.",
+      keywords: "jewelry shipping, AEJaCA delivery, InPost, fulfillment time, free shipping Poland",
+      ogAlt: "AEJaCA shipping and delivery",
+    },
+    de: {
+      title: "Versand & Lieferung — AEJaCA",
+      description: "AEJaCA Versand: InPost Kurier, Paketautomat, persönliche Abholung. Kostenloser Versand ab 400 PLN. Europa & weltweit auf Anfrage.",
+      keywords: "Schmuck Versand, AEJaCA Lieferung, InPost, Bearbeitungszeit, kostenloser Versand",
+      ogAlt: "AEJaCA Versand und Lieferung",
     },
   },
 

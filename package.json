@@ -4,7 +4,8 @@
   "description": "AEJaCA - Artisan Elegance Jewelry and Crafted Art",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && vite build --ssr src/entry-server.jsx --outDir dist/server && node scripts/prerender.mjs",
+    "build:client": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {

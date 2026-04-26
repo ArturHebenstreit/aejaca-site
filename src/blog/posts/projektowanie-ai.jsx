@@ -1,11 +1,11 @@
-import { H2, P, Lead, UL, LI, Strong, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
+import { H2, P, Lead, UL, LI, Strong, Callout, Table, CTABox, A } from "../../components/blog/Prose.jsx";
 
 export const meta = {
   slug: "projektowanie-ai",
   category: "jewelry",
   accent: "amber",
   publishedAt: "2026-04-20",
-  coverImage: "/img/blog/projektowanie-ai.jpg",
+  coverImage: "/img/blog/projektowanie-ai.webp",
   readingTime: { pl: 6, en: 5, de: 5 },
   title: {
     pl: "AI w projektowaniu biżuterii — jak wykorzystujemy sztuczną inteligencję",
@@ -62,6 +62,7 @@ export const meta = {
       { q: "Welche KI-Tools nutzen Sie?", a: "Bildgeneratoren für Konzepte, 3D-Netz-Optimierungsalgorithmen und unseren eigenen KI-gestützten Kostenkalkulator." },
     ],
   },
+  relatedPosts: ["prezenty-personalizowane", "druk-3d-krok-po-kroku"],
 };
 
 export function Body({ lang }) {
@@ -103,8 +104,8 @@ export function Body({ lang }) {
       <UL>
         <LI><Strong>1. {t("Inspiracja", "Inspiration", "Inspiration")}</Strong> — {t("klient opisuje styl, pokazuje inspiracje, określa budżet", "client describes style, shows references, sets budget", "Kunde beschreibt Stil, zeigt Referenzen, legt Budget fest")}</LI>
         <LI><Strong>2. {t("Generowanie konceptów", "Concept generation", "Konzeptgenerierung")}</Strong> — {t("AI tworzy 5–10 wizualizacji na podstawie opisu (minuty zamiast godzin)", "AI creates 5–10 visualizations from description (minutes instead of hours)", "KI erstellt 5–10 Visualisierungen aus Beschreibung (Minuten statt Stunden)")}</LI>
-        <LI><Strong>3. {t("Selekcja i modyfikacja", "Selection & modification", "Auswahl & Modifikation")}</Strong> — {t("klient wybiera kierunek, jubiler ręcznie dopracowuje projekt w CAD", "client picks direction, jeweler hand-refines design in CAD", "Kunde wählt Richtung, Juwelier verfeinert Design in CAD von Hand")}</LI>
-        <LI><Strong>4. {t("Model 3D / woskówka", "3D model / wax print", "3D-Modell / Wachsmodell")}</Strong> — {t("druk 3D prototypu do przymiarki (opcjonalnie)", "3D print prototype for fitting (optional)", "3D-Druck-Prototyp zur Anprobe (optional)")}</LI>
+        <LI><Strong>3. {t("Selekcja i modyfikacja", "Selection & modification", "Auswahl & Modifikation")}</Strong> — {t(<>klient wybiera kierunek, jubiler ręcznie dopracowuje projekt w <A href="/glossary/cad">CAD</A></>, <>client picks direction, jeweler hand-refines design in <A href="/glossary/cad">CAD</A></>, <>Kunde wählt Richtung, Juwelier verfeinert Design in <A href="/glossary/cad">CAD</A> von Hand</>)}</LI>
+        <LI><Strong>4. {t("Model 3D / woskówka", "3D model / wax print", "3D-Modell / Wachsmodell")}</Strong> — {t(<><A href="/glossary/druk-3d-fdm">druk 3D</A> prototypu do przymiarki (opcjonalnie)</>, <><A href="/glossary/druk-3d-fdm">3D print</A> prototype for fitting (optional)</>, <><A href="/glossary/druk-3d-fdm">3D-Druck</A>-Prototyp zur Anprobe (optional)</>)}</LI>
         <LI><Strong>5. {t("Realizacja", "Production", "Produktion")}</Strong> — {t("ręczne wykonanie w srebrze/złocie, osadzenie kamieni, polerowanie", "handmade in silver/gold, stone setting, polishing", "Handarbeit in Silber/Gold, Steinfassung, Politur")}</LI>
       </UL>
       <Callout accent="amber" title={t("Efekt", "Result", "Ergebnis")}>
@@ -130,9 +131,9 @@ export function Body({ lang }) {
 
       <H2 id={t("przyszlosc", "future", "zukunft")}>{t("Przyszłość", "The Future", "Die Zukunft")}</H2>
       <P>{t(
-        "Widzimy AI jako partnera, nie rywala. W najbliższych latach spodziewamy się: generowania modeli 3D (nie tylko obrazów), lepszej symulacji noszenia, i AI-wspieranej personalizacji masowej. Ale ręce jubilera pozostaną niezastąpione — bo to one nadają biżuterii duszę.",
-        "We see AI as a partner, not a rival. In coming years we expect: 3D model generation (not just images), better wear simulation, and AI-powered mass personalization. But a jeweler's hands will remain irreplaceable — they give jewelry its soul.",
-        "Wir sehen KI als Partner, nicht als Rivalen. In den kommenden Jahren erwarten wir: 3D-Modellgenerierung (nicht nur Bilder), bessere Tragesimulation und KI-gestützte Massenpersonalisierung. Aber die Hände eines Juweliers bleiben unersetzlich — sie geben Schmuck seine Seele."
+        <>Widzimy AI jako partnera, nie rywala. W najbliższych latach spodziewamy się: generowania modeli 3D (nie tylko obrazów), lepszej symulacji noszenia, i AI-wspieranej <A href="/glossary/personalizacja">personalizacji</A> masowej. Ale ręce jubilera pozostaną niezastąpione — bo to one nadają biżuterii duszę.</>,
+        <>We see AI as a partner, not a rival. In coming years we expect: 3D model generation (not just images), better wear simulation, and AI-powered mass <A href="/glossary/personalizacja">personalization</A>. But a jeweler's hands will remain irreplaceable — they give jewelry its soul.</>,
+        <>Wir sehen KI als Partner, nicht als Rivalen. In den kommenden Jahren erwarten wir: 3D-Modellgenerierung (nicht nur Bilder), bessere Tragesimulation und KI-gestützte Massen<A href="/glossary/personalizacja">personalisierung</A>. Aber die Hände eines Juweliers bleiben unersetzlich — sie geben Schmuck seine Seele.</>
       )}</P>
 
       <CTABox

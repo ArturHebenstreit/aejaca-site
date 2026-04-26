@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Gem, Sparkles, Palette, Heart, Wand2, Crown, Calculator } from "lucide-react";
+import { ArrowRight, Gem, Sparkles, Palette, Heart, Wand2, Crown, Calculator, Tag } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getPost } from "../blog/posts.js";
@@ -19,10 +19,26 @@ import {
   buildWebPageSchema,
   buildHowToSchema,
   buildProductSchema,
+  buildItemListSchema,
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 
 const icons = [Gem, Sparkles, Palette, Heart, Wand2, Crown];
+
+const PRICING_LABELS = {
+  pl: { tag: "Orientacyjne ceny", title: "Ile kosztuje biżuteria?", note: "Ceny orientacyjne — dokładna wycena w kalkulatorze poniżej.", cta: "Wyceń w kalkulatorze" },
+  en: { tag: "Indicative pricing", title: "How much does jewelry cost?", note: "Indicative prices — use the calculator below for an exact quote.", cta: "Get a quote" },
+  de: { tag: "Richtpreise", title: "Was kostet Schmuck?", note: "Richtpreise — nutzen Sie den Rechner unten für ein genaues Angebot.", cta: "Zum Rechner" },
+};
+
+const PRICING_ITEMS = [
+  { pl: "Srebrny pierścionek", en: "Silver ring", de: "Silberring", pln: 250, eur: 60 },
+  { pl: "Srebrne kolczyki", en: "Silver earrings", de: "Silberohrringe", pln: 180, eur: 40 },
+  { pl: "Złoty pierścionek 14K", en: "Gold ring 14K", de: "Goldring 14K", pln: 900, eur: 210 },
+  { pl: "Złoty wisiorek 14K", en: "Gold pendant 14K", de: "Goldanhänger 14K", pln: 600, eur: 140 },
+  { pl: "Pierścionek z kamieniem", en: "Ring with gemstone", de: "Ring mit Edelstein", pln: 350, eur: 80 },
+  { pl: "Pierścionek zaręczynowy", en: "Engagement ring", de: "Verlobungsring", pln: 1200, eur: 280 },
+];
 
 const FLOATING_CTA_LABELS = {
   pl: "Wyceń online",
@@ -74,7 +90,18 @@ export default function Jewelry() {
     }),
     // FAQ schema = direct ranking signal for Google's "People Also Ask" + LLM answers
     j.faq?.items && buildFAQSchema(j.faq.items),
-    // Product schemas = enable rich results (price, rating) in Google Shopping + AI answers
+    buildItemListSchema({
+      name: "AEJaCA Handcrafted Jewelry Collection",
+      url: pageUrl,
+      items: [
+        { name: "Custom Silver Ring with Gemstone", url: `${pageUrl}#rings`, image: `${SITE.url}/hero-jewelry.jpg`, description: "Handcrafted sterling silver ring with natural gemstone setting" },
+        { name: "Gold Engagement Ring", url: `${pageUrl}#engagement`, image: `${SITE.url}/hero-jewelry.jpg`, description: "Bespoke 14K/18K gold engagement ring with premium gemstone" },
+        { name: "Silver Earrings with Gemstones", url: `${pageUrl}#earrings`, image: `${SITE.url}/hero-jewelry.jpg`, description: "Artisan sterling silver earrings with natural gemstones" },
+        { name: "Gemstone Bracelet", url: `${pageUrl}#bracelets`, image: `${SITE.url}/hero-jewelry.jpg`, description: "Natural stone bead bracelet with silver elements" },
+        { name: "Wedding Bands", url: `${pageUrl}#wedding`, image: `${SITE.url}/hero-jewelry.jpg`, description: "Personalized wedding ring pairs with custom engraving" },
+        { name: "Personalized Pendant", url: `${pageUrl}#pendants`, image: `${SITE.url}/hero-jewelry.jpg`, description: "Custom pendant with gemstone or engraved design" },
+      ],
+    }),
     buildProductSchema({
       name: "Custom Silver Ring with Gemstone — AEJaCA",
       description: "Handcrafted sterling silver ring with natural gemstone, custom designed to order. Available with amethyst, emerald, sapphire, or ruby.",
@@ -109,20 +136,20 @@ export default function Jewelry() {
 
   return (
     <>
-      <SEOHead pageKey="jewelry" path="/jewelry" image={`${SITE.url}/hero-jewelry.jpg`} schemas={schemas} />
+      <SEOHead pageKey="jewelry" path="/jewelry" image={`${SITE.url}/og-jewelry.jpg`} schemas={schemas} />
       <div className="pt-16">
       {/* Hero */}
       <section className="bg-neutral-950 py-10 px-4">
         <div className="max-w-5xl mx-auto relative rounded-2xl overflow-hidden h-[40vh] min-h-[280px]">
           <img
-            src="/hero-jewelry.jpg"
+            src="/hero-jewelry.webp"
             alt="AEJaCA Jewelry — handcrafted silver rings, earrings, and gemstone pieces"
             className="absolute inset-0 w-full h-full object-cover"
             loading="eager"
             fetchpriority="high"
             decoding="async"
-            width="1600"
-            height="640"
+            width="1024"
+            height="572"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-black/40 to-transparent" />
           <div className="relative z-10 flex flex-col items-center justify-end h-full pb-12 px-4 text-center">
@@ -168,6 +195,40 @@ export default function Jewelry() {
 
       <div className="gradient-divider" />
 
+      {/* Indicative Pricing */}
+      <section id="pricing" className="py-20 px-4 bg-neutral-950">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{PRICING_LABELS[lang]?.tag}</div>
+            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-white">{PRICING_LABELS[lang]?.title}</h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {PRICING_ITEMS.map((item, i) => (
+              <div key={i} className="flex items-center justify-between p-4 rounded-xl glass-amber">
+                <div className="flex items-center gap-3">
+                  <Tag className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span className="text-neutral-200 text-sm">{item[lang] || item.en}</span>
+                </div>
+                <span className="text-amber-300 font-semibold text-sm whitespace-nowrap ml-3">
+                  {{ pl: "od", en: "from", de: "ab" }[lang]}{" "}
+                  {lang === "pl"
+                    ? `${item.pln.toLocaleString("pl-PL")} zł`
+                    : `€${item.eur.toLocaleString("de-DE")}`}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <p className="text-neutral-400 text-sm mb-4">{PRICING_LABELS[lang]?.note}</p>
+            <a href="#calculator" className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 text-sm font-medium transition-colors">
+              {PRICING_LABELS[lang]?.cta} <ArrowRight className="w-4 h-4" />
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <div className="gradient-divider" />
+
       {/* Jewelry Calculator */}
       <JewelryEstimator />
 
@@ -191,7 +252,7 @@ export default function Jewelry() {
           <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{j.portfolio?.tag || "Portfolio"}</div>
           <h2 className="font-serif text-3xl md:text-4xl font-semibold text-white mb-8">{j.portfolio?.title || "Portfolio"}</h2>
           <div className="py-16 rounded-2xl border border-white/5 bg-white/[0.02]">
-            <div className="text-neutral-500 text-lg">
+            <div className="text-neutral-400 text-lg">
               {{ pl: "W trakcie przygotowania", en: "In preparation", de: "In Vorbereitung" }[lang] || "In preparation"}
             </div>
           </div>
@@ -208,7 +269,7 @@ export default function Jewelry() {
             {j.values.map((v, i) => (
               <div key={i}>
                 <div className="text-amber-300 font-serif text-xl font-semibold mb-1">{v.word}</div>
-                <p className="text-neutral-500 text-sm">{v.desc}</p>
+                <p className="text-neutral-400 text-sm">{v.desc}</p>
               </div>
             ))}
           </div>
@@ -228,6 +289,44 @@ export default function Jewelry() {
       <div className="gradient-divider" />
 
       {/* Related blog article — internal linking (SEO signal) */}
+      {/* Glossary terms */}
+      <section className="py-16 px-4 bg-neutral-900/30">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-8">
+            <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-2">
+              {{ pl: "Słownik", en: "Glossary", de: "Glossar" }[lang] || "Glossary"}
+            </div>
+            <h2 className="font-serif text-xl font-semibold text-white">
+              {{ pl: "Kluczowe pojęcia", en: "Key terms", de: "Schlüsselbegriffe" }[lang] || "Key terms"}
+            </h2>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            {[
+              { id: "srebro-925", pl: "Srebro 925", en: "Sterling Silver", de: "Sterlingsilber" },
+              { id: "zloto-probowane", pl: "Złoto 14K/18K", en: "Gold 14K/18K", de: "Gold 14K/18K" },
+              { id: "moissanit", pl: "Moissanit", en: "Moissanite", de: "Moissanit" },
+              { id: "kamien-szlachetny", pl: "Kamienie szlachetne", en: "Gemstones", de: "Edelsteine" },
+              { id: "rodowanie", pl: "Rodowanie", en: "Rhodium plating", de: "Rhodinierung" },
+              { id: "personalizowany-grawer", pl: "Grawer", en: "Engraving", de: "Gravur" },
+              { id: "pierscionek-zareczynowy", pl: "Pierścionek zaręczynowy", en: "Engagement ring", de: "Verlobungsring" },
+              { id: "obraczki-slubne", pl: "Obrączki ślubne", en: "Wedding bands", de: "Eheringe" },
+            ].map((term) => (
+              <Link key={term.id} to={`/glossary/${term.id}`}
+                className="px-4 py-2 rounded-full text-sm bg-neutral-800/60 text-neutral-300 hover:bg-amber-400/10 hover:text-amber-300 border border-neutral-700/50 hover:border-amber-400/30 transition-all">
+                {term[lang] || term.en}
+              </Link>
+            ))}
+          </div>
+          <div className="text-center mt-5">
+            <Link to="/glossary" className="text-amber-400/70 text-xs hover:text-amber-300 hover:underline transition-colors">
+              {{ pl: "Zobacz pełny glosariusz →", en: "View full glossary →", de: "Vollständiges Glossar →" }[lang] || "View full glossary →"}
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <div className="gradient-divider" />
+
       {(() => {
         const post = getPost("pierscionek-zareczynowy-na-zamowienie");
         if (!post) return null;

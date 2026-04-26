@@ -6,7 +6,7 @@ export const meta = {
   accent: "blue",
   publishedAt: "2026-04-17",
   updatedAt: "2026-04-17",
-  coverImage: "/img/blog/grawerowanie-laserowe.jpg",
+  coverImage: "/img/blog/grawerowanie-laserowe.webp",
   readingTime: { pl: 6, en: 5, de: 5 },
   title: {
     pl: "Grawerowanie laserowe — przewodnik po materiałach, technikach i zastosowaniach",
@@ -69,6 +69,7 @@ export const meta = {
       { id: "faq", label: "FAQ" },
     ],
   },
+  relatedPosts: ["materialy-laser-cutting", "warsztat-od-kuchni", "druk-3d-krok-po-kroku"],
 };
 
 // ======================= PL =======================
@@ -92,7 +93,7 @@ function BodyPL() {
         ]}
       />
       <P>
-        <Strong>Krótko:</Strong> CO2 = materiały organiczne + cięcie. Fiber = metale + ekstremalny detal. AEJaCA sTuDiO ma oba, więc nie musisz szukać dwóch dostawców.
+        <Strong>Krótko:</Strong> <A href="/glossary/laser-co2">CO2</A> = materiały organiczne + cięcie. <A href="/glossary/laser-fiber">Fiber</A> = metale + ekstremalny detal. AEJaCA sTuDiO ma oba, więc nie musisz szukać dwóch dostawców.
       </P>
 
       <H2 id="materialy">Jakie materiały możesz grawerować?</H2>
@@ -146,7 +147,7 @@ function BodyPL() {
         Standardowy czas realizacji: <Strong>1–3 dni robocze</Strong>. Ekspres (ten sam dzień / 24h) możliwy za dopłatą.
       </P>
       <Callout accent="blue" title="Wskazówka">
-        Wyślij grafikę (.SVG, .AI, .DXF lub nawet .JPG) — wycenimy w 24h.
+        Wyślij grafikę (<A href="/glossary/plik-svg">.SVG</A>, .AI, .DXF lub nawet .JPG) — wycenimy w 24h.
         <br /><A href="/studio#calculator">Kalkulator wyceny sTuDiO →</A>
       </Callout>
 
@@ -181,7 +182,7 @@ function BodyEN() {
         ]}
       />
       <P>
-        <Strong>In short:</Strong> CO2 = organic materials + cutting. Fiber = metals + extreme detail. AEJaCA sTuDiO has both.
+        <Strong>In short:</Strong> <A href="/glossary/laser-co2">CO2</A> = organic materials + cutting. <A href="/glossary/laser-fiber">Fiber</A> = metals + extreme detail. AEJaCA sTuDiO has both.
       </P>
 
       <H2 id="materials">What materials can you engrave?</H2>
@@ -194,7 +195,7 @@ function BodyEN() {
 
       <H2 id="engrave-vs-cut">Engraving vs cutting</H2>
       <P>
-        Engraving removes a thin layer of surface material — creating text, images, or patterns. Depth: 0.01–2 mm. Cutting goes all the way through. CO2 cuts wood up to ~10 mm, acrylic up to ~15 mm. Fiber cuts thin sheet metal up to 1–2 mm.
+        Engraving removes a thin layer of surface material — creating text, images, or patterns. Depth: 0.01–2 mm. Cutting goes all the way through. <A href="/glossary/laser-co2">CO2</A> cuts wood up to ~10 mm, acrylic up to ~15 mm. <A href="/glossary/laser-fiber">Fiber</A> cuts thin sheet metal up to 1–2 mm.
       </P>
 
       <H2 id="applications">Most popular applications</H2>
@@ -211,6 +212,11 @@ function BodyEN() {
       <P>
         Wood/acrylic engraving from €10, metal from €15, jewelry inscriptions from €5. Standard turnaround: <Strong>1–3 business days</Strong>. Express (same day / 24h) available for a surcharge.
       </P>
+
+      <Callout accent="blue" title="Tip">
+        Send your artwork (<A href="/glossary/plik-svg">.SVG</A>, .AI, .DXF or even .JPG) — we'll quote within 24h.
+        <br /><A href="/studio#calculator">sTuDiO pricing calculator →</A>
+      </Callout>
 
       <CTABox
         accent="blue"
@@ -251,7 +257,7 @@ function BodyDE() {
 
       <H2 id="gravieren-vs-schneiden">Gravieren vs. Schneiden</H2>
       <P>
-        Gravieren entfernt eine dünne Materialschicht (Text, Bilder, Muster). Schneiden geht durch das gesamte Material. CO2 schneidet Holz bis ~10 mm, Acryl bis ~15 mm. Faser schneidet dünne Bleche bis 1–2 mm.
+        Gravieren entfernt eine dünne Materialschicht (Text, Bilder, Muster). Schneiden geht durch das gesamte Material. <A href="/glossary/laser-co2">CO2</A> schneidet Holz bis ~10 mm, Acryl bis ~15 mm. <A href="/glossary/laser-fiber">Faser</A> schneidet dünne Bleche bis 1–2 mm.
       </P>
 
       <H2 id="anwendungen">Beliebteste Anwendungen</H2>
@@ -267,6 +273,10 @@ function BodyDE() {
       <P>
         Holz-/Acrylgravur ab 10 €, Metall ab 15 €, Schmuckgravur ab 5 €. Standardlieferzeit: <Strong>1–3 Werktage</Strong>.
       </P>
+      <Callout accent="blue" title="Tipp">
+        Senden Sie Ihre Grafik (<A href="/glossary/plik-svg">.SVG</A>, .AI, .DXF oder auch .JPG) — Angebot innerhalb von 24h.
+        <br /><A href="/studio#calculator">sTuDiO-Preiskalkulator →</A>
+      </Callout>
 
       <CTABox
         accent="blue"

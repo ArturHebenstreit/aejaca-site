@@ -1,11 +1,11 @@
-import { H2, P, Lead, UL, LI, Strong, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
+import { H2, P, Lead, UL, LI, Strong, A, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
 
 export const meta = {
   slug: "odlewy-zywiczne-poradnik",
   category: "studio",
   accent: "blue",
   publishedAt: "2026-04-20",
-  coverImage: "/img/blog/odlewy-zywiczne-poradnik.jpg",
+  coverImage: "/img/blog/odlewy-zywiczne-poradnik.webp",
   readingTime: { pl: 6, en: 5, de: 5 },
   title: {
     pl: "Odlewy żywiczne — czym są i co można z nich stworzyć",
@@ -65,6 +65,7 @@ export const meta = {
       { q: "Wie groß kann ein Harzguss maximal sein?", a: "Bis ca. 30 × 30 × 10 cm in einem Guss. Größere Objekte erfordern Segmentierung oder mehrteilige Formen." },
     ],
   },
+  relatedPosts: ["druk-3d-krok-po-kroku", "jak-przygotowac-plik-stl", "warsztat-od-kuchni"],
 };
 
 export function Body({ lang }) {
@@ -81,9 +82,9 @@ export function Body({ lang }) {
 
       <H2 id="uv-vs-2k">{t("Żywica UV vs dwukomponentowa", "UV vs 2K Epoxy Resin", "UV-Harz vs 2K-Epoxid")}</H2>
       <P>{t(
-        "Pracujemy z dwoma rodzajami żywic — każda ma swoje mocne strony:",
-        "We work with two types of resin — each has its strengths:",
-        "Wir arbeiten mit zwei Harztypen — jeder hat seine Stärken:"
+        <>Pracujemy z dwoma rodzajami <A href="/glossary/zywica-uv">żywic</A> — każda ma swoje mocne strony:</>,
+        <>We work with two types of <A href="/glossary/zywica-uv">resin</A> — each has its strengths:</>,
+        <>Wir arbeiten mit zwei <A href="/glossary/zywica-uv">Harz</A>typen — jeder hat seine Stärken:</>
       )}</P>
       <Table
         headers={[
@@ -124,7 +125,7 @@ export function Body({ lang }) {
         <LI><Strong>{t("Biżuteria", "Jewelry", "Schmuck")}</Strong> — {t("wisiorki, wkładki do pierścionków, kolczyki z żywicy", "pendants, ring inserts, resin earring drops", "Anhänger, Ringeinsätze, Harz-Ohrringe")}</LI>
         <LI><Strong>{t("Obiekty dekoracyjne", "Decorative objects", "Dekorationsobjekte")}</Strong> — {t("podkładki, zakładki, breloki", "coasters, bookmarks, keychains", "Untersetzer, Lesezeichen, Schlüsselanhänger")}</LI>
         <LI><Strong>{t("Sztuka żywiczna", "Resin art", "Harzkunst")}</Strong> — {t("obrazy żywiczne, miniatury river table", "resin paintings, river table miniatures", "Harzgemälde, River-Table-Miniaturen")}</LI>
-        <LI><Strong>{t("Prototypowanie", "Prototyping", "Prototyping")}</Strong> — {t("przezroczyste obudowy, modele demonstracyjne", "transparent housings, display models", "transparente Gehäuse, Ausstellungsmodelle")}</LI>
+        <LI><Strong><A href="/glossary/prototypowanie">{t("Prototypowanie", "Prototyping", "Prototyping")}</A></Strong> — {t("przezroczyste obudowy, modele demonstracyjne", "transparent housings, display models", "transparente Gehäuse, Ausstellungsmodelle")}</LI>
         <LI><Strong>{t("Utrwalanie pamiątek", "Preservation", "Konservierung")}</Strong> — {t("kwiaty, bilety, zdjęcia zakapslowane w żywicy", "flowers, tickets, photos encapsulated in resin", "Blumen, Tickets, Fotos in Harz eingeschlossen")}</LI>
       </UL>
 
@@ -135,7 +136,11 @@ export function Body({ lang }) {
         "Jeder Guss durchläuft 4 Phasen:"
       )}</P>
       <UL>
-        <LI><Strong>{t("1. Konsultacja", "1. Consultation", "1. Beratung")}</Strong> — {t("omawiamy projekt + przygotowujemy formę (silikonową lub drukowaną 3D)", "we discuss the design + prepare the mold (silicone or 3D-printed)", "wir besprechen das Design + bereiten die Form vor (Silikon oder 3D-gedruckt)")}</LI>
+        <LI><Strong>{t("1. Konsultacja", "1. Consultation", "1. Beratung")}</Strong> — {t(
+          <>omawiamy projekt + przygotowujemy formę (silikonową lub drukowaną w <A href="/glossary/druk-3d-fdm">druku 3D</A>)</>,
+          <>we discuss the design + prepare the mold (silicone or <A href="/glossary/druk-3d-fdm">3D-printed</A>)</>,
+          <>wir besprechen das Design + bereiten die Form vor (Silikon oder per <A href="/glossary/druk-3d-fdm">3D-Druck</A> gedruckt)</>
+        )}</LI>
         <LI><Strong>{t("2. Dobór materiałów", "2. Material selection", "2. Materialwahl")}</Strong> — {t("typ żywicy, pigmenty, wkładki, wykończenie", "resin type, pigments, inserts, finish", "Harztyp, Pigmente, Einlagen, Finish")}</LI>
         <LI><Strong>{t("3. Odlew + utwardzanie", "3. Casting + curing", "3. Guss + Aushärtung")}</Strong> — {t("lampa UV lub 24h utwardzanie chemiczne", "UV lamp or 24-hour chemical cure", "UV-Lampe oder 24-stündige chemische Aushärtung")}</LI>
         <LI><Strong>{t("4. Wykończenie", "4. Finishing", "4. Nachbearbeitung")}</Strong> — {t("wyjęcie z formy, szlifowanie, polerowanie, ewentualnie lakierowanie", "demolding, sanding, polishing, optional coating", "Entformen, Schleifen, Polieren, optionale Beschichtung")}</LI>

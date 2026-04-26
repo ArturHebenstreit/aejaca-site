@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench, Calculator } from "lucide-react";
+import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench, Calculator, Tag } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getPost } from "../blog/posts.js";
@@ -18,10 +18,25 @@ import {
   buildWebPageSchema,
   buildHowToSchema,
   buildProductSchema,
+  buildItemListSchema,
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 
 const techIcons = [Cpu, Printer, Zap, Layers, Box, Wrench];
+
+const PRICING_LABELS = {
+  pl: { tag: "Orientacyjne ceny", title: "Ile kosztują usługi AEJaCA sTuDiO?", note: "Ceny orientacyjne — dokładna wycena po wgraniu pliku STL/SVG.", cta: "Wyceń swój projekt" },
+  en: { tag: "Indicative pricing", title: "How much do AEJaCA sTuDiO services cost?", note: "Indicative prices — upload your STL/SVG for an exact quote.", cta: "Quote your project" },
+  de: { tag: "Richtpreise", title: "Was kosten AEJaCA sTuDiO-Dienste?", note: "Richtpreise — laden Sie Ihre STL/SVG-Datei für ein genaues Angebot hoch.", cta: "Projekt kalkulieren" },
+};
+
+const STUDIO_PRICING = [
+  { pl: "Druk 3D FDM (PLA/PETG)", en: "3D print FDM (PLA/PETG)", de: "3D-Druck FDM (PLA/PETG)", pln: 25, eur: 6 },
+  { pl: "Wycinanie laserem CO₂", en: "CO₂ laser cutting", de: "CO₂-Laserschneiden", pln: 30, eur: 7 },
+  { pl: "Grawer laserowy CO₂", en: "CO₂ laser engraving", de: "CO₂-Lasergravur", pln: 15, eur: 4 },
+  { pl: "Znakowanie laserem fibrowym", en: "Fiber laser marking", de: "Faserlasermarkierung", pln: 20, eur: 5 },
+  { pl: "Odlew żywiczny (epoksyd/UV)", en: "Resin casting (epoxy/UV)", de: "Harzguss (Epoxid/UV)", pln: 40, eur: 10 },
+];
 
 const FLOATING_CTA_LABELS = {
   pl: "Wyceń STL/SVG",
@@ -75,7 +90,17 @@ export default function Studio() {
       image: `${SITE.url}/hero-studio.jpg`,
     }),
     s.faq?.items && buildFAQSchema(s.faq.items),
-    // Product schemas = enable rich results (price) in Google Shopping + AI answers
+    buildItemListSchema({
+      name: "AEJaCA sTuDiO Digital Fabrication Services",
+      url: pageUrl,
+      items: [
+        { name: "FDM 3D Printing", url: `${pageUrl}#3dprint`, image: `${SITE.url}/hero-studio.jpg`, description: "Professional FDM 3D printing in PLA, PETG, ABS, PA6-CF, PPA-CF" },
+        { name: "CO2 Laser Engraving & Cutting", url: `${pageUrl}#co2laser`, image: `${SITE.url}/hero-studio.jpg`, description: "xTool P2 55W CO2 laser on wood, acrylic, glass, leather" },
+        { name: "Fiber Laser Marking", url: `${pageUrl}#fiber`, image: `${SITE.url}/hero-studio.jpg`, description: "Raycus 30W fiber laser on stainless steel, titanium, brass, stone" },
+        { name: "Epoxy Resin Casting", url: `${pageUrl}#resin`, image: `${SITE.url}/hero-studio.jpg`, description: "Custom epoxy and UV resin casting for decorative objects and prototypes" },
+        { name: "Rapid Prototyping", url: `${pageUrl}#prototyping`, image: `${SITE.url}/hero-studio.jpg`, description: "From CAD design to functional prototype in 24-48 hours" },
+      ],
+    }),
     buildProductSchema({
       name: "Custom 3D Print (FDM) — AEJaCA sTuDiO",
       description: "Professional FDM 3D printing service using PLA, PETG, ABS, PA6-CF, and PPA-CF. From rapid prototypes to production parts.",
@@ -104,20 +129,20 @@ export default function Studio() {
 
   return (
     <>
-      <SEOHead pageKey="studio" path="/studio" image={`${SITE.url}/hero-studio.jpg`} schemas={schemas} />
+      <SEOHead pageKey="studio" path="/studio" image={`${SITE.url}/og-studio.jpg`} schemas={schemas} />
       <div className="pt-16">
       {/* Hero */}
       <section className="bg-neutral-950 py-10 px-4">
         <div className="max-w-5xl mx-auto relative rounded-2xl overflow-hidden h-[40vh] min-h-[280px]">
           <img
-            src="/hero-studio.jpg"
+            src="/hero-studio.webp"
             alt="AEJaCA sTuDiO — 3D printing, laser engraving, and custom fabrication workshop"
             className="absolute inset-0 w-full h-full object-cover"
             loading="eager"
             fetchpriority="high"
             decoding="async"
-            width="1600"
-            height="640"
+            width="1024"
+            height="572"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-black/40 to-transparent" />
           <div className="relative z-10 flex flex-col items-center justify-end h-full pb-12 px-4 text-center">
@@ -165,6 +190,40 @@ export default function Studio() {
 
       <div className="gradient-divider" />
 
+      {/* Indicative Pricing */}
+      <section id="pricing" className="py-20 px-4 bg-neutral-950">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-3">{PRICING_LABELS[lang]?.tag}</div>
+            <h2 className="font-sans text-3xl md:text-4xl font-bold text-white tracking-tight">{PRICING_LABELS[lang]?.title}</h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {STUDIO_PRICING.map((item, i) => (
+              <div key={i} className="flex items-center justify-between p-4 rounded-xl glass-blue">
+                <div className="flex items-center gap-3">
+                  <Tag className="w-4 h-4 text-blue-400 shrink-0" />
+                  <span className="text-neutral-200 text-sm">{item[lang] || item.en}</span>
+                </div>
+                <span className="text-blue-300 font-semibold text-sm whitespace-nowrap ml-3">
+                  {{ pl: "od", en: "from", de: "ab" }[lang]}{" "}
+                  {lang === "pl"
+                    ? `${item.pln.toLocaleString("pl-PL")} zł`
+                    : `€${item.eur.toLocaleString("de-DE")}`}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <p className="text-neutral-400 text-sm mb-4">{PRICING_LABELS[lang]?.note}</p>
+            <a href="#calculator" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors">
+              {PRICING_LABELS[lang]?.cta} <ArrowRight className="w-4 h-4" />
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <div className="gradient-divider" />
+
       {/* Studio Calculator */}
       <StudioCalculator />
 
@@ -182,7 +241,7 @@ export default function Studio() {
           <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-3">{s.portfolio?.tag || "Portfolio"}</div>
           <h2 className="font-sans text-3xl md:text-4xl font-bold text-white tracking-tight mb-8">{s.portfolio?.title || "Portfolio"}</h2>
           <div className="py-16 rounded-2xl border border-white/5 bg-white/[0.02]">
-            <div className="text-neutral-500 text-lg">
+            <div className="text-neutral-400 text-lg">
               {{ pl: "W trakcie przygotowania", en: "In preparation", de: "In Vorbereitung" }[lang] || "In preparation"}
             </div>
           </div>
@@ -219,7 +278,7 @@ export default function Studio() {
               <div key={i} ref={getStepRef(i)} className="reveal-scale">
                 <div className="text-blue-400 font-mono text-2xl font-bold mb-2">{String(i + 1).padStart(2, "0")}</div>
                 <h3 className="font-sans text-lg font-semibold text-white mb-2">{step.title}</h3>
-                <p className="text-neutral-500 text-sm">{step.desc}</p>
+                <p className="text-neutral-400 text-sm">{step.desc}</p>
               </div>
             ))}
           </div>
@@ -239,6 +298,44 @@ export default function Studio() {
       <div className="gradient-divider" />
 
       {/* Related blog articles — internal linking (SEO signal) */}
+      {/* Glossary terms */}
+      <section className="py-16 px-4 bg-neutral-900/30">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-8">
+            <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-2">
+              {{ pl: "Słownik", en: "Glossary", de: "Glossar" }[lang] || "Glossary"}
+            </div>
+            <h2 className="font-sans text-xl font-bold text-white tracking-tight">
+              {{ pl: "Kluczowe pojęcia", en: "Key terms", de: "Schlüsselbegriffe" }[lang] || "Key terms"}
+            </h2>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            {[
+              { id: "druk-3d-fdm", pl: "Druk 3D FDM", en: "FDM 3D Printing", de: "FDM 3D-Druck" },
+              { id: "zywica-uv", pl: "Żywica UV", en: "UV Resin", de: "UV-Harz" },
+              { id: "laser-co2", pl: "Laser CO₂", en: "CO₂ Laser", de: "CO₂-Laser" },
+              { id: "laser-fiber", pl: "Laser Fiber", en: "Fiber Laser", de: "Faserlaser" },
+              { id: "plik-stl", pl: "Plik STL", en: "STL File", de: "STL-Datei" },
+              { id: "plik-svg", pl: "Plik SVG", en: "SVG File", de: "SVG-Datei" },
+              { id: "odlew-zywiczny", pl: "Odlew żywiczny", en: "Resin Casting", de: "Harzguss" },
+              { id: "prototypowanie", pl: "Prototypowanie", en: "Prototyping", de: "Prototyping" },
+            ].map((term) => (
+              <Link key={term.id} to={`/glossary/${term.id}`}
+                className="px-4 py-2 rounded-full text-sm bg-neutral-800/60 text-neutral-300 hover:bg-blue-400/10 hover:text-blue-300 border border-neutral-700/50 hover:border-blue-400/30 transition-all">
+                {term[lang] || term.en}
+              </Link>
+            ))}
+          </div>
+          <div className="text-center mt-5">
+            <Link to="/glossary" className="text-blue-400/70 text-xs hover:text-blue-300 hover:underline transition-colors">
+              {{ pl: "Zobacz pełny glosariusz →", en: "View full glossary →", de: "Vollständiges Glossar →" }[lang] || "View full glossary →"}
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <div className="gradient-divider" />
+
       {(() => {
         const posts = [getPost("druk-3d-krok-po-kroku"), getPost("grawerowanie-laserowe-przewodnik")].filter(Boolean);
         if (!posts.length) return null;

@@ -20,6 +20,7 @@ export default function Navbar() {
     { to: "/", label: t.nav.home },
     { to: "/jewelry", label: t.nav.jewelry, sections: t.nav.jewelrySections },
     { to: "/studio", label: t.nav.studio, sections: t.nav.studioSections },
+    { to: "/about", label: t.nav.about, sections: t.nav.aboutSections },
     { to: "/blog", label: t.nav.blog || "Blog" },
     { to: "/glossary", label: t.nav.glossary },
     { to: "/contact", label: t.nav.contact },
@@ -40,8 +41,12 @@ export default function Navbar() {
       const inMobile = langRefMobile.current && langRefMobile.current.contains(e.target);
       if (!inDesktop && !inMobile) setLangOpen(false);
     }
+    function handleKeyDown(e) {
+      if (e.key === "Escape") { setLangOpen(false); setOpenDropdown(null); }
+    }
     document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => { document.removeEventListener("mousedown", handleClick); document.removeEventListener("keydown", handleKeyDown); };
   }, []);
 
   // Close mobile menu on route change
@@ -121,6 +126,7 @@ export default function Navbar() {
   function getDropdownKey(to) {
     if (to === "/jewelry") return "jewelry";
     if (to === "/studio") return "studio";
+    if (to === "/about") return "about";
     return null;
   }
 
@@ -131,13 +137,12 @@ export default function Navbar() {
           ? "bg-neutral-950/95 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20"
           : "bg-neutral-950/80 backdrop-blur-md border-b border-white/5"
       }`}
-      role="navigation"
       aria-label="Main navigation"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-3 group">
-            <img src="/brand-sign.webp" alt="AEJaCA" className="h-11 w-11 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] transition-transform duration-300 group-hover:scale-105" />
+            <img src="/brand-sign.webp" alt="AEJaCA" width="44" height="44" className="h-11 w-11 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] transition-transform duration-300 group-hover:scale-105" />
             <span className="font-serif text-xl font-semibold tracking-wide">AEJaCA</span>
           </Link>
 
@@ -181,19 +186,34 @@ export default function Navbar() {
                       onMouseLeave={handleDropdownLeave}
                     >
                       <div className="py-1.5">
-                        {sections.map((sec) => (
-                          <button
-                            key={sec.id}
-                            onClick={() => scrollToSection(to, sec.id)}
-                            className={`w-full text-left px-4 py-2 text-sm transition-colors ${
-                              accentColor === "blue"
-                                ? "text-neutral-400 hover:text-blue-300 hover:bg-blue-400/5"
-                                : "text-neutral-400 hover:text-amber-300 hover:bg-amber-400/5"
-                            }`}
-                          >
-                            {sec.label}
-                          </button>
-                        ))}
+                        {sections.map((sec) =>
+                          sec.to ? (
+                            <Link
+                              key={sec.to}
+                              to={sec.to}
+                              onClick={() => setOpenDropdown(null)}
+                              className={`block px-4 py-2 text-sm transition-colors ${
+                                accentColor === "blue"
+                                  ? "text-neutral-400 hover:text-blue-300 hover:bg-blue-400/5"
+                                  : "text-neutral-400 hover:text-amber-300 hover:bg-amber-400/5"
+                              }`}
+                            >
+                              {sec.label}
+                            </Link>
+                          ) : (
+                            <button
+                              key={sec.id}
+                              onClick={() => scrollToSection(to, sec.id)}
+                              className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                                accentColor === "blue"
+                                  ? "text-neutral-400 hover:text-blue-300 hover:bg-blue-400/5"
+                                  : "text-neutral-400 hover:text-amber-300 hover:bg-amber-400/5"
+                              }`}
+                            >
+                              {sec.label}
+                            </button>
+                          )
+                        )}
                       </div>
                     </div>
                   )}
@@ -284,19 +304,34 @@ export default function Navbar() {
                       isExpanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
                     }`}>
                       <div className="pl-6 pb-2 space-y-0.5">
-                        {sections.map((sec) => (
-                          <button
-                            key={sec.id}
-                            onClick={() => scrollToSection(to, sec.id)}
-                            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                              accentColor === "blue"
-                                ? "text-neutral-500 hover:text-blue-300 hover:bg-blue-400/5"
-                                : "text-neutral-500 hover:text-amber-300 hover:bg-amber-400/5"
-                            }`}
-                          >
-                            {sec.label}
-                          </button>
-                        ))}
+                        {sections.map((sec) =>
+                          sec.to ? (
+                            <Link
+                              key={sec.to}
+                              to={sec.to}
+                              onClick={() => { setMenuOpen(false); setMobileExpanded(null); }}
+                              className={`block px-3 py-2 rounded-lg text-sm transition-colors ${
+                                accentColor === "blue"
+                                  ? "text-neutral-400 hover:text-blue-300 hover:bg-blue-400/5"
+                                  : "text-neutral-400 hover:text-amber-300 hover:bg-amber-400/5"
+                              }`}
+                            >
+                              {sec.label}
+                            </Link>
+                          ) : (
+                            <button
+                              key={sec.id}
+                              onClick={() => scrollToSection(to, sec.id)}
+                              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                                accentColor === "blue"
+                                  ? "text-neutral-400 hover:text-blue-300 hover:bg-blue-400/5"
+                                  : "text-neutral-400 hover:text-amber-300 hover:bg-amber-400/5"
+                              }`}
+                            >
+                              {sec.label}
+                            </button>
+                          )
+                        )}
                       </div>
                     </div>
                   )}

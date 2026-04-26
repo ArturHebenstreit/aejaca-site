@@ -5,29 +5,43 @@ export default {
     jewelry: "AEJaCA Biżuteria",
     studio: "AEJaCA sTuDiO",
     glossary: "Słownik",
+    about: "O Marce AEJaCA",
     contact: "Kontakt",
     jewelrySections: [
-      { label: "O nas", id: "about" },
-      { label: "Usługi", id: "services" },
-      { label: "Konfigurator", id: "calculator" },
+      { label: "o AEJaCA Biżuteria", id: "about" },
+      { label: "Produkty i Usługi", id: "services" },
+      { label: "Orientacyjne Ceny", id: "pricing" },
+      { label: "Kalkulator cen", id: "calculator" },
+      { label: "FAQ", id: "faq" },
       { label: "Proces", id: "process" },
       { label: "Portfolio", id: "portfolio" },
-      { label: "Opinie", id: "testimonials" },
-      { label: "FAQ", id: "faq" },
       { label: "Porady", id: "tips" },
+      { label: "Słownik", to: "/glossary" },
+      { label: "Blog", to: "/blog" },
+      { label: "Opinie", id: "testimonials" },
       { label: "Sklep", id: "shop" },
     ],
     studioSections: [
-      { label: "O nas", id: "about" },
+      { label: "o AEJaCA sTuDiO", id: "about" },
       { label: "Technologie", id: "technologies" },
-      { label: "Kalkulator", id: "calculator" },
+      { label: "Orientacyjne Ceny", id: "pricing" },
+      { label: "Kalkulator cen", id: "calculator" },
+      { label: "FAQ", id: "faq" },
       { label: "Portfolio", id: "portfolio" },
       { label: "Usługi", id: "services" },
-      { label: "Proces", id: "process" },
-      { label: "Opinie", id: "testimonials" },
-      { label: "FAQ", id: "faq" },
+      { label: "Jak Pracujemy", id: "process" },
       { label: "Porady", id: "tips" },
+      { label: "Słownik", to: "/glossary" },
+      { label: "Blog", to: "/blog" },
+      { label: "Opinie", id: "testimonials" },
       { label: "Sklep", id: "shop" },
+    ],
+    aboutSections: [
+      { label: "o Marce", to: "/about" },
+      { label: "Gwarancja", to: "/warranty" },
+      { label: "Polityka zwrotów", to: "/returns" },
+      { label: "Wysyłka", to: "/shipping" },
+      { label: "Polityka prywatności", to: "/privacy" },
     ],
   },
 
@@ -38,11 +52,11 @@ export default {
     jewelryTitle: "AEJaCA",
     jewelrySubtitle: "AEJaCA Biżuteria",
     jewelryDesc: "Pierścionki, wisiorki i obrączki z historią zamiast piętnastej kopii z galerii. Srebro, złoto, naturalne kamienie.",
-    jewelryBtn: "Zaprojektuj biżuterię",
+    jewelryBtn: "Zobacz kolekcję",
     studioTitle: "sTuDiO",
     studioSubtitle: "AEJaCA sTuDiO",
     studioDesc: "Druk 3D, grawer laserowy, prototypy CNC. Zmień pomysł w rzeczywisty, trzymalny produkt.",
-    studioBtn: "Zleć projekt studia",
+    studioBtn: "Wyceń projekt online",
     brandHeading: "Twoja wizja. Nasza precyzja.",
     brandText: "Każdy projekt to rozmowa — nie katalog. Zaczynamy od Twojego pomysłu, szkicu lub inspiracji. Wspólnie dopracowujemy detal, materiał, wymiar. Widzisz render 3D zanim cokolwiek powstanie. Dostajesz przedmiot, który istnieje tylko dla Ciebie.",
     brandReviewsBadge: "opinii Google",
@@ -238,6 +252,10 @@ export default {
         { q: "Z jakimi metalami pracujecie?", a: "Głównie srebro próby 925 i złoto (14K, 18K). Pracujemy też z mieszanymi metalami przy unikalnych projektach." },
         { q: "Jak ustalane są ceny?", a: "Cena zależy od metalu, kamieni szlachetnych, złożoności i nakładu pracy. Przed rozpoczęciem podajemy szczegółową wycenę." },
         { q: "Czy wysyłacie za granicę?", a: "Tak! Wysyłamy na cały świat przesyłkami śledzonymi i ubezpieczonymi. Koszty wysyłki zależą od miejsca docelowego." },
+        { q: "Ile trwa realizacja zamówienia?", a: "Jeśli posiadamy materiały (kruszec + kamienie), realizacja trwa do 7 dni roboczych. Jeśli materiały wymagają zamówienia, proces wydłuża się o 3–7 dni roboczych." },
+        { q: "Czy mogę zwrócić biżuterię?", a: "Produkty uniwersalne — tak, w ciągu 14 dni. Biżuteria personalizowana wykonana na indywidualne zamówienie nie podlega zwrotowi. Szczegóły na stronie [Zwroty](/returns)." },
+        { q: "Ile kosztuje wysyłka?", a: "Wysyłka InPost od 12 zł. Darmowa przy zamówieniu od 400 zł. Wysyłamy do całej Europy. Szczegóły na stronie [Wysyłka](/shipping)." },
+        { q: "Jaka jest gwarancja?", a: "24 miesiące na wady produkcyjne. Bezpłatne pierwsze czyszczenie w ciągu 12 miesięcy. Szczegóły na stronie [Gwarancja](/warranty)." },
       ],
     },
 
@@ -247,7 +265,7 @@ export default {
       categories: [
         {
           name: "Rozmiar pierścionka",
-          img: "/img/calc/tips_jewelry/ring_sizing.png",
+          img: "/img/calc/tips_jewelry/ring_sizing.webp",
           tips: [
             { q: "Jak zmierzyć rozmiar pierścionka w domu?", a: "Owiń cienki pasek papieru lub nitkę wokół palca w najszerszym miejscu (zwykle na kostce). Zaznacz punkt nakładania, zmierz długość w mm i podziel przez 3,14 — otrzymasz średnicę wewnętrzną. Porównaj z tabelą rozmiarów. Mierz wieczorem, gdy palce są nieco większe." },
             { q: "Co jeśli mój rozmiar jest między dwoma numerami?", a: "Zawsze zaokrąglaj w górę — łatwiej jest zmniejszyć pierścionek (np. kulkami dystansowymi) niż go rozciągnąć. Przy szerokich obrączkach (6mm+) wybierz pół rozmiaru więcej, bo siedzą ciaśniej." },
@@ -257,7 +275,7 @@ export default {
         },
         {
           name: "Dobór biżuterii",
-          img: "/img/calc/tips_jewelry/styling.png",
+          img: "/img/calc/tips_jewelry/styling.webp",
           tips: [
             { q: "Jak wybrać długość naszyjnika?", a: "35cm — choker, leży na obojczyku. 45cm — najbardziej uniwersalny, tuż pod obojczykiem. 60cm — długość matinée, idealna do layeringu. Dopasuj do dekoltu: dekolty w serek świetnie wyglądają z wisiorkami, okrągłe — z krótszymi łańcuszkami." },
             { q: "Jak dopasować biżuterię do stroju?", a: "Złota zasada: dopasuj metal do detali ubioru (zamki, guziki, klamry). Srebro uzupełnia chłodne tony (niebieski, zielony, szary), złoto — ciepłe (czerwony, brąz, ziemiste). Na oficjalne okazje — jeden metal. Na co dzień — miksuj śmiało." },
@@ -267,7 +285,7 @@ export default {
         },
         {
           name: "Pielęgnacja",
-          img: "/img/calc/tips_jewelry/care.png",
+          img: "/img/calc/tips_jewelry/care.webp",
           tips: [
             { q: "Jak czyścić srebrną biżuterię w domu?", a: "Wymieszaj ciepłą wodę z kroplą łagodnego płynu do naczyń. Mocz 5–10 minut, delikatnie pocieraj miękką szczoteczką do zębów, wypłucz i osusz. Na oksydację: użyj ściereczki do polerowania srebra lub pasty z sody oczyszczonej i wody. Unikaj agresywnych chemikaliów — mogą uszkodzić kamienie." },
             { q: "Jak prawidłowo przechowywać biżuterię?", a: "Przechowuj każdy element oddzielnie w miękkich saszetkach lub wyłożonej szkatułce, by zapobiec zarysowaniom. Trzymaj srebro z dala od wilgoci (dodaj woreczki z silikaelem). Zdejmuj biżuterię przed pływaniem, ćwiczeniami i nakładaniem perfum." },
@@ -277,7 +295,7 @@ export default {
         },
         {
           name: "Kamienie szlachetne",
-          img: "/img/calc/tips_jewelry/gemstones.png",
+          img: "/img/calc/tips_jewelry/gemstones.webp",
           tips: [
             { q: "Jak rozpoznać naturalny kamień szlachetny?", a: "Naturalne kamienie mają drobne inkluzje, wariacje kolorów i drobne niedoskonałości widoczne pod lupą. Idealnie jednolite, bezbłędne kamienie w niskich cenach to prawdopodobnie syntetyki. Przy drogich kamieniach zawsze proś o certyfikat autentyczności." },
             { q: "Które kamienie szlachetne najlepiej nadają się do codziennego noszenia?", a: "Użyj skali twardości Mohsa: diamenty (10), szafiry i rubiny (9), topaz (8) — doskonałe do codziennych pierścionków. Szmaragdy (7,5) wymagają więcej ostrożności. Opale (5,5–6,5) i kamień księżycowy (6–6,5) lepiej sprawdzą się w kolczykach i wisioreczkach niż w pierścionkach." },
@@ -299,7 +317,7 @@ export default {
     techTitle: "Technologie",
     technologies: [
       { title: "Projektowanie 3D (CAD)", desc: "Profesjonalne modelowanie 3D w Autodesk Fusion i Rhino — projektowanie produktów, prototypowanie i pliki gotowe do produkcji." },
-      { title: "Druk 3D", desc: "Druk 3D filamentem i żywicą do szybkiego prototypowania, części funkcjonalnych i produkcji małoseryjnej." },
+      { title: "Druk 3D", desc: "Druk 3D FDM do szybkiego prototypowania, części funkcjonalnych i produkcji małoseryjnej." },
       { title: "Grawerowanie Laserem Światłowodowym", desc: "Precyzyjne systemy laserowe galvo do znakowania metalu, biżuterii, narzędzi i komponentów technicznych." },
       { title: "Cięcie Laserem CO2", desc: "Cięcie i grawerowanie laserowe drewna, akrylu, szkła, skóry i tworzyw sztucznych." },
       { title: "Odlewanie z Żywicy Epoksydowej", desc: "Systemy żywic UV i dwuskładnikowych do obiektów dekoracyjnych, kapsułkowania i form na zamówienie." },
@@ -451,6 +469,7 @@ export default {
         { q: "Z jakimi materiałami pracujecie?", a: "PLA, PETG, ABS, żywica do druku 3D. Metale, drewno, akryl, szkło, skóra do pracy laserowej. Żywice UV i epoksydowe do odlewów." },
         { q: "Czy oferujecie usługi projektowania?", a: "Oczywiście. Zapewniamy pełne usługi projektowania CAD — od koncepcji po pliki gotowe do produkcji." },
         { q: "Jak kalkulowane są ceny?", a: "Na podstawie technologii, materiału, rozmiaru, złożoności i ilości. Zawsze podajemy szczegółową wycenę z góry." },
+        { q: "Ile trwa realizacja projektu?", a: "Jeśli materiał jest na stanie, realizacja trwa 3–5 dni roboczych (w zależności od ilości). Zamówienie materiałów wydłuża czas o 3–7 dni. W przypadku, gdy realizacja zamówienia wymaga sprowadzenia specjalistycznych komponentów zgodnych ze specyfikacją (np. konkretne kamienie, nietypowe filamenty, komponenty elektroniczne), czas realizacji może wydłużyć się o dodatkowe 7–14 dni roboczych." },
       ],
     },
 
@@ -460,7 +479,7 @@ export default {
       categories: [
         {
           name: "Druk 3D i filamenty",
-          img: "/img/calc/tips_studio/3d_printing.png",
+          img: "/img/calc/tips_studio/3d_printing.webp",
           tips: [
             { q: "Jaki filament wybrać do mojego projektu?", a: "PLA — najłatwiejszy w druku, świetny na prototypy, elementy dekoracyjne i modele. Biodegradowalny, ale nieodporny na ciepło (mięknie w ~60°C). PETG — mocniejszy, lekko elastyczny, bezpieczny dla żywności, dobra odporność chemiczna. Idealny na części funkcjonalne i obudowy. ABS — odporny na ciepło (~100°C), wytrzymały, ale wymaga zamkniętej drukarki (deformuje się w przeciągach). Świetny na części samochodowe i narzędzia." },
             { q: "Kiedy wybrać druk z żywicy (SLA) zamiast filamentu?", a: "Żywica wygrywa przy: drobnych detalach (figurki, modele jubilerskie, stomatologia), gładkiej powierzchni i dokładności wymiarowej. Filament wygrywa przy: dużych częściach, wytrzymałości mechanicznej, szybszym druku i niższym koszcie materiału. Zasada: jeśli wygląd i detale ważniejsze niż siła — wybierz żywicę." },
@@ -471,7 +490,7 @@ export default {
         },
         {
           name: "Grawerowanie laserowe",
-          img: "/img/calc/tips_studio/laser_engraving.png",
+          img: "/img/calc/tips_studio/laser_engraving.webp",
           tips: [
             { q: "Jaki typ lasera do jakiego materiału?", a: "Laser światłowodowy (1064nm) — metale (stal, aluminium, mosiądz, srebro, złoto), twarde tworzywa i anodowane powierzchnie. Laser CO2 (10600nm) — drewno, akryl, szkło, skóra, papier, tkaniny i guma. Laser diodowy (445nm) — budżetowa opcja tylko na drewno i ciemne materiały. Nigdy nie używaj CO2 na gołym metalu — wiązka się odbija." },
             { q: "Jak uzyskać najlepszą jakość grawerowania na metalu?", a: "Użyj lasera światłowodowego z głowicą galvo. Na ciemne oznaczenia na stali nierdzewnej: niska moc / wysoka prędkość (znakowanie tlenkowe). Na głębokie grawerowanie: wiele przejść z wyższą mocą. Zawsze oczyść powierzchnię izopropanolem. Użyj sprayu do znakowania (CerMark) na metalach, które nie znakują się natywnie." },
@@ -481,7 +500,7 @@ export default {
         },
         {
           name: "Odlewy z żywicy",
-          img: "/img/calc/tips_studio/resin_casting.png",
+          img: "/img/calc/tips_studio/resin_casting.webp",
           tips: [
             { q: "Jaką żywicę do jakiego zastosowania?", a: "Żywica UV — szybkie utwardzanie (minuty), idealna na małe elementy, oprawki biżuteryjne, cienkie warstwy i powłoki. Ograniczona do ~3mm głębokości na warstwę. Żywica epoksydowa (dwuskładnikowa) — do większych odlewów, stolikowych river table, zalewania obiektów (kwiaty, zdjęcia). Utwardza się 24–72h. Żywica poliuretanowa — najlepsza na sztywne części funkcjonalne i formy prototypowe." },
             { q: "Jak stworzyć formy silikonowe do odlewów?", a: "Użyj silikonu platynowego (gładki, bezpieczny do żywności) na detale. Zbuduj ramkę wokół modelu wzorcowego, spryskaj środkiem antyadhezyjnym, wlej silikon i daj utwardzać 24h. Na złożone kształty: forma dwuczęściowa z linią podziału. Twardość Shore 20A na elastyczne formy (łatwe wyjmowanie), 40A na sztywne (lepsza dokładność wymiarowa)." },
@@ -491,7 +510,7 @@ export default {
         },
         {
           name: "Materiały i dobre praktyki",
-          img: "/img/calc/tips_studio/materials.png",
+          img: "/img/calc/tips_studio/materials.webp",
           tips: [
             { q: "Jak wybrać odpowiednią metodę wytwarzania?", a: "Potrzebujesz 1 sztuki szybko? → Druk 3D. Trwałe znakowanie metalu? → Laser światłowodowy. Precyzyjne cięcie płaskich materiałów? → Laser CO2. Przezroczyste lub dekoracyjne obiekty? → Odlew żywiczny. Mała seria identycznych części? → Druk 3D + forma silikonowa + odlew żywiczny." },
             { q: "Jak przygotować pliki do produkcji?", a: "Do druku 3D: format STL lub 3MF, siatka bez dziur (watertight), grubość ścianki min. 1,2mm dla filamentu / 0,5mm dla SLA. Do lasera: pliki wektorowe (SVG, DXF, AI), zamień tekst na krzywe, oddziel linie cięcia od wypełnień grawerowania. Do form żywicznych: uwzględnij 0,5–1% skurczu w modelu wzorcowym." },
@@ -553,5 +572,8 @@ export default {
     followUs: "Obserwuj Nas",
     rights: "Wszelkie prawa zastrzeżone.",
     privacy: "Polityka Prywatności",
+    warranty: "Gwarancja",
+    returns: "Zwroty",
+    shipping: "Wysyłka",
   },
 };

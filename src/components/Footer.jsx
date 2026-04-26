@@ -28,7 +28,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-3 gap-10">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <img src="/brand-sign.webp" alt="AEJaCA" className="h-10 w-10 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
+              <img src="/brand-sign.webp" alt="AEJaCA" width="40" height="40" className="h-10 w-10 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
               <span className="font-serif text-lg font-semibold">AEJaCA</span>
             </div>
             <p className="text-neutral-400 text-sm leading-relaxed">{t.footer.tagline}</p>
@@ -41,7 +41,11 @@ export default function Footer() {
               <Link to="/studio" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.nav.studio}</Link>
               <Link to="/blog" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.blog || "Blog"}</Link>
               <Link to="/glossary" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.glossary}</Link>
+              <Link to="/about" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.about}</Link>
               <Link to="/contact" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.contact}</Link>
+              <Link to="/warranty" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.warranty}</Link>
+              <Link to="/returns" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.returns}</Link>
+              <Link to="/shipping" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.shipping}</Link>
               <Link to="/privacy" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.privacy}</Link>
             </div>
           </nav>
@@ -59,7 +63,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-white/5 text-center text-neutral-500 text-xs">
+        <div className="mt-10 pt-6 border-t border-white/5 text-center text-neutral-400 text-xs">
           &copy; {new Date().getFullYear()} AEJaCA &mdash; {t.footer.rights}
         </div>
       </div>

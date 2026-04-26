@@ -324,6 +324,27 @@ export function buildFAQSchema(items) {
   };
 }
 
+// ---------- ItemList (carousel / list rich result in SERP) ----------
+// Google renders ItemList as a carousel when items link to individual pages.
+// AI assistants use it to enumerate offerings for "what products/services does X offer?" queries.
+export function buildItemListSchema({ name, url, items }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name,
+    url,
+    numberOfItems: items.length,
+    itemListElement: items.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: item.name,
+      url: item.url,
+      ...(item.image && { image: item.image }),
+      ...(item.description && { description: item.description }),
+    })),
+  };
+}
+
 // ---------- Google Reviews — aggregateRating + Review[] ----------
 // Critical: stars in SERP (+20-30% CTR uplift per Google case studies).
 // SEO-safe gray zone — requires 4 conditions:

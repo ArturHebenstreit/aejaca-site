@@ -56,11 +56,11 @@ export function Lead({ children }) {
 }
 
 export function UL({ children }) {
-  return <ul className="mb-6 space-y-2 list-disc pl-6 marker:text-neutral-500">{children}</ul>;
+  return <ul className="mb-6 space-y-2 list-disc pl-6 marker:text-neutral-400">{children}</ul>;
 }
 
 export function OL({ children }) {
-  return <ol className="mb-6 space-y-2 list-decimal pl-6 marker:text-neutral-500">{children}</ol>;
+  return <ol className="mb-6 space-y-2 list-decimal pl-6 marker:text-neutral-400">{children}</ol>;
 }
 
 export function LI({ children }) {

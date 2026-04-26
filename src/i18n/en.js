@@ -6,29 +6,43 @@ export default {
     jewelry: "AEJaCA Jewelry",
     studio: "AEJaCA sTuDiO",
     glossary: "Glossary",
+    about: "About AEJaCA",
     contact: "Contact",
     jewelrySections: [
-      { label: "About", id: "about" },
-      { label: "Services", id: "services" },
-      { label: "Configurator", id: "calculator" },
+      { label: "About AEJaCA Jewelry", id: "about" },
+      { label: "Products & Services", id: "services" },
+      { label: "Indicative Pricing", id: "pricing" },
+      { label: "Price Calculator", id: "calculator" },
+      { label: "FAQ", id: "faq" },
       { label: "Process", id: "process" },
       { label: "Portfolio", id: "portfolio" },
-      { label: "Testimonials", id: "testimonials" },
-      { label: "FAQ", id: "faq" },
       { label: "Tips & Advice", id: "tips" },
+      { label: "Glossary", to: "/glossary" },
+      { label: "Blog", to: "/blog" },
+      { label: "Testimonials", id: "testimonials" },
       { label: "Shop", id: "shop" },
     ],
     studioSections: [
-      { label: "About", id: "about" },
+      { label: "About AEJaCA sTuDiO", id: "about" },
       { label: "Technologies", id: "technologies" },
-      { label: "Calculator", id: "calculator" },
+      { label: "Indicative Pricing", id: "pricing" },
+      { label: "Price Calculator", id: "calculator" },
+      { label: "FAQ", id: "faq" },
       { label: "Portfolio", id: "portfolio" },
       { label: "Services", id: "services" },
-      { label: "Process", id: "process" },
-      { label: "Testimonials", id: "testimonials" },
-      { label: "FAQ", id: "faq" },
+      { label: "How We Work", id: "process" },
       { label: "Tips & Advice", id: "tips" },
+      { label: "Glossary", to: "/glossary" },
+      { label: "Blog", to: "/blog" },
+      { label: "Testimonials", id: "testimonials" },
       { label: "Shop", id: "shop" },
+    ],
+    aboutSections: [
+      { label: "About", to: "/about" },
+      { label: "Warranty", to: "/warranty" },
+      { label: "Returns Policy", to: "/returns" },
+      { label: "Shipping", to: "/shipping" },
+      { label: "Privacy Policy", to: "/privacy" },
     ],
   },
 
@@ -40,11 +54,11 @@ export default {
     jewelryTitle: "AEJaCA",
     jewelrySubtitle: "AEJaCA Jewelry",
     jewelryDesc: "Rings, pendants, and wedding bands with a story — not the fifteenth copy from a mall display. Silver, gold, natural gemstones.",
-    jewelryBtn: "Design jewelry",
+    jewelryBtn: "See the collection",
     studioTitle: "sTuDiO",
     studioSubtitle: "AEJaCA sTuDiO",
     studioDesc: "3D printing, laser engraving, CNC prototyping. Turn your idea into a real, holdable product.",
-    studioBtn: "Commission a studio project",
+    studioBtn: "Get an online quote",
     brandHeading: "Your vision. Our precision.",
     brandText: "Every project is a conversation — not a catalog. We start from your idea, sketch, or inspiration. Together we refine the detail, material, and dimensions. You see the 3D render before anything is made. You receive an object that exists only for you.",
     brandReviewsBadge: "Google reviews",
@@ -240,6 +254,10 @@ export default {
         { q: "What metals do you work with?", a: "Primarily sterling silver (925) and gold (14K, 18K). We also work with mixed metals for unique designs." },
         { q: "How are prices determined?", a: "Pricing depends on the metal, gemstones, complexity, and labor involved. We provide a detailed quote before starting." },
         { q: "Do you ship internationally?", a: "Yes! We ship worldwide via tracked and insured postal services. Shipping costs vary by destination." },
+        { q: "How long does order fulfillment take?", a: "If we have the materials (metal + stones), fulfillment takes up to 7 business days. Custom or engraved pieces — up to 14 days. You'll receive a tracking number as soon as the order ships." },
+        { q: "Can I return jewelry?", a: "Universal products — yes, within 14 days of delivery (unworn, original packaging). Custom-made pieces (engraving, non-standard size) are excluded from returns. Details on our [Returns](/returns) page." },
+        { q: "How much does shipping cost?", a: "InPost shipping from 12 PLN. Free shipping on orders over 400 PLN. International: from 35 PLN (EU) via tracked postal service. Details on our [Shipping](/shipping) page." },
+        { q: "What warranty do you offer?", a: "24 months on manufacturing defects. The warranty covers structural faults — not mechanical damage or normal wear. Full details on our [Warranty](/warranty) page." },
       ],
     },
 
@@ -249,7 +267,7 @@ export default {
       categories: [
         {
           name: "Ring Sizing",
-          img: "/img/calc/tips_jewelry/ring_sizing.png",
+          img: "/img/calc/tips_jewelry/ring_sizing.webp",
           tips: [
             { q: "How to measure your ring size at home?", a: "Wrap a thin strip of paper or string around your finger at the widest point (usually the knuckle). Mark where it overlaps, measure the length in mm, and divide by 3.14 to get the inner diameter. Compare with a ring size chart. Measure in the evening when fingers are slightly larger." },
             { q: "What if my ring size is between two sizes?", a: "Always round up to the larger size — it's easier to make a ring slightly smaller with sizing beads than to stretch it. For wide bands (6mm+), go a half-size up as they fit more snugly." },
@@ -259,7 +277,7 @@ export default {
         },
         {
           name: "Choosing Jewelry",
-          img: "/img/calc/tips_jewelry/styling.png",
+          img: "/img/calc/tips_jewelry/styling.webp",
           tips: [
             { q: "How to choose a necklace length?", a: "14\" (35cm) sits on the collarbone — choker style. 18\" (45cm) is the most universal, resting just below the collarbone. 24\" (60cm) is a matinee length for layering. Consider your neckline: V-necks pair well with pendants, crew necks with shorter chains." },
             { q: "How to match jewelry to your outfit?", a: "The golden rule: match metals to your clothing's hardware (zippers, buttons, buckles). Silver complements cool tones (blues, greens, grays), while gold pairs with warm tones (reds, browns, earth tones). For a formal look, stick to one metal. For casual — mix freely." },
@@ -269,7 +287,7 @@ export default {
         },
         {
           name: "Care & Maintenance",
-          img: "/img/calc/tips_jewelry/care.png",
+          img: "/img/calc/tips_jewelry/care.webp",
           tips: [
             { q: "How to clean silver jewelry at home?", a: "Mix warm water with a drop of mild dish soap. Soak for 5–10 minutes, gently scrub with a soft toothbrush, rinse, and pat dry. For tarnish: use a silver polishing cloth or make a paste of baking soda and water. Avoid harsh chemicals — they can damage stones." },
             { q: "How to store jewelry properly?", a: "Store each piece separately in soft pouches or a lined jewelry box to prevent scratching. Keep silver away from air and humidity (add silica gel packets). Remove jewelry before swimming, exercising, or applying perfume and lotions." },
@@ -279,7 +297,7 @@ export default {
         },
         {
           name: "Gemstones",
-          img: "/img/calc/tips_jewelry/gemstones.png",
+          img: "/img/calc/tips_jewelry/gemstones.webp",
           tips: [
             { q: "How to tell if a gemstone is natural?", a: "Natural stones have tiny inclusions, color variations, and minor imperfections visible under magnification. Perfectly flawless, uniformly colored stones at low prices are likely synthetic. Always ask for a certificate of authenticity for expensive stones." },
             { q: "Which gemstones are most durable for daily wear?", a: "Use the Mohs hardness scale: diamonds (10), sapphires and rubies (9), and topaz (8) are excellent for daily rings. Emeralds (7.5) need more care. Opals (5.5–6.5) and moonstone (6–6.5) are better for earrings and pendants than rings." },
@@ -302,7 +320,7 @@ export default {
     techTitle: "Technologies",
     technologies: [
       { title: "3D Design (CAD)", desc: "Professional 3D modeling in Autodesk Fusion & Rhino — product design, prototyping, and manufacturing-ready files." },
-      { title: "3D Printing", desc: "Filament & resin 3D printing for rapid prototyping, functional parts, and small batch production." },
+      { title: "3D Printing", desc: "FDM 3D printing for rapid prototyping, functional parts, and small batch production." },
       { title: "Fiber Laser Engraving", desc: "High-precision galvo laser systems for marking metal, jewelry, tools, and technical components." },
       { title: "CO2 Laser Cutting", desc: "Laser cutting and engraving on wood, acrylic, glass, leather, and plastics." },
       { title: "Epoxy Resin Casting", desc: "UV and two-component resin systems for decorative objects, encapsulation, and custom molds." },
@@ -454,6 +472,7 @@ export default {
         { q: "What materials do you work with?", a: "PLA, PETG, ABS, resin for 3D printing. Metals, wood, acrylic, glass, leather for laser work. UV and epoxy resins for casting." },
         { q: "Do you offer design services?", a: "Absolutely. Our team provides full CAD design services — from concept to manufacturing-ready files." },
         { q: "How are prices calculated?", a: "Based on technology, material, size, complexity, and quantity. We always provide a detailed quote upfront." },
+        { q: "How long does project fulfillment take?", a: "If material is in stock, fulfillment takes 3–5 business days (depending on quantity). Ordering materials extends the timeline by 3–7 days. If the order requires sourcing specialized components to match the specification (e.g., specific gemstones, specialty filaments, electronic components), fulfillment may take an additional 7–14 business days." },
       ],
     },
 
@@ -463,7 +482,7 @@ export default {
       categories: [
         {
           name: "3D Printing & Filaments",
-          img: "/img/calc/tips_studio/3d_printing.png",
+          img: "/img/calc/tips_studio/3d_printing.webp",
           tips: [
             { q: "Which filament should I choose for my project?", a: "PLA — easiest to print, great for prototypes, decorative items, and models. Biodegradable but not heat-resistant (softens at ~60°C). PETG — stronger, slightly flexible, food-safe, good chemical resistance. Ideal for functional parts, enclosures, and items exposed to moisture. ABS — heat-resistant (~100°C), tough, but requires an enclosed printer (warps in drafts). Great for automotive parts, tools, and heat-exposed items." },
             { q: "When should I use resin (SLA) instead of filament printing?", a: "Resin printing wins for: fine detail (miniatures, jewelry models, dental), smooth surface finish, and dimensional accuracy. Filament printing wins for: large parts, mechanical strength, faster prints, and lower material cost. Rule of thumb: if appearance and detail matter more than strength — go resin." },
@@ -474,7 +493,7 @@ export default {
         },
         {
           name: "Laser Engraving",
-          img: "/img/calc/tips_studio/laser_engraving.png",
+          img: "/img/calc/tips_studio/laser_engraving.webp",
           tips: [
             { q: "Which laser type for which material?", a: "Fiber laser (1064nm wavelength) — metals (steel, aluminum, brass, silver, gold), hard plastics, and anodized surfaces. CO2 laser (10600nm wavelength) — wood, acrylic, glass, leather, paper, fabric, and rubber. Diode laser (445nm) — budget option for wood and dark materials only. Never use CO2 on bare metal — the beam reflects off." },
             { q: "How to get the best engraving quality on metal?", a: "Use a fiber laser with galvo scanning head for speed and precision. For dark marks on stainless steel: use low power/high speed for oxide marking. For deep engraving: multiple passes at higher power. Always clean the surface with isopropanol first. Use marking spray (like CerMark) on metals that don't mark well natively." },
@@ -484,7 +503,7 @@ export default {
         },
         {
           name: "Resin Casting",
-          img: "/img/calc/tips_studio/resin_casting.png",
+          img: "/img/calc/tips_studio/resin_casting.webp",
           tips: [
             { q: "Which resin for which application?", a: "UV resin — quick curing (minutes), ideal for small pieces, jewelry bezels, thin layers, and coatings. Limited to ~3mm depth per layer. Epoxy resin (two-part) — for larger castings, river tables, encapsulation of objects (flowers, photos), deep pours. Cures in 24–72h. Polyurethane resin — best for rigid functional parts and prototype molds." },
             { q: "How to create silicone molds for resin casting?", a: "Use platinum-cure silicone (smooth, food-safe) for detailed molds. Build a box around your master model, spray mold release, pour silicone, and let cure 24h. For complex shapes: make a 2-part mold with a parting line. Shore hardness 20A for flexible molds (easy demolding), 40A for rigid molds (better dimensional accuracy)." },
@@ -494,7 +513,7 @@ export default {
         },
         {
           name: "Materials & Best Practices",
-          img: "/img/calc/tips_studio/materials.png",
+          img: "/img/calc/tips_studio/materials.webp",
           tips: [
             { q: "How to choose the right manufacturing method?", a: "Need 1 piece quickly? → 3D printing. Need permanent marking on metal? → Fiber laser. Need precision cutting of flat materials? → CO2 laser. Need transparent or decorative objects? → Resin casting. Need small batch of identical parts? → 3D print + silicone mold + resin casting combo." },
             { q: "How to prepare files for production?", a: "For 3D printing: STL or 3MF format, ensure the mesh is watertight (no holes), wall thickness minimum 1.2mm for filament / 0.5mm for SLA. For laser: vector files (SVG, DXF, AI), convert text to outlines, separate cut lines from engrave fills. For resin molds: account for 0.5–1% shrinkage in your master model." },
@@ -559,5 +578,8 @@ export default {
     followUs: "Follow Us",
     rights: "All rights reserved.",
     privacy: "Privacy Policy",
+    warranty: "Warranty",
+    returns: "Returns",
+    shipping: "Shipping",
   },
 };

@@ -34,7 +34,7 @@ export default function Testimonials({ data, accent = "amber", id }) {
               <p className="text-neutral-300 text-sm leading-relaxed mb-6 relative z-10">"{item.text}"</p>
               <div>
                 <div className={`${authorColor} text-sm font-semibold`}>{item.author}</div>
-                <div className="text-neutral-500 text-xs">{item.role}</div>
+                <div className="text-neutral-400 text-xs">{item.role}</div>
               </div>
             </div>
           ))}

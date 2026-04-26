@@ -1,11 +1,11 @@
-import { H2, P, Lead, UL, LI, Strong, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
+import { H2, P, Lead, UL, LI, Strong, A, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
 
 export const meta = {
   slug: "srebro-vs-zloto",
   category: "jewelry",
   accent: "amber",
   publishedAt: "2026-04-20",
-  coverImage: "/img/blog/srebro-vs-zloto.jpg",
+  coverImage: "/img/blog/srebro-vs-zloto.webp",
   readingTime: { pl: 6, en: 5, de: 5 },
   title: {
     pl: "Srebro vs złoto — jaki metal wybrać na biżuterię?",
@@ -65,6 +65,7 @@ export const meta = {
       { q: "Kann man Silber- und Goldschmuck kombinieren?", a: "Selbstverständlich — Metallmix ist ein beliebter Trend. Entscheidend ist ein stimmiger Stil, nicht identisches Metall." },
     ],
   },
+  relatedPosts: ["bizuteria-inwestycja", "jak-dbac-o-bizuterie", "pierscionek-zareczynowy-na-zamowienie"],
 };
 
 export function Body({ lang }) {
@@ -114,7 +115,7 @@ export function Body({ lang }) {
         <LI>{t("Czyste srebro i złoto o wysokiej próbie są hipoalergiczne", "Pure silver and high-karat gold are hypoallergenic", "Reines Silber und hochkarätiges Gold sind hypoallergen")}</LI>
         <LI>{t("Nikiel w niektórych stopach złota wywołuje reakcje — w AEJaCA używamy wyłącznie stopów bez niklu", "Nickel in some gold alloys causes reactions — at AEJaCA we use nickel-free alloys exclusively", "Nickel in manchen Goldlegierungen verursacht Reaktionen — bei AEJaCA verwenden wir ausschließlich nickelfreie Legierungen")}</LI>
         <LI>{t("pH skóry wpływa na matowienie — niektóre osoby przyciemniają srebro szybciej", "Skin pH affects tarnishing — some people darken silver faster", "Der Haut-pH beeinflusst das Anlaufen — manche Menschen verdunkeln Silber schneller")}</LI>
-        <LI>{t("Rodowanie (na srebrze lub białym złocie) dodaje dodatkową ochronę", "Rhodium plating (on silver or white gold) adds extra protection", "Rhodinierung (auf Silber oder Weißgold) bietet zusätzlichen Schutz")}</LI>
+        <LI>{t(<><A href="/glossary/rodowanie">Rodowanie</A> (na srebrze lub białym złocie) dodaje dodatkową ochronę</>, <><A href="/glossary/rodowanie">Rhodium plating</A> (on silver or white gold) adds extra protection</>, <><A href="/glossary/rodowanie">Rhodinierung</A> (auf Silber oder Weißgold) bietet zusätzlichen Schutz</>)}</LI>
       </UL>
 
       <H2 id={id("ceny", "prices", "preise")}>{t("Realistyczne porównanie cen", "Realistic Price Comparison", "Realistischer Preisvergleich")}</H2>
@@ -148,7 +149,7 @@ export function Body({ lang }) {
       <P><Strong>{t("Wybierz złoto 14k, jeśli:", "Choose 14k gold if:", "Wählen Sie 14-Karat-Gold, wenn:")}</Strong></P>
       <UL>
         <LI>{t("nosisz biżuterię codziennie", "you wear jewelry daily", "Sie Schmuck täglich tragen")}</LI>
-        <LI>{t("szukasz pierścionka zaręczynowego lub obrączki", "you're looking for an engagement or wedding ring", "Sie einen Verlobungs- oder Ehering suchen")}</LI>
+        <LI>{t(<>szukasz <A href="/glossary/pierscionek-zareczynowy">pierścionka zaręczynowego</A> lub obrączki</>, <>you're looking for an <A href="/glossary/pierscionek-zareczynowy">engagement</A> or <A href="/glossary/obraczki-slubne">wedding ring</A></>, <>Sie einen <A href="/glossary/pierscionek-zareczynowy">Verlobungs-</A> oder <A href="/glossary/obraczki-slubne">Ehering</A> suchen</>)}</LI>
         <LI>{t("cenisz trwałość i ciepły kolor", "you value durability and warm color", "Sie Haltbarkeit und warme Farbe schätzen")}</LI>
       </UL>
       <P><Strong>{t("Wybierz złoto 18k, jeśli:", "Choose 18k gold if:", "Wählen Sie 18-Karat-Gold, wenn:")}</Strong></P>

@@ -36,37 +36,37 @@ function autoSizeFromCm(maxCm) {
 // ============================================================
 
 const ITEMS = [
-  { id: "keychain", icon: KeyRound,    img: "/img/calc/studio_items/keychain.png", label: { pl: "Breloczek", en: "Keychain", de: "Schlüsselanhänger" } },
-  { id: "sign",     icon: BookText,    img: "/img/calc/studio_items/sign.png",     label: { pl: "Tabliczka / szyld", en: "Plate / sign", de: "Schild" } },
-  { id: "figurine", icon: Sparkles,    img: "/img/calc/studio_items/figurine.png", label: { pl: "Figurka / model", en: "Figurine / model", de: "Figur / Modell" } },
-  { id: "stamp",    icon: Stamp,       img: "/img/calc/studio_items/stamp.png",    label: { pl: "Pieczątka", en: "Stamp", de: "Stempel" } },
-  { id: "gift",     icon: Gift,        img: "/img/calc/studio_items/gift.png",     label: { pl: "Prezent / dekoracja", en: "Gift / decoration", de: "Geschenk / Deko" } },
-  { id: "part",     icon: Cog,         img: "/img/calc/studio_items/part.png",     label: { pl: "Część techniczna", en: "Technical part", de: "Technisches Teil" } },
-  { id: "jewelry",  icon: Gem,         img: "/img/calc/studio_items/jewelry.png",  label: { pl: "Biżuteria", en: "Jewelry", de: "Schmuck" } },
+  { id: "keychain", icon: KeyRound,    img: "/img/calc/studio_items/keychain.webp", label: { pl: "Breloczek", en: "Keychain", de: "Schlüsselanhänger" } },
+  { id: "sign",     icon: BookText,    img: "/img/calc/studio_items/sign.webp",     label: { pl: "Tabliczka / szyld", en: "Plate / sign", de: "Schild" } },
+  { id: "figurine", icon: Sparkles,    img: "/img/calc/studio_items/figurine.webp", label: { pl: "Figurka / model", en: "Figurine / model", de: "Figur / Modell" } },
+  { id: "stamp",    icon: Stamp,       img: "/img/calc/studio_items/stamp.webp",    label: { pl: "Pieczątka", en: "Stamp", de: "Stempel" } },
+  { id: "gift",     icon: Gift,        img: "/img/calc/studio_items/gift.webp",     label: { pl: "Prezent / dekoracja", en: "Gift / decoration", de: "Geschenk / Deko" } },
+  { id: "part",     icon: Cog,         img: "/img/calc/studio_items/part.webp",     label: { pl: "Część techniczna", en: "Technical part", de: "Technisches Teil" } },
+  { id: "jewelry",  icon: Gem,         img: "/img/calc/studio_items/jewelry.webp",  label: { pl: "Biżuteria", en: "Jewelry", de: "Schmuck" } },
   { id: "other",    icon: HelpCircle,  label: { pl: "Coś innego", en: "Something else", de: "Etwas anderes" } },
 ];
 
 const SIZES = [
-  { id: "coin",   icon: Circle,    img: "/img/calc/studio_sizes/coin.png",   label: { pl: "Jak moneta", en: "Coin-sized", de: "Münzgröße" },          sub: { pl: "do 3 cm",      en: "up to 3 cm",  de: "bis 3 cm" } },
-  { id: "palm",   icon: Hand,      img: "/img/calc/studio_sizes/palm.png",   label: { pl: "Jak dłoń",    en: "Palm-sized", de: "Handflächengröße" },   sub: { pl: "3–10 cm",      en: "3–10 cm",     de: "3–10 cm" } },
-  { id: "book",   icon: Book,      img: "/img/calc/studio_sizes/book.png",   label: { pl: "Jak książka", en: "Book-sized", de: "Buchgröße" },          sub: { pl: "10–25 cm",     en: "10–25 cm",    de: "10–25 cm" } },
-  { id: "box",    icon: Package,   img: "/img/calc/studio_sizes/box.png",    label: { pl: "Pudełko po butach", en: "Shoebox",  de: "Schuhkarton" },    sub: { pl: "25–40 cm",     en: "25–40 cm",    de: "25–40 cm" } },
-  { id: "bigger", icon: Maximize2, img: "/img/calc/studio_sizes/bigger.png", label: { pl: "Większe",     en: "Bigger",     de: "Größer" },             sub: { pl: "powyżej 40 cm", en: "over 40 cm", de: "über 40 cm" } },
+  { id: "coin",   icon: Circle,    img: "/img/calc/studio_sizes/coin.webp",   label: { pl: "Jak moneta", en: "Coin-sized", de: "Münzgröße" },          sub: { pl: "do 3 cm",      en: "up to 3 cm",  de: "bis 3 cm" } },
+  { id: "palm",   icon: Hand,      img: "/img/calc/studio_sizes/palm.webp",   label: { pl: "Jak dłoń",    en: "Palm-sized", de: "Handflächengröße" },   sub: { pl: "3–10 cm",      en: "3–10 cm",     de: "3–10 cm" } },
+  { id: "book",   icon: Book,      img: "/img/calc/studio_sizes/book.webp",   label: { pl: "Jak książka", en: "Book-sized", de: "Buchgröße" },          sub: { pl: "10–25 cm",     en: "10–25 cm",    de: "10–25 cm" } },
+  { id: "box",    icon: Package,   img: "/img/calc/studio_sizes/box.webp",    label: { pl: "Pudełko po butach", en: "Shoebox",  de: "Schuhkarton" },    sub: { pl: "25–40 cm",     en: "25–40 cm",    de: "25–40 cm" } },
+  { id: "bigger", icon: Maximize2, img: "/img/calc/studio_sizes/bigger.webp", label: { pl: "Większe",     en: "Bigger",     de: "Größer" },             sub: { pl: "powyżej 40 cm", en: "over 40 cm", de: "über 40 cm" } },
 ];
 
 const MATERIALS = [
-  { id: "plastic", icon: Boxes,      img: "/img/calc/studio_materials/plastic.png", label: { pl: "Plastik",       en: "Plastic",        de: "Kunststoff" } },
-  { id: "wood",    icon: TreePine,   img: "/img/calc/studio_materials/wood.png",    label: { pl: "Drewno",        en: "Wood",           de: "Holz" } },
-  { id: "metal",   icon: Wrench,     img: "/img/calc/studio_materials/metal.png",   label: { pl: "Metal",         en: "Metal",          de: "Metall" } },
-  { id: "glass",   icon: GlassWater, img: "/img/calc/studio_materials/glass.png",   label: { pl: "Szkło / kamień", en: "Glass / stone", de: "Glas / Stein" } },
-  { id: "resin",   icon: Droplet,    img: "/img/calc/studio_materials/resin.png",   label: { pl: "Żywica",        en: "Resin",          de: "Harz" } },
+  { id: "plastic", icon: Boxes,      img: "/img/calc/studio_materials/plastic.webp", label: { pl: "Plastik",       en: "Plastic",        de: "Kunststoff" } },
+  { id: "wood",    icon: TreePine,   img: "/img/calc/studio_materials/wood.webp",    label: { pl: "Drewno",        en: "Wood",           de: "Holz" } },
+  { id: "metal",   icon: Wrench,     img: "/img/calc/studio_materials/metal.webp",   label: { pl: "Metal",         en: "Metal",          de: "Metall" } },
+  { id: "glass",   icon: GlassWater, img: "/img/calc/studio_materials/glass.webp",   label: { pl: "Szkło / kamień", en: "Glass / stone", de: "Glas / Stein" } },
+  { id: "resin",   icon: Droplet,    img: "/img/calc/studio_materials/resin.webp",   label: { pl: "Żywica",        en: "Resin",          de: "Harz" } },
   { id: "idk",     icon: HelpCircle, label: { pl: "Nie wiem — doradźcie", en: "I'm not sure — advise me", de: "Weiß nicht — beraten Sie mich" } },
 ];
 
 const FINISH = [
-  { id: "prototype", icon: ZapOff,      img: "/img/calc/studio_finish/prototype.png", label: { pl: "Prototyp",  en: "Prototype", de: "Prototyp" },  sub: { pl: "tanio i szybko", en: "cheap & fast", de: "günstig & schnell" } },
-  { id: "standard",  icon: ShieldCheck, img: "/img/calc/studio_finish/standard.png",  label: { pl: "Standard",  en: "Standard",  de: "Standard" },  sub: { pl: "dobra jakość",   en: "good quality", de: "gute Qualität" } },
-  { id: "premium",   icon: Award,       img: "/img/calc/studio_finish/premium.png",   label: { pl: "Premium",   en: "Premium",   de: "Premium" },   sub: { pl: "najwyższa jakość", en: "top quality", de: "höchste Qualität" } },
+  { id: "prototype", icon: ZapOff,      img: "/img/calc/studio_finish/prototype.webp", label: { pl: "Prototyp",  en: "Prototype", de: "Prototyp" },  sub: { pl: "tanio i szybko", en: "cheap & fast", de: "günstig & schnell" } },
+  { id: "standard",  icon: ShieldCheck, img: "/img/calc/studio_finish/standard.webp",  label: { pl: "Standard",  en: "Standard",  de: "Standard" },  sub: { pl: "dobra jakość",   en: "good quality", de: "gute Qualität" } },
+  { id: "premium",   icon: Award,       img: "/img/calc/studio_finish/premium.webp",   label: { pl: "Premium",   en: "Premium",   de: "Premium" },   sub: { pl: "najwyższa jakość", en: "top quality", de: "höchste Qualität" } },
 ];
 
 const QUANTITY = [
@@ -423,7 +423,7 @@ function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false, 
                   {label}
                 </div>
                 {sub && (
-                  <div className={`text-[10px] sm:text-[11px] mt-0.5 ${active ? "text-emerald-400/80" : "text-neutral-500"}`}>
+                  <div className={`text-[10px] sm:text-[11px] mt-0.5 ${active ? "text-emerald-400/80" : "text-neutral-400"}`}>
                     {sub}
                   </div>
                 )}
@@ -588,7 +588,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
                   <span className="hidden sm:inline">{l.q0drop}</span>
                   <span className="sm:hidden">{l.q0tap}</span>
                 </div>
-                <div className="text-xs text-neutral-500 mt-1">
+                <div className="text-xs text-neutral-400 mt-1">
                   <span className="hidden sm:inline">{l.q0or}</span>
                   <span className="sm:hidden">{l.q0accept}</span>
                 </div>
@@ -596,7 +596,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
               </div>
               <input type="file" accept=".stl,.svg" onChange={onInputChange} className="sr-only" />
             </label>
-            <div className="text-center mt-3 text-[11px] text-neutral-500">{l.q0hint}</div>
+            <div className="text-center mt-3 text-[11px] text-neutral-400">{l.q0hint}</div>
           </div>
         ) : (
           <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/[0.04] p-4">
@@ -669,7 +669,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
                   <div className="font-semibold text-emerald-300 mb-1">{l.q0selected}:</div>
                   <div className="flex items-center gap-1.5 mb-0.5">
                     <Ruler className="w-3 h-3 shrink-0 text-emerald-400/50" />
-                    <span>{l.q0selSize}: <span className="text-emerald-200 font-medium">{t(sizeObj?.label, lang)}</span> <span className="text-neutral-500">({t(sizeObj?.sub, lang)})</span></span>
+                    <span>{l.q0selSize}: <span className="text-emerald-200 font-medium">{t(sizeObj?.label, lang)}</span> <span className="text-neutral-400">({t(sizeObj?.sub, lang)})</span></span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Layers className="w-3 h-3 shrink-0 text-emerald-400/50" />

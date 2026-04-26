@@ -1,11 +1,11 @@
-import { H2, H3, P, Lead, UL, LI, Strong, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
+import { H2, H3, P, Lead, UL, LI, Strong, A, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
 
 export const meta = {
   slug: "jak-przygotowac-plik-stl",
   category: "studio",
   accent: "blue",
   publishedAt: "2026-04-20",
-  coverImage: "/img/blog/jak-przygotowac-plik-stl.jpg",
+  coverImage: "/img/blog/jak-przygotowac-plik-stl.webp",
   readingTime: { pl: 7, en: 5, de: 5 },
   title: {
     pl: "Jak przygotować plik STL do druku 3D — poradnik",
@@ -65,6 +65,7 @@ export const meta = {
       { q: "Wie exportiere ich STL aus Fusion 360 / Blender?", a: "Fusion 360: Datei → Exportieren → STL, Genauigkeit auf ‚Hoch'. Blender: Datei → Exportieren → STL, ‚Modifikatoren anwenden' aktivieren." },
     ],
   },
+  relatedPosts: ["druk-3d-krok-po-kroku", "odlewy-zywiczne-poradnik"],
 };
 
 export function Body({ lang }) {
@@ -74,9 +75,9 @@ export function Body({ lang }) {
   return (
     <>
       <Lead>{t(
-        "Twój wydruk 3D jest tak dobry, jak plik źródłowy. Dobrze przygotowany STL oznacza szybszą wycenę, mniej niespodzianek i lepszy efekt końcowy.",
-        "Your 3D print is only as good as your source file. A well-prepared STL means faster quoting, fewer surprises, and a better final result.",
-        "Ihr 3D-Druck ist nur so gut wie Ihre Quelldatei. Eine gut vorbereitete STL bedeutet schnellere Angebote, weniger Überraschungen und ein besseres Endergebnis."
+        <>Twój <A href="/glossary/druk-3d-fdm">wydruk 3D</A> jest tak dobry, jak plik źródłowy. Dobrze przygotowany STL oznacza szybszą wycenę, mniej niespodzianek i lepszy efekt końcowy.</>,
+        <>Your <A href="/glossary/druk-3d-fdm">3D print</A> is only as good as your source file. A well-prepared STL means faster quoting, fewer surprises, and a better final result.</>,
+        <>Ihr <A href="/glossary/druk-3d-fdm">3D-Druck</A> ist nur so gut wie Ihre Quelldatei. Eine gut vorbereitete STL bedeutet schnellere Angebote, weniger Überraschungen und ein besseres Endergebnis.</>
       )}</Lead>
 
       <H2 id={id("co-to-stl", "what-is-stl", "was-ist-stl")}>{t("Czym jest plik STL?", "What Is an STL File?", "Was ist eine STL-Datei?")}</H2>

@@ -85,7 +85,7 @@ export default function Portfolio({ data, accent = "amber", id }) {
                   {data.filters.find((f) => f.id === item.category)?.label || item.category}
                 </div>
                 <h3 className={`text-white font-medium text-sm mb-2 ${hoverTitle} transition-colors`}>{item.title}</h3>
-                <p className="text-neutral-500 text-xs leading-relaxed">{item.desc}</p>
+                <p className="text-neutral-400 text-xs leading-relaxed">{item.desc}</p>
               </div>
             );
           })}

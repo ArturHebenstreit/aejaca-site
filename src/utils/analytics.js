@@ -39,7 +39,7 @@ export function trackEvent(category, action, label = "", value = null) {
     v: value,
     t: Date.now(),
     s: getSessionId(),
-    p: window.location.pathname,
+    p: typeof window !== "undefined" ? window.location.pathname : "/",
   };
 
   queue.push(event);
@@ -111,43 +111,34 @@ function flush() {
   }
 }
 
-// Flush periodically
-setInterval(flush, FLUSH_INTERVAL);
-
-// Flush on page unload
+// Browser-only initialization
 if (typeof window !== "undefined") {
+  setInterval(flush, FLUSH_INTERVAL);
+
   window.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") flush();
   });
   window.addEventListener("pagehide", flush);
+
+  window.getAnalyticsEvents = () => {
+    flush();
+    try {
+      return JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]");
+    } catch {
+      return [];
+    }
+  };
+
+  window.exportAnalyticsCSV = () => {
+    const events = window.getAnalyticsEvents();
+    const csv = "timestamp,session,page,category,action,label,value\n" +
+      events.map(e => `${new Date(e.t).toISOString()},${e.s},${e.p},${e.c},${e.a},${e.l},${e.v ?? ""}`).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `aejaca-analytics-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 }
-
-/**
- * Debug: get all stored events from localStorage.
- * Call in browser console: getAnalyticsEvents()
- */
-window.getAnalyticsEvents = () => {
-  flush();
-  try {
-    return JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]");
-  } catch {
-    return [];
-  }
-};
-
-/**
- * Debug: export events as CSV.
- * Call in browser console: exportAnalyticsCSV()
- */
-window.exportAnalyticsCSV = () => {
-  const events = window.getAnalyticsEvents();
-  const csv = "timestamp,session,page,category,action,label,value\n" +
-    events.map(e => `${new Date(e.t).toISOString()},${e.s},${e.p},${e.c},${e.a},${e.l},${e.v ?? ""}`).join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `aejaca-analytics-${new Date().toISOString().slice(0, 10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-};

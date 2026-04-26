@@ -26,6 +26,8 @@ export default function BlogCard({ post }) {
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
           decoding="async"
+          width="600"
+          height="400"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 to-transparent" />
         <div className="absolute bottom-3 left-3">
@@ -43,7 +45,7 @@ export default function BlogCard({ post }) {
         <p className="text-neutral-400 text-sm leading-relaxed mb-4 flex-1 line-clamp-3">
           {description}
         </p>
-        <div className="flex items-center justify-between text-xs text-neutral-500">
+        <div className="flex items-center justify-between text-xs text-neutral-400">
           <span className="inline-flex items-center gap-1">
             <Clock className="w-3 h-3" />
             {readTime} min

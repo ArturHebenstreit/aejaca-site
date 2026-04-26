@@ -1,5 +1,5 @@
 import { StrictMode, lazy, Suspense } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import "./index.css";
@@ -18,6 +18,11 @@ const BlogIndex = lazy(() => import("./pages/BlogIndex.jsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.jsx"));
 const Privacy = lazy(() => import("./pages/Privacy.jsx"));
 const Glossary = lazy(() => import("./pages/Glossary.jsx"));
+const GlossaryTerm = lazy(() => import("./pages/GlossaryTerm.jsx"));
+const About = lazy(() => import("./pages/About.jsx"));
+const Warranty = lazy(() => import("./pages/Warranty.jsx"));
+const Returns = lazy(() => import("./pages/Returns.jsx"));
+const Shipping = lazy(() => import("./pages/Shipping.jsx"));
 const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 
 function LazyFallback() {
@@ -28,9 +33,7 @@ function LazyFallback() {
   );
 }
 
-// HelmetProvider enables per-route <head> mutation (title/meta/JSON-LD).
-// Required wrapper — without it Helmet silently no-ops in SPAs.
-createRoot(document.getElementById("root")).render(
+const app = (
   <StrictMode>
     <HelmetProvider>
       <LanguageProvider>
@@ -45,6 +48,11 @@ createRoot(document.getElementById("root")).render(
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/glossary" element={<Glossary />} />
+                <Route path="/glossary/:id" element={<GlossaryTerm />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/warranty" element={<Warranty />} />
+                <Route path="/returns" element={<Returns />} />
+                <Route path="/shipping" element={<Shipping />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
@@ -55,3 +63,10 @@ createRoot(document.getElementById("root")).render(
     </HelmetProvider>
   </StrictMode>
 );
+
+const root = document.getElementById("root");
+if (root.innerHTML.trim() && root.innerHTML !== "<!--ssr-outlet-->") {
+  hydrateRoot(root, app);
+} else {
+  createRoot(root).render(app);
+}

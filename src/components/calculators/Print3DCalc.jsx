@@ -15,38 +15,38 @@ const PRINT_CONFIG = {
 };
 
 const FILAMENT_IMG = {
-  "PLA": "/img/calc/3d_filaments/pla.png", "PLA Silk": "/img/calc/3d_filaments/pla_silk.png",
-  "PLA Matte": "/img/calc/3d_filaments/pla_matte.png", "PLA Wood": "/img/calc/3d_filaments/pla_wood.png",
-  "PLA Marble": "/img/calc/3d_filaments/pla_marble.png", "PETG": "/img/calc/3d_filaments/petg.png",
-  "PETG-CF": "/img/calc/3d_filaments/petg_cf.png", "TPU 95A": "/img/calc/3d_filaments/tpu.png",
-  "PVA": "/img/calc/3d_filaments/pva.png", "ASA": "/img/calc/3d_filaments/asa.png",
-  "ABS": "/img/calc/3d_filaments/abs.png",
-  "PA6-CF": "/img/calc/3d_filaments/pa6_cf.png", "PA6-GF": "/img/calc/3d_filaments/pa6_gf.png",
-  "PA12-CF": "/img/calc/3d_filaments/pa12_cf.png", "PPA-CF": "/img/calc/3d_filaments/ppa_cf.png",
-  "PPA-GF": "/img/calc/3d_filaments/ppa_gf.png", "PC": "/img/calc/3d_filaments/pc.png",
-  "PC-ABS": "/img/calc/3d_filaments/pc_abs.png", "PET-CF": "/img/calc/3d_filaments/pet_cf.png",
-  "PPS": "/img/calc/3d_filaments/pps.png", "PPS-CF": "/img/calc/3d_filaments/pps_cf.png",
+  "PLA": "/img/calc/3d_filaments/pla.webp", "PLA Silk": "/img/calc/3d_filaments/pla_silk.webp",
+  "PLA Matte": "/img/calc/3d_filaments/pla_matte.webp", "PLA Wood": "/img/calc/3d_filaments/pla_wood.webp",
+  "PLA Marble": "/img/calc/3d_filaments/pla_marble.webp", "PETG": "/img/calc/3d_filaments/petg.webp",
+  "PETG-CF": "/img/calc/3d_filaments/petg_cf.webp", "TPU 95A": "/img/calc/3d_filaments/tpu.webp",
+  "PVA": "/img/calc/3d_filaments/pva.webp", "ASA": "/img/calc/3d_filaments/asa.webp",
+  "ABS": "/img/calc/3d_filaments/abs.webp",
+  "PA6-CF": "/img/calc/3d_filaments/pa6_cf.webp", "PA6-GF": "/img/calc/3d_filaments/pa6_gf.webp",
+  "PA12-CF": "/img/calc/3d_filaments/pa12_cf.webp", "PPA-CF": "/img/calc/3d_filaments/ppa_cf.webp",
+  "PPA-GF": "/img/calc/3d_filaments/ppa_gf.webp", "PC": "/img/calc/3d_filaments/pc.webp",
+  "PC-ABS": "/img/calc/3d_filaments/pc_abs.webp", "PET-CF": "/img/calc/3d_filaments/pet_cf.webp",
+  "PPS": "/img/calc/3d_filaments/pps.webp", "PPS-CF": "/img/calc/3d_filaments/pps_cf.webp",
 };
 
 const SEGMENTS = [
   { id: "standard", label: "Standard",
     desc: { pl: "PLA, PETG, TPU, ASA, ABS", en: "PLA, PETG, TPU, ASA, ABS", de: "PLA, PETG, TPU, ASA, ABS" },
-    img: "/img/calc/3d_segments/standard.png" },
+    img: "/img/calc/3d_segments/standard.webp" },
   { id: "engineering", label: "Engineering",
     desc: { pl: "PA-CF, PPA-CF, PC, PET-CF, PPS", en: "PA-CF, PPA-CF, PC, PET-CF, PPS", de: "PA-CF, PPA-CF, PC, PET-CF, PPS" },
-    img: "/img/calc/3d_segments/engineering.png" },
+    img: "/img/calc/3d_segments/engineering.webp" },
 ];
 
 const INFILL_OPTIONS = [
   { id: "low", label: { pl: "Niskie (≤15%)", en: "Low (≤15%)", de: "Niedrig (≤15%)" }, avg: 0.12,
     desc: { pl: "Lekki, oszczędny", en: "Light, economical", de: "Leicht, sparsam" },
-    img: "/img/calc/3d_infill/low.png" },
+    img: "/img/calc/3d_infill/low.webp" },
   { id: "medium", label: { pl: "Średnie (15–50%)", en: "Medium (15–50%)", de: "Mittel (15–50%)" }, avg: 0.35,
     desc: { pl: "Dobra wytrzymałość", en: "Good strength", de: "Gute Festigkeit" },
-    img: "/img/calc/3d_infill/medium.png" },
+    img: "/img/calc/3d_infill/medium.webp" },
   { id: "high", label: { pl: "Wysokie (>50%)", en: "High (>50%)", de: "Hoch (>50%)" }, avg: 0.70,
     desc: { pl: "Maksymalna sztywność", en: "Maximum rigidity", de: "Maximale Steifigkeit" },
-    img: "/img/calc/3d_infill/high.png" },
+    img: "/img/calc/3d_infill/high.webp" },
   { id: "custom", label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" }, avg: null, custom: true },
 ];
 
@@ -231,11 +231,11 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
           </div>
           <div className="text-center">
             <div className="font-semibold text-sm text-white mb-1">{sl.dropHint}</div>
-            <div className="text-[11px] text-neutral-500">{sl.dropSub}</div>
+            <div className="text-[11px] text-neutral-400">{sl.dropSub}</div>
           </div>
         </button>
         <input ref={fileRef} type="file" accept=".stl" className="hidden" onChange={onUpload} />
-        <div className="text-[10px] text-neutral-600">{sl.orManual}</div>
+        <div className="text-[10px] text-neutral-400">{sl.orManual}</div>
       </div>
     );
   }
@@ -253,7 +253,7 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
     <div className="rounded-xl border border-blue-400/20 bg-blue-400/[0.03] p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="text-sm font-medium text-blue-300 truncate max-w-[70%]">{stlFileName}</div>
-        <button onClick={onRemove} className="text-neutral-500 hover:text-red-400 transition-colors text-xs flex items-center gap-1">
+        <button onClick={onRemove} className="text-neutral-400 hover:text-red-400 transition-colors text-xs flex items-center gap-1">
           <X className="w-3.5 h-3.5" />{sl.remove}
         </button>
       </div>
@@ -261,15 +261,15 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
         <STLViewer triangles={stlData.triangles} bbox={stlData.bbox} />
       </Suspense>
       <div className="grid grid-cols-3 gap-3 text-center text-[11px]">
-        <div><div className="text-neutral-500">{sl.volume}</div><div className="font-bold">{scaledVol.toFixed(1)} cm³</div></div>
-        <div><div className="text-neutral-500">{sl.dims}</div><div className="font-bold">{(scaledB.x*10).toFixed(1)}×{(scaledB.y*10).toFixed(1)}×{(scaledB.z*10).toFixed(1)} mm</div></div>
-        <div><div className="text-neutral-500">{sl.triangles}</div><div className="font-bold">{stlData.triangleCount.toLocaleString()}</div></div>
+        <div><div className="text-neutral-400">{sl.volume}</div><div className="font-bold">{scaledVol.toFixed(1)} cm³</div></div>
+        <div><div className="text-neutral-400">{sl.dims}</div><div className="font-bold">{(scaledB.x*10).toFixed(1)}×{(scaledB.y*10).toFixed(1)}×{(scaledB.z*10).toFixed(1)} mm</div></div>
+        <div><div className="text-neutral-400">{sl.triangles}</div><div className="font-bold">{stlData.triangleCount.toLocaleString()}</div></div>
       </div>
 
       {/* Scale controls */}
       <div className="border-t border-white/5 pt-2 space-y-1.5">
         <div className="flex items-center justify-between text-[11px]">
-          <span className="text-neutral-500">{sl.scale}</span>
+          <span className="text-neutral-400">{sl.scale}</span>
           <span className="font-bold text-blue-300">{scale === 1 ? "1:1" : `×${scale.toFixed(2)}`}</span>
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -372,7 +372,7 @@ export default function Print3DCalc({ lang = "pl" }) {
 
   return (
     <div>
-      <div className="text-center text-[11px] text-neutral-600 mb-6">Bambu Lab H2D · 300×320×325 mm · Dual Extruder · AMS 2 Pro</div>
+      <div className="text-center text-[11px] text-neutral-400 mb-6">Bambu Lab H2D · 300×320×325 mm · Dual Extruder · AMS 2 Pro</div>
 
       <CalcCard stepNum="①" label={l.segment}>
         <HeroCards options={SEGMENTS} value={segment} onChange={setSegment} lang={lang} cols="grid-cols-2" minH={170} />
