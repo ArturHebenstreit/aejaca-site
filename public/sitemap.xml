@@ -7,7 +7,7 @@
   <!-- Home -->
   <url>
     <loc>https://www.aejaca.com/</loc>
-    <lastmod>2026-04-15</lastmod>
+    <lastmod>2026-04-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.00</priority>
     <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/" />
@@ -31,7 +31,7 @@
   <!-- Jewelry -->
   <url>
     <loc>https://www.aejaca.com/jewelry</loc>
-    <lastmod>2026-04-15</lastmod>
+    <lastmod>2026-04-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/jewelry" />
@@ -48,7 +48,7 @@
   <!-- Studio -->
   <url>
     <loc>https://www.aejaca.com/studio</loc>
-    <lastmod>2026-04-15</lastmod>
+    <lastmod>2026-04-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
     <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/studio" />
@@ -65,7 +65,7 @@
   <!-- Contact -->
   <url>
     <loc>https://www.aejaca.com/contact</loc>
-    <lastmod>2026-04-15</lastmod>
+    <lastmod>2026-04-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
     <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/contact" />
@@ -605,7 +605,7 @@
   <!-- Privacy -->
   <url>
     <loc>https://www.aejaca.com/privacy</loc>
-    <lastmod>2026-04-15</lastmod>
+    <lastmod>2026-04-26</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.30</priority>
     <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/privacy" />
