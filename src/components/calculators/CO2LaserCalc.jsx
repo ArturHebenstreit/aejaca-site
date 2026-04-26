@@ -59,15 +59,15 @@ const LBL = {
 };
 
 export const ENGRAVE_MATERIALS = [
-  { id: "wood",    label: { pl: "Drewno", en: "Wood", de: "Holz" },               rateMin: 0.07, prepCost: 0.5, img: "/img/calc/co2_materials/wood.png" },
-  { id: "plywood", label: { pl: "Sklejka", en: "Plywood", de: "Sperrholz" },      rateMin: 0.07, prepCost: 0.4, img: "/img/calc/co2_materials/plywood.png" },
-  { id: "acrylic", label: { pl: "Akryl", en: "Acrylic", de: "Acryl" },            rateMin: 0.08, prepCost: 0.8, img: "/img/calc/co2_materials/acrylic.png" },
-  { id: "glass",   label: { pl: "Szkło", en: "Glass", de: "Glas" },               rateMin: 0.20, prepCost: 1.0, img: "/img/calc/co2_materials/glass.png" },
-  { id: "leather", label: { pl: "Skóra", en: "Leather", de: "Leder" },            rateMin: 0.06, prepCost: 1.2, img: "/img/calc/co2_materials/leather.png" },
-  { id: "paper",   label: { pl: "Papier / karton", en: "Paper / cardboard", de: "Papier / Karton" }, rateMin: 0.05, prepCost: 0.2, img: "/img/calc/co2_materials/paper.png" },
-  { id: "fabric",  label: { pl: "Tkanina", en: "Fabric", de: "Stoff" },           rateMin: 0.07, prepCost: 0.6, img: "/img/calc/co2_materials/fabric.png" },
-  { id: "rubber",  label: { pl: "Guma / pieczątki", en: "Rubber / stamps", de: "Gummi / Stempel" }, rateMin: 0.10, prepCost: 0.8, img: "/img/calc/co2_materials/rubber.png" },
-  { id: "stone",   label: { pl: "Kamień / łupek", en: "Stone / slate", de: "Stein / Schiefer" }, rateMin: 0.25, prepCost: 1.5, img: "/img/calc/co2_materials/stone.png" },
+  { id: "wood",    label: { pl: "Drewno", en: "Wood", de: "Holz" },               rateMin: 0.07, prepCost: 0.5, img: "/img/calc/co2_materials/wood.webp" },
+  { id: "plywood", label: { pl: "Sklejka", en: "Plywood", de: "Sperrholz" },      rateMin: 0.07, prepCost: 0.4, img: "/img/calc/co2_materials/plywood.webp" },
+  { id: "acrylic", label: { pl: "Akryl", en: "Acrylic", de: "Acryl" },            rateMin: 0.08, prepCost: 0.8, img: "/img/calc/co2_materials/acrylic.webp" },
+  { id: "glass",   label: { pl: "Szkło", en: "Glass", de: "Glas" },               rateMin: 0.20, prepCost: 1.0, img: "/img/calc/co2_materials/glass.webp" },
+  { id: "leather", label: { pl: "Skóra", en: "Leather", de: "Leder" },            rateMin: 0.06, prepCost: 1.2, img: "/img/calc/co2_materials/leather.webp" },
+  { id: "paper",   label: { pl: "Papier / karton", en: "Paper / cardboard", de: "Papier / Karton" }, rateMin: 0.05, prepCost: 0.2, img: "/img/calc/co2_materials/paper.webp" },
+  { id: "fabric",  label: { pl: "Tkanina", en: "Fabric", de: "Stoff" },           rateMin: 0.07, prepCost: 0.6, img: "/img/calc/co2_materials/fabric.webp" },
+  { id: "rubber",  label: { pl: "Guma / pieczątki", en: "Rubber / stamps", de: "Gummi / Stempel" }, rateMin: 0.10, prepCost: 0.8, img: "/img/calc/co2_materials/rubber.webp" },
+  { id: "stone",   label: { pl: "Kamień / łupek", en: "Stone / slate", de: "Stein / Schiefer" }, rateMin: 0.25, prepCost: 1.5, img: "/img/calc/co2_materials/stone.webp" },
   { id: "custom",  label: { pl: "Inny materiał", en: "Other material", de: "Anderes Material" }, rateMin: null, prepCost: null, custom: true },
 ];
 
@@ -80,11 +80,11 @@ export const ENGRAVE_AREAS = [
 ];
 
 export const ENGRAVE_DETAIL = [
-  { id: "simple",   label: { pl: "Prosty (tekst/logo)", en: "Simple (text/logo)", de: "Einfach (Text/Logo)" },     mul: 0.7, img: "/img/calc/co2_detail/simple.png",
+  { id: "simple",   label: { pl: "Prosty (tekst/logo)", en: "Simple (text/logo)", de: "Einfach (Text/Logo)" },     mul: 0.7, img: "/img/calc/co2_detail/simple.webp",
     desc: { pl: "Tekst, logo, proste linie", en: "Text, logo, simple lines", de: "Text, Logo, einfache Linien" } },
-  { id: "standard", label: { pl: "Średni (grafika)", en: "Standard (graphics)", de: "Standard (Grafik)" },         mul: 1.0, img: "/img/calc/co2_detail/standard.png",
+  { id: "standard", label: { pl: "Średni (grafika)", en: "Standard (graphics)", de: "Standard (Grafik)" },         mul: 1.0, img: "/img/calc/co2_detail/standard.webp",
     desc: { pl: "Ilustracja, ornament, line-art", en: "Illustration, ornament, line-art", de: "Illustration, Ornament, Strichzeichnung" } },
-  { id: "photo",    label: { pl: "Wysoki (fotograwer)", en: "High (photo engrave)", de: "Hoch (Fotogravur)" },     mul: 2.2, img: "/img/calc/co2_detail/photo.png",
+  { id: "photo",    label: { pl: "Wysoki (fotograwer)", en: "High (photo engrave)", de: "Hoch (Fotogravur)" },     mul: 2.2, img: "/img/calc/co2_detail/photo.webp",
     desc: { pl: "Foto, raster, gradacja tonalna", en: "Photo, raster, tonal gradation", de: "Foto, Raster, Tonabstufung" } },
   { id: "custom",   label: { pl: "Niestandardowy", en: "Custom", de: "Individuell" }, mul: null, custom: true },
 ];
@@ -295,8 +295,8 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
 
       <CalcCard stepNum="①" label={l.mode}>
         <HeroCards value={mode} onChange={setMode} lang={lang} options={[
-          { id: "engrave", label: l.engrave, desc: l.engraveDesc, img: "/img/calc/co2_modes/engrave.png" },
-          { id: "cut",     label: l.cut,     desc: l.cutDesc,     img: "/img/calc/co2_modes/cut.png" },
+          { id: "engrave", label: l.engrave, desc: l.engraveDesc, img: "/img/calc/co2_modes/engrave.webp" },
+          { id: "cut",     label: l.cut,     desc: l.cutDesc,     img: "/img/calc/co2_modes/cut.webp" },
         ]} />
       </CalcCard>
 
@@ -324,8 +324,8 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
 
       <CalcCard stepNum="⑤" label={l.workArea}>
         <HeroCards value={extended ? "ext" : "std"} onChange={(id) => setExtended(id === "ext")} lang={lang} options={[
-          { id: "std", label: l.stdArea, desc: l.stdAreaDesc, img: "/img/calc/co2_workarea/standard.png", disabled: stdDisabled },
-          { id: "ext", label: l.extArea, desc: l.extAreaDesc, img: "/img/calc/co2_workarea/extended.png", disabled: extDisabled },
+          { id: "std", label: l.stdArea, desc: l.stdAreaDesc, img: "/img/calc/co2_workarea/standard.webp", disabled: stdDisabled },
+          { id: "ext", label: l.extArea, desc: l.extAreaDesc, img: "/img/calc/co2_workarea/extended.webp", disabled: extDisabled },
         ]} />
       </CalcCard>
 

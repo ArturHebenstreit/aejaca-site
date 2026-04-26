@@ -52,15 +52,15 @@ export const RESINS = [
   { id: "uv",          label: { pl: "Zywica UV", en: "UV Resin", de: "UV-Harz" },
     pricePerMl: 0.35, density: 1.10, cureH: 0.1,
     desc: { pl: "Szybkie utwardzanie, cienkie warstwy", en: "Fast curing, thin layers", de: "Schnelle Aushaertung, duenne Schichten" },
-    img: "/img/calc/resin_types/uv.png" },
+    img: "/img/calc/resin_types/uv.webp" },
   { id: "epoxy_clear", label: { pl: "Epoksyd — transparentny", en: "Epoxy — transparent", de: "Epoxid — transparent" },
     pricePerMl: 0.18, density: 1.15, cureH: 48,
     desc: { pl: "Krystalicznie czysty, 24-72h utwardzania", en: "Crystal clear, 24-72h curing", de: "Kristallklar, 24-72h Aushaertung" },
-    img: "/img/calc/resin_types/epoxy_clear.png" },
+    img: "/img/calc/resin_types/epoxy_clear.webp" },
   { id: "epoxy_color", label: { pl: "Epoksyd — kolorowy", en: "Epoxy — colored", de: "Epoxid — farbig" },
     pricePerMl: 0.22, density: 1.15, cureH: 48,
     desc: { pl: "Z pigmentem, efekty artystyczne", en: "With pigment, artistic effects", de: "Mit Pigment, kuenstlerische Effekte" },
-    img: "/img/calc/resin_types/epoxy_color.png" },
+    img: "/img/calc/resin_types/epoxy_color.webp" },
   { id: "custom", label: { pl: "Inna zywica", en: "Other resin", de: "Anderes Harz" },
     pricePerMl: null, density: null, cureH: null, custom: true },
 ];
@@ -74,32 +74,32 @@ export const VOLUMES = [
 ];
 
 export const MOLD_TYPES = [
-  { id: "existing", label: { pl: "Istniejaca forma", en: "Existing mold", de: "Vorhandene Form" },           moldCost: 0,   pourLife: 1,  img: "/img/calc/resin_molds/existing.png" },
-  { id: "new_s",    label: { pl: "Nowa forma — mala", en: "New mold — small", de: "Neue Form — klein" },     moldCost: 60,  pourLife: 40, img: "/img/calc/resin_molds/new_s.png" },
-  { id: "new_m",    label: { pl: "Nowa forma — srednia", en: "New mold — medium", de: "Neue Form — mittel" }, moldCost: 150, pourLife: 35, img: "/img/calc/resin_molds/new_m.png" },
-  { id: "new_l",    label: { pl: "Nowa forma — duza", en: "New mold — large", de: "Neue Form — gross" },     moldCost: 350, pourLife: 25, img: "/img/calc/resin_molds/new_l.png" },
-  { id: "client",   label: { pl: "Forma klienta", en: "Client mold", de: "Kundenform" },                      moldCost: 0,   pourLife: 1,  img: "/img/calc/resin_molds/client.png" },
+  { id: "existing", label: { pl: "Istniejaca forma", en: "Existing mold", de: "Vorhandene Form" },           moldCost: 0,   pourLife: 1,  img: "/img/calc/resin_molds/existing.webp" },
+  { id: "new_s",    label: { pl: "Nowa forma — mala", en: "New mold — small", de: "Neue Form — klein" },     moldCost: 60,  pourLife: 40, img: "/img/calc/resin_molds/new_s.webp" },
+  { id: "new_m",    label: { pl: "Nowa forma — srednia", en: "New mold — medium", de: "Neue Form — mittel" }, moldCost: 150, pourLife: 35, img: "/img/calc/resin_molds/new_m.webp" },
+  { id: "new_l",    label: { pl: "Nowa forma — duza", en: "New mold — large", de: "Neue Form — gross" },     moldCost: 350, pourLife: 25, img: "/img/calc/resin_molds/new_l.webp" },
+  { id: "client",   label: { pl: "Forma klienta", en: "Client mold", de: "Kundenform" },                      moldCost: 0,   pourLife: 1,  img: "/img/calc/resin_molds/client.webp" },
   { id: "custom",   label: { pl: "Forma niestandardowa", en: "Custom mold", de: "Individuelle Form" },        moldCost: null, pourLife: null, custom: true },
 ];
 
 export const INCLUSIONS = [
-  { id: "none",     label: { pl: "Brak", en: "None", de: "Keine" },                                              cost: 0,  img: "/img/calc/resin_inclusions/none.png" },
-  { id: "pigment",  label: { pl: "Pigment / brokat", en: "Pigment / glitter", de: "Pigment / Glitzer" },          cost: 3,  img: "/img/calc/resin_inclusions/pigment.png" },
-  { id: "object",   label: { pl: "Zalewany obiekt (kwiat, zdjecie)", en: "Embedded object (flower, photo)", de: "Eingebettetes Objekt (Blume, Foto)" }, cost: 8,  img: "/img/calc/resin_inclusions/object.png" },
-  { id: "led",      label: { pl: "LED / elektronika", en: "LED / electronics", de: "LED / Elektronik" },          cost: 15, img: "/img/calc/resin_inclusions/led.png" },
+  { id: "none",     label: { pl: "Brak", en: "None", de: "Keine" },                                              cost: 0,  img: "/img/calc/resin_inclusions/none.webp" },
+  { id: "pigment",  label: { pl: "Pigment / brokat", en: "Pigment / glitter", de: "Pigment / Glitzer" },          cost: 3,  img: "/img/calc/resin_inclusions/pigment.webp" },
+  { id: "object",   label: { pl: "Zalewany obiekt (kwiat, zdjecie)", en: "Embedded object (flower, photo)", de: "Eingebettetes Objekt (Blume, Foto)" }, cost: 8,  img: "/img/calc/resin_inclusions/object.webp" },
+  { id: "led",      label: { pl: "LED / elektronika", en: "LED / electronics", de: "LED / Elektronik" },          cost: 15, img: "/img/calc/resin_inclusions/led.webp" },
   { id: "custom",   label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" },                              cost: null, custom: true },
 ];
 
 export const FINISH_OPTIONS = [
   { id: "raw",      label: { pl: "Surowy (z formy)", en: "Raw (from mold)", de: "Roh (aus Form)" },               timeH: 0,   cost: 0,
     desc: { pl: "Naturalna faktura formy", en: "Natural mold texture", de: "Natürliche Formtextur" },
-    img: "/img/calc/resin_finish/raw.png" },
+    img: "/img/calc/resin_finish/raw.webp" },
   { id: "sanded",   label: { pl: "Szlifowany + polerowany", en: "Sanded + polished", de: "Geschliffen + poliert" }, timeH: 0.5, cost: 5,
     desc: { pl: "Lustrzany połysk", en: "Mirror gloss", de: "Spiegelglanz" },
-    img: "/img/calc/resin_finish/sanded.png" },
+    img: "/img/calc/resin_finish/sanded.webp" },
   { id: "coated",   label: { pl: "Lakierowany / powlekany", en: "Coated / lacquered", de: "Lackiert / beschichtet" }, timeH: 0.3, cost: 8,
     desc: { pl: "Głęboki „mokry” efekt", en: "Deep wet-look effect", de: "Tiefer Nass-Effekt" },
-    img: "/img/calc/resin_finish/coated.png" },
+    img: "/img/calc/resin_finish/coated.webp" },
   { id: "custom",   label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" },                              timeH: null, cost: null, custom: true },
 ];
 

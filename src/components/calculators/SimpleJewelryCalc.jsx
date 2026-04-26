@@ -21,43 +21,43 @@ import { trackCalc } from "../../utils/analytics.js";
 // ============================================================
 
 const SERVICES = [
-  { id: "new",         icon: Sparkles,   img: "/img/calc/services/new.png",
+  { id: "new",         icon: Sparkles,   img: "/img/calc/services/new.webp",
     label: { pl: "Nowa biżuteria",          en: "New jewelry",           de: "Neuer Schmuck" } },
-  { id: "renovation",  icon: Wand2,      img: "/img/calc/services/renovation.png",
+  { id: "renovation",  icon: Wand2,      img: "/img/calc/services/renovation.webp",
     label: { pl: "Renowacja / odświeżenie", en: "Renovation / refresh",  de: "Renovierung / Auffrischung" } },
-  { id: "repair",      icon: Wrench,     img: "/img/calc/services/repair.png",
+  { id: "repair",      icon: Wrench,     img: "/img/calc/services/repair.webp",
     label: { pl: "Naprawa",                 en: "Repair",                de: "Reparatur" } },
   { id: "unsure",      icon: HelpCircle, label: { pl: "Nie jestem pewien",        en: "I'm not sure",          de: "Ich bin mir nicht sicher" } },
 ];
 
 const PIECES = [
-  { id: "ring",     icon: Circle,          img: "/img/calc/types/ring.png",
+  { id: "ring",     icon: Circle,          img: "/img/calc/types/ring.webp",
     label: { pl: "Pierścionek",             en: "Ring",         de: "Ring" } },
-  { id: "signet",   icon: Crown,           img: "/img/calc/types/signet.png",
+  { id: "signet",   icon: Crown,           img: "/img/calc/types/signet.webp",
     label: { pl: "Sygnet",                  en: "Signet ring",  de: "Siegelring" } },
-  { id: "bracelet", icon: Hand,            img: "/img/calc/types/bracelet.png",
+  { id: "bracelet", icon: Hand,            img: "/img/calc/types/bracelet.webp",
     label: { pl: "Bransoletka",             en: "Bracelet",     de: "Armband" } },
-  { id: "pendant",  icon: GemIcon,         img: "/img/calc/types/pendant.png",
+  { id: "pendant",  icon: GemIcon,         img: "/img/calc/types/pendant.webp",
     label: { pl: "Wisiorek / medalik",      en: "Pendant",      de: "Anhänger" } },
-  { id: "earrings", icon: Ear,             img: "/img/calc/types/earrings.png",
+  { id: "earrings", icon: Ear,             img: "/img/calc/types/earrings.webp",
     label: { pl: "Kolczyki",                en: "Earrings",     de: "Ohrringe" } },
-  { id: "necklace", icon: Link2,           img: "/img/calc/types/necklace.png",
+  { id: "necklace", icon: Link2,           img: "/img/calc/types/necklace.webp",
     label: { pl: "Naszyjnik / łańcuszek",   en: "Necklace / chain", de: "Halskette / Kette" } },
-  { id: "cord_bracelet", icon: Hand, img: "/img/calc/types/bracelet_stones.png",
+  { id: "cord_bracelet", icon: Hand, img: "/img/calc/types/bracelet_stones.webp",
     label: { pl: "Bransoletka z kamieni", en: "Stone bracelet", de: "Stein-Armband" },
     sub:   { pl: "kamienie na gumce jubilerskiej lub rzemyku", en: "stones on elastic or leather cord", de: "Steine auf Gummiband oder Lederband" } },
-  { id: "cord_necklace", icon: Link2, img: "/img/calc/types/necklace_stones.png",
+  { id: "cord_necklace", icon: Link2, img: "/img/calc/types/necklace_stones.webp",
     label: { pl: "Naszyjnik z kamieni", en: "Stone necklace", de: "Stein-Halskette" },
     sub:   { pl: "kamienie na gumce jubilerskiej lub rzemyku", en: "stones on elastic or leather cord", de: "Steine auf Gummiband oder Lederband" } },
   { id: "other",    icon: MoreHorizontal,  label: { pl: "Inne",                    en: "Other",        de: "Andere" } },
 ];
 
 const METALS = [
-  { id: "silver",   icon: Coins,      img: "/img/calc/metals/silver.png",
+  { id: "silver",   icon: Coins,      img: "/img/calc/metals/silver.webp",
     label: { pl: "Srebro",    en: "Silver",    de: "Silber" } },
-  { id: "gold",     icon: Coins,      img: "/img/calc/metals/gold_14k.png",
+  { id: "gold",     icon: Coins,      img: "/img/calc/metals/gold_14k.webp",
     label: { pl: "Złoto",     en: "Gold",      de: "Gold" } },
-  { id: "platinum", icon: Coins,      img: "/img/calc/metals/platinum.png",
+  { id: "platinum", icon: Coins,      img: "/img/calc/metals/platinum.webp",
     label: { pl: "Platyna",   en: "Platinum",  de: "Platin" } },
   { id: "unsure",   icon: HelpCircle, label: { pl: "Nie wiem",  en: "Not sure",  de: "Unsicher" } },
 ];
@@ -65,13 +65,13 @@ const METALS = [
 // --- Q4 for NEW: gemstone category ---
 const GEM_CATEGORIES = [
   { id: "none",    icon: ZapOff,      label: { pl: "Bez kamienia",                  en: "No stone",         de: "Ohne Stein" } },
-  { id: "accent",  icon: SparkleAlt,  img: "/img/calc/gems/cz.png",
+  { id: "accent",  icon: SparkleAlt,  img: "/img/calc/gems/cz.webp",
     label: { pl: "Delikatny akcent",              en: "Subtle accent",    de: "Feiner Akzent" },
     sub: { pl: "drobne cyrkonie / lab-grown", en: "small CZ / lab-grown", de: "kleine CZ / Labor-Stein" } },
-  { id: "colored", icon: GemIcon,     img: "/img/calc/gems/sapphire.png",
+  { id: "colored", icon: GemIcon,     img: "/img/calc/gems/sapphire.webp",
     label: { pl: "Kolorowy kamień",               en: "Colored stone",    de: "Farbstein" },
     sub: { pl: "ametyst, topaz, szafir…", en: "amethyst, topaz, sapphire…", de: "Amethyst, Topas, Saphir…" } },
-  { id: "diamond", icon: Award,       img: "/img/calc/gems/diamond.png",
+  { id: "diamond", icon: Award,       img: "/img/calc/gems/diamond.webp",
     label: { pl: "Diament / drogi kamień",        en: "Diamond / precious", de: "Diamant / Edelstein" },
     sub: { pl: "rubin, szmaragd, brylant", en: "ruby, emerald, brilliant", de: "Rubin, Smaragd, Brillant" } },
 ];
@@ -98,13 +98,13 @@ const REPAIR_ISSUES = [
 
 // --- Q5 for NEW: quality tier (uses weight images — quality→weight mapping: budget=light, standard=standard, premium=heavy) ---
 const QUALITY_TIERS = [
-  { id: "budget",   icon: ZapOff,      img: "/img/calc/weights/light.png",
+  { id: "budget",   icon: ZapOff,      img: "/img/calc/weights/light.webp",
     label: { pl: "Przystępny",    en: "Affordable", de: "Erschwinglich" },
     sub: { pl: "tanio i solidnie", en: "affordable & solid", de: "günstig & solide" } },
-  { id: "standard", icon: ShieldCheck, img: "/img/calc/weights/standard.png",
+  { id: "standard", icon: ShieldCheck, img: "/img/calc/weights/standard.webp",
     label: { pl: "Standard",      en: "Standard",   de: "Standard" },
     sub: { pl: "dobra jakość",     en: "good quality",       de: "gute Qualität" } },
-  { id: "premium",  icon: Award,       img: "/img/calc/weights/heavy.png",
+  { id: "premium",  icon: Award,       img: "/img/calc/weights/heavy.webp",
     label: { pl: "Premium",       en: "Premium",    de: "Premium" },
     sub: { pl: "najwyższa jakość", en: "top quality",        de: "höchste Qualität" } },
 ];

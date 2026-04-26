@@ -15,38 +15,38 @@ const PRINT_CONFIG = {
 };
 
 const FILAMENT_IMG = {
-  "PLA": "/img/calc/3d_filaments/pla.png", "PLA Silk": "/img/calc/3d_filaments/pla_silk.png",
-  "PLA Matte": "/img/calc/3d_filaments/pla_matte.png", "PLA Wood": "/img/calc/3d_filaments/pla_wood.png",
-  "PLA Marble": "/img/calc/3d_filaments/pla_marble.png", "PETG": "/img/calc/3d_filaments/petg.png",
-  "PETG-CF": "/img/calc/3d_filaments/petg_cf.png", "TPU 95A": "/img/calc/3d_filaments/tpu.png",
-  "PVA": "/img/calc/3d_filaments/pva.png", "ASA": "/img/calc/3d_filaments/asa.png",
-  "ABS": "/img/calc/3d_filaments/abs.png",
-  "PA6-CF": "/img/calc/3d_filaments/pa6_cf.png", "PA6-GF": "/img/calc/3d_filaments/pa6_gf.png",
-  "PA12-CF": "/img/calc/3d_filaments/pa12_cf.png", "PPA-CF": "/img/calc/3d_filaments/ppa_cf.png",
-  "PPA-GF": "/img/calc/3d_filaments/ppa_gf.png", "PC": "/img/calc/3d_filaments/pc.png",
-  "PC-ABS": "/img/calc/3d_filaments/pc_abs.png", "PET-CF": "/img/calc/3d_filaments/pet_cf.png",
-  "PPS": "/img/calc/3d_filaments/pps.png", "PPS-CF": "/img/calc/3d_filaments/pps_cf.png",
+  "PLA": "/img/calc/3d_filaments/pla.webp", "PLA Silk": "/img/calc/3d_filaments/pla_silk.webp",
+  "PLA Matte": "/img/calc/3d_filaments/pla_matte.webp", "PLA Wood": "/img/calc/3d_filaments/pla_wood.webp",
+  "PLA Marble": "/img/calc/3d_filaments/pla_marble.webp", "PETG": "/img/calc/3d_filaments/petg.webp",
+  "PETG-CF": "/img/calc/3d_filaments/petg_cf.webp", "TPU 95A": "/img/calc/3d_filaments/tpu.webp",
+  "PVA": "/img/calc/3d_filaments/pva.webp", "ASA": "/img/calc/3d_filaments/asa.webp",
+  "ABS": "/img/calc/3d_filaments/abs.webp",
+  "PA6-CF": "/img/calc/3d_filaments/pa6_cf.webp", "PA6-GF": "/img/calc/3d_filaments/pa6_gf.webp",
+  "PA12-CF": "/img/calc/3d_filaments/pa12_cf.webp", "PPA-CF": "/img/calc/3d_filaments/ppa_cf.webp",
+  "PPA-GF": "/img/calc/3d_filaments/ppa_gf.webp", "PC": "/img/calc/3d_filaments/pc.webp",
+  "PC-ABS": "/img/calc/3d_filaments/pc_abs.webp", "PET-CF": "/img/calc/3d_filaments/pet_cf.webp",
+  "PPS": "/img/calc/3d_filaments/pps.webp", "PPS-CF": "/img/calc/3d_filaments/pps_cf.webp",
 };
 
 const SEGMENTS = [
   { id: "standard", label: "Standard",
     desc: { pl: "PLA, PETG, TPU, ASA, ABS", en: "PLA, PETG, TPU, ASA, ABS", de: "PLA, PETG, TPU, ASA, ABS" },
-    img: "/img/calc/3d_segments/standard.png" },
+    img: "/img/calc/3d_segments/standard.webp" },
   { id: "engineering", label: "Engineering",
     desc: { pl: "PA-CF, PPA-CF, PC, PET-CF, PPS", en: "PA-CF, PPA-CF, PC, PET-CF, PPS", de: "PA-CF, PPA-CF, PC, PET-CF, PPS" },
-    img: "/img/calc/3d_segments/engineering.png" },
+    img: "/img/calc/3d_segments/engineering.webp" },
 ];
 
 const INFILL_OPTIONS = [
   { id: "low", label: { pl: "Niskie (≤15%)", en: "Low (≤15%)", de: "Niedrig (≤15%)" }, avg: 0.12,
     desc: { pl: "Lekki, oszczędny", en: "Light, economical", de: "Leicht, sparsam" },
-    img: "/img/calc/3d_infill/low.png" },
+    img: "/img/calc/3d_infill/low.webp" },
   { id: "medium", label: { pl: "Średnie (15–50%)", en: "Medium (15–50%)", de: "Mittel (15–50%)" }, avg: 0.35,
     desc: { pl: "Dobra wytrzymałość", en: "Good strength", de: "Gute Festigkeit" },
-    img: "/img/calc/3d_infill/medium.png" },
+    img: "/img/calc/3d_infill/medium.webp" },
   { id: "high", label: { pl: "Wysokie (>50%)", en: "High (>50%)", de: "Hoch (>50%)" }, avg: 0.70,
     desc: { pl: "Maksymalna sztywność", en: "Maximum rigidity", de: "Maximale Steifigkeit" },
-    img: "/img/calc/3d_infill/high.png" },
+    img: "/img/calc/3d_infill/high.webp" },
   { id: "custom", label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" }, avg: null, custom: true },
 ];
 

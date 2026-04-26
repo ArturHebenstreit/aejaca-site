@@ -7,4 +7,15 @@ export default defineConfig({
   ssr: {
     noExternal: true,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "three": ["three"],
+          "react-vendor": ["react", "react-dom", "react-router-dom"],
+          "helmet": ["react-helmet-async"],
+        },
+      },
+    },
+  },
 });
