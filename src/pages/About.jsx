@@ -44,7 +44,7 @@ const LABELS = {
       { name: "Raycus 30W", desc: "Laser fiber do znakowania metali" },
     ],
     ctaJewelry: "Zobacz biżuterię",
-    ctaStudio: "Wyceń projekt online",
+    ctaStudio: "Wyceń projekt w sTuDiO",
     workshopTitle: "Warsztat",
     breadcrumbHome: "Strona główna",
   },
@@ -83,7 +83,7 @@ const LABELS = {
       { name: "Raycus 30W", desc: "Fiber laser for metal marking" },
     ],
     ctaJewelry: "See the jewelry",
-    ctaStudio: "Get an online quote",
+    ctaStudio: "Quote a sTuDiO project",
     workshopTitle: "Workshop",
     breadcrumbHome: "Home",
   },
@@ -122,7 +122,7 @@ const LABELS = {
       { name: "Raycus 30W", desc: "Faserlaser zur Metallmarkierung" },
     ],
     ctaJewelry: "Schmuck ansehen",
-    ctaStudio: "Online-Angebot einholen",
+    ctaStudio: "sTuDiO-Projekt kalkulieren",
     workshopTitle: "Werkstatt",
     breadcrumbHome: "Startseite",
   },
@@ -140,11 +140,51 @@ const GALLERY_PHOTOS = [
     },
   },
   {
+    src: "/img/IMG_4610.webp",
+    alt: {
+      pl: "Laser CO₂ xTool P2 w warsztacie AEJaCA",
+      en: "xTool P2 CO₂ laser at AEJaCA workshop",
+      de: "xTool P2 CO₂-Laser in der AEJaCA-Werkstatt",
+    },
+  },
+  {
+    src: "/img/9523863F-D435-4C65-89CD-C31F3A7302A3.webp",
+    alt: {
+      pl: "Laser fiber Raycus 30W w warsztacie AEJaCA",
+      en: "Raycus 30W fiber laser at AEJaCA workshop",
+      de: "Raycus 30W Faserlaser in der AEJaCA-Werkstatt",
+    },
+  },
+  {
     src: "/img/36E156EB-83B4-4663-9348-3D281BE1C95F.webp",
     alt: {
       pl: "Stół jubilerski z narzędziami AEJaCA",
       en: "AEJaCA jeweler's workbench with tools",
       de: "AEJaCA Schmuck-Werkbank mit Werkzeug",
+    },
+  },
+  {
+    src: "/img/IMG_5181.webp",
+    alt: {
+      pl: "Mikroskop z pierścionkiem w oprawie — AEJaCA",
+      en: "Microscope with ring in setting jig — AEJaCA",
+      de: "Mikroskop mit Ring in Fassung — AEJaCA",
+    },
+  },
+  {
+    src: "/img/IMG_5014.webp",
+    alt: {
+      pl: "Myjka ultradźwiękowa w warsztacie AEJaCA",
+      en: "Ultrasonic cleaner at AEJaCA workshop",
+      de: "Ultraschallreiniger in der AEJaCA-Werkstatt",
+    },
+  },
+  {
+    src: "/img/6FC3C1BC-35BF-4085-AD4F-577ADA98FCAC.webp",
+    alt: {
+      pl: "Walcarka jubilerska AEJaCA",
+      en: "AEJaCA jewelry rolling mill",
+      de: "AEJaCA Schmuck-Walzwerk",
     },
   },
   {
@@ -161,6 +201,14 @@ const GALLERY_PHOTOS = [
       pl: "Narzędzia i imadło grawerskie AEJaCA",
       en: "AEJaCA tools and engraving vise",
       de: "AEJaCA Werkzeuge und Gravierstock",
+    },
+  },
+  {
+    src: "/img/IMG_7892.webp",
+    alt: {
+      pl: "Stanowisko fotografii produktowej AEJaCA",
+      en: "AEJaCA product photography setup",
+      de: "AEJaCA Produktfotografie-Setup",
     },
   },
 ];

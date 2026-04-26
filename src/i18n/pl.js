@@ -37,6 +37,7 @@ export default {
       { label: "Sklep", id: "shop" },
     ],
     aboutSections: [
+      { label: "o Marce", to: "/about" },
       { label: "Gwarancja", to: "/warranty" },
       { label: "Polityka zwrotów", to: "/returns" },
       { label: "Wysyłka", to: "/shipping" },

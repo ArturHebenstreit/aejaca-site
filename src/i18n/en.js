@@ -38,6 +38,7 @@ export default {
       { label: "Shop", id: "shop" },
     ],
     aboutSections: [
+      { label: "About", to: "/about" },
       { label: "Warranty", to: "/warranty" },
       { label: "Returns Policy", to: "/returns" },
       { label: "Shipping", to: "/shipping" },
