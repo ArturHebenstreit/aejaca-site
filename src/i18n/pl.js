@@ -207,7 +207,7 @@ export default {
 
     // Portfolio
     portfolio: {
-      tag: "Nasze Kreacje",
+      tag: "Przykładowe realizacje",
       title: "Portfolio",
       filterAll: "Wszystkie",
       filters: [
@@ -228,6 +228,8 @@ export default {
         { img: "/img/portfolio/jewelry-web/butterfly-earrings.webp", title: "Kolczyki skrzydła motyla", category: "earrings", desc: "Złote kolczyki w kształcie skrzydeł motyla, ręcznie wycinane i teksturowane." },
         { img: "/img/portfolio/jewelry-web/amber-bangle.webp", title: "Bransoleta z bursztynem", category: "custom", desc: "Otwarta bransoleta srebrna ze spiralą i naturalnym bursztynem bałtyckim." },
         { img: "/img/portfolio/jewelry-web/byzantine-chain.webp", title: "Łańcuch bizantyjski", category: "custom", desc: "Ręcznie pleciony łańcuch bizantyjski ze srebra 925 na popiersiowej ekspozycji." },
+        { img: "/img/portfolio/jewelry-web/gold-cross.webp", title: "Złoty krzyżyk", category: "symbolic", desc: "Klasyczny złoty krzyżyk z delikatnym wzorem, symbol wiary i tradycji." },
+        { img: "/img/portfolio/jewelry-web/agate-earrings.webp", title: "Kolczyki z agatem", category: "earrings", desc: "Srebrne kolczyki z naturalnym agatem w oprawie kaboszonowej." },
       ],
     },
 
@@ -308,7 +310,7 @@ export default {
   },
 
   studioPortfolio: {
-    tag: "Realizacje",
+    tag: "Przykładowe realizacje",
     title: "Portfolio sTuDiO",
     filterAll: "Wszystkie",
     filters: [

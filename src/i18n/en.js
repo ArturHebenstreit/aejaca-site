@@ -210,7 +210,7 @@ export default {
 
     // Portfolio
     portfolio: {
-      tag: "Our Creations",
+      tag: "Sample projects",
       title: "Portfolio",
       filterAll: "All",
       filters: [
@@ -231,6 +231,8 @@ export default {
         { img: "/img/portfolio/jewelry-web/butterfly-earrings.webp", title: "Butterfly wing earrings", category: "earrings", desc: "Gold butterfly wing earrings, hand-cut and textured." },
         { img: "/img/portfolio/jewelry-web/amber-bangle.webp", title: "Amber bangle", category: "custom", desc: "Open silver bangle with spiral design and natural Baltic amber." },
         { img: "/img/portfolio/jewelry-web/byzantine-chain.webp", title: "Byzantine chain", category: "custom", desc: "Hand-woven 925 silver Byzantine chain on bust display." },
+        { img: "/img/portfolio/jewelry-web/gold-cross.webp", title: "Gold cross pendant", category: "symbolic", desc: "Classic gold cross with delicate pattern, a symbol of faith and tradition." },
+        { img: "/img/portfolio/jewelry-web/agate-earrings.webp", title: "Agate earrings", category: "earrings", desc: "Silver earrings with natural agate in cabochon setting." },
       ],
     },
 
@@ -311,7 +313,7 @@ export default {
   },
 
   studioPortfolio: {
-    tag: "Completed projects",
+    tag: "Sample projects",
     title: "sTuDiO Portfolio",
     filterAll: "All",
     filters: [

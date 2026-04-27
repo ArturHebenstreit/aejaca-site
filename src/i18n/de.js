@@ -205,7 +205,7 @@ export default {
     },
 
     portfolio: {
-      tag: "Unsere Kreationen",
+      tag: "Beispielrealisierungen",
       title: "Portfolio",
       filterAll: "Alle",
       filters: [
@@ -226,6 +226,8 @@ export default {
         { img: "/img/portfolio/jewelry-web/butterfly-earrings.webp", title: "Schmetterlingsflügel-Ohrringe", category: "earrings", desc: "Goldene Ohrringe in Schmetterlingsflügelform, handgeschnitten und texturiert." },
         { img: "/img/portfolio/jewelry-web/amber-bangle.webp", title: "Bernstein-Armreif", category: "custom", desc: "Offener Silber-Armreif mit Spiraldesign und natürlichem Baltischen Bernstein." },
         { img: "/img/portfolio/jewelry-web/byzantine-chain.webp", title: "Byzantinische Kette", category: "custom", desc: "Handgeflochtene byzantinische Kette aus 925er Silber." },
+        { img: "/img/portfolio/jewelry-web/gold-cross.webp", title: "Goldenes Kreuz", category: "symbolic", desc: "Klassisches Goldkreuz mit zartem Muster, Symbol des Glaubens und der Tradition." },
+        { img: "/img/portfolio/jewelry-web/agate-earrings.webp", title: "Achat-Ohrringe", category: "earrings", desc: "Silberne Ohrringe mit natürlichem Achat in Cabochon-Fassung." },
       ],
     },
 
@@ -304,7 +306,7 @@ export default {
   },
 
   studioPortfolio: {
-    tag: "Realisierungen",
+    tag: "Beispielrealisierungen",
     title: "sTuDiO Portfolio",
     filterAll: "Alle",
     filters: [
