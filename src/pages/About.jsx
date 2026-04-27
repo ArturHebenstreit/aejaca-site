@@ -148,11 +148,11 @@ const GALLERY_PHOTOS = [
     },
   },
   {
-    src: "/img/9523863F-D435-4C65-89CD-C31F3A7302A3.webp",
+    src: "/img/anki.webp",
     alt: {
-      pl: "Laser fiber Raycus 30W w warsztacie AEJaCA",
-      en: "Raycus 30W fiber laser at AEJaCA workshop",
-      de: "Raycus 30W Faserlaser in der AEJaCA-Werkstatt",
+      pl: "Narzędzia jubilerskie — anki i punce w warsztacie AEJaCA",
+      en: "Jewelry tools — dapping punches and block at AEJaCA workshop",
+      de: "Schmuckwerkzeuge — Punzen und Ankblock in der AEJaCA-Werkstatt",
     },
   },
   {
@@ -164,11 +164,11 @@ const GALLERY_PHOTOS = [
     },
   },
   {
-    src: "/img/IMG_5181.webp",
+    src: "/img/CieciePila.webp",
     alt: {
-      pl: "Mikroskop z pierścionkiem w oprawie — AEJaCA",
-      en: "Microscope with ring in setting jig — AEJaCA",
-      de: "Mikroskop mit Ring in Fassung — AEJaCA",
+      pl: "Cięcie piłką jubilerską w warsztacie AEJaCA",
+      en: "Jeweler's saw cutting at AEJaCA workshop",
+      de: "Sägearbeit in der AEJaCA-Schmuckwerkstatt",
     },
   },
   {
