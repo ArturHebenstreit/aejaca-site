@@ -221,7 +221,7 @@ export default {
         { img: "/img/portfolio/jewelry-web/sapphire-ring.webp", title: "Pierścionek z szafirem", category: "rings", desc: "Elegancki pierścionek ze srebra 925 z naturalnym szafirem w oprawie łapkowej." },
         { img: "/img/portfolio/jewelry-web/citrine-star-ring.webp", title: "Pierścionek gwiazda z cytrynem", category: "rings", desc: "Awangardowy pierścionek w kształcie gwiazdy z cytrynem cushion w pudełku AEJaCA." },
         { img: "/img/portfolio/jewelry-web/snake-ring-branded.webp", title: "Pierścionek wąż", category: "rings", desc: "Srebrny pierścionek w formie węża z szmaragdowymi oczami, pełna prezentacja marki." },
-        { img: "/img/portfolio/jewelry-web/gecko-pendant.webp", title: "Pierścionek gekon", category: "rings", desc: "Pierścionek pozłacany 24K złotem z kolorowymi cyrkoniami w stylu nieregularnych gałązek drzewa." },
+        { img: "/img/portfolio/jewelry-web/gecko-pendant.webp", title: "Stylizowana gałązka", category: "rings", desc: "Pierścionek pozłacany 24K złotem z kolorowymi cyrkoniami w stylu nieregularnych gałązek drzewa." },
         { img: "/img/portfolio/jewelry-web/flower-pendant.webp", title: "Wisiorek kwiat słonecznika", category: "pendants", desc: "Ręcznie rzeźbiony srebrny kwiat z cytrynem na łańcuszku, na popiersiowej ekspozycji." },
         { img: "/img/portfolio/jewelry-web/amber-pendant.webp", title: "Wisiorek z surowym bursztynem", category: "pendants", desc: "Naturalny bursztyn bałtycki w srebrnej oprawie liścia na skórzanym rzemieniu." },
         { img: "/img/portfolio/jewelry-web/filigree-cross.webp", title: "Krzyż filigranowy", category: "symbolic", desc: "Bogato zdobiony krzyż ze srebra z detailowym ornamentem filigranowym." },

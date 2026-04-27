@@ -219,7 +219,7 @@ export default {
         { img: "/img/portfolio/jewelry-web/sapphire-ring.webp", title: "Saphirring", category: "rings", desc: "Eleganter Ring aus 925er Silber mit natürlichem Saphir in Krappenfassung." },
         { img: "/img/portfolio/jewelry-web/citrine-star-ring.webp", title: "Citrin-Sternring", category: "rings", desc: "Avantgardistischer sternförmiger Ring mit Citrin im Kissenschliff in AEJaCA-Box." },
         { img: "/img/portfolio/jewelry-web/snake-ring-branded.webp", title: "Schlangenring", category: "rings", desc: "Silberner Schlangenring mit Smaragdaugen, präsentiert mit AEJaCA-Branding." },
-        { img: "/img/portfolio/jewelry-web/gecko-pendant.webp", title: "Gecko-Ring", category: "rings", desc: "Mit 24K Gold plattierter Ring mit bunten Zirkonia im unregelmäßigen Astdesign." },
+        { img: "/img/portfolio/jewelry-web/gecko-pendant.webp", title: "Stilisierter Ast-Ring", category: "rings", desc: "Mit 24K Gold plattierter Ring mit bunten Zirkonia im unregelmäßigen Astdesign." },
         { img: "/img/portfolio/jewelry-web/flower-pendant.webp", title: "Sonnenblumen-Anhänger", category: "pendants", desc: "Handgeschnitzter Silber-Sonnenblume mit Citrin-Zentrum an Kette." },
         { img: "/img/portfolio/jewelry-web/amber-pendant.webp", title: "Rohbernstein-Anhänger", category: "pendants", desc: "Natürlicher Baltischer Bernstein in Silberblatt-Fassung am Lederband." },
         { img: "/img/portfolio/jewelry-web/filigree-cross.webp", title: "Filigrankreuz", category: "symbolic", desc: "Reich verziertes Silberkreuz mit detailliertem Filigranmuster." },
