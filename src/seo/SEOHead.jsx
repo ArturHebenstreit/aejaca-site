@@ -42,9 +42,6 @@ export default function SEOHead({
   const canonical = path === "/"
     ? SITE.url
     : `${SITE.url}${path.endsWith("/") ? path : path + "/"}`;
-  const hrefBase = path === "/"
-    ? SITE.url
-    : `${SITE.url}${path.endsWith("/") ? path : path + "/"}`;
   const ogImage = image || SITE.defaultImage;
   const locale = SITE.locales[lang] || SITE.locales.en;
 
@@ -68,11 +65,8 @@ export default function SEOHead({
       {/* Canonical — dedupes language variants behind one URL */}
       <link rel="canonical" href={canonical} />
 
-      {/* Hreflang — Google picks the right locale per user region */}
-      <link rel="alternate" hrefLang="pl" href={hrefBase} />
-      <link rel="alternate" hrefLang="en" href={hrefBase} />
-      <link rel="alternate" hrefLang="de" href={hrefBase} />
-      <link rel="alternate" hrefLang="x-default" href={hrefBase} />
+      {/* Hreflang — SPA with client-side language switch: x-default only */}
+      <link rel="alternate" hrefLang="x-default" href={canonical} />
 
       {/* Open Graph — Facebook, LinkedIn, WhatsApp, Discord previews */}
       <meta property="og:type" content={ogType} />
