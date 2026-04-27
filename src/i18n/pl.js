@@ -56,7 +56,7 @@ export default {
     studioTitle: "sTuDiO",
     studioSubtitle: "AEJaCA sTuDiO",
     studioDesc: "Druk 3D, grawer laserowy, prototypy CNC. Zmień pomysł w rzeczywisty, trzymalny produkt.",
-    studioBtn: "Wyceń projekt online",
+    studioBtn: "Sprawdź sTuDiO",
     brandHeading: "Twoja wizja. Nasza precyzja.",
     brandText: "Każdy projekt to rozmowa — nie katalog. Zaczynamy od Twojego pomysłu, szkicu lub inspiracji. Wspólnie dopracowujemy detal, materiał, wymiar. Widzisz render 3D zanim cokolwiek powstanie. Dostajesz przedmiot, który istnieje tylko dla Ciebie.",
     brandReviewsBadge: "opinii Google",
