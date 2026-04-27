@@ -224,7 +224,7 @@ export default {
         { img: "/img/portfolio/jewelry-web/sapphire-ring.webp", title: "Sapphire ring", category: "rings", desc: "Elegant 925 silver ring with natural sapphire in prong setting." },
         { img: "/img/portfolio/jewelry-web/citrine-star-ring.webp", title: "Citrine star ring", category: "rings", desc: "Avant-garde star-shaped ring with cushion-cut citrine in AEJaCA box." },
         { img: "/img/portfolio/jewelry-web/snake-ring-branded.webp", title: "Snake ring", category: "rings", desc: "Silver snake ring with emerald eyes, presented with full AEJaCA branding." },
-        { img: "/img/portfolio/jewelry-web/gecko-pendant.webp", title: "Gold gecko pendant", category: "pendants", desc: "Gold gecko pendant with colorful zirconia gems in 3D-printed octagon box." },
+        { img: "/img/portfolio/jewelry-web/gecko-pendant.webp", title: "Gecko ring", category: "rings", desc: "24K gold-plated ring with colorful zirconias in an irregular tree branch design." },
         { img: "/img/portfolio/jewelry-web/flower-pendant.webp", title: "Sunflower pendant", category: "pendants", desc: "Hand-sculpted silver sunflower with citrine center on chain, bust display." },
         { img: "/img/portfolio/jewelry-web/amber-pendant.webp", title: "Raw amber pendant", category: "pendants", desc: "Natural Baltic amber in silver leaf setting on leather cord." },
         { img: "/img/portfolio/jewelry-web/filigree-cross.webp", title: "Filigree cross", category: "symbolic", desc: "Richly ornate silver cross with detailed filigree pattern." },

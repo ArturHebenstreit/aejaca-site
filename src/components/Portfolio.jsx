@@ -40,10 +40,10 @@ export default function Portfolio({ data, accent = "amber", id }) {
   const filtered = filter === "all" ? data.items : data.items.filter((item) => item.category === filter);
 
   const getItemsPerPage = useCallback(() => {
-    if (typeof window === "undefined") return 4;
+    if (typeof window === "undefined") return 3;
     if (window.innerWidth < 640) return 1;
     if (window.innerWidth < 1024) return 2;
-    return 4;
+    return 3;
   }, []);
 
   const [itemsPerPage, setItemsPerPage] = useState(getItemsPerPage);
@@ -64,9 +64,12 @@ export default function Portfolio({ data, accent = "amber", id }) {
     if (!el) return;
     const clamped = Math.max(0, Math.min(page, totalPages - 1));
     setCurrentPage(clamped);
-    const cardWidth = el.scrollWidth / filtered.length;
-    el.scrollTo({ left: clamped * itemsPerPage * cardWidth, behavior: "smooth" });
-  }, [totalPages, filtered.length, itemsPerPage]);
+    const firstCard = el.children[0];
+    if (!firstCard) return;
+    const cardWidth = firstCard.offsetWidth;
+    const gap = parseFloat(getComputedStyle(el).gap) || 16;
+    el.scrollTo({ left: clamped * itemsPerPage * (cardWidth + gap), behavior: "smooth" });
+  }, [totalPages, itemsPerPage]);
 
   const next = useCallback(() => scrollToPage((currentPage + 1) % totalPages), [currentPage, totalPages, scrollToPage]);
   const prev = useCallback(() => scrollToPage(currentPage === 0 ? totalPages - 1 : currentPage - 1), [currentPage, totalPages, scrollToPage]);
@@ -81,8 +84,11 @@ export default function Portfolio({ data, accent = "amber", id }) {
     const el = scrollRef.current;
     if (!el) return;
     function onScroll() {
-      const cardWidth = el.scrollWidth / filtered.length;
-      const page = Math.round(el.scrollLeft / (itemsPerPage * cardWidth));
+      const firstCard = el.children[0];
+      if (!firstCard) return;
+      const cardWidth = firstCard.offsetWidth;
+      const gap = parseFloat(getComputedStyle(el).gap) || 16;
+      const page = Math.round(el.scrollLeft / (itemsPerPage * (cardWidth + gap)));
       setCurrentPage(Math.max(0, Math.min(page, totalPages - 1)));
     }
     el.addEventListener("scroll", onScroll, { passive: true });
@@ -171,14 +177,16 @@ export default function Portfolio({ data, accent = "amber", id }) {
             {filtered.map((item, i) => {
               const catColor = colorMap[item.category] || colorMap.custom || "bg-neutral-500/10 text-neutral-400 border-neutral-500/20";
               const widthClass =
-                itemsPerPage === 1 ? "min-w-[calc(100%-0px)]" :
-                itemsPerPage === 2 ? "min-w-[calc(50%-8px)]" :
-                "min-w-[calc(25%-12px)]";
+                itemsPerPage === 1 ? "w-full" :
+                itemsPerPage === 2 ? "w-[calc(50%-8px)]" :
+                "w-[calc((100%-2rem)/3)]";
+
+              const snapClass = i % itemsPerPage === 0 ? "snap-start" : "";
 
               return (
                 <div
                   key={item.title + filter}
-                  className={`${widthClass} snap-start flex-shrink-0 rounded-xl bg-white/[0.03] border border-white/5 ${isAmber ? "hover:border-amber-500/20" : "hover:border-blue-500/20"} transition-all duration-300 group/card overflow-hidden cursor-pointer`}
+                  className={`${widthClass} ${snapClass} flex-none rounded-xl bg-white/[0.03] border border-white/5 ${isAmber ? "hover:border-amber-500/20" : "hover:border-blue-500/20"} transition-all duration-300 group/card overflow-hidden cursor-pointer`}
                   onClick={() => setLightbox(i)}
                 >
                   {item.img && (
@@ -187,7 +195,7 @@ export default function Portfolio({ data, accent = "amber", id }) {
                         src={item.img}
                         alt={item.title}
                         loading="lazy"
-                        className="w-full aspect-[3/4] object-cover transition-transform duration-500 group-hover/card:scale-105"
+                        className="w-full aspect-square object-cover transition-transform duration-500 group-hover/card:scale-105"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
                     </div>
