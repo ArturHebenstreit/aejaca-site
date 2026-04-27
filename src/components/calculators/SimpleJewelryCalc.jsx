@@ -306,7 +306,7 @@ function calcCord(resolved, lang) {
   const baseCost = matCost + laborCost;
   const margin = 0.45;
   const basePrice = baseCost * (1 + margin);
-  const tolLow = 0.25, tolHigh = 0.35;
+  const tolLow = 0.40, tolHigh = 0.35;
   const perMin = Math.max(1, Math.round(basePrice * (1 - tolLow)));
   const perMax = Math.max(1, Math.round(basePrice * (1 + tolHigh)));
   const eurPln = 4.28;
@@ -477,11 +477,11 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
 
   const [service, setService] = useState("new");
   const [piece, setPiece] = useState("ring");
-  const [metal, setMetal] = useState("gold");
+  const [metal, setMetal] = useState("silver");
   const [gemCategory, setGemCategory] = useState("none");
   const [renoScope, setRenoScope] = useState("clean");
   const [repairIssue, setRepairIssue] = useState("resize");
-  const [quality, setQuality] = useState("standard");
+  const [quality, setQuality] = useState("budget");
   const [quantity, setQuantity] = useState("1");
 
   const handle = (setter, key) => (v) => {

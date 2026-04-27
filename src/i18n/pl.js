@@ -5,7 +5,7 @@ export default {
     jewelry: "AEJaCA Biżuteria",
     studio: "AEJaCA sTuDiO",
     glossary: "Słownik",
-    about: "O Marce AEJaCA",
+    about: "Marka AEJaCA",
     contact: "Kontakt",
     jewelrySections: [
       { label: "o AEJaCA Biżuteria", id: "about" },
