@@ -180,7 +180,7 @@ export default function Returns() {
               </p>
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <Link
-                  to="/warranty"
+                  to="/warranty/"
                   className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors text-sm"
                 >
                   {l.complaintLink} &rarr;

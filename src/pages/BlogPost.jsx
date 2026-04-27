@@ -53,7 +53,7 @@ export default function BlogPost() {
   const { lang } = useLanguage();
   const post = getPost(slug);
 
-  if (!post) return <Navigate to="/blog" replace />;
+  if (!post) return <Navigate to="/blog/" replace />;
 
   const { Body } = post;
   const title = post.title[lang] || post.title.pl;
@@ -96,7 +96,7 @@ export default function BlogPost() {
     <>
       <SEOHead
         pageKey="home"
-        path={`/blog/${post.slug}`}
+        path={`/blog/${post.slug}/`}
         title={title}
         description={description}
         keywords={post.keywords?.[lang]}
@@ -117,7 +117,7 @@ export default function BlogPost() {
           <div className="max-w-3xl mx-auto">
             <Breadcrumb items={[
               { href: "/", label: "Home" },
-              { href: "/blog", label: "Blog" },
+              { href: "/blog/", label: "Blog" },
               { label: title },
             ]} />
 

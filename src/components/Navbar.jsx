@@ -18,12 +18,12 @@ export default function Navbar() {
 
   const navLinks = [
     { to: "/", label: t.nav.home },
-    { to: "/jewelry", label: t.nav.jewelry, sections: t.nav.jewelrySections },
-    { to: "/studio", label: t.nav.studio, sections: t.nav.studioSections },
-    { to: "/about", label: t.nav.about, sections: t.nav.aboutSections },
-    { to: "/blog", label: t.nav.blog || "Blog" },
-    { to: "/glossary", label: t.nav.glossary },
-    { to: "/contact", label: t.nav.contact },
+    { to: "/jewelry/", label: t.nav.jewelry, sections: t.nav.jewelrySections },
+    { to: "/studio/", label: t.nav.studio, sections: t.nav.studioSections },
+    { to: "/about/", label: t.nav.about, sections: t.nav.aboutSections },
+    { to: "/blog/", label: t.nav.blog || "Blog" },
+    { to: "/glossary/", label: t.nav.glossary },
+    { to: "/contact/", label: t.nav.contact },
   ];
 
   // Track scroll for enhanced navbar styling
@@ -124,9 +124,9 @@ export default function Navbar() {
   }
 
   function getDropdownKey(to) {
-    if (to === "/jewelry") return "jewelry";
-    if (to === "/studio") return "studio";
-    if (to === "/about") return "about";
+    if (to === "/jewelry/") return "jewelry";
+    if (to === "/studio/") return "studio";
+    if (to === "/about/") return "about";
     return null;
   }
 
@@ -152,7 +152,7 @@ export default function Navbar() {
               const dropKey = getDropdownKey(to);
               const hasSections = sections && sections.length > 0;
               const isActive = pathname === to;
-              const accentColor = to === "/studio" ? "blue" : "amber";
+              const accentColor = to === "/studio/" ? "blue" : "amber";
 
               return (
                 <div
@@ -271,7 +271,7 @@ export default function Navbar() {
               const dropKey = getDropdownKey(to);
               const hasSections = sections && sections.length > 0;
               const isExpanded = mobileExpanded === dropKey;
-              const accentColor = to === "/studio" ? "blue" : "amber";
+              const accentColor = to === "/studio/" ? "blue" : "amber";
 
               return (
                 <div key={to}>

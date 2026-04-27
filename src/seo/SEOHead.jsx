@@ -39,7 +39,12 @@ export default function SEOHead({
     keywords: keywords || base.keywords,
     ogAlt: ogAlt || base.ogAlt,
   };
-  const canonical = `${SITE.url}${path === "/" ? "" : path}`;
+  const canonical = path === "/"
+    ? SITE.url
+    : `${SITE.url}${path.endsWith("/") ? path : path + "/"}`;
+  const hrefBase = path === "/"
+    ? SITE.url
+    : `${SITE.url}${path.endsWith("/") ? path : path + "/"}`;
   const ogImage = image || SITE.defaultImage;
   const locale = SITE.locales[lang] || SITE.locales.en;
 
@@ -64,10 +69,10 @@ export default function SEOHead({
       <link rel="canonical" href={canonical} />
 
       {/* Hreflang — Google picks the right locale per user region */}
-      <link rel="alternate" hrefLang="pl" href={`${SITE.url}${path === "/" ? "" : path}`} />
-      <link rel="alternate" hrefLang="en" href={`${SITE.url}${path === "/" ? "" : path}`} />
-      <link rel="alternate" hrefLang="de" href={`${SITE.url}${path === "/" ? "" : path}`} />
-      <link rel="alternate" hrefLang="x-default" href={`${SITE.url}${path === "/" ? "" : path}`} />
+      <link rel="alternate" hrefLang="pl" href={hrefBase} />
+      <link rel="alternate" hrefLang="en" href={hrefBase} />
+      <link rel="alternate" hrefLang="de" href={hrefBase} />
+      <link rel="alternate" hrefLang="x-default" href={hrefBase} />
 
       {/* Open Graph — Facebook, LinkedIn, WhatsApp, Discord previews */}
       <meta property="og:type" content={ogType} />

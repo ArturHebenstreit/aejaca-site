@@ -309,14 +309,14 @@ export default function Studio() {
               { id: "odlew-zywiczny", pl: "Odlew żywiczny", en: "Resin Casting", de: "Harzguss" },
               { id: "prototypowanie", pl: "Prototypowanie", en: "Prototyping", de: "Prototyping" },
             ].map((term) => (
-              <Link key={term.id} to={`/glossary/${term.id}`}
+              <Link key={term.id} to={`/glossary/${term.id}/`}
                 className="px-4 py-2 rounded-full text-sm bg-neutral-800/60 text-neutral-300 hover:bg-blue-400/10 hover:text-blue-300 border border-neutral-700/50 hover:border-blue-400/30 transition-all">
                 {term[lang] || term.en}
               </Link>
             ))}
           </div>
           <div className="text-center mt-5">
-            <Link to="/glossary" className="text-blue-400/70 text-xs hover:text-blue-300 hover:underline transition-colors">
+            <Link to="/glossary/" className="text-blue-400/70 text-xs hover:text-blue-300 hover:underline transition-colors">
               {{ pl: "Zobacz pełny glosariusz →", en: "View full glossary →", de: "Vollständiges Glossar →" }[lang] || "View full glossary →"}
             </Link>
           </div>
@@ -364,7 +364,7 @@ export default function Studio() {
         <div ref={ctaRef} className="reveal">
           <h2 className="font-sans text-2xl md:text-3xl font-bold text-white mb-4 tracking-tight">{s.ctaTitle}</h2>
           <p className="text-neutral-400 mb-8 max-w-md mx-auto">{s.ctaText}</p>
-          <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-3 border border-blue-400/30 bg-blue-400/5 backdrop-blur-md text-blue-300 rounded-full hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all duration-300">
+          <Link to="/contact/" className="inline-flex items-center gap-2 px-8 py-3 border border-blue-400/30 bg-blue-400/5 backdrop-blur-md text-blue-300 rounded-full hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all duration-300">
             {s.ctaBtn} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

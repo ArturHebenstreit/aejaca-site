@@ -145,7 +145,7 @@ export default function Glossary() {
                 {filtered.map((term, i) => (
                   <Link
                     key={term.id}
-                    to={`/glossary/${term.id}`}
+                    to={`/glossary/${term.id}/`}
                     ref={getCardRef(i)}
                     className="reveal-scale block bg-neutral-900/60 border border-neutral-800 rounded-xl p-5 hover:border-amber-400/30 transition-colors"
                   >

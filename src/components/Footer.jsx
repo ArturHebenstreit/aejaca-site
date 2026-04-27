@@ -37,16 +37,16 @@ export default function Footer() {
           <nav aria-label="Footer navigation">
             <h4 className="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">{t.footer.quickLinks}</h4>
             <div className="space-y-2">
-              <Link to="/jewelry" className="block text-sm text-neutral-300 hover:text-amber-400 transition-colors">{t.nav.jewelry}</Link>
-              <Link to="/studio" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.nav.studio}</Link>
-              <Link to="/blog" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.blog || "Blog"}</Link>
-              <Link to="/glossary" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.glossary}</Link>
-              <Link to="/about" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.about}</Link>
-              <Link to="/contact" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.contact}</Link>
-              <Link to="/warranty" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.warranty}</Link>
-              <Link to="/returns" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.returns}</Link>
-              <Link to="/shipping" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.shipping}</Link>
-              <Link to="/privacy" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.privacy}</Link>
+              <Link to="/jewelry/" className="block text-sm text-neutral-300 hover:text-amber-400 transition-colors">{t.nav.jewelry}</Link>
+              <Link to="/studio/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.nav.studio}</Link>
+              <Link to="/blog/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.blog || "Blog"}</Link>
+              <Link to="/glossary/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.glossary}</Link>
+              <Link to="/about/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.about}</Link>
+              <Link to="/contact/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.contact}</Link>
+              <Link to="/warranty/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.warranty}</Link>
+              <Link to="/returns/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.returns}</Link>
+              <Link to="/shipping/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.shipping}</Link>
+              <Link to="/privacy/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.privacy}</Link>
             </div>
           </nav>
 
