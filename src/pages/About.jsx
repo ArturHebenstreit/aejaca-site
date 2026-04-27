@@ -20,10 +20,10 @@ const LABELS = {
     philosophyText: "AEJaCA nie jest marką dla każdego. To marka premium, stworzona dla wymagających, wyjątkowych klientów, którzy poszukują tego, czego nie znajdą w żadnej galerii handlowej. Dla tych, którzy cenią unikatowość, personalizację i niepowtarzalność — którzy pragną przedmiotów uduchowionych, z historią, nawet z nutą ezoteryki. Nie każdy zrozumie tę filozofię — i tak ma być. AEJaCA istnieje dla wybranych. Dla tych, którzy wiedzą, że prawdziwy luksus nie jest seryjny.",
     policyTitle: "Informacje",
     policyLinks: [
-      { label: "Gwarancja", to: "/warranty" },
-      { label: "Polityka zwrotów", to: "/returns" },
-      { label: "Wysyłka", to: "/shipping" },
-      { label: "Polityka prywatności", to: "/privacy" },
+      { label: "Gwarancja", to: "/warranty/" },
+      { label: "Polityka zwrotów", to: "/returns/" },
+      { label: "Wysyłka", to: "/shipping/" },
+      { label: "Polityka prywatności", to: "/privacy/" },
     ],
     twoLinesTitle: "Dwie linie — jedna filozofia",
     jewelryLine: "AEJaCA Biżuteria",
@@ -59,10 +59,10 @@ const LABELS = {
     philosophyText: "AEJaCA is not a brand for everyone. It is a premium brand, created for discerning, exceptional clients who seek what no shopping mall can offer. For those who value uniqueness, personalization, and originality — who desire objects with soul, with story, even with a touch of the esoteric. Not everyone will understand this philosophy — and that is by design. AEJaCA exists for the chosen few. For those who know that true luxury is never mass-produced.",
     policyTitle: "Information",
     policyLinks: [
-      { label: "Warranty", to: "/warranty" },
-      { label: "Returns Policy", to: "/returns" },
-      { label: "Shipping", to: "/shipping" },
-      { label: "Privacy Policy", to: "/privacy" },
+      { label: "Warranty", to: "/warranty/" },
+      { label: "Returns Policy", to: "/returns/" },
+      { label: "Shipping", to: "/shipping/" },
+      { label: "Privacy Policy", to: "/privacy/" },
     ],
     twoLinesTitle: "Two lines — one philosophy",
     jewelryLine: "AEJaCA Jewelry",
@@ -98,10 +98,10 @@ const LABELS = {
     philosophyText: "AEJaCA ist keine Marke für jedermann. Es ist eine Premium-Marke, geschaffen für anspruchsvolle, außergewöhnliche Kunden, die suchen, was kein Kaufhaus bieten kann. Für jene, die Einzigartigkeit, Personalisierung und Originalität schätzen — die nach Objekten mit Seele verlangen, mit Geschichte, vielleicht sogar mit einem Hauch von Esoterik. Nicht jeder wird diese Philosophie verstehen — und genau so soll es sein. AEJaCA existiert für die Auserwählten. Für jene, die wissen, dass wahrer Luxus nie in Serie geht.",
     policyTitle: "Informationen",
     policyLinks: [
-      { label: "Garantie", to: "/warranty" },
-      { label: "Rückgaberecht", to: "/returns" },
-      { label: "Versand", to: "/shipping" },
-      { label: "Datenschutz", to: "/privacy" },
+      { label: "Garantie", to: "/warranty/" },
+      { label: "Rückgaberecht", to: "/returns/" },
+      { label: "Versand", to: "/shipping/" },
+      { label: "Datenschutz", to: "/privacy/" },
     ],
     twoLinesTitle: "Zwei Linien — eine Philosophie",
     jewelryLine: "AEJaCA Schmuck",
@@ -367,7 +367,7 @@ export default function About() {
                 <h3 className="font-sans text-xl font-semibold text-white">{L.jewelryLine}</h3>
                 <p className="text-neutral-400 text-sm leading-relaxed flex-1">{L.jewelryLineDesc}</p>
                 <Link
-                  to="/jewelry"
+                  to="/jewelry/"
                   className="inline-flex items-center gap-1.5 text-amber-400 text-sm font-medium hover:text-amber-300 transition-colors"
                 >
                   {L.ctaJewelry} <ArrowRight className="w-4 h-4" />
@@ -382,7 +382,7 @@ export default function About() {
                 <h3 className="font-sans text-xl font-semibold text-white">{L.studioLine}</h3>
                 <p className="text-neutral-400 text-sm leading-relaxed flex-1">{L.studioLineDesc}</p>
                 <Link
-                  to="/studio"
+                  to="/studio/"
                   className="inline-flex items-center gap-1.5 text-blue-400 text-sm font-medium hover:text-blue-300 transition-colors"
                 >
                   {L.ctaStudio} <ArrowRight className="w-4 h-4" />
@@ -512,13 +512,13 @@ export default function About() {
             <p className="text-neutral-400 mb-8">{L.description}</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                to="/jewelry"
+                to="/jewelry/"
                 className="inline-flex items-center gap-2 px-8 py-3 bg-amber-500 text-neutral-950 font-semibold rounded-full hover:bg-amber-400 hover:shadow-lg hover:shadow-amber-500/20 transition-all duration-300"
               >
                 {L.ctaJewelry} <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                to="/studio"
+                to="/studio/"
                 className="inline-flex items-center gap-2 px-8 py-3 border border-blue-400/30 bg-blue-400/5 backdrop-blur-md text-blue-300 rounded-full hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all duration-300"
               >
                 {L.ctaStudio} <ArrowRight className="w-4 h-4" />

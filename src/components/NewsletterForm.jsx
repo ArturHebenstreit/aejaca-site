@@ -139,7 +139,7 @@ export default function NewsletterForm({ compact = false }) {
         />
         <span>
           {l.consent}
-          <Link to="/privacy" className="underline text-amber-300 hover:text-amber-200">{l.privacyLink}</Link>.
+          <Link to="/privacy/" className="underline text-amber-300 hover:text-amber-200">{l.privacyLink}</Link>.
         </span>
       </label>
 

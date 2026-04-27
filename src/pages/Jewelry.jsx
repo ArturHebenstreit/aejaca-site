@@ -300,14 +300,14 @@ export default function Jewelry() {
               { id: "pierscionek-zareczynowy", pl: "Pierścionek zaręczynowy", en: "Engagement ring", de: "Verlobungsring" },
               { id: "obraczki-slubne", pl: "Obrączki ślubne", en: "Wedding bands", de: "Eheringe" },
             ].map((term) => (
-              <Link key={term.id} to={`/glossary/${term.id}`}
+              <Link key={term.id} to={`/glossary/${term.id}/`}
                 className="px-4 py-2 rounded-full text-sm bg-neutral-800/60 text-neutral-300 hover:bg-amber-400/10 hover:text-amber-300 border border-neutral-700/50 hover:border-amber-400/30 transition-all">
                 {term[lang] || term.en}
               </Link>
             ))}
           </div>
           <div className="text-center mt-5">
-            <Link to="/glossary" className="text-amber-400/70 text-xs hover:text-amber-300 hover:underline transition-colors">
+            <Link to="/glossary/" className="text-amber-400/70 text-xs hover:text-amber-300 hover:underline transition-colors">
               {{ pl: "Zobacz pełny glosariusz →", en: "View full glossary →", de: "Vollständiges Glossar →" }[lang] || "View full glossary →"}
             </Link>
           </div>
@@ -353,7 +353,7 @@ export default function Jewelry() {
         <div ref={ctaRef} className="reveal">
           <h2 className="font-serif text-2xl md:text-3xl font-semibold text-white mb-4">{j.ctaTitle}</h2>
           <p className="text-neutral-400 mb-8 max-w-md mx-auto">{j.ctaText}</p>
-          <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-3 border border-amber-400/30 bg-amber-400/5 backdrop-blur-md text-amber-300 rounded-full hover:bg-amber-400 hover:text-black hover:border-amber-400 transition-all duration-300">
+          <Link to="/contact/" className="inline-flex items-center gap-2 px-8 py-3 border border-amber-400/30 bg-amber-400/5 backdrop-blur-md text-amber-300 rounded-full hover:bg-amber-400 hover:text-black hover:border-amber-400 transition-all duration-300">
             {j.ctaBtn} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

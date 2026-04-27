@@ -212,7 +212,7 @@ export function ResultDisplay({ result, lang = "pl" }) {
       <div className="text-center py-4">
         <div className="text-lg font-bold text-blue-400 mb-2">{labels.customQuote}</div>
         <div className="text-sm text-neutral-400 mb-4">{labels.customDesc}</div>
-        <Link to="/contact" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-blue-400/30 bg-blue-400/10 text-blue-300 text-sm font-medium hover:bg-blue-400/20 transition-colors">
+        <Link to="/contact/" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-blue-400/30 bg-blue-400/10 text-blue-300 text-sm font-medium hover:bg-blue-400/20 transition-colors">
           <MessageCircle className="w-4 h-4" />
           {ctaLabel}
         </Link>

@@ -16,7 +16,7 @@ export default function BlogCard({ post }) {
 
   return (
     <Link
-      to={`/blog/${post.slug}`}
+      to={`/blog/${post.slug}/`}
       className="group flex flex-col rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden hover:border-white/20 transition-all duration-300"
     >
       <div className="relative h-48 overflow-hidden">

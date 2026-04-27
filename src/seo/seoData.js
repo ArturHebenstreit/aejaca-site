@@ -247,5 +247,6 @@ export function getSEO(pageKey, lang = "en") {
 
 // Get canonical URL for a given path
 export function canonicalUrl(path = "/") {
-  return `${SITE.url}${path === "/" ? "" : path}`;
+  if (path === "/") return SITE.url;
+  return `${SITE.url}${path.endsWith("/") ? path : path + "/"}`;
 }

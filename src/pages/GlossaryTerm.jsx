@@ -66,7 +66,7 @@ export default function GlossaryTerm() {
         <section className="py-20 px-4 bg-neutral-950">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-2xl font-serif text-white mb-4">{l.notFound}</h1>
-            <Link to="/glossary" className="text-amber-400 hover:underline">{l.backToGlossary}</Link>
+            <Link to="/glossary/" className="text-amber-400 hover:underline">{l.backToGlossary}</Link>
           </div>
         </section>
       </div>
@@ -95,7 +95,7 @@ export default function GlossaryTerm() {
     <>
       <SEOHead
         pageKey="glossary"
-        path={`/glossary/${term.id}`}
+        path={`/glossary/${term.id}/`}
         title={`${termName} — ${l.glossary} — ${SITE.name}`}
         description={termDef}
         schemas={schemas}
@@ -105,7 +105,7 @@ export default function GlossaryTerm() {
           <div className="max-w-3xl mx-auto">
             <Breadcrumb items={[
               { href: "/", label: "Home" },
-              { href: "/glossary", label: l.glossary },
+              { href: "/glossary/", label: l.glossary },
               { label: termName },
             ]} />
 
@@ -124,7 +124,7 @@ export default function GlossaryTerm() {
                 <div className="mb-10 p-5 rounded-xl bg-neutral-900/60 border border-neutral-800">
                   <div className="text-neutral-400 text-xs uppercase tracking-widest mb-2">{l.relatedArticle}</div>
                   <Link
-                    to={`/blog/${term.relatedBlog}`}
+                    to={`/blog/${term.relatedBlog}/`}
                     className={`${catColorClass} hover:underline font-medium`}
                   >
                     {l.readArticle}
@@ -139,7 +139,7 @@ export default function GlossaryTerm() {
                     {related.map((r) => (
                       <Link
                         key={r.id}
-                        to={`/glossary/${r.id}`}
+                        to={`/glossary/${r.id}/`}
                         className="block p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 hover:border-amber-400/30 transition-colors"
                       >
                         <div className="text-white font-medium mb-1">{r.term[lang] || r.term.en}</div>
@@ -153,7 +153,7 @@ export default function GlossaryTerm() {
               )}
 
               <div className="mt-10">
-                <Link to="/glossary" className={`${catColorClass} hover:underline text-sm`}>
+                <Link to="/glossary/" className={`${catColorClass} hover:underline text-sm`}>
                   {l.backToGlossary}
                 </Link>
               </div>

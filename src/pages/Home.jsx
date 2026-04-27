@@ -69,7 +69,7 @@ export default function Home() {
         {/* Split Hero — two equal paths (jewelry / studio) act as primary CTAs */}
         <section className="relative min-h-[calc(40vh-4rem)] flex flex-col md:flex-row" aria-label={h.heroAria || "AEJaCA — two worlds"}>
           {/* Jewelry Panel */}
-          <Link to="/jewelry" className="group relative flex-1 min-h-[35vh] md:min-h-full overflow-hidden cursor-pointer" aria-label={h.jewelryBtn}>
+          <Link to="/jewelry/" className="group relative flex-1 min-h-[35vh] md:min-h-full overflow-hidden cursor-pointer" aria-label={h.jewelryBtn}>
             {/* LCP image: eager + fetchpriority=high tells browser to prioritize — Core Web Vitals (LCP < 2.5s) */}
             <img
               src="/hero-jewelry.webp"
@@ -93,7 +93,7 @@ export default function Home() {
           <div className="hidden md:block w-px bg-white/20" />
 
           {/* Studio Panel */}
-          <Link to="/studio" className="group relative flex-1 min-h-[35vh] md:min-h-full overflow-hidden cursor-pointer" aria-label={h.studioBtn}>
+          <Link to="/studio/" className="group relative flex-1 min-h-[35vh] md:min-h-full overflow-hidden cursor-pointer" aria-label={h.studioBtn}>
             <img
               src="/hero-studio.webp"
               alt="AEJaCA sTuDiO"
@@ -150,7 +150,7 @@ export default function Home() {
 
           {/* Two calculator cards — Jewelry + Studio (side by side) */}
           <div className="grid md:grid-cols-2 gap-6 mb-6">
-            <Link to="/jewelry#calculator" className="group relative rounded-2xl overflow-hidden border border-amber-400/20 bg-gradient-to-br from-amber-950/20 to-neutral-950 p-6 md:p-8 hover:border-amber-400/40 hover:shadow-lg hover:shadow-amber-900/10 transition-all duration-300">
+            <Link to="/jewelry/#calculator" className="group relative rounded-2xl overflow-hidden border border-amber-400/20 bg-gradient-to-br from-amber-950/20 to-neutral-950 p-6 md:p-8 hover:border-amber-400/40 hover:shadow-lg hover:shadow-amber-900/10 transition-all duration-300">
               <div className="flex items-start justify-between mb-4">
                 <Sparkles className="w-7 h-7 text-amber-400" />
                 <span className="text-amber-400/60 text-xs tracking-wider uppercase">{h.quickQuoteJewelryTag}</span>
@@ -162,7 +162,7 @@ export default function Home() {
               </span>
             </Link>
 
-            <Link to="/studio#calculator" className="group relative rounded-2xl overflow-hidden border border-blue-400/20 bg-gradient-to-br from-blue-950/20 to-neutral-950 p-6 md:p-8 hover:border-blue-400/40 hover:shadow-lg hover:shadow-blue-900/10 transition-all duration-300">
+            <Link to="/studio/#calculator" className="group relative rounded-2xl overflow-hidden border border-blue-400/20 bg-gradient-to-br from-blue-950/20 to-neutral-950 p-6 md:p-8 hover:border-blue-400/40 hover:shadow-lg hover:shadow-blue-900/10 transition-all duration-300">
               <div className="flex items-start justify-between mb-4">
                 <FileUp className="w-7 h-7 text-blue-400" />
                 <span className="text-blue-400/60 text-xs tracking-wider uppercase">{h.quickQuoteStudioTag}</span>
@@ -235,7 +235,7 @@ export default function Home() {
           </div>
           <div className="text-center mt-8">
             <Link
-              to="/blog"
+              to="/blog/"
               className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors"
             >
               {h.blogAllLink} <ArrowRight className="w-4 h-4" />
@@ -260,7 +260,7 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-            <Link to="/jewelry" className="inline-flex items-center gap-2 text-amber-400 text-sm hover:text-amber-300 transition-colors group/link">
+            <Link to="/jewelry/" className="inline-flex items-center gap-2 text-amber-400 text-sm hover:text-amber-300 transition-colors group/link">
               {h.learnMoreJewelry} <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
             </Link>
           </div>
@@ -276,7 +276,7 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-            <Link to="/studio" className="inline-flex items-center gap-2 text-blue-400 text-sm hover:text-blue-300 transition-colors group/link">
+            <Link to="/studio/" className="inline-flex items-center gap-2 text-blue-400 text-sm hover:text-blue-300 transition-colors group/link">
               {h.learnMoreStudio} <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
             </Link>
           </div>
@@ -295,7 +295,7 @@ export default function Home() {
         <div ref={ctaRef} className="reveal">
           <h2 className="font-serif text-2xl md:text-3xl font-semibold mb-4">{h.ctaHeading}</h2>
           <p className="text-neutral-400 mb-8 max-w-md mx-auto">{h.ctaText}</p>
-          <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-3 bg-white text-black font-medium rounded-full hover:bg-neutral-200 hover:shadow-lg hover:shadow-white/10 transition-all duration-300">
+          <Link to="/contact/" className="inline-flex items-center gap-2 px-8 py-3 bg-white text-black font-medium rounded-full hover:bg-neutral-200 hover:shadow-lg hover:shadow-white/10 transition-all duration-300">
             {h.ctaBtn} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

@@ -199,7 +199,7 @@ export default function Warranty() {
             {/* Bottom care link */}
             <div ref={footerRef} className="reveal text-center">
               <Link
-                to="/blog/jak-dbac-o-bizuterie"
+                to="/blog/jak-dbac-o-bizuterie/"
                 className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors text-sm"
               >
                 {l.careLink} &rarr;
