@@ -26,8 +26,17 @@ function detectLanguage() {
 const LanguageContext = createContext();
 
 export function LanguageProvider({ children }) {
-  const [lang, setLangRaw] = useState(detectLanguage);
+  const [lang, setLangRaw] = useState("pl");
   const prevLang = useRef(lang);
+  const hydrated = useRef(false);
+
+  useEffect(() => {
+    if (!hydrated.current) {
+      hydrated.current = true;
+      const detected = detectLanguage();
+      if (detected !== "pl") setLangRaw(detected);
+    }
+  }, []);
 
   const setLang = useCallback((newLang) => {
     if (newLang !== prevLang.current) {
@@ -38,6 +47,7 @@ export function LanguageProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    prevLang.current = lang;
     localStorage.setItem(STORAGE_KEY, lang);
     document.documentElement.lang = lang;
   }, [lang]);

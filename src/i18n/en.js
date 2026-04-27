@@ -81,6 +81,8 @@ export default {
       "NFC devices, smart tags & custom gadgets",
     ],
     learnMore: "Learn more",
+    learnMoreJewelry: "Discover our jewelry",
+    learnMoreStudio: "Explore sTuDiO services",
     quickQuoteTag: "Instant quote in 30 seconds",
     quickQuoteTitle: "Get a price online — skip the email back-and-forth",
     quickQuoteSubtitle: "Our calculators compute a real estimate from your parameters. Jewelry or digital fabrication — pick one and start.",

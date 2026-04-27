@@ -46,10 +46,11 @@ export default function Portfolio({ data, accent = "amber", id }) {
     return 3;
   }, []);
 
-  const [itemsPerPage, setItemsPerPage] = useState(getItemsPerPage);
+  const [itemsPerPage, setItemsPerPage] = useState(3);
   const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
 
   useEffect(() => {
+    setItemsPerPage(getItemsPerPage());
     function onResize() { setItemsPerPage(getItemsPerPage()); }
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);

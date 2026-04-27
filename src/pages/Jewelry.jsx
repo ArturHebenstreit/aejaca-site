@@ -143,7 +143,7 @@ export default function Jewelry() {
         <div className="max-w-5xl mx-auto relative rounded-2xl overflow-hidden h-[40vh] min-h-[280px]">
           <img
             src="/hero-jewelry.webp"
-            alt="AEJaCA Jewelry — handcrafted silver rings, earrings, and gemstone pieces"
+            alt="AEJaCA Jewelry"
             className="absolute inset-0 w-full h-full object-cover"
             loading="eager"
             fetchpriority="high"
