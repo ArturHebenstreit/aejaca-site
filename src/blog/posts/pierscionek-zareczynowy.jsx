@@ -9,9 +9,9 @@ export const meta = {
   coverImage: "/img/blog/pierscionek-zareczynowy.webp",
   readingTime: { pl: 7, en: 5, de: 5 },
   title: {
-    pl: "Pierścionek zaręczynowy na zamówienie — koszt, proces i 7 rzeczy, które warto wiedzieć",
-    en: "Custom Engagement Ring — Cost, Process & 7 Things You Should Know",
-    de: "Verlobungsring nach Maß — Kosten, Prozess & 7 wissenswerte Fakten",
+    pl: "Pierścionek zaręczynowy na zamówienie — koszt i proces",
+    en: "Custom Engagement Ring — Cost, Process & Tips",
+    de: "Verlobungsring nach Maß — Kosten, Prozess & Tipps",
   },
   description: {
     pl: "Ile kosztuje pierścionek zaręczynowy na zamówienie? Metal, kamienie, czas realizacji — kompletny przewodnik AEJaCA.",
