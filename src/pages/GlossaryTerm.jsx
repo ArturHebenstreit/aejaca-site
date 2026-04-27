@@ -46,9 +46,9 @@ function buildDefinedTermSchema(term, lang) {
     inDefinedTermSet: {
       "@type": "DefinedTermSet",
       name: "AEJaCA Glossary",
-      url: `${SITE.url}/glossary`,
+      url: `${SITE.url}/glossary/`,
     },
-    url: `${SITE.url}/glossary/${term.id}`,
+    url: `${SITE.url}/glossary/${term.id}/`,
   };
 }
 
@@ -80,12 +80,12 @@ export default function GlossaryTerm() {
 
   const related = GLOSSARY.filter((t) => t.category === term.category && t.id !== term.id).slice(0, 6);
 
-  const pageUrl = `${SITE.url}/glossary/${term.id}`;
+  const pageUrl = `${SITE.url}/glossary/${term.id}/`;
   const schemas = [
     buildWebPageSchema({ title: `${termName} — ${SITE.name}`, description: termDef, url: pageUrl, lang }),
     buildBreadcrumbSchema([
       { name: "Home", url: SITE.url },
-      { name: l.glossary, url: `${SITE.url}/glossary` },
+      { name: l.glossary, url: `${SITE.url}/glossary/` },
       { name: termName, url: pageUrl },
     ]),
     buildDefinedTermSchema(term, lang),

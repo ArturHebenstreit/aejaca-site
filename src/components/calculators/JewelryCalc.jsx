@@ -213,8 +213,8 @@ export default function JewelryCalc({ lang = "pl" }) {
   // New creation
   const [lineId, setLineId] = useState("woman");
   const [typeId, setTypeId] = useState("ring");
-  const [metalId, setMetalId] = useState("gold_18k");
-  const [weightId, setWeightId] = useState("standard");
+  const [metalId, setMetalId] = useState("silver");
+  const [weightId, setWeightId] = useState("light");
   const [methodId, setMethodId] = useState("handmade");
   const [platingId, setPlatingId] = useState("none");
   const [gemId, setGemId] = useState("none");

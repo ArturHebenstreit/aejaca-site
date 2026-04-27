@@ -85,7 +85,7 @@ export default function Returns() {
   const excludeRef = useScrollReveal();
   const bottomRef = useScrollReveal();
 
-  const pageUrl = `${SITE.url}/returns`;
+  const pageUrl = `${SITE.url}/returns/`;
   const schemas = [
     buildWebPageSchema({
       title: `${l.tag} — ${SITE.name}`,
@@ -104,8 +104,6 @@ export default function Returns() {
       <SEOHead
         pageKey="returns"
         path="/returns"
-        title={`${l.tag} — ${SITE.name}`}
-        description={l.description}
         schemas={schemas}
       />
       <div className="pt-16">

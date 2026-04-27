@@ -93,7 +93,7 @@ export default function Shipping() {
   const internationalRef = useScrollReveal();
   const timesRef = useScrollReveal();
 
-  const pageUrl = `${SITE.url}/shipping`;
+  const pageUrl = `${SITE.url}/shipping/`;
   const schemas = [
     buildWebPageSchema({
       title: `${l.tag} — ${SITE.name}`,
@@ -112,8 +112,6 @@ export default function Shipping() {
       <SEOHead
         pageKey="shipping"
         path="/shipping"
-        title={`${l.tag} — ${SITE.name}`}
-        description={l.description}
         schemas={schemas}
       />
       <div className="pt-16">

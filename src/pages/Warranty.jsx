@@ -113,7 +113,7 @@ export default function Warranty() {
   const exclusionsRef = useScrollReveal();
   const footerRef = useScrollReveal();
 
-  const pageUrl = `${SITE.url}/warranty`;
+  const pageUrl = `${SITE.url}/warranty/`;
   const schemas = [
     buildWebPageSchema({
       title: `${l.tag} — ${SITE.name}`,
@@ -132,8 +132,6 @@ export default function Warranty() {
       <SEOHead
         pageKey="warranty"
         path="/warranty"
-        title={`${l.tag} — ${SITE.name}`}
-        description={l.description}
         schemas={schemas}
       />
       <div className="pt-16">

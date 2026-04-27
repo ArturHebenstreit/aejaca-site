@@ -14,7 +14,7 @@ export const meta = {
     de: "Verlobungsring nach Maß — Kosten, Prozess & 7 wissenswerte Fakten",
   },
   description: {
-    pl: "Ile kosztuje pierścionek zaręczynowy na zamówienie? Jak wygląda proces od pomysłu do gotowego pierścionka? Metal, kamienie, czas realizacji — kompletny przewodnik AEJaCA.",
+    pl: "Ile kosztuje pierścionek zaręczynowy na zamówienie? Metal, kamienie, czas realizacji — kompletny przewodnik AEJaCA.",
     en: "How much does a custom engagement ring cost? From idea to finished ring — metals, gemstones, timeline. A complete guide by AEJaCA.",
     de: "Was kostet ein individueller Verlobungsring? Vom Entwurf bis zum fertigen Ring — Metalle, Edelsteine, Zeitrahmen. Ein vollständiger Leitfaden von AEJaCA.",
   },

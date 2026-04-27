@@ -30,7 +30,7 @@ export default function Contact() {
   // Contact page: emit ContactPage + Organization (with phone/email) so Google
   // surfaces "Call" / "Email" action buttons directly in knowledge panel.
   const seo = getSEO("contact", lang);
-  const pageUrl = `${SITE.url}/contact`;
+  const pageUrl = `${SITE.url}/contact/`;
   const schemas = [
     buildWebPageSchema({ title: seo.title, description: seo.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([

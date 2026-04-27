@@ -64,7 +64,7 @@ export default function BlogPost() {
   const catLabel = CATEGORY_LABELS[post.category]?.[lang] || post.category;
   const accent = post.accent || "amber";
 
-  const pageUrl = `${SITE.url}/blog/${post.slug}`;
+  const pageUrl = `${SITE.url}/blog/${post.slug}/`;
   const schemas = [
     buildArticleSchema({
       headline: title,
@@ -79,7 +79,7 @@ export default function BlogPost() {
     }),
     buildBreadcrumbSchema([
       { name: "Home", url: SITE.url },
-      { name: "Blog", url: `${SITE.url}/blog` },
+      { name: "Blog", url: `${SITE.url}/blog/` },
       { name: title, url: pageUrl },
     ]),
     faqItems?.length && buildFAQSchema(faqItems),
