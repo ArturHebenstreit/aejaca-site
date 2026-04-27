@@ -205,7 +205,7 @@ export default {
     },
 
     portfolio: {
-      tag: "Unsere Kreationen",
+      tag: "Beispielrealisierungen",
       title: "Portfolio",
       filterAll: "Alle",
       filters: [
@@ -216,17 +216,20 @@ export default {
         { id: "symbolic", label: "Symbolisch" },
       ],
       items: [
-        { title: "Silberring mit Mondstein", category: "rings", desc: "Handgefertigter Ring aus 925er Silber mit natürlichem Mondstein-Cabochon" },
-        { title: "Amethyst-Tropfen-Ohrringe", category: "earrings", desc: "Zarte Silberohrringe mit facettierten Amethyst-Tropfen" },
-        { title: "Keltischer Knoten-Anhänger", category: "pendants", desc: "Aufwendiges keltisches Knotendesign in oxidiertem Sterlingsilber" },
-        { title: "Individueller Verlobungsring", category: "custom", desc: "Maßgeschneiderter Goldring mit Smaragd, gemeinsam mit der Kundin entworfen" },
-        { title: "Lebensbaum-Brosche", category: "symbolic", desc: "Symbolischer Lebensbaum aus Silber mit eingelassenen Granat-Akzenten" },
-        { title: "Statement-Ring mit Labradorit", category: "rings", desc: "Ausdrucksstarker Ring mit großem Labradorit und blauem Schimmer" },
-        { title: "Eheringe-Set", category: "custom", desc: "Passende Eheringe aus 14K Gold mit personalisierter Gravur" },
-        { title: "Runen-Amulett", category: "symbolic", desc: "Von Wikingern inspirierter Runen-Anhänger aus gealtertem Silber" },
+        { img: "/img/portfolio/jewelry-web/sapphire-ring.webp", title: "Saphirring", category: "rings", desc: "Eleganter Ring aus 925er Silber mit natürlichem Saphir in Krappenfassung." },
+        { img: "/img/portfolio/jewelry-web/citrine-star-ring.webp", title: "Citrin-Sternring", category: "rings", desc: "Avantgardistischer sternförmiger Ring mit Citrin im Kissenschliff in AEJaCA-Box." },
+        { img: "/img/portfolio/jewelry-web/snake-ring-branded.webp", title: "Schlangenring", category: "rings", desc: "Silberner Schlangenring mit Smaragdaugen, präsentiert mit AEJaCA-Branding." },
+        { img: "/img/portfolio/jewelry-web/gecko-pendant.webp", title: "Stilisierter Ast-Ring", category: "rings", desc: "Mit 24K Gold plattierter Ring mit bunten Zirkonia im unregelmäßigen Astdesign." },
+        { img: "/img/portfolio/jewelry-web/flower-pendant.webp", title: "Sonnenblumen-Anhänger", category: "pendants", desc: "Handgeschnitzter Silber-Sonnenblume mit Citrin-Zentrum an Kette." },
+        { img: "/img/portfolio/jewelry-web/amber-pendant.webp", title: "Rohbernstein-Anhänger", category: "pendants", desc: "Natürlicher Baltischer Bernstein in Silberblatt-Fassung am Lederband." },
+        { img: "/img/portfolio/jewelry-web/filigree-cross.webp", title: "Filigrankreuz", category: "symbolic", desc: "Reich verziertes Silberkreuz mit detailliertem Filigranmuster." },
+        { img: "/img/portfolio/jewelry-web/butterfly-earrings.webp", title: "Schmetterlingsflügel-Ohrringe", category: "earrings", desc: "Goldene Ohrringe in Schmetterlingsflügelform, handgeschnitten und texturiert." },
+        { img: "/img/portfolio/jewelry-web/amber-bangle.webp", title: "Bernstein-Armreif", category: "custom", desc: "Offener Silber-Armreif mit Spiraldesign und natürlichem Baltischen Bernstein." },
+        { img: "/img/portfolio/jewelry-web/byzantine-chain.webp", title: "Byzantinische Kette", category: "custom", desc: "Handgeflochtene byzantinische Kette aus 925er Silber." },
+        { img: "/img/portfolio/jewelry-web/gold-cross.webp", title: "Goldenes Kreuz", category: "symbolic", desc: "Klassisches Goldkreuz mit zartem Muster, Symbol des Glaubens und der Tradition." },
+        { img: "/img/portfolio/jewelry-web/agate-earrings.webp", title: "Achat-Ohrringe", category: "earrings", desc: "Silberne Ohrringe mit natürlichem Achat in Cabochon-Fassung." },
       ],
     },
-
 
     testimonials: {
       tag: "Was Unsere Kunden Sagen",
@@ -300,6 +303,29 @@ export default {
         },
       ],
     },
+  },
+
+  studioPortfolio: {
+    tag: "Beispielrealisierungen",
+    title: "sTuDiO Portfolio",
+    filterAll: "Alle",
+    filters: [
+      { id: "laser", label: "Laserschneiden" },
+      { id: "engrave", label: "Gravur" },
+      { id: "3dprint", label: "3D-Druck" },
+    ],
+    items: [
+      { img: "/img/portfolio/studio-web/city-map.webp", title: "Stadtkarte von Chełmża", category: "laser", desc: "Mehrschichtige lasergeschnittene Sperrholzkarte mit farbigen Akzenten." },
+      { img: "/img/portfolio/studio-web/wolf-art.webp", title: "Geometrischer Wolf", category: "laser", desc: "Wanddekoration aus schichtweise lasergeschnittenem Sperrholz im geometrischen Stil." },
+      { img: "/img/portfolio/studio-web/communion-cross.webp", title: "Erstkommunion-Kreuz im Rahmen", category: "laser", desc: "Personalisiertes Kreuz mit Gebet — Andenken an die Erstkommunion." },
+      { img: "/img/portfolio/studio-web/gift-box.webp", title: "Geschenkbox", category: "laser", desc: "Holzschatulle mit IHS-Gravur für die Erstkommunion." },
+      { img: "/img/portfolio/studio-web/engraved-bottle.webp", title: "Gravierte Flasche", category: "engrave", desc: "Personalisierte Widmung auf einer Whiskyflasche lasergraviert." },
+      { img: "/img/portfolio/studio-web/steel-business-card.webp", title: "Visitenkarte aus Stahl", category: "engrave", desc: "AEJaCA-Visitenkarte mit Faserlaser auf Edelstahl graviert." },
+      { img: "/img/portfolio/studio-web/laser-in-action.webp", title: "Faserlaser in Aktion", category: "engrave", desc: "Gravur auf Schieferstein mit Raycus 30W Faserlaser." },
+      { img: "/img/portfolio/studio-web/eagle-art.webp", title: "Adler — Glitzerkunst", category: "laser", desc: "Adler lasergeschnitten aus Glitzermaterial, elegant gerahmt." },
+      { img: "/img/portfolio/studio-web/3d-organizer.webp", title: "Bohrerhalter", category: "3dprint", desc: "Funktionaler Bohrerhalter im FDM-3D-Druck gefertigt." },
+      { img: "/img/portfolio/studio-web/3d-gecko.webp", title: "3D-Gecko", category: "3dprint", desc: "Gecko-Figur in SLA-Harz mit hoher Detailgenauigkeit gedruckt." },
+    ],
   },
 
   studio: {

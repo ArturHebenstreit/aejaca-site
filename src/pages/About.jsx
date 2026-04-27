@@ -11,8 +11,8 @@ import { SITE, getSEO } from "../seo/seoData.js";
 const LABELS = {
   pl: {
     tag: "O AEJaCA",
-    title: "Rzemiosło i technologia od ponad 3 lat",
-    description: "AEJaCA to marka łącząca rzemiosło jubilerskie z technologią. Ponad 3 lata doświadczenia, 150+ projektów, 5.0 na Google.",
+    title: "Rzemiosło i technologia od 2023 roku",
+    description: "AEJaCA to marka łącząca rzemiosło jubilerskie z technologią. Doświadczenie od 2023 roku, 150+ projektów, 5.0 na Google.",
     bioTitle: "Artur Hebenstreit",
     bioSubtitle: "Założyciel AEJaCA",
     bioText: "Wizjoner, twórca i rzemieślnik. Fascynacja biżuterią i kamieniami szlachetnymi towarzyszyła mu od najmłodszych lat — z czasem przerodziła się w głęboką pasję, która stała się sensem pracy twórczej. To, co tworzy, nie jest produktem — to manifestacja wizji, w której technologia spotyka się z duszą rzemiosła. AI, druk 3D, laser CO₂, laser fiber — to narzędzia w rękach kogoś, kto wie, dlaczego tworzy. Efekty mówią same za siebie.",
@@ -50,8 +50,8 @@ const LABELS = {
   },
   en: {
     tag: "About AEJaCA",
-    title: "Craft and technology for over 3 years",
-    description: "AEJaCA combines jewelry craft with technology. Over 3 years of experience, 150+ projects, 5.0 on Google.",
+    title: "Craft and technology since 2023",
+    description: "AEJaCA combines jewelry craft with technology. Experience since 2023, 150+ projects, 5.0 on Google.",
     bioTitle: "Artur Hebenstreit",
     bioSubtitle: "Founder of AEJaCA",
     bioText: "Visionary, creator, and craftsman. A fascination with jewelry and gemstones has accompanied him since his earliest years — growing into a deep passion that became the driving force of his creative work. What he creates is not a product — it's a manifestation of vision where technology meets the soul of craftsmanship. AI, 3D printing, CO₂ laser, fiber laser — these are tools in the hands of someone who knows why he creates. The results speak for themselves.",
@@ -89,8 +89,8 @@ const LABELS = {
   },
   de: {
     tag: "Über AEJaCA",
-    title: "Handwerk und Technologie seit über 3 Jahren",
-    description: "AEJaCA verbindet Schmuckhandwerk mit Technologie. Über 3 Jahre Erfahrung, 150+ Projekte, 5,0 auf Google.",
+    title: "Handwerk und Technologie seit 2023",
+    description: "AEJaCA verbindet Schmuckhandwerk mit Technologie. Erfahrung seit 2023, 150+ Projekte, 5,0 auf Google.",
     bioTitle: "Artur Hebenstreit",
     bioSubtitle: "Gründer von AEJaCA",
     bioText: "Visionär, Schöpfer und Handwerker. Eine Faszination für Schmuck und Edelsteine begleitet ihn seit frühester Kindheit — sie wurde zu einer tiefen Leidenschaft und zur treibenden Kraft seines kreativen Schaffens. Was er erschafft, ist kein Produkt — es ist die Manifestation einer Vision, in der Technologie auf die Seele des Handwerks trifft. KI, 3D-Druck, CO₂-Laser, Faserlaser — das sind Werkzeuge in den Händen eines Menschen, der weiß, warum er schafft. Die Ergebnisse sprechen für sich.",
@@ -148,11 +148,11 @@ const GALLERY_PHOTOS = [
     },
   },
   {
-    src: "/img/9523863F-D435-4C65-89CD-C31F3A7302A3.webp",
+    src: "/img/anki.webp",
     alt: {
-      pl: "Laser fiber Raycus 30W w warsztacie AEJaCA",
-      en: "Raycus 30W fiber laser at AEJaCA workshop",
-      de: "Raycus 30W Faserlaser in der AEJaCA-Werkstatt",
+      pl: "Narzędzia jubilerskie — anki i punce w warsztacie AEJaCA",
+      en: "Jewelry tools — dapping punches and block at AEJaCA workshop",
+      de: "Schmuckwerkzeuge — Punzen und Ankblock in der AEJaCA-Werkstatt",
     },
   },
   {
@@ -164,11 +164,11 @@ const GALLERY_PHOTOS = [
     },
   },
   {
-    src: "/img/IMG_5181.webp",
+    src: "/img/CieciePila.webp",
     alt: {
-      pl: "Mikroskop z pierścionkiem w oprawie — AEJaCA",
-      en: "Microscope with ring in setting jig — AEJaCA",
-      de: "Mikroskop mit Ring in Fassung — AEJaCA",
+      pl: "Cięcie piłką jubilerską w warsztacie AEJaCA",
+      en: "Jeweler's saw cutting at AEJaCA workshop",
+      de: "Sägearbeit in der AEJaCA-Schmuckwerkstatt",
     },
   },
   {

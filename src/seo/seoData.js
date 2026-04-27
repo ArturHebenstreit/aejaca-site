@@ -135,20 +135,20 @@ export const SEO = {
 
   about: {
     pl: {
-      title: "O AEJaCA — Rzemiosło i technologia od ponad 3 lat",
-      description: "AEJaCA to marka łącząca rzemiosło jubilerskie z technologią. Artur Hebenstreit — ponad 3 lata doświadczenia, 150+ projektów, ocena 5.0 na Google.",
+      title: "O AEJaCA — Rzemiosło i technologia od 2023 roku",
+      description: "AEJaCA to marka łącząca rzemiosło jubilerskie z technologią. Artur Hebenstreit — doświadczenie od 2023 roku, 150+ projektów, ocena 5.0 na Google.",
       keywords: "o AEJaCA, Artur Hebenstreit, biżuteria ręcznie robiona, druk 3D, laser, Bambu Lab H2D, xTool P2, Raycus fiber",
       ogAlt: "Warsztat AEJaCA — biżuteria i studio fabrykacji cyfrowej",
     },
     en: {
       title: "About AEJaCA — Craft and technology for 3+ years",
-      description: "AEJaCA combines jewelry craft with technology. Artur Hebenstreit — over 3 years of experience, 150+ projects, 5.0 rating on Google.",
+      description: "AEJaCA combines jewelry craft with technology. Artur Hebenstreit — experience since 2023, 150+ projects, 5.0 rating on Google.",
       keywords: "about AEJaCA, Artur Hebenstreit, handmade jewelry, 3D printing, laser engraving, Bambu Lab H2D, xTool P2, Raycus fiber",
       ogAlt: "AEJaCA workshop — jewelry and digital fabrication studio",
     },
     de: {
       title: "Über AEJaCA — Handwerk und Technologie seit 3+ Jahren",
-      description: "AEJaCA verbindet Schmuckhandwerk mit Technologie. Artur Hebenstreit — über 3 Jahre Erfahrung, 150+ Projekte, 5,0 auf Google.",
+      description: "AEJaCA verbindet Schmuckhandwerk mit Technologie. Artur Hebenstreit — Erfahrung seit 2023, 150+ Projekte, 5,0 auf Google.",
       keywords: "über AEJaCA, Artur Hebenstreit, handgefertigter Schmuck, 3D-Druck, Lasergravur, Bambu Lab H2D, xTool P2, Raycus Faser",
       ogAlt: "AEJaCA Werkstatt — Schmuck und digitale Fertigung",
     },

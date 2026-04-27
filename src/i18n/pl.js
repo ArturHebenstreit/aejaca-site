@@ -207,7 +207,7 @@ export default {
 
     // Portfolio
     portfolio: {
-      tag: "Nasze Kreacje",
+      tag: "Przykładowe realizacje",
       title: "Portfolio",
       filterAll: "Wszystkie",
       filters: [
@@ -218,17 +218,20 @@ export default {
         { id: "symbolic", label: "Symboliczne" },
       ],
       items: [
-        { title: "Srebrny pierścionek z kamieniem księżycowym", category: "rings", desc: "Ręcznie wykonany pierścionek ze srebra próby 925 z naturalnym kamieniem księżycowym" },
-        { title: "Kolczyki z ametystem", category: "earrings", desc: "Delikatne srebrne kolczyki z fasetowanymi kroplami ametystu" },
-        { title: "Wisiorek z węzłem celtyckim", category: "pendants", desc: "Misterny wzór celtyckiego węzła w oksydowanym srebrze" },
-        { title: "Pierścionek zaręczynowy na zamówienie", category: "custom", desc: "Złoty pierścionek ze szmaragdem, zaprojektowany wspólnie z klientką" },
-        { title: "Broszka Drzewo Życia", category: "symbolic", desc: "Symboliczne drzewo życia ze srebra z granatowymi akcentami" },
-        { title: "Pierścionek z labradorytem", category: "rings", desc: "Odważny artystyczny pierścionek z dużym labradorytem o niebieskim blasku" },
-        { title: "Komplet obrączek ślubnych", category: "custom", desc: "Pasujące obrączki ze złota 14K z personalizowanym grawerunkiem" },
-        { title: "Amulet z runami", category: "symbolic", desc: "Wisiorek inspirowany wikingami z postarzanego srebra na skórzanym rzemieniu" },
+        { img: "/img/portfolio/jewelry-web/sapphire-ring.webp", title: "Pierścionek z szafirem", category: "rings", desc: "Elegancki pierścionek ze srebra 925 z naturalnym szafirem w oprawie łapkowej." },
+        { img: "/img/portfolio/jewelry-web/citrine-star-ring.webp", title: "Pierścionek gwiazda z cytrynem", category: "rings", desc: "Awangardowy pierścionek w kształcie gwiazdy z cytrynem cushion w pudełku AEJaCA." },
+        { img: "/img/portfolio/jewelry-web/snake-ring-branded.webp", title: "Pierścionek wąż", category: "rings", desc: "Srebrny pierścionek w formie węża z szmaragdowymi oczami, pełna prezentacja marki." },
+        { img: "/img/portfolio/jewelry-web/gecko-pendant.webp", title: "Stylizowana gałązka", category: "rings", desc: "Pierścionek pozłacany 24K złotem z kolorowymi cyrkoniami w stylu nieregularnych gałązek drzewa." },
+        { img: "/img/portfolio/jewelry-web/flower-pendant.webp", title: "Wisiorek kwiat słonecznika", category: "pendants", desc: "Ręcznie rzeźbiony srebrny kwiat z cytrynem na łańcuszku, na popiersiowej ekspozycji." },
+        { img: "/img/portfolio/jewelry-web/amber-pendant.webp", title: "Wisiorek z surowym bursztynem", category: "pendants", desc: "Naturalny bursztyn bałtycki w srebrnej oprawie liścia na skórzanym rzemieniu." },
+        { img: "/img/portfolio/jewelry-web/filigree-cross.webp", title: "Krzyż filigranowy", category: "symbolic", desc: "Bogato zdobiony krzyż ze srebra z detailowym ornamentem filigranowym." },
+        { img: "/img/portfolio/jewelry-web/butterfly-earrings.webp", title: "Kolczyki skrzydła motyla", category: "earrings", desc: "Złote kolczyki w kształcie skrzydeł motyla, ręcznie wycinane i teksturowane." },
+        { img: "/img/portfolio/jewelry-web/amber-bangle.webp", title: "Bransoleta z bursztynem", category: "custom", desc: "Otwarta bransoleta srebrna ze spiralą i naturalnym bursztynem bałtyckim." },
+        { img: "/img/portfolio/jewelry-web/byzantine-chain.webp", title: "Łańcuch bizantyjski", category: "custom", desc: "Ręcznie pleciony łańcuch bizantyjski ze srebra 925 na popiersiowej ekspozycji." },
+        { img: "/img/portfolio/jewelry-web/gold-cross.webp", title: "Złoty krzyżyk", category: "symbolic", desc: "Klasyczny złoty krzyżyk z delikatnym wzorem, symbol wiary i tradycji." },
+        { img: "/img/portfolio/jewelry-web/agate-earrings.webp", title: "Kolczyki z agatem", category: "earrings", desc: "Srebrne kolczyki z naturalnym agatem w oprawie kaboszonowej." },
       ],
     },
-
 
     // Opinie
     testimonials: {
@@ -304,6 +307,29 @@ export default {
         },
       ],
     },
+  },
+
+  studioPortfolio: {
+    tag: "Przykładowe realizacje",
+    title: "Portfolio sTuDiO",
+    filterAll: "Wszystkie",
+    filters: [
+      { id: "laser", label: "Cięcie laserowe" },
+      { id: "engrave", label: "Grawerowanie" },
+      { id: "3dprint", label: "Druk 3D" },
+    ],
+    items: [
+      { img: "/img/portfolio/studio-web/city-map.webp", title: "Mapa miasta Chełmża", category: "laser", desc: "Wielowarstwowa mapa wycięta laserowo ze sklejki z kolorowymi akcentami." },
+      { img: "/img/portfolio/studio-web/wolf-art.webp", title: "Geometryczny wilk", category: "laser", desc: "Ścienna dekoracja z warstwowo ciętej sklejki w stylu geometrycznym." },
+      { img: "/img/portfolio/studio-web/communion-cross.webp", title: "Krzyż komunijny w ramce", category: "laser", desc: "Personalizowany krzyż z modlitwą — pamiątka I Komunii Świętej." },
+      { img: "/img/portfolio/studio-web/gift-box.webp", title: "Szkatułka na prezent", category: "laser", desc: "Drewniana szkatułka z grawerem i symbolem IHS na I Komunię." },
+      { img: "/img/portfolio/studio-web/engraved-bottle.webp", title: "Grawerowana butelka", category: "engrave", desc: "Personalizowana dedykacja wygrawerowana na butelce whisky." },
+      { img: "/img/portfolio/studio-web/steel-business-card.webp", title: "Wizytówka stalowa", category: "engrave", desc: "Wizytówka firmy AEJaCA grawerowana laserem fiber na stali nierdzewnej." },
+      { img: "/img/portfolio/studio-web/laser-in-action.webp", title: "Laser fiber w akcji", category: "engrave", desc: "Grawerowanie na łupku kamiennym laserem fiber Raycus 30W." },
+      { img: "/img/portfolio/studio-web/eagle-art.webp", title: "Orzeł — obraz brokatowy", category: "laser", desc: "Orzeł wycięty laserem z brokatu, oprawiony w elegancką ramkę." },
+      { img: "/img/portfolio/studio-web/3d-organizer.webp", title: "Organizer na wiertła", category: "3dprint", desc: "Funkcjonalny organizer na wiertła wydrukowany w technologii FDM." },
+      { img: "/img/portfolio/studio-web/3d-gecko.webp", title: "Gekon 3D", category: "3dprint", desc: "Figurka gekona wydrukowana w żywicy SLA z wysoką szczegółowością." },
+    ],
   },
 
   studio: {

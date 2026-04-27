@@ -210,7 +210,7 @@ export default {
 
     // Portfolio
     portfolio: {
-      tag: "Our Creations",
+      tag: "Sample projects",
       title: "Portfolio",
       filterAll: "All",
       filters: [
@@ -221,14 +221,18 @@ export default {
         { id: "symbolic", label: "Symbolic" },
       ],
       items: [
-        { title: "Moonstone Silver Ring", category: "rings", desc: "Handcrafted sterling silver ring with natural moonstone cabochon" },
-        { title: "Amethyst Drop Earrings", category: "earrings", desc: "Delicate silver earrings with faceted amethyst drops" },
-        { title: "Celtic Knot Pendant", category: "pendants", desc: "Intricate Celtic knot design in oxidized sterling silver" },
-        { title: "Custom Engagement Ring", category: "custom", desc: "Bespoke gold ring with emerald center stone, designed with the client" },
-        { title: "Tree of Life Brooch", category: "symbolic", desc: "Symbolic tree of life in silver with embedded garnet accents" },
-        { title: "Labradorite Statement Ring", category: "rings", desc: "Bold artisan ring showcasing a large labradorite with blue flash" },
-        { title: "Wedding Band Set", category: "custom", desc: "Matching his & hers bands in 14K gold with personalized engraving" },
-        { title: "Rune Amulet Pendant", category: "symbolic", desc: "Viking-inspired rune pendant in aged silver with leather cord" },
+        { img: "/img/portfolio/jewelry-web/sapphire-ring.webp", title: "Sapphire ring", category: "rings", desc: "Elegant 925 silver ring with natural sapphire in prong setting." },
+        { img: "/img/portfolio/jewelry-web/citrine-star-ring.webp", title: "Citrine star ring", category: "rings", desc: "Avant-garde star-shaped ring with cushion-cut citrine in AEJaCA box." },
+        { img: "/img/portfolio/jewelry-web/snake-ring-branded.webp", title: "Snake ring", category: "rings", desc: "Silver snake ring with emerald eyes, presented with full AEJaCA branding." },
+        { img: "/img/portfolio/jewelry-web/gecko-pendant.webp", title: "Stylized branch ring", category: "rings", desc: "24K gold-plated ring with colorful zirconias in an irregular tree branch design." },
+        { img: "/img/portfolio/jewelry-web/flower-pendant.webp", title: "Sunflower pendant", category: "pendants", desc: "Hand-sculpted silver sunflower with citrine center on chain, bust display." },
+        { img: "/img/portfolio/jewelry-web/amber-pendant.webp", title: "Raw amber pendant", category: "pendants", desc: "Natural Baltic amber in silver leaf setting on leather cord." },
+        { img: "/img/portfolio/jewelry-web/filigree-cross.webp", title: "Filigree cross", category: "symbolic", desc: "Richly ornate silver cross with detailed filigree pattern." },
+        { img: "/img/portfolio/jewelry-web/butterfly-earrings.webp", title: "Butterfly wing earrings", category: "earrings", desc: "Gold butterfly wing earrings, hand-cut and textured." },
+        { img: "/img/portfolio/jewelry-web/amber-bangle.webp", title: "Amber bangle", category: "custom", desc: "Open silver bangle with spiral design and natural Baltic amber." },
+        { img: "/img/portfolio/jewelry-web/byzantine-chain.webp", title: "Byzantine chain", category: "custom", desc: "Hand-woven 925 silver Byzantine chain on bust display." },
+        { img: "/img/portfolio/jewelry-web/gold-cross.webp", title: "Gold cross pendant", category: "symbolic", desc: "Classic gold cross with delicate pattern, a symbol of faith and tradition." },
+        { img: "/img/portfolio/jewelry-web/agate-earrings.webp", title: "Agate earrings", category: "earrings", desc: "Silver earrings with natural agate in cabochon setting." },
       ],
     },
 
@@ -306,6 +310,29 @@ export default {
         },
       ],
     },
+  },
+
+  studioPortfolio: {
+    tag: "Sample projects",
+    title: "sTuDiO Portfolio",
+    filterAll: "All",
+    filters: [
+      { id: "laser", label: "Laser cutting" },
+      { id: "engrave", label: "Engraving" },
+      { id: "3dprint", label: "3D Printing" },
+    ],
+    items: [
+      { img: "/img/portfolio/studio-web/city-map.webp", title: "City map of Chełmża", category: "laser", desc: "Multi-layered laser-cut plywood map with colored accents." },
+      { img: "/img/portfolio/studio-web/wolf-art.webp", title: "Geometric wolf art", category: "laser", desc: "Wall decoration made from layered laser-cut plywood in geometric style." },
+      { img: "/img/portfolio/studio-web/communion-cross.webp", title: "First Communion cross frame", category: "laser", desc: "Personalized cross with prayer text — First Holy Communion keepsake." },
+      { img: "/img/portfolio/studio-web/gift-box.webp", title: "Gift box", category: "laser", desc: "Wooden gift box with IHS engraving for First Communion." },
+      { img: "/img/portfolio/studio-web/engraved-bottle.webp", title: "Engraved bottle", category: "engrave", desc: "Personalized dedication laser-engraved on a whisky bottle." },
+      { img: "/img/portfolio/studio-web/steel-business-card.webp", title: "Steel business card", category: "engrave", desc: "AEJaCA business card engraved with fiber laser on stainless steel." },
+      { img: "/img/portfolio/studio-web/laser-in-action.webp", title: "Fiber laser in action", category: "engrave", desc: "Engraving on slate stone with Raycus 30W fiber laser." },
+      { img: "/img/portfolio/studio-web/eagle-art.webp", title: "Eagle — glitter art", category: "laser", desc: "Eagle laser-cut from glitter material, framed in elegant setting." },
+      { img: "/img/portfolio/studio-web/3d-organizer.webp", title: "Drill bit organizer", category: "3dprint", desc: "Functional drill bit organizer 3D printed with FDM technology." },
+      { img: "/img/portfolio/studio-web/3d-gecko.webp", title: "3D Gecko", category: "3dprint", desc: "Gecko figurine 3D printed in SLA resin with high detail." },
+    ],
   },
 
   // Studio page
