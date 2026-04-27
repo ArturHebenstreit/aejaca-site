@@ -17,7 +17,7 @@ export const METAL_PRICES = {
 export const EUR_PLN = 4.28;
 export const MARGIN = 0.45;          // new creation margin
 export const REPAIR_MARGIN = 0.15;   // repair/renovation margin (labor IS the product)
-export const TOL_LOW = 0.25;
+export const TOL_LOW = 0.40;
 export const TOL_HIGH = 0.35;
 
 // --- SERVICE TYPES ---
