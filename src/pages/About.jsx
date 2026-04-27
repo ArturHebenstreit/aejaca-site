@@ -382,7 +382,7 @@ export default function About() {
                 <h3 className="font-sans text-xl font-semibold text-white">{L.studioLine}</h3>
                 <p className="text-neutral-400 text-sm leading-relaxed flex-1">{L.studioLineDesc}</p>
                 <Link
-                  to="/studio/"
+                  to="/studio/#calculator"
                   className="inline-flex items-center gap-1.5 text-blue-400 text-sm font-medium hover:text-blue-300 transition-colors"
                 >
                   {L.ctaStudio} <ArrowRight className="w-4 h-4" />
@@ -518,7 +518,7 @@ export default function About() {
                 {L.ctaJewelry} <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                to="/studio/"
+                to="/studio/#calculator"
                 className="inline-flex items-center gap-2 px-8 py-3 border border-blue-400/30 bg-blue-400/5 backdrop-blur-md text-blue-300 rounded-full hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all duration-300"
               >
                 {L.ctaStudio} <ArrowRight className="w-4 h-4" />
