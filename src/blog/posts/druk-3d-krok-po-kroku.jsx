@@ -10,8 +10,8 @@ export const meta = {
   readingTime: { pl: 7, en: 5, de: 5 },
   title: {
     pl: "Druk 3D krok po kroku — jak zamienić pomysł w gotowy produkt",
-    en: "3D Printing Step by Step — How to Turn an Idea into a Finished Product",
-    de: "3D-Druck Schritt für Schritt — So wird aus einer Idee ein fertiges Produkt",
+    en: "3D Printing Step by Step — From Idea to Product",
+    de: "3D-Druck Schritt für Schritt — Idee zum Produkt",
   },
   description: {
     pl: "Jak działa druk 3D? FDM vs żywica, od pliku do wydruku, ceny, materiały. Kompletny przewodnik po usługach druku 3D w AEJaCA sTuDiO.",

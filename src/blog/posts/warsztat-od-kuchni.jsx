@@ -10,7 +10,7 @@ export const meta = {
   title: {
     pl: "AEJaCA od kuchni — sprzęt, materiały i proces tworzenia",
     en: "Inside AEJaCA — Equipment, Materials & Creative Process",
-    de: "Hinter den Kulissen von AEJaCA — Ausstattung, Materialien & Prozess",
+    de: "AEJaCA hinter den Kulissen — Ausstattung & Prozess",
   },
   description: {
     pl: "Zaglądamy do warsztatu AEJaCA: drukarki 3D, lasery, narzędzia jubilerskie. Jak powstaje biżuteria i projekty studyjne od A do Z.",

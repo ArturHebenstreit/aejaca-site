@@ -9,7 +9,7 @@ export const meta = {
   readingTime: { pl: 6, en: 5, de: 5 },
   title: {
     pl: "Biżuteria jako inwestycja \u2014 kiedy warto, a kiedy nie?",
-    en: "Jewelry as an Investment \u2014 When It\u2019s Worth It & When It\u2019s Not",
+    en: "Jewelry as an Investment \u2014 Is It Worth It?",
     de: "Schmuck als Investition \u2014 Wann es sich lohnt & wann nicht",
   },
   description: {

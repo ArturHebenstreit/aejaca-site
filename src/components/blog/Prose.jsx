@@ -71,7 +71,8 @@ export function A({ href, children, external = false }) {
   const isInternal = href.startsWith("/");
   const classes = "text-amber-400 hover:text-amber-300 underline decoration-amber-500/40 underline-offset-4 transition-colors";
   if (isInternal && !external) {
-    return <Link to={href} className={classes}>{children}</Link>;
+    const to = href.includes("#") || href.endsWith("/") ? href : href + "/";
+    return <Link to={to} className={classes}>{children}</Link>;
   }
   return (
     <a href={href} className={classes} target="_blank" rel="noopener noreferrer">
@@ -140,12 +141,13 @@ export function CTABox({ accent = "amber", title, text, href, cta }) {
   const btnColor = accent === "blue"
     ? "bg-blue-500 hover:bg-blue-400 text-white"
     : "bg-amber-400 hover:bg-amber-300 text-black";
+  const to = href.startsWith("/") && !href.includes("#") && !href.endsWith("/") ? href + "/" : href;
   return (
     <aside className={`my-10 rounded-2xl border bg-gradient-to-br ${palette} p-6 md:p-8 text-center`}>
       <h3 className="font-serif text-xl md:text-2xl font-semibold text-white mb-3 tracking-tight">{title}</h3>
       <p className="text-neutral-300 mb-5 max-w-xl mx-auto">{text}</p>
       <Link
-        to={href}
+        to={to}
         className={`inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm ${btnColor} transition-colors shadow-lg`}
       >
         {cta}

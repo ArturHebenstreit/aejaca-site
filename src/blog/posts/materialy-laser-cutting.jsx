@@ -8,7 +8,7 @@ export const meta = {
   coverImage: "/img/blog/materialy-laser-cutting.webp",
   readingTime: { pl: 7, en: 5, de: 5 },
   title: {
-    pl: "Materiały do grawerowania i cięcia laserowego — co się nadaje?",
+    pl: "Materiały do cięcia laserowego — co się nadaje?",
     en: "Laser Cutting & Engraving Materials — What Works?",
     de: "Laserschnitt- & Gravurmaterialien — Was funktioniert?",
   },

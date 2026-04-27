@@ -8,9 +8,9 @@ export const meta = {
   coverImage: "/img/blog/projektowanie-ai.webp",
   readingTime: { pl: 6, en: 5, de: 5 },
   title: {
-    pl: "AI w projektowaniu biżuterii — jak wykorzystujemy sztuczną inteligencję",
-    en: "AI in Jewelry Design — How We Use Artificial Intelligence",
-    de: "KI im Schmuckdesign — Wie wir künstliche Intelligenz einsetzen",
+    pl: "AI w projektowaniu biżuterii — jak to wykorzystujemy",
+    en: "AI in Jewelry Design — How We Use It at AEJaCA",
+    de: "KI im Schmuckdesign — So nutzen wir sie bei AEJaCA",
   },
   description: {
     pl: "Jak AI wspomaga projektowanie biżuterii w AEJaCA? Generowanie konceptów, optymalizacja 3D, kalkulacja kosztów. Technologia w służbie rzemiosła.",

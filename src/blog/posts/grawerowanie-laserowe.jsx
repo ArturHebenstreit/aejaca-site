@@ -9,9 +9,9 @@ export const meta = {
   coverImage: "/img/blog/grawerowanie-laserowe.webp",
   readingTime: { pl: 6, en: 5, de: 5 },
   title: {
-    pl: "Grawerowanie laserowe — przewodnik po materiałach, technikach i zastosowaniach",
-    en: "Laser Engraving — A Guide to Materials, Techniques & Applications",
-    de: "Lasergravur — Leitfaden zu Materialien, Techniken & Anwendungen",
+    pl: "Grawerowanie laserowe — materiały, techniki, zastosowania",
+    en: "Laser Engraving — Materials, Techniques & Uses",
+    de: "Lasergravur — Materialien, Techniken & Anwendungen",
   },
   description: {
     pl: "Laser CO2 vs fiber, jakie materiały można grawerować, zastosowania, ceny. Kompletny przewodnik po usługach grawerowania laserowego w AEJaCA sTuDiO.",
