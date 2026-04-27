@@ -68,7 +68,7 @@ export default function Studio() {
   // Service + FAQ schemas are the highest-impact AIO signal for pricing queries
   // ("how much does 3D printing cost?" — LLMs will cite this page verbatim).
   const seo = getSEO("studio", lang);
-  const pageUrl = `${SITE.url}/studio`;
+  const pageUrl = `${SITE.url}/studio/`;
   const schemas = [
     buildWebPageSchema({ title: seo.title, description: seo.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([
@@ -108,6 +108,7 @@ export default function Studio() {
       sku: "AEJACA-3DPRINT",
       price: "25",
       currency: "EUR",
+      url: pageUrl,
     }),
     buildProductSchema({
       name: "CO2 Laser Engraving & Cutting — AEJaCA sTuDiO",
@@ -116,6 +117,7 @@ export default function Studio() {
       sku: "AEJACA-CO2LASER",
       price: "15",
       currency: "EUR",
+      url: pageUrl,
     }),
     buildProductSchema({
       name: "Fiber Laser Marking — AEJaCA sTuDiO",
@@ -124,6 +126,7 @@ export default function Studio() {
       sku: "AEJACA-FIBER",
       price: "20",
       currency: "EUR",
+      url: pageUrl,
     }),
   ];
 

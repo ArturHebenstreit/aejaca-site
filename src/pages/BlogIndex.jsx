@@ -31,7 +31,7 @@ export default function BlogIndex() {
   const headerRef = useScrollReveal();
   const getCardRef = useStaggerReveal(100);
 
-  const pageUrl = `${SITE.url}/blog`;
+  const pageUrl = `${SITE.url}/blog/`;
   const schemas = [
     buildWebPageSchema({ title: `${l.tag} — ${SITE.name}`, description: l.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([

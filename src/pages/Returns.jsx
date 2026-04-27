@@ -85,7 +85,7 @@ export default function Returns() {
   const excludeRef = useScrollReveal();
   const bottomRef = useScrollReveal();
 
-  const pageUrl = `${SITE.url}/returns`;
+  const pageUrl = `${SITE.url}/returns/`;
   const schemas = [
     buildWebPageSchema({
       title: `${l.tag} — ${SITE.name}`,

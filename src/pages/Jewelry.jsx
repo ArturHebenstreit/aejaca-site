@@ -67,7 +67,7 @@ export default function Jewelry() {
   // Per-page schemas: Service (jewelry as commissionable craft) + FAQ (AIO gold)
   // + Breadcrumb (SERP navigation) + WebPage (canonical wrapper).
   const seo = getSEO("jewelry", lang);
-  const pageUrl = `${SITE.url}/jewelry`;
+  const pageUrl = `${SITE.url}/jewelry/`;
   const schemas = [
     buildWebPageSchema({ title: seo.title, description: seo.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([
@@ -111,6 +111,7 @@ export default function Jewelry() {
       currency: "EUR",
       rating: 4.9,
       reviewCount: 23,
+      url: pageUrl,
     }),
     buildProductSchema({
       name: "Handmade Gold Engagement Ring — AEJaCA",
@@ -121,6 +122,7 @@ export default function Jewelry() {
       currency: "EUR",
       rating: 4.9,
       reviewCount: 23,
+      url: pageUrl,
     }),
     buildProductSchema({
       name: "Silver Earrings with Natural Gemstones — AEJaCA",
@@ -131,6 +133,7 @@ export default function Jewelry() {
       currency: "EUR",
       rating: 4.9,
       reviewCount: 23,
+      url: pageUrl,
     }),
   ];
 

@@ -21,6 +21,7 @@ export function buildOrganizationSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": `${SITE.url}/#organization`,
     name: SITE.name,
     url: SITE.url,
     logo: `${SITE.url}/logo.png`,
@@ -244,7 +245,7 @@ export function buildArticleSchema({
 // ---------- Product schema (for individual jewelry pieces / studio products) ----------
 // Required for Merchant listings + Google Shopping. `aggregateRating` + `offers`
 // combo triggers rich "star review" snippet in SERP — big CTR boost.
-export function buildProductSchema({ name, description, image, sku, price, currency = "EUR", inStock = true, rating, reviewCount }) {
+export function buildProductSchema({ name, description, image, sku, price, currency = "EUR", inStock = true, rating, reviewCount, url }) {
   const schema = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -253,6 +254,7 @@ export function buildProductSchema({ name, description, image, sku, price, curre
     image: Array.isArray(image) ? image : [image],
     sku,
     brand: { "@type": "Brand", name: SITE.name },
+    ...(url && { url }),
     offers: {
       "@type": "Offer",
       priceCurrency: currency,
@@ -261,6 +263,7 @@ export function buildProductSchema({ name, description, image, sku, price, curre
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",
       seller: { "@type": "Organization", name: SITE.name },
+      ...(url && { url }),
     },
   };
   if (rating && reviewCount) {

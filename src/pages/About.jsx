@@ -235,7 +235,7 @@ export default function About() {
   const getEquipRef = useStaggerReveal(110);
 
   const seo = getSEO("about", lang);
-  const pageUrl = `${SITE.url}/about`;
+  const pageUrl = `${SITE.url}/about/`;
   const schemas = [
     buildWebPageSchema({ title: seo.title, description: seo.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([

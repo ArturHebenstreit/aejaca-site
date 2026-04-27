@@ -93,7 +93,7 @@ export default function Shipping() {
   const internationalRef = useScrollReveal();
   const timesRef = useScrollReveal();
 
-  const pageUrl = `${SITE.url}/shipping`;
+  const pageUrl = `${SITE.url}/shipping/`;
   const schemas = [
     buildWebPageSchema({
       title: `${l.tag} — ${SITE.name}`,

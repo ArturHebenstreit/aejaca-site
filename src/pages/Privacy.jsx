@@ -10,7 +10,7 @@ export default function Privacy() {
 
   // Privacy pages are still indexed but lower priority — breadcrumb + webpage is sufficient.
   const seo = getSEO("privacy", lang);
-  const pageUrl = `${SITE.url}/privacy`;
+  const pageUrl = `${SITE.url}/privacy/`;
   const schemas = [
     buildWebPageSchema({ title: seo.title, description: seo.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([

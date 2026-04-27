@@ -113,7 +113,7 @@ export default function Warranty() {
   const exclusionsRef = useScrollReveal();
   const footerRef = useScrollReveal();
 
-  const pageUrl = `${SITE.url}/warranty`;
+  const pageUrl = `${SITE.url}/warranty/`;
   const schemas = [
     buildWebPageSchema({
       title: `${l.tag} — ${SITE.name}`,

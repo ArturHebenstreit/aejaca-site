@@ -73,7 +73,7 @@ export default function Glossary() {
     }).sort((a, b) => (a.term[lang] || "").localeCompare(b.term[lang] || "", lang));
   }, [query, activeCat, lang]);
 
-  const pageUrl = `${SITE.url}/glossary`;
+  const pageUrl = `${SITE.url}/glossary/`;
   const schemas = [
     buildWebPageSchema({ title: `${l.tag} — ${SITE.name}`, description: l.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([
