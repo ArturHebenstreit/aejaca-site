@@ -33,7 +33,7 @@ export default function BlogIndex() {
 
   const pageUrl = `${SITE.url}/blog/`;
   const schemas = [
-    buildWebPageSchema({ title: `${l.tag} — ${SITE.name}`, description: l.description, url: pageUrl, lang }),
+    buildWebPageSchema({ title: `${l.tag} — ${l.title} — ${SITE.name}`, description: l.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([
       { name: "Home", url: SITE.url },
       { name: "Blog", url: pageUrl },
@@ -45,7 +45,7 @@ export default function BlogIndex() {
       <SEOHead
         pageKey="home"
         path="/blog"
-        title={`${l.tag} — ${SITE.name}`}
+        title={`${l.tag} — ${l.title} — ${SITE.name}`}
         description={l.description}
         schemas={schemas}
       />
