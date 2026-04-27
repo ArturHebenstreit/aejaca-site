@@ -112,8 +112,6 @@ export default function Shipping() {
       <SEOHead
         pageKey="shipping"
         path="/shipping"
-        title={`${l.tag} — ${SITE.name}`}
-        description={l.description}
         schemas={schemas}
       />
       <div className="pt-16">

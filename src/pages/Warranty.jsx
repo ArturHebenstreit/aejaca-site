@@ -132,8 +132,6 @@ export default function Warranty() {
       <SEOHead
         pageKey="warranty"
         path="/warranty"
-        title={`${l.tag} — ${SITE.name}`}
-        description={l.description}
         schemas={schemas}
       />
       <div className="pt-16">
