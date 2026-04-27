@@ -73,7 +73,7 @@ export default function Home() {
             {/* LCP image: eager + fetchpriority=high tells browser to prioritize — Core Web Vitals (LCP < 2.5s) */}
             <img
               src="/hero-jewelry.webp"
-              alt="AEJaCA Jewelry — handcrafted silver and gold jewelry with natural gemstones"
+              alt="AEJaCA Jewelry"
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               loading="eager"
               fetchpriority="high"
@@ -96,7 +96,7 @@ export default function Home() {
           <Link to="/studio" className="group relative flex-1 min-h-[35vh] md:min-h-full overflow-hidden cursor-pointer" aria-label={h.studioBtn}>
             <img
               src="/hero-studio.webp"
-              alt="AEJaCA sTuDiO — 3D printing, laser engraving, resin casting, and custom fabrication"
+              alt="AEJaCA sTuDiO"
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               loading="eager"
               fetchpriority="high"
@@ -261,7 +261,7 @@ export default function Home() {
               ))}
             </ul>
             <Link to="/jewelry" className="inline-flex items-center gap-2 text-amber-400 text-sm hover:text-amber-300 transition-colors group/link">
-              {h.learnMore} <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
+              {h.learnMoreJewelry} <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
             </Link>
           </div>
 
@@ -277,7 +277,7 @@ export default function Home() {
               ))}
             </ul>
             <Link to="/studio" className="inline-flex items-center gap-2 text-blue-400 text-sm hover:text-blue-300 transition-colors group/link">
-              {h.learnMore} <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
+              {h.learnMoreStudio} <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
             </Link>
           </div>
         </div>

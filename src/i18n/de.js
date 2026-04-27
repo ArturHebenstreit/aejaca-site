@@ -79,6 +79,8 @@ export default {
       "NFC-Geräte, Smart Tags & individuelle Gadgets",
     ],
     learnMore: "Mehr erfahren",
+    learnMoreJewelry: "Schmuckkollektion entdecken",
+    learnMoreStudio: "sTuDiO-Services erkunden",
     quickQuoteTag: "Sofort-Angebot in 30 Sekunden",
     quickQuoteTitle: "Preis online berechnen — ohne E-Mail-Wartezeit",
     quickQuoteSubtitle: "Unsere Rechner liefern einen echten Kostenvoranschlag aus deinen Parametern. Schmuck oder digitale Fertigung — einfach starten.",

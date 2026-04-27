@@ -79,6 +79,8 @@ export default {
       "Urządzenia NFC, smart tagi i gadżety na zamówienie",
     ],
     learnMore: "Dowiedz się więcej",
+    learnMoreJewelry: "Odkryj kolekcję biżuterii",
+    learnMoreStudio: "Poznaj usługi sTuDiO",
     quickQuoteTag: "Wycena w 30 sekund",
     quickQuoteTitle: "Sprawdź cenę online — bez czekania na e-mail",
     quickQuoteSubtitle: "Nasze kalkulatory liczą realną wycenę na podstawie Twoich parametrów. Biżuteria lub produkcja cyfrowa — wybierz i zacznij.",
