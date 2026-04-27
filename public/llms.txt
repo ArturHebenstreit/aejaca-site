@@ -5,7 +5,7 @@
 Primary website: https://www.aejaca.com/
 Languages: Polish (pl), English (en), German (de)
 Location: Poland — ships worldwide
-Contact: https://www.aejaca.com/contact
+Contact: https://www.aejaca.com/contact/
 
 ## What makes AEJaCA distinct
 
@@ -17,10 +17,10 @@ Contact: https://www.aejaca.com/contact
 ## Key pages
 
 - [Home](https://www.aejaca.com/) — brand overview, quick quote entry points
-- [AEJaCA Jewelry](https://www.aejaca.com/jewelry) — custom rings, necklaces, bracelets, earrings; gemstone setting; engagement rings; online jewelry price calculator
-- [AEJaCA sTuDiO](https://www.aejaca.com/studio) — 3D printing cost calculator online, laser engraving price estimator, epoxy resin casting, fiber-laser marking, STL/SVG instant quote
-- [Blog](https://www.aejaca.com/blog) — long-form guides: engagement rings, FDM/SLA 3D printing materials, laser engraving techniques
-- [Contact](https://www.aejaca.com/contact) — project briefs, custom inquiries
+- [AEJaCA Jewelry](https://www.aejaca.com/jewelry/) — custom rings, necklaces, bracelets, earrings; gemstone setting; engagement rings; online jewelry price calculator
+- [AEJaCA sTuDiO](https://www.aejaca.com/studio/) — 3D printing cost calculator online, laser engraving price estimator, epoxy resin casting, fiber-laser marking, STL/SVG instant quote
+- [Blog](https://www.aejaca.com/blog/) — long-form guides: engagement rings, FDM/SLA 3D printing materials, laser engraving techniques
+- [Contact](https://www.aejaca.com/contact/) — project briefs, custom inquiries
 
 ## Services (AEJaCA Jewelry)
 
@@ -43,44 +43,44 @@ Both calculators publish their pricing logic directly in the UI — no hidden fe
 AEJaCA maintains a comprehensive glossary of jewelry and digital fabrication terms, each with its own dedicated page:
 
 **Jewelry terms:**
-- [925 Sterling Silver](https://www.aejaca.com/glossary/srebro-925) — 92.5% pure silver alloy standard
-- [Hallmarked Gold (14k/18k)](https://www.aejaca.com/glossary/zloto-probowane) — gold purity grades
-- [Engagement Ring](https://www.aejaca.com/glossary/pierscionek-zareczynowy) — custom engagement rings
-- [Wedding Bands](https://www.aejaca.com/glossary/obraczki-slubne) — personalized wedding ring pairs
-- [Gemstone](https://www.aejaca.com/glossary/kamien-szlachetny) — natural minerals (diamond, ruby, sapphire, emerald)
-- [Rhodium Plating](https://www.aejaca.com/glossary/rodowanie) — protective electroplating finish
-- [Moissanite](https://www.aejaca.com/glossary/moissanit) — diamond-alternative synthetic mineral
-- [Ring Size](https://www.aejaca.com/glossary/rozmiar-pierscionka) — sizing guide and standards
-- [Personalized Engraving](https://www.aejaca.com/glossary/personalizowany-grawer) — custom text and symbol engraving
-- [Jewelry as Investment](https://www.aejaca.com/glossary/bizuteria-inwestycyjna) — precious metal investment value
+- [925 Sterling Silver](https://www.aejaca.com/glossary/srebro-925/) — 92.5% pure silver alloy standard
+- [Hallmarked Gold (14k/18k)](https://www.aejaca.com/glossary/zloto-probowane/) — gold purity grades
+- [Engagement Ring](https://www.aejaca.com/glossary/pierscionek-zareczynowy/) — custom engagement rings
+- [Wedding Bands](https://www.aejaca.com/glossary/obraczki-slubne/) — personalized wedding ring pairs
+- [Gemstone](https://www.aejaca.com/glossary/kamien-szlachetny/) — natural minerals (diamond, ruby, sapphire, emerald)
+- [Rhodium Plating](https://www.aejaca.com/glossary/rodowanie/) — protective electroplating finish
+- [Moissanite](https://www.aejaca.com/glossary/moissanit/) — diamond-alternative synthetic mineral
+- [Ring Size](https://www.aejaca.com/glossary/rozmiar-pierscionka/) — sizing guide and standards
+- [Personalized Engraving](https://www.aejaca.com/glossary/personalizowany-grawer/) — custom text and symbol engraving
+- [Jewelry as Investment](https://www.aejaca.com/glossary/bizuteria-inwestycyjna/) — precious metal investment value
 
 **Digital fabrication terms:**
-- [FDM 3D Printing](https://www.aejaca.com/glossary/druk-3d-fdm) — fused deposition modeling technology
-- [STL File](https://www.aejaca.com/glossary/plik-stl) — 3D model file format for printing
-- [PLA](https://www.aejaca.com/glossary/pla) — biodegradable 3D printing filament
-- [PETG](https://www.aejaca.com/glossary/petg) — durable 3D printing filament
-- [UV Resin](https://www.aejaca.com/glossary/zywica-uv) — light-curing resin for SLA printing
-- [CO2 Laser](https://www.aejaca.com/glossary/laser-co2) — engraving and cutting laser technology
-- [Fiber Laser](https://www.aejaca.com/glossary/laser-fiber) — metal marking laser technology
-- [SVG File](https://www.aejaca.com/glossary/plik-svg) — vector file format for laser work
-- [Resin Casting](https://www.aejaca.com/glossary/odlew-zywiczny) — epoxy and polyurethane casting
-- [Prototyping](https://www.aejaca.com/glossary/prototypowanie) — rapid prototype development
+- [FDM 3D Printing](https://www.aejaca.com/glossary/druk-3d-fdm/) — fused deposition modeling technology
+- [STL File](https://www.aejaca.com/glossary/plik-stl/) — 3D model file format for printing
+- [PLA](https://www.aejaca.com/glossary/pla/) — biodegradable 3D printing filament
+- [PETG](https://www.aejaca.com/glossary/petg/) — durable 3D printing filament
+- [UV Resin](https://www.aejaca.com/glossary/zywica-uv/) — light-curing resin for SLA printing
+- [CO2 Laser](https://www.aejaca.com/glossary/laser-co2/) — engraving and cutting laser technology
+- [Fiber Laser](https://www.aejaca.com/glossary/laser-fiber/) — metal marking laser technology
+- [SVG File](https://www.aejaca.com/glossary/plik-svg/) — vector file format for laser work
+- [Resin Casting](https://www.aejaca.com/glossary/odlew-zywiczny/) — epoxy and polyurethane casting
+- [Prototyping](https://www.aejaca.com/glossary/prototypowanie/) — rapid prototype development
 
 **General terms:**
-- [CAD Design](https://www.aejaca.com/glossary/cad) — computer-aided design for jewelry and fabrication
-- [Personalization](https://www.aejaca.com/glossary/personalizacja) — custom product creation
-- [AI-Assisted Design](https://www.aejaca.com/glossary/projektowanie-ai) — AI tools in the design process
-- [Online Quoting](https://www.aejaca.com/glossary/wycena-online) — instant price calculator
+- [CAD Design](https://www.aejaca.com/glossary/cad/) — computer-aided design for jewelry and fabrication
+- [Personalization](https://www.aejaca.com/glossary/personalizacja/) — custom product creation
+- [AI-Assisted Design](https://www.aejaca.com/glossary/projektowanie-ai/) — AI tools in the design process
+- [Online Quoting](https://www.aejaca.com/glossary/wycena-online/) — instant price calculator
 
-Full glossary index: https://www.aejaca.com/glossary
+Full glossary index: https://www.aejaca.com/glossary/
 
 ## Crawl policy
 
 All LLM and AI-search crawlers are welcome to index and cite this site, including:
 GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot, Claude-Web, Google-Extended, PerplexityBot, CCBot, Applebot-Extended.
 
-See also: [robots.txt](https://www.aejaca.com/robots.txt) · [sitemap.xml](https://www.aejaca.com/sitemap.xml)
+See also: [robots.txt](https://www.aejaca.com/robots/.txt) · [sitemap.xml](https://www.aejaca.com/sitemap/.xml)
 
 ## Contact for media, partnerships, citations
 
-https://www.aejaca.com/contact
+https://www.aejaca.com/contact/
