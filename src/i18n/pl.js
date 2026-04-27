@@ -229,7 +229,6 @@ export default {
       ],
     },
 
-
     // Opinie
     testimonials: {
       tag: "Co Mówią Nasi Klienci",
@@ -304,6 +303,29 @@ export default {
         },
       ],
     },
+  },
+
+  studioPortfolio: {
+    tag: "Realizacje",
+    title: "Portfolio sTuDiO",
+    filterAll: "Wszystkie",
+    filters: [
+      { id: "laser", label: "Cięcie laserowe" },
+      { id: "engrave", label: "Grawerowanie" },
+      { id: "3dprint", label: "Druk 3D" },
+    ],
+    items: [
+      { img: "/img/portfolio/studio-web/city-map.webp", title: "Mapa miasta Chełmża", category: "laser", desc: "Wielowarstwowa mapa wycięta laserowo ze sklejki z kolorowymi akcentami." },
+      { img: "/img/portfolio/studio-web/wolf-art.webp", title: "Geometryczny wilk", category: "laser", desc: "Ścienna dekoracja z warstwowo ciętej sklejki w stylu geometrycznym." },
+      { img: "/img/portfolio/studio-web/communion-cross.webp", title: "Krzyż komunijny w ramce", category: "laser", desc: "Personalizowany krzyż z modlitwą — pamiątka I Komunii Świętej." },
+      { img: "/img/portfolio/studio-web/gift-box.webp", title: "Szkatułka na prezent", category: "laser", desc: "Drewniana szkatułka z grawerem i symbolem IHS na I Komunię." },
+      { img: "/img/portfolio/studio-web/engraved-bottle.webp", title: "Grawerowana butelka", category: "engrave", desc: "Personalizowana dedykacja wygrawerowana na butelce whisky." },
+      { img: "/img/portfolio/studio-web/steel-business-card.webp", title: "Wizytówka stalowa", category: "engrave", desc: "Wizytówka firmy AEJaCA grawerowana laserem fiber na stali nierdzewnej." },
+      { img: "/img/portfolio/studio-web/laser-in-action.webp", title: "Laser fiber w akcji", category: "engrave", desc: "Grawerowanie na łupku kamiennym laserem fiber Raycus 30W." },
+      { img: "/img/portfolio/studio-web/eagle-art.webp", title: "Orzeł — obraz brokatowy", category: "laser", desc: "Orzeł wycięty laserem z brokatu, oprawiony w elegancką ramkę." },
+      { img: "/img/portfolio/studio-web/3d-organizer.webp", title: "Organizer na wiertła", category: "3dprint", desc: "Funkcjonalny organizer na wiertła wydrukowany w technologii FDM." },
+      { img: "/img/portfolio/studio-web/3d-gecko.webp", title: "Gekon 3D", category: "3dprint", desc: "Figurka gekona wydrukowana w żywicy SLA z wysoką szczegółowością." },
+    ],
   },
 
   studio: {

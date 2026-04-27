@@ -6,7 +6,7 @@ import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getPost } from "../blog/posts.js";
 import BlogCard from "../components/blog/BlogCard.jsx";
 import StudioCalculator from "../components/StudioCalculator.jsx";
-// import Portfolio from "../components/Portfolio.jsx"; // temporarily disabled
+import Portfolio from "../components/Portfolio.jsx";
 import GoogleReviews from "../components/GoogleReviews.jsx";
 import FAQ from "../components/FAQ.jsx";
 import Tips from "../components/Tips.jsx";
@@ -235,18 +235,7 @@ export default function Studio() {
 
       <div className="gradient-divider" />
 
-      {/* Portfolio — temporarily replaced with placeholder */}
-      <section id="portfolio" className="py-20 px-4 bg-neutral-950">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-3">{s.portfolio?.tag || "Portfolio"}</div>
-          <h2 className="font-sans text-3xl md:text-4xl font-bold text-white tracking-tight mb-8">{s.portfolio?.title || "Portfolio"}</h2>
-          <div className="py-16 rounded-2xl border border-white/5 bg-white/[0.02]">
-            <div className="text-neutral-400 text-lg">
-              {{ pl: "W trakcie przygotowania", en: "In preparation", de: "In Vorbereitung" }[lang] || "In preparation"}
-            </div>
-          </div>
-        </div>
-      </section>
+      <Portfolio data={t.studioPortfolio} accent="blue" id="portfolio" />
 
       <div className="gradient-divider" />
 

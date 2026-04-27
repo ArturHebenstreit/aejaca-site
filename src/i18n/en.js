@@ -308,6 +308,29 @@ export default {
     },
   },
 
+  studioPortfolio: {
+    tag: "Completed projects",
+    title: "sTuDiO Portfolio",
+    filterAll: "All",
+    filters: [
+      { id: "laser", label: "Laser cutting" },
+      { id: "engrave", label: "Engraving" },
+      { id: "3dprint", label: "3D Printing" },
+    ],
+    items: [
+      { img: "/img/portfolio/studio-web/city-map.webp", title: "City map of Chełmża", category: "laser", desc: "Multi-layered laser-cut plywood map with colored accents." },
+      { img: "/img/portfolio/studio-web/wolf-art.webp", title: "Geometric wolf art", category: "laser", desc: "Wall decoration made from layered laser-cut plywood in geometric style." },
+      { img: "/img/portfolio/studio-web/communion-cross.webp", title: "First Communion cross frame", category: "laser", desc: "Personalized cross with prayer text — First Holy Communion keepsake." },
+      { img: "/img/portfolio/studio-web/gift-box.webp", title: "Gift box", category: "laser", desc: "Wooden gift box with IHS engraving for First Communion." },
+      { img: "/img/portfolio/studio-web/engraved-bottle.webp", title: "Engraved bottle", category: "engrave", desc: "Personalized dedication laser-engraved on a whisky bottle." },
+      { img: "/img/portfolio/studio-web/steel-business-card.webp", title: "Steel business card", category: "engrave", desc: "AEJaCA business card engraved with fiber laser on stainless steel." },
+      { img: "/img/portfolio/studio-web/laser-in-action.webp", title: "Fiber laser in action", category: "engrave", desc: "Engraving on slate stone with Raycus 30W fiber laser." },
+      { img: "/img/portfolio/studio-web/eagle-art.webp", title: "Eagle — glitter art", category: "laser", desc: "Eagle laser-cut from glitter material, framed in elegant setting." },
+      { img: "/img/portfolio/studio-web/3d-organizer.webp", title: "Drill bit organizer", category: "3dprint", desc: "Functional drill bit organizer 3D printed with FDM technology." },
+      { img: "/img/portfolio/studio-web/3d-gecko.webp", title: "3D Gecko", category: "3dprint", desc: "Gecko figurine 3D printed in SLA resin with high detail." },
+    ],
+  },
+
   // Studio page
   studio: {
     heroTag: "Technology & Engineering",

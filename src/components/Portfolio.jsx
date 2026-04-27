@@ -12,6 +12,7 @@ const CATEGORY_COLORS_AMBER = {
 const CATEGORY_COLORS_BLUE = {
   "3dprint": "bg-blue-500/10 text-blue-400 border-blue-500/20",
   laser: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+  engrave: "bg-amber-500/10 text-amber-400 border-amber-500/20",
   resin: "bg-purple-500/10 text-purple-400 border-purple-500/20",
   nfc: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
   custom: "bg-pink-500/10 text-pink-400 border-pink-500/20",
@@ -79,13 +80,25 @@ export default function Portfolio({ data, accent = "amber", id }) {
               <div
                 key={item.title + filter}
                 ref={getCardRef(i)}
-                className={`reveal-scale p-5 rounded-xl ${glassClass} ${hoverCard} transition-all duration-300 group`}
+                className={`reveal-scale rounded-xl ${glassClass} ${hoverCard} transition-all duration-300 group overflow-hidden`}
               >
-                <div className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-medium border mb-3 ${catColor}`}>
-                  {data.filters.find((f) => f.id === item.category)?.label || item.category}
+                {item.img && (
+                  <div className="overflow-hidden">
+                    <img
+                      src={item.img}
+                      alt={item.title}
+                      loading="lazy"
+                      className="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                )}
+                <div className="p-5">
+                  <div className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-medium border mb-3 ${catColor}`}>
+                    {data.filters.find((f) => f.id === item.category)?.label || item.category}
+                  </div>
+                  <h3 className={`text-white font-medium text-sm mb-2 ${hoverTitle} transition-colors`}>{item.title}</h3>
+                  <p className="text-neutral-400 text-xs leading-relaxed">{item.desc}</p>
                 </div>
-                <h3 className={`text-white font-medium text-sm mb-2 ${hoverTitle} transition-colors`}>{item.title}</h3>
-                <p className="text-neutral-400 text-xs leading-relaxed">{item.desc}</p>
               </div>
             );
           })}

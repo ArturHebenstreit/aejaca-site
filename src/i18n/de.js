@@ -227,7 +227,6 @@ export default {
       ],
     },
 
-
     testimonials: {
       tag: "Was Unsere Kunden Sagen",
       title: "Geschichten Unserer Kunden",
@@ -300,6 +299,29 @@ export default {
         },
       ],
     },
+  },
+
+  studioPortfolio: {
+    tag: "Realisierungen",
+    title: "sTuDiO Portfolio",
+    filterAll: "Alle",
+    filters: [
+      { id: "laser", label: "Laserschneiden" },
+      { id: "engrave", label: "Gravur" },
+      { id: "3dprint", label: "3D-Druck" },
+    ],
+    items: [
+      { img: "/img/portfolio/studio-web/city-map.webp", title: "Stadtkarte von Chełmża", category: "laser", desc: "Mehrschichtige lasergeschnittene Sperrholzkarte mit farbigen Akzenten." },
+      { img: "/img/portfolio/studio-web/wolf-art.webp", title: "Geometrischer Wolf", category: "laser", desc: "Wanddekoration aus schichtweise lasergeschnittenem Sperrholz im geometrischen Stil." },
+      { img: "/img/portfolio/studio-web/communion-cross.webp", title: "Erstkommunion-Kreuz im Rahmen", category: "laser", desc: "Personalisiertes Kreuz mit Gebet — Andenken an die Erstkommunion." },
+      { img: "/img/portfolio/studio-web/gift-box.webp", title: "Geschenkbox", category: "laser", desc: "Holzschatulle mit IHS-Gravur für die Erstkommunion." },
+      { img: "/img/portfolio/studio-web/engraved-bottle.webp", title: "Gravierte Flasche", category: "engrave", desc: "Personalisierte Widmung auf einer Whiskyflasche lasergraviert." },
+      { img: "/img/portfolio/studio-web/steel-business-card.webp", title: "Visitenkarte aus Stahl", category: "engrave", desc: "AEJaCA-Visitenkarte mit Faserlaser auf Edelstahl graviert." },
+      { img: "/img/portfolio/studio-web/laser-in-action.webp", title: "Faserlaser in Aktion", category: "engrave", desc: "Gravur auf Schieferstein mit Raycus 30W Faserlaser." },
+      { img: "/img/portfolio/studio-web/eagle-art.webp", title: "Adler — Glitzerkunst", category: "laser", desc: "Adler lasergeschnitten aus Glitzermaterial, elegant gerahmt." },
+      { img: "/img/portfolio/studio-web/3d-organizer.webp", title: "Bohrerhalter", category: "3dprint", desc: "Funktionaler Bohrerhalter im FDM-3D-Druck gefertigt." },
+      { img: "/img/portfolio/studio-web/3d-gecko.webp", title: "3D-Gecko", category: "3dprint", desc: "Gecko-Figur in SLA-Harz mit hoher Detailgenauigkeit gedruckt." },
+    ],
   },
 
   studio: {
