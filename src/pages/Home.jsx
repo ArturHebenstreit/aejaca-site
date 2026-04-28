@@ -66,52 +66,57 @@ export default function Home() {
           </a>
         </section>
 
-        {/* Split Hero — two equal paths (jewelry / studio) act as primary CTAs */}
-        <section className="relative min-h-[calc(40vh-4rem)] flex flex-col md:flex-row" aria-label={h.heroAria || "AEJaCA — two worlds"}>
-          {/* Jewelry Panel */}
-          <Link to="/jewelry/" className="group relative flex-1 min-h-[35vh] md:min-h-full overflow-hidden cursor-pointer" aria-label={h.jewelryBtn}>
-            {/* LCP image: eager + fetchpriority=high tells browser to prioritize — Core Web Vitals (LCP < 2.5s) */}
-            <img
-              src="/hero-home-jewelry.webp"
-              alt="AEJaCA Jewelry"
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              loading="eager"
-              fetchpriority="high"
-              decoding="async"
-              width="1024"
-              height="572"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 group-hover:from-black/60 transition-all duration-500" />
-            <div className="relative z-10 flex flex-col items-center justify-end h-full pb-10 px-8 text-center">
-              <p className="text-neutral-200 max-w-md text-sm md:text-base leading-relaxed mb-6">{h.jewelryDesc}</p>
-              <span className="inline-flex items-center gap-2 px-6 py-3 border border-amber-400/30 bg-amber-400/5 backdrop-blur-md text-amber-300 rounded-full text-sm tracking-wide group-hover:bg-amber-400 group-hover:text-black group-hover:border-amber-400 transition-all duration-300">
-                {h.jewelryBtn} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </span>
-            </div>
-          </Link>
+        {/* Gateway Cards — two entry points as bento-style cards (3:4 images) */}
+        <section className="bg-neutral-950 px-4 pb-10 md:pb-14" aria-label={h.heroAria || "AEJaCA — two worlds"}>
+          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+            {/* Jewelry Card */}
+            <Link to="/jewelry/" className="group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg shadow-black/40 hover:shadow-2xl hover:shadow-amber-900/20 transition-all duration-500 hover:-translate-y-1">
+              <div className="aspect-[3/4] relative overflow-hidden">
+                <img
+                  src="/hero-home-jewelry.webp"
+                  alt="AEJaCA Jewelry"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading="eager"
+                  fetchpriority="high"
+                  decoding="async"
+                  width="768"
+                  height="1024"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-center">
+                <div className="text-amber-400 text-[10px] uppercase tracking-[0.25em] mb-2">{h.jewelrySubtitle}</div>
+                <p className="text-neutral-200 text-sm leading-relaxed mb-5 max-w-xs mx-auto">{h.jewelryDesc}</p>
+                <span className="inline-flex items-center gap-2 px-6 py-2.5 border border-amber-400/30 bg-amber-400/5 backdrop-blur-md text-amber-300 rounded-full text-sm tracking-wide group-hover:bg-amber-400 group-hover:text-black group-hover:border-amber-400 transition-all duration-300">
+                  {h.jewelryBtn} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </span>
+              </div>
+            </Link>
 
-          <div className="hidden md:block w-px bg-white/20" />
-
-          {/* Studio Panel */}
-          <Link to="/studio/" className="group relative flex-1 min-h-[35vh] md:min-h-full overflow-hidden cursor-pointer" aria-label={h.studioBtn}>
-            <img
-              src="/hero-home-studio.webp"
-              alt="AEJaCA sTuDiO"
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              loading="eager"
-              fetchpriority="high"
-              decoding="async"
-              width="1024"
-              height="572"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 group-hover:from-black/60 transition-all duration-500" />
-            <div className="relative z-10 flex flex-col items-center justify-end h-full pb-10 px-8 text-center">
-              <p className="text-neutral-200 max-w-md text-sm md:text-base leading-relaxed mb-6">{h.studioDesc}</p>
-              <span className="inline-flex items-center gap-2 px-6 py-3 border border-blue-400/30 bg-blue-400/5 backdrop-blur-md text-blue-300 rounded-full text-sm tracking-wide group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-500 transition-all duration-300">
-                {h.studioBtn} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </span>
-            </div>
-          </Link>
+            {/* Studio Card */}
+            <Link to="/studio/" className="group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg shadow-black/40 hover:shadow-2xl hover:shadow-blue-900/20 transition-all duration-500 hover:-translate-y-1">
+              <div className="aspect-[3/4] relative overflow-hidden">
+                <img
+                  src="/hero-home-studio.webp"
+                  alt="AEJaCA sTuDiO"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading="eager"
+                  fetchpriority="high"
+                  decoding="async"
+                  width="768"
+                  height="1024"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-center">
+                <div className="text-blue-400 text-[10px] uppercase tracking-[0.25em] mb-2">{h.studioSubtitle}</div>
+                <p className="text-neutral-200 text-sm leading-relaxed mb-5 max-w-xs mx-auto">{h.studioDesc}</p>
+                <span className="inline-flex items-center gap-2 px-6 py-2.5 border border-blue-400/30 bg-blue-400/5 backdrop-blur-md text-blue-300 rounded-full text-sm tracking-wide group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-500 transition-all duration-300">
+                  {h.studioBtn} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </span>
+              </div>
+            </Link>
+          </div>
         </section>
 
       {/* Brand Statement */}
