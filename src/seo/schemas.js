@@ -23,6 +23,7 @@ export function buildOrganizationSchema() {
     "@type": "Organization",
     "@id": `${SITE.url}/#organization`,
     name: SITE.name,
+    alternateName: "Artisan Elegance Jewelry and Crafted Art",
     url: SITE.url,
     logo: `${SITE.url}/logo.png`,
     email: "contact@aejaca.com",

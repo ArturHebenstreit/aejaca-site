@@ -31,20 +31,20 @@ export const SEO = {
   home: {
     pl: {
       title: "AEJaCA — Biżuteria Artystyczna i sTuDiO Fabrykacji",
-      description: "Ręcznie robiona biżuteria ze srebra i złota z kamieniami + studio druku 3D, grawerowania laserowego i odlewów. Projekt na zamówienie.",
-      keywords: "biżuteria ręcznie robiona, srebro, kamienie szlachetne, druk 3D, grawerowanie laserowe, AEJaCA, personalizowane prezenty",
+      description: "AEJaCA — Artisan Elegance Jewelry and Crafted Art. Ręcznie robiona biżuteria ze srebra i złota + studio druku 3D, grawerowania laserowego i odlewów.",
+      keywords: "biżuteria ręcznie robiona, srebro, kamienie szlachetne, druk 3D, grawerowanie laserowe, AEJaCA, Artisan Elegance Jewelry and Crafted Art",
       ogAlt: "Biżuteria AEJaCA — ręcznie robiona z kamieniami szlachetnymi",
     },
     en: {
       title: "AEJaCA — Handcrafted Jewelry & Digital Fabrication Studio",
-      description: "Handmade silver & gold jewelry with natural gemstones + 3D printing, laser engraving, and resin casting studio. Custom projects on request.",
-      keywords: "handmade silver jewelry, natural gemstones, 3D printing, laser engraving, custom jewelry, AEJaCA, personalized gifts",
+      description: "AEJaCA — Artisan Elegance Jewelry and Crafted Art. Handmade silver & gold jewelry + 3D printing, laser engraving, and resin casting studio.",
+      keywords: "handmade silver jewelry, natural gemstones, 3D printing, laser engraving, custom jewelry, AEJaCA, Artisan Elegance Jewelry and Crafted Art",
       ogAlt: "AEJaCA handcrafted jewelry with natural gemstones",
     },
     de: {
       title: "AEJaCA — Handgefertigter Schmuck & Fabrikations-Studio",
-      description: "Handgefertigter Silber- und Goldschmuck mit Edelsteinen + 3D-Druck, Lasergravur und Harzguss-Studio. Individuelle Projekte auf Anfrage.",
-      keywords: "handgefertigter Schmuck, Silber, Edelsteine, 3D-Druck, Lasergravur, AEJaCA, personalisierte Geschenke",
+      description: "AEJaCA — Artisan Elegance Jewelry and Crafted Art. Handgefertigter Schmuck aus Silber & Gold + 3D-Druck, Lasergravur und Harzguss-Studio.",
+      keywords: "handgefertigter Schmuck, Silber, Edelsteine, 3D-Druck, Lasergravur, AEJaCA, Artisan Elegance Jewelry and Crafted Art",
       ogAlt: "AEJaCA handgefertigter Schmuck mit Edelsteinen",
     },
   },

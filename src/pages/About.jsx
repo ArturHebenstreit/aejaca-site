@@ -11,8 +11,9 @@ import { SITE, getSEO } from "../seo/seoData.js";
 const LABELS = {
   pl: {
     tag: "O AEJaCA",
+    acronym: "Artisan Elegance Jewelry and Crafted Art",
     title: "Rzemiosło i technologia od 2023 roku",
-    description: "AEJaCA to marka łącząca rzemiosło jubilerskie z technologią. Doświadczenie od 2023 roku, 150+ projektów, 5.0 na Google.",
+    description: "AEJaCA — Artisan Elegance Jewelry and Crafted Art — marka łącząca rzemiosło jubilerskie z technologią. Od 2023 roku, 150+ projektów, 5.0 na Google.",
     bioTitle: "Artur Hebenstreit",
     bioSubtitle: "Założyciel AEJaCA",
     bioText: "Wizjoner, twórca i rzemieślnik. Fascynacja biżuterią i kamieniami szlachetnymi towarzyszyła mu od najmłodszych lat — z czasem przerodziła się w głęboką pasję, która stała się sensem pracy twórczej. To, co tworzy, nie jest produktem — to manifestacja wizji, w której technologia spotyka się z duszą rzemiosła. AI, druk 3D, laser CO₂, laser fiber — to narzędzia w rękach kogoś, kto wie, dlaczego tworzy. Efekty mówią same za siebie.",
@@ -50,8 +51,9 @@ const LABELS = {
   },
   en: {
     tag: "About AEJaCA",
+    acronym: "Artisan Elegance Jewelry and Crafted Art",
     title: "Craft and technology since 2023",
-    description: "AEJaCA combines jewelry craft with technology. Experience since 2023, 150+ projects, 5.0 on Google.",
+    description: "AEJaCA — Artisan Elegance Jewelry and Crafted Art — combining jewelry craft with technology. Since 2023, 150+ projects, 5.0 on Google.",
     bioTitle: "Artur Hebenstreit",
     bioSubtitle: "Founder of AEJaCA",
     bioText: "Visionary, creator, and craftsman. A fascination with jewelry and gemstones has accompanied him since his earliest years — growing into a deep passion that became the driving force of his creative work. What he creates is not a product — it's a manifestation of vision where technology meets the soul of craftsmanship. AI, 3D printing, CO₂ laser, fiber laser — these are tools in the hands of someone who knows why he creates. The results speak for themselves.",
@@ -89,8 +91,9 @@ const LABELS = {
   },
   de: {
     tag: "Über AEJaCA",
+    acronym: "Artisan Elegance Jewelry and Crafted Art",
     title: "Handwerk und Technologie seit 2023",
-    description: "AEJaCA verbindet Schmuckhandwerk mit Technologie. Erfahrung seit 2023, 150+ Projekte, 5,0 auf Google.",
+    description: "AEJaCA — Artisan Elegance Jewelry and Crafted Art — Schmuckhandwerk trifft Technologie. Seit 2023, 150+ Projekte, 5,0 auf Google.",
     bioTitle: "Artur Hebenstreit",
     bioSubtitle: "Gründer von AEJaCA",
     bioText: "Visionär, Schöpfer und Handwerker. Eine Faszination für Schmuck und Edelsteine begleitet ihn seit frühester Kindheit — sie wurde zu einer tiefen Leidenschaft und zur treibenden Kraft seines kreativen Schaffens. Was er erschafft, ist kein Produkt — es ist die Manifestation einer Vision, in der Technologie auf die Seele des Handwerks trifft. KI, 3D-Druck, CO₂-Laser, Faserlaser — das sind Werkzeuge in den Händen eines Menschen, der weiß, warum er schafft. Die Ergebnisse sprechen für sich.",
@@ -268,7 +271,8 @@ export default function About() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-black/50 to-black/20" />
           <div ref={heroRef} className="reveal relative z-10 w-full max-w-4xl mx-auto px-4 pb-14 text-center">
-            <div className="text-amber-400 text-xs uppercase tracking-[0.25em] mb-3">{L.tag}</div>
+            <div className="text-amber-400 text-xs uppercase tracking-[0.25em] mb-2">{L.tag}</div>
+            <p className="text-neutral-400 text-xs tracking-[0.15em] mb-3">{L.acronym}</p>
             <h1 className="font-sans text-3xl md:text-5xl font-bold text-white drop-shadow-lg tracking-tight">
               {L.title}
             </h1>
