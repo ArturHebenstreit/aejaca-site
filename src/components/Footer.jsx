@@ -31,9 +31,6 @@ export default function Footer() {
               <img src="/brand-sign.webp" alt="AEJaCA" width="40" height="40" className="h-10 w-10 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
               <span className="font-serif text-lg font-semibold">AEJaCA</span>
             </div>
-            <p className="text-neutral-500 text-xs tracking-wide mb-1">
-              <strong className="text-neutral-400">A</strong>rtisan <strong className="text-neutral-400">E</strong>legance <strong className="text-neutral-400">J</strong>ewelry <strong className="text-neutral-400">a</strong>nd <strong className="text-neutral-400">C</strong>rafted <strong className="text-neutral-400">A</strong>rt
-            </p>
             <p className="text-neutral-400 text-sm leading-relaxed">{t.footer.tagline}</p>
           </div>
 
