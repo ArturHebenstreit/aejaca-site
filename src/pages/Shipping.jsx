@@ -14,14 +14,17 @@ const LABELS = {
     description: "Informacje o wysyłce, kosztach i czasie realizacji.",
     domestic: "Polska",
     domesticItems: [
-      { label: "Kurier InPost", price: "od 12 zł" },
-      { label: "Paczkomat InPost", price: "od 12 zł" },
+      { label: "Kurier InPost", price: "od 30 zł" },
+      { label: "Paczkomat InPost", price: "od 17 zł" },
       { label: "Odbiór osobisty (Józefosław)", price: "bezpłatnie" },
     ],
     freeShipping: "DARMOWA WYSYŁKA przy zamówieniu od 400 zł",
-    europe: "Europa (UE + UK)",
+    europe: "Europa (UE)",
     europeDesc:
-      "Wysyłka do wszystkich krajów europejskich. Koszt od 25 zł, czas dostawy 5–10 dni roboczych.",
+      "Wysyłka do krajów Unii Europejskiej. Koszt od 50 zł, czas dostawy 5–10 dni roboczych.",
+    uk: "Wielka Brytania",
+    ukDesc:
+      "Wysyłka do UK. Koszt od 80 zł, czas dostawy 7–14 dni roboczych.",
     world: "USA i inne kraje",
     worldDesc:
       "Wysyłka możliwa po indywidualnym ustaleniu — napisz na contact@aejaca.com",
@@ -39,14 +42,17 @@ const LABELS = {
     description: "Shipping information, costs, and fulfillment times.",
     domestic: "Poland",
     domesticItems: [
-      { label: "InPost Courier", price: "from 12 PLN" },
-      { label: "InPost Parcel Locker", price: "from 12 PLN" },
+      { label: "InPost Courier", price: "from €7" },
+      { label: "InPost Parcel Locker", price: "from €4" },
       { label: "Personal pickup (Józefosław)", price: "free" },
     ],
-    freeShipping: "FREE SHIPPING on orders over 400 PLN",
-    europe: "Europe (EU + UK)",
+    freeShipping: "FREE SHIPPING on orders over €100",
+    europe: "Europe (EU)",
     europeDesc:
-      "Shipping to all European countries. From 25 PLN, delivery in 5–10 business days.",
+      "Shipping to all EU countries. From €12, delivery in 5–10 business days.",
+    uk: "United Kingdom",
+    ukDesc:
+      "Shipping to the UK. From €19, delivery in 7–14 business days.",
     world: "USA & Other Countries",
     worldDesc:
       "International shipping available upon request — email contact@aejaca.com",
@@ -64,14 +70,17 @@ const LABELS = {
     description: "Versandinformationen, Kosten und Bearbeitungszeiten.",
     domestic: "Polen",
     domesticItems: [
-      { label: "InPost Kurier", price: "ab 12 PLN" },
-      { label: "InPost Paketautomat", price: "ab 12 PLN" },
+      { label: "InPost Kurier", price: "ab €7" },
+      { label: "InPost Paketautomat", price: "ab €4" },
       { label: "Persönliche Abholung (Józefosław)", price: "kostenlos" },
     ],
-    freeShipping: "KOSTENLOSER VERSAND ab 400 PLN Bestellwert",
-    europe: "Europa (EU + UK)",
+    freeShipping: "KOSTENLOSER VERSAND ab €100 Bestellwert",
+    europe: "Europa (EU)",
     europeDesc:
-      "Versand in alle europäischen Länder. Ab 25 PLN, Lieferzeit 5–10 Werktage.",
+      "Versand in alle EU-Länder. Ab €12, Lieferzeit 5–10 Werktage.",
+    uk: "Großbritannien",
+    ukDesc:
+      "Versand nach UK. Ab €19, Lieferzeit 7–14 Werktage.",
     world: "USA & andere Länder",
     worldDesc:
       "Internationaler Versand auf Anfrage — E-Mail an contact@aejaca.com",
@@ -163,15 +172,24 @@ export default function Shipping() {
               </span>
             </div>
 
-            {/* International — 2 cols */}
-            <div ref={internationalRef} className="reveal grid md:grid-cols-2 gap-5 mb-5">
-              {/* Europe */}
+            {/* International — 3 cols */}
+            <div ref={internationalRef} className="reveal grid md:grid-cols-3 gap-5 mb-5">
+              {/* Europe EU */}
               <div className="bg-neutral-900/60 border border-neutral-800 rounded-xl p-6 hover:border-amber-400/30 transition-colors">
                 <div className="flex items-center gap-3 mb-3">
                   <Truck className="w-5 h-5 text-amber-400 shrink-0" />
                   <h2 className="text-white font-semibold">{l.europe}</h2>
                 </div>
                 <p className="text-neutral-400 text-sm leading-relaxed">{l.europeDesc}</p>
+              </div>
+
+              {/* UK */}
+              <div className="bg-neutral-900/60 border border-neutral-800 rounded-xl p-6 hover:border-amber-400/30 transition-colors">
+                <div className="flex items-center gap-3 mb-3">
+                  <Truck className="w-5 h-5 text-amber-400 shrink-0" />
+                  <h2 className="text-white font-semibold">{l.uk}</h2>
+                </div>
+                <p className="text-neutral-400 text-sm leading-relaxed">{l.ukDesc}</p>
               </div>
 
               {/* World */}

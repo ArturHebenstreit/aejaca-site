@@ -35,15 +35,6 @@ export default function Privacy() {
                 <a href="mailto:contact@aejaca.com" className="text-amber-400 hover:underline">contact@aejaca.com</a>.
               </p>
               <p>{p.consent}</p>
-
-              <hr className="border-white/10 my-10" />
-
-              <h2 className="text-xl font-semibold text-white">{p.plTitle}</h2>
-              {p.plParagraphs.map((text, i) => <p key={i}>{text}</p>)}
-              <p>
-                {p.plContactLine}{" "}
-                <a href="mailto:contact@aejaca.com" className="text-amber-400 hover:underline">contact@aejaca.com</a>.
-              </p>
             </div>
 
             <div className="mt-12">

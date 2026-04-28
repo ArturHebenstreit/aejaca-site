@@ -130,6 +130,13 @@ export default function Navbar() {
     return null;
   }
 
+  const handleNavClick = (e, to) => {
+    if (pathname === to) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -141,7 +148,7 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-3 group">
+          <Link to="/" onClick={(e) => handleNavClick(e, "/")} className="flex items-center gap-3 group">
             <img src="/brand-sign.webp" alt="AEJaCA" width="44" height="44" className="h-11 w-11 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] transition-transform duration-300 group-hover:scale-105" />
             <span className="font-serif text-xl font-semibold tracking-wide">AEJaCA</span>
           </Link>
@@ -163,6 +170,7 @@ export default function Navbar() {
                 >
                   <Link
                     to={to}
+                    onClick={(e) => handleNavClick(e, to)}
                     className={`relative text-sm tracking-wide transition-colors hover:text-amber-400 flex items-center gap-1 ${
                       isActive ? "text-amber-400" : "text-neutral-300"
                     }`}
@@ -278,7 +286,7 @@ export default function Navbar() {
                   <div className="flex items-center">
                     <Link
                       to={to}
-                      onClick={() => { setMenuOpen(false); setMobileExpanded(null); }}
+                      onClick={(e) => { handleNavClick(e, to); setMenuOpen(false); setMobileExpanded(null); }}
                       className={`flex-1 px-3 py-3 rounded-lg text-base tracking-wide transition-all ${
                         pathname === to
                           ? "text-amber-400 bg-amber-400/5"
