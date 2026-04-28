@@ -72,7 +72,7 @@ export default function Home() {
           <Link to="/jewelry/" className="group relative flex-1 min-h-[35vh] md:min-h-full overflow-hidden cursor-pointer" aria-label={h.jewelryBtn}>
             {/* LCP image: eager + fetchpriority=high tells browser to prioritize — Core Web Vitals (LCP < 2.5s) */}
             <img
-              src="/hero-jewelry.webp"
+              src="/hero-home-jewelry.webp"
               alt="AEJaCA Jewelry"
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               loading="eager"
@@ -95,7 +95,7 @@ export default function Home() {
           {/* Studio Panel */}
           <Link to="/studio/" className="group relative flex-1 min-h-[35vh] md:min-h-full overflow-hidden cursor-pointer" aria-label={h.studioBtn}>
             <img
-              src="/hero-studio.webp"
+              src="/hero-home-studio.webp"
               alt="AEJaCA sTuDiO"
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               loading="eager"
