@@ -1,0 +1,71 @@
+<!--
+  AEJaCA — Newsletter welcome + 10% discount code
+  n8n variables: {{ $json.body.email }}, {{ $json.body.lang }}
+-->
+<div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 560px; margin: 0 auto; background: #0a0a0a; color: #e5e5e5; border-radius: 16px; overflow: hidden;">
+
+  <!-- Header -->
+  <div style="background: linear-gradient(135deg, #0a0a0a 0%, #2a1a0a 100%); padding: 32px 24px 20px; text-align: center;">
+    <img src="https://www.aejaca.com/brand-sign.webp" alt="AEJaCA" width="48" height="48" style="display: inline-block; margin-bottom: 12px; filter: brightness(0) invert(1);" />
+    <h1 style="font-size: 20px; font-weight: 700; color: #ffffff; margin: 0 0 4px;">
+      {{ $json.body.lang === 'de' ? 'Willkommen bei AEJaCA!' : $json.body.lang === 'en' ? 'Welcome to AEJaCA!' : 'Witaj w AEJaCA!' }}
+    </h1>
+    <p style="font-size: 12px; color: #a3a3a3; margin: 0;">Artisan Elegance Jewelry and Crafted Art</p>
+  </div>
+
+  <div style="padding: 24px;">
+
+    <p style="font-size: 14px; color: #d4d4d4; line-height: 1.7; text-align: center; margin-bottom: 24px;">
+      {{ $json.body.lang === 'de'
+        ? 'Vielen Dank für Ihre Anmeldung! Hier ist Ihr exklusiver Rabattcode für Ihre erste Bestellung:'
+        : $json.body.lang === 'en'
+        ? 'Thank you for signing up! Here is your exclusive discount code for your first order:'
+        : 'Dziękujemy za zapisanie się! Oto Twój ekskluzywny kod rabatowy na pierwsze zamówienie:'
+      }}
+    </p>
+
+    <!-- Discount code -->
+    <div style="background: linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(245,158,11,0.05) 100%); border: 2px solid rgba(245,158,11,0.3); border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 24px;">
+      <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #f59e0b; margin-bottom: 12px;">
+        {{ $json.body.lang === 'de' ? 'Dein Rabattcode' : $json.body.lang === 'en' ? 'Your discount code' : 'Twój kod rabatowy' }}
+      </div>
+      <div style="font-size: 36px; font-weight: 800; color: #f59e0b; font-family: monospace; letter-spacing: 4px; margin-bottom: 8px;">
+        AEJACA10
+      </div>
+      <div style="font-size: 24px; font-weight: 700; color: #ffffff;">
+        -10%
+      </div>
+      <div style="font-size: 12px; color: #737373; margin-top: 8px;">
+        {{ $json.body.lang === 'de' ? 'Gültig auf alle Produkte und Dienstleistungen' : $json.body.lang === 'en' ? 'Valid on all products and services' : 'Ważny na wszystkie produkty i usługi' }}
+      </div>
+    </div>
+
+    <!-- CTAs -->
+    <div style="text-align: center; margin-bottom: 20px;">
+      <a href="https://www.aejaca.com/jewelry/" style="display: inline-block; padding: 12px 24px; background: #f59e0b; color: #0a0a0a; text-decoration: none; border-radius: 999px; font-size: 14px; font-weight: 700; margin: 4px;">
+        {{ $json.body.lang === 'de' ? 'Schmuck entdecken' : $json.body.lang === 'en' ? 'Explore jewelry' : 'Zobacz biżuterię' }}
+      </a>
+      <a href="https://www.aejaca.com/studio/" style="display: inline-block; padding: 12px 24px; background: transparent; border: 1px solid #3b82f6; color: #93c5fd; text-decoration: none; border-radius: 999px; font-size: 14px; font-weight: 600; margin: 4px;">
+        {{ $json.body.lang === 'de' ? 'sTuDiO besuchen' : $json.body.lang === 'en' ? 'Visit sTuDiO' : 'Odwiedź sTuDiO' }}
+      </a>
+    </div>
+
+    <p style="font-size: 12px; color: #525252; text-align: center; line-height: 1.6;">
+      {{ $json.body.lang === 'de'
+        ? 'Nennen Sie den Code bei Ihrer Bestellung oder Anfrage. Er hat kein Ablaufdatum.'
+        : $json.body.lang === 'en'
+        ? 'Mention the code when placing your order or inquiry. It has no expiration date.'
+        : 'Podaj kod przy składaniu zamówienia lub zapytania. Kod nie ma daty ważności.'
+      }}
+    </p>
+  </div>
+
+  <!-- Footer -->
+  <div style="padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center;">
+    <p style="font-size: 11px; color: #404040; margin: 0;">
+      AEJaCA &mdash; Artisan Elegance Jewelry and Crafted Art<br />
+      <a href="https://www.aejaca.com" style="color: #525252; text-decoration: none;">www.aejaca.com</a> &middot;
+      <a href="mailto:contact@aejaca.com" style="color: #525252; text-decoration: none;">contact@aejaca.com</a>
+    </p>
+  </div>
+</div>

@@ -1,20 +1,9 @@
-// ============================================================
-// NewsletterForm — Lead Magnet (email capture)
-// ------------------------------------------------------------
-// CRO impact:
-// - Offers a concrete value exchange ("10% discount") — measurably
-//   boosts opt-in rate vs generic "Subscribe" (~3-4x per industry data).
-// - Moves anonymous visitors to owned-channel (email) before they bounce.
-// - GDPR-compliant: consent checkbox + link to Privacy Policy.
-//
-// Submission is currently a `mailto:` fallback (no backend). Replace
-// the handler with a POST to Mailchimp / ConvertKit / Resend when ready.
-// ============================================================
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Gift, CheckCircle2, Loader2 } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
+
+const NEWSLETTER_API_URL = import.meta.env.VITE_NEWSLETTER_API_URL;
 
 const LABELS = {
   pl: {
@@ -66,22 +55,37 @@ export default function NewsletterForm({ compact = false }) {
   const [state, setState] = useState("idle"); // idle | loading | done
   const [error, setError] = useState("");
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     if (!EMAIL_RX.test(email)) return setError(l.emailRequired);
     if (!consent) return setError(l.consentRequired);
     setState("loading");
 
-    // Lead magnet fallback: opens user's mail client with opt-in payload.
-    // Replace with POST to your ESP (Mailchimp / ConvertKit / Resend) when wired up.
-    const subject = encodeURIComponent(`[AEJaCA] Newsletter opt-in (${lang.toUpperCase()})`);
-    const body = encodeURIComponent(
-      `Email: ${email}\nLang: ${lang}\nSource: NewsletterForm\nConsent: given at ${new Date().toISOString()}`
-    );
-    window.location.href = `mailto:contact@aejaca.com?subject=${subject}&body=${body}`;
-
-    setTimeout(() => setState("done"), 400);
+    if (NEWSLETTER_API_URL) {
+      try {
+        const res = await fetch(NEWSLETTER_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, lang, source: "footer", ts: new Date().toISOString() }),
+        });
+        if (res.ok) {
+          setState("done");
+          if (typeof window.gtag === "function") window.gtag("event", "newsletter_signup", { lang });
+        } else {
+          setState("idle");
+          setError(l.emailRequired);
+        }
+      } catch {
+        setState("idle");
+        setError(l.emailRequired);
+      }
+    } else {
+      const subject = encodeURIComponent(`[AEJaCA] Newsletter opt-in (${lang.toUpperCase()})`);
+      const body = encodeURIComponent(`Email: ${email}\nLang: ${lang}\nSource: footer\nConsent: ${new Date().toISOString()}`);
+      window.location.href = `mailto:contact@aejaca.com?subject=${subject}&body=${body}`;
+      setTimeout(() => setState("done"), 400);
+    }
   }
 
   if (state === "done") {

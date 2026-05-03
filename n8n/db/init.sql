@@ -22,3 +22,17 @@ CREATE TABLE IF NOT EXISTS leads (
 CREATE INDEX IF NOT EXISTS idx_leads_email ON leads (email);
 CREATE INDEX IF NOT EXISTS idx_leads_status ON leads (status);
 CREATE INDEX IF NOT EXISTS idx_leads_created ON leads (created_at DESC);
+
+-- Newsletter subscribers — 10% discount opt-in
+CREATE TABLE IF NOT EXISTS subscribers (
+  id            SERIAL PRIMARY KEY,
+  email         VARCHAR(255) NOT NULL UNIQUE,
+  lang          VARCHAR(5)   NOT NULL DEFAULT 'pl',
+  source        VARCHAR(100) DEFAULT 'footer',
+  discount_code VARCHAR(50)  DEFAULT 'AEJACA10',
+  subscribed_at TIMESTAMPTZ  DEFAULT NOW(),
+  unsubscribed  BOOLEAN      DEFAULT FALSE
+);
+
+CREATE INDEX IF NOT EXISTS idx_subs_email ON subscribers (email);
+CREATE INDEX IF NOT EXISTS idx_subs_date ON subscribers (subscribed_at DESC);
