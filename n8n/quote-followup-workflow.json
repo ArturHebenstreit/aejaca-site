@@ -66,41 +66,23 @@
     },
     {
       "parameters": {
-        "operation": "appendOrUpdate",
-        "documentId": {
-          "__rl": true,
-          "mode": "list",
-          "value": "YOUR_GOOGLE_SHEET_ID"
-        },
-        "sheetName": {
-          "__rl": true,
-          "mode": "list",
-          "value": "gid=0"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "timestamp": "={{ $json.body.ts }}",
-            "email": "={{ $json.body.email }}",
-            "lang": "={{ $json.body.lang }}",
-            "calculator": "={{ $json.body.calculator }}",
-            "params": "={{ $json.body.params }}",
-            "price_min_pln": "={{ $json.body.price.perPcPLN.min }}",
-            "price_max_pln": "={{ $json.body.price.perPcPLN.max }}",
-            "price_min_eur": "={{ $json.body.price.perPcEUR.min }}",
-            "price_max_eur": "={{ $json.body.price.perPcEUR.max }}",
-            "qty": "={{ $json.body.price.qty }}",
-            "discount": "={{ $json.body.price.discount }}",
-            "status": "new"
-          }
-        },
+        "operation": "executeQuery",
+        "query": "INSERT INTO leads (email, lang, calculator, params, price_min_pln, price_max_pln, price_min_eur, price_max_eur, qty, discount) VALUES ('{{ $json.body.email }}', '{{ $json.body.lang }}', '{{ $json.body.calculator }}', '{{ $json.body.params }}', {{ $json.body.price.perPcPLN.min }}, {{ $json.body.price.perPcPLN.max }}, {{ $json.body.price.perPcEUR.min }}, {{ $json.body.price.perPcEUR.max }}, {{ $json.body.price.qty }}, {{ $json.body.price.discount }})",
         "options": {}
       },
-      "id": "save-to-sheets",
-      "name": "Save to Google Sheets",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.5,
-      "position": [860, 200]
+      "id": "save-to-postgres",
+      "name": "Save to PostgreSQL",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [860, 200],
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "Railway PostgreSQL"
+        }
+      },
+      "notesInFlow": true,
+      "notes": "CONFIGURE: Add PostgreSQL credential with Railway connection string. Run n8n/db/init.sql first to create the leads table."
     },
     {
       "parameters": {
@@ -241,7 +223,7 @@
       "main": [
         [
           {
-            "node": "Save to Google Sheets",
+            "node": "Save to PostgreSQL",
             "type": "main",
             "index": 0
           },
