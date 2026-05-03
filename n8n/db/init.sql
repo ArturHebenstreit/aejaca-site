@@ -36,3 +36,20 @@ CREATE TABLE IF NOT EXISTS subscribers (
 
 CREATE INDEX IF NOT EXISTS idx_subs_email ON subscribers (email);
 CREATE INDEX IF NOT EXISTS idx_subs_date ON subscribers (subscribed_at DESC);
+
+-- AI Chat conversations log
+CREATE TABLE IF NOT EXISTS conversations (
+  id                SERIAL PRIMARY KEY,
+  session_id        VARCHAR(100),
+  lang              VARCHAR(5)    DEFAULT 'pl',
+  messages_count    INTEGER       DEFAULT 1,
+  last_user_message TEXT,
+  assistant_response TEXT,
+  hot_lead          BOOLEAN       DEFAULT FALSE,
+  ip_hash           VARCHAR(30),
+  created_at        TIMESTAMPTZ   DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_conv_session ON conversations (session_id);
+CREATE INDEX IF NOT EXISTS idx_conv_hot ON conversations (hot_lead) WHERE hot_lead = TRUE;
+CREATE INDEX IF NOT EXISTS idx_conv_date ON conversations (created_at DESC);

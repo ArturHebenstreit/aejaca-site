@@ -137,6 +137,32 @@ app.get("/subscribers", requireAuth, async (req, res) => {
   }
 });
 
+app.get("/conversations", requireAuth, async (req, res) => {
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const filter = req.query.filter || "all";
+  const limit = 50;
+  const offset = (page - 1) * limit;
+  try {
+    const whereClause = filter === "hot" ? "WHERE hot_lead = TRUE" : "";
+    const [rows, count, stats] = await Promise.all([
+      pool.query(`SELECT * FROM conversations ${whereClause} ORDER BY created_at DESC LIMIT $1 OFFSET $2`, [limit, offset]),
+      pool.query(`SELECT COUNT(*) as total FROM conversations ${whereClause}`),
+      pool.query("SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE hot_lead = TRUE) as hot, COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE) as today FROM conversations"),
+    ]);
+    res.render("conversations", {
+      user: req.user,
+      conversations: rows.rows,
+      total: parseInt(count.rows[0].total),
+      page,
+      pages: Math.ceil(count.rows[0].total / limit),
+      stats: stats.rows[0],
+      filter,
+    });
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
 // --- Export CSV ---
 app.get("/export/:table", requireAuth, async (req, res) => {
   const table = req.params.table === "subscribers" ? "subscribers" : "leads";
