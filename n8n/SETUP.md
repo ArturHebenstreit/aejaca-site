@@ -93,7 +93,7 @@ Stores all leads for analytics:
 ## Step 6: Activate Webhook & Get URL
 
 1. In the workflow, click the **Webhook node**
-2. Copy the **Production URL** (looks like: `https://your-n8n.railway.app/webhook/quote-capture`)
+2. Copy the **Production URL**: `https://primary-production-634f2.up.railway.app/webhook/quote-capture`
 3. **Activate the workflow** (toggle in top-right)
 
 ---
@@ -103,7 +103,7 @@ Stores all leads for analytics:
 Add to your Cloudflare Pages environment variables:
 
 ```
-VITE_QUOTE_API_URL = https://your-n8n.railway.app/webhook/quote-capture
+VITE_QUOTE_API_URL = https://primary-production-634f2.up.railway.app/webhook/quote-capture
 ```
 
 **For Cloudflare Pages:**
@@ -114,7 +114,7 @@ VITE_QUOTE_API_URL = https://your-n8n.railway.app/webhook/quote-capture
 **For local development:**
 Create `.env` in project root:
 ```
-VITE_QUOTE_API_URL=https://your-n8n.railway.app/webhook/quote-capture
+VITE_QUOTE_API_URL=https://primary-production-634f2.up.railway.app/webhook/quote-capture
 ```
 
 ---
