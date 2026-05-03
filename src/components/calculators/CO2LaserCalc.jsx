@@ -3,7 +3,7 @@
 // Work area: 600 × 288 mm (standard), extended with riser
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
 import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
 
 const CO2_CONFIG = {
@@ -289,6 +289,10 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
       : `SVG: ${svgFileName} (${(svgData.pathLengthCm * svgScale).toFixed(0)} cm${svgScale !== 1 ? ` ${Math.round(svgScale*100)}%` : ""})`)
     : null;
 
+  const paramsSummary = mode === "engrave"
+    ? [t(ENGRAVE_MATERIALS.find(m => m.id === eMatId)?.label, lang), svgSummary || t(ENGRAVE_AREAS.find(a => a.id === eAreaId)?.label, lang), t(ENGRAVE_DETAIL.find(d => d.id === eDetailId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === eQtyId)?.label, lang)].join(" | ")
+    : [t(CUT_MATERIALS.find(m => m.id === cMatId)?.label, lang), svgSummary || t(CUT_PATHS.find(p => p.id === cPathId)?.label, lang), t(CUT_COMPLEXITY.find(c => c.id === cComplexId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === cQtyId)?.label, lang)].join(" | ");
+
   return (
     <div>
       <div className="text-center text-[11px] text-neutral-400 mb-6">xTool P2 · 55W CO2 · 600×288 mm</div>
@@ -338,13 +342,10 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} />
         <ResultDisplay result={result} lang={lang} />
+        <QuoteEmailCapture result={result} lang={lang} techLabel={`${t(TECH_LABEL, lang)} — ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={paramsSummary} />
       </div>
 
-      <InquiryForm lang={lang} techLabel={`${t(TECH_LABEL, lang)} — ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={
-        mode === "engrave"
-          ? [t(ENGRAVE_MATERIALS.find(m => m.id === eMatId)?.label, lang), svgSummary || t(ENGRAVE_AREAS.find(a => a.id === eAreaId)?.label, lang), t(ENGRAVE_DETAIL.find(d => d.id === eDetailId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === eQtyId)?.label, lang)].join(" | ")
-          : [t(CUT_MATERIALS.find(m => m.id === cMatId)?.label, lang), svgSummary || t(CUT_PATHS.find(p => p.id === cPathId)?.label, lang), t(CUT_COMPLEXITY.find(c => c.id === cComplexId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === cQtyId)?.label, lang)].join(" | ")
-      } />
+      <InquiryForm lang={lang} techLabel={`${t(TECH_LABEL, lang)} — ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={paramsSummary} />
     </div>
   );
 }

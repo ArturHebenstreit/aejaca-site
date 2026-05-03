@@ -6,7 +6,7 @@
 // Depreciation (UV lamp + tools): ~1.50 PLN/h
 // ============================================================
 import { useState, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
 
 const EPOXY_CONFIG = {
   POWER_KW: 0.15,
@@ -210,6 +210,7 @@ export default function EpoxyCastCalc({ lang = "pl" }) {
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} />
         <ResultDisplay result={result} lang={lang} />
+        <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={paramsSummary} />
       </div>
 
       <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={paramsSummary} />

@@ -3,7 +3,7 @@
 // ============================================================
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { Upload, X, AlertTriangle } from "lucide-react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
 
 const STLViewer = lazy(() => import("./STLViewer.jsx"));
 
@@ -395,6 +395,14 @@ export default function Print3DCalc({ lang = "pl" }) {
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} />
         <ResultDisplay result={result} lang={lang} />
+        <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={[
+          `${FILAMENTS[segment].label}: ${materialKey}`,
+          stlSummary || t(SIZES.find(s => s.id === sizeId)?.label, lang),
+          t(INFILL_OPTIONS.find(i => i.id === infillId)?.label, lang),
+          t(COLORS.find(c => c.id === colorId)?.label, lang),
+          t(PRECISION.find(p => p.id === precisionId)?.label, lang),
+          t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
+        ].join(" | ")} />
       </div>
 
       <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={[

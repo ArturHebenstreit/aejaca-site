@@ -1,0 +1,42 @@
+<!--
+  AEJaCA — 48h follow-up email
+  Access original data via: $('Webhook — Quote Received').item.json.body.*
+-->
+<div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 560px; margin: 0 auto; background: #0a0a0a; color: #e5e5e5; border-radius: 16px; overflow: hidden;">
+
+  <div style="padding: 32px 24px 20px; text-align: center;">
+    <img src="https://www.aejaca.com/brand-sign.webp" alt="AEJaCA" width="40" height="40" style="display: inline-block; margin-bottom: 12px; filter: brightness(0) invert(1);" />
+  </div>
+
+  <div style="padding: 0 24px 24px;">
+    <h2 style="font-size: 18px; color: #fff; text-align: center; margin: 0 0 16px;">
+      {{ $('Webhook — Quote Received').item.json.body.lang === 'de' ? 'Haben Sie Fragen zu Ihrem Angebot?' : $('Webhook — Quote Received').item.json.body.lang === 'en' ? 'Any questions about your quote?' : 'Masz pytania dotyczące wyceny?' }}
+    </h2>
+
+    <p style="font-size: 14px; color: #a3a3a3; line-height: 1.7; text-align: center;">
+      {{ $('Webhook — Quote Received').item.json.body.lang === 'de'
+        ? 'Wir haben bemerkt, dass Sie kürzlich ein Angebot für <b>' + $('Webhook — Quote Received').item.json.body.calculator + '</b> auf unserer Website erstellt haben. Haben Sie Fragen oder möchten Sie die Details besprechen?'
+        : $('Webhook — Quote Received').item.json.body.lang === 'en'
+        ? 'We noticed you recently created a quote for <b>' + $('Webhook — Quote Received').item.json.body.calculator + '</b> on our website. Have any questions or want to discuss the details?'
+        : 'Zauważyliśmy, że niedawno utworzyłeś wycenę <b>' + $('Webhook — Quote Received').item.json.body.calculator + '</b> na naszej stronie. Masz pytania lub chcesz omówić szczegóły?'
+      }}
+    </p>
+
+    <div style="text-align: center; margin: 24px 0;">
+      <a href="https://www.aejaca.com/contact/" style="display: inline-block; padding: 12px 28px; background: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 999px; font-size: 14px; font-weight: 600;">
+        {{ $('Webhook — Quote Received').item.json.body.lang === 'de' ? 'Jetzt antworten' : $('Webhook — Quote Received').item.json.body.lang === 'en' ? 'Reply now' : 'Odpowiedz teraz' }} &rarr;
+      </a>
+    </div>
+
+    <p style="font-size: 12px; color: #525252; text-align: center;">
+      {{ $('Webhook — Quote Received').item.json.body.lang === 'de' ? 'Oder einfach auf diese E-Mail antworten.' : $('Webhook — Quote Received').item.json.body.lang === 'en' ? 'Or simply reply to this email.' : 'Lub po prostu odpowiedz na tego maila.' }}
+    </p>
+  </div>
+
+  <div style="padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center;">
+    <p style="font-size: 11px; color: #404040; margin: 0;">
+      AEJaCA &mdash; Artisan Elegance Jewelry and Crafted Art<br />
+      <a href="https://www.aejaca.com" style="color: #525252; text-decoration: none;">www.aejaca.com</a>
+    </p>
+  </div>
+</div>

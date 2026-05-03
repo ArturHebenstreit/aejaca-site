@@ -3,7 +3,7 @@
 // Max work area: 150 × 150 mm
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
 import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
 
 const FIBER_CONFIG = {
@@ -238,6 +238,7 @@ export default function FiberLaserCalc({ lang = "pl" }) {
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} />
         <ResultDisplay result={result} lang={lang} />
+        <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={paramsSummary} />
       </div>
 
       <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={paramsSummary} />

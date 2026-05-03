@@ -2,7 +2,7 @@
 // JEWELRY ESTIMATOR — AEJaCA Jewelry
 // ============================================================
 import { useState, useMemo } from "react";
-import { t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm } from "./calcShared.jsx";
+import { t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture } from "./calcShared.jsx";
 import { trackCalc } from "../../utils/analytics.js";
 import {
   METAL_PRICES, EUR_PLN, MARGIN, REPAIR_MARGIN, TOL_LOW, TOL_HIGH,
@@ -801,6 +801,17 @@ export default function JewelryCalc({ lang = "pl" }) {
         <ResultHeader lang={lang} />
         <ResultDisplay result={result} lang={lang} />
         <div className="mt-3 text-[10px] text-neutral-400 text-center italic">{l.priceSource}</div>
+        <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={
+          serviceId === "new"
+            ? [t(PRODUCT_LINES.find(p => p.id === lineId)?.label, lang) || lineId,
+               t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
+               t(METALS.find(m => m.id === metalId)?.label, lang),
+               t(METHODS.find(m => m.id === methodId)?.label, lang),
+               gemId !== "none" ? t(GEMSTONES.find(g => g.id === gemId)?.label, lang) : ""].filter(Boolean).join(" | ")
+            : serviceId === "renovation"
+              ? `${t(SERVICE_TYPES[1].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === renoJewType)?.label, lang)} | ${renoServices.map(id => t(RENOVATION_SERVICES.find(s => s.id === id)?.label, lang)).join(", ")}`
+              : `${t(SERVICE_TYPES[2].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === repairJewType)?.label, lang)} | ${t(REPAIR_SERVICES.find(r => r.id === repairId)?.label, lang)}`
+        } />
       </div>
 
       <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={

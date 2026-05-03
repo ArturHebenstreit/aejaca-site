@@ -1,0 +1,60 @@
+<!--
+  AEJaCA — 7-day discount offer email
+  Access original data via: $('Webhook — Quote Received').item.json.body.*
+-->
+<div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 560px; margin: 0 auto; background: #0a0a0a; color: #e5e5e5; border-radius: 16px; overflow: hidden;">
+
+  <div style="padding: 32px 24px 20px; text-align: center;">
+    <img src="https://www.aejaca.com/brand-sign.webp" alt="AEJaCA" width="40" height="40" style="display: inline-block; margin-bottom: 12px; filter: brightness(0) invert(1);" />
+  </div>
+
+  <div style="padding: 0 24px 24px;">
+
+    <!-- Discount badge -->
+    <div style="text-align: center; margin-bottom: 20px;">
+      <div style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #0a0a0a; font-size: 28px; font-weight: 800; padding: 12px 32px; border-radius: 12px; letter-spacing: -0.5px;">
+        -5%
+      </div>
+    </div>
+
+    <h2 style="font-size: 18px; color: #fff; text-align: center; margin: 0 0 16px;">
+      {{ $('Webhook — Quote Received').item.json.body.lang === 'de'
+        ? 'Exklusiver Rabatt auf Ihr Projekt'
+        : $('Webhook — Quote Received').item.json.body.lang === 'en'
+        ? 'Exclusive discount on your project'
+        : 'Ekskluzywny rabat na Twój projekt'
+      }}
+    </h2>
+
+    <p style="font-size: 14px; color: #a3a3a3; line-height: 1.7; text-align: center;">
+      {{ $('Webhook — Quote Received').item.json.body.lang === 'de'
+        ? 'Als Dankeschön für Ihr Interesse an <b>' + $('Webhook — Quote Received').item.json.body.calculator + '</b> bieten wir Ihnen <b>5% Rabatt</b> auf Ihren ersten Auftrag. Gültig 14 Tage.'
+        : $('Webhook — Quote Received').item.json.body.lang === 'en'
+        ? 'As a thank you for your interest in <b>' + $('Webhook — Quote Received').item.json.body.calculator + '</b>, we\'re offering <b>5% off</b> your first order. Valid for 14 days.'
+        : 'W podziękowaniu za zainteresowanie <b>' + $('Webhook — Quote Received').item.json.body.calculator + '</b> oferujemy <b>5% rabatu</b> na Twoje pierwsze zlecenie. Ważny 14 dni.'
+      }}
+    </p>
+
+    <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); border-radius: 12px; padding: 16px; margin: 20px 0; text-align: center;">
+      <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #f59e0b; margin-bottom: 8px;">
+        {{ $('Webhook — Quote Received').item.json.body.lang === 'de' ? 'Rabattcode' : $('Webhook — Quote Received').item.json.body.lang === 'en' ? 'Discount code' : 'Kod rabatowy' }}
+      </div>
+      <div style="font-size: 22px; font-weight: 700; color: #ffffff; font-family: monospace; letter-spacing: 3px;">
+        AEJACA5
+      </div>
+    </div>
+
+    <div style="text-align: center; margin: 24px 0;">
+      <a href="https://www.aejaca.com/contact/" style="display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #0a0a0a; text-decoration: none; border-radius: 999px; font-size: 14px; font-weight: 700;">
+        {{ $('Webhook — Quote Received').item.json.body.lang === 'de' ? 'Rabatt einlösen' : $('Webhook — Quote Received').item.json.body.lang === 'en' ? 'Claim discount' : 'Wykorzystaj rabat' }} &rarr;
+      </a>
+    </div>
+  </div>
+
+  <div style="padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center;">
+    <p style="font-size: 11px; color: #404040; margin: 0;">
+      AEJaCA &mdash; Artisan Elegance Jewelry and Crafted Art<br />
+      <a href="https://www.aejaca.com" style="color: #525252; text-decoration: none;">www.aejaca.com</a>
+    </p>
+  </div>
+</div>
