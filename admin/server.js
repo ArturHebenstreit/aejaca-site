@@ -15,11 +15,12 @@ const ALLOWED_EMAIL = (process.env.ALLOWED_EMAIL || "aejaca@gmail.com").toLowerC
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
 
 // --- Session ---
+app.set("trust proxy", 1);
 app.use(session({
   secret: process.env.SESSION_SECRET || "aejaca-admin-secret-change-me",
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000, secure: process.env.NODE_ENV === "production" },
+  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000, secure: process.env.NODE_ENV === "production", sameSite: "lax" },
 }));
 
 // --- Passport Google OAuth ---
