@@ -12,7 +12,7 @@ import {
   Hash, Users, Factory,
   Lightbulb,
 } from "lucide-react";
-import { ResultHeader, ResultDisplay, InquiryForm, t } from "./calcShared.jsx";
+import { ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture, t } from "./calcShared.jsx";
 import { calcNew, calcRenovation, calcRepair } from "./JewelryCalc.jsx";
 import { trackCalc } from "../../utils/analytics.js";
 
@@ -571,6 +571,7 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
         <div className="mt-4 pt-3 border-t border-rose-400/10 text-[11px] text-rose-400/60 italic text-center">
           {l.switchHint}
         </div>
+        <QuoteEmailCapture result={result} lang={lang} techLabel={`Szybka wycena biżuterii — ${serviceLabel}`} paramsSummary={paramsSummary} />
       </div>
 
       <InquiryForm

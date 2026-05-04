@@ -13,7 +13,7 @@ import {
   Lightbulb, Upload, X, FileBox, Ruler, Layers,
 } from "lucide-react";
 import {
-  QUANTITY_TIERS, t, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm,
+  QUANTITY_TIERS, t, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture,
 } from "./calcShared.jsx";
 import { calculate as calcPrint3D } from "./Print3DCalc.jsx";
 import { calcEngrave as calcCO2Engrave, calcCut as calcCO2Cut } from "./CO2LaserCalc.jsx";
@@ -722,6 +722,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
         <div className="mt-4 pt-3 border-t border-emerald-400/10 text-[11px] text-emerald-400/60 italic text-center">
           {l.switchHint}
         </div>
+        <QuoteEmailCapture result={result} lang={lang} techLabel={techLabel ? `Szybka wycena — ${techLabel}` : "Szybka wycena"} paramsSummary={paramsSummary} />
       </div>
 
       <InquiryForm

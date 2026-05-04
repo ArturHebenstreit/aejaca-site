@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEJaCA Admin — Subscribers</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            neutral: { 950: '#0a0a0a' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-neutral-950 min-h-screen text-neutral-100">
+
+  <header class="bg-neutral-900 border-b border-white/10 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-6">
+      <span class="text-lg font-bold text-white">AEJaCA <span class="text-amber-400">Admin</span></span>
+      <nav class="flex gap-4 text-sm">
+        <a href="/dashboard" class="text-neutral-400 hover:text-white transition-colors">Dashboard</a>
+        <a href="/leads" class="text-neutral-400 hover:text-white transition-colors">Leads</a>
+        <a href="/subscribers" class="text-white font-medium border-b border-blue-400 pb-0.5">Subscribers</a>
+        <a href="/conversations" class="text-neutral-400 hover:text-white transition-colors">Chat</a>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      <img src="<%= user.photo %>" class="w-7 h-7 rounded-full" alt="" />
+      <span class="text-sm text-neutral-400"><%= user.name %></span>
+      <a href="/logout" class="text-xs text-red-400 hover:text-red-300 transition-colors">Logout</a>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <h2 class="text-xl font-semibold text-white">Subscribers</h2>
+      <a
+        href="/export/subscribers"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white text-sm font-medium rounded-lg transition-colors"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        Export CSV
+      </a>
+    </div>
+
+    <!-- Stats summary -->
+    <div class="flex flex-wrap gap-3 mb-6">
+      <div class="bg-neutral-900 border border-white/10 rounded-xl px-5 py-3 flex items-center gap-3">
+        <span class="text-neutral-500 text-sm">Total active</span>
+        <span class="text-2xl font-bold text-blue-400"><%= total %></span>
+      </div>
+      <% if (byLang && byLang.length > 0) { %>
+        <% byLang.forEach(function(item) { %>
+        <div class="bg-neutral-900 border border-white/10 rounded-xl px-4 py-3 flex items-center gap-2">
+          <span class="text-xs text-neutral-500 uppercase font-mono"><%= item.lang %></span>
+          <span class="text-lg font-semibold text-white"><%= item.count %></span>
+        </div>
+        <% }); %>
+      <% } %>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-neutral-900 border border-white/10 rounded-xl overflow-hidden mb-6">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-white/10 text-neutral-500 text-xs uppercase tracking-wider">
+              <th class="px-4 py-3 text-left whitespace-nowrap">Date</th>
+              <th class="px-4 py-3 text-left">Email</th>
+              <th class="px-4 py-3 text-left">Lang</th>
+              <th class="px-4 py-3 text-left">Source</th>
+              <th class="px-4 py-3 text-left">Code</th>
+              <th class="px-4 py-3 text-left whitespace-nowrap">Unsubscribed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (subscribers && subscribers.length > 0) { %>
+              <% subscribers.forEach(function(sub, i) { %>
+              <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors <%= i % 2 === 1 ? 'bg-white/[0.015]' : '' %>">
+                <td class="px-4 py-3 text-neutral-400 whitespace-nowrap text-xs">
+                  <%= fmtDate(sub.createdAt) %>
+                </td>
+                <td class="px-4 py-3 text-neutral-200 max-w-[200px] truncate">
+                  <a href="mailto:<%= sub.email %>" class="hover:text-blue-400 transition-colors"><%= sub.email %></a>
+                </td>
+                <td class="px-4 py-3">
+                  <% if (sub.lang) { %>
+                    <span class="px-2 py-0.5 bg-blue-950 text-blue-300 rounded text-xs font-medium uppercase">
+                      <%= sub.lang %>
+                    </span>
+                  <% } else { %>
+                    <span class="text-neutral-600">—</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3 text-neutral-400 text-xs">
+                  <%= sub.source || '—' %>
+                </td>
+                <td class="px-4 py-3 text-neutral-500 font-mono text-xs">
+                  <% if (sub.unsubscribeCode) { %>
+                    <span title="<%= sub.unsubscribeCode %>"><%= sub.unsubscribeCode.slice(0, 8) %>…</span>
+                  <% } else { %>
+                    <span class="text-neutral-700">—</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3 text-xs">
+                  <% if (sub.unsubscribedAt) { %>
+                    <span class="text-red-400"><%= fmtDate(sub.unsubscribedAt) %></span>
+                  <% } else { %>
+                    <span class="px-2 py-0.5 bg-emerald-950 text-emerald-400 rounded text-xs">active</span>
+                  <% } %>
+                </td>
+              </tr>
+              <% }); %>
+            <% } else { %>
+            <tr>
+              <td colspan="6" class="px-4 py-12 text-center text-neutral-600">No subscribers found.</td>
+            </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <% if (pages > 1) { %>
+    <div class="flex items-center justify-between">
+      <span class="text-sm text-neutral-500">Page <%= page %> of <%= pages %></span>
+      <div class="flex gap-2">
+        <% if (page > 1) { %>
+        <a href="/subscribers?page=<%= page - 1 %>" class="px-4 py-2 bg-neutral-900 border border-white/10 rounded-lg text-sm text-neutral-300 hover:text-white hover:border-white/20 transition-colors">
+          &larr; Prev
+        </a>
+        <% } else { %>
+        <span class="px-4 py-2 bg-neutral-900 border border-white/5 rounded-lg text-sm text-neutral-700 cursor-not-allowed">
+          &larr; Prev
+        </span>
+        <% } %>
+
+        <% if (page < pages) { %>
+        <a href="/subscribers?page=<%= page + 1 %>" class="px-4 py-2 bg-neutral-900 border border-white/10 rounded-lg text-sm text-neutral-300 hover:text-white hover:border-white/20 transition-colors">
+          Next &rarr;
+        </a>
+        <% } else { %>
+        <span class="px-4 py-2 bg-neutral-900 border border-white/5 rounded-lg text-sm text-neutral-700 cursor-not-allowed">
+          Next &rarr;
+        </span>
+        <% } %>
+      </div>
+    </div>
+    <% } %>
+
+  </main>
+
+  <script>
+    function fmtDate(d) {
+      if (!d) return '—';
+      const dt = new Date(d);
+      return dt.toLocaleDateString('pl-PL') + ' ' + dt.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+    }
+  </script>
+
+</body>
+</html>

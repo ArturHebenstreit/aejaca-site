@@ -1,0 +1,147 @@
+{
+  "name": "AEJaCA — Newsletter Signup (10% discount)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "newsletter-signup",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "https://www.aejaca.com"
+        }
+      },
+      "id": "webhook-newsletter",
+      "name": "Webhook — Newsletter",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 300],
+      "webhookId": "newsletter-signup"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ {\"ok\": true} }",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "https://www.aejaca.com"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-ok",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [420, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "email-check",
+              "leftValue": "={{ $json.body.email }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "isNotEmpty" }
+            }
+          ]
+        }
+      },
+      "id": "validate-email",
+      "name": "Validate Email",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [640, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO subscribers (email, lang, source) VALUES ('{{ $json.body.email }}', '{{ $json.body.lang }}', '{{ $json.body.source || \"footer\" }}') ON CONFLICT (email) DO UPDATE SET lang = EXCLUDED.lang, unsubscribed = FALSE",
+        "options": {}
+      },
+      "id": "save-subscriber",
+      "name": "Save to PostgreSQL",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [860, 200],
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "Railway PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.body.email }}",
+        "subject": "={{ $json.body.lang === 'de' ? 'Dein 10% Rabattcode von AEJaCA' : $json.body.lang === 'en' ? 'Your 10% discount code from AEJaCA' : 'Twój kod 10% zniżki od AEJaCA' }}",
+        "message": "",
+        "options": {
+          "appendAttribution": false,
+          "replyTo": "contact@aejaca.com"
+        }
+      },
+      "id": "send-welcome",
+      "name": "Send Welcome + Discount",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [860, 400],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CREDENTIAL_ID",
+          "name": "AEJaCA Gmail"
+        }
+      },
+      "notesInFlow": true,
+      "notes": "Paste HTML from n8n/emails/newsletter-welcome.html"
+    },
+    {
+      "parameters": {
+        "sendTo": "contact@aejaca.com",
+        "subject": "=📬 Nowy subskrybent: {{ $json.body.email }} ({{ $json.body.lang }})",
+        "message": "=<p><b>Nowy subskrybent newslettera</b></p><p>Email: {{ $json.body.email }}<br>Język: {{ $json.body.lang }}<br>Źródło: {{ $json.body.source || 'footer' }}<br>Czas: {{ $json.body.ts }}</p>",
+        "options": { "appendAttribution": false }
+      },
+      "id": "notify-owner",
+      "name": "Notify Owner",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [860, 600],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CREDENTIAL_ID",
+          "name": "AEJaCA Gmail"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook — Newsletter": {
+      "main": [[{ "node": "Respond OK", "type": "main", "index": 0 }]]
+    },
+    "Respond OK": {
+      "main": [[{ "node": "Validate Email", "type": "main", "index": 0 }]]
+    },
+    "Validate Email": {
+      "main": [
+        [
+          { "node": "Save to PostgreSQL", "type": "main", "index": 0 },
+          { "node": "Send Welcome + Discount", "type": "main", "index": 0 },
+          { "node": "Notify Owner", "type": "main", "index": 0 }
+        ],
+        []
+      ]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "tags": [
+    { "name": "AEJaCA", "id": "1" },
+    { "name": "Newsletter", "id": "3" }
+  ]
+}

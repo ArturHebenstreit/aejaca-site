@@ -3,7 +3,7 @@
 // ============================================================
 import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Send, Paperclip, X, MessageCircle } from "lucide-react";
+import { Send, Paperclip, X, MessageCircle, Mail } from "lucide-react";
 import { trackInquiry } from "../../utils/analytics.js";
 
 export const CONFIG = {
@@ -285,6 +285,154 @@ export function ResultDisplay({ result, lang = "pl" }) {
           )}
         </>
       )}
+    </div>
+  );
+}
+
+// ============================================================
+// QUOTE EMAIL CAPTURE — lead capture after price result
+// ============================================================
+
+const QUOTE_API_URL = import.meta.env.VITE_QUOTE_API_URL;
+
+const QUOTE_LABELS = {
+  pl: {
+    title: "Wyślij wycenę na email",
+    placeholder: "twoj@email.com",
+    send: "Wyślij",
+    consent: "Zgadzam się na otrzymanie wyceny i kontakt mailowy w sprawie projektu.",
+    sent: "Wycena wysłana!",
+    sentSub: "Sprawdź skrzynkę — wycena jest już w drodze.",
+    error: "Coś poszło nie tak — spróbuj ponownie.",
+  },
+  en: {
+    title: "Get this quote by email",
+    placeholder: "your@email.com",
+    send: "Send",
+    consent: "I agree to receive the quote and follow-up emails about my project.",
+    sent: "Quote sent!",
+    sentSub: "Check your inbox — quote is on its way.",
+    error: "Something went wrong — please try again.",
+  },
+  de: {
+    title: "Angebot per E-Mail erhalten",
+    placeholder: "ihre@email.de",
+    send: "Senden",
+    consent: "Ich stimme dem Erhalt des Angebots und Folge-E-Mails zu meinem Projekt zu.",
+    sent: "Angebot gesendet!",
+    sentSub: "Prüfen Sie Ihren Posteingang — das Angebot ist unterwegs.",
+    error: "Etwas ist schiefgelaufen — bitte versuchen Sie es erneut.",
+  },
+};
+
+export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummary }) {
+  const [email, setEmail] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [status, setStatus] = useState("idle");
+  const [honeypot, setHoneypot] = useState("");
+  const cooldownRef = useRef(false);
+
+  const lbl = QUOTE_LABELS[lang] || QUOTE_LABELS.en;
+
+  if (!QUOTE_API_URL || !result || result.type === "custom") return null;
+
+  const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (honeypot || !isValid || !consent || status === "sending" || cooldownRef.current) return;
+
+    setStatus("sending");
+    cooldownRef.current = true;
+
+    try {
+      const res = await fetch(QUOTE_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          lang,
+          calculator: techLabel,
+          params: paramsSummary,
+          price: {
+            perPcPLN: result.perPcPLN,
+            perPcEUR: result.perPcEUR,
+            qty: result.qty,
+            discount: result.discount,
+          },
+          ts: new Date().toISOString(),
+        }),
+      });
+      if (res.ok) {
+        setStatus("sent");
+        if (typeof window.gtag === "function") {
+          window.gtag("event", "quote_email_capture", { calculator: techLabel });
+        }
+      } else {
+        setStatus("error");
+        setTimeout(() => { cooldownRef.current = false; }, 5000);
+      }
+    } catch {
+      setStatus("error");
+      setTimeout(() => { cooldownRef.current = false; }, 5000);
+    }
+  }
+
+  if (status === "sent") {
+    return (
+      <div className="mt-4 pt-4 border-t border-white/5 text-center animate-in fade-in">
+        <div className="inline-flex items-center gap-2 text-green-400 text-sm font-medium">
+          <Mail className="w-4 h-4" />
+          {lbl.sent}
+        </div>
+        <div className="text-neutral-500 text-xs mt-1">{lbl.sentSub}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-4 pt-4 border-t border-white/5">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+        <div className="flex items-center gap-2 text-xs text-neutral-400 font-medium">
+          <Mail className="w-3.5 h-3.5 text-blue-400" />
+          {lbl.title}
+        </div>
+
+        {/* Honeypot */}
+        <div className="absolute opacity-0 h-0 w-0 overflow-hidden" aria-hidden="true" tabIndex={-1}>
+          <input type="text" name="company_url" autoComplete="off"
+            value={honeypot} onChange={(e) => setHoneypot(e.target.value)} tabIndex={-1} />
+        </div>
+
+        <div className="flex gap-2">
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={lbl.placeholder}
+            required
+            className="flex-1 min-w-0 bg-white/[0.03] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-500 focus:border-blue-400/50 focus:outline-none focus:ring-1 focus:ring-blue-400/30 transition-colors"
+          />
+          <button
+            type="submit"
+            disabled={!isValid || !consent || status === "sending"}
+            className="px-4 py-2 rounded-lg border border-blue-400/30 bg-blue-400/10 text-blue-300 text-sm font-medium hover:bg-blue-400/20 hover:border-blue-400/40 transition-all disabled:opacity-30 disabled:cursor-not-allowed whitespace-nowrap"
+          >
+            <Send className="w-4 h-4 sm:hidden" />
+            <span className="hidden sm:inline">{status === "sending" ? "..." : lbl.send}</span>
+          </button>
+        </div>
+
+        <label className="flex items-start gap-2 cursor-pointer select-none">
+          <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)}
+            className="mt-0.5 accent-blue-400 shrink-0" />
+          <span className="text-[11px] text-neutral-500 leading-tight">{lbl.consent}</span>
+        </label>
+
+        {status === "error" && (
+          <div className="text-[11px] text-red-400 text-center">{lbl.error}</div>
+        )}
+      </form>
     </div>
   );
 }

@@ -1,0 +1,302 @@
+{
+  "name": "AEJaCA — Quote Email Follow-up",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "quote-capture",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "https://www.aejaca.com"
+        }
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook — Quote Received",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 300],
+      "webhookId": "quote-capture"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ {\"ok\": true} }",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "https://www.aejaca.com"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-ok",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [420, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "email-check",
+              "leftValue": "={{ $json.body.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isNotEmpty"
+              }
+            }
+          ]
+        }
+      },
+      "id": "validate-data",
+      "name": "Validate Data",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [640, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO leads (email, lang, calculator, params, price_min_pln, price_max_pln, price_min_eur, price_max_eur, qty, discount) VALUES ('{{ $json.body.email }}', '{{ $json.body.lang }}', '{{ $json.body.calculator }}', '{{ $json.body.params }}', {{ $json.body.price.perPcPLN.min }}, {{ $json.body.price.perPcPLN.max }}, {{ $json.body.price.perPcEUR.min }}, {{ $json.body.price.perPcEUR.max }}, {{ $json.body.price.qty }}, {{ $json.body.price.discount }})",
+        "options": {}
+      },
+      "id": "save-to-postgres",
+      "name": "Save to PostgreSQL",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [860, 200],
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "Railway PostgreSQL"
+        }
+      },
+      "notesInFlow": true,
+      "notes": "CONFIGURE: Add PostgreSQL credential with Railway connection string. Run n8n/db/init.sql first to create the leads table."
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.body.email }}",
+        "subject": "={{ $json.body.lang === 'de' ? 'Ihr Angebot von AEJaCA' : $json.body.lang === 'en' ? 'Your AEJaCA Quote' : 'Twoja wycena z AEJaCA' }}",
+        "message": "",
+        "options": {
+          "appendAttribution": false,
+          "replyTo": "contact@aejaca.com"
+        }
+      },
+      "id": "send-quote-email",
+      "name": "Send Quote Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [860, 400],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CREDENTIAL_ID",
+          "name": "AEJaCA Gmail"
+        }
+      },
+      "notesInFlow": true,
+      "notes": "CONFIGURE: Set your Gmail OAuth2 credential. The HTML template is in the 'message' field — see SETUP.md for the template."
+    },
+    {
+      "parameters": {
+        "unit": "hours",
+        "amount": 48
+      },
+      "id": "wait-48h",
+      "name": "Wait 48h",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1080, 400]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook — Quote Received').item.json.body.email }}",
+        "subject": "={{ $('Webhook — Quote Received').item.json.body.lang === 'de' ? 'Haben Sie Fragen zu Ihrem Angebot?' : $('Webhook — Quote Received').item.json.body.lang === 'en' ? 'Any questions about your quote?' : 'Masz pytania dotyczące wyceny?' }}",
+        "message": "",
+        "options": {
+          "appendAttribution": false,
+          "replyTo": "contact@aejaca.com"
+        }
+      },
+      "id": "send-followup-48h",
+      "name": "Follow-up 48h",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [1300, 400],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CREDENTIAL_ID",
+          "name": "AEJaCA Gmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "unit": "days",
+        "amount": 5
+      },
+      "id": "wait-7d",
+      "name": "Wait 5 more days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1520, 400]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook — Quote Received').item.json.body.email }}",
+        "subject": "={{ $('Webhook — Quote Received').item.json.body.lang === 'de' ? '5% Rabatt auf Ihr AEJaCA-Projekt' : $('Webhook — Quote Received').item.json.body.lang === 'en' ? '5% off your AEJaCA project' : '5% rabatu na Twój projekt w AEJaCA' }}",
+        "message": "",
+        "options": {
+          "appendAttribution": false,
+          "replyTo": "contact@aejaca.com"
+        }
+      },
+      "id": "send-discount-7d",
+      "name": "Discount offer (7d)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [1740, 400],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CREDENTIAL_ID",
+          "name": "AEJaCA Gmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "contact@aejaca.com",
+        "subject": "=🔔 Nowa wycena: {{ $json.body.calculator }} — {{ $json.body.price.perPcPLN.min }}–{{ $json.body.price.perPcPLN.max }} PLN",
+        "message": "=<h3>Nowy lead z kalkulatora</h3><p><b>Email:</b> {{ $json.body.email }}<br><b>Kalkulator:</b> {{ $json.body.calculator }}<br><b>Parametry:</b> {{ $json.body.params }}<br><b>Cena:</b> {{ $json.body.price.perPcPLN.min }}–{{ $json.body.price.perPcPLN.max }} PLN ({{ $json.body.price.perPcEUR.min }}–{{ $json.body.price.perPcEUR.max }} EUR)<br><b>Ilość:</b> {{ $json.body.price.qty }}<br><b>Czas:</b> {{ $json.body.ts }}</p>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "notify-owner",
+      "name": "Notify Owner",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [860, 600],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CREDENTIAL_ID",
+          "name": "AEJaCA Gmail"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook — Quote Received": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond OK": {
+      "main": [
+        [
+          {
+            "node": "Validate Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Data": {
+      "main": [
+        [
+          {
+            "node": "Save to PostgreSQL",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Quote Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify Owner",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Send Quote Email": {
+      "main": [
+        [
+          {
+            "node": "Wait 48h",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 48h": {
+      "main": [
+        [
+          {
+            "node": "Follow-up 48h",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Follow-up 48h": {
+      "main": [
+        [
+          {
+            "node": "Wait 5 more days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5 more days": {
+      "main": [
+        [
+          {
+            "node": "Discount offer (7d)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "AEJaCA",
+      "id": "1"
+    },
+    {
+      "name": "Lead Generation",
+      "id": "2"
+    }
+  ]
+}

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEJaCA Admin — Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            neutral: { 950: '#0a0a0a' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-neutral-950 min-h-screen text-neutral-100">
+
+  <header class="bg-neutral-900 border-b border-white/10 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-6">
+      <span class="text-lg font-bold text-white">AEJaCA <span class="text-amber-400">Admin</span></span>
+      <nav class="flex gap-4 text-sm">
+        <a href="/dashboard" class="text-white font-medium border-b border-amber-400 pb-0.5">Dashboard</a>
+        <a href="/leads" class="text-neutral-400 hover:text-white transition-colors">Leads</a>
+        <a href="/subscribers" class="text-neutral-400 hover:text-white transition-colors">Subscribers</a>
+        <a href="/conversations" class="text-neutral-400 hover:text-white transition-colors">Chat</a>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      <img src="<%= user.photo %>" class="w-7 h-7 rounded-full" alt="" />
+      <span class="text-sm text-neutral-400"><%= user.name %></span>
+      <a href="/logout" class="text-xs text-red-400 hover:text-red-300 transition-colors">Logout</a>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <h2 class="text-xl font-semibold text-white mb-6">Overview</h2>
+
+    <!-- Stats cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+
+      <!-- Leads total -->
+      <div class="bg-neutral-900 border border-white/10 rounded-xl px-5 py-4">
+        <p class="text-xs text-neutral-500 uppercase tracking-wider mb-1">Total Leads</p>
+        <p class="text-3xl font-bold text-amber-400"><%= leadStats.total %></p>
+      </div>
+
+      <!-- Leads today / week -->
+      <div class="bg-neutral-900 border border-white/10 rounded-xl px-5 py-4">
+        <p class="text-xs text-neutral-500 uppercase tracking-wider mb-2">Leads — Recent</p>
+        <div class="flex gap-4">
+          <div>
+            <p class="text-xl font-bold text-white"><%= leadStats.today %></p>
+            <p class="text-xs text-neutral-500 mt-0.5">Today</p>
+          </div>
+          <div class="border-l border-white/10 pl-4">
+            <p class="text-xl font-bold text-white"><%= leadStats.week %></p>
+            <p class="text-xs text-neutral-500 mt-0.5">This week</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subscribers total -->
+      <div class="bg-neutral-900 border border-white/10 rounded-xl px-5 py-4">
+        <p class="text-xs text-neutral-500 uppercase tracking-wider mb-1">Total Subscribers</p>
+        <p class="text-3xl font-bold text-blue-400"><%= subStats.total %></p>
+      </div>
+
+      <!-- Subscribers today / week -->
+      <div class="bg-neutral-900 border border-white/10 rounded-xl px-5 py-4">
+        <p class="text-xs text-neutral-500 uppercase tracking-wider mb-2">Subscribers — Recent</p>
+        <div class="flex gap-4">
+          <div>
+            <p class="text-xl font-bold text-white"><%= subStats.today %></p>
+            <p class="text-xs text-neutral-500 mt-0.5">Today</p>
+          </div>
+          <div class="border-l border-white/10 pl-4">
+            <p class="text-xl font-bold text-white"><%= subStats.week %></p>
+            <p class="text-xs text-neutral-500 mt-0.5">This week</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Recent Leads -->
+    <section class="mb-10">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-base font-semibold text-white">Recent Leads</h3>
+        <a href="/leads" class="text-xs text-amber-400 hover:text-amber-300 transition-colors">View all &rarr;</a>
+      </div>
+      <div class="bg-neutral-900 border border-white/10 rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-white/10 text-neutral-500 text-xs uppercase tracking-wider">
+                <th class="px-4 py-3 text-left">Date</th>
+                <th class="px-4 py-3 text-left">Email</th>
+                <th class="px-4 py-3 text-left">Calculator</th>
+                <th class="px-4 py-3 text-left">Params</th>
+                <th class="px-4 py-3 text-right">Price (PLN)</th>
+                <th class="px-4 py-3 text-left">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (recentLeads && recentLeads.length > 0) { %>
+                <% recentLeads.forEach(function(lead) { %>
+                <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                  <td class="px-4 py-3 text-neutral-400 whitespace-nowrap">
+                    <%= fmtDate(lead.createdAt) %>
+                  </td>
+                  <td class="px-4 py-3 text-neutral-200 max-w-[180px] truncate">
+                    <%= lead.email %>
+                  </td>
+                  <td class="px-4 py-3">
+                    <span class="px-2 py-0.5 bg-amber-950 text-amber-300 rounded text-xs font-medium">
+                      <%= lead.calculator %>
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-neutral-400 text-xs max-w-[200px]">
+                    <% if (lead.params) { %>
+                      <% try { %>
+                        <% var p = typeof lead.params === 'string' ? JSON.parse(lead.params) : lead.params; %>
+                        <span class="truncate block"><%= Object.entries(p).map(function(e){ return e[0]+': '+e[1]; }).join(', ') %></span>
+                      <% } catch(e) { %>
+                        <%= lead.params %>
+                      <% } %>
+                    <% } else { %>
+                      <span class="text-neutral-600">—</span>
+                    <% } %>
+                  </td>
+                  <td class="px-4 py-3 text-right text-neutral-200 whitespace-nowrap">
+                    <% if (lead.priceMinPln && lead.priceMaxPln) { %>
+                      <%= lead.priceMinPln %>–<%= lead.priceMaxPln %>
+                    <% } else { %>
+                      <span class="text-neutral-600">—</span>
+                    <% } %>
+                  </td>
+                  <td class="px-4 py-3">
+                    <% var statusMap = { new: 'bg-blue-950 text-blue-300', contacted: 'bg-amber-950 text-amber-300', closed: 'bg-emerald-950 text-emerald-300', spam: 'bg-neutral-800 text-neutral-500' }; %>
+                    <% var statusClass = statusMap[lead.status] || 'bg-neutral-800 text-neutral-400'; %>
+                    <span class="px-2 py-0.5 rounded text-xs font-medium <%= statusClass %>">
+                      <%= lead.status || 'new' %>
+                    </span>
+                  </td>
+                </tr>
+                <% }); %>
+              <% } else { %>
+              <tr>
+                <td colspan="6" class="px-4 py-8 text-center text-neutral-600">No leads yet.</td>
+              </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent Subscribers -->
+    <section>
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-base font-semibold text-white">Recent Subscribers</h3>
+        <a href="/subscribers" class="text-xs text-blue-400 hover:text-blue-300 transition-colors">View all &rarr;</a>
+      </div>
+      <div class="bg-neutral-900 border border-white/10 rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-white/10 text-neutral-500 text-xs uppercase tracking-wider">
+                <th class="px-4 py-3 text-left">Date</th>
+                <th class="px-4 py-3 text-left">Email</th>
+                <th class="px-4 py-3 text-left">Lang</th>
+                <th class="px-4 py-3 text-left">Source</th>
+                <th class="px-4 py-3 text-left">Code</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (recentSubs && recentSubs.length > 0) { %>
+                <% recentSubs.forEach(function(sub) { %>
+                <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                  <td class="px-4 py-3 text-neutral-400 whitespace-nowrap">
+                    <%= fmtDate(sub.createdAt) %>
+                  </td>
+                  <td class="px-4 py-3 text-neutral-200 max-w-[220px] truncate">
+                    <%= sub.email %>
+                  </td>
+                  <td class="px-4 py-3">
+                    <span class="px-2 py-0.5 bg-blue-950 text-blue-300 rounded text-xs font-medium uppercase">
+                      <%= sub.lang || '—' %>
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-neutral-400 text-xs"><%= sub.source || '—' %></td>
+                  <td class="px-4 py-3 text-neutral-500 font-mono text-xs"><%= sub.unsubscribeCode ? sub.unsubscribeCode.slice(0, 8) + '…' : '—' %></td>
+                </tr>
+                <% }); %>
+              <% } else { %>
+              <tr>
+                <td colspan="5" class="px-4 py-8 text-center text-neutral-600">No subscribers yet.</td>
+              </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    function fmtDate(d) {
+      if (!d) return '—';
+      const dt = new Date(d);
+      return dt.toLocaleDateString('pl-PL') + ' ' + dt.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+    }
+    // Re-render dates client-side for correct local timezone display
+    document.querySelectorAll('[data-date]').forEach(function(el) {
+      el.textContent = fmtDate(el.dataset.date);
+    });
+  </script>
+
+</body>
+</html>
