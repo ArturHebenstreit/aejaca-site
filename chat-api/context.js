@@ -33,6 +33,9 @@ The website has instant online calculators — customers get a quote in 30 secon
 - Contact: https://www.aejaca.com/contact/
 - Glossary: https://www.aejaca.com/glossary/
 
+## Founder
+Artur Hebenstreit — founder and lead designer of AEJaCA. Jeweler, digital fabrication specialist, and creative technologist. He personally oversees every custom jewelry project and designed the AEJaCA brand concept combining traditional craftsmanship with modern technology.
+
 ## Location & shipping
 Based in Poland. Ships worldwide. Contact: contact@aejaca.com
 
