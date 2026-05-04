@@ -111,7 +111,7 @@
                 <% recentLeads.forEach(function(lead) { %>
                 <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                   <td class="px-4 py-3 text-neutral-400 whitespace-nowrap">
-                    <%= fmtDate(lead.createdAt) %>
+                    <%= fmtDate(lead.created_at) %>
                   </td>
                   <td class="px-4 py-3 text-neutral-200 max-w-[180px] truncate">
                     <%= lead.email %>
@@ -134,8 +134,8 @@
                     <% } %>
                   </td>
                   <td class="px-4 py-3 text-right text-neutral-200 whitespace-nowrap">
-                    <% if (lead.priceMinPln && lead.priceMaxPln) { %>
-                      <%= lead.priceMinPln %>–<%= lead.priceMaxPln %>
+                    <% if (lead.price_min_pln && lead.price_max_pln) { %>
+                      <%= lead.price_min_pln %>–<%= lead.price_max_pln %>
                     <% } else { %>
                       <span class="text-neutral-600">—</span>
                     <% } %>
@@ -183,7 +183,7 @@
                 <% recentSubs.forEach(function(sub) { %>
                 <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                   <td class="px-4 py-3 text-neutral-400 whitespace-nowrap">
-                    <%= fmtDate(sub.createdAt) %>
+                    <%= fmtDate(sub.subscribed_at) %>
                   </td>
                   <td class="px-4 py-3 text-neutral-200 max-w-[220px] truncate">
                     <%= sub.email %>
@@ -194,7 +194,7 @@
                     </span>
                   </td>
                   <td class="px-4 py-3 text-neutral-400 text-xs"><%= sub.source || '—' %></td>
-                  <td class="px-4 py-3 text-neutral-500 font-mono text-xs"><%= sub.unsubscribeCode ? sub.unsubscribeCode.slice(0, 8) + '…' : '—' %></td>
+                  <td class="px-4 py-3 text-neutral-500 font-mono text-xs"><%= sub.discount_code || '—' %></td>
                 </tr>
                 <% }); %>
               <% } else { %>

@@ -44,6 +44,16 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Make fmtDate available in all EJS templates
+app.use((req, res, next) => {
+  res.locals.fmtDate = (d) => {
+    if (!d) return '—';
+    const dt = new Date(d);
+    return dt.toLocaleDateString('pl-PL') + ' ' + dt.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+  };
+  next();
+});
+
 // --- View engine ---
 app.set("view engine", "ejs");
 app.set("views", join(__dirname, "views"));
