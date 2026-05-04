@@ -92,7 +92,7 @@
               <% leads.forEach(function(lead, i) { %>
               <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors <%= i % 2 === 1 ? 'bg-white/[0.015]' : '' %>">
                 <td class="px-4 py-3 text-neutral-400 whitespace-nowrap text-xs">
-                  <%= fmtDate(lead.createdAt) %>
+                  <%= fmtDate(lead.created_at) %>
                 </td>
                 <td class="px-4 py-3 text-neutral-200 max-w-[160px] truncate">
                   <a href="mailto:<%= lead.email %>" class="hover:text-amber-400 transition-colors"><%= lead.email %></a>
@@ -120,10 +120,10 @@
                   <% } %>
                 </td>
                 <td class="px-4 py-3 text-right text-neutral-300">
-                  <% if (lead.priceMinPln != null) { %><%= lead.priceMinPln %><% } else { %><span class="text-neutral-600">—</span><% } %>
+                  <% if (lead.price_min_pln != null) { %><%= lead.price_min_pln %><% } else { %><span class="text-neutral-600">—</span><% } %>
                 </td>
                 <td class="px-4 py-3 text-right text-neutral-300">
-                  <% if (lead.priceMaxPln != null) { %><%= lead.priceMaxPln %><% } else { %><span class="text-neutral-600">—</span><% } %>
+                  <% if (lead.price_max_pln != null) { %><%= lead.price_max_pln %><% } else { %><span class="text-neutral-600">—</span><% } %>
                 </td>
                 <td class="px-4 py-3 text-right text-neutral-300">
                   <% if (lead.priceMinEur != null) { %><%= lead.priceMinEur %><% } else { %><span class="text-neutral-600">—</span><% } %>
