@@ -120,6 +120,18 @@ app.post("/api/chat", async (req, res) => {
           ip ? Buffer.from(ip).toString("base64").slice(0, 20) : null,
         ]
       ).catch(() => {});
+
+      // Hot lead → also save to leads table for follow-up
+      if (isHotLead) {
+        const lastMsg = messages[messages.length - 1]?.content || "";
+        const allText = messages.map(m => m.content).join(" ");
+        const emailMatch = allText.match(/[^\s@]+@[^\s@]+\.[^\s@]+/);
+        const userEmail = emailMatch ? emailMatch[0].toLowerCase() : null;
+        pool.query(
+          `INSERT INTO leads (email, lang, calculator, params, status) VALUES ($1, $2, $3, $4, $5)`,
+          [userEmail, lang, "chat", lastMsg.slice(0, 400), "new"]
+        ).catch(() => {});
+      }
     }
   } catch (err) {
     if (!res.headersSent) {
@@ -206,6 +218,14 @@ app.post("/api/contact", (req, res, next) => {
       console.error("Contact webhook error:", err.message);
       return res.status(500).json({ error: "Failed to send message" });
     }
+  }
+
+  // Save lead to DB (best-effort, non-blocking)
+  if (pool) {
+    pool.query(
+      `INSERT INTO leads (email, lang, calculator, params, status) VALUES ($1, $2, $3, $4, $5)`,
+      [payload.email, payload.lang, payload.source, `${payload.subject}\n${payload.message.slice(0, 400)}`, "new"]
+    ).catch(err => console.error("Lead save error:", err.message));
   }
 
   res.json({ ok: true });

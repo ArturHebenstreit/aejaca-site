@@ -398,7 +398,7 @@ export default function Print3DCalc({ lang = "pl" }) {
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} />
         <ResultDisplay result={result} lang={lang} />
-        <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={[
+        <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)} preAttachedFile={stlFile} paramsSummary={[
           `${FILAMENTS[segment].label}: ${materialKey}`,
           stlSummary || t(SIZES.find(s => s.id === sizeId)?.label, lang),
           t(INFILL_OPTIONS.find(i => i.id === infillId)?.label, lang),
