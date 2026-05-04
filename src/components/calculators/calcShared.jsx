@@ -307,6 +307,8 @@ const QUOTE_LABELS = {
     sent: "Wycena wysłana!",
     sentSub: "Sprawdź skrzynkę — wycena jest już w drodze.",
     error: "Coś poszło nie tak — spróbuj ponownie.",
+    fileNote: "Plik zostanie uwzględniony w zapytaniu",
+    verifyNote: "Wycena zostanie zweryfikowana przez nasz zespół — potwierdzimy ją mailowo",
   },
   en: {
     title: "Get this quote by email",
@@ -316,6 +318,8 @@ const QUOTE_LABELS = {
     sent: "Quote sent!",
     sentSub: "Check your inbox — quote is on its way.",
     error: "Something went wrong — please try again.",
+    fileNote: "File will be included in the inquiry",
+    verifyNote: "The estimate will be verified by our team — we'll confirm it by email",
   },
   de: {
     title: "Angebot per E-Mail erhalten",
@@ -325,10 +329,12 @@ const QUOTE_LABELS = {
     sent: "Angebot gesendet!",
     sentSub: "Prüfen Sie Ihren Posteingang — das Angebot ist unterwegs.",
     error: "Etwas ist schiefgelaufen — bitte versuchen Sie es erneut.",
+    fileNote: "Datei wird in der Anfrage berücksichtigt",
+    verifyNote: "Der Kostenvoranschlag wird von unserem Team geprüft — wir bestätigen ihn per E-Mail",
   },
 };
 
-export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummary }) {
+export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummary, preAttachedFile = null }) {
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
   const [status, setStatus] = useState("idle");
@@ -349,6 +355,22 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
     cooldownRef.current = true;
 
     try {
+      let filePayload = null;
+      if (preAttachedFile) {
+        try {
+          const data = await new Promise((resolve, reject) => {
+            const fr = new FileReader();
+            fr.onload = () => resolve(fr.result.split(",")[1]);
+            fr.onerror = reject;
+            fr.readAsDataURL(preAttachedFile);
+          });
+          filePayload = { name: preAttachedFile.name, type: preAttachedFile.type || "application/octet-stream", data };
+        } catch {
+          // If file read fails, send without file rather than block submission
+          filePayload = null;
+        }
+      }
+
       const res = await fetch(QUOTE_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -363,6 +385,7 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
             qty: result.qty,
             discount: result.discount,
           },
+          ...(filePayload ? { file: filePayload } : {}),
           ts: new Date().toISOString(),
         }),
       });
@@ -426,11 +449,23 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
           </button>
         </div>
 
+        {preAttachedFile && (
+          <div className="flex items-center gap-1.5 text-[11px] text-blue-300/80 bg-blue-400/[0.04] border border-blue-400/15 rounded-md px-2 py-1.5">
+            <span aria-hidden="true">📎</span>
+            <span className="truncate font-medium">{preAttachedFile.name}</span>
+            <span className="text-neutral-500 truncate">— {lbl.fileNote}</span>
+          </div>
+        )}
+
         <label className="flex items-start gap-2 cursor-pointer select-none">
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)}
             className="mt-0.5 accent-blue-400 shrink-0" />
           <span className="text-[11px] text-neutral-500 leading-tight">{lbl.consent}</span>
         </label>
+
+        <div className="text-[10px] text-neutral-500 italic leading-tight">
+          {lbl.verifyNote}
+        </div>
 
         {status === "error" && (
           <div className="text-[11px] text-red-400 text-center">{lbl.error}</div>
