@@ -207,17 +207,15 @@ app.post("/api/contact", (req, res, next) => {
   }
 
   if (CONTACT_N8N_URL) {
-    try {
-      const r = await fetch(CONTACT_N8N_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!r.ok) throw new Error(`n8n ${r.status}`);
-    } catch (err) {
+    fetch(CONTACT_N8N_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }).then(r => {
+      if (!r.ok) console.error(`Contact webhook n8n ${r.status}`);
+    }).catch(err => {
       console.error("Contact webhook error:", err.message);
-      return res.status(500).json({ error: "Failed to send message" });
-    }
+    });
   }
 
   // Save lead to DB (best-effort, non-blocking)
