@@ -604,4 +604,9 @@ export default {
     returns: "Zwroty",
     shipping: "Wysyłka",
   },
+
+  newsletter: {
+    alreadySubscribed: "Ten adres jest już na naszej liście (zapis z dnia {date}). Kod AEJACA10 powinien być w Twojej skrzynce.",
+    alreadySubscribedNoDate: "Ten adres jest już na naszej liście. Kod AEJACA10 powinien być w Twojej skrzynce.",
+  },
 };

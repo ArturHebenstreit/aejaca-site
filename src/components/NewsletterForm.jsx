@@ -17,6 +17,8 @@ const LABELS = {
     success: "Dziękujemy! Sprawdź swoją skrzynkę — kod jest w drodze.",
     emailRequired: "Podaj poprawny adres e-mail",
     consentRequired: "Wymagana zgoda na marketing",
+    alreadySubscribed: "Ten adres jest już na naszej liście (zapis z dnia {date}). Kod AEJACA10 powinien być w Twojej skrzynce.",
+    alreadySubscribedNoDate: "Ten adres jest już na naszej liście. Kod AEJACA10 powinien być w Twojej skrzynce.",
   },
   en: {
     hook: "Get 10% off",
@@ -29,6 +31,8 @@ const LABELS = {
     success: "Thanks! Check your inbox — the code is on the way.",
     emailRequired: "Please enter a valid email address",
     consentRequired: "Marketing consent required",
+    alreadySubscribed: "This email is already on our list (signed up on {date}). Your AEJACA10 code should be in your inbox.",
+    alreadySubscribedNoDate: "This email is already on our list. Your AEJACA10 code should be in your inbox.",
   },
   de: {
     hook: "10% Rabatt sichern",
@@ -41,6 +45,8 @@ const LABELS = {
     success: "Danke! Prüfe dein Postfach — der Code ist unterwegs.",
     emailRequired: "Bitte eine gültige E-Mail-Adresse eingeben",
     consentRequired: "Marketing-Einwilligung erforderlich",
+    alreadySubscribed: "Diese E-Mail ist bereits auf unserer Liste (angemeldet am {date}). Dein Code AEJACA10 sollte in deinem Posteingang sein.",
+    alreadySubscribedNoDate: "Diese E-Mail ist bereits auf unserer Liste. Dein Code AEJACA10 sollte in deinem Posteingang sein.",
   },
 };
 
@@ -52,8 +58,9 @@ export default function NewsletterForm({ compact = false }) {
   const l = LABELS[lang] || LABELS.en;
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
-  const [state, setState] = useState("idle"); // idle | loading | done
+  const [state, setState] = useState("idle"); // idle | loading | done | duplicate
   const [error, setError] = useState("");
+  const [alreadySubscribedSince, setAlreadySubscribedSince] = useState("");
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -70,8 +77,20 @@ export default function NewsletterForm({ compact = false }) {
           body: JSON.stringify({ email, lang, source: "footer", ts: new Date().toISOString() }),
         });
         if (res.ok) {
-          setState("done");
-          if (typeof window.gtag === "function") window.gtag("event", "newsletter_signup", { lang });
+          const data = await res.json().catch(() => ({ ok: true }));
+          if (data.reason === "already_subscribed") {
+            const since = data.since
+              ? new Date(data.since).toLocaleDateString(
+                  lang === "pl" ? "pl-PL" : lang === "de" ? "de-DE" : "en-GB",
+                  { day: "numeric", month: "long", year: "numeric" }
+                )
+              : "";
+            setAlreadySubscribedSince(since);
+            setState("duplicate");
+          } else {
+            setState("done");
+            if (typeof window.gtag === "function") window.gtag("event", "newsletter_signup", { lang });
+          }
         } else {
           setState("idle");
           setError(l.emailRequired);
@@ -93,6 +112,15 @@ export default function NewsletterForm({ compact = false }) {
       <div className={`rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-5 text-center ${compact ? "" : "md:p-6"}`} role="status" aria-live="polite">
         <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-3" />
         <p className="text-emerald-200 text-sm">{l.success}</p>
+      </div>
+    );
+  }
+
+  if (state === "duplicate") {
+    return (
+      <div className={`rounded-2xl border border-amber-400/30 bg-amber-400/10 p-5 text-center ${compact ? "" : "md:p-6"}`} role="status" aria-live="polite">
+        <Gift className="w-8 h-8 text-amber-400 mx-auto mb-3" />
+        <p className="text-amber-200 text-sm">{alreadySubscribedSince ? l.alreadySubscribed.replace("{date}", alreadySubscribedSince) : l.alreadySubscribedNoDate}</p>
       </div>
     );
   }
