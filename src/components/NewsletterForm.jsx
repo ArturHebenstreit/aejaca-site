@@ -17,8 +17,8 @@ const LABELS = {
     success: "Dziękujemy! Sprawdź swoją skrzynkę — kod jest w drodze.",
     emailRequired: "Podaj poprawny adres e-mail",
     consentRequired: "Wymagana zgoda na marketing",
-    alreadySubscribed: "Ten adres jest już na naszej liście (zapis z dnia {date}). Kod AEJACA10 powinien być w Twojej skrzynce.",
-    alreadySubscribedNoDate: "Ten adres jest już na naszej liście. Kod AEJACA10 powinien być w Twojej skrzynce.",
+    alreadySubscribed: "Ten adres jest już na naszej liście. Wysłaliśmy do Ciebie wiadomość {date} — sprawdź skrzynkę odbiorczą, a na wszelki wypadek również folder spam.",
+    alreadySubscribedNoDate: "Ten adres jest już na naszej liście. Sprawdź skrzynkę odbiorczą i na wszelki wypadek folder spam — nasza wiadomość powinna tam być.",
   },
   en: {
     hook: "Get 10% off",
@@ -31,8 +31,8 @@ const LABELS = {
     success: "Thanks! Check your inbox — the code is on the way.",
     emailRequired: "Please enter a valid email address",
     consentRequired: "Marketing consent required",
-    alreadySubscribed: "This email is already on our list (signed up on {date}). Your AEJACA10 code should be in your inbox.",
-    alreadySubscribedNoDate: "This email is already on our list. Your AEJACA10 code should be in your inbox.",
+    alreadySubscribed: "This email is already on our list. We sent you a message on {date} — check your inbox and your spam folder just in case.",
+    alreadySubscribedNoDate: "This email is already on our list. Check your inbox and your spam folder just in case — our message should be there.",
   },
   de: {
     hook: "10% Rabatt sichern",
@@ -45,8 +45,8 @@ const LABELS = {
     success: "Danke! Prüfe dein Postfach — der Code ist unterwegs.",
     emailRequired: "Bitte eine gültige E-Mail-Adresse eingeben",
     consentRequired: "Marketing-Einwilligung erforderlich",
-    alreadySubscribed: "Diese E-Mail ist bereits auf unserer Liste (angemeldet am {date}). Dein Code AEJACA10 sollte in deinem Posteingang sein.",
-    alreadySubscribedNoDate: "Diese E-Mail ist bereits auf unserer Liste. Dein Code AEJACA10 sollte in deinem Posteingang sein.",
+    alreadySubscribed: "Diese E-Mail ist bereits auf unserer Liste. Wir haben dir am {date} eine Nachricht geschickt — prüfe deinen Posteingang und zur Sicherheit auch den Spam-Ordner.",
+    alreadySubscribedNoDate: "Diese E-Mail ist bereits auf unserer Liste. Prüfe deinen Posteingang und zur Sicherheit auch den Spam-Ordner — unsere Nachricht sollte dort sein.",
   },
 };
 
