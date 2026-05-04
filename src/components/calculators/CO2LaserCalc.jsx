@@ -234,6 +234,7 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
   const [extended, setExtended] = useState(false);
   const [svgData, setSvgData] = useState(null);
   const [svgFileName, setSvgFileName] = useState("");
+  const [svgFile, setSvgFile] = useState(null);
   const [svgScale, setSvgScale] = useState(1);
 
   const scaledSvgData = useMemo(() => {
@@ -264,12 +265,14 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
       const data = parseSVG(text);
       setSvgData(data);
       setSvgFileName(file.name);
+      setSvgFile(file);
     } catch {}
   }
 
   function handleSVGRemove() {
     setSvgData(null);
     setSvgFileName("");
+    setSvgFile(null);
     setSvgScale(1);
   }
 
@@ -342,10 +345,10 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} />
         <ResultDisplay result={result} lang={lang} />
-        <QuoteEmailCapture result={result} lang={lang} techLabel={`${t(TECH_LABEL, lang)} — ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={paramsSummary} />
+        <QuoteEmailCapture result={result} lang={lang} techLabel={`${t(TECH_LABEL, lang)} — ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={paramsSummary} preAttachedFile={svgFile} />
       </div>
 
-      <InquiryForm lang={lang} techLabel={`${t(TECH_LABEL, lang)} — ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={paramsSummary} />
+      <InquiryForm lang={lang} techLabel={`${t(TECH_LABEL, lang)} — ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={paramsSummary} preAttachedFile={svgFile} />
     </div>
   );
 }
