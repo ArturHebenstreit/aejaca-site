@@ -425,7 +425,7 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
         </div>
 
         {/* Honeypot */}
-        <div className="absolute opacity-0 h-0 w-0 overflow-hidden" aria-hidden="true" tabIndex={-1}>
+        <div className="sr-only" aria-hidden="true">
           <input type="text" name="company_url" autoComplete="off"
             value={honeypot} onChange={(e) => setHoneypot(e.target.value)} tabIndex={-1} />
         </div>
@@ -442,7 +442,7 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
           <button
             type="submit"
             disabled={!isValid || !consent || status === "sending"}
-            className="px-4 py-2 rounded-lg border border-blue-400/30 bg-blue-400/10 text-blue-300 text-sm font-medium hover:bg-blue-400/20 hover:border-blue-400/40 transition-all disabled:opacity-30 disabled:cursor-not-allowed whitespace-nowrap"
+            className="flex items-center justify-center px-4 py-2 rounded-lg border border-blue-400/30 bg-blue-400/10 text-blue-300 text-sm font-medium hover:bg-blue-400/20 hover:border-blue-400/40 transition-all disabled:opacity-30 disabled:cursor-not-allowed whitespace-nowrap"
           >
             <Send className="w-4 h-4 sm:hidden" />
             <span className="hidden sm:inline">{status === "sending" ? "..." : lbl.send}</span>
@@ -677,7 +677,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
       </div>
 
       {/* Honeypot — invisible to humans, bots auto-fill it */}
-      <div className="absolute opacity-0 h-0 w-0 overflow-hidden" aria-hidden="true" tabIndex={-1}>
+      <div className="sr-only" aria-hidden="true">
         <label htmlFor="inquiry_website">Website</label>
         <input id="inquiry_website" type="text" name="website" autoComplete="off"
           value={honeypot} onChange={(e) => setHoneypot(e.target.value)} tabIndex={-1} />
