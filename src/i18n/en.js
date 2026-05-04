@@ -611,4 +611,9 @@ export default {
     returns: "Returns",
     shipping: "Shipping",
   },
+
+  newsletter: {
+    alreadySubscribed: "This email is already on our list (signed up on {date}). Your AEJACA10 code should be in your inbox.",
+    alreadySubscribedNoDate: "This email is already on our list. Your AEJACA10 code should be in your inbox.",
+  },
 };
