@@ -461,6 +461,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   const [fileName, setFileName] = useState("");
   const [stlData, setStlData]   = useState(null);
   const [svgData, setSvgData]   = useState(null);
+  const [uploadedFile, setUploadedFile] = useState(null);
   const [fileParsing, setFileParsing] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
@@ -471,6 +472,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
     const ext = file.name.split(".").pop().toLowerCase();
     setFileParsing(true);
     setFileName(file.name);
+    setUploadedFile(file);
 
     if (ext === "stl") {
       const { parseSTL } = await import("../../utils/stlParser.js");
@@ -505,6 +507,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
     setFileName("");
     setStlData(null);
     setSvgData(null);
+    setUploadedFile(null);
     setItem("keychain");
   }, []);
 
@@ -722,13 +725,14 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
         <div className="mt-4 pt-3 border-t border-emerald-400/10 text-[11px] text-emerald-400/60 italic text-center">
           {l.switchHint}
         </div>
-        <QuoteEmailCapture result={result} lang={lang} techLabel={techLabel ? `Szybka wycena — ${techLabel}` : "Szybka wycena"} paramsSummary={paramsSummary} />
+        <QuoteEmailCapture result={result} lang={lang} techLabel={techLabel ? `Szybka wycena — ${techLabel}` : "Szybka wycena"} paramsSummary={paramsSummary} preAttachedFile={uploadedFile} />
       </div>
 
       <InquiryForm
         lang={lang}
         techLabel={techLabel ? `Szybka wycena — ${techLabel}` : "Szybka wycena"}
         paramsSummary={paramsSummary}
+        preAttachedFile={uploadedFile}
       />
 
       <div className="mt-4 p-3 rounded-xl border border-emerald-400/10 bg-emerald-400/[0.02] text-[11px] text-emerald-400/50 leading-relaxed text-center">
