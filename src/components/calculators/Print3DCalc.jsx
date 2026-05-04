@@ -324,6 +324,7 @@ export default function Print3DCalc({ lang = "pl" }) {
   const [precisionId, setPrecisionId] = useState("standard_04");
   const [quantityId, setQuantityId] = useState("proto");
   const [stlData, setStlData] = useState(null);
+  const [stlFile, setStlFile] = useState(null);
   const [stlFileName, setStlFileName] = useState("");
   const [stlScale, setStlScale] = useState(1);
 
@@ -339,12 +340,14 @@ export default function Print3DCalc({ lang = "pl" }) {
     const { parseSTL } = await import("../../utils/stlParser.js");
     const data = parseSTL(buffer);
     setStlData(data);
+    setStlFile(file);
     setStlFileName(file.name);
     setStlScale(1);
   }
 
   function handleSTLRemove() {
     setStlData(null);
+    setStlFile(null);
     setStlFileName("");
     setStlScale(1);
   }
@@ -405,7 +408,7 @@ export default function Print3DCalc({ lang = "pl" }) {
         ].join(" | ")} />
       </div>
 
-      <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={[
+      <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} preAttachedFile={stlFile} paramsSummary={[
         `${FILAMENTS[segment].label}: ${materialKey}`,
         stlSummary || t(SIZES.find(s => s.id === sizeId)?.label, lang),
         t(INFILL_OPTIONS.find(i => i.id === infillId)?.label, lang),

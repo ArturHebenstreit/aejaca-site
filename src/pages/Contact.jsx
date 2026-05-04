@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+
+const CONTACT_API_URL = import.meta.env.VITE_CHAT_API_URL;
 import { Link } from "react-router-dom";
 import { Store, Instagram, Music2, Facebook, Youtube, MapPin, Mail, MessageCircleMore, Phone, Send, ArrowRight } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
@@ -41,6 +43,8 @@ export default function Contact() {
   ];
   const [formData, setFormData] = useState({ name: "", email: "", subject: "jewelry", message: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
   const [showFloatingCta, setShowFloatingCta] = useState(false);
 
   const formRef = useScrollReveal();
@@ -57,13 +61,40 @@ export default function Contact() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    const mailtoBody = `Name: ${formData.name}%0D%0AEmail: ${formData.email}%0D%0ASubject: ${formData.subject}%0D%0A%0D%0A${formData.message}`;
-    window.location.href = `mailto:contact@aejaca.com?subject=${encodeURIComponent(
-      `[AEJaCA] ${formData.subject === "jewelry" ? "Jewelry" : "Studio"} inquiry from ${formData.name}`
-    )}&body=${mailtoBody}`;
-    setSubmitted(true);
+    setSendError("");
+    setSending(true);
+
+    if (CONTACT_API_URL) {
+      try {
+        const fd = new FormData();
+        fd.append("name", formData.name);
+        fd.append("email", formData.email);
+        fd.append("subject", formData.subject);
+        fd.append("message", formData.message);
+        fd.append("lang", lang);
+        fd.append("source", "contact");
+        const res = await fetch(`${CONTACT_API_URL}/api/contact`, { method: "POST", body: fd });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok) {
+          setSubmitted(true);
+        } else {
+          setSendError(c.sendError || "Something went wrong. Please try again.");
+        }
+      } catch {
+        setSendError(c.sendError || "Something went wrong. Please try again.");
+      } finally {
+        setSending(false);
+      }
+    } else {
+      const mailtoBody = `Name: ${formData.name}%0D%0AEmail: ${formData.email}%0D%0ASubject: ${formData.subject}%0D%0A%0D%0A${formData.message}`;
+      window.location.href = `mailto:contact@aejaca.com?subject=${encodeURIComponent(
+        `[AEJaCA] ${formData.subject === "jewelry" ? "Jewelry" : "Studio"} inquiry from ${formData.name}`
+      )}&body=${mailtoBody}`;
+      setSending(false);
+      setSubmitted(true);
+    }
   }
 
   return (
@@ -141,8 +172,9 @@ export default function Contact() {
                     className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-white/10 text-white placeholder-neutral-600 focus:border-amber-400/50 focus:outline-none focus:ring-1 focus:ring-amber-400/30 transition-all resize-none"
                     placeholder={c.placeholderMessage} />
                 </div>
-                <button type="submit" className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-medium rounded-full hover:bg-neutral-200 hover:shadow-lg hover:shadow-white/10 transition-all duration-300">
-                  <Send className="w-4 h-4" /> {c.sendBtn}
+                {sendError && <p className="text-[12px] text-rose-300" role="alert">{sendError}</p>}
+                <button type="submit" disabled={sending} className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-medium rounded-full hover:bg-neutral-200 hover:shadow-lg hover:shadow-white/10 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed">
+                  <Send className="w-4 h-4" /> {sending ? (c.sending || "Sending…") : c.sendBtn}
                 </button>
               </form>
             )}
