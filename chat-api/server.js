@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import OpenAI from "openai";
 import pg from "pg";
+import multer from "multer";
 import { getSystemPrompt, detectHotLead } from "./context.js";
 
 const app = express();
@@ -128,6 +129,86 @@ app.post("/api/chat", async (req, res) => {
       res.end();
     }
   }
+});
+
+// --- Contact form ---
+const CONTACT_N8N_URL = process.env.N8N_CONTACT_WEBHOOK_URL;
+const CONTACT_RATE_LIMIT = 5;
+const CONTACT_RATE_WINDOW = 60 * 60_000;
+const contactRateMap = new Map();
+
+function checkContactRate(ip) {
+  const now = Date.now();
+  const entry = contactRateMap.get(ip);
+  if (!entry || now - entry.start > CONTACT_RATE_WINDOW) {
+    contactRateMap.set(ip, { start: now, count: 1 });
+    return true;
+  }
+  if (entry.count >= CONTACT_RATE_LIMIT) return false;
+  entry.count++;
+  return true;
+}
+setInterval(() => {
+  const cutoff = Date.now() - CONTACT_RATE_WINDOW;
+  for (const [ip, e] of contactRateMap) if (e.start < cutoff) contactRateMap.delete(ip);
+}, CONTACT_RATE_WINDOW);
+
+const ALLOWED_EXT = /\.(stl|3mf|step|stp|obj|svg|ai|dxf|jpg|jpeg|png|pdf)$/i;
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 8 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    ALLOWED_EXT.test(file.originalname) ? cb(null, true) : cb(new Error("Invalid file type"));
+  },
+});
+
+const CONTACT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const SUBJECT_MAP = { jewelry: "Jewelry Inquiry", studio: "Studio Inquiry", both: "Jewelry & Studio Inquiry", other: "General Inquiry" };
+
+app.post("/api/contact", (req, res, next) => {
+  upload.single("file")(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.code === "LIMIT_FILE_SIZE" ? "File too large (max 8 MB)" : (err.message || "File upload error") });
+    }
+    next();
+  });
+}, async (req, res) => {
+  const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
+  if (!checkContactRate(ip)) return res.status(429).json({ error: "Too many requests" });
+
+  const { name, email, subject, message, lang, source, website } = req.body;
+  if (website) return res.status(400).json({ error: "Invalid request" });
+  if (!email?.trim() || !message?.trim()) return res.status(400).json({ error: "Missing required fields" });
+  if (!CONTACT_EMAIL_RE.test(email)) return res.status(400).json({ error: "Invalid email" });
+  if ((name?.length ?? 0) > 100 || message.length > 5000) return res.status(400).json({ error: "Input too long" });
+
+  const payload = {
+    name: (name || "").trim().slice(0, 100) || "—",
+    email: email.trim().toLowerCase(),
+    subject: SUBJECT_MAP[subject] || (subject || "General Inquiry").slice(0, 100),
+    message: message.trim().slice(0, 5000),
+    lang: ["pl", "en", "de"].includes(lang) ? lang : "pl",
+    source: (source || "contact").slice(0, 50),
+  };
+  if (req.file) {
+    payload.file = { name: req.file.originalname, type: req.file.mimetype, data: req.file.buffer.toString("base64") };
+  }
+
+  if (CONTACT_N8N_URL) {
+    try {
+      const r = await fetch(CONTACT_N8N_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!r.ok) throw new Error(`n8n ${r.status}`);
+    } catch (err) {
+      console.error("Contact webhook error:", err.message);
+      return res.status(500).json({ error: "Failed to send message" });
+    }
+  }
+
+  res.json({ ok: true });
 });
 
 app.listen(PORT, () => console.log(`AEJaCA Chat API running on :${PORT}`));

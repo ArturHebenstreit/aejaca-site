@@ -1,7 +1,10 @@
 // ============================================================
 // SHARED CONFIG, PRICING & UI — ALL STUDIO CALCULATORS
 // ============================================================
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+
+const CONTACT_API_URL = import.meta.env.VITE_CHAT_API_URL;
+const CONTACT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 import { Link } from "react-router-dom";
 import { Send, Paperclip, X, MessageCircle, Mail } from "lucide-react";
 import { trackInquiry } from "../../utils/analytics.js";
@@ -443,49 +446,64 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
 
 const MAX_DESC_LENGTH = 2000;
 const COOLDOWN_MS = 15000; // 15s between sends
-const MAX_FILE_SIZE_MB = 25;
+const MAX_FILE_SIZE_MB = 8;
 
 const INQUIRY_LABELS = {
   pl: {
     title: "Zapytanie o wycene",
     desc: "Opisz swoj projekt — co chcesz wykonac, wymiary, materialy, inne szczegoly:",
     descPlaceholder: "np. Potrzebuje 50 szt. zawieszek z logo firmy, wymiary 3x4 cm, grawerowanie na stali nierdzewnej...",
+    emailLabel: "Twój adres e-mail",
+    emailPlaceholder: "twoj@email.pl",
+    emailRequired: "Podaj poprawny adres e-mail",
     file: "Zalacz plik projektu",
     fileHint: "Model 3D (.stl, .3mf, .step) | Wektor (.svg, .ai, .dxf) | Grafika (.jpg, .png, .pdf)",
     send: "Wyslij zapytanie",
-    sending: "Otwieram klienta pocztowego...",
-    attachNote: "Plik zostanie wymieniony w wiadomosci — dolacz go do maila recznie",
+    sending: "Wysylanie...",
+    sent: "Wyslano!",
+    sendError: "Cos poszlo nie tak. Sprobuj jeszcze raz.",
+    attachNote: "Plik zostanie dolaczony do wiadomosci",
     cooldown: "Poczekaj chwile przed ponownym wyslaniem",
     tooLong: "Opis jest za dlugi (maks. 2000 znakow)",
-    fileTooLarge: "Plik jest za duzy (maks. 25 MB)",
+    fileTooLarge: "Plik jest za duzy (maks. 8 MB)",
     charCount: "znakow",
   },
   en: {
     title: "Quote request",
     desc: "Describe your project — what you need, dimensions, materials, other details:",
     descPlaceholder: "e.g. I need 50 pendant keychains with company logo, 3x4 cm, stainless steel engraving...",
+    emailLabel: "Your email address",
+    emailPlaceholder: "your@email.com",
+    emailRequired: "Please enter a valid email address",
     file: "Attach project file",
     fileHint: "3D model (.stl, .3mf, .step) | Vector (.svg, .ai, .dxf) | Image (.jpg, .png, .pdf)",
     send: "Send inquiry",
-    sending: "Opening email client...",
-    attachNote: "File will be mentioned in the message — please attach it to the email manually",
+    sending: "Sending...",
+    sent: "Sent!",
+    sendError: "Something went wrong. Please try again.",
+    attachNote: "File will be attached to your message",
     cooldown: "Please wait before sending again",
     tooLong: "Description is too long (max 2000 characters)",
-    fileTooLarge: "File is too large (max 25 MB)",
+    fileTooLarge: "File is too large (max 8 MB)",
     charCount: "chars",
   },
   de: {
     title: "Angebotsanfrage",
     desc: "Beschreiben Sie Ihr Projekt — was Sie brauchen, Abmessungen, Materialien, weitere Details:",
     descPlaceholder: "z.B. Ich brauche 50 Anhaenger mit Firmenlogo, 3x4 cm, Edelstahlgravur...",
+    emailLabel: "Ihre E-Mail-Adresse",
+    emailPlaceholder: "ihre@email.de",
+    emailRequired: "Bitte eine gültige E-Mail-Adresse eingeben",
     file: "Projektdatei anhaengen",
     fileHint: "3D-Modell (.stl, .3mf, .step) | Vektor (.svg, .ai, .dxf) | Bild (.jpg, .png, .pdf)",
     send: "Anfrage senden",
-    sending: "E-Mail-Client wird geoeffnet...",
-    attachNote: "Datei wird in der Nachricht erwaehnt — bitte haengen Sie sie manuell an die E-Mail an",
+    sending: "Wird gesendet...",
+    sent: "Gesendet!",
+    sendError: "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    attachNote: "Datei wird Ihrer Nachricht angehängt",
     cooldown: "Bitte warten Sie vor dem erneuten Senden",
     tooLong: "Beschreibung ist zu lang (max. 2000 Zeichen)",
-    fileTooLarge: "Datei ist zu gross (max. 25 MB)",
+    fileTooLarge: "Datei ist zu groß (max. 8 MB)",
     charCount: "Zeichen",
   },
 };
@@ -499,16 +517,29 @@ function sanitizeText(text) {
     .slice(0, MAX_DESC_LENGTH);
 }
 
-export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
+export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttachedFile = null }) {
   const il = INQUIRY_LABELS[lang] || INQUIRY_LABELS.en;
+  const [email, setEmail] = useState("");
   const [description, setDescription] = useState("");
+  const [fileBlob, setFileBlob] = useState(null);
   const [fileName, setFileName] = useState("");
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
   const [cooldown, setCooldown] = useState(false);
   const [error, setError] = useState("");
-  const [honeypot, setHoneypot] = useState("");  // hidden bot trap
+  const [honeypot, setHoneypot] = useState("");
   const fileRef = useRef(null);
   const lastSendRef = useRef(0);
+
+  useEffect(() => {
+    if (preAttachedFile) {
+      setFileBlob(preAttachedFile);
+      setFileName(preAttachedFile.name);
+    } else {
+      setFileBlob(null);
+      setFileName("");
+    }
+  }, [preAttachedFile]);
 
   function handleDescChange(e) {
     const val = e.target.value;
@@ -524,49 +555,81 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
     const file = e.target.files?.[0];
     if (file && file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
       setError(il.fileTooLarge);
+      setFileBlob(null);
       setFileName("");
       if (fileRef.current) fileRef.current.value = "";
       return;
     }
+    setFileBlob(file || null);
     setFileName(file ? file.name : "");
     setError("");
   }
 
   function clearFile() {
+    setFileBlob(null);
     setFileName("");
     if (fileRef.current) fileRef.current.value = "";
   }
 
-  function handleSend() {
-    // Honeypot check — bots fill hidden fields, humans don't
-    if (honeypot) return;
+  async function handleSend() {
+    if (honeypot || sending || cooldown) return;
 
-    // Rate limiting — cooldown between sends
+    if (!CONTACT_EMAIL_RE.test(email)) {
+      setError(il.emailRequired);
+      return;
+    }
+
     const now = Date.now();
     if (now - lastSendRef.current < COOLDOWN_MS) {
       setError(il.cooldown);
       return;
     }
 
-    // Sanitize
     const cleanDesc = sanitizeText(description);
+    const message = [paramsSummary, cleanDesc.trim()].filter(Boolean).join("\n\n");
 
-    const subject = `#${il.title} - ${techLabel}`;
-    let body = `${il.title}: ${techLabel}\n\n`;
-    body += `--- ${paramsSummary} ---\n\n`;
-    if (cleanDesc.trim()) body += `${cleanDesc.trim()}\n\n`;
-    if (fileName) body += `[${il.attachNote}: ${fileName}]\n`;
+    if (!CONTACT_API_URL) {
+      // Fallback to mailto
+      const subject = `#${il.title} - ${techLabel}`;
+      const body = `${il.title}: ${techLabel}\nEmail: ${email}\n\n--- ${paramsSummary} ---\n\n${cleanDesc.trim()}${fileBlob ? `\n[File: ${fileName}]` : ""}`;
+      trackInquiry(techLabel, paramsSummary);
+      window.location.href = `mailto:contact@aejaca.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      lastSendRef.current = now;
+      setSent(true);
+      setCooldown(true);
+      setTimeout(() => setSent(false), 3000);
+      setTimeout(() => setCooldown(false), COOLDOWN_MS);
+      return;
+    }
 
-    const mailtoUrl = `mailto:contact@aejaca.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    trackInquiry(techLabel, paramsSummary);
-    window.location.href = mailtoUrl;
-
-    lastSendRef.current = now;
-    setSent(true);
-    setCooldown(true);
+    setSending(true);
     setError("");
-    setTimeout(() => setSent(false), 3000);
-    setTimeout(() => setCooldown(false), COOLDOWN_MS);
+    try {
+      const fd = new FormData();
+      fd.append("email", email.trim());
+      fd.append("subject", `${techLabel} inquiry`);
+      fd.append("message", message);
+      fd.append("lang", lang);
+      fd.append("source", "calculator");
+      if (fileBlob) fd.append("file", fileBlob, fileName);
+
+      const res = await fetch(`${CONTACT_API_URL}/api/contact`, { method: "POST", body: fd });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
+        trackInquiry(techLabel, paramsSummary);
+        lastSendRef.current = now;
+        setSent(true);
+        setCooldown(true);
+        setTimeout(() => setSent(false), 5000);
+        setTimeout(() => setCooldown(false), COOLDOWN_MS);
+      } else {
+        setError(il.sendError);
+      }
+    } catch {
+      setError(il.sendError);
+    } finally {
+      setSending(false);
+    }
   }
 
   const descLength = description.length;
@@ -583,6 +646,21 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
         <label htmlFor="inquiry_website">Website</label>
         <input id="inquiry_website" type="text" name="website" autoComplete="off"
           value={honeypot} onChange={(e) => setHoneypot(e.target.value)} tabIndex={-1} />
+      </div>
+
+      {/* Email */}
+      <div className="mb-3">
+        <label htmlFor="inquiry-email" className="block text-[11px] text-neutral-400 mb-1.5">{il.emailLabel}</label>
+        <input
+          id="inquiry-email"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => { setEmail(e.target.value); setError(""); }}
+          placeholder={il.emailPlaceholder}
+          className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-blue-400/50 focus:outline-none focus:ring-1 focus:ring-blue-400/30 transition-colors"
+        />
       </div>
 
       {/* Description */}
@@ -627,7 +705,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
           />
         </div>
         <div className="text-[10px] text-neutral-400 mt-1">{il.fileHint}</div>
-        {fileName && <div className="text-[10px] text-amber-400/70 mt-1">{il.attachNote}</div>}
+        {fileName && <div className="text-[10px] text-blue-400/70 mt-1">{il.attachNote}</div>}
       </div>
 
       {/* Error message */}
@@ -638,9 +716,9 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
       {/* Send */}
       <button
         onClick={handleSend}
-        disabled={cooldown}
+        disabled={sending || cooldown}
         className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl border font-medium text-sm transition-all duration-300 ${
-          cooldown
+          sending || (cooldown && !sent)
             ? "border-white/5 bg-white/[0.02] text-neutral-400 cursor-not-allowed"
             : sent
               ? "border-green-400/30 bg-green-400/10 text-green-400"
@@ -648,7 +726,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary }) {
         }`}
       >
         <Send className="w-4 h-4" />
-        {cooldown && !sent ? il.cooldown : sent ? il.sending : il.send}
+        {sending ? il.sending : sent ? il.sent : (cooldown ? il.cooldown : il.send)}
       </button>
     </div>
   );
