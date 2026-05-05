@@ -1,6 +1,42 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
+
+const AEJACA_ORIGIN = "https://www.aejaca.com";
+const LINK_CLS = "text-amber-400 underline underline-offset-2 hover:text-amber-300 transition-colors";
+
+function renderMessage(text) {
+  const parts = [];
+  const re = /\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*|(https?:\/\/[^\s<>"']+)/g;
+  let last = 0, m;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) parts.push(text.slice(last, m.index));
+    if (m[1] != null) {
+      // Markdown link [text](url)
+      const url = m[2].trim();
+      const isInternal = url.startsWith(AEJACA_ORIGIN) || url.startsWith("/");
+      const to = url.startsWith(AEJACA_ORIGIN) ? (url.slice(AEJACA_ORIGIN.length) || "/") : url;
+      parts.push(isInternal
+        ? <Link key={m.index} to={to} className={LINK_CLS}>{m[1]}</Link>
+        : /^https?:\/\//.test(url)
+          ? <a key={m.index} href={url} target="_blank" rel="noopener noreferrer" className={LINK_CLS}>{m[1]}</a>
+          : m[1]);
+    } else if (m[3] != null) {
+      parts.push(<strong key={m.index} className="font-semibold text-white">{m[3]}</strong>);
+    } else if (m[4] != null) {
+      const url = m[4];
+      const isInternal = url.startsWith(AEJACA_ORIGIN);
+      const to = isInternal ? (url.slice(AEJACA_ORIGIN.length) || "/") : url;
+      parts.push(isInternal
+        ? <Link key={m.index} to={to} className={LINK_CLS}>{url}</Link>
+        : <a key={m.index} href={url} target="_blank" rel="noopener noreferrer" className={`${LINK_CLS} break-all`}>{url}</a>);
+    }
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return parts;
+}
 
 const API_URL = import.meta.env.VITE_CHAT_API_URL;
 
@@ -218,9 +254,10 @@ export default function ChatWidget() {
                       : "bg-white/5 text-neutral-200 rounded-bl-md"
                   }`}
                 >
-                  {msg.content || (
-                    <Loader2 className="w-4 h-4 animate-spin text-neutral-500" />
-                  )}
+                  {msg.content
+                    ? renderMessage(msg.content)
+                    : <Loader2 className="w-4 h-4 animate-spin text-neutral-500" />
+                  }
                 </div>
               </div>
             ))}
