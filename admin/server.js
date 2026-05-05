@@ -10,7 +10,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const ALLOWED_EMAIL = (process.env.ALLOWED_EMAIL || "aejaca@gmail.com").toLowerCase();
+const ALLOWED_EMAILS = (process.env.ALLOWED_EMAILS || "aejaca@gmail.com")
+  .split(",").map(e => e.trim().toLowerCase());
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
 
@@ -34,7 +35,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     callbackURL: process.env.CALLBACK_URL || "/auth/google/callback",
   }, (accessToken, refreshToken, profile, done) => {
     const email = profile.emails?.[0]?.value?.toLowerCase();
-    if (email === ALLOWED_EMAIL) {
+    if (ALLOWED_EMAILS.includes(email)) {
       return done(null, { name: profile.displayName, email, photo: profile.photos?.[0]?.value });
     }
     return done(null, false, { message: "Unauthorized email" });
