@@ -341,6 +341,14 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
   const [honeypot, setHoneypot] = useState("");
   const cooldownRef = useRef(false);
 
+  // Reset form when calculator params change after a successful send
+  useEffect(() => {
+    setStatus(prev => {
+      if (prev === "sent") { cooldownRef.current = false; return "idle"; }
+      return prev;
+    });
+  }, [paramsSummary]);
+
   const lbl = QUOTE_LABELS[lang] || QUOTE_LABELS.en;
 
   if (!QUOTE_API_URL || !result || result.type === "custom") return null;
