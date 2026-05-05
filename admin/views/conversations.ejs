@@ -65,6 +65,7 @@
               <th class="px-4 py-3 text-left">AI Response</th>
               <th class="px-4 py-3 text-center">Msgs</th>
               <th class="px-4 py-3 text-center">Hot</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider"></th>
             </tr>
           </thead>
           <tbody>
@@ -96,11 +97,16 @@
                     <span class="text-neutral-700">—</span>
                   <% } %>
                 </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <form method="POST" action="/conversations/<%= c.id %>/delete" onsubmit="return confirm('Usunąć ten rekord?')">
+                    <button type="submit" class="text-xs text-red-400 hover:text-red-300 hover:underline transition-colors">Usuń</button>
+                  </form>
+                </td>
               </tr>
               <% }); %>
             <% } else { %>
             <tr>
-              <td colspan="6" class="px-4 py-8 text-center text-neutral-600">No conversations yet.</td>
+              <td colspan="7" class="px-4 py-8 text-center text-neutral-600">No conversations yet.</td>
             </tr>
             <% } %>
           </tbody>

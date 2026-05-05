@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { GLOSSARY, CATEGORIES } from "../data/glossary.js";
@@ -56,8 +56,12 @@ function buildFAQSchema(terms, lang) {
 export default function Glossary() {
   const { lang } = useLanguage();
   const l = LABELS[lang] || LABELS.en;
+  const [searchParams] = useSearchParams();
+  const initialCat = ["jewelry", "studio", "general"].includes(searchParams.get("category"))
+    ? searchParams.get("category")
+    : "all";
   const [query, setQuery] = useState("");
-  const [activeCat, setActiveCat] = useState("all");
+  const [activeCat, setActiveCat] = useState(initialCat);
   const headerRef = useScrollReveal();
   const getCardRef = useStaggerReveal(80);
 

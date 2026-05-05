@@ -1,3 +1,4 @@
+import { Link, useSearchParams } from "react-router-dom";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getSortedPosts } from "../blog/posts.js";
@@ -27,7 +28,14 @@ const LABELS = {
 export default function BlogIndex() {
   const { lang } = useLanguage();
   const l = LABELS[lang] || LABELS.en;
-  const posts = getSortedPosts();
+  const [searchParams] = useSearchParams();
+  const categoryParam = ["jewelry", "studio"].includes(searchParams.get("category"))
+    ? searchParams.get("category")
+    : null;
+  const allPosts = getSortedPosts();
+  const posts = categoryParam
+    ? allPosts.filter(p => p.meta.category === categoryParam)
+    : allPosts;
   const headerRef = useScrollReveal();
   const getCardRef = useStaggerReveal(100);
 
@@ -59,6 +67,21 @@ export default function BlogIndex() {
               </h1>
               <p className="text-neutral-400 text-lg max-w-2xl mx-auto">{l.description}</p>
             </div>
+
+            {categoryParam && (
+              <div className="flex items-center gap-2 mb-6">
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border ${
+                  categoryParam === "jewelry"
+                    ? "bg-amber-400/10 text-amber-300 border-amber-400/20"
+                    : "bg-blue-400/10 text-blue-300 border-blue-400/20"
+                }`}>
+                  {categoryParam === "jewelry" ? "AEJaCA Biżuteria" : "AEJaCA sTuDiO"}
+                </span>
+                <Link to="/blog/" className="text-sm text-neutral-500 hover:text-neutral-300 transition-colors">
+                  Pokaż wszystkie →
+                </Link>
+              </div>
+            )}
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {posts.map((post, i) => (
