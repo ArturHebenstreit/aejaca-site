@@ -174,6 +174,22 @@ app.get("/conversations", requireAuth, async (req, res) => {
   }
 });
 
+// --- Delete routes ---
+app.post("/leads/:id/delete", requireAuth, async (req, res) => {
+  await pool.query("DELETE FROM leads WHERE id = $1", [req.params.id]);
+  res.redirect("/leads");
+});
+
+app.post("/subscribers/:id/delete", requireAuth, async (req, res) => {
+  await pool.query("DELETE FROM subscribers WHERE id = $1", [req.params.id]);
+  res.redirect("/subscribers");
+});
+
+app.post("/conversations/:id/delete", requireAuth, async (req, res) => {
+  await pool.query("DELETE FROM conversations WHERE id = $1", [req.params.id]);
+  res.redirect("/conversations");
+});
+
 // --- Export CSV ---
 app.get("/export/:table", requireAuth, async (req, res) => {
   const table = req.params.table === "subscribers" ? "subscribers" : "leads";
