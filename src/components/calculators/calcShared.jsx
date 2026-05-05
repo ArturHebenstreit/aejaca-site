@@ -296,7 +296,7 @@ export function ResultDisplay({ result, lang = "pl" }) {
 // QUOTE EMAIL CAPTURE — lead capture after price result
 // ============================================================
 
-const QUOTE_API_URL = import.meta.env.VITE_QUOTE_API_URL;
+const QUOTE_API_URL = CONTACT_API_URL ? `${CONTACT_API_URL}/api/quote` : null;
 
 const QUOTE_LABELS = {
   pl: {
