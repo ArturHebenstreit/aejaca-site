@@ -229,4 +229,69 @@ app.post("/api/contact", (req, res, next) => {
   res.json({ ok: true });
 });
 
+// --- Quote email capture ---
+const QUOTE_N8N_URL = process.env.N8N_QUOTE_WEBHOOK_URL;
+const quoteRateMap = new Map();
+const QUOTE_RATE_LIMIT = 10;
+const QUOTE_RATE_WINDOW = 60 * 60_000;
+
+function checkQuoteRate(ip) {
+  const now = Date.now();
+  const entry = quoteRateMap.get(ip);
+  if (!entry || now - entry.start > QUOTE_RATE_WINDOW) {
+    quoteRateMap.set(ip, { start: now, count: 1 });
+    return true;
+  }
+  if (entry.count >= QUOTE_RATE_LIMIT) return false;
+  entry.count++;
+  return true;
+}
+setInterval(() => {
+  const cutoff = Date.now() - QUOTE_RATE_WINDOW;
+  for (const [ip, e] of quoteRateMap) if (e.start < cutoff) quoteRateMap.delete(ip);
+}, QUOTE_RATE_WINDOW);
+
+app.post("/api/quote", express.json({ limit: "12mb" }), async (req, res) => {
+  const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
+  if (!checkQuoteRate(ip)) return res.status(429).json({ error: "Too many requests" });
+
+  const { email, lang, calculator, params, price, file, ts } = req.body || {};
+  if (!email || !CONTACT_EMAIL_RE.test(email)) return res.status(400).json({ error: "Invalid email" });
+  if (!calculator || !params || !price) return res.status(400).json({ error: "Missing fields" });
+
+  const payload = {
+    email: email.trim().toLowerCase(),
+    lang: ["pl", "en", "de"].includes(lang) ? lang : "pl",
+    calculator: String(calculator).slice(0, 200),
+    params: String(params).slice(0, 1000),
+    price,
+    ts: ts || new Date().toISOString(),
+    ...(file?.data ? { file: { name: String(file.name || "attachment").slice(0, 255), type: String(file.type || "application/octet-stream"), data: file.data } } : {}),
+  };
+
+  if (QUOTE_N8N_URL) {
+    fetch(QUOTE_N8N_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ body: payload }),
+    }).then(r => {
+      if (!r.ok) console.error(`Quote webhook n8n ${r.status}`);
+    }).catch(err => {
+      console.error("Quote webhook error:", err.message);
+    });
+  }
+
+  if (pool) {
+    pool.query(
+      `INSERT INTO leads (email, lang, calculator, params, price_min_pln, price_max_pln, price_min_eur, price_max_eur, qty, discount, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+      [payload.email, payload.lang, payload.calculator, payload.params,
+       price?.perPcPLN?.min ?? null, price?.perPcPLN?.max ?? null,
+       price?.perPcEUR?.min ?? null, price?.perPcEUR?.max ?? null,
+       price?.qty ?? null, price?.discount ?? null, "new"]
+    ).catch(() => {});
+  }
+
+  res.json({ ok: true });
+});
+
 app.listen(PORT, () => console.log(`AEJaCA Chat API running on :${PORT}`));
