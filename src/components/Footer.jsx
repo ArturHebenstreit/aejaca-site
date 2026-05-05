@@ -21,7 +21,7 @@ export default function Footer() {
     <footer className="bg-neutral-950 border-t border-white/10" role="contentinfo">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Lead magnet — email capture before users bounce. Placed above nav for CRO. */}
-        <div className="mb-10 max-w-2xl">
+        <div id="newsletter" className="mb-10 max-w-2xl">
           <NewsletterForm />
         </div>
 
