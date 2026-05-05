@@ -7,8 +7,8 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState(null); // "jewelry" | "studio" | null
-  const [mobileExpanded, setMobileExpanded] = useState(null); // "jewelry" | "studio" | null
+  const [openDropdown, setOpenDropdown] = useState(null); // "jewelry" | "studio" | "about" | "gallery" | "resources" | null
+  const [mobileExpanded, setMobileExpanded] = useState(null); // "jewelry" | "studio" | "about" | "gallery" | "resources" | null
   const langRefDesktop = useRef(null);
   const langRefMobile = useRef(null);
   const dropdownTimeout = useRef(null);
@@ -20,9 +20,9 @@ export default function Navbar() {
     { to: "/", label: t.nav.home },
     { to: "/jewelry/", label: t.nav.jewelry, sections: t.nav.jewelrySections },
     { to: "/studio/", label: t.nav.studio, sections: t.nav.studioSections },
+    { to: "/gallery/", label: t.nav.gallery, sections: t.nav.gallerySections },
     { to: "/about/", label: t.nav.about, sections: t.nav.aboutSections },
-    { to: "/blog/", label: t.nav.blog || "Blog" },
-    { to: "/glossary/", label: t.nav.glossary },
+    { to: "/resources/", label: t.nav.resources, sections: t.nav.resourcesSections },
     { to: "/contact/", label: t.nav.contact },
   ];
 
@@ -127,10 +127,16 @@ export default function Navbar() {
     if (to === "/jewelry/") return "jewelry";
     if (to === "/studio/") return "studio";
     if (to === "/about/") return "about";
+    if (to === "/gallery/") return "gallery";
+    if (to === "/resources/") return "resources";
     return null;
   }
 
   const handleNavClick = (e, to) => {
+    if (to === "/gallery/" || to === "/resources/") {
+      e.preventDefault();
+      return;
+    }
     if (pathname === to) {
       e.preventDefault();
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -211,7 +217,7 @@ export default function Navbar() {
                           ) : (
                             <button
                               key={sec.id}
-                              onClick={() => scrollToSection(to, sec.id)}
+                              onClick={() => scrollToSection(sec.pagePath || to, sec.id)}
                               className={`w-full text-left px-4 py-2 text-sm transition-colors ${
                                 accentColor === "blue"
                                   ? "text-neutral-400 hover:text-blue-300 hover:bg-blue-400/5"
@@ -329,7 +335,7 @@ export default function Navbar() {
                           ) : (
                             <button
                               key={sec.id}
-                              onClick={() => scrollToSection(to, sec.id)}
+                              onClick={() => scrollToSection(sec.pagePath || to, sec.id)}
                               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                                 accentColor === "blue"
                                   ? "text-neutral-400 hover:text-blue-300 hover:bg-blue-400/5"

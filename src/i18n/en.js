@@ -44,6 +44,16 @@ export default {
       { label: "Shipping", to: "/shipping/" },
       { label: "Privacy Policy", to: "/privacy/" },
     ],
+    gallery: "Gallery",
+    gallerySections: [
+      { label: "Jewelry Portfolio", pagePath: "/jewelry/", id: "portfolio" },
+      { label: "sTuDiO Portfolio", pagePath: "/studio/", id: "portfolio" },
+    ],
+    resources: "Blog & Glossary",
+    resourcesSections: [
+      { label: "Blog", to: "/blog/" },
+      { label: "Glossary", to: "/glossary/" },
+    ],
   },
 
   // Home page
