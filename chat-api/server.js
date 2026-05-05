@@ -273,7 +273,7 @@ app.post("/api/quote", express.json({ limit: "12mb" }), async (req, res) => {
     fetch(QUOTE_N8N_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ body: payload }),
+      body: JSON.stringify(payload),
     }).then(r => {
       if (!r.ok) console.error(`Quote webhook n8n ${r.status}`);
     }).catch(err => {
