@@ -30,6 +30,11 @@ const pool = process.env.DATABASE_URL
   ? new pg.Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
   : null;
 
+if (pool) {
+  pool.query(`ALTER TABLE conversations ADD COLUMN IF NOT EXISTS country VARCHAR(10)`)
+    .catch(() => {});
+}
+
 const rateMap = new Map();
 const RATE_LIMIT = 20;
 const RATE_WINDOW = 60_000;
@@ -52,6 +57,19 @@ setInterval(() => {
     if (entry.start < cutoff) rateMap.delete(ip);
   }
 }, 60_000);
+
+async function lookupCountry(ip) {
+  if (!ip || ip === "::1" || ip.startsWith("127.")) return null;
+  try {
+    const res = await fetch(`http://ip-api.com/json/${encodeURIComponent(ip)}?fields=countryCode`, {
+      signal: AbortSignal.timeout(2000),
+    });
+    const data = await res.json();
+    return data.status === "success" ? (data.countryCode || null) : null;
+  } catch {
+    return null;
+  }
+}
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
@@ -107,19 +125,22 @@ app.post("/api/chat", async (req, res) => {
 
     if (pool && fullResponse) {
       const isHotLead = detectHotLead(messages);
-      pool.query(
-        `INSERT INTO conversations (session_id, lang, messages_count, last_user_message, assistant_response, hot_lead, ip_hash)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [
-          sessionId || null,
-          lang,
-          messages.length,
-          messages[messages.length - 1]?.content?.slice(0, 500) || "",
-          fullResponse.slice(0, 2000),
-          isHotLead,
-          ip ? Buffer.from(ip).toString("base64").slice(0, 20) : null,
-        ]
-      ).catch(() => {});
+      lookupCountry(ip).then(country => {
+        pool.query(
+          `INSERT INTO conversations (session_id, lang, messages_count, last_user_message, assistant_response, hot_lead, ip_hash, country)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          [
+            sessionId || null,
+            lang,
+            messages.length,
+            messages[messages.length - 1]?.content?.slice(0, 500) || "",
+            fullResponse.slice(0, 2000),
+            isHotLead,
+            ip ? Buffer.from(ip).toString("base64").slice(0, 20) : null,
+            country,
+          ]
+        ).catch(() => {});
+      });
 
       // Hot lead → also save to leads table for follow-up
       if (isHotLead) {
