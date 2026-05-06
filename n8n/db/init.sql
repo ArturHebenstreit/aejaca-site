@@ -53,3 +53,35 @@ CREATE TABLE IF NOT EXISTS conversations (
 CREATE INDEX IF NOT EXISTS idx_conv_session ON conversations (session_id);
 CREATE INDEX IF NOT EXISTS idx_conv_hot ON conversations (hot_lead) WHERE hot_lead = TRUE;
 CREATE INDEX IF NOT EXISTS idx_conv_date ON conversations (created_at DESC);
+
+-- Analytics events (migrated from Cloudflare D1)
+CREATE TABLE IF NOT EXISTS events (
+  id         BIGSERIAL    PRIMARY KEY,
+  ts         TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+  session    VARCHAR(50)  NOT NULL,
+  path       VARCHAR(500),
+  category   VARCHAR(50),
+  action     VARCHAR(200),
+  label      VARCHAR(500),
+  value      NUMERIC,
+  country    VARCHAR(10),
+  device     VARCHAR(20)
+);
+
+CREATE INDEX IF NOT EXISTS idx_events_ts      ON events (ts DESC);
+CREATE INDEX IF NOT EXISTS idx_events_session ON events (session);
+CREATE INDEX IF NOT EXISTS idx_events_cat     ON events (category);
+CREATE INDEX IF NOT EXISTS idx_events_path    ON events (path) WHERE category = 'page';
+
+-- Materialized daily aggregates (populated by n8n cron)
+CREATE TABLE IF NOT EXISTS daily_stats (
+  day       DATE         NOT NULL,
+  metric    VARCHAR(50)  NOT NULL,
+  dimension VARCHAR(200),
+  count     INTEGER      NOT NULL DEFAULT 0,
+  PRIMARY KEY (day, metric, dimension)
+);
+
+-- Link events sessions to leads (enables conversion attribution)
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS session_id VARCHAR(50);
+CREATE INDEX IF NOT EXISTS idx_leads_session ON leads (session_id) WHERE session_id IS NOT NULL;

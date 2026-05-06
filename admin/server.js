@@ -207,4 +207,97 @@ app.get("/export/:table", requireAuth, async (req, res) => {
   }
 });
 
+// --- Analytics dashboard ---
+app.get("/analytics", requireAuth, async (req, res) => {
+  const days = parseInt(req.query.days) || 30;
+  const since = `NOW() - INTERVAL '${days} days'`;
+  try {
+    const [kpi, daily, topPages, calcFunnel, topCalc, countries, devices, recentEvents] = await Promise.all([
+      pool.query(`
+        SELECT
+          COUNT(DISTINCT session) FILTER (WHERE ts >= CURRENT_DATE) AS visitors_today,
+          COUNT(DISTINCT session) FILTER (WHERE ts >= CURRENT_DATE - 6) AS visitors_week,
+          COUNT(DISTINCT session) FILTER (WHERE ts >= NOW() - INTERVAL '30 days') AS visitors_month,
+          COUNT(*) FILTER (WHERE category = 'page' AND ts >= CURRENT_DATE) AS pageviews_today,
+          COUNT(*) FILTER (WHERE category = 'page' AND ts >= NOW() - INTERVAL '30 days') AS pageviews_month,
+          COUNT(DISTINCT session) FILTER (WHERE category = 'inquiry') AS inquiries_total,
+          COUNT(DISTINCT session) FILTER (WHERE category = 'inquiry' AND ts >= NOW() - INTERVAL '30 days') AS inquiries_month
+        FROM events
+      `),
+      pool.query(`
+        SELECT DATE(ts) AS day,
+               COUNT(DISTINCT session) AS visitors,
+               COUNT(*) FILTER (WHERE category = 'page') AS pageviews
+        FROM events
+        WHERE ts >= NOW() - INTERVAL '${days} days'
+        GROUP BY DATE(ts)
+        ORDER BY day
+      `),
+      pool.query(`
+        SELECT path,
+               COUNT(DISTINCT session) AS visitors,
+               COUNT(*) AS views
+        FROM events
+        WHERE category = 'page' AND ts >= ${since}
+        GROUP BY path
+        ORDER BY visitors DESC
+        LIMIT 10
+      `),
+      pool.query(`
+        SELECT
+          COUNT(DISTINCT session) FILTER (WHERE category = 'page' AND (path LIKE '%/jewelry/%' OR path LIKE '%/studio/%')) AS calc_page_visits,
+          COUNT(DISTINCT session) FILTER (WHERE category = 'calc') AS calc_interactions,
+          COUNT(DISTINCT session) FILTER (WHERE category = 'inquiry') AS inquiry_submits,
+          (SELECT COUNT(DISTINCT session_id) FROM leads WHERE session_id IS NOT NULL AND created_at >= ${since}) AS leads_with_session
+        FROM events
+        WHERE ts >= ${since}
+      `),
+      pool.query(`
+        SELECT action, label, COUNT(*) AS cnt
+        FROM events
+        WHERE category = 'calc' AND ts >= ${since}
+        GROUP BY action, label
+        ORDER BY cnt DESC
+        LIMIT 15
+      `),
+      pool.query(`
+        SELECT country, COUNT(DISTINCT session) AS visitors
+        FROM events
+        WHERE ts >= ${since} AND country IS NOT NULL AND country != ''
+        GROUP BY country
+        ORDER BY visitors DESC
+        LIMIT 10
+      `),
+      pool.query(`
+        SELECT device, COUNT(DISTINCT session) AS visitors
+        FROM events
+        WHERE ts >= ${since} AND device IS NOT NULL
+        GROUP BY device
+        ORDER BY visitors DESC
+      `),
+      pool.query(`
+        SELECT ts, session, path, category, action, label, value, country, device
+        FROM events
+        ORDER BY ts DESC
+        LIMIT 50
+      `),
+    ]);
+
+    res.render("analytics", {
+      user: req.user,
+      days,
+      kpi: kpi.rows[0],
+      daily: daily.rows,
+      topPages: topPages.rows,
+      calcFunnel: calcFunnel.rows[0],
+      topCalc: topCalc.rows,
+      countries: countries.rows,
+      devices: devices.rows,
+      recentEvents: recentEvents.rows,
+    });
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
 app.listen(PORT, () => console.log(`AEJaCA Admin running on :${PORT}`));

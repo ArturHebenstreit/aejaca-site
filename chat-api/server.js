@@ -31,8 +31,9 @@ const pool = process.env.DATABASE_URL
   : null;
 
 if (pool) {
-  pool.query(`ALTER TABLE conversations ADD COLUMN IF NOT EXISTS country VARCHAR(10)`)
-    .catch(() => {});
+  pool.query(`ALTER TABLE conversations ADD COLUMN IF NOT EXISTS country VARCHAR(10)`).catch(() => {});
+  pool.query(`CREATE TABLE IF NOT EXISTS events (id BIGSERIAL PRIMARY KEY, ts TIMESTAMPTZ NOT NULL DEFAULT NOW(), session VARCHAR(50) NOT NULL, path VARCHAR(500), category VARCHAR(50), action VARCHAR(200), label VARCHAR(500), value NUMERIC, country VARCHAR(10), device VARCHAR(20))`).catch(() => {});
+  pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS session_id VARCHAR(50)`).catch(() => {});
 }
 
 const rateMap = new Map();
@@ -57,6 +58,30 @@ setInterval(() => {
     if (entry.start < cutoff) rateMap.delete(ip);
   }
 }, 60_000);
+
+// --- Analytics rate limiting ---
+const analyticsRateMap = new Map();
+const ANALYTICS_RATE_LIMIT = 60;
+const ANALYTICS_RATE_WINDOW = 60_000;
+
+function checkAnalyticsRate(ip) {
+  const now = Date.now();
+  const entry = analyticsRateMap.get(ip);
+  if (!entry || now - entry.start > ANALYTICS_RATE_WINDOW) {
+    analyticsRateMap.set(ip, { start: now, count: 1 });
+    return true;
+  }
+  if (entry.count >= ANALYTICS_RATE_LIMIT) return false;
+  entry.count++;
+  return true;
+}
+
+function detectDevice(ua) {
+  if (!ua) return 'unknown';
+  if (/mobile|android|iphone|ipod/i.test(ua)) return 'mobile';
+  if (/tablet|ipad/i.test(ua)) return 'tablet';
+  return 'desktop';
+}
 
 async function lookupCountry(ip) {
   if (!ip || ip === "::1" || ip.startsWith("127.")) return null;
@@ -303,14 +328,55 @@ app.post("/api/quote", express.json({ limit: "12mb" }), async (req, res) => {
   }
 
   if (pool) {
+    const quoteSessionId = req.body?.sessionId || null;
     pool.query(
-      `INSERT INTO leads (email, lang, calculator, params, price_min_pln, price_max_pln, price_min_eur, price_max_eur, qty, discount, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+      `INSERT INTO leads (email, lang, calculator, params, price_min_pln, price_max_pln, price_min_eur, price_max_eur, qty, discount, status, session_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
       [payload.email, payload.lang, payload.calculator, payload.params,
        price?.perPcPLN?.min ?? null, price?.perPcPLN?.max ?? null,
        price?.perPcEUR?.min ?? null, price?.perPcEUR?.max ?? null,
-       price?.qty ?? null, price?.discount ?? null, "new"]
+       price?.qty ?? null, price?.discount ?? null, "new", quoteSessionId]
     ).catch(() => {});
   }
+
+  res.json({ ok: true });
+});
+
+// --- Analytics event ingestion ---
+app.post("/api/events", express.text({ type: "*/*", limit: "64kb" }), async (req, res) => {
+  if (!pool) return res.status(200).json({ ok: true });
+
+  const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
+  if (!checkAnalyticsRate(ip)) return res.status(429).json({ error: "Too many requests" });
+
+  let body;
+  try {
+    body = JSON.parse(req.body || "{}");
+  } catch {
+    return res.status(400).json({ error: "Invalid JSON" });
+  }
+
+  const events = Array.isArray(body.events) ? body.events.slice(0, 50) : [];
+  if (events.length === 0) return res.json({ ok: true });
+
+  const country = req.headers["cf-ipcountry"] || await lookupCountry(ip).catch(() => null);
+  const device = detectDevice(req.headers["user-agent"]);
+
+  const values = [];
+  const params = [];
+  let idx = 1;
+  for (const e of events) {
+    if (!e.s || !e.c) continue;
+    const ts = e.t ? new Date(e.t).toISOString() : new Date().toISOString();
+    values.push(`($${idx++}, $${idx++}, $${idx++}, $${idx++}, $${idx++}, $${idx++}, $${idx++}, $${idx++}, $${idx++})`);
+    params.push(ts, String(e.s).slice(0, 50), String(e.p || "/").slice(0, 500), String(e.c).slice(0, 50), String(e.a || "").slice(0, 200), String(e.l || "").slice(0, 500), e.v ?? null, country, device);
+  }
+
+  if (values.length === 0) return res.json({ ok: true });
+
+  pool.query(
+    `INSERT INTO events (ts, session, path, category, action, label, value, country, device) VALUES ${values.join(",")}`,
+    params
+  ).catch(() => {});
 
   res.json({ ok: true });
 });
