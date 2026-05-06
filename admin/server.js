@@ -42,6 +42,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   }));
 }
 
+app.use(express.urlencoded({ extended: false }));
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -210,32 +211,51 @@ app.post("/events/:id/delete", requireAuth, async (req, res) => {
 
 app.post("/events/bulk-delete", requireAuth, async (req, res) => {
   const { older_than_days } = req.body;
-  const days = parseInt(older_than_days) || 30;
-  await pool.query("DELETE FROM events WHERE ts < NOW() - INTERVAL '1 day' * $1", [days]).catch(() => {});
+  if (older_than_days === "all") {
+    await pool.query("DELETE FROM events").catch(() => {});
+  } else {
+    const days = parseInt(older_than_days) || 30;
+    await pool.query("DELETE FROM events WHERE ts < NOW() - INTERVAL '1 day' * $1", [days]).catch(() => {});
+  }
   res.redirect(`/analytics?days=30`);
 });
 
 app.post("/leads/bulk-delete", requireAuth, async (req, res) => {
   const { older_than_days } = req.body;
-  const days = parseInt(older_than_days) || 90;
-  await pool.query("DELETE FROM leads WHERE created_at < NOW() - INTERVAL '1 day' * $1", [days]).catch(() => {});
+  if (older_than_days === "all") {
+    await pool.query("DELETE FROM leads").catch(() => {});
+  } else {
+    const days = parseInt(older_than_days) || 90;
+    await pool.query("DELETE FROM leads WHERE created_at < NOW() - INTERVAL '1 day' * $1", [days]).catch(() => {});
+  }
   res.redirect("/leads");
 });
 
 app.post("/subscribers/bulk-delete", requireAuth, async (req, res) => {
   const { older_than_days } = req.body;
-  const days = parseInt(older_than_days) || 365;
-  await pool.query("DELETE FROM subscribers WHERE subscribed_at < NOW() - INTERVAL '1 day' * $1 AND unsubscribed = TRUE", [days]).catch(() => {});
+  if (older_than_days === "all") {
+    await pool.query("DELETE FROM subscribers WHERE unsubscribed = TRUE").catch(() => {});
+  } else {
+    const days = parseInt(older_than_days) || 365;
+    await pool.query("DELETE FROM subscribers WHERE subscribed_at < NOW() - INTERVAL '1 day' * $1 AND unsubscribed = TRUE", [days]).catch(() => {});
+  }
   res.redirect("/subscribers");
 });
 
 app.post("/conversations/bulk-delete", requireAuth, async (req, res) => {
   const { older_than_days, include_hot } = req.body;
-  const days = parseInt(older_than_days) || 30;
-  const sql = include_hot === "1"
-    ? "DELETE FROM conversations WHERE created_at < NOW() - INTERVAL '1 day' * $1"
-    : "DELETE FROM conversations WHERE created_at < NOW() - INTERVAL '1 day' * $1 AND hot_lead = FALSE";
-  await pool.query(sql, [days]).catch(() => {});
+  if (older_than_days === "all") {
+    const sql = include_hot === "1"
+      ? "DELETE FROM conversations"
+      : "DELETE FROM conversations WHERE hot_lead = FALSE";
+    await pool.query(sql).catch(() => {});
+  } else {
+    const days = parseInt(older_than_days) || 30;
+    const sql = include_hot === "1"
+      ? "DELETE FROM conversations WHERE created_at < NOW() - INTERVAL '1 day' * $1"
+      : "DELETE FROM conversations WHERE created_at < NOW() - INTERVAL '1 day' * $1 AND hot_lead = FALSE";
+    await pool.query(sql, [days]).catch(() => {});
+  }
   res.redirect("/conversations");
 });
 
@@ -324,7 +344,7 @@ app.get("/analytics", requireAuth, async (req, res) => {
         ORDER BY visitors DESC
       `),
       pool.query(`
-        SELECT ts, session, path, category, action, label, value, country, device
+        SELECT id, ts, session, path, category, action, label, value, country, device
         FROM events
         ORDER BY ts DESC
         LIMIT 50

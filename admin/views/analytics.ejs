@@ -232,12 +232,14 @@
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-sm font-semibold text-white">Ostatnie zdarzenia</h3>
           <div class="flex items-center gap-2">
-            <form method="POST" action="/events/bulk-delete" onsubmit="return confirm('Usunąć zdarzenia starsze niż wybrana liczba dni?')">
+            <form method="POST" action="/events/bulk-delete" onsubmit="return confirmBulkDeleteEvents(this)">
               <div class="flex items-center gap-1.5">
                 <select name="older_than_days" class="bg-neutral-800 border border-white/10 text-neutral-400 text-xs rounded px-2 py-1">
+                  <option value="3">starsze niż 3d</option>
                   <option value="7">starsze niż 7d</option>
                   <option value="30" selected>starsze niż 30d</option>
                   <option value="90">starsze niż 90d</option>
+                  <option value="all">⚠ wyczyść wszystko</option>
                 </select>
                 <button type="submit" class="px-2 py-1 bg-red-950 border border-red-900/50 text-red-400 hover:text-red-300 text-xs rounded transition-colors">Usuń</button>
               </div>
@@ -290,5 +292,12 @@
     </section>
 
   </main>
+  <script>
+    function confirmBulkDeleteEvents(form) {
+      const val = form.querySelector('[name="older_than_days"]').value;
+      if (val === 'all') return confirm('UWAGA: Usunąć WSZYSTKIE zdarzenia analityczne?\n\nTej operacji nie można cofnąć.');
+      return confirm('Usunąć zdarzenia starsze niż ' + val + ' dni?');
+    }
+  </script>
 </body>
 </html>
