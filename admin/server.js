@@ -42,6 +42,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   }));
 }
 
+app.use(express.urlencoded({ extended: false }));
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -324,7 +325,7 @@ app.get("/analytics", requireAuth, async (req, res) => {
         ORDER BY visitors DESC
       `),
       pool.query(`
-        SELECT ts, session, path, category, action, label, value, country, device
+        SELECT id, ts, session, path, category, action, label, value, country, device
         FROM events
         ORDER BY ts DESC
         LIMIT 50
