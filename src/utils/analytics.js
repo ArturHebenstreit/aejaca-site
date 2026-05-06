@@ -80,6 +80,60 @@ export function trackLangChange(from, to) {
   trackEvent("nav", "lang_change", `${from}→${to}`);
 }
 
+/**
+ * Track CTA button click (hero buttons, contact links, etc.)
+ * @param {string} label  - Human-readable label (e.g. "hero_jewelry_cta", "navbar_contact")
+ * @param {string} [href] - Destination path (optional)
+ */
+export function trackCTA(label, href = "") {
+  trackEvent("cta", "click", label, null);
+  if (href) trackEvent("cta", "destination", href);
+}
+
+/**
+ * Track funnel step progression.
+ * @param {string} funnel - Funnel name (e.g. "jewelry_quote", "studio_quote")
+ * @param {string} step   - Step name (e.g. "open_calculator", "set_metal", "submit_inquiry")
+ */
+export function trackFunnel(funnel, step) {
+  trackEvent("funnel", step, funnel);
+}
+
+/**
+ * Initialize scroll-depth tracking for the current page.
+ * Fires once per milestone (25 / 50 / 75 / 90 %) per page navigation.
+ * Call on every route change — it replaces the previous listener.
+ */
+let _scrollCleanup = null;
+export function initScrollTracking() {
+  if (typeof window === "undefined") return;
+
+  // Remove previous listener if called again on route change
+  if (_scrollCleanup) {
+    _scrollCleanup();
+    _scrollCleanup = null;
+  }
+
+  const milestones = [25, 50, 75, 90];
+  const fired = new Set();
+
+  function onScroll() {
+    const scrolled = window.scrollY + window.innerHeight;
+    const total = document.documentElement.scrollHeight;
+    if (total <= window.innerHeight) return;
+    const pct = Math.floor((scrolled / total) * 100);
+    for (const m of milestones) {
+      if (pct >= m && !fired.has(m)) {
+        fired.add(m);
+        trackEvent("scroll", "depth", window.location.pathname, m);
+      }
+    }
+  }
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  _scrollCleanup = () => window.removeEventListener("scroll", onScroll);
+}
+
 // --- Flushing ---
 
 function flush() {

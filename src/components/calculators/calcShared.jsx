@@ -7,7 +7,7 @@ const CONTACT_API_URL = import.meta.env.VITE_CHAT_API_URL;
 const CONTACT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 import { Link } from "react-router-dom";
 import { Send, Paperclip, X, MessageCircle, Mail } from "lucide-react";
-import { trackInquiry } from "../../utils/analytics.js";
+import { trackInquiry, trackFunnel } from "../../utils/analytics.js";
 
 export const CONFIG = {
   EUR_PLN_RATE: 4.28,
@@ -584,6 +584,10 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
     }
   }, [preAttachedFile]);
 
+  useEffect(() => {
+    trackFunnel(techLabel, "open_inquiry_form");
+  }, [techLabel]);
+
   function handleDescChange(e) {
     const val = e.target.value;
     if (val.length <= MAX_DESC_LENGTH) {
@@ -660,6 +664,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok) {
         trackInquiry(techLabel, paramsSummary);
+        trackFunnel(techLabel, "inquiry_sent");
         lastSendRef.current = now;
         setSent(true);
         setCooldown(true);

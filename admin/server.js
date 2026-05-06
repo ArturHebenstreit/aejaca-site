@@ -85,11 +85,21 @@ app.get("/logout", (req, res) => {
 // --- Routes: Dashboard ---
 app.get("/dashboard", requireAuth, async (req, res) => {
   try {
-    const [leadStats, subStats, recentLeads, recentSubs] = await Promise.all([
+    const [leadStats, subStats, recentLeads, recentSubs, analyticsKpi] = await Promise.all([
       pool.query("SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE) as today, COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') as week FROM leads"),
       pool.query("SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE subscribed_at >= CURRENT_DATE) as today, COUNT(*) FILTER (WHERE subscribed_at >= CURRENT_DATE - INTERVAL '7 days') as week FROM subscribers WHERE unsubscribed = FALSE"),
       pool.query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 10"),
       pool.query("SELECT * FROM subscribers ORDER BY subscribed_at DESC LIMIT 10"),
+      pool.query(`
+        SELECT
+          COUNT(DISTINCT session) FILTER (WHERE ts >= CURRENT_DATE) AS visitors_today,
+          COUNT(DISTINCT session) FILTER (WHERE ts >= CURRENT_DATE - 6) AS visitors_week,
+          COUNT(*) FILTER (WHERE category = 'page' AND ts >= CURRENT_DATE) AS pageviews_today,
+          COUNT(*) FILTER (WHERE category = 'page' AND ts >= NOW() - INTERVAL '7 days') AS pageviews_week,
+          COUNT(DISTINCT session) FILTER (WHERE category = 'inquiry' AND ts >= NOW() - INTERVAL '7 days') AS inquiries_week,
+          (SELECT path FROM events WHERE category = 'page' AND ts >= CURRENT_DATE GROUP BY path ORDER BY COUNT(*) DESC LIMIT 1) AS top_page_today
+        FROM events
+      `).catch(() => ({ rows: [{}] })),
     ]);
     res.render("dashboard", {
       user: req.user,
@@ -97,6 +107,7 @@ app.get("/dashboard", requireAuth, async (req, res) => {
       subStats: subStats.rows[0],
       recentLeads: recentLeads.rows,
       recentSubs: recentSubs.rows,
+      analyticsKpi: analyticsKpi.rows[0] || {},
     });
   } catch (err) {
     res.status(500).render("error", { message: err.message });
