@@ -229,7 +229,21 @@
     <!-- Recent raw events -->
     <section>
       <div class="bg-neutral-900 border border-white/10 rounded-xl p-5">
-        <h3 class="text-sm font-semibold text-white mb-4">Ostatnie zdarzenia</h3>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-semibold text-white">Ostatnie zdarzenia</h3>
+          <div class="flex items-center gap-2">
+            <form method="POST" action="/events/bulk-delete" onsubmit="return confirm('Usunąć zdarzenia starsze niż wybrana liczba dni?')">
+              <div class="flex items-center gap-1.5">
+                <select name="older_than_days" class="bg-neutral-800 border border-white/10 text-neutral-400 text-xs rounded px-2 py-1">
+                  <option value="7">starsze niż 7d</option>
+                  <option value="30" selected>starsze niż 30d</option>
+                  <option value="90">starsze niż 90d</option>
+                </select>
+                <button type="submit" class="px-2 py-1 bg-red-950 border border-red-900/50 text-red-400 hover:text-red-300 text-xs rounded transition-colors">Usuń</button>
+              </div>
+            </form>
+          </div>
+        </div>
         <div class="overflow-x-auto">
           <table class="w-full text-xs font-mono">
             <thead>
@@ -240,28 +254,34 @@
                 <th class="pb-2 text-left pr-4">Kat.</th>
                 <th class="pb-2 text-left pr-4">Akcja</th>
                 <th class="pb-2 text-left pr-4">Label</th>
-                <th class="pb-2 text-left">Kraj</th>
+                <th class="pb-2 text-left pr-4">Kraj</th>
+                <th class="pb-2"></th>
               </tr>
             </thead>
             <tbody>
               <% if (recentEvents && recentEvents.length > 0) { %>
                 <% recentEvents.forEach(function(e) { %>
-                <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                <tr class="border-b border-white/5 hover:bg-white/[0.02] group">
                   <td class="py-1.5 pr-4 text-neutral-500 whitespace-nowrap"><%= fmtDate(e.ts) %></td>
                   <td class="py-1.5 pr-4 text-neutral-500"><%= String(e.session).slice(0,8) %></td>
                   <td class="py-1.5 pr-4 text-neutral-300 max-w-[150px] truncate"><%= e.path || '—' %></td>
                   <td class="py-1.5 pr-4">
-                    <span class="px-1.5 py-0.5 rounded text-xs <%= e.category === 'page' ? 'bg-blue-950 text-blue-300' : e.category === 'calc' ? 'bg-amber-950 text-amber-300' : e.category === 'inquiry' ? 'bg-emerald-950 text-emerald-300' : 'bg-neutral-800 text-neutral-400' %>">
+                    <span class="px-1.5 py-0.5 rounded text-xs <%= e.category === 'page' ? 'bg-blue-950 text-blue-300' : e.category === 'calc' ? 'bg-amber-950 text-amber-300' : e.category === 'inquiry' ? 'bg-emerald-950 text-emerald-300' : e.category === 'cta' ? 'bg-purple-950 text-purple-300' : e.category === 'funnel' ? 'bg-teal-950 text-teal-300' : 'bg-neutral-800 text-neutral-400' %>">
                       <%= e.category %>
                     </span>
                   </td>
                   <td class="py-1.5 pr-4 text-neutral-400"><%= e.action || '—' %></td>
                   <td class="py-1.5 pr-4 text-neutral-500 max-w-[120px] truncate"><%= e.label || '—' %></td>
-                  <td class="py-1.5 text-neutral-500"><%= e.country || '—' %></td>
+                  <td class="py-1.5 pr-4 text-neutral-500"><%= e.country || '—' %></td>
+                  <td class="py-1.5 text-right">
+                    <form method="POST" action="/events/<%= e.id %>/delete?days=<%= days %>">
+                      <button type="submit" class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-400 transition-all px-1" title="Usuń">✕</button>
+                    </form>
+                  </td>
                 </tr>
                 <% }); %>
               <% } else { %>
-              <tr><td colspan="7" class="py-8 text-center text-neutral-600">Brak zdarzeń — dane pojawią się po pierwszych wizytach.</td></tr>
+              <tr><td colspan="8" class="py-8 text-center text-neutral-600">Brak zdarzeń — dane pojawią się po pierwszych wizytach.</td></tr>
               <% } %>
             </tbody>
           </table>

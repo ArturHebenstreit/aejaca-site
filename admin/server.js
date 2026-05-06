@@ -202,6 +202,19 @@ app.post("/conversations/:id/delete", requireAuth, async (req, res) => {
   res.redirect("/conversations");
 });
 
+app.post("/events/:id/delete", requireAuth, async (req, res) => {
+  await pool.query("DELETE FROM events WHERE id = $1", [req.params.id]);
+  const days = req.query.days || 30;
+  res.redirect(`/analytics?days=${days}`);
+});
+
+app.post("/events/bulk-delete", requireAuth, async (req, res) => {
+  const { older_than_days } = req.body;
+  const days = parseInt(older_than_days) || 30;
+  await pool.query("DELETE FROM events WHERE ts < NOW() - INTERVAL '1 day' * $1", [days]).catch(() => {});
+  res.redirect(`/analytics?days=30`);
+});
+
 // --- Export CSV ---
 app.get("/export/:table", requireAuth, async (req, res) => {
   const table = req.params.table === "subscribers" ? "subscribers" : "leads";
