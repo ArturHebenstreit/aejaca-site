@@ -155,7 +155,7 @@ function BodyPL() {
         accent="blue"
         title="Zagrawiruj swój projekt"
         text="Prześlij grafikę lub opisz pomysł — wycenimy i zrealizujemy w 1–3 dni."
-        href="/contact"
+        href="/contact/"
         cta="Wyślij zapytanie"
       />
     </>
@@ -222,7 +222,7 @@ function BodyEN() {
         accent="blue"
         title="Engrave your project"
         text="Send your artwork or describe your idea — we'll quote and deliver in 1–3 days."
-        href="/contact"
+        href="/contact/"
         cta="Send inquiry"
       />
     </>
@@ -282,7 +282,7 @@ function BodyDE() {
         accent="blue"
         title="Gravieren Sie Ihr Projekt"
         text="Senden Sie Ihre Grafik oder beschreiben Sie Ihre Idee — Angebot und Lieferung in 1–3 Tagen."
-        href="/contact"
+        href="/contact/"
         cta="Anfrage senden"
       />
     </>

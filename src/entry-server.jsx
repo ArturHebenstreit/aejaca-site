@@ -30,18 +30,18 @@ export function render(url) {
           <Routes>
             <Route element={<Layout />}>
               <Route path="/" element={<Home />} />
-              <Route path="/jewelry" element={<Jewelry />} />
-              <Route path="/studio" element={<Studio />} />
-              <Route path="/blog" element={<BlogIndex />} />
-              <Route path="/blog/:slug" element={<BlogPost />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/glossary" element={<Glossary />} />
-              <Route path="/glossary/:id" element={<GlossaryTerm />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/warranty" element={<Warranty />} />
-              <Route path="/returns" element={<Returns />} />
-              <Route path="/shipping" element={<Shipping />} />
-              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/jewelry/" element={<Jewelry />} />
+              <Route path="/studio/" element={<Studio />} />
+              <Route path="/blog/" element={<BlogIndex />} />
+              <Route path="/blog/:slug/" element={<BlogPost />} />
+              <Route path="/contact/" element={<Contact />} />
+              <Route path="/glossary/" element={<Glossary />} />
+              <Route path="/glossary/:id/" element={<GlossaryTerm />} />
+              <Route path="/about/" element={<About />} />
+              <Route path="/warranty/" element={<Warranty />} />
+              <Route path="/returns/" element={<Returns />} />
+              <Route path="/shipping/" element={<Shipping />} />
+              <Route path="/privacy/" element={<Privacy />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

@@ -145,7 +145,7 @@ export function Body({ lang }) {
           "Get in touch — we'll help you choose the perfect personalized present.",
           "Kontaktieren Sie uns — wir helfen Ihnen, das perfekte personalisierte Geschenk zu wählen."
         )}
-        href="/contact"
+        href="/contact/"
         cta={t("Kontakt", "Contact us", "Kontakt")}
       />
     </>

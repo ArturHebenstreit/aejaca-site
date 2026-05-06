@@ -1,1 +1,14 @@
+# Canonical trailing-slash redirects (prevents duplicate content)
+/jewelry    /jewelry/    301
+/studio     /studio/     301
+/blog       /blog/       301
+/contact    /contact/    301
+/glossary   /glossary/   301
+/about      /about/      301
+/warranty   /warranty/   301
+/returns    /returns/    301
+/shipping   /shipping/   301
+/privacy    /privacy/    301
+
+# SPA catch-all — must be last
 /*    /index.html   200

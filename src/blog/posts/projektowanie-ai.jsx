@@ -144,7 +144,7 @@ export function Body({ lang }) {
           "Describe your idea — we'll generate concepts and prepare a quote. Technology + craft = your unique jewelry.",
           "Beschreiben Sie Ihre Idee — wir generieren Konzepte und erstellen ein Angebot. Technologie + Handwerk = Ihr einzigartiger Schmuck."
         )}
-        href="/contact"
+        href="/contact/"
         cta={t("Napisz do nas", "Contact us", "Kontaktieren Sie uns")}
       />
     </>
