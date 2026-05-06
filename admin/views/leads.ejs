@@ -41,15 +41,25 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <h2 class="text-xl font-semibold text-white">Leads</h2>
-      <a
-        href="/export/leads"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 text-sm font-medium rounded-lg transition-colors"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-        </svg>
-        Export CSV
-      </a>
+      <div class="flex items-center gap-3">
+        <form method="POST" action="/leads/bulk-delete" onsubmit="return confirm('Usunąć leady starsze niż wybrany okres?')">
+          <div class="flex items-center gap-1.5">
+            <select name="older_than_days" class="bg-neutral-800 border border-white/10 text-neutral-400 text-xs rounded px-2 py-1.5">
+              <option value="30">starsze niż 30d</option>
+              <option value="90" selected>starsze niż 90d</option>
+              <option value="180">starsze niż 180d</option>
+              <option value="365">starsze niż rok</option>
+            </select>
+            <button type="submit" class="px-2 py-1.5 bg-red-950 border border-red-900/50 text-red-400 hover:text-red-300 text-xs rounded transition-colors">Usuń stare</button>
+          </div>
+        </form>
+        <a href="/export/leads" class="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-neutral-950 text-sm font-medium rounded-lg transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Export CSV
+        </a>
+      </div>
     </div>
 
     <!-- Stats summary -->
@@ -92,7 +102,7 @@
           <tbody>
             <% if (leads && leads.length > 0) { %>
               <% leads.forEach(function(lead, i) { %>
-              <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors <%= i % 2 === 1 ? 'bg-white/[0.015]' : '' %>">
+              <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors group <%= i % 2 === 1 ? 'bg-white/[0.015]' : '' %>">
                 <td class="px-4 py-3 text-neutral-400 whitespace-nowrap text-xs">
                   <%= fmtDate(lead.created_at) %>
                 </td>
@@ -146,9 +156,9 @@
                     <%= lead.status || 'new' %>
                   </span>
                 </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                  <form method="POST" action="/leads/<%= lead.id %>/delete" onsubmit="return confirm('Usunąć ten rekord?')">
-                    <button type="submit" class="text-xs text-red-400 hover:text-red-300 hover:underline transition-colors">Usuń</button>
+                <td class="px-4 py-3 whitespace-nowrap text-right">
+                  <form method="POST" action="/leads/<%= lead.id %>/delete">
+                    <button type="submit" class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-400 transition-all px-1 text-base leading-none" title="Usuń">✕</button>
                   </form>
                 </td>
               </tr>

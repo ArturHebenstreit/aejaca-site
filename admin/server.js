@@ -215,6 +215,27 @@ app.post("/events/bulk-delete", requireAuth, async (req, res) => {
   res.redirect(`/analytics?days=30`);
 });
 
+app.post("/leads/bulk-delete", requireAuth, async (req, res) => {
+  const { older_than_days } = req.body;
+  const days = parseInt(older_than_days) || 90;
+  await pool.query("DELETE FROM leads WHERE created_at < NOW() - INTERVAL '1 day' * $1", [days]).catch(() => {});
+  res.redirect("/leads");
+});
+
+app.post("/subscribers/bulk-delete", requireAuth, async (req, res) => {
+  const { older_than_days } = req.body;
+  const days = parseInt(older_than_days) || 365;
+  await pool.query("DELETE FROM subscribers WHERE subscribed_at < NOW() - INTERVAL '1 day' * $1 AND unsubscribed = TRUE", [days]).catch(() => {});
+  res.redirect("/subscribers");
+});
+
+app.post("/conversations/bulk-delete", requireAuth, async (req, res) => {
+  const { older_than_days } = req.body;
+  const days = parseInt(older_than_days) || 30;
+  await pool.query("DELETE FROM conversations WHERE created_at < NOW() - INTERVAL '1 day' * $1 AND hot_lead = FALSE", [days]).catch(() => {});
+  res.redirect("/conversations");
+});
+
 // --- Export CSV ---
 app.get("/export/:table", requireAuth, async (req, res) => {
   const table = req.params.table === "subscribers" ? "subscribers" : "leads";

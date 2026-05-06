@@ -41,15 +41,24 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <h2 class="text-xl font-semibold text-white">Subscribers</h2>
-      <a
-        href="/export/subscribers"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white text-sm font-medium rounded-lg transition-colors"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-        </svg>
-        Export CSV
-      </a>
+      <div class="flex items-center gap-3">
+        <form method="POST" action="/subscribers/bulk-delete" onsubmit="return confirm('Usunąć odsubskrybowanych starszych niż wybrany okres?')">
+          <div class="flex items-center gap-1.5">
+            <select name="older_than_days" class="bg-neutral-800 border border-white/10 text-neutral-400 text-xs rounded px-2 py-1.5">
+              <option value="180">odsubskr. starsze niż 180d</option>
+              <option value="365" selected>odsubskr. starsze niż rok</option>
+              <option value="730">odsubskr. starsze niż 2 lata</option>
+            </select>
+            <button type="submit" class="px-2 py-1.5 bg-red-950 border border-red-900/50 text-red-400 hover:text-red-300 text-xs rounded transition-colors">Usuń stare</button>
+          </div>
+        </form>
+        <a href="/export/subscribers" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white text-sm font-medium rounded-lg transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Export CSV
+        </a>
+      </div>
     </div>
 
     <!-- Stats summary -->
@@ -86,7 +95,7 @@
           <tbody>
             <% if (subscribers && subscribers.length > 0) { %>
               <% subscribers.forEach(function(sub, i) { %>
-              <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors <%= i % 2 === 1 ? 'bg-white/[0.015]' : '' %>">
+              <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors group <%= i % 2 === 1 ? 'bg-white/[0.015]' : '' %>">
                 <td class="px-4 py-3 text-neutral-400 whitespace-nowrap text-xs">
                   <%= fmtDate(sub.subscribed_at) %>
                 </td>
@@ -115,9 +124,9 @@
                     <span class="px-2 py-0.5 bg-emerald-950 text-emerald-400 rounded text-xs">active</span>
                   <% } %>
                 </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                  <form method="POST" action="/subscribers/<%= sub.id %>/delete" onsubmit="return confirm('Usunąć ten rekord?')">
-                    <button type="submit" class="text-xs text-red-400 hover:text-red-300 hover:underline transition-colors">Usuń</button>
+                <td class="px-4 py-3 whitespace-nowrap text-right">
+                  <form method="POST" action="/subscribers/<%= sub.id %>/delete">
+                    <button type="submit" class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-400 transition-all px-1 text-base leading-none" title="Usuń">✕</button>
                   </form>
                 </td>
               </tr>
