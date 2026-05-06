@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Zap, Sparkles, FileUp, Printer, Flame, Cpu, Scissors, Star } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
+import { trackCTA } from "../utils/analytics.js";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getSortedPosts } from "../blog/posts.js";
 import BlogCard from "../components/blog/BlogCard.jsx";
@@ -70,7 +71,7 @@ export default function Home() {
         <section className="bg-neutral-950 px-4 pb-10 md:pb-14" aria-label={h.heroAria || "AEJaCA — two worlds"}>
           <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
             {/* Jewelry Card */}
-            <Link to="/jewelry/" className="group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg shadow-black/40 hover:shadow-2xl hover:shadow-amber-900/20 transition-all duration-500 hover:-translate-y-1">
+            <Link to="/jewelry/" onClick={() => trackCTA("hero_jewelry")} className="group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg shadow-black/40 hover:shadow-2xl hover:shadow-amber-900/20 transition-all duration-500 hover:-translate-y-1">
               <div className="aspect-[3/4] relative overflow-hidden">
                 <img
                   src="/hero-home-jewelry.webp"
@@ -94,7 +95,7 @@ export default function Home() {
             </Link>
 
             {/* Studio Card */}
-            <Link to="/studio/" className="group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg shadow-black/40 hover:shadow-2xl hover:shadow-blue-900/20 transition-all duration-500 hover:-translate-y-1">
+            <Link to="/studio/" onClick={() => trackCTA("hero_studio")} className="group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg shadow-black/40 hover:shadow-2xl hover:shadow-blue-900/20 transition-all duration-500 hover:-translate-y-1">
               <div className="aspect-[3/4] relative overflow-hidden">
                 <img
                   src="/hero-home-studio.webp"
@@ -155,7 +156,7 @@ export default function Home() {
 
           {/* Two calculator cards — Jewelry + Studio (side by side) */}
           <div className="grid md:grid-cols-2 gap-6 mb-6">
-            <Link to="/jewelry/#calculator" className="group relative rounded-2xl overflow-hidden border border-amber-400/20 bg-gradient-to-br from-amber-950/20 to-neutral-950 p-6 md:p-8 hover:border-amber-400/40 hover:shadow-lg hover:shadow-amber-900/10 transition-all duration-300">
+            <Link to="/jewelry/#calculator" onClick={() => trackCTA("quickquote_jewelry")} className="group relative rounded-2xl overflow-hidden border border-amber-400/20 bg-gradient-to-br from-amber-950/20 to-neutral-950 p-6 md:p-8 hover:border-amber-400/40 hover:shadow-lg hover:shadow-amber-900/10 transition-all duration-300">
               <div className="flex items-start justify-between mb-4">
                 <Sparkles className="w-7 h-7 text-amber-400" />
                 <span className="text-amber-400/60 text-xs tracking-wider uppercase">{h.quickQuoteJewelryTag}</span>
@@ -167,7 +168,7 @@ export default function Home() {
               </span>
             </Link>
 
-            <Link to="/studio/#calculator" className="group relative rounded-2xl overflow-hidden border border-blue-400/20 bg-gradient-to-br from-blue-950/20 to-neutral-950 p-6 md:p-8 hover:border-blue-400/40 hover:shadow-lg hover:shadow-blue-900/10 transition-all duration-300">
+            <Link to="/studio/#calculator" onClick={() => trackCTA("quickquote_studio")} className="group relative rounded-2xl overflow-hidden border border-blue-400/20 bg-gradient-to-br from-blue-950/20 to-neutral-950 p-6 md:p-8 hover:border-blue-400/40 hover:shadow-lg hover:shadow-blue-900/10 transition-all duration-300">
               <div className="flex items-start justify-between mb-4">
                 <FileUp className="w-7 h-7 text-blue-400" />
                 <span className="text-blue-400/60 text-xs tracking-wider uppercase">{h.quickQuoteStudioTag}</span>
@@ -202,7 +203,7 @@ export default function Home() {
                 { to: "/studio?tab=fiber_laser", Icon: Cpu, title: h.quickQuoteFiberTitle, desc: h.quickQuoteFiberDesc, cta: h.quickQuoteFiberCta, img: "/img/calc/home/fiber.webp" },
                 { to: "/studio?tab=co2_laser&co2mode=cut", Icon: Scissors, title: h.quickQuoteCo2CutTitle, desc: h.quickQuoteCo2CutDesc, cta: h.quickQuoteCo2CutCta, img: "/img/calc/home/co2cut.webp" },
               ].map(({ to, Icon, title, desc, cta, img }) => (
-                <Link key={to} to={to} className="group relative rounded-xl overflow-hidden border border-emerald-400/10 hover:border-emerald-400/30 hover:shadow-lg hover:shadow-emerald-900/10 transition-all duration-300 min-h-[180px]">
+                <Link key={to} to={to} onClick={() => trackCTA("quickquote_stl_tile", to)} className="group relative rounded-xl overflow-hidden border border-emerald-400/10 hover:border-emerald-400/30 hover:shadow-lg hover:shadow-emerald-900/10 transition-all duration-300 min-h-[180px]">
                   <div className="absolute inset-0">
                     <img src={img} alt={title} loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30" />
@@ -300,7 +301,7 @@ export default function Home() {
         <div ref={ctaRef} className="reveal">
           <h2 className="font-serif text-2xl md:text-3xl font-semibold mb-4">{h.ctaHeading}</h2>
           <p className="text-neutral-400 mb-8 max-w-md mx-auto">{h.ctaText}</p>
-          <Link to="/contact/" className="inline-flex items-center gap-2 px-8 py-3 bg-white text-black font-medium rounded-full hover:bg-neutral-200 hover:shadow-lg hover:shadow-white/10 transition-all duration-300">
+          <Link to="/contact/" onClick={() => trackCTA("home_bottom_cta")} className="inline-flex items-center gap-2 px-8 py-3 bg-white text-black font-medium rounded-full hover:bg-neutral-200 hover:shadow-lg hover:shadow-white/10 transition-all duration-300">
             {h.ctaBtn} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

@@ -3,7 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
 import ChatWidget from "./ChatWidget.jsx";
-import { trackPageView } from "../utils/analytics.js";
+import { trackPageView, initScrollTracking } from "../utils/analytics.js";
 import useScrollToTop from "../hooks/useScrollToTop.js";
 
 export default function Layout() {
@@ -11,6 +11,7 @@ export default function Layout() {
   useScrollToTop();
   useEffect(() => {
     trackPageView(location.pathname);
+    initScrollTracking();
   }, [location.pathname]);
 
   return (
