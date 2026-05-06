@@ -113,11 +113,14 @@ async function lookupCountry(ip) {
   if (!ip || isPrivateIP(ip)) return null;
   if (countryCache.has(ip)) return countryCache.get(ip);
   try {
-    const res = await fetch(`http://ip-api.com/json/${encodeURIComponent(ip)}?fields=countryCode`, {
+    // ipapi.co — HTTPS, free 1k/day, plain-text country code response
+    const res = await fetch(`https://ipapi.co/${encodeURIComponent(ip)}/country_code/`, {
+      headers: { "User-Agent": "aejaca-analytics/1.0" },
       signal: AbortSignal.timeout(3000),
     });
-    const data = await res.json();
-    const country = data.status === "success" ? (data.countryCode || null) : null;
+    if (!res.ok) throw new Error(`${res.status}`);
+    const text = (await res.text()).trim();
+    const country = /^[A-Z]{2}$/.test(text) ? text : null;
     countryCache.set(ip, country);
     return country;
   } catch {
