@@ -230,9 +230,12 @@ app.post("/subscribers/bulk-delete", requireAuth, async (req, res) => {
 });
 
 app.post("/conversations/bulk-delete", requireAuth, async (req, res) => {
-  const { older_than_days } = req.body;
+  const { older_than_days, include_hot } = req.body;
   const days = parseInt(older_than_days) || 30;
-  await pool.query("DELETE FROM conversations WHERE created_at < NOW() - INTERVAL '1 day' * $1 AND hot_lead = FALSE", [days]).catch(() => {});
+  const sql = include_hot === "1"
+    ? "DELETE FROM conversations WHERE created_at < NOW() - INTERVAL '1 day' * $1"
+    : "DELETE FROM conversations WHERE created_at < NOW() - INTERVAL '1 day' * $1 AND hot_lead = FALSE";
+  await pool.query(sql, [days]).catch(() => {});
   res.redirect("/conversations");
 });
 
