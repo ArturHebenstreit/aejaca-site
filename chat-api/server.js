@@ -90,17 +90,34 @@ setInterval(() => {
   if (countryCache.size > 2000) countryCache.clear();
 }, 60 * 60_000);
 
+function extractIP(req) {
+  // Try headers in priority order — Railway / Cloudflare / generic proxies
+  const raw = req.headers["cf-connecting-ip"]
+    || req.headers["x-real-ip"]
+    || req.headers["x-forwarded-for"]?.split(",")[0]
+    || req.ip
+    || "";
+  return raw.trim().replace(/^::ffff:/, "");
+}
+
+function isPrivateIP(ip) {
+  if (!ip) return true;
+  if (ip === "::1" || ip === "localhost") return true;
+  if (ip.startsWith("127.") || ip.startsWith("10.") || ip.startsWith("192.168.")) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(ip)) return true;
+  return false;
+}
+
 async function lookupCountry(ip) {
-  if (!ip || ip === "::1" || ip.startsWith("127.") || ip.startsWith("::ffff:127.")) return null;
-  const clean = ip.replace(/^::ffff:/, "");
-  if (countryCache.has(clean)) return countryCache.get(clean);
+  if (!ip || isPrivateIP(ip)) return null;
+  if (countryCache.has(ip)) return countryCache.get(ip);
   try {
-    const res = await fetch(`http://ip-api.com/json/${encodeURIComponent(clean)}?fields=countryCode`, {
-      signal: AbortSignal.timeout(2000),
+    const res = await fetch(`http://ip-api.com/json/${encodeURIComponent(ip)}?fields=countryCode`, {
+      signal: AbortSignal.timeout(3000),
     });
     const data = await res.json();
     const country = data.status === "success" ? (data.countryCode || null) : null;
-    countryCache.set(clean, country);
+    countryCache.set(ip, country);
     return country;
   } catch {
     return null;
@@ -109,8 +126,25 @@ async function lookupCountry(ip) {
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
+// Diagnostic — shows which IP/headers we see (remove after confirming country works)
+app.get("/api/debug-ip", async (req, res) => {
+  const ip = extractIP(req);
+  const country = await lookupCountry(ip);
+  res.json({
+    ip,
+    country,
+    private: isPrivateIP(ip),
+    headers: {
+      "cf-connecting-ip": req.headers["cf-connecting-ip"] || null,
+      "x-real-ip": req.headers["x-real-ip"] || null,
+      "x-forwarded-for": req.headers["x-forwarded-for"] || null,
+      "req.ip": req.ip || null,
+    },
+  });
+});
+
 app.post("/api/chat", async (req, res) => {
-  const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
+  const ip = extractIP(req);
   if (!checkRate(ip)) {
     return res.status(429).json({ error: "Too many requests" });
   }
@@ -242,7 +276,7 @@ app.post("/api/contact", (req, res, next) => {
     next();
   });
 }, async (req, res) => {
-  const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
+  const ip = extractIP(req);
   if (!checkContactRate(ip)) return res.status(429).json({ error: "Too many requests" });
 
   const { name, email, subject, message, lang, source, website } = req.body;
@@ -309,7 +343,7 @@ setInterval(() => {
 }, QUOTE_RATE_WINDOW);
 
 app.post("/api/quote", express.json({ limit: "12mb" }), async (req, res) => {
-  const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
+  const ip = extractIP(req);
   if (!checkQuoteRate(ip)) return res.status(429).json({ error: "Too many requests" });
 
   const { email, lang, calculator, params, price, file, ts } = req.body || {};
@@ -356,7 +390,7 @@ app.post("/api/quote", express.json({ limit: "12mb" }), async (req, res) => {
 app.post("/api/events", express.text({ type: "*/*", limit: "64kb" }), async (req, res) => {
   if (!pool) return res.status(200).json({ ok: true });
 
-  const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
+  const ip = extractIP(req);
   if (!checkAnalyticsRate(ip)) return res.status(429).json({ error: "Too many requests" });
 
   let body;
