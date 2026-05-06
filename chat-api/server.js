@@ -91,10 +91,11 @@ setInterval(() => {
 }, 60 * 60_000);
 
 function extractIP(req) {
-  // Try headers in priority order — Railway / Cloudflare / generic proxies
+  // x-forwarded-for first entry = original client IP (leftmost in the chain)
+  // x-real-ip on Railway = last connecting proxy (may be Zscaler/CDN, not the real user)
   const raw = req.headers["cf-connecting-ip"]
-    || req.headers["x-real-ip"]
     || req.headers["x-forwarded-for"]?.split(",")[0]
+    || req.headers["x-real-ip"]
     || req.ip
     || "";
   return raw.trim().replace(/^::ffff:/, "");
