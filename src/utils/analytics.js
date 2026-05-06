@@ -9,7 +9,9 @@
 // in localStorage for later export / debugging.
 // ============================================================
 
-const ENDPOINT = import.meta.env.VITE_ANALYTICS_URL || "https://aejaca-analytics.aejaca.workers.dev/events";
+const _chatBase = import.meta.env.VITE_CHAT_API_URL?.replace(/\/$/, '');
+const ENDPOINT = import.meta.env.VITE_ANALYTICS_URL
+  || (_chatBase ? `${_chatBase}/api/events` : null);
 const QUEUE_KEY = "aejaca_events";
 const FLUSH_INTERVAL = 30_000;  // flush every 30s
 const MAX_QUEUE = 200;
