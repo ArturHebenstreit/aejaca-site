@@ -30,3 +30,4 @@ dist-ssr
 .mcp.json.local
 .env
 .env.local
+.claude/worktrees/
