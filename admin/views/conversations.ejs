@@ -54,9 +54,11 @@
         <form method="POST" action="/conversations/bulk-delete" onsubmit="return confirmBulkDelete(this)">
           <div class="flex items-center gap-2">
             <select name="older_than_days" class="bg-neutral-800 border border-white/10 text-neutral-400 text-xs rounded px-2 py-1.5">
+              <option value="3">starsze niż 3d</option>
               <option value="7">starsze niż 7d</option>
               <option value="30" selected>starsze niż 30d</option>
               <option value="90">starsze niż 90d</option>
+              <option value="all">⚠ wyczyść wszystko</option>
             </select>
             <label class="flex items-center gap-1.5 cursor-pointer select-none" title="Uwaga: usunie też rozmowy oznaczone jako Hot Lead">
               <input type="checkbox" name="include_hot" value="1"
@@ -158,11 +160,13 @@
   <script>
     function confirmBulkDelete(form) {
       const includeHot = form.querySelector('[name="include_hot"]').checked;
-      const days = form.querySelector('[name="older_than_days"]').value;
-      if (includeHot) {
-        return confirm(`UWAGA: Usunąć WSZYSTKIE rozmowy (w tym HOT LEADY) starsze niż ${days} dni?\n\nTej operacji nie można cofnąć.`);
+      const val = form.querySelector('[name="older_than_days"]').value;
+      if (val === 'all') {
+        if (includeHot) return confirm('UWAGA: Usunąć WSZYSTKIE rozmowy włącznie z HOT LEADAMI?\n\nTej operacji nie można cofnąć.');
+        return confirm('Usunąć WSZYSTKIE rozmowy (hot leady zostaną)?\n\nTej operacji nie można cofnąć.');
       }
-      return confirm(`Usunąć rozmowy (bez hot leadów) starsze niż ${days} dni?`);
+      if (includeHot) return confirm(`UWAGA: Usunąć WSZYSTKIE rozmowy (w tym HOT LEADY) starsze niż ${val} dni?\n\nTej operacji nie można cofnąć.`);
+      return confirm(`Usunąć rozmowy (bez hot leadów) starsze niż ${val} dni?`);
     }
   </script>
 </body>
