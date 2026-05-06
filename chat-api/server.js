@@ -6,6 +6,7 @@ import multer from "multer";
 import { getSystemPrompt, detectHotLead } from "./context.js";
 
 const app = express();
+app.set("trust proxy", true);
 const PORT = process.env.PORT || 3001;
 
 const ALLOWED_ORIGINS = [
@@ -83,14 +84,24 @@ function detectDevice(ua) {
   return 'desktop';
 }
 
+// Cache IP→country to avoid hammering ip-api.com (45 req/min free limit)
+const countryCache = new Map();
+setInterval(() => {
+  if (countryCache.size > 2000) countryCache.clear();
+}, 60 * 60_000);
+
 async function lookupCountry(ip) {
-  if (!ip || ip === "::1" || ip.startsWith("127.")) return null;
+  if (!ip || ip === "::1" || ip.startsWith("127.") || ip.startsWith("::ffff:127.")) return null;
+  const clean = ip.replace(/^::ffff:/, "");
+  if (countryCache.has(clean)) return countryCache.get(clean);
   try {
-    const res = await fetch(`http://ip-api.com/json/${encodeURIComponent(ip)}?fields=countryCode`, {
+    const res = await fetch(`http://ip-api.com/json/${encodeURIComponent(clean)}?fields=countryCode`, {
       signal: AbortSignal.timeout(2000),
     });
     const data = await res.json();
-    return data.status === "success" ? (data.countryCode || null) : null;
+    const country = data.status === "success" ? (data.countryCode || null) : null;
+    countryCache.set(clean, country);
+    return country;
   } catch {
     return null;
   }
