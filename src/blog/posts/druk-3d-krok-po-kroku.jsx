@@ -150,7 +150,7 @@ function BodyPL() {
         accent="blue"
         title="Wydrukuj swój projekt"
         text="Prześlij plik .STL lub opisz pomysł — wycenimy go w 24h."
-        href="/contact"
+        href="/contact/"
         cta="Wyślij zapytanie"
       />
     </>
@@ -213,7 +213,7 @@ function BodyEN() {
         accent="blue"
         title="Print your project"
         text="Send a .STL file or describe your idea — we'll quote it within 24h."
-        href="/contact"
+        href="/contact/"
         cta="Send inquiry"
       />
     </>
@@ -269,7 +269,7 @@ function BodyDE() {
         accent="blue"
         title="Drucken Sie Ihr Projekt"
         text="Senden Sie eine .STL-Datei oder beschreiben Sie Ihre Idee — Angebot innerhalb von 24h."
-        href="/contact"
+        href="/contact/"
         cta="Anfrage senden"
       />
     </>
