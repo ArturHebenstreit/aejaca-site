@@ -23,7 +23,7 @@ app.use(cors({
   methods: ["POST", "OPTIONS"],
   allowedHeaders: ["Content-Type"],
 }));
-app.use(express.json({ limit: "16kb" }));
+// Body parsers are applied per-route to avoid global limit conflicts.
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -147,7 +147,7 @@ app.get("/api/debug-ip", async (req, res) => {
   });
 });
 
-app.post("/api/chat", async (req, res) => {
+app.post("/api/chat", express.json({ limit: "16kb" }), async (req, res) => {
   const ip = extractIP(req);
   if (!checkRate(ip)) {
     return res.status(429).json({ error: "Too many requests" });
