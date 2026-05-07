@@ -364,9 +364,9 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
 
     try {
       let filePayload = null;
-      // Skip file if too large — base64 overhead (~33%) would push 8MB to ~10.7MB,
-      // approaching the 12MB JSON limit on /api/quote
-      if (preAttachedFile && preAttachedFile.size <= 7 * 1024 * 1024) {
+      // Skip file if too large — base64 overhead (~33%) would push 35MB to ~46MB,
+      // staying under the 50MB JSON limit on /api/quote
+      if (preAttachedFile && preAttachedFile.size <= 35 * 1024 * 1024) {
         try {
           const data = await new Promise((resolve, reject) => {
             const fr = new FileReader();
@@ -490,7 +490,7 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
 
 const MAX_DESC_LENGTH = 2000;
 const COOLDOWN_MS = 15000; // 15s between sends
-const MAX_FILE_SIZE_MB = 8;
+const MAX_FILE_SIZE_MB = 50;
 
 const INQUIRY_LABELS = {
   pl: {
@@ -509,7 +509,7 @@ const INQUIRY_LABELS = {
     attachNote: "Plik zostanie dolaczony do wiadomosci",
     cooldown: "Poczekaj chwile przed ponownym wyslaniem",
     tooLong: "Opis jest za dlugi (maks. 2000 znakow)",
-    fileTooLarge: "Plik jest za duzy (maks. 8 MB)",
+    fileTooLarge: "Plik jest za duzy (maks. 50 MB)",
     charCount: "znakow",
   },
   en: {
@@ -528,7 +528,7 @@ const INQUIRY_LABELS = {
     attachNote: "File will be attached to your message",
     cooldown: "Please wait before sending again",
     tooLong: "Description is too long (max 2000 characters)",
-    fileTooLarge: "File is too large (max 8 MB)",
+    fileTooLarge: "File is too large (max 50 MB)",
     charCount: "chars",
   },
   de: {
@@ -547,7 +547,7 @@ const INQUIRY_LABELS = {
     attachNote: "Datei wird Ihrer Nachricht angehängt",
     cooldown: "Bitte warten Sie vor dem erneuten Senden",
     tooLong: "Beschreibung ist zu lang (max. 2000 Zeichen)",
-    fileTooLarge: "Datei ist zu groß (max. 8 MB)",
+    fileTooLarge: "Datei ist zu groß (max. 50 MB)",
     charCount: "Zeichen",
   },
 };

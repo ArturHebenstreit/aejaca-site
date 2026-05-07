@@ -263,7 +263,7 @@ setInterval(() => {
 const ALLOWED_EXT = /\.(stl|3mf|step|stp|obj|svg|ai|dxf|jpg|jpeg|png|pdf)$/i;
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 8 * 1024 * 1024 },
+  limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     ALLOWED_EXT.test(file.originalname) ? cb(null, true) : cb(new Error("Invalid file type"));
   },
@@ -346,7 +346,7 @@ setInterval(() => {
   for (const [ip, e] of quoteRateMap) if (e.start < cutoff) quoteRateMap.delete(ip);
 }, QUOTE_RATE_WINDOW);
 
-app.post("/api/quote", express.json({ limit: "12mb" }), async (req, res) => {
+app.post("/api/quote", express.json({ limit: "50mb" }), async (req, res) => {
   const ip = extractIP(req);
   if (!checkQuoteRate(ip)) return res.status(429).json({ error: "Too many requests" });
 
