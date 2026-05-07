@@ -471,7 +471,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   const handleFile = useCallback(async (file) => {
     if (!file) return;
     const ext = file.name.split(".").pop().toLowerCase();
-    if (file.size > 8 * 1024 * 1024) {
+    if (file.size > 50 * 1024 * 1024) {
       setFileError(true);
       return;
     }
@@ -608,7 +608,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
             </label>
             {fileError && (
               <div className="mt-2 text-center text-[11px] text-red-400">
-                {{ pl: "Plik za duży — maksymalny rozmiar to 8 MB.", en: "File too large — maximum size is 8 MB.", de: "Datei zu groß — maximale Größe beträgt 8 MB." }[lang] || "File too large — max 8 MB."}
+                {{ pl: "Plik za duży — maksymalny rozmiar to 50 MB.", en: "File too large — maximum size is 50 MB.", de: "Datei zu groß — maximale Größe beträgt 50 MB." }[lang] || "File too large — max 50 MB."}
               </div>
             )}
             <div className="text-center mt-3 text-[11px] text-neutral-400">{l.q0hint}</div>
