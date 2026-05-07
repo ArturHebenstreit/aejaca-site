@@ -10,7 +10,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const ALLOWED_EMAILS = (process.env.ALLOWED_EMAILS || "aejaca@gmail.com")
+const ALLOWED_EMAILS = (process.env.ALLOWED_EMAILS || "contact@aejaca.com")
   .split(",").map(e => e.trim().toLowerCase());
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
