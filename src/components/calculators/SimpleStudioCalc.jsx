@@ -463,6 +463,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   const [svgData, setSvgData]   = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [fileParsing, setFileParsing] = useState(false);
+  const [fileError, setFileError] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
   const hasFile = fileType && (stlData || svgData);
@@ -470,6 +471,11 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   const handleFile = useCallback(async (file) => {
     if (!file) return;
     const ext = file.name.split(".").pop().toLowerCase();
+    if (file.size > 8 * 1024 * 1024) {
+      setFileError(true);
+      return;
+    }
+    setFileError(false);
     setFileParsing(true);
     setFileName(file.name);
     setUploadedFile(file);
@@ -508,6 +514,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
     setStlData(null);
     setSvgData(null);
     setUploadedFile(null);
+    setFileError(false);
     setItem("keychain");
   }, []);
 
@@ -599,6 +606,11 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
               </div>
               <input type="file" accept=".stl,.svg" onChange={onInputChange} className="sr-only" />
             </label>
+            {fileError && (
+              <div className="mt-2 text-center text-[11px] text-red-400">
+                {{ pl: "Plik za duży — maksymalny rozmiar to 8 MB.", en: "File too large — maximum size is 8 MB.", de: "Datei zu groß — maximale Größe beträgt 8 MB." }[lang] || "File too large — max 8 MB."}
+              </div>
+            )}
             <div className="text-center mt-3 text-[11px] text-neutral-400">{l.q0hint}</div>
           </div>
         ) : (

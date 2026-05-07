@@ -364,7 +364,9 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
 
     try {
       let filePayload = null;
-      if (preAttachedFile) {
+      // Skip file if too large — base64 overhead (~33%) would push 8MB to ~10.7MB,
+      // approaching the 12MB JSON limit on /api/quote
+      if (preAttachedFile && preAttachedFile.size <= 7 * 1024 * 1024) {
         try {
           const data = await new Promise((resolve, reject) => {
             const fr = new FileReader();
@@ -374,7 +376,6 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
           });
           filePayload = { name: preAttachedFile.name, type: preAttachedFile.type || "application/octet-stream", data };
         } catch {
-          // If file read fails, send without file rather than block submission
           filePayload = null;
         }
       }
@@ -576,13 +577,20 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
 
   useEffect(() => {
     if (preAttachedFile) {
-      setFileBlob(preAttachedFile);
-      setFileName(preAttachedFile.name);
+      if (preAttachedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        setFileBlob(null);
+        setFileName("");
+        setError(il.fileTooLarge);
+      } else {
+        setFileBlob(preAttachedFile);
+        setFileName(preAttachedFile.name);
+        setError("");
+      }
     } else {
       setFileBlob(null);
       setFileName("");
     }
-  }, [preAttachedFile]);
+  }, [preAttachedFile, il.fileTooLarge]);
 
   useEffect(() => {
     trackFunnel(techLabel, "open_inquiry_form");
