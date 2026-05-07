@@ -57,12 +57,7 @@ export default function Jewelry() {
   const etsyRef = useScrollReveal();
   const ctaRef = useScrollReveal();
 
-  const [showFloatingCta, setShowFloatingCta] = useState(false);
-  useEffect(() => {
-    function onScroll() { setShowFloatingCta(window.scrollY > 600); }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const [showFloatingCta] = useState(true);
 
   // Per-page schemas: Service (jewelry as commissionable craft) + FAQ (AIO gold)
   // + Breadcrumb (SERP navigation) + WebPage (canonical wrapper).

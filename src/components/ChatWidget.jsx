@@ -108,13 +108,11 @@ export default function ChatWidget() {
     }
   }, [messages]);
 
-  if (!API_URL) return null;
-
   const displayMessages = [{ role: "assistant", content: l.greeting }, ...messages];
 
   const sendMessage = useCallback(async (text) => {
     const userMsg = { role: "user", content: text.trim() };
-    if (!userMsg.content) return;
+    if (!userMsg.content || !API_URL) return;
 
     const updated = [...messages, userMsg];
     setMessages([...updated, { role: "assistant", content: "" }]);
@@ -204,13 +202,17 @@ export default function ChatWidget() {
     <>
       {/* Chat bubble */}
       {!open && (
-        <button
-          onClick={() => setOpen(true)}
-          className="fixed bottom-5 right-5 z-50 w-14 h-14 rounded-full bg-amber-400 hover:bg-amber-300 text-neutral-900 shadow-lg shadow-amber-500/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-          aria-label={l.title}
-        >
-          <MessageCircle className="w-6 h-6" />
-        </button>
+        <div className="fixed bottom-5 right-5 z-50">
+          <span className="absolute inset-0 rounded-full bg-amber-400 animate-ping opacity-25" style={{ animationDuration: '2s' }} />
+          <span className="absolute inset-0 rounded-full bg-amber-400 animate-ping opacity-20" style={{ animationDuration: '2s', animationDelay: '0.75s' }} />
+          <button
+            onClick={() => setOpen(true)}
+            className="relative w-14 h-14 rounded-full bg-amber-400 hover:bg-amber-300 text-neutral-900 shadow-lg shadow-amber-500/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+            aria-label={l.title}
+          >
+            <MessageCircle className="w-6 h-6" />
+          </button>
+        </div>
       )}
 
       {/* Chat panel */}

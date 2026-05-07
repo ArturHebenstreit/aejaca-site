@@ -58,12 +58,7 @@ export default function Studio() {
   const etsyRef = useScrollReveal();
   const ctaRef = useScrollReveal();
 
-  const [showFloatingCta, setShowFloatingCta] = useState(false);
-  useEffect(() => {
-    function onScroll() { setShowFloatingCta(window.scrollY > 600); }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const [showFloatingCta] = useState(true);
 
   // Service + FAQ schemas are the highest-impact AIO signal for pricing queries
   // ("how much does 3D printing cost?" — LLMs will cite this page verbatim).
