@@ -204,7 +204,7 @@ export default function ChatWidget() {
     <>
       {/* Chat bubble */}
       {!open && (
-        <div className="fixed bottom-5 right-5 z-50 w-14 h-14">
+        <div className="fixed bottom-5 right-5 z-50 w-14 h-14 relative">
           <span className="absolute inset-0 rounded-full bg-amber-400 animate-ping opacity-25" style={{ animationDuration: '2s' }} />
           <span className="absolute inset-0 rounded-full bg-amber-400 animate-ping opacity-20" style={{ animationDuration: '2s', animationDelay: '0.75s' }} />
           <button
