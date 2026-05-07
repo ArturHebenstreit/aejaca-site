@@ -108,13 +108,11 @@ export default function ChatWidget() {
     }
   }, [messages]);
 
-  if (!API_URL) return null;
-
   const displayMessages = [{ role: "assistant", content: l.greeting }, ...messages];
 
   const sendMessage = useCallback(async (text) => {
     const userMsg = { role: "user", content: text.trim() };
-    if (!userMsg.content) return;
+    if (!userMsg.content || !API_URL) return;
 
     const updated = [...messages, userMsg];
     setMessages([...updated, { role: "assistant", content: "" }]);
