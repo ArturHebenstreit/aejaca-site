@@ -91,7 +91,7 @@ export default function ToolsJewelry() {
 
         {/* Hero */}
         <section className="bg-neutral-950 py-10 px-4">
-          <div className="max-w-5xl mx-auto relative rounded-2xl overflow-hidden h-[40vh] min-h-[280px] bg-neutral-900">
+          <div className="max-w-5xl mx-auto relative rounded-2xl overflow-hidden h-[40vh] min-h-[280px] bg-gradient-to-br from-stone-800 via-amber-950 to-stone-950">
             <img
               src="/hero-toolsjewelry.webp"
               alt="Narzędzia dla jubilerów — AEJaCA"
