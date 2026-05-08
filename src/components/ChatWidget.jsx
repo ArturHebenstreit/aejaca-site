@@ -219,9 +219,9 @@ export default function ChatWidget() {
     <>
       {/* Chat bubble */}
       {!open && (
-        <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
+        <div className="fixed bottom-5 right-5 z-50 flex items-end gap-3">
           {showBubble && (
-            <div className="flex items-start gap-2 max-w-[240px] animate-[fadeSlideUp_0.3s_ease-out]">
+            <div className="mb-1 max-w-[220px] animate-[fadeSlideUp_0.3s_ease-out]">
               <div className="relative bg-white text-neutral-800 text-sm rounded-2xl rounded-br-sm px-4 py-3 shadow-lg shadow-black/15">
                 {BUBBLE_MSG[lang] || BUBBLE_MSG.pl}
                 <button
@@ -232,9 +232,9 @@ export default function ChatWidget() {
               </div>
             </div>
           )}
-          <div>
-            <span className="absolute inset-0 rounded-full bg-amber-400 animate-ping opacity-25" style={{ animationDuration: '2s' }} />
-            <span className="absolute inset-0 rounded-full bg-amber-400 animate-ping opacity-20" style={{ animationDuration: '2s', animationDelay: '0.75s' }} />
+          <div className="relative w-14 h-14 shrink-0">
+            <span className="absolute inset-0 rounded-full bg-amber-400 animate-ping opacity-25 pointer-events-none" style={{ animationDuration: '2s' }} />
+            <span className="absolute inset-0 rounded-full bg-amber-400 animate-ping opacity-20 pointer-events-none" style={{ animationDuration: '2s', animationDelay: '0.75s' }} />
             <button
               onClick={() => { setOpen(true); setShowBubble(false); }}
               className="relative w-14 h-14 rounded-full bg-amber-400 hover:bg-amber-300 text-neutral-900 shadow-lg shadow-amber-500/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95"
