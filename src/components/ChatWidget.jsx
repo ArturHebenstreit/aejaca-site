@@ -219,27 +219,25 @@ export default function ChatWidget() {
     <>
       {/* Chat bubble */}
       {!open && (
-        <div className="fixed bottom-5 right-5 z-50 flex items-end gap-3">
+        <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
           {showBubble && (
-            <div className="mb-2 max-w-[210px] animate-[fadeSlideUp_0.3s_ease-out]" style={{ marginRight: '0.75rem' }}>
-              <div className="relative bg-white text-neutral-800 text-sm rounded-2xl px-4 py-3 shadow-lg shadow-black/20"
-                style={{
-                  filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.18))',
-                }}
+            <div className="max-w-[220px] animate-[fadeSlideUp_0.3s_ease-out]">
+              <div className="relative bg-white text-neutral-800 text-sm rounded-2xl px-4 py-3"
+                style={{ filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.22))' }}
               >
                 {BUBBLE_MSG[lang] || BUBBLE_MSG.pl}
-                {/* Comic tail pointing right */}
+                {/* Comic tail pointing down-right toward the chat button */}
                 <span
                   aria-hidden="true"
                   style={{
                     position: 'absolute',
-                    right: '-10px',
-                    bottom: '14px',
+                    right: '22px',
+                    bottom: '-10px',
                     width: 0,
                     height: 0,
-                    borderTop: '7px solid transparent',
-                    borderBottom: '7px solid transparent',
-                    borderLeft: '11px solid white',
+                    borderLeft: '8px solid transparent',
+                    borderRight: '8px solid transparent',
+                    borderTop: '11px solid white',
                   }}
                 />
                 <button
