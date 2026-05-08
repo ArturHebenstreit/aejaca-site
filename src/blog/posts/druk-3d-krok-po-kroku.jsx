@@ -70,6 +70,9 @@ export const meta = {
     ],
   },
   relatedPosts: ["jak-przygotowac-plik-stl", "materialy-laser-cutting", "odlewy-zywiczne-poradnik"],
+  relatedCalculators: [
+    { to: "/studio/#calculator", icon: "⚙️", label: { pl: "Kalkulator sTuDiO", en: "sTuDiO Calculator", de: "sTuDiO-Kalkulator" }, desc: { pl: "Wycena laserowania, druku 3D, odlewów żywicznych", en: "Quote for laser engraving, 3D print, resin casting", de: "Angebot für Laser, 3D-Druck, Harzverguss" } },
+  ],
 };
 
 // ======================= PL =======================

@@ -66,6 +66,10 @@ export const meta = {
     ],
   },
   relatedPosts: ["pierscionek-zareczynowy-na-zamowienie", "jak-dbac-o-bizuterie", "prezenty-personalizowane"],
+  relatedCalculators: [
+    { to: "/jewelry/#ring-blank", icon: "💍", label: { pl: "Kalkulator blanku obrączki", en: "Ring Blank Calculator", de: "Ring-Rohling-Rechner" }, desc: { pl: "Oblicz długość i masę blanku", en: "Calculate blank length and weight", de: "Rohlinglänge und -gewicht berechnen" } },
+    { to: "/jewelry/#calculator", icon: "💎", label: { pl: "Kalkulator biżuterii", en: "Jewelry Calculator", de: "Schmuckkalkulator" }, desc: { pl: "Wycena biżuterii na zamówienie", en: "Custom jewelry quote", de: "Schmuck nach Maß kalkulieren" } },
+  ],
 };
 
 export function Body({ lang }) {

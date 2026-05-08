@@ -66,6 +66,9 @@ export const meta = {
     ],
   },
   relatedPosts: ["druk-3d-krok-po-kroku", "jak-przygotowac-plik-stl", "warsztat-od-kuchni"],
+  relatedCalculators: [
+    { to: "/studio/#calculator", icon: "⚙️", label: { pl: "Kalkulator sTuDiO", en: "sTuDiO Calculator", de: "sTuDiO-Kalkulator" }, desc: { pl: "Wycena laserowania, druku 3D, odlewów żywicznych", en: "Quote for laser engraving, 3D print, resin casting", de: "Angebot für Laser, 3D-Druck, Harzverguss" } },
+  ],
 };
 
 export function Body({ lang }) {

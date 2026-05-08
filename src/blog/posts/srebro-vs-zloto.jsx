@@ -66,6 +66,9 @@ export const meta = {
     ],
   },
   relatedPosts: ["bizuteria-inwestycja", "jak-dbac-o-bizuterie", "pierscionek-zareczynowy-na-zamowienie"],
+  relatedCalculators: [
+    { to: "/jewelry/#calculator", icon: "💎", label: { pl: "Kalkulator biżuterii", en: "Jewelry Calculator", de: "Schmuckkalkulator" }, desc: { pl: "Wycena biżuterii na zamówienie", en: "Custom jewelry quote", de: "Schmuck nach Maß kalkulieren" } },
+  ],
 };
 
 export function Body({ lang }) {
