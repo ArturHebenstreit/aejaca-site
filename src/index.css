@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @theme {
   --font-sans: "Inter", system-ui, sans-serif;
   --font-serif: "Playfair Display", "Noto Serif", Georgia, serif;
@@ -148,11 +153,10 @@ body {
 }
 
 /* ─── Floating CTA for mobile ─── */
-/* bottom: 5.5rem leaves room above the chat bubble (h-14 + bottom-5 + gap) */
 .floating-cta {
   position: fixed;
-  bottom: 5.5rem;
-  right: 1.5rem;
+  bottom: 1.5rem;
+  left: 1.5rem;
   z-index: 40;
   opacity: 0;
   transform: translateY(20px);

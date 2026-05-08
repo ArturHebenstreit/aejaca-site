@@ -40,6 +40,12 @@ function renderMessage(text) {
 
 const API_URL = import.meta.env.VITE_CHAT_API_URL;
 
+const BUBBLE_MSG = {
+  pl: "Masz pytanie o wycenę lub projekt? Chętnie pomogę 💬",
+  en: "Questions about pricing or your project? I'm here to help 💬",
+  de: "Fragen zu Preisen oder Ihrem Projekt? Ich helfe gerne 💬",
+};
+
 const LABELS = {
   pl: {
     title: "Asystent AEJaCA",
@@ -93,10 +99,21 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
+  const [showBubble, setShowBubble] = useState(false);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
   const sessionRef = useRef(genSessionId());
   const abortRef = useRef(null);
+
+  useEffect(() => {
+    if (sessionStorage.getItem("chat_bubble_dismissed")) return;
+    const t = setTimeout(() => setShowBubble(true), 8000);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    if (open) setShowBubble(false);
+  }, [open]);
 
   useEffect(() => {
     if (open && inputRef.current) inputRef.current.focus();
@@ -202,16 +219,46 @@ export default function ChatWidget() {
     <>
       {/* Chat bubble */}
       {!open && (
-        <div className="fixed bottom-5 right-5 z-50">
-          <span className="absolute inset-0 rounded-full bg-amber-400 animate-ping opacity-25" style={{ animationDuration: '2s' }} />
-          <span className="absolute inset-0 rounded-full bg-amber-400 animate-ping opacity-20" style={{ animationDuration: '2s', animationDelay: '0.75s' }} />
-          <button
-            onClick={() => setOpen(true)}
-            className="relative w-14 h-14 rounded-full bg-amber-400 hover:bg-amber-300 text-neutral-900 shadow-lg shadow-amber-500/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-            aria-label={l.title}
-          >
-            <MessageCircle className="w-6 h-6" />
-          </button>
+        <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
+          {showBubble && (
+            <div className="max-w-[220px] animate-[fadeSlideUp_0.3s_ease-out]">
+              <div className="relative bg-white text-neutral-800 text-sm rounded-2xl px-4 py-3"
+                style={{ filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.22))' }}
+              >
+                {BUBBLE_MSG[lang] || BUBBLE_MSG.pl}
+                {/* Comic tail pointing down-right toward the chat button */}
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    right: '22px',
+                    bottom: '-10px',
+                    width: 0,
+                    height: 0,
+                    borderLeft: '8px solid transparent',
+                    borderRight: '8px solid transparent',
+                    borderTop: '11px solid white',
+                  }}
+                />
+                <button
+                  onClick={() => { setShowBubble(false); sessionStorage.setItem("chat_bubble_dismissed", "1"); }}
+                  className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-neutral-200 hover:bg-neutral-300 text-neutral-500 flex items-center justify-center text-xs transition-colors"
+                  aria-label="Zamknij"
+                >×</button>
+              </div>
+            </div>
+          )}
+          <div className="relative w-14 h-14 shrink-0">
+            <span className="absolute inset-0 rounded-full bg-amber-400 animate-ping opacity-25 pointer-events-none" style={{ animationDuration: '2s' }} />
+            <span className="absolute inset-0 rounded-full bg-amber-400 animate-ping opacity-20 pointer-events-none" style={{ animationDuration: '2s', animationDelay: '0.75s' }} />
+            <button
+              onClick={() => { setOpen(true); setShowBubble(false); }}
+              className="relative w-14 h-14 rounded-full bg-amber-400 hover:bg-amber-300 text-neutral-900 shadow-lg shadow-amber-500/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+              aria-label={l.title}
+            >
+              <MessageCircle className="w-6 h-6" />
+            </button>
+          </div>
         </div>
       )}
 

@@ -1,7 +1,7 @@
 # AEJaCA — Claude Code project guide
 
 Website: https://www.aejaca.com — Polish jewelry + digital fabrication studio.
-Bilingual site (pl/en/de) built with React 19 + Vite 6 + Tailwind CSS v4.
+Bilingual site (pl/en/de) built with React 18 + Vite 6 + Tailwind CSS v4.
 Deployment: Cloudflare Pages (public/_headers, public/_redirects).
 
 ## Working philosophy
