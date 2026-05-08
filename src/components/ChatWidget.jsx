@@ -221,9 +221,27 @@ export default function ChatWidget() {
       {!open && (
         <div className="fixed bottom-5 right-5 z-50 flex items-end gap-3">
           {showBubble && (
-            <div className="mb-1 max-w-[220px] animate-[fadeSlideUp_0.3s_ease-out]">
-              <div className="relative bg-white text-neutral-800 text-sm rounded-2xl rounded-br-sm px-4 py-3 shadow-lg shadow-black/15">
+            <div className="mb-2 max-w-[210px] animate-[fadeSlideUp_0.3s_ease-out]" style={{ marginRight: '0.75rem' }}>
+              <div className="relative bg-white text-neutral-800 text-sm rounded-2xl px-4 py-3 shadow-lg shadow-black/20"
+                style={{
+                  filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.18))',
+                }}
+              >
                 {BUBBLE_MSG[lang] || BUBBLE_MSG.pl}
+                {/* Comic tail pointing right */}
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    right: '-10px',
+                    bottom: '14px',
+                    width: 0,
+                    height: 0,
+                    borderTop: '7px solid transparent',
+                    borderBottom: '7px solid transparent',
+                    borderLeft: '11px solid white',
+                  }}
+                />
                 <button
                   onClick={() => { setShowBubble(false); sessionStorage.setItem("chat_bubble_dismissed", "1"); }}
                   className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-neutral-200 hover:bg-neutral-300 text-neutral-500 flex items-center justify-center text-xs transition-colors"
