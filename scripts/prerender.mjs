@@ -21,6 +21,7 @@ const STATIC_ROUTES = [
   "/returns",
   "/shipping",
   "/privacy",
+  "/tools",
 ];
 
 const GLOSSARY_IDS = [

@@ -133,6 +133,27 @@ export const SEO = {
     },
   },
 
+  tools: {
+    pl: {
+      title: "Narzędzia i Kalkulatory — AEJaCA | Biżuteria i sTuDiO",
+      description: "Darmowe kalkulatory jubilerskie i narzędzia sTuDiO. Kalkulator blanku obrączki, wycena biżuterii, tabela parametrów laserowania.",
+      keywords: "kalkulator jubilerski, kalkulator blanku obrączki, parametry laserowania, wycena biżuterii online, AEJaCA",
+      ogAlt: "Narzędzia online AEJaCA — kalkulatory jubilerskie i sTuDiO",
+    },
+    en: {
+      title: "Tools & Calculators — AEJaCA | Jewelry & sTuDiO",
+      description: "Free jewelry calculators and sTuDiO tools. Ring blank calculator, jewelry estimator, laser parameter table.",
+      keywords: "jewelry calculator, ring blank calculator, laser parameters table, jewelry quote online, AEJaCA",
+      ogAlt: "AEJaCA Online Tools — jewelry and sTuDiO calculators",
+    },
+    de: {
+      title: "Tools & Kalkulatoren — AEJaCA | Schmuck & sTuDiO",
+      description: "Kostenlose Schmuck-Kalkulatoren und sTuDiO-Tools. Ring-Rohling-Rechner, Schmuckpreisrechner, Laserparameter-Tabelle.",
+      keywords: "Schmuckkalkulator, Ring-Rohling-Rechner, Laserparameter-Tabelle, Schmuck Angebot online, AEJaCA",
+      ogAlt: "AEJaCA Online-Tools — Schmuck- und sTuDiO-Kalkulatoren",
+    },
+  },
+
   about: {
     pl: {
       title: "O AEJaCA — Rzemiosło i technologia od 2023 roku",

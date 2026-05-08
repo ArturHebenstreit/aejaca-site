@@ -23,6 +23,7 @@ const About = lazy(() => import("./pages/About.jsx"));
 const Warranty = lazy(() => import("./pages/Warranty.jsx"));
 const Returns = lazy(() => import("./pages/Returns.jsx"));
 const Shipping = lazy(() => import("./pages/Shipping.jsx"));
+const Tools = lazy(() => import("./pages/Tools.jsx"));
 const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 
 function LazyFallback() {
@@ -53,6 +54,7 @@ const app = (
                 <Route path="/warranty/" element={<Warranty />} />
                 <Route path="/returns/" element={<Returns />} />
                 <Route path="/shipping/" element={<Shipping />} />
+                <Route path="/tools/" element={<Tools />} />
                 <Route path="/privacy/" element={<Privacy />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
