@@ -18,7 +18,8 @@ import About from "./pages/About.jsx";
 import Warranty from "./pages/Warranty.jsx";
 import Returns from "./pages/Returns.jsx";
 import Shipping from "./pages/Shipping.jsx";
-import Tools from "./pages/Tools.jsx";
+import ToolsJewelry from "./pages/ToolsJewelry.jsx";
+import ToolsStudio from "./pages/ToolsStudio.jsx";
 import NotFound from "./pages/NotFound.jsx";
 
 export function render(url) {
@@ -42,7 +43,8 @@ export function render(url) {
               <Route path="/warranty/" element={<Warranty />} />
               <Route path="/returns/" element={<Returns />} />
               <Route path="/shipping/" element={<Shipping />} />
-              <Route path="/tools/" element={<Tools />} />
+              <Route path="/toolsjewelry/" element={<ToolsJewelry />} />
+              <Route path="/toolstudio/" element={<ToolsStudio />} />
               <Route path="/privacy/" element={<Privacy />} />
               <Route path="*" element={<NotFound />} />
             </Route>

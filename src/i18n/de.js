@@ -52,8 +52,8 @@ export default {
     resourcesSections: [
       { label: "Blog", to: "/blog/" },
       { label: "Glossar", to: "/glossary/" },
-      { label: "Schmuck-Tools", to: "/tools/#jewelry" },
-      { label: "sTuDiO-Tools", to: "/tools/#studio" },
+      { label: "Schmuck-Tools", to: "/toolsjewelry/" },
+      { label: "sTuDiO-Tools", to: "/toolstudio/" },
     ],
   },
 

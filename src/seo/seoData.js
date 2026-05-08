@@ -133,24 +133,45 @@ export const SEO = {
     },
   },
 
-  tools: {
+  toolsjewelry: {
     pl: {
-      title: "Narzędzia i Kalkulatory — AEJaCA | Biżuteria i sTuDiO",
-      description: "Darmowe kalkulatory jubilerskie i narzędzia sTuDiO. Kalkulator blanku obrączki, wycena biżuterii, tabela parametrów laserowania.",
-      keywords: "kalkulator jubilerski, kalkulator blanku obrączki, parametry laserowania, wycena biżuterii online, AEJaCA",
-      ogAlt: "Narzędzia online AEJaCA — kalkulatory jubilerskie i sTuDiO",
+      title: "Narzędzia jubilerskie — Kalkulatory AEJaCA | Biżuteria",
+      description: "Darmowe kalkulatory jubilerskie AEJaCA. Kalkulator blanku obrączki, wycena biżuterii na zamówienie. Bez rejestracji.",
+      keywords: "kalkulator jubilerski, kalkulator blanku obrączki, wycena biżuterii online, AEJaCA",
+      ogAlt: "Narzędzia jubilerskie AEJaCA — kalkulatory online",
     },
     en: {
-      title: "Tools & Calculators — AEJaCA | Jewelry & sTuDiO",
-      description: "Free jewelry calculators and sTuDiO tools. Ring blank calculator, jewelry estimator, laser parameter table.",
-      keywords: "jewelry calculator, ring blank calculator, laser parameters table, jewelry quote online, AEJaCA",
-      ogAlt: "AEJaCA Online Tools — jewelry and sTuDiO calculators",
+      title: "Jewelry Tools & Calculators — AEJaCA",
+      description: "Free AEJaCA jewelry calculators. Ring blank calculator, custom jewelry estimator. No registration required.",
+      keywords: "jewelry calculator, ring blank calculator, custom jewelry estimate, AEJaCA",
+      ogAlt: "AEJaCA Jewelry Tools — online calculators",
     },
     de: {
-      title: "Tools & Kalkulatoren — AEJaCA | Schmuck & sTuDiO",
-      description: "Kostenlose Schmuck-Kalkulatoren und sTuDiO-Tools. Ring-Rohling-Rechner, Schmuckpreisrechner, Laserparameter-Tabelle.",
-      keywords: "Schmuckkalkulator, Ring-Rohling-Rechner, Laserparameter-Tabelle, Schmuck Angebot online, AEJaCA",
-      ogAlt: "AEJaCA Online-Tools — Schmuck- und sTuDiO-Kalkulatoren",
+      title: "Schmuck-Tools & Kalkulatoren — AEJaCA",
+      description: "Kostenlose AEJaCA-Schmuck-Kalkulatoren. Ring-Rohling-Rechner, Schmuck nach Maß kalkulieren. Keine Registrierung.",
+      keywords: "Schmuckkalkulator, Ring-Rohling-Rechner, Schmuck kalkulieren, AEJaCA",
+      ogAlt: "AEJaCA Schmuck-Tools — Online-Kalkulatoren",
+    },
+  },
+
+  toolstudio: {
+    pl: {
+      title: "Narzędzia sTuDiO — Parametry laserowania i kalkulator AEJaCA",
+      description: "Darmowe narzędzia dla makerów. Interaktywna tabela parametrów laserowania CO₂, Fiber, Dioda, UV. Kalkulator wyceny sTuDiO.",
+      keywords: "parametry laserowania, kalkulator laserowy, tabela parametrów laser, CO2 laser drewno, fiber laser stal, AEJaCA",
+      ogAlt: "Narzędzia sTuDiO AEJaCA — parametry laserowania i kalkulator",
+    },
+    en: {
+      title: "sTuDiO Tools — Laser Parameters & Calculator — AEJaCA",
+      description: "Free tools for makers. Interactive laser parameter table for CO₂, Fiber, Diode, UV lasers. sTuDiO project estimator.",
+      keywords: "laser parameters table, laser calculator, CO2 laser settings, fiber laser parameters, AEJaCA",
+      ogAlt: "AEJaCA sTuDiO Tools — laser parameters and calculator",
+    },
+    de: {
+      title: "sTuDiO-Tools — Laserparameter & Kalkulator — AEJaCA",
+      description: "Kostenlose Tools für Maker. Interaktive Laserparameter-Tabelle für CO₂, Fiber, Dioden-, UV-Laser. sTuDiO-Projektkalkulator.",
+      keywords: "Laserparameter Tabelle, Laser Kalkulator, CO2 Laser Einstellungen, Fiber Laser Parameter, AEJaCA",
+      ogAlt: "AEJaCA sTuDiO-Tools — Laserparameter und Kalkulator",
     },
   },
 
