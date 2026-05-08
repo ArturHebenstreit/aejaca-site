@@ -6,7 +6,6 @@ import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getPost } from "../blog/posts.js";
 import BlogCard from "../components/blog/BlogCard.jsx";
 import JewelryEstimator from "../components/JewelryEstimator.jsx";
-import RingBlankCalc from "../components/calculators/RingBlankCalc.jsx";
 import ProcessGallery from "../components/ProcessGallery.jsx";
 import Portfolio from "../components/Portfolio.jsx";
 import GoogleReviews from "../components/GoogleReviews.jsx";
@@ -223,19 +222,6 @@ export default function Jewelry() {
               {PRICING_LABELS[lang]?.cta} <ArrowRight className="w-4 h-4" />
             </a>
           </div>
-        </div>
-      </section>
-
-      <div className="gradient-divider" />
-
-      {/* Ring Blank Calculator */}
-      <section id="ring-blank" className="py-16 px-4 bg-neutral-950">
-        <div className="max-w-3xl mx-auto">
-          <div className="reveal mb-8">
-            <h2 className="text-2xl font-bold text-white mb-2">{j.ringBlankTitle}</h2>
-            <p className="text-neutral-400">{j.ringBlankSubtitle}</p>
-          </div>
-          <RingBlankCalc lang={lang} />
         </div>
       </section>
 

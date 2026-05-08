@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench, Calculator, Tag, Table } from "lucide-react";
+import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench, Calculator, Tag } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getPost } from "../blog/posts.js";
@@ -217,29 +217,6 @@ export default function Studio() {
               {PRICING_LABELS[lang]?.cta} <ArrowRight className="w-4 h-4" />
             </a>
           </div>
-        </div>
-      </section>
-
-      <div className="gradient-divider" />
-
-      {/* sTuDiO Tools hub CTA */}
-      <section className="py-12 px-4 bg-neutral-900/40">
-        <div className="max-w-3xl mx-auto">
-          <Link to="/toolstudio/"
-            className="group flex items-center justify-between gap-4 p-6 rounded-2xl glass hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300">
-            <div className="flex items-center gap-4">
-              <Table className="w-8 h-8 text-blue-400 shrink-0 transition-transform group-hover:scale-110" />
-              <div>
-                <div className="text-white font-semibold group-hover:text-blue-300 transition-colors">
-                  {{ pl: "Tabela parametrów laserowania", en: "Laser Parameter Table", de: "Laserparameter-Tabelle" }[lang]}
-                </div>
-                <div className="text-neutral-400 text-sm mt-1">
-                  {{ pl: "CO₂, Fiber, Dioda, UV — interaktywna tabela dla makerów", en: "CO₂, Fiber, Diode, UV — interactive table for makers", de: "CO₂, Fiber, Dioden, UV — interaktive Tabelle für Maker" }[lang]}
-                </div>
-              </div>
-            </div>
-            <ArrowRight className="w-5 h-5 text-neutral-500 group-hover:text-blue-400 shrink-0 transition-colors" />
-          </Link>
         </div>
       </section>
 
