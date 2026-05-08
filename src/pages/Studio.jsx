@@ -6,6 +6,7 @@ import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getPost } from "../blog/posts.js";
 import BlogCard from "../components/blog/BlogCard.jsx";
 import StudioCalculator from "../components/StudioCalculator.jsx";
+import LaserMaterialMatrix from "../components/calculators/LaserMaterialMatrix.jsx";
 import Portfolio from "../components/Portfolio.jsx";
 import GoogleReviews from "../components/GoogleReviews.jsx";
 import FAQ from "../components/FAQ.jsx";
@@ -217,6 +218,19 @@ export default function Studio() {
               {PRICING_LABELS[lang]?.cta} <ArrowRight className="w-4 h-4" />
             </a>
           </div>
+        </div>
+      </section>
+
+      <div className="gradient-divider" />
+
+      {/* Laser Material Matrix */}
+      <section id="laser-params" className="py-16 px-4 bg-neutral-950">
+        <div className="max-w-5xl mx-auto">
+          <div className="reveal mb-8">
+            <h2 className="text-2xl font-bold text-white mb-2">{s.laserParamsTitle}</h2>
+            <p className="text-neutral-400">{s.laserParamsSubtitle}</p>
+          </div>
+          <LaserMaterialMatrix lang={lang} />
         </div>
       </section>
 

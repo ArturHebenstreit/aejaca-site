@@ -49,7 +49,7 @@ export default {
       { label: "Jewelry Portfolio", pagePath: "/jewelry/", id: "portfolio" },
       { label: "sTuDiO Portfolio", pagePath: "/studio/", id: "portfolio" },
     ],
-    resources: "Blog & Glossary",
+    resources: "Tools & Knowledge",
     resourcesSections: [
       { label: "Blog", to: "/blog/" },
       { label: "Glossary", to: "/glossary/" },
@@ -168,6 +168,9 @@ export default {
     ctaTitle: "Looking for something unique?",
     ctaText: "Tell us about your dream piece — we'll design and craft it just for you.",
     ctaBtn: "Start a Custom Project",
+
+    ringBlankTitle: "Ring Blank Length Calculator",
+    ringBlankSubtitle: "Calculate how much material you need to make a ring or band.",
 
     // Configurator
     configurator: {
@@ -392,6 +395,9 @@ export default {
     ctaTitle: "Have a project in mind?",
     ctaText: "From prototypes to production — let's bring your idea to life.",
     ctaBtn: "Request a Quote",
+
+    laserParamsTitle: "Laser Parameters — Reference Table",
+    laserParamsSubtitle: "Indicative settings for popular materials. Results depend on the specific machine — treat as a starting point.",
 
     // Calculator
     calculator: {
