@@ -553,9 +553,15 @@ export default function LaserParametersTool({ lang = "pl" }) {
   useEffect(() => {
     const fetchFresh = async () => {
       try {
+        if (!API_BASE) throw new Error("Brak konfiguracji VITE_CHAT_API_URL");
         const r = await fetch(`${API_BASE}/api/laser-matrix`);
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const ct = r.headers.get("content-type") || "";
+        if (!ct.includes("application/json")) {
+          throw new Error("API niedostępne (deploy w toku)");
+        }
         const data = await r.json();
+        if (!data?.rows) throw new Error("Pusta odpowiedź z API");
         localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), payload: data }));
         setAllRows(data.rows);
         setLoading(false);
@@ -616,10 +622,12 @@ export default function LaserParametersTool({ lang = "pl" }) {
 
   if (error) {
     return (
-      <div className="text-center py-12 text-neutral-500">
-        <p className="text-red-400 text-sm mb-2">Błąd ładowania danych: {error}</p>
-        <button onClick={() => window.location.reload()} className="text-xs text-blue-400 hover:underline">
-          Spróbuj ponownie
+      <div className="text-center py-12 px-4 border border-amber-900/30 bg-amber-950/20 rounded-2xl">
+        <div className="text-3xl mb-3">⚙️</div>
+        <p className="text-amber-300 text-sm font-medium mb-1">Baza parametrów jest aktualizowana</p>
+        <p className="text-neutral-500 text-xs mb-4">Wracamy za chwilę. Spróbuj ponownie za parę minut.</p>
+        <button onClick={() => window.location.reload()} className="text-xs text-blue-400 hover:text-blue-300 transition-colors underline">
+          Odśwież stronę
         </button>
       </div>
     );
