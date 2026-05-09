@@ -132,6 +132,47 @@ const pool = new pg.Pool({
   ssl: { rejectUnauthorized: false },
 });
 
+const CREATE_TABLE_SQL = `
+CREATE TABLE IF NOT EXISTS laser_matrix (
+  id              BIGSERIAL PRIMARY KEY,
+  laser_type      VARCHAR(50)  NOT NULL,
+  action_type     VARCHAR(100) NOT NULL,
+  kinematics      VARCHAR(50)  NOT NULL,
+  wavelength_nm   INTEGER,
+  material        VARCHAR(200) NOT NULL,
+  thickness_mm    VARCHAR(50),
+  watts           VARCHAR(20)  NOT NULL,
+  speed           VARCHAR(50),
+  power_pct       VARCHAR(50),
+  passes          VARCHAR(50),
+  dpi             VARCHAR(50),
+  hatch_mm        VARCHAR(50),
+  scan_angle_deg  VARCHAR(50),
+  wobble_mm       VARCHAR(50),
+  frequency_khz   VARCHAR(50),
+  pulse_width_ns  VARCHAR(50),
+  optics_lens     VARCHAR(100),
+  defocus_mm      VARCHAR(50),
+  z_step_mm       VARCHAR(50),
+  gas_type        VARCHAR(100),
+  gas_pressure    VARCHAR(50),
+  galvo_delays    VARCHAR(200),
+  notes           TEXT,
+  material_en     VARCHAR(200),
+  material_de     VARCHAR(200),
+  action_en       VARCHAR(100),
+  action_de       VARCHAR(100),
+  notes_en        TEXT,
+  notes_de        TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_by      VARCHAR(100)
+);
+CREATE INDEX IF NOT EXISTS idx_laser_matrix_filter ON laser_matrix(laser_type, action_type, material);
+CREATE INDEX IF NOT EXISTS idx_laser_matrix_action ON laser_matrix(action_type);
+CREATE INDEX IF NOT EXISTS idx_laser_matrix_laser  ON laser_matrix(laser_type);
+`;
+
 const COLS = [
   "laser_type","action_type","kinematics","wavelength_nm","material","thickness_mm",
   "watts","speed","power_pct","passes",
@@ -148,6 +189,9 @@ const INSERT_SQL = `
 
 try {
   await pool.query("BEGIN");
+
+  console.log("Creating table if not exists...");
+  await pool.query(CREATE_TABLE_SQL);
 
   if (!NO_TRUNCATE) {
     console.log("Truncating laser_matrix...");
