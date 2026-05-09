@@ -430,4 +430,64 @@ app.post("/api/events", express.text({ type: "*/*", limit: "64kb" }), async (req
   res.json({ ok: true });
 });
 
+// --- Laser Matrix public API ---
+let _matrixCache = { ts: 0, rows: null };
+
+async function ensureMatrixCache() {
+  if (!pool) return;
+  const now = Date.now();
+  if (!_matrixCache.rows || now - _matrixCache.ts > 5 * 60_000) {
+    const { rows } = await pool.query(
+      "SELECT * FROM laser_matrix ORDER BY laser_type, action_type, material, watts"
+    );
+    _matrixCache = { ts: now, rows };
+  }
+}
+
+// GET /api/laser-matrix — all rows, optional ?laser=CO2&action=Grawerowanie&material=Akryl
+app.get("/api/laser-matrix", async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "DB unavailable" });
+  try {
+    await ensureMatrixCache();
+    let rows = _matrixCache.rows;
+    const { laser, action, material } = req.query;
+    if (laser)    rows = rows.filter(r => r.laser_type === laser);
+    if (action)   rows = rows.filter(r => r.action_type === action);
+    if (material) rows = rows.filter(r => r.material.toLowerCase().includes(material.toLowerCase()));
+    res.setHeader("Cache-Control", "public, max-age=300");
+    res.json({ rows, count: rows.length, cachedAt: new Date(_matrixCache.ts).toISOString() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/laser-matrix/options — unique filter values for wizard dropdowns
+app.get("/api/laser-matrix/options", async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "DB unavailable" });
+  try {
+    await ensureMatrixCache();
+    const rows = _matrixCache.rows || [];
+    const uniq = (arr) => [...new Set(arr.filter(Boolean))].sort();
+    const lasers    = uniq(rows.map(r => r.laser_type));
+    const actions   = uniq(rows.map(r => r.action_type));
+    const materials = uniq(rows.map(r => r.material));
+    const watts     = uniq(rows.map(r => r.watts));
+    const lenses    = uniq(rows.map(r => r.optics_lens));
+    res.setHeader("Cache-Control", "public, max-age=300");
+    res.json({ lasers, actions, materials, watts, lenses });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/laser-matrix/invalidate — clears cache (called by admin after edit)
+app.post("/api/laser-matrix/invalidate", express.json({ limit: "1kb" }), (req, res) => {
+  const token = req.headers["x-invalidate-token"];
+  if (!process.env.MATRIX_INVALIDATE_TOKEN || token !== process.env.MATRIX_INVALIDATE_TOKEN) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  _matrixCache = { ts: 0, rows: null };
+  res.json({ ok: true, message: "Cache invalidated" });
+});
+
 app.listen(PORT, () => console.log(`AEJaCA Chat API running on :${PORT}`));

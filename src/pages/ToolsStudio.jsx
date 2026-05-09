@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Cpu } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
-import LaserMaterialMatrix from "../components/calculators/LaserMaterialMatrix.jsx";
+import LaserParametersTool from "../components/calculators/LaserParametersTool.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
@@ -18,8 +18,8 @@ const LABELS = {
     calcCTATitle: "Kalkulator wyceny sTuDiO",
     calcCTADesc: "Wycena laserowania CO₂ i fiber, druku 3D FDM/SLA oraz odlewów żywicznych — online, bez czekania.",
     calcCTABtn: "Przejdź do kalkulatora wyceny",
-    laserMatrixTitle: "Interaktywna tabela parametrów laserowania",
-    laserMatrixSubtitle: "Rzeczywiste parametry dla CO₂, Fiber, Dioda, UV i IR. Filtruj po akcji, typie lasera i mocy — tabela dostosowuje się automatycznie.",
+    laserMatrixTitle: "Kreator parametrów laserowania",
+    laserMatrixSubtitle: "Parametry dla 7 typów laserów, 88 materiałów i ponad 1000 kombinacji. Wybierz akcję, materiał i laser — otrzymasz gotową kartę parametrów.",
     footerCtaTitle: "Masz projekt do realizacji?",
     footerCtaText: "Parametry to teoria — wykonanie to nasza specjalność.",
     footerCtaBtn: "AEJaCA sTuDiO",
@@ -36,8 +36,8 @@ const LABELS = {
     calcCTATitle: "sTuDiO Pricing Calculator",
     calcCTADesc: "Estimate CO₂ and fiber laser engraving, FDM/SLA 3D printing, and resin casting — online, no waiting.",
     calcCTABtn: "Go to pricing calculator",
-    laserMatrixTitle: "Interactive Laser Parameter Table",
-    laserMatrixSubtitle: "Real parameters for CO₂, Fiber, Diode, UV, and IR lasers. Filter by action, laser type, and power — table adapts automatically.",
+    laserMatrixTitle: "Laser Parameter Wizard",
+    laserMatrixSubtitle: "Parameters for 7 laser types, 88 materials and over 1000 combinations. Select action, material and laser — get a ready-to-use parameter card.",
     footerCtaTitle: "Have a project to execute?",
     footerCtaText: "Parameters are theory — execution is our specialty.",
     footerCtaBtn: "AEJaCA sTuDiO",
@@ -54,8 +54,8 @@ const LABELS = {
     calcCTATitle: "sTuDiO-Preiskalkulator",
     calcCTADesc: "Angebot für CO₂- und Faserlaser, FDM/SLA-3D-Druck und Harzverguss — online, ohne Wartezeit.",
     calcCTABtn: "Zum Preiskalkulator",
-    laserMatrixTitle: "Interaktive Laserparameter-Tabelle",
-    laserMatrixSubtitle: "Reale Parameter für CO₂, Fiber, Dioden-, UV- und IR-Laser. Nach Aktion, Lasertyp und Leistung filtern — Tabelle passt sich automatisch an.",
+    laserMatrixTitle: "Laserparameter-Assistent",
+    laserMatrixSubtitle: "Parameter für 7 Lasertypen, 88 Materialien und über 1000 Kombinationen. Aktion, Material und Laser wählen — fertige Parameterkarte erhalten.",
     footerCtaTitle: "Projekt zur Ausführung?",
     footerCtaText: "Parameter sind Theorie — Ausführung ist unsere Spezialität.",
     footerCtaBtn: "AEJaCA sTuDiO",
@@ -164,7 +164,7 @@ export default function ToolsStudio() {
               <h2 className="text-2xl font-bold text-white mb-2">{L.laserMatrixTitle}</h2>
               <p className="text-neutral-400">{L.laserMatrixSubtitle}</p>
             </div>
-            <LaserMaterialMatrix lang={lang} />
+            <LaserParametersTool lang={lang} />
           </div>
         </section>
 

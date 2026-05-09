@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "vite build && vite build --ssr src/entry-server.jsx --outDir dist/server && node scripts/prerender.mjs",
     "build:client": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:seed-laser-matrix": "node scripts/import-laser-matrix.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.536.0",
