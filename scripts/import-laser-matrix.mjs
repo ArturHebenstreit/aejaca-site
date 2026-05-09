@@ -14,7 +14,8 @@ import { readFileSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import pg from "pg";
-import * as XLSX from "xlsx";
+import XLSXModule from "xlsx";
+const XLSX = XLSXModule.default ?? XLSXModule;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
