@@ -265,7 +265,7 @@ export default function ChatWidget() {
       {/* Chat panel */}
       {open && (
         <div
-          className="fixed bottom-0 right-0 sm:bottom-5 sm:right-5 z-50 w-full sm:w-[380px] h-[100dvh] sm:h-[520px] sm:max-h-[80vh] flex flex-col bg-neutral-950 sm:rounded-2xl border border-white/10 shadow-2xl shadow-black/50 overflow-hidden"
+          className="fixed bottom-0 inset-x-0 sm:inset-x-auto sm:bottom-5 sm:right-5 z-50 w-full sm:w-[380px] h-[100svh] sm:h-[520px] sm:max-h-[80vh] flex flex-col bg-neutral-950 sm:rounded-2xl border border-white/10 shadow-2xl shadow-black/50 overflow-hidden"
           role="dialog"
           aria-label={l.title}
         >
@@ -353,6 +353,15 @@ export default function ChatWidget() {
                 )}
               </button>
             </div>
+            {/* Mobile-only close button — always reachable even when keyboard is open */}
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="sm:hidden mt-2 w-full py-1.5 text-xs text-neutral-500 hover:text-neutral-300 transition-colors flex items-center justify-center gap-1"
+              aria-label="Close chat"
+            >
+              <X className="w-3 h-3" /> Zamknij
+            </button>
           </form>
         </div>
       )}
