@@ -140,14 +140,16 @@ export default function ToolsJewelry() {
             <div ref={calcCTARef} className="reveal">
               <Link
                 to="/jewelry/#calculator"
-                className="group flex items-center gap-5 p-5 rounded-2xl glass hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-900/20 transition-all duration-300"
+                className="group flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 p-5 rounded-2xl glass hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-900/20 transition-all duration-300"
               >
-                <Calculator className="w-10 h-10 text-amber-400 shrink-0 transition-transform duration-300 group-hover:scale-110" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-white font-semibold text-base group-hover:text-amber-300 transition-colors">{L.calcCTATitle}</div>
-                  <div className="text-neutral-400 text-sm mt-0.5 leading-relaxed">{L.calcCTADesc}</div>
+                <div className="flex items-center gap-4">
+                  <Calculator className="w-10 h-10 text-amber-400 shrink-0 transition-transform duration-300 group-hover:scale-110" />
+                  <div className="min-w-0">
+                    <div className="text-white font-semibold text-base group-hover:text-amber-300 transition-colors">{L.calcCTATitle}</div>
+                    <div className="text-neutral-400 text-sm mt-0.5 leading-relaxed">{L.calcCTADesc}</div>
+                  </div>
                 </div>
-                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-amber-400 group-hover:text-amber-300 shrink-0 transition-colors">
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-amber-400 group-hover:text-amber-300 sm:ml-auto shrink-0 transition-colors">
                   {L.calcCTABtn} <ArrowRight className="w-4 h-4" />
                 </span>
               </Link>
