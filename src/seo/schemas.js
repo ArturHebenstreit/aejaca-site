@@ -153,6 +153,60 @@ export function buildBreadcrumbSchema(trail) {
   };
 }
 
+// ---------- Merchant policies (shipping + returns) ----------
+// Required by Google Merchant Listings for offers in structured data.
+// Without these, GSC reports "Missing field hasMerchantReturnPolicy" /
+// "Missing field shippingDetails" warnings and the offer may not appear
+// in Shopping / merchant rich results.
+export function buildShippingDetails({ currency = "EUR" } = {}) {
+  return {
+    "@type": "OfferShippingDetails",
+    shippingRate: {
+      "@type": "MonetaryAmount",
+      value: "0",
+      currency,
+    },
+    shippingDestination: [
+      { "@type": "DefinedRegion", addressCountry: "PL" },
+      { "@type": "DefinedRegion", addressCountry: "DE" },
+      { "@type": "DefinedRegion", addressCountry: "AT" },
+      { "@type": "DefinedRegion", addressCountry: "FR" },
+      { "@type": "DefinedRegion", addressCountry: "NL" },
+      { "@type": "DefinedRegion", addressCountry: "BE" },
+      { "@type": "DefinedRegion", addressCountry: "IT" },
+      { "@type": "DefinedRegion", addressCountry: "ES" },
+      { "@type": "DefinedRegion", addressCountry: "CZ" },
+      { "@type": "DefinedRegion", addressCountry: "SK" },
+    ],
+    deliveryTime: {
+      "@type": "ShippingDeliveryTime",
+      handlingTime: {
+        "@type": "QuantitativeValue",
+        minValue: 1,
+        maxValue: 3,
+        unitCode: "DAY",
+      },
+      transitTime: {
+        "@type": "QuantitativeValue",
+        minValue: 1,
+        maxValue: 5,
+        unitCode: "DAY",
+      },
+    },
+  };
+}
+
+export function buildReturnPolicy() {
+  return {
+    "@type": "MerchantReturnPolicy",
+    applicableCountry: ["PL", "DE", "AT", "FR", "NL", "BE", "IT", "ES", "CZ", "SK"],
+    returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+    merchantReturnDays: 14,
+    returnMethod: "https://schema.org/ReturnByMail",
+    returnFees: "https://schema.org/FreeReturn",
+  };
+}
+
 // ---------- Service offering (for Jewelry / Studio service pages) ----------
 // Google uses Service schema to surface provider + price range in local/service SERPs.
 // AI assistants use this to answer "how much does X cost" queries directly.
@@ -187,6 +241,8 @@ export function buildServiceSchema({ name, description, serviceType, url, offers
         },
         availability: "https://schema.org/InStock",
         url,
+        shippingDetails: buildShippingDetails({ currency: offers.currency || "EUR" }),
+        hasMerchantReturnPolicy: buildReturnPolicy(),
       },
     }),
   };
@@ -265,6 +321,8 @@ export function buildProductSchema({ name, description, image, sku, price, curre
         : "https://schema.org/OutOfStock",
       seller: { "@type": "Organization", name: SITE.name },
       ...(url && { url }),
+      shippingDetails: buildShippingDetails({ currency }),
+      hasMerchantReturnPolicy: buildReturnPolicy(),
     },
   };
   if (rating && reviewCount) {
