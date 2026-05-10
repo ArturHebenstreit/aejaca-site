@@ -206,6 +206,39 @@ export default function BlogPost() {
             </div>
           </section>
         )}
+
+        {/* Related calculators */}
+        {post.relatedCalculators?.length > 0 && (
+          <section className="py-12 px-4 bg-neutral-950">
+            <div className="max-w-3xl mx-auto">
+              <h2 className="font-serif text-xl font-semibold text-white mb-6">
+                {{ pl: "Powiązane narzędzia", en: "Related tools", de: "Verwandte Tools" }[lang]}
+              </h2>
+              <div className="flex flex-col gap-3">
+                {post.relatedCalculators.map((calc) => (
+                  <Link
+                    key={calc.to}
+                    to={calc.to}
+                    className="flex items-center gap-3 p-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-neutral-600 transition-colors group"
+                  >
+                    <span className="text-2xl">{calc.icon}</span>
+                    <div>
+                      <div className="text-white font-medium group-hover:text-amber-400 transition-colors">
+                        {typeof calc.label === "object" ? calc.label[lang] || calc.label.pl : calc.label}
+                      </div>
+                      {calc.desc && (
+                        <div className="text-sm text-neutral-400">
+                          {typeof calc.desc === "object" ? calc.desc[lang] || calc.desc.pl : calc.desc}
+                        </div>
+                      )}
+                    </div>
+                    <span className="ml-auto text-neutral-500 group-hover:text-amber-400 transition-colors">→</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
       </div>
     </>
   );

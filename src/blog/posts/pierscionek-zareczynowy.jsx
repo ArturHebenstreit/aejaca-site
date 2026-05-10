@@ -70,6 +70,10 @@ export const meta = {
     ],
   },
   relatedPosts: ["obraczki-slubne-na-zamowienie", "srebro-vs-zloto", "bizuteria-inwestycja"],
+  relatedCalculators: [
+    { to: "/jewelry/#calculator", icon: "💎", label: { pl: "Kalkulator biżuterii", en: "Jewelry Calculator", de: "Schmuckkalkulator" }, desc: { pl: "Wycena biżuterii na zamówienie", en: "Custom jewelry quote", de: "Schmuck nach Maß kalkulieren" } },
+    { to: "/jewelry/#ring-blank", icon: "💍", label: { pl: "Kalkulator blanku obrączki", en: "Ring Blank Calculator", de: "Ring-Rohling-Rechner" }, desc: { pl: "Oblicz długość i masę blanku", en: "Calculate blank length and weight", de: "Rohlinglänge und -gewicht berechnen" } },
+  ],
 };
 
 // ======================= PL =======================

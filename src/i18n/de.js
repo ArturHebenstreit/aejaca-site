@@ -48,10 +48,12 @@ export default {
       { label: "Schmuck Portfolio", pagePath: "/jewelry/", id: "portfolio" },
       { label: "sTuDiO Portfolio", pagePath: "/studio/", id: "portfolio" },
     ],
-    resources: "Blog & Glossar",
+    resources: "Tools & Wissen",
     resourcesSections: [
       { label: "Blog", to: "/blog/" },
       { label: "Glossar", to: "/glossary/" },
+      { label: "Schmuck-Tools", to: "/toolsjewelry/" },
+      { label: "sTuDiO-Tools", to: "/toolstudio/" },
     ],
   },
 
@@ -165,6 +167,9 @@ export default {
     ctaTitle: "Suchen Sie etwas Einzigartiges?",
     ctaText: "Erzählen Sie uns von Ihrem Traumstück — wir entwerfen und fertigen es speziell für Sie.",
     ctaBtn: "Individuelles Projekt Starten",
+
+    ringBlankTitle: "Ring-Rohling-Längenrechner",
+    ringBlankSubtitle: "Berechnen Sie, wie viel Material Sie für einen Ring oder eine Manschette benötigen.",
 
     configurator: {
       tag: "Gestalten Sie Ihr Traumstück",
@@ -384,6 +389,9 @@ export default {
     ctaTitle: "Haben Sie ein Projekt im Sinn?",
     ctaText: "Vom Prototyp zur Produktion — lassen Sie uns Ihre Idee zum Leben erwecken.",
     ctaBtn: "Angebot Anfragen",
+
+    laserParamsTitle: "Laserparameter — Referenztabelle",
+    laserParamsSubtitle: "Orientierungswerte für gängige Materialien. Ergebnisse hängen von der Maschine ab — als Ausgangspunkt verwenden.",
 
     calculator: {
       tag: "Projekt Kalkulieren",

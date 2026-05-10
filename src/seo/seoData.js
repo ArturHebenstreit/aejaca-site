@@ -133,6 +133,48 @@ export const SEO = {
     },
   },
 
+  toolsjewelry: {
+    pl: {
+      title: "Narzędzia jubilerskie — Kalkulatory AEJaCA | Biżuteria",
+      description: "Darmowe kalkulatory jubilerskie AEJaCA. Kalkulator blanku obrączki, wycena biżuterii na zamówienie. Bez rejestracji.",
+      keywords: "kalkulator jubilerski, kalkulator blanku obrączki, wycena biżuterii online, AEJaCA",
+      ogAlt: "Narzędzia jubilerskie AEJaCA — kalkulatory online",
+    },
+    en: {
+      title: "Jewelry Tools & Calculators — AEJaCA",
+      description: "Free AEJaCA jewelry calculators. Ring blank calculator, custom jewelry estimator. No registration required.",
+      keywords: "jewelry calculator, ring blank calculator, custom jewelry estimate, AEJaCA",
+      ogAlt: "AEJaCA Jewelry Tools — online calculators",
+    },
+    de: {
+      title: "Schmuck-Tools & Kalkulatoren — AEJaCA",
+      description: "Kostenlose AEJaCA-Schmuck-Kalkulatoren. Ring-Rohling-Rechner, Schmuck nach Maß kalkulieren. Keine Registrierung.",
+      keywords: "Schmuckkalkulator, Ring-Rohling-Rechner, Schmuck kalkulieren, AEJaCA",
+      ogAlt: "AEJaCA Schmuck-Tools — Online-Kalkulatoren",
+    },
+  },
+
+  toolstudio: {
+    pl: {
+      title: "Narzędzia sTuDiO — Parametry laserowania i kalkulator AEJaCA",
+      description: "Darmowe narzędzia dla makerów. Interaktywna tabela parametrów laserowania CO₂, Fiber, Dioda, UV. Kalkulator wyceny sTuDiO.",
+      keywords: "parametry laserowania, kalkulator laserowy, tabela parametrów laser, CO2 laser drewno, fiber laser stal, AEJaCA",
+      ogAlt: "Narzędzia sTuDiO AEJaCA — parametry laserowania i kalkulator",
+    },
+    en: {
+      title: "sTuDiO Tools — Laser Parameters & Calculator — AEJaCA",
+      description: "Free tools for makers. Interactive laser parameter table for CO₂, Fiber, Diode, UV lasers. sTuDiO project estimator.",
+      keywords: "laser parameters table, laser calculator, CO2 laser settings, fiber laser parameters, AEJaCA",
+      ogAlt: "AEJaCA sTuDiO Tools — laser parameters and calculator",
+    },
+    de: {
+      title: "sTuDiO-Tools — Laserparameter & Kalkulator — AEJaCA",
+      description: "Kostenlose Tools für Maker. Interaktive Laserparameter-Tabelle für CO₂, Fiber, Dioden-, UV-Laser. sTuDiO-Projektkalkulator.",
+      keywords: "Laserparameter Tabelle, Laser Kalkulator, CO2 Laser Einstellungen, Fiber Laser Parameter, AEJaCA",
+      ogAlt: "AEJaCA sTuDiO-Tools — Laserparameter und Kalkulator",
+    },
+  },
+
   about: {
     pl: {
       title: "O AEJaCA — Rzemiosło i technologia od 2023 roku",

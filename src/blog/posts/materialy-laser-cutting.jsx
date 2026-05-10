@@ -66,6 +66,10 @@ export const meta = {
     ],
   },
   relatedPosts: ["grawerowanie-laserowe-przewodnik", "druk-3d-krok-po-kroku", "warsztat-od-kuchni"],
+  relatedCalculators: [
+    { to: "/studio/#laser-params", icon: "📊", label: { pl: "Tabela parametrów laserowania", en: "Laser Parameters Table", de: "Laserparameter-Tabelle" }, desc: { pl: "Orientacyjne ustawienia CO2 i Fiber", en: "Indicative CO2 and Fiber settings", de: "Richtwerte für CO2 und Fiber" } },
+    { to: "/studio/#calculator", icon: "⚙️", label: { pl: "Kalkulator sTuDiO", en: "sTuDiO Calculator", de: "sTuDiO-Kalkulator" }, desc: { pl: "Wycena laserowania, druku 3D, odlewów żywicznych", en: "Quote for laser engraving, 3D print, resin casting", de: "Angebot für Laser, 3D-Druck, Harzverguss" } },
+  ],
 };
 
 export function Body({ lang }) {

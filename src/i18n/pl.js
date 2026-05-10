@@ -48,10 +48,12 @@ export default {
       { label: "Portfolio Biżuteria", pagePath: "/jewelry/", id: "portfolio" },
       { label: "Portfolio sTuDiO", pagePath: "/studio/", id: "portfolio" },
     ],
-    resources: "Blog i Słownik",
+    resources: "Narzędzia i Wiedza",
     resourcesSections: [
       { label: "Blog", to: "/blog/" },
       { label: "Słownik", to: "/glossary/" },
+      { label: "Narzędzia jubilerskie", to: "/toolsjewelry/" },
+      { label: "Narzędzia sTuDiO", to: "/toolstudio/" },
     ],
   },
 
@@ -165,6 +167,9 @@ export default {
     ctaTitle: "Szukasz czegoś wyjątkowego?",
     ctaText: "Opowiedz nam o swoim wymarzonym elemencie — zaprojektujemy go i stworzymy specjalnie dla Ciebie.",
     ctaBtn: "Rozpocznij Projekt Na Zamówienie",
+
+    ringBlankTitle: "Kalkulator długości blanku obrączki",
+    ringBlankSubtitle: "Oblicz ile materiału potrzebujesz do wykonania obrączki lub pierścionka.",
 
     // Konfigurator
     configurator: {
@@ -388,6 +393,9 @@ export default {
     ctaTitle: "Masz projekt w głowie?",
     ctaText: "Od prototypów po produkcję — ożywmy Twój pomysł.",
     ctaBtn: "Zapytaj o Wycenę",
+
+    laserParamsTitle: "Parametry laserowania — tabela referencyjna",
+    laserParamsSubtitle: "Orientacyjne ustawienia dla popularnych materiałów. Wyniki zależą od konkretnej maszyny — traktuj jako punkt startowy.",
 
     // Kalkulator
     calculator: {

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEJaCA Admin — <%= row ? 'Edytuj #' + row.id : 'Nowy wiersz' %> — Laser Matrix</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            neutral: { 950: '#0a0a0a' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-neutral-950 min-h-screen text-neutral-100">
+
+  <header class="bg-neutral-900 border-b border-white/10 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-6">
+      <span class="text-lg font-bold text-white">AEJaCA <span class="text-amber-400">Admin</span></span>
+      <nav class="flex gap-4 text-sm">
+        <a href="/dashboard" class="text-neutral-400 hover:text-white transition-colors">Dashboard</a>
+        <a href="/analytics" class="text-neutral-400 hover:text-white transition-colors">Analytics</a>
+        <a href="/leads" class="text-neutral-400 hover:text-white transition-colors">Leads</a>
+        <a href="/subscribers" class="text-neutral-400 hover:text-white transition-colors">Subscribers</a>
+        <a href="/conversations" class="text-neutral-400 hover:text-white transition-colors">Chat</a>
+        <a href="/laser-matrix" class="text-white font-medium border-b border-amber-400 pb-0.5">Laser Matrix</a>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      <img src="<%= user.photo %>" class="w-7 h-7 rounded-full" alt="" />
+      <span class="text-sm text-neutral-400"><%= user.name %></span>
+      <a href="/logout" class="text-xs text-red-400 hover:text-red-300 transition-colors">Logout</a>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-6 py-8">
+
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-sm text-neutral-500 mb-6">
+      <a href="/laser-matrix" class="hover:text-amber-400 transition-colors">&larr; Laser Matrix</a>
+      <span>&rsaquo;</span>
+      <% if (row) { %>
+        <span class="text-neutral-300">Edytuj #<%= row.id %></span>
+      <% } else { %>
+        <span class="text-neutral-300">Nowy wiersz</span>
+      <% } %>
+    </div>
+
+    <% if (flash === 'created') { %>
+    <div class="mb-5 px-4 py-3 bg-emerald-950 border border-emerald-700/50 text-emerald-300 rounded-lg text-sm">
+      &#10003; Wiersz dodany pomyślnie
+    </div>
+    <% } %>
+
+    <form method="POST" action="<%= row ? '/laser-matrix/' + row.id + '/update' : '/laser-matrix/create' %>" class="space-y-8">
+
+      <!-- SEKCJA 1: Identyfikacja -->
+      <fieldset class="bg-neutral-900 border border-white/10 rounded-xl p-6">
+        <legend class="text-sm font-semibold text-blue-400 uppercase tracking-wider px-2 mb-4">Sekcja 1 — Identyfikacja</legend>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Typ lasera</label>
+            <select name="laser_type" class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50">
+              <option value="">— wybierz —</option>
+              <% ['CO2','DIODE','Fiber Raycus','MOPA','GREEN','IR','UV'].forEach(function(t) { %>
+              <option value="<%= t %>" <%= (row && row.laser_type === t) ? 'selected' : '' %>><%= t %></option>
+              <% }); %>
+              <% if (options.lasers) { options.lasers.forEach(function(l) { if (!['CO2','DIODE','Fiber Raycus','MOPA','GREEN','IR','UV'].includes(l)) { %>
+              <option value="<%= l %>" <%= (row && row.laser_type === l) ? 'selected' : '' %>><%= l %></option>
+              <% }}); } %>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Typ akcji</label>
+            <input type="text" name="action_type" value="<%= row ? (row.action_type || '') : '' %>"
+              list="action-suggestions"
+              placeholder="np. cięcie, grawerowanie..."
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+            <datalist id="action-suggestions">
+              <% if (options.actions) { options.actions.forEach(function(a) { %>
+              <option value="<%= a %>">
+              <% }); } %>
+            </datalist>
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Kinematyka</label>
+            <select name="kinematics" class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50">
+              <option value="">— wybierz —</option>
+              <option value="XY (Plotery)" <%= (row && row.kinematics === 'XY (Plotery)') ? 'selected' : '' %>>XY (Plotery)</option>
+              <option value="Galvo" <%= (row && row.kinematics === 'Galvo') ? 'selected' : '' %>>Galvo</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Długość fali (nm)</label>
+            <input type="number" name="wavelength_nm" value="<%= row ? (row.wavelength_nm || '') : '' %>"
+              placeholder="np. 1064"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Materiał (PL)</label>
+            <input type="text" name="material" value="<%= row ? (row.material || '') : '' %>"
+              placeholder="np. sklejka 3mm"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Grubość (mm)</label>
+            <input type="text" name="thickness_mm" value="<%= row ? (row.thickness_mm || '') : '' %>"
+              placeholder="np. 3"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+        </div>
+      </fieldset>
+
+      <!-- SEKCJA 2: Moc i Prędkość -->
+      <fieldset class="bg-neutral-900 border border-white/10 rounded-xl p-6">
+        <legend class="text-sm font-semibold text-amber-400 uppercase tracking-wider px-2 mb-4">Sekcja 2 — Moc i Prędkość</legend>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Moc (W)</label>
+            <input type="text" name="watts" value="<%= row ? (row.watts || '') : '' %>"
+              placeholder="np. 60"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Prędkość</label>
+            <input type="text" name="speed" value="<%= row ? (row.speed || '') : '' %>"
+              placeholder="np. 20 mm/s"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Moc (%)</label>
+            <input type="text" name="power_pct" value="<%= row ? (row.power_pct || '') : '' %>"
+              placeholder="np. 85"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Przejścia</label>
+            <input type="text" name="passes" value="<%= row ? (row.passes || '') : '' %>"
+              placeholder="np. 2"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+        </div>
+      </fieldset>
+
+      <!-- SEKCJA 3: Kinematyka szczegółowa -->
+      <fieldset class="bg-neutral-900 border border-white/10 rounded-xl p-6">
+        <legend class="text-sm font-semibold text-emerald-400 uppercase tracking-wider px-2 mb-4">Sekcja 3 — Kinematyka</legend>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">DPI</label>
+            <input type="text" name="dpi" value="<%= row ? (row.dpi || '') : '' %>"
+              placeholder="np. 254"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Hatch (mm)</label>
+            <input type="text" name="hatch_mm" value="<%= row ? (row.hatch_mm || '') : '' %>"
+              placeholder="np. 0.1"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Kąt skanowania (°)</label>
+            <input type="text" name="scan_angle_deg" value="<%= row ? (row.scan_angle_deg || '') : '' %>"
+              placeholder="np. 0"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Wobble (mm)</label>
+            <input type="text" name="wobble_mm" value="<%= row ? (row.wobble_mm || '') : '' %>"
+              placeholder="np. 0.05"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Częstotliwość (kHz)</label>
+            <input type="text" name="frequency_khz" value="<%= row ? (row.frequency_khz || '') : '' %>"
+              placeholder="np. 20"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Szer. impulsu (ns)</label>
+            <input type="text" name="pulse_width_ns" value="<%= row ? (row.pulse_width_ns || '') : '' %>"
+              placeholder="np. 100"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+        </div>
+      </fieldset>
+
+      <!-- SEKCJA 4: Optyka i Oś Z -->
+      <fieldset class="bg-neutral-900 border border-white/10 rounded-xl p-6">
+        <legend class="text-sm font-semibold text-purple-400 uppercase tracking-wider px-2 mb-4">Sekcja 4 — Optyka i Oś Z</legend>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Soczewka</label>
+            <input type="text" name="optics_lens" value="<%= row ? (row.optics_lens || '') : '' %>"
+              placeholder="np. F254"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Defokus (mm)</label>
+            <input type="text" name="defocus_mm" value="<%= row ? (row.defocus_mm || '') : '' %>"
+              placeholder="np. -2"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Krok Z (mm)</label>
+            <input type="text" name="z_step_mm" value="<%= row ? (row.z_step_mm || '') : '' %>"
+              placeholder="np. 0.5"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+        </div>
+      </fieldset>
+
+      <!-- SEKCJA 5: Asysta Gazowa -->
+      <fieldset class="bg-neutral-900 border border-white/10 rounded-xl p-6">
+        <legend class="text-sm font-semibold text-cyan-400 uppercase tracking-wider px-2 mb-4">Sekcja 5 — Asysta Gazowa</legend>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Rodzaj gazu</label>
+            <input type="text" name="gas_type" value="<%= row ? (row.gas_type || '') : '' %>"
+              placeholder="np. N2, powietrze"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Ciśnienie gazu</label>
+            <input type="text" name="gas_pressure" value="<%= row ? (row.gas_pressure || '') : '' %>"
+              placeholder="np. 2 bar"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Opóźnienia Galvo</label>
+            <input type="text" name="galvo_delays" value="<%= row ? (row.galvo_delays || '') : '' %>"
+              placeholder="np. 100/200 µs"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+        </div>
+      </fieldset>
+
+      <!-- SEKCJA 6: Uwagi -->
+      <fieldset class="bg-neutral-900 border border-white/10 rounded-xl p-6">
+        <legend class="text-sm font-semibold text-rose-400 uppercase tracking-wider px-2 mb-4">Sekcja 6 — Uwagi</legend>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Uwagi (PL)</label>
+            <textarea name="notes" rows="4" placeholder="Uwagi po polsku..."
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50 resize-y"><%= row ? (row.notes || '') : '' %></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Uwagi (EN)</label>
+            <textarea name="notes_en" rows="4" placeholder="Notes in English..."
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50 resize-y"><%= row ? (row.notes_en || '') : '' %></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Uwagi (DE)</label>
+            <textarea name="notes_de" rows="4" placeholder="Notizen auf Deutsch..."
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50 resize-y"><%= row ? (row.notes_de || '') : '' %></textarea>
+          </div>
+
+        </div>
+      </fieldset>
+
+      <!-- Translacje (collapsible) -->
+      <details class="bg-neutral-900 border border-white/10 rounded-xl">
+        <summary class="px-6 py-4 cursor-pointer text-sm font-semibold text-neutral-400 hover:text-white transition-colors select-none">
+          Translacje — materiał i akcja (EN / DE)
+        </summary>
+        <div class="px-6 pb-6 pt-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Materiał (EN)</label>
+            <input type="text" name="material_en" value="<%= row ? (row.material_en || '') : '' %>"
+              placeholder="material in English"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Materiał (DE)</label>
+            <input type="text" name="material_de" value="<%= row ? (row.material_de || '') : '' %>"
+              placeholder="Material auf Deutsch"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Akcja (EN)</label>
+            <input type="text" name="action_en" value="<%= row ? (row.action_en || '') : '' %>"
+              placeholder="action in English"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Akcja (DE)</label>
+            <input type="text" name="action_de" value="<%= row ? (row.action_de || '') : '' %>"
+              placeholder="Aktion auf Deutsch"
+              class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50" />
+          </div>
+
+        </div>
+      </details>
+
+      <!-- Actions -->
+      <div class="flex items-center justify-between pt-2">
+        <a href="/laser-matrix" class="text-sm text-neutral-400 hover:text-white transition-colors">&larr; Wróć do listy</a>
+        <div class="flex items-center gap-3">
+          <% if (row) { %>
+          <form method="POST" action="/laser-matrix/<%= row.id %>/delete" onsubmit="return confirm('Usunąć wiersz #<%= row.id %>? Tej operacji nie można cofnąć.')">
+            <button type="submit" class="px-4 py-2 bg-red-950 border border-red-900/50 text-red-400 hover:text-red-300 text-sm rounded-lg transition-colors">
+              &#128465; Usuń wiersz
+            </button>
+          </form>
+          <% } %>
+          <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors">
+            &#128190; Zapisz
+          </button>
+        </div>
+      </div>
+
+    </form>
+
+  </main>
+
+</body>
+</html>
