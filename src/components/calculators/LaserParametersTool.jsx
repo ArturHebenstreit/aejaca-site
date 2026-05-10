@@ -61,13 +61,13 @@ function uniq(arr) {
 // ── Step Progress Bar ──────────────────────────────────────────────────────
 function ProgressBar({ step, total, labels }) {
   return (
-    <div className="flex items-center gap-0 mb-8">
+    <div className="flex items-start gap-0 mb-8">
       {Array.from({ length: total }, (_, i) => {
         const n = i + 1;
         const done = n < step;
         const active = n === step;
         return (
-          <div key={n} className="flex items-center flex-1 last:flex-none">
+          <div key={n} className="flex items-start flex-1 last:flex-none">
             <div className="flex flex-col items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
                 done   ? "bg-blue-600 text-white" :
@@ -77,13 +77,13 @@ function ProgressBar({ step, total, labels }) {
                 {done ? "✓" : n}
               </div>
               {labels && (
-                <span className={`text-xs mt-1 text-center leading-tight max-w-16 ${active ? "text-blue-300" : done ? "text-neutral-400" : "text-neutral-600"}`}>
+                <span className={`hidden sm:block text-xs mt-1 text-center leading-tight max-w-16 ${active ? "text-blue-300" : done ? "text-neutral-400" : "text-neutral-600"}`}>
                   {labels[i]}
                 </span>
               )}
             </div>
             {n < total && (
-              <div className={`flex-1 h-0.5 mx-1 ${done ? "bg-blue-600" : "bg-neutral-800"}`} />
+              <div className={`flex-1 h-0.5 mx-1 mt-[15px] ${done ? "bg-blue-600" : "bg-neutral-800"}`} />
             )}
           </div>
         );
@@ -163,38 +163,40 @@ function ActionPicker({ rows, onPick, lang }) {
     <div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {ACTION_GROUPS.filter(g => counts[g.id]).map(g => (
-          <div key={g.id}>
-            <button
-              onClick={() => {
-                if (byGroup[g.id]?.size === 1) {
-                  onPick([...byGroup[g.id]][0]);
-                } else {
-                  setExpandedGroup(expandedGroup === g.id ? null : g.id);
-                }
-              }}
-              className={`w-full p-4 rounded-xl border transition-all text-left group ${
-                expandedGroup === g.id
-                  ? "bg-blue-950 border-blue-600 text-white"
-                  : "bg-neutral-900 border-white/10 hover:border-blue-700/50 hover:bg-neutral-800 text-neutral-200"
-              }`}
-            >
-              <div className="text-2xl mb-2">{g.icon}</div>
-              <div className="font-semibold text-sm">{t(g, lang)}</div>
-              <div className="text-xs text-neutral-500 mt-0.5">{counts[g.id]} kombinacji</div>
-            </button>
-            {expandedGroup === g.id && byGroup[g.id] && (
-              <div className="mt-1 space-y-1 bg-neutral-900 border border-blue-700/50 rounded-xl p-2">
-                {[...byGroup[g.id]].sort().map(act => (
-                  <button key={act} onClick={() => onPick(act)}
-                    className="w-full text-left px-3 py-2 text-sm text-neutral-200 hover:bg-blue-950 hover:text-blue-300 rounded-lg transition-colors">
-                    {act}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <button
+            key={g.id}
+            onClick={() => {
+              if (byGroup[g.id]?.size === 1) {
+                onPick([...byGroup[g.id]][0]);
+              } else {
+                setExpandedGroup(expandedGroup === g.id ? null : g.id);
+              }
+            }}
+            className={`w-full p-4 rounded-xl border transition-all text-left ${
+              expandedGroup === g.id
+                ? "bg-blue-950 border-blue-600 text-white"
+                : "bg-neutral-900 border-white/10 hover:border-blue-700/50 hover:bg-neutral-800 text-neutral-200"
+            }`}
+          >
+            <div className="text-2xl mb-2">{g.icon}</div>
+            <div className="font-semibold text-sm">{t(g, lang)}</div>
+            <div className="text-xs text-neutral-500 mt-0.5">{counts[g.id]} kombinacji</div>
+          </button>
         ))}
       </div>
+      {/* Sub-action list rendered full-width below the grid */}
+      {expandedGroup && byGroup[expandedGroup] && (
+        <div className="mt-3 bg-neutral-900 border border-blue-700/50 rounded-xl p-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+            {[...byGroup[expandedGroup]].sort().map(act => (
+              <button key={act} onClick={() => onPick(act)}
+                className="w-full text-left px-3 py-2.5 text-sm text-neutral-200 hover:bg-blue-950 hover:text-blue-300 rounded-lg transition-colors">
+                {act}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -322,7 +324,7 @@ function WattsPicker({ availableWatts, onPick, onBack }) {
       <div className="flex flex-wrap gap-3">
         {sorted.map(w => (
           <button key={w} onClick={() => onPick(w)}
-            className="px-6 py-4 bg-neutral-900 hover:bg-blue-950 border border-white/10 hover:border-blue-600 rounded-xl text-white font-bold text-lg transition-all hover:scale-105">
+            className="px-4 py-3 sm:px-6 sm:py-4 bg-neutral-900 hover:bg-blue-950 border border-white/10 hover:border-blue-600 rounded-xl text-white font-bold text-base sm:text-lg transition-all hover:scale-105">
             {w}
           </button>
         ))}
