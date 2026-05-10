@@ -119,6 +119,21 @@ export default function ChatWidget() {
     if (open && inputRef.current) inputRef.current.focus();
   }, [open]);
 
+  // Lock body scroll on mobile when panel is open — prevents iOS layout shift
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+    } else {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+    };
+  }, [open]);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -265,7 +280,7 @@ export default function ChatWidget() {
       {/* Chat panel */}
       {open && (
         <div
-          className="fixed bottom-0 inset-x-0 sm:inset-x-auto sm:bottom-5 sm:right-5 z-50 w-full sm:w-[380px] h-[100svh] sm:h-[520px] sm:max-h-[80vh] flex flex-col bg-neutral-950 sm:rounded-2xl border border-white/10 shadow-2xl shadow-black/50 overflow-hidden"
+          className="fixed bottom-0 inset-x-0 sm:inset-x-auto sm:bottom-5 sm:right-5 z-50 w-full sm:w-[380px] h-[85svh] sm:h-[520px] sm:max-h-[80vh] flex flex-col bg-neutral-950 rounded-t-2xl sm:rounded-2xl border border-white/10 shadow-2xl shadow-black/50 overflow-hidden"
           role="dialog"
           aria-label={l.title}
         >
@@ -338,7 +353,7 @@ export default function ChatWidget() {
                 placeholder={l.placeholder}
                 disabled={streaming}
                 maxLength={500}
-                className="flex-1 px-4 py-2.5 rounded-full bg-neutral-800/60 border border-white/10 text-white text-sm placeholder-neutral-500 focus:outline-none focus:border-amber-400/40 focus:ring-1 focus:ring-amber-400/20 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2.5 rounded-full bg-neutral-800/60 border border-white/10 text-white text-[16px] leading-tight placeholder-neutral-500 focus:outline-none focus:border-amber-400/40 focus:ring-1 focus:ring-amber-400/20 transition-colors disabled:opacity-50"
               />
               <button
                 type="submit"
