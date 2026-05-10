@@ -289,11 +289,23 @@ export default function Navbar() {
 
               return (
                 <div key={to}>
-                  <div className="flex items-center">
+                  {hasSections ? (
+                    <button
+                      onClick={() => setMobileExpanded(isExpanded ? null : dropKey)}
+                      className={`flex items-center w-full px-3 py-3 rounded-lg text-base tracking-wide text-left transition-all ${
+                        pathname === to
+                          ? "text-amber-400 bg-amber-400/5"
+                          : "text-neutral-300 hover:text-amber-400 hover:bg-white/5"
+                      }`}
+                    >
+                      <span className="flex-1">{label}</span>
+                      <ChevronDown className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
+                    </button>
+                  ) : (
                     <Link
                       to={to}
                       onClick={(e) => { handleNavClick(e, to); setMenuOpen(false); setMobileExpanded(null); }}
-                      className={`flex-1 px-3 py-3 rounded-lg text-base tracking-wide transition-all ${
+                      className={`block px-3 py-3 rounded-lg text-base tracking-wide transition-all ${
                         pathname === to
                           ? "text-amber-400 bg-amber-400/5"
                           : "text-neutral-300 hover:text-amber-400 hover:bg-white/5"
@@ -301,16 +313,7 @@ export default function Navbar() {
                     >
                       {label}
                     </Link>
-                    {hasSections && (
-                      <button
-                        onClick={() => setMobileExpanded(isExpanded ? null : dropKey)}
-                        className="p-3 text-neutral-400 hover:text-white transition-colors"
-                        aria-label="Show sections"
-                      >
-                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
-                      </button>
-                    )}
-                  </div>
+                  )}
 
                   {/* Mobile sub-sections */}
                   {hasSections && (
