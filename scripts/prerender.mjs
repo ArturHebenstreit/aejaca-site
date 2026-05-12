@@ -22,6 +22,7 @@ const STATIC_ROUTES = [
   "/shipping",
   "/privacy",
   "/toolsjewelry",
+  "/toolsjewelry/ring-size",
   "/toolstudio",
 ];
 

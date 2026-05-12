@@ -27,6 +27,7 @@ const ToolsJewelry = lazy(() => import("./pages/ToolsJewelry.jsx"));
 const ToolsStudio = lazy(() => import("./pages/ToolsStudio.jsx"));
 const AlloyCompositionPage = lazy(() => import("./pages/AlloyCompositionPage.jsx"));
 const MetalPricingPage = lazy(() => import("./pages/MetalPricingPage.jsx"));
+const RingSizePage = lazy(() => import("./pages/RingSizePage.jsx"));
 const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 
 function LazyFallback() {
@@ -60,6 +61,7 @@ const app = (
                 <Route path="/toolsjewelry/" element={<ToolsJewelry />} />
                 <Route path="/toolsjewelry/alloy-composition/" element={<AlloyCompositionPage />} />
                 <Route path="/toolsjewelry/metal-pricing/" element={<MetalPricingPage />} />
+                <Route path="/toolsjewelry/ring-size/" element={<RingSizePage />} />
                 <Route path="/toolstudio/" element={<ToolsStudio />} />
                 <Route path="/privacy/" element={<Privacy />} />
                 <Route path="*" element={<NotFound />} />

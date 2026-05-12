@@ -39,16 +39,18 @@ const LABELS = {
   pl: {
     modeCirc: "Sznurek / papier",
     modeDia: "Mam pierścionek",
-    modeKnown: "Znam rozmiar EU",
+    modeKnown: "Znam rozmiar",
     circLabel: "Obwód palca",
     diaLabel: "Średnica wewnętrzna",
     circHint: "Owiń sznurek lub pasek papieru wokół palca, zmierz linijką w mm.",
     diaHint: "Zmierz suwmiarką lub linijką wewnętrzną średnicę istniejącego pierścionka.",
-    knownHint: "Kliknij rozmiar EU na skali poniżej.",
+    knownHint: "Wybierz system i kliknij swój rozmiar.",
     resultTitle: "Twój rozmiar",
     exactMatch: "dokładne",
     closestMatch: "przybliżone",
     systems: { eu: "EU / ISO", dia: "Ø mm", circ: "Obwód mm", us: "US", uk: "UK", jp: "JP" },
+    systemTabs: { eu: "EU", us: "US", uk: "UK", jp: "JP" },
+    systemPrompt: "Wybierz system, kliknij rozmiar:",
     tipsTitle: "Jak zmierzyć rozmiar palca?",
     tips: [
       "Mierz po południu — palce są wtedy najgrubsze.",
@@ -62,16 +64,18 @@ const LABELS = {
   en: {
     modeCirc: "String / paper",
     modeDia: "I have a ring",
-    modeKnown: "I know EU size",
+    modeKnown: "I know my size",
     circLabel: "Finger circumference",
     diaLabel: "Inner diameter",
     circHint: "Wrap a string or paper strip around your finger, mark the overlap, measure in mm.",
     diaHint: "Measure the inner diameter of an existing ring with calipers or a ruler.",
-    knownHint: "Tap your EU size on the scale below.",
+    knownHint: "Select system and tap your size.",
     resultTitle: "Your size",
     exactMatch: "exact",
     closestMatch: "closest",
     systems: { eu: "EU / ISO", dia: "Ø mm", circ: "Circumf. mm", us: "US", uk: "UK", jp: "JP" },
+    systemTabs: { eu: "EU", us: "US", uk: "UK", jp: "JP" },
+    systemPrompt: "Select system, tap your size:",
     tipsTitle: "How to measure your ring size",
     tips: [
       "Measure in the afternoon — fingers are largest then.",
@@ -85,16 +89,18 @@ const LABELS = {
   de: {
     modeCirc: "Faden / Papier",
     modeDia: "Ich habe einen Ring",
-    modeKnown: "EU-Größe bekannt",
+    modeKnown: "Größe bekannt",
     circLabel: "Fingerumfang",
     diaLabel: "Innendurchmesser",
     circHint: "Faden oder Papierstreifen um den Finger wickeln, Überschneidung markieren, in mm messen.",
     diaHint: "Innendurchmesser eines vorhandenen Rings mit Messschieber oder Lineal messen.",
-    knownHint: "EU-Größe auf der Skala unten antippen.",
+    knownHint: "System wählen und Größe antippen.",
     resultTitle: "Ihre Ringgröße",
     exactMatch: "genau",
     closestMatch: "nächste",
     systems: { eu: "EU / ISO", dia: "Ø mm", circ: "Umfang mm", us: "US", uk: "UK", jp: "JP" },
+    systemTabs: { eu: "EU", us: "US", uk: "UK", jp: "JP" },
+    systemPrompt: "System wählen, Größe antippen:",
     tipsTitle: "Wie misst man die Ringgröße?",
     tips: [
       "Nachmittags messen — Finger sind dann am dicksten.",
@@ -115,6 +121,22 @@ function findClosestByEu(euValue) {
     if (diff < bestDiff) { bestDiff = diff; best = row; }
   }
   return { row: best, exact: bestDiff <= 0.5 };
+}
+
+// Unique values per system (preserving order from SIZES)
+function uniqueValues(key) {
+  const seen = new Set();
+  return SIZES.filter(row => {
+    const v = String(row[key]);
+    if (seen.has(v)) return false;
+    seen.add(v);
+    return true;
+  });
+}
+
+// Find SIZES row for a given system+value (first match)
+function findBySystem(system, value) {
+  return SIZES.find(row => String(row[system]) === String(value)) || null;
 }
 
 // SVG ring visualisation — scales between min/max dia
@@ -185,24 +207,28 @@ function ResultCard({ row, exact, L }) {
   );
 }
 
-// EU tile grid used in "known" mode
-function EuTileGrid({ selected, onSelect }) {
+function SizeTileGrid({ system, selected, onSelect }) {
+  const rows = uniqueValues(system);
   return (
     <div className="flex flex-wrap gap-1.5" role="group">
-      {SIZES.map(({ eu }) => (
-        <button
-          key={eu}
-          onClick={() => onSelect(eu)}
-          aria-pressed={selected === eu}
-          className={`w-10 h-10 rounded-xl text-sm font-mono font-semibold border transition-all duration-150 ${
-            selected === eu
-              ? "bg-amber-500 border-amber-400 text-neutral-950 shadow-lg shadow-amber-500/25 scale-110"
-              : "bg-neutral-800 border-neutral-700 text-neutral-300 hover:border-amber-400/60 hover:text-white"
-          }`}
-        >
-          {eu}
-        </button>
-      ))}
+      {rows.map((row) => {
+        const val = String(row[system]);
+        const isSelected = selected === val;
+        return (
+          <button
+            key={val}
+            onClick={() => onSelect(val)}
+            aria-pressed={isSelected}
+            className={`min-w-[2.5rem] h-10 px-2.5 rounded-xl text-sm font-mono font-semibold border transition-all duration-150 ${
+              isSelected
+                ? "bg-amber-500 border-amber-400 text-neutral-950 shadow-lg shadow-amber-500/25 scale-110"
+                : "bg-neutral-800 border-neutral-700 text-neutral-300 hover:border-amber-400/60 hover:text-white"
+            }`}
+          >
+            {val}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -281,13 +307,17 @@ export default function RingSizeCalc({ lang: langProp }) {
   // slider states
   const [circVal, setCircVal] = useState(54);   // mm circumference
   const [diaVal, setDiaVal]   = useState(17.2); // mm diameter
-  // tile state
-  const [knownEu, setKnownEu] = useState(null);
+  // known mode state
+  const [knownSystem, setKnownSystem] = useState("eu"); // eu | us | uk | jp
+  const [knownVal, setKnownVal] = useState(null);        // string value
 
   const match = (() => {
     if (mode === "circ") return findClosestByEu(circVal);
     if (mode === "dia")  return findClosestByEu(diaVal * Math.PI);
-    if (mode === "known" && knownEu != null) return findClosestByEu(knownEu);
+    if (mode === "known" && knownVal != null) {
+      const row = findBySystem(knownSystem, knownVal);
+      if (row) return { row, exact: true };
+    }
     return null;
   })();
 
@@ -324,20 +354,32 @@ export default function RingSizeCalc({ lang: langProp }) {
         <MeasureSlider mode="dia" value={diaVal} onChange={setDiaVal} L={L} />
       )}
       {mode === "known" && (
-        <div className="p-5 rounded-2xl bg-neutral-900 border border-neutral-800 space-y-3">
-          <div className="text-xs uppercase tracking-widest text-amber-400">{L.modeKnown}</div>
-          <p className="text-neutral-500 text-xs">{L.knownHint}</p>
-          <EuTileGrid selected={knownEu} onSelect={setKnownEu} />
+        <div className="p-5 rounded-2xl bg-neutral-900 border border-neutral-800 space-y-4">
+          {/* System tabs */}
+          <div>
+            <div className="text-xs uppercase tracking-widest text-amber-400 mb-2">{L.systemPrompt}</div>
+            <div className="flex gap-1.5 mb-4">
+              {["eu", "us", "uk", "jp"].map(sys => (
+                <button
+                  key={sys}
+                  onClick={() => { setKnownSystem(sys); setKnownVal(null); }}
+                  className={`px-4 py-1.5 rounded-xl text-sm font-semibold border transition-all duration-150 ${
+                    knownSystem === sys
+                      ? "bg-amber-500/20 border-amber-400 text-amber-300"
+                      : "bg-neutral-800 border-neutral-700 text-neutral-400 hover:border-amber-400/50 hover:text-white"
+                  }`}
+                >
+                  {L.systemTabs[sys]}
+                </button>
+              ))}
+            </div>
+            <SizeTileGrid system={knownSystem} selected={knownVal} onSelect={setKnownVal} />
+          </div>
         </div>
       )}
 
       {/* Result */}
       {match && <ResultCard row={match.row} exact={match.exact} L={L} />}
-      {mode === "known" && !knownEu && (
-        <div className="p-4 rounded-2xl bg-neutral-900/50 border border-neutral-800/50 text-center">
-          <span className="text-neutral-500 text-sm">↑ wybierz rozmiar EU</span>
-        </div>
-      )}
 
       {/* Tips */}
       <div className="p-5 rounded-2xl bg-neutral-900 border border-neutral-800">
