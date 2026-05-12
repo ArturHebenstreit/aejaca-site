@@ -259,7 +259,7 @@ export default function JewelryCalc({ lang = "pl" }) {
   const result = useMemo(() => {
     if (serviceId === "new") {
       return calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
-        gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId }, lang);
+        gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId }, lang, rates);
     }
     if (serviceId === "renovation") {
       return calcRenovation({ jewTypeId: renoJewType, metalTypeId: renoMetal, services: renoServices, qtyId }, lang);
@@ -267,7 +267,7 @@ export default function JewelryCalc({ lang = "pl" }) {
     return calcRepair({ jewTypeId: repairJewType, metalTypeId: repairMetal, repairId, qtyId }, lang);
   }, [serviceId, lineId, typeId, metalId, weightId, methodId, platingId,
     gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId,
-    renoServices, renoJewType, renoMetal, repairId, repairJewType, repairMetal, lang]);
+    renoServices, renoJewType, renoMetal, repairId, repairJewType, repairMetal, lang, rates]);
 
   function toggleRenoService(id) {
     setRenoServices(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
@@ -818,7 +818,16 @@ export default function JewelryCalc({ lang = "pl" }) {
         <ResultHeader lang={lang} />
         <ResultDisplay result={result} lang={lang} />
         <div className="mt-3 text-[10px] text-neutral-400 text-center italic">{l.priceSource}</div>
-        <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={
+        <p className="text-xs text-neutral-500 mt-1 text-center">{RATE_NOTE[lang] || RATE_NOTE.pl}</p>
+        <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)}
+          rateSnapshot={{
+            au: rates.au_pln_per_g,
+            ag: rates.ag_pln_per_g,
+            pt: rates.pt_pln_per_g,
+            pln_per_eur: rates.pln_per_eur,
+            sources: rates.sources,
+          }}
+          paramsSummary={
           serviceId === "new"
             ? [t(PRODUCT_LINES.find(p => p.id === lineId)?.label, lang) || lineId,
                t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,

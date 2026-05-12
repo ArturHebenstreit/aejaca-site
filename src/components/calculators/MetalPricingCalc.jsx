@@ -96,10 +96,21 @@ export default function MetalPricingCalc() {
   const metalLabels = { Au: "Złoto (Au)", Ag: "Srebro (Ag)", Pt: "Platyna (Pt)", Pd: "Pallad (Pd)" };
 
   useEffect(() => {
-    fetch("https://api.aejaca.com/api/metal-prices")
+    fetch("https://api.aejaca.com/api/market-rates")
       .then((r) => r.json())
       .then((data) => {
-        setPrices(data);
+        // Normalize field names from market-rates API to internal format
+        setPrices({
+          Au_pln_per_g: data.au_pln_per_g ?? null,
+          Ag_pln_per_g: data.ag_pln_per_g ?? null,
+          Pt_pln_per_g: data.pt_pln_per_g ?? null,
+          Pd_pln_per_g: data.pd_pln_per_g ?? null,
+          plnPerEur: data.pln_per_eur ?? 4.25,
+          sources: data.sources ?? null,
+          updatedAt: data.sources?.au_pln_per_g?.fetched_at
+            || data.sources?.ag_pln_per_g?.fetched_at
+            || null,
+        });
         setLoadingPrices(false);
       })
       .catch(() => {
@@ -241,9 +252,27 @@ export default function MetalPricingCalc() {
           </div>
 
           {updatedAt && (
-            <div className="text-neutral-500 text-xs">
-              {L.spotSource.replace("{{time}}", updatedAt)}
-              {prices?.stale && " (cached)"}
+            <div className="text-neutral-500 text-xs space-y-0.5">
+              <div>{L.spotSource.replace("{{time}}", updatedAt)}</div>
+              {prices?.sources && (
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-neutral-600">
+                  {prices.sources.au_pln_per_g && (
+                    <span>Au: <span className="text-neutral-500">{prices.sources.au_pln_per_g.source}</span>{" "}
+                      {new Date(prices.sources.au_pln_per_g.fetched_at).toLocaleString("pl-PL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  )}
+                  {prices.sources.ag_pln_per_g && (
+                    <span>Ag: <span className="text-neutral-500">{prices.sources.ag_pln_per_g.source}</span>{" "}
+                      {new Date(prices.sources.ag_pln_per_g.fetched_at).toLocaleString("pl-PL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  )}
+                  {prices.sources.pt_pln_per_g && (
+                    <span>Pt/Pd: <span className="text-neutral-500">{prices.sources.pt_pln_per_g.source}</span>{" "}
+                      {new Date(prices.sources.pt_pln_per_g.fetched_at).toLocaleString("pl-PL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
