@@ -4,7 +4,7 @@ import { Store, Instagram, Music2, Facebook, Youtube, Mail, MessageCircleMore } 
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import NewsletterForm from "./NewsletterForm.jsx";
 
-const API = "https://api.aejaca.com";
+const API = "https://aejacachatapi-production.up.railway.app";
 
 const RATES_LABELS = {
   pl: { title: "Kursy rynkowe", source: "Źródło", updated: "Odczyt", noData: "Pobieranie kursów..." },

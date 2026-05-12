@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const API = "https://api.aejaca.com";
+const API = "https://aejacachatapi-production.up.railway.app";
 
 // Returns { rates, loading } where rates matches METAL_PRICES + EUR_PLN shape
 // Falls back to static values if API unavailable

@@ -96,7 +96,7 @@ export default function MetalPricingCalc() {
   const metalLabels = { Au: "Złoto (Au)", Ag: "Srebro (Ag)", Pt: "Platyna (Pt)", Pd: "Pallad (Pd)" };
 
   useEffect(() => {
-    fetch("https://api.aejaca.com/api/market-rates")
+    fetch("https://aejacachatapi-production.up.railway.app/api/market-rates")
       .then((r) => r.json())
       .then((data) => {
         // Normalize field names from market-rates API to internal format
