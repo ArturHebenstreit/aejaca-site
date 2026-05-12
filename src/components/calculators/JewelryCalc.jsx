@@ -4,6 +4,7 @@
 import { useState, useMemo } from "react";
 import { t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture } from "./calcShared.jsx";
 import { trackCalc } from "../../utils/analytics.js";
+import { useMarketRates } from "../../hooks/useMarketRates.js";
 import {
   METAL_PRICES, EUR_PLN, MARGIN, REPAIR_MARGIN, TOL_LOW, TOL_HIGH,
   SERVICE_TYPES, PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING,
@@ -57,22 +58,30 @@ const LBL = {
   },
 };
 
-function applyJewelryPricing(baseCost, discountRate, qty, margin = MARGIN) {
+function applyJewelryPricing(baseCost, discountRate, qty, margin = MARGIN, eurPln = EUR_PLN) {
   const basePrice = baseCost * (1 + margin);
   const discounted = basePrice * (1 - discountRate);
   const perMin = Math.round(discounted * (1 - TOL_LOW));
   const perMax = Math.round(discounted * (1 + TOL_HIGH));
   return {
     perPcPLN: { min: Math.max(1, perMin), max: Math.max(1, perMax) },
-    perPcEUR: { min: Math.max(1, Math.round(perMin / EUR_PLN)), max: Math.max(1, Math.round(perMax / EUR_PLN)) },
+    perPcEUR: { min: Math.max(1, Math.round(perMin / eurPln)), max: Math.max(1, Math.round(perMax / eurPln)) },
     totalPLN: { min: Math.max(1, perMin) * qty, max: Math.max(1, perMax) * qty },
-    totalEUR: { min: Math.round((Math.max(1, perMin) * qty) / EUR_PLN), max: Math.round((Math.max(1, perMax) * qty) / EUR_PLN) },
+    totalEUR: { min: Math.round((Math.max(1, perMin) * qty) / eurPln), max: Math.round((Math.max(1, perMax) * qty) / eurPln) },
   };
+}
+
+// Map metal.metal key to live rates field
+function resolveMetalPricePerG(metalKey, rates) {
+  if (metalKey === "gold")     return rates?.au_pln_per_g ?? METAL_PRICES.gold.plnPerG;
+  if (metalKey === "silver")   return rates?.ag_pln_per_g ?? METAL_PRICES.silver.plnPerG;
+  if (metalKey === "platinum") return rates?.pt_pln_per_g ?? METAL_PRICES.platinum.plnPerG;
+  return METAL_PRICES[metalKey]?.plnPerG ?? 0;
 }
 
 // ---- NEW CREATION CALCULATOR ----
 export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
-  gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId }, lang) {
+  gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId }, lang, rates) {
   const l = LBL[lang] || LBL.en;
   const line = PRODUCT_LINES.find(p => p.id === lineId);
   const jType = JEWELRY_TYPES[lineId]?.find(j => j.id === typeId);
@@ -86,10 +95,10 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
   if (!line || !jType || !metal || !weight || !method || !plat || !gem || !qTier) return null;
   if (metal.custom || weight.custom || method.custom || plat.custom || gem.custom || qTier.custom) return { type: "custom" };
 
-  // Metal cost
-  const metalPrice = METAL_PRICES[metal.metal];
+  // Metal cost — use live rates when available, fall back to static config
+  const plnPerG = resolveMetalPricePerG(metal.metal, rates);
   const weightG = jType.baseWeight * weight.mul;
-  const metalCost = weightG * metalPrice.plnPerG * metal.purity;
+  const metalCost = weightG * plnPerG * metal.purity;
 
   // Labor cost (weight affects labor — lighter pieces need less finishing)
   const laborCost = jType.laborH * method.laborRate * method.laborMul * metal.laborMul * jType.complexity * (weight.laborMul || 1);
@@ -125,7 +134,8 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
   const workshopCost = baseCost * MARGIN;
   const estCost = baseCost + workshopCost;
   const qty = qTier.qty;
-  const pricing = applyJewelryPricing(baseCost, qTier.discount, qty);
+  const liveEurPln = rates?.pln_per_eur ?? EUR_PLN;
+  const pricing = applyJewelryPricing(baseCost, qTier.discount, qty, MARGIN, liveEurPln);
 
   return {
     type: "calculated", ...pricing, qty, discount: qTier.discount,
@@ -203,8 +213,15 @@ export function calcRepair({ jewTypeId, metalTypeId, repairId, qtyId }, lang) {
 
 const TECH_LABEL = { pl: "Biżuteria AEJaCA", en: "AEJaCA Jewelry", de: "AEJaCA Schmuck" };
 
+const RATE_NOTE = {
+  pl: "Kursy na podstawie danych rynkowych — szczegóły w stopce strony",
+  en: "Prices based on live market data — details in site footer",
+  de: "Preise basierend auf Marktdaten — Details in der Fußzeile",
+};
+
 export default function JewelryCalc({ lang = "pl" }) {
   const l = LBL[lang] || LBL.en;
+  const { rates } = useMarketRates();
 
   // Shared
   const [serviceId, setServiceId] = useState("new");
