@@ -5,6 +5,7 @@ import { useState, useMemo } from "react";
 import { t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture } from "./calcShared.jsx";
 import { trackCalc } from "../../utils/analytics.js";
 import { useMarketRates } from "../../hooks/useMarketRates.js";
+import { useGemPrices } from "../../hooks/useGemPrices.js";
 import {
   METAL_PRICES, EUR_PLN, MARGIN, REPAIR_MARGIN, TOL_LOW, TOL_HIGH,
   SERVICE_TYPES, PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING,
@@ -81,7 +82,7 @@ function resolveMetalPricePerG(metalKey, rates) {
 
 // ---- NEW CREATION CALCULATOR ----
 export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
-  gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId }, lang, rates) {
+  gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId }, lang, rates, gemstones) {
   const l = LBL[lang] || LBL.en;
   const line = PRODUCT_LINES.find(p => p.id === lineId);
   const jType = JEWELRY_TYPES[lineId]?.find(j => j.id === typeId);
@@ -89,7 +90,8 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
   const weight = WEIGHTS.find(w => w.id === weightId);
   const method = METHODS.find(m => m.id === methodId);
   const plat = PLATING.find(p => p.id === platingId);
-  const gem = GEMSTONES.find(g => g.id === gemId);
+  const _gems = gemstones || GEMSTONES;
+  const gem = _gems.find(g => g.id === gemId);
   const qTier = QTY_TIERS.find(q => q.id === qtyId);
 
   if (!line || !jType || !metal || !weight || !method || !plat || !gem || !qTier) return null;
@@ -222,6 +224,19 @@ const RATE_NOTE = {
 export default function JewelryCalc({ lang = "pl" }) {
   const l = LBL[lang] || LBL.en;
   const { rates } = useMarketRates();
+  const gemPrices = useGemPrices(); // null=loading, map otherwise
+  const pln_per_eur = rates.pln_per_eur || 4.25;
+
+  // Merge static gem metadata with dynamic EUR prices → basePLN
+  const resolvedGemstones = useMemo(() =>
+    GEMSTONES.map(g => {
+      if (g.id === "none" || g.custom || g.basePLN === null) return g;
+      const baseEur = gemPrices?.[g.id];
+      if (baseEur == null) return g; // fallback to hardcoded basePLN
+      return { ...g, basePLN: Math.round(baseEur * pln_per_eur) };
+    }),
+    [gemPrices, pln_per_eur]
+  );
 
   // Shared
   const [serviceId, setServiceId] = useState("new");
@@ -252,14 +267,14 @@ export default function JewelryCalc({ lang = "pl" }) {
   const [repairJewType, setRepairJewType] = useState("ring_g");
   const [repairMetal, setRepairMetal] = useState("gold_g");
 
-  const selectedGem = GEMSTONES.find(g => g.id === gemId);
+  const selectedGem = resolvedGemstones.find(g => g.id === gemId);
   const showGemDetails = selectedGem && selectedGem.id !== "none" && !selectedGem.custom && selectedGem.basePLN > 0;
   const types = JEWELRY_TYPES[lineId] || [];
 
   const result = useMemo(() => {
     if (serviceId === "new") {
       return calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
-        gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId }, lang, rates);
+        gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId }, lang, rates, resolvedGemstones);
     }
     if (serviceId === "renovation") {
       return calcRenovation({ jewTypeId: renoJewType, metalTypeId: renoMetal, services: renoServices, qtyId }, lang);
@@ -267,7 +282,7 @@ export default function JewelryCalc({ lang = "pl" }) {
     return calcRepair({ jewTypeId: repairJewType, metalTypeId: repairMetal, repairId, qtyId }, lang);
   }, [serviceId, lineId, typeId, metalId, weightId, methodId, platingId,
     gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId,
-    renoServices, renoJewType, renoMetal, repairId, repairJewType, repairMetal, lang, rates]);
+    renoServices, renoJewType, renoMetal, repairId, repairJewType, repairMetal, lang, rates, resolvedGemstones]);
 
   function toggleRenoService(id) {
     setRenoServices(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
@@ -543,7 +558,7 @@ export default function JewelryCalc({ lang = "pl" }) {
 
           <CalcCard stepNum={step()} label={l.gem}>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-3">
-              {GEMSTONES.map(g => {
+              {resolvedGemstones.map(g => {
                 const active = gemId === g.id;
                 const label = t(g.label, lang);
                 const hasImg = !!g.img;
@@ -833,7 +848,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
                t(METALS.find(m => m.id === metalId)?.label, lang),
                t(METHODS.find(m => m.id === methodId)?.label, lang),
-               gemId !== "none" ? t(GEMSTONES.find(g => g.id === gemId)?.label, lang) : ""].filter(Boolean).join(" | ")
+               gemId !== "none" ? t(resolvedGemstones.find(g => g.id === gemId)?.label, lang) : ""].filter(Boolean).join(" | ")
             : serviceId === "renovation"
               ? `${t(SERVICE_TYPES[1].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === renoJewType)?.label, lang)} | ${renoServices.map(id => t(RENOVATION_SERVICES.find(s => s.id === id)?.label, lang)).join(", ")}`
               : `${t(SERVICE_TYPES[2].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === repairJewType)?.label, lang)} | ${t(REPAIR_SERVICES.find(r => r.id === repairId)?.label, lang)}`
@@ -846,7 +861,7 @@ export default function JewelryCalc({ lang = "pl" }) {
              t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
              t(METALS.find(m => m.id === metalId)?.label, lang),
              t(METHODS.find(m => m.id === methodId)?.label, lang),
-             gemId !== "none" ? t(GEMSTONES.find(g => g.id === gemId)?.label, lang) : ""].filter(Boolean).join(" | ")
+             gemId !== "none" ? t(resolvedGemstones.find(g => g.id === gemId)?.label, lang) : ""].filter(Boolean).join(" | ")
           : serviceId === "renovation"
             ? `${t(SERVICE_TYPES[1].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === renoJewType)?.label, lang)} | ${renoServices.map(id => t(RENOVATION_SERVICES.find(s => s.id === id)?.label, lang)).join(", ")}`
             : `${t(SERVICE_TYPES[2].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === repairJewType)?.label, lang)} | ${t(REPAIR_SERVICES.find(r => r.id === repairId)?.label, lang)}`

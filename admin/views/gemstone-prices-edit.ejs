@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEJaCA Admin — Edit Gemstone: <%= gem.name_en %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            neutral: { 950: '#0a0a0a' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-neutral-950 min-h-screen text-neutral-100">
+
+  <header class="bg-neutral-900 border-b border-white/10 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-6">
+      <span class="text-lg font-bold text-white">AEJaCA <span class="text-amber-400">Admin</span></span>
+      <nav class="flex gap-4 text-sm">
+        <a href="/dashboard" class="text-neutral-400 hover:text-white transition-colors">Dashboard</a>
+        <a href="/analytics" class="text-neutral-400 hover:text-white transition-colors">Analytics</a>
+        <a href="/leads" class="text-neutral-400 hover:text-white transition-colors">Leads</a>
+        <a href="/subscribers" class="text-neutral-400 hover:text-white transition-colors">Subscribers</a>
+        <a href="/conversations" class="text-neutral-400 hover:text-white transition-colors">Chat</a>
+        <a href="/laser-matrix" class="text-neutral-400 hover:text-white transition-colors">Laser Matrix</a>
+        <a href="/gemstone-prices" class="text-white font-medium border-b border-amber-400 pb-0.5">Gems</a>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      <img src="<%= user.photo %>" class="w-7 h-7 rounded-full" alt="" />
+      <span class="text-sm text-neutral-400"><%= user.name %></span>
+      <a href="/logout" class="text-xs text-red-400 hover:text-red-300 transition-colors">Logout</a>
+    </div>
+  </header>
+
+  <main class="max-w-2xl mx-auto px-6 py-8">
+
+    <div class="flex items-center gap-3 mb-6">
+      <a href="/gemstone-prices" class="text-neutral-500 hover:text-white transition-colors text-sm">&larr; Back to Gemstone Prices</a>
+    </div>
+
+    <h2 class="text-xl font-semibold text-white mb-2">Edit Gemstone Price</h2>
+    <p class="text-xs text-neutral-500 mb-6 font-mono">gem_id: <span class="text-amber-400"><%= gem.gem_id %></span></p>
+
+    <form method="POST" action="/gemstone-prices/<%= gem.id %>/update" class="space-y-5">
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Name (PL)</label>
+          <input type="text" name="name_pl" value="<%= gem.name_pl %>" required
+            class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 transition-colors" />
+        </div>
+        <div>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Name (EN)</label>
+          <input type="text" name="name_en" value="<%= gem.name_en %>" required
+            class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 transition-colors" />
+        </div>
+        <div>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Name (DE)</label>
+          <input type="text" name="name_de" value="<%= gem.name_de %>" required
+            class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 transition-colors" />
+        </div>
+      </div>
+
+      <div class="max-w-xs">
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Base Price (EUR)</label>
+        <p class="text-xs text-neutral-600 mb-2">Wholesale price per carat for a medium (~0.5ct) stone. Frontend multiplies by live EUR/PLN rate.</p>
+        <input type="number" name="base_eur" value="<%= gem.base_eur != null ? parseFloat(gem.base_eur) : '' %>"
+          step="0.01" min="0" placeholder="e.g. 3000"
+          class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-amber-400 font-semibold focus:outline-none focus:border-amber-400/50 transition-colors" />
+      </div>
+
+      <div>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Notes</label>
+        <textarea name="notes" rows="3" placeholder="Optional notes (source, date, caveats...)"
+          class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-neutral-300 focus:outline-none focus:border-amber-400/50 transition-colors resize-none"><%= gem.notes || '' %></textarea>
+      </div>
+
+      <div class="flex items-center gap-4 pt-2">
+        <button type="submit"
+          class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 text-sm font-semibold rounded-lg transition-colors">
+          Save Changes
+        </button>
+        <a href="/gemstone-prices" class="text-sm text-neutral-500 hover:text-white transition-colors">Cancel</a>
+      </div>
+
+    </form>
+
+    <div class="mt-8 border-t border-white/5 pt-6 text-xs text-neutral-700 space-y-1">
+      <p>Precious: <%= gem.precious ? 'Yes' : 'No' %> &nbsp;|&nbsp; Has grades: <%= gem.has_grades ? 'Yes' : 'No' %> &nbsp;|&nbsp; Lab-grown: <%= gem.lab ? 'Yes' : 'No' %></p>
+      <p>Last updated: <%= fmtDate(gem.updated_at) %> <% if (gem.updated_by) { %>by <%= gem.updated_by %><% } %></p>
+    </div>
+
+  </main>
+
+</body>
+</html>

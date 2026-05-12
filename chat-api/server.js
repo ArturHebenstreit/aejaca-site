@@ -59,6 +59,48 @@ if (pool) {
     pt_usd_per_oz NUMERIC(12,4),
     pd_usd_per_oz NUMERIC(12,4)
   )`).catch(() => {});
+
+  pool.query(`CREATE TABLE IF NOT EXISTS gemstone_prices (
+    id SERIAL PRIMARY KEY,
+    gem_id VARCHAR(50) NOT NULL UNIQUE,
+    name_pl VARCHAR(100) NOT NULL,
+    name_en VARCHAR(100) NOT NULL,
+    name_de VARCHAR(100) NOT NULL,
+    base_eur NUMERIC(10,2),
+    precious BOOLEAN DEFAULT false,
+    has_grades BOOLEAN DEFAULT false,
+    lab BOOLEAN DEFAULT false,
+    notes TEXT,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_by VARCHAR(100)
+  )`).then(() => {
+    return pool.query(`INSERT INTO gemstone_prices (gem_id,name_pl,name_en,name_de,base_eur,precious,has_grades,lab) VALUES
+      ('diamond','Diament','Diamond','Diamant',3000,true,true,false),
+      ('ruby','Rubin','Ruby','Rubin',1500,true,true,false),
+      ('sapphire','Szafir','Sapphire','Saphir',1000,true,true,false),
+      ('emerald','Szmaragd','Emerald','Smaragd',800,true,true,false),
+      ('lab_diamond','Diament lab-grown','Lab-grown diamond','Labor-Diamant',350,false,true,true),
+      ('moissanite','Mosanit','Moissanite','Moissanit',95,false,false,true),
+      ('cz','Cyrkonia (CZ)','Cubic zirconia (CZ)','Zirkonia (CZ)',2,false,false,true),
+      ('lab_ruby','Rubin lab-grown','Lab-grown ruby','Labor-Rubin',190,false,true,true),
+      ('lab_sapphire','Szafir lab-grown','Lab-grown sapphire','Labor-Saphir',140,false,true,true),
+      ('lab_emerald','Szmaragd lab-grown','Lab-grown emerald','Labor-Smaragd',120,false,true,true),
+      ('tanzanite','Tanzanit','Tanzanite','Tansanit',400,false,true,false),
+      ('aquamarine','Akwamaryn','Aquamarine','Aquamarin',100,false,false,false),
+      ('tourmaline','Turmalin','Tourmaline','Turmalin',150,false,false,false),
+      ('topaz','Topaz','Topaz','Topas',30,false,false,false),
+      ('amethyst','Ametyst','Amethyst','Amethyst',15,false,false,false),
+      ('citrine','Cytryn','Citrine','Citrin',13,false,false,false),
+      ('garnet','Granat','Garnet','Granat',20,false,false,false),
+      ('peridot','Perydot','Peridot','Peridot',40,false,false,false),
+      ('opal','Opal','Opal','Opal',100,false,false,false),
+      ('moonstone','Kamień księżycowy','Moonstone','Mondstein',20,false,false,false),
+      ('lapis','Lapis lazuli','Lapis lazuli','Lapislazuli',13,false,false,false),
+      ('turquoise','Turkus','Turquoise','Türkis',20,false,false,false),
+      ('onyx','Onyks','Onyx','Onyx',7,false,false,false),
+      ('tiger_eye','Tygrysie oko','Tiger eye','Tigerauge',5,false,false,false)
+      ON CONFLICT (gem_id) DO NOTHING`);
+  }).catch(() => {});
 }
 
 const rateMap = new Map();
@@ -634,5 +676,33 @@ app.get("/api/market-rates", async (req, res) => {
 });
 
 app.get("/api/metal-prices", (req, res) => res.redirect("/api/market-rates"));
+
+// --- Gemstone Prices ---
+let _gemCache = { ts: 0, data: null };
+
+app.get("/api/gemstone-prices", async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "DB unavailable" });
+  const now = Date.now();
+  if (_gemCache.data && now - _gemCache.ts < 24 * 60 * 60 * 1000) {
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    return res.json(_gemCache.data);
+  }
+  try {
+    const { rows } = await pool.query("SELECT * FROM gemstone_prices ORDER BY precious DESC, lab, name_pl");
+    const data = { gems: rows, updatedAt: new Date().toISOString() };
+    _gemCache = { ts: now, data };
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ error: "Failed to fetch gemstone prices" });
+  }
+});
+
+app.post("/api/gemstone-prices/invalidate", express.json(), (req, res) => {
+  if (req.headers["x-invalidate-token"] !== process.env.MATRIX_INVALIDATE_TOKEN)
+    return res.status(401).json({ error: "Unauthorized" });
+  _gemCache = { ts: 0, data: null };
+  res.json({ ok: true });
+});
 
 app.listen(PORT, () => console.log(`AEJaCA Chat API running on :${PORT}`));
