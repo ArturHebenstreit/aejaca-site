@@ -545,74 +545,54 @@ async function fetchNBP() {
   }
 }
 
-async function fetchSilver() {
-  if (!pool) return;
-  try {
-    // gold-api.com — no API key, no rate limit
-    const res = await fetch("https://gold-api.com/price/XAG");
-    const data = await res.json();
-    const ag_usd_per_oz = data?.price ?? null;
-    if (!ag_usd_per_oz) throw new Error("No price in response");
-    // Get latest PLN/USD from DB for conversion
-    const rateRow = await pool.query(
-      "SELECT pln_per_usd FROM market_rates WHERE pln_per_usd IS NOT NULL ORDER BY fetched_at DESC LIMIT 1"
-    );
-    const pln_per_usd = rateRow.rows[0]?.pln_per_usd ?? null;
-    const ag_pln_per_g = pln_per_usd
-      ? (ag_usd_per_oz * pln_per_usd) / TROY_OZ_TO_GRAM : null;
-    await pool.query(
-      `INSERT INTO market_rates (source, ag_pln_per_g, ag_usd_per_oz) VALUES ($1,$2,$3)`,
-      ["gold-api", ag_pln_per_g, ag_usd_per_oz]
-    );
-    console.log(`[rates] gold-api: Ag=${ag_usd_per_oz} USD/oz = ${ag_pln_per_g?.toFixed(2)} PLN/g`);
-  } catch (e) {
-    console.error("[rates] gold-api silver fetch failed:", e.message);
-  }
-}
 
-async function fetchPlatinumPalladium() {
+async function fetchPlatinumPalladiumSilver() {
   if (!pool) return;
   const apiKey = process.env.METAL_PRICE_API_KEY;
   if (!apiKey) {
-    console.warn("[rates] METAL_PRICE_API_KEY not set — skipping Pt/Pd fetch");
+    console.warn("[rates] METAL_PRICE_API_KEY not set — skipping Pt/Pd/Ag fetch");
     return;
   }
   try {
     const resp = await fetch(
-      `https://api.metalpriceapi.com/v1/latest?api_key=${apiKey}&base=USD&currencies=XPT,XPD`
+      `https://api.metalpriceapi.com/v1/latest?api_key=${apiKey}&base=USD&currencies=XPT,XPD,XAG`
     );
     const json = await resp.json();
     if (!json.success) throw new Error(json.error?.info || "API error");
     const pt_usd_per_oz = json.rates?.XPT ? 1 / json.rates.XPT : null;
     const pd_usd_per_oz = json.rates?.XPD ? 1 / json.rates.XPD : null;
+    const ag_usd_per_oz = json.rates?.XAG ? 1 / json.rates.XAG : null;
     const rateRow = await pool.query(
       "SELECT pln_per_usd FROM market_rates WHERE pln_per_usd IS NOT NULL ORDER BY fetched_at DESC LIMIT 1"
     );
     const pln_per_usd = rateRow.rows[0]?.pln_per_usd ?? null;
     const pt_pln_per_g = (pt_usd_per_oz && pln_per_usd) ? (pt_usd_per_oz * pln_per_usd) / TROY_OZ_TO_GRAM : null;
     const pd_pln_per_g = (pd_usd_per_oz && pln_per_usd) ? (pd_usd_per_oz * pln_per_usd) / TROY_OZ_TO_GRAM : null;
+    const ag_pln_per_g = (ag_usd_per_oz && pln_per_usd) ? (ag_usd_per_oz * pln_per_usd) / TROY_OZ_TO_GRAM : null;
     await pool.query(
-      `INSERT INTO market_rates (source, pt_pln_per_g, pd_pln_per_g, pt_usd_per_oz, pd_usd_per_oz)
-       VALUES ($1,$2,$3,$4,$5)`,
-      ["metalpriceapi", pt_pln_per_g, pd_pln_per_g, pt_usd_per_oz, pd_usd_per_oz]
+      `INSERT INTO market_rates (source, pt_pln_per_g, pd_pln_per_g, pt_usd_per_oz, pd_usd_per_oz, ag_pln_per_g, ag_usd_per_oz)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      ["metalpriceapi", pt_pln_per_g, pd_pln_per_g, pt_usd_per_oz, pd_usd_per_oz, ag_pln_per_g, ag_usd_per_oz]
     );
-    console.log(`[rates] metalpriceapi: Pt=${pt_pln_per_g?.toFixed(2)}, Pd=${pd_pln_per_g?.toFixed(2)} PLN/g`);
+    console.log(`[rates] metalpriceapi: Pt=${pt_pln_per_g?.toFixed(2)}, Pd=${pd_pln_per_g?.toFixed(2)}, Ag=${ag_pln_per_g?.toFixed(2)} PLN/g`);
   } catch (e) {
-    console.error("[rates] metalpriceapi Pt/Pd fetch failed:", e.message);
+    console.error("[rates] metalpriceapi fetch failed:", e.message);
   }
 }
 
-// Run NBP + Silver on startup, then every hour
-// Run Pt/Pd on startup, then twice daily at 06:00 and 18:00 Warsaw time
+// NBP: hourly (gold PLN/g + currencies). metalpriceapi: twice daily (Pt/Pd/Ag, 60 req/month)
 if (pool) {
-  // Startup fetch (staggered to avoid race on PLN/USD for silver conversion)
-  fetchNBP().then(() => fetchSilver());
-  fetchPlatinumPalladium();
+  fetchNBP();
+  fetchPlatinumPalladiumSilver();
 
-  cron.schedule("5 * * * *", fetchNBP);          // xx:05 every hour
-  cron.schedule("10 * * * *", fetchSilver);       // xx:10 every hour (after NBP)
-  cron.schedule("0 5 * * *", fetchPlatinumPalladium);   // 05:00 UTC ≈ 06:00 Warsaw
-  cron.schedule("0 17 * * *", fetchPlatinumPalladium);  // 17:00 UTC ≈ 18:00 Warsaw
+  cron.schedule("5 * * * *", fetchNBP);
+  // Weekdays: 3× (London market open / mid / close) = 66 req/month
+  cron.schedule("0 8 * * 1-5", fetchPlatinumPalladiumSilver);   // 08:00 UTC = ~09:00 Warsaw (open)
+  cron.schedule("0 12 * * 1-5", fetchPlatinumPalladiumSilver);  // 12:00 UTC = ~13:00 Warsaw (mid)
+  cron.schedule("0 16 * * 1-5", fetchPlatinumPalladiumSilver);  // 16:00 UTC = ~17:00 Warsaw (close)
+  // Weekends: 2× (market closed but reference prices) = 16 req/month → total ~82/month < 100 limit
+  cron.schedule("0 7 * * 0,6", fetchPlatinumPalladiumSilver);   // 07:00 UTC Sat/Sun
+  cron.schedule("0 15 * * 0,6", fetchPlatinumPalladiumSilver);  // 15:00 UTC Sat/Sun
 }
 
 app.get("/api/market-rates", async (req, res) => {

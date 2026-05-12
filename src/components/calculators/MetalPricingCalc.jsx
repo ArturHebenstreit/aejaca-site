@@ -13,7 +13,7 @@ const LABELS = {
     perGramAlloy: "Za gram stopu {{purity}}‰",
     totalValue: "Łączna wartość {{weight}}g",
     disclaimer: "Wartość informacyjna. Cena skupu przez jubilerów/mennicy będzie niższa o 10–25%.",
-    spotSource: "Cena spot: rynek globalny, przeliczenie NBP. Aktualizacja: {{time}}",
+    spotSource: "Źródła kursów: stopka strony",
     manualPrice: "Wpisz cenę 1 uncji troy (PLN)",
     loading: "Pobieranie cen rynkowych...",
   },
@@ -28,7 +28,7 @@ const LABELS = {
     perGramAlloy: "Per gram {{purity}}‰ alloy",
     totalValue: "Total value {{weight}}g",
     disclaimer: "Indicative value. Buyback price by jewelers/mint will be 10–25% lower.",
-    spotSource: "Spot price: global market, NBP conversion. Updated: {{time}}",
+    spotSource: "Rate sources: see page footer",
     manualPrice: "Enter 1 troy oz price (PLN)",
     loading: "Loading market prices...",
   },
@@ -43,7 +43,7 @@ const LABELS = {
     perGramAlloy: "Pro Gramm {{purity}}‰ Legierung",
     totalValue: "Gesamtwert {{weight}}g",
     disclaimer: "Richtwert. Rückkaufpreis durch Juweliere/Münzanstalt liegt 10–25 % darunter.",
-    spotSource: "Spotpreis: Weltmarkt, NBP-Kurs. Aktualisiert: {{time}}",
+    spotSource: "Kursquellen: Seitenfußzeile",
     manualPrice: "Preis pro Feinunze eingeben (PLN)",
     loading: "Marktpreise werden geladen...",
   },
@@ -85,6 +85,7 @@ function fmtEur(val) {
 export default function MetalPricingCalc() {
   const { lang } = useLanguage();
   const L = LABELS[lang] || LABELS.pl;
+  const showEur = lang === "en" || lang === "de";
 
   const [selectedMetal, setSelectedMetal] = useState("Au");
   const [selectedFineness, setSelectedFineness] = useState(750);
@@ -232,48 +233,35 @@ export default function MetalPricingCalc() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="bg-neutral-800/60 rounded-xl p-3">
               <div className="text-neutral-400 text-xs mb-1">{L.perGramPure}</div>
-              <div className="text-white font-mono font-semibold text-sm">{fmtPln(spotPerGramPure)}</div>
+              <div className="text-white font-mono font-semibold text-sm">
+                {showEur ? fmtEur(spotPerGramPure / plnPerEur) : fmtPln(spotPerGramPure)}
+              </div>
             </div>
             <div className="bg-neutral-800/60 rounded-xl p-3">
               <div className="text-neutral-400 text-xs mb-1">
                 {L.perGramAlloy.replace("{{purity}}", fineness)}
               </div>
-              <div className="text-white font-mono font-semibold text-sm">{fmtPln(spotPerGramAlloy)}</div>
+              <div className="text-white font-mono font-semibold text-sm">
+                {showEur ? fmtEur(spotPerGramAlloy / plnPerEur) : fmtPln(spotPerGramAlloy)}
+              </div>
             </div>
             {totalPln != null && (
               <div className="bg-amber-500/10 border border-amber-400/20 rounded-xl p-3">
                 <div className="text-amber-300 text-xs mb-1">
                   {L.totalValue.replace("{{weight}}", weightNum.toFixed(weightNum % 1 === 0 ? 0 : 2))}
                 </div>
-                <div className="text-white font-mono font-bold text-base">{fmtPln(totalPln)}</div>
-                <div className="text-neutral-400 font-mono text-xs mt-0.5">{fmtEur(totalEur)}</div>
+                <div className="text-white font-mono font-bold text-base">
+                  {showEur ? fmtEur(totalEur) : fmtPln(totalPln)}
+                </div>
+                <div className="text-neutral-400 font-mono text-xs mt-0.5">
+                  {showEur ? fmtPln(totalPln) : fmtEur(totalEur)}
+                </div>
               </div>
             )}
           </div>
 
-          {updatedAt && (
-            <div className="text-neutral-500 text-xs space-y-0.5">
-              <div>{L.spotSource.replace("{{time}}", updatedAt)}</div>
-              {prices?.sources && (
-                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-neutral-600">
-                  {prices.sources.au_pln_per_g && (
-                    <span>Au: <span className="text-neutral-500">{prices.sources.au_pln_per_g.source}</span>{" "}
-                      {new Date(prices.sources.au_pln_per_g.fetched_at).toLocaleString("pl-PL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
-                    </span>
-                  )}
-                  {prices.sources.ag_pln_per_g && (
-                    <span>Ag: <span className="text-neutral-500">{prices.sources.ag_pln_per_g.source}</span>{" "}
-                      {new Date(prices.sources.ag_pln_per_g.fetched_at).toLocaleString("pl-PL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
-                    </span>
-                  )}
-                  {prices.sources.pt_pln_per_g && (
-                    <span>Pt/Pd: <span className="text-neutral-500">{prices.sources.pt_pln_per_g.source}</span>{" "}
-                      {new Date(prices.sources.pt_pln_per_g.fetched_at).toLocaleString("pl-PL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
+          {prices && (
+            <div className="text-neutral-500 text-xs">{L.spotSource}</div>
           )}
 
           <div className="bg-amber-400/5 border border-amber-400/15 rounded-xl p-3">
