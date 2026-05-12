@@ -498,4 +498,60 @@ app.post("/api/laser-matrix/invalidate", express.json({ limit: "1kb" }), (req, r
   res.json({ ok: true, message: "Cache invalidated" });
 });
 
+// Metal prices cache (1h TTL)
+let _metalPriceCache = { ts: 0, data: null };
+
+app.get("/api/metal-prices", async (req, res) => {
+  const TTL = 60 * 60_000; // 1 hour
+  const now = Date.now();
+
+  if (_metalPriceCache.data && now - _metalPriceCache.ts < TTL) {
+    return res.json(_metalPriceCache.data);
+  }
+
+  try {
+    const apiKey = process.env.METAL_PRICE_API_KEY;
+    if (!apiKey) throw new Error("No API key");
+
+    // metalpriceapi.com — free tier: USD base, up to 100/month
+    const resp = await fetch(
+      `https://api.metalpriceapi.com/v1/latest?api_key=${apiKey}&base=USD&currencies=XAU,XAG,XPT,XPD,PLN,EUR`
+    );
+    const json = await resp.json();
+
+    if (!json.success) throw new Error("API error");
+
+    // rates: "how much of currency per 1 USD"
+    // XAU = troy oz of gold per 1 USD (e.g., 0.000488 oz/USD → 1/0.000488 = 2049 USD/oz)
+    const TROY_OZ_TO_GRAM = 31.1035;
+
+    const usdPerOzAu = 1 / json.rates.XAU;
+    const usdPerOzAg = 1 / json.rates.XAG;
+    const usdPerOzPt = 1 / json.rates.XPT;
+    const usdPerOzPd = 1 / json.rates.XPD;
+    const plnPerUsd = json.rates.PLN;
+    const eurPerUsd = json.rates.EUR;
+
+    const data = {
+      Au_pln_per_g: (usdPerOzAu * plnPerUsd) / TROY_OZ_TO_GRAM,
+      Ag_pln_per_g: (usdPerOzAg * plnPerUsd) / TROY_OZ_TO_GRAM,
+      Pt_pln_per_g: (usdPerOzPt * plnPerUsd) / TROY_OZ_TO_GRAM,
+      Pd_pln_per_g: (usdPerOzPd * plnPerUsd) / TROY_OZ_TO_GRAM,
+      plnPerEur: plnPerUsd / eurPerUsd,
+      updatedAt: new Date().toISOString(),
+      source: "metalpriceapi.com",
+    };
+
+    _metalPriceCache = { ts: now, data };
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    res.json(data);
+  } catch (err) {
+    // Fallback: return cached data even if stale, or error
+    if (_metalPriceCache.data) {
+      return res.json({ ..._metalPriceCache.data, stale: true });
+    }
+    res.status(503).json({ error: "Metal prices unavailable", message: err.message });
+  }
+});
+
 app.listen(PORT, () => console.log(`AEJaCA Chat API running on :${PORT}`));

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Calculator } from "lucide-react";
+import { ArrowRight, Calculator, FlaskConical, TrendingUp, Circle } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import RingBlankCalc from "../components/calculators/RingBlankCalc.jsx";
@@ -26,6 +26,13 @@ const LABELS = {
     breadHome: "Strona główna",
     breadJewelry: "Biżuteria",
     breadTools: "Narzędzia jubilerskie",
+    toolsTitle: "Dostępne narzędzia",
+    tool1Title: "Skład stopów jubilerskich",
+    tool1Desc: "Dokładny skład, temperatura topnienia i twardość stopów Au, Ag, Pt",
+    tool2Title: "Wycena surowca",
+    tool2Desc: "Oblicz wartość kruszcu na podstawie aktualnej ceny spot",
+    tool3Title: "Kalkulator blanku obrączki",
+    tool3Desc: "Długość pręta i masa blanku dla dowolnego metalu i rozmiaru",
   },
   en: {
     heroTag: "Open knowledge",
@@ -44,6 +51,13 @@ const LABELS = {
     breadHome: "Home",
     breadJewelry: "Jewelry",
     breadTools: "Jewelry Tools",
+    toolsTitle: "Available Tools",
+    tool1Title: "Alloy Composition",
+    tool1Desc: "Exact composition, melting range and hardness for Au, Ag, Pt alloys",
+    tool2Title: "Metal Pricing",
+    tool2Desc: "Calculate metal value based on current spot price",
+    tool3Title: "Ring Blank Calculator",
+    tool3Desc: "Strip length and blank weight for any metal and size",
   },
   de: {
     heroTag: "Offenes Wissen",
@@ -62,6 +76,13 @@ const LABELS = {
     breadHome: "Startseite",
     breadJewelry: "Schmuck",
     breadTools: "Schmuck-Tools",
+    toolsTitle: "Verfügbare Tools",
+    tool1Title: "Legierungszusammensetzung",
+    tool1Desc: "Genaue Zusammensetzung, Schmelzbereich und Härte für Au, Ag, Pt-Legierungen",
+    tool2Title: "Metallbewertung",
+    tool2Desc: "Metallwert basierend auf aktuellem Spotpreis berechnen",
+    tool3Title: "Ring-Rohling-Rechner",
+    tool3Desc: "Streifenlänge und Rohlinggewicht für beliebige Metalle und Größen",
   },
 };
 
@@ -71,6 +92,7 @@ export default function ToolsJewelry() {
   const seo = getSEO("toolsjewelry", lang);
 
   const whyRef = useScrollReveal();
+  const toolsRef = useScrollReveal();
   const calcCTARef = useScrollReveal();
   const ringBlankRef = useScrollReveal();
   const ctaRef = useScrollReveal();
@@ -128,6 +150,47 @@ export default function ToolsJewelry() {
             <div ref={whyRef} className="reveal p-6 rounded-2xl bg-amber-400/5 border border-amber-400/15">
               <h2 className="font-sans text-xl font-semibold text-amber-300 mb-3">{L.whyTitle}</h2>
               <p className="text-neutral-300 text-sm leading-relaxed">{L.whyText}</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Available Tools */}
+        <section className="py-10 px-4 bg-neutral-950">
+          <div className="max-w-3xl mx-auto">
+            <div ref={toolsRef} className="reveal">
+              <h2 className="text-xl font-semibold text-white mb-5">{L.toolsTitle}</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Link
+                  to="/toolsjewelry/alloy-composition/"
+                  className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-900/20 transition-all duration-300"
+                >
+                  <FlaskConical className="w-8 h-8 text-amber-400 transition-transform duration-300 group-hover:scale-110" />
+                  <div>
+                    <div className="text-white font-semibold text-sm group-hover:text-amber-300 transition-colors">{L.tool1Title}</div>
+                    <div className="text-neutral-400 text-xs mt-1 leading-relaxed">{L.tool1Desc}</div>
+                  </div>
+                </Link>
+                <Link
+                  to="/toolsjewelry/metal-pricing/"
+                  className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-900/20 transition-all duration-300"
+                >
+                  <TrendingUp className="w-8 h-8 text-amber-400 transition-transform duration-300 group-hover:scale-110" />
+                  <div>
+                    <div className="text-white font-semibold text-sm group-hover:text-amber-300 transition-colors">{L.tool2Title}</div>
+                    <div className="text-neutral-400 text-xs mt-1 leading-relaxed">{L.tool2Desc}</div>
+                  </div>
+                </Link>
+                <a
+                  href="#ring-blank"
+                  className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-900/20 transition-all duration-300"
+                >
+                  <Circle className="w-8 h-8 text-amber-400 transition-transform duration-300 group-hover:scale-110" />
+                  <div>
+                    <div className="text-white font-semibold text-sm group-hover:text-amber-300 transition-colors">{L.tool3Title}</div>
+                    <div className="text-neutral-400 text-xs mt-1 leading-relaxed">{L.tool3Desc}</div>
+                  </div>
+                </a>
+              </div>
             </div>
           </div>
         </section>
