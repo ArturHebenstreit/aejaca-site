@@ -586,8 +586,13 @@ if (pool) {
   fetchPlatinumPalladiumSilver();
 
   cron.schedule("5 * * * *", fetchNBP);
-  cron.schedule("0 5 * * *", fetchPlatinumPalladiumSilver);   // 05:00 UTC ≈ 06:00 Warsaw
-  cron.schedule("0 17 * * *", fetchPlatinumPalladiumSilver);  // 17:00 UTC ≈ 18:00 Warsaw
+  // Weekdays: 3× (London market open / mid / close) = 66 req/month
+  cron.schedule("0 8 * * 1-5", fetchPlatinumPalladiumSilver);   // 08:00 UTC = ~09:00 Warsaw (open)
+  cron.schedule("0 12 * * 1-5", fetchPlatinumPalladiumSilver);  // 12:00 UTC = ~13:00 Warsaw (mid)
+  cron.schedule("0 16 * * 1-5", fetchPlatinumPalladiumSilver);  // 16:00 UTC = ~17:00 Warsaw (close)
+  // Weekends: 2× (market closed but reference prices) = 16 req/month → total ~82/month < 100 limit
+  cron.schedule("0 7 * * 0,6", fetchPlatinumPalladiumSilver);   // 07:00 UTC Sat/Sun
+  cron.schedule("0 15 * * 0,6", fetchPlatinumPalladiumSilver);  // 15:00 UTC Sat/Sun
 }
 
 app.get("/api/market-rates", async (req, res) => {
