@@ -3,6 +3,7 @@ import cors from "cors";
 import OpenAI from "openai";
 import pg from "pg";
 import multer from "multer";
+import cron from "node-cron";
 import { getSystemPrompt, detectHotLead } from "./context.js";
 
 const app = express();
@@ -43,6 +44,21 @@ if (pool) {
   pool.query(`ALTER TABLE conversations ADD COLUMN IF NOT EXISTS country VARCHAR(10)`).catch(() => {});
   pool.query(`CREATE TABLE IF NOT EXISTS events (id BIGSERIAL PRIMARY KEY, ts TIMESTAMPTZ NOT NULL DEFAULT NOW(), session VARCHAR(50) NOT NULL, path VARCHAR(500), category VARCHAR(50), action VARCHAR(200), label VARCHAR(500), value NUMERIC, country VARCHAR(10), device VARCHAR(20))`).catch(() => {});
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS session_id VARCHAR(50)`).catch(() => {});
+  pool.query(`CREATE TABLE IF NOT EXISTS market_rates (
+    id SERIAL PRIMARY KEY,
+    fetched_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    source VARCHAR(50) NOT NULL,
+    pln_per_usd NUMERIC(10,6),
+    pln_per_eur NUMERIC(10,6),
+    au_pln_per_g NUMERIC(12,4),
+    ag_pln_per_g NUMERIC(12,4),
+    pt_pln_per_g NUMERIC(12,4),
+    pd_pln_per_g NUMERIC(12,4),
+    au_usd_per_oz NUMERIC(12,4),
+    ag_usd_per_oz NUMERIC(12,4),
+    pt_usd_per_oz NUMERIC(12,4),
+    pd_usd_per_oz NUMERIC(12,4)
+  )`).catch(() => {});
 }
 
 const rateMap = new Map();
@@ -497,5 +513,146 @@ app.post("/api/laser-matrix/invalidate", express.json({ limit: "1kb" }), (req, r
   _matrixCache = { ts: 0, rows: null };
   res.json({ ok: true, message: "Cache invalidated" });
 });
+
+// ─── Market Rates: fetch functions ────────────────────────────────────────
+
+const TROY_OZ_TO_GRAM = 31.1035;
+
+async function fetchNBP() {
+  if (!pool) return;
+  try {
+    const [goldRes, usdRes, eurRes] = await Promise.all([
+      fetch("https://api.nbp.pl/api/cenyzlota/last/1/?format=json"),
+      fetch("https://api.nbp.pl/api/exchangerates/rates/a/usd/?format=json"),
+      fetch("https://api.nbp.pl/api/exchangerates/rates/a/eur/?format=json"),
+    ]);
+    const [goldData, usdData, eurData] = await Promise.all([
+      goldRes.json(), usdRes.json(), eurRes.json(),
+    ]);
+    const au_pln_per_g = goldData[0]?.cena ?? null;
+    const pln_per_usd = usdData?.rates?.[0]?.mid ?? null;
+    const pln_per_eur = eurData?.rates?.[0]?.mid ?? null;
+    const au_usd_per_oz = (au_pln_per_g && pln_per_usd)
+      ? (au_pln_per_g / pln_per_usd) * TROY_OZ_TO_GRAM : null;
+    await pool.query(
+      `INSERT INTO market_rates (source, pln_per_usd, pln_per_eur, au_pln_per_g, au_usd_per_oz)
+       VALUES ($1,$2,$3,$4,$5)`,
+      ["nbp", pln_per_usd, pln_per_eur, au_pln_per_g, au_usd_per_oz]
+    );
+    console.log(`[rates] NBP: Au=${au_pln_per_g} PLN/g, USD=${pln_per_usd}, EUR=${pln_per_eur}`);
+  } catch (e) {
+    console.error("[rates] NBP fetch failed:", e.message);
+  }
+}
+
+async function fetchSilver() {
+  if (!pool) return;
+  try {
+    // gold-api.com — no API key, no rate limit
+    const res = await fetch("https://gold-api.com/price/XAG");
+    const data = await res.json();
+    const ag_usd_per_oz = data?.price ?? null;
+    if (!ag_usd_per_oz) throw new Error("No price in response");
+    // Get latest PLN/USD from DB for conversion
+    const rateRow = await pool.query(
+      "SELECT pln_per_usd FROM market_rates WHERE pln_per_usd IS NOT NULL ORDER BY fetched_at DESC LIMIT 1"
+    );
+    const pln_per_usd = rateRow.rows[0]?.pln_per_usd ?? null;
+    const ag_pln_per_g = pln_per_usd
+      ? (ag_usd_per_oz * pln_per_usd) / TROY_OZ_TO_GRAM : null;
+    await pool.query(
+      `INSERT INTO market_rates (source, ag_pln_per_g, ag_usd_per_oz) VALUES ($1,$2,$3)`,
+      ["gold-api", ag_pln_per_g, ag_usd_per_oz]
+    );
+    console.log(`[rates] gold-api: Ag=${ag_usd_per_oz} USD/oz = ${ag_pln_per_g?.toFixed(2)} PLN/g`);
+  } catch (e) {
+    console.error("[rates] gold-api silver fetch failed:", e.message);
+  }
+}
+
+async function fetchPlatinumPalladium() {
+  if (!pool) return;
+  const apiKey = process.env.METAL_PRICE_API_KEY;
+  if (!apiKey) {
+    console.warn("[rates] METAL_PRICE_API_KEY not set — skipping Pt/Pd fetch");
+    return;
+  }
+  try {
+    const resp = await fetch(
+      `https://api.metalpriceapi.com/v1/latest?api_key=${apiKey}&base=USD&currencies=XPT,XPD`
+    );
+    const json = await resp.json();
+    if (!json.success) throw new Error(json.error?.info || "API error");
+    const pt_usd_per_oz = json.rates?.XPT ? 1 / json.rates.XPT : null;
+    const pd_usd_per_oz = json.rates?.XPD ? 1 / json.rates.XPD : null;
+    const rateRow = await pool.query(
+      "SELECT pln_per_usd FROM market_rates WHERE pln_per_usd IS NOT NULL ORDER BY fetched_at DESC LIMIT 1"
+    );
+    const pln_per_usd = rateRow.rows[0]?.pln_per_usd ?? null;
+    const pt_pln_per_g = (pt_usd_per_oz && pln_per_usd) ? (pt_usd_per_oz * pln_per_usd) / TROY_OZ_TO_GRAM : null;
+    const pd_pln_per_g = (pd_usd_per_oz && pln_per_usd) ? (pd_usd_per_oz * pln_per_usd) / TROY_OZ_TO_GRAM : null;
+    await pool.query(
+      `INSERT INTO market_rates (source, pt_pln_per_g, pd_pln_per_g, pt_usd_per_oz, pd_usd_per_oz)
+       VALUES ($1,$2,$3,$4,$5)`,
+      ["metalpriceapi", pt_pln_per_g, pd_pln_per_g, pt_usd_per_oz, pd_usd_per_oz]
+    );
+    console.log(`[rates] metalpriceapi: Pt=${pt_pln_per_g?.toFixed(2)}, Pd=${pd_pln_per_g?.toFixed(2)} PLN/g`);
+  } catch (e) {
+    console.error("[rates] metalpriceapi Pt/Pd fetch failed:", e.message);
+  }
+}
+
+// Run NBP + Silver on startup, then every hour
+// Run Pt/Pd on startup, then twice daily at 06:00 and 18:00 Warsaw time
+if (pool) {
+  // Startup fetch (staggered to avoid race on PLN/USD for silver conversion)
+  fetchNBP().then(() => fetchSilver());
+  fetchPlatinumPalladium();
+
+  cron.schedule("5 * * * *", fetchNBP);          // xx:05 every hour
+  cron.schedule("10 * * * *", fetchSilver);       // xx:10 every hour (after NBP)
+  cron.schedule("0 5 * * *", fetchPlatinumPalladium);   // 05:00 UTC ≈ 06:00 Warsaw
+  cron.schedule("0 17 * * *", fetchPlatinumPalladium);  // 17:00 UTC ≈ 18:00 Warsaw
+}
+
+app.get("/api/market-rates", async (req, res) => {
+  if (!pool) {
+    return res.status(503).json({ error: "Database not available" });
+  }
+  try {
+    // Get latest non-null value for each field, with its source and timestamp
+    const q = await pool.query(`
+      SELECT DISTINCT ON (field) field, value, source, fetched_at FROM (
+        SELECT 'pln_per_usd' AS field, pln_per_usd::float AS value, source, fetched_at FROM market_rates WHERE pln_per_usd IS NOT NULL
+        UNION ALL SELECT 'pln_per_eur', pln_per_eur::float, source, fetched_at FROM market_rates WHERE pln_per_eur IS NOT NULL
+        UNION ALL SELECT 'au_pln_per_g', au_pln_per_g::float, source, fetched_at FROM market_rates WHERE au_pln_per_g IS NOT NULL
+        UNION ALL SELECT 'ag_pln_per_g', ag_pln_per_g::float, source, fetched_at FROM market_rates WHERE ag_pln_per_g IS NOT NULL
+        UNION ALL SELECT 'pt_pln_per_g', pt_pln_per_g::float, source, fetched_at FROM market_rates WHERE pt_pln_per_g IS NOT NULL
+        UNION ALL SELECT 'pd_pln_per_g', pd_pln_per_g::float, source, fetched_at FROM market_rates WHERE pd_pln_per_g IS NOT NULL
+      ) sub
+      ORDER BY field, fetched_at DESC
+    `);
+
+    const rates = {};
+    const sources = {};
+    for (const row of q.rows) {
+      rates[row.field] = row.value;
+      sources[row.field] = { source: row.source, fetched_at: row.fetched_at };
+    }
+
+    // Derive EUR/USD from PLN rates
+    if (rates.pln_per_usd && rates.pln_per_eur) {
+      rates.eur_per_usd = rates.pln_per_usd / rates.pln_per_eur;
+    }
+
+    res.setHeader("Cache-Control", "public, max-age=300");
+    res.json({ ...rates, sources });
+  } catch (e) {
+    console.error("[market-rates] query error:", e.message);
+    res.status(500).json({ error: "Failed to fetch market rates" });
+  }
+});
+
+app.get("/api/metal-prices", (req, res) => res.redirect("/api/market-rates"));
 
 app.listen(PORT, () => console.log(`AEJaCA Chat API running on :${PORT}`));

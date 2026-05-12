@@ -334,7 +334,7 @@ const QUOTE_LABELS = {
   },
 };
 
-export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummary, preAttachedFile = null }) {
+export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummary, preAttachedFile = null, rateSnapshot = null }) {
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
   const [status, setStatus] = useState("idle");
@@ -395,6 +395,7 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
             discount: result.discount,
           },
           ...(filePayload ? { file: filePayload } : {}),
+          ...(rateSnapshot ? { rateSnapshot } : {}),
           ts: new Date().toISOString(),
         }),
       });
