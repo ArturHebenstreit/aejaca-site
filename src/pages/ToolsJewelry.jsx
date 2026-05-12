@@ -3,7 +3,6 @@ import { ArrowRight, Calculator, FlaskConical, TrendingUp, Circle, Ruler } from 
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import RingBlankCalc from "../components/calculators/RingBlankCalc.jsx";
-import RingSizeCalc from "../components/calculators/RingSizeCalc.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
@@ -36,8 +35,6 @@ const LABELS = {
     tool3Desc: "Długość pręta i masa blanku dla dowolnego metalu i rozmiaru",
     tool4Title: "Konwerter rozmiarów pierścionków",
     tool4Desc: "Przelicz EU / US / UK / JP — lub wpisz obwód/średnicę palca.",
-    ringSizeTitle: "Rozmiary pierścionków",
-    ringSizeSubtitle: "Konwerter i kalkulator rozmiaru na podstawie obwodu palca lub istniejącego pierścionka.",
   },
   en: {
     heroTag: "Open knowledge",
@@ -65,8 +62,6 @@ const LABELS = {
     tool3Desc: "Strip length and blank weight for any metal and size",
     tool4Title: "Ring Size Converter",
     tool4Desc: "Convert EU / US / UK / JP — or enter your finger circumference/diameter.",
-    ringSizeTitle: "Ring Sizes",
-    ringSizeSubtitle: "Converter and calculator based on finger circumference or an existing ring.",
   },
   de: {
     heroTag: "Offenes Wissen",
@@ -94,8 +89,6 @@ const LABELS = {
     tool3Desc: "Streifenlänge und Rohlinggewicht für beliebige Metalle und Größen",
     tool4Title: "Ringgrößen-Konverter",
     tool4Desc: "EU / US / UK / JP umrechnen — oder Fingerumfang/Durchmesser eingeben.",
-    ringSizeTitle: "Ringgrößen",
-    ringSizeSubtitle: "Konverter und Rechner anhand des Fingerumfangs oder eines vorhandenen Rings.",
   },
 };
 
@@ -108,7 +101,6 @@ export default function ToolsJewelry() {
   const toolsRef = useScrollReveal();
   const calcCTARef = useScrollReveal();
   const ringBlankRef = useScrollReveal();
-  const ringSizeRef = useScrollReveal();
   const ctaRef = useScrollReveal();
 
   const schemas = [
@@ -204,8 +196,8 @@ export default function ToolsJewelry() {
                     <div className="text-neutral-400 text-xs mt-1 leading-relaxed">{L.tool3Desc}</div>
                   </div>
                 </a>
-                <a
-                  href="#ring-size"
+                <Link
+                  to="/toolsjewelry/ring-size/"
                   className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-900/20 transition-all duration-300"
                 >
                   <Ruler className="w-8 h-8 text-amber-400 transition-transform duration-300 group-hover:scale-110" />
@@ -213,7 +205,7 @@ export default function ToolsJewelry() {
                     <div className="text-white font-semibold text-sm group-hover:text-amber-300 transition-colors">{L.tool4Title}</div>
                     <div className="text-neutral-400 text-xs mt-1 leading-relaxed">{L.tool4Desc}</div>
                   </div>
-                </a>
+                </Link>
               </div>
             </div>
           </div>
@@ -254,18 +246,6 @@ export default function ToolsJewelry() {
               <p className="text-neutral-400">{L.ringBlankSubtitle}</p>
             </div>
             <RingBlankCalc lang={lang} />
-          </div>
-        </section>
-
-        {/* Ring Size Calculator */}
-        <div className="gradient-divider" />
-        <section id="ring-size" className="py-16 px-4 bg-neutral-950">
-          <div className="max-w-3xl mx-auto">
-            <div ref={ringSizeRef} className="reveal mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">{L.ringSizeTitle}</h2>
-              <p className="text-neutral-400">{L.ringSizeSubtitle}</p>
-            </div>
-            <RingSizeCalc lang={lang} />
           </div>
         </section>
 
