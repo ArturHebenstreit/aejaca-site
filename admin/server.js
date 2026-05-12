@@ -86,7 +86,7 @@ app.get("/logout", (req, res) => {
 // --- Routes: Dashboard ---
 app.get("/dashboard", requireAuth, async (req, res) => {
   try {
-    const [leadStats, subStats, recentLeads, recentSubs, analyticsKpi, laserMatrixCount] = await Promise.all([
+    const [leadStats, subStats, recentLeads, recentSubs, analyticsKpi, laserMatrixCount, gemResult] = await Promise.all([
       pool.query("SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE) as today, COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') as week FROM leads"),
       pool.query("SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE subscribed_at >= CURRENT_DATE) as today, COUNT(*) FILTER (WHERE subscribed_at >= CURRENT_DATE - INTERVAL '7 days') as week FROM subscribers WHERE unsubscribed = FALSE"),
       pool.query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 10"),
@@ -102,6 +102,7 @@ app.get("/dashboard", requireAuth, async (req, res) => {
         FROM events
       `).catch(() => ({ rows: [{}] })),
       pool.query("SELECT COUNT(*) as total FROM laser_matrix").catch(() => ({ rows: [{ total: '?' }] })),
+      pool.query("SELECT COUNT(*) as count FROM gemstone_prices").catch(() => ({ rows: [{ count: '0' }] })),
     ]);
     res.render("dashboard", {
       user: req.user,
@@ -111,6 +112,7 @@ app.get("/dashboard", requireAuth, async (req, res) => {
       recentSubs: recentSubs.rows,
       analyticsKpi: analyticsKpi.rows[0] || {},
       laserMatrixCount: laserMatrixCount.rows[0].total,
+      gemstoneCount: parseInt(gemResult.rows[0].count),
     });
   } catch (err) {
     res.status(500).render("error", { message: err.message });
@@ -509,6 +511,38 @@ app.post("/laser-matrix/:id/delete", requireAuth, async (req, res) => {
   await pool.query("DELETE FROM laser_matrix WHERE id = $1", [req.params.id]);
   await invalidateMatrixCache();
   res.redirect("/laser-matrix?flash=deleted");
+});
+
+// --- Gemstone Prices CRUD ---
+async function invalidateGemCache() {
+  if (!process.env.CHAT_API_URL || !process.env.MATRIX_INVALIDATE_TOKEN) return;
+  fetch(`${process.env.CHAT_API_URL}/api/gemstone-prices/invalidate`, {
+    method: "POST",
+    headers: { "x-invalidate-token": process.env.MATRIX_INVALIDATE_TOKEN },
+  }).catch(() => {});
+}
+
+app.get("/gemstone-prices", requireAuth, async (req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT * FROM gemstone_prices ORDER BY precious DESC, lab, name_pl");
+    res.render("gemstone-prices", { user: req.user, gems: rows });
+  } catch (err) { res.status(500).render("error", { message: err.message }); }
+});
+
+app.get("/gemstone-prices/:id/edit", requireAuth, async (req, res) => {
+  const { rows } = await pool.query("SELECT * FROM gemstone_prices WHERE id = $1", [req.params.id]);
+  if (!rows[0]) return res.status(404).render("error", { message: "Not found" });
+  res.render("gemstone-prices-edit", { user: req.user, gem: rows[0] });
+});
+
+app.post("/gemstone-prices/:id/update", requireAuth, express.urlencoded({ extended: true }), async (req, res) => {
+  const { base_eur, notes, name_pl, name_en, name_de } = req.body;
+  await pool.query(
+    `UPDATE gemstone_prices SET base_eur=$1, notes=$2, name_pl=$3, name_en=$4, name_de=$5, updated_at=NOW(), updated_by=$6 WHERE id=$7`,
+    [base_eur || null, notes || null, name_pl, name_en, name_de, req.user.email, req.params.id]
+  );
+  await invalidateGemCache();
+  res.redirect("/gemstone-prices");
 });
 
 app.listen(PORT, () => console.log(`AEJaCA Admin running on :${PORT}`));
