@@ -1,0 +1,179 @@
+import { useLanguage } from "../i18n/LanguageContext.jsx";
+import { useScrollReveal } from "../hooks/useScrollReveal.js";
+import RingSizeCalc from "../components/calculators/RingSizeCalc.jsx";
+import SEOHead from "../seo/SEOHead.jsx";
+import Breadcrumb from "../components/Breadcrumb.jsx";
+import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
+import { SITE } from "../seo/seoData.js";
+
+const LABELS = {
+  pl: {
+    heroTag: "Narzędzia jubilerskie",
+    heroTitle: "Rozmiary pierścionków",
+    heroDesc: "Konwerter rozmiarów EU / US / UK / JP. Oblicz rozmiar ze sznurka, średnicy lub wybierz z siatki.",
+    introTitle: "Jak korzystać z konwertera?",
+    introText: "Wybierz metodę: mierzysz sznurkiem → wpisz obwód w mm (= rozmiar EU). Masz pierścionek → wpisz średnicę wewnętrzną. Znasz rozmiar → wybierz system i kliknij wartość na siatce. Kalkulator pokaże odpowiedniki we wszystkich systemach.",
+    breadHome: "Strona główna",
+    breadJewelry: "Biżuteria",
+    breadTools: "Narzędzia jubilerskie",
+    breadThis: "Rozmiary pierścionków",
+    footerCtaTitle: "Potrzebujesz pierścionka na miarę?",
+    footerCtaText: "Znając swój rozmiar, możemy stworzyć pierścionek idealnie dopasowany — od projektu po gotowy wyrób.",
+    footerCtaBtn: "Napisz do nas",
+  },
+  en: {
+    heroTag: "Jewelry tools",
+    heroTitle: "Ring Size Converter",
+    heroDesc: "Convert EU / US / UK / JP ring sizes. Calculate from string measurement, diameter, or pick from a grid.",
+    introTitle: "How to use the converter?",
+    introText: "Choose a method: measuring with string → enter circumference in mm (= EU size). Have a ring → enter inner diameter. Know your size → select system and tap a tile. The calculator shows equivalents in all systems.",
+    breadHome: "Home",
+    breadJewelry: "Jewelry",
+    breadTools: "Jewelry Tools",
+    breadThis: "Ring Size Converter",
+    footerCtaTitle: "Need a custom-fit ring?",
+    footerCtaText: "Knowing your size, we can create a perfectly fitted ring — from design to finished piece.",
+    footerCtaBtn: "Contact us",
+  },
+  de: {
+    heroTag: "Schmuck-Tools",
+    heroTitle: "Ringgrößen-Konverter",
+    heroDesc: "EU / US / UK / JP Ringgrößen umrechnen. Aus Fadenmaß, Durchmesser oder direkt aus dem Raster wählen.",
+    introTitle: "Wie benutzt man den Konverter?",
+    introText: "Methode wählen: Faden messen → Umfang in mm eingeben (= EU-Größe). Ring vorhanden → Innendurchmesser eingeben. Größe bekannt → System wählen und Kachel antippen. Der Rechner zeigt alle Entsprechungen.",
+    breadHome: "Startseite",
+    breadJewelry: "Schmuck",
+    breadTools: "Schmuck-Tools",
+    breadThis: "Ringgrößen-Konverter",
+    footerCtaTitle: "Einen maßgefertigten Ring bestellen?",
+    footerCtaText: "Mit Ihrer Größe erstellen wir einen perfekt passenden Ring — vom Entwurf bis zum fertigen Stück.",
+    footerCtaBtn: "Kontakt",
+  },
+};
+
+const SEO_META = {
+  pl: {
+    title: "Rozmiary pierścionków — Konwerter EU / US / UK / JP | AEJaCA",
+    description: "Kalkulator i konwerter rozmiarów pierścionków. Oblicz rozmiar EU ze sznurka lub średnicy. Przelicznik EU, US, UK, JP.",
+  },
+  en: {
+    title: "Ring Size Converter — EU / US / UK / JP | AEJaCA",
+    description: "Ring size calculator and converter. Calculate EU size from string measurement or diameter. EU, US, UK, JP chart.",
+  },
+  de: {
+    title: "Ringgrößen-Konverter — EU / US / UK / JP | AEJaCA",
+    description: "Ringgrößen Rechner und Konverter. EU-Größe aus Fadenmaß oder Durchmesser berechnen. EU, US, UK, JP Tabelle.",
+  },
+};
+
+export default function RingSizePage() {
+  const { lang } = useLanguage();
+  const L = LABELS[lang] || LABELS.pl;
+  const seo = SEO_META[lang] || SEO_META.pl;
+
+  const introRef = useScrollReveal();
+  const calcRef = useScrollReveal();
+  const ctaRef = useScrollReveal();
+
+  const schemas = [
+    buildWebPageSchema({
+      title: seo.title,
+      description: seo.description,
+      url: `${SITE.url}/toolsjewelry/ring-size/`,
+    }),
+    buildBreadcrumbSchema([
+      { name: L.breadHome, url: SITE.url },
+      { name: L.breadJewelry, url: `${SITE.url}/jewelry/` },
+      { name: L.breadTools, url: `${SITE.url}/toolsjewelry/` },
+      { name: L.breadThis, url: `${SITE.url}/toolsjewelry/ring-size/` },
+    ]),
+  ];
+
+  return (
+    <>
+      <SEOHead
+        pageKey="toolsjewelry"
+        path="/toolsjewelry/ring-size"
+        schemas={schemas}
+        title={seo.title}
+        description={seo.description}
+      />
+      <div className="pt-16 bg-neutral-950">
+
+        {/* Hero */}
+        <section className="bg-neutral-950 py-10 px-4">
+          <div className="max-w-5xl mx-auto relative rounded-2xl overflow-hidden h-[40vh] min-h-[280px] bg-gradient-to-br from-stone-800 via-amber-950 to-stone-950">
+            <img
+              src="/hero-toolsjewelry.webp"
+              alt="Rozmiary pierścionków — AEJaCA"
+              className="absolute inset-0 w-full h-full object-cover"
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
+              width="1024"
+              height="572"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-black/40 to-transparent" />
+            <div className="relative z-10 flex flex-col items-center justify-end h-full pb-12 px-4 text-center">
+              <div className="text-amber-400 text-xs uppercase tracking-[0.25em] mb-3">{L.heroTag}</div>
+              <h1 className="font-serif text-3xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg">{L.heroTitle}</h1>
+              <p className="text-neutral-300 text-base max-w-2xl">{L.heroDesc}</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Breadcrumb */}
+        <div className="max-w-4xl mx-auto px-4 pt-4 pb-2">
+          <Breadcrumb
+            items={[
+              { label: L.breadHome, href: "/" },
+              { label: L.breadJewelry, href: "/jewelry/" },
+              { label: L.breadTools, href: "/toolsjewelry/" },
+              { label: L.breadThis },
+            ]}
+          />
+        </div>
+
+        {/* Intro */}
+        <section className="py-10 px-4 bg-neutral-950">
+          <div className="max-w-3xl mx-auto">
+            <div ref={introRef} className="reveal p-6 rounded-2xl bg-amber-400/5 border border-amber-400/15">
+              <h2 className="font-sans text-xl font-semibold text-amber-300 mb-3">{L.introTitle}</h2>
+              <p className="text-neutral-300 text-sm leading-relaxed">{L.introText}</p>
+            </div>
+          </div>
+        </section>
+
+        <div className="gradient-divider" />
+
+        {/* Calculator */}
+        <section className="py-12 px-4 bg-neutral-950">
+          <div className="max-w-3xl mx-auto">
+            <div ref={calcRef} className="reveal">
+              <RingSizeCalc />
+            </div>
+          </div>
+        </section>
+
+        <div className="gradient-divider" />
+
+        {/* Footer CTA */}
+        <section className="py-12 px-4 bg-neutral-950 text-center">
+          <div ref={ctaRef} className="reveal max-w-xl mx-auto">
+            <h2 className="font-sans text-xl font-semibold text-white mb-2">{L.footerCtaTitle}</h2>
+            <p className="text-neutral-400 text-sm mb-6">{L.footerCtaText}</p>
+            <a
+              href="/contact/"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 text-neutral-950 font-semibold rounded-full hover:bg-amber-400 hover:shadow-lg hover:shadow-amber-500/20 transition-all duration-300"
+            >
+              {L.footerCtaBtn}
+            </a>
+          </div>
+        </section>
+
+        <div className="gradient-divider" />
+
+      </div>
+    </>
+  );
+}
