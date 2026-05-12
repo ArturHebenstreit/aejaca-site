@@ -70,6 +70,16 @@ public/
   sitemap.xml, robots.txt, _headers, _redirects
 ```
 
+## Currency display rule (ALWAYS apply)
+
+**Prices and amounts must follow the active language:**
+- `lang === "pl"` → display in **PLN** (Polish złoty)
+- `lang === "en"` or `lang === "de"` → display in **EUR**
+
+Conversion: `eur = pln / pln_per_eur` where `pln_per_eur` comes from the live `/api/market-rates` endpoint (NBP rate). Fallback: `4.25`. The secondary amount (smaller text below primary) shows the opposite currency.
+
+This applies to: all calculators, pricing displays, result cards, quote forms — any component that shows monetary values. Use the pattern: `const showEur = lang === "en" || lang === "de"`.
+
 ## Key conventions
 
 - **i18n**: every user-facing string lives in `src/i18n/{pl,en,de}.js`. When adding a key, add it to ALL THREE files — they must stay in sync.

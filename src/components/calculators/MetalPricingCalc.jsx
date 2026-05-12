@@ -85,6 +85,7 @@ function fmtEur(val) {
 export default function MetalPricingCalc() {
   const { lang } = useLanguage();
   const L = LABELS[lang] || LABELS.pl;
+  const showEur = lang === "en" || lang === "de";
 
   const [selectedMetal, setSelectedMetal] = useState("Au");
   const [selectedFineness, setSelectedFineness] = useState(750);
@@ -232,21 +233,29 @@ export default function MetalPricingCalc() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="bg-neutral-800/60 rounded-xl p-3">
               <div className="text-neutral-400 text-xs mb-1">{L.perGramPure}</div>
-              <div className="text-white font-mono font-semibold text-sm">{fmtPln(spotPerGramPure)}</div>
+              <div className="text-white font-mono font-semibold text-sm">
+                {showEur ? fmtEur(spotPerGramPure / plnPerEur) : fmtPln(spotPerGramPure)}
+              </div>
             </div>
             <div className="bg-neutral-800/60 rounded-xl p-3">
               <div className="text-neutral-400 text-xs mb-1">
                 {L.perGramAlloy.replace("{{purity}}", fineness)}
               </div>
-              <div className="text-white font-mono font-semibold text-sm">{fmtPln(spotPerGramAlloy)}</div>
+              <div className="text-white font-mono font-semibold text-sm">
+                {showEur ? fmtEur(spotPerGramAlloy / plnPerEur) : fmtPln(spotPerGramAlloy)}
+              </div>
             </div>
             {totalPln != null && (
               <div className="bg-amber-500/10 border border-amber-400/20 rounded-xl p-3">
                 <div className="text-amber-300 text-xs mb-1">
                   {L.totalValue.replace("{{weight}}", weightNum.toFixed(weightNum % 1 === 0 ? 0 : 2))}
                 </div>
-                <div className="text-white font-mono font-bold text-base">{fmtPln(totalPln)}</div>
-                <div className="text-neutral-400 font-mono text-xs mt-0.5">{fmtEur(totalEur)}</div>
+                <div className="text-white font-mono font-bold text-base">
+                  {showEur ? fmtEur(totalEur) : fmtPln(totalPln)}
+                </div>
+                <div className="text-neutral-400 font-mono text-xs mt-0.5">
+                  {showEur ? fmtPln(totalPln) : fmtEur(totalEur)}
+                </div>
               </div>
             )}
           </div>
