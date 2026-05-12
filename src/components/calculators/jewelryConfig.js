@@ -103,6 +103,7 @@ export const PLATING = [
 ];
 
 // --- GEMSTONES ---
+// basePLN: static fallback only — live prices fetched from /api/gemstone-prices and override these
 // basePLN = approximate wholesale PLN per carat for medium quality, ~0.5ct
 export const GEMSTONES = [
   { id: "none", label: { pl: "Bez kamienia", en: "No gemstone", de: "Ohne Stein" }, basePLN: 0, precious: false, hasGrades: false },

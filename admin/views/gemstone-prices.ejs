@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEJaCA Admin — Gemstone Prices</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            neutral: { 950: '#0a0a0a' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-neutral-950 min-h-screen text-neutral-100">
+
+  <header class="bg-neutral-900 border-b border-white/10 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-6">
+      <span class="text-lg font-bold text-white">AEJaCA <span class="text-amber-400">Admin</span></span>
+      <nav class="flex gap-4 text-sm">
+        <a href="/dashboard" class="text-neutral-400 hover:text-white transition-colors">Dashboard</a>
+        <a href="/analytics" class="text-neutral-400 hover:text-white transition-colors">Analytics</a>
+        <a href="/leads" class="text-neutral-400 hover:text-white transition-colors">Leads</a>
+        <a href="/subscribers" class="text-neutral-400 hover:text-white transition-colors">Subscribers</a>
+        <a href="/conversations" class="text-neutral-400 hover:text-white transition-colors">Chat</a>
+        <a href="/laser-matrix" class="text-neutral-400 hover:text-white transition-colors">Laser Matrix</a>
+        <a href="/gemstone-prices" class="text-white font-medium border-b border-amber-400 pb-0.5">Gems</a>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      <img src="<%= user.photo %>" class="w-7 h-7 rounded-full" alt="" />
+      <span class="text-sm text-neutral-400"><%= user.name %></span>
+      <a href="/logout" class="text-xs text-red-400 hover:text-red-300 transition-colors">Logout</a>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl font-semibold text-white">Gemstone Prices</h2>
+      <p class="text-xs text-neutral-500">Prices in EUR — frontend converts to PLN using live NBP rate</p>
+    </div>
+
+    <div class="bg-neutral-900 border border-white/10 rounded-xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-white/10 text-neutral-500 text-xs uppercase tracking-wider">
+              <th class="px-4 py-3 text-left">Gem ID</th>
+              <th class="px-4 py-3 text-left">Name PL</th>
+              <th class="px-4 py-3 text-left">Name EN / DE</th>
+              <th class="px-4 py-3 text-right">Base EUR</th>
+              <th class="px-4 py-3 text-center">Precious</th>
+              <th class="px-4 py-3 text-center">Lab</th>
+              <th class="px-4 py-3 text-left">Notes</th>
+              <th class="px-4 py-3 text-left">Updated</th>
+              <th class="px-4 py-3 text-left"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (gems && gems.length > 0) { %>
+              <% gems.forEach(function(gem, i) { %>
+              <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors group <%= i % 2 === 1 ? 'bg-white/[0.015]' : '' %>">
+                <td class="px-4 py-3 font-mono text-xs text-neutral-500"><%= gem.gem_id %></td>
+                <td class="px-4 py-3 text-neutral-200 font-medium"><%= gem.name_pl %></td>
+                <td class="px-4 py-3 text-neutral-400 text-xs">
+                  <div><%= gem.name_en %></div>
+                  <div class="text-neutral-600"><%= gem.name_de %></div>
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <% if (gem.base_eur != null) { %>
+                    <span class="text-amber-400 font-semibold"><%= parseFloat(gem.base_eur).toFixed(2) %></span>
+                    <span class="text-neutral-600 text-xs ml-0.5">€</span>
+                  <% } else { %>
+                    <span class="text-neutral-600">—</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <% if (gem.precious) { %>
+                    <span class="text-amber-400 text-xs font-medium">YES</span>
+                  <% } else { %>
+                    <span class="text-neutral-700 text-xs">—</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <% if (gem.lab) { %>
+                    <span class="px-1.5 py-0.5 bg-emerald-950 text-emerald-400 rounded text-[10px] font-medium">LAB</span>
+                  <% } else { %>
+                    <span class="text-neutral-700 text-xs">—</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3 text-neutral-500 text-xs max-w-[160px] truncate" title="<%= gem.notes || '' %>">
+                  <%= gem.notes || '—' %>
+                </td>
+                <td class="px-4 py-3 text-neutral-600 text-xs whitespace-nowrap">
+                  <%= fmtDate(gem.updated_at) %>
+                  <% if (gem.updated_by) { %>
+                    <div class="text-neutral-700 truncate max-w-[100px]"><%= gem.updated_by %></div>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <a href="/gemstone-prices/<%= gem.id %>/edit"
+                    class="opacity-0 group-hover:opacity-100 px-3 py-1 bg-amber-950 border border-amber-800/50 text-amber-400 hover:text-amber-300 text-xs rounded transition-all">
+                    Edit
+                  </a>
+                </td>
+              </tr>
+              <% }); %>
+            <% } else { %>
+            <tr>
+              <td colspan="9" class="px-4 py-12 text-center text-neutral-600">No gemstone prices found.</td>
+            </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="mt-4 text-xs text-neutral-600">
+      Changes take effect on the frontend within 24 hours (localStorage cache). Cache is invalidated automatically on save.
+    </p>
+
+  </main>
+
+</body>
+</html>
