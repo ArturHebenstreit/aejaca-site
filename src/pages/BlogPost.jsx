@@ -1,5 +1,5 @@
 import { useParams, Link, Navigate } from "react-router-dom";
-import { Clock, Calendar, Tag } from "lucide-react";
+import { Clock, Calendar, Tag, User } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { getPost, getSortedPosts } from "../blog/posts.js";
 import Prose from "../components/blog/Prose.jsx";
@@ -127,6 +127,10 @@ export default function BlogPost() {
               }`}>
                 <Tag className="w-3 h-3" />
                 {catLabel}
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <User className="w-3 h-3" />
+                <a href="/about/" className="hover:text-amber-400 transition-colors">Artur Hebenstreit</a>
               </span>
               <span className="inline-flex items-center gap-1">
                 <Calendar className="w-3 h-3" />

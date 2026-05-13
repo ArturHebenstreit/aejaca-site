@@ -65,7 +65,10 @@ export default function SEOHead({
       {/* Canonical — dedupes language variants behind one URL */}
       <link rel="canonical" href={canonical} />
 
-      {/* Hreflang — SPA with client-side language switch: x-default only */}
+      {/* Hreflang — same URL serves pl/en/de via client-side language switch */}
+      <link rel="alternate" hrefLang="pl" href={canonical} />
+      <link rel="alternate" hrefLang="en" href={canonical} />
+      <link rel="alternate" hrefLang="de" href={canonical} />
       <link rel="alternate" hrefLang="x-default" href={canonical} />
 
       {/* Open Graph — Facebook, LinkedIn, WhatsApp, Discord previews */}
