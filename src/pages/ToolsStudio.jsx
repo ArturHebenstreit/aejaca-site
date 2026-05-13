@@ -149,75 +149,58 @@ export default function ToolsStudio() {
 
         <div className="gradient-divider" />
 
-        {/* Print Settings tool card */}
-        <section className="py-8 px-4 bg-neutral-950">
+        {/* Tool cards — 2-column grid */}
+        <section className="py-10 px-4 bg-neutral-950">
           <div className="max-w-3xl mx-auto">
-            <div ref={printCardRef} className="reveal mb-4">
-              <Link
-                to="/toolstudio/print-settings/"
-                className="group flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 p-5 rounded-2xl glass hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300"
-              >
-                <div className="flex items-center gap-4">
-                  <Printer className="w-10 h-10 text-blue-400 shrink-0 transition-transform duration-300 group-hover:scale-110" />
-                  <div className="min-w-0">
-                    <div className="text-white font-semibold text-base group-hover:text-blue-300 transition-colors">{L.printCardTitle}</div>
-                    <div className="text-neutral-400 text-sm mt-0.5">{L.printCardDesc}</div>
+            <div ref={printCardRef} className="reveal">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <Link
+                  to="/toolstudio/print-settings/"
+                  className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300"
+                >
+                  <Printer className="w-8 h-8 text-blue-400 transition-transform duration-300 group-hover:scale-110" />
+                  <div>
+                    <div className="text-white font-semibold text-sm group-hover:text-blue-300 transition-colors">{L.printCardTitle}</div>
+                    <div className="text-neutral-400 text-xs mt-1 leading-relaxed">{L.printCardDesc}</div>
                   </div>
-                </div>
-                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-400 group-hover:text-blue-300 sm:ml-auto shrink-0 transition-colors">
-                  {L.printCardBtn} <ArrowRight className="w-4 h-4" />
-                </span>
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        <div className="gradient-divider" />
-
-        {/* CTA tile → /studio/#calculator */}
-        <section className="py-8 px-4 bg-neutral-950">
-          <div className="max-w-3xl mx-auto">
-            <div ref={calcCTARef} className="reveal">
-              <Link
-                to="/studio/#calculator"
-                className="group flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 p-5 rounded-2xl glass hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300"
-              >
-                <div className="flex items-center gap-4">
-                  <Cpu className="w-10 h-10 text-blue-400 shrink-0 transition-transform duration-300 group-hover:scale-110" />
-                  <div className="min-w-0">
-                    <div className="text-white font-semibold text-base group-hover:text-blue-300 transition-colors">{L.calcCTATitle}</div>
-                    <div className="text-neutral-400 text-sm mt-0.5">{L.calcCTADesc}</div>
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-400 group-hover:text-blue-300 mt-auto transition-colors">
+                    {L.printCardBtn} <ArrowRight className="w-3 h-3" />
+                  </span>
+                </Link>
+                <Link
+                  ref={laserCardRef}
+                  to="/toolstudio/laser-parameters/"
+                  className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300"
+                >
+                  <Zap className="w-8 h-8 text-blue-400 transition-transform duration-300 group-hover:scale-110" />
+                  <div>
+                    <div className="text-white font-semibold text-sm group-hover:text-blue-300 transition-colors">{L.laserCardTitle}</div>
+                    <div className="text-neutral-400 text-xs mt-1 leading-relaxed">{L.laserCardDesc}</div>
                   </div>
-                </div>
-                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-400 group-hover:text-blue-300 sm:ml-auto shrink-0 transition-colors">
-                  {L.calcCTABtn} <ArrowRight className="w-4 h-4" />
-                </span>
-              </Link>
-            </div>
-          </div>
-        </section>
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-400 group-hover:text-blue-300 mt-auto transition-colors">
+                    {L.printCardBtn} <ArrowRight className="w-3 h-3" />
+                  </span>
+                </Link>
+              </div>
 
-        <div className="gradient-divider" />
-
-        {/* Laser Parameters tool card */}
-        <section className="py-8 px-4 bg-neutral-950">
-          <div className="max-w-3xl mx-auto">
-            <div ref={laserCardRef} className="reveal mb-4">
-              <Link
-                to="/toolstudio/laser-parameters/"
-                className="group flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 p-5 rounded-2xl glass hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300"
-              >
-                <div className="flex items-center gap-4">
-                  <Zap className="w-10 h-10 text-blue-400 shrink-0 transition-transform duration-300 group-hover:scale-110" />
-                  <div className="min-w-0">
-                    <div className="text-white font-semibold text-base group-hover:text-blue-300 transition-colors">{L.laserCardTitle}</div>
-                    <div className="text-neutral-400 text-sm mt-0.5">{L.laserCardDesc}</div>
+              {/* Wide CTA → pricing calculator */}
+              <div ref={calcCTARef}>
+                <Link
+                  to="/studio/#calculator"
+                  className="group flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 p-5 rounded-2xl glass hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300"
+                >
+                  <div className="flex items-center gap-4">
+                    <Cpu className="w-10 h-10 text-blue-400 shrink-0 transition-transform duration-300 group-hover:scale-110" />
+                    <div className="min-w-0">
+                      <div className="text-white font-semibold text-base group-hover:text-blue-300 transition-colors">{L.calcCTATitle}</div>
+                      <div className="text-neutral-400 text-sm mt-0.5">{L.calcCTADesc}</div>
+                    </div>
                   </div>
-                </div>
-                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-400 group-hover:text-blue-300 sm:ml-auto shrink-0 transition-colors">
-                  {L.printCardBtn} <ArrowRight className="w-4 h-4" />
-                </span>
-              </Link>
+                  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-400 group-hover:text-blue-300 sm:ml-auto shrink-0 transition-colors">
+                    {L.calcCTABtn} <ArrowRight className="w-4 h-4" />
+                  </span>
+                </Link>
+              </div>
             </div>
           </div>
         </section>
