@@ -27,6 +27,8 @@ const STATIC_ROUTES = [
   "/toolsjewelry/ring-size",
   "/toolstudio",
   "/toolstudio/print-settings",
+  "/toolstudio/laser-parameters",
+  "/toolsjewelry/ring-blank",
 ];
 
 const GLOSSARY_IDS = [
