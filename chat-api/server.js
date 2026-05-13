@@ -792,7 +792,7 @@ app.get("/api/filaments/contributions", async (req, res) => {
 });
 
 // POST /api/filaments/contribute — user submission
-const contributeLimit = rateLimit({ windowMs: 60 * 60_000, max: 3, keyGenerator: getIP, standardHeaders: true, legacyHeaders: false });
+const contributeLimit = rateLimit({ windowMs: 60 * 60_000, max: 3, keyGenerator: extractIP, standardHeaders: true, legacyHeaders: false });
 app.post("/api/filaments/contribute", express.json({ limit: "16kb" }), contributeLimit, async (req, res) => {
   try {
     if (!pool) return res.status(503).json({ error: "DB unavailable" });
@@ -822,7 +822,7 @@ app.post("/api/filaments/contribute", express.json({ limit: "16kb" }), contribut
 });
 
 // POST /api/filaments/vote — community voting on contributions
-const voteLimit = rateLimit({ windowMs: 60 * 60_000, max: 20, keyGenerator: getIP, standardHeaders: true, legacyHeaders: false });
+const voteLimit = rateLimit({ windowMs: 60 * 60_000, max: 20, keyGenerator: extractIP, standardHeaders: true, legacyHeaders: false });
 app.post("/api/filaments/vote", express.json({ limit: "4kb" }), voteLimit, async (req, res) => {
   try {
     if (!pool) return res.status(503).json({ error: "DB unavailable" });
@@ -830,7 +830,7 @@ app.post("/api/filaments/vote", express.json({ limit: "4kb" }), voteLimit, async
     if (!contribution_id || !["confirm", "dispute"].includes(vote))
       return res.status(400).json({ error: "Invalid request" });
 
-    const ip = getIP(req);
+    const ip = extractIP(req);
     const ipHash = createHash("sha256").update(ip + contribution_id).digest("hex");
 
     // Deduplication check
