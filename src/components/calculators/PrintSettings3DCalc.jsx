@@ -4,7 +4,7 @@ import { useLanguage } from "../../i18n/LanguageContext.jsx";
 // ============================================================
 // CONFIG
 // ============================================================
-const API_BASE = "https://api.aejaca.com/api/filaments";
+const API_BASE = "https://aejacachatapi-production.up.railway.app/api/filaments";
 const CACHE_KEY = "filament-data-v1";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const PLN_PER_EUR = 4.25;
