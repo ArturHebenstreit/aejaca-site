@@ -5,6 +5,7 @@ import pg from "pg";
 import multer from "multer";
 import cron from "node-cron";
 import { createHash } from "crypto";
+import { rateLimit } from "express-rate-limit";
 import { getSystemPrompt, detectHotLead } from "./context.js";
 
 const app = express();
