@@ -103,6 +103,79 @@ if (pool) {
       ('tiger_eye','Tygrysie oko','Tiger eye','Tigerauge',5,false,false,false)
       ON CONFLICT (gem_id) DO NOTHING`);
   }).catch(() => {});
+
+  pool.query(`CREATE TABLE IF NOT EXISTS filament_types (
+    id BIGSERIAL PRIMARY KEY,
+    type_id VARCHAR(50) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    category VARCHAR(30) NOT NULL,
+    nozzle_min INTEGER, nozzle_max INTEGER,
+    bed_min INTEGER, bed_max INTEGER,
+    temp_resistance INTEGER,
+    speed_min INTEGER, speed_max INTEGER,
+    layer_min NUMERIC(4,2), layer_max NUMERIC(4,2),
+    retraction_min NUMERIC(4,1), retraction_max NUMERIC(4,1),
+    cooling INTEGER,
+    enclosure VARCHAR(20) DEFAULT 'no',
+    difficulty INTEGER CHECK (difficulty BETWEEN 1 AND 5),
+    density NUMERIC(5,3),
+    price_per_kg INTEGER,
+    props TEXT[],
+    uses_pl TEXT, uses_en TEXT, uses_de TEXT,
+    notes_pl TEXT, notes_en TEXT, notes_de TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    sort_order INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_by VARCHAR(100)
+  )`).catch(e => console.error("[filaments] CREATE filament_types failed:", e.message));
+
+  pool.query(`CREATE TABLE IF NOT EXISTS filament_brands (
+    id BIGSERIAL PRIMARY KEY,
+    filament_type_id BIGINT REFERENCES filament_types(id) ON DELETE CASCADE,
+    brand VARCHAR(100) NOT NULL,
+    product_name VARCHAR(200),
+    nozzle_min INTEGER, nozzle_max INTEGER,
+    bed_min INTEGER, bed_max INTEGER,
+    speed_min INTEGER, speed_max INTEGER,
+    notes_pl TEXT, notes_en TEXT, notes_de TEXT,
+    product_url VARCHAR(500),
+    is_verified BOOLEAN DEFAULT FALSE,
+    auto_approved BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_by VARCHAR(100)
+  )`).catch(e => console.error("[filaments] CREATE filament_brands failed:", e.message));
+
+  pool.query(`CREATE TABLE IF NOT EXISTS filament_contributions (
+    id BIGSERIAL PRIMARY KEY,
+    filament_type_id BIGINT REFERENCES filament_types(id),
+    filament_brand_id BIGINT REFERENCES filament_brands(id),
+    contribution_type VARCHAR(30) NOT NULL,
+    brand_name VARCHAR(100), product_name VARCHAR(200),
+    nozzle_min INTEGER, nozzle_max INTEGER,
+    bed_min INTEGER, bed_max INTEGER,
+    speed_min INTEGER, speed_max INTEGER,
+    notes TEXT,
+    contributor_email VARCHAR(200), contributor_name VARCHAR(100),
+    gdpr_consent BOOLEAN DEFAULT FALSE,
+    vote_confirm INTEGER DEFAULT 0, vote_dispute INTEGER DEFAULT 0,
+    auto_approved BOOLEAN DEFAULT FALSE,
+    status VARCHAR(20) DEFAULT 'pending',
+    admin_note TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    reviewed_at TIMESTAMPTZ, reviewed_by VARCHAR(100)
+  )`).catch(e => console.error("[filaments] CREATE filament_contributions failed:", e.message));
+
+  pool.query(`CREATE TABLE IF NOT EXISTS filament_contribution_votes (
+    id BIGSERIAL PRIMARY KEY,
+    contribution_id BIGINT REFERENCES filament_contributions(id) ON DELETE CASCADE,
+    voter_email VARCHAR(200),
+    vote VARCHAR(10) NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    ip_hash VARCHAR(64)
+  )`).catch(e => console.error("[filaments] CREATE filament_contribution_votes failed:", e.message));
 }
 
 const rateMap = new Map();
@@ -749,7 +822,8 @@ app.get("/api/filaments", async (req, res) => {
     res.setHeader("Cache-Control", "public, max-age=300");
     res.json({ types, count: types.length, cachedAt: new Date(_filamentCache.ts).toISOString() });
   } catch (e) {
-    res.status(500).json({ error: "Failed to fetch filaments" });
+    console.error("[filaments] GET /api/filaments error:", e.message);
+    res.status(500).json({ error: "Failed to fetch filaments", detail: e.message });
   }
 });
 
