@@ -6,7 +6,7 @@ import { useScrollReveal } from "../hooks/useScrollReveal.js";
 // Find it: business.trustpilot.com → Integrations → TrustBox → any widget code
 // Look for: data-businessunit-id="xxxxxxxxxxxxxxxxxxxxxxxx"  (24-char hex string)
 // Then replace the placeholder below and redeploy.
-const BUSINESS_UNIT_ID = "PASTE_YOUR_BUSINESS_UNIT_ID_HERE";
+const BUSINESS_UNIT_ID = "3ZAbneSM708zd1i8";
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PROFILE_URL = "https://www.trustpilot.com/review/aejaca.com";
