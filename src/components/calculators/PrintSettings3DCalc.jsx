@@ -1,290 +1,418 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useLanguage } from "../../i18n/LanguageContext.jsx";
 
 // ============================================================
-// MATERIALS DATA
+// CONFIG
 // ============================================================
-const MATERIALS = [
-  // STANDARD
-  { id:"pla",     name:"PLA",        category:"standard",    nozzle:[190,220], bed:[20,60],   speed:[40,80],  layer:[0.1,0.3],  cooling:100, retraction:[3,6],  enclosure:"no",          difficulty:1, density:1.24, tempRes:55,  pricePerKg:70,
-    props:["easy","rigid","biodegradable","low-warp"],
-    uses:{ pl:"Modele dekoracyjne, prototypy, figurki, breloki", en:"Decorative models, prototypes, figurines, keychains", de:"Dekorationsmodelle, Prototypen, Figuren, Schlüsselanhänger" },
-    notes:{ pl:"Najłatwiejszy w druku. Niska odporność na temp. — nie do zastosowań zewnętrznych ani w samochodzie.", en:"Easiest to print. Low heat resistance — not for outdoor or car use.", de:"Einfachstes Material. Geringe Wärmebeständigkeit." } },
-
-  { id:"plaSilk", name:"PLA Silk",   category:"standard",    nozzle:[210,230], bed:[25,60],   speed:[30,60],  layer:[0.1,0.25], cooling:100, retraction:[4,7],  enclosure:"no",          difficulty:2, density:1.24, tempRes:52,  pricePerKg:90,
-    props:["shiny","rigid","decorative","low-warp"],
-    uses:{ pl:"Ozdoby, biżuteria, trofea, figurki kolekcjonerskie", en:"Decorations, jewelry, trophies, collectibles", de:"Dekorationen, Schmuck, Trophäen" },
-    notes:{ pl:"Efekt jedwabistego połysku. Wyższa temp. niż PLA standard. Słabe mostki.", en:"Silky shine effect. Higher temp than standard PLA. Poor bridging.", de:"Seidiger Glanzeffekt. Höhere Temp. als Standard-PLA." } },
-
-  { id:"petg",    name:"PETG",       category:"standard",    nozzle:[230,250], bed:[70,90],   speed:[30,60],  layer:[0.1,0.3],  cooling:50,  retraction:[3,6],  enclosure:"recommended", difficulty:2, density:1.27, tempRes:80,  pricePerKg:80,
-    props:["durable","water-resistant","uv-resistant","food-safe"],
-    uses:{ pl:"Części mechaniczne, pojemniki, elementy zewnętrzne", en:"Mechanical parts, containers, outdoor parts", de:"Mechanische Teile, Behälter, Außenteile" },
-    notes:{ pl:"Świetna alternatywa dla ABS — brak warpage. Bardzo dobra adhezja warstw.", en:"Great ABS alternative — no warping. Excellent layer adhesion.", de:"Gute ABS-Alternative — kein Warping." } },
-
-  { id:"petgCF",  name:"PETG-CF",    category:"standard",    nozzle:[240,260], bed:[70,90],   speed:[30,50],  layer:[0.1,0.25], cooling:50,  retraction:[2,5],  enclosure:"recommended", difficulty:3, density:1.30, tempRes:85,  pricePerKg:160,
-    props:["stiff","lightweight","water-resistant","carbon-fiber"],
-    uses:{ pl:"Lekkie obudowy, wsporniki, drony", en:"Lightweight housings, brackets, drones", de:"Leichte Gehäuse, Halterungen, Drohnen" },
-    notes:{ pl:"Wymaga hardened nozzle (stal hartowana). Bardzo sztywny i lekki.", en:"Requires hardened nozzle. Very stiff and light.", de:"Gehärtete Düse erforderlich. Sehr steif und leicht." } },
-
-  { id:"tpu",     name:"TPU 95A",    category:"standard",    nozzle:[220,240], bed:[30,60],   speed:[15,35],  layer:[0.1,0.3],  cooling:80,  retraction:[0,2],  enclosure:"no",          difficulty:3, density:1.21, tempRes:80,  pricePerKg:100,
-    props:["flexible","rubber-like","abrasion-resistant","shock-absorbing"],
-    uses:{ pl:"Uszczelki, etui, podeszwy, amortyzatory", en:"Gaskets, phone cases, soles, shock absorbers", de:"Dichtungen, Handyhüllen, Sohlen, Stoßdämpfer" },
-    notes:{ pl:"Bardzo wolna prędkość. Minimalna retrakcja. Direct drive zalecany — Bowden problematyczny.", en:"Very slow speed. Minimal retraction. Direct drive recommended.", de:"Sehr langsam. Minimale Retraktion. Direktantrieb empfohlen." } },
-
-  { id:"asa",     name:"ASA",        category:"standard",    nozzle:[240,260], bed:[90,110],  speed:[30,60],  layer:[0.1,0.3],  cooling:20,  retraction:[3,6],  enclosure:"required",    difficulty:4, density:1.07, tempRes:100, pricePerKg:100,
-    props:["uv-resistant","weather-resistant","rigid","outdoor"],
-    uses:{ pl:"Elementy zewnętrzne, części samochodowe, znaki", en:"Outdoor parts, car components, signs", de:"Außenteile, Fahrzeugteile, Schilder" },
-    notes:{ pl:"Konieczna zamknięta obudowa. Odporny na UV i warunki atmosferyczne. Opary — wentylacja wymagana.", en:"Enclosed chamber required. UV resistant. Fumes — ventilation mandatory.", de:"Geschlossenes Gehäuse erforderlich. UV-beständig. Belüftung obligatorisch." } },
-
-  { id:"abs",     name:"ABS",        category:"standard",    nozzle:[230,250], bed:[100,120], speed:[30,60],  layer:[0.1,0.3],  cooling:0,   retraction:[3,6],  enclosure:"required",    difficulty:4, density:1.04, tempRes:100, pricePerKg:80,
-    props:["rigid","impact-resistant","acetone-smoothable","paintable"],
-    uses:{ pl:"Części techniczne, obudowy elektroniki, elementy do wygładzania acetonem", en:"Technical parts, electronics housings, acetone-smoothable parts", de:"Technische Teile, Elektronikgehäuse, Acetonglättung" },
-    notes:{ pl:"Silny warpage bez obudowy. Opary szkodliwe — wentylacja. Wygładzanie acetonem.", en:"Heavy warping without enclosure. Harmful fumes. Acetone smoothing possible.", de:"Starkes Warping ohne Gehäuse. Schädliche Dämpfe. Acetonglättung möglich." } },
-
-  { id:"pva",     name:"PVA",        category:"standard",    nozzle:[185,200], bed:[35,60],   speed:[20,40],  layer:[0.1,0.2],  cooling:100, retraction:[3,6],  enclosure:"no",          difficulty:3, density:1.19, tempRes:50,  pricePerKg:200,
-    props:["water-soluble","support-material","biodegradable"],
-    uses:{ pl:"Materiał podporowy do rozpuszczania w wodzie", en:"Water-soluble support material", de:"Wasserlösliches Stützmaterial" },
-    notes:{ pl:"Wyłącznie jako support. Bardzo higroskopijny — przechowywać szczelnie.", en:"Support material only. Very hygroscopic — store airtight.", de:"Nur Stützmaterial. Sehr hygroskopisch — luftdicht lagern." } },
-
-  // ENGINEERING
-  { id:"pa6cf",   name:"PA6-CF",     category:"engineering", nozzle:[260,280], bed:[70,90],   speed:[20,40],  layer:[0.1,0.2],  cooling:20,  retraction:[1,3],  enclosure:"required",    difficulty:5, density:1.14, tempRes:170, pricePerKg:280,
-    props:["very-stiff","lightweight","high-strength","carbon-fiber","low-creep"],
-    uses:{ pl:"Protezy, części lotnicze, drony wyścigowe, CNC", en:"Prosthetics, aerospace, racing drones, CNC", de:"Prothesen, Luft- und Raumfahrt, Renndrohnen, CNC" },
-    notes:{ pl:"Hardened nozzle obowiązkowa. Suszyć 70°C/4h przed drukiem. Bardzo niskie pełzanie.", en:"Hardened nozzle mandatory. Dry at 70°C/4h before printing. Very low creep.", de:"Gehärtete Düse obligatorisch. 70°C/4h vor dem Druck trocknen." } },
-
-  { id:"pa12cf",  name:"PA12-CF",    category:"engineering", nozzle:[255,275], bed:[70,90],   speed:[20,40],  layer:[0.1,0.2],  cooling:20,  retraction:[1,3],  enclosure:"required",    difficulty:5, density:1.02, tempRes:150, pricePerKg:320,
-    props:["stiff","lightweight","good-surface","carbon-fiber"],
-    uses:{ pl:"Lekkie obudowy, komponenty UAV, wsporniki strukturalne", en:"Lightweight housings, UAV components, structural brackets", de:"Leichte Gehäuse, UAV-Komponenten, Strukturhalterungen" },
-    notes:{ pl:"Mniejsza absorpcja wilgoci niż PA6. Lepsza powierzchnia niż PA6-CF. Hardened nozzle.", en:"Less moisture absorption than PA6. Better surface than PA6-CF. Hardened nozzle.", de:"Geringere Feuchtigkeitsaufnahme als PA6. Bessere Oberfläche." } },
-
-  { id:"pc",      name:"PC",         category:"engineering", nozzle:[270,300], bed:[100,120], speed:[20,40],  layer:[0.1,0.25], cooling:0,   retraction:[2,5],  enclosure:"required",    difficulty:5, density:1.20, tempRes:130, pricePerKg:180,
-    props:["impact-resistant","optical","high-temp","transparent-possible"],
-    uses:{ pl:"Soczewki, osłony maszyn, elementy optyczne", en:"Lenses, machine guards, optical parts", de:"Linsen, Maschinenschutzabdeckungen, optische Teile" },
-    notes:{ pl:"Bardzo podatny na warpage. Łoże min. 110°C. Wymaga high-end drukarki.", en:"Very prone to warping. Bed min 110°C. High-end printer required.", de:"Sehr warpanfällig. Bett min. 110°C. High-End-Drucker erforderlich." } },
-
-  { id:"pcabs",   name:"PC-ABS",     category:"engineering", nozzle:[250,270], bed:[100,110], speed:[25,50],  layer:[0.1,0.25], cooling:10,  retraction:[3,5],  enclosure:"required",    difficulty:4, density:1.12, tempRes:115, pricePerKg:150,
-    props:["impact-resistant","high-temp","rigid"],
-    uses:{ pl:"Obudowy elektroniki przemysłowej, części samochodowe, narzędzia", en:"Industrial electronics housings, automotive parts, tools", de:"Industrieelektronikgehäuse, Automobilteile, Werkzeuge" },
-    notes:{ pl:"Lepsze właściwości niż ABS, mniejszy warpage niż PC. Dobry kompromis.", en:"Better than ABS, less warping than PC. Good compromise.", de:"Besser als ABS, weniger Warping als PC." } },
-
-  { id:"petCF",   name:"PET-CF",     category:"engineering", nozzle:[250,270], bed:[70,85],   speed:[25,45],  layer:[0.1,0.25], cooling:30,  retraction:[2,4],  enclosure:"recommended", difficulty:4, density:1.35, tempRes:110, pricePerKg:240,
-    props:["stiff","chemical-resistant","carbon-fiber","dimensional-stable"],
-    uses:{ pl:"Części narażone na chemikalia, elementy przemysłowe", en:"Chemically exposed parts, industrial components", de:"Chemisch belastete Teile, Industriekomponenten" },
-    notes:{ pl:"Lepsza odporność chemiczna niż PETG-CF. Hardened nozzle wymagana.", en:"Better chemical resistance than PETG-CF. Hardened nozzle required.", de:"Bessere Chemikalienbeständigkeit als PETG-CF. Gehärtete Düse erforderlich." } },
-
-  { id:"ppacf",   name:"PPA-CF",     category:"engineering", nozzle:[280,310], bed:[100,120], speed:[15,30],  layer:[0.1,0.2],  cooling:10,  retraction:[1,3],  enclosure:"required",    difficulty:5, density:1.15, tempRes:200, pricePerKg:500,
-    props:["very-high-temp","chemical-resistant","carbon-fiber","aerospace"],
-    uses:{ pl:"Aplikacje lotnicze, mocowania silnikowe, przemysł", en:"Aerospace, engine mounts, industrial", de:"Luft- und Raumfahrt, Motorhalterungen, Industrie" },
-    notes:{ pl:"Praca do 200°C. Wymaga hotend 350°C. Hardened nozzle obowiązkowa.", en:"Up to 200°C service temp. Requires 350°C hotend. Hardened nozzle mandatory.", de:"Bis 200°C. 350°C Hotend erforderlich. Gehärtete Düse obligatorisch." } },
-
-  { id:"pps",     name:"PPS/PPS-CF", category:"engineering", nozzle:[300,340], bed:[120,150], speed:[10,25],  layer:[0.08,0.2], cooling:0,   retraction:[1,2],  enclosure:"required",    difficulty:5, density:1.35, tempRes:220, pricePerKg:600,
-    props:["ultra-high-temp","flame-retardant","chemical-resistant","low-creep"],
-    uses:{ pl:"Przemysł chemiczny, elektronika wysokotemperaturowa, lotnictwo", en:"Chemical industry, high-temp electronics, aviation", de:"Chemieindustrie, Hochtemperaturelektronik, Luftfahrt" },
-    notes:{ pl:"Jeden z najtrudniejszych materiałów. Do 220°C. Niepalny (UL94-V0). Wymaga specjalistycznej drukarki.", en:"One of the hardest to print. Up to 220°C. Flame retardant (UL94-V0). Specialist printer required.", de:"Eines der schwierigsten Materialien. Bis 220°C. Flammhemmend (UL94-V0)." } },
-];
+const API_BASE = "https://api.aejaca.com/api/filaments";
+const CACHE_KEY = "filament-data-v1";
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const PLN_PER_EUR = 4.25;
 
 // ============================================================
-// REQUIREMENT FILTERS
-// ============================================================
-const REQUIREMENTS = [
-  { id: "easy",      label: { pl: "Łatwy w druku",                         en: "Easy to print",              de: "Einfach zu drucken"         }, match: m => m.difficulty <= 2 },
-  { id: "flexible",  label: { pl: "Elastyczny/gumowy",                     en: "Flexible/rubber-like",       de: "Flexibel/gummiartig"        }, match: m => m.props.includes("flexible") || m.props.includes("rubber-like") },
-  { id: "highTemp",  label: { pl: "Odporność na temp. >100°C",             en: "Temp. resistance >100°C",    de: "Wärmebeständig >100°C"      }, match: m => m.tempRes >= 100 },
-  { id: "outdoor",   label: { pl: "Zastosowania zewnętrzne/UV",            en: "Outdoor/UV resistant",       de: "Außen/UV-beständig"         }, match: m => m.props.includes("uv-resistant") || m.props.includes("weather-resistant") || m.props.includes("outdoor") },
-  { id: "strong",    label: { pl: "Wysoka wytrzymałość/CF",                en: "High strength/CF",           de: "Hochfest/CF"                }, match: m => m.props.includes("high-strength") || m.props.includes("very-stiff") || m.props.includes("carbon-fiber") },
-  { id: "chemical",  label: { pl: "Odporność chemiczna",                   en: "Chemical resistance",        de: "Chemikalienbeständig"       }, match: m => m.props.includes("chemical-resistant") },
-  { id: "decorative",label: { pl: "Dekoracyjny/błyszczący",                en: "Decorative/shiny",           de: "Dekorativ/glänzend"         }, match: m => m.props.includes("shiny") || m.props.includes("decorative") },
-  { id: "support",   label: { pl: "Materiał podporowy (rozpuszczalny)",    en: "Soluble support material",   de: "Lösliches Stützmaterial"    }, match: m => m.props.includes("support-material") },
-  { id: "foodSafe",  label: { pl: "Kontakt z żywnością",                   en: "Food-safe",                  de: "Lebensmittelecht"           }, match: m => m.props.includes("food-safe") },
-];
-
-// ============================================================
-// LABELS
+// LABELS (pl/en/de — self-contained)
 // ============================================================
 const LABELS = {
   pl: {
-    tab1: "Dobór materiału",
-    tab2: "Parametry druku",
-    tab3: "Kalkulator filamentu",
-    reqTitle: "Wymagania (multiselect):",
-    reqAll: "Brak wyboru = pokaż wszystkie",
-    resultsTitle: "Dopasowane materiały",
-    noMatch: "Brak materiałów spełniających wszystkie wymagania. Spróbuj mniej filtrów.",
-    seeParams: "Zobacz parametry →",
-    diffLabel: "Trudność",
-    tempResLabel: "Maks. temp. pracy",
-    standardLabel: "Standardowe",
-    engineeringLabel: "Inżynieryjne",
-    paramNozzle: "Dysza",
-    paramBed: "Łoże",
-    paramSpeed: "Prędkość",
-    paramLayer: "Wysokość warstwy",
-    paramCooling: "Chłodzenie",
-    paramRetraction: "Retrakcja",
-    paramEnclosure: "Obudowa",
-    paramDifficulty: "Trudność",
-    paramTempRes: "Odp. na temp.",
-    paramPrice: "Cena orientacyjna",
-    paramUses: "Zastosowania",
-    paramNotes: "Uwagi",
+    loading: "Ładowanie bazy filamentów...",
+    loadError: "Błąd ładowania danych. Spróbuj odświeżyć stronę.",
+    retry: "Spróbuj ponownie",
+
+    step1: "Wymagania",
+    step2: "Dobór materiału",
+    step3: "Wybierz markę",
+    step4: "Parametry",
+
+    step1Title: "Do czego drukujesz?",
+    step1Hint: "Wybierz wymagania (możesz wybrać kilka)",
+    skipStep1: "Pokaż wszystkie materiały →",
+
+    step2Title: "Wybierz materiał",
+    searchPlaceholder: "Szukaj materiału...",
+    standard: "Standardowe",
+    engineering: "Inżynieryjne",
+    flexible: "Elastyczne",
+    specialty: "Specjalistyczne",
+    noResults: "Brak materiałów dla wybranych wymagań",
+    showAll: "Pokaż wszystkie materiały",
+    expand: "Rozwiń",
+    collapse: "Zwiń",
+
+    step3Title: "Wybierz markę / producenta",
+    step3Hint: "Opcjonalne — wybierz markę dla parametrów specyficznych lub zostań przy ogólnych",
+    genericParams: "Parametry ogólne",
+    genericDesc: "Uniwersalne parametry startowe dla tego materiału",
+    verified: "Zweryfikowane ✓",
+    communityApproved: "Społeczność ✓",
+    next: "Dalej →",
+
+    step4Title: "Parametry druku",
+    sectionTemps: "Temperatury",
+    sectionSpeed: "Prędkość i warstwy",
+    sectionEnclosure: "Chłodzenie i obudowa",
+    sectionProps: "Właściwości",
+    sectionNotes: "Uwagi",
+    nozzle: "Dysza",
+    bed: "Łoże",
+    tempRes: "Maks. temp. pracy",
+    speed: "Prędkość",
+    layerHeight: "Wysokość warstwy",
+    retraction: "Retrakcja",
+    cooling: "Chłodzenie",
+    enclosure: "Obudowa",
+    difficulty: "Trudność druku",
+    density: "Gęstość",
+    priceEst: "Cena orientacyjna",
     encNo: "Nie wymagana",
     encRec: "Zalecana",
     encReq: "Wymagana",
-    ctaText: "Zamawiaj wydruki z tego materiału →",
+    uses: "Zastosowania",
+    notes: "Uwagi techniczne",
+
     calcTitle: "Kalkulator filamentu",
-    calcSelectMat: "Wybierz materiał:",
-    calcInputMode: "Tryb wprowadzania:",
-    calcModeVol: "Objętość modelu (cm³)",
-    calcModeDim: "Wymiary (L×W×H)",
-    calcVolLabel: "Objętość modelu",
-    calcVolUnit: "cm³",
-    calcLengthLabel: "Długość",
-    calcWidthLabel: "Szerokość",
-    calcHeightLabel: "Wysokość",
-    calcInfillLabel: "Wypełnienie",
-    calcResultTitle: "Wynik kalkulacji",
+    calcLength: "Długość",
+    calcWidth: "Szerokość",
+    calcHeight: "Wysokość",
+    calcInfill: "Wypełnienie",
     calcMass: "Szacowana masa",
     calcCost: "Koszt materiału",
     calcRoll: "Udział rolki 1 kg",
-    calcNote: "Waga szacunkowa. Rzeczywiste zużycie zależy od slicera, supportów i wypełnienia.",
-    calcSelectFirst: "Wybierz materiał aby zobaczyć wynik.",
-    calcCTA: "Wycena druku 3D w sTuDiO →",
+    calcNote: "Szacunkowe wartości. Rzeczywiste zużycie zależy od slicera.",
+
+    contribTitle: "Masz sprawdzone parametry?",
+    contribToggle: "💡 Masz dokładniejsze parametry dla tej marki?",
+    contribDesc: "Podziel się swoimi ustawieniami druku dla tej marki. Twoje dane trafią do weryfikacji przez społeczność.",
+    contribBrand: "Marka",
+    contribProduct: "Nazwa produktu",
+    contribNozzle: "Temperatura dyszy (°C)",
+    contribBed: "Temperatura łoża (°C)",
+    contribSpeed: "Prędkość druku (mm/s)",
+    contribNotes: "Uwagi dodatkowe",
+    contribName: "Twoje imię (opcjonalne)",
+    contribEmail: "Adres email *",
+    contribGdpr: "Wyrażam zgodę na przetwarzanie adresu email w celu kontaktu dotyczącego zgłoszenia",
+    contribSubmit: "Wyślij zgłoszenie",
+    contribSending: "Wysyłanie...",
+    contribSuccess: "Dziękujemy! Twoje parametry trafią do weryfikacji przez społeczność.",
+    contribError: "Błąd wysyłania. Sprawdź pola i spróbuj ponownie.",
+    rangeMin: "od",
+    rangeMax: "do",
+
+    communityContribs: "Sugestie społeczności",
+    voteConfirm: "👍 Potwierdzam",
+    voteDispute: "👎 Inne parametry",
+    voteSuccess: "Głos zapisany!",
+    voteDuplicate: "Już głosowałeś na to zgłoszenie.",
+    confirms: "potwierdzeń",
+    disputes: "głosów sprzeciwu",
+    noContribs: "Brak sugestii społeczności dla tego materiału.",
+
     legendTitle: "Legenda",
     legendDiff: "Poziom trudności (1=łatwy, 5=trudny)",
     legendEncReq: "Obudowa wymagana",
     legendEncRec: "Obudowa zalecana",
     legendEncNo: "Obudowa niepotrzebna",
-    legendHardNozzle: "Wymagana dysza hartowana (stal)",
+    legendHardNozzle: "Materiały CF/GF wymagają dyszy hartowanej",
+
+    back: "← Wstecz",
+    change: "Zmień",
+    cta: "Zamów wydruk w sTuDiO →",
+
+    reqEasy: "Łatwy w druku",
+    reqFlexible: "Elastyczny / gumowy",
+    reqHighTemp: "Odp. na temp. >100°C",
+    reqOutdoor: "Zewnętrzny / UV",
+    reqStrong: "Wysoka wytrzymałość / CF",
+    reqChemical: "Odporność chemiczna",
+    reqDecorative: "Dekoracyjny / błyszczący",
+    reqSupport: "Materiał podporowy",
+    reqFoodSafe: "Kontakt z żywnością",
+
+    catStandard: "Standardowe",
+    catEngineering: "Inżynieryjne",
+    catFlexible: "Elastyczne",
+    catSpecialty: "Specjalistyczne",
   },
   en: {
-    tab1: "Material Advisor",
-    tab2: "Print Parameters",
-    tab3: "Filament Calculator",
-    reqTitle: "Requirements (multiselect):",
-    reqAll: "No selection = show all",
-    resultsTitle: "Matching materials",
-    noMatch: "No materials match all requirements. Try fewer filters.",
-    seeParams: "See parameters →",
-    diffLabel: "Difficulty",
-    tempResLabel: "Max service temp.",
-    standardLabel: "Standard",
-    engineeringLabel: "Engineering",
-    paramNozzle: "Nozzle",
-    paramBed: "Bed",
-    paramSpeed: "Speed",
-    paramLayer: "Layer height",
-    paramCooling: "Cooling",
-    paramRetraction: "Retraction",
-    paramEnclosure: "Enclosure",
-    paramDifficulty: "Difficulty",
-    paramTempRes: "Heat resistance",
-    paramPrice: "Est. price",
-    paramUses: "Use cases",
-    paramNotes: "Notes",
+    loading: "Loading filament database...",
+    loadError: "Error loading data. Try refreshing the page.",
+    retry: "Try again",
+
+    step1: "Requirements",
+    step2: "Material",
+    step3: "Choose brand",
+    step4: "Parameters",
+
+    step1Title: "What are you printing?",
+    step1Hint: "Pick requirements (multi-select)",
+    skipStep1: "Show all materials →",
+
+    step2Title: "Pick a material",
+    searchPlaceholder: "Search material...",
+    standard: "Standard",
+    engineering: "Engineering",
+    flexible: "Flexible",
+    specialty: "Specialty",
+    noResults: "No materials match the selected requirements",
+    showAll: "Show all materials",
+    expand: "Expand",
+    collapse: "Collapse",
+
+    step3Title: "Choose brand / manufacturer",
+    step3Hint: "Optional — pick a brand for specific parameters or stick with generic",
+    genericParams: "Generic parameters",
+    genericDesc: "Universal starting parameters for this material",
+    verified: "Verified ✓",
+    communityApproved: "Community ✓",
+    next: "Next →",
+
+    step4Title: "Print parameters",
+    sectionTemps: "Temperatures",
+    sectionSpeed: "Speed & layers",
+    sectionEnclosure: "Cooling & enclosure",
+    sectionProps: "Properties",
+    sectionNotes: "Notes",
+    nozzle: "Nozzle",
+    bed: "Bed",
+    tempRes: "Max service temp.",
+    speed: "Speed",
+    layerHeight: "Layer height",
+    retraction: "Retraction",
+    cooling: "Cooling",
+    enclosure: "Enclosure",
+    difficulty: "Print difficulty",
+    density: "Density",
+    priceEst: "Est. price",
     encNo: "Not required",
     encRec: "Recommended",
     encReq: "Required",
-    ctaText: "Order prints in this material →",
-    calcTitle: "Filament Calculator",
-    calcSelectMat: "Select material:",
-    calcInputMode: "Input mode:",
-    calcModeVol: "Model volume (cm³)",
-    calcModeDim: "Dimensions (L×W×H)",
-    calcVolLabel: "Model volume",
-    calcVolUnit: "cm³",
-    calcLengthLabel: "Length",
-    calcWidthLabel: "Width",
-    calcHeightLabel: "Height",
-    calcInfillLabel: "Infill",
-    calcResultTitle: "Calculation result",
+    uses: "Use cases",
+    notes: "Technical notes",
+
+    calcTitle: "Filament calculator",
+    calcLength: "Length",
+    calcWidth: "Width",
+    calcHeight: "Height",
+    calcInfill: "Infill",
     calcMass: "Estimated mass",
     calcCost: "Material cost",
     calcRoll: "Share of 1 kg spool",
-    calcNote: "Estimated weight. Actual usage depends on slicer, supports, and infill.",
-    calcSelectFirst: "Select a material to see the result.",
-    calcCTA: "Get 3D print quote at sTuDiO →",
+    calcNote: "Estimated values. Actual usage depends on slicer settings.",
+
+    contribTitle: "Have proven parameters?",
+    contribToggle: "💡 Have more accurate parameters for this brand?",
+    contribDesc: "Share your print settings for this brand. Your data will be verified by the community.",
+    contribBrand: "Brand",
+    contribProduct: "Product name",
+    contribNozzle: "Nozzle temperature (°C)",
+    contribBed: "Bed temperature (°C)",
+    contribSpeed: "Print speed (mm/s)",
+    contribNotes: "Additional notes",
+    contribName: "Your name (optional)",
+    contribEmail: "Email address *",
+    contribGdpr: "I consent to processing of my email for follow-up regarding this submission",
+    contribSubmit: "Submit",
+    contribSending: "Sending...",
+    contribSuccess: "Thank you! Your parameters will be verified by the community.",
+    contribError: "Submission error. Check fields and try again.",
+    rangeMin: "from",
+    rangeMax: "to",
+
+    communityContribs: "Community suggestions",
+    voteConfirm: "👍 Confirm",
+    voteDispute: "👎 Different params",
+    voteSuccess: "Vote recorded!",
+    voteDuplicate: "You already voted on this submission.",
+    confirms: "confirms",
+    disputes: "disputes",
+    noContribs: "No community suggestions for this material yet.",
+
     legendTitle: "Legend",
     legendDiff: "Difficulty level (1=easy, 5=hard)",
     legendEncReq: "Enclosure required",
     legendEncRec: "Enclosure recommended",
     legendEncNo: "No enclosure needed",
-    legendHardNozzle: "Hardened nozzle required (steel)",
+    legendHardNozzle: "CF/GF materials need a hardened nozzle",
+
+    back: "← Back",
+    change: "Change",
+    cta: "Order 3D print at sTuDiO →",
+
+    reqEasy: "Easy to print",
+    reqFlexible: "Flexible / rubber-like",
+    reqHighTemp: "Heat resistance >100°C",
+    reqOutdoor: "Outdoor / UV",
+    reqStrong: "High strength / CF",
+    reqChemical: "Chemical resistance",
+    reqDecorative: "Decorative / shiny",
+    reqSupport: "Support material",
+    reqFoodSafe: "Food contact",
+
+    catStandard: "Standard",
+    catEngineering: "Engineering",
+    catFlexible: "Flexible",
+    catSpecialty: "Specialty",
   },
   de: {
-    tab1: "Material-Berater",
-    tab2: "Druckparameter",
-    tab3: "Filamentrechner",
-    reqTitle: "Anforderungen (Mehrfachauswahl):",
-    reqAll: "Keine Auswahl = alle anzeigen",
-    resultsTitle: "Passende Materialien",
-    noMatch: "Kein Material erfüllt alle Anforderungen. Weniger Filter versuchen.",
-    seeParams: "Parameter ansehen →",
-    diffLabel: "Schwierigkeit",
-    tempResLabel: "Max. Einsatztemp.",
-    standardLabel: "Standard",
-    engineeringLabel: "Technisch",
-    paramNozzle: "Düse",
-    paramBed: "Bett",
-    paramSpeed: "Geschwindigkeit",
-    paramLayer: "Schichthöhe",
-    paramCooling: "Kühlung",
-    paramRetraction: "Retraktion",
-    paramEnclosure: "Gehäuse",
-    paramDifficulty: "Schwierigkeit",
-    paramTempRes: "Wärmebeständigkeit",
-    paramPrice: "Richtpreis",
-    paramUses: "Anwendungen",
-    paramNotes: "Hinweise",
+    loading: "Filament-Datenbank wird geladen...",
+    loadError: "Fehler beim Laden. Bitte Seite neu laden.",
+    retry: "Erneut versuchen",
+
+    step1: "Anforderungen",
+    step2: "Material",
+    step3: "Marke wählen",
+    step4: "Parameter",
+
+    step1Title: "Was möchten Sie drucken?",
+    step1Hint: "Anforderungen wählen (Mehrfachauswahl möglich)",
+    skipStep1: "Alle Materialien anzeigen →",
+
+    step2Title: "Material auswählen",
+    searchPlaceholder: "Material suchen...",
+    standard: "Standard",
+    engineering: "Technisch",
+    flexible: "Flexibel",
+    specialty: "Speziell",
+    noResults: "Keine Materialien entsprechen den Anforderungen",
+    showAll: "Alle Materialien anzeigen",
+    expand: "Aufklappen",
+    collapse: "Einklappen",
+
+    step3Title: "Marke / Hersteller wählen",
+    step3Hint: "Optional — Marke wählen für spezifische Parameter oder generisch bleiben",
+    genericParams: "Generische Parameter",
+    genericDesc: "Universelle Startparameter für dieses Material",
+    verified: "Verifiziert ✓",
+    communityApproved: "Community ✓",
+    next: "Weiter →",
+
+    step4Title: "Druckparameter",
+    sectionTemps: "Temperaturen",
+    sectionSpeed: "Geschwindigkeit & Schichten",
+    sectionEnclosure: "Kühlung & Gehäuse",
+    sectionProps: "Eigenschaften",
+    sectionNotes: "Hinweise",
+    nozzle: "Düse",
+    bed: "Bett",
+    tempRes: "Max. Einsatztemp.",
+    speed: "Geschwindigkeit",
+    layerHeight: "Schichthöhe",
+    retraction: "Retraktion",
+    cooling: "Kühlung",
+    enclosure: "Gehäuse",
+    difficulty: "Druckschwierigkeit",
+    density: "Dichte",
+    priceEst: "Richtpreis",
     encNo: "Nicht erforderlich",
     encRec: "Empfohlen",
     encReq: "Erforderlich",
-    ctaText: "Drucke in diesem Material bestellen →",
+    uses: "Anwendungen",
+    notes: "Technische Hinweise",
+
     calcTitle: "Filamentrechner",
-    calcSelectMat: "Material auswählen:",
-    calcInputMode: "Eingabemodus:",
-    calcModeVol: "Modellvolumen (cm³)",
-    calcModeDim: "Abmessungen (L×B×H)",
-    calcVolLabel: "Modellvolumen",
-    calcVolUnit: "cm³",
-    calcLengthLabel: "Länge",
-    calcWidthLabel: "Breite",
-    calcHeightLabel: "Höhe",
-    calcInfillLabel: "Füllung",
-    calcResultTitle: "Berechnungsergebnis",
+    calcLength: "Länge",
+    calcWidth: "Breite",
+    calcHeight: "Höhe",
+    calcInfill: "Füllung",
     calcMass: "Geschätzte Masse",
     calcCost: "Materialkosten",
-    calcRoll: "Anteil an 1-kg-Spule",
-    calcNote: "Schätzgewicht. Tatsächlicher Verbrauch hängt von Slicer, Stützen und Füllung ab.",
-    calcSelectFirst: "Material auswählen um Ergebnis zu sehen.",
-    calcCTA: "3D-Druck-Angebot bei sTuDiO →",
+    calcRoll: "Anteil 1-kg-Spule",
+    calcNote: "Schätzwerte. Tatsächlicher Verbrauch hängt vom Slicer ab.",
+
+    contribTitle: "Haben Sie bewährte Parameter?",
+    contribToggle: "💡 Genauere Parameter für diese Marke?",
+    contribDesc: "Teilen Sie Ihre Druckeinstellungen für diese Marke. Die Daten werden von der Community geprüft.",
+    contribBrand: "Marke",
+    contribProduct: "Produktname",
+    contribNozzle: "Düsentemperatur (°C)",
+    contribBed: "Betttemperatur (°C)",
+    contribSpeed: "Druckgeschwindigkeit (mm/s)",
+    contribNotes: "Zusätzliche Hinweise",
+    contribName: "Ihr Name (optional)",
+    contribEmail: "E-Mail-Adresse *",
+    contribGdpr: "Ich stimme der Verarbeitung meiner E-Mail-Adresse zur Kontaktaufnahme zu",
+    contribSubmit: "Absenden",
+    contribSending: "Wird gesendet...",
+    contribSuccess: "Danke! Ihre Parameter werden von der Community geprüft.",
+    contribError: "Fehler beim Senden. Bitte Felder prüfen und erneut versuchen.",
+    rangeMin: "von",
+    rangeMax: "bis",
+
+    communityContribs: "Community-Vorschläge",
+    voteConfirm: "👍 Bestätigen",
+    voteDispute: "👎 Andere Parameter",
+    voteSuccess: "Stimme gespeichert!",
+    voteDuplicate: "Sie haben bereits abgestimmt.",
+    confirms: "Bestätigungen",
+    disputes: "Einsprüche",
+    noContribs: "Noch keine Community-Vorschläge für dieses Material.",
+
     legendTitle: "Legende",
     legendDiff: "Schwierigkeitsgrad (1=leicht, 5=schwer)",
     legendEncReq: "Gehäuse erforderlich",
     legendEncRec: "Gehäuse empfohlen",
     legendEncNo: "Kein Gehäuse nötig",
-    legendHardNozzle: "Gehärtete Düse erforderlich (Stahl)",
+    legendHardNozzle: "CF/GF-Materialien benötigen gehärtete Düse",
+
+    back: "← Zurück",
+    change: "Ändern",
+    cta: "3D-Druck bei sTuDiO bestellen →",
+
+    reqEasy: "Einfach zu drucken",
+    reqFlexible: "Flexibel / gummiartig",
+    reqHighTemp: "Wärmebeständig >100°C",
+    reqOutdoor: "Außen / UV",
+    reqStrong: "Hochfest / CF",
+    reqChemical: "Chemikalienbeständig",
+    reqDecorative: "Dekorativ / glänzend",
+    reqSupport: "Stützmaterial",
+    reqFoodSafe: "Lebensmittelkontakt",
+
+    catStandard: "Standard",
+    catEngineering: "Technisch",
+    catFlexible: "Flexibel",
+    catSpecialty: "Speziell",
   },
 };
 
-const PLN_PER_EUR = 4.25;
+// ============================================================
+// REQUIREMENT FILTERS (operate on API filament type objects)
+// ============================================================
+const REQUIREMENTS = [
+  { id: "easy",      labelKey: "reqEasy",       match: t => (t.difficulty ?? 99) <= 2 },
+  { id: "flexible",  labelKey: "reqFlexible",   match: t => hasProp(t, ["flexible","rubber-like"]) },
+  { id: "highTemp",  labelKey: "reqHighTemp",   match: t => (t.temp_resistance ?? 0) >= 100 },
+  { id: "outdoor",   labelKey: "reqOutdoor",    match: t => hasProp(t, ["uv-resistant","weather-resistant","outdoor"]) },
+  { id: "strong",    labelKey: "reqStrong",     match: t => hasProp(t, ["high-strength","very-stiff","carbon-fiber"]) },
+  { id: "chemical",  labelKey: "reqChemical",   match: t => hasProp(t, ["chemical-resistant"]) },
+  { id: "decorative",labelKey: "reqDecorative", match: t => hasProp(t, ["shiny","decorative"]) },
+  { id: "support",   labelKey: "reqSupport",    match: t => hasProp(t, ["support-material","water-soluble"]) },
+  { id: "foodSafe",  labelKey: "reqFoodSafe",   match: t => hasProp(t, ["food-safe"]) },
+];
+
+function hasProp(type, needles) {
+  if (!type?.props || !Array.isArray(type.props)) return false;
+  return needles.some(n => type.props.includes(n));
+}
 
 // ============================================================
-// HELPER COMPONENTS
+// PRIMITIVE UI COMPONENTS
 // ============================================================
 
 function DifficultyDots({ level }) {
-  const color = level <= 2 ? "bg-green-400" : level === 3 ? "bg-amber-400" : "bg-red-400";
+  const lvl = level || 1;
+  const color = lvl <= 2 ? "bg-green-400" : lvl === 3 ? "bg-amber-400" : "bg-red-400";
   return (
     <span className="flex gap-0.5 items-center">
       {[1,2,3,4,5].map(i => (
-        <span key={i} className={`w-2 h-2 rounded-full ${i <= level ? color : "bg-white/10"}`} />
+        <span key={i} className={`w-2 h-2 rounded-full ${i <= lvl ? color : "bg-white/10"}`} />
       ))}
     </span>
   );
 }
 
 function EnclosureBadge({ value, L }) {
-  if (value === "no") return null;
+  if (!value || value === "no") return null;
   const isReq = value === "required";
   return (
     <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${isReq ? "bg-red-500/20 text-red-300" : "bg-amber-500/20 text-amber-300"}`}>
@@ -309,25 +437,18 @@ function PropChip({ prop }) {
     "weather-resistant": "bg-emerald-500/20 text-emerald-300",
   };
   const cls = colors[prop] || "bg-white/10 text-neutral-300";
-  return (
-    <span className={`text-[10px] px-2 py-0.5 rounded-full ${cls}`}>{prop}</span>
-  );
+  return <span className={`text-[10px] px-2 py-0.5 rounded-full ${cls}`}>{prop}</span>;
 }
 
-// ============================================================
-// LEGEND POPUP
-// ============================================================
 function LegendPopup({ L }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-
   useEffect(() => {
     if (!open) return;
     function handle(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
     document.addEventListener("mousedown", handle);
     return () => document.removeEventListener("mousedown", handle);
   }, [open]);
-
   return (
     <div ref={ref} className="relative inline-block">
       <button
@@ -340,45 +461,34 @@ function LegendPopup({ L }) {
         </svg>
         {L.legendTitle}
       </button>
-
       {open && (
         <div className="absolute right-0 top-full mt-2 z-30 w-72 bg-neutral-900 border border-white/15 rounded-xl shadow-2xl p-4 text-xs">
           <p className="font-semibold text-neutral-200 mb-3 uppercase tracking-wider text-[10px]">{L.legendTitle}</p>
-
-          {/* Difficulty */}
           <div className="mb-3">
             <p className="text-neutral-400 mb-1.5">{L.legendDiff}</p>
             <div className="flex flex-col gap-1">
-              {[[1,"text-green-400"],[2,"text-green-400"],[3,"text-amber-400"],[4,"text-red-400"],[5,"text-red-400"]].map(([lvl, cls]) => (
+              {[1,2,3,4,5].map(lvl => (
                 <div key={lvl} className="flex items-center gap-2">
-                  <span className="flex gap-0.5">{[1,2,3,4,5].map(i => (
-                    <span key={i} className={`w-2 h-2 rounded-full ${i <= lvl ? (lvl<=2?"bg-green-400":lvl===3?"bg-amber-400":"bg-red-400") : "bg-white/10"}`}/>
-                  ))}</span>
-                  <span className={`${cls} font-medium`}>{lvl}/5</span>
+                  <DifficultyDots level={lvl} />
+                  <span className={`${lvl<=2?"text-green-400":lvl===3?"text-amber-400":"text-red-400"} font-medium`}>{lvl}/5</span>
                 </div>
               ))}
             </div>
           </div>
-
-          {/* Enclosure */}
-          <div className="mb-3">
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-red-500/20 text-red-300">{L.encReq}</span>
-                <span className="text-neutral-400">{L.legendEncReq}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-amber-500/20 text-amber-300">{L.encRec}</span>
-                <span className="text-neutral-400">{L.legendEncRec}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-12 text-[10px] text-neutral-600 italic">—</span>
-                <span className="text-neutral-400">{L.legendEncNo}</span>
-              </div>
+          <div className="mb-3 flex flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-red-500/20 text-red-300">{L.encReq}</span>
+              <span className="text-neutral-400">{L.legendEncReq}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-amber-500/20 text-amber-300">{L.encRec}</span>
+              <span className="text-neutral-400">{L.legendEncRec}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-12 text-[10px] text-neutral-600 italic">—</span>
+              <span className="text-neutral-400">{L.legendEncNo}</span>
             </div>
           </div>
-
-          {/* Hard nozzle note */}
           <div className="pt-2 border-t border-white/5 text-neutral-500 flex items-start gap-1.5">
             <span className="text-amber-400 mt-0.5">⚠</span>
             <span>{L.legendHardNozzle}</span>
@@ -390,103 +500,87 @@ function LegendPopup({ L }) {
 }
 
 // ============================================================
-// TAB 1 — MATERIAL ADVISOR
+// RangeBar — visual slider-style range indicator
 // ============================================================
-function Tab1Advisor({ lang, L, onGoToParams }) {
-  const [selected, setSelected] = useState(new Set());
-
-  function toggleReq(id) {
-    setSelected(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  }
-
-  const scored = MATERIALS.map(m => {
-    if (selected.size === 0) return { m, score: 0, match: true };
-    const reqs = REQUIREMENTS.filter(r => selected.has(r.id));
-    const matchCount = reqs.filter(r => r.match(m)).length;
-    return { m, score: matchCount, match: matchCount === reqs.size };
-  }).sort((a, b) => b.score - a.score);
-
-  const topMatches = scored.filter(x => x.match);
-  const list = selected.size === 0 ? scored : topMatches;
-
-  const borderColors = ["border-amber-400/70", "border-green-400/70", "border-blue-400/70"];
-
+function RangeBar({ min, max, scaleMin, scaleMax, unit, label }) {
+  const safeMin = min ?? scaleMin;
+  const safeMax = max ?? safeMin;
+  const range = scaleMax - scaleMin || 1;
+  const leftPct = Math.max(0, Math.min(100, ((safeMin - scaleMin) / range) * 100));
+  const widthPct = Math.max(1, Math.min(100 - leftPct, ((safeMax - safeMin) / range) * 100));
+  const displayValue = safeMin === safeMax ? `${safeMin}` : `${safeMin}–${safeMax}`;
   return (
     <div>
-      {/* Requirement chips */}
-      <div className="mb-6">
-        <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">{L.reqTitle}</div>
-        <div className="flex flex-wrap gap-2">
-          {REQUIREMENTS.map(r => {
-            const active = selected.has(r.id);
-            const label = r.label[lang] || r.label.en;
-            return (
-              <button
-                key={r.id}
-                onClick={() => toggleReq(r.id)}
-                className={`px-3 py-1.5 rounded-lg border text-sm transition-all duration-200 ${
-                  active
-                    ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
-                    : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20 hover:text-neutral-200"
-                }`}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
-        {selected.size === 0 && (
-          <div className="text-xs text-neutral-500 mt-2 italic">{L.reqAll}</div>
-        )}
+      <div className="flex justify-between text-xs mb-1">
+        <span className="text-neutral-400">{label}</span>
+        <span className="text-white font-medium">{displayValue} {unit}</span>
       </div>
-
-      {/* Results */}
-      <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">
-        {L.resultsTitle} ({list.length})
+      <div className="h-2 bg-neutral-800 rounded-full overflow-hidden relative">
+        <div
+          className="absolute h-full bg-amber-400/80 rounded-full"
+          style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
+        />
       </div>
+      <div className="flex justify-between text-[9px] text-neutral-600 mt-0.5">
+        <span>{scaleMin}</span>
+        <span>{scaleMax}</span>
+      </div>
+    </div>
+  );
+}
 
-      {list.length === 0 && (
-        <div className="text-neutral-400 text-sm py-4 text-center">{L.noMatch}</div>
+// ============================================================
+// LOADING / ERROR STATES
+// ============================================================
+function LoadingState({ L }) {
+  return (
+    <div className="rounded-2xl border border-white/5 bg-white/[0.01] p-10 text-center">
+      <div className="inline-block w-8 h-8 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin mb-3" />
+      <div className="text-sm text-neutral-400">{L.loading}</div>
+    </div>
+  );
+}
+
+function ErrorState({ L, onRetry }) {
+  return (
+    <div className="rounded-2xl border border-red-400/20 bg-red-400/[0.03] p-10 text-center">
+      <div className="text-red-300 text-sm mb-3">{L.loadError}</div>
+      {onRetry && (
+        <button
+          onClick={onRetry}
+          className="px-4 py-2 rounded-lg border border-red-400/30 bg-red-400/10 text-red-200 text-sm hover:bg-red-400/20 transition-colors"
+        >
+          {L.retry}
+        </button>
       )}
+    </div>
+  );
+}
 
-      <div className="space-y-3">
-        {list.map(({ m }, idx) => {
-          const borderCls = selected.size > 0 && idx < 3 ? borderColors[idx] : "border-white/10";
+// ============================================================
+// WIZARD PROGRESS
+// ============================================================
+function WizardProgress({ step, L }) {
+  const steps = [L.step1, L.step2, L.step3, L.step4];
+  return (
+    <div className="px-5 pt-5">
+      <div className="flex items-center gap-1.5 sm:gap-2 mb-2">
+        {steps.map((label, idx) => {
+          const num = idx + 1;
+          const isActive = num === step;
+          const isDone = num < step;
           return (
-            <div key={m.id} className={`rounded-xl border ${borderCls} bg-white/[0.02] p-4`}>
-              <div className="flex items-start justify-between gap-3 flex-wrap">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span className="font-bold text-white text-base">{m.name}</span>
-                  {selected.size > 0 && idx < 3 && (
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      idx === 0 ? "bg-amber-400/20 text-amber-300" :
-                      idx === 1 ? "bg-green-400/20 text-green-300" :
-                      "bg-blue-400/20 text-blue-300"
-                    }`}>
-                      #{idx + 1}
-                    </span>
-                  )}
-                  <DifficultyDots level={m.difficulty} />
+            <div key={num} className="flex-1 flex items-center gap-1.5">
+              <div className="flex flex-col items-center gap-1 w-full">
+                <div className={`h-1 w-full rounded-full transition-all duration-300 ${
+                  isActive ? "bg-amber-400" : isDone ? "bg-green-400" : "bg-neutral-700"
+                }`} />
+                <div className={`text-[10px] sm:text-[11px] font-medium uppercase tracking-wider text-center ${
+                  isActive ? "text-amber-300" : isDone ? "text-green-400" : "text-neutral-600"
+                }`}>
+                  <span className="hidden sm:inline">{num}. </span>{label}
                 </div>
-                <button
-                  onClick={() => onGoToParams(m.id)}
-                  className="text-xs text-blue-400 hover:text-blue-300 transition-colors whitespace-nowrap"
-                >
-                  {L.seeParams}
-                </button>
               </div>
-              <div className="flex items-center gap-4 mt-2 text-xs text-neutral-400">
-                <span>{L.tempResLabel}: <span className="text-neutral-200">{m.tempRes}°C</span></span>
-                <EnclosureBadge value={m.enclosure} L={L} />
-              </div>
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {m.props.map(p => <PropChip key={p} prop={p} />)}
-              </div>
-              <div className="text-xs text-neutral-400 mt-2 italic">{m.uses[lang] || m.uses.en}</div>
             </div>
           );
         })}
@@ -496,322 +590,813 @@ function Tab1Advisor({ lang, L, onGoToParams }) {
 }
 
 // ============================================================
-// PARAMETER CARD
+// BREADCRUMB CHIPS
 // ============================================================
-function ParameterCard({ m, lang, L }) {
-  const showEur = lang === "en" || lang === "de";
-  const priceDisplay = showEur
-    ? `~${(m.pricePerKg / PLN_PER_EUR).toFixed(0)} EUR/kg`
-    : `~${m.pricePerKg} PLN/kg`;
+function BreadcrumbChips({ step, selectedType, selectedBrand, brandChoice, onJump, L }) {
+  if (step === 1) return null;
+  const chips = [];
+  if (selectedType && step >= 2) {
+    chips.push({ label: selectedType.name, jumpTo: 2 });
+  }
+  if (step >= 4) {
+    chips.push({
+      label: selectedBrand ? `${selectedBrand.brand}${selectedBrand.product_name ? " · " + selectedBrand.product_name : ""}` : L.genericParams,
+      jumpTo: 3,
+    });
+  }
+  if (!chips.length) return null;
+  return (
+    <div className="px-5 pt-3 flex flex-wrap items-center gap-1.5 text-xs">
+      {chips.map((c, i) => (
+        <span key={i} className="flex items-center gap-1.5">
+          {i > 0 && <span className="text-neutral-600">/</span>}
+          <button
+            onClick={() => onJump(c.jumpTo)}
+            className="px-2.5 py-1 rounded-md border border-white/10 bg-white/[0.03] text-neutral-300 hover:border-amber-400/40 hover:text-amber-300 transition-colors"
+          >
+            {c.label} <span className="text-neutral-500 ml-1">({L.change})</span>
+          </button>
+        </span>
+      ))}
+    </div>
+  );
+}
 
-  const encLabel = m.enclosure === "no" ? L.encNo : m.enclosure === "recommended" ? L.encRec : L.encReq;
-  const encColor = m.enclosure === "no" ? "text-neutral-300" : m.enclosure === "recommended" ? "text-amber-300" : "text-red-300";
+// ============================================================
+// STEP 1 — REQUIREMENTS
+// ============================================================
+function Step1Requirements({ requirements, selected, onToggle, onNext, onSkip, L }) {
+  return (
+    <div>
+      <h3 className="text-lg font-bold text-white mb-1">{L.step1Title}</h3>
+      <p className="text-xs text-neutral-400 mb-4">{L.step1Hint}</p>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-5">
+        {requirements.map(r => {
+          const active = selected.has(r.id);
+          return (
+            <button
+              key={r.id}
+              onClick={() => onToggle(r.id)}
+              className={`px-3 py-2.5 rounded-lg border text-sm text-left transition-all duration-200 ${
+                active
+                  ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                  : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20 hover:text-neutral-200"
+              }`}
+            >
+              {L[r.labelKey]}
+            </button>
+          );
+        })}
+      </div>
+      <div className="flex flex-wrap gap-3 justify-between items-center">
+        <button
+          onClick={onSkip}
+          className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
+        >
+          {L.skipStep1}
+        </button>
+        <button
+          onClick={onNext}
+          className="px-5 py-2.5 rounded-xl border border-amber-400/40 bg-amber-400/10 text-amber-300 font-medium text-sm hover:bg-amber-400/20 transition-colors"
+        >
+          {L.next}
+        </button>
+      </div>
+    </div>
+  );
+}
 
-  const params = [
-    { label: `🌡 ${L.paramNozzle}`,        value: `${m.nozzle[0]}–${m.nozzle[1]}°C` },
-    { label: `🛏 ${L.paramBed}`,           value: `${m.bed[0]}–${m.bed[1]}°C` },
-    { label: `⚡ ${L.paramSpeed}`,         value: `${m.speed[0]}–${m.speed[1]} mm/s` },
-    { label: `📏 ${L.paramLayer}`,         value: `${m.layer[0].toFixed(2)}–${m.layer[1].toFixed(2)} mm` },
-    { label: `❄ ${L.paramCooling}`,        value: `${m.cooling}%` },
-    { label: `↩ ${L.paramRetraction}`,     value: `${m.retraction[0]}–${m.retraction[1]} mm` },
-    { label: `🔒 ${L.paramEnclosure}`,     value: encLabel, valueClass: encColor },
-    { label: `⭐ ${L.paramDifficulty}`,    value: null, diffLevel: m.difficulty },
-    { label: `🌡 ${L.paramTempRes}`,       value: `${m.tempRes}°C` },
-    { label: `💶 ${L.paramPrice}`,         value: priceDisplay },
+// ============================================================
+// STEP 2 — MATERIALS
+// ============================================================
+function MaterialMiniCard({ type, onSelect, L }) {
+  return (
+    <button
+      onClick={() => onSelect(type)}
+      className="text-left rounded-xl border border-white/10 bg-white/[0.02] p-3 hover:border-amber-400/40 hover:bg-amber-400/[0.04] transition-all duration-200"
+    >
+      <div className="font-semibold text-white text-sm mb-1.5">{type.name}</div>
+      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+        <DifficultyDots level={type.difficulty} />
+        {type.temp_resistance != null && (
+          <span className="text-[10px] text-neutral-400">{type.temp_resistance}°C</span>
+        )}
+      </div>
+      <div className="flex flex-wrap gap-1">
+        <EnclosureBadge value={type.enclosure} L={L} />
+        {type.brands && type.brands.length > 0 && (
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-medium">
+            {type.brands.length} {type.brands.length === 1 ? "brand" : "brands"}
+          </span>
+        )}
+      </div>
+    </button>
+  );
+}
+
+function CategorySection({ category, types, defaultOpen, onSelect, L }) {
+  const [open, setOpen] = useState(defaultOpen);
+  if (!types.length) return null;
+  const catLabel = L[`cat${category.charAt(0).toUpperCase()}${category.slice(1)}`] || category;
+  return (
+    <div className="mb-4">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between mb-2 text-left"
+      >
+        <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+          {catLabel} <span className="text-neutral-600">({types.length})</span>
+        </div>
+        <span className="text-xs text-neutral-500">{open ? L.collapse : L.expand}</span>
+      </button>
+      {open && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+          {types.map(t => <MaterialMiniCard key={t.id} type={t} onSelect={onSelect} L={L} />)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Step2Materials({ types, allTypes, selectedReqs, onSelect, onBack, onClearReqs, L }) {
+  const [search, setSearch] = useState("");
+  const filtered = useMemo(() => {
+    if (!search.trim()) return types;
+    const q = search.trim().toLowerCase();
+    return types.filter(t => (t.name || "").toLowerCase().includes(q));
+  }, [types, search]);
+
+  const grouped = useMemo(() => {
+    const g = { standard: [], engineering: [], flexible: [], specialty: [] };
+    filtered.forEach(t => {
+      const cat = g[t.category] ? t.category : "specialty";
+      g[cat].push(t);
+    });
+    return g;
+  }, [filtered]);
+
+  const empty = filtered.length === 0;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h3 className="text-lg font-bold text-white">{L.step2Title}</h3>
+        <LegendPopup L={L} />
+      </div>
+      <input
+        type="text"
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        placeholder={L.searchPlaceholder}
+        className="w-full mb-4 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-neutral-500 focus:border-amber-400/50 focus:outline-none focus:ring-1 focus:ring-amber-400/30 transition-colors"
+      />
+
+      {empty ? (
+        <div className="rounded-xl border border-white/5 bg-white/[0.02] p-8 text-center">
+          <div className="text-neutral-400 text-sm mb-3">{L.noResults}</div>
+          {selectedReqs.size > 0 && (
+            <button
+              onClick={onClearReqs}
+              className="px-4 py-2 rounded-lg border border-amber-400/30 bg-amber-400/10 text-amber-300 text-sm hover:bg-amber-400/20 transition-colors"
+            >
+              {L.showAll}
+            </button>
+          )}
+        </div>
+      ) : (
+        <>
+          {["standard","engineering","flexible","specialty"].map(cat => (
+            <CategorySection
+              key={cat}
+              category={cat}
+              types={grouped[cat]}
+              defaultOpen={grouped[cat].length <= 12}
+              onSelect={onSelect}
+              L={L}
+            />
+          ))}
+        </>
+      )}
+
+      <div className="mt-5">
+        <button
+          onClick={onBack}
+          className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
+        >
+          {L.back}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// STEP 3 — BRANDS
+// ============================================================
+function BrandCard({ active, onClick, title, subtitle, badge, badgeColor, rangePreview }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`text-left rounded-xl border p-4 transition-all duration-200 ${
+        active
+          ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10"
+          : "border-white/10 bg-white/[0.02] hover:border-white/20"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-2 mb-1">
+        <div className="font-semibold text-white text-sm">{title}</div>
+        {badge && (
+          <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${badgeColor}`}>
+            {badge}
+          </span>
+        )}
+      </div>
+      {subtitle && <div className="text-xs text-neutral-400 mb-2">{subtitle}</div>}
+      {rangePreview && (
+        <div className="text-[11px] text-neutral-500 leading-relaxed">{rangePreview}</div>
+      )}
+    </button>
+  );
+}
+
+function Step3Brands({ type, brandChoice, onSelect, onBack, L }) {
+  const brands = type.brands || [];
+  const verified = brands.filter(b => b.is_verified);
+  const community = brands.filter(b => !b.is_verified && b.auto_approved);
+
+  function fmtRange(min, max, unit) {
+    if (min == null && max == null) return null;
+    if (min === max) return `${min}${unit}`;
+    return `${min ?? "?"}–${max ?? "?"}${unit}`;
+  }
+  function brandPreview(b) {
+    const parts = [];
+    const nozzle = fmtRange(b.nozzle_min, b.nozzle_max, "°C");
+    const bed = fmtRange(b.bed_min, b.bed_max, "°C");
+    if (nozzle) parts.push(`${L.nozzle}: ${nozzle}`);
+    if (bed) parts.push(`${L.bed}: ${bed}`);
+    return parts.join(" · ");
+  }
+
+  return (
+    <div>
+      <h3 className="text-lg font-bold text-white mb-1">{L.step3Title}</h3>
+      <p className="text-xs text-neutral-400 mb-4">{L.step3Hint}</p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <BrandCard
+          active={brandChoice === "generic"}
+          onClick={() => onSelect("generic", null)}
+          title={L.genericParams}
+          subtitle={L.genericDesc}
+          rangePreview={`${L.nozzle}: ${fmtRange(type.nozzle_min, type.nozzle_max, "°C")} · ${L.bed}: ${fmtRange(type.bed_min, type.bed_max, "°C")}`}
+        />
+        {verified.map(b => (
+          <BrandCard
+            key={b.id}
+            active={brandChoice === b.id}
+            onClick={() => onSelect(b.id, b)}
+            title={b.brand}
+            subtitle={b.product_name}
+            badge={L.verified}
+            badgeColor="bg-green-500/20 text-green-300"
+            rangePreview={brandPreview(b)}
+          />
+        ))}
+        {community.map(b => (
+          <BrandCard
+            key={b.id}
+            active={brandChoice === b.id}
+            onClick={() => onSelect(b.id, b)}
+            title={b.brand}
+            subtitle={b.product_name}
+            badge={L.communityApproved}
+            badgeColor="bg-blue-500/20 text-blue-300"
+            rangePreview={brandPreview(b)}
+          />
+        ))}
+      </div>
+
+      <div className="mt-5 flex items-center justify-between">
+        <button
+          onClick={onBack}
+          className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
+        >
+          {L.back}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// FILAMENT CALCULATOR (inline in step 4)
+// ============================================================
+function FilamentCalculator({ density, pricePerKg, lang, showEur, L }) {
+  const [dimL, setDimL] = useState(50);
+  const [dimW, setDimW] = useState(50);
+  const [dimH, setDimH] = useState(50);
+  const [infill, setInfill] = useState(20);
+
+  const volCm3 = (dimL * dimW * dimH * 0.001) * (0.25 + (infill / 100) * 0.75);
+  const massG = density ? parseFloat((volCm3 * density).toFixed(1)) : 0;
+  const costPLN = pricePerKg ? (massG / 1000) * pricePerKg : 0;
+  const costDisplay = showEur
+    ? `${(costPLN / PLN_PER_EUR).toFixed(2)} EUR`
+    : `${costPLN.toFixed(2)} PLN`;
+  const rollPct = Math.min(100, Math.round((massG / 1000) * 100));
+
+  const sliders = [
+    { label: L.calcLength, val: dimL, set: setDimL, min: 1, max: 500, step: 1, unit: "mm" },
+    { label: L.calcWidth,  val: dimW, set: setDimW, min: 1, max: 500, step: 1, unit: "mm" },
+    { label: L.calcHeight, val: dimH, set: setDimH, min: 1, max: 500, step: 1, unit: "mm" },
+    { label: L.calcInfill, val: infill, set: setInfill, min: 5, max: 100, step: 5, unit: "%" },
   ];
 
   return (
-    <div className="rounded-xl border border-amber-400/30 bg-amber-400/[0.03] p-5 mt-4">
-      <div className="flex items-center gap-3 mb-4 flex-wrap">
-        <h3 className="font-bold text-white text-xl">{m.name}</h3>
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-          m.category === "engineering" ? "bg-blue-500/20 text-blue-300" : "bg-neutral-500/20 text-neutral-300"
-        }`}>
-          {m.category === "engineering" ? L.engineeringLabel : L.standardLabel}
-        </span>
-      </div>
+    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5 mt-5">
+      <div className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-4">{L.calcTitle}</div>
 
-      {/* Params grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 mb-4">
-        {params.map(({ label, value, valueClass, diffLevel }) => (
-          <div key={label} className="flex items-center justify-between text-sm border-b border-white/5 py-1.5">
-            <span className="text-neutral-400 text-xs">{label}</span>
-            {diffLevel !== undefined
-              ? <DifficultyDots level={diffLevel} />
-              : <span className={`font-medium text-xs ${valueClass || "text-neutral-200"}`}>{value}</span>
-            }
+      <div className="space-y-3 mb-4">
+        {sliders.map(s => (
+          <div key={s.label}>
+            <div className="flex justify-between text-xs mb-1">
+              <span className="text-neutral-400">{s.label}</span>
+              <span className="text-white font-medium">{s.val} {s.unit}</span>
+            </div>
+            <input
+              type="range"
+              min={s.min}
+              max={s.max}
+              step={s.step}
+              value={s.val}
+              onChange={e => s.set(Number(e.target.value))}
+              className="w-full accent-amber-400"
+            />
           </div>
         ))}
       </div>
 
-      {/* Props */}
-      <div className="flex flex-wrap gap-1.5 mb-3">
-        {m.props.map(p => <PropChip key={p} prop={p} />)}
-      </div>
-
-      {/* Uses */}
-      <div className="text-xs text-neutral-400 italic mb-2">
-        <span className="font-semibold text-neutral-300 not-italic">{L.paramUses}: </span>
-        {m.uses[lang] || m.uses.en}
-      </div>
-
-      {/* Notes */}
-      <div className={`text-xs leading-relaxed ${m.difficulty >= 4 ? "text-amber-200/80" : "text-neutral-400"}`}>
-        {m.difficulty >= 4 && <span className="mr-1">⚠</span>}
-        <span className="font-semibold text-neutral-300">{L.paramNotes}: </span>
-        {m.notes[lang] || m.notes.en}
-      </div>
-
-      {/* CTA */}
-      <div className="mt-4 pt-4 border-t border-white/5">
-        <a
-          href="https://www.aejaca.com/studio/#calculator"
-          className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
-        >
-          {L.ctaText}
-        </a>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================
-// TAB 2 — PRINT PARAMETERS
-// ============================================================
-function Tab2Parameters({ lang, L, initialMat }) {
-  const [selected, setSelected] = useState(initialMat || null);
-
-  const standard = MATERIALS.filter(m => m.category === "standard");
-  const engineering = MATERIALS.filter(m => m.category === "engineering");
-  const selectedMat = MATERIALS.find(m => m.id === selected);
-
-  function MatGrid({ mats }) {
-    return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        {mats.map(m => {
-          const active = selected === m.id;
-          const diffColor = m.difficulty <= 2 ? "text-green-400" : m.difficulty === 3 ? "text-amber-400" : "text-red-400";
-          return (
-            <button
-              key={m.id}
-              onClick={() => setSelected(active ? null : m.id)}
-              className={`rounded-xl border p-3 text-left transition-all duration-200 ${
-                active
-                  ? "border-amber-400/50 bg-amber-400/[0.06] shadow-lg shadow-amber-400/10"
-                  : "border-white/10 bg-white/[0.02] hover:border-white/20"
-              }`}
-            >
-              <div className="font-semibold text-white text-sm mb-1.5">{m.name}</div>
-              <div className="flex items-center gap-2 mb-1">
-                <DifficultyDots level={m.difficulty} />
-                <span className={`text-[10px] font-bold ${diffColor}`}>{m.difficulty}/5</span>
-              </div>
-              <EnclosureBadge value={m.enclosure} L={L} />
-            </button>
-          );
-        })}
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="mb-2">
-        <div className="flex items-center justify-between mb-3">
-          <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400">{L.standardLabel}</div>
-          <LegendPopup L={L} />
+      <div className="space-y-2 pt-3 border-t border-white/5">
+        <div className="flex justify-between items-center py-1.5">
+          <span className="text-neutral-400 text-sm">{L.calcMass}</span>
+          <span className="text-white font-bold">{massG} g</span>
         </div>
-        <MatGrid mats={standard} />
+        <div className="flex justify-between items-center py-1.5 border-t border-white/5">
+          <span className="text-neutral-400 text-sm">{L.calcCost}</span>
+          <span className="text-amber-300 font-bold">{costDisplay}</span>
+        </div>
+        <div className="flex justify-between items-center py-1.5 border-t border-white/5">
+          <span className="text-neutral-400 text-sm">{L.calcRoll}</span>
+          <span className="text-neutral-200 font-semibold">{rollPct}%</span>
+        </div>
+        <div className="w-full bg-white/5 rounded-full h-2">
+          <div
+            className="h-2 rounded-full bg-amber-400 transition-all duration-300"
+            style={{ width: `${rollPct}%` }}
+          />
+        </div>
+        <div className="text-[10px] text-neutral-500 italic mt-2">{L.calcNote}</div>
       </div>
-      <div className="mt-6">
-        <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">{L.engineeringLabel}</div>
-        <MatGrid mats={engineering} />
-      </div>
-
-      {selectedMat && <ParameterCard m={selectedMat} lang={lang} L={L} />}
     </div>
   );
 }
 
 // ============================================================
-// TAB 3 — FILAMENT CALCULATOR
+// CONTRIBUTION FORM
 // ============================================================
-function Tab3Calculator({ lang, L }) {
-  const [matId, setMatId] = useState(null);
-  const [mode, setMode] = useState("vol"); // "vol" | "dim"
-  const [vol, setVol] = useState("");
-  const [dimL, setDimL] = useState("");
-  const [dimW, setDimW] = useState("");
-  const [dimH, setDimH] = useState("");
-  const [infill, setInfill] = useState(20);
+function ContributionForm({ typeId, defaultBrand, L }) {
+  const [open, setOpen] = useState(false);
+  const [brand, setBrand] = useState(defaultBrand || "");
+  const [product, setProduct] = useState("");
+  const [nozzleMin, setNozzleMin] = useState("");
+  const [nozzleMax, setNozzleMax] = useState("");
+  const [bedMin, setBedMin] = useState("");
+  const [bedMax, setBedMax] = useState("");
+  const [speedMin, setSpeedMin] = useState("");
+  const [speedMax, setSpeedMax] = useState("");
+  const [notes, setNotes] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [gdpr, setGdpr] = useState(false);
+  const [status, setStatus] = useState("idle");
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const mat = MATERIALS.find(m => m.id === matId);
-
-  // Calculate volume
-  let volCm3 = null;
-  if (mode === "vol") {
-    const v = parseFloat(vol);
-    if (!isNaN(v) && v > 0) volCm3 = v;
-  } else {
-    const l = parseFloat(dimL), w = parseFloat(dimW), h = parseFloat(dimH);
-    if (!isNaN(l) && !isNaN(w) && !isNaN(h) && l > 0 && w > 0 && h > 0) {
-      volCm3 = (l * w * h * 0.001) * (0.25 + (infill / 100) * 0.75);
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!brand.trim() || !email.trim() || !gdpr) {
+      setStatus("error");
+      setErrorMsg(L.contribError);
+      return;
+    }
+    setStatus("sending");
+    setErrorMsg("");
+    try {
+      const body = {
+        filament_type_id: typeId,
+        brand_name: brand.trim(),
+        product_name: product.trim() || null,
+        nozzle_min: nozzleMin ? Number(nozzleMin) : null,
+        nozzle_max: nozzleMax ? Number(nozzleMax) : null,
+        bed_min: bedMin ? Number(bedMin) : null,
+        bed_max: bedMax ? Number(bedMax) : null,
+        speed_min: speedMin ? Number(speedMin) : null,
+        speed_max: speedMax ? Number(speedMax) : null,
+        notes: notes.trim() || null,
+        contributor_email: email.trim(),
+        contributor_name: name.trim() || null,
+        gdpr_consent: true,
+      };
+      const res = await fetch(`${API_BASE}/contribute`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
+        setStatus("success");
+      } else {
+        setStatus("error");
+        setErrorMsg(L.contribError);
+      }
+    } catch {
+      setStatus("error");
+      setErrorMsg(L.contribError);
     }
   }
 
-  const massG = mat && volCm3 !== null ? parseFloat((volCm3 * mat.density).toFixed(1)) : null;
-  const showEur = lang === "en" || lang === "de";
-  const costDisplay = mat && massG !== null
-    ? showEur
-      ? `${((massG / 1000) * mat.pricePerKg / PLN_PER_EUR).toFixed(2)} EUR`
-      : `${((massG / 1000) * mat.pricePerKg).toFixed(2)} PLN`
-    : null;
-  const rollPct = massG !== null ? Math.round((massG / 1000) * 100) : null;
-
-  const standard = MATERIALS.filter(m => m.category === "standard");
-  const engineering = MATERIALS.filter(m => m.category === "engineering");
-
-  function MatChips({ mats }) {
+  if (status === "success") {
     return (
-      <div className="flex flex-wrap gap-2">
-        {mats.map(m => (
-          <button
-            key={m.id}
-            onClick={() => setMatId(m.id === matId ? null : m.id)}
-            className={`px-3 py-1.5 rounded-lg border text-sm transition-all duration-200 ${
-              matId === m.id
-                ? "border-blue-400 bg-blue-400/10 text-blue-300 font-medium"
-                : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20 hover:text-neutral-200"
-            }`}
-          >
-            {m.name}
-          </button>
-        ))}
+      <div className="mt-5 rounded-xl border border-green-400/30 bg-green-400/10 p-4 text-center">
+        <div className="text-green-300 text-sm font-medium">{L.contribSuccess}</div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-5">
-      {/* Material selector */}
-      <div className="rounded-xl border border-white/5 bg-white/[0.02] p-5">
-        <div className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">{L.calcSelectMat}</div>
-        <div className="text-[10px] uppercase tracking-wider text-neutral-500 mb-2">{L.standardLabel}</div>
-        <MatChips mats={standard} />
-        <div className="text-[10px] uppercase tracking-wider text-neutral-500 mt-3 mb-2">{L.engineeringLabel}</div>
-        <MatChips mats={engineering} />
-      </div>
+    <div className="mt-5">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full text-left px-4 py-3 rounded-xl border border-white/10 bg-white/[0.02] text-sm text-neutral-300 hover:border-amber-400/30 hover:text-amber-300 transition-colors"
+      >
+        {L.contribToggle}
+      </button>
 
-      {/* Input mode */}
-      <div className="rounded-xl border border-white/5 bg-white/[0.02] p-5">
-        <div className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">{L.calcInputMode}</div>
-        <div className="flex gap-2 mb-4">
-          {["vol", "dim"].map(m => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              className={`px-3 py-2 rounded-lg border text-sm transition-all ${
-                mode === m
-                  ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
-                  : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-200"
-              }`}
-            >
-              {m === "vol" ? L.calcModeVol : L.calcModeDim}
-            </button>
-          ))}
-        </div>
+      {open && (
+        <form
+          onSubmit={handleSubmit}
+          className="mt-3 rounded-xl border border-amber-400/20 bg-amber-400/[0.03] p-5"
+        >
+          <h4 className="text-sm font-bold text-white mb-1">{L.contribTitle}</h4>
+          <p className="text-xs text-neutral-400 mb-4">{L.contribDesc}</p>
 
-        {mode === "vol" ? (
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              min="0"
-              step="0.1"
-              value={vol}
-              onChange={e => setVol(e.target.value)}
-              placeholder="0.0"
-              className="w-36 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-neutral-500 focus:border-amber-400/50 focus:outline-none focus:ring-1 focus:ring-amber-400/30 transition-colors"
-            />
-            <span className="text-neutral-400 text-sm">{L.calcVolUnit}</span>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { label: L.calcLengthLabel, val: dimL, set: setDimL },
-                { label: L.calcWidthLabel,  val: dimW, set: setDimW },
-                { label: L.calcHeightLabel, val: dimH, set: setDimH },
-              ].map(({ label, val, set }) => (
-                <div key={label}>
-                  <div className="text-xs text-neutral-400 mb-1">{label} (mm)</div>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={val}
-                    onChange={e => set(e.target.value)}
-                    placeholder="0"
-                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder:text-neutral-500 focus:border-amber-400/50 focus:outline-none focus:ring-1 focus:ring-amber-400/30 transition-colors"
-                  />
-                </div>
-              ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+            <div>
+              <label className="block text-[11px] text-neutral-400 mb-1">{L.contribBrand} *</label>
+              <input
+                value={brand}
+                onChange={e => setBrand(e.target.value)}
+                required
+                className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-400/50 focus:outline-none transition-colors"
+              />
             </div>
             <div>
-              <div className="flex justify-between text-xs text-neutral-400 mb-1">
-                <span>{L.calcInfillLabel}</span>
-                <span className="text-amber-300 font-medium">{infill}%</span>
-              </div>
+              <label className="block text-[11px] text-neutral-400 mb-1">{L.contribProduct}</label>
               <input
-                type="range"
-                min="5" max="100" step="5"
-                value={infill}
-                onChange={e => setInfill(Number(e.target.value))}
-                className="w-full accent-amber-400"
+                value={product}
+                onChange={e => setProduct(e.target.value)}
+                className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-400/50 focus:outline-none transition-colors"
               />
-              <div className="flex justify-between text-[10px] text-neutral-500 mt-0.5">
-                <span>5%</span><span>100%</span>
-              </div>
             </div>
           </div>
-        )}
+
+          {[
+            { label: L.contribNozzle, min: nozzleMin, max: nozzleMax, setMin: setNozzleMin, setMax: setNozzleMax },
+            { label: L.contribBed,    min: bedMin,    max: bedMax,    setMin: setBedMin,    setMax: setBedMax },
+            { label: L.contribSpeed,  min: speedMin,  max: speedMax,  setMin: setSpeedMin,  setMax: setSpeedMax },
+          ].map(({ label, min, max, setMin, setMax }) => (
+            <div key={label} className="mb-3">
+              <label className="block text-[11px] text-neutral-400 mb-1">{label}</label>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="number"
+                  value={min}
+                  onChange={e => setMin(e.target.value)}
+                  placeholder={L.rangeMin}
+                  className="bg-white/[0.03] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-400/50 focus:outline-none transition-colors"
+                />
+                <input
+                  type="number"
+                  value={max}
+                  onChange={e => setMax(e.target.value)}
+                  placeholder={L.rangeMax}
+                  className="bg-white/[0.03] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-400/50 focus:outline-none transition-colors"
+                />
+              </div>
+            </div>
+          ))}
+
+          <div className="mb-3">
+            <label className="block text-[11px] text-neutral-400 mb-1">{L.contribNotes}</label>
+            <textarea
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              rows={2}
+              className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-400/50 focus:outline-none resize-none transition-colors"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+            <div>
+              <label className="block text-[11px] text-neutral-400 mb-1">{L.contribName}</label>
+              <input
+                value={name}
+                onChange={e => setName(e.target.value)}
+                className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-400/50 focus:outline-none transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] text-neutral-400 mb-1">{L.contribEmail}</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-400/50 focus:outline-none transition-colors"
+              />
+            </div>
+          </div>
+
+          <label className="flex items-start gap-2 cursor-pointer mb-4">
+            <input
+              type="checkbox"
+              checked={gdpr}
+              onChange={e => setGdpr(e.target.checked)}
+              className="mt-0.5 accent-amber-400 shrink-0"
+            />
+            <span className="text-[11px] text-neutral-400 leading-tight">{L.contribGdpr}</span>
+          </label>
+
+          {errorMsg && (
+            <div className="text-[11px] text-red-400 mb-3 text-center">{errorMsg}</div>
+          )}
+
+          <button
+            type="submit"
+            disabled={status === "sending" || !brand.trim() || !email.trim() || !gdpr}
+            className="w-full py-2.5 rounded-xl border border-amber-400/40 bg-amber-400/10 text-amber-300 font-medium text-sm hover:bg-amber-400/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {status === "sending" ? L.contribSending : L.contribSubmit}
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// COMMUNITY CONTRIBUTIONS (with voting)
+// ============================================================
+function CommunityContributions({ typeId, L }) {
+  const [list, setList] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+  const [voteStatus, setVoteStatus] = useState({}); // { [id]: "success"|"duplicate"|"error" }
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_BASE}/contributions?type_id=${typeId}`)
+      .then(r => r.json())
+      .then(d => {
+        if (cancelled) return;
+        setList(Array.isArray(d.contributions) ? d.contributions : []);
+        setLoaded(true);
+      })
+      .catch(() => { if (!cancelled) setLoaded(true); });
+    return () => { cancelled = true; };
+  }, [typeId]);
+
+  async function vote(contribId, type) {
+    try {
+      const res = await fetch(`${API_BASE}/vote`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contribution_id: contribId, vote: type }),
+      });
+      if (res.status === 409) {
+        setVoteStatus(s => ({ ...s, [contribId]: "duplicate" }));
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
+        setList(prev => prev.map(c => c.id === contribId
+          ? { ...c, vote_confirm: data.votes?.vote_confirm ?? c.vote_confirm, vote_dispute: data.votes?.vote_dispute ?? c.vote_dispute }
+          : c
+        ));
+        setVoteStatus(s => ({ ...s, [contribId]: "success" }));
+      } else {
+        setVoteStatus(s => ({ ...s, [contribId]: "error" }));
+      }
+    } catch {
+      setVoteStatus(s => ({ ...s, [contribId]: "error" }));
+    }
+  }
+
+  if (!loaded) return null;
+  if (!list.length) return null;
+
+  return (
+    <div className="mt-5">
+      <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">
+        {L.communityContribs} ({list.length})
+      </h4>
+      <div className="space-y-2">
+        {list.map(c => {
+          const status = voteStatus[c.id];
+          const fmtR = (mn, mx, u) => mn != null || mx != null
+            ? `${mn ?? "?"}–${mx ?? "?"}${u}`
+            : null;
+          const nozzle = fmtR(c.nozzle_min, c.nozzle_max, "°C");
+          const bed = fmtR(c.bed_min, c.bed_max, "°C");
+          const speed = fmtR(c.speed_min, c.speed_max, " mm/s");
+          return (
+            <div key={c.id} className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
+              <div className="flex items-start justify-between gap-3 flex-wrap mb-1.5">
+                <div>
+                  <div className="text-sm font-semibold text-white">{c.brand_name}</div>
+                  {c.product_name && <div className="text-xs text-neutral-400">{c.product_name}</div>}
+                </div>
+                <div className="text-[10px] text-neutral-500">
+                  <span className="text-green-400">{c.vote_confirm || 0}</span> {L.confirms}
+                </div>
+              </div>
+              <div className="text-[11px] text-neutral-400 mb-2 space-x-2">
+                {nozzle && <span>{L.nozzle}: <span className="text-neutral-200">{nozzle}</span></span>}
+                {bed && <span>{L.bed}: <span className="text-neutral-200">{bed}</span></span>}
+                {speed && <span>{L.speed}: <span className="text-neutral-200">{speed}</span></span>}
+              </div>
+              {c.notes && <div className="text-[11px] text-neutral-500 italic mb-2">{c.notes}</div>}
+              <div className="flex gap-2 items-center">
+                <button
+                  onClick={() => vote(c.id, "confirm")}
+                  disabled={status === "duplicate"}
+                  className="text-[11px] px-2.5 py-1 rounded-md border border-green-400/30 bg-green-400/10 text-green-300 hover:bg-green-400/20 transition-colors disabled:opacity-40"
+                >
+                  {L.voteConfirm}
+                </button>
+                <button
+                  onClick={() => vote(c.id, "dispute")}
+                  disabled={status === "duplicate"}
+                  className="text-[11px] px-2.5 py-1 rounded-md border border-red-400/30 bg-red-400/10 text-red-300 hover:bg-red-400/20 transition-colors disabled:opacity-40"
+                >
+                  {L.voteDispute}
+                </button>
+                {status === "success" && <span className="text-[10px] text-green-400">{L.voteSuccess}</span>}
+                {status === "duplicate" && <span className="text-[10px] text-amber-400">{L.voteDuplicate}</span>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// STEP 4 — PARAMETERS
+// ============================================================
+function Step4Parameters({ type, brand, params, onBack, lang, showEur, L }) {
+  const encLabel = params.enclosure === "no" ? L.encNo : params.enclosure === "recommended" ? L.encRec : L.encReq;
+  const encColor = params.enclosure === "no" ? "text-neutral-300" : params.enclosure === "recommended" ? "text-amber-300" : "text-red-300";
+  const priceDisplay = showEur
+    ? `~${(params.price_per_kg / PLN_PER_EUR).toFixed(0)} EUR/kg`
+    : `~${params.price_per_kg} PLN/kg`;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div>
+          <h3 className="text-lg font-bold text-white">{type.name}</h3>
+          {brand && (
+            <div className="text-xs text-amber-300 mt-0.5">
+              {brand.brand}{brand.product_name ? ` · ${brand.product_name}` : ""}
+              {brand.is_verified && <span className="ml-2 text-[10px] text-green-400">{L.verified}</span>}
+            </div>
+          )}
+        </div>
+        <LegendPopup L={L} />
       </div>
 
-      {/* Result */}
-      <div className="rounded-xl border border-white/5 bg-white/[0.02] p-5">
-        <div className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-4">{L.calcResultTitle}</div>
-        {!mat || massG === null ? (
-          <div className="text-neutral-400 text-sm text-center py-4">{L.calcSelectFirst}</div>
-        ) : (
+      <div className="rounded-xl border border-amber-400/30 bg-amber-400/[0.03] p-5">
+        {/* Temperatures */}
+        <div className="mb-5">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-3">{L.sectionTemps}</div>
           <div className="space-y-3">
-            <div className="flex justify-between items-center py-2 border-b border-white/5">
-              <span className="text-neutral-400 text-sm">{L.calcMass}</span>
-              <span className="text-white font-bold text-lg">{massG} g</span>
+            <RangeBar min={params.nozzle_min} max={params.nozzle_max} scaleMin={150} scaleMax={450} unit="°C" label={L.nozzle} />
+            <RangeBar min={params.bed_min} max={params.bed_max} scaleMin={0} scaleMax={200} unit="°C" label={L.bed} />
+            <div className="flex justify-between items-center pt-1 text-sm">
+              <span className="text-neutral-400 text-xs">{L.tempRes}</span>
+              <span className="text-white font-medium text-xs">{params.temp_resistance}°C</span>
             </div>
-            <div className="flex justify-between items-center py-2 border-b border-white/5">
-              <span className="text-neutral-400 text-sm">{L.calcCost}</span>
-              <span className="text-amber-300 font-bold text-lg">{costDisplay}</span>
+          </div>
+        </div>
+
+        {/* Speed & layers */}
+        <div className="mb-5">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-3">{L.sectionSpeed}</div>
+          <div className="space-y-3">
+            <RangeBar min={params.speed_min} max={params.speed_max} scaleMin={5} scaleMax={200} unit="mm/s" label={L.speed} />
+            <RangeBar min={params.layer_min} max={params.layer_max} scaleMin={0.05} scaleMax={0.50} unit="mm" label={L.layerHeight} />
+            <RangeBar min={params.retraction_min} max={params.retraction_max} scaleMin={0} scaleMax={10} unit="mm" label={L.retraction} />
+          </div>
+        </div>
+
+        {/* Cooling & enclosure */}
+        <div className="mb-5">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-3">{L.sectionEnclosure}</div>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="flex justify-between items-center border-b border-white/5 py-1.5">
+              <span className="text-neutral-400 text-xs">{L.cooling}</span>
+              <span className="text-white font-medium text-xs">{params.cooling}%</span>
             </div>
-            <div className="flex justify-between items-center py-2">
-              <span className="text-neutral-400 text-sm">{L.calcRoll}</span>
-              <span className="text-neutral-200 font-semibold">{rollPct}%</span>
+            <div className="flex justify-between items-center border-b border-white/5 py-1.5">
+              <span className="text-neutral-400 text-xs">{L.enclosure}</span>
+              <span className={`font-medium text-xs ${encColor}`}>{encLabel}</span>
             </div>
-            <div className="w-full bg-white/5 rounded-full h-2 mt-1">
-              <div
-                className="h-2 rounded-full bg-amber-400 transition-all duration-500"
-                style={{ width: `${Math.min(100, rollPct)}%` }}
-              />
+            <div className="flex justify-between items-center border-b border-white/5 py-1.5">
+              <span className="text-neutral-400 text-xs">{L.difficulty}</span>
+              <DifficultyDots level={params.difficulty} />
             </div>
-            <div className="text-[11px] text-neutral-500 italic mt-2">{L.calcNote}</div>
+            <div className="flex justify-between items-center border-b border-white/5 py-1.5">
+              <span className="text-neutral-400 text-xs">{L.density}</span>
+              <span className="text-white font-medium text-xs">{params.density} g/cm³</span>
+            </div>
+            <div className="flex justify-between items-center border-b border-white/5 py-1.5 col-span-2">
+              <span className="text-neutral-400 text-xs">{L.priceEst}</span>
+              <span className="text-amber-300 font-medium text-xs">{priceDisplay}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Properties */}
+        {params.props && params.props.length > 0 && (
+          <div className="mb-5">
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-2">{L.sectionProps}</div>
+            <div className="flex flex-wrap gap-1.5">
+              {params.props.map(p => <PropChip key={p} prop={p} />)}
+            </div>
           </div>
         )}
+
+        {/* Uses */}
+        {params.uses && (
+          <div className="mb-3 text-xs">
+            <span className="font-semibold text-neutral-300">{L.uses}: </span>
+            <span className="text-neutral-400 italic">{params.uses}</span>
+          </div>
+        )}
+
+        {/* Notes */}
+        {params.notes && (
+          <div className={`text-xs leading-relaxed ${params.difficulty >= 4 ? "text-amber-200/80" : "text-neutral-400"}`}>
+            {params.difficulty >= 4 && <span className="mr-1">⚠</span>}
+            <span className="font-semibold text-neutral-300">{L.notes}: </span>
+            {params.notes}
+          </div>
+        )}
+
+        {/* CTA */}
         <div className="mt-4 pt-4 border-t border-white/5">
           <a
-            href="/studio/#calculator"
+            href="https://www.aejaca.com/studio/#calculator"
             className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
           >
-            {L.calcCTA}
+            {L.cta}
           </a>
         </div>
+      </div>
+
+      {/* Filament calculator */}
+      <FilamentCalculator
+        density={params.density}
+        pricePerKg={params.price_per_kg}
+        lang={lang}
+        showEur={showEur}
+        L={L}
+      />
+
+      {/* Contribution form */}
+      <ContributionForm typeId={type.id} defaultBrand={brand?.brand || ""} L={L} />
+
+      {/* Community contributions */}
+      <CommunityContributions typeId={type.id} L={L} />
+
+      <div className="mt-5">
+        <button
+          onClick={onBack}
+          className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
+        >
+          {L.back}
+        </button>
       </div>
     </div>
   );
@@ -823,43 +1408,188 @@ function Tab3Calculator({ lang, L }) {
 export default function PrintSettings3DCalc() {
   const { lang } = useLanguage();
   const L = LABELS[lang] || LABELS.pl;
-  const [activeTab, setActiveTab] = useState(0);
-  const [paramsMat, setParamsMat] = useState(null);
+  const showEur = lang === "en" || lang === "de";
 
-  const tabs = [L.tab1, L.tab2, L.tab3];
+  // Data
+  const [types, setTypes] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  function handleGoToParams(matId) {
-    setParamsMat(matId);
-    setActiveTab(1);
+  // Wizard state
+  const [step, setStep] = useState(1);
+  const [selectedReqs, setSelectedReqs] = useState(new Set());
+  const [selectedType, setSelectedType] = useState(null);
+  const [selectedBrand, setSelectedBrand] = useState(null);
+  const [brandChoice, setBrandChoice] = useState("generic");
+
+  // Fetch with localStorage cache
+  function loadData() {
+    setLoading(true);
+    setError(null);
+    let cached = null;
+    try {
+      cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+    } catch { cached = null; }
+
+    const fetchFresh = () =>
+      fetch(API_BASE)
+        .then(r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.json();
+        })
+        .then(d => {
+          if (!d || !Array.isArray(d.types)) throw new Error("Invalid payload");
+          try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), payload: d }));
+          } catch { /* quota errors are fine */ }
+          setTypes(d.types);
+          return d;
+        });
+
+    if (cached && cached.payload && Array.isArray(cached.payload.types) && Date.now() - cached.ts < CACHE_TTL_MS) {
+      setTypes(cached.payload.types);
+      setLoading(false);
+      fetchFresh().catch(() => { /* silent background refresh failure */ });
+    } else {
+      fetchFresh()
+        .catch(e => {
+          if (cached && cached.payload && Array.isArray(cached.payload.types)) {
+            setTypes(cached.payload.types);
+          } else {
+            setError(e.message || "load failed");
+          }
+        })
+        .finally(() => setLoading(false));
+    }
+  }
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  // Filtering
+  const filteredTypes = useMemo(() => {
+    if (!types) return [];
+    if (selectedReqs.size === 0) return types;
+    return types.filter(t =>
+      REQUIREMENTS.every(r => !selectedReqs.has(r.id) || r.match(t))
+    );
+  }, [types, selectedReqs]);
+
+  // Merge generic + brand overrides
+  const activeParams = useMemo(() => {
+    if (!selectedType) return null;
+    const base = selectedType;
+    const b = selectedBrand;
+    const notesKey = `notes_${lang}`;
+    const usesKey = `uses_${lang}`;
+    return {
+      nozzle_min: b?.nozzle_min ?? base.nozzle_min,
+      nozzle_max: b?.nozzle_max ?? base.nozzle_max,
+      bed_min: b?.bed_min ?? base.bed_min,
+      bed_max: b?.bed_max ?? base.bed_max,
+      speed_min: b?.speed_min ?? base.speed_min,
+      speed_max: b?.speed_max ?? base.speed_max,
+      layer_min: base.layer_min,
+      layer_max: base.layer_max,
+      retraction_min: base.retraction_min,
+      retraction_max: base.retraction_max,
+      cooling: base.cooling,
+      enclosure: base.enclosure,
+      difficulty: base.difficulty,
+      density: base.density,
+      price_per_kg: base.price_per_kg,
+      temp_resistance: base.temp_resistance,
+      props: base.props || [],
+      notes: b
+        ? (b[notesKey] || b.notes_en || base[notesKey] || base.notes_pl || "")
+        : (base[notesKey] || base.notes_pl || base.notes_en || ""),
+      uses: base[usesKey] || base.uses_pl || base.uses_en || "",
+    };
+  }, [selectedType, selectedBrand, lang]);
+
+  if (loading && !types) return <LoadingState L={L} />;
+  if (error && !types) return <ErrorState L={L} onRetry={loadData} />;
+  if (!types) return <LoadingState L={L} />;
+
+  function toggleReq(id) {
+    setSelectedReqs(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  function jumpTo(targetStep) {
+    if (targetStep < step) setStep(targetStep);
   }
 
   return (
     <div className="rounded-2xl border border-white/5 bg-white/[0.01] overflow-hidden">
-      {/* Tab bar */}
-      <div className="flex border-b border-white/5">
-        {tabs.map((tab, i) => (
-          <button
-            key={i}
-            onClick={() => setActiveTab(i)}
-            className={`flex-1 px-3 py-3.5 text-sm font-medium transition-all duration-200 relative ${
-              activeTab === i
-                ? "text-amber-300"
-                : "text-neutral-400 hover:text-neutral-200"
-            }`}
-          >
-            {tab}
-            {activeTab === i && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-400 rounded-t" />
-            )}
-          </button>
-        ))}
-      </div>
+      <WizardProgress step={step} L={L} />
+      <BreadcrumbChips
+        step={step}
+        selectedType={selectedType}
+        selectedBrand={selectedBrand}
+        brandChoice={brandChoice}
+        onJump={jumpTo}
+        L={L}
+      />
 
-      {/* Tab content */}
       <div className="p-5">
-        {activeTab === 0 && <Tab1Advisor lang={lang} L={L} onGoToParams={handleGoToParams} />}
-        {activeTab === 1 && <Tab2Parameters lang={lang} L={L} initialMat={paramsMat} />}
-        {activeTab === 2 && <Tab3Calculator lang={lang} L={L} />}
+        {step === 1 && (
+          <Step1Requirements
+            requirements={REQUIREMENTS}
+            selected={selectedReqs}
+            onToggle={toggleReq}
+            onNext={() => setStep(2)}
+            onSkip={() => { setSelectedReqs(new Set()); setStep(2); }}
+            L={L}
+          />
+        )}
+
+        {step === 2 && (
+          <Step2Materials
+            types={filteredTypes}
+            allTypes={types}
+            selectedReqs={selectedReqs}
+            onSelect={t => {
+              setSelectedType(t);
+              setSelectedBrand(null);
+              setBrandChoice("generic");
+              setStep(3);
+            }}
+            onBack={() => setStep(1)}
+            onClearReqs={() => setSelectedReqs(new Set())}
+            L={L}
+          />
+        )}
+
+        {step === 3 && selectedType && (
+          <Step3Brands
+            type={selectedType}
+            brandChoice={brandChoice}
+            onSelect={(choice, brand) => {
+              setBrandChoice(choice);
+              setSelectedBrand(brand);
+              setStep(4);
+            }}
+            onBack={() => setStep(2)}
+            L={L}
+          />
+        )}
+
+        {step === 4 && selectedType && activeParams && (
+          <Step4Parameters
+            type={selectedType}
+            brand={selectedBrand}
+            params={activeParams}
+            onBack={() => setStep(3)}
+            lang={lang}
+            showEur={showEur}
+            L={L}
+          />
+        )}
       </div>
     </div>
   );
