@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import pg from "pg";
 import multer from "multer";
 import cron from "node-cron";
+import { createHash } from "crypto";
 import { getSystemPrompt, detectHotLead } from "./context.js";
 
 const app = express();
@@ -829,8 +830,7 @@ app.post("/api/filaments/vote", express.json({ limit: "4kb" }), voteLimit, async
       return res.status(400).json({ error: "Invalid request" });
 
     const ip = getIP(req);
-    const crypto = await import("crypto");
-    const ipHash = crypto.createHash("sha256").update(ip + contribution_id).digest("hex");
+    const ipHash = createHash("sha256").update(ip + contribution_id).digest("hex");
 
     // Deduplication check
     const { rows: existing } = await pool.query(
