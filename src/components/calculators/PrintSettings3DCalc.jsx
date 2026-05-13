@@ -566,7 +566,7 @@ function ErrorState({ L, onRetry }) {
 // ============================================================
 // WIZARD PROGRESS
 // ============================================================
-function WizardProgress({ step, L }) {
+function WizardProgress({ step, onJump, L }) {
   const steps = [L.step1, L.step2, L.step3, L.step4];
   return (
     <div className="px-5 pt-5">
@@ -575,15 +575,21 @@ function WizardProgress({ step, L }) {
           const num = idx + 1;
           const isActive = num === step;
           const isDone = num < step;
+          const clickable = isDone;
           return (
             <div key={num} className="flex-1 flex items-center gap-1.5">
               <div className="flex flex-col items-center gap-1 w-full">
                 <div className={`h-1 w-full rounded-full transition-all duration-300 ${
                   isActive ? "bg-amber-400" : isDone ? "bg-green-400" : "bg-neutral-700"
                 }`} />
-                <div className={`text-[10px] sm:text-[11px] font-medium uppercase tracking-wider text-center ${
-                  isActive ? "text-amber-300" : isDone ? "text-green-400" : "text-neutral-600"
-                }`}>
+                <div
+                  onClick={clickable ? () => onJump(num) : undefined}
+                  className={`text-[10px] sm:text-[11px] font-medium uppercase tracking-wider text-center transition-colors ${
+                    isActive ? "text-amber-300" :
+                    isDone ? "text-green-400 cursor-pointer hover:text-amber-300" :
+                    "text-neutral-600"
+                  }`}
+                >
                   <span className="hidden sm:inline">{num}. </span>{label}
                 </div>
               </div>
@@ -1443,8 +1449,9 @@ export default function PrintSettings3DCalc() {
   const [error, setError] = useState(null);
 
   // Wizard state
+  const calcRef = useRef(null);
   const [step, setStep] = useState(1);
-  const [selectedReqs, setSelectedReqs] = useState(new Set(REQUIREMENTS.map(r => r.id)));
+  const [selectedReqs, setSelectedReqs] = useState(new Set());
   const [selectedType, setSelectedType] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [brandChoice, setBrandChoice] = useState("generic");
@@ -1547,13 +1554,20 @@ export default function PrintSettings3DCalc() {
     });
   }
 
+  function goToStep(targetStep) {
+    setStep(targetStep);
+    setTimeout(() => {
+      calcRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
+  }
+
   function jumpTo(targetStep) {
-    if (targetStep < step) setStep(targetStep);
+    if (targetStep <= step) goToStep(targetStep);
   }
 
   return (
-    <div className="rounded-2xl border border-white/5 bg-white/[0.01] overflow-hidden">
-      <WizardProgress step={step} L={L} />
+    <div ref={calcRef} className="rounded-2xl border border-white/5 bg-white/[0.01] overflow-hidden">
+      <WizardProgress step={step} onJump={jumpTo} L={L} />
       <BreadcrumbChips
         step={step}
         selectedType={selectedType}
@@ -1570,8 +1584,8 @@ export default function PrintSettings3DCalc() {
             selected={selectedReqs}
             onToggle={toggleReq}
             onDeselectAll={() => setSelectedReqs(new Set())}
-            onNext={() => setStep(2)}
-            onShowAll={() => { setSelectedReqs(new Set()); setStep(2); }}
+            onNext={() => goToStep(2)}
+            onShowAll={() => { setSelectedReqs(new Set()); goToStep(2); }}
             L={L}
           />
         )}
@@ -1585,9 +1599,9 @@ export default function PrintSettings3DCalc() {
               setSelectedType(t);
               setSelectedBrand(null);
               setBrandChoice("generic");
-              setStep(3);
+              goToStep(3);
             }}
-            onBack={() => setStep(1)}
+            onBack={() => goToStep(1)}
             onClearReqs={() => setSelectedReqs(new Set())}
             L={L}
           />
@@ -1600,9 +1614,9 @@ export default function PrintSettings3DCalc() {
             onSelect={(choice, brand) => {
               setBrandChoice(choice);
               setSelectedBrand(brand);
-              setStep(4);
+              goToStep(4);
             }}
-            onBack={() => setStep(2)}
+            onBack={() => goToStep(2)}
             L={L}
           />
         )}
@@ -1612,7 +1626,7 @@ export default function PrintSettings3DCalc() {
             type={selectedType}
             brand={selectedBrand}
             params={activeParams}
-            onBack={() => setStep(3)}
+            onBack={() => goToStep(3)}
             lang={lang}
             showEur={showEur}
             L={L}
