@@ -1581,6 +1581,13 @@ export default function PrintSettings3DCalc() {
     };
   }, [selectedType, selectedBrand, lang]);
 
+  const canNext = useMemo(() => {
+    if (step === 1) return selectedReqs.size > 0;
+    if (step === 2) return selectedType != null;
+    if (step === 3) return true;
+    return false;
+  }, [step, selectedReqs, selectedType]);
+
   if (loading && !types) return <LoadingState L={L} />;
   if (error && !types) return <ErrorState L={L} onRetry={loadData} />;
   if (!types) return <LoadingState L={L} />;
@@ -1606,13 +1613,6 @@ export default function PrintSettings3DCalc() {
   function jumpTo(targetStep) {
     if (targetStep <= step) goToStep(targetStep);
   }
-
-  const canNext = useMemo(() => {
-    if (step === 1) return selectedReqs.size > 0;
-    if (step === 2) return selectedType != null;
-    if (step === 3) return true;
-    return false;
-  }, [step, selectedReqs, selectedType]);
 
   function handleNext() {
     if (step === 1 && selectedReqs.size > 0) goToStep(2);
