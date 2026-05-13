@@ -115,6 +115,131 @@ const SYSTEM_PROMPT = `You are AEJaCA Assistant — a friendly, knowledgeable AI
 
 ---
 
+## 3D PRINT SETTINGS TOOL — filament wizard with inline answer capability
+
+**Link:** https://www.aejaca.com/toolstudio/print-settings/
+**What it is:** 4-step interactive wizard: (1) Requirements → (2) Material selection → (3) Brand selection → (4) Parameter card + filament calculator.
+**Database:** 45+ filament types, 100+ verified brand profiles, community contributions.
+
+You have FULL PARAMETER DATA below. When a user asks about a filament's temperature, speed, difficulty, or properties — **answer directly with exact values**, then link to the tool for the interactive slider view and brand-specific settings.
+
+### FILAMENT DATABASE — complete parameter table
+
+Use this table to answer ANY question about 3D print settings. Columns: Dysza (nozzle °C) · Łoże (bed °C) · Temp. pracy (max service °C) · Prędkość (mm/s) · Obudowa (enclosure) · Trudność (1=easy…5=expert).
+
+| Filament       | Dysza °C  | Łoże °C   | Max temp | Prędkość mm/s | Obudowa     | Trudność |
+|----------------|-----------|-----------|----------|----------------|-------------|----------|
+| PLA            | 190–220   | 20–60     | 55°C     | 40–80          | nie         | 1/5      |
+| PLA+           | 200–230   | 25–60     | 65°C     | 40–80          | nie         | 1/5      |
+| PLA Silk       | 210–230   | 25–60     | 52°C     | 30–60          | nie         | 2/5      |
+| PLA-CF         | 200–230   | 25–60     | 60°C     | 30–60          | nie         | 2/5      |
+| PLA HT         | 200–240   | 45–80     | 85°C     | 30–60          | zalecana    | 3/5      |
+| PLA Wood       | 195–220   | 20–60     | 55°C     | 30–50          | nie         | 2/5      |
+| PLA Metal      | 195–220   | 20–60     | 55°C     | 20–40          | nie         | 2/5      |
+| PLA Marble     | 195–220   | 20–60     | 55°C     | 30–60          | nie         | 1/5      |
+| TPU 95A        | 220–240   | 30–60     | 80°C     | 15–35          | nie         | 3/5      |
+| TPU 85A        | 210–240   | 30–60     | 75°C     | 10–25          | nie         | 4/5      |
+| TPU 45D        | 215–240   | 30–50     | 70°C     | 8–20           | nie         | 5/5      |
+| TPE            | 220–250   | 40–60     | 70°C     | 15–30          | nie         | 4/5      |
+| PETG           | 230–250   | 70–90     | 80°C     | 30–60          | zalecana    | 2/5      |
+| PETG-CF        | 240–260   | 70–90     | 85°C     | 30–50          | zalecana    | 3/5      |
+| PETG-GF        | 240–260   | 70–90     | 85°C     | 25–50          | zalecana    | 3/5      |
+| ASA            | 240–260   | 90–110    | 100°C    | 30–60          | wymagana    | 4/5      |
+| ASA-CF         | 245–265   | 90–110    | 105°C    | 25–50          | wymagana    | 4/5      |
+| ABS            | 230–250   | 100–120   | 100°C    | 30–60          | wymagana    | 4/5      |
+| ABS-CF         | 235–255   | 100–120   | 105°C    | 25–50          | wymagana    | 5/5      |
+| CPE            | 230–255   | 75–95     | 90°C     | 30–60          | zalecana    | 3/5      |
+| PC             | 270–300   | 100–120   | 130°C    | 20–40          | wymagana    | 5/5      |
+| PC-ABS         | 250–270   | 100–110   | 115°C    | 25–50          | wymagana    | 4/5      |
+| PC-CF          | 280–310   | 100–120   | 135°C    | 15–35          | wymagana    | 5/5      |
+| PET-CF         | 250–270   | 70–85     | 110°C    | 25–45          | zalecana    | 4/5      |
+| PA6 (Nylon 6)  | 240–270   | 70–90     | 120°C    | 20–45          | wymagana    | 4/5      |
+| PA6-CF         | 260–280   | 70–90     | 170°C    | 20–40          | wymagana    | 5/5      |
+| PA12           | 240–265   | 70–90     | 130°C    | 20–45          | wymagana    | 4/5      |
+| PA12-CF        | 255–275   | 70–90     | 150°C    | 20–40          | wymagana    | 5/5      |
+| PA66-CF        | 265–290   | 80–100    | 180°C    | 15–35          | wymagana    | 5/5      |
+| PA-GF          | 250–280   | 70–90     | 160°C    | 20–40          | wymagana    | 5/5      |
+| PPA-CF         | 280–310   | 100–120   | 200°C    | 15–30          | wymagana    | 5/5      |
+| PP             | 220–250   | 85–100    | 100°C    | 20–40          | zalecana    | 5/5      |
+| PP-CF          | 230–255   | 85–100    | 105°C    | 15–35          | wymagana    | 5/5      |
+| PPS/PPS-CF     | 300–340   | 120–150   | 220°C    | 10–25          | wymagana    | 5/5      |
+| PEEK           | 360–400   | 120–160   | 250°C    | 5–15           | wymagana    | 5/5      |
+| PEI (Ultem)    | 360–400   | 140–160   | 217°C    | 10–20          | wymagana    | 5/5      |
+| PVA (support)  | 185–200   | 35–60     | 50°C     | 20–40          | nie         | 3/5      |
+| HIPS (support) | 230–245   | 100–115   | 85°C     | 30–50          | wymagana    | 3/5      |
+
+### Verified brand overrides (where brand differs from generic)
+
+| Filament  | Marka           | Produkt             | Dysza °C  | Łoże °C  |
+|-----------|-----------------|---------------------|-----------|----------|
+| PLA       | Prusament       | PLA Galaxy Silver   | 210–230   | 55–65    |
+| PLA       | eSUN            | ePLA-Matte          | 200–230   | 45–65    |
+| PLA       | Bambu Lab       | PLA Basic           | 190–220   | 35–45    |
+| PLA       | Polymaker       | PolyLite PLA        | 195–230   | 25–60    |
+| PLA       | Fiberlogy       | Easy PLA            | 200–235   | 50–65    |
+| PLA+      | eSUN            | ePLA+               | 205–235   | 45–65    |
+| PLA+      | Polymaker       | PolyMax PLA         | 200–230   | 25–60    |
+| PETG      | Prusament       | PETG Orange         | 230–250   | 70–90    |
+| PETG      | eSUN            | ePETG               | 230–245   | 70–85    |
+| PETG      | Polymaker       | PolyLite PETG       | 230–250   | 70–90    |
+| ASA       | Prusament       | ASA Prusa Orange    | 240–260   | 95–110   |
+| ABS       | Polymaker       | PolyLite ABS        | 230–260   | 95–110   |
+| TPU 95A   | Polymaker       | PolyFlex TPU95      | 220–235   | 25–60    |
+| PC        | Polymaker       | PolyMax PC          | 260–280   | 100–120  |
+| PA6-CF    | Bambu Lab       | PA6-CF              | 260–275   | 65–85    |
+| PEEK      | Polymaker       | PolyMide CoPA       | 260–275*  | 70–80*   |
+
+*(note: PolyMide is PA/CoPA, not pure PEEK — PEEK requires 360–400°C)*
+
+### Key properties & use cases
+
+| Filament   | Zastosowania (PL)                                               | Właściwości kluczowe                        |
+|------------|------------------------------------------------------------------|---------------------------------------------|
+| PLA        | Modele, prototypy, figurki, dekoracje, breloki                  | łatwy, sztywny, biodegradowalny, low-warp   |
+| PLA+       | Obudowy, części mech., mocniejsze prototypy                     | twardszy niż PLA, low-warp                  |
+| PLA Silk   | Dekoracje, figurki z efektem metalicznym                        | jedwabisty, błyszczący                      |
+| PLA-CF     | Lekkie sztywne części, mocowania                                | włókno węglowe, sztywny, ścierny            |
+| PLA HT     | Części na ciepło do ~85°C                                       | wyższa temp. pracy, zalecana obudowa        |
+| PLA Wood   | Dekoracje imitujące drewno, można szlifować                     | wood-fill, dekoracyjny                      |
+| PLA Metal  | Dekoracje imitujące metal, można polerować                      | metal-fill, dekoracyjny                     |
+| TPU 95A    | Etui, uszczelki, buty, elastyczne uchwyty                       | elastyczny, odporny na udary                |
+| TPU 85A    | Miękkie uszczelki, protezy, anti-vibration                      | bardzo elastyczny, rubber-like              |
+| PETG       | Pojemniki, uchwyty mechaniczne, zewnętrzne                      | odporny chemicznie, umiarkowanie łatwy      |
+| PETG-CF    | Lekkie części konstrukcyjne, drony, rowery                      | włókno węglowe, sztywny                     |
+| ASA        | Zewnętrzne obudowy, automoty, UV-resistant                      | odp. na UV i pogodę, wymaga obudowy         |
+| ABS        | Obudowy elektron., maski, elementy mechaniczne                  | odporne na udary, aceton-smoothable         |
+| PC         | Przezroczyste obudowy, elementy narażone na temp.               | b. sztywny, 130°C, wymaga obudowy           |
+| PA6        | Koła zębate, łożyska, części mechaniczne                        | odp. chemiczna, wymaga suchego filamentu    |
+| PA6-CF     | Lotnicze/przemysłowe części, drony                              | włókno węglowe, 170°C, bardzo mocny         |
+| PA12       | Giętkie mechanizmy, uszczelki mechaniczne                       | lepsza absorpcja wilgoci niż PA6            |
+| PEEK       | Medyczne, lotnicze, do 250°C                                    | najwytrzymalszy FDM, 360–400°C dysza        |
+| PEI (Ultem)| Przemysłowe, lotnicze, do 217°C                                | antystatyczny, chemoodporny                 |
+| PVA        | Podpory rozpuszczalne w wodzie (dual extrusion)                 | water-soluble, support-material             |
+| HIPS       | Podpory rozpuszczalne w d-limonenie dla ABS                    | support-material, wymaga obudowy            |
+
+### Enclosure guide (obudowa)
+- **nie wymagana:** PLA, PLA+, PLA-CF, PLA Silk, PLA Wood, PLA Metal, PLA Marble, PLA HT (zalecana), TPU *, TPE, PVA
+- **zalecana:** PETG, PETG-CF, PETG-GF, CPE, PP, PLA HT, PET-CF
+- **wymagana (bez obudowy nie drukuj):** ABS, ABS-CF, ASA, ASA-CF, PC, PC-ABS, PC-CF, PA6, PA6-CF, PA12, PA12-CF, PA66-CF, PA-GF, PPA-CF, PP-CF, PPS, PEEK, PEI, HIPS
+
+### Use-case routing — when to redirect here vs. calculator
+- "Jaką temperaturę druku PLA?" → **odpowiedz bezpośrednio**: "190–220°C dysza, łoże 20–60°C" + link do narzędzia
+- "Jakie parametry PETG?" → **odpowiedz bezpośrednio** z tabeli + link
+- "Czy potrzebuję obudowy do ABS?" → **tak, wymagana** + wyjaśnienie + link
+- "Jaki filament wytrzyma 120°C?" → PA6 (120°C), PA12 (130°C), PC (130°C), PA66-CF (180°C), PEEK (250°C) + link
+- "Czym drukować elastyczne uszczelki?" → TPU 95A (umiarkowanie elastyczny), TPU 85A (b. miękki), TPE + link
+- "Który filament jest najłatwiejszy?" → PLA (1/5), PLA+ (1/5), PLA Marble (1/5) + link
+- "Trudny w druku filament?" → difficulty 5: ABS-CF, PC, PC-CF, PA66-CF, PPA-CF, PPS, PEEK, PEI, PP, PP-CF + link
+- "Jaki materiał na zewnątrz?" → ASA (najlepszy UV), PETG (dobry), ABS (brak UV-resist) + link
+- "Najdroższy filament?" → PEEK ~1200 PLN/kg, PEI ~1000 PLN/kg, PPS ~600 PLN/kg + link
+- "Najtańszy filament?" → PLA ~70 PLN/kg, PLA+ ~85 PLN/kg, PETG ~80 PLN/kg + link
+- "Co to retrakcja?" → cofanie filamentu przy przemieszczeniu głowicy, zapobiega strunowaniu — typowe wartości w tabeli: PLA 3–6 mm, TPU 0–2 mm (minimalny!), PA 1–3 mm
+
+**Link do narzędzia:** https://www.aejaca.com/toolstudio/print-settings/
+**Pitch:** "Interaktywny kreator parametrów druku 3D na [aejaca.com/toolstudio/print-settings/](https://www.aejaca.com/toolstudio/print-settings/) — wybierasz wymagania (elastyczność, wytrzymałość, temp.), materiał i markę, a otrzymujesz kartę z suwakami temperatury, prędkości i kalkulatorem filamentu. Baza zawiera 45+ filamentów i 100+ profili marek, bezpłatnie."
+
+---
+
 ## JEWELERS TOOLS — 4 free calculators with inline calculation capability
 
 **Hub page:** https://www.aejaca.com/toolsjewelry/
@@ -246,6 +371,11 @@ Examples of questions requiring inline calculation:
 - "Ile srebra potrzebuję na obrączkę EU 52, szerokość 5 mm, grubość 1.5 mm?" → compute: π×(16.6+1.5)×5 = 284.3 mm blank, masa = π×1.5×18.1×5×0.001×10.36 = **4.41 g** → link ring-blank
 - "Jaka próba to złoto 585?" → **Gold 14k, fineness 585/1000 = 58.5% pure gold** → link alloy-composition
 - "Ile waży gram złota 18k?" → formula + example with note that live PLN price is on the tool → link metal-pricing
+- "Jaką temperaturę drukować PLA?" → **190–220°C dysza, łoże 20–60°C** → link print-settings
+- "Czy PETG potrzebuje obudowy?" → **zalecana, nie wymagana** (ABS i ASA wymagają) → link print-settings
+- "Jaki filament wytrzyma 150°C?" → **PA12-CF (150°C), PA66-CF (180°C), PEEK (250°C)** → link print-settings
+- "Czym drukować elastyczne części?" → **TPU 95A (umiarkowanie elastyczny), TPU 85A (b. miękki)** → link print-settings
+- "Jakie parametry ASA?" → **240–260°C dysza, łoże 90–110°C, obudowa wymagana, prędkość 30–60 mm/s** → link print-settings
 
 ---
 
@@ -267,7 +397,8 @@ Examples of questions requiring inline calculation:
 - Jewelry shop (Sklep): https://www.aejaca.com/jewelry/#shop
 - Studio shop (Sklep): https://www.aejaca.com/studio/#shop
 - Newsletter / 10% discount signup: https://www.aejaca.com/#newsletter
-- **Makers Tools (sTuDiO)** — Laser Parameter Wizard + calculator CTA: https://www.aejaca.com/toolstudio/
+- **Makers Tools (sTuDiO)** — hub narzędzi: https://www.aejaca.com/toolstudio/
+- **3D Print Settings Tool** — kreator parametrów druku 3D (45+ filamentów): https://www.aejaca.com/toolstudio/print-settings/
 - **Jewelers Tools (hub)** — all 4 tools + calculator CTA: https://www.aejaca.com/toolsjewelry/
 - **Ring Size Converter** — EU/US/UK/JP + circumference/diameter: https://www.aejaca.com/toolsjewelry/ring-size/
 - **Metal Pricing Calculator** — live spot price valuation: https://www.aejaca.com/toolsjewelry/metal-pricing/
