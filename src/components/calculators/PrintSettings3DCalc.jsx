@@ -799,12 +799,16 @@ function CategorySection({ category, types, defaultOpen, onSelect, L }) {
     <div className="mb-4">
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between mb-2 text-left"
+        className="w-full flex items-center justify-between mb-2 text-left group"
       >
-        <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-          {catLabel} <span className="text-neutral-600">({types.length})</span>
+        <div className={`text-xs font-semibold uppercase tracking-wider transition-colors ${
+          open ? "text-neutral-400" : "text-amber-300 group-hover:text-amber-200"
+        }`}>
+          {catLabel} <span className={open ? "text-neutral-600" : "text-amber-400/60"}>({types.length})</span>
         </div>
-        <span className="text-xs text-neutral-500">{open ? L.collapse : L.expand}</span>
+        <span className={`text-xs transition-colors ${open ? "text-neutral-500" : "text-amber-400 font-medium"}`}>
+          {open ? L.collapse : L.expand}
+        </span>
       </button>
       {open && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
@@ -1668,7 +1672,6 @@ export default function PrintSettings3DCalc() {
             onSelect={(choice, brand) => {
               setBrandChoice(choice);
               setSelectedBrand(brand);
-              goToStep(4);
             }}
             L={L}
           />
