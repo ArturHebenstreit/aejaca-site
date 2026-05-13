@@ -158,6 +158,11 @@ export default function MetalPricingPage() {
 
         <div className="gradient-divider" />
 
+        {/* Review CTA */}
+        <section className="px-4 bg-neutral-950">
+          <ToolReviewCTA />
+        </section>
+
         {/* Footer CTA */}
         <section className="py-12 px-4 bg-neutral-950 text-center">
           <div ref={ctaRef} className="reveal max-w-xl mx-auto">
