@@ -148,6 +148,8 @@ if (pool) {
     updated_by VARCHAR(100)
   )`).catch(e => console.error("[filaments] CREATE filament_brands failed:", e.message));
 
+  pool.query(`ALTER TABLE filament_brands ADD COLUMN IF NOT EXISTS auto_approved BOOLEAN DEFAULT FALSE`).catch(() => {});
+
   pool.query(`CREATE TABLE IF NOT EXISTS filament_contributions (
     id BIGSERIAL PRIMARY KEY,
     filament_type_id BIGINT REFERENCES filament_types(id),
