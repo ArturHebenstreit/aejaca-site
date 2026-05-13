@@ -701,8 +701,7 @@ function BreadcrumbChips({ step, selectedType, selectedBrand, brandChoice, onJum
 // ============================================================
 // STEP 1 — REQUIREMENTS
 // ============================================================
-function Step1Requirements({ requirements, selected, onToggle, onDeselectAll, onNext, onShowAll, L }) {
-  const hasAny = requirements.some(r => selected.has(r.id));
+function Step1Requirements({ requirements, selected, onToggle, onDeselectAll, onShowAll, L }) {
   return (
     <div>
       <h3 className="text-lg font-bold text-white mb-1">{L.step1Title}</h3>
@@ -718,19 +717,8 @@ function Step1Requirements({ requirements, selected, onToggle, onDeselectAll, on
           {L.deselectAll}
         </button>
 
-        {/* Right group: Dalej → | Pokaż wszystkie materiały → */}
+        {/* Right: Pokaż wszystkie materiały → */}
         <div className="ml-auto flex items-center gap-2">
-          <button
-            onClick={onNext}
-            disabled={!hasAny}
-            className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all duration-200 ${
-              hasAny
-                ? "border-amber-400/40 bg-amber-400/10 text-amber-300 hover:bg-amber-400/20"
-                : "border-white/10 bg-white/[0.02] text-neutral-600 cursor-not-allowed"
-            }`}
-          >
-            {L.next}
-          </button>
           <button
             onClick={onShowAll}
             className="px-4 py-2 rounded-xl border border-blue-400/30 bg-blue-400/10 text-blue-300 text-sm font-medium hover:bg-blue-400/20 transition-all duration-200 whitespace-nowrap"
@@ -1643,7 +1631,6 @@ export default function PrintSettings3DCalc() {
             selected={selectedReqs}
             onToggle={toggleReq}
             onDeselectAll={() => setSelectedReqs(new Set())}
-            onNext={() => goToStep(2)}
             onShowAll={() => { setSelectedReqs(new Set()); goToStep(2); }}
             L={L}
           />
