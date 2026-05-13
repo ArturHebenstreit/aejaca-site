@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Cpu } from "lucide-react";
+import { ArrowRight, Cpu, Printer } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import LaserParametersTool from "../components/calculators/LaserParametersTool.jsx";
@@ -26,6 +26,9 @@ const LABELS = {
     breadHome: "Strona główna",
     breadStudio: "sTuDiO",
     breadTools: "Narzędzia sTuDiO",
+    printCardTitle: "Parametry druku 3D",
+    printCardDesc: "Dobieracz materiału, karty parametrów i kalkulator filamentu dla 16 filamentów.",
+    printCardBtn: "Otwórz narzędzie",
   },
   en: {
     heroTag: "Open knowledge",
@@ -44,6 +47,9 @@ const LABELS = {
     breadHome: "Home",
     breadStudio: "sTuDiO",
     breadTools: "sTuDiO Tools",
+    printCardTitle: "3D Print Settings",
+    printCardDesc: "Material advisor, parameter cards and filament calculator for 16 filaments.",
+    printCardBtn: "Open tool",
   },
   de: {
     heroTag: "Offenes Wissen",
@@ -62,6 +68,9 @@ const LABELS = {
     breadHome: "Startseite",
     breadStudio: "sTuDiO",
     breadTools: "sTuDiO-Tools",
+    printCardTitle: "3D-Druckparameter",
+    printCardDesc: "Materialberater, Parameterkarten und Filamentrechner für 16 Filamente.",
+    printCardBtn: "Tool öffnen",
   },
 };
 
@@ -71,6 +80,7 @@ export default function ToolsStudio() {
   const seo = getSEO("toolstudio", lang);
 
   const whyRef = useScrollReveal();
+  const printCardRef = useScrollReveal();
   const calcCTARef = useScrollReveal();
   const matrixRef = useScrollReveal();
   const ctaRef = useScrollReveal();
@@ -128,6 +138,31 @@ export default function ToolsStudio() {
             <div ref={whyRef} className="reveal p-6 rounded-2xl bg-blue-400/5 border border-blue-400/15">
               <h2 className="font-sans text-xl font-semibold text-blue-300 mb-3">{L.whyTitle}</h2>
               <p className="text-neutral-300 text-sm leading-relaxed">{L.whyText}</p>
+            </div>
+          </div>
+        </section>
+
+        <div className="gradient-divider" />
+
+        {/* Print Settings tool card */}
+        <section className="py-8 px-4 bg-neutral-950">
+          <div className="max-w-3xl mx-auto">
+            <div ref={printCardRef} className="reveal mb-4">
+              <Link
+                to="/toolstudio/print-settings/"
+                className="group flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 p-5 rounded-2xl glass hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300"
+              >
+                <div className="flex items-center gap-4">
+                  <Printer className="w-10 h-10 text-blue-400 shrink-0 transition-transform duration-300 group-hover:scale-110" />
+                  <div className="min-w-0">
+                    <div className="text-white font-semibold text-base group-hover:text-blue-300 transition-colors">{L.printCardTitle}</div>
+                    <div className="text-neutral-400 text-sm mt-0.5">{L.printCardDesc}</div>
+                  </div>
+                </div>
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-400 group-hover:text-blue-300 sm:ml-auto shrink-0 transition-colors">
+                  {L.printCardBtn} <ArrowRight className="w-4 h-4" />
+                </span>
+              </Link>
             </div>
           </div>
         </section>

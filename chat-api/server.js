@@ -705,4 +705,187 @@ app.post("/api/gemstone-prices/invalidate", express.json(), (req, res) => {
   res.json({ ok: true });
 });
 
+// ── FILAMENT TYPES API ────────────────────────────────────────────────────────
+
+let _filamentCache = { ts: 0, data: null };
+const FILAMENT_TTL = 5 * 60_000;
+
+async function getFilamentData() {
+  const now = Date.now();
+  if (_filamentCache.data && now - _filamentCache.ts < FILAMENT_TTL) return _filamentCache.data;
+  if (!pool) return null;
+
+  const { rows: types } = await pool.query(
+    `SELECT * FROM filament_types WHERE is_active=TRUE ORDER BY sort_order, category, name`
+  );
+  const { rows: brands } = await pool.query(
+    `SELECT * FROM filament_brands WHERE is_active=TRUE AND (is_verified=TRUE OR auto_approved=TRUE) ORDER BY is_verified DESC, brand`
+  );
+
+  // Nest brands into types
+  const brandsByType = {};
+  for (const b of brands) {
+    if (!brandsByType[b.filament_type_id]) brandsByType[b.filament_type_id] = [];
+    brandsByType[b.filament_type_id].push(b);
+  }
+  for (const t of types) t.brands = brandsByType[t.id] || [];
+
+  _filamentCache = { ts: now, data: { types, count: types.length } };
+  return _filamentCache.data;
+}
+
+// GET /api/filaments — public
+app.get("/api/filaments", async (req, res) => {
+  try {
+    const data = await getFilamentData();
+    if (!data) return res.status(503).json({ error: "DB unavailable" });
+
+    let types = data.types;
+    const { category } = req.query;
+    if (category) types = types.filter(t => t.category === category);
+
+    res.setHeader("Cache-Control", "public, max-age=300");
+    res.json({ types, count: types.length, cachedAt: new Date(_filamentCache.ts).toISOString() });
+  } catch (e) {
+    res.status(500).json({ error: "Failed to fetch filaments" });
+  }
+});
+
+// GET /api/filaments/options — unique values for wizard
+app.get("/api/filaments/options", async (req, res) => {
+  try {
+    const data = await getFilamentData();
+    if (!data) return res.status(503).json({ error: "DB unavailable" });
+
+    const categories = [...new Set(data.types.map(t => t.category))].sort();
+    const difficulties = [...new Set(data.types.map(t => t.difficulty))].sort((a, b) => a - b);
+
+    res.json({ categories, difficulties, count: data.count });
+  } catch (e) {
+    res.status(500).json({ error: "Failed to fetch options" });
+  }
+});
+
+// GET /api/filaments/contributions?type_id=X — pending contributions (public)
+app.get("/api/filaments/contributions", async (req, res) => {
+  try {
+    if (!pool) return res.status(503).json({ error: "DB unavailable" });
+    const { type_id } = req.query;
+    const conditions = ["status='pending'", "vote_confirm >= 1"];
+    const params = [];
+    if (type_id) { params.push(type_id); conditions.push(`filament_type_id=$${params.length}`); }
+    const where = `WHERE ${conditions.join(" AND ")}`;
+    const { rows } = await pool.query(
+      `SELECT id, filament_type_id, brand_name, product_name, nozzle_min, nozzle_max,
+              bed_min, bed_max, speed_min, speed_max, notes, vote_confirm, vote_dispute,
+              auto_approved, created_at
+       FROM filament_contributions ${where}
+       ORDER BY vote_confirm DESC, created_at DESC LIMIT 50`,
+      params
+    );
+    res.json({ contributions: rows });
+  } catch (e) {
+    res.status(500).json({ error: "Failed to fetch contributions" });
+  }
+});
+
+// POST /api/filaments/contribute — user submission
+const contributeLimit = rateLimit({ windowMs: 60 * 60_000, max: 3, keyGenerator: getIP, standardHeaders: true, legacyHeaders: false });
+app.post("/api/filaments/contribute", express.json({ limit: "16kb" }), contributeLimit, async (req, res) => {
+  try {
+    if (!pool) return res.status(503).json({ error: "DB unavailable" });
+    const { filament_type_id, brand_name, product_name, nozzle_min, nozzle_max,
+            bed_min, bed_max, speed_min, speed_max, notes,
+            contributor_email, contributor_name, gdpr_consent } = req.body;
+
+    if (!filament_type_id || !brand_name || !contributor_email || !gdpr_consent)
+      return res.status(400).json({ error: "Missing required fields" });
+
+    const { rows } = await pool.query(
+      `INSERT INTO filament_contributions
+        (filament_type_id, brand_name, product_name, nozzle_min, nozzle_max,
+         bed_min, bed_max, speed_min, speed_max, notes,
+         contributor_email, contributor_name, gdpr_consent, contribution_type)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,'new_brand')
+       RETURNING id`,
+      [filament_type_id, brand_name, product_name || null,
+       nozzle_min || null, nozzle_max || null, bed_min || null, bed_max || null,
+       speed_min || null, speed_max || null, notes || null,
+       contributor_email, contributor_name || null, !!gdpr_consent]
+    );
+    res.status(201).json({ ok: true, id: rows[0].id });
+  } catch (e) {
+    res.status(500).json({ error: "Failed to save contribution" });
+  }
+});
+
+// POST /api/filaments/vote — community voting on contributions
+const voteLimit = rateLimit({ windowMs: 60 * 60_000, max: 20, keyGenerator: getIP, standardHeaders: true, legacyHeaders: false });
+app.post("/api/filaments/vote", express.json({ limit: "4kb" }), voteLimit, async (req, res) => {
+  try {
+    if (!pool) return res.status(503).json({ error: "DB unavailable" });
+    const { contribution_id, vote, voter_email } = req.body;
+    if (!contribution_id || !["confirm", "dispute"].includes(vote))
+      return res.status(400).json({ error: "Invalid request" });
+
+    const ip = getIP(req);
+    const crypto = await import("crypto");
+    const ipHash = crypto.createHash("sha256").update(ip + contribution_id).digest("hex");
+
+    // Deduplication check
+    const { rows: existing } = await pool.query(
+      "SELECT id FROM filament_contribution_votes WHERE contribution_id=$1 AND ip_hash=$2",
+      [contribution_id, ipHash]
+    );
+    if (existing.length > 0) return res.status(409).json({ error: "Already voted" });
+
+    await pool.query(
+      "INSERT INTO filament_contribution_votes (contribution_id, voter_email, vote, ip_hash) VALUES ($1,$2,$3,$4)",
+      [contribution_id, voter_email || null, vote, ipHash]
+    );
+
+    // Update vote counts
+    const field = vote === "confirm" ? "vote_confirm" : "vote_dispute";
+    const { rows: updated } = await pool.query(
+      `UPDATE filament_contributions SET ${field}=${field}+1
+       WHERE id=$1 RETURNING vote_confirm, vote_dispute`,
+      [contribution_id]
+    );
+
+    // Auto-approve if 5+ confirms
+    if (updated[0]?.vote_confirm >= 5) {
+      await pool.query(
+        `UPDATE filament_contributions SET auto_approved=TRUE WHERE id=$1 AND auto_approved=FALSE`,
+        [contribution_id]
+      );
+      // Insert as brand if not already
+      const { rows: contrib } = await pool.query(
+        "SELECT * FROM filament_contributions WHERE id=$1", [contribution_id]
+      );
+      if (contrib[0] && !contrib[0].filament_brand_id) {
+        await pool.query(
+          `INSERT INTO filament_brands (filament_type_id, brand, product_name, nozzle_min, nozzle_max, bed_min, bed_max, speed_min, speed_max, notes_en, is_verified, is_active)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,FALSE,TRUE)`,
+          [contrib[0].filament_type_id, contrib[0].brand_name, contrib[0].product_name,
+           contrib[0].nozzle_min, contrib[0].nozzle_max, contrib[0].bed_min, contrib[0].bed_max,
+           contrib[0].speed_min, contrib[0].speed_max, contrib[0].notes]
+        );
+        _filamentCache = { ts: 0, data: null }; // invalidate
+      }
+    }
+
+    res.json({ ok: true, votes: updated[0] });
+  } catch (e) {
+    res.status(500).json({ error: "Failed to record vote" });
+  }
+});
+
+// POST /api/filaments/invalidate — admin cache invalidation
+app.post("/api/filaments/invalidate", express.json(), (req, res) => {
+  if (req.headers["x-invalidate-token"] !== process.env.MATRIX_INVALIDATE_TOKEN)
+    return res.status(401).json({ error: "Unauthorized" });
+  _filamentCache = { ts: 0, data: null };
+  res.json({ ok: true });
+});
+
 app.listen(PORT, () => console.log(`AEJaCA Chat API running on :${PORT}`));

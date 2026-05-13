@@ -26,6 +26,7 @@ const STATIC_ROUTES = [
   "/toolsjewelry/metal-pricing",
   "/toolsjewelry/ring-size",
   "/toolstudio",
+  "/toolstudio/print-settings",
 ];
 
 const GLOSSARY_IDS = [
