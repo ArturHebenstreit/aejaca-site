@@ -631,47 +631,47 @@ function BreadcrumbChips({ step, selectedType, selectedBrand, brandChoice, onJum
 // ============================================================
 // STEP 1 — REQUIREMENTS
 // ============================================================
-function Step1Requirements({ requirements, selected, onToggle, onSelectAll, onDeselectAll, onNext, onSkip, L }) {
+function Step1Requirements({ requirements, selected, onToggle, onDeselectAll, onNext, onShowAll, L }) {
   const hasAny = requirements.some(r => selected.has(r.id));
-  const allSelected = requirements.every(r => selected.has(r.id));
   return (
     <div>
       <h3 className="text-lg font-bold text-white mb-1">{L.step1Title}</h3>
       <p className="text-xs text-neutral-400 mb-4">{L.step1Hint}</p>
 
-      {/* Top control bar: Select All | Deselect All | ──── Dalej */}
+      {/* Control bar */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        <button
-          onClick={onSelectAll}
-          className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all duration-200 ${
-            allSelected
-              ? "border-amber-400 bg-amber-400/10 text-amber-300"
-              : "border-white/15 bg-white/[0.03] text-neutral-300 hover:border-white/25 hover:text-white"
-          }`}
-        >
-          {L.selectAll}
-        </button>
+        {/* Left: Odznacz wszystkie */}
         <button
           onClick={onDeselectAll}
           className="px-3 py-1.5 rounded-lg border border-white/15 bg-white/[0.03] text-xs font-medium text-neutral-300 hover:border-white/25 hover:text-white transition-all duration-200"
         >
           {L.deselectAll}
         </button>
-        <button
-          onClick={onNext}
-          disabled={!hasAny}
-          className={`ml-auto px-5 py-2 rounded-xl border text-sm font-medium transition-all duration-200 ${
-            hasAny
-              ? "border-amber-400/40 bg-amber-400/10 text-amber-300 hover:bg-amber-400/20"
-              : "border-white/10 bg-white/[0.02] text-neutral-600 cursor-not-allowed"
-          }`}
-        >
-          {L.next}
-        </button>
+
+        {/* Right group: Dalej → | Pokaż wszystkie materiały → */}
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={onNext}
+            disabled={!hasAny}
+            className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all duration-200 ${
+              hasAny
+                ? "border-amber-400/40 bg-amber-400/10 text-amber-300 hover:bg-amber-400/20"
+                : "border-white/10 bg-white/[0.02] text-neutral-600 cursor-not-allowed"
+            }`}
+          >
+            {L.next}
+          </button>
+          <button
+            onClick={onShowAll}
+            className="px-4 py-2 rounded-xl border border-blue-400/30 bg-blue-400/10 text-blue-300 text-sm font-medium hover:bg-blue-400/20 transition-all duration-200 whitespace-nowrap"
+          >
+            {L.showAll} →
+          </button>
+        </div>
       </div>
 
       {/* Requirement chips */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {requirements.map(r => {
           const active = selected.has(r.id);
           return (
@@ -689,12 +689,6 @@ function Step1Requirements({ requirements, selected, onToggle, onSelectAll, onDe
           );
         })}
       </div>
-      <button
-        onClick={onSkip}
-        className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors"
-      >
-        {L.skipStep1}
-      </button>
     </div>
   );
 }
@@ -1575,10 +1569,9 @@ export default function PrintSettings3DCalc() {
             requirements={REQUIREMENTS}
             selected={selectedReqs}
             onToggle={toggleReq}
-            onSelectAll={() => setSelectedReqs(new Set(REQUIREMENTS.map(r => r.id)))}
             onDeselectAll={() => setSelectedReqs(new Set())}
             onNext={() => setStep(2)}
-            onSkip={() => { setSelectedReqs(new Set()); setStep(2); }}
+            onShowAll={() => { setSelectedReqs(new Set()); setStep(2); }}
             L={L}
           />
         )}
