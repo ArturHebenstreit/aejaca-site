@@ -24,7 +24,7 @@ const LABELS = {
     step4: "Parametry",
 
     step1Title: "Co chcesz wydrukować?",
-    step1Hint: "Wszystkie wymagania zaznaczone — odznacz te, których nie potrzebujesz",
+    step1Hint: "Wybierz wymagania ważne dla Twojego projektu — lub przejdź od razu do listy",
     skipStep1: "Pokaż wszystkie materiały →",
     selectAll: "Zaznacz wszystkie",
     deselectAll: "Odznacz wszystkie",
@@ -35,7 +35,7 @@ const LABELS = {
     engineering: "Inżynieryjne",
     flexible: "Elastyczne",
     specialty: "Specjalistyczne",
-    noResults: "Brak materiałów dla wybranych wymagań",
+    noResults: "Dla tego wyboru nie udało się znaleźć filamentu",
     showAll: "Pokaż wszystkie materiały",
     expand: "Rozwiń",
     collapse: "Zwiń",
@@ -146,7 +146,7 @@ const LABELS = {
     step4: "Parameters",
 
     step1Title: "What do you want to print?",
-    step1Hint: "All requirements selected — deselect ones you don't need",
+    step1Hint: "Select requirements important for your project — or go straight to the full list",
     skipStep1: "Show all materials →",
     selectAll: "Select all",
     deselectAll: "Deselect all",
@@ -157,7 +157,7 @@ const LABELS = {
     engineering: "Engineering",
     flexible: "Flexible",
     specialty: "Specialty",
-    noResults: "No materials match the selected requirements",
+    noResults: "No filament found for this selection",
     showAll: "Show all materials",
     expand: "Expand",
     collapse: "Collapse",
@@ -268,7 +268,7 @@ const LABELS = {
     step4: "Parameter",
 
     step1Title: "Was möchten Sie drucken?",
-    step1Hint: "Alle Anforderungen ausgewählt — nicht benötigte abwählen",
+    step1Hint: "Wählen Sie die für Ihr Projekt wichtigen Anforderungen — oder gehen Sie direkt zur Liste",
     skipStep1: "Alle Materialien anzeigen →",
     selectAll: "Alle auswählen",
     deselectAll: "Alle abwählen",
@@ -279,7 +279,7 @@ const LABELS = {
     engineering: "Technisch",
     flexible: "Flexibel",
     specialty: "Speziell",
-    noResults: "Keine Materialien entsprechen den Anforderungen",
+    noResults: "Für diese Auswahl wurde kein Filament gefunden",
     showAll: "Alle Materialien anzeigen",
     expand: "Aufklappen",
     collapse: "Einklappen",
@@ -401,6 +401,40 @@ function hasProp(type, needles) {
   return needles.some(n => type.props.includes(n));
 }
 
+const PROP_TRANSLATIONS = {
+  "easy":               { pl: "łatwy w druku",      en: "easy to print",      de: "einfach zu drucken" },
+  "rigid":              { pl: "sztywny",             en: "rigid",              de: "steif" },
+  "flexible":           { pl: "elastyczny",          en: "flexible",           de: "flexibel" },
+  "rubber-like":        { pl: "gumopodobny",         en: "rubber-like",        de: "gummiartig" },
+  "semi-flexible":      { pl: "półelastyczny",       en: "semi-flexible",      de: "halbflexibel" },
+  "tougher-than-pla":   { pl: "twardszy niż PLA",   en: "tougher than PLA",   de: "härter als PLA" },
+  "low-warp":           { pl: "niskie odkształcenia",en: "low warping",        de: "geringes Verziehen" },
+  "high-strength":      { pl: "wysoka wytrzymałość", en: "high strength",      de: "hohe Festigkeit" },
+  "impact-resistant":   { pl: "odporny na udary",    en: "impact resistant",   de: "schlagfest" },
+  "chemical-resistant": { pl: "odp. chemiczna",      en: "chemical resistant", de: "chemisch beständig" },
+  "weather-resistant":  { pl: "odp. na pogodę",      en: "weather resistant",  de: "witterungsbeständig" },
+  "uv-resistant":       { pl: "odp. na UV",          en: "UV resistant",       de: "UV-beständig" },
+  "outdoor":            { pl: "zewnętrzny",          en: "outdoor",            de: "Außenbereich" },
+  "high-temp":          { pl: "wysoka temp.",        en: "high temp",          de: "Hochtemperatur" },
+  "temperature-resistant": { pl: "odp. na temp.",   en: "temp resistant",     de: "temperaturbeständig" },
+  "carbon-fiber":       { pl: "włókno węglowe",      en: "carbon fiber",       de: "Kohlefaser" },
+  "glass-fiber":        { pl: "włókno szklane",      en: "glass fiber",        de: "Glasfaser" },
+  "shiny":              { pl: "błyszczący",          en: "shiny",              de: "glänzend" },
+  "silk":               { pl: "jedwabisty",          en: "silk",               de: "Seide" },
+  "decorative":         { pl: "dekoracyjny",         en: "decorative",         de: "dekorativ" },
+  "transparent":        { pl: "przezroczysty",       en: "transparent",        de: "transparent" },
+  "food-safe":          { pl: "kontakt z żywnością", en: "food safe",          de: "lebensmittelecht" },
+  "water-soluble":      { pl: "rozpuszczalny w wodzie", en: "water soluble",  de: "wasserlöslich" },
+  "support-material":   { pl: "materiał podporowy",  en: "support material",   de: "Stützmaterial" },
+  "biodegradable":      { pl: "biodegradowalny",     en: "biodegradable",      de: "biologisch abbaubar" },
+  "eco":                { pl: "eko",                  en: "eco",                de: "Öko" },
+  "abrasive":           { pl: "ścierny",             en: "abrasive",           de: "abrasiv" },
+  "stiff":              { pl: "twardy",              en: "stiff",              de: "hart" },
+  "wood-fill":          { pl: "wypełnienie drewniane", en: "wood fill",        de: "Holzfüllung" },
+  "metal-fill":         { pl: "wypełnienie metalowe", en: "metal fill",        de: "Metallfüllung" },
+  "marble-fill":        { pl: "wypełnienie marmurowe", en: "marble fill",      de: "Marmorfüllung" },
+};
+
 // ============================================================
 // PRIMITIVE UI COMPONENTS
 // ============================================================
@@ -427,7 +461,7 @@ function EnclosureBadge({ value, L }) {
   );
 }
 
-function PropChip({ prop }) {
+function PropChip({ prop, lang }) {
   const colors = {
     "carbon-fiber": "bg-neutral-600/40 text-neutral-300",
     "uv-resistant": "bg-blue-500/20 text-blue-300",
@@ -443,7 +477,8 @@ function PropChip({ prop }) {
     "weather-resistant": "bg-emerald-500/20 text-emerald-300",
   };
   const cls = colors[prop] || "bg-white/10 text-neutral-300";
-  return <span className={`text-[10px] px-2 py-0.5 rounded-full ${cls}`}>{prop}</span>;
+  const label = PROP_TRANSLATIONS[prop]?.[lang] || PROP_TRANSLATIONS[prop]?.en || prop;
+  return <span className={`text-[10px] px-2 py-0.5 rounded-full ${cls}`}>{label}</span>;
 }
 
 function LegendPopup({ L }) {
@@ -566,36 +601,65 @@ function ErrorState({ L, onRetry }) {
 // ============================================================
 // WIZARD PROGRESS
 // ============================================================
-function WizardProgress({ step, onJump, L }) {
+function WizardProgress({ step, canNext, onPrev, onNext, onJump, L }) {
   const steps = [L.step1, L.step2, L.step3, L.step4];
   return (
-    <div className="px-5 pt-5">
-      <div className="flex items-center gap-1.5 sm:gap-2 mb-2">
-        {steps.map((label, idx) => {
-          const num = idx + 1;
-          const isActive = num === step;
-          const isDone = num < step;
-          const clickable = isDone;
-          return (
-            <div key={num} className="flex-1 flex items-center gap-1.5">
-              <div className="flex flex-col items-center gap-1 w-full">
-                <div className={`h-1 w-full rounded-full transition-all duration-300 ${
-                  isActive ? "bg-amber-400" : isDone ? "bg-green-400" : "bg-neutral-700"
-                }`} />
-                <div
-                  onClick={clickable ? () => onJump(num) : undefined}
-                  className={`text-[10px] sm:text-[11px] font-medium uppercase tracking-wider text-center transition-colors ${
-                    isActive ? "text-amber-300" :
-                    isDone ? "text-green-400 cursor-pointer hover:text-amber-300" :
-                    "text-neutral-600"
-                  }`}
-                >
-                  <span className="hidden sm:inline">{num}. </span>{label}
+    <div className="px-5 pt-4">
+      <div className="flex items-start gap-3">
+        <div className="flex-1 flex items-center gap-1.5 sm:gap-2 pt-1">
+          {steps.map((label, idx) => {
+            const num = idx + 1;
+            const isActive = num === step;
+            const isDone = num < step;
+            const clickable = isDone;
+            return (
+              <div key={num} className="flex-1 flex items-center gap-1.5">
+                <div className="flex flex-col items-center gap-1 w-full">
+                  <div className={`h-1 w-full rounded-full transition-all duration-300 ${
+                    isActive ? "bg-amber-400" : isDone ? "bg-green-400" : "bg-neutral-700"
+                  }`} />
+                  <div
+                    onClick={clickable ? () => onJump(num) : undefined}
+                    className={`text-[10px] sm:text-[11px] font-medium uppercase tracking-wider text-center transition-colors ${
+                      isActive ? "text-amber-300" :
+                      isDone ? "text-green-400 cursor-pointer hover:text-amber-300" :
+                      "text-neutral-600"
+                    }`}
+                  >
+                    <span className="hidden sm:inline">{num}. </span>{label}
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+        {/* Persistent nav arrows */}
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            onClick={onPrev}
+            disabled={step === 1}
+            aria-label="Wstecz"
+            className={`w-8 h-8 rounded-lg flex items-center justify-center border text-base transition-all ${
+              step === 1
+                ? "border-white/5 text-neutral-700 cursor-not-allowed"
+                : "border-white/15 text-neutral-300 hover:border-white/30 hover:text-white"
+            }`}
+          >
+            ←
+          </button>
+          <button
+            onClick={onNext}
+            disabled={!canNext}
+            aria-label="Dalej"
+            className={`w-8 h-8 rounded-lg flex items-center justify-center border text-base transition-all ${
+              !canNext
+                ? "border-white/5 text-neutral-700 cursor-not-allowed"
+                : "border-amber-400/30 text-amber-300 hover:border-amber-400/50 hover:bg-amber-400/10"
+            }`}
+          >
+            →
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -751,7 +815,7 @@ function CategorySection({ category, types, defaultOpen, onSelect, L }) {
   );
 }
 
-function Step2Materials({ types, allTypes, selectedReqs, onSelect, onBack, onClearReqs, L }) {
+function Step2Materials({ types, allTypes, selectedReqs, onSelect, onClearReqs, L }) {
   const [search, setSearch] = useState("");
   const filtered = useMemo(() => {
     if (!search.trim()) return types;
@@ -803,7 +867,7 @@ function Step2Materials({ types, allTypes, selectedReqs, onSelect, onBack, onCle
               key={cat}
               category={cat}
               types={grouped[cat]}
-              defaultOpen={grouped[cat].length <= 12}
+              defaultOpen={false}
               onSelect={onSelect}
               L={L}
             />
@@ -811,14 +875,6 @@ function Step2Materials({ types, allTypes, selectedReqs, onSelect, onBack, onCle
         </>
       )}
 
-      <div className="mt-5">
-        <button
-          onClick={onBack}
-          className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
-        >
-          {L.back}
-        </button>
-      </div>
     </div>
   );
 }
@@ -852,7 +908,7 @@ function BrandCard({ active, onClick, title, subtitle, badge, badgeColor, rangeP
   );
 }
 
-function Step3Brands({ type, brandChoice, onSelect, onBack, L }) {
+function Step3Brands({ type, brandChoice, onSelect, L }) {
   const brands = type.brands || [];
   const verified = brands.filter(b => b.is_verified);
   const community = brands.filter(b => !b.is_verified && b.auto_approved);
@@ -910,14 +966,6 @@ function Step3Brands({ type, brandChoice, onSelect, onBack, L }) {
         ))}
       </div>
 
-      <div className="mt-5 flex items-center justify-between">
-        <button
-          onClick={onBack}
-          className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
-        >
-          {L.back}
-        </button>
-      </div>
     </div>
   );
 }
@@ -1297,7 +1345,7 @@ function CommunityContributions({ typeId, L }) {
 // ============================================================
 // STEP 4 — PARAMETERS
 // ============================================================
-function Step4Parameters({ type, brand, params, onBack, lang, showEur, L }) {
+function Step4Parameters({ type, brand, params, lang, showEur, L }) {
   const encLabel = params.enclosure === "no" ? L.encNo : params.enclosure === "recommended" ? L.encRec : L.encReq;
   const encColor = params.enclosure === "no" ? "text-neutral-300" : params.enclosure === "recommended" ? "text-amber-300" : "text-red-300";
   const priceDisplay = showEur
@@ -1375,7 +1423,7 @@ function Step4Parameters({ type, brand, params, onBack, lang, showEur, L }) {
           <div className="mb-5">
             <div className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-2">{L.sectionProps}</div>
             <div className="flex flex-wrap gap-1.5">
-              {params.props.map(p => <PropChip key={p} prop={p} />)}
+              {params.props.map(p => <PropChip key={p} prop={p} lang={lang} />)}
             </div>
           </div>
         )}
@@ -1422,15 +1470,6 @@ function Step4Parameters({ type, brand, params, onBack, lang, showEur, L }) {
 
       {/* Community contributions */}
       <CommunityContributions typeId={type.id} L={L} />
-
-      <div className="mt-5">
-        <button
-          onClick={onBack}
-          className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
-        >
-          {L.back}
-        </button>
-      </div>
     </div>
   );
 }
@@ -1536,9 +1575,9 @@ export default function PrintSettings3DCalc() {
       temp_resistance: base.temp_resistance,
       props: base.props || [],
       notes: b
-        ? (b[notesKey] || b.notes_en || base[notesKey] || base.notes_pl || "")
-        : (base[notesKey] || base.notes_pl || base.notes_en || ""),
-      uses: base[usesKey] || base.uses_pl || base.uses_en || "",
+        ? (b[notesKey] || base[notesKey] || "")
+        : (base[notesKey] || ""),
+      uses: base[usesKey] || "",
     };
   }, [selectedType, selectedBrand, lang]);
 
@@ -1557,17 +1596,33 @@ export default function PrintSettings3DCalc() {
   function goToStep(targetStep) {
     setStep(targetStep);
     setTimeout(() => {
-      calcRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 0);
+      if (calcRef.current) {
+        const top = calcRef.current.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top, behavior: "smooth" });
+      }
+    }, 50);
   }
 
   function jumpTo(targetStep) {
     if (targetStep <= step) goToStep(targetStep);
   }
 
+  const canNext = useMemo(() => {
+    if (step === 1) return selectedReqs.size > 0;
+    if (step === 2) return selectedType != null;
+    if (step === 3) return true;
+    return false;
+  }, [step, selectedReqs, selectedType]);
+
+  function handleNext() {
+    if (step === 1 && selectedReqs.size > 0) goToStep(2);
+    else if (step === 2 && selectedType) goToStep(3);
+    else if (step === 3) goToStep(4);
+  }
+
   return (
     <div ref={calcRef} className="rounded-2xl border border-white/5 bg-white/[0.01] overflow-hidden">
-      <WizardProgress step={step} onJump={jumpTo} L={L} />
+      <WizardProgress step={step} canNext={canNext} onPrev={() => goToStep(step - 1)} onNext={handleNext} onJump={jumpTo} L={L} />
       <BreadcrumbChips
         step={step}
         selectedType={selectedType}
@@ -1601,7 +1656,6 @@ export default function PrintSettings3DCalc() {
               setBrandChoice("generic");
               goToStep(3);
             }}
-            onBack={() => goToStep(1)}
             onClearReqs={() => setSelectedReqs(new Set())}
             L={L}
           />
@@ -1616,7 +1670,6 @@ export default function PrintSettings3DCalc() {
               setSelectedBrand(brand);
               goToStep(4);
             }}
-            onBack={() => goToStep(2)}
             L={L}
           />
         )}
@@ -1626,7 +1679,6 @@ export default function PrintSettings3DCalc() {
             type={selectedType}
             brand={selectedBrand}
             params={activeParams}
-            onBack={() => goToStep(3)}
             lang={lang}
             showEur={showEur}
             L={L}
