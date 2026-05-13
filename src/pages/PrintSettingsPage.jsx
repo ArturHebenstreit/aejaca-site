@@ -10,7 +10,7 @@ import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
 const LABELS = {
   pl: {
     heroTag: "Narzędzia dla drukarzy 3D",
-    heroTitle: "Parametry druku 3D i dobieracz materiału",
+    heroTitle: "Parametry druku 3D i dobór materiału",
     heroDesc: "Dobierz filament, sprawdź parametry i oblicz zużycie materiału — bezpłatnie, bez rejestracji.",
     introTitle: "Parametry jako punkt wyjścia",
     introText: "Podane zakresy to sprawdzone wartości startowe dla typowych drukarek FDM. Rzeczywiste parametry mogą się różnić w zależności od drukarki, slicera, jakości filamentu i geometrii modelu. Zawsze wykonaj test kalibracyjny przed drukiem produkcyjnym.",
