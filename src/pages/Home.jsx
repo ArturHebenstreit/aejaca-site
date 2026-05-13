@@ -14,6 +14,7 @@ import {
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 import GoogleReviews from "../components/GoogleReviews.jsx";
+import TrustpilotWidget from "../components/TrustpilotWidget.jsx";
 import { GOOGLE_BUSINESS, REVIEWS } from "../data/googleReviews.js";
 
 export default function Home() {
@@ -293,6 +294,11 @@ export default function Home() {
 
       {/* Google Reviews — social proof before CTA (trust → action pattern) */}
       <GoogleReviews id="reviews" limit={6} />
+
+      <div className="gradient-divider" />
+
+      {/* Trustpilot — second trust layer after Google reviews */}
+      <TrustpilotWidget />
 
       <div className="gradient-divider" />
 
