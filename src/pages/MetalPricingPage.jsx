@@ -5,6 +5,7 @@ import SEOHead from "../seo/SEOHead.jsx";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
+import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
 
 const LABELS = {
   pl: {
