@@ -163,9 +163,6 @@ export default function ToolsStudio() {
                     <div className="text-white font-semibold text-sm group-hover:text-blue-300 transition-colors">{L.printCardTitle}</div>
                     <div className="text-neutral-400 text-xs mt-1 leading-relaxed">{L.printCardDesc}</div>
                   </div>
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-400 group-hover:text-blue-300 mt-auto transition-colors">
-                    {L.printCardBtn} <ArrowRight className="w-3 h-3" />
-                  </span>
                 </Link>
                 <Link
                   ref={laserCardRef}
@@ -177,9 +174,6 @@ export default function ToolsStudio() {
                     <div className="text-white font-semibold text-sm group-hover:text-blue-300 transition-colors">{L.laserCardTitle}</div>
                     <div className="text-neutral-400 text-xs mt-1 leading-relaxed">{L.laserCardDesc}</div>
                   </div>
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-400 group-hover:text-blue-300 mt-auto transition-colors">
-                    {L.printCardBtn} <ArrowRight className="w-3 h-3" />
-                  </span>
                 </Link>
               </div>
 
