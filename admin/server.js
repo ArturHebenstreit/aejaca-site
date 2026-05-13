@@ -86,7 +86,7 @@ app.get("/logout", (req, res) => {
 // --- Routes: Dashboard ---
 app.get("/dashboard", requireAuth, async (req, res) => {
   try {
-    const [leadStats, subStats, recentLeads, recentSubs, analyticsKpi, laserMatrixCount, gemResult] = await Promise.all([
+    const [leadStats, subStats, recentLeads, recentSubs, analyticsKpi, laserMatrixCount, gemResult, filamentResult, filamentPending] = await Promise.all([
       pool.query("SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE) as today, COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') as week FROM leads"),
       pool.query("SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE subscribed_at >= CURRENT_DATE) as today, COUNT(*) FILTER (WHERE subscribed_at >= CURRENT_DATE - INTERVAL '7 days') as week FROM subscribers WHERE unsubscribed = FALSE"),
       pool.query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 10"),
@@ -103,6 +103,8 @@ app.get("/dashboard", requireAuth, async (req, res) => {
       `).catch(() => ({ rows: [{}] })),
       pool.query("SELECT COUNT(*) as total FROM laser_matrix").catch(() => ({ rows: [{ total: '?' }] })),
       pool.query("SELECT COUNT(*) as count FROM gemstone_prices").catch(() => ({ rows: [{ count: '0' }] })),
+      pool.query("SELECT COUNT(*) FROM filament_types WHERE is_active=TRUE").catch(() => ({ rows: [{ count: '0' }] })),
+      pool.query("SELECT COUNT(*) FROM filament_contributions WHERE status='pending'").catch(() => ({ rows: [{ count: '0' }] })),
     ]);
     res.render("dashboard", {
       user: req.user,
@@ -113,6 +115,8 @@ app.get("/dashboard", requireAuth, async (req, res) => {
       analyticsKpi: analyticsKpi.rows[0] || {},
       laserMatrixCount: laserMatrixCount.rows[0].total,
       gemstoneCount: parseInt(gemResult.rows[0].count),
+      filamentCount: parseInt(filamentResult.rows[0].count),
+      pendingContributions: parseInt(filamentPending.rows[0].count),
     });
   } catch (err) {
     res.status(500).render("error", { message: err.message });
@@ -543,6 +547,316 @@ app.post("/gemstone-prices/:id/update", requireAuth, express.urlencoded({ extend
   );
   await invalidateGemCache();
   res.redirect("/gemstone-prices");
+});
+
+// --- Filament CRUD ---
+
+async function invalidateFilamentCache() {
+  const url = process.env.CHAT_API_URL;
+  const token = process.env.MATRIX_INVALIDATE_TOKEN;
+  if (!url || !token) return;
+  fetch(`${url}/api/filaments/invalidate`, {
+    method: "POST",
+    headers: { "x-invalidate-token": token },
+  }).catch(() => {});
+}
+
+// LIST filament types
+app.get("/filaments", requireAuth, async (req, res) => {
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = 50;
+  const offset = (page - 1) * limit;
+  const { search, category } = req.query;
+  const conditions = [], params = [];
+  if (search)   { params.push(`%${search}%`); conditions.push(`(name ILIKE $${params.length} OR type_id ILIKE $${params.length})`); }
+  if (category) { params.push(category);      conditions.push(`category = $${params.length}`); }
+  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  try {
+    const [rows, count, catStats, pendingCount] = await Promise.all([
+      pool.query(
+        `SELECT ft.*, (SELECT COUNT(*) FROM filament_brands fb WHERE fb.filament_type_id = ft.id AND fb.is_active = TRUE) as brand_count
+         FROM filament_types ft ${where} ORDER BY ft.sort_order, ft.category, ft.name
+         LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+        [...params, limit, offset]
+      ),
+      pool.query(`SELECT COUNT(*) FROM filament_types ${where}`, params),
+      pool.query("SELECT category, COUNT(*) as count FROM filament_types GROUP BY category ORDER BY category"),
+      pool.query("SELECT COUNT(*) FROM filament_contributions WHERE status='pending'"),
+    ]);
+    res.render("filaments", {
+      user: req.user,
+      rows: rows.rows,
+      total: parseInt(count.rows[0].count),
+      page,
+      pages: Math.ceil(parseInt(count.rows[0].count) / limit),
+      catStats: catStats.rows,
+      pendingContributions: parseInt(pendingCount.rows[0].count),
+      filters: req.query,
+    });
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+// CONTRIBUTIONS list — before /:id routes
+app.get("/filaments/contributions", requireAuth, async (req, res) => {
+  const statusFilter = req.query.status || "pending";
+  const where = statusFilter === "all" ? "" : `WHERE fc.status = $1`;
+  const params = statusFilter === "all" ? [] : [statusFilter];
+  try {
+    const [rows, pendingCount] = await Promise.all([
+      pool.query(
+        `SELECT fc.*, ft.name as type_name,
+                (SELECT COUNT(*) FROM filament_contribution_votes fcv WHERE fcv.contribution_id = fc.id AND fcv.vote = 'confirm') as vote_confirm_count,
+                (SELECT COUNT(*) FROM filament_contribution_votes fcv WHERE fcv.contribution_id = fc.id AND fcv.vote = 'dispute') as vote_dispute_count
+         FROM filament_contributions fc
+         LEFT JOIN filament_types ft ON ft.id = fc.filament_type_id
+         ${where} ORDER BY fc.vote_confirm DESC, fc.created_at DESC LIMIT 50`,
+        params
+      ),
+      pool.query("SELECT COUNT(*) FROM filament_contributions WHERE status='pending'"),
+    ]);
+    res.render("filament-contributions", {
+      user: req.user,
+      rows: rows.rows,
+      pendingContributions: parseInt(pendingCount.rows[0].count),
+      filters: req.query,
+    });
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+// APPROVE contribution
+app.post("/filaments/contributions/:id/approve", requireAuth, async (req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT * FROM filament_contributions WHERE id = $1", [req.params.id]);
+    if (!rows[0]) return res.status(404).render("error", { message: "Contribution not found" });
+    const c = rows[0];
+    await pool.query(
+      `INSERT INTO filament_brands (filament_type_id, brand, product_name, nozzle_min, nozzle_max, bed_min, bed_max, speed_min, speed_max, notes_pl, notes_en, notes_de, is_verified, is_active, updated_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,TRUE,TRUE,$13)`,
+      [c.filament_type_id, c.brand_name, c.product_name, c.nozzle_min, c.nozzle_max, c.bed_min, c.bed_max, c.speed_min, c.speed_max, c.notes, c.notes, c.notes, req.user.email]
+    );
+    await pool.query(
+      `UPDATE filament_contributions SET status='approved', reviewed_at=NOW(), reviewed_by=$1 WHERE id=$2`,
+      [req.user.email, req.params.id]
+    );
+    await invalidateFilamentCache();
+    res.redirect("/filaments/contributions?flash=approved");
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+// REJECT contribution
+app.post("/filaments/contributions/:id/reject", requireAuth, express.urlencoded({ extended: true }), async (req, res) => {
+  try {
+    await pool.query(
+      `UPDATE filament_contributions SET status='rejected', admin_note=$1, reviewed_at=NOW(), reviewed_by=$2 WHERE id=$3`,
+      [req.body.admin_note || null, req.user.email, req.params.id]
+    );
+    res.redirect("/filaments/contributions?flash=rejected");
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+// NEW type form — before /:id
+app.get("/filaments/new", requireAuth, async (req, res) => {
+  const pendingCount = await pool.query("SELECT COUNT(*) FROM filament_contributions WHERE status='pending'").catch(() => ({ rows: [{ count: 0 }] }));
+  res.render("filament-edit", { user: req.user, row: null, flash: null, pendingContributions: parseInt(pendingCount.rows[0].count) });
+});
+
+// BRAND edit form — before /:typeId/brands
+app.get("/filaments/brands/:id/edit", requireAuth, async (req, res) => {
+  try {
+    const [brandRes, pendingCount] = await Promise.all([
+      pool.query("SELECT fb.*, ft.name as type_name, ft.nozzle_min as t_nozzle_min, ft.nozzle_max as t_nozzle_max, ft.bed_min as t_bed_min, ft.bed_max as t_bed_max, ft.speed_min as t_speed_min, ft.speed_max as t_speed_max FROM filament_brands fb JOIN filament_types ft ON ft.id = fb.filament_type_id WHERE fb.id = $1", [req.params.id]),
+      pool.query("SELECT COUNT(*) FROM filament_contributions WHERE status='pending'"),
+    ]);
+    if (!brandRes.rows[0]) return res.status(404).render("error", { message: "Brand not found" });
+    res.render("filament-brand-edit", { user: req.user, brand: brandRes.rows[0], typeId: brandRes.rows[0].filament_type_id, flash: req.query.flash || null, pendingContributions: parseInt(pendingCount.rows[0].count) });
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+// UPDATE brand
+app.post("/filaments/brands/:id/update", requireAuth, express.urlencoded({ extended: true }), async (req, res) => {
+  const b = req.body;
+  try {
+    const { rows } = await pool.query("SELECT filament_type_id FROM filament_brands WHERE id = $1", [req.params.id]);
+    if (!rows[0]) return res.status(404).render("error", { message: "Brand not found" });
+    await pool.query(
+      `UPDATE filament_brands SET brand=$1, product_name=$2, nozzle_min=$3, nozzle_max=$4, bed_min=$5, bed_max=$6,
+       speed_min=$7, speed_max=$8, notes_pl=$9, notes_en=$10, notes_de=$11, product_url=$12,
+       is_verified=$13, is_active=$14, updated_at=NOW(), updated_by=$15 WHERE id=$16`,
+      [b.brand||null, b.product_name||null, b.nozzle_min||null, b.nozzle_max||null, b.bed_min||null, b.bed_max||null,
+       b.speed_min||null, b.speed_max||null, b.notes_pl||null, b.notes_en||null, b.notes_de||null, b.product_url||null,
+       b.is_verified === 'on', b.is_active === 'on', req.user.email, req.params.id]
+    );
+    await invalidateFilamentCache();
+    res.redirect(`/filaments/${rows[0].filament_type_id}/brands?flash=updated&id=${req.params.id}`);
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+// DELETE brand
+app.post("/filaments/brands/:id/delete", requireAuth, async (req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT filament_type_id FROM filament_brands WHERE id = $1", [req.params.id]);
+    const typeId = rows[0]?.filament_type_id;
+    await pool.query("DELETE FROM filament_brands WHERE id = $1", [req.params.id]);
+    await invalidateFilamentCache();
+    res.redirect(typeId ? `/filaments/${typeId}/brands?flash=deleted` : "/filaments?flash=deleted");
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+// CREATE type
+app.post("/filaments/create", requireAuth, express.urlencoded({ extended: true }), async (req, res) => {
+  const b = req.body;
+  try {
+    const propsArr = b.props ? b.props.split(",").map(s => s.trim()).filter(Boolean) : [];
+    const result = await pool.query(
+      `INSERT INTO filament_types (type_id, name, category, nozzle_min, nozzle_max, bed_min, bed_max, temp_resistance,
+       speed_min, speed_max, layer_min, layer_max, retraction_min, retraction_max, cooling, enclosure, difficulty,
+       density, price_per_kg, props, uses_pl, uses_en, uses_de, notes_pl, notes_en, notes_de, is_active, sort_order, updated_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29) RETURNING id`,
+      [b.type_id||null, b.name||null, b.category||null, b.nozzle_min||null, b.nozzle_max||null, b.bed_min||null, b.bed_max||null,
+       b.temp_resistance||null, b.speed_min||null, b.speed_max||null, b.layer_min||null, b.layer_max||null,
+       b.retraction_min||null, b.retraction_max||null, b.cooling||null, b.enclosure||null,
+       b.difficulty ? parseInt(b.difficulty) : null, b.density||null, b.price_per_kg||null,
+       propsArr, b.uses_pl||null, b.uses_en||null, b.uses_de||null, b.notes_pl||null, b.notes_en||null, b.notes_de||null,
+       b.is_active === 'on', b.sort_order ? parseInt(b.sort_order) : 0, req.user.email]
+    );
+    await invalidateFilamentCache();
+    res.redirect(`/filaments?flash=created&id=${result.rows[0].id}`);
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+// EDIT type form
+app.get("/filaments/:id/edit", requireAuth, async (req, res) => {
+  try {
+    const [rowRes, pendingCount] = await Promise.all([
+      pool.query("SELECT * FROM filament_types WHERE id = $1", [req.params.id]),
+      pool.query("SELECT COUNT(*) FROM filament_contributions WHERE status='pending'"),
+    ]);
+    if (!rowRes.rows[0]) return res.status(404).render("error", { message: "Filament type not found" });
+    res.render("filament-edit", { user: req.user, row: rowRes.rows[0], flash: req.query.flash || null, pendingContributions: parseInt(pendingCount.rows[0].count) });
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+// UPDATE type
+app.post("/filaments/:id/update", requireAuth, express.urlencoded({ extended: true }), async (req, res) => {
+  const b = req.body;
+  try {
+    const propsArr = b.props ? b.props.split(",").map(s => s.trim()).filter(Boolean) : [];
+    await pool.query(
+      `UPDATE filament_types SET name=$1, category=$2, nozzle_min=$3, nozzle_max=$4, bed_min=$5, bed_max=$6,
+       temp_resistance=$7, speed_min=$8, speed_max=$9, layer_min=$10, layer_max=$11, retraction_min=$12,
+       retraction_max=$13, cooling=$14, enclosure=$15, difficulty=$16, density=$17, price_per_kg=$18,
+       props=$19, uses_pl=$20, uses_en=$21, uses_de=$22, notes_pl=$23, notes_en=$24, notes_de=$25,
+       is_active=$26, sort_order=$27, updated_at=NOW(), updated_by=$28 WHERE id=$29`,
+      [b.name||null, b.category||null, b.nozzle_min||null, b.nozzle_max||null, b.bed_min||null, b.bed_max||null,
+       b.temp_resistance||null, b.speed_min||null, b.speed_max||null, b.layer_min||null, b.layer_max||null,
+       b.retraction_min||null, b.retraction_max||null, b.cooling||null, b.enclosure||null,
+       b.difficulty ? parseInt(b.difficulty) : null, b.density||null, b.price_per_kg||null,
+       propsArr, b.uses_pl||null, b.uses_en||null, b.uses_de||null, b.notes_pl||null, b.notes_en||null, b.notes_de||null,
+       b.is_active === 'on', b.sort_order ? parseInt(b.sort_order) : 0, req.user.email, req.params.id]
+    );
+    await invalidateFilamentCache();
+    res.redirect(`/filaments?flash=updated&id=${req.params.id}`);
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+// DELETE type
+app.post("/filaments/:id/delete", requireAuth, async (req, res) => {
+  try {
+    await pool.query("DELETE FROM filament_types WHERE id = $1", [req.params.id]);
+    await invalidateFilamentCache();
+    res.redirect("/filaments?flash=deleted");
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+// BRANDS list for a type
+app.get("/filaments/:typeId/brands", requireAuth, async (req, res) => {
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = 50;
+  const offset = (page - 1) * limit;
+  try {
+    const [typeRes, rows, count, pendingCount] = await Promise.all([
+      pool.query("SELECT * FROM filament_types WHERE id = $1", [req.params.typeId]),
+      pool.query(
+        `SELECT fb.*,
+                (SELECT COUNT(*) FROM filament_contribution_votes fcv
+                 JOIN filament_contributions fc ON fc.id = fcv.contribution_id
+                 WHERE fc.filament_brand_id = fb.id AND fcv.vote = 'confirm') as vote_confirm_count
+         FROM filament_brands fb WHERE fb.filament_type_id = $1 ORDER BY fb.brand, fb.product_name LIMIT $2 OFFSET $3`,
+        [req.params.typeId, limit, offset]
+      ),
+      pool.query("SELECT COUNT(*) FROM filament_brands WHERE filament_type_id = $1", [req.params.typeId]),
+      pool.query("SELECT COUNT(*) FROM filament_contributions WHERE status='pending'"),
+    ]);
+    if (!typeRes.rows[0]) return res.status(404).render("error", { message: "Filament type not found" });
+    res.render("filament-brands", {
+      user: req.user,
+      type: typeRes.rows[0],
+      brands: rows.rows,
+      total: parseInt(count.rows[0].count),
+      page,
+      pages: Math.ceil(parseInt(count.rows[0].count) / limit),
+      pendingContributions: parseInt(pendingCount.rows[0].count),
+      filters: req.query,
+    });
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+// NEW brand form
+app.get("/filaments/:typeId/brands/new", requireAuth, async (req, res) => {
+  try {
+    const [typeRes, pendingCount] = await Promise.all([
+      pool.query("SELECT * FROM filament_types WHERE id = $1", [req.params.typeId]),
+      pool.query("SELECT COUNT(*) FROM filament_contributions WHERE status='pending'"),
+    ]);
+    if (!typeRes.rows[0]) return res.status(404).render("error", { message: "Filament type not found" });
+    res.render("filament-brand-edit", { user: req.user, brand: null, typeId: req.params.typeId, type: typeRes.rows[0], flash: null, pendingContributions: parseInt(pendingCount.rows[0].count) });
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+// CREATE brand
+app.post("/filaments/:typeId/brands/create", requireAuth, express.urlencoded({ extended: true }), async (req, res) => {
+  const b = req.body;
+  try {
+    const result = await pool.query(
+      `INSERT INTO filament_brands (filament_type_id, brand, product_name, nozzle_min, nozzle_max, bed_min, bed_max,
+       speed_min, speed_max, notes_pl, notes_en, notes_de, product_url, is_verified, is_active, updated_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING id`,
+      [req.params.typeId, b.brand||null, b.product_name||null, b.nozzle_min||null, b.nozzle_max||null,
+       b.bed_min||null, b.bed_max||null, b.speed_min||null, b.speed_max||null,
+       b.notes_pl||null, b.notes_en||null, b.notes_de||null, b.product_url||null,
+       b.is_verified === 'on', b.is_active === 'on', req.user.email]
+    );
+    await invalidateFilamentCache();
+    res.redirect(`/filaments/${req.params.typeId}/brands?flash=created&id=${result.rows[0].id}`);
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
 });
 
 app.listen(PORT, () => console.log(`AEJaCA Admin running on :${PORT}`));

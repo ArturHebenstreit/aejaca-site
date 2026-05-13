@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLanguage } from "../../i18n/LanguageContext.jsx";
 
 // ============================================================
@@ -103,7 +103,7 @@ const REQUIREMENTS = [
 // ============================================================
 const LABELS = {
   pl: {
-    tab1: "Dobieracz materiału",
+    tab1: "Dobór materiału",
     tab2: "Parametry druku",
     tab3: "Kalkulator filamentu",
     reqTitle: "Wymagania (multiselect):",
@@ -149,6 +149,12 @@ const LABELS = {
     calcNote: "Waga szacunkowa. Rzeczywiste zużycie zależy od slicera, supportów i wypełnienia.",
     calcSelectFirst: "Wybierz materiał aby zobaczyć wynik.",
     calcCTA: "Wycena druku 3D w sTuDiO →",
+    legendTitle: "Legenda",
+    legendDiff: "Poziom trudności (1=łatwy, 5=trudny)",
+    legendEncReq: "Obudowa wymagana",
+    legendEncRec: "Obudowa zalecana",
+    legendEncNo: "Obudowa niepotrzebna",
+    legendHardNozzle: "Wymagana dysza hartowana (stal)",
   },
   en: {
     tab1: "Material Advisor",
@@ -197,6 +203,12 @@ const LABELS = {
     calcNote: "Estimated weight. Actual usage depends on slicer, supports, and infill.",
     calcSelectFirst: "Select a material to see the result.",
     calcCTA: "Get 3D print quote at sTuDiO →",
+    legendTitle: "Legend",
+    legendDiff: "Difficulty level (1=easy, 5=hard)",
+    legendEncReq: "Enclosure required",
+    legendEncRec: "Enclosure recommended",
+    legendEncNo: "No enclosure needed",
+    legendHardNozzle: "Hardened nozzle required (steel)",
   },
   de: {
     tab1: "Material-Berater",
@@ -245,6 +257,12 @@ const LABELS = {
     calcNote: "Schätzgewicht. Tatsächlicher Verbrauch hängt von Slicer, Stützen und Füllung ab.",
     calcSelectFirst: "Material auswählen um Ergebnis zu sehen.",
     calcCTA: "3D-Druck-Angebot bei sTuDiO →",
+    legendTitle: "Legende",
+    legendDiff: "Schwierigkeitsgrad (1=leicht, 5=schwer)",
+    legendEncReq: "Gehäuse erforderlich",
+    legendEncRec: "Gehäuse empfohlen",
+    legendEncNo: "Kein Gehäuse nötig",
+    legendHardNozzle: "Gehärtete Düse erforderlich (Stahl)",
   },
 };
 
@@ -293,6 +311,81 @@ function PropChip({ prop }) {
   const cls = colors[prop] || "bg-white/10 text-neutral-300";
   return (
     <span className={`text-[10px] px-2 py-0.5 rounded-full ${cls}`}>{prop}</span>
+  );
+}
+
+// ============================================================
+// LEGEND POPUP
+// ============================================================
+function LegendPopup({ L }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handle(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative inline-block">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="flex items-center gap-1 text-xs text-neutral-500 hover:text-neutral-300 transition-colors border border-white/10 rounded-lg px-2 py-1"
+        aria-label={L.legendTitle}
+      >
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        {L.legendTitle}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-2 z-30 w-72 bg-neutral-900 border border-white/15 rounded-xl shadow-2xl p-4 text-xs">
+          <p className="font-semibold text-neutral-200 mb-3 uppercase tracking-wider text-[10px]">{L.legendTitle}</p>
+
+          {/* Difficulty */}
+          <div className="mb-3">
+            <p className="text-neutral-400 mb-1.5">{L.legendDiff}</p>
+            <div className="flex flex-col gap-1">
+              {[[1,"text-green-400"],[2,"text-green-400"],[3,"text-amber-400"],[4,"text-red-400"],[5,"text-red-400"]].map(([lvl, cls]) => (
+                <div key={lvl} className="flex items-center gap-2">
+                  <span className="flex gap-0.5">{[1,2,3,4,5].map(i => (
+                    <span key={i} className={`w-2 h-2 rounded-full ${i <= lvl ? (lvl<=2?"bg-green-400":lvl===3?"bg-amber-400":"bg-red-400") : "bg-white/10"}`}/>
+                  ))}</span>
+                  <span className={`${cls} font-medium`}>{lvl}/5</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Enclosure */}
+          <div className="mb-3">
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-red-500/20 text-red-300">{L.encReq}</span>
+                <span className="text-neutral-400">{L.legendEncReq}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-amber-500/20 text-amber-300">{L.encRec}</span>
+                <span className="text-neutral-400">{L.legendEncRec}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-12 text-[10px] text-neutral-600 italic">—</span>
+                <span className="text-neutral-400">{L.legendEncNo}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Hard nozzle note */}
+          <div className="pt-2 border-t border-white/5 text-neutral-500 flex items-start gap-1.5">
+            <span className="text-amber-400 mt-0.5">⚠</span>
+            <span>{L.legendHardNozzle}</span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -524,7 +617,10 @@ function Tab2Parameters({ lang, L, initialMat }) {
   return (
     <div>
       <div className="mb-2">
-        <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">{L.standardLabel}</div>
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400">{L.standardLabel}</div>
+          <LegendPopup L={L} />
+        </div>
         <MatGrid mats={standard} />
       </div>
       <div className="mt-6">
