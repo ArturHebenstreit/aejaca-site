@@ -575,48 +575,210 @@ const TYPES = [
 // INITIAL BRAND DATA
 // ============================================================
 const BRANDS = [
-  // PLA brands
+  // ── PLA ──────────────────────────────────────────────────
   { type_id: "pla", brand: "Prusament", product_name: "PLA Galaxy Silver", nozzle_min: 210, nozzle_max: 230, bed_min: 55, bed_max: 65, is_verified: true, product_url: "https://www.prusa3d.com/prusament-pla/", notes_en: "Tight tolerances (±0.02mm). Very consistent quality. Recommended settings: 215°C nozzle, 60°C bed." },
   { type_id: "pla", brand: "eSUN", product_name: "ePLA-Matte", nozzle_min: 200, nozzle_max: 230, bed_min: 45, bed_max: 65, is_verified: true, product_url: "https://www.esun3d.com/", notes_en: "Matte PLA variant. Excellent value. Wide range of colors available." },
   { type_id: "pla", brand: "Bambu Lab", product_name: "PLA Basic", nozzle_min: 190, nozzle_max: 220, bed_min: 35, bed_max: 45, is_verified: true, notes_en: "Optimized for Bambu Lab printers. Works well on other printers too." },
   { type_id: "pla", brand: "Polymaker", product_name: "PolyLite PLA", nozzle_min: 195, nozzle_max: 230, bed_min: 25, bed_max: 60, is_verified: true, notes_en: "Entry-level reliable PLA. Good for beginners." },
-  { type_id: "pla", brand: "Fiberlogy", product_name: "FiberFlex 40D", nozzle_min: 205, nozzle_max: 225, bed_min: 50, bed_max: 60, is_verified: true, notes_en: "Polish brand. Very good quality-to-price ratio." },
+  { type_id: "pla", brand: "Fiberlogy", product_name: "Easy PLA", nozzle_min: 200, nozzle_max: 235, bed_min: 50, bed_max: 65, is_verified: true, notes_en: "Polish brand. Very good quality-to-price ratio. Easy to print with minimal stringing." },
 
-  // PETG brands
+  // ── PLA+ ─────────────────────────────────────────────────
+  { type_id: "pla-plus", brand: "eSUN", product_name: "ePLA+", nozzle_min: 205, nozzle_max: 235, bed_min: 45, bed_max: 65, is_verified: true, notes_en: "One of the most popular PLA+ brands. Noticeably tougher than standard PLA. Excellent value." },
+  { type_id: "pla-plus", brand: "Polymaker", product_name: "PolyMax PLA", nozzle_min: 200, nozzle_max: 230, bed_min: 25, bed_max: 60, is_verified: true, notes_en: "High-impact PLA with Nano-Reinforcement technology. Very tough for a PLA-based material." },
+  { type_id: "pla-plus", brand: "Hatchbox", product_name: "PLA+", nozzle_min: 200, nozzle_max: 235, bed_min: 45, bed_max: 60, is_verified: true, notes_en: "Popular US brand. Good consistency and wide color range. Reliable across many printers." },
+  { type_id: "pla-plus", brand: "Overture", product_name: "PLA Pro", nozzle_min: 205, nozzle_max: 230, bed_min: 45, bed_max: 65, is_verified: true, notes_en: "Budget-friendly PLA+ with good mechanical improvements over standard PLA. Includes build plate." },
+
+  // ── PLA Silk ─────────────────────────────────────────────
+  { type_id: "pla-silk", brand: "Polymaker", product_name: "PolySilk PLA", nozzle_min: 205, nozzle_max: 225, bed_min: 25, bed_max: 60, is_verified: true, notes_en: "Consistent silk finish. Strong gloss even at lower temps. Available in many metallic colors." },
+  { type_id: "pla-silk", brand: "eSUN", product_name: "eSilk PLA", nozzle_min: 210, nozzle_max: 235, bed_min: 45, bed_max: 65, is_verified: true, notes_en: "Popular silk PLA with vivid metallic sheen. Slow print speeds advised for best surface quality." },
+  { type_id: "pla-silk", brand: "Hatchbox", product_name: "PLA Silk Gold", nozzle_min: 205, nozzle_max: 230, bed_min: 45, bed_max: 60, is_verified: true, notes_en: "Rich metallic look. Consistent diameter. Good value option for decorative prints." },
+  { type_id: "pla-silk", brand: "SunLu", product_name: "Silk PLA", nozzle_min: 210, nozzle_max: 230, bed_min: 25, bed_max: 60, is_verified: true, notes_en: "Very affordable silk PLA. Wide color range including dual-color silk options." },
+
+  // ── PLA-CF ────────────────────────────────────────────────
+  { type_id: "pla-cf", brand: "Bambu Lab", product_name: "PLA-CF", nozzle_min: 220, nozzle_max: 240, bed_min: 35, bed_max: 45, is_verified: true, notes_en: "Very popular CF option. Matte black only. Requires hardened nozzle — included with X1C." },
+  { type_id: "pla-cf", brand: "eSUN", product_name: "ePLA-CF", nozzle_min: 210, nozzle_max: 230, bed_min: 50, bed_max: 60, is_verified: true, notes_en: "Budget CF-PLA option. Good stiffness improvement over base PLA." },
+  { type_id: "pla-cf", brand: "Polymaker", product_name: "PolyMax PLA-CF", nozzle_min: 205, nozzle_max: 225, bed_min: 25, bed_max: 60, is_verified: true, notes_en: "Combines PolyMax toughness with carbon fiber stiffness. Good surface finish for a CF material." },
+  { type_id: "pla-cf", brand: "Overture", product_name: "PLA Carbon Fiber", nozzle_min: 210, nozzle_max: 230, bed_min: 45, bed_max: 65, is_verified: true, notes_en: "Affordable PLA-CF with good stiffness. Hardened nozzle required. Matte finish." },
+
+  // ── PLA HT ────────────────────────────────────────────────
+  { type_id: "pla-ht", brand: "Polymaker", product_name: "PolyMax PLA HT", nozzle_min: 210, nozzle_max: 240, bed_min: 45, bed_max: 80, is_verified: true, notes_en: "Heat-tolerant PLA with HDT around 85°C after annealing. Good for functional parts." },
+  { type_id: "pla-ht", brand: "ColorFabb", product_name: "HT (High Temp co-polyester)", nozzle_min: 220, nozzle_max: 250, bed_min: 55, bed_max: 75, is_verified: true, notes_en: "ColorFabb HT co-polyester — HDT ~100°C. Better than PLA HT for thermal stability." },
+  { type_id: "pla-ht", brand: "Extrudr", product_name: "PLA NX2", nozzle_min: 210, nozzle_max: 240, bed_min: 50, bed_max: 80, is_verified: true, notes_en: "Austrian brand. PLA NX2 HDT ~130°C after annealing. Good quality and consistency." },
+
+  // ── PLA Wood ──────────────────────────────────────────────
+  { type_id: "pla-wood", brand: "eSUN", product_name: "eWood", nozzle_min: 200, nozzle_max: 230, bed_min: 45, bed_max: 60, is_verified: true, notes_en: "10% wood fiber content. Can be stained and sanded. Use ≥0.4mm nozzle." },
+  { type_id: "pla-wood", brand: "Hatchbox", product_name: "Wood PLA", nozzle_min: 195, nozzle_max: 220, bed_min: 20, bed_max: 55, is_verified: true, notes_en: "Good wood texture. Widely available and affordable. Use open nozzle ≥0.4mm." },
+  { type_id: "pla-wood", brand: "Polymaker", product_name: "PolyWood", nozzle_min: 195, nozzle_max: 230, bed_min: 25, bed_max: 60, is_verified: true, notes_en: "Low-density wood-like material. Lighter than regular PLA. Good for lightweight decoratives." },
+  { type_id: "pla-wood", brand: "SunLu", product_name: "Wood PLA", nozzle_min: 200, nozzle_max: 225, bed_min: 25, bed_max: 60, is_verified: true, notes_en: "Budget wood PLA option. Available in multiple wood tones. Sand and paint after printing." },
+
+  // ── PLA Metal ─────────────────────────────────────────────
+  { type_id: "pla-metal", brand: "eSUN", product_name: "eMetal Copper PLA", nozzle_min: 200, nozzle_max: 220, bed_min: 45, bed_max: 60, is_verified: true, notes_en: "High metal powder content. Very heavy finish. Polishable to real copper shine. Hardened nozzle required." },
+  { type_id: "pla-metal", brand: "Hatchbox", product_name: "Metal PLA Bronze", nozzle_min: 195, nozzle_max: 215, bed_min: 20, bed_max: 55, is_verified: true, notes_en: "Bronze-filled PLA. Good for decorative and art prints. Can be polished and patinated." },
+  { type_id: "pla-metal", brand: "Polymaker", product_name: "PolyMetal", nozzle_min: 195, nozzle_max: 220, bed_min: 25, bed_max: 55, is_verified: true, notes_en: "Metal-filled PLA with polishable finish. Lower abrasiveness than full metal fills." },
+
+  // ── PLA Marble ────────────────────────────────────────────
+  { type_id: "pla-marble", brand: "eSUN", product_name: "eMarble PLA", nozzle_min: 200, nozzle_max: 230, bed_min: 45, bed_max: 60, is_verified: true, notes_en: "Classic white-grey marble swirl effect. Very easy to print. Great for vases and sculptures." },
+  { type_id: "pla-marble", brand: "Hatchbox", product_name: "Marble PLA", nozzle_min: 195, nozzle_max: 220, bed_min: 20, bed_max: 55, is_verified: true, notes_en: "Consistent marble pattern throughout spool. Good value. Use standard PLA settings." },
+  { type_id: "pla-marble", brand: "SunLu", product_name: "Marble PLA", nozzle_min: 200, nozzle_max: 225, bed_min: 25, bed_max: 60, is_verified: true, notes_en: "Budget marble PLA. Attractive stone-like appearance. Compatible with PLA print profiles." },
+
+  // ── TPU 95A ───────────────────────────────────────────────
+  { type_id: "tpu-95a", brand: "eSUN", product_name: "eTPU-95A", nozzle_min: 225, nozzle_max: 245, bed_min: 40, bed_max: 60, is_verified: true, notes_en: "Good all-round TPU. Can work with Bowden if speed is very low." },
+  { type_id: "tpu-95a", brand: "Polymaker", product_name: "PolyFlex TPU95", nozzle_min: 220, nozzle_max: 235, bed_min: 25, bed_max: 45, is_verified: true, notes_en: "Lower temp TPU. Very consistent. Works on Bowden at very low speeds." },
+  { type_id: "tpu-95a", brand: "Fiberlogy", product_name: "Easy TPU 95A", nozzle_min: 220, nozzle_max: 240, bed_min: 30, bed_max: 50, is_verified: true, notes_en: "Polish brand TPU. Good value and consistent diameter." },
+
+  // ── TPU 85A ───────────────────────────────────────────────
+  { type_id: "tpu-85a", brand: "Ninjatek", product_name: "Chinchilla TPU 75A", nozzle_min: 225, nozzle_max: 240, bed_min: 30, bed_max: 50, is_verified: true, notes_en: "Ultra-soft NinjaFlex-family material. Shore 75A. Direct drive only. Extremely flexible." },
+  { type_id: "tpu-85a", brand: "eSUN", product_name: "eTPU-85A", nozzle_min: 210, nozzle_max: 235, bed_min: 30, bed_max: 50, is_verified: true, notes_en: "Soft 85A TPU. Needs direct drive extruder. Very low print speed required." },
+  { type_id: "tpu-85a", brand: "Polymaker", product_name: "PolyFlex TPU90", nozzle_min: 215, nozzle_max: 235, bed_min: 25, bed_max: 45, is_verified: true, notes_en: "90A variant — softer than TPU95. Good for very flexible parts. Direct drive recommended." },
+
+  // ── TPU 45D ───────────────────────────────────────────────
+  { type_id: "tpu-45d", brand: "Ninjatek", product_name: "Eel TPU 60D", nozzle_min: 220, nozzle_max: 240, bed_min: 30, bed_max: 50, is_verified: true, notes_en: "Very soft shore 60D elastomer. Excellent for waterproof gaskets and soft grips. Direct drive essential." },
+  { type_id: "tpu-45d", brand: "BASF Ultrafuse", product_name: "TPC 45D", nozzle_min: 215, nozzle_max: 240, bed_min: 30, bed_max: 50, is_verified: true, notes_en: "BASF industrial-grade TPC 45D. Very consistent diameter. Good chemical resistance." },
+  { type_id: "tpu-45d", brand: "Taulman3D", product_name: "PCTPE", nozzle_min: 220, nozzle_max: 240, bed_min: 45, bed_max: 60, is_verified: true, notes_en: "Plasticized Co-Polyamide TPE. Combines nylon toughness with elastomer flexibility. Direct drive only." },
+
+  // ── TPE ───────────────────────────────────────────────────
+  { type_id: "tpe", brand: "Taulman3D", product_name: "PCTPE", nozzle_min: 220, nozzle_max: 245, bed_min: 45, bed_max: 60, is_verified: true, notes_en: "Plasticized nylon-TPE blend. Shore ~40D. Chemically resistant and flexible. Needs direct drive." },
+  { type_id: "tpe", brand: "eSUN", product_name: "eTPE", nozzle_min: 225, nozzle_max: 250, bed_min: 40, bed_max: 60, is_verified: true, notes_en: "General purpose TPE. Similar to TPU but slightly stiffer. Good abrasion resistance." },
+  { type_id: "tpe", brand: "Sainsmart", product_name: "Flexible TPE", nozzle_min: 220, nozzle_max: 245, bed_min: 40, bed_max: 60, is_verified: true, notes_en: "Affordable TPE option. Rubbery feel. Works on direct drive printers at slow speeds." },
+
+  // ── PETG ──────────────────────────────────────────────────
   { type_id: "petg", brand: "Prusament", product_name: "PETG Jet Black", nozzle_min: 240, nozzle_max: 250, bed_min: 80, bed_max: 90, is_verified: true, notes_en: "Prusament PETG — excellent clarity on transparent variants. 240-250°C nozzle recommended." },
   { type_id: "petg", brand: "eSUN", product_name: "ePETG", nozzle_min: 230, nozzle_max: 250, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Good all-round PETG. Budget-friendly." },
   { type_id: "petg", brand: "Bambu Lab", product_name: "PETG HF", nozzle_min: 240, nozzle_max: 260, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "High-flow PETG. Optimized for speed on Bambu printers." },
   { type_id: "petg", brand: "Polymaker", product_name: "PolyLite PETG", nozzle_min: 230, nozzle_max: 250, bed_min: 70, bed_max: 85, is_verified: true, notes_en: "Reliable PETG. Low stringing." },
 
-  // TPU brands
-  { type_id: "tpu-95a", brand: "eSUN", product_name: "eTPU-95A", nozzle_min: 225, nozzle_max: 245, bed_min: 40, bed_max: 60, is_verified: true, notes_en: "Good all-round TPU. Can work with Bowden if speed is very low." },
-  { type_id: "tpu-95a", brand: "Polymaker", product_name: "PolyFlex TPU95", nozzle_min: 220, nozzle_max: 235, bed_min: 25, bed_max: 45, is_verified: true, notes_en: "Lower temp TPU. Very consistent. Works on Bowden at very low speeds." },
-  { type_id: "tpu-95a", brand: "Fiberlogy", product_name: "FiberFlex 30D", nozzle_min: 220, nozzle_max: 240, bed_min: 30, bed_max: 50, is_verified: true, notes_en: "Polish brand TPU. Good value." },
-
-  // ASA brands
-  { type_id: "asa", brand: "Prusament", product_name: "ASA Azure Blue", nozzle_min: 255, nozzle_max: 265, bed_min: 100, bed_max: 110, is_verified: true, notes_en: "High quality ASA. Needs heated enclosure. 260°C nozzle typical." },
-  { type_id: "asa", brand: "Polymaker", product_name: "PolyLite ASA", nozzle_min: 240, nozzle_max: 260, bed_min: 90, bed_max: 110, is_verified: true, notes_en: "Good UV resistance. Requires enclosure." },
-
-  // PA6-CF brands
-  { type_id: "pa6-cf", brand: "Bambu Lab", product_name: "PA6-CF", nozzle_min: 260, nozzle_max: 280, bed_min: 45, bed_max: 65, is_verified: true, notes_en: "Pre-dried. Works well with Bambu AMS Lite dry box. High-performance." },
-  { type_id: "pa6-cf", brand: "Polymaker", product_name: "PolyMide PA6-CF", nozzle_min: 260, nozzle_max: 275, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Very stiff and lightweight. Excellent layer adhesion for a CF material." },
-  { type_id: "pa6-cf", brand: "BASF Ultrafuse", product_name: "PA6 GF30 Black", nozzle_min: 265, nozzle_max: 280, bed_min: 80, bed_max: 95, is_verified: true, notes_en: "Glass fiber reinforced PA6 from BASF. Industrial grade quality." },
-
-  // PLA-CF brands
-  { type_id: "pla-cf", brand: "Bambu Lab", product_name: "PLA-CF", nozzle_min: 220, nozzle_max: 240, bed_min: 35, bed_max: 45, is_verified: true, notes_en: "Very popular CF option. Matte black only. Requires hardened nozzle — included with X1C." },
-  { type_id: "pla-cf", brand: "eSUN", product_name: "ePLA-CF", nozzle_min: 210, nozzle_max: 230, bed_min: 50, bed_max: 60, is_verified: true, notes_en: "Budget CF-PLA option. Good stiffness improvement over base PLA." },
-
-  // PETG-CF brands
+  // ── PETG-CF ───────────────────────────────────────────────
   { type_id: "petg-cf", brand: "Bambu Lab", product_name: "PETG-CF", nozzle_min: 250, nozzle_max: 265, bed_min: 70, bed_max: 80, is_verified: true, notes_en: "Excellent balance of stiffness and moisture resistance. Requires hardened nozzle." },
   { type_id: "petg-cf", brand: "Polymaker", product_name: "PolyMax PETG-CF", nozzle_min: 240, nozzle_max: 260, bed_min: 70, bed_max: 85, is_verified: true, notes_en: "Strong and stiff. Good surface finish for a CF material." },
+  { type_id: "petg-cf", brand: "Prusament", product_name: "PETG CF", nozzle_min: 245, nozzle_max: 260, bed_min: 75, bed_max: 90, is_verified: true, notes_en: "Prusament quality PETG-CF. Consistent diameter. Hardened nozzle mandatory." },
+  { type_id: "petg-cf", brand: "Overture", product_name: "PETG Carbon Fiber", nozzle_min: 240, nozzle_max: 260, bed_min: 70, bed_max: 85, is_verified: true, notes_en: "Budget PETG-CF option. Good stiffness increase over standard PETG. Matte black finish." },
 
-  // PC brands
+  // ── PETG-GF ───────────────────────────────────────────────
+  { type_id: "petg-gf", brand: "eSUN", product_name: "ePETG-GF", nozzle_min: 240, nozzle_max: 260, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Glass fiber reinforced PETG. Better dimensional stability than standard PETG. Hardened nozzle needed." },
+  { type_id: "petg-gf", brand: "BASF Ultrafuse", product_name: "PETG GF30", nozzle_min: 240, nozzle_max: 265, bed_min: 75, bed_max: 95, is_verified: true, notes_en: "Industrial BASF glass-fiber PETG. 30% GF content. Excellent dimensional stability." },
+  { type_id: "petg-gf", brand: "Spectrum Filaments", product_name: "PETG CF15", nozzle_min: 240, nozzle_max: 260, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Spectrum 15% carbon/glass reinforced PETG. High rigidity. Good moisture resistance." },
+
+  // ── ASA ───────────────────────────────────────────────────
+  { type_id: "asa", brand: "Prusament", product_name: "ASA Azure Blue", nozzle_min: 255, nozzle_max: 265, bed_min: 100, bed_max: 110, is_verified: true, notes_en: "High quality ASA. Needs heated enclosure. 260°C nozzle typical." },
+  { type_id: "asa", brand: "Polymaker", product_name: "PolyLite ASA", nozzle_min: 240, nozzle_max: 260, bed_min: 90, bed_max: 110, is_verified: true, notes_en: "Good UV resistance. Requires enclosure." },
+  { type_id: "asa", brand: "Fillamentum", product_name: "ASA Extrafill", nozzle_min: 240, nozzle_max: 260, bed_min: 90, bed_max: 110, is_verified: true, notes_en: "Czech brand. Excellent color range. Very good UV and weather resistance. Enclosure required." },
+
+  // ── ASA-CF ────────────────────────────────────────────────
+  { type_id: "asa-cf", brand: "Bambu Lab", product_name: "ASA-CF", nozzle_min: 250, nozzle_max: 270, bed_min: 90, bed_max: 110, is_verified: true, notes_en: "Carbon fiber reinforced ASA. Stiff and UV-resistant. Requires hardened nozzle and heated enclosure." },
+  { type_id: "asa-cf", brand: "Polymaker", product_name: "PolyMax ASA-CF", nozzle_min: 245, nozzle_max: 265, bed_min: 90, bed_max: 110, is_verified: true, notes_en: "High-performance ASA-CF. Good weather resistance combined with CF stiffness." },
+  { type_id: "asa-cf", brand: "Spectrum Filaments", product_name: "ASA CF15", nozzle_min: 245, nozzle_max: 265, bed_min: 90, bed_max: 110, is_verified: true, notes_en: "15% carbon fiber ASA. Excellent UV resistance. Hardened nozzle and enclosure mandatory." },
+
+  // ── ABS ───────────────────────────────────────────────────
+  { type_id: "abs", brand: "Bambu Lab", product_name: "ABS", nozzle_min: 240, nozzle_max: 260, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "Well-tuned ABS for Bambu printers. Lower warping tendency than generic ABS. Enclosure required." },
+  { type_id: "abs", brand: "eSUN", product_name: "ABS+", nozzle_min: 230, nozzle_max: 250, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "ABS+ with reduced warping. One of the most popular ABS options. Wide color range." },
+  { type_id: "abs", brand: "Hatchbox", product_name: "ABS", nozzle_min: 230, nozzle_max: 250, bed_min: 100, bed_max: 115, is_verified: true, notes_en: "Consistent quality ABS. Good dimensional accuracy. Enclosure and ventilation required." },
+  { type_id: "abs", brand: "Polymaker", product_name: "PolyLite ABS", nozzle_min: 230, nozzle_max: 250, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "Reliable ABS with good layer adhesion. Acetone-smoothable. Fumes — ensure ventilation." },
+
+  // ── ABS-CF ────────────────────────────────────────────────
+  { type_id: "abs-cf", brand: "Bambu Lab", product_name: "ABS-CF", nozzle_min: 240, nozzle_max: 260, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "Carbon fiber reinforced ABS. Significantly stiffer than ABS. Hardened nozzle and enclosure required." },
+  { type_id: "abs-cf", brand: "eSUN", product_name: "eABS-CF", nozzle_min: 235, nozzle_max: 255, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "CF-reinforced ABS. Good rigidity boost over standard ABS. Not acetone-smoothable." },
+  { type_id: "abs-cf", brand: "Polymaker", product_name: "PolyMax ABS-CF", nozzle_min: 235, nozzle_max: 255, bed_min: 100, bed_max: 115, is_verified: true, notes_en: "Tough ABS-CF blend. Good structural performance. Enclosure and hardened nozzle mandatory." },
+
+  // ── CPE ───────────────────────────────────────────────────
+  { type_id: "cpe", brand: "ColorFabb", product_name: "CPE+", nozzle_min: 235, nozzle_max: 260, bed_min: 75, bed_max: 95, is_verified: true, notes_en: "ColorFabb's co-polyester blend. Better chemical resistance than PETG. Can be printed transparent." },
+  { type_id: "cpe", brand: "eSUN", product_name: "eCPE", nozzle_min: 230, nozzle_max: 255, bed_min: 75, bed_max: 95, is_verified: true, notes_en: "Affordable CPE option. Good chemical and heat resistance. Slight stringing possible." },
+  { type_id: "cpe", brand: "Fillamentum", product_name: "CPE HG100", nozzle_min: 235, nozzle_max: 260, bed_min: 80, bed_max: 95, is_verified: true, notes_en: "Czech brand CPE. Excellent transparency option. Chemical resistant. Recommended for food-safe applications." },
+
+  // ── PC ────────────────────────────────────────────────────
   { type_id: "pc", brand: "Polymaker", product_name: "PolyMax PC", nozzle_min: 260, nozzle_max: 280, bed_min: 100, bed_max: 110, is_verified: true, notes_en: "More printable than raw PC. Still needs enclosure and high temps." },
   { type_id: "pc", brand: "BASF Ultrafuse", product_name: "PC", nozzle_min: 265, nozzle_max: 285, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "Industrial grade PC. Excellent for transparent optical parts." },
+  { type_id: "pc", brand: "Prusament", product_name: "PC Blend", nozzle_min: 270, nozzle_max: 290, bed_min: 100, bed_max: 115, is_verified: true, notes_en: "PC-ABS blend with improved printability. Excellent impact resistance and heat deflection." },
+  { type_id: "pc", brand: "Fillamentum", product_name: "PC + ABS", nozzle_min: 255, nozzle_max: 275, bed_min: 100, bed_max: 115, is_verified: true, notes_en: "Czech PC-ABS blend. Easier to print than pure PC. Good toughness and temperature resistance." },
 
-  // PVA brands
+  // ── PC-ABS ────────────────────────────────────────────────
+  { type_id: "pc-abs", brand: "Polymaker", product_name: "PolyMax PC-ABS", nozzle_min: 250, nozzle_max: 270, bed_min: 100, bed_max: 110, is_verified: true, notes_en: "Excellent impact strength. More printable than pure PC. Enclosure required for best results." },
+  { type_id: "pc-abs", brand: "BASF Ultrafuse", product_name: "PC+ABS FR", nozzle_min: 250, nozzle_max: 270, bed_min: 100, bed_max: 115, is_verified: true, notes_en: "Flame-retardant PC-ABS from BASF. UL94 V0 rated. For electronics housings requiring fire resistance." },
+  { type_id: "pc-abs", brand: "Fillamentum", product_name: "PC + ABS", nozzle_min: 250, nozzle_max: 270, bed_min: 100, bed_max: 115, is_verified: true, notes_en: "Good blend of PC strength and ABS printability. Reduced warping vs pure PC. Needs enclosure." },
+
+  // ── PC-CF ─────────────────────────────────────────────────
+  { type_id: "pc-cf", brand: "Polymaker", product_name: "PolyMax PC-CF", nozzle_min: 280, nozzle_max: 310, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "Carbon fiber reinforced PC. Extremely stiff and heat resistant. Hardened nozzle and high-temp printer required." },
+  { type_id: "pc-cf", brand: "3DXTech", product_name: "CarbonX PC-CF", nozzle_min: 285, nozzle_max: 315, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "High-performance PC-CF from specialized engineering filament brand. Aerospace-grade rigidity." },
+  { type_id: "pc-cf", brand: "BASF Ultrafuse", product_name: "PC CF", nozzle_min: 280, nozzle_max: 310, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "Industrial grade PC-CF from BASF. Very demanding to print — 300°C+ hotend and heated enclosure required." },
+
+  // ── PET-CF ────────────────────────────────────────────────
+  { type_id: "pet-cf", brand: "Bambu Lab", product_name: "PET-CF", nozzle_min: 255, nozzle_max: 270, bed_min: 70, bed_max: 85, is_verified: true, notes_en: "Bambu's carbon fiber PET. Excellent chemical resistance and stiffness. Hardened nozzle required." },
+  { type_id: "pet-cf", brand: "3DXTech", product_name: "CarbonX PET-CF", nozzle_min: 250, nozzle_max: 270, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Engineering-grade PET-CF. Very good chemical resistance and low moisture uptake vs nylon CF." },
+  { type_id: "pet-cf", brand: "Polymaker", product_name: "PolyMax PET-CF", nozzle_min: 250, nozzle_max: 265, bed_min: 70, bed_max: 85, is_verified: true, notes_en: "PET-CF with good surface finish. Strong and stiff. Better chemical resistance than PETG-CF." },
+
+  // ── PA6 ───────────────────────────────────────────────────
+  { type_id: "pa6", brand: "Taulman3D", product_name: "Bridge Nylon", nozzle_min: 245, nozzle_max: 265, bed_min: 45, bed_max: 70, is_verified: true, notes_en: "Semi-rigid PA6 nylon. Good for hinges and mechanical parts. Less warping than pure PA6. Must dry thoroughly." },
+  { type_id: "pa6", brand: "eSUN", product_name: "ePA Nylon", nozzle_min: 240, nozzle_max: 270, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Standard PA6 nylon. Excellent toughness and wear resistance. Dry at 70°C for 8+ hours before printing." },
+  { type_id: "pa6", brand: "Polymaker", product_name: "PolyMide CoPA", nozzle_min: 240, nozzle_max: 260, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Co-polyamide with improved printability over pure PA6. Lower moisture sensitivity. Enclosure needed." },
+  { type_id: "pa6", brand: "Markforged", product_name: "Nylon White", nozzle_min: 255, nozzle_max: 270, bed_min: 45, bed_max: 60, is_verified: true, notes_en: "Industrial PA6 from Markforged. Designed for their printers but works on open-frame with proper settings." },
+
+  // ── PA6-CF ────────────────────────────────────────────────
+  { type_id: "pa6-cf", brand: "Bambu Lab", product_name: "PA6-CF", nozzle_min: 260, nozzle_max: 280, bed_min: 45, bed_max: 65, is_verified: true, notes_en: "Pre-dried. Works well with Bambu AMS Lite dry box. High-performance." },
+  { type_id: "pa6-cf", brand: "Polymaker", product_name: "PolyMide PA6-CF", nozzle_min: 260, nozzle_max: 275, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Very stiff and lightweight. Excellent layer adhesion for a CF material." },
+  { type_id: "pa6-cf", brand: "BASF Ultrafuse", product_name: "PAHT CF15", nozzle_min: 265, nozzle_max: 285, bed_min: 80, bed_max: 100, is_verified: true, notes_en: "BASF industrial PA-HT with 15% carbon fiber. Excellent high-temperature PA performance." },
+  { type_id: "pa6-cf", brand: "3DXTech", product_name: "CarbonX PA6-CF", nozzle_min: 260, nozzle_max: 280, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Specialized engineering-grade PA6-CF. High fiber loading. Very stiff with low creep at elevated temps." },
+  { type_id: "pa6-cf", brand: "Markforged", product_name: "Onyx", nozzle_min: 265, nozzle_max: 280, bed_min: 45, bed_max: 60, is_verified: true, notes_en: "Markforged's micro carbon fiber PA6 — industry standard for PA-CF performance. Matte black only." },
+
+  // ── PA12 ──────────────────────────────────────────────────
+  { type_id: "pa12", brand: "Polymaker", product_name: "PolyMide PA12", nozzle_min: 240, nozzle_max: 265, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Lower moisture absorption than PA6. Better surface finish. Good for flexible-tough parts and tubing." },
+  { type_id: "pa12", brand: "Fiberlogy", product_name: "Nylon PA12", nozzle_min: 240, nozzle_max: 265, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Polish brand PA12. Consistent quality. Dry thoroughly before use. Good chemical resistance." },
+  { type_id: "pa12", brand: "Taulman3D", product_name: "645 Nylon", nozzle_min: 245, nozzle_max: 265, bed_min: 45, bed_max: 60, is_verified: true, notes_en: "Taulman 645 — semi-rigid nylon with lower warping. Good for bearings, gears and flexible joints." },
+
+  // ── PA12-CF ───────────────────────────────────────────────
+  { type_id: "pa12-cf", brand: "Polymaker", product_name: "PolyMide PA12-CF", nozzle_min: 255, nozzle_max: 275, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Carbon fiber PA12 with low moisture uptake. Better surface finish than PA6-CF. Stiff and lightweight." },
+  { type_id: "pa12-cf", brand: "Fiberlogy", product_name: "PA12+CF", nozzle_min: 255, nozzle_max: 275, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Polish brand PA12-CF. Good strength-to-weight ratio. Hardened nozzle required." },
+  { type_id: "pa12-cf", brand: "3DXTech", product_name: "CarbonX PA12-CF", nozzle_min: 255, nozzle_max: 280, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Engineering-grade PA12-CF. Lower moisture sensitivity than PA6-CF. UAV and robotics applications." },
+
+  // ── PA66-CF ───────────────────────────────────────────────
+  { type_id: "pa66-cf", brand: "3DXTech", product_name: "CarbonX PA66-CF", nozzle_min: 265, nozzle_max: 290, bed_min: 80, bed_max: 100, is_verified: true, notes_en: "PA66-CF for high-temp industrial applications. Up to 180°C service temp. Very demanding to print." },
+  { type_id: "pa66-cf", brand: "BASF Ultrafuse", product_name: "PAHT CF15", nozzle_min: 270, nozzle_max: 295, bed_min: 80, bed_max: 100, is_verified: true, notes_en: "BASF high-temp PA with 15% CF. Exceptional stiffness at elevated temperatures. Industrial grade." },
+  { type_id: "pa66-cf", brand: "Polymaker", product_name: "PolyMide PA6-CF HT", nozzle_min: 265, nozzle_max: 290, bed_min: 80, bed_max: 100, is_verified: true, notes_en: "High-temp resistant PA-CF from Polymaker. Good for automotive under-hood components." },
+
+  // ── PPA-CF ────────────────────────────────────────────────
+  { type_id: "ppa-cf", brand: "BASF Ultrafuse", product_name: "PPA CF", nozzle_min: 285, nozzle_max: 315, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "BASF Polyphthalamide with CF reinforcement. Up to 200°C continuous service. Industrial use only." },
+  { type_id: "ppa-cf", brand: "3DXTech", product_name: "CarbonX PPA-CF", nozzle_min: 280, nozzle_max: 315, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "Specialty PPA-CF from 3DXTech. Aerospace-grade heat resistance. Requires 350°C hotend and heated chamber." },
+  { type_id: "ppa-cf", brand: "Solvay", product_name: "Amodel PPA", nozzle_min: 280, nozzle_max: 310, bed_min: 100, bed_max: 130, is_verified: true, notes_en: "Solvay/Syensqo PPA compounds used in high-temp FFF — best-in-class thermal performance for PPA." },
+
+  // ── PP ────────────────────────────────────────────────────
+  { type_id: "pp", brand: "BASF Ultrafuse", product_name: "PP GF30", nozzle_min: 225, nozzle_max: 250, bed_min: 85, bed_max: 100, is_verified: true, notes_en: "Glass-fiber reinforced PP from BASF. Reduced warping vs pure PP. Chemical-resistant structural parts." },
+  { type_id: "pp", brand: "3DXTech", product_name: "PP", nozzle_min: 220, nozzle_max: 250, bed_min: 85, bed_max: 100, is_verified: true, notes_en: "Pure PP with good chemical resistance. Requires PP build surface for adhesion. Living hinges possible." },
+  { type_id: "pp", brand: "FormFutura", product_name: "Reynolds 531 PP", nozzle_min: 220, nozzle_max: 250, bed_min: 85, bed_max: 100, is_verified: true, notes_en: "Premium Dutch PP filament. Improved adhesion formulation. Lightweight and chemically resistant." },
+
+  // ── PP-CF ─────────────────────────────────────────────────
+  { type_id: "pp-cf", brand: "3DXTech", product_name: "CarbonX PP-CF", nozzle_min: 230, nozzle_max: 255, bed_min: 85, bed_max: 100, is_verified: true, notes_en: "Carbon fiber PP for lightweight chemical-resistant structural parts. All PP adhesion challenges apply." },
+  { type_id: "pp-cf", brand: "BASF Ultrafuse", product_name: "PP CF", nozzle_min: 230, nozzle_max: 255, bed_min: 85, bed_max: 100, is_verified: true, notes_en: "BASF PP-CF. Stiff and lightweight. Excellent chemical resistance. PP bed surface required." },
+  { type_id: "pp-cf", brand: "Polymaker", product_name: "PolyPropylene CF", nozzle_min: 230, nozzle_max: 255, bed_min: 85, bed_max: 100, is_verified: true, notes_en: "PP with CF reinforcement. Hardened nozzle and specialized bed surface required. Very difficult." },
+
+  // ── PPS ───────────────────────────────────────────────────
+  { type_id: "pps", brand: "3DXTech", product_name: "PPS-CF", nozzle_min: 300, nozzle_max: 340, bed_min: 120, bed_max: 150, is_verified: true, notes_en: "PPS with carbon fiber from 3DXTech. Flame retardant UL94-V0. Up to 220°C service. Specialist printer required." },
+  { type_id: "pps", brand: "BASF Ultrafuse", product_name: "PPS", nozzle_min: 305, nozzle_max: 340, bed_min: 120, bed_max: 150, is_verified: true, notes_en: "BASF Ultrafuse PPS — one of few consumer-accessible PPS options. Extreme heat and chemical resistance." },
+  { type_id: "pps", brand: "Solvay", product_name: "Ryton PPS", nozzle_min: 310, nozzle_max: 345, bed_min: 130, bed_max: 150, is_verified: true, notes_en: "Solvay Ryton PPS — industry reference for PPS. Requires 400°C+ printer. Unmatched chemical and heat resistance." },
+
+  // ── PEEK ──────────────────────────────────────────────────
+  { type_id: "peek", brand: "3DXTech", product_name: "PEEK", nozzle_min: 360, nozzle_max: 400, bed_min: 120, bed_max: 160, is_verified: true, notes_en: "Pure PEEK filament. Medical and aerospace grade available. Requires dedicated PEEK-capable printer at 380-400°C." },
+  { type_id: "peek", brand: "Fiberlogy", product_name: "PEEK", nozzle_min: 370, nozzle_max: 410, bed_min: 130, bed_max: 160, is_verified: true, notes_en: "European PEEK from Fiberlogy. Very consistent diameter. Biocompatible grades available. Extremely expensive." },
+  { type_id: "peek", brand: "BASF Ultrafuse", product_name: "PEEK Ultrafuse", nozzle_min: 365, nozzle_max: 400, bed_min: 120, bed_max: 160, is_verified: true, notes_en: "BASF industrial PEEK. Excellent batch-to-batch consistency. UL94-V0 and biocompatible certifications." },
+
+  // ── PEI / Ultem ───────────────────────────────────────────
+  { type_id: "pei-ultem", brand: "3DXTech", product_name: "PEI 9085", nozzle_min: 360, nozzle_max: 400, bed_min: 140, bed_max: 160, is_verified: true, notes_en: "Ultem 9085 PEI — FAA-certified flame retardant. Aerospace standard. Requires specialist 400°C printer." },
+  { type_id: "pei-ultem", brand: "BASF Ultrafuse", product_name: "PEI 1010", nozzle_min: 355, nozzle_max: 395, bed_min: 140, bed_max: 160, is_verified: true, notes_en: "Ultem 1010 PEI from BASF. Highest heat resistance PEI variant — HDT 217°C. Medical and aerospace grade." },
+  { type_id: "pei-ultem", brand: "Polymaker", product_name: "PolyUltem", nozzle_min: 360, nozzle_max: 400, bed_min: 140, bed_max: 160, is_verified: true, notes_en: "Consumer-accessible PEI/Ultem from Polymaker. Requires 400°C hotend and heated chamber above 140°C." },
+
+  // ── PVA ───────────────────────────────────────────────────
   { type_id: "pva", brand: "eSUN", product_name: "ePVA+", nozzle_min: 190, nozzle_max: 210, bed_min: 40, bed_max: 60, is_verified: true, notes_en: "Improved PVA+ dissolves faster than standard PVA. Store in dry box." },
   { type_id: "pva", brand: "Polymaker", product_name: "PolyDissolve S1", nozzle_min: 185, nozzle_max: 200, bed_min: 35, bed_max: 55, is_verified: true, notes_en: "PVOH-based support material. Compatible with PLA and PETG." },
+  { type_id: "pva", brand: "Bambu Lab", product_name: "Support for PLA", nozzle_min: 190, nozzle_max: 210, bed_min: 35, bed_max: 55, is_verified: true, notes_en: "Water-soluble PVA support optimized for Bambu AMS. Excellent compatibility with Bambu PLA." },
+  { type_id: "pva", brand: "Devil Design", product_name: "PVA", nozzle_min: 185, nozzle_max: 205, bed_min: 35, bed_max: 55, is_verified: true, notes_en: "Affordable PVA support material. Dissolves in warm water. Store vacuum-sealed when not in use." },
+
+  // ── HIPS ──────────────────────────────────────────────────
+  { type_id: "hips", brand: "eSUN", product_name: "eHIPS", nozzle_min: 230, nozzle_max: 245, bed_min: 100, bed_max: 115, is_verified: true, notes_en: "D-limonene soluble support for ABS. Good price. Dissolves cleanly leaving smooth surface." },
+  { type_id: "hips", brand: "Devil Design", product_name: "HIPS", nozzle_min: 230, nozzle_max: 245, bed_min: 100, bed_max: 115, is_verified: true, notes_en: "HIPS support material. Compatible with ABS printing temperatures. Use D-limonene for dissolution." },
+  { type_id: "hips", brand: "Sainsmart", product_name: "HIPS", nozzle_min: 230, nozzle_max: 245, bed_min: 100, bed_max: 115, is_verified: true, notes_en: "Budget HIPS option. Dissolves in D-limonene. Ventilation required during printing." },
+  { type_id: "hips", brand: "FormFutura", product_name: "EasyFil HIPS", nozzle_min: 230, nozzle_max: 245, bed_min: 100, bed_max: 115, is_verified: true, notes_en: "Dutch brand HIPS. Good dimensional consistency. Compatible with ABS enclosure printing conditions." },
+
+  // ── PA-GF ─────────────────────────────────────────────────
+  { type_id: "pa-gf", brand: "BASF Ultrafuse", product_name: "PAHT CF15", nozzle_min: 250, nozzle_max: 280, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "High-temp PA with glass/CF reinforcement from BASF. Dimensional stability under load at elevated temps." },
+  { type_id: "pa-gf", brand: "3DXTech", product_name: "GF Nylon", nozzle_min: 250, nozzle_max: 275, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Glass fiber reinforced nylon. High stiffness and dimensional stability. Hardened nozzle required." },
+  { type_id: "pa-gf", brand: "Polymaker", product_name: "PolyMide PA6-GF", nozzle_min: 250, nozzle_max: 275, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Glass-fiber PA6 with reduced warping vs CF versions. Good structural performance and lower abrasion." },
 ];
 
 // ============================================================
