@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Cpu, Printer } from "lucide-react";
+import { ArrowRight, Cpu, Printer, Zap } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
-import LaserParametersTool from "../components/calculators/LaserParametersTool.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
@@ -27,8 +26,10 @@ const LABELS = {
     breadStudio: "sTuDiO",
     breadTools: "Narzędzia sTuDiO",
     printCardTitle: "Parametry druku 3D",
-    printCardDesc: "Dobieracz materiału, karty parametrów i kalkulator filamentu dla 16 filamentów.",
+    printCardDesc: "Dobór materiału, karty parametrów i kalkulator filamentu dla 38+ filamentów.",
     printCardBtn: "Otwórz narzędzie",
+    laserCardTitle: "Kreator parametrów laserowania",
+    laserCardDesc: "Parametry dla 7 typów laserów, 88 materiałów i ponad 1000 kombinacji.",
   },
   en: {
     heroTag: "Open knowledge",
@@ -48,8 +49,10 @@ const LABELS = {
     breadStudio: "sTuDiO",
     breadTools: "sTuDiO Tools",
     printCardTitle: "3D Print Settings",
-    printCardDesc: "Material advisor, parameter cards and filament calculator for 16 filaments.",
+    printCardDesc: "Material selector, parameter cards and filament calculator for 38+ filaments.",
     printCardBtn: "Open tool",
+    laserCardTitle: "Laser Parameter Wizard",
+    laserCardDesc: "Parameters for 7 laser types, 88 materials and over 1000 combinations.",
   },
   de: {
     heroTag: "Offenes Wissen",
@@ -69,8 +72,10 @@ const LABELS = {
     breadStudio: "sTuDiO",
     breadTools: "sTuDiO-Tools",
     printCardTitle: "3D-Druckparameter",
-    printCardDesc: "Materialberater, Parameterkarten und Filamentrechner für 16 Filamente.",
+    printCardDesc: "Materialauswahl, Parameterkarten und Filamentrechner für 38+ Filamente.",
     printCardBtn: "Tool öffnen",
+    laserCardTitle: "Laserparameter-Assistent",
+    laserCardDesc: "Parameter für 7 Lasertypen, 88 Materialien und über 1000 Kombinationen.",
   },
 };
 
@@ -81,8 +86,8 @@ export default function ToolsStudio() {
 
   const whyRef = useScrollReveal();
   const printCardRef = useScrollReveal();
+  const laserCardRef = useScrollReveal();
   const calcCTARef = useScrollReveal();
-  const matrixRef = useScrollReveal();
   const ctaRef = useScrollReveal();
 
   const schemas = [
@@ -194,14 +199,26 @@ export default function ToolsStudio() {
 
         <div className="gradient-divider" />
 
-        {/* Laser Material Matrix */}
-        <section id="laser-params" className="py-16 px-4 bg-neutral-950">
-          <div className="max-w-5xl mx-auto">
-            <div ref={matrixRef} className="reveal mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">{L.laserMatrixTitle}</h2>
-              <p className="text-neutral-400">{L.laserMatrixSubtitle}</p>
+        {/* Laser Parameters tool card */}
+        <section className="py-8 px-4 bg-neutral-950">
+          <div className="max-w-3xl mx-auto">
+            <div ref={laserCardRef} className="reveal mb-4">
+              <Link
+                to="/toolstudio/laser-parameters/"
+                className="group flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 p-5 rounded-2xl glass hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300"
+              >
+                <div className="flex items-center gap-4">
+                  <Zap className="w-10 h-10 text-blue-400 shrink-0 transition-transform duration-300 group-hover:scale-110" />
+                  <div className="min-w-0">
+                    <div className="text-white font-semibold text-base group-hover:text-blue-300 transition-colors">{L.laserCardTitle}</div>
+                    <div className="text-neutral-400 text-sm mt-0.5">{L.laserCardDesc}</div>
+                  </div>
+                </div>
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-400 group-hover:text-blue-300 sm:ml-auto shrink-0 transition-colors">
+                  {L.printCardBtn} <ArrowRight className="w-4 h-4" />
+                </span>
+              </Link>
             </div>
-            <LaserParametersTool lang={lang} />
           </div>
         </section>
 

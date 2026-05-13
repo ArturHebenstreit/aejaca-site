@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Calculator, FlaskConical, TrendingUp, Circle, Ruler } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
-import RingBlankCalc from "../components/calculators/RingBlankCalc.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
@@ -100,7 +99,6 @@ export default function ToolsJewelry() {
   const whyRef = useScrollReveal();
   const toolsRef = useScrollReveal();
   const calcCTARef = useScrollReveal();
-  const ringBlankRef = useScrollReveal();
   const ctaRef = useScrollReveal();
 
   const schemas = [
@@ -186,8 +184,8 @@ export default function ToolsJewelry() {
                     <div className="text-neutral-400 text-xs mt-1 leading-relaxed">{L.tool2Desc}</div>
                   </div>
                 </Link>
-                <a
-                  href="#ring-blank"
+                <Link
+                  to="/toolsjewelry/ring-blank/"
                   className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-900/20 transition-all duration-300"
                 >
                   <Circle className="w-8 h-8 text-amber-400 transition-transform duration-300 group-hover:scale-110" />
@@ -195,7 +193,7 @@ export default function ToolsJewelry() {
                     <div className="text-white font-semibold text-sm group-hover:text-amber-300 transition-colors">{L.tool3Title}</div>
                     <div className="text-neutral-400 text-xs mt-1 leading-relaxed">{L.tool3Desc}</div>
                   </div>
-                </a>
+                </Link>
                 <Link
                   to="/toolsjewelry/ring-size/"
                   className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-900/20 transition-all duration-300"
@@ -233,19 +231,6 @@ export default function ToolsJewelry() {
                 </span>
               </Link>
             </div>
-          </div>
-        </section>
-
-        <div className="gradient-divider" />
-
-        {/* Ring Blank Calculator */}
-        <section id="ring-blank" className="py-16 px-4 bg-neutral-950">
-          <div className="max-w-3xl mx-auto">
-            <div ref={ringBlankRef} className="reveal mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">{L.ringBlankTitle}</h2>
-              <p className="text-neutral-400">{L.ringBlankSubtitle}</p>
-            </div>
-            <RingBlankCalc lang={lang} />
           </div>
         </section>
 
