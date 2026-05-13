@@ -176,25 +176,31 @@ export default function ToolsStudio() {
                   </div>
                 </Link>
               </div>
+            </div>
+          </div>
+        </section>
 
-              {/* Wide CTA → pricing calculator */}
-              <div ref={calcCTARef}>
-                <Link
-                  to="/studio/#calculator"
-                  className="group flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 p-5 rounded-2xl glass hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300"
-                >
-                  <div className="flex items-center gap-4">
-                    <Cpu className="w-10 h-10 text-blue-400 shrink-0 transition-transform duration-300 group-hover:scale-110" />
-                    <div className="min-w-0">
-                      <div className="text-white font-semibold text-base group-hover:text-blue-300 transition-colors">{L.calcCTATitle}</div>
-                      <div className="text-neutral-400 text-sm mt-0.5">{L.calcCTADesc}</div>
-                    </div>
+        <div className="gradient-divider" />
+
+        {/* Wide CTA → pricing calculator */}
+        <section className="py-8 px-4 bg-neutral-950">
+          <div className="max-w-3xl mx-auto">
+            <div ref={calcCTARef} className="reveal">
+              <Link
+                to="/studio/#calculator"
+                className="group flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 p-5 rounded-2xl glass hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300"
+              >
+                <div className="flex items-center gap-4">
+                  <Cpu className="w-10 h-10 text-blue-400 shrink-0 transition-transform duration-300 group-hover:scale-110" />
+                  <div className="min-w-0">
+                    <div className="text-white font-semibold text-base group-hover:text-blue-300 transition-colors">{L.calcCTATitle}</div>
+                    <div className="text-neutral-400 text-sm mt-0.5">{L.calcCTADesc}</div>
                   </div>
-                  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-400 group-hover:text-blue-300 sm:ml-auto shrink-0 transition-colors">
-                    {L.calcCTABtn} <ArrowRight className="w-4 h-4" />
-                  </span>
-                </Link>
-              </div>
+                </div>
+                <span className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-400 group-hover:text-blue-300 sm:ml-auto shrink-0 transition-colors">
+                  {L.calcCTABtn} <ArrowRight className="w-4 h-4" />
+                </span>
+              </Link>
             </div>
           </div>
         </section>
