@@ -42,6 +42,7 @@ export default {
       { label: "Rückgaberecht", to: "/returns/" },
       { label: "Versand", to: "/shipping/" },
       { label: "Datenschutz", to: "/privacy/" },
+      { label: "AEJaCA bewerten", to: "/reviews/" },
     ],
     gallery: "Galerie",
     gallerySections: [

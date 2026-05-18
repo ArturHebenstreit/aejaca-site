@@ -21,6 +21,7 @@ const STATIC_ROUTES = [
   "/returns",
   "/shipping",
   "/privacy",
+  "/reviews",
   "/toolsjewelry",
   "/toolsjewelry/alloy-composition",
   "/toolsjewelry/metal-pricing",

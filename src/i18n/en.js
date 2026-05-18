@@ -43,6 +43,7 @@ export default {
       { label: "Returns Policy", to: "/returns/" },
       { label: "Shipping", to: "/shipping/" },
       { label: "Privacy Policy", to: "/privacy/" },
+      { label: "Rate AEJaCA", to: "/reviews/" },
     ],
     gallery: "Gallery",
     gallerySections: [
