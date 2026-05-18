@@ -4,7 +4,7 @@ import SEOHead from "../seo/SEOHead.jsx";
 const LABELS = {
   pl: {
     tag: "Powiedz nam szczerze",
-    headline: "Jak Ci poszło z AEJaCA?",
+    headline: "Jak nam poszło? Jak nas oceniasz?",
     sub: "Czy byłeś zadowolony? Jak nas oceniasz? Twoja opinia — dobra lub zła — pomaga nam być lepszymi i dociera do kolejnych klientów. Zajmie to dosłownie minutę.",
     google: "Oceń na Google",
     trustpilot: "Oceń na Trustpilot",
@@ -20,7 +20,7 @@ const LABELS = {
   },
   de: {
     tag: "Sagen Sie uns ehrlich",
-    headline: "Wie war Ihre Erfahrung mit AEJaCA?",
+    headline: "Wie haben wir abgeschnitten? Wie bewerten Sie uns?",
     sub: "Hat Ihnen die Zusammenarbeit gefallen? Wie würden Sie uns bewerten? Ihre Meinung — positiv oder negativ — hilft uns besser zu werden. Es dauert nur eine Minute.",
     google: "Auf Google bewerten",
     trustpilot: "Auf Trustpilot bewerten",
