@@ -259,6 +259,27 @@ export const SEO = {
     },
   },
 
+  reviews: {
+    pl: {
+      title: "Oceń AEJaCA — Google & Trustpilot | Podziel się opinią",
+      description: "Twoja opinia pomaga nam rosnąć. Zostaw recenzję na Google lub Trustpilot — zajmie to minutę.",
+      keywords: "opinie AEJaCA, recenzja Google, Trustpilot AEJaCA",
+      ogAlt: "Oceń AEJaCA na Google i Trustpilot",
+    },
+    en: {
+      title: "Review AEJaCA — Google & Trustpilot | Share Your Experience",
+      description: "Your review helps us grow. Leave feedback on Google or Trustpilot — it takes just a minute.",
+      keywords: "AEJaCA reviews, Google review, Trustpilot AEJaCA",
+      ogAlt: "Review AEJaCA on Google and Trustpilot",
+    },
+    de: {
+      title: "AEJaCA bewerten — Google & Trustpilot | Ihre Meinung",
+      description: "Ihre Bewertung hilft uns zu wachsen. Hinterlassen Sie eine Rezension auf Google oder Trustpilot.",
+      keywords: "AEJaCA Bewertungen, Google Bewertung, Trustpilot AEJaCA",
+      ogAlt: "AEJaCA auf Google und Trustpilot bewerten",
+    },
+  },
+
   privacy: {
     pl: {
       title: "Polityka prywatności — AEJaCA",

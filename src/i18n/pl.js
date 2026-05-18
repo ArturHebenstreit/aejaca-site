@@ -42,6 +42,7 @@ export default {
       { label: "Polityka zwrotów", to: "/returns/" },
       { label: "Wysyłka", to: "/shipping/" },
       { label: "Polityka prywatności", to: "/privacy/" },
+      { label: "Oceń AEJaCA", to: "/reviews/" },
     ],
     gallery: "Galeria",
     gallerySections: [
