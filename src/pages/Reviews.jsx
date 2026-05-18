@@ -3,34 +3,41 @@ import SEOHead from "../seo/SEOHead.jsx";
 
 const LABELS = {
   pl: {
-    tag: "Twoja opinia ma znaczenie",
-    headline: "Powiedz innym, jak Ci poszło",
-    sub: "Każda recenzja pomaga kolejnym klientom trafić do AEJaCA i motywuje nas do jeszcze lepszej pracy. Zajmie to dosłownie minutę.",
+    tag: "Powiedz nam szczerze",
+    headline: "Jak Ci poszło z AEJaCA?",
+    sub: "Czy byłeś zadowolony? Jak nas oceniasz? Twoja opinia — dobra lub zła — pomaga nam być lepszymi i dociera do kolejnych klientów. Zajmie to dosłownie minutę.",
     google: "Oceń na Google",
     trustpilot: "Oceń na Trustpilot",
     thanks: "Dziękujemy z całego serca 🙏",
   },
   en: {
-    tag: "Your opinion matters",
-    headline: "Tell others about your experience",
-    sub: "Every review helps new customers find AEJaCA and motivates us to keep improving. It takes just a minute.",
+    tag: "Be honest with us",
+    headline: "How did we do?",
+    sub: "Did you enjoy working with AEJaCA? How would you rate us? Your feedback — good or bad — helps us improve and reach new customers. It takes just a minute.",
     google: "Review on Google",
     trustpilot: "Review on Trustpilot",
     thanks: "Thank you from the bottom of our hearts 🙏",
   },
   de: {
-    tag: "Ihre Meinung zählt",
-    headline: "Erzählen Sie anderen von Ihrer Erfahrung",
-    sub: "Jede Bewertung hilft neuen Kunden, AEJaCA zu finden, und motiviert uns, noch besser zu werden. Es dauert nur eine Minute.",
+    tag: "Sagen Sie uns ehrlich",
+    headline: "Wie war Ihre Erfahrung mit AEJaCA?",
+    sub: "Hat Ihnen die Zusammenarbeit gefallen? Wie würden Sie uns bewerten? Ihre Meinung — positiv oder negativ — hilft uns besser zu werden. Es dauert nur eine Minute.",
     google: "Auf Google bewerten",
     trustpilot: "Auf Trustpilot bewerten",
     thanks: "Herzlichen Dank 🙏",
   },
 };
 
+const TRUSTPILOT_URL = {
+  pl: "https://pl.trustpilot.com/review/aejaca.com",
+  de: "https://de.trustpilot.com/review/aejaca.com",
+  en: "https://www.trustpilot.com/review/aejaca.com",
+};
+
 export default function Reviews() {
   const { lang } = useLanguage();
   const L = LABELS[lang] || LABELS.en;
+  const trustpilotUrl = TRUSTPILOT_URL[lang] || TRUSTPILOT_URL.en;
 
   return (
     <>
@@ -73,7 +80,7 @@ export default function Reviews() {
 
           {/* TrustPilot */}
           <a
-            href="https://www.trustpilot.com/review/aejaca.com"
+            href={trustpilotUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-semibold text-base text-white transition-colors shadow-lg w-full sm:w-56 hover:opacity-90"
