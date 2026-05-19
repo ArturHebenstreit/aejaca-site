@@ -135,26 +135,24 @@ export default function Jewelry() {
   return (
     <>
       <SEOHead pageKey="jewelry" path="/jewelry" image={`${SITE.url}/og-jewelry.jpg`} schemas={schemas} />
-      <div className="pt-16">
+      <div className="bg-neutral-950">
       {/* Hero */}
-      <section className="bg-neutral-950 py-10 px-4">
-        <div className="max-w-5xl mx-auto relative rounded-2xl overflow-hidden h-[40vh] min-h-[280px]">
-          <img
-            src="/hero-jewelry.webp"
-            alt="AEJaCA Jewelry"
-            className="absolute inset-0 w-full h-full object-cover"
-            loading="eager"
-            fetchpriority="high"
-            decoding="async"
-            width="1024"
-            height="572"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-black/40 to-transparent" />
-          <div className="relative z-10 flex flex-col items-center justify-end h-full pb-12 px-4 text-center">
-            <div className="text-amber-400 text-xs uppercase tracking-[0.25em] mb-3">{j.heroTag}</div>
-            <h1 className="font-serif text-3xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg">{j.heroTitle}</h1>
-            <p className="text-neutral-300 text-base max-w-2xl">{j.heroDesc}</p>
-          </div>
+      <section className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
+        <img
+          src="/hero-jewelry.webp"
+          alt="AEJaCA Jewelry"
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+          width="1920"
+          height="1080"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/20" />
+        <div className="relative z-10 flex flex-col items-center text-center px-6 max-w-4xl mx-auto">
+          <div className="text-amber-400 text-xs font-semibold uppercase tracking-[0.35em] mb-5">{j.heroTag}</div>
+          <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white mb-6 leading-tight drop-shadow-2xl">{j.heroTitle}</h1>
+          <p className="text-neutral-200 text-base md:text-lg max-w-xl leading-relaxed">{j.heroDesc}</p>
         </div>
       </section>
 
