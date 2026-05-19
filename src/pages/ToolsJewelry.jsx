@@ -127,7 +127,7 @@ export default function ToolsJewelry() {
             width="1024"
             height="572"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/20" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/20 to-black/55" />
           <div className="relative z-10 flex flex-col items-center text-center px-6 max-w-4xl mx-auto">
             <div className="text-amber-400 text-xs font-semibold uppercase tracking-[0.35em] mb-5">{L.heroTag}</div>
             <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-5 leading-tight drop-shadow-2xl">{L.heroTitle}</h1>

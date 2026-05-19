@@ -141,7 +141,7 @@ export default function Studio() {
           width="1920"
           height="1080"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/60" />
         <div className="relative z-10 flex flex-col items-center text-center px-6 max-w-4xl mx-auto">
           <div className="text-blue-400 text-xs font-semibold uppercase tracking-[0.35em] mb-5">{s.heroTag}</div>
           <h1 className="font-sans text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white mb-6 leading-tight drop-shadow-2xl">
