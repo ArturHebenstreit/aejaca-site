@@ -264,7 +264,7 @@ export default function Home() {
         <div ref={worldsRef} className="reveal max-w-6xl mx-auto grid md:grid-cols-2 gap-8">
           <div ref={getCardRef(0)} className="reveal-scale rounded-2xl glass-amber p-8 hover:shadow-lg hover:shadow-amber-900/20 hover:-translate-y-1 transition-all duration-300">
             <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{h.artisticLuxury}</div>
-            <h3 className="font-serif text-2xl font-semibold mb-4">{h.jewelryCardTitle}</h3>
+            <h3 className="font-serif text-2xl font-semibold mb-4">AEJaCA <span className="text-amber-400">Biżuteria</span></h3>
             <ul className="space-y-2 text-neutral-300 text-sm mb-6">
               {h.jewelryCardItems.map((item, i) => (
                 <li key={i} className="flex items-start gap-2">
@@ -280,7 +280,7 @@ export default function Home() {
 
           <div ref={getCardRef(1)} className="reveal-scale rounded-2xl glass-blue p-8 hover:shadow-lg hover:shadow-blue-900/20 hover:-translate-y-1 transition-all duration-300">
             <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-3">{h.technicalEngineering}</div>
-            <h3 className="font-sans text-2xl font-semibold mb-4">{h.studioCardTitle}</h3>
+            <h3 className="font-sans text-2xl font-semibold mb-4">AEJaCA <span className="text-blue-400">sTuDiO</span></h3>
             <ul className="space-y-2 text-neutral-300 text-sm mb-6">
               {h.studioCardItems.map((item, i) => (
                 <li key={i} className="flex items-start gap-2">

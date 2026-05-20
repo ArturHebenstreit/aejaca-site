@@ -99,27 +99,25 @@ export default function RingBlankPage() {
         title={seo.title}
         description={seo.description}
       />
-      <div className="pt-16 bg-neutral-950">
+      <div className="bg-neutral-950">
 
         {/* Hero */}
-        <section className="bg-neutral-950 py-10 px-4">
-          <div className="max-w-5xl mx-auto relative rounded-2xl overflow-hidden h-[40vh] min-h-[280px] bg-gradient-to-br from-stone-800 via-amber-950 to-stone-950">
-            <img
-              src="/hero-home-jewelry.webp"
-              alt="Kalkulator Rozwinięcia Obrączki — AEJaCA"
-              className="absolute inset-0 w-full h-full object-cover"
-              loading="eager"
-              fetchpriority="high"
-              decoding="async"
-              width="1024"
-              height="572"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-black/40 to-transparent" />
-            <div className="relative z-10 flex flex-col items-center justify-end h-full pb-12 px-4 text-center">
-              <div className="text-amber-400 text-xs uppercase tracking-[0.25em] mb-3">{L.heroTag}</div>
-              <h1 className="font-serif text-3xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg">{L.heroTitle}</h1>
-              <p className="text-neutral-300 text-base max-w-2xl">{L.heroDesc}</p>
-            </div>
+        <section className="relative overflow-hidden min-h-[480px]">
+          <img
+            src="/hero-home-jewelry.webp"
+            alt="Kalkulator Rozwinięcia Obrączki — AEJaCA"
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+            width="1024"
+            height="572"
+          />
+          <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
+          <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-28 pb-20 text-center flex flex-col items-center">
+            <div className="text-amber-400 text-xs font-medium uppercase tracking-[0.35em] mb-5">{L.heroTag}</div>
+            <h1 className="font-serif text-4xl sm:text-5xl md:text-[60px] font-semibold text-white mb-5 leading-[1.02] tracking-tight drop-shadow-2xl">{L.heroTitle}</h1>
+            <p className="text-neutral-200 text-base max-w-xl leading-relaxed">{L.heroDesc}</p>
           </div>
         </section>
 
