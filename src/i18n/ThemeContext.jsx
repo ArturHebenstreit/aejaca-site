@@ -3,19 +3,20 @@ import { createContext, useContext, useState, useEffect, useCallback } from "rea
 const STORAGE_KEY = "aejaca-theme";
 
 function detectTheme() {
-  if (typeof window === "undefined") return "dark";
+  if (typeof window === "undefined") return "light";
   const saved = localStorage.getItem(STORAGE_KEY);
-  return saved === "light" ? "light" : "dark"; // dark = brand default
+  // light = new brand default; only switch to dark if explicitly saved
+  return saved === "dark" ? "dark" : "light";
 }
 
 const ThemeContext = createContext({
-  theme: "dark",
+  theme: "light",
   toggleTheme: () => {},
-  isDark: true,
+  isDark: false,
 });
 
 export function ThemeProvider({ children }) {
-  const [theme, setThemeRaw] = useState("dark"); // SSR-safe default
+  const [theme, setThemeRaw] = useState("light"); // SSR-safe default
 
   useEffect(() => {
     const t = detectTheme();

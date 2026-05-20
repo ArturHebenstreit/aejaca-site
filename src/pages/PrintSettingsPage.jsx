@@ -105,8 +105,8 @@ export default function PrintSettingsPage() {
         <section className="bg-neutral-950 py-10 px-4">
           <div className="max-w-5xl mx-auto relative rounded-2xl overflow-hidden h-[40vh] min-h-[280px] bg-gradient-to-br from-slate-800 via-blue-950 to-slate-950">
             <img
-              src="/hero-toolstudio.webp"
-              alt="Parametry druku 3D — AEJaCA sTuDiO"
+              src="/hero-print-settings.webp"
+              alt="Druk 3D FDM — parametry filamentów, AEJaCA sTuDiO"
               className="absolute inset-0 w-full h-full object-cover"
               loading="eager"
               fetchpriority="high"
