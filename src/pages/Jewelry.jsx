@@ -137,7 +137,7 @@ export default function Jewelry() {
       <SEOHead pageKey="jewelry" path="/jewelry" image={`${SITE.url}/og-jewelry.jpg`} schemas={schemas} />
       <div className="bg-neutral-950">
       {/* Hero */}
-      <section className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
+      <section className="relative overflow-hidden min-h-[540px]">
         <img
           src="/hero-jewelry.webp"
           alt="AEJaCA Jewelry"
@@ -148,10 +148,10 @@ export default function Jewelry() {
           width="1920"
           height="1080"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/60" />
-        <div className="relative z-10 flex flex-col items-center text-center px-6 max-w-4xl mx-auto">
-          <div className="text-amber-400 text-xs font-semibold uppercase tracking-[0.35em] mb-5">{j.heroTag}</div>
-          <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white mb-6 leading-tight drop-shadow-2xl">{j.heroTitle}</h1>
+        <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
+        <div className="relative z-10 max-w-4xl mx-auto px-6 pt-32 pb-24 text-center flex flex-col items-center">
+          <div className="text-amber-400 text-xs font-medium uppercase tracking-[0.35em] mb-5">{j.heroTag}</div>
+          <h1 className="font-serif text-5xl sm:text-6xl md:text-[72px] font-semibold text-white mb-6 leading-[1.02] tracking-tight drop-shadow-2xl">{j.heroTitle}</h1>
           <p className="text-neutral-200 text-base md:text-lg max-w-xl leading-relaxed">{j.heroDesc}</p>
         </div>
       </section>

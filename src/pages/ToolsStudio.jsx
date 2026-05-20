@@ -105,7 +105,7 @@ export default function ToolsStudio() {
       <div className="bg-neutral-950">
 
         {/* Hero */}
-        <section className="relative h-[70vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+        <section className="relative overflow-hidden min-h-[480px]">
           <img
             src="/hero-toolstudio.webp"
             alt="Narzędzia dla makerów — AEJaCA sTuDiO"
@@ -116,10 +116,10 @@ export default function ToolsStudio() {
             width="1024"
             height="572"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/20 to-black/55" />
-          <div className="relative z-10 flex flex-col items-center text-center px-6 max-w-4xl mx-auto">
-            <div className="text-blue-400 text-xs font-semibold uppercase tracking-[0.35em] mb-5">{L.heroTag}</div>
-            <h1 className="font-sans text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-5 leading-tight drop-shadow-2xl">{L.heroTitle}</h1>
+          <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
+          <div className="relative z-10 max-w-4xl mx-auto px-6 pt-28 pb-20 text-center flex flex-col items-center">
+            <div className="text-blue-400 text-xs font-medium uppercase tracking-[0.35em] mb-5">{L.heroTag}</div>
+            <h1 className="font-sans text-4xl sm:text-5xl md:text-[60px] font-semibold text-white mb-5 leading-[1.02] tracking-tight drop-shadow-2xl">{L.heroTitle}</h1>
             <p className="text-neutral-200 text-base max-w-xl leading-relaxed">{L.heroDesc}</p>
           </div>
         </section>
