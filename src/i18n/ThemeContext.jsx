@@ -8,7 +8,11 @@ function detectTheme() {
   return saved === "light" ? "light" : "dark"; // dark = brand default
 }
 
-const ThemeContext = createContext();
+const ThemeContext = createContext({
+  theme: "dark",
+  toggleTheme: () => {},
+  isDark: true,
+});
 
 export function ThemeProvider({ children }) {
   const [theme, setThemeRaw] = useState("dark"); // SSR-safe default
