@@ -164,7 +164,7 @@ export default function ToolsJewelry() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Link
                   to="/toolsjewelry/alloy-composition/"
-                  className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-900/20 transition-all duration-300"
+                  className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-900/20 hover:-translate-y-1 transition-all duration-300"
                 >
                   <FlaskConical className="w-8 h-8 text-amber-400 transition-transform duration-300 group-hover:scale-110" />
                   <div>
@@ -174,7 +174,7 @@ export default function ToolsJewelry() {
                 </Link>
                 <Link
                   to="/toolsjewelry/metal-pricing/"
-                  className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-900/20 transition-all duration-300"
+                  className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-900/20 hover:-translate-y-1 transition-all duration-300"
                 >
                   <TrendingUp className="w-8 h-8 text-amber-400 transition-transform duration-300 group-hover:scale-110" />
                   <div>
@@ -184,7 +184,7 @@ export default function ToolsJewelry() {
                 </Link>
                 <Link
                   to="/toolsjewelry/ring-blank/"
-                  className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-900/20 transition-all duration-300"
+                  className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-900/20 hover:-translate-y-1 transition-all duration-300"
                 >
                   <Circle className="w-8 h-8 text-amber-400 transition-transform duration-300 group-hover:scale-110" />
                   <div>
@@ -194,7 +194,7 @@ export default function ToolsJewelry() {
                 </Link>
                 <Link
                   to="/toolsjewelry/ring-size/"
-                  className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-900/20 transition-all duration-300"
+                  className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-900/20 hover:-translate-y-1 transition-all duration-300"
                 >
                   <Ruler className="w-8 h-8 text-amber-400 transition-transform duration-300 group-hover:scale-110" />
                   <div>

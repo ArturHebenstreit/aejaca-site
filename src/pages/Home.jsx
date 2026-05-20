@@ -72,7 +72,7 @@ export default function Home() {
         <section className="bg-neutral-950 px-4 pb-10 md:pb-14" aria-label={h.heroAria || "AEJaCA — two worlds"}>
           <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
             {/* Jewelry Card */}
-            <Link to="/jewelry/" onClick={() => trackCTA("hero_jewelry")} className="group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg shadow-black/40 hover:shadow-2xl hover:shadow-amber-900/20 transition-all duration-500 hover:-translate-y-1">
+            <Link to="/jewelry/" onClick={() => trackCTA("hero_jewelry")} className="group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg shadow-black/40 hover:shadow-2xl hover:shadow-amber-900/40 transition-all duration-500 hover:-translate-y-1">
               <div className="aspect-[3/4] relative overflow-hidden">
                 <img
                   src="/hero-home-jewelry.webp"
@@ -96,7 +96,7 @@ export default function Home() {
             </Link>
 
             {/* Studio Card */}
-            <Link to="/studio/" onClick={() => trackCTA("hero_studio")} className="group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg shadow-black/40 hover:shadow-2xl hover:shadow-blue-900/20 transition-all duration-500 hover:-translate-y-1">
+            <Link to="/studio/" onClick={() => trackCTA("hero_studio")} className="group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg shadow-black/40 hover:shadow-2xl hover:shadow-blue-900/40 transition-all duration-500 hover:-translate-y-1">
               <div className="aspect-[3/4] relative overflow-hidden">
                 <img
                   src="/hero-home-studio.webp"
@@ -157,7 +157,7 @@ export default function Home() {
 
           {/* Two calculator cards — Jewelry + Studio (side by side) */}
           <div className="grid md:grid-cols-2 gap-6 mb-6">
-            <Link to="/jewelry/#calculator" onClick={() => trackCTA("quickquote_jewelry")} className="group relative rounded-2xl overflow-hidden border border-amber-400/20 bg-gradient-to-br from-amber-950/20 to-neutral-950 p-6 md:p-8 hover:border-amber-400/40 hover:shadow-lg hover:shadow-amber-900/10 transition-all duration-300">
+            <Link to="/jewelry/#calculator" onClick={() => trackCTA("quickquote_jewelry")} className="group relative rounded-2xl overflow-hidden border border-amber-400/20 bg-gradient-to-br from-amber-950/20 to-neutral-950 p-6 md:p-8 hover:border-amber-400/40 hover:shadow-lg hover:shadow-amber-900/20 hover:-translate-y-1 transition-all duration-300">
               <div className="flex items-start justify-between mb-4">
                 <Sparkles className="w-7 h-7 text-amber-400" />
                 <span className="text-amber-400/60 text-xs tracking-wider uppercase">{h.quickQuoteJewelryTag}</span>
@@ -169,7 +169,7 @@ export default function Home() {
               </span>
             </Link>
 
-            <Link to="/studio/#calculator" onClick={() => trackCTA("quickquote_studio")} className="group relative rounded-2xl overflow-hidden border border-blue-400/20 bg-gradient-to-br from-blue-950/20 to-neutral-950 p-6 md:p-8 hover:border-blue-400/40 hover:shadow-lg hover:shadow-blue-900/10 transition-all duration-300">
+            <Link to="/studio/#calculator" onClick={() => trackCTA("quickquote_studio")} className="group relative rounded-2xl overflow-hidden border border-blue-400/20 bg-gradient-to-br from-blue-950/20 to-neutral-950 p-6 md:p-8 hover:border-blue-400/40 hover:shadow-lg hover:shadow-blue-900/20 hover:-translate-y-1 transition-all duration-300">
               <div className="flex items-start justify-between mb-4">
                 <FileUp className="w-7 h-7 text-blue-400" />
                 <span className="text-blue-400/60 text-xs tracking-wider uppercase">{h.quickQuoteStudioTag}</span>
@@ -256,7 +256,7 @@ export default function Home() {
       {/* Two Worlds */}
       <section className="py-16 px-4 bg-neutral-900/50">
         <div ref={worldsRef} className="reveal max-w-6xl mx-auto grid md:grid-cols-2 gap-8">
-          <div ref={getCardRef(0)} className="reveal-scale rounded-2xl glass-amber p-8 hover:shadow-lg hover:shadow-amber-900/10 transition-shadow duration-300">
+          <div ref={getCardRef(0)} className="reveal-scale rounded-2xl glass-amber p-8 hover:shadow-lg hover:shadow-amber-900/20 hover:-translate-y-1 transition-all duration-300">
             <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{h.artisticLuxury}</div>
             <h3 className="font-serif text-2xl font-semibold mb-4">{h.jewelryCardTitle}</h3>
             <ul className="space-y-2 text-neutral-300 text-sm mb-6">
@@ -272,7 +272,7 @@ export default function Home() {
             </Link>
           </div>
 
-          <div ref={getCardRef(1)} className="reveal-scale rounded-2xl glass-blue p-8 hover:shadow-lg hover:shadow-blue-900/10 transition-shadow duration-300">
+          <div ref={getCardRef(1)} className="reveal-scale rounded-2xl glass-blue p-8 hover:shadow-lg hover:shadow-blue-900/20 hover:-translate-y-1 transition-all duration-300">
             <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-3">{h.technicalEngineering}</div>
             <h3 className="font-sans text-2xl font-semibold mb-4">{h.studioCardTitle}</h3>
             <ul className="space-y-2 text-neutral-300 text-sm mb-6">
