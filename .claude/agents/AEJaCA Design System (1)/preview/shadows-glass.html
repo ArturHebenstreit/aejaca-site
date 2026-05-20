@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — Shadows</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #F3EDDF; font-family: var(--font-sans); color: #1F1A14; }
+  .wrap { padding: 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .sub-rule { grid-column: 1 / -1; display: inline-flex; align-items: center; gap: 12px; font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; font-weight: 600; color: #7A5217; }
+  .sub-rule::before, .sub-rule::after { content: ""; width: 20px; height: 1px; background: currentColor; opacity: 0.6; }
+  .card { background: #FFFFFF; border: 1px solid #E0D5BC; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+  .card .k { font-family: var(--font-mono); font-size: 11px; color: #1F1A14; font-weight: 600; }
+  .card .v { font-family: var(--font-mono); font-size: 10px; color: #8F8170; line-height: 1.55; }
+  .swatch { width: 100%; height: 80px; border-radius: 10px; }
+
+  .s-card        { background: #FFFFFF; box-shadow: 0 1px 2px rgba(31,26,20,0.04), 0 8px 24px -8px rgba(31,26,20,0.08); }
+  .s-card-hover  { background: #FFFFFF; box-shadow: 0 4px 8px rgba(31,26,20,0.06), 0 24px 48px -12px rgba(31,26,20,0.14); }
+  .s-accent      { background: #FFFFFF; box-shadow: 0 20px 40px -16px rgba(168,116,37,0.30); border: 1px solid #E0D5BC; }
+  .s-accent-blue { background: #FFFFFF; box-shadow: 0 20px 40px -16px rgba(37,99,235,0.30);  border: 1px solid #D9DFE8; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <span class="sub-rule">Card shadow system — light themes</span>
+    <div class="card"><div class="swatch s-card"></div><div class="k">shadow-card</div><div class="v">rest state · double layer</div></div>
+    <div class="card"><div class="swatch s-card-hover"></div><div class="k">shadow-card-hover</div><div class="v">on hover · -2px lift</div></div>
+    <div class="card"><div class="swatch s-accent"></div><div class="k">shadow-accent · jewelry</div><div class="v">champagne glow on cards</div></div>
+    <div class="card"><div class="swatch s-accent-blue"></div><div class="k">shadow-accent · studio</div><div class="v">cobalt glow on cards</div></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — Semantic colors</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #F8F4ED; font-family: var(--font-sans); color: #1F1A14; }
+  .wrap { padding: 22px 28px; display: grid; gap: 16px; }
+  .row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .sw { padding: 14px; border-radius: 12px; border: 1px solid #E0D5BC; background: #FFFFFF; display:flex; align-items: center; gap: 12px; }
+  .dot { width: 28px; height: 28px; border-radius: 999px; flex: 0 0 28px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.10); }
+  .meta .k { font-size: 12px; color: #1F1A14; font-weight: 600; }
+  .meta .h { font-family: var(--font-mono); font-size: 10px; color: #8F8170; margin-top: 2px; }
+  .sub-rule { display: inline-flex; align-items: center; gap: 12px; font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; font-weight: 600; color: #7A5217; margin-bottom: 4px; }
+  .sub-rule::before, .sub-rule::after { content: ""; width: 20px; height: 1px; background: currentColor; opacity: 0.6; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div>
+      <span class="sub-rule">Status</span>
+      <div class="row">
+        <div class="sw"><div class="dot" style="background:#16A34A"></div><div class="meta"><div class="k">success</div><div class="h">#16A34A</div></div></div>
+        <div class="sw"><div class="dot" style="background:#D97706"></div><div class="meta"><div class="k">warning</div><div class="h">#D97706</div></div></div>
+        <div class="sw"><div class="dot" style="background:#DC2626"></div><div class="meta"><div class="k">danger</div><div class="h">#DC2626</div></div></div>
+        <div class="sw"><div class="dot" style="background:#2563EB"></div><div class="meta"><div class="k">info</div><div class="h">#2563EB</div></div></div>
+      </div>
+    </div>
+    <div>
+      <span class="sub-rule">Metals — footer ticker</span>
+      <div class="row">
+        <div class="sw"><div class="dot" style="background:#A87425"></div><div class="meta"><div class="k">Au · gold</div><div class="h">#A87425</div></div></div>
+        <div class="sw"><div class="dot" style="background:#94A3B8"></div><div class="meta"><div class="k">Ag · silver</div><div class="h">#94A3B8</div></div></div>
+        <div class="sw"><div class="dot" style="background:#7C3AED"></div><div class="meta"><div class="k">Pt · platinum</div><div class="h">#7C3AED</div></div></div>
+        <div class="sw"><div class="dot" style="background:#0891B2"></div><div class="meta"><div class="k">Pd · palladium</div><div class="h">#0891B2</div></div></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

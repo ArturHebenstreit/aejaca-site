@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — sTuDiO palette</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #F4F6F9; font-family: var(--font-sans); color: #0F172A; }
+  .wrap { padding: 22px 28px; }
+  .head { display:flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .eyebrow-rule { display: inline-flex; align-items: center; gap: 12px; font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase; font-weight: 600; color: #1D4ED8; }
+  .eyebrow-rule::before, .eyebrow-rule::after { content: ""; width: 24px; height: 1px; background: currentColor; opacity: 0.6; }
+  .label { font-family: var(--font-sans); font-size: 18px; color: #0F172A; font-weight: 600; }
+  .meta { font-family: var(--font-mono); font-size: 11px; color: #94A3B8; }
+
+  .row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .chip { aspect-ratio: 1/1.05; border-radius: 8px; position: relative; }
+  .chip .n { position: absolute; bottom: 6px; left: 6px; font-size: 9px; font-family: var(--font-mono); color: rgba(0,0,0,0.55); font-weight: 600; }
+  .chip.d .n { color: rgba(255,255,255,0.85); }
+  .primary-row { display:flex; gap: 10px; margin-top: 14px; }
+  .primary { flex:1; height: 56px; border-radius: 12px; display:flex; align-items: center; justify-content: space-between; padding: 0 16px; background: #FFFFFF; border: 1px solid #D9DFE8; }
+  .primary .k { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600; color: #334155; }
+  .primary .v { font-family: var(--font-mono); font-size: 13px; color: #0F172A; }
+  .swatch-disc { width: 26px; height: 26px; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.10); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <span class="eyebrow-rule">sTuDiO · blueprint</span>
+        <div class="label" style="margin-top: 8px;">Cool cobalt blue accent scale</div>
+      </div>
+      <div class="meta">--accent · --accent-hover · --accent-soft · --accent-light</div>
+    </div>
+    <div class="row">
+      <div class="chip" style="background:#EFF6FF"><span class="n">50</span></div>
+      <div class="chip" style="background:#DBEAFE"><span class="n">100 · soft</span></div>
+      <div class="chip" style="background:#93C5FD"><span class="n">300 · light</span></div>
+      <div class="chip" style="background:#60A5FA"><span class="n">400</span></div>
+      <div class="chip d" style="background:#2563EB"><span class="n">600 · brand</span></div>
+      <div class="chip d" style="background:#1D4ED8"><span class="n">700 · hover</span></div>
+    </div>
+    <div class="primary-row">
+      <div class="primary">
+        <span class="k">Brand</span>
+        <span style="display:inline-flex; align-items: center; gap: 10px;"><span class="swatch-disc" style="background:#2563EB;"></span><span class="v">#2563EB</span></span>
+      </div>
+      <div class="primary">
+        <span class="k">Eyebrow / hover</span>
+        <span style="display:inline-flex; align-items: center; gap: 10px;"><span class="swatch-disc" style="background:#1D4ED8;"></span><span class="v">#1D4ED8</span></span>
+      </div>
+      <div class="primary">
+        <span class="k">Hero (on scrim)</span>
+        <span style="display:inline-flex; align-items: center; gap: 10px;"><span class="swatch-disc" style="background:#93C5FD;"></span><span class="v">#93C5FD</span></span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

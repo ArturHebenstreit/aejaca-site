@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — Eyebrows & badges</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #F8F4ED; font-family: var(--font-sans); color: #1F1A14; }
+  .wrap { padding: 22px 26px; display: grid; gap: 16px; }
+  .sub-rule { display: inline-flex; align-items: center; gap: 12px; font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; font-weight: 600; color: #7A5217; margin-bottom: 10px; }
+  .sub-rule::before, .sub-rule::after { content: ""; width: 20px; height: 1px; background: currentColor; opacity: 0.6; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+  /* Eyebrow with flanking hairlines */
+  .eyebrow-rule { display: inline-flex; align-items: center; gap: 12px; font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase; font-weight: 600; }
+  .eyebrow-rule::before, .eyebrow-rule::after { content: ""; width: 28px; height: 1px; background: currentColor; opacity: 0.6; }
+  .eyebrow-rule.gold { color: #7A5217; }
+  .eyebrow-rule.blue { color: #1D4ED8; }
+  .eyebrow-rule.neutral { color: #6B5F4F; }
+
+  /* Rating pill */
+  .rating { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 9999px; background: #FFFFFF; border: 1px solid #E0D5BC; font-size: 13px; box-shadow: 0 1px 2px rgba(31,26,20,0.04); }
+  .rating .star { color: #A87425; }
+  .rating b { color: #7A5217; font-weight: 700; }
+  .rating .sep { color: #C9BB99; }
+  .rating .meta { color: #6B5F4F; }
+
+  /* Chips */
+  .chip { display:inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 9999px; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; }
+  .chip.gold { background: #FBF3DE; color: #7A5217; border: 1px solid #E0D5BC; }
+  .chip.blue { background: #DBEAFE; color: #1D4ED8; border: 1px solid #93C5FD; }
+  .chip.neutral { background: #FFFFFF; color: #4A4138; border: 1px solid #E0D5BC; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div>
+      <span class="sub-rule">Section eyebrows · flanked by hairlines</span>
+      <div class="row">
+        <span class="eyebrow-rule gold">Artistic & Luxury</span>
+        <span class="eyebrow-rule blue">Technology & Engineering</span>
+        <span class="eyebrow-rule neutral">The Philosophy</span>
+      </div>
+    </div>
+    <div>
+      <span class="sub-rule">Rating pill · social proof</span>
+      <div class="row">
+        <span class="rating"><span class="star">★</span><b>4.9</b><span class="sep">·</span><span class="meta">127 Google reviews</span></span>
+      </div>
+    </div>
+    <div>
+      <span class="sub-rule">Category chips · portfolio & filters</span>
+      <div class="row">
+        <span class="chip gold">Jewelry</span>
+        <span class="chip blue">sTuDiO</span>
+        <span class="chip neutral">All</span>
+        <span class="chip neutral">Rings</span>
+        <span class="chip neutral">Engraving</span>
+        <span class="chip neutral">3D Printing</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

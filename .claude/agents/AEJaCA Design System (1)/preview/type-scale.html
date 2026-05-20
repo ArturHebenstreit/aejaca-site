@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — Type scale</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #F8F4ED; font-family: var(--font-sans); color: #1F1A14; }
+  .wrap { padding: 22px 28px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: #8F8170; font-weight: 600; padding: 4px 6px; border-bottom: 1px solid #E0D5BC; }
+  td { padding: 8px 6px; border-bottom: 1px solid #EFE8D6; vertical-align: middle; }
+  td.tok { font-family: var(--font-mono); font-size: 11px; color: #6B5F4F; width: 110px; }
+  td.size { font-family: var(--font-mono); font-size: 11px; color: #8F8170; width: 90px; }
+  td.spec { color: #1F1A14; }
+  .serif { font-family: 'Playfair Display', Georgia, serif; font-weight: 600; }
+  .sans  { font-family: Inter, sans-serif; }
+  .eyebrow-rule { display: inline-flex; align-items: center; gap: 10px; font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase; font-weight: 600; color: #7A5217; }
+  .eyebrow-rule::before, .eyebrow-rule::after { content: ""; width: 20px; height: 1px; background: currentColor; opacity: 0.6; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <table>
+      <thead><tr><th>Token</th><th>Size / line</th><th>Specimen</th></tr></thead>
+      <tbody>
+        <tr><td class="tok">display</td>   <td class="size">60 / 1.05</td> <td class="spec serif" style="font-size: 36px;">Editorial headline</td></tr>
+        <tr><td class="tok">h1</td>        <td class="size">48 / 1.05</td> <td class="spec serif" style="font-size: 30px;">Section opener</td></tr>
+        <tr><td class="tok">h2</td>        <td class="size">38 / 1.2</td>  <td class="spec serif" style="font-size: 24px;">Where art meets craft</td></tr>
+        <tr><td class="tok">h3</td>        <td class="size">26 / 1.2</td>  <td class="spec sans"  style="font-size: 19px; font-weight: 600;">Two worlds, one studio</td></tr>
+        <tr><td class="tok">body-lg</td>   <td class="size">18 / 1.65</td> <td class="spec sans"  style="font-size: 16px; color: #4A4138;">Subtitle paragraph under hero blocks.</td></tr>
+        <tr><td class="tok">body</td>      <td class="size">16 / 1.65</td> <td class="spec sans"  style="font-size: 14px; color: #4A4138;">Default running text on the site.</td></tr>
+        <tr><td class="tok">body-sm</td>   <td class="size">14 / 1.5</td>  <td class="spec sans"  style="font-size: 13px; color: #6B5F4F;">Card copy, FAQ answers, meta.</td></tr>
+        <tr><td class="tok">eyebrow</td>   <td class="size">12 / 0.32em</td><td class="spec"><span class="eyebrow-rule">Section tag</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

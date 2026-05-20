@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — Motion</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #F8F4ED; font-family: var(--font-sans); color: #1F1A14; }
+  .wrap { padding: 24px 28px; }
+  .sub-rule { display: inline-flex; align-items: center; gap: 12px; font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; font-weight: 600; color: #7A5217; margin-bottom: 14px; }
+  .sub-rule::before, .sub-rule::after { content: ""; width: 20px; height: 1px; background: currentColor; opacity: 0.6; }
+  .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+  .m { padding: 14px; border-radius: 12px; background: #FFFFFF; border: 1px solid #E0D5BC; }
+  .m .k { font-family: var(--font-mono); font-size: 11px; color: #1F1A14; font-weight: 600; }
+  .m .v { font-family: var(--font-mono); font-size: 10px; color: #8F8170; margin-top: 4px; }
+  .demo { height: 38px; margin-top: 10px; background: #EDDDB6; border: 1px solid #D1A458; border-radius: 8px; position: relative; overflow: hidden; }
+  .demo::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 30%; background: #A87425; animation: slide 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
+  .demo.std::before { animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); background: #2563EB; }
+  .demo.std { background: #DBEAFE; border-color: #93C5FD; }
+  @keyframes slide { 0% { left: -30%; } 60% { left: 100%; } 100% { left: 100%; } }
+  .pair { font-family: var(--font-mono); font-size: 10px; color: #6B5F4F; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <span class="sub-rule">Easing curves</span>
+    <div class="row">
+      <div class="m">
+        <div class="k">ease-editorial</div>
+        <div class="v">cubic-bezier(0.16, 1, 0.3, 1)</div>
+        <div class="demo"></div>
+        <div class="pair" style="margin-top: 8px;">scroll reveal · hero entry</div>
+      </div>
+      <div class="m">
+        <div class="k">ease-standard</div>
+        <div class="v">cubic-bezier(0.4, 0, 0.2, 1)</div>
+        <div class="demo std"></div>
+        <div class="pair" style="margin-top: 8px;">hover · color · transform</div>
+      </div>
+      <div class="m">
+        <div class="k">durations</div>
+        <div class="v">fast 200 · base 300 · slow 500 · reveal 700</div>
+        <div class="demo" style="background: linear-gradient(90deg, #A87425, #2563EB); border-color: #1F1A14;"></div>
+        <div class="pair" style="margin-top: 8px;">Four steps for all transitions</div>
+      </div>
+    </div>
+    <span class="sub-rule">Motion vocabulary</span>
+    <div class="row">
+      <div class="m"><div class="k">reveal</div><div class="v">opacity 0→1 · translateY 24→0 · 700ms editorial</div></div>
+      <div class="m"><div class="k">reveal-scale</div><div class="v">opacity 0→1 · scale 0.95→1 · 600ms editorial</div></div>
+      <div class="m"><div class="k">card hover</div><div class="v">translateY -2px · shadow grows · 300ms</div></div>
+    </div>
+  </div>
+</body>
+</html>

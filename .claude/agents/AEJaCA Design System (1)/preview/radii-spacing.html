@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — Radii & Spacing</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #F8F4ED; font-family: var(--font-sans); color: #1F1A14; }
+  .wrap { padding: 22px 26px; display: grid; gap: 18px; }
+  .sub-rule { display: inline-flex; align-items: center; gap: 12px; font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; font-weight: 600; color: #7A5217; margin-bottom: 10px; }
+  .sub-rule::before, .sub-rule::after { content: ""; width: 20px; height: 1px; background: currentColor; opacity: 0.6; }
+
+  .r-row { display: flex; gap: 14px; align-items: end; }
+  .r { display: grid; gap: 6px; justify-items: center; }
+  .r .box { width: 60px; height: 60px; background: #EDDDB6; border: 1px solid #A87425; }
+  .r .k { font-family: var(--font-mono); font-size: 10px; color: #4A4138; font-weight: 600; }
+  .r .v { font-family: var(--font-mono); font-size: 9px; color: #8F8170; }
+  .r .accent .box { background: #A87425; border-color: #7A5217; }
+
+  .sp-row { display: grid; gap: 6px; }
+  .sp { display: grid; grid-template-columns: 60px 1fr 70px; align-items: center; gap: 12px; }
+  .sp .name { font-family: var(--font-mono); font-size: 11px; color: #6B5F4F; }
+  .sp .bar { height: 12px; background: linear-gradient(90deg, #A87425, rgba(168,116,37,0.20)); border-radius: 4px; }
+  .sp .num { font-family: var(--font-mono); font-size: 10px; color: #8F8170; text-align: right; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div>
+      <span class="sub-rule">Border radius</span>
+      <div class="r-row">
+        <div class="r"><div class="box" style="border-radius:4px"></div><div class="k">sm</div><div class="v">4px</div></div>
+        <div class="r"><div class="box" style="border-radius:8px"></div><div class="k">md</div><div class="v">8px</div></div>
+        <div class="r"><div class="box" style="border-radius:12px"></div><div class="k">lg</div><div class="v">12px</div></div>
+        <div class="r accent"><div class="box" style="border-radius:16px"></div><div class="k" style="color:#7A5217">2xl ◀ card</div><div class="v">16px</div></div>
+        <div class="r"><div class="box" style="border-radius:24px"></div><div class="k">3xl</div><div class="v">24px</div></div>
+        <div class="r"><div class="box" style="border-radius:9999px"></div><div class="k">pill</div><div class="v">9999px</div></div>
+      </div>
+    </div>
+    <div>
+      <span class="sub-rule">Spacing scale · 4px base</span>
+      <div class="sp-row">
+        <div class="sp"><span class="name">space-1</span><div class="bar" style="width: 4px"></div><span class="num">4 px</span></div>
+        <div class="sp"><span class="name">space-2</span><div class="bar" style="width: 8px"></div><span class="num">8 px</span></div>
+        <div class="sp"><span class="name">space-4</span><div class="bar" style="width: 16px"></div><span class="num">16 px</span></div>
+        <div class="sp"><span class="name">space-6</span><div class="bar" style="width: 24px"></div><span class="num">24 px</span></div>
+        <div class="sp"><span class="name">space-8</span><div class="bar" style="width: 32px"></div><span class="num">32 px</span></div>
+        <div class="sp"><span class="name">space-12</span><div class="bar" style="width: 48px"></div><span class="num">48 px</span></div>
+        <div class="sp"><span class="name">space-20</span><div class="bar" style="width: 80px"></div><span class="num">80 px · section</span></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

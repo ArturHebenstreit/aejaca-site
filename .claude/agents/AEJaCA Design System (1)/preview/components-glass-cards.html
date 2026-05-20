@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — Two Worlds cards</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #F3EDDF; font-family: var(--font-sans); color: #1F1A14; }
+  .wrap { padding: 22px 26px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .card { padding: 28px; border-radius: 16px; background: #FFFFFF; border: 1px solid; }
+  .card.gold { border-color: #E0D5BC; box-shadow: 0 1px 2px rgba(31,26,20,0.04), 0 8px 24px -8px rgba(31,26,20,0.08); }
+  .card.blue { border-color: #D9DFE8; box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 8px 24px -8px rgba(15,23,42,0.10); }
+
+  .eyebrow-rule { display: inline-flex; align-items: center; gap: 10px; font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase; font-weight: 600; margin-bottom: 14px; }
+  .eyebrow-rule::before, .eyebrow-rule::after { content: ""; width: 24px; height: 1px; background: currentColor; opacity: 0.6; }
+  .eyebrow-rule.gold { color: #7A5217; }
+  .eyebrow-rule.blue { color: #1D4ED8; }
+  .title-serif { font-family: 'Playfair Display', Georgia, serif; font-size: 24px; font-weight: 600; color: #1F1A14; margin: 0 0 16px; letter-spacing: -0.01em; }
+  .title-sans  { font-family: Inter, sans-serif; font-size: 22px; font-weight: 600; color: #0F172A; margin: 0 0 16px; }
+
+  ul { list-style: none; padding: 0; margin: 0 0 18px; display: grid; gap: 8px; }
+  li { font-size: 13px; line-height: 1.55; display: flex; gap: 8px; }
+  li.gold { color: #4A4138; }
+  li.gold .dot { color: #A87425; }
+  li.blue { color: #334155; }
+  li.blue .dot { color: #2563EB; }
+
+  .link { font-size: 13px; font-weight: 600; display:inline-flex; gap: 6px; align-items: center; }
+  .link.gold { color: #A87425; }
+  .link.blue { color: #2563EB; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card gold">
+      <div class="eyebrow-rule gold">Artistic &amp; Luxury</div>
+      <h3 class="title-serif">AEJaCA Jewelry</h3>
+      <ul>
+        <li class="gold"><span class="dot">•</span>Handcrafted rings, earrings, pendants &amp; bracelets</li>
+        <li class="gold"><span class="dot">•</span>Natural gemstones &amp; precious metals</li>
+        <li class="gold"><span class="dot">•</span>Custom &amp; personalized jewelry projects</li>
+        <li class="gold"><span class="dot">•</span>Traditional craft meets 3D modeling</li>
+      </ul>
+      <a class="link gold">Discover our jewelry <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+    </div>
+    <div class="card blue">
+      <div class="eyebrow-rule blue">Technical &amp; Engineering</div>
+      <h3 class="title-sans">AEJaCA sTuDiO</h3>
+      <ul>
+        <li class="blue"><span class="dot">•</span>3D design (CAD) &amp; 3D printing</li>
+        <li class="blue"><span class="dot">•</span>Fiber laser &amp; CO2 laser engraving/cutting</li>
+        <li class="blue"><span class="dot">•</span>Epoxy resin casting (UV &amp; two-component)</li>
+        <li class="blue"><span class="dot">•</span>NFC devices, smart tags &amp; custom gadgets</li>
+      </ul>
+      <a class="link blue">Explore sTuDiO services <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+    </div>
+  </div>
+</body>
+</html>

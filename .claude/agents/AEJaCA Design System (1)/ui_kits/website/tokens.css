@@ -1,0 +1,362 @@
+/* ============================================================
+   AEJaCA Design System — Colors & Type (v2 · light defaults)
+   ------------------------------------------------------------
+   Two brand themes, one toggleable dark "night mode" alternate.
+
+     .brand-jewelry  →  Warm cream + champagne gold + Playfair
+     .brand-studio   →  Blueprint cool white + cobalt blue + Inter
+
+   Add data-theme="dark" anywhere up the tree to flip that subtree
+   into the legacy dark palette (kept as a documented alternate /
+   night mode). Example:
+
+     <html data-theme="dark"> ... </html>
+     <body class="brand-jewelry" data-theme="dark"> ... </body>
+
+   The fg/accent/surface variables are the SAME names across themes,
+   so any component that consumes them works in both modes.
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap");
+
+/* -----------------------------------------------------------
+   Shared base — fonts + scales + motion (theme-agnostic)
+   ----------------------------------------------------------- */
+:root {
+  --font-serif:  "Playfair Display", "Noto Serif", Georgia, serif;
+  --font-sans:   "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:   ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Type scale (px) */
+  --fs-display:  60px;
+  --fs-h1:       48px;
+  --fs-h2:       38px;
+  --fs-h3:       26px;
+  --fs-h4:       20px;
+  --fs-body-lg:  18px;
+  --fs-body:     16px;
+  --fs-body-sm:  14px;
+  --fs-caption:  12px;
+  --fs-micro:    11px;
+
+  --lh-tight:    1.05;
+  --lh-snug:     1.2;
+  --lh-normal:   1.5;
+  --lh-relaxed:  1.65;
+  --lh-loose:    1.75;
+
+  --tracking-tight:       -0.02em;
+  --tracking-normal:      0;
+  --tracking-wide:        0.05em;
+  --tracking-eyebrow:     0.28em;
+  --tracking-eyebrow-x:   0.32em;
+
+  /* Radii — same in both themes */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-2xl:  16px;   /* card default */
+  --radius-3xl:  24px;
+  --radius-pill: 9999px;
+
+  /* Spacing scale (4px base) */
+  --space-1:  4px;  --space-2:  8px;  --space-3:  12px; --space-4:  16px;
+  --space-5: 20px;  --space-6: 24px;  --space-8:  32px; --space-10: 40px;
+  --space-12: 48px; --space-16: 64px; --space-20: 80px; --space-24: 96px;
+
+  /* Motion */
+  --ease-editorial: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-standard:  cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast:       200ms;
+  --dur-base:       300ms;
+  --dur-slow:       500ms;
+  --dur-reveal:     700ms;
+
+  --blur-glass:        12px;
+  --blur-glass-strong: 16px;
+  --blur-nav:          20px;
+}
+
+/* ============================================================
+   THEME 1 — AEJaCA Jewelry · Warm cream (default for Jewelry)
+   ============================================================ */
+.brand-jewelry,
+:root.brand-jewelry {
+  /* Surfaces */
+  --bg-page:        #F8F4ED;      /* cream */
+  --bg-page-soft:   #F3EDDF;      /* deeper cream for banded sections */
+  --bg-elevated:    #FFFFFF;      /* pure white card */
+  --bg-inverse:     #1F1A14;      /* deep espresso for inverse panels */
+
+  /* Borders / dividers */
+  --border-faint:   #EFE8D6;
+  --border-default: #E0D5BC;
+  --border-strong:  #C9BB99;
+  --border-accent:  #A0742B;
+  --divider:        linear-gradient(90deg, transparent, #C9BB99, transparent);
+
+  /* Foregrounds */
+  --fg-1:           #1F1A14;      /* primary text */
+  --fg-2:           #4A4138;      /* body */
+  --fg-3:           #6B5F4F;      /* supporting */
+  --fg-4:           #8F8170;      /* caption / meta */
+  --fg-5:           #B5A78F;      /* tertiary */
+  --fg-on-accent:   #FFFFFF;      /* text on the gold accent */
+  --fg-inverse:     #F8F4ED;      /* text on espresso panels */
+
+  /* Accent — champagne gold */
+  --accent:         #A87425;      /* primary  */
+  --accent-hover:   #7A5217;      /* eyebrows / hover deeper */
+  --accent-soft:    #EDDDB6;      /* tinted background */
+  --accent-light:   #E6C580;      /* luminous tone for hero white-on-dark */
+
+  /* Hero scrim — darkens the photo so white text reads */
+  --hero-scrim:     linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.28) 40%, rgba(248,244,237,0.55) 75%, #F8F4ED 100%);
+
+  /* Button defaults */
+  --btn-primary-bg: #1F1A14;
+  --btn-primary-fg: #F8F4ED;
+  --btn-accent-bg:  #A87425;
+  --btn-accent-fg:  #FFFFFF;
+
+  /* Shadow system — lighter, warmer */
+  --shadow-card:        0 1px 2px rgba(31,26,20,0.04), 0 8px 24px -8px rgba(31,26,20,0.08);
+  --shadow-card-hover:  0 4px 8px rgba(31,26,20,0.06), 0 24px 48px -12px rgba(31,26,20,0.14);
+  --shadow-accent-glow: 0 20px 40px -16px rgba(168,116,37,0.30);
+
+  /* Type-by-family — Jewelry leads with Playfair */
+  --font-display:   var(--font-serif);
+  --font-h2:        var(--font-serif);
+  --font-h3:        var(--font-serif);
+  --font-ui:        var(--font-sans);
+
+  color-scheme: light;
+}
+
+/* ============================================================
+   THEME 2 — AEJaCA sTuDiO · Light blueprint (default for sTuDiO)
+   ============================================================ */
+.brand-studio,
+:root.brand-studio {
+  /* Surfaces */
+  --bg-page:        #F4F6F9;      /* cool blueprint white */
+  --bg-page-soft:   #EAEFF6;      /* deeper cool gray for bands */
+  --bg-elevated:    #FFFFFF;      /* card */
+  --bg-inverse:     #0F172A;      /* slate-950 for inverse */
+
+  /* Borders */
+  --border-faint:   #ECF0F5;
+  --border-default: #D9DFE8;
+  --border-strong:  #B8C2D1;
+  --border-accent:  #2563EB;
+  --divider:        linear-gradient(90deg, transparent, #B8C2D1, transparent);
+
+  /* Foregrounds */
+  --fg-1:           #0F172A;
+  --fg-2:           #334155;
+  --fg-3:           #64748B;
+  --fg-4:           #94A3B8;
+  --fg-5:           #CBD5E1;
+  --fg-on-accent:   #FFFFFF;
+  --fg-inverse:     #F4F6F9;
+
+  /* Accent — blueprint cobalt */
+  --accent:         #2563EB;
+  --accent-hover:   #1D4ED8;
+  --accent-soft:    #DBEAFE;
+  --accent-light:   #93C5FD;
+
+  --hero-scrim:     linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.28) 40%, rgba(244,246,249,0.60) 75%, #F4F6F9 100%);
+
+  --btn-primary-bg: #0F172A;
+  --btn-primary-fg: #FFFFFF;
+  --btn-accent-bg:  #2563EB;
+  --btn-accent-fg:  #FFFFFF;
+
+  --shadow-card:        0 1px 2px rgba(15,23,42,0.04), 0 8px 24px -8px rgba(15,23,42,0.10);
+  --shadow-card-hover:  0 4px 8px rgba(15,23,42,0.06), 0 24px 48px -12px rgba(15,23,42,0.16);
+  --shadow-accent-glow: 0 20px 40px -16px rgba(37,99,235,0.30);
+
+  /* sTuDiO leads with Inter for everything */
+  --font-display:   var(--font-sans);
+  --font-h2:        var(--font-sans);
+  --font-h3:        var(--font-sans);
+  --font-ui:        var(--font-sans);
+
+  color-scheme: light;
+}
+
+/* ============================================================
+   DARK ALTERNATE — night mode for either brand
+   Activate with data-theme="dark" on any ancestor.
+   ============================================================ */
+.brand-jewelry[data-theme="dark"],
+[data-theme="dark"] .brand-jewelry,
+.brand-studio[data-theme="dark"],
+[data-theme="dark"] .brand-studio {
+  --bg-page:        #0a0a0a;
+  --bg-page-soft:   #171717;
+  --bg-elevated:    #262626;
+  --bg-inverse:     #FFFFFF;
+  --border-faint:   rgba(255,255,255,0.05);
+  --border-default: rgba(255,255,255,0.10);
+  --border-strong:  rgba(255,255,255,0.18);
+  --divider:        linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent);
+  --fg-1:           #ffffff;
+  --fg-2:           #d4d4d4;
+  --fg-3:           #a3a3a3;
+  --fg-4:           #737373;
+  --fg-5:           #525252;
+  --fg-on-accent:   #000000;
+  --fg-inverse:     #1F1A14;
+  --btn-primary-bg: #ffffff;
+  --btn-primary-fg: #000000;
+  --btn-accent-fg:  #000000;
+  --shadow-card:        0 10px 15px -3px rgba(0,0,0,0.40);
+  --shadow-card-hover:  0 25px 50px -12px rgba(0,0,0,0.60);
+  color-scheme: dark;
+}
+
+/* In dark mode, restore the original brand-specific accents
+   (amber for jewelry, cool blue for studio) and a dark scrim. */
+.brand-jewelry[data-theme="dark"],
+[data-theme="dark"] .brand-jewelry {
+  --border-accent:  rgba(245,158,11,0.40);
+  --accent:         #f59e0b;
+  --accent-hover:   #fcd34d;
+  --accent-soft:    rgba(245,158,11,0.10);
+  --accent-light:   #fcd34d;
+  --hero-scrim:     linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.40) 40%, rgba(10,10,10,0.80) 75%, #0a0a0a 100%);
+  --btn-accent-bg:  #f59e0b;
+  --shadow-accent-glow: 0 20px 40px -16px rgba(120,53,15,0.50);
+}
+.brand-studio[data-theme="dark"],
+[data-theme="dark"] .brand-studio {
+  --border-accent:  rgba(59,130,246,0.40);
+  --accent:         #3b82f6;
+  --accent-hover:   #93c5fd;
+  --accent-soft:    rgba(59,130,246,0.10);
+  --accent-light:   #93c5fd;
+  --hero-scrim:     linear-gradient(180deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.40) 40%, rgba(10,10,10,0.80) 75%, #0a0a0a 100%);
+  --btn-accent-bg:  #3b82f6;
+  --shadow-accent-glow: 0 20px 40px -16px rgba(30,58,138,0.50);
+}
+
+/* ============================================================
+   Semantic helpers — drop these classes on elements for instant
+   on-brand typography. They consume the variables above.
+   ============================================================ */
+
+.ds-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(36px, 6vw, var(--fs-display));
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-1);
+}
+.ds-h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-h1);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-1);
+}
+.ds-h2 {
+  font-family: var(--font-h2);
+  font-weight: 600;
+  font-size: var(--fs-h2);
+  line-height: var(--lh-snug);
+  letter-spacing: -0.015em;
+  color: var(--fg-1);
+}
+.ds-h3 {
+  font-family: var(--font-h3);
+  font-weight: 600;
+  font-size: var(--fs-h3);
+  line-height: var(--lh-snug);
+  color: var(--fg-1);
+}
+.ds-body {
+  font-family: var(--font-ui);
+  font-weight: 400;
+  font-size: var(--fs-body);
+  line-height: var(--lh-relaxed);
+  color: var(--fg-2);
+}
+.ds-body-sm {
+  font-family: var(--font-ui);
+  font-weight: 400;
+  font-size: var(--fs-body-sm);
+  line-height: var(--lh-normal);
+  color: var(--fg-3);
+}
+.ds-caption {
+  font-family: var(--font-ui);
+  font-weight: 400;
+  font-size: var(--fs-caption);
+  color: var(--fg-4);
+}
+.ds-mono {
+  font-family: var(--font-mono);
+  font-size: var(--fs-body-sm);
+  color: var(--fg-3);
+}
+
+/* Eyebrow — uppercase tracked tag. Use the .ds-eyebrow-rule
+   variant to add the flanking hairlines used on every section
+   title in the live design. */
+.ds-eyebrow {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: var(--fs-caption);
+  letter-spacing: var(--tracking-eyebrow-x);
+  text-transform: uppercase;
+  color: var(--accent-hover);
+  display: inline-block;
+}
+.ds-eyebrow-rule {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: var(--fs-caption);
+  letter-spacing: var(--tracking-eyebrow-x);
+  text-transform: uppercase;
+  color: var(--accent-hover);
+}
+.ds-eyebrow-rule::before,
+.ds-eyebrow-rule::after {
+  content: "";
+  display: inline-block;
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.6;
+}
+
+/* Section divider hairline */
+.ds-divider {
+  height: 1px;
+  background: var(--divider);
+}
+
+/* Card defaults */
+.ds-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--dur-base) var(--ease-editorial),
+              transform var(--dur-base) var(--ease-editorial),
+              border-color var(--dur-base) var(--ease-editorial);
+}
+.ds-card:hover {
+  border-color: var(--border-accent);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
