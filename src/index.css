@@ -423,16 +423,27 @@ body {
 [data-theme="light"] .hero-text .text-blue-400  { color: var(--ds-blue-text) !important; }
 [data-theme="light"] .hero-text span.text-blue-400 { color: var(--ds-blue-text) !important; }
 
-/* ── Calc / service image card overlays — much lighter in light mode ── */
-/* Reduced from 55%/30% → 22%/8% so photos show clearly */
-[data-theme="light"] .from-black\/95 { --tw-gradient-from: rgba(0,0,0,0.22) !important; }
-[data-theme="light"] .via-black\/70  { --tw-gradient-via:  rgba(0,0,0,0.08) !important; }
-[data-theme="light"] .via-black\/65  { --tw-gradient-via:  rgba(0,0,0,0.06) !important; }
+/* ── Calc / service image card overlays — direct bg-image (bypasses Tailwind v4 CSS var issue) ── */
+/* Combined-class selector targets ONLY elements with BOTH classes on the same element */
+[data-theme="light"] .from-black\/95.via-black\/70 {
+  background-image: linear-gradient(to top, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.06) 55%, transparent 100%) !important;
+}
+[data-theme="light"] .from-black\/95.via-black\/65 {
+  background-image: linear-gradient(to top, rgba(0,0,0,0.16) 0%, rgba(0,0,0,0.05) 55%, transparent 100%) !important;
+}
+/* STL/SVG home tiles use from-black/90 via-black/60 to-black/30 (different from calc cards!) */
+[data-theme="light"] .from-black\/90.via-black\/60 {
+  background-image: linear-gradient(to top, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.03) 100%) !important;
+}
+/* Tool subpage card heroes: via-black/40 (from-neutral-950 via-black/40 to-transparent) */
+[data-theme="light"] .via-black\/40 { --tw-gradient-via: rgba(0,0,0,0.05) !important; }
+
 /* Boost brightness of images inside calc/service cards */
 [data-theme="light"] button:has(.from-black\/95) img { filter: brightness(1.28) !important; }
+/* STL/SVG tile images (Link elements) */
+[data-theme="light"] a:has(.from-black\/90.via-black\/60) img { filter: brightness(1.25) !important; }
 
 /* ── Calc card text — stays white over dark gradient background ── */
-/* Targets any button that contains a from-black/95 overlay child */
 [data-theme="light"] button:has(.from-black\/95) .text-white,
 [data-theme="light"] button:has(.from-black\/90) .text-white  { color: #ffffff !important; }
 [data-theme="light"] button:has(.from-black\/95) .text-neutral-200,
@@ -440,6 +451,9 @@ body {
 [data-theme="light"] button:has(.from-black\/95) .text-amber-300 { color: #fbbf24 !important; }
 [data-theme="light"] button:has(.from-black\/95) .text-blue-300  { color: #93c5fd !important; }
 [data-theme="light"] button:has(.from-black\/95) .text-rose-300  { color: #fca5a5 !important; }
+/* STL/SVG tile text (Link elements) stays white on dark photo */
+[data-theme="light"] a:has(.from-black\/90.via-black\/60) .text-white   { color: #ffffff !important; }
+[data-theme="light"] a:has(.from-black\/90.via-black\/60) .text-neutral-300 { color: rgba(255,255,255,0.82) !important; }
 [data-theme="light"] button:has(.from-black\/95) .text-rose-200  { color: rgba(252,165,165,0.90) !important; }
 
 /* ── Portfolio carousel navigation shadows — visible warm edge on hover ── */
