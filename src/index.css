@@ -422,6 +422,15 @@ body {
 [data-theme="light"] .hero-text .text-amber-400 { color: var(--ds-amber-text) !important; }
 [data-theme="light"] .hero-text .text-blue-400  { color: var(--ds-blue-text) !important; }
 [data-theme="light"] .hero-text span.text-blue-400 { color: var(--ds-blue-text) !important; }
+/* Brand name accent in hero H1 — vibrant gold/blue, more saturated than body text */
+[data-theme="light"] .hero-text h1 span.text-amber-400 {
+  color: #b45309 !important; /* amber-700 — intense warm gold */
+  text-shadow: 0 0 20px rgba(250,247,242,0.95), 0 0 40px rgba(250,247,242,0.80) !important;
+}
+[data-theme="light"] .hero-text h1 span.text-blue-400 {
+  color: #1d4ed8 !important; /* blue-700 */
+  text-shadow: 0 0 20px rgba(250,247,242,0.95), 0 0 40px rgba(250,247,242,0.80) !important;
+}
 
 /* ── Calc / service image card overlays — direct bg-image (bypasses Tailwind v4 CSS var issue) ── */
 /* Darker at bottom (text area) + lighter in middle/top (image area) for best readability + visibility */
@@ -511,6 +520,20 @@ body {
 
 /* Blog card title in dark → light */
 [data-theme="light"] .group-hover\:text-amber-300:hover { color: var(--ds-amber-hi) !important; }
+
+/* ── Emerald accent — muted in light mode (neon teal clashes with warm parchment) ── */
+/* Studio calculator tabs, STL/SVG section, quick-quote tag */
+[data-theme="light"] .text-emerald-400       { color: #047857 !important; } /* emerald-700 */
+[data-theme="light"] .text-emerald-400\/70   { color: rgba(4,120,87,0.70) !important; }
+[data-theme="light"] .border-emerald-400     { border-color: #047857 !important; }
+[data-theme="light"] .border-emerald-400\/10 { border-color: rgba(4,120,87,0.10) !important; }
+[data-theme="light"] .border-emerald-400\/20 { border-color: rgba(4,120,87,0.20) !important; }
+[data-theme="light"] .border-emerald-400\/30 { border-color: rgba(4,120,87,0.30) !important; }
+[data-theme="light"] .bg-emerald-400\/10     { background-color: rgba(4,120,87,0.10) !important; }
+[data-theme="light"] .bg-emerald-400\/20     { background-color: rgba(4,120,87,0.14) !important; }
+[data-theme="light"] .hover\:border-emerald-400\/30:hover { border-color: rgba(4,120,87,0.30) !important; }
+[data-theme="light"] .hover\:shadow-emerald-900\/10:hover { box-shadow: 0 10px 15px -3px rgba(4,120,87,0.08) !important; }
+[data-theme="light"] .text-emerald-300       { color: #065f46 !important; } /* emerald-800 for hover states */
 
 /* ── Glossary chips / keyword tag pills ── */
 [data-theme="light"] .bg-neutral-800 { background-color: rgba(120,110,100,0.15) !important; }

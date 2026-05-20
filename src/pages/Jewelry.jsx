@@ -40,6 +40,12 @@ const PRICING_ITEMS = [
   { pl: "Pierścionek zaręczynowy", en: "Engagement ring", de: "Verlobungsring", pln: 1200, eur: 280 },
 ];
 
+const LABELS = {
+  pl: { heroTitleBrand: "Biżuteria" },
+  en: { heroTitleBrand: "Jewelry" },
+  de: { heroTitleBrand: "Schmuck" },
+};
+
 const FLOATING_CTA_LABELS = {
   pl: "Wyceń online",
   en: "Quick quote",
@@ -49,6 +55,7 @@ const FLOATING_CTA_LABELS = {
 export default function Jewelry() {
   const { t, lang } = useLanguage();
   const j = t.jewelry;
+  const L = LABELS[lang] || LABELS.pl;
 
   const aboutRef = useScrollReveal();
   const servicesHeaderRef = useScrollReveal();
@@ -151,7 +158,7 @@ export default function Jewelry() {
         <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
         <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-32 pb-24 text-center flex flex-col items-center">
           <div className="text-amber-400 text-xs font-medium uppercase tracking-[0.35em] mb-5">{j.heroTag}</div>
-          <h1 className="font-serif text-5xl sm:text-6xl md:text-[72px] font-semibold text-white mb-6 leading-[1.02] tracking-tight drop-shadow-2xl">{j.heroTitle}</h1>
+          <h1 className="font-serif text-5xl sm:text-6xl md:text-[72px] font-semibold text-white mb-6 leading-[1.02] tracking-tight drop-shadow-2xl">AEJaCA <span className="text-amber-400">{L.heroTitleBrand}</span></h1>
           <p className="text-neutral-200 text-base md:text-lg max-w-xl leading-relaxed">{j.heroDesc}</p>
         </div>
       </section>
