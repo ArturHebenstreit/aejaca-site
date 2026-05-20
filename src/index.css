@@ -423,10 +423,13 @@ body {
 [data-theme="light"] .hero-text .text-blue-400  { color: var(--ds-blue-text) !important; }
 [data-theme="light"] .hero-text span.text-blue-400 { color: var(--ds-blue-text) !important; }
 
-/* ── Calc / service image card overlays — lighter in light mode ── */
-[data-theme="light"] .from-black\/95 { --tw-gradient-from: rgba(0,0,0,0.55) var(--tw-gradient-from-position) !important; }
-[data-theme="light"] .via-black\/70  { --tw-gradient-via:  rgba(0,0,0,0.30) var(--tw-gradient-via-position)  !important; }
-[data-theme="light"] .via-black\/65  { --tw-gradient-via:  rgba(0,0,0,0.25) var(--tw-gradient-via-position)  !important; }
+/* ── Calc / service image card overlays — much lighter in light mode ── */
+/* Reduced from 55%/30% → 22%/8% so photos show clearly */
+[data-theme="light"] .from-black\/95 { --tw-gradient-from: rgba(0,0,0,0.22) !important; }
+[data-theme="light"] .via-black\/70  { --tw-gradient-via:  rgba(0,0,0,0.08) !important; }
+[data-theme="light"] .via-black\/65  { --tw-gradient-via:  rgba(0,0,0,0.06) !important; }
+/* Boost brightness of images inside calc/service cards */
+[data-theme="light"] button:has(.from-black\/95) img { filter: brightness(1.28) !important; }
 
 /* ── Calc card text — stays white over dark gradient background ── */
 /* Targets any button that contains a from-black/95 overlay child */
@@ -439,18 +442,22 @@ body {
 [data-theme="light"] button:has(.from-black\/95) .text-rose-300  { color: #fca5a5 !important; }
 [data-theme="light"] button:has(.from-black\/95) .text-rose-200  { color: rgba(252,165,165,0.90) !important; }
 
-/* ── Portfolio carousel navigation shadows — parchment in light mode ── */
+/* ── Portfolio carousel navigation shadows — visible warm edge on hover ── */
+/* Slightly darker than page bg so the soft edge is distinguishable */
 [data-theme="light"] .from-neutral-900\/90 {
-  --tw-gradient-from: rgba(250,247,242,0.97) var(--tw-gradient-from-position) !important;
+  --tw-gradient-from: rgba(195,181,163,0.95) !important;
 }
-[data-theme="light"] .from-neutral-900\/90 ~ * .text-white,
+/* Portfolio card hover dark-bottom overlay → remove in light mode */
+[data-theme="light"] .from-black\/60 { --tw-gradient-from: rgba(0,0,0,0) !important; }
 [data-theme="light"] .from-neutral-900\/90 .text-white { color: var(--ds-text-1) !important; }
 
-/* ── Blog card + Tools subpage hero overlay — parchment fade ── */
-/* from-neutral-950/80 in blog cards (bg-gradient-to-t from-neutral-950/80 to-transparent) */
-[data-theme="light"] .from-neutral-950\/80 {
-  --tw-gradient-from: rgba(250,247,242,0.88) var(--tw-gradient-from-position) !important;
+/* ── Blog card overlay — direct background-image override (avoids CSS var double-position bug) ── */
+/* bg-gradient-to-t from-neutral-950/80 to-transparent → parchment fade */
+[data-theme="light"] .bg-gradient-to-t.from-neutral-950\/80 {
+  background-image: linear-gradient(to top, rgba(250,247,242,0.82) 0%, transparent 100%) !important;
 }
+/* Also boost brightness of blog card images */
+[data-theme="light"] a.group:has(.from-neutral-950\/80) img { filter: brightness(1.22) !important; }
 /* blog card itself: warm border + bg */
 [data-theme="light"] a.group .border-white\/10 { border-color: rgba(0,0,0,0.07) !important; }
 [data-theme="light"] .bg-white\/\[0\.02\] { background-color: rgba(255,255,255,0.60) !important; }
