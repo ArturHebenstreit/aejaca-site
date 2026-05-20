@@ -533,6 +533,49 @@ body {
 /* Blog card title in dark → light */
 [data-theme="light"] .group-hover\:text-amber-300:hover { color: var(--ds-amber-hi) !important; }
 
+/* ── 3D Print wizard nav arrows — clearly visible in light mode ── */
+/* Back arrow (active): dark border + solid dark bg */
+[data-theme="light"] button[aria-label="Wstecz"]:not(:disabled),
+[data-theme="light"] button[aria-label="Back"]:not(:disabled),
+[data-theme="light"] button[aria-label="Zurück"]:not(:disabled) {
+  border-color: rgba(0,0,0,0.35) !important;
+  color: #262626 !important;
+  background-color: rgba(0,0,0,0.07) !important;
+}
+[data-theme="light"] button[aria-label="Wstecz"]:not(:disabled):hover,
+[data-theme="light"] button[aria-label="Back"]:not(:disabled):hover,
+[data-theme="light"] button[aria-label="Zurück"]:not(:disabled):hover {
+  border-color: rgba(0,0,0,0.55) !important;
+  color: #0a0a0a !important;
+  background-color: rgba(0,0,0,0.12) !important;
+}
+/* Forward arrow (active): amber border + amber bg — very visible */
+[data-theme="light"] button[aria-label="Dalej"]:not(:disabled),
+[data-theme="light"] button[aria-label="Next"]:not(:disabled),
+[data-theme="light"] button[aria-label="Weiter"]:not(:disabled) {
+  border-color: #b45309 !important;
+  color: #92400e !important;
+  background-color: rgba(180,83,9,0.12) !important;
+  font-weight: 600 !important;
+}
+[data-theme="light"] button[aria-label="Dalej"]:not(:disabled):hover,
+[data-theme="light"] button[aria-label="Next"]:not(:disabled):hover,
+[data-theme="light"] button[aria-label="Weiter"]:not(:disabled):hover {
+  border-color: #92400e !important;
+  background-color: rgba(180,83,9,0.22) !important;
+}
+/* Disabled arrows — clearly greyed out */
+[data-theme="light"] button[aria-label="Wstecz"]:disabled,
+[data-theme="light"] button[aria-label="Back"]:disabled,
+[data-theme="light"] button[aria-label="Zurück"]:disabled,
+[data-theme="light"] button[aria-label="Dalej"]:disabled,
+[data-theme="light"] button[aria-label="Next"]:disabled,
+[data-theme="light"] button[aria-label="Weiter"]:disabled {
+  border-color: rgba(0,0,0,0.10) !important;
+  color: rgba(0,0,0,0.25) !important;
+  background-color: transparent !important;
+}
+
 /* ── Emerald accent — muted in light mode (neon teal clashes with warm parchment) ── */
 /* Studio calculator tabs, STL/SVG section, quick-quote tag */
 [data-theme="light"] .text-emerald-400       { color: #047857 !important; } /* emerald-700 */
