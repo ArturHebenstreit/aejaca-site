@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — Buttons</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: var(--bg-page); color: var(--fg-1); font-family: var(--font-sans); }
+  .wrap { padding: 22px 26px; display: grid; gap: 16px; }
+  .sub { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--fg-4); margin-bottom: 8px; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  /* Primary white pill — bottom-of-page CTA */
+  .btn-primary { display:inline-flex; gap: 8px; align-items: center; padding: 12px 28px; background: #fff; color: #000; font-weight: 500; border-radius: 9999px; font-size: 14px; transition: all 300ms var(--ease-editorial); border: none; cursor: pointer; }
+  .btn-primary:hover { background: #e5e5e5; box-shadow: 0 10px 30px -10px rgba(255,255,255,0.15); }
+  /* Amber outlined pill — Jewelry CTA */
+  .btn-amber { display:inline-flex; gap: 8px; align-items: center; padding: 10px 24px; background: rgba(245,158,11,0.05); color: var(--amber-300); border: 1px solid var(--border-amber-hi); border-radius: 9999px; font-size: 14px; letter-spacing: 0.02em; backdrop-filter: blur(12px); transition: all 300ms; cursor: pointer; }
+  .btn-amber:hover { background: var(--amber-500); color: #000; border-color: var(--amber-500); }
+  /* Blue outlined pill — sTuDiO CTA */
+  .btn-blue { display:inline-flex; gap: 8px; align-items: center; padding: 10px 24px; background: rgba(59,130,246,0.05); color: var(--blue-300); border: 1px solid var(--border-blue-hi); border-radius: 9999px; font-size: 14px; backdrop-filter: blur(12px); transition: all 300ms; cursor: pointer; }
+  .btn-blue:hover { background: var(--blue-500); color: #fff; border-color: var(--blue-500); }
+  /* Ghost text link */
+  .btn-link-amber { color: var(--amber-500); font-size: 14px; font-weight: 500; display:inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  .btn-link-amber:hover { color: var(--amber-300); }
+  .btn-link-blue { color: var(--blue-500); font-size: 14px; font-weight: 500; display:inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  .btn-link-blue:hover { color: var(--blue-300); }
+  .arrow { display: inline-block; width: 14px; height: 14px; vertical-align: middle; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div>
+      <div class="sub">Primary · neutral CTA (bottom-of-page, contact)</div>
+      <div class="row">
+        <button class="btn-primary">Get in Touch <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></button>
+        <button class="btn-primary" disabled style="opacity: 0.4; cursor: not-allowed;">Disabled</button>
+      </div>
+    </div>
+    <div>
+      <div class="sub">Brand CTAs · amber for Jewelry, blue for sTuDiO</div>
+      <div class="row">
+        <button class="btn-amber">Discover jewelry <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></button>
+        <button class="btn-blue">Enter sTuDiO <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></button>
+      </div>
+    </div>
+    <div>
+      <div class="sub">Inline text links · arrow translate on hover</div>
+      <div class="row">
+        <a class="btn-link-amber">Calculate jewelry price <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+        <a class="btn-link-blue">Quote a project online <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

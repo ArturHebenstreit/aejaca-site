@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — Glass list cards (Two Worlds)</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #171717; color: var(--fg-1); font-family: var(--font-sans); }
+  .wrap { padding: 22px 26px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .card { padding: 24px; border-radius: 16px; backdrop-filter: blur(16px); }
+  .card.amber { background: rgba(245,158,11,0.06); border: 1px solid var(--border-amber); }
+  .card.blue  { background: rgba(59,130,246,0.06); border: 1px solid var(--border-blue); }
+  .eyebrow { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 500; margin-bottom: 10px; }
+  .eyebrow.amber { color: var(--amber-500); }
+  .eyebrow.blue  { color: var(--blue-500); }
+  .title-serif { font-family: var(--font-serif); font-size: 22px; font-weight: 600; color: #fff; margin: 0 0 14px; }
+  .title-sans  { font-family: var(--font-sans);  font-size: 22px; font-weight: 600; color: #fff; margin: 0 0 14px; }
+  ul { list-style: none; padding: 0; margin: 0 0 18px; display: grid; gap: 6px; }
+  li { font-size: 13px; color: var(--fg-2); display: flex; gap: 8px; line-height: 1.5; }
+  li .dot { line-height: 1; }
+  li.amber .dot { color: var(--amber-500); }
+  li.blue  .dot { color: var(--blue-500); }
+  .link { font-size: 13px; font-weight: 500; display:inline-flex; gap: 6px; align-items: center; }
+  .link.amber { color: var(--amber-500); }
+  .link.blue  { color: var(--blue-500); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card amber">
+      <div class="eyebrow amber">Artistic &amp; Luxury</div>
+      <h3 class="title-serif">AEJaCA Jewelry</h3>
+      <ul>
+        <li class="amber"><span class="dot">•</span>Handcrafted rings, earrings, pendants &amp; bracelets</li>
+        <li class="amber"><span class="dot">•</span>Natural gemstones &amp; precious metals</li>
+        <li class="amber"><span class="dot">•</span>Custom &amp; personalized jewelry projects</li>
+        <li class="amber"><span class="dot">•</span>Traditional craft meets 3D modeling</li>
+      </ul>
+      <a class="link amber">Discover our jewelry <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+    </div>
+    <div class="card blue">
+      <div class="eyebrow blue">Technical &amp; Engineering</div>
+      <h3 class="title-sans">AEJaCA sTuDiO</h3>
+      <ul>
+        <li class="blue"><span class="dot">•</span>3D design (CAD) &amp; 3D printing</li>
+        <li class="blue"><span class="dot">•</span>Fiber laser &amp; CO2 laser engraving/cutting</li>
+        <li class="blue"><span class="dot">•</span>Epoxy resin casting (UV &amp; two-component)</li>
+        <li class="blue"><span class="dot">•</span>NFC devices, smart tags &amp; custom gadgets</li>
+      </ul>
+      <a class="link blue">Explore sTuDiO services <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+    </div>
+  </div>
+</body>
+</html>

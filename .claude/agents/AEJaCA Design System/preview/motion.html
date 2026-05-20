@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — Motion</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: var(--bg-page); color: var(--fg-1); font-family: var(--font-sans); }
+  .wrap { padding: 24px 28px; }
+  .sub { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--fg-4); margin-bottom: 14px; }
+  .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px;}
+  .m { padding: 14px; border-radius: 12px; background: var(--bg-page-soft); border: 1px solid var(--border-default); }
+  .m .k { font-family: var(--font-mono); font-size: 11px; color: var(--fg-1); font-weight: 600; }
+  .m .v { font-family: var(--font-mono); font-size: 10px; color: var(--fg-4); margin-top: 4px; }
+  .demo { height: 38px; margin-top: 10px; background: rgba(245,158,11,0.10); border: 1px solid var(--border-amber); border-radius: 8px; position: relative; overflow: hidden; }
+  .demo::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 30%; background: var(--amber-500); animation: slide 2.4s var(--ease-editorial) infinite; }
+  .demo.std::before { animation-timing-function: var(--ease-standard); background: var(--blue-500); }
+  @keyframes slide { 0% { left: -30%; } 60% { left: 100%; } 100% { left: 100%; } }
+  .pair { font-family: var(--font-mono); font-size: 10px; color: var(--fg-3); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="sub">Easing curves</div>
+    <div class="row">
+      <div class="m">
+        <div class="k">ease-editorial</div>
+        <div class="v">cubic-bezier(0.16, 1, 0.3, 1)</div>
+        <div class="demo"></div>
+        <div class="pair" style="margin-top: 8px;">Used by · scroll reveal, hero entry</div>
+      </div>
+      <div class="m">
+        <div class="k">ease-standard</div>
+        <div class="v">cubic-bezier(0.4, 0, 0.2, 1)</div>
+        <div class="demo std"></div>
+        <div class="pair" style="margin-top: 8px;">Used by · hover · color · transform</div>
+      </div>
+      <div class="m">
+        <div class="k">durations</div>
+        <div class="v">fast 200 · base 300 · slow 500 · reveal 700</div>
+        <div class="demo" style="background: linear-gradient(90deg, var(--amber-500), var(--blue-500)); border: none;"></div>
+        <div class="pair" style="margin-top: 8px;">All transitions use these four steps</div>
+      </div>
+    </div>
+
+    <div class="sub">Motion vocabulary</div>
+    <div class="row">
+      <div class="m"><div class="k">reveal</div><div class="v">opacity 0→1 · translateY 24px → 0 · 700ms editorial</div></div>
+      <div class="m"><div class="k">reveal-scale</div><div class="v">opacity 0→1 · scale 0.95 → 1 · 600ms editorial</div></div>
+      <div class="m"><div class="k">card hover</div><div class="v">translateY -4px · shadow grows · 500ms</div></div>
+    </div>
+  </div>
+</body>
+</html>
