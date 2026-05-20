@@ -577,7 +577,7 @@ export default {
     placeholderMessage: "Erzählen Sie uns von Ihrem Projekt oder Ihrer Idee...",
     optionJewelry: "Individueller Schmuck (AEJaCA)",
     optionStudio: "Technische Dienstleistungen (AEJaCA sTuDiO)",
-    optionBoth: "Beides — Schmuck & Studio",
+    optionBoth: "Beides — Schmuck & sTuDiO",
     optionOther: "Sonstiges",
     sending: "Wird gesendet...",
     sendError: "Etwas ist schiefgelaufen. Bitte versuche es erneut.",

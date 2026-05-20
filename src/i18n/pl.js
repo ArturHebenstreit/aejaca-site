@@ -585,7 +585,7 @@ export default {
     placeholderMessage: "Opowiedz nam o swoim projekcie lub pomyśle...",
     optionJewelry: "Biżuteria na zamówienie (AEJaCA)",
     optionStudio: "Usługi techniczne (AEJaCA sTuDiO)",
-    optionBoth: "Oba — Biżuteria i Studio",
+    optionBoth: "Oba — Biżuteria i sTuDiO",
     optionOther: "Inne",
     sending: "Wysyłanie...",
     sendError: "Coś poszło nie tak. Spróbuj jeszcze raz.",

@@ -18,6 +18,16 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* ─── AEJaCA Design System tokens ─── */
+  --border-amber:       rgba(245, 158, 11, 0.18);
+  --border-amber-hi:    rgba(245, 158, 11, 0.40);
+  --border-blue:        rgba(59, 130, 246, 0.18);
+  --border-blue-hi:     rgba(59, 130, 246, 0.40);
+  --shadow-amber-glow:  0 20px 40px -16px rgba(120, 53, 15, 0.20);
+  --shadow-blue-glow:   0 20px 40px -16px rgba(30, 58, 138, 0.20);
+  --shadow-white-glow:  0 10px 30px -10px rgba(255, 255, 255, 0.10);
+  --ease-editorial:     cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 html {
