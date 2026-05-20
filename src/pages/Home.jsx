@@ -85,13 +85,16 @@ export default function Home() {
                   height="1024"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,transparent_50%,rgba(0,0,0,0.72)_100%)]" />
               </div>
-              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-center">
-                <div className="text-amber-400 text-[10px] uppercase tracking-[0.25em] mb-2">{h.jewelrySubtitle}</div>
-                <p className="text-neutral-200 text-sm leading-relaxed mb-5 max-w-xs mx-auto">{h.jewelryDesc}</p>
-                <span className="inline-flex items-center gap-2 px-6 py-2.5 border border-amber-400/30 bg-amber-400/5 backdrop-blur-md text-amber-300 rounded-full text-sm tracking-wide group-hover:bg-amber-400 group-hover:text-black group-hover:border-amber-400 transition-all duration-300">
-                  {h.jewelryBtn} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                </span>
+              <div className="absolute bottom-0 left-0 right-0 h-56 md:h-60 flex flex-col justify-between items-center px-6 md:px-8 pb-7 md:pb-8 pt-5 text-center">
+                <div className="text-amber-400 text-[10px] uppercase tracking-[0.25em]">{h.jewelrySubtitle}</div>
+                <div>
+                  <p className="text-neutral-200 text-sm leading-relaxed mb-5 max-w-xs mx-auto">{h.jewelryDesc}</p>
+                  <span className="inline-flex items-center gap-2 px-7 py-3 border border-amber-400/40 bg-amber-400/10 backdrop-blur-md text-amber-200 font-medium rounded-full text-sm tracking-wide group-hover:bg-amber-400 group-hover:text-black group-hover:border-amber-400 group-hover:shadow-lg group-hover:shadow-amber-500/30 transition-all duration-300">
+                    {h.jewelryBtn} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  </span>
+                </div>
               </div>
             </Link>
 
@@ -109,13 +112,16 @@ export default function Home() {
                   height="1024"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,transparent_50%,rgba(0,0,0,0.72)_100%)]" />
               </div>
-              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-center">
-                <div className="text-blue-400 text-[10px] uppercase tracking-[0.25em] mb-2">{h.studioSubtitle}</div>
-                <p className="text-neutral-200 text-sm leading-relaxed mb-5 max-w-xs mx-auto">{h.studioDesc}</p>
-                <span className="inline-flex items-center gap-2 px-6 py-2.5 border border-blue-400/30 bg-blue-400/5 backdrop-blur-md text-blue-300 rounded-full text-sm tracking-wide group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-500 transition-all duration-300">
-                  {h.studioBtn} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                </span>
+              <div className="absolute bottom-0 left-0 right-0 h-56 md:h-60 flex flex-col justify-between items-center px-6 md:px-8 pb-7 md:pb-8 pt-5 text-center">
+                <div className="text-blue-400 text-[10px] uppercase tracking-[0.25em]">{h.studioSubtitle}</div>
+                <div>
+                  <p className="text-neutral-200 text-sm leading-relaxed mb-5 max-w-xs mx-auto">{h.studioDesc}</p>
+                  <span className="inline-flex items-center gap-2 px-7 py-3 border border-blue-400/40 bg-blue-400/10 backdrop-blur-md text-blue-200 font-medium rounded-full text-sm tracking-wide group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-500 group-hover:shadow-lg group-hover:shadow-blue-500/30 transition-all duration-300">
+                    {h.studioBtn} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  </span>
+                </div>
               </div>
             </Link>
           </div>
