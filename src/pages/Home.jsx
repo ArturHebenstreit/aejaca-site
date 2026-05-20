@@ -87,7 +87,7 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,transparent_50%,rgba(0,0,0,0.72)_100%)]" />
               </div>
-              <div className="absolute bottom-0 left-0 right-0 h-48 md:h-52 flex flex-col justify-between items-center px-6 md:px-8 pb-6 md:pb-7 pt-4 text-center">
+              <div className="photo-card-text absolute bottom-0 left-0 right-0 h-48 md:h-52 flex flex-col justify-between items-center px-6 md:px-8 pb-6 md:pb-7 pt-4 text-center">
                 <div>
                   <div className="text-amber-400 text-[10px] uppercase tracking-[0.25em] mb-3">{h.jewelrySubtitle}</div>
                   <p className="text-neutral-200 text-sm leading-relaxed max-w-xs mx-auto">{h.jewelryDesc}</p>
@@ -114,7 +114,7 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,transparent_50%,rgba(0,0,0,0.72)_100%)]" />
               </div>
-              <div className="absolute bottom-0 left-0 right-0 h-48 md:h-52 flex flex-col justify-between items-center px-6 md:px-8 pb-6 md:pb-7 pt-4 text-center">
+              <div className="photo-card-text absolute bottom-0 left-0 right-0 h-48 md:h-52 flex flex-col justify-between items-center px-6 md:px-8 pb-6 md:pb-7 pt-4 text-center">
                 <div>
                   <div className="text-blue-400 text-[10px] uppercase tracking-[0.25em] mb-3">{h.studioSubtitle}</div>
                   <p className="text-neutral-200 text-sm leading-relaxed max-w-xs mx-auto">{h.studioDesc}</p>

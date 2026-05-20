@@ -272,15 +272,91 @@ body {
 [data-theme="light"] nav[aria-label="Main navigation"] .bg-amber-400\/5 {
   background-color: rgba(146,64,14,0.05) !important;
 }
-/* Logo invert — keep inverted in dark (already white), remove in light */
-[data-theme="light"] nav .brightness-0.invert {
-  filter: none;
+/* ── Logo — BLACK in light mode (brightness-0 = all-black) ── */
+[data-theme="light"] .brightness-0.invert {
+  filter: brightness(0) !important;
   opacity: 0.85;
 }
 [data-theme="light"] footer .brightness-0.invert {
-  filter: none;
-  opacity: 0.75;
+  filter: brightness(0) !important;
+  opacity: 0.70;
 }
+/* Brand-sign in body (brand statement section) — remove white glow */
+[data-theme="light"] img.brightness-0.invert {
+  filter: brightness(0) !important;
+  drop-shadow: none;
+}
+
+/* ── Images — slightly brighter in light mode ── */
+/* Excludes logos (brightness-0 class) and gateway card overlays */
+[data-theme="light"] img:not([class*="brightness-0"]) {
+  filter: brightness(1.12);
+}
+/* But hero overlay images — boost more since overlay dims them */
+[data-theme="light"] .aspect-\[3\/4\] img {
+  filter: brightness(1.25) !important;
+}
+
+/* ── Photo card text overlay — stays WHITE regardless of theme ── */
+/* Applied to gateway cards on Home page where text sits over dark photo */
+[data-theme="light"] .photo-card-text .text-neutral-200 { color: rgba(255,255,255,0.88) !important; }
+[data-theme="light"] .photo-card-text .text-white       { color: #ffffff !important; }
+[data-theme="light"] .photo-card-text .text-amber-400   { color: #fbbf24 !important; }
+[data-theme="light"] .photo-card-text .text-amber-200   { color: #fde68a !important; }
+[data-theme="light"] .photo-card-text .text-blue-400    { color: #60a5fa !important; }
+[data-theme="light"] .photo-card-text .text-blue-200    { color: #bfdbfe !important; }
+[data-theme="light"] .photo-card-text .border-amber-400\/40 { border-color: rgba(251,191,36,0.40) !important; }
+[data-theme="light"] .photo-card-text .border-blue-400\/40  { border-color: rgba(96,165,250,0.40) !important; }
+[data-theme="light"] .photo-card-text .bg-amber-400\/10 { background-color: rgba(251,191,36,0.12) !important; }
+[data-theme="light"] .photo-card-text .bg-blue-400\/10  { background-color: rgba(96,165,250,0.12) !important; }
+
+/* ── Missing gradient via overrides ── */
+[data-theme="light"] .via-neutral-900\/40  { --tw-gradient-via: rgba(240,236,228,0.40) !important; }
+[data-theme="light"] .via-neutral-900\/50  { --tw-gradient-via: rgba(240,236,228,0.50) !important; }
+[data-theme="light"] .via-neutral-900\/60  { --tw-gradient-via: rgba(240,236,228,0.60) !important; }
+[data-theme="light"] .bg-neutral-900\/60   { background-color: rgba(240,236,228,0.70) !important; }
+[data-theme="light"] .bg-neutral-900\/40   { background-color: rgba(240,236,228,0.40) !important; }
+
+/* ── Emerald section (STL/SVG banner) gradients ── */
+[data-theme="light"] .from-emerald-950\/20 { --tw-gradient-from: rgba(6,78,59,0.04) !important; }
+[data-theme="light"] .to-emerald-950\/20   { --tw-gradient-to: rgba(6,78,59,0.04) !important; }
+/* via-neutral-900/50 covered above */
+
+/* ── Arbitrary opacity bg-white/[0.0X] → white card surface ── */
+[data-theme="light"] [class*="bg-white\/\["] {
+  background-color: rgba(255,255,255,0.82) !important;
+}
+/* hover variants: bg-white/[0.05], bg-white/[0.06] etc. */
+[data-theme="light"] [class*="hover\:bg-white\/\["]:hover {
+  background-color: rgba(255,255,255,0.92) !important;
+}
+
+/* ── Newsletter form — input + container ── */
+[data-theme="light"] input[class*="bg-neutral-950"] {
+  background-color: rgba(255,255,255,0.90) !important;
+  color: #0a0a0a !important;
+  border-color: rgba(0,0,0,0.18) !important;
+}
+[data-theme="light"] input::placeholder { color: #a3a3a3 !important; }
+/* Newsletter container: from-amber-400/10 via-neutral-900/40 to-blue-400/10 */
+[data-theme="light"] .from-amber-400\/10  { --tw-gradient-from: rgba(146,64,14,0.07) !important; }
+[data-theme="light"] .to-blue-400\/10     { --tw-gradient-to: rgba(30,64,175,0.07) !important; }
+[data-theme="light"] .backdrop-blur-sm    { /* keep as-is */ }
+
+/* ── Notification states (success/error) ── */
+[data-theme="light"] .text-emerald-200  { color: #065f46 !important; }
+[data-theme="light"] .text-rose-300     { color: #be123c !important; }
+
+/* ── Calc chips — inactive borders/hover ── */
+[data-theme="light"] .hover\:border-white\/20:hover { border-color: rgba(0,0,0,0.15) !important; }
+[data-theme="light"] .hover\:border-white\/30:hover { border-color: rgba(0,0,0,0.20) !important; }
+[data-theme="light"] .hover\:text-neutral-300:hover { color: #525252 !important; }
+/* Active chip blue accent — keep blue visible on light */
+[data-theme="light"] .border-blue-400.bg-blue-400\/10 { border-color: #1d4ed8 !important; background-color: rgba(29,78,216,0.10) !important; }
+/* Amber tag opacity on light */
+[data-theme="light"] .text-amber-400\/60  { color: rgba(146,64,14,0.60) !important; }
+[data-theme="light"] .text-blue-400\/60   { color: rgba(30,64,175,0.60) !important; }
+
 /* ── Additional text color variants ── */
 [data-theme="light"] .text-blue-200          { color: #1e40af !important; }
 [data-theme="light"] .text-amber-200         { color: #92400e !important; }
