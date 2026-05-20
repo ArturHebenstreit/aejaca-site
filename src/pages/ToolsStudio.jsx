@@ -13,14 +13,14 @@ const LABELS = {
     heroTitle: "Narzędzia dla Makerów",
     heroDesc: "Interaktywna tabela parametrów laserowania i kalkulator sTuDiO. Bezpłatne, bez rejestracji.",
     whyTitle: "Dlaczego dzielę się wiedzą?",
-    whyText: "Cyfrowa fabrykacja stała się dostępna — ale wiedza o parametrach wciąż bywa strzeżona. Udostępniam te narzędzia, bo uważam, że społeczność makerów rośnie, gdy wiedza jest otwarta. Wspólna wiedza to wspólny postęp. Korzystaj bez ograniczeń.",
+    whyText: "Cyfrowa fabrykacja stała się dostępna, ale wiedza o parametrach wciąż bywa strzeżona. Udostępniam te narzędzia, bo uważam, że społeczność makerów rośnie, gdy wiedza jest otwarta. Wspólna wiedza to wspólny postęp. Korzystaj bez ograniczeń.",
     calcCTATitle: "Kalkulator wyceny sTuDiO",
-    calcCTADesc: "Wycena laserowania CO₂ i fiber, druku 3D FDM/SLA oraz odlewów żywicznych — online, bez czekania.",
+    calcCTADesc: "Wycena laserowania CO₂ i fiber, druku 3D FDM/SLA oraz odlewów żywicznych, online, bez czekania.",
     calcCTABtn: "Przejdź do kalkulatora wyceny",
     laserMatrixTitle: "Kreator parametrów laserowania",
-    laserMatrixSubtitle: "Parametry dla 7 typów laserów, 88 materiałów i ponad 1000 kombinacji. Wybierz akcję, materiał i laser — otrzymasz gotową kartę parametrów.",
+    laserMatrixSubtitle: "Parametry dla 7 typów laserów, 88 materiałów i ponad 1000 kombinacji. Wybierz akcję, materiał i laser, otrzymasz gotową kartę parametrów.",
     footerCtaTitle: "Masz projekt do realizacji?",
-    footerCtaText: "Parametry to teoria — wykonanie to nasza specjalność.",
+    footerCtaText: "Parametry to teoria, wykonanie to nasza specjalność.",
     footerCtaBtn: "AEJaCA sTuDiO",
     breadHome: "Strona główna",
     breadStudio: "sTuDiO",
@@ -36,14 +36,14 @@ const LABELS = {
     heroTitle: "Tools for Makers",
     heroDesc: "Interactive laser parameter table and sTuDiO calculator. Free, no registration required.",
     whyTitle: "Why do I share this knowledge?",
-    whyText: "Digital fabrication has become accessible — but parameter knowledge is still often hoarded. I share these tools because I believe the maker community grows when knowledge is open. Shared knowledge means shared progress. Use them freely.",
+    whyText: "Digital fabrication has become accessible, but parameter knowledge is still often hoarded. I share these tools because I believe the maker community grows when knowledge is open. Shared knowledge means shared progress. Use them freely.",
     calcCTATitle: "sTuDiO Pricing Calculator",
-    calcCTADesc: "Estimate CO₂ and fiber laser engraving, FDM/SLA 3D printing, and resin casting — online, no waiting.",
+    calcCTADesc: "Estimate CO₂ and fiber laser engraving, FDM/SLA 3D printing, and resin casting, online, no waiting.",
     calcCTABtn: "Go to pricing calculator",
     laserMatrixTitle: "Laser Parameter Wizard",
-    laserMatrixSubtitle: "Parameters for 7 laser types, 88 materials and over 1000 combinations. Select action, material and laser — get a ready-to-use parameter card.",
+    laserMatrixSubtitle: "Parameters for 7 laser types, 88 materials and over 1000 combinations. Select action, material and laser, get a ready-to-use parameter card.",
     footerCtaTitle: "Have a project to execute?",
-    footerCtaText: "Parameters are theory — execution is our specialty.",
+    footerCtaText: "Parameters are theory, execution is our specialty.",
     footerCtaBtn: "AEJaCA sTuDiO",
     breadHome: "Home",
     breadStudio: "sTuDiO",
@@ -59,14 +59,14 @@ const LABELS = {
     heroTitle: "Tools für Maker",
     heroDesc: "Interaktive Laserparameter-Tabelle und sTuDiO-Kalkulator. Kostenlos, keine Registrierung.",
     whyTitle: "Warum teile ich dieses Wissen?",
-    whyText: "Digitale Fertigung ist zugänglich geworden — aber Parameterwissen wird oft noch gehütet. Ich teile diese Tools, weil ich glaube, dass die Maker-Community wächst, wenn Wissen offen ist. Geteiltes Wissen bedeutet gemeinsamen Fortschritt. Nutze sie frei.",
+    whyText: "Digitale Fertigung ist zugänglich geworden, aber Parameterwissen wird oft noch gehütet. Ich teile diese Tools, weil ich glaube, dass die Maker-Community wächst, wenn Wissen offen ist. Geteiltes Wissen bedeutet gemeinsamen Fortschritt. Nutze sie frei.",
     calcCTATitle: "sTuDiO-Preiskalkulator",
-    calcCTADesc: "Angebot für CO₂- und Faserlaser, FDM/SLA-3D-Druck und Harzverguss — online, ohne Wartezeit.",
+    calcCTADesc: "Angebot für CO₂- und Faserlaser, FDM/SLA-3D-Druck und Harzverguss, online, ohne Wartezeit.",
     calcCTABtn: "Zum Preiskalkulator",
     laserMatrixTitle: "Laserparameter-Assistent",
-    laserMatrixSubtitle: "Parameter für 7 Lasertypen, 88 Materialien und über 1000 Kombinationen. Aktion, Material und Laser wählen — fertige Parameterkarte erhalten.",
+    laserMatrixSubtitle: "Parameter für 7 Lasertypen, 88 Materialien und über 1000 Kombinationen. Aktion, Material und Laser wählen, fertige Parameterkarte erhalten.",
     footerCtaTitle: "Projekt zur Ausführung?",
-    footerCtaText: "Parameter sind Theorie — Ausführung ist unsere Spezialität.",
+    footerCtaText: "Parameter sind Theorie, Ausführung ist unsere Spezialität.",
     footerCtaBtn: "AEJaCA sTuDiO",
     breadHome: "Startseite",
     breadStudio: "sTuDiO",
@@ -108,7 +108,7 @@ export default function ToolsStudio() {
         <section className="relative overflow-hidden min-h-[480px]">
           <img
             src="/hero-toolstudio.webp"
-            alt="Narzędzia dla makerów — AEJaCA sTuDiO"
+            alt="Narzędzia dla makerów, AEJaCA sTuDiO"
             className="absolute inset-0 w-full h-full object-cover"
             loading="eager"
             fetchpriority="high"
@@ -147,7 +147,7 @@ export default function ToolsStudio() {
 
         <div className="gradient-divider" />
 
-        {/* Tool cards — 2-column grid */}
+        {/* Tool cards, 2-column grid */}
         <section className="py-10 px-4 bg-neutral-950">
           <div className="max-w-3xl mx-auto">
             <div ref={printCardRef} className="reveal">

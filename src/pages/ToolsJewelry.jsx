@@ -13,14 +13,14 @@ const LABELS = {
     heroTitle: "Narzędzia dla jubilerów",
     heroDesc: "Darmowe kalkulatory dla złotników i twórców biżuterii. Oblicz blank, zaplanuj projekt.",
     whyTitle: "Dlaczego dzielę się wiedzą?",
-    whyText: "Rzemiosło jubilerskie powinno być dostępne. Każdy, kto chce tworzyć biżuterię, zasługuje na rzetelne informacje — bez ukrytych kalkulacji i marży za „tajniki zawodu”. AEJaCA to pracownia, która wierzy, że wiedza otwiera więcej drzwi niż jej zamykanie. Te narzędzia są bezpłatne, bez reklam, bez rejestracji.",
+    whyText: "Rzemiosło jubilerskie powinno być dostępne. Każdy, kto chce tworzyć biżuterię, zasługuje na rzetelne informacje, bez ukrytych kalkulacji i marży za „tajniki zawodu”. AEJaCA to pracownia, która wierzy, że wiedza otwiera więcej drzwi niż jej zamykanie. Te narzędzia są bezpłatne, bez reklam, bez rejestracji.",
     calcCTATitle: "Kalkulator wyceny biżuterii",
     calcCTADesc: "Szybka wycena pierścionków, obrączek, wisiorków na podstawie aktualnych cen metali i kamieni.",
     calcCTABtn: "Przejdź do kalkulatora wyceny",
     ringBlankTitle: "Kalkulator blanku obrączki",
     ringBlankSubtitle: "Oblicz długość pręta i masę blanku dla dowolnego metalu, średnicy i szerokości obrączki.",
     footerCtaTitle: "Chcesz zamówić biżuterię?",
-    footerCtaText: "Kalkulatory to wiedza — realizacja to nasza specjalność.",
+    footerCtaText: "Kalkulatory to wiedza, realizacja to nasza specjalność.",
     footerCtaBtn: "AEJaCA Biżuteria",
     breadHome: "Strona główna",
     breadJewelry: "Biżuteria",
@@ -33,21 +33,21 @@ const LABELS = {
     tool3Title: "Kalkulator blanku obrączki",
     tool3Desc: "Długość pręta i masa blanku dla dowolnego metalu i rozmiaru",
     tool4Title: "Konwerter rozmiarów pierścionków",
-    tool4Desc: "Przelicz EU / US / UK / JP — lub wpisz obwód/średnicę palca.",
+    tool4Desc: "Przelicz EU / US / UK / JP, lub wpisz obwód/średnicę palca.",
   },
   en: {
     heroTag: "Open knowledge",
     heroTitle: "Tools for Jewelers",
     heroDesc: "Free calculators for goldsmiths and jewelry makers. Calculate ring blanks, plan your project.",
     whyTitle: "Why do I share this knowledge?",
-    whyText: "Jewelry craft should be accessible. Everyone who wants to make jewelry deserves honest information — without hidden calculations or premium pricing for 'trade secrets'. AEJaCA is a studio that believes knowledge opens more doors than it closes. These tools are free, ad-free, no sign-up required.",
+    whyText: "Jewelry craft should be accessible. Everyone who wants to make jewelry deserves honest information, without hidden calculations or premium pricing for 'trade secrets'. AEJaCA is a studio that believes knowledge opens more doors than it closes. These tools are free, ad-free, no sign-up required.",
     calcCTATitle: "Jewelry Pricing Calculator",
     calcCTADesc: "Quick estimate for rings, bands, pendants based on current metal and gemstone prices.",
     calcCTABtn: "Go to pricing calculator",
     ringBlankTitle: "Ring Blank Calculator",
     ringBlankSubtitle: "Calculate strip length and weight for any metal, inner diameter, and band width.",
     footerCtaTitle: "Want to order jewelry?",
-    footerCtaText: "Calculators are knowledge — execution is our specialty.",
+    footerCtaText: "Calculators are knowledge, execution is our specialty.",
     footerCtaBtn: "AEJaCA Jewelry",
     breadHome: "Home",
     breadJewelry: "Jewelry",
@@ -60,21 +60,21 @@ const LABELS = {
     tool3Title: "Ring Blank Calculator",
     tool3Desc: "Strip length and blank weight for any metal and size",
     tool4Title: "Ring Size Converter",
-    tool4Desc: "Convert EU / US / UK / JP — or enter your finger circumference/diameter.",
+    tool4Desc: "Convert EU / US / UK / JP, or enter your finger circumference/diameter.",
   },
   de: {
     heroTag: "Offenes Wissen",
     heroTitle: "Tools für Goldschmiede",
     heroDesc: "Kostenlose Kalkulatoren für Goldschmiede und Schmuckmacher. Rohling berechnen, Projekt planen.",
     whyTitle: "Warum teile ich dieses Wissen?",
-    whyText: "Das Schmuckhandwerk sollte zugänglich sein. Jeder, der Schmuck herstellen möchte, verdient ehrliche Informationen — ohne versteckte Berechnungen oder Aufpreise für 'Branchengeheimnisse'. AEJaCA ist ein Atelier, das glaubt, dass Wissen mehr Türen öffnet als es schließt. Diese Tools sind kostenlos, werbefrei und erfordern keine Anmeldung.",
+    whyText: "Das Schmuckhandwerk sollte zugänglich sein. Jeder, der Schmuck herstellen möchte, verdient ehrliche Informationen, ohne versteckte Berechnungen oder Aufpreise für 'Branchengeheimnisse'. AEJaCA ist ein Atelier, das glaubt, dass Wissen mehr Türen öffnet als es schließt. Diese Tools sind kostenlos, werbefrei und erfordern keine Anmeldung.",
     calcCTATitle: "Schmuck-Preiskalkulator",
     calcCTADesc: "Schnelle Schätzung für Ringe, Bänder, Anhänger basierend auf aktuellen Metall- und Edelsteinpreisen.",
     calcCTABtn: "Zum Preiskalkulator",
     ringBlankTitle: "Ring-Rohling-Rechner",
     ringBlankSubtitle: "Streifen-länge und Gewicht für beliebige Metalle, Innendurchmesser und Ringbreite berechnen.",
     footerCtaTitle: "Schmuck bestellen?",
-    footerCtaText: "Kalkulatoren sind Wissen — Ausführung ist unsere Spezialität.",
+    footerCtaText: "Kalkulatoren sind Wissen, Ausführung ist unsere Spezialität.",
     footerCtaBtn: "AEJaCA Schmuck",
     breadHome: "Startseite",
     breadJewelry: "Schmuck",
@@ -87,7 +87,7 @@ const LABELS = {
     tool3Title: "Ring-Rohling-Rechner",
     tool3Desc: "Streifenlänge und Rohlinggewicht für beliebige Metalle und Größen",
     tool4Title: "Ringgrößen-Konverter",
-    tool4Desc: "EU / US / UK / JP umrechnen — oder Fingerumfang/Durchmesser eingeben.",
+    tool4Desc: "EU / US / UK / JP umrechnen, oder Fingerumfang/Durchmesser eingeben.",
   },
 };
 
@@ -119,7 +119,7 @@ export default function ToolsJewelry() {
         <section className="relative overflow-hidden min-h-[480px]">
           <img
             src="/hero-toolsjewelry.webp"
-            alt="Narzędzia dla jubilerów — AEJaCA"
+            alt="Narzędzia dla jubilerów, AEJaCA"
             className="absolute inset-0 w-full h-full object-cover"
             loading="eager"
             fetchpriority="high"

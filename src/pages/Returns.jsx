@@ -88,7 +88,7 @@ export default function Returns() {
   const pageUrl = `${SITE.url}/returns/`;
   const schemas = [
     buildWebPageSchema({
-      title: `${l.tag} — ${SITE.name}`,
+      title: `${l.tag}, ${SITE.name}`,
       description: l.description,
       url: pageUrl,
       lang,

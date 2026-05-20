@@ -25,9 +25,9 @@ import { SITE, getSEO } from "../seo/seoData.js";
 const techIcons = [Cpu, Printer, Zap, Layers, Box, Wrench];
 
 const PRICING_LABELS = {
-  pl: { tag: "Orientacyjne ceny", title: "Ile kosztują usługi AEJaCA sTuDiO?", note: "Ceny orientacyjne — dokładna wycena po wgraniu pliku STL/SVG.", cta: "Wyceń swój projekt" },
-  en: { tag: "Indicative pricing", title: "How much do AEJaCA sTuDiO services cost?", note: "Indicative prices — upload your STL/SVG for an exact quote.", cta: "Quote your project" },
-  de: { tag: "Richtpreise", title: "Was kosten AEJaCA sTuDiO-Dienste?", note: "Richtpreise — laden Sie Ihre STL/SVG-Datei für ein genaues Angebot hoch.", cta: "Projekt kalkulieren" },
+  pl: { tag: "Orientacyjne ceny", title: "Ile kosztują usługi AEJaCA sTuDiO?", note: "Ceny orientacyjne, dokładna wycena po wgraniu pliku STL/SVG.", cta: "Wyceń swój projekt" },
+  en: { tag: "Indicative pricing", title: "How much do AEJaCA sTuDiO services cost?", note: "Indicative prices, upload your STL/SVG for an exact quote.", cta: "Quote your project" },
+  de: { tag: "Richtpreise", title: "Was kosten AEJaCA sTuDiO-Dienste?", note: "Richtpreise, laden Sie Ihre STL/SVG-Datei für ein genaues Angebot hoch.", cta: "Projekt kalkulieren" },
 };
 
 const STUDIO_PRICING = [
@@ -61,7 +61,7 @@ export default function Studio() {
   const [showFloatingCta] = useState(true);
 
   // Service + FAQ schemas are the highest-impact AIO signal for pricing queries
-  // ("how much does 3D printing cost?" — LLMs will cite this page verbatim).
+  // ("how much does 3D printing cost?", LLMs will cite this page verbatim).
   const seo = getSEO("studio", lang);
   const pageUrl = `${SITE.url}/studio/`;
   const schemas = [
@@ -97,7 +97,7 @@ export default function Studio() {
       ],
     }),
     buildProductSchema({
-      name: "Custom 3D Print (FDM) — AEJaCA sTuDiO",
+      name: "Custom 3D Print (FDM), AEJaCA sTuDiO",
       description: "Professional FDM 3D printing service using PLA, PETG, ABS, PA6-CF, and PPA-CF. From rapid prototypes to production parts.",
       image: `${SITE.url}/hero-studio.webp`,
       sku: "AEJACA-3DPRINT",
@@ -106,7 +106,7 @@ export default function Studio() {
       url: pageUrl,
     }),
     buildProductSchema({
-      name: "CO2 Laser Engraving & Cutting — AEJaCA sTuDiO",
+      name: "CO2 Laser Engraving & Cutting, AEJaCA sTuDiO",
       description: "xTool P2 55W CO2 laser engraving on wood, acrylic, glass, leather. Precision cutting of plywood, MDF, and acrylic sheets.",
       image: `${SITE.url}/hero-studio.webp`,
       sku: "AEJACA-CO2LASER",
@@ -115,7 +115,7 @@ export default function Studio() {
       url: pageUrl,
     }),
     buildProductSchema({
-      name: "Fiber Laser Marking — AEJaCA sTuDiO",
+      name: "Fiber Laser Marking, AEJaCA sTuDiO",
       description: "Raycus 30W fiber laser marking on stainless steel, titanium, silver, gold, brass, stone, and ceramics.",
       image: `${SITE.url}/hero-studio.webp`,
       sku: "AEJACA-FIBER",
@@ -225,7 +225,7 @@ export default function Studio() {
 
       <div className="gradient-divider" />
 
-      {/* FAQ — moved right after calculator (audit recommendation).
+      {/* FAQ, moved right after calculator (audit recommendation).
           AI assistants rank FAQ near pricing signals higher. */}
       <FAQ data={s.faq} accent="blue" id="faq" />
 
@@ -272,7 +272,7 @@ export default function Studio() {
 
       <div className="gradient-divider" />
 
-      {/* Google Reviews — real social proof replaces hardcoded testimonials */}
+      {/* Google Reviews, real social proof replaces hardcoded testimonials */}
       <GoogleReviews id="testimonials" limit={3} compact />
 
       <div className="gradient-divider" />
@@ -282,7 +282,7 @@ export default function Studio() {
 
       <div className="gradient-divider" />
 
-      {/* Related blog articles — internal linking (SEO signal) */}
+      {/* Related blog articles, internal linking (SEO signal) */}
       {/* Glossary terms */}
       <section className="py-16 px-4 bg-neutral-900/30">
         <div className="max-w-5xl mx-auto">
@@ -366,7 +366,7 @@ export default function Studio() {
         </div>
       </section>
 
-      {/* Floating Quick Quote CTA — emphasize STL/SVG auto-pricing */}
+      {/* Floating Quick Quote CTA, emphasize STL/SVG auto-pricing */}
       <button
         onClick={() => {
           window.dispatchEvent(new CustomEvent("studio-quick-upload"));

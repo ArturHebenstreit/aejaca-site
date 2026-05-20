@@ -64,7 +64,7 @@ export default function Navbar() {
       const el = document.getElementById(sectionId);
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "start" });
-        // Force reveal animations — IntersectionObserver may miss
+        // Force reveal animations, IntersectionObserver may miss
         // elements when scrollIntoView jumps directly to them
         requestAnimationFrame(() => {
           el.querySelectorAll(".reveal, .reveal-scale, .reveal-left, .reveal-right").forEach(
@@ -77,10 +77,10 @@ export default function Navbar() {
     };
 
     if (pathname === pagePath) {
-      // Already on the page — small delay for mobile menu close animation
+      // Already on the page, small delay for mobile menu close animation
       setTimeout(doScroll, 100);
     } else {
-      // Navigate then scroll after render — retry for slow mobile devices
+      // Navigate then scroll after render, retry for slow mobile devices
       navigate(pagePath);
       const tryScroll = (attempts) => {
         if (!doScroll() && attempts > 0) {

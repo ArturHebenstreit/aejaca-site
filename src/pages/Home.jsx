@@ -46,7 +46,7 @@ export default function Home() {
     <>
       <SEOHead pageKey="home" path="/" schemas={schemas} />
       <div className="pt-16">
-        {/* Hero intro — visible StoryBrand tagline (H1 now visible, not sr-only).
+        {/* Hero intro, visible StoryBrand tagline (H1 now visible, not sr-only).
             One H1 per page = SEO rule; value prop is front-and-center for humans + LLMs. */}
         <section className="bg-neutral-950 pt-10 pb-6 md:pt-14 md:pb-8 px-4 text-center" aria-labelledby="hero-tagline">
           <h1
@@ -68,8 +68,8 @@ export default function Home() {
           </a>
         </section>
 
-        {/* Gateway Cards — two entry points as bento-style cards (3:4 images) */}
-        <section className="bg-neutral-950 px-4 pb-10 md:pb-14" aria-label={h.heroAria || "AEJaCA — two worlds"}>
+        {/* Gateway Cards, two entry points as bento-style cards (3:4 images) */}
+        <section className="bg-neutral-950 px-4 pb-3 md:pb-4" aria-label={h.heroAria || "AEJaCA, two worlds"}>
           <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
             {/* Jewelry Card */}
             <Link to="/jewelry/" onClick={() => trackCTA("hero_jewelry")} className="group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg shadow-black/40 hover:shadow-2xl hover:shadow-amber-900/40 transition-all duration-500 hover:-translate-y-1">
@@ -87,7 +87,7 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,transparent_50%,rgba(0,0,0,0.72)_100%)]" />
               </div>
-              <div className="absolute bottom-0 left-0 right-0 h-56 md:h-60 flex flex-col justify-between items-center px-6 md:px-8 pb-7 md:pb-8 pt-5 text-center">
+              <div className="absolute bottom-0 left-0 right-0 h-48 md:h-52 flex flex-col justify-between items-center px-6 md:px-8 pb-6 md:pb-7 pt-4 text-center">
                 <div>
                   <div className="text-amber-400 text-[10px] uppercase tracking-[0.25em] mb-3">{h.jewelrySubtitle}</div>
                   <p className="text-neutral-200 text-sm leading-relaxed max-w-xs mx-auto">{h.jewelryDesc}</p>
@@ -114,7 +114,7 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,transparent_50%,rgba(0,0,0,0.72)_100%)]" />
               </div>
-              <div className="absolute bottom-0 left-0 right-0 h-56 md:h-60 flex flex-col justify-between items-center px-6 md:px-8 pb-7 md:pb-8 pt-5 text-center">
+              <div className="absolute bottom-0 left-0 right-0 h-48 md:h-52 flex flex-col justify-between items-center px-6 md:px-8 pb-6 md:pb-7 pt-4 text-center">
                 <div>
                   <div className="text-blue-400 text-[10px] uppercase tracking-[0.25em] mb-3">{h.studioSubtitle}</div>
                   <p className="text-neutral-200 text-sm leading-relaxed max-w-xs mx-auto">{h.studioDesc}</p>
@@ -128,9 +128,9 @@ export default function Home() {
         </section>
 
       {/* Brand Statement */}
-      <section className="py-20 px-4 text-center bg-neutral-950">
+      <section className="py-12 px-4 text-center bg-neutral-950">
         <div ref={brandRef} className="reveal max-w-3xl mx-auto">
-          {/* Below-the-fold image: lazy loaded to save bandwidth — no LCP impact */}
+          {/* Below-the-fold image: lazy loaded to save bandwidth, no LCP impact */}
           <img src="/brand-sign.webp" alt="AEJaCA brand mark" loading="lazy" decoding="async" className="w-36 h-36 mx-auto mb-8 brightness-0 invert opacity-80 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]" />
           <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-6">{h.brandHeading}</h2>
           <p className="text-neutral-400 text-lg leading-relaxed">{h.brandText}</p>
@@ -145,8 +145,8 @@ export default function Home() {
 
       <div className="gradient-divider" />
 
-      {/* Quick Quote — showcase calculators + STL/SVG upload (conversion driver) */}
-      <section className="py-20 px-4 bg-gradient-to-b from-neutral-950 via-neutral-900/30 to-neutral-950">
+      {/* Quick Quote, showcase calculators + STL/SVG upload (conversion driver) */}
+      <section className="py-12 px-4 bg-gradient-to-b from-neutral-950 via-neutral-900/30 to-neutral-950">
         <div ref={quoteRef} className="reveal max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <div className="flex items-center justify-center gap-2 mb-3">
@@ -161,7 +161,7 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Two calculator cards — Jewelry + Studio (side by side) */}
+          {/* Two calculator cards, Jewelry + Studio (side by side) */}
           <div className="grid md:grid-cols-2 gap-6 mb-6">
             <Link to="/jewelry/#calculator" onClick={() => trackCTA("quickquote_jewelry")} className="group relative rounded-2xl overflow-hidden border border-amber-400/20 bg-gradient-to-br from-amber-950/20 to-neutral-950 p-6 md:p-8 hover:border-amber-400/40 hover:shadow-lg hover:shadow-amber-900/20 hover:-translate-y-1 transition-all duration-300">
               <div className="flex items-start justify-between mb-4">
@@ -232,7 +232,7 @@ export default function Home() {
 
       <div className="gradient-divider" />
 
-      {/* Blog highlights — internal linking + content discovery (SEO + AIO) */}
+      {/* Blog highlights, internal linking + content discovery (SEO + AIO) */}
       <section className="py-16 px-4 bg-neutral-950">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10">
@@ -298,12 +298,12 @@ export default function Home() {
 
       <div className="gradient-divider" />
 
-      {/* Google Reviews — social proof before CTA (trust → action pattern) */}
+      {/* Google Reviews, social proof before CTA (trust → action pattern) */}
       <GoogleReviews id="reviews" limit={6} />
 
       <div className="gradient-divider" />
 
-      {/* Trustpilot — second trust layer after Google reviews */}
+      {/* Trustpilot, second trust layer after Google reviews */}
       <TrustpilotWidget />
 
       <div className="gradient-divider" />

@@ -26,9 +26,9 @@ import { SITE, getSEO } from "../seo/seoData.js";
 const icons = [Gem, Sparkles, Palette, Heart, Wand2, Crown];
 
 const PRICING_LABELS = {
-  pl: { tag: "Orientacyjne ceny", title: "Ile kosztuje biżuteria?", note: "Ceny orientacyjne — dokładna wycena w kalkulatorze poniżej.", cta: "Wyceń w kalkulatorze" },
-  en: { tag: "Indicative pricing", title: "How much does jewelry cost?", note: "Indicative prices — use the calculator below for an exact quote.", cta: "Get a quote" },
-  de: { tag: "Richtpreise", title: "Was kostet Schmuck?", note: "Richtpreise — nutzen Sie den Rechner unten für ein genaues Angebot.", cta: "Zum Rechner" },
+  pl: { tag: "Orientacyjne ceny", title: "Ile kosztuje biżuteria?", note: "Ceny orientacyjne, dokładna wycena w kalkulatorze poniżej.", cta: "Wyceń w kalkulatorze" },
+  en: { tag: "Indicative pricing", title: "How much does jewelry cost?", note: "Indicative prices, use the calculator below for an exact quote.", cta: "Get a quote" },
+  de: { tag: "Richtpreise", title: "Was kostet Schmuck?", note: "Richtpreise, nutzen Sie den Rechner unten für ein genaues Angebot.", cta: "Zum Rechner" },
 };
 
 const PRICING_ITEMS = [
@@ -98,7 +98,7 @@ export default function Jewelry() {
       ],
     }),
     buildProductSchema({
-      name: "Custom Silver Ring with Gemstone — AEJaCA",
+      name: "Custom Silver Ring with Gemstone, AEJaCA",
       description: "Handcrafted sterling silver ring with natural gemstone, custom designed to order. Available with amethyst, emerald, sapphire, or ruby.",
       image: `${SITE.url}/hero-jewelry.webp`,
       sku: "AEJACA-RING-925",
@@ -109,7 +109,7 @@ export default function Jewelry() {
       url: pageUrl,
     }),
     buildProductSchema({
-      name: "Handmade Gold Engagement Ring — AEJaCA",
+      name: "Handmade Gold Engagement Ring, AEJaCA",
       description: "Bespoke 14K or 18K gold engagement ring with premium gemstone setting. Prong, bezel, or channel setting available.",
       image: `${SITE.url}/hero-jewelry.webp`,
       sku: "AEJACA-ENGAGE-14K",
@@ -120,7 +120,7 @@ export default function Jewelry() {
       url: pageUrl,
     }),
     buildProductSchema({
-      name: "Silver Earrings with Natural Gemstones — AEJaCA",
+      name: "Silver Earrings with Natural Gemstones, AEJaCA",
       description: "Artisan-crafted sterling silver earrings featuring hand-selected natural gemstones. Each pair is unique.",
       image: `${SITE.url}/hero-jewelry.webp`,
       sku: "AEJACA-EARR-925",
@@ -230,7 +230,7 @@ export default function Jewelry() {
 
       <div className="gradient-divider" />
 
-      {/* FAQ — moved right after calculator so users get answers
+      {/* FAQ, moved right after calculator so users get answers
           before they need to scroll through portfolio / reviews.
           AI assistants also rank FAQ above-the-fold higher. */}
       <FAQ data={j.faq} accent="amber" id="faq" />
@@ -263,7 +263,7 @@ export default function Jewelry() {
 
       <div className="gradient-divider" />
 
-      {/* Google Reviews — real social proof replaces hardcoded testimonials */}
+      {/* Google Reviews, real social proof replaces hardcoded testimonials */}
       <GoogleReviews id="testimonials" limit={3} compact />
 
       <div className="gradient-divider" />
@@ -273,7 +273,7 @@ export default function Jewelry() {
 
       <div className="gradient-divider" />
 
-      {/* Related blog article — internal linking (SEO signal) */}
+      {/* Related blog article, internal linking (SEO signal) */}
       {/* Glossary terms */}
       <section className="py-16 px-4 bg-neutral-900/30">
         <div className="max-w-5xl mx-auto">
@@ -355,7 +355,7 @@ export default function Jewelry() {
         </div>
       </section>
 
-      {/* Floating Quick Quote CTA — jumps user straight to calculator (conversion driver) */}
+      {/* Floating Quick Quote CTA, jumps user straight to calculator (conversion driver) */}
       <a
         href="#calculator"
         className={`floating-cta ${showFloatingCta ? "visible" : ""}`}

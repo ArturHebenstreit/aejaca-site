@@ -27,7 +27,7 @@ const LABELS = {
       "Wysyłka do UK. Koszt od 80 zł, czas dostawy 7–14 dni roboczych.",
     world: "USA i inne kraje",
     worldDesc:
-      "Wysyłka możliwa po indywidualnym ustaleniu — napisz na contact@aejaca.com",
+      "Wysyłka możliwa po indywidualnym ustaleniu, napisz na contact@aejaca.com",
     timesTitle: "Czas realizacji",
     times: [
       { label: "Biżuteria (materiały na stanie)", value: "do 7 dni roboczych" },
@@ -55,7 +55,7 @@ const LABELS = {
       "Shipping to the UK. From €19, delivery in 7–14 business days.",
     world: "USA & Other Countries",
     worldDesc:
-      "International shipping available upon request — email contact@aejaca.com",
+      "International shipping available upon request, email contact@aejaca.com",
     timesTitle: "Fulfillment Times",
     times: [
       { label: "Jewelry (materials in stock)", value: "up to 7 business days" },
@@ -83,7 +83,7 @@ const LABELS = {
       "Versand nach UK. Ab €19, Lieferzeit 7–14 Werktage.",
     world: "USA & andere Länder",
     worldDesc:
-      "Internationaler Versand auf Anfrage — E-Mail an contact@aejaca.com",
+      "Internationaler Versand auf Anfrage, E-Mail an contact@aejaca.com",
     timesTitle: "Bearbeitungszeiten",
     times: [
       { label: "Schmuck (Material auf Lager)", value: "bis zu 7 Werktage" },
@@ -105,7 +105,7 @@ export default function Shipping() {
   const pageUrl = `${SITE.url}/shipping/`;
   const schemas = [
     buildWebPageSchema({
-      title: `${l.tag} — ${SITE.name}`,
+      title: `${l.tag}, ${SITE.name}`,
       description: l.description,
       url: pageUrl,
       lang,
@@ -172,7 +172,7 @@ export default function Shipping() {
               </span>
             </div>
 
-            {/* International — 3 cols */}
+            {/* International, 3 cols */}
             <div ref={internationalRef} className="reveal grid md:grid-cols-3 gap-5 mb-5">
               {/* Europe EU */}
               <div className="bg-neutral-900/60 border border-neutral-800 rounded-xl p-6 hover:border-amber-400/30 transition-colors">

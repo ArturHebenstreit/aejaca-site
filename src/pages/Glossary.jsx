@@ -12,7 +12,7 @@ const LABELS = {
   pl: {
     tag: "Słownik pojęć",
     title: "Glosariusz biżuterii i fabrykacji",
-    description: "Kluczowe pojęcia ze świata biżuterii, druku 3D, grawerowania laserowego i odlewów żywicznych — wyjaśnione prosto i zwięźle.",
+    description: "Kluczowe pojęcia ze świata biżuterii, druku 3D, grawerowania laserowego i odlewów żywicznych, wyjaśnione prosto i zwięźle.",
     search: "Szukaj pojęcia…",
     all: "Wszystkie",
     readMore: "Czytaj więcej",
@@ -21,7 +21,7 @@ const LABELS = {
   en: {
     tag: "Glossary",
     title: "Jewelry & fabrication glossary",
-    description: "Key terms from the world of jewelry, 3D printing, laser engraving, and resin casting — explained simply and concisely.",
+    description: "Key terms from the world of jewelry, 3D printing, laser engraving, and resin casting, explained simply and concisely.",
     search: "Search terms…",
     all: "All",
     readMore: "Read more",
@@ -30,7 +30,7 @@ const LABELS = {
   de: {
     tag: "Glossar",
     title: "Schmuck- & Fertigungs-Glossar",
-    description: "Schlüsselbegriffe aus der Welt des Schmucks, 3D-Drucks, der Lasergravur und des Harzgusses — einfach und prägnant erklärt.",
+    description: "Schlüsselbegriffe aus der Welt des Schmucks, 3D-Drucks, der Lasergravur und des Harzgusses, einfach und prägnant erklärt.",
     search: "Begriff suchen…",
     all: "Alle",
     readMore: "Mehr lesen",
@@ -79,7 +79,7 @@ export default function Glossary() {
 
   const pageUrl = `${SITE.url}/glossary/`;
   const schemas = [
-    buildWebPageSchema({ title: `${l.tag} — ${SITE.name}`, description: l.description, url: pageUrl, lang }),
+    buildWebPageSchema({ title: `${l.tag}, ${SITE.name}`, description: l.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([
       { name: "Home", url: SITE.url },
       { name: l.tag, url: pageUrl },
@@ -94,7 +94,7 @@ export default function Glossary() {
       <SEOHead
         pageKey="glossary"
         path="/glossary"
-        title={`${l.tag} — ${SITE.name}`}
+        title={`${l.tag}, ${SITE.name}`}
         description={l.description}
         schemas={schemas}
       />
