@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — Shadows & Glass</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: var(--bg-page); color: var(--fg-1); font-family: var(--font-sans); }
+  .wrap { padding: 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .sub { grid-column: 1 / -1; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--fg-4); margin-bottom: 0; }
+  .card { background: var(--bg-page-soft); border-radius: 16px; padding: 18px; border: 1px solid var(--border-default); display: flex; flex-direction: column; gap: 10px; min-height: 120px; }
+  .card .k { font-family: var(--font-mono); font-size: 11px; color: var(--fg-2); font-weight: 600; }
+  .card .v { font-family: var(--font-mono); font-size: 10px; color: var(--fg-4); line-height: 1.5; }
+  .swatch { width: 100%; flex: 1; border-radius: 10px; }
+
+  .s-card { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.40); background: #171717; }
+  .s-card-hover { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.60); background: #171717; }
+  .s-amber { box-shadow: 0 20px 40px -16px rgba(120,53,15,0.50); background: linear-gradient(180deg, rgba(245,158,11,0.10), #0a0a0a); border: 1px solid var(--border-amber); }
+  .s-blue { box-shadow: 0 20px 40px -16px rgba(30,58,138,0.50); background: linear-gradient(180deg, rgba(59,130,246,0.10), #0a0a0a); border: 1px solid var(--border-blue); }
+
+  .g { padding: 14px; border-radius: 12px; }
+  .g.amber { background: rgba(245,158,11,0.06); backdrop-filter: blur(16px); border: 1px solid var(--border-amber); }
+  .g.blue  { background: rgba(59,130,246,0.06); backdrop-filter: blur(16px); border: 1px solid var(--border-blue); }
+  .g.white { background: rgba(255,255,255,0.03); backdrop-filter: blur(12px); border: 1px solid var(--border-default); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="sub">Shadow system — applied on hover</div>
+    <div class="card"><div class="swatch s-card"></div><div class="k">shadow-card</div><div class="v">0 10 15 -3 / black 40%</div></div>
+    <div class="card"><div class="swatch s-card-hover"></div><div class="k">shadow-card-hover</div><div class="v">0 25 50 -12 / black 60%</div></div>
+    <div class="card"><div class="swatch s-amber"></div><div class="k">amber glow</div><div class="v">jewelry hover halo</div></div>
+    <div class="card"><div class="swatch s-blue"></div><div class="k">blue glow</div><div class="v">studio hover halo</div></div>
+
+    <div class="sub">Glass morphism panels</div>
+    <div class="card g amber"><div class="k" style="color: var(--amber-300)">.glass-amber</div><div class="v">white 3% · amber border<br/>blur 16px</div></div>
+    <div class="card g blue"><div class="k" style="color: var(--blue-300)">.glass-blue</div><div class="v">white 3% · blue border<br/>blur 16px</div></div>
+    <div class="card g white"><div class="k">.glass</div><div class="v">white 3% · neutral border<br/>blur 12px · navbar</div></div>
+    <div class="card" style="background: linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent); border: none; box-shadow: none;"><div class="k">gradient-divider</div><div class="v">1px high · section separator</div></div>
+  </div>
+</body>
+</html>

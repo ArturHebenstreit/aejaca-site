@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — Semantic colors</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: var(--bg-page); color: var(--fg-1); font-family: var(--font-sans); }
+  .wrap { padding: 24px; display: grid; gap: 14px; }
+  .row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .sw { padding: 14px; border-radius: 12px; border: 1px solid var(--border-default); background: var(--bg-page-soft); display: flex; align-items: center; gap: 12px; }
+  .dot { width: 28px; height: 28px; border-radius: 999px; flex: 0 0 28px; box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset; }
+  .meta .k { font-size: 12px; color: var(--fg-1); font-weight: 600; letter-spacing: 0.02em; }
+  .meta .h { font-family: var(--font-mono); font-size: 10px; color: var(--fg-4); margin-top: 2px; }
+  .sub { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--fg-4); margin-bottom: 4px; }
+  .accent .sub { color: var(--amber-500); }
+  .accent.studio .sub { color: var(--blue-500); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div>
+      <div class="sub">Semantic — status</div>
+      <div class="row">
+        <div class="sw"><div class="dot" style="background:#34d399"></div><div class="meta"><div class="k">success</div><div class="h">emerald-400 · #34d399</div></div></div>
+        <div class="sw"><div class="dot" style="background:#f59e0b"></div><div class="meta"><div class="k">warning</div><div class="h">amber-500 · #f59e0b</div></div></div>
+        <div class="sw"><div class="dot" style="background:#ef4444"></div><div class="meta"><div class="k">danger</div><div class="h">red-500 · #ef4444</div></div></div>
+        <div class="sw"><div class="dot" style="background:#3b82f6"></div><div class="meta"><div class="k">info</div><div class="h">blue-500 · #3b82f6</div></div></div>
+      </div>
+    </div>
+    <div>
+      <div class="sub">Metals (footer ticker)</div>
+      <div class="row">
+        <div class="sw"><div class="dot" style="background:#fbbf24"></div><div class="meta"><div class="k">Au · gold</div><div class="h">amber-400 · #fbbf24</div></div></div>
+        <div class="sw"><div class="dot" style="background:#cbd5e1"></div><div class="meta"><div class="k">Ag · silver</div><div class="h">slate-300 · #cbd5e1</div></div></div>
+        <div class="sw"><div class="dot" style="background:#d8b4fe"></div><div class="meta"><div class="k">Pt · platinum</div><div class="h">purple-300 · #d8b4fe</div></div></div>
+        <div class="sw"><div class="dot" style="background:#67e8f9"></div><div class="meta"><div class="k">Pd · palladium</div><div class="h">cyan-300 · #67e8f9</div></div></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

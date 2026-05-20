@@ -1,0 +1,305 @@
+/* ============================================================
+   AEJaCA Design System — Colors & Type
+   ------------------------------------------------------------
+   Dual-brand under one site, on a dark canvas.
+   - AEJaCA Jewelry → amber/gold accents, Playfair Display serif
+   - AEJaCA sTuDiO  → blue accents, Inter sans-serif
+   - Shared chrome  → neutral-950 background, white text
+   Reference: aejaca.com (React 18 + Tailwind v4)
+   ============================================================ */
+
+/* -----------------------------------------------------------
+   Web fonts — match the live site exactly.
+   ----------------------------------------------------------- */
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap");
+
+:root {
+  /* ---------- Surfaces (dark canvas) ----------
+     Site bg is neutral-950. We layer with subtle tints + glass. */
+  --bg-page:            #0a0a0a;       /* neutral-950 — canonical canvas */
+  --bg-page-soft:       #171717;       /* neutral-900 — second tier */
+  --bg-elevated:        #262626;       /* neutral-800 — cards w/o glass */
+  --bg-glass:           rgba(255,255,255,0.03);     /* .glass utility */
+  --bg-glass-amber:     rgba(245,158,11,0.06);      /* .glass-amber */
+  --bg-glass-blue:      rgba(59,130,246,0.06);      /* .glass-blue */
+
+  /* ---------- Borders / dividers ---------- */
+  --border-faint:       rgba(255,255,255,0.05);
+  --border-default:     rgba(255,255,255,0.08);
+  --border-strong:      rgba(255,255,255,0.10);
+  --border-amber:       rgba(245,158,11,0.18);
+  --border-amber-hi:    rgba(245,158,11,0.40);
+  --border-blue:        rgba(59,130,246,0.18);
+  --border-blue-hi:     rgba(59,130,246,0.40);
+  --border-emerald:     rgba(52,211,153,0.20);
+
+  /* ---------- Foregrounds (text on dark) ---------- */
+  --fg-1:               #ffffff;     /* primary text */
+  --fg-2:               #d4d4d4;     /* neutral-300 — body */
+  --fg-3:               #a3a3a3;     /* neutral-400 — supporting */
+  --fg-4:               #737373;     /* neutral-500 — captions/meta */
+  --fg-5:               #525252;     /* neutral-600 — tertiary meta */
+
+  /* ---------- Jewelry — amber/gold ----------
+     Used for AEJaCA Jewelry surfaces, focus rings, and the
+     site's primary accent across shared chrome. */
+  --amber-50:           #fffbeb;
+  --amber-100:          #fef3c7;
+  --amber-200:          #fde68a;
+  --amber-300:          #fcd34d;   /* hover state */
+  --amber-400:          #fbbf24;   /* secondary tone */
+  --amber-500:          #f59e0b;   /* PRIMARY brand amber */
+  --amber-600:          #d97706;
+  --amber-700:          #b45309;
+  --amber-800:          #92400e;
+  --amber-900:          #78350f;
+  --amber-950:          #451a03;
+
+  /* ---------- sTuDiO — blue ----------
+     Used for AEJaCA sTuDiO surfaces, technical/utility CTAs. */
+  --blue-50:            #eff6ff;
+  --blue-100:           #dbeafe;
+  --blue-200:           #bfdbfe;
+  --blue-300:           #93c5fd;   /* hover state */
+  --blue-400:           #60a5fa;   /* secondary tone */
+  --blue-500:           #3b82f6;   /* PRIMARY studio blue */
+  --blue-600:           #2563eb;
+  --blue-700:           #1d4ed8;
+  --blue-800:           #1e40af;
+  --blue-900:           #1e3a8a;
+  --blue-950:           #172554;
+
+  /* ---------- Tertiary / supporting ---------- */
+  --emerald-300:        #6ee7b7;
+  --emerald-400:        #34d399;   /* "STL → price" upload banner */
+  --emerald-500:        #10b981;
+  --rose-400:           #fb7185;   /* jewelry warmth pairing */
+  --slate-300:          #cbd5e1;   /* silver in metal pricing */
+  --purple-300:         #d8b4fe;   /* platinum in metal pricing */
+  --cyan-300:           #67e8f9;   /* palladium in metal pricing */
+
+  /* ---------- Semantic ---------- */
+  --color-success:      var(--emerald-400);
+  --color-warning:      var(--amber-500);
+  --color-danger:       #ef4444;
+  --color-info:         var(--blue-500);
+
+  /* ---------- Type families ---------- */
+  --font-serif:         "Playfair Display", "Noto Serif", Georgia, serif;
+  --font-sans:          "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:          ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* ---------- Type scale (px) ----------
+     Tracks the live site: editorial serif for Jewelry + shared
+     hero, sans for sTuDiO + UI. */
+  --fs-display:         60px;        /* hero h1 lg */
+  --fs-h1:              48px;
+  --fs-h2:              36px;
+  --fs-h3:              24px;
+  --fs-h4:              20px;
+  --fs-body-lg:         18px;
+  --fs-body:            16px;
+  --fs-body-sm:         14px;
+  --fs-caption:         12px;
+  --fs-micro:           10px;        /* eyebrow / uppercase tag */
+
+  /* ---------- Line height ---------- */
+  --lh-tight:           1.1;
+  --lh-snug:            1.25;
+  --lh-normal:          1.5;
+  --lh-relaxed:         1.625;
+
+  /* ---------- Letter spacing ---------- */
+  --tracking-tight:     -0.02em;
+  --tracking-normal:    0;
+  --tracking-wide:      0.05em;
+  --tracking-eyebrow:   0.2em;       /* uppercase tags */
+  --tracking-eyebrow-x: 0.25em;      /* extra wide eyebrows */
+
+  /* ---------- Radii ----------
+     Tailwind defaults; site uses rounded-2xl extensively. */
+  --radius-sm:          0.25rem;     /* 4px  */
+  --radius-md:          0.5rem;      /* 8px  — default */
+  --radius-lg:          0.75rem;     /* 12px */
+  --radius-xl:          1rem;        /* 16px */
+  --radius-2xl:         1rem;        /* 16px — CARD DEFAULT */
+  --radius-3xl:         1.5rem;      /* 24px */
+  --radius-pill:        9999px;
+
+  /* ---------- Spacing scale (Tailwind-aligned, 4px base) ---------- */
+  --space-0:            0;
+  --space-1:            4px;
+  --space-2:            8px;
+  --space-3:            12px;
+  --space-4:            16px;
+  --space-5:            20px;
+  --space-6:            24px;
+  --space-8:            32px;
+  --space-10:           40px;
+  --space-12:           48px;
+  --space-16:           64px;
+  --space-20:           80px;
+  --space-24:           96px;
+
+  /* ---------- Shadows ----------
+     Mostly used on card hover; deep, black, faintly tinted. */
+  --shadow-card:        0 10px 15px -3px rgba(0,0,0,0.40);
+  --shadow-card-hover:  0 25px 50px -12px rgba(0,0,0,0.60);
+  --shadow-amber-glow:  0 20px 40px -16px rgba(120,53,15,0.20);  /* amber-900/20 */
+  --shadow-blue-glow:   0 20px 40px -16px rgba(30,58,138,0.20);  /* blue-900/20  */
+  --shadow-white-glow:  0 10px 30px -10px rgba(255,255,255,0.10);
+  --shadow-emerald-glow:0 20px 40px -16px rgba(6,78,59,0.10);
+
+  /* ---------- Blur / glass ---------- */
+  --blur-glass:         12px;
+  --blur-glass-strong:  16px;
+  --blur-nav:           20px;
+
+  /* ---------- Motion ----------
+     Site uses cubic-bezier(0.16, 1, 0.3, 1) for reveals — a
+     soft "ease-out-quint" that gives the editorial feel. */
+  --ease-editorial:     cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-standard:      cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast:           200ms;
+  --dur-base:           300ms;
+  --dur-slow:           500ms;
+  --dur-reveal:         700ms;
+}
+
+/* ============================================================
+   Semantic typography
+   Map raw scale to the document's voice.
+   ============================================================ */
+
+.ds-display {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: clamp(36px, 6vw, var(--fs-display));
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-1);
+}
+
+.ds-h1 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: var(--fs-h1);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-1);
+}
+
+/* Jewelry/editorial section headings (most h2 on site). */
+.ds-h2 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: var(--fs-h2);
+  line-height: var(--lh-snug);
+  color: var(--fg-1);
+}
+
+/* sTuDiO/technical section headings — same scale, sans. */
+.ds-h2-sans {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--fs-h2);
+  line-height: var(--lh-snug);
+  color: var(--fg-1);
+}
+
+.ds-h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: var(--fs-h3);
+  line-height: var(--lh-snug);
+  color: var(--fg-1);
+}
+
+.ds-h3-sans {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--fs-h3);
+  line-height: var(--lh-snug);
+  color: var(--fg-1);
+}
+
+.ds-body {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: var(--fs-body);
+  line-height: var(--lh-relaxed);
+  color: var(--fg-2);
+}
+
+.ds-body-lg {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: var(--fs-body-lg);
+  line-height: var(--lh-relaxed);
+  color: var(--fg-2);
+}
+
+.ds-body-sm {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: var(--fs-body-sm);
+  line-height: var(--lh-normal);
+  color: var(--fg-3);
+}
+
+/* Brand eyebrow — appears above every section title.
+   AMBER for Jewelry context, BLUE for sTuDiO context. */
+.ds-eyebrow {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: var(--fs-caption);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-eyebrow);
+  color: var(--amber-500);
+}
+.ds-eyebrow--studio { color: var(--blue-500); }
+.ds-eyebrow--neutral { color: var(--fg-4); }
+
+.ds-caption {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: var(--fs-caption);
+  line-height: var(--lh-normal);
+  color: var(--fg-4);
+}
+
+.ds-mono {
+  font-family: var(--font-mono);
+  font-size: var(--fs-body-sm);
+  color: var(--fg-2);
+}
+
+/* ============================================================
+   Utility surfaces — match live `.glass*` and gradient dividers.
+   ============================================================ */
+
+.ds-glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(var(--blur-glass));
+  -webkit-backdrop-filter: blur(var(--blur-glass));
+  border: 1px solid var(--border-default);
+}
+
+.ds-glass-amber {
+  background: var(--bg-glass-amber);
+  backdrop-filter: blur(var(--blur-glass-strong));
+  -webkit-backdrop-filter: blur(var(--blur-glass-strong));
+  border: 1px solid var(--border-amber);
+}
+
+.ds-glass-blue {
+  background: var(--bg-glass-blue);
+  backdrop-filter: blur(var(--blur-glass-strong));
+  -webkit-backdrop-filter: blur(var(--blur-glass-strong));
+  border: 1px solid var(--border-blue);
+}
+
+.ds-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent);
+}

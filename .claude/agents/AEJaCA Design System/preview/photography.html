@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — Photography</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: var(--bg-page); color: var(--fg-1); font-family: var(--font-sans); }
+  .wrap { padding: 18px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .frame { aspect-ratio: 4/3; border-radius: 14px; position: relative; overflow: hidden; }
+  .frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0) 60%); }
+  .caption { position: absolute; left: 14px; bottom: 12px; right: 14px; }
+  .eyebrow { font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 4px; }
+  .eyebrow.amber { color: var(--amber-300); }
+  .eyebrow.blue  { color: var(--blue-300); }
+  .name { font-family: var(--font-serif); font-size: 16px; color: #fff; font-weight: 600; }
+  .name.sans { font-family: var(--font-sans); }
+  .meta { font-size: 10px; color: var(--fg-3); margin-top: 4px; line-height: 1.5; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="frame">
+      <img src="../assets/hero-home-jewelry.webp" alt="Jewelry"/>
+      <div class="scrim"></div>
+      <div class="caption">
+        <div class="eyebrow amber">Jewelry photography</div>
+        <div class="name">Warm, low-key, dark slate &amp; wood</div>
+        <div class="meta">Top-light · golden rim · gemstones &amp; rings hero · 3:4 portrait</div>
+      </div>
+    </div>
+    <div class="frame">
+      <img src="../assets/hero-home-studio.webp" alt="Studio"/>
+      <div class="scrim"></div>
+      <div class="caption">
+        <div class="eyebrow blue">sTuDiO photography</div>
+        <div class="name sans">Cool, atmospheric, the workshop</div>
+        <div class="meta">Tungsten + cyan rim · machine portraits · 3:4 portrait</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

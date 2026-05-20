@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — Quick Quote Cards</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: var(--bg-page); color: var(--fg-1); font-family: var(--font-sans); }
+  .wrap { padding: 22px 26px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .card { position: relative; border-radius: 16px; padding: 24px; overflow: hidden; transition: all 300ms; cursor: pointer; }
+  .card.jewelry { background: linear-gradient(135deg, rgba(120,53,15,0.18) 0%, #0a0a0a 70%); border: 1px solid var(--border-amber); }
+  .card.studio  { background: linear-gradient(135deg, rgba(30,58,138,0.18) 0%, #0a0a0a 70%); border: 1px solid var(--border-blue); }
+  .top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+  .icon { width: 28px; height: 28px; }
+  .icon.amber { color: var(--amber-500); }
+  .icon.blue  { color: var(--blue-500); }
+  .tag { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; }
+  .tag.amber { color: rgba(245,158,11,0.6); }
+  .tag.blue { color: rgba(59,130,246,0.6); }
+  .title-serif { font-family: var(--font-serif); font-size: 22px; font-weight: 600; color: #fff; margin: 0 0 10px; line-height: 1.2; }
+  .title-sans { font-family: var(--font-sans); font-size: 22px; font-weight: 600; color: #fff; margin: 0 0 10px; line-height: 1.2; }
+  .desc { color: var(--fg-3); font-size: 14px; line-height: 1.55; margin: 0 0 18px; }
+  .cta { display:inline-flex; gap: 6px; align-items: center; font-size: 14px; font-weight: 500; }
+  .cta.amber { color: var(--amber-500); }
+  .cta.blue { color: var(--blue-500); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card jewelry">
+      <div class="top">
+        <svg class="icon amber" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l1.9 4.5L18 9l-3.7 2.8 1 4.7L12 14l-3.3 2.5 1-4.7L6 9l4.1-1.5z"/><path d="M5 21l1.5-3M19 21l-1.5-3"/></svg>
+        <span class="tag amber">Jewelry</span>
+      </div>
+      <h3 class="title-serif">Jewelry price calculator</h3>
+      <p class="desc">Rings, bracelets, necklaces. Simple mode (fast estimate) or advanced (metal, karat, stones, labor).</p>
+      <span class="cta amber">Calculate jewelry price <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+    </div>
+
+    <div class="card studio">
+      <div class="top">
+        <svg class="icon blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 3v5h5"/><path d="M19 8v11a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2h7z"/><path d="M9 14l3-3 3 3M12 11v6"/></svg>
+        <span class="tag blue">sTuDiO</span>
+      </div>
+      <h3 class="title-sans">3D print &amp; laser engraving calculator</h3>
+      <p class="desc">Upload an STL or SVG — get an instant quote for 3D printing, laser engraving, and resin casting.</p>
+      <span class="cta blue">Quote a project online <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+    </div>
+  </div>
+</body>
+</html>

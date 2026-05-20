@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — Gateway Tile (signature)</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: var(--bg-page); color: var(--fg-1); font-family: var(--font-sans); }
+  .wrap { padding: 18px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .tile { position: relative; aspect-ratio: 3/4; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.4); }
+  .tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.3) 55%, transparent 80%); }
+  .footer { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 16px; text-align: center; }
+  .eyebrow { font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 6px; }
+  .eyebrow.amber { color: var(--amber-400); }
+  .eyebrow.blue { color: var(--blue-400); }
+  .desc { color: #d4d4d4; font-size: 11px; line-height: 1.55; margin: 0 0 12px; }
+  .pill { display:inline-flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: 9999px; font-size: 12px; backdrop-filter: blur(12px); }
+  .pill.amber { color: var(--amber-300); border: 1px solid var(--border-amber-hi); background: rgba(245,158,11,0.05); }
+  .pill.blue  { color: var(--blue-300);  border: 1px solid var(--border-blue-hi);  background: rgba(59,130,246,0.05); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="tile">
+      <img src="../assets/hero-home-jewelry.webp" alt="AEJaCA Jewelry" />
+      <div class="scrim"></div>
+      <div class="footer">
+        <div class="eyebrow amber">AEJaCA Jewelry</div>
+        <p class="desc">Silver, gold, natural gemstones. Every piece handcrafted — just for you.</p>
+        <span class="pill amber">Discover jewelry <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+      </div>
+    </div>
+    <div class="tile">
+      <img src="../assets/hero-home-studio.webp" alt="AEJaCA sTuDiO" />
+      <div class="scrim"></div>
+      <div class="footer">
+        <div class="eyebrow blue">AEJaCA sTuDiO</div>
+        <p class="desc">3D printing, laser engraving, CNC milling. Get an instant quote online.</p>
+        <span class="pill blue">Enter sTuDiO <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

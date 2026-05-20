@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — Colors: Jewelry (Amber)</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: var(--bg-page); color: var(--fg-1); font-family: var(--font-sans); }
+  .wrap { padding: 24px; }
+  .head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom: 14px; }
+  .eyebrow { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--amber-500); font-weight: 500; }
+  .label { font-family: var(--font-serif); font-size: 16px; color: var(--fg-1); }
+  .row { display: grid; grid-template-columns: repeat(11, 1fr); gap: 4px; }
+  .chip { aspect-ratio: 1/1.2; border-radius: 8px; position: relative; overflow: hidden; }
+  .chip .num { position: absolute; bottom: 6px; left: 6px; font-size: 9px; font-family: var(--font-mono); color: rgba(0,0,0,0.55); font-weight: 600; }
+  .chip.dark .num { color: rgba(255,255,255,0.75); }
+  .primary-row { display:flex; gap:10px; margin-top: 14px; }
+  .primary { flex:1; height: 50px; border-radius: 10px; display:flex; align-items:center; justify-content:space-between; padding: 0 14px; border: 1px solid var(--border-amber); }
+  .primary .k { font-size: 11px; color: var(--fg-3); letter-spacing: 0.18em; text-transform: uppercase; }
+  .primary .v { font-family: var(--font-mono); font-size: 12px; color: var(--fg-1); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <div class="eyebrow">AEJaCA Jewelry</div>
+        <div class="label">Amber / gold accent scale</div>
+      </div>
+      <div style="font-family:var(--font-mono); font-size: 11px; color: var(--fg-4);">--amber-50 → 950</div>
+    </div>
+    <div class="row">
+      <div class="chip" style="background:#fffbeb"><span class="num">50</span></div>
+      <div class="chip" style="background:#fef3c7"><span class="num">100</span></div>
+      <div class="chip" style="background:#fde68a"><span class="num">200</span></div>
+      <div class="chip" style="background:#fcd34d"><span class="num">300</span></div>
+      <div class="chip" style="background:#fbbf24"><span class="num">400</span></div>
+      <div class="chip" style="background:#f59e0b"><span class="num">500</span></div>
+      <div class="chip dark" style="background:#d97706"><span class="num">600</span></div>
+      <div class="chip dark" style="background:#b45309"><span class="num">700</span></div>
+      <div class="chip dark" style="background:#92400e"><span class="num">800</span></div>
+      <div class="chip dark" style="background:#78350f"><span class="num">900</span></div>
+      <div class="chip dark" style="background:#451a03"><span class="num">950</span></div>
+    </div>
+    <div class="primary-row">
+      <div class="primary" style="background: rgba(245,158,11,0.06);">
+        <span class="k">Primary · amber-500</span>
+        <span class="v">#f59e0b</span>
+      </div>
+      <div class="primary" style="background: rgba(252,211,77,0.04); border-color: rgba(252,211,77,0.25);">
+        <span class="k">Hover · amber-300</span>
+        <span class="v">#fcd34d</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

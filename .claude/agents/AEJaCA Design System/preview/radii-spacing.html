@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — Radii & Spacing</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: var(--bg-page); color: var(--fg-1); font-family: var(--font-sans); }
+  .wrap { padding: 22px 26px; display: grid; gap: 18px; }
+  .sub { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--fg-4); margin-bottom: 10px; }
+  .r-row { display: flex; gap: 14px; align-items: end; }
+  .r { display: grid; gap: 6px; justify-items: center; }
+  .r .box { width: 64px; height: 64px; background: rgba(245,158,11,0.10); border: 1px solid var(--border-amber); }
+  .r .k { font-family: var(--font-mono); font-size: 10px; color: var(--fg-3); }
+  .r .v { font-family: var(--font-mono); font-size: 9px; color: var(--fg-4); }
+
+  .sp-row { display: grid; gap: 6px; }
+  .sp { display: grid; grid-template-columns: 60px 1fr 50px; align-items: center; gap: 12px; }
+  .sp .name { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
+  .sp .bar { height: 12px; background: linear-gradient(90deg, var(--blue-500), rgba(59,130,246,0.2)); border-radius: 4px; }
+  .sp .num { font-family: var(--font-mono); font-size: 10px; color: var(--fg-4); text-align: right; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div>
+      <div class="sub">Border radius</div>
+      <div class="r-row">
+        <div class="r"><div class="box" style="border-radius:4px"></div><div class="k">sm</div><div class="v">4px</div></div>
+        <div class="r"><div class="box" style="border-radius:8px"></div><div class="k">md</div><div class="v">8px</div></div>
+        <div class="r"><div class="box" style="border-radius:12px"></div><div class="k">lg</div><div class="v">12px</div></div>
+        <div class="r"><div class="box" style="border-radius:16px; border-color: var(--border-amber-hi); background: rgba(245,158,11,0.16)"></div><div class="k" style="color: var(--amber-300)">2xl ◀ card default</div><div class="v">16px</div></div>
+        <div class="r"><div class="box" style="border-radius:24px"></div><div class="k">3xl</div><div class="v">24px</div></div>
+        <div class="r"><div class="box" style="border-radius:9999px"></div><div class="k">pill</div><div class="v">9999px</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="sub">Spacing scale · 4px base</div>
+      <div class="sp-row">
+        <div class="sp"><span class="name">space-1</span><div class="bar" style="width: 4px"></div><span class="num">4 px</span></div>
+        <div class="sp"><span class="name">space-2</span><div class="bar" style="width: 8px"></div><span class="num">8 px</span></div>
+        <div class="sp"><span class="name">space-4</span><div class="bar" style="width: 16px"></div><span class="num">16 px</span></div>
+        <div class="sp"><span class="name">space-6</span><div class="bar" style="width: 24px"></div><span class="num">24 px</span></div>
+        <div class="sp"><span class="name">space-8</span><div class="bar" style="width: 32px"></div><span class="num">32 px</span></div>
+        <div class="sp"><span class="name">space-12</span><div class="bar" style="width: 48px"></div><span class="num">48 px</span></div>
+        <div class="sp"><span class="name">space-20</span><div class="bar" style="width: 80px"></div><span class="num">80 px · section pad</span></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

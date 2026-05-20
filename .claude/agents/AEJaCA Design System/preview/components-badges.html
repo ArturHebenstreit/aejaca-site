@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AEJaCA — Badges & Eyebrows</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: var(--bg-page); color: var(--fg-1); font-family: var(--font-sans); }
+  .wrap { padding: 22px 26px; display: grid; gap: 16px; }
+  .sub { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--fg-4); margin-bottom: 10px; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+  .eyebrow { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 500; }
+  .eyebrow.amber { color: var(--amber-500); }
+  .eyebrow.blue  { color: var(--blue-500); }
+  .eyebrow.emerald { color: var(--emerald-400); }
+
+  .rating-pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 9999px; border: 1px solid var(--border-amber); background: rgba(245,158,11,0.03); font-size: 13px; }
+  .rating-pill .star { color: var(--amber-400); }
+  .rating-pill b { color: var(--amber-300); font-weight: 700; }
+  .rating-pill .sep { color: var(--fg-4); }
+  .rating-pill .meta { color: var(--fg-3); }
+
+  .chip { display:inline-flex; align-items:center; gap: 6px; padding: 4px 10px; border-radius: 9999px; font-size: 11px; }
+  .chip.amber { background: rgba(245,158,11,0.10); color: var(--amber-300); border: 1px solid var(--border-amber); }
+  .chip.blue  { background: rgba(59,130,246,0.10); color: var(--blue-300); border: 1px solid var(--border-blue); }
+  .chip.emerald { background: rgba(52,211,153,0.10); color: var(--emerald-400); border: 1px solid var(--border-emerald); }
+  .chip.neutral { background: rgba(255,255,255,0.05); color: var(--fg-2); border: 1px solid var(--border-default); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div>
+      <div class="sub">Section eyebrows · always above headlines, dot-led</div>
+      <div class="row">
+        <span class="eyebrow amber">Artistic & Luxury</span>
+        <span class="eyebrow blue">Technology & Engineering</span>
+        <span class="eyebrow emerald">Instant quote in 30 seconds</span>
+      </div>
+    </div>
+    <div>
+      <div class="sub">Rating pill · Google reviews badge</div>
+      <div class="row">
+        <span class="rating-pill"><span class="star">★</span><b>4.9</b><span class="sep">·</span><span class="meta">127 Google reviews</span></span>
+      </div>
+    </div>
+    <div>
+      <div class="sub">Category chips · portfolio + tag filters</div>
+      <div class="row">
+        <span class="chip amber">Jewelry</span>
+        <span class="chip blue">sTuDiO</span>
+        <span class="chip emerald">STL / SVG → price</span>
+        <span class="chip neutral">All</span>
+        <span class="chip neutral">Rings</span>
+        <span class="chip neutral">Engraving</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
