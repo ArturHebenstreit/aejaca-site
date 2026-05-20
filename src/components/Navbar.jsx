@@ -19,7 +19,6 @@ export default function Navbar() {
   const { isDark, toggleTheme } = useTheme();
 
   const navLinks = [
-    { to: "/", label: t.nav.home },
     { to: "/jewelry/", label: t.nav.jewelry, sections: t.nav.jewelrySections },
     { to: "/studio/", label: t.nav.studio, sections: t.nav.studioSections },
     { to: "/gallery/", label: t.nav.gallery, sections: t.nav.gallerySections },
