@@ -5,6 +5,7 @@ import { HelmetProvider } from "react-helmet-async";
 import "./index.css";
 import "./utils/analytics.js";  // init analytics (side-effect)
 import { LanguageProvider } from "./i18n/LanguageContext.jsx";
+import { ThemeProvider } from "./i18n/ThemeContext.jsx";
 import Layout from "./components/Layout.jsx";
 import Home from "./pages/Home.jsx";
 import Contact from "./pages/Contact.jsx";
@@ -45,8 +46,9 @@ function LazyFallback() {
 const app = (
   <StrictMode>
     <HelmetProvider>
-      <LanguageProvider>
-        <BrowserRouter>
+      <ThemeProvider>
+        <LanguageProvider>
+          <BrowserRouter>
           <Suspense fallback={<LazyFallback />}>
             <Routes>
               <Route element={<Layout />}>
@@ -76,8 +78,9 @@ const app = (
               </Route>
             </Routes>
           </Suspense>
-        </BrowserRouter>
-      </LanguageProvider>
+          </BrowserRouter>
+        </LanguageProvider>
+      </ThemeProvider>
     </HelmetProvider>
   </StrictMode>
 );

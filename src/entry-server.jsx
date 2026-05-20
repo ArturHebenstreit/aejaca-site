@@ -3,6 +3,7 @@ import { StaticRouter } from "react-router";
 import { Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { LanguageProvider } from "./i18n/LanguageContext.jsx";
+import { ThemeProvider } from "./i18n/ThemeContext.jsx";
 import Layout from "./components/Layout.jsx";
 
 import Home from "./pages/Home.jsx";
@@ -27,8 +28,9 @@ export function render(url) {
 
   const html = renderToString(
     <HelmetProvider context={helmetContext}>
-      <LanguageProvider>
-        <StaticRouter location={url}>
+      <ThemeProvider>
+        <LanguageProvider>
+          <StaticRouter location={url}>
           <Routes>
             <Route element={<Layout />}>
               <Route path="/" element={<Home />} />
@@ -49,8 +51,9 @@ export function render(url) {
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
-        </StaticRouter>
-      </LanguageProvider>
+          </StaticRouter>
+        </LanguageProvider>
+      </ThemeProvider>
     </HelmetProvider>
   );
 

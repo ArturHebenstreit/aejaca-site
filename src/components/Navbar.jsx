@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Globe, ChevronDown } from "lucide-react";
+import { Menu, X, Globe, ChevronDown, Sun, Moon } from "lucide-react";
 import { useLanguage, LANGUAGES } from "../i18n/LanguageContext.jsx";
+import { useTheme } from "../i18n/ThemeContext.jsx";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -15,6 +16,7 @@ export default function Navbar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { lang, setLang, t } = useLanguage();
+  const { isDark, toggleTheme } = useTheme();
 
   const navLinks = [
     { to: "/", label: t.nav.home },
@@ -147,9 +149,10 @@ export default function Navbar() {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-neutral-950/95 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20"
-          : "bg-neutral-950/80 backdrop-blur-md border-b border-white/5"
+          ? "backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20"
+          : "backdrop-blur-md border-b border-white/5"
       }`}
+      style={{ background: scrolled ? "var(--ds-navbar-bg-s)" : "var(--ds-navbar-bg)" }}
       aria-label="Main navigation"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -234,6 +237,15 @@ export default function Navbar() {
                 </div>
               );
             })}
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              aria-label={isDark ? "Włącz tryb jasny" : "Włącz tryb ciemny"}
+              title={isDark ? "Light mode" : "Dark mode"}
+              className="flex items-center justify-center w-8 h-8 rounded-md text-neutral-400 hover:text-white hover:bg-white/5 transition-all duration-300"
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
             <div ref={langRefDesktop} className="relative">
               <button
                 onClick={() => setLangOpen(!langOpen)}
@@ -250,6 +262,14 @@ export default function Navbar() {
 
           {/* Mobile */}
           <div className="md:hidden flex items-center gap-2">
+            {/* Theme toggle mobile */}
+            <button
+              onClick={toggleTheme}
+              aria-label={isDark ? "Włącz tryb jasny" : "Włącz tryb ciemny"}
+              className="text-neutral-400 hover:text-white p-1 transition-colors"
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
             <div ref={langRefMobile} className="relative">
               <button
                 onClick={() => setLangOpen(!langOpen)}

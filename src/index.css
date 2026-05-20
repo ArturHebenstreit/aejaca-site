@@ -28,6 +28,42 @@
   --shadow-blue-glow:   0 20px 40px -16px rgba(30, 58, 138, 0.20);
   --shadow-white-glow:  0 10px 30px -10px rgba(255, 255, 255, 0.10);
   --ease-editorial:     cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ─── Theme semantic tokens (dark = default) ─── */
+  --ds-bg:              #0a0a0a;
+  --ds-bg-soft:         #171717;
+  --ds-text-1:          #ffffff;
+  --ds-text-2:          #e5e5e5;
+  --ds-text-3:          #a3a3a3;
+  --ds-text-4:          #737373;
+  --ds-border:          rgba(255,255,255,0.08);
+  --ds-border-hi:       rgba(255,255,255,0.15);
+  --ds-navbar-bg:       rgba(10,10,10,0.80);
+  --ds-navbar-bg-s:     rgba(10,10,10,0.95);
+  --ds-divider:         rgba(255,255,255,0.10);
+  --ds-amber-text:      #fbbf24;
+  --ds-amber-hi:        #f59e0b;
+  --ds-blue-text:       #60a5fa;
+  --ds-blue-hi:         #3b82f6;
+}
+
+/* ─── Light mode token overrides ─── */
+[data-theme="light"] {
+  --ds-bg:              #faf7f2;
+  --ds-bg-soft:         #f0ece4;
+  --ds-text-1:          #0a0a0a;
+  --ds-text-2:          #262626;
+  --ds-text-3:          #525252;
+  --ds-text-4:          #737373;
+  --ds-border:          rgba(0,0,0,0.08);
+  --ds-border-hi:       rgba(0,0,0,0.18);
+  --ds-navbar-bg:       rgba(250,247,242,0.85);
+  --ds-navbar-bg-s:     rgba(250,247,242,0.97);
+  --ds-divider:         rgba(0,0,0,0.08);
+  --ds-amber-text:      #92400e;
+  --ds-amber-hi:        #b45309;
+  --ds-blue-text:       #1e40af;
+  --ds-blue-hi:         #1d4ed8;
 }
 
 html {
@@ -35,7 +71,8 @@ html {
 }
 
 body {
-  @apply bg-neutral-950 text-white;
+  background-color: var(--ds-bg);
+  color: var(--ds-text-1);
 }
 
 /* Offset scroll targets for fixed navbar */
@@ -154,6 +191,95 @@ body {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ─── Light mode: global Tailwind utility overrides ─────────────── */
+/* Backgrounds */
+[data-theme="light"] .bg-neutral-950        { background-color: var(--ds-bg) !important; }
+[data-theme="light"] .bg-neutral-900        { background-color: var(--ds-bg-soft) !important; }
+[data-theme="light"] .bg-neutral-900\/30    { background-color: rgba(240,236,228,0.30) !important; }
+[data-theme="light"] .bg-neutral-900\/50    { background-color: rgba(240,236,228,0.50) !important; }
+[data-theme="light"] .from-neutral-950      { --tw-gradient-from: var(--ds-bg) !important; }
+[data-theme="light"] .via-neutral-900\/30   { --tw-gradient-via: rgba(240,236,228,0.30) !important; }
+[data-theme="light"] .to-neutral-950        { --tw-gradient-to: var(--ds-bg) !important; }
+/* Text */
+[data-theme="light"] .text-white            { color: var(--ds-text-1) !important; }
+[data-theme="light"] .text-neutral-100      { color: var(--ds-text-2) !important; }
+[data-theme="light"] .text-neutral-200      { color: var(--ds-text-2) !important; }
+[data-theme="light"] .text-neutral-300      { color: var(--ds-text-3) !important; }
+[data-theme="light"] .text-neutral-400      { color: var(--ds-text-4) !important; }
+[data-theme="light"] .text-neutral-500      { color: #a3a3a3 !important; }
+/* Borders */
+[data-theme="light"] .border-white\/5       { border-color: rgba(0,0,0,0.05) !important; }
+[data-theme="light"] .border-white\/10      { border-color: rgba(0,0,0,0.10) !important; }
+[data-theme="light"] .border-white\/20      { border-color: rgba(0,0,0,0.15) !important; }
+/* Accent — amber */
+[data-theme="light"] .text-amber-400        { color: var(--ds-amber-text) !important; }
+[data-theme="light"] .text-amber-300        { color: var(--ds-amber-hi) !important; }
+[data-theme="light"] .border-amber-400\/20  { border-color: rgba(146,64,14,0.20) !important; }
+[data-theme="light"] .border-amber-400\/40  { border-color: rgba(146,64,14,0.40) !important; }
+[data-theme="light"] .bg-amber-400\/10      { background-color: rgba(180,83,9,0.08) !important; }
+[data-theme="light"] .bg-amber-950\/20      { background-color: rgba(146,64,14,0.06) !important; }
+[data-theme="light"] .from-amber-950\/20    { --tw-gradient-from: rgba(146,64,14,0.06) !important; }
+/* Accent — blue */
+[data-theme="light"] .text-blue-400         { color: var(--ds-blue-text) !important; }
+[data-theme="light"] .text-blue-300         { color: var(--ds-blue-hi) !important; }
+[data-theme="light"] .border-blue-400\/20   { border-color: rgba(30,64,175,0.20) !important; }
+[data-theme="light"] .border-blue-400\/40   { border-color: rgba(30,64,175,0.40) !important; }
+[data-theme="light"] .bg-blue-400\/10       { background-color: rgba(29,78,216,0.08) !important; }
+[data-theme="light"] .bg-blue-950\/20       { background-color: rgba(30,64,175,0.06) !important; }
+[data-theme="light"] .from-blue-950\/20     { --tw-gradient-from: rgba(30,64,175,0.06) !important; }
+/* Emerald accent */
+[data-theme="light"] .text-emerald-400      { color: #065f46 !important; }
+[data-theme="light"] .border-emerald-400\/20 { border-color: rgba(6,95,70,0.20) !important; }
+[data-theme="light"] .border-emerald-400\/10 { border-color: rgba(6,95,70,0.10) !important; }
+/* Glass utilities */
+[data-theme="light"] .glass {
+  background: rgba(255,255,255,0.70);
+  border-color: rgba(0,0,0,0.08);
+}
+[data-theme="light"] .glass-amber {
+  background: rgba(180,83,9,0.06);
+  border-color: rgba(146,64,14,0.18);
+}
+[data-theme="light"] .glass-blue {
+  background: rgba(29,78,216,0.06);
+  border-color: rgba(30,64,175,0.18);
+}
+/* Divider */
+[data-theme="light"] .gradient-divider {
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.08), transparent);
+}
+/* Dropdown menus */
+[data-theme="light"] .bg-neutral-900\/95 {
+  background-color: rgba(250,247,242,0.97) !important;
+}
+/* Shadows on dark — invert for light */
+[data-theme="light"] .shadow-black\/20      { --tw-shadow-color: rgba(0,0,0,0.10) !important; }
+[data-theme="light"] .shadow-black\/40      { --tw-shadow-color: rgba(0,0,0,0.15) !important; }
+/* Hero overlays — remain dark (image underneath) */
+/* .from-black\/90, .via-black\/30, .from-neutral-950\/40 NOT overridden */
+/* Navbar text overrides */
+[data-theme="light"] nav[aria-label="Main navigation"] .text-neutral-300 {
+  color: #404040;
+}
+[data-theme="light"] nav[aria-label="Main navigation"] .hover\:text-amber-400:hover {
+  color: var(--ds-amber-text);
+}
+[data-theme="light"] nav[aria-label="Main navigation"] a.text-amber-400 {
+  color: var(--ds-amber-text);
+}
+[data-theme="light"] nav[aria-label="Main navigation"] .bg-amber-400\/5 {
+  background-color: rgba(146,64,14,0.05) !important;
+}
+/* Logo invert — keep inverted in dark (already white), remove in light */
+[data-theme="light"] nav .brightness-0.invert {
+  filter: none;
+  opacity: 0.85;
+}
+[data-theme="light"] footer .brightness-0.invert {
+  filter: none;
+  opacity: 0.75;
 }
 
 /* ─── Smooth gradient divider ─── */
