@@ -148,8 +148,8 @@ export default function Jewelry() {
           width="1920"
           height="1080"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
-        <div className="relative z-10 max-w-4xl mx-auto px-6 pt-32 pb-24 text-center flex flex-col items-center">
+        <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
+        <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-32 pb-24 text-center flex flex-col items-center">
           <div className="text-amber-400 text-xs font-medium uppercase tracking-[0.35em] mb-5">{j.heroTag}</div>
           <h1 className="font-serif text-5xl sm:text-6xl md:text-[72px] font-semibold text-white mb-6 leading-[1.02] tracking-tight drop-shadow-2xl">{j.heroTitle}</h1>
           <p className="text-neutral-200 text-base md:text-lg max-w-xl leading-relaxed">{j.heroDesc}</p>
