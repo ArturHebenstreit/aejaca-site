@@ -1,5 +1,5 @@
 // ============================================================
-// SHARED CONFIG, PRICING & UI — ALL STUDIO CALCULATORS
+// SHARED CONFIG, PRICING & UI, ALL STUDIO CALCULATORS
 // ============================================================
 import { useState, useRef, useEffect } from "react";
 
@@ -195,13 +195,13 @@ export function CalcCard({ stepNum, label, children, id }) {
   );
 }
 
-/** Result header — translated */
+/** Result header, translated */
 export function ResultHeader({ lang }) {
   const titles = { pl: "Szacowany zakres cenowy", en: "Estimated price range", de: "Geschaetzter Preisbereich" };
   return <div className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-4">{t(titles, lang)}</div>;
 }
 
-/** Price result display — PLN for PL, EUR for EN/DE */
+/** Price result display, PLN for PL, EUR for EN/DE */
 export function ResultDisplay({ result, lang = "pl" }) {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const labels = RESULT_LABELS[lang] || RESULT_LABELS.en;
@@ -293,7 +293,7 @@ export function ResultDisplay({ result, lang = "pl" }) {
 }
 
 // ============================================================
-// QUOTE EMAIL CAPTURE — lead capture after price result
+// QUOTE EMAIL CAPTURE, lead capture after price result
 // ============================================================
 
 const QUOTE_API_URL = CONTACT_API_URL ? `${CONTACT_API_URL}/api/quote` : null;
@@ -305,10 +305,10 @@ const QUOTE_LABELS = {
     send: "Wyślij",
     consent: "Zgadzam się na otrzymanie wyceny i kontakt mailowy w sprawie projektu.",
     sent: "Wycena wysłana!",
-    sentSub: "Sprawdź skrzynkę — wycena jest już w drodze.",
-    error: "Coś poszło nie tak — spróbuj ponownie.",
+    sentSub: "Sprawdź skrzynkę, wycena jest już w drodze.",
+    error: "Coś poszło nie tak, spróbuj ponownie.",
     fileNote: "Plik zostanie uwzględniony w zapytaniu",
-    verifyNote: "Wycena zostanie zweryfikowana przez nasz zespół — potwierdzimy ją mailowo",
+    verifyNote: "Wycena zostanie zweryfikowana przez nasz zespół, potwierdzimy ją mailowo",
   },
   en: {
     title: "Get this quote by email",
@@ -316,10 +316,10 @@ const QUOTE_LABELS = {
     send: "Send",
     consent: "I agree to receive the quote and follow-up emails about my project.",
     sent: "Quote sent!",
-    sentSub: "Check your inbox — quote is on its way.",
-    error: "Something went wrong — please try again.",
+    sentSub: "Check your inbox, quote is on its way.",
+    error: "Something went wrong, please try again.",
     fileNote: "File will be included in the inquiry",
-    verifyNote: "The estimate will be verified by our team — we'll confirm it by email",
+    verifyNote: "The estimate will be verified by our team, we'll confirm it by email",
   },
   de: {
     title: "Angebot per E-Mail erhalten",
@@ -327,10 +327,10 @@ const QUOTE_LABELS = {
     send: "Senden",
     consent: "Ich stimme dem Erhalt des Angebots und Folge-E-Mails zu meinem Projekt zu.",
     sent: "Angebot gesendet!",
-    sentSub: "Prüfen Sie Ihren Posteingang — das Angebot ist unterwegs.",
-    error: "Etwas ist schiefgelaufen — bitte versuchen Sie es erneut.",
+    sentSub: "Prüfen Sie Ihren Posteingang, das Angebot ist unterwegs.",
+    error: "Etwas ist schiefgelaufen, bitte versuchen Sie es erneut.",
     fileNote: "Datei wird in der Anfrage berücksichtigt",
-    verifyNote: "Der Kostenvoranschlag wird von unserem Team geprüft — wir bestätigen ihn per E-Mail",
+    verifyNote: "Der Kostenvoranschlag wird von unserem Team geprüft, wir bestätigen ihn per E-Mail",
   },
 };
 
@@ -364,7 +364,7 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
 
     try {
       let filePayload = null;
-      // Skip file if too large — base64 overhead (~33%) would push 35MB to ~46MB,
+      // Skip file if too large, base64 overhead (~33%) would push 35MB to ~46MB,
       // staying under the 50MB JSON limit on /api/quote
       if (preAttachedFile && preAttachedFile.size <= 35 * 1024 * 1024) {
         try {
@@ -486,7 +486,7 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
 }
 
 // ============================================================
-// INQUIRY FORM — shared across all calculators
+// INQUIRY FORM, shared across all calculators
 // ============================================================
 
 const MAX_DESC_LENGTH = 2000;
@@ -496,7 +496,7 @@ const MAX_FILE_SIZE_MB = 50;
 const INQUIRY_LABELS = {
   pl: {
     title: "Zapytanie o wycene",
-    desc: "Opisz swoj projekt — co chcesz wykonac, wymiary, materialy, inne szczegoly:",
+    desc: "Opisz swoj projekt, co chcesz wykonac, wymiary, materialy, inne szczegoly:",
     descPlaceholder: "np. Potrzebuje 50 szt. zawieszek z logo firmy, wymiary 3x4 cm, grawerowanie na stali nierdzewnej...",
     emailLabel: "Twój adres e-mail",
     emailPlaceholder: "twoj@email.pl",
@@ -515,7 +515,7 @@ const INQUIRY_LABELS = {
   },
   en: {
     title: "Quote request",
-    desc: "Describe your project — what you need, dimensions, materials, other details:",
+    desc: "Describe your project, what you need, dimensions, materials, other details:",
     descPlaceholder: "e.g. I need 50 pendant keychains with company logo, 3x4 cm, stainless steel engraving...",
     emailLabel: "Your email address",
     emailPlaceholder: "your@email.com",
@@ -534,7 +534,7 @@ const INQUIRY_LABELS = {
   },
   de: {
     title: "Angebotsanfrage",
-    desc: "Beschreiben Sie Ihr Projekt — was Sie brauchen, Abmessungen, Materialien, weitere Details:",
+    desc: "Beschreiben Sie Ihr Projekt, was Sie brauchen, Abmessungen, Materialien, weitere Details:",
     descPlaceholder: "z.B. Ich brauche 50 Anhaenger mit Firmenlogo, 3x4 cm, Edelstahlgravur...",
     emailLabel: "Ihre E-Mail-Adresse",
     emailPlaceholder: "ihre@email.de",
@@ -695,10 +695,10 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
   return (
     <div className="mt-6 rounded-2xl border border-blue-400/20 bg-gradient-to-br from-blue-400/[0.03] to-transparent p-5">
       <div className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-4">
-        {il.title} — {techLabel}
+        {il.title}, {techLabel}
       </div>
 
-      {/* Honeypot — invisible to humans, bots auto-fill it */}
+      {/* Honeypot, invisible to humans, bots auto-fill it */}
       <div className="sr-only" aria-hidden="true">
         <label htmlFor="inquiry_website">Website</label>
         <input id="inquiry_website" type="text" name="website" autoComplete="off"
@@ -794,7 +794,7 @@ const RESULT_LABELS = {
     perPiece: "Cena za sztuke", order: "Zamowienie", pcs: "szt.",
     showDetails: "Pokaz szczegoly kalkulacji", hideDetails: "Ukryj szczegoly",
     customQuote: "Indywidualne ustalenie warunków",
-    customDesc: "Skontaktuj się z nami — wspólnie ustalimy szczegóły zlecenia i przygotujemy dedykowaną wycenę.",
+    customDesc: "Skontaktuj się z nami, wspólnie ustalimy szczegóły zlecenia i przygotujemy dedykowaną wycenę.",
     selectAll: "Wybierz wszystkie parametry",
     totalTime: "Szacowany czas produkcji",
     rangeNote: `Zakres: -${CONFIG.TOLERANCE_LOW * 100}% / +${CONFIG.TOLERANCE_HIGH * 100}% | Kurs ${CONFIG.EUR_PLN_RATE} PLN/EUR`,
@@ -803,7 +803,7 @@ const RESULT_LABELS = {
     perPiece: "Price per piece", order: "Order", pcs: "pcs",
     showDetails: "Show calculation details", hideDetails: "Hide details",
     customQuote: "Individual terms required",
-    customDesc: "Contact us — we'll determine the order details together and prepare a dedicated quote.",
+    customDesc: "Contact us, we'll determine the order details together and prepare a dedicated quote.",
     selectAll: "Select all parameters",
     totalTime: "Estimated production time",
     rangeNote: `Range: -${CONFIG.TOLERANCE_LOW * 100}% / +${CONFIG.TOLERANCE_HIGH * 100}% | Rate ${CONFIG.EUR_PLN_RATE} PLN/EUR`,
@@ -812,7 +812,7 @@ const RESULT_LABELS = {
     perPiece: "Preis pro Stueck", order: "Bestellung", pcs: "Stk.",
     showDetails: "Kalkulationsdetails anzeigen", hideDetails: "Details ausblenden",
     customQuote: "Individuelle Konditionen erforderlich",
-    customDesc: "Kontaktieren Sie uns — wir legen die Auftragsdetails gemeinsam fest und erstellen ein dediziertes Angebot.",
+    customDesc: "Kontaktieren Sie uns, wir legen die Auftragsdetails gemeinsam fest und erstellen ein dediziertes Angebot.",
     selectAll: "Alle Parameter auswaehlen",
     totalTime: "Geschaetzte Produktionszeit",
     rangeNote: `Bereich: -${CONFIG.TOLERANCE_LOW * 100}% / +${CONFIG.TOLERANCE_HIGH * 100}% | Kurs ${CONFIG.EUR_PLN_RATE} PLN/EUR`,

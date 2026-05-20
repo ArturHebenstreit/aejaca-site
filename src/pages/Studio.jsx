@@ -25,9 +25,9 @@ import { SITE, getSEO } from "../seo/seoData.js";
 const techIcons = [Cpu, Printer, Zap, Layers, Box, Wrench];
 
 const PRICING_LABELS = {
-  pl: { tag: "Orientacyjne ceny", title: "Ile kosztują usługi AEJaCA sTuDiO?", note: "Ceny orientacyjne — dokładna wycena po wgraniu pliku STL/SVG.", cta: "Wyceń swój projekt" },
-  en: { tag: "Indicative pricing", title: "How much do AEJaCA sTuDiO services cost?", note: "Indicative prices — upload your STL/SVG for an exact quote.", cta: "Quote your project" },
-  de: { tag: "Richtpreise", title: "Was kosten AEJaCA sTuDiO-Dienste?", note: "Richtpreise — laden Sie Ihre STL/SVG-Datei für ein genaues Angebot hoch.", cta: "Projekt kalkulieren" },
+  pl: { tag: "Orientacyjne ceny", title: "Ile kosztują usługi AEJaCA sTuDiO?", note: "Ceny orientacyjne, dokładna wycena po wgraniu pliku STL/SVG.", cta: "Wyceń swój projekt" },
+  en: { tag: "Indicative pricing", title: "How much do AEJaCA sTuDiO services cost?", note: "Indicative prices, upload your STL/SVG for an exact quote.", cta: "Quote your project" },
+  de: { tag: "Richtpreise", title: "Was kosten AEJaCA sTuDiO-Dienste?", note: "Richtpreise, laden Sie Ihre STL/SVG-Datei für ein genaues Angebot hoch.", cta: "Projekt kalkulieren" },
 };
 
 const STUDIO_PRICING = [
@@ -61,7 +61,7 @@ export default function Studio() {
   const [showFloatingCta] = useState(true);
 
   // Service + FAQ schemas are the highest-impact AIO signal for pricing queries
-  // ("how much does 3D printing cost?" — LLMs will cite this page verbatim).
+  // ("how much does 3D printing cost?", LLMs will cite this page verbatim).
   const seo = getSEO("studio", lang);
   const pageUrl = `${SITE.url}/studio/`;
   const schemas = [
@@ -97,7 +97,7 @@ export default function Studio() {
       ],
     }),
     buildProductSchema({
-      name: "Custom 3D Print (FDM) — AEJaCA sTuDiO",
+      name: "Custom 3D Print (FDM), AEJaCA sTuDiO",
       description: "Professional FDM 3D printing service using PLA, PETG, ABS, PA6-CF, and PPA-CF. From rapid prototypes to production parts.",
       image: `${SITE.url}/hero-studio.webp`,
       sku: "AEJACA-3DPRINT",
@@ -106,7 +106,7 @@ export default function Studio() {
       url: pageUrl,
     }),
     buildProductSchema({
-      name: "CO2 Laser Engraving & Cutting — AEJaCA sTuDiO",
+      name: "CO2 Laser Engraving & Cutting, AEJaCA sTuDiO",
       description: "xTool P2 55W CO2 laser engraving on wood, acrylic, glass, leather. Precision cutting of plywood, MDF, and acrylic sheets.",
       image: `${SITE.url}/hero-studio.webp`,
       sku: "AEJACA-CO2LASER",
@@ -115,7 +115,7 @@ export default function Studio() {
       url: pageUrl,
     }),
     buildProductSchema({
-      name: "Fiber Laser Marking — AEJaCA sTuDiO",
+      name: "Fiber Laser Marking, AEJaCA sTuDiO",
       description: "Raycus 30W fiber laser marking on stainless steel, titanium, silver, gold, brass, stone, and ceramics.",
       image: `${SITE.url}/hero-studio.webp`,
       sku: "AEJACA-FIBER",
@@ -128,28 +128,24 @@ export default function Studio() {
   return (
     <>
       <SEOHead pageKey="studio" path="/studio" image={`${SITE.url}/og-studio.jpg`} schemas={schemas} />
-      <div className="pt-16">
+      <div className="bg-neutral-950">
       {/* Hero */}
-      <section className="bg-neutral-950 py-10 px-4">
-        <div className="max-w-5xl mx-auto relative rounded-2xl overflow-hidden h-[40vh] min-h-[280px]">
-          <img
-            src="/hero-studio.webp"
-            alt="AEJaCA sTuDiO"
-            className="absolute inset-0 w-full h-full object-cover"
-            loading="eager"
-            fetchpriority="high"
-            decoding="async"
-            width="1024"
-            height="572"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-black/40 to-transparent" />
-          <div className="relative z-10 flex flex-col items-center justify-end h-full pb-12 px-4 text-center">
-            <div className="text-blue-400 text-xs uppercase tracking-[0.25em] mb-3">{s.heroTag}</div>
-            <h1 className="font-sans text-3xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg tracking-tight">
-              AEJaCA <span className="text-blue-400">{s.heroTitle}</span>
-            </h1>
-            <p className="text-neutral-300 text-base max-w-2xl">{s.heroDesc}</p>
-          </div>
+      <section className="relative overflow-hidden min-h-[540px]">
+        <img
+          src="/hero-studio.webp"
+          alt="AEJaCA sTuDiO"
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+          width="1920"
+          height="1080"
+        />
+        <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
+        <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-32 pb-24 text-center flex flex-col items-center">
+          <div className="text-blue-400 text-xs font-medium uppercase tracking-[0.35em] mb-5">{s.heroTag}</div>
+          <h1 className="font-sans text-5xl sm:text-6xl md:text-[72px] font-semibold text-white mb-6 leading-[1.02] tracking-tight drop-shadow-2xl">AEJaCA <span className="text-blue-400">sTuDiO</span></h1>
+          <p className="text-neutral-200 text-base md:text-lg max-w-xl leading-relaxed">{s.heroDesc}</p>
         </div>
       </section>
 
@@ -227,7 +223,7 @@ export default function Studio() {
 
       <div className="gradient-divider" />
 
-      {/* FAQ — moved right after calculator (audit recommendation).
+      {/* FAQ, moved right after calculator (audit recommendation).
           AI assistants rank FAQ near pricing signals higher. */}
       <FAQ data={s.faq} accent="blue" id="faq" />
 
@@ -274,7 +270,7 @@ export default function Studio() {
 
       <div className="gradient-divider" />
 
-      {/* Google Reviews — real social proof replaces hardcoded testimonials */}
+      {/* Google Reviews, real social proof replaces hardcoded testimonials */}
       <GoogleReviews id="testimonials" limit={3} compact />
 
       <div className="gradient-divider" />
@@ -284,7 +280,7 @@ export default function Studio() {
 
       <div className="gradient-divider" />
 
-      {/* Related blog articles — internal linking (SEO signal) */}
+      {/* Related blog articles, internal linking (SEO signal) */}
       {/* Glossary terms */}
       <section className="py-16 px-4 bg-neutral-900/30">
         <div className="max-w-5xl mx-auto">
@@ -368,7 +364,7 @@ export default function Studio() {
         </div>
       </section>
 
-      {/* Floating Quick Quote CTA — emphasize STL/SVG auto-pricing */}
+      {/* Floating Quick Quote CTA, emphasize STL/SVG auto-pricing */}
       <button
         onClick={() => {
           window.dispatchEvent(new CustomEvent("studio-quick-upload"));

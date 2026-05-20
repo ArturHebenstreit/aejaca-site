@@ -82,7 +82,7 @@ export default function GlossaryTerm() {
 
   const pageUrl = `${SITE.url}/glossary/${term.id}/`;
   const schemas = [
-    buildWebPageSchema({ title: `${termName} — ${SITE.name}`, description: termDef, url: pageUrl, lang }),
+    buildWebPageSchema({ title: `${termName}, ${SITE.name}`, description: termDef, url: pageUrl, lang }),
     buildBreadcrumbSchema([
       { name: "Home", url: SITE.url },
       { name: l.glossary, url: `${SITE.url}/glossary/` },
@@ -96,7 +96,7 @@ export default function GlossaryTerm() {
       <SEOHead
         pageKey="glossary"
         path={`/glossary/${term.id}/`}
-        title={`${termName} — ${l.glossary} — ${SITE.name}`}
+        title={`${termName}, ${l.glossary}, ${SITE.name}`}
         description={termDef}
         schemas={schemas}
       />

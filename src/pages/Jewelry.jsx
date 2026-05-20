@@ -26,9 +26,9 @@ import { SITE, getSEO } from "../seo/seoData.js";
 const icons = [Gem, Sparkles, Palette, Heart, Wand2, Crown];
 
 const PRICING_LABELS = {
-  pl: { tag: "Orientacyjne ceny", title: "Ile kosztuje biżuteria?", note: "Ceny orientacyjne — dokładna wycena w kalkulatorze poniżej.", cta: "Wyceń w kalkulatorze" },
-  en: { tag: "Indicative pricing", title: "How much does jewelry cost?", note: "Indicative prices — use the calculator below for an exact quote.", cta: "Get a quote" },
-  de: { tag: "Richtpreise", title: "Was kostet Schmuck?", note: "Richtpreise — nutzen Sie den Rechner unten für ein genaues Angebot.", cta: "Zum Rechner" },
+  pl: { tag: "Orientacyjne ceny", title: "Ile kosztuje biżuteria?", note: "Ceny orientacyjne, dokładna wycena w kalkulatorze poniżej.", cta: "Wyceń w kalkulatorze" },
+  en: { tag: "Indicative pricing", title: "How much does jewelry cost?", note: "Indicative prices, use the calculator below for an exact quote.", cta: "Get a quote" },
+  de: { tag: "Richtpreise", title: "Was kostet Schmuck?", note: "Richtpreise, nutzen Sie den Rechner unten für ein genaues Angebot.", cta: "Zum Rechner" },
 };
 
 const PRICING_ITEMS = [
@@ -40,6 +40,12 @@ const PRICING_ITEMS = [
   { pl: "Pierścionek zaręczynowy", en: "Engagement ring", de: "Verlobungsring", pln: 1200, eur: 280 },
 ];
 
+const LABELS = {
+  pl: { heroTitleBrand: "Biżuteria" },
+  en: { heroTitleBrand: "Jewelry" },
+  de: { heroTitleBrand: "Schmuck" },
+};
+
 const FLOATING_CTA_LABELS = {
   pl: "Wyceń online",
   en: "Quick quote",
@@ -49,6 +55,7 @@ const FLOATING_CTA_LABELS = {
 export default function Jewelry() {
   const { t, lang } = useLanguage();
   const j = t.jewelry;
+  const L = LABELS[lang] || LABELS.pl;
 
   const aboutRef = useScrollReveal();
   const servicesHeaderRef = useScrollReveal();
@@ -98,7 +105,7 @@ export default function Jewelry() {
       ],
     }),
     buildProductSchema({
-      name: "Custom Silver Ring with Gemstone — AEJaCA",
+      name: "Custom Silver Ring with Gemstone, AEJaCA",
       description: "Handcrafted sterling silver ring with natural gemstone, custom designed to order. Available with amethyst, emerald, sapphire, or ruby.",
       image: `${SITE.url}/hero-jewelry.webp`,
       sku: "AEJACA-RING-925",
@@ -109,7 +116,7 @@ export default function Jewelry() {
       url: pageUrl,
     }),
     buildProductSchema({
-      name: "Handmade Gold Engagement Ring — AEJaCA",
+      name: "Handmade Gold Engagement Ring, AEJaCA",
       description: "Bespoke 14K or 18K gold engagement ring with premium gemstone setting. Prong, bezel, or channel setting available.",
       image: `${SITE.url}/hero-jewelry.webp`,
       sku: "AEJACA-ENGAGE-14K",
@@ -120,7 +127,7 @@ export default function Jewelry() {
       url: pageUrl,
     }),
     buildProductSchema({
-      name: "Silver Earrings with Natural Gemstones — AEJaCA",
+      name: "Silver Earrings with Natural Gemstones, AEJaCA",
       description: "Artisan-crafted sterling silver earrings featuring hand-selected natural gemstones. Each pair is unique.",
       image: `${SITE.url}/hero-jewelry.webp`,
       sku: "AEJACA-EARR-925",
@@ -135,26 +142,24 @@ export default function Jewelry() {
   return (
     <>
       <SEOHead pageKey="jewelry" path="/jewelry" image={`${SITE.url}/og-jewelry.jpg`} schemas={schemas} />
-      <div className="pt-16">
+      <div className="bg-neutral-950">
       {/* Hero */}
-      <section className="bg-neutral-950 py-10 px-4">
-        <div className="max-w-5xl mx-auto relative rounded-2xl overflow-hidden h-[40vh] min-h-[280px]">
-          <img
-            src="/hero-jewelry.webp"
-            alt="AEJaCA Jewelry"
-            className="absolute inset-0 w-full h-full object-cover"
-            loading="eager"
-            fetchpriority="high"
-            decoding="async"
-            width="1024"
-            height="572"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-black/40 to-transparent" />
-          <div className="relative z-10 flex flex-col items-center justify-end h-full pb-12 px-4 text-center">
-            <div className="text-amber-400 text-xs uppercase tracking-[0.25em] mb-3">{j.heroTag}</div>
-            <h1 className="font-serif text-3xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg">{j.heroTitle}</h1>
-            <p className="text-neutral-300 text-base max-w-2xl">{j.heroDesc}</p>
-          </div>
+      <section className="relative overflow-hidden min-h-[540px]">
+        <img
+          src="/hero-jewelry.webp"
+          alt="AEJaCA Jewelry"
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+          width="1920"
+          height="1080"
+        />
+        <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
+        <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-32 pb-24 text-center flex flex-col items-center">
+          <div className="text-amber-400 text-xs font-medium uppercase tracking-[0.35em] mb-5">{j.heroTag}</div>
+          <h1 className="font-serif text-5xl sm:text-6xl md:text-[72px] font-semibold text-white mb-6 leading-[1.02] tracking-tight drop-shadow-2xl">AEJaCA <span className="text-amber-400">{L.heroTitleBrand}</span></h1>
+          <p className="text-neutral-200 text-base md:text-lg max-w-xl leading-relaxed">{j.heroDesc}</p>
         </div>
       </section>
 
@@ -232,7 +237,7 @@ export default function Jewelry() {
 
       <div className="gradient-divider" />
 
-      {/* FAQ — moved right after calculator so users get answers
+      {/* FAQ, moved right after calculator so users get answers
           before they need to scroll through portfolio / reviews.
           AI assistants also rank FAQ above-the-fold higher. */}
       <FAQ data={j.faq} accent="amber" id="faq" />
@@ -265,7 +270,7 @@ export default function Jewelry() {
 
       <div className="gradient-divider" />
 
-      {/* Google Reviews — real social proof replaces hardcoded testimonials */}
+      {/* Google Reviews, real social proof replaces hardcoded testimonials */}
       <GoogleReviews id="testimonials" limit={3} compact />
 
       <div className="gradient-divider" />
@@ -275,7 +280,7 @@ export default function Jewelry() {
 
       <div className="gradient-divider" />
 
-      {/* Related blog article — internal linking (SEO signal) */}
+      {/* Related blog article, internal linking (SEO signal) */}
       {/* Glossary terms */}
       <section className="py-16 px-4 bg-neutral-900/30">
         <div className="max-w-5xl mx-auto">
@@ -357,7 +362,7 @@ export default function Jewelry() {
         </div>
       </section>
 
-      {/* Floating Quick Quote CTA — jumps user straight to calculator (conversion driver) */}
+      {/* Floating Quick Quote CTA, jumps user straight to calculator (conversion driver) */}
       <a
         href="#calculator"
         className={`floating-cta ${showFloatingCta ? "visible" : ""}`}

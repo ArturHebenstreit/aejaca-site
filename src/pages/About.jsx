@@ -7,18 +7,18 @@ import SEOHead from "../seo/SEOHead.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 
-// All labels inline — trilingual, no i18n file needed for a single page
+// All labels inline, trilingual, no i18n file needed for a single page
 const LABELS = {
   pl: {
     tag: "O AEJaCA",
     acronym: "Artisan Elegance Jewelry and Crafted Art",
     title: "Rzemiosło i technologia od 2023 roku",
-    description: "AEJaCA — Artisan Elegance Jewelry and Crafted Art — marka łącząca rzemiosło jubilerskie z technologią. Od 2023 roku, 150+ projektów, 5.0 na Google.",
+    description: "AEJaCA, Artisan Elegance Jewelry and Crafted Art, marka łącząca rzemiosło jubilerskie z technologią. Od 2023 roku, 150+ projektów, 5.0 na Google.",
     bioTitle: "Artur Hebenstreit",
     bioSubtitle: "Założyciel AEJaCA",
-    bioText: "Wizjoner, twórca i rzemieślnik. Fascynacja biżuterią i kamieniami szlachetnymi towarzyszyła mu od najmłodszych lat — z czasem przerodziła się w głęboką pasję, która stała się sensem pracy twórczej. To, co tworzy, nie jest produktem — to manifestacja wizji, w której technologia spotyka się z duszą rzemiosła. AI, druk 3D, laser CO₂, laser fiber — to narzędzia w rękach kogoś, kto wie, dlaczego tworzy. Efekty mówią same za siebie.",
+    bioText: "Wizjoner, twórca i rzemieślnik. Fascynacja biżuterią i kamieniami szlachetnymi towarzyszyła mu od najmłodszych lat, z czasem przerodziła się w głęboką pasję, która stała się sensem pracy twórczej. To, co tworzy, nie jest produktem, to manifestacja wizji, w której technologia spotyka się z duszą rzemiosła. AI, druk 3D, laser CO₂, laser fiber, to narzędzia w rękach kogoś, kto wie, dlaczego tworzy. Efekty mówią same za siebie.",
     philosophyTitle: "Filozofia marki",
-    philosophyText: "Nazwa AEJaCA — Artisan Elegance Jewelry and Crafted Art — nie jest przypadkowa. Każde słowo oddaje fundament marki: rzemieślniczą precyzję, elegancję bez kompromisów i sztukę tworzoną z intencją. To marka premium, stworzona dla wymagających, wyjątkowych klientów, którzy poszukują tego, czego nie znajdą w żadnej galerii handlowej. Dla tych, którzy cenią unikatowość, personalizację i niepowtarzalność — którzy pragną przedmiotów uduchowionych, z historią, nawet z nutą ezoteryki. Nie każdy zrozumie tę filozofię — i tak ma być. AEJaCA istnieje dla wybranych. Dla tych, którzy wiedzą, że prawdziwy luksus nie jest seryjny.",
+    philosophyText: "Nazwa AEJaCA, Artisan Elegance Jewelry and Crafted Art, nie jest przypadkowa. Każde słowo oddaje fundament marki: rzemieślniczą precyzję, elegancję bez kompromisów i sztukę tworzoną z intencją. To marka premium, stworzona dla wymagających, wyjątkowych klientów, którzy poszukują tego, czego nie znajdą w żadnej galerii handlowej. Dla tych, którzy cenią unikatowość, personalizację i niepowtarzalność, którzy pragną przedmiotów uduchowionych, z historią, nawet z nutą ezoteryki. Nie każdy zrozumie tę filozofię, i tak ma być. AEJaCA istnieje dla wybranych. Dla tych, którzy wiedzą, że prawdziwy luksus nie jest seryjny.",
     policyTitle: "Informacje",
     policyLinks: [
       { label: "Gwarancja", to: "/warranty/" },
@@ -26,9 +26,9 @@ const LABELS = {
       { label: "Wysyłka", to: "/shipping/" },
       { label: "Polityka prywatności", to: "/privacy/" },
     ],
-    twoLinesTitle: "Dwie linie — jedna filozofia",
+    twoLinesTitle: "Dwie linie, jedna filozofia",
     jewelryLine: "AEJaCA Biżuteria",
-    jewelryLineDesc: "Ręcznie robiona biżuteria ze srebra 925, złota 14k/18k i kamieni naturalnych. Pierścionki zaręczynowe, obrączki, wisiorki — każdy projekt indywidualny.",
+    jewelryLineDesc: "Ręcznie robiona biżuteria ze srebra 925, złota 14k/18k i kamieni naturalnych. Pierścionki zaręczynowe, obrączki, wisiorki, każdy projekt indywidualny.",
     studioLine: "AEJaCA sTuDiO",
     studioLineDesc: "Druk 3D FDM/SLA, grawerowanie laserowe CO₂ i fiber, odlewy żywiczne. Prototypy, produkcja małoseryjna, personalizacja.",
     qualityTitle: "Jakość i zgodność",
@@ -53,12 +53,12 @@ const LABELS = {
     tag: "About AEJaCA",
     acronym: "Artisan Elegance Jewelry and Crafted Art",
     title: "Craft and technology since 2023",
-    description: "AEJaCA — Artisan Elegance Jewelry and Crafted Art — combining jewelry craft with technology. Since 2023, 150+ projects, 5.0 on Google.",
+    description: "AEJaCA, Artisan Elegance Jewelry and Crafted Art, combining jewelry craft with technology. Since 2023, 150+ projects, 5.0 on Google.",
     bioTitle: "Artur Hebenstreit",
     bioSubtitle: "Founder of AEJaCA",
-    bioText: "Visionary, creator, and craftsman. A fascination with jewelry and gemstones has accompanied him since his earliest years — growing into a deep passion that became the driving force of his creative work. What he creates is not a product — it's a manifestation of vision where technology meets the soul of craftsmanship. AI, 3D printing, CO₂ laser, fiber laser — these are tools in the hands of someone who knows why he creates. The results speak for themselves.",
+    bioText: "Visionary, creator, and craftsman. A fascination with jewelry and gemstones has accompanied him since his earliest years, growing into a deep passion that became the driving force of his creative work. What he creates is not a product, it's a manifestation of vision where technology meets the soul of craftsmanship. AI, 3D printing, CO₂ laser, fiber laser, these are tools in the hands of someone who knows why he creates. The results speak for themselves.",
     philosophyTitle: "Brand Philosophy",
-    philosophyText: "The name AEJaCA — Artisan Elegance Jewelry and Crafted Art — is no accident. Every word reflects the brand's foundation: artisanal precision, uncompromising elegance, and art created with intention. It is a premium brand, created for discerning, exceptional clients who seek what no shopping mall can offer. For those who value uniqueness, personalization, and originality — who desire objects with soul, with story, even with a touch of the esoteric. Not everyone will understand this philosophy — and that is by design. AEJaCA exists for the chosen few. For those who know that true luxury is never mass-produced.",
+    philosophyText: "The name AEJaCA, Artisan Elegance Jewelry and Crafted Art, is no accident. Every word reflects the brand's foundation: artisanal precision, uncompromising elegance, and art created with intention. It is a premium brand, created for discerning, exceptional clients who seek what no shopping mall can offer. For those who value uniqueness, personalization, and originality, who desire objects with soul, with story, even with a touch of the esoteric. Not everyone will understand this philosophy, and that is by design. AEJaCA exists for the chosen few. For those who know that true luxury is never mass-produced.",
     policyTitle: "Information",
     policyLinks: [
       { label: "Warranty", to: "/warranty/" },
@@ -66,9 +66,9 @@ const LABELS = {
       { label: "Shipping", to: "/shipping/" },
       { label: "Privacy Policy", to: "/privacy/" },
     ],
-    twoLinesTitle: "Two lines — one philosophy",
+    twoLinesTitle: "Two lines, one philosophy",
     jewelryLine: "AEJaCA Jewelry",
-    jewelryLineDesc: "Handmade jewelry from 925 silver, 14k/18k gold, and natural gemstones. Engagement rings, wedding bands, pendants — every design is unique.",
+    jewelryLineDesc: "Handmade jewelry from 925 silver, 14k/18k gold, and natural gemstones. Engagement rings, wedding bands, pendants, every design is unique.",
     studioLine: "AEJaCA sTuDiO",
     studioLineDesc: "FDM/SLA 3D printing, CO₂ and fiber laser engraving, resin casting. Prototypes, small-batch production, personalization.",
     qualityTitle: "Quality & Compliance",
@@ -93,12 +93,12 @@ const LABELS = {
     tag: "Über AEJaCA",
     acronym: "Artisan Elegance Jewelry and Crafted Art",
     title: "Handwerk und Technologie seit 2023",
-    description: "AEJaCA — Artisan Elegance Jewelry and Crafted Art — Schmuckhandwerk trifft Technologie. Seit 2023, 150+ Projekte, 5,0 auf Google.",
+    description: "AEJaCA, Artisan Elegance Jewelry and Crafted Art, Schmuckhandwerk trifft Technologie. Seit 2023, 150+ Projekte, 5,0 auf Google.",
     bioTitle: "Artur Hebenstreit",
     bioSubtitle: "Gründer von AEJaCA",
-    bioText: "Visionär, Schöpfer und Handwerker. Eine Faszination für Schmuck und Edelsteine begleitet ihn seit frühester Kindheit — sie wurde zu einer tiefen Leidenschaft und zur treibenden Kraft seines kreativen Schaffens. Was er erschafft, ist kein Produkt — es ist die Manifestation einer Vision, in der Technologie auf die Seele des Handwerks trifft. KI, 3D-Druck, CO₂-Laser, Faserlaser — das sind Werkzeuge in den Händen eines Menschen, der weiß, warum er schafft. Die Ergebnisse sprechen für sich.",
+    bioText: "Visionär, Schöpfer und Handwerker. Eine Faszination für Schmuck und Edelsteine begleitet ihn seit frühester Kindheit, sie wurde zu einer tiefen Leidenschaft und zur treibenden Kraft seines kreativen Schaffens. Was er erschafft, ist kein Produkt, es ist die Manifestation einer Vision, in der Technologie auf die Seele des Handwerks trifft. KI, 3D-Druck, CO₂-Laser, Faserlaser, das sind Werkzeuge in den Händen eines Menschen, der weiß, warum er schafft. Die Ergebnisse sprechen für sich.",
     philosophyTitle: "Markenphilosophie",
-    philosophyText: "Der Name AEJaCA — Artisan Elegance Jewelry and Crafted Art — ist kein Zufall. Jedes Wort spiegelt das Fundament der Marke wider: handwerkliche Präzision, kompromisslose Eleganz und Kunst, die mit Absicht geschaffen wird. Es ist eine Premium-Marke, geschaffen für anspruchsvolle, außergewöhnliche Kunden, die suchen, was kein Kaufhaus bieten kann. Für jene, die Einzigartigkeit, Personalisierung und Originalität schätzen — die nach Objekten mit Seele verlangen, mit Geschichte, vielleicht sogar mit einem Hauch von Esoterik. Nicht jeder wird diese Philosophie verstehen — und genau so soll es sein. AEJaCA existiert für die Auserwählten. Für jene, die wissen, dass wahrer Luxus nie in Serie geht.",
+    philosophyText: "Der Name AEJaCA, Artisan Elegance Jewelry and Crafted Art, ist kein Zufall. Jedes Wort spiegelt das Fundament der Marke wider: handwerkliche Präzision, kompromisslose Eleganz und Kunst, die mit Absicht geschaffen wird. Es ist eine Premium-Marke, geschaffen für anspruchsvolle, außergewöhnliche Kunden, die suchen, was kein Kaufhaus bieten kann. Für jene, die Einzigartigkeit, Personalisierung und Originalität schätzen, die nach Objekten mit Seele verlangen, mit Geschichte, vielleicht sogar mit einem Hauch von Esoterik. Nicht jeder wird diese Philosophie verstehen, und genau so soll es sein. AEJaCA existiert für die Auserwählten. Für jene, die wissen, dass wahrer Luxus nie in Serie geht.",
     policyTitle: "Informationen",
     policyLinks: [
       { label: "Garantie", to: "/warranty/" },
@@ -106,9 +106,9 @@ const LABELS = {
       { label: "Versand", to: "/shipping/" },
       { label: "Datenschutz", to: "/privacy/" },
     ],
-    twoLinesTitle: "Zwei Linien — eine Philosophie",
+    twoLinesTitle: "Zwei Linien, eine Philosophie",
     jewelryLine: "AEJaCA Schmuck",
-    jewelryLineDesc: "Handgefertigter Schmuck aus 925 Silber, 14k/18k Gold und natürlichen Edelsteinen. Verlobungsringe, Eheringe, Anhänger — jedes Design ist einzigartig.",
+    jewelryLineDesc: "Handgefertigter Schmuck aus 925 Silber, 14k/18k Gold und natürlichen Edelsteinen. Verlobungsringe, Eheringe, Anhänger, jedes Design ist einzigartig.",
     studioLine: "AEJaCA sTuDiO",
     studioLineDesc: "FDM/SLA 3D-Druck, CO₂- und Faserlasergravur, Harzguss. Prototypen, Kleinserienfertigung, Personalisierung.",
     qualityTitle: "Qualität & Konformität",
@@ -153,9 +153,9 @@ const GALLERY_PHOTOS = [
   {
     src: "/img/anki.webp",
     alt: {
-      pl: "Narzędzia jubilerskie — anki i punce w warsztacie AEJaCA",
-      en: "Jewelry tools — dapping punches and block at AEJaCA workshop",
-      de: "Schmuckwerkzeuge — Punzen und Ankblock in der AEJaCA-Werkstatt",
+      pl: "Narzędzia jubilerskie, anki i punce w warsztacie AEJaCA",
+      en: "Jewelry tools, dapping punches and block at AEJaCA workshop",
+      de: "Schmuckwerkzeuge, Punzen und Ankblock in der AEJaCA-Werkstatt",
     },
   },
   {
@@ -261,7 +261,7 @@ export default function About() {
         <section className="relative min-h-[50vh] flex items-end overflow-hidden">
           <img
             src="/img/IMG_5145.webp"
-            alt="AEJaCA workshop — jewelry and digital fabrication studio"
+            alt="AEJaCA workshop, jewelry and digital fabrication studio"
             className="absolute inset-0 w-full h-full object-cover"
             loading="eager"
             fetchpriority="high"
@@ -298,7 +298,7 @@ export default function About() {
             <div className="flex flex-col gap-3 items-center md:items-start">
               <img
                 src="/img/DSC05225.webp"
-                alt="Artur Hebenstreit — founder of AEJaCA"
+                alt="Artur Hebenstreit, founder of AEJaCA"
                 className="rounded-2xl aspect-[3/4] object-cover object-top w-full max-w-[220px] md:max-w-[260px] shadow-2xl shadow-black/50"
                 loading="lazy"
                 decoding="async"

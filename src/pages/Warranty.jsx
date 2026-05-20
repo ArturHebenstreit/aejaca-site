@@ -10,12 +10,12 @@ import Breadcrumb from "../components/Breadcrumb.jsx";
 const LABELS = {
   pl: {
     tag: "Gwarancja",
-    title: "Gwarancja AEJaCA — 24 miesiące",
+    title: "Gwarancja AEJaCA, 24 miesiące",
     description: "Szczegóły gwarancji na biżuterię i produkty AEJaCA.",
     period: "Okres gwarancji",
     periodDesc: "24 miesiące od daty zakupu na wszystkie produkty AEJaCA.",
     scope: "Zakres gwarancji",
-    scopeDesc: "Wady produkcyjne — wady materiałowe i błędy wykonania.",
+    scopeDesc: "Wady produkcyjne, wady materiałowe i błędy wykonania.",
     exclusions: "Gwarancja nie obejmuje",
     exclusionItems: [
       "Uszkodzenia mechaniczne (zarysowania, zgniecenia, złamania)",
@@ -26,23 +26,23 @@ const LABELS = {
     ],
     freeService: "Bezpłatny serwis",
     freeServiceDesc:
-      "Pierwsze czyszczenie i odświeżenie biżuterii w ciągu 12 miesięcy od zakupu — bezpłatnie.",
+      "Pierwsze czyszczenie i odświeżenie biżuterii w ciągu 12 miesięcy od zakupu, bezpłatnie.",
     b2b: "B2B",
     b2bDesc:
       "Wyłączenie rękojmi wobec przedsiębiorców zgodnie z przepisami prawa polskiego.",
     claim: "Reklamacja",
     claimDesc:
-      "Napisz na contact@aejaca.com — rozpatrzymy zgłoszenie w ciągu 14 dni roboczych.",
+      "Napisz na contact@aejaca.com, rozpatrzymy zgłoszenie w ciągu 14 dni roboczych.",
     careLink: "Jak dbać o biżuterię?",
   },
   en: {
     tag: "Warranty",
-    title: "AEJaCA Warranty — 24 Months",
+    title: "AEJaCA Warranty, 24 Months",
     description: "Warranty details for AEJaCA jewelry and products.",
     period: "Warranty Period",
     periodDesc: "24 months from the date of purchase on all AEJaCA products.",
     scope: "Coverage",
-    scopeDesc: "Manufacturing defects — material flaws and workmanship errors.",
+    scopeDesc: "Manufacturing defects, material flaws and workmanship errors.",
     exclusions: "Not Covered",
     exclusionItems: [
       "Mechanical damage (scratches, dents, breaks)",
@@ -53,22 +53,22 @@ const LABELS = {
     ],
     freeService: "Complimentary Service",
     freeServiceDesc:
-      "First cleaning and refresh of your jewelry within 12 months of purchase — free of charge.",
+      "First cleaning and refresh of your jewelry within 12 months of purchase, free of charge.",
     b2b: "B2B",
     b2bDesc: "Statutory warranty exclusion for business customers under Polish law.",
     claim: "Filing a Claim",
     claimDesc:
-      "Email contact@aejaca.com — we'll review your claim within 14 business days.",
+      "Email contact@aejaca.com, we'll review your claim within 14 business days.",
     careLink: "How to care for your jewelry?",
   },
   de: {
     tag: "Garantie",
-    title: "AEJaCA Garantie — 24 Monate",
+    title: "AEJaCA Garantie, 24 Monate",
     description: "Garantiedetails für AEJaCA-Schmuck und -Produkte.",
     period: "Garantiezeitraum",
     periodDesc: "24 Monate ab Kaufdatum auf alle AEJaCA-Produkte.",
     scope: "Abdeckung",
-    scopeDesc: "Herstellungsfehler — Materialfehler und Verarbeitungsmängel.",
+    scopeDesc: "Herstellungsfehler, Materialfehler und Verarbeitungsmängel.",
     exclusions: "Nicht abgedeckt",
     exclusionItems: [
       "Mechanische Schäden (Kratzer, Dellen, Brüche)",
@@ -79,12 +79,12 @@ const LABELS = {
     ],
     freeService: "Kostenloser Service",
     freeServiceDesc:
-      "Erste Reinigung und Auffrischung Ihres Schmucks innerhalb von 12 Monaten nach dem Kauf — kostenlos.",
+      "Erste Reinigung und Auffrischung Ihres Schmucks innerhalb von 12 Monaten nach dem Kauf, kostenlos.",
     b2b: "B2B",
     b2bDesc: "Gewährleistungsausschluss für Geschäftskunden nach polnischem Recht.",
     claim: "Reklamation",
     claimDesc:
-      "Schreiben Sie an contact@aejaca.com — wir bearbeiten Ihre Anfrage innerhalb von 14 Werktagen.",
+      "Schreiben Sie an contact@aejaca.com, wir bearbeiten Ihre Anfrage innerhalb von 14 Werktagen.",
     careLink: "Wie pflege ich meinen Schmuck?",
   },
 };
@@ -116,7 +116,7 @@ export default function Warranty() {
   const pageUrl = `${SITE.url}/warranty/`;
   const schemas = [
     buildWebPageSchema({
-      title: `${l.tag} — ${SITE.name}`,
+      title: `${l.tag}, ${SITE.name}`,
       description: l.description,
       url: pageUrl,
       lang,
@@ -175,7 +175,7 @@ export default function Warranty() {
               })}
             </div>
 
-            {/* Exclusions section — full width */}
+            {/* Exclusions section, full width */}
             <div
               ref={exclusionsRef}
               className="reveal bg-neutral-900/60 border border-neutral-800 rounded-xl p-6 mb-10"

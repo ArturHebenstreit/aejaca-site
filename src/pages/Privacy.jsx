@@ -8,7 +8,7 @@ export default function Privacy() {
   const { t, lang } = useLanguage();
   const p = t.privacy;
 
-  // Privacy pages are still indexed but lower priority — breadcrumb + webpage is sufficient.
+  // Privacy pages are still indexed but lower priority, breadcrumb + webpage is sufficient.
   const seo = getSEO("privacy", lang);
   const pageUrl = `${SITE.url}/privacy/`;
   const schemas = [

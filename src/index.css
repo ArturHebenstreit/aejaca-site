@@ -18,6 +18,52 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* ─── AEJaCA Design System tokens ─── */
+  --border-amber:       rgba(245, 158, 11, 0.18);
+  --border-amber-hi:    rgba(245, 158, 11, 0.40);
+  --border-blue:        rgba(59, 130, 246, 0.18);
+  --border-blue-hi:     rgba(59, 130, 246, 0.40);
+  --shadow-amber-glow:  0 20px 40px -16px rgba(120, 53, 15, 0.20);
+  --shadow-blue-glow:   0 20px 40px -16px rgba(30, 58, 138, 0.20);
+  --shadow-white-glow:  0 10px 30px -10px rgba(255, 255, 255, 0.10);
+  --ease-editorial:     cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ─── Theme semantic tokens (dark = default) ─── */
+  --ds-bg:              #0a0a0a;
+  --ds-bg-soft:         #171717;
+  --ds-text-1:          #ffffff;
+  --ds-text-2:          #e5e5e5;
+  --ds-text-3:          #a3a3a3;
+  --ds-text-4:          #737373;
+  --ds-border:          rgba(255,255,255,0.08);
+  --ds-border-hi:       rgba(255,255,255,0.15);
+  --ds-navbar-bg:       rgba(10,10,10,0.80);
+  --ds-navbar-bg-s:     rgba(10,10,10,0.95);
+  --ds-divider:         rgba(255,255,255,0.10);
+  --ds-amber-text:      #fbbf24;
+  --ds-amber-hi:        #f59e0b;
+  --ds-blue-text:       #60a5fa;
+  --ds-blue-hi:         #3b82f6;
+}
+
+/* ─── Light mode token overrides ─── */
+[data-theme="light"] {
+  --ds-bg:              #faf7f2;
+  --ds-bg-soft:         #f0ece4;
+  --ds-text-1:          #0a0a0a;
+  --ds-text-2:          #262626;
+  --ds-text-3:          #525252;
+  --ds-text-4:          #737373;
+  --ds-border:          rgba(0,0,0,0.08);
+  --ds-border-hi:       rgba(0,0,0,0.18);
+  --ds-navbar-bg:       rgba(250,247,242,0.85);
+  --ds-navbar-bg-s:     rgba(250,247,242,0.97);
+  --ds-divider:         rgba(0,0,0,0.08);
+  --ds-amber-text:      #92400e;
+  --ds-amber-hi:        #b45309;
+  --ds-blue-text:       #1e40af;
+  --ds-blue-hi:         #1d4ed8;
 }
 
 html {
@@ -25,7 +71,8 @@ html {
 }
 
 body {
-  @apply bg-neutral-950 text-white;
+  background-color: var(--ds-bg);
+  color: var(--ds-text-1);
 }
 
 /* Offset scroll targets for fixed navbar */
@@ -145,6 +192,371 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ─── Light mode: global Tailwind utility overrides ─────────────── */
+/* Backgrounds */
+[data-theme="light"] .bg-neutral-950        { background-color: var(--ds-bg) !important; }
+[data-theme="light"] .bg-neutral-900        { background-color: var(--ds-bg-soft) !important; }
+[data-theme="light"] .bg-neutral-900\/30    { background-color: rgba(240,236,228,0.30) !important; }
+[data-theme="light"] .bg-neutral-900\/50    { background-color: rgba(240,236,228,0.50) !important; }
+[data-theme="light"] .from-neutral-950      { --tw-gradient-from: var(--ds-bg) !important; }
+[data-theme="light"] .via-neutral-900\/30   { --tw-gradient-via: rgba(240,236,228,0.30) !important; }
+[data-theme="light"] .to-neutral-950        { --tw-gradient-to: var(--ds-bg) !important; }
+/* Text */
+[data-theme="light"] .text-white            { color: var(--ds-text-1) !important; }
+[data-theme="light"] .text-neutral-100      { color: var(--ds-text-2) !important; }
+[data-theme="light"] .text-neutral-200      { color: var(--ds-text-2) !important; }
+[data-theme="light"] .text-neutral-300      { color: var(--ds-text-3) !important; }
+[data-theme="light"] .text-neutral-400      { color: var(--ds-text-4) !important; }
+[data-theme="light"] .text-neutral-500      { color: #a3a3a3 !important; }
+/* Borders */
+[data-theme="light"] .border-white\/5       { border-color: rgba(0,0,0,0.05) !important; }
+[data-theme="light"] .border-white\/10      { border-color: rgba(0,0,0,0.10) !important; }
+[data-theme="light"] .border-white\/20      { border-color: rgba(0,0,0,0.15) !important; }
+/* Accent — amber */
+[data-theme="light"] .text-amber-400        { color: var(--ds-amber-text) !important; }
+[data-theme="light"] .text-amber-300        { color: var(--ds-amber-hi) !important; }
+[data-theme="light"] .border-amber-400\/20  { border-color: rgba(146,64,14,0.20) !important; }
+[data-theme="light"] .border-amber-400\/40  { border-color: rgba(146,64,14,0.40) !important; }
+[data-theme="light"] .bg-amber-400\/10      { background-color: rgba(180,83,9,0.08) !important; }
+[data-theme="light"] .bg-amber-950\/20      { background-color: rgba(146,64,14,0.06) !important; }
+[data-theme="light"] .from-amber-950\/20    { --tw-gradient-from: rgba(146,64,14,0.06) !important; }
+/* Accent — blue */
+[data-theme="light"] .text-blue-400         { color: var(--ds-blue-text) !important; }
+[data-theme="light"] .text-blue-300         { color: var(--ds-blue-hi) !important; }
+[data-theme="light"] .border-blue-400\/20   { border-color: rgba(30,64,175,0.20) !important; }
+[data-theme="light"] .border-blue-400\/40   { border-color: rgba(30,64,175,0.40) !important; }
+[data-theme="light"] .bg-blue-400\/10       { background-color: rgba(29,78,216,0.08) !important; }
+[data-theme="light"] .bg-blue-950\/20       { background-color: rgba(30,64,175,0.06) !important; }
+[data-theme="light"] .from-blue-950\/20     { --tw-gradient-from: rgba(30,64,175,0.06) !important; }
+/* Emerald accent */
+[data-theme="light"] .text-emerald-400      { color: #065f46 !important; }
+[data-theme="light"] .border-emerald-400\/20 { border-color: rgba(6,95,70,0.20) !important; }
+[data-theme="light"] .border-emerald-400\/10 { border-color: rgba(6,95,70,0.10) !important; }
+/* Glass utilities */
+[data-theme="light"] .glass {
+  background: rgba(255,255,255,0.70);
+  border-color: rgba(0,0,0,0.08);
+}
+[data-theme="light"] .glass-amber {
+  background: rgba(180,83,9,0.06);
+  border-color: rgba(146,64,14,0.18);
+}
+[data-theme="light"] .glass-blue {
+  background: rgba(29,78,216,0.06);
+  border-color: rgba(30,64,175,0.18);
+}
+/* Divider */
+[data-theme="light"] .gradient-divider {
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.08), transparent);
+}
+/* Dropdown menus */
+[data-theme="light"] .bg-neutral-900\/95 {
+  background-color: rgba(250,247,242,0.97) !important;
+}
+/* Shadows on dark — invert for light */
+[data-theme="light"] .shadow-black\/20      { --tw-shadow-color: rgba(0,0,0,0.10) !important; }
+[data-theme="light"] .shadow-black\/40      { --tw-shadow-color: rgba(0,0,0,0.15) !important; }
+/* Hero overlays — remain dark (image underneath) */
+/* .from-black\/90, .via-black\/30, .from-neutral-950\/40 NOT overridden */
+/* Navbar text overrides */
+[data-theme="light"] nav[aria-label="Main navigation"] .text-neutral-300 {
+  color: #404040;
+}
+[data-theme="light"] nav[aria-label="Main navigation"] .hover\:text-amber-400:hover {
+  color: var(--ds-amber-text);
+}
+[data-theme="light"] nav[aria-label="Main navigation"] a.text-amber-400 {
+  color: var(--ds-amber-text);
+}
+[data-theme="light"] nav[aria-label="Main navigation"] .bg-amber-400\/5 {
+  background-color: rgba(146,64,14,0.05) !important;
+}
+/* ── Logo — BLACK in light mode (brightness-0 = all-black) ── */
+[data-theme="light"] .brightness-0.invert {
+  filter: brightness(0) !important;
+  opacity: 0.85;
+}
+[data-theme="light"] footer .brightness-0.invert {
+  filter: brightness(0) !important;
+  opacity: 0.70;
+}
+/* Brand-sign in body (brand statement section) — remove white glow */
+[data-theme="light"] img.brightness-0.invert {
+  filter: brightness(0) !important;
+  drop-shadow: none;
+}
+
+/* ── Images — slightly brighter in light mode ── */
+/* Excludes logos (brightness-0 class) and gateway card overlays */
+[data-theme="light"] img:not([class*="brightness-0"]) {
+  filter: brightness(1.12);
+}
+/* But hero overlay images — boost more since overlay dims them */
+[data-theme="light"] .aspect-\[3\/4\] img {
+  filter: brightness(1.25) !important;
+}
+
+/* ── Photo card text overlay — stays WHITE regardless of theme ── */
+/* Applied to gateway cards on Home page where text sits over dark photo */
+[data-theme="light"] .photo-card-text .text-neutral-200 { color: rgba(255,255,255,0.88) !important; }
+[data-theme="light"] .photo-card-text .text-white       { color: #ffffff !important; }
+[data-theme="light"] .photo-card-text .text-amber-400   { color: #fbbf24 !important; }
+[data-theme="light"] .photo-card-text .text-amber-200   { color: #fde68a !important; }
+[data-theme="light"] .photo-card-text .text-blue-400    { color: #60a5fa !important; }
+[data-theme="light"] .photo-card-text .text-blue-200    { color: #bfdbfe !important; }
+[data-theme="light"] .photo-card-text .border-amber-400\/40 { border-color: rgba(251,191,36,0.40) !important; }
+[data-theme="light"] .photo-card-text .border-blue-400\/40  { border-color: rgba(96,165,250,0.40) !important; }
+[data-theme="light"] .photo-card-text .bg-amber-400\/10 { background-color: rgba(251,191,36,0.12) !important; }
+[data-theme="light"] .photo-card-text .bg-blue-400\/10  { background-color: rgba(96,165,250,0.12) !important; }
+
+/* ── Missing gradient via overrides ── */
+[data-theme="light"] .via-neutral-900\/40  { --tw-gradient-via: rgba(240,236,228,0.40) !important; }
+[data-theme="light"] .via-neutral-900\/50  { --tw-gradient-via: rgba(240,236,228,0.50) !important; }
+[data-theme="light"] .via-neutral-900\/60  { --tw-gradient-via: rgba(240,236,228,0.60) !important; }
+[data-theme="light"] .bg-neutral-900\/60   { background-color: rgba(240,236,228,0.70) !important; }
+[data-theme="light"] .bg-neutral-900\/40   { background-color: rgba(240,236,228,0.40) !important; }
+
+/* ── Emerald section (STL/SVG banner) gradients ── */
+[data-theme="light"] .from-emerald-950\/20 { --tw-gradient-from: rgba(6,78,59,0.04) !important; }
+[data-theme="light"] .to-emerald-950\/20   { --tw-gradient-to: rgba(6,78,59,0.04) !important; }
+/* via-neutral-900/50 covered above */
+
+/* ── Arbitrary opacity bg-white/[0.0X] → white card surface ── */
+[data-theme="light"] [class*="bg-white\/\["] {
+  background-color: rgba(255,255,255,0.82) !important;
+}
+/* hover variants: bg-white/[0.05], bg-white/[0.06] etc. */
+[data-theme="light"] [class*="hover\:bg-white\/\["]:hover {
+  background-color: rgba(255,255,255,0.92) !important;
+}
+
+/* ── Newsletter form — input + container ── */
+[data-theme="light"] input[class*="bg-neutral-950"] {
+  background-color: rgba(255,255,255,0.90) !important;
+  color: #0a0a0a !important;
+  border-color: rgba(0,0,0,0.18) !important;
+}
+[data-theme="light"] input::placeholder { color: #a3a3a3 !important; }
+/* Newsletter container: from-amber-400/10 via-neutral-900/40 to-blue-400/10 */
+[data-theme="light"] .from-amber-400\/10  { --tw-gradient-from: rgba(146,64,14,0.07) !important; }
+[data-theme="light"] .to-blue-400\/10     { --tw-gradient-to: rgba(30,64,175,0.07) !important; }
+[data-theme="light"] .backdrop-blur-sm    { /* keep as-is */ }
+
+/* ── Notification states (success/error) ── */
+[data-theme="light"] .text-emerald-200  { color: #065f46 !important; }
+[data-theme="light"] .text-rose-300     { color: #be123c !important; }
+
+/* ── Calc chips — inactive borders/hover ── */
+[data-theme="light"] .hover\:border-white\/20:hover { border-color: rgba(0,0,0,0.15) !important; }
+[data-theme="light"] .hover\:border-white\/30:hover { border-color: rgba(0,0,0,0.20) !important; }
+[data-theme="light"] .hover\:text-neutral-300:hover { color: #525252 !important; }
+/* Active chip blue accent — keep blue visible on light */
+[data-theme="light"] .border-blue-400.bg-blue-400\/10 { border-color: #1d4ed8 !important; background-color: rgba(29,78,216,0.10) !important; }
+/* Amber tag opacity on light */
+[data-theme="light"] .text-amber-400\/60  { color: rgba(146,64,14,0.60) !important; }
+[data-theme="light"] .text-blue-400\/60   { color: rgba(30,64,175,0.60) !important; }
+
+/* ── Additional text color variants ── */
+[data-theme="light"] .text-blue-200          { color: #1e40af !important; }
+[data-theme="light"] .text-amber-200         { color: #92400e !important; }
+[data-theme="light"] .text-blue-500          { color: #1d4ed8 !important; }
+[data-theme="light"] .text-amber-500         { color: #92400e !important; }
+[data-theme="light"] .text-neutral-600       { color: #525252 !important; }
+[data-theme="light"] .fill-amber-400         { fill: #92400e !important; }
+/* ── bg-white/* opacity variants (card surfaces, hover overlays) ── */
+[data-theme="light"] .bg-white\/5            { background-color: rgba(0,0,0,0.03) !important; }
+[data-theme="light"] .bg-white\/8            { background-color: rgba(0,0,0,0.04) !important; }
+[data-theme="light"] .bg-white\/10           { background-color: rgba(0,0,0,0.05) !important; }
+[data-theme="light"] .bg-white\/15           { background-color: rgba(0,0,0,0.07) !important; }
+[data-theme="light"] .bg-white\/20           { background-color: rgba(0,0,0,0.08) !important; }
+/* ── Hover states (bg overlays) ── */
+[data-theme="light"] .hover\:bg-white\/5:hover  { background-color: rgba(0,0,0,0.04) !important; }
+[data-theme="light"] .hover\:bg-white\/10:hover { background-color: rgba(0,0,0,0.06) !important; }
+[data-theme="light"] .hover\:text-white:hover   { color: var(--ds-text-1) !important; }
+[data-theme="light"] .hover\:text-amber-300:hover { color: var(--ds-amber-hi) !important; }
+[data-theme="light"] .hover\:text-blue-300:hover  { color: var(--ds-blue-hi) !important; }
+/* ── Accent hover backgrounds ── */
+[data-theme="light"] .hover\:bg-amber-400\/5:hover { background-color: rgba(146,64,14,0.05) !important; }
+[data-theme="light"] .hover\:bg-blue-400\/5:hover  { background-color: rgba(30,64,175,0.05) !important; }
+/* ── bg-neutral-950/* opacity variants ── */
+[data-theme="light"] .bg-neutral-950\/40     { background-color: rgba(250,247,242,0.40) !important; }
+[data-theme="light"] .bg-neutral-950\/80     { background-color: rgba(250,247,242,0.80) !important; }
+[data-theme="light"] .bg-neutral-950\/95     { background-color: rgba(250,247,242,0.95) !important; }
+/* ── Additional border variants ── */
+[data-theme="light"] .border-white\/8        { border-color: rgba(0,0,0,0.08) !important; }
+[data-theme="light"] .border-white\/15       { border-color: rgba(0,0,0,0.12) !important; }
+/* ── Active nav link underline stays amber/brown in light ── */
+[data-theme="light"] nav .bg-amber-400       { background-color: var(--ds-amber-text) !important; }
+/* ── Rating pill and badges ── */
+[data-theme="light"] .border-amber-400\/20.bg-amber-400\/\[0\.03\] {
+  background-color: rgba(146,64,14,0.03) !important;
+}
+/* ── Social icon circles in footer ── */
+[data-theme="light"] footer .bg-white\/5     { background-color: rgba(0,0,0,0.04) !important; }
+[data-theme="light"] footer .border-white\/10 { border-color: rgba(0,0,0,0.10) !important; }
+[data-theme="light"] footer .hover\:bg-white\/10:hover { background-color: rgba(0,0,0,0.08) !important; }
+/* ── Hero overlay — parchment brightening in light mode (photo shows through, fades at bottom) ── */
+[data-theme="light"] .hero-overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(250,247,242,0.45) 0%,
+    rgba(250,247,242,0.65) 40%,
+    rgba(250,247,242,0.90) 72%,
+    rgba(250,247,242,1.0)  100%
+  ) !important;
+}
+/* Hero text — dark in light mode (readable on parchment-brightened photo area) */
+/* Slight parchment glow ensures contrast on all photo types */
+[data-theme="light"] .hero-text .text-white,
+[data-theme="light"] .hero-text h1 {
+  color: var(--ds-text-1) !important;
+  text-shadow: 0 0 24px rgba(250,247,242,0.98), 0 0 48px rgba(250,247,242,0.90) !important;
+}
+[data-theme="light"] .hero-text p,
+[data-theme="light"] .hero-text .text-neutral-200 {
+  color: var(--ds-text-2) !important;
+  text-shadow: 0 0 16px rgba(250,247,242,0.95) !important;
+}
+/* Eyebrow accent colors stay on-brand (dark amber/blue for light bg) */
+[data-theme="light"] .hero-text .text-amber-400 { color: var(--ds-amber-text) !important; }
+[data-theme="light"] .hero-text .text-blue-400  { color: var(--ds-blue-text) !important; }
+[data-theme="light"] .hero-text span.text-blue-400 { color: var(--ds-blue-text) !important; }
+/* Brand name accent in hero H1 — vibrant gold/blue, more saturated than body text */
+[data-theme="light"] .hero-text h1 span.text-amber-400 {
+  color: #b45309 !important; /* amber-700 — intense warm gold */
+  text-shadow: 0 0 20px rgba(250,247,242,0.95), 0 0 40px rgba(250,247,242,0.80) !important;
+}
+[data-theme="light"] .hero-text h1 span.text-blue-400 {
+  color: #1d4ed8 !important; /* blue-700 */
+  text-shadow: 0 0 20px rgba(250,247,242,0.95), 0 0 40px rgba(250,247,242,0.80) !important;
+}
+
+/* ── Calc / service image card overlays — direct bg-image (bypasses Tailwind v4 CSS var issue) ── */
+/* Strong dark at bottom (text area) + lighter above (image visible) */
+[data-theme="light"] .from-black\/95.via-black\/70 {
+  background-image: linear-gradient(to top, rgba(0,0,0,0.84) 0%, rgba(0,0,0,0.52) 40%, rgba(0,0,0,0.12) 70%, transparent 100%) !important;
+}
+[data-theme="light"] .from-black\/95.via-black\/65 {
+  background-image: linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.46) 40%, rgba(0,0,0,0.10) 70%, transparent 100%) !important;
+}
+/* STL/SVG home tiles use from-black/90 via-black/60 to-black/30 (different from calc cards!) */
+[data-theme="light"] .from-black\/90.via-black\/60 {
+  background-image: linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.28) 50%, rgba(0,0,0,0.06) 80%, transparent 100%) !important;
+}
+/* Tool subpage rounded-card hero: from-neutral-950 via-black/40 to-transparent */
+/* Parchment at bottom (text readable), photo visible at top */
+[data-theme="light"] .bg-gradient-to-t.from-neutral-950.via-black\/40 {
+  background-image: linear-gradient(
+    to top,
+    rgba(250,247,242,0.96) 0%,
+    rgba(250,247,242,0.72) 30%,
+    rgba(250,247,242,0.28) 58%,
+    transparent 100%
+  ) !important;
+}
+
+/* Boost brightness of images inside calc/service cards */
+[data-theme="light"] button:has(.from-black\/95) img { filter: brightness(1.32) !important; }
+/* STL/SVG tile images (Link elements) */
+[data-theme="light"] a:has(.from-black\/90.via-black\/60) img { filter: brightness(1.28) !important; }
+/* Tool subpage rounded card — brighten image */
+[data-theme="light"] div:has(> .bg-gradient-to-t.from-neutral-950.via-black\/40) img {
+  filter: brightness(1.20) !important;
+}
+
+/* ── Calc card text — stays white + shadow over dark gradient background ── */
+[data-theme="light"] button:has(.from-black\/95) .text-white,
+[data-theme="light"] button:has(.from-black\/90) .text-white  {
+  color: #ffffff !important;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.85), 0 2px 8px rgba(0,0,0,0.60) !important;
+}
+[data-theme="light"] button:has(.from-black\/95) .text-neutral-200,
+[data-theme="light"] button:has(.from-black\/90) .text-neutral-200 {
+  color: rgba(255,255,255,0.90) !important;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.80) !important;
+}
+[data-theme="light"] button:has(.from-black\/95) .text-amber-300 {
+  color: #fbbf24 !important;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.70) !important;
+}
+[data-theme="light"] button:has(.from-black\/95) .text-blue-300  { color: #93c5fd !important; }
+[data-theme="light"] button:has(.from-black\/95) .text-rose-300  { color: #fca5a5 !important; }
+/* STL/SVG tile text (Link elements) stays white on dark photo */
+[data-theme="light"] a:has(.from-black\/90.via-black\/60) .text-white   {
+  color: #ffffff !important;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.80) !important;
+}
+[data-theme="light"] a:has(.from-black\/90.via-black\/60) .text-neutral-300 { color: rgba(255,255,255,0.88) !important; }
+[data-theme="light"] button:has(.from-black\/95) .text-rose-200  { color: rgba(252,165,165,0.90) !important; }
+
+/* ── Tool subpage hero text — dark on parchment-fade area ── */
+[data-theme="light"] div:has(> .bg-gradient-to-t.from-neutral-950.via-black\/40) .text-white {
+  color: var(--ds-text-1) !important;
+  text-shadow: 0 0 20px rgba(250,247,242,0.95), 0 0 40px rgba(250,247,242,0.80) !important;
+}
+[data-theme="light"] div:has(> .bg-gradient-to-t.from-neutral-950.via-black\/40) h1 {
+  color: var(--ds-text-1) !important;
+  text-shadow: 0 0 20px rgba(250,247,242,0.95), 0 0 40px rgba(250,247,242,0.80) !important;
+}
+[data-theme="light"] div:has(> .bg-gradient-to-t.from-neutral-950.via-black\/40) .text-neutral-300 {
+  color: var(--ds-text-3) !important;
+  text-shadow: 0 0 12px rgba(250,247,242,0.90) !important;
+}
+[data-theme="light"] div:has(> .bg-gradient-to-t.from-neutral-950.via-black\/40) .text-amber-400 {
+  color: var(--ds-amber-text) !important;
+}
+[data-theme="light"] div:has(> .bg-gradient-to-t.from-neutral-950.via-black\/40) .text-blue-400 {
+  color: var(--ds-blue-text) !important;
+}
+
+/* ── Portfolio carousel navigation shadows — visible warm edge on hover ── */
+/* Slightly darker than page bg so the soft edge is distinguishable */
+[data-theme="light"] .from-neutral-900\/90 {
+  --tw-gradient-from: rgba(195,181,163,0.95) !important;
+}
+/* Portfolio card hover dark-bottom overlay → remove in light mode */
+[data-theme="light"] .from-black\/60 { --tw-gradient-from: rgba(0,0,0,0) !important; }
+[data-theme="light"] .from-neutral-900\/90 .text-white { color: var(--ds-text-1) !important; }
+
+/* ── Blog card overlay — direct background-image override (avoids CSS var double-position bug) ── */
+/* bg-gradient-to-t from-neutral-950/80 to-transparent → parchment fade */
+[data-theme="light"] .bg-gradient-to-t.from-neutral-950\/80 {
+  background-image: linear-gradient(to top, rgba(250,247,242,0.82) 0%, transparent 100%) !important;
+}
+/* Also boost brightness of blog card images */
+[data-theme="light"] a.group:has(.from-neutral-950\/80) img { filter: brightness(1.22) !important; }
+/* blog card itself: warm border + bg */
+[data-theme="light"] a.group .border-white\/10 { border-color: rgba(0,0,0,0.07) !important; }
+[data-theme="light"] .bg-white\/\[0\.02\] { background-color: rgba(255,255,255,0.60) !important; }
+
+/* Blog card title in dark → light */
+[data-theme="light"] .group-hover\:text-amber-300:hover { color: var(--ds-amber-hi) !important; }
+
+/* ── Emerald accent — muted in light mode (neon teal clashes with warm parchment) ── */
+/* Studio calculator tabs, STL/SVG section, quick-quote tag */
+[data-theme="light"] .text-emerald-400       { color: #047857 !important; } /* emerald-700 */
+[data-theme="light"] .text-emerald-400\/70   { color: rgba(4,120,87,0.70) !important; }
+[data-theme="light"] .border-emerald-400     { border-color: #047857 !important; }
+[data-theme="light"] .border-emerald-400\/10 { border-color: rgba(4,120,87,0.10) !important; }
+[data-theme="light"] .border-emerald-400\/20 { border-color: rgba(4,120,87,0.20) !important; }
+[data-theme="light"] .border-emerald-400\/30 { border-color: rgba(4,120,87,0.30) !important; }
+[data-theme="light"] .bg-emerald-400\/10     { background-color: rgba(4,120,87,0.10) !important; }
+[data-theme="light"] .bg-emerald-400\/20     { background-color: rgba(4,120,87,0.14) !important; }
+[data-theme="light"] .hover\:border-emerald-400\/30:hover { border-color: rgba(4,120,87,0.30) !important; }
+[data-theme="light"] .hover\:shadow-emerald-900\/10:hover { box-shadow: 0 10px 15px -3px rgba(4,120,87,0.08) !important; }
+[data-theme="light"] .text-emerald-300       { color: #065f46 !important; } /* emerald-800 for hover states */
+
+/* ── Glossary chips / keyword tag pills ── */
+[data-theme="light"] .bg-neutral-800 { background-color: rgba(120,110,100,0.15) !important; }
+[data-theme="light"] .hover\:bg-neutral-700:hover { background-color: rgba(120,110,100,0.28) !important; }
+[data-theme="light"] .bg-neutral-800\/60  { background-color: rgba(120,110,100,0.14) !important; }
+[data-theme="light"] .bg-neutral-800\/80  { background-color: rgba(120,110,100,0.25) !important; }
+/* Glossary search input + card borders */
+[data-theme="light"] .border-neutral-800 { border-color: rgba(0,0,0,0.12) !important; }
+[data-theme="light"] .bg-neutral-900\/60 { background-color: rgba(240,236,228,0.55) !important; }
+[data-theme="light"] .border-neutral-700\/50 { border-color: rgba(0,0,0,0.12) !important; }
+[data-theme="light"] .border-neutral-700\/30 { border-color: rgba(0,0,0,0.08) !important; }
 
 /* ─── Smooth gradient divider ─── */
 .gradient-divider {

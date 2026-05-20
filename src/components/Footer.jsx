@@ -93,7 +93,7 @@ export default function Footer() {
   return (
     <footer className="bg-neutral-950 border-t border-white/10" role="contentinfo">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Lead magnet — email capture before users bounce. Placed above nav for CRO. */}
+        {/* Lead magnet, email capture before users bounce. Placed above nav for CRO. */}
         <div id="newsletter" className="mb-10 max-w-2xl">
           <NewsletterForm />
         </div>
@@ -123,7 +123,7 @@ export default function Footer() {
             </div>
           </nav>
 
-          {/* "Obserwuj nas" column — market rates appended below socials */}
+          {/* "Obserwuj nas" column, market rates appended below socials */}
           <div>
             <h4 className="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">{t.footer.followUs}</h4>
             <div className="flex flex-wrap gap-3">
