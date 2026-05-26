@@ -1,7 +1,7 @@
 // ============================================================
 // JEWELRY ESTIMATOR — AEJaCA Jewelry
 // ============================================================
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture } from "./calcShared.jsx";
 import { trackCalc } from "../../utils/analytics.js";
 import { useMarketRates } from "../../hooks/useMarketRates.js";
@@ -13,11 +13,33 @@ import {
   GEM_QUALITY, CERTIFICATIONS, RENOVATION_SERVICES, REPAIR_SERVICES,
   REPAIR_METAL_MUL, QTY_TIERS, GENERIC_TYPES, GENERIC_METALS,
 } from "./jewelryConfig.js";
-import { PRODUCT_TYPES } from "./jewelry/productConfig.js";
+import { getProductType } from "./jewelry/productConfig.js";
 import { calcWeight as computeWeight } from "./jewelry/WeightEngine.js";
 import DimensionInputs from "./jewelry/DimensionInputs.jsx";
 import WeightDisplay from "./jewelry/WeightDisplay.jsx";
 import ClientSupplyPanel from "./jewelry/ClientSupplyPanel.jsx";
+
+// Map JEWELRY_TYPES ids → PRODUCT_TYPES ids (for dimension engine)
+const TYPE_TO_FORM = {
+  // woman line
+  ring:       "ring",
+  bracelet:   "bracelet",
+  pendant:    "pendant",
+  earrings:   "earrings",
+  brooch:     "brooch",
+  necklace:   null,    // no geometry model for chains/necklaces
+  // men line
+  signet:     "signet",
+  medallion:  "pendant", // closest model
+  bracelet_m: "bracelet",
+  cufflinks:  null,
+  tie_clip:   null,
+  chain_m:    null,
+  // pet line
+  tag:        "pendant",
+  charm:      "pendant",
+  pin:        null,
+};
 
 // Density (g/cm³) by metal type key
 const METAL_DENSITY = {
@@ -262,8 +284,11 @@ export default function JewelryCalc({ lang = "pl" }) {
   const [qtyId, setQtyId] = useState("1");
 
   // New creation — geometry + client supply
-  const [productForm, setProductForm] = useState(null); // "ring", "pendant", etc.
+  // productForm is derived from typeId — no separate selection needed
+  const productForm = useMemo(() => TYPE_TO_FORM[typeId] ?? null, [typeId]);
   const [dimensions, setDimensions] = useState({});     // fieldId: value
+  // Reset dimensions whenever the jewelry type (and thus product form) changes
+  useEffect(() => { setDimensions({}); }, [typeId]);
   const [clientSuppliesMetal, setClientSuppliesMetal] = useState(false);
   const [clientSuppliesStones, setClientSuppliesStones] = useState(false);
 
@@ -441,31 +466,17 @@ export default function JewelryCalc({ lang = "pl" }) {
 
           {/* Shape & Dimensions step */}
           <CalcCard stepNum={step()} label={{ pl: "Kształt i wymiary", en: "Shape & Dimensions", de: "Form & Abmessungen" }[lang] || "Shape & Dimensions"}>
-            {/* Product form selector grid */}
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-4">
-              {PRODUCT_TYPES.map(pt => {
-                const active = productForm === pt.id;
-                return (
-                  <button key={pt.id}
-                    type="button"
-                    onClick={() => { setProductForm(pt.id); setDimensions({}); }}
-                    className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all duration-200 ${
-                      active
-                        ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10"
-                        : "border-white/10 bg-white/[0.02] hover:border-white/20"
-                    }`}>
-                    <span className="text-2xl leading-none">{pt.icon}</span>
-                    <span className={`text-[10px] sm:text-[11px] text-center leading-tight ${
-                      active ? "text-amber-300 font-medium" : "text-neutral-400"
-                    }`}>{t(pt.label, lang)}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Dimension inputs — shown once a form is selected */}
-            {productForm && (
-              <div className="mt-2 space-y-5">
+            {productForm ? (
+              <div className="space-y-5">
+                {/* Show which geometry model is being used */}
+                {(() => {
+                  const pt = getProductType(productForm);
+                  return pt ? (
+                    <p className="text-xs text-neutral-400">
+                      {pt.icon} {t(pt.label, lang)} — {t(pt.notes, lang)}
+                    </p>
+                  ) : null;
+                })()}
                 <DimensionInputs
                   productTypeId={productForm}
                   values={dimensions}
@@ -493,6 +504,10 @@ export default function JewelryCalc({ lang = "pl" }) {
                   lang={lang}
                 />
               </div>
+            ) : (
+              <p className="text-xs text-neutral-500">
+                {{ pl: "Szczegółowe wymiary niedostępne dla tego rodzaju biżuterii.", en: "Detailed dimensions not available for this jewelry type.", de: "Detaillierte Abmessungen für diesen Schmucktyp nicht verfügbar." }[lang]}
+              </p>
             )}
           </CalcCard>
 
