@@ -13,6 +13,18 @@ import {
   GEM_QUALITY, CERTIFICATIONS, RENOVATION_SERVICES, REPAIR_SERVICES,
   REPAIR_METAL_MUL, QTY_TIERS, GENERIC_TYPES, GENERIC_METALS,
 } from "./jewelryConfig.js";
+import { PRODUCT_TYPES } from "./jewelry/productConfig.js";
+import { calcWeight as computeWeight } from "./jewelry/WeightEngine.js";
+import DimensionInputs from "./jewelry/DimensionInputs.jsx";
+import WeightDisplay from "./jewelry/WeightDisplay.jsx";
+import ClientSupplyPanel from "./jewelry/ClientSupplyPanel.jsx";
+
+// Density (g/cm³) by metal type key
+const METAL_DENSITY = {
+  gold: 19.3,      // approximated as 24k; purity scaling handled implicitly
+  silver: 10.5,
+  platinum: 21.4,
+};
 
 const LBL = {
   pl: {
@@ -82,7 +94,8 @@ function resolveMetalPricePerG(metalKey, rates) {
 
 // ---- NEW CREATION CALCULATOR ----
 export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
-  gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId }, lang, rates, gemstones) {
+  gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId,
+  clientSuppliesMetal, clientSuppliesStones, overrideWeightG }, lang, rates, gemstones) {
   const l = LBL[lang] || LBL.en;
   const line = PRODUCT_LINES.find(p => p.id === lineId);
   const jType = JEWELRY_TYPES[lineId]?.find(j => j.id === typeId);
@@ -99,8 +112,11 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
 
   // Metal cost — use live rates when available, fall back to static config
   const plnPerG = resolveMetalPricePerG(metal.metal, rates);
-  const weightG = jType.baseWeight * weight.mul;
-  const metalCost = weightG * plnPerG * metal.purity;
+  // Use geometric weight override if provided (from WeightEngine), else fall back to baseWeight × mul
+  const weightG = (overrideWeightG != null && overrideWeightG > 0)
+    ? overrideWeightG
+    : jType.baseWeight * weight.mul;
+  const metalCost = clientSuppliesMetal ? 0 : weightG * plnPerG * metal.purity;
 
   // Labor cost (weight affects labor — lighter pieces need less finishing)
   const laborCost = jType.laborH * method.laborRate * method.laborMul * metal.laborMul * jType.complexity * (weight.laborMul || 1);
@@ -125,7 +141,10 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
     }
 
     const pricePerStone = gem.basePLN * stoneSize.priceMul * qualMul * cert.mul;
-    gemCost = pricePerStone * stoneCount.count;
+    // Client supplies stones: skip gem purchase cost but still include setting labour
+    if (!clientSuppliesStones) {
+      gemCost = pricePerStone * stoneCount.count;
+    }
     settingCost = stoneCount.count * (stoneSize.ct >= 0.3 ? 120 : 60);
   }
 
@@ -242,6 +261,12 @@ export default function JewelryCalc({ lang = "pl" }) {
   const [serviceId, setServiceId] = useState("new");
   const [qtyId, setQtyId] = useState("1");
 
+  // New creation — geometry + client supply
+  const [productForm, setProductForm] = useState(null); // "ring", "pendant", etc.
+  const [dimensions, setDimensions] = useState({});     // fieldId: value
+  const [clientSuppliesMetal, setClientSuppliesMetal] = useState(false);
+  const [clientSuppliesStones, setClientSuppliesStones] = useState(false);
+
   // New creation
   const [lineId, setLineId] = useState("woman");
   const [typeId, setTypeId] = useState("ring");
@@ -271,10 +296,22 @@ export default function JewelryCalc({ lang = "pl" }) {
   const showGemDetails = selectedGem && selectedGem.id !== "none" && !selectedGem.custom && selectedGem.basePLN > 0;
   const types = JEWELRY_TYPES[lineId] || [];
 
+  // Live geometric weight from WeightEngine (when productForm + dimensions are set)
+  const weightResult = useMemo(() => {
+    if (!productForm) return null;
+    const selectedMetal = METALS.find(m => m.id === metalId);
+    const density = METAL_DENSITY[selectedMetal?.metal] ?? 10.5;
+    const result = computeWeight(productForm, dimensions, density);
+    if (!result || typeof result.nettoG !== "number" || typeof result.bruttoG !== "number") return null;
+    return result;
+  }, [productForm, dimensions, metalId]);
+
   const result = useMemo(() => {
     if (serviceId === "new") {
       return calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
-        gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId }, lang, rates, resolvedGemstones);
+        gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId,
+        clientSuppliesMetal, clientSuppliesStones,
+        overrideWeightG: weightResult?.nettoG ?? null }, lang, rates, resolvedGemstones);
     }
     if (serviceId === "renovation") {
       return calcRenovation({ jewTypeId: renoJewType, metalTypeId: renoMetal, services: renoServices, qtyId }, lang);
@@ -282,6 +319,7 @@ export default function JewelryCalc({ lang = "pl" }) {
     return calcRepair({ jewTypeId: repairJewType, metalTypeId: repairMetal, repairId, qtyId }, lang);
   }, [serviceId, lineId, typeId, metalId, weightId, methodId, platingId,
     gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId,
+    clientSuppliesMetal, clientSuppliesStones, weightResult,
     renoServices, renoJewType, renoMetal, repairId, repairJewType, repairMetal, lang, rates, resolvedGemstones]);
 
   function toggleRenoService(id) {
@@ -399,6 +437,63 @@ export default function JewelryCalc({ lang = "pl" }) {
                 );
               })}
             </div>
+          </CalcCard>
+
+          {/* Shape & Dimensions step */}
+          <CalcCard stepNum={step()} label={{ pl: "Kształt i wymiary", en: "Shape & Dimensions", de: "Form & Abmessungen" }[lang] || "Shape & Dimensions"}>
+            {/* Product form selector grid */}
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-4">
+              {PRODUCT_TYPES.map(pt => {
+                const active = productForm === pt.id;
+                return (
+                  <button key={pt.id}
+                    type="button"
+                    onClick={() => { setProductForm(pt.id); setDimensions({}); }}
+                    className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all duration-200 ${
+                      active
+                        ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10"
+                        : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                    }`}>
+                    <span className="text-2xl leading-none">{pt.icon}</span>
+                    <span className={`text-[10px] sm:text-[11px] text-center leading-tight ${
+                      active ? "text-amber-300 font-medium" : "text-neutral-400"
+                    }`}>{t(pt.label, lang)}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Dimension inputs — shown once a form is selected */}
+            {productForm && (
+              <div className="mt-2 space-y-5">
+                <DimensionInputs
+                  productTypeId={productForm}
+                  values={dimensions}
+                  onChange={(id, val) => setDimensions(prev => ({ ...prev, [id]: val }))}
+                  lang={lang}
+                />
+
+                {/* Live weight display */}
+                {weightResult && (
+                  <WeightDisplay
+                    nettoG={weightResult.nettoG}
+                    bruttoG={weightResult.bruttoG}
+                    metalName={t(METALS.find(m => m.id === metalId)?.label, lang) ?? ""}
+                    lang={lang}
+                    clientSuppliesMetal={clientSuppliesMetal}
+                  />
+                )}
+
+                {/* Client supply toggles */}
+                <ClientSupplyPanel
+                  suppliesMetal={clientSuppliesMetal}
+                  suppliesStones={clientSuppliesStones}
+                  onToggleMetal={() => setClientSuppliesMetal(v => !v)}
+                  onToggleStones={() => setClientSuppliesStones(v => !v)}
+                  lang={lang}
+                />
+              </div>
+            )}
           </CalcCard>
 
           <CalcCard stepNum={step()} label={l.metal}>
