@@ -102,7 +102,7 @@ export default function LaserParametersPage() {
       <div className="bg-neutral-950">
 
         {/* Hero */}
-        <section className="relative overflow-hidden min-h-[480px]">
+        <section className="relative overflow-hidden min-h-[340px]">
           <img
             src="/hero-toolstudio.webp"
             alt="Kreator parametrów laserowania — AEJaCA sTuDiO"
@@ -114,7 +114,7 @@ export default function LaserParametersPage() {
             height="572"
           />
           <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
-          <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-24 pb-10 text-center flex flex-col items-center">
+          <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-24 pb-6 text-center flex flex-col items-center">
             <div className="text-blue-400 text-xs font-medium uppercase tracking-[0.35em] mb-5">{L.heroTag}</div>
             <h1 className="font-sans text-4xl sm:text-5xl md:text-[60px] font-semibold text-white mb-5 leading-[1.02] tracking-tight drop-shadow-2xl">{L.heroTitle}</h1>
             <p className="text-neutral-200 text-base max-w-xl leading-relaxed">{L.heroDesc}</p>

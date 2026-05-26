@@ -144,7 +144,7 @@ export default function Jewelry() {
       <SEOHead pageKey="jewelry" path="/jewelry" image={`${SITE.url}/og-jewelry.jpg`} schemas={schemas} />
       <div className="bg-neutral-950">
       {/* Hero */}
-      <section className="relative overflow-hidden min-h-[540px]">
+      <section className="relative overflow-hidden min-h-[400px]">
         <img
           src="/hero-jewelry.webp"
           alt="AEJaCA Jewelry"
@@ -156,7 +156,7 @@ export default function Jewelry() {
           height="1080"
         />
         <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
-        <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-28 pb-14 text-center flex flex-col items-center">
+        <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-28 pb-6 text-center flex flex-col items-center">
           <div className="text-amber-400 text-xs font-medium uppercase tracking-[0.35em] mb-5">{j.heroTag}</div>
           <h1 className="font-serif text-5xl sm:text-6xl md:text-[72px] font-semibold text-white mb-6 leading-[1.02] tracking-tight drop-shadow-2xl">AEJaCA <span className="text-amber-400">{L.heroTitleBrand}</span></h1>
           <p className="text-neutral-200 text-base md:text-lg max-w-xl leading-relaxed">{j.heroDesc}</p>
