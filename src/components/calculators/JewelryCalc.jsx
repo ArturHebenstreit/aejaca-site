@@ -283,18 +283,17 @@ export default function JewelryCalc({ lang = "pl" }) {
   const [serviceId, setServiceId] = useState("new");
   const [qtyId, setQtyId] = useState("1");
 
-  // New creation — geometry + client supply
-  // productForm is derived from typeId — no separate selection needed
+  // New creation
+  const [lineId, setLineId] = useState("woman");
+  const [typeId, setTypeId] = useState("ring");
+
+  // Geometry + client supply — productForm is derived from typeId (no separate selection needed)
   const productForm = useMemo(() => TYPE_TO_FORM[typeId] ?? null, [typeId]);
   const [dimensions, setDimensions] = useState({});     // fieldId: value
   // Reset dimensions whenever the jewelry type (and thus product form) changes
   useEffect(() => { setDimensions({}); }, [typeId]);
   const [clientSuppliesMetal, setClientSuppliesMetal] = useState(false);
   const [clientSuppliesStones, setClientSuppliesStones] = useState(false);
-
-  // New creation
-  const [lineId, setLineId] = useState("woman");
-  const [typeId, setTypeId] = useState("ring");
   const [metalId, setMetalId] = useState("silver");
   const [weightId, setWeightId] = useState("light");
   const [methodId, setMethodId] = useState("cast");
