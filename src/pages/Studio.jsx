@@ -142,7 +142,7 @@ export default function Studio() {
           height="1080"
         />
         <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
-        <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-32 pb-24 text-center flex flex-col items-center">
+        <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-28 pb-14 text-center flex flex-col items-center">
           <div className="text-blue-400 text-xs font-medium uppercase tracking-[0.35em] mb-5">{s.heroTag}</div>
           <h1 className="font-sans text-5xl sm:text-6xl md:text-[72px] font-semibold text-white mb-6 leading-[1.02] tracking-tight drop-shadow-2xl">AEJaCA <span className="text-blue-400">sTuDiO</span></h1>
           <p className="text-neutral-200 text-base md:text-lg max-w-xl leading-relaxed">{s.heroDesc}</p>
@@ -150,7 +150,7 @@ export default function Studio() {
       </section>
 
       {/* About */}
-      <section id="about" className="py-20 px-4 bg-neutral-950">
+      <section id="about" className="py-14 px-4 bg-neutral-950">
         <div ref={aboutRef} className="reveal max-w-4xl mx-auto text-center">
           <h2 className="font-sans text-3xl md:text-4xl font-bold mb-6 text-white tracking-tight">{s.aboutTitle}</h2>
           <p className="text-neutral-400 text-lg leading-relaxed mb-6">{s.aboutP1}</p>
@@ -161,7 +161,7 @@ export default function Studio() {
       <div className="gradient-divider" />
 
       {/* Technologies */}
-      <section id="technologies" className="py-20 px-4 bg-neutral-900/50">
+      <section id="technologies" className="py-14 px-4 bg-neutral-900/50">
         <div className="max-w-6xl mx-auto">
           <div ref={techHeaderRef} className="reveal text-center mb-14">
             <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-3">{s.techTag}</div>
@@ -185,7 +185,7 @@ export default function Studio() {
       <div className="gradient-divider" />
 
       {/* Indicative Pricing */}
-      <section id="pricing" className="py-20 px-4 bg-neutral-950">
+      <section id="pricing" className="py-14 px-4 bg-neutral-950">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-3">{PRICING_LABELS[lang]?.tag}</div>
@@ -234,7 +234,7 @@ export default function Studio() {
       <div className="gradient-divider" />
 
       {/* Services */}
-      <section id="services" className="py-20 px-4 bg-neutral-950">
+      <section id="services" className="py-14 px-4 bg-neutral-950">
         <div className="max-w-4xl mx-auto">
           <div ref={servicesRef} className="reveal text-center mb-14">
             <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-3">{s.servicesTag}</div>
@@ -252,7 +252,7 @@ export default function Studio() {
       </section>
 
       {/* Process */}
-      <section id="process" className="py-20 px-4 bg-gradient-to-b from-blue-950/20 to-neutral-950">
+      <section id="process" className="py-14 px-4 bg-gradient-to-b from-blue-950/20 to-neutral-950">
         <div ref={processRef} className="reveal max-w-4xl mx-auto text-center">
           <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-3">{s.processTag}</div>
           <h2 className="font-sans text-3xl md:text-4xl font-bold text-white mb-12 tracking-tight">{s.processTitle}</h2>
@@ -354,7 +354,7 @@ export default function Studio() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-4 text-center bg-neutral-950">
+      <section className="py-14 px-4 text-center bg-neutral-950">
         <div ref={ctaRef} className="reveal">
           <h2 className="font-sans text-2xl md:text-3xl font-bold text-white mb-4 tracking-tight">{s.ctaTitle}</h2>
           <p className="text-neutral-400 mb-8 max-w-md mx-auto">{s.ctaText}</p>

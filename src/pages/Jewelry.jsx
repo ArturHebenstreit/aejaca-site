@@ -156,7 +156,7 @@ export default function Jewelry() {
           height="1080"
         />
         <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
-        <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-32 pb-24 text-center flex flex-col items-center">
+        <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-28 pb-14 text-center flex flex-col items-center">
           <div className="text-amber-400 text-xs font-medium uppercase tracking-[0.35em] mb-5">{j.heroTag}</div>
           <h1 className="font-serif text-5xl sm:text-6xl md:text-[72px] font-semibold text-white mb-6 leading-[1.02] tracking-tight drop-shadow-2xl">AEJaCA <span className="text-amber-400">{L.heroTitleBrand}</span></h1>
           <p className="text-neutral-200 text-base md:text-lg max-w-xl leading-relaxed">{j.heroDesc}</p>
@@ -164,7 +164,7 @@ export default function Jewelry() {
       </section>
 
       {/* About */}
-      <section id="about" className="py-20 px-4 bg-neutral-950">
+      <section id="about" className="py-14 px-4 bg-neutral-950">
         <div ref={aboutRef} className="reveal max-w-4xl mx-auto text-center">
           <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-6 text-white">{j.aboutTitle}</h2>
           <p className="text-neutral-400 text-lg leading-relaxed mb-6">{j.aboutP1}</p>
@@ -175,7 +175,7 @@ export default function Jewelry() {
       <div className="gradient-divider" />
 
       {/* Services */}
-      <section id="services" className="py-20 px-4 bg-neutral-900/50">
+      <section id="services" className="py-14 px-4 bg-neutral-900/50">
         <div className="max-w-6xl mx-auto">
           <div ref={servicesHeaderRef} className="reveal text-center mb-14">
             <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{j.servicesTag}</div>
@@ -199,7 +199,7 @@ export default function Jewelry() {
       <div className="gradient-divider" />
 
       {/* Indicative Pricing */}
-      <section id="pricing" className="py-20 px-4 bg-neutral-950">
+      <section id="pricing" className="py-14 px-4 bg-neutral-950">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{PRICING_LABELS[lang]?.tag}</div>
@@ -254,7 +254,7 @@ export default function Jewelry() {
       <div className="gradient-divider" />
 
       {/* Values */}
-      <section id="values" className="py-20 px-4 bg-gradient-to-b from-emerald-950/20 to-neutral-950">
+      <section id="values" className="py-14 px-4 bg-gradient-to-b from-emerald-950/20 to-neutral-950">
         <div ref={valuesRef} className="reveal max-w-4xl mx-auto text-center">
           <h2 className="font-serif text-3xl font-semibold text-white mb-10">{j.valuesTitle}</h2>
           <div className="grid sm:grid-cols-4 gap-8">
@@ -352,7 +352,7 @@ export default function Jewelry() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-4 text-center bg-neutral-950">
+      <section className="py-14 px-4 text-center bg-neutral-950">
         <div ref={ctaRef} className="reveal">
           <h2 className="font-serif text-2xl md:text-3xl font-semibold text-white mb-4">{j.ctaTitle}</h2>
           <p className="text-neutral-400 mb-8 max-w-md mx-auto">{j.ctaText}</p>

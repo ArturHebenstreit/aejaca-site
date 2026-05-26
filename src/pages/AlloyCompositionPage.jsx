@@ -114,7 +114,7 @@ export default function AlloyCompositionPage() {
             height="572"
           />
           <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
-          <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-28 pb-20 text-center flex flex-col items-center">
+          <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-24 pb-10 text-center flex flex-col items-center">
             <div className="text-amber-400 text-xs font-medium uppercase tracking-[0.35em] mb-5">{L.heroTag}</div>
             <h1 className="font-serif text-4xl sm:text-5xl md:text-[60px] font-semibold text-white mb-5 leading-[1.02] tracking-tight drop-shadow-2xl">{L.heroTitle}</h1>
             <p className="text-neutral-200 text-base max-w-xl leading-relaxed">{L.heroDesc}</p>
@@ -134,7 +134,7 @@ export default function AlloyCompositionPage() {
         </div>
 
         {/* Intro */}
-        <section className="py-10 px-4 bg-neutral-950">
+        <section className="py-6 px-4 bg-neutral-950">
           <div className="max-w-3xl mx-auto">
             <div ref={introRef} className="reveal p-6 rounded-2xl bg-amber-400/5 border border-amber-400/15">
               <h2 className="font-sans text-xl font-semibold text-amber-300 mb-3">{L.introTitle}</h2>
@@ -146,7 +146,7 @@ export default function AlloyCompositionPage() {
         <div className="gradient-divider" />
 
         {/* Calculator */}
-        <section className="py-12 px-4 bg-neutral-950">
+        <section className="py-8 px-4 bg-neutral-950">
           <div className="max-w-3xl mx-auto">
             <div ref={calcRef} className="reveal">
               <AlloyCompositionCalc />
@@ -162,7 +162,7 @@ export default function AlloyCompositionPage() {
         </section>
 
         {/* Footer CTA */}
-        <section className="py-12 px-4 bg-neutral-950 text-center">
+        <section className="py-10 px-4 bg-neutral-950 text-center">
           <div ref={ctaRef} className="reveal max-w-xl mx-auto">
             <h2 className="font-sans text-xl font-semibold text-white mb-2">{L.footerCtaTitle}</h2>
             <p className="text-neutral-400 text-sm mb-6">{L.footerCtaText}</p>
