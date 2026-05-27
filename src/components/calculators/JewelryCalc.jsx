@@ -462,44 +462,6 @@ export default function JewelryCalc({ lang = "pl" }) {
             </div>
           </CalcCard>
 
-          {/* Shape & Dimensions step */}
-          <CalcCard stepNum={step()} label={{ pl: "Kształt i wymiary", en: "Shape & Dimensions", de: "Form & Abmessungen" }[lang] || "Shape & Dimensions"}>
-            {productForm ? (
-              <div className="space-y-5">
-                {/* Show which geometry model is being used */}
-                {(() => {
-                  const pt = getProductType(productForm);
-                  return pt ? (
-                    <p className="text-xs text-neutral-400">
-                      {pt.icon} {t(pt.label, lang)} — {t(pt.notes, lang)}
-                    </p>
-                  ) : null;
-                })()}
-                <DimensionInputs
-                  productTypeId={productForm}
-                  values={dimensions}
-                  onChange={(id, val) => setDimensions(prev => ({ ...prev, [id]: val }))}
-                  lang={lang}
-                />
-
-                {/* Live weight display */}
-                {weightResult && (
-                  <WeightDisplay
-                    nettoG={weightResult.nettoG}
-                    bruttoG={weightResult.bruttoG}
-                    metalName={t(METALS.find(m => m.id === metalId)?.label, lang) ?? ""}
-                    lang={lang}
-                    clientSuppliesMetal={clientSuppliesMetal}
-                  />
-                )}
-              </div>
-            ) : (
-              <p className="text-xs text-neutral-500">
-                {{ pl: "Szczegółowe wymiary niedostępne dla tego rodzaju biżuterii.", en: "Detailed dimensions not available for this jewelry type.", de: "Detaillierte Abmessungen für diesen Schmucktyp nicht verfügbar." }[lang]}
-              </p>
-            )}
-          </CalcCard>
-
           <CalcCard stepNum={step()} label={l.weight}>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
               {WEIGHTS.map(w => {
@@ -536,6 +498,44 @@ export default function JewelryCalc({ lang = "pl" }) {
                 );
               })}
             </div>
+          </CalcCard>
+
+          {/* Shape & Dimensions step */}
+          <CalcCard stepNum={step()} label={{ pl: "Kształt i wymiary", en: "Shape & Dimensions", de: "Form & Abmessungen" }[lang] || "Shape & Dimensions"}>
+            {productForm ? (
+              <div className="space-y-5">
+                {/* Show which geometry model is being used */}
+                {(() => {
+                  const pt = getProductType(productForm);
+                  return pt ? (
+                    <p className="text-xs text-neutral-400">
+                      {pt.icon} {t(pt.label, lang)} — {t(pt.notes, lang)}
+                    </p>
+                  ) : null;
+                })()}
+                <DimensionInputs
+                  productTypeId={productForm}
+                  values={dimensions}
+                  onChange={(id, val) => setDimensions(prev => ({ ...prev, [id]: val }))}
+                  lang={lang}
+                />
+
+                {/* Live weight display */}
+                {weightResult && (
+                  <WeightDisplay
+                    nettoG={weightResult.nettoG}
+                    bruttoG={weightResult.bruttoG}
+                    metalName={t(METALS.find(m => m.id === metalId)?.label, lang) ?? ""}
+                    lang={lang}
+                    clientSuppliesMetal={clientSuppliesMetal}
+                  />
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-neutral-500">
+                {{ pl: "Szczegółowe wymiary niedostępne dla tego rodzaju biżuterii.", en: "Detailed dimensions not available for this jewelry type.", de: "Detaillierte Abmessungen für diesen Schmucktyp nicht verfügbar." }[lang]}
+              </p>
+            )}
           </CalcCard>
 
           <CalcCard stepNum={step()} label={l.metal}>
