@@ -1,4 +1,4 @@
-import { EU_RING_SIZES, getProductType } from "./productConfig.js";
+import { EU_RING_SIZES, getProductType, getRingInnerDiameter } from "./productConfig.js";
 
 export const BRUTTO_FACTOR = 1.15;
 
@@ -7,18 +7,32 @@ export function formatWeight(grams) {
   return grams.toFixed(1) + " g";
 }
 
-function getFillFactor(productTypeId, params) {
+function getFillFactor(productTypeId, params, weightId) {
   const pt = getProductType(productTypeId);
   if (!pt) return 1;
-  const key = params.massiveness || params.style || pt.defaultFill;
+  // For ring/signet: weightId from the visual WEIGHTS step takes priority
+  if (weightId && pt.fillFactors[weightId] != null) {
+    return pt.fillFactors[weightId];
+  }
+  // For other types: use params.style (pendant, bracelet, earrings, brooch)
+  const key = params.style || pt.defaultFill;
   return pt.fillFactors[key] ?? pt.fillFactors[pt.defaultFill];
 }
 
-function calcRingWeight(params, metalDensity) {
-  const innerDiameterMm = EU_RING_SIZES[Number(params.ringSize)] ?? EU_RING_SIZES[54];
+function resolveRingInnerDiameter(params) {
+  const ringSizeParam = params.ringSize;
+  if (ringSizeParam && typeof ringSizeParam === "object") {
+    return getRingInnerDiameter(ringSizeParam.system, ringSizeParam.value);
+  }
+  // legacy: plain EU size number
+  return EU_RING_SIZES[Number(ringSizeParam)] ?? 17.2;
+}
+
+function calcRingWeight(params, metalDensity, weightId) {
+  const innerDiameterMm = resolveRingInnerDiameter(params);
   const wallThickness = Number(params.wallThickness);
   const width = Number(params.width);
-  const fillFactor = getFillFactor("ring", params);
+  const fillFactor = getFillFactor("ring", params, weightId);
 
   const r_out = innerDiameterMm / 2 + wallThickness;
   const r_in = innerDiameterMm / 2;
@@ -28,13 +42,13 @@ function calcRingWeight(params, metalDensity) {
   return { nettoG, bruttoG: nettoG * BRUTTO_FACTOR, method: "hollow-cylinder" };
 }
 
-function calcSignetWeight(params, metalDensity) {
-  const innerDiameterMm = EU_RING_SIZES[Number(params.ringSize)] ?? EU_RING_SIZES[54];
+function calcSignetWeight(params, metalDensity, weightId) {
+  const innerDiameterMm = resolveRingInnerDiameter(params);
   const wallThickness = Number(params.wallThickness);
   const width = Number(params.width);
   const faceWidth = Number(params.faceWidth);
   const faceHeight = Number(params.faceHeight);
-  const fillFactor = getFillFactor("signet", params);
+  const fillFactor = getFillFactor("signet", params, weightId);
 
   const r_out = innerDiameterMm / 2 + wallThickness;
   const r_in = innerDiameterMm / 2;
@@ -49,7 +63,7 @@ function calcPendantWeight(params, metalDensity) {
   const height = Number(params.height);
   const width = Number(params.width);
   const thickness = Number(params.thickness);
-  const fillFactor = getFillFactor("pendant", params);
+  const fillFactor = getFillFactor("pendant", params, null);
 
   const V_cm3 = (height * width * thickness) / 1000;
   const nettoG = V_cm3 * metalDensity * fillFactor;
@@ -60,7 +74,7 @@ function calcBraceletWeight(params, metalDensity) {
   const length = Number(params.length);
   const width = Number(params.width);
   const thickness = Number(params.thickness);
-  const fillFactor = getFillFactor("bracelet", params);
+  const fillFactor = getFillFactor("bracelet", params, null);
 
   const V_cm3 = (length * width * thickness) / 1000;
   const nettoG = V_cm3 * metalDensity * fillFactor;
@@ -72,7 +86,7 @@ function calcEarringWeight(params, metalDensity) {
   const width = Number(params.width);
   const thickness = Number(params.thickness);
   const isPair = params.isPair === true || params.isPair === "true";
-  const fillFactor = getFillFactor("earrings", params);
+  const fillFactor = getFillFactor("earrings", params, null);
 
   const V_cm3 = (height * width * thickness) / 1000;
   const nettoG = V_cm3 * metalDensity * fillFactor * (isPair ? 2 : 1);
@@ -83,19 +97,19 @@ function calcBroochWeight(params, metalDensity) {
   const height = Number(params.height);
   const width = Number(params.width);
   const thickness = Number(params.thickness);
-  const fillFactor = getFillFactor("brooch", params);
+  const fillFactor = getFillFactor("brooch", params, null);
 
   const V_cm3 = (height * width * thickness) / 1000;
   const nettoG = V_cm3 * metalDensity * fillFactor;
   return { nettoG, bruttoG: nettoG * BRUTTO_FACTOR, method: "bounding-box" };
 }
 
-export function calcWeight(productTypeId, params, metalDensity) {
+export function calcWeight(productTypeId, params, metalDensity, weightId = null) {
   switch (productTypeId) {
     case "ring":
-      return calcRingWeight(params, metalDensity);
+      return calcRingWeight(params, metalDensity, weightId);
     case "signet":
-      return calcSignetWeight(params, metalDensity);
+      return calcSignetWeight(params, metalDensity, weightId);
     case "pendant":
       return calcPendantWeight(params, metalDensity);
     case "bracelet":

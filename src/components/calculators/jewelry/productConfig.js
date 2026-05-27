@@ -8,12 +8,40 @@ export const EU_RING_SIZES = {
   74: 23.6,
 };
 
-const RING_SIZE_OPTIONS = Object.keys(EU_RING_SIZES).map((s) => ({
-  id: s,
-  pl: `${s} EU`,
-  en: `${s} EU`,
-  de: `${s} EU`,
-}));
+// US → inner diameter (mm)
+export const US_RING_SIZES = {
+  "3": 14.1, "3.5": 14.5, "4": 14.9, "4.5": 15.3, "5": 15.7,
+  "5.5": 16.1, "6": 16.5, "6.5": 16.9, "7": 17.3, "7.5": 17.7,
+  "8": 18.2, "8.5": 18.6, "9": 19.0, "9.5": 19.4, "10": 19.8,
+  "10.5": 20.2, "11": 20.6, "11.5": 21.0, "12": 21.4, "12.5": 21.8, "13": 22.2,
+};
+
+// UK/AU → inner diameter (mm)
+export const UK_RING_SIZES = {
+  "F": 13.5, "G": 14.0, "H": 14.5, "I": 14.9, "J": 15.3,
+  "K": 15.7, "L": 16.1, "M": 16.5, "N": 16.9, "O": 17.3,
+  "P": 17.8, "Q": 18.2, "R": 18.6, "S": 19.0, "T": 19.4,
+  "U": 19.8, "V": 20.2, "W": 20.6, "X": 21.0, "Y": 21.4, "Z": 21.8,
+};
+
+// JP → inner diameter (mm)
+export const JP_RING_SIZES = {
+  "1": 12.9, "2": 13.2, "3": 13.5, "4": 13.9, "5": 14.2,
+  "6": 14.5, "7": 14.9, "8": 15.2, "9": 15.5, "10": 15.9,
+  "11": 16.2, "12": 16.5, "13": 16.9, "14": 17.2, "15": 17.5,
+  "16": 17.9, "17": 18.2, "18": 18.5, "19": 18.9, "20": 19.2,
+  "21": 19.5, "22": 19.9, "23": 20.2, "24": 20.5, "25": 20.9, "26": 21.2, "27": 21.5,
+};
+
+// Helper: get inner diameter from any system
+export function getRingInnerDiameter(system, value) {
+  if (system === "EU") return EU_RING_SIZES[value] ?? 17.2;
+  if (system === "US") return US_RING_SIZES[String(value)] ?? 17.2;
+  if (system === "UK") return UK_RING_SIZES[String(value)] ?? 17.2;
+  if (system === "JP") return JP_RING_SIZES[String(value)] ?? 17.2;
+  if (system === "mm") return parseFloat(value) || 17.2; // direct diameter
+  return 17.2;
+}
 
 export const PRODUCT_TYPES = [
   {
@@ -28,10 +56,9 @@ export const PRODUCT_TYPES = [
     fields: [
       {
         id: "ringSize",
-        label: { pl: "Rozmiar EU", en: "EU Size", de: "EU-Größe" },
-        type: "select",
-        options: RING_SIZE_OPTIONS,
-        default: "54",
+        type: "ringSize",
+        label: { pl: "Rozmiar pierścionka", en: "Ring size", de: "Ringgröße" },
+        default: { system: "EU", value: 54 },
       },
       {
         id: "width",
@@ -53,20 +80,10 @@ export const PRODUCT_TYPES = [
         default: 1.5,
         step: 0.1,
       },
-      {
-        id: "massiveness",
-        label: { pl: "Masywność", en: "Massiveness", de: "Massivität" },
-        type: "select",
-        options: [
-          { id: "solid", pl: "Lita", en: "Solid", de: "Massiv" },
-          { id: "medium", pl: "Średnia", en: "Medium", de: "Mittel" },
-          { id: "light", pl: "Ażurowa", en: "Openwork", de: "Filigran" },
-        ],
-        default: "medium",
-      },
     ],
-    fillFactors: { solid: 0.88, medium: 0.72, light: 0.42 },
-    defaultFill: "medium",
+    // Keys match WEIGHTS ids from jewelryConfig.js: light / standard / heavy
+    fillFactors: { light: 0.42, standard: 0.72, heavy: 0.88 },
+    defaultFill: "standard",
     notes: {
       pl: "Waga szacowana metodą walca z uwzględnieniem współczynnika wypełnienia.",
       en: "Weight estimated using hollow cylinder formula with fill factor.",
@@ -85,10 +102,9 @@ export const PRODUCT_TYPES = [
     fields: [
       {
         id: "ringSize",
-        label: { pl: "Rozmiar EU", en: "EU Size", de: "EU-Größe" },
-        type: "select",
-        options: RING_SIZE_OPTIONS,
-        default: "54",
+        type: "ringSize",
+        label: { pl: "Rozmiar sygnetu", en: "Ring size", de: "Ringgröße" },
+        default: { system: "EU", value: 54 },
       },
       {
         id: "width",
@@ -130,19 +146,10 @@ export const PRODUCT_TYPES = [
         default: 2,
         step: 0.1,
       },
-      {
-        id: "massiveness",
-        label: { pl: "Masywność", en: "Massiveness", de: "Massivität" },
-        type: "select",
-        options: [
-          { id: "solid", pl: "Lita", en: "Solid", de: "Massiv" },
-          { id: "medium", pl: "Średnia", en: "Medium", de: "Mittel" },
-        ],
-        default: "medium",
-      },
     ],
-    fillFactors: { solid: 0.88, medium: 0.78 },
-    defaultFill: "medium",
+    // Keys match WEIGHTS ids from jewelryConfig.js: light / standard / heavy
+    fillFactors: { light: 0.62, standard: 0.78, heavy: 0.88 },
+    defaultFill: "standard",
     notes: {
       pl: "Model łączy walec pierścienia z prostokątną płytką czołową.",
       en: "Model combines ring cylinder with a rectangular face plate.",
