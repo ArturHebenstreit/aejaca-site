@@ -86,7 +86,7 @@ app.get("/logout", (req, res) => {
 // --- Routes: Dashboard ---
 app.get("/dashboard", requireAuth, async (req, res) => {
   try {
-    const [leadStats, subStats, recentLeads, recentSubs, analyticsKpi, laserMatrixCount, gemResult, filamentResult, filamentPending] = await Promise.all([
+    const [leadStats, subStats, recentLeads, recentSubs, analyticsKpi, laserMatrixCount, gemResult, filamentResult, filamentPending, ordersPending] = await Promise.all([
       pool.query("SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE) as today, COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '7 days') as week FROM leads"),
       pool.query("SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE subscribed_at >= CURRENT_DATE) as today, COUNT(*) FILTER (WHERE subscribed_at >= CURRENT_DATE - INTERVAL '7 days') as week FROM subscribers WHERE unsubscribed = FALSE"),
       pool.query("SELECT * FROM leads ORDER BY created_at DESC LIMIT 10"),
@@ -105,6 +105,7 @@ app.get("/dashboard", requireAuth, async (req, res) => {
       pool.query("SELECT COUNT(*) as count FROM gemstone_prices").catch(() => ({ rows: [{ count: '0' }] })),
       pool.query("SELECT COUNT(*) FROM filament_types WHERE is_active=TRUE").catch(() => ({ rows: [{ count: '0' }] })),
       pool.query("SELECT COUNT(*) FROM filament_contributions WHERE status='pending'").catch(() => ({ rows: [{ count: '0' }] })),
+      pool.query("SELECT COUNT(*) FROM orders WHERE status='pending'").catch(() => ({ rows: [{ count: '0' }] })),
     ]);
     res.render("dashboard", {
       user: req.user,
@@ -117,6 +118,7 @@ app.get("/dashboard", requireAuth, async (req, res) => {
       gemstoneCount: parseInt(gemResult.rows[0].count),
       filamentCount: parseInt(filamentResult.rows[0].count),
       pendingContributions: parseInt(filamentPending.rows[0].count),
+      pendingOrders: parseInt(ordersPending.rows[0].count),
     });
   } catch (err) {
     res.status(500).render("error", { message: err.message });
@@ -854,6 +856,65 @@ app.post("/filaments/:typeId/brands/create", requireAuth, express.urlencoded({ e
     );
     await invalidateFilamentCache();
     res.redirect(`/filaments/${req.params.typeId}/brands?flash=created&id=${result.rows[0].id}`);
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+// ── ORDERS ──────────────────────────────────────────────────────────────
+app.get("/orders", requireAuth, async (req, res) => {
+  try {
+    const { status, search } = req.query;
+    let where = "WHERE 1=1";
+    const params = [];
+    if (status) { params.push(status); where += ` AND status=$${params.length}`; }
+    if (search) {
+      params.push(`%${search}%`);
+      where += ` AND (customer_name ILIKE $${params.length} OR customer_email ILIKE $${params.length} OR order_number ILIKE $${params.length})`;
+    }
+
+    const [rows, counts] = await Promise.all([
+      pool.query(`SELECT * FROM orders ${where} ORDER BY created_at DESC LIMIT 100`, params),
+      pool.query(`SELECT status, COUNT(*) FROM orders GROUP BY status`),
+    ]);
+    const pendingCount = counts.rows.find(r => r.status === 'pending')?.count || 0;
+    res.render("orders", {
+      user: req.user,
+      orders: rows.rows,
+      counts: counts.rows,
+      pendingCount,
+      currentStatus: status || '',
+      search: search || '',
+    });
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+app.get("/orders/:id", requireAuth, async (req, res) => {
+  try {
+    const [orderRes, itemsRes] = await Promise.all([
+      pool.query("SELECT * FROM orders WHERE id=$1", [req.params.id]),
+      pool.query("SELECT * FROM order_items WHERE order_id=$1 ORDER BY id", [req.params.id]),
+    ]);
+    const order = orderRes.rows[0];
+    if (!order) return res.redirect("/orders");
+    res.render("order-detail", { user: req.user, order, items: itemsRes.rows });
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+app.post("/orders/:id/status", requireAuth, express.urlencoded({ extended: true }), async (req, res) => {
+  const { status, admin_note } = req.body;
+  const validStatuses = ['pending', 'confirmed', 'in_production', 'shipped', 'delivered', 'cancelled'];
+  if (!validStatuses.includes(status)) return res.redirect(`/orders/${req.params.id}`);
+  try {
+    await pool.query(
+      "UPDATE orders SET status=$1, admin_note=$2, updated_at=NOW(), updated_by=$3 WHERE id=$4",
+      [status, admin_note || null, req.user?.email || 'admin', req.params.id]
+    );
+    res.redirect(`/orders/${req.params.id}`);
   } catch (err) {
     res.status(500).render("error", { message: err.message });
   }

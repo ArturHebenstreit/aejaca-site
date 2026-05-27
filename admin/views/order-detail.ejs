@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEJaCA Admin — Zamówienie <%= order.order_number %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{neutral:{950:'#0a0a0a'}}}}}</script>
+</head>
+<body class="bg-neutral-950 min-h-screen text-neutral-100">
+  <header class="bg-neutral-900 border-b border-white/10 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-6">
+      <span class="text-lg font-bold text-white">AEJaCA <span class="text-amber-400">Admin</span></span>
+      <nav class="flex gap-4 text-sm">
+        <a href="/dashboard" class="text-neutral-400 hover:text-white transition-colors">Dashboard</a>
+        <a href="/analytics" class="text-neutral-400 hover:text-white transition-colors">Analytics</a>
+        <a href="/leads" class="text-neutral-400 hover:text-white transition-colors">Leads</a>
+        <a href="/subscribers" class="text-neutral-400 hover:text-white transition-colors">Subscribers</a>
+        <a href="/conversations" class="text-neutral-400 hover:text-white transition-colors">Chat</a>
+        <a href="/orders" class="text-white font-medium border-b border-amber-400 pb-0.5">Zamówienia</a>
+        <a href="/laser-matrix" class="text-neutral-400 hover:text-white transition-colors">Laser Matrix</a>
+        <a href="/gemstone-prices" class="text-neutral-400 hover:text-white transition-colors">Gems</a>
+        <a href="/filaments" class="text-neutral-400 hover:text-white transition-colors">Filamenty</a>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      <img src="<%= user.photo %>" class="w-7 h-7 rounded-full" alt="" />
+      <span class="text-sm text-neutral-400"><%= user.name %></span>
+      <a href="/logout" class="text-xs text-red-400 hover:text-red-300 transition-colors">Logout</a>
+    </div>
+  </header>
+  <main class="max-w-5xl mx-auto px-6 py-8">
+    <%
+      const statusBadge={pending:'bg-amber-900/40 text-amber-300',confirmed:'bg-blue-900/40 text-blue-300',in_production:'bg-purple-900/40 text-purple-300',shipped:'bg-cyan-900/40 text-cyan-300',delivered:'bg-green-900/40 text-green-300',cancelled:'bg-red-900/40 text-red-400'};
+      const statusLabel={pending:'Oczekujące',confirmed:'Potwierdzone',in_production:'W produkcji',shipped:'Wysłane',delivered:'Dostarczone',cancelled:'Anulowane'};
+      function fmtDate(d){if(!d)return'—';const dt=new Date(d);return dt.toLocaleDateString('pl-PL')+' '+dt.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});}
+    %>
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-xs text-neutral-500 mb-6">
+      <a href="/dashboard" class="hover:text-white">Dashboard</a><span>›</span>
+      <a href="/orders" class="hover:text-white">Zamówienia</a><span>›</span>
+      <span class="text-neutral-300"><%= order.order_number %></span>
+    </div>
+    <!-- Header -->
+    <div class="flex items-start justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-white font-mono"><%= order.order_number %></h1>
+        <p class="text-sm text-neutral-500 mt-1">Złożone <%= fmtDate(order.created_at) %></p>
+      </div>
+      <span class="px-3 py-1.5 rounded-lg text-sm font-medium <%= statusBadge[order.status]||'bg-neutral-800 text-neutral-400' %>"><%= statusLabel[order.status]||order.status %></span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Left 2/3 -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Customer -->
+        <div class="bg-neutral-900 rounded-xl border border-white/10 p-5">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-4">Dane klienta</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
+            <div><p class="text-neutral-500 text-xs mb-0.5">Imię i nazwisko</p><p class="text-white"><%= order.customer_name %></p></div>
+            <div><p class="text-neutral-500 text-xs mb-0.5">E-mail</p><p><a href="mailto:<%= order.customer_email %>" class="text-amber-300 hover:text-amber-200"><%= order.customer_email %></a></p></div>
+            <% if(order.customer_phone){%><div><p class="text-neutral-500 text-xs mb-0.5">Telefon</p><p class="text-white"><%= order.customer_phone %></p></div><%}%>
+            <% if(order.company_name){%><div><p class="text-neutral-500 text-xs mb-0.5">Firma</p><p class="text-white"><%= order.company_name %></p></div><%}%>
+            <% if(order.vat_id){%><div><p class="text-neutral-500 text-xs mb-0.5">NIP / VAT ID</p><p class="text-white font-mono text-xs"><%= order.vat_id %></p></div><%}%>
+            <% if(order.address){%><div class="sm:col-span-2"><p class="text-neutral-500 text-xs mb-0.5">Adres dostawy</p><p class="text-white"><%= order.address %>, <%= order.postal_code %> <%= order.city %> (<%= order.country %>)</p></div><%}%>
+            <div><p class="text-neutral-500 text-xs mb-0.5">Metoda dostawy</p><p class="text-white"><%= order.shipping_method==='inpost'?'InPost Paczkomat':order.shipping_method==='dhl'?'DHL Kurier':order.shipping_method==='personal'?'Odbiór osobisty':order.shipping_method||'—' %></p></div>
+          </div>
+        </div>
+        <!-- Items -->
+        <div class="bg-neutral-900 rounded-xl border border-white/10 p-5">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-4">Pozycje zamówienia</h2>
+          <% if(items&&items.length>0){%>
+          <div class="space-y-4">
+            <% items.forEach(function(item){%>
+            <div class="border border-white/8 rounded-lg p-4 bg-white/[0.02]">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <div>
+                  <p class="text-sm font-semibold text-white"><%= item.stl_filename||'Druk 3D' %></p>
+                  <p class="text-xs text-neutral-400 mt-0.5"><%= item.material %><%= item.segment?' ('+item.segment+')':'' %></p>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="text-sm font-semibold text-white"><%= item.qty %> szt.</p>
+                  <p class="text-xs text-neutral-500"><%= parseFloat(item.unit_price_netto).toFixed(2) %> <%= item.currency %>/szt.</p>
+                </div>
+              </div>
+              <div class="text-xs text-neutral-500 space-y-1">
+                <% if(item.infill){%><p>Wypełnienie: <span class="text-neutral-300"><%= item.infill %></span></p><%}%>
+                <% if(item.precision_label){%><p>Precyzja: <span class="text-neutral-300"><%= item.precision_label %></span></p><%}%>
+                <% if(item.stl_dims){const dims=typeof item.stl_dims==='string'?JSON.parse(item.stl_dims):item.stl_dims;%>
+                  <p>Wymiary: <span class="text-neutral-300"><%= dims.x %>×<%= dims.y %>×<%= dims.z %> mm</span></p>
+                <%}%>
+                <% if(item.colors){const cols=typeof item.colors==='string'?JSON.parse(item.colors):item.colors;if(cols&&cols.length>0){%>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span><%= cols.length===1?'Kolor:':'Kolory:' %></span>
+                    <% cols.forEach(function(c){%>
+                    <span class="flex items-center gap-1">
+                      <%if(c.hex){%><span class="w-3 h-3 rounded-full border border-white/20 inline-block" style="background:<%= c.hex %>"></span><%}%>
+                      <span class="text-neutral-300"><%= c.name %></span>
+                    </span>
+                    <%});%>
+                  </div>
+                <%}}%>
+                <% if(item.color_descriptions){%><p>Przypisanie: <span class="text-neutral-300 italic"><%= item.color_descriptions %></span></p><%}%>
+              </div>
+            </div>
+            <%});%>
+          </div>
+          <%}else{%><p class="text-neutral-600 text-sm">Brak pozycji.</p><%}%>
+        </div>
+        <% if(order.admin_note){%>
+        <div class="bg-neutral-900 rounded-xl border border-amber-400/20 p-5">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">Notatka admina</h2>
+          <p class="text-sm text-neutral-300"><%= order.admin_note %></p>
+        </div>
+        <%}%>
+      </div>
+      <!-- Right 1/3 -->
+      <div class="space-y-6">
+        <!-- Pricing -->
+        <div class="bg-neutral-900 rounded-xl border border-white/10 p-5">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-4">Podsumowanie</h2>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span class="text-neutral-500">Produkty netto</span><span class="text-neutral-200"><%= parseFloat(order.subtotal_netto).toFixed(2) %> <%= order.currency %></span></div>
+            <div class="flex justify-between"><span class="text-neutral-500">Dostawa</span><span class="text-neutral-200"><%= parseFloat(order.shipping_cost).toFixed(2) %> <%= order.currency %></span></div>
+            <div class="flex justify-between"><span class="text-neutral-500">VAT (<%= (parseFloat(order.vat_rate)*100).toFixed(0) %>%)</span><span class="text-neutral-200"><%= parseFloat(order.vat_amount).toFixed(2) %> <%= order.currency %></span></div>
+            <div class="border-t border-white/10 pt-2 flex justify-between font-semibold">
+              <span class="text-white">Razem brutto</span>
+              <span class="text-amber-300"><%= parseFloat(order.total_brutto).toFixed(2) %> <%= order.currency %></span>
+            </div>
+          </div>
+        </div>
+        <!-- Status update -->
+        <div class="bg-neutral-900 rounded-xl border border-white/10 p-5">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-4">Zmień status</h2>
+          <form method="POST" action="/orders/<%= order.id %>/status" class="space-y-3">
+            <select name="status" class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-neutral-200 focus:outline-none focus:border-amber-400/40">
+              <option value="pending"       <%= order.status==='pending'      ?'selected':'' %>>Oczekujące</option>
+              <option value="confirmed"     <%= order.status==='confirmed'    ?'selected':'' %>>Potwierdzone</option>
+              <option value="in_production" <%= order.status==='in_production'?'selected':'' %>>W produkcji</option>
+              <option value="shipped"       <%= order.status==='shipped'      ?'selected':'' %>>Wysłane</option>
+              <option value="delivered"     <%= order.status==='delivered'    ?'selected':'' %>>Dostarczone</option>
+              <option value="cancelled"     <%= order.status==='cancelled'    ?'selected':'' %>>Anulowane</option>
+            </select>
+            <textarea name="admin_note" rows="3" placeholder="Notatka (opcjonalnie)…" class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-amber-400/40 resize-none"><%= order.admin_note||'' %></textarea>
+            <button type="submit" class="w-full py-2 rounded-lg bg-amber-400 text-black font-semibold text-sm hover:bg-amber-300 transition-colors">Zapisz zmiany</button>
+          </form>
+        </div>
+        <!-- Timestamps -->
+        <div class="bg-neutral-900 rounded-xl border border-white/10 p-5 text-xs text-neutral-500 space-y-1">
+          <p>Złożone: <span class="text-neutral-300"><%= fmtDate(order.created_at) %></span></p>
+          <% if(order.updated_at&&order.updated_at!==order.created_at){%><p>Zaktualizowane: <span class="text-neutral-300"><%= fmtDate(order.updated_at) %></span></p><%}%>
+          <% if(order.updated_by){%><p>Przez: <span class="text-neutral-300"><%= order.updated_by %></span></p><%}%>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
