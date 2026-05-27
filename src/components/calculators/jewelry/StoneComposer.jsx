@@ -49,7 +49,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
     : "border-amber-400 bg-amber-400/10 text-amber-700 font-medium";
   const inactivePill = isDark
     ? "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-    : "border-neutral-200 bg-white text-neutral-500 hover:border-neutral-400";
+    : "border-neutral-200 bg-white/[0.02] text-neutral-600 hover:border-neutral-400";
 
   function update(patch) {
     onChange({ ...row, ...patch });
@@ -63,7 +63,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
     }`}>
       {/* Row header: remove button */}
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[10px] uppercase tracking-wider text-neutral-500 font-bold">
+        <span className="text-[10px] uppercase tracking-wider text-neutral-400 [data-theme='light']:text-neutral-600 font-bold">
           {{ pl: "Kamień", en: "Stone", de: "Stein" }[lang]}
         </span>
         {canRemove && (
@@ -135,7 +135,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
         <>
           {/* Size pills — always shown for configured stones incl. custom */}
           <div>
-            <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+            <div className="text-[10px] text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
               {{ pl: "Wielkość", en: "Size", de: "Größe" }[lang]}
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -164,7 +164,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
 
           {/* Count — always shown for configured stones incl. custom */}
           <div>
-            <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+            <div className="text-[10px] text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
               {{ pl: "Liczba kamieni", en: "Count", de: "Anzahl" }[lang]}
             </div>
             <div className="flex items-center gap-2">
@@ -192,7 +192,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
 
           {/* Who supplies — always shown for configured stones incl. custom */}
           <div>
-            <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+            <div className="text-[10px] text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
               {{ pl: "Kto dostarcza kamień", en: "Who supplies stone", de: "Wer liefert den Stein" }[lang]}
             </div>
             <div className="flex gap-2">
@@ -217,7 +217,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
               {showGrades && isDiamond && (
                 <>
                   <div>
-                    <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+                    <div className="text-[10px] text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
                       {{ pl: "Czystość", en: "Clarity", de: "Reinheit" }[lang]}
                     </div>
                     <div className="flex flex-wrap gap-1.5">
@@ -230,7 +230,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                     </div>
                   </div>
                   <div>
-                    <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+                    <div className="text-[10px] text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
                       {{ pl: "Barwa", en: "Color", de: "Farbe" }[lang]}
                     </div>
                     <div className="flex flex-wrap gap-1.5">
@@ -248,7 +248,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
               {/* Colored gem quality */}
               {showGrades && !isDiamond && (
                 <div>
-                  <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+                  <div className="text-[10px] text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
                     {{ pl: "Jakość", en: "Quality", de: "Qualität" }[lang]}
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -265,7 +265,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
               {/* Certificate — only for diamond / lab_diamond */}
               {isDiamond && (
                 <div>
-                  <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+                  <div className="text-[10px] text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
                     {{ pl: "Certyfikat", en: "Certificate", de: "Zertifikat" }[lang]}
                   </div>
                   <div className="flex flex-wrap gap-1.5">
