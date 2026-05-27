@@ -9,6 +9,7 @@
 //   gemstones: resolved gemstones array (with live basePLN)
 // ============================================================
 import { t } from "../calcShared.jsx";
+import { useTheme } from "../../../i18n/ThemeContext.jsx";
 import {
   STONE_SIZES,
   DIAMOND_CLARITY,
@@ -40,6 +41,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
   const isDiamond = row.gemId === "diamond" || row.gemId === "lab_diamond";
   const showGrades = selectedGem && selectedGem.hasGrades && row.gemId !== "none";
   const isConfigured = row.gemId !== "none";
+  const { isDark } = useTheme();
 
   function update(patch) {
     onChange({ ...row, ...patch });
@@ -141,7 +143,9 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                       <span className="rounded-full shrink-0" style={{
                         width: Math.max(4, Math.min(v.gemD * 0.6, 14)),
                         height: Math.max(4, Math.min(v.gemD * 0.6, 14)),
-                        background: active ? "rgb(251 191 36 / 0.6)" : "rgb(255 255 255 / 0.25)",
+                        background: active
+                          ? (isDark ? "rgb(251 191 36 / 0.6)" : "rgb(180 83 9 / 0.55)")
+                          : (isDark ? "rgb(255 255 255 / 0.25)" : "rgb(0 0 0 / 0.12)"),
                         display: "inline-block",
                       }} />
                     )}
