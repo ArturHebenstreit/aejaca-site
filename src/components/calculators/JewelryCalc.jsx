@@ -1,7 +1,7 @@
 // ============================================================
 // JEWELRY ESTIMATOR — AEJaCA Jewelry
 // ============================================================
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture } from "./calcShared.jsx";
 import { trackCalc } from "../../utils/analytics.js";
 import { useMarketRates } from "../../hooks/useMarketRates.js";
@@ -9,10 +9,44 @@ import { useGemPrices } from "../../hooks/useGemPrices.js";
 import {
   METAL_PRICES, EUR_PLN, MARGIN, REPAIR_MARGIN, TOL_LOW, TOL_HIGH,
   SERVICE_TYPES, PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING,
-  GEMSTONES, STONE_SIZES, STONE_COUNTS, DIAMOND_CLARITY, DIAMOND_COLOR,
-  GEM_QUALITY, CERTIFICATIONS, RENOVATION_SERVICES, REPAIR_SERVICES,
+  GEMSTONES, STONE_SIZES, DIAMOND_CLARITY, DIAMOND_COLOR, GEM_QUALITY, CERTIFICATIONS,
+  RENOVATION_SERVICES, REPAIR_SERVICES,
   REPAIR_METAL_MUL, QTY_TIERS, GENERIC_TYPES, GENERIC_METALS,
 } from "./jewelryConfig.js";
+import { getProductType } from "./jewelry/productConfig.js";
+import { calcWeight as computeWeight } from "./jewelry/WeightEngine.js";
+import DimensionInputs from "./jewelry/DimensionInputs.jsx";
+import WeightDisplay from "./jewelry/WeightDisplay.jsx";
+import StoneComposer from "./jewelry/StoneComposer.jsx";
+
+// Map JEWELRY_TYPES ids → PRODUCT_TYPES ids (for dimension engine)
+const TYPE_TO_FORM = {
+  // woman line
+  ring:       "ring",
+  bracelet:   "bracelet",
+  pendant:    "pendant",
+  earrings:   "earrings",
+  brooch:     "brooch",
+  necklace:   null,    // no geometry model for chains/necklaces
+  // men line
+  signet:     "signet",
+  medallion:  "pendant", // closest model
+  bracelet_m: "bracelet",
+  cufflinks:  null,
+  tie_clip:   null,
+  chain_m:    null,
+  // pet line
+  tag:        "pendant",
+  charm:      "pendant",
+  pin:        null,
+};
+
+// Density (g/cm³) by metal type key
+const METAL_DENSITY = {
+  gold: 19.3,      // approximated as 24k; purity scaling handled implicitly
+  silver: 10.5,
+  platinum: 21.4,
+};
 
 const LBL = {
   pl: {
@@ -82,7 +116,8 @@ function resolveMetalPricePerG(metalKey, rates) {
 
 // ---- NEW CREATION CALCULATOR ----
 export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
-  gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId }, lang, rates, gemstones) {
+  stoneRows, qtyId,
+  clientSuppliesMetal, overrideWeightG }, lang, rates, gemstones) {
   const l = LBL[lang] || LBL.en;
   const line = PRODUCT_LINES.find(p => p.id === lineId);
   const jType = JEWELRY_TYPES[lineId]?.find(j => j.id === typeId);
@@ -90,43 +125,61 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
   const weight = WEIGHTS.find(w => w.id === weightId);
   const method = METHODS.find(m => m.id === methodId);
   const plat = PLATING.find(p => p.id === platingId);
-  const _gems = gemstones || GEMSTONES;
-  const gem = _gems.find(g => g.id === gemId);
   const qTier = QTY_TIERS.find(q => q.id === qtyId);
 
-  if (!line || !jType || !metal || !weight || !method || !plat || !gem || !qTier) return null;
-  if (metal.custom || weight.custom || method.custom || plat.custom || gem.custom || qTier.custom) return { type: "custom" };
+  if (!line || !jType || !metal || !weight || !method || !plat || !qTier) return null;
+  if (metal.custom || weight.custom || method.custom || plat.custom || qTier.custom) return { type: "custom" };
 
   // Metal cost — use live rates when available, fall back to static config
   const plnPerG = resolveMetalPricePerG(metal.metal, rates);
-  const weightG = jType.baseWeight * weight.mul;
-  const metalCost = weightG * plnPerG * metal.purity;
+  // Use geometric weight override if provided (from WeightEngine), else fall back to baseWeight × mul
+  const weightG = (overrideWeightG != null && overrideWeightG > 0)
+    ? overrideWeightG
+    : jType.baseWeight * weight.mul;
+  const metalCost = clientSuppliesMetal ? 0 : weightG * plnPerG * metal.purity;
 
   // Labor cost (weight affects labor — lighter pieces need less finishing)
   const laborCost = jType.laborH * method.laborRate * method.laborMul * metal.laborMul * jType.complexity * (weight.laborMul || 1);
 
-  // Gemstone cost
+  // Stone costs — iterate all rows
   let gemCost = 0;
   let settingCost = 0;
-  if (gem.id !== "none" && gem.basePLN > 0) {
-    const stoneSize = STONE_SIZES.find(s => s.id === stoneSizeId);
-    const stoneCount = STONE_COUNTS.find(c => c.id === stoneCountId);
-    const cert = CERTIFICATIONS.find(c => c.id === certId);
-    if (!stoneSize || !stoneCount || !cert || stoneSize.custom || stoneCount.custom) return { type: "custom" };
+  const _gems = gemstones || GEMSTONES;
 
+  for (const row of (stoneRows || [])) {
+    if (!row.gemId || row.gemId === "none") continue;
+    const gem = _gems.find(g => g.id === row.gemId);
+    if (!gem || gem.custom || !gem.basePLN) continue;
+
+    const stoneSize = STONE_SIZES.find(s => s.id === row.stoneSizeId);
+    if (!stoneSize || stoneSize.custom) continue;
+
+    const count = Math.max(1, parseInt(row.count) || 1);
+
+    // Quality multiplier
     let qualMul = 1.0;
     if (gem.hasGrades && (gem.id === "diamond" || gem.id === "lab_diamond")) {
-      const cl = DIAMOND_CLARITY.find(c => c.id === clarityId);
-      const co = DIAMOND_COLOR.find(c => c.id === colorId);
+      const cl = DIAMOND_CLARITY.find(c => c.id === row.clarityId);
+      const co = DIAMOND_COLOR.find(c => c.id === row.colorId);
       if (cl && co) qualMul = cl.mul * co.mul;
     } else if (gem.hasGrades) {
-      const q = GEM_QUALITY.find(q => q.id === qualityId);
+      const q = GEM_QUALITY.find(q => q.id === row.qualityId);
       if (q) qualMul = q.mul;
     }
 
-    const pricePerStone = gem.basePLN * stoneSize.priceMul * qualMul * cert.mul;
-    gemCost = pricePerStone * stoneCount.count;
-    settingCost = stoneCount.count * (stoneSize.ct >= 0.3 ? 120 : 60);
+    // Cert
+    const cert = CERTIFICATIONS.find(c => c.id === row.certId);
+    const certMul = cert?.mul ?? 1.0;
+
+    const pricePerStone = gem.basePLN * stoneSize.priceMul * qualMul * certMul;
+
+    // Only add gem purchase cost if NOT supplied by client
+    if (row.suppliedBy !== "client") {
+      gemCost += pricePerStone * count;
+    }
+
+    // Setting cost always applies (regardless of who supplies the stone)
+    settingCost += count * (stoneSize.ct >= 0.3 ? 120 : 60);
   }
 
   // Plating
@@ -245,17 +298,33 @@ export default function JewelryCalc({ lang = "pl" }) {
   // New creation
   const [lineId, setLineId] = useState("woman");
   const [typeId, setTypeId] = useState("ring");
+
+  // Geometry + client supply — productForm is derived from typeId (no separate selection needed)
+  const productForm = useMemo(() => TYPE_TO_FORM[typeId] ?? null, [typeId]);
+  const [dimensions, setDimensions] = useState({});     // fieldId: value
+  // Reset dimensions whenever the jewelry type changes — populate defaults immediately
+  useEffect(() => {
+    if (!productForm) { setDimensions({}); return; }
+    const pt = getProductType(productForm);
+    if (!pt) { setDimensions({}); return; }
+    const defaults = {};
+    for (const field of pt.fields) {
+      if (field.default !== undefined) {
+        defaults[field.id] = field.default;
+      }
+    }
+    setDimensions(defaults);
+  }, [productForm]);
+  const [clientSuppliesMetal, setClientSuppliesMetal] = useState(false);
   const [metalId, setMetalId] = useState("silver");
   const [weightId, setWeightId] = useState("light");
   const [methodId, setMethodId] = useState("cast");
   const [platingId, setPlatingId] = useState("none");
-  const [gemId, setGemId] = useState("none");
-  const [stoneSizeId, setStoneSizeId] = useState("medium");
-  const [stoneCountId, setStoneCountId] = useState("1");
-  const [clarityId, setClarityId] = useState("VS");
-  const [colorId, setColorId] = useState("GH");
-  const [qualityId, setQualityId] = useState("A");
-  const [certId, setCertId] = useState("none");
+  // Stone rows — up to 10 different stone entries
+  const [stoneRows, setStoneRows] = useState([
+    { rowId: "row0", gemId: "none", stoneSizeId: "small", count: 1, suppliedBy: "studio",
+      clarityId: "VS", colorId: "GH", qualityId: "A", certId: "none" }
+  ]);
 
   // Renovation
   const [renoServices, setRenoServices] = useState([]);
@@ -267,21 +336,32 @@ export default function JewelryCalc({ lang = "pl" }) {
   const [repairJewType, setRepairJewType] = useState("ring_g");
   const [repairMetal, setRepairMetal] = useState("gold_g");
 
-  const selectedGem = resolvedGemstones.find(g => g.id === gemId);
-  const showGemDetails = selectedGem && selectedGem.id !== "none" && !selectedGem.custom && selectedGem.basePLN > 0;
   const types = JEWELRY_TYPES[lineId] || [];
+
+  // Live geometric weight from WeightEngine (when productForm + dimensions are set)
+  const weightResult = useMemo(() => {
+    if (!productForm) return null;
+    const selectedMetal = METALS.find(m => m.id === metalId);
+    const density = METAL_DENSITY[selectedMetal?.metal] ?? 10.5;
+    const result = computeWeight(productForm, dimensions, density, weightId);
+    if (!result || typeof result.nettoG !== "number" || typeof result.bruttoG !== "number") return null;
+    return result;
+  }, [productForm, dimensions, metalId, weightId]);
 
   const result = useMemo(() => {
     if (serviceId === "new") {
       return calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
-        gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId }, lang, rates, resolvedGemstones);
+        stoneRows, qtyId,
+        clientSuppliesMetal,
+        overrideWeightG: weightResult?.nettoG ?? null }, lang, rates, resolvedGemstones);
     }
     if (serviceId === "renovation") {
       return calcRenovation({ jewTypeId: renoJewType, metalTypeId: renoMetal, services: renoServices, qtyId }, lang);
     }
     return calcRepair({ jewTypeId: repairJewType, metalTypeId: repairMetal, repairId, qtyId }, lang);
   }, [serviceId, lineId, typeId, metalId, weightId, methodId, platingId,
-    gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId,
+    stoneRows, qtyId,
+    clientSuppliesMetal, weightResult,
     renoServices, renoJewType, renoMetal, repairId, repairJewType, repairMetal, lang, rates, resolvedGemstones]);
 
   function toggleRenoService(id) {
@@ -401,6 +481,82 @@ export default function JewelryCalc({ lang = "pl" }) {
             </div>
           </CalcCard>
 
+          <CalcCard stepNum={step()} label={l.weight}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+              {WEIGHTS.map(w => {
+                const active = weightId === w.id;
+                if (w.custom) {
+                  return (
+                    <button key={w.id} onClick={() => setWeightId(w.id)}
+                      className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-dashed border transition-all text-xs ${
+                        active ? "border-amber-400 text-amber-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
+                      }`}>
+                      <span className="text-lg opacity-50">?</span>
+                      <span className="text-center leading-tight">{t(w.label, lang)}</span>
+                    </button>
+                  );
+                }
+                return (
+                  <button key={w.id} onClick={() => setWeightId(w.id)}
+                    className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[130px] ${
+                      active ? "border-amber-400 shadow-lg shadow-amber-400/20" : "border-white/10 hover:border-white/30"
+                    }`}>
+                    {w.img && (
+                      <div className="absolute inset-0 overflow-hidden">
+                        <img src={w.img} alt={t(w.label, lang)} loading="lazy"
+                          className={`w-full h-full object-cover transition-transform duration-500 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+                        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/95 via-black/70 to-transparent" />
+                        {active && <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />}
+                      </div>
+                    )}
+                    <div className="relative p-2.5 h-full min-h-[130px] flex flex-col justify-end">
+                      <div className={`text-[11px] sm:text-xs font-bold mb-0.5 drop-shadow-lg ${active ? "text-amber-300" : "text-white"}`}>{t(w.label, lang)}</div>
+                      <div className="text-[9px] sm:text-[10px] text-neutral-300 break-words drop-shadow-md leading-tight">{t(w.desc, lang)}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </CalcCard>
+
+          {/* Shape & Dimensions step */}
+          <CalcCard stepNum={step()} label={{ pl: "Kształt i wymiary", en: "Shape & Dimensions", de: "Form & Abmessungen" }[lang] || "Shape & Dimensions"}>
+            {productForm ? (
+              <div className="space-y-5">
+                {/* Show which geometry model is being used */}
+                {(() => {
+                  const pt = getProductType(productForm);
+                  return pt ? (
+                    <p className="text-xs text-neutral-400">
+                      {pt.icon} {t(pt.label, lang)} — {t(pt.notes, lang)}
+                    </p>
+                  ) : null;
+                })()}
+                <DimensionInputs
+                  productTypeId={productForm}
+                  values={dimensions}
+                  onChange={(id, val) => setDimensions(prev => ({ ...prev, [id]: val }))}
+                  lang={lang}
+                />
+
+                {/* Live weight display */}
+                {weightResult && (
+                  <WeightDisplay
+                    nettoG={weightResult.nettoG}
+                    bruttoG={weightResult.bruttoG}
+                    metalName={t(METALS.find(m => m.id === metalId)?.label, lang) ?? ""}
+                    lang={lang}
+                    clientSuppliesMetal={clientSuppliesMetal}
+                  />
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-neutral-500">
+                {{ pl: "Szczegółowe wymiary niedostępne dla tego rodzaju biżuterii.", en: "Detailed dimensions not available for this jewelry type.", de: "Detaillierte Abmessungen für diesen Schmucktyp nicht verfügbar." }[lang]}
+              </p>
+            )}
+          </CalcCard>
+
           <CalcCard stepNum={step()} label={l.metal}>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 gap-2 sm:gap-3">
               {METALS.filter(m => !m.custom).map(m => {
@@ -442,43 +598,35 @@ export default function JewelryCalc({ lang = "pl" }) {
                 );
               })}
             </div>
-          </CalcCard>
-
-          <CalcCard stepNum={step()} label={l.weight}>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-              {WEIGHTS.map(w => {
-                const active = weightId === w.id;
-                if (w.custom) {
-                  return (
-                    <button key={w.id} onClick={() => setWeightId(w.id)}
-                      className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-dashed border transition-all text-xs ${
-                        active ? "border-amber-400 text-amber-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
-                      }`}>
-                      <span className="text-lg opacity-50">?</span>
-                      <span className="text-center leading-tight">{t(w.label, lang)}</span>
-                    </button>
-                  );
-                }
-                return (
-                  <button key={w.id} onClick={() => setWeightId(w.id)}
-                    className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[130px] ${
-                      active ? "border-amber-400 shadow-lg shadow-amber-400/20" : "border-white/10 hover:border-white/30"
-                    }`}>
-                    {w.img && (
-                      <div className="absolute inset-0 overflow-hidden">
-                        <img src={w.img} alt={t(w.label, lang)} loading="lazy"
-                          className={`w-full h-full object-cover transition-transform duration-500 ${active ? "scale-105" : "group-hover:scale-105"}`} />
-                        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/95 via-black/70 to-transparent" />
-                        {active && <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />}
-                      </div>
-                    )}
-                    <div className="relative p-2.5 h-full min-h-[130px] flex flex-col justify-end">
-                      <div className={`text-[11px] sm:text-xs font-bold mb-0.5 drop-shadow-lg ${active ? "text-amber-300" : "text-white"}`}>{t(w.label, lang)}</div>
-                      <div className="text-[9px] sm:text-[10px] text-neutral-300 break-words drop-shadow-md leading-tight">{t(w.desc, lang)}</div>
-                    </div>
-                  </button>
-                );
-              })}
+            {/* Client supplies metal toggle */}
+            <div className="mt-4 flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200
+              border-white/8 hover:border-amber-400/20"
+              onClick={() => setClientSuppliesMetal(v => !v)}
+              style={clientSuppliesMetal ? {borderColor: 'rgba(251,191,36,0.25)', background: 'rgba(251,191,36,0.05)'} : {}}
+            >
+              <button
+                type="button"
+                role="switch"
+                aria-checked={clientSuppliesMetal}
+                onClick={e => { e.stopPropagation(); setClientSuppliesMetal(v => !v); }}
+                className={`relative shrink-0 w-10 h-5 rounded-full transition-colors duration-200 ${
+                  clientSuppliesMetal ? "bg-amber-500" : "bg-neutral-700"
+                }`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${
+                  clientSuppliesMetal ? "translate-x-5" : "translate-x-0"
+                }`} />
+              </button>
+              <div>
+                <div className="text-sm font-medium text-neutral-300">
+                  {{ pl: "Kruszec od klienta", en: "Client supplies metal", de: "Metall vom Kunden" }[lang]}
+                </div>
+                {clientSuppliesMetal && (
+                  <div className="text-xs text-neutral-500 mt-0.5">
+                    {{ pl: "Odejmiemy koszt metalu — dostarcz kruszec przed realizacją", en: "Metal cost excluded — supply raw metal before production", de: "Metallkosten entfallen — Rohmetall vor der Produktion liefern" }[lang]}
+                  </div>
+                )}
+              </div>
             </div>
           </CalcCard>
 
@@ -557,100 +705,13 @@ export default function JewelryCalc({ lang = "pl" }) {
           </CalcCard>
 
           <CalcCard stepNum={step()} label={l.gem}>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-3">
-              {resolvedGemstones.map(g => {
-                const active = gemId === g.id;
-                const label = t(g.label, lang);
-                const hasImg = !!g.img;
-                const isSpecial = g.id === "none" || g.custom;
-
-                return (
-                  <button key={g.id}
-                    onClick={() => { setGemId(g.id); trackCalc("jewelry", "gem", g.id); }}
-                    className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                      isSpecial && !active ? "border-dashed border-white/10 hover:border-white/20" :
-                      isSpecial && active ? "border-dashed border-amber-400 bg-amber-400/10" :
-                      active ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10" :
-                      "border-white/10 bg-white/[0.02] hover:border-white/20"
-                    }`}>
-                    {/* Image or placeholder */}
-                    <div className={`w-full aspect-square rounded-lg overflow-hidden ${
-                      hasImg ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
-                    }`}>
-                      {hasImg ? (
-                        <img src={g.img} alt={label} loading="lazy"
-                          className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`} />
-                      ) : (
-                        <span className={`text-2xl ${isSpecial ? "opacity-40" : "opacity-60"}`}>
-                          {g.id === "none" ? "∅" : g.custom ? "?" : "◆"}
-                        </span>
-                      )}
-                    </div>
-                    {/* Label */}
-                    <span className={`text-[10px] sm:text-[11px] text-center leading-tight break-words ${
-                      active ? "text-amber-300 font-medium" : "text-neutral-400"
-                    }`}>
-                      {label}
-                    </span>
-                    {/* LAB badge */}
-                    {g.lab && (
-                      <span className={`absolute top-1 right-1 text-[8px] px-1 py-0.5 rounded font-semibold tracking-wider ${
-                        active ? "bg-amber-400/30 text-amber-200" : "bg-black/60 text-amber-400/80"
-                      }`}>LAB</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            <StoneComposer
+              stoneRows={stoneRows}
+              onChange={setStoneRows}
+              lang={lang}
+              gemstones={resolvedGemstones}
+            />
           </CalcCard>
-
-          {showGemDetails && (
-            <>
-              <CalcCard stepNum={step()} label={l.stoneSize}>
-                <div className="flex flex-wrap gap-3">
-                  {STONE_SIZES.map(s => {
-                    const active = stoneSizeId === s.id;
-                    const v = s.visual;
-                    return (
-                      <button key={s.id} onClick={() => setStoneSizeId(s.id)}
-                        className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all min-w-[90px] ${
-                          s.custom && !active ? "border-dashed border-white/10 text-neutral-400 italic text-xs" :
-                          active ? "border-amber-400 bg-amber-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
-                        }`}>
-                        {v && <div className="rounded-full" style={{ width: v.gemD, height: v.gemD, background: active ? "rgb(251 191 36 / 0.6)" : "rgb(255 255 255 / 0.3)" }} />}
-                        <span className={`text-[11px] text-center leading-tight ${active ? "text-amber-300 font-medium" : "text-neutral-400"}`}>{t(s.label, lang)}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </CalcCard>
-
-              <CalcCard stepNum={step()} label={l.stoneCount}>
-                <Chips options={STONE_COUNTS} value={stoneCountId} onChange={setStoneCountId} lang={lang} />
-              </CalcCard>
-
-              {(selectedGem.id === "diamond" || selectedGem.id === "lab_diamond") && (
-                <>
-                  <CalcCard stepNum={step()} label={l.clarity}>
-                    <Chips options={DIAMOND_CLARITY} value={clarityId} onChange={setClarityId} lang={lang} />
-                  </CalcCard>
-                  <CalcCard stepNum={step()} label={l.color}>
-                    <Chips options={DIAMOND_COLOR} value={colorId} onChange={setColorId} lang={lang} />
-                  </CalcCard>
-                </>
-              )}
-
-              {selectedGem.hasGrades && selectedGem.id !== "diamond" && (
-                <CalcCard stepNum={step()} label={l.quality}>
-                  <Chips options={GEM_QUALITY} value={qualityId} onChange={setQualityId} lang={lang} />
-                </CalcCard>
-              )}
-
-              <CalcCard stepNum={step()} label={l.cert}>
-                <Chips options={CERTIFICATIONS} value={certId} onChange={setCertId} lang={lang} />
-              </CalcCard>
-            </>
-          )}
         </>
       )}
 
@@ -848,7 +909,11 @@ export default function JewelryCalc({ lang = "pl" }) {
                t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
                t(METALS.find(m => m.id === metalId)?.label, lang),
                t(METHODS.find(m => m.id === methodId)?.label, lang),
-               gemId !== "none" ? t(resolvedGemstones.find(g => g.id === gemId)?.label, lang) : ""].filter(Boolean).join(" | ")
+               ...stoneRows.filter(r => r.gemId !== "none").map(r => {
+                 const gem = resolvedGemstones.find(g => g.id === r.gemId);
+                 const sz = STONE_SIZES.find(s => s.id === r.stoneSizeId);
+                 return `${r.count}× ${t(gem?.label, lang) ?? r.gemId} (${t(sz?.label, lang) ?? r.stoneSizeId})${r.suppliedBy === "client" ? " [klient]" : ""}`;
+               })].filter(Boolean).join(" | ")
             : serviceId === "renovation"
               ? `${t(SERVICE_TYPES[1].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === renoJewType)?.label, lang)} | ${renoServices.map(id => t(RENOVATION_SERVICES.find(s => s.id === id)?.label, lang)).join(", ")}`
               : `${t(SERVICE_TYPES[2].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === repairJewType)?.label, lang)} | ${t(REPAIR_SERVICES.find(r => r.id === repairId)?.label, lang)}`
@@ -861,7 +926,11 @@ export default function JewelryCalc({ lang = "pl" }) {
              t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
              t(METALS.find(m => m.id === metalId)?.label, lang),
              t(METHODS.find(m => m.id === methodId)?.label, lang),
-             gemId !== "none" ? t(resolvedGemstones.find(g => g.id === gemId)?.label, lang) : ""].filter(Boolean).join(" | ")
+             ...stoneRows.filter(r => r.gemId !== "none").map(r => {
+               const gem = resolvedGemstones.find(g => g.id === r.gemId);
+               const sz = STONE_SIZES.find(s => s.id === r.stoneSizeId);
+               return `${r.count}× ${t(gem?.label, lang) ?? r.gemId} (${t(sz?.label, lang) ?? r.stoneSizeId})${r.suppliedBy === "client" ? " [klient]" : ""}`;
+             })].filter(Boolean).join(" | ")
           : serviceId === "renovation"
             ? `${t(SERVICE_TYPES[1].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === renoJewType)?.label, lang)} | ${renoServices.map(id => t(RENOVATION_SERVICES.find(s => s.id === id)?.label, lang)).join(", ")}`
             : `${t(SERVICE_TYPES[2].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === repairJewType)?.label, lang)} | ${t(REPAIR_SERVICES.find(r => r.id === repairId)?.label, lang)}`
