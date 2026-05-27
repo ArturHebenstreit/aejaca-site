@@ -1,5 +1,10 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { ShoppingCart } from "lucide-react";
 import { useLanguage } from "../../i18n/LanguageContext.jsx";
+import { useCart } from "../../cart/CartContext.jsx";
+import STLUploader from "./STLUploader.jsx";
+import ColorPicker from "./ColorPicker.jsx";
+import AddToCartToast from "../AddToCartToast.jsx";
 
 // ============================================================
 // CONFIG
@@ -119,6 +124,12 @@ const LABELS = {
     back: "← Wstecz",
     change: "Zmień",
     cta: "Zamów wydruk w sTuDiO →",
+
+    orderTitle: "Złóż zamówienie",
+    orderStlLabel: "Plik modelu 3D (opcjonalnie)",
+    orderColorLabel: "Kolor filamentu",
+    addToCart: "Dodaj do koszyka",
+    addToCartHint: "Wybierz kolor, aby dodać do koszyka",
 
     reqEasy: "Łatwy w druku",
     reqFlexible: "Elastyczny / gumowy",
@@ -242,6 +253,12 @@ const LABELS = {
     change: "Change",
     cta: "Order 3D print at sTuDiO →",
 
+    orderTitle: "Place an order",
+    orderStlLabel: "3D model file (optional)",
+    orderColorLabel: "Filament color",
+    addToCart: "Add to cart",
+    addToCartHint: "Select a color to add to cart",
+
     reqEasy: "Easy to print",
     reqFlexible: "Flexible / rubber-like",
     reqHighTemp: "Heat resistance >100°C",
@@ -363,6 +380,12 @@ const LABELS = {
     back: "← Zurück",
     change: "Ändern",
     cta: "3D-Druck bei sTuDiO bestellen →",
+
+    orderTitle: "Bestellung aufgeben",
+    orderStlLabel: "3D-Modelldatei (optional)",
+    orderColorLabel: "Filamentfarbe",
+    addToCart: "In den Warenkorb",
+    addToCartHint: "Farbe wählen, um in den Warenkorb zu legen",
 
     reqEasy: "Einfach zu drucken",
     reqFlexible: "Flexibel / gummiartig",
@@ -1335,6 +1358,87 @@ function CommunityContributions({ typeId, L }) {
 }
 
 // ============================================================
+// ORDER SECTION — STL upload + color picker + add to cart
+// ============================================================
+function OrderSection({ type, params, lang, L, showEur }) {
+  const { addItem } = useCart();
+  const [stlFile, setStlFile] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [showToast, setShowToast] = useState(false);
+  const [lastAdded, setLastAdded] = useState(null);
+
+  const handleAddToCart = useCallback(() => {
+    if (!selectedColor) return;
+
+    // Estimate price from calculator (use FilamentCalculator defaults: 50x50x50mm, 20% infill)
+    const volCm3 = (50 * 50 * 50 * 0.001) * (0.25 + (20 / 100) * 0.75);
+    const massG = params.density ? parseFloat((volCm3 * params.density).toFixed(1)) : 0;
+    const pricePLN = params.price_per_kg ? (massG / 1000) * params.price_per_kg : 0;
+    const unitPriceNetto = showEur ? parseFloat((pricePLN / PLN_PER_EUR).toFixed(2)) : parseFloat(pricePLN.toFixed(2));
+
+    const item = {
+      type: "print3d",
+      stlFilename: stlFile?.filename || null,
+      stlDims: stlFile?.dims || null,
+      stlVolumeCm3: stlFile?.volumeCm3 || null,
+      material: type.name,
+      materialId: type.id,
+      color: selectedColor.name,
+      colorHex: selectedColor.hex || null,
+      colorNote: selectedColor.note || null,
+      dims: { x: 50, y: 50, z: 50 },
+      fillPercent: 20,
+      layerHeight: params.layer_min ?? 0.2,
+      weightG: massG,
+      unitPriceNetto,
+      currency: showEur ? "EUR" : "PLN",
+      qty: 1,
+    };
+
+    addItem(item);
+    setLastAdded(item);
+    setShowToast(true);
+  }, [selectedColor, stlFile, type, params, showEur, addItem]);
+
+  return (
+    <div className="mt-5 rounded-xl border border-amber-400/20 bg-amber-400/[0.03] p-5">
+      <div className="text-xs font-bold uppercase tracking-wider text-amber-400 mb-4">{L.orderTitle}</div>
+
+      {/* STL upload */}
+      <div className="mb-4">
+        <div className="text-[11px] text-neutral-400 mb-2">{L.orderStlLabel}</div>
+        <STLUploader onFile={setStlFile} lang={lang} />
+      </div>
+
+      {/* Color picker */}
+      <div className="mb-5">
+        <div className="text-[11px] text-neutral-400 mb-2">{L.orderColorLabel}</div>
+        <ColorPicker value={selectedColor} onChange={setSelectedColor} lang={lang} />
+      </div>
+
+      {/* Add to cart button */}
+      <button
+        onClick={handleAddToCart}
+        disabled={!selectedColor}
+        className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
+          selectedColor
+            ? "bg-amber-400 text-black hover:bg-amber-300 shadow-lg shadow-amber-400/20"
+            : "bg-white/5 text-neutral-500 cursor-not-allowed border border-white/10"
+        }`}
+      >
+        <ShoppingCart className="w-4 h-4" />
+        {selectedColor ? L.addToCart : L.addToCartHint}
+      </button>
+
+      {/* Toast */}
+      {showToast && lastAdded && (
+        <AddToCartToast item={lastAdded} onClose={() => setShowToast(false)} />
+      )}
+    </div>
+  );
+}
+
+// ============================================================
 // STEP 4 — PARAMETERS
 // ============================================================
 function Step4Parameters({ type, brand, params, lang, showEur, L }) {
@@ -1456,6 +1560,9 @@ function Step4Parameters({ type, brand, params, lang, showEur, L }) {
         showEur={showEur}
         L={L}
       />
+
+      {/* Order section */}
+      <OrderSection type={type} params={params} lang={lang} L={L} showEur={showEur} />
 
       {/* Contribution form */}
       <ContributionForm typeId={type.id} defaultBrand={brand?.brand || ""} L={L} />

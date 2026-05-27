@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Globe, ChevronDown, Sun, Moon } from "lucide-react";
+import { Menu, X, Globe, ChevronDown, Sun, Moon, ShoppingCart } from "lucide-react";
 import { useLanguage, LANGUAGES } from "../i18n/LanguageContext.jsx";
 import { useTheme } from "../i18n/ThemeContext.jsx";
+import { useCart } from "../cart/CartContext.jsx";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -17,6 +18,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const { lang, setLang, t } = useLanguage();
   const { isDark, toggleTheme } = useTheme();
+  const { totalItems } = useCart();
 
   const navLinks = [
     { to: "/jewelry/", label: t.nav.jewelry, sections: t.nav.jewelrySections },
@@ -236,6 +238,19 @@ export default function Navbar() {
                 </div>
               );
             })}
+            {/* Cart icon */}
+            <Link
+              to="/cart"
+              aria-label="Koszyk"
+              className="relative flex items-center justify-center w-8 h-8 rounded-md text-neutral-400 hover:text-white hover:bg-white/5 transition-all duration-300"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+                  {totalItems > 9 ? "9+" : totalItems}
+                </span>
+              )}
+            </Link>
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
@@ -261,6 +276,19 @@ export default function Navbar() {
 
           {/* Mobile */}
           <div className="md:hidden flex items-center gap-2">
+            {/* Cart icon mobile */}
+            <Link
+              to="/cart"
+              aria-label="Koszyk"
+              className="relative flex items-center justify-center w-8 h-8 rounded-md text-neutral-400 hover:text-white transition-colors"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+                  {totalItems > 9 ? "9+" : totalItems}
+                </span>
+              )}
+            </Link>
             {/* Theme toggle mobile */}
             <button
               onClick={toggleTheme}

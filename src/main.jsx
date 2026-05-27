@@ -6,6 +6,7 @@ import "./index.css";
 import "./utils/analytics.js";  // init analytics (side-effect)
 import { LanguageProvider } from "./i18n/LanguageContext.jsx";
 import { ThemeProvider } from "./i18n/ThemeContext.jsx";
+import { CartProvider } from "./cart/CartContext.jsx";
 import Layout from "./components/Layout.jsx";
 import Home from "./pages/Home.jsx";
 import Contact from "./pages/Contact.jsx";
@@ -33,6 +34,7 @@ const PrintSettingsPage = lazy(() => import("./pages/PrintSettingsPage.jsx"));
 const LaserParametersPage = lazy(() => import("./pages/LaserParametersPage.jsx"));
 const RingBlankPage = lazy(() => import("./pages/RingBlankPage.jsx"));
 const Reviews = lazy(() => import("./pages/Reviews.jsx"));
+const CartPage = lazy(() => import("./pages/CartPage.jsx"));
 const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 
 function LazyFallback() {
@@ -47,6 +49,7 @@ const app = (
   <StrictMode>
     <HelmetProvider>
       <ThemeProvider>
+        <CartProvider>
         <LanguageProvider>
           <BrowserRouter>
           <Suspense fallback={<LazyFallback />}>
@@ -74,12 +77,14 @@ const app = (
                 <Route path="/toolsjewelry/ring-blank/" element={<RingBlankPage />} />
                 <Route path="/privacy/" element={<Privacy />} />
                 <Route path="/reviews/" element={<Reviews />} />
+                <Route path="/cart" element={<CartPage />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
           </Suspense>
           </BrowserRouter>
         </LanguageProvider>
+        </CartProvider>
       </ThemeProvider>
     </HelmetProvider>
   </StrictMode>

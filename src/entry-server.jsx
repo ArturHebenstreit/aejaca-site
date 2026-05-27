@@ -4,6 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { LanguageProvider } from "./i18n/LanguageContext.jsx";
 import { ThemeProvider } from "./i18n/ThemeContext.jsx";
+import { CartProvider } from "./cart/CartContext.jsx";
 import Layout from "./components/Layout.jsx";
 
 import Home from "./pages/Home.jsx";
@@ -28,6 +29,7 @@ export function render(url) {
 
   const html = renderToString(
     <HelmetProvider context={helmetContext}>
+      <CartProvider>
       <ThemeProvider>
         <LanguageProvider>
           <StaticRouter location={url}>
@@ -54,6 +56,7 @@ export function render(url) {
           </StaticRouter>
         </LanguageProvider>
       </ThemeProvider>
+      </CartProvider>
     </HelmetProvider>
   );
 
