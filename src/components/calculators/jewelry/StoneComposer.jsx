@@ -113,7 +113,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                   )}
                 </div>
                 <span className={`text-[9px] text-center leading-tight break-all ${
-                  active ? (isDark ? "text-amber-200 font-semibold" : "text-amber-900 font-semibold") : "text-neutral-500"
+                  active ? (isDark ? "text-amber-200 font-semibold" : "text-amber-900 font-semibold") : (isDark ? "text-neutral-500" : "text-neutral-600")
                 }`}>
                   {label}
                 </span>
