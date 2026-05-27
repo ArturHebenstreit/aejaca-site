@@ -216,9 +216,12 @@ body {
 /* Accent — amber */
 [data-theme="light"] .text-amber-400        { color: var(--ds-amber-text) !important; }
 [data-theme="light"] .text-amber-300        { color: var(--ds-amber-hi) !important; }
+[data-theme="light"] .border-amber-400       { border-color: #b45309 !important; }  /* amber-700 — solid, active pill border */
 [data-theme="light"] .border-amber-400\/20  { border-color: rgba(146,64,14,0.20) !important; }
 [data-theme="light"] .border-amber-400\/40  { border-color: rgba(146,64,14,0.40) !important; }
 [data-theme="light"] .bg-amber-400\/10      { background-color: rgba(180,83,9,0.08) !important; }
+[data-theme="light"] .bg-amber-400\/25      { background-color: rgba(180,83,9,0.18) !important; }  /* active pill bg */
+[data-theme="light"] .bg-amber-400\/30      { background-color: rgba(180,83,9,0.22) !important; }  /* active gem badge bg */
 [data-theme="light"] .bg-amber-950\/20      { background-color: rgba(146,64,14,0.06) !important; }
 [data-theme="light"] .from-amber-950\/20    { --tw-gradient-from: rgba(146,64,14,0.06) !important; }
 /* Accent — blue */

@@ -9,6 +9,7 @@
 //   gemstones: resolved gemstones array (with live basePLN)
 // ============================================================
 import { t } from "../calcShared.jsx";
+import { useTheme } from "../../../i18n/ThemeContext.jsx";
 import {
   STONE_SIZES,
   DIAMOND_CLARITY,
@@ -40,6 +41,15 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
   const isDiamond = row.gemId === "diamond" || row.gemId === "lab_diamond";
   const showGrades = selectedGem && selectedGem.hasGrades && row.gemId !== "none";
   const isConfigured = row.gemId !== "none";
+  const { isDark } = useTheme();
+
+  // Theme-aware pill classes — vivid in both dark and light mode
+  const activePill = isDark
+    ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
+    : "border-amber-600 bg-amber-100 text-amber-800 font-semibold shadow-sm shadow-amber-500/20";
+  const inactivePill = isDark
+    ? "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
+    : "border-neutral-200 bg-white text-neutral-500 hover:border-neutral-400";
 
   function update(patch) {
     onChange({ ...row, ...patch });
@@ -84,10 +94,10 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                 title={isNoneLocked ? ({ pl: "Usuń następny kamień aby wybrać brak", en: "Remove next stone to select none", de: "Nächsten Stein entfernen um 'Kein' zu wählen" }[lang]) : undefined}
                 className={`relative flex flex-col items-center gap-1 p-1.5 rounded-xl border transition-all shrink-0 w-14 ${
                   isNoneLocked ? "border-dashed border-white/5 opacity-30 cursor-not-allowed" :
-                  isSpecial && !active ? "border-dashed border-white/10 hover:border-white/20" :
-                  isSpecial && active ? "border-dashed border-amber-400 bg-amber-400/25 shadow-md shadow-amber-400/30" :
-                  active ? "border-amber-400 bg-amber-400/25 shadow-md shadow-amber-400/30" :
-                  "border-white/10 bg-white/[0.02] hover:border-white/20"
+                  isSpecial && !active ? (isDark ? "border-dashed border-white/10 hover:border-white/20" : "border-dashed border-neutral-200 hover:border-neutral-400") :
+                  isSpecial && active ? (isDark ? "border-dashed border-amber-400 bg-amber-400/25 shadow-md shadow-amber-400/30" : "border-dashed border-amber-600 bg-amber-100 shadow-md shadow-amber-500/20") :
+                  active ? (isDark ? "border-amber-400 bg-amber-400/25 shadow-md shadow-amber-400/30" : "border-amber-600 bg-amber-100 shadow-md shadow-amber-500/20") :
+                  (isDark ? "border-white/10 bg-white/[0.02] hover:border-white/20" : "border-neutral-200 bg-white hover:border-neutral-400")
                 }`}
               >
                 <div className={`w-10 aspect-square rounded-lg overflow-hidden ${
@@ -103,13 +113,15 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                   )}
                 </div>
                 <span className={`text-[9px] text-center leading-tight break-all ${
-                  active ? "text-amber-200 font-semibold" : "text-neutral-500"
+                  active ? (isDark ? "text-amber-200 font-semibold" : "text-amber-800 font-semibold") : "text-neutral-500"
                 }`}>
                   {label}
                 </span>
                 {g.lab && (
                   <span className={`absolute top-0.5 right-0.5 text-[7px] px-0.5 py-0 rounded font-semibold tracking-wider ${
-                    active ? "bg-amber-400/30 text-amber-200" : "bg-black/60 text-amber-400/80"
+                    active
+                      ? (isDark ? "bg-amber-400/30 text-amber-200" : "bg-amber-600 text-white")
+                      : "bg-black/60 text-amber-400/80"
                   }`}>LAB</span>
                 )}
               </button>
@@ -132,16 +144,14 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                 const v = s.visual;
                 return (
                   <button key={s.id} onClick={() => update({ stoneSizeId: s.id })}
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all text-[10px] ${
-                      active
-                        ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
-                        : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-                    }`}>
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all text-[10px] ${active ? activePill : inactivePill}`}>
                     {v && (
                       <span className="rounded-full shrink-0" style={{
                         width: Math.max(4, Math.min(v.gemD * 0.6, 14)),
                         height: Math.max(4, Math.min(v.gemD * 0.6, 14)),
-                        background: active ? "rgb(251 191 36 / 0.6)" : "rgb(255 255 255 / 0.25)",
+                        background: active
+                          ? (isDark ? "rgb(251 191 36 / 0.6)" : "rgb(180 83 9 / 0.55)")
+                          : (isDark ? "rgb(255 255 255 / 0.25)" : "rgb(0 0 0 / 0.12)"),
                         display: "inline-block",
                       }} />
                     )}
@@ -188,11 +198,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
             <div className="flex gap-2">
               {["studio", "client"].map(src => (
                 <button key={src} onClick={() => update({ suppliedBy: src })}
-                  className={`px-3 py-1.5 rounded-lg border text-xs transition-all ${
-                    row.suppliedBy === src
-                      ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
-                      : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-                  }`}>
+                  className={`px-3 py-1.5 rounded-lg border text-xs transition-all ${row.suppliedBy === src ? activePill : inactivePill}`}>
                   {t(SUPPLY_LABELS[src], lang)}
                 </button>
               ))}
@@ -217,11 +223,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                     <div className="flex flex-wrap gap-1.5">
                       {DIAMOND_CLARITY.map(c => (
                         <button key={c.id} onClick={() => update({ clarityId: c.id })}
-                          className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
-                            row.clarityId === c.id
-                              ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
-                              : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-                          }`}>
+                          className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${row.clarityId === c.id ? activePill : inactivePill}`}>
                           {c.label}
                         </button>
                       ))}
@@ -234,11 +236,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                     <div className="flex flex-wrap gap-1.5">
                       {DIAMOND_COLOR.map(c => (
                         <button key={c.id} onClick={() => update({ colorId: c.id })}
-                          className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
-                            row.colorId === c.id
-                              ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
-                              : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-                          }`}>
+                          className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${row.colorId === c.id ? activePill : inactivePill}`}>
                           {c.label}
                         </button>
                       ))}
@@ -256,11 +254,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                   <div className="flex flex-wrap gap-1.5">
                     {GEM_QUALITY.map(q => (
                       <button key={q.id} onClick={() => update({ qualityId: q.id })}
-                        className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
-                          row.qualityId === q.id
-                            ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
-                            : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-                        }`}>
+                        className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${row.qualityId === q.id ? activePill : inactivePill}`}>
                         {t(q.label, lang)}
                       </button>
                     ))}
@@ -277,11 +271,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                   <div className="flex flex-wrap gap-1.5">
                     {CERTIFICATIONS.map(c => (
                       <button key={c.id} onClick={() => update({ certId: c.id })}
-                        className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
-                          row.certId === c.id
-                            ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
-                            : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-                        }`}>
+                        className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${row.certId === c.id ? activePill : inactivePill}`}>
                         {t(c.label, lang)}
                       </button>
                     ))}
