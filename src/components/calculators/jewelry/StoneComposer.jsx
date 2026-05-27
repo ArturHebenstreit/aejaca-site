@@ -1,0 +1,342 @@
+// ============================================================
+// STONE COMPOSER — multi-row gemstone selector for JewelryCalc
+// ============================================================
+// Props:
+//   stoneRows: array of { rowId, gemId, stoneSizeId, count, suppliedBy,
+//                          clarityId, colorId, qualityId, certId }
+//   onChange: (newRows) => void
+//   lang: "pl" | "en" | "de"
+//   gemstones: resolved gemstones array (with live basePLN)
+// ============================================================
+import { t } from "../calcShared.jsx";
+import {
+  STONE_SIZES,
+  DIAMOND_CLARITY,
+  DIAMOND_COLOR,
+  GEM_QUALITY,
+  CERTIFICATIONS,
+} from "../jewelryConfig.js";
+
+const ADD_LABEL = {
+  pl: "Dodaj kolejny kamień",
+  en: "Add another stone",
+  de: "Weiteren Stein hinzufügen",
+};
+
+const SUPPLY_LABELS = {
+  studio: { pl: "AEJaCA", en: "AEJaCA", de: "AEJaCA" },
+  client: { pl: "Klient", en: "Client", de: "Kunde" },
+};
+
+const CLIENT_NOTE = {
+  pl: "Kamień dostarczony przez klienta — ubezpieczamy go na czas realizacji",
+  en: "Stone supplied by client — we insure it during production",
+  de: "Stein vom Kunden geliefert — wir versichern ihn während der Produktion",
+};
+
+// ---- Single stone row ----
+function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove }) {
+  const selectedGem = gemstones.find(g => g.id === row.gemId);
+  const isDiamond = row.gemId === "diamond" || row.gemId === "lab_diamond";
+  const showGrades = selectedGem && selectedGem.hasGrades && row.gemId !== "none";
+  const isConfigured = row.gemId !== "none";
+
+  function update(patch) {
+    onChange({ ...row, ...patch });
+  }
+
+  return (
+    <div className={`p-4 rounded-2xl border space-y-3 transition-all ${
+      isConfigured
+        ? "border-amber-400/20 bg-white/[0.02]"
+        : "border-white/8 bg-white/[0.02]"
+    }`}>
+      {/* Row header: remove button */}
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[10px] uppercase tracking-wider text-neutral-500 font-bold">
+          {{ pl: "Kamień", en: "Stone", de: "Stein" }[lang]}
+        </span>
+        {canRemove && (
+          <button
+            onClick={onRemove}
+            aria-label="Remove stone row"
+            className="w-5 h-5 flex items-center justify-center rounded-full text-neutral-600 hover:text-red-400 hover:bg-red-400/10 transition-all text-xs"
+          >
+            ×
+          </button>
+        )}
+      </div>
+
+      {/* Gem selector — horizontal scrollable strip */}
+      <div className="overflow-x-auto pb-1">
+        <div className="flex gap-1.5 min-w-max">
+          {gemstones.map(g => {
+            const active = row.gemId === g.id;
+            const label = t(g.label, lang);
+            const isSpecial = g.id === "none" || g.custom;
+            return (
+              <button
+                key={g.id}
+                onClick={() => update({ gemId: g.id })}
+                className={`relative flex flex-col items-center gap-1 p-1.5 rounded-xl border transition-all shrink-0 w-14 ${
+                  isSpecial && !active ? "border-dashed border-white/10 hover:border-white/20" :
+                  isSpecial && active ? "border-dashed border-amber-400 bg-amber-400/10" :
+                  active ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10" :
+                  "border-white/10 bg-white/[0.02] hover:border-white/20"
+                }`}
+              >
+                <div className={`w-10 aspect-square rounded-lg overflow-hidden ${
+                  g.img ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
+                }`}>
+                  {g.img ? (
+                    <img src={g.img} alt={label} loading="lazy"
+                      className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "hover:scale-105"}`} />
+                  ) : (
+                    <span className={`text-base ${isSpecial ? "opacity-40" : "opacity-60"}`}>
+                      {g.id === "none" ? "∅" : g.custom ? "?" : "◆"}
+                    </span>
+                  )}
+                </div>
+                <span className={`text-[9px] text-center leading-tight break-all ${
+                  active ? "text-amber-300 font-medium" : "text-neutral-500"
+                }`}>
+                  {label}
+                </span>
+                {g.lab && (
+                  <span className={`absolute top-0.5 right-0.5 text-[7px] px-0.5 py-0 rounded font-semibold tracking-wider ${
+                    active ? "bg-amber-400/30 text-amber-200" : "bg-black/60 text-amber-400/80"
+                  }`}>LAB</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Stone details — only when gem is configured (not "none") */}
+      {isConfigured && !selectedGem?.custom && (
+        <>
+          {/* Size pills */}
+          <div>
+            <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+              {{ pl: "Wielkość", en: "Size", de: "Größe" }[lang]}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {STONE_SIZES.filter(s => !s.custom).map(s => {
+                const active = row.stoneSizeId === s.id;
+                const v = s.visual;
+                return (
+                  <button key={s.id} onClick={() => update({ stoneSizeId: s.id })}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all text-[10px] ${
+                      active
+                        ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                        : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
+                    }`}>
+                    {v && (
+                      <span className="rounded-full shrink-0" style={{
+                        width: Math.max(4, Math.min(v.gemD * 0.6, 14)),
+                        height: Math.max(4, Math.min(v.gemD * 0.6, 14)),
+                        background: active ? "rgb(251 191 36 / 0.6)" : "rgb(255 255 255 / 0.25)",
+                        display: "inline-block",
+                      }} />
+                    )}
+                    {t(s.label, lang)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Count */}
+          <div>
+            <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+              {{ pl: "Liczba kamieni", en: "Count", de: "Anzahl" }[lang]}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => update({ count: Math.max(1, (parseInt(row.count) || 1) - 1) })}
+                className="w-7 h-7 rounded-lg border border-white/10 bg-white/[0.02] text-neutral-400 hover:border-amber-400/30 hover:text-amber-300 transition-all text-sm flex items-center justify-center"
+              >−</button>
+              <input
+                type="number"
+                min={1}
+                max={200}
+                value={row.count}
+                onChange={e => {
+                  const v = Math.max(1, Math.min(200, parseInt(e.target.value) || 1));
+                  update({ count: v });
+                }}
+                className="w-14 text-center bg-white/[0.03] border border-white/10 rounded-lg px-2 py-1 text-xs text-white focus:border-amber-400/40 focus:outline-none transition-colors"
+              />
+              <button
+                onClick={() => update({ count: Math.min(200, (parseInt(row.count) || 1) + 1) })}
+                className="w-7 h-7 rounded-lg border border-white/10 bg-white/[0.02] text-neutral-400 hover:border-amber-400/30 hover:text-amber-300 transition-all text-sm flex items-center justify-center"
+              >+</button>
+            </div>
+          </div>
+
+          {/* Who supplies */}
+          <div>
+            <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+              {{ pl: "Kto dostarcza kamień", en: "Who supplies stone", de: "Wer liefert den Stein" }[lang]}
+            </div>
+            <div className="flex gap-2">
+              {["studio", "client"].map(src => (
+                <button key={src} onClick={() => update({ suppliedBy: src })}
+                  className={`px-3 py-1.5 rounded-lg border text-xs transition-all ${
+                    row.suppliedBy === src
+                      ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                      : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
+                  }`}>
+                  {t(SUPPLY_LABELS[src], lang)}
+                </button>
+              ))}
+            </div>
+            {row.suppliedBy === "client" && (
+              <div className="mt-1.5">
+                <span className="bg-amber-400/10 text-amber-300 text-xs px-2 py-0.5 rounded-full">
+                  {CLIENT_NOTE[lang]}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Diamond grades */}
+          {showGrades && isDiamond && (
+            <>
+              <div>
+                <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+                  {{ pl: "Czystość", en: "Clarity", de: "Reinheit" }[lang]}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {DIAMOND_CLARITY.map(c => (
+                    <button key={c.id} onClick={() => update({ clarityId: c.id })}
+                      className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
+                        row.clarityId === c.id
+                          ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                          : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
+                      }`}>
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+                  {{ pl: "Barwa", en: "Color", de: "Farbe" }[lang]}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {DIAMOND_COLOR.map(c => (
+                    <button key={c.id} onClick={() => update({ colorId: c.id })}
+                      className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
+                        row.colorId === c.id
+                          ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                          : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
+                      }`}>
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Colored gem quality */}
+          {showGrades && !isDiamond && (
+            <div>
+              <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+                {{ pl: "Jakość", en: "Quality", de: "Qualität" }[lang]}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {GEM_QUALITY.map(q => (
+                  <button key={q.id} onClick={() => update({ qualityId: q.id })}
+                    className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
+                      row.qualityId === q.id
+                        ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                        : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
+                    }`}>
+                    {t(q.label, lang)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Certificate — only for diamond / lab_diamond */}
+          {isDiamond && (
+            <div>
+              <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+                {{ pl: "Certyfikat", en: "Certificate", de: "Zertifikat" }[lang]}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {CERTIFICATIONS.map(c => (
+                  <button key={c.id} onClick={() => update({ certId: c.id })}
+                    className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
+                      row.certId === c.id
+                        ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                        : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
+                    }`}>
+                    {t(c.label, lang)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ---- Main StoneComposer ----
+export default function StoneComposer({ stoneRows, onChange, lang, gemstones }) {
+  function updateRow(idx, newRow) {
+    const next = stoneRows.map((r, i) => i === idx ? newRow : r);
+    onChange(next);
+  }
+
+  function removeRow(idx) {
+    if (stoneRows.length <= 1) return;
+    onChange(stoneRows.filter((_, i) => i !== idx));
+  }
+
+  function addRow() {
+    if (stoneRows.length >= 10) return;
+    onChange([...stoneRows, {
+      rowId: `row${Date.now()}`,
+      gemId: "none",
+      stoneSizeId: "small",
+      count: 1,
+      suppliedBy: "studio",
+      clarityId: "VS",
+      colorId: "GH",
+      qualityId: "A",
+      certId: "none",
+    }]);
+  }
+
+  return (
+    <div className="space-y-3">
+      {stoneRows.map((row, idx) => (
+        <StoneRow
+          key={row.rowId}
+          row={row}
+          gemstones={gemstones}
+          onChange={newRow => updateRow(idx, newRow)}
+          onRemove={() => removeRow(idx)}
+          lang={lang}
+          canRemove={stoneRows.length > 1}
+        />
+      ))}
+
+      {stoneRows.length < 10 && (
+        <button
+          onClick={addRow}
+          className="w-full py-2 rounded-xl border-dashed border border-white/10 text-xs text-neutral-500 hover:border-amber-400/30 hover:text-amber-400 transition-all"
+        >
+          + {ADD_LABEL[lang] || ADD_LABEL.en}
+        </button>
+      )}
+    </div>
+  );
+}

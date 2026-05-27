@@ -9,14 +9,15 @@ import { useGemPrices } from "../../hooks/useGemPrices.js";
 import {
   METAL_PRICES, EUR_PLN, MARGIN, REPAIR_MARGIN, TOL_LOW, TOL_HIGH,
   SERVICE_TYPES, PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING,
-  GEMSTONES, STONE_SIZES, STONE_COUNTS, DIAMOND_CLARITY, DIAMOND_COLOR,
-  GEM_QUALITY, CERTIFICATIONS, RENOVATION_SERVICES, REPAIR_SERVICES,
+  GEMSTONES, STONE_SIZES, DIAMOND_CLARITY, DIAMOND_COLOR, GEM_QUALITY, CERTIFICATIONS,
+  RENOVATION_SERVICES, REPAIR_SERVICES,
   REPAIR_METAL_MUL, QTY_TIERS, GENERIC_TYPES, GENERIC_METALS,
 } from "./jewelryConfig.js";
 import { getProductType } from "./jewelry/productConfig.js";
 import { calcWeight as computeWeight } from "./jewelry/WeightEngine.js";
 import DimensionInputs from "./jewelry/DimensionInputs.jsx";
 import WeightDisplay from "./jewelry/WeightDisplay.jsx";
+import StoneComposer from "./jewelry/StoneComposer.jsx";
 
 // Map JEWELRY_TYPES ids → PRODUCT_TYPES ids (for dimension engine)
 const TYPE_TO_FORM = {
@@ -115,8 +116,8 @@ function resolveMetalPricePerG(metalKey, rates) {
 
 // ---- NEW CREATION CALCULATOR ----
 export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
-  gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId,
-  clientSuppliesMetal, clientSuppliesStones, overrideWeightG }, lang, rates, gemstones) {
+  stoneRows, qtyId,
+  clientSuppliesMetal, overrideWeightG }, lang, rates, gemstones) {
   const l = LBL[lang] || LBL.en;
   const line = PRODUCT_LINES.find(p => p.id === lineId);
   const jType = JEWELRY_TYPES[lineId]?.find(j => j.id === typeId);
@@ -124,12 +125,10 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
   const weight = WEIGHTS.find(w => w.id === weightId);
   const method = METHODS.find(m => m.id === methodId);
   const plat = PLATING.find(p => p.id === platingId);
-  const _gems = gemstones || GEMSTONES;
-  const gem = _gems.find(g => g.id === gemId);
   const qTier = QTY_TIERS.find(q => q.id === qtyId);
 
-  if (!line || !jType || !metal || !weight || !method || !plat || !gem || !qTier) return null;
-  if (metal.custom || weight.custom || method.custom || plat.custom || gem.custom || qTier.custom) return { type: "custom" };
+  if (!line || !jType || !metal || !weight || !method || !plat || !qTier) return null;
+  if (metal.custom || weight.custom || method.custom || plat.custom || qTier.custom) return { type: "custom" };
 
   // Metal cost — use live rates when available, fall back to static config
   const plnPerG = resolveMetalPricePerG(metal.metal, rates);
@@ -142,31 +141,48 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
   // Labor cost (weight affects labor — lighter pieces need less finishing)
   const laborCost = jType.laborH * method.laborRate * method.laborMul * metal.laborMul * jType.complexity * (weight.laborMul || 1);
 
-  // Gemstone cost
+  // Stone costs — iterate all rows
   let gemCost = 0;
   let settingCost = 0;
-  if (gem.id !== "none" && gem.basePLN > 0) {
-    const stoneSize = STONE_SIZES.find(s => s.id === stoneSizeId);
-    const stoneCount = STONE_COUNTS.find(c => c.id === stoneCountId);
-    const cert = CERTIFICATIONS.find(c => c.id === certId);
-    if (!stoneSize || !stoneCount || !cert || stoneSize.custom || stoneCount.custom) return { type: "custom" };
+  const _gems = gemstones || GEMSTONES;
 
+  for (const row of (stoneRows || [])) {
+    if (!row.gemId || row.gemId === "none") continue;
+    const gem = _gems.find(g => g.id === row.gemId);
+    if (!gem || gem.custom || !gem.basePLN) continue;
+
+    const stoneSize = STONE_SIZES.find(s => s.id === row.stoneSizeId);
+    if (!stoneSize || stoneSize.custom) continue;
+
+    const count = Math.max(1, parseInt(row.count) || 1);
+
+    // Quality multiplier
     let qualMul = 1.0;
     if (gem.hasGrades && (gem.id === "diamond" || gem.id === "lab_diamond")) {
-      const cl = DIAMOND_CLARITY.find(c => c.id === clarityId);
-      const co = DIAMOND_COLOR.find(c => c.id === colorId);
+      const { DIAMOND_CLARITY, DIAMOND_COLOR } = require("./jewelryConfig.js");
+      const cl = DIAMOND_CLARITY.find(c => c.id === row.clarityId);
+      const co = DIAMOND_COLOR.find(c => c.id === row.colorId);
       if (cl && co) qualMul = cl.mul * co.mul;
     } else if (gem.hasGrades) {
-      const q = GEM_QUALITY.find(q => q.id === qualityId);
+      const { GEM_QUALITY } = require("./jewelryConfig.js");
+      const q = GEM_QUALITY.find(q => q.id === row.qualityId);
       if (q) qualMul = q.mul;
     }
 
-    const pricePerStone = gem.basePLN * stoneSize.priceMul * qualMul * cert.mul;
-    // Client supplies stones: skip gem purchase cost but still include setting labour
-    if (!clientSuppliesStones) {
-      gemCost = pricePerStone * stoneCount.count;
+    // Cert
+    const { CERTIFICATIONS } = require("./jewelryConfig.js");
+    const cert = CERTIFICATIONS.find(c => c.id === row.certId);
+    const certMul = cert?.mul ?? 1.0;
+
+    const pricePerStone = gem.basePLN * stoneSize.priceMul * qualMul * certMul;
+
+    // Only add gem purchase cost if NOT supplied by client
+    if (row.suppliedBy !== "client") {
+      gemCost += pricePerStone * count;
     }
-    settingCost = stoneCount.count * (stoneSize.ct >= 0.3 ? 120 : 60);
+
+    // Setting cost always applies (regardless of who supplies the stone)
+    settingCost += count * (stoneSize.ct >= 0.3 ? 120 : 60);
   }
 
   // Plating
