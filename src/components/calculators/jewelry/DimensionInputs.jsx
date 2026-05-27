@@ -214,18 +214,59 @@ function RingSizeField({ field, value, onChange }) {
         )}
 
         {system === "mm" && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-neutral-400 shrink-0">ø mm</span>
-            <input
-              type="number"
-              min={12}
-              max={25}
-              step={0.1}
-              placeholder="17.2"
-              value={sizeValue}
-              onChange={(e) => changeValue(parseFloat(e.target.value) || 17.2)}
-              className="w-full bg-transparent border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 [data-theme='light']:border-black/10 [data-theme='light']:text-neutral-900"
-            />
+          <div className="space-y-3">
+            {/* Visual ring diameter indicator */}
+            <div className="flex items-center justify-center py-3">
+              <div className="relative flex items-center justify-center"
+                style={{
+                  width: `${Math.min(160, Math.max(96, Math.round(sizeValue * 8)))}px`,
+                  height: `${Math.min(160, Math.max(96, Math.round(sizeValue * 8)))}px`,
+                }}>
+                {/* Outer ring shape */}
+                <div className="absolute inset-0 rounded-full border-[6px] border-amber-400/40" />
+                {/* Inner hole representation */}
+                <div className="absolute rounded-full bg-neutral-900"
+                  style={{ width: '50%', height: '50%' }} />
+                {/* Diameter label */}
+                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-amber-400 font-semibold whitespace-nowrap">
+                  ø {sizeValue.toFixed(1)} mm
+                </div>
+              </div>
+            </div>
+
+            {/* Slider */}
+            <div className="pt-8">
+              <input
+                type="range"
+                min={12}
+                max={25}
+                step={0.1}
+                value={sizeValue}
+                onChange={(e) => changeValue(parseFloat(e.target.value))}
+                className="w-full accent-amber-400"
+              />
+              <div className="flex justify-between text-[10px] text-neutral-600 mt-1">
+                <span>ø 12 mm</span>
+                <span>ø 25 mm</span>
+              </div>
+            </div>
+
+            {/* Optional direct number input below slider */}
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={12}
+                max={25}
+                step={0.1}
+                value={sizeValue}
+                onChange={(e) => {
+                  const v = Math.min(25, Math.max(12, parseFloat(e.target.value) || 17.2));
+                  changeValue(v);
+                }}
+                className="w-24 bg-transparent border border-white/10 rounded-lg px-2 py-1.5 text-sm text-white text-center focus:outline-none focus:border-amber-400/50"
+              />
+              <span className="text-xs text-neutral-500">mm (ø wewnętrzna)</span>
+            </div>
           </div>
         )}
       </div>

@@ -37,33 +37,38 @@ export default function WeightDisplay({ nettoG, bruttoG, metalName, lang, client
         {TITLE[l]}
       </div>
 
-      {/* Netto row */}
-      <div className="flex items-center gap-3 mb-2">
-        <span className="text-xs text-neutral-500 w-14 shrink-0">{LABEL_NETTO[l]}</span>
-        <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-amber-500 rounded-full transition-all duration-500"
-            style={{ width: `${nettoPercent}%` }}
-          />
-        </div>
-        <span className="text-sm font-semibold text-white [data-theme='light']:text-neutral-900 w-14 text-right">
-          {nettoG.toFixed(1)} g
-        </span>
-      </div>
+      {/* Weight bars — only render when valid */}
+      {nettoG > 0 && bruttoG > 0 && (
+        <>
+          {/* Netto row */}
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-xs text-neutral-500 w-14 shrink-0">{LABEL_NETTO[l]}</span>
+            <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                style={{ width: `${nettoPercent}%` }}
+              />
+            </div>
+            <span className="text-sm font-semibold text-white [data-theme='light']:text-neutral-900 w-16 text-right shrink-0">
+              {nettoG.toFixed(2)} g
+            </span>
+          </div>
 
-      {/* Brutto row */}
-      <div className="flex items-center gap-3">
-        <span className="text-xs text-neutral-500 w-14 shrink-0">{LABEL_BRUTTO[l]}</span>
-        <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-amber-400/40 rounded-full transition-all duration-500"
-            style={{ width: "100%" }}
-          />
-        </div>
-        <span className="text-sm font-semibold text-white [data-theme='light']:text-neutral-900 w-14 text-right">
-          {bruttoG.toFixed(1)} g
-        </span>
-      </div>
+          {/* Brutto row */}
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-neutral-500 w-14 shrink-0">{LABEL_BRUTTO[l]}</span>
+            <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-amber-400/40 rounded-full transition-all duration-500"
+                style={{ width: "100%" }}
+              />
+            </div>
+            <span className="text-sm font-semibold text-white [data-theme='light']:text-neutral-900 w-16 text-right shrink-0">
+              {bruttoG.toFixed(2)} g
+            </span>
+          </div>
+        </>
+      )}
 
       {/* Client supplies metal notice */}
       {clientSuppliesMetal && (

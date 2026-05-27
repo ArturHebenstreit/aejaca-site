@@ -500,6 +500,44 @@ export default function JewelryCalc({ lang = "pl" }) {
             )}
           </CalcCard>
 
+          <CalcCard stepNum={step()} label={l.weight}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+              {WEIGHTS.map(w => {
+                const active = weightId === w.id;
+                if (w.custom) {
+                  return (
+                    <button key={w.id} onClick={() => setWeightId(w.id)}
+                      className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-dashed border transition-all text-xs ${
+                        active ? "border-amber-400 text-amber-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
+                      }`}>
+                      <span className="text-lg opacity-50">?</span>
+                      <span className="text-center leading-tight">{t(w.label, lang)}</span>
+                    </button>
+                  );
+                }
+                return (
+                  <button key={w.id} onClick={() => setWeightId(w.id)}
+                    className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[130px] ${
+                      active ? "border-amber-400 shadow-lg shadow-amber-400/20" : "border-white/10 hover:border-white/30"
+                    }`}>
+                    {w.img && (
+                      <div className="absolute inset-0 overflow-hidden">
+                        <img src={w.img} alt={t(w.label, lang)} loading="lazy"
+                          className={`w-full h-full object-cover transition-transform duration-500 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+                        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/95 via-black/70 to-transparent" />
+                        {active && <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />}
+                      </div>
+                    )}
+                    <div className="relative p-2.5 h-full min-h-[130px] flex flex-col justify-end">
+                      <div className={`text-[11px] sm:text-xs font-bold mb-0.5 drop-shadow-lg ${active ? "text-amber-300" : "text-white"}`}>{t(w.label, lang)}</div>
+                      <div className="text-[9px] sm:text-[10px] text-neutral-300 break-words drop-shadow-md leading-tight">{t(w.desc, lang)}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </CalcCard>
+
           <CalcCard stepNum={step()} label={l.metal}>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 gap-2 sm:gap-3">
               {METALS.filter(m => !m.custom).map(m => {
@@ -570,44 +608,6 @@ export default function JewelryCalc({ lang = "pl" }) {
                   </div>
                 )}
               </div>
-            </div>
-          </CalcCard>
-
-          <CalcCard stepNum={step()} label={l.weight}>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-              {WEIGHTS.map(w => {
-                const active = weightId === w.id;
-                if (w.custom) {
-                  return (
-                    <button key={w.id} onClick={() => setWeightId(w.id)}
-                      className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-dashed border transition-all text-xs ${
-                        active ? "border-amber-400 text-amber-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
-                      }`}>
-                      <span className="text-lg opacity-50">?</span>
-                      <span className="text-center leading-tight">{t(w.label, lang)}</span>
-                    </button>
-                  );
-                }
-                return (
-                  <button key={w.id} onClick={() => setWeightId(w.id)}
-                    className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[130px] ${
-                      active ? "border-amber-400 shadow-lg shadow-amber-400/20" : "border-white/10 hover:border-white/30"
-                    }`}>
-                    {w.img && (
-                      <div className="absolute inset-0 overflow-hidden">
-                        <img src={w.img} alt={t(w.label, lang)} loading="lazy"
-                          className={`w-full h-full object-cover transition-transform duration-500 ${active ? "scale-105" : "group-hover:scale-105"}`} />
-                        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/95 via-black/70 to-transparent" />
-                        {active && <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />}
-                      </div>
-                    )}
-                    <div className="relative p-2.5 h-full min-h-[130px] flex flex-col justify-end">
-                      <div className={`text-[11px] sm:text-xs font-bold mb-0.5 drop-shadow-lg ${active ? "text-amber-300" : "text-white"}`}>{t(w.label, lang)}</div>
-                      <div className="text-[9px] sm:text-[10px] text-neutral-300 break-words drop-shadow-md leading-tight">{t(w.desc, lang)}</div>
-                    </div>
-                  </button>
-                );
-              })}
             </div>
           </CalcCard>
 
