@@ -85,8 +85,8 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                 className={`relative flex flex-col items-center gap-1 p-1.5 rounded-xl border transition-all shrink-0 w-14 ${
                   isNoneLocked ? "border-dashed border-white/5 opacity-30 cursor-not-allowed" :
                   isSpecial && !active ? "border-dashed border-white/10 hover:border-white/20" :
-                  isSpecial && active ? "border-dashed border-amber-400 bg-amber-400/10" :
-                  active ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10" :
+                  isSpecial && active ? "border-dashed border-amber-400 bg-amber-400/25 shadow-md shadow-amber-400/30" :
+                  active ? "border-amber-400 bg-amber-400/25 shadow-md shadow-amber-400/30" :
                   "border-white/10 bg-white/[0.02] hover:border-white/20"
                 }`}
               >
@@ -103,7 +103,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                   )}
                 </div>
                 <span className={`text-[9px] text-center leading-tight break-all ${
-                  active ? "text-amber-300 font-medium" : "text-neutral-500"
+                  active ? "text-amber-200 font-semibold" : "text-neutral-500"
                 }`}>
                   {label}
                 </span>
@@ -134,7 +134,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                   <button key={s.id} onClick={() => update({ stoneSizeId: s.id })}
                     className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all text-[10px] ${
                       active
-                        ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                        ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
                         : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
                     }`}>
                     {v && (
@@ -190,7 +190,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                 <button key={src} onClick={() => update({ suppliedBy: src })}
                   className={`px-3 py-1.5 rounded-lg border text-xs transition-all ${
                     row.suppliedBy === src
-                      ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                      ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
                       : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
                   }`}>
                   {t(SUPPLY_LABELS[src], lang)}
@@ -219,7 +219,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                         <button key={c.id} onClick={() => update({ clarityId: c.id })}
                           className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
                             row.clarityId === c.id
-                              ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                              ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
                               : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
                           }`}>
                           {c.label}
@@ -236,7 +236,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                         <button key={c.id} onClick={() => update({ colorId: c.id })}
                           className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
                             row.colorId === c.id
-                              ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                              ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
                               : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
                           }`}>
                           {c.label}
@@ -258,7 +258,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                       <button key={q.id} onClick={() => update({ qualityId: q.id })}
                         className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
                           row.qualityId === q.id
-                            ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                            ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
                             : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
                         }`}>
                         {t(q.label, lang)}
@@ -279,7 +279,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                       <button key={c.id} onClick={() => update({ certId: c.id })}
                         className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
                           row.certId === c.id
-                            ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                            ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
                             : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
                         }`}>
                         {t(c.label, lang)}
