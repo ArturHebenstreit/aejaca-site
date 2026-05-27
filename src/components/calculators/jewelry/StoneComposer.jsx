@@ -43,13 +43,13 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
   const isConfigured = row.gemId !== "none";
   const { isDark } = useTheme();
 
-  // Theme-aware pill classes — vivid in both dark and light mode
+  // Theme-aware pill classes — match JewelryCalc "Brak" card style in light mode
   const activePill = isDark
     ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
-    : "border-amber-500 bg-amber-500 text-white font-semibold shadow-sm shadow-amber-500/30";
+    : "border-amber-400 bg-amber-400/10 text-amber-700 font-medium";
   const inactivePill = isDark
     ? "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-    : "border-neutral-200 bg-white text-neutral-500 hover:border-amber-400 hover:text-neutral-700";
+    : "border-neutral-200 bg-white text-neutral-500 hover:border-neutral-400";
 
   function update(patch) {
     onChange({ ...row, ...patch });
@@ -95,8 +95,8 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                 className={`relative flex flex-col items-center gap-1 p-1.5 rounded-xl border transition-all shrink-0 w-14 ${
                   isNoneLocked ? "border-dashed border-white/5 opacity-30 cursor-not-allowed" :
                   isSpecial && !active ? (isDark ? "border-dashed border-white/10 hover:border-white/20" : "border-dashed border-neutral-200 hover:border-neutral-400") :
-                  isSpecial && active ? (isDark ? "border-dashed border-amber-400 bg-amber-400/25 shadow-md shadow-amber-400/30" : "border-dashed border-amber-500 bg-amber-500/15 shadow-md shadow-amber-500/20") :
-                  active ? (isDark ? "border-amber-400 bg-amber-400/25 shadow-md shadow-amber-400/30" : "border-amber-500 bg-amber-500/15 shadow-md shadow-amber-500/20") :
+                  isSpecial && active ? (isDark ? "border-dashed border-amber-400 bg-amber-400/25 shadow-md shadow-amber-400/30" : "border-dashed border-amber-400 bg-amber-400/10") :
+                  active ? (isDark ? "border-amber-400 bg-amber-400/25 shadow-md shadow-amber-400/30" : "border-amber-400 bg-amber-400/10") :
                   (isDark ? "border-white/10 bg-white/[0.02] hover:border-white/20" : "border-neutral-200 bg-white hover:border-neutral-400")
                 }`}
               >
