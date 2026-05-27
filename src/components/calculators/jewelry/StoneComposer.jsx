@@ -29,9 +29,9 @@ const SUPPLY_LABELS = {
 };
 
 const CLIENT_NOTE = {
-  pl: "Kamień dostarczony przez klienta — ubezpieczamy go na czas realizacji",
-  en: "Stone supplied by client — we insure it during production",
-  de: "Stein vom Kunden geliefert — wir versichern ihn während der Produktion",
+  pl: "Kamień dostarczony przez klienta. Kwestia ubezpieczenia kamienia na czas realizacji wymaga osobnego uzgodnienia i może wpłynąć na finalną cenę. W przypadku braku ubezpieczenia odpowiedzialność za kamień pozostaje po stronie klienta.",
+  en: "Stone supplied by client. Insurance of the stone during production requires separate agreement and may affect the final price. Without insurance, the client bears responsibility for the stone.",
+  de: "Stein vom Kunden geliefert. Die Versicherung des Steins während der Produktion bedarf einer gesonderten Vereinbarung und kann den Endpreis beeinflussen. Ohne Versicherung liegt die Verantwortung für den Stein beim Kunden.",
 };
 
 // ---- Single stone row ----
@@ -193,10 +193,8 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove }) {
               ))}
             </div>
             {row.suppliedBy === "client" && (
-              <div className="mt-1.5">
-                <span className="bg-amber-400/10 text-amber-300 text-xs px-2 py-0.5 rounded-full">
-                  {CLIENT_NOTE[lang]}
-                </span>
+              <div className="mt-2 p-3 rounded-xl bg-amber-400/8 border border-amber-400/20 text-xs text-amber-200 leading-relaxed">
+                {CLIENT_NOTE[lang]}
               </div>
             )}
           </div>
@@ -337,6 +335,15 @@ export default function StoneComposer({ stoneRows, onChange, lang, gemstones }) 
           + {ADD_LABEL[lang] || ADD_LABEL.en}
         </button>
       )}
+
+      {/* General gem price disclaimer */}
+      <p className="text-[11px] text-neutral-600 leading-relaxed pt-1">
+        {{
+          pl: "⚠ Ceny kamieni są orientacyjne i wymagają finalnego potwierdzenia przed realizacją zamówienia.",
+          en: "⚠ Gemstone prices are indicative and require final confirmation before order execution.",
+          de: "⚠ Edelsteinpreise sind Richtwerte und müssen vor der Auftragsausführung endgültig bestätigt werden.",
+        }[lang]}
+      </p>
     </div>
   );
 }
