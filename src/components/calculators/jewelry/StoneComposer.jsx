@@ -114,9 +114,9 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove }) {
       </div>
 
       {/* Stone details — only when gem is configured (not "none") */}
-      {isConfigured && !selectedGem?.custom && (
+      {isConfigured && (
         <>
-          {/* Size pills */}
+          {/* Size pills — always shown for configured stones incl. custom */}
           <div>
             <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
               {{ pl: "Wielkość", en: "Size", de: "Größe" }[lang]}
@@ -147,7 +147,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove }) {
             </div>
           </div>
 
-          {/* Count */}
+          {/* Count — always shown for configured stones incl. custom */}
           <div>
             <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
               {{ pl: "Liczba kamieni", en: "Count", de: "Anzahl" }[lang]}
@@ -175,7 +175,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove }) {
             </div>
           </div>
 
-          {/* Who supplies */}
+          {/* Who supplies — always shown for configured stones incl. custom */}
           <div>
             <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
               {{ pl: "Kto dostarcza kamień", en: "Who supplies stone", de: "Wer liefert den Stein" }[lang]}
@@ -199,86 +199,91 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove }) {
             )}
           </div>
 
-          {/* Diamond grades */}
-          {showGrades && isDiamond && (
+          {/* Quality grades + cert — only for known (non-custom) gems */}
+          {!selectedGem?.custom && (
             <>
-              <div>
-                <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
-                  {{ pl: "Czystość", en: "Clarity", de: "Reinheit" }[lang]}
+              {/* Diamond grades */}
+              {showGrades && isDiamond && (
+                <>
+                  <div>
+                    <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+                      {{ pl: "Czystość", en: "Clarity", de: "Reinheit" }[lang]}
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {DIAMOND_CLARITY.map(c => (
+                        <button key={c.id} onClick={() => update({ clarityId: c.id })}
+                          className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
+                            row.clarityId === c.id
+                              ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                              : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
+                          }`}>
+                          {c.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+                      {{ pl: "Barwa", en: "Color", de: "Farbe" }[lang]}
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {DIAMOND_COLOR.map(c => (
+                        <button key={c.id} onClick={() => update({ colorId: c.id })}
+                          className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
+                            row.colorId === c.id
+                              ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                              : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
+                          }`}>
+                          {c.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Colored gem quality */}
+              {showGrades && !isDiamond && (
+                <div>
+                  <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+                    {{ pl: "Jakość", en: "Quality", de: "Qualität" }[lang]}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {GEM_QUALITY.map(q => (
+                      <button key={q.id} onClick={() => update({ qualityId: q.id })}
+                        className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
+                          row.qualityId === q.id
+                            ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                            : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
+                        }`}>
+                        {t(q.label, lang)}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {DIAMOND_CLARITY.map(c => (
-                    <button key={c.id} onClick={() => update({ clarityId: c.id })}
-                      className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
-                        row.clarityId === c.id
-                          ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
-                          : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-                      }`}>
-                      {c.label}
-                    </button>
-                  ))}
+              )}
+
+              {/* Certificate — only for diamond / lab_diamond */}
+              {isDiamond && (
+                <div>
+                  <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+                    {{ pl: "Certyfikat", en: "Certificate", de: "Zertifikat" }[lang]}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {CERTIFICATIONS.map(c => (
+                      <button key={c.id} onClick={() => update({ certId: c.id })}
+                        className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
+                          row.certId === c.id
+                            ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                            : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
+                        }`}>
+                        {t(c.label, lang)}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div>
-                <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
-                  {{ pl: "Barwa", en: "Color", de: "Farbe" }[lang]}
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {DIAMOND_COLOR.map(c => (
-                    <button key={c.id} onClick={() => update({ colorId: c.id })}
-                      className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
-                        row.colorId === c.id
-                          ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
-                          : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-                      }`}>
-                      {c.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              )}
             </>
-          )}
-
-          {/* Colored gem quality */}
-          {showGrades && !isDiamond && (
-            <div>
-              <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
-                {{ pl: "Jakość", en: "Quality", de: "Qualität" }[lang]}
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {GEM_QUALITY.map(q => (
-                  <button key={q.id} onClick={() => update({ qualityId: q.id })}
-                    className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
-                      row.qualityId === q.id
-                        ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
-                        : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-                    }`}>
-                    {t(q.label, lang)}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Certificate — only for diamond / lab_diamond */}
-          {isDiamond && (
-            <div>
-              <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
-                {{ pl: "Certyfikat", en: "Certificate", de: "Zertifikat" }[lang]}
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {CERTIFICATIONS.map(c => (
-                  <button key={c.id} onClick={() => update({ certId: c.id })}
-                    className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
-                      row.certId === c.id
-                        ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
-                        : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-                    }`}>
-                    {t(c.label, lang)}
-                  </button>
-                ))}
-              </div>
-            </div>
           )}
         </>
       )}
