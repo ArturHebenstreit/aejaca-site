@@ -28,6 +28,7 @@
         <a href="/leads" class="text-neutral-400 hover:text-white transition-colors">Leads</a>
         <a href="/subscribers" class="text-neutral-400 hover:text-white transition-colors">Subscribers</a>
         <a href="/conversations" class="text-neutral-400 hover:text-white transition-colors">Chat</a>
+        <a href="/orders" class="text-neutral-400 hover:text-white transition-colors">Zamówienia<% if (typeof pendingOrders !== 'undefined' && pendingOrders > 0) { %> <span class="text-amber-400">(<%= pendingOrders %>)</span><% } %></a>
         <a href="/laser-matrix" class="text-neutral-400 hover:text-white transition-colors">Laser Matrix</a>
         <a href="/gemstone-prices" class="text-neutral-400 hover:text-white transition-colors">Gems</a>
         <a href="/filaments" class="text-neutral-400 hover:text-white transition-colors">Filamenty<% if (typeof pendingContributions !== 'undefined' && pendingContributions > 0) { %> <span class="text-amber-400">(<%= pendingContributions %>)</span><% } %></a>
@@ -112,6 +113,14 @@
           <div class="mt-2 text-xs text-amber-400">&#9889; <%= pendingContributions %> oczekuje weryfikacji</div>
         <% } %>
         <a href="/filaments" class="block mt-3 text-xs text-blue-400 hover:text-blue-300">Zarządzaj &rarr;</a>
+      </div>
+
+      <!-- Zamówienia -->
+      <div class="bg-neutral-900 border border-white/10 rounded-xl px-5 py-4">
+        <div class="text-xs text-neutral-500 uppercase tracking-wider mb-1">Zamówienia</div>
+        <div class="text-2xl font-bold text-amber-400"><%= typeof pendingOrders !== 'undefined' ? pendingOrders : 0 %></div>
+        <div class="text-xs text-neutral-400 mt-1">oczekujących</div>
+        <a href="/orders" class="block mt-3 text-xs text-amber-400 hover:text-amber-300">Wszystkie zamówienia &rarr;</a>
       </div>
 
     </div>
