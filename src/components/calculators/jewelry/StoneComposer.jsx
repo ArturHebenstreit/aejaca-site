@@ -35,7 +35,7 @@ const CLIENT_NOTE = {
 };
 
 // ---- Single stone row ----
-function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove }) {
+function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast }) {
   const selectedGem = gemstones.find(g => g.id === row.gemId);
   const isDiamond = row.gemId === "diamond" || row.gemId === "lab_diamond";
   const showGrades = selectedGem && selectedGem.hasGrades && row.gemId !== "none";
@@ -74,14 +74,19 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove }) {
             const active = row.gemId === g.id;
             const label = t(g.label, lang);
             const isSpecial = g.id === "none" || g.custom;
+            // "Brak kamienia" locked for non-last rows (row has a successor)
+            const isNoneLocked = g.id === "none" && !isLast;
             return (
               <button
                 key={g.id}
-                onClick={() => update({ gemId: g.id })}
+                onClick={() => !isNoneLocked && update({ gemId: g.id })}
+                disabled={isNoneLocked}
+                title={isNoneLocked ? ({ pl: "Usuń następny kamień aby wybrać brak", en: "Remove next stone to select none", de: "Nächsten Stein entfernen um 'Kein' zu wählen" }[lang]) : undefined}
                 className={`relative flex flex-col items-center gap-1 p-1.5 rounded-xl border transition-all shrink-0 w-14 ${
+                  isNoneLocked ? "border-dashed border-white/5 opacity-30 cursor-not-allowed" :
                   isSpecial && !active ? "border-dashed border-white/10 hover:border-white/20" :
-                  isSpecial && active ? "border-dashed border-amber-400 bg-amber-400/10" :
-                  active ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10" :
+                  isSpecial && active ? "border-dashed border-amber-400 bg-amber-400/25 shadow-md shadow-amber-400/30" :
+                  active ? "border-amber-400 bg-amber-400/25 shadow-md shadow-amber-400/30" :
                   "border-white/10 bg-white/[0.02] hover:border-white/20"
                 }`}
               >
@@ -98,7 +103,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove }) {
                   )}
                 </div>
                 <span className={`text-[9px] text-center leading-tight break-all ${
-                  active ? "text-amber-300 font-medium" : "text-neutral-500"
+                  active ? "text-amber-200 font-semibold" : "text-neutral-500"
                 }`}>
                   {label}
                 </span>
@@ -129,7 +134,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove }) {
                   <button key={s.id} onClick={() => update({ stoneSizeId: s.id })}
                     className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all text-[10px] ${
                       active
-                        ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                        ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
                         : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
                     }`}>
                     {v && (
@@ -185,7 +190,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove }) {
                 <button key={src} onClick={() => update({ suppliedBy: src })}
                   className={`px-3 py-1.5 rounded-lg border text-xs transition-all ${
                     row.suppliedBy === src
-                      ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                      ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
                       : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
                   }`}>
                   {t(SUPPLY_LABELS[src], lang)}
@@ -214,7 +219,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove }) {
                         <button key={c.id} onClick={() => update({ clarityId: c.id })}
                           className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
                             row.clarityId === c.id
-                              ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                              ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
                               : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
                           }`}>
                           {c.label}
@@ -231,7 +236,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove }) {
                         <button key={c.id} onClick={() => update({ colorId: c.id })}
                           className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
                             row.colorId === c.id
-                              ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                              ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
                               : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
                           }`}>
                           {c.label}
@@ -253,7 +258,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove }) {
                       <button key={q.id} onClick={() => update({ qualityId: q.id })}
                         className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
                           row.qualityId === q.id
-                            ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                            ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
                             : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
                         }`}>
                         {t(q.label, lang)}
@@ -274,7 +279,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove }) {
                       <button key={c.id} onClick={() => update({ certId: c.id })}
                         className={`px-2.5 py-1 rounded-lg border text-[10px] transition-all ${
                           row.certId === c.id
-                            ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                            ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
                             : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
                         }`}>
                         {t(c.label, lang)}
@@ -329,17 +334,27 @@ export default function StoneComposer({ stoneRows, onChange, lang, gemstones }) 
           onRemove={() => removeRow(idx)}
           lang={lang}
           canRemove={stoneRows.length > 1}
+          isLast={idx === stoneRows.length - 1}
         />
       ))}
 
-      {stoneRows.length < 10 && (
-        <button
-          onClick={addRow}
-          className="w-full py-2 rounded-xl border-dashed border border-white/10 text-xs text-neutral-500 hover:border-amber-400/30 hover:text-amber-400 transition-all"
-        >
-          + {ADD_LABEL[lang] || ADD_LABEL.en}
-        </button>
-      )}
+      {stoneRows.length < 10 && (() => {
+        const lastRow = stoneRows[stoneRows.length - 1];
+        const canAdd = lastRow && lastRow.gemId !== "none";
+        return (
+          <button
+            onClick={canAdd ? addRow : undefined}
+            disabled={!canAdd}
+            className={`w-full py-2 rounded-xl border-dashed border text-xs transition-all ${
+              canAdd
+                ? "border-white/10 text-neutral-500 hover:border-amber-400/30 hover:text-amber-400 cursor-pointer"
+                : "border-white/5 text-neutral-700 cursor-not-allowed opacity-50"
+            }`}
+          >
+            + {ADD_LABEL[lang] || ADD_LABEL.en}
+          </button>
+        );
+      })()}
 
       {/* General gem price disclaimer */}
       <p className="text-[11px] text-neutral-600 leading-relaxed pt-1">
