@@ -324,10 +324,10 @@ export default function JewelryCalc({ lang = "pl" }) {
     if (!productForm) return null;
     const selectedMetal = METALS.find(m => m.id === metalId);
     const density = METAL_DENSITY[selectedMetal?.metal] ?? 10.5;
-    const result = computeWeight(productForm, dimensions, density);
+    const result = computeWeight(productForm, dimensions, density, weightId);
     if (!result || typeof result.nettoG !== "number" || typeof result.bruttoG !== "number") return null;
     return result;
-  }, [productForm, dimensions, metalId]);
+  }, [productForm, dimensions, metalId, weightId]);
 
   const result = useMemo(() => {
     if (serviceId === "new") {
