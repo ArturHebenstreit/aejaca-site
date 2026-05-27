@@ -36,11 +36,47 @@ export default function CartPage() {
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
                     <p className="text-sm font-semibold text-white">{item.stlFilename || "Druk 3D"}</p>
-                    <p className="text-xs text-neutral-400 mt-0.5">{item.material} · {item.color}</p>
+
+                    {/* Material + segment */}
+                    <p className="text-xs text-neutral-400 mt-0.5">
+                      {item.material}{item.segment ? ` (${item.segment})` : ""}
+                    </p>
+
+                    {/* Infill + precision */}
+                    {(item.infill || item.precision) && (
+                      <p className="text-xs text-neutral-500 mt-0.5">
+                        {[item.infill, item.precision].filter(Boolean).join(" · ")}
+                      </p>
+                    )}
+
+                    {/* Dims from STL */}
                     {item.stlDims && (
                       <p className="text-xs text-neutral-500 mt-0.5">
-                        {item.stlDims.x}×{item.stlDims.y}×{item.stlDims.z} mm · {item.fillPercent}% wypełnienie
+                        {item.stlDims.x}×{item.stlDims.y}×{item.stlDims.z} mm
                       </p>
+                    )}
+
+                    {/* Colors */}
+                    {item.colors?.length > 0 && (
+                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                        {item.colors.map((c, i) => (
+                          <span key={i} className="flex items-center gap-1 text-[11px] text-neutral-400">
+                            {c.hex ? (
+                              <span
+                                className="w-3 h-3 rounded-full border border-white/20 inline-block"
+                                style={{ background: c.hex }}
+                              />
+                            ) : null}
+                            {c.name}
+                            {i < item.colors.length - 1 ? <span className="text-neutral-600">·</span> : null}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Color descriptions for multi-color */}
+                    {item.colorDescriptions && (
+                      <p className="text-[11px] text-neutral-500 mt-1 italic">{item.colorDescriptions}</p>
                     )}
                   </div>
                   <button

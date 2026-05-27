@@ -332,7 +332,8 @@ export default function Print3DCalc({ lang = "pl" }) {
   const [stlFileName, setStlFileName] = useState("");
   const [stlScale, setStlScale] = useState(1);
   const [wantOrder, setWantOrder] = useState(false);
-  const [filamentColor, setFilamentColor] = useState(null);
+  const [filamentColors, setFilamentColors] = useState([]);
+  const [colorDescriptions, setColorDescriptions] = useState("");
   const [showToast, setShowToast] = useState(false);
   const [lastAdded, setLastAdded] = useState(null);
 
@@ -341,10 +342,28 @@ export default function Print3DCalc({ lang = "pl" }) {
   const showEur = lang === "en" || lang === "de";
   const PLN_PER_EUR = 4.25;
 
+  const customInfill = INFILL_OPTIONS.find(i => i.id === infillId)?.custom;
+  const customPrecision = PRECISION.find(p => p.id === precisionId)?.custom;
+  const customColors = COLORS.find(c => c.id === colorId)?.custom;
+  const needsStl = !stlData;
+  const canOrder = !customInfill && !customPrecision && !customColors && !needsStl;
+
   useEffect(() => {
     const mats = Object.keys(FILAMENTS[segment].materials);
     if (!mats.includes(materialKey)) setMaterialKey(mats[0]);
   }, [segment]);
+
+  useEffect(() => {
+    if (!wantOrder) return;
+    const count = colorId >= 1 && colorId <= 5 ? colorId : 1;
+    setFilamentColors(prev => {
+      if (prev.length === count) return prev;
+      if (prev.length < count) {
+        return [...prev, ...Array.from({ length: count - prev.length }, () => ({ id: "black", name: lang === "de" ? "Schwarz" : lang === "en" ? "Black" : "Czarny", hex: "#1a1a1a" }))];
+      }
+      return prev.slice(0, count);
+    });
+  }, [colorId, wantOrder, lang]);
 
   async function handleSTLUpload(e) {
     const file = e.target.files?.[0];
@@ -379,7 +398,7 @@ export default function Print3DCalc({ lang = "pl" }) {
     [segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, scaledStlData, lang]);
 
   const handleAddToCart = useCallback(() => {
-    if (!filamentColor) return;
+    if (!filamentColors.length) return;
 
     const qTier = QUANTITY_TIERS.find(q => q.id === quantityId);
 
@@ -395,13 +414,12 @@ export default function Print3DCalc({ lang = "pl" }) {
       stlVolumeCm3: scaledStlData?.volumeCm3 || null,
       material: materialKey,
       materialId: materialKey,
-      color: filamentColor.name,
-      colorHex: filamentColor.hex || null,
-      colorNote: filamentColor.note || null,
       segment: FILAMENTS[segment].label,
+      colors: filamentColors,
+      colorCount: colorId,
+      colorDescriptions: colorDescriptions || null,
       infill: t(INFILL_OPTIONS.find(i => i.id === infillId)?.label, lang),
       precision: t(PRECISION.find(p => p.id === precisionId)?.label, lang),
-      colorCount: colorId,
       qty: qTier?.qty ?? 1,
       unitPriceNetto,
       currency: showEur ? "EUR" : "PLN",
@@ -410,7 +428,7 @@ export default function Print3DCalc({ lang = "pl" }) {
     addItem(item);
     setLastAdded(item);
     setShowToast(true);
-  }, [filamentColor, segment, materialKey, infillId, colorId, precisionId, quantityId, stlFileName, stlData, scaledStlData, result, showEur, addItem, lang]);
+  }, [filamentColors, colorDescriptions, segment, materialKey, infillId, colorId, precisionId, quantityId, stlFileName, stlData, scaledStlData, result, showEur, addItem, lang]);
 
   const matOptions = Object.entries(FILAMENTS[segment].materials).map(([k, v]) => ({
     id: k, label: k, sub: `${v.price_kg}zł`, img: FILAMENT_IMG[k],
@@ -457,7 +475,13 @@ export default function Print3DCalc({ lang = "pl" }) {
 
       {!wantOrder ? (
         <button
-          onClick={() => { setWantOrder(true); setFilamentColor({ id: "black", name: "Czarny", hex: "#1a1a1a" }); }}
+          onClick={() => {
+            const count = colorId >= 1 && colorId <= 5 ? colorId : 1;
+            const initialColors = Array.from({ length: count }, () => ({ id: "black", name: lang === "de" ? "Schwarz" : lang === "en" ? "Black" : "Czarny", hex: "#1a1a1a" }));
+            setFilamentColors(initialColors);
+            setColorDescriptions("");
+            setWantOrder(true);
+          }}
           className="w-full mt-4 py-3 rounded-xl border border-amber-400/30 text-amber-400 text-sm font-medium hover:bg-amber-400/10 hover:border-amber-400/60 transition-all duration-200 flex items-center justify-center gap-2"
         >
           <ShoppingCart className="w-4 h-4" />
@@ -467,27 +491,122 @@ export default function Print3DCalc({ lang = "pl" }) {
         <div className="mt-4 rounded-xl border border-amber-400/20 bg-amber-400/[0.03] p-5">
           <div className="flex items-center justify-between mb-3">
             <div className="text-xs font-bold uppercase tracking-wider text-amber-400">
-              {lang === "pl" ? "Kolor filamentu" : lang === "de" ? "Filamentfarbe" : "Filament color"}
+              {lang === "pl" ? "Zlecenie wydruku" : lang === "de" ? "Druckauftrag" : "Print order"}
             </div>
             <button onClick={() => setWantOrder(false)} className="text-neutral-500 hover:text-neutral-300 text-xs transition-colors">
               {lang === "pl" ? "Anuluj" : lang === "de" ? "Abbrechen" : "Cancel"}
             </button>
           </div>
-          <ColorPicker value={filamentColor} onChange={setFilamentColor} lang={lang} />
-          <button
-            onClick={handleAddToCart}
-            disabled={!filamentColor}
-            className={`mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
-              filamentColor
-                ? "bg-amber-400 text-black hover:bg-amber-300 shadow-lg shadow-amber-400/20"
-                : "bg-white/5 text-neutral-500 cursor-not-allowed border border-white/10"
-            }`}
-          >
-            <ShoppingCart className="w-4 h-4" />
-            {lang === "pl" ? "Dodaj do koszyka" : lang === "de" ? "In den Warenkorb" : "Add to cart"}
-          </button>
-          {showToast && lastAdded && (
-            <AddToCartToast item={lastAdded} onClose={() => setShowToast(false)} />
+
+          {!canOrder ? (
+            <div className="space-y-2">
+              <p className="text-xs text-neutral-400 mb-3">
+                {lang === "pl" ? "Aby dodać do koszyka, uzupełnij poniższe:" : lang === "de" ? "Um in den Warenkorb zu legen, ergänze folgendes:" : "To add to cart, please complete the following:"}
+              </p>
+              <ul className="space-y-1.5">
+                {needsStl && (
+                  <li className="flex items-start gap-2 text-xs text-amber-300">
+                    <span className="mt-0.5">•</span>
+                    <span>{lang === "pl" ? "Załaduj plik STL — potrzebujemy dokładnych wymiarów modelu" : lang === "de" ? "STL-Datei hochladen — wir benötigen genaue Modellmaße" : "Upload an STL file — we need exact model dimensions"}</span>
+                  </li>
+                )}
+                {customInfill && (
+                  <li className="flex items-start gap-2 text-xs text-amber-300">
+                    <span className="mt-0.5">•</span>
+                    <span>{lang === "pl" ? "Wybierz standardowe wypełnienie (Niskie / Średnie / Wysokie)" : lang === "de" ? "Standard-Füllung wählen (Niedrig / Mittel / Hoch)" : "Select standard infill (Low / Medium / High)"}</span>
+                  </li>
+                )}
+                {customPrecision && (
+                  <li className="flex items-start gap-2 text-xs text-amber-300">
+                    <span className="mt-0.5">•</span>
+                    <span>{lang === "pl" ? "Wybierz standardową precyzję z listy" : lang === "de" ? "Standard-Präzision aus der Liste wählen" : "Select a standard precision option"}</span>
+                  </li>
+                )}
+                {customColors && (
+                  <li className="flex items-start gap-2 text-xs text-amber-300">
+                    <span className="mt-0.5">•</span>
+                    <span>{lang === "pl" ? "Niestandardowa kolorystyka wymaga indywidualnych ustaleń — skontaktuj się z nami" : lang === "de" ? "Individuelle Farbgebung erfordert persönliche Absprache — kontaktiere uns" : "Custom color scheme requires individual discussion — contact us"}</span>
+                  </li>
+                )}
+              </ul>
+            </div>
+          ) : (
+            <>
+              <div className="mb-1 text-xs font-medium text-neutral-300">
+                {colorId === 1
+                  ? (lang === "pl" ? "Kolor filamentu" : lang === "de" ? "Filamentfarbe" : "Filament color")
+                  : (lang === "pl" ? `Kolory filamentu (${colorId})` : lang === "de" ? `Filamentfarben (${colorId})` : `Filament colors (${colorId})`)}
+              </div>
+
+              {colorId === 1 ? (
+                <ColorPicker
+                  value={filamentColors[0] || null}
+                  onChange={c => setFilamentColors([c])}
+                  lang={lang}
+                />
+              ) : (
+                <div className="space-y-4">
+                  {Array.from({ length: colorId }).map((_, i) => (
+                    <div key={i}>
+                      <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+                        {lang === "pl" ? `Kolor ${i + 1}` : lang === "de" ? `Farbe ${i + 1}` : `Color ${i + 1}`}
+                      </div>
+                      <ColorPicker
+                        value={filamentColors[i] || null}
+                        onChange={c => setFilamentColors(prev => { const next = [...prev]; next[i] = c; return next; })}
+                        lang={lang}
+                      />
+                    </div>
+                  ))}
+
+                  <div>
+                    <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+                      {lang === "pl" ? "Przypisanie kolorów do elementów" : lang === "de" ? "Farbzuweisung zu Elementen" : "Color-to-element assignment"}
+                    </div>
+                    <textarea
+                      value={colorDescriptions}
+                      onChange={e => setColorDescriptions(e.target.value)}
+                      rows={3}
+                      placeholder={
+                        lang === "pl" ? "Np. Kolor 1 (czarny) – korpus, Kolor 2 (biały) – logo…" :
+                        lang === "de" ? "Z.B. Farbe 1 (Schwarz) – Gehäuse, Farbe 2 (Weiß) – Logo…" :
+                        "E.g. Color 1 (black) – body, Color 2 (white) – logo…"
+                      }
+                      className="w-full rounded-lg bg-neutral-900/60 border border-white/10 text-sm text-neutral-200 placeholder-neutral-600 px-3 py-2 focus:outline-none focus:border-amber-400/40 resize-none transition-colors"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {(() => {
+                const allColorsSelected = filamentColors.length === (colorId || 1) && filamentColors.every(c => c != null);
+                const needsDesc = colorId > 1 && !colorDescriptions.trim();
+                const canAdd = allColorsSelected && !needsDesc;
+                return (
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={!canAdd}
+                    title={needsDesc ? (lang === "pl" ? "Opisz przypisanie kolorów" : "Describe color assignment") : undefined}
+                    className={`mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                      canAdd
+                        ? "bg-amber-400 text-black hover:bg-amber-300 shadow-lg shadow-amber-400/20"
+                        : "bg-white/5 text-neutral-500 cursor-not-allowed border border-white/10"
+                    }`}
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                    {canAdd
+                      ? (lang === "pl" ? "Dodaj do koszyka" : lang === "de" ? "In den Warenkorb" : "Add to cart")
+                      : needsDesc
+                        ? (lang === "pl" ? "Opisz przypisanie kolorów" : lang === "de" ? "Farbzuweisung beschreiben" : "Describe color assignment")
+                        : (lang === "pl" ? "Wybierz kolory" : lang === "de" ? "Farben auswählen" : "Select colors")}
+                  </button>
+                );
+              })()}
+
+              {showToast && lastAdded && (
+                <AddToCartToast item={lastAdded} onClose={() => setShowToast(false)} />
+              )}
+            </>
           )}
         </div>
       )}
