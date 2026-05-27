@@ -288,6 +288,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
 
 // ---- Main StoneComposer ----
 export default function StoneComposer({ stoneRows, onChange, lang, gemstones }) {
+  const { isDark } = useTheme();
   function updateRow(idx, newRow) {
     const next = stoneRows.map((r, i) => i === idx ? newRow : r);
     onChange(next);
@@ -337,8 +338,12 @@ export default function StoneComposer({ stoneRows, onChange, lang, gemstones }) 
             disabled={!canAdd}
             className={`w-full py-2 rounded-xl border-dashed border text-xs transition-all ${
               canAdd
-                ? "border-white/10 text-neutral-500 hover:border-amber-400/30 hover:text-amber-400 cursor-pointer"
-                : "border-white/5 text-neutral-700 cursor-not-allowed opacity-50"
+                ? isDark
+                  ? "border-amber-400/40 text-amber-400 hover:border-amber-400 hover:bg-amber-400/5 cursor-pointer"
+                  : "border-amber-500 text-amber-700 hover:bg-amber-50 cursor-pointer font-medium"
+                : isDark
+                  ? "border-white/5 text-neutral-700 cursor-not-allowed opacity-50"
+                  : "border-neutral-200 text-neutral-400 cursor-not-allowed opacity-50"
             }`}
           >
             + {ADD_LABEL[lang] || ADD_LABEL.en}
