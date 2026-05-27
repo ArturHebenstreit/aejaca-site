@@ -1,9 +1,13 @@
 // ============================================================
 // 3D PRINT ESTIMATOR — Bambu Lab H2D  v1.3
 // ============================================================
-import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
-import { Upload, X, AlertTriangle } from "lucide-react";
+import { useState, useEffect, useMemo, useRef, lazy, Suspense, useCallback } from "react";
+import { Upload, X, AlertTriangle, ShoppingCart } from "lucide-react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
+import ColorPicker from "./ColorPicker.jsx";
+import AddToCartToast from "../AddToCartToast.jsx";
+import { useCart } from "../../cart/CartContext.jsx";
+import { useLanguage } from "../../i18n/LanguageContext.jsx";
 
 const STLViewer = lazy(() => import("./STLViewer.jsx"));
 
@@ -327,6 +331,15 @@ export default function Print3DCalc({ lang = "pl" }) {
   const [stlFile, setStlFile] = useState(null);
   const [stlFileName, setStlFileName] = useState("");
   const [stlScale, setStlScale] = useState(1);
+  const [wantOrder, setWantOrder] = useState(false);
+  const [filamentColor, setFilamentColor] = useState(null);
+  const [showToast, setShowToast] = useState(false);
+  const [lastAdded, setLastAdded] = useState(null);
+
+  const { addItem } = useCart();
+  const { lang: ctxLang } = useLanguage();
+  const showEur = lang === "en" || lang === "de";
+  const PLN_PER_EUR = 4.25;
 
   useEffect(() => {
     const mats = Object.keys(FILAMENTS[segment].materials);
@@ -364,6 +377,40 @@ export default function Print3DCalc({ lang = "pl" }) {
 
   const result = useMemo(() => calculate({ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, stlData: scaledStlData }, lang),
     [segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, scaledStlData, lang]);
+
+  const handleAddToCart = useCallback(() => {
+    if (!filamentColor) return;
+
+    const qTier = QUANTITY_TIERS.find(q => q.id === quantityId);
+
+    const unitPricePLN = result?.perPcPLN?.min ?? 0;
+    const unitPriceNetto = showEur
+      ? parseFloat((unitPricePLN / PLN_PER_EUR).toFixed(2))
+      : parseFloat(unitPricePLN.toFixed(2));
+
+    const item = {
+      type: "print3d",
+      stlFilename: stlFileName || null,
+      stlDims: stlData ? { x: +(stlData.bbox.x * 10).toFixed(1), y: +(stlData.bbox.y * 10).toFixed(1), z: +(stlData.bbox.z * 10).toFixed(1) } : null,
+      stlVolumeCm3: scaledStlData?.volumeCm3 || null,
+      material: materialKey,
+      materialId: materialKey,
+      color: filamentColor.name,
+      colorHex: filamentColor.hex || null,
+      colorNote: filamentColor.note || null,
+      segment: FILAMENTS[segment].label,
+      infill: t(INFILL_OPTIONS.find(i => i.id === infillId)?.label, lang),
+      precision: t(PRECISION.find(p => p.id === precisionId)?.label, lang),
+      colorCount: colorId,
+      qty: qTier?.qty ?? 1,
+      unitPriceNetto,
+      currency: showEur ? "EUR" : "PLN",
+    };
+
+    addItem(item);
+    setLastAdded(item);
+    setShowToast(true);
+  }, [filamentColor, segment, materialKey, infillId, colorId, precisionId, quantityId, stlFileName, stlData, scaledStlData, result, showEur, addItem, lang]);
 
   const matOptions = Object.entries(FILAMENTS[segment].materials).map(([k, v]) => ({
     id: k, label: k, sub: `${v.price_kg}zł`, img: FILAMENT_IMG[k],
@@ -407,6 +454,43 @@ export default function Print3DCalc({ lang = "pl" }) {
           t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
         ].join(" | ")} />
       </div>
+
+      {!wantOrder ? (
+        <button
+          onClick={() => { setWantOrder(true); setFilamentColor({ id: "black", name: "Czarny", hex: "#1a1a1a" }); }}
+          className="w-full mt-4 py-3 rounded-xl border border-amber-400/30 text-amber-400 text-sm font-medium hover:bg-amber-400/10 hover:border-amber-400/60 transition-all duration-200 flex items-center justify-center gap-2"
+        >
+          <ShoppingCart className="w-4 h-4" />
+          {lang === "pl" ? "Chcę zlecić wydruk" : lang === "de" ? "Druckauftrag erteilen" : "I want to order a print"}
+        </button>
+      ) : (
+        <div className="mt-4 rounded-xl border border-amber-400/20 bg-amber-400/[0.03] p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-xs font-bold uppercase tracking-wider text-amber-400">
+              {lang === "pl" ? "Kolor filamentu" : lang === "de" ? "Filamentfarbe" : "Filament color"}
+            </div>
+            <button onClick={() => setWantOrder(false)} className="text-neutral-500 hover:text-neutral-300 text-xs transition-colors">
+              {lang === "pl" ? "Anuluj" : lang === "de" ? "Abbrechen" : "Cancel"}
+            </button>
+          </div>
+          <ColorPicker value={filamentColor} onChange={setFilamentColor} lang={lang} />
+          <button
+            onClick={handleAddToCart}
+            disabled={!filamentColor}
+            className={`mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
+              filamentColor
+                ? "bg-amber-400 text-black hover:bg-amber-300 shadow-lg shadow-amber-400/20"
+                : "bg-white/5 text-neutral-500 cursor-not-allowed border border-white/10"
+            }`}
+          >
+            <ShoppingCart className="w-4 h-4" />
+            {lang === "pl" ? "Dodaj do koszyka" : lang === "de" ? "In den Warenkorb" : "Add to cart"}
+          </button>
+          {showToast && lastAdded && (
+            <AddToCartToast item={lastAdded} onClose={() => setShowToast(false)} />
+          )}
+        </div>
+      )}
 
       <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} preAttachedFile={stlFile} paramsSummary={[
         `${FILAMENTS[segment].label}: ${materialKey}`,
