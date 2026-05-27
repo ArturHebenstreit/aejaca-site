@@ -35,6 +35,8 @@ const LaserParametersPage = lazy(() => import("./pages/LaserParametersPage.jsx")
 const RingBlankPage = lazy(() => import("./pages/RingBlankPage.jsx"));
 const Reviews = lazy(() => import("./pages/Reviews.jsx"));
 const CartPage = lazy(() => import("./pages/CartPage.jsx"));
+const CheckoutPage = lazy(() => import("./pages/CheckoutPage.jsx"));
+const OrderConfirmationPage = lazy(() => import("./pages/OrderConfirmationPage.jsx"));
 const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 
 function LazyFallback() {
@@ -78,6 +80,8 @@ const app = (
                 <Route path="/privacy/" element={<Privacy />} />
                 <Route path="/reviews/" element={<Reviews />} />
                 <Route path="/cart" element={<CartPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>

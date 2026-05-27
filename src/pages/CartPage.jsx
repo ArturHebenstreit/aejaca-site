@@ -146,9 +146,12 @@ export default function CartPage() {
                 <ArrowLeft className="w-4 h-4" />
                 Dodaj więcej
               </Link>
-              <button className="flex-1 py-3 rounded-xl bg-amber-400 text-black font-semibold text-sm hover:bg-amber-300 transition-colors">
+              <Link
+                to="/checkout"
+                className="flex-1 py-3 rounded-xl bg-amber-400 text-black font-semibold text-sm hover:bg-amber-300 transition-colors text-center"
+              >
                 Przejdź do zamówienia →
-              </button>
+              </Link>
             </div>
           </div>
         )}
