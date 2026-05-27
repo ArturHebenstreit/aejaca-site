@@ -90,7 +90,7 @@ export default function CartPage() {
             {/* CTA */}
             <div className="flex gap-3 mt-4">
               <Link
-                to="/toolstudio/print-settings/"
+                to="/studio/?tab=3dprint"
                 className="flex items-center gap-2 px-4 py-3 rounded-xl border border-white/10 text-neutral-400 text-sm hover:border-white/20 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
