@@ -23,7 +23,7 @@ export default function CartPage() {
             <ShoppingCart className="w-16 h-16 text-neutral-700 mx-auto mb-4" />
             <p className="text-neutral-400 mb-6">Koszyk jest pusty</p>
             <Link
-              to="/toolstudio/print-settings/"
+              to="/studio/?tab=3dprint"
               className="px-6 py-3 rounded-xl bg-amber-400 text-black font-semibold text-sm hover:bg-amber-300 transition-colors"
             >
               Skonfiguruj wydruk 3D
