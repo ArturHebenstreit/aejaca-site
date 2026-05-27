@@ -159,18 +159,15 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
     // Quality multiplier
     let qualMul = 1.0;
     if (gem.hasGrades && (gem.id === "diamond" || gem.id === "lab_diamond")) {
-      const { DIAMOND_CLARITY, DIAMOND_COLOR } = require("./jewelryConfig.js");
       const cl = DIAMOND_CLARITY.find(c => c.id === row.clarityId);
       const co = DIAMOND_COLOR.find(c => c.id === row.colorId);
       if (cl && co) qualMul = cl.mul * co.mul;
     } else if (gem.hasGrades) {
-      const { GEM_QUALITY } = require("./jewelryConfig.js");
       const q = GEM_QUALITY.find(q => q.id === row.qualityId);
       if (q) qualMul = q.mul;
     }
 
     // Cert
-    const { CERTIFICATIONS } = require("./jewelryConfig.js");
     const cert = CERTIFICATIONS.find(c => c.id === row.certId);
     const certMul = cert?.mul ?? 1.0;
 
@@ -305,21 +302,29 @@ export default function JewelryCalc({ lang = "pl" }) {
   // Geometry + client supply — productForm is derived from typeId (no separate selection needed)
   const productForm = useMemo(() => TYPE_TO_FORM[typeId] ?? null, [typeId]);
   const [dimensions, setDimensions] = useState({});     // fieldId: value
-  // Reset dimensions whenever the jewelry type (and thus product form) changes
-  useEffect(() => { setDimensions({}); }, [typeId]);
+  // Reset dimensions whenever the jewelry type changes — populate defaults immediately
+  useEffect(() => {
+    if (!productForm) { setDimensions({}); return; }
+    const pt = getProductType(productForm);
+    if (!pt) { setDimensions({}); return; }
+    const defaults = {};
+    for (const field of pt.fields) {
+      if (field.default !== undefined) {
+        defaults[field.id] = field.default;
+      }
+    }
+    setDimensions(defaults);
+  }, [productForm]);
   const [clientSuppliesMetal, setClientSuppliesMetal] = useState(false);
-  const [clientSuppliesStones, setClientSuppliesStones] = useState(false);
   const [metalId, setMetalId] = useState("silver");
   const [weightId, setWeightId] = useState("light");
   const [methodId, setMethodId] = useState("cast");
   const [platingId, setPlatingId] = useState("none");
-  const [gemId, setGemId] = useState("none");
-  const [stoneSizeId, setStoneSizeId] = useState("medium");
-  const [stoneCountId, setStoneCountId] = useState("1");
-  const [clarityId, setClarityId] = useState("VS");
-  const [colorId, setColorId] = useState("GH");
-  const [qualityId, setQualityId] = useState("A");
-  const [certId, setCertId] = useState("none");
+  // Stone rows — up to 10 different stone entries
+  const [stoneRows, setStoneRows] = useState([
+    { rowId: "row0", gemId: "none", stoneSizeId: "small", count: 1, suppliedBy: "studio",
+      clarityId: "VS", colorId: "GH", qualityId: "A", certId: "none" }
+  ]);
 
   // Renovation
   const [renoServices, setRenoServices] = useState([]);
@@ -331,8 +336,6 @@ export default function JewelryCalc({ lang = "pl" }) {
   const [repairJewType, setRepairJewType] = useState("ring_g");
   const [repairMetal, setRepairMetal] = useState("gold_g");
 
-  const selectedGem = resolvedGemstones.find(g => g.id === gemId);
-  const showGemDetails = selectedGem && selectedGem.id !== "none" && !selectedGem.custom && selectedGem.basePLN > 0;
   const types = JEWELRY_TYPES[lineId] || [];
 
   // Live geometric weight from WeightEngine (when productForm + dimensions are set)
@@ -348,8 +351,8 @@ export default function JewelryCalc({ lang = "pl" }) {
   const result = useMemo(() => {
     if (serviceId === "new") {
       return calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
-        gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId,
-        clientSuppliesMetal, clientSuppliesStones,
+        stoneRows, qtyId,
+        clientSuppliesMetal,
         overrideWeightG: weightResult?.nettoG ?? null }, lang, rates, resolvedGemstones);
     }
     if (serviceId === "renovation") {
@@ -357,8 +360,8 @@ export default function JewelryCalc({ lang = "pl" }) {
     }
     return calcRepair({ jewTypeId: repairJewType, metalTypeId: repairMetal, repairId, qtyId }, lang);
   }, [serviceId, lineId, typeId, metalId, weightId, methodId, platingId,
-    gemId, stoneSizeId, stoneCountId, clarityId, colorId, qualityId, certId, qtyId,
-    clientSuppliesMetal, clientSuppliesStones, weightResult,
+    stoneRows, qtyId,
+    clientSuppliesMetal, weightResult,
     renoServices, renoJewType, renoMetal, repairId, repairJewType, repairMetal, lang, rates, resolvedGemstones]);
 
   function toggleRenoService(id) {
@@ -702,130 +705,13 @@ export default function JewelryCalc({ lang = "pl" }) {
           </CalcCard>
 
           <CalcCard stepNum={step()} label={l.gem}>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-3">
-              {resolvedGemstones.map(g => {
-                const active = gemId === g.id;
-                const label = t(g.label, lang);
-                const hasImg = !!g.img;
-                const isSpecial = g.id === "none" || g.custom;
-
-                return (
-                  <button key={g.id}
-                    onClick={() => { setGemId(g.id); trackCalc("jewelry", "gem", g.id); }}
-                    className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                      isSpecial && !active ? "border-dashed border-white/10 hover:border-white/20" :
-                      isSpecial && active ? "border-dashed border-amber-400 bg-amber-400/10" :
-                      active ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10" :
-                      "border-white/10 bg-white/[0.02] hover:border-white/20"
-                    }`}>
-                    {/* Image or placeholder */}
-                    <div className={`w-full aspect-square rounded-lg overflow-hidden ${
-                      hasImg ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
-                    }`}>
-                      {hasImg ? (
-                        <img src={g.img} alt={label} loading="lazy"
-                          className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`} />
-                      ) : (
-                        <span className={`text-2xl ${isSpecial ? "opacity-40" : "opacity-60"}`}>
-                          {g.id === "none" ? "∅" : g.custom ? "?" : "◆"}
-                        </span>
-                      )}
-                    </div>
-                    {/* Label */}
-                    <span className={`text-[10px] sm:text-[11px] text-center leading-tight break-words ${
-                      active ? "text-amber-300 font-medium" : "text-neutral-400"
-                    }`}>
-                      {label}
-                    </span>
-                    {/* LAB badge */}
-                    {g.lab && (
-                      <span className={`absolute top-1 right-1 text-[8px] px-1 py-0.5 rounded font-semibold tracking-wider ${
-                        active ? "bg-amber-400/30 text-amber-200" : "bg-black/60 text-amber-400/80"
-                      }`}>LAB</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-            {/* Client supplies stones toggle */}
-            <div className="mt-4 flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200
-              border-white/8 hover:border-amber-400/20"
-              onClick={() => setClientSuppliesStones(v => !v)}
-              style={clientSuppliesStones ? {borderColor: 'rgba(251,191,36,0.25)', background: 'rgba(251,191,36,0.05)'} : {}}
-            >
-              <button
-                type="button"
-                role="switch"
-                aria-checked={clientSuppliesStones}
-                onClick={e => { e.stopPropagation(); setClientSuppliesStones(v => !v); }}
-                className={`relative shrink-0 w-10 h-5 rounded-full transition-colors duration-200 ${
-                  clientSuppliesStones ? "bg-amber-500" : "bg-neutral-700"
-                }`}
-              >
-                <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${
-                  clientSuppliesStones ? "translate-x-5" : "translate-x-0"
-                }`} />
-              </button>
-              <div>
-                <div className="text-sm font-medium text-neutral-300">
-                  {{ pl: "Kamienie od klienta", en: "Client supplies stones", de: "Steine vom Kunden" }[lang]}
-                </div>
-                {clientSuppliesStones && (
-                  <div className="text-xs text-neutral-500 mt-0.5">
-                    {{ pl: "Odejmiemy koszt kamieni — ubezpieczamy je na czas realizacji", en: "Stone cost excluded — we insure them during production", de: "Steinkosten entfallen — werden während der Produktion versichert" }[lang]}
-                  </div>
-                )}
-              </div>
-            </div>
+            <StoneComposer
+              stoneRows={stoneRows}
+              onChange={setStoneRows}
+              lang={lang}
+              gemstones={resolvedGemstones}
+            />
           </CalcCard>
-
-          {showGemDetails && (
-            <>
-              <CalcCard stepNum={step()} label={l.stoneSize}>
-                <div className="flex flex-wrap gap-3">
-                  {STONE_SIZES.map(s => {
-                    const active = stoneSizeId === s.id;
-                    const v = s.visual;
-                    return (
-                      <button key={s.id} onClick={() => setStoneSizeId(s.id)}
-                        className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all min-w-[90px] ${
-                          s.custom && !active ? "border-dashed border-white/10 text-neutral-400 italic text-xs" :
-                          active ? "border-amber-400 bg-amber-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
-                        }`}>
-                        {v && <div className="rounded-full" style={{ width: v.gemD, height: v.gemD, background: active ? "rgb(251 191 36 / 0.6)" : "rgb(255 255 255 / 0.3)" }} />}
-                        <span className={`text-[11px] text-center leading-tight ${active ? "text-amber-300 font-medium" : "text-neutral-400"}`}>{t(s.label, lang)}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </CalcCard>
-
-              <CalcCard stepNum={step()} label={l.stoneCount}>
-                <Chips options={STONE_COUNTS} value={stoneCountId} onChange={setStoneCountId} lang={lang} />
-              </CalcCard>
-
-              {(selectedGem.id === "diamond" || selectedGem.id === "lab_diamond") && (
-                <>
-                  <CalcCard stepNum={step()} label={l.clarity}>
-                    <Chips options={DIAMOND_CLARITY} value={clarityId} onChange={setClarityId} lang={lang} />
-                  </CalcCard>
-                  <CalcCard stepNum={step()} label={l.color}>
-                    <Chips options={DIAMOND_COLOR} value={colorId} onChange={setColorId} lang={lang} />
-                  </CalcCard>
-                </>
-              )}
-
-              {selectedGem.hasGrades && selectedGem.id !== "diamond" && (
-                <CalcCard stepNum={step()} label={l.quality}>
-                  <Chips options={GEM_QUALITY} value={qualityId} onChange={setQualityId} lang={lang} />
-                </CalcCard>
-              )}
-
-              <CalcCard stepNum={step()} label={l.cert}>
-                <Chips options={CERTIFICATIONS} value={certId} onChange={setCertId} lang={lang} />
-              </CalcCard>
-            </>
-          )}
         </>
       )}
 
@@ -1023,7 +909,11 @@ export default function JewelryCalc({ lang = "pl" }) {
                t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
                t(METALS.find(m => m.id === metalId)?.label, lang),
                t(METHODS.find(m => m.id === methodId)?.label, lang),
-               gemId !== "none" ? t(resolvedGemstones.find(g => g.id === gemId)?.label, lang) : ""].filter(Boolean).join(" | ")
+               ...stoneRows.filter(r => r.gemId !== "none").map(r => {
+                 const gem = resolvedGemstones.find(g => g.id === r.gemId);
+                 const sz = STONE_SIZES.find(s => s.id === r.stoneSizeId);
+                 return `${r.count}× ${t(gem?.label, lang) ?? r.gemId} (${t(sz?.label, lang) ?? r.stoneSizeId})${r.suppliedBy === "client" ? " [klient]" : ""}`;
+               })].filter(Boolean).join(" | ")
             : serviceId === "renovation"
               ? `${t(SERVICE_TYPES[1].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === renoJewType)?.label, lang)} | ${renoServices.map(id => t(RENOVATION_SERVICES.find(s => s.id === id)?.label, lang)).join(", ")}`
               : `${t(SERVICE_TYPES[2].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === repairJewType)?.label, lang)} | ${t(REPAIR_SERVICES.find(r => r.id === repairId)?.label, lang)}`
@@ -1036,7 +926,11 @@ export default function JewelryCalc({ lang = "pl" }) {
              t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
              t(METALS.find(m => m.id === metalId)?.label, lang),
              t(METHODS.find(m => m.id === methodId)?.label, lang),
-             gemId !== "none" ? t(resolvedGemstones.find(g => g.id === gemId)?.label, lang) : ""].filter(Boolean).join(" | ")
+             ...stoneRows.filter(r => r.gemId !== "none").map(r => {
+               const gem = resolvedGemstones.find(g => g.id === r.gemId);
+               const sz = STONE_SIZES.find(s => s.id === r.stoneSizeId);
+               return `${r.count}× ${t(gem?.label, lang) ?? r.gemId} (${t(sz?.label, lang) ?? r.stoneSizeId})${r.suppliedBy === "client" ? " [klient]" : ""}`;
+             })].filter(Boolean).join(" | ")
           : serviceId === "renovation"
             ? `${t(SERVICE_TYPES[1].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === renoJewType)?.label, lang)} | ${renoServices.map(id => t(RENOVATION_SERVICES.find(s => s.id === id)?.label, lang)).join(", ")}`
             : `${t(SERVICE_TYPES[2].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === repairJewType)?.label, lang)} | ${t(REPAIR_SERVICES.find(r => r.id === repairId)?.label, lang)}`
