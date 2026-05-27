@@ -17,7 +17,6 @@ import { getProductType } from "./jewelry/productConfig.js";
 import { calcWeight as computeWeight } from "./jewelry/WeightEngine.js";
 import DimensionInputs from "./jewelry/DimensionInputs.jsx";
 import WeightDisplay from "./jewelry/WeightDisplay.jsx";
-import ClientSupplyPanel from "./jewelry/ClientSupplyPanel.jsx";
 
 // Map JEWELRY_TYPES ids → PRODUCT_TYPES ids (for dimension engine)
 const TYPE_TO_FORM = {
@@ -493,15 +492,6 @@ export default function JewelryCalc({ lang = "pl" }) {
                     clientSuppliesMetal={clientSuppliesMetal}
                   />
                 )}
-
-                {/* Client supply toggles */}
-                <ClientSupplyPanel
-                  suppliesMetal={clientSuppliesMetal}
-                  suppliesStones={clientSuppliesStones}
-                  onToggleMetal={() => setClientSuppliesMetal(v => !v)}
-                  onToggleStones={() => setClientSuppliesStones(v => !v)}
-                  lang={lang}
-                />
               </div>
             ) : (
               <p className="text-xs text-neutral-500">
@@ -550,6 +540,36 @@ export default function JewelryCalc({ lang = "pl" }) {
                   </button>
                 );
               })}
+            </div>
+            {/* Client supplies metal toggle */}
+            <div className="mt-4 flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200
+              border-white/8 hover:border-amber-400/20"
+              onClick={() => setClientSuppliesMetal(v => !v)}
+              style={clientSuppliesMetal ? {borderColor: 'rgba(251,191,36,0.25)', background: 'rgba(251,191,36,0.05)'} : {}}
+            >
+              <button
+                type="button"
+                role="switch"
+                aria-checked={clientSuppliesMetal}
+                onClick={e => { e.stopPropagation(); setClientSuppliesMetal(v => !v); }}
+                className={`relative shrink-0 w-10 h-5 rounded-full transition-colors duration-200 ${
+                  clientSuppliesMetal ? "bg-amber-500" : "bg-neutral-700"
+                }`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${
+                  clientSuppliesMetal ? "translate-x-5" : "translate-x-0"
+                }`} />
+              </button>
+              <div>
+                <div className="text-sm font-medium text-neutral-300">
+                  {{ pl: "Kruszec od klienta", en: "Client supplies metal", de: "Metall vom Kunden" }[lang]}
+                </div>
+                {clientSuppliesMetal && (
+                  <div className="text-xs text-neutral-500 mt-0.5">
+                    {{ pl: "Odejmiemy koszt metalu — dostarcz kruszec przed realizacją", en: "Metal cost excluded — supply raw metal before production", de: "Metallkosten entfallen — Rohmetall vor der Produktion liefern" }[lang]}
+                  </div>
+                )}
+              </div>
             </div>
           </CalcCard>
 
@@ -710,6 +730,36 @@ export default function JewelryCalc({ lang = "pl" }) {
                   </button>
                 );
               })}
+            </div>
+            {/* Client supplies stones toggle */}
+            <div className="mt-4 flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200
+              border-white/8 hover:border-amber-400/20"
+              onClick={() => setClientSuppliesStones(v => !v)}
+              style={clientSuppliesStones ? {borderColor: 'rgba(251,191,36,0.25)', background: 'rgba(251,191,36,0.05)'} : {}}
+            >
+              <button
+                type="button"
+                role="switch"
+                aria-checked={clientSuppliesStones}
+                onClick={e => { e.stopPropagation(); setClientSuppliesStones(v => !v); }}
+                className={`relative shrink-0 w-10 h-5 rounded-full transition-colors duration-200 ${
+                  clientSuppliesStones ? "bg-amber-500" : "bg-neutral-700"
+                }`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${
+                  clientSuppliesStones ? "translate-x-5" : "translate-x-0"
+                }`} />
+              </button>
+              <div>
+                <div className="text-sm font-medium text-neutral-300">
+                  {{ pl: "Kamienie od klienta", en: "Client supplies stones", de: "Steine vom Kunden" }[lang]}
+                </div>
+                {clientSuppliesStones && (
+                  <div className="text-xs text-neutral-500 mt-0.5">
+                    {{ pl: "Odejmiemy koszt kamieni — ubezpieczamy je na czas realizacji", en: "Stone cost excluded — we insure them during production", de: "Steinkosten entfallen — werden während der Produktion versichert" }[lang]}
+                  </div>
+                )}
+              </div>
             </div>
           </CalcCard>
 
