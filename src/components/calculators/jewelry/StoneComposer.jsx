@@ -43,13 +43,13 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
   const isConfigured = row.gemId !== "none";
   const { isDark } = useTheme();
 
-  // Theme-aware pill classes — vivid in both dark and light mode
+  // Theme-aware pill classes — match JewelryCalc "Brak" card style in light mode
   const activePill = isDark
     ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
-    : "border-amber-600 bg-amber-100 text-amber-800 font-semibold shadow-sm shadow-amber-500/20";
+    : "border-amber-400 bg-amber-400/10 text-amber-700 font-medium";
   const inactivePill = isDark
     ? "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-    : "border-neutral-200 bg-white text-neutral-500 hover:border-neutral-400";
+    : "border-neutral-200 bg-white/[0.02] text-neutral-600 hover:border-neutral-400";
 
   function update(patch) {
     onChange({ ...row, ...patch });
@@ -63,7 +63,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
     }`}>
       {/* Row header: remove button */}
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[10px] uppercase tracking-wider text-neutral-500 font-bold">
+        <span className="text-[10px] uppercase tracking-wider text-neutral-400 [data-theme='light']:text-neutral-600 font-bold">
           {{ pl: "Kamień", en: "Stone", de: "Stein" }[lang]}
         </span>
         {canRemove && (
@@ -95,8 +95,8 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                 className={`relative flex flex-col items-center gap-1 p-1.5 rounded-xl border transition-all shrink-0 w-14 ${
                   isNoneLocked ? "border-dashed border-white/5 opacity-30 cursor-not-allowed" :
                   isSpecial && !active ? (isDark ? "border-dashed border-white/10 hover:border-white/20" : "border-dashed border-neutral-200 hover:border-neutral-400") :
-                  isSpecial && active ? (isDark ? "border-dashed border-amber-400 bg-amber-400/25 shadow-md shadow-amber-400/30" : "border-dashed border-amber-600 bg-amber-100 shadow-md shadow-amber-500/20") :
-                  active ? (isDark ? "border-amber-400 bg-amber-400/25 shadow-md shadow-amber-400/30" : "border-amber-600 bg-amber-100 shadow-md shadow-amber-500/20") :
+                  isSpecial && active ? (isDark ? "border-dashed border-amber-400 bg-amber-400/25 shadow-md shadow-amber-400/30" : "border-dashed border-amber-400 bg-amber-400/10") :
+                  active ? (isDark ? "border-amber-400 bg-amber-400/25 shadow-md shadow-amber-400/30" : "border-amber-400 bg-amber-400/10") :
                   (isDark ? "border-white/10 bg-white/[0.02] hover:border-white/20" : "border-neutral-200 bg-white hover:border-neutral-400")
                 }`}
               >
@@ -113,7 +113,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                   )}
                 </div>
                 <span className={`text-[9px] text-center leading-tight break-all ${
-                  active ? (isDark ? "text-amber-200 font-semibold" : "text-amber-800 font-semibold") : "text-neutral-500"
+                  active ? (isDark ? "text-amber-200 font-semibold" : "text-amber-900 font-semibold") : (isDark ? "text-neutral-500" : "text-neutral-600")
                 }`}>
                   {label}
                 </span>
@@ -135,7 +135,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
         <>
           {/* Size pills — always shown for configured stones incl. custom */}
           <div>
-            <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+            <div className="text-[10px] text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
               {{ pl: "Wielkość", en: "Size", de: "Größe" }[lang]}
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -164,7 +164,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
 
           {/* Count — always shown for configured stones incl. custom */}
           <div>
-            <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+            <div className="text-[10px] text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
               {{ pl: "Liczba kamieni", en: "Count", de: "Anzahl" }[lang]}
             </div>
             <div className="flex items-center gap-2">
@@ -192,7 +192,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
 
           {/* Who supplies — always shown for configured stones incl. custom */}
           <div>
-            <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+            <div className="text-[10px] text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
               {{ pl: "Kto dostarcza kamień", en: "Who supplies stone", de: "Wer liefert den Stein" }[lang]}
             </div>
             <div className="flex gap-2">
@@ -217,7 +217,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
               {showGrades && isDiamond && (
                 <>
                   <div>
-                    <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+                    <div className="text-[10px] text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
                       {{ pl: "Czystość", en: "Clarity", de: "Reinheit" }[lang]}
                     </div>
                     <div className="flex flex-wrap gap-1.5">
@@ -230,7 +230,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                     </div>
                   </div>
                   <div>
-                    <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+                    <div className="text-[10px] text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
                       {{ pl: "Barwa", en: "Color", de: "Farbe" }[lang]}
                     </div>
                     <div className="flex flex-wrap gap-1.5">
@@ -248,7 +248,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
               {/* Colored gem quality */}
               {showGrades && !isDiamond && (
                 <div>
-                  <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+                  <div className="text-[10px] text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
                     {{ pl: "Jakość", en: "Quality", de: "Qualität" }[lang]}
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -265,7 +265,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
               {/* Certificate — only for diamond / lab_diamond */}
               {isDiamond && (
                 <div>
-                  <div className="text-[10px] text-neutral-500 mb-1.5 uppercase tracking-wide">
+                  <div className="text-[10px] text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
                     {{ pl: "Certyfikat", en: "Certificate", de: "Zertifikat" }[lang]}
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -288,6 +288,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
 
 // ---- Main StoneComposer ----
 export default function StoneComposer({ stoneRows, onChange, lang, gemstones }) {
+  const { isDark } = useTheme();
   function updateRow(idx, newRow) {
     const next = stoneRows.map((r, i) => i === idx ? newRow : r);
     onChange(next);
@@ -337,8 +338,12 @@ export default function StoneComposer({ stoneRows, onChange, lang, gemstones }) 
             disabled={!canAdd}
             className={`w-full py-2 rounded-xl border-dashed border text-xs transition-all ${
               canAdd
-                ? "border-white/10 text-neutral-500 hover:border-amber-400/30 hover:text-amber-400 cursor-pointer"
-                : "border-white/5 text-neutral-700 cursor-not-allowed opacity-50"
+                ? isDark
+                  ? "border-amber-400/40 text-amber-400 hover:border-amber-400 hover:bg-amber-400/5 cursor-pointer"
+                  : "border-amber-500 text-amber-700 hover:bg-amber-50 cursor-pointer font-medium"
+                : isDark
+                  ? "border-white/5 text-neutral-700 cursor-not-allowed opacity-50"
+                  : "border-neutral-200 text-neutral-400 cursor-not-allowed opacity-50"
             }`}
           >
             + {ADD_LABEL[lang] || ADD_LABEL.en}
