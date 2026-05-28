@@ -7,6 +7,8 @@ import cron from "node-cron";
 import { createHash } from "crypto";
 import { rateLimit } from "express-rate-limit";
 import { getSystemPrompt, detectHotLead } from "./context.js";
+import Stripe from "stripe";
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder");
 
 const app = express();
 app.set("trust proxy", true);
@@ -1045,6 +1047,141 @@ app.post("/api/orders/create", express.json(), async (req, res) => {
     console.error('POST /api/orders/create error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+// ── Stripe: create-payment-intent ──────────────────────────────────────────
+app.post("/api/stripe/create-payment-intent", express.json(), async (req, res) => {
+  try {
+    if (!pool) return res.status(503).json({ error: "Database unavailable" });
+    const { items, customer, shipping, pricing } = req.body;
+
+    // Basic validation
+    if (!items?.length || !customer?.email || !customer?.name) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Calculate amount in grosze (PLN smallest unit = grosz = 1/100 PLN)
+    const amountGrosze = Math.round((pricing.totalBrutto || 0) * 100);
+    if (amountGrosze < 50) {
+      return res.status(400).json({ error: "Amount too small" });
+    }
+
+    // Insert order with awaiting_payment status
+    const orderRes = await pool.query(`
+      INSERT INTO orders (
+        order_number, status,
+        customer_name, customer_email, customer_phone, company_name, vat_id,
+        address, postal_code, city, country,
+        shipping_method, shipping_cost,
+        subtotal_netto, vat_rate, vat_amount, total_brutto, currency,
+        cart_snapshot
+      ) VALUES (
+        '', 'awaiting_payment',
+        $1, $2, $3, $4, $5,
+        $6, $7, $8, $9,
+        $10, $11,
+        $12, $13, $14, $15, $16,
+        $17
+      ) RETURNING id, order_number
+    `, [
+      customer.name, customer.email, customer.phone || null, customer.company || null, customer.vatId || null,
+      customer.address, customer.postalCode, customer.city, customer.country,
+      shipping.method, shipping.cost,
+      pricing.subtotalNetto, pricing.vatRate, pricing.vatAmount, pricing.totalBrutto, pricing.currency || 'PLN',
+      JSON.stringify(items)
+    ]);
+
+    const orderId = orderRes.rows[0].id;
+    let orderNumber = orderRes.rows[0].order_number;
+    if (!orderNumber) {
+      orderNumber = `AEJ-${new Date().getFullYear()}-${String(orderId).padStart(5, '0')}`;
+      await pool.query('UPDATE orders SET order_number=$1 WHERE id=$2', [orderNumber, orderId]);
+    }
+
+    // Insert order items
+    for (const item of items) {
+      await pool.query(`
+        INSERT INTO order_items (
+          order_id, item_type, stl_filename, stl_dims, stl_volume_cm3,
+          material, segment, colors, color_descriptions,
+          infill, precision_label, color_count, qty, unit_price_netto, currency
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+      `, [
+        orderId, item.type || 'print3d', item.stlFilename || null,
+        item.stlDims ? JSON.stringify(item.stlDims) : null, item.stlVolumeCm3 || null,
+        item.material || null, item.segment || null,
+        item.colors ? JSON.stringify(item.colors) : null, item.colorDescriptions || null,
+        item.infill || null, item.precision || null, item.colorCount || null,
+        item.qty || 1, item.unitPriceNetto || 0, item.currency || 'PLN'
+      ]);
+    }
+
+    // Create Stripe PaymentIntent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amountGrosze,
+      currency: 'pln',
+      metadata: {
+        orderId: String(orderId),
+        orderNumber,
+        customerEmail: customer.email,
+      },
+      receipt_email: customer.email,
+      description: `AEJaCA zamówienie ${orderNumber}`,
+    });
+
+    // Save payment_intent_id to order
+    await pool.query('UPDATE orders SET payment_intent_id=$1 WHERE id=$2', [paymentIntent.id, orderId]);
+
+    res.status(201).json({ clientSecret: paymentIntent.client_secret, orderNumber });
+  } catch (err) {
+    console.error('POST /api/stripe/create-payment-intent error:', err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ── Stripe: webhook ─────────────────────────────────────────────────────────
+app.post("/api/stripe/webhook", express.raw({ type: 'application/json' }), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  let event;
+  try {
+    if (webhookSecret) {
+      event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    } else {
+      event = JSON.parse(req.body.toString());
+    }
+  } catch (err) {
+    console.error('Stripe webhook signature error:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === 'payment_intent.succeeded') {
+    const pi = event.data.object;
+    try {
+      await pool.query(
+        `UPDATE orders SET status='pending', updated_at=NOW() WHERE payment_intent_id=$1`,
+        [pi.id]
+      );
+      console.log(`Order updated to pending for payment_intent ${pi.id}`);
+    } catch (err) {
+      console.error('Webhook DB update error:', err);
+    }
+  }
+
+  if (event.type === 'payment_intent.payment_failed') {
+    const pi = event.data.object;
+    try {
+      await pool.query(
+        `UPDATE orders SET status='payment_failed', updated_at=NOW() WHERE payment_intent_id=$1`,
+        [pi.id]
+      );
+    } catch (err) {
+      console.error('Webhook payment_failed DB error:', err);
+    }
+  }
+
+  res.json({ received: true });
 });
 
 app.listen(PORT, () => console.log(`AEJaCA Chat API running on :${PORT}`));

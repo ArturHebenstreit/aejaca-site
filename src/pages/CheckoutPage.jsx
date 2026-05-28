@@ -2,8 +2,12 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useCart } from "../cart/CartContext.jsx";
 import { ArrowLeft, Package, Truck, MapPin } from "lucide-react";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 
 const API_BASE = import.meta.env.VITE_CHAT_API_URL || "https://api.aejaca.com";
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "pk_test_placeholder");
 
 const EU_COUNTRIES = [
   "PL","DE","FR","AT","BE","BG","HR","CY","CZ","DK","EE","FI","GR","HU",
@@ -114,6 +118,57 @@ const inputCls = (error) =>
       : "border-white/10 focus:border-amber-400/50 focus:ring-amber-400/30"
   }`;
 
+function StripePaymentForm({ orderNumber, totalBrutto }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState(null);
+
+  async function handlePay(e) {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+    setPaying(true);
+    setPayError(null);
+
+    const returnUrl = `${window.location.origin}/order-confirmation?order=${orderNumber}`;
+
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: { return_url: returnUrl },
+    });
+
+    if (error) {
+      setPayError(error.message || "Wystąpił błąd płatności. Spróbuj ponownie.");
+      setPaying(false);
+    }
+    // On success Stripe redirects automatically
+  }
+
+  return (
+    <div className="rounded-xl border border-amber-400/30 bg-amber-400/[0.02] p-5 mb-4">
+      <p className="text-xs font-bold uppercase tracking-wider text-amber-400 mb-4">Płatność</p>
+      <form onSubmit={handlePay}>
+        <PaymentElement className="mb-4" />
+        {payError && <p className="text-sm text-red-400 mb-3">{payError}</p>}
+        <button
+          type="submit"
+          disabled={paying || !stripe}
+          className="w-full py-4 rounded-xl bg-amber-400 text-black font-bold text-sm hover:bg-amber-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+        >
+          {paying ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin inline-block" />
+              Przetwarzanie...
+            </span>
+          ) : (
+            `Zapłać ${totalBrutto.toFixed(2).replace(".", ",")} PLN`
+          )}
+        </button>
+      </form>
+    </div>
+  );
+}
+
 export default function CheckoutPage() {
   const { items, totalNetto, clearCart } = useCart();
   const navigate = useNavigate();
@@ -126,7 +181,12 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
 
+  const [clientSecret, setClientSecret] = useState(null);
+  const [orderNumber, setOrderNumber] = useState(null);
+  const [paymentStep, setPaymentStep] = useState(false);
+
   const firstErrorRef = useRef(null);
+  const paymentSectionRef = useRef(null);
 
   // Redirect if cart is empty
   useEffect(() => {
@@ -242,7 +302,7 @@ export default function CheckoutPage() {
         },
       };
 
-      const res = await fetch(`${API_BASE}/api/orders/create`, {
+      const res = await fetch(`${API_BASE}/api/stripe/create-payment-intent`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -250,8 +310,11 @@ export default function CheckoutPage() {
 
       if (res.status === 201) {
         const data = await res.json();
+        setClientSecret(data.clientSecret);
+        setOrderNumber(data.orderNumber);
         clearCart();
-        navigate(`/order-confirmation?order=${data.orderNumber}`);
+        setPaymentStep(true);
+        setTimeout(() => paymentSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
       } else {
         setSubmitError(
           "Wystąpił błąd. Spróbuj ponownie lub skontaktuj się z nami."
@@ -266,7 +329,7 @@ export default function CheckoutPage() {
     }
   }
 
-  if (items.length === 0) return null;
+  if (items.length === 0 && !paymentStep) return null;
 
   return (
     <div className="min-h-screen bg-neutral-950 pt-24 pb-16">
@@ -564,25 +627,54 @@ export default function CheckoutPage() {
             </div>
           </SectionBlock>
 
-          {/* Submit */}
-          {submitError && (
-            <p className="text-sm text-red-400 mb-3 text-center">{submitError}</p>
+          {/* Submit — only shown before payment step */}
+          {!paymentStep && (
+            <>
+              {submitError && (
+                <p className="text-sm text-red-400 mb-3 text-center">{submitError}</p>
+              )}
+              <button
+                type="submit"
+                disabled={submitting || !agree1 || !agree2}
+                className="w-full py-4 rounded-xl bg-amber-400 text-black font-bold text-sm hover:bg-amber-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin inline-block" />
+                    Wysyłanie...
+                  </span>
+                ) : (
+                  "Przejdź do płatności →"
+                )}
+              </button>
+            </>
           )}
-          <button
-            type="submit"
-            disabled={submitting || !agree1 || !agree2}
-            className="w-full py-4 rounded-xl bg-amber-400 text-black font-bold text-sm hover:bg-amber-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {submitting ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin inline-block" />
-                Wysyłanie...
-              </span>
-            ) : (
-              "Złóż zamówienie"
-            )}
-          </button>
         </form>
+
+        {/* Section 7: Stripe Payment Element — revealed after form submission */}
+        <div ref={paymentSectionRef}>
+          {paymentStep && clientSecret && (
+            <Elements
+              stripe={stripePromise}
+              options={{
+                clientSecret,
+                appearance: {
+                  theme: "night",
+                  variables: {
+                    colorPrimary: "#fbbf24",
+                    colorBackground: "#171717",
+                    colorText: "#ffffff",
+                    colorDanger: "#f87171",
+                    fontFamily: "Inter, sans-serif",
+                    borderRadius: "8px",
+                  },
+                },
+              }}
+            >
+              <StripePaymentForm orderNumber={orderNumber} totalBrutto={totalBrutto} />
+            </Elements>
+          )}
+        </div>
       </div>
     </div>
   );

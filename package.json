@@ -12,6 +12,8 @@
     "db:schema-filaments": "psql $DATABASE_URL -f scripts/filament-schema.sql"
   },
   "dependencies": {
+    "@stripe/react-stripe-js": "^6.4.0",
+    "@stripe/stripe-js": "^9.7.0",
     "lucide-react": "^0.536.0",
     "pg": "^8.13.0",
     "react": "^18.2.0",
