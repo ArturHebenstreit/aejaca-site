@@ -58,12 +58,14 @@ export function buildLocalBusinessSchema() {
     founder: { "@type": "Person", name: "Artur Hebenstreit" },
     address: {
       "@type": "PostalAddress",
+      addressLocality: "Józefosław",
+      addressRegion: "Mazowieckie",
       addressCountry: "PL",
     },
     geo: {
       "@type": "GeoCoordinates",
-      latitude: "50.0647",
-      longitude: "19.9450",
+      latitude: "52.0736",
+      longitude: "21.0724",
     },
     areaServed: [
       { "@type": "Country", name: "Poland" },
@@ -72,7 +74,7 @@ export function buildLocalBusinessSchema() {
     ],
     serviceArea: {
       "@type": "GeoCircle",
-      geoMidpoint: { "@type": "GeoCoordinates", latitude: "50.0647", longitude: "19.9450" },
+      geoMidpoint: { "@type": "GeoCoordinates", latitude: "52.0736", longitude: "21.0724" },
       geoRadius: "5000",
     },
     priceRange: "€€",
