@@ -9,6 +9,7 @@
 /returns    /returns/    301
 /shipping   /shipping/   301
 /privacy    /privacy/    301
+/reviews    /reviews/    301
 
 # SPA catch-all — must be last
 /*    /index.html   200
