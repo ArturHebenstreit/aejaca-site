@@ -30,22 +30,22 @@ export const SITE = {
 export const SEO = {
   home: {
     pl: {
-      title: "AEJaCA, Biżuteria Artystyczna i sTuDiO Fabrykacji",
-      description: "AEJaCA, Artisan Elegance Jewelry and Crafted Art. Ręcznie robiona biżuteria ze srebra i złota + studio druku 3D, grawerowania laserowego i odlewów.",
-      keywords: "biżuteria ręcznie robiona, srebro, kamienie szlachetne, druk 3D, grawerowanie laserowe, AEJaCA, Artisan Elegance Jewelry and Crafted Art",
-      ogAlt: "Biżuteria AEJaCA, ręcznie robiona z kamieniami szlachetnymi",
+      title: "AEJaCA — Biżuteria Artystyczna & sTuDiO Fabrykacji Cyfrowej",
+      description: "Dwie marki, jedno studio. AEJaCA Biżuteria: srebro, złoto, żywica epoksydowa — ręcznie robiona. AEJaCA sTuDiO: druk 3D, grawer CO2 & Fiber, CNC.",
+      keywords: "biżuteria ręcznie robiona, srebro, złoto, żywica epoksydowa, druk 3D, grawerowanie laserowe CO2, Fiber, CNC, AEJaCA",
+      ogAlt: "AEJaCA Biżuteria i sTuDiO — dwie marki, jedno studio rzemiosła",
     },
     en: {
-      title: "AEJaCA, Handcrafted Jewelry & Digital Fabrication Studio",
-      description: "AEJaCA, Artisan Elegance Jewelry and Crafted Art. Handmade silver & gold jewelry + 3D printing, laser engraving, and resin casting studio.",
-      keywords: "handmade silver jewelry, natural gemstones, 3D printing, laser engraving, custom jewelry, AEJaCA, Artisan Elegance Jewelry and Crafted Art",
-      ogAlt: "AEJaCA handcrafted jewelry with natural gemstones",
+      title: "AEJaCA — Handcrafted Jewelry & Digital Fabrication Studio",
+      description: "Two brands, one studio. AEJaCA Jewelry: silver, gold, epoxy resin — all handmade. AEJaCA sTuDiO: 3D printing, CO2 & Fiber laser engraving, CNC.",
+      keywords: "handmade jewelry, silver, gold, epoxy resin, 3D printing, CO2 laser engraving, Fiber laser, CNC, AEJaCA",
+      ogAlt: "AEJaCA Jewelry and sTuDiO — two brands, one craft studio",
     },
     de: {
-      title: "AEJaCA, Handgefertigter Schmuck & Fabrikations-Studio",
-      description: "AEJaCA, Artisan Elegance Jewelry and Crafted Art. Handgefertigter Schmuck aus Silber & Gold + 3D-Druck, Lasergravur und Harzguss-Studio.",
-      keywords: "handgefertigter Schmuck, Silber, Edelsteine, 3D-Druck, Lasergravur, AEJaCA, Artisan Elegance Jewelry and Crafted Art",
-      ogAlt: "AEJaCA handgefertigter Schmuck mit Edelsteinen",
+      title: "AEJaCA — Handgefertigter Schmuck & Studio für Digitalfertigung",
+      description: "Zwei Marken, ein Studio. AEJaCA Schmuck: Silber, Gold, Epoxidharz — alles handgefertigt. AEJaCA sTuDiO: 3D-Druck, CO2- & Fiber-Lasergravur, CNC.",
+      keywords: "handgefertigter Schmuck, Silber, Gold, Epoxidharz, 3D-Druck, CO2-Lasergravur, Fiber-Laser, CNC, AEJaCA",
+      ogAlt: "AEJaCA Schmuck und sTuDiO — zwei Marken, ein Handwerksstudio",
     },
   },
 
