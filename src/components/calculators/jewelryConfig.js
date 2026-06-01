@@ -43,13 +43,13 @@ export const PRODUCT_LINES = [
 // --- JEWELRY TYPES per line ---
 export const JEWELRY_TYPES = {
   woman: [
-    { id: "ring",      label: { pl: "Pierścionek", en: "Ring", de: "Ring" }, baseWeight: 4, laborH: 6, complexity: 1.0, img: "/img/calc/types/ring.webp" },
+    { id: "ring",      label: { pl: "Pierścionek", en: "Ring", de: "Ring" }, baseWeight: 4, laborH: 6, complexity: 1.0, img: "/img/calc/types/wedding_ring.webp" },
     { id: "bracelet",  label: { pl: "Bransoletka", en: "Bracelet", de: "Armband" }, baseWeight: 15, laborH: 8, complexity: 1.2, img: "/img/calc/types/bracelet.webp" },
     { id: "pendant",   label: { pl: "Wisiorek", en: "Pendant", de: "Anhänger" }, baseWeight: 4, laborH: 4, complexity: 0.8, img: "/img/calc/types/pendant.webp" },
     { id: "earrings",  label: { pl: "Kolczyki (para)", en: "Earrings (pair)", de: "Ohrringe (Paar)" }, baseWeight: 4, laborH: 7, complexity: 1.1, img: "/img/calc/types/earrings.webp" },
     { id: "brooch",    label: { pl: "Broszka", en: "Brooch", de: "Brosche" }, baseWeight: 8, laborH: 6, complexity: 1.0, img: "/img/calc/types/brooch.webp" },
     { id: "necklace",  label: { pl: "Naszyjnik / łańcuszek", en: "Necklace / chain", de: "Halskette / Kette" }, baseWeight: 12, laborH: 5, complexity: 0.9, img: "/img/calc/types/necklace.webp" },
-    { id: "wedding_ring_w", label: { pl: "Obrączka", en: "Wedding ring", de: "Trauring" }, baseWeight: 6, laborH: 5, complexity: 0.9, img: "/img/calc/types/ring.webp" },
+    { id: "wedding_ring_w", label: { pl: "Obrączka", en: "Wedding ring", de: "Trauring" }, baseWeight: 6, laborH: 5, complexity: 0.9, img: "/img/calc/types/wedding_ring.webp" },
   ],
   men: [
     { id: "signet",    label: { pl: "Sygnet", en: "Signet ring", de: "Siegelring" }, baseWeight: 12, laborH: 7, complexity: 1.1, img: "/img/calc/types/signet.webp" },
@@ -58,7 +58,7 @@ export const JEWELRY_TYPES = {
     { id: "cufflinks", label: { pl: "Spinki do mankietów (para)", en: "Cufflinks (pair)", de: "Manschettenknöpfe (Paar)" }, baseWeight: 10, laborH: 6, complexity: 1.0, img: "/img/calc/types/cufflinks.webp" },
     { id: "tie_clip",  label: { pl: "Spinka do krawata", en: "Tie clip", de: "Krawattennadel" }, baseWeight: 6, laborH: 4, complexity: 0.7, img: "/img/calc/types/tie_clip.webp" },
     { id: "chain_m",   label: { pl: "Łańcuch", en: "Chain", de: "Kette" }, baseWeight: 20, laborH: 5, complexity: 0.8, img: "/img/calc/types/chain_m.webp" },
-    { id: "wedding_ring_m", label: { pl: "Obrączka", en: "Wedding ring", de: "Trauring" }, baseWeight: 8, laborH: 5, complexity: 0.9, img: "/img/calc/types/ring.webp" },
+    { id: "wedding_ring_m", label: { pl: "Obrączka", en: "Wedding ring", de: "Trauring" }, baseWeight: 8, laborH: 5, complexity: 0.9, img: "/img/calc/types/wedding_ring.webp" },
   ],
   pet: [
     { id: "tag",       label: { pl: "Zawieszka / adresówka", en: "Tag / ID pendant", de: "Anhänger / Adressmarke" }, baseWeight: 4, laborH: 3, complexity: 0.6, img: "/img/calc/types/tag.webp" },
@@ -235,7 +235,7 @@ export const QTY_TIERS = [
 
 // --- GENERIC JEWELRY TYPES (for renovation/repair) ---
 export const GENERIC_TYPES = [
-  { id: "ring_g",     label: { pl: "Pierścionek / sygnet", en: "Ring / signet", de: "Ring / Siegelring" }, img: "/img/calc/types/ring.webp" },
+  { id: "ring_g",     label: { pl: "Pierścionek / sygnet", en: "Ring / signet", de: "Ring / Siegelring" }, img: "/img/calc/types/wedding_ring.webp" },
   { id: "bracelet_g", label: { pl: "Bransoletka", en: "Bracelet", de: "Armband" },                         img: "/img/calc/types/bracelet.webp" },
   { id: "pendant_g",  label: { pl: "Wisiorek / medalik", en: "Pendant / medallion", de: "Anhänger / Medaillon" }, img: "/img/calc/types/pendant.webp" },
   { id: "earrings_g", label: { pl: "Kolczyki", en: "Earrings", de: "Ohrringe" },                           img: "/img/calc/types/earrings.webp" },

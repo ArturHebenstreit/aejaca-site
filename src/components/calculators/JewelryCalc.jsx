@@ -41,8 +41,8 @@ const TYPE_TO_FORM = {
   charm:      "pendant",
   pin:        null,
   // wedding rings
-  wedding_ring_w: "ring",
-  wedding_ring_m: "ring",
+  wedding_ring_w: "wedding_ring",
+  wedding_ring_m: "wedding_ring",
 };
 
 // Density (g/cm³) by metal type key
@@ -717,7 +717,16 @@ export default function JewelryCalc({ lang = "pl" }) {
             </div>
           </CalcCard>
 
-          <CalcCard stepNum={step()} label={l.engraving}>
+          <CalcCard stepNum={step()} label={typeId === "signet"
+            ? ({ pl: "Grawerowanie oczka sygnetu", en: "Signet bezel engraving", de: "Siegelkopf-Gravur" }[lang] ?? l.engraving)
+            : l.engraving}>
+            {typeId === "signet" && (
+              <p className="text-[11px] text-neutral-500 mb-3">
+                {{ pl: "Grawer nakładany jest bezpośrednio na oczko sygnetu — może współistnieć z kamieniem lub zastąpić go.",
+                   en: "Engraving is applied directly to the signet bezel — it can coexist with a stone or replace it.",
+                   de: "Gravur wird direkt auf den Siegelkopf aufgetragen — kann mit einem Stein kombiniert werden oder ihn ersetzen." }[lang]}
+              </p>
+            )}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {ENGRAVING_OPTIONS.map(opt => {
                 const active = engravingId === opt.id;
@@ -737,7 +746,9 @@ export default function JewelryCalc({ lang = "pl" }) {
             </div>
           </CalcCard>
 
-          <CalcCard stepNum={step()} label={l.gem}>
+          <CalcCard stepNum={step()} label={typeId === "signet"
+            ? ({ pl: "Kamień w oczku sygnetu", en: "Stone in signet bezel", de: "Stein im Siegelkopf" }[lang] ?? l.gem)
+            : l.gem}>
             <StoneComposer
               stoneRows={stoneRows}
               onChange={setStoneRows}

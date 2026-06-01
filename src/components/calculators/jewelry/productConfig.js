@@ -49,9 +49,9 @@ export const PRODUCT_TYPES = [
     icon: "💍",
     label: { pl: "Pierścionek", en: "Ring", de: "Ring" },
     description: {
-      pl: "Klasyczny pierścionek lub obrączka — oblicz wagę na podstawie rozmiaru i grubości ścianki.",
-      en: "Classic ring or band — estimate weight from size and wall thickness.",
-      de: "Klassischer Ring oder Reif — Gewicht anhand von Größe und Wandstärke berechnen.",
+      pl: "Klasyczny pierścionek — oblicz wagę na podstawie rozmiaru i grubości ścianki.",
+      en: "Classic ring — estimate weight from size and wall thickness.",
+      de: "Klassischer Ring — Gewicht anhand von Größe und Wandstärke berechnen.",
     },
     fields: [
       {
@@ -81,13 +81,57 @@ export const PRODUCT_TYPES = [
         step: 0.1,
       },
     ],
-    // Keys match WEIGHTS ids from jewelryConfig.js: light / standard / heavy
     fillFactors: { light: 0.42, standard: 0.72, heavy: 0.88 },
     defaultFill: "standard",
     notes: {
       pl: "Waga szacowana metodą walca z uwzględnieniem współczynnika wypełnienia.",
       en: "Weight estimated using hollow cylinder formula with fill factor.",
       de: "Gewicht mit Hohlzylinderformel und Füllfaktor geschätzt.",
+    },
+  },
+  {
+    id: "wedding_ring",
+    icon: "🪢",
+    label: { pl: "Obrączka", en: "Wedding ring", de: "Trauring" },
+    description: {
+      pl: "Obrączka ślubna lub wieczności — gładka lub z delikatnym zdobieniem, oblicz wagę z rozmiaru i szerokości.",
+      en: "Wedding band or eternity ring — plain or lightly decorated, estimate weight from size and width.",
+      de: "Trauring oder Ewigkeitsring — schlicht oder leicht verziert, Gewicht aus Größe und Breite berechnen.",
+    },
+    fields: [
+      {
+        id: "ringSize",
+        type: "ringSize",
+        label: { pl: "Rozmiar obrączki", en: "Ring size", de: "Ringgröße" },
+        default: { system: "EU", value: 54 },
+      },
+      {
+        id: "width",
+        label: { pl: "Szerokość obrączki", en: "Band width", de: "Ringbreite" },
+        type: "number",
+        unit: "mm",
+        min: 2,
+        max: 12,
+        default: 4,
+        step: 0.5,
+      },
+      {
+        id: "wallThickness",
+        label: { pl: "Grubość ścianki", en: "Wall thickness", de: "Wandstärke" },
+        type: "number",
+        unit: "mm",
+        min: 0.5,
+        max: 3,
+        default: 1.5,
+        step: 0.1,
+      },
+    ],
+    fillFactors: { light: 0.55, standard: 0.78, heavy: 0.92 },
+    defaultFill: "standard",
+    notes: {
+      pl: "Obrączki są zazwyczaj węższe i masywniejsze od pierścionków. Waga szacowana metodą walca.",
+      en: "Wedding bands are typically narrower and more solid than dress rings. Weight via hollow cylinder formula.",
+      de: "Trauringe sind in der Regel schmaler und massiver als Designringe. Gewicht mit Hohlzylinderformel.",
     },
   },
   {
