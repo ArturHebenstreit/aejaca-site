@@ -35,15 +35,15 @@ export const SERVICE_TYPES = [
 
 // --- PRODUCT LINES ---
 export const PRODUCT_LINES = [
-  { id: "woman", label: "AEJaCA Woman", desc: { pl: "Pierścionki, bransoletki, wisiorki, kolczyki, brosze", en: "Rings, bracelets, pendants, earrings, brooches", de: "Ringe, Armbänder, Anhänger, Ohrringe, Broschen" }, img: "/img/calc/lines/woman.webp" },
-  { id: "men", label: "AEJaCA Men", desc: { pl: "Sygnety, medaliki, bransoletki, spinki, łańcuchy", en: "Signet rings, medallions, bracelets, cufflinks, chains", de: "Siegelringe, Medaillons, Armbänder, Manschettenknöpfe, Ketten" }, img: "/img/calc/lines/men.webp" },
+  { id: "woman", label: "AEJaCA Woman", desc: { pl: "Pierścionki, obrączki, bransoletki, wisiorki, kolczyki, brosze", en: "Rings, wedding bands, bracelets, pendants, earrings, brooches", de: "Ringe, Trauringe, Armbänder, Anhänger, Ohrringe, Broschen" }, img: "/img/calc/lines/woman.webp" },
+  { id: "men", label: "AEJaCA Men", desc: { pl: "Sygnety, obrączki, medaliki, bransoletki, spinki, łańcuchy", en: "Signet rings, wedding bands, medallions, bracelets, cufflinks, chains", de: "Siegelringe, Trauringe, Medaillons, Armbänder, Manschettenknöpfe, Ketten" }, img: "/img/calc/lines/men.webp" },
   { id: "pet", label: "AEJaCA Pet", desc: { pl: "Zawieszki, ozdoby na obrożę, spinki", en: "Tags, collar charms, collar pins", de: "Anhänger, Halsbandschmuck, Nadeln" }, img: "/img/calc/lines/pet.webp" },
 ];
 
 // --- JEWELRY TYPES per line ---
 export const JEWELRY_TYPES = {
   woman: [
-    { id: "ring",      label: { pl: "Pierścionek", en: "Ring", de: "Ring" }, baseWeight: 4, laborH: 6, complexity: 1.0, img: "/img/calc/types/wedding_ring.webp" },
+    { id: "ring",      label: { pl: "Pierścionek", en: "Ring", de: "Ring" }, baseWeight: 4, laborH: 6, complexity: 1.0, img: "/img/calc/types/ring.webp" },
     { id: "bracelet",  label: { pl: "Bransoletka", en: "Bracelet", de: "Armband" }, baseWeight: 15, laborH: 8, complexity: 1.2, img: "/img/calc/types/bracelet.webp" },
     { id: "pendant",   label: { pl: "Wisiorek", en: "Pendant", de: "Anhänger" }, baseWeight: 4, laborH: 4, complexity: 0.8, img: "/img/calc/types/pendant.webp" },
     { id: "earrings",  label: { pl: "Kolczyki (para)", en: "Earrings (pair)", de: "Ohrringe (Paar)" }, baseWeight: 4, laborH: 7, complexity: 1.1, img: "/img/calc/types/earrings.webp" },
@@ -235,7 +235,7 @@ export const QTY_TIERS = [
 
 // --- GENERIC JEWELRY TYPES (for renovation/repair) ---
 export const GENERIC_TYPES = [
-  { id: "ring_g",     label: { pl: "Pierścionek / sygnet", en: "Ring / signet", de: "Ring / Siegelring" }, img: "/img/calc/types/wedding_ring.webp" },
+  { id: "ring_g",     label: { pl: "Pierścionek / sygnet", en: "Ring / signet", de: "Ring / Siegelring" }, img: "/img/calc/types/ring.webp" },
   { id: "bracelet_g", label: { pl: "Bransoletka", en: "Bracelet", de: "Armband" },                         img: "/img/calc/types/bracelet.webp" },
   { id: "pendant_g",  label: { pl: "Wisiorek / medalik", en: "Pendant / medallion", de: "Anhänger / Medaillon" }, img: "/img/calc/types/pendant.webp" },
   { id: "earrings_g", label: { pl: "Kolczyki", en: "Earrings", de: "Ohrringe" },                           img: "/img/calc/types/earrings.webp" },
