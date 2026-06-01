@@ -77,10 +77,22 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
         )}
       </div>
 
+      {/* Prominent no-stone shortcut */}
+      <button
+        onClick={() => update({ gemId: "none" })}
+        className={`w-full py-1.5 rounded-xl border text-xs font-medium transition-all ${
+          row.gemId === "none"
+            ? "border-amber-400 bg-amber-400/10 text-amber-300"
+            : "border-white/15 text-neutral-400 hover:border-white/30 hover:text-neutral-200"
+        }`}
+      >
+        ∅ {{ pl: "Bez kamienia", en: "No gemstone", de: "Ohne Stein" }[lang]}
+      </button>
+
       {/* Gem selector — horizontal scrollable strip */}
       <div className="overflow-x-auto pb-1">
         <div className="flex gap-1.5 min-w-max">
-          {gemstones.map(g => {
+          {gemstones.filter(g => g.id !== "none").map(g => {
             const active = row.gemId === g.id;
             const label = t(g.label, lang);
             const isSpecial = g.id === "none" || g.custom;

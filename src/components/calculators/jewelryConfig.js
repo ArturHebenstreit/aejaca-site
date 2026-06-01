@@ -49,6 +49,7 @@ export const JEWELRY_TYPES = {
     { id: "earrings",  label: { pl: "Kolczyki (para)", en: "Earrings (pair)", de: "Ohrringe (Paar)" }, baseWeight: 4, laborH: 7, complexity: 1.1, img: "/img/calc/types/earrings.webp" },
     { id: "brooch",    label: { pl: "Broszka", en: "Brooch", de: "Brosche" }, baseWeight: 8, laborH: 6, complexity: 1.0, img: "/img/calc/types/brooch.webp" },
     { id: "necklace",  label: { pl: "Naszyjnik / łańcuszek", en: "Necklace / chain", de: "Halskette / Kette" }, baseWeight: 12, laborH: 5, complexity: 0.9, img: "/img/calc/types/necklace.webp" },
+    { id: "wedding_ring_w", label: { pl: "Obrączka", en: "Wedding ring", de: "Trauring" }, baseWeight: 6, laborH: 5, complexity: 0.9, img: "/img/calc/types/ring.webp" },
   ],
   men: [
     { id: "signet",    label: { pl: "Sygnet", en: "Signet ring", de: "Siegelring" }, baseWeight: 12, laborH: 7, complexity: 1.1, img: "/img/calc/types/signet.webp" },
@@ -57,6 +58,7 @@ export const JEWELRY_TYPES = {
     { id: "cufflinks", label: { pl: "Spinki do mankietów (para)", en: "Cufflinks (pair)", de: "Manschettenknöpfe (Paar)" }, baseWeight: 10, laborH: 6, complexity: 1.0, img: "/img/calc/types/cufflinks.webp" },
     { id: "tie_clip",  label: { pl: "Spinka do krawata", en: "Tie clip", de: "Krawattennadel" }, baseWeight: 6, laborH: 4, complexity: 0.7, img: "/img/calc/types/tie_clip.webp" },
     { id: "chain_m",   label: { pl: "Łańcuch", en: "Chain", de: "Kette" }, baseWeight: 20, laborH: 5, complexity: 0.8, img: "/img/calc/types/chain_m.webp" },
+    { id: "wedding_ring_m", label: { pl: "Obrączka", en: "Wedding ring", de: "Trauring" }, baseWeight: 8, laborH: 5, complexity: 0.9, img: "/img/calc/types/ring.webp" },
   ],
   pet: [
     { id: "tag",       label: { pl: "Zawieszka / adresówka", en: "Tag / ID pendant", de: "Anhänger / Adressmarke" }, baseWeight: 4, laborH: 3, complexity: 0.6, img: "/img/calc/types/tag.webp" },
@@ -68,6 +70,7 @@ export const JEWELRY_TYPES = {
 // --- METALS with purity ---
 export const METALS = [
   { id: "silver",   metal: "silver", label: { pl: "Srebro 925", en: "Silver 925", de: "Silber 925" }, purity: 0.925, laborMul: 0.7, img: "/img/calc/metals/silver.webp" },
+  { id: "silver_800", metal: "silver", label: { pl: "Srebro 800", en: "Silver 800", de: "Silber 800" }, purity: 0.800, laborMul: 0.7, img: "/img/calc/metals/silver.webp" },
   { id: "gold_9k",  metal: "gold", label: { pl: "Złoto 9k (375)", en: "Gold 9k (375)", de: "Gold 9k (375)" }, purity: 0.375, laborMul: 0.9, img: "/img/calc/metals/gold_9k.webp" },
   { id: "platinum",  metal: "platinum", label: { pl: "Platyna 950", en: "Platinum 950", de: "Platin 950" }, purity: 0.950, laborMul: 1.5, img: "/img/calc/metals/platinum.webp" },
   { id: "gold_14k", metal: "gold", label: { pl: "Złoto 14k (585)", en: "Gold 14k (585)", de: "Gold 14k (585)" }, purity: 0.585, laborMul: 1.0, img: "/img/calc/metals/gold_14k.webp" },
@@ -100,6 +103,14 @@ export const PLATING = [
   { id: "gold_pl",  label: { pl: "Złocenie (vermeil)", en: "Gold plating (vermeil)", de: "Vergoldung (Vermeil)" }, cost: 90, img: "/img/calc/plating/gold_pl.webp" },
   { id: "rose_pl",  label: { pl: "Złocenie różowe", en: "Rose gold plating", de: "Roségold-Beschichtung" }, cost: 90, img: "/img/calc/plating/rose_pl.webp" },
   { id: "custom_pl",label: { pl: "Inne pokrycie", en: "Other plating", de: "Andere Beschichtung" }, cost: null, custom: true },
+];
+
+// --- ENGRAVING OPTIONS ---
+export const ENGRAVING_OPTIONS = [
+  { id: "none",    label: { pl: "Brak grawerowania", en: "No engraving", de: "Keine Gravur" }, cost: 0 },
+  { id: "text",    label: { pl: "Tekst / inicjały (laser)", en: "Text / initials (laser)", de: "Text / Initialen (Laser)" }, cost: 80 },
+  { id: "pattern", label: { pl: "Wzór / logo (laser)", en: "Pattern / logo (laser)", de: "Muster / Logo (Laser)" }, cost: 150 },
+  { id: "both",    label: { pl: "Tekst + wzór (obie strony)", en: "Text + pattern (both sides)", de: "Text + Muster (beide Seiten)" }, cost: 200 },
 ];
 
 // --- GEMSTONES ---

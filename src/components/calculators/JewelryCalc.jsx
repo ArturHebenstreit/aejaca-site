@@ -9,6 +9,7 @@ import { useGemPrices } from "../../hooks/useGemPrices.js";
 import {
   METAL_PRICES, EUR_PLN, MARGIN, REPAIR_MARGIN, TOL_LOW, TOL_HIGH,
   SERVICE_TYPES, PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING,
+  ENGRAVING_OPTIONS,
   GEMSTONES, STONE_SIZES, DIAMOND_CLARITY, DIAMOND_COLOR, GEM_QUALITY, CERTIFICATIONS,
   RENOVATION_SERVICES, REPAIR_SERVICES,
   REPAIR_METAL_MUL, QTY_TIERS, GENERIC_TYPES, GENERIC_METALS,
@@ -39,6 +40,9 @@ const TYPE_TO_FORM = {
   tag:        "pendant",
   charm:      "pendant",
   pin:        null,
+  // wedding rings
+  wedding_ring_w: "ring",
+  wedding_ring_m: "ring",
 };
 
 // Density (g/cm³) by metal type key
@@ -62,6 +66,7 @@ const LBL = {
     renoServices: "Usługi renowacyjne", jewType: "Rodzaj biżuterii", metalType: "Kruszec",
     serviceCost: "Koszt usług", materialCost: "Materiały", total: "Łącznie",
     priceSource: "Ceny kruszców: LBMA/Kitco | Kamienie: Rapaport/GemVal",
+    engraving: "Grawerowanie laserowe",
   },
   en: {
     service: "Service type", line: "Product line", type: "Jewelry type",
@@ -76,6 +81,7 @@ const LBL = {
     renoServices: "Renovation services", jewType: "Jewelry type", metalType: "Metal",
     serviceCost: "Service cost", materialCost: "Materials", total: "Total",
     priceSource: "Metal prices: LBMA/Kitco | Gems: Rapaport/GemVal",
+    engraving: "Laser engraving",
   },
   de: {
     service: "Dienstleistungstyp", line: "Produktlinie", type: "Schmuckart",
@@ -90,6 +96,7 @@ const LBL = {
     renoServices: "Renovierungsleistungen", jewType: "Schmuckart", metalType: "Metall",
     serviceCost: "Servicekosten", materialCost: "Materialien", total: "Gesamt",
     priceSource: "Metallpreise: LBMA/Kitco | Steine: Rapaport/GemVal",
+    engraving: "Lasergravur",
   },
 };
 
@@ -116,7 +123,7 @@ function resolveMetalPricePerG(metalKey, rates) {
 
 // ---- NEW CREATION CALCULATOR ----
 export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
-  stoneRows, qtyId,
+  stoneRows, qtyId, engravingId,
   clientSuppliesMetal, overrideWeightG }, lang, rates, gemstones) {
   const l = LBL[lang] || LBL.en;
   const line = PRODUCT_LINES.find(p => p.id === lineId);
@@ -185,7 +192,11 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
   // Plating
   const platingCost = plat.cost;
 
-  const baseCost = metalCost + laborCost + gemCost + settingCost + platingCost;
+  // Engraving
+  const engraving = ENGRAVING_OPTIONS.find(e => e.id === (engravingId || "none"));
+  const engravingCost = engraving?.cost ?? 0;
+
+  const baseCost = metalCost + laborCost + gemCost + settingCost + platingCost + engravingCost;
   const workshopCost = baseCost * MARGIN;
   const estCost = baseCost + workshopCost;
   const qty = qTier.qty;
@@ -200,6 +211,7 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
       ...(gemCost > 0 ? [{ label: l.gemCost, value: fmtCost(gemCost, lang) }] : []),
       ...(settingCost > 0 ? [{ label: l.settingCost, value: fmtCost(settingCost, lang) }] : []),
       ...(platingCost > 0 ? [{ label: l.platingCost, value: fmtCost(platingCost, lang) }] : []),
+      ...(engravingCost > 0 ? [{ label: { pl: "Grawerowanie laserowe", en: "Laser engraving", de: "Lasergravur" }[lang] ?? "Laser engraving", value: fmtCost(engravingCost, lang) }] : []),
       { label: l.workshop, value: fmtCost(workshopCost, lang) },
       { divider: true },
       { label: l.estCost, value: fmtCost(estCost, lang), bold: true },
@@ -320,6 +332,7 @@ export default function JewelryCalc({ lang = "pl" }) {
   const [weightId, setWeightId] = useState("light");
   const [methodId, setMethodId] = useState("cast");
   const [platingId, setPlatingId] = useState("none");
+  const [engravingId, setEngravingId] = useState("none");
   // Stone rows — up to 10 different stone entries
   const [stoneRows, setStoneRows] = useState([
     { rowId: "row0", gemId: "none", stoneSizeId: "small", count: 1, suppliedBy: "studio",
@@ -351,7 +364,7 @@ export default function JewelryCalc({ lang = "pl" }) {
   const result = useMemo(() => {
     if (serviceId === "new") {
       return calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
-        stoneRows, qtyId,
+        stoneRows, qtyId, engravingId,
         clientSuppliesMetal,
         overrideWeightG: weightResult?.nettoG ?? null }, lang, rates, resolvedGemstones);
     }
@@ -359,7 +372,7 @@ export default function JewelryCalc({ lang = "pl" }) {
       return calcRenovation({ jewTypeId: renoJewType, metalTypeId: renoMetal, services: renoServices, qtyId }, lang);
     }
     return calcRepair({ jewTypeId: repairJewType, metalTypeId: repairMetal, repairId, qtyId }, lang);
-  }, [serviceId, lineId, typeId, metalId, weightId, methodId, platingId,
+  }, [serviceId, lineId, typeId, metalId, weightId, methodId, platingId, engravingId,
     stoneRows, qtyId,
     clientSuppliesMetal, weightResult,
     renoServices, renoJewType, renoMetal, repairId, repairJewType, repairMetal, lang, rates, resolvedGemstones]);
@@ -470,7 +483,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                         <span className="text-2xl opacity-60">◆</span>
                       )}
                     </div>
-                    <span className={`text-[11px] sm:text-xs text-center leading-tight break-words ${
+                    <span className={`text-[11px] sm:text-xs text-center leading-tight break-all line-clamp-2 ${
                       active ? "text-amber-300 font-medium" : "text-neutral-400"
                     }`}>
                       {label}
@@ -578,7 +591,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                         <span className="text-2xl opacity-60">⬡</span>
                       )}
                     </div>
-                    <span className={`text-[10px] sm:text-[11px] text-center leading-tight break-words ${
+                    <span className={`text-[10px] sm:text-[11px] text-center leading-tight break-all line-clamp-2 ${
                       active ? "text-amber-300 font-medium" : "text-neutral-400"
                     }`}>{label}</span>
                   </button>
@@ -695,9 +708,29 @@ export default function JewelryCalc({ lang = "pl" }) {
                       <img src={pl.img} alt={label} loading="lazy"
                         className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`} />
                     </div>
-                    <span className={`text-[10px] sm:text-[11px] text-center leading-tight break-words ${
+                    <span className={`text-[10px] sm:text-[11px] text-center leading-tight break-all line-clamp-2 ${
                       active ? "text-amber-300 font-medium" : "text-neutral-400"
                     }`}>{label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </CalcCard>
+
+          <CalcCard stepNum={step()} label={l.engraving}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {ENGRAVING_OPTIONS.map(opt => {
+                const active = engravingId === opt.id;
+                return (
+                  <button key={opt.id} onClick={() => setEngravingId(opt.id)}
+                    className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border text-xs text-center transition-all ${
+                      active
+                        ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                        : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20 hover:text-neutral-200"
+                    }`}>
+                    <span className="text-lg leading-none">{opt.cost === 0 ? "∅" : "✦"}</span>
+                    <span className="leading-tight break-words">{t(opt.label, lang)}</span>
+                    {opt.cost > 0 && <span className="text-[9px] opacity-60">+{opt.cost} PLN</span>}
                   </button>
                 );
               })}
@@ -909,6 +942,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
                t(METALS.find(m => m.id === metalId)?.label, lang),
                t(METHODS.find(m => m.id === methodId)?.label, lang),
+               engravingId !== "none" ? t(ENGRAVING_OPTIONS.find(e => e.id === engravingId)?.label, lang) : null,
                ...stoneRows.filter(r => r.gemId !== "none").map(r => {
                  const gem = resolvedGemstones.find(g => g.id === r.gemId);
                  const sz = STONE_SIZES.find(s => s.id === r.stoneSizeId);
@@ -926,6 +960,7 @@ export default function JewelryCalc({ lang = "pl" }) {
              t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
              t(METALS.find(m => m.id === metalId)?.label, lang),
              t(METHODS.find(m => m.id === methodId)?.label, lang),
+             engravingId !== "none" ? t(ENGRAVING_OPTIONS.find(e => e.id === engravingId)?.label, lang) : null,
              ...stoneRows.filter(r => r.gemId !== "none").map(r => {
                const gem = resolvedGemstones.find(g => g.id === r.gemId);
                const sz = STONE_SIZES.find(s => s.id === r.stoneSizeId);
