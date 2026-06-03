@@ -893,4 +893,62 @@ app.post("/filaments/:typeId/brands/create", requireAuth, express.urlencoded({ e
   }
 });
 
+// --- Email Threads ---
+app.get("/email-threads", requireAuth, async (req, res) => {
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = 50;
+  const offset = (page - 1) * limit;
+  try {
+    const [rows, count, stats] = await Promise.all([
+      pool.query(`
+        SELECT et.*, l.email as lead_email, l.status as lead_status,
+          (SELECT COUNT(*) FROM email_messages em WHERE em.thread_id = et.id AND em.direction = 'inbound') as inbound_count,
+          (SELECT COUNT(*) FROM email_messages em WHERE em.thread_id = et.id AND em.direction = 'outbound') as outbound_count
+        FROM email_threads et
+        LEFT JOIN leads l ON l.id = et.lead_id
+        ORDER BY et.last_message_at DESC NULLS LAST
+        LIMIT $1 OFFSET $2
+      `, [limit, offset]),
+      pool.query("SELECT COUNT(*) as total FROM email_threads"),
+      pool.query(`SELECT
+        COUNT(*) as total,
+        COUNT(*) FILTER (WHERE lead_id IS NOT NULL) as linked,
+        COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE) as today
+        FROM email_threads`),
+    ]);
+    res.render("email-threads", {
+      user: req.user,
+      threads: rows.rows,
+      total: parseInt(count.rows[0].total),
+      page,
+      pages: Math.ceil(count.rows[0].total / limit),
+      stats: stats.rows[0],
+    });
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
+app.get("/email-threads/:id", requireAuth, async (req, res) => {
+  try {
+    const [thread, messages] = await Promise.all([
+      pool.query(`
+        SELECT et.*, l.email as lead_email, l.status as lead_status, l.calculator as lead_calculator
+        FROM email_threads et
+        LEFT JOIN leads l ON l.id = et.lead_id
+        WHERE et.id = $1
+      `, [req.params.id]),
+      pool.query("SELECT * FROM email_messages WHERE thread_id = $1 ORDER BY received_at ASC", [req.params.id]),
+    ]);
+    if (!thread.rows[0]) return res.status(404).render("error", { message: "Thread not found" });
+    res.render("email-thread", {
+      user: req.user,
+      thread: thread.rows[0],
+      messages: messages.rows,
+    });
+  } catch (err) {
+    res.status(500).render("error", { message: err.message });
+  }
+});
+
 app.listen(PORT, () => console.log(`AEJaCA Admin running on :${PORT}`));

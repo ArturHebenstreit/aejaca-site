@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEJaCA Admin — Email</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            neutral: { 950: '#0a0a0a' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-neutral-950 min-h-screen text-neutral-100">
+
+  <header class="bg-neutral-900 border-b border-white/10 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-6">
+      <span class="text-lg font-bold text-white">AEJaCA <span class="text-amber-400">Admin</span></span>
+      <nav class="flex gap-4 text-sm">
+        <a href="/dashboard" class="text-neutral-400 hover:text-white transition-colors">Dashboard</a>
+        <a href="/analytics" class="text-neutral-400 hover:text-white transition-colors">Analytics</a>
+        <a href="/leads" class="text-neutral-400 hover:text-white transition-colors">Leads</a>
+        <a href="/subscribers" class="text-neutral-400 hover:text-white transition-colors">Subscribers</a>
+        <a href="/conversations" class="text-neutral-400 hover:text-white transition-colors">Chat</a>
+        <a href="/email-threads" class="text-white font-medium border-b border-amber-400 pb-0.5">Email</a>
+        <a href="/laser-matrix" class="text-neutral-400 hover:text-white transition-colors">Laser Matrix</a>
+        <a href="/gemstone-prices" class="text-neutral-400 hover:text-white transition-colors">Gems</a>
+        <a href="/filaments" class="text-neutral-400 hover:text-white transition-colors">Filamenty</a>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      <img src="<%= user.photo %>" class="w-7 h-7 rounded-full" alt="" />
+      <span class="text-sm text-neutral-400"><%= user.name %></span>
+      <a href="/logout" class="text-xs text-red-400 hover:text-red-300 transition-colors">Logout</a>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <h2 class="text-xl font-semibold text-white">Wątki email</h2>
+    </div>
+
+    <!-- Stats -->
+    <div class="flex flex-wrap gap-3 mb-6">
+      <div class="bg-neutral-900 border border-white/10 rounded-xl px-5 py-3 flex items-center gap-3">
+        <span class="text-neutral-500 text-sm">Wszystkich wątków</span>
+        <span class="text-2xl font-bold text-amber-400"><%= stats.total %></span>
+      </div>
+      <div class="bg-neutral-900 border border-emerald-900/40 rounded-xl px-4 py-3 flex items-center gap-2">
+        <span class="text-xs text-neutral-500 uppercase">Powiązane z leadem</span>
+        <span class="text-lg font-semibold text-emerald-400"><%= stats.linked %></span>
+      </div>
+      <div class="bg-neutral-900 border border-blue-900/40 rounded-xl px-4 py-3 flex items-center gap-2">
+        <span class="text-xs text-neutral-500 uppercase">Dzisiaj</span>
+        <span class="text-lg font-semibold text-blue-400"><%= stats.today %></span>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-neutral-900 border border-white/10 rounded-xl overflow-hidden mb-6">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-white/10 text-neutral-500 text-xs uppercase tracking-wider">
+              <th class="px-4 py-3 text-left whitespace-nowrap">Data (ostatnia)</th>
+              <th class="px-4 py-3 text-left">Temat</th>
+              <th class="px-4 py-3 text-left">Email leada</th>
+              <th class="px-4 py-3 text-center whitespace-nowrap">Przych.</th>
+              <th class="px-4 py-3 text-center whitespace-nowrap">Wych.</th>
+              <th class="px-4 py-3 text-left">Status leada</th>
+              <th class="px-4 py-3 text-left"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (threads && threads.length > 0) { %>
+              <% threads.forEach(function(thread, i) { %>
+              <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors <%= i % 2 === 1 ? 'bg-white/[0.015]' : '' %>">
+                <td class="px-4 py-3 text-neutral-400 whitespace-nowrap text-xs">
+                  <%= fmtDate(thread.last_message_at) %>
+                </td>
+                <td class="px-4 py-3 text-neutral-200 max-w-[240px] truncate">
+                  <%= thread.subject || '(brak tematu)' %>
+                </td>
+                <td class="px-4 py-3 text-neutral-300 max-w-[180px] truncate">
+                  <% if (thread.lead_email) { %>
+                    <a href="mailto:<%= thread.lead_email %>" class="hover:text-amber-400 transition-colors"><%= thread.lead_email %></a>
+                  <% } else { %>
+                    <span class="text-neutral-600">—</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span class="px-2 py-0.5 bg-amber-950 text-amber-300 rounded text-xs font-medium"><%= thread.inbound_count %></span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <span class="px-2 py-0.5 bg-blue-950 text-blue-300 rounded text-xs font-medium"><%= thread.outbound_count %></span>
+                </td>
+                <td class="px-4 py-3">
+                  <% if (thread.lead_status) { %>
+                    <% var statusMap = { new: 'bg-blue-950 text-blue-300', contacted: 'bg-amber-950 text-amber-300', closed: 'bg-emerald-950 text-emerald-300', spam: 'bg-neutral-800 text-neutral-500' }; %>
+                    <% var statusClass = statusMap[thread.lead_status] || 'bg-neutral-800 text-neutral-400'; %>
+                    <span class="px-2 py-0.5 rounded text-xs font-medium <%= statusClass %>">
+                      <%= thread.lead_status %>
+                    </span>
+                  <% } else { %>
+                    <span class="text-neutral-600 text-xs">—</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <a href="/email-threads/<%= thread.id %>" class="text-xs px-3 py-1 rounded border border-white/10 text-neutral-400 hover:text-white hover:border-white/20 transition-colors whitespace-nowrap">
+                    Podgląd
+                  </a>
+                </td>
+              </tr>
+              <% }); %>
+            <% } else { %>
+            <tr>
+              <td colspan="7" class="px-4 py-12 text-center text-neutral-600">Brak wątków email. Skonfiguruj Gmail watch aby rozpocząć śledzenie.</td>
+            </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <% if (pages > 1) { %>
+    <div class="flex items-center justify-between">
+      <span class="text-sm text-neutral-500">Strona <%= page %> z <%= pages %></span>
+      <div class="flex gap-2">
+        <% if (page > 1) { %>
+        <a href="/email-threads?page=<%= page - 1 %>" class="px-4 py-2 bg-neutral-900 border border-white/10 rounded-lg text-sm text-neutral-300 hover:text-white hover:border-white/20 transition-colors">
+          &larr; Poprzednia
+        </a>
+        <% } else { %>
+        <span class="px-4 py-2 bg-neutral-900 border border-white/5 rounded-lg text-sm text-neutral-700 cursor-not-allowed">
+          &larr; Poprzednia
+        </span>
+        <% } %>
+
+        <% if (page < pages) { %>
+        <a href="/email-threads?page=<%= page + 1 %>" class="px-4 py-2 bg-neutral-900 border border-white/10 rounded-lg text-sm text-neutral-300 hover:text-white hover:border-white/20 transition-colors">
+          Następna &rarr;
+        </a>
+        <% } else { %>
+        <span class="px-4 py-2 bg-neutral-900 border border-white/5 rounded-lg text-sm text-neutral-700 cursor-not-allowed">
+          Następna &rarr;
+        </span>
+        <% } %>
+      </div>
+    </div>
+    <% } %>
+
+  </main>
+
+</body>
+</html>
