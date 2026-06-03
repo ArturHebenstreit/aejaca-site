@@ -73,6 +73,16 @@
         <span class="text-neutral-500 text-sm">Total</span>
         <span class="text-2xl font-bold text-amber-400"><%= total %></span>
       </div>
+      <% if (typeof contactedCount !== 'undefined') { %>
+      <div class="bg-neutral-900 border border-emerald-900/40 rounded-xl px-4 py-3 flex items-center gap-2">
+        <span class="text-xs text-neutral-500 uppercase">Skontaktowano</span>
+        <span class="text-lg font-semibold text-emerald-400"><%= contactedCount %></span>
+      </div>
+      <div class="bg-neutral-900 border border-blue-900/40 rounded-xl px-4 py-3 flex items-center gap-2">
+        <span class="text-xs text-neutral-500 uppercase">Nowych</span>
+        <span class="text-lg font-semibold text-blue-400"><%= newCount %></span>
+      </div>
+      <% } %>
       <% if (byCalc && byCalc.length > 0) { %>
         <% byCalc.forEach(function(item) { %>
         <div class="bg-neutral-900 border border-white/10 rounded-xl px-4 py-3 flex items-center gap-2">
@@ -101,6 +111,7 @@
               <th class="px-4 py-3 text-right">Qty</th>
               <th class="px-4 py-3 text-right">Disc%</th>
               <th class="px-4 py-3 text-left">Status</th>
+              <th class="px-4 py-3 text-left whitespace-nowrap">Skontaktowano</th>
               <th class="px-4 py-3 text-left text-xs font-medium text-neutral-400 uppercase tracking-wider"></th>
             </tr>
           </thead>
@@ -161,6 +172,29 @@
                     <%= lead.status || 'new' %>
                   </span>
                 </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <% if (lead.contacted_at) { %>
+                    <div class="flex flex-col gap-0.5">
+                      <span class="flex items-center gap-1 text-emerald-400 text-xs font-medium">
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        Tak
+                      </span>
+                      <span class="text-neutral-500 text-[10px]"><%= fmtDate(lead.contacted_at) %></span>
+                      <% if (lead.contact_note) { %>
+                        <span class="text-neutral-400 text-[10px] max-w-[140px] truncate" title="<%= lead.contact_note %>"><%= lead.contact_note %></span>
+                      <% } %>
+                      <form method="POST" action="/leads/<%= lead.id %>/unmark-contacted" class="mt-0.5">
+                        <button type="submit" class="text-[10px] text-neutral-600 hover:text-neutral-400 transition-colors underline">cofnij</button>
+                      </form>
+                    </div>
+                  <% } else { %>
+                    <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onclick="showContactModal(<%= lead.id %>)" class="text-xs px-2 py-1 rounded border border-emerald-800 text-emerald-500 hover:bg-emerald-950 transition-colors whitespace-nowrap">
+                        + Oznacz
+                      </button>
+                    </div>
+                  <% } %>
+                </td>
                 <td class="px-4 py-3 whitespace-nowrap text-right">
                   <form method="POST" action="/leads/<%= lead.id %>/delete">
                     <button type="submit" class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-400 transition-all px-1 text-base leading-none" title="Usuń">✕</button>
@@ -170,7 +204,7 @@
               <% }); %>
             <% } else { %>
             <tr>
-              <td colspan="13" class="px-4 py-12 text-center text-neutral-600">No leads found.</td>
+              <td colspan="14" class="px-4 py-12 text-center text-neutral-600">No leads found.</td>
             </tr>
             <% } %>
           </tbody>
@@ -208,6 +242,22 @@
 
   </main>
 
+  <!-- Mark contacted modal -->
+  <div id="contactModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+    <div class="bg-neutral-900 border border-white/10 rounded-xl p-6 w-full max-w-sm">
+      <h3 class="text-white font-semibold mb-1">Oznacz jako skontaktowany</h3>
+      <p class="text-neutral-400 text-sm mb-4">Opcjonalna notatka o treści komunikacji (np. "Odpowiedź na zapytanie ws. pierścionka").</p>
+      <form id="contactForm" method="POST" action="">
+        <textarea name="note" rows="3" placeholder="Notatka (opcjonalna)…"
+          class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-neutral-100 placeholder-neutral-600 resize-none mb-4 focus:outline-none focus:border-emerald-500/50"></textarea>
+        <div class="flex gap-3 justify-end">
+          <button type="button" onclick="hideContactModal()" class="px-4 py-2 text-sm text-neutral-400 hover:text-white transition-colors">Anuluj</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition-colors">Potwierdź</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     function fmtDate(d) {
       if (!d) return '—';
@@ -219,6 +269,18 @@
       if (val === 'all') return confirm('UWAGA: Usunąć WSZYSTKIE leady?\n\nTej operacji nie można cofnąć.');
       return confirm('Usunąć leady starsze niż ' + val + ' dni?');
     }
+    function showContactModal(leadId) {
+      document.getElementById('contactForm').action = '/leads/' + leadId + '/mark-contacted';
+      document.getElementById('contactModal').classList.remove('hidden');
+      document.querySelector('#contactModal textarea').value = '';
+      document.querySelector('#contactModal textarea').focus();
+    }
+    function hideContactModal() {
+      document.getElementById('contactModal').classList.add('hidden');
+    }
+    document.getElementById('contactModal').addEventListener('click', function(e) {
+      if (e.target === this) hideContactModal();
+    });
   </script>
 
 </body>

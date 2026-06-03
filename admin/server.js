@@ -128,10 +128,11 @@ app.get("/leads", requireAuth, async (req, res) => {
   const limit = 50;
   const offset = (page - 1) * limit;
   try {
-    const [rows, count, byCalc] = await Promise.all([
+    const [rows, count, byCalc, statusCounts] = await Promise.all([
       pool.query("SELECT * FROM leads ORDER BY created_at DESC LIMIT $1 OFFSET $2", [limit, offset]),
       pool.query("SELECT COUNT(*) as total FROM leads"),
       pool.query("SELECT calculator, COUNT(*) as count FROM leads GROUP BY calculator ORDER BY count DESC"),
+      pool.query("SELECT COUNT(*) FILTER (WHERE contacted_at IS NOT NULL) as contacted, COUNT(*) FILTER (WHERE status = 'new') as new_count FROM leads"),
     ]);
     res.render("leads", {
       user: req.user,
@@ -140,6 +141,8 @@ app.get("/leads", requireAuth, async (req, res) => {
       page,
       pages: Math.ceil(count.rows[0].total / limit),
       byCalc: byCalc.rows,
+      contactedCount: parseInt(statusCounts.rows[0]?.contacted || 0),
+      newCount: parseInt(statusCounts.rows[0]?.new_count || 0),
     });
   } catch (err) {
     res.status(500).render("error", { message: err.message });
@@ -196,6 +199,37 @@ app.get("/conversations", requireAuth, async (req, res) => {
 });
 
 // --- Delete routes ---
+app.post("/leads/:id/mark-contacted", requireAuth, async (req, res) => {
+  const { note } = req.body || {};
+  await pool.query(
+    `UPDATE leads SET contacted_at = NOW(), status = 'contacted', contact_note = $2 WHERE id = $1`,
+    [req.params.id, (note || "").trim().slice(0, 500) || null]
+  ).catch(() => {});
+  res.redirect("/leads");
+});
+
+app.post("/leads/:id/unmark-contacted", requireAuth, async (req, res) => {
+  await pool.query(
+    `UPDATE leads SET contacted_at = NULL, status = 'new', contact_note = NULL WHERE id = $1`,
+    [req.params.id]
+  ).catch(() => {});
+  res.redirect("/leads");
+});
+
+app.post("/leads/:id/update-status", requireAuth, async (req, res) => {
+  const { status } = req.body || {};
+  const valid = ["new", "contacted", "closed", "spam"];
+  if (!valid.includes(status)) return res.redirect("/leads");
+  const extra = status === "contacted"
+    ? ", contacted_at = COALESCE(contacted_at, NOW())"
+    : "";
+  await pool.query(
+    `UPDATE leads SET status = $2${extra} WHERE id = $1`,
+    [req.params.id, status]
+  ).catch(() => {});
+  res.redirect("/leads");
+});
+
 app.post("/leads/:id/delete", requireAuth, async (req, res) => {
   await pool.query("DELETE FROM leads WHERE id = $1", [req.params.id]);
   res.redirect("/leads");
