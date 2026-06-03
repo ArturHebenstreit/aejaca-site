@@ -7,7 +7,7 @@ import cron from "node-cron";
 import { createHash } from "crypto";
 import { rateLimit } from "express-rate-limit";
 import { getSystemPrompt, detectHotLead } from "./context.js";
-import { createGmailClient, processHistory, setupGmailWatch } from "./gmail.js";
+import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages } from "./gmail.js";
 
 const app = express();
 app.set("trust proxy", true);
@@ -789,6 +789,14 @@ if (pool) {
   // Weekends: 2× (market closed but reference prices) = 16 req/month → total ~82/month < 100 limit
   cron.schedule("0 7 * * 0,6", fetchPlatinumPalladiumSilver);   // 07:00 UTC Sat/Sun
   cron.schedule("0 15 * * 0,6", fetchPlatinumPalladiumSilver);  // 15:00 UTC Sat/Sun
+
+  // Gmail polling every 5 minutes (fallback when Pub/Sub unavailable)
+  cron.schedule("*/5 * * * *", async () => {
+    const gmail = createGmailClient();
+    if (!gmail) return;
+    const count = await pollRecentMessages(gmail, pool);
+    if (count > 0) console.log(`[gmail] poll: ${count} new messages processed`);
+  });
 }
 
 app.get("/api/market-rates", async (req, res) => {

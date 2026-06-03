@@ -191,3 +191,27 @@ export async function setupGmailWatch(gmail) {
   });
   return { historyId: data.historyId, expiration: data.expiration };
 }
+
+// Poll Gmail for recent messages — used as fallback when Pub/Sub is unavailable
+export async function pollRecentMessages(gmail, pool) {
+  let count = 0;
+  try {
+    // Fetch recent INBOX and SENT messages (last 15 minutes)
+    for (const label of ["INBOX", "SENT"]) {
+      const listRes = await gmail.users.messages.list({
+        userId: "me",
+        labelIds: [label],
+        q: "newer_than:15m",
+        maxResults: 20,
+      });
+      const messages = listRes.data.messages || [];
+      for (const { id } of messages) {
+        const result = await processGmailMessage(gmail, pool, id);
+        if (result) count++;
+      }
+    }
+  } catch (err) {
+    console.error("[gmail] pollRecentMessages error:", err.message);
+  }
+  return count;
+}
