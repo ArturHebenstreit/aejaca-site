@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEJaCA Admin — Wątek email</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            neutral: { 950: '#0a0a0a' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-neutral-950 min-h-screen text-neutral-100">
+
+  <header class="bg-neutral-900 border-b border-white/10 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-6">
+      <span class="text-lg font-bold text-white">AEJaCA <span class="text-amber-400">Admin</span></span>
+      <nav class="flex gap-4 text-sm">
+        <a href="/dashboard" class="text-neutral-400 hover:text-white transition-colors">Dashboard</a>
+        <a href="/analytics" class="text-neutral-400 hover:text-white transition-colors">Analytics</a>
+        <a href="/leads" class="text-neutral-400 hover:text-white transition-colors">Leads</a>
+        <a href="/subscribers" class="text-neutral-400 hover:text-white transition-colors">Subscribers</a>
+        <a href="/conversations" class="text-neutral-400 hover:text-white transition-colors">Chat</a>
+        <a href="/email-threads" class="text-white font-medium border-b border-amber-400 pb-0.5">Email</a>
+        <a href="/laser-matrix" class="text-neutral-400 hover:text-white transition-colors">Laser Matrix</a>
+        <a href="/gemstone-prices" class="text-neutral-400 hover:text-white transition-colors">Gems</a>
+        <a href="/filaments" class="text-neutral-400 hover:text-white transition-colors">Filamenty</a>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      <img src="<%= user.photo %>" class="w-7 h-7 rounded-full" alt="" />
+      <span class="text-sm text-neutral-400"><%= user.name %></span>
+      <a href="/logout" class="text-xs text-red-400 hover:text-red-300 transition-colors">Logout</a>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-6 py-8">
+
+    <div class="mb-6 flex items-center gap-3">
+      <a href="/email-threads" class="text-neutral-400 hover:text-white transition-colors text-sm">&larr; Wątki email</a>
+    </div>
+
+    <!-- Thread header -->
+    <div class="bg-neutral-900 border border-white/10 rounded-xl px-6 py-5 mb-6">
+      <h2 class="text-xl font-semibold text-white mb-3 break-words">
+        <%= thread.subject || '(brak tematu)' %>
+      </h2>
+      <div class="flex flex-wrap gap-4 text-sm text-neutral-400">
+        <div>
+          <span class="text-neutral-600 text-xs uppercase mr-1">Lead:</span>
+          <% if (thread.lead_email) { %>
+            <a href="mailto:<%= thread.lead_email %>" class="text-amber-400 hover:text-amber-300 transition-colors">
+              <%= thread.lead_email %>
+            </a>
+          <% } else { %>
+            <span class="text-neutral-600">— (brak powiązania)</span>
+          <% } %>
+        </div>
+        <% if (thread.lead_calculator) { %>
+        <div>
+          <span class="text-neutral-600 text-xs uppercase mr-1">Kalkulator:</span>
+          <span class="text-neutral-300"><%= thread.lead_calculator %></span>
+        </div>
+        <% } %>
+        <% if (thread.lead_status) { %>
+        <div>
+          <span class="text-neutral-600 text-xs uppercase mr-1">Status:</span>
+          <% var statusMap = { new: 'bg-blue-950 text-blue-300', contacted: 'bg-amber-950 text-amber-300', closed: 'bg-emerald-950 text-emerald-300', spam: 'bg-neutral-800 text-neutral-500' }; %>
+          <% var statusClass = statusMap[thread.lead_status] || 'bg-neutral-800 text-neutral-400'; %>
+          <span class="px-2 py-0.5 rounded text-xs font-medium <%= statusClass %>">
+            <%= thread.lead_status %>
+          </span>
+        </div>
+        <% } %>
+        <div>
+          <span class="text-neutral-600 text-xs uppercase mr-1">Wiadomości:</span>
+          <span class="text-neutral-300"><%= thread.message_count || messages.length %></span>
+        </div>
+        <div>
+          <span class="text-neutral-600 text-xs uppercase mr-1">Ostatnia:</span>
+          <span class="text-neutral-300"><%= fmtDate(thread.last_message_at) %></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages timeline -->
+    <div class="space-y-4">
+      <% if (messages && messages.length > 0) { %>
+        <% messages.forEach(function(msg, i) { %>
+          <div class="bg-neutral-900 border <%= msg.direction === 'outbound' ? 'border-blue-900/40' : 'border-amber-900/40' %> rounded-xl overflow-hidden">
+
+            <!-- Message header -->
+            <div class="px-5 py-3 border-b border-white/5 flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <% if (msg.direction === 'outbound') { %>
+                  <span class="px-2.5 py-0.5 bg-blue-950 text-blue-300 rounded text-xs font-medium">&rarr; Wychodzący</span>
+                <% } else { %>
+                  <span class="px-2.5 py-0.5 bg-amber-950 text-amber-300 rounded text-xs font-medium">&larr; Przychodzący</span>
+                <% } %>
+                <span class="text-xs text-neutral-500"><%= fmtDate(msg.received_at) %></span>
+              </div>
+            </div>
+
+            <!-- From / To -->
+            <div class="px-5 py-2 border-b border-white/5 text-xs space-y-0.5">
+              <div class="flex gap-2">
+                <span class="text-neutral-600 w-8 shrink-0">Od:</span>
+                <span class="text-neutral-300 break-all"><%= msg.from_addr || '—' %></span>
+              </div>
+              <div class="flex gap-2">
+                <span class="text-neutral-600 w-8 shrink-0">Do:</span>
+                <span class="text-neutral-300 break-all"><%= msg.to_addr || '—' %></span>
+              </div>
+              <% if (msg.cc_addr) { %>
+              <div class="flex gap-2">
+                <span class="text-neutral-600 w-8 shrink-0">CC:</span>
+                <span class="text-neutral-300 break-all"><%= msg.cc_addr %></span>
+              </div>
+              <% } %>
+            </div>
+
+            <!-- Body -->
+            <div class="px-5 py-4">
+              <% if (msg.body_text && msg.body_text.trim()) { %>
+                <pre class="whitespace-pre-wrap text-xs text-neutral-300 font-mono leading-relaxed max-h-96 overflow-y-auto"><%= msg.body_text %></pre>
+              <% } else if (msg.snippet) { %>
+                <p class="text-xs text-neutral-500 italic"><%= msg.snippet %></p>
+              <% } else { %>
+                <p class="text-xs text-neutral-600">(brak treści)</p>
+              <% } %>
+            </div>
+
+          </div>
+          <% if (i < messages.length - 1) { %>
+            <div class="flex items-center gap-3">
+              <div class="flex-1 border-t border-white/5"></div>
+              <span class="text-xs text-neutral-700">&darr;</span>
+              <div class="flex-1 border-t border-white/5"></div>
+            </div>
+          <% } %>
+        <% }); %>
+      <% } else { %>
+        <div class="bg-neutral-900 border border-white/10 rounded-xl px-6 py-12 text-center text-neutral-600">
+          Brak wiadomości w tym wątku.
+        </div>
+      <% } %>
+    </div>
+
+  </main>
+
+</body>
+</html>
