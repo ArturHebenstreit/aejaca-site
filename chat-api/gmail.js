@@ -71,7 +71,7 @@ export function extractBody(payload) {
   return "";
 }
 
-async function classifyEmailThread(subject, bodyText) {
+export async function classifyEmailThread(subject, bodyText) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return "unclassified";
   try {
