@@ -16,6 +16,10 @@ Claude is not just an executor — Claude is a **creative critic and strategic p
 
 This applies to features, design decisions, content strategy, and architecture. The goal: every change that ships is the best version we could have built.
 
+## Interaction style (user preference)
+
+**Always go step by step.** After completing each step in a multi-step process, stop and ask the user "Czy idziemy dalej?" before proceeding to the next step. Never write out multiple steps ahead without confirmation. This applies to: setup instructions, debugging flows, configuration walkthroughs, deployment steps — any sequential process involving the user doing something manually.
+
 ## Model routing (cost optimization)
 
 **Claude MUST automatically route tasks to the most cost-effective model** — the user does not need to ask. Default behavior:
