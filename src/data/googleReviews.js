@@ -40,12 +40,12 @@ export const GOOGLE_BUSINESS = {
   writeReviewUrl: "https://search.google.com/local/writereview?placeid=ChIJE7k_bwABwGwRNtWGAYfCHH4",
   // Agregaty (aktualizuj przy zmianach)
   rating: 5.0,
-  totalReviews: 22,
+  totalReviews: 23,
 };
 
 // -------------------------------------------------------------------
-// 22 rzeczywiste opinie z Google Maps (stan: kwiecień 2026)
-// 8 z treścią + 14 rating-only (5★, bez tekstu — normalne na Google)
+// 23 rzeczywiste opinie z Google Maps (stan: czerwiec 2026)
+// 8 z treścią + 15 rating-only (5★, bez tekstu — normalne na Google)
 // Daty szacunkowe "miesiąc temu" — wszystkie w marcu 2026,
 // oprócz Artur Hebenstreit (2 mies. temu wg odpowiedzi właściciela).
 // -------------------------------------------------------------------
@@ -166,4 +166,5 @@ export const REVIEWS = [
   { id: "r20", author: "Marcin Kosek",        rating: 5, date: "2026-03-05", originalLang: "pl", text: "" },
   { id: "r21", author: "Justyna Wodyńska",    rating: 5, date: "2026-03-04", originalLang: "pl", text: "" },
   { id: "r22", author: "Andrzej Buczkowski",  rating: 5, date: "2026-03-03", originalLang: "pl", text: "" },
+  { id: "r23", author: "",                   rating: 5, date: "2026-06-08", originalLang: "pl", text: "" },
 ];
