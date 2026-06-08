@@ -27,6 +27,30 @@ export function getHeader(headers, name) {
   return found?.value || null;
 }
 
+// Senders that are clearly machines, not clients. Matches the local-part or
+// full address — deliberately does NOT match generic business addresses like
+// info@ or contact@ which can be real correspondence.
+const AUTOMATED_SENDER_RE = /(no-?reply|do-?not-?reply|donotreply|no_reply|mailer-daemon|postmaster@|bounce|notifications?@|newsletter|mailchimp|sendgrid|mailerlite|sendinblue|amazonses|dmarc|abuse@|@(?:bounce|email|mail|reports?|news)\.)/i;
+
+// True when an INBOUND message is automated mail (newsletters, DMARC/domain
+// reports, autoresponders, mailing lists) rather than real client correspondence.
+// Detection is header-based so it works regardless of Gmail tab settings.
+export function isAutomatedEmail(headers, from) {
+  if (AUTOMATED_SENDER_RE.test((from || "").toLowerCase())) return true;
+  // Marketing / mailing-list signals
+  if (getHeader(headers, "List-Unsubscribe")) return true;
+  if (getHeader(headers, "List-Id")) return true;
+  const precedence = (getHeader(headers, "Precedence") || "").toLowerCase();
+  if (["bulk", "list", "junk", "auto_reply"].includes(precedence)) return true;
+  // Auto-generated mail: DMARC reports, vacation replies, system notices
+  const autoSubmitted = (getHeader(headers, "Auto-Submitted") || "").toLowerCase();
+  if (autoSubmitted && autoSubmitted !== "no") return true;
+  if (getHeader(headers, "X-Auto-Response-Suppress")) return true;
+  // Feedback-loop / DMARC aggregate reports ("Report Domain: …")
+  if ((getHeader(headers, "Content-Type") || "").toLowerCase().includes("report-type=")) return true;
+  return false;
+}
+
 export function extractBody(payload) {
   if (!payload) return "";
 
@@ -76,6 +100,13 @@ export async function processGmailMessage(gmail, pool, messageId) {
 
     const bodyText = extractBody(data.payload);
     const direction = labelIds.includes("SENT") ? "outbound" : "inbound";
+
+    // Skip automated inbound mail (newsletters, DMARC/domain reports,
+    // autoresponders, mailing lists) — not real client correspondence.
+    // Outbound (our own SENT replies) is always kept.
+    if (direction === "inbound" && isAutomatedEmail(headers, from)) {
+      return null;
+    }
 
     // Determine which email to match against leads
     const matchEmail = direction === "outbound"
@@ -194,23 +225,34 @@ export async function setupGmailWatch(gmail) {
   return { historyId: data.historyId, expiration: data.expiration };
 }
 
-// Poll Gmail for recent messages — used as fallback when Pub/Sub is unavailable
-export async function pollRecentMessages(gmail, pool) {
+// Poll Gmail for recent messages — used as fallback when Pub/Sub is unavailable.
+// opts.query: Gmail search query (default last 15 min, for the 5-min cron).
+// opts.maxPages: how many 100-message pages to walk per label (default 1;
+//   raise for a one-time backfill over a wider window).
+export async function pollRecentMessages(gmail, pool, opts = {}) {
+  const query = opts.query || "newer_than:15m";
+  const maxPages = opts.maxPages || 1;
   let count = 0;
   try {
-    // Fetch recent INBOX and SENT messages (last 15 minutes)
     for (const label of ["INBOX", "SENT"]) {
-      const listRes = await gmail.users.messages.list({
-        userId: "me",
-        labelIds: [label],
-        q: "newer_than:15m",
-        maxResults: 20,
-      });
-      const messages = listRes.data.messages || [];
-      for (const { id } of messages) {
-        const result = await processGmailMessage(gmail, pool, id);
-        if (result) count++;
-      }
+      let pageToken;
+      let pages = 0;
+      do {
+        const listRes = await gmail.users.messages.list({
+          userId: "me",
+          labelIds: [label],
+          q: query,
+          maxResults: 100,
+          pageToken,
+        });
+        const messages = listRes.data.messages || [];
+        for (const { id } of messages) {
+          const result = await processGmailMessage(gmail, pool, id);
+          if (result) count++;
+        }
+        pageToken = listRes.data.nextPageToken;
+        pages++;
+      } while (pageToken && pages < maxPages);
     }
   } catch (err) {
     console.error("[gmail] pollRecentMessages error:", err.message);
