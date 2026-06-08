@@ -34,9 +34,25 @@
     <link rel="preload" as="image" href="/hero-home-jewelry.webp" type="image/webp" fetchpriority="high" />
     <link rel="preload" as="image" href="/hero-home-studio.webp" type="image/webp" fetchpriority="high" />
 
-    <!-- Helmet (react-helmet-async) injects per-page: title, description,
-         keywords, robots, canonical, hreflang, OG, Twitter, JSON-LD.
-         Only static tags that never change live here. -->
+    <!-- Static fallback meta tags — crawlers that don't execute JS see these.
+         react-helmet-async overrides them per-page once JS runs. -->
+    <title>AEJaCA — Biżuteria handmade & Studio Fabrykacji Cyfrowej | Józefosław k. Warszawy</title>
+    <meta name="description" content="Dwie marki, jedno studio. AEJaCA Biżuteria: srebro, złoto, żywica epoksydowa — każdy element ręcznie robiony. AEJaCA sTuDiO: druk 3D, grawer laserowy CO2 & Fiber." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="AEJaCA" />
+    <meta property="og:title" content="AEJaCA — Biżuteria handmade & Studio Fabrykacji Cyfrowej | Józefosław k. Warszawy" />
+    <meta property="og:description" content="Dwie marki, jedno studio. AEJaCA Biżuteria: srebro, złoto, żywica epoksydowa — każdy element ręcznie robiony. AEJaCA sTuDiO: druk 3D, grawer laserowy CO2 & Fiber." />
+    <meta property="og:image" content="https://www.aejaca.com/og-default.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:url" content="https://www.aejaca.com/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@aejaca_" />
+    <meta name="twitter:title" content="AEJaCA — Biżuteria handmade &amp; Studio Fabrykacji Cyfrowej" />
+    <meta name="twitter:description" content="AEJaCA Biżuteria: srebro, złoto, żywica epoksydowa. AEJaCA sTuDiO: druk 3D, grawer laserowy CO2 &amp; Fiber. Józefosław k. Warszawy." />
+    <meta name="twitter:image" content="https://www.aejaca.com/og-default.jpg" />
+
+    <!-- Author / theme (never changes) -->
     <meta name="author" content="AEJaCA" />
     <meta name="theme-color" content="#0a0a0a" />
 

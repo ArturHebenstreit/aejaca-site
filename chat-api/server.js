@@ -7,6 +7,7 @@ import cron from "node-cron";
 import { createHash } from "crypto";
 import { rateLimit } from "express-rate-limit";
 import { getSystemPrompt, detectHotLead } from "./context.js";
+import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages } from "./gmail.js";
 
 const app = express();
 app.set("trust proxy", true);
@@ -46,6 +47,34 @@ if (pool) {
   pool.query(`ALTER TABLE conversations ADD COLUMN IF NOT EXISTS country VARCHAR(10)`).catch(() => {});
   pool.query(`CREATE TABLE IF NOT EXISTS events (id BIGSERIAL PRIMARY KEY, ts TIMESTAMPTZ NOT NULL DEFAULT NOW(), session VARCHAR(50) NOT NULL, path VARCHAR(500), category VARCHAR(50), action VARCHAR(200), label VARCHAR(500), value NUMERIC, country VARCHAR(10), device VARCHAR(20))`).catch(() => {});
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS session_id VARCHAR(50)`).catch(() => {});
+  pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS contacted_at TIMESTAMPTZ`).catch(() => {});
+  pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS contact_note TEXT`).catch(() => {});
+
+  pool.query(`CREATE TABLE IF NOT EXISTS email_threads (
+    id BIGSERIAL PRIMARY KEY,
+    gmail_thread_id VARCHAR(200) UNIQUE NOT NULL,
+    lead_id BIGINT,
+    subject VARCHAR(500),
+    last_message_at TIMESTAMPTZ,
+    message_count INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  )`).catch(() => {});
+
+  pool.query(`CREATE TABLE IF NOT EXISTS email_messages (
+    id BIGSERIAL PRIMARY KEY,
+    thread_id BIGINT,
+    gmail_message_id VARCHAR(200) UNIQUE NOT NULL,
+    direction VARCHAR(10) NOT NULL,
+    from_addr VARCHAR(300),
+    to_addr TEXT,
+    cc_addr TEXT,
+    subject VARCHAR(500),
+    body_text TEXT,
+    snippet VARCHAR(500),
+    gmail_labels TEXT[],
+    received_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  )`).catch(() => {});
   pool.query(`CREATE TABLE IF NOT EXISTS market_rates (
     id SERIAL PRIMARY KEY,
     fetched_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -444,17 +473,26 @@ app.post("/api/contact", (req, res, next) => {
     payload.file = { name: req.file.originalname, type: req.file.mimetype, data: req.file.buffer.toString("base64") };
   }
 
-  if (CONTACT_N8N_URL) {
-    fetch(CONTACT_N8N_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    }).then(r => {
-      if (!r.ok) console.error(`Contact webhook n8n ${r.status}`);
-    }).catch(err => {
-      console.error("Contact webhook error:", err.message);
-    });
-  }
+  // Check if this email was already contacted — pass flag to n8n so it skips follow-up
+  const alreadyContacted = pool
+    ? pool.query("SELECT contacted_at FROM leads WHERE email = $1 AND contacted_at IS NOT NULL LIMIT 1", [payload.email])
+        .then(r => r.rows.length > 0)
+        .catch(() => false)
+    : Promise.resolve(false);
+
+  alreadyContacted.then(skipFollowup => {
+    if (CONTACT_N8N_URL) {
+      fetch(CONTACT_N8N_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, skip_followup: skipFollowup }),
+      }).then(r => {
+        if (!r.ok) console.error(`Contact webhook n8n ${r.status}`);
+      }).catch(err => {
+        console.error("Contact webhook error:", err.message);
+      });
+    }
+  });
 
   // Save lead to DB (best-effort, non-blocking)
   if (pool) {
@@ -507,17 +545,26 @@ app.post("/api/quote", express.json({ limit: "50mb" }), async (req, res) => {
     ...(file?.data ? { file: { name: String(file.name || "attachment").slice(0, 255), type: String(file.type || "application/octet-stream"), data: file.data } } : {}),
   };
 
-  if (QUOTE_N8N_URL) {
-    fetch(QUOTE_N8N_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    }).then(r => {
-      if (!r.ok) console.error(`Quote webhook n8n ${r.status}`);
-    }).catch(err => {
-      console.error("Quote webhook error:", err.message);
-    });
-  }
+  // Check if this email was already contacted — pass flag to n8n so it skips follow-up
+  const alreadyContactedQuote = pool
+    ? pool.query("SELECT contacted_at FROM leads WHERE email = $1 AND contacted_at IS NOT NULL LIMIT 1", [payload.email])
+        .then(r => r.rows.length > 0)
+        .catch(() => false)
+    : Promise.resolve(false);
+
+  alreadyContactedQuote.then(skipFollowup => {
+    if (QUOTE_N8N_URL) {
+      fetch(QUOTE_N8N_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, skip_followup: skipFollowup }),
+      }).then(r => {
+        if (!r.ok) console.error(`Quote webhook n8n ${r.status}`);
+      }).catch(err => {
+        console.error("Quote webhook error:", err.message);
+      });
+    }
+  });
 
   if (pool) {
     const quoteSessionId = req.body?.sessionId || null;
@@ -531,6 +578,36 @@ app.post("/api/quote", express.json({ limit: "50mb" }), async (req, res) => {
   }
 
   res.json({ ok: true });
+});
+
+// --- Lead contact status (for n8n BCC automation) ---
+// Token-authenticated: requires X-Admin-Token header matching ADMIN_API_TOKEN env var
+app.get("/api/leads/contact-status", async (req, res) => {
+  const token = req.headers["x-admin-token"];
+  if (!token || token !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  const email = (req.query.email || "").trim().toLowerCase();
+  if (!email || !CONTACT_EMAIL_RE.test(email)) return res.status(400).json({ error: "Invalid email" });
+  if (!pool) return res.json({ contacted: false });
+  const { rows } = await pool.query(
+    "SELECT contacted_at, contact_note FROM leads WHERE email = $1 AND contacted_at IS NOT NULL ORDER BY contacted_at DESC LIMIT 1",
+    [email]
+  ).catch(() => ({ rows: [] }));
+  res.json({ contacted: rows.length > 0, contacted_at: rows[0]?.contacted_at || null, note: rows[0]?.contact_note || null });
+});
+
+// Mark lead as contacted via API (for n8n BCC automation)
+app.post("/api/leads/mark-contacted", express.json(), async (req, res) => {
+  const token = req.headers["x-admin-token"];
+  if (!token || token !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  const { email, note } = req.body || {};
+  if (!email || !CONTACT_EMAIL_RE.test(email)) return res.status(400).json({ error: "Invalid email" });
+  if (!pool) return res.json({ ok: true, updated: 0 });
+  const { rowCount } = await pool.query(
+    `UPDATE leads SET contacted_at = NOW(), status = 'contacted', contact_note = COALESCE($2, contact_note)
+     WHERE email = $1 AND contacted_at IS NULL`,
+    [email.trim().toLowerCase(), note || null]
+  ).catch(() => ({ rowCount: 0 }));
+  res.json({ ok: true, updated: rowCount });
 });
 
 // --- Analytics event ingestion ---
@@ -712,6 +789,14 @@ if (pool) {
   // Weekends: 2× (market closed but reference prices) = 16 req/month → total ~82/month < 100 limit
   cron.schedule("0 7 * * 0,6", fetchPlatinumPalladiumSilver);   // 07:00 UTC Sat/Sun
   cron.schedule("0 15 * * 0,6", fetchPlatinumPalladiumSilver);  // 15:00 UTC Sat/Sun
+
+  // Gmail polling every 5 minutes (fallback when Pub/Sub unavailable)
+  cron.schedule("*/5 * * * *", async () => {
+    const gmail = createGmailClient();
+    if (!gmail) return;
+    const count = await pollRecentMessages(gmail, pool);
+    if (count > 0) console.log(`[gmail] poll: ${count} new messages processed`);
+  });
 }
 
 app.get("/api/market-rates", async (req, res) => {
@@ -964,5 +1049,69 @@ app.post("/api/filaments/invalidate", express.json(), (req, res) => {
   _filamentCache = { ts: 0, data: null };
   res.json({ ok: true });
 });
+
+// --- Gmail Push Notifications (Google Cloud Pub/Sub) ---
+let _lastHistoryId = null;
+
+app.post("/api/gmail/push", express.json(), async (req, res) => {
+  // Verify Pub/Sub push token
+  const token = req.query.token;
+  if (!token || token !== process.env.GMAIL_PUBSUB_SECRET) {
+    return res.status(401).end();
+  }
+
+  // Acknowledge immediately (Pub/Sub requires fast 200)
+  res.status(200).end();
+
+  if (!pool) return;
+
+  try {
+    const msgData = req.body?.message?.data;
+    if (!msgData) return;
+    const decoded = JSON.parse(Buffer.from(msgData, "base64").toString("utf-8"));
+    const historyId = decoded.historyId;
+    if (!historyId) return;
+
+    const gmail = createGmailClient();
+    if (!gmail) return;
+
+    const startId = _lastHistoryId || String(BigInt(historyId) - 10n);
+    const count = await processHistory(gmail, pool, startId);
+    _lastHistoryId = historyId;
+    if (count > 0) console.log(`[gmail] processed ${count} new messages from historyId ${startId}`);
+  } catch (err) {
+    console.error("[gmail] push error:", err.message);
+  }
+});
+
+// Setup/renew Gmail watch (token-auth, call once to start and then auto-renewed by cron)
+app.post("/api/gmail/setup-watch", async (req, res) => {
+  const token = req.headers["x-admin-token"];
+  if (!token || token !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  try {
+    const gmail = createGmailClient();
+    if (!gmail) return res.status(503).json({ error: "Gmail not configured" });
+    const result = await setupGmailWatch(gmail);
+    _lastHistoryId = result.historyId;
+    res.json({ ok: true, historyId: result.historyId, expiration: result.expiration });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+if (pool) {
+  // Renew Gmail watch every 6 days (expires after 7)
+  cron.schedule("0 6 */6 * *", async () => {
+    const gmail = createGmailClient();
+    if (!gmail) return;
+    try {
+      const result = await setupGmailWatch(gmail);
+      _lastHistoryId = result.historyId;
+      console.log("[gmail] watch renewed, historyId:", result.historyId);
+    } catch (err) {
+      console.error("[gmail] watch renewal error:", err.message);
+    }
+  });
+}
 
 app.listen(PORT, () => console.log(`AEJaCA Chat API running on :${PORT}`));
