@@ -896,8 +896,17 @@ app.post("/filaments/:typeId/brands/create", requireAuth, express.urlencoded({ e
 // --- Email Threads ---
 app.get("/email-threads", requireAuth, async (req, res) => {
   const page = Math.max(1, parseInt(req.query.page) || 1);
+  const filter = req.query.filter || "active";
   const limit = 50;
   const offset = (page - 1) * limit;
+
+  const whereClause = filter === "all" ? "" :
+    filter === "spam" ? "WHERE et.tag = 'spam'" :
+    filter === "lead" ? "WHERE et.tag = 'lead'" :
+    filter === "not_lead" ? "WHERE et.tag = 'not_lead'" :
+    filter === "unclassified" ? "WHERE et.tag = 'unclassified'" :
+    "WHERE et.tag != 'spam'";  // default "active": hide spam
+
   try {
     const [rows, count, stats] = await Promise.all([
       pool.query(`
@@ -906,13 +915,17 @@ app.get("/email-threads", requireAuth, async (req, res) => {
           (SELECT COUNT(*) FROM email_messages em WHERE em.thread_id = et.id AND em.direction = 'outbound') as outbound_count
         FROM email_threads et
         LEFT JOIN leads l ON l.id = et.lead_id
+        ${whereClause}
         ORDER BY et.last_message_at DESC NULLS LAST
         LIMIT $1 OFFSET $2
       `, [limit, offset]),
-      pool.query("SELECT COUNT(*) as total FROM email_threads"),
+      pool.query(`SELECT COUNT(*) as total FROM email_threads et ${whereClause}`),
       pool.query(`SELECT
         COUNT(*) as total,
-        COUNT(*) FILTER (WHERE lead_id IS NOT NULL) as linked,
+        COUNT(*) FILTER (WHERE tag = 'lead') as leads,
+        COUNT(*) FILTER (WHERE tag = 'spam') as spam,
+        COUNT(*) FILTER (WHERE tag = 'not_lead') as not_lead,
+        COUNT(*) FILTER (WHERE tag = 'unclassified') as unclassified,
         COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE) as today
         FROM email_threads`),
     ]);
@@ -921,11 +934,24 @@ app.get("/email-threads", requireAuth, async (req, res) => {
       threads: rows.rows,
       total: parseInt(count.rows[0].total),
       page,
-      pages: Math.ceil(count.rows[0].total / limit),
+      pages: Math.ceil(parseInt(count.rows[0].total) / limit),
       stats: stats.rows[0],
+      filter,
     });
   } catch (err) {
     res.status(500).render("error", { message: err.message });
+  }
+});
+
+app.post("/email-threads/:id/tag", requireAuth, async (req, res) => {
+  const { tag } = req.body;
+  const valid = ["spam", "lead", "not_lead", "unclassified"];
+  if (!valid.includes(tag)) return res.status(400).json({ error: "invalid tag" });
+  try {
+    await pool.query("UPDATE email_threads SET tag = $1 WHERE id = $2", [tag, req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

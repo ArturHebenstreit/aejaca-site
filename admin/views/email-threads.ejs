@@ -48,19 +48,48 @@
     </div>
 
     <!-- Stats -->
-    <div class="flex flex-wrap gap-3 mb-6">
+    <div class="flex flex-wrap gap-3 mb-5">
       <div class="bg-neutral-900 border border-white/10 rounded-xl px-5 py-3 flex items-center gap-3">
-        <span class="text-neutral-500 text-sm">Wszystkich wątków</span>
+        <span class="text-neutral-500 text-sm">Wszystkich</span>
         <span class="text-2xl font-bold text-amber-400"><%= stats.total %></span>
       </div>
       <div class="bg-neutral-900 border border-emerald-900/40 rounded-xl px-4 py-3 flex items-center gap-2">
-        <span class="text-xs text-neutral-500 uppercase">Powiązane z leadem</span>
-        <span class="text-lg font-semibold text-emerald-400"><%= stats.linked %></span>
+        <span class="text-xs text-neutral-500 uppercase">Leady</span>
+        <span class="text-lg font-semibold text-emerald-400"><%= stats.leads %></span>
+      </div>
+      <div class="bg-neutral-900 border border-red-900/40 rounded-xl px-4 py-3 flex items-center gap-2">
+        <span class="text-xs text-neutral-500 uppercase">Spam</span>
+        <span class="text-lg font-semibold text-red-400"><%= stats.spam %></span>
+      </div>
+      <div class="bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-3 flex items-center gap-2">
+        <span class="text-xs text-neutral-500 uppercase">Niesklasyfikowane</span>
+        <span class="text-lg font-semibold text-neutral-400"><%= stats.unclassified %></span>
       </div>
       <div class="bg-neutral-900 border border-blue-900/40 rounded-xl px-4 py-3 flex items-center gap-2">
         <span class="text-xs text-neutral-500 uppercase">Dzisiaj</span>
         <span class="text-lg font-semibold text-blue-400"><%= stats.today %></span>
       </div>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="flex gap-2 mb-5 flex-wrap">
+      <% var tabs = [
+        { key: 'active', label: 'Aktywne (bez spamu)' },
+        { key: 'lead', label: 'Leady' },
+        { key: 'not_lead', label: 'Nie Leady' },
+        { key: 'unclassified', label: 'Niesklasyfikowane' },
+        { key: 'spam', label: 'Spam' },
+        { key: 'all', label: 'Wszystkie' },
+      ]; %>
+      <% tabs.forEach(function(tab) { %>
+        <a href="/email-threads?filter=<%= tab.key %>"
+           class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
+             <%= filter === tab.key
+               ? 'bg-amber-600 text-white'
+               : 'bg-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-700' %>">
+          <%= tab.label %>
+        </a>
+      <% }); %>
     </div>
 
     <!-- Table -->
@@ -74,21 +103,22 @@
               <th class="px-4 py-3 text-left">Email leada</th>
               <th class="px-4 py-3 text-center whitespace-nowrap">Przych.</th>
               <th class="px-4 py-3 text-center whitespace-nowrap">Wych.</th>
-              <th class="px-4 py-3 text-left">Status leada</th>
+              <th class="px-4 py-3 text-left">Tag</th>
+              <th class="px-4 py-3 text-left">Oznacz</th>
               <th class="px-4 py-3 text-left"></th>
             </tr>
           </thead>
           <tbody>
             <% if (threads && threads.length > 0) { %>
               <% threads.forEach(function(thread, i) { %>
-              <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors <%= i % 2 === 1 ? 'bg-white/[0.015]' : '' %>">
+              <tr id="row-<%= thread.id %>" class="border-b border-white/5 hover:bg-white/[0.03] transition-colors <%= i % 2 === 1 ? 'bg-white/[0.015]' : '' %>">
                 <td class="px-4 py-3 text-neutral-400 whitespace-nowrap text-xs">
                   <%= fmtDate(thread.last_message_at) %>
                 </td>
-                <td class="px-4 py-3 text-neutral-200 max-w-[240px] truncate">
+                <td class="px-4 py-3 text-neutral-200 max-w-[220px] truncate">
                   <%= thread.subject || '(brak tematu)' %>
                 </td>
-                <td class="px-4 py-3 text-neutral-300 max-w-[180px] truncate">
+                <td class="px-4 py-3 text-neutral-300 max-w-[160px] truncate">
                   <% if (thread.lead_email) { %>
                     <a href="mailto:<%= thread.lead_email %>" class="hover:text-amber-400 transition-colors"><%= thread.lead_email %></a>
                   <% } else { %>
@@ -102,15 +132,32 @@
                   <span class="px-2 py-0.5 bg-blue-950 text-blue-300 rounded text-xs font-medium"><%= thread.outbound_count %></span>
                 </td>
                 <td class="px-4 py-3">
-                  <% if (thread.lead_status) { %>
-                    <% var statusMap = { new: 'bg-blue-950 text-blue-300', contacted: 'bg-amber-950 text-amber-300', closed: 'bg-emerald-950 text-emerald-300', spam: 'bg-neutral-800 text-neutral-500' }; %>
-                    <% var statusClass = statusMap[thread.lead_status] || 'bg-neutral-800 text-neutral-400'; %>
-                    <span class="px-2 py-0.5 rounded text-xs font-medium <%= statusClass %>">
-                      <%= thread.lead_status %>
-                    </span>
-                  <% } else { %>
-                    <span class="text-neutral-600 text-xs">—</span>
-                  <% } %>
+                  <span id="tag-badge-<%= thread.id %>" class="px-2 py-0.5 rounded text-xs font-medium
+                    <%= thread.tag === 'lead' ? 'bg-emerald-950 text-emerald-300' :
+                        thread.tag === 'spam' ? 'bg-red-950 text-red-400' :
+                        thread.tag === 'not_lead' ? 'bg-neutral-800 text-neutral-400' :
+                        'bg-neutral-800 text-neutral-600' %>">
+                    <%= thread.tag === 'lead' ? 'Lead' :
+                        thread.tag === 'spam' ? 'Spam' :
+                        thread.tag === 'not_lead' ? 'Nie Lead' :
+                        '?' %>
+                  </span>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex gap-1">
+                    <button onclick="setTag(<%= thread.id %>, 'lead')"
+                      class="px-2 py-0.5 text-xs rounded border border-emerald-800 text-emerald-400 hover:bg-emerald-900 transition-colors">
+                      Lead
+                    </button>
+                    <button onclick="setTag(<%= thread.id %>, 'not_lead')"
+                      class="px-2 py-0.5 text-xs rounded border border-neutral-700 text-neutral-400 hover:bg-neutral-800 transition-colors">
+                      Nie Lead
+                    </button>
+                    <button onclick="setTag(<%= thread.id %>, 'spam')"
+                      class="px-2 py-0.5 text-xs rounded border border-red-900 text-red-400 hover:bg-red-950 transition-colors">
+                      Spam
+                    </button>
+                  </div>
                 </td>
                 <td class="px-4 py-3 text-right">
                   <a href="/email-threads/<%= thread.id %>" class="text-xs px-3 py-1 rounded border border-white/10 text-neutral-400 hover:text-white hover:border-white/20 transition-colors whitespace-nowrap">
@@ -121,7 +168,7 @@
               <% }); %>
             <% } else { %>
             <tr>
-              <td colspan="7" class="px-4 py-12 text-center text-neutral-600">Brak wątków email. Skonfiguruj Gmail watch aby rozpocząć śledzenie.</td>
+              <td colspan="8" class="px-4 py-12 text-center text-neutral-600">Brak wątków email w tej kategorii.</td>
             </tr>
             <% } %>
           </tbody>
@@ -135,7 +182,7 @@
       <span class="text-sm text-neutral-500">Strona <%= page %> z <%= pages %></span>
       <div class="flex gap-2">
         <% if (page > 1) { %>
-        <a href="/email-threads?page=<%= page - 1 %>" class="px-4 py-2 bg-neutral-900 border border-white/10 rounded-lg text-sm text-neutral-300 hover:text-white hover:border-white/20 transition-colors">
+        <a href="/email-threads?filter=<%= filter %>&page=<%= page - 1 %>" class="px-4 py-2 bg-neutral-900 border border-white/10 rounded-lg text-sm text-neutral-300 hover:text-white hover:border-white/20 transition-colors">
           &larr; Poprzednia
         </a>
         <% } else { %>
@@ -145,7 +192,7 @@
         <% } %>
 
         <% if (page < pages) { %>
-        <a href="/email-threads?page=<%= page + 1 %>" class="px-4 py-2 bg-neutral-900 border border-white/10 rounded-lg text-sm text-neutral-300 hover:text-white hover:border-white/20 transition-colors">
+        <a href="/email-threads?filter=<%= filter %>&page=<%= page + 1 %>" class="px-4 py-2 bg-neutral-900 border border-white/10 rounded-lg text-sm text-neutral-300 hover:text-white hover:border-white/20 transition-colors">
           Następna &rarr;
         </a>
         <% } else { %>
@@ -158,6 +205,34 @@
     <% } %>
 
   </main>
+
+  <script>
+    const tagColors = {
+      lead: 'bg-emerald-950 text-emerald-300',
+      spam: 'bg-red-950 text-red-400',
+      not_lead: 'bg-neutral-800 text-neutral-400',
+      unclassified: 'bg-neutral-800 text-neutral-600',
+    };
+    const tagLabels = { lead: 'Lead', spam: 'Spam', not_lead: 'Nie Lead', unclassified: '?' };
+
+    async function setTag(id, tag) {
+      try {
+        const resp = await fetch(`/email-threads/${id}/tag`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `tag=${tag}`,
+        });
+        if (!resp.ok) throw new Error('Server error');
+        const badge = document.getElementById(`tag-badge-${id}`);
+        if (badge) {
+          badge.className = `px-2 py-0.5 rounded text-xs font-medium ${tagColors[tag] || tagColors.unclassified}`;
+          badge.textContent = tagLabels[tag] || '?';
+        }
+      } catch (e) {
+        alert('Błąd zapisu tagu');
+      }
+    }
+  </script>
 
 </body>
 </html>
