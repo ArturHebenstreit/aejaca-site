@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+import OpenAI from "openai";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -68,6 +69,33 @@ export function extractBody(payload) {
   }
 
   return "";
+}
+
+export async function classifyEmailThread(subject, bodyText) {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return "unclassified";
+  try {
+    const openai = new OpenAI({ apiKey });
+    const prompt = `Jesteś filtrem dla studia jubilerskiego AEJaCA (biżuteria autorska + druk 3D/laser).
+
+Oceń poniższy e-mail. Odpowiedz JEDNYM słowem:
+- "lead" — potencjalny klient pyta o biżuterię, wycenę, projekt, zamówienie, materiały lub usługi AEJaCA
+- "not_lead" — wiadomość ogólna, informacyjna, niebiznesowa
+- "spam" — alert systemowy, notyfikacja automatyczna, reklama, promo, newsletter, raport
+
+Temat: ${subject}
+Treść: ${(bodyText || "").slice(0, 800)}`;
+    const resp = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 10,
+      temperature: 0,
+    });
+    const result = (resp.choices[0]?.message?.content || "").trim().toLowerCase();
+    return ["lead", "not_lead", "spam"].includes(result) ? result : "unclassified";
+  } catch {
+    return "unclassified";
+  }
 }
 
 export async function processGmailMessage(gmail, pool, messageId) {
@@ -161,6 +189,12 @@ export async function processGmailMessage(gmail, pool, messageId) {
         [threadId, leadId, subject.slice(0, 500), receivedAt]
       );
       threadDbId = newThread.rows[0].id;
+      if (direction === "inbound") {
+        const tag = await classifyEmailThread(subject, bodyText);
+        if (tag !== "unclassified") {
+          await pool.query("UPDATE email_threads SET tag = $1 WHERE id = $2", [tag, threadDbId]);
+        }
+      }
     }
 
     // Save message

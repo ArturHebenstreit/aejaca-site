@@ -59,6 +59,7 @@ if (pool) {
     message_count INTEGER DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW()
   )`).catch(() => {});
+  pool.query(`ALTER TABLE email_threads ADD COLUMN IF NOT EXISTS tag VARCHAR(20) DEFAULT 'unclassified'`).catch(() => {});
 
   pool.query(`CREATE TABLE IF NOT EXISTS email_messages (
     id BIGSERIAL PRIMARY KEY,
