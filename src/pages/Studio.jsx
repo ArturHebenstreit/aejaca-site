@@ -294,6 +294,7 @@ export default function Studio() {
           </div>
           <div className="flex flex-wrap justify-center gap-2">
             {[
+              { id: "modelowanie-3d", pl: "Modelowanie 3D", en: "3D Modeling", de: "3D-Modellierung" },
               { id: "druk-3d-fdm", pl: "Druk 3D FDM", en: "FDM 3D Printing", de: "FDM 3D-Druck" },
               { id: "zywica-uv", pl: "Żywica UV", en: "UV Resin", de: "UV-Harz" },
               { id: "laser-co2", pl: "Laser CO₂", en: "CO₂ Laser", de: "CO₂-Laser" },

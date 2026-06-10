@@ -294,6 +294,7 @@ export default function Jewelry() {
           </div>
           <div className="flex flex-wrap justify-center gap-2">
             {[
+              { id: "modelowanie-3d", pl: "Modelowanie 3D", en: "3D Modeling", de: "3D-Modellierung" },
               { id: "srebro-925", pl: "Srebro 925", en: "Sterling Silver", de: "Sterlingsilber" },
               { id: "zloto-probowane", pl: "Złoto 14K/18K", en: "Gold 14K/18K", de: "Gold 14K/18K" },
               { id: "moissanit", pl: "Moissanit", en: "Moissanite", de: "Moissanit" },
