@@ -4,7 +4,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import { useMarketRates } from "../hooks/useMarketRates.js";
 import SEOHead from "../seo/SEOHead.jsx";
-import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
+import { buildWebPageSchema, buildBreadcrumbSchema, buildFAQSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 
@@ -59,6 +59,15 @@ const LABELS = {
     calcNote: "Dokładny koszt potwierdzamy indywidualnie przed wysyłką.",
     customsTitle: "Cło poza Unią Europejską",
     customsDesc: "Przesyłki poza UE (w tym Wielka Brytania, USA, Azja) mogą podlegać cłu i podatkom importowym naliczanym przez kraj odbiorcy. Koszty te ponosi odbiorca i nie są wliczone w cenę wysyłki.",
+    faqTitle: "Najczęstsze pytania o wysyłkę",
+    faq: [
+      { q: "Ile kosztuje wysyłka w Polsce?", a: (f) => `W Polsce: kurier InPost od ${f.courier}, paczkomat InPost od ${f.locker}, a odbiór osobisty w Józefosławiu jest bezpłatny. Przy zamówieniu od ${f.free} wysyłka w Polsce jest darmowa.` },
+      { q: "Czy wysyłacie do krajów Unii Europejskiej?", a: (f) => `Tak. Wysyłka do UE od ${f.eu}, dostawa zwykle 5–10 dni roboczych. Korzystamy z InPost tam, gdzie jest dostępny, a w pozostałych krajach z DHL.` },
+      { q: "Ile kosztuje wysyłka do Wielkiej Brytanii?", a: (f) => `Kurierem ekspresowym (DHL, UPS, FedEx) zwykle 3–5 dni roboczych. Koszt zależy od wagi: do 5 kg ${f.uk5}, do 10 kg ${f.uk10}, 20–30 kg ${f.uk2030}. Od czasu Brexitu przesyłki podlegają odprawie celnej.` },
+      { q: "Ile kosztuje wysyłka do USA i innych krajów świata?", a: (f) => `DHL Express lotniczo na cały świat, w tym USA i Azja, zwykle 2–5 dni roboczych. Koszt: do 1 kg ${f.usa1}, do 10 kg ${f.usa10}.` },
+      { q: "Czy muszę zapłacić cło?", a: () => `Przesyłki poza UE (m.in. Wielka Brytania, USA, Azja) mogą podlegać cłu i podatkom importowym naliczanym przez kraj odbiorcy. Koszty te ponosi odbiorca i nie są wliczone w cenę wysyłki.` },
+      { q: "Jak długo trwa realizacja zamówienia?", a: () => `Biżuteria: do 7 dni roboczych przy materiałach na stanie, 10–14 dni przy zamawianiu materiałów. Studio (druk 3D, laser): 3–5 dni na stanie, 6–12 dni przy zamawianiu materiałów. Czas realizacji jest niezależny od czasu transportu i potwierdzamy go indywidualnie.` },
+    ],
   },
   en: {
     tag: "Shipping",
@@ -94,6 +103,15 @@ const LABELS = {
     calcNote: "We confirm the exact cost individually before shipping.",
     customsTitle: "Customs outside the EU",
     customsDesc: "Shipments outside the EU (including the UK, USA, Asia) may be subject to customs duties and import taxes charged by the destination country. These are paid by the recipient and are not included in the shipping price.",
+    faqTitle: "Shipping — frequently asked questions",
+    faq: [
+      { q: "How much does shipping cost within Poland?", a: (f) => `Within Poland: InPost courier from ${f.courier}, InPost parcel locker from ${f.locker}, and personal pickup in Józefosław is free. Orders over ${f.free} ship free within Poland.` },
+      { q: "Do you ship to EU countries?", a: (f) => `Yes. Shipping to the EU from ${f.eu}, usually 5–10 business days. We use InPost where available, otherwise DHL.` },
+      { q: "How much does shipping to the United Kingdom cost?", a: (f) => `By express courier (DHL, UPS, FedEx), typically 3–5 business days. Cost depends on weight: up to 5 kg ${f.uk5}, up to 10 kg ${f.uk10}, 20–30 kg ${f.uk2030}. Since Brexit, parcels clear customs.` },
+      { q: "How much does shipping to the USA and the rest of the world cost?", a: (f) => `DHL Express by air worldwide, including the USA and Asia, typically 2–5 business days. Cost: up to 1 kg ${f.usa1}, up to 10 kg ${f.usa10}.` },
+      { q: "Will I have to pay customs duty?", a: () => `Shipments outside the EU (including the UK, USA, Asia) may be subject to customs duties and import taxes charged by the destination country. These are paid by the recipient and are not included in the shipping price.` },
+      { q: "How long does an order take to make?", a: () => `Jewelry: up to 7 business days when materials are in stock, 10–14 days if materials must be ordered. Studio (3D printing, laser): 3–5 days in stock, 6–12 days if materials must be ordered. Fulfillment time is separate from shipping transit time and is confirmed individually.` },
+    ],
   },
   de: {
     tag: "Versand",
@@ -129,6 +147,15 @@ const LABELS = {
     calcNote: "Die genauen Kosten bestätigen wir vor dem Versand individuell.",
     customsTitle: "Zoll außerhalb der EU",
     customsDesc: "Sendungen außerhalb der EU (inkl. Großbritannien, USA, Asien) können Zöllen und Einfuhrsteuern unterliegen, die vom Bestimmungsland erhoben werden. Diese trägt der Empfänger und sind nicht im Versandpreis enthalten.",
+    faqTitle: "Häufige Fragen zum Versand",
+    faq: [
+      { q: "Wie viel kostet der Versand innerhalb Polens?", a: (f) => `Innerhalb Polens: InPost Kurier ab ${f.courier}, InPost Paketautomat ab ${f.locker}, persönliche Abholung in Józefosław kostenlos. Bestellungen ab ${f.free} werden innerhalb Polens kostenlos versandt.` },
+      { q: "Versenden Sie in EU-Länder?", a: (f) => `Ja. Versand in die EU ab ${f.eu}, in der Regel 5–10 Werktage. Wir nutzen InPost, wo verfügbar, sonst DHL.` },
+      { q: "Wie viel kostet der Versand nach Großbritannien?", a: (f) => `Per Express-Kurier (DHL, UPS, FedEx), in der Regel 3–5 Werktage. Die Kosten richten sich nach dem Gewicht: bis 5 kg ${f.uk5}, bis 10 kg ${f.uk10}, 20–30 kg ${f.uk2030}. Seit dem Brexit werden Pakete verzollt.` },
+      { q: "Wie viel kostet der Versand in die USA und den Rest der Welt?", a: (f) => `DHL Express per Luftfracht weltweit, inkl. USA und Asien, in der Regel 2–5 Werktage. Kosten: bis 1 kg ${f.usa1}, bis 10 kg ${f.usa10}.` },
+      { q: "Muss ich Zoll bezahlen?", a: () => `Sendungen außerhalb der EU (inkl. Großbritannien, USA, Asien) können Zöllen und Einfuhrsteuern unterliegen, die vom Bestimmungsland erhoben werden. Diese trägt der Empfänger und sind nicht im Versandpreis enthalten.` },
+      { q: "Wie lange dauert die Anfertigung einer Bestellung?", a: () => `Schmuck: bis zu 7 Werktage bei Material auf Lager, 10–14 Tage bei Materialbestellung. Studio (3D-Druck, Laser): 3–5 Tage auf Lager, 6–12 Tage bei Materialbestellung. Die Bearbeitungszeit ist unabhängig von der Transportzeit und wird individuell bestätigt.` },
+    ],
   },
 };
 
@@ -158,6 +185,22 @@ export default function Shipping() {
     { label: l.pickupLabel, price: l.freeLabel },
   ];
 
+  // Shared formatted values — used by BOTH the visible FAQ section and the
+  // FAQPage JSON-LD, so the structured data always matches what users see.
+  const freeDisp = showEur ? `€${FREE_SHIP.eur}` : `${FREE_SHIP.pln} zł`;
+  const faqValues = {
+    courier: fmtFrom(DOMESTIC_FROM_PLN.courier),
+    locker: fmtFrom(DOMESTIC_FROM_PLN.locker),
+    free: freeDisp,
+    eu: fmtFrom(EU_FROM_PLN),
+    uk5: fmtRange(UK_TIERS_PLN[0].min, UK_TIERS_PLN[0].max),
+    uk10: fmtRange(UK_TIERS_PLN[1].min, UK_TIERS_PLN[1].max),
+    uk2030: fmtRange(UK_TIERS_PLN[2].min, UK_TIERS_PLN[2].max),
+    usa1: fmtRange(USA_TIERS_PLN[0].min, USA_TIERS_PLN[0].max),
+    usa10: fmtRange(USA_TIERS_PLN[1].min, USA_TIERS_PLN[1].max),
+  };
+  const faqItems = l.faq.map(({ q, a }) => ({ q, a: a(faqValues) }));
+
   const pageUrl = `${SITE.url}/shipping/`;
   const schemas = [
     buildWebPageSchema({
@@ -170,6 +213,7 @@ export default function Shipping() {
       { name: "Home", url: SITE.url },
       { name: l.tag, url: pageUrl },
     ]),
+    buildFAQSchema(faqItems),
   ];
 
   return (
@@ -331,6 +375,25 @@ export default function Shipping() {
                 ))}
               </div>
               <p className="text-neutral-500 text-xs mt-4">{l.timesNote}</p>
+            </div>
+
+            {/* FAQ — visible Q&A mirrors the FAQPage JSON-LD (parity = SEO-safe) */}
+            <div className="reveal mt-5">
+              <h2 className="text-white font-semibold text-lg mb-4">{l.faqTitle}</h2>
+              <div className="space-y-3">
+                {faqItems.map((item, i) => (
+                  <details
+                    key={i}
+                    className="group bg-neutral-900/60 border border-neutral-800 rounded-xl px-6 py-4 [&_summary]:cursor-pointer"
+                  >
+                    <summary className="flex items-center justify-between text-sm font-medium text-neutral-200 list-none">
+                      <span>{item.q}</span>
+                      <span className="text-amber-400 ml-4 shrink-0 transition-transform group-open:rotate-45">+</span>
+                    </summary>
+                    <p className="text-neutral-400 text-sm leading-relaxed mt-3">{item.a}</p>
+                  </details>
+                ))}
+              </div>
             </div>
           </div>
         </section>
