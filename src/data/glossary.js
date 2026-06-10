@@ -237,6 +237,17 @@ export const GLOSSARY = [
     relatedBlog: "jak-przygotowac-plik-stl",
   },
   {
+    id: "modelowanie-3d",
+    category: "general",
+    term: { pl: "Modelowanie 3D (Rhino, Fusion 360)", en: "3D Modeling (Rhino, Fusion 360)", de: "3D-Modellierung (Rhino, Fusion 360)" },
+    definition: {
+      pl: "Tworzenie precyzyjnych modeli 3D w Rhino i Fusion 360 — zarówno organicznych form biżuteryjnych, jak i technicznych części funkcjonalnych (projektowanie parametryczne, tolerancje mechaniczne, inżynieria odwrotna). AEJaCA modeluje od szkicu, zdjęcia lub pomysłu, przygotowując pliki gotowe do druku 3D lub odlewu.",
+      en: "Creating precise 3D models in Rhino and Fusion 360 — both organic jewelry forms and functional technical parts (parametric design, mechanical tolerances, reverse engineering). AEJaCA models from a sketch, photo, or idea, preparing files ready for 3D printing or casting.",
+      de: "Erstellung präziser 3D-Modelle in Rhino und Fusion 360 — sowohl organische Schmuckformen als auch funktionale technische Teile (parametrisches Design, mechanische Toleranzen, Reverse Engineering). AEJaCA modelliert aus Skizze, Foto oder Idee und bereitet druck- oder gussfertige Dateien vor.",
+    },
+    relatedBlog: "jak-przygotowac-plik-stl",
+  },
+  {
     id: "personalizacja",
     category: "general",
     term: { pl: "Personalizacja", en: "Personalization", de: "Personalisierung" },

@@ -54,6 +54,7 @@ const GLOSSARY_IDS = [
   "odlew-zywiczny",
   "prototypowanie",
   "cad",
+  "modelowanie-3d",
   "personalizacja",
   "projektowanie-ai",
   "wycena-online",

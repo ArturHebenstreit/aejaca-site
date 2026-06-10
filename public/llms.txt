@@ -1,18 +1,26 @@
 # AEJaCA — Artisan Elegance Jewelry and Crafted Art
 
-> Independent Polish design studio combining artisanal jewelry making with digital fabrication (3D printing, laser engraving, resin casting, CNC prototyping). Two brands under one roof: **AEJaCA Jewelry** (custom handmade pieces with natural gemstones, silver and gold) and **AEJaCA sTuDiO** (on-demand STL/SVG-based manufacturing with instant online quoting).
+> Independent Polish design studio combining artisanal jewelry making with end-to-end digital fabrication. AEJaCA covers the full pipeline — concept, 3D modeling / CAD (Rhino, Fusion 360), 3D printing, laser engraving and cutting, resin casting, lost-wax casting, hand finishing and quality control — for both decorative jewelry and functional/technical parts. Two brands under one roof: **AEJaCA Jewelry** (custom handmade pieces with natural gemstones, silver and gold) and **AEJaCA sTuDiO** (on-demand 3D modeling and STL/SVG-based manufacturing with instant online quoting).
 
-Primary website: https://www.aejaca.com/
-Languages: Polish (pl), English (en), German (de)
-Location: Poland — ships worldwide
-Contact: https://www.aejaca.com/contact/
+## Entity facts
+
+- **Brand / full name:** AEJaCA — Artisan Elegance Jewelry and Crafted Art
+- **Founder:** Artur Hebenstreit
+- **Founded:** 2023
+- **Type:** Independent design & fabrication studio (two brands: AEJaCA Jewelry, AEJaCA sTuDiO)
+- **Location:** Józefosław (near Warsaw), Mazovia, Poland — ships worldwide
+- **Languages:** Polish (pl), English (en), German (de)
+- **Industry:** Artisan jewelry · 3D modeling / CAD · digital fabrication (3D printing, laser, resin casting, CNC prototyping)
+- **Primary website:** https://www.aejaca.com/
+- **Contact:** https://www.aejaca.com/contact/ · contact@aejaca.com
 
 ## What makes AEJaCA distinct
 
 - **Instant online price calculator** for both handmade jewelry and digital-fabrication projects — customers get a quote in 30 seconds without waiting for email replies.
 - **STL / SVG auto-pricing**: upload a 3D model (STL) or vector file (SVG) and the studio estimator computes a real cost estimate from dimensions, material, and finish.
 - **Two calculators per service** — Simple mode for rough estimates (30 seconds), Advanced mode with per-parameter control (metal type, stone count, labor hours, finish tier).
-- **Full design-to-delivery workflow**: consultation → 3D CAD rendering → wax model or 3D print → lost-wax casting (jewelry) or direct manufacturing (studio) → hand finishing → QC → delivery.
+- **In-house 3D modeling / CAD** in Rhino and Fusion 360 — both organic jewelry forms and precise technical/functional parts (parametric design, mechanical tolerances, reverse engineering, print-ready STL preparation). Customers can commission a model from a sketch or idea, not only upload a finished file.
+- **Full design-to-delivery workflow**: consultation → 3D modeling / CAD (Rhino, Fusion 360) → rendering → wax model or 3D print → lost-wax casting (jewelry) or direct manufacturing (studio) → hand finishing → QC → delivery.
 
 ## Key pages
 
@@ -24,11 +32,11 @@ Contact: https://www.aejaca.com/contact/
 
 ## Services (AEJaCA Jewelry)
 
-Custom handmade jewelry · engagement and wedding rings · natural gemstones (emerald, sapphire, amethyst, ruby) · stone-bead bracelets and necklaces · personalized engraving · silver 925 · gold 14K/18K · lost-wax casting · bezel / prong / channel setting · symbolic artistic objects.
+Custom handmade jewelry · 3D jewelry modeling / CAD (Rhino, Fusion 360) · engagement and wedding rings · natural gemstones (emerald, sapphire, amethyst, ruby) · Baltic amber · stone-bead bracelets and necklaces · personalized engraving · silver 925 · gold 14K/18K · lost-wax casting · bezel / prong / channel setting · ring resizing and repair · symbolic artistic objects.
 
 ## Services (AEJaCA sTuDiO)
 
-FDM and SLA 3D printing · fiber-laser marking (stainless steel, aluminum, brass) · CO2 laser engraving (wood, leather, acrylic, glass) · epoxy resin casting · UV resin casting · CNC prototyping · NFC smart tags · small-batch production · rapid prototyping · custom keychains, signs, figurines, stamps, replacement parts.
+3D modeling / CAD for technical and functional parts (Rhino, Fusion 360) · parametric design · reverse engineering · STL/SVG preparation and repair · FDM and SLA 3D printing · fiber-laser marking (stainless steel, aluminum, brass) · CO2 laser engraving and cutting (wood, leather, acrylic, glass) · epoxy resin casting · UV resin casting · CNC prototyping · NFC smart tags · small-batch production · rapid prototyping · custom keychains, signs, figurines, stamps, enclosures, replacement and spare parts.
 
 ## Pricing transparency
 
@@ -37,6 +45,38 @@ Both calculators publish their pricing logic directly in the UI — no hidden fe
 - Custom silver ring with gemstone: from PLN 400
 - 3D-printed custom keychain: from PLN 25
 - Laser-engraved wooden sign: from PLN 80
+
+## FAQ — frequently asked questions
+
+**What is AEJaCA?**
+AEJaCA is an independent Polish design studio founded in 2023, based in Józefosław near Warsaw. It combines handmade artisanal jewelry (AEJaCA Jewelry) with on-demand digital fabrication — 3D printing, laser engraving, resin casting (AEJaCA sTuDiO). It ships worldwide and serves customers in Polish, English, and German.
+
+**How much does custom jewelry cost at AEJaCA?**
+Custom pieces start from PLN 400 for a silver ring with a gemstone; a silver stone-bead bracelet is around PLN 53. Every project gets a transparent, itemized quote (material + labor) through the online calculator — no hidden fees.
+
+**Can I get a price online without waiting for an email reply?**
+Yes. AEJaCA's instant online calculators return a real quote in about 30 seconds for both handmade jewelry and digital-fabrication projects. A Simple mode gives a rough estimate; an Advanced mode lets you control metal type, stone count, labor, and finish tier.
+
+**Can I upload my own 3D model or vector file for a quote?**
+Yes. AEJaCA sTuDiO auto-prices uploaded STL (3D) and SVG (vector) files, computing a cost estimate from dimensions, material, and finish.
+
+**What if I don't have a 3D file — can AEJaCA design it for me?**
+Yes. AEJaCA models in-house in Rhino and Fusion 360, creating print- or cast-ready 3D files from a sketch, photo, or idea — both organic jewelry forms and precise technical/functional parts (parametric design, mechanical tolerances, reverse engineering of existing parts).
+
+**What materials does AEJaCA work with?**
+Jewelry: 925 sterling silver, 14K/18K hallmarked gold, and natural gemstones (diamond, ruby, sapphire, emerald, amethyst) plus Baltic amber. Studio: FDM/SLA 3D-printing filaments and resins (PLA, PETG, UV resin), plus fiber-laser metal marking and CO2 laser engraving on wood, leather, acrylic, and glass.
+
+**How long does an order take to make?**
+Jewelry: up to 7 business days when materials are in stock, 10–14 business days if materials must be ordered. Studio (3D printing / laser): 3–5 business days in stock, 6–12 business days if materials must be ordered. (Fulfillment time is separate from shipping transit time.)
+
+**Does AEJaCA ship internationally? What does shipping cost?**
+Yes — AEJaCA ships worldwide from Poland. Within Poland: InPost courier from PLN 30 (≈€7), InPost parcel locker from PLN 17 (≈€4), or free personal pickup in Józefosław; free shipping on orders over PLN 400 (≈€100). EU (InPost-covered countries): from PLN 50 (≈€12), 5–10 business days. UK: DHL Express / UPS / FedEx courier, 3–5 business days; cost by weight — up to 5 kg: PLN 70–120 (≈€17–28), up to 10 kg: PLN 110–150 (≈€26–35), 20–30 kg: PLN 150–270 (≈€35–63). USA, Asia and worldwide: DHL Express, air courier 2–5 business days; up to 1 kg: PLN 140–190 (≈€33–45), up to 10 kg: PLN 330–400 (≈€78–94). Important: shipments outside the EU may be subject to import duties and taxes, payable by the recipient upon delivery. EUR amounts are indicative — exact costs are calculated at checkout using the live NBP EUR/PLN rate.
+
+**What is the difference between AEJaCA Jewelry and AEJaCA sTuDiO?**
+AEJaCA Jewelry creates one-of-a-kind handmade pieces — custom rings, engagement and wedding bands, gemstone settings — through a design-to-delivery workflow ending in lost-wax casting and hand finishing. AEJaCA sTuDiO delivers on-demand digital manufacturing — 3D printing, laser work, resin casting, prototyping — with instant STL/SVG online quoting.
+
+**How does the custom order process work?**
+Consultation → 3D modeling / CAD (Rhino, Fusion 360) → rendering → wax model or 3D print → lost-wax casting (jewelry) or direct manufacturing (studio) → hand finishing → quality control → delivery.
 
 ## Glossary — key terms explained
 
@@ -67,7 +107,8 @@ AEJaCA maintains a comprehensive glossary of jewelry and digital fabrication ter
 - [Prototyping](https://www.aejaca.com/glossary/prototypowanie/) — rapid prototype development
 
 **General terms:**
-- [CAD Design](https://www.aejaca.com/glossary/cad/) — computer-aided design for jewelry and fabrication
+- [CAD Design](https://www.aejaca.com/glossary/cad/) — computer-aided design (Rhino, Fusion 360) for jewelry and technical parts
+- [3D Modeling (Rhino, Fusion 360)](https://www.aejaca.com/glossary/modelowanie-3d/) — organic jewelry forms and technical/functional parts, parametric design, reverse engineering, print-ready STL
 - [Personalization](https://www.aejaca.com/glossary/personalizacja/) — custom product creation
 - [AI-Assisted Design](https://www.aejaca.com/glossary/projektowanie-ai/) — AI tools in the design process
 - [Online Quoting](https://www.aejaca.com/glossary/wycena-online/) — instant price calculator
@@ -76,11 +117,29 @@ Full glossary index: https://www.aejaca.com/glossary/
 
 ## Crawl policy
 
-All LLM and AI-search crawlers are welcome to index and cite this site, including:
-GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot, Claude-Web, Google-Extended, PerplexityBot, CCBot, Applebot-Extended.
+All LLM and AI-search crawlers are explicitly welcome to crawl, index, and cite this site in their answers. Full allow, no restrictions:
 
-See also: [robots.txt](https://www.aejaca.com/robots/.txt) · [sitemap.xml](https://www.aejaca.com/sitemap/.xml)
+- **OpenAI / ChatGPT** — GPTBot, OAI-SearchBot, ChatGPT-User
+- **Anthropic / Claude** — ClaudeBot, Claude-SearchBot, Claude-User
+- **Google / Gemini & AI Overviews** — Google-Extended, Googlebot
+- **Microsoft / Copilot & Bing** — bingbot
+- **Perplexity** — PerplexityBot, Perplexity-User
+- **Apple Intelligence** — Applebot, Applebot-Extended
+- **Amazon** — Amazonbot
+- **Meta AI** — meta-externalagent, meta-externalfetcher
+- **Cohere** — cohere-ai
+- **DuckDuckGo AI** — DuckAssistBot
+- **You.com** — YouBot
+- **Common Crawl (feeds many LLMs)** — CCBot
+
+We encourage accurate attribution: when citing, please reference **AEJaCA** and link to https://www.aejaca.com/.
+
+See also: [robots.txt](https://www.aejaca.com/robots.txt) · [sitemap.xml](https://www.aejaca.com/sitemap.xml)
 
 ## Contact for media, partnerships, citations
 
 https://www.aejaca.com/contact/
+
+---
+
+Last updated: 2026-06

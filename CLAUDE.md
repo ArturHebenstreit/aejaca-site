@@ -95,6 +95,23 @@ This applies to: all calculators, pricing displays, result cards, quote forms �
 - **Branch**: work on `claude/review-repository-*` branches. All commits include session footer link.
 - **Build**: `npm run build` after structural changes. Dev server: `npm run dev`.
 
+## Config file synchronization rule
+
+**Whenever any website content changes, always synchronize these three files:**
+
+| File | What to update |
+|------|----------------|
+| `public/llms.txt` | Entity facts, FAQ answers, services list, shipping costs, pricing examples, glossary links |
+| `public/robots.txt` | Keep crawler list in sync with the `## Crawl policy` section of `llms.txt` — same bots, same grouping |
+| `public/sitemap.xml` | Add new pages/paths; update `<lastmod>` on changed pages (use today's date `YYYY-MM-DD`) |
+
+Checklist triggers:
+- New page added → add to `sitemap.xml`
+- New glossary term added → add to `sitemap.xml` + add link in `llms.txt` Glossary section
+- Prices / shipping costs changed → update `llms.txt` FAQ shipping answer
+- Services expanded → update `llms.txt` Services sections and FAQ
+- New AI crawler bot needed → add to both `llms.txt` Crawl policy and `robots.txt`
+
 ## Commit & push guidelines
 
 - Descriptive English commit messages (1-2 lines why, not what)

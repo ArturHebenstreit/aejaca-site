@@ -109,7 +109,7 @@
   <!-- Shipping -->
   <url>
     <loc>https://www.aejaca.com/shipping/</loc>
-    <lastmod>2026-04-24</lastmod>
+    <lastmod>2026-06-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.50</priority>
 
@@ -516,6 +516,16 @@
     <priority>0.50</priority>
 
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/cad/" />
+  </url>
+
+  <!-- Glossary: modelowanie-3d -->
+  <url>
+    <loc>https://www.aejaca.com/glossary/modelowanie-3d/</loc>
+    <lastmod>2026-06-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/modelowanie-3d/" />
   </url>
 
   <!-- Glossary: personalizacja -->
