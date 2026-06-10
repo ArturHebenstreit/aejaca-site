@@ -128,6 +128,14 @@ export default {
     ctaHeading: "Have an idea? Let's create it together.",
     ctaText: "Whether you need custom jewelry or a technical prototype, we're here to help.",
     ctaBtn: "Get in Touch",
+    faqHeading: "Frequently asked questions",
+    faq: [
+      { q: "What is AEJaCA?", a: "AEJaCA (Artisan Elegance Jewelry and Crafted Art) is an independent Polish design studio founded in 2023 in Józefosław near Warsaw. It combines handmade artisanal jewelry (AEJaCA Jewelry) with on-demand digital fabrication — 3D printing, laser engraving and resin casting (AEJaCA sTuDiO). We serve customers in Polish, English and German, and ship worldwide." },
+      { q: "Do you make custom jewelry?", a: "Yes. We design and craft one-of-a-kind custom jewelry — engagement rings, wedding bands, necklaces, bracelets and earrings in 925 sterling silver and 14K/18K gold with natural gemstones. We model in 3D (Rhino, Fusion 360) from a sketch or idea, then produce via lost-wax casting with hand finishing." },
+      { q: "What does AEJaCA sTuDiO offer?", a: "AEJaCA sTuDiO is on-demand digital fabrication: 3D modeling / CAD of technical and functional parts (Rhino, Fusion 360), FDM/SLA 3D printing, CO2 laser engraving and cutting, fiber-laser marking, resin casting and prototyping. You can upload your own STL/SVG file or commission a model designed from scratch." },
+      { q: "How much does an order cost and how fast is a quote?", a: "You get an online quote in about 30 seconds with AEJaCA's calculators — no waiting for email. Simple mode gives a quick estimate; advanced mode gives full control over metal, stones and finish. For example: a silver ring with a gemstone from €95, a 3D-printed keychain from €6." },
+      { q: "Where is AEJaCA based and do you ship internationally?", a: "The studio is in Józefosław near Warsaw and ships worldwide. Within Poland: InPost courier from €7, parcel locker from €4, free shipping over €100. We also deliver to the EU, the UK and the USA via DHL Express." },
+    ],
   },
 
   // Jewelry page
