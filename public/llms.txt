@@ -79,7 +79,7 @@ Full glossary index: https://www.aejaca.com/glossary/
 All LLM and AI-search crawlers are welcome to index and cite this site, including:
 GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot, Claude-Web, Google-Extended, PerplexityBot, CCBot, Applebot-Extended.
 
-See also: [robots.txt](https://www.aejaca.com/robots/.txt) · [sitemap.xml](https://www.aejaca.com/sitemap/.xml)
+See also: [robots.txt](https://www.aejaca.com/robots.txt) · [sitemap.xml](https://www.aejaca.com/sitemap.xml)
 
 ## Contact for media, partnerships, citations
 
