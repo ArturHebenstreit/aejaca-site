@@ -38,6 +38,35 @@ Both calculators publish their pricing logic directly in the UI — no hidden fe
 - 3D-printed custom keychain: from PLN 25
 - Laser-engraved wooden sign: from PLN 80
 
+## FAQ — frequently asked questions
+
+**What is AEJaCA?**
+AEJaCA is an independent Polish design studio founded in 2023, based in Józefosław near Warsaw. It combines handmade artisanal jewelry (AEJaCA Jewelry) with on-demand digital fabrication — 3D printing, laser engraving, resin casting (AEJaCA sTuDiO). It ships worldwide and serves customers in Polish, English, and German.
+
+**How much does custom jewelry cost at AEJaCA?**
+Custom pieces start from PLN 400 for a silver ring with a gemstone; a silver stone-bead bracelet is around PLN 53. Every project gets a transparent, itemized quote (material + labor) through the online calculator — no hidden fees.
+
+**Can I get a price online without waiting for an email reply?**
+Yes. AEJaCA's instant online calculators return a real quote in about 30 seconds for both handmade jewelry and digital-fabrication projects. A Simple mode gives a rough estimate; an Advanced mode lets you control metal type, stone count, labor, and finish tier.
+
+**Can I upload my own 3D model or vector file for a quote?**
+Yes. AEJaCA sTuDiO auto-prices uploaded STL (3D) and SVG (vector) files, computing a cost estimate from dimensions, material, and finish.
+
+**What materials does AEJaCA work with?**
+Jewelry: 925 sterling silver, 14K/18K hallmarked gold, and natural gemstones (diamond, ruby, sapphire, emerald, amethyst) plus Baltic amber. Studio: FDM/SLA 3D-printing filaments and resins (PLA, PETG, UV resin), plus fiber-laser metal marking and CO2 laser engraving on wood, leather, acrylic, and glass.
+
+**How long does an order take to make?**
+Jewelry: up to 7 business days when materials are in stock, 10–14 business days if materials must be ordered. Studio (3D printing / laser): 3–5 business days in stock, 6–12 business days if materials must be ordered. (Fulfillment time is separate from shipping transit time.)
+
+**Does AEJaCA ship internationally? What does shipping cost?**
+Yes — AEJaCA ships worldwide from Poland. Within Poland: InPost courier from €7 (PLN 30), parcel locker from €4 (PLN 17), or free personal pickup in Józefosław; free shipping on orders over €100 (PLN 400). EU: from €12, 5–10 business days. UK: from €19, 7–14 business days. USA and other countries: on request via contact@aejaca.com. The site and quoting process work in Polish, English, and German.
+
+**What is the difference between AEJaCA Jewelry and AEJaCA sTuDiO?**
+AEJaCA Jewelry creates one-of-a-kind handmade pieces — custom rings, engagement and wedding bands, gemstone settings — through a design-to-delivery workflow ending in lost-wax casting and hand finishing. AEJaCA sTuDiO delivers on-demand digital manufacturing — 3D printing, laser work, resin casting, prototyping — with instant STL/SVG online quoting.
+
+**How does the custom order process work?**
+Consultation → 3D CAD rendering → wax model or 3D print → lost-wax casting (jewelry) or direct manufacturing (studio) → hand finishing → quality control → delivery.
+
 ## Glossary — key terms explained
 
 AEJaCA maintains a comprehensive glossary of jewelry and digital fabrication terms, each with its own dedicated page:
