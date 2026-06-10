@@ -108,6 +108,7 @@ AEJaCA maintains a comprehensive glossary of jewelry and digital fabrication ter
 
 **General terms:**
 - [CAD Design](https://www.aejaca.com/glossary/cad/) — computer-aided design (Rhino, Fusion 360) for jewelry and technical parts
+- [3D Modeling (Rhino, Fusion 360)](https://www.aejaca.com/glossary/modelowanie-3d/) — organic jewelry forms and technical/functional parts, parametric design, reverse engineering, print-ready STL
 - [Personalization](https://www.aejaca.com/glossary/personalizacja/) — custom product creation
 - [AI-Assisted Design](https://www.aejaca.com/glossary/projektowanie-ai/) — AI tools in the design process
 - [Online Quoting](https://www.aejaca.com/glossary/wycena-online/) — instant price calculator
@@ -138,3 +139,7 @@ See also: [robots.txt](https://www.aejaca.com/robots.txt) · [sitemap.xml](https
 ## Contact for media, partnerships, citations
 
 https://www.aejaca.com/contact/
+
+---
+
+Last updated: 2026-06
