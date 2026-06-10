@@ -76,8 +76,22 @@ Full glossary index: https://www.aejaca.com/glossary/
 
 ## Crawl policy
 
-All LLM and AI-search crawlers are welcome to index and cite this site, including:
-GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot, Claude-Web, Google-Extended, PerplexityBot, CCBot, Applebot-Extended.
+All LLM and AI-search crawlers are explicitly welcome to crawl, index, and cite this site in their answers. Full allow, no restrictions:
+
+- **OpenAI / ChatGPT** — GPTBot, OAI-SearchBot, ChatGPT-User
+- **Anthropic / Claude** — ClaudeBot, Claude-SearchBot, Claude-User
+- **Google / Gemini & AI Overviews** — Google-Extended, Googlebot
+- **Microsoft / Copilot & Bing** — bingbot
+- **Perplexity** — PerplexityBot, Perplexity-User
+- **Apple Intelligence** — Applebot, Applebot-Extended
+- **Amazon** — Amazonbot
+- **Meta AI** — meta-externalagent, meta-externalfetcher
+- **Cohere** — cohere-ai
+- **DuckDuckGo AI** — DuckAssistBot
+- **You.com** — YouBot
+- **Common Crawl (feeds many LLMs)** — CCBot
+
+We encourage accurate attribution: when citing, please reference **AEJaCA** and link to https://www.aejaca.com/.
 
 See also: [robots.txt](https://www.aejaca.com/robots.txt) · [sitemap.xml](https://www.aejaca.com/sitemap.xml)
 

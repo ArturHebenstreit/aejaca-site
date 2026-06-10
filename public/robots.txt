@@ -5,32 +5,63 @@ User-agent: *
 Allow: /
 Disallow: /*?*
 
-# Allow known AI / LLM crawlers explicitly (AIO — AI Search Optimization)
+# Allow known AI / LLM crawlers explicitly (AEO / LLMEO — AI Search Optimization).
+# Grouped User-agent lines share the rule block below them (valid robots.txt syntax).
+# These bots get full access with no query-string trap, unlike the wildcard above.
+
+# OpenAI / ChatGPT
 User-agent: GPTBot
-Allow: /
-
 User-agent: OAI-SearchBot
-Allow: /
-
 User-agent: ChatGPT-User
 Allow: /
 
+# Anthropic / Claude
 User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
 Allow: /
 
-User-agent: Claude-Web
-Allow: /
-
+# Google / Gemini & AI Overviews
 User-agent: Google-Extended
 Allow: /
 
+# Microsoft / Copilot & Bing
+User-agent: bingbot
+Allow: /
+
+# Perplexity
 User-agent: PerplexityBot
+User-agent: Perplexity-User
 Allow: /
 
-User-agent: CCBot
-Allow: /
-
+# Apple Intelligence
+User-agent: Applebot
 User-agent: Applebot-Extended
+Allow: /
+
+# Amazon
+User-agent: Amazonbot
+Allow: /
+
+# Meta AI
+User-agent: meta-externalagent
+User-agent: meta-externalfetcher
+Allow: /
+
+# Cohere
+User-agent: cohere-ai
+Allow: /
+
+# DuckDuckGo AI
+User-agent: DuckAssistBot
+Allow: /
+
+# You.com
+User-agent: YouBot
+Allow: /
+
+# Common Crawl (training corpus feeding many LLMs)
+User-agent: CCBot
 Allow: /
 
 Sitemap: https://www.aejaca.com/sitemap.xml
