@@ -11,6 +11,7 @@ import * as p10 from "./posts/materialy-laser-cutting.jsx";
 import * as p11 from "./posts/bizuteria-inwestycja.jsx";
 import * as p12 from "./posts/projektowanie-ai.jsx";
 import * as p13 from "./posts/warsztat-od-kuchni.jsx";
+import * as p14 from "./posts/modelowanie-3d-na-zamowienie.jsx";
 
 export const POSTS = [
   { ...p1.meta, Body: p1.Body },
@@ -26,6 +27,7 @@ export const POSTS = [
   { ...p11.meta, Body: p11.Body },
   { ...p12.meta, Body: p12.Body },
   { ...p13.meta, Body: p13.Body },
+  { ...p14.meta, Body: p14.Body },
 ];
 
 export function getPost(slug) {

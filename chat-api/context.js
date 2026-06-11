@@ -430,6 +430,7 @@ When a question matches a topic below, link directly to the article, not just to
 | Materiały do cięcia laserowego, co nadaje się pod laser | https://www.aejaca.com/blog/materialy-laser-cutting/ |
 | Biżuteria jako inwestycja, wartość złota, kamieni | https://www.aejaca.com/blog/bizuteria-inwestycja/ |
 | AI w projektowaniu, sztuczna inteligencja, CAD, technologia | https://www.aejaca.com/blog/projektowanie-ai/ |
+| Modelowanie 3D na zamówienie, projekt modelu od szkicu, Rhino, Fusion 360, reverse engineering, model do druku/odlewu | https://www.aejaca.com/blog/modelowanie-3d-na-zamowienie/ |
 | Warsztat AEJaCA, sprzęt, maszyny, jak pracujemy, od kuchni | https://www.aejaca.com/blog/warsztat-od-kuchni/ |
 
 ## Glossary terms — link directly, not just to /glossary/
