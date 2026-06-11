@@ -75,6 +75,7 @@ const BLOG_SLUGS = [
   "projektowanie-ai",
   "warsztat-od-kuchni",
   "modelowanie-3d-na-zamowienie",
+  "ile-kosztuje-bizuteria-na-zamowienie",
 ];
 
 const routes = [
