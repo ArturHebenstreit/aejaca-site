@@ -57,54 +57,53 @@ function ChainSilhouette({ lengthMm, gender = "women" }) {
   const yMap = gender === "men" ? CHAIN_SVG_Y_MEN : CHAIN_SVG_Y_WOMEN;
   const chainY = yMap[lengthMm] ?? (gender === "men" ? 190 : 185);
   const isMen = gender === "men";
-
-  // Connection points where chain hangs on shoulders/collarbone
   const lx = isMen ? 60 : 65;
   const rx = isMen ? 140 : 135;
   const connectY = isMen ? 96 : 99;
 
   return (
-    <svg viewBox="0 0 200 310" className="w-full h-auto" aria-hidden="true">
-      {/* Body silhouette */}
-      <g stroke="rgba(255,255,255,0.30)" fill="none" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-        {/* Head */}
-        <circle cx="100" cy="33" r="21" />
-        {/* Neck */}
-        <line x1="90" y1="54" x2="87" y2="72" />
-        <line x1="110" y1="54" x2="113" y2="72" />
-        {isMen ? (
-          <>
-            <path d="M87,72 L44,95 C36,118 35,152 39,172 C42,190 41,212 43,233 C44,250 46,265 50,278 L55,310" />
-            <path d="M113,72 L156,95 C164,118 165,152 161,172 C158,190 159,212 157,233 C156,250 154,265 150,278 L145,310" />
-          </>
-        ) : (
-          <>
-            <path d="M87,72 L50,97 C42,117 40,146 44,166 C47,181 48,202 44,224 C40,246 42,264 50,276 L55,310" />
-            <path d="M113,72 L150,97 C158,117 160,146 156,166 C153,181 152,202 156,224 C160,246 158,264 150,276 L145,310" />
-          </>
-        )}
-      </g>
+    // Dark container ensures silhouette + chain are always visible regardless of page bg
+    <div className="bg-neutral-900 rounded-xl p-1 w-full">
+      <svg viewBox="0 0 200 310" className="w-full h-auto" aria-hidden="true">
+        {/* Body silhouette */}
+        <g stroke="rgba(255,255,255,0.55)" fill="none" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="100" cy="33" r="21" />
+          <line x1="90" y1="54" x2="87" y2="72" />
+          <line x1="110" y1="54" x2="113" y2="72" />
+          {isMen ? (
+            <>
+              <path d="M87,72 L44,95 C36,118 35,152 39,172 C42,190 41,212 43,233 C44,250 46,265 50,278 L55,310" />
+              <path d="M113,72 L156,95 C164,118 165,152 161,172 C158,190 159,212 157,233 C156,250 154,265 150,278 L145,310" />
+            </>
+          ) : (
+            <>
+              <path d="M87,72 L50,97 C42,117 40,146 44,166 C47,181 48,202 44,224 C40,246 42,264 50,276 L55,310" />
+              <path d="M113,72 L150,97 C158,117 160,146 156,166 C153,181 152,202 156,224 C160,246 158,264 150,276 L145,310" />
+            </>
+          )}
+        </g>
 
-      {/* Dashed guide line at chain bottom */}
-      <line x1="18" y1={chainY} x2="182" y2={chainY}
-        stroke="rgba(251,191,36,0.22)" strokeWidth="0.8" strokeDasharray="4,3" />
+        {/* Guide line */}
+        <line x1="18" y1={chainY} x2="182" y2={chainY}
+          stroke="rgba(251,191,36,0.30)" strokeWidth="0.8" strokeDasharray="4,3" />
 
-      {/* Chain arc */}
-      <path d={`M${lx},${connectY} Q100,${chainY + 6} ${rx},${connectY}`}
-        fill="none" stroke="#fbbf24" strokeWidth="2.2" strokeLinecap="round" opacity="0.92" />
+        {/* Chain arc */}
+        <path d={`M${lx},${connectY} Q100,${chainY + 6} ${rx},${connectY}`}
+          fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" />
 
-      {/* Clasp dots */}
-      <circle cx={lx} cy={connectY} r="2.2" fill="#fbbf24" opacity="0.7" />
-      <circle cx={rx} cy={connectY} r="2.2" fill="#fbbf24" opacity="0.7" />
+        {/* Clasp dots */}
+        <circle cx={lx} cy={connectY} r="2.5" fill="#fbbf24" />
+        <circle cx={rx} cy={connectY} r="2.5" fill="#fbbf24" />
 
-      {/* Length tag */}
-      <rect x="78" y={Math.min(chainY + 8, 297)} width="44" height="14" rx="7"
-        fill="rgba(251,191,36,0.15)" stroke="rgba(251,191,36,0.4)" strokeWidth="0.8" />
-      <text x="100" y={Math.min(chainY + 18, 307)} textAnchor="middle"
-        fill="#fbbf24" fontSize="9.5" fontWeight="700" fontFamily="Inter,sans-serif">
-        {(lengthMm / 10).toFixed(0)} cm
-      </text>
-    </svg>
+        {/* Length label with solid dark background for readability */}
+        <rect x="74" y={Math.min(chainY + 7, 295)} width="52" height="17" rx="8"
+          fill="rgba(0,0,0,0.75)" stroke="#fbbf24" strokeWidth="1" />
+        <text x="100" y={Math.min(chainY + 19, 307)} textAnchor="middle"
+          fill="#fbbf24" fontSize="11" fontWeight="700" fontFamily="Inter,sans-serif">
+          {(lengthMm / 10).toFixed(0)} cm
+        </text>
+      </svg>
+    </div>
   );
 }
 
@@ -291,8 +290,10 @@ const WIRE_D_MAX_MM = 3.0;
 // AR (Aspect Ratio = ID / wire_diameter) is defined per weave in CHAIN_WEAVES.
 // In from_stock mode: user supplies mass + picks length → we derive wire diameter.
 // In standard mode: user picks length + wire diameter → mass is computed.
+// Standard mode: user inputs chainWidthMm (visible chain width) → wire diameter derived from AR.
+// From-stock mode: user inputs stockMassG + picks length → wire diameter derived from physics.
 export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engravingId,
-  chainLengthMm, wireDiameterMm,
+  chainLengthMm, chainWidthMm,
   clientSuppliesMetal, qtyId, calcMode, stockMassG }, lang, rates) {
   const l = LBL[lang] || LBL.en;
   const ln = (pl, en, de) => ({ pl, en, de }[lang] ?? pl);
@@ -323,7 +324,9 @@ export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engrav
     wireDCm = Math.sqrt(Math.max(0, d2));
     wireDMm = wireDCm * 10;
   } else {
-    wireDMm = wireDiameterMm || 1.0;
+    // User inputs chain WIDTH → wire diameter derived from weave's widthMul
+    const inputWidthMm = chainWidthMm || 3.0;
+    wireDMm = inputWidthMm / (weave.widthMul ?? 4.0);
     wireDCm = wireDMm / 10;
   }
 
@@ -521,8 +524,7 @@ export default function JewelryCalc({ lang = "pl" }) {
   const [weaveId, setWeaveId] = useState("klasyczny");
   const [claspId, setClaspId] = useState("spring");
   const [chainLengthMm, setChainLengthMm] = useState(450);
-  const [wireDiameterMm, setWireDiameterMm] = useState(1.0);
-  const [chainGender, setChainGender] = useState("women"); // "women" | "men"
+  const [chainWidthMm, setChainWidthMm] = useState(3.0); // visible chain width (mm), wire diameter auto-derived via AR
   const [weaveModal, setWeaveModal] = useState(null);
   // Stone rows — up to 10 different stone entries
   const [stoneRows, setStoneRows] = useState([
@@ -556,7 +558,7 @@ export default function JewelryCalc({ lang = "pl" }) {
     if (serviceId === "new") {
       if (isChainType(typeId)) {
         return calcChain({ typeId, metalId, weaveId, claspId, platingId, engravingId,
-          chainLengthMm, wireDiameterMm,
+          chainLengthMm, chainWidthMm,
           clientSuppliesMetal, qtyId, calcMode, stockMassG }, lang, rates);
       }
       return calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
@@ -569,7 +571,7 @@ export default function JewelryCalc({ lang = "pl" }) {
     }
     return calcRepair({ jewTypeId: repairJewType, metalTypeId: repairMetal, repairId, qtyId }, lang);
   }, [serviceId, lineId, typeId, metalId, weightId, methodId, platingId, engravingId,
-    stoneRows, qtyId, weaveId, claspId, chainLengthMm, wireDiameterMm,
+    stoneRows, qtyId, weaveId, claspId, chainLengthMm, chainWidthMm,
     clientSuppliesMetal, weightResult, calcMode, stockMassG,
     renoServices, renoJewType, renoMetal, repairId, repairJewType, repairMetal, lang, rates, resolvedGemstones]);
 
@@ -751,61 +753,42 @@ export default function JewelryCalc({ lang = "pl" }) {
           <CalcCard stepNum={step()} label={isChainType(typeId)
             ? ({ pl: "Długość łańcuszka", en: "Chain length", de: "Kettenlänge" }[lang])
             : ({ pl: "Kształt i wymiary", en: "Shape & Dimensions", de: "Form & Abmessungen" }[lang] || "Shape & Dimensions")}>
-            {isChainType(typeId) ? (
+            {isChainType(typeId) ? (() => {
+              // Gender is already known from the selected product line — no separate toggle needed
+              const necklaceGender = lineId === "men" ? "men" : "women";
+              const necklacePresets = necklaceGender === "men" ? NECKLACE_LENGTHS_MEN : NECKLACE_LENGTHS_WOMEN;
+              return (
               <div className="space-y-3">
-                {/* Necklace/chain: gender tabs + SVG silhouette + preset lengths */}
+                {/* Necklace/chain: SVG silhouette + preset lengths (gender derived from lineId) */}
                 {isNecklaceChain(typeId) && (
-                  <>
-                    {/* Gender tabs */}
-                    <div className="flex gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/8">
-                      {[
-                        { id: "women", pl: "♀ Kobieta", en: "♀ Women", de: "♀ Damen" },
-                        { id: "men",   pl: "♂ Mężczyzna", en: "♂ Men", de: "♂ Herren" },
-                      ].map(g => (
-                        <button key={g.id}
-                          onClick={() => {
-                            setChainGender(g.id);
-                            const presets = g.id === "men" ? NECKLACE_LENGTHS_MEN : NECKLACE_LENGTHS_WOMEN;
-                            if (!presets.includes(chainLengthMm)) setChainLengthMm(presets[0]);
-                          }}
-                          className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium transition-all duration-200 ${
-                            chainGender === g.id ? "bg-amber-500 text-black shadow-sm" : "text-neutral-400 hover:text-neutral-200"
-                          }`}>
-                          {g[lang] ?? g.pl}
-                        </button>
-                      ))}
+                  <div className="flex gap-3 items-start">
+                    {/* Silhouette — always dark container, always readable */}
+                    <div className="w-24 sm:w-28 flex-shrink-0">
+                      <ChainSilhouette lengthMm={chainLengthMm} gender={necklaceGender} />
                     </div>
 
-                    {/* SVG silhouette + preset length buttons */}
-                    <div className="flex gap-3 items-start">
-                      {/* Silhouette */}
-                      <div className="w-24 sm:w-28 flex-shrink-0">
-                        <ChainSilhouette lengthMm={chainLengthMm} gender={chainGender} />
-                      </div>
-
-                      {/* Preset length buttons */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[10px] text-neutral-500 mb-1.5">
-                          {{ pl: "Wybierz długość", en: "Select length", de: "Länge wählen" }[lang]}
-                        </p>
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-1">
-                          {(chainGender === "men" ? NECKLACE_LENGTHS_MEN : NECKLACE_LENGTHS_WOMEN).map(len => (
-                            <button key={len} onClick={() => setChainLengthMm(len)}
-                              className={`py-1.5 rounded-lg text-[11px] font-medium border transition-all duration-150 ${
-                                chainLengthMm === len
-                                  ? "border-amber-400 bg-amber-400/10 text-amber-300"
-                                  : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-200"
-                              }`}>
-                              {len / 10} cm
-                            </button>
-                          ))}
-                        </div>
+                    {/* Preset length buttons */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] text-neutral-500 mb-1.5">
+                        {{ pl: "Wybierz długość", en: "Select length", de: "Länge wählen" }[lang]}
+                      </p>
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-1">
+                        {necklacePresets.map(len => (
+                          <button key={len} onClick={() => setChainLengthMm(len)}
+                            className={`py-1.5 rounded-lg text-[11px] font-medium border transition-all duration-150 ${
+                              chainLengthMm === len
+                                ? "border-amber-400 bg-amber-400/10 text-amber-300"
+                                : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-200"
+                            }`}>
+                            {len / 10} cm
+                          </button>
+                        ))}
                       </div>
                     </div>
-                  </>
+                  </div>
                 )}
 
-                {/* Bracelet: simple preset grid (no silhouette) */}
+                {/* Bracelet: simple preset grid (no silhouette needed) */}
                 {typeId === "bracelet_m" && (
                   <div>
                     <p className="text-[10px] text-neutral-500 mb-1.5">
@@ -826,22 +809,32 @@ export default function JewelryCalc({ lang = "pl" }) {
                   </div>
                 )}
 
-                {/* Wire diameter: visible in standard mode only; in from_stock it's a derived output */}
+                {/* Chain WIDTH input — standard mode only; wire diameter & thickness auto-derived from AR */}
                 {calcMode === "standard" && (
-                  <label className="flex flex-col gap-1.5 mt-2">
-                    <span className="text-xs text-neutral-400">
-                      {{ pl: "Grubość drutu (mm)", en: "Wire diameter (mm)", de: "Drahtdurchmesser (mm)" }[lang]}
-                      <span className="ml-2 text-neutral-600 text-[10px]">
-                        {{ pl: "→ szerokość i grubość splotu liczone automatycznie",
-                           en: "→ weave width & thickness auto-calculated",
-                           de: "→ Breite und Dicke automatisch berechnet" }[lang]}
+                  <div className="mt-2 flex flex-wrap gap-4 items-end">
+                    <label className="flex flex-col gap-1.5">
+                      <span className="text-xs text-neutral-400">
+                        {{ pl: "Szerokość łańcuszka (mm)", en: "Chain width (mm)", de: "Kettenbreite (mm)" }[lang]}
                       </span>
-                    </span>
-                    <input type="number" min={0.3} max={3.0} step={0.1}
-                      value={wireDiameterMm || ""}
-                      onChange={e => { const n = parseFloat(e.target.value); if (n > 0) setWireDiameterMm(n); }}
-                      className="w-32 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50" />
-                  </label>
+                      <input type="number" min={1.0} max={20.0} step={0.5}
+                        value={chainWidthMm || ""}
+                        onChange={e => { const n = parseFloat(e.target.value); if (n > 0) setChainWidthMm(n); }}
+                        className="w-28 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50" />
+                    </label>
+                    {/* Show derived values live */}
+                    {result && result.type === "calculated" && !result.fromStock && (
+                      <div className="flex gap-3 text-[11px]">
+                        <div className="text-center px-2 py-1 rounded-lg bg-white/[0.03] border border-white/8">
+                          <div className="text-neutral-500">Ø { { pl: "drut", en: "wire", de: "Draht" }[lang]}</div>
+                          <div className="text-amber-300 font-semibold">{result.wireDMm?.toFixed(2)} mm</div>
+                        </div>
+                        <div className="text-center px-2 py-1 rounded-lg bg-white/[0.03] border border-white/8">
+                          <div className="text-neutral-500">{ { pl: "Grubość", en: "Thickness", de: "Dicke" }[lang]}</div>
+                          <div className="text-amber-300 font-semibold">{result.thicknessMm?.toFixed(1)} mm</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 {/* From-stock: mass input */}
@@ -888,7 +881,8 @@ export default function JewelryCalc({ lang = "pl" }) {
                   </div>
                 )}
               </div>
-            ) : (
+              );
+            })() : (
               productForm ? (
                 <div className="space-y-5">
                   {/* Show which geometry model is being used */}
@@ -1436,7 +1430,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                  t(CHAIN_WEAVES.find(w => w.id === weaveId)?.label, lang),
                  t(CHAIN_CLASPS.find(c => c.id === claspId)?.label, lang),
                  `${chainLengthMm / 10}cm`,
-                 calcMode === "standard" ? `Ø${wireDiameterMm}mm` : `${stockMassG}g`,
+                 calcMode === "standard" ? `${chainWidthMm}mm szer.` : `${stockMassG}g`,
                  engravingId !== "none" ? t(ENGRAVING_OPTIONS.find(e => e.id === engravingId)?.label, lang) : null,
                 ].filter(Boolean).join(" | ")
               : [t(PRODUCT_LINES.find(p => p.id === lineId)?.label, lang) || lineId,
@@ -1464,7 +1458,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                t(CHAIN_WEAVES.find(w => w.id === weaveId)?.label, lang),
                t(CHAIN_CLASPS.find(c => c.id === claspId)?.label, lang),
                `${chainLengthMm / 10}cm`,
-               calcMode === "standard" ? `Ø${wireDiameterMm}mm` : `${stockMassG}g`,
+               calcMode === "standard" ? `${chainWidthMm}mm szer.` : `${stockMassG}g`,
                engravingId !== "none" ? t(ENGRAVING_OPTIONS.find(e => e.id === engravingId)?.label, lang) : null,
               ].filter(Boolean).join(" | ")
             : [t(PRODUCT_LINES.find(p => p.id === lineId)?.label, lang) || lineId,
