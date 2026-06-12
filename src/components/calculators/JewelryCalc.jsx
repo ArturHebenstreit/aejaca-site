@@ -237,7 +237,7 @@ export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engrav
   const engraving = ENGRAVING_OPTIONS.find(e => e.id === (engravingId || "none"));
 
   if (!metal || !weave || !clasp || !plat || !qTier) return null;
-  if (metal.custom || plat.custom || qTier.custom) return { type: "custom" };
+  if (metal.custom || plat.custom || qTier.custom || weave.custom || clasp.custom) return { type: "custom" };
 
   const density = METAL_DENSITY[metal.metal] ?? 10.5;
   const lengthCm = (chainLengthMm || 450) / 10;
@@ -685,6 +685,17 @@ export default function JewelryCalc({ lang = "pl" }) {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
                 {CHAIN_WEAVES.map(w => {
                   const active = weaveId === w.id;
+                  if (w.custom) {
+                    return (
+                      <button key={w.id} onClick={() => setWeaveId(w.id)}
+                        className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl border-dashed border transition-all text-xs ${
+                          active ? "border-amber-400 text-amber-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
+                        }`}>
+                        <span className="text-lg opacity-50">?</span>
+                        <span className="text-center leading-tight">{t(w.label, lang)}</span>
+                      </button>
+                    );
+                  }
                   return (
                     <button key={w.id} onClick={() => setWeaveId(w.id)}
                       className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
@@ -707,7 +718,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                   );
                 })}
               </div>
-              {clientSuppliesMetal && (
+              {clientSuppliesMetal && !CHAIN_WEAVES.find(w=>w.id===weaveId)?.custom && (
                 <div className="mt-3 p-3 rounded-xl border border-amber-400/20 bg-amber-400/5 text-xs text-amber-300">
                   {{ pl: `Odpad technologiczny splotu ${CHAIN_WEAVES.find(w=>w.id===weaveId)?.label.pl}: ~${CHAIN_WEAVES.find(w=>w.id===weaveId)?.materialWaste}% materiału — uwzględnij zapas przy dostarczaniu kruszcu.`,
                      en: `Weave waste for ${CHAIN_WEAVES.find(w=>w.id===weaveId)?.label.en}: ~${CHAIN_WEAVES.find(w=>w.id===weaveId)?.materialWaste}% — account for this when supplying metal.`,
@@ -721,18 +732,38 @@ export default function JewelryCalc({ lang = "pl" }) {
           {/* Clasp selection — chain types only */}
           {isChainType(typeId) && (
             <CalcCard stepNum={step()} label={{ pl: "Zapięcie", en: "Clasp", de: "Verschluss" }[lang]}>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
                 {CHAIN_CLASPS.map(c => {
                   const active = claspId === c.id;
+                  if (c.custom) {
+                    return (
+                      <button key={c.id} onClick={() => setClaspId(c.id)}
+                        className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl border-dashed border transition-all text-xs ${
+                          active ? "border-amber-400 text-amber-300" : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-300"
+                        }`}>
+                        <span className="text-lg opacity-50">?</span>
+                        <span className="text-center leading-tight">{t(c.label, lang)}</span>
+                      </button>
+                    );
+                  }
                   return (
                     <button key={c.id} onClick={() => setClaspId(c.id)}
-                      className={`flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border transition-all text-xs ${
-                        active ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
-                          : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20 hover:text-neutral-200"
+                      className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
+                        active ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10"
+                          : "border-white/10 bg-white/[0.02] hover:border-white/20"
                       }`}>
-                      <span className="text-lg leading-none">🔗</span>
-                      <span className="text-center leading-tight">{t(c.label, lang)}</span>
-                      <span className="text-[9px] opacity-60">+{c.cost} PLN</span>
+                      <div className="w-full aspect-square rounded-lg overflow-hidden bg-black">
+                        {c.img ? (
+                          <img src={c.img} alt={t(c.label, lang)} loading="lazy"
+                            className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+                        ) : (
+                          <span className="text-2xl opacity-40 flex items-center justify-center h-full">🔗</span>
+                        )}
+                      </div>
+                      <span className={`text-[10px] sm:text-[11px] text-center leading-tight ${active ? "text-amber-300 font-medium" : "text-neutral-400"}`}>
+                        {t(c.label, lang)}
+                      </span>
+                      <span className="text-[9px] text-neutral-500">+{c.cost} PLN</span>
                     </button>
                   );
                 })}

@@ -262,13 +262,15 @@ export const CHAIN_WEAVES = [
   { id: "rolo",     label: { pl: "Rolo", en: "Rolo / Belcher", de: "Rolo" },        weaveFactor: 1.2, laborMul: 0.9, materialWaste: 7,  img: "/img/calc/weaves/rolo.webp" },
   { id: "venezia",  label: { pl: "Wenecja", en: "Venetian", de: "Venezia" },        weaveFactor: 1.7, laborMul: 1.3, materialWaste: 12, img: "/img/calc/weaves/venezia.webp" },
   { id: "spirala",  label: { pl: "Spirala (lina)", en: "Rope", de: "Seil" },        weaveFactor: 3.2, laborMul: 2.0, materialWaste: 20, img: "/img/calc/weaves/spirala.webp" },
+  { id: "custom_weave", label: { pl: "Inne / niestandardowe", en: "Other / custom", de: "Andere / Individuell" }, custom: true },
 ];
 
 export const CHAIN_CLASPS = [
-  { id: "spring",   label: { pl: "Sprężynka", en: "Spring ring", de: "Federring" },        cost: 15 },
-  { id: "lobster",  label: { pl: "Karabińczyk", en: "Lobster clasp", de: "Karabiner" },   cost: 20 },
-  { id: "box",      label: { pl: "Zapięcie pudełkowe", en: "Box clasp", de: "Kastenverschluss" }, cost: 35 },
-  { id: "toggle",   label: { pl: "Toggle T-bar", en: "Toggle T-bar", de: "Toggle T-bar" }, cost: 40 },
+  { id: "spring",   label: { pl: "Sprężynka", en: "Spring ring", de: "Federring" },              cost: 15, img: "/img/calc/clasps/spring.webp" },
+  { id: "lobster",  label: { pl: "Karabińczyk", en: "Lobster clasp", de: "Karabiner" },          cost: 20, img: "/img/calc/clasps/lobster.webp" },
+  { id: "box",      label: { pl: "Zapięcie pudełkowe", en: "Box clasp", de: "Kastenverschluss" }, cost: 35, img: "/img/calc/clasps/box.webp" },
+  { id: "toggle",   label: { pl: "Toggle T-bar", en: "Toggle T-bar", de: "Toggle T-bar" },       cost: 40, img: "/img/calc/clasps/toggle.webp" },
+  { id: "custom_clasp", label: { pl: "Inne / niestandardowe", en: "Other / custom", de: "Andere / Individuell" }, custom: true },
 ];
 
 // Default chain length per type (mm)
