@@ -27,7 +27,8 @@
 - [Home](https://www.aejaca.com/) — brand overview, quick quote entry points
 - [AEJaCA Jewelry](https://www.aejaca.com/jewelry/) — custom rings, necklaces, bracelets, earrings; gemstone setting; engagement rings; online jewelry price calculator
 - [AEJaCA sTuDiO](https://www.aejaca.com/studio/) — 3D printing cost calculator online, laser engraving price estimator, epoxy resin casting, fiber-laser marking, STL/SVG instant quote
-- [Blog](https://www.aejaca.com/blog/) — long-form guides: engagement rings, FDM/SLA 3D printing materials, laser engraving techniques
+- [Blog](https://www.aejaca.com/blog/) — long-form guides: engagement rings, FDM/SLA 3D printing materials, laser engraving techniques, chain weave types
+- [Chain Weave Types](https://www.aejaca.com/blog/rodzaje-splotow-lancuszkow/) — guide to 12 chain weave patterns (curb, anchor, Figaro, Byzantine, rope, foxtail, box, Bismark, Rolo, Gucci, Singapore, classic)
 - [Contact](https://www.aejaca.com/contact/) — project briefs, custom inquiries
 
 ## Services (AEJaCA Jewelry)

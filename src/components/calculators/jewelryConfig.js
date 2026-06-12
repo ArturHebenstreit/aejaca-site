@@ -251,17 +251,48 @@ export const GENERIC_METALS = [
   { id: "other_m",    label: { pl: "Inny / nie wiem", en: "Other / not sure", de: "Anderes / unsicher" }, metalKey: "silver" },
 ];
 
+// ar = ID/wire_diameter (Aspect Ratio — controls what link size is achievable)
+// widthMul: chain width = widthMul × wire_diameter_mm
+// thicknessMul: chain thickness = thicknessMul × wire_diameter_mm
+// weaveFactor: wire mass per chain length vs straight wire of same Ø
+// CALIBRATED against real chain: curb (pancerka) Ag925, w=3.58mm, t=1.2mm, L=55cm → 13.93g bare (no clasp)
 export const CHAIN_WEAVES = [
-  { id: "ankier",   label: { pl: "Ankier", en: "Anchor", de: "Anker" },           weaveFactor: 1.4, laborMul: 1.0, materialWaste: 8,  img: "/img/calc/weaves/ankier.webp" },
-  { id: "figaro",   label: { pl: "Figaro", en: "Figaro", de: "Figaro" },           weaveFactor: 1.6, laborMul: 1.2, materialWaste: 10, img: "/img/calc/weaves/figaro.webp" },
-  { id: "singapur", label: { pl: "Singapur", en: "Singapore", de: "Singapur" },     weaveFactor: 1.8, laborMul: 1.4, materialWaste: 12, img: "/img/calc/weaves/singapur.webp" },
-  { id: "bizmark",  label: { pl: "Bizmark", en: "Bismark", de: "Bismark" },         weaveFactor: 2.2, laborMul: 1.5, materialWaste: 15, img: "/img/calc/weaves/bizmark.webp" },
-  { id: "lisi_ogon",label: { pl: "Lisi ogon", en: "Foxtail", de: "Fuchsschwanz" }, weaveFactor: 2.8, laborMul: 1.8, materialWaste: 18, img: "/img/calc/weaves/lisi_ogon.webp" },
-  { id: "omega",    label: { pl: "Omega", en: "Omega", de: "Omega" },               weaveFactor: 1.2, laborMul: 0.9, materialWaste: 6,  img: "/img/calc/weaves/omega.webp" },
-  { id: "pancerz",  label: { pl: "Pancerka", en: "Curb", de: "Panzer" },             weaveFactor: 1.5, laborMul: 1.1, materialWaste: 9,  img: "/img/calc/weaves/pancerz.webp" },
-  { id: "rolo",     label: { pl: "Rolo", en: "Rolo / Belcher", de: "Rolo" },        weaveFactor: 1.2, laborMul: 0.9, materialWaste: 7,  img: "/img/calc/weaves/rolo.webp" },
-  { id: "venezia",  label: { pl: "Wenecja", en: "Venetian", de: "Venezia" },        weaveFactor: 1.7, laborMul: 1.3, materialWaste: 12, img: "/img/calc/weaves/venezia.webp" },
-  { id: "spirala",  label: { pl: "Spirala (lina)", en: "Rope", de: "Seil" },        weaveFactor: 3.2, laborMul: 2.0, materialWaste: 20, img: "/img/calc/weaves/spirala.webp" },
+  { id: "klasyczny",  label: { pl: "Klasyczny", en: "Classic", de: "Klassisch" },
+    ar: 4.0, widthMul: 3.5, thicknessMul: 2.0,
+    weaveFactor: 2.5, laborMul: 0.8, materialWaste: 5,  img: "/img/calc/weaves/klasyczny.webp" },
+  { id: "ankier",    label: { pl: "Ankier", en: "Anchor", de: "Anker" },
+    ar: 4.5, widthMul: 3.5, thicknessMul: 2.0,
+    weaveFactor: 2.2, laborMul: 1.0, materialWaste: 8,  img: "/img/calc/weaves/ankier.webp" },
+  { id: "figaro",    label: { pl: "Figaro", en: "Figaro", de: "Figaro" },
+    ar: 4.0, widthMul: 3.0, thicknessMul: 1.0,
+    weaveFactor: 2.2, laborMul: 1.2, materialWaste: 10, img: "/img/calc/weaves/figaro.webp" },
+  { id: "pancerz",   label: { pl: "Pancerka", en: "Curb", de: "Panzer" },
+    ar: 3.2, widthMul: 3.0, thicknessMul: 1.0,
+    weaveFactor: 2.15, laborMul: 1.1, materialWaste: 9,  img: "/img/calc/weaves/pancerz.webp" },
+  { id: "cuban_link",label: { pl: "Kubański", en: "Cuban link", de: "Kubanische Kette" },
+    ar: 3.2, widthMul: 3.5, thicknessMul: 1.4,
+    weaveFactor: 3.0, laborMul: 1.3, materialWaste: 12, img: "/img/calc/weaves/cuban_link.webp" },
+  { id: "rolo",      label: { pl: "Rolo", en: "Rolo / Belcher", de: "Rolo" },
+    ar: 4.0, widthMul: 5.0, thicknessMul: 2.0,
+    weaveFactor: 1.8, laborMul: 0.9, materialWaste: 7,  img: "/img/calc/weaves/rolo.webp" },
+  { id: "kordel",    label: { pl: "Kordel (lina)", en: "Rope", de: "Kordel" },
+    ar: 2.8, widthMul: 3.0, thicknessMul: 3.0,
+    weaveFactor: 3.5, laborMul: 1.7, materialWaste: 18, img: "/img/calc/weaves/kordel.webp" },
+  { id: "lisi_ogon", label: { pl: "Lisi ogon", en: "Foxtail", de: "Fuchsschwanz" },
+    ar: 3.2, widthMul: 3.5, thicknessMul: 3.0,
+    weaveFactor: 3.8, laborMul: 1.8, materialWaste: 18, img: "/img/calc/weaves/lisi_ogon.webp" },
+  { id: "spiga",     label: { pl: "Spiga / Kłos", en: "Spiga / Wheat", de: "Spiga / Ähre" },
+    ar: 3.2, widthMul: 2.5, thicknessMul: 2.0,
+    weaveFactor: 3.5, laborMul: 1.4, materialWaste: 12, img: "/img/calc/weaves/spiga.webp" },
+  { id: "bizmark",   label: { pl: "Bizmark", en: "Bismark", de: "Bismark" },
+    ar: 3.2, widthMul: 6.0, thicknessMul: 2.0,
+    weaveFactor: 3.0, laborMul: 1.5, materialWaste: 15, img: "/img/calc/weaves/bizmark.webp" },
+  { id: "byzantine", label: { pl: "Bizantyjski / Królewski", en: "Byzantine / Royal", de: "Byzantinisch / Königskette" },
+    ar: 4.5, widthMul: 3.5, thicknessMul: 3.0,
+    weaveFactor: 4.0, laborMul: 2.2, materialWaste: 22, img: "/img/calc/weaves/byzantine.webp" },
+  { id: "franco",    label: { pl: "Franco", en: "Franco", de: "Franco" },
+    ar: 2.8, widthMul: 3.5, thicknessMul: 3.5,
+    weaveFactor: 3.6, laborMul: 1.5, materialWaste: 15, img: "/img/calc/weaves/franco.webp" },
   { id: "custom_weave", label: { pl: "Inne / niestandardowe", en: "Other / custom", de: "Andere / Individuell" }, custom: true },
 ];
 
@@ -278,4 +309,18 @@ export const CHAIN_DEFAULT_LENGTH = {
   necklace:   450,
   chain_m:    550,
   bracelet_m: 200,
+};
+
+// Preset necklace/chain lengths (in mm) — per gender
+export const NECKLACE_LENGTHS_WOMEN = [400, 420, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900];
+export const NECKLACE_LENGTHS_MEN   = [500, 550, 600, 650, 700, 750];
+export const BRACELET_LENGTHS       = [160, 170, 180, 190, 200, 210, 220];
+
+// Y-positions for chain lowest point in SVG body visualiser (viewBox 0 0 200 360)
+export const CHAIN_SVG_Y_WOMEN = {
+  400: 102, 420: 112, 450: 128, 500: 150, 550: 170, 600: 190,
+  650: 210, 700: 228, 750: 244, 800: 259, 850: 273, 900: 286,
+};
+export const CHAIN_SVG_Y_MEN = {
+  500: 150, 550: 170, 600: 190, 650: 208, 700: 225, 750: 241,
 };

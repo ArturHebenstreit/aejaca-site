@@ -5,7 +5,7 @@ export const meta = {
   category: "jewelry",
   accent: "amber",
   publishedAt: "2026-06-11",
-  coverImage: "/img/blog/ile-kosztuje-bizuteria.webp",
+  coverImage: "/img/blog/ile-kosztuje-bizuteria.png",
   readingTime: { pl: 8, en: 7, de: 7 },
   title: {
     pl: "Ile kosztuje biżuteria na zamówienie w Polsce? Kompletny cennik 2026",

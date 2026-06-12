@@ -336,6 +336,20 @@
     </image:image>
   </url>
 
+  <!-- Blog: Rodzaje splotów łańcuszków -->
+  <url>
+    <loc>https://www.aejaca.com/blog/rodzaje-splotow-lancuszkow/</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/rodzaje-splotow-lancuszkow/" />
+    <image:image>
+      <image:loc>https://www.aejaca.com/img/blog/rodzaje-splotow-lancuszkow.png</image:loc>
+      <image:title>Chain weave types — 12 patterns: curb, anchor, Figaro, Byzantine, rope and more</image:title>
+    </image:image>
+  </url>
+
   <!-- Glossary: srebro-925 -->
   <url>
     <loc>https://www.aejaca.com/glossary/srebro-925/</loc>
