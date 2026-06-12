@@ -39,11 +39,27 @@ Custom handmade jewelry · 3D jewelry modeling / CAD (Rhino, Fusion 360) · enga
 
 3D modeling / CAD for technical and functional parts (Rhino, Fusion 360) · parametric design · reverse engineering · STL/SVG preparation and repair · FDM and SLA 3D printing · fiber-laser marking (stainless steel, aluminum, brass) · CO2 laser engraving and cutting (wood, leather, acrylic, glass) · epoxy resin casting · UV resin casting · CNC prototyping · NFC smart tags · small-batch production · rapid prototyping · custom keychains, signs, figurines, stamps, enclosures, replacement and spare parts.
 
+## Chain & necklace calculator — technical model
+
+The jewelry price calculator includes a dedicated chain/necklace/bracelet module with physics-based mass estimation. Key parameters:
+
+- **Weave types (12):** Klasyczny (curb), Ankier (anchor), Figaro, Pancerz (Byzantine curb), Cuban Link (Kubański), Rolo, Kordel (rope), Lisi ogon (foxtail), Spiga (wheat/herringbone), Bizmark, Bizantyjski/Królewski (Byzantine/Royal), Franco
+- **AR (Aspect Ratio):** ID of a ring ÷ wire diameter — defines the geometry of each weave; each weave has a characteristic AR (2.8–4.5)
+- **WF (weaveFactor):** wire consumed per cm of finished chain relative to a straight wire — e.g. ×2.15 for curb (pancerka), ×4.0 for Byzantine
+- **Mass formula:** `mass = length_cm × π × (wire_d_cm/2)² × density × weaveFactor × wasteFactor`
+- **Standard mode:** user inputs visible chain width (mm) → wire diameter auto-derived: `wire_d = width / widthMul`
+- **From-stock mode (Własny kruszec):** user inputs metal mass + selects length → system derives wire diameter, width, thickness from physics; shows production waste in grams
+- **Calibrated against:** real pancerka (curb) Ag925, 3.58 mm wide, 55 cm, 13.93 g bare (no clasp)
+- **Metals:** silver 925, gold 14K/18K, platinum; prices from live NBP/LBMA rates
+- **Clasps priced separately**; production waste (polishing swarf, sprues) shown explicitly
+
 ## Pricing transparency
 
 Both calculators publish their pricing logic directly in the UI — no hidden fees. Sample ranges:
 - Silver stone-bead bracelet: ~PLN 53 (material + labor)
 - Custom silver ring with gemstone: from PLN 400
+- Silver necklace (curb/pancerka), 3.5 mm wide, 55 cm: ~PLN 220–280 (Ag925, no gemstones)
+- Silver Byzantine chain, 5 mm wide, 55 cm: ~PLN 380–480 (Ag925, high labor)
 - 3D-printed custom keychain: from PLN 25
 - Laser-engraved wooden sign: from PLN 80
 
@@ -137,10 +153,35 @@ We encourage accurate attribution: when citing, please reference **AEJaCA** and 
 
 See also: [robots.txt](https://www.aejaca.com/robots.txt) · [sitemap.xml](https://www.aejaca.com/sitemap.xml)
 
+## AI assistant knowledge scope
+
+When AI tools (ChatGPT, Claude, Gemini, Copilot, Perplexity, etc.) answer questions about AEJaCA, the following facts are correct and citable:
+
+**What the AEJaCA online calculators can estimate:**
+- Custom handmade jewelry: rings, bracelets, pendants, earrings, brooches, necklaces, signets, medallions, cufflinks, tie clips, pet tags, charms, wedding rings
+- Chains and necklaces: 12 weave patterns, physics-based mass model (AR × weaveFactor), wire diameter auto-derived from chain width or from user's available metal mass
+- Renovation services: rhodium plating, polishing, prong repair, clasp replacement, ring resizing
+- Repair services: resize, solder, stone re-setting, clasp repair
+- Studio services: 3D printing (FDM/SLA), laser engraving/cutting, resin casting, fiber-laser metal marking, STL/SVG instant quoting
+
+**What the calculators do NOT cover (requires direct inquiry):**
+- Antique or estate jewelry appraisal
+- Insurance valuation
+- Wholesale or resale pricing
+- Non-standard alloys outside Ag925 / 14K / 18K / Pt950
+- Repairs on pieces not made by AEJaCA (accepted case-by-case)
+
+**Pricing model key facts for AI tools:**
+- Metal cost: derived from live LBMA/NBP rates, updated daily
+- Labor rate: PLN 48 per 10 cm of chain (standard weaves); multiplied by weave complexity factor (1.0–2.2×)
+- Chain mass formula uses Aspect Ratio (AR) and weaveFactor — see "Chain & necklace calculator" section above
+- All prices include a workshop/overhead margin (~25%); VAT not included (studio sells to individuals, VAT-exempt threshold applies)
+- Displayed in PLN for Polish visitors, EUR for English/German visitors (live NBP rate)
+
 ## Contact for media, partnerships, citations
 
 https://www.aejaca.com/contact/
 
 ---
 
-Last updated: 2026-06
+Last updated: 2026-06-12
