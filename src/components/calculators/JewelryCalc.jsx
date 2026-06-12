@@ -13,6 +13,7 @@ import {
   GEMSTONES, STONE_SIZES, DIAMOND_CLARITY, DIAMOND_COLOR, GEM_QUALITY, CERTIFICATIONS,
   RENOVATION_SERVICES, REPAIR_SERVICES,
   REPAIR_METAL_MUL, QTY_TIERS, GENERIC_TYPES, GENERIC_METALS,
+  CHAIN_WEAVES, CHAIN_CLASPS, CHAIN_DEFAULT_LENGTH,
 } from "./jewelryConfig.js";
 import { getProductType } from "./jewelry/productConfig.js";
 import { calcWeight as computeWeight } from "./jewelry/WeightEngine.js";
@@ -44,6 +45,9 @@ const TYPE_TO_FORM = {
   wedding_ring_w: "wedding_ring",
   wedding_ring_m: "wedding_ring",
 };
+
+const CHAIN_TYPES = new Set(["chain_m", "bracelet_m", "necklace"]);
+const isChainType = (id) => CHAIN_TYPES.has(id);
 
 // Density (g/cm³) by metal type key
 const METAL_DENSITY = {
@@ -220,6 +224,69 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
   };
 }
 
+// ---- CHAIN / NECKLACE / BRACELET CALCULATOR ----
+export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engravingId,
+  chainLengthMm, weaveWidthMm, wireDiameterMm,
+  clientSuppliesMetal, qtyId }, lang, rates) {
+  const l = LBL[lang] || LBL.en;
+  const metal = METALS.find(m => m.id === metalId);
+  const weave = CHAIN_WEAVES.find(w => w.id === weaveId);
+  const clasp = CHAIN_CLASPS.find(c => c.id === claspId);
+  const plat = PLATING.find(p => p.id === platingId);
+  const qTier = QTY_TIERS.find(q => q.id === qtyId);
+  const engraving = ENGRAVING_OPTIONS.find(e => e.id === (engravingId || "none"));
+
+  if (!metal || !weave || !clasp || !plat || !qTier) return null;
+  if (metal.custom || plat.custom || qTier.custom) return { type: "custom" };
+
+  const density = METAL_DENSITY[metal.metal] ?? 10.5;
+  const lengthCm = (chainLengthMm || 450) / 10;
+  const dCm = (wireDiameterMm || 0.8) / 10;
+  const r = dCm / 2;
+
+  // Wire mass: length × cross-section area × density × weave factor × waste factor
+  const wasteFactor = 1 + weave.materialWaste / 100;
+  const wireVolumePerCm = Math.PI * r * r; // cm³ per cm of wire
+  const wireMassG = lengthCm * wireVolumePerCm * density * weave.weaveFactor * wasteFactor;
+
+  const plnPerG = resolveMetalPricePerG(metal.metal, rates);
+  const metalCost = clientSuppliesMetal ? 0 : wireMassG * plnPerG * metal.purity;
+
+  // Labor: base rate per 10cm of chain × weave labor multiplier × metal multiplier
+  const BASE_CHAIN_LABOR_RATE = 18; // PLN per 10cm
+  const laborCost = (lengthCm / 10) * BASE_CHAIN_LABOR_RATE * weave.laborMul * metal.laborMul;
+
+  const claspCost = clasp.cost;
+  const platingCost = plat.cost;
+  const engravingCost = engraving?.cost ?? 0;
+
+  const baseCost = metalCost + laborCost + claspCost + platingCost + engravingCost;
+  const workshopCost = baseCost * MARGIN;
+  const estCost = baseCost + workshopCost;
+  const qty = qTier.qty;
+  const liveEurPln = rates?.pln_per_eur ?? EUR_PLN;
+  const pricing = applyJewelryPricing(baseCost, qTier.discount, qty, MARGIN, liveEurPln);
+
+  return {
+    type: "calculated", ...pricing, qty, discount: qTier.discount,
+    breakdown: [
+      { label: `${l.metalCost} (${wireMassG.toFixed(1)}g ${t(metal.label, lang)})`, value: fmtCost(metalCost, lang) },
+      ...(clientSuppliesMetal && weave.materialWaste > 0 ? [{
+        label: { pl: `⚠ Odpad technologiczny splotu: ~${weave.materialWaste}% materiału`, en: `⚠ Weave waste: ~${weave.materialWaste}% material`, de: `⚠ Webabfall: ~${weave.materialWaste}% Material` }[lang],
+        value: "",
+      }] : []),
+      { label: l.laborCost, value: fmtCost(laborCost, lang) },
+      { label: { pl: "Zapięcie", en: "Clasp", de: "Verschluss" }[lang], value: fmtCost(claspCost, lang) },
+      ...(platingCost > 0 ? [{ label: l.platingCost, value: fmtCost(platingCost, lang) }] : []),
+      ...(engravingCost > 0 ? [{ label: l.engraving, value: fmtCost(engravingCost, lang) }] : []),
+      { label: l.workshop, value: fmtCost(workshopCost, lang) },
+      { divider: true },
+      { label: l.estCost, value: fmtCost(estCost, lang), bold: true },
+      ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
+    ],
+  };
+}
+
 // ---- RENOVATION CALCULATOR ----
 export function calcRenovation({ jewTypeId, metalTypeId, services, qtyId }, lang) {
   const l = LBL[lang] || LBL.en;
@@ -327,12 +394,21 @@ export default function JewelryCalc({ lang = "pl" }) {
     }
     setDimensions(defaults);
   }, [productForm]);
+  useEffect(() => {
+    setChainLengthMm(CHAIN_DEFAULT_LENGTH[typeId] ?? 450);
+  }, [typeId]);
   const [clientSuppliesMetal, setClientSuppliesMetal] = useState(false);
   const [metalId, setMetalId] = useState("silver");
   const [weightId, setWeightId] = useState("light");
   const [methodId, setMethodId] = useState("cast");
   const [platingId, setPlatingId] = useState("none");
   const [engravingId, setEngravingId] = useState("none");
+  // Chain-specific state
+  const [weaveId, setWeaveId] = useState("ankier");
+  const [claspId, setClaspId] = useState("lobster");
+  const [chainLengthMm, setChainLengthMm] = useState(450);
+  const [weaveWidthMm, setWeaveWidthMm] = useState(3.0);
+  const [wireDiameterMm, setWireDiameterMm] = useState(0.8);
   // Stone rows — up to 10 different stone entries
   const [stoneRows, setStoneRows] = useState([
     { rowId: "row0", gemId: "none", stoneSizeId: "small", count: 1, suppliedBy: "studio",
@@ -363,6 +439,11 @@ export default function JewelryCalc({ lang = "pl" }) {
 
   const result = useMemo(() => {
     if (serviceId === "new") {
+      if (isChainType(typeId)) {
+        return calcChain({ typeId, metalId, weaveId, claspId, platingId, engravingId,
+          chainLengthMm, weaveWidthMm, wireDiameterMm,
+          clientSuppliesMetal, qtyId }, lang, rates);
+      }
       return calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
         stoneRows, qtyId, engravingId,
         clientSuppliesMetal,
@@ -373,7 +454,7 @@ export default function JewelryCalc({ lang = "pl" }) {
     }
     return calcRepair({ jewTypeId: repairJewType, metalTypeId: repairMetal, repairId, qtyId }, lang);
   }, [serviceId, lineId, typeId, metalId, weightId, methodId, platingId, engravingId,
-    stoneRows, qtyId,
+    stoneRows, qtyId, weaveId, claspId, chainLengthMm, weaveWidthMm, wireDiameterMm,
     clientSuppliesMetal, weightResult,
     renoServices, renoJewType, renoMetal, repairId, repairJewType, repairMetal, lang, rates, resolvedGemstones]);
 
@@ -494,7 +575,7 @@ export default function JewelryCalc({ lang = "pl" }) {
             </div>
           </CalcCard>
 
-          <CalcCard stepNum={step()} label={l.weight}>
+          {!isChainType(typeId) && <CalcCard stepNum={step()} label={l.weight}>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
               {WEIGHTS.map(w => {
                 const active = weightId === w.id;
@@ -530,45 +611,134 @@ export default function JewelryCalc({ lang = "pl" }) {
                 );
               })}
             </div>
-          </CalcCard>
+          </CalcCard>}
 
-          {/* Shape & Dimensions step */}
-          <CalcCard stepNum={step()} label={{ pl: "Kształt i wymiary", en: "Shape & Dimensions", de: "Form & Abmessungen" }[lang] || "Shape & Dimensions"}>
-            {productForm ? (
-              <div className="space-y-5">
-                {/* Show which geometry model is being used */}
-                {(() => {
-                  const pt = getProductType(productForm);
-                  return pt ? (
-                    <p className="text-xs text-neutral-400">
-                      {pt.icon} {t(pt.label, lang)} — {t(pt.notes, lang)}
-                    </p>
-                  ) : null;
-                })()}
-                <DimensionInputs
-                  productTypeId={productForm}
-                  values={dimensions}
-                  onChange={(id, val) => setDimensions(prev => ({ ...prev, [id]: val }))}
-                  lang={lang}
-                />
-
-                {/* Live weight display */}
-                {weightResult && (
-                  <WeightDisplay
-                    nettoG={weightResult.nettoG}
-                    bruttoG={weightResult.bruttoG}
-                    metalName={t(METALS.find(m => m.id === metalId)?.label, lang) ?? ""}
-                    lang={lang}
-                    clientSuppliesMetal={clientSuppliesMetal}
-                  />
-                )}
+          {/* Shape & Dimensions / Chain dimensions step */}
+          <CalcCard stepNum={step()} label={isChainType(typeId)
+            ? { pl: "Wymiary łańcuszka", en: "Chain dimensions", de: "Kettenmaße" }[lang]
+            : ({ pl: "Kształt i wymiary", en: "Shape & Dimensions", de: "Form & Abmessungen" }[lang] || "Shape & Dimensions")}>
+            {isChainType(typeId) ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs text-neutral-400">{{ pl: "Długość (mm)", en: "Length (mm)", de: "Länge (mm)" }[lang]}</span>
+                    <input type="number" min={50} max={1500} step={5} value={chainLengthMm}
+                      onChange={e => setChainLengthMm(Number(e.target.value))}
+                      className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50" />
+                    <span className="text-[10px] text-neutral-500">{(chainLengthMm / 10).toFixed(0)} cm</span>
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs text-neutral-400">{{ pl: "Grubość drutu (mm)", en: "Wire diameter (mm)", de: "Drahtdurchmesser (mm)" }[lang]}</span>
+                    <input type="number" min={0.3} max={3.0} step={0.1} value={wireDiameterMm}
+                      onChange={e => setWireDiameterMm(Number(e.target.value))}
+                      className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50" />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs text-neutral-400">{{ pl: "Szerokość splotu (mm)", en: "Weave width (mm)", de: "Flechtbreite (mm)" }[lang]}</span>
+                    <input type="number" min={1.0} max={20.0} step={0.5} value={weaveWidthMm}
+                      onChange={e => setWeaveWidthMm(Number(e.target.value))}
+                      className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50" />
+                  </label>
+                </div>
               </div>
             ) : (
-              <p className="text-xs text-neutral-500">
-                {{ pl: "Szczegółowe wymiary niedostępne dla tego rodzaju biżuterii.", en: "Detailed dimensions not available for this jewelry type.", de: "Detaillierte Abmessungen für diesen Schmucktyp nicht verfügbar." }[lang]}
-              </p>
+              productForm ? (
+                <div className="space-y-5">
+                  {/* Show which geometry model is being used */}
+                  {(() => {
+                    const pt = getProductType(productForm);
+                    return pt ? (
+                      <p className="text-xs text-neutral-400">
+                        {pt.icon} {t(pt.label, lang)} — {t(pt.notes, lang)}
+                      </p>
+                    ) : null;
+                  })()}
+                  <DimensionInputs
+                    productTypeId={productForm}
+                    values={dimensions}
+                    onChange={(id, val) => setDimensions(prev => ({ ...prev, [id]: val }))}
+                    lang={lang}
+                  />
+
+                  {/* Live weight display */}
+                  {weightResult && (
+                    <WeightDisplay
+                      nettoG={weightResult.nettoG}
+                      bruttoG={weightResult.bruttoG}
+                      metalName={t(METALS.find(m => m.id === metalId)?.label, lang) ?? ""}
+                      lang={lang}
+                      clientSuppliesMetal={clientSuppliesMetal}
+                    />
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs text-neutral-500">
+                  {{ pl: "Szczegółowe wymiary niedostępne dla tego rodzaju biżuterii.", en: "Detailed dimensions not available for this jewelry type.", de: "Detaillierte Abmessungen für diesen Schmucktyp nicht verfügbar." }[lang]}
+                </p>
+              )
             )}
           </CalcCard>
+
+          {/* Weave selection — chain types only */}
+          {isChainType(typeId) && (
+            <CalcCard stepNum={step()} label={{ pl: "Splot łańcuszka", en: "Chain weave", de: "Kettenmuster" }[lang]}>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
+                {CHAIN_WEAVES.map(w => {
+                  const active = weaveId === w.id;
+                  return (
+                    <button key={w.id} onClick={() => setWeaveId(w.id)}
+                      className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
+                        active ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10"
+                          : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                      }`}>
+                      <div className="w-full aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center">
+                        {w.img ? (
+                          <img src={w.img} alt={t(w.label, lang)} loading="lazy"
+                            className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+                        ) : (
+                          <span className="text-2xl opacity-40">⛓</span>
+                        )}
+                      </div>
+                      <span className={`text-[10px] sm:text-[11px] text-center leading-tight ${active ? "text-amber-300 font-medium" : "text-neutral-400"}`}>
+                        {t(w.label, lang)}
+                      </span>
+                      <span className="text-[9px] text-neutral-500">×{w.weaveFactor}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {clientSuppliesMetal && (
+                <div className="mt-3 p-3 rounded-xl border border-amber-400/20 bg-amber-400/5 text-xs text-amber-300">
+                  {{ pl: `Odpad technologiczny splotu ${CHAIN_WEAVES.find(w=>w.id===weaveId)?.label.pl}: ~${CHAIN_WEAVES.find(w=>w.id===weaveId)?.materialWaste}% materiału — uwzględnij zapas przy dostarczaniu kruszcu.`,
+                     en: `Weave waste for ${CHAIN_WEAVES.find(w=>w.id===weaveId)?.label.en}: ~${CHAIN_WEAVES.find(w=>w.id===weaveId)?.materialWaste}% — account for this when supplying metal.`,
+                     de: `Webabfall für ${CHAIN_WEAVES.find(w=>w.id===weaveId)?.label.de}: ~${CHAIN_WEAVES.find(w=>w.id===weaveId)?.materialWaste}% — beim Liefern des Metalls berücksichtigen.`
+                  }[lang]}
+                </div>
+              )}
+            </CalcCard>
+          )}
+
+          {/* Clasp selection — chain types only */}
+          {isChainType(typeId) && (
+            <CalcCard stepNum={step()} label={{ pl: "Zapięcie", en: "Clasp", de: "Verschluss" }[lang]}>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                {CHAIN_CLASPS.map(c => {
+                  const active = claspId === c.id;
+                  return (
+                    <button key={c.id} onClick={() => setClaspId(c.id)}
+                      className={`flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border transition-all text-xs ${
+                        active ? "border-amber-400 bg-amber-400/10 text-amber-300 font-medium"
+                          : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20 hover:text-neutral-200"
+                      }`}>
+                      <span className="text-lg leading-none">🔗</span>
+                      <span className="text-center leading-tight">{t(c.label, lang)}</span>
+                      <span className="text-[9px] opacity-60">+{c.cost} PLN</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </CalcCard>
+          )}
 
           <CalcCard stepNum={step()} label={l.metal}>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 gap-2 sm:gap-3">
@@ -643,7 +813,7 @@ export default function JewelryCalc({ lang = "pl" }) {
             </div>
           </CalcCard>
 
-          <CalcCard stepNum={step()} label={l.method}>
+          {!isChainType(typeId) && <CalcCard stepNum={step()} label={l.method}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {METHODS.filter(m => !m.custom).map(m => {
                 const active = methodId === m.id;
@@ -668,7 +838,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                 );
               })}
             </div>
-          </CalcCard>
+          </CalcCard>}
 
           <CalcCard stepNum={step()} label={l.plating}>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
@@ -746,16 +916,18 @@ export default function JewelryCalc({ lang = "pl" }) {
             </div>
           </CalcCard>
 
-          <CalcCard stepNum={step()} label={typeId === "signet"
-            ? ({ pl: "Kamień w oczku sygnetu", en: "Stone in signet bezel", de: "Stein im Siegelkopf" }[lang] ?? l.gem)
-            : l.gem}>
-            <StoneComposer
-              stoneRows={stoneRows}
-              onChange={setStoneRows}
-              lang={lang}
-              gemstones={resolvedGemstones}
-            />
-          </CalcCard>
+          {!isChainType(typeId) && (
+            <CalcCard stepNum={step()} label={typeId === "signet"
+              ? ({ pl: "Kamień w oczku sygnetu", en: "Stone in signet bezel", de: "Stein im Siegelkopf" }[lang] ?? l.gem)
+              : l.gem}>
+              <StoneComposer
+                stoneRows={stoneRows}
+                onChange={setStoneRows}
+                lang={lang}
+                gemstones={resolvedGemstones}
+              />
+            </CalcCard>
+          )}
         </>
       )}
 
@@ -949,7 +1121,45 @@ export default function JewelryCalc({ lang = "pl" }) {
           }}
           paramsSummary={
           serviceId === "new"
+            ? isChainType(typeId)
+              ? [t(PRODUCT_LINES.find(p => p.id === lineId)?.label, lang) || lineId,
+                 t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
+                 t(METALS.find(m => m.id === metalId)?.label, lang),
+                 t(CHAIN_WEAVES.find(w => w.id === weaveId)?.label, lang),
+                 t(CHAIN_CLASPS.find(c => c.id === claspId)?.label, lang),
+                 `${chainLengthMm}mm`,
+                 `Ø${wireDiameterMm}mm`,
+                 engravingId !== "none" ? t(ENGRAVING_OPTIONS.find(e => e.id === engravingId)?.label, lang) : null,
+                ].filter(Boolean).join(" | ")
+              : [t(PRODUCT_LINES.find(p => p.id === lineId)?.label, lang) || lineId,
+                 t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
+                 t(METALS.find(m => m.id === metalId)?.label, lang),
+                 t(METHODS.find(m => m.id === methodId)?.label, lang),
+                 engravingId !== "none" ? t(ENGRAVING_OPTIONS.find(e => e.id === engravingId)?.label, lang) : null,
+                 ...stoneRows.filter(r => r.gemId !== "none").map(r => {
+                   const gem = resolvedGemstones.find(g => g.id === r.gemId);
+                   const sz = STONE_SIZES.find(s => s.id === r.stoneSizeId);
+                   return `${r.count}× ${t(gem?.label, lang) ?? r.gemId} (${t(sz?.label, lang) ?? r.stoneSizeId})${r.suppliedBy === "client" ? " [klient]" : ""}`;
+                 })].filter(Boolean).join(" | ")
+            : serviceId === "renovation"
+              ? `${t(SERVICE_TYPES[1].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === renoJewType)?.label, lang)} | ${renoServices.map(id => t(RENOVATION_SERVICES.find(s => s.id === id)?.label, lang)).join(", ")}`
+              : `${t(SERVICE_TYPES[2].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === repairJewType)?.label, lang)} | ${t(REPAIR_SERVICES.find(r => r.id === repairId)?.label, lang)}`
+        } />
+      </div>
+
+      <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={
+        serviceId === "new"
+          ? isChainType(typeId)
             ? [t(PRODUCT_LINES.find(p => p.id === lineId)?.label, lang) || lineId,
+               t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
+               t(METALS.find(m => m.id === metalId)?.label, lang),
+               t(CHAIN_WEAVES.find(w => w.id === weaveId)?.label, lang),
+               t(CHAIN_CLASPS.find(c => c.id === claspId)?.label, lang),
+               `${chainLengthMm}mm`,
+               `Ø${wireDiameterMm}mm`,
+               engravingId !== "none" ? t(ENGRAVING_OPTIONS.find(e => e.id === engravingId)?.label, lang) : null,
+              ].filter(Boolean).join(" | ")
+            : [t(PRODUCT_LINES.find(p => p.id === lineId)?.label, lang) || lineId,
                t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
                t(METALS.find(m => m.id === metalId)?.label, lang),
                t(METHODS.find(m => m.id === methodId)?.label, lang),
@@ -959,24 +1169,6 @@ export default function JewelryCalc({ lang = "pl" }) {
                  const sz = STONE_SIZES.find(s => s.id === r.stoneSizeId);
                  return `${r.count}× ${t(gem?.label, lang) ?? r.gemId} (${t(sz?.label, lang) ?? r.stoneSizeId})${r.suppliedBy === "client" ? " [klient]" : ""}`;
                })].filter(Boolean).join(" | ")
-            : serviceId === "renovation"
-              ? `${t(SERVICE_TYPES[1].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === renoJewType)?.label, lang)} | ${renoServices.map(id => t(RENOVATION_SERVICES.find(s => s.id === id)?.label, lang)).join(", ")}`
-              : `${t(SERVICE_TYPES[2].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === repairJewType)?.label, lang)} | ${t(REPAIR_SERVICES.find(r => r.id === repairId)?.label, lang)}`
-        } />
-      </div>
-
-      <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={
-        serviceId === "new"
-          ? [t(PRODUCT_LINES.find(p => p.id === lineId)?.label, lang) || lineId,
-             t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
-             t(METALS.find(m => m.id === metalId)?.label, lang),
-             t(METHODS.find(m => m.id === methodId)?.label, lang),
-             engravingId !== "none" ? t(ENGRAVING_OPTIONS.find(e => e.id === engravingId)?.label, lang) : null,
-             ...stoneRows.filter(r => r.gemId !== "none").map(r => {
-               const gem = resolvedGemstones.find(g => g.id === r.gemId);
-               const sz = STONE_SIZES.find(s => s.id === r.stoneSizeId);
-               return `${r.count}× ${t(gem?.label, lang) ?? r.gemId} (${t(sz?.label, lang) ?? r.stoneSizeId})${r.suppliedBy === "client" ? " [klient]" : ""}`;
-             })].filter(Boolean).join(" | ")
           : serviceId === "renovation"
             ? `${t(SERVICE_TYPES[1].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === renoJewType)?.label, lang)} | ${renoServices.map(id => t(RENOVATION_SERVICES.find(s => s.id === id)?.label, lang)).join(", ")}`
             : `${t(SERVICE_TYPES[2].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === repairJewType)?.label, lang)} | ${t(REPAIR_SERVICES.find(r => r.id === repairId)?.label, lang)}`
