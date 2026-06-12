@@ -13,6 +13,7 @@ import * as p12 from "./posts/projektowanie-ai.jsx";
 import * as p13 from "./posts/warsztat-od-kuchni.jsx";
 import * as p14 from "./posts/modelowanie-3d-na-zamowienie.jsx";
 import * as p15 from "./posts/ile-kosztuje-bizuteria.jsx";
+import * as p16 from "./posts/rodzaje-splotow-lancuszkow.jsx";
 
 export const POSTS = [
   { ...p1.meta, Body: p1.Body },
@@ -30,6 +31,7 @@ export const POSTS = [
   { ...p13.meta, Body: p13.Body },
   { ...p14.meta, Body: p14.Body },
   { ...p15.meta, Body: p15.Body },
+  { ...p16.meta, Body: p16.Body },
 ];
 
 export function getPost(slug) {

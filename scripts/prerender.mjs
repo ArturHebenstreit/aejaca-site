@@ -76,6 +76,7 @@ const BLOG_SLUGS = [
   "warsztat-od-kuchni",
   "modelowanie-3d-na-zamowienie",
   "ile-kosztuje-bizuteria-na-zamowienie",
+  "rodzaje-splotow-lancuszkow",
 ];
 
 const routes = [
