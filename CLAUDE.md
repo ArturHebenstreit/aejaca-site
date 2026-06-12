@@ -95,22 +95,42 @@ This applies to: all calculators, pricing displays, result cards, quote forms �
 - **Branch**: work on `claude/review-repository-*` branches. All commits include session footer link.
 - **Build**: `npm run build` after structural changes. Dev server: `npm run dev`.
 
-## Config file synchronization rule
+## Config file synchronization rule — MANDATORY before every deploy
 
-**Whenever any website content changes, always synchronize these three files:**
+**This is a hard rule. Every content change MUST be followed by updating ALL applicable files below before committing. No exceptions.**
 
-| File | What to update |
-|------|----------------|
-| `public/llms.txt` | Entity facts, FAQ answers, services list, shipping costs, pricing examples, glossary links |
-| `public/robots.txt` | Keep crawler list in sync with the `## Crawl policy` section of `llms.txt` — same bots, same grouping |
-| `public/sitemap.xml` | Add new pages/paths; update `<lastmod>` on changed pages (use today's date `YYYY-MM-DD`) |
+### Full sync checklist (5 files)
 
-Checklist triggers:
-- New page added → add to `sitemap.xml`
-- New glossary term added → add to `sitemap.xml` + add link in `llms.txt` Glossary section
-- Prices / shipping costs changed → update `llms.txt` FAQ shipping answer
-- Services expanded → update `llms.txt` Services sections and FAQ
-- New AI crawler bot needed → add to both `llms.txt` Crawl policy and `robots.txt`
+| File | What to update | When |
+|------|----------------|------|
+| `public/llms.txt` | Entity facts, FAQ answers, services list, pricing examples, chain weave data, glossary links | Any content/pricing/service change |
+| `public/robots.txt` | Keep crawler list in sync with `llms.txt` Crawl policy — same bots, same grouping | When adding/removing crawlers |
+| `public/sitemap.xml` | Add new pages; update `<lastmod>` on changed pages (today's date `YYYY-MM-DD`) | Any page content or structure change |
+| `chat-api/context.js` | AI assistant system prompt — must reflect current calculator options, prices, weave types, blog articles, tools | Any new feature, new blog post, new calculator option, price change |
+| `src/seo/` (`seoData.js`, `schemas.js`) | Page meta titles/descriptions, structured data schemas (FAQ, Service, HowTo, Article) | New pages, changed page content, new FAQs |
+
+### Trigger → action mapping
+
+| What changed | Files to update |
+|-------------|----------------|
+| New page added | `sitemap.xml` (new URL) + `llms.txt` (Key pages) + `chat-api/context.js` (Key pages & anchors) + `seoData.js` |
+| New blog post | `sitemap.xml` + `llms.txt` (Blog entry) + `chat-api/context.js` (Blog articles table) |
+| New glossary term | `sitemap.xml` + `llms.txt` (Glossary section) + `chat-api/context.js` (Glossary terms) |
+| Calculator option changed (new weave, metal, service…) | `llms.txt` (relevant section) + `chat-api/context.js` (calculator section + use-case routing) |
+| Prices / shipping changed | `llms.txt` (FAQ + Pricing) + `chat-api/context.js` (pricing ballparks) |
+| New tool / free resource added | `llms.txt` + `chat-api/context.js` (add full tool section with inline-calc capability if applicable) |
+| New AI crawler | `llms.txt` (Crawl policy) + `robots.txt` |
+| Page content significantly updated | `sitemap.xml` (`<lastmod>`) + `llms.txt` if factual content changed |
+
+### Pre-deploy verification checklist
+
+Before every `git push`, confirm:
+- [ ] `sitemap.xml` — `<lastmod>` updated for all changed pages, new pages added
+- [ ] `llms.txt` — facts match the live site; "Last updated" date is today
+- [ ] `robots.txt` — crawler list matches `llms.txt` Crawl policy
+- [ ] `chat-api/context.js` — assistant knows about every new feature, blog post, calculator option, price range
+- [ ] `src/seo/seoData.js` — meta title/description correct for changed pages
+- [ ] `npm run build` passes with 0 errors
 
 ## Commit & push guidelines
 
