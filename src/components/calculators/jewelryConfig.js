@@ -255,7 +255,7 @@ export const GENERIC_METALS = [
 // widthMul: chain width = widthMul × wire_diameter_mm
 // thicknessMul: chain thickness = thicknessMul × wire_diameter_mm
 // weaveFactor: wire mass per chain length vs straight wire of same Ø
-// CALIBRATED against real chain: curb (pancerka) Ag925, w=3.58mm, t=1.2mm, L=55cm → 15g
+// CALIBRATED against real chain: curb (pancerka) Ag925, w=3.58mm, t=1.2mm, L=55cm → 13.93g bare (no clasp)
 export const CHAIN_WEAVES = [
   { id: "klasyczny",  label: { pl: "Klasyczny", en: "Classic", de: "Klassisch" },
     ar: 4.0, widthMul: 3.5, thicknessMul: 2.0,
@@ -268,7 +268,7 @@ export const CHAIN_WEAVES = [
     weaveFactor: 2.2, laborMul: 1.2, materialWaste: 10, img: "/img/calc/weaves/figaro.webp" },
   { id: "pancerz",   label: { pl: "Pancerka", en: "Curb", de: "Panzer" },
     ar: 3.2, widthMul: 3.0, thicknessMul: 1.0,
-    weaveFactor: 2.3, laborMul: 1.1, materialWaste: 9,  img: "/img/calc/weaves/pancerz.webp" },
+    weaveFactor: 2.15, laborMul: 1.1, materialWaste: 9,  img: "/img/calc/weaves/pancerz.webp" },
   { id: "cuban_link",label: { pl: "Kubański", en: "Cuban link", de: "Kubanische Kette" },
     ar: 3.2, widthMul: 3.5, thicknessMul: 1.4,
     weaveFactor: 3.0, laborMul: 1.3, materialWaste: 12, img: "/img/calc/weaves/cuban_link.webp" },
