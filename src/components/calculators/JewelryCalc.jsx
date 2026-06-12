@@ -668,30 +668,30 @@ export default function JewelryCalc({ lang = "pl" }) {
                   {calcMode === "from_stock" ? (
                     <label className="flex flex-col gap-1.5">
                       <span className="text-xs text-neutral-400">{{ pl: "Masa kruszcu (g)", en: "Metal mass (g)", de: "Metallmasse (g)" }[lang]}</span>
-                      <input type="number" min={1} max={500} step={0.5} value={stockMassG}
-                        onChange={e => setStockMassG(Number(e.target.value))}
+                      <input type="number" min={1} max={500} step={0.5} value={stockMassG || ""}
+                        onChange={e => { const n = parseFloat(e.target.value); if (n > 0) setStockMassG(n); }}
                         className="bg-white/5 border border-amber-400/30 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/70" />
                       <span className="text-[10px] text-neutral-500">{stockMassG} g</span>
                     </label>
                   ) : (
                     <label className="flex flex-col gap-1.5">
                       <span className="text-xs text-neutral-400">{{ pl: "Długość (mm)", en: "Length (mm)", de: "Länge (mm)" }[lang]}</span>
-                      <input type="number" min={50} max={1500} step={5} value={chainLengthMm}
-                        onChange={e => setChainLengthMm(Number(e.target.value))}
+                      <input type="number" min={50} max={1500} step={5} value={chainLengthMm || ""}
+                        onChange={e => { const n = parseFloat(e.target.value); if (n > 0) setChainLengthMm(n); }}
                         className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50" />
                       <span className="text-[10px] text-neutral-500">{(chainLengthMm / 10).toFixed(0)} cm</span>
                     </label>
                   )}
                   <label className="flex flex-col gap-1.5">
                     <span className="text-xs text-neutral-400">{{ pl: "Grubość drutu (mm)", en: "Wire diameter (mm)", de: "Drahtdurchmesser (mm)" }[lang]}</span>
-                    <input type="number" min={0.3} max={3.0} step={0.1} value={wireDiameterMm}
-                      onChange={e => setWireDiameterMm(Number(e.target.value))}
+                    <input type="number" min={0.3} max={3.0} step={0.1} value={wireDiameterMm || ""}
+                      onChange={e => { const n = parseFloat(e.target.value); if (n > 0) setWireDiameterMm(n); }}
                       className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50" />
                   </label>
                   <label className="flex flex-col gap-1.5">
                     <span className="text-xs text-neutral-400">{{ pl: "Szerokość splotu (mm)", en: "Weave width (mm)", de: "Flechtbreite (mm)" }[lang]}</span>
-                    <input type="number" min={1.0} max={20.0} step={0.5} value={weaveWidthMm}
-                      onChange={e => setWeaveWidthMm(Number(e.target.value))}
+                    <input type="number" min={1.0} max={20.0} step={0.5} value={weaveWidthMm || ""}
+                      onChange={e => { const n = parseFloat(e.target.value); if (n > 0) setWeaveWidthMm(n); }}
                       className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50" />
                   </label>
                 </div>

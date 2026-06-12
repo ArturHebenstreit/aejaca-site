@@ -254,14 +254,16 @@ export const GENERIC_METALS = [
 export const CHAIN_WEAVES = [
   { id: "klasyczny",  label: { pl: "Klasyczny", en: "Classic", de: "Klassisch" },             weaveFactor: 1.0, laborMul: 0.8, materialWaste: 5,  img: "/img/calc/weaves/klasyczny.webp" },
   { id: "ankier",    label: { pl: "Ankier", en: "Anchor", de: "Anker" },                      weaveFactor: 1.4, laborMul: 1.0, materialWaste: 8,  img: "/img/calc/weaves/ankier.webp" },
-  { id: "rolo",      label: { pl: "Rolo", en: "Rolo / Belcher", de: "Rolo" },                 weaveFactor: 1.2, laborMul: 0.9, materialWaste: 7,  img: "/img/calc/weaves/rolo.webp" },
   { id: "figaro",    label: { pl: "Figaro", en: "Figaro", de: "Figaro" },                     weaveFactor: 1.6, laborMul: 1.2, materialWaste: 10, img: "/img/calc/weaves/figaro.webp" },
   { id: "pancerz",   label: { pl: "Pancerka", en: "Curb", de: "Panzer" },                     weaveFactor: 1.5, laborMul: 1.1, materialWaste: 9,  img: "/img/calc/weaves/pancerz.webp" },
-  { id: "royal",     label: { pl: "Królewski", en: "Royal / Double curb", de: "Royal" },       weaveFactor: 1.8, laborMul: 1.3, materialWaste: 12, img: "/img/calc/weaves/royal.webp" },
-  { id: "omega",     label: { pl: "Omega", en: "Omega", de: "Omega" },                        weaveFactor: 1.2, laborMul: 0.9, materialWaste: 6,  img: "/img/calc/weaves/omega.webp" },
-  { id: "bizmark",   label: { pl: "Bizmark", en: "Bismark", de: "Bismark" },                  weaveFactor: 2.2, laborMul: 1.5, materialWaste: 15, img: "/img/calc/weaves/bizmark.webp" },
-  { id: "lisi_ogon", label: { pl: "Lisi ogon", en: "Foxtail", de: "Fuchsschwanz" },           weaveFactor: 2.8, laborMul: 1.8, materialWaste: 18, img: "/img/calc/weaves/lisi_ogon.webp" },
-  { id: "byzantine", label: { pl: "Bizantyjski", en: "Byzantine", de: "Byzantinisch" },       weaveFactor: 3.2, laborMul: 2.2, materialWaste: 22, img: "/img/calc/weaves/byzantine.webp" },
+  { id: "kostka",    label: { pl: "Kostka", en: "Box chain", de: "Kastenkette" },             weaveFactor: 1.3, laborMul: 1.0, materialWaste: 8,  img: "/img/calc/weaves/kostka.webp" },
+  { id: "singapur",  label: { pl: "Singapur", en: "Singapore", de: "Singapur" },             weaveFactor: 1.8, laborMul: 1.4, materialWaste: 12, img: "/img/calc/weaves/singapur.webp" },
+  { id: "rolo",      label: { pl: "Rolo", en: "Rolo / Belcher", de: "Rolo" },                weaveFactor: 1.2, laborMul: 0.9, materialWaste: 7,  img: "/img/calc/weaves/rolo.webp" },
+  { id: "kordel",    label: { pl: "Kordel (lina)", en: "Rope", de: "Kordel" },               weaveFactor: 2.5, laborMul: 1.7, materialWaste: 18, img: "/img/calc/weaves/kordel.webp" },
+  { id: "lisi_ogon", label: { pl: "Lisi ogon", en: "Foxtail", de: "Fuchsschwanz" },          weaveFactor: 2.8, laborMul: 1.8, materialWaste: 18, img: "/img/calc/weaves/lisi_ogon.webp" },
+  { id: "gucci",     label: { pl: "Gucci", en: "Gucci link", de: "Gucci" },                  weaveFactor: 1.5, laborMul: 1.1, materialWaste: 10, img: "/img/calc/weaves/gucci.webp" },
+  { id: "bizmark",   label: { pl: "Bizmark", en: "Bismark", de: "Bismark" },                 weaveFactor: 2.2, laborMul: 1.5, materialWaste: 15, img: "/img/calc/weaves/bizmark.webp" },
+  { id: "byzantine", label: { pl: "Bizantyjski", en: "Byzantine", de: "Byzantinisch" },      weaveFactor: 3.2, laborMul: 2.2, materialWaste: 22, img: "/img/calc/weaves/byzantine.webp" },
   { id: "custom_weave", label: { pl: "Inne / niestandardowe", en: "Other / custom", de: "Andere / Individuell" }, custom: true },
 ];
 
