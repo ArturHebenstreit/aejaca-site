@@ -11,6 +11,7 @@ import {
   buildWebPageSchema,
   buildBreadcrumbSchema,
   buildLocalBusinessSchema,
+  buildFAQSchema,
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 import GoogleReviews from "../components/GoogleReviews.jsx";
@@ -40,6 +41,7 @@ export default function Home() {
     buildWebPageSchema({ title: seo.title, description: seo.description, url: SITE.url, lang }),
     buildBreadcrumbSchema([{ name: "Home", url: SITE.url }]),
     buildLocalBusinessSchema(),
+    buildFAQSchema(h.faq),
   ];
 
   return (
@@ -305,6 +307,32 @@ export default function Home() {
 
       {/* Trustpilot, second trust layer after Google reviews */}
       <TrustpilotWidget />
+
+      <div className="gradient-divider" />
+
+      {/* FAQ — brand-level Q&A; visible content mirrors the FAQPage JSON-LD
+          (parity = SEO-safe) and targets AI-engine "what is AEJaCA" queries. */}
+      <section className="py-16 px-4 bg-neutral-950">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="font-serif text-2xl md:text-3xl font-semibold text-white tracking-tight text-center mb-8">
+            {h.faqHeading}
+          </h2>
+          <div className="space-y-3">
+            {h.faq.map((item, i) => (
+              <details
+                key={i}
+                className="group bg-neutral-900/50 border border-neutral-800 rounded-xl px-6 py-4 [&_summary]:cursor-pointer"
+              >
+                <summary className="flex items-center justify-between text-base font-medium text-neutral-100 list-none">
+                  <span>{item.q}</span>
+                  <span className="text-amber-400 ml-4 shrink-0 transition-transform group-open:rotate-45">+</span>
+                </summary>
+                <p className="text-neutral-400 text-sm leading-relaxed mt-3">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <div className="gradient-divider" />
 

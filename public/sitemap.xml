@@ -308,6 +308,34 @@
     </image:image>
   </url>
 
+  <!-- Blog: Ile kosztuje biżuteria na zamówienie -->
+  <url>
+    <loc>https://www.aejaca.com/blog/ile-kosztuje-bizuteria-na-zamowienie/</loc>
+    <lastmod>2026-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/ile-kosztuje-bizuteria-na-zamowienie/" />
+    <image:image>
+      <image:loc>https://www.aejaca.com/img/blog/ile-kosztuje-bizuteria.webp</image:loc>
+      <image:title>Custom jewelry price guide — rings, necklaces, bracelets, earrings from AEJaCA</image:title>
+    </image:image>
+  </url>
+
+  <!-- Blog: Modelowanie 3D na zamówienie -->
+  <url>
+    <loc>https://www.aejaca.com/blog/modelowanie-3d-na-zamowienie/</loc>
+    <lastmod>2026-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/modelowanie-3d-na-zamowienie/" />
+    <image:image>
+      <image:loc>https://www.aejaca.com/img/blog/modelowanie-3d-na-zamowienie.webp</image:loc>
+      <image:title>3D modeling on demand — Rhino, Fusion 360 for jewelry and technical parts</image:title>
+    </image:image>
+  </url>
+
   <!-- Glossary: srebro-925 -->
   <url>
     <loc>https://www.aejaca.com/glossary/srebro-925/</loc>

@@ -126,6 +126,14 @@ export default {
     ctaHeading: "Masz pomysł? Stwórzmy go razem.",
     ctaText: "Niezależnie czy potrzebujesz biżuterii na zamówienie, czy prototypu technicznego, jesteśmy tu, żeby pomóc.",
     ctaBtn: "Skontaktuj się",
+    faqHeading: "Najczęściej zadawane pytania",
+    faq: [
+      { q: "Czym jest AEJaCA?", a: "AEJaCA (Artisan Elegance Jewelry and Crafted Art) to niezależne polskie studio projektowe założone w 2023 roku w Józefosławiu pod Warszawą. Łączy ręcznie tworzoną biżuterię artystyczną (AEJaCA Biżuteria) z cyfrową produkcją na zamówienie — drukiem 3D, grawerem laserowym i odlewami żywicznymi (AEJaCA sTuDiO). Obsługujemy klientów po polsku, angielsku i niemiecku, z wysyłką na cały świat." },
+      { q: "Czy tworzycie biżuterię na zamówienie?", a: "Tak. Projektujemy i wykonujemy unikatową biżuterię na zamówienie — pierścionki zaręczynowe, obrączki ślubne, naszyjniki, bransoletki i kolczyki ze srebra 925 oraz złota 14K/18K, z naturalnymi kamieniami szlachetnymi. Modelujemy w 3D (Rhino, Fusion 360) od szkicu lub pomysłu, a całość powstaje w technologii traconego wosku z ręcznym wykończeniem." },
+      { q: "Co oferuje AEJaCA sTuDiO?", a: "AEJaCA sTuDiO to cyfrowa produkcja na zamówienie: modelowanie 3D / CAD części technicznych i funkcjonalnych (Rhino, Fusion 360), druk 3D FDM/SLA, grawerowanie i cięcie laserem CO2, znakowanie laserem fiber, odlewy z żywicy oraz prototypowanie. Możesz przesłać własny plik STL/SVG albo zlecić nam zaprojektowanie modelu od podstaw." },
+      { q: "Ile kosztuje zamówienie i jak szybko dostanę wycenę?", a: "Wycenę otrzymasz online w około 30 sekund dzięki kalkulatorom AEJaCA — bez czekania na e-mail. Tryb prosty daje szybki szacunek, a tryb zaawansowany pełną kontrolę nad metalem, kamieniami i wykończeniem. Przykładowo: srebrny pierścionek z kamieniem od 400 zł, brelok z druku 3D od 25 zł." },
+      { q: "Gdzie znajduje się AEJaCA i czy wysyłacie za granicę?", a: "Studio mieści się w Józefosławiu pod Warszawą i wysyła na cały świat. W Polsce: kurier InPost od 30 zł, paczkomat od 17 zł, darmowa wysyłka od 400 zł. Realizujemy też dostawy do UE, Wielkiej Brytanii i USA kurierem DHL Express." },
+    ],
   },
 
   jewelry: {

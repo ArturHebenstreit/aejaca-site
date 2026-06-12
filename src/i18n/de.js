@@ -126,6 +126,14 @@ export default {
     ctaHeading: "Haben Sie eine Idee? Lassen Sie uns sie gemeinsam umsetzen.",
     ctaText: "Ob individueller Schmuck oder technischer Prototyp, wir sind hier, um zu helfen.",
     ctaBtn: "Kontakt aufnehmen",
+    faqHeading: "Häufig gestellte Fragen",
+    faq: [
+      { q: "Was ist AEJaCA?", a: "AEJaCA (Artisan Elegance Jewelry and Crafted Art) ist ein unabhängiges polnisches Designstudio, gegründet 2023 in Józefosław bei Warschau. Es verbindet handgefertigten Schmuck (AEJaCA Jewelry) mit digitaler Fertigung auf Bestellung — 3D-Druck, Lasergravur und Harzguss (AEJaCA sTuDiO). Wir betreuen Kunden auf Polnisch, Englisch und Deutsch und versenden weltweit." },
+      { q: "Fertigen Sie individuellen Schmuck an?", a: "Ja. Wir entwerfen und fertigen einzigartigen Schmuck nach Maß — Verlobungsringe, Eheringe, Halsketten, Armbänder und Ohrringe aus 925er Sterlingsilber und 14K/18K-Gold mit echten Edelsteinen. Wir modellieren in 3D (Rhino, Fusion 360) aus einer Skizze oder Idee und fertigen im Wachsausschmelzverfahren mit Handveredelung." },
+      { q: "Was bietet AEJaCA sTuDiO?", a: "AEJaCA sTuDiO ist digitale Fertigung auf Bestellung: 3D-Modellierung / CAD technischer und funktionaler Teile (Rhino, Fusion 360), FDM/SLA-3D-Druck, CO2-Lasergravur und -schnitt, Faserlaser-Markierung, Harzguss und Prototyping. Sie können Ihre eigene STL/SVG-Datei hochladen oder ein Modell von Grund auf entwerfen lassen." },
+      { q: "Was kostet eine Bestellung und wie schnell erhalte ich ein Angebot?", a: "Mit den AEJaCA-Rechnern erhalten Sie online in etwa 30 Sekunden ein Angebot — ohne auf eine E-Mail zu warten. Der einfache Modus liefert eine schnelle Schätzung, der erweiterte Modus volle Kontrolle über Metall, Steine und Veredelung. Zum Beispiel: ein Silberring mit Edelstein ab 95 €, ein 3D-gedruckter Schlüsselanhänger ab 6 €." },
+      { q: "Wo befindet sich AEJaCA und versenden Sie international?", a: "Das Studio befindet sich in Józefosław bei Warschau und versendet weltweit. Innerhalb Polens: InPost-Kurier ab 7 €, Paketautomat ab 4 €, kostenloser Versand ab 100 €. Wir liefern auch in die EU, nach Großbritannien und in die USA per DHL Express." },
+    ],
   },
 
   jewelry: {
