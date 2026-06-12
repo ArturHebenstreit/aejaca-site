@@ -250,3 +250,32 @@ export const GENERIC_METALS = [
   { id: "platinum_g", label: { pl: "Platyna", en: "Platinum", de: "Platin" }, metalKey: "platinum", img: "/img/calc/metals/platinum.webp" },
   { id: "other_m",    label: { pl: "Inny / nie wiem", en: "Other / not sure", de: "Anderes / unsicher" }, metalKey: "silver" },
 ];
+
+export const CHAIN_WEAVES = [
+  { id: "ankier",   label: { pl: "Ankier", en: "Anchor", de: "Anker" },           weaveFactor: 1.4, laborMul: 1.0, materialWaste: 8,  img: "/img/calc/weaves/ankier.webp" },
+  { id: "figaro",   label: { pl: "Figaro", en: "Figaro", de: "Figaro" },           weaveFactor: 1.6, laborMul: 1.2, materialWaste: 10, img: "/img/calc/weaves/figaro.webp" },
+  { id: "singapur", label: { pl: "Singapur", en: "Singapore", de: "Singapur" },     weaveFactor: 1.8, laborMul: 1.4, materialWaste: 12, img: "/img/calc/weaves/singapur.webp" },
+  { id: "bizmark",  label: { pl: "Bizmark", en: "Bismark", de: "Bismark" },         weaveFactor: 2.2, laborMul: 1.5, materialWaste: 15, img: "/img/calc/weaves/bizmark.webp" },
+  { id: "lisi_ogon",label: { pl: "Lisi ogon", en: "Foxtail", de: "Fuchsschwanz" }, weaveFactor: 2.8, laborMul: 1.8, materialWaste: 18, img: "/img/calc/weaves/lisi_ogon.webp" },
+  { id: "omega",    label: { pl: "Omega", en: "Omega", de: "Omega" },               weaveFactor: 1.2, laborMul: 0.9, materialWaste: 6,  img: "/img/calc/weaves/omega.webp" },
+  { id: "pancerz",  label: { pl: "Pancerz", en: "Curb", de: "Panzer" },             weaveFactor: 1.5, laborMul: 1.1, materialWaste: 9,  img: "/img/calc/weaves/pancerz.webp" },
+  { id: "rolo",     label: { pl: "Rolo", en: "Rolo / Belcher", de: "Rolo" },        weaveFactor: 1.2, laborMul: 0.9, materialWaste: 7,  img: "/img/calc/weaves/rolo.webp" },
+  { id: "venezia",  label: { pl: "Wenecja", en: "Venetian", de: "Venezia" },        weaveFactor: 1.7, laborMul: 1.3, materialWaste: 12, img: "/img/calc/weaves/venezia.webp" },
+  { id: "spirala",  label: { pl: "Spirala (lina)", en: "Rope", de: "Seil" },        weaveFactor: 3.2, laborMul: 2.0, materialWaste: 20, img: "/img/calc/weaves/spirala.webp" },
+  { id: "custom_weave", label: { pl: "Inne / niestandardowe", en: "Other / custom", de: "Andere / Individuell" }, custom: true },
+];
+
+export const CHAIN_CLASPS = [
+  { id: "spring",   label: { pl: "Sprężynka", en: "Spring ring", de: "Federring" },              cost: 15, img: "/img/calc/clasps/spring.webp" },
+  { id: "lobster",  label: { pl: "Karabińczyk", en: "Lobster clasp", de: "Karabiner" },          cost: 20, img: "/img/calc/clasps/lobster.webp" },
+  { id: "box",      label: { pl: "Zapięcie pudełkowe", en: "Box clasp", de: "Kastenverschluss" }, cost: 35, img: "/img/calc/clasps/box.webp" },
+  { id: "toggle",   label: { pl: "Toggle T-bar", en: "Toggle T-bar", de: "Toggle T-bar" },       cost: 40, img: "/img/calc/clasps/toggle.webp" },
+  { id: "custom_clasp", label: { pl: "Inne / niestandardowe", en: "Other / custom", de: "Andere / Individuell" }, custom: true },
+];
+
+// Default chain length per type (mm)
+export const CHAIN_DEFAULT_LENGTH = {
+  necklace:   450,
+  chain_m:    550,
+  bracelet_m: 200,
+};
