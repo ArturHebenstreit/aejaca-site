@@ -253,7 +253,8 @@ export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engrav
   const metalCost = clientSuppliesMetal ? 0 : wireMassG * plnPerG * metal.purity;
 
   // Labor: base rate per 10cm of chain × weave labor multiplier × metal multiplier
-  const BASE_CHAIN_LABOR_RATE = 18; // PLN per 10cm
+  // Calibrated: 55cm silver pancerka (1.4mm wire, 15g) = ~100 PLN labor → ~240 PLN wholesale
+  const BASE_CHAIN_LABOR_RATE = 24; // PLN per 10cm
   const laborCost = (lengthCm / 10) * BASE_CHAIN_LABOR_RATE * weave.laborMul * metal.laborMul;
 
   const claspCost = clasp.cost;
@@ -405,10 +406,11 @@ export default function JewelryCalc({ lang = "pl" }) {
   const [engravingId, setEngravingId] = useState("none");
   // Chain-specific state
   const [weaveId, setWeaveId] = useState("ankier");
-  const [claspId, setClaspId] = useState("lobster");
+  const [claspId, setClaspId] = useState("spring");
   const [chainLengthMm, setChainLengthMm] = useState(450);
   const [weaveWidthMm, setWeaveWidthMm] = useState(3.0);
-  const [wireDiameterMm, setWireDiameterMm] = useState(0.8);
+  const [wireDiameterMm, setWireDiameterMm] = useState(1.2);
+  const [weaveModal, setWeaveModal] = useState(null);
   // Stone rows — up to 10 different stone entries
   const [stoneRows, setStoneRows] = useState([
     { rowId: "row0", gemId: "none", stoneSizeId: "small", count: 1, suppliedBy: "studio",
@@ -682,6 +684,9 @@ export default function JewelryCalc({ lang = "pl" }) {
           {/* Weave selection — chain types only */}
           {isChainType(typeId) && (
             <CalcCard stepNum={step()} label={{ pl: "Splot łańcuszka", en: "Chain weave", de: "Kettenmuster" }[lang]}>
+              <p className="text-[10px] text-neutral-500 mb-2">
+                {{ pl: "Kliknij dwukrotnie na zdjęcie — powiększ podgląd splotu", en: "Double-click an image to preview the weave pattern", de: "Doppelklick auf ein Bild zum Vergrößern" }[lang]}
+              </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
                 {CHAIN_WEAVES.map(w => {
                   const active = weaveId === w.id;
@@ -702,7 +707,8 @@ export default function JewelryCalc({ lang = "pl" }) {
                         active ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10"
                           : "border-white/10 bg-white/[0.02] hover:border-white/20"
                       }`}>
-                      <div className="w-full aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center">
+                      <div className="w-full aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
+                        onDoubleClick={e => { e.stopPropagation(); if (w.img) setWeaveModal(w.id); }}>
                         {w.img ? (
                           <img src={w.img} alt={t(w.label, lang)} loading="lazy"
                             className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`} />
@@ -728,6 +734,32 @@ export default function JewelryCalc({ lang = "pl" }) {
               )}
             </CalcCard>
           )}
+
+          {/* Weave image lightbox modal */}
+          {weaveModal && (() => {
+            const wm = CHAIN_WEAVES.find(x => x.id === weaveModal);
+            if (!wm || !wm.img) return null;
+            return (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm"
+                onClick={() => setWeaveModal(null)}>
+                <div className="relative max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
+                  <img src={wm.img} alt={t(wm.label, lang)}
+                    className="w-full rounded-2xl shadow-2xl shadow-black/60" />
+                  <div className="mt-4 text-center">
+                    <p className="text-white font-bold text-xl">{t(wm.label, lang)}</p>
+                    <p className="text-neutral-400 text-sm mt-1">
+                      {{ pl: `Współczynnik splotu: ×${wm.weaveFactor} · odpad materiału: ~${wm.materialWaste}%`,
+                         en: `Weave factor: ×${wm.weaveFactor} · material waste: ~${wm.materialWaste}%`,
+                         de: `Flechtfaktor: ×${wm.weaveFactor} · Materialverlust: ~${wm.materialWaste}%`
+                      }[lang]}
+                    </p>
+                  </div>
+                  <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 text-white text-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+                    onClick={() => setWeaveModal(null)}>✕</button>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Clasp selection — chain types only */}
           {isChainType(typeId) && (
