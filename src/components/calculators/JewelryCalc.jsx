@@ -227,7 +227,7 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
 // ---- CHAIN / NECKLACE / BRACELET CALCULATOR ----
 export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engravingId,
   chainLengthMm, weaveWidthMm, wireDiameterMm,
-  clientSuppliesMetal, qtyId }, lang, rates) {
+  clientSuppliesMetal, qtyId, calcMode, stockMassG }, lang, rates) {
   const l = LBL[lang] || LBL.en;
   const metal = METALS.find(m => m.id === metalId);
   const weave = CHAIN_WEAVES.find(w => w.id === weaveId);
@@ -240,21 +240,26 @@ export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engrav
   if (metal.custom || plat.custom || qTier.custom || weave.custom || clasp.custom) return { type: "custom" };
 
   const density = METAL_DENSITY[metal.metal] ?? 10.5;
-  const lengthCm = (chainLengthMm || 450) / 10;
-  const dCm = (wireDiameterMm || 0.8) / 10;
+  const dCm = (wireDiameterMm || 1.2) / 10;
   const r = dCm / 2;
-
-  // Wire mass: length × cross-section area × density × weave factor × waste factor
   const wasteFactor = 1 + weave.materialWaste / 100;
-  const wireVolumePerCm = Math.PI * r * r; // cm³ per cm of wire
-  const wireMassG = lengthCm * wireVolumePerCm * density * weave.weaveFactor * wasteFactor;
+  const wireVolumePerCm = Math.PI * r * r;
+
+  const fromStock = calcMode === "from_stock";
+  const massG = fromStock ? (stockMassG || 10) : null;
+
+  // Standard mode: given length → compute mass.  From-stock mode: given mass → compute length.
+  const lengthCm = fromStock
+    ? massG / (wireVolumePerCm * density * weave.weaveFactor * wasteFactor)
+    : (chainLengthMm || 450) / 10;
+  const wireMassG = fromStock ? massG : lengthCm * wireVolumePerCm * density * weave.weaveFactor * wasteFactor;
 
   const plnPerG = resolveMetalPricePerG(metal.metal, rates);
-  const metalCost = clientSuppliesMetal ? 0 : wireMassG * plnPerG * metal.purity;
+  const effectiveClientMetal = fromStock ? true : clientSuppliesMetal;
+  const metalCost = effectiveClientMetal ? 0 : wireMassG * plnPerG * metal.purity;
 
-  // Labor: base rate per 10cm of chain × weave labor multiplier × metal multiplier
-  // Calibrated: 55cm silver pancerka (1.4mm wire, 15g) = ~100 PLN labor → ~240 PLN wholesale
-  const BASE_CHAIN_LABOR_RATE = 24; // PLN per 10cm
+  // Calibrated to real market: 55cm silver pancerka 15g ≈ 240 PLN wholesale
+  const BASE_CHAIN_LABOR_RATE = 48; // PLN per 10cm
   const laborCost = (lengthCm / 10) * BASE_CHAIN_LABOR_RATE * weave.laborMul * metal.laborMul;
 
   const claspCost = clasp.cost;
@@ -268,16 +273,24 @@ export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engrav
   const liveEurPln = rates?.pln_per_eur ?? EUR_PLN;
   const pricing = applyJewelryPricing(baseCost, qTier.discount, qty, MARGIN, liveEurPln);
 
+  const claspLabel = { pl: "Zapięcie", en: "Clasp", de: "Verschluss" }[lang];
+  const lengthLabel = { pl: `Osiągalna długość: ${lengthCm.toFixed(1)} cm (${Math.round(lengthCm * 10)} mm)`,
+    en: `Achievable length: ${lengthCm.toFixed(1)} cm (${Math.round(lengthCm * 10)} mm)`,
+    de: `Erreichbare Länge: ${lengthCm.toFixed(1)} cm (${Math.round(lengthCm * 10)} mm)` }[lang];
+
   return {
     type: "calculated", ...pricing, qty, discount: qTier.discount,
+    fromStock, derivedLengthCm: fromStock ? lengthCm : null,
     breakdown: [
-      { label: `${l.metalCost} (${wireMassG.toFixed(1)}g ${t(metal.label, lang)})`, value: fmtCost(metalCost, lang) },
-      ...(clientSuppliesMetal && weave.materialWaste > 0 ? [{
+      ...(fromStock ? [{ label: lengthLabel, value: "", bold: true }] : []),
+      ...(!fromStock ? [{ label: `${l.metalCost} (${wireMassG.toFixed(1)}g ${t(metal.label, lang)})`, value: fmtCost(metalCost, lang) }] : []),
+      ...(fromStock ? [{ label: `${l.metalCost} (${wireMassG.toFixed(1)}g — ${{ pl: "dostarczony przez klienta", en: "supplied by client", de: "vom Kunden geliefert" }[lang]})`, value: "0 PLN" }] : []),
+      ...(!fromStock && effectiveClientMetal && weave.materialWaste > 0 ? [{
         label: { pl: `⚠ Odpad technologiczny splotu: ~${weave.materialWaste}% materiału`, en: `⚠ Weave waste: ~${weave.materialWaste}% material`, de: `⚠ Webabfall: ~${weave.materialWaste}% Material` }[lang],
         value: "",
       }] : []),
       { label: l.laborCost, value: fmtCost(laborCost, lang) },
-      { label: { pl: "Zapięcie", en: "Clasp", de: "Verschluss" }[lang], value: fmtCost(claspCost, lang) },
+      { label: claspLabel, value: fmtCost(claspCost, lang) },
       ...(platingCost > 0 ? [{ label: l.platingCost, value: fmtCost(platingCost, lang) }] : []),
       ...(engravingCost > 0 ? [{ label: l.engraving, value: fmtCost(engravingCost, lang) }] : []),
       { label: l.workshop, value: fmtCost(workshopCost, lang) },
@@ -405,7 +418,9 @@ export default function JewelryCalc({ lang = "pl" }) {
   const [platingId, setPlatingId] = useState("none");
   const [engravingId, setEngravingId] = useState("none");
   // Chain-specific state
-  const [weaveId, setWeaveId] = useState("ankier");
+  const [calcMode, setCalcMode] = useState("standard"); // "standard" | "from_stock"
+  const [stockMassG, setStockMassG] = useState(15);
+  const [weaveId, setWeaveId] = useState("klasyczny");
   const [claspId, setClaspId] = useState("spring");
   const [chainLengthMm, setChainLengthMm] = useState(450);
   const [weaveWidthMm, setWeaveWidthMm] = useState(3.0);
@@ -444,7 +459,7 @@ export default function JewelryCalc({ lang = "pl" }) {
       if (isChainType(typeId)) {
         return calcChain({ typeId, metalId, weaveId, claspId, platingId, engravingId,
           chainLengthMm, weaveWidthMm, wireDiameterMm,
-          clientSuppliesMetal, qtyId }, lang, rates);
+          clientSuppliesMetal, qtyId, calcMode, stockMassG }, lang, rates);
       }
       return calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
         stoneRows, qtyId, engravingId,
@@ -457,7 +472,7 @@ export default function JewelryCalc({ lang = "pl" }) {
     return calcRepair({ jewTypeId: repairJewType, metalTypeId: repairMetal, repairId, qtyId }, lang);
   }, [serviceId, lineId, typeId, metalId, weightId, methodId, platingId, engravingId,
     stoneRows, qtyId, weaveId, claspId, chainLengthMm, weaveWidthMm, wireDiameterMm,
-    clientSuppliesMetal, weightResult,
+    clientSuppliesMetal, weightResult, calcMode, stockMassG,
     renoServices, renoJewType, renoMetal, repairId, repairJewType, repairMetal, lang, rates, resolvedGemstones]);
 
   function toggleRenoService(id) {
@@ -577,6 +592,25 @@ export default function JewelryCalc({ lang = "pl" }) {
             </div>
           </CalcCard>
 
+          {/* Calc mode tabs — visible only for chain types */}
+          {isChainType(typeId) && (
+            <div className="flex gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/8 mb-2">
+              {[
+                { id: "standard", pl: "Klasyczny", en: "Standard pricing", de: "Standardkalkulation" },
+                { id: "from_stock", pl: "Dobór do kruszcu", en: "From metal stock", de: "Aus Metallvorrat" },
+              ].map(mode => (
+                <button key={mode.id} onClick={() => setCalcMode(mode.id)}
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
+                    calcMode === mode.id
+                      ? "bg-amber-500 text-black shadow-sm"
+                      : "text-neutral-400 hover:text-neutral-200"
+                  }`}>
+                  {mode[lang] ?? mode.pl}
+                </button>
+              ))}
+            </div>
+          )}
+
           {!isChainType(typeId) && <CalcCard stepNum={step()} label={l.weight}>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
               {WEIGHTS.map(w => {
@@ -617,18 +651,37 @@ export default function JewelryCalc({ lang = "pl" }) {
 
           {/* Shape & Dimensions / Chain dimensions step */}
           <CalcCard stepNum={step()} label={isChainType(typeId)
-            ? { pl: "Wymiary łańcuszka", en: "Chain dimensions", de: "Kettenmaße" }[lang]
+            ? (calcMode === "from_stock"
+                ? { pl: "Mój zapas kruszcu", en: "My metal stock", de: "Mein Metallvorrat" }[lang]
+                : { pl: "Wymiary łańcuszka", en: "Chain dimensions", de: "Kettenmaße" }[lang])
             : ({ pl: "Kształt i wymiary", en: "Shape & Dimensions", de: "Form & Abmessungen" }[lang] || "Shape & Dimensions")}>
             {isChainType(typeId) ? (
               <div className="space-y-4">
+                {calcMode === "from_stock" && (
+                  <p className="text-[11px] text-amber-300/70">
+                    {{ pl: "Podaj masę posiadanego kruszcu — kalkulator obliczy maksymalną długość łańcuszka uwzględniając straty technologiczne splotu.",
+                       en: "Enter your available metal mass — the calculator will compute the maximum chain length accounting for weave material losses.",
+                       de: "Geben Sie Ihre verfügbare Metallmasse ein — der Rechner berechnet die maximale Kettenlänge unter Berücksichtigung des Webeverlusts." }[lang]}
+                  </p>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs text-neutral-400">{{ pl: "Długość (mm)", en: "Length (mm)", de: "Länge (mm)" }[lang]}</span>
-                    <input type="number" min={50} max={1500} step={5} value={chainLengthMm}
-                      onChange={e => setChainLengthMm(Number(e.target.value))}
-                      className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50" />
-                    <span className="text-[10px] text-neutral-500">{(chainLengthMm / 10).toFixed(0)} cm</span>
-                  </label>
+                  {calcMode === "from_stock" ? (
+                    <label className="flex flex-col gap-1.5">
+                      <span className="text-xs text-neutral-400">{{ pl: "Masa kruszcu (g)", en: "Metal mass (g)", de: "Metallmasse (g)" }[lang]}</span>
+                      <input type="number" min={1} max={500} step={0.5} value={stockMassG}
+                        onChange={e => setStockMassG(Number(e.target.value))}
+                        className="bg-white/5 border border-amber-400/30 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/70" />
+                      <span className="text-[10px] text-neutral-500">{stockMassG} g</span>
+                    </label>
+                  ) : (
+                    <label className="flex flex-col gap-1.5">
+                      <span className="text-xs text-neutral-400">{{ pl: "Długość (mm)", en: "Length (mm)", de: "Länge (mm)" }[lang]}</span>
+                      <input type="number" min={50} max={1500} step={5} value={chainLengthMm}
+                        onChange={e => setChainLengthMm(Number(e.target.value))}
+                        className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50" />
+                      <span className="text-[10px] text-neutral-500">{(chainLengthMm / 10).toFixed(0)} cm</span>
+                    </label>
+                  )}
                   <label className="flex flex-col gap-1.5">
                     <span className="text-xs text-neutral-400">{{ pl: "Grubość drutu (mm)", en: "Wire diameter (mm)", de: "Drahtdurchmesser (mm)" }[lang]}</span>
                     <input type="number" min={0.3} max={3.0} step={0.1} value={wireDiameterMm}
@@ -844,8 +897,8 @@ export default function JewelryCalc({ lang = "pl" }) {
                 );
               })}
             </div>
-            {/* Client supplies metal toggle */}
-            <div className="mt-4 flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200
+            {/* Client supplies metal toggle — hidden in from_stock mode (metal is always client-supplied there) */}
+            {!(isChainType(typeId) && calcMode === "from_stock") && <div className="mt-4 flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200
               border-white/8 hover:border-amber-400/20"
               onClick={() => setClientSuppliesMetal(v => !v)}
               style={clientSuppliesMetal ? {borderColor: 'rgba(251,191,36,0.25)', background: 'rgba(251,191,36,0.05)'} : {}}
@@ -873,7 +926,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                   </div>
                 )}
               </div>
-            </div>
+            </div>}
           </CalcCard>
 
           {!isChainType(typeId) && <CalcCard stepNum={step()} label={l.method}>
