@@ -258,7 +258,7 @@ export const CHAIN_WEAVES = [
   { id: "bizmark",  label: { pl: "Bizmark", en: "Bismark", de: "Bismark" },         weaveFactor: 2.2, laborMul: 1.5, materialWaste: 15, img: "/img/calc/weaves/bizmark.webp" },
   { id: "lisi_ogon",label: { pl: "Lisi ogon", en: "Foxtail", de: "Fuchsschwanz" }, weaveFactor: 2.8, laborMul: 1.8, materialWaste: 18, img: "/img/calc/weaves/lisi_ogon.webp" },
   { id: "omega",    label: { pl: "Omega", en: "Omega", de: "Omega" },               weaveFactor: 1.2, laborMul: 0.9, materialWaste: 6,  img: "/img/calc/weaves/omega.webp" },
-  { id: "pancerz",  label: { pl: "Pancerz", en: "Curb", de: "Panzer" },             weaveFactor: 1.5, laborMul: 1.1, materialWaste: 9,  img: "/img/calc/weaves/pancerz.webp" },
+  { id: "pancerz",  label: { pl: "Pancerka", en: "Curb", de: "Panzer" },             weaveFactor: 1.5, laborMul: 1.1, materialWaste: 9,  img: "/img/calc/weaves/pancerz.webp" },
   { id: "rolo",     label: { pl: "Rolo", en: "Rolo / Belcher", de: "Rolo" },        weaveFactor: 1.2, laborMul: 0.9, materialWaste: 7,  img: "/img/calc/weaves/rolo.webp" },
   { id: "venezia",  label: { pl: "Wenecja", en: "Venetian", de: "Venezia" },        weaveFactor: 1.7, laborMul: 1.3, materialWaste: 12, img: "/img/calc/weaves/venezia.webp" },
   { id: "spirala",  label: { pl: "Spirala (lina)", en: "Rope", de: "Seil" },        weaveFactor: 3.2, laborMul: 2.0, materialWaste: 20, img: "/img/calc/weaves/spirala.webp" },
