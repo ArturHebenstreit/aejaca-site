@@ -66,7 +66,7 @@ function ChainSilhouette({ lengthMm, gender = "women" }) {
     <div className="bg-neutral-900 rounded-xl p-1 w-full">
       <svg viewBox="0 0 200 310" className="w-full h-auto" aria-hidden="true">
         {/* Body silhouette */}
-        <g stroke="rgba(255,255,255,0.55)" fill="none" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <g stroke="rgba(255,255,255,0.85)" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="100" cy="33" r="21" />
           <line x1="90" y1="54" x2="87" y2="72" />
           <line x1="110" y1="54" x2="113" y2="72" />
@@ -361,7 +361,7 @@ export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engrav
 
   return {
     type: "calculated", ...pricing, qty, discount: qTier.discount,
-    fromStock, wireDMm, widthMm, thicknessMm, wasteG,
+    fromStock, wireDMm, widthMm, thicknessMm, wasteG, grossMassG, netMassG,
     breakdown: [
       // Dimensions summary
       { label: ln(
@@ -697,7 +697,7 @@ export default function JewelryCalc({ lang = "pl" }) {
             <div className="flex gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/8 mb-2">
               {[
                 { id: "standard", pl: "Klasyczny", en: "Standard pricing", de: "Standardkalkulation" },
-                { id: "from_stock", pl: "Dobór do kruszcu", en: "From metal stock", de: "Aus Metallvorrat" },
+                { id: "from_stock", pl: "Własny kruszec", en: "From metal stock", de: "Aus Metallvorrat" },
               ].map(mode => (
                 <button key={mode.id} onClick={() => setCalcMode(mode.id)}
                   className={`flex-1 py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
@@ -811,8 +811,17 @@ export default function JewelryCalc({ lang = "pl" }) {
 
                 {/* Chain WIDTH input — standard mode only; wire diameter & thickness auto-derived from AR */}
                 {calcMode === "standard" && (
-                  <div className="mt-2 flex flex-wrap gap-4 items-end">
-                    <label className="flex flex-col gap-1.5">
+                  <div className="mt-3 space-y-3">
+                    {/* Section separator */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-px bg-white/10" />
+                      <span className="text-[10px] text-neutral-500 uppercase tracking-widest px-1">
+                        {{ pl: "Parametry łańcuszka", en: "Chain parameters", de: "Kettenparameter" }[lang]}
+                      </span>
+                      <div className="flex-1 h-px bg-white/10" />
+                    </div>
+                    {/* Width input */}
+                    <label className="flex flex-col gap-1.5 w-fit">
                       <span className="text-xs text-neutral-400">
                         {{ pl: "Szerokość łańcuszka (mm)", en: "Chain width (mm)", de: "Kettenbreite (mm)" }[lang]}
                       </span>
@@ -821,17 +830,21 @@ export default function JewelryCalc({ lang = "pl" }) {
                         onChange={e => { const n = parseFloat(e.target.value); if (n > 0) setChainWidthMm(n); }}
                         className="w-28 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50" />
                     </label>
-                    {/* Show derived values live */}
+                    {/* Derived values — 5-cell grid */}
                     {result && result.type === "calculated" && !result.fromStock && (
-                      <div className="flex gap-3 text-[11px]">
-                        <div className="text-center px-2 py-1 rounded-lg bg-white/[0.03] border border-white/8">
-                          <div className="text-neutral-500">Ø { { pl: "drut", en: "wire", de: "Draht" }[lang]}</div>
-                          <div className="text-amber-300 font-semibold">{result.wireDMm?.toFixed(2)} mm</div>
-                        </div>
-                        <div className="text-center px-2 py-1 rounded-lg bg-white/[0.03] border border-white/8">
-                          <div className="text-neutral-500">{ { pl: "Grubość", en: "Thickness", de: "Dicke" }[lang]}</div>
-                          <div className="text-amber-300 font-semibold">{result.thicknessMm?.toFixed(1)} mm</div>
-                        </div>
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 text-[11px]">
+                        {[
+                          { label: `Ø ${{ pl: "drut", en: "wire", de: "Draht" }[lang]}`, val: `${result.wireDMm?.toFixed(2)} mm` },
+                          { label: { pl: "Grubość splotu", en: "Weave thickness", de: "Flechtdicke" }[lang], val: `${result.thicknessMm?.toFixed(1)} mm` },
+                          { label: "AR", val: CHAIN_WEAVES.find(w => w.id === weaveId)?.ar?.toFixed(1) ?? "—" },
+                          { label: "WF", val: `×${CHAIN_WEAVES.find(w => w.id === weaveId)?.weaveFactor ?? "—"}` },
+                          { label: { pl: "Potrzeba kruszcu", en: "Metal needed", de: "Metall benötigt" }[lang], val: result.grossMassG != null ? `${result.grossMassG.toFixed(1)} g` : "—" },
+                        ].map(d => (
+                          <div key={d.label} className="text-center px-2 py-1.5 rounded-lg bg-white/[0.03] border border-white/8">
+                            <div className="text-neutral-500 text-[9px]">{d.label}</div>
+                            <div className="text-amber-300 font-semibold">{d.val}</div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -839,45 +852,57 @@ export default function JewelryCalc({ lang = "pl" }) {
 
                 {/* From-stock: mass input */}
                 {calcMode === "from_stock" && (
-                  <div className="mt-2 p-3 rounded-xl border border-amber-400/20 bg-amber-400/[0.04] space-y-2">
-                    <p className="text-[11px] text-amber-300/80">
-                      {{ pl: "Podaj masę posiadanego kruszcu — grubość drutu i wymiary łańcuszka zostaną dobrane automatycznie na podstawie AR splotu.",
-                         en: "Enter your available metal mass — wire diameter and chain dimensions will be auto-calculated from weave AR.",
-                         de: "Geben Sie Ihre Metallmasse ein — Drahtdurchmesser und Kettenmaße werden aus dem AR automatisch berechnet." }[lang]}
-                    </p>
-                    <label className="flex items-center gap-3">
-                      <span className="text-xs text-neutral-400 whitespace-nowrap">
-                        {{ pl: "Masa kruszcu (g)", en: "Metal mass (g)", de: "Metallmasse (g)" }[lang]}
+                  <div className="mt-3 space-y-3">
+                    {/* Section separator */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-px bg-white/10" />
+                      <span className="text-[10px] text-neutral-500 uppercase tracking-widest px-1">
+                        {{ pl: "Dobór do posiadanego kruszcu", en: "From your metal stock", de: "Aus Ihrem Metallvorrat" }[lang]}
                       </span>
-                      <input type="number" min={1} max={500} step={0.5}
-                        value={stockMassG || ""}
-                        onChange={e => { const n = parseFloat(e.target.value); if (n > 0) setStockMassG(n); }}
-                        className="w-28 bg-white/5 border border-amber-400/30 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/70" />
-                      <span className="text-xs text-amber-300/70 font-medium">{stockMassG} g</span>
-                    </label>
-                    {/* Live derived dimensions preview */}
-                    {result && result.type === "calculated" && result.fromStock && (
-                      <div className="grid grid-cols-3 gap-2 pt-1">
-                        {[
-                          { label: { pl: "Ø drut", en: "Ø wire", de: "Ø Draht" }[lang], val: `${result.wireDMm?.toFixed(2)} mm` },
-                          { label: { pl: "Szerokość", en: "Width", de: "Breite" }[lang], val: `${result.widthMm?.toFixed(1)} mm` },
-                          { label: { pl: "Grubość", en: "Thickness", de: "Dicke" }[lang], val: `${result.thicknessMm?.toFixed(1)} mm` },
-                        ].map(d => (
-                          <div key={d.label} className="text-center p-1.5 rounded-lg bg-white/[0.03] border border-white/8">
-                            <div className="text-[9px] text-neutral-500">{d.label}</div>
-                            <div className="text-xs text-amber-300 font-semibold">{d.val}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    {/* Waste summary */}
-                    {result && result.type === "calculated" && result.fromStock && result.wasteG > 0 && (
-                      <div className="text-[11px] text-amber-300/70 border-t border-white/5 pt-2">
-                        {{ pl: `Uwaga: z ${stockMassG} g oddasz ${(stockMassG - result.wasteG).toFixed(1)} g jako gotowy łańcuszek — ${result.wasteG.toFixed(1)} g to nieodwracalne odpady produkcyjne (szlam + trociny jubilerskie).`,
-                           en: `Note: from ${stockMassG} g you'll receive ${(stockMassG - result.wasteG).toFixed(1)} g as a finished chain — ${result.wasteG.toFixed(1)} g is irreversible production waste (polishing swarf + filings).`,
-                           de: `Hinweis: Von ${stockMassG} g erhalten Sie ${(stockMassG - result.wasteG).toFixed(1)} g als fertige Kette — ${result.wasteG.toFixed(1)} g sind unwiederbringliche Produktionsabfälle (Polierschlamm + Feilspäne).` }[lang]}
-                      </div>
-                    )}
+                      <div className="flex-1 h-px bg-white/10" />
+                    </div>
+                    <div className="p-3 rounded-xl border border-white/10 bg-neutral-900 space-y-3">
+                      <p className="text-[11px] text-neutral-300">
+                        {{ pl: "Podaj masę posiadanego kruszcu — grubość drutu i wymiary łańcuszka zostaną dobrane automatycznie na podstawie AR splotu.",
+                           en: "Enter your available metal mass — wire diameter and chain dimensions will be auto-calculated from weave AR.",
+                           de: "Geben Sie Ihre Metallmasse ein — Drahtdurchmesser und Kettenmaße werden aus dem AR automatisch berechnet." }[lang]}
+                      </p>
+                      <label className="flex items-center gap-3">
+                        <span className="text-xs text-neutral-400 whitespace-nowrap">
+                          {{ pl: "Masa kruszcu (g)", en: "Metal mass (g)", de: "Metallmasse (g)" }[lang]}
+                        </span>
+                        <input type="number" min={1} max={500} step={0.5}
+                          value={stockMassG || ""}
+                          onChange={e => { const n = parseFloat(e.target.value); if (n > 0) setStockMassG(n); }}
+                          className="w-28 bg-white/8 border border-amber-400/40 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/80" />
+                        <span className="text-sm text-amber-400 font-bold">{stockMassG} g</span>
+                      </label>
+                      {/* Live derived dimensions — 5-cell grid */}
+                      {result && result.type === "calculated" && result.fromStock && (
+                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                          {[
+                            { label: { pl: "Ø drut", en: "Ø wire", de: "Ø Draht" }[lang], val: `${result.wireDMm?.toFixed(2)} mm` },
+                            { label: { pl: "Szerokość", en: "Width", de: "Breite" }[lang], val: `${result.widthMm?.toFixed(1)} mm` },
+                            { label: { pl: "Grubość splotu", en: "Weave thk.", de: "Flechtdicke" }[lang], val: `${result.thicknessMm?.toFixed(1)} mm` },
+                            { label: "AR", val: CHAIN_WEAVES.find(w => w.id === weaveId)?.ar?.toFixed(1) ?? "—" },
+                            { label: "WF", val: `×${CHAIN_WEAVES.find(w => w.id === weaveId)?.weaveFactor ?? "—"}` },
+                          ].map(d => (
+                            <div key={d.label} className="text-center p-1.5 rounded-lg bg-neutral-800 border border-white/8">
+                              <div className="text-[9px] text-neutral-400">{d.label}</div>
+                              <div className="text-xs text-amber-400 font-bold">{d.val}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {/* Waste summary */}
+                      {result && result.type === "calculated" && result.fromStock && result.wasteG > 0 && (
+                        <div className="text-[11px] text-neutral-200 border-t border-white/10 pt-2">
+                          {{ pl: `Z ${stockMassG} g kruszcu powstanie ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g gotowego łańcuszka — ${result.wasteG.toFixed(1)} g to nieodwracalne odpady produkcyjne (szlam + trociny jubilerskie).`,
+                             en: `From ${stockMassG} g you'll receive ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g as a finished chain — ${result.wasteG.toFixed(1)} g is irreversible production waste (polishing swarf + filings).`,
+                             de: `Von ${stockMassG} g erhalten Sie ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g als fertige Kette — ${result.wasteG.toFixed(1)} g sind unwiederbringliche Produktionsabfälle (Polierschlamm + Feilspäne).` }[lang]}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
