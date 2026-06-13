@@ -15,10 +15,15 @@ export const METAL_PRICES = {
 };
 
 export const EUR_PLN = 4.28;
-export const MARGIN = 0.45;          // new creation margin
-export const REPAIR_MARGIN = 0.15;   // repair/renovation margin (labor IS the product)
-export const TOL_LOW = 0.40;
-export const TOL_HIGH = 0.35;
+// Polish jeweler market convention: raw material (metal + stone) carries only a
+// modest handling markup, while the workshop margin lives on labor/services.
+// AEJaCA positions slightly below market → margin 0.40 (was 0.45).
+export const MARGIN = 0.40;            // workshop margin on labor + setting + plating + engraving
+export const MATERIAL_MARKUP = 0.15;   // markup on raw metal + gemstone (handling, casting loss)
+export const REPAIR_MARGIN = 0.15;     // repair/renovation margin (labor IS the product)
+// Estimate tolerance band — tight, leans slightly cheap (market-style "od–do" quote)
+export const TOL_LOW = 0.15;
+export const TOL_HIGH = 0.12;
 
 // --- SERVICE TYPES ---
 export const SERVICE_TYPES = [
