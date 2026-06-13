@@ -46,7 +46,7 @@ Chains (necklaces, men's chains, bracelets) have their own dedicated calculator 
 | Lisi ogon | Foxtail | high | ×3.8 |
 | Spiga (Kłos) | Wheat / Herringbone | medium-high | ×3.5 |
 | Bizmark | Bismarck | medium-high | ×3.0 |
-| Bizantyjski / Królewski | Byzantine / Royal | very high | ×4.0 |
+| Bizantyjski / Królewski | Byzantine / Royal | very high | ×7.5 |
 | Franco | Franco | high | ×3.6 |
 
 **AR (Aspect Ratio):** ID of a ring ÷ wire diameter — defines geometry (2.8–4.5 per weave). Higher AR = looser links.
@@ -59,7 +59,8 @@ Chains (necklaces, men's chains, bracelets) have their own dedicated calculator 
 **Typical price ballparks (PLN, studio price):**
 - Pancerka (curb) Ag925, 3.5 mm, 55 cm: ~PLN 220–280
 - Ankier Ag925, 4 mm, 50 cm: ~PLN 190–240
-- Byzantine Ag925, 5 mm, 55 cm: ~PLN 380–480
+- Byzantine Ag925, 5 mm, 55 cm: ~PLN 900–1200 (z kruszcem studia)
+- Byzantine Ag925, 7–8 mm, 55 cm z kruszcu klienta (200g): ~PLN 2300–3100 (sama robocizna+marża)
 - Cuban Link Ag585 (14k), 6 mm, 55 cm: ~PLN 1800–2400
 
 **Use-case routing for chain questions:**

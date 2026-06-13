@@ -347,8 +347,12 @@ export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engrav
   const effectiveClientMetal = fromStock ? true : clientSuppliesMetal;
   const metalCost = effectiveClientMetal ? 0 : grossMassG * plnPerG * metal.purity;
 
-  const BASE_CHAIN_LABOR_RATE = 48; // PLN per 10 cm, calibrated to market rates
-  const laborCost    = (lengthCm / 10) * BASE_CHAIN_LABOR_RATE * weave.laborMul * metal.laborMul;
+  const BASE_CHAIN_LABOR_RATE = 48;   // PLN per 10 cm — calibrated to simple chains
+  const MASS_LABOR_PLN_PER_G  = 6.0;  // PLN per gram of finished chain (before massLaborMul)
+  // Mass-based component captures that complex weaves need far more operations per gram
+  // (Byzantine 200g = ~1000 links × manual threading × soldering vs. simple curb 15g = ~200 links)
+  const laborCost    = (lengthCm / 10) * BASE_CHAIN_LABOR_RATE * weave.laborMul * metal.laborMul
+                     + netMassG * MASS_LABOR_PLN_PER_G * (weave.massLaborMul ?? 0.4) * metal.laborMul;
   const claspCost    = clasp.cost;
   const platingCost  = plat.cost;
   const engravingCost = engraving?.cost ?? 0;
