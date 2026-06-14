@@ -52,6 +52,7 @@ The jewelry price calculator includes a dedicated chain/necklace/bracelet module
 - **Calibrated against:** real pancerka (curb) Ag925, 3.58 mm wide, 55 cm, 13.93 g bare (no clasp)
 - **Metals:** silver 925, gold 14K/18K, platinum; prices from live NBP/LBMA rates
 - **Clasps priced separately**; production waste shown explicitly in grams — covers melt/fire loss (copper oxidation + slag when melting client metal), wire-drawing offcuts, and polishing swarf + filings (all irreversible without refining)
+- **Consigned material (materiał powierzony):** when a client supplies their own metal, AEJaCA accepts it on its declared fineness, weighs + photographs each item on receipt and verifies the alloy (density + acid test); if in doubt, an assay at the State Assay Office (Urząd Probierczy) is proposed before production (client-paid). AEJaCA is not liable for finished-piece defects caused by supplied material differing from the declared fineness.
 
 ## Pricing transparency
 

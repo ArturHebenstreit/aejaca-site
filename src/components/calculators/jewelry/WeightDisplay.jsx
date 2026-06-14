@@ -16,6 +16,13 @@ const CLIENT_METAL_NOTE = {
   de: "Wir prüfen Reinheit und Gewicht (+1–2 Werktage)",
 };
 
+// Consigned-material (materiał powierzony) liability note — in the name of the AEJaCA team
+const CONSIGNED_NOTE = {
+  pl: "Materiał powierzony: kruszec przyjmujemy na podstawie deklarowanej próby. Przy odbiorze ważymy i fotografujemy każdy element oraz weryfikujemy stop (gęstość, próba kwasowa); w razie wątpliwości proponujemy analizę w Urzędzie Probierczym przed wykonaniem (koszt po stronie Klienta). Zespół AEJaCA nie odpowiada za wady wyrobu wynikające z faktycznego składu powierzonego materiału, jeśli odbiega on od deklaracji.",
+  en: "Consigned material: we accept metal based on its declared fineness. On receipt we weigh and photograph each item and verify the alloy (density, acid test); if in doubt we propose an assay at the State Assay Office before production (cost borne by the Client). The AEJaCA team is not liable for defects in the finished piece resulting from the supplied material's actual composition differing from the declaration.",
+  de: "Beigestelltes Material: Wir nehmen das Metall auf Basis der angegebenen Feinheit an. Bei Annahme wiegen und fotografieren wir jedes Teil und prüfen die Legierung (Dichte, Säuretest); im Zweifel schlagen wir vor der Fertigung eine Analyse beim Punzierungsamt vor (Kosten trägt der Kunde). Das AEJaCA-Team haftet nicht für Mängel des fertigen Stücks, die sich aus einer von der Angabe abweichenden tatsächlichen Zusammensetzung des beigestellten Materials ergeben.",
+};
+
 const DISCLAIMER = {
   pl: "Szacunek ±15–20%. Dokładna waga podawana po wizualizacji projektu.",
   en: "Estimate ±15–20%. Exact weight provided after project visualization.",
@@ -78,6 +85,9 @@ export default function WeightDisplay({ nettoG, bruttoG, metalName, lang, client
           </div>
           <div className="text-xs text-neutral-500 mt-0.5">
             {CLIENT_METAL_NOTE[l]}
+          </div>
+          <div className="text-[11px] leading-relaxed text-neutral-400 mt-2 pt-2 border-t border-amber-500/15">
+            {CONSIGNED_NOTE[l]}
           </div>
         </div>
       )}
