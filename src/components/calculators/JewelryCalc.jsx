@@ -7,7 +7,7 @@ import { trackCalc } from "../../utils/analytics.js";
 import { useMarketRates } from "../../hooks/useMarketRates.js";
 import { useGemPrices } from "../../hooks/useGemPrices.js";
 import {
-  METAL_PRICES, EUR_PLN, MARGIN, REPAIR_MARGIN, TOL_LOW, TOL_HIGH,
+  METAL_PRICES, EUR_PLN, MARGIN, MATERIAL_MARKUP, REPAIR_MARGIN, TOL_LOW, TOL_HIGH,
   SERVICE_TYPES, PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING,
   ENGRAVING_OPTIONS,
   GEMSTONES, STONE_SIZES, DIAMOND_CLARITY, DIAMOND_COLOR, GEM_QUALITY, CERTIFICATIONS,
@@ -162,9 +162,10 @@ const LBL = {
   },
 };
 
-function applyJewelryPricing(baseCost, discountRate, qty, margin = MARGIN, eurPln = EUR_PLN) {
-  const basePrice = baseCost * (1 + margin);
-  const discounted = basePrice * (1 - discountRate);
+// sellPrice is already marked up (material markup + workshop margin applied by caller).
+// This only applies the quantity discount and the estimate tolerance band.
+function applyJewelryPricing(sellPrice, discountRate, qty, eurPln = EUR_PLN) {
+  const discounted = sellPrice * (1 - discountRate);
   const perMin = Math.round(discounted * (1 - TOL_LOW));
   const perMax = Math.round(discounted * (1 + TOL_HIGH));
   return {
@@ -247,8 +248,10 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
       gemCost += pricePerStone * count;
     }
 
-    // Setting cost always applies (regardless of who supplies the stone)
-    settingCost += count * (stoneSize.ct >= 0.3 ? 120 : 60);
+    // Setting cost always applies (regardless of who supplies the stone).
+    // Per-stone rate tapers with count — micro-pavé is far cheaper per stone than a solitaire.
+    const perStone = stoneSize.ct >= 0.3 ? 110 : (count <= 3 ? 55 : count <= 10 ? 35 : 22);
+    settingCost += count * perStone;
   }
 
   // Plating
@@ -258,12 +261,15 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
   const engraving = ENGRAVING_OPTIONS.find(e => e.id === (engravingId || "none"));
   const engravingCost = engraving?.cost ?? 0;
 
-  const baseCost = metalCost + laborCost + gemCost + settingCost + platingCost + engravingCost;
-  const workshopCost = baseCost * MARGIN;
-  const estCost = baseCost + workshopCost;
+  // Split markup: raw material (metal + stone) carries only a modest handling markup;
+  // the workshop margin lives on labor + setting + plating + engraving.
+  const materialCost = metalCost + gemCost;
+  const workCost = laborCost + settingCost + platingCost + engravingCost;
+  const estCost = materialCost * (1 + MATERIAL_MARKUP) + workCost * (1 + MARGIN);
+  const workshopCost = estCost - (materialCost + workCost); // combined markup+margin (shown as workshop line)
   const qty = qTier.qty;
   const liveEurPln = rates?.pln_per_eur ?? EUR_PLN;
-  const pricing = applyJewelryPricing(baseCost, qTier.discount, qty, MARGIN, liveEurPln);
+  const pricing = applyJewelryPricing(estCost, qTier.discount, qty, liveEurPln);
 
   return {
     type: "calculated", ...pricing, qty, discount: qTier.discount,
@@ -347,17 +353,23 @@ export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engrav
   const effectiveClientMetal = fromStock ? true : clientSuppliesMetal;
   const metalCost = effectiveClientMetal ? 0 : grossMassG * plnPerG * metal.purity;
 
-  const BASE_CHAIN_LABOR_RATE = 48; // PLN per 10 cm, calibrated to market rates
-  const laborCost    = (lengthCm / 10) * BASE_CHAIN_LABOR_RATE * weave.laborMul * metal.laborMul;
+  const BASE_CHAIN_LABOR_RATE = 48;   // PLN per 10 cm — calibrated to simple chains
+  const MASS_LABOR_PLN_PER_G  = 6.0;  // PLN per gram of finished chain (before massLaborMul)
+  // Mass-based component captures that complex weaves need far more operations per gram
+  // (Byzantine 200g = ~1000 links × manual threading × soldering vs. simple curb 15g = ~200 links)
+  const laborCost    = (lengthCm / 10) * BASE_CHAIN_LABOR_RATE * weave.laborMul * metal.laborMul
+                     + netMassG * MASS_LABOR_PLN_PER_G * (weave.massLaborMul ?? 0.4) * metal.laborMul;
   const claspCost    = clasp.cost;
   const platingCost  = plat.cost;
   const engravingCost = engraving?.cost ?? 0;
 
-  const baseCost     = metalCost + laborCost + claspCost + platingCost + engravingCost;
-  const workshopCost = baseCost * MARGIN;
-  const qty          = qTier.qty;
-  const liveEurPln   = rates?.pln_per_eur ?? EUR_PLN;
-  const pricing      = applyJewelryPricing(baseCost, qTier.discount, qty, MARGIN, liveEurPln);
+  // Split markup: raw metal carries only handling markup; labor/clasp/finish carry full margin.
+  const workChainCost = laborCost + claspCost + platingCost + engravingCost;
+  const estCost       = metalCost * (1 + MATERIAL_MARKUP) + workChainCost * (1 + MARGIN);
+  const workshopCost  = estCost - (metalCost + workChainCost);
+  const qty           = qTier.qty;
+  const liveEurPln    = rates?.pln_per_eur ?? EUR_PLN;
+  const pricing       = applyJewelryPricing(estCost, qTier.discount, qty, liveEurPln);
 
   return {
     type: "calculated", ...pricing, qty, discount: qTier.discount,
@@ -396,7 +408,7 @@ export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engrav
       ...(engravingCost > 0 ? [{ label: l.engraving, value: fmtCost(engravingCost, lang) }] : []),
       { label: l.workshop, value: fmtCost(workshopCost, lang) },
       { divider: true },
-      { label: l.estCost, value: fmtCost(baseCost + workshopCost, lang), bold: true },
+      { label: l.estCost, value: fmtCost(estCost, lang), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
     ],
   };
@@ -420,9 +432,9 @@ export function calcRenovation({ jewTypeId, metalTypeId, services, qtyId }, lang
       rows.push({ label: t(svc.label, lang), value: fmtCost(cost, lang) });
     }
   }
-  const workshopCost = totalService * REPAIR_MARGIN;
-  const estCost = totalService + workshopCost;
-  const pricing = applyJewelryPricing(totalService, qTier.discount, qTier.qty, REPAIR_MARGIN);
+  const estCost = totalService * (1 + REPAIR_MARGIN);
+  const workshopCost = estCost - totalService;
+  const pricing = applyJewelryPricing(estCost, qTier.discount, qTier.qty);
   return {
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     breakdown: [
@@ -445,9 +457,9 @@ export function calcRepair({ jewTypeId, metalTypeId, repairId, qtyId }, lang) {
 
   const metalMul = REPAIR_METAL_MUL[gMetal.metalKey] || 1.0;
   const cost = repair.basePLN * metalMul;
-  const workshopCost = cost * REPAIR_MARGIN;
-  const estCost = cost + workshopCost;
-  const pricing = applyJewelryPricing(cost, qTier.discount, qTier.qty, REPAIR_MARGIN);
+  const estCost = cost * (1 + REPAIR_MARGIN);
+  const workshopCost = estCost - cost;
+  const pricing = applyJewelryPricing(estCost, qTier.discount, qTier.qty);
   return {
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     breakdown: [

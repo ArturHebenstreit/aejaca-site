@@ -45,7 +45,7 @@ The jewelry price calculator includes a dedicated chain/necklace/bracelet module
 
 - **Weave types (12):** Klasyczny (curb), Ankier (anchor), Figaro, Pancerz (Byzantine curb), Cuban Link (Kubański), Rolo, Kordel (rope), Lisi ogon (foxtail), Spiga (wheat/herringbone), Bizmark, Bizantyjski/Królewski (Byzantine/Royal), Franco
 - **AR (Aspect Ratio):** ID of a ring ÷ wire diameter — defines the geometry of each weave; each weave has a characteristic AR (2.8–4.5)
-- **WF (weaveFactor):** wire consumed per cm of finished chain relative to a straight wire — e.g. ×2.15 for curb (pancerka), ×4.0 for Byzantine
+- **WF (weaveFactor):** wire consumed per cm of finished chain relative to a straight wire — e.g. ×2.15 for curb (pancerka), ×7.5 for Byzantine (Bizantyjski/Królewski)
 - **Mass formula:** `mass = length_cm × π × (wire_d_cm/2)² × density × weaveFactor × wasteFactor`
 - **Standard mode:** user inputs visible chain width (mm) → wire diameter auto-derived: `wire_d = width / widthMul`
 - **From-stock mode (Własny kruszec):** user inputs metal mass + selects length → system derives wire diameter, width, thickness from physics; shows production waste in grams
@@ -59,7 +59,7 @@ Both calculators publish their pricing logic directly in the UI — no hidden fe
 - Silver stone-bead bracelet: ~PLN 53 (material + labor)
 - Custom silver ring with gemstone: from PLN 400
 - Silver necklace (curb/pancerka), 3.5 mm wide, 55 cm: ~PLN 220–280 (Ag925, no gemstones)
-- Silver Byzantine chain, 5 mm wide, 55 cm: ~PLN 380–480 (Ag925, high labor)
+- Silver Byzantine (Bizantyjski/Królewski) chain, 5 mm wide, 55 cm: ~PLN 900–1200 (Ag925, very high labor + ×7.5 wire usage)
 - 3D-printed custom keychain: from PLN 25
 - Laser-engraved wooden sign: from PLN 80
 
@@ -184,4 +184,4 @@ https://www.aejaca.com/contact/
 
 ---
 
-Last updated: 2026-06-12
+Last updated: 2026-06-14

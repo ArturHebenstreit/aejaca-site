@@ -15,10 +15,15 @@ export const METAL_PRICES = {
 };
 
 export const EUR_PLN = 4.28;
-export const MARGIN = 0.45;          // new creation margin
-export const REPAIR_MARGIN = 0.15;   // repair/renovation margin (labor IS the product)
-export const TOL_LOW = 0.40;
-export const TOL_HIGH = 0.35;
+// Polish jeweler market convention: raw material (metal + stone) carries only a
+// modest handling markup, while the workshop margin lives on labor/services.
+// AEJaCA positions slightly below market → margin 0.40 (was 0.45).
+export const MARGIN = 0.40;            // workshop margin on labor + setting + plating + engraving
+export const MATERIAL_MARKUP = 0.15;   // markup on raw metal + gemstone (handling, casting loss)
+export const REPAIR_MARGIN = 0.15;     // repair/renovation margin (labor IS the product)
+// Estimate tolerance band — tight, leans slightly cheap (market-style "od–do" quote)
+export const TOL_LOW = 0.15;
+export const TOL_HIGH = 0.12;
 
 // --- SERVICE TYPES ---
 export const SERVICE_TYPES = [
@@ -92,7 +97,7 @@ export const METHODS = [
   { id: "cast", label: { pl: "Odlew (lost wax)", en: "Cast (lost wax)", de: "Guss (Wachsausschmelzverfahren)" },
     desc: { pl: "Precyzyjny odlew, idealne do serii", en: "Precision casting, ideal for series", de: "Präzisionsguss, ideal für Serien" }, laborMul: 0.6, laborRate: 80, img: "/img/calc/methods/cast.webp" },
   { id: "handmade", label: { pl: "Ręczna (lutowanie + osadzanie)", en: "Handmade (soldering + setting)", de: "Handarbeit (Löten + Fassen)" },
-    desc: { pl: "Najwyższa jakość, unikalne wykonanie", en: "Highest quality, unique craftsmanship", de: "Höchste Qualität, einzigartige Handwerkskunst" }, laborMul: 1.0, laborRate: 150, img: "/img/calc/methods/handmade.webp" },
+    desc: { pl: "Najwyższa jakość, unikalne wykonanie", en: "Highest quality, unique craftsmanship", de: "Höchste Qualität, einzigartige Handwerkskunst" }, laborMul: 1.0, laborRate: 65, img: "/img/calc/methods/handmade.webp" },
   { id: "custom_m", label: { pl: "Niestandardowa", en: "Custom", de: "Individuell" }, laborMul: null, custom: true },
 ];
 
@@ -150,11 +155,15 @@ export const GEMSTONES = [
 
 // --- STONE SIZE categories ---
 // visual: gemD = diameter in px for stone size preview circle
+// priceMul = total stone price relative to the medium (0.5 ct) anchor. Gemstone
+// prices scale super-linearly with size (rarity premium), so small/accent stones
+// cost far less per carat than a 0.5 ct centre — the low end must stay shallow,
+// otherwise multi-stone pavé of natural diamonds is grossly overpriced.
 export const STONE_SIZES = [
-  { id: "accent", label: { pl: "Akcent (0.01-0.05 ct)", en: "Accent (0.01-0.05 ct)", de: "Akzent (0.01-0.05 ct)" }, ct: 0.03, priceMul: 0.15, visual: { gemD: 4 } },
-  { id: "small",  label: { pl: "Mały (0.1-0.3 ct)", en: "Small (0.1-0.3 ct)", de: "Klein (0.1-0.3 ct)" }, ct: 0.2, priceMul: 0.5, visual: { gemD: 8 } },
+  { id: "accent", label: { pl: "Akcent (0.01-0.05 ct)", en: "Accent (0.01-0.05 ct)", de: "Akzent (0.01-0.05 ct)" }, ct: 0.03, priceMul: 0.05, visual: { gemD: 4 } },
+  { id: "small",  label: { pl: "Mały (0.1-0.3 ct)", en: "Small (0.1-0.3 ct)", de: "Klein (0.1-0.3 ct)" }, ct: 0.2, priceMul: 0.30, visual: { gemD: 8 } },
   { id: "medium", label: { pl: "Średni (0.3-0.7 ct)", en: "Medium (0.3-0.7 ct)", de: "Mittel (0.3-0.7 ct)" }, ct: 0.5, priceMul: 1.0, visual: { gemD: 14 } },
-  { id: "large",  label: { pl: "Duży (0.7-1.5 ct)", en: "Large (0.7-1.5 ct)", de: "Groß (0.7-1.5 ct)" }, ct: 1.0, priceMul: 2.2, visual: { gemD: 20 } },
+  { id: "large",  label: { pl: "Duży (0.7-1.5 ct)", en: "Large (0.7-1.5 ct)", de: "Groß (0.7-1.5 ct)" }, ct: 1.0, priceMul: 2.6, visual: { gemD: 20 } },
   { id: "xl",     label: { pl: "XL (1.5+ ct)", en: "XL (1.5+ ct)", de: "XL (1.5+ ct)" }, ct: null, priceMul: null, custom: true },
 ];
 
@@ -255,44 +264,49 @@ export const GENERIC_METALS = [
 // widthMul: chain width = widthMul × wire_diameter_mm
 // thicknessMul: chain thickness = thicknessMul × wire_diameter_mm
 // weaveFactor: wire mass per chain length vs straight wire of same Ø
-// CALIBRATED against real chain: curb (pancerka) Ag925, w=3.58mm, t=1.2mm, L=55cm → 13.93g bare (no clasp)
+// massLaborMul: mass-based labor multiplier — scales extra labor per gram of finished chain
+//   (complex weaves like Byzantine need far more operations per gram than simple curb chains)
+// CALIBRATED:
+//   pancerka Ag925 w=3.58mm L=55cm → 13.93g bare (weaveFactor=2.15, widthMul=3.0)
+//   Byzantine Ag925 w=7mm L=80cm → ~195g bare (Enigma ref) → weaveFactor=7.5, widthMul=3.5
 export const CHAIN_WEAVES = [
   { id: "klasyczny",  label: { pl: "Klasyczny", en: "Classic", de: "Klassisch" },
     ar: 4.0, widthMul: 3.5, thicknessMul: 2.0,
-    weaveFactor: 2.5, laborMul: 0.8, materialWaste: 5,  img: "/img/calc/weaves/klasyczny.webp" },
+    weaveFactor: 2.5,  laborMul: 0.8, massLaborMul: 0.25, materialWaste: 5,  img: "/img/calc/weaves/klasyczny.webp" },
   { id: "ankier",    label: { pl: "Ankier", en: "Anchor", de: "Anker" },
     ar: 4.5, widthMul: 3.5, thicknessMul: 2.0,
-    weaveFactor: 2.2, laborMul: 1.0, materialWaste: 8,  img: "/img/calc/weaves/ankier.webp" },
+    weaveFactor: 2.2,  laborMul: 1.0, massLaborMul: 0.35, materialWaste: 8,  img: "/img/calc/weaves/ankier.webp" },
   { id: "figaro",    label: { pl: "Figaro", en: "Figaro", de: "Figaro" },
     ar: 4.0, widthMul: 3.0, thicknessMul: 1.0,
-    weaveFactor: 2.2, laborMul: 1.2, materialWaste: 10, img: "/img/calc/weaves/figaro.webp" },
+    weaveFactor: 2.2,  laborMul: 1.2, massLaborMul: 0.45, materialWaste: 10, img: "/img/calc/weaves/figaro.webp" },
   { id: "pancerz",   label: { pl: "Pancerka", en: "Curb", de: "Panzer" },
     ar: 3.2, widthMul: 3.0, thicknessMul: 1.0,
-    weaveFactor: 2.15, laborMul: 1.1, materialWaste: 9,  img: "/img/calc/weaves/pancerz.webp" },
+    weaveFactor: 2.15, laborMul: 1.1, massLaborMul: 0.40, materialWaste: 9,  img: "/img/calc/weaves/pancerz.webp" },
   { id: "cuban_link",label: { pl: "Kubański", en: "Cuban link", de: "Kubanische Kette" },
     ar: 3.2, widthMul: 3.5, thicknessMul: 1.4,
-    weaveFactor: 3.0, laborMul: 1.3, materialWaste: 12, img: "/img/calc/weaves/cuban_link.webp" },
+    weaveFactor: 3.0,  laborMul: 1.3, massLaborMul: 1.20, materialWaste: 12, img: "/img/calc/weaves/cuban_link.webp" },
   { id: "rolo",      label: { pl: "Rolo", en: "Rolo / Belcher", de: "Rolo" },
     ar: 4.0, widthMul: 5.0, thicknessMul: 2.0,
-    weaveFactor: 1.8, laborMul: 0.9, materialWaste: 7,  img: "/img/calc/weaves/rolo.webp" },
+    weaveFactor: 1.8,  laborMul: 0.9, massLaborMul: 0.25, materialWaste: 7,  img: "/img/calc/weaves/rolo.webp" },
   { id: "kordel",    label: { pl: "Kordel (lina)", en: "Rope", de: "Kordel" },
     ar: 2.8, widthMul: 3.0, thicknessMul: 3.0,
-    weaveFactor: 3.5, laborMul: 1.7, materialWaste: 18, img: "/img/calc/weaves/kordel.webp" },
+    weaveFactor: 3.5,  laborMul: 1.7, massLaborMul: 1.20, materialWaste: 18, img: "/img/calc/weaves/kordel.webp" },
   { id: "lisi_ogon", label: { pl: "Lisi ogon", en: "Foxtail", de: "Fuchsschwanz" },
     ar: 3.2, widthMul: 3.5, thicknessMul: 3.0,
-    weaveFactor: 3.8, laborMul: 1.8, materialWaste: 18, img: "/img/calc/weaves/lisi_ogon.webp" },
+    weaveFactor: 3.8,  laborMul: 1.8, massLaborMul: 1.60, materialWaste: 18, img: "/img/calc/weaves/lisi_ogon.webp" },
   { id: "spiga",     label: { pl: "Spiga / Kłos", en: "Spiga / Wheat", de: "Spiga / Ähre" },
     ar: 3.2, widthMul: 2.5, thicknessMul: 2.0,
-    weaveFactor: 3.5, laborMul: 1.4, materialWaste: 12, img: "/img/calc/weaves/spiga.webp" },
+    weaveFactor: 3.5,  laborMul: 1.4, massLaborMul: 1.00, materialWaste: 12, img: "/img/calc/weaves/spiga.webp" },
   { id: "bizmark",   label: { pl: "Bizmark", en: "Bismark", de: "Bismark" },
     ar: 3.2, widthMul: 6.0, thicknessMul: 2.0,
-    weaveFactor: 3.0, laborMul: 1.5, materialWaste: 15, img: "/img/calc/weaves/bizmark.webp" },
+    weaveFactor: 3.0,  laborMul: 1.5, massLaborMul: 1.00, materialWaste: 15, img: "/img/calc/weaves/bizmark.webp" },
   { id: "byzantine", label: { pl: "Bizantyjski / Królewski", en: "Byzantine / Royal", de: "Byzantinisch / Königskette" },
     ar: 4.5, widthMul: 3.5, thicknessMul: 3.0,
-    weaveFactor: 4.0, laborMul: 2.2, materialWaste: 22, img: "/img/calc/weaves/byzantine.webp" },
+    // weaveFactor calibrated: Enigma ref Ag925 7mm/80cm=195g bare → WF=195/(80×π×0.01×10.5)=7.37 → 7.5
+    weaveFactor: 7.5,  laborMul: 2.2, massLaborMul: 2.50, materialWaste: 22, img: "/img/calc/weaves/byzantine.webp" },
   { id: "franco",    label: { pl: "Franco", en: "Franco", de: "Franco" },
     ar: 2.8, widthMul: 3.5, thicknessMul: 3.5,
-    weaveFactor: 3.6, laborMul: 1.5, materialWaste: 15, img: "/img/calc/weaves/franco.webp" },
+    weaveFactor: 3.6,  laborMul: 1.5, massLaborMul: 1.80, materialWaste: 15, img: "/img/calc/weaves/franco.webp" },
   { id: "custom_weave", label: { pl: "Inne / niestandardowe", en: "Other / custom", de: "Andere / Individuell" }, custom: true },
 ];
 

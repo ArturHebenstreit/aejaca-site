@@ -46,7 +46,7 @@ Chains (necklaces, men's chains, bracelets) have their own dedicated calculator 
 | Lisi ogon | Foxtail | high | ×3.8 |
 | Spiga (Kłos) | Wheat / Herringbone | medium-high | ×3.5 |
 | Bizmark | Bismarck | medium-high | ×3.0 |
-| Bizantyjski / Królewski | Byzantine / Royal | very high | ×4.0 |
+| Bizantyjski / Królewski | Byzantine / Royal | very high | ×7.5 |
 | Franco | Franco | high | ×3.6 |
 
 **AR (Aspect Ratio):** ID of a ring ÷ wire diameter — defines geometry (2.8–4.5 per weave). Higher AR = looser links.
@@ -59,14 +59,15 @@ Chains (necklaces, men's chains, bracelets) have their own dedicated calculator 
 **Typical price ballparks (PLN, studio price):**
 - Pancerka (curb) Ag925, 3.5 mm, 55 cm: ~PLN 220–280
 - Ankier Ag925, 4 mm, 50 cm: ~PLN 190–240
-- Byzantine Ag925, 5 mm, 55 cm: ~PLN 380–480
+- Byzantine Ag925, 5 mm, 55 cm: ~PLN 900–1200 (z kruszcem studia)
+- Byzantine Ag925, 7–8 mm, 55 cm z kruszcu klienta (200g): ~PLN 2300–3100 (sama robocizna+marża)
 - Cuban Link Ag585 (14k), 6 mm, 55 cm: ~PLN 1800–2400
 
 **Use-case routing for chain questions:**
 - "Ile kosztuje łańcuszek pancerka 4mm 55cm ze srebra?" → direct to [kalkulator biżuterii](https://www.aejaca.com/jewelry/#calculator), Men's line → Łańcuch → Splot Pancerz → Srebro 925, wybierz długość i szerokość
 - "Mam 20g srebra — jaki łańcuszek z tego wyjdzie?" → Tryb "Własny kruszec": podaj 20g masy, wybierz splot i długość, kalkulator dobierze grubość drutu
 - "Czym różni się kubański od pancerki?" → explain: kubański (Cuban Link) ma grubsze, zaokrąglone ogniwa skręcone pod 45°, WF ×3.0 vs pancerka ×2.15 — kubański zużywa więcej metalu, jest masywniejszy i droższy
-- "Co to splot bizantyjski?" → najzłożniejszy splot jubilerski, charakterystyczna wzorzysta faktura, WF ×4.0 (zużywa 4× więcej drutu niż prosta żyłka), wysoka robocizna → link do [artykułu o splotach](https://www.aejaca.com/blog/rodzaje-splotow-lancuszkow/)
+- "Co to splot bizantyjski?" → najzłożniejszy splot jubilerski, charakterystyczna wzorzysta faktura, WF ×7.5 (zużywa ~7.5× więcej drutu niż prosta żyłka), bardzo wysoka robocizna → link do [artykułu o splotach](https://www.aejaca.com/blog/rodzaje-splotow-lancuszkow/)
 
 ### New Creation — configurable options
 **Product lines:** AEJaCA Woman (rings, bracelets, pendants, earrings, brooches) | AEJaCA Men (signet rings, medallions, bracelets, cufflinks, chains) | AEJaCA Pet (tags, collar charms)
