@@ -54,6 +54,7 @@ Chains (necklaces, men's chains, bracelets) have their own dedicated calculator 
 **Mass formula:** `mass = length_cm × π × (wire_d_cm/2)² × density × weaveFactor × wasteFactor`
 **Production waste** (odpad): 5–22% depending on weave, shown explicitly in grams. Covers three irreversible losses: (1) melt/fire loss — copper oxidation + slag when melting client silver, ~1–3% per melt; (2) wire-drawing offcuts; (3) polishing swarf + filings. NOTE: solidification shrinkage (skurcz odlewniczy) changes volume, NOT mass — it is not a metal loss, so do not cite it as one.
 **Metals:** Silver 925, Gold 14K/18K, Platinum. **Clasps priced separately** (spring ring, lobster, barrel, toggle, custom).
+**Consigned material (materiał powierzony) policy** — when the client supplies their own metal ("Własny kruszec" / "Kruszec od klienta"): AEJaCA accepts the metal on its DECLARED fineness; on receipt each item is weighed + photographed and the alloy is verified (density + acid test). If fineness is doubtful, AEJaCA proposes an assay at the State Assay Office (Urząd Probierczy) BEFORE production, cost borne by the client. The AEJaCA team is NOT liable for defects in the finished piece caused by the supplied material's actual composition differing from what was declared. When asked "what if I bring my own silver / is it 925?": explain this policy reassuringly — verification protects both sides.
 **Calibrated against:** real pancerka (curb) Ag925, 3.58 mm wide, 55 cm long = 13.93 g bare chain.
 
 **Typical price ballparks (PLN, studio price):**

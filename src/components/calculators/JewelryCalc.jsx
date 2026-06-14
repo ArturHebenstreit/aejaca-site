@@ -480,6 +480,26 @@ const RATE_NOTE = {
   de: "Preise basierend auf Marktdaten — Details in der Fußzeile",
 };
 
+// Consigned-material (materiał powierzony) disclaimer — shown wherever the client
+// declares they will supply their own precious metal. Worded in the name of the
+// AEJaCA team. Reused by both the chain "from stock" mode and the supply toggle.
+const CONSIGNED_NOTE = {
+  pl: "Materiał powierzony: kruszec przyjmujemy na podstawie deklarowanej próby. Przy odbiorze ważymy i fotografujemy każdy element oraz weryfikujemy stop (gęstość, próba kwasowa); w razie wątpliwości proponujemy analizę w Urzędzie Probierczym przed wykonaniem (koszt po stronie Klienta). Zespół AEJaCA nie odpowiada za wady wyrobu wynikające z faktycznego składu powierzonego materiału, jeśli odbiega on od deklaracji.",
+  en: "Consigned material: we accept metal based on its declared fineness. On receipt we weigh and photograph each item and verify the alloy (density, acid test); if in doubt we propose an assay at the State Assay Office before production (cost borne by the Client). The AEJaCA team is not liable for defects in the finished piece resulting from the supplied material's actual composition differing from the declaration.",
+  de: "Beigestelltes Material: Wir nehmen das Metall auf Basis der angegebenen Feinheit an. Bei Annahme wiegen und fotografieren wir jedes Teil und prüfen die Legierung (Dichte, Säuretest); im Zweifel schlagen wir vor der Fertigung eine Analyse beim Punzierungsamt vor (Kosten trägt der Kunde). Das AEJaCA-Team haftet nicht für Mängel des fertigen Stücks, die sich aus einer von der Angabe abweichenden tatsächlichen Zusammensetzung des beigestellten Materials ergeben.",
+};
+
+function ConsignedNote({ lang }) {
+  return (
+    <div className="mt-2 flex gap-2 rounded-lg border border-amber-400/20 bg-amber-400/5 px-3 py-2">
+      <span aria-hidden="true" className="text-amber-400/80 text-xs leading-5">ⓘ</span>
+      <p className="text-[11px] leading-relaxed text-neutral-300">
+        {CONSIGNED_NOTE[lang] || CONSIGNED_NOTE.pl}
+      </p>
+    </div>
+  );
+}
+
 export default function JewelryCalc({ lang = "pl" }) {
   const l = LBL[lang] || LBL.en;
   const { rates } = useMarketRates();
@@ -919,6 +939,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                              de: `Von ${stockMassG} g erhalten Sie ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g als fertige Kette — ${result.wasteG.toFixed(1)} g sind unwiederbringliche Prozessverluste: Schmelzverlust (Kupferoxidation + Schlacke), Drahtzieh-Verschnitt sowie Polierschlamm + Feilspäne.` }[lang]}
                         </div>
                       )}
+                      <ConsignedNote lang={lang} />
                     </div>
                   </div>
                 )}
@@ -1151,6 +1172,11 @@ export default function JewelryCalc({ lang = "pl" }) {
                 {clientSuppliesMetal && (
                   <div className="text-xs text-neutral-500 mt-0.5">
                     {{ pl: "Odejmiemy koszt metalu — dostarcz kruszec przed realizacją", en: "Metal cost excluded — supply raw metal before production", de: "Metallkosten entfallen — Rohmetall vor der Produktion liefern" }[lang]}
+                  </div>
+                )}
+                {clientSuppliesMetal && (
+                  <div onClick={e => e.stopPropagation()}>
+                    <ConsignedNote lang={lang} />
                   </div>
                 )}
               </div>
