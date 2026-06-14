@@ -52,7 +52,7 @@ Chains (necklaces, men's chains, bracelets) have their own dedicated calculator 
 **AR (Aspect Ratio):** ID of a ring ÷ wire diameter — defines geometry (2.8–4.5 per weave). Higher AR = looser links.
 **WF (weaveFactor):** how many times more wire is needed per cm of finished chain vs. a straight wire. Higher WF = more metal = higher price.
 **Mass formula:** `mass = length_cm × π × (wire_d_cm/2)² × density × weaveFactor × wasteFactor`
-**Production waste** (odpad): 5–22% depending on weave, shown explicitly in the calculator.
+**Production waste** (odpad): 5–22% depending on weave, shown explicitly in grams. Covers three irreversible losses: (1) melt/fire loss — copper oxidation + slag when melting client silver, ~1–3% per melt; (2) wire-drawing offcuts; (3) polishing swarf + filings. NOTE: solidification shrinkage (skurcz odlewniczy) changes volume, NOT mass — it is not a metal loss, so do not cite it as one.
 **Metals:** Silver 925, Gold 14K/18K, Platinum. **Clasps priced separately** (spring ring, lobster, barrel, toggle, custom).
 **Calibrated against:** real pancerka (curb) Ag925, 3.58 mm wide, 55 cm long = 13.93 g bare chain.
 
