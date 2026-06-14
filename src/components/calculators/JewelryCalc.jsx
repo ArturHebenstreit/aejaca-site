@@ -914,9 +914,9 @@ export default function JewelryCalc({ lang = "pl" }) {
                       {/* Waste summary */}
                       {result && result.type === "calculated" && result.fromStock && result.wasteG > 0 && (
                         <div className="text-[11px] text-neutral-200 border-t border-white/10 pt-2">
-                          {{ pl: `Z ${stockMassG} g kruszcu powstanie ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g gotowego łańcuszka — ${result.wasteG.toFixed(1)} g to nieodwracalne odpady produkcyjne (szlam + trociny jubilerskie).`,
-                             en: `From ${stockMassG} g you'll receive ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g as a finished chain — ${result.wasteG.toFixed(1)} g is irreversible production waste (polishing swarf + filings).`,
-                             de: `Von ${stockMassG} g erhalten Sie ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g als fertige Kette — ${result.wasteG.toFixed(1)} g sind unwiederbringliche Produktionsabfälle (Polierschlamm + Feilspäne).` }[lang]}
+                          {{ pl: `Z ${stockMassG} g kruszcu powstanie ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g gotowego łańcuszka — ${result.wasteG.toFixed(1)} g to nieodwracalne straty technologiczne: ubytek na topieniu (utlenianie miedzi i zgar), odpady przy ciągnieniu drutu oraz szlam i trociny z polerowania.`,
+                             en: `From ${stockMassG} g you'll receive ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g as a finished chain — ${result.wasteG.toFixed(1)} g is irreversible process loss: melt/fire loss (copper oxidation + slag), wire-drawing offcuts, and polishing swarf + filings.`,
+                             de: `Von ${stockMassG} g erhalten Sie ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g als fertige Kette — ${result.wasteG.toFixed(1)} g sind unwiederbringliche Prozessverluste: Schmelzverlust (Kupferoxidation + Schlacke), Drahtzieh-Verschnitt sowie Polierschlamm + Feilspäne.` }[lang]}
                         </div>
                       )}
                     </div>

@@ -51,7 +51,7 @@ The jewelry price calculator includes a dedicated chain/necklace/bracelet module
 - **From-stock mode (Własny kruszec):** user inputs metal mass + selects length → system derives wire diameter, width, thickness from physics; shows production waste in grams
 - **Calibrated against:** real pancerka (curb) Ag925, 3.58 mm wide, 55 cm, 13.93 g bare (no clasp)
 - **Metals:** silver 925, gold 14K/18K, platinum; prices from live NBP/LBMA rates
-- **Clasps priced separately**; production waste (polishing swarf, sprues) shown explicitly
+- **Clasps priced separately**; production waste shown explicitly in grams — covers melt/fire loss (copper oxidation + slag when melting client metal), wire-drawing offcuts, and polishing swarf + filings (all irreversible without refining)
 
 ## Pricing transparency
 
