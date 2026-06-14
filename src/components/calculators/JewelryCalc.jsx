@@ -884,10 +884,15 @@ export default function JewelryCalc({ lang = "pl" }) {
                           {{ pl: "Masa kruszcu (g)", en: "Metal mass (g)", de: "Metallmasse (g)" }[lang]}
                         </span>
                         <input type="number" min={1} max={500} step={0.5}
-                          value={stockMassG || ""}
-                          onChange={e => { const n = parseFloat(e.target.value); if (n > 0) setStockMassG(n); }}
+                          value={stockMassG === "" ? "" : stockMassG}
+                          onChange={e => {
+                            const v = e.target.value;
+                            if (v === "") { setStockMassG(""); return; }
+                            const n = parseFloat(v);
+                            if (!isNaN(n) && n >= 0) setStockMassG(n);
+                          }}
                           className="w-28 bg-white/8 border border-amber-400/40 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/80" />
-                        <span className="text-sm text-amber-400 font-bold">{stockMassG} g</span>
+                        <span className="text-sm text-amber-400 font-bold">{stockMassG || "—"} g</span>
                       </label>
                       {/* Live derived dimensions — 5-cell grid */}
                       {result && result.type === "calculated" && result.fromStock && (
