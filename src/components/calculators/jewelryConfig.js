@@ -155,11 +155,15 @@ export const GEMSTONES = [
 
 // --- STONE SIZE categories ---
 // visual: gemD = diameter in px for stone size preview circle
+// priceMul = total stone price relative to the medium (0.5 ct) anchor. Gemstone
+// prices scale super-linearly with size (rarity premium), so small/accent stones
+// cost far less per carat than a 0.5 ct centre — the low end must stay shallow,
+// otherwise multi-stone pavé of natural diamonds is grossly overpriced.
 export const STONE_SIZES = [
-  { id: "accent", label: { pl: "Akcent (0.01-0.05 ct)", en: "Accent (0.01-0.05 ct)", de: "Akzent (0.01-0.05 ct)" }, ct: 0.03, priceMul: 0.15, visual: { gemD: 4 } },
-  { id: "small",  label: { pl: "Mały (0.1-0.3 ct)", en: "Small (0.1-0.3 ct)", de: "Klein (0.1-0.3 ct)" }, ct: 0.2, priceMul: 0.5, visual: { gemD: 8 } },
+  { id: "accent", label: { pl: "Akcent (0.01-0.05 ct)", en: "Accent (0.01-0.05 ct)", de: "Akzent (0.01-0.05 ct)" }, ct: 0.03, priceMul: 0.05, visual: { gemD: 4 } },
+  { id: "small",  label: { pl: "Mały (0.1-0.3 ct)", en: "Small (0.1-0.3 ct)", de: "Klein (0.1-0.3 ct)" }, ct: 0.2, priceMul: 0.30, visual: { gemD: 8 } },
   { id: "medium", label: { pl: "Średni (0.3-0.7 ct)", en: "Medium (0.3-0.7 ct)", de: "Mittel (0.3-0.7 ct)" }, ct: 0.5, priceMul: 1.0, visual: { gemD: 14 } },
-  { id: "large",  label: { pl: "Duży (0.7-1.5 ct)", en: "Large (0.7-1.5 ct)", de: "Groß (0.7-1.5 ct)" }, ct: 1.0, priceMul: 2.2, visual: { gemD: 20 } },
+  { id: "large",  label: { pl: "Duży (0.7-1.5 ct)", en: "Large (0.7-1.5 ct)", de: "Groß (0.7-1.5 ct)" }, ct: 1.0, priceMul: 2.6, visual: { gemD: 20 } },
   { id: "xl",     label: { pl: "XL (1.5+ ct)", en: "XL (1.5+ ct)", de: "XL (1.5+ ct)" }, ct: null, priceMul: null, custom: true },
 ];
 
