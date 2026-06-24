@@ -282,7 +282,12 @@ export function ResultDisplay({ result, lang = "pl" }) {
                 </div>
               ))}
               <div className="mt-2 text-[11px] text-neutral-400 italic">
-                {labels.rangeNote}
+                {result.tolLow != null
+                  ? ({ pl: `Zakres: -${Math.round(result.tolLow*100)}% / +${Math.round(result.tolHigh*100)}% | Kurs ${(result.eurPln ?? CONFIG.EUR_PLN_RATE).toFixed(2)} PLN/EUR`,
+                       en: `Range: -${Math.round(result.tolLow*100)}% / +${Math.round(result.tolHigh*100)}% | Rate ${(result.eurPln ?? CONFIG.EUR_PLN_RATE).toFixed(2)} PLN/EUR`,
+                       de: `Bereich: -${Math.round(result.tolLow*100)}% / +${Math.round(result.tolHigh*100)}% | Kurs ${(result.eurPln ?? CONFIG.EUR_PLN_RATE).toFixed(2)} PLN/EUR`,
+                     }[lang] ?? labels.rangeNote)
+                  : labels.rangeNote}
               </div>
             </div>
           )}
