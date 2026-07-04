@@ -91,6 +91,7 @@ This applies to: all calculators, pricing displays, result cards, quote forms �
 ## Key conventions
 
 - **i18n**: every user-facing string lives in `src/i18n/{pl,en,de}.js`. When adding a key, add it to ALL THREE files — they must stay in sync.
+- **Google reviews** (`src/data/googleReviews.js`): every review that has `text` MUST also carry a `translations: { en, de }` object (or `{ pl, ... }` when `originalLang` is en/de). Without it, the translation block silently fails to render for visitors in other languages while every other card shows one. The reviews list cites only reviews with text, newest first; keep `GOOGLE_BUSINESS.totalReviews` equal to the real Google count (rating-only entries count toward it but are not displayed). Never fake a review's `date` to reorder it — dates must match Google.
 - **SEO**: every page uses `<SEOHead pageKey="..." path="..." schemas={[...]} />` at the top. Schemas from `src/seo/schemas.js`: Organization, Service, FAQ, Breadcrumb, Article, HowTo.
 - **Images**: `/public/img/calc/<category>/<id>.png`. Product style: black background, upper-left key light, premium photography aesthetic. Use Gemini MCP (`mcp__nano-banana-pro__generate_image`) with `aspectRatio: "1:1"` (tiles) or `"21:9"` (banners), `imageSize: "1K"`.
 - **Tailwind themes**: Jewelry = amber/rose, Studio = blue/emerald, Tips = amber (jewelry) / blue (studio).

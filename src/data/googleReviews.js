@@ -179,5 +179,16 @@ export const REVIEWS = [
   { id: "r20", author: "Marcin Kosek",        rating: 5, date: "2026-03-05", originalLang: "pl", text: "" },
   { id: "r21", author: "Justyna Wodyńska",    rating: 5, date: "2026-03-04", originalLang: "pl", text: "" },
   { id: "r22", author: "Andrzej Buczkowski",  rating: 5, date: "2026-03-03", originalLang: "pl", text: "" },
-  { id: "r23", author: "Ika Ryczkowska",      rating: 5, date: "2026-06-05", originalLang: "pl", text: "Biżuteria oryginalna, niepowtarzalna. Polecam, miło mieć coś nietuzinkowego." },
+  {
+    id: "r23",
+    author: "Ika Ryczkowska",
+    rating: 5,
+    date: "2026-06-05",
+    originalLang: "pl",
+    text: "Biżuteria oryginalna, niepowtarzalna. Polecam, miło mieć coś nietuzinkowego.",
+    translations: {
+      en: "Original, one-of-a-kind jewelry. I recommend it, it's nice to have something out of the ordinary.",
+      de: "Origineller, einzigartiger Schmuck. Sehr zu empfehlen, es ist schön, etwas Außergewöhnliches zu haben.",
+    },
+  },
 ];
