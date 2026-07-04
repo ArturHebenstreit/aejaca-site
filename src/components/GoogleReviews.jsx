@@ -172,8 +172,12 @@ export default function GoogleReviews({
   const l = LABELS[lang] || LABELS.en;
   const [expanded, setExpanded] = useState(false);
 
-  // Sortuj od najnowszej do najstarszej
-  const sorted = [...REVIEWS].sort((a, b) => new Date(b.date) - new Date(a.date));
+  // Cytujemy tylko opinie z komentarzem, posortowane po dacie (najnowsze pierwsze).
+  // Oceny bez treści (rating-only) nadal liczą się w agregacie
+  // (GOOGLE_BUSINESS.totalReviews w nagłówku), ale nie zaśmiecają listy cytatów.
+  const sorted = [...REVIEWS]
+    .filter((r) => r.text && r.text.trim())
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
   const visible = expanded ? sorted : sorted.slice(0, limit);
   const hasMore = sorted.length > limit;
 

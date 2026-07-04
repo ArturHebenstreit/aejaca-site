@@ -24,7 +24,8 @@
 // - aggregateRating pokazuje 5.0 / 24 w SERP (gwiazdki)
 // - Review[] z publisher:Google = jawna atrybucja (SEO-safe)
 // - W JSON-LD trafiają TYLKO opinie z treścią (Google guidelines wymagają reviewBody)
-// - Wszystkie 24 (w tym rating-only) są widoczne na stronie = parity z aggregate count
+// - Na stronie cytujemy tylko opinie z komentarzem (od najnowszej); rating-only
+//   nie są wyświetlane, ale liczą się w aggregateRating (reviewCount = 24)
 // ============================================================
 
 export const GOOGLE_BUSINESS = {
@@ -104,7 +105,7 @@ export const REVIEWS = [
     id: "r5",
     author: "Alicja Wiśniewska",
     rating: 5,
-    date: "2026-06-20",
+    date: "2026-03-12",
     originalLang: "pl",
     text: "Cuda! 🤩",
     translations: {
