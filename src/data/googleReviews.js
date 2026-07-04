@@ -21,10 +21,10 @@
 //   translations — { en, pl, de } — opcjonalne tłumaczenia (fallback: oryginał)
 //
 // SCHEMA.ORG:
-// - aggregateRating pokazuje 5.0 / 22 w SERP (gwiazdki)
+// - aggregateRating pokazuje 5.0 / 24 w SERP (gwiazdki)
 // - Review[] z publisher:Google = jawna atrybucja (SEO-safe)
 // - W JSON-LD trafiają TYLKO opinie z treścią (Google guidelines wymagają reviewBody)
-// - Wszystkie 22 (w tym rating-only) są widoczne na stronie = parity z aggregate count
+// - Wszystkie 24 (w tym rating-only) są widoczne na stronie = parity z aggregate count
 // ============================================================
 
 export const GOOGLE_BUSINESS = {
@@ -40,18 +40,18 @@ export const GOOGLE_BUSINESS = {
   writeReviewUrl: "https://search.google.com/local/writereview?placeid=ChIJE7k_bwABwGwRNtWGAYfCHH4",
   // Agregaty (aktualizuj przy zmianach)
   rating: 5.0,
-  totalReviews: 23,
+  totalReviews: 24,
 };
 
 // -------------------------------------------------------------------
-// 23 rzeczywiste opinie z Google Maps (stan: czerwiec 2026)
-// 9 z treścią + 14 rating-only (5★, bez tekstu — normalne na Google)
+// 24 rzeczywiste opinie z Google Maps (stan: lipiec 2026)
+// 10 z treścią + 14 rating-only (5★, bez tekstu, normalne na Google)
 // Daty szacunkowe "miesiąc temu" — wszystkie w marcu 2026,
 // oprócz Artur Hebenstreit (2 mies. temu wg odpowiedzi właściciela).
 // -------------------------------------------------------------------
 
 export const REVIEWS = [
-  // --- Z TREŚCIĄ (8) ---
+  // --- Z TREŚCIĄ (9) ---
   {
     id: "r1",
     author: "Paweł Kołaszewski",
@@ -104,7 +104,7 @@ export const REVIEWS = [
     id: "r5",
     author: "Alicja Wiśniewska",
     rating: 5,
-    date: "2026-03-12",
+    date: "2026-06-20",
     originalLang: "pl",
     text: "Cuda! 🤩",
     translations: {
@@ -148,6 +148,18 @@ export const REVIEWS = [
     translations: {
       en: "Super",
       de: "Super",
+    },
+  },
+  {
+    id: "r24",
+    author: "Renata Strzerzysz",
+    rating: 5,
+    date: "2026-06-29",
+    originalLang: "pl",
+    text: "Świetny kontakt, profesjonalne podejście do klienta. Propozycja wzoru pierścionka była idealna. Bardzo szybka realizacja zamówienia. Nic dodać, nic ująć. Gorąco polecam !!!",
+    translations: {
+      en: "Great contact, a professional approach to the customer. The ring design proposal was perfect. Very fast order fulfillment. Nothing to add, nothing to take away. Highly recommend !!!",
+      de: "Toller Kontakt, professioneller Umgang mit dem Kunden. Der Entwurf des Ringmusters war perfekt. Sehr schnelle Auftragsabwicklung. Nichts hinzuzufügen, nichts wegzunehmen. Sehr zu empfehlen !!!",
     },
   },
 
