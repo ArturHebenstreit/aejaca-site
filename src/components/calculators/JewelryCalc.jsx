@@ -273,6 +273,7 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
 
   return {
     type: "calculated", ...pricing, qty, discount: qTier.discount,
+    tolLow: TOL_LOW, tolHigh: TOL_HIGH, eurPln: liveEurPln,
     breakdown: [
       { label: `${l.metalCost} (${weightG.toFixed(1)}g ${t(metal.label, lang)})`, value: fmtCost(metalCost, lang) },
       { label: l.laborCost, value: fmtCost(laborCost, lang) },
@@ -411,6 +412,7 @@ export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engrav
       { label: l.estCost, value: fmtCost(estCost, lang), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
     ],
+    tolLow: TOL_LOW, tolHigh: TOL_HIGH, eurPln: liveEurPln,
   };
 }
 

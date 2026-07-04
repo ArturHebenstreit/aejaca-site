@@ -60,6 +60,7 @@ if (pool) {
     created_at TIMESTAMPTZ DEFAULT NOW()
   )`).catch(() => {});
   pool.query(`ALTER TABLE email_threads ADD COLUMN IF NOT EXISTS tag VARCHAR(20) DEFAULT 'unclassified'`).catch(() => {});
+  pool.query(`ALTER TABLE email_threads ADD COLUMN IF NOT EXISTS auto_replied_at TIMESTAMPTZ`).catch(() => {});
 
   pool.query(`CREATE TABLE IF NOT EXISTS email_messages (
     id BIGSERIAL PRIMARY KEY,
