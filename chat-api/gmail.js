@@ -71,17 +71,26 @@ export function extractBody(payload) {
   return "";
 }
 
-export async function classifyEmailThread(subject, bodyText) {
+// Core classifier: returns { tag, lang } in one LLM call.
+// tag  in lead | not_lead | spam | unclassified
+// lang in pl | en | de  (best-effort language of the sender; defaults to "pl")
+export async function classifyEmailThreadFull(subject, bodyText) {
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return "unclassified";
+  if (!apiKey) return { tag: "unclassified", lang: "pl" };
   try {
     const openai = new OpenAI({ apiKey });
     const prompt = `Jesteś filtrem dla studia jubilerskiego AEJaCA (biżuteria autorska + druk 3D/laser).
 
-Oceń poniższy e-mail. Odpowiedz JEDNYM słowem:
-- "lead" — potencjalny klient pyta o biżuterię, wycenę, projekt, zamówienie, materiały lub usługi AEJaCA
-- "not_lead" — wiadomość ogólna, informacyjna, niebiznesowa
-- "spam" — alert systemowy, notyfikacja automatyczna, reklama, promo, newsletter, raport
+Oceń poniższy e-mail i odpowiedz DOKŁADNIE w formacie "tag|lang" (jedna linia).
+
+tag:
+- "lead" (potencjalny klient pyta o biżuterię, wycenę, projekt, zamówienie, materiały lub usługi AEJaCA)
+- "not_lead" (wiadomość ogólna, informacyjna, niebiznesowa)
+- "spam" (alert systemowy, notyfikacja automatyczna, reklama, promo, newsletter, raport)
+
+lang, język nadawcy: "pl", "en" albo "de" (jeśli niepewne, "pl").
+
+Przykład odpowiedzi: lead|pl
 
 Temat: ${subject}
 Treść: ${(bodyText || "").slice(0, 800)}`;
@@ -91,10 +100,89 @@ Treść: ${(bodyText || "").slice(0, 800)}`;
       max_tokens: 10,
       temperature: 0,
     });
-    const result = (resp.choices[0]?.message?.content || "").trim().toLowerCase();
-    return ["lead", "not_lead", "spam"].includes(result) ? result : "unclassified";
+    const raw = (resp.choices[0]?.message?.content || "").trim().toLowerCase();
+    const [tagPart, langPart] = raw.split("|").map(s => (s || "").trim());
+    const tag = ["lead", "not_lead", "spam"].includes(tagPart) ? tagPart : "unclassified";
+    const lang = ["pl", "en", "de"].includes(langPart) ? langPart : "pl";
+    return { tag, lang };
   } catch {
-    return "unclassified";
+    return { tag: "unclassified", lang: "pl" };
+  }
+}
+
+// Backward-compatible wrapper, returns just the tag string.
+// Used by scripts/classify-threads.mjs.
+export async function classifyEmailThread(subject, bodyText) {
+  const { tag } = await classifyEmailThreadFull(subject, bodyText);
+  return tag;
+}
+
+// Domains we never auto-reply to (our own mailboxes). Comma-separated env override.
+const SELF_DOMAINS = (process.env.AUTOREPLY_SELF_DOMAINS || "aejaca.com")
+  .split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+
+// Send an AEJaCA "thank you for contacting us" acknowledgement for a fresh
+// client inquiry. The actual email is sent by n8n (same channel as the contact
+// and quote forms); here we only decide *whether* to send and guard against
+// duplicates and loops. Never throws — a failure here must not break ingestion.
+export async function maybeSendAutoReply(pool, { threadDbId, toEmail, subject, lang, messageIdHeader, snippet }) {
+  try {
+    if (process.env.AUTOREPLY_ENABLED !== "true") return;
+    if (!toEmail) return;
+    // Never acknowledge our own outbound-looking senders.
+    const domain = toEmail.split("@")[1] || "";
+    if (SELF_DOMAINS.includes(domain)) return;
+
+    const webhook = process.env.N8N_AUTOREPLY_WEBHOOK_URL;
+    const dryRun = process.env.AUTOREPLY_DRY_RUN === "true";
+
+    // Rate-limit: at most one acknowledgement per sender per 24h across threads.
+    const recent = await pool.query(
+      `SELECT 1 FROM email_threads et
+         JOIN leads l ON l.id = et.lead_id
+        WHERE l.email = $1 AND et.auto_replied_at > NOW() - INTERVAL '24 hours'
+        LIMIT 1`,
+      [toEmail]
+    );
+    if (recent.rows.length > 0) {
+      console.log(`[autoreply] skip ${toEmail} — already acknowledged in last 24h`);
+      return;
+    }
+
+    if (dryRun || !webhook) {
+      console.log(`[autoreply] DRY_RUN would acknowledge ${toEmail} (lang=${lang}) re: "${(subject || "").slice(0, 60)}"`);
+      return;
+    }
+
+    // Atomically claim this thread so we never send twice, even under races.
+    const claim = await pool.query(
+      `UPDATE email_threads SET auto_replied_at = NOW()
+        WHERE id = $1 AND auto_replied_at IS NULL RETURNING id`,
+      [threadDbId]
+    );
+    if (claim.rows.length === 0) return; // already acknowledged
+
+    const payload = {
+      to: toEmail,
+      subject: subject || "",
+      lang: ["pl", "en", "de"].includes(lang) ? lang : "pl",
+      in_reply_to: messageIdHeader || null,
+      snippet: snippet || "",
+      source: "autoreply",
+    };
+    try {
+      const r = await fetch(webhook, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!r.ok) console.error(`[autoreply] n8n webhook ${r.status} for ${toEmail}`);
+      else console.log(`[autoreply] acknowledged ${toEmail} (lang=${payload.lang})`);
+    } catch (err) {
+      console.error(`[autoreply] webhook error for ${toEmail}:`, err.message);
+    }
+  } catch (err) {
+    console.error("[autoreply] maybeSendAutoReply error:", err.message);
   }
 }
 
@@ -122,6 +210,7 @@ export async function processGmailMessage(gmail, pool, messageId) {
     const labelIds = data.labelIds || [];
     const threadId = data.threadId;
     const snippet = (data.snippet || "").slice(0, 500);
+    const messageIdHeader = getHeader(headers, "Message-ID") || "";
     const receivedAt = data.internalDate
       ? new Date(parseInt(data.internalDate)).toISOString()
       : new Date().toISOString();
@@ -190,9 +279,22 @@ export async function processGmailMessage(gmail, pool, messageId) {
       );
       threadDbId = newThread.rows[0].id;
       if (direction === "inbound") {
-        const tag = await classifyEmailThread(subject, bodyText);
+        const { tag, lang } = await classifyEmailThreadFull(subject, bodyText);
         if (tag !== "unclassified") {
           await pool.query("UPDATE email_threads SET tag = $1 WHERE id = $2", [tag, threadDbId]);
+        }
+        // Acknowledge genuine client inquiries with an AEJaCA thank-you note.
+        // Only for brand-new inbound lead threads — never on ongoing replies,
+        // never on not_lead/spam. Sending itself is delegated to n8n.
+        if (tag === "lead") {
+          await maybeSendAutoReply(pool, {
+            threadDbId,
+            toEmail: matchEmail,
+            subject,
+            lang,
+            messageIdHeader,
+            snippet,
+          });
         }
       }
     }

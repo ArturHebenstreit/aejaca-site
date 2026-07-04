@@ -87,6 +87,38 @@ Trigger a new deployment after adding the variable.
 
 ---
 
+## Auto-reply (thank-you acknowledgement)
+
+When a brand-new inbound email is classified as a `lead`, the backend delegates
+an AEJaCA-style thank-you to n8n (same channel as the contact and quote forms).
+Only genuine client inquiries are acknowledged, never `not_lead` / `spam`,
+never machine mail, and never twice per thread.
+
+### Environment Variables (Railway):
+
+| Variable | Value |
+|----------|-------|
+| `AUTOREPLY_ENABLED` | `true` to turn it on (default off) |
+| `AUTOREPLY_DRY_RUN` | `true` to log intended sends without sending (safe first-run mode) |
+| `N8N_AUTOREPLY_WEBHOOK_URL` | n8n webhook that sends the thank-you email |
+| `AUTOREPLY_SELF_DOMAINS` | *(optional)* comma-separated own domains to never reply to (default `aejaca.com`) |
+
+### n8n workflow
+
+Webhook receives JSON: `{ to, subject, lang, in_reply_to, snippet, source: "autoreply" }`.
+Pick the template by `lang` (pl/en/de), set the email `In-Reply-To` header to
+`in_reply_to` so the reply lands in the same thread, and send from `contact@aejaca.com`.
+
+### Safeguards (in code)
+
+- Fires only on a **new inbound thread** classified `lead` (never on follow-ups).
+- One acknowledgement **per thread** (`email_threads.auto_replied_at`, claimed atomically).
+- Max **one per sender per 24h** across threads.
+- Skips our own domains and all machine mail (`isAutomatedEmail`).
+- Start with `AUTOREPLY_DRY_RUN=true` for a week, review logs, then switch to live.
+
+---
+
 ## Features
 
 - **GPT-4o-mini streaming**: fast, cost-effective responses
