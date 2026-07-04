@@ -125,7 +125,7 @@ const SELF_DOMAINS = (process.env.AUTOREPLY_SELF_DOMAINS || "aejaca.com")
 // client inquiry. The actual email is sent by n8n (same channel as the contact
 // and quote forms); here we only decide *whether* to send and guard against
 // duplicates and loops. Never throws — a failure here must not break ingestion.
-export async function maybeSendAutoReply(pool, { threadDbId, toEmail, subject, lang, messageIdHeader, snippet }) {
+export async function maybeSendAutoReply(pool, { threadDbId, toEmail, subject, lang, messageIdHeader, gmailMessageId, snippet }) {
   try {
     if (process.env.AUTOREPLY_ENABLED !== "true") return;
     if (!toEmail) return;
@@ -166,6 +166,7 @@ export async function maybeSendAutoReply(pool, { threadDbId, toEmail, subject, l
       to: toEmail,
       subject: subject || "",
       lang: ["pl", "en", "de"].includes(lang) ? lang : "pl",
+      gmail_message_id: gmailMessageId || null,
       in_reply_to: messageIdHeader || null,
       snippet: snippet || "",
       source: "autoreply",
@@ -293,6 +294,7 @@ export async function processGmailMessage(gmail, pool, messageId) {
             subject,
             lang,
             messageIdHeader,
+            gmailMessageId: messageId,
             snippet,
           });
         }
