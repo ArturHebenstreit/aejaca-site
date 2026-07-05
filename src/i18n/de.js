@@ -243,8 +243,8 @@ export default {
       ],
       items: [
         { img: "/img/portfolio/jewelry-web/sinful-cross.webp", title: "SINFUL-Kreuz", category: "symbolic", desc: "Kreuz aus Sterlingsilber 925 mit erhabener SINFUL-Gravur, an einer 3mm Panzerkette." },
-        { img: "/img/portfolio/jewelry-web/sea-snail-pendant-v2.webp", title: "Anhänger Meeresschnecke", category: "custom", desc: "Auf Sonderbestellung gefertigter Anhänger in Form einer symbolischen Meeresschnecke, Silber 925, an einem schwarzen Naturlederband." },
-        { img: "/img/portfolio/jewelry-web/gold-band-585-v2.webp", title: "Trauring Gold 585", category: "rings", desc: "Klassischer Trauring aus 585er Gold, 4mm breit, hochglanzpoliert." },
+        { img: "/img/portfolio/jewelry-web/sea-snail-pendant-v3.webp", title: "Anhänger Meeresschnecke", category: "custom", desc: "Auf Sonderbestellung gefertigter Anhänger in Form einer symbolischen Meeresschnecke, Silber 925, an einem schwarzen Naturlederband." },
+        { img: "/img/portfolio/jewelry-web/gold-band-585-v3.webp", title: "Trauring Gold 585", category: "rings", desc: "Klassischer Trauring aus 585er Gold, 4mm breit, hochglanzpoliert." },
         { img: "/img/portfolio/jewelry-web/garnet-ring-585-v2.webp", title: "Ring mit Granat", category: "rings", desc: "Ring aus 585er Gold mit zentral gefasstem roten Granat 1,2 ct, flankiert von sechs 2,5mm Zirkonia." },
         { img: "/img/portfolio/jewelry-web/sapphire-ring.webp", title: "Saphirring", category: "rings", desc: "Eleganter Ring aus 925er Silber mit natürlichem Saphir in Krappenfassung." },
         { img: "/img/portfolio/jewelry-web/citrine-star-ring.webp", title: "Citrin-Sternring", category: "rings", desc: "Avantgardistischer sternförmiger Ring mit Citrin im Kissenschliff in AEJaCA-Box." },
