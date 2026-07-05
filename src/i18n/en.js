@@ -248,8 +248,8 @@ export default {
       ],
       items: [
         { img: "/img/portfolio/jewelry-web/sinful-cross.webp", title: "SINFUL cross", category: "symbolic", desc: "Sterling silver 925 cross with a raised SINFUL inscription, on a 3mm curb (Pancerka) chain." },
-        { img: "/img/portfolio/jewelry-web/sea-snail-pendant-v2.webp", title: "Sea snail pendant", category: "custom", desc: "Custom-made pendant shaped like a symbolic sea snail, 925 silver, on a black natural leather cord." },
-        { img: "/img/portfolio/jewelry-web/gold-band-585-v2.webp", title: "Gold wedding band 585", category: "rings", desc: "Classic 585 gold band, 4mm wide, polished to a high shine." },
+        { img: "/img/portfolio/jewelry-web/sea-snail-pendant-v3.webp", title: "Sea snail pendant", category: "custom", desc: "Custom-made pendant shaped like a symbolic sea snail, 925 silver, on a black natural leather cord." },
+        { img: "/img/portfolio/jewelry-web/gold-band-585-v3.webp", title: "Gold wedding band 585", category: "rings", desc: "Classic 585 gold band, 4mm wide, polished to a high shine." },
         { img: "/img/portfolio/jewelry-web/garnet-ring-585-v2.webp", title: "Garnet ring", category: "rings", desc: "585 gold ring with a central 1.2 ct red garnet flanked by six 2.5mm cubic zirconias." },
         { img: "/img/portfolio/jewelry-web/sapphire-ring.webp", title: "Sapphire ring", category: "rings", desc: "Elegant 925 silver ring with natural sapphire in prong setting." },
         { img: "/img/portfolio/jewelry-web/citrine-star-ring.webp", title: "Citrine star ring", category: "rings", desc: "Avant-garde star-shaped ring with cushion-cut citrine in AEJaCA box." },

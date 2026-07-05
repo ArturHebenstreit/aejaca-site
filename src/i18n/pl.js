@@ -245,8 +245,8 @@ export default {
       ],
       items: [
         { img: "/img/portfolio/jewelry-web/sinful-cross.webp", title: "Krzyż SINFUL", category: "symbolic", desc: "Srebrny krzyż próby 925 z wypukłym napisem SINFUL, na łańcuchu Pancerka 3mm." },
-        { img: "/img/portfolio/jewelry-web/sea-snail-pendant-v2.webp", title: "Wisiorek ślimak morski", category: "custom", desc: "Wisiorek wykonany na specjalne zamówienie w kształcie symbolicznego ślimaka morskiego, srebro 925, na czarnym naturalnym rzemieniu." },
-        { img: "/img/portfolio/jewelry-web/gold-band-585-v2.webp", title: "Obrączka złota 585", category: "rings", desc: "Klasyczna obrączka ze złota próby 585 o szerokości 4mm, polerowana na wysoki połysk." },
+        { img: "/img/portfolio/jewelry-web/sea-snail-pendant-v3.webp", title: "Wisiorek ślimak morski", category: "custom", desc: "Wisiorek wykonany na specjalne zamówienie w kształcie symbolicznego ślimaka morskiego, srebro 925, na czarnym naturalnym rzemieniu." },
+        { img: "/img/portfolio/jewelry-web/gold-band-585-v3.webp", title: "Obrączka złota 585", category: "rings", desc: "Klasyczna obrączka ze złota próby 585 o szerokości 4mm, polerowana na wysoki połysk." },
         { img: "/img/portfolio/jewelry-web/garnet-ring-585-v2.webp", title: "Pierścionek z granatem", category: "rings", desc: "Pierścionek ze złota próby 585 z centralnie osadzonym czerwonym granatem 1,2 ct w towarzystwie sześciu cyrkonii 2,5mm." },
         { img: "/img/portfolio/jewelry-web/sapphire-ring.webp", title: "Pierścionek z szafirem", category: "rings", desc: "Elegancki pierścionek ze srebra 925 z naturalnym szafirem w oprawie łapkowej." },
         { img: "/img/portfolio/jewelry-web/citrine-star-ring.webp", title: "Pierścionek gwiazda z cytrynem", category: "rings", desc: "Awangardowy pierścionek w kształcie gwiazdy z cytrynem cushion w pudełku AEJaCA." },
