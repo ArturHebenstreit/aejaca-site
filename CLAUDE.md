@@ -137,6 +137,10 @@ Before every `git push`, confirm:
 - [ ] `src/seo/seoData.js` — meta title/description correct for changed pages
 - [ ] `npm run build` passes with 0 errors
 
+### IndexNow (after deploy, when pages changed/added)
+
+After a deploy that changes page content, adds/removes pages, or updates `sitemap.xml`, run `npm run indexnow` from a machine with normal network access (this pings Bing/Yandex to recrawl faster — sandboxed Claude Code sessions can't reach `api.indexnow.org`, their egress is allowlisted). Verification key file: `public/1cc7ba768716151f4028f5c9d6127177.txt`.
+
 ## Commit & push guidelines
 
 - Descriptive English commit messages (1-2 lines why, not what)

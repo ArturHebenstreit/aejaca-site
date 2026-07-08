@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "db:seed-laser-matrix": "node scripts/import-laser-matrix.mjs",
     "db:seed-filaments": "node scripts/seed-filament-types.mjs",
-    "db:schema-filaments": "psql $DATABASE_URL -f scripts/filament-schema.sql"
+    "db:schema-filaments": "psql $DATABASE_URL -f scripts/filament-schema.sql",
+    "indexnow": "node scripts/submit-indexnow.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.536.0",
