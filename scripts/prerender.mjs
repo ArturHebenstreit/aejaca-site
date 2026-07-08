@@ -94,6 +94,17 @@ for (const route of routes) {
 
     let page = template.replace("<!--ssr-outlet-->", html);
 
+    // Strip the static fallback <title>/description/OG/Twitter tags from
+    // index.html — every route is now SSR-prerendered, so Helmet always
+    // supplies the real per-page tags below. Leaving the static ones in
+    // produces duplicate title/description/OG tags on every page.
+    page = page
+      .replace(/\s*<!-- Static fallback meta tags[\s\S]*?-->\s*/, "\n")
+      .replace(/\s*<title>[\s\S]*?<\/title>/, "")
+      .replace(/\s*<meta name="description"[^>]*\/>/, "")
+      .replace(/\s*<meta property="og:[a-z:]+"[^>]*\/>/g, "")
+      .replace(/\s*<meta name="twitter:[a-z:]+"[^>]*\/>/g, "");
+
     if (helmet) {
       const helmetHead = [
         helmet.title?.toString(),

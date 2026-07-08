@@ -21,6 +21,13 @@ import Returns from "./pages/Returns.jsx";
 import Shipping from "./pages/Shipping.jsx";
 import ToolsJewelry from "./pages/ToolsJewelry.jsx";
 import ToolsStudio from "./pages/ToolsStudio.jsx";
+import AlloyCompositionPage from "./pages/AlloyCompositionPage.jsx";
+import MetalPricingPage from "./pages/MetalPricingPage.jsx";
+import RingSizePage from "./pages/RingSizePage.jsx";
+import PrintSettingsPage from "./pages/PrintSettingsPage.jsx";
+import LaserParametersPage from "./pages/LaserParametersPage.jsx";
+import RingBlankPage from "./pages/RingBlankPage.jsx";
+import Reviews from "./pages/Reviews.jsx";
 import NotFound from "./pages/NotFound.jsx";
 
 export function render(url) {
@@ -46,8 +53,15 @@ export function render(url) {
               <Route path="/returns/" element={<Returns />} />
               <Route path="/shipping/" element={<Shipping />} />
               <Route path="/toolsjewelry/" element={<ToolsJewelry />} />
+              <Route path="/toolsjewelry/alloy-composition/" element={<AlloyCompositionPage />} />
+              <Route path="/toolsjewelry/metal-pricing/" element={<MetalPricingPage />} />
+              <Route path="/toolsjewelry/ring-size/" element={<RingSizePage />} />
               <Route path="/toolstudio/" element={<ToolsStudio />} />
+              <Route path="/toolstudio/print-settings/" element={<PrintSettingsPage />} />
+              <Route path="/toolstudio/laser-parameters/" element={<LaserParametersPage />} />
+              <Route path="/toolsjewelry/ring-blank/" element={<RingBlankPage />} />
               <Route path="/privacy/" element={<Privacy />} />
+              <Route path="/reviews/" element={<Reviews />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
