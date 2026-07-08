@@ -14,7 +14,7 @@ export const meta = {
   description: {
     pl: "Jak działa druk 3D? FDM vs żywica, od pliku do wydruku, ceny, materiały. Kompletny przewodnik po usługach druku 3D w AEJaCA sTuDiO.",
     en: "How does 3D printing work? FDM vs resin, from file to print, pricing, materials. A complete guide to 3D printing services at AEJaCA sTuDiO.",
-    de: "Wie funktioniert 3D-Druck? FDM vs. Harz, von der Datei zum Druck, Preise, Materialien. Ein vollständiger Leitfaden zu den 3D-Druckdiensten von AEJaCA sTuDiO.",
+    de: "Wie funktioniert 3D-Druck? FDM vs. Harz, von der Datei zum Druck, Preise, Materialien. Leitfaden zu 3D-Druckdiensten von AEJaCA sTuDiO.",
   },
   keywords: {
     pl: "druk 3D krok po kroku, jak działa druk 3D, FDM vs żywica, usługi druku 3D Warszawa, druk 3D na zamówienie cena",

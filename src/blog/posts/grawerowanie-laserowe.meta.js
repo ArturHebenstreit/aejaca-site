@@ -14,7 +14,7 @@ export const meta = {
   description: {
     pl: "Laser CO2 vs fiber, jakie materiały można grawerować, zastosowania, ceny. Kompletny przewodnik po usługach grawerowania laserowego w AEJaCA sTuDiO.",
     en: "CO2 vs fiber laser, which materials can be engraved, applications, pricing. A complete guide to laser engraving services at AEJaCA sTuDiO.",
-    de: "CO2- vs. Faserlaser, welche Materialien graviert werden können, Anwendungen, Preise. Ein vollständiger Leitfaden zu den Lasergravurdiensten von AEJaCA sTuDiO.",
+    de: "CO2- vs. Faserlaser, welche Materialien graviert werden, Anwendungen, Preise. Leitfaden zu Lasergravurdiensten von AEJaCA sTuDiO.",
   },
   keywords: {
     pl: "grawerowanie laserowe, laser CO2, laser fiber, grawer na metalu, grawerowanie laserowe cena, usługi grawerowania Warszawa",

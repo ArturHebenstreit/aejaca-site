@@ -11,7 +11,7 @@ export const meta = {
     de: "Was kostet individueller Schmuck in Polen? Kompletter Preisleitfaden 2026",
   },
   description: {
-    pl: "Pierścionki, naszyjniki, bransoletki, kolczyki — ile naprawdę kosztuje biżuteria na zamówienie? Czynniki cenotwórcze, realne widełki cenowe i porady od AEJaCA.",
+    pl: "Pierścionki, naszyjniki, bransoletki, kolczyki — ile kosztuje biżuteria na zamówienie? Czynniki cenotwórcze, widełki cenowe i porady AEJaCA.",
     en: "Rings, necklaces, bracelets, earrings — what does custom jewelry really cost? Pricing factors, real price ranges and expert tips from AEJaCA.",
     de: "Ringe, Halsketten, Armbänder, Ohrringe — was kostet individueller Schmuck wirklich? Preisfaktoren, reale Preisspannen und Expertentipps von AEJaCA.",
   },
