@@ -12,7 +12,7 @@ export const meta = {
     de: "3D-Modellierung nach Maß — Rhino, Fusion 360 (Leitfaden)",
   },
   description: {
-    pl: "Nie masz pliku 3D? Zaprojektujemy model od szkicu. Modelowanie 3D / CAD w Rhino i Fusion 360 dla biżuterii i części technicznych — proces, formaty, koszt.",
+    pl: "Nie masz pliku 3D? Zaprojektujemy model od szkicu. Modelowanie 3D / CAD w Rhino i Fusion 360 — proces, formaty, koszt.",
     en: "No 3D file? We design the model from a sketch. 3D modeling / CAD in Rhino and Fusion 360 for jewelry and technical parts — process, formats, cost.",
     de: "Keine 3D-Datei? Wir modellieren ab Skizze. 3D-Modellierung / CAD in Rhino und Fusion 360 für Schmuck und technische Teile — Prozess, Formate, Kosten.",
   },
