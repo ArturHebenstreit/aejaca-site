@@ -1,0 +1,75 @@
+export const meta = {
+  slug: "grawerowanie-laserowe-przewodnik",
+  category: "studio",
+  accent: "blue",
+  publishedAt: "2026-04-17",
+  updatedAt: "2026-04-17",
+  coverImage: "/img/blog/grawerowanie-laserowe.webp",
+  readingTime: { pl: 6, en: 5, de: 5 },
+  title: {
+    pl: "Grawerowanie laserowe — materiały, techniki, zastosowania",
+    en: "Laser Engraving — Materials, Techniques & Uses",
+    de: "Lasergravur — Materialien, Techniken & Anwendungen",
+  },
+  description: {
+    pl: "Laser CO2 vs fiber, jakie materiały można grawerować, zastosowania, ceny. Kompletny przewodnik po usługach grawerowania laserowego w AEJaCA sTuDiO.",
+    en: "CO2 vs fiber laser, which materials can be engraved, applications, pricing. A complete guide to laser engraving services at AEJaCA sTuDiO.",
+    de: "CO2- vs. Faserlaser, welche Materialien graviert werden können, Anwendungen, Preise. Ein vollständiger Leitfaden zu den Lasergravurdiensten von AEJaCA sTuDiO.",
+  },
+  keywords: {
+    pl: "grawerowanie laserowe, laser CO2, laser fiber, grawer na metalu, grawerowanie laserowe cena, usługi grawerowania Warszawa",
+    en: "laser engraving guide, CO2 vs fiber laser, laser engraving materials, custom engraving service Europe",
+    de: "Lasergravur Leitfaden, CO2 vs Faserlaser, Lasergravur Materialien, individuelle Gravur Europa",
+  },
+  faq: {
+    pl: [
+      { q: "Ile kosztuje grawerowanie laserowe?", a: "Cena zależy od materiału, rozmiaru i złożoności grafiki. Prosty grawer na drewnie (10×10 cm) to od 40 zł, na metalu od 65 zł. Personalizacja biżuterii (np. inskrypcja w pierścionku) od 20 zł. Wycena w 24h." },
+      { q: "Jakie materiały można grawerować laserem?", a: "Laser CO2: drewno, sklejka, akryl, skóra, papier, tkaniny, szkło (powierzchniowo). Laser fiber: stal, aluminium, miedź, mosiądz, tytan, srebro, złoto, ceramika, kamień." },
+      { q: "Czym różni się grawerowanie od cięcia laserowego?", a: "Grawerowanie usuwa materiał z powierzchni (tworzy rysunek/tekst). Cięcie przechodzi przez cały materiał. Laser CO2 tnie drewno i akryl do 10 mm grubości, fiber tnie cienkie metale do 1-2 mm." },
+      { q: "Czy mogę dostarczyć własny plik graficzny?", a: "Tak — akceptujemy .SVG, .AI, .DXF, .PDF (wektory) oraz .PNG/.JPG (rastry, konwertujemy na wektor). Jeśli nie masz pliku, zaprojektujemy grafikę od zera." },
+    ],
+    en: [
+      { q: "How much does laser engraving cost?", a: "It depends on material, size, and design complexity. A simple wood engraving (10×10 cm) starts at €10, metal from €15. Jewelry personalization (e.g., ring inscription) from €5. Quote within 24h." },
+      { q: "What materials can be laser engraved?", a: "CO2 laser: wood, plywood, acrylic, leather, paper, fabric, glass (surface). Fiber laser: steel, aluminum, copper, brass, titanium, silver, gold, ceramics, stone." },
+      { q: "What's the difference between engraving and cutting?", a: "Engraving removes surface material (creates a design/text). Cutting goes through the entire material. CO2 cuts wood and acrylic up to 10 mm thick, fiber cuts thin metals up to 1-2 mm." },
+      { q: "Can I provide my own design file?", a: "Yes — we accept .SVG, .AI, .DXF, .PDF (vectors) and .PNG/.JPG (rasters, we'll convert to vector). If you don't have a file, we'll design the artwork from scratch." },
+    ],
+    de: [
+      { q: "Was kostet Lasergravur?", a: "Das hängt von Material, Größe und Designkomplexität ab. Eine einfache Holzgravur (10×10 cm) beginnt bei 10 €, Metall ab 15 €. Schmuckpersonalisierung (z.B. Ringgravur) ab 5 €. Angebot innerhalb von 24h." },
+      { q: "Welche Materialien können lasergraviert werden?", a: "CO2-Laser: Holz, Sperrholz, Acryl, Leder, Papier, Stoff, Glas (Oberfläche). Faserlaser: Stahl, Aluminium, Kupfer, Messing, Titan, Silber, Gold, Keramik, Stein." },
+      { q: "Was ist der Unterschied zwischen Gravieren und Schneiden?", a: "Gravieren entfernt Oberflächenmaterial (erzeugt Design/Text). Schneiden geht durch das gesamte Material. CO2 schneidet Holz und Acryl bis 10 mm, Faser schneidet dünne Metalle bis 1-2 mm." },
+      { q: "Kann ich meine eigene Designdatei liefern?", a: "Ja — wir akzeptieren .SVG, .AI, .DXF, .PDF (Vektoren) und .PNG/.JPG (Raster, wir konvertieren zu Vektor)." },
+    ],
+  },
+  toc: {
+    pl: [
+      { id: "co2-vs-fiber", label: "CO2 vs fiber" },
+      { id: "materialy", label: "Materiały" },
+      { id: "grawer-vs-ciecie", label: "Grawer vs cięcie" },
+      { id: "zastosowania", label: "Zastosowania" },
+      { id: "ceny", label: "Ceny" },
+      { id: "faq", label: "FAQ" },
+    ],
+    en: [
+      { id: "co2-vs-fiber", label: "CO2 vs fiber" },
+      { id: "materials", label: "Materials" },
+      { id: "engrave-vs-cut", label: "Engraving vs cutting" },
+      { id: "applications", label: "Applications" },
+      { id: "pricing", label: "Pricing" },
+      { id: "faq", label: "FAQ" },
+    ],
+    de: [
+      { id: "co2-vs-faser", label: "CO2 vs Faser" },
+      { id: "materialien", label: "Materialien" },
+      { id: "gravieren-vs-schneiden", label: "Gravieren vs Schneiden" },
+      { id: "anwendungen", label: "Anwendungen" },
+      { id: "preise", label: "Preise" },
+      { id: "faq", label: "FAQ" },
+    ],
+  },
+  relatedPosts: ["materialy-laser-cutting", "warsztat-od-kuchni", "druk-3d-krok-po-kroku"],
+  relatedCalculators: [
+    { to: "/studio/#laser-params", icon: "📊", label: { pl: "Tabela parametrów laserowania", en: "Laser Parameters Table", de: "Laserparameter-Tabelle" }, desc: { pl: "Orientacyjne ustawienia CO2 i Fiber", en: "Indicative CO2 and Fiber settings", de: "Richtwerte für CO2 und Fiber" } },
+    { to: "/studio/#calculator", icon: "⚙️", label: { pl: "Kalkulator sTuDiO", en: "sTuDiO Calculator", de: "sTuDiO-Kalkulator" }, desc: { pl: "Wycena laserowania, druku 3D, odlewów żywicznych", en: "Quote for laser engraving, 3D print, resin casting", de: "Angebot für Laser, 3D-Druck, Harzverguss" } },
+  ],
+};

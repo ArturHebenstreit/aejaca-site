@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench, Calculator, Tag } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
-import { getPost } from "../blog/posts.js";
+import { getPostMeta } from "../blog/postsMeta.js";
 import BlogCard from "../components/blog/BlogCard.jsx";
 import StudioCalculator from "../components/StudioCalculator.jsx";
 import Portfolio from "../components/Portfolio.jsx";
@@ -321,7 +321,7 @@ export default function Studio() {
       <div className="gradient-divider" />
 
       {(() => {
-        const posts = [getPost("druk-3d-krok-po-kroku"), getPost("grawerowanie-laserowe-przewodnik")].filter(Boolean);
+        const posts = [getPostMeta("druk-3d-krok-po-kroku"), getPostMeta("grawerowanie-laserowe-przewodnik")].filter(Boolean);
         if (!posts.length) return null;
         return (
           <section className="py-16 px-4 bg-neutral-950">
