@@ -600,6 +600,84 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/wycena-online/" />
   </url>
 
+  <!-- Reviews -->
+  <url>
+    <loc>https://www.aejaca.com/reviews/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.40</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/reviews/" />
+  </url>
+
+  <!-- Jewelry Tools -->
+  <url>
+    <loc>https://www.aejaca.com/toolsjewelry/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/" />
+  </url>
+  <url>
+    <loc>https://www.aejaca.com/toolsjewelry/ring-size/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/ring-size/" />
+  </url>
+  <url>
+    <loc>https://www.aejaca.com/toolsjewelry/alloy-composition/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/alloy-composition/" />
+  </url>
+  <url>
+    <loc>https://www.aejaca.com/toolsjewelry/metal-pricing/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/metal-pricing/" />
+  </url>
+  <url>
+    <loc>https://www.aejaca.com/toolsjewelry/ring-blank/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/ring-blank/" />
+  </url>
+
+  <!-- Studio Tools -->
+  <url>
+    <loc>https://www.aejaca.com/toolstudio/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/" />
+  </url>
+  <url>
+    <loc>https://www.aejaca.com/toolstudio/print-settings/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/print-settings/" />
+  </url>
+  <url>
+    <loc>https://www.aejaca.com/toolstudio/laser-parameters/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/laser-parameters/" />
+  </url>
+
   <!-- Privacy -->
   <url>
     <loc>https://www.aejaca.com/privacy/</loc>
