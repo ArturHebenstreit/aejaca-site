@@ -62,14 +62,12 @@ export default function SEOHead({
           : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"}
       />
 
-      {/* Canonical — dedupes language variants behind one URL */}
+      {/* Canonical — dedupes language variants behind one URL.
+          No hreflang: pl/en/de all live at this same URL (client-side
+          language switch), and hreflang requires distinct per-language
+          URLs — pointing multiple languages at one URL is invalid and
+          flagged by crawlers as ambiguous language targeting. */}
       <link rel="canonical" href={canonical} />
-
-      {/* Hreflang — same URL serves pl/en/de via client-side language switch */}
-      <link rel="alternate" hrefLang="pl" href={canonical} />
-      <link rel="alternate" hrefLang="en" href={canonical} />
-      <link rel="alternate" hrefLang="de" href={canonical} />
-      <link rel="alternate" hrefLang="x-default" href={canonical} />
 
       {/* Open Graph — Facebook, LinkedIn, WhatsApp, Discord previews */}
       <meta property="og:type" content={ogType} />

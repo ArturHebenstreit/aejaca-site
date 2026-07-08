@@ -166,8 +166,25 @@ export default function Navbar() {
             {navLinks.map(({ to, label, sections }) => {
               const dropKey = getDropdownKey(to);
               const hasSections = sections && sections.length > 0;
+              const isDropdownOnly = to === "/gallery/" || to === "/resources/";
               const isActive = pathname === to;
               const accentColor = to === "/studio/" ? "blue" : "amber";
+              const triggerClass = `relative text-sm tracking-wide transition-colors hover:text-amber-400 flex items-center gap-1 ${
+                isActive ? "text-amber-400" : "text-neutral-300"
+              }`;
+              const triggerContent = (
+                <>
+                  {label}
+                  {hasSections && (
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                      openDropdown === dropKey ? "rotate-180" : ""
+                    }`} />
+                  )}
+                  {isActive && (
+                    <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-amber-400 rounded-full" />
+                  )}
+                </>
+              );
 
               return (
                 <div
@@ -176,23 +193,25 @@ export default function Navbar() {
                   onMouseEnter={() => hasSections && handleDropdownEnter(dropKey)}
                   onMouseLeave={() => hasSections && handleDropdownLeave()}
                 >
-                  <Link
-                    to={to}
-                    onClick={(e) => handleNavClick(e, to)}
-                    className={`relative text-sm tracking-wide transition-colors hover:text-amber-400 flex items-center gap-1 ${
-                      isActive ? "text-amber-400" : "text-neutral-300"
-                    }`}
-                  >
-                    {label}
-                    {hasSections && (
-                      <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                        openDropdown === dropKey ? "rotate-180" : ""
-                      }`} />
-                    )}
-                    {isActive && (
-                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-amber-400 rounded-full" />
-                    )}
-                  </Link>
+                  {isDropdownOnly ? (
+                    <button
+                      type="button"
+                      onClick={() => setOpenDropdown(openDropdown === dropKey ? null : dropKey)}
+                      aria-haspopup="true"
+                      aria-expanded={openDropdown === dropKey}
+                      className={triggerClass}
+                    >
+                      {triggerContent}
+                    </button>
+                  ) : (
+                    <Link
+                      to={to}
+                      onClick={(e) => handleNavClick(e, to)}
+                      className={triggerClass}
+                    >
+                      {triggerContent}
+                    </Link>
+                  )}
 
                   {/* Desktop dropdown */}
                   {hasSections && openDropdown === dropKey && (
