@@ -3,7 +3,7 @@ export const meta = {
   category: "jewelry",
   accent: "amber",
   publishedAt: "2026-06-12",
-  coverImage: "/img/blog/rodzaje-splotow-lancuszkow.png",
+  coverImage: "/img/blog/rodzaje-splotow-lancuszkow.webp",
   readingTime: { pl: 10, en: 9, de: 9 },
   title: {
     pl: "Rodzaje splotów łańcuszków – 12 wzorów, które warto znać",
