@@ -1,0 +1,77 @@
+export const meta = {
+  slug: "ile-kosztuje-bizuteria-na-zamowienie",
+  category: "jewelry",
+  accent: "amber",
+  publishedAt: "2026-06-11",
+  coverImage: "/img/blog/ile-kosztuje-bizuteria.png",
+  readingTime: { pl: 8, en: 7, de: 7 },
+  title: {
+    pl: "Ile kosztuje biżuteria na zamówienie w Polsce? Kompletny cennik 2026",
+    en: "How Much Does Custom Jewelry Cost in Poland? Complete 2026 Price Guide",
+    de: "Was kostet individueller Schmuck in Polen? Kompletter Preisleitfaden 2026",
+  },
+  description: {
+    pl: "Pierścionki, naszyjniki, bransoletki, kolczyki — ile naprawdę kosztuje biżuteria na zamówienie? Czynniki cenotwórcze, realne widełki cenowe i porady od AEJaCA.",
+    en: "Rings, necklaces, bracelets, earrings — what does custom jewelry really cost? Pricing factors, real price ranges and expert tips from AEJaCA.",
+    de: "Ringe, Halsketten, Armbänder, Ohrringe — was kostet individueller Schmuck wirklich? Preisfaktoren, reale Preisspannen und Expertentipps von AEJaCA.",
+  },
+  keywords: {
+    pl: "ile kosztuje biżuteria na zamówienie, cena biżuterii na zamówienie, cennik biżuterii 2026, biżuteria na zamówienie Polska, custom jewelry cena",
+    en: "custom jewelry cost Poland, bespoke jewelry price 2026, how much does custom jewelry cost, handmade jewelry pricing Europe",
+    de: "individueller Schmuck Kosten Polen, Schmuck nach Maß Preis 2026, was kostet individueller Schmuck, handgefertigter Schmuck Preise Europa",
+  },
+  faq: {
+    pl: [
+      { q: "Ile kosztuje biżuteria na zamówienie?", a: "Zależy od metalu, kamieni i złożoności. Prosty srebrny wisiorek to od ~150 zł, pierścionek złoty od ~780 zł, a biżuteria z kamieniami szlachetnymi od 1500 do 15 000+ zł. Bezpłatna wycena w ciągu 24h po przesłaniu projektu." },
+      { q: "Czy biżuteria na zamówienie jest droższa niż gotowa?", a: "Niekoniecznie. Płacisz za dokładny projekt i jakość, bez narzutu pośredników. Proste elementy custom są często porównywalne cenowo do markowej biżuterii z galerii handlowej." },
+      { q: "Co najbardziej wpływa na cenę biżuterii?", a: "Pięć czynników: rodzaj i waga metalu (30–50% ceny), kamienie szlachetne (0–60%), złożoność projektu, technika wykonania (odlew / ręczne kucie) i wykończenie (rodowanie, grawer, satynowanie)." },
+      { q: "Jak szybko dostanę wycenę?", a: "W ciągu 24h od konsultacji. Wystarczy opisać pomysł lub przesłać inspirację — przygotowujemy szczegółową wycenę z wizualizacją 3D." },
+    ],
+    en: [
+      { q: "How much does custom jewelry cost?", a: "It depends on the metal, stones, and complexity. A simple silver pendant starts around €35, a gold ring from €180, and jewelry with gemstones from €350 to €3,500+. Free quote within 24h after your consultation." },
+      { q: "Is custom jewelry more expensive than off-the-shelf?", a: "Not necessarily. You pay for exact design and quality, with no middleman markup. Simple custom pieces are often comparable in price to branded jewelry from a boutique." },
+      { q: "What affects the price the most?", a: "Five factors: metal type and weight (30–50% of cost), gemstones (0–60%), design complexity, technique (casting vs. hand-forging), and finish (rhodium plating, engraving, satin texture)." },
+      { q: "How quickly will I get a quote?", a: "Within 24h of consultation. Just describe your idea or send an inspiration image — we prepare a detailed quote with a 3D visualization." },
+    ],
+    de: [
+      { q: "Was kostet individueller Schmuck?", a: "Das hängt von Metall, Steinen und Komplexität ab. Ein einfacher Silberanhänger beginnt bei ca. 35 €, ein Goldring ab 180 €, Schmuck mit Edelsteinen ab 350 bis 3.500+ €. Kostenloser Kostenvoranschlag innerhalb von 24h." },
+      { q: "Ist individueller Schmuck teurer als Fertigware?", a: "Nicht unbedingt. Sie zahlen für genaues Design und Qualität, ohne Zwischenhändler-Aufschlag. Einfache Maßstücke sind oft vergleichbar mit Marken-Schmuck aus einer Boutique." },
+      { q: "Was beeinflusst den Preis am meisten?", a: "Fünf Faktoren: Metallart und -gewicht (30–50% der Kosten), Edelsteine (0–60%), Designkomplexität, Technik (Guss vs. Handschmieden) und Veredelung (Rhodinierung, Gravur, Satinierung)." },
+      { q: "Wie schnell bekomme ich ein Angebot?", a: "Innerhalb von 24h nach der Beratung. Beschreiben Sie einfach Ihre Idee oder senden Sie ein Inspirationsbild — wir erstellen ein detailliertes Angebot mit 3D-Visualisierung." },
+    ],
+  },
+  toc: {
+    pl: [
+      { id: "co-wplywa-na-cene", label: "Co wpływa na cenę" },
+      { id: "metale", label: "Metal i próba" },
+      { id: "kamienie", label: "Kamienie szlachetne" },
+      { id: "kategorie", label: "Cennik wg kategorii" },
+      { id: "proces-wyceny", label: "Jak wygląda wycena" },
+      { id: "kiedy-warto", label: "Kiedy warto zamawiać custom" },
+      { id: "faq", label: "FAQ" },
+    ],
+    en: [
+      { id: "pricing-factors", label: "What affects the price" },
+      { id: "metals", label: "Metals & purity" },
+      { id: "gemstones", label: "Gemstones" },
+      { id: "categories", label: "Prices by category" },
+      { id: "quoting-process", label: "The quoting process" },
+      { id: "when-worth-it", label: "When custom is worth it" },
+      { id: "faq", label: "FAQ" },
+    ],
+    de: [
+      { id: "preisfaktoren", label: "Was beeinflusst den Preis" },
+      { id: "metalle", label: "Metalle & Feingehalt" },
+      { id: "edelsteine", label: "Edelsteine" },
+      { id: "kategorien", label: "Preise nach Kategorie" },
+      { id: "angebotsprozess", label: "Der Angebotsprozess" },
+      { id: "wann-lohnt-es-sich", label: "Wann sich Maßanfertigung lohnt" },
+      { id: "faq", label: "FAQ" },
+    ],
+  },
+  relatedPosts: ["pierscionek-zareczynowy-na-zamowienie", "srebro-vs-zloto", "bizuteria-inwestycja"],
+  relatedCalculators: [
+    { to: "/jewelry/#calculator", icon: "💎", label: { pl: "Kalkulator biżuterii", en: "Jewelry Calculator", de: "Schmuckkalkulator" }, desc: { pl: "Wycena biżuterii na zamówienie", en: "Custom jewelry quote", de: "Schmuck nach Maß kalkulieren" } },
+    { to: "/jewelry/#ring-blank", icon: "💍", label: { pl: "Kalkulator blanku obrączki", en: "Ring Blank Calculator", de: "Ring-Rohling-Rechner" }, desc: { pl: "Oblicz długość i masę blanku", en: "Calculate blank length and weight", de: "Rohlinglänge und -gewicht berechnen" } },
+  ],
+};

@@ -3,7 +3,7 @@ import { ArrowRight, Zap, Sparkles, FileUp, Printer, Flame, Cpu, Scissors, Star 
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { trackCTA } from "../utils/analytics.js";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
-import { getSortedPosts } from "../blog/posts.js";
+import { getSortedPostsMeta } from "../blog/postsMeta.js";
 import BlogCard from "../components/blog/BlogCard.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import {
@@ -244,7 +244,7 @@ export default function Home() {
             </h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {getSortedPosts().slice(0, 3).map((post) => (
+            {getSortedPostsMeta().slice(0, 3).map((post) => (
               <BlogCard key={post.slug} post={post} />
             ))}
           </div>

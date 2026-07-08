@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Gem, Sparkles, Palette, Heart, Wand2, Crown, Calculator, Tag } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
-import { getPost } from "../blog/posts.js";
+import { getPostMeta } from "../blog/postsMeta.js";
 import BlogCard from "../components/blog/BlogCard.jsx";
 import JewelryEstimator from "../components/JewelryEstimator.jsx";
 import ProcessGallery from "../components/ProcessGallery.jsx";
@@ -321,7 +321,7 @@ export default function Jewelry() {
       <div className="gradient-divider" />
 
       {(() => {
-        const post = getPost("pierscionek-zareczynowy-na-zamowienie");
+        const post = getPostMeta("pierscionek-zareczynowy-na-zamowienie");
         if (!post) return null;
         return (
           <section className="py-16 px-4 bg-neutral-950">

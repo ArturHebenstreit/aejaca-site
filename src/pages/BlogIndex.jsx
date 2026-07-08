@@ -1,7 +1,7 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
-import { getSortedPosts } from "../blog/posts.js";
+import { getSortedPostsMeta } from "../blog/postsMeta.js";
 import BlogCard from "../components/blog/BlogCard.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
@@ -32,9 +32,9 @@ export default function BlogIndex() {
   const categoryParam = ["jewelry", "studio"].includes(searchParams.get("category"))
     ? searchParams.get("category")
     : null;
-  const allPosts = getSortedPosts();
+  const allPosts = getSortedPostsMeta();
   const posts = categoryParam
-    ? allPosts.filter(p => p.meta.category === categoryParam)
+    ? allPosts.filter(p => p.category === categoryParam)
     : allPosts;
   const headerRef = useScrollReveal();
   const getCardRef = useStaggerReveal(100);
