@@ -30,6 +30,7 @@ const STATIC_ROUTES = [
   "/toolstudio",
   "/toolstudio/print-settings",
   "/toolstudio/laser-parameters",
+  "/toolstudio/shrinkage",
   "/toolsjewelry/ring-blank",
 ];
 
