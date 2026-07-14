@@ -1,0 +1,77 @@
+export const meta = {
+  slug: "druk-miniatur-figurek-16k",
+  category: "studio",
+  accent: "blue",
+  publishedAt: "2026-07-14",
+  updatedAt: "2026-07-14",
+  coverImage: "/img/blog/druk-miniatur-figurek-16k.webp",
+  readingTime: { pl: 8, en: 6, de: 6 },
+  title: {
+    pl: "Druk miniatur i figurek na zamówienie: żywica 16K",
+    en: "Custom Miniature & Figurine Printing: 16K Resin",
+    de: "Individueller Miniaturen- und Figurendruck: 16K-Harz",
+  },
+  description: {
+    pl: "Miniatury do gier bitewnych, figurki kolekcjonerskie i prototypy planszówek drukowane na Elegoo Saturn 4 Ultra 16K. Detal od 0,2 mm, ceny od 49 zł, prawa autorskie.",
+    en: "Battle-game miniatures, collectible figurines and board game prototypes printed on the Elegoo Saturn 4 Ultra 16K. Detail from 0.2 mm, prices from €12, copyright rules.",
+    de: "Tabletop-Miniaturen, Sammlerfiguren und Brettspiel-Prototypen, gedruckt auf dem Elegoo Saturn 4 Ultra 16K. Details ab 0,2 mm, Preise ab 12 €, Urheberrecht.",
+  },
+  keywords: {
+    pl: "druk miniatur na zamówienie, figurki 3D druk żywica, druk miniatur bitewnych, druk figurek kolekcjonerskich, Elegoo Saturn 16K",
+    en: "custom miniature printing, resin figurine 3D print, tabletop miniature printing, collectible figurine 3D print, Elegoo Saturn 16K",
+    de: "Miniaturen 3D-Druck, Harzfigur drucken lassen, Tabletop-Miniaturen Druck, Sammlerfigur 3D-Druck, Elegoo Saturn 16K",
+  },
+  faq: {
+    pl: [
+      { q: "Jakie pliki są potrzebne do druku miniatury?", a: "Najczęściej .STL lub .3MF, tak jak do zwykłego druku 3D. Model musi być zamkniętą, wodoszczelną siatką (manifold). Jeśli plik ma błędy, naprawiamy go przed drukiem." },
+      { q: "Ile trwa realizacja druku miniatur?", a: "Standardowo 2-5 dni roboczych od zatwierdzenia pliku i wyceny. Sam druk na Elegoo Saturn 4 Ultra 16K trwa zwykle kilka godzin, bo cała platforma (nawet kilkanaście figurek) drukuje się jednocześnie, niezależnie od tego, czy stawiamy jedną sztukę, czy serię." },
+      { q: "Czy malujecie wydrukowane figurki?", a: "Nie. Świadczymy druk 3D wraz z myciem IPA, utwardzaniem UV i usunięciem podpór, a przy odlewach dodatkowo primer pod malowanie. Samo malowanie i szczegółowe wykończenie zostawiamy modelarzom i malarzom miniatur." },
+      { q: "Czy mogę zlecić druk dowolnej figurki z internetu?", a: "Tylko jeśli masz do niej prawa: to Twój własny projekt, plik na licencji komercyjnej (np. patronaty z merchant tier) lub model bez zastrzeżeń praw autorskich. Nie drukujemy figurek systemów bitewnych i innych chronionych IP bez licencji klienta." },
+    ],
+    en: [
+      { q: "What files do I need for miniature printing?", a: "Usually .STL or .3MF, same as regular 3D printing. The model must be a closed, watertight (manifold) mesh. If the file has errors, we repair it before printing." },
+      { q: "How long does miniature printing take?", a: "Standard turnaround is 2-5 business days from file approval and quote. The print itself on the Elegoo Saturn 4 Ultra 16K usually takes a few hours, since the whole build platform, even a dozen figurines, prints at once regardless of whether it's a single piece or a batch." },
+      { q: "Do you paint the printed figurines?", a: "No. We provide 3D printing including IPA washing, UV curing, and support removal, plus a paint-ready primer coat for castings. Painting and detailed finishing we leave to miniature painters and hobbyists." },
+      { q: "Can I order a print of any figurine I find online?", a: "Only if you hold the rights to it: it's your own design, a commercially licensed file (e.g. a merchant-tier Patreon), or a model free of copyright restrictions. We don't print figures from tabletop wargame systems or other protected IP without the client's license." },
+    ],
+    de: [
+      { q: "Welche Dateien brauche ich für den Miniaturendruck?", a: "Meist .STL oder .3MF, wie beim normalen 3D-Druck. Das Modell muss ein geschlossenes, wasserdichtes (manifold) Netz sein. Bei Fehlern reparieren wir die Datei vor dem Druck." },
+      { q: "Wie lange dauert der Druck von Miniaturen?", a: "Standardmäßig 2-5 Werktage ab Dateifreigabe und Angebot. Der Druck selbst auf dem Elegoo Saturn 4 Ultra 16K dauert meist nur wenige Stunden, da die gesamte Bauplattform, auch ein Dutzend Figuren, gleichzeitig gedruckt wird, egal ob Einzelstück oder Serie." },
+      { q: "Bemalen Sie die gedruckten Figuren?", a: "Nein. Wir bieten 3D-Druck inklusive IPA-Reinigung, UV-Härtung und Stützenentfernung, bei Güssen zusätzlich eine Primer-Grundierung zum Bemalen. Bemalung und Detailfinish überlassen wir Miniaturmalern und Hobbyisten." },
+      { q: "Kann ich jede beliebige Figur aus dem Internet drucken lassen?", a: "Nur wenn Sie die Rechte daran besitzen: ein eigenes Design, eine kommerziell lizenzierte Datei (z. B. Patreon Merchant-Tier) oder ein Modell ohne Urheberrechtsschutz. Figuren aus Tabletop-Wargame-Systemen oder anderes geschütztes IP drucken wir ohne Lizenz des Kunden nicht." },
+    ],
+  },
+  toc: {
+    pl: [
+      { id: "dlaczego-zywica", label: "Żywica vs FDM" },
+      { id: "sprzet", label: "Nasz sprzęt" },
+      { id: "zastosowania", label: "Zastosowania" },
+      { id: "batching", label: "Batching i ceny" },
+      { id: "prawa-autorskie", label: "Prawa autorskie" },
+      { id: "srebro", label: "Wariant w srebrze 925" },
+      { id: "faq", label: "FAQ" },
+    ],
+    en: [
+      { id: "why-resin", label: "Resin vs FDM" },
+      { id: "hardware", label: "Our hardware" },
+      { id: "applications", label: "Applications" },
+      { id: "batching", label: "Batching & pricing" },
+      { id: "copyright", label: "Copyright" },
+      { id: "silver", label: "Silver 925 variant" },
+      { id: "faq", label: "FAQ" },
+    ],
+    de: [
+      { id: "warum-harz", label: "Harz vs FDM" },
+      { id: "hardware", label: "Unsere Hardware" },
+      { id: "anwendungen", label: "Anwendungen" },
+      { id: "batching", label: "Batching & Preise" },
+      { id: "urheberrecht", label: "Urheberrecht" },
+      { id: "silber", label: "Variante in Silber 925" },
+      { id: "faq", label: "FAQ" },
+    ],
+  },
+  relatedPosts: ["druk-3d-krok-po-kroku", "jak-przygotowac-plik-stl", "lost-resin-krok-po-kroku"],
+  relatedCalculators: [
+    { to: "/studio/#calculator", icon: "🧙", label: { pl: "Kalkulator sTuDiO", en: "sTuDiO Calculator", de: "sTuDiO-Kalkulator" }, desc: { pl: "Wycena druku figurki lub miniatury z żywicy", en: "Quote for a resin figurine or miniature print", de: "Angebot für Figuren- oder Miniaturdruck aus Harz" } },
+  ],
+};
