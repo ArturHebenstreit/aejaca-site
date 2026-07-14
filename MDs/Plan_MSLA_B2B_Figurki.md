@@ -70,10 +70,10 @@ Koszt bazowy = żywica + maszyna + post-processing + handling:
 - Castable: premia QC x1,30 na robociznę (kontrola wzorca pod inwestycję)
 - Handling: 8 PLN (jak FDM); minimalna wartość zlecenia MSLA: 49 PLN
 
-Ceny żywic (PLN/kg; castable zweryfikowane na 3duv.pl, lipiec 2026, opakowania 0,1 kg po 139,90 zl):
+Ceny żywic (PLN/kg; standard zweryfikowany na Allegro, castable na 3duv.pl, lipiec 2026; castable kupowane w opakowaniach 0,1 kg po 139,90 zl):
 | Żywica | PLN/kg | PLN/ml (~gęstość 1,1) |
 |---|---|---|
-| Standard (Elegoo WW / ABS-like) | 180 | 0,20 |
+| Standard (Elegoo WW / ABS-like, rynkowo 62-142 zl/kg) | 120 | 0,13 |
 | BlueCast X-One V2 | 1399 | 1,54 |
 | BlueCast X-Wax Filigree | 1399 | 1,54 |
 
