@@ -20,6 +20,7 @@ export default {
       { label: "Blog", to: "/blog/?category=jewelry" },
       { label: "Referenzen", id: "testimonials" },
       { label: "Shop", id: "shop" },
+      { label: "B2B-Zusammenarbeit", to: "/b2b/" },
     ],
     studioSections: [
       { label: "Über AEJaCA sTuDiO", id: "about" },
@@ -35,6 +36,7 @@ export default {
       { label: "Blog", to: "/blog/?category=studio" },
       { label: "Referenzen", id: "testimonials" },
       { label: "Shop", id: "shop" },
+      { label: "B2B-Zusammenarbeit", to: "/b2b/" },
     ],
     aboutSections: [
       { label: "Über uns", to: "/about/" },
@@ -629,6 +631,7 @@ export default {
     warranty: "Garantie",
     returns: "Rückgabe",
     shipping: "Versand",
+    b2b: "B2B-Zusammenarbeit",
   },
 
   newsletter: {

@@ -56,6 +56,20 @@
     </image:image>
   </url>
 
+  <!-- B2B -->
+  <url>
+    <loc>https://www.aejaca.com/b2b/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/b2b/" />
+    <image:image>
+      <image:loc>https://www.aejaca.com/img/b2b/hero.webp</image:loc>
+      <image:title>AEJaCA B2B, jewelry production for brands and partner workshops</image:title>
+    </image:image>
+  </url>
+
   <!-- Contact -->
   <url>
     <loc>https://www.aejaca.com/contact/</loc>
