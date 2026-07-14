@@ -226,8 +226,12 @@ const MSLA_SIZE_PRESETS = [
 ];
 
 const TECHS = [
-  { id: "fdm",  label: { pl: "FDM - Bambu Lab H2D", en: "FDM - Bambu Lab H2D", de: "FDM - Bambu Lab H2D" } },
-  { id: "msla", label: { pl: "Żywica MSLA 16K - Elegoo Saturn 4 Ultra", en: "MSLA Resin 16K - Elegoo Saturn 4 Ultra", de: "MSLA-Harz 16K - Elegoo Saturn 4 Ultra" } },
+  { id: "fdm",  label: { pl: "FDM - Bambu Lab H2D", en: "FDM - Bambu Lab H2D", de: "FDM - Bambu Lab H2D" },
+    desc: { pl: "Filament, części funkcjonalne i wielokolorowe", en: "Filament, functional and multi-color parts", de: "Filament, funktionale und mehrfarbige Teile" },
+    img: "/img/calc/3d_segments/fdm_bambu.webp" },
+  { id: "msla", label: { pl: "Żywica MSLA 16K - Elegoo Saturn 4 Ultra", en: "MSLA Resin 16K - Elegoo Saturn 4 Ultra", de: "MSLA-Harz 16K - Elegoo Saturn 4 Ultra" },
+    desc: { pl: "Mikrodetal 14 µm: figurki, wzorce jubilerskie", en: "14 µm micro-detail: figurines, jewelry patterns", de: "14-µm-Mikrodetail: Figuren, Schmuck-Gussmodelle" },
+    img: "/img/calc/3d_segments/msla_resin.webp" },
 ];
 
 const TECH_SWITCH_LBL = { pl: "Technologia druku", en: "Print technology", de: "Drucktechnologie" };
@@ -623,7 +627,7 @@ export default function Print3DCalc({ lang = "pl" }) {
         <div className="text-center text-[11px] text-neutral-400 mb-6">Elegoo Saturn 4 Ultra 16K · 218×123×250 mm · 14µm piksel</div>
 
         <CalcCard stepNum="①" label={t(TECH_SWITCH_LBL, lang)}>
-          <Chips options={TECHS} value={tech} onChange={setTech} lang={lang} />
+          <HeroCards options={TECHS} value={tech} onChange={setTech} lang={lang} cols="grid-cols-2" minH={170} />
         </CalcCard>
 
         <CalcCard stepNum="②" label={ml.application}>
@@ -666,7 +670,7 @@ export default function Print3DCalc({ lang = "pl" }) {
       <div className="text-center text-[11px] text-neutral-400 mb-6">Bambu Lab H2D · 300×320×325 mm · Dual Extruder · AMS 2 Pro</div>
 
       <CalcCard stepNum="①" label={t(TECH_SWITCH_LBL, lang)}>
-        <Chips options={TECHS} value={tech} onChange={setTech} lang={lang} />
+        <HeroCards options={TECHS} value={tech} onChange={setTech} lang={lang} cols="grid-cols-2" minH={170} />
       </CalcCard>
 
       <CalcCard stepNum="②" label={l.segment}>
