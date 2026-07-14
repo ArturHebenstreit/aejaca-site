@@ -495,11 +495,11 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
 const TECH_LABEL = { pl: "Druk 3D", en: "3D Print", de: "3D-Druck" };
 const TECH_LABEL_MSLA = { pl: "Druk żywiczny MSLA", en: "MSLA Resin Print", de: "MSLA-Harzdruck" };
 
-export default function Print3DCalc({ lang = "pl" }) {
+export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
   const l = LBL[lang] || LBL.en;
   const sl = STL_LBL[lang] || STL_LBL.en;
   const ml = MSLA_LBL[lang] || MSLA_LBL.en;
-  const [tech, setTech] = useState("fdm");
+  const [tech, setTech] = useState(initialTech);
 
   // ---- FDM state ----
   const [segment, setSegment] = useState("standard");

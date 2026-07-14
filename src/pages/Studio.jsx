@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench, Calculator, Tag } from "lucide-react";
+import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench, Calculator, Tag, Droplet } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getPostMeta } from "../blog/postsMeta.js";
@@ -22,7 +22,7 @@ import {
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 
-const techIcons = [Cpu, Printer, Zap, Layers, Box, Wrench];
+const techIcons = [Cpu, Printer, Droplet, Zap, Layers, Box, Wrench];
 
 const PRICING_LABELS = {
   pl: { tag: "Orientacyjne ceny", title: "Ile kosztują usługi AEJaCA sTuDiO?", note: "Ceny orientacyjne, dokładna wycena po wgraniu pliku STL/SVG.", cta: "Wyceń swój projekt" },
@@ -35,6 +35,8 @@ const STUDIO_PRICING = [
   { pl: "Wycinanie laserem CO₂", en: "CO₂ laser cutting", de: "CO₂-Laserschneiden", pln: 30, eur: 7 },
   { pl: "Grawer laserowy CO₂", en: "CO₂ laser engraving", de: "CO₂-Lasergravur", pln: 15, eur: 4 },
   { pl: "Znakowanie laserem fibrowym", en: "Fiber laser marking", de: "Faserlasermarkierung", pln: 20, eur: 5 },
+  { pl: "Druk żywiczny MSLA 16K", en: "MSLA 16K resin print", de: "MSLA-16K-Harzdruck", pln: 49, eur: 12 },
+  { pl: "Wzorzec castable (BlueCast)", en: "Castable pattern (BlueCast)", de: "Castable-Gussmodell (BlueCast)", pln: 90, eur: 21 },
   { pl: "Odlew żywiczny (epoksyd/UV)", en: "Resin casting (epoxy/UV)", de: "Harzguss (Epoxid/UV)", pln: 40, eur: 10 },
 ];
 

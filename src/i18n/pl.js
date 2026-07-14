@@ -376,6 +376,7 @@ export default {
     technologies: [
       { title: "Modelowanie 3D (Rhino, Fusion 360)", desc: "Własne modelowanie 3D od szkicu, zdjęcia lub pomysłu. Organiczne formy biżuteryjne i techniczne części funkcjonalne: projektowanie parametryczne, tolerancje mechaniczne, inżynieria odwrotna, pliki STL gotowe do druku lub odlewu." },
       { title: "Druk 3D", desc: "Druk 3D FDM do szybkiego prototypowania, części funkcjonalnych i produkcji małoseryjnej." },
+      { title: "Druk Żywiczny MSLA 16K", desc: "Elegoo Saturn 4 Ultra 16K (piksel 14 µm): figurki i miniatury z mikrodetalem, prototypy oraz wzorce castable do odlewu jubilerskiego, detal od 0,2 mm." },
       { title: "Grawerowanie Laserem Światłowodowym", desc: "Precyzyjne systemy laserowe galvo do znakowania metalu, biżuterii, narzędzi i komponentów technicznych." },
       { title: "Cięcie Laserem CO2", desc: "Cięcie i grawerowanie laserowe drewna, akrylu, szkła, skóry i tworzyw sztucznych." },
       { title: "Odlewanie z Żywicy Epoksydowej", desc: "Systemy żywic UV i dwuskładnikowych do obiektów dekoracyjnych, kapsułkowania i form na zamówienie." },

@@ -380,6 +380,7 @@ export default {
     technologies: [
       { title: "3D Modeling (Rhino, Fusion 360)", desc: "In-house 3D modeling from a sketch, photo, or idea. Organic jewelry forms and functional technical parts: parametric design, mechanical tolerances, reverse engineering, STL files ready for printing or casting." },
       { title: "3D Printing", desc: "FDM 3D printing for rapid prototyping, functional parts, and small batch production." },
+      { title: "MSLA 16K Resin Printing", desc: "Elegoo Saturn 4 Ultra 16K (14 µm pixel): figurines and miniatures with micro-detail, prototypes, and castable patterns for jewelry casting, detail from 0.2 mm." },
       { title: "Fiber Laser Engraving", desc: "High-precision galvo laser systems for marking metal, jewelry, tools, and technical components." },
       { title: "CO2 Laser Cutting", desc: "Laser cutting and engraving on wood, acrylic, glass, leather, and plastics." },
       { title: "Epoxy Resin Casting", desc: "UV and two-component resin systems for decorative objects, encapsulation, and custom molds." },
