@@ -74,8 +74,12 @@ Ceny żywic (PLN/kg; standard zweryfikowany na Allegro, castable na 3duv.pl, lip
 | Żywica | PLN/kg | PLN/ml (~gęstość 1,1) |
 |---|---|---|
 | Standard (Elegoo WW / ABS-like, rynkowo 62-142 zl/kg) | 120 | 0,13 |
+| High precision (Sunlu 14K 110-156 zl/kg, Phrozen Hyperfine ~321 zl/kg) | 280 | 0,31 |
 | BlueCast X-One V2 | 1399 | 1,54 |
 | BlueCast X-Wax Filigree | 1399 | 1,54 |
+
+Trzy poziomy żywic w UI kalkulatora: Standard (prototypy, figurki hobby) /
+High precision (miniatury kolekcjonerskie, mikrodetal) / Castable (wzorce odlewnicze).
 
 Uwaga: przy opakowaniach 0,5 kg koszt spada do ~1220-1270 PLN/kg (traktować jako margines, nie powód obniżki cennika).
 
