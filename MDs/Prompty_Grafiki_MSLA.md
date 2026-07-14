@@ -1,7 +1,7 @@
-# Prompty grafik MSLA (zadanie 1.4 - do wygenerowania z sesji lokalnej z Gemini MCP)
+# Prompty grafik MSLA (zadanie 1.4)
 
-Status: w repo siedzą PLACEHOLDERY skopiowane z istniejących kafelków. Po wygenerowaniu
-nadpisz pliki 1:1 (te same ścieżki), format webp quality 82.
+Status: WYGENEROWANE (Imagen 4 przez GEMINI_API_KEY w środowisku zdalnym, lipiec 2026).
+Prompty zachowane na wypadek regeneracji. Format webp quality 82.
 
 Styl domowy wszystkich: czarne tło, jedno światło kluczowe z góry-lewej, premium product
 photography, bez tekstu, bez ludzi. aspectRatio "1:1", imageSize "1K".
