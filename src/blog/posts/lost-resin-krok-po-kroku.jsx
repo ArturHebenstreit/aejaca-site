@@ -159,11 +159,11 @@ function BodyPL() {
 
       <H2 id="ograniczenia">Ograniczenia i typowe błędy</H2>
       <UL>
-        <LI><Strong>Złe wypalanie</Strong> — zbyt szybkie tempo grzania lub za krótki czas w wysokiej temperaturze zostawia w masie popiół, który blokuje wypełnienie metalem i psuje odlew.</LI>
-        <LI><Strong>Zbyt cienkie ścianki</Strong> — poniżej granicy detalu danej żywicy (0,2 mm dla X-Wax Filigree) element może się nie wydrukować albo pęknie przy zdejmowaniu z platformy.</LI>
-        <LI><Strong>Brak kompensacji skurczu</Strong> — projekt bez uwzględnienia współczynnika skurczu metalu skończy się odlewem mniejszym niż zakładano, szczególnie odczuwalne przy pierścionkach z dokładnym rozmiarem.</LI>
-        <LI><Strong>Zła żywica do zadania</Strong> — użycie X-One V2 do filigranu albo X-Wax Filigree do masywnej sygnetówki daje gorszy rezultat niż dobór właściwej żywicy do geometrii.</LI>
-        <LI><Strong>Zbyt krótki main sprue lub zła średnica</Strong> — przy vacuum-assist mniejszej niż 2,0 mm metal nie zdąży wypełnić formy zanim zacznie krzepnąć, a zbyt duża zwiększa ryzyko turbulencji i porowatości w miejscu połączenia z odlewem.</LI>
+        <LI><Strong>Złe wypalanie</Strong>: zbyt szybkie tempo grzania lub za krótki czas w wysokiej temperaturze zostawia w masie popiół, który blokuje wypełnienie metalem i psuje odlew.</LI>
+        <LI><Strong>Zbyt cienkie ścianki</Strong>: poniżej granicy detalu danej żywicy (0,2 mm dla X-Wax Filigree) element może się nie wydrukować albo pęknie przy zdejmowaniu z platformy.</LI>
+        <LI><Strong>Brak kompensacji skurczu</Strong>: projekt bez uwzględnienia współczynnika skurczu metalu skończy się odlewem mniejszym niż zakładano, szczególnie odczuwalne przy pierścionkach z dokładnym rozmiarem.</LI>
+        <LI><Strong>Zła żywica do zadania</Strong>: użycie X-One V2 do filigranu albo X-Wax Filigree do masywnej sygnetówki daje gorszy rezultat niż dobór właściwej żywicy do geometrii.</LI>
+        <LI><Strong>Zbyt krótki main sprue lub zła średnica</Strong>: przy vacuum-assist mniejszej niż 2,0 mm metal nie zdąży wypełnić formy zanim zacznie krzepnąć, a zbyt duża zwiększa ryzyko turbulencji i porowatości w miejscu połączenia z odlewem.</LI>
       </UL>
       <P>
         Część tych błędów ujawnia się dopiero po wypaleniu, kiedy poprawka jest już niemożliwa,
