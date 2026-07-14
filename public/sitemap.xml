@@ -702,4 +702,82 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/privacy/" />
   </url>
 
+  <!-- Blog: lost-resin-krok-po-kroku -->
+  <url>
+    <loc>https://www.aejaca.com/blog/lost-resin-krok-po-kroku/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/lost-resin-krok-po-kroku/" />
+    <image:image>
+      <image:loc>https://www.aejaca.com/img/blog/lost-resin-krok-po-kroku.webp</image:loc>
+      <image:title>Lost-resin step by step, resin printing in jewelry making</image:title>
+    </image:image>
+  </url>
+
+  <!-- Blog: druk-miniatur-figurek-16k -->
+  <url>
+    <loc>https://www.aejaca.com/blog/druk-miniatur-figurek-16k/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/druk-miniatur-figurek-16k/" />
+    <image:image>
+      <image:loc>https://www.aejaca.com/img/blog/druk-miniatur-figurek-16k.webp</image:loc>
+      <image:title>Custom miniature and figurine printing, 16K resin</image:title>
+    </image:image>
+  </url>
+
+  <!-- Glossary: lost-resin -->
+  <url>
+    <loc>https://www.aejaca.com/glossary/lost-resin/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/lost-resin/" />
+  </url>
+
+  <!-- Glossary: zywica-castable -->
+  <url>
+    <loc>https://www.aejaca.com/glossary/zywica-castable/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/zywica-castable/" />
+  </url>
+
+  <!-- Glossary: druk-msla -->
+  <url>
+    <loc>https://www.aejaca.com/glossary/druk-msla/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/druk-msla/" />
+  </url>
+
+  <!-- Glossary: kompensacja-skurczu -->
+  <url>
+    <loc>https://www.aejaca.com/glossary/kompensacja-skurczu/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/kompensacja-skurczu/" />
+  </url>
+
+  <!-- Tool: shrinkage compensation calculator -->
+  <url>
+    <loc>https://www.aejaca.com/toolstudio/shrinkage/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/shrinkage/" />
+  </url>
+
 </urlset>

@@ -60,6 +60,10 @@ const GLOSSARY_IDS = [
   "personalizacja",
   "projektowanie-ai",
   "wycena-online",
+  "lost-resin",
+  "zywica-castable",
+  "druk-msla",
+  "kompensacja-skurczu",
 ];
 
 const BLOG_SLUGS = [
@@ -79,6 +83,8 @@ const BLOG_SLUGS = [
   "modelowanie-3d-na-zamowienie",
   "ile-kosztuje-bizuteria-na-zamowienie",
   "rodzaje-splotow-lancuszkow",
+  "lost-resin-krok-po-kroku",
+  "druk-miniatur-figurek-16k",
 ];
 
 const routes = [
