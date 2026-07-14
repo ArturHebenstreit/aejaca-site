@@ -59,9 +59,15 @@ export const RESINS = {
 };
 
 export const APPLICATIONS = [
-  { id: "prototype", label: { pl: "Prototyp", en: "Prototype", de: "Prototyp" } },
-  { id: "figurine",  label: { pl: "Figurka / miniatura", en: "Figurine / miniature", de: "Figur / Miniatur" } },
-  { id: "casting",   label: { pl: "Wzorzec odlewniczy", en: "Casting pattern", de: "Gussmodell" } },
+  { id: "prototype", label: { pl: "Prototyp", en: "Prototype", de: "Prototyp" },
+    desc: { pl: "Części, obudowy, testy dopasowania", en: "Parts, housings, fit tests", de: "Teile, Gehäuse, Passtests" },
+    img: "/img/calc/3d_apps/prototype.webp" },
+  { id: "figurine",  label: { pl: "Figurka / miniatura", en: "Figurine / miniature", de: "Figur / Miniatur" },
+    desc: { pl: "Kolekcjonerskie, do gier, dekoracyjne", en: "Collectible, gaming, decorative", de: "Sammler, Gaming, Deko" },
+    img: "/img/calc/3d_apps/figurine.webp" },
+  { id: "casting",   label: { pl: "Wzorzec odlewniczy", en: "Casting pattern", de: "Gussmodell" },
+    desc: { pl: "Biżuteria, odlew lost-resin", en: "Jewelry, lost-resin casting", de: "Schmuck, Lost-Resin-Guss" },
+    img: "/img/calc/3d_apps/casting.webp" },
 ];
 
 export const LAYER_HEIGHTS = [
@@ -631,7 +637,7 @@ export default function Print3DCalc({ lang = "pl" }) {
         </CalcCard>
 
         <CalcCard stepNum="②" label={ml.application}>
-          <Chips options={APPLICATIONS} value={applicationId} onChange={setApplicationId} lang={lang} />
+          <MaterialCards options={APPLICATIONS} value={applicationId} onChange={setApplicationId} lang={lang} cols="grid-cols-3" />
         </CalcCard>
 
         <CalcCard stepNum="③" label={ml.resin}>
