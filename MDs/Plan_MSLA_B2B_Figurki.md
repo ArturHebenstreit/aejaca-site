@@ -14,8 +14,8 @@
 | 0.1 | CAD B2B | 400-1200 zl netto wg złożoności |
 | 0.2 | Wzorzec castable | 90-180 zl, kolejne z tej samej platformy -40% |
 | 0.3 | Prototyp w srebrze | 180-300 zl + materiał |
-| 0.4 | Cechowanie | DO POTWIERDZENIA: własny numer probierczy czy partner |
-| 0.5 | White-label | DO POTWIERDZENIA: opis otwarty czy "wycena indywidualna" |
+| 0.4 | Cechowanie | ZATWIERDZONE: domyślnie znak wytwórcy AEJaCA + zgłoszenie do Urzędu Probierczego pod szyldem AEJaCA; po indywidualnych ustaleniach wyrób/odlew bez cech (obowiązek zgłoszenia do obrotu przechodzi na odbiorcę) |
+| 0.5 | White-label | ZATWIERDZONE: proces etapowy opisany otwarcie, bez kwot (kwoty tylko w filarach 1-4) |
 | 0.6 | Licencja figurek | tylko pliki klienta / licencja komercyjna / nasze projekty |
 | 0.7 | Stawki MSLA | patrz sekcja "Silnik wyceny MSLA" (propozycja do akceptacji) |
 
