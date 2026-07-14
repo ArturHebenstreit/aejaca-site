@@ -67,7 +67,8 @@ Koszt bazowy = żywica + maszyna + post-processing + handling:
 - Czas [h] = wysokość_mm / prędkość (0,05 mm: ~35 mm/h; 0,03 mm jakość: ~20 mm/h)
 - Maszyna: amortyzacja 3,00 PLN/h + energia (CONFIG.ENERGY_COST_PLN x 0,25 kW)
 - Post-processing (mycie IPA/woda, UV, zdjęcie supportów): 20 PLN/platformę + 3 PLN/szt
-- Castable: premia QC x1,30 na robociznę (kontrola wzorca pod inwestycję)
+- Castable: premia QC x3,0 na robociznę post-processingu (kontrola wzorca pod inwestycję;
+  skorygowane z x1,3 podczas implementacji, bo x1,3 dawalo 38-77 zl, ponizej widelek 90-180 zl z decyzji 0.2)
 - Handling: 8 PLN (jak FDM); minimalna wartość zlecenia MSLA: 49 PLN
 
 Ceny żywic (PLN/kg; standard zweryfikowany na Allegro, castable na 3duv.pl, lipiec 2026; castable kupowane w opakowaniach 0,1 kg po 139,90 zl):

@@ -13,9 +13,9 @@ import {
   Lightbulb, Upload, X, FileBox, Ruler, Layers,
 } from "lucide-react";
 import {
-  QUANTITY_TIERS, t, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture,
+  QUANTITY_TIERS, t, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture, LicenseNotice,
 } from "./calcShared.jsx";
-import { calculate as calcPrint3D } from "./Print3DCalc.jsx";
+import { calculate as calcPrint3D, calculateMSLA, MSLA_SIZES } from "./Print3DCalc.jsx";
 import { calcEngrave as calcCO2Engrave, calcCut as calcCO2Cut } from "./CO2LaserCalc.jsx";
 import { calculate as calcFiber } from "./FiberLaserCalc.jsx";
 import { calculate as calcEpoxy } from "./EpoxyCastCalc.jsx";
@@ -39,6 +39,7 @@ const ITEMS = [
   { id: "keychain", icon: KeyRound,    img: "/img/calc/studio_items/keychain.webp", label: { pl: "Breloczek", en: "Keychain", de: "Schlüsselanhänger" } },
   { id: "sign",     icon: BookText,    img: "/img/calc/studio_items/sign.webp",     label: { pl: "Tabliczka / szyld", en: "Plate / sign", de: "Schild" } },
   { id: "figurine", icon: Sparkles,    img: "/img/calc/studio_items/figurine.webp", label: { pl: "Figurka / model", en: "Figurine / model", de: "Figur / Modell" } },
+  { id: "figurine_msla", icon: Sparkles, img: "/img/calc/studio_materials/figurine.webp", label: { pl: "Figurka / miniatura (żywica)", en: "Figurine / miniature (resin)", de: "Figur / Miniatur (Harz)" } },
   { id: "stamp",    icon: Stamp,       img: "/img/calc/studio_items/stamp.webp",    label: { pl: "Pieczątka", en: "Stamp", de: "Stempel" } },
   { id: "gift",     icon: Gift,        img: "/img/calc/studio_items/gift.webp",     label: { pl: "Prezent / dekoracja", en: "Gift / decoration", de: "Geschenk / Deko" } },
   { id: "part",     icon: Cog,         img: "/img/calc/studio_items/part.webp",     label: { pl: "Część techniczna", en: "Technical part", de: "Technisches Teil" } },
@@ -92,16 +93,19 @@ const DEFAULT_TECH_FROM_ITEM = {
   keychain: "3dprint",
   sign:     "co2",
   figurine: "3dprint",
+  figurine_msla: "msla",
   stamp:    "co2",
   gift:     "co2",
   part:     "3dprint",
   jewelry:  "fiber",
 };
 
+// coin/palm/book map cleanly onto the Saturn 4 Ultra plate (21.8x12.3x25.0 cm);
+// box/bigger (>25 cm) exceed it, handled as custom quote below.
 const SIZE_MAP = {
-  coin:   { "3dprint": "XS", co2: "XS", fiber: "XS", epoxy: "XS" },
-  palm:   { "3dprint": "S",  co2: "S",  fiber: "S",  epoxy: "S"  },
-  book:   { "3dprint": "M",  co2: "M",  fiber: "M",  epoxy: "M"  },
+  coin:   { "3dprint": "XS", co2: "XS", fiber: "XS", epoxy: "XS", msla: "XS" },
+  palm:   { "3dprint": "S",  co2: "S",  fiber: "S",  epoxy: "S",  msla: "S"  },
+  book:   { "3dprint": "M",  co2: "M",  fiber: "M",  epoxy: "M",  msla: "L"  },
   box:    { "3dprint": "L",  co2: "L",  fiber: "L",  epoxy: "L"  },
   bigger: { "3dprint": "XL", co2: "XL", fiber: "XL", epoxy: "XL" },
 };
@@ -201,6 +205,21 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
     return { custom: true };
   }
 
+  // Figurine/miniature (MSLA resin): tech is fixed regardless of the material question
+  if (item === "figurine_msla") {
+    const mslaSizeId = SIZE_MAP[size]?.msla;
+    if (!mslaSizeId) return { custom: true };
+    return {
+      tech: "msla", params: {
+        applicationId: "figurine",
+        resinKey: finish === "premium" ? "high_precision" : "standard",
+        layerId: finish === "premium" ? "quality" : "standard",
+        sizeId: mslaSizeId,
+        quantityId: QTY_MAP[quantity],
+      },
+    };
+  }
+
   const tech = material === "idk" ? DEFAULT_TECH_FROM_ITEM[item] : TECH_FROM_MATERIAL[material];
   if (!tech) return { custom: true };
 
@@ -290,6 +309,7 @@ function runCalc(resolved, lang) {
   if (tech === "co2")     return mode === "cut" ? calcCO2Cut(params, lang) : calcCO2Engrave(params, lang);
   if (tech === "fiber")   return calcFiber(params, lang);
   if (tech === "epoxy")   return calcEpoxy(params, lang);
+  if (tech === "msla")    return calculateMSLA(params, lang);
   return null;
 }
 
@@ -302,6 +322,7 @@ const TECH_BADGE = {
   "co2":     { pl: "Laser CO2",  en: "CO2 Laser",    de: "CO2-Laser" },
   "fiber":   { pl: "Laser Fiber", en: "Fiber Laser",  de: "Faserlaser" },
   "epoxy":   { pl: "Żywica",      en: "Resin casting", de: "Harzguss" },
+  "msla":    { pl: "Żywica MSLA", en: "MSLA Resin",   de: "MSLA-Harz" },
 };
 
 const TECH_RATIONALE = {
@@ -325,6 +346,11 @@ const TECH_RATIONALE = {
     en: "Resin casting gives best results for transparent and decorative forms.",
     de: "Harzguss liefert die besten Ergebnisse für transparente und dekorative Formen.",
   },
+  "msla": {
+    pl: "Druk żywiczny MSLA 16K oddaje mikrodetal i gładkie powierzchnie, idealny do figurek i miniatur.",
+    en: "MSLA 16K resin printing captures micro-detail and smooth surfaces, ideal for figurines and miniatures.",
+    de: "MSLA-16K-Harzdruck erfasst Mikrodetails und glatte Oberflächen, ideal für Figuren und Miniaturen.",
+  },
 };
 
 const LBL = {
@@ -340,6 +366,7 @@ const LBL = {
     why: "Dlaczego?",
     switchHint: 'Chcesz podać dokładniejsze parametry? Przełącz na tryb "Dla zaawansowanych" u góry.',
     note: 'Tryb Szybkiej Wyceny dobiera technologię i parametry automatycznie — dla dokładnej kontroli użyj trybu zaawansowanego.',
+    mslaHint: "Ten model zmieści się na drukarce żywicznej MSLA 16K, to opcja z wyższą precyzją i gładszą powierzchnią niż odlew z żywicy.",
   },
   en: {
     q0: "Got a file ready?", q0hint: "Drop an STL or SVG file — we'll quote it automatically",
@@ -353,6 +380,7 @@ const LBL = {
     why: "Why?",
     switchHint: 'Want more precise parameters? Switch to "Advanced" mode at the top.',
     note: 'Quick Quote mode picks technology and parameters automatically — for full control, use the advanced mode.',
+    mslaHint: "This model fits the MSLA 16K resin printer, an option with higher precision and a smoother surface than a resin cast.",
   },
   de: {
     q0: "Haben Sie eine Datei?", q0hint: "Laden Sie eine STL- oder SVG-Datei hoch — wir kalkulieren automatisch",
@@ -366,6 +394,7 @@ const LBL = {
     why: "Warum?",
     switchHint: 'Genauere Parameter? Wechseln Sie oben in den "Fortgeschrittenen"-Modus.',
     note: 'Der Schnellkalkulationsmodus wählt Technologie und Parameter automatisch — für volle Kontrolle verwenden Sie den erweiterten Modus.',
+    mslaHint: "Dieses Modell passt auf den MSLA-16K-Harzdrucker, eine Option mit höherer Präzision und glatterer Oberfläche als ein Harzguss.",
   },
 };
 
@@ -563,6 +592,11 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   const techRationale = !resolved?.custom && resolved?.tech
     ? t(TECH_RATIONALE[resolved.tech], lang)
     : null;
+  const isMslaPath = resolved?.tech === "msla";
+
+  // STL + resin (decorative epoxy cast) but small enough for MSLA precision: suggest it as an alternative
+  const showMslaHint = fileType === "stl" && stlData && material === "resin" &&
+    Math.max(stlData.bbox.x, stlData.bbox.y, stlData.bbox.z) < 12;
 
   const paramsSummary = [
     hasFile ? `📁 ${fileName}` : null,
@@ -717,6 +751,17 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
         <TileGrid options={QUANTITY} value={quantity} onChange={handleSet(setQuantity, "quantity")} lang={lang} cols={4} />
       </SimpleCard>
 
+      {/* MSLA hint for small resin STL uploads */}
+      {showMslaHint && (
+        <div className="mb-3 p-3 rounded-xl bg-emerald-400/5 border border-emerald-400/15 flex items-start gap-3">
+          <Lightbulb className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+          <div className="text-[12px] leading-relaxed text-emerald-400/70">{l.mslaHint}</div>
+        </div>
+      )}
+
+      {/* License notice, MSLA figurine/miniature path only */}
+      {isMslaPath && <LicenseNotice lang={lang} />}
+
       {/* Suggested tech badge */}
       {techLabel && (
         <div className="mb-3 p-3 rounded-xl bg-emerald-400/10 border border-emerald-400/20 flex items-start gap-3">
@@ -745,6 +790,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
         techLabel={techLabel ? `Szybka wycena — ${techLabel}` : "Szybka wycena"}
         paramsSummary={paramsSummary}
         preAttachedFile={uploadedFile}
+        requireLicenseConsent={isMslaPath}
       />
 
       <div className="mt-4 p-3 rounded-xl border border-emerald-400/10 bg-emerald-400/[0.02] text-[11px] text-emerald-400/50 leading-relaxed text-center">

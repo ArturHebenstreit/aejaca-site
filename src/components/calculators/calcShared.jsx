@@ -491,6 +491,31 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
 }
 
 // ============================================================
+// FIGURINE LICENSE NOTICE, shown on MSLA figurine/miniature paths
+// ============================================================
+
+export const LICENSE_NOTICE_TEXT = {
+  pl: "Drukujemy wyłącznie pliki własne klienta, modele na licencji komercyjnej lub nasze projekty. Nie drukujemy modeli objętych cudzymi prawami autorskimi (np. figurki systemów bitewnych bez licencji).",
+  en: "We only print the customer's own files, models under a commercial license, or our own designs. We do not print models covered by third-party copyright (e.g. wargame miniatures without a license).",
+  de: "Wir drucken ausschließlich eigene Dateien des Kunden, Modelle mit kommerzieller Lizenz oder unsere eigenen Entwürfe. Wir drucken keine Modelle, die dem Urheberrecht Dritter unterliegen (z.B. Tabletop-Miniaturen ohne Lizenz).",
+};
+
+export function LicenseNotice({ lang = "pl" }) {
+  return (
+    <div className="flex items-start gap-2.5 p-3 rounded-xl border border-blue-400/15 bg-blue-400/[0.04] text-[11px] leading-relaxed text-neutral-300 mb-4">
+      <span className="text-blue-400 mt-0.5 shrink-0" aria-hidden="true">ⓘ</span>
+      <span>{t(LICENSE_NOTICE_TEXT, lang)}</span>
+    </div>
+  );
+}
+
+const LICENSE_CONSENT_LABEL = {
+  pl: "Potwierdzam, że przesyłany plik jest moim projektem, modelem na licencji komercyjnej lub projektem AEJaCA i nie narusza cudzych praw autorskich.",
+  en: "I confirm the submitted file is my own design, a commercially licensed model, or an AEJaCA design, and does not infringe third-party copyright.",
+  de: "Ich bestätige, dass die übermittelte Datei mein eigener Entwurf, ein kommerziell lizenziertes Modell oder ein AEJaCA-Entwurf ist und keine Urheberrechte Dritter verletzt.",
+};
+
+// ============================================================
 // INQUIRY FORM, shared across all calculators
 // ============================================================
 
@@ -567,7 +592,7 @@ function sanitizeText(text) {
     .slice(0, MAX_DESC_LENGTH);
 }
 
-export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttachedFile = null }) {
+export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttachedFile = null, requireLicenseConsent = false }) {
   const il = INQUIRY_LABELS[lang] || INQUIRY_LABELS.en;
   const [email, setEmail] = useState("");
   const [description, setDescription] = useState("");
@@ -578,8 +603,10 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
   const [cooldown, setCooldown] = useState(false);
   const [error, setError] = useState("");
   const [honeypot, setHoneypot] = useState("");
+  const [licenseConsent, setLicenseConsent] = useState(false);
   const fileRef = useRef(null);
   const lastSendRef = useRef(0);
+  const licenseLabel = t(LICENSE_CONSENT_LABEL, lang);
 
   useEffect(() => {
     if (preAttachedFile) {
@@ -634,6 +661,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
 
   async function handleSend() {
     if (honeypot || sending || cooldown) return;
+    if (requireLicenseConsent && !licenseConsent) return;
 
     if (!CONTACT_EMAIL_RE.test(email)) {
       setError(il.emailRequired);
@@ -770,6 +798,15 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
         {fileName && <div className="text-[10px] text-blue-400/70 mt-1">{il.attachNote}</div>}
       </div>
 
+      {/* License consent, MSLA figurine/miniature path only */}
+      {requireLicenseConsent && (
+        <label className="flex items-start gap-2 cursor-pointer select-none mb-3">
+          <input type="checkbox" checked={licenseConsent} onChange={(e) => setLicenseConsent(e.target.checked)}
+            className="mt-0.5 accent-blue-400 shrink-0" />
+          <span className="text-[11px] text-neutral-400 leading-tight">{licenseLabel}</span>
+        </label>
+      )}
+
       {/* Error message */}
       {error && (
         <div className="mb-3 text-[11px] text-red-400 text-center">{error}</div>
@@ -778,9 +815,9 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
       {/* Send */}
       <button
         onClick={handleSend}
-        disabled={sending || cooldown}
+        disabled={sending || cooldown || (requireLicenseConsent && !licenseConsent)}
         className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl border font-medium text-sm transition-all duration-300 ${
-          sending || (cooldown && !sent)
+          sending || (cooldown && !sent) || (requireLicenseConsent && !licenseConsent)
             ? "border-white/5 bg-white/[0.02] text-neutral-400 cursor-not-allowed"
             : sent
               ? "border-green-400/30 bg-green-400/10 text-green-400"

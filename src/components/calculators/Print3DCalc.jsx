@@ -3,7 +3,7 @@
 // ============================================================
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { Upload, X, AlertTriangle } from "lucide-react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture, LicenseNotice } from "./calcShared.jsx";
 
 const STLViewer = lazy(() => import("./STLViewer.jsx"));
 
@@ -13,6 +13,162 @@ const PRINT_CONFIG = {
   ENGINEERING_PREMIUM: 0.35,
   HANDLING_FEE: 8.0,
 };
+
+// ============================================================
+// MSLA RESIN (Elegoo Saturn 4 Ultra 16K), pricing engine
+// ============================================================
+
+const MSLA_CONFIG = {
+  DEPRECIATION_PLN_H: 3.0,
+  ENERGY_KW: 0.25,
+  HANDLING_FEE: 8.0,
+  POST_PLATFORM_PLN: 20.0,
+  POST_PC_PLN: 3.0,
+  CASTABLE_QC_MULTIPLIER: 3.0, // premia robocizny za kontrole wzorca pod inwestycje (dostrojona wyzej niz 1.3 z planu, patrz raport)
+  MIN_ORDER_PLN: 49.0,
+  WASTE_DEFAULT: 1.25,
+  WASTE_FIGURINE: 1.35,
+};
+
+// Elegoo Saturn 4 Ultra 16K build volume
+const MSLA_BUILD_VOL_CM = { x: 21.8, y: 12.3, z: 25.0 };
+
+export const RESINS = {
+  standard: {
+    price_kg: 120, density: 1.1,
+    label: { pl: "Standard", en: "Standard", de: "Standard" },
+    desc: { pl: "Prototypy, figurki hobby", en: "Prototypes, hobby figurines", de: "Prototypen, Hobby-Figuren" },
+    img: "/img/calc/3d_resins/standard.webp",
+  },
+  high_precision: {
+    price_kg: 280, density: 1.1,
+    label: { pl: "High Precision", en: "High Precision", de: "High Precision" },
+    desc: { pl: "Miniatury kolekcjonerskie, mikrodetal", en: "Collectible miniatures, micro-detail", de: "Sammler-Miniaturen, Mikrodetail" },
+    img: "/img/calc/3d_resins/high_precision.webp",
+  },
+  castable: {
+    price_kg: 1399, density: 1.1,
+    label: { pl: "Castable (BlueCast)", en: "Castable (BlueCast)", de: "Castable (BlueCast)" },
+    desc: {
+      pl: "Wzorce odlewnicze (BlueCast X-One V2 / X-Wax Filigree)",
+      en: "Casting patterns (BlueCast X-One V2 / X-Wax Filigree)",
+      de: "Gussmodelle (BlueCast X-One V2 / X-Wax Filigree)",
+    },
+    img: "/img/calc/3d_resins/castable.webp",
+  },
+};
+
+export const APPLICATIONS = [
+  { id: "prototype", label: { pl: "Prototyp", en: "Prototype", de: "Prototyp" } },
+  { id: "figurine",  label: { pl: "Figurka / miniatura", en: "Figurine / miniature", de: "Figur / Miniatur" } },
+  { id: "casting",   label: { pl: "Wzorzec odlewniczy", en: "Casting pattern", de: "Gussmodell" } },
+];
+
+export const LAYER_HEIGHTS = [
+  { id: "standard", label: { pl: "0,05 mm (standard)", en: "0.05 mm (standard)", de: "0,05 mm (Standard)" }, speed: 35 },
+  { id: "quality",  label: { pl: "0,03 mm (jakość)", en: "0.03 mm (quality)", de: "0,03 mm (Qualität)" }, speed: 20 },
+];
+
+// Size presets for MSLA, max dimension in cm, matched against Saturn 4 Ultra plate 21.8x12.3x25.0 cm
+export const MSLA_SIZES = [
+  { id: "XS", label: { pl: "XS - do 2 cm", en: "XS - up to 2 cm", de: "XS - bis 2 cm" }, maxCm: 2,  volumeRef: 3,   pcsPerPlate: 30 },
+  { id: "S",  label: { pl: "S - 2-5 cm", en: "S - 2-5 cm", de: "S - 2-5 cm" }, maxCm: 5,  volumeRef: 20,  pcsPerPlate: 12 },
+  { id: "M",  label: { pl: "M - 5-10 cm", en: "M - 5-10 cm", de: "M - 5-10 cm" }, maxCm: 10, volumeRef: 80,  pcsPerPlate: 4 },
+  { id: "L",  label: { pl: "L - 10-15 cm", en: "L - 10-15 cm", de: "L - 10-15 cm" }, maxCm: 15, volumeRef: 220, pcsPerPlate: 2 },
+  { id: "XL", label: { pl: "XL - powyżej 15 cm", en: "XL - over 15 cm", de: "XL - über 15 cm" }, maxCm: null, volumeRef: null, pcsPerPlate: 1, custom: true },
+];
+
+function estimatePcsPerPlateMSLA(bbox) {
+  const partW = bbox.x + 0.3, partD = bbox.y + 0.3;
+  if (partW > MSLA_BUILD_VOL_CM.x || partD > MSLA_BUILD_VOL_CM.y) return 1;
+  return Math.max(1, Math.min(Math.floor(MSLA_BUILD_VOL_CM.x / partW) * Math.floor(MSLA_BUILD_VOL_CM.y / partD), 30));
+}
+
+const MSLA_LBL = {
+  pl: { application: "Zastosowanie", resin: "Żywica", layer: "Wysokość warstwy", size: "Rozmiar modelu", qty: "Nakład",
+    volume: "Objętość żywicy", resinCost: "Żywica / szt.", printTime: "Czas druku / szt.", machine: "Maszyna / szt.",
+    postProc: "Post-processing / szt.", handling: "Obsługa / szt.", estCost: "Koszt szacunkowy / szt.",
+    discount: "Rabat seryjny", totalProd: "Czas produkcji łącznie", minOrder: "Zastosowano minimalną wartość zlecenia (49 PLN)" },
+  en: { application: "Application", resin: "Resin", layer: "Layer height", size: "Model size", qty: "Quantity",
+    volume: "Resin volume", resinCost: "Resin / pc", printTime: "Print time / pc", machine: "Machine / pc",
+    postProc: "Post-processing / pc", handling: "Handling / pc", estCost: "Estimated cost / pc",
+    discount: "Series discount", totalProd: "Total production time", minOrder: "Minimum order value applied (49 PLN)" },
+  de: { application: "Anwendung", resin: "Harz", layer: "Schichthöhe", size: "Modellgröße", qty: "Auflage",
+    volume: "Harzvolumen", resinCost: "Harz / Stk.", printTime: "Druckzeit / Stk.", machine: "Maschine / Stk.",
+    postProc: "Nachbearbeitung / Stk.", handling: "Handhabung / Stk.", estCost: "Geschätzte Kosten / Stk.",
+    discount: "Serienrabatt", totalProd: "Gesamte Produktionszeit", minOrder: "Mindestbestellwert angewendet (49 PLN)" },
+};
+
+export function calculateMSLA(params, lang) {
+  const { applicationId, resinKey: resinKeyRaw, layerId, sizeId, quantityId, stlData } = params;
+  const l = MSLA_LBL[lang] || MSLA_LBL.en;
+  const application = APPLICATIONS.find(a => a.id === applicationId);
+  const layer = LAYER_HEIGHTS.find(ly => ly.id === layerId);
+  const qTier = QUANTITY_TIERS.find(q => q.id === quantityId);
+  const resinKey = applicationId === "casting" ? "castable" : resinKeyRaw;
+  const resin = RESINS[resinKey];
+  const size = stlData ? null : MSLA_SIZES.find(s => s.id === sizeId);
+  if (!application || !layer || !qTier || !resin || (!stlData && !size)) return null;
+  if (!qTier.qty || (size && size.custom)) return { type: "custom" };
+
+  const volumeCm3 = stlData ? stlData.volumeCm3 : size.volumeRef;
+  const heightCm = stlData ? stlData.bbox.z : size.maxCm * 0.8;
+  const pcsPerPlate = stlData ? estimatePcsPerPlateMSLA(stlData.bbox) : size.pcsPerPlate;
+  const wasteFactor = applicationId === "figurine" ? MSLA_CONFIG.WASTE_FIGURINE : MSLA_CONFIG.WASTE_DEFAULT;
+
+  const resinCost = volumeCm3 * wasteFactor * (resin.price_kg * resin.density / 1000);
+  const printTimeH = (heightCm * 10) / layer.speed;
+  const platformDivisor = Math.max(1, Math.min(qTier.qty, pcsPerPlate));
+  const machineCostPerPc = (printTimeH * (MSLA_CONFIG.DEPRECIATION_PLN_H + CONFIG.ENERGY_COST_PLN * MSLA_CONFIG.ENERGY_KW)) / platformDivisor;
+  let postProcessing = (MSLA_CONFIG.POST_PLATFORM_PLN / platformDivisor) + MSLA_CONFIG.POST_PC_PLN;
+  if (resinKey === "castable") postProcessing *= MSLA_CONFIG.CASTABLE_QC_MULTIPLIER;
+
+  const baseCost = resinCost + machineCostPerPc + postProcessing + MSLA_CONFIG.HANDLING_FEE;
+  const margin = CONFIG.BASE_MARGIN;
+
+  const platesNeeded = Math.ceil(qTier.qty / (pcsPerPlate || 1));
+  const totalTimeH = (printTimeH * platesNeeded) + 0.5;
+
+  const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
+  const pricing = applyPricing(baseCost, margin, qTier.discount, qTier.qty, plDiscount);
+
+  // Minimum order value floor (49 PLN)
+  let minOrderApplied = false;
+  if (pricing.totalPLN.min < MSLA_CONFIG.MIN_ORDER_PLN) {
+    minOrderApplied = true;
+    const floorPerPc = Math.max(pricing.perPcPLN.min, Math.ceil(MSLA_CONFIG.MIN_ORDER_PLN / qTier.qty));
+    pricing.perPcPLN.min = floorPerPc;
+    pricing.perPcPLN.max = Math.max(pricing.perPcPLN.max, floorPerPc);
+    pricing.totalPLN.min = pricing.perPcPLN.min * qTier.qty;
+    pricing.totalPLN.max = pricing.perPcPLN.max * qTier.qty;
+    pricing.perPcEUR = {
+      min: Math.max(1, Math.round(pricing.perPcPLN.min / CONFIG.EUR_PLN_RATE)),
+      max: Math.max(1, Math.round(pricing.perPcPLN.max / CONFIG.EUR_PLN_RATE)),
+    };
+    pricing.totalEUR = {
+      min: Math.round(pricing.totalPLN.min / CONFIG.EUR_PLN_RATE),
+      max: Math.round(pricing.totalPLN.max / CONFIG.EUR_PLN_RATE),
+    };
+  }
+
+  return {
+    type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
+    totalTimeH: qTier.qty > 1 ? totalTimeH : null,
+    breakdown: [
+      { label: l.volume, value: `${volumeCm3.toFixed(1)} ml` },
+      { label: l.resinCost, value: fmtCost(resinCost, lang) },
+      { label: l.printTime, value: `${printTimeH.toFixed(2)} h` },
+      { label: l.machine, value: fmtCost(machineCostPerPc, lang) },
+      { label: l.postProc, value: fmtCost(postProcessing, lang) },
+      { label: l.handling, value: fmtCost(MSLA_CONFIG.HANDLING_FEE, lang) },
+      { divider: true },
+      { label: l.estCost, value: fmtCost(baseCost * (1 + margin), lang), bold: true },
+      ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
+      ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${totalTimeH.toFixed(1)} h`, bold: true }] : []),
+      ...(minOrderApplied ? [{ label: l.minOrder, value: "" }] : []),
+    ],
+  };
+}
 
 const FILAMENT_IMG = {
   "PLA": "/img/calc/3d_filaments/pla.webp", "PLA Silk": "/img/calc/3d_filaments/pla_silk.webp",
@@ -60,6 +216,21 @@ const SIZE_PRESETS = [
   { id: "M",  maxCm: 20.0 },
   { id: "L",  maxCm: 30.0 },
 ];
+
+// MSLA scale presets, matching MSLA_SIZES buckets (max dimension in cm)
+const MSLA_SIZE_PRESETS = [
+  { id: "XS", maxCm: 2.0 },
+  { id: "S",  maxCm: 5.0 },
+  { id: "M",  maxCm: 10.0 },
+  { id: "L",  maxCm: 15.0 },
+];
+
+const TECHS = [
+  { id: "fdm",  label: { pl: "FDM - Bambu Lab H2D", en: "FDM - Bambu Lab H2D", de: "FDM - Bambu Lab H2D" } },
+  { id: "msla", label: { pl: "Żywica MSLA 16K - Elegoo Saturn 4 Ultra", en: "MSLA Resin 16K - Elegoo Saturn 4 Ultra", de: "MSLA-Harz 16K - Elegoo Saturn 4 Ultra" } },
+];
+
+const TECH_SWITCH_LBL = { pl: "Technologia druku", en: "Print technology", de: "Drucktechnologie" };
 
 function estimateTimeFromVolume(volumeCm3) {
   return 0.194 * Math.pow(volumeCm3, 0.602);
@@ -217,7 +388,7 @@ export function calculate(params, lang) {
   };
 }
 
-function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, onRemove, lang }) {
+function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, onRemove, lang, buildVolCm = BUILD_VOL_CM, sizePresets = SIZE_PRESETS }) {
   const sl = STL_LBL[lang] || STL_LBL.en;
   const fileRef = useRef(null);
 
@@ -242,11 +413,11 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
 
   const b = stlData.bbox;
   const rawMaxCm = Math.max(b.x, b.y, b.z);
-  const fitScale = Math.min(BUILD_VOL_CM.x / b.x, BUILD_VOL_CM.y / b.y, BUILD_VOL_CM.z / b.z);
+  const fitScale = Math.min(buildVolCm.x / b.x, buildVolCm.y / b.y, buildVolCm.z / b.z);
   const fitFloor = Math.floor(fitScale * 10000) / 10000;
   const scaledB = { x: b.x * scale, y: b.y * scale, z: b.z * scale };
   const TOL = 0.05;
-  const exceeds = scaledB.x > BUILD_VOL_CM.x + TOL || scaledB.y > BUILD_VOL_CM.y + TOL || scaledB.z > BUILD_VOL_CM.z + TOL;
+  const exceeds = scaledB.x > buildVolCm.x + TOL || scaledB.y > buildVolCm.y + TOL || scaledB.z > buildVolCm.z + TOL;
   const scaledVol = stlData.volumeCm3 * scale * scale * scale;
 
   return (
@@ -273,7 +444,7 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
           <span className="font-bold text-blue-300">{scale === 1 ? "1:1" : `×${scale.toFixed(2)}`}</span>
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {SIZE_PRESETS.map(p => {
+          {sizePresets.map(p => {
             const s = Math.floor(Math.min(p.maxCm / rawMaxCm, fitScale) * 10000) / 10000;
             const isActive = Math.abs(scale - s) < 0.005;
             const disabled = p.maxCm / rawMaxCm > fitScale * 1.001;
@@ -304,7 +475,7 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
       {exceeds && (
         <div className="flex items-center gap-1.5 text-amber-400 text-[11px]">
           <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
-          {sl.exceeds} (300×320×325 mm)
+          {sl.exceeds} ({(buildVolCm.x*10).toFixed(0)}×{(buildVolCm.y*10).toFixed(0)}×{(buildVolCm.z*10).toFixed(0)} mm)
         </div>
       )}
     </div>
@@ -312,10 +483,15 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
 }
 
 const TECH_LABEL = { pl: "Druk 3D", en: "3D Print", de: "3D-Druck" };
+const TECH_LABEL_MSLA = { pl: "Druk żywiczny MSLA", en: "MSLA Resin Print", de: "MSLA-Harzdruck" };
 
 export default function Print3DCalc({ lang = "pl" }) {
   const l = LBL[lang] || LBL.en;
   const sl = STL_LBL[lang] || STL_LBL.en;
+  const ml = MSLA_LBL[lang] || MSLA_LBL.en;
+  const [tech, setTech] = useState("fdm");
+
+  // ---- FDM state ----
   const [segment, setSegment] = useState("standard");
   const [materialKey, setMaterialKey] = useState("PLA");
   const [sizeId, setSizeId] = useState("S");
@@ -328,10 +504,28 @@ export default function Print3DCalc({ lang = "pl" }) {
   const [stlFileName, setStlFileName] = useState("");
   const [stlScale, setStlScale] = useState(1);
 
+  // ---- MSLA state ----
+  const [applicationId, setApplicationId] = useState("prototype");
+  const [resinKey, setResinKey] = useState("standard");
+  const [layerId, setLayerId] = useState("standard");
+  const [mslaSizeId, setMslaSizeId] = useState("S");
+  const [mslaQuantityId, setMslaQuantityId] = useState("proto");
+  const [mslaStlData, setMslaStlData] = useState(null);
+  const [mslaStlFile, setMslaStlFile] = useState(null);
+  const [mslaStlFileName, setMslaStlFileName] = useState("");
+  const [mslaStlScale, setMslaStlScale] = useState(1);
+
   useEffect(() => {
     const mats = Object.keys(FILAMENTS[segment].materials);
     if (!mats.includes(materialKey)) setMaterialKey(mats[0]);
   }, [segment]);
+
+  // Casting patterns require the castable resin
+  useEffect(() => {
+    if (applicationId === "casting") setResinKey("castable");
+    else if (resinKey === "castable") setResinKey("standard");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applicationId]);
 
   async function handleSTLUpload(e) {
     const file = e.target.files?.[0];
@@ -352,6 +546,25 @@ export default function Print3DCalc({ lang = "pl" }) {
     setStlScale(1);
   }
 
+  async function handleMslaSTLUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const buffer = await file.arrayBuffer();
+    const { parseSTL } = await import("../../utils/stlParser.js");
+    const data = parseSTL(buffer);
+    setMslaStlData(data);
+    setMslaStlFile(file);
+    setMslaStlFileName(file.name);
+    setMslaStlScale(1);
+  }
+
+  function handleMslaSTLRemove() {
+    setMslaStlData(null);
+    setMslaStlFile(null);
+    setMslaStlFileName("");
+    setMslaStlScale(1);
+  }
+
   const scaledStlData = useMemo(() => {
     if (!stlData || stlScale === 1) return stlData;
     const s = stlScale;
@@ -362,38 +575,117 @@ export default function Print3DCalc({ lang = "pl" }) {
     };
   }, [stlData, stlScale]);
 
+  const scaledMslaStlData = useMemo(() => {
+    if (!mslaStlData || mslaStlScale === 1) return mslaStlData;
+    const s = mslaStlScale;
+    return {
+      ...mslaStlData,
+      volumeCm3: mslaStlData.volumeCm3 * s * s * s,
+      bbox: { x: mslaStlData.bbox.x * s, y: mslaStlData.bbox.y * s, z: mslaStlData.bbox.z * s },
+    };
+  }, [mslaStlData, mslaStlScale]);
+
   const result = useMemo(() => calculate({ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, stlData: scaledStlData }, lang),
     [segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, scaledStlData, lang]);
 
+  const mslaResult = useMemo(() => calculateMSLA({ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId, stlData: scaledMslaStlData }, lang),
+    [applicationId, resinKey, layerId, mslaSizeId, mslaQuantityId, scaledMslaStlData, lang]);
+
   const matOptions = Object.entries(FILAMENTS[segment].materials).map(([k, v]) => ({
     id: k, label: k, sub: `${v.price_kg}zł`, img: FILAMENT_IMG[k],
+  }));
+
+  const resinOptions = Object.entries(RESINS).map(([k, v]) => ({
+    id: k, label: v.label, desc: v.desc, img: v.img,
   }));
 
   const stlSummary = stlData
     ? `STL: ${stlFileName} (${(stlData.volumeCm3 * stlScale ** 3).toFixed(1)} cm³${stlScale !== 1 ? ` ×${stlScale.toFixed(2)}` : ""})`
     : null;
 
+  const mslaStlSummary = mslaStlData
+    ? `STL: ${mslaStlFileName} (${(mslaStlData.volumeCm3 * mslaStlScale ** 3).toFixed(1)} cm³${mslaStlScale !== 1 ? ` ×${mslaStlScale.toFixed(2)}` : ""})`
+    : null;
+
+  const isFigurine = applicationId === "figurine";
+
+  if (tech === "msla") {
+    const mslaParamsSummary = [
+      t(APPLICATIONS.find(a => a.id === applicationId)?.label, lang),
+      t(RESINS[resinKey]?.label, lang),
+      t(LAYER_HEIGHTS.find(ly => ly.id === layerId)?.label, lang),
+      mslaStlSummary || t(MSLA_SIZES.find(s => s.id === mslaSizeId)?.label, lang),
+      t(QUANTITY_TIERS.find(q => q.id === mslaQuantityId)?.label, lang),
+    ].join(" | ");
+
+    return (
+      <div>
+        <div className="text-center text-[11px] text-neutral-400 mb-6">Elegoo Saturn 4 Ultra 16K · 218×123×250 mm · 14µm piksel</div>
+
+        <CalcCard stepNum="①" label={t(TECH_SWITCH_LBL, lang)}>
+          <Chips options={TECHS} value={tech} onChange={setTech} lang={lang} />
+        </CalcCard>
+
+        <CalcCard stepNum="②" label={ml.application}>
+          <Chips options={APPLICATIONS} value={applicationId} onChange={setApplicationId} lang={lang} />
+        </CalcCard>
+
+        <CalcCard stepNum="③" label={ml.resin}>
+          <MaterialCards options={resinOptions} value={resinKey} onChange={setResinKey} lang={lang} cols="grid-cols-3" />
+        </CalcCard>
+
+        {isFigurine && <LicenseNotice lang={lang} />}
+
+        <CalcCard stepNum="④" label={ml.layer}>
+          <Chips options={LAYER_HEIGHTS} value={layerId} onChange={setLayerId} lang={lang} />
+        </CalcCard>
+
+        <CalcCard stepNum="⑤" label={mslaStlData ? sl.stlSize : ml.size} id="file-upload">
+          <STLUploadCard stlData={mslaStlData} stlFileName={mslaStlFileName} scale={mslaStlScale} onScaleChange={setMslaStlScale}
+            onUpload={handleMslaSTLUpload} onRemove={handleMslaSTLRemove} lang={lang}
+            buildVolCm={MSLA_BUILD_VOL_CM} sizePresets={MSLA_SIZE_PRESETS} />
+          {!mslaStlData && <Chips options={MSLA_SIZES} value={mslaSizeId} onChange={setMslaSizeId} lang={lang} />}
+        </CalcCard>
+
+        <CalcCard stepNum="⑥" label={ml.qty}><Chips options={QUANTITY_TIERS} value={mslaQuantityId} onChange={setMslaQuantityId} lang={lang} /></CalcCard>
+
+        <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
+          <ResultHeader lang={lang} />
+          <ResultDisplay result={mslaResult} lang={lang} />
+          <QuoteEmailCapture result={mslaResult} lang={lang} techLabel={t(TECH_LABEL_MSLA, lang)} preAttachedFile={mslaStlFile} paramsSummary={mslaParamsSummary} />
+        </div>
+
+        <InquiryForm lang={lang} techLabel={t(TECH_LABEL_MSLA, lang)} preAttachedFile={mslaStlFile} paramsSummary={mslaParamsSummary}
+          requireLicenseConsent={isFigurine} />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="text-center text-[11px] text-neutral-400 mb-6">Bambu Lab H2D · 300×320×325 mm · Dual Extruder · AMS 2 Pro</div>
 
-      <CalcCard stepNum="①" label={l.segment}>
+      <CalcCard stepNum="①" label={t(TECH_SWITCH_LBL, lang)}>
+        <Chips options={TECHS} value={tech} onChange={setTech} lang={lang} />
+      </CalcCard>
+
+      <CalcCard stepNum="②" label={l.segment}>
         <HeroCards options={SEGMENTS} value={segment} onChange={setSegment} lang={lang} cols="grid-cols-2" minH={170} />
       </CalcCard>
 
-      <CalcCard stepNum="②" label={`${l.filament} — ${FILAMENTS[segment].label}`}>
+      <CalcCard stepNum="③" label={`${l.filament} — ${FILAMENTS[segment].label}`}>
         <MaterialCards options={matOptions} value={materialKey} onChange={setMaterialKey} lang={lang} cols="grid-cols-3 sm:grid-cols-4 md:grid-cols-6" />
       </CalcCard>
 
-      <CalcCard stepNum="③" label={stlData ? sl.stlSize : l.size} id="file-upload">
+      <CalcCard stepNum="④" label={stlData ? sl.stlSize : l.size} id="file-upload">
         <STLUploadCard stlData={stlData} stlFileName={stlFileName} scale={stlScale} onScaleChange={setStlScale} onUpload={handleSTLUpload} onRemove={handleSTLRemove} lang={lang} />
         {!stlData && <Chips options={SIZES} value={sizeId} onChange={setSizeId} lang={lang} />}
       </CalcCard>
 
-      <CalcCard stepNum="④" label={l.infill}><HeroCards options={INFILL_OPTIONS} value={infillId} onChange={setInfillId} lang={lang} cols="grid-cols-2 sm:grid-cols-4" minH={150} /></CalcCard>
-      <CalcCard stepNum="⑤" label={l.colors}><Chips options={COLORS} value={colorId} onChange={setColorId} lang={lang} /></CalcCard>
-      <CalcCard stepNum="⑥" label={l.precision}><Chips options={PRECISION} value={precisionId} onChange={setPrecisionId} lang={lang} /></CalcCard>
-      <CalcCard stepNum="⑦" label={l.qty}><Chips options={QUANTITY_TIERS} value={quantityId} onChange={setQuantityId} lang={lang} /></CalcCard>
+      <CalcCard stepNum="⑤" label={l.infill}><HeroCards options={INFILL_OPTIONS} value={infillId} onChange={setInfillId} lang={lang} cols="grid-cols-2 sm:grid-cols-4" minH={150} /></CalcCard>
+      <CalcCard stepNum="⑥" label={l.colors}><Chips options={COLORS} value={colorId} onChange={setColorId} lang={lang} /></CalcCard>
+      <CalcCard stepNum="⑦" label={l.precision}><Chips options={PRECISION} value={precisionId} onChange={setPrecisionId} lang={lang} /></CalcCard>
+      <CalcCard stepNum="⑧" label={l.qty}><Chips options={QUANTITY_TIERS} value={quantityId} onChange={setQuantityId} lang={lang} /></CalcCard>
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} />
