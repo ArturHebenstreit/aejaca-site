@@ -21,8 +21,6 @@ const L = {
     heroTag: "AEJaCA sTuDiO",
     heroTitle: "Produkcja jubilerska B2B",
     heroSub: "Od wizji do wyrobu. Albo tylko ten jeden etap, którego Ci brakuje.",
-    ctaBrand: "Buduję markę",
-    ctaWorkshop: "Prowadzę pracownię",
 
     pathATitle: "Budujesz markę biżuterii",
     pathAText: "Masz wizję, nie masz warsztatu. Prowadzimy cały łańcuch: od projektu CAD, przez wzorzec i odlew, po wykończenie i zdjęcia gotowe do sprzedaży.",
@@ -104,8 +102,6 @@ const L = {
     heroTag: "AEJaCA sTuDiO",
     heroTitle: "B2B Jewelry Production",
     heroSub: "From vision to finished piece. Or just the one stage you are missing.",
-    ctaBrand: "I'm building a brand",
-    ctaWorkshop: "I run a workshop",
 
     pathATitle: "Building a jewelry brand",
     pathAText: "You have a vision, not a workshop. We run the full chain: CAD design, pattern and casting, finishing and photography, ready to sell.",
@@ -187,8 +183,6 @@ const L = {
     heroTag: "AEJaCA sTuDiO",
     heroTitle: "B2B-Schmuckproduktion",
     heroSub: "Von der Vision zum fertigen Stück. Oder nur die eine Etappe, die Ihnen fehlt.",
-    ctaBrand: "Ich baue eine Marke auf",
-    ctaWorkshop: "Ich betreibe eine Werkstatt",
 
     pathATitle: "Sie bauen eine Schmuckmarke auf",
     pathAText: "Sie haben eine Vision, keine Werkstatt. Wir übernehmen die ganze Kette: CAD-Design, Modell und Guss, Veredelung und Produktfotos, verkaufsfertig.",
@@ -360,21 +354,13 @@ export default function B2B() {
             width="1920"
             height="820"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/50 via-neutral-950/85 to-neutral-950" />
-          <div className="relative z-10 max-w-4xl mx-auto px-6 pt-28 pb-10 text-center flex flex-col items-center">
+          <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-neutral-950/50 via-neutral-950/85 to-neutral-950" />
+          <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-28 pb-14 text-center flex flex-col items-center">
             <div className="text-blue-400 text-xs font-medium uppercase tracking-[0.35em] mb-5">{t.heroTag}</div>
             <h1 className="font-sans text-4xl sm:text-5xl md:text-6xl font-semibold text-white mb-6 leading-[1.05] tracking-tight drop-shadow-2xl">
               {t.heroTitle}
             </h1>
-            <p className="text-neutral-200 text-base md:text-lg max-w-xl leading-relaxed mb-8">{t.heroSub}</p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <a href="#white-label" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 text-white font-medium rounded-full hover:bg-blue-400 transition-all">
-                {t.ctaBrand} <ArrowRight className="w-4 h-4" />
-              </a>
-              <a href="#uslugi" className="inline-flex items-center gap-2 px-6 py-3 border border-blue-400/30 bg-blue-400/5 backdrop-blur-md text-blue-300 rounded-full hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all">
-                {t.ctaWorkshop} <ArrowRight className="w-4 h-4" />
-              </a>
-            </div>
+            <p className="text-neutral-200 text-base md:text-lg max-w-xl leading-relaxed">{t.heroSub}</p>
           </div>
         </section>
 
@@ -384,15 +370,15 @@ export default function B2B() {
             <div className="p-6 rounded-2xl glass-blue">
               <h2 className="font-sans text-xl font-semibold text-white mb-3">{t.pathATitle}</h2>
               <p className="text-neutral-400 text-sm leading-relaxed mb-4">{t.pathAText}</p>
-              <a href="#white-label" className="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors">
-                {t.pathALink} <ArrowRight className="w-3.5 h-3.5" />
+              <a href="#white-label" className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500 text-white text-sm font-medium rounded-full hover:bg-blue-400 transition-all">
+                {t.pathALink} <ArrowRight className="w-4 h-4" />
               </a>
             </div>
             <div className="p-6 rounded-2xl glass-blue">
               <h2 className="font-sans text-xl font-semibold text-white mb-3">{t.pathBTitle}</h2>
               <p className="text-neutral-400 text-sm leading-relaxed mb-4">{t.pathBText}</p>
-              <a href="#uslugi" className="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors">
-                {t.pathBLink} <ArrowRight className="w-3.5 h-3.5" />
+              <a href="#uslugi" className="inline-flex items-center gap-2 px-5 py-2.5 border border-blue-400/40 text-blue-400 text-sm font-medium rounded-full hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all">
+                {t.pathBLink} <ArrowRight className="w-4 h-4" />
               </a>
             </div>
           </div>
