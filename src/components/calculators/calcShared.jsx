@@ -197,7 +197,7 @@ export function CalcCard({ stepNum, label, children, id }) {
 
 /** Result header, translated */
 export function ResultHeader({ lang }) {
-  const titles = { pl: "Szacowany zakres cenowy", en: "Estimated price range", de: "Geschaetzter Preisbereich" };
+  const titles = { pl: "Szacowany zakres cenowy", en: "Estimated price range", de: "Geschätzter Preisbereich" };
   return <div className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-4">{t(titles, lang)}</div>;
 }
 
@@ -525,23 +525,23 @@ const MAX_FILE_SIZE_MB = 50;
 
 const INQUIRY_LABELS = {
   pl: {
-    title: "Zapytanie o wycene",
-    desc: "Opisz swoj projekt, co chcesz wykonac, wymiary, materialy, inne szczegoly:",
-    descPlaceholder: "np. Potrzebuje 50 szt. zawieszek z logo firmy, wymiary 3x4 cm, grawerowanie na stali nierdzewnej...",
+    title: "Zapytanie o wycenę",
+    desc: "Opisz swój projekt, co chcesz wykonać, wymiary, materiały, inne szczegóły:",
+    descPlaceholder: "np. Potrzebuję 50 szt. zawieszek z logo firmy, wymiary 3x4 cm, grawerowanie na stali nierdzewnej...",
     emailLabel: "Twój adres e-mail",
     emailPlaceholder: "twoj@email.pl",
     emailRequired: "Podaj poprawny adres e-mail",
-    file: "Zalacz plik projektu",
+    file: "Załącz plik projektu",
     fileHint: "Model 3D (.stl, .3mf, .step) | Wektor (.svg, .ai, .dxf) | Grafika (.jpg, .png, .pdf)",
-    send: "Wyslij zapytanie",
-    sending: "Wysylanie...",
-    sent: "Wyslano!",
-    sendError: "Cos poszlo nie tak. Sprobuj jeszcze raz.",
-    attachNote: "Plik zostanie dolaczony do wiadomosci",
-    cooldown: "Poczekaj chwile przed ponownym wyslaniem",
-    tooLong: "Opis jest za dlugi (maks. 2000 znakow)",
-    fileTooLarge: "Plik jest za duzy (maks. 50 MB)",
-    charCount: "znakow",
+    send: "Wyślij zapytanie",
+    sending: "Wysyłanie...",
+    sent: "Wysłano!",
+    sendError: "Coś poszło nie tak. Spróbuj jeszcze raz.",
+    attachNote: "Plik zostanie dołączony do wiadomości",
+    cooldown: "Poczekaj chwilę przed ponownym wysłaniem",
+    tooLong: "Opis jest za długi (maks. 2000 znaków)",
+    fileTooLarge: "Plik jest za duży (maks. 50 MB)",
+    charCount: "znaków",
   },
   en: {
     title: "Quote request",
@@ -833,8 +833,8 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
 
 const RESULT_LABELS = {
   pl: {
-    perPiece: "Cena za sztuke", order: "Zamowienie", pcs: "szt.",
-    showDetails: "Pokaz szczegoly kalkulacji", hideDetails: "Ukryj szczegoly",
+    perPiece: "Cena za sztukę", order: "Zamówienie", pcs: "szt.",
+    showDetails: "Pokaż szczegóły kalkulacji", hideDetails: "Ukryj szczegóły",
     customQuote: "Indywidualne ustalenie warunków",
     customDesc: "Skontaktuj się z nami, wspólnie ustalimy szczegóły zlecenia i przygotujemy dedykowaną wycenę.",
     selectAll: "Wybierz wszystkie parametry",
@@ -851,12 +851,12 @@ const RESULT_LABELS = {
     rangeNote: `Range: -${CONFIG.TOLERANCE_LOW * 100}% / +${CONFIG.TOLERANCE_HIGH * 100}% | Rate ${CONFIG.EUR_PLN_RATE} PLN/EUR`,
   },
   de: {
-    perPiece: "Preis pro Stueck", order: "Bestellung", pcs: "Stk.",
+    perPiece: "Preis pro Stück", order: "Bestellung", pcs: "Stk.",
     showDetails: "Kalkulationsdetails anzeigen", hideDetails: "Details ausblenden",
     customQuote: "Individuelle Konditionen erforderlich",
     customDesc: "Kontaktieren Sie uns, wir legen die Auftragsdetails gemeinsam fest und erstellen ein dediziertes Angebot.",
-    selectAll: "Alle Parameter auswaehlen",
-    totalTime: "Geschaetzte Produktionszeit",
+    selectAll: "Alle Parameter auswählen",
+    totalTime: "Geschätzte Produktionszeit",
     rangeNote: `Bereich: -${CONFIG.TOLERANCE_LOW * 100}% / +${CONFIG.TOLERANCE_HIGH * 100}% | Kurs ${CONFIG.EUR_PLN_RATE} PLN/EUR`,
   },
 };
