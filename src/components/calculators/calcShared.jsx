@@ -197,7 +197,7 @@ export function CalcCard({ stepNum, label, children, id }) {
 
 /** Result header, translated */
 export function ResultHeader({ lang }) {
-  const titles = { pl: "Szacowany zakres cenowy", en: "Estimated price range", de: "Geschaetzter Preisbereich" };
+  const titles = { pl: "Szacowany zakres cenowy", en: "Estimated price range", de: "Geschätzter Preisbereich" };
   return <div className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-4">{t(titles, lang)}</div>;
 }
 
