@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench, Calculator, Tag } from "lucide-react";
+import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench, Calculator, Tag, Droplet } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getPostMeta } from "../blog/postsMeta.js";
@@ -22,7 +22,7 @@ import {
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 
-const techIcons = [Cpu, Printer, Zap, Layers, Box, Wrench];
+const techIcons = [Cpu, Printer, Droplet, Zap, Layers, Box, Wrench];
 
 const PRICING_LABELS = {
   pl: { tag: "Orientacyjne ceny", title: "Ile kosztują usługi AEJaCA sTuDiO?", note: "Ceny orientacyjne, dokładna wycena po wgraniu pliku STL/SVG.", cta: "Wyceń swój projekt" },
@@ -35,6 +35,8 @@ const STUDIO_PRICING = [
   { pl: "Wycinanie laserem CO₂", en: "CO₂ laser cutting", de: "CO₂-Laserschneiden", pln: 30, eur: 7 },
   { pl: "Grawer laserowy CO₂", en: "CO₂ laser engraving", de: "CO₂-Lasergravur", pln: 15, eur: 4 },
   { pl: "Znakowanie laserem fibrowym", en: "Fiber laser marking", de: "Faserlasermarkierung", pln: 20, eur: 5 },
+  { pl: "Druk żywiczny MSLA 16K", en: "MSLA 16K resin print", de: "MSLA-16K-Harzdruck", pln: 49, eur: 12 },
+  { pl: "Wzorzec castable (BlueCast)", en: "Castable pattern (BlueCast)", de: "Castable-Gussmodell (BlueCast)", pln: 90, eur: 21 },
   { pl: "Odlew żywiczny (epoksyd/UV)", en: "Resin casting (epoxy/UV)", de: "Harzguss (Epoxid/UV)", pln: 40, eur: 10 },
 ];
 
@@ -42,6 +44,27 @@ const FLOATING_CTA_LABELS = {
   pl: "Wyceń STL/SVG",
   en: "Quote STL/SVG",
   de: "STL/SVG kalkulieren",
+};
+
+const B2B_TEASER = {
+  pl: {
+    tag: "Dla firm",
+    title: "Prowadzisz markę biżuterii albo pracownię?",
+    text: "Realizujemy zlecenia B2B: projekt CAD, wzorce castable 16K, odlew i wykończenie, aż po produkcję pod Twoją marką. Kupujesz cały łańcuch albo tylko brakujące ogniwo.",
+    cta: "Zobacz ofertę B2B",
+  },
+  en: {
+    tag: "For businesses",
+    title: "Running a jewelry brand or a workshop?",
+    text: "We handle B2B orders: CAD design, castable 16K patterns, casting and finishing, up to full production under your brand. Buy the whole chain or just the missing link.",
+    cta: "See the B2B offer",
+  },
+  de: {
+    tag: "Für Unternehmen",
+    title: "Sie betreiben eine Schmuckmarke oder eine Werkstatt?",
+    text: "Wir übernehmen B2B-Aufträge: CAD-Design, Castable-16K-Modelle, Guss und Veredelung, bis zur kompletten Produktion unter Ihrer Marke. Buchen Sie die ganze Kette oder nur das fehlende Glied.",
+    cta: "B2B-Angebot ansehen",
+  },
 };
 
 export default function Studio() {
@@ -339,6 +362,20 @@ export default function Studio() {
           </section>
         );
       })()}
+
+      <div className="gradient-divider" />
+
+      {/* B2B teaser */}
+      <section className="py-14 px-4 text-center bg-neutral-900/50">
+        <div className="max-w-xl mx-auto">
+          <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-3">{B2B_TEASER[lang]?.tag}</div>
+          <h2 className="font-sans text-2xl font-bold text-white mb-3 tracking-tight">{B2B_TEASER[lang]?.title}</h2>
+          <p className="text-neutral-400 text-sm leading-relaxed mb-6">{B2B_TEASER[lang]?.text}</p>
+          <Link to="/b2b/" className="inline-flex items-center gap-2 px-6 py-3 border border-blue-400/30 bg-blue-400/5 backdrop-blur-md text-blue-300 rounded-full hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all duration-300">
+            {B2B_TEASER[lang]?.cta} <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </section>
 
       <div className="gradient-divider" />
 

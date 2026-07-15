@@ -13,40 +13,41 @@ const TECHS = [
   { id: "3dprint",     labelKey: "tab3d",    descKey: "desc3d",    img: "/img/calc/studio/3dprint.png" },
   { id: "co2_laser",   labelKey: "tabCO2",   descKey: "descCO2",   img: "/img/calc/studio/co2_laser.png" },
   { id: "fiber_laser", labelKey: "tabFiber", descKey: "descFiber", img: "/img/calc/studio/fiber_laser.png" },
+  { id: "resin_msla",  labelKey: "tabMSLA",  descKey: "descMSLA",  img: "/img/calc/3d_segments/msla_resin.webp" },
   { id: "epoxy",       labelKey: "tabEpoxy", descKey: "descEpoxy", img: "/img/calc/studio/epoxy.png" },
 ];
 
 const LABELS = {
   pl: { tag: "Kalkulatory Projektów", title: "Estymator Kosztów",
     modeSimple: "Szybka wycena",
-    modeSimpleDesc: "5 prostych pytań — dla każdego",
+    modeSimpleDesc: "5 prostych pytań: dla każdego",
     modeAdvanced: "Dla zaawansowanych",
     modeAdvancedDesc: "Pełna kontrola parametrów",
-    modeHint: "Szybka wycena to wstępny koszt w 30 sekund. Tryb zaawansowany pozwala wrzucić plik STL/SVG, wybrać materiał, wymiar i wykończenie — pełna kontrola.",
-    tab3d: "Druk 3D", tabCO2: "Laser CO2", tabFiber: "Laser Fiber", tabEpoxy: "Odlewy żywiczne",
-    desc3d: "Bambu Lab H2D — FDM i multi-materiał", descCO2: "xTool P2 55W — grawerowanie i cięcie", descFiber: "Raycus 30W — metal, biżuteria, kamień, ceramika", descEpoxy: "Żywica UV/dwukomponentowa — odlewy artystyczne",
+    modeHint: "Szybka wycena to wstępny koszt w 30 sekund. Tryb zaawansowany pozwala wrzucić plik STL/SVG, wybrać materiał, wymiar i wykończenie: pełna kontrola.",
+    tab3d: "Druk 3D", tabCO2: "Laser CO2", tabFiber: "Laser Fiber", tabMSLA: "Druk żywiczny", tabEpoxy: "Odlewy żywiczne",
+    desc3d: "Bambu Lab H2D: FDM i multi-materiał", descCO2: "xTool P2 55W: grawerowanie i cięcie", descFiber: "Raycus 30W: metal, biżuteria, kamień, ceramika", descMSLA: "Saturn 4 Ultra 16K: figurki, wzorce jubilerskie", descEpoxy: "Żywica UV/dwukomponentowa: odlewy artystyczne",
     note: 'Kalkulacje są szacunkowe. Rzeczywista cena zależy od geometrii, złożoności i specyfikacji. Opcje "niestandardowe" wymagają indywidualnej wyceny.',
     vat: "Podane ceny są orientacyjne i nie zawierają stosownych podatków VAT czy ich odpowiedników, które należy doliczyć przy finalizacji zamówienia.",
     shipping: "Ceny nie uwzględniają kosztów transportu." },
   en: { tag: "Project Calculators", title: "Cost Estimator",
     modeSimple: "Quick quote",
-    modeSimpleDesc: "5 simple questions — for everyone",
+    modeSimpleDesc: "5 simple questions: for everyone",
     modeAdvanced: "For advanced users",
     modeAdvancedDesc: "Full control over parameters",
-    modeHint: "Quick quote gives an upfront estimate in 30 seconds. Advanced mode lets you upload an STL/SVG file, pick material, size, and finish — full control.",
-    tab3d: "3D Print", tabCO2: "CO2 Laser", tabFiber: "Fiber Laser", tabEpoxy: "Resin Casting",
-    desc3d: "Bambu Lab H2D — FDM & multi-material", descCO2: "xTool P2 55W — engraving & cutting", descFiber: "Raycus 30W — metal, jewelry, stone & ceramics", descEpoxy: "UV/2K resin — artistic casting",
+    modeHint: "Quick quote gives an upfront estimate in 30 seconds. Advanced mode lets you upload an STL/SVG file, pick material, size, and finish: full control.",
+    tab3d: "3D Print", tabCO2: "CO2 Laser", tabFiber: "Fiber Laser", tabMSLA: "Resin Print", tabEpoxy: "Resin Casting",
+    desc3d: "Bambu Lab H2D: FDM & multi-material", descCO2: "xTool P2 55W: engraving & cutting", descFiber: "Raycus 30W: metal, jewelry, stone & ceramics", descMSLA: "Saturn 4 Ultra 16K: figurines, jewelry patterns", descEpoxy: "UV/2K resin: artistic casting",
     note: "Estimates are approximate. Actual price depends on geometry, complexity, and specifications. Custom options require an individual quote.",
     vat: "Prices shown are indicative and do not include applicable VAT or equivalent taxes, which will be added upon order finalization.",
     shipping: "Prices do not include shipping costs." },
   de: { tag: "Projektkalkulatoren", title: "Kostenschätzer",
     modeSimple: "Schnellkalkulation",
-    modeSimpleDesc: "5 einfache Fragen — für jeden",
+    modeSimpleDesc: "5 einfache Fragen: für jeden",
     modeAdvanced: "Für Fortgeschrittene",
     modeAdvancedDesc: "Volle Kontrolle über Parameter",
-    modeHint: "Schnellkalkulation liefert einen Vorab-Preis in 30 Sekunden. Der erweiterte Modus erlaubt den Upload von STL/SVG-Dateien, Materialwahl, Maße und Finish — volle Kontrolle.",
-    tab3d: "3D-Druck", tabCO2: "CO2-Laser", tabFiber: "Faserlaser", tabEpoxy: "Harzguss",
-    desc3d: "Bambu Lab H2D — FDM & Multi-Material", descCO2: "xTool P2 55W — Gravur & Schnitt", descFiber: "Raycus 30W — Metall, Schmuck, Stein & Keramik", descEpoxy: "UV/2K-Harz — Kunstguss",
+    modeHint: "Schnellkalkulation liefert einen Vorab-Preis in 30 Sekunden. Der erweiterte Modus erlaubt den Upload von STL/SVG-Dateien, Materialwahl, Maße und Finish: volle Kontrolle.",
+    tab3d: "3D-Druck", tabCO2: "CO2-Laser", tabFiber: "Faserlaser", tabMSLA: "Harzdruck", tabEpoxy: "Harzguss",
+    desc3d: "Bambu Lab H2D: FDM & Multi-Material", descCO2: "xTool P2 55W: Gravur & Schnitt", descFiber: "Raycus 30W: Metall, Schmuck, Stein & Keramik", descMSLA: "Saturn 4 Ultra 16K: Figuren, Gussmodelle", descEpoxy: "UV/2K-Harz: Kunstguss",
     note: 'Kalkulationen sind Schätzungen. Der tatsächliche Preis hängt von Geometrie, Komplexität und Spezifikationen ab. "Individuelle" Optionen erfordern ein separates Angebot.',
     vat: "Die angegebenen Preise sind Richtwerte und enthalten keine Mehrwertsteuer oder gleichwertige Abgaben, die bei der Auftragsabwicklung hinzukommen.",
     shipping: "Preise verstehen sich ohne Versandkosten." },
@@ -127,7 +128,7 @@ export default function StudioCalculator() {
           </button>
         </div>
 
-        {/* Mode hint — clarifies when to use each (audit: UX friction) */}
+        {/* Mode hint: clarifies when to use each (audit: UX friction) */}
         <div className="mb-6 flex items-start gap-2 px-3 text-[11px] text-neutral-400 leading-relaxed">
           <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-neutral-400" />
           <span>{l.modeHint}</span>
@@ -144,7 +145,7 @@ export default function StudioCalculator() {
         {!isSimple && (
           <>
             {/* Technology tiles */}
-            <div className="grid grid-cols-2 gap-3 mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
               {TECHS.map(({ id, labelKey, descKey, img }) => {
                 const active = activeTech === id;
                 return (
@@ -163,7 +164,7 @@ export default function StudioCalculator() {
                     )}
                     <div className="relative p-3 h-full min-h-[140px] flex flex-col justify-end">
                       <div className={`text-xs sm:text-sm font-bold mb-1 drop-shadow-lg ${active ? "text-blue-300" : "text-white"}`}>{l[labelKey]}</div>
-                      <div className="text-[10px] text-neutral-300 break-words drop-shadow-md">{l[descKey]}</div>
+                      <div className="text-[11px] text-neutral-200 break-words drop-shadow-md">{l[descKey]}</div>
                     </div>
                   </button>
                 );
@@ -172,6 +173,7 @@ export default function StudioCalculator() {
 
             <div className="glass-blue rounded-2xl p-5 sm:p-6">
               {activeTech === "3dprint" && <Print3DCalc lang={lang} />}
+              {activeTech === "resin_msla" && <Print3DCalc lang={lang} initialTech="msla" />}
               {activeTech === "co2_laser" && <CO2LaserCalc lang={lang} initialMode={urlCo2Mode === "cut" ? "cut" : "engrave"} />}
               {activeTech === "fiber_laser" && <FiberLaserCalc lang={lang} />}
               {activeTech === "epoxy" && <EpoxyCastCalc lang={lang} />}

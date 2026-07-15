@@ -94,8 +94,8 @@ export const WEIGHTS = [
 
 // --- MANUFACTURING METHODS ---
 export const METHODS = [
-  { id: "cast", label: { pl: "Odlew (lost wax)", en: "Cast (lost wax)", de: "Guss (Wachsausschmelzverfahren)" },
-    desc: { pl: "Precyzyjny odlew, idealne do serii", en: "Precision casting, ideal for series", de: "Präzisionsguss, ideal für Serien" }, laborMul: 0.6, laborRate: 80, img: "/img/calc/methods/cast.webp" },
+  { id: "cast", label: { pl: "Odlew (lost wax / lost resin)", en: "Cast (lost wax / lost resin)", de: "Guss (Wachsausschmelz / Lost-Resin)" },
+    desc: { pl: "Wzorce drukowane 16K, filigran i detal od 0,2 mm", en: "16K printed patterns, filigree and detail from 0.2 mm", de: "16K-gedruckte Modelle, Filigran und Details ab 0,2 mm" }, laborMul: 0.6, laborRate: 80, img: "/img/calc/methods/cast.webp" },
   { id: "handmade", label: { pl: "Ręczna (lutowanie + osadzanie)", en: "Handmade (soldering + setting)", de: "Handarbeit (Löten + Fassen)" },
     desc: { pl: "Najwyższa jakość, unikalne wykonanie", en: "Highest quality, unique craftsmanship", de: "Höchste Qualität, einzigartige Handwerkskunst" }, laborMul: 1.0, laborRate: 65, img: "/img/calc/methods/handmade.webp" },
   { id: "custom_m", label: { pl: "Niestandardowa", en: "Custom", de: "Individuell" }, laborMul: null, custom: true },

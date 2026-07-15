@@ -280,6 +280,27 @@ export const SEO = {
     },
   },
 
+  b2b: {
+    pl: {
+      title: "Produkcja jubilerska B2B, CAD, wzorce 16K, odlew | AEJaCA",
+      description: "Usługi B2B dla marek i pracowni: projektowanie CAD, wzorce castable 16K, odlew Au 585 / Ag 925, wykończenie, cechowanie. Wycena w 24h.",
+      keywords: "produkcja jubilerska B2B, CAD biżuteria zlecenie, wzorce castable 16K, odlew srebra na zlecenie, odlew złota na zlecenie, white label biżuteria, wykończenie biżuterii B2B, cechowanie biżuterii, AEJaCA",
+      ogAlt: "AEJaCA B2B, produkcja jubilerska dla marek i pracowni partnerskich",
+    },
+    en: {
+      title: "B2B Jewelry Production, CAD, 16K Patterns, Casting | AEJaCA",
+      description: "B2B services for jewelry brands and workshops: CAD design, castable 16K patterns, Au 585 / Ag 925 casting, finishing, hallmarking. Quote in 24h.",
+      keywords: "B2B jewelry manufacturing, jewelry CAD outsourcing, castable 16K patterns, silver casting service, gold casting service, jewelry white label, jewelry finishing B2B, hallmarking, AEJaCA",
+      ogAlt: "AEJaCA B2B, jewelry production for brands and partner workshops",
+    },
+    de: {
+      title: "B2B-Schmuckproduktion, CAD, 16K-Modelle, Guss | AEJaCA",
+      description: "B2B-Leistungen für Schmuckmarken und Werkstätten: CAD-Design, Castable-16K-Modelle, Au-585/Ag-925-Guss, Veredelung, Punzierung. Angebot in 24h.",
+      keywords: "B2B Schmuckproduktion, Schmuck CAD Auftragsfertigung, Castable 16K Modelle, Silberguss Auftrag, Goldguss Auftrag, Schmuck White Label, Schmuckveredelung B2B, Punzierung, AEJaCA",
+      ogAlt: "AEJaCA B2B, Schmuckproduktion für Marken und Partnerwerkstätten",
+    },
+  },
+
   privacy: {
     pl: {
       title: "Polityka prywatności, AEJaCA",

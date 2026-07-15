@@ -1,0 +1,77 @@
+export const meta = {
+  slug: "lost-resin-krok-po-kroku",
+  category: "studio",
+  accent: "blue",
+  publishedAt: "2026-07-14",
+  updatedAt: "2026-07-14",
+  coverImage: "/img/blog/lost-resin-krok-po-kroku.webp",
+  readingTime: { pl: 8, en: 6, de: 6 },
+  title: {
+    pl: "Lost-resin krok po kroku: druk żywiczny w jubilerstwie",
+    en: "Lost-Resin Step by Step: Resin Printing in Jewelry Making",
+    de: "Lost-Resin Schritt für Schritt: Harzdruck in der Schmuckherstellung",
+  },
+  description: {
+    pl: "Jak powstaje wzorzec lost-resin do odlewu biżuterii? Sprzęt, żywice castable, kompensacja skurczu i pełny workflow od CAD do gotowego pierścionka.",
+    en: "How is a lost-resin pattern made for jewelry casting? Equipment, castable resins, shrinkage compensation, and the workflow from CAD to a finished ring.",
+    de: "Wie entsteht ein Lost-Resin-Modell für den Schmuckguss? Ausrüstung, Castable-Harze, Schrumpfungskompensation und Workflow von CAD bis zum fertigen Ring.",
+  },
+  keywords: {
+    pl: "lost-resin, druk żywiczny biżuteria, wzorzec do odlewu, BlueCast żywica, odlew próżniowy biżuteria, kompensacja skurczu złota",
+    en: "lost-resin casting, resin 3D printing jewelry, castable resin pattern, BlueCast resin, vacuum casting jewelry, gold shrinkage compensation",
+    de: "Lost-Resin-Guss, Harz-3D-Druck Schmuck, gießbares Harzmodell, BlueCast Harz, Vakuumguss Schmuck, Goldschrumpfung Kompensation",
+  },
+  faq: {
+    pl: [
+      { q: "Czy każdą żywicą można odlewać biżuterię?", a: "Nie. Do odlewu potrzebna jest żywica castable, która wypala się prawie bez popiołu (np. BlueCast X-One V2 lub X-Wax Filigree). Standardowe żywice do miniatur czy prototypów zostawiają popiół i zniszczą formę odlewniczą." },
+      { q: "Ile trwa cały cykl lost-resin, od pliku do gotowego odlewu?", a: "Druk wzorca to 2–4h, mycie i utwardzanie UV kolejne 15–20 minut. Inwestycja w masę Omni-II, wypalanie w piecu i odlew próżniowy zajmują zwykle 1 dzień roboczy. Wykończenie odlewu dochodzi osobno." },
+      { q: "Jaką dokładność daje druk żywiczny na Elegoo Saturn 4 Ultra 16K?", a: "Piksel drukarki to 14×19 µm, a wysokość warstwy przy wzorcach jubilerskich to 0,05 mm (lub 0,03 mm dla najdrobniejszych detali). Pozwala to odwzorować filigran i detale rzędu 0,2 mm." },
+      { q: "Ile kosztuje wzorzec lost-resin do odlewu biżuterii?", a: "Orientacyjnie 90–180 zł za wzorzec, w zależności od złożoności geometrii i wielkości elementu. Cena nie obejmuje samego odlewu i wykończenia." },
+    ],
+    en: [
+      { q: "Can any resin be used to cast jewelry?", a: "No. Casting requires a castable resin that burns out with almost no ash, such as BlueCast X-One V2 or X-Wax Filigree. Standard miniature or prototype resins leave ash behind and will ruin the investment mold." },
+      { q: "How long does a full lost-resin cycle take, from file to finished casting?", a: "Printing the pattern takes 2-4 hours, washing and UV curing another 15-20 minutes. Investing in Omni-II plaster, burnout, and vacuum casting typically take one business day. Finishing the casting is a separate step." },
+      { q: "How accurate is resin printing on the Elegoo Saturn 4 Ultra 16K?", a: "The printer's pixel size is 14x19 microns, and jewelry patterns are printed at 0.05 mm layer height (or 0.03 mm for the finest details). This reproduces filigree and details down to about 0.2 mm." },
+      { q: "How much does a lost-resin jewelry pattern cost?", a: "Roughly PLN 90-180 per pattern, depending on geometry complexity and size. This price does not include the casting itself or finishing." },
+    ],
+    de: [
+      { q: "Kann man mit jedem Harz Schmuck gießen?", a: "Nein. Für den Guss braucht man ein Castable-Harz, das nahezu rückstandslos ausbrennt, zum Beispiel BlueCast X-One V2 oder X-Wax Filigree. Standard-Harze für Miniaturen oder Prototypen hinterlassen Asche und zerstören die Einbettmasse." },
+      { q: "Wie lange dauert ein kompletter Lost-Resin-Zyklus, von der Datei bis zum fertigen Guss?", a: "Der Druck des Modells dauert 2-4 Stunden, Waschen und UV-Härtung weitere 15-20 Minuten. Einbetten in Omni-II-Masse, Ausbrennen und Vakuumguss nehmen meist einen Arbeitstag in Anspruch. Die Nachbearbeitung kommt separat dazu." },
+      { q: "Wie genau ist der Harzdruck auf dem Elegoo Saturn 4 Ultra 16K?", a: "Die Pixelgröße des Druckers beträgt 14x19 µm, Schmuckmodelle werden mit 0,05 mm Schichthöhe gedruckt (bei feinsten Details 0,03 mm). Damit lassen sich Filigranarbeiten und Details bis etwa 0,2 mm abbilden." },
+      { q: "Was kostet ein Lost-Resin-Modell für den Schmuckguss?", a: "Richtwert 90-180 PLN pro Modell, abhängig von Geometrie und Größe. Der Preis umfasst nicht den Guss selbst oder die Nachbearbeitung." },
+    ],
+  },
+  toc: {
+    pl: [
+      { id: "czym-jest", label: "Czym jest lost-resin" },
+      { id: "sprzet", label: "Sprzęt: drukarka i myjka" },
+      { id: "zywice", label: "Żywice castable: którą wybrać" },
+      { id: "workflow", label: "Workflow krok po kroku" },
+      { id: "ograniczenia", label: "Ograniczenia i typowe błędy" },
+      { id: "kiedy-zlecic", label: "Kiedy zlecić zamiast robić samemu" },
+      { id: "faq", label: "FAQ" },
+    ],
+    en: [
+      { id: "what-is", label: "What is lost-resin" },
+      { id: "equipment", label: "Equipment: printer and washer" },
+      { id: "resins", label: "Castable resins: which to choose" },
+      { id: "workflow", label: "Step-by-step workflow" },
+      { id: "limitations", label: "Limitations and common mistakes" },
+      { id: "when-outsource", label: "When to outsource" },
+      { id: "faq", label: "FAQ" },
+    ],
+    de: [
+      { id: "was-ist", label: "Was ist Lost-Resin" },
+      { id: "ausruestung", label: "Ausrüstung: Drucker und Wäsche" },
+      { id: "harze", label: "Castable-Harze: welches wählen" },
+      { id: "workflow", label: "Workflow Schritt für Schritt" },
+      { id: "grenzen", label: "Grenzen und typische Fehler" },
+      { id: "wann-auslagern", label: "Wann auslagern statt selbst machen" },
+      { id: "faq", label: "FAQ" },
+    ],
+  },
+  relatedPosts: ["druk-3d-krok-po-kroku", "grawerowanie-laserowe-przewodnik", "jak-przygotowac-plik-stl"],
+  relatedCalculators: [
+    { to: "/studio/#calculator", icon: "⚙️", label: { pl: "Kalkulator sTuDiO", en: "sTuDiO Calculator", de: "sTuDiO-Kalkulator" }, desc: { pl: "Wycena druku żywicznego i odlewów lost-resin", en: "Quote for resin printing and lost-resin casting", de: "Angebot für Harzdruck und Lost-Resin-Guss" } },
+  ],
+};

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Cpu, Printer, Zap } from "lucide-react";
+import { ArrowRight, Cpu, Printer, Shrink, Zap } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -30,6 +30,8 @@ const LABELS = {
     printCardBtn: "Otwórz narzędzie",
     laserCardTitle: "Kreator parametrów laserowania",
     laserCardDesc: "Parametry dla 7 typów laserów, 88 materiałów i ponad 1000 kombinacji.",
+    shrinkCardTitle: "Kompensacja skurczu odlewniczego",
+    shrinkCardDesc: "Przelicz wymiar wzorca na wymiar po odlewie dla Au 585, Ag 925, Au 9K i Au 18K.",
   },
   en: {
     heroTag: "Open knowledge",
@@ -53,6 +55,8 @@ const LABELS = {
     printCardBtn: "Open tool",
     laserCardTitle: "Laser Parameter Wizard",
     laserCardDesc: "Parameters for 7 laser types, 88 materials and over 1000 combinations.",
+    shrinkCardTitle: "Casting Shrinkage Compensation",
+    shrinkCardDesc: "Convert a pattern dimension to the after-cast dimension for Au 585, Ag 925, Au 9K and Au 18K.",
   },
   de: {
     heroTag: "Offenes Wissen",
@@ -76,6 +80,8 @@ const LABELS = {
     printCardBtn: "Tool öffnen",
     laserCardTitle: "Laserparameter-Assistent",
     laserCardDesc: "Parameter für 7 Lasertypen, 88 Materialien und über 1000 Kombinationen.",
+    shrinkCardTitle: "Guss-Schwindungskompensation",
+    shrinkCardDesc: "Modellmaß in das Maß nach dem Guss umrechnen, für Au 585, Ag 925, Au 9K und Au 18K.",
   },
 };
 
@@ -151,7 +157,7 @@ export default function ToolsStudio() {
         <section className="py-10 px-4 bg-neutral-950">
           <div className="max-w-3xl mx-auto">
             <div ref={printCardRef} className="reveal">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                 <Link
                   to="/toolstudio/print-settings/"
                   className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/20 hover:-translate-y-1 transition-all duration-300"
@@ -171,6 +177,16 @@ export default function ToolsStudio() {
                   <div>
                     <div className="text-white font-semibold text-sm group-hover:text-blue-300 transition-colors">{L.laserCardTitle}</div>
                     <div className="text-neutral-400 text-xs mt-1 leading-relaxed">{L.laserCardDesc}</div>
+                  </div>
+                </Link>
+                <Link
+                  to="/toolstudio/shrinkage/"
+                  className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/20 hover:-translate-y-1 transition-all duration-300"
+                >
+                  <Shrink className="w-8 h-8 text-blue-400 transition-transform duration-300 group-hover:scale-110" />
+                  <div>
+                    <div className="text-white font-semibold text-sm group-hover:text-blue-300 transition-colors">{L.shrinkCardTitle}</div>
+                    <div className="text-neutral-400 text-xs mt-1 leading-relaxed">{L.shrinkCardDesc}</div>
                   </div>
                 </Link>
               </div>

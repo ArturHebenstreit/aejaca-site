@@ -25,6 +25,27 @@ import { SITE, getSEO } from "../seo/seoData.js";
 
 const icons = [Gem, Sparkles, Palette, Heart, Wand2, Crown];
 
+const PRECISION_LABELS = {
+  pl: {
+    tag: "Technologia",
+    title: "Nowa precyzja",
+    text: "Wzorce biżuterii drukujemy w rozdzielczości 16K (piksel 14 µm), co pozwala na filigran, ażur i mikrograwer od 0,2 mm. Cały cykl lost-resin, od projektu CAD po metal Au 585 / Ag 925, realizujemy na miejscu w pracowni.",
+    cta: "Zobacz możliwości druku sTuDiO",
+  },
+  en: {
+    tag: "Technology",
+    title: "New precision",
+    text: "We print jewelry patterns at 16K resolution (14 µm pixel), enabling filigree, openwork and micro-engraving from 0.2 mm. The full lost-resin cycle, from CAD file to Au 585 / Ag 925 metal, happens in-house.",
+    cta: "See sTuDiO printing capabilities",
+  },
+  de: {
+    tag: "Technologie",
+    title: "Neue Präzision",
+    text: "Wir drucken Schmuckmodelle in 16K-Auflösung (14 µm Pixel), was Filigran, Durchbrucharbeit und Mikrogravur ab 0,2 mm ermöglicht. Den gesamten Lost-Resin-Zyklus, vom CAD-Entwurf bis zum Au 585 / Ag 925 Metall, führen wir inhouse aus.",
+    cta: "sTuDiO Druckmöglichkeiten ansehen",
+  },
+};
+
 const PRICING_LABELS = {
   pl: { tag: "Orientacyjne ceny", title: "Ile kosztuje biżuteria?", note: "Ceny orientacyjne, dokładna wycena w kalkulatorze poniżej.", cta: "Wyceń w kalkulatorze" },
   en: { tag: "Indicative pricing", title: "How much does jewelry cost?", note: "Indicative prices, use the calculator below for an exact quote.", cta: "Get a quote" },
@@ -60,6 +81,7 @@ export default function Jewelry() {
   const aboutRef = useScrollReveal();
   const servicesHeaderRef = useScrollReveal();
   const getServiceRef = useStaggerReveal(100);
+  const precisionRef = useScrollReveal();
   const valuesRef = useScrollReveal();
   const etsyRef = useScrollReveal();
   const ctaRef = useScrollReveal();
@@ -193,6 +215,20 @@ export default function Jewelry() {
               );
             })}
           </div>
+        </div>
+      </section>
+
+      <div className="gradient-divider" />
+
+      {/* New precision, lost-resin 16K in-house capability */}
+      <section id="precision" className="py-14 px-4 bg-neutral-900/50">
+        <div ref={precisionRef} className="reveal max-w-3xl mx-auto text-center">
+          <div className="text-amber-400 text-xs uppercase tracking-[0.2em] mb-3">{PRECISION_LABELS[lang]?.tag}</div>
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-white mb-6">{PRECISION_LABELS[lang]?.title}</h2>
+          <p className="text-neutral-400 text-lg leading-relaxed mb-8">{PRECISION_LABELS[lang]?.text}</p>
+          <Link to="/studio/" className="inline-flex items-center gap-2 px-6 py-3 border border-amber-400/30 bg-amber-400/5 backdrop-blur-md text-amber-300 rounded-full hover:bg-amber-400 hover:text-black hover:border-amber-400 transition-all duration-300">
+            {PRECISION_LABELS[lang]?.cta} <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </section>
 

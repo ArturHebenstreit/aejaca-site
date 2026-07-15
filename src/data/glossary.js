@@ -280,6 +280,50 @@ export const GLOSSARY = [
     },
     relatedBlog: null,
   },
+  {
+    id: "lost-resin",
+    category: "studio",
+    term: { pl: "Lost-resin (odlew z wypalanego wzorca żywicznego)", en: "Lost-Resin Casting", de: "Lost-Resin-Guss" },
+    definition: {
+      pl: "Metoda odlewnicza, w której wzorzec wydrukowany z żywicy castable jest inwestowany w masę wypalającą, a następnie wypalany w piecu do ok. 600°C, tak że żywica spala się bez śladu, zostawiając pustą formę gotową na metal. Tym wzorcem odlewamy pierścionki i figurki w Ag 925 lub Au 585.",
+      en: "A casting method where a pattern printed in castable resin is invested in casting plaster, then burned out in a kiln at around 600°C so the resin combusts cleanly, leaving an empty cavity ready for metal. AEJaCA uses this pattern to cast rings and figurines in 925 silver or 585 gold.",
+      de: "Ein Gussverfahren, bei dem ein aus Gussharz gedrucktes Modell in Einbettmasse eingebettet und anschließend im Ofen bei rund 600°C ausgebrannt wird, sodass das Harz rückstandslos verbrennt und eine leere Form für das Metall zurückbleibt. AEJaCA nutzt dieses Modell zum Gießen von Ringen und Figuren in 925-Silber oder 585-Gold.",
+    },
+    relatedBlog: "druk-miniatur-figurek-16k",
+  },
+  {
+    id: "zywica-castable",
+    category: "studio",
+    term: { pl: "Żywica castable (BlueCast)", en: "Castable Resin (BlueCast)", de: "Gussharz (BlueCast)" },
+    definition: {
+      pl: "Żywica do druku MSLA zaprojektowana do czystego wypalania w piecu odlewniczym. AEJaCA używa BlueCast X-One V2 (zero skurczu, do szyn i masywnych elementów) oraz BlueCast X-Wax Filigree (ponad 80% wosku, do filigranu i detali od 0,2 mm). Wysoka zawartość wosku ułatwia całkowite spalenie bez pozostałości popiołu, co chroni formę odlewniczą.",
+      en: "A resin for MSLA printing designed to burn out cleanly in a casting kiln. AEJaCA uses BlueCast X-One V2 (zero shrinkage, for shanks and bulky elements) and BlueCast X-Wax Filigree (over 80% wax content, for filigree and details down to 0.2 mm). High wax content ensures complete combustion with no ash residue, protecting the casting mold.",
+      de: "Ein Harz für den MSLA-Druck, das für ein sauberes Ausbrennen im Gussofen ausgelegt ist. AEJaCA verwendet BlueCast X-One V2 (kein Schrumpf, für Ringschienen und massive Elemente) und BlueCast X-Wax Filigree (über 80% Wachsanteil, für Filigran und Details ab 0,2 mm). Der hohe Wachsanteil sorgt für rückstandsfreies Verbrennen ohne Ascherückstände und schont die Gussform.",
+    },
+    relatedBlog: "odlewy-zywiczne-poradnik",
+  },
+  {
+    id: "druk-msla",
+    category: "studio",
+    term: { pl: "Druk MSLA", en: "MSLA Printing", de: "MSLA-Druck" },
+    definition: {
+      pl: "Technologia druku żywicznego, w której cała warstwa jest utwardzana naraz światłem UV wyświetlanym przez ekran mono LCD (nie punktowo, jak w klasycznym SLA laserowym). Rozdzielczość zależy od wielkości piksela ekranu (na Elegoo Saturn 4 Ultra 16K: 14x19 µm), a nie od średnicy dyszy jak w druku FDM. Daje gładką powierzchnię i detal od ok. 0,2 mm, znacznie precyzyjniejszy niż FDM (0,4-0,8 mm).",
+      en: "A resin printing technology where an entire layer is cured at once by UV light projected through a mono LCD screen, rather than point-by-point as in classic laser SLA. Resolution depends on the screen's pixel size (14x19 µm on the Elegoo Saturn 4 Ultra 16K), not on nozzle diameter as with FDM. It produces a smooth surface and detail from about 0.2 mm, far finer than FDM's 0.4-0.8 mm.",
+      de: "Eine Harzdrucktechnologie, bei der eine ganze Schicht gleichzeitig durch UV-Licht ausgehärtet wird, das über einen Mono-LCD-Bildschirm projiziert wird, statt punktweise wie beim klassischen Laser-SLA. Die Auflösung hängt von der Pixelgröße des Bildschirms ab (14x19 µm beim Elegoo Saturn 4 Ultra 16K), nicht vom Düsendurchmesser wie beim FDM-Druck. Sie liefert eine glatte Oberfläche und Details ab etwa 0,2 mm, deutlich feiner als FDM mit 0,4-0,8 mm.",
+    },
+    relatedBlog: "druk-miniatur-figurek-16k",
+  },
+  {
+    id: "kompensacja-skurczu",
+    category: "studio",
+    term: { pl: "Kompensacja skurczu odlewniczego", en: "Casting Shrinkage Compensation", de: "Gussschwund-Kompensation" },
+    definition: {
+      pl: "Powiększenie modelu CAD przed drukiem o współczynnik odpowiadający skurczowi stopu podczas krzepnięcia, tak by gotowy odlew miał docelowy wymiar. AEJaCA stosuje: Au 585 x1,0196, Ag 925 x1,016, Au 9K x1,021, Au 18K x1,018. Bez tej korekty odlew wychodzi mniejszy niż zaprojektowany model.",
+      en: "Scaling up a CAD model before printing by a factor matching the alloy's shrinkage during solidification, so the finished casting reaches its target size. AEJaCA applies: Au 585 x1.0196, Ag 925 x1.016, Au 9K x1.021, Au 18K x1.018. Without this correction, the casting comes out smaller than the designed model.",
+      de: "Vergrößerung eines CAD-Modells vor dem Druck um einen Faktor, der dem Schwund der Legierung beim Erstarren entspricht, damit der fertige Guss die Zielgröße erreicht. AEJaCA verwendet: Au 585 x1,0196, Ag 925 x1,016, Au 9K x1,021, Au 18K x1,018. Ohne diese Korrektur fällt der Guss kleiner aus als das entworfene Modell.",
+    },
+    relatedBlog: "druk-3d-krok-po-kroku",
+  },
 ];
 
 export function getTermsByCategory(category) {

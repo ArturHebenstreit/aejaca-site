@@ -20,6 +20,7 @@ export default {
       { label: "Blog", to: "/blog/?category=jewelry" },
       { label: "Referenzen", id: "testimonials" },
       { label: "Shop", id: "shop" },
+      { label: "B2B-Zusammenarbeit", to: "/b2b/" },
     ],
     studioSections: [
       { label: "Über AEJaCA sTuDiO", id: "about" },
@@ -35,6 +36,7 @@ export default {
       { label: "Blog", to: "/blog/?category=studio" },
       { label: "Referenzen", id: "testimonials" },
       { label: "Shop", id: "shop" },
+      { label: "B2B-Zusammenarbeit", to: "/b2b/" },
     ],
     aboutSections: [
       { label: "Über uns", to: "/about/" },
@@ -370,6 +372,7 @@ export default {
     technologies: [
       { title: "3D-Modellierung (Rhino, Fusion 360)", desc: "Eigenes 3D-Modellieren von Skizze, Foto oder Idee. Organische Schmuckformen und funktionale technische Teile: parametrisches Design, mechanische Toleranzen, Reverse Engineering, druckfertige STL-Dateien." },
       { title: "3D-Druck", desc: "FDM-3D-Druck für Rapid Prototyping, Funktionsteile und Kleinserienfertigung." },
+      { title: "MSLA-16K-Harzdruck", desc: "Elegoo Saturn 4 Ultra 16K (14-µm-Pixel): Figuren und Miniaturen mit Mikrodetail, Prototypen sowie Castable-Gussmodelle für den Schmuckguss, Details ab 0,2 mm." },
       { title: "Faserlaser-Gravur", desc: "Hochpräzise Galvo-Lasersysteme zur Markierung von Metall, Schmuck, Werkzeugen und technischen Bauteilen." },
       { title: "CO2-Laserschneiden", desc: "Laserschneiden und -gravur auf Holz, Acryl, Glas, Leder und Kunststoffen." },
       { title: "Epoxidharzguss", desc: "UV- und Zweikomponenten-Harzsysteme für Dekorationsobjekte, Einkapselung und individuelle Formen." },
@@ -629,6 +632,7 @@ export default {
     warranty: "Garantie",
     returns: "Rückgabe",
     shipping: "Versand",
+    b2b: "B2B-Zusammenarbeit",
   },
 
   newsletter: {

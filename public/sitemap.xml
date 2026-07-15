@@ -29,7 +29,7 @@
   <!-- Jewelry -->
   <url>
     <loc>https://www.aejaca.com/jewelry/</loc>
-    <lastmod>2026-07-04</lastmod>
+    <lastmod>2026-07-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
 
@@ -44,7 +44,7 @@
   <!-- Studio -->
   <url>
     <loc>https://www.aejaca.com/studio/</loc>
-    <lastmod>2026-04-26</lastmod>
+    <lastmod>2026-07-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
 
@@ -53,6 +53,20 @@
       <image:loc>https://www.aejaca.com/hero-studio.webp</image:loc>
       <image:title>AEJaCA sTuDiO — 3D printing, laser engraving and custom fabrication</image:title>
       <image:caption>Multi-material 3D printing, CO2/Fiber laser engraving, UV and 2K resin casting</image:caption>
+    </image:image>
+  </url>
+
+  <!-- B2B -->
+  <url>
+    <loc>https://www.aejaca.com/b2b/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/b2b/" />
+    <image:image>
+      <image:loc>https://www.aejaca.com/img/b2b/hero.webp</image:loc>
+      <image:title>AEJaCA B2B, jewelry production for brands and partner workshops</image:title>
     </image:image>
   </url>
 
@@ -686,6 +700,84 @@
     <priority>0.30</priority>
 
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/privacy/" />
+  </url>
+
+  <!-- Blog: lost-resin-krok-po-kroku -->
+  <url>
+    <loc>https://www.aejaca.com/blog/lost-resin-krok-po-kroku/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/lost-resin-krok-po-kroku/" />
+    <image:image>
+      <image:loc>https://www.aejaca.com/img/blog/lost-resin-krok-po-kroku.webp</image:loc>
+      <image:title>Lost-resin step by step, resin printing in jewelry making</image:title>
+    </image:image>
+  </url>
+
+  <!-- Blog: druk-miniatur-figurek-16k -->
+  <url>
+    <loc>https://www.aejaca.com/blog/druk-miniatur-figurek-16k/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/druk-miniatur-figurek-16k/" />
+    <image:image>
+      <image:loc>https://www.aejaca.com/img/blog/druk-miniatur-figurek-16k.webp</image:loc>
+      <image:title>Custom miniature and figurine printing, 16K resin</image:title>
+    </image:image>
+  </url>
+
+  <!-- Glossary: lost-resin -->
+  <url>
+    <loc>https://www.aejaca.com/glossary/lost-resin/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/lost-resin/" />
+  </url>
+
+  <!-- Glossary: zywica-castable -->
+  <url>
+    <loc>https://www.aejaca.com/glossary/zywica-castable/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/zywica-castable/" />
+  </url>
+
+  <!-- Glossary: druk-msla -->
+  <url>
+    <loc>https://www.aejaca.com/glossary/druk-msla/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/druk-msla/" />
+  </url>
+
+  <!-- Glossary: kompensacja-skurczu -->
+  <url>
+    <loc>https://www.aejaca.com/glossary/kompensacja-skurczu/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/kompensacja-skurczu/" />
+  </url>
+
+  <!-- Tool: shrinkage compensation calculator -->
+  <url>
+    <loc>https://www.aejaca.com/toolstudio/shrinkage/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/shrinkage/" />
   </url>
 
 </urlset>

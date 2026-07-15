@@ -116,6 +116,7 @@ export default function Footer() {
               <Link to="/glossary/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.glossary}</Link>
               <Link to="/about/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.about}</Link>
               <Link to="/contact/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.contact}</Link>
+              <Link to="/b2b/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.footer.b2b}</Link>
               <Link to="/warranty/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.warranty}</Link>
               <Link to="/returns/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.returns}</Link>
               <Link to="/shipping/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.shipping}</Link>

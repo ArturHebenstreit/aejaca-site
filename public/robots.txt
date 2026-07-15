@@ -23,6 +23,7 @@ Allow: /
 
 # Google / Gemini & AI Overviews
 User-agent: Google-Extended
+User-agent: Googlebot
 Allow: /
 
 # Microsoft / Copilot & Bing

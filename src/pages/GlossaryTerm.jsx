@@ -75,6 +75,10 @@ export default function GlossaryTerm() {
 
   const termName = term.term[lang] || term.term.en;
   const termDef = term.definition[lang] || term.definition.en;
+  // Meta description capped at ~155 chars (full definition stays on-page and in schema)
+  const termMetaDesc = termDef.length > 155
+    ? termDef.slice(0, termDef.lastIndexOf(" ", 152)) + "..."
+    : termDef;
   const catLabel = CATEGORIES[term.category]?.[lang] || term.category;
   const catColorClass = term.category === "jewelry" ? "text-amber-400" : term.category === "studio" ? "text-blue-400" : "text-emerald-400";
 
@@ -97,7 +101,7 @@ export default function GlossaryTerm() {
         pageKey="glossary"
         path={`/glossary/${term.id}/`}
         title={`${termName}, ${l.glossary}, ${SITE.name}`}
-        description={termDef}
+        description={termMetaDesc}
         schemas={schemas}
       />
       <div className="pt-16">
