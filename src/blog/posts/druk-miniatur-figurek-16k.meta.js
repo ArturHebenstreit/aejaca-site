@@ -12,8 +12,8 @@ export const meta = {
     de: "Individueller Miniaturen- und Figurendruck: 16K-Harz",
   },
   description: {
-    pl: "Miniatury do gier bitewnych, figurki kolekcjonerskie i prototypy planszówek drukowane na Elegoo Saturn 4 Ultra 16K. Detal od 0,2 mm, ceny od 49 zł, prawa autorskie.",
-    en: "Battle-game miniatures, collectible figurines and board game prototypes printed on the Elegoo Saturn 4 Ultra 16K. Detail from 0.2 mm, prices from €12, copyright rules.",
+    pl: "Miniatury do gier, figurki kolekcjonerskie i prototypy planszówek z drukarki Elegoo Saturn 4 Ultra 16K. Detal od 0,2 mm, ceny od 49 zł.",
+    en: "Gaming miniatures, collectible figurines and board game prototypes printed on the Elegoo Saturn 4 Ultra 16K. Detail from 0.2 mm, prices from €12.",
     de: "Tabletop-Miniaturen, Sammlerfiguren und Brettspiel-Prototypen, gedruckt auf dem Elegoo Saturn 4 Ultra 16K. Details ab 0,2 mm, Preise ab 12 €, Urheberrecht.",
   },
   keywords: {

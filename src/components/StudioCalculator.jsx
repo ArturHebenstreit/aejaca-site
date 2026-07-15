@@ -20,34 +20,34 @@ const TECHS = [
 const LABELS = {
   pl: { tag: "Kalkulatory Projektów", title: "Estymator Kosztów",
     modeSimple: "Szybka wycena",
-    modeSimpleDesc: "5 prostych pytań — dla każdego",
+    modeSimpleDesc: "5 prostych pytań: dla każdego",
     modeAdvanced: "Dla zaawansowanych",
     modeAdvancedDesc: "Pełna kontrola parametrów",
-    modeHint: "Szybka wycena to wstępny koszt w 30 sekund. Tryb zaawansowany pozwala wrzucić plik STL/SVG, wybrać materiał, wymiar i wykończenie — pełna kontrola.",
+    modeHint: "Szybka wycena to wstępny koszt w 30 sekund. Tryb zaawansowany pozwala wrzucić plik STL/SVG, wybrać materiał, wymiar i wykończenie: pełna kontrola.",
     tab3d: "Druk 3D", tabCO2: "Laser CO2", tabFiber: "Laser Fiber", tabMSLA: "Druk żywiczny", tabEpoxy: "Odlewy żywiczne",
-    desc3d: "Bambu Lab H2D — FDM i multi-materiał", descCO2: "xTool P2 55W — grawerowanie i cięcie", descFiber: "Raycus 30W — metal, biżuteria, kamień, ceramika", descMSLA: "Saturn 4 Ultra 16K: figurki, wzorce jubilerskie", descEpoxy: "Żywica UV/dwukomponentowa — odlewy artystyczne",
+    desc3d: "Bambu Lab H2D: FDM i multi-materiał", descCO2: "xTool P2 55W: grawerowanie i cięcie", descFiber: "Raycus 30W: metal, biżuteria, kamień, ceramika", descMSLA: "Saturn 4 Ultra 16K: figurki, wzorce jubilerskie", descEpoxy: "Żywica UV/dwukomponentowa: odlewy artystyczne",
     note: 'Kalkulacje są szacunkowe. Rzeczywista cena zależy od geometrii, złożoności i specyfikacji. Opcje "niestandardowe" wymagają indywidualnej wyceny.',
     vat: "Podane ceny są orientacyjne i nie zawierają stosownych podatków VAT czy ich odpowiedników, które należy doliczyć przy finalizacji zamówienia.",
     shipping: "Ceny nie uwzględniają kosztów transportu." },
   en: { tag: "Project Calculators", title: "Cost Estimator",
     modeSimple: "Quick quote",
-    modeSimpleDesc: "5 simple questions — for everyone",
+    modeSimpleDesc: "5 simple questions: for everyone",
     modeAdvanced: "For advanced users",
     modeAdvancedDesc: "Full control over parameters",
-    modeHint: "Quick quote gives an upfront estimate in 30 seconds. Advanced mode lets you upload an STL/SVG file, pick material, size, and finish — full control.",
+    modeHint: "Quick quote gives an upfront estimate in 30 seconds. Advanced mode lets you upload an STL/SVG file, pick material, size, and finish: full control.",
     tab3d: "3D Print", tabCO2: "CO2 Laser", tabFiber: "Fiber Laser", tabMSLA: "Resin Print", tabEpoxy: "Resin Casting",
-    desc3d: "Bambu Lab H2D — FDM & multi-material", descCO2: "xTool P2 55W — engraving & cutting", descFiber: "Raycus 30W — metal, jewelry, stone & ceramics", descMSLA: "Saturn 4 Ultra 16K: figurines, jewelry patterns", descEpoxy: "UV/2K resin — artistic casting",
+    desc3d: "Bambu Lab H2D: FDM & multi-material", descCO2: "xTool P2 55W: engraving & cutting", descFiber: "Raycus 30W: metal, jewelry, stone & ceramics", descMSLA: "Saturn 4 Ultra 16K: figurines, jewelry patterns", descEpoxy: "UV/2K resin: artistic casting",
     note: "Estimates are approximate. Actual price depends on geometry, complexity, and specifications. Custom options require an individual quote.",
     vat: "Prices shown are indicative and do not include applicable VAT or equivalent taxes, which will be added upon order finalization.",
     shipping: "Prices do not include shipping costs." },
   de: { tag: "Projektkalkulatoren", title: "Kostenschätzer",
     modeSimple: "Schnellkalkulation",
-    modeSimpleDesc: "5 einfache Fragen — für jeden",
+    modeSimpleDesc: "5 einfache Fragen: für jeden",
     modeAdvanced: "Für Fortgeschrittene",
     modeAdvancedDesc: "Volle Kontrolle über Parameter",
-    modeHint: "Schnellkalkulation liefert einen Vorab-Preis in 30 Sekunden. Der erweiterte Modus erlaubt den Upload von STL/SVG-Dateien, Materialwahl, Maße und Finish — volle Kontrolle.",
+    modeHint: "Schnellkalkulation liefert einen Vorab-Preis in 30 Sekunden. Der erweiterte Modus erlaubt den Upload von STL/SVG-Dateien, Materialwahl, Maße und Finish: volle Kontrolle.",
     tab3d: "3D-Druck", tabCO2: "CO2-Laser", tabFiber: "Faserlaser", tabMSLA: "Harzdruck", tabEpoxy: "Harzguss",
-    desc3d: "Bambu Lab H2D — FDM & Multi-Material", descCO2: "xTool P2 55W — Gravur & Schnitt", descFiber: "Raycus 30W — Metall, Schmuck, Stein & Keramik", descMSLA: "Saturn 4 Ultra 16K: Figuren, Gussmodelle", descEpoxy: "UV/2K-Harz — Kunstguss",
+    desc3d: "Bambu Lab H2D: FDM & Multi-Material", descCO2: "xTool P2 55W: Gravur & Schnitt", descFiber: "Raycus 30W: Metall, Schmuck, Stein & Keramik", descMSLA: "Saturn 4 Ultra 16K: Figuren, Gussmodelle", descEpoxy: "UV/2K-Harz: Kunstguss",
     note: 'Kalkulationen sind Schätzungen. Der tatsächliche Preis hängt von Geometrie, Komplexität und Spezifikationen ab. "Individuelle" Optionen erfordern ein separates Angebot.',
     vat: "Die angegebenen Preise sind Richtwerte und enthalten keine Mehrwertsteuer oder gleichwertige Abgaben, die bei der Auftragsabwicklung hinzukommen.",
     shipping: "Preise verstehen sich ohne Versandkosten." },
@@ -128,7 +128,7 @@ export default function StudioCalculator() {
           </button>
         </div>
 
-        {/* Mode hint — clarifies when to use each (audit: UX friction) */}
+        {/* Mode hint: clarifies when to use each (audit: UX friction) */}
         <div className="mb-6 flex items-start gap-2 px-3 text-[11px] text-neutral-400 leading-relaxed">
           <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-neutral-400" />
           <span>{l.modeHint}</span>
