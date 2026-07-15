@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Award, Shield, Cpu, Gem, Printer, Flame, Droplet } from "lucide-react";
+import { ArrowRight, Award, Shield, Cpu, Gem, Printer, Flame, Droplet, Disc, Waves, PenTool, Zap, Microscope, Wind } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
@@ -39,11 +39,22 @@ const LABELS = {
       "Ponad 150 zrealizowanych projektów",
     ],
     equipTitle: "Sprzęt",
+    equipGroup1Title: "Fabrykacja cyfrowa",
     equipItems: [
       { name: "Bambu Lab H2D", desc: "Drukarka 3D multi-materiałowa" },
       { name: "Elegoo Saturn 4 Ultra 16K", desc: "Drukarka żywiczna, piksel 14 µm, wzorce jubilerskie" },
       { name: "xTool P2 55W", desc: "Laser CO₂ do cięcia i grawerowania" },
       { name: "Raycus 30W", desc: "Laser fiber do znakowania metali" },
+    ],
+    equipGroup2Title: "Jubilerstwo",
+    equipItems2: [
+      { name: "Tumbler magnetyczny", desc: "Wygładzanie, polerowanie wstępne" },
+      { name: "Myjka ultradźwiękowa", desc: "Czyszczenie po odlewie i polerze" },
+      { name: "Grawernik pneumatyczny", desc: "Ręczny grawer, korekta detali" },
+      { name: "Galwanizacja", desc: "Powłoki ochronne, złocenie, rodowanie" },
+      { name: "Mikroskop", desc: "Kontrola jakości, setting kamieni" },
+      { name: "Palniki propan/tlen", desc: "Lutowanie, wyżarzanie" },
+      { name: "Kompresor", desc: "Zasilanie narzędzi warsztatowych" },
     ],
     ctaJewelry: "Zobacz biżuterię",
     ctaStudio: "Wyceń projekt w sTuDiO",
@@ -80,11 +91,22 @@ const LABELS = {
       "Over 150 completed projects",
     ],
     equipTitle: "Equipment",
+    equipGroup1Title: "Digital fabrication",
     equipItems: [
       { name: "Bambu Lab H2D", desc: "Multi-material 3D printer" },
       { name: "Elegoo Saturn 4 Ultra 16K", desc: "Resin 3D printer, 14 µm pixel, jewelry patterns" },
       { name: "xTool P2 55W", desc: "CO₂ laser for cutting and engraving" },
       { name: "Raycus 30W", desc: "Fiber laser for metal marking" },
+    ],
+    equipGroup2Title: "Jewelry making",
+    equipItems2: [
+      { name: "Magnetic tumbler", desc: "Smoothing, initial polishing" },
+      { name: "Ultrasonic cleaner", desc: "Cleaning after casting and polishing" },
+      { name: "Pneumatic engraver", desc: "Hand engraving, detail correction" },
+      { name: "Electroplating", desc: "Protective coatings, gold plating, rhodium plating" },
+      { name: "Microscope", desc: "Quality control, stone setting" },
+      { name: "Propane/oxygen torches", desc: "Soldering, annealing" },
+      { name: "Compressor", desc: "Powers workshop tools" },
     ],
     ctaJewelry: "See the jewelry",
     ctaStudio: "Quote a sTuDiO project",
@@ -121,11 +143,22 @@ const LABELS = {
       "Über 150 abgeschlossene Projekte",
     ],
     equipTitle: "Ausrüstung",
+    equipGroup1Title: "Digitale Fertigung",
     equipItems: [
       { name: "Bambu Lab H2D", desc: "Multi-Material-3D-Drucker" },
       { name: "Elegoo Saturn 4 Ultra 16K", desc: "Harz-3D-Drucker, 14-µm-Pixel, Schmuckmodelle" },
       { name: "xTool P2 55W", desc: "CO₂-Laser zum Schneiden und Gravieren" },
       { name: "Raycus 30W", desc: "Faserlaser zur Metallmarkierung" },
+    ],
+    equipGroup2Title: "Schmuckherstellung",
+    equipItems2: [
+      { name: "Magnettrommel", desc: "Glätten, Vorpolitur" },
+      { name: "Ultraschallreiniger", desc: "Reinigung nach Guss und Politur" },
+      { name: "Pneumatischer Gravierstichel", desc: "Handgravur, Detailkorrektur" },
+      { name: "Galvanisierung", desc: "Schutzschichten, Vergoldung, Rhodinierung" },
+      { name: "Mikroskop", desc: "Qualitätskontrolle, Steinfassung" },
+      { name: "Propan-/Sauerstoffbrenner", desc: "Löten, Ausglühen" },
+      { name: "Kompressor", desc: "Versorgt die Werkstattwerkzeuge" },
     ],
     ctaJewelry: "Schmuck ansehen",
     ctaStudio: "sTuDiO-Projekt kalkulieren",
@@ -135,6 +168,7 @@ const LABELS = {
 };
 
 const equipIcons = [Printer, Droplet, Flame, Cpu];
+const equipIcons2 = [Disc, Waves, PenTool, Zap, Microscope, Flame, Wind];
 
 const GALLERY_PHOTOS = [
   {
@@ -239,6 +273,7 @@ export default function About() {
   const getQualityRef = useStaggerReveal(80);
   const getGalleryRef = useStaggerReveal(100);
   const getEquipRef = useStaggerReveal(110);
+  const getEquip2Ref = useStaggerReveal(110);
 
   const seo = getSEO("about", lang);
   const pageUrl = `${SITE.url}/about/`;
@@ -470,7 +505,11 @@ export default function About() {
                 {L.equipTitle}
               </h2>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+            <div className="text-blue-400 text-xs font-medium uppercase tracking-[0.2em] mb-5 text-center">
+              {L.equipGroup1Title}
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-14">
               {L.equipItems.map((item, i) => {
                 const Icon = equipIcons[i];
                 return (
@@ -480,6 +519,26 @@ export default function About() {
                     className="reveal-scale p-6 rounded-xl glass-blue hover:shadow-lg hover:shadow-blue-900/10 transition-all duration-300 group text-center"
                   >
                     <Icon className="w-8 h-8 text-blue-400 mx-auto mb-4 transition-transform duration-300 group-hover:scale-110" />
+                    <h3 className="font-sans text-base font-semibold text-white mb-2">{item.name}</h3>
+                    <p className="text-neutral-400 text-sm leading-relaxed">{item.desc}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="text-amber-400 text-xs font-medium uppercase tracking-[0.2em] mb-5 text-center">
+              {L.equipGroup2Title}
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {L.equipItems2.map((item, i) => {
+                const Icon = equipIcons2[i];
+                return (
+                  <div
+                    key={i}
+                    ref={getEquip2Ref(i)}
+                    className="reveal-scale p-6 rounded-xl glass-amber hover:shadow-lg hover:shadow-amber-900/10 transition-all duration-300 group text-center"
+                  >
+                    <Icon className="w-8 h-8 text-amber-400 mx-auto mb-4 transition-transform duration-300 group-hover:scale-110" />
                     <h3 className="font-sans text-base font-semibold text-white mb-2">{item.name}</h3>
                     <p className="text-neutral-400 text-sm leading-relaxed">{item.desc}</p>
                   </div>
