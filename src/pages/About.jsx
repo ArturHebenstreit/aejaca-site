@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Award, Shield, Cpu, Gem, Printer, Flame } from "lucide-react";
+import { ArrowRight, Award, Shield, Cpu, Gem, Printer, Flame, Droplet } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
@@ -41,6 +41,7 @@ const LABELS = {
     equipTitle: "Sprzęt",
     equipItems: [
       { name: "Bambu Lab H2D", desc: "Drukarka 3D multi-materiałowa" },
+      { name: "Elegoo Saturn 4 Ultra 16K", desc: "Drukarka żywiczna, piksel 14 µm, wzorce jubilerskie" },
       { name: "xTool P2 55W", desc: "Laser CO₂ do cięcia i grawerowania" },
       { name: "Raycus 30W", desc: "Laser fiber do znakowania metali" },
     ],
@@ -81,6 +82,7 @@ const LABELS = {
     equipTitle: "Equipment",
     equipItems: [
       { name: "Bambu Lab H2D", desc: "Multi-material 3D printer" },
+      { name: "Elegoo Saturn 4 Ultra 16K", desc: "Resin 3D printer, 14 µm pixel, jewelry patterns" },
       { name: "xTool P2 55W", desc: "CO₂ laser for cutting and engraving" },
       { name: "Raycus 30W", desc: "Fiber laser for metal marking" },
     ],
@@ -120,7 +122,8 @@ const LABELS = {
     ],
     equipTitle: "Ausrüstung",
     equipItems: [
-      { name: "Bambu Lab H2D", desc: "Multi-Material 3D-Drucker" },
+      { name: "Bambu Lab H2D", desc: "Multi-Material-3D-Drucker" },
+      { name: "Elegoo Saturn 4 Ultra 16K", desc: "Harz-3D-Drucker, 14-µm-Pixel, Schmuckmodelle" },
       { name: "xTool P2 55W", desc: "CO₂-Laser zum Schneiden und Gravieren" },
       { name: "Raycus 30W", desc: "Faserlaser zur Metallmarkierung" },
     ],
@@ -131,7 +134,7 @@ const LABELS = {
   },
 };
 
-const equipIcons = [Printer, Flame, Cpu];
+const equipIcons = [Printer, Droplet, Flame, Cpu];
 
 const GALLERY_PHOTOS = [
   {
@@ -467,7 +470,7 @@ export default function About() {
                 {L.equipTitle}
               </h2>
             </div>
-            <div className="grid sm:grid-cols-3 gap-5">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {L.equipItems.map((item, i) => {
                 const Icon = equipIcons[i];
                 return (
