@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Award, Shield, Cpu, Gem, Printer, Flame, Droplet, Disc, Waves, PenTool, Zap, Microscope, Wind } from "lucide-react";
+import { ArrowRight, Award, Shield, Cpu, Gem, Printer, Flame, Droplet, Disc, Waves, PenTool, Zap, Microscope, Thermometer, Gauge } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
@@ -54,7 +54,8 @@ const LABELS = {
       { name: "Galwanizacja", desc: "Powłoki ochronne, złocenie, rodowanie" },
       { name: "Mikroskop", desc: "Kontrola jakości, setting kamieni" },
       { name: "Palniki propan/tlen", desc: "Lutowanie, wyżarzanie" },
-      { name: "Kompresor", desc: "Zasilanie narzędzi warsztatowych" },
+      { name: "Piece topienia i wypalania", desc: "Topienie stopu, wypalanie wzorca przed odlewem" },
+      { name: "Odlew próżniowy", desc: "Maszyna i pompa próżniowa do odlewu metalu" },
     ],
     ctaJewelry: "Zobacz biżuterię",
     ctaStudio: "Wyceń projekt w sTuDiO",
@@ -106,7 +107,8 @@ const LABELS = {
       { name: "Electroplating", desc: "Protective coatings, gold plating, rhodium plating" },
       { name: "Microscope", desc: "Quality control, stone setting" },
       { name: "Propane/oxygen torches", desc: "Soldering, annealing" },
-      { name: "Compressor", desc: "Powers workshop tools" },
+      { name: "Melting and burnout kilns", desc: "Alloy melting, pattern burnout before casting" },
+      { name: "Vacuum casting", desc: "Machine and vacuum pump for metal casting" },
     ],
     ctaJewelry: "See the jewelry",
     ctaStudio: "Quote a sTuDiO project",
@@ -158,7 +160,8 @@ const LABELS = {
       { name: "Galvanisierung", desc: "Schutzschichten, Vergoldung, Rhodinierung" },
       { name: "Mikroskop", desc: "Qualitätskontrolle, Steinfassung" },
       { name: "Propan-/Sauerstoffbrenner", desc: "Löten, Ausglühen" },
-      { name: "Kompressor", desc: "Versorgt die Werkstattwerkzeuge" },
+      { name: "Schmelz- und Brennöfen", desc: "Legierungsschmelze, Modellausbrennen vor dem Guss" },
+      { name: "Vakuumguss", desc: "Maschine und Vakuumpumpe für den Metallguss" },
     ],
     ctaJewelry: "Schmuck ansehen",
     ctaStudio: "sTuDiO-Projekt kalkulieren",
@@ -168,7 +171,7 @@ const LABELS = {
 };
 
 const equipIcons = [Printer, Droplet, Flame, Cpu];
-const equipIcons2 = [Disc, Waves, PenTool, Zap, Microscope, Flame, Wind];
+const equipIcons2 = [Disc, Waves, PenTool, Zap, Microscope, Flame, Thermometer, Gauge];
 
 const GALLERY_PHOTOS = [
   {
