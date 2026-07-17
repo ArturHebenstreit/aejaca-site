@@ -9,6 +9,7 @@ import JewelryEstimator from "../components/JewelryEstimator.jsx";
 import ProcessGallery from "../components/ProcessGallery.jsx";
 import Portfolio from "../components/Portfolio.jsx";
 import GoogleReviews from "../components/GoogleReviews.jsx";
+import { GOOGLE_BUSINESS } from "../data/googleReviews.js";
 import FAQ from "../components/FAQ.jsx";
 import Tips from "../components/Tips.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -133,8 +134,8 @@ export default function Jewelry() {
       sku: "AEJACA-RING-925",
       price: "150",
       currency: "EUR",
-      rating: 4.9,
-      reviewCount: 23,
+      rating: GOOGLE_BUSINESS.rating,
+      reviewCount: GOOGLE_BUSINESS.totalReviews,
       url: pageUrl,
     }),
     buildProductSchema({
@@ -144,8 +145,8 @@ export default function Jewelry() {
       sku: "AEJACA-ENGAGE-14K",
       price: "450",
       currency: "EUR",
-      rating: 4.9,
-      reviewCount: 23,
+      rating: GOOGLE_BUSINESS.rating,
+      reviewCount: GOOGLE_BUSINESS.totalReviews,
       url: pageUrl,
     }),
     buildProductSchema({
@@ -155,8 +156,8 @@ export default function Jewelry() {
       sku: "AEJACA-EARR-925",
       price: "95",
       currency: "EUR",
-      rating: 4.9,
-      reviewCount: 23,
+      rating: GOOGLE_BUSINESS.rating,
+      reviewCount: GOOGLE_BUSINESS.totalReviews,
       url: pageUrl,
     }),
   ];
