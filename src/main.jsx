@@ -33,6 +33,7 @@ const PrintSettingsPage = lazy(() => import("./pages/PrintSettingsPage.jsx"));
 const LaserParametersPage = lazy(() => import("./pages/LaserParametersPage.jsx"));
 const RingBlankPage = lazy(() => import("./pages/RingBlankPage.jsx"));
 const ShrinkagePage = lazy(() => import("./pages/ShrinkagePage.jsx"));
+const ResinSettingsPage = lazy(() => import("./pages/ResinSettingsPage.jsx"));
 const Reviews = lazy(() => import("./pages/Reviews.jsx"));
 const B2B = lazy(() => import("./pages/B2B.jsx"));
 const NotFound = lazy(() => import("./pages/NotFound.jsx"));
@@ -72,6 +73,7 @@ const app = (
                 <Route path="/toolsjewelry/ring-size/" element={<RingSizePage />} />
                 <Route path="/toolstudio/" element={<ToolsStudio />} />
                 <Route path="/toolstudio/print-settings/" element={<PrintSettingsPage />} />
+                <Route path="/toolstudio/resin-settings/" element={<ResinSettingsPage />} />
                 <Route path="/toolstudio/laser-parameters/" element={<LaserParametersPage />} />
                 <Route path="/toolstudio/shrinkage/" element={<ShrinkagePage />} />
                 <Route path="/toolsjewelry/ring-blank/" element={<RingBlankPage />} />

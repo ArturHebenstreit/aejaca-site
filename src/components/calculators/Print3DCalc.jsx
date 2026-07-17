@@ -4,6 +4,7 @@
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { Upload, X, AlertTriangle } from "lucide-react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture, LicenseNotice } from "./calcShared.jsx";
+import { RESIN_SEGMENTS, RESIN_COLORS, getResinsBySegment, getResin } from "../../data/resins.js";
 
 const STLViewer = lazy(() => import("./STLViewer.jsx"));
 
@@ -33,30 +34,27 @@ const MSLA_CONFIG = {
 // Elegoo Saturn 4 Ultra 16K build volume
 const MSLA_BUILD_VOL_CM = { x: 21.8, y: 12.3, z: 25.0 };
 
-export const RESINS = {
-  standard: {
-    price_kg: 120, density: 1.1,
-    label: { pl: "Standard", en: "Standard", de: "Standard" },
-    desc: { pl: "Prototypy, figurki hobby", en: "Prototypes, hobby figurines", de: "Prototypen, Hobby-Figuren" },
-    img: "/img/calc/3d_resins/standard.webp",
-  },
-  high_precision: {
-    price_kg: 280, density: 1.1,
-    label: { pl: "High Precision", en: "High Precision", de: "High Precision" },
-    desc: { pl: "Miniatury kolekcjonerskie, mikrodetal", en: "Collectible miniatures, micro-detail", de: "Sammler-Miniaturen, Mikrodetail" },
-    img: "/img/calc/3d_resins/high_precision.webp",
-  },
-  castable: {
-    price_kg: 1399, density: 1.1,
-    label: { pl: "Castable (BlueCast)", en: "Castable (BlueCast)", de: "Castable (BlueCast)" },
-    desc: {
-      pl: "Wzorce odlewnicze (BlueCast X-One V2 / X-Wax Filigree)",
-      en: "Casting patterns (BlueCast X-One V2 / X-Wax Filigree)",
-      de: "Gussmodelle (BlueCast X-One V2 / X-Wax Filigree)",
-    },
-    img: "/img/calc/3d_resins/castable.webp",
-  },
+// Resin segment tiles (hero cards), images generated for the 3 RESIN_SEGMENTS buckets
+const RESIN_SEGMENT_IMG = {
+  standard: "/img/calc/3d_resins/standard.webp",
+  technical: "/img/calc/3d_resins/technical.webp",
+  precision: "/img/calc/3d_resins/high_precision.webp",
 };
+
+const RESIN_SEGMENT_OPTIONS = Object.entries(RESIN_SEGMENTS).map(([id, seg]) => ({
+  id, label: seg.label, desc: seg.desc, img: RESIN_SEGMENT_IMG[id],
+}));
+
+/** Only castable resins may be picked for casting patterns */
+function isCastable(resinId) {
+  return typeof resinId === "string" && resinId.startsWith("castable");
+}
+
+/** Resins available for a segment, filtered to castable-only when applicationId is "casting" */
+function getAvailableResins(segmentId, applicationId) {
+  const bySeg = getResinsBySegment(segmentId);
+  return applicationId === "casting" ? bySeg.filter(r => isCastable(r.id)) : bySeg;
+}
 
 export const APPLICATIONS = [
   { id: "prototype", label: { pl: "Prototyp", en: "Prototype", de: "Prototyp" },
@@ -91,28 +89,30 @@ function estimatePcsPerPlateMSLA(bbox) {
 }
 
 const MSLA_LBL = {
-  pl: { application: "Zastosowanie", resin: "Żywica", layer: "Wysokość warstwy", size: "Rozmiar modelu", qty: "Nakład",
+  pl: { application: "Zastosowanie", resinSegment: "Segment żywicy", resin: "Żywica", color: "Preferowany kolor (opcjonalnie)",
+    colorDefault: "Do ustalenia", layer: "Wysokość warstwy", size: "Rozmiar modelu", qty: "Nakład",
     volume: "Objętość żywicy", resinCost: "Żywica / szt.", printTime: "Czas druku / szt.", machine: "Maszyna / szt.",
     postProc: "Post-processing / szt.", handling: "Obsługa / szt.", estCost: "Koszt szacunkowy / szt.",
     discount: "Rabat seryjny", totalProd: "Czas produkcji łącznie", minOrder: "Zastosowano minimalną wartość zlecenia (49 PLN)" },
-  en: { application: "Application", resin: "Resin", layer: "Layer height", size: "Model size", qty: "Quantity",
+  en: { application: "Application", resinSegment: "Resin segment", resin: "Resin", color: "Preferred color (optional)",
+    colorDefault: "To be decided", layer: "Layer height", size: "Model size", qty: "Quantity",
     volume: "Resin volume", resinCost: "Resin / pc", printTime: "Print time / pc", machine: "Machine / pc",
     postProc: "Post-processing / pc", handling: "Handling / pc", estCost: "Estimated cost / pc",
     discount: "Series discount", totalProd: "Total production time", minOrder: "Minimum order value applied (49 PLN)" },
-  de: { application: "Anwendung", resin: "Harz", layer: "Schichthöhe", size: "Modellgröße", qty: "Auflage",
+  de: { application: "Anwendung", resinSegment: "Harz-Segment", resin: "Harz", color: "Wunschfarbe (optional)",
+    colorDefault: "Nach Absprache", layer: "Schichthöhe", size: "Modellgröße", qty: "Auflage",
     volume: "Harzvolumen", resinCost: "Harz / Stk.", printTime: "Druckzeit / Stk.", machine: "Maschine / Stk.",
     postProc: "Nachbearbeitung / Stk.", handling: "Handhabung / Stk.", estCost: "Geschätzte Kosten / Stk.",
     discount: "Serienrabatt", totalProd: "Gesamte Produktionszeit", minOrder: "Mindestbestellwert angewendet (49 PLN)" },
 };
 
 export function calculateMSLA(params, lang) {
-  const { applicationId, resinKey: resinKeyRaw, layerId, sizeId, quantityId, stlData } = params;
+  const { applicationId, resinKey, layerId, sizeId, quantityId, stlData } = params;
   const l = MSLA_LBL[lang] || MSLA_LBL.en;
   const application = APPLICATIONS.find(a => a.id === applicationId);
   const layer = LAYER_HEIGHTS.find(ly => ly.id === layerId);
   const qTier = QUANTITY_TIERS.find(q => q.id === quantityId);
-  const resinKey = applicationId === "casting" ? "castable" : resinKeyRaw;
-  const resin = RESINS[resinKey];
+  const resin = getResin(resinKey);
   const size = stlData ? null : MSLA_SIZES.find(s => s.id === sizeId);
   if (!application || !layer || !qTier || !resin || (!stlData && !size)) return null;
   if (!qTier.qty || (size && size.custom)) return { type: "custom" };
@@ -127,7 +127,7 @@ export function calculateMSLA(params, lang) {
   const platformDivisor = Math.max(1, Math.min(qTier.qty, pcsPerPlate));
   const machineCostPerPc = (printTimeH * (MSLA_CONFIG.DEPRECIATION_PLN_H + CONFIG.ENERGY_COST_PLN * MSLA_CONFIG.ENERGY_KW)) / platformDivisor;
   let postProcessing = (MSLA_CONFIG.POST_PLATFORM_PLN / platformDivisor) + MSLA_CONFIG.POST_PC_PLN;
-  if (resinKey === "castable") postProcessing *= MSLA_CONFIG.CASTABLE_QC_MULTIPLIER;
+  if (isCastable(resinKey)) postProcessing *= MSLA_CONFIG.CASTABLE_QC_MULTIPLIER;
 
   const baseCost = resinCost + machineCostPerPc + postProcessing + MSLA_CONFIG.HANDLING_FEE;
   const margin = CONFIG.BASE_MARGIN;
@@ -174,6 +174,27 @@ export function calculateMSLA(params, lang) {
       ...(minOrderApplied ? [{ label: l.minOrder, value: "" }] : []),
     ],
   };
+}
+
+/** Text-based resin option cards: label, short desc, price hint. Mirrors MaterialCards but adds desc/price text. */
+function ResinCards({ options, value, onChange, lang }) {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+      {options.map(o => {
+        const active = value === o.id;
+        return (
+          <button key={o.id} onClick={() => onChange(o.id)}
+            className={`text-left p-3 rounded-xl border transition-all duration-200 ${
+              active ? "border-blue-400 bg-blue-400/10 shadow-lg shadow-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
+            }`}>
+            <div className={`text-xs sm:text-sm font-semibold mb-0.5 ${active ? "text-blue-300" : "text-white"}`}>{t(o.label, lang)}</div>
+            <div className="text-[11px] text-neutral-400 mb-1.5 leading-snug">{t(o.desc, lang)}</div>
+            <div className={`text-[10px] font-medium ${active ? "text-blue-300" : "text-neutral-500"}`}>{o.priceHint}</div>
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
 const FILAMENT_IMG = {
@@ -516,7 +537,9 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
 
   // ---- MSLA state ----
   const [applicationId, setApplicationId] = useState("prototype");
+  const [resinSegmentId, setResinSegmentId] = useState("standard");
   const [resinKey, setResinKey] = useState("standard");
+  const [resinColor, setResinColor] = useState("");
   const [layerId, setLayerId] = useState("standard");
   const [mslaSizeId, setMslaSizeId] = useState("S");
   const [mslaQuantityId, setMslaQuantityId] = useState("proto");
@@ -530,12 +553,24 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
     if (!mats.includes(materialKey)) setMaterialKey(mats[0]);
   }, [segment]);
 
-  // Casting patterns require the castable resin
+  // Casting patterns require the precision segment, figurines default to standard segment
   useEffect(() => {
-    if (applicationId === "casting") setResinKey("castable");
-    else if (resinKey === "castable") setResinKey("standard");
+    if (applicationId === "casting") setResinSegmentId("precision");
+    else if (applicationId === "figurine") setResinSegmentId("standard");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applicationId]);
+
+  // Keep the selected resin valid for the current segment / application, reset to the first match otherwise
+  useEffect(() => {
+    const avail = getAvailableResins(resinSegmentId, applicationId);
+    if (!avail.find(r => r.id === resinKey)) setResinKey(avail[0]?.id || "standard");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resinSegmentId, applicationId]);
+
+  // Reset the preferred color whenever the resin changes
+  useEffect(() => {
+    setResinColor("");
+  }, [resinKey]);
 
   async function handleSTLUpload(e) {
     const file = e.target.files?.[0];
@@ -605,9 +640,17 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
     id: k, label: k, sub: `${v.price_kg}zł`, img: FILAMENT_IMG[k],
   }));
 
-  const resinOptions = Object.entries(RESINS).map(([k, v]) => ({
-    id: k, label: v.label, desc: v.desc, img: v.img,
+  const resinSegmentOptions = applicationId === "casting"
+    ? RESIN_SEGMENT_OPTIONS.filter(s => s.id === "precision")
+    : RESIN_SEGMENT_OPTIONS;
+
+  const availableResins = getAvailableResins(resinSegmentId, applicationId);
+  const resinOptions = availableResins.map(r => ({
+    id: r.id, label: r.label, desc: r.desc,
+    priceHint: lang === "pl" ? `od ${Math.round(r.price_kg)} zł/kg` : `from ${Math.round(r.price_kg / CONFIG.EUR_PLN_RATE)} EUR/kg`,
   }));
+
+  const selectedResin = getResin(resinKey);
 
   const stlSummary = stlData
     ? `STL: ${stlFileName} (${(stlData.volumeCm3 * stlScale ** 3).toFixed(1)} cm³${stlScale !== 1 ? ` ×${stlScale.toFixed(2)}` : ""})`
@@ -622,7 +665,8 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
   if (tech === "msla") {
     const mslaParamsSummary = [
       t(APPLICATIONS.find(a => a.id === applicationId)?.label, lang),
-      t(RESINS[resinKey]?.label, lang),
+      t(selectedResin?.label, lang),
+      ...(selectedResin?.colorable && resinColor ? [`${ml.color}: ${resinColor}`] : []),
       t(LAYER_HEIGHTS.find(ly => ly.id === layerId)?.label, lang),
       mslaStlSummary || t(MSLA_SIZES.find(s => s.id === mslaSizeId)?.label, lang),
       t(QUANTITY_TIERS.find(q => q.id === mslaQuantityId)?.label, lang),
@@ -640,24 +684,38 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
           <MaterialCards options={APPLICATIONS} value={applicationId} onChange={setApplicationId} lang={lang} cols="grid-cols-3" />
         </CalcCard>
 
-        <CalcCard stepNum="③" label={ml.resin}>
-          <MaterialCards options={resinOptions} value={resinKey} onChange={setResinKey} lang={lang} cols="grid-cols-3" />
+        <CalcCard stepNum="③" label={ml.resinSegment}>
+          <HeroCards options={resinSegmentOptions} value={resinSegmentId} onChange={setResinSegmentId} lang={lang} cols="grid-cols-3" minH={130} />
         </CalcCard>
+
+        <CalcCard stepNum="④" label={ml.resin}>
+          <ResinCards options={resinOptions} value={resinKey} onChange={setResinKey} lang={lang} />
+        </CalcCard>
+
+        {selectedResin?.colorable && (
+          <CalcCard label={ml.color}>
+            <select value={resinColor} onChange={(e) => setResinColor(e.target.value)}
+              className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-400/50 focus:outline-none focus:ring-1 focus:ring-blue-400/30 transition-colors">
+              <option value="">{ml.colorDefault}</option>
+              {RESIN_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </CalcCard>
+        )}
 
         {isFigurine && <LicenseNotice lang={lang} />}
 
-        <CalcCard stepNum="④" label={ml.layer}>
+        <CalcCard stepNum="⑤" label={ml.layer}>
           <Chips options={LAYER_HEIGHTS} value={layerId} onChange={setLayerId} lang={lang} />
         </CalcCard>
 
-        <CalcCard stepNum="⑤" label={mslaStlData ? sl.stlSize : ml.size} id="file-upload">
+        <CalcCard stepNum="⑥" label={mslaStlData ? sl.stlSize : ml.size} id="file-upload">
           <STLUploadCard stlData={mslaStlData} stlFileName={mslaStlFileName} scale={mslaStlScale} onScaleChange={setMslaStlScale}
             onUpload={handleMslaSTLUpload} onRemove={handleMslaSTLRemove} lang={lang}
             buildVolCm={MSLA_BUILD_VOL_CM} sizePresets={MSLA_SIZE_PRESETS} />
           {!mslaStlData && <Chips options={MSLA_SIZES} value={mslaSizeId} onChange={setMslaSizeId} lang={lang} />}
         </CalcCard>
 
-        <CalcCard stepNum="⑥" label={ml.qty}><Chips options={QUANTITY_TIERS} value={mslaQuantityId} onChange={setMslaQuantityId} lang={lang} /></CalcCard>
+        <CalcCard stepNum="⑦" label={ml.qty}><Chips options={QUANTITY_TIERS} value={mslaQuantityId} onChange={setMslaQuantityId} lang={lang} /></CalcCard>
 
         <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
           <ResultHeader lang={lang} />

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Cpu, Printer, Shrink, Zap } from "lucide-react";
+import { ArrowRight, Cpu, Droplet, Printer, Shrink, Zap } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -25,9 +25,11 @@ const LABELS = {
     breadHome: "Strona główna",
     breadStudio: "sTuDiO",
     breadTools: "Narzędzia sTuDiO",
-    printCardTitle: "Parametry druku 3D",
+    printCardTitle: "Parametry druku 3D FDM",
     printCardDesc: "Dobór materiału, karty parametrów i kalkulator filamentu dla 38+ filamentów.",
     printCardBtn: "Otwórz narzędzie",
+    resinCardTitle: "Parametry druku 3D MSLA",
+    resinCardDesc: "Dobór żywicy, parametry i tabela porównawcza 13 żywic dla drukarki 16K.",
     laserCardTitle: "Kreator parametrów laserowania",
     laserCardDesc: "Parametry dla 7 typów laserów, 88 materiałów i ponad 1000 kombinacji.",
     shrinkCardTitle: "Kompensacja skurczu odlewniczego",
@@ -50,9 +52,11 @@ const LABELS = {
     breadHome: "Home",
     breadStudio: "sTuDiO",
     breadTools: "sTuDiO Tools",
-    printCardTitle: "3D Print Settings",
+    printCardTitle: "3D Print Settings FDM",
     printCardDesc: "Material selector, parameter cards and filament calculator for 38+ filaments.",
     printCardBtn: "Open tool",
+    resinCardTitle: "3D Print Settings MSLA",
+    resinCardDesc: "Resin selector, parameters and comparison table of 13 resins for a 16K printer.",
     laserCardTitle: "Laser Parameter Wizard",
     laserCardDesc: "Parameters for 7 laser types, 88 materials and over 1000 combinations.",
     shrinkCardTitle: "Casting Shrinkage Compensation",
@@ -75,9 +79,11 @@ const LABELS = {
     breadHome: "Startseite",
     breadStudio: "sTuDiO",
     breadTools: "sTuDiO-Tools",
-    printCardTitle: "3D-Druckparameter",
+    printCardTitle: "3D-Druckparameter FDM",
     printCardDesc: "Materialauswahl, Parameterkarten und Filamentrechner für 38+ Filamente.",
     printCardBtn: "Tool öffnen",
+    resinCardTitle: "3D-Druckparameter MSLA",
+    resinCardDesc: "Harzauswahl, Parameter und Vergleichstabelle von 13 Harzen für einen 16K-Drucker.",
     laserCardTitle: "Laserparameter-Assistent",
     laserCardDesc: "Parameter für 7 Lasertypen, 88 Materialien und über 1000 Kombinationen.",
     shrinkCardTitle: "Guss-Schwindungskompensation",
@@ -157,7 +163,7 @@ export default function ToolsStudio() {
         <section className="py-10 px-4 bg-neutral-950">
           <div className="max-w-3xl mx-auto">
             <div ref={printCardRef} className="reveal">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <Link
                   to="/toolstudio/print-settings/"
                   className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/20 hover:-translate-y-1 transition-all duration-300"
@@ -166,6 +172,16 @@ export default function ToolsStudio() {
                   <div>
                     <div className="text-white font-semibold text-sm group-hover:text-blue-300 transition-colors">{L.printCardTitle}</div>
                     <div className="text-neutral-400 text-xs mt-1 leading-relaxed">{L.printCardDesc}</div>
+                  </div>
+                </Link>
+                <Link
+                  to="/toolstudio/resin-settings/"
+                  className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/20 hover:-translate-y-1 transition-all duration-300"
+                >
+                  <Droplet className="w-8 h-8 text-blue-400 transition-transform duration-300 group-hover:scale-110" />
+                  <div>
+                    <div className="text-white font-semibold text-sm group-hover:text-blue-300 transition-colors">{L.resinCardTitle}</div>
+                    <div className="text-neutral-400 text-xs mt-1 leading-relaxed">{L.resinCardDesc}</div>
                   </div>
                 </Link>
                 <Link

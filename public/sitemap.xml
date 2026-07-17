@@ -44,7 +44,7 @@
   <!-- Studio -->
   <url>
     <loc>https://www.aejaca.com/studio/</loc>
-    <lastmod>2026-07-14</lastmod>
+    <lastmod>2026-07-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
 
@@ -669,7 +669,7 @@
   <!-- Studio Tools -->
   <url>
     <loc>https://www.aejaca.com/toolstudio/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-07-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.60</priority>
 
@@ -677,11 +677,19 @@
   </url>
   <url>
     <loc>https://www.aejaca.com/toolstudio/print-settings/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-07-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.60</priority>
 
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/print-settings/" />
+  </url>
+  <url>
+    <loc>https://www.aejaca.com/toolstudio/resin-settings/</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/resin-settings/" />
   </url>
   <url>
     <loc>https://www.aejaca.com/toolstudio/laser-parameters/</loc>
