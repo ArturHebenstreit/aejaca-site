@@ -8,6 +8,7 @@ import BlogCard from "../components/blog/BlogCard.jsx";
 import StudioCalculator from "../components/StudioCalculator.jsx";
 import Portfolio from "../components/Portfolio.jsx";
 import GoogleReviews from "../components/GoogleReviews.jsx";
+import { GOOGLE_BUSINESS } from "../data/googleReviews.js";
 import FAQ from "../components/FAQ.jsx";
 import Tips from "../components/Tips.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -126,6 +127,8 @@ export default function Studio() {
       sku: "AEJACA-3DPRINT",
       price: "25",
       currency: "EUR",
+      rating: GOOGLE_BUSINESS.rating,
+      reviewCount: GOOGLE_BUSINESS.totalReviews,
       url: pageUrl,
     }),
     buildProductSchema({
@@ -135,6 +138,8 @@ export default function Studio() {
       sku: "AEJACA-CO2LASER",
       price: "15",
       currency: "EUR",
+      rating: GOOGLE_BUSINESS.rating,
+      reviewCount: GOOGLE_BUSINESS.totalReviews,
       url: pageUrl,
     }),
     buildProductSchema({
@@ -144,6 +149,8 @@ export default function Studio() {
       sku: "AEJACA-FIBER",
       price: "20",
       currency: "EUR",
+      rating: GOOGLE_BUSINESS.rating,
+      reviewCount: GOOGLE_BUSINESS.totalReviews,
       url: pageUrl,
     }),
   ];
