@@ -34,6 +34,8 @@
 - [Lost-Resin Step by Step](https://www.aejaca.com/blog/lost-resin-krok-po-kroku/), how a castable resin pattern becomes a cast jewelry piece: equipment, castable resins, shrinkage compensation, full workflow
 - [Custom Miniature & Figurine Printing 16K](https://www.aejaca.com/blog/druk-miniatur-figurek-16k/), battle-game miniatures, collectible figurines, board game prototypes on the Elegoo Saturn 4 Ultra 16K, copyright rules
 - [Shrinkage Compensation Calculator](https://www.aejaca.com/toolstudio/shrinkage/), free tool converting a castable pattern size to the after-cast size for Au 585, Ag 925, Au 9K, Au 18K
+- [3D Print Settings, FDM](https://www.aejaca.com/toolstudio/print-settings/), "Parametry druku 3D FDM", free filament wizard: requirements, material, brand, parameter card, 45+ filament types, 100+ brand profiles
+- [3D Print Settings, MSLA](https://www.aejaca.com/toolstudio/resin-settings/), "Parametry druku 3D MSLA", free resin advisor: application filter, resin picker in 3 segments (13 resins), parameter cards (layer height, wash medium, UV post-cure time, hardness, density), full comparison table, FAQ, no registration
 - [Contact](https://www.aejaca.com/contact/) — project briefs, custom inquiries
 
 ## Services (AEJaCA Jewelry)
@@ -44,7 +46,7 @@ Custom handmade jewelry · 3D jewelry modeling / CAD (Rhino, Fusion 360) · enga
 
 3D modeling / CAD for technical and functional parts (Rhino, Fusion 360) · parametric design · reverse engineering · STL/SVG preparation and repair · FDM 3D printing · MSLA resin 3D printing at 16K resolution (Elegoo Saturn 4 Ultra 16K, 14 µm pixel, layers 0.05/0.03 mm) · fiber-laser marking (stainless steel, aluminum, brass) · CO2 laser engraving and cutting (wood, leather, acrylic, glass) · epoxy resin casting · UV resin casting · CNC prototyping · NFC smart tags · small-batch production · rapid prototyping · custom keychains, signs, stamps, enclosures, replacement and spare parts.
 
-**MSLA resin printing (16K):** three resin tiers, standard (PLN 120/kg, prototypes and hobby figurines), high precision (PLN 280/kg, collectible miniatures and micro-detail), and castable BlueCast (PLN 1399/kg, casting patterns for jewelry). Applications: prototypes, figurines/miniatures, jewelry casting patterns. Minimum order value PLN 49; multiple pieces printed together on one build platform (batching) lower the per-piece machine cost.
+**MSLA resin printing (16K):** 13 resin types in 3 segments (PLN/kg, * = estimated, retail-verified 2026-07-17). Standardowe: Standard 120, Water-washable (mycie wodą) 130, Plant-based eco 140, Transparentna Clear 130. Techniczne: ABS-like 3.0+ 160, Tough 150, Flexible 320, Heat-resistant 350*, Fast 140. Precyzyjne i odlewnicze: High-precision 14K 280, Rigid/Ceramic-filled 250*, Castable BlueCast X-One V2 1399, Castable BlueCast X-Wax Filigree 1399. An optional preferred-color field (18 colors) is available for colorable resins. Applications: prototypes, figurines/miniatures, jewelry casting patterns, casting is locked to the two castable BlueCast resins. Minimum order value PLN 49; multiple pieces printed together on one build platform (batching) lower the per-piece machine cost. Free resin picker and comparison table: [3D Print Settings, MSLA](https://www.aejaca.com/toolstudio/resin-settings/).
 
 **Figurines and miniatures:** collectible figurines, 28/32 mm tabletop and board-game miniatures printed on the Elegoo Saturn 4 Ultra 16K. Licensing rule (strictly enforced): AEJaCA only prints the customer's own design, a file under a valid commercial license (e.g. a merchant-tier Patreon release), or AEJaCA's own designs. Miniatures from protected tabletop wargame IP or other copyrighted figures are not printed without the client holding the license.
 
@@ -227,4 +229,4 @@ https://www.aejaca.com/contact/
 
 ---
 
-Last updated: 2026-07-14
+Last updated: 2026-07-17

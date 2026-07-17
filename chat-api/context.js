@@ -117,8 +117,15 @@ Chains (necklaces, men's chains, bracelets) have their own dedicated calculator 
 **Output:** per-piece price + total + estimated print time
 
 **MSLA Resin 16K tab, Elegoo Saturn 4 Ultra 16K, 218x123x250 mm build plate, 14 µm pixel:**
-**Applications:** Prototype · Figurine / miniature · Casting pattern (jewelry, auto-selects castable resin)
-**Resins:** Standard (120 PLN/kg, prototypes and hobby figurines) · High Precision (280 PLN/kg, collectible miniatures, micro-detail) · Castable BlueCast (1399 PLN/kg, jewelry casting patterns)
+**Applications:** Prototype · Figurine / miniature · Casting pattern (jewelry, restricted to the two castable resins below)
+**Resins: 13 types in 3 segments** (PLN/kg, * = estimated, retail-verified 2026-07-17):
+- Standardowe: Standard 120 · Water-washable (mycie wodą) 130 · Plant-based eco 140 · Transparentna Clear 130
+- Techniczne: ABS-like 3.0+ 160 · Tough 150 · Flexible 320 · Heat-resistant 350* · Fast 140
+- Precyzyjne i odlewnicze: High-precision 14K 280 · Rigid/Ceramic-filled 250* · Castable BlueCast X-One V2 1399 · Castable BlueCast X-Wax Filigree 1399
+
+**Preferred color field:** optional, 18 colors, shown only for colorable resins (not offered for the two castable BlueCast resins).
+**Casting application lock:** selecting "Casting pattern" restricts the resin choice to Castable BlueCast X-One V2 (solid elements, zero shrinkage) or X-Wax Filigree (filigree, detail from 0.2 mm).
+Full picker, parameter cards and a 13-resin comparison table: [3D Print Settings, MSLA](https://www.aejaca.com/toolstudio/resin-settings/).
 **Layer height:** 0.05 mm standard (~35 mm/h) · 0.03 mm quality (~20 mm/h)
 **Size (max dimension):** XS ≤2 cm · S 2–5 cm · M 5–10 cm · L 10–15 cm · XL >15 cm (custom quote)
 **Special:** STL file upload for 3D preview and scaling; minimum order value PLN 49; multiple pieces printed together on one build platform (batching) lower the per-piece machine cost
@@ -215,9 +222,9 @@ Chains (necklaces, men's chains, bracelets) have their own dedicated calculator 
 
 ---
 
-## 3D PRINT SETTINGS TOOL — filament wizard with inline answer capability
+## 3D PRINT SETTINGS TOOL, FDM, filament wizard with inline answer capability
 
-**Link:** https://www.aejaca.com/toolstudio/print-settings/
+**Link:** https://www.aejaca.com/toolstudio/print-settings/ ("Parametry druku 3D FDM")
 **What it is:** 4-step interactive wizard: (1) Requirements → (2) Material selection → (3) Brand selection → (4) Parameter card + filament calculator.
 **Database:** 45+ filament types, 100+ verified brand profiles, community contributions.
 
@@ -336,7 +343,46 @@ Use this table to answer ANY question about 3D print settings. Columns: Dysza (n
 - "Co to retrakcja?" → cofanie filamentu przy przemieszczeniu głowicy, zapobiega strunowaniu — typowe wartości w tabeli: PLA 3–6 mm, TPU 0–2 mm (minimalny!), PA 1–3 mm
 
 **Link do narzędzia:** https://www.aejaca.com/toolstudio/print-settings/
-**Pitch:** "Interaktywny kreator parametrów druku 3D na [aejaca.com/toolstudio/print-settings/](https://www.aejaca.com/toolstudio/print-settings/) — wybierasz wymagania (elastyczność, wytrzymałość, temp.), materiał i markę, a otrzymujesz kartę z suwakami temperatury, prędkości i kalkulatorem filamentu. Baza zawiera 45+ filamentów i 100+ profili marek, bezpłatnie."
+**Pitch:** "Interaktywny kreator parametrów druku 3D FDM na [aejaca.com/toolstudio/print-settings/](https://www.aejaca.com/toolstudio/print-settings/), wybierasz wymagania (elastyczność, wytrzymałość, temp.), materiał i markę, a otrzymujesz kartę z suwakami temperatury, prędkości i kalkulatorem filamentu. Baza zawiera 45+ filamentów i 100+ profili marek, bezpłatnie."
+
+---
+
+## 3D PRINT SETTINGS TOOL, MSLA, resin advisor with inline answer capability
+
+**Link:** https://www.aejaca.com/toolstudio/resin-settings/ ("Parametry druku 3D MSLA")
+**What it is:** free resin advisor, static data, no registration. Steps: application filter (prototype, figurine/miniature, casting pattern) → resin picker grouped in 3 segments (13 resins total) → parameter cards (layer height, wash medium, UV post-cure time, hardness, density) → full comparison table of all 13 resins → FAQ.
+**Point users here for ANY resin-selection question**, e.g. "jaka żywica do figurek", "jaka żywica do odlewu biżuterii", "czym się różni żywica standard od tough", "jaka żywica jest zmywalna wodą".
+
+**RESIN CATALOG, 13 types in 3 segments** (PLN/kg, * = estimated, retail-verified 2026-07-17):
+
+| Segment | Resin | PLN/kg | Typical use |
+|---------|-------|--------|-------------|
+| Standardowe | Standard | 120 | prototypy, figurki hobby |
+| Standardowe | Water-washable (mycie wodą) | 130 | brak IPA, łatwe czyszczenie |
+| Standardowe | Plant-based eco | 140 | żywica roślinna, niższa toksyczność |
+| Standardowe | Transparentna Clear | 130 | modele przezroczyste |
+| Techniczne | ABS-like 3.0+ | 160 | części funkcjonalne, ABS-podobna wytrzymałość |
+| Techniczne | Tough | 150 | wyższa udarność |
+| Techniczne | Flexible | 320 | elastyczne uszczelki/detale |
+| Techniczne | Heat-resistant | 350* | części narażone na temperaturę |
+| Techniczne | Fast | 140 | szybki druk, skrócony czas ekspozycji |
+| Precyzyjne i odlewnicze | High-precision 14K | 280 | kolekcjonerskie miniatury, mikro-detal |
+| Precyzyjne i odlewnicze | Rigid/Ceramic-filled | 250* | sztywność, wysoka precyzja wymiarowa |
+| Precyzyjne i odlewnicze | Castable BlueCast X-One V2 | 1399 | wzorce odlewnicze, elementy pełne, zero skurczu |
+| Precyzyjne i odlewnicze | Castable BlueCast X-Wax Filigree | 1399 | wzorce odlewnicze, filigran, detal od 0.2 mm |
+
+**Color option:** 18 kolorów do wyboru dla żywic barwnych (nie dotyczy dwóch żywic castable, które wypalane są w procesie odlewu).
+**Casting rule:** aplikacja "wzorzec do odlewu" ogranicza dobór wyłącznie do dwóch żywic castable BlueCast powyżej.
+**Client pricing (unchanged):** wydruki MSLA od 49 PLN (minimum order), wzorce castable do odlewu biżuterii typowo 90-180 PLN.
+
+**Use-case routing:**
+- "Jaka żywica do figurek/miniatur?" → High-precision 14K (280 PLN/kg, mikro-detal) lub Standard (120 PLN/kg, hobby) → link [Parametry druku 3D MSLA](https://www.aejaca.com/toolstudio/resin-settings/)
+- "Jaka żywica do odlewu biżuterii?" → wyłącznie Castable BlueCast X-One V2 lub X-Wax Filigree (1399 PLN/kg) → link [Parametry druku 3D MSLA](https://www.aejaca.com/toolstudio/resin-settings/)
+- "Jaka żywica jest zmywalna wodą?" → Water-washable 130 PLN/kg → link [Parametry druku 3D MSLA](https://www.aejaca.com/toolstudio/resin-settings/)
+- "Elastyczna żywica MSLA?" → Flexible 320 PLN/kg → link [Parametry druku 3D MSLA](https://www.aejaca.com/toolstudio/resin-settings/)
+- "Czy mogę wybrać kolor żywicy?" → tak, 18 kolorów dla żywic barwnych (nie dla castable) → link [Parametry druku 3D MSLA](https://www.aejaca.com/toolstudio/resin-settings/)
+
+**Pitch:** "Darmowy doradca żywic MSLA na [aejaca.com/toolstudio/resin-settings/](https://www.aejaca.com/toolstudio/resin-settings/): filtr zastosowania, dobór z 13 żywic w 3 segmentach, karty parametrów (wysokość warstwy, medium do mycia, czas utwardzania UV, twardość, gęstość) i pełna tabela porównawcza, bez rejestracji."
 
 ---
 
@@ -504,7 +550,8 @@ Examples of questions requiring inline calculation:
 - Studio shop (Sklep): https://www.aejaca.com/studio/#shop
 - Newsletter / 10% discount signup: https://www.aejaca.com/#newsletter
 - **Makers Tools (sTuDiO)** — hub narzędzi: https://www.aejaca.com/toolstudio/
-- **3D Print Settings Tool** — kreator parametrów druku 3D (45+ filamentów): https://www.aejaca.com/toolstudio/print-settings/
+- **3D Print Settings, FDM**, kreator parametrów druku 3D FDM (45+ filamentów): https://www.aejaca.com/toolstudio/print-settings/
+- **3D Print Settings, MSLA**, doradca żywic MSLA (13 żywic w 3 segmentach, tabela porównawcza): https://www.aejaca.com/toolstudio/resin-settings/
 - **Jewelers Tools (hub)** — all 4 tools + calculator CTA: https://www.aejaca.com/toolsjewelry/
 - **Ring Size Converter** — EU/US/UK/JP + circumference/diameter: https://www.aejaca.com/toolsjewelry/ring-size/
 - **Metal Pricing Calculator** — live spot price valuation: https://www.aejaca.com/toolsjewelry/metal-pricing/
