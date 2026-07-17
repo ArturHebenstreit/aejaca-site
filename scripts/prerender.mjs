@@ -29,6 +29,7 @@ const STATIC_ROUTES = [
   "/toolsjewelry/ring-size",
   "/toolstudio",
   "/toolstudio/print-settings",
+  "/toolstudio/resin-settings",
   "/toolstudio/laser-parameters",
   "/toolstudio/shrinkage",
   "/toolsjewelry/ring-blank",
