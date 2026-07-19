@@ -104,7 +104,7 @@ This applies to: all calculators, pricing displays, result cards, quote forms �
 
 **This is a hard rule. Every content change MUST be followed by updating ALL applicable files below before committing. No exceptions.**
 
-### Full sync checklist (5 files)
+### Full sync checklist (6 files)
 
 | File | What to update | When |
 |------|----------------|------|
@@ -113,19 +113,22 @@ This applies to: all calculators, pricing displays, result cards, quote forms �
 | `public/sitemap.xml` | Add new pages; update `<lastmod>` on changed pages (today's date `YYYY-MM-DD`) | Any page content or structure change |
 | `chat-api/context.js` | AI assistant system prompt — must reflect current calculator options, prices, weave types, blog articles, tools | Any new feature, new blog post, new calculator option, price change |
 | `src/seo/` (`seoData.js`, `schemas.js`) | Page meta titles/descriptions, structured data schemas (FAQ, Service, HowTo, Article) | New pages, changed page content, new FAQs |
+| `MDs/AEJaCA_Brand_Reference.md` | **Kompletny dokument referencyjny marki** — ceny, oferta, kalkulatory, narzędzia, SEO, equipment, opinie, copywriting. Update the relevant section(s) and set the "Wygenerowano" date at the top. | Any change to: offer, prices, equipment, tools, calculators, copy, SEO strategy, shipping, reviews count |
 
 ### Trigger → action mapping
 
 | What changed | Files to update |
 |-------------|----------------|
-| New page added | `sitemap.xml` (new URL) + `llms.txt` (Key pages) + `chat-api/context.js` (Key pages & anchors) + `seoData.js` |
-| New blog post | `sitemap.xml` + `llms.txt` (Blog entry) + `chat-api/context.js` (Blog articles table) |
-| New glossary term | `sitemap.xml` + `llms.txt` (Glossary section) + `chat-api/context.js` (Glossary terms) |
-| Calculator option changed (new weave, metal, service…) | `llms.txt` (relevant section) + `chat-api/context.js` (calculator section + use-case routing) |
-| Prices / shipping changed | `llms.txt` (FAQ + Pricing) + `chat-api/context.js` (pricing ballparks) |
-| New tool / free resource added | `llms.txt` + `chat-api/context.js` (add full tool section with inline-calc capability if applicable) |
-| New AI crawler | `llms.txt` (Crawl policy) + `robots.txt` |
-| Page content significantly updated | `sitemap.xml` (`<lastmod>`) + `llms.txt` if factual content changed |
+| New page added | `sitemap.xml` (new URL) + `llms.txt` (Key pages) + `chat-api/context.js` (Key pages & anchors) + `seoData.js` + `Brand_Reference.md` (section 8 SEO + relevant offer section) |
+| New blog post | `sitemap.xml` + `llms.txt` (Blog entry) + `chat-api/context.js` (Blog articles table) + `Brand_Reference.md` (section 8 Blog) |
+| New glossary term | `sitemap.xml` + `llms.txt` (Glossary section) + `chat-api/context.js` (Glossary terms) + `Brand_Reference.md` (section 8 Glossary) |
+| Calculator option changed (new weave, metal, service…) | `llms.txt` (relevant section) + `chat-api/context.js` (calculator section + use-case routing) + `Brand_Reference.md` (section 6) |
+| Prices / shipping changed | `llms.txt` (FAQ + Pricing) + `chat-api/context.js` (pricing ballparks) + `Brand_Reference.md` (section 3/4/5/10) |
+| New tool / free resource added | `llms.txt` + `chat-api/context.js` (add full tool section with inline-calc capability if applicable) + `Brand_Reference.md` (section 7) |
+| New AI crawler | `llms.txt` (Crawl policy) + `robots.txt` + `Brand_Reference.md` (section 8 Crawlers) |
+| Page content significantly updated | `sitemap.xml` (`<lastmod>`) + `llms.txt` if factual content changed + `Brand_Reference.md` if factual content changed |
+| New equipment / machine | `About.jsx` + `Brand_Reference.md` (section 4 Equipment) |
+| New review (Google) | `googleReviews.js` + `Brand_Reference.md` (section 11, update total count) |
 
 ### Pre-deploy verification checklist
 
@@ -135,6 +138,7 @@ Before every `git push`, confirm:
 - [ ] `robots.txt` — crawler list matches `llms.txt` Crawl policy
 - [ ] `chat-api/context.js` — assistant knows about every new feature, blog post, calculator option, price range
 - [ ] `src/seo/seoData.js` — meta title/description correct for changed pages
+- [ ] `MDs/AEJaCA_Brand_Reference.md` — relevant sections updated, "Wygenerowano" date updated
 - [ ] `npm run build` passes with 0 errors
 
 ### IndexNow (after deploy, when pages changed/added)
