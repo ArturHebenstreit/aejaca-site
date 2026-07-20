@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Award, Shield, Cpu, Gem, Printer, Flame, Droplet, Disc, Waves, PenTool, Zap, Microscope, Thermometer, Gauge } from "lucide-react";
+import { ArrowRight, Award, Shield, Cpu, Gem, Printer, Flame, Droplet, Disc, Waves, PenTool, Zap, Microscope, Thermometer, Gauge, Layers } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
@@ -56,6 +56,7 @@ const LABELS = {
       { name: "Palniki propan/tlen", desc: "Lutowanie, wyżarzanie" },
       { name: "Piece topienia i wypalania", desc: "Topienie stopu, wypalanie wzorca przed odlewem" },
       { name: "Odlew próżniowy", desc: "Maszyna i pompa próżniowa do odlewu metalu" },
+      { name: "Walcarka jubilerska VEVOR 3w1", desc: "Walcowanie blachy 0,03-6,5 mm, drutu i profili pierścionkowych; produkcja lutu Au/Ag" },
     ],
     ctaJewelry: "Zobacz biżuterię",
     ctaStudio: "Wyceń projekt w sTuDiO",
@@ -109,6 +110,7 @@ const LABELS = {
       { name: "Propane/oxygen torches", desc: "Soldering, annealing" },
       { name: "Melting and burnout kilns", desc: "Alloy melting, pattern burnout before casting" },
       { name: "Vacuum casting", desc: "Machine and vacuum pump for metal casting" },
+      { name: "VEVOR 3-in-1 rolling mill", desc: "Sheet rolling 0.03-6.5 mm, wire and ring shank profiles; Au/Ag solder production" },
     ],
     ctaJewelry: "See the jewelry",
     ctaStudio: "Quote a sTuDiO project",
@@ -162,6 +164,7 @@ const LABELS = {
       { name: "Propan-/Sauerstoffbrenner", desc: "Löten, Ausglühen" },
       { name: "Schmelz- und Brennöfen", desc: "Legierungsschmelze, Modellausbrennen vor dem Guss" },
       { name: "Vakuumguss", desc: "Maschine und Vakuumpumpe für den Metallguss" },
+      { name: "VEVOR 3-in-1-Walzwerk", desc: "Blechwalzen 0,03-6,5 mm, Draht- und Ringschienen-Profile; Au/Ag-Lot-Herstellung" },
     ],
     ctaJewelry: "Schmuck ansehen",
     ctaStudio: "sTuDiO-Projekt kalkulieren",
@@ -171,7 +174,7 @@ const LABELS = {
 };
 
 const equipIcons = [Printer, Droplet, Flame, Cpu];
-const equipIcons2 = [Disc, Waves, PenTool, Zap, Microscope, Flame, Thermometer, Gauge];
+const equipIcons2 = [Disc, Waves, PenTool, Zap, Microscope, Flame, Thermometer, Gauge, Layers];
 
 const GALLERY_PHOTOS = [
   {

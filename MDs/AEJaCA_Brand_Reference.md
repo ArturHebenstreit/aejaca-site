@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-07-19 | Wersja: 1.0*
+*Wygenerowano: 2026-07-20 | Wersja: 1.1*
 
 ---
 
@@ -126,6 +126,39 @@ Zakres cenowy (schema): EUR 5-2000
 | Palniki propan/tlen | Lutowanie, wyżarzanie |
 | Piece topienia i wypalania | Topienie stopu, wypalanie wzorca przed odlewem |
 | Odlew próżniowy (maszyna + pompa) | Odlew metalu metodą próżniową |
+| Walcarka jubilerska VEVOR 3w1 | Walcowanie blachy 0,03-6,5 mm, drutu i profili pierścionkowych; kanały: płaski/drut/półokrągły; produkcja lutu Au 585 i Ag 925 |
+
+### Specyfikacja walcarki VEVOR 3w1
+
+| Parametr | Wartość |
+|----------|---------|
+| Model | VEVOR 3w1 kombinowana |
+| Szerokość rolek | 75 mm |
+| Regulacja grubości | 0,03 - 6,5 mm |
+| Material rolek | Stal narzędziowa 45# |
+| Przekładnia | CNC (precyzyjne koła zębate) |
+| Napęd | Ręczny (korbka) |
+| Cena zakupu | ~638,90 zł |
+
+**Trzy kanały robocze:**
+| Kanał | Zastosowanie | Zakres |
+|-------|-------------|--------|
+| Płaski | Blacha, taśma, lut w blasze | 0,03-6,5 mm |
+| Drut (rowki półokrągłe) | Drut okrągły, lut w drucie | kilka rozmiarów rowków |
+| Półokrągły (profile) | Szyny pierścionkowe, profile D | profil jubilerski |
+
+**Możliwości w AEJaCA:**
+- Produkcja lutu Au 585 (twardy/średni/miękki) - blacha 0,15 mm lub drut 0,3-0,5 mm
+- Produkcja lutu Ag 925
+- Walcowanie odlewów na blachy do dalszej obróbki
+- Formowanie szyn pierścionkowych z blachy/pręta (kanał półokrągły)
+- Redukcja grubości elementów metalowych po odlewie
+- Faktury powierzchniowe przez walcowanie z matrycą (tekstury na biżuterii)
+
+**Ograniczenia:**
+- Rolki 45# nie nadają sie do platyny (zbyt twarda, ściera rolki)
+- Ręczna - przy twardszych stopach (Au 750 zahartowane) wymaga wyżarzania co 3-4 przejścia
+- Drut poniżej 0,3 mm wymaga ciągadła (nie samej walcarki)
 
 ---
 
