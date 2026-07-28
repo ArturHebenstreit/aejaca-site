@@ -1,6 +1,8 @@
 # AEJaCA - Przepustowość, kolejka produkcyjna i magazyn materiałów
 
-*Wersja robocza 1.0 | 2026-07-28 | branch `claude/shop-plan` | dokument towarzyszący `AEJaCA_Shop_Plan.md`, rozdz. 10*
+*Wersja robocza 1.1 | 2026-07-28 | branch `claude/shop-plan` | dokument towarzyszący `AEJaCA_Shop_Plan.md`, rozdz. 10*
+
+*Zmiany w 1.1: wyliczenie sufitu na realnych danych (3.4), mechanizm samokalibrujący zamiast dwóch trybów (3.3), projektowanie pod szeroką bazę materiałów (4.4), zmieniona kolejność etapów (7), ustalenia i pytania otwarte (9).*
 
 ---
 
@@ -105,21 +107,81 @@ Prosty log każdego zlecenia przez cztery tygodnie. Jedna tabela, kilkanaście p
 
 Dopiero wtedy ustawiamy parametry silnika terminów.
 
-### 3.3 Co robić w międzyczasie
+### 3.3 Mechanizm samokalibrujący zamiast dwóch trybów
 
-Sklep nie musi na to czekać. Startujemy z **ręcznie ustawionym, konserwatywnym terminem** (na przykład 5 do 7 dni roboczych), logujemy dane od pierwszego zamówienia, i przełączamy na terminy wyliczane automatycznie dopiero wtedy, gdy dane to uzasadnią.
+Pierwotnie proponowałem termin ręczny przez cztery tygodnie, a potem przełączenie na automat. **Wersja właściciela jest lepsza i ją przyjmuję:** jeden mechanizm od pierwszego dnia, uruchomiony z szerokim marginesem, który zwęża się w miarę napływu danych.
 
-To jest ważne: pomiar nie blokuje uruchomienia sklepu, tylko blokuje **automatyzację terminów**.
+Zaleta jest praktyczna. Nie ma momentu przełączenia, czyli nie ma ryzyka, że automat wystartuje z parametrami, których nikt nie sprawdził w boju. System od początku liczy tak samo, zmienia się wyłącznie szerokość bufora.
 
-### 3.4 Liczby poglądowe, do zastąpienia pomiarem
+**Bufor terminu**
 
-Żeby pokazać rząd wielkości, nie żeby na nich planować:
+```
+promised_ship_date = computed_ready_date + buffer(n, p90, otd)
+```
 
-- H2D przy 16 h dziennie przez 6 dni to 96 h tygodniowo nominalnie; przy realistycznym wykorzystaniu 60 procent zostaje około 58 h druku tygodniowo
-- Saturn 4 przy 2 do 3 platformach dziennie to około 15 platform tygodniowo, przy czym limit stawia obróbka, nie druk
-- Jedna osoba przy 4 h dziennie na samą produkcję to około 20 h operatora tygodniowo
+| Liczba zamkniętych zleceń `n` | Bufor |
+|---|---|
+| < 10 | +100 proc. czasu produkcji, nie mniej niż 3 dni robocze |
+| 10 do 29 | p90 ze stosunku czas rzeczywisty / szacowany, nie mniej niż 2 dni |
+| 30 i więcej | p90, nie mniej niż 1 dzień |
 
-**Te trzy liczby są zmyślone.** Wpisuję je tylko po to, żeby pokazać, że to operator (20 h) jest ciaśniejszy niż maszyny, a nie odwrotnie.
+**Pętla korygująca.** Liczymy wskaźnik terminowości (odsetek zleceń wysłanych do obiecanej daty) z ostatnich 20 zleceń. Jeśli spadnie poniżej 95 procent, bufor **automatycznie się rozszerza** o jeden poziom i alarmuje. To jest zabezpieczenie przed sytuacją, w której zwężamy margines na podstawie dobrego okresu, a potem systematycznie się spóźniamy.
+
+**Ten sam schemat dla ceny wiążącej**
+
+```
+binding_price = estimate_mid × (1 + risk_margin)
+```
+
+`risk_margin` startuje szeroko (rzędu 20 procent) i zbiega do zmierzonego p90 ze stosunku koszt rzeczywisty / szacowany. Niezależnie od tego działa próg wartości, powyżej którego zlecenie idzie do ręcznej weryfikacji, wzorem Mapi-Tech.
+
+**Czego pilnować.** Bufor zwęża się wyłącznie na danych z tej samej kategorii zleceń. Trzydzieści udanych druków FDM nie uprawnia do zwężenia marginesu na żywicy odlewniczej, bo to inny proces i inne ryzyko. Kalibracja musi być prowadzona osobno dla FDM, MSLA standard i MSLA castable.
+
+### 3.4 Wyliczenie sufitu na realnych danych wejściowych
+
+Dane od właściciela (2026-07-28): operator 40 h tygodniowo, H2D pracuje w nocy bez nadzoru, dostawa materiałów 2 dni robocze.
+
+**Minuty operatora, odczytane z modelu kosztowego.** Kalkulatory nie mają jawnej stawki dla druku 3D, ale mają ją dla lasera CO2 (`LABOR_PLN_MIN: 1.00`, czyli 60 PLN/h). Przy takim przeliczniku:
+
+| Pozycja z kodu | Kwota | Wynikające minuty |
+|---|---|---|
+| `POST_PLATFORM_PLN` | 20 PLN | 20 min na platformę MSLA |
+| `POST_PC_PLN` | 3 PLN | 3 min na sztukę |
+| `HANDLING_FEE` | 8 PLN | 8 min na zlecenie FDM |
+
+**To jest wnioskowanie, nie fakt.** Stawka 60 PLN/h dla obróbki wydruków wymaga potwierdzenia, bo pochodzi z innego kalkulatora. Jeśli realna jest inna, wszystkie poniższe liczby skalują się liniowo.
+
+**Maszyny**
+
+- H2D, praca nocna, 6 dni w tygodniu: 144 h nominalnie. Z odliczeniem awarii, przerw na wymianę platformy i tak zwanego ogona bezczynności (druk kończy się o 3 w nocy, maszyna stoi do rana) realistycznie około **90 h druku tygodniowo**.
+- Saturn 4: druk MSLA jest krótki, wzór daje 1,4 h dla modelu 5 cm przy warstwie 0,05 mm. Przy 3 platformach dziennie to około 18 platform i jakieś 30 h druku tygodniowo. **Maszyna nie jest tu ograniczeniem.**
+
+**Operator, 40 h tygodniowo**
+
+Z tego trzeba odliczyć pakowanie, obsługę klienta, weryfikację nietypowych wycen i pracę jubilerską. Przy założeniu 25 procent na te czynności zostaje **około 30 h tygodniowo na samą produkcję**.
+
+| Zużycie | Rachunek | Godziny |
+|---|---|---|
+| Obróbka MSLA | 18 platform × (20 min + ~8 szt. × 3 min) ≈ 44 min | ~13 h |
+| Obsługa zleceń FDM | 90 h druku ÷ 5 h średnio = 18 zleceń × 8 min | ~2,5 h |
+| **Razem produkcja** | | **~15,5 h** |
+| Zostaje na jubilerstwo, projektowanie, resztę | | ~14,5 h |
+
+**Wynikowy sufit przepustowości**
+
+- FDM: około **18 zleceń tygodniowo** (ograniczenie: godziny maszyny)
+- MSLA: około **16 do 20 zleceń tygodniowo** (ograniczenie: obróbka, nie druk)
+- Razem rzędu **30 do 38 zleceń tygodniowo**, czyli około 6 dziennie
+
+### 3.5 Wniosek, który zmienia priorytet całego systemu
+
+Sufit wychodzi wyraźnie wyżej, niż zakładałem, i **wyżej niż realny popyt nowego sklepu w pierwszych miesiącach**. Praca nocna H2D robi tu największą różnicę: podwaja dostępne godziny maszynowe i przesuwa ograniczenie z drukarki na obróbkę żywicy.
+
+To znaczy, że w krótkim terminie **kolejka nie jest narzędziem do racjonowania, tylko do trafnego obiecywania dat**. Nie budujemy jej po to, żeby odmawiać zamówień, tylko po to, żeby data na stronie odpowiadała rzeczywistości.
+
+Zmienia to kolejność ważności funkcji: rezerwacja zasobów i twarde limity są mniej pilne, a kalibracja i uczciwość terminu są pilne od pierwszego dnia.
+
+Sufit staje się istotny dopiero przy około 30 zleceniach tygodniowo. Wtedy pierwszą rzeczą, która pęknie, będzie obróbka żywicy, i to jest moment na pomoc operatorską, o której wspominasz.
 
 ---
 
@@ -179,6 +241,29 @@ inventory_moves           -- księga, tylko dopisywanie
   reason ('reserve'|'release'|'consume'|'restock'|'waste'|'stocktake')
   created_at, note
 ```
+
+### 4.4 Projektowanie pod szeroką bazę materiałów
+
+Właściciel trzyma dziś kilkanaście pozycji, ale chce projektować pod bazę znacznie szerszą. To zmienia dwie rzeczy.
+
+**Dostawa 2 dni robocze wywraca problem magazynu do góry nogami.** Przy tak krótkim czasie dostawy **szerokość oferty przestaje zależeć od tego, co leży na półce**. Możemy pokazywać w kreatorze bardzo szeroki katalog materiałów i uczciwie oznaczać: część "od ręki", resztę "plus 2 dni robocze". Magazynujemy tylko to, co się kręci, a nie wszystko, co oferujemy.
+
+To jest realna przewaga nad warsztatem, który ogranicza wybór do własnej półki, i kosztuje nas tylko dyscyplinę w oznaczaniu dostępności.
+
+**Wprowadzanie danych staje się głównym ryzykiem.** Przy kilkunastu pozycjach ręczne odejmowanie gramów jest do zniesienia. Przy stu pozycjach (typ × marka × kolor) nikt tego nie utrzyma i magazyn umrze śmiercią naturalną. Trzy sposoby, żeby temu zapobiec, w kolejności opłacalności:
+
+1. **Automatyczne odejmowanie z szacunku zlecenia.** Zlecenie zna gramaturę, więc po zakończeniu odejmuje ją samo. Zero pracy ręcznej, kosztem dryfu, który koryguje okresowa inwentaryzacja.
+2. **AMS i RFID w Bambu Lab.** H2D z AMS rozpoznaje szpule Bambu i raportuje zużycie. Warto sprawdzić, czy da się to wyciągnąć przez lokalne MQTT drukarki i podpiąć jako źródło prawdy dla filamentów Bambu. To wymaga weryfikacji technicznej, nie przesądzam wykonalności.
+3. **Kod QR na szpuli i butelce**, skanowany przy zakładaniu. Tanie, działa dla materiałów spoza Bambu.
+
+Realistycznie: punkt 1 od razu, punkt 3 dla żywic (bo tam zużycie jest najbardziej nieprzewidywalne), punkt 2 do zbadania.
+
+**Rozdział katalogu od magazynu.** Przy szerokiej bazie tym bardziej trzeba trzymać osobno:
+
+- **katalog oferowany** - co klient może wybrać w kreatorze (szeroki, oparty o `filament_types` i `resins.js`)
+- **magazyn** - co fizycznie mamy (wąski, `inventory_items`)
+
+Pozycja w magazynie wskazuje na pozycję w katalogu, nigdy odwrotnie. Materiał bez wpisu magazynowego jest po prostu oznaczony jako "plus 2 dni robocze", a nie znika z oferty.
 
 **Dlaczego księga, a nie sam licznik.** Licznik stanu magazynowego w warsztacie rozjeżdża się z rzeczywistością w kilka tygodni, bo zawsze jest jakiś nieudany druk, resztka na dnie butelki albo szpula zważona na oko. Księga pozwala odtworzyć, skąd wzięła się różnica, i skorygować ją wpisem `stocktake` zamiast nadpisywać liczbę. Bez tego magazyn po miesiącu przestaje być wiarygodny, a wtedy przestaje być używany.
 
@@ -243,25 +328,29 @@ Ostrożnie z jednym: podpowiedź musi być **techniczna, a nie sprzedażowa**. Z
 
 ## 7. Etapy wdrożenia
 
-### Etap 1: log i pomiar (bez kodu na stronie)
+Kolejność zmieniona względem wersji 1.0, zgodnie z ustaleniem, że mechanizm ma działać od początku i korygować się w trakcie.
 
-Tabele `production_jobs` i `inventory_moves` plus prosty panel do wpisywania rzeczywistych czasów i zużycia. Cztery tygodnie zbierania danych. Sklep w tym czasie podaje termin konserwatywny, ustawiony ręcznie.
+### Etap 1: silnik terminów z szerokim buforem plus log
 
-### Etap 2: magazyn
+Tabele `machines`, `production_jobs`, `capacity_blackouts`. Silnik z rozdziału 5 liczy datę od pierwszego dnia, ale z buforem +100 procent i minimum 3 dni roboczych. Równolegle każde zlecenie zapisuje `est_*`, a panel pozwala dopisać `actual_*` w minutę po zakończeniu.
 
-`inventory_items` z realnym stanem, rezerwacje przy zamówieniu, statusy dostępności w kreatorze. To można wdrożyć **przed** automatycznymi terminami, bo informacja "mamy na stanie" jest wartościowa nawet przy ręcznym terminie.
+Efekt: klient od razu widzi konkretną datę, my od razu zbieramy dane do zwężania.
 
-### Etap 3: kolejka i automatyczne terminy
+### Etap 2: magazyn z automatycznym odejmowaniem
 
-Silnik z rozdziału 5, uruchomiony na parametrach z pomiaru. Przełączenie z terminu ręcznego na wyliczany.
+`inventory_items` i `inventory_moves`. Odejmowanie z szacunku zlecenia, inwentaryzacja korygująca. Statusy "od ręki" i "plus 2 dni robocze" w kreatorze.
 
-### Etap 4: kalibracja ciągła
+### Etap 3: pętla kalibrująca
 
-Porównywanie `est_*` z `actual_*`, automatyczne korygowanie współczynników. Alarm, gdy odchylenie rośnie.
+Automatyczne zwężanie bufora według progów `n`, wskaźnik terminowości, alarm i automatyczne rozszerzenie przy spadku poniżej 95 procent. Osobne serie dla FDM, MSLA standard i MSLA castable.
 
-### Etap 5: zamówienia do dostawców
+### Etap 4: zwężenie pasa cenowego
 
-Automatyczna lista braków na podstawie `reorder_point_g` i rezerwacji w kolejce.
+Zamiana `-30 / +40 procent` na cenę wiążącą z marginesem ryzyka wyliczonym z tych samych danych. Próg ręcznej weryfikacji dla wartości odstających.
+
+### Etap 5: zamówienia do dostawców i integracje
+
+Automatyczna lista braków na podstawie `reorder_point_g` i rezerwacji. Do zbadania: odczyt zużycia filamentu z AMS w H2D, kody QR dla żywic.
 
 ---
 
@@ -281,13 +370,25 @@ Ostatni wiersz wymaga komentarza. W `calcShared.jsx` mamy dziś `TOLERANCE_LOW: 
 
 ---
 
-## 9. Co wymaga Twojej decyzji
+## 9. Ustalenia i to, co zostało otwarte
 
-1. **Ile godzin dziennie realnie poświęcasz na samą produkcję?** To jest liczba, która ustawia sufit całego systemu, i podejrzewam, że jest ciaśniejsza niż godziny maszynowe.
-2. **Czy H2D pracuje w nocy bez nadzoru?** Zmienia dostępne godziny maszynowe o współczynnik dwa.
-3. **Ile pozycji materiałowych realnie trzymasz na stanie?** Jeśli to kilkanaście, magazyn jest prosty. Jeśli kilkadziesiąt kolorów, potrzebna jest inna ergonomia wprowadzania danych.
-4. **Jakie masz realne czasy dostawy filamentów i żywic od dostawców?** To wprost wchodzi do obiecywanych terminów.
-5. **Czy zgadzasz się na cztery tygodnie pomiaru przed automatycznymi terminami?** Alternatywa to szybszy start z ryzykiem obiecywania dat, których nie dowozimy.
+### 9.1 Ustalone (2026-07-28)
+
+| Parametr | Wartość | Konsekwencja |
+|---|---|---|
+| Czas operatora | 40 h tygodniowo, w razie potrzeby pomoc | Około 30 h na produkcję po odliczeniu obsługi |
+| Praca nocna H2D | Tak, standardowo | Około 90 h druku FDM tygodniowo, ograniczenie przesuwa się na obróbkę żywicy |
+| Baza materiałów | Dziś kilkanaście pozycji, projektujemy pod szeroką | Rozdział katalogu od magazynu, automatyczne odejmowanie |
+| Dostawa od dostawcy | 2 dni robocze | Szeroka oferta bez szerokiego magazynu |
+| Tryb uruchomienia | Mechanizm od początku, szeroki bufor, korekta w trakcie | Brak momentu przełączenia, jedna ścieżka kodu |
+
+### 9.2 Otwarte
+
+1. **Stawka godzinowa dla obróbki wydruków.** Przyjąłem 60 PLN/h przez analogię do kalkulatora CO2. Wszystkie wyliczenia minut operatora skalują się od tej liczby, więc warto ją potwierdzić.
+2. **Podział 40 h między produkcję a resztę.** Założyłem 75 na 25. Jeśli jubilerstwo zjada więcej, sufit MSLA spada proporcjonalnie.
+3. **Ile realnie sztuk mieści się na typowej platformie MSLA.** Wpisałem 8 jako średnią, ale to zgadywanie, a wpływa wprost na minuty obróbki.
+4. **Dni pracy w tygodniu.** Liczyłem 6. Przy 5 wszystkie sufity spadają o jakieś 17 procent.
+5. **Czy odczyt zużycia z AMS w H2D jest technicznie dostępny.** Do sprawdzenia, nie przesądzam.
 
 ---
 
