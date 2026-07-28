@@ -32,7 +32,7 @@ Współrzędne GPS: 52.0736, 21.0724
 Polski (pl), English (en), Deutsch (de)
 
 ### Ocena Google
-5.0 / 5.0 - 24 opinie (dane z 2026-07)
+5.0 / 5.0 - 25 opinii Google + 1 opinia Trustpilot (dane z 2026-07-28)
 
 ---
 
@@ -398,7 +398,7 @@ SEO title PL: "Kalkulator kompensacji skurczu odlewniczego | AEJaCA sTuDiO"
 |---------|-------|
 | Organization | Strona główna, Studio, Jewelry |
 | LocalBusiness | Strona główna (geo: Józefosław) |
-| Product + aggregateRating (5.0 / 24) | Studio (3x SKU), Jewelry (3x SKU) |
+| Product + aggregateRating (5.0 / 25) | Studio (3x SKU), Jewelry (3x SKU) |
 | Service + priceRange | Studio, Jewelry |
 | BreadcrumbList | Wszystkie podstrony |
 | FAQPage | B2B, narzędzia, blog |

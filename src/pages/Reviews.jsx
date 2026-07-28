@@ -1,5 +1,6 @@
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
+import { TRUSTPILOT_BUSINESS } from "../data/googleReviews.js";
 
 const LABELS = {
   pl: {
@@ -28,11 +29,79 @@ const LABELS = {
   },
 };
 
+const TRUSTPILOT_SCORE = {
+  pl: { score: "TrustScore", on: "Zobacz na" },
+  en: { score: "TrustScore", on: "See it on" },
+  de: { score: "TrustScore", on: "Ansehen auf" },
+};
+
 const TRUSTPILOT_URL = {
   pl: "https://pl.trustpilot.com/review/aejaca.com",
   de: "https://de.trustpilot.com/review/aejaca.com",
   en: "https://www.trustpilot.com/review/aejaca.com",
 };
+
+// Official Trustpilot star: white glyph on the brand green square.
+function TpStar({ filled = true }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="inline-flex items-center justify-center w-6 h-6 rounded-[3px]"
+      style={{ backgroundColor: filled ? "#00b67a" : "#dcdce6" }}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff">
+        <path d="M12 2.5l2.9 6.4 6.9.7-5.2 4.7 1.5 6.9L12 17.6 5.9 21.2l1.5-6.9L2.2 9.6l6.9-.7L12 2.5z" />
+      </svg>
+    </span>
+  );
+}
+
+/**
+ * Polish needs three plural forms, English and German two.
+ * 1 opinia | 2-4 opinie | 5+ opinii (with the 12-14 exception).
+ */
+function reviewCountLabel(n, lang) {
+  if (lang === "de") return n === 1 ? "1 Bewertung" : `${n} Bewertungen`;
+  if (lang === "en") return n === 1 ? "1 review" : `${n} reviews`;
+  const last = n % 10;
+  const lastTwo = n % 100;
+  if (n === 1) return "1 opinia";
+  if (last >= 2 && last <= 4 && (lastTwo < 12 || lastTwo > 14)) return `${n} opinie`;
+  return `${n} opinii`;
+}
+
+// Static aggregate, deliberately NOT wired into JSON-LD. The Organization
+// schema already carries an aggregateRating built from Google reviews, and a
+// second rating from another platform on the same entity would misreport it.
+function TrustpilotScore({ lang }) {
+  const S = TRUSTPILOT_SCORE[lang] || TRUSTPILOT_SCORE.en;
+  const { rating, totalReviews, profileUrl } = TRUSTPILOT_BUSINESS;
+  const rounded = Math.round(rating);
+
+  return (
+    <a
+      href={profileUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex flex-col items-center gap-2 mb-8 group"
+    >
+      <div className="flex items-center gap-1">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <TpStar key={i} filled={i <= rounded} />
+        ))}
+      </div>
+      <div className="text-sm text-neutral-300">
+        <span className="font-semibold text-white">
+          {S.score} {rating.toFixed(1).replace(".", lang === "en" ? "." : ",")}
+        </span>
+        <span className="text-neutral-500"> · {reviewCountLabel(totalReviews, lang)}</span>
+      </div>
+      <div className="text-xs text-neutral-600 group-hover:text-neutral-400 transition-colors">
+        {S.on} Trustpilot
+      </div>
+    </a>
+  );
+}
 
 export default function Reviews() {
   const { lang } = useLanguage();
@@ -62,6 +131,9 @@ export default function Reviews() {
         <p className="text-neutral-400 text-sm max-w-sm mb-10 leading-relaxed">
           {L.sub}
         </p>
+
+        {/* Trustpilot aggregate score */}
+        <TrustpilotScore lang={lang} />
 
         {/* CTA buttons */}
         <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm sm:max-w-none sm:justify-center">
