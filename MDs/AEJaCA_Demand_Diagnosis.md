@@ -1,6 +1,6 @@
 # AEJaCA - Diagnoza popytu
 
-*Wersja 1.0 | 2026-07-28 | branch `claude/shop-plan` | dane: Google Search Console, 3 miesiące do 28.07.2026*
+*Wersja 1.1 | 2026-07-28 | branch `claude/shop-plan` | dane: Google Search Console, 3 miesiące do 28.07.2026*
 
 ---
 
@@ -153,6 +153,68 @@ Słownik i narzędzia ściągają ruch informacyjny, w dodatku anglojęzyczny. T
 Do zweryfikowania w raporcie "Linki". Przy pozycji 11,7 przy dobrej treści to najbardziej prawdopodobna brakująca składowa.
 
 ---
+
+## 6a. Dane z Google Business Profile i raportu Linki (28.07.2026)
+
+### Profil firmy, 6 miesięcy
+
+| Wskaźnik | Wartość |
+|---|---|
+| Wyświetlenia profilu | **363** |
+| Interakcje na profilu | **13** (przez pół roku) |
+| Wyszukiwarka Google, mobile | 120 (33 proc.) |
+| Wyszukiwarka Google, desktop | 88 (24 proc.) |
+| Mapy, mobile | 84 (23 proc.) |
+| Mapy, desktop | 71 (20 proc.) |
+| Liczba fraz | < 50 |
+| Fraza numer 1 | **"aejaca - artisan elegance jewelry and crafted art"** (< 15) |
+
+**To jest rozstrzygające.** Najczęstsza fraza prowadząca do profilu to **pełna nazwa firmy**. W języku Google Business to są wyszukiwania "bezpośrednie", czyli ludzie, którzy już nas znają. Wyszukiwań "z odkrycia", czyli po kategorii ("jubiler Piaseczno", "druk 3D Warszawa"), praktycznie nie ma.
+
+Jednocześnie: **363 wyświetlenia profilu wobec 26 kliknięć z wyszukiwarki na stronę**. Profil firmy jest dziś **czternaście razy większym kanałem niż cała witryna**, mimo że nikt się nim nie zajmuje.
+
+### Linki przychodzące
+
+| Wskaźnik | Wartość |
+|---|---|
+| Linki zewnętrzne, łącznie | **4** |
+| Domeny linkujące | 2: `trustpilot.com` (3 strony), `reddit.com` (1) |
+| Teksty linków | "odwiedź tę stronę", "visit website", *(pusta)*, "aejaca ... logo" |
+| Linki wewnętrzne wg Google | 39, tylko na 6 stronach |
+
+Cztery linki zewnętrzne to w praktyce zero. **To wyjaśnia średnią pozycję 11,7 lepiej niż cokolwiek innego.** Treść jest, technika od dziś naprawiona, ale bez sygnałów zaufania Google nie ma powodu stawiać nas wyżej.
+
+Żaden z tekstów linków nie zawiera słowa opisującego usługę. Same "odwiedź tę stronę" i logo.
+
+Uwaga do 39 linków wewnętrznych: sprawdziłem kod i **markup jest poprawny**. `BlogCard`, słownik i nawigacja używają prawdziwych `<Link>`. Wyjątkiem są pozycje rozwijane bez własnej trasy oraz kotwice sekcji, renderowane jako `<button>`, ale to nie są osobne strony. Niska liczba w raporcie odzwierciedla raczej to, że Google przeczołgał witrynę płytko, co jest spójne z blokadami indeksacji naprawionymi 28.07. Nie traktuję tego jako błędu do naprawy, tylko jako wskaźnik do obserwacji.
+
+### Wniosek łączny
+
+Oba kanały, wyszukiwarka i Mapy, obsługują wyłącznie ludzi, **którzy już znają nazwę**. To dokładnie odpowiada opisowi właściciela: klienci przychodzą z polecenia i z pracy. Internet tego nie wzmacnia, tylko odnotowuje.
+
+**Nie mamy problemu z konwersją ani z treścią. Nie istniejemy dla nikogo, kto nas nie zna.**
+
+## 6b. Trzy dźwignie w kolejności szybkości działania
+
+### 1. Kategorie w profilu firmy (dni)
+
+W Google Business to **kategoria główna i kategorie dodatkowe decydują, na jakie zapytania kategorialne profil w ogóle się pokazuje**. Skoro fraz "z odkrycia" nie ma, pierwsze podejrzenie pada na kategorie: albo są zbyt wąskie, albo nie ma dodatkowych.
+
+Kandydaci: usługa druku 3D, grawerowanie, jubiler, projektowanie, warsztat rzemieślniczy. Do tego lista usług, zdjęcia realizacji i posty.
+
+Ranking w Mapach na zapytania lokalne jest nieporównanie łatwiejszy niż ranking w wynikach webowych. **To jest najszybsza dostępna droga do pierwszych zleceń.**
+
+### 2. Reklama Google z kredytem 1200 zł (dni)
+
+W panelu widnieje oferta 1200 zł na start dla nowych reklamodawców. Przy zerowym ruchu organicznym i braku czasu na akwizycję bezpośrednią to jedyny kanał, który **kupuje ruch od razu**, i to na frazy o wysokiej intencji ("druk 3d warszawa", "grawerowanie laserowe piaseczno").
+
+Kredyt pozwala przetestować, czy takie zapytania w ogóle konwertują u nas, zanim wydamy własne pieniądze na SEO pod te same frazy.
+
+### 3. Linki i strony lokalne (miesiące)
+
+Cztery linki to sufit dla wszystkiego innego. Źródła realne i tanie: katalogi firm (Panorama Firm, Aleo, Oferteo), profile w mediach społecznościowych z linkiem, profile Etsy, lokalne grupy i fora, strony dostawców i partnerów.
+
+Równolegle strony lokalne, których nie mamy ani jednej.
 
 ## 7. Czego jeszcze nie wiem
 
