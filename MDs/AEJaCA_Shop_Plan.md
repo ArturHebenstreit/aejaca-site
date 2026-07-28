@@ -379,6 +379,8 @@ Ponowne zamówienia, cenniki B2B, śledzenie statusu produkcji. Mamy już stron�
 
 Ryzyko przepustowości jest moim zdaniem najbardziej niedoceniane. Kalkulator, który tylko wycenia, nie zobowiązuje do niczego. Sklep, który przyjmuje płatność, zobowiązuje.
 
+Ten temat rozwija osobny dokument: **`MDs/AEJaCA_Production_Capacity_Plan.md`** (pomiar przepustowości, kolejka produkcyjna, magazyn filamentów i żywic, algorytm obietnicy terminu).
+
 ---
 
 ## 11. Co wymaga Twojej decyzji
