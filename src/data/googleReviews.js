@@ -21,11 +21,11 @@
 //   translations — { en, pl, de } — opcjonalne tłumaczenia (fallback: oryginał)
 //
 // SCHEMA.ORG:
-// - aggregateRating pokazuje 5.0 / 24 w SERP (gwiazdki)
+// - aggregateRating pokazuje 5.0 / 25 w SERP (gwiazdki)
 // - Review[] z publisher:Google = jawna atrybucja (SEO-safe)
 // - W JSON-LD trafiają TYLKO opinie z treścią (Google guidelines wymagają reviewBody)
 // - Na stronie cytujemy tylko opinie z komentarzem (od najnowszej); rating-only
-//   nie są wyświetlane, ale liczą się w aggregateRating (reviewCount = 24)
+//   nie są wyświetlane, ale liczą się w aggregateRating (reviewCount = 25)
 // ============================================================
 
 export const GOOGLE_BUSINESS = {
@@ -41,18 +41,71 @@ export const GOOGLE_BUSINESS = {
   writeReviewUrl: "https://search.google.com/local/writereview?placeid=ChIJE7k_bwABwGwRNtWGAYfCHH4",
   // Agregaty (aktualizuj przy zmianach)
   rating: 5.0,
-  totalReviews: 24,
+  totalReviews: 25,
 };
 
+// ============================================================
+// TRUSTPILOT — osobne źródło, świadomie NIE łączone z Google
+// ------------------------------------------------------------
+// Dlaczego osobno: buildReviewsAugmentedOrganization emituje każdą
+// opinię z publisher: "Google". Dopisanie tu opinii z Trustpilota
+// zafałszowałoby atrybucję w JSON-LD i rozjechało reviewCount
+// z rzeczywistą liczbą opinii na Google Business Profile.
+//
+// Widget na stronie głównej (TrustpilotWidget.jsx) ciąga dane na
+// żywo z Trustpilota, więc te wartości służą wyłącznie tam, gdzie
+// potrzebujemy ich po stronie serwera (prerender, treści).
+// Aktualizuj ręcznie przy zmianach.
+// ============================================================
+
+export const TRUSTPILOT_BUSINESS = {
+  profileUrl: "https://www.trustpilot.com/review/aejaca.com",
+  writeReviewUrl: "https://www.trustpilot.com/evaluate/aejaca.com",
+  rating: 5.0,
+  totalReviews: 1,
+};
+
+export const TRUSTPILOT_REVIEWS = [
+  {
+    id: "tp1",
+    author: "Jakub",
+    rating: 5,
+    date: "2026-07-28",
+    originalLang: "pl",
+    title: "Cudownie wykonana praca",
+    text: "Cudownie wykonana praca! Kontakt był bardzo szybki i łatwy. Wspólnie z AEJaCA mogłem dojść do finalnego designu a wystarczył tylko pomysł. Zdecydowanie polecam!",
+    translations: {
+      en: "Wonderfully executed work! Contact was very quick and easy. Together with AEJaCA I was able to arrive at the final design, and an idea was all it took. I definitely recommend them!",
+      de: "Wunderbar ausgeführte Arbeit! Der Kontakt war sehr schnell und unkompliziert. Gemeinsam mit AEJaCA kam ich zum finalen Design, und eine Idee genügte. Ich kann sie absolut empfehlen!",
+    },
+    // Uwaga: ten sam klient zostawił tę samą treść także na Google (r25).
+    // Nie cytować obu naraz na jednej liście, bo wygląda to na sztuczne
+    // zwielokrotnienie tej samej opinii.
+    alsoOnGoogle: "r25",
+  },
+];
+
 // -------------------------------------------------------------------
-// 24 rzeczywiste opinie z Google Maps (stan: lipiec 2026)
-// 10 z treścią + 14 rating-only (5★, bez tekstu, normalne na Google)
+// 25 rzeczywistych opinii z Google Maps (stan: lipiec 2026)
+// 11 z treścią + 14 rating-only (5★, bez tekstu, normalne na Google)
 // Daty szacunkowe "miesiąc temu" — wszystkie w marcu 2026,
 // oprócz Artur Hebenstreit (2 mies. temu wg odpowiedzi właściciela).
 // -------------------------------------------------------------------
 
 export const REVIEWS = [
-  // --- Z TREŚCIĄ (9) ---
+  // --- Z TREŚCIĄ (10) ---
+  {
+    id: "r25",
+    author: "Jacob",
+    rating: 5,
+    date: "2026-07-28",
+    originalLang: "pl",
+    text: "Cudownie wykonana praca! Kontakt był bardzo szybki i łatwy. Wspólnie z AEJaCA mogłem dojść do finalnego designu a wystarczył tylko pomysł. Zdecydowanie polecam!",
+    translations: {
+      en: "Wonderfully executed work! Contact was very quick and easy. Together with AEJaCA I was able to arrive at the final design, and an idea was all it took. I definitely recommend them!",
+      de: "Wunderbar ausgeführte Arbeit! Der Kontakt war sehr schnell und unkompliziert. Gemeinsam mit AEJaCA kam ich zum finalen Design, und eine Idee genügte. Ich kann sie absolut empfehlen!",
+    },
+  },
   {
     id: "r1",
     author: "Paweł Kołaszewski",
