@@ -1,12 +1,14 @@
 # AEJaCA - Przepustowość, kolejka produkcyjna i magazyn materiałów
 
-*Wersja robocza 1.3 | 2026-07-28 | branch `claude/shop-plan` | dokument towarzyszący `AEJaCA_Shop_Plan.md`, rozdz. 10*
+*Wersja robocza 1.4 | 2026-07-28 | branch `claude/shop-plan` | dokument towarzyszący `AEJaCA_Shop_Plan.md`, rozdz. 10*
 
 *Zmiany w 1.1: wyliczenie sufitu na realnych danych (3.4), mechanizm samokalibrujący zamiast dwóch trybów (3.3), projektowanie pod szeroką bazę materiałów (4.4), zmieniona kolejność etapów (7), ustalenia i pytania otwarte (9).*
 
 *Zmiany w 1.2: przeliczenie sufitu przy stawce 100 PLN/h, podziale czasu 50 na 50 i 5 dniach roboczych (3.4), znalezisko o niedoszacowaniu kosztu obróbki (3.6), potwierdzona wykonalność odczytu zużycia filamentu z AMS przez MQTT (4.4).*
 
 *Zmiany w 1.3: obróbka 15 min na sztukę przeliczona na sufit w sztukach (3.4), maszyny okazują się wykorzystane w ~30 proc. (3.5), termin jako bufor liczony z obłożenia (3.5a), rabat seryjny działa odwrotnie do założenia (3.6a), liczenie sztuk na platformie już w kodzie (1.3).*
+
+*Zmiany w 1.4: czasy obróbki rozdzielone na technologie (FDM 6 min, MSLA 10 min), sufit ~107 sztuk i ~24 zlecenia tygodniowo (3.4), wąskie gardło różne dla FDM i MSLA (3.5), wycena FDM okazuje się poprawna, korekta dotyczy wyłącznie żywicy (3.6).*
 
 ---
 
@@ -178,49 +180,56 @@ Dane od właściciela: operator 40 h tygodniowo w podziale 50 procent produkcja 
 
 **Operator: 20 h tygodniowo na produkcję (1200 minut)**
 
-Czas obróbki przyjęty przez właściciela: **średnio 15 minut na sztukę**, niezależnie od technologii, plus stały narzut na platformę.
+Czasy obróbki przyjęte przez właściciela, **rozdzielone na technologie**:
 
 | Czynność | Czas | Co się na to składa |
 |---|---|---|
-| Obróbka sztuki | **15 min** | usunięcie podpór, doczyszczenie, kontrola, pakowanie |
+| Obróbka sztuki FDM | **6 min** | zdjęcie z platformy, usunięcie podpór, kontrola, pakowanie |
+| Obróbka sztuki MSLA | **10 min** | usunięcie podpór, doczyszczenie, kontrola, pakowanie |
 | Narzut na platformę MSLA | ~25 min | spust, mycie w IPA, zdjęcie z platformy, filtrowanie żywicy |
 
-**Sufit trzeba teraz liczyć w sztukach, nie w zleceniach.** Przy 15 minutach na sztukę czas operatora rośnie liniowo z liczbą sztuk, a czas maszyny prawie nie. To odwraca całą arytmetykę.
+Rozdzielenie technologii jest istotne, bo odbudowuje różnicę, którą jedna uśredniona liczba zacierała: przy FDM praca rąk jest krótka i ograniczeniem zostaje maszyna, przy MSLA jest odwrotnie.
 
-Czas platformy MSLA z `p` sztukami: `25 + 15p` minut. Przepustowość w sztukach na minutę: `p / (25 + 15p)`.
+**MSLA: sufit liczony w sztukach**
 
-| Sztuk na platformie | Minut na platformę | Sztuk tygodniowo z 1200 minut |
+Czas platformy z `p` sztukami: `25 + 10p` minut.
+
+| Sztuk na platformie | Minut na platformę | Sztuk tygodniowo, gdyby cały czas szedł na MSLA |
 |---|---|---|
-| 1 | 40 | 30 |
-| 4 | 85 | 56 |
-| 8 | 145 | 66 |
-| 20 | 325 | 74 |
+| 1 | 35 | 34 |
+| 4 | 65 | 74 |
+| 8 | 105 | 91 |
+| 20 | 225 | 107 |
 
-Granica przy nieskończenie dużej platformie to `1200 / 15 = 80 sztuk`. **Sufit twardy to około 70 do 80 sztuk tygodniowo**, i nie ruszy go ani szybsza drukarka, ani lepsze upakowanie platformy.
+Granica teoretyczna to `1200 / 10 = 120 sztuk`.
 
 **Scenariusz mieszany**
 
 | Zużycie | Rachunek | Minuty |
 |---|---|---|
-| FDM: 14 zleceń po średnio 2 szt. | 28 szt. × 15 min | 420 |
-| MSLA: 5,4 platformy po 8 szt. | 43 szt. × 15 min + 5,4 × 25 min | 780 |
-| **Razem** | **71 sztuk** | **1200 z 1200** |
+| FDM: 14,4 platformy po ~2 szt. = 29 szt. | 29 × 6 min | 174 |
+| MSLA: 9,8 platformy po 8 szt. = 78 szt. | 78 × 10 min + 9,8 × 25 min | 1026 |
+| **Razem** | **107 sztuk, ~24 zlecenia** | **1200 z 1200** |
 
-**Wynikowy sufit: około 70 sztuk tygodniowo.** Przełożenie na zlecenia zależy od średniej wielkości zamówienia: przy 3 do 4 sztukach na zlecenie to **około 20 zleceń tygodniowo**, przy zamówieniach jednosztukowych bliżej 60.
+**Wynikowy sufit: około 107 sztuk i 24 zlecenia tygodniowo.** To jest o połowę więcej sztuk niż przy 15 minutach na wszystko, ale wciąż operator jest wykorzystany w 100 procentach.
 
-### 3.5 Maszyny stoją, człowiek jest wąskim gardłem w całości
+### 3.5 Wąskie gardło przesuwa się zależnie od technologii
 
-To jest najostrzejszy wniosek z całego wyliczenia i zmienia się względem wersji 1.2.
+Po rozdzieleniu czasów obraz przestaje być jednorodny i to jest praktycznie użyteczne.
 
-Saturn 4 mógłby zrobić 20 platform tygodniowo, czyli przy 8 sztukach na platformie 160 sztuk. Operator obsłuży niecałe 5,5 platformy. **Maszyna wykorzystana w około 27 procentach.** H2D podobnie: 72 h dostępnego druku, wykorzystane może 40 h.
+| | Zasób ograniczający | Wykorzystanie maszyny |
+|---|---|---|
+| **FDM (H2D)** | **godziny maszyny** | ~100 proc. z 72 h dostępnych |
+| **MSLA (Saturn 4)** | **minuty operatora** | ~49 proc. (9,8 z 20 możliwych platform) |
 
 Konsekwencje, w kolejności ważności:
 
-1. **Kupowanie kolejnej drukarki nie zwiększy przepustowości ani o sztukę.** Zwiększy ją wyłącznie drugi człowiek albo skrócenie 15 minut na sztukę.
-2. **Każda minuta ścięta z obróbki sztuki daje 80 minut tygodniowo**, czyli ponad 5 sztuk. Inwestycja w stację mycia i doświetlania, lepsze ustawienia podpór albo szlifierkę wibracyjną zwraca się szybciej niż jakikolwiek sprzęt drukujący.
-3. **Kolejka musi rezerwować minuty operatora jako zasób nadrzędny.** Rezerwacja godzin maszyny jest przy takim obłożeniu formalnością.
+1. **Przy FDM druga drukarka faktycznie coś dałaby**, bo H2D pracuje na styk. Obróbka 6 minut na sztukę zajmuje tylko 174 z 1200 minut operatora, więc druga maszyna FDM miałaby kto obsłużyć.
+2. **Przy MSLA druga drukarka nie dałaby nic.** Saturn stoi w połowie czasu, bo operator nie nadąża z obróbką. Tu dźwignią jest wyłącznie skrócenie 10 minut albo druga para rąk.
+3. **Każda minuta ścięta z obróbki MSLA daje 120 minut tygodniowo**, czyli 12 dodatkowych sztuk. Stacja mycia i doświetlania nadal zwraca się szybciej niż sprzęt drukujący, ale argument jest teraz słabszy niż przy 15 minutach.
+4. **Kolejka musi rezerwować oba zasoby**, bo żaden nie jest już oczywistą formalnością. Przy FDM wiąże maszyna, przy MSLA człowiek.
 
-To jest też odpowiedź na pytanie, kiedy druga osoba. Nie "przy suficie", tylko **od momentu, w którym zlecenia zaczną regularnie przekraczać 50 sztuk tygodniowo**, bo wtedy zaczniemy odrzucać pracę, którą maszyny spokojnie by wykonały.
+Odpowiedź na pytanie o drugą osobę: **od momentu, w którym zlecenia MSLA zaczną regularnie przekraczać 70 sztuk tygodniowo.** Wtedy zaczniemy odrzucać pracę, którą Saturn spokojnie by wykonał.
 
 ### 3.5a Termin jako obietnica, nie deklaracja marketingowa
 
@@ -234,23 +243,29 @@ Ponieważ operator jest wykorzystany blisko sufitu, ostrzeżenie musi przyjść 
 
 ### 3.6 Znalezisko: obróbka jest wyceniona poniżej realnego kosztu pracy
 
-Przy stawce 100 PLN/h i 15 minutach obróbki na sztukę obecne stałe w kalkulatorze rozjeżdżają się z rzeczywistością nie o kilkanaście procent, tylko wielokrotnie.
+Po rozdzieleniu czasów na technologie okazuje się, że problem nie dotyczy całego kalkulatora, tylko **wyłącznie żywicy**. To ważne, bo zawęża zakres poprawki.
 
 | Stała w kodzie | Kwota | Opłacone minuty przy 100 PLN/h | Przyjęty czas realny | Niedobór |
 |---|---|---|---|---|
-| `POST_PC_PLN` | 3 PLN | 1,8 min | **15 min** | **~22 PLN na sztukę** |
-| `POST_PLATFORM_PLN` | 20 PLN | 12 min | ~25 min | ~13 PLN na platformę |
-| `HANDLING_FEE` | 8 PLN | 4,8 min | wliczone w 15 min | ~17 PLN na sztukę |
+| `HANDLING_FEE` (FDM) | 8 PLN | 4,8 min | **6 min** | ~2 PLN, w granicach błędu |
+| `POST_PC_PLN` (MSLA) | 3 PLN | 1,8 min | **10 min** | **~14 PLN na sztukę** |
+| `POST_PLATFORM_PLN` (MSLA) | 20 PLN | 12 min | ~25 min | ~22 PLN na platformę |
 
-**Przykład na platformie MSLA z ośmioma sztukami:**
+**FDM jest wyceniony poprawnie.** Osiem złotych za sześć minut pracy przy stawce 100 PLN/h to niedobór rzędu dwóch złotych, czyli mniej niż niepewność samego szacunku. Tu nie ma czego naprawiać.
+
+**MSLA jest niedoszacowany pięciokrotnie na sztuce.**
+
+Przykład na platformie z ośmioma sztukami:
 
 - kalkulator liczy `20 + 8 × 3 = 44 PLN` obróbki
-- realny koszt pracy to `25 + 8 × 15 = 145 minut`, czyli przy 100 PLN/h **242 PLN**
-- różnica: **około 200 PLN na jednej platformie**
+- realna praca to `25 + 8 × 10 = 105 minut`, czyli przy 100 PLN/h **175 PLN**
+- różnica: **około 130 PLN na jednej platformie**
 
-To już nie jest korekta parametru, tylko **fundamentalna wada modelu cenowego przy zamówieniach wielosztukowych**. Dopóki wycena jest orientacyjna, wychodzi to w negocjacji. Przy cenie wiążącej w sklepie każde takie zamówienie jest stratne, a to są dokładnie te zamówienia, które sklep przyciąga najlepiej.
+Skala jest mniejsza niż przy 15 minutach (było 200 PLN), ale nadal przewyższa całą marżę warsztatową na takim zleceniu. Dopóki wycena jest orientacyjna, wychodzi to w negocjacji. Przy cenie wiążącej w sklepie każde wielosztukowe zamówienie z żywicy jest stratne, a to są dokładnie te zamówienia, które sklep przyciąga najlepiej.
 
 Próg `MIN_ORDER_PLN` (49 PLN) chroni zamówienia jednosztukowe. **Nie chroni wielosztukowych**, bo tam cena rośnie liniowo z ilości, a koszt pracy rośnie szybciej.
+
+Wartości docelowe wynikające wprost z przyjętych czasów: `POST_PC_PLN` około **17 PLN**, `POST_PLATFORM_PLN` około **42 PLN**. Przekłada się to na wzrost ceny drobnej figurki o mniej więcej 16 PLN na sztuce.
 
 ### 3.6a Rabat seryjny działa w odwrotną stronę, niż zakłada
 
@@ -262,20 +277,22 @@ To jest konsekwencja, którą trzeba nazwać osobno, bo siedzi w `QUANTITY_TIERS
 { id: "medium", qty: 35, discount: 0.15 },
 ```
 
-Rabat ilościowy zakłada, że przy większej serii koszt jednostkowy spada. **Przy druku żywicznym to prawda tylko dla maszyny i tylko częściowo dla materiału. Dla pracy rąk nie jest prawdą w ogóle.** Każda kolejna sztuka to te same 15 minut usuwania podpór.
+Rabat ilościowy zakłada, że przy większej serii koszt jednostkowy spada. **To prawda dla maszyny i częściowo dla materiału. Dla pracy rąk nie jest prawdą w ogóle.** Każda kolejna sztuka to te same 10 minut przy żywicy albo 6 minut przy FDM.
 
-Efekt: przy 35 sztukach udzielamy 15 procent rabatu na koszt, którego 85 procent w ogóle nie maleje. To pogłębia stratę z rozdziału 3.6 dokładnie tam, gdzie jest ona największa.
+Efekt: przy 35 sztukach udzielamy 15 procent rabatu na koszt, którego znaczna część w ogóle nie maleje. Przy MSLA pogłębia to stratę z rozdziału 3.6 dokładnie tam, gdzie jest ona największa. Przy FDM rabat jest mniej szkodliwy, bo tam robocizna to niewielka część ceny, ale logika pozostaje ta sama.
 
 ### 3.6b Możliwe reakcje
 
-1. **Podnieść `POST_PC_PLN` do realnego czasu.** Uczciwe, ale podnosi cenę serii żywicznych kilkukrotnie i może wypchnąć nas z rynku figurek.
+1. **Podnieść `POST_PC_PLN` do 17 PLN i `POST_PLATFORM_PLN` do 42 PLN.** Uczciwe wobec kosztu, podnosi cenę figurki o jakieś 16 PLN na sztuce. Przy obecnym progu 49 PLN na zamówienie to zmiana odczuwalna, ale nie wypychająca z rynku.
 2. **Rozdzielić rabat na dwie składowe:** rabat ilościowy stosowany wyłącznie do kosztu maszyny i materiału, robocizna liczona liniowo bez rabatu. Technicznie to jedna zmiana w `applyPricing`.
-3. **Skrócić same 15 minut.** Stacja mycia i doświetlania, lepsze ustawienia podpór, szlifierka wibracyjna. Każda minuta ścięta z obróbki sztuki to 80 minut tygodniowo i realny wzrost przepustowości.
+3. **Skrócić 10 minut obróbki MSLA.** Stacja mycia i doświetlania, lepsze ustawienia podpór, szlifierka wibracyjna. Każda minuta to 120 minut tygodniowo, czyli 12 dodatkowych sztuk.
 4. **Świadomie ograniczyć ofertę zamówień wielosztukowych z żywicy**, albo wycenić je z jawną informacją, że obróbka jest ręczna.
 
-Rekomendacja: **punkt 2 natychmiast** (bo to błąd logiczny, nie decyzja cenowa), **punkt 3 jako priorytet inwestycyjny** (bo poprawia jednocześnie marżę i przepustowość), punkty 1 i 4 jako decyzja biznesowa po pomiarze.
+Rekomendacja: **punkty 1 i 2 razem, przed uruchomieniem cen wiążących.** Punkt 2 to błąd logiczny, nie decyzja cenowa. Punkt 1 bez punktu 2 podniesie ceny, a rabat i tak zje część korekty. Punkt 3 jako priorytet inwestycyjny, bo poprawia jednocześnie marżę i przepustowość. Punkt 4 tylko wtedy, gdy po pomiarze okaże się, że korekta cen nie wystarcza.
 
-**Zastrzeżenie do liczby 15 minut.** Jest to średnia podana przez właściciela i uznaję ją za punkt wyjścia, ale ma ogromną rozpiętość: wzorzec odlewniczy dla jubilerstwa (mały, mało podpór) i figurka kolekcjonerska (duża, gęsto podparta) to zupełnie inne procesy. Skoro ta jedna liczba rozstrzyga i sufit, i rentowność, **musi być mierzona osobno dla każdej kategorii zastosowania**, czyli tak, jak już dzielimy je w `APPLICATIONS`: prototyp, figurka, wzorzec odlewniczy.
+FDM zostawiamy bez zmian poza rozdzieleniem rabatu.
+
+**Zastrzeżenie do liczb 6 i 10 minut.** To średnie podane przez właściciela i uznaję je za punkt wyjścia, ale przy żywicy rozpiętość jest duża: wzorzec odlewniczy dla jubilerstwa (mały, mało podpór) i figurka kolekcjonerska (duża, gęsto podparta) to inne procesy. Skoro ta liczba rozstrzyga i sufit, i rentowność, **warto mierzyć ją osobno dla kategorii, które już mamy w `APPLICATIONS`**: prototyp, figurka, wzorzec odlewniczy. Podejrzewam, że wzorce jubilerskie schodzą poniżej 10 minut, co poprawiłoby rentowność akurat tego segmentu, w którym mamy największą przewagę.
 
 ---
 
@@ -478,10 +495,11 @@ Ostatni wiersz wymaga komentarza. W `calcShared.jsx` mamy dziś `TOLERANCE_LOW: 
 | Czas operatora | 40 h tygodniowo, podział 50 na 50 | 20 h na produkcję, czyli 1200 minut |
 | Wsparcie | Możliwa druga osoba | Potrzebna od około 50 sztuk tygodniowo, nie dopiero przy suficie |
 | Stawka robocizny | Około 100 PLN/h | Ujawnia niedoszacowanie obróbki, rozdz. 3.6 |
-| **Obróbka na sztukę** | **Średnio 15 min** | **Sufit ~70 do 80 sztuk tygodniowo, maszyny wykorzystane w ~30 proc.** |
-| Praca nocna H2D | Tak, standardowo | Około 72 h druku FDM tygodniowo, w praktyce niewykorzystane |
-| Platformy MSLA dziennie | 4 | Potwierdzone, ale operator obsłuży realnie ~5,5 tygodniowo |
-| Dni robocze | 5 | Sufit około 20 zleceń tygodniowo przy 3-4 szt. na zlecenie |
+| **Obróbka sztuki FDM** | **6 min** | Wycena `HANDLING_FEE` poprawna, ograniczeniem zostaje maszyna |
+| **Obróbka sztuki MSLA** | **10 min** | `POST_PC_PLN` niedoszacowany pięciokrotnie, ograniczeniem zostaje operator |
+| Praca nocna H2D | Tak, standardowo | Około 72 h druku FDM tygodniowo, wykorzystane w całości |
+| Platformy MSLA dziennie | 4 | Możliwe 20 tygodniowo, operator obsłuży ~9,8 |
+| Dni robocze | 5 | Sufit ~107 sztuk i ~24 zlecenia tygodniowo |
 | Sztuk na platformie | Liczone z bounding boxa przy zamówieniu | Mechanizm już w kodzie, rozdz. 1.3 |
 | Charakter terminu | Bufor liczony z obłożenia, nie ryczałt | Rezerwacja minut przy przyjęciu zamówienia, rozdz. 3.5a |
 | Baza materiałów | Dziś kilkanaście pozycji, projektujemy pod szeroką | Rozdział katalogu od magazynu, automatyczne odejmowanie |
@@ -491,9 +509,10 @@ Ostatni wiersz wymaga komentarza. W `calcShared.jsx` mamy dziś `TOLERANCE_LOW: 
 
 ### 9.2 Otwarte
 
-1. **Rozbicie 15 minut na kategorie zastosowania.** Wzorzec odlewniczy i figurka kolekcjonerska to zupełnie inne czasy. Skoro ta liczba rozstrzyga i sufit, i rentowność, musi być mierzona osobno dla `prototype`, `figurine` i `casting`.
-2. **Która z reakcji na niedoszacowanie obróbki** (rozdz. 3.6b). Rozdzielenie rabatu (punkt 2) uważam za oczywiste, reszta to decyzja biznesowa.
-3. **Czy inwestycja w skrócenie obróbki jest na stole.** Stacja mycia i doświetlania, szlifierka wibracyjna, optymalizacja podpór. Przy 15 minutach na sztukę to jedyna dźwignia, która jednocześnie podnosi marżę i przepustowość.
+1. **Rozbicie 10 minut MSLA na kategorie zastosowania.** Wzorzec odlewniczy i figurka kolekcjonerska to inne czasy. Warto mierzyć osobno dla `prototype`, `figurine` i `casting`.
+2. **Czy akceptujesz podniesienie `POST_PC_PLN` do 17 PLN i `POST_PLATFORM_PLN` do 42 PLN** (rozdz. 3.6b). Rozdzielenie rabatu uważam za oczywiste i niezależne od tej decyzji.
+3. **Czy inwestycja w skrócenie obróbki MSLA jest na stole.** Stacja mycia i doświetlania, szlifierka wibracyjna, optymalizacja podpór. Każda minuta to 12 dodatkowych sztuk tygodniowo.
+4. **Czy druga drukarka FDM wchodzi w grę.** H2D pracuje na styk, a obróbka FDM zajmuje tylko 174 z 1200 minut operatora, więc drugą maszynę byłoby kto obsłużyć. To jedyne miejsce, gdzie sprzęt faktycznie podniósłby przepustowość.
 4. **Pole robocze H2D w kodzie: 30,0 × 32,0 cm.** Czy to świadomy margines na pracę dwudyszową, czy wartość do poprawienia.
 5. **Mnożnik czasu dla druku dwumateriałowego.** Wieża czyszcząca potrafi wydłużyć druk znacząco, a dziś w modelu tego nie ma.
 
