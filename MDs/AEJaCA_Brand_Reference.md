@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-07-20 | Wersja: 1.1*
+*Wygenerowano: 2026-07-28 | Wersja: 1.2*
 
 ---
 
@@ -458,10 +458,17 @@ Dedykowane strony /glossary/[slug] dla każdego terminu, budujące topical autho
 Wszystkie główne crawlery AI są explicite dozwolone:
 OpenAI (GPTBot, OAI-SearchBot, ChatGPT-User), Anthropic (ClaudeBot, Claude-SearchBot, Claude-User), Google-Extended, Googlebot, bingbot, PerplexityBot, Perplexity-User, Applebot, Applebot-Extended, Amazonbot, meta-externalagent, meta-externalfetcher, cohere-ai, DuckAssistBot, YouBot, CCBot
 
+**Parametry zapytań:** od 2026-07-28 nie ma już reguły `Disallow: /*?*`. Adresy z `?tab=`, `?category=`, `?co2mode=` to realna nawigacja wewnątrz stron, linkowana z naszych własnych menu, a każda strona wystawia canonical na czysty adres. Blokada powodowała, że Search Console raportowało 7 własnych, linkowanych wewnętrznie URL jako "Zablokowana przez plik robots.txt".
+
+### Kanoniczne przekierowania (_redirects)
+Poza przekierowaniami trailing-slash dla stron głównych, plik zawiera:
+- `/gallery/` → `/jewelry/` i `/resources/` → `/blog/` (301). To pozycje rozwijane w menu bez własnych stron; bez tych reguł wpadały w catch-all SPA i zwracały stronę NotFound z kodem 200, czyli soft 404 raportowany przez Google jako "noindex".
+- Stare slugi bloga: `/blog/grawerowanie-laserowe/` → `/blog/grawerowanie-laserowe-przewodnik/`, `/blog/pierscionek-zareczynowy/` → `/blog/pierscionek-zareczynowy-na-zamowienie/` (301).
+
 ### Plik llms.txt
 Publiczny plik /llms.txt (specyfikacja llms.txt) zawierający:
 - Pełny opis marki i usług dla crawlerów AI
-- Zaktualizowany 2026-07-17
+- Zaktualizowany 2026-07-28
 - Katalog 13 żywic z cenami
 - Cennik wszystkich usług
 - Linki do wszystkich kluczowych stron

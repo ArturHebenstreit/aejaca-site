@@ -11,5 +11,20 @@
 /privacy    /privacy/    301
 /reviews    /reviews/    301
 
+# Dropdown-only navbar entries. These have no route of their own, so without
+# a rule here they fall through to the SPA catch-all and return the NotFound
+# page with HTTP 200 (soft 404, flagged by Search Console as "noindex").
+/gallery      /jewelry/    301
+/gallery/     /jewelry/    301
+/resources    /blog/       301
+/resources/   /blog/       301
+
+# Legacy blog slugs. Handled client-side by <Navigate> until now, which
+# Googlebot reads as a soft redirect instead of a real 301.
+/blog/grawerowanie-laserowe          /blog/grawerowanie-laserowe-przewodnik/          301
+/blog/grawerowanie-laserowe/         /blog/grawerowanie-laserowe-przewodnik/          301
+/blog/pierscionek-zareczynowy        /blog/pierscionek-zareczynowy-na-zamowienie/     301
+/blog/pierscionek-zareczynowy/       /blog/pierscionek-zareczynowy-na-zamowienie/     301
+
 # SPA catch-all — must be last
 /*    /index.html   200
