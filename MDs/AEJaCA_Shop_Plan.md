@@ -1,6 +1,8 @@
 # AEJaCA - Plan sklepu internetowego
 
-*Wersja robocza 1.0 | 2026-07-28 | branch `claude/shop-plan` | nic nie jest jeszcze implementowane*
+*Wersja robocza 1.1 | 2026-07-28 | branch `claude/shop-plan` | nic nie jest jeszcze implementowane*
+
+*Zmiany w 1.1: analiza Mapi-Tech (rozdz. 2.3), korekta oceny konkurencji (2.4), rozdzielenie decyzji o platformie (5.3), zamiana kolejności Fazy 1 i 2 (rozdz. 9).*
 
 ---
 
@@ -16,7 +18,9 @@ Nie potrzebujemy "sklepu internetowego" w klasycznym sensie. Potrzebujemy **trze
 
 Największa wartość i największa przewaga konkurencyjna leży w środkowym wierszu. Mamy już silniki wyceny, których nie ma żaden lokalny konkurent. Problem w tym, że dziś zwracają **widełki**, a sklep wymaga **liczby**.
 
-Rekomendacja startowa: uruchomić w tej kolejności 1 → 2 → 3, nie wszystko naraz.
+Rekomendacja startowa: **zacząć od środkowego wiersza**, nie od katalogu. Zamówienie z pliku nie ma koszyka, stanu magazynowego ani prawa zwrotu, więc da się je uruchomić na samym Stripe, bez wdrażania platformy sklepowej. Katalog i biżuteria autorska dochodzą później.
+
+Kolejność: usługa z pliku → wyroby gotowe → biżuteria autorska. Nie wszystko naraz.
 
 ---
 
@@ -78,7 +82,42 @@ Dwie rzeczy warte przeniesienia:
 1. **Rozdzielenie "konfigurowalne" od "w pełni autorskie".** Konfigurowalne ma cenę natychmiast. Autorskie ma płatny etap projektowy przed ceną finalną. Mieszanie tych dwóch ścieżek w jednym formularzu jest głównym powodem, dla którego konfiguratory jubilerskie bywają nieczytelne.
 2. **Cena widoczna zawsze**, od pierwszego kroku, aktualizowana natychmiast. Klient, który musi kliknąć "wyceń", żeby zobaczyć liczbę, w połowie przypadków nie klika.
 
-### 2.3 Platforma i płatności w Polsce
+### 2.3 Mapi-Tech: najbliższy wzorzec operacyjny
+
+Polski warsztat druku 3D z Łodzi, który rozwiązał dokładnie ten problem, o który nam chodzi, i zrobił to prościej, niż zakładałem.
+
+Ich ścieżka:
+
+1. Klient wgrywa plik STL lub STEP do kalkulatora na stronie
+2. Wybiera materiał i parametry, **albo opisuje zastosowanie i dostaje rekomendację**
+3. Dostaje wycenę w kilka chwil, bez rejestracji i bez zobowiązania
+4. Zatwierdza wycenę i płaci online: BLIK, karta lub przelew, obsługa przez **Stripe**
+5. Odbiera przesyłkę kurierem, standardowo 3 do 5 dni roboczych
+
+Deklarują wprost: cały proces online, bez wizyt, bez telefonów, bez zbędnych formalności. Przyjmują zamówienia **od jednej sztuki**, bez minimum. Jeśli klient nie jest pewien materiału lub parametrów, może wgrać pliki i wybrać opcję **ręcznej weryfikacji wyceny**.
+
+Cztery rzeczy, które warto z tego wziąć wprost:
+
+1. **Opcja "opisz zastosowanie, doradzimy" obok wyboru parametrów.** To jest dokładnie ta furtka, którą opisałem w regułach kreatora, tyle że sprawdzona w praktyce na polskim kliencie. Klient, który nie wie, czy chce PETG czy PA6-CF, nie odpada z lejka.
+2. **Ręczna weryfikacja jako świadomy element ścieżki, a nie awaria.** Automat wycenia większość, człowiek wchodzi tam, gdzie automat się nie nadaje. To rozwiązuje problem z rozdziału 3.2 bez budowania sztucznej inteligencji.
+3. **Stripe z BLIK-iem jako pełny checkout.** To jest twardy dowód, że dla zamówienia jednopozycyjnego z pliku **nie potrzeba żadnej platformy sklepowej**. Konsekwencje opisuję w rozdziale 5.3.
+4. **Rozróżnienie STL i STEP.** STL jako standard eksportu, STEP tam, gdzie liczy się precyzja wymiarowa. Drobiazg, ale buduje wiarygodność techniczną, a nasz `STLViewer` obsługuje dziś tylko STL.
+
+### 2.4 Uczciwa ocena konkurencji, korekta wcześniejszego założenia
+
+Przy okazji Mapi-Tech wyszła rzecz, którą muszę sprostować względem pierwszej wersji tego planu. Napisałem tam, że kreator plikowy to coś, czego lokalna konkurencja nie ma w ogóle. **To nieprawda.**
+
+W polskim internecie działa co najmniej kilka warsztatów z natychmiastową wyceną z pliku: Mapi-Tech, LayerTech, Drukex, Send3D, Geometry Hustlers, Druk3D Kraków, AM3D, Werk3D. Segment natychmiastowej wyceny druku 3D jest w Polsce **nasycony**.
+
+To zmienia pozycjonowanie, ale nie unieważnia pomysłu. Nasza przewaga nie może brzmieć "wyceniamy od ręki", bo to już nie wyróżnia. Realne wyróżniki, które faktycznie mamy:
+
+- **Druk 3D i laser i biżuteria pod jednym dachem.** Żaden z wymienionych nie robi jednocześnie odlewów jubilerskich, grawerowania fiber i druku. Klient, który chce prototyp, a potem ten sam kształt w srebrze, u nas przechodzi całą drogę.
+- **Głębia wiedzy materiałowej.** Mamy bazę filamentów z głosowaniem społeczności, matrycę parametrów laserowych, kalkulatory skurczu i ustawień druku. To są narzędzia, po które klient wraca, zanim jeszcze cokolwiek zamówi.
+- **Żywe ceny surowców.** `GET /api/market-rates` z kursami NBP i cenami metali to rzecz, której nie ma nikt z tej listy, bo nikomu poza jubilerem nie jest potrzebna.
+
+Wniosek: kreator plikowy budujemy nie dlatego, że jest unikalny, tylko dlatego, że jest **warunkiem wejścia do gry**. Wyróżniamy się dopiero tym, co jest obok niego.
+
+### 2.5 Platforma i płatności w Polsce
 
 BLIK obsługuje ponad 60 procent checkoutów w polskim e-commerce i ma ponad 16 milionów aktywnych użytkowników. To nie jest opcja dodatkowa, to jest warunek konieczny. Podobnie Paczkomaty InPost jako domyślna forma dostawy.
 
@@ -180,13 +219,21 @@ Za: BLIK, InPost, faktury i zgodność z polskim prawem od ręki.
 
 Przeciw: monolityczne, walczyłyby z naszą stroną w Reakcie, a wstrzyknięcie naszych kreatorów byłoby uciążliwe. Ryzyko, że skończymy z dwiema niespójnymi stronami.
 
-### 5.3 Rekomendacja
+### 5.3 Rekomendacja, zrewidowana po analizie Mapi-Tech
 
-**Wariant A.** Uzasadnienie w jednym zdaniu: naszą przewagą konkurencyjną są kreatory wyceny, a nie checkout, więc budowanie własnego checkoutu to inwestowanie czasu w część, w której i tak nie wygramy.
+Pierwotnie rekomendowałem wariant A dla całości. **Wycofuję się z tego** i proponuję rozdzielenie decyzji, bo Mapi-Tech pokazuje, że dla części zakresu platforma sklepowa jest po prostu zbędna.
 
-Wariant B ma sens dopiero wtedy, gdy wolumen sprawi, że prowizje przekroczą koszt utrzymania własnego rozwiązania. To jest problem, który chcemy mieć za dwa lata, a nie teraz.
+Kluczowa obserwacja: **zamówienie z pliku nie jest zakupem w sklepie.** Nie ma koszyka, bo pozycja jest jedna. Nie ma stanu magazynowego, bo nic nie leży na półce. Nie ma prawa odstąpienia, bo rzecz jest personalizowana. Nie ma katalogu, bo katalogiem jest plik klienta. Zostaje jedna płatność za jedną, świeżo wyliczoną kwotę, czyli dokładnie to, do czego służy Stripe Checkout.
 
-**Do zweryfikowania przed ostateczną decyzją:** dostępność BLIK na wybranym planie Shopify w Polsce oraz konkretna aplikacja do InPost. Nie chcę tego przesądzać z pamięci, bo to jest warunek konieczny całego wariantu. Jeśli okaże się słaby, wracamy do wariantu B.
+Stąd rekomendacja rozdzielona:
+
+**Dla kreatora plikowego: wariant B, czyli Stripe na istniejącym backendzie.** Mamy już `POST /api/quote`, który przyjmuje wycenę wraz z plikiem do 50 MB i zapisuje ją do Postgresa. Brakuje właściwie tylko utworzenia sesji płatności i webhooka potwierdzającego. Zero abonamentu, zero nowej platformy, zero migracji. Stripe obsługuje BLIK, karty i Apple/Google Pay w Polsce, co Mapi-Tech potwierdza w praktyce.
+
+**Dla katalogu wyrobów gotowych: wariant A, czyli platforma.** Tu dopiero pojawia się to, czego Stripe sam nie daje: stany magazynowe, zwroty w 14 dni, korekty faktur, wysyłka wielopozycyjna, wymagany prawem przycisk odstąpienia od umowy. Budowanie tego samemu jest dokładnie tą pułapką, przed którą ostrzegałem.
+
+Praktyczna konsekwencja: **te dwie decyzje nie muszą zapaść jednocześnie.** Kreator plikowy może ruszyć bez rozstrzygania, na jakiej platformie stanie kiedyś katalog.
+
+**Do zweryfikowania dopiero przed katalogiem:** dostępność BLIK na wybranym planie Shopify w Polsce oraz konkretna integracja z InPost. Nie przesądzam tego z pamięci, bo to warunek konieczny wariantu A.
 
 ---
 
@@ -220,11 +267,17 @@ Wszystkie wynikają z tego, co działa u Taylor & Hart i Ponoko, plus z ogranicz
 
 ### 6.4 Trzy konkretne kreatory
 
-**Kreator "Wykonaj z mojego pliku"** (najwyższy priorytet po katalogu)
+**Kreator "Wykonaj z mojego pliku"** (najwyższy priorytet, przed katalogiem)
 
 Kroki: wgraj plik → technologia i materiał → wykończenie i ilość → dostawa → płatność.
 Cena wiążąca od razu po wgraniu pliku. Bazuje na `Print3DCalc` i `CO2LaserCalc`.
-To jest jedyny moment w całym planie, w którym oferujemy coś, czego lokalna konkurencja nie ma w ogóle.
+
+Wzorzec ścieżki bierzemy z Mapi-Tech, łącznie z dwiema rzeczami, które warto skopiować świadomie:
+
+- obok wyboru materiału zawsze dostępne "opisz zastosowanie, doradzimy"
+- opcja ręcznej weryfikacji wyceny jako normalny wybór klienta, nie komunikat o błędzie
+
+Do domknięcia zakresu: obsługa **STEP** obok STL. Dziś `STLViewer` czyta tylko STL, a STEP jest formatem preferowanym tam, gdzie liczy się precyzja wymiarowa. To osobna pozycja pracy, nie drobiazg.
 
 **Kreator "Biżuteria konfigurowalna"**
 
@@ -286,15 +339,19 @@ Kolejność jest celowa: każdy etap sprzedaje samodzielnie i finansuje następn
 - Progi ręcznej akceptacji zamówienia
 - Zakres pierwszego katalogu
 
-### Faza 1: katalog wyrobów gotowych
+### Faza 1: kreator "z mojego pliku"
 
-Najkrótsza droga do pierwszej sprzedaży. Zdjęcia już mamy. Wymaga: modelu produktu, stron produktowych z SEO i schematem Product, koszyka, checkoutu, regulaminu, przycisku odstąpienia.
+**Kolejność zmieniona po analizie Mapi-Tech.** Pierwotnie stawiałem tu katalog. Kreator plikowy jest jednak lżejszy, mimo że brzmi trudniej, bo omija cztery najbardziej pracochłonne elementy sklepu naraz: koszyk, stan magazynowy, zwroty w 14 dni i wybór platformy.
 
-Efekt: sklep działa i sprzedaje, zanim napiszemy pierwszy kreator.
+Wymaga: uploadu i walidacji plików (mamy), zwinięcia widełek do ceny wiążącej, sesji płatności Stripe, webhooka potwierdzającego, wyceny wysyłki, kolejki produkcyjnej. Rozszerzenie o STEP.
 
-### Faza 2: kreator "z mojego pliku"
+Efekt: pierwsza automatyczna sprzedaż bez wdrażania jakiejkolwiek platformy sklepowej.
 
-Największa przewaga konkurencyjna. Wymaga: uploadu i walidacji plików, zwinięcia widełek do ceny wiążącej, wyceny wysyłki, integracji z kolejką produkcyjną.
+### Faza 2: katalog wyrobów gotowych
+
+Tu dopiero potrzebujemy platformy. Wymaga: modelu produktu, stron produktowych z SEO i schematem Product, koszyka, stanów magazynowych, zwrotów, faktur, regulaminu, przycisku odstąpienia.
+
+Zdjęcia już mamy, 26 sztuk w `public/img/portfolio/`.
 
 ### Faza 3: kreator biżuterii konfigurowalnej
 
@@ -318,6 +375,7 @@ Ponowne zamówienia, cenniki B2B, śledzenie statusu produkcji. Mamy już stron�
 | Podwójna sprzedaż unikatu (Etsy i sklep) | Trzeba anulować zamówienie, strata zaufania | Jedno źródło stanu magazynowego |
 | Zwroty przy personalizacji | Spór z konsumentem o zasadność wyłączenia | Jednoznaczna informacja przed zamówieniem, personalizacja realna a nie pozorna |
 | Rozrost zakresu | Cztery fazy naraz oznaczają zero faz skończonych | Faza 1 na produkcji, zanim zacznie się Faza 2 |
+| **Nasycony rynek natychmiastowej wyceny druku 3D** | Co najmniej 8 polskich warsztatów ma już taki kalkulator, samo "wycena od ręki" nie sprzedaje | Pozycjonowanie na połączeniu druku, lasera i jubilerstwa oraz na głębi wiedzy materiałowej, nie na szybkości wyceny |
 
 Ryzyko przepustowości jest moim zdaniem najbardziej niedoceniane. Kalkulator, który tylko wycenia, nie zobowiązuje do niczego. Sklep, który przyjmuje płatność, zobowiązuje.
 
@@ -327,8 +385,8 @@ Ryzyko przepustowości jest moim zdaniem najbardziej niedoceniane. Kalkulator, k
 
 Zanim ruszy Faza 0, potrzebuję odpowiedzi na cztery pytania:
 
-1. **Czy sprzedajemy gotowe wyroby, czy tylko usługi?** Od tego zależy, czy Faza 1 w ogóle ma sens, czy zaczynamy od kreatora plikowego.
-2. **Jak bardzo chcesz kontrolować checkout?** To jest wybór między wariantem A (szybko, abonament, mniej kontroli) a B (wolno, taniej w skali, pełna kontrola i pełna odpowiedzialność).
+1. **Czy akceptujesz zmienioną kolejność?** Kreator plikowy przed katalogiem. Jeśli zależy Ci na tym, żeby najpierw sprzedawać wyroby gotowe, kolejność wraca do pierwotnej, ale wtedy decyzja o platformie musi zapaść od razu.
+2. **Czy godzisz się na Stripe jako jedyny checkout w pierwszej fazie?** To znaczy: bez koszyka wielopozycyjnego i bez konta klienta na starcie.
 3. **Jaki próg wartości zamówienia ma trafiać do ręcznej akceptacji?** Poniżej tego progu sklep działa w pełni automatycznie.
 4. **Jaki jest realny sufit przepustowości warsztatu na miesiąc?** Bez tej liczby nie da się ustawić terminów realizacji ani limitów.
 
