@@ -1,6 +1,7 @@
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import { TRUSTPILOT_BUSINESS } from "../data/googleReviews.js";
+import { reviewCountLabel } from "../utils/reviewCount.js";
 
 const LABELS = {
   pl: {
@@ -54,20 +55,6 @@ function TpStar({ filled = true }) {
       </svg>
     </span>
   );
-}
-
-/**
- * Polish needs three plural forms, English and German two.
- * 1 opinia | 2-4 opinie | 5+ opinii (with the 12-14 exception).
- */
-function reviewCountLabel(n, lang) {
-  if (lang === "de") return n === 1 ? "1 Bewertung" : `${n} Bewertungen`;
-  if (lang === "en") return n === 1 ? "1 review" : `${n} reviews`;
-  const last = n % 10;
-  const lastTwo = n % 100;
-  if (n === 1) return "1 opinia";
-  if (last >= 2 && last <= 4 && (lastTwo < 12 || lastTwo > 14)) return `${n} opinie`;
-  return `${n} opinii`;
 }
 
 // Static aggregate, deliberately NOT wired into JSON-LD. The Organization

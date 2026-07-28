@@ -16,7 +16,36 @@ import {
 import { SITE, getSEO } from "../seo/seoData.js";
 import GoogleReviews from "../components/GoogleReviews.jsx";
 import TrustpilotWidget from "../components/TrustpilotWidget.jsx";
-import { GOOGLE_BUSINESS, REVIEWS } from "../data/googleReviews.js";
+import { GOOGLE_BUSINESS, REVIEWS, TRUSTPILOT_BUSINESS } from "../data/googleReviews.js";
+import { reviewCountLabel } from "../utils/reviewCount.js";
+
+// Trustpilot trust pill, sits next to the Google one. Anchors to the Trustpilot
+// widget further down the page rather than leaving the site, same as the Google
+// pill anchors to the reviews section.
+function TrustpilotPill({ lang, className = "" }) {
+  return (
+    <a
+      href="#trustpilot"
+      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-300 cursor-pointer ${className}`}
+      style={{ borderColor: "rgba(0,182,122,0.25)", backgroundColor: "rgba(0,182,122,0.04)" }}
+    >
+      <span
+        aria-hidden="true"
+        className="inline-flex items-center justify-center w-4 h-4 rounded-[2px]"
+        style={{ backgroundColor: "#00b67a" }}
+      >
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="#fff">
+          <path d="M12 2.5l2.9 6.4 6.9.7-5.2 4.7 1.5 6.9L12 17.6 5.9 21.2l1.5-6.9L2.2 9.6l6.9-.7L12 2.5z" />
+        </svg>
+      </span>
+      <span className="font-bold" style={{ color: "#4ade9f" }}>{TRUSTPILOT_BUSINESS.rating}</span>
+      <span className="text-neutral-400">·</span>
+      <span className="text-neutral-400">
+        {reviewCountLabel(TRUSTPILOT_BUSINESS.totalReviews, lang)} Trustpilot
+      </span>
+    </a>
+  );
+}
 
 export default function Home() {
   const { t, lang } = useLanguage();
@@ -62,12 +91,15 @@ export default function Home() {
               {h.heroSubtitle}
             </p>
           )}
-          <a href="#reviews" className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-amber-400/20 bg-amber-400/[0.03] hover:bg-amber-400/10 hover:border-amber-400/40 transition-all duration-300 cursor-pointer">
-            <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-            <span className="font-bold text-amber-300">{GOOGLE_BUSINESS.rating}</span>
-            <span className="text-neutral-400">·</span>
-            <span className="text-neutral-400">{GOOGLE_BUSINESS.totalReviews} {h.brandReviewsBadge}</span>
-          </a>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <a href="#reviews" className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-amber-400/20 bg-amber-400/[0.03] hover:bg-amber-400/10 hover:border-amber-400/40 transition-all duration-300 cursor-pointer">
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+              <span className="font-bold text-amber-300">{GOOGLE_BUSINESS.rating}</span>
+              <span className="text-neutral-400">·</span>
+              <span className="text-neutral-400">{GOOGLE_BUSINESS.totalReviews} {h.brandReviewsBadge}</span>
+            </a>
+            <TrustpilotPill lang={lang} />
+          </div>
         </section>
 
         {/* Gateway Cards, two entry points as bento-style cards (3:4 images) */}
@@ -136,12 +168,15 @@ export default function Home() {
           <img src="/brand-sign.webp" alt="AEJaCA brand mark" loading="lazy" decoding="async" className="w-36 h-36 mx-auto mb-8 brightness-0 invert opacity-80 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]" />
           <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-6">{h.brandHeading}</h2>
           <p className="text-neutral-400 text-lg leading-relaxed">{h.brandText}</p>
-          <a href="#reviews" className="inline-flex items-center gap-2 mt-6 px-4 py-2 rounded-full border border-amber-400/20 bg-amber-400/[0.03] text-sm hover:bg-amber-400/10 hover:border-amber-400/40 transition-all duration-300">
-            <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-            <span className="font-bold text-amber-300">{GOOGLE_BUSINESS.rating}</span>
-            <span className="text-neutral-400">·</span>
-            <span className="text-neutral-400">{GOOGLE_BUSINESS.totalReviews} {h.brandReviewsBadge}</span>
-          </a>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-sm">
+            <a href="#reviews" className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-amber-400/20 bg-amber-400/[0.03] hover:bg-amber-400/10 hover:border-amber-400/40 transition-all duration-300">
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+              <span className="font-bold text-amber-300">{GOOGLE_BUSINESS.rating}</span>
+              <span className="text-neutral-400">·</span>
+              <span className="text-neutral-400">{GOOGLE_BUSINESS.totalReviews} {h.brandReviewsBadge}</span>
+            </a>
+            <TrustpilotPill lang={lang} className="text-sm" />
+          </div>
         </div>
       </section>
 
@@ -306,7 +341,9 @@ export default function Home() {
       <div className="gradient-divider" />
 
       {/* Trustpilot, second trust layer after Google reviews */}
-      <TrustpilotWidget />
+      <div id="trustpilot" className="scroll-mt-20">
+        <TrustpilotWidget />
+      </div>
 
       <div className="gradient-divider" />
 
