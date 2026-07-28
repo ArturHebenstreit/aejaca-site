@@ -28,6 +28,8 @@
 - [Home](https://www.aejaca.com/) — brand overview, quick quote entry points
 - [AEJaCA Jewelry](https://www.aejaca.com/jewelry/) — custom rings, necklaces, bracelets, earrings; gemstone setting; engagement rings; online jewelry price calculator
 - [AEJaCA sTuDiO](https://www.aejaca.com/studio/), 3D printing cost calculator online (FDM and MSLA resin 16K), laser engraving price estimator, epoxy resin casting, fiber-laser marking, STL/SVG instant quote
+- [Druk 3D Warszawa](https://www.aejaca.com/druk-3d-warszawa/), 3D printing service page for Warsaw: FDM and 16K resin, prototypes, architectural models, spare parts, casting patterns, next-working-day dispatch, minimum order 49 PLN
+- [Druk 3D Piaseczno](https://www.aejaca.com/druk-3d-piaseczno/), 3D printing service page for Piaseczno and Jozefoslaw: same machines, free personal collection by appointment about 10 minutes from central Piaseczno
 - [AEJaCA B2B](https://www.aejaca.com/b2b/), jewelry production services for brands and partner workshops: CAD design, castable 16K patterns, casting and finishing, white-label production, hallmarking
 - [Blog](https://www.aejaca.com/blog/), long-form guides: engagement rings, FDM/SLA 3D printing materials, laser engraving techniques, chain weave types, lost-resin casting, miniature and figurine printing
 - [Chain Weave Types](https://www.aejaca.com/blog/rodzaje-splotow-lancuszkow/) — guide to 12 chain weave patterns (curb, anchor, Figaro, Byzantine, rope, foxtail, box, Bismark, Rolo, Gucci, Singapore, classic)

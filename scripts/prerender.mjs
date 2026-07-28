@@ -40,6 +40,8 @@ const STATIC_ROUTES = [
   "/toolstudio/laser-parameters",
   "/toolstudio/shrinkage",
   "/toolsjewelry/ring-blank",
+  "/druk-3d-piaseczno",
+  "/druk-3d-warszawa",
 ];
 
 const GLOSSARY_IDS = GLOSSARY.map((term) => term.id);

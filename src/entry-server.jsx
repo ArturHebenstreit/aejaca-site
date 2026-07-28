@@ -31,6 +31,7 @@ import ShrinkagePage from "./pages/ShrinkagePage.jsx";
 import ResinSettingsPage from "./pages/ResinSettingsPage.jsx";
 import Reviews from "./pages/Reviews.jsx";
 import B2B from "./pages/B2B.jsx";
+import LocalPrint3D from "./pages/LocalPrint3D.jsx";
 import NotFound from "./pages/NotFound.jsx";
 
 export function render(url) {
@@ -68,7 +69,9 @@ export function render(url) {
               <Route path="/privacy/" element={<Privacy />} />
               <Route path="/reviews/" element={<Reviews />} />
               <Route path="/b2b/" element={<B2B />} />
-              <Route path="*" element={<NotFound />} />
+              <Route path="/druk-3d-piaseczno/" element={<LocalPrint3D city="piaseczno" />} />
+              <Route path="/druk-3d-warszawa/" element={<LocalPrint3D city="warszawa" />} />
+                <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
           </StaticRouter>

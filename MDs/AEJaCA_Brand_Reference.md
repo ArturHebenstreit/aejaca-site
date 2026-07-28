@@ -460,6 +460,23 @@ OpenAI (GPTBot, OAI-SearchBot, ChatGPT-User), Anthropic (ClaudeBot, Claude-Searc
 
 **Parametry zapytań:** od 2026-07-28 nie ma już reguły `Disallow: /*?*`. Adresy z `?tab=`, `?category=`, `?co2mode=` to realna nawigacja wewnątrz stron, linkowana z naszych własnych menu, a każda strona wystawia canonical na czysty adres. Blokada powodowała, że Search Console raportowało 7 własnych, linkowanych wewnętrznie URL jako "Zablokowana przez plik robots.txt".
 
+### Strony lokalne (SEO lokalne, od 2026-07-28)
+
+Pierwsze dwie strony celujące w zapytania z nazwą miejscowości. Powód: przez 3 miesiące Search Console pokazał 26 kliknięć i ani jednego zapytania z intencją zakupową, a profil Google odwiedzano prawie wyłącznie po pełnej nazwie marki. Serwis nie istniał dla nikogo, kto nie znał nazwy.
+
+| URL | Fraza docelowa | Wyróżnik treści |
+|---|---|---|
+| `/druk-3d-warszawa/` | druk 3d warszawa | wysyłka następnego dnia, krótkie serie dla firm, makiety, wzorce odlewnicze |
+| `/druk-3d-piaseczno/` | druk 3d piaseczno | bezpłatny odbiór osobisty, ~10 min od centrum, naprawa części przyniesionych na miejsce |
+
+Treść w `src/data/localPages.js`, komponent `src/pages/LocalPrint3D.jsx`, jedna trasa na miasto z propem `city`.
+
+**Zasada:** treść każdego miasta musi być realnie inna. Sklonowane strony z podmienioną nazwą miasta Google traktuje jako strony przejściowe i obniża całą witrynę. Różnicujemy sposób odbioru, czas dojazdu, typ odbiorcy, przykłady zleceń i FAQ. Park maszynowy i materiały mogą się powtarzać, bo to specyfikacja techniczna.
+
+Linki wewnętrzne: sekcja "Obsługujemy" na `/studio/`, bez niej strony byłyby sierotami w strukturze witryny.
+
+Tytuły zaczynają się od frazy, nie od marki. `AEJaCA` idzie na koniec, bo nikt nie szuka frazy "AEJaCA sTuDiO", a pierwsze słowa tytułu ważą najwięcej.
+
 ### Kanoniczne przekierowania (_redirects)
 Poza przekierowaniami trailing-slash dla stron głównych, plik zawiera:
 - `/gallery/` → `/jewelry/` i `/resources/` → `/blog/` (301). To pozycje rozwijane w menu bez własnych stron; bez tych reguł wpadały w catch-all SPA i zwracały stronę NotFound z kodem 200, czyli soft 404 raportowany przez Google jako "noindex".
