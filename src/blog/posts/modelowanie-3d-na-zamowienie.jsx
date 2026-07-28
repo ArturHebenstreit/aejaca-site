@@ -110,7 +110,7 @@ function BodyPL() {
         accent="blue"
         title="Masz pomysł, ale nie masz pliku?"
         text="Prześlij szkic, zdjęcie lub opis — zaprojektujemy model 3D i wycenimy całość. Możemy od razu wydrukować lub odlać gotowy efekt."
-        href="/contact"
+        href="/contact/"
         cta="Zamów modelowanie 3D"
       />
     </>
@@ -219,7 +219,7 @@ function BodyEN() {
         accent="blue"
         title="Have an idea but no file?"
         text="Send a sketch, photo, or description — we'll design the 3D model and quote the whole job. We can print or cast the finished result right away."
-        href="/contact"
+        href="/contact/"
         cta="Order 3D modeling"
       />
     </>
@@ -329,7 +329,7 @@ function BodyDE() {
         accent="blue"
         title="Eine Idee, aber keine Datei?"
         text="Senden Sie Skizze, Foto oder Beschreibung — wir gestalten das 3D-Modell und kalkulieren das Ganze. Wir können das fertige Ergebnis direkt drucken oder gießen."
-        href="/contact"
+        href="/contact/"
         cta="3D-Modellierung bestellen"
       />
     </>

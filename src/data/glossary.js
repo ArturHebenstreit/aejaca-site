@@ -36,7 +36,7 @@ export const GLOSSARY = [
       en: "A ring given at a proposal — typically set with a diamond, moissanite, or gemstone. AEJaCA designs them to order.",
       de: "Ein Ring, der beim Antrag überreicht wird — meist mit Diamant, Moissanit oder Edelstein. AEJaCA fertigt ihn auf Bestellung.",
     },
-    relatedBlog: "pierscionek-zareczynowy",
+    relatedBlog: "pierscionek-zareczynowy-na-zamowienie",
   },
   {
     id: "obraczki-slubne",
@@ -58,7 +58,7 @@ export const GLOSSARY = [
       en: "A natural mineral valued for hardness, clarity, and color (diamond, ruby, sapphire, emerald). Used in AEJaCA rings and pendants.",
       de: "Ein natürliches Mineral, geschätzt für Härte, Klarheit und Farbe (Diamant, Rubin, Saphir, Smaragd). Verwendet in AEJaCA-Ringen und -Anhängern.",
     },
-    relatedBlog: "pierscionek-zareczynowy",
+    relatedBlog: "pierscionek-zareczynowy-na-zamowienie",
   },
   {
     id: "rodowanie",
@@ -80,7 +80,7 @@ export const GLOSSARY = [
       en: "A synthetic mineral (SiC) with diamond-like brilliance at a fraction of the cost. Mohs hardness 9.25.",
       de: "Ein synthetisches Mineral (SiC) mit diamantähnlichem Glanz zu einem Bruchteil der Kosten. Mohshärte 9,25.",
     },
-    relatedBlog: "pierscionek-zareczynowy",
+    relatedBlog: "pierscionek-zareczynowy-na-zamowienie",
   },
   {
     id: "rozmiar-pierscionka",
@@ -179,7 +179,7 @@ export const GLOSSARY = [
       en: "A gas laser (10.6 μm) for cutting and engraving wood, leather, acrylic, glass. Available at AEJaCA sTuDiO with instant online pricing.",
       de: "Ein Gaslaser (10,6 μm) zum Schneiden und Gravieren von Holz, Leder, Acryl, Glas. Bei AEJaCA sTuDiO mit Sofort-Online-Preisrechner.",
     },
-    relatedBlog: "grawerowanie-laserowe",
+    relatedBlog: "grawerowanie-laserowe-przewodnik",
   },
   {
     id: "laser-fiber",
@@ -190,7 +190,7 @@ export const GLOSSARY = [
       en: "A fiber laser (1064 nm) for precision metal marking — steel, aluminum, silver, gold. Permanent markings and jewelry engraving.",
       de: "Ein Faserlaser (1064 nm) zur präzisen Metallmarkierung — Stahl, Aluminium, Silber, Gold. Dauerhafte Markierungen und Schmuckgravur.",
     },
-    relatedBlog: "grawerowanie-laserowe",
+    relatedBlog: "grawerowanie-laserowe-przewodnik",
   },
   {
     id: "plik-svg",

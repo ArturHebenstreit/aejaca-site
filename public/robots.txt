@@ -1,13 +1,17 @@
 # AEJaCA — https://www.aejaca.com/
-# Full crawl allowed, no staging paths, no query-string traps.
+# Full crawl allowed, no staging paths.
+#
+# Query strings are intentionally NOT disallowed. The only parameters the site
+# uses (?tab=, ?category=, ?co2mode=) are real in-page navigation linked from
+# our own menus, and every page emits a canonical pointing at the clean path,
+# so Google consolidates them instead of indexing duplicates. Blocking them
+# only hid internally linked URLs from the crawler.
 
 User-agent: *
 Allow: /
-Disallow: /*?*
 
 # Allow known AI / LLM crawlers explicitly (AEO / LLMEO — AI Search Optimization).
 # Grouped User-agent lines share the rule block below them (valid robots.txt syntax).
-# These bots get full access with no query-string trap, unlike the wildcard above.
 
 # OpenAI / ChatGPT
 User-agent: GPTBot
