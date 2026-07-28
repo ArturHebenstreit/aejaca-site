@@ -1,8 +1,10 @@
 # AEJaCA - Przepustowość, kolejka produkcyjna i magazyn materiałów
 
-*Wersja robocza 1.1 | 2026-07-28 | branch `claude/shop-plan` | dokument towarzyszący `AEJaCA_Shop_Plan.md`, rozdz. 10*
+*Wersja robocza 1.2 | 2026-07-28 | branch `claude/shop-plan` | dokument towarzyszący `AEJaCA_Shop_Plan.md`, rozdz. 10*
 
 *Zmiany w 1.1: wyliczenie sufitu na realnych danych (3.4), mechanizm samokalibrujący zamiast dwóch trybów (3.3), projektowanie pod szeroką bazę materiałów (4.4), zmieniona kolejność etapów (7), ustalenia i pytania otwarte (9).*
+
+*Zmiany w 1.2: przeliczenie sufitu przy stawce 100 PLN/h, podziale czasu 50 na 50 i 5 dniach roboczych (3.4), znalezisko o niedoszacowaniu kosztu obróbki (3.6), potwierdzona wykonalność odczytu zużycia filamentu z AMS przez MQTT (4.4).*
 
 ---
 
@@ -139,39 +141,38 @@ binding_price = estimate_mid × (1 + risk_margin)
 
 ### 3.4 Wyliczenie sufitu na realnych danych wejściowych
 
-Dane od właściciela (2026-07-28): operator 40 h tygodniowo, H2D pracuje w nocy bez nadzoru, dostawa materiałów 2 dni robocze.
-
-**Minuty operatora, odczytane z modelu kosztowego.** Kalkulatory nie mają jawnej stawki dla druku 3D, ale mają ją dla lasera CO2 (`LABOR_PLN_MIN: 1.00`, czyli 60 PLN/h). Przy takim przeliczniku:
-
-| Pozycja z kodu | Kwota | Wynikające minuty |
-|---|---|---|
-| `POST_PLATFORM_PLN` | 20 PLN | 20 min na platformę MSLA |
-| `POST_PC_PLN` | 3 PLN | 3 min na sztukę |
-| `HANDLING_FEE` | 8 PLN | 8 min na zlecenie FDM |
-
-**To jest wnioskowanie, nie fakt.** Stawka 60 PLN/h dla obróbki wydruków wymaga potwierdzenia, bo pochodzi z innego kalkulatora. Jeśli realna jest inna, wszystkie poniższe liczby skalują się liniowo.
+Dane od właściciela: operator 40 h tygodniowo w podziale 50 procent produkcja i 50 procent reszta, docelowa stawka robocizny w okolicach 100 PLN/h, H2D pracuje w nocy bez nadzoru, 5 dni roboczych, dostawa materiałów 2 dni robocze, możliwe wsparcie drugą osobą.
 
 **Maszyny**
 
-- H2D, praca nocna, 6 dni w tygodniu: 144 h nominalnie. Z odliczeniem awarii, przerw na wymianę platformy i tak zwanego ogona bezczynności (druk kończy się o 3 w nocy, maszyna stoi do rana) realistycznie około **90 h druku tygodniowo**.
-- Saturn 4: druk MSLA jest krótki, wzór daje 1,4 h dla modelu 5 cm przy warstwie 0,05 mm. Przy 3 platformach dziennie to około 18 platform i jakieś 30 h druku tygodniowo. **Maszyna nie jest tu ograniczeniem.**
+- H2D, praca nocna, 5 dni: 120 h nominalnie. Po odliczeniu awarii, przerw na wymianę platformy i ogona bezczynności (druk kończy się o 3 w nocy, maszyna stoi do rana) realistycznie **około 72 h druku tygodniowo**.
+- Saturn 4: druk MSLA jest krótki, wzór daje 1,4 h dla modelu 5 cm przy warstwie 0,05 mm. Ograniczeniem nie jest czas druku, tylko liczba wymian platformy, bo każda wymaga człowieka. Realistycznie **około 4 platformy dziennie, czyli 20 tygodniowo**.
 
-**Operator, 40 h tygodniowo**
+**Operator: 20 h tygodniowo na produkcję (1200 minut)**
 
-Z tego trzeba odliczyć pakowanie, obsługę klienta, weryfikację nietypowych wycen i pracę jubilerską. Przy założeniu 25 procent na te czynności zostaje **około 30 h tygodniowo na samą produkcję**.
+Przyjmuję czasy realistyczne, a nie te wynikające z obecnych stawek w kalkulatorze. Powód w rozdziale 3.6.
 
-| Zużycie | Rachunek | Godziny |
+| Czynność | Czas | Co się na to składa |
 |---|---|---|
-| Obróbka MSLA | 18 platform × (20 min + ~8 szt. × 3 min) ≈ 44 min | ~13 h |
-| Obsługa zleceń FDM | 90 h druku ÷ 5 h średnio = 18 zleceń × 8 min | ~2,5 h |
-| **Razem produkcja** | | **~15,5 h** |
-| Zostaje na jubilerstwo, projektowanie, resztę | | ~14,5 h |
+| Obróbka platformy MSLA | ~25 min | spust, mycie w IPA, zdjęcie z platformy, filtrowanie żywicy, czyszczenie |
+| Obróbka sztuki MSLA | ~3 min | usunięcie podpór, kontrola, doczyszczenie |
+| Obsługa zlecenia FDM | ~12 min | zdjęcie z platformy, oczyszczenie, kontrola, pakowanie |
+
+| Zużycie | Rachunek | Minuty |
+|---|---|---|
+| Obsługa zleceń FDM | 72 h ÷ 5 h średnio = 14 zleceń × 12 min | 168 |
+| Obróbka MSLA | 20 platform × (25 min + 8 szt. × 3 min = 49 min) | 980 |
+| **Razem** | | **1148 z 1200** |
 
 **Wynikowy sufit przepustowości**
 
-- FDM: około **18 zleceń tygodniowo** (ograniczenie: godziny maszyny)
-- MSLA: około **16 do 20 zleceń tygodniowo** (ograniczenie: obróbka, nie druk)
-- Razem rzędu **30 do 38 zleceń tygodniowo**, czyli około 6 dziennie
+- FDM: około **14 zleceń tygodniowo**, ograniczenie stawiają godziny maszyny
+- MSLA: około **20 platform tygodniowo**, ograniczenie stawiają wymiany platformy i obróbka
+- Razem rzędu **34 zlecenia tygodniowo**, czyli około 7 dziennie
+
+**Operator jest wykorzystany w 96 procentach.** To jest istotna zmiana względem wersji 1.1, gdzie przy 30 h produkcji zostawał spory zapas. Przy podziale 50 na 50 zapasu praktycznie nie ma, więc **druga osoba staje się potrzebna dokładnie w momencie osiągnięcia sufitu**, a nie długo po nim.
+
+Gdyby popyt rósł szybciej, najtańszym ruchem nie jest kolejna drukarka, tylko pomoc przy obróbce żywicy albo przesunięcie proporcji 50 na 50. Tam siedzi 980 z 1148 minut, czyli 85 procent całego czasu produkcyjnego.
 
 ### 3.5 Wniosek, który zmienia priorytet całego systemu
 
@@ -181,7 +182,31 @@ To znaczy, że w krótkim terminie **kolejka nie jest narzędziem do racjonowani
 
 Zmienia to kolejność ważności funkcji: rezerwacja zasobów i twarde limity są mniej pilne, a kalibracja i uczciwość terminu są pilne od pierwszego dnia.
 
-Sufit staje się istotny dopiero przy około 30 zleceniach tygodniowo. Wtedy pierwszą rzeczą, która pęknie, będzie obróbka żywicy, i to jest moment na pomoc operatorską, o której wspominasz.
+Sufit staje się istotny przy około 34 zleceniach tygodniowo. Wtedy pierwszą rzeczą, która pęknie, będzie obróbka żywicy, i to jest moment na pomoc operatorską, o której wspominasz. Ponieważ operator jest wtedy wykorzystany w 96 procentach, ostrzeżenie musi przyjść **zanim** sufit zostanie osiągnięty, a nie w chwili osiągnięcia. Stąd w kolejce potrzebny jest alarm progowy, na przykład przy 80 procentach obłożenia w oknie dwutygodniowym.
+
+### 3.6 Znalezisko: obróbka jest wyceniona poniżej realnego kosztu pracy
+
+Przy stawce 100 PLN/h obecne stałe w kalkulatorze przekładają się na czasy, które są nierealnie krótkie.
+
+| Stała w kodzie | Kwota | Opłacone minuty przy 100 PLN/h | Realny czas (szacunek) | Niedobór |
+|---|---|---|---|---|
+| `POST_PLATFORM_PLN` | 20 PLN | 12 min | ~25 min | ~13 PLN |
+| `POST_PC_PLN` | 3 PLN | 1,8 min | ~3 min | ~2 PLN |
+| `HANDLING_FEE` | 8 PLN | 4,8 min | ~12 min | ~12 PLN |
+
+Na typowej platformie MSLA z ośmioma sztukami: kalkulator liczy 20 + 8 × 3 = **44 PLN**, a realny koszt pracy przy 100 PLN/h to 49 minut, czyli **82 PLN**. Różnica około 38 PLN na platformie.
+
+Konsekwencja jest poważniejsza, niż wygląda. Dopóki wycena jest orientacyjna, niedoszacowanie robocizny wychodzi w praniu przy negocjacji. **Przy cenie wiążącej w sklepie zamienia się w systematyczną stratę na zleceniach pracochłonnych**, i to tym większą, im więcej drobnych sztuk na platformie.
+
+Trzy możliwe reakcje:
+
+1. **Podnieść stałe do realnych czasów.** Uczciwe wobec kosztu, ale podnosi cenę drobnych serii żywicznych o kilkadziesiąt procent.
+2. **Zaakceptować niższą efektywną stawkę na obróbce**, traktując ją jako świadomą inwestycję w konkurencyjność wejścia. Wymaga jednak, żeby to była decyzja, a nie przypadek.
+3. **Zmienić strukturę ceny**: niższa stawka za sztukę, wyższa opłata wejściowa za zlecenie. Odzwierciedla to, że koszt stały platformy jest niezależny od liczby sztuk.
+
+Rekomendacja: wariant 3 dla żywicy, bo najlepiej opisuje rzeczywistą strukturę kosztu, plus podniesienie `HANDLING_FEE` dla FDM, gdzie niedobór jest największy proporcjonalnie (8 PLN wobec 20 PLN realnego kosztu).
+
+**Wszystkie te liczby czekają na pomiar.** Moje szacunki 25, 3 i 12 minut to punkt wyjścia do stopera, a nie ustalenie. Ale kierunek rozbieżności jest na tyle wyraźny, że warto to sprawdzić przed uruchomieniem cen wiążących, a nie po.
 
 ---
 
@@ -253,10 +278,15 @@ To jest realna przewaga nad warsztatem, który ogranicza wybór do własnej pó�
 **Wprowadzanie danych staje się głównym ryzykiem.** Przy kilkunastu pozycjach ręczne odejmowanie gramów jest do zniesienia. Przy stu pozycjach (typ × marka × kolor) nikt tego nie utrzyma i magazyn umrze śmiercią naturalną. Trzy sposoby, żeby temu zapobiec, w kolejności opłacalności:
 
 1. **Automatyczne odejmowanie z szacunku zlecenia.** Zlecenie zna gramaturę, więc po zakończeniu odejmuje ją samo. Zero pracy ręcznej, kosztem dryfu, który koryguje okresowa inwentaryzacja.
-2. **AMS i RFID w Bambu Lab.** H2D z AMS rozpoznaje szpule Bambu i raportuje zużycie. Warto sprawdzić, czy da się to wyciągnąć przez lokalne MQTT drukarki i podpiąć jako źródło prawdy dla filamentów Bambu. To wymaga weryfikacji technicznej, nie przesądzam wykonalności.
-3. **Kod QR na szpuli i butelce**, skanowany przy zakładaniu. Tanie, działa dla materiałów spoza Bambu.
+2. **AMS i RFID w Bambu Lab. Sprawdzone, jest wykonalne.** Drukarki Bambu wystawiają lokalnego brokera MQTT na porcie 8883 (użytkownik `bblp`, hasło z panelu drukarki), a AMS raportuje przez niego, jaka szpula jest założona i ile filamentu zostało. Istnieją gotowe integracje robiące dokładnie to, czego potrzebujemy: `bambulab-ams-spoolman-filamentstatus` nasłuchuje MQTT i automatycznie odejmuje zużycie w Spoolmanie, czyli otwartoźródłowym magazynie szpul. Sterowanie drukarką wymaga trybu LAN i trybu deweloperskiego, ale samo **czytanie danych przez MQTT tego nie wymaga**.
 
-Realistycznie: punkt 1 od razu, punkt 3 dla żywic (bo tam zużycie jest najbardziej nieprzewidywalne), punkt 2 do zbadania.
+   Dwa zastrzeżenia. Po pierwsze, AMS **szacuje** pozostały filament z liczby obrotów szpuli odniesionej do znanej geometrii szpul Bambu, więc dla szpul innych producentów jest to przybliżenie. Po drugie, to dotyczy wyłącznie FDM. Dla żywicy odpowiednika nie ma.
+
+   Wniosek: MQTT z H2D nadaje się jako **kontrola krzyżowa** dla filamentów, a nie jako jedyne źródło prawdy. Zestawienie odczytu z AMS z naszym odejmowaniem z szacunku zlecenia da nam przy okazji darmową kalibrację modelu zużycia.
+
+3. **Kod QR na szpuli i butelce**, skanowany przy zakładaniu. Tanie, działa dla materiałów spoza Bambu i dla żywic.
+
+Realistycznie: punkt 1 od razu, punkt 3 dla żywic (tam zużycie jest najmniej przewidywalne i nie ma automatyki), punkt 2 jako kontrola krzyżowa dla FDM w drugiej kolejności.
 
 **Rozdział katalogu od magazynu.** Przy szerokiej bazie tym bardziej trzeba trzymać osobno:
 
@@ -372,23 +402,26 @@ Ostatni wiersz wymaga komentarza. W `calcShared.jsx` mamy dziś `TOLERANCE_LOW: 
 
 ## 9. Ustalenia i to, co zostało otwarte
 
-### 9.1 Ustalone (2026-07-28)
+### 9.1 Ustalone
 
 | Parametr | Wartość | Konsekwencja |
 |---|---|---|
-| Czas operatora | 40 h tygodniowo, w razie potrzeby pomoc | Około 30 h na produkcję po odliczeniu obsługi |
-| Praca nocna H2D | Tak, standardowo | Około 90 h druku FDM tygodniowo, ograniczenie przesuwa się na obróbkę żywicy |
+| Czas operatora | 40 h tygodniowo, podział 50 na 50 | 20 h na produkcję, wykorzystane w 96 procentach przy suficie |
+| Wsparcie | Możliwa druga osoba | Potrzebna w momencie osiągnięcia sufitu, nie później |
+| Stawka robocizny | Około 100 PLN/h | Ujawnia niedoszacowanie obróbki w kalkulatorze, rozdz. 3.6 |
+| Praca nocna H2D | Tak, standardowo | Około 72 h druku FDM tygodniowo |
+| Dni robocze | 5 | Sufit około 34 zlecenia tygodniowo |
 | Baza materiałów | Dziś kilkanaście pozycji, projektujemy pod szeroką | Rozdział katalogu od magazynu, automatyczne odejmowanie |
 | Dostawa od dostawcy | 2 dni robocze | Szeroka oferta bez szerokiego magazynu |
+| Odczyt z AMS | Technicznie dostępny przez lokalne MQTT | Kontrola krzyżowa dla FDM, rozdz. 4.4 |
 | Tryb uruchomienia | Mechanizm od początku, szeroki bufor, korekta w trakcie | Brak momentu przełączenia, jedna ścieżka kodu |
 
 ### 9.2 Otwarte
 
-1. **Stawka godzinowa dla obróbki wydruków.** Przyjąłem 60 PLN/h przez analogię do kalkulatora CO2. Wszystkie wyliczenia minut operatora skalują się od tej liczby, więc warto ją potwierdzić.
-2. **Podział 40 h między produkcję a resztę.** Założyłem 75 na 25. Jeśli jubilerstwo zjada więcej, sufit MSLA spada proporcjonalnie.
-3. **Ile realnie sztuk mieści się na typowej platformie MSLA.** Wpisałem 8 jako średnią, ale to zgadywanie, a wpływa wprost na minuty obróbki.
-4. **Dni pracy w tygodniu.** Liczyłem 6. Przy 5 wszystkie sufity spadają o jakieś 17 procent.
-5. **Czy odczyt zużycia z AMS w H2D jest technicznie dostępny.** Do sprawdzenia, nie przesądzam.
+1. **Ile realnie sztuk mieści się na typowej platformie MSLA.** Przyjąłem 8 jako średnią. Ta liczba wpływa wprost na minuty obróbki, a przez nie na cały sufit MSLA. Zależy od tego, co klienci zamówią, więc realnie ustali ją dopiero pomiar na pierwszych zleceniach.
+2. **Rzeczywiste czasy obróbki:** 25 min na platformę, 3 min na sztukę, 12 min na zlecenie FDM. Mój szacunek, punkt wyjścia do stopera. Rozstrzyga zarówno sufit, jak i wycenę z rozdziału 3.6.
+3. **Która z trzech reakcji na niedoszacowanie obróbki** (rozdz. 3.6). Rekomenduję wariant 3, ale to decyzja cenowa, nie techniczna.
+4. **Ile realnie platform MSLA da się przerobić dziennie.** Przyjąłem 4. Przy pracy nocnej Saturna może być więcej, ale wymiany i tak wymagają człowieka.
 
 ---
 
