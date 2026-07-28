@@ -1,6 +1,6 @@
 # AEJaCA - Przepustowość, kolejka produkcyjna i magazyn materiałów
 
-*Wersja robocza 1.4 | 2026-07-28 | branch `claude/shop-plan` | dokument towarzyszący `AEJaCA_Shop_Plan.md`, rozdz. 10*
+*Wersja robocza 1.5 | 2026-07-28 | branch `claude/shop-plan` | dokument towarzyszący `AEJaCA_Shop_Plan.md`, rozdz. 10*
 
 *Zmiany w 1.1: wyliczenie sufitu na realnych danych (3.4), mechanizm samokalibrujący zamiast dwóch trybów (3.3), projektowanie pod szeroką bazę materiałów (4.4), zmieniona kolejność etapów (7), ustalenia i pytania otwarte (9).*
 
@@ -9,6 +9,8 @@
 *Zmiany w 1.3: obróbka 15 min na sztukę przeliczona na sufit w sztukach (3.4), maszyny okazują się wykorzystane w ~30 proc. (3.5), termin jako bufor liczony z obłożenia (3.5a), rabat seryjny działa odwrotnie do założenia (3.6a), liczenie sztuk na platformie już w kodzie (1.3).*
 
 *Zmiany w 1.4: czasy obróbki rozdzielone na technologie (FDM 6 min, MSLA 10 min), sufit ~107 sztuk i ~24 zlecenia tygodniowo (3.4), wąskie gardło różne dla FDM i MSLA (3.5), wycena FDM okazuje się poprawna, korekta dotyczy wyłącznie żywicy (3.6).*
+
+*Zmiany w 1.5: czasy obróbki MSLA rozbite na kategorie 5/7/10 min, cennik obróbki per kategoria 8/12/17 PLN (3.6), sufit ~130 sztuk tygodniowo (3.4), zmiana priorytetu na popyt zamiast podaży (9.3).*
 
 ---
 
@@ -185,8 +187,14 @@ Czasy obróbki przyjęte przez właściciela, **rozdzielone na technologie**:
 | Czynność | Czas | Co się na to składa |
 |---|---|---|
 | Obróbka sztuki FDM | **6 min** | zdjęcie z platformy, usunięcie podpór, kontrola, pakowanie |
-| Obróbka sztuki MSLA | **10 min** | usunięcie podpór, doczyszczenie, kontrola, pakowanie |
+| Obróbka sztuki MSLA, wzorzec odlewniczy (`casting`) | **5 min** | mały, rzadkie podpory |
+| Obróbka sztuki MSLA, prototyp (`prototype`) | **7 min** | średnia złożoność |
+| Obróbka sztuki MSLA, figurka (`figurine`) | **10 min** | duża, gęsto podparta |
 | Narzut na platformę MSLA | ~25 min | spust, mycie w IPA, zdjęcie z platformy, filtrowanie żywicy |
+
+Podział na kategorie odpowiada temu, co już mamy w `APPLICATIONS` w `Print3DCalc.jsx`, więc nie wymaga nowego wymiaru danych. Przy mieszanym obłożeniu średnia wychodzi około **7 minut na sztukę MSLA**.
+
+Potwierdza się przypuszczenie z wersji 1.3: **wzorce odlewnicze są dwukrotnie tańsze w obróbce niż figurki**. To akurat ten segment, w którym połączenie druku z jubilerstwem daje nam największą przewagę, więc rozdzielenie kategorii poprawia rentowność dokładnie tam, gdzie chcemy rosnąć.
 
 Rozdzielenie technologii jest istotne, bo odbudowuje różnicę, którą jedna uśredniona liczba zacierała: przy FDM praca rąk jest krótka i ograniczeniem zostaje maszyna, przy MSLA jest odwrotnie.
 
@@ -208,10 +216,12 @@ Granica teoretyczna to `1200 / 10 = 120 sztuk`.
 | Zużycie | Rachunek | Minuty |
 |---|---|---|
 | FDM: 14,4 platformy po ~2 szt. = 29 szt. | 29 × 6 min | 174 |
-| MSLA: 9,8 platformy po 8 szt. = 78 szt. | 78 × 10 min + 9,8 × 25 min | 1026 |
-| **Razem** | **107 sztuk, ~24 zlecenia** | **1200 z 1200** |
+| MSLA: 12,7 platformy po 8 szt. = 101 szt. | 101 × 7 min + 12,7 × 25 min | 1026 |
+| **Razem** | **130 sztuk, ~27 zleceń** | **1200 z 1200** |
 
-**Wynikowy sufit: około 107 sztuk i 24 zlecenia tygodniowo.** To jest o połowę więcej sztuk niż przy 15 minutach na wszystko, ale wciąż operator jest wykorzystany w 100 procentach.
+**Wynikowy sufit: około 130 sztuk i 27 zleceń tygodniowo.** Przy obłożeniu samymi wzorcami odlewniczymi (5 min) rośnie do jakichś 160 sztuk, przy samych figurkach (10 min) spada do 107.
+
+Saturn przy 12,7 platformy tygodniowo z możliwych 20 jest wykorzystany w około 64 procentach, czyli więcej niż przy jednolitych 10 minutach, ale nadal z zapasem.
 
 ### 3.5 Wąskie gardło przesuwa się zależnie od technologii
 
@@ -265,7 +275,21 @@ Skala jest mniejsza niż przy 15 minutach (było 200 PLN), ale nadal przewyższa
 
 Próg `MIN_ORDER_PLN` (49 PLN) chroni zamówienia jednosztukowe. **Nie chroni wielosztukowych**, bo tam cena rośnie liniowo z ilości, a koszt pracy rośnie szybciej.
 
-Wartości docelowe wynikające wprost z przyjętych czasów: `POST_PC_PLN` około **17 PLN**, `POST_PLATFORM_PLN` około **42 PLN**. Przekłada się to na wzrost ceny drobnej figurki o mniej więcej 16 PLN na sztuce.
+**Wartości docelowe, zatwierdzone, rozbite na kategorie**
+
+Skoro czasy obróbki różnią się per kategoria, płaska stawka 17 PLN byłaby błędem w drugą stronę: przepłacalibyśmy za wzorce odlewnicze. Stąd:
+
+| Kategoria | Czas | `POST_PC_PLN` docelowe |
+|---|---|---|
+| `casting` (wzorzec odlewniczy) | 5 min | **8 PLN** |
+| `prototype` | 7 min | **12 PLN** |
+| `figurine` | 10 min | **17 PLN** |
+
+`POST_PLATFORM_PLN`: **42 PLN** (25 min), wspólne dla wszystkich kategorii.
+
+To jest ulepszenie względem zatwierdzonej płaskiej stawki 17 PLN. Wzorce odlewnicze dla jubilerstwa, czyli nasz najmocniejszy segment, drożeją o 5 PLN zamiast o 14, a figurki płacą tyle, ile realnie kosztują.
+
+`HANDLING_FEE` dla FDM zostaje bez zmian (8 PLN).
 
 ### 3.6a Rabat seryjny działa w odwrotną stronę, niż zakłada
 
@@ -507,12 +531,32 @@ Ostatni wiersz wymaga komentarza. W `calcShared.jsx` mamy dziś `TOLERANCE_LOW: 
 | Odczyt z AMS | Technicznie dostępny przez lokalne MQTT | Kontrola krzyżowa dla FDM, rozdz. 4.4 |
 | Tryb uruchomienia | Mechanizm od początku, szeroki bufor, korekta w trakcie | Brak momentu przełączenia, jedna ścieżka kodu |
 
-### 9.2 Otwarte
+### 9.2 Zatwierdzone decyzje cenowe i sprzętowe
 
-1. **Rozbicie 10 minut MSLA na kategorie zastosowania.** Wzorzec odlewniczy i figurka kolekcjonerska to inne czasy. Warto mierzyć osobno dla `prototype`, `figurine` i `casting`.
-2. **Czy akceptujesz podniesienie `POST_PC_PLN` do 17 PLN i `POST_PLATFORM_PLN` do 42 PLN** (rozdz. 3.6b). Rozdzielenie rabatu uważam za oczywiste i niezależne od tej decyzji.
-3. **Czy inwestycja w skrócenie obróbki MSLA jest na stole.** Stacja mycia i doświetlania, szlifierka wibracyjna, optymalizacja podpór. Każda minuta to 12 dodatkowych sztuk tygodniowo.
-4. **Czy druga drukarka FDM wchodzi w grę.** H2D pracuje na styk, a obróbka FDM zajmuje tylko 174 z 1200 minut operatora, więc drugą maszynę byłoby kto obsłużyć. To jedyne miejsce, gdzie sprzęt faktycznie podniósłby przepustowość.
+| Decyzja | Stan |
+|---|---|
+| Czasy obróbki MSLA per kategoria: 5 / 7 / 10 min | Zatwierdzone |
+| `POST_PC_PLN` per kategoria: 8 / 12 / 17 PLN | Wynika z powyższego, ulepszenie płaskiej stawki 17 PLN |
+| `POST_PLATFORM_PLN` 42 PLN | Zatwierdzone |
+| Rozdzielenie rabatu (ilościowy tylko na maszynę i materiał) | Zatwierdzone |
+| Inwestycja w skrócenie obróbki MSLA | Zatwierdzona |
+| Druga drukarka FDM | Odłożona do wzrostu zleceń, w razie potrzeby podzlecanie druku |
+
+### 9.3 Zmiana priorytetu: problemem nie jest podaż, tylko popyt
+
+Ustalenie właściciela z 2026-07-28, nadrzędne wobec całego tego dokumentu:
+
+> "cały czas jednak na obecną chwilę drukarki stoją bezczynnie bo nie ma zleceń na wydruki i to na obecną chwilę trzeba zmienić"
+
+To ustawia cały system przepustowości we właściwym miejscu. Sufit 130 sztuk tygodniowo jest nieistotny, dopóki realne obłożenie wynosi ułamek tej liczby. Możliwość podzlecania druku dodatkowo zdejmuje presję z podaży.
+
+**Konsekwencja dla kolejności prac:**
+
+- Z tego dokumentu wdrażamy **wyłącznie minimum potrzebne sklepowi**: wyliczenie daty wysyłki z szerokim buforem i zapis `est_*` do późniejszej kalibracji. To jest kilka tabel i jeden endpoint.
+- Pełny magazyn, pętla kalibrująca, rezerwacje z wygasaniem, integracja z AMS i alarmy obłożenia **czekają na wolumen**. Budowanie ich teraz to optymalizacja problemu, którego nie mamy.
+- Poprawki cenowe z rozdziału 3.6 wdrażamy mimo to, bo są tanie i muszą być gotowe przed pierwszą ceną wiążącą, a nie po niej.
+
+Analiza samego problemu popytu wykracza poza zakres tego dokumentu i jest prowadzona osobno. To jedyne miejsce, gdzie sprzęt faktycznie podniósłby przepustowość.
 4. **Pole robocze H2D w kodzie: 30,0 × 32,0 cm.** Czy to świadomy margines na pracę dwudyszową, czy wartość do poprawienia.
 5. **Mnożnik czasu dla druku dwumateriałowego.** Wieża czyszcząca potrafi wydłużyć druk znacząco, a dziś w modelu tego nie ma.
 
