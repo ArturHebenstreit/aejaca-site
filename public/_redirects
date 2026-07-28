@@ -26,5 +26,9 @@
 /blog/pierscionek-zareczynowy        /blog/pierscionek-zareczynowy-na-zamowienie/     301
 /blog/pierscionek-zareczynowy/       /blog/pierscionek-zareczynowy-na-zamowienie/     301
 
-# SPA catch-all — must be last
-/*    /index.html   200
+# No SPA catch-all. Every route is prerendered to its own index.html, so
+# Cloudflare Pages resolves real pages as static assets and falls through to
+# dist/404.html (with a real HTTP 404) for everything else. A catch-all here
+# would instead answer dead URLs with HTTP 200, which Google treats as a soft
+# 404. scripts/prerender.mjs fails the build if a declared route is missing
+# from the prerender list, so this cannot silently drop a live page.

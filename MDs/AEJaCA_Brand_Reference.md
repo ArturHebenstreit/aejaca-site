@@ -465,6 +465,10 @@ Poza przekierowaniami trailing-slash dla stron głównych, plik zawiera:
 - `/gallery/` → `/jewelry/` i `/resources/` → `/blog/` (301). To pozycje rozwijane w menu bez własnych stron; bez tych reguł wpadały w catch-all SPA i zwracały stronę NotFound z kodem 200, czyli soft 404 raportowany przez Google jako "noindex".
 - Stare slugi bloga: `/blog/grawerowanie-laserowe/` → `/blog/grawerowanie-laserowe-przewodnik/`, `/blog/pierscionek-zareczynowy/` → `/blog/pierscionek-zareczynowy-na-zamowienie/` (301).
 
+**Brak catch-all SPA (od 2026-07-28):** reguła `/* /index.html 200` została usunięta. Wcześniej każdy nieistniejący adres zwracał kod 200 ze stroną NotFound, czyli soft 404. Teraz wszystkie 70 tras jest prerenderowanych jako osobne pliki `index.html`, a Cloudflare Pages serwuje `dist/404.html` z prawdziwym kodem HTTP 404 dla reszty. Plik `404.html` powstaje w `scripts/prerender.mjs` z tego samego komponentu NotFound, więc jest w pełni obrandowany i ma `noindex, nofollow`.
+
+**Zabezpieczenie przed rozjazdem tras:** `scripts/prerender.mjs` czyta slugi bloga z `POSTS_META` i identyfikatory słownika z `GLOSSARY` (koniec ręcznych list), a listę `STATIC_ROUTES` porównuje z trasami zadeklarowanymi w `src/main.jsx`. Rozjazd w którąkolwiek stronę przerywa build. To krytyczne: bez catch-all trasa pominięta w prerenderze byłaby żywą stroną zwracającą 404.
+
 ### Plik llms.txt
 Publiczny plik /llms.txt (specyfikacja llms.txt) zawierający:
 - Pełny opis marki i usług dla crawlerów AI
