@@ -648,6 +648,8 @@ export default {
     returns: "Returns",
     shipping: "Shipping",
     b2b: "B2B Cooperation",
+    local3dWarsaw: "3D Printing Warsaw",
+    local3dPiaseczno: "3D Printing Piaseczno",
   },
 
   newsletter: {
