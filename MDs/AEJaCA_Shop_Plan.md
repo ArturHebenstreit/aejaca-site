@@ -1,8 +1,10 @@
 # AEJaCA - Plan sklepu internetowego
 
-*Wersja robocza 1.1 | 2026-07-28 | branch `claude/shop-plan` | nic nie jest jeszcze implementowane*
+*Wersja robocza 1.2 | 2026-07-28 | branch `claude/shop-plan` | nic nie jest jeszcze implementowane*
 
 *Zmiany w 1.1: analiza Mapi-Tech (rozdz. 2.3), korekta oceny konkurencji (2.4), rozdzielenie decyzji o platformie (5.3), zamiana kolejności Fazy 1 i 2 (rozdz. 9).*
+
+*Zmiany w 1.2: kreator zapytania Oferteo jako zwalidowany wzorzec kolejności pytań (2.4a), wniosek o rozpoczynaniu od przeznaczenia zamiast technologii.*
 
 ---
 
@@ -116,6 +118,30 @@ To zmienia pozycjonowanie, ale nie unieważnia pomysłu. Nasza przewaga nie moż
 - **Żywe ceny surowców.** `GET /api/market-rates` z kursami NBP i cenami metali to rzecz, której nie ma nikt z tej listy, bo nikomu poza jubilerem nie jest potrzebna.
 
 Wniosek: kreator plikowy budujemy nie dlatego, że jest unikalny, tylko dlatego, że jest **warunkiem wejścia do gry**. Wyróżniamy się dopiero tym, co jest obok niego.
+
+### 2.4a Kreator zapytania w Oferteo, sprawdzony wzorzec pytań
+
+Oferteo prowadzi rozbudowaną ścieżkę zapytania dla druku 3D. Ma wartość jako **zwalidowany na dużej próbie model tego, jak polski klient myśli o tej usłudze**, a nie jako inspiracja wizualna.
+
+Kolejność pytań, odtworzona z kreatora (lipiec 2026):
+
+1. **Co chcesz wydrukować w 3D?** Prototyp lub model do testów / Część zamienna lub naprawcza (np. element AGD, część samochodowa) / Obudowa do urządzenia / Inny
+2. Liczba detali
+3. Czy masz projekt
+4. **Z jakiego materiału?** PLA (najpopularniejszy, ekonomiczny, do prototypów) / PET-G (wytrzymały, do części użytkowych i zewnętrznych) / ABS-ASA (bardzo trwały, odporny na wysoką temperaturę) / Żywica (do precyzyjnych wydruków o gładkiej powierzchni) / Inny
+5. Lokalizacja
+6. Termin
+7. Opis i załączniki, z możliwością pominięcia
+8. Dane kontaktowe
+
+Cztery rzeczy warte przeniesienia:
+
+1. **Pierwsze pytanie dotyczy przeznaczenia, nie technologii.** Klient nie wie, czy chce FDM czy MSLA, ale wie, że pękła mu część od pralki. Nasze `APPLICATIONS` (prototyp, figurka, wzorzec odlewniczy) są ułożone pod jubilerstwo i modelarstwo. Brakuje w nich **części zamiennej** i **obudowy**, czyli dwóch najbardziej masowych zastosowań konsumenckich.
+2. **Materiał opisany korzyścią, nie skrótem.** Nie "PET-G", tylko "PET-G, wytrzymały, do części użytkowych i zewnętrznych". Mamy do tego pełną bazę `filament_types` z polami `uses_pl`, więc możemy to zrobić lepiej niż oni, i to bez pisania nowych treści.
+3. **Krok z opisem jest jawnie opcjonalny** ("Pomiń"). Zmniejsza to porzucenia, bo nikt nie utyka na polu, którego nie umie wypełnić.
+4. **Pytanie o intencję**: "Chcę zatrudnić wykonawcę" kontra "Chcę wyłącznie otrzymać wycenę". Rozdziela klienta gotowego do zakupu od zbierającego rozeznanie, i pozwala każdemu odpowiedzieć inaczej.
+
+Wniosek dla naszego kreatora: kolejność powinna brzmieć **przeznaczenie → ilość → plik → materiał (z rekomendacją) → termin → cena**, a nie zaczynać od technologii druku.
 
 ### 2.5 Platforma i płatności w Polsce
 
