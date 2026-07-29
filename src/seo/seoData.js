@@ -175,6 +175,51 @@ export const SEO = {
     },
   },
 
+  // --- Strony lokalne (druk 3D) ---
+  // Tytuł zaczyna się od frazy, nie od marki. Marka jest dopisana na końcu,
+  // bo nikt nie szuka "AEJaCA sTuDiO", a pierwsze słowa tytułu ważą najwięcej.
+  druk3dPiaseczno: {
+    pl: {
+      title: "Druk 3D Piaseczno, wydruki na zamówienie z odbiorem osobistym",
+      description: "Druk 3D w Piasecznie i okolicy. FDM i żywica 16K, wydruk z pliku STL lub modelowanie od zera. Odbiór osobisty w Józefosławiu, od 49 zł.",
+      keywords: "druk 3d piaseczno, wydruk 3d piaseczno, drukarnia 3d piaseczno, druk 3d józefosław, modelowanie 3d piaseczno",
+      ogAlt: "Druk 3D Piaseczno, pracownia AEJaCA sTuDiO",
+    },
+    en: {
+      title: "3D Printing in Piaseczno, custom prints with local collection",
+      description: "3D printing in Piaseczno and the surrounding area. FDM and 16K resin, printing from your STL or modelling from scratch. Collection in Józefosław, from 49 PLN.",
+      keywords: "3d printing piaseczno, 3d print service piaseczno, 3d printing warsaw area, 3d modelling piaseczno",
+      ogAlt: "3D printing in Piaseczno, AEJaCA sTuDiO workshop",
+    },
+    de: {
+      title: "3D-Druck Piaseczno, Einzelanfertigung mit Abholung vor Ort",
+      description: "3D-Druck in Piaseczno und Umgebung. FDM und 16K-Harz, Druck aus Ihrer STL-Datei oder Modellierung von Grund auf. Abholung in Józefosław, ab 49 PLN.",
+      keywords: "3d druck piaseczno, 3d druckservice piaseczno, 3d modellierung piaseczno",
+      ogAlt: "3D-Druck Piaseczno, Werkstatt AEJaCA sTuDiO",
+    },
+  },
+
+  druk3dWarszawa: {
+    pl: {
+      title: "Druk 3D Warszawa, wycena z pliku STL, wysyłka następnego dnia",
+      description: "Druk 3D na zamówienie dla Warszawy. FDM i żywica 16K, prototypy, makiety, części zamienne i wzorce odlewnicze. Od jednej sztuki, od 49 zł.",
+      keywords: "druk 3d warszawa, wydruk 3d warszawa, drukarnia 3d warszawa, prototypy 3d warszawa, druk 3d na zamówienie",
+      ogAlt: "Druk 3D Warszawa, pracownia AEJaCA sTuDiO",
+    },
+    en: {
+      title: "3D Printing in Warsaw, quote from your STL, next-day dispatch",
+      description: "Custom 3D printing for Warsaw. FDM and 16K resin, prototypes, architectural models, spare parts and casting patterns. From one piece, from 49 PLN.",
+      keywords: "3d printing warsaw, 3d print service warsaw, rapid prototyping warsaw, resin printing warsaw",
+      ogAlt: "3D printing in Warsaw, AEJaCA sTuDiO workshop",
+    },
+    de: {
+      title: "3D-Druck Warschau, Angebot aus STL, Versand am Folgetag",
+      description: "3D-Druck nach Maß für Warschau. FDM und 16K-Harz, Prototypen, Architekturmodelle, Ersatzteile und Gussmodelle. Ab einem Stück, ab 49 PLN.",
+      keywords: "3d druck warschau, 3d druckservice warschau, prototypen warschau, harzdruck warschau",
+      ogAlt: "3D-Druck Warschau, Werkstatt AEJaCA sTuDiO",
+    },
+  },
+
   about: {
     pl: {
       title: "O AEJaCA, Rzemiosło i technologia od 2023 roku",

@@ -36,6 +36,7 @@ const ShrinkagePage = lazy(() => import("./pages/ShrinkagePage.jsx"));
 const ResinSettingsPage = lazy(() => import("./pages/ResinSettingsPage.jsx"));
 const Reviews = lazy(() => import("./pages/Reviews.jsx"));
 const B2B = lazy(() => import("./pages/B2B.jsx"));
+const LocalPrint3D = lazy(() => import("./pages/LocalPrint3D.jsx"));
 const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 
 function LazyFallback() {
@@ -80,6 +81,8 @@ const app = (
                 <Route path="/privacy/" element={<Privacy />} />
                 <Route path="/reviews/" element={<Reviews />} />
                 <Route path="/b2b/" element={<B2B />} />
+                <Route path="/druk-3d-piaseczno/" element={<LocalPrint3D city="piaseczno" />} />
+                <Route path="/druk-3d-warszawa/" element={<LocalPrint3D city="warszawa" />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>

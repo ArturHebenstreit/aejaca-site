@@ -72,10 +72,15 @@ export function buildLocalBusinessSchema() {
       { "@type": "Country", name: "Germany" },
       { "@type": "Place", name: "European Union" },
     ],
+    // 30 km from Józefosław covers Warsaw and the southern belt (Piaseczno,
+    // Konstancin, Ursynów, Wilanów), matching the service area declared on the
+    // Google Business Profile. The previous 5 km told Google we served a radius
+    // that stopped short of Warsaw itself, while areaServed above already
+    // states we ship across Poland and the EU.
     serviceArea: {
       "@type": "GeoCircle",
       geoMidpoint: { "@type": "GeoCoordinates", latitude: "52.0736", longitude: "21.0724" },
-      geoRadius: "5000",
+      geoRadius: "30000",
     },
     priceRange: "€€",
     currenciesAccepted: "PLN, EUR",

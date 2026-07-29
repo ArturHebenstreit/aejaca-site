@@ -386,6 +386,30 @@ export default function Studio() {
 
       <div className="gradient-divider" />
 
+      {/* Obsługiwane lokalizacje. Kontekstowy link wewnętrzny do stron
+          lokalnych, bez którego byłyby sierotami w strukturze witryny. */}
+      <section className="py-12 px-4 text-center">
+        <p className="text-sm uppercase tracking-[0.2em] text-neutral-500 mb-4">
+          {{ pl: "Obsługujemy", en: "We serve", de: "Wir bedienen" }[lang] || "We serve"}
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Link
+            to="/druk-3d-warszawa/"
+            className="px-5 py-2.5 rounded-full border border-neutral-700 text-neutral-300 hover:border-blue-400/50 hover:text-white transition-colors text-sm"
+          >
+            {{ pl: "Druk 3D Warszawa", en: "3D printing in Warsaw", de: "3D-Druck Warschau" }[lang] || "3D printing in Warsaw"}
+          </Link>
+          <Link
+            to="/druk-3d-piaseczno/"
+            className="px-5 py-2.5 rounded-full border border-neutral-700 text-neutral-300 hover:border-blue-400/50 hover:text-white transition-colors text-sm"
+          >
+            {{ pl: "Druk 3D Piaseczno", en: "3D printing in Piaseczno", de: "3D-Druck Piaseczno" }[lang] || "3D printing in Piaseczno"}
+          </Link>
+        </div>
+      </section>
+
+      <div className="gradient-divider" />
+
       {/* Etsy */}
       <section id="shop" className="py-16 px-4 text-center bg-neutral-900/50">
         <div ref={etsyRef} className="reveal">

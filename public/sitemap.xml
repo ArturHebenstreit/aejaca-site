@@ -44,7 +44,7 @@
   <!-- Studio -->
   <url>
     <loc>https://www.aejaca.com/studio/</loc>
-    <lastmod>2026-07-17</lastmod>
+    <lastmod>2026-07-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
 
@@ -54,6 +54,18 @@
       <image:title>AEJaCA sTuDiO — 3D printing, laser engraving and custom fabrication</image:title>
       <image:caption>Multi-material 3D printing, CO2/Fiber laser engraving, UV and 2K resin casting</image:caption>
     </image:image>
+  </url>
+  <url>
+    <loc>https://www.aejaca.com/druk-3d-piaseczno/</loc>
+    <lastmod>2026-07-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <url>
+    <loc>https://www.aejaca.com/druk-3d-warszawa/</loc>
+    <lastmod>2026-07-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
   </url>
 
   <!-- B2B -->

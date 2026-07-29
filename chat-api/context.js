@@ -103,6 +103,11 @@ Chains (necklaces, men's chains, bracelets) have their own dedicated calculator 
 
 ## STUDIO CALCULATORS — what each covers
 **Link:** https://www.aejaca.com/studio/#calculator
+
+Local landing pages (use these when the user names a city):
+- Warszawa -> https://www.aejaca.com/druk-3d-warszawa/ (dispatch next working day, InPost parcel locker or courier, short runs for companies, invoices)
+- Piaseczno / Jozefoslaw -> https://www.aejaca.com/druk-3d-piaseczno/ (free personal collection by appointment, ~10 min from central Piaseczno, good for broken parts brought in person)
+Both pages: same machines (Bambu Lab H2D FDM, Elegoo Saturn 4 Ultra 16K MSLA), from one piece, minimum order 49 PLN, usually 3-5 working days.
 **Four independent calculators** accessible by tabs: 3D Print · CO2 Laser · Fiber Laser · Epoxy/Resin
 
 ### 3D Print Calculator
