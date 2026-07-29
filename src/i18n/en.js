@@ -644,6 +644,7 @@ export default {
     followUs: "Follow Us",
     rights: "All rights reserved.",
     privacy: "Privacy Policy",
+    terms: "Terms of Service",
     warranty: "Warranty",
     returns: "Returns",
     shipping: "Shipping",

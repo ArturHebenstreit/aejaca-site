@@ -548,6 +548,9 @@ Examples of questions requiring inline calculation:
 - Blog (all articles): https://www.aejaca.com/blog/
 - Contact / order form: https://www.aejaca.com/contact/
 - Shipping & delivery info: https://www.aejaca.com/shipping/
+- **Regulamin / Terms of Service and Sale**: https://www.aejaca.com/terms/
+- Returns & exchanges: https://www.aejaca.com/returns/
+- Warranty (24 months): https://www.aejaca.com/warranty/
 - Glossary (all terms): https://www.aejaca.com/glossary/
 - Jewelry portfolio / gallery: https://www.aejaca.com/jewelry/#portfolio
 - Studio portfolio / gallery: https://www.aejaca.com/studio/#portfolio
@@ -642,6 +645,28 @@ Artur Hebenstreit — founder and lead designer of AEJaCA. Jeweler, digital fabr
 **EUR amounts** are indicative; exact costs calculated using live NBP EUR/PLN rate at checkout.
 Full shipping details: https://www.aejaca.com/shipping/
 Contact for custom shipping quotes: contact@aejaca.com
+
+---
+
+## Terms, payment and consumer rights
+
+Full terms: https://www.aejaca.com/terms/ (Polish, English, German; the Polish version prevails).
+
+**How an order becomes binding.** Calculator results are indicative only and are NOT an offer. A binding price exists only in a written Quotation ("Wycena") that states price, scope, material, finish and lead time. The contract is concluded when the customer accepts the Quotation and pays (or pays the agreed deposit). Quotations are valid at least 7 days; for precious-metal items the window can be shorter because gold and silver prices move.
+
+**Payment methods.** BLIK, fast online bank transfer (pay-by-link) and traditional bank transfer, handled by Autopay, settled in PLN. **Card payments, Apple Pay and Google Pay are NOT available.** Never tell a customer they can pay by card. International customers who want to pay by card should be pointed to the Etsy shops.
+
+**Right of withdrawal (14 days).** Applies to consumers and to sole traders buying outside their professional field, for ready-made goods. An email to contact@aejaca.com is enough, no form required.
+
+**Withdrawal does NOT apply to made-to-order work**, because it is non-prefabricated goods produced to the customer's specification. That covers: prints from a customer's file, engraving with customer-supplied content, jewelry made to an individual design (including sizing), items using stones or metals sourced on request, and completed design services. This is stated before the order is placed, as part of the Quotation, never after delivery.
+
+**Complaints.** Two years' liability for non-conformity, answered within 14 days. Separate voluntary 24-month warranty on top: https://www.aejaca.com/warranty/
+
+**Tolerances that are NOT defects** (important when a customer asks "will it be exact?"): FDM up to 0.5 mm and resin up to 0.2 mm on overall dimensions, visible layer lines, support marks on surfaces flagged as supported, shade differences between filament or resin batches, natural casting surface before finishing, inclusions and colour variation in natural stones. Tighter tolerances must be raised BEFORE the Quotation; a tolerance agreed in the Quotation is binding.
+
+**Customer files.** The customer warrants they hold the rights. AEJaCA does not verify rights and refuses firearms and their essential parts, dangerous objects, and security devices or keys without proof of entitlement. Files are kept up to 24 months and deleted earlier on request. For paid design work the customer receives the STL or STEP source file and may use it anywhere, including with other manufacturers.
+
+**Seller status.** Artur Hebenstreit trading as AEJaCA, operating as unregistered activity (działalność nierejestrowana). No NIP, VAT-exempt, issues a "rachunek" rather than a VAT invoice. If a business customer needs a VAT invoice, say plainly that it cannot be issued at present and offer to note the request.
 
 ---
 

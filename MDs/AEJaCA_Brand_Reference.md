@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-07-28 | Wersja: 1.2*
+*Wygenerowano: 2026-07-29 | Wersja: 1.3*
 
 ---
 
@@ -560,6 +560,49 @@ Klucz weryfikacyjny: `public/1cc7ba768716151f4028f5c9d6127177.txt`
   - do 10 kg: 330-400 PLN (~78-94 EUR)
 
 Polityka zwrotów: 14 dni, bezpłatny zwrot (MerchantReturnPolicy)
+
+---
+
+## 10a. STATUS PRAWNY, PŁATNOŚCI I REGULAMIN (od 2026-07-29)
+
+### Forma prowadzenia działalności
+
+**Działalność nierejestrowana** (art. 5 ust. 1 Prawa przedsiębiorców), prowadzona przez Artura Hebenstreita pod marką AEJaCA. **Brak NIP i REGON**, identyfikatorem podatkowym jest PESEL. Zwolnienie z VAT, dokumentem sprzedaży jest **rachunek**, nie faktura VAT.
+
+Plan: formalna spółka po osiągnięciu przychodu uzasadniającego rejestrację. Do tego czasu obowiązuje miesięczny limit przychodu, który jest warunkiem brzegowym planu sklepu i planu przepustowości.
+
+Konsekwencje operacyjne, o których trzeba pamiętać:
+- polskie katalogi firm (Panorama Firm, ALEO, pkt.pl) identyfikują podmiot po NIP-ie, więc są dla nas **niedostępne**
+- większość bramek płatniczych (PayU, Przelewy24, Tpay) wymaga zarejestrowanej działalności
+
+### Płatności
+
+Operator: **Autopay S.A.**, ID serwisu 218869, podpis SHA256. Klucz wyłącznie w zmiennych środowiskowych backendu, nigdy w repozytorium.
+
+- Dostępne: **BLIK, szybki przelew online (PBL), przelew tradycyjny**
+- Niedostępne: **karta płatnicza, Apple Pay, Google Pay**
+- Waluta rozliczeniowa: **PLN**
+
+Podział rynków: Polska przez sklep na aejaca.com, zagranica przez Etsy (własne płatności Etsy). PayPal jako opcja dopiero po rejestracji spółki.
+
+### Dane podmiotu w kodzie
+
+Jedno źródło prawdy: **`src/data/sellerInfo.js`**. Po rejestracji spółki zmienia się ten jeden plik, nie komponenty.
+
+**Otwarty punkt:** brak pełnego adresu do korespondencji. Adres pracowni jest adresem prywatnym i nie jest publikowany. Przed uruchomieniem sprzedaży potrzebna skrytka pocztowa w Piasecznie. Flaga `hasFullPostalAddress: false` w `sellerInfo.js`.
+
+### Regulamin
+
+Strona **`/terms/`** (`src/pages/Terms.jsx`, treść w `src/data/termsContent.js`), trójjęzyczna, 17 sekcji, obowiązuje od 2026-07-29. Wersja polska wiążąca.
+
+Sekcje wykraczające poza typowy wzór, bo dopasowane do naszej technologii:
+- **§ 10**, wyłączenie prawa odstąpienia dla rzeczy nieprefabrykowanej wykonanej według specyfikacji konsumenta, z wyliczeniem pięciu naszych przypadków (wydruk z pliku klienta, grawer, biżuteria na projekt, kamienie na życzenie, usługa projektowa)
+- **§ 12**, prawa do plików klienta, odmowa realizacji broni i zabezpieczeń, przekazanie pliku STL/STEP przy usłudze projektowej wraz z prawem do użycia u innego wykonawcy
+- **§ 13**, właściwości technologiczne, które nie są wadą: odchyłki do 0,5 mm dla FDM i 0,2 mm dla żywicy, widoczna struktura warstw, ślady podpór, różnice odcienia między partiami, inkluzje kamieni naturalnych
+
+Dokumenty powiązane bez zmian: `/returns/`, `/warranty/`, `/shipping/`, `/privacy/`.
+
+**Zastrzeżenie:** regulamin napisany bez udziału prawnika. Przed uruchomieniem prawdziwej sprzedaży wymaga przeglądu przez osobę z uprawnieniami.
 
 ---
 

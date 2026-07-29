@@ -23,6 +23,7 @@ const GlossaryTerm = lazy(() => import("./pages/GlossaryTerm.jsx"));
 const About = lazy(() => import("./pages/About.jsx"));
 const Warranty = lazy(() => import("./pages/Warranty.jsx"));
 const Returns = lazy(() => import("./pages/Returns.jsx"));
+const Terms = lazy(() => import("./pages/Terms.jsx"));
 const Shipping = lazy(() => import("./pages/Shipping.jsx"));
 const ToolsJewelry = lazy(() => import("./pages/ToolsJewelry.jsx"));
 const ToolsStudio = lazy(() => import("./pages/ToolsStudio.jsx"));
@@ -67,6 +68,7 @@ const app = (
                 <Route path="/about/" element={<About />} />
                 <Route path="/warranty/" element={<Warranty />} />
                 <Route path="/returns/" element={<Returns />} />
+                <Route path="/terms/" element={<Terms />} />
                 <Route path="/shipping/" element={<Shipping />} />
                 <Route path="/toolsjewelry/" element={<ToolsJewelry />} />
                 <Route path="/toolsjewelry/alloy-composition/" element={<AlloyCompositionPage />} />

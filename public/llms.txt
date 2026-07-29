@@ -39,6 +39,7 @@
 - [3D Print Settings, FDM](https://www.aejaca.com/toolstudio/print-settings/), "Parametry druku 3D FDM", free filament wizard: requirements, material, brand, parameter card, 45+ filament types, 100+ brand profiles
 - [3D Print Settings, MSLA](https://www.aejaca.com/toolstudio/resin-settings/), "Parametry druku 3D MSLA", free resin advisor: application filter, resin picker in 3 segments (13 resins), parameter cards (layer height, wash medium, UV post-cure time, hardness, density), full comparison table, FAQ, no registration
 - [Contact](https://www.aejaca.com/contact/) — project briefs, custom inquiries
+- [Terms of Service and Sale](https://www.aejaca.com/terms/), "Regulamin", full trilingual terms: how a contract is concluded (enquiry, binding quotation, acceptance), prices and payment (BLIK, pay-by-link, bank transfer via Autopay, PLN, no card payments), lead times, right of withdrawal and its exclusion for made-to-order goods, complaints, rights to customer files, and the manufacturing tolerances that do not count as defects (FDM up to 0.5 mm, resin up to 0.2 mm, visible layer lines, support marks, batch shade differences)
 
 ## Services (AEJaCA Jewelry)
 
