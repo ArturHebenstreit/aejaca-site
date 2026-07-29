@@ -641,6 +641,8 @@ export default {
     returns: "Zwroty",
     shipping: "Wysyłka",
     b2b: "Współpraca B2B",
+    local3dWarsaw: "Druk 3D Warszawa",
+    local3dPiaseczno: "Druk 3D Piaseczno",
   },
 
   newsletter: {
