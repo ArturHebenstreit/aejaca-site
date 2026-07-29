@@ -1,6 +1,8 @@
 # AEJaCA - Przepustowość, kolejka produkcyjna i magazyn materiałów
 
-*Wersja robocza 1.5 | 2026-07-28 | branch `claude/shop-plan` | dokument towarzyszący `AEJaCA_Shop_Plan.md`, rozdz. 10*
+*Wersja robocza 1.6 | 2026-07-29 | branch `claude/shop-plan` | dokument towarzyszący `AEJaCA_Shop_Plan.md`, rozdz. 10*
+
+> **Faza przedrejestracyjna, czytaj przed liczbami.** Do czasu założenia spółki działamy jako **działalność nierejestrowana**, którą obowiązuje miesięczny limit przychodu. Sufit ~130 sztuk i ~27 zleceń tygodniowo opisuje **stan docelowy po rejestracji**, a nie cel na dziś. Dziś te liczby służą wyłącznie do kalibracji mechanizmu terminów i cennika, żeby po rejestracji nie trzeba było ich wyznaczać od zera. Kolejność jest świadoma: najpierw zbudować popyt, potem zarejestrować spółkę, potem zdjąć ograniczenie.
 
 *Zmiany w 1.1: wyliczenie sufitu na realnych danych (3.4), mechanizm samokalibrujący zamiast dwóch trybów (3.3), projektowanie pod szeroką bazę materiałów (4.4), zmieniona kolejność etapów (7), ustalenia i pytania otwarte (9).*
 
@@ -11,6 +13,8 @@
 *Zmiany w 1.4: czasy obróbki rozdzielone na technologie (FDM 6 min, MSLA 10 min), sufit ~107 sztuk i ~24 zlecenia tygodniowo (3.4), wąskie gardło różne dla FDM i MSLA (3.5), wycena FDM okazuje się poprawna, korekta dotyczy wyłącznie żywicy (3.6).*
 
 *Zmiany w 1.5: czasy obróbki MSLA rozbite na kategorie 5/7/10 min, cennik obróbki per kategoria 8/12/17 PLN (3.6), sufit ~130 sztuk tygodniowo (3.4), zmiana priorytetu na popyt zamiast podaży (9.3).*
+
+*Zmiany w 1.6: dopisana ramka o fazie przedrejestracyjnej i limicie przychodu działalności nierejestrowanej.*
 
 ---
 
