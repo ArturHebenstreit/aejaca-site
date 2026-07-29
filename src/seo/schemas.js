@@ -34,6 +34,10 @@ export function buildOrganizationSchema() {
       "https://aejaca2studio.etsy.com",
       "https://www.instagram.com/aejaca_",
       "https://www.tiktok.com/@aejaca_",
+      // Drugi, autentyczny profil TikTok prowadzony pod rynek amerykanski.
+      // Oba nalezy trzymac w sameAs: to pole sluzy potwierdzaniu tozsamosci
+      // encji, wiec kazdy prawdziwy profil wzmacnia rozpoznanie firmy.
+      "https://www.tiktok.com/@aejaca_us",
       "https://www.facebook.com/people/Artisan-Elegance-Jewelry-and-Crafted-Art/61570057929428/",
       "https://www.youtube.com/@aejaca",
     ],
@@ -96,6 +100,10 @@ export function buildLocalBusinessSchema() {
       "https://aejaca2studio.etsy.com",
       "https://www.instagram.com/aejaca_",
       "https://www.tiktok.com/@aejaca_",
+      // Drugi, autentyczny profil TikTok prowadzony pod rynek amerykanski.
+      // Oba nalezy trzymac w sameAs: to pole sluzy potwierdzaniu tozsamosci
+      // encji, wiec kazdy prawdziwy profil wzmacnia rozpoznanie firmy.
+      "https://www.tiktok.com/@aejaca_us",
       "https://www.facebook.com/people/Artisan-Elegance-Jewelry-and-Crafted-Art/61570057929428/",
       "https://www.youtube.com/@aejaca",
     ],
