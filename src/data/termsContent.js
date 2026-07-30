@@ -53,7 +53,8 @@ export const TERMS = {
         n: "3",
         title: "Sprzedawca i kontakt",
         items: [
-          "Sprzedawca: Artur Hebenstreit, działający pod marką AEJaCA, prowadzący działalność nierejestrowaną, Józefosław, gmina Piaseczno, województwo mazowieckie.",
+          "Sprzedawca: Artur Hebenstreit, działający pod marką AEJaCA. Adres prowadzenia działalności i adres do korespondencji: ul. Nowy Świat 33 lok. 13, 00-029 Warszawa.",
+          "Pracownia, w której wykonywane są zamówienia oraz w której możliwy jest odbiór osobisty po wcześniejszym uzgodnieniu, znajduje się w Józefosławiu w gminie Piaseczno. Nie jest to adres do korespondencji.",
           "Adres poczty elektronicznej: contact@aejaca.com. Telefon: +48 780 737 786.",
           "Podstawowym kanałem kontaktu, składania oświadczeń i reklamacji jest poczta elektroniczna. Oświadczenie złożone e-mailem jest skuteczne i wystarczające, w szczególności oświadczenie o odstąpieniu od umowy.",
           "Odbiór osobisty i przekazanie rzeczy odbywają się wyłącznie po wcześniejszym uzgodnieniu terminu i miejsca.",
@@ -268,7 +269,8 @@ export const TERMS = {
         n: "3",
         title: "Seller and contact",
         items: [
-          "Seller: Artur Hebenstreit, trading under the AEJaCA brand, carrying out unregistered business activity, Józefosław, Piaseczno municipality, Mazowieckie voivodeship, Poland.",
+          "Seller: Artur Hebenstreit, trading under the AEJaCA brand. Business and correspondence address: ul. Nowy Świat 33 lok. 13, 00-029 Warsaw, Poland.",
+          "The workshop where orders are produced, and where personal collection is possible by prior arrangement, is located in Józefosław, Piaseczno municipality. It is not a correspondence address.",
           "Email: contact@aejaca.com. Telephone: +48 780 737 786.",
           "Email is the primary channel for contact, declarations and complaints. A declaration made by email is effective and sufficient, in particular a declaration of withdrawal from a contract.",
           "Personal collection and handover take place only after the time and place have been agreed in advance.",
@@ -483,7 +485,8 @@ export const TERMS = {
         n: "3",
         title: "Verkäufer und Kontakt",
         items: [
-          "Verkäufer: Artur Hebenstreit, tätig unter der Marke AEJaCA, nicht registrierte Erwerbstätigkeit, Józefosław, Gemeinde Piaseczno, Woiwodschaft Masowien, Polen.",
+          "Verkäufer: Artur Hebenstreit, tätig unter der Marke AEJaCA. Geschäfts- und Korrespondenzanschrift: ul. Nowy Świat 33 lok. 13, 00-029 Warschau, Polen.",
+          "Die Werkstatt, in der die Aufträge gefertigt werden und in der nach vorheriger Absprache eine Selbstabholung möglich ist, befindet sich in Józefosław, Gemeinde Piaseczno. Sie ist keine Korrespondenzanschrift.",
           "E-Mail: contact@aejaca.com. Telefon: +48 780 737 786.",
           "Hauptkanal für Kontakt, Erklärungen und Reklamationen ist die E-Mail. Eine per E-Mail abgegebene Erklärung ist wirksam und ausreichend, insbesondere die Widerrufserklärung.",
           "Selbstabholung und Übergabe erfolgen ausschließlich nach vorheriger Abstimmung von Zeit und Ort.",

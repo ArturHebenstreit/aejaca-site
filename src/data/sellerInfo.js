@@ -19,14 +19,23 @@ export const SELLER = {
   phone: "+48 780 737 786",
   phoneHref: "tel:+48780737786",
 
-  // TODO przed uruchomieniem sprzedaży: pełny adres do korespondencji.
-  // Konsument musi mieć dokąd wysłać oświadczenie o odstąpieniu i reklamację
-  // drogą pocztową, a adres pracowni jest adresem prywatnym i nie jest
-  // publikowany. Rozwiązaniem jest skrytka pocztowa w Piasecznie.
-  // Do tego czasu podajemy tylko lokalizację, tak jak w schemacie
-  // LocalBusiness, i kanał elektroniczny jako podstawowy.
-  addressLines: ["Józefosław", "gmina Piaseczno, woj. mazowieckie"],
-  hasFullPostalAddress: false,
+  // Adres prowadzenia działalności i do korespondencji: wirtualne biuro
+  // wynajęte od NOWY ŚWIAT 33 Sp. z o.o., umowa z 30.07.2026, obowiązuje od
+  // 01.08.2026. Umowa (§ 1 ust. 1) wprost dopuszcza rejestrację siedziby i
+  // adres do korespondencji, więc spełnia obowiązek z art. 12 ust. 1 pkt 2
+  // ustawy o prawach konsumenta.
+  //
+  // UWAGA, dwie rzeczy, których nie wolno pomylić:
+  //  1. To NIE jest lokalizacja pracowni. Pracownia i odbiór osobisty
+  //     pozostają w Józefosławiu i tak też ma zostać w schemacie
+  //     LocalBusiness, na stronach lokalnych i w Shipping.jsx.
+  //  2. Tego adresu NIE wpisujemy do wizytówki Google. Google zakazuje
+  //     wirtualnych biur w profilu firmy, grozi to zawieszeniem.
+  addressLines: ["ul. Nowy Świat 33 lok. 13", "00-029 Warszawa"],
+  hasFullPostalAddress: true,
+
+  // Miejsce wykonywania prac i odbioru osobistego, celowo osobne pole.
+  workshopLocality: "Józefosław, gmina Piaseczno",
 
   // Bramka płatnicza. Patrz Shop Plan 5.3a. Klucz (hash) NIGDY tutaj,
   // wyłącznie w zmiennych środowiskowych backendu.
