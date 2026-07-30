@@ -2,7 +2,7 @@
 
 *Wersja robocza 1.6 | 2026-07-29 | branch `claude/shop-plan` | dokument towarzyszący `AEJaCA_Shop_Plan.md`, rozdz. 10*
 
-> **Faza przedrejestracyjna, czytaj przed liczbami.** Do czasu założenia spółki działamy jako **działalność nierejestrowana**, którą obowiązuje miesięczny limit przychodu. Sufit ~130 sztuk i ~27 zleceń tygodniowo opisuje **stan docelowy po rejestracji**, a nie cel na dziś. Dziś te liczby służą wyłącznie do kalibracji mechanizmu terminów i cennika, żeby po rejestracji nie trzeba było ich wyznaczać od zera. Kolejność jest świadoma: najpierw zbudować popyt, potem zarejestrować spółkę, potem zdjąć ograniczenie.
+> **Faza przedrejestracyjna, czytaj przed liczbami.** Do czasu założenia spółki działamy jako **działalność nierejestrowana**. Od 2026-01-01 limit rozliczany jest **kwartalnie i wynosi 10 813,50 PLN** (225 proc. kwartalnego wynagrodzenia minimalnego), co potwierdził Autopay przy weryfikacji serwisu. To około **3 600 PLN miesięcznie** i **43 250 PLN rocznie**. Sufit ~130 sztuk i ~27 zleceń tygodniowo opisuje **stan docelowy po rejestracji**, a nie cel na dziś. Dziś te liczby służą wyłącznie do kalibracji mechanizmu terminów i cennika, żeby po rejestracji nie trzeba było ich wyznaczać od zera. Kolejność jest świadoma: najpierw zbudować popyt, potem zarejestrować spółkę, potem zdjąć ograniczenie.
 
 *Zmiany w 1.1: wyliczenie sufitu na realnych danych (3.4), mechanizm samokalibrujący zamiast dwóch trybów (3.3), projektowanie pod szeroką bazę materiałów (4.4), zmieniona kolejność etapów (7), ustalenia i pytania otwarte (9).*
 

@@ -26,6 +26,10 @@ Rekomendacja startowa: **zacząć od środkowego wiersza**, nie od katalogu. Zam
 
 **Ograniczenie ramowe (od wersji 1.3).** Działamy jako **działalność nierejestrowana**, bez NIP-u, do czasu osiągnięcia przychodu uzasadniającego założenie spółki. To nie jest szczegół księgowy, tylko warunek brzegowy całego planu: determinuje wybór bramki, dostępne metody płatności, obsługiwane rynki i sufit skali. Liczby w tym dokumencie oraz w `AEJaCA_Production_Capacity_Plan.md` opisują **stan docelowy po rejestracji**, a nie cel na dziś.
 
+**Twarda liczba (potwierdzona przez Autopay 2026-07-30).** Od 2026-01-01 limit przychodu rozliczany jest **kwartalnie i wynosi 10 813,50 PLN**, czyli 225 proc. kwartalnego wynagrodzenia minimalnego. Autopay ustawił ten pułap obrotu na naszym serwisie. To około 3 600 PLN miesięcznie.
+
+Wniosek, który zmienia priorytety wdrożenia: przy średnim zamówieniu rzędu 250 PLN limit wyczerpuje się na poziomie **około 43 zamówień kwartalnie, czyli 3 do 4 tygodniowo**. Przy takiej skali pełna integracja płatnicza z webhookami i obsługą błędów jest przerostem formy. **Faza 0.5 na ręcznych linkach płatniczych prawdopodobnie wystarczy na cały okres przedrejestracyjny.** Integrację budujemy dopiero wtedy, gdy limit przestanie obowiązywać, albo gdy ręczna obsługa zacznie realnie kosztować czas.
+
 Kolejność: usługa z pliku → wyroby gotowe → biżuteria autorska. Nie wszystko naraz.
 
 ---
