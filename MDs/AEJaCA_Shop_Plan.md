@@ -1,8 +1,12 @@
 # AEJaCA - Plan sklepu internetowego
 
-*Wersja robocza 1.1 | 2026-07-28 | branch `claude/shop-plan` | nic nie jest jeszcze implementowane*
+*Wersja robocza 1.3 | 2026-07-29 | branch `claude/shop-plan` | nic nie jest jeszcze implementowane*
 
 *Zmiany w 1.1: analiza Mapi-Tech (rozdz. 2.3), korekta oceny konkurencji (2.4), rozdzielenie decyzji o platformie (5.3), zamiana kolejności Fazy 1 i 2 (rozdz. 9).*
+
+*Zmiany w 1.2: kreator zapytania Oferteo jako zwalidowany wzorzec kolejności pytań (2.4a), wniosek o rozpoczynaniu od przeznaczenia zamiast technologii.*
+
+*Zmiany w 1.3: **Stripe zastąpiony przez Autopay** po ustaleniu, że działamy jako działalność nierejestrowana (5.3, 7.1). Podział rynków: Polska na aejaca.com, zagranica na Etsy. Dopisana faza przedrejestracyjna i wymóg wymienialnej warstwy płatności. Nowa Faza 0.5, sprzedaż na ręcznych linkach płatniczych. Ustalenie, że brakuje strony Regulaminu (7.3).*
 
 ---
 
@@ -18,7 +22,13 @@ Nie potrzebujemy "sklepu internetowego" w klasycznym sensie. Potrzebujemy **trze
 
 Największa wartość i największa przewaga konkurencyjna leży w środkowym wierszu. Mamy już silniki wyceny, których nie ma żaden lokalny konkurent. Problem w tym, że dziś zwracają **widełki**, a sklep wymaga **liczby**.
 
-Rekomendacja startowa: **zacząć od środkowego wiersza**, nie od katalogu. Zamówienie z pliku nie ma koszyka, stanu magazynowego ani prawa zwrotu, więc da się je uruchomić na samym Stripe, bez wdrażania platformy sklepowej. Katalog i biżuteria autorska dochodzą później.
+Rekomendacja startowa: **zacząć od środkowego wiersza**, nie od katalogu. Zamówienie z pliku nie ma koszyka, stanu magazynowego ani prawa zwrotu, więc da się je uruchomić na samej bramce płatniczej, bez wdrażania platformy sklepowej. Katalog i biżuteria autorska dochodzą później.
+
+**Ograniczenie ramowe (od wersji 1.3).** Działamy jako **działalność nierejestrowana**, bez NIP-u, do czasu osiągnięcia przychodu uzasadniającego założenie spółki. To nie jest szczegół księgowy, tylko warunek brzegowy całego planu: determinuje wybór bramki, dostępne metody płatności, obsługiwane rynki i sufit skali. Liczby w tym dokumencie oraz w `AEJaCA_Production_Capacity_Plan.md` opisują **stan docelowy po rejestracji**, a nie cel na dziś.
+
+**Twarda liczba (potwierdzona przez Autopay 2026-07-30).** Od 2026-01-01 limit przychodu rozliczany jest **kwartalnie i wynosi 10 813,50 PLN**, czyli 225 proc. kwartalnego wynagrodzenia minimalnego. Autopay ustawił ten pułap obrotu na naszym serwisie. To około 3 600 PLN miesięcznie.
+
+Wniosek, który zmienia priorytety wdrożenia: przy średnim zamówieniu rzędu 250 PLN limit wyczerpuje się na poziomie **około 43 zamówień kwartalnie, czyli 3 do 4 tygodniowo**. Przy takiej skali pełna integracja płatnicza z webhookami i obsługą błędów jest przerostem formy. **Faza 0.5 na ręcznych linkach płatniczych prawdopodobnie wystarczy na cały okres przedrejestracyjny.** Integrację budujemy dopiero wtedy, gdy limit przestanie obowiązywać, albo gdy ręczna obsługa zacznie realnie kosztować czas.
 
 Kolejność: usługa z pliku → wyroby gotowe → biżuteria autorska. Nie wszystko naraz.
 
@@ -116,6 +126,30 @@ To zmienia pozycjonowanie, ale nie unieważnia pomysłu. Nasza przewaga nie moż
 - **Żywe ceny surowców.** `GET /api/market-rates` z kursami NBP i cenami metali to rzecz, której nie ma nikt z tej listy, bo nikomu poza jubilerem nie jest potrzebna.
 
 Wniosek: kreator plikowy budujemy nie dlatego, że jest unikalny, tylko dlatego, że jest **warunkiem wejścia do gry**. Wyróżniamy się dopiero tym, co jest obok niego.
+
+### 2.4a Kreator zapytania w Oferteo, sprawdzony wzorzec pytań
+
+Oferteo prowadzi rozbudowaną ścieżkę zapytania dla druku 3D. Ma wartość jako **zwalidowany na dużej próbie model tego, jak polski klient myśli o tej usłudze**, a nie jako inspiracja wizualna.
+
+Kolejność pytań, odtworzona z kreatora (lipiec 2026):
+
+1. **Co chcesz wydrukować w 3D?** Prototyp lub model do testów / Część zamienna lub naprawcza (np. element AGD, część samochodowa) / Obudowa do urządzenia / Inny
+2. Liczba detali
+3. Czy masz projekt
+4. **Z jakiego materiału?** PLA (najpopularniejszy, ekonomiczny, do prototypów) / PET-G (wytrzymały, do części użytkowych i zewnętrznych) / ABS-ASA (bardzo trwały, odporny na wysoką temperaturę) / Żywica (do precyzyjnych wydruków o gładkiej powierzchni) / Inny
+5. Lokalizacja
+6. Termin
+7. Opis i załączniki, z możliwością pominięcia
+8. Dane kontaktowe
+
+Cztery rzeczy warte przeniesienia:
+
+1. **Pierwsze pytanie dotyczy przeznaczenia, nie technologii.** Klient nie wie, czy chce FDM czy MSLA, ale wie, że pękła mu część od pralki. Nasze `APPLICATIONS` (prototyp, figurka, wzorzec odlewniczy) są ułożone pod jubilerstwo i modelarstwo. Brakuje w nich **części zamiennej** i **obudowy**, czyli dwóch najbardziej masowych zastosowań konsumenckich.
+2. **Materiał opisany korzyścią, nie skrótem.** Nie "PET-G", tylko "PET-G, wytrzymały, do części użytkowych i zewnętrznych". Mamy do tego pełną bazę `filament_types` z polami `uses_pl`, więc możemy to zrobić lepiej niż oni, i to bez pisania nowych treści.
+3. **Krok z opisem jest jawnie opcjonalny** ("Pomiń"). Zmniejsza to porzucenia, bo nikt nie utyka na polu, którego nie umie wypełnić.
+4. **Pytanie o intencję**: "Chcę zatrudnić wykonawcę" kontra "Chcę wyłącznie otrzymać wycenę". Rozdziela klienta gotowego do zakupu od zbierającego rozeznanie, i pozwala każdemu odpowiedzieć inaczej.
+
+Wniosek dla naszego kreatora: kolejność powinna brzmieć **przeznaczenie → ilość → plik → materiał (z rekomendacją) → termin → cena**, a nie zaczynać od technologii druku.
 
 ### 2.5 Platforma i płatności w Polsce
 
@@ -223,17 +257,61 @@ Przeciw: monolityczne, walczyłyby z naszą stroną w Reakcie, a wstrzyknięcie 
 
 Pierwotnie rekomendowałem wariant A dla całości. **Wycofuję się z tego** i proponuję rozdzielenie decyzji, bo Mapi-Tech pokazuje, że dla części zakresu platforma sklepowa jest po prostu zbędna.
 
-Kluczowa obserwacja: **zamówienie z pliku nie jest zakupem w sklepie.** Nie ma koszyka, bo pozycja jest jedna. Nie ma stanu magazynowego, bo nic nie leży na półce. Nie ma prawa odstąpienia, bo rzecz jest personalizowana. Nie ma katalogu, bo katalogiem jest plik klienta. Zostaje jedna płatność za jedną, świeżo wyliczoną kwotę, czyli dokładnie to, do czego służy Stripe Checkout.
+Kluczowa obserwacja: **zamówienie z pliku nie jest zakupem w sklepie.** Nie ma koszyka, bo pozycja jest jedna. Nie ma stanu magazynowego, bo nic nie leży na półce. Nie ma prawa odstąpienia, bo rzecz jest personalizowana. Nie ma katalogu, bo katalogiem jest plik klienta. Zostaje jedna płatność za jedną, świeżo wyliczoną kwotę, czyli dokładnie to, do czego służy zwykła bramka płatnicza.
 
 Stąd rekomendacja rozdzielona:
 
-**Dla kreatora plikowego: wariant B, czyli Stripe na istniejącym backendzie.** Mamy już `POST /api/quote`, który przyjmuje wycenę wraz z plikiem do 50 MB i zapisuje ją do Postgresa. Brakuje właściwie tylko utworzenia sesji płatności i webhooka potwierdzającego. Zero abonamentu, zero nowej platformy, zero migracji. Stripe obsługuje BLIK, karty i Apple/Google Pay w Polsce, co Mapi-Tech potwierdza w praktyce.
+**Dla kreatora plikowego: wariant B, czyli bramka na istniejącym backendzie.** Mamy już `POST /api/quote`, który przyjmuje wycenę wraz z plikiem do 50 MB i zapisuje ją do Postgresa. Brakuje właściwie tylko utworzenia transakcji i potwierdzenia zwrotnego. Zero abonamentu, zero nowej platformy, zero migracji.
 
-**Dla katalogu wyrobów gotowych: wariant A, czyli platforma.** Tu dopiero pojawia się to, czego Stripe sam nie daje: stany magazynowe, zwroty w 14 dni, korekty faktur, wysyłka wielopozycyjna, wymagany prawem przycisk odstąpienia od umowy. Budowanie tego samemu jest dokładnie tą pułapką, przed którą ostrzegałem.
+**Dla katalogu wyrobów gotowych: wariant A, czyli platforma.** Tu dopiero pojawia się to, czego sama bramka nie daje: stany magazynowe, zwroty w 14 dni, korekty faktur, wysyłka wielopozycyjna, wymagany prawem przycisk odstąpienia od umowy. Budowanie tego samemu jest dokładnie tą pułapką, przed którą ostrzegałem.
 
 Praktyczna konsekwencja: **te dwie decyzje nie muszą zapaść jednocześnie.** Kreator plikowy może ruszyć bez rozstrzygania, na jakiej platformie stanie kiedyś katalog.
 
-**Do zweryfikowania dopiero przed katalogiem:** dostępność BLIK na wybranym planie Shopify w Polsce oraz konkretna integracja z InPost. Nie przesądzam tego z pamięci, bo to warunek konieczny wariantu A.
+**Do zweryfikowania dopiero przed katalogiem:** dostępność wybranej bramki na wybranym planie Shopify w Polsce oraz konkretna integracja z InPost. Nie przesądzam tego z pamięci, bo to warunek konieczny wariantu A.
+
+### 5.3a Wybór operatora płatności, rozstrzygnięty
+
+Pierwotnie zakładałem Stripe. **Wycofuję to.** Powód nie jest techniczny, tylko formalny: bez NIP-u większość operatorów po prostu nas nie przyjmie.
+
+Stan ustalony:
+
+| Operator | Działalność nierejestrowana | Werdykt |
+|---|---|---|
+| PayU | nie, wymaga zarejestrowanej działalności | odpada |
+| Przelewy24 | nie, wymaga zarejestrowanej działalności | odpada |
+| Tpay | nie, wymaga zarejestrowanej działalności | odpada |
+| Stripe | niepotwierdzone, weryfikacja konta po fakcie | zbyt ryzykowne |
+| **Autopay** | **tak, dedykowana ścieżka** | **wybrany** |
+
+**Konto Autopay zostało założone i czeka na weryfikację.** ID serwisu 218869, podpis SHA256, endpoint `https://pay.autopay.eu/payment`. Klucz jest sekretem i trafia wyłącznie do zmiennych środowiskowych backendu na Railway. Podpis liczymy po stronie serwera. Klucz nigdy nie pojawia się w repozytorium ani w kodzie frontu.
+
+**Cena tego wyboru: brak płatności kartą**, a więc też brak Google Pay i Apple Pay. Dostępne są BLIK, szybkie przelewy (PBL) i przelew tradycyjny. Waluta rozliczeniowa: PLN.
+
+To wygląda groźniej, niż jest. W polskim e-commerce BLIK i pay-by-link to zdecydowana większość transakcji, karta jest mniejszością. Ograniczenie boli dopiero przy kliencie zagranicznym, gdzie karta jest standardem.
+
+### 5.3b Podział rynków, wynikający z 5.3a
+
+| Rynek | Kanał | Płatność |
+|---|---|---|
+| Polska, usługi i druk z pliku | sklep na aejaca.com | Autopay: BLIK, PBL, przelew |
+| Zagranica, wyroby gotowe | Etsy | płatności Etsy |
+
+Wniosek projektowy: **nie budujemy przełącznika walut w checkoucie**, bo bramka i tak obsłuży tylko PLN. Reguła prezentacji cen (PLN dla `pl`, EUR dla `en` i `de`) pozostaje bez zmian w kalkulatorach i na stronach, ale kasa działa w PLN.
+
+**PayPal jako opcja fazy drugiej, nie teraz.** Zamyka lukę kartową, bo pozwala zapłacić kartą bez konta PayPal. Trzy zastrzeżenia: ochrona Sprzedającego nie obejmuje sporów "niezgodny z opisem", a my sprzedajemy rzeczy wykonane na indywidualne zamówienie, czyli najbardziej sporną kategorię; prowizja transgraniczna plus spread trzeba wliczyć w ceny EN i DE; do potwierdzenia pozostaje, czy PayPal Business w Polsce przyjmie działalność nierejestrowaną (sprzedaż na koncie prywatnym łamie ich regulamin i kończy się zamrożeniem środków).
+
+Konto EUR z numerem IBAN (Wise lub Revolut, bez NIP-u) ma sens jako uzupełnienie dla Niemiec, gdzie przedpłata przelewem, czyli *Vorkasse*, jest normalną metodą zakupu. Konto USD nie ma sensu, bo przelew międzynarodowy nie funkcjonuje w Stanach jako zwyczaj zakupowy; ten rynek zostaje na Etsy.
+
+Nadrzędny argument za odłożeniem zagranicy: **limit przychodu działalności nierejestrowanej dotyczy wszystkich kanałów łącznie.** Krajowe zamówienia wyczerpią go, zanim kanał zagraniczny zdąży się rozpędzić, a zagranicę już obsługuje Etsy z gotowymi płatnościami i gotową obsługą sporów.
+
+### 5.3c Wymóg architektoniczny: wymienialna warstwa płatności
+
+Spółka ma powstać po osiągnięciu przychodu. Sklep **musi przetrwać tę zmianę bez przebudowy**. Stąd dwie zasady wiążące od pierwszej linijki kodu:
+
+1. **Dane podmiotu w jednym module konfiguracyjnym**, nigdy na sztywno w komponentach. Po rejestracji zmienia się nazwa, forma prawna, NIP i treść regulaminu. To ma być zmiana jednego pliku.
+2. **Operator płatności za interfejsem.** Backend woła własną abstrakcję (utworzenie transakcji, weryfikacja potwierdzenia, zwrot), a nie Autopay bezpośrednio. Podmiana Autopay na Przelewy24, Stripe czy PayPal ma być wymianą jednej implementacji.
+
+Koszt: około godziny dziś. Oszczędność: tydzień przy migracji.
 
 ---
 
@@ -296,7 +374,9 @@ Bazuje na pełnym `JewelryCalc` jako narzędziu wewnętrznym, nie klienckim.
 
 ### 7.1 Płatności
 
-Obowiązkowo: BLIK, karta, Apple Pay, Google Pay, szybki przelew. Opcjonalnie PayPal dla rynku niemieckiego.
+**Zrewidowane w 1.3, patrz 5.3a.** Dostępne i wystarczające na start: **BLIK, szybki przelew (PBL), przelew tradycyjny**, wszystko przez Autopay, w PLN. Karta, Apple Pay i Google Pay są **niedostępne** przy działalności nierejestrowanej i wracają dopiero po rejestracji spółki. PayPal dla rynku niemieckiego pozostaje opcją fazy drugiej, z zastrzeżeniami opisanymi w 5.3b.
+
+**Sprzedaż da się uruchomić przed integracją.** Panel Autopay generuje **linki płatnicze wysyłane klientowi ręcznie** (funkcja aktywna po weryfikacji serwisu). To znaczy, że kreator może liczyć cenę wiążącą, a płatność może odbywać się linkiem, bez ani jednej linijki kodu integracji. Wykorzystujemy to w Fazie 0.5.
 
 Dla zamówień powyżej ustalonego progu warto rozważyć płatność dwuetapową: zaliczka przy zamówieniu, reszta przed wysyłką. To jest standard w rzemiośle na zamówienie i chroni warsztat przed porzuconymi zleceniami.
 
@@ -310,9 +390,16 @@ Uwaga: obecny schemat JSON-LD deklaruje darmową wysyłkę do dziesięciu krajó
 
 1. **Przycisk "odstąp od umowy tutaj".** Od 19 czerwca 2026 sklepy internetowe muszą udostępniać łatwo dostępną funkcję odstąpienia online. To jest już obowiązujące prawo, nie plan na przyszłość.
 2. **Rozróżnienie typów zamówień.** Towar personalizowany, wyprodukowany według specyfikacji konsumenta, jest wyłączony z prawa odstąpienia. Towar gotowy nie jest. Sklep musi obsłużyć obie ścieżki i **jasno komunikować brak prawa zwrotu przed złożeniem zamówienia**, a nie po.
-3. **VAT OSS.** Sprzedaż do Niemiec i innych krajów UE powyżej progu wymaga rozliczenia w procedurze OSS. To argument za wariantem A, gdzie platforma to obsługuje.
+3. **VAT OSS.** Sprzedaż do Niemiec i innych krajów UE powyżej progu wymaga rozliczenia w procedurze OSS. To argument za wariantem A, gdzie platforma to obsługuje. Przy obecnym podziale rynków (5.3b) problem nie występuje, bo zagranicę obsługuje Etsy.
+4. **Status sprzedawcy.** Do czasu rejestracji spółki sprzedawcą jest **osoba fizyczna prowadząca działalność nierejestrowaną**, identyfikowana numerem PESEL, bez NIP-u. Regulamin i dane w stopce muszą to odzwierciedlać. Nie wolno podawać NIP-u ani formy prawnej, których nie mamy. Obowiązki wobec konsumenta (prawo odstąpienia, rękojmia, obowiązki informacyjne) **obowiązują mimo braku rejestracji**.
 
-Regulamin, polityka zwrotów i polityka prywatności wymagają aktualizacji. Mamy już `Returns.jsx`, `Shipping.jsx`, `Warranty.jsx`, `Privacy.jsx`, ale były pisane dla serwisu bez sprzedaży.
+Stan faktyczny dokumentów, sprawdzony w repozytorium 2026-07-29:
+
+- `Returns.jsx` **już poprawnie wyłącza prawo odstąpienia** dla biżuterii na indywidualne zamówienie i wyrobów studia wykonanych według indywidualnej specyfikacji. To najważniejsza pułapka naszej branży i akurat jest zaadresowana.
+- `Shipping.jsx`, `Warranty.jsx`, `Privacy.jsx` istnieją, ale były pisane dla serwisu bez sprzedaży.
+- **Nie ma w ogóle strony Regulaminu.** Sklep przyjmujący płatności musi ją mieć. To jest brakujący element blokujący uruchomienie sprzedaży.
+
+Jeśli regulamin kupujemy z gotowego wzoru, przed zakupem trzeba potwierdzić dwie rzeczy: czy wzór obsługuje **działalność nierejestrowaną**, oraz czy zawiera wyłączenie prawa odstąpienia dla **rzeczy nieprefabrykowanej wykonanej według specyfikacji konsumenta** wraz z wymaganym oświadczeniem klienta składanym przy zamówieniu. Wzór ogólny tego drugiego zwykle nie robi poprawnie, a nasz przypadek ogólny nie jest.
 
 ---
 
@@ -334,16 +421,28 @@ Kolejność jest celowa: każdy etap sprzedaje samodzielnie i finansuje następn
 
 ### Faza 0: decyzje (przed jakimkolwiek kodem)
 
-- Wybór platformy, po weryfikacji BLIK i InPost
+- ~~Wybór operatora płatności~~ **rozstrzygnięte: Autopay** (5.3a), konto założone, czeka na weryfikację
+- Wybór platformy pod katalog, po weryfikacji InPost. Nie blokuje Fazy 1
 - Polityka ceny wiążącej: okna ważności osobno dla złota, srebra i usług studia
 - Progi ręcznej akceptacji zamówienia
 - Zakres pierwszego katalogu
+- **Regulamin sklepu**, którego dziś nie ma (7.3). Blokuje uruchomienie sprzedaży
+
+### Faza 0.5: sprzedaż na ręcznych linkach płatniczych
+
+**Etap dodany w 1.3.** Kolejność wynika z tego, że panel Autopay generuje linki płatnicze bez integracji.
+
+Kreator liczy cenę wiążącą i zapisuje zamówienie przez istniejące `POST /api/quote`. Klient zatwierdza, my generujemy link w panelu i wysyłamy mailem. Reszta procesu bez zmian.
+
+Po co osobny etap: **odpowiada na pytanie, czy ludzie w ogóle dochodzą do końca kreatora**, zanim zapłacimy czasem za integrację, webhooki i obsługę błędów płatności. Jeśli nikt nie dociera do kasy, integracja niczego nie naprawi. Jeśli docierają, mamy dane o wartościach zamówień, na których oprzemy progi z Fazy 0.
+
+Koszt: zero kodu płatniczego. Ograniczenie: ręczna obsługa, więc nie skaluje się powyżej kilku zamówień dziennie. Na tym etapie to nie jest problem.
 
 ### Faza 1: kreator "z mojego pliku"
 
 **Kolejność zmieniona po analizie Mapi-Tech.** Pierwotnie stawiałem tu katalog. Kreator plikowy jest jednak lżejszy, mimo że brzmi trudniej, bo omija cztery najbardziej pracochłonne elementy sklepu naraz: koszyk, stan magazynowy, zwroty w 14 dni i wybór platformy.
 
-Wymaga: uploadu i walidacji plików (mamy), zwinięcia widełek do ceny wiążącej, sesji płatności Stripe, webhooka potwierdzającego, wyceny wysyłki, kolejki produkcyjnej. Rozszerzenie o STEP.
+Wymaga: uploadu i walidacji plików (mamy), zwinięcia widełek do ceny wiążącej, utworzenia transakcji w Autopay za wymienialną warstwą płatności (5.3c), obsługi potwierdzenia zwrotnego, wyceny wysyłki, kolejki produkcyjnej. Rozszerzenie o STEP.
 
 Efekt: pierwsza automatyczna sprzedaż bez wdrażania jakiejkolwiek platformy sklepowej.
 
@@ -388,7 +487,7 @@ Ten temat rozwija osobny dokument: **`MDs/AEJaCA_Production_Capacity_Plan.md`** 
 Zanim ruszy Faza 0, potrzebuję odpowiedzi na cztery pytania:
 
 1. **Czy akceptujesz zmienioną kolejność?** Kreator plikowy przed katalogiem. Jeśli zależy Ci na tym, żeby najpierw sprzedawać wyroby gotowe, kolejność wraca do pierwotnej, ale wtedy decyzja o platformie musi zapaść od razu.
-2. **Czy godzisz się na Stripe jako jedyny checkout w pierwszej fazie?** To znaczy: bez koszyka wielopozycyjnego i bez konta klienta na starcie.
+2. ~~Czy godzisz się na Stripe jako jedyny checkout w pierwszej fazie?~~ **Rozstrzygnięte w 1.3: Autopay**, bez koszyka wielopozycyjnego i bez konta klienta na starcie. Otwarte pozostaje, czy akceptujesz **brak płatności kartą** do czasu rejestracji spółki.
 3. **Jaki próg wartości zamówienia ma trafiać do ręcznej akceptacji?** Poniżej tego progu sklep działa w pełni automatycznie.
 4. **Jaki jest realny sufit przepustowości warsztatu na miesiąc?** Bez tej liczby nie da się ustawić terminów realizacji ani limitów.
 

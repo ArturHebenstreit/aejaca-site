@@ -1,6 +1,6 @@
 # AEJaCA - Diagnoza popytu
 
-*Wersja 1.1 | 2026-07-28 | branch `claude/shop-plan` | dane: Google Search Console, 3 miesiące do 28.07.2026*
+*Wersja 1.2 | 2026-07-28 | branch `claude/shop-plan` | dane: Google Search Console, 3 miesiące do 28.07.2026*
 
 ---
 
@@ -215,6 +215,57 @@ Kredyt pozwala przetestować, czy takie zapytania w ogóle konwertują u nas, za
 Cztery linki to sufit dla wszystkiego innego. Źródła realne i tanie: katalogi firm (Panorama Firm, Aleo, Oferteo), profile w mediach społecznościowych z linkiem, profile Etsy, lokalne grupy i fora, strony dostawców i partnerów.
 
 Równolegle strony lokalne, których nie mamy ani jednej.
+
+## 6c. Widoczność w asystentach AI (AIEO)
+
+### Jak to naprawdę działa
+
+Są dwa mechanizmy, przez które model językowy może wymienić firmę, i mylenie ich prowadzi do marnowania czasu.
+
+**Dane treningowe.** Powolne, bez kontroli, liczą się coraz mniej. Nic tu nie zoptymalizujesz w skali kwartału.
+
+**Pobieranie w momencie odpowiedzi.** ChatGPT z wyszukiwaniem, Gemini z osadzeniem w Google, Claude z wyszukiwaniem, Perplexity. Model **wykonuje zwykłe zapytanie do wyszukiwarki i czyta wyniki**. To jest dziś mechanizm dominujący.
+
+Konsekwencja jest niewygodna, ale zasadnicza:
+
+> **AIEO nie jest osobnym kanałem od SEO. To ten sam kanał z innym sposobem wyświetlania wyniku.** Jeśli nie rankujesz, nie zostaniesz pobrany, a jeśli nie zostaniesz pobrany, nie zostaniesz zacytowany.
+
+Poszczególne asystenty korzystają z różnych wyszukiwarek: ChatGPT z Binga, Gemini z Google, Perplexity z własnego indeksu wspartego zewnętrznymi. Dlatego **Bing trzeba traktować osobno**, a nie zakładać, że skoro Google nas widzi, to widzi nas każdy.
+
+### Test empiryczny, 2026-07-28
+
+Wykonałem dokładnie takie zapytania, jakie wykonałby asystent.
+
+Zapytanie **"druk 3D Warszawa usługa wydruki na zamówienie"** zwróciło siedem firm: rudnik.agency, 3dprint.com.pl, 3dprodruk.pl, 3dstart.pl, hexagongroup.pl, 3d-innowacje.pl, proto3d.com.pl. **AEJaCA nie pojawiła się ani razu.**
+
+Zapytanie **"AEJaCA jubiler druk 3D Józefosław Piaseczno"**, czyli z nazwą własną, zwróciło katalogi i konkurencję, w tym firmę Plastcore mającą siedzibę w samym Józefosławiu. **Naszej witryny nie było nawet przy zapytaniu o markę.**
+
+To jest ta sama diagnoza co w rozdziale 6a, tylko widziana od strony asystenta.
+
+### Co z tego wynika praktycznie
+
+Wyniki zdominowały **agregatory**: `oferteo.pl`, `drukarnie3d.pl`, `strefadruku3d.pl`, `yellowpages.pl`. To są strony, które **już rankują** na frazy, o które walczymy.
+
+Stąd najkrótsza droga do bycia wymienianym przez AI, i jednocześnie do rozwiązania problemu czterech linków:
+
+**Wpis w katalogu, który już rankuje, działa dwukrotnie.** Po pierwsze jest linkiem przychodzącym. Po drugie, gdy asystent pobierze taką stronę, przeczyta na niej naszą nazwę i może ją wymienić, mimo że naszej witryny nie pobrał wcale.
+
+To jest tańsze i szybsze niż próba wyprzedzenia siedmiu firm w wynikach organicznych.
+
+### Lista działań, od najszybszych
+
+| Działanie | Efekt | Kto |
+|---|---|---|
+| Wpisy w katalogach: Oferteo, Panorama Firm, Aleo, drukarnie3d.pl, strefadruku3d.pl, Yellow Pages | linki + cytowania w AI | właściciel |
+| Bing Webmaster Tools: weryfikacja witryny i przesłanie sitemapy | ChatGPT pobiera z Binga | właściciel |
+| Konto na Treatstock | link + zlecenia | właściciel |
+| Utrzymanie `llms.txt` i schematów | higiena, warunek konieczny, nie wystarczający | zrobione |
+| Treści odpowiadające wprost na pytania (FAQ, słownik, konkretne liczby) | łatwość cytowania | zrobione, do rozbudowy |
+| Spójność danych firmy (nazwa, telefon, lokalizacja) wszędzie | rozpoznanie encji | do przeglądu |
+
+### Czego nie robić
+
+Nie ma sensu dalsza rozbudowa `llms.txt` ani dokładanie kolejnych schematów. To jest już zrobione dobrze i nie jest wąskim gardłem. Wąskim gardłem jest to, że **nikt nas nie pobiera**, a tego nie naprawi lepszy opis dla robota, który i tak nie przychodzi.
 
 ## 7. Czego jeszcze nie wiem
 

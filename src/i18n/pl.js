@@ -637,6 +637,7 @@ export default {
     followUs: "Obserwuj Nas",
     rights: "Wszelkie prawa zastrzeżone.",
     privacy: "Polityka Prywatności",
+    terms: "Regulamin",
     warranty: "Gwarancja",
     returns: "Zwroty",
     shipping: "Wysyłka",

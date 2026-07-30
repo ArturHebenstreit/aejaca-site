@@ -629,6 +629,7 @@ export default {
     followUs: "Folgen Sie Uns",
     rights: "Alle Rechte vorbehalten.",
     privacy: "Datenschutzrichtlinie",
+    terms: "AGB",
     warranty: "Garantie",
     returns: "Rückgabe",
     shipping: "Versand",

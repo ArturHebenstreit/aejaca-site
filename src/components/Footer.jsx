@@ -121,6 +121,7 @@ export default function Footer() {
                   co daje im głębokość 1 kliknięcia zamiast 2 przez /studio/. */}
               <Link to="/druk-3d-warszawa/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.footer.local3dWarsaw}</Link>
               <Link to="/druk-3d-piaseczno/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.footer.local3dPiaseczno}</Link>
+              <Link to="/terms/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.terms}</Link>
               <Link to="/warranty/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.warranty}</Link>
               <Link to="/returns/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.returns}</Link>
               <Link to="/shipping/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.shipping}</Link>

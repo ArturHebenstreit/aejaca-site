@@ -262,6 +262,27 @@ export const SEO = {
     },
   },
 
+  terms: {
+    pl: {
+      title: "Regulamin serwisu i sprzedaży, AEJaCA",
+      description: "Regulamin AEJaCA: zawarcie umowy, ceny i płatności, terminy realizacji, prawo odstąpienia, reklamacje, prawa do plików i tolerancje wykonania.",
+      keywords: "regulamin AEJaCA, warunki sprzedaży, prawo odstąpienia, reklamacje, druk 3D regulamin",
+      ogAlt: "Regulamin serwisu AEJaCA",
+    },
+    en: {
+      title: "Terms of Service and Sale, AEJaCA",
+      description: "AEJaCA terms: contract conclusion, prices and payment, lead times, right of withdrawal, complaints, file rights and manufacturing tolerances.",
+      keywords: "AEJaCA terms, terms of sale, right of withdrawal, complaints, 3D printing terms",
+      ogAlt: "AEJaCA terms of service and sale",
+    },
+    de: {
+      title: "Allgemeine Geschäftsbedingungen, AEJaCA",
+      description: "AEJaCA AGB: Vertragsschluss, Preise und Zahlung, Lieferzeiten, Widerrufsrecht, Reklamationen, Dateirechte und Fertigungstoleranzen.",
+      keywords: "AEJaCA AGB, Verkaufsbedingungen, Widerrufsrecht, Reklamation, 3D-Druck AGB",
+      ogAlt: "AEJaCA Allgemeine Geschäftsbedingungen",
+    },
+  },
+
   returns: {
     pl: {
       title: "Zwroty i wymiany, AEJaCA",

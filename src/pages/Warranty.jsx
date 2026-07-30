@@ -6,6 +6,7 @@ import SEOHead from "../seo/SEOHead.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
+import PolicyLinks from "../components/PolicyLinks.jsx";
 
 const LABELS = {
   pl: {
@@ -203,6 +204,8 @@ export default function Warranty() {
                 {l.careLink} &rarr;
               </Link>
             </div>
+
+            <PolicyLinks current="warranty" className="mt-10" />
           </div>
         </section>
       </div>
