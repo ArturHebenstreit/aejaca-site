@@ -39,12 +39,15 @@ export default {
       { label: "Współpraca B2B", to: "/b2b/" },
     ],
     aboutSections: [
+      // Opinie na pierwszym miejscu, bo to najwartościowsza akcja w tym menu.
+      { label: "Oceń AEJaCA", to: "/reviews/" },
       { label: "o Marce", to: "/about/" },
+      // Regulamin przed dokumentami szczegółowymi, bo jest wobec nich nadrzędny.
+      { label: "Regulamin", to: "/terms/" },
       { label: "Gwarancja", to: "/warranty/" },
       { label: "Polityka zwrotów", to: "/returns/" },
       { label: "Wysyłka", to: "/shipping/" },
       { label: "Polityka prywatności", to: "/privacy/" },
-      { label: "Oceń AEJaCA", to: "/reviews/" },
     ],
     gallery: "Galeria",
     gallerySections: [

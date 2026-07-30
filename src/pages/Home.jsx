@@ -38,11 +38,11 @@ function TrustpilotPill({ lang, className = "" }) {
           <path d="M12 2.5l2.9 6.4 6.9.7-5.2 4.7 1.5 6.9L12 17.6 5.9 21.2l1.5-6.9L2.2 9.6l6.9-.7L12 2.5z" />
         </svg>
       </span>
-      <span className="font-bold" style={{ color: "#4ade9f" }}>{TRUSTPILOT_BUSINESS.rating}</span>
-      <span className="text-neutral-400">·</span>
-      <span className="text-neutral-400">
-        {reviewCountLabel(TRUSTPILOT_BUSINESS.totalReviews, lang)} Trustpilot
+      {/* Bez liczby TrustScore, uzasadnienie w TrustpilotScore w Reviews.jsx. */}
+      <span className="font-bold" style={{ color: "#4ade9f" }}>
+        {reviewCountLabel(TRUSTPILOT_BUSINESS.totalReviews, lang)}
       </span>
+      <span className="text-neutral-400">Trustpilot</span>
     </a>
   );
 }

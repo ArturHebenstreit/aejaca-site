@@ -31,8 +31,19 @@ Współrzędne GPS: 52.0736, 21.0724
 ### Języki serwisu
 Polski (pl), English (en), Deutsch (de)
 
-### Ocena Google
-5.0 / 5.0 - 25 opinii Google + 1 opinia Trustpilot (dane z 2026-07-28)
+### Oceny (dane z 2026-07-30)
+
+**Google: 5,0 / 5,0 przy 25 opiniach.** To jest ocena eksponowana w interfejsie i jedyna wpisana do `aggregateRating` w JSON-LD.
+
+**Trustpilot: 2 opinie, obie na 5 gwiazdek, TrustScore 3,8.** TrustScore nie jest średnią arytmetyczną, Trustpilot waży go wolumenem i świeżością, więc przy dwóch opiniach wypada 3,8 i będzie rósł.
+
+**Zasada prezentacji: liczby 3,8 nie pokazujemy nigdzie w interfejsie.** Zaniża to, co faktycznie ocenili klienci, a postawiona obok Google 5,0 działa przeciw nam. Pokazujemy sprawdzalny fakt: liczbę opinii i informację, że wszystkie są na 5 gwiazdek. Nie rysujemy też rzędu pięciu gwiazdek Trustpilot, bo to czytałoby się jako TrustScore 5,0, czyli błąd w drugą stronę. Wartość `rating: 3.8` żyje w `TRUSTPILOT_BUSINESS` wyłącznie jako zapis stanu faktycznego.
+
+Rewizja tej zasady, gdy TrustScore osiągnie 4,5 lub więcej. Wtedy warto pokazywać liczbę, bo zacznie pracować na naszą korzyść.
+
+**Nakładanie się platform:** obie opinie Trustpilot pochodzą od klientów, którzy mają też oceny Google (`tp1` = `r25` Jacob/Jakub, `tp2` = `r11` Aleksandra Kwaśnica). Liczb nie sumujemy.
+
+**Profil Trustpilot zawiera klikalny link do aejaca.com** oraz adres Nowy Świat 33 lok. 13. To jeden z niewielu realnych linków zewnętrznych, jakie mamy, patrz `AEJaCA_Demand_Diagnosis.md`.
 
 ---
 

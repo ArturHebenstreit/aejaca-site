@@ -61,11 +61,33 @@ export const GOOGLE_BUSINESS = {
 export const TRUSTPILOT_BUSINESS = {
   profileUrl: "https://www.trustpilot.com/review/aejaca.com",
   writeReviewUrl: "https://www.trustpilot.com/evaluate/aejaca.com",
-  rating: 5.0,
-  totalReviews: 1,
+  // TrustScore, nie średnia arytmetyczna. Trustpilot waży ocenę wolumenem i
+  // świeżością, więc przy dwóch opiniach na 5 gwiazdek wskaźnik wynosi 3,8 i
+  // będzie rósł wraz z liczbą opinii. Dlatego NIE pokazujemy tej liczby jako
+  // nagłówka: zaniża ona to, co klienci faktycznie ocenili, i stoi obok
+  // Google 5,0. Prezentujemy fakt rozkładu gwiazdek, patrz Reviews.jsx.
+  rating: 3.8,
+  totalReviews: 2,
+  // Udział ocen 5-gwiazdkowych. 1 = wszystkie.
+  fiveStarShare: 1,
 };
 
 export const TRUSTPILOT_REVIEWS = [
+  {
+    id: "tp2",
+    author: "Aleksandra Kwaśnica",
+    rating: 5,
+    date: "2026-07-29",
+    originalLang: "pl",
+    title: "Serdecznie polecam :) wykonanie",
+    text: "Serdecznie polecam :) wykonanie, jakość i szybka, miła obsługa :)",
+    translations: {
+      en: "I warmly recommend :) the craftsmanship, the quality, and the fast, friendly service :)",
+      de: "Ich empfehle es von Herzen :) die Ausführung, die Qualität und der schnelle, freundliche Service :)",
+    },
+    // Ta sama klientka ma też ocenę na Google (r11, bez treści, z marca).
+    alsoOnGoogle: "r11",
+  },
   {
     id: "tp1",
     author: "Jakub",

@@ -39,12 +39,13 @@ export default {
       { label: "B2B-Zusammenarbeit", to: "/b2b/" },
     ],
     aboutSections: [
+      { label: "AEJaCA bewerten", to: "/reviews/" },
       { label: "Über uns", to: "/about/" },
+      { label: "AGB", to: "/terms/" },
       { label: "Garantie", to: "/warranty/" },
       { label: "Rückgaberecht", to: "/returns/" },
       { label: "Versand", to: "/shipping/" },
       { label: "Datenschutz", to: "/privacy/" },
-      { label: "AEJaCA bewerten", to: "/reviews/" },
     ],
     gallery: "Galerie",
     gallerySections: [
