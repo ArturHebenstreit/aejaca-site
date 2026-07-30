@@ -3,6 +3,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
+import PolicyLinks from "../components/PolicyLinks.jsx";
 
 export default function Privacy() {
   const { t, lang } = useLanguage();
@@ -37,7 +38,9 @@ export default function Privacy() {
               <p>{p.consent}</p>
             </div>
 
-            <div className="mt-12">
+            <PolicyLinks current="privacy" className="mt-12" />
+
+            <div className="mt-8">
               <Link to="/" className="text-sm text-neutral-400 hover:text-white transition-colors">
                 &larr; {p.backHome}
               </Link>

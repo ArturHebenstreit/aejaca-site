@@ -6,6 +6,7 @@ import SEOHead from "../seo/SEOHead.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
+import PolicyLinks from "../components/PolicyLinks.jsx";
 
 const LABELS = {
   pl: {
@@ -29,6 +30,8 @@ const LABELS = {
     complaintDesc: "Reklamacje rozpatrywane są w ramach osobnej procedury gwarancyjnej.",
     complaintLink: "Szczegóły gwarancji",
     contactNote: "Pytania? Napisz na contact@aejaca.com",
+    termsNote: "Wiążące brzmienie tych zasad zawiera",
+    termsLink: "Regulamin, § 10",
   },
   en: {
     tag: "Returns",
@@ -51,6 +54,8 @@ const LABELS = {
     complaintDesc: "Complaints are handled under a separate warranty procedure.",
     complaintLink: "Warranty details",
     contactNote: "Questions? Email contact@aejaca.com",
+    termsNote: "The binding wording of these rules is set out in",
+    termsLink: "Terms of Service, section 10",
   },
   de: {
     tag: "Rückgabe",
@@ -74,6 +79,8 @@ const LABELS = {
       "Reklamationen werden im Rahmen eines separaten Garantieverfahrens bearbeitet.",
     complaintLink: "Garantiedetails",
     contactNote: "Fragen? Schreiben Sie an contact@aejaca.com",
+    termsNote: "Der verbindliche Wortlaut dieser Regeln findet sich in den",
+    termsLink: "AGB, Abschnitt 10",
   },
 };
 
@@ -162,6 +169,15 @@ export default function Returns() {
                   </li>
                 ))}
               </ul>
+              {/* Ta strona jest skrótem. Wiążący zapis wyłączenia siedzi w § 10
+                  regulaminu, więc klient musi mieć stąd do niego drogę. */}
+              <p className="mt-4 pt-4 border-t border-neutral-800 text-xs text-neutral-500">
+                {l.termsNote}{" "}
+                <Link to="/terms/#sec-10" className="text-amber-400 hover:text-amber-300 transition-colors">
+                  {l.termsLink}
+                </Link>
+                .
+              </p>
             </div>
 
             {/* Complaints + contact */}
@@ -190,6 +206,8 @@ export default function Returns() {
                 </span>
               </div>
             </div>
+
+            <PolicyLinks current="returns" className="mt-5" />
           </div>
         </section>
       </div>

@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { Scale, Mail, Phone } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
@@ -6,6 +5,7 @@ import SEOHead from "../seo/SEOHead.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
+import PolicyLinks from "../components/PolicyLinks.jsx";
 import { TERMS, TERMS_EFFECTIVE_DATE } from "../data/termsContent.js";
 import { SELLER } from "../data/sellerInfo.js";
 
@@ -13,29 +13,14 @@ const UI = {
   pl: {
     toc: "Spis treści",
     contact: "Kontakt w sprawach regulaminu",
-    related: "Dokumenty powiązane",
-    returns: "Zwroty i wymiany",
-    warranty: "Gwarancja",
-    shipping: "Wysyłka i dostawa",
-    privacy: "Polityka prywatności",
   },
   en: {
     toc: "Contents",
     contact: "Contact regarding these Terms",
-    related: "Related documents",
-    returns: "Returns & exchanges",
-    warranty: "Warranty",
-    shipping: "Shipping & delivery",
-    privacy: "Privacy policy",
   },
   de: {
     toc: "Inhalt",
     contact: "Kontakt zu diesen AGB",
-    related: "Zugehörige Dokumente",
-    returns: "Rückgabe und Umtausch",
-    warranty: "Garantie",
-    shipping: "Versand und Lieferung",
-    privacy: "Datenschutzerklärung",
   },
 };
 
@@ -146,24 +131,7 @@ export default function Terms() {
               </div>
             </div>
 
-            {/* Dokumenty powiązane */}
-            <div className="mt-5 bg-neutral-900/60 border border-neutral-800 rounded-xl p-6">
-              <h2 className="text-white font-semibold mb-4">{u.related}</h2>
-              <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-                <Link to="/returns/" className="text-neutral-400 hover:text-amber-400 transition-colors">
-                  {u.returns} &rarr;
-                </Link>
-                <Link to="/warranty/" className="text-neutral-400 hover:text-amber-400 transition-colors">
-                  {u.warranty} &rarr;
-                </Link>
-                <Link to="/shipping/" className="text-neutral-400 hover:text-amber-400 transition-colors">
-                  {u.shipping} &rarr;
-                </Link>
-                <Link to="/privacy/" className="text-neutral-400 hover:text-amber-400 transition-colors">
-                  {u.privacy} &rarr;
-                </Link>
-              </div>
-            </div>
+            <PolicyLinks current="terms" className="mt-5" />
           </div>
         </section>
       </div>

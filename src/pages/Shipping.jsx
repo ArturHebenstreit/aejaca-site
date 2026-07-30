@@ -7,6 +7,7 @@ import SEOHead from "../seo/SEOHead.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema, buildFAQSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
+import PolicyLinks from "../components/PolicyLinks.jsx";
 
 // All shipping costs are stored in PLN (base). For en/de the EUR amount is
 // computed live from the NBP rate (pln_per_eur) via useMarketRates — never
@@ -395,6 +396,8 @@ export default function Shipping() {
                 ))}
               </div>
             </div>
+
+            <PolicyLinks current="shipping" className="mt-10" />
           </div>
         </section>
       </div>
