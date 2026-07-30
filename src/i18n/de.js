@@ -40,6 +40,7 @@ export default {
     ],
     aboutSections: [
       { label: "Über uns", to: "/about/" },
+      { label: "AGB", to: "/terms/" },
       { label: "Garantie", to: "/warranty/" },
       { label: "Rückgaberecht", to: "/returns/" },
       { label: "Versand", to: "/shipping/" },

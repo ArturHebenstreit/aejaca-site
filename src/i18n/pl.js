@@ -40,6 +40,8 @@ export default {
     ],
     aboutSections: [
       { label: "o Marce", to: "/about/" },
+      // Regulamin przed dokumentami szczegółowymi, bo jest wobec nich nadrzędny.
+      { label: "Regulamin", to: "/terms/" },
       { label: "Gwarancja", to: "/warranty/" },
       { label: "Polityka zwrotów", to: "/returns/" },
       { label: "Wysyłka", to: "/shipping/" },

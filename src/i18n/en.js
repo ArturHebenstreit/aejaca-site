@@ -41,6 +41,7 @@ export default {
     ],
     aboutSections: [
       { label: "About", to: "/about/" },
+      { label: "Terms of Service", to: "/terms/" },
       { label: "Warranty", to: "/warranty/" },
       { label: "Returns Policy", to: "/returns/" },
       { label: "Shipping", to: "/shipping/" },
