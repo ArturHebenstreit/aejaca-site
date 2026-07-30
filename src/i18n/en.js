@@ -40,13 +40,13 @@ export default {
       { label: "B2B Cooperation", to: "/b2b/" },
     ],
     aboutSections: [
+      { label: "Rate AEJaCA", to: "/reviews/" },
       { label: "About", to: "/about/" },
       { label: "Terms of Service", to: "/terms/" },
       { label: "Warranty", to: "/warranty/" },
       { label: "Returns Policy", to: "/returns/" },
       { label: "Shipping", to: "/shipping/" },
       { label: "Privacy Policy", to: "/privacy/" },
-      { label: "Rate AEJaCA", to: "/reviews/" },
     ],
     gallery: "Gallery",
     gallerySections: [
