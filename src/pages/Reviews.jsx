@@ -31,9 +31,9 @@ const LABELS = {
 };
 
 const TRUSTPILOT_SCORE = {
-  pl: { score: "TrustScore", on: "Zobacz na" },
-  en: { score: "TrustScore", on: "See it on" },
-  de: { score: "TrustScore", on: "Ansehen auf" },
+  pl: { allFive: "wszystkie na 5 gwiazdek", on: "Zobacz na" },
+  en: { allFive: "all rated 5 stars", on: "See it on" },
+  de: { allFive: "alle mit 5 Sternen", on: "Ansehen auf" },
 };
 
 const TRUSTPILOT_URL = {
@@ -57,13 +57,19 @@ function TpStar({ filled = true }) {
   );
 }
 
-// Static aggregate, deliberately NOT wired into JSON-LD. The Organization
-// schema already carries an aggregateRating built from Google reviews, and a
-// second rating from another platform on the same entity would misreport it.
+// Deliberately NOT wired into JSON-LD. The Organization schema already carries
+// an aggregateRating built from Google reviews, and a second rating for the
+// same entity would misreport it.
+//
+// Nie pokazujemy tu liczby TrustScore. Przy dwóch opiniach Trustpilot wylicza
+// 3,8, mimo że obie oceny to 5 gwiazdek, bo wskaźnik jest ważony wolumenem.
+// Wyświetlenie "3,8" obok Google "5,0" sugerowałoby klientowi coś, czego nie
+// powiedział ani jeden recenzent. Podajemy więc fakt sprawdzalny na profilu:
+// ile jest opinii i jak się rozkładają. Gwiazdek nie rysujemy, bo rząd pięciu
+// zielonych gwiazdek czytałby się jako TrustScore 5,0, czyli w drugą stronę.
 function TrustpilotScore({ lang }) {
   const S = TRUSTPILOT_SCORE[lang] || TRUSTPILOT_SCORE.en;
-  const { rating, totalReviews, profileUrl } = TRUSTPILOT_BUSINESS;
-  const rounded = Math.round(rating);
+  const { totalReviews, fiveStarShare, profileUrl } = TRUSTPILOT_BUSINESS;
 
   return (
     <a
@@ -72,16 +78,10 @@ function TrustpilotScore({ lang }) {
       rel="noopener noreferrer"
       className="flex flex-col items-center gap-2 mb-8 group"
     >
-      <div className="flex items-center gap-1">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <TpStar key={i} filled={i <= rounded} />
-        ))}
-      </div>
+      <TpStar />
       <div className="text-sm text-neutral-300">
-        <span className="font-semibold text-white">
-          {S.score} {rating.toFixed(1).replace(".", lang === "en" ? "." : ",")}
-        </span>
-        <span className="text-neutral-500"> · {reviewCountLabel(totalReviews, lang)}</span>
+        <span className="font-semibold text-white">{reviewCountLabel(totalReviews, lang)}</span>
+        {fiveStarShare === 1 && <span className="text-neutral-500"> · {S.allFive}</span>}
       </div>
       <div className="text-xs text-neutral-600 group-hover:text-neutral-400 transition-colors">
         {S.on} Trustpilot
