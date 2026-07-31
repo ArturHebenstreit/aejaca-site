@@ -24,6 +24,7 @@ export default function Navbar() {
     { to: "/gallery/", label: t.nav.gallery, sections: t.nav.gallerySections },
     { to: "/about/", label: t.nav.about, sections: t.nav.aboutSections },
     { to: "/resources/", label: t.nav.resources, sections: t.nav.resourcesSections },
+    { to: "/order/", label: t.nav.order, highlight: true },
     { to: "/contact/", label: t.nav.contact },
   ];
 

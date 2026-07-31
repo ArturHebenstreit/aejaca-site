@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-07-29 | Wersja: 1.3*
+*Wygenerowano: 2026-07-31 | Wersja: 1.4*
 
 ---
 
@@ -571,6 +571,52 @@ Klucz weryfikacyjny: `public/1cc7ba768716151f4028f5c9d6127177.txt`
   - do 10 kg: 330-400 PLN (~78-94 EUR)
 
 Polityka zwrotów: 14 dni, bezpłatny zwrot (MerchantReturnPolicy)
+
+---
+
+## 10b. SKLEP I KREATOR ZAMÓWIEŃ (od 2026-07-31)
+
+### Zasada nadrzędna
+
+**Cena, którą płaci klient, jest liczona wyłącznie na serwerze.** Rdzeń cenowy leży w `src/pricing/` i jest kopiowany do `chat-api/pricing/` skryptem `scripts/sync-pricing.mjs`. `npm run build` sprawdza dryf między kopiami i przerywa build, gdy cena zmieni się tylko po jednej stronie. Kalkulatory w przeglądarce pokazują wynik, ale nie decydują o kwocie.
+
+Przy pozycjach z plikiem geometria przysłana przez przeglądarkę jest kasowana i liczona od nowa z wgranego pliku. Podmiana `stlData` w konsoli nie zmienia ceny.
+
+### Cena wiążąca kontra widełki
+
+`applyPricing` zwraca `unitGrosze`, czyli kwotę sprzed rozrzutu tolerancji. To ona trafia na zamówienie. Widełki -30% / +40% zostają wyłącznie w kalkulatorach poglądowych, bo opisują niepewność szacunku, a nie ofertę. Kwoty w bazie i w komunikacji z Autopay są w **groszach**, jako liczby całkowite.
+
+### Kreator `/order/`
+
+Pięć kroków: usługa, parametry (lub plik), cena wiążąca, dane i zgody, płatność.
+
+Zamówić i zapłacić od razu można: druk FDM, druk MSLA, grawer CO2, cięcie CO2, znakowanie fiber, odlew żywiczny, renowację i naprawę biżuterii oraz biżuterię bez kamieni.
+
+Ścieżką wyceny indywidualnej idą: biżuteria z kamieniami, łańcuszki, projekty CAD i konfiguracje oznaczone przez kalkulator jako niestandardowe.
+
+Dostawa: paczkomat InPost 15,90 PLN, kurier 24,90 PLN, odbiór osobisty 0 PLN.
+
+### Zgody
+
+Akceptacja regulaminu i oświadczenie z art. 38 UPK to **dwa osobne checkboxy**. Wyłączenie prawa odstąpienia przy rzeczy wykonywanej na zamówienie działa tylko wtedy, gdy klient złożył wyraźne, odrębne oświadczenie. Ukrycie go w akceptacji regulaminu unieważnia wyłączenie.
+
+### Integracja Autopay
+
+Szczegóły protokołu w `MDs/AEJaCA_Autopay_Integration.md`. Trzy reguły, które muszą przetrwać każdą zmianę kodu:
+
+1. Puste pole wypada z sumy kontrolnej **razem ze swoim separatorem**.
+2. Status zamówienia zmienia **wyłącznie** komunikat ITN. Strona powrotu tylko weryfikuje podpis i niczego nie zapisuje.
+3. Realizacja zamówienia (maile, wydanie plików) dzieje się **raz**, przy pierwszym `SUCCESS`, mimo że potwierdzamy każdy komunikat.
+
+Kwota z ITN jest porównywana z kwotą zamówienia, więc sam poprawny podpis nie wystarczy do opłacenia zamówienia niższą kwotą.
+
+### Limit kwartalny w kodzie
+
+`checkQuarterlyLimit` blokuje przyjęcie płatności przy **10 613,50 PLN**, czyli 200 zł przed progiem 10 813,50 PLN, żeby zamówienie w locie nie przebiło limitu działalności nierejestrowanej. Widok `quarterly_revenue` w bazie pokazuje obrót narastająco.
+
+### Schemat bazy
+
+`scripts/orders-schema.sql`: `orders`, `order_items`, `products`, `downloads`, `payment_notifications`, widok `quarterly_revenue`. Parametry wejściowe wyceny zapisujemy razem z wynikiem, żeby dało się odtworzyć cenę po latach. Surowe komunikaty ITN trafiają do bazy, bo bez nich reklamacja płatności to słowo przeciwko słowu.
 
 ---
 

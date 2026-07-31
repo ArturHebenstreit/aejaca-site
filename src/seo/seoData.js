@@ -262,6 +262,31 @@ export const SEO = {
     },
   },
 
+  order: {
+    pl: {
+      title: "Zamów online, druk 3D, grawer i biżuteria, AEJaCA",
+      description: "Wyceń i zamów w kilka minut. Wgraj plik STL, poznaj wiążącą cenę i zapłać BLIK-iem lub szybkim przelewem. Druk 3D, grawer laserowy, odlewy żywiczne, renowacja biżuterii.",
+      keywords: "zamów druk 3d online, wycena stl online, druk 3d na zamówienie, grawer laserowy zamówienie, płatność blik",
+      ogAlt: "Kreator zamówień AEJaCA",
+    },
+    en: {
+      title: "Order online, 3D printing, engraving and jewelry, AEJaCA",
+      description: "Quote and order in minutes. Upload an STL file, get a binding price and pay by BLIK or instant transfer. 3D printing, laser engraving, resin casting, jewelry renovation.",
+      keywords: "order 3d printing online, stl instant quote, custom 3d print, laser engraving order",
+      ogAlt: "AEJaCA order wizard",
+    },
+    de: {
+      title: "Online bestellen, 3D-Druck, Gravur und Schmuck, AEJaCA",
+      description: "In Minuten kalkulieren und bestellen. STL-Datei hochladen, verbindlichen Preis erhalten und per BLIK oder Sofortüberweisung zahlen. 3D-Druck, Lasergravur, Harzguss, Schmuckaufarbeitung.",
+      keywords: "3d druck online bestellen, stl sofortangebot, lasergravur bestellen",
+      ogAlt: "AEJaCA Bestellassistent",
+    },
+  },
+  orderStatus: {
+    pl: { title: "Status zamówienia, AEJaCA", description: "Status Twojego zamówienia i płatności w AEJaCA.", keywords: "status zamówienia", ogAlt: "Status zamówienia AEJaCA" },
+    en: { title: "Order status, AEJaCA", description: "The status of your AEJaCA order and payment.", keywords: "order status", ogAlt: "AEJaCA order status" },
+    de: { title: "Bestellstatus, AEJaCA", description: "Der Status Ihrer AEJaCA-Bestellung und Zahlung.", keywords: "bestellstatus", ogAlt: "AEJaCA Bestellstatus" },
+  },
   terms: {
     pl: {
       title: "Regulamin serwisu i sprzedaży, AEJaCA",

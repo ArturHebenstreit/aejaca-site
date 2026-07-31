@@ -19,6 +19,8 @@ import About from "./pages/About.jsx";
 import Warranty from "./pages/Warranty.jsx";
 import Returns from "./pages/Returns.jsx";
 import Terms from "./pages/Terms.jsx";
+import Order from "./pages/Order.jsx";
+import OrderStatus from "./pages/OrderStatus.jsx";
 import Shipping from "./pages/Shipping.jsx";
 import ToolsJewelry from "./pages/ToolsJewelry.jsx";
 import ToolsStudio from "./pages/ToolsStudio.jsx";
@@ -57,6 +59,8 @@ export function render(url) {
               <Route path="/warranty/" element={<Warranty />} />
               <Route path="/returns/" element={<Returns />} />
               <Route path="/terms/" element={<Terms />} />
+              <Route path="/order/" element={<Order />} />
+              <Route path="/order/status/" element={<OrderStatus />} />
               <Route path="/shipping/" element={<Shipping />} />
               <Route path="/toolsjewelry/" element={<ToolsJewelry />} />
               <Route path="/toolsjewelry/alloy-composition/" element={<AlloyCompositionPage />} />

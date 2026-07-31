@@ -122,6 +122,16 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/warranty/" />
   </url>
 
+  <!-- Order wizard, instant quote and payment -->
+  <url>
+    <loc>https://www.aejaca.com/order/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/order/" />
+  </url>
+
   <!-- Terms of service and sale -->
   <url>
     <loc>https://www.aejaca.com/terms/</loc>

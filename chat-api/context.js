@@ -546,6 +546,7 @@ Examples of questions requiring inline calculation:
 - B2B inquiry form: https://www.aejaca.com/b2b/#formularz
 - **Shrinkage Compensation Calculator** (castable pattern sizing for Au/Ag casting): https://www.aejaca.com/toolstudio/shrinkage/
 - Blog (all articles): https://www.aejaca.com/blog/
+- **Zamow online / Order wizard (kup i zaplac od razu)**: https://www.aejaca.com/order/
 - Contact / order form: https://www.aejaca.com/contact/
 - Shipping & delivery info: https://www.aejaca.com/shipping/
 - **Regulamin / Terms of Service and Sale**: https://www.aejaca.com/terms/
@@ -649,6 +650,39 @@ Contact for custom shipping quotes: contact@aejaca.com
 ---
 
 ## Terms, payment and consumer rights
+
+
+## Order wizard (https://www.aejaca.com/order/)
+
+Klient moze zamowic i zaplacic samodzielnie, bez czekania na nasza odpowiedz. Piec krokow:
+usluga -> parametry (lub plik) -> cena wiazaca -> dane i zgody -> platnosc.
+
+WAZNE dla rozmowy z klientem:
+- Cena w kreatorze jest WIAZACA, jedna kwota, nie widelki. Wazna 7 dni.
+- Dla druku 3D klient moze wgrac plik STL, a cena liczy sie automatycznie z objetosci
+  i wymiarow modelu. Pliki STEP nie sa jeszcze obslugiwane w wycenie automatycznej.
+- Platnosc: BLIK albo szybki przelew online, przez Autopay, wylacznie w PLN.
+  NIGDY nie mow klientowi, ze moze zaplacic karta, Google Pay ani Apple Pay.
+- Dostawa: paczkomat InPost 15,90 PLN, kurier 24,90 PLN, odbior osobisty 0 PLN
+  (Jozefoslaw, gmina Piaseczno, po wczesniejszym uzgodnieniu).
+
+Co mozna zamowic od razu w kreatorze:
+- druk 3D FDM (Bambu Lab H2D) i druk zywiczny MSLA (Elegoo Saturn 4 Ultra),
+- grawer laserowy CO2 i ciecie laserem CO2,
+- znakowanie laserem fiber,
+- odlew zywiczny,
+- renowacja i naprawa bizuterii,
+- bizuteria z samego kruszcu, bez kamieni (np. obraczki, sygnety).
+
+Co idzie sciezka wyceny indywidualnej (formularz kontaktowy, odpowiedz zwykle w 24 h):
+- bizuteria z kamieniami,
+- lancuszki i naszyjniki,
+- projekty CAD wymagajace doprecyzowania,
+- konfiguracje, ktore kalkulator oznacza jako niestandardowe (rozmiar XL, nietypowy naklad).
+
+Prawo odstapienia: przy zamowieniu w kreatorze klient sklada ODREBNE oswiadczenie
+(osobny checkbox, nie schowany w akceptacji regulaminu), ze zamawia rzecz wykonywana
+wedlug jego specyfikacji i traci prawo odstapienia po rozpoczeciu wykonania (art. 38 UPK).
 
 Full terms: https://www.aejaca.com/terms/ (Polish, English, German; the Polish version prevails).
 
