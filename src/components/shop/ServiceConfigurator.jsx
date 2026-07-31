@@ -37,6 +37,7 @@ const UI = {
     needsQuoteCta: "Wyślij do wyceny",
     priceNote: "Cena wiążąca, obowiązuje 7 dni.",
     engravingHint: "Grawer wykonujemy dokładnie tak, jak wpiszesz. Sprawdź pisownię.",
+    uploadFailed: "Nie udało się przyjąć pliku. Spróbuj ponownie albo napisz do nas.",
   },
   en: {
     configure: "Configure and add to cart",
@@ -56,6 +57,7 @@ const UI = {
     needsQuoteCta: "Request a quote",
     priceNote: "Binding price, valid for 7 days.",
     engravingHint: "We engrave exactly what you type. Please check the spelling.",
+    uploadFailed: "We could not accept the file. Try again or write to us.",
   },
   de: {
     configure: "Konfigurieren und in den Warenkorb",
@@ -75,6 +77,7 @@ const UI = {
     needsQuoteCta: "Angebot anfordern",
     priceNote: "Verbindlicher Preis, 7 Tage gültig.",
     engravingHint: "Wir gravieren genau das, was Sie eingeben. Bitte Schreibweise prüfen.",
+    uploadFailed: "Die Datei konnte nicht angenommen werden. Bitte erneut versuchen oder uns schreiben.",
   },
 };
 
@@ -90,6 +93,8 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
 
   const [params, setParams] = useState(() => ({ ...(service?.defaults || {}) }));
   const [file, setFile] = useState(null);
+  const [uploadToken, setUploadToken] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [geometry, setGeometry] = useState(null);
   const [packagingId, setPackagingId] = useState(DEFAULT_PACKAGING);
   const [engraving, setEngraving] = useState("");
@@ -112,7 +117,8 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       body.append("calculator", service.calculator);
       body.append("lang", lang);
       body.append("params", JSON.stringify({ ...params, ...(service.fixed || {}) }));
-      if (file) body.append("file", file);
+      // Plik poszedl juz raz do /api/uploads, tutaj wystarczy identyfikator.
+      if (uploadToken) body.append("uploadToken", uploadToken);
 
       const resp = await fetch(`${API}/api/price`, { method: "POST", body });
       const data = await resp.json();
@@ -129,7 +135,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
     } finally {
       if (mine === reqId.current) setBusy(false);
     }
-  }, [service, params, file, lang, u.needsQuote]);
+  }, [service, params, uploadToken, lang, u.needsQuote]);
 
   // Cena odswieza sie po kazdej zmianie, z krotkim opoznieniem, zeby
   // przesuwanie suwaka nie wysylalo kilkunastu zapytan.
@@ -149,12 +155,36 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
 
   const setParam = (key, val) => setParams((p) => ({ ...p, [key]: val }));
 
-  function onPickFile(e) {
+  async function onPickFile(e) {
     const f = e.target.files?.[0];
     if (!f) return;
     setFile(f);
     setGeometry(null);
     setPrice(null);
+    setUploadToken(null);
+    setUploading(true);
+    setError(null);
+    try {
+      // Wysylamy raz. Serwer liczy geometrie, zapisuje plik na Dysku
+      // i oddaje identyfikator, ktory trafia do koszyka zamiast megabajtow.
+      const fd = new FormData();
+      fd.append("file", f);
+      fd.append("lang", lang);
+      const resp = await fetch(`${API}/api/uploads`, { method: "POST", body: fd });
+      const data = await resp.json();
+      if (!resp.ok) {
+        setError({ message: data.error, code: data.code });
+        setFile(null);
+        return;
+      }
+      setUploadToken(data.uploadToken);
+      setGeometry(data.geometry);
+    } catch {
+      setError({ message: u.uploadFailed });
+      setFile(null);
+    } finally {
+      setUploading(false);
+    }
   }
 
   function addToCart() {
@@ -168,8 +198,10 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       params: { ...params, ...(service.fixed || {}) },
       geometry,
       fileName: file?.name || null,
+      uploadToken,
       needsFile: Boolean(file),
-      fileRetained: false,
+      // Plik lezy juz na Dysku, wiec pozycja przezyje odswiezenie strony.
+      fileRetained: Boolean(uploadToken),
       unitGrosze: price.unitGrosze,
       packagingId,
       packagingGrosze: packGrosze,
@@ -180,7 +212,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
     setAdded(true);
   }
 
-  const visibleFields = service.fields.filter((f) => !(f.hiddenWithFile && file));
+  const visibleFields = service.fields.filter((f) => !(f.hiddenWithFile && uploadToken));
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6">
@@ -193,9 +225,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
             hint={u.fileHint}
             file={file}
             geometry={geometry}
-            busy={busy && Boolean(file) && !geometry}
+            busy={uploading}
             onPick={onPickFile}
-            onClear={() => { setFile(null); setGeometry(null); setPrice(null); }}
+            onClear={() => { setFile(null); setGeometry(null); setPrice(null); setUploadToken(null); }}
             accent={accent}
             lang={lang}
           />
