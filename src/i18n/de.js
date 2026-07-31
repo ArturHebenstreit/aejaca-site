@@ -9,8 +9,10 @@ export default {
     order: "Online bestellen",
     contact: "Kontakt",
     jewelrySections: [
-      // Sklep na pierwszym miejscu, bo to jedyna pozycja prowadzaca do zakupu.
-      { label: "Produkte und Leistungen", to: "/shop/jewelry/" },
+      // Dwie pozycje zakupowe na czele: nasz sklep i sklep Etsy tego dzialu.
+      // Etsy zniknal z tresci strony, wiec jedyne wejscie prowadzi stad.
+      { label: "Shop", to: "/shop/jewelry/" },
+      { label: "Etsy-Shop", href: "https://aejacashop.etsy.com" },
       { label: "Über AEJaCA Schmuck", id: "about" },
       { label: "Produkte & Leistungen", id: "services" },
       { label: "Richtpreise", id: "pricing" },
@@ -22,11 +24,11 @@ export default {
       { label: "Glossar", to: "/glossary/?category=jewelry" },
       { label: "Blog", to: "/blog/?category=jewelry" },
       { label: "Referenzen", id: "testimonials" },
-      { label: "Shop", id: "shop" },
       { label: "B2B-Zusammenarbeit", to: "/b2b/" },
     ],
     studioSections: [
-      { label: "Produkte und Leistungen", to: "/shop/studio/" },
+      { label: "Shop", to: "/shop/studio/" },
+      { label: "Etsy-Shop Studio", href: "https://aejaca2studio.etsy.com" },
       { label: "Über AEJaCA sTuDiO", id: "about" },
       { label: "Technologien", id: "technologies" },
       { label: "Richtpreise", id: "pricing" },
@@ -39,7 +41,6 @@ export default {
       { label: "Glossar", to: "/glossary/?category=studio" },
       { label: "Blog", to: "/blog/?category=studio" },
       { label: "Referenzen", id: "testimonials" },
-      { label: "Shop", id: "shop" },
       { label: "B2B-Zusammenarbeit", to: "/b2b/" },
     ],
     aboutSections: [
@@ -177,9 +178,6 @@ export default {
       { word: "Symbolik", desc: "Bedeutung in jedem Detail verwoben" },
       { word: "Zeitlosigkeit", desc: "Designs, die Trends überdauern" },
     ],
-    shopTitle: "Unsere Kollektion Durchstöbern",
-    shopText: "Verfügbare Stücke in unserem Etsy-Shop entdecken.",
-    shopBtn: "Etsy-Shop Besuchen",
     ctaTitle: "Suchen Sie etwas Einzigartiges?",
     ctaText: "Erzählen Sie uns von Ihrem Traumstück, wir entwerfen und fertigen es speziell für Sie.",
     ctaBtn: "Individuelles Projekt Starten",
@@ -405,9 +403,6 @@ export default {
       { title: "Prototyp", desc: "3D-gedruckter oder lasergeschnittener Prototyp zum Testen und Validieren" },
       { title: "Produktion", desc: "Endprodukt nach exakten Spezifikationen gefertigt" },
     ],
-    shopTitle: "Unsere Produkte Durchstöbern",
-    shopText: "Fertige Produkte und individuelle Optionen in unserem Etsy-Shop ansehen.",
-    shopBtn: "Etsy Studio-Shop Besuchen",
     ctaTitle: "Haben Sie ein Projekt im Sinn?",
     ctaText: "Vom Prototyp zur Produktion, lassen Sie uns Ihre Idee zum Leben erwecken.",
     ctaBtn: "Angebot Anfragen",

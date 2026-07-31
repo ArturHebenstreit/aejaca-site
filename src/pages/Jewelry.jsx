@@ -84,7 +84,6 @@ export default function Jewelry() {
   const getServiceRef = useStaggerReveal(100);
   const precisionRef = useScrollReveal();
   const valuesRef = useScrollReveal();
-  const etsyRef = useScrollReveal();
   const ctaRef = useScrollReveal();
 
   const [showFloatingCta] = useState(true);
@@ -375,19 +374,6 @@ export default function Jewelry() {
         );
       })()}
 
-      <div className="gradient-divider" />
-
-      {/* Etsy */}
-      <section id="shop" className="py-16 px-4 text-center bg-neutral-900/50">
-        <div ref={etsyRef} className="reveal">
-          <h2 className="font-serif text-2xl font-semibold text-white mb-3">{j.shopTitle}</h2>
-          <p className="text-neutral-400 mb-6">{j.shopText}</p>
-          <a href="https://aejacashop.etsy.com" target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 text-black font-medium rounded-full hover:bg-amber-400 hover:shadow-lg hover:shadow-amber-500/20 transition-all duration-300">
-            {j.shopBtn} <ArrowRight className="w-4 h-4" />
-          </a>
-        </div>
-      </section>
 
       {/* CTA */}
       <section className="py-14 px-4 text-center bg-neutral-950">

@@ -40,8 +40,10 @@ function snapshot(gl) {
  * @param {number} [props.height] wysokosc ramki w pikselach
  * @param {(dataUrl: string) => void} [props.onSnapshot] wolane raz, gdy model
  *        sie ustabilizuje, dostaje miniature do pokazania w koszyku
+ * @param {boolean} [props.grid] podloga pomocnicza. Domyslnie wylaczona, bo
+ *        przy wgranym modelu klienta rozprasza zamiast pomagac
  */
-export default function STLViewer({ triangles, bbox, height = 220, onSnapshot }) {
+export default function STLViewer({ triangles, bbox, height = 220, onSnapshot, grid = false }) {
   const containerRef = useRef(null);
   const stateRef = useRef(null);
   const snapRef = useRef(onSnapshot);
@@ -122,11 +124,13 @@ export default function STLViewer({ triangles, bbox, height = 220, onSnapshot })
     fillLight.position.set(-dist, -dist * 0.5, -dist * 0.3);
     scene.add(fillLight);
 
-    // Grid
-    const gridSize = maxDim * 2;
-    const grid = new THREE.GridHelper(gridSize, 20, 0x334155, 0x1e293b);
-    grid.position.y = box.min.y - center.y;
-    scene.add(grid);
+    // Podloga pomocnicza, tylko na zyczenie
+    let gridHelper = null;
+    if (grid) {
+      gridHelper = new THREE.GridHelper(maxDim * 2, 20, 0x334155, 0x1e293b);
+      gridHelper.position.y = box.min.y - center.y;
+      scene.add(gridHelper);
+    }
 
     // Miniatura z ujecia trzy czwarte, po chwili obrotu, zeby nie zlapac
     // modelu ustawionego plasko do kamery.
@@ -169,12 +173,13 @@ export default function STLViewer({ triangles, bbox, height = 220, onSnapshot })
       if (snapTimer) clearTimeout(snapTimer);
       ro.disconnect();
       controls.dispose();
+      gridHelper?.geometry?.dispose();
       renderer.dispose();
       geom.dispose();
       mat.dispose();
       if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
     };
-  }, [triangles, bbox, height]);
+  }, [triangles, bbox, height, grid]);
 
   return (
     <div
