@@ -4,7 +4,7 @@
 // Formuly przeniesione 1:1 z FiberLaserCalc.jsx. Bez Reacta, zeby backend
 // zamowien liczyl cene tym samym kodem co kalkulator.
 
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost } from "./config.js";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, plDiscountRow } from "./config.js";
 
 export const FIBER_CONFIG = {
   POWER_KW: 0.50,
@@ -130,6 +130,7 @@ export function calculate({ matId, lensId, markId, areaId, quantityId, svgData }
       { label: l.workshop, value: fmtCost(baseCost * CONFIG.BASE_MARGIN, lang) },
       { divider: true },
       { label: l.estCost, value: fmtCost(baseCost * (1 + CONFIG.BASE_MARGIN), lang), bold: true },
+      ...(plDiscountRow(baseCost * (1 + CONFIG.BASE_MARGIN), plDiscount, lang) ? [plDiscountRow(baseCost * (1 + CONFIG.BASE_MARGIN), plDiscount, lang)] : []),
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
       ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${batchTimeH.toFixed(1)} h`, bold: true }] : []),
     ],
