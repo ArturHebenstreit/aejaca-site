@@ -13,6 +13,7 @@ import {
   autopayConfigured, buildStartTransaction, formatValidityTime,
   verifyReturn, parseITN, buildITNConfirmation, fetchGatewayList,
 } from "./autopay.js";
+import { packagingGrosze, sanitizePersonalization } from "./pricing/packaging.js";
 import { sendOrderPaidEmails } from "./orderMail.js";
 
 const app = express();
