@@ -2,6 +2,35 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
+/** Bok kwadratowej miniatury zapisywanej przy zamowieniu */
+const THUMB_PX = 320;
+
+/**
+ * Kwadratowy kadr z podgladu, przeskalowany i skompresowany.
+ *
+ * Zrzut prosto z plotna WebGL potrafi wazyc kilkaset kilobajtow, a Safari
+ * nie umie zapisac WEBP i po cichu oddaje PNG, czyli jeszcze wiecej. Stad
+ * przerysowanie na male plotno 2D i jawny zapas w postaci JPEG.
+ *
+ * @param {HTMLCanvasElement} gl plotno renderera
+ * @returns {string} data URL gotowy do wyslania
+ */
+function snapshot(gl) {
+  const c = document.createElement("canvas");
+  c.width = THUMB_PX;
+  c.height = THUMB_PX;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#0c1222";
+  ctx.fillRect(0, 0, THUMB_PX, THUMB_PX);
+
+  // Kadr kwadratowy ze srodka, zeby model nie zostal sciety z boku.
+  const side = Math.min(gl.width, gl.height);
+  ctx.drawImage(gl, (gl.width - side) / 2, (gl.height - side) / 2, side, side, 0, 0, THUMB_PX, THUMB_PX);
+
+  const webp = c.toDataURL("image/webp", 0.8);
+  return webp.startsWith("data:image/webp") ? webp : c.toDataURL("image/jpeg", 0.82);
+}
+
 /**
  * Podglad siatki trojkatow. Mimo nazwy nie jest juz zwiazany z STL,
  * karmimy go tez OBJ i 3MF.
@@ -105,10 +134,10 @@ export default function STLViewer({ triangles, bbox, height = 220, onSnapshot })
     if (snapRef.current) {
       snapTimer = setTimeout(() => {
         try {
-          const url = renderer.domElement.toDataURL("image/webp", 0.82);
-          if (url && url.length > 1000) snapRef.current?.(url);
-        } catch {
-          // Zrzut jest wygoda, nie warunkiem zamowienia. Cisza wystarczy.
+          snapRef.current?.(snapshot(renderer.domElement));
+        } catch (err) {
+          // Zrzut jest wygoda, nie warunkiem zamowienia, wiec nie przerywamy.
+          console.warn("[viewer] zrzut modelu nie powiodl sie:", err?.message);
         }
       }, 900);
     }
