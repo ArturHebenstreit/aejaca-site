@@ -626,6 +626,17 @@ STL i OBJ nie zapisują jednostki, więc czytamy je jako milimetry. `assertPlaus
 
 Wgrany model pokazujemy jako **obracający się podgląd 3D** (`STLViewer.jsx`, three.js ładowany leniwie). Po chwili obrotu komponent robi zrzut ujęcia trzy czwarte w WEBP, zrzut trafia do kolumny `uploads.thumbnail` i staje się miniaturą pozycji w koszyku oraz linkiem podglądu w mailu warsztatowym. Klient widzi własny model zamiast ikony usługi, a warsztat wie, co ma zrobić, bez otwierania Dysku.
 
+### Formaty plikow klienta
+
+| Format | Jak liczymy | Uwagi |
+|---|---|---|
+| STL, OBJ | siatka trojkatow, odczyt natychmiastowy | brak jednostki w pliku, czytamy jako mm, `assertPlausibleScale` odrzuca modele ponizej 0,5 mm i powyzej 2 m |
+| 3MF | siatka w archiwum ZIP | format deklaruje jednostke (mikron, mm, cm, cal, stopa, metr), przeliczamy |
+| STEP, STP | tesselacja jadrem OpenCascade (WASM) | jednostka jest w pliku, modul 7 MB ladowany leniwie z `public/wasm/` |
+| SVG, DXF, PDF | **nie liczymy**, zalacznik do zlecenia | cene wyznacza wybrane pole grawerowania |
+
+`scripts/test-mesh-formats.mjs` sprawdza przy kazdym buildzie, ze ten sam szescian 20 x 10 x 5 mm zapisany jako STL, OBJ, 3MF (w trzech jednostkach) i STEP daje **identyczna objetosc i pole**. Plik STEP do testu generuje `scripts/make-step-fixture.mjs`, bo STEP opisuje bryle powierzchniami i nie da sie go zlozyc recznie w kilku linijkach.
+
 ### Droga pliku klienta
 
 | Kiedy | Co sie dzieje |

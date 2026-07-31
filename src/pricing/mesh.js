@@ -1,18 +1,26 @@
 // ============================================================
-// PARSER SIATEK — STL, OBJ, 3MF
+// PARSER MODELI — STL, OBJ, 3MF, STEP
 // ============================================================
-// Jeden wejsciowy punkt dla wszystkich formatow trojkatowych. Przegladarka
-// uzywa go, zeby pokazac model, a backend zamowien, zeby policzyc wiazaca
-// cene. Obie strony musza dostac te same liczby, dlatego objetosc liczy
-// wspolne metricsFromTriangles z stl.js.
+// Jeden wejsciowy punkt dla wszystkich formatow. Przegladarka uzywa go,
+// zeby pokazac model, a backend zamowien, zeby policzyc wiazaca cene.
+// Obie strony musza dostac te same liczby, dlatego objetosc liczy wspolne
+// metricsFromTriangles z stl.js.
 //
-// STEP nie jest siatka, tylko opisem powierzchni, wiec tu go nie ma.
+// STL, OBJ i 3MF to gotowe siatki trojkatow: odczyt jest natychmiastowy.
+// STEP opisuje bryle powierzchniami, wiec najpierw idzie przez tesselacje
+// jadrem OpenCascade (step.js) i dlatego wymaga wersji asynchronicznej.
 
 import { parseSTL, metricsFromTriangles } from "./stl.js";
 import { unzipSync, strFromU8 } from "fflate";
 
-/** Formaty, ktore umiemy wycenic bez udzialu czlowieka */
+/** Formaty siatkowe: odczyt jest natychmiastowy i synchroniczny */
 export const MESH_EXTENSIONS = ["stl", "obj", "3mf"];
+
+/** Formaty CAD: wymagaja tesselacji jadrem OpenCascade, wiec sa asynchroniczne */
+export const CAD_EXTENSIONS = ["step", "stp"];
+
+/** Wszystko, co umiemy wycenic bez udzialu czlowieka */
+export const SUPPORTED_EXTENSIONS = [...MESH_EXTENSIONS, ...CAD_EXTENSIONS];
 
 /** Mnozniki do milimetra dla jednostek deklarowanych w 3MF */
 const MM_PER_UNIT = {
@@ -52,7 +60,33 @@ export function parseMesh(input, fileName = "") {
   if (ext === "obj") return metricsFromTriangles(parseOBJ(bytes));
   if (ext === "3mf") return metricsFromTriangles(parse3MF(bytes));
 
+  if (CAD_EXTENSIONS.includes(ext)) {
+    throw new MeshError("needs_async", `Format .${ext} wymaga parseMeshAsync`);
+  }
   throw new MeshError("unsupported_format", `Format .${ext} nie jest obsługiwany`);
+}
+
+/**
+ * Jedno wejscie dla wszystkich formatow, takze tych wymagajacych jadra CAD.
+ *
+ * Siatki czytamy tym samym kodem co wczesniej, wiec nic sie dla nich nie
+ * zmienia. STEP przechodzi przez tesselacje, a dalej liczy sie identycznie:
+ * ta sama objetosc, to samo pole, ta sama cena.
+ *
+ * @param {ArrayBuffer|Uint8Array} input
+ * @param {string} fileName
+ */
+export async function parseMeshAsync(input, fileName = "") {
+  const ext = extensionOf(fileName);
+  if (!CAD_EXTENSIONS.includes(ext)) return parseMesh(input, fileName);
+
+  const { parseSTEPTriangles, StepError } = await import("./step.js");
+  try {
+    return metricsFromTriangles(await parseSTEPTriangles(input));
+  } catch (e) {
+    if (e instanceof StepError) throw new MeshError(e.code, e.message);
+    throw new MeshError("file_unreadable", `Nie udało się odczytać pliku .${ext}`);
+  }
 }
 
 // ------------------------------------------------------------

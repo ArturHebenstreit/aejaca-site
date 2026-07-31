@@ -1,8 +1,9 @@
 // Ten sam szescian 20x10x5 mm zapisany jako STL, OBJ i 3MF musi dac
 // identyczna objetosc, pole i gabaryty. Inaczej klient placi rozne kwoty
 // za ten sam model w zaleznosci od tego, co wyeksportowal.
-import { parseMesh } from "../src/pricing/mesh.js";
+import { parseMeshAsync } from "../src/pricing/mesh.js";
 import { zipSync, strToU8 } from "fflate";
+import { execFileSync } from "node:child_process";
 
 const SX = 20, SY = 10, SZ = 5;
 
@@ -60,7 +61,11 @@ function threeMF(unit = "millimeter", divisor = 1) {
   return Buffer.from(zipSync({ "3D/3dmodel.model": strToU8(xml) }));
 }
 
+// STEP powstaje osobnym generatorem, bo opisuje bryle powierzchniami.
+const stepBuf = execFileSync("node", [new URL("./make-step-fixture.mjs", import.meta.url).pathname]);
+
 const cases = [
+  ["cube.step", stepBuf],
   ["cube.stl", binarySTL()],
   ["cube.obj", objFile()],
   ["cube.3mf", threeMF()],
@@ -72,7 +77,7 @@ const expected = { volumeCm3: (SX * SY * SZ) / 1000, surfaceAreaCm2: 2 * (SX * S
 let bad = 0;
 
 for (const [name, buf] of cases) {
-  const r = parseMesh(buf, name);
+  const r = await parseMeshAsync(buf, name);
   const dv = Math.abs(r.volumeCm3 - expected.volumeCm3);
   const ds = Math.abs(r.surfaceAreaCm2 - expected.surfaceAreaCm2);
   const db = Math.abs(r.bbox.x - SX / 10) + Math.abs(r.bbox.y - SY / 10) + Math.abs(r.bbox.z - SZ / 10);
