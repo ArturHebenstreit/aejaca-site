@@ -11,7 +11,17 @@
 export function parseSTL(buffer) {
   const isBinary = detectBinary(buffer);
   const triangles = isBinary ? parseBinarySTL(buffer) : parseAsciiSTL(buffer);
+  return metricsFromTriangles(triangles);
+}
 
+/**
+ * Objetosc, pole i gabaryty z listy trojkatow. Wydzielone z parseSTL, bo
+ * dokladnie te same liczby musza wychodzic dla OBJ i 3MF, a druga kopia
+ * wzorow to prosta droga do dwoch roznych cen za ten sam model.
+ *
+ * @param {number[][][]} triangles trojkaty w milimetrach
+ */
+export function metricsFromTriangles(triangles) {
   let volume = 0;
   let surfaceArea = 0;
   let minX = Infinity, minY = Infinity, minZ = Infinity;

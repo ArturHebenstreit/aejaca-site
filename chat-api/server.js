@@ -795,12 +795,62 @@ app.post("/api/uploads", (req, res, next) => {
 });
 
 /**
+ * Miniatura modelu, zrzucona z podgladu w przegladarce.
+ *
+ * Bez uwierzytelnienia, bo w tym momencie klient nie ma jeszcze zadnego
+ * konta. Chroni nas to, ze token uploadu ma 48 znakow losowych, a zdjecie
+ * da sie ustawic tylko raz i tylko dla pliku, ktory jeszcze nie zostal
+ * zamowiony. Podmiana cudzego podgladu wymagalaby zgadniecia tokenu.
+ */
+const THUMB_PREFIX = /^data:image\/(webp|png|jpeg);base64,[A-Za-z0-9+/=]+$/;
+const MAX_THUMB_CHARS = 300_000; // okolo 220 kB obrazu
+
+app.post("/api/uploads/:token/thumb", express.json({ limit: "400kb" }), async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const dataUrl = String(req.body?.dataUrl || "");
+  if (dataUrl.length > MAX_THUMB_CHARS || !THUMB_PREFIX.test(dataUrl)) {
+    return res.status(400).json({ error: "Nieprawidlowy obraz" });
+  }
+
+  const { rowCount } = await pool.query(
+    `UPDATE uploads SET thumbnail = $2
+      WHERE token = $1 AND thumbnail IS NULL AND status = 'pending'`,
+    [String(req.params.token || ""), dataUrl]
+  );
+  if (!rowCount) return res.status(404).json({ error: "Nieznany plik" });
+  res.json({ ok: true });
+});
+
+app.get("/api/uploads/:token/thumb", async (req, res) => {
+  if (!pool) return res.status(503).end();
+  const { rows } = await pool.query(`SELECT thumbnail FROM uploads WHERE token = $1`, [
+    String(req.params.token || ""),
+  ]);
+  const dataUrl = rows[0]?.thumbnail;
+  if (!dataUrl) return res.status(404).end();
+
+  const [, mime, b64] = /^data:(image\/[a-z]+);base64,(.+)$/.exec(dataUrl) || [];
+  if (!b64) return res.status(404).end();
+
+  res.set("Content-Type", mime);
+  // Miniatura nigdy sie nie zmienia, wiec moze lezec w cache do konca zycia tokenu.
+  res.set("Cache-Control", "public, max-age=31536000, immutable");
+  res.send(Buffer.from(b64, "base64"));
+});
+
+/**
  * Oddzwonienie z n8n po zapisaniu pliku na Dysku.
  * Chronione wspoldzielonym tokenem, bo inaczej ktokolwiek moglby podmienic
  * link do pliku w zamowieniu.
  */
 app.post("/api/uploads/:token/stored", express.json({ limit: "8kb" }), async (req, res) => {
-  if (!UPLOAD_CALLBACK_TOKEN || req.headers["x-upload-token"] !== UPLOAD_CALLBACK_TOKEN) {
+  const sent = req.headers["x-upload-token"];
+  if (!UPLOAD_CALLBACK_TOKEN || sent !== UPLOAD_CALLBACK_TOKEN) {
+    // Odcisk zamiast wartosci: tyle wystarczy, zeby porownac obie strony,
+    // a sam sekret nie trafia do logow.
+    const fp = (v) => (v ? `${v.length}/${createHash("sha256").update(v).digest("hex").slice(0, 8)}` : "BRAK");
+    console.error(`[uploads] 401 stored: serwer=${fp(UPLOAD_CALLBACK_TOKEN)} n8n=${fp(sent)}`);
     return res.status(401).json({ error: "Unauthorized" });
   }
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });

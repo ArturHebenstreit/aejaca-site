@@ -20,6 +20,10 @@ const SELLER = {
   site: "https://www.aejaca.com",
 };
 
+// Adres wlasnego API, pod ktorym leza miniatury modeli. Bez niego mail
+// warsztatowy po prostu nie pokaze podgladu, reszta dziala tak samo.
+const API_BASE = (process.env.PUBLIC_API_URL || "").replace(/\/$/, "");
+
 const INTERNAL_TO = process.env.ORDER_NOTIFY_EMAIL || SELLER.email;
 const FROM = process.env.ORDER_FROM_EMAIL || SELLER.email;
 
@@ -173,7 +177,7 @@ function internalText(order, items) {
   const lines = items.map(
     (i) => `- ${i.title} x ${i.qty} = ${money(i.line_grosze)}
   kalkulator: ${i.calculator}
-  parametry: ${JSON.stringify(i.params)}${i.file_name ? `\n  plik: ${i.file_name} (sha256 ${String(i.file_sha256 || "").slice(0, 16)})${i.file_url ? `\n  Dysk: ${i.file_url}` : "\n  Dysk: link jeszcze nie dotarl z n8n"}` : ""}${
+  parametry: ${JSON.stringify(i.params)}${i.file_name ? `\n  plik: ${i.file_name} (sha256 ${String(i.file_sha256 || "").slice(0, 16)})${i.file_url ? `\n  Dysk: ${i.file_url}` : "\n  Dysk: link jeszcze nie dotarl z n8n"}${i.upload_token && API_BASE ? `\n  Podglad: ${API_BASE}/api/uploads/${i.upload_token}/thumb` : ""}` : ""}${
       i.geometry ? `\n  geometria: ${Number(i.geometry.volumeCm3).toFixed(2)} cm3, bbox ${i.geometry.bbox?.x}x${i.geometry.bbox?.y}x${i.geometry.bbox?.z} cm` : ""
     }`
   );
@@ -294,7 +298,12 @@ export async function sendOrderPaidEmails(pool, orderId) {
     if (!order) return false;
 
     const { rows: items } = await pool.query(
-      "SELECT title, qty, unit_grosze, line_grosze, calculator, params, file_name, file_sha256, file_url, geometry FROM order_items WHERE order_id = $1 ORDER BY id",
+      `SELECT oi.title, oi.qty, oi.unit_grosze, oi.line_grosze, oi.calculator, oi.params,
+              oi.file_name, oi.file_sha256, oi.file_url, oi.geometry, u.token AS upload_token
+         FROM order_items oi
+         LEFT JOIN uploads u ON u.id = oi.upload_id
+        WHERE oi.order_id = $1
+        ORDER BY oi.id`,
       [orderId]
     );
 

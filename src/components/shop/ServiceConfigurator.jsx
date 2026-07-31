@@ -7,7 +7,7 @@
 // Cena pochodzi wylacznie z /api/price. Ten komponent jej nie liczy,
 // tylko pokazuje to, co odpowiedzial backend.
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingCart, Check, Loader2, AlertTriangle, ArrowRight } from "lucide-react";
 import { useCart } from "../../cart/CartContext.jsx";
@@ -18,11 +18,19 @@ import { TileGroup, StepSlider, QtyStepper, FileDrop, PersonalizationField } fro
 
 const API = import.meta.env.VITE_CHAT_API_URL;
 
+// three.js wazy wiecej niz cala reszta strony sklepu, wiec sciagamy go
+// dopiero, gdy ktos naprawde wgra model.
+const STLViewer = lazy(() => import("../calculators/STLViewer.jsx"));
+
+/** Rozszerzenia przyjmowane w polu pliku, zgodne z MESH_EXTENSIONS na serwerze */
+const ACCEPT_MESH = ".stl,.obj,.3mf";
+
 const UI = {
   pl: {
     configure: "Skonfiguruj i dodaj do koszyka",
     file: "Twój plik",
-    fileHint: "Kliknij lub przeciągnij plik STL",
+    fileHint: "Kliknij lub przeciągnij plik STL, OBJ lub 3MF",
+    unitsNote: "Pliki STL i OBJ nie zapisują jednostki. Przyjmujemy milimetry, sprawdź wymiary powyżej.",
     fileOptional: "Bez pliku wybierzesz rozmiar z listy poniżej",
     packaging: "Opakowanie",
     qty: "Liczba sztuk",
@@ -42,7 +50,8 @@ const UI = {
   en: {
     configure: "Configure and add to cart",
     file: "Your file",
-    fileHint: "Click or drag an STL file",
+    fileHint: "Click or drag an STL, OBJ or 3MF file",
+    unitsNote: "STL and OBJ carry no unit. We read them as millimetres, please check the dimensions above.",
     fileOptional: "Without a file, pick a size from the list below",
     packaging: "Packaging",
     qty: "Quantity",
@@ -62,7 +71,8 @@ const UI = {
   de: {
     configure: "Konfigurieren und in den Warenkorb",
     file: "Ihre Datei",
-    fileHint: "STL-Datei klicken oder hierher ziehen",
+    fileHint: "STL-, OBJ- oder 3MF-Datei klicken oder hierher ziehen",
+    unitsNote: "STL und OBJ speichern keine Einheit. Wir lesen Millimeter, bitte prüfen Sie die Maße oben.",
     fileOptional: "Ohne Datei wählen Sie unten eine Größe",
     packaging: "Verpackung",
     qty: "Stückzahl",
@@ -96,6 +106,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const [uploadToken, setUploadToken] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [geometry, setGeometry] = useState(null);
+  const [triangles, setTriangles] = useState(null);
+  const [hasThumb, setHasThumb] = useState(false);
+  const [thumbTick, setThumbTick] = useState(0);
   const [packagingId, setPackagingId] = useState(DEFAULT_PACKAGING);
   const [engraving, setEngraving] = useState("");
   const [qty, setQty] = useState(1);
@@ -106,6 +119,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const [added, setAdded] = useState(false);
 
   const reqId = useRef(0);
+  // Podglad rysuje sie z lokalnego odczytu, wiec zrzut bywa gotowy, zanim
+  // serwer odda identyfikator uploadu. Trzymamy go tu i wysylamy, gdy bedzie dokad.
+  const pendingThumb = useRef(null);
 
   const fetchPrice = useCallback(async () => {
     if (!service || !API) return;
@@ -146,6 +162,27 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
 
   useEffect(() => setAdded(false), [params, file, packagingId, engraving, qty]);
 
+  // Wysylka miniatury czeka na identyfikator uploadu i idzie dokladnie raz.
+  useEffect(() => {
+    const dataUrl = pendingThumb.current;
+    if (!dataUrl || !uploadToken || hasThumb || !API) return;
+    let cancelled = false;
+    fetch(`${API}/api/uploads/${uploadToken}/thumb`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dataUrl }),
+    })
+      .then((r) => {
+        if (r.ok && !cancelled) {
+          pendingThumb.current = null;
+          setHasThumb(true);
+        }
+      })
+      // Brak podgladu w koszyku nie blokuje zamowienia.
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [uploadToken, hasThumb, thumbTick]);
+
   if (!service) return null;
 
   const pack = getPackaging(packagingId);
@@ -155,15 +192,43 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
 
   const setParam = (key, val) => setParams((p) => ({ ...p, [key]: val }));
 
+  function resetFile() {
+    setFile(null);
+    setGeometry(null);
+    setTriangles(null);
+    setPrice(null);
+    setUploadToken(null);
+    setHasThumb(false);
+    pendingThumb.current = null;
+  }
+
+  /**
+   * Miniatura z podgladu. Trafia do koszyka i do maila warsztatowego,
+   * zeby po obu stronach bylo widac, co dokladnie zamowiono.
+   */
+  function onSnapshot(dataUrl) {
+    pendingThumb.current = dataUrl;
+    setThumbTick((n) => n + 1);
+  }
+
   async function onPickFile(e) {
     const f = e.target.files?.[0];
     if (!f) return;
+    resetFile();
     setFile(f);
-    setGeometry(null);
-    setPrice(null);
-    setUploadToken(null);
     setUploading(true);
     setError(null);
+
+    // Podglad rysujemy z wlasnego odczytu, zeby model pojawil sie od razu,
+    // nie czekajac na przeslanie kilkunastu megabajtow. Cena i tak przyjdzie
+    // z serwera, wiec ten odczyt niczego nie rozstrzyga.
+    import("../../pricing/mesh.js")
+      .then(async ({ parseMesh }) => {
+        const parsed = parseMesh(await f.arrayBuffer(), f.name);
+        setTriangles(parsed.triangles);
+      })
+      .catch(() => setTriangles(null));
+
     try {
       // Wysylamy raz. Serwer liczy geometrie, zapisuje plik na Dysku
       // i oddaje identyfikator, ktory trafia do koszyka zamiast megabajtow.
@@ -174,14 +239,14 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       const data = await resp.json();
       if (!resp.ok) {
         setError({ message: data.error, code: data.code });
-        setFile(null);
+        resetFile();
         return;
       }
       setUploadToken(data.uploadToken);
       setGeometry(data.geometry);
     } catch {
       setError({ message: u.uploadFailed });
-      setFile(null);
+      resetFile();
     } finally {
       setUploading(false);
     }
@@ -199,6 +264,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       geometry,
       fileName: file?.name || null,
       uploadToken,
+      // Zrzut modelu zamiast zdjecia katalogowego, zeby w koszyku bylo
+      // widac wlasny model, a nie ikone uslugi.
+      thumbUrl: hasThumb ? `${API}/api/uploads/${uploadToken}/thumb` : null,
       needsFile: Boolean(file),
       // Plik lezy juz na Dysku, wiec pozycja przezyje odswiezenie strony.
       fileRetained: Boolean(uploadToken),
@@ -227,10 +295,18 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
             geometry={geometry}
             busy={uploading}
             onPick={onPickFile}
-            onClear={() => { setFile(null); setGeometry(null); setPrice(null); setUploadToken(null); }}
+            onClear={resetFile}
             accent={accent}
             lang={lang}
-          />
+            accept={ACCEPT_MESH}
+          >
+            {triangles?.length > 0 && (
+              <Suspense fallback={<div className="h-[220px] rounded-lg bg-white/[0.02]" />}>
+                <STLViewer triangles={triangles} onSnapshot={onSnapshot} />
+              </Suspense>
+            )}
+            {geometry && <p className="text-neutral-600 text-[10px] mt-2 leading-relaxed">{u.unitsNote}</p>}
+          </FileDrop>
           {!file && <p className="text-neutral-600 text-[11px] -mt-4 mb-6">{u.fileOptional}</p>}
         </>
       )}

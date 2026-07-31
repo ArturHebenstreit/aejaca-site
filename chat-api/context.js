@@ -118,7 +118,7 @@ Both pages: same machines (Bambu Lab H2D FDM, Elegoo Saturn 4 Ultra 16K MSLA), f
 **Materials — Engineering:** PA6-CF · PA6-GF · PA12-CF · PPA-CF · PPA-GF · PC · PC-ABS · PET-CF · PPS · PPS-CF
 **Size (max dimension):** XS ≤5 cm · S 5–10 cm · M 10–20 cm · L 20–30 cm
 **Infill:** Low ≤15% · Medium 15–50% · High >50% · Custom
-**Special:** STL file upload for 3D preview
+**Special:** 3D model upload (STL, OBJ, 3MF) with rotating preview
 **Output:** per-piece price + total + estimated print time
 
 **MSLA Resin 16K tab, Elegoo Saturn 4 Ultra 16K, 218x123x250 mm build plate, 14 µm pixel:**
@@ -133,7 +133,7 @@ Both pages: same machines (Bambu Lab H2D FDM, Elegoo Saturn 4 Ultra 16K MSLA), f
 Full picker, parameter cards and a 13-resin comparison table: [3D Print Settings, MSLA](https://www.aejaca.com/toolstudio/resin-settings/).
 **Layer height:** 0.05 mm standard (~35 mm/h) · 0.03 mm quality (~20 mm/h)
 **Size (max dimension):** XS ≤2 cm · S 2–5 cm · M 5–10 cm · L 10–15 cm · XL >15 cm (custom quote)
-**Special:** STL file upload for 3D preview and scaling; minimum order value PLN 49; multiple pieces printed together on one build platform (batching) lower the per-piece machine cost
+**Special:** 3D model upload (STL, OBJ, 3MF) with rotating preview and scaling; minimum order value PLN 49; multiple pieces printed together on one build platform (batching) lower the per-piece machine cost
 **Figurine/miniature licensing rule (shown as a notice in the calculator and required as a consent checkbox before sending an inquiry):** AEJaCA only prints (a) the client's own design, (b) a file under a valid commercial license (e.g. a merchant-tier Patreon release), or (c) AEJaCA's own designs. Miniatures from protected tabletop wargame systems or other copyrighted IP are NOT printed without the client holding the license. If a user asks to print a specific commercial miniature line, remind them of this rule before quoting.
 **Output:** per-piece price + total + estimated production time; detail from ~0.2 mm
 
@@ -659,7 +659,7 @@ usluga -> parametry (lub plik) -> cena wiazaca -> dane i zgody -> platnosc.
 
 WAZNE dla rozmowy z klientem:
 - Cena w kreatorze jest WIAZACA, jedna kwota, nie widelki. Wazna 7 dni.
-- Dla druku 3D klient moze wgrac plik STL, a cena liczy sie automatycznie z objetosci
+- Dla druku 3D klient moze wgrac plik STL, OBJ lub 3MF, widzi obracajacy sie podglad modelu, a cena liczy sie automatycznie z objetosci. STEP nadal idzie sciezka wyceny indywidualnej
   i wymiarow modelu. Pliki STEP nie sa jeszcze obslugiwane w wycenie automatycznej.
 - Platnosc: BLIK albo szybki przelew online, przez Autopay, wylacznie w PLN.
   NIGDY nie mow klientowi, ze moze zaplacic karta, Google Pay ani Apple Pay.

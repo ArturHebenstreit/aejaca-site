@@ -109,7 +109,7 @@ export function QtyStepper({ label, value, onChange, min = 1, max = 999, accent 
 }
 
 /** Wgrywanie pliku z podgladem geometrii policzonej przez serwer */
-export function FileDrop({ label, hint, file, geometry, onPick, onClear, busy, accent = "blue", lang }) {
+export function FileDrop({ label, hint, file, geometry, onPick, onClear, busy, accent = "blue", lang, accept = ".stl", children }) {
   const ref = useRef(null);
   const ring = accent === "amber" ? "border-amber-400/30 hover:border-amber-400/50" : "border-blue-400/30 hover:border-blue-400/50";
   const tint = accent === "amber" ? "text-amber-400" : "text-blue-400";
@@ -127,7 +127,7 @@ export function FileDrop({ label, hint, file, geometry, onPick, onClear, busy, a
           <Upload className={`w-6 h-6 ${tint}`} />
           <span className="text-white text-sm font-medium">{hint}</span>
         </button>
-        <input ref={ref} type="file" accept=".stl" className="hidden" onChange={onPick} />
+        <input ref={ref} type="file" accept={accept} className="hidden" onChange={onPick} />
       </div>
     );
   }
@@ -162,6 +162,7 @@ export function FileDrop({ label, hint, file, geometry, onPick, onClear, busy, a
             </div>
           </div>
         )}
+        {children && <div className="mt-3">{children}</div>}
       </div>
     </div>
   );

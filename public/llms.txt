@@ -17,7 +17,7 @@
 ## What makes AEJaCA distinct
 
 - **Instant online price calculator** for both handmade jewelry and digital-fabrication projects — customers get a quote in 30 seconds without waiting for email replies.
-- **STL / SVG auto-pricing**: upload a 3D model (STL) or vector file (SVG) and the studio estimator computes a real cost estimate from dimensions, material, and finish.
+- **3D model / SVG auto-pricing**: upload a 3D model (STL, OBJ or 3MF) or vector file (SVG) and the studio estimator computes a real cost estimate from dimensions, material, and finish. Uploaded models are shown as a rotating 3D preview before ordering.
 - **Two calculators per service** — Simple mode for rough estimates (30 seconds), Advanced mode with per-parameter control (metal type, stone count, labor hours, finish tier).
 - **In-house 3D modeling / CAD** in Rhino and Fusion 360 — both organic jewelry forms and precise technical/functional parts (parametric design, mechanical tolerances, reverse engineering, print-ready STL preparation). Customers can commission a model from a sketch or idea, not only upload a finished file.
 - **MSLA resin printing at 16K resolution** (Elegoo Saturn 4 Ultra 16K, 14 µm pixel): prototypes, collectible figurines and miniatures, and castable patterns for jewelry casting, detail from 0.2 mm.
@@ -39,7 +39,7 @@
 - [3D Print Settings, FDM](https://www.aejaca.com/toolstudio/print-settings/), "Parametry druku 3D FDM", free filament wizard: requirements, material, brand, parameter card, 45+ filament types, 100+ brand profiles
 - [3D Print Settings, MSLA](https://www.aejaca.com/toolstudio/resin-settings/), "Parametry druku 3D MSLA", free resin advisor: application filter, resin picker in 3 segments (13 resins), parameter cards (layer height, wash medium, UV post-cure time, hardness, density), full comparison table, FAQ, no registration
 - [Contact](https://www.aejaca.com/contact/) — project briefs, custom inquiries
-- [Order online](https://www.aejaca.com/order/), "Zamow online", five-step order wizard: pick a service, set parameters or upload an STL file, receive a BINDING price (not a range), enter delivery details and consents, pay by BLIK or instant bank transfer through Autopay. Covers FDM and MSLA 3D printing (priced automatically from the uploaded model geometry), CO2 laser engraving and cutting, fiber laser marking, resin casting, jewelry renovation and repair, and plain metal jewelry without stones. Jewelry with stones, chains and projects needing clarification go through individual quotation instead, usually answered within 24 hours. Payment is PLN only, no card payments.
+- [Order online](https://www.aejaca.com/order/), "Zamow online", five-step order wizard: pick a service, set parameters or upload a 3D model (STL, OBJ, 3MF), receive a BINDING price (not a range), enter delivery details and consents, pay by BLIK or instant bank transfer through Autopay. Covers FDM and MSLA 3D printing (priced automatically from the uploaded model geometry), CO2 laser engraving and cutting, fiber laser marking, resin casting, jewelry renovation and repair, and plain metal jewelry without stones. Jewelry with stones, chains and projects needing clarification go through individual quotation instead, usually answered within 24 hours. Payment is PLN only, no card payments.
 - [Terms of Service and Sale](https://www.aejaca.com/terms/), "Regulamin", full trilingual terms: how a contract is concluded (enquiry, binding quotation, acceptance), prices and payment (BLIK, pay-by-link, bank transfer via Autopay, PLN, no card payments), lead times, right of withdrawal and its exclusion for made-to-order goods, complaints, rights to customer files, and the manufacturing tolerances that do not count as defects (FDM up to 0.5 mm, resin up to 0.2 mm, visible layer lines, support marks, batch shade differences)
 
 ## Services (AEJaCA Jewelry)
@@ -109,7 +109,7 @@ Custom pieces start from PLN 400 for a silver ring with a gemstone; a silver sto
 Yes. AEJaCA's instant online calculators return a real quote in about 30 seconds for both handmade jewelry and digital-fabrication projects. A Simple mode gives a rough estimate; an Advanced mode lets you control metal type, stone count, labor, and finish tier.
 
 **Can I upload my own 3D model or vector file for a quote?**
-Yes. AEJaCA sTuDiO auto-prices uploaded STL (3D) and SVG (vector) files, computing a cost estimate from dimensions, material, and finish.
+Yes. AEJaCA sTuDiO auto-prices uploaded 3D models (STL, OBJ, 3MF) and SVG vector files, computing a cost estimate from dimensions, material, and finish. STEP files still go through individual quotation.
 
 **What if I don't have a 3D file — can AEJaCA design it for me?**
 Yes. AEJaCA models in-house in Rhino and Fusion 360, creating print- or cast-ready 3D files from a sketch, photo, or idea — both organic jewelry forms and precise technical/functional parts (parametric design, mechanical tolerances, reverse engineering of existing parts).
