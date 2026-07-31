@@ -4,6 +4,7 @@
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { Upload, X, AlertTriangle } from "lucide-react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture, LicenseNotice } from "./calcShared.jsx";
+import CalcToCart from "./CalcToCart.jsx";
 import { RESIN_SEGMENTS, RESIN_COLORS, getResinsBySegment, getResin } from "../../data/resins.js";
 
 const STLViewer = lazy(() => import("./STLViewer.jsx"));
@@ -438,6 +439,14 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
           <ResultHeader lang={lang} />
           <ResultDisplay result={mslaResult} lang={lang} />
           <QuoteEmailCapture result={mslaResult} lang={lang} techLabel={t(TECH_LABEL_MSLA, lang)} preAttachedFile={mslaStlFile} paramsSummary={mslaParamsSummary} />
+          <CalcToCart
+            calculator="print3d_msla"
+            serviceId="print_msla"
+            params={{ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId }}
+            file={mslaStlFile}
+            scale={mslaStlScale}
+            lang={lang}
+          />
         </div>
 
         <InquiryForm lang={lang} techLabel={t(TECH_LABEL_MSLA, lang)} preAttachedFile={mslaStlFile} paramsSummary={mslaParamsSummary}
@@ -483,6 +492,14 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
           t(PRECISION.find(p => p.id === precisionId)?.label, lang),
           t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
         ].join(" | ")} />
+        <CalcToCart
+          calculator="print3d_fdm"
+          serviceId="print_fdm"
+          params={{ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId }}
+          file={stlFile}
+          scale={stlScale}
+          lang={lang}
+        />
       </div>
 
       <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} preAttachedFile={stlFile} paramsSummary={[

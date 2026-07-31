@@ -7,6 +7,7 @@
 // ============================================================
 import { useState, useMemo } from "react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
+import CalcToCart from "./CalcToCart.jsx";
 
 import { EPOXY_CONFIG, RESINS, VOLUMES, MOLD_TYPES, INCLUSIONS, FINISH_OPTIONS, calculate,
   LBL,
@@ -69,6 +70,12 @@ export default function EpoxyCastCalc({ lang = "pl" }) {
         <ResultHeader lang={lang} />
         <ResultDisplay result={result} lang={lang} />
         <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={paramsSummary} />
+        <CalcToCart
+          calculator="epoxy"
+          serviceId="epoxy"
+          params={{ resinId, volumeId, moldId, inclusionId, finishId, quantityId }}
+          lang={lang}
+        />
       </div>
 
       <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={paramsSummary} />

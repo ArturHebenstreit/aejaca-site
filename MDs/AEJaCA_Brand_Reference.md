@@ -626,6 +626,21 @@ STL i OBJ nie zapisują jednostki, więc czytamy je jako milimetry. `assertPlaus
 
 Wgrany model pokazujemy jako **obracający się podgląd 3D** (`STLViewer.jsx`, three.js ładowany leniwie). Po chwili obrotu komponent robi zrzut ujęcia trzy czwarte w WEBP, zrzut trafia do kolumny `uploads.thumbnail` i staje się miniaturą pozycji w koszyku oraz linkiem podglądu w mailu warsztatowym. Klient widzi własny model zamiast ikony usługi, a warsztat wie, co ma zrobić, bez otwierania Dysku.
 
+### Kalkulator i sklep to jedno
+
+Kalkulatory i konfigurator w sklepie wolaja ten sam rdzen z `src/pricing/` i **uzywaja tych samych nazw parametrow**, wiec nie ma miedzy nimi warstwy tlumaczacej. Roznica jest wylacznie w prezentacji: kalkulator pokazuje widelki (niepewnosc szacunku), sklep kwote wiazaca (oferte).
+
+Pod wynikiem kazdego kalkulatora siedzi `CalcToCart.jsx`: pyta `/api/price` o kwote wiazaca i pozwala dodac konfiguracje do koszyka razem z plikiem. Kalkulator przestal byc slepa uliczka konczaca sie formularzem.
+
+Do koszyka nie trafia to, czego nie umiemy wycenic bez czlowieka, i mowimy o tym wprost zamiast pokazywac kwote, ktora i tak bysmy poprawili:
+
+| Blokada | Powod |
+|---|---|
+| wgrany SVG w laserach CO2 i fiber | cene wyznacza realna dlugosc sciezki, nie preset pola |
+| bizuteria z kamieniami | dobor i osadzenie kamienia zalezy od rzeczy spoza parametrow |
+| sploty lancuszkow | masa splotu zalezy od wykonania |
+| metal powierzony przez klienta | trzeba ocenic material |
+
 ### Schemat bazy
 
 `scripts/orders-schema.sql`: `orders`, `order_items`, `products`, `downloads`, `payment_notifications`, widok `quarterly_revenue`. Parametry wejściowe wyceny zapisujemy razem z wynikiem, żeby dało się odtworzyć cenę po latach. Surowe komunikaty ITN trafiają do bazy, bo bez nich reklamacja płatności to słowo przeciwko słowu.

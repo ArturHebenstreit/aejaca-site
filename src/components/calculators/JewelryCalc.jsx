@@ -5,6 +5,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture } from "./calcShared.jsx";
 import { trackCalc } from "../../utils/analytics.js";
+import CalcToCart from "./CalcToCart.jsx";
 import { useMarketRates } from "../../hooks/useMarketRates.js";
 import { useGemPrices } from "../../hooks/useGemPrices.js";
 import {
@@ -1141,6 +1142,24 @@ export default function JewelryCalc({ lang = "pl" }) {
       <div className="rounded-2xl border-2 border-amber-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} />
         <ResultDisplay result={result} lang={lang} />
+        {/* Do koszyka trafia tylko to, co sklep potrafi wycenic wiazaco.
+            Kamienie, lancuszki i metal powierzony przez klienta wymagaja
+            oceny czlowieka, wiec tam zostaje sciezka wyceny. */}
+        <CalcToCart
+          calculator={serviceId === "renovation" ? "jewelry_renovation" : serviceId === "repair" ? "jewelry_repair" : "jewelry_new"}
+          serviceId={serviceId === "renovation" ? "jewelry_renovation" : serviceId === "repair" ? "jewelry_repair" : "jewelry_plain"}
+          params={
+            serviceId === "renovation"
+              ? { jewTypeId: renoJewType, metalTypeId: renoMetal, services: renoServices, qtyId }
+              : serviceId === "repair"
+                ? { jewTypeId: repairJewType, metalTypeId: repairMetal, repairId, qtyId }
+                : { lineId, typeId, metalId, weightId, methodId, platingId, engravingId, qtyId }
+          }
+          blocked={serviceId === "new" && (stoneRows.length > 0 || isChainType(typeId) || clientSuppliesMetal)}
+          blockedReason="manual"
+          lang={lang}
+          accent="amber"
+        />
         <div className="mt-3 text-[10px] text-neutral-400 text-center italic">{l.priceSource}</div>
         <p className="text-xs text-neutral-500 mt-1 text-center">{RATE_NOTE[lang] || RATE_NOTE.pl}</p>
         <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)}
