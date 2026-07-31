@@ -7,6 +7,9 @@
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+  # Domeny autopay.eu w form-action i img-src sa konieczne, zeby przegladarka
+  # wpuscila formularz platnosci i logotypy kanalow. Bez nich blokuje je po
+  # cichu, bez komunikatu, a przycisk platnosci wisi w nieskonczonosc.
   Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://images.autopay.eu https://testimages.autopay.eu; connect-src 'self' https://api.aejaca.com https://aejaca-analytics.aejaca.workers.dev https://cloudflareinsights.com https://primary-production-634f2.up.railway.app https://*.up.railway.app; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://pay.autopay.eu https://testpay.autopay.eu
   Cross-Origin-Opener-Policy: same-origin
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
