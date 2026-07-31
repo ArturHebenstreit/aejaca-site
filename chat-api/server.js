@@ -800,7 +800,12 @@ app.post("/api/uploads", (req, res, next) => {
  * link do pliku w zamowieniu.
  */
 app.post("/api/uploads/:token/stored", express.json({ limit: "8kb" }), async (req, res) => {
-  if (!UPLOAD_CALLBACK_TOKEN || req.headers["x-upload-token"] !== UPLOAD_CALLBACK_TOKEN) {
+  const sent = req.headers["x-upload-token"];
+  if (!UPLOAD_CALLBACK_TOKEN || sent !== UPLOAD_CALLBACK_TOKEN) {
+    // Odcisk zamiast wartosci: tyle wystarczy, zeby porownac obie strony,
+    // a sam sekret nie trafia do logow.
+    const fp = (v) => (v ? `${v.length}/${createHash("sha256").update(v).digest("hex").slice(0, 8)}` : "BRAK");
+    console.error(`[uploads] 401 stored: serwer=${fp(UPLOAD_CALLBACK_TOKEN)} n8n=${fp(sent)}`);
     return res.status(401).json({ error: "Unauthorized" });
   }
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
