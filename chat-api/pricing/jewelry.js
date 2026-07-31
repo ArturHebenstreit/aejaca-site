@@ -84,6 +84,8 @@ function applyJewelryPricing(sellPrice, discountRate, qty, eurPln = EUR_PLN) {
   const perMin = Math.round(discounted * (1 - TOL_LOW));
   const perMax = Math.round(discounted * (1 + TOL_HIGH));
   return {
+    // Kwota wiazaca, patrz applyPricing w config.js
+    unitGrosze: Math.max(1, Math.round(discounted * 100)),
     perPcPLN: { min: Math.max(1, perMin), max: Math.max(1, perMax) },
     perPcEUR: { min: Math.max(1, Math.round(perMin / eurPln)), max: Math.max(1, Math.round(perMax / eurPln)) },
     totalPLN: { min: Math.max(1, perMin) * qty, max: Math.max(1, perMax) * qty },

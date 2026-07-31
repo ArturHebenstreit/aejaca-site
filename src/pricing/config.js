@@ -65,6 +65,9 @@ export function applyPricing(baseCost, margin, discountRate, qty, localDiscount 
   const perMin = Math.round(discounted * (1 - CONFIG.TOLERANCE_LOW));
   const perMax = Math.round(discounted * (1 + CONFIG.TOLERANCE_HIGH));
   return {
+    // Kwota wiazaca, ta ktora realnie obciazamy klienta. Widelki ponizej
+    // opisuja niepewnosc szacunku i sluza wylacznie prezentacji.
+    unitGrosze: Math.max(1, Math.round(discounted * 100)),
     perPcPLN: { min: Math.max(1, perMin), max: Math.max(1, perMax) },
     perPcEUR: { min: Math.max(1, Math.round(perMin / CONFIG.EUR_PLN_RATE)), max: Math.max(1, Math.round(perMax / CONFIG.EUR_PLN_RATE)) },
     totalPLN: { min: Math.max(1, perMin) * qty, max: Math.max(1, perMax) * qty },

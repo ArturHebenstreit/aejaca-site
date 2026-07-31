@@ -8,6 +8,7 @@ import { createHash } from "crypto";
 import { rateLimit } from "express-rate-limit";
 import { getSystemPrompt, detectHotLead } from "./context.js";
 import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages } from "./gmail.js";
+import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit } from "./orders.js";
 
 const app = express();
 app.set("trust proxy", true);
@@ -580,6 +581,113 @@ app.post("/api/quote", express.json({ limit: "50mb" }), async (req, res) => {
   }
 
   res.json({ ok: true });
+});
+
+// --- Wiazaca wycena, liczona po stronie serwera ---
+// Przegladarka przysyla parametry i ewentualnie plik. Nigdy nie przysyla ceny.
+const priceUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 60 * 1024 * 1024, files: 1 },
+});
+
+const priceRateMap = new Map();
+const PRICE_RATE_LIMIT = 60;
+const PRICE_RATE_WINDOW = 10 * 60_000;
+
+function checkPriceRate(ip) {
+  const now = Date.now();
+  const e = priceRateMap.get(ip);
+  if (!e || now - e.start > PRICE_RATE_WINDOW) {
+    priceRateMap.set(ip, { start: now, count: 1 });
+    return true;
+  }
+  if (e.count >= PRICE_RATE_LIMIT) return false;
+  e.count++;
+  return true;
+}
+setInterval(() => {
+  const cutoff = Date.now() - PRICE_RATE_WINDOW;
+  for (const [ip, e] of priceRateMap) if (e.start < cutoff) priceRateMap.delete(ip);
+}, PRICE_RATE_WINDOW);
+
+/** Kursy kruszcow z wlasnej bazy, ten sam zestaw pol, ktory dostaje frontend */
+async function currentMetalRates() {
+  if (!pool) return null;
+  try {
+    const { rows } = await pool.query(`
+      SELECT DISTINCT ON (field) field, value FROM (
+        SELECT 'au_pln_per_g' AS field, au_pln_per_g::float AS value, fetched_at FROM market_rates WHERE au_pln_per_g IS NOT NULL
+        UNION ALL SELECT 'ag_pln_per_g', ag_pln_per_g::float, fetched_at FROM market_rates WHERE ag_pln_per_g IS NOT NULL
+        UNION ALL SELECT 'pt_pln_per_g', pt_pln_per_g::float, fetched_at FROM market_rates WHERE pt_pln_per_g IS NOT NULL
+        UNION ALL SELECT 'pd_pln_per_g', pd_pln_per_g::float, fetched_at FROM market_rates WHERE pd_pln_per_g IS NOT NULL
+      ) sub ORDER BY field, fetched_at DESC
+    `);
+    const rates = {};
+    for (const r of rows) rates[r.field] = r.value;
+    return Object.keys(rates).length ? rates : null;
+  } catch (e) {
+    console.error("[price] rates query failed:", e.message);
+    return null;
+  }
+}
+
+app.get("/api/price/calculators", (_req, res) => {
+  res.json({
+    calculators: Object.entries(CALCULATORS).map(([id, c]) => ({ id, label: c.label })),
+  });
+});
+
+app.post("/api/price", (req, res, next) => {
+  priceUpload.single("file")(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({
+        error: err.code === "LIMIT_FILE_SIZE" ? "Plik przekracza 60 MB" : (err.message || "Blad wysylki pliku"),
+      });
+    }
+    next();
+  });
+}, async (req, res) => {
+  const ip = extractIP(req);
+  if (!checkPriceRate(ip)) return res.status(429).json({ error: "Za duzo zapytan, sprobuj za chwile" });
+
+  try {
+    const calculator = String(req.body?.calculator || "");
+    const lang = String(req.body?.lang || "pl");
+    const scale = req.body?.scale ? Number(req.body.scale) : 1;
+    let params = req.body?.params;
+    if (typeof params === "string") {
+      try { params = JSON.parse(params); }
+      catch { return res.status(400).json({ error: "Nieprawidlowy format parametrow" }); }
+    }
+
+    let geometry = null;
+    if (req.file?.buffer) geometry = geometryFromFile(req.file.buffer, req.file.originalname || "");
+
+    const rates = calculator.startsWith("jewelry_") ? await currentMetalRates() : null;
+    const item = priceItem({ calculator, params, lang, geometry, scale, rates });
+
+    // Informacyjnie: ile jeszcze zmiesci sie w limicie kwartalnym.
+    const limit = pool ? await checkQuarterlyLimit(pool, item.lineGrosze) : null;
+
+    res.json({
+      ok: true,
+      item,
+      geometry: geometry && {
+        volumeCm3: Number(geometry.volumeCm3.toFixed(3)),
+        bbox: geometry.bbox,
+        triangleCount: geometry.triangleCount,
+        sha256: geometry.sha256,
+      },
+      capacity: limit && { ok: limit.ok, remainingPLN: Math.round(limit.remainingGrosze / 100) },
+    });
+  } catch (e) {
+    if (e instanceof PricingError) {
+      const status = e.code === "needs_quote" ? 409 : 400;
+      return res.status(status).json({ error: e.message, code: e.code });
+    }
+    console.error("[price] unexpected:", e);
+    res.status(500).json({ error: "Wycena chwilowo niedostepna" });
+  }
 });
 
 // --- Lead contact status (for n8n BCC automation) ---
