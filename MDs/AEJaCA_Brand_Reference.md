@@ -626,6 +626,22 @@ STL i OBJ nie zapisują jednostki, więc czytamy je jako milimetry. `assertPlaus
 
 Wgrany model pokazujemy jako **obracający się podgląd 3D** (`STLViewer.jsx`, three.js ładowany leniwie). Po chwili obrotu komponent robi zrzut ujęcia trzy czwarte w WEBP, zrzut trafia do kolumny `uploads.thumbnail` i staje się miniaturą pozycji w koszyku oraz linkiem podglądu w mailu warsztatowym. Klient widzi własny model zamiast ikony usługi, a warsztat wie, co ma zrobić, bez otwierania Dysku.
 
+### Droga pliku klienta
+
+| Kiedy | Co sie dzieje |
+|---|---|
+| klient wybiera plik w kalkulatorze albo na karcie uslugi | idzie raz na serwer, liczymy geometrie, wraca sam identyfikator |
+| dalej: koszyk, kasa, zamowienie | podrozuje wylacznie identyfikator, plik **nigdy nie jest wgrywany drugi raz** |
+| rownolegle | n8n zapisuje plik na Dysku w folderze **roboczym** |
+| po zaplacie (pierwszy SUCCESS z ITN) | `moveOrderFilesToOrders` prosi n8n o przeniesienie do **AEJaCA / Zamowienia / \<numer zamowienia\>** |
+| po 14 dniach bez zamowienia | wpis dostaje status `abandoned` |
+
+Folder roboczy istnieje dlatego, ze plik trafia na Dysk juz w chwili wgrania (inaczej klient czekalby na wycene), a wiekszosc wgranych plikow nigdy nie stanie sie zamowieniem. Bez tego podzialu folder Zamowienia zapelnialby sie probami wyceny.
+
+Nieudane przeniesienie zostawia plik w folderze roboczym i nie wywraca obslugi platnosci. Link w mailu warsztatowym dziala niezaleznie od tego, w ktorym folderze plik lezy.
+
+Przeplywy n8n: `n8n/order-file-workflow.json` (zapis) i `n8n/order-files-ready-workflow.json` (przeniesienie po zaplacie).
+
 ### Projekt jako zalacznik
 
 Grawer CO2, ciecie CO2 i znakowanie fiber przyjmuja drugi plik: SVG, DXF albo PDF, do 15 MB. To **material do wykonania, nie podstawa wyceny**. Serwer nie liczy z niego geometrii i nigdy nie wpuszcza go do `/api/price`, bo cene wyznacza wybrane pole grawerowania albo dlugosc sciezki. Zalacznik wiszy przy zamowieniu (`uploads.order_id`), nie przy linii, i wchodzi do maila warsztatowego osobna sekcja z linkiem do Dysku.

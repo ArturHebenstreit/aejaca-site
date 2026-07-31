@@ -1,0 +1,99 @@
+{
+  "name": "AEJaCA: pliki oplaconego zamowienia do folderu Zamowienia",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "aejaca-order-files-ready",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "b2000000-0000-4000-8000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "aejaca-order-files-ready",
+      "notes": "Wolane przez chat-api po pierwszym SUCCESS z Autopay. Cialo: { orderRef, files: [{ driveFileId, fileName, kind }] }"
+    },
+    {
+      "parameters": {
+        "name": "={{ $json.body.orderRef }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultName": "WYBIERZ: AEJaCA / Zamowienia"
+        },
+        "resource": "folder",
+        "options": {}
+      },
+      "id": "b2000000-0000-4000-8000-000000000002",
+      "name": "Folder zamowienia",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [220, 0],
+      "notes": "Tworzy podfolder o nazwie numeru zamowienia wewnatrz AEJaCA / Zamowienia."
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "body.files",
+        "options": {}
+      },
+      "id": "b2000000-0000-4000-8000-000000000003",
+      "name": "Rozbij na pliki",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [440, 0],
+      "notes": "Zamowienie moze miec model i rysunek, wiec kazdy plik przechodzi osobno."
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "resource": "file",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.driveFileId }}"
+        },
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Folder zamowienia').item.json.id }}"
+        },
+        "options": {}
+      },
+      "id": "b2000000-0000-4000-8000-000000000004",
+      "name": "Przenies do zamowienia",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [660, 0],
+      "notes": "Przenosi plik z folderu roboczego do podfolderu zamowienia."
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Folder zamowienia", "type": "main", "index": 0 }]]
+    },
+    "Folder zamowienia": {
+      "main": [[{ "node": "Rozbij na pliki", "type": "main", "index": 0 }]]
+    },
+    "Rozbij na pliki": {
+      "main": [[{ "node": "Przenies do zamowienia", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

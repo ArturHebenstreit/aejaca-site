@@ -892,6 +892,54 @@ app.post("/api/uploads/:token/stored", express.json({ limit: "8kb" }), async (re
   res.json({ ok: true });
 });
 
+const FILES_READY_N8N_URL = process.env.N8N_ORDER_FILES_READY_WEBHOOK_URL;
+
+/**
+ * Prosi n8n o przeniesienie plikow zamowienia do folderu Zamowienia.
+ *
+ * Plik trafia na Dysk juz w chwili wgrania, bo wtedy liczymy geometrie
+ * i klient nie ma czekac. W tym momencie to jednak tylko proba wyceny:
+ * wiekszosc takich plikow nigdy nie stanie sie zamowieniem. Dlatego
+ * ladaja w folderze roboczym, a tutaj, po zaplacie, wedruja tam, gdzie
+ * naprawde jest robota do wykonania.
+ *
+ * Nie rzuca wyjatkiem. Nieudane przeniesienie zostawia plik w folderze
+ * roboczym, co jest niewygodne, ale nie moze wywrocic obslugi platnosci.
+ */
+async function moveOrderFilesToOrders(pool, orderId, orderRef) {
+  if (!FILES_READY_N8N_URL) {
+    console.warn("[dysk] N8N_ORDER_FILES_READY_WEBHOOK_URL nie ustawiony, pliki zostaja w folderze roboczym");
+    return;
+  }
+
+  const { rows } = await pool.query(
+    `SELECT token, file_name, drive_file_id, geometry IS NOT NULL AS is_model
+       FROM uploads
+      WHERE order_id = $1 AND drive_file_id IS NOT NULL
+      ORDER BY id`,
+    [orderId]
+  );
+  if (!rows.length) return;
+
+  const resp = await fetch(FILES_READY_N8N_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      orderRef,
+      files: rows.map((r) => ({
+        driveFileId: r.drive_file_id,
+        fileName: r.file_name,
+        kind: r.is_model ? "model" : "attachment",
+      })),
+    }),
+  });
+  if (!resp.ok) {
+    console.error(`[dysk] webhook przenoszenia zwrocil ${resp.status} dla ${orderRef}`);
+    return;
+  }
+  console.log(`[dysk] zlecono przeniesienie ${rows.length} plikow zamowienia ${orderRef}`);
+}
+
 /** Pliki wgrane i nigdy niezamowione oznaczamy jako porzucone */
 async function markAbandonedUploads() {
   if (!pool) return;
@@ -1212,6 +1260,11 @@ app.post("/api/autopay/itn", express.urlencoded({ extended: false, limit: "256kb
           // trzeba potwierdzic niezaleznie od tego, czy poczta zadziala.
           sendOrderPaidEmails(pool, order.id).catch((e) =>
             console.error("[autopay] wysylka maili nie powiodla sie:", e.message)
+          );
+          // Pliki lezaly dotad w folderze roboczym, bo w chwili wgrania nikt
+          // jeszcze niczego nie zamowil. Dopiero zaplata robi z nich zlecenie.
+          moveOrderFilesToOrders(pool, order.id, parsed.orderID).catch((e) =>
+            console.error("[dysk] przeniesienie plikow nie powiodlo sie:", e.message)
           );
           // TODO: wydanie plikow cyfrowych po dodaniu produktow do katalogu
         } else {
