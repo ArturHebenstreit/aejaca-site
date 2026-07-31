@@ -44,7 +44,7 @@
           "__rl": true,
           "mode": "list",
           "value": "",
-          "cachedResultName": "WYBIERZ: AEJaCA / Zamowienia"
+          "cachedResultName": "WYBIERZ: AEJaCA / Robocze"
         },
         "options": {}
       },
@@ -53,7 +53,7 @@
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [440, 0],
-      "notes": "Wybierz swoje poswiadczenia Google Drive oraz katalog AEJaCA / Zamowienia."
+      "notes": "Wybierz swoje poswiadczenia Google Drive oraz katalog roboczy AEJaCA / Robocze. NIE folder Zamowienia: plik trafia tu juz przy wgraniu, zanim ktokolwiek cokolwiek zamowil. Do Zamowien przenosi go drugi przeplyw, po zaplacie."
     },
     {
       "parameters": {

@@ -18,12 +18,13 @@ export const SERVICES_FULL = [
   // ---------------- sTuDiO ----------------
   {
     id: "print_fdm",
+    calcHref: "/studio/?tab=3dprint#calculator",
     service: "print_fdm",
     category: "studio",
     image: "/img/shop/service/print_fdm.webp",
     imagePrompt:
       "Close-up of a Bambu Lab H2D 3D printer mid-print, nozzle laying a fresh layer of black PETG on a partially finished functional part, build plate visible, cool blue rim light from upper left, black background, premium product photography, shallow depth of field",
-    priceFromGrosze: 1200,
+    priceFromGrosze: 1600,
     leadTimeDays: 3,
     title: L("Druk 3D z filamentu", "FDM 3D printing", "FDM-3D-Druck"),
     lead: L(
@@ -61,12 +62,13 @@ export const SERVICES_FULL = [
   },
   {
     id: "print_msla",
+    calcHref: "/studio/?tab=resin_msla#calculator",
     service: "print_msla",
     category: "studio",
     image: "/img/shop/service/print_msla.webp",
     imagePrompt:
       "Resin 3D printer build plate lifting out of a vat, a highly detailed miniature figure hanging upside down covered in glossy grey resin, dramatic side lighting, black background, premium product photography, macro detail",
-    priceFromGrosze: 4900,
+    priceFromGrosze: 4000,
     leadTimeDays: 4,
     title: L("Druk żywiczny MSLA", "MSLA resin printing", "MSLA-Harzdruck"),
     lead: L(
@@ -102,12 +104,13 @@ export const SERVICES_FULL = [
   },
   {
     id: "laser_engrave",
+    calcHref: "/studio/?tab=co2_laser&co2mode=engrave#calculator",
     service: "laser_engrave",
     category: "studio",
     image: "/img/shop/service/laser_engrave.webp",
     imagePrompt:
       "CO2 laser head engraving a wooden board, thin wisp of smoke rising, glowing red laser dot, fine detail appearing in the wood grain, dark workshop, dramatic lighting from upper left, premium product photography",
-    priceFromGrosze: 1500,
+    priceFromGrosze: 800,
     leadTimeDays: 3,
     title: L("Grawer laserowy CO2", "CO2 laser engraving", "CO2-Lasergravur"),
     lead: L(
@@ -142,12 +145,13 @@ export const SERVICES_FULL = [
   },
   {
     id: "laser_cut",
+    calcHref: "/studio/?tab=co2_laser&co2mode=cut#calculator",
     service: "laser_cut",
     category: "studio",
     image: "/img/shop/service/laser_cut.webp",
     imagePrompt:
       "CO2 laser cutting through 3 mm plywood, bright cutting spark at the kerf, precise intricate shape emerging, thin smoke, dark workshop background, dramatic side light, premium product photography",
-    priceFromGrosze: 1500,
+    priceFromGrosze: 800,
     leadTimeDays: 3,
     title: L("Cięcie laserem CO2", "CO2 laser cutting", "CO2-Laserschnitt"),
     lead: L(
@@ -183,12 +187,13 @@ export const SERVICES_FULL = [
   },
   {
     id: "laser_fiber",
+    calcHref: "/studio/?tab=fiber_laser#calculator",
     service: "laser_fiber",
     category: "studio",
     image: "/img/shop/service/laser_fiber.webp",
     imagePrompt:
       "Fiber laser marking a stainless steel plate, bright white spark trail following the beam, crisp dark engraved lines appearing on brushed metal, black background, cool rim light from upper left, premium macro product photography",
-    priceFromGrosze: 2000,
+    priceFromGrosze: 800,
     leadTimeDays: 2,
     title: L("Znakowanie laserem fiber", "Fiber laser marking", "Faserlaser-Markierung"),
     lead: L(
@@ -223,12 +228,13 @@ export const SERVICES_FULL = [
   },
   {
     id: "epoxy",
+    calcHref: "/studio/?tab=epoxy#calculator",
     service: "epoxy",
     category: "studio",
     image: "/img/shop/service/epoxy.webp",
     imagePrompt:
       "Clear epoxy resin being poured into a silicone mold, amber-tinted resin catching warm light, small dried flowers suspended inside, glossy surface, black background, upper left key light, premium product photography",
-    priceFromGrosze: 3900,
+    priceFromGrosze: 1800,
     leadTimeDays: 7,
     title: L("Odlew żywiczny", "Resin casting", "Harzguss"),
     lead: L(
@@ -266,12 +272,13 @@ export const SERVICES_FULL = [
   // ---------------- Bizuteria ----------------
   {
     id: "jewelry_renovation",
+    calcHref: "/jewelry/?service=renovation#calculator",
     service: "jewelry_renovation",
     category: "jewelry",
     image: "/img/shop/service/jewelry_renovation.webp",
     imagePrompt:
       "Jeweler polishing a tarnished silver pendant on a polishing wheel, half of the piece already mirror bright and half still dark, hands in focus, warm amber key light from upper left, black background, premium product photography",
-    priceFromGrosze: 4000,
+    priceFromGrosze: 3500,
     leadTimeDays: 5,
     title: L("Renowacja biżuterii", "Jewelry renovation", "Schmuckaufarbeitung"),
     lead: L(
@@ -308,6 +315,7 @@ export const SERVICES_FULL = [
   },
   {
     id: "jewelry_repair",
+    calcHref: "/jewelry/?service=repair#calculator",
     service: "jewelry_repair",
     category: "jewelry",
     image: "/img/shop/service/jewelry_repair.webp",
@@ -350,12 +358,13 @@ export const SERVICES_FULL = [
   },
   {
     id: "jewelry_plain",
+    calcHref: "/jewelry/?service=new#calculator",
     service: "jewelry_plain",
     category: "jewelry",
     image: "/img/shop/service/jewelry_plain.webp",
     imagePrompt:
       "Molten gold being poured into an investment casting flask, glowing orange metal stream, sparks, dark workshop, warm amber key light from upper left, black background, premium product photography",
-    priceFromGrosze: 25000,
+    priceFromGrosze: 13000,
     leadTimeDays: 10,
     title: L("Biżuteria bez kamieni", "Jewelry without stones", "Schmuck ohne Steine"),
     lead: L(
@@ -393,6 +402,7 @@ export const SERVICES_FULL = [
   // ---------------- Wymagajace rozmowy ----------------
   {
     id: "jewelry_stones",
+    calcHref: "/jewelry/?service=new#calculator",
     quoteOnly: true,
     category: "jewelry",
     image: "/img/shop/service/jewelry_stones.webp",
@@ -439,6 +449,7 @@ export const SERVICES_FULL = [
   },
   {
     id: "jewelry_chain_custom",
+    calcHref: "/jewelry/?service=new&type=necklace#calculator",
     quoteOnly: true,
     category: "jewelry",
     image: "/img/shop/service/jewelry_chain_custom.webp",
@@ -483,6 +494,7 @@ export const SERVICES_FULL = [
   },
   {
     id: "cad_project",
+    calcHref: "/b2b/",
     quoteOnly: true,
     category: "studio",
     image: "/img/shop/service/cad_project.webp",

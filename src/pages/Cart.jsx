@@ -25,6 +25,7 @@ const UI = {
     packaging: "Opakowanie",
     engraving: "Grawer",
     file: "Plik",
+    attachment: "Projekt",
     subtotal: "Wartość zamówienia",
     shippingNote: "Koszt dostawy policzymy w następnym kroku.",
     checkout: "Przejdź do zamówienia",
@@ -45,6 +46,7 @@ const UI = {
     packaging: "Packaging",
     engraving: "Engraving",
     file: "File",
+    attachment: "Artwork",
     subtotal: "Order value",
     shippingNote: "Delivery cost is calculated in the next step.",
     checkout: "Proceed to order",
@@ -65,6 +67,7 @@ const UI = {
     packaging: "Verpackung",
     engraving: "Gravur",
     file: "Datei",
+    attachment: "Vorlage",
     subtotal: "Bestellwert",
     shippingNote: "Die Versandkosten berechnen wir im nächsten Schritt.",
     checkout: "Zur Bestellung",
@@ -164,6 +167,7 @@ export default function Cart() {
                           {pack && <div>{u.packaging}: {t(pack.label, lang)}{pack.grosze ? ` (+${money(pack.grosze)})` : ""}</div>}
                           {i.personalization && <div>{u.engraving}: &bdquo;{i.personalization}&rdquo;</div>}
                           {i.fileName && <div>{u.file}: {i.fileName}</div>}
+                          {i.attachmentName && <div>{u.attachment}: {i.attachmentName}</div>}
                         </div>
 
                         <div className="flex items-center justify-between mt-3">

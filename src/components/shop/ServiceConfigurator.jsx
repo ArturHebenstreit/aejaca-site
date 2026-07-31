@@ -25,6 +25,9 @@ const STLViewer = lazy(() => import("../calculators/STLViewer.jsx"));
 /** Rozszerzenia przyjmowane w polu pliku, zgodne z MESH_EXTENSIONS na serwerze */
 const ACCEPT_MESH = ".stl,.obj,.3mf";
 
+/** Rysunki techniczne, ktore przyjmujemy jako zalacznik do zlecenia */
+const ACCEPT_VECTOR = ".svg,.dxf,.pdf";
+
 /** Gorna granica miniatury trzymanej w koszyku, zeby nie przepelnic localStorage */
 const MAX_CART_THUMB_CHARS = 80_000;
 
@@ -34,6 +37,9 @@ const UI = {
     file: "Twój plik",
     fileHint: "Kliknij lub przeciągnij plik STL, OBJ lub 3MF",
     unitsNote: "Pliki STL i OBJ nie zapisują jednostki. Przyjmujemy milimetry, sprawdź wymiary powyżej.",
+    vector: "Projekt do wykonania",
+    vectorHint: "Kliknij lub przeciągnij plik SVG, DXF lub PDF",
+    vectorNote: "Nieobowiązkowe. Rysunek nie zmienia ceny, wyznacza ją wybrane pole grawerowania. Trafia do warsztatu razem z zamówieniem.",
     fileOptional: "Bez pliku wybierzesz rozmiar z listy poniżej",
     packaging: "Opakowanie",
     qty: "Liczba sztuk",
@@ -57,6 +63,9 @@ const UI = {
     file: "Your file",
     fileHint: "Click or drag an STL, OBJ or 3MF file",
     unitsNote: "STL and OBJ carry no unit. We read them as millimetres, please check the dimensions above.",
+    vector: "Your artwork",
+    vectorHint: "Click or drag an SVG, DXF or PDF file",
+    vectorNote: "Optional. The drawing does not change the price, the selected engraving area does. It travels to the workshop with the order.",
     fileOptional: "Without a file, pick a size from the list below",
     packaging: "Packaging",
     qty: "Quantity",
@@ -80,6 +89,9 @@ const UI = {
     file: "Ihre Datei",
     fileHint: "STL-, OBJ- oder 3MF-Datei klicken oder hierher ziehen",
     unitsNote: "STL und OBJ speichern keine Einheit. Wir lesen Millimeter, bitte prüfen Sie die Maße oben.",
+    vector: "Ihre Vorlage",
+    vectorHint: "SVG-, DXF- oder PDF-Datei klicken oder hierher ziehen",
+    vectorNote: "Optional. Die Zeichnung ändert den Preis nicht, das gewählte Gravurfeld bestimmt ihn. Sie geht mit der Bestellung in die Werkstatt.",
     fileOptional: "Ohne Datei wählen Sie unten eine Größe",
     packaging: "Verpackung",
     qty: "Stückzahl",
@@ -118,6 +130,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const [triangles, setTriangles] = useState(null);
   const [hasThumb, setHasThumb] = useState(false);
   const [thumbData, setThumbData] = useState(null);
+  const [vectorFile, setVectorFile] = useState(null);
+  const [vectorToken, setVectorToken] = useState(null);
+  const [vectorBusy, setVectorBusy] = useState(false);
   const [thumbTick, setThumbTick] = useState(0);
   const [packagingId, setPackagingId] = useState(DEFAULT_PACKAGING);
   const [engraving, setEngraving] = useState("");
@@ -235,6 +250,33 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
     setThumbTick((n) => n + 1);
   }
 
+  async function onPickVector(e) {
+    const f = e.target.files?.[0];
+    if (!f || !API) return;
+    setVectorFile(f);
+    setVectorToken(null);
+    setVectorBusy(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", f);
+      fd.append("lang", lang);
+      fd.append("kind", "attachment");
+      const resp = await fetch(`${API}/api/uploads`, { method: "POST", body: fd });
+      const data = await resp.json();
+      if (!resp.ok) {
+        setError({ message: data.error, code: data.code });
+        setVectorFile(null);
+        return;
+      }
+      setVectorToken(data.uploadToken);
+    } catch {
+      setError({ message: u.uploadFailed });
+      setVectorFile(null);
+    } finally {
+      setVectorBusy(false);
+    }
+  }
+
   async function onPickFile(e) {
     const f = e.target.files?.[0];
     if (!f) return;
@@ -290,6 +332,8 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       uploadToken,
       // Zrzut modelu zamiast zdjecia katalogowego, zeby w koszyku bylo
       // widac wlasny model, a nie ikone uslugi.
+      attachmentToken: vectorToken,
+      attachmentName: vectorFile?.name || null,
       thumbData,
       thumbUrl: hasThumb ? `${API}/api/uploads/${uploadToken}/thumb` : null,
       needsFile: Boolean(file),
@@ -333,6 +377,23 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
             {geometry && <p className="text-neutral-600 text-[10px] mt-2 leading-relaxed">{u.unitsNote}</p>}
           </FileDrop>
           {!file && <p className="text-neutral-600 text-[11px] -mt-4 mb-6">{u.fileOptional}</p>}
+        </>
+      )}
+
+      {service.acceptsVector && (
+        <>
+          <FileDrop
+            label={u.vector}
+            hint={u.vectorHint}
+            file={vectorFile}
+            busy={vectorBusy}
+            onPick={onPickVector}
+            onClear={() => { setVectorFile(null); setVectorToken(null); }}
+            accent={accent}
+            lang={lang}
+            accept={ACCEPT_VECTOR}
+          />
+          <p className="text-neutral-600 text-[11px] -mt-4 mb-6 leading-relaxed">{u.vectorNote}</p>
         </>
       )}
 

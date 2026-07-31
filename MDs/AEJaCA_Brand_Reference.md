@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-07-31 | Wersja: 1.5*
+*Wygenerowano: 2026-07-31 | Wersja: 1.6*
 
 ---
 
@@ -108,15 +108,17 @@ Zakres cenowy (schema): EUR 80-3500, PLN ~340-15000
 ### Technologie i cennik (ceny startowe)
 | Usługa | PLN | EUR |
 |--------|-----|-----|
-| Druk 3D FDM (PLA/PETG) | 25 | 6 |
-| Wycinanie laserem CO2 | 30 | 7 |
-| Grawer laserowy CO2 | 15 | 4 |
-| Znakowanie laserem fibrowym | 20 | 5 |
-| Druk żywiczny MSLA 16K | 49 | 12 |
+| Druk 3D FDM (PLA/PETG) | 16 | 4 |
+| Wycinanie laserem CO2 | 8 | 2 |
+| Grawer laserowy CO2 | 8 | 2 |
+| Znakowanie laserem fibrowym | 8 | 2 |
+| Druk żywiczny MSLA 16K | 40 | 9 |
 | Wzorzec castable (BlueCast) | 90 | 21 |
-| Odlew żywiczny (epoksyd/UV) | 40 | 10 |
+| Odlew żywiczny (epoksyd/UV) | 18 | 4 |
 
 Zakres cenowy (schema): EUR 5-2000
+
+**Skąd te liczby.** To najtańsza konfiguracja, jaką silnik wyceny potrafi policzyć dla jednej sztuki, wyprowadzona skryptem `scripts/derive-service-prices.mjs` i pilnowana przy każdym buildzie. Nie wpisujemy ich z pamięci, bo poprzedni zestaw rozjechał się z cennikiem nawet trzykrotnie. Pozycje jubilerskie dostają 10% zapasu na ruch kursu kruszcu.
 
 ### Sprzęt cyfrowej fabrykacji
 | Urządzenie | Opis |
@@ -623,6 +625,41 @@ STL i OBJ nie zapisują jednostki, więc czytamy je jako milimetry. `assertPlaus
 **STEP** nie jest siatką, tylko opisem powierzchni, i wymaga tesselacji jądrem CAD. Do czasu wdrożenia idzie ścieżką wyceny indywidualnej.
 
 Wgrany model pokazujemy jako **obracający się podgląd 3D** (`STLViewer.jsx`, three.js ładowany leniwie). Po chwili obrotu komponent robi zrzut ujęcia trzy czwarte w WEBP, zrzut trafia do kolumny `uploads.thumbnail` i staje się miniaturą pozycji w koszyku oraz linkiem podglądu w mailu warsztatowym. Klient widzi własny model zamiast ikony usługi, a warsztat wie, co ma zrobić, bez otwierania Dysku.
+
+### Droga pliku klienta
+
+| Kiedy | Co sie dzieje |
+|---|---|
+| klient wybiera plik w kalkulatorze albo na karcie uslugi | idzie raz na serwer, liczymy geometrie, wraca sam identyfikator |
+| dalej: koszyk, kasa, zamowienie | podrozuje wylacznie identyfikator, plik **nigdy nie jest wgrywany drugi raz** |
+| rownolegle | n8n zapisuje plik na Dysku w folderze **roboczym** |
+| po zaplacie (pierwszy SUCCESS z ITN) | `moveOrderFilesToOrders` prosi n8n o przeniesienie do **AEJaCA / Zamowienia / \<numer zamowienia\>** |
+| po 14 dniach bez zamowienia | wpis dostaje status `abandoned` |
+
+Folder roboczy istnieje dlatego, ze plik trafia na Dysk juz w chwili wgrania (inaczej klient czekalby na wycene), a wiekszosc wgranych plikow nigdy nie stanie sie zamowieniem. Bez tego podzialu folder Zamowienia zapelnialby sie probami wyceny.
+
+Nieudane przeniesienie zostawia plik w folderze roboczym i nie wywraca obslugi platnosci. Link w mailu warsztatowym dziala niezaleznie od tego, w ktorym folderze plik lezy.
+
+Przeplywy n8n: `n8n/order-file-workflow.json` (zapis) i `n8n/order-files-ready-workflow.json` (przeniesienie po zaplacie).
+
+### Projekt jako zalacznik
+
+Grawer CO2, ciecie CO2 i znakowanie fiber przyjmuja drugi plik: SVG, DXF albo PDF, do 15 MB. To **material do wykonania, nie podstawa wyceny**. Serwer nie liczy z niego geometrii i nigdy nie wpuszcza go do `/api/price`, bo cene wyznacza wybrane pole grawerowania albo dlugosc sciezki. Zalacznik wiszy przy zamowieniu (`uploads.order_id`), nie przy linii, i wchodzi do maila warsztatowego osobna sekcja z linkiem do Dysku.
+
+### Kalkulator i sklep to jedno
+
+Kalkulatory i konfigurator w sklepie wolaja ten sam rdzen z `src/pricing/` i **uzywaja tych samych nazw parametrow**, wiec nie ma miedzy nimi warstwy tlumaczacej. Roznica jest wylacznie w prezentacji: kalkulator pokazuje widelki (niepewnosc szacunku), sklep kwote wiazaca (oferte).
+
+Pod wynikiem kazdego kalkulatora siedzi `CalcToCart.jsx`: pyta `/api/price` o kwote wiazaca i pozwala dodac konfiguracje do koszyka razem z plikiem. Kalkulator przestal byc slepa uliczka konczaca sie formularzem.
+
+Do koszyka nie trafia to, czego nie umiemy wycenic bez czlowieka, i mowimy o tym wprost zamiast pokazywac kwote, ktora i tak bysmy poprawili:
+
+| Blokada | Powod |
+|---|---|
+| wgrany SVG w laserach CO2 i fiber | cene wyznacza realna dlugosc sciezki, nie preset pola |
+| bizuteria z kamieniami | dobor i osadzenie kamienia zalezy od rzeczy spoza parametrow |
+| sploty lancuszkow | masa splotu zalezy od wykonania |
+| metal powierzony przez klienta | trzeba ocenic material |
 
 ### Schemat bazy
 

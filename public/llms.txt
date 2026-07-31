@@ -17,6 +17,7 @@
 ## What makes AEJaCA distinct
 
 - **Instant online price calculator** for both handmade jewelry and digital-fabrication projects — customers get a quote in 30 seconds without waiting for email replies.
+- **Vector artwork as an attachment**: CO2 engraving, CO2 cutting and fiber marking accept an SVG, DXF or PDF drawing alongside the order. The drawing does not change the price, the selected engraving area or path length does; it reaches the workshop with the order.
 - **3D model / SVG auto-pricing**: upload a 3D model (STL, OBJ or 3MF) or vector file (SVG) and the studio estimator computes a real cost estimate from dimensions, material, and finish. Uploaded models are shown as a rotating 3D preview before ordering.
 - **Two calculators per service** — Simple mode for rough estimates (30 seconds), Advanced mode with per-parameter control (metal type, stone count, labor hours, finish tier).
 - **In-house 3D modeling / CAD** in Rhino and Fusion 360 — both organic jewelry forms and precise technical/functional parts (parametric design, mechanical tolerances, reverse engineering, print-ready STL preparation). Customers can commission a model from a sketch or idea, not only upload a finished file.

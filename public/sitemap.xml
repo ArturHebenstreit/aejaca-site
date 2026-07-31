@@ -820,4 +820,188 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/shrinkage/" />
   </url>
 
+  <!-- SHOP:BEGIN, generowane przez scripts/sync-sitemap-shop.mjs -->
+
+  <!-- Shop: products and services hub -->
+  <url>
+    <loc>https://www.aejaca.com/shop/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/" />
+  </url>
+
+  <!-- Shop category: jewelry -->
+  <url>
+    <loc>https://www.aejaca.com/shop/jewelry/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/jewelry/" />
+  </url>
+
+  <!-- Shop category: studio -->
+  <url>
+    <loc>https://www.aejaca.com/shop/studio/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/studio/" />
+  </url>
+
+  <!-- Product: pierscionek-granat-zloto-585 -->
+  <url>
+    <loc>https://www.aejaca.com/shop/pierscionek-granat-zloto-585/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/pierscionek-granat-zloto-585/" />
+  </url>
+
+  <!-- Product: wizytowka-stalowa-nfc -->
+  <url>
+    <loc>https://www.aejaca.com/shop/wizytowka-stalowa-nfc/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/wizytowka-stalowa-nfc/" />
+  </url>
+
+  <!-- Product: model-stl-gekon-geometryczny -->
+  <url>
+    <loc>https://www.aejaca.com/shop/model-stl-gekon-geometryczny/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/model-stl-gekon-geometryczny/" />
+  </url>
+
+  <!-- Service: print_fdm -->
+  <url>
+    <loc>https://www.aejaca.com/shop/service/print_fdm/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/print_fdm/" />
+  </url>
+
+  <!-- Service: print_msla -->
+  <url>
+    <loc>https://www.aejaca.com/shop/service/print_msla/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/print_msla/" />
+  </url>
+
+  <!-- Service: laser_engrave -->
+  <url>
+    <loc>https://www.aejaca.com/shop/service/laser_engrave/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/laser_engrave/" />
+  </url>
+
+  <!-- Service: laser_cut -->
+  <url>
+    <loc>https://www.aejaca.com/shop/service/laser_cut/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/laser_cut/" />
+  </url>
+
+  <!-- Service: laser_fiber -->
+  <url>
+    <loc>https://www.aejaca.com/shop/service/laser_fiber/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/laser_fiber/" />
+  </url>
+
+  <!-- Service: epoxy -->
+  <url>
+    <loc>https://www.aejaca.com/shop/service/epoxy/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/epoxy/" />
+  </url>
+
+  <!-- Service: jewelry_renovation -->
+  <url>
+    <loc>https://www.aejaca.com/shop/service/jewelry_renovation/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_renovation/" />
+  </url>
+
+  <!-- Service: jewelry_repair -->
+  <url>
+    <loc>https://www.aejaca.com/shop/service/jewelry_repair/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_repair/" />
+  </url>
+
+  <!-- Service: jewelry_plain -->
+  <url>
+    <loc>https://www.aejaca.com/shop/service/jewelry_plain/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_plain/" />
+  </url>
+
+  <!-- Service: jewelry_stones -->
+  <url>
+    <loc>https://www.aejaca.com/shop/service/jewelry_stones/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_stones/" />
+  </url>
+
+  <!-- Service: jewelry_chain_custom -->
+  <url>
+    <loc>https://www.aejaca.com/shop/service/jewelry_chain_custom/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_chain_custom/" />
+  </url>
+
+  <!-- Service: cad_project -->
+  <url>
+    <loc>https://www.aejaca.com/shop/service/cad_project/</loc>
+    <lastmod>2026-07-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/cad_project/" />
+  </url>
+
+  <!-- SHOP:END -->
+
 </urlset>

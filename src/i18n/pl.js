@@ -47,6 +47,8 @@ export default {
       // Opinie na pierwszym miejscu, bo to najwartościowsza akcja w tym menu.
       { label: "Oceń AEJaCA", to: "/reviews/" },
       { label: "o Marce", to: "/about/" },
+      // Sklep przed dokumentami, bo to jedyna pozycja prowadzaca do zakupu.
+      { label: "Sklep", to: "/shop/" },
       // Regulamin przed dokumentami szczegółowymi, bo jest wobec nich nadrzędny.
       { label: "Regulamin", to: "/terms/" },
       { label: "Gwarancja", to: "/warranty/" },

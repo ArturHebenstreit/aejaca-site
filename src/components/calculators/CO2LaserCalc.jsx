@@ -4,6 +4,7 @@
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
+import CalcToCart from "./CalcToCart.jsx";
 import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
 
 import {
@@ -145,6 +146,15 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
         <ResultHeader lang={lang} />
         <ResultDisplay result={result} lang={lang} />
         <QuoteEmailCapture result={result} lang={lang} techLabel={`${t(TECH_LABEL, lang)} — ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={paramsSummary} preAttachedFile={svgFile} />
+        <CalcToCart
+          calculator={mode === "engrave" ? "laser_co2_engrave" : "laser_co2_cut"}
+          serviceId={mode === "engrave" ? "laser_engrave" : "laser_cut"}
+          params={mode === "engrave"
+            ? { matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, extended }
+            : { matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended }}
+          blocked={Boolean(svgData)}
+          lang={lang}
+        />
       </div>
 
       <InquiryForm lang={lang} techLabel={`${t(TECH_LABEL, lang)} — ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={paramsSummary} preAttachedFile={svgFile} />
