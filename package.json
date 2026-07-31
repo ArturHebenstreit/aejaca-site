@@ -4,7 +4,7 @@
   "description": "AEJaCA - Artisan Elegance Jewelry and Crafted Art",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/sync-pricing.mjs --check && node scripts/check-undefined-calls.mjs && node scripts/test-mesh-formats.mjs && node scripts/derive-service-prices.mjs --check && vite build && vite build --ssr src/entry-server.jsx --outDir dist/server && node scripts/prerender.mjs",
+    "build": "node scripts/sync-pricing.mjs --check && node scripts/check-undefined-calls.mjs && node scripts/test-mesh-formats.mjs && node scripts/derive-service-prices.mjs --check && node scripts/sync-sitemap-shop.mjs --check && vite build && vite build --ssr src/entry-server.jsx --outDir dist/server && node scripts/prerender.mjs",
     "build:client": "vite build",
     "preview": "vite preview",
     "db:seed-laser-matrix": "node scripts/import-laser-matrix.mjs",
@@ -14,7 +14,8 @@
     "sync:pricing": "node scripts/sync-pricing.mjs",
     "check:backend": "node scripts/check-undefined-calls.mjs",
     "test:mesh": "node scripts/test-mesh-formats.mjs",
-    "prices:derive": "node scripts/derive-service-prices.mjs"
+    "prices:derive": "node scripts/derive-service-prices.mjs",
+    "sitemap:shop": "node scripts/sync-sitemap-shop.mjs"
   },
   "dependencies": {
     "fflate": "^0.8.3",

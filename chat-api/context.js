@@ -662,6 +662,7 @@ WAZNE dla rozmowy z klientem:
 - Dla druku 3D klient moze wgrac plik STL, OBJ lub 3MF, widzi obracajacy sie podglad modelu, a cena liczy sie automatycznie z objetosci. STEP nadal idzie sciezka wyceny indywidualnej
 - Kazdy kalkulator konczy sie kwota wiazaca i przyciskiem "Dodaj do koszyka", wiec klient kupuje bez przechodzenia do sklepu. Widelki nad przyciskiem to szacunek, kwota pod nimi to oferta wiazaca na 7 dni
 - Wyjatki, ktore nadal ida do wyceny recznej: wgrany plik SVG w laserach (liczy sie realna dlugosc sciezki), a w bizuterii kamienie, sploty lancuszkow i metal powierzony przez klienta
+- Przy grawerze CO2, cieciu CO2 i znakowaniu fiber klient moze dolaczyc projekt (SVG, DXF, PDF) jako zalacznik do zlecenia. Zalacznik NIE zmienia ceny, cene wyznacza wybrane pole lub dlugosc sciezki. Rysunek trafia na Dysk i do maila warsztatowego
   i wymiarow modelu. Pliki STEP nie sa jeszcze obslugiwane w wycenie automatycznej.
 - Platnosc: BLIK albo szybki przelew online, przez Autopay, wylacznie w PLN.
   NIGDY nie mow klientowi, ze moze zaplacic karta, Google Pay ani Apple Pay.

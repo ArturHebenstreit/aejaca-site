@@ -626,6 +626,10 @@ STL i OBJ nie zapisują jednostki, więc czytamy je jako milimetry. `assertPlaus
 
 Wgrany model pokazujemy jako **obracający się podgląd 3D** (`STLViewer.jsx`, three.js ładowany leniwie). Po chwili obrotu komponent robi zrzut ujęcia trzy czwarte w WEBP, zrzut trafia do kolumny `uploads.thumbnail` i staje się miniaturą pozycji w koszyku oraz linkiem podglądu w mailu warsztatowym. Klient widzi własny model zamiast ikony usługi, a warsztat wie, co ma zrobić, bez otwierania Dysku.
 
+### Projekt jako zalacznik
+
+Grawer CO2, ciecie CO2 i znakowanie fiber przyjmuja drugi plik: SVG, DXF albo PDF, do 15 MB. To **material do wykonania, nie podstawa wyceny**. Serwer nie liczy z niego geometrii i nigdy nie wpuszcza go do `/api/price`, bo cene wyznacza wybrane pole grawerowania albo dlugosc sciezki. Zalacznik wiszy przy zamowieniu (`uploads.order_id`), nie przy linii, i wchodzi do maila warsztatowego osobna sekcja z linkiem do Dysku.
+
 ### Kalkulator i sklep to jedno
 
 Kalkulatory i konfigurator w sklepie wolaja ten sam rdzen z `src/pricing/` i **uzywaja tych samych nazw parametrow**, wiec nie ma miedzy nimi warstwy tlumaczacej. Roznica jest wylacznie w prezentacji: kalkulator pokazuje widelki (niepewnosc szacunku), sklep kwote wiazaca (oferte).

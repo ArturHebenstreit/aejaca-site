@@ -173,7 +173,7 @@ function customerText(order, items, lang) {
   ].join("\n");
 }
 
-function internalText(order, items) {
+function internalText(order, items, attachments = []) {
   const lines = items.map(
     (i) => `- ${i.title} x ${i.qty} = ${money(i.line_grosze)}
   kalkulator: ${i.calculator}
@@ -181,6 +181,11 @@ function internalText(order, items) {
       i.geometry ? `\n  geometria: ${Number(i.geometry.volumeCm3).toFixed(2)} cm3, bbox ${i.geometry.bbox?.x}x${i.geometry.bbox?.y}x${i.geometry.bbox?.z} cm` : ""
     }`
   );
+  const attachmentLines = attachments.length
+    ? ["", "ZALACZNIKI (projekty do wykonania):",
+       ...attachments.map((a) => `- ${a.file_name}${a.drive_url ? `\n  Dysk: ${a.drive_url}` : "\n  Dysk: link jeszcze nie dotarl z n8n"}`)]
+    : [];
+
   return [
     `NOWE OPLACONE ZAMOWIENIE ${order.order_ref}`,
     "",
@@ -190,6 +195,7 @@ function internalText(order, items) {
     "",
     "Pozycje:",
     ...lines,
+    ...attachmentLines,
     "",
     `Dostawa: ${order.delivery_method || "-"}`,
     order.delivery_point ? `Paczkomat: ${order.delivery_point}` : "",
@@ -203,7 +209,7 @@ function internalText(order, items) {
 }
 
 /** Wyodrebnione, zeby dalo sie obejrzec tresc maili bez wysylania ich komukolwiek */
-export function buildOrderMessages(order, items) {
+export function buildOrderMessages(order, items, attachments = []) {
   const lang = ["pl", "en", "de"].includes(order.lang) ? order.lang : "pl";
   const l = T[lang];
 
@@ -221,8 +227,8 @@ export function buildOrderMessages(order, items) {
       from: FROM,
       replyTo: order.customer_email,
       subject: `[ZAMOWIENIE] ${order.order_ref}, ${money(order.total_grosze)}`,
-      text: internalText(order, items),
-      html: `<pre style="font-family:ui-monospace,monospace;font-size:13px;white-space:pre-wrap">${esc(internalText(order, items))}</pre>`,
+      text: internalText(order, items, attachments),
+      html: `<pre style="font-family:ui-monospace,monospace;font-size:13px;white-space:pre-wrap">${esc(internalText(order, items, attachments))}</pre>`,
     },
   ];
 }
@@ -307,7 +313,17 @@ export async function sendOrderPaidEmails(pool, orderId) {
       [orderId]
     );
 
-    const messages = buildOrderMessages(order, items);
+    // Rysunki techniczne wisza przy zamowieniu, nie przy linii, wiec bierzemy
+    // je osobno. Bez tego warsztat dostalby zlecenie bez projektu do wyciecia.
+    const { rows: attachments } = await pool.query(
+      `SELECT file_name, drive_url, file_sha256
+         FROM uploads
+        WHERE order_id = $1 AND geometry IS NULL
+        ORDER BY id`,
+      [orderId]
+    );
+
+    const messages = buildOrderMessages(order, items, attachments);
     try {
       if (await sendViaGmail(messages)) {
         console.log(`[order-mail] wyslano potwierdzenia dla ${order.order_ref} przez Gmail`);

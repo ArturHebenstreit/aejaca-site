@@ -154,6 +154,7 @@ export const SERVICES = [
   },
   {
     id: "laser_engrave",
+    acceptsVector: true,
     calculator: "laser_co2_engrave",
     group: "laser",
     title: L("Grawer laserowy CO2", "CO2 laser engraving", "CO2-Lasergravur"),
@@ -172,6 +173,7 @@ export const SERVICES = [
   },
   {
     id: "laser_cut",
+    acceptsVector: true,
     calculator: "laser_co2_cut",
     group: "laser",
     title: L("Cięcie laserem CO2", "CO2 laser cutting", "CO2-Laserschnitt"),
@@ -190,6 +192,7 @@ export const SERVICES = [
   },
   {
     id: "laser_fiber",
+    acceptsVector: true,
     calculator: "laser_fiber",
     group: "laser",
     title: L("Znakowanie laserem fiber", "Fiber laser marking", "Faserlaser-Markierung"),

@@ -674,7 +674,8 @@ app.post("/api/price", (req, res, next) => {
       // z bazy, wiec przesuwanie suwaka nie wysyla modelu za kazdym razem.
       const { rows } = await pool.query("SELECT geometry FROM uploads WHERE token = $1", [String(req.body.uploadToken)]);
       if (!rows[0]) return res.status(404).json({ error: "Nieznany plik", code: "unknown_upload" });
-      geometry = rows[0].geometry;
+      // Zalacznik nie ma geometrii i nigdy nie moze wplynac na cene.
+      geometry = rows[0].geometry || null;
     }
 
     const rates = calculator.startsWith("jewelry_") ? await currentMetalRates() : null;
@@ -718,6 +719,10 @@ const UPLOAD_N8N_URL = process.env.N8N_ORDER_FILE_WEBHOOK_URL;
 const UPLOAD_CALLBACK_TOKEN = process.env.UPLOAD_CALLBACK_TOKEN;
 const ABANDON_AFTER_DAYS = Number(process.env.UPLOAD_ABANDON_DAYS || 14);
 
+/** Rysunki techniczne przyjmowane jako zalacznik do zlecenia */
+const ATTACHMENT_EXT = /\.(svg|dxf|pdf)$/i;
+const MAX_ATTACHMENT_BYTES = 15 * 1024 * 1024;
+
 const uploadStore = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 60 * 1024 * 1024, files: 1 },
@@ -738,7 +743,21 @@ app.post("/api/uploads", (req, res, next) => {
   if (!req.file?.buffer) return res.status(400).json({ error: "Brak pliku" });
 
   try {
-    const geometry = geometryFromFile(req.file.buffer, req.file.originalname || "");
+    // Zalacznik to projekt do wykonania, nie podstawa wyceny. Grawer i ciecie
+    // licza sie z pola albo dlugosci sciezki wybranej przez klienta, a rysunek
+    // mowi warsztatowi, co ma wyciac. Dlatego nie liczymy z niego geometrii
+    // i nie wpuszczamy go nigdy do wyceny.
+    const isAttachment = req.body?.kind === "attachment";
+    const name = (req.file.originalname || "plik").slice(0, 255);
+
+    if (isAttachment && !ATTACHMENT_EXT.test(name)) {
+      return res.status(400).json({ error: "Załącznik przyjmujemy jako SVG, DXF lub PDF", code: "unsupported_format" });
+    }
+    if (isAttachment && req.file.size > MAX_ATTACHMENT_BYTES) {
+      return res.status(400).json({ error: "Załącznik przekracza 15 MB", code: "file_too_large" });
+    }
+
+    const geometry = isAttachment ? null : geometryFromFile(req.file.buffer, name);
     const token = generateToken();
     const lang = ["pl", "en", "de"].includes(req.body?.lang) ? req.body.lang : "pl";
 
@@ -746,9 +765,10 @@ app.post("/api/uploads", (req, res, next) => {
       await pool.query(
         `INSERT INTO uploads (token, file_name, file_size_bytes, file_sha256, mime_type, geometry, lang, ip_hash)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-        [token, (req.file.originalname || "model.stl").slice(0, 255), req.file.size,
-         geometry.sha256, req.file.mimetype || "application/octet-stream",
-         JSON.stringify(geometry), lang,
+        [token, name, req.file.size,
+         geometry ? geometry.sha256 : createHash("sha256").update(req.file.buffer).digest("hex"),
+         req.file.mimetype || "application/octet-stream",
+         geometry ? JSON.stringify(geometry) : null, lang,
          createHash("sha256").update(ip).digest("hex").slice(0, 30)]
       );
     }
@@ -781,7 +801,7 @@ app.post("/api/uploads", (req, res, next) => {
     res.json({
       ok: true,
       uploadToken: token,
-      geometry: {
+      geometry: geometry && {
         volumeCm3: Number(geometry.volumeCm3.toFixed(3)),
         bbox: geometry.bbox,
         triangleCount: geometry.triangleCount,
@@ -968,6 +988,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
         geometry: raw.geometry || null,
         fileName: raw.fileName || null,
         uploadToken: raw.uploadToken || null,
+        attachmentToken: raw.attachmentToken || null,
       });
     }
 
@@ -1017,6 +1038,15 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
           [i.uploadToken, orderId]
         );
         uploadRow = rows[0] || null;
+      }
+
+      // Rysunek techniczny nie jest pozycja zamowienia, tylko materialem do
+      // wykonania, wiec wiazemy go z zamowieniem, a nie z linia.
+      if (i.attachmentToken) {
+        await pool.query(
+          `UPDATE uploads SET status = 'ordered', order_id = $2 WHERE token = $1`,
+          [i.attachmentToken, orderId]
+        );
       }
 
       await pool.query(
