@@ -8,7 +8,11 @@ import { createHash } from "crypto";
 import { rateLimit } from "express-rate-limit";
 import { getSystemPrompt, detectHotLead } from "./context.js";
 import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages } from "./gmail.js";
-import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit } from "./orders.js";
+import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken } from "./orders.js";
+import {
+  autopayConfigured, buildStartTransaction, formatValidityTime,
+  verifyReturn, parseITN, buildITNConfirmation, fetchGatewayList,
+} from "./autopay.js";
 
 const app = express();
 app.set("trust proxy", true);
@@ -688,6 +692,287 @@ app.post("/api/price", (req, res, next) => {
     console.error("[price] unexpected:", e);
     res.status(500).json({ error: "Wycena chwilowo niedostepna" });
   }
+});
+
+// ============================================================
+// ZAMOWIENIA I PLATNOSCI
+// ============================================================
+
+const SITE_URL = process.env.SITE_URL || "https://www.aejaca.com";
+const ORDER_VALIDITY_DAYS = 7;
+
+/** Kanaly platnosci dostepne na serwisie, prosto z Autopay */
+app.get("/api/payment-methods", async (_req, res) => {
+  const list = await fetchGatewayList();
+  if (!list) return res.json({ available: false, gateways: [] });
+  res.json({
+    available: true,
+    gateways: (list.gatewayList || [])
+      .filter((g) => g.state === "OK")
+      .map((g) => ({
+        id: g.gatewayID, name: g.name, group: g.groupType,
+        icon: g.iconURL || g.iconUrl || null, order: g.order ?? 99,
+      }))
+      .sort((a, b) => a.order - b.order),
+  });
+});
+
+/**
+ * Utworzenie zamowienia.
+ * Cena liczona jest tutaj od nowa, z parametrow i geometrii pliku.
+ * Kwota przyslana przez przegladarke jest ignorowana.
+ */
+app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  try {
+    const { items, customer, delivery, consents, lang } = req.body || {};
+    if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: "Zamowienie bez pozycji" });
+    if (items.length > 20) return res.status(400).json({ error: "Za duzo pozycji" });
+    if (!customer?.email || !CONTACT_EMAIL_RE.test(customer.email)) return res.status(400).json({ error: "Nieprawidlowy adres email" });
+    if (!consents?.terms) return res.status(400).json({ error: "Akceptacja regulaminu jest wymagana" });
+
+    const safeLang = ["pl", "en", "de"].includes(lang) ? lang : "pl";
+    const rates = items.some((i) => String(i.calculator || "").startsWith("jewelry_")) ? await currentMetalRates() : null;
+
+    const priced = [];
+    for (const raw of items) {
+      // Geometria pochodzi z wczesniejszego wywolania /api/price, gdzie zostala
+      // policzona z pliku po stronie serwera. Cene liczymy tu jeszcze raz tym
+      // samym kodem, wiec zmiana czegokolwiek po drodze nic nie daje.
+      const item = priceItem({
+        calculator: raw.calculator,
+        params: raw.params,
+        lang: safeLang,
+        geometry: raw.geometry || null,
+        scale: raw.scale || 1,
+        rates,
+      });
+      priced.push({ ...item, params: raw.params, geometry: raw.geometry || null, fileName: raw.fileName || null });
+    }
+
+    const itemsTotal = priced.reduce((sum, i) => sum + i.lineGrosze, 0);
+    const shipping = Number.isInteger(delivery?.shippingGrosze) ? delivery.shippingGrosze : 0;
+    const total = itemsTotal + shipping;
+
+    const limit = await checkQuarterlyLimit(pool, total);
+    if (!limit.ok) {
+      return res.status(409).json({
+        error: "Nie mozemy teraz przyjac tej platnosci",
+        code: "quarterly_limit",
+        remainingPLN: Math.round(limit.remainingGrosze / 100),
+      });
+    }
+
+    const orderRef = generateOrderRef();
+    const token = generateToken();
+    const expiresAt = new Date(Date.now() + ORDER_VALIDITY_DAYS * 86400_000);
+
+    const { rows } = await pool.query(
+      `INSERT INTO orders (order_ref, status, kind, lang, items_total_grosze, shipping_grosze, total_grosze,
+         customer_email, customer_name, customer_phone,
+         delivery_method, delivery_point, address_line1, address_line2, postal_code, city, country,
+         accepted_terms_at, waived_withdrawal_at, digital_immediate_at,
+         access_token, ip_hash, expires_at)
+       VALUES ($1,'awaiting_payment','instant',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
+         NOW(), $16, $17, $18, $19, $20)
+       RETURNING id`,
+      [orderRef, safeLang, itemsTotal, shipping, total,
+       customer.email.trim().toLowerCase(), customer.name || null, customer.phone || null,
+       delivery?.method || null, delivery?.point || null, delivery?.addressLine1 || null,
+       delivery?.addressLine2 || null, delivery?.postalCode || null, delivery?.city || null,
+       delivery?.country || "PL",
+       consents?.waiveWithdrawal ? new Date() : null,
+       consents?.digitalImmediate ? new Date() : null,
+       token, createHash("sha256").update(extractIP(req)).digest("hex").slice(0, 30), expiresAt]
+    );
+    const orderId = rows[0].id;
+
+    for (const i of priced) {
+      await pool.query(
+        `INSERT INTO order_items (order_id, item_type, calculator, title, qty, unit_grosze, line_grosze,
+           params, price_breakdown, file_name, file_sha256, geometry)
+         VALUES ($1,'service',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+        [orderId, i.calculator, i.title, i.qty, i.unitGrosze, i.lineGrosze,
+         JSON.stringify(i.params ?? {}), JSON.stringify(i.breakdown ?? []),
+         i.fileName, i.geometry?.sha256 ?? null,
+         i.geometry ? JSON.stringify(i.geometry) : null]
+      );
+    }
+
+    res.json({
+      ok: true,
+      orderRef,
+      token,
+      totalGrosze: total,
+      totalPLN: (total / 100).toFixed(2),
+      expiresAt,
+      items: priced.map((i) => ({
+        title: i.title, qty: i.qty,
+        unitPLN: (i.unitGrosze / 100).toFixed(2),
+        linePLN: (i.lineGrosze / 100).toFixed(2),
+      })),
+    });
+  } catch (e) {
+    if (e instanceof PricingError) return res.status(400).json({ error: e.message, code: e.code });
+    console.error("[orders] create failed:", e);
+    res.status(500).json({ error: "Nie udalo sie utworzyc zamowienia" });
+  }
+});
+
+/** Parametry startu transakcji, podpisane po stronie serwera */
+app.post("/api/orders/:ref/pay", express.json({ limit: "8kb" }), async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  if (!autopayConfigured()) return res.status(503).json({ error: "Platnosci nie sa skonfigurowane" });
+
+  const ref = String(req.params.ref || "");
+  const token = String(req.body?.token || "");
+  const gatewayId = req.body?.gatewayId ?? 0;
+
+  const { rows } = await pool.query(
+    "SELECT id, order_ref, access_token, status, total_grosze, customer_email, expires_at FROM orders WHERE order_ref = $1",
+    [ref]
+  );
+  const order = rows[0];
+  if (!order) return res.status(404).json({ error: "Zamowienie nie istnieje" });
+  if (order.access_token !== token) return res.status(403).json({ error: "Brak dostepu" });
+  if (order.status === "paid") return res.status(409).json({ error: "Zamowienie jest juz oplacone", code: "already_paid" });
+  if (order.expires_at && new Date(order.expires_at) < new Date()) {
+    return res.status(410).json({ error: "Wycena wygasla", code: "expired" });
+  }
+
+  const limit = await checkQuarterlyLimit(pool, order.total_grosze);
+  if (!limit.ok) return res.status(409).json({ error: "Nie mozemy teraz przyjac tej platnosci", code: "quarterly_limit" });
+
+  const validity = new Date(Math.min(new Date(order.expires_at).getTime(), Date.now() + 30 * 86400_000));
+  const start = buildStartTransaction({
+    orderId: order.order_ref,
+    amountGrosze: order.total_grosze,
+    description: `AEJaCA ${order.order_ref}`,
+    gatewayId,
+    customerEmail: order.customer_email,
+    validityTime: formatValidityTime(validity),
+  });
+
+  await pool.query("UPDATE orders SET payment_gateway_id = $2 WHERE id = $1", [order.id, Number(gatewayId) || null]);
+
+  // Zwracamy gotowe parametry, formularz wysyla przegladarka.
+  // Klucz wspoldzielony nigdy nie opuszcza serwera.
+  res.json({ ok: true, ...start });
+});
+
+/**
+ * Powrot klienta z bramki.
+ * Weryfikacja podpisu jest obowiazkowa, a status zamowienia zmienia
+ * WYLACZNIE komunikat ITN. Ta strona pokazuje tylko to, co juz wiadomo.
+ */
+app.get("/api/autopay/return", async (req, res) => {
+  const { ServiceID, OrderID, Hash } = req.query || {};
+  const target = new URL("/order/status/", SITE_URL);
+
+  if (!verifyReturn({ ServiceID, OrderID, Hash })) {
+    console.warn("[autopay] powrot z niepoprawnym podpisem", { OrderID });
+    target.searchParams.set("error", "invalid_signature");
+    return res.redirect(302, target.toString());
+  }
+
+  target.searchParams.set("ref", String(OrderID));
+  res.redirect(302, target.toString());
+});
+
+/**
+ * Powiadomienie natychmiastowe o statusie platnosci (ITN).
+ *
+ * Reguly z dokumentacji, str. 26 do 27:
+ *  - kazdy komunikat o poprawnym podpisie potwierdzamy struktura CONFIRMED,
+ *  - logike biznesowa wykonujemy tylko przy PIERWSZYM SUCCESS,
+ *  - FAILURE po SUCCESS potwierdzamy, ale nie cofamy statusu zamowienia.
+ */
+app.post("/api/autopay/itn", express.urlencoded({ extended: false, limit: "256kb" }), async (req, res) => {
+  const parsed = parseITN(req.body?.transactions);
+
+  if (pool) {
+    await pool.query(
+      `INSERT INTO payment_notifications (order_ref, remote_id, payment_status, status_details,
+         amount_grosze, currency, gateway_id, payment_date, hash_valid, raw_xml)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+      [parsed.orderID ?? null, parsed.remoteID ?? null, parsed.paymentStatus ?? null,
+       parsed.paymentStatusDetails ?? null,
+       parsed.amount ? Math.round(Number(parsed.amount) * 100) : null,
+       parsed.currency ?? null, parsed.gatewayID ? Number(parsed.gatewayID) : null,
+       parsed.paymentDate ?? null, Boolean(parsed.hashValid), parsed.xml ?? null]
+    ).catch((e) => console.error("[itn] log failed:", e.message));
+  }
+
+  if (!parsed.ok || !parsed.hashValid) {
+    console.warn("[autopay] ITN odrzucony:", parsed.error || "bledny podpis", parsed.orderID);
+    return res.status(400).type("text/plain").send("hash mismatch");
+  }
+
+  try {
+    if (pool) {
+      const { rows } = await pool.query(
+        "SELECT id, status, total_grosze, fulfilled_at FROM orders WHERE order_ref = $1",
+        [parsed.orderID]
+      );
+      const order = rows[0];
+
+      if (!order) {
+        console.warn("[autopay] ITN dla nieznanego zamowienia", parsed.orderID);
+      } else {
+        const amountGrosze = Math.round(Number(parsed.amount) * 100);
+        const amountOk = amountGrosze === order.total_grosze;
+        if (!amountOk) {
+          console.error("[autopay] kwota z ITN nie zgadza sie z zamowieniem", {
+            ref: parsed.orderID, itn: amountGrosze, zamowienie: order.total_grosze,
+          });
+        }
+
+        if (parsed.paymentStatus === "SUCCESS" && amountOk && !order.fulfilled_at) {
+          await pool.query(
+            `UPDATE orders SET status = 'paid', paid_at = NOW(), fulfilled_at = NOW(),
+               payment_status = $2, payment_status_details = $3, payment_remote_id = $4
+             WHERE id = $1`,
+            [order.id, parsed.paymentStatus, parsed.paymentStatusDetails, parsed.remoteID]
+          );
+          console.log(`[autopay] zamowienie ${parsed.orderID} oplacone, ${(amountGrosze / 100).toFixed(2)} PLN`);
+          // TODO: maile do klienta i do warsztatu, wydanie plikow cyfrowych
+        } else {
+          await pool.query(
+            `UPDATE orders SET payment_status = COALESCE($2, payment_status),
+               payment_status_details = COALESCE($3, payment_status_details)
+             WHERE id = $1 AND status <> 'paid'`,
+            [order.id, parsed.paymentStatus, parsed.paymentStatusDetails]
+          );
+        }
+      }
+    }
+  } catch (e) {
+    console.error("[autopay] przetwarzanie ITN nie powiodlo sie:", e.message);
+  }
+
+  // Potwierdzamy zawsze, takze komunikat, ktory niczego nie zmienil.
+  res.type("application/xml").send(buildITNConfirmation(parsed.orderID));
+});
+
+/** Status zamowienia dla strony powrotu */
+app.get("/api/orders/:ref", async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  const { rows } = await pool.query(
+    `SELECT order_ref, status, total_grosze, lang, paid_at, expires_at, delivery_method
+       FROM orders WHERE order_ref = $1`,
+    [String(req.params.ref || "")]
+  );
+  const o = rows[0];
+  if (!o) return res.status(404).json({ error: "Zamowienie nie istnieje" });
+  res.json({
+    orderRef: o.order_ref,
+    status: o.status,
+    totalPLN: (o.total_grosze / 100).toFixed(2),
+    paidAt: o.paid_at,
+    expiresAt: o.expires_at,
+    deliveryMethod: o.delivery_method,
+  });
 });
 
 // --- Lead contact status (for n8n BCC automation) ---
