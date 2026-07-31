@@ -16,6 +16,7 @@ import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { t } from "../pricing/config.js";
 import { getServiceCard } from "../data/serviceCatalog.js";
+import ServiceConfigurator from "../components/shop/ServiceConfigurator.jsx";
 import { SHOP_CATEGORIES } from "../data/shopCatalog.js";
 import NotFound from "./NotFound.jsx";
 
@@ -24,9 +25,9 @@ const UI = {
     shop: "Produkty i usługi",
     from: "Cena od",
     quotePrice: "Wycena indywidualna",
-    order: "Zamawiam usługę",
+    order: "Konfiguruj i zamów",
     askQuote: "Wyślij do wyceny",
-    orderNote: "Konfigurator policzy wiążącą cenę dla Twojego zlecenia.",
+    orderNote: "Konfiguracja i wycena poniżej, bez opuszczania tej strony.",
     quoteNote: "Odpowiadamy zwykle w ciągu 24 godzin.",
     leadTime: "Czas realizacji",
     days: "dni roboczych",
@@ -44,9 +45,9 @@ const UI = {
     shop: "Products and services",
     from: "Price from",
     quotePrice: "Individual quote",
-    order: "Order this service",
+    order: "Configure and order",
     askQuote: "Request a quote",
-    orderNote: "The configurator will calculate a binding price for your job.",
+    orderNote: "Configuration and pricing below, without leaving this page.",
     quoteNote: "We usually reply within 24 hours.",
     leadTime: "Lead time",
     days: "business days",
@@ -64,9 +65,9 @@ const UI = {
     shop: "Produkte und Leistungen",
     from: "Preis ab",
     quotePrice: "Individuelles Angebot",
-    order: "Leistung bestellen",
+    order: "Konfigurieren und bestellen",
     askQuote: "Angebot anfordern",
-    orderNote: "Der Konfigurator berechnet einen verbindlichen Preis für Ihren Auftrag.",
+    orderNote: "Konfiguration und Preis unten, ohne diese Seite zu verlassen.",
     quoteNote: "Wir antworten meist innerhalb von 24 Stunden.",
     leadTime: "Bearbeitungszeit",
     days: "Werktage",
@@ -182,23 +183,36 @@ export default function Service() {
                 {u.leadTime}: {card.leadTimeDays} {u.days}
               </div>
 
-              <Link
-                to={target}
-                className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-colors ${
-                  card.quoteOnly
-                    ? "border border-amber-400/40 bg-amber-400/10 text-amber-300 hover:bg-amber-400/20"
-                    : amber
-                      ? "bg-amber-500 hover:bg-amber-400 text-neutral-900"
-                      : "bg-blue-500 hover:bg-blue-400 text-white"
-                }`}
-              >
-                {card.quoteOnly ? <MessageCircle className="w-4 h-4" /> : <Wrench className="w-4 h-4" />}
-                {card.quoteOnly ? u.askQuote : u.order}
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <p className="text-neutral-600 text-[11px] text-center mt-2 mb-7">
-                {card.quoteOnly ? u.quoteNote : u.orderNote}
-              </p>
+              {card.quoteOnly ? (
+                <>
+                  <Link
+                    to={target}
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm
+                               border border-amber-400/40 bg-amber-400/10 text-amber-300 hover:bg-amber-400/20 transition-colors"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    {u.askQuote}
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <p className="text-neutral-600 text-[11px] text-center mt-2 mb-7">{u.quoteNote}</p>
+                </>
+              ) : (
+                // Konfiguracja odbywa sie nizej, na tej samej stronie. Kotwica
+                // zamiast przejscia, zeby nie wyrzucac klienta poza karte uslugi.
+                <>
+                  <a
+                    href="#konfigurator"
+                    className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-colors ${
+                      amber ? "bg-amber-500 hover:bg-amber-400 text-neutral-900" : "bg-blue-500 hover:bg-blue-400 text-white"
+                    }`}
+                  >
+                    <Wrench className="w-4 h-4" />
+                    {u.order}
+                    <ArrowRight className="w-4 h-4" />
+                  </a>
+                  <p className="text-neutral-600 text-[11px] text-center mt-2 mb-7">{u.orderNote}</p>
+                </>
+              )}
 
               {card.why && (
                 <div className="rounded-xl border border-amber-400/20 bg-amber-400/[0.03] p-4 mb-5">
@@ -243,6 +257,13 @@ export default function Service() {
               </dl>
             </div>
           </div>
+
+          {/* Konfigurator, tylko dla uslug z cena automatyczna */}
+          {!card.quoteOnly && (
+            <div id="konfigurator" className="mt-12 scroll-mt-24">
+              <ServiceConfigurator card={card} lang={lang} accent={amber ? "amber" : "blue"} />
+            </div>
+          )}
 
           {/* Przebieg */}
           <div className="mt-12">

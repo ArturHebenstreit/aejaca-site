@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, Globe, ChevronDown, Sun, Moon, ShoppingCart } from "lucide-react";
 import { useLanguage, LANGUAGES } from "../i18n/LanguageContext.jsx";
 import { useTheme } from "../i18n/ThemeContext.jsx";
+import { useCart } from "../cart/CartContext.jsx";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -17,6 +18,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const { lang, setLang, t } = useLanguage();
   const { isDark, toggleTheme } = useTheme();
+  const { count: cartCount } = useCart();
 
   const navLinks = [
     { to: "/jewelry/", label: t.nav.jewelry, sections: t.nav.jewelrySections },
@@ -258,12 +260,17 @@ export default function Navbar() {
             {/* Sklep, ikona zamiast pozycji tekstowej: akcja zakupowa
                 stoi przy nawigacji, przelaczniki motywu i jezyka zostaja razem */}
             <Link
-              to="/order/"
+              to="/cart/"
               aria-label={t.nav.order}
               title={t.nav.order}
-              className="flex items-center justify-center w-8 h-8 rounded-md text-neutral-300 hover:text-amber-300 hover:bg-amber-400/10 transition-all duration-300"
+              className="relative flex items-center justify-center w-8 h-8 rounded-md text-neutral-300 hover:text-amber-300 hover:bg-amber-400/10 transition-all duration-300"
             >
               <ShoppingCart className="w-[18px] h-[18px]" />
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-neutral-900 text-[10px] font-bold flex items-center justify-center">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              )}
             </Link>
             {/* Theme toggle */}
             <button
@@ -291,11 +298,16 @@ export default function Navbar() {
           {/* Mobile */}
           <div className="md:hidden flex items-center gap-2">
             <Link
-              to="/order/"
+              to="/cart/"
               aria-label={t.nav.order}
-              className="text-neutral-300 hover:text-amber-300 p-1 transition-colors"
+              className="relative text-neutral-300 hover:text-amber-300 p-1 transition-colors"
             >
               <ShoppingCart className="w-5 h-5" />
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-neutral-900 text-[10px] font-bold flex items-center justify-center">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              )}
             </Link>
             {/* Theme toggle mobile */}
             <button
