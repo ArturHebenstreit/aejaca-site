@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Globe, ChevronDown, Sun, Moon } from "lucide-react";
+import { Menu, X, Globe, ChevronDown, Sun, Moon, ShoppingCart } from "lucide-react";
 import { useLanguage, LANGUAGES } from "../i18n/LanguageContext.jsx";
 import { useTheme } from "../i18n/ThemeContext.jsx";
 
@@ -24,7 +24,6 @@ export default function Navbar() {
     { to: "/gallery/", label: t.nav.gallery, sections: t.nav.gallerySections },
     { to: "/about/", label: t.nav.about, sections: t.nav.aboutSections },
     { to: "/resources/", label: t.nav.resources, sections: t.nav.resourcesSections },
-    { to: "/order/", label: t.nav.order, highlight: true },
     { to: "/contact/", label: t.nav.contact },
   ];
 
@@ -256,6 +255,16 @@ export default function Navbar() {
                 </div>
               );
             })}
+            {/* Sklep, ikona zamiast pozycji tekstowej: akcja zakupowa
+                stoi przy nawigacji, przelaczniki motywu i jezyka zostaja razem */}
+            <Link
+              to="/order/"
+              aria-label={t.nav.order}
+              title={t.nav.order}
+              className="flex items-center justify-center w-8 h-8 rounded-md text-neutral-300 hover:text-amber-300 hover:bg-amber-400/10 transition-all duration-300"
+            >
+              <ShoppingCart className="w-[18px] h-[18px]" />
+            </Link>
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
@@ -281,6 +290,13 @@ export default function Navbar() {
 
           {/* Mobile */}
           <div className="md:hidden flex items-center gap-2">
+            <Link
+              to="/order/"
+              aria-label={t.nav.order}
+              className="text-neutral-300 hover:text-amber-300 p-1 transition-colors"
+            >
+              <ShoppingCart className="w-5 h-5" />
+            </Link>
             {/* Theme toggle mobile */}
             <button
               onClick={toggleTheme}
