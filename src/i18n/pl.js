@@ -6,6 +6,7 @@ export default {
     studio: "AEJaCA sTuDiO",
     glossary: "Słownik",
     about: "Marka AEJaCA",
+    order: "Zamów online",
     contact: "Kontakt",
     jewelrySections: [
       { label: "o AEJaCA Biżuteria", id: "about" },

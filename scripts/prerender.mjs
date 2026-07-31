@@ -27,6 +27,8 @@ const STATIC_ROUTES = [
   "/warranty",
   "/returns",
   "/terms",
+  "/order",
+  "/order/status",
   "/shipping",
   "/privacy",
   "/reviews",
