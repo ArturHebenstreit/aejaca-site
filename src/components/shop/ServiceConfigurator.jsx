@@ -13,7 +13,7 @@ import { ShoppingCart, Check, Loader2, AlertTriangle, ArrowRight } from "lucide-
 import { useCart } from "../../cart/CartContext.jsx";
 import { getService } from "../../data/orderCatalog.js";
 import { PACKAGING, DEFAULT_PACKAGING, getPackaging } from "../../pricing/packaging.js";
-import { t } from "../../pricing/config.js";
+import { t, quantityBounds } from "../../pricing/config.js";
 import { TileGroup, StepSlider, QtyStepper, FileDrop, PersonalizationField } from "./ConfigControls.jsx";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
@@ -36,6 +36,8 @@ const UI = {
     qty: "Liczba sztuk",
     price: "Cena",
     perPc: "za sztukę",
+    pcs: "szt.",
+    tierRange: "próg",
     total: "Razem",
     addToCart: "Dodaj do koszyka",
     added: "Dodano do koszyka",
@@ -57,6 +59,8 @@ const UI = {
     qty: "Quantity",
     price: "Price",
     perPc: "per piece",
+    pcs: "pcs",
+    tierRange: "tier",
     total: "Total",
     addToCart: "Add to cart",
     added: "Added to cart",
@@ -78,6 +82,8 @@ const UI = {
     qty: "Stückzahl",
     price: "Preis",
     perPc: "pro Stück",
+    pcs: "Stk.",
+    tierRange: "Stufe",
     total: "Gesamt",
     addToCart: "In den Warenkorb",
     added: "In den Warenkorb gelegt",
@@ -172,14 +178,18 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ dataUrl }),
     })
-      .then((r) => {
-        if (r.ok && !cancelled) {
-          pendingThumb.current = null;
-          setHasThumb(true);
+      .then(async (r) => {
+        if (r.ok) {
+          if (!cancelled) {
+            pendingThumb.current = null;
+            setHasThumb(true);
+          }
+          return;
         }
+        // Brak podgladu w koszyku nie blokuje zamowienia, ale ma zostawic slad.
+        console.warn(`[shop] miniatura odrzucona (${r.status})`, await r.text().catch(() => ""));
       })
-      // Brak podgladu w koszyku nie blokuje zamowienia.
-      .catch(() => {});
+      .catch((e) => console.warn("[shop] miniatura nie doszla:", e.message));
     return () => { cancelled = true; };
   }, [uploadToken, hasThumb, thumbTick]);
 
@@ -188,7 +198,13 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const pack = getPackaging(packagingId);
   const packGrosze = pack?.grosze ?? 0;
   const unitTotal = (price?.unitGrosze ?? 0) + packGrosze;
-  const lineTotal = unitTotal * qty;
+
+  // Prog nakladu wyznacza przedzial sztuk. Rabat progu jest juz wliczony
+  // w cene jednostkowa, wiec licznik musi w tym przedziale zostac.
+  const hasTier = service.fields.some((f) => f.key === "quantityId");
+  const bounds = hasTier ? quantityBounds(params.quantityId) : { min: 1, max: 999 };
+  const effectiveQty = Math.min(bounds.max, Math.max(bounds.min, qty));
+  const lineTotal = unitTotal * effectiveQty;
 
   const setParam = (key, val) => setParams((p) => ({ ...p, [key]: val }));
 
@@ -275,7 +291,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       packagingGrosze: packGrosze,
       personalization: engraving || null,
       withdrawal: "made_to_order",
-      qty,
+      qty: effectiveQty,
     });
     setAdded(true);
   }
@@ -396,7 +412,14 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
         />
       )}
 
-      <QtyStepper label={u.qty} value={qty} onChange={setQty} accent={accent} />
+      <QtyStepper
+        label={bounds.min > 1 ? `${u.qty} (${u.tierRange} ${bounds.min}-${bounds.max})` : u.qty}
+        value={effectiveQty}
+        onChange={setQty}
+        min={bounds.min}
+        max={bounds.max}
+        accent={accent}
+      />
 
       {/* Cena */}
       <div className="border-t border-white/10 pt-5">
@@ -424,18 +447,20 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
 
         {price && !error && (
           <>
+            {/* Przy nakladzie wieksszym niz jedna sztuka wiodaca kwota jest ta,
+                ktora klient realnie zaplaci, a cena jednostkowa schodzi pod nia. */}
             <div className="flex items-end justify-between mb-1">
               <div>
-                <div className="text-[11px] uppercase tracking-wide text-neutral-500">{u.price}</div>
-                <div className="text-2xl font-extrabold text-white">
-                  {money(unitTotal)} <span className="text-xs font-normal text-neutral-500">{u.perPc}</span>
+                <div className="text-[11px] uppercase tracking-wide text-neutral-500">
+                  {effectiveQty > 1 ? `${u.total} (${effectiveQty} ${u.pcs})` : u.price}
                 </div>
+                <div className="text-2xl font-extrabold text-white">{money(lineTotal)}</div>
               </div>
-              {qty > 1 && (
+              {effectiveQty > 1 && (
                 <div className="text-right">
-                  <div className="text-[11px] uppercase tracking-wide text-neutral-500">{u.total}</div>
-                  <div className={`text-xl font-bold ${accent === "amber" ? "text-amber-300" : "text-blue-300"}`}>
-                    {money(lineTotal)}
+                  <div className="text-[11px] uppercase tracking-wide text-neutral-500">{u.price}</div>
+                  <div className={`text-lg font-bold ${accent === "amber" ? "text-amber-300" : "text-blue-300"}`}>
+                    {money(unitTotal)} <span className="text-[11px] font-normal text-neutral-500">{u.perPc}</span>
                   </div>
                 </div>
               )}

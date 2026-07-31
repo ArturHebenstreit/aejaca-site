@@ -813,13 +813,20 @@ app.post("/api/uploads/:token/thumb", express.json({ limit: "400kb" }), async (r
     return res.status(400).json({ error: "Nieprawidlowy obraz" });
   }
 
-  const { rowCount } = await pool.query(
-    `UPDATE uploads SET thumbnail = $2
-      WHERE token = $1 AND thumbnail IS NULL AND status = 'pending'`,
-    [String(req.params.token || ""), dataUrl]
-  );
-  if (!rowCount) return res.status(404).json({ error: "Nieznany plik" });
-  res.json({ ok: true });
+  try {
+    const { rowCount } = await pool.query(
+      `UPDATE uploads SET thumbnail = $2
+        WHERE token = $1 AND thumbnail IS NULL AND status = 'pending'`,
+      [String(req.params.token || ""), dataUrl]
+    );
+    if (!rowCount) return res.status(404).json({ error: "Nieznany plik" });
+    res.json({ ok: true });
+  } catch (e) {
+    // Najczestszy powod to brak kolumny thumbnail w bazie. Bez tego logu
+    // objaw jest niemy: koszyk po prostu pokazuje zdjecie katalogowe.
+    console.error("[uploads] zapis miniatury nie powiodl sie:", e.message);
+    res.status(500).json({ error: "Nie udalo sie zapisac podgladu" });
+  }
 });
 
 app.get("/api/uploads/:token/thumb", async (req, res) => {

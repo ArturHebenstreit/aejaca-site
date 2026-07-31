@@ -16,14 +16,23 @@ export const CONFIG = {
   PL_MARKET_DISCOUNT: 0.15,
 };
 
+// `qty` to nakald reprezentatywny, na ktorym opiera sie rabat progu.
+// `min` i `max` to granice przedzialu z etykiety: kreator ustawia na nich
+// licznik sztuk, zeby klient nie wybral progu 11-20 i nie zamowil jednej sztuki.
 export const QUANTITY_TIERS = [
-  { id: "proto",  label: { pl: "1 szt. (prototyp)", en: "1 pc (prototype)", de: "1 Stk. (Prototyp)" }, qty: 1, discount: 0.00 },
-  { id: "micro",  label: { pl: "2-10 szt.", en: "2-10 pcs", de: "2-10 Stk." }, qty: 6, discount: 0.05 },
-  { id: "small",  label: { pl: "11-20 szt.", en: "11-20 pcs", de: "11-20 Stk." }, qty: 15, discount: 0.10 },
-  { id: "medium", label: { pl: "21-50 szt.", en: "21-50 pcs", de: "21-50 Stk." }, qty: 35, discount: 0.15 },
-  { id: "large",  label: { pl: "51-100 szt.", en: "51-100 pcs", de: "51-100 Stk." }, qty: null, discount: null, custom: true },
-  { id: "custom", label: { pl: "100+ / niestandardowe", en: "100+ / custom", de: "100+ / individuell" }, qty: null, discount: null, custom: true },
+  { id: "proto",  label: { pl: "1 szt. (prototyp)", en: "1 pc (prototype)", de: "1 Stk. (Prototyp)" }, qty: 1, discount: 0.00, min: 1, max: 1 },
+  { id: "micro",  label: { pl: "2-10 szt.", en: "2-10 pcs", de: "2-10 Stk." }, qty: 6, discount: 0.05, min: 2, max: 10 },
+  { id: "small",  label: { pl: "11-20 szt.", en: "11-20 pcs", de: "11-20 Stk." }, qty: 15, discount: 0.10, min: 11, max: 20 },
+  { id: "medium", label: { pl: "21-50 szt.", en: "21-50 pcs", de: "21-50 Stk." }, qty: 35, discount: 0.15, min: 21, max: 50 },
+  { id: "large",  label: { pl: "51-100 szt.", en: "51-100 pcs", de: "51-100 Stk." }, qty: null, discount: null, custom: true, min: 51, max: 100 },
+  { id: "custom", label: { pl: "100+ / niestandardowe", en: "100+ / custom", de: "100+ / individuell" }, qty: null, discount: null, custom: true, min: 100, max: 999 },
 ];
+
+/** Granice licznika sztuk dla wybranego progu nakladu */
+export function quantityBounds(quantityId) {
+  const tier = QUANTITY_TIERS.find((q) => q.id === quantityId);
+  return { min: tier?.min ?? 1, max: tier?.max ?? 999 };
+}
 
 /** Lookup helper for multilingual labels */
 export function t(obj, lang) {
