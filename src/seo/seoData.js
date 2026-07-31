@@ -262,6 +262,26 @@ export const SEO = {
     },
   },
 
+  shop: {
+    pl: { title: "Produkty i usługi, AEJaCA", description: "Gotowe wyroby jubilerskie, produkty sTuDiO i modele do pobrania, a obok usługi wyceniane online: druk 3D, grawer laserowy, odlewy żywiczne, renowacja biżuterii.", keywords: "sklep aejaca, biżuteria online, druk 3d sklep, modele stl do pobrania", ogAlt: "Sklep AEJaCA" },
+    en: { title: "Products and services, AEJaCA", description: "Ready-made jewelry, sTuDiO products and downloadable models, alongside services quoted online: 3D printing, laser engraving, resin casting, jewelry renovation.", keywords: "aejaca shop, handmade jewelry, 3d printing shop, stl models", ogAlt: "AEJaCA shop" },
+    de: { title: "Produkte und Leistungen, AEJaCA", description: "Fertiger Schmuck, sTuDiO-Produkte und Modelle zum Download, dazu online kalkulierte Leistungen: 3D-Druck, Lasergravur, Harzguss, Schmuckaufarbeitung.", keywords: "aejaca shop, handgefertigter schmuck, 3d druck shop, stl modelle", ogAlt: "AEJaCA Shop" },
+  },
+  shop_jewelry: {
+    pl: { title: "Biżuteria: produkty i usługi, AEJaCA", description: "Wyroby gotowe ze złota i srebra oraz usługi jubilerskie: renowacja, naprawa, biżuteria na zamówienie i wyroby z kamieniami.", keywords: "biżuteria ręcznie robiona, renowacja biżuterii, naprawa biżuterii, pierścionek na zamówienie", ogAlt: "Biżuteria AEJaCA" },
+    en: { title: "Jewelry: products and services, AEJaCA", description: "Ready-made gold and silver pieces plus jewelry services: renovation, repair, made-to-order work and pieces with stones.", keywords: "handmade jewelry, jewelry renovation, jewelry repair, custom ring", ogAlt: "AEJaCA jewelry" },
+    de: { title: "Schmuck: Produkte und Leistungen, AEJaCA", description: "Fertige Stücke aus Gold und Silber sowie Schmuckleistungen: Aufarbeitung, Reparatur, Anfertigung nach Maß und Stücke mit Steinen.", keywords: "handgefertigter schmuck, schmuckaufarbeitung, schmuckreparatur, ring nach maß", ogAlt: "AEJaCA Schmuck" },
+  },
+  shop_studio: {
+    pl: { title: "sTuDiO: produkty i usługi, AEJaCA", description: "Druk 3D FDM i żywiczny, grawer laserowy CO2 i fiber, odlewy żywiczne, produkty gotowe oraz modele STL do pobrania.", keywords: "druk 3d na zamówienie, grawer laserowy, modele stl, odlew żywiczny", ogAlt: "AEJaCA sTuDiO" },
+    en: { title: "sTuDiO: products and services, AEJaCA", description: "FDM and resin 3D printing, CO2 and fiber laser engraving, resin casting, ready-made products and downloadable STL models.", keywords: "custom 3d printing, laser engraving, stl models, resin casting", ogAlt: "AEJaCA sTuDiO" },
+    de: { title: "sTuDiO: Produkte und Leistungen, AEJaCA", description: "FDM- und Harz-3D-Druck, CO2- und Faserlasergravur, Harzguss, fertige Produkte und STL-Modelle zum Download.", keywords: "3d druck nach maß, lasergravur, stl modelle, harzguss", ogAlt: "AEJaCA sTuDiO" },
+  },
+  product: {
+    pl: { title: "Produkt, AEJaCA", description: "Szczegóły produktu w sklepie AEJaCA.", keywords: "produkt aejaca", ogAlt: "Produkt AEJaCA" },
+    en: { title: "Product, AEJaCA", description: "Product details in the AEJaCA shop.", keywords: "aejaca product", ogAlt: "AEJaCA product" },
+    de: { title: "Produkt, AEJaCA", description: "Produktdetails im AEJaCA-Shop.", keywords: "aejaca produkt", ogAlt: "AEJaCA Produkt" },
+  },
   order: {
     pl: {
       title: "Zamów online, druk 3D, grawer i biżuteria, AEJaCA",

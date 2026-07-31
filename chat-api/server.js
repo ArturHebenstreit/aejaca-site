@@ -13,6 +13,7 @@ import {
   autopayConfigured, buildStartTransaction, formatValidityTime,
   verifyReturn, parseITN, buildITNConfirmation, fetchGatewayList,
 } from "./autopay.js";
+import { sendOrderPaidEmails } from "./orderMail.js";
 
 const app = express();
 app.set("trust proxy", true);
@@ -936,7 +937,14 @@ app.post("/api/autopay/itn", express.urlencoded({ extended: false, limit: "256kb
             [order.id, parsed.paymentStatus, parsed.paymentStatusDetails, parsed.remoteID]
           );
           console.log(`[autopay] zamowienie ${parsed.orderID} oplacone, ${(amountGrosze / 100).toFixed(2)} PLN`);
-          // TODO: maile do klienta i do warsztatu, wydanie plikow cyfrowych
+
+          // Maile wysylamy po ustawieniu fulfilled_at, wiec kolejny SUCCESS
+          // tego zamowienia juz tu nie wejdzie. Nie czekamy na wynik: ITN
+          // trzeba potwierdzic niezaleznie od tego, czy poczta zadziala.
+          sendOrderPaidEmails(pool, order.id).catch((e) =>
+            console.error("[autopay] wysylka maili nie powiodla sie:", e.message)
+          );
+          // TODO: wydanie plikow cyfrowych po dodaniu produktow do katalogu
         } else {
           await pool.query(
             `UPDATE orders SET payment_status = COALESCE($2, payment_status),
