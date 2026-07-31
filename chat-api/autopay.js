@@ -208,9 +208,12 @@ export async function fetchGatewayList({ language = "PL", currencies = "PLN" } =
   if (!autopayConfigured()) return null;
   if (_gatewayCache.data && Date.now() - _gatewayCache.ts < GATEWAY_TTL) return _gatewayCache.data;
 
+  // Ta metoda, w odroznieniu od startu transakcji, przyjmuje JSON (REST),
+  // a ServiceID jest w nim liczba, nie napisem. Wyslanie formularza konczy
+  // sie odpowiedzia HTTP 415.
   const messageID = crypto.randomBytes(16).toString("hex");
-  const body = new URLSearchParams({
-    ServiceID: AUTOPAY.serviceId,
+  const body = JSON.stringify({
+    ServiceID: Number(AUTOPAY.serviceId),
     MessageID: messageID,
     Currencies: currencies,
     Language: language,
@@ -220,12 +223,15 @@ export async function fetchGatewayList({ language = "PL", currencies = "PLN" } =
   try {
     const resp = await fetch(`${AUTOPAY.host.replace(/\/$/, "")}/gatewayList/v3`, {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
       body,
     });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    if (!resp.ok) {
+      const detail = await resp.text().catch(() => "");
+      throw new Error(`HTTP ${resp.status} ${detail.slice(0, 200)}`);
+    }
     const json = await resp.json();
-    if (json.result !== "OK") throw new Error(json.errorStatus || "gatewayList error");
+    if (json.result !== "OK") throw new Error(`${json.errorStatus || "gatewayList error"}: ${json.description || ""}`);
     _gatewayCache = { ts: Date.now(), data: json };
     return json;
   } catch (e) {
