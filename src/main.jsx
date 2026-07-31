@@ -30,6 +30,7 @@ const Shop = lazy(() => import("./pages/Shop.jsx"));
 const Product = lazy(() => import("./pages/Product.jsx"));
 const Service = lazy(() => import("./pages/Service.jsx"));
 const Cart = lazy(() => import("./pages/Cart.jsx"));
+const Checkout = lazy(() => import("./pages/Checkout.jsx"));
 const OrderStatus = lazy(() => import("./pages/OrderStatus.jsx"));
 const Shipping = lazy(() => import("./pages/Shipping.jsx"));
 const ToolsJewelry = lazy(() => import("./pages/ToolsJewelry.jsx"));
@@ -78,6 +79,7 @@ const app = (
                 <Route path="/returns/" element={<Returns />} />
                 <Route path="/terms/" element={<Terms />} />
                 <Route path="/cart/" element={<Cart />} />
+                <Route path="/checkout/" element={<Checkout />} />
                 <Route path="/shop/" element={<Shop />} />
                 <Route path="/shop/jewelry/" element={<Shop />} />
                 <Route path="/shop/studio/" element={<Shop />} />

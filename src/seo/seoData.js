@@ -282,6 +282,11 @@ export const SEO = {
     en: { title: "Cart, AEJaCA", description: "Your cart in the AEJaCA shop.", keywords: "cart", ogAlt: "AEJaCA cart" },
     de: { title: "Warenkorb, AEJaCA", description: "Ihr Warenkorb im AEJaCA-Shop.", keywords: "warenkorb", ogAlt: "AEJaCA Warenkorb" },
   },
+  checkout: {
+    pl: { title: "Zamówienie, AEJaCA", description: "Finalizacja zamówienia w sklepie AEJaCA.", keywords: "zamówienie", ogAlt: "Zamówienie AEJaCA" },
+    en: { title: "Order, AEJaCA", description: "Completing your order in the AEJaCA shop.", keywords: "order", ogAlt: "AEJaCA order" },
+    de: { title: "Bestellung, AEJaCA", description: "Bestellabschluss im AEJaCA-Shop.", keywords: "bestellung", ogAlt: "AEJaCA Bestellung" },
+  },
   service: {
     pl: { title: "Usługa, AEJaCA", description: "Szczegóły usługi w AEJaCA.", keywords: "usługa aejaca", ogAlt: "Usługa AEJaCA" },
     en: { title: "Service, AEJaCA", description: "Service details at AEJaCA.", keywords: "aejaca service", ogAlt: "AEJaCA service" },

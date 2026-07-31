@@ -25,6 +25,7 @@ import Shop from "./pages/Shop.jsx";
 import Product from "./pages/Product.jsx";
 import Service from "./pages/Service.jsx";
 import Cart from "./pages/Cart.jsx";
+import Checkout from "./pages/Checkout.jsx";
 import OrderStatus from "./pages/OrderStatus.jsx";
 import Shipping from "./pages/Shipping.jsx";
 import ToolsJewelry from "./pages/ToolsJewelry.jsx";
@@ -66,6 +67,7 @@ export function render(url) {
               <Route path="/returns/" element={<Returns />} />
               <Route path="/terms/" element={<Terms />} />
               <Route path="/cart/" element={<Cart />} />
+              <Route path="/checkout/" element={<Checkout />} />
               <Route path="/shop/" element={<Shop />} />
               <Route path="/shop/jewelry/" element={<Shop />} />
               <Route path="/shop/studio/" element={<Shop />} />
