@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-07-31 | Wersja: 1.5*
+*Wygenerowano: 2026-07-31 | Wersja: 1.6*
 
 ---
 
@@ -108,15 +108,17 @@ Zakres cenowy (schema): EUR 80-3500, PLN ~340-15000
 ### Technologie i cennik (ceny startowe)
 | Usługa | PLN | EUR |
 |--------|-----|-----|
-| Druk 3D FDM (PLA/PETG) | 25 | 6 |
-| Wycinanie laserem CO2 | 30 | 7 |
-| Grawer laserowy CO2 | 15 | 4 |
-| Znakowanie laserem fibrowym | 20 | 5 |
-| Druk żywiczny MSLA 16K | 49 | 12 |
+| Druk 3D FDM (PLA/PETG) | 16 | 4 |
+| Wycinanie laserem CO2 | 8 | 2 |
+| Grawer laserowy CO2 | 8 | 2 |
+| Znakowanie laserem fibrowym | 8 | 2 |
+| Druk żywiczny MSLA 16K | 40 | 9 |
 | Wzorzec castable (BlueCast) | 90 | 21 |
-| Odlew żywiczny (epoksyd/UV) | 40 | 10 |
+| Odlew żywiczny (epoksyd/UV) | 18 | 4 |
 
 Zakres cenowy (schema): EUR 5-2000
+
+**Skąd te liczby.** To najtańsza konfiguracja, jaką silnik wyceny potrafi policzyć dla jednej sztuki, wyprowadzona skryptem `scripts/derive-service-prices.mjs` i pilnowana przy każdym buildzie. Nie wpisujemy ich z pamięci, bo poprzedni zestaw rozjechał się z cennikiem nawet trzykrotnie. Pozycje jubilerskie dostają 10% zapasu na ruch kursu kruszcu.
 
 ### Sprzęt cyfrowej fabrykacji
 | Urządzenie | Opis |
