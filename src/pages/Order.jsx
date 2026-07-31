@@ -69,6 +69,7 @@ const UI = {
     required: "Pole wymagane",
     creating: "Tworzę zamówienie",
     redirecting: "Przekierowuję do płatności",
+    redirectBlocked: "Nie udało się otworzyć strony płatności. Zamówienie jest zapisane, napisz do nas z jego numerem, a prześlemy link do zapłaty.",
   },
   en: {
     title: "Order online",
@@ -119,6 +120,7 @@ const UI = {
     required: "Required",
     creating: "Creating order",
     redirecting: "Redirecting to payment",
+    redirectBlocked: "We could not open the payment page. Your order is saved, write to us with its number and we will send a payment link.",
   },
   de: {
     title: "Online bestellen",
@@ -169,6 +171,7 @@ const UI = {
     required: "Pflichtfeld",
     creating: "Bestellung wird angelegt",
     redirecting: "Weiterleitung zur Zahlung",
+    redirectBlocked: "Die Zahlungsseite konnte nicht geöffnet werden. Ihre Bestellung ist gespeichert, schreiben Sie uns mit der Nummer und wir senden einen Zahlungslink.",
   },
 };
 
@@ -414,6 +417,15 @@ export default function Order() {
       }
       document.body.appendChild(form);
       form.submit();
+
+      // Przegladarka blokuje wysylke formularza po cichu, gdy polityka
+      // bezpieczenstwa nie dopuszcza domeny bramki. Bez tego zabezpieczenia
+      // przycisk zostawal w stanie przekierowania na zawsze, a klient nie
+      // wiedzial, ze cokolwiek poszlo nie tak.
+      setTimeout(() => {
+        setSubmitting(false);
+        setSubmitError(u.redirectBlocked);
+      }, 8000);
     } catch {
       setSubmitError(u.errorGeneric);
       setSubmitting(false);
