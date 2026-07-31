@@ -256,6 +256,36 @@ function Field({ label, value, onChange, type = "text", required, placeholder })
   );
 }
 
+/**
+ * Zapytanie z twardym limitem czasu.
+ *
+ * Bez tego zawieszone polaczenie zostawialo przycisk w stanie
+ * "przekierowuje" na zawsze, bo obietnica fetch nigdy sie nie rozstrzygala.
+ * Kazdy etap loguje sie tez do konsoli, zeby przy zgloszeniu bledu bylo
+ * widac, ktory krok nie doszedl do skutku.
+ */
+async function postJSON(url, body, timeoutMs = 20000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    console.info("[order] ->", url);
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: ctrl.signal,
+    });
+    const text = await resp.text();
+    let data;
+    try { data = JSON.parse(text); }
+    catch { data = { error: `Serwer zwrocil odpowiedz, ktorej nie da sie odczytac (${resp.status})`, raw: text.slice(0, 200) }; }
+    console.info("[order] <-", url, resp.status, data);
+    return { ok: resp.ok, status: resp.status, data };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export default function Order() {
   const { lang } = useLanguage();
   const u = UI[lang] || UI.en;
@@ -361,10 +391,13 @@ export default function Order() {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const orderResp = await fetch(`${API}/api/orders`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      if (!API) {
+        setSubmitError("Brak adresu API. Skontaktuj sie z nami, zamowienie nie zostalo zlozone.");
+        setSubmitting(false);
+        return;
+      }
+
+      const created = await postJSON(`${API}/api/orders`, {
           lang,
           items: [{
             calculator: service.calculator,
@@ -383,26 +416,24 @@ export default function Order() {
             city: addr.city || null,
           },
           consents,
-        }),
       });
-      const order = await orderResp.json();
-      if (!orderResp.ok) {
-        setSubmitError(order.error || u.errorGeneric);
+      if (!created.ok) {
+        setSubmitError(created.data?.error || `${u.errorGeneric} (${created.status})`);
         setSubmitting(false);
         return;
       }
+      const order = created.data;
 
-      const payResp = await fetch(`${API}/api/orders/${order.orderRef}/pay`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: order.token, gatewayId }),
+      const payment = await postJSON(`${API}/api/orders/${order.orderRef}/pay`, {
+        token: order.token,
+        gatewayId,
       });
-      const pay = await payResp.json();
-      if (!payResp.ok) {
-        setSubmitError(pay.error || u.errorGeneric);
+      if (!payment.ok) {
+        setSubmitError(payment.data?.error || `${u.errorGeneric} (${payment.status})`);
         setSubmitting(false);
         return;
       }
+      const pay = payment.data;
 
       // Bramka oczekuje zwyklego formularza POST, nie wywolania fetch.
       const form = document.createElement("form");
@@ -426,8 +457,13 @@ export default function Order() {
         setSubmitting(false);
         setSubmitError(u.redirectBlocked);
       }, 8000);
-    } catch {
-      setSubmitError(u.errorGeneric);
+    } catch (e) {
+      console.error("[order] blad:", e);
+      setSubmitError(
+        e?.name === "AbortError"
+          ? "Serwer nie odpowiedzial w wyznaczonym czasie. Sprobuj ponownie albo napisz do nas."
+          : `${u.errorGeneric}: ${e?.message || e}`
+      );
       setSubmitting(false);
     }
   }
