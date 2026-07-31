@@ -13,6 +13,7 @@ import {
   APPLICATIONS, LAYER_HEIGHTS, MSLA_SIZES, FILAMENTS, SIZES, INFILL, INFILL_OPTIONS, COLORS, PRECISION,
   isCastable, getAvailableResins, estimateTimeFromVolume, estimatePcsPerPlate, estimatePcsPerPlateMSLA,
   calculate, calculateMSLA,
+  LBL, MSLA_LBL,
 } from "../../pricing/print3d.js";
 
 // Re-eksport, bo SimpleStudioCalc i inne moduly importuja te symbole stad.

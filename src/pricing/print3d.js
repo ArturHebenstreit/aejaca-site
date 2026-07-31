@@ -74,7 +74,7 @@ export function estimatePcsPerPlateMSLA(bbox) {
   return Math.max(1, Math.min(Math.floor(MSLA_BUILD_VOL_CM.x / partW) * Math.floor(MSLA_BUILD_VOL_CM.y / partD), 30));
 }
 
-const MSLA_LBL = {
+export const MSLA_LBL = {
   pl: { application: "Zastosowanie", resinSegment: "Segment żywicy", resin: "Żywica", color: "Preferowany kolor (opcjonalnie)",
     colorDefault: "Do ustalenia", layer: "Wysokość warstwy", size: "Rozmiar modelu", qty: "Nakład",
     volume: "Objętość żywicy", resinCost: "Żywica / szt.", printTime: "Czas druku / szt.", machine: "Maszyna / szt.",
@@ -245,7 +245,7 @@ export const PRECISION = [
   { id: "custom",      label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" }, speedMul: null, custom: true },
 ];
 
-const LBL = {
+export const LBL = {
   pl: { segment: "Segment wydruku", filament: "Filament", size: "Rozmiar modelu", infill: "Wypełnienie (infill)",
     colors: "Liczba kolorów", precision: "Precyzja (nozzle × warstwa)", qty: "Nakład",
     mass: "Masa / szt.", material: "Materiał / szt.", printTime: "Czas druku / szt.", timeSetup: "Czas + setup / szt.",
