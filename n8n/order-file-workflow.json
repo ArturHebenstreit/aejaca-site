@@ -1,0 +1,99 @@
+{
+  "name": "AEJaCA: pliki zamowien na Dysk",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "aejaca-order-file",
+        "responseMode": "onReceived",
+        "options": {
+          "rawBody": false
+        }
+      },
+      "id": "a1000000-0000-4000-8000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "aejaca-order-file"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "body.data",
+        "options": {
+          "fileName": "={{ $json.body.fileName }}",
+          "mimeType": "={{ $json.body.mimeType || 'application/octet-stream' }}"
+        }
+      },
+      "id": "a1000000-0000-4000-8000-000000000002",
+      "name": "Base64 na plik",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "name": "={{ $('Webhook').item.json.body.fileName }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultName": "WYBIERZ: AEJaCA / Zamowienia"
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000003",
+      "name": "Zapis na Dysku",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [440, 0],
+      "notes": "Wybierz swoje poswiadczenia Google Drive oraz katalog AEJaCA / Zamowienia."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://aejacachatapi-production.up.railway.app/api/uploads/{{ $('Webhook').item.json.body.token }}/stored",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-upload-token",
+              "value": "WKLEJ_TU_WARTOSC_UPLOAD_CALLBACK_TOKEN"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ driveUrl: $json.webViewLink, driveFileId: $json.id }) }}",
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000004",
+      "name": "Oddzwonienie do AEJaCA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 0],
+      "notes": "Przekazuje link do Dysku, zeby trafil do maila zamowienia obok reszty danych."
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Base64 na plik", "type": "main", "index": 0 }]]
+    },
+    "Base64 na plik": {
+      "main": [[{ "node": "Zapis na Dysku", "type": "main", "index": 0 }]]
+    },
+    "Zapis na Dysku": {
+      "main": [[{ "node": "Oddzwonienie do AEJaCA", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}
