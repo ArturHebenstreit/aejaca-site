@@ -835,8 +835,14 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
     });
   } catch (e) {
     if (e instanceof PricingError) return res.status(400).json({ error: e.message, code: e.code });
-    console.error("[orders] create failed:", e);
-    res.status(500).json({ error: "Nie udalo sie utworzyc zamowienia" });
+    // Pelny blad do logow, skrocony do odpowiedzi. Komunikaty Postgresa
+    // mowia o kolumnach i ograniczeniach, nie o poswiadczeniach, wiec
+    // ich pokazanie przyspiesza diagnoze bez ryzyka wycieku sekretow.
+    console.error("[orders] create failed:", e?.code, e?.message, e?.detail, e?.stack);
+    res.status(500).json({
+      error: "Nie udalo sie utworzyc zamowienia",
+      detail: [e?.code, e?.message, e?.detail].filter(Boolean).join(" | ").slice(0, 300),
+    });
   }
 });
 
