@@ -79,7 +79,6 @@ export default function Studio() {
   const getServiceRef = useStaggerReveal(80);
   const processRef = useScrollReveal();
   const getStepRef = useStaggerReveal(120);
-  const etsyRef = useScrollReveal();
   const ctaRef = useScrollReveal();
 
   const [showFloatingCta] = useState(true);
@@ -408,19 +407,6 @@ export default function Studio() {
         </div>
       </section>
 
-      <div className="gradient-divider" />
-
-      {/* Etsy */}
-      <section id="shop" className="py-16 px-4 text-center bg-neutral-900/50">
-        <div ref={etsyRef} className="reveal">
-          <h2 className="font-sans text-2xl font-bold text-white mb-3 tracking-tight">{s.shopTitle}</h2>
-          <p className="text-neutral-400 mb-6">{s.shopText}</p>
-          <a href="https://aejaca2studio.etsy.com" target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 text-white font-medium rounded-full hover:bg-blue-400 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300">
-            {s.shopBtn} <ArrowRight className="w-4 h-4" />
-          </a>
-        </div>
-      </section>
 
       {/* CTA */}
       <section className="py-14 px-4 text-center bg-neutral-950">

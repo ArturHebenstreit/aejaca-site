@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Globe, ChevronDown, Sun, Moon, ShoppingCart } from "lucide-react";
+import { Menu, X, Globe, ChevronDown, Sun, Moon, ShoppingCart, ExternalLink } from "lucide-react";
 import { useLanguage, LANGUAGES } from "../i18n/LanguageContext.jsx";
 import { useTheme } from "../i18n/ThemeContext.jsx";
 import { useCart } from "../cart/CartContext.jsx";
@@ -224,7 +224,25 @@ export default function Navbar() {
                     >
                       <div className="py-1.5">
                         {sections.map((sec) =>
-                          sec.to ? (
+                          // Etsy prowadzi poza serwis, wiec musi otwierac sie
+                          // w nowej karcie i byc widocznie oznaczone.
+                          sec.href ? (
+                            <a
+                              key={sec.href}
+                              href={sec.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => setOpenDropdown(null)}
+                              className={`flex items-center justify-between gap-2 px-4 py-2 text-sm transition-colors ${
+                                accentColor === "blue"
+                                  ? "text-neutral-400 hover:text-blue-300 hover:bg-blue-400/5"
+                                  : "text-neutral-400 hover:text-amber-300 hover:bg-amber-400/5"
+                              }`}
+                            >
+                              {sec.label}
+                              <ExternalLink className="w-3 h-3 opacity-60" />
+                            </a>
+                          ) : sec.to ? (
                             <Link
                               key={sec.to}
                               to={sec.to}
@@ -389,7 +407,23 @@ export default function Navbar() {
                     }`}>
                       <div className="pl-6 pb-2 space-y-0.5">
                         {sections.map((sec) =>
-                          sec.to ? (
+                          sec.href ? (
+                            <a
+                              key={sec.href}
+                              href={sec.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => { setMenuOpen(false); setMobileExpanded(null); }}
+                              className={`flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                                accentColor === "blue"
+                                  ? "text-neutral-400 hover:text-blue-300 hover:bg-blue-400/5"
+                                  : "text-neutral-400 hover:text-amber-300 hover:bg-amber-400/5"
+                              }`}
+                            >
+                              {sec.label}
+                              <ExternalLink className="w-3 h-3 opacity-60" />
+                            </a>
+                          ) : sec.to ? (
                             <Link
                               key={sec.to}
                               to={sec.to}

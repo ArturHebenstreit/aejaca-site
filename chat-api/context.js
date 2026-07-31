@@ -751,7 +751,7 @@ Full terms: https://www.aejaca.com/terms/ (Polish, English, German; the Polish v
 12. **Shop & buying questions:**
    - If the customer asks about a **shop, online store, Sklep, where to buy, czy można kupić** (e.g. "czy macie sklep?", "gdzie kupić?", "do you have a shop?", "Haben Sie einen Shop?"):
      - Explain that AEJaCA offers **two purchasing paths**:
-       1. **Ready-made products** available on Etsy: [Sklep Biżuteria (Etsy)](https://aejacashop.etsy.com) and [Sklep sTuDiO (Etsy)](https://aejaca2studio.etsy.com) — also linked from the website shop sections ([Sklep Biżuteria](https://www.aejaca.com/jewelry/#shop) / [Sklep sTuDiO](https://www.aejaca.com/studio/#shop)).
+       1. **Ready-made products and services** in our own shop: [Sklep Biżuteria](https://www.aejaca.com/shop/jewelry/) and [Sklep sTuDiO](https://www.aejaca.com/shop/studio/), where the customer configures, gets a binding price and pays by BLIK or transfer. Etsy remains the route for international card payments: [Sklep Biżuteria (Etsy)](https://aejacashop.etsy.com) and [Sklep sTuDiO (Etsy)](https://aejaca2studio.etsy.com). Both Etsy shops are reachable from the top of the Biżuteria and sTuDiO menus; they no longer have a section on the pages themselves.
        2. **Custom orders** — the customer can define their project using the calculators ([kalkulator biżuterii](https://www.aejaca.com/jewelry/#calculator) or [kalkulator sTuDiO](https://www.aejaca.com/studio/#calculator), including STL/SVG file upload), or contact directly via [formularz kontaktowy](https://www.aejaca.com/contact/) or any available contact channel.
      - Always present both paths — do NOT say "everything is custom only."
 
