@@ -27,6 +27,7 @@ const Terms = lazy(() => import("./pages/Terms.jsx"));
 const Order = lazy(() => import("./pages/Order.jsx"));
 const Shop = lazy(() => import("./pages/Shop.jsx"));
 const Product = lazy(() => import("./pages/Product.jsx"));
+const Service = lazy(() => import("./pages/Service.jsx"));
 const OrderStatus = lazy(() => import("./pages/OrderStatus.jsx"));
 const Shipping = lazy(() => import("./pages/Shipping.jsx"));
 const ToolsJewelry = lazy(() => import("./pages/ToolsJewelry.jsx"));
@@ -76,6 +77,7 @@ const app = (
                 <Route path="/shop/" element={<Shop />} />
                 <Route path="/shop/jewelry/" element={<Shop />} />
                 <Route path="/shop/studio/" element={<Shop />} />
+                <Route path="/shop/service/:id/" element={<Service />} />
                 <Route path="/shop/:slug/" element={<Product />} />
                 <Route path="/order/" element={<Order />} />
                 <Route path="/order/status/" element={<OrderStatus />} />

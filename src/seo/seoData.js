@@ -277,6 +277,11 @@ export const SEO = {
     en: { title: "sTuDiO: products and services, AEJaCA", description: "FDM and resin 3D printing, CO2 and fiber laser engraving, resin casting, ready-made products and downloadable STL models.", keywords: "custom 3d printing, laser engraving, stl models, resin casting", ogAlt: "AEJaCA sTuDiO" },
     de: { title: "sTuDiO: Produkte und Leistungen, AEJaCA", description: "FDM- und Harz-3D-Druck, CO2- und Faserlasergravur, Harzguss, fertige Produkte und STL-Modelle zum Download.", keywords: "3d druck nach maß, lasergravur, stl modelle, harzguss", ogAlt: "AEJaCA sTuDiO" },
   },
+  service: {
+    pl: { title: "Usługa, AEJaCA", description: "Szczegóły usługi w AEJaCA.", keywords: "usługa aejaca", ogAlt: "Usługa AEJaCA" },
+    en: { title: "Service, AEJaCA", description: "Service details at AEJaCA.", keywords: "aejaca service", ogAlt: "AEJaCA service" },
+    de: { title: "Leistung, AEJaCA", description: "Details zur Leistung bei AEJaCA.", keywords: "aejaca leistung", ogAlt: "AEJaCA Leistung" },
+  },
   product: {
     pl: { title: "Produkt, AEJaCA", description: "Szczegóły produktu w sklepie AEJaCA.", keywords: "produkt aejaca", ogAlt: "Produkt AEJaCA" },
     en: { title: "Product, AEJaCA", description: "Product details in the AEJaCA shop.", keywords: "aejaca product", ogAlt: "AEJaCA product" },

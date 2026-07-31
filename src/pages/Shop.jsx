@@ -36,6 +36,7 @@ const UI = {
     days: "dni",
     immediate: "natychmiast po opłaceniu",
     quoteBadge: "Wycena indywidualna",
+    quoteReply: "odpowiedź w 24 h",
     bothSections: "Wybierz dział",
   },
   en: {
@@ -56,6 +57,7 @@ const UI = {
     days: "days",
     immediate: "immediately after payment",
     quoteBadge: "Individual quote",
+    quoteReply: "reply within 24 h",
     bothSections: "Choose a section",
   },
   de: {
@@ -76,6 +78,7 @@ const UI = {
     days: "Tagen",
     immediate: "sofort nach Zahlung",
     quoteBadge: "Individuelles Angebot",
+    quoteReply: "Antwort in 24 h",
     bothSections: "Bereich wählen",
   },
 };
@@ -146,19 +149,23 @@ function ProductCard({ product, lang, u }) {
   );
 }
 
-function ServiceCard({ card, lang, u, theme }) {
-  const accent = theme === "amber" ? "amber" : "blue";
-  const target = card.quoteOnly ? "/contact/" : `/order/?service=${card.service}`;
-
+function ServiceCard({ card, lang, u }) {
   return (
-    <div className="flex flex-col sm:flex-row gap-4 rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
-      <div className="sm:w-44 sm:flex-shrink-0 aspect-video sm:aspect-auto bg-black">
-        <img src={card.image} alt={t(card.title, lang)} loading="lazy" className="w-full h-full object-cover" />
+    <Link
+      to={`/shop/service/${card.id}/`}
+      className="group flex flex-col rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden
+                 hover:border-white/20 hover:bg-white/[0.04] transition-all duration-300"
+    >
+      <div className="aspect-square bg-black overflow-hidden">
+        <img
+          src={card.image}
+          alt={t(card.title, lang)}
+          loading="lazy"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
       </div>
-
-      <div className="p-4 sm:pl-0 sm:py-5 sm:pr-5 flex flex-col flex-1">
-        <div className="flex flex-wrap items-center gap-2 mb-1.5">
-          <h3 className="text-white font-medium text-sm">{t(card.title, lang)}</h3>
+      <div className="p-4 flex flex-col flex-1">
+        <div className="flex flex-wrap gap-1.5 mb-2">
           {card.quoteOnly ? (
             <Badge tone="warn"><MessageCircle className="w-3 h-3" />{u.quoteBadge}</Badge>
           ) : (
@@ -166,47 +173,34 @@ function ServiceCard({ card, lang, u, theme }) {
           )}
         </div>
 
-        <p className="text-neutral-300 text-xs mb-2.5">{t(card.lead, lang)}</p>
+        <h3 className="text-white font-medium text-sm leading-snug mb-1">{t(card.title, lang)}</h3>
+        <p className="text-neutral-400 text-xs leading-relaxed mb-3 flex-1">{t(card.lead, lang)}</p>
 
-        <ul className="space-y-1 mb-3 flex-1">
-          {card.bullets.map((b, i) => (
-            <li key={i} className="text-neutral-400 text-[11px] leading-relaxed flex gap-2">
-              <span className={accent === "amber" ? "text-amber-400/60" : "text-blue-400/60"}>&bull;</span>
-              {t(b, lang)}
-            </li>
-          ))}
-        </ul>
-
-        {card.why && (
-          <p className="text-neutral-500 text-[11px] italic leading-relaxed mb-3 pt-2 border-t border-white/5">
-            {t(card.why, lang)}
-          </p>
-        )}
-
-        <div className="flex items-center justify-between gap-3">
-          {card.priceFromGrosze ? (
-            <div className="text-xs text-neutral-400">
-              {u.from} <span className="text-white font-semibold">{money(card.priceFromGrosze)}</span>
-            </div>
-          ) : (
-            <span />
-          )}
-          <Link
-            to={target}
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-colors ${
-              card.quoteOnly
-                ? "border border-amber-400/30 bg-amber-400/10 text-amber-300 hover:bg-amber-400/20"
-                : accent === "amber"
-                  ? "bg-amber-500 hover:bg-amber-400 text-neutral-900"
-                  : "bg-blue-500 hover:bg-blue-400 text-white"
-            }`}
-          >
-            {card.quoteOnly ? u.askQuote : u.order}
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+        <div className="flex items-end justify-between">
+          <div>
+            {card.priceFromGrosze ? (
+              <>
+                <div className="text-white font-bold">
+                  <span className="text-neutral-500 text-xs font-normal">{u.from} </span>
+                  {money(card.priceFromGrosze)}
+                </div>
+                <div className="text-neutral-500 text-[10px] mt-0.5">
+                  {u.ready} {card.leadTimeDays} {u.days}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-amber-300 font-semibold text-sm">{u.quoteBadge}</div>
+                <div className="text-neutral-500 text-[10px] mt-0.5">{u.quoteReply}</div>
+              </>
+            )}
+          </div>
+          <span className="text-neutral-500 group-hover:text-white text-xs flex items-center gap-1 transition-colors">
+            {u.details} <ArrowRight className="w-3.5 h-3.5" />
+          </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -294,9 +288,9 @@ export default function Shop() {
           {services.length > 0 && (
             <section>
               <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-4">{u.services}</h2>
-              <div className="space-y-4">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                 {services.map((s) => (
-                  <ServiceCard key={s.id} card={s} lang={lang} u={u} theme={category?.theme} />
+                  <ServiceCard key={s.id} card={s} lang={lang} u={u} />
                 ))}
               </div>
             </section>
