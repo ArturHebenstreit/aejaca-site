@@ -189,14 +189,13 @@ export default function Cart() {
                   <span className="text-white font-bold text-xl">{money(subtotalGrosze)}</span>
                 </div>
                 <p className="text-neutral-600 text-[11px] mb-4">{u.shippingNote}</p>
-                <button
-                  type="button"
-                  disabled
-                  className="w-full py-3.5 rounded-xl bg-neutral-800 text-neutral-500 font-semibold text-sm cursor-not-allowed"
+                <Link
+                  to="/checkout/"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-blue-500 hover:bg-blue-400
+                             text-white font-semibold text-sm transition-colors"
                 >
-                  {u.checkout}
-                </button>
-                <p className="text-neutral-600 text-[11px] text-center mt-2">{u.soon}</p>
+                  {u.checkout} <ArrowRight className="w-4 h-4" />
+                </Link>
               </div>
             </>
           )}

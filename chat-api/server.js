@@ -749,7 +749,25 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
         scale: raw.scale || 1,
         rates,
       });
-      priced.push({ ...item, params: raw.params, geometry: raw.geometry || null, fileName: raw.fileName || null });
+      // Opakowanie i personalizacja licza sie tutaj, nie w przegladarce.
+      // Bez tego klient widzialby cene z doplata, a placil bez niej.
+      const packGrosze = packagingGrosze(raw.packagingId);
+      const personalization = sanitizePersonalization(raw.personalization);
+      const qty = Number.isInteger(raw.qty) && raw.qty > 0 ? Math.min(999, raw.qty) : item.qty;
+      const unitGrosze = item.unitGrosze + packGrosze;
+
+      priced.push({
+        ...item,
+        qty,
+        unitGrosze,
+        lineGrosze: unitGrosze * qty,
+        packagingId: raw.packagingId || null,
+        packagingGrosze: packGrosze,
+        personalization,
+        params: raw.params,
+        geometry: raw.geometry || null,
+        fileName: raw.fileName || null,
+      });
     }
 
     const itemsTotal = priced.reduce((sum, i) => sum + i.lineGrosze, 0);
@@ -795,7 +813,8 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
            params, price_breakdown, file_name, file_sha256, geometry)
          VALUES ($1,'service',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
         [orderId, i.calculator, i.title, i.qty, i.unitGrosze, i.lineGrosze,
-         JSON.stringify(i.params ?? {}), JSON.stringify(i.breakdown ?? []),
+         JSON.stringify({ ...(i.params ?? {}), packagingId: i.packagingId, personalization: i.personalization }),
+         JSON.stringify(i.breakdown ?? []),
          i.fileName, i.geometry?.sha256 ?? null,
          i.geometry ? JSON.stringify(i.geometry) : null]
       );
