@@ -231,7 +231,11 @@ export default function Checkout() {
       });
 
       if (!created.ok) {
-        setError(created.data?.error || `${u.generic} (${created.status})`);
+        setError(
+          [created.data?.error || `${u.generic} (${created.status})`, created.data?.detail]
+            .filter(Boolean)
+            .join(" — ".replace(" — ", ": "))
+        );
         setBusy(false);
         return;
       }

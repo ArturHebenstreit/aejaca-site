@@ -4,14 +4,15 @@
   "description": "AEJaCA - Artisan Elegance Jewelry and Crafted Art",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/sync-pricing.mjs --check && vite build && vite build --ssr src/entry-server.jsx --outDir dist/server && node scripts/prerender.mjs",
+    "build": "node scripts/sync-pricing.mjs --check && node scripts/check-undefined-calls.mjs && vite build && vite build --ssr src/entry-server.jsx --outDir dist/server && node scripts/prerender.mjs",
     "build:client": "vite build",
     "preview": "vite preview",
     "db:seed-laser-matrix": "node scripts/import-laser-matrix.mjs",
     "db:seed-filaments": "node scripts/seed-filament-types.mjs",
     "db:schema-filaments": "psql $DATABASE_URL -f scripts/filament-schema.sql",
     "indexnow": "node scripts/submit-indexnow.mjs",
-    "sync:pricing": "node scripts/sync-pricing.mjs"
+    "sync:pricing": "node scripts/sync-pricing.mjs",
+    "check:backend": "node scripts/check-undefined-calls.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.536.0",
