@@ -15,6 +15,7 @@ const { render } = await import(serverPath);
 // Pages instead of silently falling back to client-side rendering.
 const { POSTS_META } = await import("../src/blog/postsMeta.js");
 const { GLOSSARY } = await import("../src/data/glossary.js");
+const { PRODUCTS } = await import("../src/data/shopCatalog.js");
 
 const STATIC_ROUTES = [
   "/",
@@ -29,6 +30,9 @@ const STATIC_ROUTES = [
   "/terms",
   "/order",
   "/order/status",
+  "/shop",
+  "/shop/jewelry",
+  "/shop/studio",
   "/shipping",
   "/privacy",
   "/reviews",
@@ -49,6 +53,8 @@ const STATIC_ROUTES = [
 
 const GLOSSARY_IDS = GLOSSARY.map((term) => term.id);
 const BLOG_SLUGS = POSTS_META.map((post) => post.slug);
+// Slugi produktow pochodza z katalogu, wiec nowy produkt nie wymaga wpisu recznego
+const PRODUCT_SLUGS = PRODUCTS.map((p) => p.slug);
 
 // STATIC_ROUTES is the one list still written by hand, so cross-check it
 // against the routes main.jsx actually declares. Without the SPA catch-all a
@@ -89,6 +95,7 @@ const routes = [
   ...STATIC_ROUTES,
   ...BLOG_SLUGS.map((s) => `/blog/${s}`),
   ...GLOSSARY_IDS.map((id) => `/glossary/${id}`),
+  ...PRODUCT_SLUGS.map((slug) => `/shop/${slug}`),
 ];
 
 function buildPage(route) {

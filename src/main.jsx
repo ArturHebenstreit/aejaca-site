@@ -25,6 +25,8 @@ const Warranty = lazy(() => import("./pages/Warranty.jsx"));
 const Returns = lazy(() => import("./pages/Returns.jsx"));
 const Terms = lazy(() => import("./pages/Terms.jsx"));
 const Order = lazy(() => import("./pages/Order.jsx"));
+const Shop = lazy(() => import("./pages/Shop.jsx"));
+const Product = lazy(() => import("./pages/Product.jsx"));
 const OrderStatus = lazy(() => import("./pages/OrderStatus.jsx"));
 const Shipping = lazy(() => import("./pages/Shipping.jsx"));
 const ToolsJewelry = lazy(() => import("./pages/ToolsJewelry.jsx"));
@@ -71,6 +73,10 @@ const app = (
                 <Route path="/warranty/" element={<Warranty />} />
                 <Route path="/returns/" element={<Returns />} />
                 <Route path="/terms/" element={<Terms />} />
+                <Route path="/shop/" element={<Shop />} />
+                <Route path="/shop/jewelry/" element={<Shop />} />
+                <Route path="/shop/studio/" element={<Shop />} />
+                <Route path="/shop/:slug/" element={<Product />} />
                 <Route path="/order/" element={<Order />} />
                 <Route path="/order/status/" element={<OrderStatus />} />
                 <Route path="/shipping/" element={<Shipping />} />

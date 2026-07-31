@@ -10,6 +10,8 @@ export default {
     order: "Order online",
     contact: "Contact",
     jewelrySections: [
+      // Sklep na pierwszym miejscu, bo to jedyna pozycja prowadzaca do zakupu.
+      { label: "Products and services", to: "/shop/jewelry/" },
       { label: "About AEJaCA Jewelry", id: "about" },
       { label: "Products & Services", id: "services" },
       { label: "Indicative Pricing", id: "pricing" },
@@ -25,6 +27,7 @@ export default {
       { label: "B2B Cooperation", to: "/b2b/" },
     ],
     studioSections: [
+      { label: "Products and services", to: "/shop/studio/" },
       { label: "About AEJaCA sTuDiO", id: "about" },
       { label: "Technologies", id: "technologies" },
       { label: "Indicative Pricing", id: "pricing" },
