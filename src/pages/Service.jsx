@@ -8,7 +8,7 @@
 
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
-import { ArrowRight, ArrowLeft, Clock, RotateCcw, MessageCircle, Wrench } from "lucide-react";
+import { ArrowRight, ArrowLeft, Clock, RotateCcw, MessageCircle, Wrench, Calculator } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildBreadcrumbSchema } from "../seo/schemas.js";
@@ -27,6 +27,9 @@ const UI = {
     quotePrice: "Wycena indywidualna",
     order: "Konfiguruj i zamów",
     askQuote: "Wyślij do wyceny",
+    openCalc: "Policz szacunkowo w kalkulatorze",
+    advCalc: "Potrzebujesz więcej parametrów? Otwórz kalkulator zaawansowany",
+    calcNote: "Kalkulator poda widełki. Kwota wiążąca przychodzi od nas po wycenie.",
     orderNote: "Konfiguracja i wycena poniżej, bez opuszczania tej strony.",
     quoteNote: "Odpowiadamy zwykle w ciągu 24 godzin.",
     leadTime: "Czas realizacji",
@@ -47,6 +50,9 @@ const UI = {
     quotePrice: "Individual quote",
     order: "Configure and order",
     askQuote: "Request a quote",
+    openCalc: "Estimate it in the calculator",
+    advCalc: "Need more parameters? Open the advanced calculator",
+    calcNote: "The calculator gives a range. The binding amount comes from us with the quote.",
     orderNote: "Configuration and pricing below, without leaving this page.",
     quoteNote: "We usually reply within 24 hours.",
     leadTime: "Lead time",
@@ -67,6 +73,9 @@ const UI = {
     quotePrice: "Individuelles Angebot",
     order: "Konfigurieren und bestellen",
     askQuote: "Angebot anfordern",
+    openCalc: "Im Kalkulator schätzen",
+    advCalc: "Mehr Parameter nötig? Erweiterten Kalkulator öffnen",
+    calcNote: "Der Kalkulator nennt eine Spanne. Den verbindlichen Betrag erhalten Sie mit dem Angebot.",
     orderNote: "Konfiguration und Preis unten, ohne diese Seite zu verlassen.",
     quoteNote: "Wir antworten meist innerhalb von 24 Stunden.",
     leadTime: "Bearbeitungszeit",
@@ -194,7 +203,23 @@ export default function Service() {
                     {u.askQuote}
                     <ArrowRight className="w-4 h-4" />
                   </Link>
-                  <p className="text-neutral-600 text-[11px] text-center mt-2 mb-7">{u.quoteNote}</p>
+                  <p className="text-neutral-600 text-[11px] text-center mt-2 mb-3">{u.quoteNote}</p>
+                  {/* Klient, ktory szuka rzedu wielkosci, nie chce czekac
+                      dobe na maila. Kalkulator odpowie od razu, a wycena
+                      i tak zostaje jedynym zrodlem kwoty wiazacej. */}
+                  {card.calcHref && (
+                    <>
+                      <Link
+                        to={card.calcHref}
+                        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm
+                                   border border-white/10 bg-white/[0.02] text-neutral-300 hover:border-white/25 hover:text-white transition-colors"
+                      >
+                        <Calculator className="w-4 h-4" />
+                        {u.openCalc}
+                      </Link>
+                      <p className="text-neutral-600 text-[11px] text-center mt-2 mb-7">{u.calcNote}</p>
+                    </>
+                  )}
                 </>
               ) : (
                 // Konfiguracja odbywa sie nizej, na tej samej stronie. Kotwica
@@ -262,6 +287,17 @@ export default function Service() {
           {!card.quoteOnly && (
             <div id="konfigurator" className="mt-12 scroll-mt-24">
               <ServiceConfigurator card={card} lang={lang} accent={amber ? "amber" : "blue"} />
+              {/* Konfigurator pokazuje wybor typowy. Kto potrzebuje pelnej
+                  kontroli, idzie do kalkulatora, ktory liczy tym samym kodem. */}
+              {card.calcHref && (
+                <Link
+                  to={card.calcHref}
+                  className="mt-3 flex items-center justify-center gap-2 py-2.5 text-neutral-500 hover:text-neutral-200 text-xs transition-colors"
+                >
+                  <Calculator className="w-3.5 h-3.5" />
+                  {u.advCalc}
+                </Link>
+              )}
             </div>
           )}
 

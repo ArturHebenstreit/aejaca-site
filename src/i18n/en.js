@@ -47,6 +47,8 @@ export default {
     aboutSections: [
       { label: "Rate AEJaCA", to: "/reviews/" },
       { label: "About", to: "/about/" },
+      // Sklep przed dokumentami, bo to jedyna pozycja prowadzaca do zakupu.
+      { label: "Shop", to: "/shop/" },
       { label: "Terms of Service", to: "/terms/" },
       { label: "Warranty", to: "/warranty/" },
       { label: "Returns Policy", to: "/returns/" },

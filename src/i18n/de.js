@@ -46,6 +46,8 @@ export default {
     aboutSections: [
       { label: "AEJaCA bewerten", to: "/reviews/" },
       { label: "Über uns", to: "/about/" },
+      // Sklep przed dokumentami, bo to jedyna pozycja prowadzaca do zakupu.
+      { label: "Shop", to: "/shop/" },
       { label: "AGB", to: "/terms/" },
       { label: "Garantie", to: "/warranty/" },
       { label: "Rückgaberecht", to: "/returns/" },

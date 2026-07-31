@@ -18,6 +18,7 @@ export const SERVICES_FULL = [
   // ---------------- sTuDiO ----------------
   {
     id: "print_fdm",
+    calcHref: "/studio/?tab=3dprint#calculator",
     service: "print_fdm",
     category: "studio",
     image: "/img/shop/service/print_fdm.webp",
@@ -61,6 +62,7 @@ export const SERVICES_FULL = [
   },
   {
     id: "print_msla",
+    calcHref: "/studio/?tab=resin_msla#calculator",
     service: "print_msla",
     category: "studio",
     image: "/img/shop/service/print_msla.webp",
@@ -102,6 +104,7 @@ export const SERVICES_FULL = [
   },
   {
     id: "laser_engrave",
+    calcHref: "/studio/?tab=co2_laser&co2mode=engrave#calculator",
     service: "laser_engrave",
     category: "studio",
     image: "/img/shop/service/laser_engrave.webp",
@@ -142,6 +145,7 @@ export const SERVICES_FULL = [
   },
   {
     id: "laser_cut",
+    calcHref: "/studio/?tab=co2_laser&co2mode=cut#calculator",
     service: "laser_cut",
     category: "studio",
     image: "/img/shop/service/laser_cut.webp",
@@ -183,6 +187,7 @@ export const SERVICES_FULL = [
   },
   {
     id: "laser_fiber",
+    calcHref: "/studio/?tab=fiber_laser#calculator",
     service: "laser_fiber",
     category: "studio",
     image: "/img/shop/service/laser_fiber.webp",
@@ -223,6 +228,7 @@ export const SERVICES_FULL = [
   },
   {
     id: "epoxy",
+    calcHref: "/studio/?tab=epoxy#calculator",
     service: "epoxy",
     category: "studio",
     image: "/img/shop/service/epoxy.webp",
@@ -266,6 +272,7 @@ export const SERVICES_FULL = [
   // ---------------- Bizuteria ----------------
   {
     id: "jewelry_renovation",
+    calcHref: "/jewelry/?service=renovation#calculator",
     service: "jewelry_renovation",
     category: "jewelry",
     image: "/img/shop/service/jewelry_renovation.webp",
@@ -308,6 +315,7 @@ export const SERVICES_FULL = [
   },
   {
     id: "jewelry_repair",
+    calcHref: "/jewelry/?service=repair#calculator",
     service: "jewelry_repair",
     category: "jewelry",
     image: "/img/shop/service/jewelry_repair.webp",
@@ -350,6 +358,7 @@ export const SERVICES_FULL = [
   },
   {
     id: "jewelry_plain",
+    calcHref: "/jewelry/?service=new#calculator",
     service: "jewelry_plain",
     category: "jewelry",
     image: "/img/shop/service/jewelry_plain.webp",
@@ -393,6 +402,7 @@ export const SERVICES_FULL = [
   // ---------------- Wymagajace rozmowy ----------------
   {
     id: "jewelry_stones",
+    calcHref: "/jewelry/?service=new#calculator",
     quoteOnly: true,
     category: "jewelry",
     image: "/img/shop/service/jewelry_stones.webp",
@@ -439,6 +449,7 @@ export const SERVICES_FULL = [
   },
   {
     id: "jewelry_chain_custom",
+    calcHref: "/jewelry/?service=new&type=necklace#calculator",
     quoteOnly: true,
     category: "jewelry",
     image: "/img/shop/service/jewelry_chain_custom.webp",
@@ -483,6 +494,7 @@ export const SERVICES_FULL = [
   },
   {
     id: "cad_project",
+    calcHref: "/b2b/",
     quoteOnly: true,
     category: "studio",
     image: "/img/shop/service/cad_project.webp",
