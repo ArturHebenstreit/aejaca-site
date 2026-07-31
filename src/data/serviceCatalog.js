@@ -20,7 +20,7 @@ export const SERVICES_FULL = [
     id: "print_fdm",
     service: "print_fdm",
     category: "studio",
-    image: "/img/portfolio/studio-web/3d-organizer.webp",
+    image: "/img/shop/service/print_fdm.webp",
     imagePrompt:
       "Close-up of a Bambu Lab H2D 3D printer mid-print, nozzle laying a fresh layer of black PETG on a partially finished functional part, build plate visible, cool blue rim light from upper left, black background, premium product photography, shallow depth of field",
     priceFromGrosze: 1200,
@@ -63,7 +63,7 @@ export const SERVICES_FULL = [
     id: "print_msla",
     service: "print_msla",
     category: "studio",
-    image: "/img/calc/3d_apps/casting.webp",
+    image: "/img/shop/service/print_msla.webp",
     imagePrompt:
       "Resin 3D printer build plate lifting out of a vat, a highly detailed miniature figure hanging upside down covered in glossy grey resin, dramatic side lighting, black background, premium product photography, macro detail",
     priceFromGrosze: 4900,
@@ -104,7 +104,7 @@ export const SERVICES_FULL = [
     id: "laser_engrave",
     service: "laser_engrave",
     category: "studio",
-    image: "/img/portfolio/studio-web/engraved-bottle.webp",
+    image: "/img/shop/service/laser_engrave.webp",
     imagePrompt:
       "CO2 laser head engraving a wooden board, thin wisp of smoke rising, glowing red laser dot, fine detail appearing in the wood grain, dark workshop, dramatic lighting from upper left, premium product photography",
     priceFromGrosze: 1500,
@@ -144,7 +144,7 @@ export const SERVICES_FULL = [
     id: "laser_cut",
     service: "laser_cut",
     category: "studio",
-    image: "/img/portfolio/studio-web/eagle-art.webp",
+    image: "/img/shop/service/laser_cut.webp",
     imagePrompt:
       "CO2 laser cutting through 3 mm plywood, bright cutting spark at the kerf, precise intricate shape emerging, thin smoke, dark workshop background, dramatic side light, premium product photography",
     priceFromGrosze: 1500,
@@ -185,7 +185,7 @@ export const SERVICES_FULL = [
     id: "laser_fiber",
     service: "laser_fiber",
     category: "studio",
-    image: "/img/portfolio/studio-web/steel-business-card.webp",
+    image: "/img/shop/service/laser_fiber.webp",
     imagePrompt:
       "Fiber laser marking a stainless steel plate, bright white spark trail following the beam, crisp dark engraved lines appearing on brushed metal, black background, cool rim light from upper left, premium macro product photography",
     priceFromGrosze: 2000,
@@ -225,7 +225,7 @@ export const SERVICES_FULL = [
     id: "epoxy",
     service: "epoxy",
     category: "studio",
-    image: "/img/portfolio/studio-web/gift-box.webp",
+    image: "/img/shop/service/epoxy.webp",
     imagePrompt:
       "Clear epoxy resin being poured into a silicone mold, amber-tinted resin catching warm light, small dried flowers suspended inside, glossy surface, black background, upper left key light, premium product photography",
     priceFromGrosze: 3900,
@@ -268,7 +268,7 @@ export const SERVICES_FULL = [
     id: "jewelry_renovation",
     service: "jewelry_renovation",
     category: "jewelry",
-    image: "/img/portfolio/jewelry-web/filigree-cross.webp",
+    image: "/img/shop/service/jewelry_renovation.webp",
     imagePrompt:
       "Jeweler polishing a tarnished silver pendant on a polishing wheel, half of the piece already mirror bright and half still dark, hands in focus, warm amber key light from upper left, black background, premium product photography",
     priceFromGrosze: 4000,
@@ -310,7 +310,7 @@ export const SERVICES_FULL = [
     id: "jewelry_repair",
     service: "jewelry_repair",
     category: "jewelry",
-    image: "/img/portfolio/jewelry-web/gold-band-585-v3.webp",
+    image: "/img/shop/service/jewelry_repair.webp",
     imagePrompt:
       "Jeweler's torch soldering a gold ring held in tweezers, small bright flame, molten solder flowing at the joint, dark workshop, warm amber light from upper left, black background, premium macro product photography",
     priceFromGrosze: 6000,
@@ -352,7 +352,7 @@ export const SERVICES_FULL = [
     id: "jewelry_plain",
     service: "jewelry_plain",
     category: "jewelry",
-    image: "/img/portfolio/jewelry-web/gold-cross.webp",
+    image: "/img/shop/service/jewelry_plain.webp",
     imagePrompt:
       "Molten gold being poured into an investment casting flask, glowing orange metal stream, sparks, dark workshop, warm amber key light from upper left, black background, premium product photography",
     priceFromGrosze: 25000,
@@ -395,7 +395,7 @@ export const SERVICES_FULL = [
     id: "jewelry_stones",
     quoteOnly: true,
     category: "jewelry",
-    image: "/img/portfolio/jewelry-web/citrine-star-ring.webp",
+    image: "/img/shop/service/jewelry_stones.webp",
     imagePrompt:
       "Jeweler setting a brilliant-cut stone into a gold ring under a microscope, tweezers holding the stone, prongs visible, extreme macro, warm amber light from upper left, black background, premium product photography",
     leadTimeDays: 21,
@@ -441,7 +441,7 @@ export const SERVICES_FULL = [
     id: "jewelry_chain_custom",
     quoteOnly: true,
     category: "jewelry",
-    image: "/img/portfolio/jewelry-web/byzantine-chain.webp",
+    image: "/img/shop/service/jewelry_chain_custom.webp",
     imagePrompt:
       "Jeweler assembling a byzantine chain link by link with two pliers, silver rings catching the light, extreme macro of hands and links, warm amber light from upper left, black background, premium product photography",
     leadTimeDays: 14,
@@ -485,7 +485,7 @@ export const SERVICES_FULL = [
     id: "cad_project",
     quoteOnly: true,
     category: "studio",
-    image: "/img/portfolio/studio-web/city-map.webp",
+    image: "/img/shop/service/cad_project.webp",
     imagePrompt:
       "Computer screen showing a 3D CAD model being sculpted, wireframe and solid views side by side, designer's hand on a mouse, dark studio, cool blue screen glow, premium product photography",
     leadTimeDays: 7,

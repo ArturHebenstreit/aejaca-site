@@ -25,6 +25,9 @@ const STLViewer = lazy(() => import("../calculators/STLViewer.jsx"));
 /** Rozszerzenia przyjmowane w polu pliku, zgodne z MESH_EXTENSIONS na serwerze */
 const ACCEPT_MESH = ".stl,.obj,.3mf";
 
+/** Gorna granica miniatury trzymanej w koszyku, zeby nie przepelnic localStorage */
+const MAX_CART_THUMB_CHARS = 80_000;
+
 const UI = {
   pl: {
     configure: "Skonfiguruj i dodaj do koszyka",
@@ -114,6 +117,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const [geometry, setGeometry] = useState(null);
   const [triangles, setTriangles] = useState(null);
   const [hasThumb, setHasThumb] = useState(false);
+  const [thumbData, setThumbData] = useState(null);
   const [thumbTick, setThumbTick] = useState(0);
   const [packagingId, setPackagingId] = useState(DEFAULT_PACKAGING);
   const [engraving, setEngraving] = useState("");
@@ -215,6 +219,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
     setPrice(null);
     setUploadToken(null);
     setHasThumb(false);
+    setThumbData(null);
     pendingThumb.current = null;
   }
 
@@ -224,6 +229,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
    */
   function onSnapshot(dataUrl) {
     pendingThumb.current = dataUrl;
+    // Kopia w koszyku nie zalezy od tego, czy zapis na serwerze sie powiodl.
+    // Kilkanascie kilobajtow na pozycje localStorage udzwignie.
+    if (dataUrl.length <= MAX_CART_THUMB_CHARS) setThumbData(dataUrl);
     setThumbTick((n) => n + 1);
   }
 
@@ -282,6 +290,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       uploadToken,
       // Zrzut modelu zamiast zdjecia katalogowego, zeby w koszyku bylo
       // widac wlasny model, a nie ikone uslugi.
+      thumbData,
       thumbUrl: hasThumb ? `${API}/api/uploads/${uploadToken}/thumb` : null,
       needsFile: Boolean(file),
       // Plik lezy juz na Dysku, wiec pozycja przezyje odswiezenie strony.

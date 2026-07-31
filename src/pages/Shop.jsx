@@ -22,7 +22,9 @@ const UI = {
     title: "Produkty i usługi",
     lead: "Kup gotowe wyroby albo zamów usługę z wyceną w kilka minut. Płatność BLIK-iem lub szybkim przelewem.",
     products: "Produkty gotowe",
+    productsLead: "Leżą u nas na półce albo czekają jako plik do pobrania. Płacisz i wysyłamy, bez konfigurowania.",
     services: "Usługi",
+    servicesLead: "Konfigurujesz na karcie usługi, cena wiążąca pojawia się od razu, a przedmiot powstaje pod Twoje zamówienie.",
     inStock: "Dostępny",
     lastOne: "Ostatnia sztuka",
     outOfStock: "Chwilowo niedostępny",
@@ -43,7 +45,9 @@ const UI = {
     title: "Products and services",
     lead: "Buy ready-made pieces or order a service with a quote in minutes. Pay by BLIK or instant transfer.",
     products: "Ready-made products",
+    productsLead: "On our shelf or ready as a download. You pay, we ship, nothing to configure.",
     services: "Services",
+    servicesLead: "You configure it on the service card, the binding price appears at once, and the piece is made for your order.",
     inStock: "In stock",
     lastOne: "Last one",
     outOfStock: "Currently unavailable",
@@ -64,7 +68,9 @@ const UI = {
     title: "Produkte und Leistungen",
     lead: "Fertige Stücke kaufen oder eine Leistung mit Angebot in wenigen Minuten bestellen. Zahlung per BLIK oder Sofortüberweisung.",
     products: "Fertige Produkte",
+    productsLead: "Liegen bei uns im Regal oder stehen als Datei bereit. Sie zahlen, wir versenden, nichts zu konfigurieren.",
     services: "Leistungen",
+    servicesLead: "Sie konfigurieren auf der Leistungskarte, der verbindliche Preis erscheint sofort, und das Stück entsteht für Ihre Bestellung.",
     inStock: "Verfügbar",
     lastOne: "Letztes Stück",
     outOfStock: "Derzeit nicht verfügbar",
@@ -96,6 +102,32 @@ function Badge({ children, tone = "neutral" }) {
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[10px] font-medium ${tones[tone]}`}>
       {children}
     </span>
+  );
+}
+
+/**
+ * Naglowek dzialu. Produkt gotowy i usluga to dwie rozne obietnice: jedno
+ * lezy na polce, drugie dopiero powstanie. Bez wyraznej granicy klient czyta
+ * to jako jedna liste i dziwi sie terminom.
+ */
+function SectionHead({ icon: Icon, title, lead, count, tone }) {
+  const tones = {
+    emerald: "border-emerald-400/25 bg-emerald-400/10 text-emerald-300",
+    blue: "border-blue-400/25 bg-blue-400/10 text-blue-300",
+    amber: "border-amber-400/25 bg-amber-400/10 text-amber-300",
+  };
+  return (
+    <div className="mb-6">
+      <div className="flex items-center gap-3 mb-2">
+        <span className={`inline-flex items-center justify-center w-9 h-9 rounded-xl border ${tones[tone]}`}>
+          <Icon className="w-4 h-4" />
+        </span>
+        <h2 className="text-white font-serif text-xl sm:text-2xl font-bold">{title}</h2>
+        <span className="text-neutral-600 text-xs font-medium tabular-nums">{count}</span>
+      </div>
+      <p className="text-neutral-500 text-xs leading-relaxed max-w-xl">{lead}</p>
+      <div className="h-px bg-gradient-to-r from-white/15 to-transparent mt-4" />
+    </div>
   );
 }
 
@@ -274,8 +306,14 @@ export default function Shop() {
 
           {/* Produkty gotowe */}
           {products.length > 0 && (
-            <section className="mb-14">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-4">{u.products}</h2>
+            <section className="mb-16">
+              <SectionHead
+                icon={Package}
+                title={u.products}
+                lead={u.productsLead}
+                count={products.length}
+                tone="emerald"
+              />
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                 {products.map((p) => (
                   <ProductCard key={p.slug} product={p} lang={lang} u={u} />
@@ -287,7 +325,13 @@ export default function Shop() {
           {/* Uslugi */}
           {services.length > 0 && (
             <section>
-              <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-4">{u.services}</h2>
+              <SectionHead
+                icon={Wrench}
+                title={u.services}
+                lead={u.servicesLead}
+                count={services.length}
+                tone={category?.theme === "amber" ? "amber" : "blue"}
+              />
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                 {services.map((s) => (
                   <ServiceCard key={s.id} card={s} lang={lang} u={u} />

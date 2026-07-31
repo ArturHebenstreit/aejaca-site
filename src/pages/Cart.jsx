@@ -129,10 +129,12 @@ export default function Cart() {
                   const Icon = i.kind === "service" ? Wrench : i.withdrawal === "digital" ? Download : Package;
                   return (
                     <div key={i.id} className="flex gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-4">
-                      {/* Wlasny model klienta wygrywa ze zdjeciem katalogowym uslugi. */}
-                      {(i.thumbUrl || i.image) && (
+                      {/* Wlasny model klienta wygrywa ze zdjeciem katalogowym uslugi.
+                          thumbData jest zapisany razem z pozycja, wiec podglad
+                          dziala takze wtedy, gdy kopia na serwerze nie doszla. */}
+                      {(i.thumbData || i.thumbUrl || i.image) && (
                         <img
-                          src={i.thumbUrl || i.image}
+                          src={i.thumbData || i.thumbUrl || i.image}
                           alt=""
                           loading="lazy"
                           onError={(e) => { if (i.image && e.currentTarget.src !== i.image) e.currentTarget.src = i.image; }}
