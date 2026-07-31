@@ -2,9 +2,21 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-export default function STLViewer({ triangles, bbox }) {
+/**
+ * Podglad siatki trojkatow. Mimo nazwy nie jest juz zwiazany z STL,
+ * karmimy go tez OBJ i 3MF.
+ *
+ * @param {object} props
+ * @param {number[][][]} props.triangles
+ * @param {number} [props.height] wysokosc ramki w pikselach
+ * @param {(dataUrl: string) => void} [props.onSnapshot] wolane raz, gdy model
+ *        sie ustabilizuje, dostaje miniature do pokazania w koszyku
+ */
+export default function STLViewer({ triangles, bbox, height = 220, onSnapshot }) {
   const containerRef = useRef(null);
   const stateRef = useRef(null);
+  const snapRef = useRef(onSnapshot);
+  snapRef.current = onSnapshot;
 
   useEffect(() => {
     const el = containerRef.current;
@@ -13,7 +25,9 @@ export default function STLViewer({ triangles, bbox }) {
     const w = el.clientWidth;
     const h = el.clientHeight;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    // preserveDrawingBuffer jest potrzebny, zeby dalo sie zczytac klatke
+    // do miniatury. Bez niego toDataURL zwraca pusty obraz.
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: !!snapRef.current });
     renderer.setSize(w, h);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -85,6 +99,20 @@ export default function STLViewer({ triangles, bbox }) {
     grid.position.y = box.min.y - center.y;
     scene.add(grid);
 
+    // Miniatura z ujecia trzy czwarte, po chwili obrotu, zeby nie zlapac
+    // modelu ustawionego plasko do kamery.
+    let snapTimer = null;
+    if (snapRef.current) {
+      snapTimer = setTimeout(() => {
+        try {
+          const url = renderer.domElement.toDataURL("image/webp", 0.82);
+          if (url && url.length > 1000) snapRef.current?.(url);
+        } catch {
+          // Zrzut jest wygoda, nie warunkiem zamowienia. Cisza wystarczy.
+        }
+      }, 900);
+    }
+
     let animId;
     function animate() {
       animId = requestAnimationFrame(animate);
@@ -109,6 +137,7 @@ export default function STLViewer({ triangles, bbox }) {
 
     return () => {
       cancelAnimationFrame(animId);
+      if (snapTimer) clearTimeout(snapTimer);
       ro.disconnect();
       controls.dispose();
       renderer.dispose();
@@ -116,13 +145,13 @@ export default function STLViewer({ triangles, bbox }) {
       mat.dispose();
       if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
     };
-  }, [triangles, bbox]);
+  }, [triangles, bbox, height]);
 
   return (
     <div
       ref={containerRef}
       className="w-full rounded-lg overflow-hidden bg-[#0c1222] border border-white/5"
-      style={{ height: "220px" }}
+      style={{ height: `${height}px` }}
     />
   );
 }

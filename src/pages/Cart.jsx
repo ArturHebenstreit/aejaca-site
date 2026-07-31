@@ -129,8 +129,15 @@ export default function Cart() {
                   const Icon = i.kind === "service" ? Wrench : i.withdrawal === "digital" ? Download : Package;
                   return (
                     <div key={i.id} className="flex gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-4">
-                      {i.image && (
-                        <img src={i.image} alt="" className="w-16 h-16 rounded-lg object-cover bg-black flex-shrink-0" />
+                      {/* Wlasny model klienta wygrywa ze zdjeciem katalogowym uslugi. */}
+                      {(i.thumbUrl || i.image) && (
+                        <img
+                          src={i.thumbUrl || i.image}
+                          alt=""
+                          loading="lazy"
+                          onError={(e) => { if (i.image && e.currentTarget.src !== i.image) e.currentTarget.src = i.image; }}
+                          className="w-16 h-16 rounded-lg object-cover bg-black flex-shrink-0"
+                        />
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-3">

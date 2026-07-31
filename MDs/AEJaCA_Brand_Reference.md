@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-07-31 | Wersja: 1.4*
+*Wygenerowano: 2026-07-31 | Wersja: 1.5*
 
 ---
 
@@ -613,6 +613,16 @@ Kwota z ITN jest porównywana z kwotą zamówienia, więc sam poprawny podpis ni
 ### Limit kwartalny w kodzie
 
 `checkQuarterlyLimit` blokuje przyjęcie płatności przy **10 613,50 PLN**, czyli 200 zł przed progiem 10 813,50 PLN, żeby zamówienie w locie nie przebiło limitu działalności nierejestrowanej. Widok `quarterly_revenue` w bazie pokazuje obrót narastająco.
+
+### Pliki klienta i podgląd modelu
+
+Przyjmujemy **STL, OBJ i 3MF**. To formaty siatkowe, więc objętość i gabaryty liczy ten sam kod po obu stronach (`src/pricing/mesh.js`, kopiowany do `chat-api/pricing/`). `scripts/test-mesh-formats.mjs` sprawdza przy każdym buildzie, że ten sam sześcian zapisany w trzech formatach daje identyczną objętość, razem z przeliczeniem jednostek deklarowanych w 3MF (mikron, mm, cm, cal, stopa, metr).
+
+STL i OBJ nie zapisują jednostki, więc czytamy je jako milimetry. `assertPlausibleScale` odrzuca modele poniżej 0,5 mm i powyżej 2 m z prośbą o sprawdzenie eksportu, bo eksport z programu ustawionego na metry dałby cenę tysiąc razy za wysoką.
+
+**STEP** nie jest siatką, tylko opisem powierzchni, i wymaga tesselacji jądrem CAD. Do czasu wdrożenia idzie ścieżką wyceny indywidualnej.
+
+Wgrany model pokazujemy jako **obracający się podgląd 3D** (`STLViewer.jsx`, three.js ładowany leniwie). Po chwili obrotu komponent robi zrzut ujęcia trzy czwarte w WEBP, zrzut trafia do kolumny `uploads.thumbnail` i staje się miniaturą pozycji w koszyku oraz linkiem podglądu w mailu warsztatowym. Klient widzi własny model zamiast ikony usługi, a warsztat wie, co ma zrobić, bez otwierania Dysku.
 
 ### Schemat bazy
 

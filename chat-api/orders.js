@@ -8,7 +8,7 @@
 
 import crypto from "node:crypto";
 
-import { parseSTL } from "./pricing/stl.js";
+import { parseMesh, MeshError, MESH_EXTENSIONS, extensionOf } from "./pricing/mesh.js";
 import * as print3d from "./pricing/print3d.js";
 import * as jewelry from "./pricing/jewelry.js";
 import * as laserCo2 from "./pricing/laserCo2.js";
@@ -59,21 +59,23 @@ export function geometryFromFile(buffer, fileName = "") {
   if (!buffer || !buffer.length) throw new PricingError("file_empty", "Pusty plik");
   if (buffer.length > MAX_FILE_BYTES) throw new PricingError("file_too_large", "Plik przekracza 60 MB");
 
-  const ext = fileName.toLowerCase().split(".").pop();
-  if (ext !== "stl") {
+  const ext = extensionOf(fileName);
+  if (!MESH_EXTENSIONS.includes(ext)) {
     // STEP wymaga jadra CAD do tesselacji, wchodzi osobnym krokiem.
     throw new PricingError("unsupported_format", `Format .${ext} nie jest jeszcze obsługiwany w wycenie automatycznej`);
   }
 
   let parsed;
   try {
-    parsed = parseSTL(buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength));
-  } catch {
-    throw new PricingError("file_unreadable", "Nie udało się odczytać pliku STL");
+    parsed = parseMesh(buffer, fileName);
+  } catch (e) {
+    if (e instanceof MeshError) throw new PricingError(e.code, e.message);
+    throw new PricingError("file_unreadable", `Nie udało się odczytać pliku .${ext}`);
   }
 
-  if (!parsed.triangleCount) throw new PricingError("file_unreadable", "Plik STL nie zawiera geometrii");
+  if (!parsed.triangleCount) throw new PricingError("file_unreadable", "Plik nie zawiera geometrii");
   if (!(parsed.volumeCm3 > 0)) throw new PricingError("file_not_solid", "Model nie jest bryłą zamkniętą, nie da się policzyć objętości");
+  assertPlausibleScale(parsed.bbox, ext);
 
   return {
     volumeCm3: parsed.volumeCm3,
@@ -83,6 +85,26 @@ export function geometryFromFile(buffer, fileName = "") {
     sha256: crypto.createHash("sha256").update(buffer).digest("hex"),
     // Trojkatow nie zwracamy, bo to megabajty danych, ktorych zamowienie nie potrzebuje.
   };
+}
+
+/**
+ * STL i OBJ nie zapisuja jednostki, wiec przyjmujemy milimetry. Eksport
+ * z programu ustawionego na metry albo cale daje model tysiac razy za duzy
+ * lub za maly, a wtedy cena jest bez sensu w obie strony. Lapiemy to tutaj
+ * i kazemy poprawic eksport, zamiast wystawic rachunek na tysiac zlotych
+ * za breloczek.
+ *
+ * @param {{x:number,y:number,z:number}} bbox gabaryty w centymetrach
+ */
+function assertPlausibleScale(bbox, ext) {
+  if (ext === "3mf") return; // 3MF deklaruje jednostke, nie ma czego zgadywac
+  const maxCm = Math.max(bbox.x, bbox.y, bbox.z);
+  if (maxCm < 0.05) {
+    throw new PricingError("scale_suspect", "Model ma poniżej 0,5 mm w każdym wymiarze. Sprawdź jednostki w eksporcie, pliki STL i OBJ zapisujemy w milimetrach.");
+  }
+  if (maxCm > 200) {
+    throw new PricingError("scale_suspect", "Model przekracza 2 m. Sprawdź jednostki w eksporcie, pliki STL i OBJ zapisujemy w milimetrach.");
+  }
 }
 
 /** Skalowanie geometrii, gdy klient zmienil skale wydruku w kreatorze */

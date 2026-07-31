@@ -24,6 +24,9 @@ CREATE TABLE IF NOT EXISTS uploads (
   -- Wynik parsowania modelu, zeby wycena nie wymagala ponownego wgrania pliku
   geometry        JSONB,
 
+  -- Zrzut modelu z podgladu 3D, pokazywany w koszyku i w mailu warsztatowym
+  thumbnail       TEXT,
+
   -- Link nadawany przez n8n po zapisaniu pliku na Dysku
   drive_url       TEXT,
   drive_file_id   VARCHAR(128),
@@ -53,3 +56,6 @@ SELECT id, token, file_name, drive_url, lang, created_at, abandoned_at
 FROM uploads
 WHERE status = 'abandoned'
 ORDER BY created_at DESC;
+
+-- Dopisanie miniatury do istniejacej instalacji
+ALTER TABLE uploads ADD COLUMN IF NOT EXISTS thumbnail TEXT;
