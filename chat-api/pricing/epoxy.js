@@ -8,7 +8,7 @@
 // Formuly przeniesione 1:1 z EpoxyCastCalc.jsx. Bez Reacta, zeby backend
 // zamowien liczyl cene tym samym kodem co kalkulator.
 
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost } from "./config.js";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, plDiscountRow } from "./config.js";
 
 export const EPOXY_CONFIG = {
   POWER_KW: 0.15,
@@ -152,6 +152,7 @@ export function calculate({ resinId, volumeId, moldId, inclusionId, finishId, qu
       { label: l.workshop, value: fmtCost(baseCost * CONFIG.BASE_MARGIN, lang) },
       { divider: true },
       { label: l.estCost, value: fmtCost(baseCost * (1 + CONFIG.BASE_MARGIN), lang), bold: true },
+      ...(plDiscountRow(baseCost * (1 + CONFIG.BASE_MARGIN), plDiscount, lang) ? [plDiscountRow(baseCost * (1 + CONFIG.BASE_MARGIN), plDiscount, lang)] : []),
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
       ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${batchTimeH.toFixed(1)} h`, bold: true }] : []),
     ],

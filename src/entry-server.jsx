@@ -4,6 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { LanguageProvider } from "./i18n/LanguageContext.jsx";
 import { ThemeProvider } from "./i18n/ThemeContext.jsx";
+import { CartProvider } from "./cart/CartContext.jsx";
 import Layout from "./components/Layout.jsx";
 
 import Home from "./pages/Home.jsx";
@@ -22,6 +23,8 @@ import Terms from "./pages/Terms.jsx";
 import Order from "./pages/Order.jsx";
 import Shop from "./pages/Shop.jsx";
 import Product from "./pages/Product.jsx";
+import Service from "./pages/Service.jsx";
+import Cart from "./pages/Cart.jsx";
 import OrderStatus from "./pages/OrderStatus.jsx";
 import Shipping from "./pages/Shipping.jsx";
 import ToolsJewelry from "./pages/ToolsJewelry.jsx";
@@ -46,6 +49,7 @@ export function render(url) {
     <HelmetProvider context={helmetContext}>
       <ThemeProvider>
         <LanguageProvider>
+          <CartProvider>
           <StaticRouter location={url}>
           <Routes>
             <Route element={<Layout />}>
@@ -61,9 +65,11 @@ export function render(url) {
               <Route path="/warranty/" element={<Warranty />} />
               <Route path="/returns/" element={<Returns />} />
               <Route path="/terms/" element={<Terms />} />
+              <Route path="/cart/" element={<Cart />} />
               <Route path="/shop/" element={<Shop />} />
               <Route path="/shop/jewelry/" element={<Shop />} />
               <Route path="/shop/studio/" element={<Shop />} />
+              <Route path="/shop/service/:id/" element={<Service />} />
               <Route path="/shop/:slug/" element={<Product />} />
               <Route path="/order/" element={<Order />} />
               <Route path="/order/status/" element={<OrderStatus />} />
@@ -87,6 +93,7 @@ export function render(url) {
             </Route>
           </Routes>
           </StaticRouter>
+          </CartProvider>
         </LanguageProvider>
       </ThemeProvider>
     </HelmetProvider>

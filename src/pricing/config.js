@@ -75,6 +75,29 @@ export function applyPricing(baseCost, margin, discountRate, qty, localDiscount 
   };
 }
 
+const PL_DISCOUNT_LABEL = {
+  pl: "Rabat rynek polski",
+  en: "Polish market discount",
+  de: "Rabatt polnischer Markt",
+};
+
+/**
+ * Wiersz rozpiski z rabatem na rynek polski.
+ *
+ * Bez niego rozpiska konczyla sie kosztem szacunkowym wyzszym od ceny
+ * koncowej, co wygladalo, jakbysmy sprzedawali ponizej kosztu bez powodu.
+ * Rabat jest realny, wiec ma byc widoczny, a nie ukryty w formule.
+ */
+export function plDiscountRow(preDiscountPln, plDiscount, lang) {
+  if (!plDiscount) return null;
+  const label = PL_DISCOUNT_LABEL[lang] || PL_DISCOUNT_LABEL.en;
+  return {
+    label: `${label} (-${Math.round(plDiscount * 100)}%)`,
+    value: `-${fmtCost(preDiscountPln * plDiscount, lang)}`,
+    accent: true,
+  };
+}
+
 /** Format grosze as a PLN string with two decimals, the format Autopay expects */
 export function formatAmountPLN(grosze) {
   return (grosze / 100).toFixed(2);

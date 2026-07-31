@@ -9,7 +9,7 @@
 // w przegladarce, jak i na backendzie zamowien, dlatego nie moze importowac
 // Reacta ani niczego spoza src/pricing i src/data.
 
-import { CONFIG, QUANTITY_TIERS, applyPricing, fmtCost, unitPriceGrosze } from "./config.js";
+import { CONFIG, QUANTITY_TIERS, applyPricing, fmtCost, plDiscountRow, unitPriceGrosze } from "./config.js";
 import { getResinsBySegment, getResin } from "./resins.js";
 
 
@@ -159,6 +159,7 @@ export function calculateMSLA(params, lang) {
       { label: l.handling, value: fmtCost(MSLA_CONFIG.HANDLING_FEE, lang) },
       { divider: true },
       { label: l.estCost, value: fmtCost(baseCost * (1 + margin), lang), bold: true },
+      ...(plDiscountRow(baseCost * (1 + margin), plDiscount, lang) ? [plDiscountRow(baseCost * (1 + margin), plDiscount, lang)] : []),
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
       ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${totalTimeH.toFixed(1)} h`, bold: true }] : []),
       ...(minOrderApplied ? [{ label: l.minOrder, value: "" }] : []),
@@ -314,6 +315,7 @@ export function calculate(params, lang) {
       { label: l.workshop, value: fmtCost(baseCost * margin, lang) },
       { divider: true },
       { label: l.estCost, value: fmtCost(baseCost * (1 + margin), lang), bold: true },
+      ...(plDiscountRow(baseCost * (1 + margin), plDiscount, lang) ? [plDiscountRow(baseCost * (1 + margin), plDiscount, lang)] : []),
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
       ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${totalTimeH.toFixed(1)} h`, bold: true }] : []),
     ],

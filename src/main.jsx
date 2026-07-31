@@ -6,6 +6,7 @@ import "./index.css";
 import "./utils/analytics.js";  // init analytics (side-effect)
 import { LanguageProvider } from "./i18n/LanguageContext.jsx";
 import { ThemeProvider } from "./i18n/ThemeContext.jsx";
+import { CartProvider } from "./cart/CartContext.jsx";
 import Layout from "./components/Layout.jsx";
 import Home from "./pages/Home.jsx";
 import Contact from "./pages/Contact.jsx";
@@ -27,6 +28,8 @@ const Terms = lazy(() => import("./pages/Terms.jsx"));
 const Order = lazy(() => import("./pages/Order.jsx"));
 const Shop = lazy(() => import("./pages/Shop.jsx"));
 const Product = lazy(() => import("./pages/Product.jsx"));
+const Service = lazy(() => import("./pages/Service.jsx"));
+const Cart = lazy(() => import("./pages/Cart.jsx"));
 const OrderStatus = lazy(() => import("./pages/OrderStatus.jsx"));
 const Shipping = lazy(() => import("./pages/Shipping.jsx"));
 const ToolsJewelry = lazy(() => import("./pages/ToolsJewelry.jsx"));
@@ -57,6 +60,7 @@ const app = (
     <HelmetProvider>
       <ThemeProvider>
         <LanguageProvider>
+          <CartProvider>
           <BrowserRouter>
           <Suspense fallback={<LazyFallback />}>
             <Routes>
@@ -73,9 +77,11 @@ const app = (
                 <Route path="/warranty/" element={<Warranty />} />
                 <Route path="/returns/" element={<Returns />} />
                 <Route path="/terms/" element={<Terms />} />
+                <Route path="/cart/" element={<Cart />} />
                 <Route path="/shop/" element={<Shop />} />
                 <Route path="/shop/jewelry/" element={<Shop />} />
                 <Route path="/shop/studio/" element={<Shop />} />
+                <Route path="/shop/service/:id/" element={<Service />} />
                 <Route path="/shop/:slug/" element={<Product />} />
                 <Route path="/order/" element={<Order />} />
                 <Route path="/order/status/" element={<OrderStatus />} />
@@ -100,6 +106,7 @@ const app = (
             </Routes>
           </Suspense>
           </BrowserRouter>
+          </CartProvider>
         </LanguageProvider>
       </ThemeProvider>
     </HelmetProvider>
