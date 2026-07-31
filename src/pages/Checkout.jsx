@@ -214,6 +214,7 @@ export default function Checkout() {
           params: i.params,
           geometry: i.geometry || null,
           fileName: i.fileName || null,
+          uploadToken: i.uploadToken || null,
           packagingId: i.packagingId || null,
           personalization: i.personalization || null,
           qty: i.qty || 1,

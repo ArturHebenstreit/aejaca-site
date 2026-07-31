@@ -667,7 +667,15 @@ app.post("/api/price", (req, res, next) => {
     }
 
     let geometry = null;
-    if (req.file?.buffer) geometry = geometryFromFile(req.file.buffer, req.file.originalname || "");
+    if (req.file?.buffer) {
+      geometry = geometryFromFile(req.file.buffer, req.file.originalname || "");
+    } else if (req.body?.uploadToken && pool) {
+      // Plik zostal wgrany wczesniej przez /api/uploads. Geometrie czytamy
+      // z bazy, wiec przesuwanie suwaka nie wysyla modelu za kazdym razem.
+      const { rows } = await pool.query("SELECT geometry FROM uploads WHERE token = $1", [String(req.body.uploadToken)]);
+      if (!rows[0]) return res.status(404).json({ error: "Nieznany plik", code: "unknown_upload" });
+      geometry = rows[0].geometry;
+    }
 
     const rates = calculator.startsWith("jewelry_") ? await currentMetalRates() : null;
     const item = priceItem({ calculator, params, lang, geometry, scale, rates });
@@ -695,6 +703,133 @@ app.post("/api/price", (req, res, next) => {
     res.status(500).json({ error: "Wycena chwilowo niedostepna" });
   }
 });
+
+// ============================================================
+// PLIKI KLIENTOW
+// ============================================================
+// Plik wgrywany jest raz, na karcie uslugi, i od razu trafia na Dysk przez
+// n8n. Przegladarka dostaje sam identyfikator, wiec pozycja w koszyku
+// przezywa odswiezenie strony i powrot po kilku dniach.
+//
+// n8n nie zwraca linku w odpowiedzi HTTP, tylko wysyla go mailem, dlatego
+// po zapisaniu pliku oddzwania do nas na /api/uploads/:token/stored.
+
+const UPLOAD_N8N_URL = process.env.N8N_ORDER_FILE_WEBHOOK_URL;
+const UPLOAD_CALLBACK_TOKEN = process.env.UPLOAD_CALLBACK_TOKEN;
+const ABANDON_AFTER_DAYS = Number(process.env.UPLOAD_ABANDON_DAYS || 14);
+
+const uploadStore = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 60 * 1024 * 1024, files: 1 },
+});
+
+app.post("/api/uploads", (req, res, next) => {
+  uploadStore.single("file")(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({
+        error: err.code === "LIMIT_FILE_SIZE" ? "Plik przekracza 60 MB" : (err.message || "Blad wysylki pliku"),
+      });
+    }
+    next();
+  });
+}, async (req, res) => {
+  const ip = extractIP(req);
+  if (!checkPriceRate(ip)) return res.status(429).json({ error: "Za duzo zapytan, sprobuj za chwile" });
+  if (!req.file?.buffer) return res.status(400).json({ error: "Brak pliku" });
+
+  try {
+    const geometry = geometryFromFile(req.file.buffer, req.file.originalname || "");
+    const token = generateToken();
+    const lang = ["pl", "en", "de"].includes(req.body?.lang) ? req.body.lang : "pl";
+
+    if (pool) {
+      await pool.query(
+        `INSERT INTO uploads (token, file_name, file_size_bytes, file_sha256, mime_type, geometry, lang, ip_hash)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        [token, (req.file.originalname || "model.stl").slice(0, 255), req.file.size,
+         geometry.sha256, req.file.mimetype || "application/octet-stream",
+         JSON.stringify(geometry), lang,
+         createHash("sha256").update(ip).digest("hex").slice(0, 30)]
+      );
+    }
+
+    // Wysylka na Dysk idzie obok glownego watku. Klient nie ma czekac
+    // na zapis pliku, zeby zobaczyc cene, a brak Dysku nie moze zablokowac
+    // wyceny. Link dojdzie do nas oddzwonieniem z n8n.
+    if (UPLOAD_N8N_URL) {
+      fetch(UPLOAD_N8N_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          fileName: req.file.originalname,
+          mimeType: req.file.mimetype,
+          sizeBytes: req.file.size,
+          sha256: geometry.sha256,
+          lang,
+          geometry: { volumeCm3: geometry.volumeCm3, bbox: geometry.bbox, triangleCount: geometry.triangleCount },
+          data: req.file.buffer.toString("base64"),
+          source: "order_file",
+        }),
+      }).then((r) => {
+        if (!r.ok) console.error(`[uploads] webhook n8n ${r.status} dla ${token}`);
+      }).catch((e) => console.error("[uploads] webhook blad:", e.message));
+    } else {
+      console.warn("[uploads] N8N_ORDER_FILE_WEBHOOK_URL nie ustawiony, plik nie trafi na Dysk");
+    }
+
+    res.json({
+      ok: true,
+      uploadToken: token,
+      geometry: {
+        volumeCm3: Number(geometry.volumeCm3.toFixed(3)),
+        bbox: geometry.bbox,
+        triangleCount: geometry.triangleCount,
+      },
+    });
+  } catch (e) {
+    if (e instanceof PricingError) return res.status(400).json({ error: e.message, code: e.code });
+    console.error("[uploads] blad:", e);
+    res.status(500).json({ error: "Nie udalo sie przyjac pliku" });
+  }
+});
+
+/**
+ * Oddzwonienie z n8n po zapisaniu pliku na Dysku.
+ * Chronione wspoldzielonym tokenem, bo inaczej ktokolwiek moglby podmienic
+ * link do pliku w zamowieniu.
+ */
+app.post("/api/uploads/:token/stored", express.json({ limit: "8kb" }), async (req, res) => {
+  if (!UPLOAD_CALLBACK_TOKEN || req.headers["x-upload-token"] !== UPLOAD_CALLBACK_TOKEN) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const { driveUrl, driveFileId } = req.body || {};
+  const { rowCount } = await pool.query(
+    `UPDATE uploads SET drive_url = $2, drive_file_id = $3, stored_at = NOW() WHERE token = $1`,
+    [String(req.params.token || ""), driveUrl || null, driveFileId || null]
+  );
+  if (!rowCount) return res.status(404).json({ error: "Nieznany plik" });
+  console.log(`[uploads] plik ${req.params.token} zapisany na Dysku`);
+  res.json({ ok: true });
+});
+
+/** Pliki wgrane i nigdy niezamowione oznaczamy jako porzucone */
+async function markAbandonedUploads() {
+  if (!pool) return;
+  try {
+    const { rowCount } = await pool.query(
+      `UPDATE uploads SET status = 'abandoned', abandoned_at = NOW()
+        WHERE status = 'pending' AND created_at < NOW() - ($1 || ' days')::interval`,
+      [String(ABANDON_AFTER_DAYS)]
+    );
+    if (rowCount) console.log(`[uploads] oznaczono jako porzucone: ${rowCount}`);
+  } catch (e) {
+    console.error("[uploads] oznaczanie porzuconych nie powiodlo sie:", e.message);
+  }
+}
+if (pool) cron.schedule("30 3 * * *", markAbandonedUploads);
 
 // ============================================================
 // ZAMOWIENIA I PLATNOSCI
@@ -742,11 +877,18 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
       // Geometria pochodzi z wczesniejszego wywolania /api/price, gdzie zostala
       // policzona z pliku po stronie serwera. Cene liczymy tu jeszcze raz tym
       // samym kodem, wiec zmiana czegokolwiek po drodze nic nie daje.
+      // Geometrie bierzemy z bazy, nie z przegladarki, gdy pozycja ma plik.
+      let itemGeometry = raw.geometry || null;
+      if (raw.uploadToken) {
+        const { rows } = await pool.query("SELECT geometry FROM uploads WHERE token = $1", [String(raw.uploadToken)]);
+        if (rows[0]?.geometry) itemGeometry = rows[0].geometry;
+      }
+
       const item = priceItem({
         calculator: raw.calculator,
         params: raw.params,
         lang: safeLang,
-        geometry: raw.geometry || null,
+        geometry: itemGeometry,
         scale: raw.scale || 1,
         rates,
       });
@@ -768,6 +910,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
         params: raw.params,
         geometry: raw.geometry || null,
         fileName: raw.fileName || null,
+        uploadToken: raw.uploadToken || null,
       });
     }
 
@@ -809,15 +952,28 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
     const orderId = rows[0].id;
 
     for (const i of priced) {
+      let uploadRow = null;
+      if (i.uploadToken) {
+        const { rows } = await pool.query(
+          `UPDATE uploads SET status = 'ordered', order_id = $2 WHERE token = $1
+           RETURNING id, drive_url, file_name, file_sha256, geometry`,
+          [i.uploadToken, orderId]
+        );
+        uploadRow = rows[0] || null;
+      }
+
       await pool.query(
         `INSERT INTO order_items (order_id, item_type, calculator, title, qty, unit_grosze, line_grosze,
-           params, price_breakdown, file_name, file_sha256, geometry)
-         VALUES ($1,'service',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+           params, price_breakdown, file_name, file_sha256, file_url, geometry, upload_id)
+         VALUES ($1,'service',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
         [orderId, i.calculator, i.title, i.qty, i.unitGrosze, i.lineGrosze,
          JSON.stringify({ ...(i.params ?? {}), packagingId: i.packagingId, personalization: i.personalization }),
          JSON.stringify(i.breakdown ?? []),
-         i.fileName, i.geometry?.sha256 ?? null,
-         i.geometry ? JSON.stringify(i.geometry) : null]
+         i.fileName || uploadRow?.file_name || null,
+         i.geometry?.sha256 ?? uploadRow?.file_sha256 ?? null,
+         uploadRow?.drive_url ?? null,
+         i.geometry ? JSON.stringify(i.geometry) : (uploadRow?.geometry ? JSON.stringify(uploadRow.geometry) : null),
+         uploadRow?.id ?? null]
       );
     }
 
