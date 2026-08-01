@@ -269,7 +269,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
 
   if (!service) return null;
 
-  const pack = getPackaging(packagingId);
+  // Usluga cyfrowa konczy sie plikiem, wiec nie ma czego pakowac.
+  const isDigital = Boolean(service.digital);
+  const pack = isDigital ? null : getPackaging(packagingId);
   const packGrosze = pack?.grosze ?? 0;
   const unitTotal = (price?.unitGrosze ?? 0) + packGrosze;
 
@@ -430,12 +432,12 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       // Plik lezy juz na Dysku, wiec pozycja przezyje odswiezenie strony.
       fileRetained: Boolean(uploadToken),
       unitGrosze: price.unitGrosze,
-      packagingId,
+      packagingId: isDigital ? null : packagingId,
       packagingGrosze: packGrosze,
+      withdrawal: isDigital ? "digital" : "made_to_order",
       personalization: engraving.trim() || null,
       packagingText: packEngraving.trim() || null,
       packagingTextBack: lidBackText.trim() || null,
-      withdrawal: "made_to_order",
       qty: effectiveQty,
     });
     setAdded(true);
@@ -569,7 +571,8 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
         />
       )}
 
-      {/* Opakowanie */}
+      {/* Opakowanie, tylko dla rzeczy, ktore realnie wysylamy */}
+      {!isDigital && (
       <TileGroup
         label={u.packaging}
         options={PACKAGING.map((p) => ({
@@ -583,6 +586,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
         accent={accent}
         columns={3}
       />
+      )}
 
       {/* Grawer na wyrobie. Niezalezny od graweru na pudelku, bo jedno
           zamowienie moze miec oba. */}

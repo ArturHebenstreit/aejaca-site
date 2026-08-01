@@ -694,6 +694,8 @@ Zakres plikow: STL bez doplaty, STL + STEP +15%, komplet z renderem i raportem w
 
 Licznik `wykorzystane / w cenie` widnieje na stronie statusu **od poczatku**. Klient, ktory dowiaduje sie o wyczerpaniu limitu dopiero przy rachunku, czuje sie naciagniety.
 
+**Usluga cyfrowa.** Projekt 3D ma w katalogu `digital: true`. Konfigurator nie pokazuje przy niej opakowania (nie ma czego pakowac), pozycja trafia do koszyka z rezimem `digital`, a kasa sama pomija wybor dostawy i liczy 0 zl transportu. Wystarczy ta jedna flaga, zeby cala sciezka zachowala sie poprawnie.
+
 **Oplata projektowa zaliczana na poczet wykonania.** Klient, ktory w ciagu 90 dni zamowi u nas wykonanie zaprojektowanej rzeczy, odzyskuje cala oplate za projekt. Odliczenie jest jednorazowe, nie obejmuje dostawy i nalicza sie automatycznie przy zamianie wyceny w zamowienie. Stawka i okno czasowe siedza w `CAD_CONFIG.CREDIT_RATE` i `CREDIT_DAYS`, wiec zmiana na polowe albo wylaczenie to jedna liczba.
 
 Sens: dla klienta, ktory naprawde zamawia, projekt jest darmowy, a dla zbierajacego darmowe koncepcje po pieciu pracowniach juz nie. Nieodplatne doradztwo zamienia sie w zaliczke.
