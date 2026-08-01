@@ -24,6 +24,7 @@ const UI = {
     qty: "szt.",
     packaging: "Opakowanie",
     engraving: "Grawer",
+    engravingLid: "Grawer na wieku",
     engravingBack: "Grawer, wewnętrzna strona wieka",
     file: "Plik",
     attachment: "Projekt",
@@ -47,6 +48,7 @@ const UI = {
     qty: "pcs",
     packaging: "Packaging",
     engraving: "Engraving",
+    engravingLid: "Engraving on the lid",
     engravingBack: "Engraving, inside of the lid",
     file: "File",
     attachment: "Artwork",
@@ -70,6 +72,7 @@ const UI = {
     qty: "Stk.",
     packaging: "Verpackung",
     engraving: "Gravur",
+    engravingLid: "Gravur auf dem Deckel",
     engravingBack: "Gravur, Deckelinnenseite",
     file: "Datei",
     attachment: "Vorlage",
@@ -172,7 +175,8 @@ export default function Cart() {
                         <div className="text-neutral-500 text-[11px] mt-1.5 space-y-0.5">
                           {pack && <div>{u.packaging}: {t(pack.label, lang)}{pack.grosze ? ` (+${money(pack.grosze)})` : ""}</div>}
                           {i.personalization && <div>{u.engraving}: &bdquo;{i.personalization}&rdquo;</div>}
-                          {i.personalizationBack && <div>{u.engravingBack}: &bdquo;{i.personalizationBack}&rdquo;</div>}
+                          {i.packagingText && <div>{u.engravingLid}: &bdquo;{i.packagingText}&rdquo;</div>}
+                          {i.packagingTextBack && <div>{u.engravingBack}: &bdquo;{i.packagingTextBack}&rdquo;</div>}
                           {i.fileName && <div>{u.file}: {i.fileName}</div>}
                           {i.attachmentName && <div>{u.attachment}: {i.attachmentName}</div>}
                           {i.description && <div className="line-clamp-2">{u.description}: {i.description}</div>}

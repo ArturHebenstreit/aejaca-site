@@ -208,9 +208,10 @@ export function PersonalizationField({ label, value, onChange, maxLength = 60, p
  * co zrobic: "pierscionek, srebro, bez kamienia" to nie jest zamowienie.
  * Bez tego pola pozycja w koszyku nie jest gotowa do kupienia.
  */
-export function JobDescription({ label, hint, value, onChange, minLength = 20, accent = "blue", image, onPickImage, onClearImage, imageLabel, lang }) {
+export function JobDescription({ label, hint, value, onChange, minLength = 20, maxLength = 700, accent = "blue", image, onPickImage, onClearImage, imageLabel, lang }) {
   const ref = useRef(null);
-  const short = value.trim().length < minLength;
+  const len = value.trim().length;
+  const short = len < minLength;
   const ring = accent === "amber" ? "focus:border-amber-400/50" : "focus:border-blue-400/50";
 
   return (
@@ -219,13 +220,23 @@ export function JobDescription({ label, hint, value, onChange, minLength = 20, a
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        rows={4}
+        rows={5}
+        maxLength={maxLength}
         className={`w-full rounded-xl bg-white/[0.03] border border-white/10 px-3.5 py-3 text-sm text-white
                     placeholder:text-neutral-600 focus:outline-none transition-colors ${ring}`}
         placeholder={hint}
       />
+      {/* Licznik pokazywal "0 / 20" i czytalo sie to jak limit, a 20 to prog
+          minimalny. Dopoki opis jest za krotki, mowimy ile brakuje; potem
+          licznik odnosi sie juz do gornej granicy, ktora jest hojna. */}
       <div className={`text-[11px] mt-1.5 ${short ? "text-amber-400/80" : "text-neutral-600"}`}>
-        {value.trim().length} / {minLength}
+        {short
+          ? t({
+              pl: `Jeszcze ${minLength - len} znaków`,
+              en: `${minLength - len} more characters`,
+              de: `Noch ${minLength - len} Zeichen`,
+            }, lang)
+          : `${len} / ${maxLength}`}
       </div>
 
       {onPickImage && (

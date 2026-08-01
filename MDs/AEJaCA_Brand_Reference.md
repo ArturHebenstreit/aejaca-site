@@ -664,6 +664,10 @@ Wymogi sa zapisane raz, w `src/data/orderCatalog.js` (`requiresDescription`, `re
 | wieko pudelka drewnianego | **60 znakow** | jak wyzej |
 | wewnetrzna strona wieka | 60 znakow, pole nieobowiazkowe | jak wyzej |
 
+To sa **trzy niezalezne teksty**, nie jeden. Jedno zamowienie moze miec grawer na pierscionku i inny na wieku pudelka, wiec kazdy ma wlasne pole i wlasny stan. Wspolne pole kasowalo jeden tekst przy wpisywaniu drugiego.
+
+Opis zlecenia to osobna sprawa: minimum 20 znakow, gorna granica 700. Licznik pokazuje "jeszcze X znakow", dopoki prog nie zostanie osiagniety, bo "0 / 20" czytalo sie jak limit.
+
 Limity leza w `src/pricing/packaging.js` (`ENGRAVING_LIMITS`) i obowiazuja identycznie w sklepie i w kalkulatorze.
 
 Tekstu **nie ucinamy w polu**. Klient widzi licznik przekroczony i zdanie wyjasniajace, ze dluzszy grawer to inne ustawienia lasera i inna kompozycja, wiec wycenia go czlowiek. Ciche skrocenie dedykacji o polowe byloby gorsze niz odmowa.
