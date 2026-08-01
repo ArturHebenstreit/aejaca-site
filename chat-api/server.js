@@ -668,7 +668,7 @@ app.post("/api/price", (req, res, next) => {
 
     let geometry = null;
     if (req.file?.buffer) {
-      geometry = geometryFromFile(req.file.buffer, req.file.originalname || "");
+      geometry = await geometryFromFile(req.file.buffer, req.file.originalname || "");
     } else if (req.body?.uploadToken && pool) {
       // Plik zostal wgrany wczesniej przez /api/uploads. Geometrie czytamy
       // z bazy, wiec przesuwanie suwaka nie wysyla modelu za kazdym razem.
@@ -757,7 +757,7 @@ app.post("/api/uploads", (req, res, next) => {
       return res.status(400).json({ error: "Załącznik przekracza 15 MB", code: "file_too_large" });
     }
 
-    const geometry = isAttachment ? null : geometryFromFile(req.file.buffer, name);
+    const geometry = isAttachment ? null : await geometryFromFile(req.file.buffer, name);
     const token = generateToken();
     const lang = ["pl", "en", "de"].includes(req.body?.lang) ? req.body.lang : "pl";
 

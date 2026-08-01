@@ -15,6 +15,7 @@ import {
 import {
   QUANTITY_TIERS, t, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture, LicenseNotice,
 } from "./calcShared.jsx";
+import CalcToCart from "./CalcToCart.jsx";
 import { calculate as calcPrint3D, calculateMSLA, MSLA_SIZES } from "./Print3DCalc.jsx";
 import { calcEngrave as calcCO2Engrave, calcCut as calcCO2Cut } from "./CO2LaserCalc.jsx";
 import { calculate as calcFiber } from "./FiberLaserCalc.jsx";
@@ -302,6 +303,25 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
   return { custom: true };
 }
 
+/**
+ * Mapowanie wyniku szybkiej wyceny na usluge w sklepie.
+ * Zwraca null, gdy konfiguracji nie da sie kupic jednym kliknieciem.
+ */
+function cartTargetFor(resolved) {
+  if (!resolved || resolved.custom) return null;
+  const { tech, mode } = resolved;
+  if (tech === "3dprint") return { calculator: "print3d_fdm", serviceId: "print_fdm" };
+  if (tech === "msla")    return { calculator: "print3d_msla", serviceId: "print_msla" };
+  if (tech === "epoxy")   return { calculator: "epoxy", serviceId: "epoxy" };
+  if (tech === "fiber")   return { calculator: "laser_fiber", serviceId: "laser_fiber" };
+  if (tech === "co2") {
+    return mode === "cut"
+      ? { calculator: "laser_co2_cut", serviceId: "laser_cut" }
+      : { calculator: "laser_co2_engrave", serviceId: "laser_engrave" };
+  }
+  return null;
+}
+
 function runCalc(resolved, lang) {
   if (!resolved || resolved.custom) return { type: "custom" };
   const { tech, mode, params } = resolved;
@@ -566,6 +586,10 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   );
   const result = useMemo(() => runCalc(resolved, lang), [resolved, lang]);
 
+  // Szybka wycena otwiera sie domyslnie, wiec bez tego wiekszosc odwiedzajacych
+  // w ogole nie widziala drogi do zakupu.
+  const cartTarget = useMemo(() => cartTargetFor(resolved), [resolved]);
+
   const svgBlobUrl = useMemo(() => {
     if (!svgData?.svgText) return null;
     return URL.createObjectURL(new Blob([svgData.svgText], { type: "image/svg+xml" }));
@@ -779,6 +803,14 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
       <div id={hasFile ? "file-upload" : undefined} className="rounded-2xl border-2 border-emerald-400/30 bg-gradient-to-br from-emerald-400/[0.04] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} />
         <ResultDisplay result={result} lang={lang} />
+        {cartTarget && (
+          <CalcToCart
+            calculator={cartTarget.calculator}
+            serviceId={cartTarget.serviceId}
+            params={resolved.params}
+            lang={lang}
+          />
+        )}
         <div className="mt-4 pt-3 border-t border-emerald-400/10 text-[11px] text-emerald-400/60 italic text-center">
           {l.switchHint}
         </div>

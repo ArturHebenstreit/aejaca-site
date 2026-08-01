@@ -22,8 +22,8 @@ const API = import.meta.env.VITE_CHAT_API_URL;
 // dopiero, gdy ktos naprawde wgra model.
 const STLViewer = lazy(() => import("../calculators/STLViewer.jsx"));
 
-/** Rozszerzenia przyjmowane w polu pliku, zgodne z MESH_EXTENSIONS na serwerze */
-const ACCEPT_MESH = ".stl,.obj,.3mf";
+/** Rozszerzenia przyjmowane w polu pliku, zgodne z SUPPORTED_EXTENSIONS na serwerze */
+const ACCEPT_MESH = ".stl,.obj,.3mf,.step,.stp";
 
 /** Rysunki techniczne, ktore przyjmujemy jako zalacznik do zlecenia */
 const ACCEPT_VECTOR = ".svg,.dxf,.pdf";
@@ -35,7 +35,7 @@ const UI = {
   pl: {
     configure: "Skonfiguruj i dodaj do koszyka",
     file: "Twój plik",
-    fileHint: "Kliknij lub przeciągnij plik STL, OBJ lub 3MF",
+    fileHint: "Kliknij lub przeciągnij plik STL, OBJ, 3MF lub STEP",
     unitsNote: "Pliki STL i OBJ nie zapisują jednostki. Przyjmujemy milimetry, sprawdź wymiary powyżej.",
     vector: "Projekt do wykonania",
     vectorHint: "Kliknij lub przeciągnij plik SVG, DXF lub PDF",
@@ -61,7 +61,7 @@ const UI = {
   en: {
     configure: "Configure and add to cart",
     file: "Your file",
-    fileHint: "Click or drag an STL, OBJ or 3MF file",
+    fileHint: "Click or drag an STL, OBJ, 3MF or STEP file",
     unitsNote: "STL and OBJ carry no unit. We read them as millimetres, please check the dimensions above.",
     vector: "Your artwork",
     vectorHint: "Click or drag an SVG, DXF or PDF file",
@@ -87,7 +87,7 @@ const UI = {
   de: {
     configure: "Konfigurieren und in den Warenkorb",
     file: "Ihre Datei",
-    fileHint: "STL-, OBJ- oder 3MF-Datei klicken oder hierher ziehen",
+    fileHint: "STL-, OBJ-, 3MF- oder STEP-Datei klicken oder hierher ziehen",
     unitsNote: "STL und OBJ speichern keine Einheit. Wir lesen Millimeter, bitte prüfen Sie die Maße oben.",
     vector: "Ihre Vorlage",
     vectorHint: "SVG-, DXF- oder PDF-Datei klicken oder hierher ziehen",
@@ -289,8 +289,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
     // nie czekajac na przeslanie kilkunastu megabajtow. Cena i tak przyjdzie
     // z serwera, wiec ten odczyt niczego nie rozstrzyga.
     import("../../pricing/mesh.js")
-      .then(async ({ parseMesh }) => {
-        const parsed = parseMesh(await f.arrayBuffer(), f.name);
+      .then(async ({ parseMeshAsync }) => {
+        // STEP idzie przez jadro CAD, wiec odczyt jest asynchroniczny.
+        const parsed = await parseMeshAsync(await f.arrayBuffer(), f.name);
         setTriangles(parsed.triangles);
       })
       .catch(() => setTriangles(null));

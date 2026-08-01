@@ -13,6 +13,7 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture, t } from "./calcShared.jsx";
+import CalcToCart from "./CalcToCart.jsx";
 import { calcNew, calcRenovation, calcRepair } from "./JewelryCalc.jsx";
 import { trackCalc } from "../../utils/analytics.js";
 
@@ -333,6 +334,22 @@ function calcCord(resolved, lang) {
   };
 }
 
+/**
+ * Do koszyka wpuszczamy tylko to, co potrafimy wycenic wiazaco.
+ * Kamienie, sznurki i sploty zostaja przy wycenie czlowieka.
+ */
+function cartTargetFor(resolved) {
+  if (!resolved || resolved.custom) return null;
+  if (resolved.flow === "renovation") return { calculator: "jewelry_renovation", serviceId: "jewelry_renovation" };
+  if (resolved.flow === "repair")     return { calculator: "jewelry_repair", serviceId: "jewelry_repair" };
+  if (resolved.flow === "new") {
+    const p = resolved.params || {};
+    const hasStone = Boolean(p.stoneRows?.length || p.gemId || p.gemstoneId);
+    return hasStone ? null : { calculator: "jewelry_new", serviceId: "jewelry_plain" };
+  }
+  return null;
+}
+
 function runCalc(resolved, lang) {
   if (!resolved || resolved.custom) return { type: "custom" };
   if (resolved.flow === "cord")       return calcCord(resolved, lang);
@@ -492,6 +509,7 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
   const state = { service, piece, metal, gemCategory, renoScope, repairIssue, quality, quantity };
   const resolved = useMemo(() => resolveJewelryParams(state), [service, piece, metal, gemCategory, renoScope, repairIssue, quality, quantity]);
   const result = useMemo(() => runCalc(resolved, lang), [resolved, lang]);
+  const cartTarget = useMemo(() => cartTargetFor(resolved), [resolved]);
 
   const isNew    = service === "new";
   const isReno   = service === "renovation";
@@ -568,6 +586,15 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
       <div className="rounded-2xl border-2 border-rose-400/30 bg-gradient-to-br from-rose-400/[0.04] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} />
         <ResultDisplay result={result} lang={lang} />
+        {cartTarget && (
+          <CalcToCart
+            calculator={cartTarget.calculator}
+            serviceId={cartTarget.serviceId}
+            params={resolved.params}
+            lang={lang}
+            accent="amber"
+          />
+        )}
         <div className="mt-4 pt-3 border-t border-rose-400/10 text-[11px] text-rose-400/60 italic text-center">
           {l.switchHint}
         </div>

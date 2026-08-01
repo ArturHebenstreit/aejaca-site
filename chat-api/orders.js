@@ -8,7 +8,7 @@
 
 import crypto from "node:crypto";
 
-import { parseMesh, MeshError, MESH_EXTENSIONS, extensionOf } from "./pricing/mesh.js";
+import { parseMeshAsync, MeshError, SUPPORTED_EXTENSIONS, extensionOf } from "./pricing/mesh.js";
 import * as print3d from "./pricing/print3d.js";
 import * as jewelry from "./pricing/jewelry.js";
 import * as laserCo2 from "./pricing/laserCo2.js";
@@ -55,19 +55,18 @@ export class PricingError extends Error {
  * Przegladarka liczy to samo dla podgladu, ale jej wynikowi nie ufamy,
  * bo jest o jedno `fetch` od podmiany.
  */
-export function geometryFromFile(buffer, fileName = "") {
+export async function geometryFromFile(buffer, fileName = "") {
   if (!buffer || !buffer.length) throw new PricingError("file_empty", "Pusty plik");
   if (buffer.length > MAX_FILE_BYTES) throw new PricingError("file_too_large", "Plik przekracza 60 MB");
 
   const ext = extensionOf(fileName);
-  if (!MESH_EXTENSIONS.includes(ext)) {
-    // STEP wymaga jadra CAD do tesselacji, wchodzi osobnym krokiem.
+  if (!SUPPORTED_EXTENSIONS.includes(ext)) {
     throw new PricingError("unsupported_format", `Format .${ext} nie jest jeszcze obsługiwany w wycenie automatycznej`);
   }
 
   let parsed;
   try {
-    parsed = parseMesh(buffer, fileName);
+    parsed = await parseMeshAsync(buffer, fileName);
   } catch (e) {
     if (e instanceof MeshError) throw new PricingError(e.code, e.message);
     throw new PricingError("file_unreadable", `Nie udało się odczytać pliku .${ext}`);
@@ -97,7 +96,8 @@ export function geometryFromFile(buffer, fileName = "") {
  * @param {{x:number,y:number,z:number}} bbox gabaryty w centymetrach
  */
 function assertPlausibleScale(bbox, ext) {
-  if (ext === "3mf") return; // 3MF deklaruje jednostke, nie ma czego zgadywac
+  // 3MF i STEP deklaruja jednostke w pliku, wiec nie ma czego zgadywac.
+  if (ext === "3mf" || ext === "step" || ext === "stp") return;
   const maxCm = Math.max(bbox.x, bbox.y, bbox.z);
   if (maxCm < 0.05) {
     throw new PricingError("scale_suspect", "Model ma poniżej 0,5 mm w każdym wymiarze. Sprawdź jednostki w eksporcie, pliki STL i OBJ zapisujemy w milimetrach.");
