@@ -1155,7 +1155,13 @@ export default function JewelryCalc({ lang = "pl" }) {
                 ? { jewTypeId: repairJewType, metalTypeId: repairMetal, repairId, qtyId }
                 : { lineId, typeId, metalId, weightId, methodId, platingId, engravingId, qtyId }
           }
-          blocked={serviceId === "new" && (stoneRows.length > 0 || isChainType(typeId) || clientSuppliesMetal)}
+          blocked={serviceId === "new" && (
+            // Lista kamieni ma zawsze co najmniej jeden wiersz, domyslnie
+            // ustawiony na "bez kamienia", wiec liczy sie tresc, nie dlugosc.
+            stoneRows.some((r) => r.gemId && r.gemId !== "none")
+            || isChainType(typeId)
+            || clientSuppliesMetal
+          )}
           blockedReason="manual"
           lang={lang}
           accent="amber"

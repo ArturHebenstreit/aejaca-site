@@ -344,7 +344,10 @@ function cartTargetFor(resolved) {
   if (resolved.flow === "repair")     return { calculator: "jewelry_repair", serviceId: "jewelry_repair" };
   if (resolved.flow === "new") {
     const p = resolved.params || {};
-    const hasStone = Boolean(p.stoneRows?.length || p.gemId || p.gemstoneId);
+    // mapGem zwraca gemId: "none" przy wyborze "bez kamienia", wiec sama
+    // obecnosc pola nic nie znaczy.
+    const hasStone = Boolean(p.gemId && p.gemId !== "none")
+      || Boolean(p.stoneRows?.some((r) => r.gemId && r.gemId !== "none"));
     return hasStone ? null : { calculator: "jewelry_new", serviceId: "jewelry_plain" };
   }
   return null;
