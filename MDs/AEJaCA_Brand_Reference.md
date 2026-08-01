@@ -682,9 +682,11 @@ Jedyna usluga, ktora dotad nie miala kalkulatora, wiec kazde zapytanie zaczynalo
 |---|---:|---|
 | prosty (gladka obraczka, sygnet, powtarzalna czesc) | 500 PLN | 3 dni robocze |
 | sredni (oprawy, relief, mechanizm z tolerancjami) | 750 PLN | 4 dni |
-| rzezbiarski (azur, filigran, forma organiczna) | 1050 PLN | 5 dni |
+| rzezbiarski / wysoka zlozonosc | **wycena indywidualna** | ustalany |
 
 Zakres plikow: STL bez doplaty, STL + STEP +15%, komplet z renderem i raportem wymiarowym +30%. STEP ma wlasna cene, bo to plik, z ktorym klient moze pojsc do dowolnego wykonawcy.
+
+Prog rzezbiarski **nie ma ceny z automatu**. Przy formie organicznej czas pracy zalezy od tego, jak daleko klient ma sprecyzowany pomysl, a tego nie widac w zadnym parametrze. Ryczalt bylby albo strata, albo kwota zaporowa liczona na wszelki wypadek. Kwota 1050 PLN zostaje w kodzie jako podstawa doplat za poprawki, gdy juz wycenimy takie zlecenie recznie.
 
 **Nie ma stawki godzinowej ani ekspresu.** Klient nie wie, ile godzin zajmuje jego pomysl, wiec kazda liczba, ktora by wybral, bylaby negocjacja od nowa. Ekspres przy jednoosobowym warsztacie oznacza przesuniecie czyjegos innego zlecenia.
 
@@ -716,6 +718,12 @@ Wiazaca kwota za nowy wyrob ma pokrycie tylko wtedy, gdy czas pracy jest przewid
 **Uwaga na dwa rozne znaczenia tego samego slowa.** Przy **bizuterii** zlozonosc jest bramka: sredni i zlozony ksztalt ida do wyceny czlowieka. Przy **projekcie 3D** zlozonosc jest progiem cenowym: podnosi kwote i pozwala normalnie zlecic prace. Oba pola nazywaja sie `complexityId`, wiec bramka jest zawezona do kalkulatora `jewelry_new`.
 
 Zlozonosc ksztaltu bizuterii (`SHAPE_COMPLEXITY` w `jewelryConfig.js`) **nie jest mnoznikiem ceny**, tylko bramka. Naklad pracy przy ornamentowanej bryle nie wynika ani z masy, ani z metody, wiec mnozenie przez wspolczynnik byloby zgadywaniem udajacym rachunek.
+
+### Dlaczego nie da sie kupic: lista warunkow
+
+Wygaszony przycisk bez wyjasnienia to najgorszy mozliwy komunikat. Wczesniej powod byl jednym zdaniem drobnym drukiem i ginal, zwlaszcza przy brakujacym opisie.
+
+`BlockedReasons` pokazuje teraz **kazdy warunek osobno**, z wlasnym znacznikiem i podpowiedzia, gdzie go spelnic. Spelnione sa przekreslone, brakujace opisane zdaniem. Ten sam komponent obsluguje konfigurator w sklepie i blok zakupowy w kalkulatorze, wiec komunikat jest identyczny niezaleznie od tego, gdzie klient stoi.
 
 ### Formaty plikow klienta
 
