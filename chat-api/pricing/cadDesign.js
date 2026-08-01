@@ -25,6 +25,19 @@ export const CAD_CONFIG = {
   /** Minimalny termin. Nie ma stawki ekspresowej: przy jednoosobowym
    *  warsztacie ekspres oznacza przesuniecie czyjegos innego zlecenia. */
   MIN_LEAD_DAYS: 3,
+
+  /**
+   * Ile z oplaty projektowej odliczamy, gdy klient zamowi u nas wykonanie.
+   *
+   * Sens tej zasady: dla klienta, ktory naprawde zamawia, projekt jest
+   * darmowy, a dla zbierajacego darmowe koncepcje po pieciu pracowniach
+   * juz nie. Zamienia nieodplatne doradztwo w zaliczke.
+   *
+   * Zmiana na 0.5 daje odliczenie polowy. Zmiana na 0 wylacza mechanizm.
+   */
+  CREDIT_RATE: 1.0,
+  /** Ile dni od zaplaty za projekt odliczenie pozostaje wazne */
+  CREDIT_DAYS: 90,
 };
 
 export const LBL = {

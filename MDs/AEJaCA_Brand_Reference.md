@@ -694,7 +694,11 @@ Zakres plikow: STL bez doplaty, STL + STEP +15%, komplet z renderem i raportem w
 
 Licznik `wykorzystane / w cenie` widnieje na stronie statusu **od poczatku**. Klient, ktory dowiaduje sie o wyczerpaniu limitu dopiero przy rachunku, czuje sie naciagniety.
 
-**Do dopisania w regulaminie:** co sie dzieje, gdy klient nie zaplaci za kolejna runde. Projekt zostaje w stanie po ostatniej oplaconej poprawce, klient dostaje pliki w oplaconym zakresie, sprawa jest zamknieta.
+**Oplata projektowa zaliczana na poczet wykonania.** Klient, ktory w ciagu 90 dni zamowi u nas wykonanie zaprojektowanej rzeczy, odzyskuje cala oplate za projekt. Odliczenie jest jednorazowe, nie obejmuje dostawy i nalicza sie automatycznie przy zamianie wyceny w zamowienie. Stawka i okno czasowe siedza w `CAD_CONFIG.CREDIT_RATE` i `CREDIT_DAYS`, wiec zmiana na polowe albo wylaczenie to jedna liczba.
+
+Sens: dla klienta, ktory naprawde zamawia, projekt jest darmowy, a dla zbierajacego darmowe koncepcje po pieciu pracowniach juz nie. Nieodplatne doradztwo zamienia sie w zaliczke.
+
+**Regulamin, sekcja 8a** opisuje zakres uslugi, rundy poprawek, skutki nieoplacenia kolejnej rundy oraz zaliczenie oplaty. Limit kwartalny liczy sie od kwoty po odliczeniu, bo tyle realnie wplywa.
 
 ### Kiedy bizuteria dostaje cene wiazaca
 
