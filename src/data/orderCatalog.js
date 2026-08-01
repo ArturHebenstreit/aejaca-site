@@ -242,6 +242,8 @@ export const SERVICES = [
   {
     id: "cad_design",
     calculator: "cad_design",
+    // Wynikiem sa pliki, wiec nie ma czego pakowac ani wysylac.
+    digital: true,
     requiresDescription: true,
     acceptsVector: true,
     fields: [

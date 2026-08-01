@@ -694,6 +694,8 @@ Zakres plikow: STL bez doplaty, STL + STEP +15%, komplet z renderem i raportem w
 
 Licznik `wykorzystane / w cenie` widnieje na stronie statusu **od poczatku**. Klient, ktory dowiaduje sie o wyczerpaniu limitu dopiero przy rachunku, czuje sie naciagniety.
 
+**Usluga cyfrowa.** Projekt 3D ma w katalogu `digital: true`. Konfigurator nie pokazuje przy niej opakowania (nie ma czego pakowac), pozycja trafia do koszyka z rezimem `digital`, a kasa sama pomija wybor dostawy i liczy 0 zl transportu. Wystarczy ta jedna flaga, zeby cala sciezka zachowala sie poprawnie.
+
 **Oplata projektowa zaliczana na poczet wykonania.** Klient, ktory w ciagu 90 dni zamowi u nas wykonanie zaprojektowanej rzeczy, odzyskuje cala oplate za projekt. Odliczenie jest jednorazowe, nie obejmuje dostawy i nalicza sie automatycznie przy zamianie wyceny w zamowienie. Stawka i okno czasowe siedza w `CAD_CONFIG.CREDIT_RATE` i `CREDIT_DAYS`, wiec zmiana na polowe albo wylaczenie to jedna liczba.
 
 Sens: dla klienta, ktory naprawde zamawia, projekt jest darmowy, a dla zbierajacego darmowe koncepcje po pieciu pracowniach juz nie. Nieodplatne doradztwo zamienia sie w zaliczke.
@@ -711,7 +713,9 @@ Wiazaca kwota za nowy wyrob ma pokrycie tylko wtedy, gdy czas pracy jest przewid
 | ksztalt sredni lub zlozony (faktura, azur, filigran, forma rzezbiarska) | nie, wycena czlowieka |
 | kamienie, sploty lancuszkow, metal powierzony przez klienta | nie, wycena czlowieka |
 
-Zlozonosc ksztaltu (`SHAPE_COMPLEXITY` w `jewelryConfig.js`) **nie jest mnoznikiem ceny**, tylko bramka. Naklad pracy przy ornamentowanej bryle nie wynika ani z masy, ani z metody, wiec mnozenie przez wspolczynnik byloby zgadywaniem udajacym rachunek.
+**Uwaga na dwa rozne znaczenia tego samego slowa.** Przy **bizuterii** zlozonosc jest bramka: sredni i zlozony ksztalt ida do wyceny czlowieka. Przy **projekcie 3D** zlozonosc jest progiem cenowym: podnosi kwote i pozwala normalnie zlecic prace. Oba pola nazywaja sie `complexityId`, wiec bramka jest zawezona do kalkulatora `jewelry_new`.
+
+Zlozonosc ksztaltu bizuterii (`SHAPE_COMPLEXITY` w `jewelryConfig.js`) **nie jest mnoznikiem ceny**, tylko bramka. Naklad pracy przy ornamentowanej bryle nie wynika ani z masy, ani z metody, wiec mnozenie przez wspolczynnik byloby zgadywaniem udajacym rachunek.
 
 ### Formaty plikow klienta
 
