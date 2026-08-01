@@ -226,17 +226,20 @@ export function JobDescription({ label, hint, value, onChange, minLength = 20, m
                     placeholder:text-neutral-600 focus:outline-none transition-colors ${ring}`}
         placeholder={hint}
       />
-      {/* Licznik pokazywal "0 / 20" i czytalo sie to jak limit, a 20 to prog
-          minimalny. Dopoki opis jest za krotki, mowimy ile brakuje; potem
-          licznik odnosi sie juz do gornej granicy, ktora jest hojna. */}
-      <div className={`text-[11px] mt-1.5 ${short ? "text-amber-400/80" : "text-neutral-600"}`}>
-        {short
-          ? t({
-              pl: `Jeszcze ${minLength - len} znaków`,
-              en: `${minLength - len} more characters`,
-              de: `Noch ${minLength - len} Zeichen`,
-            }, lang)
-          : `${len} / ${maxLength}`}
+      {/* Licznik ma jedna skale przez caly czas: ile wpisano z ilu mozna.
+          Odliczanie do progu zmienialo znaczenie liczby w trakcie pisania,
+          a prog jest wymaganiem, nie limitem, wiec mowimy o nim slowami. */}
+      <div className="flex items-baseline justify-between gap-3 mt-1.5">
+        <span className={`text-[11px] ${short ? "text-amber-400/80" : "text-transparent select-none"}`}>
+          {t({
+            pl: `Opisz krótko, minimum ${minLength} znaków`,
+            en: `A short brief, at least ${minLength} characters`,
+            de: `Kurze Beschreibung, mindestens ${minLength} Zeichen`,
+          }, lang)}
+        </span>
+        <span className={`text-[11px] tabular-nums flex-shrink-0 ${short ? "text-amber-400/80" : "text-neutral-600"}`}>
+          {len} / {maxLength}
+        </span>
       </div>
 
       {onPickImage && (
