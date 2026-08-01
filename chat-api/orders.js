@@ -14,6 +14,7 @@ import * as jewelry from "./pricing/jewelry.js";
 import * as laserCo2 from "./pricing/laserCo2.js";
 import * as laserFiber from "./pricing/laserFiber.js";
 import * as epoxy from "./pricing/epoxy.js";
+import * as cadDesign from "./pricing/cadDesign.js";
 
 /** Limit obrotu dzialalnosci nierejestrowanej, od 2026-01-01 rozliczany kwartalnie */
 export const QUARTERLY_LIMIT_GROSZE = 1_081_350; // 10 813,50 PLN
@@ -36,6 +37,7 @@ export const CALCULATORS = {
   laser_co2_cut:      { fn: laserCo2.calcCut,       needsFile: false, label: { pl: "Cięcie laserem CO2", en: "CO2 laser cutting", de: "CO2-Laserschnitt" } },
   laser_fiber:        { fn: laserFiber.calculate,   needsFile: false, label: { pl: "Znakowanie laserem fiber", en: "Fiber laser marking", de: "Faserlaser-Markierung" } },
   epoxy:              { fn: epoxy.calculate,        needsFile: false, label: { pl: "Odlew żywiczny", en: "Resin casting", de: "Harzguss" } },
+  cad_design:         { fn: cadDesign.calculate,    needsFile: false, label: { pl: "Projekt 3D (CAD)", en: "3D design (CAD)", de: "3D-Entwurf (CAD)" } },
 };
 
 /** Kalkulatory, w ktorych plik klienta zastepuje wybor rozmiaru */
@@ -170,6 +172,9 @@ export function priceItem({ calculator, params, lang = "pl", geometry = null, sc
     estimateRange: { minPLN: result.perPcPLN?.min ?? null, maxPLN: result.perPcPLN?.max ?? null },
     totalTimeH: result.totalTimeH ?? null,
     breakdown: result.breakdown ?? null,
+    // Projekt 3D niesie limit poprawek w cenie. Zamowienie musi go zapamietac,
+    // bo od niego zalezy, czy kolejna runda jest platna.
+    revisionsIncluded: result.revisionsIncluded ?? null,
   };
 }
 

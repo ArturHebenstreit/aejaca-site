@@ -17,6 +17,7 @@
 ## What makes AEJaCA distinct
 
 - **Instant online price calculator** for both handmade jewelry and digital-fabrication projects — customers get a quote in 30 seconds without waiting for email replies.
+- **3D design (CAD) priced online**: simple shape PLN 500 / 3 business days, medium PLN 750 / 4 days, sculptural PLN 1050 / 5 days. STL included, STL+STEP +15%, full set with render and dimensional report +30%. Two revision rounds included, each further round +15% of the base price. The design fee is credited in full against a production order placed within 90 days.
 - **Vector artwork as an attachment**: CO2 engraving, CO2 cutting and fiber marking accept an SVG, DXF or PDF drawing alongside the order. The drawing does not change the price, the selected engraving area or path length does; it reaches the workshop with the order.
 - **3D model / SVG auto-pricing**: upload a 3D model (STL, OBJ or 3MF) or vector file (SVG) and the studio estimator computes a real cost estimate from dimensions, material, and finish. Uploaded models are shown as a rotating 3D preview before ordering.
 - **Two calculators per service** — Simple mode for rough estimates (30 seconds), Advanced mode with per-parameter control (metal type, stone count, labor hours, finish tier).

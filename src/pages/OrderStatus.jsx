@@ -28,6 +28,7 @@ const UI = {
     notFound: "Nie znaleziono takiego zamówienia",
     orderNo: "Numer zamówienia",
     amount: "Kwota",
+    revisions: "Wykorzystane poprawki",
     contact: "Napisz do nas",
     home: "Wróć na stronę główną",
   },
@@ -45,6 +46,7 @@ const UI = {
     notFound: "Order not found",
     orderNo: "Order number",
     amount: "Amount",
+    revisions: "Revisions used",
     contact: "Write to us",
     home: "Back to home page",
   },
@@ -62,6 +64,7 @@ const UI = {
     notFound: "Bestellung nicht gefunden",
     orderNo: "Bestellnummer",
     amount: "Betrag",
+    revisions: "Genutzte Korrekturen",
     contact: "Schreiben Sie uns",
     home: "Zurück zur Startseite",
   },
@@ -160,6 +163,16 @@ export default function OrderStatus() {
                     <span className="text-neutral-500">{u.amount}</span>
                     <span className="text-white font-semibold">{String(order.totalPLN).replace(".", ",")} PLN</span>
                   </div>
+                  {/* Licznik poprawek widoczny od poczatku, zeby trzecia runda
+                      byla swiadomym wyborem, a nie niespodzianka przy rachunku. */}
+                  {order.revisions && (
+                    <div className="flex justify-between mt-1">
+                      <span className="text-neutral-500">{u.revisions}</span>
+                      <span className="text-white">
+                        {order.revisions.used} / {order.revisions.included}
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
             </>

@@ -9,7 +9,8 @@ import { rateLimit } from "express-rate-limit";
 import { getSystemPrompt, detectHotLead } from "./context.js";
 import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages } from "./gmail.js";
 import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken } from "./orders.js";
-import { createQuote, priceQuote, getQuoteByRef, convertQuoteToOrder, QuoteError } from "./quotes.js";
+import { createQuote, priceQuote, getQuoteByRef, convertQuoteToOrder, availableDesignCredit, QuoteError } from "./quotes.js";
+import { extraRevisionGrosze, CAD_CONFIG } from "./pricing/cadDesign.js";
 import {
   autopayConfigured, buildStartTransaction, formatValidityTime,
   verifyReturn, parseITN, buildITNConfirmation, fetchGatewayList,
@@ -65,6 +66,15 @@ if (pool) {
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS upload_id BIGINT`).catch(() => {});
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS quote_ref VARCHAR(32)`).catch(() => {});
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS source VARCHAR(30)`).catch(() => {});
+  // Projekt 3D ma limit poprawek w cenie. Kolejne sa platne, wiec licznik
+  // musi zyc przy zamowieniu, a doplata wisiec przy nim jako dziecko.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS revisions_included INTEGER`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS revisions_used INTEGER NOT NULL DEFAULT 0`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS parent_order_id BIGINT`).catch(() => {});
+  // Oplata projektowa zaliczana na poczet wykonania. Slad trzymamy po obu
+  // stronach: ile odliczono i ktore zamowienie skonsumowalo odliczenie.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS credit_applied_grosze INTEGER`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS credit_consumed_by BIGINT`).catch(() => {});
 
   pool.query(`CREATE TABLE IF NOT EXISTS email_threads (
     id BIGSERIAL PRIMARY KEY,
@@ -805,6 +815,85 @@ app.post("/api/price", (req, res, next) => {
 });
 
 // ============================================================
+// DOPLATY ZA DODATKOWE POPRAWKI
+// ============================================================
+// Trzecia runda poprawek jest platna ZANIM ja zaczniemy, nigdy po. Przy
+// dzialalnosci nierejestrowanej, bez umow i faktur, sciganie kogos o 90 zl
+// kosztuje wiecej niz te 90 zl. Jedyny moment z realna dzwignia to moment,
+// w ktorym klient czegos chce.
+//
+// Doplata jest zwyklym zamowieniem: przechodzi ta sama droga co zakup ze
+// sklepu, razem z Autopay, ITN i mailami, wiec nic nie trzeba dublowac.
+
+app.post("/api/orders/:ref/revision", express.json({ limit: "16kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  try {
+    const { rows } = await pool.query(
+      `SELECT o.*, i.calculator, i.params
+         FROM orders o
+         LEFT JOIN order_items i ON i.order_id = o.id AND i.calculator = 'cad_design'
+        WHERE o.order_ref = $1`,
+      [String(req.params.ref || "")]
+    );
+    const order = rows[0];
+    if (!order) return res.status(404).json({ error: "Nie ma takiego zamowienia" });
+    if (order.calculator !== "cad_design") {
+      return res.status(400).json({ error: "To zamowienie nie jest projektem", code: "not_a_design" });
+    }
+
+    const amount = extraRevisionGrosze(order.params?.complexityId);
+    if (!amount) return res.status(400).json({ error: "Nie znam progu zlozonosci tego projektu", code: "no_rate" });
+
+    const limit = await checkQuarterlyLimit(pool, amount);
+    if (!limit.ok) {
+      return res.status(409).json({
+        error: "Ta kwota nie zmiesci sie w limicie kwartalnym",
+        code: "quarterly_limit",
+        remainingPLN: Math.round(limit.remainingGrosze / 100),
+      });
+    }
+
+    const childRef = generateOrderRef();
+    const childToken = generateToken();
+    const round = (order.revisions_included ?? 0) + 1 + (order.revisions_used ?? 0);
+
+    const { rows: created } = await pool.query(
+      `INSERT INTO orders (order_ref, status, kind, lang, items_total_grosze, shipping_grosze, total_grosze,
+         customer_email, customer_name, customer_phone, delivery_method,
+         access_token, ip_hash, expires_at, parent_order_id)
+       VALUES ($1,'awaiting_payment','quoted',$2,$3,0,$3,$4,$5,$6,'pickup',$7,$8,$9,$10)
+       RETURNING id`,
+      [childRef, order.lang, amount,
+       order.customer_email, order.customer_name, order.customer_phone,
+       childToken, order.ip_hash, new Date(Date.now() + 7 * 86400_000), order.id]
+    );
+
+    await pool.query(
+      `INSERT INTO order_items (order_id, item_type, calculator, title, qty, unit_grosze, line_grosze, params)
+       VALUES ($1,'service','cad_design',$2,1,$3,$3,$4)`,
+      [created[0].id,
+       `Dodatkowa runda poprawek (${round}) do ${order.order_ref}`,
+       amount,
+       JSON.stringify({ parentOrderRef: order.order_ref, round, complexityId: order.params?.complexityId })]
+    );
+
+    console.log(`[poprawki] ${order.order_ref}: doplata ${childRef} na ${(amount / 100).toFixed(2)} PLN`);
+    res.json({
+      ok: true,
+      orderRef: childRef,
+      amountGrosze: amount,
+      round,
+      payUrl: `${SITE_URL}/order/status/?ref=${childRef}&token=${childToken}`,
+    });
+  } catch (e) {
+    console.error("[poprawki] doplata nie powiodla sie:", e.message);
+    res.status(500).json({ error: "Nie udalo sie utworzyc doplaty" });
+  }
+});
+
+// ============================================================
 // WYCENY INDYWIDUALNE
 // ============================================================
 // Sciezka dla tego, czego nie umiemy wycenic automatem: kamienie, sploty,
@@ -899,7 +988,11 @@ app.post("/api/quotes/:ref/convert", express.json({ limit: "16kb" }), async (req
     if (!quote.total_grosze) return res.status(400).json({ error: "Najpierw wpisz kwoty", code: "not_priced" });
 
     const shipping = Number.isInteger(req.body?.delivery?.shippingGrosze) ? req.body.delivery.shippingGrosze : 0;
-    const limit = await checkQuarterlyLimit(pool, quote.total_grosze + shipping);
+    // Limit kwartalny liczy sie od kwoty, ktora realnie wplynie, a wiec
+    // po odliczeniu oplaty projektowej.
+    const credit = await availableDesignCredit(pool, quote.customer_email);
+    const creditGrosze = credit ? Math.min(credit.grosze, quote.total_grosze) : 0;
+    const limit = await checkQuarterlyLimit(pool, quote.total_grosze - creditGrosze + shipping);
     if (!limit.ok) {
       return res.status(409).json({
         error: "Ta kwota nie zmiesci sie w limicie kwartalnym",
@@ -912,11 +1005,16 @@ app.post("/api/quotes/:ref/convert", express.json({ limit: "16kb" }), async (req
       orderRef: generateOrderRef(),
       delivery: req.body?.delivery || {},
     });
-    console.log(`[wycena] ${req.params.ref} stala sie zamowieniem ${order.orderRef}`);
+    console.log(
+      `[wycena] ${req.params.ref} stala sie zamowieniem ${order.orderRef}` +
+      (order.creditGrosze ? `, odliczono ${(order.creditGrosze / 100).toFixed(2)} PLN z projektu ${order.creditFrom}` : "")
+    );
     res.json({
       ok: true,
       orderRef: order.orderRef,
       totalGrosze: order.totalGrosze,
+      creditGrosze: order.creditGrosze || 0,
+      creditFrom: order.creditFrom,
       // Adres do wyslania klientowi. Dalej idzie ta sama sciezka co w sklepie.
       payUrl: `${SITE_URL}/order/status/?ref=${order.orderRef}&token=${order.accessToken}`,
     });
@@ -1293,9 +1391,9 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
          customer_email, customer_name, customer_phone,
          delivery_method, delivery_point, address_line1, address_line2, postal_code, city, country,
          accepted_terms_at, waived_withdrawal_at, digital_immediate_at,
-         access_token, ip_hash, expires_at)
+         access_token, ip_hash, expires_at, revisions_included)
        VALUES ($1,'awaiting_payment','instant',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
-         NOW(), $16, $17, $18, $19, $20)
+         NOW(), $16, $17, $18, $19, $20, $21)
        RETURNING id`,
       [orderRef, safeLang, itemsTotal, shipping, total,
        customer.email.trim().toLowerCase(), customer.name || null, customer.phone || null,
@@ -1304,7 +1402,9 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
        delivery?.country || "PL",
        consents?.waiveWithdrawal ? new Date() : null,
        consents?.digitalImmediate ? new Date() : null,
-       token, createHash("sha256").update(extractIP(req)).digest("hex").slice(0, 30), expiresAt]
+       token, createHash("sha256").update(extractIP(req)).digest("hex").slice(0, 30), expiresAt,
+       // Limit bierzemy z pozycji projektowej, jesli taka jest w koszyku.
+       priced.find((i) => i.revisionsIncluded)?.revisionsIncluded ?? null]
     );
     const orderId = rows[0].id;
 
@@ -1520,7 +1620,8 @@ app.post("/api/autopay/itn", express.urlencoded({ extended: false, limit: "256kb
 app.get("/api/orders/:ref", async (req, res) => {
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
   const { rows } = await pool.query(
-    `SELECT order_ref, status, total_grosze, lang, paid_at, expires_at, delivery_method
+    `SELECT order_ref, status, total_grosze, lang, paid_at, expires_at, delivery_method,
+            revisions_included, revisions_used
        FROM orders WHERE order_ref = $1`,
     [String(req.params.ref || "")]
   );
@@ -1533,6 +1634,11 @@ app.get("/api/orders/:ref", async (req, res) => {
     paidAt: o.paid_at,
     expiresAt: o.expires_at,
     deliveryMethod: o.delivery_method,
+    // Licznik poprawek pokazujemy od poczatku. Klient, ktory dowiaduje sie
+    // o wyczerpaniu limitu dopiero przy rachunku, czuje sie naciagniety.
+    revisions: o.revisions_included
+      ? { included: o.revisions_included, used: o.revisions_used ?? 0 }
+      : null,
   });
 });
 

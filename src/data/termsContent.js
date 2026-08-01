@@ -119,6 +119,20 @@ export const TERMS = {
         ],
       },
       {
+        n: "8a",
+        title: "Usługa projektowania 3D (CAD)",
+        items: [
+          "Przedmiotem usługi jest wykonanie modelu trójwymiarowego zgodnie z opisem przekazanym przez Klienta przy składaniu zamówienia. Cena oraz termin wynikają z wybranego progu złożoności i zakresu plików wskazanych w zamówieniu.",
+          "W cenie podstawowej mieszczą się dwie rundy poprawek. Przez rundę rozumie się jeden komplet uwag przekazany przez Klienta po otrzymaniu wersji modelu.",
+          "Klient może dokupić kolejne rundy poprawek, przy zamówieniu albo w trakcie realizacji. Każda dodatkowa runda jest płatna z góry, przed jej rozpoczęciem, i przedłuża termin realizacji o jeden dzień roboczy.",
+          "Jeżeli Klient nie opłaci dodatkowej rundy, realizacja kończy się na stanie po ostatniej opłaconej poprawce. Sprzedawca przekazuje pliki w opłaconym zakresie, a umowę uważa się za wykonaną.",
+          "Zakres usługi nie obejmuje: zmiany koncepcji po zaakceptowaniu wersji roboczej, modelowania z fotografii bez podanych wymiarów oraz przygotowania modelu pod wymagania technologiczne innego wykonawcy. Prace te wyceniane są odrębnie.",
+          "Klient otrzymuje pliki w zakresie wskazanym w zamówieniu i może z nich korzystać bez ograniczeń, także zlecając wykonanie innemu podmiotowi.",
+          "Jeżeli Klient w terminie 90 dni od opłacenia projektu zamówi u Sprzedawcy jego wykonanie, opłata projektowa zostaje zaliczona na poczet ceny wykonania. Zaliczenie następuje jednorazowo i nie obejmuje kosztów dostawy.",
+          "Usługa jest wykonywana według specyfikacji Klienta, w związku z czym prawo odstąpienia nie przysługuje po rozpoczęciu wykonania, zgodnie z sekcją 11.",
+        ],
+      },
+      {
         n: "9",
         title: "Dostawa",
         items: [
@@ -335,6 +349,20 @@ export const TERMS = {
         ],
       },
       {
+        n: "8a",
+        title: "3D design service (CAD)",
+        items: [
+          "The service consists of producing a three-dimensional model according to the brief supplied by the Customer when placing the order. Price and lead time follow from the complexity tier and the set of deliverables selected in the order.",
+          "The base price includes two revision rounds. A round means one complete set of comments provided by the Customer after receiving a version of the model.",
+          "The Customer may purchase further revision rounds, either with the order or during the work. Every additional round is payable in advance, before it begins, and extends the lead time by one business day.",
+          "If the Customer does not pay for an additional round, the work ends at the state following the last paid revision. The Seller delivers the files within the paid scope and the contract is treated as performed.",
+          "The service does not cover: changing the concept after a draft has been approved, modelling from photographs without stated dimensions, and preparing the model for another manufacturer's technological requirements. Such work is quoted separately.",
+          "The Customer receives the files listed in the order and may use them without restriction, including by commissioning production elsewhere.",
+          "If within 90 days of paying for the design the Customer orders its production from the Seller, the design fee is credited against the production price. The credit applies once and does not cover delivery costs.",
+          "The service is performed to the Customer's specification, so the right of withdrawal does not apply once performance has begun, in accordance with section 11.",
+        ],
+      },
+      {
         n: "9",
         title: "Delivery",
         items: [
@@ -548,6 +576,20 @@ export const TERMS = {
           "Der Verkäufer betreibt eine Werkstatt mit begrenzter Kapazität. Die genannte Lieferzeit berücksichtigt die aktuelle Auslastung und den Materialbestand. Ist eine Materialbeschaffung erforderlich, weist der Verkäufer im Angebot darauf hin.",
           "Über jede Gefährdung der Lieferzeit informiert der Verkäufer unverzüglich und nennt einen neuen Termin. Akzeptiert der Kunde diesen nicht, kann er vom Vertrag zurücktreten; der Verkäufer erstattet alle erhaltenen Beträge binnen 14 Tagen.",
           "Der Verkäufer kann die Ausführung aussetzen, wenn sich während der Arbeiten ein die Herstellung verhindernder Dateifehler zeigt. Der Kunde wird informiert und kann eine korrigierte Datei übermitteln, die Korrektur kostenpflichtig beauftragen oder gegen Erstattung gezahlter Beträge vom Vertrag zurücktreten.",
+        ],
+      },
+      {
+        n: "8a",
+        title: "3D-Entwurfsleistung (CAD)",
+        items: [
+          "Gegenstand der Leistung ist die Erstellung eines dreidimensionalen Modells gemäß der vom Kunden bei der Bestellung übermittelten Beschreibung. Preis und Termin ergeben sich aus der gewählten Komplexitätsstufe und dem bestellten Dateiumfang.",
+          "Im Grundpreis sind zwei Korrekturrunden enthalten. Eine Runde ist ein vollständiger Satz von Anmerkungen, den der Kunde nach Erhalt einer Modellversion übermittelt.",
+          "Der Kunde kann weitere Korrekturrunden hinzukaufen, bei der Bestellung oder während der Arbeit. Jede zusätzliche Runde ist im Voraus zu zahlen, vor ihrem Beginn, und verlängert die Lieferzeit um einen Werktag.",
+          "Zahlt der Kunde eine zusätzliche Runde nicht, endet die Arbeit im Zustand nach der letzten bezahlten Korrektur. Der Verkäufer übergibt die Dateien im bezahlten Umfang, der Vertrag gilt als erfüllt.",
+          "Nicht umfasst sind: Konzeptänderungen nach Freigabe eines Entwurfs, Modellieren nach Fotografien ohne angegebene Maße sowie die Aufbereitung des Modells für die technologischen Anforderungen eines anderen Fertigers. Solche Arbeiten werden gesondert kalkuliert.",
+          "Der Kunde erhält die in der Bestellung genannten Dateien und darf sie uneingeschränkt nutzen, auch für eine Fertigung bei einem anderen Anbieter.",
+          "Bestellt der Kunde innerhalb von 90 Tagen nach Bezahlung des Entwurfs dessen Fertigung beim Verkäufer, wird das Entwurfshonorar auf den Fertigungspreis angerechnet. Die Anrechnung erfolgt einmalig und umfasst keine Versandkosten.",
+          "Die Leistung wird nach Kundenspezifikation erbracht, daher besteht nach Beginn der Ausführung kein Widerrufsrecht, gemäß Abschnitt 11.",
         ],
       },
       {

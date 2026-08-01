@@ -20,6 +20,7 @@ import {
 } from "../pricing/laserCo2.js";
 import { MATERIALS as FIBER_MATERIALS, LENSES, MARK_TYPES, AREAS as FIBER_AREAS } from "../pricing/laserFiber.js";
 import { RESINS, VOLUMES, MOLD_TYPES, INCLUSIONS, FINISH_OPTIONS } from "../pricing/epoxy.js";
+import { CAD_COMPLEXITY, CAD_DELIVERABLES, CAD_REVISIONS } from "../pricing/cadDesign.js";
 
 const L = (pl, en, de) => ({ pl, en, de });
 
@@ -237,6 +238,18 @@ export const SERVICES = [
       { key: "quantityId", label: L("Nakład", "Quantity", "Auflage"), options: QUANTITY_TIERS },
     ],
     defaults: { resinId: "uv", volumeId: "S", moldId: "existing", inclusionId: "none", finishId: "sanded", quantityId: "proto" },
+  },
+  {
+    id: "cad_design",
+    calculator: "cad_design",
+    requiresDescription: true,
+    acceptsVector: true,
+    fields: [
+      { key: "complexityId", label: L("Złożoność projektu", "Design complexity", "Komplexität"), options: CAD_COMPLEXITY },
+      { key: "deliverablesId", label: L("Zakres plików", "Deliverables", "Dateiumfang"), options: CAD_DELIVERABLES },
+      { key: "revisionsId", label: L("Rundy poprawek", "Revision rounds", "Korrekturrunden"), options: CAD_REVISIONS },
+    ],
+    defaults: { complexityId: "simple", deliverablesId: "stl", revisionsId: "2" },
   },
 ];
 

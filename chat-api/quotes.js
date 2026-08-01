@@ -11,6 +11,7 @@
 // w zamowienie do zaplaty.
 
 import { generateToken } from "./orders.js";
+import { CAD_CONFIG } from "./pricing/cadDesign.js";
 
 /** Ile dni obowiazuje wyslana wycena, jesli nie podano inaczej */
 export const QUOTE_VALIDITY_DAYS = 14;
@@ -120,6 +121,42 @@ export async function priceQuote(pool, quoteRef, lines, note = null, validDays =
   return { quoteRef, totalGrosze: total, validUntil: validUntil.toISOString().slice(0, 10) };
 }
 
+/**
+ * Nierozliczone odliczenie z oplaconego projektu 3D tego klienta.
+ *
+ * Kto zaplacil za projekt, ma go za darmo, jesli zamowi u nas wykonanie.
+ * Odliczenie jest jednorazowe i wygasa po CAD_CONFIG.CREDIT_DAYS dniach,
+ * bo po pol roku to juz nie jest ta sama rozmowa i nie te same ceny metalu.
+ *
+ * @returns {Promise<{orderId:number, orderRef:string, grosze:number}|null>}
+ */
+export async function availableDesignCredit(pool, email) {
+  if (!pool || !email || !CAD_CONFIG.CREDIT_RATE) return null;
+
+  const { rows } = await pool.query(
+    `SELECT o.id, o.order_ref, o.items_total_grosze
+       FROM orders o
+       JOIN order_items i ON i.order_id = o.id AND i.calculator = 'cad_design'
+      WHERE o.customer_email = $1
+        AND o.status = 'paid'
+        AND o.credit_consumed_by IS NULL
+        AND o.paid_at > NOW() - ($2 || ' days')::interval
+        -- Doplaty za poprawki wisza przy projekcie i nie tworza wlasnego odliczenia.
+        AND o.parent_order_id IS NULL
+      ORDER BY o.paid_at
+      LIMIT 1`,
+    [String(email).trim().toLowerCase(), String(CAD_CONFIG.CREDIT_DAYS)]
+  );
+  const row = rows[0];
+  if (!row) return null;
+
+  return {
+    orderId: row.id,
+    orderRef: row.order_ref,
+    grosze: Math.round(row.items_total_grosze * CAD_CONFIG.CREDIT_RATE),
+  };
+}
+
 export async function getQuoteByRef(pool, quoteRef) {
   if (!pool) return null;
   const { rows } = await pool.query(`SELECT * FROM quotes WHERE quote_ref = $1`, [String(quoteRef || "")]);
@@ -153,7 +190,11 @@ export async function convertQuoteToOrder(pool, quoteRef, { orderRef, delivery =
   if (!quote.total_grosze) throw new QuoteError("not_priced", "Najpierw wpisz kwoty w wycenie");
 
   const shipping = Number.isInteger(delivery.shippingGrosze) ? delivery.shippingGrosze : 0;
-  const total = quote.total_grosze + shipping;
+
+  // Odliczenie nigdy nie schodzi ponizej zera i nie obejmuje dostawy.
+  const credit = await availableDesignCredit(pool, quote.customer_email);
+  const creditGrosze = credit ? Math.min(credit.grosze, quote.total_grosze) : 0;
+  const total = quote.total_grosze - creditGrosze + shipping;
   const accessToken = generateToken();
   const expiresAt = new Date(Date.now() + validityDays * 86400_000);
 
@@ -161,16 +202,16 @@ export async function convertQuoteToOrder(pool, quoteRef, { orderRef, delivery =
     `INSERT INTO orders (order_ref, status, kind, lang, items_total_grosze, shipping_grosze, total_grosze,
        customer_email, customer_name, customer_phone,
        delivery_method, delivery_point, address_line1, address_line2, postal_code, city, country,
-       access_token, ip_hash, expires_at)
+       access_token, ip_hash, expires_at, credit_applied_grosze)
      -- 'quoted' jest jedyna dopuszczona przez CHECK w orders.kind obok 'instant'
-     VALUES ($1,'awaiting_payment','quoted',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+     VALUES ($1,'awaiting_payment','quoted',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
      RETURNING id`,
     [orderRef, quote.lang, quote.total_grosze, shipping, total,
      quote.customer_email, quote.customer_name, quote.customer_phone,
      delivery.method || null, delivery.point || null, delivery.addressLine1 || null,
      delivery.addressLine2 || null, delivery.postalCode || null, delivery.city || null,
      delivery.country || "PL",
-     accessToken, quote.ip_hash, expiresAt]
+     accessToken, quote.ip_hash, expiresAt, creditGrosze || null]
   );
   const orderId = rows[0].id;
 
@@ -189,10 +230,14 @@ export async function convertQuoteToOrder(pool, quoteRef, { orderRef, delivery =
     }
   }
 
+  if (creditGrosze) {
+    await pool.query(`UPDATE orders SET credit_consumed_by = $2 WHERE id = $1`, [credit.orderId, orderId]);
+  }
+
   await pool.query(
     `UPDATE quotes SET status = 'converted', converted_order_id = $2, converted_at = NOW() WHERE id = $1`,
     [quote.id, orderId]
   );
 
-  return { orderRef, accessToken, totalGrosze: total, orderId };
+  return { orderRef, accessToken, totalGrosze: total, orderId, creditGrosze, creditFrom: credit?.orderRef ?? null };
 }
