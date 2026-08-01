@@ -95,6 +95,7 @@ export const SERVICES = [
   },
   {
     id: "jewelry_renovation",
+    requiresDescription: true,
     calculator: "jewelry_renovation",
     group: "jewelry",
     title: L("Renowacja biżuterii", "Jewelry renovation", "Schmuckaufarbeitung"),
@@ -113,6 +114,7 @@ export const SERVICES = [
   },
   {
     id: "jewelry_repair",
+    requiresDescription: true,
     calculator: "jewelry_repair",
     group: "jewelry",
     title: L("Naprawa biżuterii", "Jewelry repair", "Schmuckreparatur"),
@@ -131,6 +133,7 @@ export const SERVICES = [
   },
   {
     id: "jewelry_plain",
+    requiresDescription: true,
     calculator: "jewelry_new",
     group: "jewelry",
     title: L("Biżuteria bez kamieni", "Jewelry without stones", "Schmuck ohne Steine"),
@@ -155,6 +158,7 @@ export const SERVICES = [
   {
     id: "laser_engrave",
     acceptsVector: true,
+    requiresVector: true,
     calculator: "laser_co2_engrave",
     group: "laser",
     title: L("Grawer laserowy CO2", "CO2 laser engraving", "CO2-Lasergravur"),
@@ -174,6 +178,7 @@ export const SERVICES = [
   {
     id: "laser_cut",
     acceptsVector: true,
+    requiresVector: true,
     calculator: "laser_co2_cut",
     group: "laser",
     title: L("Cięcie laserem CO2", "CO2 laser cutting", "CO2-Laserschnitt"),
@@ -193,6 +198,7 @@ export const SERVICES = [
   {
     id: "laser_fiber",
     acceptsVector: true,
+    requiresVector: true,
     calculator: "laser_fiber",
     group: "laser",
     title: L("Znakowanie laserem fiber", "Fiber laser marking", "Faserlaser-Markierung"),

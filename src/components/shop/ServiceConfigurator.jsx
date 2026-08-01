@@ -14,7 +14,7 @@ import { useCart } from "../../cart/CartContext.jsx";
 import { getService } from "../../data/orderCatalog.js";
 import { PACKAGING, DEFAULT_PACKAGING, getPackaging } from "../../pricing/packaging.js";
 import { t, quantityBounds } from "../../pricing/config.js";
-import { TileGroup, StepSlider, QtyStepper, FileDrop, PersonalizationField } from "./ConfigControls.jsx";
+import { TileGroup, StepSlider, QtyStepper, FileDrop, PersonalizationField, JobDescription } from "./ConfigControls.jsx";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
 
@@ -39,7 +39,13 @@ const UI = {
     unitsNote: "Pliki STL i OBJ nie zapisują jednostki. Przyjmujemy milimetry, sprawdź wymiary powyżej.",
     vector: "Projekt do wykonania",
     vectorHint: "Kliknij lub przeciągnij plik SVG, DXF lub PDF",
-    vectorNote: "Nieobowiązkowe. Rysunek nie zmienia ceny, wyznacza ją wybrane pole grawerowania. Trafia do warsztatu razem z zamówieniem.",
+    vectorNote: "Rysunek nie zmienia ceny, wyznacza ją wybrane pole grawerowania. Trafia do warsztatu razem z zamówieniem.",
+    describeLabel: "Opisz, co mamy wykonać",
+    describeHint: "np. pierścionek zaręczynowy, szyna 2,5 mm, matowa powierzchnia, grawer wewnątrz, rozmiar 15",
+    describeWhy: "Cena jest policzona, ale z samych parametrów nie wynika, jak przedmiot ma wyglądać. Bez opisu nie przyjmiemy zlecenia.",
+    addImage: "Dołącz zdjęcie lub szkic (opcjonalnie)",
+    missingDescription: "Uzupełnij opis, żeby dodać do koszyka",
+    missingArtwork: "Wgraj projekt, żeby dodać do koszyka",
     fileOptional: "Bez pliku wybierzesz rozmiar z listy poniżej",
     packaging: "Opakowanie",
     qty: "Liczba sztuk",
@@ -65,7 +71,13 @@ const UI = {
     unitsNote: "STL and OBJ carry no unit. We read them as millimetres, please check the dimensions above.",
     vector: "Your artwork",
     vectorHint: "Click or drag an SVG, DXF or PDF file",
-    vectorNote: "Optional. The drawing does not change the price, the selected engraving area does. It travels to the workshop with the order.",
+    vectorNote: "The drawing does not change the price, the selected engraving area does. It travels to the workshop with the order.",
+    describeLabel: "Describe what we are to make",
+    describeHint: "e.g. engagement ring, 2.5 mm band, matte finish, inside engraving, size 15",
+    describeWhy: "The price is calculated, but the parameters alone do not say how the piece should look. Without a description we cannot accept the job.",
+    addImage: "Attach a photo or sketch (optional)",
+    missingDescription: "Add a description to put this in the cart",
+    missingArtwork: "Upload the artwork to put this in the cart",
     fileOptional: "Without a file, pick a size from the list below",
     packaging: "Packaging",
     qty: "Quantity",
@@ -91,7 +103,13 @@ const UI = {
     unitsNote: "STL und OBJ speichern keine Einheit. Wir lesen Millimeter, bitte prüfen Sie die Maße oben.",
     vector: "Ihre Vorlage",
     vectorHint: "SVG-, DXF- oder PDF-Datei klicken oder hierher ziehen",
-    vectorNote: "Optional. Die Zeichnung ändert den Preis nicht, das gewählte Gravurfeld bestimmt ihn. Sie geht mit der Bestellung in die Werkstatt.",
+    vectorNote: "Die Zeichnung ändert den Preis nicht, das gewählte Gravurfeld bestimmt ihn. Sie geht mit der Bestellung in die Werkstatt.",
+    describeLabel: "Beschreiben Sie, was wir anfertigen sollen",
+    describeHint: "z. B. Verlobungsring, Schiene 2,5 mm, matt, Innengravur, Größe 15",
+    describeWhy: "Der Preis steht, aber aus den Parametern allein geht nicht hervor, wie das Stück aussehen soll. Ohne Beschreibung nehmen wir den Auftrag nicht an.",
+    addImage: "Foto oder Skizze anhängen (optional)",
+    missingDescription: "Beschreibung ergänzen, um in den Warenkorb zu legen",
+    missingArtwork: "Vorlage hochladen, um in den Warenkorb zu legen",
     fileOptional: "Ohne Datei wählen Sie unten eine Größe",
     packaging: "Verpackung",
     qty: "Stückzahl",
@@ -136,6 +154,8 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const [thumbTick, setThumbTick] = useState(0);
   const [packagingId, setPackagingId] = useState(DEFAULT_PACKAGING);
   const [engraving, setEngraving] = useState("");
+  const [description, setDescription] = useState("");
+  const [refImage, setRefImage] = useState(null);
   const [qty, setQty] = useState(1);
 
   const [price, setPrice] = useState(null);
@@ -224,6 +244,11 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const bounds = hasTier ? quantityBounds(params.quantityId) : { min: 1, max: 999 };
   const effectiveQty = Math.min(bounds.max, Math.max(bounds.min, qty));
   const lineTotal = unitTotal * effectiveQty;
+
+  // Pozycja w koszyku ma byc gotowa do kupienia, a nie do dopytania mailem.
+  const descriptionOk = !service.requiresDescription || description.trim().length >= 20;
+  const artworkOk = !service.requiresVector || Boolean(vectorFile);
+  const ready = descriptionOk && artworkOk;
 
   const setParam = (key, val) => setParams((p) => ({ ...p, [key]: val }));
 
@@ -320,7 +345,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   }
 
   function addToCart() {
-    if (!price) return;
+    if (!price || !ready) return;
     cart.add({
       kind: "service",
       calculator: service.calculator,
@@ -333,6 +358,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       uploadToken,
       // Zrzut modelu zamiast zdjecia katalogowego, zeby w koszyku bylo
       // widac wlasny model, a nie ikone uslugi.
+      description: description.trim() || null,
       attachmentToken: vectorToken,
       attachmentName: vectorFile?.name || null,
       thumbData,
@@ -457,6 +483,27 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
         );
       })}
 
+      {service.requiresDescription && (
+        <JobDescription
+          label={u.describeLabel}
+          hint={u.describeHint}
+          value={description}
+          onChange={setDescription}
+          minLength={20}
+          accent={accent}
+          image={refImage}
+          imageLabel={u.addImage}
+          onPickImage={(e) => {
+            const f = e.target.files?.[0];
+            if (!f) return;
+            setRefImage(f);
+            onPickVector({ target: { files: [f] } });
+          }}
+          onClearImage={() => { setRefImage(null); setVectorToken(null); }}
+          lang={lang}
+        />
+      )}
+
       {/* Opakowanie */}
       <TileGroup
         label={u.packaging}
@@ -538,19 +585,28 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
             </div>
             <p className="text-neutral-600 text-[11px] mb-4">{u.priceNote}</p>
 
+            {!ready && (
+              <p className="text-amber-400/80 text-[11px] mb-3 leading-relaxed">
+                {!descriptionOk ? u.describeWhy : u.vectorNote}
+              </p>
+            )}
+
             <button
               type="button"
               onClick={addToCart}
+              disabled={!ready}
               className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-colors ${
-                added
-                  ? "bg-emerald-500 text-white"
-                  : accent === "amber"
-                    ? "bg-amber-500 hover:bg-amber-400 text-neutral-900"
-                    : "bg-blue-500 hover:bg-blue-400 text-white"
+                !ready
+                  ? "bg-white/5 text-neutral-500 cursor-not-allowed"
+                  : added
+                    ? "bg-emerald-500 text-white"
+                    : accent === "amber"
+                      ? "bg-amber-500 hover:bg-amber-400 text-neutral-900"
+                      : "bg-blue-500 hover:bg-blue-400 text-white"
               }`}
             >
               {added ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
-              {added ? u.added : u.addToCart}
+              {added ? u.added : !ready ? (!descriptionOk ? u.missingDescription : u.missingArtwork) : u.addToCart}
             </button>
 
             {added && (

@@ -193,3 +193,54 @@ export function PersonalizationField({ label, value, onChange, maxLength = 60, p
     </div>
   );
 }
+
+/**
+ * Opis zlecenia. Cena moze byc policzona co do grosza, a i tak nie wiadomo,
+ * co zrobic: "pierscionek, srebro, bez kamienia" to nie jest zamowienie.
+ * Bez tego pola pozycja w koszyku nie jest gotowa do kupienia.
+ */
+export function JobDescription({ label, hint, value, onChange, minLength = 20, accent = "blue", image, onPickImage, onClearImage, imageLabel, lang }) {
+  const ref = useRef(null);
+  const short = value.trim().length < minLength;
+  const ring = accent === "amber" ? "focus:border-amber-400/50" : "focus:border-blue-400/50";
+
+  return (
+    <div className="mb-6">
+      <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">{label}</div>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={4}
+        className={`w-full rounded-xl bg-white/[0.03] border border-white/10 px-3.5 py-3 text-sm text-white
+                    placeholder:text-neutral-600 focus:outline-none transition-colors ${ring}`}
+        placeholder={hint}
+      />
+      <div className={`text-[11px] mt-1.5 ${short ? "text-amber-400/80" : "text-neutral-600"}`}>
+        {value.trim().length} / {minLength}
+      </div>
+
+      {onPickImage && (
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={() => ref.current?.click()}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-white/10 bg-white/[0.02]
+                       text-neutral-300 hover:border-white/25 hover:text-white text-xs transition-colors"
+          >
+            <Upload className="w-3.5 h-3.5" />
+            {imageLabel}
+          </button>
+          <input ref={ref} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" className="hidden" onChange={onPickImage} />
+          {image && (
+            <div className="flex items-center justify-between gap-3 mt-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+              <span className="text-white text-xs truncate">{image.name}</span>
+              <button type="button" onClick={onClearImage} className="text-neutral-500 hover:text-red-400 transition-colors">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

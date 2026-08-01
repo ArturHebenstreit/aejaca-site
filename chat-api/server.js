@@ -1021,6 +1021,9 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
       // Bez tego klient widzialby cene z doplata, a placil bez niej.
       const packGrosze = packagingGrosze(raw.packagingId);
       const personalization = sanitizePersonalization(raw.personalization);
+      // Opis zlecenia to tresc od klienta, nie parametr wyceny, wiec przycinamy
+      // go do rozsadnej dlugosci i zapisujemy razem z parametrami pozycji.
+      const description = String(raw.description || "").slice(0, 2000).trim() || null;
       const qty = Number.isInteger(raw.qty) && raw.qty > 0 ? Math.min(999, raw.qty) : item.qty;
       const unitGrosze = item.unitGrosze + packGrosze;
 
@@ -1032,6 +1035,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
         packagingId: raw.packagingId || null,
         packagingGrosze: packGrosze,
         personalization,
+        description,
         params: raw.params,
         geometry: raw.geometry || null,
         fileName: raw.fileName || null,
@@ -1102,7 +1106,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
            params, price_breakdown, file_name, file_sha256, file_url, geometry, upload_id)
          VALUES ($1,'service',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
         [orderId, i.calculator, i.title, i.qty, i.unitGrosze, i.lineGrosze,
-         JSON.stringify({ ...(i.params ?? {}), packagingId: i.packagingId, personalization: i.personalization }),
+         JSON.stringify({ ...(i.params ?? {}), packagingId: i.packagingId, personalization: i.personalization, description: i.description }),
          JSON.stringify(i.breakdown ?? []),
          i.fileName || uploadRow?.file_name || null,
          i.geometry?.sha256 ?? uploadRow?.file_sha256 ?? null,

@@ -250,13 +250,20 @@ export function ResultDisplay({ result, lang = "pl", hideRange = false }) {
                   <span>{row.value}</span>
                 </div>
               ))}
+              {/* Tolerancja opisuje niepewnosc szacunku. Przy kwocie wiazacej
+                  nie ma czego opisywac, wiec zostaje sam kurs. */}
               <div className="mt-2 text-[11px] text-neutral-400 italic">
-                {result.tolLow != null
-                  ? ({ pl: `Zakres: -${Math.round(result.tolLow*100)}% / +${Math.round(result.tolHigh*100)}% | Kurs ${(result.eurPln ?? CONFIG.EUR_PLN_RATE).toFixed(2)} PLN/EUR`,
-                       en: `Range: -${Math.round(result.tolLow*100)}% / +${Math.round(result.tolHigh*100)}% | Rate ${(result.eurPln ?? CONFIG.EUR_PLN_RATE).toFixed(2)} PLN/EUR`,
-                       de: `Bereich: -${Math.round(result.tolLow*100)}% / +${Math.round(result.tolHigh*100)}% | Kurs ${(result.eurPln ?? CONFIG.EUR_PLN_RATE).toFixed(2)} PLN/EUR`,
-                     }[lang] ?? labels.rangeNote)
-                  : labels.rangeNote}
+                {hideRange
+                  ? ({ pl: `Kurs ${(result.eurPln ?? CONFIG.EUR_PLN_RATE).toFixed(2)} PLN/EUR`,
+                       en: `Rate ${(result.eurPln ?? CONFIG.EUR_PLN_RATE).toFixed(2)} PLN/EUR`,
+                       de: `Kurs ${(result.eurPln ?? CONFIG.EUR_PLN_RATE).toFixed(2)} PLN/EUR`,
+                     }[lang] ?? "")
+                  : result.tolLow != null
+                    ? ({ pl: `Zakres: -${Math.round(result.tolLow*100)}% / +${Math.round(result.tolHigh*100)}% | Kurs ${(result.eurPln ?? CONFIG.EUR_PLN_RATE).toFixed(2)} PLN/EUR`,
+                         en: `Range: -${Math.round(result.tolLow*100)}% / +${Math.round(result.tolHigh*100)}% | Rate ${(result.eurPln ?? CONFIG.EUR_PLN_RATE).toFixed(2)} PLN/EUR`,
+                         de: `Bereich: -${Math.round(result.tolLow*100)}% / +${Math.round(result.tolHigh*100)}% | Kurs ${(result.eurPln ?? CONFIG.EUR_PLN_RATE).toFixed(2)} PLN/EUR`,
+                       }[lang] ?? labels.rangeNote)
+                    : labels.rangeNote}
               </div>
             </div>
           )}

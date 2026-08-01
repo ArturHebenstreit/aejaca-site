@@ -626,6 +626,18 @@ STL i OBJ nie zapisują jednostki, więc czytamy je jako milimetry. `assertPlaus
 
 Wgrany model pokazujemy jako **obracający się podgląd 3D** (`STLViewer.jsx`, three.js ładowany leniwie). Po chwili obrotu komponent robi zrzut ujęcia trzy czwarte w WEBP, zrzut trafia do kolumny `uploads.thumbnail` i staje się miniaturą pozycji w koszyku oraz linkiem podglądu w mailu warsztatowym. Klient widzi własny model zamiast ikony usługi, a warsztat wie, co ma zrobić, bez otwierania Dysku.
 
+### Co musi byc podane, zeby pozycja trafila do koszyka
+
+Cena policzona co do grosza nie znaczy jeszcze, ze wiadomo, co wykonac. Pozycja w koszyku ma byc gotowa do kupienia, a nie do dopytywania mailem, wiec przycisk zakupu jest nieaktywny do czasu uzupelnienia:
+
+| Usluga | Wymog | Dlaczego |
+|---|---|---|
+| biżuteria (nowa, renowacja, naprawa) | **opis, min. 20 znakow** + opcjonalne zdjecie lub szkic | "pierscionek, srebro, bez kamienia" to nie jest zamowienie |
+| grawer CO2, ciecie CO2, fiber | **plik projektu** (SVG, DXF, PDF) | bez rysunku nie ma czego wygrawerowac, wielkosc pola wybiera klient wyzej i to ona ustala cene |
+| druk 3D, odlew zywiczny | nic ponad parametry | model albo rozmiar z listy opisuje zadanie w calosci |
+
+Wymogi sa zapisane raz, w `src/data/orderCatalog.js` (`requiresDescription`, `requiresVector`), i czyta je zarowno konfigurator w sklepie, jak i blok zakupowy w kalkulatorze. Opis trafia do `order_items.params.description` i do maila warsztatowego jako osobna linia.
+
 ### Formaty plikow klienta
 
 | Format | Jak liczymy | Uwagi |
