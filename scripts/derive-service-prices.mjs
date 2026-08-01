@@ -24,6 +24,7 @@ import * as jewelry from "../src/pricing/jewelry.js";
 import * as laserCo2 from "../src/pricing/laserCo2.js";
 import * as laserFiber from "../src/pricing/laserFiber.js";
 import * as epoxy from "../src/pricing/epoxy.js";
+import * as cadDesign from "../src/pricing/cadDesign.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CATALOG = join(ROOT, "src", "data", "serviceCatalog.js");
@@ -40,6 +41,7 @@ const FN = {
   laser_co2_cut: laserCo2.calcCut,
   laser_fiber: laserFiber.calculate,
   epoxy: epoxy.calculate,
+  cad_design: cadDesign.calculate,
 };
 
 /** Powyzej tego progu przechodzimy na losowanie, zeby build nie stanal */
