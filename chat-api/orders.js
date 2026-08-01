@@ -172,6 +172,9 @@ export function priceItem({ calculator, params, lang = "pl", geometry = null, sc
     estimateRange: { minPLN: result.perPcPLN?.min ?? null, maxPLN: result.perPcPLN?.max ?? null },
     totalTimeH: result.totalTimeH ?? null,
     breakdown: result.breakdown ?? null,
+    // Projekt 3D niesie limit poprawek w cenie. Zamowienie musi go zapamietac,
+    // bo od niego zalezy, czy kolejna runda jest platna.
+    revisionsIncluded: result.revisionsIncluded ?? null,
   };
 }
 

@@ -674,6 +674,28 @@ Tekstu **nie ucinamy w polu**. Klient widzi licznik przekroczony i zdanie wyjasn
 
 Wybranie wariantu graweru bez wpisania tresci blokuje zakup: to zlecenie, ktorego nie da sie wykonac.
 
+### Projektowanie 3D (CAD): cennik i poprawki
+
+Jedyna usluga, ktora dotad nie miala kalkulatora, wiec kazde zapytanie zaczynalo sie od nieodplatnego doradztwa. Teraz ma cene wiazaca zlozona z dwoch rzeczy, ktore naprawde decyduja o czasie pracy.
+
+| Zlozonosc | Cena bazowa | Termin |
+|---|---:|---|
+| prosty (gladka obraczka, sygnet, powtarzalna czesc) | 500 PLN | 3 dni robocze |
+| sredni (oprawy, relief, mechanizm z tolerancjami) | 750 PLN | 4 dni |
+| rzezbiarski (azur, filigran, forma organiczna) | 1050 PLN | 5 dni |
+
+Zakres plikow: STL bez doplaty, STL + STEP +15%, komplet z renderem i raportem wymiarowym +30%. STEP ma wlasna cene, bo to plik, z ktorym klient moze pojsc do dowolnego wykonawcy.
+
+**Nie ma stawki godzinowej ani ekspresu.** Klient nie wie, ile godzin zajmuje jego pomysl, wiec kazda liczba, ktora by wybral, bylaby negocjacja od nowa. Ekspres przy jednoosobowym warsztacie oznacza przesuniecie czyjegos innego zlecenia.
+
+**Poprawki: 2 w cenie, kazda kolejna +15% ceny bazowej** (75 / 112,50 / 157,50 PLN) i +1 dzien terminu. Klient moze dokupic je z gory albo pozniej.
+
+**Doplata po fakcie jest platna zanim zaczniemy runde, nigdy po.** Przy dzialalnosci nierejestrowanej sciganie kogos o 90 zl kosztuje wiecej niz te 90 zl, a jedyny moment z realna dzwignia to ten, w ktorym klient czegos chce. `POST /api/orders/:ref/revision` (token administratora) tworzy zamowienie doplaty powiazane z projektem przez `parent_order_id` i zwraca link do platnosci. Dalej idzie ta sama droga co kazdy zakup.
+
+Licznik `wykorzystane / w cenie` widnieje na stronie statusu **od poczatku**. Klient, ktory dowiaduje sie o wyczerpaniu limitu dopiero przy rachunku, czuje sie naciagniety.
+
+**Do dopisania w regulaminie:** co sie dzieje, gdy klient nie zaplaci za kolejna runde. Projekt zostaje w stanie po ostatniej oplaconej poprawce, klient dostaje pliki w oplaconym zakresie, sprawa jest zamknieta.
+
 ### Kiedy bizuteria dostaje cene wiazaca
 
 Wiazaca kwota za nowy wyrob ma pokrycie tylko wtedy, gdy czas pracy jest przewidywalny. Stad dwie bramki, identyczne w sklepie i w kalkulatorze:
