@@ -76,6 +76,21 @@ export const JEWELRY_TYPES = {
   ],
 };
 
+/**
+ * Zlozonosc ksztaltu. Nie jest mnoznikiem ceny, tylko bramka: prosta bryla
+ * da sie wycenic z masy i metody, a ornament, azur czy rzezba to praca,
+ * ktorej nie widac w zadnym parametrze. Zamiast zgadywac, kierujemy takie
+ * zlecenie do czlowieka.
+ */
+export const SHAPE_COMPLEXITY = [
+  { id: "simple", label: { pl: "Prosty", en: "Simple", de: "Einfach" },
+    sub: { pl: "gładka obrączka, sygnet, prosty wisiorek", en: "plain band, signet, simple pendant", de: "glatter Ring, Siegelring, einfacher Anhänger" } },
+  { id: "medium", label: { pl: "Średnio złożony", en: "Moderately complex", de: "Mittel komplex" },
+    sub: { pl: "faktura, relief, delikatne ornamenty", en: "texture, relief, light ornament", de: "Struktur, Relief, leichtes Ornament" }, needsQuote: true },
+  { id: "complex", label: { pl: "Złożony", en: "Complex", de: "Komplex" },
+    sub: { pl: "ażur, filigran, forma rzeźbiarska", en: "openwork, filigree, sculptural", de: "Durchbruch, Filigran, skulptural" }, needsQuote: true },
+];
+
 // --- METALS with purity ---
 // Platyny nie ma na liscie: wymaga palnika o wyzszej temperaturze, wlasnego
 // lutu i osobnego oprzyrzadowania odlewniczego, ktorych warsztat nie ma.

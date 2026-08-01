@@ -12,6 +12,7 @@ import {
 import { RESIN_TYPES } from "../data/resins.js";
 import {
   QTY_TIERS, GENERIC_TYPES, RENOVATION_METALS, REPAIR_METALS, RENOVATION_SERVICES, REPAIR_SERVICES,
+  SHAPE_COMPLEXITY,
   PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING, ENGRAVING_OPTIONS,
 } from "../pricing/jewelryConfig.js";
 import {
@@ -150,9 +151,10 @@ export const SERVICES = [
       { key: "methodId", label: L("Metoda", "Method", "Methode"), options: METHODS },
       { key: "platingId", label: L("Powłoka", "Plating", "Beschichtung"), options: PLATING },
       { key: "engravingId", label: L("Grawer", "Engraving", "Gravur"), options: ENGRAVING_OPTIONS },
+      { key: "complexityId", label: L("Złożoność kształtu", "Shape complexity", "Formkomplexität"), options: SHAPE_COMPLEXITY },
       { key: "qtyId", label: L("Liczba sztuk", "Quantity", "Stückzahl"), options: QTY_TIERS },
     ],
-    defaults: { lineId: "woman", typeId: "ring", metalId: "silver", weightId: "standard", methodId: "cast", platingId: "none", engravingId: "none", qtyId: "1", gemId: "none", stoneCount: 0, certId: "none" },
+    defaults: { lineId: "woman", typeId: "ring", metalId: "silver", weightId: "standard", methodId: "cast", platingId: "none", engravingId: "none", complexityId: "simple", qtyId: "1", gemId: "none", stoneCount: 0, certId: "none" },
     fixed: { gemId: "none", stoneCount: 0, certId: "none" },
   },
   {

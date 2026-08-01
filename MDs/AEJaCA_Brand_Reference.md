@@ -674,6 +674,19 @@ Tekstu **nie ucinamy w polu**. Klient widzi licznik przekroczony i zdanie wyjasn
 
 Wybranie wariantu graweru bez wpisania tresci blokuje zakup: to zlecenie, ktorego nie da sie wykonac.
 
+### Kiedy bizuteria dostaje cene wiazaca
+
+Wiazaca kwota za nowy wyrob ma pokrycie tylko wtedy, gdy czas pracy jest przewidywalny. Stad dwie bramki, identyczne w sklepie i w kalkulatorze:
+
+| Warunek | Wiazaca cena |
+|---|---|
+| odlew (lost wax / lost resin) + prosty ksztalt | tak |
+| wykonanie reczne (lutowanie, osadzanie) | nie, wycena czlowieka |
+| ksztalt sredni lub zlozony (faktura, azur, filigran, forma rzezbiarska) | nie, wycena czlowieka |
+| kamienie, sploty lancuszkow, metal powierzony przez klienta | nie, wycena czlowieka |
+
+Zlozonosc ksztaltu (`SHAPE_COMPLEXITY` w `jewelryConfig.js`) **nie jest mnoznikiem ceny**, tylko bramka. Naklad pracy przy ornamentowanej bryle nie wynika ani z masy, ani z metody, wiec mnozenie przez wspolczynnik byloby zgadywaniem udajacym rachunek.
+
 ### Formaty plikow klienta
 
 | Format | Jak liczymy | Uwagi |
