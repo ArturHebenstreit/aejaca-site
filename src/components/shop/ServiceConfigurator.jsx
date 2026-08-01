@@ -308,7 +308,12 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
 
   // Wiazaca cena bizuterii ma pokrycie tylko przy odlewie prostej bryly.
   // Reszta to praca, ktorej nie widac w parametrach.
-  const gateComplex = params.complexityId != null && params.complexityId !== "simple";
+  // Bramka dotyczy WYLACZNIE bizuterii. Przy projekcie 3D zlozonosc jest
+  // progiem cenowym: podnosi kwote i pozwala zlecic prace, a nie zatrzymuje
+  // klienta. Oba pola nazywaja sie complexityId, wiec bez tego warunku
+  // projekt sredni i rzezbiarski byly nie do kupienia.
+  const gateComplex = service.calculator === "jewelry_new"
+    && params.complexityId != null && params.complexityId !== "simple";
   const gateHandmade = service.calculator === "jewelry_new" && params.methodId != null && params.methodId !== "cast";
   const needsHumanQuote = gateComplex || gateHandmade;
 

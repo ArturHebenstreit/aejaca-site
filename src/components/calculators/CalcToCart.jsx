@@ -272,8 +272,10 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
 
   // Grawer wybrany w kalkulatorze musi miec tresc, a zbyt dlugi tekst to juz
   // inna robota niz ta, ktora wlasnie wyceniono.
-  // Bramka zlozonosci obowiazuje tak samo jak w sklepie: jedno zrodlo zasady.
-  const gatedShape = Boolean(params?.complexityId && params.complexityId !== "simple");
+  // Bramka zlozonosci dotyczy wylacznie bizuterii. Projekt 3D uzywa tego
+  // samego klucza, ale tam zlozonosc jest progiem cenowym, nie blokada.
+  const gatedShape = calculator === "jewelry_new"
+    && Boolean(params?.complexityId && params.complexityId !== "simple");
   const wantsEngraving = Boolean(params?.engravingId && params.engravingId !== "none");
   const engravingOver = wantsEngraving && engraving.trim().length > ENGRAVING_LIMITS.jewelry;
   const engravingOk = !wantsEngraving || (engraving.trim().length >= 1 && !engravingOver);
