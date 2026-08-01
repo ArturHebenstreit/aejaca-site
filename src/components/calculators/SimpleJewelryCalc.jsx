@@ -58,8 +58,6 @@ const METALS = [
     label: { pl: "Srebro",    en: "Silver",    de: "Silber" } },
   { id: "gold",     icon: Coins,      img: "/img/calc/metals/gold_14k.webp",
     label: { pl: "Złoto",     en: "Gold",      de: "Gold" } },
-  { id: "platinum", icon: Coins,      img: "/img/calc/metals/platinum.webp",
-    label: { pl: "Platyna",   en: "Platinum",  de: "Platin" } },
   { id: "unsure",   icon: HelpCircle, label: { pl: "Nie wiem",  en: "Not sure",  de: "Unsicher" } },
 ];
 
@@ -145,7 +143,6 @@ const PIECE_TO_GENERIC = {
 /** Map Simple metal+quality → advanced metalId */
 function mapMetal(metal, quality) {
   if (metal === "silver")   return "silver";
-  if (metal === "platinum") return "platinum";
   if (metal === "gold") {
     if (quality === "budget")   return "gold_9k";
     if (quality === "premium")  return "gold_18k";
@@ -161,7 +158,6 @@ function mapMetal(metal, quality) {
 function mapGenericMetal(metal) {
   if (metal === "silver")   return "silver_g";
   if (metal === "gold")     return "gold_g";
-  if (metal === "platinum") return "platinum_g";
   return "other_m";
 }
 
@@ -256,7 +252,7 @@ export function resolveJewelryParams(state) {
     const weightId = quality === "budget" ? "light" : quality === "premium" ? "heavy" : "standard";
     const methodId = quality === "premium" ? "handmade" : "cast";
     // Platinum/white gold needs rhodium; gold can stay bare
-    const platingId = (quality === "premium" && (metalId === "silver" || metalId === "platinum")) ? "rhodium" : "none";
+    const platingId = (quality === "premium" && metalId === "silver") ? "rhodium" : "none";
     const gem = mapGem(gemCategory, quality);
     return {
       flow: "new",

@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-07-31 | Wersja: 1.6*
+*Wygenerowano: 2026-07-31 | Wersja: 1.7*
 
 ---
 
@@ -80,6 +80,16 @@ Identyfikacja wizualna: paleta blue/emerald, krój Inter.
 | Pierścionek zaręczynowy | 1200 | 280 |
 
 Zakres cenowy (schema): EUR 80-3500, PLN ~340-15000
+
+### Kruszce, ktore wykonujemy
+
+Srebro 925 i 800, zloto 9k, 14k, 18k i 24k.
+
+**Platyny nie oferujemy.** Wycofana z kalkulatorow i z listy kruszcow do zamowienia (`METALS` i `GENERIC_METALS` w `jewelryConfig.js`), bo warsztat nie ma palnika o odpowiedniej temperaturze, lutu platynowego ani osobnego oprzyrzadowania odlewniczego. Walcarka VEVOR tez sie do niej nie nadaje (sekcja 4).
+
+Stale cenowe platyny zostaly w kodzie (`METAL_PRICES`, `REPAIR_METAL_MUL`), zeby dalo sie odtworzyc kwote starego zamowienia. Nie sa nigdzie pokazywane.
+
+Klientowi szukajacemu platyny proponujemy **zloto biale 585 lub 750 z rodowaniem**: to najblizszy efekt wizualny, ktory naprawde umiemy wykonac.
 
 ### Precyzja nowego cyklu lost-resin (sekcja PRECISION_LABELS)
 - Drukarka 16K, piksel 14 µm
