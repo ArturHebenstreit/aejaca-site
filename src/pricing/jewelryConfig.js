@@ -255,11 +255,21 @@ export const GENERIC_TYPES = [
 ];
 
 // --- GENERIC METALS (for renovation/repair) ---
+// Platyna zostaje przy renowacji, bo czyszczenie, polerowanie i powloki
+// wykonujemy bez ognia. Nie ma jej przy naprawie: tam wchodzi lutowanie,
+// a lutu platynowego i palnika o tej temperaturze warsztat nie ma.
 export const GENERIC_METALS = [
   { id: "silver_g",   label: { pl: "Srebro", en: "Silver", de: "Silber" }, metalKey: "silver", img: "/img/calc/metals/silver.webp" },
   { id: "gold_g",     label: { pl: "Złoto", en: "Gold", de: "Gold" }, metalKey: "gold", img: "/img/calc/metals/gold_18k.webp" },
+  { id: "platinum_g", label: { pl: "Platyna", en: "Platinum", de: "Platin" }, metalKey: "platinum", img: "/img/calc/metals/platinum.webp", renovationOnly: true },
   { id: "other_m",    label: { pl: "Inny / nie wiem", en: "Other / not sure", de: "Anderes / unsicher" }, metalKey: "silver" },
 ];
+
+/** Metale przyjmowane do renowacji: czyszczenie, polerowanie, powloki */
+export const RENOVATION_METALS = GENERIC_METALS;
+
+/** Metale przyjmowane do naprawy: wszystko, co wymaga lutowania */
+export const REPAIR_METALS = GENERIC_METALS.filter((m) => !m.renovationOnly);
 
 // ar = ID/wire_diameter (Aspect Ratio — controls what link size is achievable)
 // widthMul: chain width = widthMul × wire_diameter_mm

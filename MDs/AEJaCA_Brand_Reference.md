@@ -85,7 +85,9 @@ Zakres cenowy (schema): EUR 80-3500, PLN ~340-15000
 
 Srebro 925 i 800, zloto 9k, 14k, 18k i 24k.
 
-**Platyny nie oferujemy.** Wycofana z kalkulatorow i z listy kruszcow do zamowienia (`METALS` i `GENERIC_METALS` w `jewelryConfig.js`), bo warsztat nie ma palnika o odpowiedniej temperaturze, lutu platynowego ani osobnego oprzyrzadowania odlewniczego. Walcarka VEVOR tez sie do niej nie nadaje (sekcja 4).
+**Platyny nie wykonujemy i nie naprawiamy**, bo warsztat nie ma palnika o odpowiedniej temperaturze, lutu platynowego ani osobnego oprzyrzadowania odlewniczego. Walcarka VEVOR tez sie do niej nie nadaje (sekcja 4).
+
+**Renowacja platyny jest dostepna**: czyszczenie, polerowanie i powloki nie wymagaja ognia. Dlatego lista metali jest rozdzielona: `RENOVATION_METALS` zawiera platyne, `REPAIR_METALS` juz nie, a `METALS` (nowe wyroby) tym bardziej.
 
 Stale cenowe platyny zostaly w kodzie (`METAL_PRICES`, `REPAIR_METAL_MUL`), zeby dalo sie odtworzyc kwote starego zamowienia. Nie sa nigdzie pokazywane.
 

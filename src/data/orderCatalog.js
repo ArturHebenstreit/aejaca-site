@@ -11,7 +11,7 @@ import {
 } from "../pricing/print3d.js";
 import { RESIN_TYPES } from "../data/resins.js";
 import {
-  QTY_TIERS, GENERIC_TYPES, GENERIC_METALS, RENOVATION_SERVICES, REPAIR_SERVICES,
+  QTY_TIERS, GENERIC_TYPES, RENOVATION_METALS, REPAIR_METALS, RENOVATION_SERVICES, REPAIR_SERVICES,
   PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING, ENGRAVING_OPTIONS,
 } from "../pricing/jewelryConfig.js";
 import {
@@ -106,7 +106,7 @@ export const SERVICES = [
     ),
     fields: [
       { key: "jewTypeId", label: L("Rodzaj", "Type", "Art"), options: GENERIC_TYPES },
-      { key: "metalTypeId", label: L("Kruszec", "Metal", "Metall"), options: GENERIC_METALS },
+      { key: "metalTypeId", label: L("Kruszec", "Metal", "Metall"), options: RENOVATION_METALS },
       { key: "services", label: L("Zakres usług", "Services", "Leistungen"), options: RENOVATION_SERVICES, multi: true },
       { key: "qtyId", label: L("Liczba sztuk", "Quantity", "Stückzahl"), options: QTY_TIERS },
     ],
@@ -125,7 +125,7 @@ export const SERVICES = [
     ),
     fields: [
       { key: "jewTypeId", label: L("Rodzaj", "Type", "Art"), options: GENERIC_TYPES },
-      { key: "metalTypeId", label: L("Kruszec", "Metal", "Metall"), options: GENERIC_METALS },
+      { key: "metalTypeId", label: L("Kruszec", "Metal", "Metall"), options: REPAIR_METALS },
       { key: "repairId", label: L("Rodzaj naprawy", "Repair type", "Reparaturart"), options: REPAIR_SERVICES },
       { key: "qtyId", label: L("Liczba sztuk", "Quantity", "Stückzahl"), options: QTY_TIERS },
     ],
