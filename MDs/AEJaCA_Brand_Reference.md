@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-07-31 | Wersja: 1.6*
+*Wygenerowano: 2026-07-31 | Wersja: 1.7*
 
 ---
 
@@ -80,6 +80,18 @@ Identyfikacja wizualna: paleta blue/emerald, krój Inter.
 | Pierścionek zaręczynowy | 1200 | 280 |
 
 Zakres cenowy (schema): EUR 80-3500, PLN ~340-15000
+
+### Kruszce, ktore wykonujemy
+
+Srebro 925 i 800, zloto 9k, 14k, 18k i 24k.
+
+**Platyny nie wykonujemy i nie naprawiamy**, bo warsztat nie ma palnika o odpowiedniej temperaturze, lutu platynowego ani osobnego oprzyrzadowania odlewniczego. Walcarka VEVOR tez sie do niej nie nadaje (sekcja 4).
+
+**Renowacja platyny jest dostepna**: czyszczenie, polerowanie i powloki nie wymagaja ognia. Dlatego lista metali jest rozdzielona: `RENOVATION_METALS` zawiera platyne, `REPAIR_METALS` juz nie, a `METALS` (nowe wyroby) tym bardziej.
+
+Stale cenowe platyny zostaly w kodzie (`METAL_PRICES`, `REPAIR_METAL_MUL`), zeby dalo sie odtworzyc kwote starego zamowienia. Nie sa nigdzie pokazywane.
+
+Klientowi szukajacemu platyny proponujemy **zloto biale 585 lub 750 z rodowaniem**: to najblizszy efekt wizualny, ktory naprawde umiemy wykonac.
 
 ### Precyzja nowego cyklu lost-resin (sekcja PRECISION_LABELS)
 - Drukarka 16K, piksel 14 µm
@@ -626,6 +638,38 @@ STL i OBJ nie zapisują jednostki, więc czytamy je jako milimetry. `assertPlaus
 
 Wgrany model pokazujemy jako **obracający się podgląd 3D** (`STLViewer.jsx`, three.js ładowany leniwie). Po chwili obrotu komponent robi zrzut ujęcia trzy czwarte w WEBP, zrzut trafia do kolumny `uploads.thumbnail` i staje się miniaturą pozycji w koszyku oraz linkiem podglądu w mailu warsztatowym. Klient widzi własny model zamiast ikony usługi, a warsztat wie, co ma zrobić, bez otwierania Dysku.
 
+### Produkty gotowe: chwilowo brak
+
+Trzy wpisy w `shopCatalog.js` byly przykladami przygotowanymi pod przyszly asortyment. Leza teraz w `PRODUCTS_DRAFT` i **nie sa wystawione**: sklep pokazuje w ich miejsce kafelek "Chwilowo brak produktow gotowych" z odsylaczem do uslug. Zeby wystawic pozycje, wystarczy ustawic przy niej `draft: false`.
+
+Sekcja produktow zostaje widoczna takze wtedy, gdy jest pusta. Milczenie czytaloby sie jak brak dzialu, a nie jak stan przejsciowy.
+
+### Co musi byc podane, zeby pozycja trafila do koszyka
+
+Cena policzona co do grosza nie znaczy jeszcze, ze wiadomo, co wykonac. Pozycja w koszyku ma byc gotowa do kupienia, a nie do dopytywania mailem, wiec przycisk zakupu jest nieaktywny do czasu uzupelnienia:
+
+| Usluga | Wymog | Dlaczego |
+|---|---|---|
+| biżuteria (nowa, renowacja, naprawa) | **opis, min. 20 znakow** + opcjonalne zdjecie lub szkic | "pierscionek, srebro, bez kamienia" to nie jest zamowienie |
+| grawer CO2, ciecie CO2, fiber | **plik projektu** (SVG, DXF, PDF) | bez rysunku nie ma czego wygrawerowac, wielkosc pola wybiera klient wyzej i to ona ustala cene |
+| druk 3D, odlew zywiczny | nic ponad parametry | model albo rozmiar z listy opisuje zadanie w calosci |
+
+Wymogi sa zapisane raz, w `src/data/orderCatalog.js` (`requiresDescription`, `requiresVector`), i czyta je zarowno konfigurator w sklepie, jak i blok zakupowy w kalkulatorze. Opis trafia do `order_items.params.description` i do maila warsztatowego jako osobna linia.
+
+### Grawer: limity i moment przejscia na wycene
+
+| Gdzie | Limit | Powyzej limitu |
+|---|---|---|
+| grawer na wyrobie (bizuteria, laser) | **30 znakow** | przycisk zakupu ustepuje miejsca odnosnikowi do wyceny |
+| wieko pudelka drewnianego | **60 znakow** | jak wyzej |
+| wewnetrzna strona wieka | 60 znakow, pole nieobowiazkowe | jak wyzej |
+
+Limity leza w `src/pricing/packaging.js` (`ENGRAVING_LIMITS`) i obowiazuja identycznie w sklepie i w kalkulatorze.
+
+Tekstu **nie ucinamy w polu**. Klient widzi licznik przekroczony i zdanie wyjasniajace, ze dluzszy grawer to inne ustawienia lasera i inna kompozycja, wiec wycenia go czlowiek. Ciche skrocenie dedykacji o polowe byloby gorsze niz odmowa.
+
+Wybranie wariantu graweru bez wpisania tresci blokuje zakup: to zlecenie, ktorego nie da sie wykonac.
+
 ### Formaty plikow klienta
 
 | Format | Jak liczymy | Uwagi |
@@ -671,6 +715,43 @@ Do koszyka nie trafia to, czego nie umiemy wycenic bez czlowieka, i mowimy o tym
 | bizuteria z kamieniami | dobor i osadzenie kamienia zalezy od rzeczy spoza parametrow |
 | sploty lancuszkow | masa splotu zalezy od wykonania |
 | metal powierzony przez klienta | trzeba ocenic material |
+
+### Wyceny indywidualne: tabele i sciezka
+
+`quotes` i `quote_items` (`scripts/quotes-schema.sql`) sa lustrem `orders` i `order_items`. Roznica jest jedna: **kwota moze byc pusta**, bo podaje ja czlowiek. Pusta `total_grosze` znaczy "jeszcze niczego nie obiecalismy".
+
+| Krok | Kto | Co sie dzieje |
+|---|---|---|
+| 1. zapytanie | klient | `POST /api/quotes`, pozycje z parametrami, opisem i plikiem, status `new` |
+| 2. wycena | AEJaCA | `POST /api/quotes/:ref/price` z kwotami per pozycja, status `priced`, wazna 14 dni |
+| 3. zamowienie | AEJaCA | `POST /api/quotes/:ref/convert`, powstaje zamowienie `kind = quoted` w stanie `awaiting_payment` |
+| 4. zaplata | klient | dokladnie ta sama droga co zakup ze sklepu: Autopay, ITN, maile |
+
+Kroki 2 i 3 wymagaja naglowka `X-Admin-Token` rownego `ADMIN_API_TOKEN`. Konwersja sprawdza limit kwartalny tak samo jak sklep, wiec wycena nie przebije progu dzialalnosci nierejestrowanej.
+
+Klient oglada wycene pod `GET /api/quotes/:ref?token=...`. Bez tokenu numer zapytania nic nie daje.
+
+Widok `quotes_pending` pokazuje, co czeka na odpowiedz, razem z liczba pozycji i plikow.
+
+**Czego jeszcze nie ma:** interfejsu do wpisywania kwot. Na razie robi sie to zapytaniem HTTP z tokenem administratora.
+
+### Zapytania o wycene w bazie
+
+Zapytanie o wycene jest zobowiazaniem tak samo jak zamowienie i musi dac sie odtworzyc po roku. Tabela `leads` (`scripts/leads-schema.sql`) trzyma teraz:
+
+| Kolumna | Co niesie |
+|---|---|
+| `description` | **pelna tresc od klienta**, bez obcinania |
+| `params_json` | parametry i widelki jako struktura, nie sklejony tekst |
+| `upload_id` | wiersz w `uploads`: nazwa, suma kontrolna, link do Dysku |
+| `quote_ref` | numer `WY20260801-XXXXXXXX` cytowany w korespondencji |
+| `source` | contact, quote, chat |
+
+Wczesniej opis byl obcinany do 400 znakow w formularzu kontaktowym i do 1000 w podsumowaniu wyceny, a plik szedl wylacznie mailem, bez zadnego sladu w bazie. Klient, ktory dokladnie opisal pierscionek, zostawial w bazie kikut.
+
+Kolumny dopisuja sie same przy starcie serwera (`ALTER TABLE ... IF NOT EXISTS`), wiec wdrozenie nie wymaga recznej migracji.
+
+Widok `open_quotes` pokazuje zapytania czekajace na odpowiedz, od najstarszego.
 
 ### Schemat bazy
 

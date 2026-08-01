@@ -11,7 +11,7 @@ import {
 } from "../pricing/print3d.js";
 import { RESIN_TYPES } from "../data/resins.js";
 import {
-  QTY_TIERS, GENERIC_TYPES, GENERIC_METALS, RENOVATION_SERVICES, REPAIR_SERVICES,
+  QTY_TIERS, GENERIC_TYPES, RENOVATION_METALS, REPAIR_METALS, RENOVATION_SERVICES, REPAIR_SERVICES,
   PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING, ENGRAVING_OPTIONS,
 } from "../pricing/jewelryConfig.js";
 import {
@@ -95,6 +95,7 @@ export const SERVICES = [
   },
   {
     id: "jewelry_renovation",
+    requiresDescription: true,
     calculator: "jewelry_renovation",
     group: "jewelry",
     title: L("Renowacja biżuterii", "Jewelry renovation", "Schmuckaufarbeitung"),
@@ -105,7 +106,7 @@ export const SERVICES = [
     ),
     fields: [
       { key: "jewTypeId", label: L("Rodzaj", "Type", "Art"), options: GENERIC_TYPES },
-      { key: "metalTypeId", label: L("Kruszec", "Metal", "Metall"), options: GENERIC_METALS },
+      { key: "metalTypeId", label: L("Kruszec", "Metal", "Metall"), options: RENOVATION_METALS },
       { key: "services", label: L("Zakres usług", "Services", "Leistungen"), options: RENOVATION_SERVICES, multi: true },
       { key: "qtyId", label: L("Liczba sztuk", "Quantity", "Stückzahl"), options: QTY_TIERS },
     ],
@@ -113,6 +114,7 @@ export const SERVICES = [
   },
   {
     id: "jewelry_repair",
+    requiresDescription: true,
     calculator: "jewelry_repair",
     group: "jewelry",
     title: L("Naprawa biżuterii", "Jewelry repair", "Schmuckreparatur"),
@@ -123,7 +125,7 @@ export const SERVICES = [
     ),
     fields: [
       { key: "jewTypeId", label: L("Rodzaj", "Type", "Art"), options: GENERIC_TYPES },
-      { key: "metalTypeId", label: L("Kruszec", "Metal", "Metall"), options: GENERIC_METALS },
+      { key: "metalTypeId", label: L("Kruszec", "Metal", "Metall"), options: REPAIR_METALS },
       { key: "repairId", label: L("Rodzaj naprawy", "Repair type", "Reparaturart"), options: REPAIR_SERVICES },
       { key: "qtyId", label: L("Liczba sztuk", "Quantity", "Stückzahl"), options: QTY_TIERS },
     ],
@@ -131,6 +133,7 @@ export const SERVICES = [
   },
   {
     id: "jewelry_plain",
+    requiresDescription: true,
     calculator: "jewelry_new",
     group: "jewelry",
     title: L("Biżuteria bez kamieni", "Jewelry without stones", "Schmuck ohne Steine"),
@@ -155,6 +158,7 @@ export const SERVICES = [
   {
     id: "laser_engrave",
     acceptsVector: true,
+    requiresVector: true,
     calculator: "laser_co2_engrave",
     group: "laser",
     title: L("Grawer laserowy CO2", "CO2 laser engraving", "CO2-Lasergravur"),
@@ -174,6 +178,7 @@ export const SERVICES = [
   {
     id: "laser_cut",
     acceptsVector: true,
+    requiresVector: true,
     calculator: "laser_co2_cut",
     group: "laser",
     title: L("Cięcie laserem CO2", "CO2 laser cutting", "CO2-Laserschnitt"),
@@ -193,6 +198,7 @@ export const SERVICES = [
   {
     id: "laser_fiber",
     acceptsVector: true,
+    requiresVector: true,
     calculator: "laser_fiber",
     group: "laser",
     title: L("Znakowanie laserem fiber", "Fiber laser marking", "Faserlaser-Markierung"),

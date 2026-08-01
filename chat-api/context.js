@@ -56,7 +56,7 @@ Chains (necklaces, men's chains, bracelets) have their own dedicated calculator 
 **WF (weaveFactor):** how many times more wire is needed per cm of finished chain vs. a straight wire. Higher WF = more metal = higher price.
 **Mass formula:** \`mass = length_cm × π × (wire_d_cm/2)² × density × weaveFactor × wasteFactor\`
 **Production waste** (odpad): 5–22% depending on weave, shown explicitly in grams. Covers three irreversible losses: (1) melt/fire loss — copper oxidation + slag when melting client silver, ~1–3% per melt; (2) wire-drawing offcuts; (3) polishing swarf + filings. NOTE: solidification shrinkage (skurcz odlewniczy) changes volume, NOT mass — it is not a metal loss, so do not cite it as one.
-**Metals:** Silver 925, Gold 14K/18K, Platinum. **Clasps priced separately** (spring ring, lobster, barrel, toggle, custom).
+**Metals:** Silver 925/800, Gold 9K-24K. **No platinum for NEW pieces or REPAIRS** (missing equipment: higher-temperature torch, platinum solder, separate casting tooling). **Renovation of a platinum piece IS available**: cleaning, polishing and plating need no flame. If a customer wants a new platinum piece, say plainly that we do not make it and propose white gold 585/750 with rhodium plating as the closest look. **Clasps priced separately** (spring ring, lobster, barrel, toggle, custom).
 **Consigned material (materiał powierzony) policy** — when the client supplies their own metal ("Własny kruszec" / "Kruszec od klienta"): AEJaCA accepts the metal on its DECLARED fineness; on receipt each item is weighed + photographed and the alloy is verified (density + acid test). If fineness is doubtful, AEJaCA proposes an assay at the State Assay Office (Urząd Probierczy) BEFORE production, cost borne by the client. The AEJaCA team is NOT liable for defects in the finished piece caused by the supplied material's actual composition differing from what was declared. When asked "what if I bring my own silver / is it 925?": explain this policy reassuringly — verification protects both sides.
 **Calibrated against:** real pancerka (curb) Ag925, 3.58 mm wide, 55 cm long = 13.93 g bare chain.
 
@@ -75,7 +75,7 @@ Chains (necklaces, men's chains, bracelets) have their own dedicated calculator 
 
 ### New Creation — configurable options
 **Product lines:** AEJaCA Woman (rings, bracelets, pendants, earrings, brooches) | AEJaCA Men (signet rings, medallions, bracelets, cufflinks, chains) | AEJaCA Pet (tags, collar charms)
-**Metals:** Silver 925 · Gold 9k · Gold 14k · Gold 18k · Gold 24k · Platinum 950 · Other
+**Metals:** Silver 925 · Silver 800 · Gold 9k · Gold 14k · Gold 18k · Gold 24k · Other (NO platinum)
 **Weight/style:** Light/delicate · Standard · Bold/massive · Custom
 **Technique:** Lost-wax casting · Handmade/soldering · Custom
 **Plating:** None · Rhodium · Gold vermeil · Rose gold · Other
@@ -662,6 +662,9 @@ WAZNE dla rozmowy z klientem:
 - Dla druku 3D klient moze wgrac plik STL, OBJ, 3MF lub STEP, widzi obracajacy sie podglad modelu, a cena liczy sie automatycznie z objetosci. STEP jest tesselowany jadrem OpenCascade, wiec zwymiarowany plik CAD wycenia sie tak samo szybko jak siatka
 - Kazdy kalkulator konczy sie kwota wiazaca i przyciskiem "Dodaj do koszyka", wiec klient kupuje bez przechodzenia do sklepu. Widelki nad przyciskiem to szacunek, kwota pod nimi to oferta wiazaca na 7 dni
 - Wyjatki, ktore nadal ida do wyceny recznej: wgrany plik SVG w laserach (liczy sie realna dlugosc sciezki), a w bizuterii kamienie, sploty lancuszkow i metal powierzony przez klienta
+- Wycena indywidualna ma teraz wlasny numer (WY20260801-XXXXXXXX) i klient dostaje link, pod ktorym widzi kwote. Po akceptacji ta sama wycena staje sie zamowieniem do zaplaty BLIK-iem lub przelewem, bez wpisywania czegokolwiek od nowa
+- Grawer ma limity dlugosci: 30 znakow na wyrobie, 60 znakow na wieku pudelka drewnianego. Powyzej limitu klient nie kupuje z automatu, tylko idzie do wyceny indywidualnej, bo dluzszy tekst to inne ustawienia lasera i inna kompozycja
+- Bizuteria wymaga opisu zlecenia (min. 20 znakow) przed dodaniem do koszyka, opcjonalnie ze zdjeciem lub szkicem. Grawer CO2, ciecie CO2 i fiber wymagaja pliku projektu
 - Przy grawerze CO2, cieciu CO2 i znakowaniu fiber klient moze dolaczyc projekt (SVG, DXF, PDF) jako zalacznik do zlecenia. Zalacznik NIE zmienia ceny, cene wyznacza wybrane pole lub dlugosc sciezki. Rysunek trafia na Dysk i do maila warsztatowego
   i wymiarow modelu. Pliki STEP nie sa jeszcze obslugiwane w wycenie automatycznej.
 - Platnosc: BLIK albo szybki przelew online, przez Autopay, wylacznie w PLN.

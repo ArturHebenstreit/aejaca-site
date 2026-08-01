@@ -39,9 +39,9 @@ export function Body({ lang }) {
         "Zum Beispiel: das klassische Muster hat einen Faktor von ×1,0 — eine 45 cm Kette benötigt etwa 45 cm Draht. Das Byzantinermuster erreicht ×3,2 — dieselben 45 cm fertiges Stück verbraucht über 144 cm Draht und ein Vielfaches mehr Arbeitszeit. Das erklärt, warum zwei Ketten gleicher Länge und Metall im Preis um ein Vielfaches abweichen können."
       )}</P>
       <Callout accent="amber">{t(
-        "W AEJaCA wszystkie łańcuszki wykonujemy ręcznie — każde ogniwo formowane i lutowane osobno. Dzięki temu możemy zrealizować dowolną długość, szerokość i splot w każdym metalu: srebro 925, złoto 9k–24k, platyna.",
-        "At AEJaCA, all chains are made by hand — each link individually formed and soldered. This allows us to produce any length, width, and weave in any metal: silver 925, gold 9k–24k, platinum.",
-        "Bei AEJaCA werden alle Ketten von Hand gefertigt — jedes Glied einzeln geformt und gelötet. Dadurch können wir jede Länge, Breite und Muster in jedem Metall realisieren: Silber 925, Gold 9k–24k, Platin."
+        "W AEJaCA wszystkie łańcuszki wykonujemy ręcznie — każde ogniwo formowane i lutowane osobno. Dzięki temu możemy zrealizować dowolną długość, szerokość i splot w każdym metalu, który wykonujemy: srebro 925 i 800, złoto 9k–24k.",
+        "At AEJaCA, all chains are made by hand — each link individually formed and soldered. This allows us to produce any length, width, and weave in any metal we work with: silver 925 and 800, gold 9k–24k.",
+        "Bei AEJaCA werden alle Ketten von Hand gefertigt — jedes Glied einzeln geformt und gelötet. Dadurch können wir jede Länge, Breite und Muster in jedem Metall realisieren, das wir verarbeiten: Silber 925 und 800, Gold 9k–24k."
       )}</Callout>
 
       <H2 id={t("tabela", "table", "tabelle")}>

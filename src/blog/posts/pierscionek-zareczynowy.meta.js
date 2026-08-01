@@ -26,19 +26,19 @@ export const meta = {
       { q: "Ile kosztuje pierścionek zaręczynowy na zamówienie?", a: "Cena zależy od metalu, kamienia i stopnia skomplikowania. W AEJaCA zaczynamy od ok. 800 zł za prosty srebrny pierścionek. Złote pierścionki z kamieniami szlachetnymi to zwykle 3 000–15 000 zł. Wycenę otrzymasz w ciągu 24h po konsultacji." },
       { q: "Ile trwa realizacja pierścionka na zamówienie?", a: "Standardowy czas to 2–4 tygodnie od zatwierdzenia projektu. Dla projektów z odlewem metodą traconego wosku i osadzaniem kamieni — do 6 tygodni. Ekspresowa realizacja (7 dni) jest możliwa za dopłatą." },
       { q: "Czy mogę zobaczyć projekt przed produkcją?", a: "Tak — zawsze przygotowujemy render 3D (CAD) pierścionka z każdego kąta. Zatwierdzasz projekt wizualnie zanim rozpoczniemy produkcję. Zmiany na etapie CAD są bezpłatne." },
-      { q: "Jakie metale i kamienie oferujecie?", a: "Pracujemy ze srebrem 925, złotem 585 (14K) i 750 (18K), oraz platyną. Kamienie: diamenty, moissanity, szafiry, szmaragdy, rubiny, ametysty i wiele innych naturalnych kamieni szlachetnych." },
+      { q: "Jakie metale i kamienie oferujecie?", a: "Pracujemy ze srebrem 925 i 800 oraz złotem od 9K do 24K, w tym 585 (14K) i 750 (18K). Platyny obecnie nie wykonujemy. Kamienie: diamenty, moissanity, szafiry, szmaragdy, rubiny, ametysty i wiele innych naturalnych kamieni szlachetnych." },
     ],
     en: [
       { q: "How much does a custom engagement ring cost?", a: "It depends on the metal, stone, and complexity. At AEJaCA, simple silver rings start around €180. Gold rings with gemstones typically range €700–3,500. You'll receive a quote within 24h of your consultation." },
       { q: "How long does it take to make a custom ring?", a: "Standard timeline is 2–4 weeks from design approval. For lost-wax casting with stone setting, allow up to 6 weeks. Express production (7 days) is available for a surcharge." },
       { q: "Can I see the design before production?", a: "Yes — we always prepare a 3D CAD render from every angle. You approve the design visually before we begin production. Changes at the CAD stage are free." },
-      { q: "What metals and stones do you offer?", a: "We work with 925 silver, 14K and 18K gold, and platinum. Stones include diamonds, moissanites, sapphires, emeralds, rubies, amethysts, and many other natural gemstones." },
+      { q: "What metals and stones do you offer?", a: "We work with 925 and 800 silver and gold from 9K to 24K, including 14K and 18K. We do not currently work in platinum. Stones include diamonds, moissanites, sapphires, emeralds, rubies, amethysts, and many other natural gemstones." },
     ],
     de: [
       { q: "Was kostet ein individueller Verlobungsring?", a: "Das hängt von Metall, Stein und Komplexität ab. Bei AEJaCA beginnen einfache Silberringe bei ca. 180 €. Goldringe mit Edelsteinen kosten typischerweise 700–3.500 €. Sie erhalten innerhalb von 24 Stunden ein Angebot." },
       { q: "Wie lange dauert die Anfertigung?", a: "Standardmäßig 2–4 Wochen ab Design-Freigabe. Für Wachsausschmelzguss mit Steinbesatz bis zu 6 Wochen. Express-Anfertigung (7 Tage) ist gegen Aufpreis möglich." },
       { q: "Kann ich das Design vor der Produktion sehen?", a: "Ja — wir erstellen immer einen 3D-CAD-Render aus jedem Winkel. Sie geben das Design visuell frei, bevor wir mit der Produktion beginnen. Änderungen im CAD-Stadium sind kostenlos." },
-      { q: "Welche Metalle und Steine bieten Sie an?", a: "Wir arbeiten mit 925er Silber, 14K- und 18K-Gold sowie Platin. Edelsteine: Diamanten, Moissanite, Saphire, Smaragde, Rubine, Amethyste und viele andere." },
+      { q: "Welche Metalle und Steine bieten Sie an?", a: "Wir arbeiten mit 925er und 800er Silber sowie Gold von 9K bis 24K, darunter 14K und 18K. Platin fertigen wir derzeit nicht. Edelsteine: Diamanten, Moissanite, Saphire, Smaragde, Rubine, Amethyste und viele andere." },
     ],
   },
   toc: {

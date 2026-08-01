@@ -14,7 +14,7 @@ import {
   ENGRAVING_OPTIONS,
   GEMSTONES, STONE_SIZES, DIAMOND_CLARITY, DIAMOND_COLOR, GEM_QUALITY, CERTIFICATIONS,
   RENOVATION_SERVICES, REPAIR_SERVICES,
-  REPAIR_METAL_MUL, QTY_TIERS, GENERIC_TYPES, GENERIC_METALS,
+  REPAIR_METAL_MUL, QTY_TIERS, GENERIC_TYPES, RENOVATION_METALS, REPAIR_METALS,
   CHAIN_WEAVES, CHAIN_CLASPS, CHAIN_DEFAULT_LENGTH,
   NECKLACE_LENGTHS_WOMEN, NECKLACE_LENGTHS_MEN, BRACELET_LENGTHS,
   CHAIN_SVG_Y_WOMEN, CHAIN_SVG_Y_MEN,
@@ -1006,7 +1006,7 @@ export default function JewelryCalc({ lang = "pl" }) {
           </CalcCard>
           <CalcCard stepNum={step()} label={l.metalType}>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-              {GENERIC_METALS.map(m => {
+              {RENOVATION_METALS.map(m => {
                 const active = renoMetal === m.id;
                 const label = t(m.label, lang);
                 if (!m.img) {
@@ -1097,7 +1097,8 @@ export default function JewelryCalc({ lang = "pl" }) {
           </CalcCard>
           <CalcCard stepNum={step()} label={l.metalType}>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-              {GENERIC_METALS.map(m => {
+              {/* Naprawa wymaga lutowania, wiec bez platyny. */}
+              {REPAIR_METALS.map(m => {
                 const active = repairMetal === m.id;
                 const label = t(m.label, lang);
                 if (!m.img) {

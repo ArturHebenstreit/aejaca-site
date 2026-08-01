@@ -22,7 +22,15 @@ export const WITHDRAWAL = {
   DIGITAL: "digital",
 };
 
-export const PRODUCTS = [
+/**
+ * Produkty gotowe. Wpisy ponizej sa przykladowe, przygotowane pod przyszly
+ * asortyment, i **nie sa wystawione na sprzedaz**: sklep pokazywalby wtedy
+ * rzeczy, ktorych nie mamy na polce, a zamowienie ich skonczyloby sie
+ * tlumaczeniem klientowi, ze to bylo tylko na probe.
+ *
+ * Zeby wystawic asortyment, ustaw `draft: false` przy gotowych pozycjach.
+ */
+export const PRODUCTS_DRAFT = [
   {
     slug: "pierscionek-granat-zloto-585",
     category: "jewelry",
@@ -156,6 +164,9 @@ export const SHOP_CATEGORIES = [
     ),
   },
 ];
+
+/** Wystawiamy wylacznie to, co naprawde da sie kupic */
+export const PRODUCTS = PRODUCTS_DRAFT.filter((p) => p.draft === false);
 
 export function getProduct(slug) {
   return PRODUCTS.find((p) => p.slug === slug) || null;

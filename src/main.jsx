@@ -8,6 +8,7 @@ import { LanguageProvider } from "./i18n/LanguageContext.jsx";
 import { ThemeProvider } from "./i18n/ThemeContext.jsx";
 import { CartProvider } from "./cart/CartContext.jsx";
 import Layout from "./components/Layout.jsx";
+import ScrollToHash from "./components/ScrollToHash.jsx";
 import Home from "./pages/Home.jsx";
 import Contact from "./pages/Contact.jsx";
 
@@ -63,6 +64,7 @@ const app = (
         <LanguageProvider>
           <CartProvider>
           <BrowserRouter>
+          <ScrollToHash />
           <Suspense fallback={<LazyFallback />}>
             <Routes>
               <Route element={<Layout />}>

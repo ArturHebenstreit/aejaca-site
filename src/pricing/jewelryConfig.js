@@ -73,11 +73,13 @@ export const JEWELRY_TYPES = {
 };
 
 // --- METALS with purity ---
+// Platyny nie ma na liscie: wymaga palnika o wyzszej temperaturze, wlasnego
+// lutu i osobnego oprzyrzadowania odlewniczego, ktorych warsztat nie ma.
+// Stale cenowe zostaja nizej, zeby stare zamowienia dalo sie odtworzyc.
 export const METALS = [
   { id: "silver",   metal: "silver", label: { pl: "Srebro 925", en: "Silver 925", de: "Silber 925" }, purity: 0.925, laborMul: 0.7, img: "/img/calc/metals/silver.webp" },
   { id: "silver_800", metal: "silver", label: { pl: "Srebro 800", en: "Silver 800", de: "Silber 800" }, purity: 0.800, laborMul: 0.7, img: "/img/calc/metals/silver.webp" },
   { id: "gold_9k",  metal: "gold", label: { pl: "Złoto 9k (375)", en: "Gold 9k (375)", de: "Gold 9k (375)" }, purity: 0.375, laborMul: 0.9, img: "/img/calc/metals/gold_9k.webp" },
-  { id: "platinum",  metal: "platinum", label: { pl: "Platyna 950", en: "Platinum 950", de: "Platin 950" }, purity: 0.950, laborMul: 1.5, img: "/img/calc/metals/platinum.webp" },
   { id: "gold_14k", metal: "gold", label: { pl: "Złoto 14k (585)", en: "Gold 14k (585)", de: "Gold 14k (585)" }, purity: 0.585, laborMul: 1.0, img: "/img/calc/metals/gold_14k.webp" },
   { id: "gold_18k", metal: "gold", label: { pl: "Złoto 18k (750)", en: "Gold 18k (750)", de: "Gold 18k (750)" }, purity: 0.750, laborMul: 1.0, img: "/img/calc/metals/gold_18k.webp" },
   { id: "gold_24k", metal: "gold", label: { pl: "Złoto 24k (999)", en: "Gold 24k (999)", de: "Gold 24k (999)" }, purity: 0.999, laborMul: 1.3, img: "/img/calc/metals/gold_24k.webp" },
@@ -253,12 +255,21 @@ export const GENERIC_TYPES = [
 ];
 
 // --- GENERIC METALS (for renovation/repair) ---
+// Platyna zostaje przy renowacji, bo czyszczenie, polerowanie i powloki
+// wykonujemy bez ognia. Nie ma jej przy naprawie: tam wchodzi lutowanie,
+// a lutu platynowego i palnika o tej temperaturze warsztat nie ma.
 export const GENERIC_METALS = [
   { id: "silver_g",   label: { pl: "Srebro", en: "Silver", de: "Silber" }, metalKey: "silver", img: "/img/calc/metals/silver.webp" },
   { id: "gold_g",     label: { pl: "Złoto", en: "Gold", de: "Gold" }, metalKey: "gold", img: "/img/calc/metals/gold_18k.webp" },
-  { id: "platinum_g", label: { pl: "Platyna", en: "Platinum", de: "Platin" }, metalKey: "platinum", img: "/img/calc/metals/platinum.webp" },
+  { id: "platinum_g", label: { pl: "Platyna", en: "Platinum", de: "Platin" }, metalKey: "platinum", img: "/img/calc/metals/platinum.webp", renovationOnly: true },
   { id: "other_m",    label: { pl: "Inny / nie wiem", en: "Other / not sure", de: "Anderes / unsicher" }, metalKey: "silver" },
 ];
+
+/** Metale przyjmowane do renowacji: czyszczenie, polerowanie, powloki */
+export const RENOVATION_METALS = GENERIC_METALS;
+
+/** Metale przyjmowane do naprawy: wszystko, co wymaga lutowania */
+export const REPAIR_METALS = GENERIC_METALS.filter((m) => !m.renovationOnly);
 
 // ar = ID/wire_diameter (Aspect Ratio — controls what link size is achievable)
 // widthMul: chain width = widthMul × wire_diameter_mm

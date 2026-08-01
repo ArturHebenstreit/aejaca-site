@@ -59,7 +59,9 @@ const METALS = [
   { id: "gold",     icon: Coins,      img: "/img/calc/metals/gold_14k.webp",
     label: { pl: "Złoto",     en: "Gold",      de: "Gold" } },
   { id: "platinum", icon: Coins,      img: "/img/calc/metals/platinum.webp",
-    label: { pl: "Platyna",   en: "Platinum",  de: "Platin" } },
+    label: { pl: "Platyna",   en: "Platinum",  de: "Platin" },
+    // Platyny nie wykonujemy i nie lutujemy, ale renowacje na niej robimy.
+    renovationOnly: true },
   { id: "unsure",   icon: HelpCircle, label: { pl: "Nie wiem",  en: "Not sure",  de: "Unsicher" } },
 ];
 
@@ -145,7 +147,6 @@ const PIECE_TO_GENERIC = {
 /** Map Simple metal+quality → advanced metalId */
 function mapMetal(metal, quality) {
   if (metal === "silver")   return "silver";
-  if (metal === "platinum") return "platinum";
   if (metal === "gold") {
     if (quality === "budget")   return "gold_9k";
     if (quality === "premium")  return "gold_18k";
@@ -161,6 +162,8 @@ function mapMetal(metal, quality) {
 function mapGenericMetal(metal) {
   if (metal === "silver")   return "silver_g";
   if (metal === "gold")     return "gold_g";
+  // Platyna jest wyborem tylko przy renowacji, przy naprawie kafelek nie
+  // istnieje, wiec ta galaz nie ma jak sie tam wykonac.
   if (metal === "platinum") return "platinum_g";
   return "other_m";
 }
@@ -256,7 +259,7 @@ export function resolveJewelryParams(state) {
     const weightId = quality === "budget" ? "light" : quality === "premium" ? "heavy" : "standard";
     const methodId = quality === "premium" ? "handmade" : "cast";
     // Platinum/white gold needs rhodium; gold can stay bare
-    const platingId = (quality === "premium" && (metalId === "silver" || metalId === "platinum")) ? "rhodium" : "none";
+    const platingId = (quality === "premium" && metalId === "silver") ? "rhodium" : "none";
     const gem = mapGem(gemCategory, quality);
     return {
       flow: "new",
@@ -548,7 +551,15 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
 
       {!isCord && (
         <SimpleCard stepNum="③" label={l.q3}>
-          <TileGrid options={METALS} value={metal} onChange={handle(setMetal, "metal")} lang={lang} cols={4} />
+          {/* Platyne pokazujemy wylacznie przy renowacji: czyszczenie i powloki
+              wykonujemy, ale nowego wyrobu ani lutowania juz nie. */}
+          <TileGrid
+            options={service === "renovation" ? METALS : METALS.filter((m) => !m.renovationOnly)}
+            value={metal}
+            onChange={handle(setMetal, "metal")}
+            lang={lang}
+            cols={4}
+          />
         </SimpleCard>
       )}
 

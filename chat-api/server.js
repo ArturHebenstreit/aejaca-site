@@ -9,6 +9,7 @@ import { rateLimit } from "express-rate-limit";
 import { getSystemPrompt, detectHotLead } from "./context.js";
 import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages } from "./gmail.js";
 import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken } from "./orders.js";
+import { createQuote, priceQuote, getQuoteByRef, convertQuoteToOrder, QuoteError } from "./quotes.js";
 import {
   autopayConfigured, buildStartTransaction, formatValidityTime,
   verifyReturn, parseITN, buildITNConfirmation, fetchGatewayList,
@@ -56,6 +57,14 @@ if (pool) {
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS session_id VARCHAR(50)`).catch(() => {});
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS contacted_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS contact_note TEXT`).catch(() => {});
+  // Zapytanie o wycene to zobowiazanie tak samo jak zamowienie, wiec musi dac
+  // sie odtworzyc w calosci. Pelny opis, parametry jako struktura, plik i numer
+  // do cytowania w korespondencji. Schemat w scripts/leads-schema.sql.
+  pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS description TEXT`).catch(() => {});
+  pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS params_json JSONB`).catch(() => {});
+  pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS upload_id BIGINT`).catch(() => {});
+  pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS quote_ref VARCHAR(32)`).catch(() => {});
+  pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS source VARCHAR(30)`).catch(() => {});
 
   pool.query(`CREATE TABLE IF NOT EXISTS email_threads (
     id BIGSERIAL PRIMARY KEY,
@@ -451,6 +460,61 @@ const upload = multer({
 });
 
 const CONTACT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Numer zapytania cytowany w korespondencji, odpowiednik numeru zamowienia */
+function generateQuoteRef() {
+  const d = new Date();
+  const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+  return `WY${stamp}-${generateToken().slice(0, 8).toUpperCase()}`;
+}
+
+/**
+ * Zapisuje plik przyslany do wyceny tak samo, jak plik z zamowienia:
+ * wiersz w uploads (suma kontrolna, nazwa) i wyslanie na Dysk przez n8n.
+ *
+ * Dotad plik z formularza wyceny szedl wylacznie mailem, wiec po pol roku
+ * nie dalo sie ustalic, co dokladnie klient przyslal. Zwraca id wiersza
+ * albo null, bo brak Dysku nie moze zablokowac przyjecia zapytania.
+ *
+ * @param {{name:string, mimeType:string, buffer:Buffer}} file
+ */
+async function storeQuoteAttachment(file, lang, ip) {
+  if (!pool || !file?.buffer?.length) return null;
+  try {
+    const token = generateToken();
+    const { rows } = await pool.query(
+      `INSERT INTO uploads (token, file_name, file_size_bytes, file_sha256, mime_type, lang, ip_hash)
+       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
+      [token, String(file.name || "zalacznik").slice(0, 255), file.buffer.length,
+       createHash("sha256").update(file.buffer).digest("hex"),
+       file.mimeType || "application/octet-stream", lang,
+       createHash("sha256").update(ip).digest("hex").slice(0, 30)]
+    );
+
+    if (UPLOAD_N8N_URL) {
+      fetch(UPLOAD_N8N_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          fileName: file.name,
+          mimeType: file.mimeType,
+          sizeBytes: file.buffer.length,
+          lang,
+          data: file.buffer.toString("base64"),
+          source: "quote_file",
+        }),
+      }).then((r) => {
+        if (!r.ok) console.error(`[wycena] webhook n8n ${r.status} dla ${token}`);
+      }).catch((e) => console.error("[wycena] webhook blad:", e.message));
+    }
+
+    return rows[0].id;
+  } catch (e) {
+    console.error("[wycena] zapis zalacznika nie powiodl sie:", e.message);
+    return null;
+  }
+}
 const SUBJECT_MAP = { jewelry: "Jewelry Inquiry", studio: "Studio Inquiry", both: "Jewelry & Studio Inquiry", other: "General Inquiry" };
 
 app.post("/api/contact", (req, res, next) => {
@@ -503,11 +567,24 @@ app.post("/api/contact", (req, res, next) => {
     }
   });
 
-  // Save lead to DB (best-effort, non-blocking)
+  // Zapis zapytania. Pelna tresc, bez obcinania: to ona jest podstawa
+  // pozniejszej realizacji i jedynym zapisem tego, co obiecalismy.
   if (pool) {
-    pool.query(
-      `INSERT INTO leads (email, lang, calculator, params, status) VALUES ($1, $2, $3, $4, $5)`,
-      [payload.email, payload.lang, payload.source, `${payload.subject}\n${payload.message.slice(0, 400)}`, "new"]
+    const quoteRef = generateQuoteRef();
+    storeQuoteAttachment(
+      req.file ? { name: req.file.originalname, mimeType: req.file.mimetype, buffer: req.file.buffer } : null,
+      payload.lang,
+      ip
+    ).then((uploadId) =>
+      pool.query(
+        `INSERT INTO leads (email, lang, calculator, source, params, description, params_json, upload_id, quote_ref, status)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+        [payload.email, payload.lang, payload.source, "contact",
+         `${payload.subject}\n${payload.message.slice(0, 400)}`,
+         payload.message,
+         JSON.stringify({ name: payload.name || null, subject: payload.subject || null }),
+         uploadId, quoteRef, "new"]
+      )
     ).catch(err => console.error("Lead save error:", err.message));
   }
 
@@ -544,11 +621,15 @@ app.post("/api/quote", express.json({ limit: "50mb" }), async (req, res) => {
   if (!email || !CONTACT_EMAIL_RE.test(email)) return res.status(400).json({ error: "Invalid email" });
   if (!calculator || !params || !price) return res.status(400).json({ error: "Missing fields" });
 
+  // Numer nadajemy przed wysylka, zeby ten sam trafil do maila i do bazy.
+  const quoteRef = generateQuoteRef();
+
   const payload = {
     email: email.trim().toLowerCase(),
     lang: ["pl", "en", "de"].includes(lang) ? lang : "pl",
     calculator: String(calculator).slice(0, 200),
     params: String(params).slice(0, 1000),
+    quoteRef,
     price,
     ts: ts || new Date().toISOString(),
     ...(file?.data ? { file: { name: String(file.name || "attachment").slice(0, 255), type: String(file.type || "application/octet-stream"), data: file.data } } : {}),
@@ -577,13 +658,31 @@ app.post("/api/quote", express.json({ limit: "50mb" }), async (req, res) => {
 
   if (pool) {
     const quoteSessionId = req.body?.sessionId || null;
-    pool.query(
-      `INSERT INTO leads (email, lang, calculator, params, price_min_pln, price_max_pln, price_min_eur, price_max_eur, qty, discount, status, session_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
-      [payload.email, payload.lang, payload.calculator, payload.params,
-       price?.perPcPLN?.min ?? null, price?.perPcPLN?.max ?? null,
-       price?.perPcEUR?.min ?? null, price?.perPcEUR?.max ?? null,
-       price?.qty ?? null, price?.discount ?? null, "new", quoteSessionId]
-    ).catch(() => {});
+    // Plik przychodzi w JSON jako base64. Rozpakowujemy go tutaj, zeby
+    // zapytanie mialo taki sam slad w bazie jak zamowienie.
+    const attachment = file?.data
+      ? { name: file.name, mimeType: file.type, buffer: Buffer.from(String(file.data).split(",").pop(), "base64") }
+      : null;
+
+    storeQuoteAttachment(attachment, payload.lang, ip)
+      .then((uploadId) =>
+        pool.query(
+          `INSERT INTO leads (email, lang, calculator, source, params, description, params_json,
+             price_min_pln, price_max_pln, price_min_eur, price_max_eur, qty, discount,
+             upload_id, quote_ref, status, session_id)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
+          [payload.email, payload.lang, payload.calculator, "quote",
+           payload.params,
+           // Pelny opis od klienta, bez limitu 1000 znakow z podsumowania.
+           String(req.body?.description || req.body?.message || params || ""),
+           JSON.stringify({ params: req.body?.params ?? null, price: price ?? null }),
+           price?.perPcPLN?.min ?? null, price?.perPcPLN?.max ?? null,
+           price?.perPcEUR?.min ?? null, price?.perPcEUR?.max ?? null,
+           price?.qty ?? null, price?.discount ?? null,
+           uploadId, quoteRef, "new", quoteSessionId]
+        )
+      )
+      .catch((err) => console.error("Quote save error:", err.message));
   }
 
   res.json({ ok: true });
@@ -702,6 +801,129 @@ app.post("/api/price", (req, res, next) => {
     }
     console.error("[price] unexpected:", e);
     res.status(500).json({ error: "Wycena chwilowo niedostepna" });
+  }
+});
+
+// ============================================================
+// WYCENY INDYWIDUALNE
+// ============================================================
+// Sciezka dla tego, czego nie umiemy wycenic automatem: kamienie, sploty,
+// projekty CAD, dlugie grawery. Klient zostawia komplet danych, czlowiek
+// wpisuje kwote, a wycena zamienia sie w zwykle zamowienie do zaplaty.
+//
+// Tresc i pliki zapisujemy strukturalnie, a nie tylko w mailu, bo po pol
+// roku mail nie wystarczy do ustalenia, co obiecalismy.
+
+/** Wpisywanie kwot i konwersja to czynnosci wlascicielskie, nie klienckie */
+function requireAdmin(req, res) {
+  const token = req.headers["x-admin-token"];
+  if (!token || token !== process.env.ADMIN_API_TOKEN) {
+    res.status(401).json({ error: "Unauthorized" });
+    return false;
+  }
+  return true;
+}
+
+app.post("/api/quotes", express.json({ limit: "1mb" }), async (req, res) => {
+  const ip = extractIP(req);
+  if (!checkQuoteRate(ip)) return res.status(429).json({ error: "Za duzo zapytan, sprobuj za chwile" });
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const { email, name, phone, lang, source, message, items } = req.body || {};
+  if (!email || !CONTACT_EMAIL_RE.test(String(email))) return res.status(400).json({ error: "Nieprawidlowy adres e-mail" });
+  if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: "Zapytanie bez pozycji" });
+  if (items.length > 20) return res.status(400).json({ error: "Za duzo pozycji w jednym zapytaniu" });
+
+  try {
+    const created = await createQuote(pool, {
+      email, name, phone, lang, source: source || "configurator",
+      message: String(message || "").slice(0, 8000),
+      items: items.slice(0, 20),
+      ipHash: createHash("sha256").update(ip).digest("hex").slice(0, 30),
+    });
+    console.log(`[wycena] przyjeto ${created.quoteRef} od ${String(email).toLowerCase()}`);
+    res.json({ ok: true, quoteRef: created.quoteRef });
+  } catch (e) {
+    if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
+    console.error("[wycena] zapis nie powiodl sie:", e.message);
+    res.status(500).json({ error: "Nie udalo sie przyjac zapytania" });
+  }
+});
+
+/** Podglad wyceny dla klienta. Bez logowania, wiec adres musi znac token. */
+app.get("/api/quotes/:ref", async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  const quote = await getQuoteByRef(pool, req.params.ref);
+  if (!quote || !quote.access_token || quote.access_token !== req.query.token) {
+    return res.status(404).json({ error: "Nie ma takiej wyceny" });
+  }
+  res.json({
+    ok: true,
+    quoteRef: quote.quote_ref,
+    status: quote.status,
+    lang: quote.lang,
+    totalGrosze: quote.total_grosze,
+    priceNote: quote.price_note,
+    validUntil: quote.valid_until,
+    items: quote.items.map((i) => ({
+      id: i.id, title: i.title, qty: i.qty,
+      unitGrosze: i.unit_grosze, lineGrosze: i.line_grosze,
+      description: i.description, fileName: i.file_name,
+    })),
+  });
+});
+
+/** Wpisanie kwot: dopiero to czyni z zapytania oferte */
+app.post("/api/quotes/:ref/price", express.json({ limit: "64kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  try {
+    const result = await priceQuote(pool, req.params.ref, req.body?.lines, req.body?.note ?? null, req.body?.validDays);
+    console.log(`[wycena] ${result.quoteRef} wyceniona na ${(result.totalGrosze / 100).toFixed(2)} PLN`);
+    res.json({ ok: true, ...result });
+  } catch (e) {
+    if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
+    console.error("[wycena] wycenianie nie powiodlo sie:", e.message);
+    res.status(500).json({ error: "Nie udalo sie zapisac kwot" });
+  }
+});
+
+/** Zamiana wyceny w zamowienie do zaplaty, z limitem kwartalnym jak w sklepie */
+app.post("/api/quotes/:ref/convert", express.json({ limit: "16kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  try {
+    const quote = await getQuoteByRef(pool, req.params.ref);
+    if (!quote) return res.status(404).json({ error: "Nie ma takiej wyceny" });
+    if (!quote.total_grosze) return res.status(400).json({ error: "Najpierw wpisz kwoty", code: "not_priced" });
+
+    const shipping = Number.isInteger(req.body?.delivery?.shippingGrosze) ? req.body.delivery.shippingGrosze : 0;
+    const limit = await checkQuarterlyLimit(pool, quote.total_grosze + shipping);
+    if (!limit.ok) {
+      return res.status(409).json({
+        error: "Ta kwota nie zmiesci sie w limicie kwartalnym",
+        code: "quarterly_limit",
+        remainingPLN: Math.round(limit.remainingGrosze / 100),
+      });
+    }
+
+    const order = await convertQuoteToOrder(pool, req.params.ref, {
+      orderRef: generateOrderRef(),
+      delivery: req.body?.delivery || {},
+    });
+    console.log(`[wycena] ${req.params.ref} stala sie zamowieniem ${order.orderRef}`);
+    res.json({
+      ok: true,
+      orderRef: order.orderRef,
+      totalGrosze: order.totalGrosze,
+      // Adres do wyslania klientowi. Dalej idzie ta sama sciezka co w sklepie.
+      payUrl: `${SITE_URL}/order/status/?ref=${order.orderRef}&token=${order.accessToken}`,
+    });
+  } catch (e) {
+    if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
+    console.error("[wycena] konwersja nie powiodla sie:", e.message);
+    res.status(500).json({ error: "Nie udalo sie utworzyc zamowienia" });
   }
 });
 
@@ -1021,6 +1243,10 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
       // Bez tego klient widzialby cene z doplata, a placil bez niej.
       const packGrosze = packagingGrosze(raw.packagingId);
       const personalization = sanitizePersonalization(raw.personalization);
+      const personalizationBack = sanitizePersonalization(raw.personalizationBack);
+      // Opis zlecenia to tresc od klienta, nie parametr wyceny, wiec przycinamy
+      // go do rozsadnej dlugosci i zapisujemy razem z parametrami pozycji.
+      const description = String(raw.description || "").slice(0, 2000).trim() || null;
       const qty = Number.isInteger(raw.qty) && raw.qty > 0 ? Math.min(999, raw.qty) : item.qty;
       const unitGrosze = item.unitGrosze + packGrosze;
 
@@ -1032,6 +1258,8 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
         packagingId: raw.packagingId || null,
         packagingGrosze: packGrosze,
         personalization,
+        personalizationBack,
+        description,
         params: raw.params,
         geometry: raw.geometry || null,
         fileName: raw.fileName || null,
@@ -1102,7 +1330,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
            params, price_breakdown, file_name, file_sha256, file_url, geometry, upload_id)
          VALUES ($1,'service',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
         [orderId, i.calculator, i.title, i.qty, i.unitGrosze, i.lineGrosze,
-         JSON.stringify({ ...(i.params ?? {}), packagingId: i.packagingId, personalization: i.personalization }),
+         JSON.stringify({ ...(i.params ?? {}), packagingId: i.packagingId, personalization: i.personalization, personalizationBack: i.personalizationBack, description: i.description }),
          JSON.stringify(i.breakdown ?? []),
          i.fileName || uploadRow?.file_name || null,
          i.geometry?.sha256 ?? uploadRow?.file_sha256 ?? null,

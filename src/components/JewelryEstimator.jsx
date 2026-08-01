@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Zap, SlidersHorizontal, Info } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { trackCalc } from "../utils/analytics.js";
@@ -45,7 +46,12 @@ const LABELS = {
 };
 
 export default function JewelryEstimator() {
-  const [mode, setMode] = useState("simple");
+  // Wejscie z karty uslugi ("Otworz kalkulator zaawansowany") niesie w adresie
+  // wybrana usluge. Skoro klient prosil o pelna kontrole, otwieramy tryb
+  // zaawansowany od razu, zamiast kazac mu przelaczac go recznie.
+  const [searchParams] = useSearchParams();
+  const deepLinked = ["service", "type", "mode"].some((k) => searchParams.get(k));
+  const [mode, setMode] = useState(deepLinked ? "advanced" : "simple");
   const { lang } = useLanguage();
   const l = LABELS[lang] || LABELS.en;
 
