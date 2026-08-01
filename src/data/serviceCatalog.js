@@ -303,7 +303,7 @@ export const SERVICES_FULL = [
     ],
     specs: [
       { label: L("Zakres", "Scope", "Umfang"), value: L("Czyszczenie, polerowanie, rodowanie, złocenie", "Cleaning, polishing, rhodium, gilding", "Reinigung, Politur, Rhodinierung, Vergoldung") },
-      { label: L("Kruszce", "Metals", "Metalle"), value: L("Srebro, złoto, platyna", "Silver, gold, platinum", "Silber, Gold, Platin") },
+      { label: L("Kruszce", "Metals", "Metalle"), value: L("Srebro, złoto, platyna (renowacja bez lutowania)", "Silver, gold, platinum (renovation without soldering)", "Silber, Gold, Platin (Renovierung ohne Löten)") },
       { label: L("Kontrola kamieni", "Stone check", "Steinkontrolle"), value: L("W każdym zleceniu", "Included in every order", "In jedem Auftrag enthalten") },
       { label: L("Czas realizacji", "Lead time", "Bearbeitungszeit"), value: L("3 do 5 dni roboczych", "3 to 5 business days", "3 bis 5 Werktage") },
     ],
@@ -346,7 +346,7 @@ export const SERVICES_FULL = [
     ],
     specs: [
       { label: L("Zakres", "Scope", "Umfang"), value: L("Rozmiar, krapy, kamienie, zapięcia, łańcuszki, lutowanie", "Resizing, prongs, stones, clasps, chains, soldering", "Weite, Krappen, Steine, Verschlüsse, Ketten, Löten") },
-      { label: L("Kruszce", "Metals", "Metalle"), value: L("Srebro, złoto, platyna", "Silver, gold, platinum", "Silber, Gold, Platin") },
+      { label: L("Kruszce", "Metals", "Metalle"), value: L("Srebro, złoto", "Silver, gold", "Silber, Gold") },
       { label: L("Wycena", "Quote", "Angebot"), value: L("Wstępna ze zdjęcia, ostateczna po obejrzeniu", "Preliminary from a photo, final after inspection", "Vorläufig per Foto, endgültig nach Begutachtung") },
       { label: L("Czas realizacji", "Lead time", "Bearbeitungszeit"), value: L("3 do 7 dni roboczych", "3 to 7 business days", "3 bis 7 Werktage") },
     ],
@@ -388,13 +388,13 @@ export const SERVICES_FULL = [
         body: L("Polerowanie, opcjonalna powłoka i grawer wewnętrzny.", "Polishing, optional plating and inside engraving.", "Politur, optionale Beschichtung und Innengravur.") },
     ],
     specs: [
-      { label: L("Kruszce", "Metals", "Metalle"), value: L("Srebro 925 i 800, złoto 375, 585, 750, platyna", "925 and 800 silver, 375, 585, 750 gold, platinum", "925er und 800er Silber, 375er, 585er, 750er Gold, Platin") },
+      { label: L("Kruszce", "Metals", "Metalle"), value: L("Srebro 925 i 800, złoto 375, 585, 750", "925 and 800 silver, 375, 585 and 750 gold", "925er und 800er Silber, 375er, 585er und 750er Gold") },
       { label: L("Metody", "Methods", "Methoden"), value: L("Odlew na wosk tracony, wykonanie ręczne", "Lost-wax casting, handmaking", "Wachsausschmelzguss, Handarbeit") },
       { label: L("Powłoki", "Plating", "Beschichtungen"), value: L("Rod, złoto, różowe złoto", "Rhodium, gold, rose gold", "Rhodium, Gold, Roségold") },
       { label: L("Kurs kruszcu", "Metal rate", "Metallkurs"), value: L("NBP, aktualizowany co godzinę", "Polish central bank, refreshed hourly", "Polnische Nationalbank, stündlich aktualisiert") },
     ],
     bullets: [
-      L("Srebro 925, złoto 585 i 750, platyna", "925 silver, 585 and 750 gold, platinum", "925er Silber, 585er und 750er Gold, Platin"),
+      L("Srebro 925 i 800, złoto od 375 do 750", "925 and 800 silver, gold from 375 to 750", "925er und 800er Silber, Gold von 375 bis 750"),
       L("Cena z aktualnego kursu kruszcu, wiążąca 7 dni", "Priced at the current metal rate, binding for 7 days", "Preis zum aktuellen Metallkurs, 7 Tage verbindlich"),
       L("Grawer wewnętrzny i zewnętrzny", "Inside and outside engraving", "Innen- und Außengravur"),
     ],
@@ -477,7 +477,7 @@ export const SERVICES_FULL = [
     ],
     specs: [
       { label: L("Sploty", "Weaves", "Geflechte"), value: L("13 rodzajów, od klasycznego po bizantyjski", "13 types, from classic to byzantine", "13 Arten, von klassisch bis byzantinisch") },
-      { label: L("Kruszce", "Metals", "Metalle"), value: L("Srebro, złoto, platyna", "Silver, gold, platinum", "Silber, Gold, Platin") },
+      { label: L("Kruszce", "Metals", "Metalle"), value: L("Srebro, złoto", "Silver, gold", "Silber, Gold") },
       { label: L("Twój kruszec", "Your own metal", "Ihr Metall"), value: L("Tak, płacisz wtedy za samą pracę", "Yes, you then pay for labour only", "Ja, Sie zahlen dann nur die Arbeit") },
       { label: L("Zapięcia", "Clasps", "Verschlüsse"), value: L("Sprężynowe, karabińczyki, box, toggle", "Spring rings, lobster, box, toggle", "Federringe, Karabiner, Box, Knebel") },
     ],
