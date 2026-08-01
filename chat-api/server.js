@@ -56,6 +56,14 @@ if (pool) {
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS session_id VARCHAR(50)`).catch(() => {});
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS contacted_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS contact_note TEXT`).catch(() => {});
+  // Zapytanie o wycene to zobowiazanie tak samo jak zamowienie, wiec musi dac
+  // sie odtworzyc w calosci. Pelny opis, parametry jako struktura, plik i numer
+  // do cytowania w korespondencji. Schemat w scripts/leads-schema.sql.
+  pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS description TEXT`).catch(() => {});
+  pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS params_json JSONB`).catch(() => {});
+  pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS upload_id BIGINT`).catch(() => {});
+  pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS quote_ref VARCHAR(32)`).catch(() => {});
+  pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS source VARCHAR(30)`).catch(() => {});
 
   pool.query(`CREATE TABLE IF NOT EXISTS email_threads (
     id BIGSERIAL PRIMARY KEY,
@@ -451,6 +459,61 @@ const upload = multer({
 });
 
 const CONTACT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Numer zapytania cytowany w korespondencji, odpowiednik numeru zamowienia */
+function generateQuoteRef() {
+  const d = new Date();
+  const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+  return `WY${stamp}-${generateToken().slice(0, 8).toUpperCase()}`;
+}
+
+/**
+ * Zapisuje plik przyslany do wyceny tak samo, jak plik z zamowienia:
+ * wiersz w uploads (suma kontrolna, nazwa) i wyslanie na Dysk przez n8n.
+ *
+ * Dotad plik z formularza wyceny szedl wylacznie mailem, wiec po pol roku
+ * nie dalo sie ustalic, co dokladnie klient przyslal. Zwraca id wiersza
+ * albo null, bo brak Dysku nie moze zablokowac przyjecia zapytania.
+ *
+ * @param {{name:string, mimeType:string, buffer:Buffer}} file
+ */
+async function storeQuoteAttachment(file, lang, ip) {
+  if (!pool || !file?.buffer?.length) return null;
+  try {
+    const token = generateToken();
+    const { rows } = await pool.query(
+      `INSERT INTO uploads (token, file_name, file_size_bytes, file_sha256, mime_type, lang, ip_hash)
+       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
+      [token, String(file.name || "zalacznik").slice(0, 255), file.buffer.length,
+       createHash("sha256").update(file.buffer).digest("hex"),
+       file.mimeType || "application/octet-stream", lang,
+       createHash("sha256").update(ip).digest("hex").slice(0, 30)]
+    );
+
+    if (UPLOAD_N8N_URL) {
+      fetch(UPLOAD_N8N_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          fileName: file.name,
+          mimeType: file.mimeType,
+          sizeBytes: file.buffer.length,
+          lang,
+          data: file.buffer.toString("base64"),
+          source: "quote_file",
+        }),
+      }).then((r) => {
+        if (!r.ok) console.error(`[wycena] webhook n8n ${r.status} dla ${token}`);
+      }).catch((e) => console.error("[wycena] webhook blad:", e.message));
+    }
+
+    return rows[0].id;
+  } catch (e) {
+    console.error("[wycena] zapis zalacznika nie powiodl sie:", e.message);
+    return null;
+  }
+}
 const SUBJECT_MAP = { jewelry: "Jewelry Inquiry", studio: "Studio Inquiry", both: "Jewelry & Studio Inquiry", other: "General Inquiry" };
 
 app.post("/api/contact", (req, res, next) => {
@@ -503,11 +566,24 @@ app.post("/api/contact", (req, res, next) => {
     }
   });
 
-  // Save lead to DB (best-effort, non-blocking)
+  // Zapis zapytania. Pelna tresc, bez obcinania: to ona jest podstawa
+  // pozniejszej realizacji i jedynym zapisem tego, co obiecalismy.
   if (pool) {
-    pool.query(
-      `INSERT INTO leads (email, lang, calculator, params, status) VALUES ($1, $2, $3, $4, $5)`,
-      [payload.email, payload.lang, payload.source, `${payload.subject}\n${payload.message.slice(0, 400)}`, "new"]
+    const quoteRef = generateQuoteRef();
+    storeQuoteAttachment(
+      req.file ? { name: req.file.originalname, mimeType: req.file.mimetype, buffer: req.file.buffer } : null,
+      payload.lang,
+      ip
+    ).then((uploadId) =>
+      pool.query(
+        `INSERT INTO leads (email, lang, calculator, source, params, description, params_json, upload_id, quote_ref, status)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+        [payload.email, payload.lang, payload.source, "contact",
+         `${payload.subject}\n${payload.message.slice(0, 400)}`,
+         payload.message,
+         JSON.stringify({ name: payload.name || null, subject: payload.subject || null }),
+         uploadId, quoteRef, "new"]
+      )
     ).catch(err => console.error("Lead save error:", err.message));
   }
 
@@ -544,11 +620,15 @@ app.post("/api/quote", express.json({ limit: "50mb" }), async (req, res) => {
   if (!email || !CONTACT_EMAIL_RE.test(email)) return res.status(400).json({ error: "Invalid email" });
   if (!calculator || !params || !price) return res.status(400).json({ error: "Missing fields" });
 
+  // Numer nadajemy przed wysylka, zeby ten sam trafil do maila i do bazy.
+  const quoteRef = generateQuoteRef();
+
   const payload = {
     email: email.trim().toLowerCase(),
     lang: ["pl", "en", "de"].includes(lang) ? lang : "pl",
     calculator: String(calculator).slice(0, 200),
     params: String(params).slice(0, 1000),
+    quoteRef,
     price,
     ts: ts || new Date().toISOString(),
     ...(file?.data ? { file: { name: String(file.name || "attachment").slice(0, 255), type: String(file.type || "application/octet-stream"), data: file.data } } : {}),
@@ -577,13 +657,31 @@ app.post("/api/quote", express.json({ limit: "50mb" }), async (req, res) => {
 
   if (pool) {
     const quoteSessionId = req.body?.sessionId || null;
-    pool.query(
-      `INSERT INTO leads (email, lang, calculator, params, price_min_pln, price_max_pln, price_min_eur, price_max_eur, qty, discount, status, session_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
-      [payload.email, payload.lang, payload.calculator, payload.params,
-       price?.perPcPLN?.min ?? null, price?.perPcPLN?.max ?? null,
-       price?.perPcEUR?.min ?? null, price?.perPcEUR?.max ?? null,
-       price?.qty ?? null, price?.discount ?? null, "new", quoteSessionId]
-    ).catch(() => {});
+    // Plik przychodzi w JSON jako base64. Rozpakowujemy go tutaj, zeby
+    // zapytanie mialo taki sam slad w bazie jak zamowienie.
+    const attachment = file?.data
+      ? { name: file.name, mimeType: file.type, buffer: Buffer.from(String(file.data).split(",").pop(), "base64") }
+      : null;
+
+    storeQuoteAttachment(attachment, payload.lang, ip)
+      .then((uploadId) =>
+        pool.query(
+          `INSERT INTO leads (email, lang, calculator, source, params, description, params_json,
+             price_min_pln, price_max_pln, price_min_eur, price_max_eur, qty, discount,
+             upload_id, quote_ref, status, session_id)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
+          [payload.email, payload.lang, payload.calculator, "quote",
+           payload.params,
+           // Pelny opis od klienta, bez limitu 1000 znakow z podsumowania.
+           String(req.body?.description || req.body?.message || params || ""),
+           JSON.stringify({ params: req.body?.params ?? null, price: price ?? null }),
+           price?.perPcPLN?.min ?? null, price?.perPcPLN?.max ?? null,
+           price?.perPcEUR?.min ?? null, price?.perPcEUR?.max ?? null,
+           price?.qty ?? null, price?.discount ?? null,
+           uploadId, quoteRef, "new", quoteSessionId]
+        )
+      )
+      .catch((err) => console.error("Quote save error:", err.message));
   }
 
   res.json({ ok: true });

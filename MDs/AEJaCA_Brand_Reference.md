@@ -716,6 +716,24 @@ Do koszyka nie trafia to, czego nie umiemy wycenic bez czlowieka, i mowimy o tym
 | sploty lancuszkow | masa splotu zalezy od wykonania |
 | metal powierzony przez klienta | trzeba ocenic material |
 
+### Zapytania o wycene w bazie
+
+Zapytanie o wycene jest zobowiazaniem tak samo jak zamowienie i musi dac sie odtworzyc po roku. Tabela `leads` (`scripts/leads-schema.sql`) trzyma teraz:
+
+| Kolumna | Co niesie |
+|---|---|
+| `description` | **pelna tresc od klienta**, bez obcinania |
+| `params_json` | parametry i widelki jako struktura, nie sklejony tekst |
+| `upload_id` | wiersz w `uploads`: nazwa, suma kontrolna, link do Dysku |
+| `quote_ref` | numer `WY20260801-XXXXXXXX` cytowany w korespondencji |
+| `source` | contact, quote, chat |
+
+Wczesniej opis byl obcinany do 400 znakow w formularzu kontaktowym i do 1000 w podsumowaniu wyceny, a plik szedl wylacznie mailem, bez zadnego sladu w bazie. Klient, ktory dokladnie opisal pierscionek, zostawial w bazie kikut.
+
+Kolumny dopisuja sie same przy starcie serwera (`ALTER TABLE ... IF NOT EXISTS`), wiec wdrozenie nie wymaga recznej migracji.
+
+Widok `open_quotes` pokazuje zapytania czekajace na odpowiedz, od najstarszego.
+
 ### Schemat bazy
 
 `scripts/orders-schema.sql`: `orders`, `order_items`, `products`, `downloads`, `payment_notifications`, widok `quarterly_revenue`. Parametry wejściowe wyceny zapisujemy razem z wynikiem, żeby dało się odtworzyć cenę po latach. Surowe komunikaty ITN trafiają do bazy, bo bez nich reklamacja płatności to słowo przeciwko słowu.
