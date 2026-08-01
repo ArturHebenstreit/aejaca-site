@@ -626,6 +626,7 @@ export default {
   },
 
   footer: {
+    shop: "Shop",
     tagline: "Artisan Elegance Jewelry and Crafted Art. Wo Handwerkskunst auf Technologie trifft.",
     quickLinks: "Schnelllinks",
     followUs: "Folgen Sie Uns",

@@ -5,6 +5,9 @@ import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { Upload, X, AlertTriangle } from "lucide-react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture, LicenseNotice } from "./calcShared.jsx";
 import CalcToCart from "./CalcToCart.jsx";
+
+/** Te same formaty, ktore przyjmuje konfigurator w sklepie */
+const ACCEPT_MODEL = ".stl,.obj,.3mf,.step,.stp";
 import { RESIN_SEGMENTS, RESIN_COLORS, getResinsBySegment, getResin } from "../../data/resins.js";
 
 const STLViewer = lazy(() => import("./STLViewer.jsx"));
@@ -119,20 +122,20 @@ const TECH_SWITCH_LBL = { pl: "Technologia druku", en: "Print technology", de: "
 
 
 const STL_LBL = {
-  pl: { upload: "Załaduj plik STL", orManual: "lub wybierz rozmiar ręcznie poniżej",
-    dropHint: "Kliknij lub przeciągnij plik STL", dropSub: "Automatyczna wycena na podstawie objętości i wymiarów",
+  pl: { upload: "Załaduj model 3D", orManual: "lub wybierz rozmiar ręcznie poniżej",
+    dropHint: "Kliknij lub przeciągnij model: STL, OBJ, 3MF lub STEP", dropSub: "Automatyczna wycena na podstawie objętości i wymiarów",
     volume: "Objętość", dims: "Wymiary",
-    triangles: "Trójkąty", remove: "Usuń", exceeds: "Model przekracza przestrzeń druku", stlSize: "Rozmiar z pliku STL",
+    triangles: "Trójkąty", remove: "Usuń", exceeds: "Model przekracza przestrzeń druku", stlSize: "Rozmiar z pliku",
     scale: "Skala wydruku", fitToPlate: "Dopasuj do płyty", original: "Oryg." },
-  en: { upload: "Upload STL file", orManual: "or select size manually below",
-    dropHint: "Click or drag & drop an STL file", dropSub: "Auto-quote based on volume and dimensions",
+  en: { upload: "Upload a 3D model", orManual: "or select size manually below",
+    dropHint: "Click or drag a model: STL, OBJ, 3MF or STEP", dropSub: "Auto-quote based on volume and dimensions",
     volume: "Volume", dims: "Dimensions",
-    triangles: "Triangles", remove: "Remove", exceeds: "Model exceeds build volume", stlSize: "Size from STL file",
+    triangles: "Triangles", remove: "Remove", exceeds: "Model exceeds build volume", stlSize: "Size from file",
     scale: "Print scale", fitToPlate: "Fit to plate", original: "Orig." },
-  de: { upload: "STL-Datei hochladen", orManual: "oder Größe unten manuell wählen",
-    dropHint: "Klicken oder STL-Datei hierher ziehen", dropSub: "Automatische Kalkulation anhand von Volumen und Maßen",
+  de: { upload: "3D-Modell hochladen", orManual: "oder Größe unten manuell wählen",
+    dropHint: "Modell klicken oder ziehen: STL, OBJ, 3MF oder STEP", dropSub: "Automatische Kalkulation anhand von Volumen und Maßen",
     volume: "Volumen", dims: "Abmessungen",
-    triangles: "Dreiecke", remove: "Entfernen", exceeds: "Modell überschreitet Bauraum", stlSize: "Größe aus STL-Datei",
+    triangles: "Dreiecke", remove: "Entfernen", exceeds: "Modell überschreitet Bauraum", stlSize: "Größe aus Datei",
     scale: "Druckmaßstab", fitToPlate: "An Platte anpassen", original: "Orig." },
 };
 
@@ -154,7 +157,7 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
             <div className="text-[11px] text-neutral-400">{sl.dropSub}</div>
           </div>
         </button>
-        <input ref={fileRef} type="file" accept=".stl" className="hidden" onChange={onUpload} />
+        <input ref={fileRef} type="file" accept={ACCEPT_MODEL} className="hidden" onChange={onUpload} />
         <div className="text-[10px] text-neutral-400">{sl.orManual}</div>
       </div>
     );
@@ -238,6 +241,10 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
   const l = LBL[lang] || LBL.en;
   const sl = STL_LBL[lang] || STL_LBL.en;
   const ml = MSLA_LBL[lang] || MSLA_LBL.en;
+  // Kwota wiazaca zglaszana przez CalcToCart. Gdy jest, widelki znikaja,
+  // bo przedzial obok konkretnej kwoty tylko ja podwaza.
+  const [bindingGrosze, setBindingGrosze] = useState(null);
+
   const [tech, setTech] = useState(initialTech);
 
   // ---- FDM state ----
@@ -294,8 +301,8 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
     const file = e.target.files?.[0];
     if (!file) return;
     const buffer = await file.arrayBuffer();
-    const { parseSTL } = await import("../../utils/stlParser.js");
-    const data = parseSTL(buffer);
+    const { parseMeshAsync } = await import("../../pricing/mesh.js");
+    const data = await parseMeshAsync(buffer, file.name);
     setStlData(data);
     setStlFile(file);
     setStlFileName(file.name);
@@ -313,8 +320,8 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
     const file = e.target.files?.[0];
     if (!file) return;
     const buffer = await file.arrayBuffer();
-    const { parseSTL } = await import("../../utils/stlParser.js");
-    const data = parseSTL(buffer);
+    const { parseMeshAsync } = await import("../../pricing/mesh.js");
+    const data = await parseMeshAsync(buffer, file.name);
     setMslaStlData(data);
     setMslaStlFile(file);
     setMslaStlFileName(file.name);
@@ -436,14 +443,16 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
         <CalcCard stepNum="⑦" label={ml.qty}><Chips options={QUANTITY_TIERS} value={mslaQuantityId} onChange={setMslaQuantityId} lang={lang} /></CalcCard>
 
         <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
-          <ResultHeader lang={lang} />
-          <ResultDisplay result={mslaResult} lang={lang} />
+          <ResultHeader lang={lang} binding={bindingGrosze != null} />
+          <ResultDisplay result={mslaResult} lang={lang} hideRange={bindingGrosze != null} />
           <QuoteEmailCapture result={mslaResult} lang={lang} techLabel={t(TECH_LABEL_MSLA, lang)} preAttachedFile={mslaStlFile} paramsSummary={mslaParamsSummary} />
           <CalcToCart
+          onBinding={setBindingGrosze}
             calculator="print3d_msla"
             serviceId="print_msla"
             params={{ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId }}
             file={mslaStlFile}
+            triangles={mslaStlData?.triangles || null}
             scale={mslaStlScale}
             lang={lang}
           />
@@ -482,8 +491,8 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
       <CalcCard stepNum="⑧" label={l.qty}><Chips options={QUANTITY_TIERS} value={quantityId} onChange={setQuantityId} lang={lang} /></CalcCard>
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
-        <ResultHeader lang={lang} />
-        <ResultDisplay result={result} lang={lang} />
+        <ResultHeader lang={lang} binding={bindingGrosze != null} />
+        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
         <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)} preAttachedFile={stlFile} paramsSummary={[
           `${FILAMENTS[segment].label}: ${materialKey}`,
           stlSummary || t(SIZES.find(s => s.id === sizeId)?.label, lang),
@@ -493,10 +502,12 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
           t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
         ].join(" | ")} />
         <CalcToCart
+          onBinding={setBindingGrosze}
           calculator="print3d_fdm"
           serviceId="print_fdm"
           params={{ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId }}
           file={stlFile}
+          triangles={stlData?.triangles || null}
           scale={stlScale}
           lang={lang}
         />

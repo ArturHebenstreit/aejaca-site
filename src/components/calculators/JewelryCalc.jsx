@@ -175,6 +175,10 @@ export default function JewelryCalc({ lang = "pl" }) {
   const urlService = searchParams.get("service");
   const urlType = searchParams.get("type");
 
+  // Kwota wiazaca zglaszana przez CalcToCart. Gdy jest, widelki znikaja,
+  // bo przedzial obok konkretnej kwoty tylko ja podwaza.
+  const [bindingGrosze, setBindingGrosze] = useState(null);
+
   const [serviceId, setServiceId] = useState(
     SERVICE_TYPES.some((x) => x.id === urlService) ? urlService : "new"
   );
@@ -1140,12 +1144,13 @@ export default function JewelryCalc({ lang = "pl" }) {
 
       {/* Result */}
       <div className="rounded-2xl border-2 border-amber-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
-        <ResultHeader lang={lang} />
-        <ResultDisplay result={result} lang={lang} />
+        <ResultHeader lang={lang} binding={bindingGrosze != null} />
+        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
         {/* Do koszyka trafia tylko to, co sklep potrafi wycenic wiazaco.
             Kamienie, lancuszki i metal powierzony przez klienta wymagaja
             oceny czlowieka, wiec tam zostaje sciezka wyceny. */}
         <CalcToCart
+          onBinding={setBindingGrosze}
           calculator={serviceId === "renovation" ? "jewelry_renovation" : serviceId === "repair" ? "jewelry_repair" : "jewelry_new"}
           serviceId={serviceId === "renovation" ? "jewelry_renovation" : serviceId === "repair" ? "jewelry_repair" : "jewelry_plain"}
           params={

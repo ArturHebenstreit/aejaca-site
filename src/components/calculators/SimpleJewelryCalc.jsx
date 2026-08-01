@@ -495,6 +495,10 @@ function SimpleCard({ stepNum, label, children }) {
 export default function SimpleJewelryCalc({ lang = "pl" }) {
   const l = LBL[lang] || LBL.en;
 
+  // Kwota wiazaca zglaszana przez CalcToCart. Gdy jest, widelki znikaja,
+  // bo przedzial obok konkretnej kwoty tylko ja podwaza.
+  const [bindingGrosze, setBindingGrosze] = useState(null);
+
   const [service, setService] = useState("new");
   const [piece, setPiece] = useState("ring");
   const [metal, setMetal] = useState("silver");
@@ -587,10 +591,11 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
 
       {/* Result */}
       <div className="rounded-2xl border-2 border-rose-400/30 bg-gradient-to-br from-rose-400/[0.04] to-transparent p-6 mt-2">
-        <ResultHeader lang={lang} />
-        <ResultDisplay result={result} lang={lang} />
+        <ResultHeader lang={lang} binding={bindingGrosze != null} />
+        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
         {cartTarget && (
           <CalcToCart
+          onBinding={setBindingGrosze}
             calculator={cartTarget.calculator}
             serviceId={cartTarget.serviceId}
             params={resolved.params}

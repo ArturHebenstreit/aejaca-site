@@ -22,6 +22,10 @@ const TECH_LABEL = { pl: "Laser CO2", en: "CO2 Laser", de: "CO2-Laser" };
 export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
   const l = LBL[lang] || LBL.en;
   const sl = SVG_LBL[lang] || SVG_LBL.en;
+  // Kwota wiazaca zglaszana przez CalcToCart. Gdy jest, widelki znikaja,
+  // bo przedzial obok konkretnej kwoty tylko ja podwaza.
+  const [bindingGrosze, setBindingGrosze] = useState(null);
+
   const [mode, setMode] = useState(initialMode);
   const [eMatId, setEMatId] = useState("wood");
   const [eAreaId, setEAreaId] = useState("S");
@@ -143,10 +147,11 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
       </CalcCard>
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
-        <ResultHeader lang={lang} />
-        <ResultDisplay result={result} lang={lang} />
+        <ResultHeader lang={lang} binding={bindingGrosze != null} />
+        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
         <QuoteEmailCapture result={result} lang={lang} techLabel={`${t(TECH_LABEL, lang)} — ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={paramsSummary} preAttachedFile={svgFile} />
         <CalcToCart
+          onBinding={setBindingGrosze}
           calculator={mode === "engrave" ? "laser_co2_engrave" : "laser_co2_cut"}
           serviceId={mode === "engrave" ? "laser_engrave" : "laser_cut"}
           params={mode === "engrave"
