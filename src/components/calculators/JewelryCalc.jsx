@@ -1162,6 +1162,8 @@ export default function JewelryCalc({ lang = "pl" }) {
                 : { lineId, typeId, metalId, weightId, methodId, platingId, engravingId, qtyId }
           }
           blocked={serviceId === "new" && (
+            // Wiazaca cena ma pokrycie tylko przy odlewie prostej bryly.
+            methodId !== "cast" ||
             // Lista kamieni ma zawsze co najmniej jeden wiersz, domyslnie
             // ustawiony na "bez kamienia", wiec liczy sie tresc, nie dlugosc.
             stoneRows.some((r) => r.gemId && r.gemId !== "none")

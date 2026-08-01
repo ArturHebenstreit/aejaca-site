@@ -272,11 +272,13 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
 
   // Grawer wybrany w kalkulatorze musi miec tresc, a zbyt dlugi tekst to juz
   // inna robota niz ta, ktora wlasnie wyceniono.
+  // Bramka zlozonosci obowiazuje tak samo jak w sklepie: jedno zrodlo zasady.
+  const gatedShape = Boolean(params?.complexityId && params.complexityId !== "simple");
   const wantsEngraving = Boolean(params?.engravingId && params.engravingId !== "none");
   const engravingOver = wantsEngraving && engraving.trim().length > ENGRAVING_LIMITS.jewelry;
   const engravingOk = !wantsEngraving || (engraving.trim().length >= 1 && !engravingOver);
 
-  const ready = descriptionOk && artworkOk && engravingOk;
+  const ready = descriptionOk && artworkOk && engravingOk && !gatedShape;
 
   const qty = price?.qty || 1;
   const lineGrosze = (price?.unitGrosze || 0) * qty;

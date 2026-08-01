@@ -347,6 +347,9 @@ function cartTargetFor(resolved) {
   if (resolved.flow === "repair")     return { calculator: "jewelry_repair", serviceId: "jewelry_repair" };
   if (resolved.flow === "new") {
     const p = resolved.params || {};
+    // Wiazaca cena tylko przy odlewie: przy wykonaniu recznym czas pracy
+    // zalezy od rzeczy, ktorych szybka wycena nie pyta.
+    if (p.methodId && p.methodId !== "cast") return null;
     // mapGem zwraca gemId: "none" przy wyborze "bez kamienia", wiec sama
     // obecnosc pola nic nie znaczy.
     const hasStone = Boolean(p.gemId && p.gemId !== "none")

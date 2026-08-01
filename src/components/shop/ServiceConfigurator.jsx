@@ -52,6 +52,10 @@ const UI = {
     lidBack: "Treść po wewnętrznej stronie wieka (opcjonalnie)",
     missingEngraving: "Wpisz treść graweru",
     toQuote: "Wyślij do wyceny",
+    showDetails: "Pokaż szczegóły kalkulacji",
+    hideDetails: "Ukryj szczegóły",
+    gateComplex: "Kształt z ornamentem, ażurem albo formą rzeźbiarską wyceniamy indywidualnie. Nakład pracy przy takiej bryle nie wynika z masy ani z metody, więc kwota z automatu byłaby zgadywaniem.",
+    gateHandmade: "Wykonanie ręczne wyceniamy indywidualnie. Wiążącą cenę podajemy przy odlewie, bo tam czas pracy jest powtarzalny.",
     fileOptional: "Bez pliku wybierzesz rozmiar z listy poniżej",
     packaging: "Opakowanie",
     qty: "Liczba sztuk",
@@ -90,6 +94,10 @@ const UI = {
     lidBack: "Text on the inside of the lid (optional)",
     missingEngraving: "Enter the engraving text",
     toQuote: "Request a quote",
+    showDetails: "Show the breakdown",
+    hideDetails: "Hide the breakdown",
+    gateComplex: "An ornamented, openwork or sculptural shape is quoted individually. The work involved does not follow from mass or method, so an automatic price would be guesswork.",
+    gateHandmade: "Hand fabrication is quoted individually. We commit to a price for casting, where the working time is repeatable.",
     fileOptional: "Without a file, pick a size from the list below",
     packaging: "Packaging",
     qty: "Quantity",
@@ -128,6 +136,10 @@ const UI = {
     lidBack: "Text auf der Deckelinnenseite (optional)",
     missingEngraving: "Gravurtext eingeben",
     toQuote: "Angebot anfordern",
+    showDetails: "Kalkulation anzeigen",
+    hideDetails: "Kalkulation ausblenden",
+    gateComplex: "Eine ornamentierte, durchbrochene oder skulpturale Form kalkulieren wir individuell. Der Aufwand ergibt sich weder aus Masse noch aus Methode, ein automatischer Preis wäre geraten.",
+    gateHandmade: "Handanfertigung kalkulieren wir individuell. Verbindlich wird der Preis beim Guss, wo die Arbeitszeit reproduzierbar ist.",
     fileOptional: "Ohne Datei wählen Sie unten eine Größe",
     packaging: "Verpackung",
     qty: "Stückzahl",
@@ -170,6 +182,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const [vectorToken, setVectorToken] = useState(null);
   const [vectorBusy, setVectorBusy] = useState(false);
   const [thumbTick, setThumbTick] = useState(0);
+  const [showBreakdown, setShowBreakdown] = useState(false);
   const [packagingId, setPackagingId] = useState(DEFAULT_PACKAGING);
   const [engraving, setEngraving] = useState("");
   const [description, setDescription] = useState("");
@@ -291,8 +304,14 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   );
   const packEngravingOk = !pack?.personalizable || (packEngraving.trim().length >= 1 && !packOver);
 
+  // Wiazaca cena bizuterii ma pokrycie tylko przy odlewie prostej bryly.
+  // Reszta to praca, ktorej nie widac w parametrach.
+  const gateComplex = params.complexityId != null && params.complexityId !== "simple";
+  const gateHandmade = service.calculator === "jewelry_new" && params.methodId != null && params.methodId !== "cast";
+  const needsHumanQuote = gateComplex || gateHandmade;
+
   const overLimit = jewelryOver || packOver;
-  const ready = descriptionOk && artworkOk && jewelryEngravingOk && packEngravingOk;
+  const ready = descriptionOk && artworkOk && jewelryEngravingOk && packEngravingOk && !needsHumanQuote;
 
   const setParam = (key, val) => setParams((p) => ({ ...p, [key]: val }));
 
@@ -658,12 +677,48 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
                 </div>
               )}
             </div>
-            <p className="text-neutral-600 text-[11px] mb-4">{u.priceNote}</p>
+            <p className="text-neutral-600 text-[11px] mb-3">{u.priceNote}</p>
 
-            {!ready && !overLimit && (
+            {/* Ta sama kalkulacja co w kalkulatorze. Klient ma widziec, z czego
+                sklada sie kwota, w obu miejscach tak samo. */}
+            {price.breakdown?.length > 0 && (
+              <div className="mb-4">
+                <button
+                  type="button"
+                  onClick={() => setShowBreakdown((v) => !v)}
+                  className="w-full text-center py-2 rounded-lg border border-white/10 bg-white/[0.02]
+                             text-neutral-400 hover:text-white hover:border-white/20 text-[11px] transition-colors"
+                >
+                  {showBreakdown ? `\u25B2 ${u.hideDetails}` : `\u25BC ${u.showDetails}`}
+                </button>
+                {showBreakdown && (
+                  <div className="mt-2 rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-1.5 text-[11px]">
+                    {price.breakdown.map((row, i) => (
+                      <div key={i} className={`flex justify-between gap-4 ${row.bold ? "font-semibold text-white" : "text-neutral-400"}`}>
+                        <span>{row.label}</span>
+                        <span className="tabular-nums flex-shrink-0">{row.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!ready && !overLimit && !needsHumanQuote && (
               <p className="text-amber-400/80 text-[11px] mb-3 leading-relaxed">
                 {!descriptionOk ? u.describeWhy : !artworkOk ? u.vectorNote : u.missingEngraving}
               </p>
+            )}
+
+            {needsHumanQuote && (
+              <div className="rounded-xl border border-amber-400/30 bg-amber-400/[0.05] p-4 mb-3">
+                <p className="text-amber-300/90 text-[11px] leading-relaxed mb-2">
+                  {gateComplex ? u.gateComplex : u.gateHandmade}
+                </p>
+                <Link to="/contact/" className="inline-flex items-center gap-1.5 text-amber-400 hover:text-amber-300 text-xs">
+                  {u.toQuote} <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
             )}
 
             {overLimit && (
@@ -676,6 +731,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
               </Link>
             )}
 
+            {!needsHumanQuote && (
             <button
               type="button"
               onClick={addToCart}
@@ -693,6 +749,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
               {added ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
               {added ? u.added : !ready ? (!descriptionOk ? u.missingDescription : !artworkOk ? u.missingArtwork : u.missingEngraving) : u.addToCart}
             </button>
+            )}
 
             {added && (
               <Link
