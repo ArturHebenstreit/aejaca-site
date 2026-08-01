@@ -98,7 +98,7 @@ export default function Footer() {
           <NewsletterForm />
         </div>
 
-        <div className="grid md:grid-cols-3 gap-10">
+        <div className="grid md:grid-cols-4 gap-10">
           <div>
             <div className="flex items-center gap-3 mb-4">
               <img src="/brand-sign.webp" alt="AEJaCA" width="40" height="40" className="h-10 w-10 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
@@ -107,25 +107,33 @@ export default function Footer() {
             <p className="text-neutral-400 text-sm leading-relaxed">{t.footer.tagline}</p>
           </div>
 
-          <nav aria-label="Footer navigation">
+          {/* Szybkie linki w dwoch kolumnach: oferta po lewej, informacje
+              i dokumenty po prawej. Jedna kolumna czternastu pozycji rozciagala
+              stopke i psula proporcje wzgledem pozostalych kolumn. */}
+          <nav aria-label="Footer navigation" className="md:col-span-2">
             <h4 className="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">{t.footer.quickLinks}</h4>
-            <div className="space-y-2">
-              <Link to="/jewelry/" className="block text-sm text-neutral-300 hover:text-amber-400 transition-colors">{t.nav.jewelry}</Link>
-              <Link to="/studio/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.nav.studio}</Link>
-              <Link to="/blog/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.blog || "Blog"}</Link>
-              <Link to="/glossary/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.glossary}</Link>
-              <Link to="/about/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.about}</Link>
-              <Link to="/contact/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.contact}</Link>
-              <Link to="/b2b/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.footer.b2b}</Link>
-              {/* Strony lokalne. W stopce, bo pojawia się na każdej z 72 stron,
-                  co daje im głębokość 1 kliknięcia zamiast 2 przez /studio/. */}
-              <Link to="/druk-3d-warszawa/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.footer.local3dWarsaw}</Link>
-              <Link to="/druk-3d-piaseczno/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.footer.local3dPiaseczno}</Link>
-              <Link to="/terms/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.terms}</Link>
-              <Link to="/warranty/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.warranty}</Link>
-              <Link to="/returns/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.returns}</Link>
-              <Link to="/shipping/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.shipping}</Link>
-              <Link to="/privacy/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.privacy}</Link>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+              <div className="space-y-2">
+                <Link to="/shop/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.shop}</Link>
+                <Link to="/jewelry/" className="block text-sm text-neutral-300 hover:text-amber-400 transition-colors">{t.nav.jewelry}</Link>
+                <Link to="/studio/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.nav.studio}</Link>
+                <Link to="/b2b/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.footer.b2b}</Link>
+                {/* Strony lokalne. W stopce, bo pojawia sie na kazdej stronie,
+                    co daje im glebokosc 1 klikniecia zamiast 2 przez /studio/. */}
+                <Link to="/druk-3d-warszawa/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.footer.local3dWarsaw}</Link>
+                <Link to="/druk-3d-piaseczno/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.footer.local3dPiaseczno}</Link>
+                <Link to="/blog/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.blog || "Blog"}</Link>
+                <Link to="/glossary/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.glossary}</Link>
+              </div>
+              <div className="space-y-2">
+                <Link to="/about/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.about}</Link>
+                <Link to="/contact/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.nav.contact}</Link>
+                <Link to="/terms/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.terms}</Link>
+                <Link to="/warranty/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.warranty}</Link>
+                <Link to="/returns/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.returns}</Link>
+                <Link to="/shipping/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.shipping}</Link>
+                <Link to="/privacy/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.privacy}</Link>
+              </div>
             </div>
           </nav>
 

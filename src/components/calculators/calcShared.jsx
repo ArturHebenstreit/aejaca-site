@@ -152,13 +152,22 @@ export function CalcCard({ stepNum, label, children, id }) {
 }
 
 /** Result header, translated */
-export function ResultHeader({ lang }) {
-  const titles = { pl: "Szacowany zakres cenowy", en: "Estimated price range", de: "Geschätzter Preisbereich" };
+export function ResultHeader({ lang, binding = false }) {
+  // Naglowek musi zgadzac sie z tym, co jest ponizej. "Zakres" nad konkretna
+  // kwota to sprzeczny komunikat.
+  const titles = binding
+    ? { pl: "Wycena", en: "Quote", de: "Kalkulation" }
+    : { pl: "Szacowany zakres cenowy", en: "Estimated price range", de: "Geschätzter Preisbereich" };
   return <div className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-4">{t(titles, lang)}</div>;
 }
 
 /** Price result display, PLN for PL, EUR for EN/DE */
-export function ResultDisplay({ result, lang = "pl" }) {
+/**
+ * @param {boolean} [props.hideRange] chowa widelki, gdy ponizej stoi kwota
+ *        wiazaca. Przedzial opisuje niepewnosc szacunku, wiec postawiony obok
+ *        konkretnej kwoty tylko ja podwaza. Zostaje wtedy sama kalkulacja.
+ */
+export function ResultDisplay({ result, lang = "pl", hideRange = false }) {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const labels = RESULT_LABELS[lang] || RESULT_LABELS.en;
   const showPLN = lang === "pl";
@@ -187,16 +196,20 @@ export function ResultDisplay({ result, lang = "pl" }) {
   return (
     <div aria-live="polite" aria-atomic="true">
       {/* Per piece */}
-      <div className="text-center text-[11px] uppercase tracking-wide text-neutral-400 mb-1">
-        {labels.perPiece}
-        {r.discount > 0 && <span className="text-green-400 ml-2 font-bold">(-{r.discount * 100}%)</span>}
-      </div>
-      <div className="flex items-baseline justify-center gap-1.5 sm:gap-3 mb-4 flex-wrap">
-        <span className="text-2xl sm:text-4xl font-extrabold tracking-tight">{fmtNum(mainPc.min)}</span>
-        <span className="text-lg sm:text-xl text-neutral-400">&mdash;</span>
-        <span className="text-2xl sm:text-4xl font-extrabold tracking-tight">{fmtNum(mainPc.max)}</span>
-        <span className="text-sm sm:text-base font-semibold text-neutral-400">{mainCurr}</span>
-      </div>
+      {!hideRange && (
+        <>
+          <div className="text-center text-[11px] uppercase tracking-wide text-neutral-400 mb-1">
+            {labels.perPiece}
+            {r.discount > 0 && <span className="text-green-400 ml-2 font-bold">(-{r.discount * 100}%)</span>}
+          </div>
+          <div className="flex items-baseline justify-center gap-1.5 sm:gap-3 mb-4 flex-wrap">
+            <span className="text-2xl sm:text-4xl font-extrabold tracking-tight">{fmtNum(mainPc.min)}</span>
+            <span className="text-lg sm:text-xl text-neutral-400">&mdash;</span>
+            <span className="text-2xl sm:text-4xl font-extrabold tracking-tight">{fmtNum(mainPc.max)}</span>
+            <span className="text-sm sm:text-base font-semibold text-neutral-400">{mainCurr}</span>
+          </div>
+        </>
+      )}
 
       {/* Order total (qty > 1) */}
       {r.qty > 1 && (

@@ -19,6 +19,10 @@ const TECH_LABEL = { pl: "Laser Fiber", en: "Fiber Laser", de: "Faserlaser" };
 export default function FiberLaserCalc({ lang = "pl" }) {
   const l = LBL[lang] || LBL.en;
   const sl = SVG_LBL[lang] || SVG_LBL.en;
+  // Kwota wiazaca zglaszana przez CalcToCart. Gdy jest, widelki znikaja,
+  // bo przedzial obok konkretnej kwoty tylko ja podwaza.
+  const [bindingGrosze, setBindingGrosze] = useState(null);
+
   const [matId, setMatId] = useState("stainless");
   const [lensId, setLensId] = useState("150mm");
   const [markId, setMarkId] = useState("surface");
@@ -116,10 +120,11 @@ export default function FiberLaserCalc({ lang = "pl" }) {
       </CalcCard>
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
-        <ResultHeader lang={lang} />
-        <ResultDisplay result={result} lang={lang} />
+        <ResultHeader lang={lang} binding={bindingGrosze != null} />
+        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
         <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={paramsSummary} preAttachedFile={svgFile} />
         <CalcToCart
+          onBinding={setBindingGrosze}
           calculator="laser_fiber"
           serviceId="laser_fiber"
           params={{ matId, lensId, markId, areaId, quantityId }}

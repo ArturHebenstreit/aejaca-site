@@ -60,7 +60,7 @@ export const APPLICATIONS = [
 
 export const LAYER_HEIGHTS = [
   { id: "standard", label: { pl: "0,05 mm (standard)", en: "0.05 mm (standard)", de: "0,05 mm (Standard)" }, speed: 35 },
-  { id: "quality",  label: { pl: "0,03 mm (jakość)", en: "0.03 mm (quality)", de: "0,03 mm (Qualität)" }, speed: 20 },
+  { id: "quality",  label: { pl: "0,03 mm (wysoka precyzja)", en: "0.03 mm (high precision)", de: "0,03 mm (hohe Präzision)" }, speed: 20 },
 ];
 
 // Size presets for MSLA, max dimension in cm, matched against Saturn 4 Ultra plate 21.8x12.3x25.0 cm

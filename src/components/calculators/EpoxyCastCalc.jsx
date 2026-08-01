@@ -19,6 +19,10 @@ const TECH_LABEL = { pl: "Odlewy żywiczne", en: "Resin Casting", de: "Harzguss"
 
 export default function EpoxyCastCalc({ lang = "pl" }) {
   const l = LBL[lang] || LBL.en;
+  // Kwota wiazaca zglaszana przez CalcToCart. Gdy jest, widelki znikaja,
+  // bo przedzial obok konkretnej kwoty tylko ja podwaza.
+  const [bindingGrosze, setBindingGrosze] = useState(null);
+
   const [resinId, setResinId] = useState("epoxy_clear");
   const [volumeId, setVolumeId] = useState("S");
   const [moldId, setMoldId] = useState("existing");
@@ -67,10 +71,11 @@ export default function EpoxyCastCalc({ lang = "pl" }) {
       </CalcCard>
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
-        <ResultHeader lang={lang} />
-        <ResultDisplay result={result} lang={lang} />
+        <ResultHeader lang={lang} binding={bindingGrosze != null} />
+        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
         <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={paramsSummary} />
         <CalcToCart
+          onBinding={setBindingGrosze}
           calculator="epoxy"
           serviceId="epoxy"
           params={{ resinId, volumeId, moldId, inclusionId, finishId, quantityId }}

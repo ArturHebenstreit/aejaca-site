@@ -10,7 +10,7 @@
 // Parametry sa te same, ktorych uzywa kalkulator, bo obie strony wolaja
 // ten sam rdzen z src/pricing/.
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingCart, Check, Loader2, ArrowRight, Info } from "lucide-react";
 import { useCart } from "../../cart/CartContext.jsx";
@@ -18,6 +18,11 @@ import { getServiceCard } from "../../data/serviceCatalog.js";
 import { t } from "../../pricing/config.js";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
+
+const STLViewer = lazy(() => import("./STLViewer.jsx"));
+
+/** Gorna granica miniatury trzymanej w koszyku, zeby nie przepelnic localStorage */
+const MAX_CART_THUMB_CHARS = 80_000;
 
 const UI = {
   pl: {
@@ -79,7 +84,11 @@ const money = (g) => `${(g / 100).toFixed(2).replace(".", ",")} PLN`;
  * @param {string} props.lang
  * @param {"blue"|"amber"} [props.accent]
  */
-export default function CalcToCart({ calculator, serviceId, params, file = null, scale = 1, lang, accent = "blue", blocked = false, blockedReason = "vector" }) {
+/**
+ * @param {number[][][]} [props.triangles] siatka wgranego modelu, jesli kalkulator
+ *        juz ja odczytal. Sluzy wylacznie do zrobienia miniatury dla koszyka.
+ */
+export default function CalcToCart({ calculator, serviceId, params, file = null, triangles = null, scale = 1, lang, accent = "blue", blocked = false, blockedReason = "vector", onBinding = null }) {
   const u = UI[lang] || UI.en;
   const cart = useCart();
   const card = getServiceCard(serviceId);
@@ -89,6 +98,7 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
   const [error, setError] = useState(null);
   const [added, setAdded] = useState(false);
 
+  const [thumbData, setThumbData] = useState(null);
   const [uploadToken, setUploadToken] = useState(null);
   const [uploading, setUploading] = useState(false);
   const reqId = useRef(0);
@@ -151,6 +161,13 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
 
   useEffect(() => setAdded(false), [paramsKey, uploadToken]);
 
+  // Kalkulator musi wiedziec, czy udalo sie podac kwote wiazaca. Jesli tak,
+  // widelki znikaja: dwie rozne liczby obok siebie podwazaja te wiazaca.
+  useEffect(() => {
+    if (!onBinding) return;
+    onBinding(blocked ? null : (price?.unitGrosze ?? null));
+  }, [onBinding, blocked, price]);
+
   if (!card) return null;
 
   // Sciezka wektorowa nie da sie policzyc z presetu pola, wiec zamiast
@@ -185,6 +202,7 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
       params,
       fileName: file?.name || null,
       uploadToken,
+      thumbData,
       fileRetained: Boolean(uploadToken),
       unitGrosze: price.unitGrosze,
       packagingId: "paper",
@@ -221,6 +239,22 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
               {u.contact} <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
+        </div>
+      )}
+
+      {/* Podglad rysujemy poza ekranem: w kalkulatorze model jest juz pokazany
+          wyzej, a tutaj potrzebujemy wylacznie kadru na miniature koszyka. */}
+      {triangles?.length > 0 && !thumbData && (
+        <div className="h-0 overflow-hidden" aria-hidden="true">
+          <Suspense fallback={null}>
+            <STLViewer
+              triangles={triangles}
+              height={240}
+              onSnapshot={(dataUrl) => {
+                if (dataUrl.length <= MAX_CART_THUMB_CHARS) setThumbData(dataUrl);
+              }}
+            />
+          </Suspense>
         </div>
       )}
 

@@ -344,7 +344,10 @@ function cartTargetFor(resolved) {
   if (resolved.flow === "repair")     return { calculator: "jewelry_repair", serviceId: "jewelry_repair" };
   if (resolved.flow === "new") {
     const p = resolved.params || {};
-    const hasStone = Boolean(p.stoneRows?.length || p.gemId || p.gemstoneId);
+    // mapGem zwraca gemId: "none" przy wyborze "bez kamienia", wiec sama
+    // obecnosc pola nic nie znaczy.
+    const hasStone = Boolean(p.gemId && p.gemId !== "none")
+      || Boolean(p.stoneRows?.some((r) => r.gemId && r.gemId !== "none"));
     return hasStone ? null : { calculator: "jewelry_new", serviceId: "jewelry_plain" };
   }
   return null;
@@ -492,6 +495,10 @@ function SimpleCard({ stepNum, label, children }) {
 export default function SimpleJewelryCalc({ lang = "pl" }) {
   const l = LBL[lang] || LBL.en;
 
+  // Kwota wiazaca zglaszana przez CalcToCart. Gdy jest, widelki znikaja,
+  // bo przedzial obok konkretnej kwoty tylko ja podwaza.
+  const [bindingGrosze, setBindingGrosze] = useState(null);
+
   const [service, setService] = useState("new");
   const [piece, setPiece] = useState("ring");
   const [metal, setMetal] = useState("silver");
@@ -584,10 +591,11 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
 
       {/* Result */}
       <div className="rounded-2xl border-2 border-rose-400/30 bg-gradient-to-br from-rose-400/[0.04] to-transparent p-6 mt-2">
-        <ResultHeader lang={lang} />
-        <ResultDisplay result={result} lang={lang} />
+        <ResultHeader lang={lang} binding={bindingGrosze != null} />
+        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
         {cartTarget && (
           <CalcToCart
+          onBinding={setBindingGrosze}
             calculator={cartTarget.calculator}
             serviceId={cartTarget.serviceId}
             params={resolved.params}
