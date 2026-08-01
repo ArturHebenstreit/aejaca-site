@@ -716,6 +716,25 @@ Do koszyka nie trafia to, czego nie umiemy wycenic bez czlowieka, i mowimy o tym
 | sploty lancuszkow | masa splotu zalezy od wykonania |
 | metal powierzony przez klienta | trzeba ocenic material |
 
+### Wyceny indywidualne: tabele i sciezka
+
+`quotes` i `quote_items` (`scripts/quotes-schema.sql`) sa lustrem `orders` i `order_items`. Roznica jest jedna: **kwota moze byc pusta**, bo podaje ja czlowiek. Pusta `total_grosze` znaczy "jeszcze niczego nie obiecalismy".
+
+| Krok | Kto | Co sie dzieje |
+|---|---|---|
+| 1. zapytanie | klient | `POST /api/quotes`, pozycje z parametrami, opisem i plikiem, status `new` |
+| 2. wycena | AEJaCA | `POST /api/quotes/:ref/price` z kwotami per pozycja, status `priced`, wazna 14 dni |
+| 3. zamowienie | AEJaCA | `POST /api/quotes/:ref/convert`, powstaje zamowienie `kind = quoted` w stanie `awaiting_payment` |
+| 4. zaplata | klient | dokladnie ta sama droga co zakup ze sklepu: Autopay, ITN, maile |
+
+Kroki 2 i 3 wymagaja naglowka `X-Admin-Token` rownego `ADMIN_API_TOKEN`. Konwersja sprawdza limit kwartalny tak samo jak sklep, wiec wycena nie przebije progu dzialalnosci nierejestrowanej.
+
+Klient oglada wycene pod `GET /api/quotes/:ref?token=...`. Bez tokenu numer zapytania nic nie daje.
+
+Widok `quotes_pending` pokazuje, co czeka na odpowiedz, razem z liczba pozycji i plikow.
+
+**Czego jeszcze nie ma:** interfejsu do wpisywania kwot. Na razie robi sie to zapytaniem HTTP z tokenem administratora.
+
 ### Zapytania o wycene w bazie
 
 Zapytanie o wycene jest zobowiazaniem tak samo jak zamowienie i musi dac sie odtworzyc po roku. Tabela `leads` (`scripts/leads-schema.sql`) trzyma teraz:

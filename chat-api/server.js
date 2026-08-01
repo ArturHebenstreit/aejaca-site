@@ -9,6 +9,7 @@ import { rateLimit } from "express-rate-limit";
 import { getSystemPrompt, detectHotLead } from "./context.js";
 import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages } from "./gmail.js";
 import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken } from "./orders.js";
+import { createQuote, priceQuote, getQuoteByRef, convertQuoteToOrder, QuoteError } from "./quotes.js";
 import {
   autopayConfigured, buildStartTransaction, formatValidityTime,
   verifyReturn, parseITN, buildITNConfirmation, fetchGatewayList,
@@ -800,6 +801,129 @@ app.post("/api/price", (req, res, next) => {
     }
     console.error("[price] unexpected:", e);
     res.status(500).json({ error: "Wycena chwilowo niedostepna" });
+  }
+});
+
+// ============================================================
+// WYCENY INDYWIDUALNE
+// ============================================================
+// Sciezka dla tego, czego nie umiemy wycenic automatem: kamienie, sploty,
+// projekty CAD, dlugie grawery. Klient zostawia komplet danych, czlowiek
+// wpisuje kwote, a wycena zamienia sie w zwykle zamowienie do zaplaty.
+//
+// Tresc i pliki zapisujemy strukturalnie, a nie tylko w mailu, bo po pol
+// roku mail nie wystarczy do ustalenia, co obiecalismy.
+
+/** Wpisywanie kwot i konwersja to czynnosci wlascicielskie, nie klienckie */
+function requireAdmin(req, res) {
+  const token = req.headers["x-admin-token"];
+  if (!token || token !== process.env.ADMIN_API_TOKEN) {
+    res.status(401).json({ error: "Unauthorized" });
+    return false;
+  }
+  return true;
+}
+
+app.post("/api/quotes", express.json({ limit: "1mb" }), async (req, res) => {
+  const ip = extractIP(req);
+  if (!checkQuoteRate(ip)) return res.status(429).json({ error: "Za duzo zapytan, sprobuj za chwile" });
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const { email, name, phone, lang, source, message, items } = req.body || {};
+  if (!email || !CONTACT_EMAIL_RE.test(String(email))) return res.status(400).json({ error: "Nieprawidlowy adres e-mail" });
+  if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: "Zapytanie bez pozycji" });
+  if (items.length > 20) return res.status(400).json({ error: "Za duzo pozycji w jednym zapytaniu" });
+
+  try {
+    const created = await createQuote(pool, {
+      email, name, phone, lang, source: source || "configurator",
+      message: String(message || "").slice(0, 8000),
+      items: items.slice(0, 20),
+      ipHash: createHash("sha256").update(ip).digest("hex").slice(0, 30),
+    });
+    console.log(`[wycena] przyjeto ${created.quoteRef} od ${String(email).toLowerCase()}`);
+    res.json({ ok: true, quoteRef: created.quoteRef });
+  } catch (e) {
+    if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
+    console.error("[wycena] zapis nie powiodl sie:", e.message);
+    res.status(500).json({ error: "Nie udalo sie przyjac zapytania" });
+  }
+});
+
+/** Podglad wyceny dla klienta. Bez logowania, wiec adres musi znac token. */
+app.get("/api/quotes/:ref", async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  const quote = await getQuoteByRef(pool, req.params.ref);
+  if (!quote || !quote.access_token || quote.access_token !== req.query.token) {
+    return res.status(404).json({ error: "Nie ma takiej wyceny" });
+  }
+  res.json({
+    ok: true,
+    quoteRef: quote.quote_ref,
+    status: quote.status,
+    lang: quote.lang,
+    totalGrosze: quote.total_grosze,
+    priceNote: quote.price_note,
+    validUntil: quote.valid_until,
+    items: quote.items.map((i) => ({
+      id: i.id, title: i.title, qty: i.qty,
+      unitGrosze: i.unit_grosze, lineGrosze: i.line_grosze,
+      description: i.description, fileName: i.file_name,
+    })),
+  });
+});
+
+/** Wpisanie kwot: dopiero to czyni z zapytania oferte */
+app.post("/api/quotes/:ref/price", express.json({ limit: "64kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  try {
+    const result = await priceQuote(pool, req.params.ref, req.body?.lines, req.body?.note ?? null, req.body?.validDays);
+    console.log(`[wycena] ${result.quoteRef} wyceniona na ${(result.totalGrosze / 100).toFixed(2)} PLN`);
+    res.json({ ok: true, ...result });
+  } catch (e) {
+    if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
+    console.error("[wycena] wycenianie nie powiodlo sie:", e.message);
+    res.status(500).json({ error: "Nie udalo sie zapisac kwot" });
+  }
+});
+
+/** Zamiana wyceny w zamowienie do zaplaty, z limitem kwartalnym jak w sklepie */
+app.post("/api/quotes/:ref/convert", express.json({ limit: "16kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  try {
+    const quote = await getQuoteByRef(pool, req.params.ref);
+    if (!quote) return res.status(404).json({ error: "Nie ma takiej wyceny" });
+    if (!quote.total_grosze) return res.status(400).json({ error: "Najpierw wpisz kwoty", code: "not_priced" });
+
+    const shipping = Number.isInteger(req.body?.delivery?.shippingGrosze) ? req.body.delivery.shippingGrosze : 0;
+    const limit = await checkQuarterlyLimit(pool, quote.total_grosze + shipping);
+    if (!limit.ok) {
+      return res.status(409).json({
+        error: "Ta kwota nie zmiesci sie w limicie kwartalnym",
+        code: "quarterly_limit",
+        remainingPLN: Math.round(limit.remainingGrosze / 100),
+      });
+    }
+
+    const order = await convertQuoteToOrder(pool, req.params.ref, {
+      orderRef: generateOrderRef(),
+      delivery: req.body?.delivery || {},
+    });
+    console.log(`[wycena] ${req.params.ref} stala sie zamowieniem ${order.orderRef}`);
+    res.json({
+      ok: true,
+      orderRef: order.orderRef,
+      totalGrosze: order.totalGrosze,
+      // Adres do wyslania klientowi. Dalej idzie ta sama sciezka co w sklepie.
+      payUrl: `${SITE_URL}/order/status/?ref=${order.orderRef}&token=${order.accessToken}`,
+    });
+  } catch (e) {
+    if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
+    console.error("[wycena] konwersja nie powiodla sie:", e.message);
+    res.status(500).json({ error: "Nie udalo sie utworzyc zamowienia" });
   }
 });
 
