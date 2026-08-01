@@ -23,6 +23,9 @@ const UI = {
     lead: "Kup gotowe wyroby albo zamów usługę z wyceną w kilka minut. Płatność BLIK-iem lub szybkim przelewem.",
     products: "Produkty gotowe",
     productsLead: "Leżą u nas na półce albo czekają jako plik do pobrania. Płacisz i wysyłamy, bez konfigurowania.",
+    noProducts: "Chwilowo brak produktów gotowych",
+    noProductsBody: "Uzupełniamy asortyment. W tym czasie wszystko z listy usług poniżej zamówisz z wyceną od ręki.",
+    noProductsCta: "Zobacz usługi",
     services: "Usługi",
     servicesLead: "Konfigurujesz na karcie usługi, cena wiążąca pojawia się od razu, a przedmiot powstaje pod Twoje zamówienie.",
     inStock: "Dostępny",
@@ -46,6 +49,9 @@ const UI = {
     lead: "Buy ready-made pieces or order a service with a quote in minutes. Pay by BLIK or instant transfer.",
     products: "Ready-made products",
     productsLead: "On our shelf or ready as a download. You pay, we ship, nothing to configure.",
+    noProducts: "No ready-made products at the moment",
+    noProductsBody: "We are building the range. In the meantime everything in the services below is quoted and ordered on the spot.",
+    noProductsCta: "See the services",
     services: "Services",
     servicesLead: "You configure it on the service card, the binding price appears at once, and the piece is made for your order.",
     inStock: "In stock",
@@ -69,6 +75,9 @@ const UI = {
     lead: "Fertige Stücke kaufen oder eine Leistung mit Angebot in wenigen Minuten bestellen. Zahlung per BLIK oder Sofortüberweisung.",
     products: "Fertige Produkte",
     productsLead: "Liegen bei uns im Regal oder stehen als Datei bereit. Sie zahlen, wir versenden, nichts zu konfigurieren.",
+    noProducts: "Derzeit keine fertigen Produkte",
+    noProductsBody: "Wir bauen das Sortiment auf. Bis dahin wird alles aus den Leistungen unten sofort kalkuliert und bestellt.",
+    noProductsCta: "Leistungen ansehen",
     services: "Leistungen",
     servicesLead: "Sie konfigurieren auf der Leistungskarte, der verbindliche Preis erscheint sofort, und das Stück entsteht für Ihre Bestellung.",
     inStock: "Verfügbar",
@@ -304,7 +313,31 @@ export default function Shop() {
             </div>
           )}
 
-          {/* Produkty gotowe */}
+          {/* Produkty gotowe. Sekcja zostaje takze wtedy, gdy nic nie mamy:
+              milczenie wygladaloby jak brak dzialu, a nie jak stan przejsciowy. */}
+          {products.length === 0 && (
+            <section className="mb-16">
+              <SectionHead
+                icon={Package}
+                title={u.products}
+                lead={u.productsLead}
+                count={0}
+                tone="emerald"
+              />
+              <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-10 text-center">
+                <Package className="w-7 h-7 text-neutral-700 mx-auto mb-3" />
+                <h3 className="text-white font-medium text-sm mb-1.5">{u.noProducts}</h3>
+                <p className="text-neutral-500 text-xs leading-relaxed max-w-md mx-auto mb-4">{u.noProductsBody}</p>
+                <a
+                  href="#uslugi"
+                  className="inline-flex items-center gap-1.5 text-neutral-300 hover:text-white text-xs transition-colors"
+                >
+                  {u.noProductsCta} <ArrowRight className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            </section>
+          )}
+
           {products.length > 0 && (
             <section className="mb-16">
               <SectionHead
@@ -324,7 +357,7 @@ export default function Shop() {
 
           {/* Uslugi */}
           {services.length > 0 && (
-            <section>
+            <section id="uslugi" className="scroll-mt-24">
               <SectionHead
                 icon={Wrench}
                 title={u.services}

@@ -638,6 +638,12 @@ STL i OBJ nie zapisują jednostki, więc czytamy je jako milimetry. `assertPlaus
 
 Wgrany model pokazujemy jako **obracający się podgląd 3D** (`STLViewer.jsx`, three.js ładowany leniwie). Po chwili obrotu komponent robi zrzut ujęcia trzy czwarte w WEBP, zrzut trafia do kolumny `uploads.thumbnail` i staje się miniaturą pozycji w koszyku oraz linkiem podglądu w mailu warsztatowym. Klient widzi własny model zamiast ikony usługi, a warsztat wie, co ma zrobić, bez otwierania Dysku.
 
+### Produkty gotowe: chwilowo brak
+
+Trzy wpisy w `shopCatalog.js` byly przykladami przygotowanymi pod przyszly asortyment. Leza teraz w `PRODUCTS_DRAFT` i **nie sa wystawione**: sklep pokazuje w ich miejsce kafelek "Chwilowo brak produktow gotowych" z odsylaczem do uslug. Zeby wystawic pozycje, wystarczy ustawic przy niej `draft: false`.
+
+Sekcja produktow zostaje widoczna takze wtedy, gdy jest pusta. Milczenie czytaloby sie jak brak dzialu, a nie jak stan przejsciowy.
+
 ### Co musi byc podane, zeby pozycja trafila do koszyka
 
 Cena policzona co do grosza nie znaczy jeszcze, ze wiadomo, co wykonac. Pozycja w koszyku ma byc gotowa do kupienia, a nie do dopytywania mailem, wiec przycisk zakupu jest nieaktywny do czasu uzupelnienia:

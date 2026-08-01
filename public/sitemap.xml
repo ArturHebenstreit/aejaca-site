@@ -852,36 +852,6 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/studio/" />
   </url>
 
-  <!-- Product: pierscionek-granat-zloto-585 -->
-  <url>
-    <loc>https://www.aejaca.com/shop/pierscionek-granat-zloto-585/</loc>
-    <lastmod>2026-07-31</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.70</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/pierscionek-granat-zloto-585/" />
-  </url>
-
-  <!-- Product: wizytowka-stalowa-nfc -->
-  <url>
-    <loc>https://www.aejaca.com/shop/wizytowka-stalowa-nfc/</loc>
-    <lastmod>2026-07-31</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.70</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/wizytowka-stalowa-nfc/" />
-  </url>
-
-  <!-- Product: model-stl-gekon-geometryczny -->
-  <url>
-    <loc>https://www.aejaca.com/shop/model-stl-gekon-geometryczny/</loc>
-    <lastmod>2026-07-31</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.70</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/model-stl-gekon-geometryczny/" />
-  </url>
-
   <!-- Service: print_fdm -->
   <url>
     <loc>https://www.aejaca.com/shop/service/print_fdm/</loc>
