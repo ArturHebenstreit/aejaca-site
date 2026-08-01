@@ -494,7 +494,6 @@ export const SERVICES_FULL = [
   },
   {
     id: "cad_project",
-    calcHref: "/b2b/",
     quoteOnly: true,
     category: "studio",
     image: "/img/shop/service/cad_project.webp",
