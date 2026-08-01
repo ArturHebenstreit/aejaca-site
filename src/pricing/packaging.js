@@ -51,7 +51,7 @@ export const PACKAGING = [
       de: "Dieselbe Schachtel mit Lasergravur auf dem Deckel: Name, Datum oder kurze Widmung.",
     },
     personalizationLabel: {
-      pl: "Treść grawera na wieku",
+      pl: "Treść graweru na wieku",
       en: "Engraving text on the lid",
       de: "Gravurtext auf dem Deckel",
     },
@@ -65,7 +65,7 @@ export const PACKAGING = [
 ];
 
 /**
- * Limity dlugosci grawera. Powyzej nich nie odmawiamy, tylko kierujemy do
+ * Limity dlugosci graweru. Powyzej nich nie odmawiamy, tylko kierujemy do
  * wyceny indywidualnej: dluzszy tekst to inne ustawienia lasera, inny czas
  * i czesto inna kompozycja, wiec kwota z automatu przestaje byc uczciwa.
  */
@@ -95,7 +95,7 @@ export function packagingGrosze(id) {
 
 /**
  * Walidacja tekstu personalizacji. Zwraca przyciety tekst albo null.
- * Znaki spoza zakresu grawera odrzucamy tutaj, a nie dopiero przy realizacji,
+ * Znaki spoza zakresu graweru odrzucamy tutaj, a nie dopiero przy realizacji,
  * zeby klient dowiedzial sie o tym przed zaplata.
  */
 export function sanitizePersonalization(text, maxLength = 120) {

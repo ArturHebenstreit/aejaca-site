@@ -46,11 +46,11 @@ const UI = {
     addImage: "Dołącz zdjęcie lub szkic (opcjonalnie)",
     missingDescription: "Uzupełnij opis, żeby dodać do koszyka",
     missingArtwork: "Wgraj projekt, żeby dodać do koszyka",
-    engravingLabel: "Treść grawera",
+    engravingLabel: "Treść graweru",
     engravingPlaceholder: "np. A + M, 12.06.2026",
     engravingOver: "Dłuższy grawer wyceniamy indywidualnie: to inne ustawienia lasera i inna kompozycja. Napisz do nas, odpowiemy w 24 godziny.",
     lidBack: "Treść po wewnętrznej stronie wieka (opcjonalnie)",
-    missingEngraving: "Wpisz treść grawera",
+    missingEngraving: "Wpisz treść graweru",
     toQuote: "Wyślij do wyceny",
     fileOptional: "Bez pliku wybierzesz rozmiar z listy poniżej",
     packaging: "Opakowanie",
@@ -174,6 +174,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const [engraving, setEngraving] = useState("");
   const [description, setDescription] = useState("");
   const [refImage, setRefImage] = useState(null);
+  // Grawer na wyrobie i grawer na pudelku to dwie rozne rzeczy, ktore klient
+  // moze zamowic naraz. Wspolny stan kasowal jedno przy wyborze drugiego.
+  const [packEngraving, setPackEngraving] = useState("");
   const [lidBackText, setLidBackText] = useState("");
   const [qty, setQty] = useState(1);
 
@@ -224,7 +227,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
     return () => clearTimeout(timer);
   }, [fetchPrice]);
 
-  useEffect(() => setAdded(false), [params, file, packagingId, engraving, qty]);
+  useEffect(() => setAdded(false), [params, file, packagingId, engraving, packEngraving, lidBackText, description, qty]);
 
   // Wysylka miniatury czeka na identyfikator uploadu i idzie dokladnie raz.
   useEffect(() => {
@@ -281,12 +284,12 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const jewelryOver = wantsEngraving && engraving.trim().length > ENGRAVING_LIMITS.jewelry;
   const jewelryEngravingOk = !wantsEngraving || (engraving.trim().length >= 1 && !jewelryOver);
 
-  // Grawer na wieku pudelka, ten sam mechanizm z wlasnym limitem.
+  // Grawer na wieku pudelka, wlasne pole i wlasny limit.
+  const packLimit = pack?.maxLength ?? ENGRAVING_LIMITS.packaging;
   const packOver = Boolean(pack?.personalizable) && (
-    engraving.trim().length > (pack.maxLength ?? ENGRAVING_LIMITS.packaging)
-    || lidBackText.trim().length > (pack.maxLength ?? ENGRAVING_LIMITS.packaging)
+    packEngraving.trim().length > packLimit || lidBackText.trim().length > packLimit
   );
-  const packEngravingOk = !pack?.personalizable || (engraving.trim().length >= 1 && !packOver);
+  const packEngravingOk = !pack?.personalizable || (packEngraving.trim().length >= 1 && !packOver);
 
   const overLimit = jewelryOver || packOver;
   const ready = descriptionOk && artworkOk && jewelryEngravingOk && packEngravingOk;
@@ -411,7 +414,8 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       packagingId,
       packagingGrosze: packGrosze,
       personalization: engraving.trim() || null,
-      personalizationBack: lidBackText.trim() || null,
+      packagingText: packEngraving.trim() || null,
+      packagingTextBack: lidBackText.trim() || null,
       withdrawal: "made_to_order",
       qty: effectiveQty,
     });
@@ -561,9 +565,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
         columns={3}
       />
 
-      {/* Grawer na wyrobie. Ten sam stan obsluguje grawer na pudelku, bo
-          klient nigdy nie wybiera obu naraz na jednej pozycji. */}
-      {wantsEngraving && !pack?.personalizable && (
+      {/* Grawer na wyrobie. Niezalezny od graweru na pudelku, bo jedno
+          zamowienie moze miec oba. */}
+      {wantsEngraving && (
         <PersonalizationField
           label={u.engravingLabel}
           value={engraving}
@@ -580,9 +584,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
         <>
           <PersonalizationField
             label={t(pack.personalizationLabel, lang)}
-            value={engraving}
-            onChange={setEngraving}
-            maxLength={pack.maxLength || ENGRAVING_LIMITS.packaging}
+            value={packEngraving}
+            onChange={setPackEngraving}
+            maxLength={packLimit}
             placeholder={u.engravingPlaceholder}
             hint={u.engravingHint}
             overLimitNote={u.engravingOver}
@@ -592,7 +596,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
             label={t(pack.secondaryLabel, lang) || u.lidBack}
             value={lidBackText}
             onChange={setLidBackText}
-            maxLength={pack.maxLength || ENGRAVING_LIMITS.packaging}
+            maxLength={packLimit}
             overLimitNote={u.engravingOver}
             accent={accent}
           />

@@ -19,7 +19,7 @@ const LABELS = {
     breadTools: "Narzędzia jubilerskie",
     breadThis: "Skład stopów",
     footerCtaTitle: "Chcesz zamówić biżuterię ze stopu na zamówienie?",
-    footerCtaText: "Dobieramy metal i stop do projektu — od srebra 925 po platynę 950.",
+    footerCtaText: "Dobieramy metal i stop do projektu: od srebra 800 i 925 po złoto 750.",
     footerCtaBtn: "Napisz do nas",
   },
   en: {
@@ -33,7 +33,7 @@ const LABELS = {
     breadTools: "Jewelry Tools",
     breadThis: "Alloy Composition",
     footerCtaTitle: "Want to order custom alloy jewelry?",
-    footerCtaText: "We select the metal and alloy for your project — from sterling silver to platinum 950.",
+    footerCtaText: "We select the metal and alloy for your project: from 800 and 925 silver to 750 gold.",
     footerCtaBtn: "Contact us",
   },
   de: {
@@ -47,7 +47,7 @@ const LABELS = {
     breadTools: "Schmuck-Tools",
     breadThis: "Legierungszusammensetzung",
     footerCtaTitle: "Schmuck aus einer bestimmten Legierung bestellen?",
-    footerCtaText: "Wir wählen Metall und Legierung für Ihr Projekt — von Sterlingsilber bis Platin 950.",
+    footerCtaText: "Wir wählen Metall und Legierung für Ihr Projekt: von 800er und 925er Silber bis 750er Gold.",
     footerCtaBtn: "Kontakt",
   },
 };
