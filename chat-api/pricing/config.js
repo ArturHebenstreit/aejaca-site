@@ -32,10 +32,25 @@ export const QUANTITY_TIERS = [
   { id: "custom", label: { pl: "100+ / niestandardowe", en: "100+ / custom", de: "100+ / individuell" }, qty: null, discount: null, custom: true, min: 100, max: 999 },
 ];
 
-/** Granice licznika sztuk dla wybranego progu nakladu */
+/**
+ * Granice licznika sztuk dla wybranego progu.
+ *
+ * Bizuteria ma wlasne progi (1, 2-5, 6-10, 10+) o innych identyfikatorach,
+ * wiec czytamy je z etykiety. Bez tego kreator pokazywalby prog "2-5 szt."
+ * obok licznika ustawionego na 1 i klient nie wiedzialby, co obowiazuje.
+ */
 export function quantityBounds(quantityId) {
   const tier = QUANTITY_TIERS.find((q) => q.id === quantityId);
-  return { min: tier?.min ?? 1, max: tier?.max ?? 999 };
+  if (tier) return { min: tier.min ?? 1, max: tier.max ?? 999 };
+
+  // Progi jubilerskie: "1", "2-5", "6-10", "10+"
+  const id = String(quantityId ?? "");
+  const range = /^(\d+)-(\d+)$/.exec(id);
+  if (range) return { min: Number(range[1]), max: Number(range[2]) };
+  if (/^\d+\+$/.test(id)) return { min: parseInt(id, 10), max: 999 };
+  if (/^\d+$/.test(id)) return { min: Number(id), max: Number(id) };
+
+  return { min: 1, max: 999 };
 }
 
 /** Lookup helper for multilingual labels */

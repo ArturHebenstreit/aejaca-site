@@ -55,13 +55,30 @@ export const PACKAGING = [
       de: "Dieselbe Schachtel mit Lasergravur auf dem Deckel: Name, Datum oder kurze Widmung.",
     },
     personalizationLabel: {
-      pl: "Treść grawera na pudełku",
-      en: "Engraving text on the box",
-      de: "Gravurtext auf der Schachtel",
+      pl: "Treść grawera na wieku",
+      en: "Engraving text on the lid",
+      de: "Gravurtext auf dem Deckel",
+    },
+    secondaryLabel: {
+      pl: "Treść po wewnętrznej stronie wieka (opcjonalnie)",
+      en: "Text on the inside of the lid (optional)",
+      de: "Text auf der Deckelinnenseite (optional)",
     },
     maxLength: 60,
   },
 ];
+
+/**
+ * Limity dlugosci grawera. Powyzej nich nie odmawiamy, tylko kierujemy do
+ * wyceny indywidualnej: dluzszy tekst to inne ustawienia lasera, inny czas
+ * i czesto inna kompozycja, wiec kwota z automatu przestaje byc uczciwa.
+ */
+export const ENGRAVING_LIMITS = {
+  /** Grawer na wyrobie: inicjaly, data, krotka dedykacja */
+  jewelry: 30,
+  /** Wieko pudelka, jest na nim wiecej miejsca */
+  packaging: 60,
+};
 
 /** Opakowanie ma sens wylacznie dla rzeczy fizycznych */
 export const DEFAULT_PACKAGING = "paper";

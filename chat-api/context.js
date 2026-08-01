@@ -662,6 +662,8 @@ WAZNE dla rozmowy z klientem:
 - Dla druku 3D klient moze wgrac plik STL, OBJ, 3MF lub STEP, widzi obracajacy sie podglad modelu, a cena liczy sie automatycznie z objetosci. STEP jest tesselowany jadrem OpenCascade, wiec zwymiarowany plik CAD wycenia sie tak samo szybko jak siatka
 - Kazdy kalkulator konczy sie kwota wiazaca i przyciskiem "Dodaj do koszyka", wiec klient kupuje bez przechodzenia do sklepu. Widelki nad przyciskiem to szacunek, kwota pod nimi to oferta wiazaca na 7 dni
 - Wyjatki, ktore nadal ida do wyceny recznej: wgrany plik SVG w laserach (liczy sie realna dlugosc sciezki), a w bizuterii kamienie, sploty lancuszkow i metal powierzony przez klienta
+- Grawer ma limity dlugosci: 30 znakow na wyrobie, 60 znakow na wieku pudelka drewnianego. Powyzej limitu klient nie kupuje z automatu, tylko idzie do wyceny indywidualnej, bo dluzszy tekst to inne ustawienia lasera i inna kompozycja
+- Bizuteria wymaga opisu zlecenia (min. 20 znakow) przed dodaniem do koszyka, opcjonalnie ze zdjeciem lub szkicem. Grawer CO2, ciecie CO2 i fiber wymagaja pliku projektu
 - Przy grawerze CO2, cieciu CO2 i znakowaniu fiber klient moze dolaczyc projekt (SVG, DXF, PDF) jako zalacznik do zlecenia. Zalacznik NIE zmienia ceny, cene wyznacza wybrane pole lub dlugosc sciezki. Rysunek trafia na Dysk i do maila warsztatowego
   i wymiarow modelu. Pliki STEP nie sa jeszcze obslugiwane w wycenie automatycznej.
 - Platnosc: BLIK albo szybki przelew online, przez Autopay, wylacznie w PLN.

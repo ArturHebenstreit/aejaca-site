@@ -169,27 +169,36 @@ export function FileDrop({ label, hint, file, geometry, onPick, onClear, busy, a
 }
 
 /** Pole personalizacji z licznikiem znakow */
-export function PersonalizationField({ label, value, onChange, maxLength = 60, placeholder, hint, accent = "blue" }) {
+export function PersonalizationField({ label, value, onChange, maxLength = 60, placeholder, hint, accent = "blue", overLimitNote }) {
+  // Tekstu nie ucinamy w polu. Klient ma zobaczyc, ze przekroczyl limit,
+  // i dowiedziec sie, ze dluzszy grawer idzie do wyceny, zamiast po cichu
+  // stracic polowe dedykacji.
+  const over = value.length > maxLength;
+
   return (
     <div className="mb-4">
       <div className="flex items-baseline justify-between mb-1.5">
         <span className="text-[11px] uppercase tracking-wide text-neutral-500">{label}</span>
-        <span className={`text-[10px] ${value.length > maxLength * 0.9 ? "text-amber-400" : "text-neutral-600"}`}>
+        <span className={`text-[10px] ${over ? "text-amber-400 font-medium" : value.length > maxLength * 0.9 ? "text-amber-400/70" : "text-neutral-600"}`}>
           {value.length} / {maxLength}
         </span>
       </div>
       <input
         type="text"
         value={value}
-        maxLength={maxLength}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/10 text-white text-sm
+        className={`w-full px-3 py-2.5 rounded-lg bg-white/[0.03] border text-white text-sm
                     placeholder:text-neutral-600 focus:outline-none transition-colors ${
-                      accent === "amber" ? "focus:border-amber-400/50" : "focus:border-blue-400/50"
+                      over
+                        ? "border-amber-400/50"
+                        : accent === "amber"
+                          ? "border-white/10 focus:border-amber-400/50"
+                          : "border-white/10 focus:border-blue-400/50"
                     }`}
       />
-      {hint && <p className="text-neutral-600 text-[11px] mt-1">{hint}</p>}
+      {over && overLimitNote && <p className="text-amber-400/80 text-[11px] mt-1 leading-relaxed">{overLimitNote}</p>}
+      {!over && hint && <p className="text-neutral-600 text-[11px] mt-1">{hint}</p>}
     </div>
   );
 }

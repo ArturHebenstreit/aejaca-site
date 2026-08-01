@@ -17,6 +17,8 @@ import { useCart } from "../../cart/CartContext.jsx";
 import { getServiceCard } from "../../data/serviceCatalog.js";
 import { JobDescription, FileDrop } from "../shop/ConfigControls.jsx";
 import { getService } from "../../data/orderCatalog.js";
+import { ENGRAVING_LIMITS } from "../../pricing/packaging.js";
+import { PersonalizationField } from "../shop/ConfigControls.jsx";
 import { t } from "../../pricing/config.js";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
@@ -51,6 +53,11 @@ const UI = {
     artworkWhy: "Bez projektu nie wiemy, co wygrawerować ani wyciąć. Rozmiar pola wybrałeś wyżej, on decyduje o cenie.",
     missingDescription: "Uzupełnij opis, żeby dodać do koszyka",
     missingArtwork: "Wgraj projekt, żeby dodać do koszyka",
+    engravingLabel: "Treść grawera",
+    engravingPlaceholder: "np. A + M, 12.06.2026",
+    engravingHint: "Grawer wykonujemy dokładnie tak, jak wpiszesz. Sprawdź pisownię.",
+    engravingOver: "Dłuższy grawer wyceniamy indywidualnie: to inne ustawienia lasera i inna kompozycja. Napisz do nas, odpowiemy w 24 godziny.",
+    missingEngraving: "Wpisz treść grawera",
     svgBlocked: "Wgrany plik wektorowy wyceniamy ręcznie, bo liczy się realna długość ścieżki. Usuń plik, żeby kupić po polu z listy, albo wyślij do wyceny.",
     manualBlocked: "Tę konfigurację wycenia człowiek: kamienie, sploty łańcuszków i metal powierzony przez klienta zależą od rzeczy, których nie widać w parametrach. Odpowiadamy w 24 godziny.",
   },
@@ -75,6 +82,11 @@ const UI = {
     artworkWhy: "Without the artwork we do not know what to engrave or cut. You picked the area above, and that is what sets the price.",
     missingDescription: "Add a description to put this in the cart",
     missingArtwork: "Upload the artwork to put this in the cart",
+    engravingLabel: "Engraving text",
+    engravingPlaceholder: "e.g. A + M, 12.06.2026",
+    engravingHint: "We engrave exactly what you type. Please check the spelling.",
+    engravingOver: "A longer engraving is quoted individually: different laser settings and a different layout. Write to us, we reply within 24 hours.",
+    missingEngraving: "Enter the engraving text",
     svgBlocked: "An uploaded vector file is quoted by hand, because the real path length decides the price. Remove the file to buy by the listed area, or request a quote.",
     manualBlocked: "This configuration is quoted by a person: stones, chain weaves and customer-supplied metal depend on things the parameters do not capture. We reply within 24 hours.",
   },
@@ -99,6 +111,11 @@ const UI = {
     artworkWhy: "Ohne Vorlage wissen wir nicht, was graviert oder geschnitten werden soll. Die Fläche haben Sie oben gewählt, sie bestimmt den Preis.",
     missingDescription: "Beschreibung ergänzen, um in den Warenkorb zu legen",
     missingArtwork: "Vorlage hochladen, um in den Warenkorb zu legen",
+    engravingLabel: "Gravurtext",
+    engravingPlaceholder: "z. B. A + M, 12.06.2026",
+    engravingHint: "Wir gravieren genau das, was Sie eingeben. Bitte Schreibweise prüfen.",
+    engravingOver: "Eine längere Gravur kalkulieren wir individuell: andere Lasereinstellungen, andere Komposition. Schreiben Sie uns, wir antworten binnen 24 Stunden.",
+    missingEngraving: "Gravurtext eingeben",
     svgBlocked: "Eine hochgeladene Vektordatei kalkulieren wir manuell, denn die tatsächliche Pfadlänge entscheidet. Entfernen Sie die Datei, um nach gelisteter Fläche zu kaufen, oder fordern Sie ein Angebot an.",
     manualBlocked: "Diese Konfiguration kalkuliert ein Mensch: Steine, Kettengeflechte und beigestelltes Metall hängen von Dingen ab, die in den Parametern nicht stehen. Wir antworten binnen 24 Stunden.",
   },
@@ -135,6 +152,7 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
   const [added, setAdded] = useState(false);
 
   const [description, setDescription] = useState("");
+  const [engraving, setEngraving] = useState("");
   const [refImage, setRefImage] = useState(null);
   const [artworkFile, setArtworkFile] = useState(null);
   const [artworkToken, setArtworkToken] = useState(null);
@@ -251,7 +269,14 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
   // Pozycja ma trafic do koszyka gotowa do kupienia, a nie do dopytania mailem.
   const descriptionOk = !requiresDescription || description.trim().length >= MIN_DESCRIPTION;
   const artworkOk = !requiresArtwork || Boolean(artworkFile);
-  const ready = descriptionOk && artworkOk;
+
+  // Grawer wybrany w kalkulatorze musi miec tresc, a zbyt dlugi tekst to juz
+  // inna robota niz ta, ktora wlasnie wyceniono.
+  const wantsEngraving = Boolean(params?.engravingId && params.engravingId !== "none");
+  const engravingOver = wantsEngraving && engraving.trim().length > ENGRAVING_LIMITS.jewelry;
+  const engravingOk = !wantsEngraving || (engraving.trim().length >= 1 && !engravingOver);
+
+  const ready = descriptionOk && artworkOk && engravingOk;
 
   const qty = price?.qty || 1;
   const lineGrosze = (price?.unitGrosze || 0) * qty;
@@ -271,6 +296,7 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
       fileRetained: Boolean(uploadToken),
       unitGrosze: price.unitGrosze,
       description: description.trim() || null,
+      personalization: engraving.trim() || null,
       attachmentToken: artworkToken,
       attachmentName: artworkFile?.name || refImage?.name || null,
       packagingId: "paper",
@@ -366,6 +392,19 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
             />
           )}
 
+          {wantsEngraving && (
+            <PersonalizationField
+              label={u.engravingLabel}
+              value={engraving}
+              onChange={setEngraving}
+              maxLength={ENGRAVING_LIMITS.jewelry}
+              placeholder={u.engravingPlaceholder}
+              hint={u.engravingHint}
+              overLimitNote={u.engravingOver}
+              accent={accent}
+            />
+          )}
+
           {requiresArtwork && (
             <FileDrop
               label={u.artworkLabel}
@@ -385,10 +424,20 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
             />
           )}
 
-          {!ready && (
+          {!ready && !engravingOver && (
             <p className="text-amber-400/80 text-[11px] mb-3 leading-relaxed">
-              {requiresDescription && !descriptionOk ? u.describeWhy : u.artworkWhy}
+              {requiresDescription && !descriptionOk ? u.describeWhy : !artworkOk ? u.artworkWhy : u.missingEngraving}
             </p>
+          )}
+
+          {engravingOver && (
+            <Link
+              to="/contact/"
+              className="mb-3 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm
+                         border border-amber-400/40 bg-amber-400/10 text-amber-300 hover:bg-amber-400/20 transition-colors"
+            >
+              {u.contact} <ArrowRight className="w-4 h-4" />
+            </Link>
           )}
 
           <button
@@ -400,7 +449,7 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
             }`}
           >
             {added ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
-            {added ? u.added : !ready ? (requiresArtwork && !artworkOk ? u.missingArtwork : u.missingDescription) : u.addToCart}
+            {added ? u.added : !ready ? (requiresArtwork && !artworkOk ? u.missingArtwork : !descriptionOk ? u.missingDescription : u.missingEngraving) : u.addToCart}
           </button>
 
           {added && (

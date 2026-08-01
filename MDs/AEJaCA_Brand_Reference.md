@@ -638,6 +638,20 @@ Cena policzona co do grosza nie znaczy jeszcze, ze wiadomo, co wykonac. Pozycja 
 
 Wymogi sa zapisane raz, w `src/data/orderCatalog.js` (`requiresDescription`, `requiresVector`), i czyta je zarowno konfigurator w sklepie, jak i blok zakupowy w kalkulatorze. Opis trafia do `order_items.params.description` i do maila warsztatowego jako osobna linia.
 
+### Grawer: limity i moment przejscia na wycene
+
+| Gdzie | Limit | Powyzej limitu |
+|---|---|---|
+| grawer na wyrobie (bizuteria, laser) | **30 znakow** | przycisk zakupu ustepuje miejsca odnosnikowi do wyceny |
+| wieko pudelka drewnianego | **60 znakow** | jak wyzej |
+| wewnetrzna strona wieka | 60 znakow, pole nieobowiazkowe | jak wyzej |
+
+Limity leza w `src/pricing/packaging.js` (`ENGRAVING_LIMITS`) i obowiazuja identycznie w sklepie i w kalkulatorze.
+
+Tekstu **nie ucinamy w polu**. Klient widzi licznik przekroczony i zdanie wyjasniajace, ze dluzszy grawer to inne ustawienia lasera i inna kompozycja, wiec wycenia go czlowiek. Ciche skrocenie dedykacji o polowe byloby gorsze niz odmowa.
+
+Wybranie wariantu graweru bez wpisania tresci blokuje zakup: to zlecenie, ktorego nie da sie wykonac.
+
 ### Formaty plikow klienta
 
 | Format | Jak liczymy | Uwagi |

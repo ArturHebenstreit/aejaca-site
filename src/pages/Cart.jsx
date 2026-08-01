@@ -24,6 +24,7 @@ const UI = {
     qty: "szt.",
     packaging: "Opakowanie",
     engraving: "Grawer",
+    engravingBack: "Grawer, wewnętrzna strona wieka",
     file: "Plik",
     attachment: "Projekt",
     description: "Opis",
@@ -46,6 +47,7 @@ const UI = {
     qty: "pcs",
     packaging: "Packaging",
     engraving: "Engraving",
+    engravingBack: "Engraving, inside of the lid",
     file: "File",
     attachment: "Artwork",
     description: "Description",
@@ -68,6 +70,7 @@ const UI = {
     qty: "Stk.",
     packaging: "Verpackung",
     engraving: "Gravur",
+    engravingBack: "Gravur, Deckelinnenseite",
     file: "Datei",
     attachment: "Vorlage",
     description: "Beschreibung",
@@ -169,6 +172,7 @@ export default function Cart() {
                         <div className="text-neutral-500 text-[11px] mt-1.5 space-y-0.5">
                           {pack && <div>{u.packaging}: {t(pack.label, lang)}{pack.grosze ? ` (+${money(pack.grosze)})` : ""}</div>}
                           {i.personalization && <div>{u.engraving}: &bdquo;{i.personalization}&rdquo;</div>}
+                          {i.personalizationBack && <div>{u.engravingBack}: &bdquo;{i.personalizationBack}&rdquo;</div>}
                           {i.fileName && <div>{u.file}: {i.fileName}</div>}
                           {i.attachmentName && <div>{u.attachment}: {i.attachmentName}</div>}
                           {i.description && <div className="line-clamp-2">{u.description}: {i.description}</div>}

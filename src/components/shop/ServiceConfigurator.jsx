@@ -12,7 +12,7 @@ import { Link } from "react-router-dom";
 import { ShoppingCart, Check, Loader2, AlertTriangle, ArrowRight } from "lucide-react";
 import { useCart } from "../../cart/CartContext.jsx";
 import { getService } from "../../data/orderCatalog.js";
-import { PACKAGING, DEFAULT_PACKAGING, getPackaging } from "../../pricing/packaging.js";
+import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS } from "../../pricing/packaging.js";
 import { t, quantityBounds } from "../../pricing/config.js";
 import { TileGroup, StepSlider, QtyStepper, FileDrop, PersonalizationField, JobDescription } from "./ConfigControls.jsx";
 
@@ -46,6 +46,12 @@ const UI = {
     addImage: "Dołącz zdjęcie lub szkic (opcjonalnie)",
     missingDescription: "Uzupełnij opis, żeby dodać do koszyka",
     missingArtwork: "Wgraj projekt, żeby dodać do koszyka",
+    engravingLabel: "Treść grawera",
+    engravingPlaceholder: "np. A + M, 12.06.2026",
+    engravingOver: "Dłuższy grawer wyceniamy indywidualnie: to inne ustawienia lasera i inna kompozycja. Napisz do nas, odpowiemy w 24 godziny.",
+    lidBack: "Treść po wewnętrznej stronie wieka (opcjonalnie)",
+    missingEngraving: "Wpisz treść grawera",
+    toQuote: "Wyślij do wyceny",
     fileOptional: "Bez pliku wybierzesz rozmiar z listy poniżej",
     packaging: "Opakowanie",
     qty: "Liczba sztuk",
@@ -78,6 +84,12 @@ const UI = {
     addImage: "Attach a photo or sketch (optional)",
     missingDescription: "Add a description to put this in the cart",
     missingArtwork: "Upload the artwork to put this in the cart",
+    engravingLabel: "Engraving text",
+    engravingPlaceholder: "e.g. A + M, 12.06.2026",
+    engravingOver: "A longer engraving is quoted individually: different laser settings and a different layout. Write to us, we reply within 24 hours.",
+    lidBack: "Text on the inside of the lid (optional)",
+    missingEngraving: "Enter the engraving text",
+    toQuote: "Request a quote",
     fileOptional: "Without a file, pick a size from the list below",
     packaging: "Packaging",
     qty: "Quantity",
@@ -110,6 +122,12 @@ const UI = {
     addImage: "Foto oder Skizze anhängen (optional)",
     missingDescription: "Beschreibung ergänzen, um in den Warenkorb zu legen",
     missingArtwork: "Vorlage hochladen, um in den Warenkorb zu legen",
+    engravingLabel: "Gravurtext",
+    engravingPlaceholder: "z. B. A + M, 12.06.2026",
+    engravingOver: "Eine längere Gravur kalkulieren wir individuell: andere Lasereinstellungen, andere Komposition. Schreiben Sie uns, wir antworten binnen 24 Stunden.",
+    lidBack: "Text auf der Deckelinnenseite (optional)",
+    missingEngraving: "Gravurtext eingeben",
+    toQuote: "Angebot anfordern",
     fileOptional: "Ohne Datei wählen Sie unten eine Größe",
     packaging: "Verpackung",
     qty: "Stückzahl",
@@ -156,6 +174,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const [engraving, setEngraving] = useState("");
   const [description, setDescription] = useState("");
   const [refImage, setRefImage] = useState(null);
+  const [lidBackText, setLidBackText] = useState("");
   const [qty, setQty] = useState(1);
 
   const [price, setPrice] = useState(null);
@@ -240,15 +259,37 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
 
   // Prog nakladu wyznacza przedzial sztuk. Rabat progu jest juz wliczony
   // w cene jednostkowa, wiec licznik musi w tym przedziale zostac.
-  const hasTier = service.fields.some((f) => f.key === "quantityId");
-  const bounds = hasTier ? quantityBounds(params.quantityId) : { min: 1, max: 999 };
+  // Prog nakladu nazywa sie inaczej w bizuterii (qtyId) niz w studiu (quantityId).
+  const tierKey = service.fields.some((f) => f.key === "quantityId")
+    ? "quantityId"
+    : service.fields.some((f) => f.key === "qtyId") ? "qtyId" : null;
+  const bounds = tierKey ? quantityBounds(params[tierKey]) : { min: 1, max: 999 };
+  // Gdy prog wskazuje dokladnie jedna sztuke, osobny licznik jest zbedny
+  // i wyglada jak druga, sprzeczna kontrolka o tej samej nazwie.
+  const showQtyStepper = bounds.min !== bounds.max;
   const effectiveQty = Math.min(bounds.max, Math.max(bounds.min, qty));
   const lineTotal = unitTotal * effectiveQty;
 
   // Pozycja w koszyku ma byc gotowa do kupienia, a nie do dopytania mailem.
   const descriptionOk = !service.requiresDescription || description.trim().length >= 20;
   const artworkOk = !service.requiresVector || Boolean(vectorFile);
-  const ready = descriptionOk && artworkOk;
+
+  // Grawer na wyrobie. Wybrany wariant bez tresci to zlecenie, ktorego nie da
+  // sie wykonac, a tekst dluzszy niz limit to juz inna robota, wiec kierujemy
+  // go do wyceny zamiast obiecywac cene z automatu.
+  const wantsEngraving = Boolean(params.engravingId && params.engravingId !== "none");
+  const jewelryOver = wantsEngraving && engraving.trim().length > ENGRAVING_LIMITS.jewelry;
+  const jewelryEngravingOk = !wantsEngraving || (engraving.trim().length >= 1 && !jewelryOver);
+
+  // Grawer na wieku pudelka, ten sam mechanizm z wlasnym limitem.
+  const packOver = Boolean(pack?.personalizable) && (
+    engraving.trim().length > (pack.maxLength ?? ENGRAVING_LIMITS.packaging)
+    || lidBackText.trim().length > (pack.maxLength ?? ENGRAVING_LIMITS.packaging)
+  );
+  const packEngravingOk = !pack?.personalizable || (engraving.trim().length >= 1 && !packOver);
+
+  const overLimit = jewelryOver || packOver;
+  const ready = descriptionOk && artworkOk && jewelryEngravingOk && packEngravingOk;
 
   const setParam = (key, val) => setParams((p) => ({ ...p, [key]: val }));
 
@@ -369,7 +410,8 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       unitGrosze: price.unitGrosze,
       packagingId,
       packagingGrosze: packGrosze,
-      personalization: engraving || null,
+      personalization: engraving.trim() || null,
+      personalizationBack: lidBackText.trim() || null,
       withdrawal: "made_to_order",
       qty: effectiveQty,
     });
@@ -519,17 +561,45 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
         columns={3}
       />
 
-      {pack?.personalizable && (
+      {/* Grawer na wyrobie. Ten sam stan obsluguje grawer na pudelku, bo
+          klient nigdy nie wybiera obu naraz na jednej pozycji. */}
+      {wantsEngraving && !pack?.personalizable && (
         <PersonalizationField
-          label={t(pack.personalizationLabel, lang)}
+          label={u.engravingLabel}
           value={engraving}
           onChange={setEngraving}
-          maxLength={pack.maxLength || 60}
+          maxLength={ENGRAVING_LIMITS.jewelry}
+          placeholder={u.engravingPlaceholder}
           hint={u.engravingHint}
+          overLimitNote={u.engravingOver}
           accent={accent}
         />
       )}
 
+      {pack?.personalizable && (
+        <>
+          <PersonalizationField
+            label={t(pack.personalizationLabel, lang)}
+            value={engraving}
+            onChange={setEngraving}
+            maxLength={pack.maxLength || ENGRAVING_LIMITS.packaging}
+            placeholder={u.engravingPlaceholder}
+            hint={u.engravingHint}
+            overLimitNote={u.engravingOver}
+            accent={accent}
+          />
+          <PersonalizationField
+            label={t(pack.secondaryLabel, lang) || u.lidBack}
+            value={lidBackText}
+            onChange={setLidBackText}
+            maxLength={pack.maxLength || ENGRAVING_LIMITS.packaging}
+            overLimitNote={u.engravingOver}
+            accent={accent}
+          />
+        </>
+      )}
+
+      {showQtyStepper && (
       <QtyStepper
         label={bounds.min > 1 ? `${u.qty} (${u.tierRange} ${bounds.min}-${bounds.max})` : u.qty}
         value={effectiveQty}
@@ -538,6 +608,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
         max={bounds.max}
         accent={accent}
       />
+      )}
 
       {/* Cena */}
       <div className="border-t border-white/10 pt-5">
@@ -585,10 +656,20 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
             </div>
             <p className="text-neutral-600 text-[11px] mb-4">{u.priceNote}</p>
 
-            {!ready && (
+            {!ready && !overLimit && (
               <p className="text-amber-400/80 text-[11px] mb-3 leading-relaxed">
-                {!descriptionOk ? u.describeWhy : u.vectorNote}
+                {!descriptionOk ? u.describeWhy : !artworkOk ? u.vectorNote : u.missingEngraving}
               </p>
+            )}
+
+            {overLimit && (
+              <Link
+                to="/contact/"
+                className="mb-3 w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm
+                           border border-amber-400/40 bg-amber-400/10 text-amber-300 hover:bg-amber-400/20 transition-colors"
+              >
+                {u.toQuote} <ArrowRight className="w-4 h-4" />
+              </Link>
             )}
 
             <button
@@ -606,7 +687,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
               }`}
             >
               {added ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
-              {added ? u.added : !ready ? (!descriptionOk ? u.missingDescription : u.missingArtwork) : u.addToCart}
+              {added ? u.added : !ready ? (!descriptionOk ? u.missingDescription : !artworkOk ? u.missingArtwork : u.missingEngraving) : u.addToCart}
             </button>
 
             {added && (
