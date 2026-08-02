@@ -32,6 +32,7 @@ const STATIC_ROUTES = [
   "/order",
   "/order/status",
   "/admin/transfers",
+  "/admin/products",
   "/cart",
   "/checkout",
   "/shop",

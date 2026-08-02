@@ -17,6 +17,7 @@ export const PRODUCT_SEED = [
   {
     slug: "pierscionek-granat-zloto-585",
     category: "jewelry",
+    subcategory: "women",
     kind: "physical",
     offer: OFFER_KIND.READY,
     title: L(
@@ -54,6 +55,7 @@ export const PRODUCT_SEED = [
   {
     slug: "wizytowka-stalowa-nfc",
     category: "studio",
+    subcategory: "fiber",
     kind: "physical",
     offer: OFFER_KIND.READY,
     title: L(
@@ -86,6 +88,7 @@ export const PRODUCT_SEED = [
   {
     slug: "model-stl-gekon-geometryczny",
     category: "studio",
+    subcategory: "digital",
     kind: "digital",
     offer: OFFER_KIND.READY,
     title: L(

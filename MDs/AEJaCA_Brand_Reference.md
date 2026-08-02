@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-02 | Wersja: 1.9*
+*Wygenerowano: 2026-08-02 | Wersja: 2.0*
 
 ---
 
@@ -662,6 +662,38 @@ Sprawdzenie dostępności i założenie rezerwacji idą w jednej transakcji z `S
 Endpointy: `GET /api/products`, `GET /api/products/:slug` publicznie; `PUT /api/products/:slug`, `PATCH /api/products/:slug/stock` i `GET /api/admin/products` za nagłówkiem `X-Admin-Token`.
 
 Schemat: `scripts/products-schema.sql`, migracje wykonują się też przy starcie backendu.
+
+#### Podkategorie i ikony
+
+Dwa działy to za grube sito, więc każdy produkt ma podkategorię (`products.subcategory`). Ona rysuje ikonę na karcie, buduje filtr nad listą i dzieli listę na półki. Definicja w jednym miejscu: `src/data/shopFacets.js`, zgodna z ograniczeniem w bazie.
+
+| Dział | Podkategoria | Ikona | Dlaczego ta ikona |
+|---|---|---|---|
+| Biżuteria | Damska | Venus | przyjęty znak płci, czytelny bez podpisu |
+| Biżuteria | Męska | Mars | j.w. |
+| Biżuteria | Dla zwierząt | PawPrint | łapa, jedyny oczywisty znak w tym zestawie |
+| sTuDiO | Druk FDM | Layers | druk warstwa po warstwie |
+| sTuDiO | Druk żywiczny MSLA | Sun | utwardzanie światłem |
+| sTuDiO | Laser CO2 | Flame | wiązka wypala materiał |
+| sTuDiO | Laser fiber | Zap | impuls znakujący metal |
+| sTuDiO | Żywica | Droplets | materiał lany |
+| sTuDiO | Cyfrowy | Download | nic nie wysyłamy, plik idzie mailem |
+
+Usługi mają własny podział, bo pytanie brzmi tam inaczej: nie "dla kogo", tylko "czym to wykonujemy". Pięć wartości: **Druk 3D** (Layers), **Laser** (Zap, cała rodzina CO2 i fiber razem, bo maszynę do materiału dobieramy my), **Żywica** (Droplets), **Jubilerstwo** (Gem), **Projektowanie** (FileCode).
+
+#### Wyszukiwarka i filtry
+
+Nad wszystkimi trzema sekcjami stoi jedno pole wyszukiwania. Szuka po tytule, zajawce, opisie i adresie pozycji w aktywnym języku, wymaga wystąpienia wszystkich słów zapytania, i obejmuje produkty, personalizacje oraz usługi naraz. Klient szukający "grawer" nie wie z góry, czy odpowiedzią jest gotowa wizytówka, personalizacja czy usługa, więc nie powinien szukać trzy razy.
+
+Filtry stoją nad każdą listą osobno i pokazują wyłącznie wartości obecne w tej liście, razem z liczbą pozycji. Filtr prowadzący do pustej listy jest gorszy niż jego brak, bo wygląda jak awaria. Przy jednej wartości pasek znika.
+
+Bez wybranego filtru lista dzieli się na półki po podkategorii, z nagłówkiem i ikoną. Po wybraniu filtru grupowanie znika, bo klient sam już zawęził. Pozycje bez podkategorii trafiają do grupy "Pozostałe" i nigdy nie wypadają z listy.
+
+#### Panel produktów
+
+`/admin/products/`, ten sam token co panel przelewów, `noindex` i `Disallow: /admin/` w robots. Tabela obejmuje **wszystkie** pozycje, także zdjęte ze sprzedaży: miniatura, tytuł, dział z podkategorią i ikoną, rodzaj oferty, cena, stan, rezerwacje, dostępność, licznik sprzedanych i przełącznik widoczności. Do tego szukanie po nazwie i adresie oraz filtr "tylko ukryte".
+
+Od ręki robi się tu dwie rzeczy, bo są codzienne: korekta stanu (`PATCH /api/products/:slug/stock`) i zdjęcie pozycji ze sprzedaży (`PATCH /api/products/:slug/visibility`). Obie działają w sklepie natychmiast, bo karty pytają o dostępność na żywo. Zmiana treści, ceny albo zdjęć idzie przez `PUT /api/products/:slug` i wymaga jeszcze `npm run products:pull` oraz wdrożenia.
 
 #### Zdjęcia produktów
 

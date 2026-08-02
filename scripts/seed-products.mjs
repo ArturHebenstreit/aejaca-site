@@ -30,11 +30,12 @@ let inserted = 0;
 for (const p of PRODUCT_SEED) {
   const { rows } = await pool.query(
     `INSERT INTO products
-       (slug, kind, category, offer, active, title, short, description, specs, note,
+       (slug, kind, category, subcategory, offer, active, title, short, description, specs, note,
         images, price_grosze, weight_g, stock, lead_time_days, license)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
      ON CONFLICT (slug) DO UPDATE SET
-       kind = EXCLUDED.kind, category = EXCLUDED.category, offer = EXCLUDED.offer,
+       kind = EXCLUDED.kind, category = EXCLUDED.category, subcategory = EXCLUDED.subcategory,
+       offer = EXCLUDED.offer,
        title = EXCLUDED.title, short = EXCLUDED.short, description = EXCLUDED.description,
        specs = EXCLUDED.specs, note = EXCLUDED.note, images = EXCLUDED.images,
        price_grosze = EXCLUDED.price_grosze, weight_g = EXCLUDED.weight_g,
@@ -42,7 +43,7 @@ for (const p of PRODUCT_SEED) {
        updated_at = NOW()
      RETURNING slug, active`,
     [
-      p.slug, p.kind, p.category, p.offer, activate,
+      p.slug, p.kind, p.category, p.subcategory || null, p.offer, activate,
       JSON.stringify(p.title), JSON.stringify(p.short), JSON.stringify(p.description),
       JSON.stringify(p.specs || []), p.note ? JSON.stringify(p.note) : null,
       JSON.stringify(p.images || []),

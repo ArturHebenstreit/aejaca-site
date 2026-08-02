@@ -34,6 +34,7 @@ const Cart = lazy(() => import("./pages/Cart.jsx"));
 const Checkout = lazy(() => import("./pages/Checkout.jsx"));
 const OrderStatus = lazy(() => import("./pages/OrderStatus.jsx"));
 const AdminTransfers = lazy(() => import("./pages/AdminTransfers.jsx"));
+const AdminProducts = lazy(() => import("./pages/AdminProducts.jsx"));
 const Shipping = lazy(() => import("./pages/Shipping.jsx"));
 const ToolsJewelry = lazy(() => import("./pages/ToolsJewelry.jsx"));
 const ToolsStudio = lazy(() => import("./pages/ToolsStudio.jsx"));
@@ -91,6 +92,7 @@ const app = (
                 <Route path="/order/" element={<Order />} />
                 <Route path="/order/status/" element={<OrderStatus />} />
                 <Route path="/admin/transfers/" element={<AdminTransfers />} />
+                <Route path="/admin/products/" element={<AdminProducts />} />
                 <Route path="/shipping/" element={<Shipping />} />
                 <Route path="/toolsjewelry/" element={<ToolsJewelry />} />
                 <Route path="/toolsjewelry/alloy-composition/" element={<AlloyCompositionPage />} />

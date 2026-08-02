@@ -16,6 +16,9 @@
 -- Uzupelnienie katalogu
 -- ------------------------------------------------------------
 ALTER TABLE products ADD COLUMN IF NOT EXISTS category    VARCHAR(20);
+-- Podkategoria: to, po czym klient zawezi liste jednym kliknieciem, i to, co
+-- widzi na karcie jako ikone. Lista musi zgadzac sie z `src/data/shopFacets.js`.
+ALTER TABLE products ADD COLUMN IF NOT EXISTS subcategory VARCHAR(20);
 ALTER TABLE products ADD COLUMN IF NOT EXISTS offer       VARCHAR(20) NOT NULL DEFAULT 'ready';
 ALTER TABLE products ADD COLUMN IF NOT EXISTS short       JSONB;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS specs       JSONB;
@@ -34,6 +37,13 @@ DO $$ BEGIN
   ALTER TABLE products DROP CONSTRAINT IF EXISTS products_category_check;
   ALTER TABLE products ADD CONSTRAINT products_category_check
     CHECK (category IS NULL OR category IN ('jewelry','studio'));
+  -- Podkategoria musi pasowac do dzialu, inaczej w bizuterii pojawilby sie
+  -- filtr "Laser CO2", a w studiu "Damska".
+  ALTER TABLE products DROP CONSTRAINT IF EXISTS products_subcategory_check;
+  ALTER TABLE products ADD CONSTRAINT products_subcategory_check
+    CHECK (subcategory IS NULL
+      OR (category = 'jewelry' AND subcategory IN ('women','men','pet'))
+      OR (category = 'studio'  AND subcategory IN ('fdm','msla','co2','fiber','resin','digital')));
   ALTER TABLE products DROP CONSTRAINT IF EXISTS products_offer_check;
   ALTER TABLE products ADD CONSTRAINT products_offer_check
     CHECK (offer IN ('ready','personalized'));

@@ -110,6 +110,7 @@ if (pool) {
   // Katalog produktow: tresc, zdjecia i stan magazynowy zyja w bazie, a nie
   // w repozytorium, zeby zmiana stanu nie wymagala wdrozenia.
   pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS category VARCHAR(20)`).catch(() => {});
+  pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS subcategory VARCHAR(20)`).catch(() => {});
   pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS offer VARCHAR(20) NOT NULL DEFAULT 'ready'`).catch(() => {});
   pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS short JSONB`).catch(() => {});
   pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS specs JSONB`).catch(() => {});
@@ -123,6 +124,10 @@ if (pool) {
     DO $$ BEGIN
       ALTER TABLE products DROP CONSTRAINT IF EXISTS products_offer_check;
       ALTER TABLE products ADD CONSTRAINT products_offer_check CHECK (offer IN ('ready','personalized'));
+      ALTER TABLE products DROP CONSTRAINT IF EXISTS products_subcategory_check;
+      ALTER TABLE products ADD CONSTRAINT products_subcategory_check CHECK (subcategory IS NULL
+        OR (category = 'jewelry' AND subcategory IN ('women','men','pet'))
+        OR (category = 'studio'  AND subcategory IN ('fdm','msla','co2','fiber','resin','digital')));
       ALTER TABLE products DROP CONSTRAINT IF EXISTS products_category_check;
       ALTER TABLE products ADD CONSTRAINT products_category_check CHECK (category IS NULL OR category IN ('jewelry','studio'));
       ALTER TABLE products DROP CONSTRAINT IF EXISTS products_stock_check;
@@ -1761,6 +1766,14 @@ app.put("/api/products/:slug", express.json({ limit: "256kb" }), async (req, res
   // Zdjecia leza w repozytorium, wiec baza trzyma tylko sciezki. Pilnujemy ich
   // tutaj, zeby zla sciezka nie doszla do odcisku katalogu i nie zatrzymala
   // budowania strony dopiero przy wdrozeniu.
+  // Podkategoria musi pasowac do dzialu: to ona rysuje ikone na karcie
+  // i buduje filtr nad lista, wiec zla wartosc byloby widac od razu w sklepie.
+  const SUBCATEGORIES = { jewelry: ["women", "men", "pet"], studio: ["fdm", "msla", "co2", "fiber", "resin", "digital"] };
+  const subcategory = b.subcategory || null;
+  if (subcategory && !(SUBCATEGORIES[b.category] || []).includes(subcategory)) {
+    return res.status(400).json({ error: `Podkategoria ${subcategory} nie pasuje do dzialu ${b.category || "(brak)"}` });
+  }
+
   const images = Array.isArray(b.images) ? b.images.filter((s) => typeof s === "string") : [];
   if (images.length < 1 || images.length > 5) {
     return res.status(400).json({ error: "Produkt potrzebuje od 1 do 5 zdjec" });
@@ -1771,11 +1784,12 @@ app.put("/api/products/:slug", express.json({ limit: "256kb" }), async (req, res
 
   try {
     const { rows } = await pool.query(
-      `INSERT INTO products (slug, kind, category, offer, title, short, description, specs, note, images,
+      `INSERT INTO products (slug, kind, category, subcategory, offer, title, short, description, specs, note, images,
          price_grosze, weight_g, stock, lead_time_days, personalization, sort_order, active, license, notes)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
        ON CONFLICT (slug) DO UPDATE SET
-         kind = EXCLUDED.kind, category = EXCLUDED.category, offer = EXCLUDED.offer,
+         kind = EXCLUDED.kind, category = EXCLUDED.category, subcategory = EXCLUDED.subcategory,
+         offer = EXCLUDED.offer,
          title = EXCLUDED.title, short = EXCLUDED.short, description = EXCLUDED.description,
          specs = EXCLUDED.specs, note = EXCLUDED.note, images = EXCLUDED.images, price_grosze = EXCLUDED.price_grosze,
          weight_g = EXCLUDED.weight_g, stock = EXCLUDED.stock, lead_time_days = EXCLUDED.lead_time_days,
@@ -1783,7 +1797,8 @@ app.put("/api/products/:slug", express.json({ limit: "256kb" }), async (req, res
          active = EXCLUDED.active, license = EXCLUDED.license, notes = EXCLUDED.notes,
          updated_at = NOW()
        RETURNING id, slug`,
-      [slug, kind, b.category || null, b.offer === "personalized" ? "personalized" : "ready",
+      [slug, kind, b.category || null, subcategory,
+       b.offer === "personalized" ? "personalized" : "ready",
        JSON.stringify(b.title), b.short ? JSON.stringify(b.short) : null,
        b.description ? JSON.stringify(b.description) : null, b.specs ? JSON.stringify(b.specs) : null,
        b.note ? JSON.stringify(b.note) : null,
@@ -1816,13 +1831,32 @@ app.patch("/api/products/:slug/stock", express.json({ limit: "4kb" }), async (re
   res.json({ ok: true, ...rows[0] });
 });
 
+/**
+ * Zdjecie pozycji ze sprzedazy i przywrocenie jej. Osobno od pelnego zapisu,
+ * bo to najczestsza zmiana w panelu, a produkt zdjety ze sprzedazy ma zostac
+ * w bazie razem z historia, a nie zniknac.
+ */
+app.patch("/api/products/:slug/visibility", express.json({ limit: "4kb" }), async (req, res) => {
+  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  const active = req.body?.active;
+  if (typeof active !== "boolean") return res.status(400).json({ error: "Pole active musi byc true albo false" });
+  const { rows } = await pool.query(
+    `UPDATE products SET active = $2, updated_at = NOW() WHERE slug = $1 RETURNING slug, active`,
+    [String(req.params.slug || ""), active]
+  );
+  if (!rows[0]) return res.status(404).json({ error: "Produkt nie istnieje" });
+  res.json({ ok: true, ...rows[0] });
+});
+
 /** Lista dla panelu: takze pozycje wylaczone, razem z rezerwacjami. */
 app.get("/api/admin/products", async (req, res) => {
   if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
   const { rows } = await pool.query(
-    `SELECT p.slug, p.kind, p.category, p.offer, p.title, p.price_grosze, p.stock, p.active,
-            p.sold_count, p.sort_order, a.reserved, a.available
+    `SELECT p.slug, p.kind, p.category, p.subcategory, p.offer, p.title, p.short, p.images,
+            p.price_grosze, p.weight_g, p.stock, p.active, p.lead_time_days,
+            p.sold_count, p.sort_order, p.notes, p.updated_at, a.reserved, a.available
        FROM products p LEFT JOIN product_availability a ON a.id = p.id
       ORDER BY p.active DESC, p.sort_order, p.slug`
   );
