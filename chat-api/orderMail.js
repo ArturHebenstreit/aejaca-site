@@ -47,6 +47,18 @@ const T = {
     terms: "Regulamin",
     bye: "Pozdrawiamy",
     deliveryNames: { pickup: "Odbiór osobisty", inpost_locker: "Paczkomat InPost", courier: "Kurier", digital: "Dostawa cyfrowa" },
+    thanksTransfer: "potwierdzamy wpływ Twojej wpłaty. Poniżej podsumowanie zamówienia. Zabieramy się do pracy.",
+    trSubject: (ref) => `Zamówienie ${ref}, dane do przelewu, AEJaCA`,
+    trIntro: "dziękujemy za zamówienie. Nic nie zostało jeszcze pobrane. Poniżej dane do przelewu.",
+    trAmount: "Kwota do przelewu",
+    trIban: "Numer rachunku (IBAN)",
+    trBic: "BIC / SWIFT",
+    trHolder: "Odbiorca",
+    trBank: "Bank",
+    trRef: "Tytuł przelewu",
+    trDue: "Kwota obowiązuje do",
+    trSteps: "Co się wydarzy dalej",
+    trStepsBody: "Gdy pieniądze wpłyną na konto, potwierdzamy to ręcznie i wysyłamy potwierdzenie przyjęcia należności wraz z informacją o rozpoczęciu prac. Termin realizacji liczymy od zaksięgowania wpłaty, nie od złożenia zamówienia. Prosimy o zachowanie tytułu przelewu, po nim rozpoznajemy zamówienie.",
   },
   en: {
     subject: (ref) => `Order confirmation ${ref}, AEJaCA`,
@@ -67,6 +79,18 @@ const T = {
     terms: "Terms of Service",
     bye: "Best regards",
     deliveryNames: { pickup: "Personal pickup", inpost_locker: "InPost locker", courier: "Courier", digital: "Digital delivery" },
+    thanksTransfer: "we confirm that your payment has arrived. Here is the summary of your order. We are starting work.",
+    trSubject: (ref) => `Order ${ref}, transfer details, AEJaCA`,
+    trIntro: "thank you for your order. Nothing has been charged yet. Below are the transfer details.",
+    trAmount: "Amount to transfer",
+    trIban: "Account number (IBAN)",
+    trBic: "BIC / SWIFT",
+    trHolder: "Beneficiary",
+    trBank: "Bank",
+    trRef: "Payment reference",
+    trDue: "Amount valid until",
+    trSteps: "What happens next",
+    trStepsBody: "Once the money lands on our account we confirm it by hand and send you a receipt confirmation together with a note that work has started. The lead time is counted from the day the money clears, not from the day you ordered. Please keep the payment reference, that is how we recognise your order.",
   },
   de: {
     subject: (ref) => `Bestellbestätigung ${ref}, AEJaCA`,
@@ -87,6 +111,18 @@ const T = {
     terms: "AGB",
     bye: "Mit freundlichen Grüßen",
     deliveryNames: { pickup: "Selbstabholung", inpost_locker: "InPost-Paketstation", courier: "Kurier", digital: "Digitale Lieferung" },
+    thanksTransfer: "wir bestätigen den Eingang Ihrer Zahlung. Nachfolgend die Zusammenfassung Ihrer Bestellung. Wir beginnen mit der Arbeit.",
+    trSubject: (ref) => `Bestellung ${ref}, Überweisungsdaten, AEJaCA`,
+    trIntro: "vielen Dank für Ihre Bestellung. Es wurde noch nichts abgebucht. Nachfolgend die Überweisungsdaten.",
+    trAmount: "Zu überweisender Betrag",
+    trIban: "Kontonummer (IBAN)",
+    trBic: "BIC / SWIFT",
+    trHolder: "Empfänger",
+    trBank: "Bank",
+    trRef: "Verwendungszweck",
+    trDue: "Betrag gültig bis",
+    trSteps: "Wie es weitergeht",
+    trStepsBody: "Sobald das Geld auf unserem Konto eingeht, bestätigen wir es persönlich und senden Ihnen die Zahlungsbestätigung samt Hinweis, dass die Arbeit beginnt. Die Lieferzeit zählt ab Geldeingang, nicht ab Bestelldatum. Bitte behalten Sie den Verwendungszweck bei, daran erkennen wir Ihre Bestellung.",
   },
 };
 
@@ -94,6 +130,14 @@ const money = (grosze) => `${(grosze / 100).toFixed(2).replace(".", ",")} PLN`;
 
 function esc(s) {
   return String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+/** Przy przelewie klient przelal euro, wiec taka kwote ma zobaczyc.
+ *  W zlotowkach rozliczamy sie dalej, ale to jego nie dotyczy. */
+function paidAmount(order) {
+  return order.payment_method === "bank_transfer" && order.amount_eur_cents != null
+    ? `${(order.amount_eur_cents / 100).toFixed(2)} EUR`
+    : money(order.total_grosze);
 }
 
 function customerHtml(order, items, lang) {
@@ -113,7 +157,7 @@ function customerHtml(order, items, lang) {
   <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px">
     <div style="font-size:12px;letter-spacing:2px;color:#b58a3c;font-weight:700;margin-bottom:18px">AEJACA</div>
     <p style="margin:0 0 6px">${l.hi}</p>
-    <p style="margin:0 0 20px;line-height:1.6">${l.thanks}</p>
+    <p style="margin:0 0 20px;line-height:1.6">${order.payment_method === "bank_transfer" ? l.thanksTransfer : l.thanks}</p>
 
     <p style="margin:0 0 4px;font-size:12px;color:#777">${l.orderNo}</p>
     <p style="margin:0 0 20px;font-size:18px;font-weight:700;font-family:ui-monospace,monospace">${esc(order.order_ref)}</p>
@@ -126,7 +170,7 @@ function customerHtml(order, items, lang) {
       </tr>
       <tr>
         <td style="padding:12px 0;font-weight:700">${l.total}</td>
-        <td style="padding:12px 0;text-align:right;font-weight:700;font-size:16px">${money(order.total_grosze)}</td>
+        <td style="padding:12px 0;text-align:right;font-weight:700;font-size:16px">${paidAmount(order)}</td>
       </tr>
     </table>
 
@@ -153,14 +197,14 @@ function customerText(order, items, lang) {
   return [
     l.hi,
     "",
-    l.thanks,
+    order.payment_method === "bank_transfer" ? l.thanksTransfer : l.thanks,
     "",
     `${l.orderNo}: ${order.order_ref}`,
     "",
     `${l.items}:`,
     ...lines,
     `${l.delivery}: ${l.deliveryNames[order.delivery_method] || order.delivery_method || ""} ${money(order.shipping_grosze)}`,
-    `${l.total}: ${money(order.total_grosze)}`,
+    `${l.total}: ${paidAmount(order)}`,
     "",
     `${l.next}: ${l.nextBody}`,
     "",
@@ -231,6 +275,111 @@ export function buildOrderMessages(order, items, attachments = []) {
       html: `<pre style="font-family:ui-monospace,monospace;font-size:13px;white-space:pre-wrap">${esc(internalText(order, items, attachments))}</pre>`,
     },
   ];
+}
+
+// ------------------------------------------------------------
+// Mail z danymi do przelewu
+// ------------------------------------------------------------
+// Wysylany od razu po zlozeniu zamowienia, zanim cokolwiek wplynie. Klient
+// musi miec te dane poza przegladarka, bo strone zamknie, a przelew zrobi
+// wieczorem z telefonu.
+function transferRows(l, tr) {
+  return [
+    [l.trIban, tr.iban],
+    [l.trBic, tr.bic],
+    [l.trHolder, tr.holder],
+    [l.trBank, tr.bank],
+    [l.trRef, tr.reference],
+    [l.trDue, tr.dueAt ? new Date(tr.dueAt).toISOString().slice(0, 10) : null],
+  ].filter(([, v]) => v);
+}
+
+export function buildTransferMessage(order, tr) {
+  const lang = ["pl", "en", "de"].includes(order.lang) ? order.lang : "en";
+  const l = T[lang];
+  const rows = transferRows(l, tr);
+
+  const html = `<!doctype html><html><body style="margin:0;padding:24px;background:#f6f6f6;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111">
+  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px">
+    <div style="font-size:12px;letter-spacing:2px;color:#b58a3c;font-weight:700;margin-bottom:18px">AEJACA</div>
+    <p style="margin:0 0 6px">${l.hi}</p>
+    <p style="margin:0 0 20px;line-height:1.6">${l.trIntro}</p>
+
+    <div style="border:1px solid #eee;border-radius:10px;padding:18px;margin-bottom:20px">
+      <p style="margin:0 0 4px;font-size:12px;color:#777">${l.trAmount}</p>
+      <p style="margin:0 0 16px;font-size:26px;font-weight:800">${tr.amountEur} EUR</p>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        ${rows.map(([k, v]) => `<tr>
+          <td style="padding:6px 0;color:#777;white-space:nowrap;vertical-align:top">${esc(k)}</td>
+          <td style="padding:6px 0;text-align:right;font-family:ui-monospace,monospace;word-break:break-all">${esc(String(v))}</td>
+        </tr>`).join("")}
+      </table>
+    </div>
+
+    <h3 style="font-size:14px;margin:0 0 6px">${l.trSteps}</h3>
+    <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${l.trStepsBody}</p>
+
+    <h3 style="font-size:14px;margin:20px 0 6px">${l.questions}</h3>
+    <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${l.questionsBody}<br>
+      ${SELLER.email} &middot; ${SELLER.phone}</p>
+
+    <p style="margin:24px 0 0;font-size:12px;color:#999">
+      ${l.bye},<br>${SELLER.brand}<br>
+      <a href="${SELLER.site}/terms/" style="color:#b58a3c">${l.terms}</a>
+    </p>
+  </div></body></html>`;
+
+  const text = [
+    l.hi, "", l.trIntro, "",
+    `${l.trAmount}: ${tr.amountEur} EUR`,
+    ...rows.map(([k, v]) => `${k}: ${v}`),
+    "", `${l.trSteps}: ${l.trStepsBody}`,
+    "", `${l.questions}: ${SELLER.email}, ${SELLER.phone}`,
+    "", `${l.bye}, ${SELLER.brand}`,
+  ].join("\n");
+
+  return { to: order.customer_email, from: FROM, replyTo: SELLER.email, subject: l.trSubject(order.order_ref), text, html };
+}
+
+/** Mail z danymi do przelewu plus kopia dla nas, zebysmy wiedzieli, na co czekamy */
+export async function sendTransferInstructions(pool, orderId, tr) {
+  try {
+    const { rows } = await pool.query("SELECT * FROM orders WHERE id = $1", [orderId]);
+    const order = rows[0];
+    if (!order) return false;
+
+    const messages = [
+      buildTransferMessage(order, tr),
+      {
+        to: INTERNAL_TO, from: FROM, replyTo: order.customer_email,
+        subject: `[PRZELEW] ${order.order_ref}, ${tr.amountEur} EUR, czekamy na wplate`,
+        text: [
+          `ZAMOWIENIE ${order.order_ref} ZLOZONE, PLATNOSC PRZELEWEM`,
+          "",
+          `Kwota: ${tr.amountEur} EUR (${money(order.total_grosze)} po kursie ${order.eur_rate})`,
+          `Klient: ${order.customer_name || "(brak nazwiska)"} <${order.customer_email}>`,
+          `Tytul przelewu: ${tr.reference}`,
+          `Kwota wazna do: ${tr.dueAt ? new Date(tr.dueAt).toISOString().slice(0, 10) : "-"}`,
+          "",
+          "Po zaksiegowaniu potwierdz wplate, wtedy pojda maile i pliki trafia do Zamowien.",
+        ].join("\n"),
+      },
+    ];
+
+    try {
+      if (await sendViaGmail(messages)) {
+        console.log(`[przelew-mail] wyslano dane do przelewu dla ${order.order_ref}`);
+        return true;
+      }
+    } catch (e) {
+      console.error("[przelew-mail] Gmail nie zadzialal:", e.message);
+    }
+    console.error(`[przelew-mail] BRAK KANALU WYSYLKI dla ${order.order_ref}`);
+    return false;
+  } catch (e) {
+    console.error("[przelew-mail] blad:", e.message);
+    return false;
+  }
 }
 
 /** RFC 2822 w postaci, ktorej oczekuje Gmail API (base64url) */

@@ -17,7 +17,7 @@ import {
 } from "./autopay.js";
 import { packagingGrosze, sanitizePersonalization } from "./pricing/packaging.js";
 import { eurCentsFromGrosze } from "./pricing/currency.js";
-import { sendOrderPaidEmails } from "./orderMail.js";
+import { sendOrderPaidEmails, sendTransferInstructions } from "./orderMail.js";
 
 const app = express();
 app.set("trust proxy", true);
@@ -1446,6 +1446,12 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
     if (wantsTransfer && !transferConfigured()) {
       return res.status(503).json({ error: "Platnosc przelewem nie jest skonfigurowana" });
     }
+    // Przelew z recznym potwierdzeniem obsluguje wylacznie sprzedaz w euro.
+    // Klient placacy w zlotowkach ma BLIK i pay-by-link, wiec reczne
+    // ksiegowanie byloby dla niego wylacznie opoznieniem.
+    if (wantsTransfer && !["en", "de"].includes(safeLang)) {
+      return res.status(400).json({ error: "Przelew jest dostepny wylacznie przy cenach w euro" });
+    }
     const eurRate = wantsTransfer ? await currentEurRate() : null;
     const amountEurCents = wantsTransfer ? eurCentsFromGrosze(total, eurRate) : null;
 
@@ -1511,6 +1517,17 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
       );
     }
 
+    // Dane do przelewu wysylamy od razu: klient zamknie strone, a przelew
+    // zrobi wieczorem z telefonu.
+    if (wantsTransfer) {
+      sendTransferInstructions(pool, orderId, {
+        ...TRANSFER,
+        amountEur: (amountEurCents / 100).toFixed(2),
+        reference: orderRef,
+        dueAt: expiresAt,
+      }).catch((e) => console.error("[przelew] wysylka danych do przelewu nie powiodla sie:", e.message));
+    }
+
     res.json({
       ok: true,
       orderRef,
@@ -1541,6 +1558,91 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
       detail: [e?.code, e?.message, e?.detail].filter(Boolean).join(" | ").slice(0, 300),
     });
   }
+});
+
+// ------------------------------------------------------------
+// Reczne potwierdzenie wplaty
+// ------------------------------------------------------------
+// Przelew nie ma ITN, wiec jedynym dowodem wplywu jest wyciag bankowy, ktory
+// oglada czlowiek. Ten endpoint jest odpowiednikiem SUCCESS z bramki: ustawia
+// oplacenie, wysyla te same maile i przenosi pliki do Zamowien. Wolno go
+// wykonac raz, bo pilnuje tego fulfilled_at.
+const TRANSFER_TOLERANCE = 0.98;
+
+app.get("/api/orders/awaiting-transfer", async (req, res) => {
+  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  const { rows } = await pool.query(
+    `SELECT order_ref, customer_email, customer_name, lang, total_grosze,
+            amount_eur_cents, eur_rate, created_at, expires_at
+       FROM orders WHERE status = 'awaiting_transfer' ORDER BY created_at DESC LIMIT 100`
+  );
+  res.json({
+    orders: rows.map((o) => ({
+      orderRef: o.order_ref,
+      email: o.customer_email,
+      name: o.customer_name,
+      lang: o.lang,
+      totalPLN: (o.total_grosze / 100).toFixed(2),
+      amountEur: o.amount_eur_cents != null ? (o.amount_eur_cents / 100).toFixed(2) : null,
+      eurRate: o.eur_rate,
+      createdAt: o.created_at,
+      expiresAt: o.expires_at,
+    })),
+  });
+});
+
+app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), async (req, res) => {
+  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const ref = String(req.params.ref || "");
+  const { receivedEur, note, by, force } = req.body || {};
+
+  const { rows } = await pool.query(
+    `SELECT id, status, amount_eur_cents, fulfilled_at FROM orders WHERE order_ref = $1`,
+    [ref]
+  );
+  const order = rows[0];
+  if (!order) return res.status(404).json({ error: "Zamowienie nie istnieje" });
+  if (order.fulfilled_at) return res.status(409).json({ error: "Zamowienie juz zostalo rozliczone" });
+  if (order.status !== "awaiting_transfer") {
+    return res.status(409).json({ error: `Zamowienie ma status ${order.status}, nie czeka na przelew` });
+  }
+
+  // Kwota otrzymana bywa mniejsza od naleznej o oplaty banku posredniczacego.
+  // Drobna roznice przyjmujemy, wieksza wymaga swiadomej decyzji.
+  const expected = order.amount_eur_cents ?? 0;
+  const received = Number.isFinite(Number(receivedEur)) ? Math.round(Number(receivedEur) * 100) : expected;
+  if (!force && expected > 0 && received < Math.round(expected * TRANSFER_TOLERANCE)) {
+    return res.status(409).json({
+      error: "Kwota nizsza od naleznej",
+      code: "underpaid",
+      expectedEur: (expected / 100).toFixed(2),
+      receivedEur: (received / 100).toFixed(2),
+      shortfallEur: ((expected - received) / 100).toFixed(2),
+    });
+  }
+
+  await pool.query(
+    `UPDATE orders SET status = 'paid', paid_at = NOW(), fulfilled_at = NOW(),
+       payment_status = 'SUCCESS', payment_status_details = 'manual_transfer',
+       transfer_received_cents = $2, transfer_confirmed_at = NOW(),
+       transfer_confirmed_by = $3, transfer_note = $4
+     WHERE id = $1`,
+    [order.id, received, String(by || "admin").slice(0, 120), note ? String(note).slice(0, 2000) : null]
+  );
+  console.log(`[przelew] ${ref} potwierdzony recznie, ${(received / 100).toFixed(2)} EUR`);
+
+  // Dalej dokladnie to samo, co po SUCCESS z bramki.
+  sendOrderPaidEmails(pool, order.id).catch((e) =>
+    console.error("[przelew] wysylka maili nie powiodla sie:", e.message)
+  );
+  moveOrderFilesToOrders(pool, order.id, ref).catch((e) =>
+    console.error("[dysk] przeniesienie plikow nie powiodlo sie:", e.message)
+  );
+
+  res.json({ ok: true, orderRef: ref, receivedEur: (received / 100).toFixed(2) });
 });
 
 /** Parametry startu transakcji, podpisane po stronie serwera */

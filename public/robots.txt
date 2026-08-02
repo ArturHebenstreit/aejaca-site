@@ -9,6 +9,9 @@
 
 User-agent: *
 Allow: /
+# Panel wewnetrzny. Strona i tak jest noindex, ale nie ma powodu, zeby
+# jakikolwiek robot ja odwiedzal.
+Disallow: /admin/
 
 # Allow known AI / LLM crawlers explicitly (AEO / LLMEO — AI Search Optimization).
 # Grouped User-agent lines share the rule block below them (valid robots.txt syntax).

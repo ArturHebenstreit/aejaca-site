@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-07-31 | Wersja: 1.7*
+*Wygenerowano: 2026-08-02 | Wersja: 1.8*
 
 ---
 
@@ -623,6 +623,24 @@ Szczegóły protokołu w `MDs/AEJaCA_Autopay_Integration.md`. Trzy reguły, któ
 3. Realizacja zamówienia (maile, wydanie plików) dzieje się **raz**, przy pierwszym `SUCCESS`, mimo że potwierdzamy każdy komunikat.
 
 Kwota z ITN jest porównywana z kwotą zamówienia, więc sam poprawny podpis nie wystarczy do opłacenia zamówienia niższą kwotą.
+
+### Sprzedaż w euro i przelew z ręcznym potwierdzeniem
+
+Żaden kanał Autopay nie działa bez konta w polskim banku: lista włączonych bramek to BLIK i 22 linki do polskich banków, kart nie ma. Klient z zagranicy nie ma więc czym zapłacić od ręki.
+
+Przy `en` i `de` sklep pokazuje **wyłącznie euro**, przeliczone z ceny w groszach PLN po kursie NBP powiększonym o **8%** na różnice kursowe. Stała `EUR_FX_MARGIN` leży w `src/pricing/currency.js`, czyli w rdzeniu kopiowanym do `chat-api`, żeby strona i backend liczyły identycznie. Zaokrąglenie idzie w górę do pełnego centa.
+
+Zamówienie w euro:
+
+1. Klient wybiera przelew, widzi pięć kroków procesu, jeszcze nic nie płaci.
+2. Backend zamraża kwotę w `amount_eur_cents` razem z `eur_rate` i ustawia status `awaiting_transfer`. Numer rachunku pojawia się dopiero teraz: na stronie zamówienia i w mailu.
+3. Kwota jest wiążąca 7 dni.
+4. Po wpływie potwierdzamy ręcznie w `/admin/transfers/` (token administracyjny w nagłówku `X-Admin-Token`). Potwierdzenie robi dokładnie to, co `SUCCESS` z ITN: ustawia `paid`, wysyła maile i przenosi pliki do folderu Zamówienia. Wykonuje się raz, bo pilnuje tego `fulfilled_at`.
+5. Niedopłata do 2% przechodzi bez pytania (opłaty banków pośredniczących), większa wymaga świadomego potwierdzenia.
+
+Termin realizacji liczy się od zaksięgowania wpłaty, nie od złożenia zamówienia, i tak mówi regulamin w trzech językach.
+
+Dane rachunku żyją w zmiennych środowiskowych Railwaya: `TRANSFER_IBAN_EUR` (wymagana), `TRANSFER_BIC`, `TRANSFER_ACCOUNT_HOLDER`, `TRANSFER_BANK_NAME`. Bez pierwszej z nich backend odrzuca zamówienie przelewem, zamiast przyjąć je i zostawić klienta bez danych do zapłaty.
 
 ### Limit kwartalny w kodzie
 
