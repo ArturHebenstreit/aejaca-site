@@ -88,12 +88,31 @@ for (const file of walk(SRC)) {
     const classAttrs = line.match(/className=(?:"[^"]*"|\{`[^`]*`\}|\{"[^"]*"\})/g) || [];
     const inline = line.match(/^\s*(?:idle|chip|icon|[a-z]+):\s*"[^"]*"/) ? [line] : [];
     for (const attr of [...classAttrs, ...inline]) {
-      for (const cls of attr.split(/[\s"`{}]+/)) {
-        if (!cls || cls.includes("$") || cls.includes("[")) continue;
-        if (!isRisky(cls)) continue;
+      const classes = attr.split(/[\s"`{}]+/).filter((c) => c && !c.includes("$") && !c.includes("["));
+      const isCovered = (c) => covered.has(c) || allowed.has(c);
+
+      for (const cls of classes) {
         const bare = cls.replace(/^(hover|focus|active|group-hover|focus-visible):/, "");
-        if (covered.has(cls) || covered.has(bare) || allowed.has(cls) || allowed.has(bare)) continue;
-        problems.push({ file: relative(ROOT, file), line: i + 1, cls });
+        if (isCovered(cls) || isCovered(bare)) continue;
+
+        if (isRisky(cls)) {
+          problems.push({ file: relative(ROOT, file), line: i + 1, cls, why: "brak nadpisania" });
+          continue;
+        }
+
+        // Nadpisania stanu podstawowego niosa !important, wiec hover bez
+        // wlasnej reguly nigdy nie zadziala: element wyglada w trybie jasnym
+        // tak samo z kursorem i bez niego.
+        const m = cls.match(/^hover:(bg|border|text)-[a-z]+-\d{2,3}(\/\d{1,3})?$/);
+        if (m) {
+          const prop = m[1];
+          const baseSameProp = classes.some(
+            (c) => !c.startsWith("hover:") && c.startsWith(`${prop}-`) && isCovered(c)
+          );
+          if (baseSameProp) {
+            problems.push({ file: relative(ROOT, file), line: i + 1, cls, why: "hover nie przebije !important stanu podstawowego" });
+          }
+        }
       }
     }
   });
@@ -105,14 +124,16 @@ if (!problems.length) {
 }
 
 const byClass = new Map();
+const whyByClass = new Map();
 for (const p of problems) {
   if (!byClass.has(p.cls)) byClass.set(p.cls, []);
   byClass.get(p.cls).push(`${p.file}:${p.line}`);
+  whyByClass.set(p.cls, p.why);
 }
 
-console.error(`\nKlasy bez nadpisania w trybie jasnym (${byClass.size}):\n`);
+console.error(`\nProblemy z trybem jasnym (${byClass.size}):\n`);
 for (const [cls, where] of [...byClass].sort()) {
-  console.error(`  ${cls}`);
+  console.error(`  ${cls}  (${whyByClass.get(cls)})`);
   console.error(`    ${where.slice(0, 4).join(", ")}${where.length > 4 ? `, +${where.length - 4}` : ""}`);
 }
 console.error(`\nDopisz reguly do src/index.css albo uzyj klasy, ktora juz jest obsluzona.`);
