@@ -52,8 +52,8 @@ const UI = {
     transferHolder: "Odbiorca",
     transferBank: "Bank",
     transferRef: "Tytuł przelewu",
-    transferDue: "Kwota obowiązuje do",
-    transferAfter: "Po zaksięgowaniu wpłaty potwierdzamy ją ręcznie i wysyłamy potwierdzenie przyjęcia należności wraz z informacją o rozpoczęciu prac. Termin realizacji liczymy od tego momentu.",
+    transferDue: "Rezerwacja i kwota obowiązują do",
+    transferAfter: "Po zaksięgowaniu wpłaty potwierdzamy ją ręcznie i wysyłamy potwierdzenie przyjęcia należności wraz z informacją o rozpoczęciu prac. Termin realizacji liczymy od tego momentu. Towar rezerwujemy dla Ciebie przez 3 dni robocze. Jeżeli czwartego dnia roboczego wpłata nie zostanie zaksięgowana na wskazanym koncie, rezerwacja zostaje zdjęta, a towar wraca do sprzedaży.",
     transferMissing: "Dane rachunku nie są jeszcze skonfigurowane. Napisz do nas, prześlemy je od ręki.",
   },
   en: {
@@ -81,8 +81,8 @@ const UI = {
     transferHolder: "Beneficiary",
     transferBank: "Bank",
     transferRef: "Payment reference",
-    transferDue: "Amount valid until",
-    transferAfter: "Once the money clears we confirm it by hand and send you a receipt confirmation together with a note that work has started. The lead time is counted from that moment.",
+    transferDue: "Reservation and amount valid until",
+    transferAfter: "Once the money clears we confirm it by hand and send you a receipt confirmation together with a note that work has started. The lead time is counted from that moment. We reserve the goods for you for 3 business days. If the payment has not cleared on the stated account by the fourth business day, the reservation is released and the goods go back on sale.",
     transferMissing: "The account details are not configured yet. Write to us and we will send them straight away.",
   },
   de: {
@@ -110,8 +110,8 @@ const UI = {
     transferHolder: "Empfänger",
     transferBank: "Bank",
     transferRef: "Verwendungszweck",
-    transferDue: "Betrag gültig bis",
-    transferAfter: "Nach Geldeingang bestätigen wir ihn persönlich und senden Ihnen die Zahlungsbestätigung samt Hinweis, dass die Arbeit beginnt. Die Lieferzeit zählt ab diesem Moment.",
+    transferDue: "Reservierung und Betrag gültig bis",
+    transferAfter: "Nach Geldeingang bestätigen wir ihn persönlich und senden Ihnen die Zahlungsbestätigung samt Hinweis, dass die Arbeit beginnt. Die Lieferzeit zählt ab diesem Moment. Wir reservieren die Ware 3 Werktage lang für Sie. Ist die Zahlung bis zum vierten Werktag nicht auf dem angegebenen Konto eingegangen, wird die Reservierung aufgehoben und die Ware geht zurück in den Verkauf.",
     transferMissing: "Die Kontodaten sind noch nicht hinterlegt. Schreiben Sie uns, wir senden sie umgehend.",
   },
 };

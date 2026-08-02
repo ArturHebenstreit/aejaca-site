@@ -69,7 +69,7 @@ const UI = {
     step3: "Robisz zwykły przelew SEPA ze swojego banku. Kwota jest ostateczna, nic nie dopłacasz.",
     step4: "Gdy pieniądze wpłyną, potwierdzamy to ręcznie i wysyłamy potwierdzenie przyjęcia wpłaty wraz z informacją o rozpoczęciu prac.",
     step5: "Termin realizacji liczymy od zaksięgowania wpłaty, nie od złożenia zamówienia.",
-    lockNote: "Kwota w euro jest zamrożona na 7 dni od złożenia zamówienia.",
+    lockNote: "Kwota w euro i rezerwacja towaru obowiązują przez 3 dni robocze od złożenia zamówienia. Jeżeli czwartego dnia roboczego wpłata nie zostanie zaksięgowana na wskazanym koncie, rezerwacja zostaje zdjęta, a towar wraca do sprzedaży.",
     placeOrder: "Zamawiam z płatnością przelewem",
   },
   en: {
@@ -121,7 +121,7 @@ const UI = {
     step3: "You make an ordinary SEPA transfer from your bank. The amount is final, there is nothing to pay on top.",
     step4: "Once the money lands, we confirm it by hand and send you a receipt confirmation together with a note that work has started.",
     step5: "The lead time is counted from the day the money clears, not from the day you order.",
-    lockNote: "The amount in EUR is locked for 7 days from placing the order.",
+    lockNote: "The amount in EUR and the reservation of the goods hold for 3 business days from placing the order. If the payment has not cleared on the stated account by the fourth business day, the reservation is released and the goods go back on sale.",
     placeOrder: "Place order and pay by transfer",
   },
   de: {
@@ -173,7 +173,7 @@ const UI = {
     step3: "Sie überweisen ganz normal per SEPA. Der Betrag ist endgültig, es kommt nichts hinzu.",
     step4: "Sobald das Geld eingeht, bestätigen wir es persönlich und senden Ihnen die Zahlungsbestätigung samt Hinweis, dass die Arbeit beginnt.",
     step5: "Die Lieferzeit zählt ab Geldeingang, nicht ab Bestelldatum.",
-    lockNote: "Der Betrag in EUR ist ab Bestellung 7 Tage lang festgeschrieben.",
+    lockNote: "Der Betrag in EUR und die Reservierung der Ware gelten 3 Werktage ab Bestellung. Ist die Zahlung bis zum vierten Werktag nicht auf dem angegebenen Konto eingegangen, wird die Reservierung aufgehoben und die Ware geht zurück in den Verkauf.",
     placeOrder: "Bestellen und per Überweisung zahlen",
   },
 };

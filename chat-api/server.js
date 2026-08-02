@@ -18,6 +18,7 @@ import {
 import { packagingGrosze, sanitizePersonalization } from "./pricing/packaging.js";
 import { eurCentsFromGrosze } from "./pricing/currency.js";
 import { shippingGrosze as shippingCost, needsCustoms, zoneForCountry } from "./pricing/shipping.js";
+import { addBusinessDays, TRANSFER_HOLD_BUSINESS_DAYS } from "./pricing/businessDays.js";
 import { sendOrderPaidEmails, sendTransferInstructions } from "./orderMail.js";
 
 const app = express();
@@ -1449,7 +1450,6 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
 
     const orderRef = generateOrderRef();
     const token = generateToken();
-    const expiresAt = new Date(Date.now() + ORDER_VALIDITY_DAYS * 86400_000);
 
     // Przelew w euro: kwote zamrazamy tu i teraz razem z kursem. Gdybysmy
     // przeliczali ja dopiero przy ksiegowaniu, klient przelalby jedna kwote,
@@ -1466,6 +1466,13 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
     }
     const eurRate = wantsTransfer ? await currentEurRate() : null;
     const amountEurCents = wantsTransfer ? eurCentsFromGrosze(total, eurRate) : null;
+
+    // Przy przelewie ta sama data konczy rezerwacje towaru i waznosc kwoty.
+    // Dwie rozne daty oznaczalyby dwie obietnice, z ktorych klient zapamieta
+    // korzystniejsza.
+    const expiresAt = wantsTransfer
+      ? addBusinessDays(new Date(), TRANSFER_HOLD_BUSINESS_DAYS)
+      : new Date(Date.now() + ORDER_VALIDITY_DAYS * 86400_000);
 
     const { rows } = await pool.query(
       `INSERT INTO orders (order_ref, status, kind, lang, items_total_grosze, shipping_grosze, total_grosze,

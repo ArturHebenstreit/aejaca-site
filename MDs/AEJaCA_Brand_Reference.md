@@ -634,7 +634,7 @@ Zamówienie w euro:
 
 1. Klient wybiera przelew, widzi pięć kroków procesu, jeszcze nic nie płaci.
 2. Backend zamraża kwotę w `amount_eur_cents` razem z `eur_rate` i ustawia status `awaiting_transfer`. Numer rachunku pojawia się dopiero teraz: na stronie zamówienia i w mailu.
-3. Kwota jest wiążąca 7 dni.
+3. Kwota i rezerwacja towaru obowiązują **3 dni robocze**, liczone z pominięciem sobót, niedziel i polskich świąt (`src/pricing/businessDays.js`). Czwartego dnia roboczego bez zaksięgowanej wpłaty rezerwacja spada, a towar wraca do sprzedaży. To zdanie stoi w kasie, w mailu z danymi do przelewu, na stronie zamówienia i w regulaminie, w trzech językach.
 4. Po wpływie potwierdzamy ręcznie w `/admin/transfers/` (token administracyjny w nagłówku `X-Admin-Token`). Potwierdzenie robi dokładnie to, co `SUCCESS` z ITN: ustawia `paid`, wysyła maile i przenosi pliki do folderu Zamówienia. Wykonuje się raz, bo pilnuje tego `fulfilled_at`.
 5. Niedopłata do 2% przechodzi bez pytania (opłaty banków pośredniczących), większa wymaga świadomego potwierdzenia.
 
