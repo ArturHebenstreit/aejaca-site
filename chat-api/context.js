@@ -671,7 +671,7 @@ WAZNE dla rozmowy z klientem:
 - Bizuteria wymaga opisu zlecenia (min. 20 znakow) przed dodaniem do koszyka, opcjonalnie ze zdjeciem lub szkicem. Grawer CO2, ciecie CO2 i fiber wymagaja pliku projektu
 - Przy grawerze CO2, cieciu CO2 i znakowaniu fiber klient moze dolaczyc projekt (SVG, DXF, PDF) jako zalacznik do zlecenia. Zalacznik NIE zmienia ceny, cene wyznacza wybrane pole lub dlugosc sciezki. Rysunek trafia na Dysk i do maila warsztatowego
   i wymiarow modelu. Pliki STEP nie sa jeszcze obslugiwane w wycenie automatycznej.
-- Platnosc: BLIK albo szybki przelew online, przez Autopay, wylacznie w PLN.
+- Platnosc: BLIK albo szybki przelew online, przez Autopay, w PLN. Dla klienta czytajacego strone po angielsku lub niemiecku ceny sa w EUR (kurs NBP + 8% na roznice kursowe) i platne przelewem SEPA na nasze konto w euro; numer rachunku pokazuje sie po zlozeniu zamowienia i przychodzi mailem, kwota jest wiazaca 7 dni, wplyw potwierdzamy recznie, a termin realizacji liczy sie od zaksiegowania.
   NIGDY nie mow klientowi, ze moze zaplacic karta, Google Pay ani Apple Pay.
 - Dostawa: paczkomat InPost 15,90 PLN, kurier 24,90 PLN, odbior osobisty 0 PLN
   (Jozefoslaw, gmina Piaseczno, po wczesniejszym uzgodnieniu).
@@ -698,7 +698,7 @@ Full terms: https://www.aejaca.com/terms/ (Polish, English, German; the Polish v
 
 **How an order becomes binding.** Calculator results are indicative only and are NOT an offer. A binding price exists only in a written Quotation ("Wycena") that states price, scope, material, finish and lead time. The contract is concluded when the customer accepts the Quotation and pays (or pays the agreed deposit). Quotations are valid at least 7 days; for precious-metal items the window can be shorter because gold and silver prices move.
 
-**Payment methods.** BLIK, fast online bank transfer (pay-by-link) and traditional bank transfer, handled by Autopay, settled in PLN. **Card payments, Apple Pay and Google Pay are NOT available.** Never tell a customer they can pay by card. International customers who want to pay by card should be pointed to the Etsy shops.
+**Payment methods.** BLIK, fast online bank transfer (pay-by-link) and traditional bank transfer, handled by Autopay, settled in PLN. **Card payments, Apple Pay and Google Pay are NOT available.** Never tell a customer they can pay by card. A customer outside Poland cannot use any Autopay channel, because every one of them needs an account in a Polish bank; for them the shop prices in EUR and offers a SEPA bank transfer to our euro account, confirmed by hand once the money clears. Etsy remains the route for anyone who insists on paying by card.
 
 **Right of withdrawal (14 days).** Applies to consumers and to sole traders buying outside their professional field, for ready-made goods. An email to contact@aejaca.com is enough, no form required.
 

@@ -16,7 +16,8 @@ import {
   verifyReturn, parseITN, buildITNConfirmation, fetchGatewayList,
 } from "./autopay.js";
 import { packagingGrosze, sanitizePersonalization } from "./pricing/packaging.js";
-import { sendOrderPaidEmails } from "./orderMail.js";
+import { eurCentsFromGrosze } from "./pricing/currency.js";
+import { sendOrderPaidEmails, sendTransferInstructions } from "./orderMail.js";
 
 const app = express();
 app.set("trust proxy", true);
@@ -75,6 +76,30 @@ if (pool) {
   // stronach: ile odliczono i ktore zamowienie skonsumowalo odliczenie.
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS credit_applied_grosze INTEGER`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS credit_consumed_by BIGINT`).catch(() => {});
+  // Platnosc przelewem. Autopay obsluguje wylacznie polskie banki i BLIK, wiec
+  // klient z zagranicy nie ma czym zaplacic od reki. Kwote naleznosci zamrazamy
+  // w euro w chwili zamowienia, razem z kursem, zeby po tygodniu nie bylo sporu
+  // o to, ile mial przelac. Rozliczenie i tak zostaje w groszach PLN.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(20) NOT NULL DEFAULT 'autopay'`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS amount_eur_cents INTEGER`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS eur_rate NUMERIC(10,4)`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS eur_rate_locked_at TIMESTAMPTZ`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_received_cents INTEGER`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_confirmed_at TIMESTAMPTZ`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_confirmed_by VARCHAR(120)`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_note TEXT`).catch(() => {});
+  // Status posredni: zamowienie zlozone, czekamy na wplyw na konto.
+  pool.query(`
+    DO $$ BEGIN
+      ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_status_check;
+      ALTER TABLE orders ADD CONSTRAINT orders_status_check CHECK (status IN
+        ('draft','awaiting_payment','awaiting_transfer','paid','in_production','shipped','completed','cancelled','expired','refunded'));
+      ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_payment_method_check;
+      ALTER TABLE orders ADD CONSTRAINT orders_payment_method_check CHECK (payment_method IN ('autopay','bank_transfer'));
+    END $$;
+  `).catch((e) => console.error("[migracja] status/payment_method:", e.message));
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_orders_awaiting_transfer
+              ON orders (created_at DESC) WHERE status = 'awaiting_transfer'`).catch(() => {});
 
   pool.query(`CREATE TABLE IF NOT EXISTS email_threads (
     id BIGSERIAL PRIMARY KEY,
@@ -1283,6 +1308,34 @@ if (pool) cron.schedule("30 3 * * *", markAbandonedUploads);
 const SITE_URL = process.env.SITE_URL || "https://www.aejaca.com";
 const ORDER_VALIDITY_DAYS = 7;
 
+// ------------------------------------------------------------
+// Przelew w euro
+// ------------------------------------------------------------
+// Autopay obsluguje wylacznie BLIK i polskie banki, wiec klient spoza Polski
+// nie ma czym zaplacic od reki. Dane rachunku trzymamy w zmiennych srodowiskowych,
+// bo zmieniaja sie niezaleznie od kodu i nie maja czego szukac w repozytorium.
+const TRANSFER = {
+  iban: process.env.TRANSFER_IBAN_EUR || null,
+  bic: process.env.TRANSFER_BIC || null,
+  holder: process.env.TRANSFER_ACCOUNT_HOLDER || null,
+  bank: process.env.TRANSFER_BANK_NAME || null,
+};
+const transferConfigured = () => Boolean(TRANSFER.iban);
+
+/** Kurs NBP z bazy, ten sam, ktory widzi strona */
+async function currentEurRate() {
+  if (!pool) return null;
+  try {
+    const { rows } = await pool.query(
+      `SELECT pln_per_eur::float AS rate FROM market_rates
+        WHERE pln_per_eur IS NOT NULL ORDER BY fetched_at DESC LIMIT 1`
+    );
+    return rows[0]?.rate ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** Kanaly platnosci dostepne na serwisie, prosto z Autopay */
 app.get("/api/payment-methods", async (_req, res) => {
   const list = await fetchGatewayList();
@@ -1308,7 +1361,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
 
   try {
-    const { items, customer, delivery, consents, lang } = req.body || {};
+    const { items, customer, delivery, consents, lang, paymentMethod } = req.body || {};
     if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: "Zamowienie bez pozycji" });
     if (items.length > 20) return res.status(400).json({ error: "Za duzo pozycji" });
     if (!customer?.email || !CONTACT_EMAIL_RE.test(customer.email)) return res.status(400).json({ error: "Nieprawidlowy adres email" });
@@ -1386,14 +1439,32 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
     const token = generateToken();
     const expiresAt = new Date(Date.now() + ORDER_VALIDITY_DAYS * 86400_000);
 
+    // Przelew w euro: kwote zamrazamy tu i teraz razem z kursem. Gdybysmy
+    // przeliczali ja dopiero przy ksiegowaniu, klient przelalby jedna kwote,
+    // a my oczekiwalibysmy innej.
+    const wantsTransfer = paymentMethod === "bank_transfer";
+    if (wantsTransfer && !transferConfigured()) {
+      return res.status(503).json({ error: "Platnosc przelewem nie jest skonfigurowana" });
+    }
+    // Przelew z recznym potwierdzeniem obsluguje wylacznie sprzedaz w euro.
+    // Klient placacy w zlotowkach ma BLIK i pay-by-link, wiec reczne
+    // ksiegowanie byloby dla niego wylacznie opoznieniem.
+    if (wantsTransfer && !["en", "de"].includes(safeLang)) {
+      return res.status(400).json({ error: "Przelew jest dostepny wylacznie przy cenach w euro" });
+    }
+    const eurRate = wantsTransfer ? await currentEurRate() : null;
+    const amountEurCents = wantsTransfer ? eurCentsFromGrosze(total, eurRate) : null;
+
     const { rows } = await pool.query(
       `INSERT INTO orders (order_ref, status, kind, lang, items_total_grosze, shipping_grosze, total_grosze,
          customer_email, customer_name, customer_phone,
          delivery_method, delivery_point, address_line1, address_line2, postal_code, city, country,
          accepted_terms_at, waived_withdrawal_at, digital_immediate_at,
-         access_token, ip_hash, expires_at, revisions_included)
-       VALUES ($1,'awaiting_payment','instant',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
-         NOW(), $16, $17, $18, $19, $20, $21)
+         access_token, ip_hash, expires_at, revisions_included,
+         payment_method, amount_eur_cents, eur_rate, eur_rate_locked_at)
+       VALUES ($1,$22,'instant',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
+         NOW(), $16, $17, $18, $19, $20, $21,
+         $23, $24, $25, CASE WHEN $24::INTEGER IS NULL THEN NULL ELSE NOW() END)
        RETURNING id`,
       [orderRef, safeLang, itemsTotal, shipping, total,
        customer.email.trim().toLowerCase(), customer.name || null, customer.phone || null,
@@ -1404,7 +1475,10 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
        consents?.digitalImmediate ? new Date() : null,
        token, createHash("sha256").update(extractIP(req)).digest("hex").slice(0, 30), expiresAt,
        // Limit bierzemy z pozycji projektowej, jesli taka jest w koszyku.
-       priced.find((i) => i.revisionsIncluded)?.revisionsIncluded ?? null]
+       priced.find((i) => i.revisionsIncluded)?.revisionsIncluded ?? null,
+       wantsTransfer ? "awaiting_transfer" : "awaiting_payment",
+       wantsTransfer ? "bank_transfer" : "autopay",
+       amountEurCents, eurRate]
     );
     const orderId = rows[0].id;
 
@@ -1443,6 +1517,17 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
       );
     }
 
+    // Dane do przelewu wysylamy od razu: klient zamknie strone, a przelew
+    // zrobi wieczorem z telefonu.
+    if (wantsTransfer) {
+      sendTransferInstructions(pool, orderId, {
+        ...TRANSFER,
+        amountEur: (amountEurCents / 100).toFixed(2),
+        reference: orderRef,
+        dueAt: expiresAt,
+      }).catch((e) => console.error("[przelew] wysylka danych do przelewu nie powiodla sie:", e.message));
+    }
+
     res.json({
       ok: true,
       orderRef,
@@ -1450,6 +1535,12 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
       totalGrosze: total,
       totalPLN: (total / 100).toFixed(2),
       expiresAt,
+      paymentMethod: wantsTransfer ? "bank_transfer" : "autopay",
+      // Numer rachunku wydajemy dopiero razem z zamowieniem, czyli wtedy, gdy
+      // klient potwierdzil chec zaplaty. Wczesniej nie ma po co go pokazywac.
+      transfer: wantsTransfer
+        ? { ...TRANSFER, amountEurCents, amountEur: (amountEurCents / 100).toFixed(2), reference: orderRef, dueAt: expiresAt }
+        : null,
       items: priced.map((i) => ({
         title: i.title, qty: i.qty,
         unitPLN: (i.unitGrosze / 100).toFixed(2),
@@ -1467,6 +1558,91 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
       detail: [e?.code, e?.message, e?.detail].filter(Boolean).join(" | ").slice(0, 300),
     });
   }
+});
+
+// ------------------------------------------------------------
+// Reczne potwierdzenie wplaty
+// ------------------------------------------------------------
+// Przelew nie ma ITN, wiec jedynym dowodem wplywu jest wyciag bankowy, ktory
+// oglada czlowiek. Ten endpoint jest odpowiednikiem SUCCESS z bramki: ustawia
+// oplacenie, wysyla te same maile i przenosi pliki do Zamowien. Wolno go
+// wykonac raz, bo pilnuje tego fulfilled_at.
+const TRANSFER_TOLERANCE = 0.98;
+
+app.get("/api/orders/awaiting-transfer", async (req, res) => {
+  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  const { rows } = await pool.query(
+    `SELECT order_ref, customer_email, customer_name, lang, total_grosze,
+            amount_eur_cents, eur_rate, created_at, expires_at
+       FROM orders WHERE status = 'awaiting_transfer' ORDER BY created_at DESC LIMIT 100`
+  );
+  res.json({
+    orders: rows.map((o) => ({
+      orderRef: o.order_ref,
+      email: o.customer_email,
+      name: o.customer_name,
+      lang: o.lang,
+      totalPLN: (o.total_grosze / 100).toFixed(2),
+      amountEur: o.amount_eur_cents != null ? (o.amount_eur_cents / 100).toFixed(2) : null,
+      eurRate: o.eur_rate,
+      createdAt: o.created_at,
+      expiresAt: o.expires_at,
+    })),
+  });
+});
+
+app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), async (req, res) => {
+  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const ref = String(req.params.ref || "");
+  const { receivedEur, note, by, force } = req.body || {};
+
+  const { rows } = await pool.query(
+    `SELECT id, status, amount_eur_cents, fulfilled_at FROM orders WHERE order_ref = $1`,
+    [ref]
+  );
+  const order = rows[0];
+  if (!order) return res.status(404).json({ error: "Zamowienie nie istnieje" });
+  if (order.fulfilled_at) return res.status(409).json({ error: "Zamowienie juz zostalo rozliczone" });
+  if (order.status !== "awaiting_transfer") {
+    return res.status(409).json({ error: `Zamowienie ma status ${order.status}, nie czeka na przelew` });
+  }
+
+  // Kwota otrzymana bywa mniejsza od naleznej o oplaty banku posredniczacego.
+  // Drobna roznice przyjmujemy, wieksza wymaga swiadomej decyzji.
+  const expected = order.amount_eur_cents ?? 0;
+  const received = Number.isFinite(Number(receivedEur)) ? Math.round(Number(receivedEur) * 100) : expected;
+  if (!force && expected > 0 && received < Math.round(expected * TRANSFER_TOLERANCE)) {
+    return res.status(409).json({
+      error: "Kwota nizsza od naleznej",
+      code: "underpaid",
+      expectedEur: (expected / 100).toFixed(2),
+      receivedEur: (received / 100).toFixed(2),
+      shortfallEur: ((expected - received) / 100).toFixed(2),
+    });
+  }
+
+  await pool.query(
+    `UPDATE orders SET status = 'paid', paid_at = NOW(), fulfilled_at = NOW(),
+       payment_status = 'SUCCESS', payment_status_details = 'manual_transfer',
+       transfer_received_cents = $2, transfer_confirmed_at = NOW(),
+       transfer_confirmed_by = $3, transfer_note = $4
+     WHERE id = $1`,
+    [order.id, received, String(by || "admin").slice(0, 120), note ? String(note).slice(0, 2000) : null]
+  );
+  console.log(`[przelew] ${ref} potwierdzony recznie, ${(received / 100).toFixed(2)} EUR`);
+
+  // Dalej dokladnie to samo, co po SUCCESS z bramki.
+  sendOrderPaidEmails(pool, order.id).catch((e) =>
+    console.error("[przelew] wysylka maili nie powiodla sie:", e.message)
+  );
+  moveOrderFilesToOrders(pool, order.id, ref).catch((e) =>
+    console.error("[dysk] przeniesienie plikow nie powiodlo sie:", e.message)
+  );
+
+  res.json({ ok: true, orderRef: ref, receivedEur: (received / 100).toFixed(2) });
 });
 
 /** Parametry startu transakcji, podpisane po stronie serwera */
@@ -1621,7 +1797,8 @@ app.get("/api/orders/:ref", async (req, res) => {
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
   const { rows } = await pool.query(
     `SELECT order_ref, status, total_grosze, lang, paid_at, expires_at, delivery_method,
-            revisions_included, revisions_used
+            revisions_included, revisions_used,
+            payment_method, amount_eur_cents, transfer_confirmed_at
        FROM orders WHERE order_ref = $1`,
     [String(req.params.ref || "")]
   );
@@ -1639,6 +1816,17 @@ app.get("/api/orders/:ref", async (req, res) => {
     revisions: o.revisions_included
       ? { included: o.revisions_included, used: o.revisions_used ?? 0 }
       : null,
+    paymentMethod: o.payment_method || "autopay",
+    transfer:
+      o.payment_method === "bank_transfer" && o.amount_eur_cents != null
+        ? {
+            ...TRANSFER,
+            amountEur: (o.amount_eur_cents / 100).toFixed(2),
+            reference: o.order_ref,
+            dueAt: o.expires_at,
+            confirmedAt: o.transfer_confirmed_at,
+          }
+        : null,
   });
 });
 

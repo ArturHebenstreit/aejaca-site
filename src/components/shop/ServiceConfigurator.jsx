@@ -15,6 +15,7 @@ import { getService } from "../../data/orderCatalog.js";
 import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS } from "../../pricing/packaging.js";
 import { t, quantityBounds } from "../../pricing/config.js";
 import { TileGroup, StepSlider, QtyStepper, FileDrop, PersonalizationField, JobDescription, BlockedReasons } from "./ConfigControls.jsx";
+import { useMoney } from "../../shop/money.js";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
 
@@ -181,12 +182,12 @@ const UI = {
   },
 };
 
-const money = (g) => `${(g / 100).toFixed(2).replace(".", ",")} PLN`;
 
 /** Pola, ktore lepiej czytaja sie jako suwak niz jako kafelki */
 const SLIDER_FIELDS = new Set(["sizeId", "infillId", "precisionId", "layerId", "areaId", "pathId", "volumeId", "quantityId"]);
 
 export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
+  const { money } = useMoney();
   const u = UI[lang] || UI.en;
   const service = getService(card.service);
   const cart = useCart();

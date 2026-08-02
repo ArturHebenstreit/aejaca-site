@@ -14,6 +14,7 @@ import { buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { t } from "../pricing/config.js";
+import { useMoney } from "../shop/money.js";
 import { getProduct, WITHDRAWAL, SHOP_CATEGORIES } from "../data/shopCatalog.js";
 import NotFound from "./NotFound.jsx";
 
@@ -98,10 +99,10 @@ const UI = {
   },
 };
 
-const money = (grosze) => `${(grosze / 100).toFixed(2).replace(".", ",")} PLN`;
 
 export default function Product() {
   const { lang } = useLanguage();
+  const { money } = useMoney();
   const u = UI[lang] || UI.en;
   const { slug } = useParams();
   const product = getProduct(slug);
@@ -188,7 +189,7 @@ export default function Product() {
               </h1>
               <p className="text-neutral-400 text-sm mb-5">{t(product.short, lang)}</p>
 
-              <div className="flex items-baseline gap-3 mb-1">
+              <div className="mb-1">
                 <span className="text-3xl font-extrabold text-white">{money(product.priceGrosze)}</span>
               </div>
 

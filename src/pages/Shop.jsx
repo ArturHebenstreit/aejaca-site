@@ -14,6 +14,7 @@ import { buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { t } from "../pricing/config.js";
+import { useMoney } from "../shop/money.js";
 import {
   SHOP_CATEGORIES, productsByCategory, personalizedByCategory, serviceCardsByCategory,
   PRODUCTS, PERSONALIZED,
@@ -138,8 +139,6 @@ const UI = {
     items: "Pos.",
   },
 };
-
-const money = (grosze) => `${(grosze / 100).toFixed(2).replace(".", ",")} PLN`;
 
 function Badge({ children, tone = "neutral" }) {
   const tones = {
@@ -333,7 +332,7 @@ function StickySectionTabs({ items, u, navRef }) {
   );
 }
 
-function ProductCard({ product, lang, u }) {
+function ProductCard({ product, lang, u, money }) {
   const isDigital = product.kind === "digital";
   const soldOut = product.stock === 0;
 
@@ -383,7 +382,7 @@ function ProductCard({ product, lang, u }) {
   );
 }
 
-function ServiceCard({ card, lang, u }) {
+function ServiceCard({ card, lang, u, money }) {
   return (
     <Link
       to={`/shop/service/${card.id}/`}
@@ -443,6 +442,7 @@ export default function Shop() {
   const u = UI[lang] || UI.en;
   const { pathname } = useLocation();
   const navRef = useRef(null);
+  const { money } = useMoney();
 
   // Prerender renderuje sciezki bez koncowego ukosnika, przegladarka z nim,
   // wiec porownujemy na znormalizowanej postaci.
@@ -570,7 +570,7 @@ export default function Shop() {
               />
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                 {products.map((p) => (
-                  <ProductCard key={p.slug} product={p} lang={lang} u={u} />
+                  <ProductCard key={p.slug} product={p} lang={lang} u={u} money={money} />
                 ))}
               </div>
             </section>
@@ -590,7 +590,7 @@ export default function Shop() {
             {personalized.length > 0 ? (
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                 {personalized.map((p) => (
-                  <ProductCard key={p.slug} product={p} lang={lang} u={u} />
+                  <ProductCard key={p.slug} product={p} lang={lang} u={u} money={money} />
                 ))}
               </div>
             ) : (
@@ -613,7 +613,7 @@ export default function Shop() {
               />
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                 {services.map((s) => (
-                  <ServiceCard key={s.id} card={s} lang={lang} u={u} />
+                  <ServiceCard key={s.id} card={s} lang={lang} u={u} money={money} />
                 ))}
               </div>
             </section>

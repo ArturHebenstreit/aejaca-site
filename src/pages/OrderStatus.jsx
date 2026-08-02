@@ -13,6 +13,19 @@ import SEOHead from "../seo/SEOHead.jsx";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
 
+/** Wiersz danych do przelewu. Numer rachunku i tytul musza byc latwe do
+ *  przepisania, wiec ida czcionka o stalej szerokosci i lamia sie w calosci. */
+function TransferRow({ label, value, mono, highlight }) {
+  return (
+    <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 py-1.5">
+      <span className="text-neutral-500 text-[11px]">{label}</span>
+      <span className={`text-sm break-all ${mono ? "font-mono text-xs" : ""} ${highlight ? "text-blue-300 font-semibold" : "text-white"}`}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
 const UI = {
   pl: {
     title: "Status zamówienia",
@@ -31,6 +44,17 @@ const UI = {
     revisions: "Wykorzystane poprawki",
     contact: "Napisz do nas",
     home: "Wróć na stronę główną",
+    transferTitle: "Zamówienie przyjęte, czekamy na przelew",
+    transferDesc: "Nic nie zostało pobrane. Poniżej masz dane do przelewu. Ten sam komplet wysłaliśmy Ci mailem.",
+    transferAmount: "Kwota do przelewu",
+    transferIban: "Numer rachunku (IBAN)",
+    transferBic: "BIC / SWIFT",
+    transferHolder: "Odbiorca",
+    transferBank: "Bank",
+    transferRef: "Tytuł przelewu",
+    transferDue: "Kwota obowiązuje do",
+    transferAfter: "Po zaksięgowaniu wpłaty potwierdzamy ją ręcznie i wysyłamy potwierdzenie przyjęcia należności wraz z informacją o rozpoczęciu prac. Termin realizacji liczymy od tego momentu.",
+    transferMissing: "Dane rachunku nie są jeszcze skonfigurowane. Napisz do nas, prześlemy je od ręki.",
   },
   en: {
     title: "Order status",
@@ -49,6 +73,17 @@ const UI = {
     revisions: "Revisions used",
     contact: "Write to us",
     home: "Back to home page",
+    transferTitle: "Order received, waiting for your transfer",
+    transferDesc: "Nothing has been charged. Below are the transfer details. We sent you the same set by email.",
+    transferAmount: "Amount to transfer",
+    transferIban: "Account number (IBAN)",
+    transferBic: "BIC / SWIFT",
+    transferHolder: "Beneficiary",
+    transferBank: "Bank",
+    transferRef: "Payment reference",
+    transferDue: "Amount valid until",
+    transferAfter: "Once the money clears we confirm it by hand and send you a receipt confirmation together with a note that work has started. The lead time is counted from that moment.",
+    transferMissing: "The account details are not configured yet. Write to us and we will send them straight away.",
   },
   de: {
     title: "Bestellstatus",
@@ -67,6 +102,17 @@ const UI = {
     revisions: "Genutzte Korrekturen",
     contact: "Schreiben Sie uns",
     home: "Zurück zur Startseite",
+    transferTitle: "Bestellung eingegangen, wir warten auf Ihre Überweisung",
+    transferDesc: "Es wurde nichts abgebucht. Unten finden Sie die Überweisungsdaten. Dieselben Angaben haben wir Ihnen per E-Mail geschickt.",
+    transferAmount: "Zu überweisender Betrag",
+    transferIban: "Kontonummer (IBAN)",
+    transferBic: "BIC / SWIFT",
+    transferHolder: "Empfänger",
+    transferBank: "Bank",
+    transferRef: "Verwendungszweck",
+    transferDue: "Betrag gültig bis",
+    transferAfter: "Nach Geldeingang bestätigen wir ihn persönlich und senden Ihnen die Zahlungsbestätigung samt Hinweis, dass die Arbeit beginnt. Die Lieferzeit zählt ab diesem Moment.",
+    transferMissing: "Die Kontodaten sind noch nicht hinterlegt. Schreiben Sie uns, wir senden sie umgehend.",
   },
 };
 
@@ -99,7 +145,9 @@ export default function OrderStatus() {
         if (cancelled) return;
         setOrder(data);
         setLoading(false);
-        if (data.status !== "paid" && attempts < 5) {
+        // Przy przelewie nie ma czego odpytywac: potwierdzenie przychodzi
+        // z naszej strony, nie z bramki.
+        if (data.status !== "paid" && data.status !== "awaiting_transfer" && attempts < 5) {
           attempts++;
           setTimeout(check, 3000);
         }
@@ -113,10 +161,19 @@ export default function OrderStatus() {
 
   const paid = order?.status === "paid";
   const failed = order?.payment_status === "FAILURE";
+  // Przelew czeka na nasze reczne potwierdzenie, wiec ta strona nie jest
+  // "czekamy na bank", tylko instrukcja, co klient ma teraz zrobic.
+  const awaitingTransfer = order?.status === "awaiting_transfer";
+  const tr = order?.transfer || null;
 
   let icon = <Clock className="w-12 h-12 text-amber-400" />;
   let title = u.pendingTitle;
   let desc = u.pendingDesc;
+
+  if (awaitingTransfer) {
+    title = u.transferTitle;
+    desc = u.transferDesc;
+  }
 
   if (signatureError) {
     icon = <XCircle className="w-12 h-12 text-red-400" />;
@@ -152,6 +209,32 @@ export default function OrderStatus() {
               <div className="flex justify-center mb-5">{icon}</div>
               <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white mb-3">{title}</h1>
               <p className="text-neutral-400 text-sm leading-relaxed mb-6">{desc}</p>
+
+              {awaitingTransfer && (
+                tr?.iban ? (
+                  <div className="rounded-xl border border-blue-400/25 bg-blue-400/[0.05] p-4 mb-6 text-left">
+                    <div className="text-center pb-3 mb-3 border-b border-white/10">
+                      <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-1">{u.transferAmount}</div>
+                      <div className="text-3xl font-extrabold text-white tabular-nums">{tr.amountEur} EUR</div>
+                    </div>
+                    <TransferRow label={u.transferIban} value={tr.iban} mono />
+                    {tr.bic && <TransferRow label={u.transferBic} value={tr.bic} mono />}
+                    {tr.holder && <TransferRow label={u.transferHolder} value={tr.holder} />}
+                    {tr.bank && <TransferRow label={u.transferBank} value={tr.bank} />}
+                    <TransferRow label={u.transferRef} value={tr.reference} mono highlight />
+                    {tr.dueAt && (
+                      <TransferRow label={u.transferDue} value={new Date(tr.dueAt).toLocaleDateString(lang === "pl" ? "pl-PL" : lang === "de" ? "de-DE" : "en-IE")} />
+                    )}
+                    <p className="text-neutral-500 text-[11px] leading-relaxed mt-3 pt-3 border-t border-white/10">
+                      {u.transferAfter}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 p-4 mb-6">
+                    <p className="text-amber-200 text-xs leading-relaxed">{u.transferMissing}</p>
+                  </div>
+                )
+              )}
 
               {order && (
                 <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-sm mb-6">

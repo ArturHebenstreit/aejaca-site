@@ -14,6 +14,7 @@ import Breadcrumb from "../components/Breadcrumb.jsx";
 import { useCart } from "../cart/CartContext.jsx";
 import { getPackaging } from "../pricing/packaging.js";
 import { t } from "../pricing/config.js";
+import { useMoney } from "../shop/money.js";
 
 const UI = {
   pl: {
@@ -90,10 +91,10 @@ const UI = {
   },
 };
 
-const money = (g) => `${(g / 100).toFixed(2).replace(".", ",")} PLN`;
 
 export default function Cart() {
   const { lang } = useLanguage();
+  const { money } = useMoney();
   const u = UI[lang] || UI.en;
   const { items, subtotalGrosze, remove, setQty, hasVolatile, ready } = useCart();
 

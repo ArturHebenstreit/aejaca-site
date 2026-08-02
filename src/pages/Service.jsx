@@ -15,6 +15,7 @@ import { buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { t } from "../pricing/config.js";
+import { useMoney } from "../shop/money.js";
 import { getServiceCard } from "../data/serviceCatalog.js";
 import ServiceConfigurator from "../components/shop/ServiceConfigurator.jsx";
 import { SHOP_CATEGORIES } from "../data/shopCatalog.js";
@@ -92,10 +93,10 @@ const UI = {
   },
 };
 
-const money = (grosze) => `${(grosze / 100).toFixed(2).replace(".", ",")} PLN`;
 
 export default function Service() {
   const { lang } = useLanguage();
+  const { money } = useMoney();
   const u = UI[lang] || UI.en;
   const { id } = useParams();
   const card = getServiceCard(id);
