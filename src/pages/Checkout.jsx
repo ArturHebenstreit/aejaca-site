@@ -16,6 +16,7 @@ import { useCart } from "../cart/CartContext.jsx";
 import { DELIVERY_METHODS } from "../data/orderCatalog.js";
 import { t } from "../pricing/config.js";
 import { API_URL, postJSON, submitPaymentForm } from "../utils/api.js";
+import { useMoney, CHARGED_IN_PLN } from "../shop/money.js";
 
 const UI = {
   pl: {
@@ -116,7 +117,6 @@ const UI = {
   },
 };
 
-const money = (g) => `${(g / 100).toFixed(2).replace(".", ",")} PLN`;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function Field({ label, value, onChange, type = "text", required, placeholder }) {
@@ -153,6 +153,7 @@ function Consent({ checked, onChange, children }) {
 
 export default function Checkout() {
   const { lang } = useLanguage();
+  const { money, alt, showEur } = useMoney();
   const u = UI[lang] || UI.en;
   const navigate = useNavigate();
   const { items, subtotalGrosze, ready, clear } = useCart();
@@ -301,8 +302,16 @@ export default function Checkout() {
             </div>
             <div className="flex justify-between font-bold pt-3 mt-3 border-t border-white/10">
               <span className="text-white">{u.total}</span>
-              <span className="text-blue-400 text-xl">{money(totalGrosze)}</span>
+              <span className="text-right">
+                <span className="block text-blue-400 text-xl">{money(totalGrosze)}</span>
+                {showEur && <span className="block text-neutral-500 text-[11px] font-normal">{alt(totalGrosze)}</span>}
+              </span>
             </div>
+            {/* Cena jest w euro, ale obciazenie idzie w zlotowkach: klient musi
+                to wiedziec przed klikiem, a nie z wyciagu z banku. */}
+            {showEur && (
+              <p className="text-neutral-500 text-[11px] leading-relaxed pt-3">{CHARGED_IN_PLN[lang]}</p>
+            )}
           </div>
 
           <h2 className="text-white font-semibold mb-4">{u.yourData}</h2>

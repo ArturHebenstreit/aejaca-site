@@ -16,6 +16,7 @@ import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { SERVICES, GROUPS, getService, DELIVERY_METHODS } from "../data/orderCatalog.js";
 import { t } from "../pricing/config.js";
+import { useMoney } from "../shop/money.js";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
 
@@ -288,6 +289,7 @@ async function postJSON(url, body, timeoutMs = 20000) {
 
 export default function Order() {
   const { lang } = useLanguage();
+  const { money, alt, showEur } = useMoney();
   const u = UI[lang] || UI.en;
 
   const [step, setStep] = useState(0);
@@ -468,7 +470,6 @@ export default function Order() {
     }
   }
 
-  const money = (grosze) => (grosze / 100).toFixed(2).replace(".", ",");
 
   return (
     <>
@@ -625,8 +626,10 @@ export default function Order() {
                       <span className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
                         {money(price.unitGrosze)}
                       </span>
-                      <span className="text-lg font-semibold text-neutral-400">PLN</span>
                     </div>
+                    {showEur && (
+                      <div className="text-neutral-500 text-xs mt-1">{alt(price.unitGrosze)}</div>
+                    )}
                     <div className="text-neutral-500 text-xs mt-1">{u.perPc}</div>
 
                     {price.qty > 1 && (
@@ -634,7 +637,7 @@ export default function Order() {
                         <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-1">
                           {u.total}: {price.qty} {u.pcs}
                         </div>
-                        <div className="text-2xl font-bold text-blue-400">{money(price.lineGrosze)} PLN</div>
+                        <div className="text-2xl font-bold text-blue-400">{money(price.lineGrosze)}</div>
                       </div>
                     )}
 
@@ -690,7 +693,7 @@ export default function Order() {
                       <div className="text-neutral-500 text-[11px]">{t(d.note, lang)}</div>
                     </div>
                     <div className="text-sm font-semibold text-white">
-                      {d.grosze === 0 ? "0,00" : money(d.grosze)} PLN
+                      {money(d.grosze)}
                     </div>
                   </button>
                 ))}
@@ -746,15 +749,18 @@ export default function Order() {
               <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 mb-6 text-sm">
                 <div className="flex justify-between mb-2">
                   <span className="text-neutral-400">{price.title} × {price.qty}</span>
-                  <span className="text-white">{money(price.lineGrosze)} PLN</span>
+                  <span className="text-white">{money(price.lineGrosze)}</span>
                 </div>
                 <div className="flex justify-between mb-3 pb-3 border-b border-white/5">
                   <span className="text-neutral-400">{u.shipping}: {t(delivery.label, lang)}</span>
-                  <span className="text-white">{money(delivery.grosze)} PLN</span>
+                  <span className="text-white">{money(delivery.grosze)}</span>
                 </div>
                 <div className="flex justify-between font-bold">
                   <span className="text-white">{u.total}</span>
-                  <span className="text-blue-400 text-lg">{money(totalGrosze)} PLN</span>
+                  <span className="text-right">
+                    <span className="block text-blue-400 text-lg">{money(totalGrosze)}</span>
+                    {showEur && <span className="block text-neutral-500 text-[11px] font-normal">{alt(totalGrosze)}</span>}
+                  </span>
                 </div>
               </div>
 
@@ -800,7 +806,7 @@ export default function Order() {
                 {submitting ? (
                   <><Loader2 className="w-4 h-4 animate-spin" />{u.redirecting}</>
                 ) : (
-                  <><ShieldCheck className="w-4 h-4" />{u.payNow} {money(totalGrosze)} PLN</>
+                  <><ShieldCheck className="w-4 h-4" />{u.payNow} {money(totalGrosze)}</>
                 )}
               </button>
             </div>

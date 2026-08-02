@@ -14,6 +14,7 @@ import Breadcrumb from "../components/Breadcrumb.jsx";
 import { useCart } from "../cart/CartContext.jsx";
 import { getPackaging } from "../pricing/packaging.js";
 import { t } from "../pricing/config.js";
+import { useMoney } from "../shop/money.js";
 
 const UI = {
   pl: {
@@ -90,10 +91,10 @@ const UI = {
   },
 };
 
-const money = (g) => `${(g / 100).toFixed(2).replace(".", ",")} PLN`;
 
 export default function Cart() {
   const { lang } = useLanguage();
+  const { money, alt, showEur } = useMoney();
   const u = UI[lang] || UI.en;
   const { items, subtotalGrosze, remove, setQty, hasVolatile, ready } = useCart();
 
@@ -211,7 +212,10 @@ export default function Cart() {
               <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-neutral-300 text-sm">{u.subtotal}</span>
-                  <span className="text-white font-bold text-xl">{money(subtotalGrosze)}</span>
+                  <span className="text-right">
+                    <span className="block text-white font-bold text-xl">{money(subtotalGrosze)}</span>
+                    {showEur && <span className="block text-neutral-500 text-[11px]">{alt(subtotalGrosze)}</span>}
+                  </span>
                 </div>
                 <p className="text-neutral-600 text-[11px] mb-4">{u.shippingNote}</p>
                 <Link
