@@ -60,10 +60,11 @@ export function useMoney() {
   };
 }
 
-// Zdanie o kursie. Cena w euro jest cena ostateczna: klient przelewa
-// dokladnie te kwote i nic nie doplaca.
+// Zdanie o cenie w euro. Swiadomie nie obiecuje "zadnych doplat": przy
+// wysylce poza Unie clo pobiera kurier przy doreczeniu i jest to poza nasza
+// cena. Tresc o cle stoi w kasie, przy wyborze kraju.
 export const EUR_PRICE_NOTE = {
   pl: null,
-  en: "Prices in EUR are final. You transfer exactly this amount, with no surcharge on delivery.",
-  de: "Die Preise in EUR sind Endpreise. Sie überweisen genau diesen Betrag, ohne Aufschlag bei Lieferung.",
+  en: "Prices in EUR are final for the goods and shipping. Customs duty outside the EU is collected by the courier on delivery.",
+  de: "Die Preise in EUR sind Endpreise für Ware und Versand. Zoll außerhalb der EU zieht der Kurier bei der Zustellung ein.",
 };

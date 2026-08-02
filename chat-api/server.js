@@ -17,6 +17,7 @@ import {
 } from "./autopay.js";
 import { packagingGrosze, sanitizePersonalization } from "./pricing/packaging.js";
 import { eurCentsFromGrosze } from "./pricing/currency.js";
+import { shippingGrosze as shippingCost, needsCustoms, zoneForCountry } from "./pricing/shipping.js";
 import { sendOrderPaidEmails, sendTransferInstructions } from "./orderMail.js";
 
 const app = express();
@@ -1423,7 +1424,18 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
     }
 
     const itemsTotal = priced.reduce((sum, i) => sum + i.lineGrosze, 0);
-    const shipping = Number.isInteger(delivery?.shippingGrosze) ? delivery.shippingGrosze : 0;
+
+    // Koszt wysylki liczymy tutaj, z kraju i metody. Przyjecie kwoty od
+    // przegladarki pozwalaloby zamowic paczke do Australii za cene paczkomatu.
+    const country = String(delivery?.country || "PL").toUpperCase();
+    const method = delivery?.method || "pickup";
+    const shipping = shippingCost(method, country, itemsTotal);
+    if (shipping === null) {
+      return res.status(400).json({
+        error: "Ta metoda dostawy nie jest dostepna dla wybranego kraju",
+        code: "delivery_unavailable",
+      });
+    }
     const total = itemsTotal + shipping;
 
     const limit = await checkQuarterlyLimit(pool, total);
@@ -1470,7 +1482,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
        customer.email.trim().toLowerCase(), customer.name || null, customer.phone || null,
        delivery?.method || null, delivery?.point || null, delivery?.addressLine1 || null,
        delivery?.addressLine2 || null, delivery?.postalCode || null, delivery?.city || null,
-       delivery?.country || "PL",
+       country,
        consents?.waiveWithdrawal ? new Date() : null,
        consents?.digitalImmediate ? new Date() : null,
        token, createHash("sha256").update(extractIP(req)).digest("hex").slice(0, 30), expiresAt,

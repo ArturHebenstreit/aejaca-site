@@ -17,6 +17,7 @@ import { DELIVERY_METHODS } from "../data/orderCatalog.js";
 import { t } from "../pricing/config.js";
 import { API_URL, postJSON, submitPaymentForm } from "../utils/api.js";
 import { useMoney, formatPln } from "../shop/money.js";
+import { SHIPPING_COUNTRIES, shippingOptions, shippingGrosze, needsCustoms } from "../pricing/shipping.js";
 
 const UI = {
   pl: {
@@ -50,6 +51,14 @@ const UI = {
     blocked: "Nie udało się otworzyć strony płatności. Zamówienie jest zapisane, napisz do nas z jego numerem, a prześlemy link do zapłaty.",
     timeout: "Serwer nie odpowiedział w wyznaczonym czasie. Spróbuj ponownie albo napisz do nas.",
     generic: "Coś poszło nie tak",
+    country: "Kraj dostawy",
+    carrier: "Przewoźnik",
+    businessDays: "dni roboczych",
+    customsTitle: "Przesyłka poza Unię Europejską",
+    customsBody: "Cło i podatek importowy nalicza urząd celny kraju odbiorcy, a pobiera je kurier przy doręczeniu. Nie są zawarte w cenie i nie możemy ich za Ciebie opłacić. Do paczki dołączamy deklarację celną z opisem zawartości i wartością zamówienia.",
+    handlingNote: "W cenie wysyłki zagranicznej zawarte jest 10 PLN za obsługę nadania i dokumentów.",
+    heavyTitle: "Przesyłka powyżej 2 kg",
+    heavyBody: "Przy tej wadze koszt zależy od kierunku zbyt mocno, żeby podać go z góry. Napisz do nas, wycenimy wysyłkę indywidualnie.",
     payInstant: "Płatność natychmiastowa",
     payInstantNote: "BLIK lub przelew z polskiego banku. Rozliczenie w złotówkach.",
     payTransfer: "Przelew bankowy w euro",
@@ -94,6 +103,14 @@ const UI = {
     blocked: "We could not open the payment page. Your order is saved, write to us with its number and we will send a payment link.",
     timeout: "The server did not respond in time. Please try again or write to us.",
     generic: "Something went wrong",
+    country: "Delivery country",
+    carrier: "Carrier",
+    businessDays: "business days",
+    customsTitle: "Shipment outside the European Union",
+    customsBody: "Customs duty and import tax are set by the customs office of the destination country and collected by the courier on delivery. They are not included in the price and we cannot pay them on your behalf. We attach a customs declaration with the contents and the order value.",
+    handlingNote: "International shipping includes 10 PLN for handling the dispatch and the paperwork.",
+    heavyTitle: "Shipment over 2 kg",
+    heavyBody: "At this weight the cost depends too much on the destination to state upfront. Write to us and we will quote the shipping individually.",
     payInstant: "Instant payment",
     payInstantNote: "BLIK or a link to a Polish bank. Requires an account in a Polish bank, settled in PLN.",
     payTransfer: "Bank transfer in EUR",
@@ -138,6 +155,14 @@ const UI = {
     blocked: "Die Zahlungsseite konnte nicht geöffnet werden. Ihre Bestellung ist gespeichert, schreiben Sie uns mit der Nummer.",
     timeout: "Der Server hat nicht rechtzeitig geantwortet. Bitte erneut versuchen oder uns schreiben.",
     generic: "Etwas ist schiefgelaufen",
+    country: "Lieferland",
+    carrier: "Versanddienstleister",
+    businessDays: "Werktage",
+    customsTitle: "Sendung außerhalb der Europäischen Union",
+    customsBody: "Zoll und Einfuhrsteuer setzt die Zollbehörde des Bestimmungslandes fest, der Kurier zieht sie bei der Zustellung ein. Sie sind nicht im Preis enthalten und wir können sie nicht für Sie entrichten. Der Sendung liegt eine Zollerklärung mit Inhalt und Bestellwert bei.",
+    handlingNote: "Im Auslandsversand sind 10 PLN für die Abwicklung und die Papiere enthalten.",
+    heavyTitle: "Sendung über 2 kg",
+    heavyBody: "Bei diesem Gewicht hängen die Kosten zu stark vom Ziel ab, um sie vorab zu nennen. Schreiben Sie uns, wir kalkulieren den Versand individuell.",
     payInstant: "Sofortzahlung",
     payInstantNote: "BLIK oder Link zu einer polnischen Bank. Erfordert ein Konto in Polen, Abrechnung in PLN.",
     payTransfer: "Banküberweisung in EUR",
@@ -152,6 +177,25 @@ const UI = {
     placeOrder: "Bestellen und per Überweisung zahlen",
   },
 };
+
+/** Nazwy krajow bierzemy z przegladarki, zeby nie utrzymywac listy w trzech
+ *  jezykach. Gdy srodowisko tego nie potrafi, zostaje kod ISO. */
+function countryName(code, lang) {
+  try {
+    return new Intl.DisplayNames([lang === "pl" ? "pl" : lang === "de" ? "de" : "en"], { type: "region" }).of(code) || code;
+  } catch {
+    return code;
+  }
+}
+
+/** Lista posortowana alfabetycznie w jezyku klienta. Kolejnosc stref jest
+ *  nasza sprawa, klient szuka swojego kraju po nazwie. */
+function countryList(lang) {
+  const locale = lang === "pl" ? "pl" : lang === "de" ? "de" : "en";
+  return SHIPPING_COUNTRIES
+    .map((code) => ({ code, name: countryName(code, lang) }))
+    .sort((a, b) => a.name.localeCompare(b.name, locale));
+}
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -195,7 +239,10 @@ export default function Checkout() {
   const { items, subtotalGrosze, ready, clear } = useCart();
 
   const [customer, setCustomer] = useState({ name: "", email: "", phone: "" });
-  const [deliveryId, setDeliveryId] = useState("inpost_locker");
+  // Klient czytajacy strone po angielsku lub niemiecku prawie nigdy nie wysyla
+  // do Polski, wiec nie zaczynamy od paczkomatu, ktorego u siebie nie ma.
+  const [country, setCountry] = useState(lang === "de" ? "DE" : lang === "en" ? "GB" : "PL");
+  const [deliveryId, setDeliveryId] = useState(lang === "pl" ? "inpost_locker" : "courier");
   const [addr, setAddr] = useState({ line1: "", postalCode: "", city: "", point: "" });
   const [consents, setConsents] = useState({ terms: false, waiveWithdrawal: false, digitalImmediate: false });
   const [gatewayId, setGatewayId] = useState(0);
@@ -211,9 +258,25 @@ export default function Checkout() {
   const hasDigital = items.some((i) => i.withdrawal === "digital");
   const onlyDigital = items.length > 0 && items.every((i) => i.withdrawal === "digital");
 
+  // Lista metod zalezy od kraju: paczkomat istnieje tylko w Polsce, a kurier
+  // kosztuje inaczej w kazdej strefie.
+  const options = shippingOptions(country, subtotalGrosze);
+  const optionIds = options.map((o) => o.id);
+
+  useEffect(() => {
+    if (!onlyDigital && optionIds.length && !optionIds.includes(deliveryId)) {
+      setDeliveryId(optionIds[0]);
+    }
+  }, [country, onlyDigital, deliveryId, optionIds.join(",")]);
+
+  const deliveryGrosze = onlyDigital ? 0 : shippingGrosze(deliveryId, country, subtotalGrosze) ?? 0;
+  const deliveryMeta = DELIVERY_METHODS.find((d) => d.id === deliveryId);
   const delivery = onlyDigital
     ? { id: "digital", grosze: 0, label: { pl: "Dostawa cyfrowa", en: "Digital delivery", de: "Digitale Lieferung" } }
-    : DELIVERY_METHODS.find((d) => d.id === deliveryId) || DELIVERY_METHODS[0];
+    : { id: deliveryId, grosze: deliveryGrosze, label: deliveryMeta?.label || { pl: "Dostawa", en: "Delivery", de: "Lieferung" } };
+
+  const abroad = !onlyDigital && country !== "PL";
+  const customs = !onlyDigital && needsCustoms(country);
 
   const totalGrosze = subtotalGrosze + delivery.grosze;
 
@@ -262,6 +325,7 @@ export default function Checkout() {
         customer,
         delivery: {
           method: delivery.id,
+          country,
           shippingGrosze: delivery.grosze,
           point: addr.point || null,
           addressLine1: addr.line1 || null,
@@ -362,24 +426,57 @@ export default function Checkout() {
           {!onlyDigital && (
             <>
               <h2 className="text-white font-semibold mb-3 mt-8">{u.delivery}</h2>
-              <div className="space-y-2 mb-4">
-                {DELIVERY_METHODS.map((d) => (
-                  <button
-                    key={d.id}
-                    type="button"
-                    onClick={() => setDeliveryId(d.id)}
-                    className={`w-full flex items-center justify-between p-3 rounded-lg border text-left transition-all ${
-                      deliveryId === d.id ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
-                    }`}
-                  >
-                    <div>
-                      <div className={`text-sm ${deliveryId === d.id ? "text-blue-300 font-medium" : "text-neutral-300"}`}>{t(d.label, lang)}</div>
-                      <div className="text-neutral-500 text-[11px]">{t(d.note, lang)}</div>
-                    </div>
-                    <div className="text-sm font-semibold text-white">{money(d.grosze)}</div>
-                  </button>
+
+              <label className="block text-xs font-medium text-neutral-400 mb-1.5">{u.country}</label>
+              <select
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                className="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white mb-4
+                           focus:outline-none focus:border-blue-400/50"
+              >
+                {countryList(lang).map(({ code, name }) => (
+                  <option key={code} value={code}>{name}</option>
                 ))}
+              </select>
+
+              <div className="space-y-2 mb-4">
+                {options.map((o) => {
+                  const meta = DELIVERY_METHODS.find((d) => d.id === o.id);
+                  return (
+                    <button
+                      key={o.id}
+                      type="button"
+                      onClick={() => setDeliveryId(o.id)}
+                      className={`w-full flex items-center justify-between gap-3 p-3 rounded-lg border text-left transition-all ${
+                        deliveryId === o.id ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                      }`}
+                    >
+                      <div>
+                        <div className={`text-sm ${deliveryId === o.id ? "text-blue-300 font-medium" : "text-neutral-300"}`}>
+                          {meta ? t(meta.label, lang) : o.id}
+                        </div>
+                        <div className="text-neutral-500 text-[11px]">
+                          {o.id === "pickup"
+                            ? t(meta.note, lang)
+                            : `${u.carrier}: ${o.carrier}, ${o.leadDays} ${u.businessDays}`}
+                        </div>
+                      </div>
+                      <div className="text-sm font-semibold text-white whitespace-nowrap">{money(o.grosze)}</div>
+                    </button>
+                  );
+                })}
               </div>
+
+              {abroad && <p className="text-neutral-600 text-[11px] mb-4">{u.handlingNote}</p>}
+
+              {/* Clo pobiera kurier przy doreczeniu. Klient musi to wiedziec
+                  przed zaplata, a nie od kuriera pod drzwiami. */}
+              {customs && (
+                <div className="rounded-lg border border-amber-400/30 bg-amber-400/10 p-3 mb-4">
+                  <p className="text-amber-200 text-xs font-medium mb-1">{u.customsTitle}</p>
+                  <p className="text-amber-100/80 text-[11px] leading-relaxed">{u.customsBody}</p>
+                </div>
+              )}
 
               {deliveryId === "inpost_locker" && (
                 <Field label={u.lockerCode} value={addr.point} onChange={(v) => setAddr((a) => ({ ...a, point: v }))} required placeholder="WAW01A" />

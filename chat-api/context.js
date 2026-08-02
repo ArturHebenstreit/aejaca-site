@@ -671,6 +671,8 @@ WAZNE dla rozmowy z klientem:
 - Bizuteria wymaga opisu zlecenia (min. 20 znakow) przed dodaniem do koszyka, opcjonalnie ze zdjeciem lub szkicem. Grawer CO2, ciecie CO2 i fiber wymagaja pliku projektu
 - Przy grawerze CO2, cieciu CO2 i znakowaniu fiber klient moze dolaczyc projekt (SVG, DXF, PDF) jako zalacznik do zlecenia. Zalacznik NIE zmienia ceny, cene wyznacza wybrane pole lub dlugosc sciezki. Rysunek trafia na Dysk i do maila warsztatowego
   i wymiarow modelu. Pliki STEP nie sa jeszcze obslugiwane w wycenie automatycznej.
+- Wysylka wedlug stref, cena do 2 kg, w tym 10 zl obslugi nadania: Polska paczkomat 15,90 / kurier 24,90 (darmowa od 400 zl), Niemcy, Czechy, Slowacja, Litwa 100 zl, reszta UE 140 zl, Europa poza UE (UK, Norwegia, Szwajcaria) 190 zl, obie Ameryki 390 zl, Azja, Australia, Bliski Wschod, Afryka 450 zl. Powyzej 2 kg wycena indywidualna. Paczkomat InPost dziala WYLACZNIE w Polsce, za granica zostaje kurier DHL lub FedEx.
+- Clo: przy wysylce poza Unie Europejska clo i VAT importowy nalicza kraj odbiorcy, a pobiera kurier przy doreczeniu. NIE sa w naszej cenie i NIE pobieramy ich za klienta. Nigdy nie mow klientowi, ze cena zawiera clo. Do paczki dolaczamy deklaracje celna.
 - Platnosc: BLIK albo szybki przelew online, przez Autopay, w PLN. Dla klienta czytajacego strone po angielsku lub niemiecku ceny sa w EUR (kurs NBP + 8% na roznice kursowe) i platne przelewem SEPA na nasze konto w euro; numer rachunku pokazuje sie po zlozeniu zamowienia i przychodzi mailem, kwota jest wiazaca 7 dni, wplyw potwierdzamy recznie, a termin realizacji liczy sie od zaksiegowania.
   NIGDY nie mow klientowi, ze moze zaplacic karta, Google Pay ani Apple Pay.
 - Dostawa: paczkomat InPost 15,90 PLN, kurier 24,90 PLN, odbior osobisty 0 PLN

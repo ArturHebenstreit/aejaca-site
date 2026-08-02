@@ -642,6 +642,29 @@ Termin realizacji liczy się od zaksięgowania wpłaty, nie od złożenia zamów
 
 Dane rachunku żyją w zmiennych środowiskowych Railwaya: `TRANSFER_IBAN_EUR` (wymagana), `TRANSFER_BIC`, `TRANSFER_ACCOUNT_HOLDER`, `TRANSFER_BANK_NAME`. Bez pierwszej z nich backend odrzuca zamówienie przelewem, zamiast przyjąć je i zostawić klienta bez danych do zapłaty.
 
+### Wysyłka i cło
+
+Strefy i ceny leżą w `src/pricing/shipping.js`, czyli w rdzeniu kopiowanym do `chat-api`. Strona `/shipping/` i kasa czytają te same liczby, więc nie mogą się rozjechać. Wcześniej były wpisane osobno i różniły się kilkukrotnie.
+
+| Strefa | Kurier | Cena do 2 kg |
+|---|---|---|
+| Polska | InPost | paczkomat 15,90, kurier 24,90, od 400 zł za darmo |
+| Niemcy, Czechy, Słowacja, Litwa | DHL | 100 zł |
+| Pozostała UE | DHL | 140 zł |
+| Europa poza UE | DHL | 190 zł |
+| Ameryki | DHL / FedEx | 390 zł |
+| Azja, Australia, Bliski Wschód, Afryka | DHL / FedEx | 450 zł |
+
+Każda cena zagraniczna zawiera 10 zł obsługi nadania u brokera. Powyżej 2 kg wysyłka idzie do wyceny indywidualnej. Paczkomat działa wyłącznie w Polsce, bo międzynarodowa sieć InPost wymaga osobnej umowy.
+
+Ceny nie pochodzą z API przewoźnika: cennik DHL i FedEx wymaga konta firmowego z umową, którego przy działalności nierejestrowanej nie ma. Tabela jest utrzymywana ręcznie i celowo konserwatywna. Struktura jest przygotowana pod podmianę na odpytanie brokera, wystarczy zastąpić `shippingGrosze`.
+
+**Cło.** Poza Unią cło i VAT importowy nalicza kraj odbiorcy, a pobiera kurier przy doręczeniu. Nie doliczamy ich do ceny i nie wolno tego robić: nie jesteśmy agentem celnym w kraju odbiorcy, więc pobranych pieniędzy nie mielibyśmy komu przekazać. Kasa pokazuje ostrzeżenie przy każdym kraju spoza UE, a regulamin mówi to samo w trzech językach. Do paczki dołączamy deklarację celną.
+
+**VAT w UE.** Sprzedaż wysyłkowa do konsumentów w innych krajach UE powyżej 10 000 EUR rocznie oznacza rejestrację w OSS i VAT kraju odbiorcy. Limit działalności nierejestrowanej (~43 000 zł rocznie) uderza wcześniej, więc dziś to nie dotyczy, ale wymaga potwierdzenia u księgowej przed rejestracją działalności.
+
+Koszt wysyłki liczy **backend**, z kraju i metody. Przyjęcie kwoty od przeglądarki pozwalałoby zamówić paczkę do Australii za cenę paczkomatu.
+
 ### Limit kwartalny w kodzie
 
 `checkQuarterlyLimit` blokuje przyjęcie płatności przy **10 613,50 PLN**, czyli 200 zł przed progiem 10 813,50 PLN, żeby zamówienie w locie nie przebiło limitu działalności nierejestrowanej. Widok `quarterly_revenue` w bazie pokazuje obrót narastająco.

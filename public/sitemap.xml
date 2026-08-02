@@ -125,7 +125,7 @@
   <!-- Order wizard, instant quote and payment -->
   <url>
     <loc>https://www.aejaca.com/order/</loc>
-    <lastmod>2026-07-31</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
 
@@ -155,7 +155,7 @@
   <!-- Shipping -->
   <url>
     <loc>https://www.aejaca.com/shipping/</loc>
-    <lastmod>2026-06-10</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.50</priority>
 
