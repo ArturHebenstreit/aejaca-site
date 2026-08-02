@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-02 | Wersja: 1.8*
+*Wygenerowano: 2026-08-02 | Wersja: 2.1*
 
 ---
 
@@ -634,13 +634,116 @@ Zamówienie w euro:
 
 1. Klient wybiera przelew, widzi pięć kroków procesu, jeszcze nic nie płaci.
 2. Backend zamraża kwotę w `amount_eur_cents` razem z `eur_rate` i ustawia status `awaiting_transfer`. Numer rachunku pojawia się dopiero teraz: na stronie zamówienia i w mailu.
-3. Kwota jest wiążąca 7 dni.
+3. Kwota i rezerwacja towaru obowiązują **3 dni robocze**, liczone z pominięciem sobót, niedziel i polskich świąt (`src/pricing/businessDays.js`). Czwartego dnia roboczego bez zaksięgowanej wpłaty rezerwacja spada, a towar wraca do sprzedaży. To zdanie stoi w kasie, w mailu z danymi do przelewu, na stronie zamówienia i w regulaminie, w trzech językach.
 4. Po wpływie potwierdzamy ręcznie w `/admin/transfers/` (token administracyjny w nagłówku `X-Admin-Token`). Potwierdzenie robi dokładnie to, co `SUCCESS` z ITN: ustawia `paid`, wysyła maile i przenosi pliki do folderu Zamówienia. Wykonuje się raz, bo pilnuje tego `fulfilled_at`.
 5. Niedopłata do 2% przechodzi bez pytania (opłaty banków pośredniczących), większa wymaga świadomego potwierdzenia.
 
 Termin realizacji liczy się od zaksięgowania wpłaty, nie od złożenia zamówienia, i tak mówi regulamin w trzech językach.
 
 Dane rachunku żyją w zmiennych środowiskowych Railwaya: `TRANSFER_IBAN_EUR` (wymagana), `TRANSFER_BIC`, `TRANSFER_ACCOUNT_HOLDER`, `TRANSFER_BANK_NAME`. Bez pierwszej z nich backend odrzuca zamówienie przelewem, zamiast przyjąć je i zostawić klienta bez danych do zapłaty.
+
+### Produkty i stany magazynowe
+
+Źródłem prawdy o produkcie jest **baza**, nie repozytorium: tytuł, opis, dane techniczne, zdjęcia, cena, waga, czas wysyłki, konfiguracja personalizacji i stan magazynowy siedzą w tabeli `products`. Zmiana stanu nie wymaga wdrożenia.
+
+Przed sprzedaniem tej samej sztuki dwa razy broni nas `product_reservations`:
+
+| Moment | Co się dzieje |
+|---|---|
+| złożenie zamówienia | powstaje rezerwacja, stan **nie** schodzi |
+| brak zapłaty | rezerwacja wygasa sama: 20 minut przy BLIK i pay-by-link, 3 dni robocze przy przelewie |
+| potwierdzona płatność | rezerwacja zamienia się w sprzedaż, stan schodzi, rośnie `sold_count` |
+| zamówienie po terminie | godzinny cron ustawia `expired` i oddaje towar do sprzedaży |
+
+Dostępność liczy widok `product_availability`: `stock` minus suma aktywnych rezerwacji. Produkt cyfrowy ma `stock = NULL`, czyli bez limitu, i nic go nie rezerwuje.
+
+Sprawdzenie dostępności i założenie rezerwacji idą w jednej transakcji z `SELECT ... FOR UPDATE` na wierszu produktu, więc dwa równoległe zamówienia na ostatnią sztukę ustawiają się w kolejce zamiast obydwa zobaczyć ją jako wolną. Gdy towaru zabraknie, świeże zamówienie jest kasowane, a klient dostaje `409 out_of_stock` z liczbą realnie dostępnych sztuk, zamiast linku do zapłaty za coś, czego nie wyślemy.
+
+Endpointy: `GET /api/products`, `GET /api/products/:slug` publicznie; `PUT /api/products/:slug`, `PATCH /api/products/:slug/stock` i `GET /api/admin/products` za nagłówkiem `X-Admin-Token`.
+
+Schemat: `scripts/products-schema.sql`, migracje wykonują się też przy starcie backendu.
+
+#### Stan pozycji w ofercie
+
+Jedno pole `products.status` zamiast kilku znaczników. Trzy osobne flagi (aktywny, widoczny, wyprzedany) dawałyby osiem kombinacji, z czego połowa nie znaczy nic, a pytanie "czy klient to kupi" wymagałoby sprawdzenia trzech pól w każdym miejscu.
+
+| Stan | W sklepie | Można kupić | Po co |
+|---|---|---|---|
+| `draft` | nie | nie | przygotowywany, nigdy nie był wystawiony |
+| `live` | tak | tak, jeśli są wolne sztuki | normalna sprzedaż |
+| `sold_out` | tak, z plakietką "wyprzedany, będzie ponownie" | nie | sprzedany poza sklepem, wróci na półkę |
+| `hidden` | nie | nie | chwilowo zdjęty, np. do poprawki zdjęć |
+| `retired` | nie | nie | wycofany na stałe |
+
+**Sprzedane na Etsy albo na miejscu**: jedno kliknięcie w panelu, skutek natychmiast, bez wdrożenia. Karty pytają o dostępność na żywo, więc `sold_out` od razu gasi przycisk zakupu i zostawia plakietkę, a `hidden` i `retired` zdejmują kafelek z listy. Strona produktu zostaje (bywa w zakładkach i w wynikach wyszukiwania), ale mówi wprost, że pozycji nie ma, i oddaje `Discontinued` w danych strukturalnych.
+
+`sold_out` nie rusza stanu magazynowego, bo rzecz nadal fizycznie leży, tylko jest już czyjaś. Własna sprzedaż zdejmuje sztuki sama, więc tam wystarcza `stock`.
+
+Rezerwacja przy zamówieniu wymaga `live`, więc pozycji zdjętej ze sprzedaży nie da się kupić także ze starej, otwartej karty ani z pominięciem sklepu.
+
+Dawna kolumna `active` została, ale niczym już nie steruje: wylicza się ze stanu wyzwalaczem, żeby zapytanie napisane ręcznie w bazie nie mogło rozjechać się z tym, co widzi sklep.
+
+#### Podkategorie i ikony
+
+Dwa działy to za grube sito, więc każdy produkt ma podkategorię (`products.subcategory`). Ona rysuje ikonę na karcie, buduje filtr nad listą i dzieli listę na półki. Definicja w jednym miejscu: `src/data/shopFacets.js`, zgodna z ograniczeniem w bazie.
+
+| Dział | Podkategoria | Ikona | Dlaczego ta ikona |
+|---|---|---|---|
+| Biżuteria | Damska | Venus | przyjęty znak płci, czytelny bez podpisu |
+| Biżuteria | Męska | Mars | j.w. |
+| Biżuteria | Dla zwierząt | PawPrint | łapa, jedyny oczywisty znak w tym zestawie |
+| sTuDiO | Druk FDM | Layers | druk warstwa po warstwie |
+| sTuDiO | Druk żywiczny MSLA | Sun | utwardzanie światłem |
+| sTuDiO | Laser CO2 | Flame | wiązka wypala materiał |
+| sTuDiO | Laser fiber | Zap | impuls znakujący metal |
+| sTuDiO | Żywica | Droplets | materiał lany |
+| sTuDiO | Cyfrowy | Download | nic nie wysyłamy, plik idzie mailem |
+
+Usługi mają własny podział, bo pytanie brzmi tam inaczej: nie "dla kogo", tylko "czym to wykonujemy". Pięć wartości: **Druk 3D** (Layers), **Laser** (Zap, cała rodzina CO2 i fiber razem, bo maszynę do materiału dobieramy my), **Żywica** (Droplets), **Jubilerstwo** (Gem), **Projektowanie** (FileCode).
+
+#### Wyszukiwarka i filtry
+
+Nad wszystkimi trzema sekcjami stoi jedno pole wyszukiwania. Szuka po tytule, zajawce, opisie i adresie pozycji w aktywnym języku, wymaga wystąpienia wszystkich słów zapytania, i obejmuje produkty, personalizacje oraz usługi naraz. Klient szukający "grawer" nie wie z góry, czy odpowiedzią jest gotowa wizytówka, personalizacja czy usługa, więc nie powinien szukać trzy razy.
+
+Filtry stoją nad każdą listą osobno i pokazują wyłącznie wartości obecne w tej liście, razem z liczbą pozycji. Filtr prowadzący do pustej listy jest gorszy niż jego brak, bo wygląda jak awaria. Przy jednej wartości pasek znika.
+
+Bez wybranego filtru lista dzieli się na półki po podkategorii, z nagłówkiem i ikoną. Po wybraniu filtru grupowanie znika, bo klient sam już zawęził. Pozycje bez podkategorii trafiają do grupy "Pozostałe" i nigdy nie wypadają z listy.
+
+#### Panel produktów
+
+`/admin/products/`, ten sam token co panel przelewów, `noindex` i `Disallow: /admin/` w robots. Tabela obejmuje **wszystkie** pozycje, także zdjęte ze sprzedaży: miniatura, tytuł, dział z podkategorią i ikoną, rodzaj oferty, cena, stan, rezerwacje, dostępność, licznik sprzedanych i wybór stanu pozycji. Do tego szukanie po nazwie i adresie oraz filtr "poza sprzedażą".
+
+Od ręki robi się tu dwie rzeczy, bo są codzienne: korekta stanu (`PATCH /api/products/:slug/stock`) i zmiana stanu pozycji (`PATCH /api/products/:slug/status`). Pięć stanów leży na wierzchu jako przyciski, bez rozwijanej listy, bo rzecz sprzedana na Etsy ma zejść ze sprzedaży jednym kliknięciem, a nie dwoma. Obie zmiany działają w sklepie natychmiast, bo karty pytają o dostępność na żywo. Zmiana treści, ceny albo zdjęć idzie przez `PUT /api/products/:slug` i wymaga jeszcze `npm run products:pull` oraz wdrożenia.
+
+#### Zdjęcia produktów
+
+Baza trzyma **ścieżki**, pliki leżą w repozytorium pod `/public/img/shop/`. Wybór świadomy: zdjęcia produktowe zmieniają się rzadko, a serwowane z tej samej domeny co strona ładują się szybciej niż z zewnętrznego dysku, co przy sklepie przekłada się na sprzedaż i pozycję w wyszukiwarce.
+
+Zasady, pilnowane przez `scripts/check-shop-images.mjs` w buildzie i przez walidację w `PUT /api/products/:slug`:
+
+| Reguła | Wartość |
+|---|---|
+| liczba zdjęć na produkt | od 1 do 5 |
+| ścieżka | zaczyna się od `/img/`, plik musi istnieć w repozytorium |
+| waga pliku | ostrzeżenie powyżej 200 kB, **błąd budowania** powyżej 400 kB |
+| format | webp (inne przechodzą z ostrzeżeniem) |
+
+Karta produktu pokazuje duże zdjęcie wybrane, a pod nim miniatury pozostałych.
+
+#### Katalog w repozytorium: odcisk bazy
+
+Strony sklepu są budowane statycznie i każda karta produktu musi istnieć jako plik, więc katalog wchodzi do repozytorium jako odcisk bazy: `src/data/products.generated.js`, plik generowany, nie edytujemy go ręcznie. Zdjęcia i tak wymagają wdrożenia, więc odcisk i pliki idą jednym commitem.
+
+Kolejność przy zmianie asortymentu:
+
+1. produkt w bazie (panel albo `PUT /api/products/:slug`), zdjęcia do `/public/img/shop/`
+2. `npm run products:pull` (odcisk katalogu)
+3. `npm run sitemap:shop` (adresy kart produktów)
+4. `npm run build`, commit, push
+
+Stan magazynowy z odcisku jest tylko punktem wyjścia: strony sklepu i karta produktu dopytują `/api/products` na żywo (`src/shop/availability.js`), więc sprzedana sztuka przestaje zachęcać do zakupu, nie czekając na kolejne wdrożenie.
+
+Dane startowe do pustej bazy: `src/data/productSeed.js` plus `npm run products:seed` (pozycje trafiają tam jako ukryte, chyba że dodasz `--activate`).
 
 ### Tryb jasny: kontrola w buildzie
 
@@ -703,7 +806,7 @@ Personalizacja to nie to samo co usluga: przy podstawce baza istnieje i termin l
 
 ### Produkty gotowe: chwilowo brak
 
-Trzy wpisy w `shopCatalog.js` byly przykladami przygotowanymi pod przyszly asortyment. Leza teraz w `PRODUCTS_DRAFT` i **nie sa wystawione**: sklep pokazuje w ich miejsce kafelek "Chwilowo brak produktow gotowych" z odsylaczem do uslug. Zeby wystawic pozycje, wystarczy ustawic przy niej `draft: false`.
+Baza produktow jest pusta, wiec sklep pokazuje kafelek "Chwilowo brak produktow gotowych" z odsylaczem do uslug. Trzy dawne przykladowe wpisy leza teraz w `src/data/productSeed.js` jako dane startowe do wgrania (`npm run products:seed`) i domyslnie sa ukryte.
 
 Sekcja produktow zostaje widoczna takze wtedy, gdy jest pusta. Milczenie czytaloby sie jak brak dzialu, a nie jak stan przejsciowy.
 

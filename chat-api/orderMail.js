@@ -56,9 +56,9 @@ const T = {
     trHolder: "Odbiorca",
     trBank: "Bank",
     trRef: "Tytuł przelewu",
-    trDue: "Kwota obowiązuje do",
+    trDue: "Rezerwacja i kwota obowiązują do",
     trSteps: "Co się wydarzy dalej",
-    trStepsBody: "Gdy pieniądze wpłyną na konto, potwierdzamy to ręcznie i wysyłamy potwierdzenie przyjęcia należności wraz z informacją o rozpoczęciu prac. Termin realizacji liczymy od zaksięgowania wpłaty, nie od złożenia zamówienia. Prosimy o zachowanie tytułu przelewu, po nim rozpoznajemy zamówienie.",
+    trStepsBody: "Gdy pieniądze wpłyną na konto, potwierdzamy to ręcznie i wysyłamy potwierdzenie przyjęcia należności wraz z informacją o rozpoczęciu prac. Termin realizacji liczymy od zaksięgowania wpłaty, nie od złożenia zamówienia. Prosimy o zachowanie tytułu przelewu, po nim rozpoznajemy zamówienie. Towar i kwota są dla Ciebie zarezerwowane przez 3 dni robocze. Jeżeli czwartego dnia roboczego wpłata nie zostanie zaksięgowana na wskazanym koncie, rezerwacja zostaje zdjęta, a towar wraca do sprzedaży.",
   },
   en: {
     subject: (ref) => `Order confirmation ${ref}, AEJaCA`,
@@ -88,9 +88,9 @@ const T = {
     trHolder: "Beneficiary",
     trBank: "Bank",
     trRef: "Payment reference",
-    trDue: "Amount valid until",
+    trDue: "Reservation and amount valid until",
     trSteps: "What happens next",
-    trStepsBody: "Once the money lands on our account we confirm it by hand and send you a receipt confirmation together with a note that work has started. The lead time is counted from the day the money clears, not from the day you ordered. Please keep the payment reference, that is how we recognise your order.",
+    trStepsBody: "Once the money lands on our account we confirm it by hand and send you a receipt confirmation together with a note that work has started. The lead time is counted from the day the money clears, not from the day you ordered. Please keep the payment reference, that is how we recognise your order. The goods and the amount are reserved for you for 3 business days. If the payment has not cleared on the stated account by the fourth business day, the reservation is released and the goods go back on sale.",
   },
   de: {
     subject: (ref) => `Bestellbestätigung ${ref}, AEJaCA`,
@@ -120,9 +120,9 @@ const T = {
     trHolder: "Empfänger",
     trBank: "Bank",
     trRef: "Verwendungszweck",
-    trDue: "Betrag gültig bis",
+    trDue: "Reservierung und Betrag gültig bis",
     trSteps: "Wie es weitergeht",
-    trStepsBody: "Sobald das Geld auf unserem Konto eingeht, bestätigen wir es persönlich und senden Ihnen die Zahlungsbestätigung samt Hinweis, dass die Arbeit beginnt. Die Lieferzeit zählt ab Geldeingang, nicht ab Bestelldatum. Bitte behalten Sie den Verwendungszweck bei, daran erkennen wir Ihre Bestellung.",
+    trStepsBody: "Sobald das Geld auf unserem Konto eingeht, bestätigen wir es persönlich und senden Ihnen die Zahlungsbestätigung samt Hinweis, dass die Arbeit beginnt. Die Lieferzeit zählt ab Geldeingang, nicht ab Bestelldatum. Bitte behalten Sie den Verwendungszweck bei, daran erkennen wir Ihre Bestellung. Ware und Betrag sind 3 Werktage lang für Sie reserviert. Ist die Zahlung bis zum vierten Werktag nicht auf dem angegebenen Konto eingegangen, wird die Reservierung aufgehoben und die Ware geht zurück in den Verkauf.",
   },
 };
 

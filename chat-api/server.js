@@ -18,6 +18,11 @@ import {
 import { packagingGrosze, sanitizePersonalization } from "./pricing/packaging.js";
 import { eurCentsFromGrosze } from "./pricing/currency.js";
 import { shippingGrosze as shippingCost, needsCustoms, zoneForCountry } from "./pricing/shipping.js";
+import { addBusinessDays, TRANSFER_HOLD_BUSINESS_DAYS } from "./pricing/businessDays.js";
+import {
+  listProducts, getProduct, reserveProduct, consumeReservations,
+  releaseExpiredReservations, releaseOrderReservations, ProductError, PRODUCT_STATUSES,
+} from "./products.js";
 import { sendOrderPaidEmails, sendTransferInstructions } from "./orderMail.js";
 
 const app = express();
@@ -101,6 +106,82 @@ if (pool) {
   `).catch((e) => console.error("[migracja] status/payment_method:", e.message));
   pool.query(`CREATE INDEX IF NOT EXISTS idx_orders_awaiting_transfer
               ON orders (created_at DESC) WHERE status = 'awaiting_transfer'`).catch(() => {});
+
+  // Katalog produktow: tresc, zdjecia i stan magazynowy zyja w bazie, a nie
+  // w repozytorium, zeby zmiana stanu nie wymagala wdrozenia.
+  pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS category VARCHAR(20)`).catch(() => {});
+  pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS subcategory VARCHAR(20)`).catch(() => {});
+  pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'draft'`).catch(() => {});
+  pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS offer VARCHAR(20) NOT NULL DEFAULT 'ready'`).catch(() => {});
+  pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS short JSONB`).catch(() => {});
+  pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS specs JSONB`).catch(() => {});
+  pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS note JSONB`).catch(() => {});
+  pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS lead_time_days INTEGER NOT NULL DEFAULT 2`).catch(() => {});
+  pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS personalization JSONB`).catch(() => {});
+  pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 100`).catch(() => {});
+  pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS sold_count INTEGER NOT NULL DEFAULT 0`).catch(() => {});
+  pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS notes TEXT`).catch(() => {});
+  pool.query(`
+    DO $$ BEGIN
+      ALTER TABLE products DROP CONSTRAINT IF EXISTS products_offer_check;
+      ALTER TABLE products ADD CONSTRAINT products_offer_check CHECK (offer IN ('ready','personalized'));
+      ALTER TABLE products DROP CONSTRAINT IF EXISTS products_status_check;
+      ALTER TABLE products ADD CONSTRAINT products_status_check
+        CHECK (status IN ('draft','live','sold_out','hidden','retired'));
+      ALTER TABLE products DROP CONSTRAINT IF EXISTS products_subcategory_check;
+      ALTER TABLE products ADD CONSTRAINT products_subcategory_check CHECK (subcategory IS NULL
+        OR (category = 'jewelry' AND subcategory IN ('women','men','pet'))
+        OR (category = 'studio'  AND subcategory IN ('fdm','msla','co2','fiber','resin','digital')));
+      ALTER TABLE products DROP CONSTRAINT IF EXISTS products_category_check;
+      ALTER TABLE products ADD CONSTRAINT products_category_check CHECK (category IS NULL OR category IN ('jewelry','studio'));
+      ALTER TABLE products DROP CONSTRAINT IF EXISTS products_stock_check;
+      ALTER TABLE products ADD CONSTRAINT products_stock_check CHECK (stock IS NULL OR stock >= 0);
+    END $$;
+  `).catch((e) => console.error("[migracja] products:", e.message));
+
+  // Przepisanie dawnego znacznika `active` na stan pozycji. Dziala raz: pozniej
+  // kazdy wiersz ma juz swoj status, a `active` wylicza sie z niego wyzwalaczem,
+  // wiec zapytanie napisane recznie w bazie nie rozjedzie sie ze sklepem.
+  // Tylko wiersze sprzed wyzwalacza: pozycja zapisana juz na statusach ma
+  // active = false, dopoki nie jest w sprzedazy, wiec swiezy szkic zostaje
+  // szkicem takze po restarcie backendu.
+  pool.query(`UPDATE products SET status = 'live' WHERE status = 'draft' AND active = TRUE`).catch(() => {});
+  pool.query(`
+    CREATE OR REPLACE FUNCTION products_sync_active() RETURNS TRIGGER AS $$
+    BEGIN
+      NEW.active := NEW.status IN ('live', 'sold_out');
+      RETURN NEW;
+    END $$ LANGUAGE plpgsql;
+    DROP TRIGGER IF EXISTS trg_products_sync_active ON products;
+    CREATE TRIGGER trg_products_sync_active BEFORE INSERT OR UPDATE ON products
+      FOR EACH ROW EXECUTE FUNCTION products_sync_active();
+  `).then(() => pool.query(`UPDATE products SET status = status`))
+    .catch((e) => console.error("[migracja] products.status:", e.message));
+
+  pool.query(`CREATE TABLE IF NOT EXISTS product_reservations (
+    id BIGSERIAL PRIMARY KEY,
+    product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    order_id BIGINT REFERENCES orders(id) ON DELETE CASCADE,
+    qty INTEGER NOT NULL CHECK (qty > 0),
+    expires_at TIMESTAMPTZ NOT NULL,
+    consumed_at TIMESTAMPTZ,
+    released_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`).catch((e) => console.error("[migracja] product_reservations:", e.message));
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_reservations_product ON product_reservations (product_id)
+              WHERE consumed_at IS NULL AND released_at IS NULL`).catch(() => {});
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_reservations_order ON product_reservations (order_id)`).catch(() => {});
+  pool.query(`
+    CREATE OR REPLACE VIEW product_availability AS
+    SELECT p.id, p.slug, p.stock,
+      COALESCE(SUM(r.qty) FILTER (WHERE r.consumed_at IS NULL AND r.released_at IS NULL AND r.expires_at > NOW()), 0)::INTEGER AS reserved,
+      CASE WHEN p.stock IS NULL THEN NULL
+           ELSE GREATEST(p.stock - COALESCE(SUM(r.qty) FILTER (WHERE r.consumed_at IS NULL AND r.released_at IS NULL AND r.expires_at > NOW()), 0), 0)::INTEGER
+      END AS available
+    FROM products p
+    LEFT JOIN product_reservations r ON r.product_id = p.id
+    GROUP BY p.id, p.slug, p.stock
+  `).catch((e) => console.error("[migracja] product_availability:", e.message));
 
   pool.query(`CREATE TABLE IF NOT EXISTS email_threads (
     id BIGSERIAL PRIMARY KEY,
@@ -1301,6 +1382,26 @@ async function markAbandonedUploads() {
   }
 }
 if (pool) cron.schedule("30 3 * * *", markAbandonedUploads);
+// Rezerwacje wygasaja co kwadrans, bo przy platnosci natychmiastowej trzymamy
+// towar tylko 20 minut i nie ma sensu czekac z tym do nocy.
+if (pool) cron.schedule("*/15 * * * *", () => releaseExpiredReservations(pool).catch(() => {}));
+
+/** Zamowienie nieoplacone po terminie zamykamy i oddajemy jego towar do sprzedazy. */
+async function expireStaleOrders() {
+  try {
+    const { rows } = await pool.query(
+      `UPDATE orders SET status = 'expired'
+        WHERE status IN ('awaiting_payment','awaiting_transfer')
+          AND paid_at IS NULL AND expires_at IS NOT NULL AND expires_at < NOW()
+        RETURNING id, order_ref`
+    );
+    for (const o of rows) await releaseOrderReservations(pool, o.id);
+    if (rows.length) console.log(`[zamowienia] wygaslo ${rows.length}: ${rows.map((r) => r.order_ref).join(", ")}`);
+  } catch (e) {
+    console.error("[zamowienia] wygaszanie nie powiodlo sie:", e.message);
+  }
+}
+if (pool) cron.schedule("0 * * * *", expireStaleOrders);
 
 // ============================================================
 // ZAMOWIENIA I PLATNOSCI
@@ -1371,8 +1472,33 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
     const safeLang = ["pl", "en", "de"].includes(lang) ? lang : "pl";
     const rates = items.some((i) => String(i.calculator || "").startsWith("jewelry_")) ? await currentMetalRates() : null;
 
+    // Pozycje produktowe wyceniamy z bazy, nie z przegladarki: cena i stan
+    // moga sie zmienic miedzy dodaniem do koszyka a zaplata.
+    const productItems = [];
+    for (const raw of items.filter((i) => i.productSlug)) {
+      const product = await getProduct(pool, raw.productSlug);
+      if (!product) return res.status(400).json({ error: `Produkt ${raw.productSlug} nie istnieje`, code: "product_not_found" });
+      const qty = Number.isInteger(raw.qty) && raw.qty > 0 ? Math.min(99, raw.qty) : 1;
+      if (product.available !== null && product.available < qty) {
+        return res.status(409).json({
+          error: "Nie mamy tylu sztuk", code: "out_of_stock",
+          slug: product.slug, available: product.available,
+        });
+      }
+      productItems.push({
+        slug: product.slug,
+        title: product.title?.[safeLang] || product.title?.pl || product.slug,
+        qty,
+        unitGrosze: product.priceGrosze,
+        lineGrosze: product.priceGrosze * qty,
+        weightG: product.weightG,
+        personalization: sanitizePersonalization(raw.personalization),
+        kind: product.kind,
+      });
+    }
+
     const priced = [];
-    for (const raw of items) {
+    for (const raw of items.filter((i) => !i.productSlug)) {
       // Geometria pochodzi z wczesniejszego wywolania /api/price, gdzie zostala
       // policzona z pliku po stronie serwera. Cene liczymy tu jeszcze raz tym
       // samym kodem, wiec zmiana czegokolwiek po drodze nic nie daje.
@@ -1423,7 +1549,9 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
       });
     }
 
-    const itemsTotal = priced.reduce((sum, i) => sum + i.lineGrosze, 0);
+    const itemsTotal =
+      priced.reduce((sum, i) => sum + i.lineGrosze, 0) +
+      productItems.reduce((sum, i) => sum + i.lineGrosze, 0);
 
     // Koszt wysylki liczymy tutaj, z kraju i metody. Przyjecie kwoty od
     // przegladarki pozwalaloby zamowic paczke do Australii za cene paczkomatu.
@@ -1449,7 +1577,6 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
 
     const orderRef = generateOrderRef();
     const token = generateToken();
-    const expiresAt = new Date(Date.now() + ORDER_VALIDITY_DAYS * 86400_000);
 
     // Przelew w euro: kwote zamrazamy tu i teraz razem z kursem. Gdybysmy
     // przeliczali ja dopiero przy ksiegowaniu, klient przelalby jedna kwote,
@@ -1466,6 +1593,13 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
     }
     const eurRate = wantsTransfer ? await currentEurRate() : null;
     const amountEurCents = wantsTransfer ? eurCentsFromGrosze(total, eurRate) : null;
+
+    // Przy przelewie ta sama data konczy rezerwacje towaru i waznosc kwoty.
+    // Dwie rozne daty oznaczalyby dwie obietnice, z ktorych klient zapamieta
+    // korzystniejsza.
+    const expiresAt = wantsTransfer
+      ? addBusinessDays(new Date(), TRANSFER_HOLD_BUSINESS_DAYS)
+      : new Date(Date.now() + ORDER_VALIDITY_DAYS * 86400_000);
 
     const { rows } = await pool.query(
       `INSERT INTO orders (order_ref, status, kind, lang, items_total_grosze, shipping_grosze, total_grosze,
@@ -1493,6 +1627,39 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
        amountEurCents, eurRate]
     );
     const orderId = rows[0].id;
+
+    // Rezerwacja idzie w osobnej transakcji z blokada wiersza produktu, wiec
+    // dwa rownolegle zamowienia na ostatnia sztuke ustawiaja sie w kolejce.
+    // Gdy towaru zabraknie, kasujemy swieze zamowienie zamiast zostawiac
+    // klienta z linkiem do zaplaty za cos, czego nie wyslemy.
+    if (productItems.length) {
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+        for (const it of productItems) {
+          await reserveProduct(client, {
+            slug: it.slug, qty: it.qty, orderId,
+            paymentMethod: wantsTransfer ? "bank_transfer" : "autopay",
+          });
+          await client.query(
+            `INSERT INTO order_items (order_id, item_type, product_id, title, qty, unit_grosze, line_grosze, params)
+             SELECT $1, 'product', id, $2, $3, $4, $5, $6 FROM products WHERE slug = $7`,
+            [orderId, it.title, it.qty, it.unitGrosze, it.lineGrosze,
+             JSON.stringify({ slug: it.slug, personalization: it.personalization }), it.slug]
+          );
+        }
+        await client.query("COMMIT");
+      } catch (e) {
+        await client.query("ROLLBACK").catch(() => {});
+        await pool.query("DELETE FROM orders WHERE id = $1", [orderId]).catch(() => {});
+        if (e instanceof ProductError) {
+          return res.status(409).json({ error: e.message, code: e.code, slug: e.slug, available: e.available });
+        }
+        throw e;
+      } finally {
+        client.release();
+      }
+    }
 
     for (const i of priced) {
       let uploadRow = null;
@@ -1573,6 +1740,161 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
 });
 
 // ------------------------------------------------------------
+// Katalog produktow
+// ------------------------------------------------------------
+// Czytane przez sklep przy budowaniu stron oraz na zywo, gdy klient oglada
+// karte: stan magazynowy zmienia sie bez wdrozenia, wiec statyczna strona
+// nie moze byc jedynym zrodlem informacji o dostepnosci.
+app.get("/api/products", async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  try {
+    const products = await listProducts(pool, {
+      category: ["jewelry", "studio"].includes(req.query.category) ? req.query.category : null,
+      offer: ["ready", "personalized"].includes(req.query.offer) ? req.query.offer : null,
+    });
+    res.json({ products });
+  } catch (e) {
+    console.error("[produkty] lista:", e.message);
+    res.status(500).json({ error: "Nie udalo sie pobrac katalogu" });
+  }
+});
+
+app.get("/api/products/:slug", async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  const product = await getProduct(pool, req.params.slug).catch(() => null);
+  if (!product) return res.status(404).json({ error: "Produkt nie istnieje" });
+  res.json({ product });
+});
+
+/** Dodanie albo aktualizacja produktu. Slug jest kluczem, wiec ten sam wpis
+ *  mozna poprawiac wielokrotnie bez tworzenia duplikatow. */
+app.put("/api/products/:slug", express.json({ limit: "256kb" }), async (req, res) => {
+  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const slug = String(req.params.slug || "").trim().toLowerCase();
+  if (!/^[a-z0-9-]{3,120}$/.test(slug)) return res.status(400).json({ error: "Nieprawidlowy slug" });
+
+  const b = req.body || {};
+  if (!b.title?.pl || !b.title?.en || !b.title?.de) {
+    return res.status(400).json({ error: "Tytul musi byc w trzech jezykach" });
+  }
+  if (!Number.isInteger(b.priceGrosze) || b.priceGrosze < 0) {
+    return res.status(400).json({ error: "Cena musi byc liczba calkowita w groszach" });
+  }
+  const status = b.status || "draft";
+  if (!PRODUCT_STATUSES.includes(status)) {
+    return res.status(400).json({ error: `Stan musi byc jednym z: ${PRODUCT_STATUSES.join(", ")}` });
+  }
+
+  const kind = b.kind === "digital" ? "digital" : "physical";
+  // Produkt cyfrowy nie ma stanu magazynowego, fizyczny musi go miec.
+  const stock = kind === "digital" ? null : (Number.isInteger(b.stock) ? Math.max(0, b.stock) : 0);
+
+  // Zdjecia leza w repozytorium, wiec baza trzyma tylko sciezki. Pilnujemy ich
+  // tutaj, zeby zla sciezka nie doszla do odcisku katalogu i nie zatrzymala
+  // budowania strony dopiero przy wdrozeniu.
+  // Podkategoria musi pasowac do dzialu: to ona rysuje ikone na karcie
+  // i buduje filtr nad lista, wiec zla wartosc byloby widac od razu w sklepie.
+  const SUBCATEGORIES = { jewelry: ["women", "men", "pet"], studio: ["fdm", "msla", "co2", "fiber", "resin", "digital"] };
+  const subcategory = b.subcategory || null;
+  if (subcategory && !(SUBCATEGORIES[b.category] || []).includes(subcategory)) {
+    return res.status(400).json({ error: `Podkategoria ${subcategory} nie pasuje do dzialu ${b.category || "(brak)"}` });
+  }
+
+  const images = Array.isArray(b.images) ? b.images.filter((s) => typeof s === "string") : [];
+  if (images.length < 1 || images.length > 5) {
+    return res.status(400).json({ error: "Produkt potrzebuje od 1 do 5 zdjec" });
+  }
+  if (images.some((s) => !/^\/img\/[\w./-]+\.(webp|jpg|jpeg|png)$/i.test(s))) {
+    return res.status(400).json({ error: "Zdjecie musi byc sciezka /img/... do pliku w repozytorium" });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `INSERT INTO products (slug, kind, category, subcategory, offer, title, short, description, specs, note, images,
+         price_grosze, weight_g, stock, lead_time_days, personalization, sort_order, status, license, notes)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
+       ON CONFLICT (slug) DO UPDATE SET
+         kind = EXCLUDED.kind, category = EXCLUDED.category, subcategory = EXCLUDED.subcategory,
+         offer = EXCLUDED.offer,
+         title = EXCLUDED.title, short = EXCLUDED.short, description = EXCLUDED.description,
+         specs = EXCLUDED.specs, note = EXCLUDED.note, images = EXCLUDED.images, price_grosze = EXCLUDED.price_grosze,
+         weight_g = EXCLUDED.weight_g, stock = EXCLUDED.stock, lead_time_days = EXCLUDED.lead_time_days,
+         personalization = EXCLUDED.personalization, sort_order = EXCLUDED.sort_order,
+         status = EXCLUDED.status, license = EXCLUDED.license, notes = EXCLUDED.notes,
+         updated_at = NOW()
+       RETURNING id, slug`,
+      [slug, kind, b.category || null, subcategory,
+       b.offer === "personalized" ? "personalized" : "ready",
+       JSON.stringify(b.title), b.short ? JSON.stringify(b.short) : null,
+       b.description ? JSON.stringify(b.description) : null, b.specs ? JSON.stringify(b.specs) : null,
+       b.note ? JSON.stringify(b.note) : null,
+       JSON.stringify(images),
+       b.priceGrosze, Number.isInteger(b.weightG) ? b.weightG : null, stock,
+       Number.isInteger(b.leadTimeDays) ? b.leadTimeDays : 2,
+       b.personalization ? JSON.stringify(b.personalization) : null,
+       Number.isInteger(b.sortOrder) ? b.sortOrder : 100,
+       status, b.license || null, b.notes || null]
+    );
+    res.json({ ok: true, product: rows[0] });
+  } catch (e) {
+    console.error("[produkty] zapis:", e.message);
+    res.status(500).json({ error: "Nie udalo sie zapisac produktu", detail: e.message.slice(0, 200) });
+  }
+});
+
+/** Korekta samego stanu magazynowego, bez przepisywania calego produktu. */
+app.patch("/api/products/:slug/stock", express.json({ limit: "4kb" }), async (req, res) => {
+  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  const { stock } = req.body || {};
+  if (!Number.isInteger(stock) || stock < 0) return res.status(400).json({ error: "Stan musi byc liczba nieujemna" });
+  const { rows } = await pool.query(
+    `UPDATE products SET stock = $2, updated_at = NOW()
+      WHERE slug = $1 AND stock IS NOT NULL RETURNING slug, stock`,
+    [String(req.params.slug || ""), stock]
+  );
+  if (!rows[0]) return res.status(404).json({ error: "Produkt nie istnieje albo jest cyfrowy" });
+  res.json({ ok: true, ...rows[0] });
+});
+
+/**
+ * Zmiana stanu pozycji. Osobno od pelnego zapisu, bo to najczestsza zmiana
+ * w panelu i musi byc jednym kliknieciem: rzecz sprzedana na Etsy albo na
+ * miejscu ma przestac byc do kupienia natychmiast, bez czekania na wdrozenie.
+ * Sklep pyta o dostepnosc na zywo, wiec skutek widac od razu.
+ */
+app.patch("/api/products/:slug/status", express.json({ limit: "4kb" }), async (req, res) => {
+  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  const status = req.body?.status;
+  if (!PRODUCT_STATUSES.includes(status)) {
+    return res.status(400).json({ error: `Stan musi byc jednym z: ${PRODUCT_STATUSES.join(", ")}` });
+  }
+  const { rows } = await pool.query(
+    `UPDATE products SET status = $2, updated_at = NOW() WHERE slug = $1 RETURNING slug, status, active`,
+    [String(req.params.slug || ""), status]
+  );
+  if (!rows[0]) return res.status(404).json({ error: "Produkt nie istnieje" });
+  res.json({ ok: true, ...rows[0] });
+});
+
+/** Lista dla panelu: takze pozycje wylaczone, razem z rezerwacjami. */
+app.get("/api/admin/products", async (req, res) => {
+  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  const { rows } = await pool.query(
+    `SELECT p.slug, p.kind, p.category, p.subcategory, p.offer, p.title, p.short, p.images,
+            p.price_grosze, p.weight_g, p.stock, p.status, p.lead_time_days,
+            p.sold_count, p.sort_order, p.notes, p.updated_at, a.reserved, a.available
+       FROM products p LEFT JOIN product_availability a ON a.id = p.id
+      ORDER BY p.status = 'live' DESC, p.sort_order, p.slug`
+  );
+  res.json({ products: rows });
+});
+
+// ------------------------------------------------------------
 // Reczne potwierdzenie wplaty
 // ------------------------------------------------------------
 // Przelew nie ma ITN, wiec jedynym dowodem wplywu jest wyciag bankowy, ktory
@@ -1649,6 +1971,9 @@ app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), as
   // Dalej dokladnie to samo, co po SUCCESS z bramki.
   sendOrderPaidEmails(pool, order.id).catch((e) =>
     console.error("[przelew] wysylka maili nie powiodla sie:", e.message)
+  );
+  consumeReservations(pool, order.id).catch((e) =>
+    console.error("[produkty] zdjecie ze stanu nie powiodlo sie:", e.message)
   );
   moveOrderFilesToOrders(pool, order.id, ref).catch((e) =>
     console.error("[dysk] przeniesienie plikow nie powiodlo sie:", e.message)
@@ -1779,6 +2104,11 @@ app.post("/api/autopay/itn", express.urlencoded({ extended: false, limit: "256kb
           // trzeba potwierdzic niezaleznie od tego, czy poczta zadziala.
           sendOrderPaidEmails(pool, order.id).catch((e) =>
             console.error("[autopay] wysylka maili nie powiodla sie:", e.message)
+          );
+          // Stan magazynowy schodzi dopiero teraz. Do tej pory towar byl
+          // wylacznie zarezerwowany, wiec porzucone zamowienie niczego nie kasowalo.
+          consumeReservations(pool, order.id).catch((e) =>
+            console.error("[produkty] zdjecie ze stanu nie powiodlo sie:", e.message)
           );
           // Pliki lezaly dotad w folderze roboczym, bo w chwili wgrania nikt
           // jeszcze niczego nie zamowil. Dopiero zaplata robi z nich zlecenie.

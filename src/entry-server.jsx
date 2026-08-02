@@ -28,6 +28,7 @@ import Cart from "./pages/Cart.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import OrderStatus from "./pages/OrderStatus.jsx";
 import AdminTransfers from "./pages/AdminTransfers.jsx";
+import AdminProducts from "./pages/AdminProducts.jsx";
 import Shipping from "./pages/Shipping.jsx";
 import ToolsJewelry from "./pages/ToolsJewelry.jsx";
 import ToolsStudio from "./pages/ToolsStudio.jsx";
@@ -77,6 +78,7 @@ export function render(url) {
               <Route path="/order/" element={<Order />} />
               <Route path="/order/status/" element={<OrderStatus />} />
               <Route path="/admin/transfers/" element={<AdminTransfers />} />
+              <Route path="/admin/products/" element={<AdminProducts />} />
               <Route path="/shipping/" element={<Shipping />} />
               <Route path="/toolsjewelry/" element={<ToolsJewelry />} />
               <Route path="/toolsjewelry/alloy-composition/" element={<AlloyCompositionPage />} />

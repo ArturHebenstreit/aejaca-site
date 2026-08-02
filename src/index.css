@@ -649,6 +649,26 @@ body {
   color: var(--ds-text-1) !important;
 }
 
+/* Chipy filtrow nad lista. Tez z tokenow, bo stan wybrany musi byc czytelny
+   w obu trybach, a nadpisania Tailwinda niosa !important i zjadlyby hover. */
+.facet-chip {
+  border-color: var(--ds-border);
+  color: var(--ds-text-2);
+  background-color: transparent;
+}
+.facet-chip:hover {
+  border-color: var(--ds-border-hi);
+  color: var(--ds-text-1);
+  background-color: var(--ds-bg-soft);
+}
+.facet-chip-on,
+.facet-chip-on:hover {
+  border-color: var(--ds-border-hi);
+  background-color: var(--ds-bg-soft);
+  color: var(--ds-text-1);
+  font-weight: 500;
+}
+
 /* ─── Tryb jasny: dopelnienie listy nadpisan ───
    Wyszukane przez scripts/check-light-theme.mjs. Bez nich jasny tekst
    zostawal jasnym tekstem takze na kremowym tle, czyli znikal. */
