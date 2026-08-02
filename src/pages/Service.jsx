@@ -283,25 +283,8 @@ export default function Service() {
             </div>
           </div>
 
-          {/* Konfigurator, tylko dla uslug z cena automatyczna */}
-          {!card.quoteOnly && (
-            <div id="konfigurator" className="mt-12 scroll-mt-24">
-              <ServiceConfigurator card={card} lang={lang} accent={amber ? "amber" : "blue"} />
-              {/* Konfigurator pokazuje wybor typowy. Kto potrzebuje pelnej
-                  kontroli, idzie do kalkulatora, ktory liczy tym samym kodem. */}
-              {card.calcHref && (
-                <Link
-                  to={card.calcHref}
-                  className="mt-3 flex items-center justify-center gap-2 py-2.5 text-neutral-500 hover:text-neutral-200 text-xs transition-colors"
-                >
-                  <Calculator className="w-3.5 h-3.5" />
-                  {u.advCalc}
-                </Link>
-              )}
-            </div>
-          )}
-
-          {/* Przebieg */}
+          {/* Przebieg przed konfiguratorem: klient najpierw ma zrozumiec,
+              co sie wydarzy, a dopiero potem podawac parametry. */}
           <div className="mt-12">
             <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-4">{u.howItWorks}</h2>
             <ol className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -320,6 +303,24 @@ export default function Service() {
               ))}
             </ol>
           </div>
+          {/* Konfigurator, tylko dla uslug z cena automatyczna */}
+          {!card.quoteOnly && (
+            <div id="konfigurator" className="mt-12 scroll-mt-24">
+              <ServiceConfigurator card={card} lang={lang} accent={amber ? "amber" : "blue"} />
+              {/* Konfigurator pokazuje wybor typowy. Kto potrzebuje pelnej
+                  kontroli, idzie do kalkulatora, ktory liczy tym samym kodem. */}
+              {card.calcHref && (
+                <Link
+                  to={card.calcHref}
+                  className="mt-3 flex items-center justify-center gap-2 py-2.5 text-neutral-500 hover:text-neutral-200 text-xs transition-colors"
+                >
+                  <Calculator className="w-3.5 h-3.5" />
+                  {u.advCalc}
+                </Link>
+              )}
+            </div>
+          )}
+
 
           <Link
             to={category ? category.path : "/shop/"}

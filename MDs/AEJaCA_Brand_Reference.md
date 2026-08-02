@@ -638,6 +638,20 @@ STL i OBJ nie zapisują jednostki, więc czytamy je jako milimetry. `assertPlaus
 
 Wgrany model pokazujemy jako **obracający się podgląd 3D** (`STLViewer.jsx`, three.js ładowany leniwie). Po chwili obrotu komponent robi zrzut ujęcia trzy czwarte w WEBP, zrzut trafia do kolumny `uploads.thumbnail` i staje się miniaturą pozycji w koszyku oraz linkiem podglądu w mailu warsztatowym. Klient widzi własny model zamiast ikony usługi, a warsztat wie, co ma zrobić, bez otwierania Dysku.
 
+### Trzy rodzaje oferty
+
+Granica miedzy nimi to **ile pracy dzieli zamowienie od wysylki**. Klient czyta z tego termin i zakres swojego wplywu na wyrob, wiec granice musza byc ostre.
+
+| Rodzaj | Co to znaczy | Przyklady | Praca |
+|---|---|---|---|
+| **Produkt gotowy** | lezy na polce, pakujemy i wysylamy | wyrob z witryny, plik do pobrania | zero |
+| **Gotowe, personalizowane** | polprodukt lezy na polce, dopasowujemy go do klienta | kamienne podstawki pod drinki, drewniane szkatulki, deski z grawerem | minuty |
+| **Usluga** | wykonujemy od nowa albo prawie od nowa | druk 3D, bizuteria, odlew, projekt CAD | godziny |
+
+W `shopCatalog.js` rozroznia je pole `offer` (`OFFER_KIND.READY` / `PERSONALIZED` / `SERVICE`). Sekcje w sklepie ida w kolejnosci rosnacej ilosci naszej pracy, bo tak tez rosnie termin.
+
+Personalizacja to nie to samo co usluga: przy podstawce baza istnieje i termin liczy sie w dniach, przy pierscionku nie istnieje nic i termin liczy sie w tygodniach. Wrzucenie obu do jednego worka konczy sie klientem, ktory dziwi sie, czemu grawer na gotowej desce trwa tyle co odlew.
+
 ### Produkty gotowe: chwilowo brak
 
 Trzy wpisy w `shopCatalog.js` byly przykladami przygotowanymi pod przyszly asortyment. Leza teraz w `PRODUCTS_DRAFT` i **nie sa wystawione**: sklep pokazuje w ich miejsce kafelek "Chwilowo brak produktow gotowych" z odsylaczem do uslug. Zeby wystawic pozycje, wystarczy ustawic przy niej `draft: false`.
@@ -714,6 +728,8 @@ Wiazaca kwota za nowy wyrob ma pokrycie tylko wtedy, gdy czas pracy jest przewid
 | wykonanie reczne (lutowanie, osadzanie) | nie, wycena czlowieka |
 | ksztalt sredni lub zlozony (faktura, azur, filigran, forma rzezbiarska) | nie, wycena czlowieka |
 | kamienie, sploty lancuszkow, metal powierzony przez klienta | nie, wycena czlowieka |
+
+**Przebieg przed konfiguratorem.** Na kazdej karcie uslugi sekcja "Jak to przebiega" stoi nad narzedziem konfiguracyjnym. Klient ma najpierw zrozumiec, co sie wydarzy, a dopiero potem podawac parametry: odwrotna kolejnosc kaze mu decydowac, zanim wie, o czym decyduje.
 
 **Uwaga na dwa rozne znaczenia tego samego slowa.** Przy **bizuterii** zlozonosc jest bramka: sredni i zlozony ksztalt ida do wyceny czlowieka. Przy **projekcie 3D** zlozonosc jest progiem cenowym: podnosi kwote i pozwala normalnie zlecic prace. Oba pola nazywaja sie `complexityId`, wiec bramka jest zawezona do kalkulatora `jewelry_new`.
 

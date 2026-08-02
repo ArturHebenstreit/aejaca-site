@@ -16,6 +16,22 @@ const L = (pl, en, de) => ({ pl, en, de });
  *  made_to_order rzecz na zamowienie, art. 38 pkt 3 UPK
  *  digital       tresc cyfrowa, art. 38 pkt 13 UPK
  */
+/**
+ * Trzy rodzaje oferty, rozroznione tym, ile pracy dzieli zamowienie od wysylki.
+ * Klient czyta z tego termin i zakres wplywu na wyrob, wiec granice musza byc
+ * ostre, inaczej wszystko zlewa sie w jedna liste o nieznanym czasie realizacji.
+ *
+ *   ready        gotowe, pakujemy i wysylamy. Zero pracy warsztatowej.
+ *   personalized polprodukt lezy na polce, dopasowujemy go do klienta
+ *                (grawer, wymiar, kolor). Praca liczona w minutach.
+ *   service      wykonujemy od nowa albo prawie od nowa. Praca w godzinach.
+ */
+export const OFFER_KIND = {
+  READY: "ready",
+  PERSONALIZED: "personalized",
+  SERVICE: "service",
+};
+
 export const WITHDRAWAL = {
   STANDARD: "standard",
   MADE_TO_ORDER: "made_to_order",
@@ -166,7 +182,20 @@ export const SHOP_CATEGORIES = [
 ];
 
 /** Wystawiamy wylacznie to, co naprawde da sie kupic */
-export const PRODUCTS = PRODUCTS_DRAFT.filter((p) => p.draft === false);
+export const PRODUCTS = PRODUCTS_DRAFT.filter((p) => p.draft === false && p.offer !== OFFER_KIND.PERSONALIZED);
+
+/**
+ * Gotowe polprodukty dopasowywane do klienta: kamienne podstawki pod drinki,
+ * drewniane szkatulki, deski. Baza jest na polce, wiec termin liczy sie
+ * w dniach, a nie w tygodniach, ale wysylka nastepuje dopiero po obrobce.
+ */
+export const PERSONALIZED = PRODUCTS_DRAFT.filter(
+  (p) => p.draft === false && p.offer === OFFER_KIND.PERSONALIZED
+);
+
+export function personalizedByCategory(category) {
+  return PERSONALIZED.filter((p) => p.category === category);
+}
 
 export function getProduct(slug) {
   return PRODUCTS.find((p) => p.slug === slug) || null;

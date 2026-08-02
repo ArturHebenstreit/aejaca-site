@@ -496,7 +496,6 @@ export const SERVICES_FULL = [
     id: "cad_project",
     priceFromGrosze: 50000,
     service: "cad_design",
-    calcHref: "/shop/service/cad_project/#konfigurator",
     category: "studio",
     image: "/img/shop/service/cad_project.webp",
     imagePrompt:
