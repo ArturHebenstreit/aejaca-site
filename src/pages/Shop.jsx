@@ -6,7 +6,7 @@
 // to ta sama decyzja zakupowa, tylko z innym czasem realizacji.
 
 import { Link, useLocation } from "react-router-dom";
-import { ArrowRight, Package, Download, Wrench, MessageCircle } from "lucide-react";
+import { ArrowRight, Package, Download, Wrench, MessageCircle, Sparkles } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildBreadcrumbSchema } from "../seo/schemas.js";
@@ -14,7 +14,8 @@ import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { t } from "../pricing/config.js";
 import {
-  SHOP_CATEGORIES, productsByCategory, serviceCardsByCategory, PRODUCTS,
+  SHOP_CATEGORIES, productsByCategory, personalizedByCategory, serviceCardsByCategory,
+  PRODUCTS, PERSONALIZED,
 } from "../data/shopCatalog.js";
 
 const UI = {
@@ -26,6 +27,10 @@ const UI = {
     noProducts: "Chwilowo brak produktów gotowych",
     noProductsBody: "Uzupełniamy asortyment. W tym czasie wszystko z listy usług poniżej zamówisz z wyceną od ręki.",
     noProductsCta: "Zobacz usługi",
+    personalized: "Gotowe, personalizowane",
+    personalizedLead: "Półprodukt czeka u nas na półce, a my dopasowujemy go do Ciebie: grawer, wymiar, wykończenie. Krótki termin, własna treść.",
+    noPersonalized: "Chwilowo brak pozycji personalizowanych",
+    noPersonalizedBody: "Przygotowujemy podstawki kamienne, szkatułki i deski do personalizacji. Do tego czasu to samo zamówisz jako usługę grawerowania.",
     services: "Usługi",
     servicesLead: "Konfigurujesz na karcie usługi, cena wiążąca pojawia się od razu, a przedmiot powstaje pod Twoje zamówienie.",
     inStock: "Dostępny",
@@ -52,6 +57,10 @@ const UI = {
     noProducts: "No ready-made products at the moment",
     noProductsBody: "We are building the range. In the meantime everything in the services below is quoted and ordered on the spot.",
     noProductsCta: "See the services",
+    personalized: "Ready-made, personalised",
+    personalizedLead: "The blank waits on our shelf and we fit it to you: engraving, size, finish. Short lead time, your own wording.",
+    noPersonalized: "No personalised items at the moment",
+    noPersonalizedBody: "Stone coasters, boxes and boards for personalisation are on the way. Until then, order the same thing as an engraving service.",
     services: "Services",
     servicesLead: "You configure it on the service card, the binding price appears at once, and the piece is made for your order.",
     inStock: "In stock",
@@ -78,6 +87,10 @@ const UI = {
     noProducts: "Derzeit keine fertigen Produkte",
     noProductsBody: "Wir bauen das Sortiment auf. Bis dahin wird alles aus den Leistungen unten sofort kalkuliert und bestellt.",
     noProductsCta: "Leistungen ansehen",
+    personalized: "Fertig, personalisiert",
+    personalizedLead: "Der Rohling liegt bei uns im Regal, wir passen ihn an Sie an: Gravur, Maß, Finish. Kurze Frist, Ihr eigener Text.",
+    noPersonalized: "Derzeit keine personalisierten Positionen",
+    noPersonalizedBody: "Steinuntersetzer, Schatullen und Bretter zur Personalisierung sind in Vorbereitung. Bis dahin bestellen Sie dasselbe als Gravurleistung.",
     services: "Leistungen",
     servicesLead: "Sie konfigurieren auf der Leistungskarte, der verbindliche Preis erscheint sofort, und das Stück entsteht für Ihre Bestellung.",
     inStock: "Verfügbar",
@@ -255,6 +268,7 @@ export default function Shop() {
   const here = pathname.endsWith("/") ? pathname : `${pathname}/`;
   const category = SHOP_CATEGORIES.find((c) => here === c.path) || null;
   const products = category ? productsByCategory(category.id) : PRODUCTS;
+  const personalized = category ? personalizedByCategory(category.id) : PERSONALIZED;
   const services = category ? serviceCardsByCategory(category.id) : [];
 
   const pageTitle = category ? `${t(category.title, lang)}, ${u.title.toLowerCase()}` : u.title;
@@ -356,6 +370,31 @@ export default function Shop() {
           )}
 
           {/* Uslugi */}
+          {/* Kolejnosc sekcji odpowiada rosnacej ilosci naszej pracy:
+              gotowe, gotowe z personalizacja, wykonywane od nowa. */}
+          <section className="mb-16">
+            <SectionHead
+              icon={Sparkles}
+              title={u.personalized}
+              lead={u.personalizedLead}
+              count={personalized.length}
+              tone="amber"
+            />
+            {personalized.length > 0 ? (
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                {personalized.map((p) => (
+                  <ProductCard key={p.slug} product={p} lang={lang} u={u} />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-10 text-center">
+                <Sparkles className="w-7 h-7 text-neutral-700 mx-auto mb-3" />
+                <h3 className="text-white font-medium text-sm mb-1.5">{u.noPersonalized}</h3>
+                <p className="text-neutral-500 text-xs leading-relaxed max-w-md mx-auto">{u.noPersonalizedBody}</p>
+              </div>
+            )}
+          </section>
+
           {services.length > 0 && (
             <section id="uslugi" className="scroll-mt-24">
               <SectionHead
