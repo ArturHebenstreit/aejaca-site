@@ -694,3 +694,36 @@ body {
   background-color: rgba(0, 182, 122, 0.16);
 }
 [data-theme="light"] .pill-trustpilot .pill-trustpilot-score { color: #00694a; }
+
+/* ─── Tryb jasny: stany po najechaniu ───
+   Nadpisania stanu podstawowego niosa !important, wiec zwykla klasa hover:
+   Tailwinda nie ma jak ich pokonac i element przestaje reagowac na kursor
+   (widoczne bylo na kafelku opinii Google). Kazdy hover uzywany na tinto-
+   wanych ramkach i tlach dostaje wiec wlasna regule o wyzszej specyficznosci. */
+[data-theme="light"] .hover\:border-amber-400\/20:hover { border-color: rgba(146,64,14,0.35) !important; }
+[data-theme="light"] .hover\:border-amber-400\/30:hover { border-color: rgba(146,64,14,0.45) !important; }
+[data-theme="light"] .hover\:border-amber-400\/40:hover { border-color: rgba(146,64,14,0.55) !important; }
+[data-theme="light"] .hover\:border-amber-400\/50:hover { border-color: rgba(146,64,14,0.65) !important; }
+[data-theme="light"] .hover\:border-amber-500\/30:hover { border-color: rgba(146,64,14,0.45) !important; }
+[data-theme="light"] .hover\:border-blue-400\/30:hover  { border-color: rgba(30,64,175,0.45) !important; }
+[data-theme="light"] .hover\:border-blue-400\/40:hover  { border-color: rgba(30,64,175,0.55) !important; }
+[data-theme="light"] .hover\:border-blue-400\/50:hover  { border-color: rgba(30,64,175,0.65) !important; }
+[data-theme="light"] .hover\:border-blue-500\/30:hover  { border-color: rgba(30,64,175,0.45) !important; }
+[data-theme="light"] .hover\:border-emerald-400\/30:hover { border-color: rgba(4,120,87,0.45) !important; }
+[data-theme="light"] .hover\:border-emerald-400\/40:hover { border-color: rgba(4,120,87,0.55) !important; }
+
+[data-theme="light"] .hover\:bg-amber-400\/5:hover   { background-color: rgba(180,83,9,0.07) !important; }
+[data-theme="light"] .hover\:bg-amber-400\/10:hover  { background-color: rgba(180,83,9,0.13) !important; }
+[data-theme="light"] .hover\:bg-amber-400\/20:hover  { background-color: rgba(180,83,9,0.20) !important; }
+[data-theme="light"] .hover\:bg-blue-400\/5:hover    { background-color: rgba(29,78,216,0.07) !important; }
+[data-theme="light"] .hover\:bg-blue-400\/10:hover   { background-color: rgba(29,78,216,0.13) !important; }
+[data-theme="light"] .hover\:bg-blue-400\/20:hover   { background-color: rgba(29,78,216,0.20) !important; }
+[data-theme="light"] .hover\:bg-emerald-400\/10:hover { background-color: rgba(4,120,87,0.13) !important; }
+[data-theme="light"] .hover\:bg-amber-300:hover       { background-color: #b45309 !important; }
+[data-theme="light"] .hover\:bg-blue-600:hover        { background-color: #1d4ed8 !important; }
+[data-theme="light"] .hover\:border-amber-500\/20:hover { border-color: rgba(146,64,14,0.35) !important; }
+[data-theme="light"] .hover\:border-blue-500\/20:hover  { border-color: rgba(30,64,175,0.35) !important; }
+[data-theme="light"] .hover\:border-blue-500:hover    { border-color: #1d4ed8 !important; }
+[data-theme="light"] .hover\:border-blue-600:hover    { border-color: #1e40af !important; }
+[data-theme="light"] .hover\:border-neutral-600:hover { border-color: var(--ds-border-hi) !important; }
+[data-theme="light"] .hover\:text-red-400:hover       { color: #b91c1c !important; }

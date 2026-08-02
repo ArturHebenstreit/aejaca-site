@@ -646,7 +646,7 @@ Dane rachunku żyją w zmiennych środowiskowych Railwaya: `TRANSFER_IBAN_EUR` (
 
 Tryb jasny nie działa przez warianty `dark:`, tylko przez listę nadpisań w `src/index.css` (`[data-theme="light"] .klasa`). Klasa spoza tej listy zostaje w kolorze przeznaczonym na czarne tło, więc jasny tekst na kremowym tle po prostu znika. Zdarzyło się to dwa razy i za każdym razem wyszło dopiero ze zrzutu ekranu.
 
-`scripts/check-light-theme.mjs` wywala build, gdy w `src/` pojawi się jasny tekst (odcienie 50-300) albo ciemne tło panelu (700-950) bez nadpisania. Gradienty i czerń z przezroczystością są pomijane, bo to przyciemnienia zdjęć, które mają wyglądać tak samo w obu trybach. Świadome wyjątki, na przykład ciemny przycisk z białym tekstem, leżą w `scripts/light-theme-allow.json` i każdy musi mieć uzasadnienie.
+`scripts/check-light-theme.mjs` wywala build w dwóch sytuacjach. Pierwsza: jasny tekst (odcienie 50-300) albo ciemne tło panelu (700-950) bez nadpisania. Druga: klasa `hover:` bez własnej reguły na elemencie, którego stan podstawowy nadpisanie ma. Nadpisania niosą `!important`, więc taki hover nigdy nie zadziała i element w trybie jasnym wygląda tak samo z kursorem i bez niego. Tak zniknęło podświetlenie kafelka opinii Google. Gradienty i czerń z przezroczystością są pomijane, bo to przyciemnienia zdjęć, które mają wyglądać tak samo w obu trybach. Świadome wyjątki, na przykład ciemny przycisk z białym tekstem, leżą w `scripts/light-theme-allow.json` i każdy musi mieć uzasadnienie.
 
 Uruchomienie osobno: `npm run check:light`.
 
