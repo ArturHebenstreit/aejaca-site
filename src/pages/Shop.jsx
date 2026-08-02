@@ -23,16 +23,16 @@ const UI = {
   pl: {
     title: "Produkty i usługi",
     lead: "Kup gotowe wyroby albo zamów usługę z wyceną w kilka minut. Płatność BLIK-iem lub szybkim przelewem.",
-    products: "Produkty gotowe",
+    products: "Gotowe produkty",
     productsLead: "Leżą u nas na półce albo czekają jako plik do pobrania. Płacisz i wysyłamy, bez konfigurowania.",
     noProducts: "Chwilowo brak produktów gotowych",
     noProductsBody: "Uzupełniamy asortyment. W tym czasie wszystko z listy usług poniżej zamówisz z wyceną od ręki.",
     noProductsCta: "Zobacz usługi",
-    personalized: "Gotowe, personalizowane",
+    personalized: "Produkty personalizowane",
     personalizedLead: "Półprodukt czeka u nas na półce, a my dopasowujemy go do Ciebie: grawer, wymiar, wykończenie. Krótki termin, własna treść.",
     noPersonalized: "Chwilowo brak pozycji personalizowanych",
     noPersonalizedBody: "Przygotowujemy podstawki kamienne, szkatułki i deski do personalizacji. Do tego czasu to samo zamówisz jako usługę grawerowania.",
-    services: "Usługi",
+    services: "Usługi / Produkty na zamówienie",
     servicesLead: "Konfigurujesz na karcie usługi, cena wiążąca pojawia się od razu, a przedmiot powstaje pod Twoje zamówienie.",
     inStock: "Dostępny",
     lastOne: "Ostatnia sztuka",
@@ -54,7 +54,7 @@ const UI = {
     shortPersonalized: "Personalizowane",
     shortServices: "Usługi",
     hintProducts: "Płacisz, wysyłamy. Nic do ustawiania.",
-    hintPersonalized: "Nasz półprodukt, Twój grawer i wymiar.",
+    hintPersonalized: "Nasz produkt, Twój pomysł na grawer lub inną personalizację.",
     hintServices: "Powstaje od zera pod Twoje zamówienie.",
     empty: "w przygotowaniu",
     items: "poz.",
@@ -67,11 +67,11 @@ const UI = {
     noProducts: "No ready-made products at the moment",
     noProductsBody: "We are building the range. In the meantime everything in the services below is quoted and ordered on the spot.",
     noProductsCta: "See the services",
-    personalized: "Ready-made, personalised",
+    personalized: "Personalised products",
     personalizedLead: "The blank waits on our shelf and we fit it to you: engraving, size, finish. Short lead time, your own wording.",
     noPersonalized: "No personalised items at the moment",
     noPersonalizedBody: "Stone coasters, boxes and boards for personalisation are on the way. Until then, order the same thing as an engraving service.",
-    services: "Services",
+    services: "Services / Made to order",
     servicesLead: "You configure it on the service card, the binding price appears at once, and the piece is made for your order.",
     inStock: "In stock",
     lastOne: "Last one",
@@ -93,7 +93,7 @@ const UI = {
     shortPersonalized: "Personalised",
     shortServices: "Services",
     hintProducts: "You pay, we ship. Nothing to set up.",
-    hintPersonalized: "Our blank, your engraving and size.",
+    hintPersonalized: "Our product, your idea for an engraving or another personalisation.",
     hintServices: "Made from scratch for your order.",
     empty: "in preparation",
     items: "items",
@@ -106,11 +106,11 @@ const UI = {
     noProducts: "Derzeit keine fertigen Produkte",
     noProductsBody: "Wir bauen das Sortiment auf. Bis dahin wird alles aus den Leistungen unten sofort kalkuliert und bestellt.",
     noProductsCta: "Leistungen ansehen",
-    personalized: "Fertig, personalisiert",
+    personalized: "Personalisierte Produkte",
     personalizedLead: "Der Rohling liegt bei uns im Regal, wir passen ihn an Sie an: Gravur, Maß, Finish. Kurze Frist, Ihr eigener Text.",
     noPersonalized: "Derzeit keine personalisierten Positionen",
     noPersonalizedBody: "Steinuntersetzer, Schatullen und Bretter zur Personalisierung sind in Vorbereitung. Bis dahin bestellen Sie dasselbe als Gravurleistung.",
-    services: "Leistungen",
+    services: "Leistungen / Auf Bestellung",
     servicesLead: "Sie konfigurieren auf der Leistungskarte, der verbindliche Preis erscheint sofort, und das Stück entsteht für Ihre Bestellung.",
     inStock: "Verfügbar",
     lastOne: "Letztes Stück",
@@ -132,7 +132,7 @@ const UI = {
     shortPersonalized: "Personalisiert",
     shortServices: "Leistungen",
     hintProducts: "Sie zahlen, wir versenden. Nichts einzustellen.",
-    hintPersonalized: "Unser Rohling, Ihre Gravur und Maß.",
+    hintPersonalized: "Unser Produkt, Ihre Idee für Gravur oder andere Personalisierung.",
     hintServices: "Entsteht von Grund auf für Ihre Bestellung.",
     empty: "in Vorbereitung",
     items: "Pos.",
@@ -181,21 +181,24 @@ function SectionHead({ icon: Icon, title, lead, count, tone }) {
   );
 }
 
+// Tryb jasny w tym projekcie dziala przez nadpisanie znanych klas w index.css,
+// wiec uzywamy wylacznie tych, ktore tam istnieja. Klasa dowolna typu
+// bg-neutral-950/85 zostalaby czarna na jasnym tle.
 const NAV_TONES = {
   emerald: {
-    idle: "border-emerald-400/20 bg-emerald-400/[0.03] hover:border-emerald-400/40 hover:bg-emerald-400/[0.07]",
-    icon: "text-emerald-300",
-    chip: "border-emerald-400/40 bg-emerald-400/10 text-emerald-200",
+    idle: "border-emerald-400/20 bg-emerald-400/[0.03]",
+    icon: "text-emerald-400",
+    chip: "border-emerald-400/40 bg-emerald-400/10 text-emerald-400",
   },
   amber: {
-    idle: "border-amber-400/20 bg-amber-400/[0.03] hover:border-amber-400/40 hover:bg-amber-400/[0.07]",
-    icon: "text-amber-300",
-    chip: "border-amber-400/40 bg-amber-400/10 text-amber-200",
+    idle: "border-amber-400/20 bg-amber-400/[0.03]",
+    icon: "text-amber-400",
+    chip: "border-amber-400/40 bg-amber-400/10 text-amber-400",
   },
   blue: {
-    idle: "border-blue-400/20 bg-blue-400/[0.03] hover:border-blue-400/40 hover:bg-blue-400/[0.07]",
-    icon: "text-blue-300",
-    chip: "border-blue-400/40 bg-blue-400/10 text-blue-200",
+    idle: "border-blue-400/20 bg-blue-400/[0.03]",
+    icon: "text-blue-400",
+    chip: "border-blue-400/40 bg-blue-400/10 text-blue-400",
   },
 };
 
@@ -205,10 +208,10 @@ const NAV_TONES = {
  * zostaja rozwiniete: zwijanie chowaloby towar za kliknieciem i za kazdym
  * razem kosztowaloby jedno wejscie w cel, ktorego nikt nie szukal.
  */
-function SectionNav({ items, u }) {
+function SectionNav({ items, u, innerRef }) {
   if (items.length < 2) return null;
   return (
-    <nav aria-label={u.navTitle} className="mb-12">
+    <nav ref={innerRef} aria-label={u.navTitle} className="mb-12">
       <h2 className="text-neutral-500 text-[11px] uppercase tracking-wider font-medium mb-3">{u.navTitle}</h2>
       <div className="grid gap-3 sm:grid-cols-3">
         {items.map((it) => {
@@ -217,7 +220,7 @@ function SectionNav({ items, u }) {
             <a
               key={it.id}
               href={`#${it.id}`}
-              className={`group flex flex-col rounded-xl border px-4 py-3 transition-all duration-300 ${tone.idle}`}
+              className={`section-card group flex flex-col rounded-xl border px-4 py-3 transition-all duration-300 ${tone.idle}`}
             >
               <span className="flex items-center gap-2 mb-1">
                 <it.icon className={`w-4 h-4 shrink-0 ${tone.icon}`} />
@@ -236,13 +239,28 @@ function SectionNav({ items, u }) {
 }
 
 /**
- * Pasek przyklejony pod menu. Lezy w normalnym przeplywie tuz pod
- * rozdzielaczem, wiec pojawia sie dokladnie wtedy, gdy tamten znika z ekranu,
- * i nie przesuwa tresci. Podswietla dzial, w ktorym jestesmy.
+ * Pasek dzialow. Lezy poza przeplywem i pokazuje sie dopiero, gdy rozdzielacz
+ * zniknie z ekranu: przy samej gorze strony powtarzalby tamte kafelki, a nizej
+ * jest jedynym sposobem, zeby przeskoczyc do innego dzialu bez przewijania.
  */
-function StickySectionTabs({ items, u }) {
+function StickySectionTabs({ items, u, navRef }) {
   const [active, setActive] = useState(items[0]?.id || null);
+  const [shown, setShown] = useState(false);
   const ref = useRef(null);
+
+  useEffect(() => {
+    const nav = navRef?.current;
+    if (!nav || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // Pokazujemy tylko po minieciu rozdzielacza w gore, nie przed nim.
+        setShown(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+      },
+      { threshold: 0 }
+    );
+    observer.observe(nav);
+    return () => observer.disconnect();
+  }, [navRef]);
 
   useEffect(() => {
     if (typeof IntersectionObserver === "undefined") return;
@@ -280,10 +298,15 @@ function StickySectionTabs({ items, u }) {
   if (items.length < 2) return null;
 
   return (
-    <div className="sticky top-[4.25rem] z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 mb-8">
+    <div
+      aria-hidden={!shown}
+      className={`fixed top-[4.25rem] left-0 right-0 z-30 px-4 sm:px-6 transition-all duration-300 ${
+        shown ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
+      }`}
+    >
       <div
         ref={ref}
-        className="flex gap-2 overflow-x-auto rounded-xl border border-white/10 bg-neutral-950/85 backdrop-blur px-2 py-2
+        className="section-tabs max-w-5xl mx-auto flex gap-2 overflow-x-auto rounded-xl px-2 py-2
                    [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {items.map((it) => {
@@ -294,14 +317,13 @@ function StickySectionTabs({ items, u }) {
               href={`#${it.id}`}
               data-tab={it.id}
               aria-current={on ? "true" : undefined}
-              className={`shrink-0 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition-colors ${
-                on
-                  ? NAV_TONES[it.tone].chip
-                  : "border-transparent text-neutral-400 hover:text-white hover:bg-white/[0.06]"
+              tabIndex={shown ? undefined : -1}
+              className={`section-tab shrink-0 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition-colors ${
+                on ? NAV_TONES[it.tone].chip : "border-transparent text-neutral-400"
               }`}
             >
               <it.icon className="w-3.5 h-3.5" />
-              {it.label}
+              {it.tab}
               <span className="text-[10px] text-neutral-500 tabular-nums">{it.count > 0 ? it.count : "—"}</span>
             </a>
           );
@@ -420,6 +442,7 @@ export default function Shop() {
   const { lang } = useLanguage();
   const u = UI[lang] || UI.en;
   const { pathname } = useLocation();
+  const navRef = useRef(null);
 
   // Prerender renderuje sciezki bez koncowego ukosnika, przegladarka z nim,
   // wiec porownujemy na znormalizowanej postaci.
@@ -434,14 +457,17 @@ export default function Shop() {
 
   // Nawigacja opisuje tylko te dzialy, ktore faktycznie sa na stronie:
   // na hubie nie ma jeszcze kart uslug, bo te naleza do kategorii.
+  // Kafelek dostaje pelna nazwe dzialu, zakladka skrocona: trzy dlugie nazwy
+  // nie mieszcza sie w pasku na telefonie i zostawialyby widoczna polowe.
   const navItems = [
-    { id: "produkty", icon: Package, label: u.shortProducts, hint: u.hintProducts, count: products.length, tone: "emerald" },
-    { id: "personalizowane", icon: Sparkles, label: u.shortPersonalized, hint: u.hintPersonalized, count: personalized.length, tone: "amber" },
+    { id: "produkty", icon: Package, label: u.products, tab: u.shortProducts, hint: u.hintProducts, count: products.length, tone: "emerald" },
+    { id: "personalizowane", icon: Sparkles, label: u.personalized, tab: u.shortPersonalized, hint: u.hintPersonalized, count: personalized.length, tone: "amber" },
     ...(services.length > 0
       ? [{
           id: "uslugi",
           icon: Wrench,
-          label: u.shortServices,
+          label: u.services,
+          tab: u.shortServices,
           hint: u.hintServices,
           count: services.length,
           tone: category?.theme === "amber" ? "amber" : "blue",
@@ -502,8 +528,8 @@ export default function Shop() {
             </div>
           )}
 
-          <SectionNav items={navItems} u={u} />
-          <StickySectionTabs items={navItems} u={u} />
+          <SectionNav items={navItems} u={u} innerRef={navRef} />
+          <StickySectionTabs items={navItems} u={u} navRef={navRef} />
 
           {/* Produkty gotowe. Sekcja zostaje takze wtedy, gdy nic nie mamy:
               milczenie wygladaloby jak brak dzialu, a nie jak stan przejsciowy. */}

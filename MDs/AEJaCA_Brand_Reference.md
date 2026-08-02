@@ -645,7 +645,7 @@ Granica miedzy nimi to **ile pracy dzieli zamowienie od wysylki**. Klient czyta 
 | Rodzaj | Co to znaczy | Przyklady | Praca |
 |---|---|---|---|
 | **Produkt gotowy** | lezy na polce, pakujemy i wysylamy | wyrob z witryny, plik do pobrania | zero |
-| **Gotowe, personalizowane** | polprodukt lezy na polce, dopasowujemy go do klienta | kamienne podstawki pod drinki, drewniane szkatulki, deski z grawerem | minuty |
+| **Produkty personalizowane** | polprodukt lezy na polce, dopasowujemy go do klienta | kamienne podstawki pod drinki, drewniane szkatulki, deski z grawerem | minuty |
 | **Usluga** | wykonujemy od nowa albo prawie od nowa | druk 3D, bizuteria, odlew, projekt CAD | godziny |
 
 W `shopCatalog.js` rozroznia je pole `offer` (`OFFER_KIND.READY` / `PERSONALIZED` / `SERVICE`). Sekcje w sklepie ida w kolejnosci rosnacej ilosci naszej pracy, bo tak tez rosnie termin.

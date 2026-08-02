@@ -626,3 +626,25 @@ body {
   transform: translateY(0);
   pointer-events: auto;
 }
+
+/* ─── Sklep: rozdzielacz dzialow i pasek zakladek ───
+   Kolory biora sie z tokenow motywu, a nie z nadpisywanych klas Tailwinda,
+   wiec pasek wyglada poprawnie w obu trybach bez dopisywania kolejnych
+   wyjatkow do listy powyzej. */
+.section-card:hover {
+  border-color: var(--ds-border-hi) !important;
+  background-color: var(--ds-bg-soft);
+}
+
+.section-tabs {
+  background: var(--ds-navbar-bg-s);
+  border: 1px solid var(--ds-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.55);
+}
+
+.section-tab:not([aria-current]):hover {
+  background-color: var(--ds-bg-soft);
+  color: var(--ds-text-1) !important;
+}
