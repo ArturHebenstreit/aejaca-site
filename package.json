@@ -20,7 +20,8 @@
     "check:images": "node scripts/check-shop-images.mjs",
     "products:pull": "node scripts/pull-products.mjs",
     "products:seed": "node scripts/seed-products.mjs",
-    "db:schema-products": "psql $DATABASE_URL -f scripts/products-schema.sql"
+    "db:schema-products": "psql $DATABASE_URL -f scripts/products-schema.sql",
+    "db:schema-discounts": "psql $DATABASE_URL -f scripts/discounts-schema.sql"
   },
   "dependencies": {
     "fflate": "^0.8.3",

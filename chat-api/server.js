@@ -23,6 +23,10 @@ import {
   listProducts, getProduct, reserveProduct, consumeReservations,
   releaseExpiredReservations, releaseOrderReservations, ProductError, PRODUCT_STATUSES,
 } from "./products.js";
+import {
+  previewDiscount, reserveDiscount, consumeDiscount, releaseExpiredRedemptions,
+  releaseOrderRedemptions, normalizeCode, randomCode, DiscountError, APPLIES_TO, MAX_PERCENT,
+} from "./discounts.js";
 import { sendOrderPaidEmails, sendTransferInstructions } from "./orderMail.js";
 
 const app = express();
@@ -106,6 +110,49 @@ if (pool) {
   `).catch((e) => console.error("[migracja] status/payment_method:", e.message));
   pool.query(`CREATE INDEX IF NOT EXISTS idx_orders_awaiting_transfer
               ON orders (created_at DESC) WHERE status = 'awaiting_transfer'`).catch(() => {});
+
+  // Kody rabatowe. Jedna tabela obsluguje kody osobiste (jednorazowe) i akcje
+  // (MATKA15, BLACKFRIDAY), rozroznione wylacznie ustawieniami.
+  pool.query(`
+    CREATE TABLE IF NOT EXISTS discount_codes (
+      id BIGSERIAL PRIMARY KEY,
+      code VARCHAR(32) UNIQUE NOT NULL,
+      kind VARCHAR(10) NOT NULL CHECK (kind IN ('percent','amount')),
+      value INTEGER NOT NULL CHECK (value > 0),
+      applies_to VARCHAR(20) NOT NULL DEFAULT 'all'
+        CHECK (applies_to IN ('all','products','services','jewelry','studio')),
+      min_order_grosze INTEGER NOT NULL DEFAULT 0,
+      max_uses INTEGER CHECK (max_uses IS NULL OR max_uses > 0),
+      max_uses_per_email INTEGER NOT NULL DEFAULT 1 CHECK (max_uses_per_email > 0),
+      used_count INTEGER NOT NULL DEFAULT 0,
+      valid_from TIMESTAMPTZ,
+      valid_to TIMESTAMPTZ,
+      active BOOLEAN NOT NULL DEFAULT TRUE,
+      campaign VARCHAR(60),
+      issued_to VARCHAR(255),
+      note TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      CONSTRAINT discount_percent_range CHECK (kind <> 'percent' OR value BETWEEN 1 AND 80)
+    );
+    CREATE TABLE IF NOT EXISTS discount_redemptions (
+      id BIGSERIAL PRIMARY KEY,
+      code_id BIGINT NOT NULL REFERENCES discount_codes(id) ON DELETE CASCADE,
+      order_id BIGINT REFERENCES orders(id) ON DELETE CASCADE,
+      email VARCHAR(255) NOT NULL,
+      amount_grosze INTEGER NOT NULL CHECK (amount_grosze >= 0),
+      expires_at TIMESTAMPTZ NOT NULL,
+      consumed_at TIMESTAMPTZ,
+      released_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_redemptions_code ON discount_redemptions (code_id) WHERE released_at IS NULL;
+    CREATE INDEX IF NOT EXISTS idx_redemptions_email ON discount_redemptions (code_id, email) WHERE released_at IS NULL;
+    CREATE INDEX IF NOT EXISTS idx_redemptions_order ON discount_redemptions (order_id);
+  `).catch((e) => console.error("[migracja] discounts:", e.message));
+  pool.query(`ALTER TABLE discount_codes ADD COLUMN IF NOT EXISTS issued_to VARCHAR(255)`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_code VARCHAR(32)`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_grosze INTEGER NOT NULL DEFAULT 0`).catch(() => {});
 
   // Katalog produktow: tresc, zdjecia i stan magazynowy zyja w bazie, a nie
   // w repozytorium, zeby zmiana stanu nie wymagala wdrozenia.
@@ -1385,6 +1432,8 @@ if (pool) cron.schedule("30 3 * * *", markAbandonedUploads);
 // Rezerwacje wygasaja co kwadrans, bo przy platnosci natychmiastowej trzymamy
 // towar tylko 20 minut i nie ma sensu czekac z tym do nocy.
 if (pool) cron.schedule("*/15 * * * *", () => releaseExpiredReservations(pool).catch(() => {}));
+// Kod z porzuconego koszyka wraca do puli razem z towarem, w tym samym rytmie.
+if (pool) cron.schedule("*/15 * * * *", () => releaseExpiredRedemptions(pool).catch(() => {}));
 
 /** Zamowienie nieoplacone po terminie zamykamy i oddajemy jego towar do sprzedazy. */
 async function expireStaleOrders() {
@@ -1395,7 +1444,11 @@ async function expireStaleOrders() {
           AND paid_at IS NULL AND expires_at IS NOT NULL AND expires_at < NOW()
         RETURNING id, order_ref`
     );
-    for (const o of rows) await releaseOrderReservations(pool, o.id);
+    for (const o of rows) {
+      await releaseOrderReservations(pool, o.id);
+      // Kod z przeterminowanego zamowienia wraca do puli razem z towarem.
+      await releaseOrderRedemptions(pool, o.id);
+    }
     if (rows.length) console.log(`[zamowienia] wygaslo ${rows.length}: ${rows.map((r) => r.order_ref).join(", ")}`);
   } catch (e) {
     console.error("[zamowienia] wygaszanie nie powiodlo sie:", e.message);
@@ -1494,6 +1547,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
         weightG: product.weightG,
         personalization: sanitizePersonalization(raw.personalization),
         kind: product.kind,
+        category: product.category,
       });
     }
 
@@ -1564,7 +1618,37 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
         code: "delivery_unavailable",
       });
     }
-    const total = itemsTotal + shipping;
+    // Kod rabatowy sprawdzamy tu, przed zapisem zamowienia, zeby wygasly kod
+    // odbil sie od kasy, a nie od platnosci. Znizka liczy sie wylacznie od
+    // pozycji, ktore obejmuje, i nigdy od wysylki.
+    const discountItems = [
+      ...priced.map((i) => ({
+        lineGrosze: i.lineGrosze,
+        source: "service",
+        category: String(i.calculator || "").startsWith("jewelry") ? "jewelry" : "studio",
+      })),
+      ...productItems.map((i) => ({ lineGrosze: i.lineGrosze, source: "product", category: i.category })),
+    ];
+
+    const rawCode = normalizeCode(req.body?.discountCode);
+    let discountGrosze = 0;
+    let discountCode = null;
+    if (rawCode) {
+      try {
+        const preview = await previewDiscount(pool, {
+          code: rawCode,
+          email: customer.email,
+          items: discountItems,
+        });
+        discountGrosze = preview.discountGrosze;
+        discountCode = preview.code;
+      } catch (e) {
+        if (e instanceof DiscountError) return res.status(400).json({ error: e.message, code: e.code });
+        throw e;
+      }
+    }
+
+    const total = itemsTotal - discountGrosze + shipping;
 
     const limit = await checkQuarterlyLimit(pool, total);
     if (!limit.ok) {
@@ -1607,10 +1691,12 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
          delivery_method, delivery_point, address_line1, address_line2, postal_code, city, country,
          accepted_terms_at, waived_withdrawal_at, digital_immediate_at,
          access_token, ip_hash, expires_at, revisions_included,
-         payment_method, amount_eur_cents, eur_rate, eur_rate_locked_at)
+         payment_method, amount_eur_cents, eur_rate, eur_rate_locked_at,
+         discount_code, discount_grosze)
        VALUES ($1,$22,'instant',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
          NOW(), $16, $17, $18, $19, $20, $21,
-         $23, $24, $25, CASE WHEN $24::INTEGER IS NULL THEN NULL ELSE NOW() END)
+         $23, $24, $25, CASE WHEN $24::INTEGER IS NULL THEN NULL ELSE NOW() END,
+         $26, $27)
        RETURNING id`,
       [orderRef, safeLang, itemsTotal, shipping, total,
        customer.email.trim().toLowerCase(), customer.name || null, customer.phone || null,
@@ -1624,7 +1710,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
        priced.find((i) => i.revisionsIncluded)?.revisionsIncluded ?? null,
        wantsTransfer ? "awaiting_transfer" : "awaiting_payment",
        wantsTransfer ? "bank_transfer" : "autopay",
-       amountEurCents, eurRate]
+       amountEurCents, eurRate, discountCode, discountGrosze]
     );
     const orderId = rows[0].id;
 
@@ -1632,10 +1718,23 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
     // dwa rownolegle zamowienia na ostatnia sztuke ustawiaja sie w kolejce.
     // Gdy towaru zabraknie, kasujemy swieze zamowienie zamiast zostawiac
     // klienta z linkiem do zaplaty za cos, czego nie wyslemy.
-    if (productItems.length) {
+    if (productItems.length || discountCode) {
       const client = await pool.connect();
       try {
         await client.query("BEGIN");
+        // Kod blokujemy tak samo jak towar: wiersz kodu pod blokada, wiec dwa
+        // zamowienia zlozone w tej samej sekundzie nie uzyja jednorazowego
+        // kodu obydwa. Kwota policzona tutaj musi zgadzac sie z ta, ktora
+        // zapisalismy na zamowieniu, inaczej klient zaplacilby inna niz widzial.
+        if (discountCode) {
+          const used = await reserveDiscount(client, {
+            code: discountCode, email: customer.email, items: discountItems,
+            orderId, paymentMethod: wantsTransfer ? "bank_transfer" : "autopay",
+          });
+          if (used.discountGrosze !== discountGrosze) {
+            throw new DiscountError("Warunki kodu zmienily sie w trakcie skladania zamowienia", "changed");
+          }
+        }
         for (const it of productItems) {
           await reserveProduct(client, {
             slug: it.slug, qty: it.qty, orderId,
@@ -1654,6 +1753,9 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
         await pool.query("DELETE FROM orders WHERE id = $1", [orderId]).catch(() => {});
         if (e instanceof ProductError) {
           return res.status(409).json({ error: e.message, code: e.code, slug: e.slug, available: e.available });
+        }
+        if (e instanceof DiscountError) {
+          return res.status(409).json({ error: e.message, code: e.code });
         }
         throw e;
       } finally {
@@ -1713,6 +1815,8 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
       token,
       totalGrosze: total,
       totalPLN: (total / 100).toFixed(2),
+      discountCode,
+      discountGrosze,
       expiresAt,
       paymentMethod: wantsTransfer ? "bank_transfer" : "autopay",
       // Numer rachunku wydajemy dopiero razem z zamowieniem, czyli wtedy, gdy
@@ -1895,6 +1999,181 @@ app.get("/api/admin/products", async (req, res) => {
 });
 
 // ------------------------------------------------------------
+// Kody rabatowe
+// ------------------------------------------------------------
+
+/**
+ * Podglad w kasie. Klient ma zobaczyc kwote znizki, zanim zamowi, i ten sam
+ * powod odmowy co przy zamowieniu, zamiast dowiadywac sie o wygasnieciu kodu
+ * dopiero przy platnosci. Kwota nigdy nie pochodzi z przegladarki.
+ */
+app.post("/api/discounts/check", express.json({ limit: "16kb" }), async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  const items = Array.isArray(req.body?.items) ? req.body.items : [];
+  // Same kwoty pozycji sa tu tylko podgladem. Przy skladaniu zamowienia
+  // liczymy je od nowa z katalogu i z kalkulatora, wiec podstawiona kwota
+  // niczego nie daje poza ladniejsza liczba na ekranie przez chwile.
+  const clean = items
+    .map((i) => ({
+      lineGrosze: Number.isInteger(i.lineGrosze) ? Math.max(0, i.lineGrosze) : 0,
+      source: i.source === "product" ? "product" : "service",
+      category: i.category === "jewelry" ? "jewelry" : "studio",
+    }))
+    .filter((i) => i.lineGrosze > 0);
+  if (!clean.length) return res.status(400).json({ error: "Koszyk jest pusty", code: "empty_cart" });
+
+  try {
+    const preview = await previewDiscount(pool, {
+      code: req.body?.code,
+      email: req.body?.email,
+      items: clean,
+    });
+    res.json({ ok: true, ...preview });
+  } catch (e) {
+    if (e instanceof DiscountError) return res.status(400).json({ error: e.message, code: e.code, minGrosze: e.minGrosze });
+    console.error("[rabaty] sprawdzenie kodu:", e.message);
+    res.status(500).json({ error: "Nie udalo sie sprawdzic kodu" });
+  }
+});
+
+/**
+ * Kod powitalny dla zapisujacych sie do newslettera. Wola go przeplyw w n8n,
+ * ktory wysyla maila, i wstawia otrzymany kod do tresci. Obietnica ze strony
+ * ("wyslemy kod 10% na pierwsze zamowienie") zaczyna dzialac sama, bez reki
+ * czlowieka przy kazdym zapisie.
+ *
+ * Powtarzalne: drugi zapis tym samym adresem oddaje ten sam kod, zamiast
+ * rozdawac kolejne. Inaczej wystarczyloby zapisac sie piec razy.
+ */
+app.post("/api/discounts/welcome", express.json({ limit: "4kb" }), async (req, res) => {
+  if (!process.env.NEWSLETTER_CODE_TOKEN || req.headers["x-newsletter-token"] !== process.env.NEWSLETTER_CODE_TOKEN) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: "Nieprawidlowy adres e-mail" });
+
+  const percent = Number.isInteger(req.body?.percent) ? Math.min(req.body.percent, MAX_PERCENT) : 10;
+  const days = Number.isInteger(req.body?.days) ? Math.min(Math.max(req.body.days, 7), 365) : 90;
+
+  try {
+    const { rows: existing } = await pool.query(
+      `SELECT code, valid_to FROM discount_codes
+        WHERE campaign = 'newsletter' AND issued_to = $1 AND active = TRUE AND used_count = 0
+          AND (valid_to IS NULL OR valid_to > NOW())
+        ORDER BY created_at DESC LIMIT 1`,
+      [email]
+    );
+    if (existing[0]) return res.json({ ok: true, reused: true, code: existing[0].code, percent, validTo: existing[0].valid_to });
+
+    // Kolizja losowania jest skrajnie rzadka, ale kosztuje jedno powtorzenie,
+    // a nie odmowe wyslania maila, wiec probujemy kilka razy.
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const code = randomCode("AEJ10");
+      const { rows } = await pool.query(
+        `INSERT INTO discount_codes
+           (code, kind, value, applies_to, max_uses, max_uses_per_email, valid_to, campaign, issued_to, note)
+         VALUES ($1, 'percent', $2, 'all', 1, 1, NOW() + ($3 || ' days')::INTERVAL, 'newsletter', $4, $5)
+         ON CONFLICT (code) DO NOTHING
+         RETURNING code, valid_to`,
+        [code, percent, String(days), email, `Kod powitalny, zapis ${new Date().toISOString().slice(0, 10)}`]
+      );
+      if (rows[0]) return res.json({ ok: true, reused: false, code: rows[0].code, percent, validTo: rows[0].valid_to });
+    }
+    res.status(500).json({ error: "Nie udalo sie wylosowac kodu" });
+  } catch (e) {
+    console.error("[rabaty] kod powitalny:", e.message);
+    res.status(500).json({ error: "Nie udalo sie wystawic kodu" });
+  }
+});
+
+/** Lista dla panelu, razem z liczba uzyc i rezerwacji w toku. */
+app.get("/api/admin/discounts", async (req, res) => {
+  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  const { rows } = await pool.query(
+    `SELECT c.*,
+            (SELECT COUNT(*)::INTEGER FROM discount_redemptions r
+              WHERE r.code_id = c.id AND r.released_at IS NULL AND r.consumed_at IS NULL
+                AND r.expires_at > NOW()) AS pending,
+            (SELECT COALESCE(SUM(r.amount_grosze), 0)::INTEGER FROM discount_redemptions r
+              WHERE r.code_id = c.id AND r.consumed_at IS NOT NULL) AS granted_grosze
+       FROM discount_codes c
+      ORDER BY c.active DESC, c.created_at DESC
+      LIMIT 500`
+  );
+  res.json({ codes: rows });
+});
+
+/**
+ * Tworzenie kodow. Jedno wywolanie robi albo jeden kod o zadanej nazwie
+ * (akcja), albo paczke kodow osobistych z losowa koncowka: wreczenie
+ * dwudziestu roznych kodow ma byc jedna czynnoscia, a nie dwudziestoma.
+ */
+app.post("/api/admin/discounts", express.json({ limit: "16kb" }), async (req, res) => {
+  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const b = req.body || {};
+  const kind = b.kind === "amount" ? "amount" : "percent";
+  const value = Number(b.value);
+  if (!Number.isInteger(value) || value <= 0) return res.status(400).json({ error: "Wartosc musi byc liczba calkowita wieksza od zera" });
+  if (kind === "percent" && value > MAX_PERCENT) return res.status(400).json({ error: `Procent nie moze przekroczyc ${MAX_PERCENT}` });
+  const appliesTo = APPLIES_TO.includes(b.appliesTo) ? b.appliesTo : "all";
+
+  const count = Number.isInteger(b.count) ? Math.min(Math.max(b.count, 1), 200) : 1;
+  const single = String(b.code || "").trim();
+  if (count > 1 && single) return res.status(400).json({ error: "Paczka kodow losuje nazwy, wiec nie podawaj wlasnej" });
+  if (count === 1 && !single) return res.status(400).json({ error: "Podaj nazwe kodu albo liczbe kodow do wygenerowania" });
+
+  const codes = count > 1
+    ? Array.from({ length: count }, () => randomCode(b.prefix || "AEJ"))
+    : [normalizeCode(single)];
+
+  const created = [];
+  try {
+    for (const code of codes) {
+      const { rows } = await pool.query(
+        `INSERT INTO discount_codes
+           (code, kind, value, applies_to, min_order_grosze, max_uses, max_uses_per_email,
+            valid_from, valid_to, campaign, issued_to, note)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+         ON CONFLICT (code) DO NOTHING
+         RETURNING code`,
+        [code, kind, value, appliesTo,
+         Number.isInteger(b.minOrderGrosze) ? b.minOrderGrosze : 0,
+         Number.isInteger(b.maxUses) ? b.maxUses : (count > 1 ? 1 : null),
+         Number.isInteger(b.maxUsesPerEmail) ? b.maxUsesPerEmail : 1,
+         b.validFrom || null, b.validTo || null,
+         b.campaign || null, b.issuedTo || null, b.note || null]
+      );
+      if (rows[0]) created.push(rows[0].code);
+    }
+  } catch (e) {
+    console.error("[rabaty] tworzenie kodu:", e.message);
+    return res.status(400).json({ error: "Nie udalo sie zapisac kodu", detail: e.message.slice(0, 200) });
+  }
+
+  if (!created.length) return res.status(409).json({ error: "Taki kod juz istnieje", code: "duplicate" });
+  res.json({ ok: true, codes: created });
+});
+
+/** Wylaczenie albo wlaczenie kodu. Kod zostaje w bazie razem z historia uzyc. */
+app.patch("/api/admin/discounts/:code", express.json({ limit: "4kb" }), async (req, res) => {
+  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  const active = req.body?.active;
+  if (typeof active !== "boolean") return res.status(400).json({ error: "Pole active musi byc true albo false" });
+  const { rows } = await pool.query(
+    `UPDATE discount_codes SET active = $2, updated_at = NOW() WHERE code = $1 RETURNING code, active`,
+    [normalizeCode(req.params.code), active]
+  );
+  if (!rows[0]) return res.status(404).json({ error: "Nie znamy takiego kodu" });
+  res.json({ ok: true, ...rows[0] });
+});
+
+// ------------------------------------------------------------
 // Reczne potwierdzenie wplaty
 // ------------------------------------------------------------
 // Przelew nie ma ITN, wiec jedynym dowodem wplywu jest wyciag bankowy, ktory
@@ -1974,6 +2253,9 @@ app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), as
   );
   consumeReservations(pool, order.id).catch((e) =>
     console.error("[produkty] zdjecie ze stanu nie powiodlo sie:", e.message)
+  );
+  consumeDiscount(pool, order.id).catch((e) =>
+    console.error("[rabaty] zapisanie uzycia kodu nie powiodlo sie:", e.message)
   );
   moveOrderFilesToOrders(pool, order.id, ref).catch((e) =>
     console.error("[dysk] przeniesienie plikow nie powiodlo sie:", e.message)
@@ -2109,6 +2391,11 @@ app.post("/api/autopay/itn", express.urlencoded({ extended: false, limit: "256kb
           // wylacznie zarezerwowany, wiec porzucone zamowienie niczego nie kasowalo.
           consumeReservations(pool, order.id).catch((e) =>
             console.error("[produkty] zdjecie ze stanu nie powiodlo sie:", e.message)
+          );
+          // Kod rabatowy liczy sie jako uzyty dopiero teraz, z tego samego
+          // powodu: porzucony koszyk nie ma prawa spalic kodu jednorazowego.
+          consumeDiscount(pool, order.id).catch((e) =>
+            console.error("[rabaty] zapisanie uzycia kodu nie powiodlo sie:", e.message)
           );
           // Pliki lezaly dotad w folderze roboczym, bo w chwili wgrania nikt
           // jeszcze niczego nie zamowil. Dopiero zaplata robi z nich zlecenie.

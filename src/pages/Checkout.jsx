@@ -8,7 +8,7 @@
 
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ShieldCheck, Loader2, ArrowLeft, AlertTriangle } from "lucide-react";
+import { ShieldCheck, Loader2, ArrowLeft, AlertTriangle, Check } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import Breadcrumb from "../components/Breadcrumb.jsx";
@@ -41,6 +41,12 @@ const UI = {
     items: "Pozycje",
     shipping: "Dostawa",
     total: "Do zapłaty",
+    codeLabel: "Kod rabatowy",
+    codePlaceholder: "np. MATKA15",
+    codeApply: "Zastosuj",
+    codeRemove: "Usuń kod",
+    codeOk: "Kod naliczony",
+    discount: "Rabat",
     payMethod: "Metoda płatności",
     payAny: "Wybiorę na stronie płatności",
     pay: "Zapłać",
@@ -93,6 +99,12 @@ const UI = {
     items: "Items",
     shipping: "Delivery",
     total: "To pay",
+    codeLabel: "Discount code",
+    codePlaceholder: "e.g. MATKA15",
+    codeApply: "Apply",
+    codeRemove: "Remove code",
+    codeOk: "Code applied",
+    discount: "Discount",
     payMethod: "Payment method",
     payAny: "I will choose on the payment page",
     pay: "Pay",
@@ -145,6 +157,12 @@ const UI = {
     items: "Positionen",
     shipping: "Lieferung",
     total: "Zu zahlen",
+    codeLabel: "Rabattcode",
+    codePlaceholder: "z. B. MATKA15",
+    codeApply: "Einlösen",
+    codeRemove: "Code entfernen",
+    codeOk: "Code angerechnet",
+    discount: "Rabatt",
     payMethod: "Zahlungsmethode",
     payAny: "Ich wähle auf der Zahlungsseite",
     pay: "Bezahlen",
@@ -252,6 +270,10 @@ export default function Checkout() {
   const [methods, setMethods] = useState([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  const [codeInput, setCodeInput] = useState("");
+  const [applied, setApplied] = useState(null);   // { code, discountGrosze }
+  const [codeBusy, setCodeBusy] = useState(false);
+  const [codeError, setCodeError] = useState(null);
 
   // Zgody zalezne od zawartosci koszyka, nie od zamowienia jako calosci.
   const hasMadeToOrder = items.some((i) => i.withdrawal === "made_to_order" || i.kind === "service");
@@ -278,7 +300,49 @@ export default function Checkout() {
   const abroad = !onlyDigital && country !== "PL";
   const customs = !onlyDigital && needsCustoms(country);
 
-  const totalGrosze = subtotalGrosze + delivery.grosze;
+  // Kod rabatowy sprawdza serwer, tu pokazujemy wylacznie wynik. Kwota
+  // policzona w przegladarce nie ma znaczenia: zamowienie i tak przeliczy
+  // wszystko od nowa, a niezgodnosc odbije sie bledem zamiast tansza paczka.
+  const discountItems = items.map((i) => ({
+    lineGrosze: ((i.unitGrosze || 0) + (i.packagingGrosze || 0)) * (i.qty || 1),
+    source: i.productSlug ? "product" : "service",
+    category: i.category || (String(i.calculator || "").startsWith("jewelry") ? "jewelry" : "studio"),
+  }));
+
+  const discountGrosze = applied?.discountGrosze || 0;
+  const totalGrosze = Math.max(subtotalGrosze - discountGrosze, 0) + delivery.grosze;
+
+  async function checkCode(raw, { silent = false } = {}) {
+    const code = String(raw || "").trim().toUpperCase();
+    if (!code || !API_URL) return;
+    setCodeBusy(true);
+    if (!silent) setCodeError(null);
+    try {
+      const r = await postJSON(`${API_URL}/api/discounts/check`, {
+        code, email: customer.email || null, items: discountItems,
+      });
+      if (r.ok && r.data?.ok) {
+        setApplied({ code: r.data.code, discountGrosze: r.data.discountGrosze });
+        setCodeError(null);
+      } else {
+        setApplied(null);
+        if (!silent) setCodeError(r.data?.error || u.generic);
+      }
+    } catch {
+      setApplied(null);
+      if (!silent) setCodeError(u.generic);
+    } finally {
+      setCodeBusy(false);
+    }
+  }
+
+  // Zmiana koszyka zmienia kwote znizki, a przy kodzie z progiem moze ja
+  // odebrac w calosci. Przeliczamy po cichu, zeby na ekranie nie stala kwota
+  // sprzed zmiany.
+  useEffect(() => {
+    if (applied?.code) checkCode(applied.code, { silent: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subtotalGrosze]);
 
   useEffect(() => {
     if (!API_URL) return;
@@ -334,6 +398,7 @@ export default function Checkout() {
         },
         consents,
         paymentMethod: payMode,
+        discountCode: applied?.code || null,
       });
 
       if (!created.ok) {
@@ -408,6 +473,12 @@ export default function Checkout() {
                 <span className="text-white">{money(((i.unitGrosze || 0) + (i.packagingGrosze || 0)) * (i.qty || 1))}</span>
               </div>
             ))}
+            {discountGrosze > 0 && (
+              <div className="flex justify-between text-sm pt-2 mt-2 border-t border-white/5">
+                <span className="text-emerald-300">{u.discount}: {applied.code}</span>
+                <span className="text-emerald-300">-{money(discountGrosze)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm pt-2 mt-2 border-t border-white/5">
               <span className="text-neutral-400">{u.shipping}: {t(delivery.label, lang)}</span>
               <span className="text-white">{money(delivery.grosze)}</span>
@@ -415,6 +486,49 @@ export default function Checkout() {
             <div className="flex justify-between font-bold pt-3 mt-3 border-t border-white/10">
               <span className="text-white">{u.total}</span>
               <span className="text-blue-400 text-xl">{money(totalGrosze)}</span>
+            </div>
+
+            {/* Kod rabatowy. Wpisany kod sprawdza serwer, wiec komunikat mowi
+                dokladnie, dlaczego kod nie dziala: wygasl, byl juz uzyty albo
+                nie obejmuje niczego z tego koszyka. */}
+            <div className="pt-4 mt-4 border-t border-white/5">
+              {applied ? (
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-emerald-300 text-xs inline-flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5" />{u.codeOk}: <strong>{applied.code}</strong>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => { setApplied(null); setCodeInput(""); setCodeError(null); }}
+                    className="text-neutral-500 hover:text-white text-xs transition-colors"
+                  >
+                    {u.codeRemove}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <label className="sr-only" htmlFor="discount-code">{u.codeLabel}</label>
+                  <input
+                    id="discount-code"
+                    value={codeInput}
+                    onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => e.key === "Enter" && checkCode(codeInput)}
+                    placeholder={u.codePlaceholder}
+                    className="flex-1 bg-transparent border border-white/10 rounded-lg px-3 py-2 text-sm text-white
+                               placeholder:text-neutral-600 focus:outline-none focus:border-blue-400/50 uppercase"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => checkCode(codeInput)}
+                    disabled={!codeInput.trim() || codeBusy}
+                    className="px-4 py-2 rounded-lg border border-white/15 text-neutral-300 text-sm
+                               hover:border-white/30 hover:text-white disabled:opacity-40 transition-colors"
+                  >
+                    {codeBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : u.codeApply}
+                  </button>
+                </div>
+              )}
+              {codeError && <p className="text-amber-300 text-[11px] mt-2">{codeError}</p>}
             </div>
           </div>
 

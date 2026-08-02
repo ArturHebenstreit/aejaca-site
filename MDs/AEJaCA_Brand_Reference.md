@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-02 | Wersja: 2.1*
+*Wygenerowano: 2026-08-02 | Wersja: 2.2*
 
 ---
 
@@ -662,6 +662,34 @@ Sprawdzenie dostępności i założenie rezerwacji idą w jednej transakcji z `S
 Endpointy: `GET /api/products`, `GET /api/products/:slug` publicznie; `PUT /api/products/:slug`, `PATCH /api/products/:slug/stock` i `GET /api/admin/products` za nagłówkiem `X-Admin-Token`.
 
 Schemat: `scripts/products-schema.sql`, migracje wykonują się też przy starcie backendu.
+
+### Kody rabatowe
+
+Jedna tabela `discount_codes` obsługuje dwie rodziny kodów, rozróżnione wyłącznie ustawieniami.
+
+| | Kod osobisty | Akcja |
+|---|---|---|
+| przykład | `AEJ10-K7QMP4` | `MATKA15` |
+| ile użyć | dokładnie jedno, globalnie | bez limitu albo z pułapem |
+| na osobę | nie dotyczy | domyślnie raz na adres e-mail |
+| termin | zwykle 90 dni | okno akcji (Dzień Matki, Black Friday) |
+| jak powstaje | panel, pojedynczo albo paczką do 200 sztuk | panel, własne hasło |
+
+Kod niesie: rodzaj (procent do 80 albo kwota w groszach), zakres (`all`, `products`, `services`, `jewelry`, `studio`), minimalną wartość zamówienia, limit użyć łącznie, limit na adres e-mail, okno czasowe, nazwę akcji, komu wręczony i notatkę wewnętrzną.
+
+**Zniżka nigdy nie obejmuje wysyłki.** Dwadzieścia procent od kuriera zjada nasz koszt, a nie marżę. Liczy się wyłącznie od pozycji objętych zakresem kodu, zaokrąglana w dół, i nigdy nie przekracza wartości tych pozycji.
+
+**Jednorazowość bez kont.** Bez rejestracji nie da się zagwarantować, że ta sama osoba nie użyje kodu akcji z drugiego adresu. Da się natomiast to, co realnie potrzebne: kod osobisty jest jednorazowy naprawdę (limit liczy się globalnie, nie na osobę), a kod akcji nie da się zmielić dziesięć razy z jednej skrzynki. Sprawdzenie limitu i zapis użycia idą w jednej transakcji z blokadą wiersza kodu, więc dwa zamówienia złożone w tej samej sekundzie nie wykorzystają tego samego kodu jednorazowego.
+
+**Kod rezerwuje się przy zamówieniu, a zużywa przy zapłacie**, dokładnie jak towar. Porzucony koszyk nie spala kodu. Przy przelewie kod trzyma się te same 3 dni robocze co cena i rezerwacja towaru, więc klient dostaje jedną datę, a nie trzy.
+
+Kwota rabatu jest liczona po stronie serwera dwa razy: przy podglądzie w kasie i jeszcze raz przy składaniu zamówienia. Rozbieżność przerywa zamówienie zamiast wystawić inną kwotę niż widział klient. `orders.discount_code` i `orders.discount_grosze` zostają na zamówieniu, więc kwotę da się odtworzyć po latach bez zaglądania do tabeli kodów.
+
+**Kod powitalny z newslettera** wystawia `POST /api/discounts/welcome`, wołany przez przepływ n8n, który wysyła maila (nagłówek `X-Newsletter-Token`, sekret w `NEWSLETTER_CODE_TOKEN`). Kod osobisty, 10%, ważny 90 dni. Powtarzalny: drugi zapis tym samym adresem oddaje ten sam kod, zamiast rozdawać kolejne.
+
+Panel: `/admin/discounts/`, ten sam token co reszta. Lista z liczbą użyć, rezerwacji w toku i sumą udzielonych rabatów, tworzenie akcji, generowanie paczki kodów osobistych, włącznik. Kodu nigdy nie kasujemy, tylko wyłączamy, bo historia użyć ma zostać.
+
+Schemat: `scripts/discounts-schema.sql`, migracje wykonują się też przy starcie backendu.
 
 #### Stan pozycji w ofercie
 
