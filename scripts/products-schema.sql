@@ -19,6 +19,9 @@ ALTER TABLE products ADD COLUMN IF NOT EXISTS category    VARCHAR(20);
 ALTER TABLE products ADD COLUMN IF NOT EXISTS offer       VARCHAR(20) NOT NULL DEFAULT 'ready';
 ALTER TABLE products ADD COLUMN IF NOT EXISTS short       JSONB;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS specs       JSONB;
+-- Uwaga dla klienta na karcie produktu, np. o bezplatnej zmianie rozmiaru.
+-- Osobno od `notes`, ktore jest notatka wewnetrzna i nigdzie sie nie pokazuje.
+ALTER TABLE products ADD COLUMN IF NOT EXISTS note        JSONB;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS lead_time_days INTEGER NOT NULL DEFAULT 2;
 -- Konfiguracja personalizacji: co klient podaje i jaki jest limit znakow.
 ALTER TABLE products ADD COLUMN IF NOT EXISTS personalization JSONB;

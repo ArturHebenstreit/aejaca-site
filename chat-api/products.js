@@ -33,7 +33,7 @@ export function reservationExpiry(paymentMethod, now = new Date()) {
 
 const PUBLIC_COLUMNS = `
   p.id, p.slug, p.kind, p.category, p.offer, p.title, p.short, p.description,
-  p.specs, p.images, p.price_grosze, p.weight_g, p.stock, p.lead_time_days,
+  p.specs, p.note, p.images, p.price_grosze, p.weight_g, p.stock, p.lead_time_days,
   p.personalization, p.sort_order, p.license
 `;
 
@@ -48,6 +48,7 @@ function shape(row) {
     short: row.short,
     description: row.description,
     specs: row.specs,
+    note: row.note,
     images: row.images || [],
     priceGrosze: row.price_grosze,
     weightG: row.weight_g,

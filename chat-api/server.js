@@ -113,6 +113,7 @@ if (pool) {
   pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS offer VARCHAR(20) NOT NULL DEFAULT 'ready'`).catch(() => {});
   pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS short JSONB`).catch(() => {});
   pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS specs JSONB`).catch(() => {});
+  pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS note JSONB`).catch(() => {});
   pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS lead_time_days INTEGER NOT NULL DEFAULT 2`).catch(() => {});
   pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS personalization JSONB`).catch(() => {});
   pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 100`).catch(() => {});
@@ -1757,15 +1758,26 @@ app.put("/api/products/:slug", express.json({ limit: "256kb" }), async (req, res
   // Produkt cyfrowy nie ma stanu magazynowego, fizyczny musi go miec.
   const stock = kind === "digital" ? null : (Number.isInteger(b.stock) ? Math.max(0, b.stock) : 0);
 
+  // Zdjecia leza w repozytorium, wiec baza trzyma tylko sciezki. Pilnujemy ich
+  // tutaj, zeby zla sciezka nie doszla do odcisku katalogu i nie zatrzymala
+  // budowania strony dopiero przy wdrozeniu.
+  const images = Array.isArray(b.images) ? b.images.filter((s) => typeof s === "string") : [];
+  if (images.length < 1 || images.length > 5) {
+    return res.status(400).json({ error: "Produkt potrzebuje od 1 do 5 zdjec" });
+  }
+  if (images.some((s) => !/^\/img\/[\w./-]+\.(webp|jpg|jpeg|png)$/i.test(s))) {
+    return res.status(400).json({ error: "Zdjecie musi byc sciezka /img/... do pliku w repozytorium" });
+  }
+
   try {
     const { rows } = await pool.query(
-      `INSERT INTO products (slug, kind, category, offer, title, short, description, specs, images,
+      `INSERT INTO products (slug, kind, category, offer, title, short, description, specs, note, images,
          price_grosze, weight_g, stock, lead_time_days, personalization, sort_order, active, license, notes)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
        ON CONFLICT (slug) DO UPDATE SET
          kind = EXCLUDED.kind, category = EXCLUDED.category, offer = EXCLUDED.offer,
          title = EXCLUDED.title, short = EXCLUDED.short, description = EXCLUDED.description,
-         specs = EXCLUDED.specs, images = EXCLUDED.images, price_grosze = EXCLUDED.price_grosze,
+         specs = EXCLUDED.specs, note = EXCLUDED.note, images = EXCLUDED.images, price_grosze = EXCLUDED.price_grosze,
          weight_g = EXCLUDED.weight_g, stock = EXCLUDED.stock, lead_time_days = EXCLUDED.lead_time_days,
          personalization = EXCLUDED.personalization, sort_order = EXCLUDED.sort_order,
          active = EXCLUDED.active, license = EXCLUDED.license, notes = EXCLUDED.notes,
@@ -1774,7 +1786,8 @@ app.put("/api/products/:slug", express.json({ limit: "256kb" }), async (req, res
       [slug, kind, b.category || null, b.offer === "personalized" ? "personalized" : "ready",
        JSON.stringify(b.title), b.short ? JSON.stringify(b.short) : null,
        b.description ? JSON.stringify(b.description) : null, b.specs ? JSON.stringify(b.specs) : null,
-       JSON.stringify(Array.isArray(b.images) ? b.images : []),
+       b.note ? JSON.stringify(b.note) : null,
+       JSON.stringify(images),
        b.priceGrosze, Number.isInteger(b.weightG) ? b.weightG : null, stock,
        Number.isInteger(b.leadTimeDays) ? b.leadTimeDays : 2,
        b.personalization ? JSON.stringify(b.personalization) : null,

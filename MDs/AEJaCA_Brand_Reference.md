@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-02 | Wersja: 1.8*
+*Wygenerowano: 2026-08-02 | Wersja: 1.9*
 
 ---
 
@@ -663,6 +663,36 @@ Endpointy: `GET /api/products`, `GET /api/products/:slug` publicznie; `PUT /api/
 
 Schemat: `scripts/products-schema.sql`, migracje wykonują się też przy starcie backendu.
 
+#### Zdjęcia produktów
+
+Baza trzyma **ścieżki**, pliki leżą w repozytorium pod `/public/img/shop/`. Wybór świadomy: zdjęcia produktowe zmieniają się rzadko, a serwowane z tej samej domeny co strona ładują się szybciej niż z zewnętrznego dysku, co przy sklepie przekłada się na sprzedaż i pozycję w wyszukiwarce.
+
+Zasady, pilnowane przez `scripts/check-shop-images.mjs` w buildzie i przez walidację w `PUT /api/products/:slug`:
+
+| Reguła | Wartość |
+|---|---|
+| liczba zdjęć na produkt | od 1 do 5 |
+| ścieżka | zaczyna się od `/img/`, plik musi istnieć w repozytorium |
+| waga pliku | ostrzeżenie powyżej 200 kB, **błąd budowania** powyżej 400 kB |
+| format | webp (inne przechodzą z ostrzeżeniem) |
+
+Karta produktu pokazuje duże zdjęcie wybrane, a pod nim miniatury pozostałych.
+
+#### Katalog w repozytorium: odcisk bazy
+
+Strony sklepu są budowane statycznie i każda karta produktu musi istnieć jako plik, więc katalog wchodzi do repozytorium jako odcisk bazy: `src/data/products.generated.js`, plik generowany, nie edytujemy go ręcznie. Zdjęcia i tak wymagają wdrożenia, więc odcisk i pliki idą jednym commitem.
+
+Kolejność przy zmianie asortymentu:
+
+1. produkt w bazie (panel albo `PUT /api/products/:slug`), zdjęcia do `/public/img/shop/`
+2. `npm run products:pull` (odcisk katalogu)
+3. `npm run sitemap:shop` (adresy kart produktów)
+4. `npm run build`, commit, push
+
+Stan magazynowy z odcisku jest tylko punktem wyjścia: strony sklepu i karta produktu dopytują `/api/products` na żywo (`src/shop/availability.js`), więc sprzedana sztuka przestaje zachęcać do zakupu, nie czekając na kolejne wdrożenie.
+
+Dane startowe do pustej bazy: `src/data/productSeed.js` plus `npm run products:seed` (pozycje trafiają tam jako ukryte, chyba że dodasz `--activate`).
+
 ### Tryb jasny: kontrola w buildzie
 
 Tryb jasny nie działa przez warianty `dark:`, tylko przez listę nadpisań w `src/index.css` (`[data-theme="light"] .klasa`). Klasa spoza tej listy zostaje w kolorze przeznaczonym na czarne tło, więc jasny tekst na kremowym tle po prostu znika. Zdarzyło się to dwa razy i za każdym razem wyszło dopiero ze zrzutu ekranu.
@@ -724,7 +754,7 @@ Personalizacja to nie to samo co usluga: przy podstawce baza istnieje i termin l
 
 ### Produkty gotowe: chwilowo brak
 
-Trzy wpisy w `shopCatalog.js` byly przykladami przygotowanymi pod przyszly asortyment. Leza teraz w `PRODUCTS_DRAFT` i **nie sa wystawione**: sklep pokazuje w ich miejsce kafelek "Chwilowo brak produktow gotowych" z odsylaczem do uslug. Zeby wystawic pozycje, wystarczy ustawic przy niej `draft: false`.
+Baza produktow jest pusta, wiec sklep pokazuje kafelek "Chwilowo brak produktow gotowych" z odsylaczem do uslug. Trzy dawne przykladowe wpisy leza teraz w `src/data/productSeed.js` jako dane startowe do wgrania (`npm run products:seed`) i domyslnie sa ukryte.
 
 Sekcja produktow zostaje widoczna takze wtedy, gdy jest pusta. Milczenie czytaloby sie jak brak dzialu, a nie jak stan przejsciowy.
 

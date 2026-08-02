@@ -15,6 +15,7 @@ import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { t } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
+import { useAvailability, stockOf } from "../shop/availability.js";
 import { getProduct, WITHDRAWAL, SHOP_CATEGORIES } from "../data/shopCatalog.js";
 import NotFound from "./NotFound.jsx";
 
@@ -106,12 +107,16 @@ export default function Product() {
   const u = UI[lang] || UI.en;
   const { slug } = useParams();
   const product = getProduct(slug);
+  const availability = useAvailability();
   const [added, setAdded] = useState(false);
+  const [shown, setShown] = useState(0);
 
   if (!product) return <NotFound />;
 
   const isDigital = product.kind === "digital";
-  const soldOut = product.stock === 0;
+  // Stan z bazy, nie ten zapisany w HTML przy wdrozeniu.
+  const stock = stockOf(product, availability);
+  const soldOut = stock === 0;
   const category = SHOP_CATEGORIES.find((c) => c.id === product.category);
   const accent = category?.theme === "amber" ? "amber" : "blue";
 
@@ -173,13 +178,34 @@ export default function Product() {
           />
 
           <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
-            {/* Zdjecie */}
-            <div className="rounded-2xl overflow-hidden bg-black border border-white/10">
-              <img
-                src={product.images[0]}
-                alt={t(product.title, lang)}
-                className="w-full h-full object-cover"
-              />
+            {/* Zdjecia: duze wybrane, pod nim reszta. Miniatury pokazujemy tylko
+                wtedy, gdy jest co przelaczac. */}
+            <div>
+              <div className="rounded-2xl overflow-hidden bg-black border border-white/10 aspect-square">
+                <img
+                  src={product.images[shown] || product.images[0]}
+                  alt={t(product.title, lang)}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {product.images.length > 1 && (
+                <div className="flex gap-2 mt-2">
+                  {product.images.map((img, i) => (
+                    <button
+                      key={img}
+                      type="button"
+                      onClick={() => setShown(i)}
+                      aria-label={`${t(product.title, lang)} ${i + 1}`}
+                      aria-current={i === shown}
+                      className={`w-16 h-16 rounded-lg overflow-hidden border transition-colors ${
+                        i === shown ? "border-white/50" : "border-white/10 hover:border-white/30"
+                      }`}
+                    >
+                      <img src={img} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Panel zakupowy */}
@@ -203,7 +229,7 @@ export default function Product() {
                 ) : (
                   <span className="inline-flex items-center gap-1.5 text-xs text-emerald-300">
                     <Package className="w-3.5 h-3.5" />
-                    {product.stock === 1 ? u.lastOne : `${u.inStock}, ${product.stock} ${u.stockLeft}`}
+                    {stock === 1 ? u.lastOne : `${u.inStock}, ${stock} ${u.stockLeft}`}
                   </span>
                 )}
                 <span className="text-neutral-600">&middot;</span>

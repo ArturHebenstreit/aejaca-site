@@ -15,6 +15,7 @@ import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { t } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
+import { useAvailability, stockOf } from "../shop/availability.js";
 import {
   SHOP_CATEGORIES, productsByCategory, personalizedByCategory, serviceCardsByCategory,
   PRODUCTS, PERSONALIZED, SERVICE_CARDS,
@@ -332,9 +333,11 @@ function StickySectionTabs({ items, u, navRef }) {
   );
 }
 
-function ProductCard({ product, lang, u, money }) {
+function ProductCard({ product, lang, u, money, availability }) {
   const isDigital = product.kind === "digital";
-  const soldOut = product.stock === 0;
+  // Stan z bazy, nie ten zapisany w HTML przy wdrozeniu.
+  const stock = stockOf(product, availability);
+  const soldOut = stock === 0;
 
   return (
     <Link
@@ -356,7 +359,7 @@ function ProductCard({ product, lang, u, money }) {
             <Badge tone="info"><Download className="w-3 h-3" />{u.digital}</Badge>
           ) : soldOut ? (
             <Badge tone="warn">{u.outOfStock}</Badge>
-          ) : product.stock === 1 ? (
+          ) : stock === 1 ? (
             <Badge tone="warn">{u.lastOne}</Badge>
           ) : (
             <Badge tone="good"><Package className="w-3 h-3" />{u.inStock}</Badge>
@@ -443,6 +446,7 @@ export default function Shop() {
   const { pathname } = useLocation();
   const navRef = useRef(null);
   const { money } = useMoney();
+  const availability = useAvailability();
 
   // Prerender renderuje sciezki bez koncowego ukosnika, przegladarka z nim,
   // wiec porownujemy na znormalizowanej postaci.
@@ -573,7 +577,7 @@ export default function Shop() {
               />
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                 {products.map((p) => (
-                  <ProductCard key={p.slug} product={p} lang={lang} u={u} money={money} />
+                  <ProductCard key={p.slug} product={p} lang={lang} u={u} money={money} availability={availability} />
                 ))}
               </div>
             </section>
@@ -593,7 +597,7 @@ export default function Shop() {
             {personalized.length > 0 ? (
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                 {personalized.map((p) => (
-                  <ProductCard key={p.slug} product={p} lang={lang} u={u} money={money} />
+                  <ProductCard key={p.slug} product={p} lang={lang} u={u} money={money} availability={availability} />
                 ))}
               </div>
             ) : (
