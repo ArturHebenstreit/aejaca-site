@@ -15,7 +15,7 @@ import { Link } from "react-router-dom";
 import { ShoppingCart, Check, Loader2, ArrowRight, Info } from "lucide-react";
 import { useCart } from "../../cart/CartContext.jsx";
 import { getServiceCard } from "../../data/serviceCatalog.js";
-import { JobDescription, FileDrop } from "../shop/ConfigControls.jsx";
+import { JobDescription, FileDrop, BlockedReasons } from "../shop/ConfigControls.jsx";
 import { getService } from "../../data/orderCatalog.js";
 import { ENGRAVING_LIMITS } from "../../pricing/packaging.js";
 import { PersonalizationField } from "../shop/ConfigControls.jsx";
@@ -58,6 +58,13 @@ const UI = {
     engravingHint: "Grawer wykonujemy dokładnie tak, jak wpiszesz. Sprawdź pisownię.",
     engravingOver: "Dłuższy grawer wyceniamy indywidualnie: to inne ustawienia lasera i inna kompozycja. Napisz do nas, odpowiemy w 24 godziny.",
     missingEngraving: "Wpisz treść graweru",
+    blockedTitle: "Zanim dodasz do koszyka",
+    needDescription: "Opis zlecenia",
+    needDescriptionHint: "Wpisz co najmniej 20 znaków w polu opisu powyżej.",
+    needArtwork: "Projekt do wykonania",
+    needArtworkHint: "Wgraj plik SVG, DXF lub PDF.",
+    needEngraving: "Treść graweru",
+    needEngravingHint: "Wybrałeś grawer, więc wpisz, co ma zostać wygrawerowane.",
     svgBlocked: "Wgrany plik wektorowy wyceniamy ręcznie, bo liczy się realna długość ścieżki. Usuń plik, żeby kupić po polu z listy, albo wyślij do wyceny.",
     manualBlocked: "Tę konfigurację wycenia człowiek: kamienie, sploty łańcuszków i metal powierzony przez klienta zależą od rzeczy, których nie widać w parametrach. Odpowiadamy w 24 godziny.",
   },
@@ -87,6 +94,13 @@ const UI = {
     engravingHint: "We engrave exactly what you type. Please check the spelling.",
     engravingOver: "A longer engraving is quoted individually: different laser settings and a different layout. Write to us, we reply within 24 hours.",
     missingEngraving: "Enter the engraving text",
+    blockedTitle: "Before you add this to the cart",
+    needDescription: "Job description",
+    needDescriptionHint: "Type at least 20 characters in the description above.",
+    needArtwork: "Your artwork",
+    needArtworkHint: "Upload an SVG, DXF or PDF file.",
+    needEngraving: "Engraving text",
+    needEngravingHint: "You chose an engraving, so tell us what to engrave.",
     svgBlocked: "An uploaded vector file is quoted by hand, because the real path length decides the price. Remove the file to buy by the listed area, or request a quote.",
     manualBlocked: "This configuration is quoted by a person: stones, chain weaves and customer-supplied metal depend on things the parameters do not capture. We reply within 24 hours.",
   },
@@ -116,6 +130,13 @@ const UI = {
     engravingHint: "Wir gravieren genau das, was Sie eingeben. Bitte Schreibweise prüfen.",
     engravingOver: "Eine längere Gravur kalkulieren wir individuell: andere Lasereinstellungen, andere Komposition. Schreiben Sie uns, wir antworten binnen 24 Stunden.",
     missingEngraving: "Gravurtext eingeben",
+    blockedTitle: "Bevor Sie in den Warenkorb legen",
+    needDescription: "Auftragsbeschreibung",
+    needDescriptionHint: "Mindestens 20 Zeichen im Beschreibungsfeld oben.",
+    needArtwork: "Ihre Vorlage",
+    needArtworkHint: "Laden Sie eine SVG-, DXF- oder PDF-Datei hoch.",
+    needEngraving: "Gravurtext",
+    needEngravingHint: "Sie haben eine Gravur gewählt, bitte geben Sie den Text an.",
     svgBlocked: "Eine hochgeladene Vektordatei kalkulieren wir manuell, denn die tatsächliche Pfadlänge entscheidet. Entfernen Sie die Datei, um nach gelisteter Fläche zu kaufen, oder fordern Sie ein Angebot an.",
     manualBlocked: "Diese Konfiguration kalkuliert ein Mensch: Steine, Kettengeflechte und beigestelltes Metall hängen von Dingen ab, die in den Parametern nicht stehen. Wir antworten binnen 24 Stunden.",
   },
@@ -429,9 +450,15 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
           )}
 
           {!ready && !engravingOver && (
-            <p className="text-amber-400/80 text-[11px] mb-3 leading-relaxed">
-              {requiresDescription && !descriptionOk ? u.describeWhy : !artworkOk ? u.artworkWhy : u.missingEngraving}
-            </p>
+            <BlockedReasons
+              title={u.blockedTitle}
+              accent={accent}
+              items={[
+                ...(requiresDescription ? [{ ok: descriptionOk, label: u.needDescription, hint: u.needDescriptionHint }] : []),
+                ...(requiresArtwork ? [{ ok: artworkOk, label: u.needArtwork, hint: u.needArtworkHint }] : []),
+                ...(wantsEngraving ? [{ ok: engravingOk, label: u.needEngraving, hint: u.needEngravingHint }] : []),
+              ]}
+            />
           )}
 
           {engravingOver && (

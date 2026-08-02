@@ -6,7 +6,7 @@
 // suwak z podpowiedziami, a cena aktualizuje sie w miejscu, bez przeladowania.
 
 import { useRef } from "react";
-import { Upload, X, Check, Loader2 } from "lucide-react";
+import { Upload, X, Check, Loader2, CircleAlert } from "lucide-react";
 import { t } from "../../pricing/config.js";
 
 /** Kafelki wariantow. Zaznaczenie jest widoczne kolorem i znaczkiem. */
@@ -264,6 +264,47 @@ export function JobDescription({ label, hint, value, onChange, minLength = 20, m
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * Lista warunkow, ktore trzeba spelnic, zeby kupic.
+ *
+ * Dotad brakujacy warunek byl jednym zdaniem drobnym drukiem nad przyciskiem
+ * i po prostu ginal. Klient widzial wygaszony przycisk i nie wiedzial dlaczego.
+ * Tutaj kazdy warunek ma wlasny wiersz i znacznik, wiec od razu widac,
+ * czego brakuje i ile juz jest zrobione.
+ *
+ * @param {{ok: boolean, label: string, hint?: string}[]} items
+ */
+export function BlockedReasons({ title, items, accent = "blue" }) {
+  const pending = items.filter((i) => !i.ok);
+  if (!pending.length) return null;
+
+  return (
+    <div className="mb-3 rounded-xl border border-amber-400/30 bg-amber-400/[0.06] p-4">
+      <div className="flex items-center gap-2 mb-2.5">
+        <CircleAlert className="w-4 h-4 text-amber-400 flex-shrink-0" />
+        <span className="text-amber-300 text-xs font-semibold">{title}</span>
+      </div>
+      <ul className="space-y-2">
+        {items.map((i, idx) => (
+          <li key={idx} className="flex items-start gap-2.5">
+            <span
+              className={`mt-0.5 flex-shrink-0 w-4 h-4 rounded-full border flex items-center justify-center ${
+                i.ok ? "border-emerald-400/50 text-emerald-400" : "border-amber-400/50 text-amber-400"
+              }`}
+            >
+              {i.ok ? <Check className="w-2.5 h-2.5" /> : <span className="block w-1 h-1 rounded-full bg-current" />}
+            </span>
+            <span className="min-w-0">
+              <span className={`block text-xs ${i.ok ? "text-neutral-500 line-through" : "text-white"}`}>{i.label}</span>
+              {!i.ok && i.hint && <span className="block text-[11px] text-neutral-400 leading-relaxed mt-0.5">{i.hint}</span>}
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

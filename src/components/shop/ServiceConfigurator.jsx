@@ -14,7 +14,7 @@ import { useCart } from "../../cart/CartContext.jsx";
 import { getService } from "../../data/orderCatalog.js";
 import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS } from "../../pricing/packaging.js";
 import { t, quantityBounds } from "../../pricing/config.js";
-import { TileGroup, StepSlider, QtyStepper, FileDrop, PersonalizationField, JobDescription } from "./ConfigControls.jsx";
+import { TileGroup, StepSlider, QtyStepper, FileDrop, PersonalizationField, JobDescription, BlockedReasons } from "./ConfigControls.jsx";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
 
@@ -51,6 +51,13 @@ const UI = {
     engravingOver: "Dłuższy grawer wyceniamy indywidualnie: to inne ustawienia lasera i inna kompozycja. Napisz do nas, odpowiemy w 24 godziny.",
     lidBack: "Treść po wewnętrznej stronie wieka (opcjonalnie)",
     missingEngraving: "Wpisz treść graweru",
+    blockedTitle: "Zanim dodasz do koszyka",
+    needDescription: "Opis zlecenia",
+    needDescriptionHint: "Wpisz co najmniej 20 znaków w polu \u201eOpisz, co mamy wykonać\u201d powyżej.",
+    needArtwork: "Projekt do wykonania",
+    needArtworkHint: "Wgraj plik SVG, DXF lub PDF w polu \u201eProjekt do wykonania\u201d powyżej.",
+    needEngraving: "Treść graweru",
+    needEngravingHint: "Wybrałeś grawer, więc wpisz, co ma zostać wygrawerowane.",
     toQuote: "Wyślij do wyceny",
     showDetails: "Pokaż szczegóły kalkulacji",
     hideDetails: "Ukryj szczegóły",
@@ -93,6 +100,13 @@ const UI = {
     engravingOver: "A longer engraving is quoted individually: different laser settings and a different layout. Write to us, we reply within 24 hours.",
     lidBack: "Text on the inside of the lid (optional)",
     missingEngraving: "Enter the engraving text",
+    blockedTitle: "Before you add this to the cart",
+    needDescription: "Job description",
+    needDescriptionHint: "Type at least 20 characters in \u201cDescribe what we are to make\u201d above.",
+    needArtwork: "Your artwork",
+    needArtworkHint: "Upload an SVG, DXF or PDF in the artwork field above.",
+    needEngraving: "Engraving text",
+    needEngravingHint: "You chose an engraving, so tell us what to engrave.",
     toQuote: "Request a quote",
     showDetails: "Show the breakdown",
     hideDetails: "Hide the breakdown",
@@ -135,6 +149,13 @@ const UI = {
     engravingOver: "Eine längere Gravur kalkulieren wir individuell: andere Lasereinstellungen, andere Komposition. Schreiben Sie uns, wir antworten binnen 24 Stunden.",
     lidBack: "Text auf der Deckelinnenseite (optional)",
     missingEngraving: "Gravurtext eingeben",
+    blockedTitle: "Bevor Sie in den Warenkorb legen",
+    needDescription: "Auftragsbeschreibung",
+    needDescriptionHint: "Mindestens 20 Zeichen im Feld \u201eBeschreiben Sie, was wir anfertigen sollen\u201c oben.",
+    needArtwork: "Ihre Vorlage",
+    needArtworkHint: "Laden Sie oben eine SVG-, DXF- oder PDF-Datei hoch.",
+    needEngraving: "Gravurtext",
+    needEngravingHint: "Sie haben eine Gravur gewählt, bitte geben Sie den Text an.",
     toQuote: "Angebot anfordern",
     showDetails: "Kalkulation anzeigen",
     hideDetails: "Kalkulation ausblenden",
@@ -714,9 +735,18 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
             )}
 
             {!ready && !overLimit && !needsHumanQuote && (
-              <p className="text-amber-400/80 text-[11px] mb-3 leading-relaxed">
-                {!descriptionOk ? u.describeWhy : !artworkOk ? u.vectorNote : u.missingEngraving}
-              </p>
+              <BlockedReasons
+                title={u.blockedTitle}
+                accent={accent}
+                items={[
+                  ...(service.requiresDescription
+                    ? [{ ok: descriptionOk, label: u.needDescription, hint: u.needDescriptionHint }] : []),
+                  ...(service.requiresVector
+                    ? [{ ok: artworkOk, label: u.needArtwork, hint: u.needArtworkHint }] : []),
+                  ...(wantsEngraving || pack?.personalizable
+                    ? [{ ok: jewelryEngravingOk && packEngravingOk, label: u.needEngraving, hint: u.needEngravingHint }] : []),
+                ]}
+              />
             )}
 
             {needsHumanQuote && (

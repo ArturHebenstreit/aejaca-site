@@ -87,8 +87,12 @@ export const CAD_COMPLEXITY = [
     },
   },
   {
-    id: "sculptural", baseCost: 1050, days: 5,
-    label: { pl: "Rzeźbiarski", en: "Sculptural", de: "Skulptural" },
+    // Najwyzszy prog nie ma ceny z automatu. Przy formie rzezbiarskiej czas
+    // pracy zalezy od tego, jak daleko klient ma sprecyzowany pomysl, a tego
+    // nie widac w zadnym parametrze. Ryczalt bylby albo strata, albo
+    // zaporowa kwota liczona na wszelki wypadek.
+    id: "sculptural", baseCost: 1050, days: 5, needsQuote: true,
+    label: { pl: "Rzeźbiarski (wysoka złożoność)", en: "Sculptural (high complexity)", de: "Skulptural (hohe Komplexität)" },
     sub: {
       pl: "ażur, filigran, forma organiczna, projekt od szkicu",
       en: "openwork, filigree, organic form, design from a sketch",
@@ -150,6 +154,7 @@ export function calculate({ complexityId, deliverablesId, revisionsId = "2" }, l
   const files = CAD_DELIVERABLES.find((d) => d.id === deliverablesId);
   const rev = CAD_REVISIONS.find((r) => r.id === String(revisionsId));
   if (!tier || !files || !rev) return null;
+  if (tier.needsQuote) return { type: "custom" };
 
   const l = LBL[lang] || LBL.en;
 
