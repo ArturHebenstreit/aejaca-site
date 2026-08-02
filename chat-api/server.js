@@ -21,7 +21,7 @@ import { shippingGrosze as shippingCost, needsCustoms, zoneForCountry } from "./
 import { addBusinessDays, TRANSFER_HOLD_BUSINESS_DAYS } from "./pricing/businessDays.js";
 import {
   listProducts, getProduct, reserveProduct, consumeReservations,
-  releaseExpiredReservations, releaseOrderReservations, ProductError,
+  releaseExpiredReservations, releaseOrderReservations, ProductError, PRODUCT_STATUSES,
 } from "./products.js";
 import { sendOrderPaidEmails, sendTransferInstructions } from "./orderMail.js";
 
@@ -111,6 +111,7 @@ if (pool) {
   // w repozytorium, zeby zmiana stanu nie wymagala wdrozenia.
   pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS category VARCHAR(20)`).catch(() => {});
   pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS subcategory VARCHAR(20)`).catch(() => {});
+  pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'draft'`).catch(() => {});
   pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS offer VARCHAR(20) NOT NULL DEFAULT 'ready'`).catch(() => {});
   pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS short JSONB`).catch(() => {});
   pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS specs JSONB`).catch(() => {});
@@ -124,6 +125,9 @@ if (pool) {
     DO $$ BEGIN
       ALTER TABLE products DROP CONSTRAINT IF EXISTS products_offer_check;
       ALTER TABLE products ADD CONSTRAINT products_offer_check CHECK (offer IN ('ready','personalized'));
+      ALTER TABLE products DROP CONSTRAINT IF EXISTS products_status_check;
+      ALTER TABLE products ADD CONSTRAINT products_status_check
+        CHECK (status IN ('draft','live','sold_out','hidden','retired'));
       ALTER TABLE products DROP CONSTRAINT IF EXISTS products_subcategory_check;
       ALTER TABLE products ADD CONSTRAINT products_subcategory_check CHECK (subcategory IS NULL
         OR (category = 'jewelry' AND subcategory IN ('women','men','pet'))
@@ -134,6 +138,25 @@ if (pool) {
       ALTER TABLE products ADD CONSTRAINT products_stock_check CHECK (stock IS NULL OR stock >= 0);
     END $$;
   `).catch((e) => console.error("[migracja] products:", e.message));
+
+  // Przepisanie dawnego znacznika `active` na stan pozycji. Dziala raz: pozniej
+  // kazdy wiersz ma juz swoj status, a `active` wylicza sie z niego wyzwalaczem,
+  // wiec zapytanie napisane recznie w bazie nie rozjedzie sie ze sklepem.
+  // Tylko wiersze sprzed wyzwalacza: pozycja zapisana juz na statusach ma
+  // active = false, dopoki nie jest w sprzedazy, wiec swiezy szkic zostaje
+  // szkicem takze po restarcie backendu.
+  pool.query(`UPDATE products SET status = 'live' WHERE status = 'draft' AND active = TRUE`).catch(() => {});
+  pool.query(`
+    CREATE OR REPLACE FUNCTION products_sync_active() RETURNS TRIGGER AS $$
+    BEGIN
+      NEW.active := NEW.status IN ('live', 'sold_out');
+      RETURN NEW;
+    END $$ LANGUAGE plpgsql;
+    DROP TRIGGER IF EXISTS trg_products_sync_active ON products;
+    CREATE TRIGGER trg_products_sync_active BEFORE INSERT OR UPDATE ON products
+      FOR EACH ROW EXECUTE FUNCTION products_sync_active();
+  `).then(() => pool.query(`UPDATE products SET status = status`))
+    .catch((e) => console.error("[migracja] products.status:", e.message));
 
   pool.query(`CREATE TABLE IF NOT EXISTS product_reservations (
     id BIGSERIAL PRIMARY KEY,
@@ -1759,6 +1782,11 @@ app.put("/api/products/:slug", express.json({ limit: "256kb" }), async (req, res
   if (!Number.isInteger(b.priceGrosze) || b.priceGrosze < 0) {
     return res.status(400).json({ error: "Cena musi byc liczba calkowita w groszach" });
   }
+  const status = b.status || "draft";
+  if (!PRODUCT_STATUSES.includes(status)) {
+    return res.status(400).json({ error: `Stan musi byc jednym z: ${PRODUCT_STATUSES.join(", ")}` });
+  }
+
   const kind = b.kind === "digital" ? "digital" : "physical";
   // Produkt cyfrowy nie ma stanu magazynowego, fizyczny musi go miec.
   const stock = kind === "digital" ? null : (Number.isInteger(b.stock) ? Math.max(0, b.stock) : 0);
@@ -1785,7 +1813,7 @@ app.put("/api/products/:slug", express.json({ limit: "256kb" }), async (req, res
   try {
     const { rows } = await pool.query(
       `INSERT INTO products (slug, kind, category, subcategory, offer, title, short, description, specs, note, images,
-         price_grosze, weight_g, stock, lead_time_days, personalization, sort_order, active, license, notes)
+         price_grosze, weight_g, stock, lead_time_days, personalization, sort_order, status, license, notes)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
        ON CONFLICT (slug) DO UPDATE SET
          kind = EXCLUDED.kind, category = EXCLUDED.category, subcategory = EXCLUDED.subcategory,
@@ -1794,7 +1822,7 @@ app.put("/api/products/:slug", express.json({ limit: "256kb" }), async (req, res
          specs = EXCLUDED.specs, note = EXCLUDED.note, images = EXCLUDED.images, price_grosze = EXCLUDED.price_grosze,
          weight_g = EXCLUDED.weight_g, stock = EXCLUDED.stock, lead_time_days = EXCLUDED.lead_time_days,
          personalization = EXCLUDED.personalization, sort_order = EXCLUDED.sort_order,
-         active = EXCLUDED.active, license = EXCLUDED.license, notes = EXCLUDED.notes,
+         status = EXCLUDED.status, license = EXCLUDED.license, notes = EXCLUDED.notes,
          updated_at = NOW()
        RETURNING id, slug`,
       [slug, kind, b.category || null, subcategory,
@@ -1807,7 +1835,7 @@ app.put("/api/products/:slug", express.json({ limit: "256kb" }), async (req, res
        Number.isInteger(b.leadTimeDays) ? b.leadTimeDays : 2,
        b.personalization ? JSON.stringify(b.personalization) : null,
        Number.isInteger(b.sortOrder) ? b.sortOrder : 100,
-       b.active !== false, b.license || null, b.notes || null]
+       status, b.license || null, b.notes || null]
     );
     res.json({ ok: true, product: rows[0] });
   } catch (e) {
@@ -1832,18 +1860,21 @@ app.patch("/api/products/:slug/stock", express.json({ limit: "4kb" }), async (re
 });
 
 /**
- * Zdjecie pozycji ze sprzedazy i przywrocenie jej. Osobno od pelnego zapisu,
- * bo to najczestsza zmiana w panelu, a produkt zdjety ze sprzedazy ma zostac
- * w bazie razem z historia, a nie zniknac.
+ * Zmiana stanu pozycji. Osobno od pelnego zapisu, bo to najczestsza zmiana
+ * w panelu i musi byc jednym kliknieciem: rzecz sprzedana na Etsy albo na
+ * miejscu ma przestac byc do kupienia natychmiast, bez czekania na wdrozenie.
+ * Sklep pyta o dostepnosc na zywo, wiec skutek widac od razu.
  */
-app.patch("/api/products/:slug/visibility", express.json({ limit: "4kb" }), async (req, res) => {
+app.patch("/api/products/:slug/status", express.json({ limit: "4kb" }), async (req, res) => {
   if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
-  const active = req.body?.active;
-  if (typeof active !== "boolean") return res.status(400).json({ error: "Pole active musi byc true albo false" });
+  const status = req.body?.status;
+  if (!PRODUCT_STATUSES.includes(status)) {
+    return res.status(400).json({ error: `Stan musi byc jednym z: ${PRODUCT_STATUSES.join(", ")}` });
+  }
   const { rows } = await pool.query(
-    `UPDATE products SET active = $2, updated_at = NOW() WHERE slug = $1 RETURNING slug, active`,
-    [String(req.params.slug || ""), active]
+    `UPDATE products SET status = $2, updated_at = NOW() WHERE slug = $1 RETURNING slug, status, active`,
+    [String(req.params.slug || ""), status]
   );
   if (!rows[0]) return res.status(404).json({ error: "Produkt nie istnieje" });
   res.json({ ok: true, ...rows[0] });
@@ -1855,10 +1886,10 @@ app.get("/api/admin/products", async (req, res) => {
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
   const { rows } = await pool.query(
     `SELECT p.slug, p.kind, p.category, p.subcategory, p.offer, p.title, p.short, p.images,
-            p.price_grosze, p.weight_g, p.stock, p.active, p.lead_time_days,
+            p.price_grosze, p.weight_g, p.stock, p.status, p.lead_time_days,
             p.sold_count, p.sort_order, p.notes, p.updated_at, a.reserved, a.available
        FROM products p LEFT JOIN product_availability a ON a.id = p.id
-      ORDER BY p.active DESC, p.sort_order, p.slug`
+      ORDER BY p.status = 'live' DESC, p.sort_order, p.slug`
   );
   res.json({ products: rows });
 });

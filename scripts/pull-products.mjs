@@ -25,7 +25,7 @@ const API = (process.env.CHAT_API_URL || "https://aejacachatapi-production.up.ra
 
 /** Kolejnosc pol ustalona, zeby diff pokazywal zmiane tresci, a nie przetasowanie kluczy. */
 const KEYS = [
-  "slug", "category", "subcategory", "offer", "kind",
+  "slug", "category", "subcategory", "offer", "kind", "status",
   "title", "short", "description", "specs", "note",
   "images",
   "priceGrosze", "weightG", "stock", "leadTimeDays",

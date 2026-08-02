@@ -17,7 +17,10 @@ import { useEffect, useState } from "react";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
 
-/** Mapa slug -> liczba dostepnych sztuk. `null` znaczy bez limitu (plik). */
+/**
+ * Mapa slug -> { available, status }. `available: null` znaczy bez limitu (plik).
+ * Pozycji zdjetych ze sklepu w odpowiedzi nie ma, wiec ich brak jest informacja.
+ */
 export function useAvailability() {
   const [map, setMap] = useState(null);
 
@@ -29,7 +32,7 @@ export function useAvailability() {
       .then((d) => {
         if (!alive) return;
         const next = {};
-        for (const p of d.products || []) next[p.slug] = p.available;
+        for (const p of d.products || []) next[p.slug] = { available: p.available, status: p.status };
         setMap(next);
       })
       // Cisza jest tu celowa: bez odpowiedzi zostaje stan z budowania, co jest
@@ -43,11 +46,26 @@ export function useAvailability() {
 
 /**
  * Stan do pokazania: liczba z bazy, jesli zdazyla przyjsc, inaczej ta
- * z budowania. Produkt zdjety ze sprzedazy znika z listy w API, wiec brak
+ * z budowania. Pozycja zdjeta ze sklepu znika z odpowiedzi API, wiec brak
  * wpisu przy wczytanej mapie oznacza zero sztuk.
  */
 export function stockOf(product, map) {
   if (product.stock === null || product.stock === undefined) return null;
   if (!map) return product.stock;
-  return map[product.slug] ?? 0;
+  return map[product.slug]?.available ?? 0;
+}
+
+/**
+ * Stan pozycji widziany przez klienta:
+ *   live       normalnie w sprzedazy
+ *   sold_out   wyprzedany, karta zostaje, zakupu nie ma, rzecz wroci
+ *   withdrawn  zdjeta ze sklepu, kafelek znika, a karta mowi o tym wprost
+ *
+ * Rozroznienie robimy po stronie przegladarki, bo strony sklepu sa budowane
+ * statycznie, a rzecz sprzedana gdzie indziej ma przestac zachecac do zakupu
+ * od razu, nie przy najblizszym wdrozeniu.
+ */
+export function statusOf(product, map) {
+  if (!map) return product.status || "live";
+  return map[product.slug]?.status || "withdrawn";
 }

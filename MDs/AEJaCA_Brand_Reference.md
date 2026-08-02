@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-02 | Wersja: 2.0*
+*Wygenerowano: 2026-08-02 | Wersja: 2.1*
 
 ---
 
@@ -663,6 +663,26 @@ Endpointy: `GET /api/products`, `GET /api/products/:slug` publicznie; `PUT /api/
 
 Schemat: `scripts/products-schema.sql`, migracje wykonują się też przy starcie backendu.
 
+#### Stan pozycji w ofercie
+
+Jedno pole `products.status` zamiast kilku znaczników. Trzy osobne flagi (aktywny, widoczny, wyprzedany) dawałyby osiem kombinacji, z czego połowa nie znaczy nic, a pytanie "czy klient to kupi" wymagałoby sprawdzenia trzech pól w każdym miejscu.
+
+| Stan | W sklepie | Można kupić | Po co |
+|---|---|---|---|
+| `draft` | nie | nie | przygotowywany, nigdy nie był wystawiony |
+| `live` | tak | tak, jeśli są wolne sztuki | normalna sprzedaż |
+| `sold_out` | tak, z plakietką "wyprzedany, będzie ponownie" | nie | sprzedany poza sklepem, wróci na półkę |
+| `hidden` | nie | nie | chwilowo zdjęty, np. do poprawki zdjęć |
+| `retired` | nie | nie | wycofany na stałe |
+
+**Sprzedane na Etsy albo na miejscu**: jedno kliknięcie w panelu, skutek natychmiast, bez wdrożenia. Karty pytają o dostępność na żywo, więc `sold_out` od razu gasi przycisk zakupu i zostawia plakietkę, a `hidden` i `retired` zdejmują kafelek z listy. Strona produktu zostaje (bywa w zakładkach i w wynikach wyszukiwania), ale mówi wprost, że pozycji nie ma, i oddaje `Discontinued` w danych strukturalnych.
+
+`sold_out` nie rusza stanu magazynowego, bo rzecz nadal fizycznie leży, tylko jest już czyjaś. Własna sprzedaż zdejmuje sztuki sama, więc tam wystarcza `stock`.
+
+Rezerwacja przy zamówieniu wymaga `live`, więc pozycji zdjętej ze sprzedaży nie da się kupić także ze starej, otwartej karty ani z pominięciem sklepu.
+
+Dawna kolumna `active` została, ale niczym już nie steruje: wylicza się ze stanu wyzwalaczem, żeby zapytanie napisane ręcznie w bazie nie mogło rozjechać się z tym, co widzi sklep.
+
 #### Podkategorie i ikony
 
 Dwa działy to za grube sito, więc każdy produkt ma podkategorię (`products.subcategory`). Ona rysuje ikonę na karcie, buduje filtr nad listą i dzieli listę na półki. Definicja w jednym miejscu: `src/data/shopFacets.js`, zgodna z ograniczeniem w bazie.
@@ -691,9 +711,9 @@ Bez wybranego filtru lista dzieli się na półki po podkategorii, z nagłówkie
 
 #### Panel produktów
 
-`/admin/products/`, ten sam token co panel przelewów, `noindex` i `Disallow: /admin/` w robots. Tabela obejmuje **wszystkie** pozycje, także zdjęte ze sprzedaży: miniatura, tytuł, dział z podkategorią i ikoną, rodzaj oferty, cena, stan, rezerwacje, dostępność, licznik sprzedanych i przełącznik widoczności. Do tego szukanie po nazwie i adresie oraz filtr "tylko ukryte".
+`/admin/products/`, ten sam token co panel przelewów, `noindex` i `Disallow: /admin/` w robots. Tabela obejmuje **wszystkie** pozycje, także zdjęte ze sprzedaży: miniatura, tytuł, dział z podkategorią i ikoną, rodzaj oferty, cena, stan, rezerwacje, dostępność, licznik sprzedanych i wybór stanu pozycji. Do tego szukanie po nazwie i adresie oraz filtr "poza sprzedażą".
 
-Od ręki robi się tu dwie rzeczy, bo są codzienne: korekta stanu (`PATCH /api/products/:slug/stock`) i zdjęcie pozycji ze sprzedaży (`PATCH /api/products/:slug/visibility`). Obie działają w sklepie natychmiast, bo karty pytają o dostępność na żywo. Zmiana treści, ceny albo zdjęć idzie przez `PUT /api/products/:slug` i wymaga jeszcze `npm run products:pull` oraz wdrożenia.
+Od ręki robi się tu dwie rzeczy, bo są codzienne: korekta stanu (`PATCH /api/products/:slug/stock`) i zmiana stanu pozycji (`PATCH /api/products/:slug/status`). Pięć stanów leży na wierzchu jako przyciski, bez rozwijanej listy, bo rzecz sprzedana na Etsy ma zejść ze sprzedaży jednym kliknięciem, a nie dwoma. Obie zmiany działają w sklepie natychmiast, bo karty pytają o dostępność na żywo. Zmiana treści, ceny albo zdjęć idzie przez `PUT /api/products/:slug` i wymaga jeszcze `npm run products:pull` oraz wdrożenia.
 
 #### Zdjęcia produktów
 

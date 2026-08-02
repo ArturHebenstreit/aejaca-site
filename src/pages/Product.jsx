@@ -15,7 +15,7 @@ import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { t } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
-import { useAvailability, stockOf } from "../shop/availability.js";
+import { useAvailability, stockOf, statusOf } from "../shop/availability.js";
 import { getProduct, WITHDRAWAL, SHOP_CATEGORIES } from "../data/shopCatalog.js";
 import NotFound from "./NotFound.jsx";
 
@@ -28,6 +28,10 @@ const UI = {
     inStock: "Dostępny od ręki",
     lastOne: "Ostatnia sztuka",
     outOfStock: "Chwilowo niedostępny",
+    soldOutBack: "Wyprzedany, będzie ponownie",
+    soldOutBody: "Ten egzemplarz jest już sprzedany. Wykonamy kolejny, napisz do nas, jeśli chcesz go zarezerwować.",
+    withdrawn: "Pozycja wycofana ze sklepu",
+    withdrawnBody: "Tej pozycji nie ma już w sprzedaży. Zajrzyj do sklepu po podobne wyroby albo zamów wykonanie na zamówienie.",
     digital: "Plik do pobrania",
     stockLeft: "sztuk w magazynie",
     shipping: "Wysyłka",
@@ -54,6 +58,10 @@ const UI = {
     inStock: "Available now",
     lastOne: "Last one",
     outOfStock: "Currently unavailable",
+    soldOutBack: "Sold out, coming back",
+    soldOutBody: "This piece is already sold. We will make another one, write to us if you would like to reserve it.",
+    withdrawn: "No longer in the shop",
+    withdrawnBody: "This item is no longer for sale. Have a look at the shop for similar pieces, or order one made to your requirements.",
     digital: "Downloadable file",
     stockLeft: "in stock",
     shipping: "Shipping",
@@ -80,6 +88,10 @@ const UI = {
     inStock: "Sofort verfügbar",
     lastOne: "Letztes Stück",
     outOfStock: "Derzeit nicht verfügbar",
+    soldOutBack: "Ausverkauft, kommt wieder",
+    soldOutBody: "Dieses Stück ist bereits verkauft. Wir fertigen ein weiteres, schreiben Sie uns, wenn Sie es reservieren möchten.",
+    withdrawn: "Nicht mehr im Shop",
+    withdrawnBody: "Diese Position ist nicht mehr im Verkauf. Sehen Sie sich ähnliche Stücke im Shop an oder bestellen Sie eine Anfertigung nach Maß.",
     digital: "Datei zum Download",
     stockLeft: "auf Lager",
     shipping: "Versand",
@@ -116,7 +128,11 @@ export default function Product() {
   const isDigital = product.kind === "digital";
   // Stan z bazy, nie ten zapisany w HTML przy wdrozeniu.
   const stock = stockOf(product, availability);
-  const soldOut = stock === 0;
+  const status = statusOf(product, availability);
+  // Zdjeta ze sklepu: strona zostaje, bo moze byc w zakladkach i w wynikach
+  // wyszukiwania, ale mowi wprost, ze pozycji nie ma, zamiast udawac sklep.
+  const withdrawn = status === "withdrawn";
+  const soldOut = stock === 0 || status === "sold_out" || withdrawn;
   const category = SHOP_CATEGORIES.find((c) => c.id === product.category);
   const accent = category?.theme === "amber" ? "amber" : "blue";
 
@@ -141,7 +157,11 @@ export default function Product() {
       "@type": "Offer",
       price: (product.priceGrosze / 100).toFixed(2),
       priceCurrency: "PLN",
-      availability: soldOut ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+      availability: withdrawn
+        ? "https://schema.org/Discontinued"
+        : soldOut
+          ? "https://schema.org/OutOfStock"
+          : "https://schema.org/InStock",
       url: `${SITE.url}/shop/${product.slug}/`,
       itemCondition: "https://schema.org/NewCondition",
     },
@@ -224,6 +244,10 @@ export default function Product() {
                   <span className="inline-flex items-center gap-1.5 text-xs text-blue-300">
                     <Download className="w-3.5 h-3.5" />{u.digital}
                   </span>
+                ) : withdrawn ? (
+                  <span className="text-xs text-amber-300">{u.withdrawn}</span>
+                ) : status === "sold_out" ? (
+                  <span className="text-xs text-amber-300">{u.soldOutBack}</span>
                 ) : soldOut ? (
                   <span className="text-xs text-amber-300">{u.outOfStock}</span>
                 ) : (
@@ -256,7 +280,9 @@ export default function Product() {
                 {added ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
                 {added ? u.soonAvailable : u.addToCart}
               </button>
-              <p className="text-neutral-600 text-[11px] text-center mb-7">{u.soonAvailable}</p>
+              <p className="text-neutral-600 text-[11px] text-center mb-7">
+                {withdrawn ? u.withdrawnBody : status === "sold_out" ? u.soldOutBody : u.soonAvailable}
+              </p>
 
               {/* Warunki, ktore realnie decyduja o zakupie */}
               <div className="space-y-3 text-xs">

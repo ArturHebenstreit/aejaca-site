@@ -22,6 +22,21 @@ export class ProductError extends Error {
   }
 }
 
+/**
+ * Stany pozycji w ofercie. Jedno pole zamiast kilku znacznikow, bo pytanie
+ * "czy klient to kupi" ma miec jedna odpowiedz, a nie sume trzech pol.
+ *
+ *   draft     przygotowywany, nigdy nie byl wystawiony
+ *   live      w sprzedazy, kupowalny, jesli sa wolne sztuki
+ *   sold_out  widoczny z plakietka, bez przycisku zakupu, wroci na polke
+ *   hidden    znika ze sklepu, wroci
+ *   retired   wycofany na stale
+ */
+export const PRODUCT_STATUSES = ["draft", "live", "sold_out", "hidden", "retired"];
+
+/** Stany, w ktorych pozycja jest w sklepie widoczna. */
+export const SHOP_STATUSES = ["live", "sold_out"];
+
 /** Ile trzymamy towar dla nieoplaconego zamowienia z bramka platnicza. */
 export const INSTANT_HOLD_MINUTES = 20;
 
@@ -32,7 +47,7 @@ export function reservationExpiry(paymentMethod, now = new Date()) {
 }
 
 const PUBLIC_COLUMNS = `
-  p.id, p.slug, p.kind, p.category, p.subcategory, p.offer, p.title, p.short, p.description,
+  p.id, p.slug, p.kind, p.category, p.subcategory, p.offer, p.status, p.title, p.short, p.description,
   p.specs, p.note, p.images, p.price_grosze, p.weight_g, p.stock, p.lead_time_days,
   p.personalization, p.sort_order, p.license
 `;
@@ -45,6 +60,7 @@ function shape(row) {
     category: row.category,
     subcategory: row.subcategory,
     offer: row.offer,
+    status: row.status,
     title: row.title,
     short: row.short,
     description: row.description,
@@ -54,7 +70,9 @@ function shape(row) {
     priceGrosze: row.price_grosze,
     weightG: row.weight_g,
     stock: row.stock,
-    available: row.available ?? null,
+    // Wyprzedany poza sklepem nie ma wolnych sztuk, choc w magazynie jeszcze
+    // lezy. Liczba idzie stad do karty, wiec musi mowic to samo co plakietka.
+    available: row.status === "sold_out" ? 0 : (row.available ?? null),
     leadTimeDays: row.lead_time_days,
     personalization: row.personalization,
     license: row.license,
@@ -63,7 +81,7 @@ function shape(row) {
 
 /** Katalog do listy w sklepie i do prerenderu. */
 export async function listProducts(pool, { category, offer } = {}) {
-  const where = ["p.active = TRUE"];
+  const where = [`p.status IN ('live', 'sold_out')`];
   const params = [];
   if (category) { params.push(category); where.push(`p.category = $${params.length}`); }
   if (offer) { params.push(offer); where.push(`p.offer = $${params.length}`); }
@@ -84,7 +102,7 @@ export async function getProduct(pool, slug) {
     `SELECT ${PUBLIC_COLUMNS}, a.available
        FROM products p
        LEFT JOIN product_availability a ON a.id = p.id
-      WHERE p.slug = $1 AND p.active = TRUE`,
+      WHERE p.slug = $1 AND p.status IN ('live', 'sold_out')`,
     [String(slug || "")]
   );
   return rows[0] ? shape(rows[0]) : null;
@@ -99,12 +117,17 @@ export async function getProduct(pool, slug) {
  */
 export async function reserveProduct(client, { slug, qty, orderId, paymentMethod }) {
   const { rows } = await client.query(
-    `SELECT id, slug, title, kind, stock, price_grosze, weight_g, lead_time_days
-       FROM products WHERE slug = $1 AND active = TRUE FOR UPDATE`,
+    `SELECT id, slug, title, kind, status, stock, price_grosze, weight_g, lead_time_days
+       FROM products WHERE slug = $1 FOR UPDATE`,
     [String(slug || "")]
   );
   const product = rows[0];
   if (!product) throw new ProductError("Produkt nie istnieje", "product_not_found", { slug });
+  // Pozycja zdjeta ze sprzedazy nie moze wjechac do zamowienia takze wtedy, gdy
+  // klient trzymal otwarta stara karte albo wysyla zadanie z pominieciem sklepu.
+  if (product.status !== "live") {
+    throw new ProductError("Pozycja nie jest w sprzedazy", "out_of_stock", { slug, available: 0, requested: qty });
+  }
 
   // Produkt cyfrowy nie ma limitu, wiec nie ma czego rezerwowac.
   if (product.stock !== null) {

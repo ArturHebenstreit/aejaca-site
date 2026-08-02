@@ -17,12 +17,26 @@
 // w panelu przelewow.
 
 import { useState, useEffect, useCallback } from "react";
-import { Loader2, RefreshCw, AlertTriangle, Inbox, Eye, EyeOff, Check, Search, ExternalLink } from "lucide-react";
+import { Loader2, RefreshCw, AlertTriangle, Inbox, Check, Search, ExternalLink } from "lucide-react";
 import SEOHead from "../seo/SEOHead.jsx";
 import { subcategory as findSub } from "../data/shopFacets.js";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
 const KEY = "aejaca_admin_token";
+
+/**
+ * Stany pozycji. Jedno pole zamiast kilku znacznikow: pytanie "czy klient to
+ * kupi" ma jedna odpowiedz, a niemozliwe kombinacje nie istnieja.
+ *
+ * Kolejnosc jest kolejnoscia w panelu, od najczestszej decyzji do najrzadszej.
+ */
+const STATUSES = [
+  { id: "live",     label: "W sprzedaży", hint: "Widoczny, można kupić", tone: "border-emerald-400/40 bg-emerald-400/10 text-emerald-300" },
+  { id: "sold_out", label: "Wyprzedany",  hint: "Widoczny z plakietką, bez zakupu, wróci na półkę", tone: "border-amber-400/40 bg-amber-400/10 text-amber-300" },
+  { id: "hidden",   label: "Ukryty",      hint: "Znika ze sklepu, wróci", tone: "border-blue-400/40 bg-blue-400/10 text-blue-300" },
+  { id: "draft",    label: "Roboczy",     hint: "Nigdy nie był wystawiony", tone: "border-white/25 bg-white/[0.06] text-neutral-300" },
+  { id: "retired",  label: "Wycofany",    hint: "Zdjęty na stałe", tone: "border-red-400/40 bg-red-400/10 text-red-300" },
+];
 
 const pln = (grosze) =>
   new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN", maximumFractionDigits: 2 })
@@ -31,9 +45,37 @@ const pln = (grosze) =>
 /** Stan magazynowy jest tu najwazniejsza liczba, wiec ma wlasny kolor. */
 function stockTone(p) {
   if (p.stock === null) return "text-blue-300";
-  if (p.available === 0) return "text-red-300";
+  if (p.status !== "live" || p.available === 0) return "text-red-300";
   if (p.available <= 1) return "text-amber-300";
   return "text-emerald-300";
+}
+
+/**
+ * Wybor stanu. Cala piatka lezy na wierzchu, bez rozwijanej listy: rzecz
+ * sprzedana na Etsy ma zejsc ze sprzedazy jednym kliknieciem, a nie dwoma.
+ */
+function StatusPicker({ product, busy, onPick }) {
+  return (
+    <div className="flex flex-wrap gap-1">
+      {STATUSES.map((st) => {
+        const on = product.status === st.id;
+        return (
+          <button
+            key={st.id}
+            type="button"
+            title={st.hint}
+            onClick={() => !on && onPick(st.id)}
+            disabled={busy}
+            className={`px-2 py-1 rounded-md border text-[10px] transition-colors ${
+              on ? st.tone : "border-white/10 text-neutral-500 hover:border-white/25 hover:text-neutral-300"
+            }`}
+          >
+            {busy && on ? <Loader2 className="w-3 h-3 animate-spin" /> : st.label}
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
 export default function AdminProducts() {
@@ -44,7 +86,7 @@ export default function AdminProducts() {
   const [busy, setBusy] = useState(null);
   const [draftStock, setDraftStock] = useState({});
   const [query, setQuery] = useState("");
-  const [onlyHidden, setOnlyHidden] = useState(false);
+  const [onlyOff, setOnlyOff] = useState(false);
 
   useEffect(() => {
     const saved = sessionStorage.getItem(KEY);
@@ -110,7 +152,7 @@ export default function AdminProducts() {
 
   const q = query.trim().toLowerCase();
   const rows = (products || []).filter((p) => {
-    if (onlyHidden && p.active) return false;
+    if (onlyOff && p.status === "live") return false;
     if (!q) return true;
     const title = Object.values(p.title || {}).join(" ").toLowerCase();
     return p.slug.includes(q) || title.includes(q);
@@ -123,8 +165,10 @@ export default function AdminProducts() {
         <div className="max-w-6xl mx-auto">
           <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white mb-2">Produkty i stany magazynowe</h1>
           <p className="text-neutral-500 text-xs mb-8 leading-relaxed max-w-2xl">
-            Stan i widoczność zmieniają się od razu, bo sklep pyta o dostępność na żywo. Zmiana treści,
-            ceny albo zdjęć wymaga jeszcze <code className="text-neutral-400">npm run products:pull</code> i wdrożenia,
+            Stan magazynowy i stan pozycji działają od razu, bo sklep pyta o dostępność na żywo. Rzecz sprzedana
+            na Etsy albo na miejscu przestaje być do kupienia w tej samej sekundzie: <strong className="text-neutral-300">Wyprzedany</strong> zostawia
+            kartę z plakietką i obietnicą powrotu, <strong className="text-neutral-300">Ukryty</strong> zdejmuje ją ze sklepu, a <strong className="text-neutral-300">Wycofany</strong> robi
+            to na stałe. Zmiana treści, ceny albo zdjęć wymaga jeszcze <code className="text-neutral-400">npm run products:pull</code> i wdrożenia,
             bo katalog jest budowany statycznie, a zdjęcia leżą w repozytorium.
           </p>
 
@@ -172,14 +216,14 @@ export default function AdminProducts() {
               </div>
               <button
                 type="button"
-                onClick={() => setOnlyHidden((v) => !v)}
+                onClick={() => setOnlyOff((v) => !v)}
                 className={`px-3 py-2 rounded-lg border text-xs transition-colors ${
-                  onlyHidden
+                  onlyOff
                     ? "border-amber-400/40 bg-amber-400/10 text-amber-300"
                     : "border-white/10 text-neutral-400 hover:border-white/25"
                 }`}
               >
-                Tylko ukryte
+                Poza sprzedażą
               </button>
               <span className="text-neutral-600 text-[11px]">{rows.length} z {products.length}</span>
             </div>
@@ -209,7 +253,7 @@ export default function AdminProducts() {
                     <th className="px-3 py-2 font-medium text-right">Rezerw.</th>
                     <th className="px-3 py-2 font-medium text-right">Dostępne</th>
                     <th className="px-3 py-2 font-medium text-right">Sprzedane</th>
-                    <th className="px-3 py-2 font-medium">Widoczność</th>
+                    <th className="px-3 py-2 font-medium">Stan pozycji</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -218,7 +262,7 @@ export default function AdminProducts() {
                     const SubIcon = sub?.Icon;
                     const editing = draftStock[p.slug] !== undefined;
                     return (
-                      <tr key={p.slug} className={p.active ? "" : "opacity-50"}>
+                      <tr key={p.slug} className={p.status === "live" ? "" : "opacity-60"}>
                         <td className="px-3 py-2">
                           <div className="flex items-center gap-2.5">
                             {p.images?.[0] && (
@@ -283,25 +327,17 @@ export default function AdminProducts() {
                         </td>
                         <td className="px-3 py-2 text-right text-neutral-400 text-xs">{p.reserved || 0}</td>
                         <td className={`px-3 py-2 text-right text-xs font-medium ${stockTone(p)}`}>
-                          {p.stock === null ? "bez limitu" : p.available}
+                          {p.stock === null
+                            ? (p.status === "live" ? "bez limitu" : "-")
+                            : (p.status === "live" ? p.available : 0)}
                         </td>
                         <td className="px-3 py-2 text-right text-neutral-500 text-xs">{p.sold_count || 0}</td>
                         <td className="px-3 py-2">
-                          <button
-                            type="button"
-                            onClick={() => patch(p.slug, "visibility", { active: !p.active }, (x) => ({ ...x, active: !x.active }))}
-                            disabled={busy === p.slug + "visibility"}
-                            className={`px-2.5 py-1.5 rounded-lg border text-[11px] inline-flex items-center gap-1.5 transition-colors ${
-                              p.active
-                                ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300 hover:border-emerald-400/50"
-                                : "border-white/10 text-neutral-500 hover:border-white/25"
-                            }`}
-                          >
-                            {busy === p.slug + "visibility"
-                              ? <Loader2 className="w-3 h-3 animate-spin" />
-                              : p.active ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                            {p.active ? "w sklepie" : "ukryty"}
-                          </button>
+                          <StatusPicker
+                            product={p}
+                            busy={busy === p.slug + "status"}
+                            onPick={(status) => patch(p.slug, "status", { status }, (x) => ({ ...x, status }))}
+                          />
                         </td>
                       </tr>
                     );

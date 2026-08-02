@@ -57,6 +57,55 @@ CREATE INDEX IF NOT EXISTS idx_products_category ON products (category) WHERE ac
 CREATE INDEX IF NOT EXISTS idx_products_offer ON products (offer) WHERE active = TRUE;
 
 -- ------------------------------------------------------------
+-- Stan pozycji w ofercie
+-- ------------------------------------------------------------
+-- Jedno pole zamiast kilku znacznikow. Trzy osobne flagi (aktywny, widoczny,
+-- wyprzedany) daja osiem kombinacji, z czego polowa nie znaczy nic, a pytanie
+-- "czy klient to kupi" wymagaloby sprawdzenia trzech pol w kazdym miejscu.
+--
+--   draft     przygotowywany, nigdy nie byl wystawiony
+--   live      w sprzedazy, kupowalny, jesli sa wolne sztuki
+--   sold_out  widoczny z plakietka, bez przycisku zakupu, wroci na polke
+--   hidden    znika ze sklepu, wroci
+--   retired   wycofany na stale
+--
+-- `sold_out` istnieje dla rzeczy sprzedanych poza sklepem (Etsy, na miejscu):
+-- stan magazynowy zostaje nietkniety, a pozycja natychmiast przestaje byc do
+-- kupienia. Wlasna sprzedaz i tak zdejmuje sztuki, wiec tam wystarcza `stock`.
+ALTER TABLE products ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'draft';
+
+DO $$ BEGIN
+  ALTER TABLE products DROP CONSTRAINT IF EXISTS products_status_check;
+  ALTER TABLE products ADD CONSTRAINT products_status_check
+    CHECK (status IN ('draft','live','sold_out','hidden','retired'));
+END $$;
+
+-- Przepisanie dawnego znacznika na stan. Wykonuje sie raz, przy pierwszym
+-- uruchomieniu po zmianie: pozniej kazdy wiersz ma juz swoj status.
+-- Tylko wiersze sprzed wyzwalacza ponizej: pozycja zapisana juz na statusach
+-- ma active = false, dopoki nie jest w sprzedazy, wiec swiezy szkic zostaje
+-- szkicem takze przy ponownym uruchomieniu tego pliku.
+UPDATE products SET status = 'live' WHERE status = 'draft' AND active = TRUE;
+
+-- `active` zostaje, ale przestaje byc czymkolwiek sterowac: wylicza sie ze
+-- stanu, zeby zapytanie napisane recznie w bazie nie moglo rozjechac sie
+-- z tym, co widzi sklep.
+CREATE OR REPLACE FUNCTION products_sync_active() RETURNS TRIGGER AS $$
+BEGIN
+  NEW.active := NEW.status IN ('live', 'sold_out');
+  RETURN NEW;
+END $$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_products_sync_active ON products;
+CREATE TRIGGER trg_products_sync_active
+  BEFORE INSERT OR UPDATE ON products
+  FOR EACH ROW EXECUTE FUNCTION products_sync_active();
+
+UPDATE products SET status = status;  -- wymusza przeliczenie `active`
+
+CREATE INDEX IF NOT EXISTS idx_products_status ON products (status);
+
+-- ------------------------------------------------------------
 -- Rezerwacje stanu
 -- ------------------------------------------------------------
 -- Rezerwacja powstaje przy skladaniu zamowienia i wygasa sama: 20 minut przy

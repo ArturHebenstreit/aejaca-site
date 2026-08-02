@@ -15,7 +15,7 @@ import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { t } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
-import { useAvailability, stockOf } from "../shop/availability.js";
+import { useAvailability, stockOf, statusOf } from "../shop/availability.js";
 import { subcategoriesFor, subcategory as findSub, SERVICE_FACETS, serviceFacet } from "../data/shopFacets.js";
 import {
   SHOP_CATEGORIES, productsByCategory, personalizedByCategory, serviceCardsByCategory,
@@ -40,6 +40,7 @@ const UI = {
     inStock: "Dostępny",
     lastOne: "Ostatnia sztuka",
     outOfStock: "Chwilowo niedostępny",
+    soldOutBack: "Wyprzedany, będzie ponownie",
     digital: "Plik do pobrania",
     madeToOrder: "Na zamówienie",
     from: "od",
@@ -86,6 +87,7 @@ const UI = {
     inStock: "In stock",
     lastOne: "Last one",
     outOfStock: "Currently unavailable",
+    soldOutBack: "Sold out, coming back",
     digital: "Downloadable file",
     madeToOrder: "Made to order",
     from: "from",
@@ -132,6 +134,7 @@ const UI = {
     inStock: "Verfügbar",
     lastOne: "Letztes Stück",
     outOfStock: "Derzeit nicht verfügbar",
+    soldOutBack: "Ausverkauft, kommt wieder",
     digital: "Datei zum Download",
     madeToOrder: "Auf Bestellung",
     from: "ab",
@@ -518,7 +521,8 @@ function ProductCard({ product, lang, u, money, availability }) {
   const isDigital = product.kind === "digital";
   // Stan z bazy, nie ten zapisany w HTML przy wdrozeniu.
   const stock = stockOf(product, availability);
-  const soldOut = stock === 0;
+  const status = statusOf(product, availability);
+  const soldOut = stock === 0 || status === "sold_out";
 
   return (
     <Link
@@ -538,6 +542,8 @@ function ProductCard({ product, lang, u, money, availability }) {
         <div className="flex flex-wrap gap-1.5 mb-2">
           {isDigital ? (
             <Badge tone="info"><Download className="w-3 h-3" />{u.digital}</Badge>
+          ) : status === "sold_out" ? (
+            <Badge tone="warn">{u.soldOutBack}</Badge>
           ) : soldOut ? (
             <Badge tone="warn">{u.outOfStock}</Badge>
           ) : stock === 1 ? (
@@ -637,8 +643,12 @@ export default function Shop() {
   // wiec porownujemy na znormalizowanej postaci.
   const here = pathname.endsWith("/") ? pathname : `${pathname}/`;
   const category = SHOP_CATEGORIES.find((c) => here === c.path) || null;
-  const allProducts = category ? productsByCategory(category.id) : PRODUCTS;
-  const allPersonalized = category ? personalizedByCategory(category.id) : PERSONALIZED;
+  // Pozycja zdjeta ze sklepu znika z list od razu, bez czekania na wdrozenie.
+  // Odsiewamy ja tutaj, a nie w kafelku, zeby liczniki nad sekcjami mowily
+  // prawde, zamiast liczyc rzeczy, ktorych nie widac.
+  const onShelf = (list) => list.filter((p) => statusOf(p, availability) !== "withdrawn");
+  const allProducts = onShelf(category ? productsByCategory(category.id) : PRODUCTS);
+  const allPersonalized = onShelf(category ? personalizedByCategory(category.id) : PERSONALIZED);
   // Na hubie pokazujemy wszystkie uslugi. Wczesniej lista byla pusta, wiec
   // klient wchodzacy na /shop/ widzial sklep bez zadnej pozycji, mimo ze
   // kart uslug jest kilkanascie.
