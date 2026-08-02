@@ -26,8 +26,7 @@ function TrustpilotPill({ lang, className = "" }) {
   return (
     <a
       href="#trustpilot"
-      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-300 cursor-pointer ${className}`}
-      style={{ borderColor: "rgba(0,182,122,0.25)", backgroundColor: "rgba(0,182,122,0.04)" }}
+      className={`pill-trustpilot inline-flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-300 cursor-pointer ${className}`}
     >
       <span
         aria-hidden="true"
@@ -39,7 +38,7 @@ function TrustpilotPill({ lang, className = "" }) {
         </svg>
       </span>
       {/* Bez liczby TrustScore, uzasadnienie w TrustpilotScore w Reviews.jsx. */}
-      <span className="font-bold" style={{ color: "#4ade9f" }}>
+      <span className="pill-trustpilot-score font-bold">
         {reviewCountLabel(TRUSTPILOT_BUSINESS.totalReviews, lang)}
       </span>
       <span className="text-neutral-400">Trustpilot</span>

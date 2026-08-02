@@ -670,3 +670,27 @@ body {
 [data-theme="light"] .bg-neutral-900\/80     { background-color: rgba(240,236,228,0.80) !important; }
 [data-theme="light"] .bg-neutral-950\/60     { background-color: rgba(250,247,242,0.60) !important; }
 [data-theme="light"] .hover\:bg-blue-950:hover { background-color: rgba(29,78,216,0.08) !important; }
+
+/* ─── Kafelek Trustpilota w naglowku strony glownej ───
+   Zielen Trustpilota nie istnieje w palecie Tailwinda, wiec kolory szly przez
+   atrybut style. Styl wpisany bezposrednio wygrywa z klasami hover:, przez co
+   kafelek jako jedyny w tym rzedzie nie reagowal na najechanie. */
+.pill-trustpilot {
+  border-color: rgba(0, 182, 122, 0.25);
+  background-color: rgba(0, 182, 122, 0.04);
+}
+.pill-trustpilot:hover {
+  border-color: rgba(0, 182, 122, 0.55);
+  background-color: rgba(0, 182, 122, 0.12);
+}
+.pill-trustpilot .pill-trustpilot-score { color: #4ade9f; }
+
+[data-theme="light"] .pill-trustpilot {
+  border-color: rgba(0, 124, 82, 0.30);
+  background-color: rgba(0, 182, 122, 0.08);
+}
+[data-theme="light"] .pill-trustpilot:hover {
+  border-color: rgba(0, 124, 82, 0.55);
+  background-color: rgba(0, 182, 122, 0.16);
+}
+[data-theme="light"] .pill-trustpilot .pill-trustpilot-score { color: #00694a; }
