@@ -376,16 +376,26 @@ export default function Checkout() {
 
       const created = await postJSON(`${API_URL}/api/orders`, {
         lang,
-        items: items.map((i) => ({
-          calculator: i.calculator,
-          params: i.params,
-          geometry: i.geometry || null,
-          fileName: i.fileName || null,
-          uploadToken: i.uploadToken || null,
-          packagingId: i.packagingId || null,
-          personalization: i.personalization || null,
-          qty: i.qty || 1,
-        })),
+        // Pozycja z polki idzie samym adresem: cene, wage i dostepnosc backend
+        // bierze z katalogu, wiec nie ma czego podstawiac z przegladarki.
+        items: items.map((i) =>
+          i.productSlug
+            ? {
+                productSlug: i.productSlug,
+                qty: i.qty || 1,
+                personalization: i.personalization || null,
+              }
+            : {
+                calculator: i.calculator,
+                params: i.params,
+                geometry: i.geometry || null,
+                fileName: i.fileName || null,
+                uploadToken: i.uploadToken || null,
+                packagingId: i.packagingId || null,
+                personalization: i.personalization || null,
+                qty: i.qty || 1,
+              }
+        ),
         customer,
         delivery: {
           method: delivery.id,

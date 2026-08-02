@@ -151,6 +151,10 @@ if (pool) {
     CREATE INDEX IF NOT EXISTS idx_redemptions_order ON discount_redemptions (order_id);
   `).catch((e) => console.error("[migracja] discounts:", e.message));
   pool.query(`ALTER TABLE discount_codes ADD COLUMN IF NOT EXISTS issued_to VARCHAR(255)`).catch(() => {});
+  // Kolumna `subscribers.discount_code` miala domyslna wartosc 'AEJACA10' z czasow,
+  // gdy wszyscy dostawali ten sam kod. Przeplyw zapisuje teraz kod wystawiony dla
+  // konkretnej osoby, a domyslna wartosc tylko wpisywalaby w tabele nieprawde.
+  pool.query(`ALTER TABLE subscribers ALTER COLUMN discount_code DROP DEFAULT`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_code VARCHAR(32)`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_grosze INTEGER NOT NULL DEFAULT 0`).catch(() => {});
 
@@ -2157,6 +2161,35 @@ app.post("/api/admin/discounts", express.json({ limit: "16kb" }), async (req, re
 
   if (!created.length) return res.status(409).json({ error: "Taki kod juz istnieje", code: "duplicate" });
   res.json({ ok: true, codes: created });
+});
+
+/**
+ * Skasowanie kodu. Wolno tylko wtedy, gdy nikt go jeszcze nie uzyl: kod
+ * z historia stoi za kwota na czyims zamowieniu i skasowany zostawilby
+ * rabat, ktorego juz nie da sie wytlumaczyc. Uzyte kody sie wylacza, nie kasuje.
+ */
+app.delete("/api/admin/discounts/:code", async (req, res) => {
+  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  const code = normalizeCode(req.params.code);
+  const { rows } = await pool.query(
+    `SELECT c.id, c.used_count,
+            (SELECT COUNT(*)::INTEGER FROM discount_redemptions r
+              WHERE r.code_id = c.id AND r.consumed_at IS NOT NULL) AS consumed
+       FROM discount_codes c WHERE c.code = $1`,
+    [code]
+  );
+  if (!rows[0]) return res.status(404).json({ error: "Nie znamy takiego kodu" });
+  if (rows[0].used_count > 0 || rows[0].consumed > 0) {
+    return res.status(409).json({
+      error: "Ten kod byl juz uzyty, wiec zostaje w bazie razem z historia. Wylacz go zamiast kasowac.",
+      code: "already_used",
+    });
+  }
+  // Rezerwacje w toku znikaja razem z kodem: dotycza nieoplaconych zamowien,
+  // ktore i tak straca znizke, a zamowienie zostaje ze swoja kwota.
+  await pool.query(`DELETE FROM discount_codes WHERE id = $1`, [rows[0].id]);
+  res.json({ ok: true, deleted: code });
 });
 
 /** Wylaczenie albo wlaczenie kodu. Kod zostaje w bazie razem z historia uzyc. */

@@ -1084,6 +1084,13 @@ app.post("/discounts", requireAuth, async (req, res) => {
   } catch (err) { back(res, "/discounts", { err: err.message }); }
 });
 
+app.post("/discounts/:code/delete", requireAuth, async (req, res) => {
+  try {
+    await shopApi(`/api/admin/discounts/${encodeURIComponent(req.params.code)}`, { method: "DELETE" });
+    back(res, "/discounts", { msg: `${req.params.code}: skasowany` });
+  } catch (err) { back(res, "/discounts", { err: err.message }); }
+});
+
 app.post("/discounts/:code/toggle", requireAuth, async (req, res) => {
   try {
     const { active } = await shopApi(`/api/admin/discounts/${encodeURIComponent(req.params.code)}`, {

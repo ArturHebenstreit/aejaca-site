@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-02 | Wersja: 2.3*
+*Wygenerowano: 2026-08-02 | Wersja: 2.5*
 
 ---
 
@@ -693,11 +693,23 @@ Kod niesie: rodzaj (procent do 80 albo kwota w groszach), zakres (`all`, `produc
 
 Kwota rabatu jest liczona po stronie serwera dwa razy: przy podglądzie w kasie i jeszcze raz przy składaniu zamówienia. Rozbieżność przerywa zamówienie zamiast wystawić inną kwotę niż widział klient. `orders.discount_code` i `orders.discount_grosze` zostają na zamówieniu, więc kwotę da się odtworzyć po latach bez zaglądania do tabeli kodów.
 
+Kod wystawiony przy zapisie do newslettera trafia też do kolumny `subscribers.discount_code`, więc w zakładce Subscribers widać, kto jaki kod dostał. Kolumna miała wcześniej domyślną wartość `AEJACA10` z czasów jednego wspólnego kodu i wpisywała ją każdemu nowemu zapisowi, mimo że mail niósł już inny kod. Domyślna wartość została usunięta.
+
 **Kod powitalny z newslettera** wystawia `POST /api/discounts/welcome`, wołany przez przepływ n8n, który wysyła maila (nagłówek `X-Newsletter-Token`, sekret w `NEWSLETTER_CODE_TOKEN`). Kod osobisty, 10%, ważny 90 dni. Powtarzalny: drugi zapis tym samym adresem oddaje ten sam kod, zamiast rozdawać kolejne.
 
-Panel: zakładka **Kody** w aplikacji AEJaCA Admin. Lista z liczbą użyć, rezerwacji w toku i sumą udzielonych rabatów, tworzenie akcji, generowanie paczki kodów osobistych, włącznik. Kodu nigdy nie kasujemy, tylko wyłączamy, bo historia użyć ma zostać.
+Panel: zakładka **Kody** w aplikacji AEJaCA Admin. Lista z liczbą użyć, rezerwacji w toku i sumą udzielonych rabatów, tworzenie akcji, generowanie paczki kodów osobistych, włącznik i kasowanie.
+
+Kasować wolno wyłącznie kod, którego nikt jeszcze nie użył i który nie ma rezerwacji w toku, czyli pomyłkę albo pozycję testową. Kod z historią stoi za kwotą na czyimś zamówieniu i skasowany zostawiłby rabat, którego nie da się już wytłumaczyć, więc taki się wyłącza. Przycisk kasowania po prostu nie pojawia się przy kodach z historią, a backend odmawia z `409 already_used` także wtedy, gdy ktoś spróbuje z pominięciem panelu.
 
 Schemat: `scripts/discounts-schema.sql`, migracje wykonują się też przy starcie backendu.
+
+#### Droga produktu do koszyka
+
+Przycisk na karcie dokłada pozycję do tego samego koszyka, co usługi. Ta sama rzecz dołożona drugi raz podbija ilość istniejącej pozycji, a nie tworzy drugiej, i nie da się dołożyć więcej sztuk, niż mamy na półce.
+
+Do zamówienia idzie **sam adres pozycji** (`productSlug`) razem z ilością. Cenę, wagę i dostępność backend bierze z katalogu, więc podmiana kwoty w przeglądarce nic nie daje.
+
+Koszyk pyta o dostępność na żywo i blokuje przejście do kasy, gdy któraś pozycja sprzedała się w międzyczasie: przy linii pojawia się „sprzedane" albo „zostało już tylko sztuk: N". Klient dowiaduje się o tym w koszyku, a nie po wypełnieniu całego formularza w kasie. Backend i tak sprawdza to jeszcze raz przy składaniu zamówienia i odmawia z `409 out_of_stock`, bo między koszykiem a płatnością mija czas.
 
 #### Stan pozycji w ofercie
 
