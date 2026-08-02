@@ -642,6 +642,27 @@ Termin realizacji liczy się od zaksięgowania wpłaty, nie od złożenia zamów
 
 Dane rachunku żyją w zmiennych środowiskowych Railwaya: `TRANSFER_IBAN_EUR` (wymagana), `TRANSFER_BIC`, `TRANSFER_ACCOUNT_HOLDER`, `TRANSFER_BANK_NAME`. Bez pierwszej z nich backend odrzuca zamówienie przelewem, zamiast przyjąć je i zostawić klienta bez danych do zapłaty.
 
+### Produkty i stany magazynowe
+
+Źródłem prawdy o produkcie jest **baza**, nie repozytorium: tytuł, opis, dane techniczne, zdjęcia, cena, waga, czas wysyłki, konfiguracja personalizacji i stan magazynowy siedzą w tabeli `products`. Zmiana stanu nie wymaga wdrożenia.
+
+Przed sprzedaniem tej samej sztuki dwa razy broni nas `product_reservations`:
+
+| Moment | Co się dzieje |
+|---|---|
+| złożenie zamówienia | powstaje rezerwacja, stan **nie** schodzi |
+| brak zapłaty | rezerwacja wygasa sama: 20 minut przy BLIK i pay-by-link, 3 dni robocze przy przelewie |
+| potwierdzona płatność | rezerwacja zamienia się w sprzedaż, stan schodzi, rośnie `sold_count` |
+| zamówienie po terminie | godzinny cron ustawia `expired` i oddaje towar do sprzedaży |
+
+Dostępność liczy widok `product_availability`: `stock` minus suma aktywnych rezerwacji. Produkt cyfrowy ma `stock = NULL`, czyli bez limitu, i nic go nie rezerwuje.
+
+Sprawdzenie dostępności i założenie rezerwacji idą w jednej transakcji z `SELECT ... FOR UPDATE` na wierszu produktu, więc dwa równoległe zamówienia na ostatnią sztukę ustawiają się w kolejce zamiast obydwa zobaczyć ją jako wolną. Gdy towaru zabraknie, świeże zamówienie jest kasowane, a klient dostaje `409 out_of_stock` z liczbą realnie dostępnych sztuk, zamiast linku do zapłaty za coś, czego nie wyślemy.
+
+Endpointy: `GET /api/products`, `GET /api/products/:slug` publicznie; `PUT /api/products/:slug`, `PATCH /api/products/:slug/stock` i `GET /api/admin/products` za nagłówkiem `X-Admin-Token`.
+
+Schemat: `scripts/products-schema.sql`, migracje wykonują się też przy starcie backendu.
+
 ### Tryb jasny: kontrola w buildzie
 
 Tryb jasny nie działa przez warianty `dark:`, tylko przez listę nadpisań w `src/index.css` (`[data-theme="light"] .klasa`). Klasa spoza tej listy zostaje w kolorze przeznaczonym na czarne tło, więc jasny tekst na kremowym tle po prostu znika. Zdarzyło się to dwa razy i za każdym razem wyszło dopiero ze zrzutu ekranu.
