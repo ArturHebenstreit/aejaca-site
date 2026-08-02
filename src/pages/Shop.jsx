@@ -5,6 +5,7 @@
 // Produkty gotowe i uslugi lezą obok siebie, bo z perspektywy klienta
 // to ta sama decyzja zakupowa, tylko z innym czasem realizacji.
 
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ArrowRight, Package, Download, Wrench, MessageCircle, Sparkles } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
@@ -48,6 +49,15 @@ const UI = {
     quoteBadge: "Wycena indywidualna",
     quoteReply: "odpowiedź w 24 h",
     bothSections: "Wybierz dział",
+    navTitle: "Co znajdziesz w sklepie",
+    shortProducts: "Gotowe",
+    shortPersonalized: "Personalizowane",
+    shortServices: "Usługi",
+    hintProducts: "Płacisz, wysyłamy. Nic do ustawiania.",
+    hintPersonalized: "Nasz półprodukt, Twój grawer i wymiar.",
+    hintServices: "Powstaje od zera pod Twoje zamówienie.",
+    empty: "w przygotowaniu",
+    items: "poz.",
   },
   en: {
     title: "Products and services",
@@ -78,6 +88,15 @@ const UI = {
     quoteBadge: "Individual quote",
     quoteReply: "reply within 24 h",
     bothSections: "Choose a section",
+    navTitle: "What you will find here",
+    shortProducts: "Ready-made",
+    shortPersonalized: "Personalised",
+    shortServices: "Services",
+    hintProducts: "You pay, we ship. Nothing to set up.",
+    hintPersonalized: "Our blank, your engraving and size.",
+    hintServices: "Made from scratch for your order.",
+    empty: "in preparation",
+    items: "items",
   },
   de: {
     title: "Produkte und Leistungen",
@@ -108,6 +127,15 @@ const UI = {
     quoteBadge: "Individuelles Angebot",
     quoteReply: "Antwort in 24 h",
     bothSections: "Bereich wählen",
+    navTitle: "Das finden Sie hier",
+    shortProducts: "Fertig",
+    shortPersonalized: "Personalisiert",
+    shortServices: "Leistungen",
+    hintProducts: "Sie zahlen, wir versenden. Nichts einzustellen.",
+    hintPersonalized: "Unser Rohling, Ihre Gravur und Maß.",
+    hintServices: "Entsteht von Grund auf für Ihre Bestellung.",
+    empty: "in Vorbereitung",
+    items: "Pos.",
   },
 };
 
@@ -149,6 +177,136 @@ function SectionHead({ icon: Icon, title, lead, count, tone }) {
       </div>
       <p className="text-neutral-500 text-xs leading-relaxed max-w-xl">{lead}</p>
       <div className="h-px bg-gradient-to-r from-white/15 to-transparent mt-4" />
+    </div>
+  );
+}
+
+const NAV_TONES = {
+  emerald: {
+    idle: "border-emerald-400/20 bg-emerald-400/[0.03] hover:border-emerald-400/40 hover:bg-emerald-400/[0.07]",
+    icon: "text-emerald-300",
+    chip: "border-emerald-400/40 bg-emerald-400/10 text-emerald-200",
+  },
+  amber: {
+    idle: "border-amber-400/20 bg-amber-400/[0.03] hover:border-amber-400/40 hover:bg-amber-400/[0.07]",
+    icon: "text-amber-300",
+    chip: "border-amber-400/40 bg-amber-400/10 text-amber-200",
+  },
+  blue: {
+    idle: "border-blue-400/20 bg-blue-400/[0.03] hover:border-blue-400/40 hover:bg-blue-400/[0.07]",
+    icon: "text-blue-300",
+    chip: "border-blue-400/40 bg-blue-400/10 text-blue-200",
+  },
+};
+
+/**
+ * Rozdzielacz nad trescia. Bez niego na telefonie widac tylko pierwsza sekcje,
+ * wiec klient nie wie, ze nizej sa jeszcze dwa inne rodzaje oferty. Sekcje
+ * zostaja rozwiniete: zwijanie chowaloby towar za kliknieciem i za kazdym
+ * razem kosztowaloby jedno wejscie w cel, ktorego nikt nie szukal.
+ */
+function SectionNav({ items, u }) {
+  if (items.length < 2) return null;
+  return (
+    <nav aria-label={u.navTitle} className="mb-12">
+      <h2 className="text-neutral-500 text-[11px] uppercase tracking-wider font-medium mb-3">{u.navTitle}</h2>
+      <div className="grid gap-3 sm:grid-cols-3">
+        {items.map((it) => {
+          const tone = NAV_TONES[it.tone];
+          return (
+            <a
+              key={it.id}
+              href={`#${it.id}`}
+              className={`group flex flex-col rounded-xl border px-4 py-3 transition-all duration-300 ${tone.idle}`}
+            >
+              <span className="flex items-center gap-2 mb-1">
+                <it.icon className={`w-4 h-4 shrink-0 ${tone.icon}`} />
+                <span className="text-white text-sm font-medium">{it.label}</span>
+                <span className="ml-auto text-[10px] text-neutral-500 tabular-nums shrink-0">
+                  {it.count > 0 ? `${it.count} ${u.items}` : u.empty}
+                </span>
+              </span>
+              <span className="text-neutral-400 text-xs leading-relaxed">{it.hint}</span>
+            </a>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
+/**
+ * Pasek przyklejony pod menu. Lezy w normalnym przeplywie tuz pod
+ * rozdzielaczem, wiec pojawia sie dokladnie wtedy, gdy tamten znika z ekranu,
+ * i nie przesuwa tresci. Podswietla dzial, w ktorym jestesmy.
+ */
+function StickySectionTabs({ items, u }) {
+  const [active, setActive] = useState(items[0]?.id || null);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+    const nodes = items
+      .map((it) => document.getElementById(it.id))
+      .filter(Boolean);
+    if (!nodes.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting);
+        if (visible.length) {
+          // Najwyzej polozona widoczna sekcja jest ta, ktora klient czyta.
+          visible.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+          setActive(visible[0].target.id);
+        }
+      },
+      { rootMargin: "-25% 0px -55% 0px", threshold: 0 }
+    );
+    nodes.forEach((n) => observer.observe(n));
+    return () => observer.disconnect();
+  }, [items]);
+
+  // Trzymamy aktywna zakladke w polu widzenia paska na waskich ekranach.
+  useEffect(() => {
+    const bar = ref.current;
+    if (!bar || !active) return;
+    const chip = bar.querySelector(`[data-tab="${active}"]`);
+    if (chip && bar.scrollWidth > bar.clientWidth) {
+      const left = chip.offsetLeft - (bar.clientWidth - chip.offsetWidth) / 2;
+      bar.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+    }
+  }, [active]);
+
+  if (items.length < 2) return null;
+
+  return (
+    <div className="sticky top-[4.25rem] z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 mb-8">
+      <div
+        ref={ref}
+        className="flex gap-2 overflow-x-auto rounded-xl border border-white/10 bg-neutral-950/85 backdrop-blur px-2 py-2
+                   [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {items.map((it) => {
+          const on = it.id === active;
+          return (
+            <a
+              key={it.id}
+              href={`#${it.id}`}
+              data-tab={it.id}
+              aria-current={on ? "true" : undefined}
+              className={`shrink-0 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition-colors ${
+                on
+                  ? NAV_TONES[it.tone].chip
+                  : "border-transparent text-neutral-400 hover:text-white hover:bg-white/[0.06]"
+              }`}
+            >
+              <it.icon className="w-3.5 h-3.5" />
+              {it.label}
+              <span className="text-[10px] text-neutral-500 tabular-nums">{it.count > 0 ? it.count : "—"}</span>
+            </a>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -274,6 +432,23 @@ export default function Shop() {
   const pageTitle = category ? `${t(category.title, lang)}, ${u.title.toLowerCase()}` : u.title;
   const path = category ? category.path : "/shop/";
 
+  // Nawigacja opisuje tylko te dzialy, ktore faktycznie sa na stronie:
+  // na hubie nie ma jeszcze kart uslug, bo te naleza do kategorii.
+  const navItems = [
+    { id: "produkty", icon: Package, label: u.shortProducts, hint: u.hintProducts, count: products.length, tone: "emerald" },
+    { id: "personalizowane", icon: Sparkles, label: u.shortPersonalized, hint: u.hintPersonalized, count: personalized.length, tone: "amber" },
+    ...(services.length > 0
+      ? [{
+          id: "uslugi",
+          icon: Wrench,
+          label: u.shortServices,
+          hint: u.hintServices,
+          count: services.length,
+          tone: category?.theme === "amber" ? "amber" : "blue",
+        }]
+      : []),
+  ];
+
   return (
     <>
       <SEOHead
@@ -327,10 +502,13 @@ export default function Shop() {
             </div>
           )}
 
+          <SectionNav items={navItems} u={u} />
+          <StickySectionTabs items={navItems} u={u} />
+
           {/* Produkty gotowe. Sekcja zostaje takze wtedy, gdy nic nie mamy:
               milczenie wygladaloby jak brak dzialu, a nie jak stan przejsciowy. */}
           {products.length === 0 && (
-            <section className="mb-16">
+            <section id="produkty" className="mb-16 scroll-mt-36">
               <SectionHead
                 icon={Package}
                 title={u.products}
@@ -342,18 +520,21 @@ export default function Shop() {
                 <Package className="w-7 h-7 text-neutral-700 mx-auto mb-3" />
                 <h3 className="text-white font-medium text-sm mb-1.5">{u.noProducts}</h3>
                 <p className="text-neutral-500 text-xs leading-relaxed max-w-md mx-auto mb-4">{u.noProductsBody}</p>
-                <a
-                  href="#uslugi"
-                  className="inline-flex items-center gap-1.5 text-neutral-300 hover:text-white text-xs transition-colors"
-                >
-                  {u.noProductsCta} <ArrowRight className="w-3.5 h-3.5" />
-                </a>
+                {/* Na hubie kart uslug nie ma, wiec kotwica prowadzilaby w pustke. */}
+                {services.length > 0 && (
+                  <a
+                    href="#uslugi"
+                    className="inline-flex items-center gap-1.5 text-neutral-300 hover:text-white text-xs transition-colors"
+                  >
+                    {u.noProductsCta} <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
+                )}
               </div>
             </section>
           )}
 
           {products.length > 0 && (
-            <section className="mb-16">
+            <section id="produkty" className="mb-16 scroll-mt-36">
               <SectionHead
                 icon={Package}
                 title={u.products}
@@ -372,7 +553,7 @@ export default function Shop() {
           {/* Uslugi */}
           {/* Kolejnosc sekcji odpowiada rosnacej ilosci naszej pracy:
               gotowe, gotowe z personalizacja, wykonywane od nowa. */}
-          <section className="mb-16">
+          <section id="personalizowane" className="mb-16 scroll-mt-36">
             <SectionHead
               icon={Sparkles}
               title={u.personalized}
@@ -396,7 +577,7 @@ export default function Shop() {
           </section>
 
           {services.length > 0 && (
-            <section id="uslugi" className="scroll-mt-24">
+            <section id="uslugi" className="scroll-mt-36">
               <SectionHead
                 icon={Wrench}
                 title={u.services}

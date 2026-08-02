@@ -825,7 +825,7 @@
   <!-- Shop: products and services hub -->
   <url>
     <loc>https://www.aejaca.com/shop/</loc>
-    <lastmod>2026-07-31</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
 
@@ -835,7 +835,7 @@
   <!-- Shop category: jewelry -->
   <url>
     <loc>https://www.aejaca.com/shop/jewelry/</loc>
-    <lastmod>2026-07-31</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
 
@@ -845,7 +845,7 @@
   <!-- Shop category: studio -->
   <url>
     <loc>https://www.aejaca.com/shop/studio/</loc>
-    <lastmod>2026-07-31</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
 
