@@ -977,4 +977,146 @@ app.get("/email-threads/:id", requireAuth, async (req, res) => {
   }
 });
 
+// ============================================================
+// SKLEP: PRODUKTY, KODY RABATOWE, PRZELEWY
+// ============================================================
+// Te trzy rzeczy zyja w bazie sklepu, ale zapis ma skutki uboczne: zmiana
+// stanu wchodzi w rezerwacje towaru, a potwierdzenie przelewu wysyla maile
+// i przenosi pliki klienta. Dlatego panel nie pisze do bazy sam, tylko wola
+// backend sklepu, gdzie te reguly juz sa. Jedna implementacja, jedno miejsce
+// na blad.
+//
+// Wymaga dwoch zmiennych w tej usludze: CHAT_API_URL i ADMIN_API_TOKEN.
+
+const CHAT_API = (process.env.CHAT_API_URL || "").replace(/\/$/, "");
+
+async function shopApi(path, { method = "GET", body } = {}) {
+  if (!CHAT_API) throw new Error("Brak zmiennej CHAT_API_URL w tej usludze");
+  if (!process.env.ADMIN_API_TOKEN) throw new Error("Brak zmiennej ADMIN_API_TOKEN w tej usludze");
+  const res = await fetch(`${CHAT_API}${path}`, {
+    method,
+    headers: {
+      "X-Admin-Token": process.env.ADMIN_API_TOKEN,
+      ...(body ? { "Content-Type": "application/json" } : {}),
+    },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Backend sklepu odpowiedzial ${res.status}`);
+  return data;
+}
+
+/** Wynik akcji wraca w adresie, zeby odswiezenie strony nie powtarzalo zapisu. */
+const back = (res, path, params = {}) => {
+  const q = new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString();
+  res.redirect(q ? `${path}?${q}` : path);
+};
+
+// --- Produkty ---
+app.get("/products", requireAuth, async (req, res) => {
+  try {
+    const { products } = await shopApi("/api/admin/products");
+    res.render("products", { user: req.user, products, msg: req.query.msg, err: req.query.err });
+  } catch (err) {
+    res.render("products", { user: req.user, products: [], msg: null, err: err.message });
+  }
+});
+
+app.post("/products/:slug/stock", requireAuth, async (req, res) => {
+  try {
+    const stock = parseInt(req.body.stock, 10);
+    await shopApi(`/api/products/${encodeURIComponent(req.params.slug)}/stock`, {
+      method: "PATCH", body: { stock },
+    });
+    back(res, "/products", { msg: `${req.params.slug}: stan ustawiony na ${stock}` });
+  } catch (err) { back(res, "/products", { err: err.message }); }
+});
+
+app.post("/products/:slug/status", requireAuth, async (req, res) => {
+  try {
+    await shopApi(`/api/products/${encodeURIComponent(req.params.slug)}/status`, {
+      method: "PATCH", body: { status: req.body.status },
+    });
+    back(res, "/products", { msg: `${req.params.slug}: ${req.body.status}` });
+  } catch (err) { back(res, "/products", { err: err.message }); }
+});
+
+// --- Kody rabatowe ---
+app.get("/discounts", requireAuth, async (req, res) => {
+  try {
+    const { codes } = await shopApi("/api/admin/discounts");
+    res.render("discounts", {
+      user: req.user, codes,
+      created: req.query.created ? req.query.created.split(",") : [],
+      msg: req.query.msg, err: req.query.err,
+    });
+  } catch (err) {
+    res.render("discounts", { user: req.user, codes: [], created: [], msg: null, err: err.message });
+  }
+});
+
+app.post("/discounts", requireAuth, async (req, res) => {
+  const b = req.body;
+  const batch = b.mode === "batch";
+  const num = (v) => (v === "" || v === undefined ? null : parseInt(v, 10));
+  try {
+    const { codes } = await shopApi("/api/admin/discounts", {
+      method: "POST",
+      body: {
+        code: batch ? undefined : b.code,
+        prefix: batch ? (b.prefix || "AEJ") : undefined,
+        count: batch ? num(b.count) || 1 : 1,
+        kind: b.kind === "amount" ? "amount" : "percent",
+        // Kwote podajesz w zlotych, backend liczy w groszach.
+        value: b.kind === "amount" ? Math.round(Number(b.value) * 100) : num(b.value),
+        appliesTo: b.appliesTo,
+        minOrderGrosze: b.minOrder ? Math.round(Number(b.minOrder) * 100) : 0,
+        maxUses: num(b.maxUses) ?? (batch ? 1 : null),
+        maxUsesPerEmail: num(b.maxUsesPerEmail) || 1,
+        validFrom: b.validFrom || null,
+        validTo: b.validTo || null,
+        campaign: b.campaign || null,
+        issuedTo: b.issuedTo || null,
+        note: b.note || null,
+      },
+    });
+    back(res, "/discounts", { created: codes.join(",") });
+  } catch (err) { back(res, "/discounts", { err: err.message }); }
+});
+
+app.post("/discounts/:code/toggle", requireAuth, async (req, res) => {
+  try {
+    const { active } = await shopApi(`/api/admin/discounts/${encodeURIComponent(req.params.code)}`, {
+      method: "PATCH", body: { active: req.body.active === "true" },
+    });
+    back(res, "/discounts", { msg: `${req.params.code}: ${active ? "aktywny" : "wylaczony"}` });
+  } catch (err) { back(res, "/discounts", { err: err.message }); }
+});
+
+// --- Przelewy czekajace na potwierdzenie ---
+// Przelew nie ma powiadomienia z bramki, wiec jedynym dowodem wplywu jest
+// wyciag bankowy. Potwierdzenie robi dokladnie to samo, co SUCCESS z Autopay:
+// maile do klienta i przeniesienie plikow do Zamowien. Wykonuje sie raz.
+app.get("/transfers", requireAuth, async (req, res) => {
+  try {
+    const { orders } = await shopApi("/api/orders/awaiting-transfer");
+    res.render("transfers", { user: req.user, orders, msg: req.query.msg, err: req.query.err });
+  } catch (err) {
+    res.render("transfers", { user: req.user, orders: [], msg: null, err: err.message });
+  }
+});
+
+app.post("/transfers/:ref/confirm", requireAuth, async (req, res) => {
+  try {
+    await shopApi(`/api/orders/${encodeURIComponent(req.params.ref)}/confirm-transfer`, {
+      method: "POST",
+      body: {
+        receivedEur: req.body.receivedEur ? Number(req.body.receivedEur) : undefined,
+        force: req.body.force === "true",
+      },
+    });
+    back(res, "/transfers", { msg: `${req.params.ref}: potwierdzony` });
+  } catch (err) { back(res, "/transfers", { err: err.message }); }
+});
+
 app.listen(PORT, () => console.log(`AEJaCA Admin running on :${PORT}`));

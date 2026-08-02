@@ -1,0 +1,63 @@
+<%#
+  Naglowek panelu: jedno miejsce na cale menu.
+
+  Wczesniej kazdy widok mial wlasna, przepisana recznie kopie tej listy i kopie
+  sie rozjechaly: na jednej podstronie brakowalo Emaila, na innej Filamentow,
+  wiec wygladalo to, jakby pozycje znikaly przy klikaniu. Teraz nowa zakladka
+  dopisuje sie raz, tutaj, i widac ja wszedzie.
+
+  Uzycie: include partials/header z polami user, title i active.
+-%>
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEJaCA Admin<%= typeof title !== 'undefined' && title ? ' — ' + title : '' %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { neutral: { 950: '#0a0a0a' } } } } }
+  </script>
+</head>
+<body class="bg-neutral-950 min-h-screen text-neutral-100">
+
+<%
+  // Kolejnosc od tego, co otwieram najczesciej, do rzeczy ustawianych raz na
+  // dlugo. Zamowienia i sklep na poczatku, slowniki materialowe na koncu.
+  const NAV = [
+    { href: "/dashboard",        id: "dashboard",     label: "Dashboard" },
+    { href: "/products",         id: "products",      label: "Produkty" },
+    { href: "/discounts",        id: "discounts",     label: "Kody" },
+    { href: "/transfers",        id: "transfers",     label: "Przelewy" },
+    { href: "/analytics",        id: "analytics",     label: "Analytics" },
+    { href: "/leads",            id: "leads",         label: "Leads" },
+    { href: "/subscribers",      id: "subscribers",   label: "Subscribers" },
+    { href: "/conversations",    id: "conversations", label: "Chat" },
+    { href: "/email-threads",    id: "email",         label: "Email" },
+    { href: "/laser-matrix",     id: "laser",         label: "Laser Matrix" },
+    { href: "/gemstone-prices",  id: "gems",          label: "Gems" },
+    { href: "/filaments",        id: "filaments",     label: "Filamenty" },
+  ];
+  const current = typeof active !== 'undefined' ? active : null;
+%>
+
+  <header class="bg-neutral-900 border-b border-white/10 px-6 py-3 flex items-center justify-between gap-4 flex-wrap">
+    <div class="flex items-center gap-6 flex-wrap">
+      <span class="text-lg font-bold text-white">AEJaCA <span class="text-amber-400">Admin</span></span>
+      <nav class="flex gap-4 text-sm flex-wrap">
+        <% NAV.forEach(function (item) { %>
+          <a href="<%= item.href %>"
+             class="<%= item.id === current
+               ? 'text-white font-medium border-b border-amber-400 pb-0.5'
+               : 'text-neutral-400 hover:text-white transition-colors' %>"><%= item.label %></a>
+        <% }); %>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      <% if (typeof user !== 'undefined' && user) { %>
+        <% if (user.photo) { %><img src="<%= user.photo %>" class="w-7 h-7 rounded-full" alt="" /><% } %>
+        <span class="text-sm text-neutral-400"><%= user.name %></span>
+      <% } %>
+      <a href="/logout" class="text-xs text-red-400 hover:text-red-300 transition-colors">Logout</a>
+    </div>
+  </header>

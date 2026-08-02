@@ -322,21 +322,6 @@ export const SEO = {
     en: { title: "Order status, AEJaCA", description: "The status of your AEJaCA order and payment.", keywords: "order status", ogAlt: "AEJaCA order status" },
     de: { title: "Bestellstatus, AEJaCA", description: "Der Status Ihrer AEJaCA-Bestellung und Zahlung.", keywords: "bestellstatus", ogAlt: "AEJaCA Bestellstatus" },
   },
-  adminTransfers: {
-    pl: { title: "Przelewy do potwierdzenia, AEJaCA", description: "Panel wewnętrzny.", keywords: "", ogAlt: "Panel AEJaCA" },
-    en: { title: "Transfers to confirm, AEJaCA", description: "Internal panel.", keywords: "", ogAlt: "AEJaCA panel" },
-    de: { title: "Zu bestätigende Überweisungen, AEJaCA", description: "Internes Panel.", keywords: "", ogAlt: "AEJaCA Panel" },
-  },
-  adminProducts: {
-    pl: { title: "Produkty i stany magazynowe, AEJaCA", description: "Panel wewnętrzny.", keywords: "", ogAlt: "Panel AEJaCA" },
-    en: { title: "Products and stock, AEJaCA", description: "Internal panel.", keywords: "", ogAlt: "AEJaCA panel" },
-    de: { title: "Produkte und Bestände, AEJaCA", description: "Internes Panel.", keywords: "", ogAlt: "AEJaCA Panel" },
-  },
-  adminDiscounts: {
-    pl: { title: "Kody rabatowe, AEJaCA", description: "Panel wewnętrzny.", keywords: "", ogAlt: "Panel AEJaCA" },
-    en: { title: "Discount codes, AEJaCA", description: "Internal panel.", keywords: "", ogAlt: "AEJaCA panel" },
-    de: { title: "Rabattcodes, AEJaCA", description: "Internes Panel.", keywords: "", ogAlt: "AEJaCA Panel" },
-  },
   terms: {
     pl: {
       title: "Regulamin serwisu i sprzedaży, AEJaCA",
