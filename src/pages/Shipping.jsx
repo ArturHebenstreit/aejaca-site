@@ -8,22 +8,25 @@ import { buildWebPageSchema, buildBreadcrumbSchema, buildFAQSchema } from "../se
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import PolicyLinks from "../components/PolicyLinks.jsx";
+import { ZONES, HANDLING_GROSZE, FREE_SHIPPING_FROM_GROSZE, MAX_PARCEL_G } from "../pricing/shipping.js";
 
 // All shipping costs are stored in PLN (base). For en/de the EUR amount is
 // computed live from the NBP rate (pln_per_eur) via useMarketRates — never
 // hardcoded — so quoted prices track the real exchange rate.
-const DOMESTIC_FROM_PLN = { courier: 30, locker: 17 };
-const FREE_SHIP = { pln: 400, eur: 100 }; // round policy threshold per locale
-const EU_FROM_PLN = 50;
-const UK_TIERS_PLN = [
-  { kg: "5", min: 70, max: 120 },
-  { kg: "10", min: 110, max: 150 },
-  { kg: "20-30", min: 150, max: 270 },
-];
-const USA_TIERS_PLN = [
-  { kg: "1", min: 140, max: 190 },
-  { kg: "10", min: 330, max: 400 },
-];
+// Liczby pochodza z tego samego pliku, ktory liczy wysylke w kasie. Zanim
+// tu byly wpisane recznie i rozjechaly sie z tym, co klient realnie placil.
+const pln = (grosze) => Math.round(grosze / 100);
+const DOMESTIC_FROM_PLN = { courier: pln(ZONES.pl.courierGrosze), locker: pln(ZONES.pl.lockerGrosze) };
+const FREE_SHIP = { pln: pln(FREE_SHIPPING_FROM_GROSZE), eur: 100 };
+const EU_FROM_PLN = pln(ZONES.eu_near.courierGrosze + HANDLING_GROSZE);
+const EU_TO_PLN = pln(ZONES.eu_far.courierGrosze + HANDLING_GROSZE);
+const UK_PLN = pln(ZONES.eur_non_eu.courierGrosze + HANDLING_GROSZE);
+const USA_PLN = pln(ZONES.world_am.courierGrosze + HANDLING_GROSZE);
+const ASIA_PLN = pln(ZONES.world_rest.courierGrosze + HANDLING_GROSZE);
+
+const ZONE_ROWS = Object.values(ZONES)
+  .filter((z) => z.id !== "pl")
+  .map((z) => ({ id: z.id, carrier: z.carrier, leadDays: z.leadDays, pln: pln(z.courierGrosze + HANDLING_GROSZE) }));
 
 const LABELS = {
   pl: {
@@ -33,6 +36,14 @@ const LABELS = {
     domestic: "Polska",
     from: "od",
     courierLabel: "Kurier InPost",
+    days: "dni roboczych",
+    zoneNames: {
+      eu_near: "Niemcy, Czechy, Słowacja, Litwa",
+      eu_far: "Pozostałe kraje Unii Europejskiej",
+      eur_non_eu: "Europa poza UE (Wielka Brytania, Norwegia, Szwajcaria)",
+      world_am: "Ameryka Północna i Południowa",
+      world_rest: "Azja, Australia, Bliski Wschód, Afryka",
+    },
     lockerLabel: "Paczkomat InPost",
     pickupLabel: "Odbiór osobisty (Józefosław)",
     freeLabel: "bezpłatnie",
@@ -77,6 +88,14 @@ const LABELS = {
     domestic: "Poland",
     from: "from",
     courierLabel: "InPost Courier",
+    days: "business days",
+    zoneNames: {
+      eu_near: "Germany, Czechia, Slovakia, Lithuania",
+      eu_far: "Other European Union countries",
+      eur_non_eu: "Europe outside the EU (United Kingdom, Norway, Switzerland)",
+      world_am: "North and South America",
+      world_rest: "Asia, Australia, Middle East, Africa",
+    },
     lockerLabel: "InPost Parcel Locker",
     pickupLabel: "Personal pickup (Józefosław)",
     freeLabel: "free",
@@ -121,6 +140,14 @@ const LABELS = {
     domestic: "Polen",
     from: "ab",
     courierLabel: "InPost Kurier",
+    days: "Werktage",
+    zoneNames: {
+      eu_near: "Deutschland, Tschechien, Slowakei, Litauen",
+      eu_far: "Übrige Länder der Europäischen Union",
+      eur_non_eu: "Europa außerhalb der EU (Großbritannien, Norwegen, Schweiz)",
+      world_am: "Nord- und Südamerika",
+      world_rest: "Asien, Australien, Naher Osten, Afrika",
+    },
     lockerLabel: "InPost Paketautomat",
     pickupLabel: "Persönliche Abholung (Józefosław)",
     freeLabel: "kostenlos",
@@ -177,9 +204,6 @@ export default function Shipping() {
     showEur
       ? `€${Math.round(min / rate)}–${Math.round(max / rate)}`
       : `${min}–${max} zł`;
-  const tierLabel = (kg) =>
-    kg.includes("-") ? `${kg.replace("-", "–")} kg` : `${l.upTo} ${kg} kg`;
-
   const domesticItems = [
     { label: l.courierLabel, price: `${l.from} ${fmtFrom(DOMESTIC_FROM_PLN.courier)}` },
     { label: l.lockerLabel, price: `${l.from} ${fmtFrom(DOMESTIC_FROM_PLN.locker)}` },
@@ -193,12 +217,13 @@ export default function Shipping() {
     courier: fmtFrom(DOMESTIC_FROM_PLN.courier),
     locker: fmtFrom(DOMESTIC_FROM_PLN.locker),
     free: freeDisp,
-    eu: fmtFrom(EU_FROM_PLN),
-    uk5: fmtRange(UK_TIERS_PLN[0].min, UK_TIERS_PLN[0].max),
-    uk10: fmtRange(UK_TIERS_PLN[1].min, UK_TIERS_PLN[1].max),
-    uk2030: fmtRange(UK_TIERS_PLN[2].min, UK_TIERS_PLN[2].max),
-    usa1: fmtRange(USA_TIERS_PLN[0].min, USA_TIERS_PLN[0].max),
-    usa10: fmtRange(USA_TIERS_PLN[1].min, USA_TIERS_PLN[1].max),
+    eu: fmtRange(EU_FROM_PLN, EU_TO_PLN),
+    uk5: fmtFrom(UK_PLN),
+    uk10: fmtFrom(UK_PLN),
+    uk2030: fmtFrom(UK_PLN),
+    usa1: fmtFrom(USA_PLN),
+    usa10: fmtFrom(USA_PLN),
+    asia: fmtFrom(ASIA_PLN),
   };
   const faqItems = l.faq.map(({ q, a }) => ({ q, a: a(faqValues) }));
 
@@ -315,31 +340,18 @@ export default function Shipping() {
                 <h2 className="text-white font-semibold">{l.ratesTitle}</h2>
               </div>
               <p className="text-neutral-400 text-sm mb-5">{l.ratesIntro}</p>
-              <div className="grid sm:grid-cols-2 gap-x-8 gap-y-5">
-                {/* UK tiers */}
-                <div>
-                  <h3 className="text-neutral-200 text-sm font-medium mb-2">{l.ukRatesTitle}</h3>
-                  <div className="divide-y divide-neutral-800">
-                    {UK_TIERS_PLN.map((row, i) => (
-                      <div key={i} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
-                        <span className="text-sm text-neutral-300">{tierLabel(row.kg)}</span>
-                        <span className="text-sm text-amber-400 font-medium">{fmtRange(row.min, row.max)}</span>
-                      </div>
-                    ))}
+              {/* Jedna tabela stref zamiast dwoch list wagowych: kasa liczy
+                  wysylke po strefie, wiec strona ma pokazywac to samo. */}
+              <div className="divide-y divide-neutral-800">
+                {ZONE_ROWS.map((z) => (
+                  <div key={z.id} className="flex items-baseline justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
+                    <div>
+                      <div className="text-sm text-neutral-300">{l.zoneNames[z.id]}</div>
+                      <div className="text-neutral-500 text-[11px]">{z.carrier}, {z.leadDays} {l.days}</div>
+                    </div>
+                    <span className="text-sm text-amber-400 font-medium whitespace-nowrap">{fmtFrom(z.pln)}</span>
                   </div>
-                </div>
-                {/* USA tiers */}
-                <div>
-                  <h3 className="text-neutral-200 text-sm font-medium mb-2">{l.usaRatesTitle}</h3>
-                  <div className="divide-y divide-neutral-800">
-                    {USA_TIERS_PLN.map((row, i) => (
-                      <div key={i} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
-                        <span className="text-sm text-neutral-300">{tierLabel(row.kg)}</span>
-                        <span className="text-sm text-amber-400 font-medium">{fmtRange(row.min, row.max)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                ))}
               </div>
               <p className="text-neutral-500 text-xs mt-5">{l.calcNote}</p>
             </div>

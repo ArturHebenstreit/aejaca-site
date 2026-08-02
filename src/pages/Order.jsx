@@ -15,6 +15,7 @@ import { buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { SERVICES, GROUPS, getService, DELIVERY_METHODS } from "../data/orderCatalog.js";
+import { shippingOptions, shippingGrosze, needsCustoms, SHIPPING_COUNTRIES } from "../pricing/shipping.js";
 import { t } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
 
@@ -51,6 +52,12 @@ const UI = {
     postal: "Kod pocztowy",
     city: "Miasto",
     lockerCode: "Kod paczkomatu",
+    country: "Kraj dostawy",
+    carrier: "Przewoźnik",
+    businessDays: "dni roboczych",
+    customsTitle: "Przesyłka poza Unię Europejską",
+    customsBody: "Cło i podatek importowy nalicza urząd celny kraju odbiorcy, a pobiera je kurier przy doręczeniu. Nie są zawarte w cenie i nie możemy ich za Ciebie opłacić.",
+    handlingNote: "W cenie wysyłki zagranicznej zawarte jest 10 PLN za obsługę nadania i dokumentów.",
     consents: "Zgody",
     consentTerms: "Akceptuję regulamin i politykę prywatności",
     consentWithdrawal: "Zamawiam rzecz wykonywaną według mojej specyfikacji i przyjmuję do wiadomości, że tracę prawo odstąpienia od umowy po rozpoczęciu wykonania",
@@ -102,6 +109,12 @@ const UI = {
     postal: "Postal code",
     city: "City",
     lockerCode: "Locker code",
+    country: "Delivery country",
+    carrier: "Carrier",
+    businessDays: "business days",
+    customsTitle: "Shipment outside the European Union",
+    customsBody: "Customs duty and import tax are set by the destination country and collected by the courier on delivery. They are not included in the price and we cannot pay them on your behalf.",
+    handlingNote: "International shipping includes 10 PLN for handling the dispatch and the paperwork.",
     consents: "Consents",
     consentTerms: "I accept the Terms of Service and the Privacy Policy",
     consentWithdrawal: "I am ordering an item made to my specification and acknowledge that I lose the right of withdrawal once production begins",
@@ -153,6 +166,12 @@ const UI = {
     postal: "Postleitzahl",
     city: "Stadt",
     lockerCode: "Paketstationscode",
+    country: "Lieferland",
+    carrier: "Versanddienstleister",
+    businessDays: "Werktage",
+    customsTitle: "Sendung außerhalb der Europäischen Union",
+    customsBody: "Zoll und Einfuhrsteuer setzt das Bestimmungsland fest, der Kurier zieht sie bei der Zustellung ein. Sie sind nicht im Preis enthalten und wir können sie nicht für Sie entrichten.",
+    handlingNote: "Im Auslandsversand sind 10 PLN für die Abwicklung und die Papiere enthalten.",
     consents: "Einwilligungen",
     consentTerms: "Ich akzeptiere die AGB und die Datenschutzerklärung",
     consentWithdrawal: "Ich bestelle eine nach meinen Vorgaben gefertigte Sache und nehme zur Kenntnis, dass das Widerrufsrecht mit Fertigungsbeginn erlischt",
@@ -177,6 +196,22 @@ const UI = {
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Nazwy krajow z przegladarki, posortowane alfabetycznie w jezyku klienta. */
+function countryName(code, lang) {
+  try {
+    return new Intl.DisplayNames([lang === "pl" ? "pl" : lang === "de" ? "de" : "en"], { type: "region" }).of(code) || code;
+  } catch {
+    return code;
+  }
+}
+
+function countryList(lang) {
+  const locale = lang === "pl" ? "pl" : lang === "de" ? "de" : "en";
+  return SHIPPING_COUNTRIES
+    .map((code) => ({ code, name: countryName(code, lang) }))
+    .sort((a, b) => a.name.localeCompare(b.name, locale));
+}
 
 function StepBar({ step, labels }) {
   return (
@@ -303,7 +338,8 @@ export default function Order() {
   const [priceError, setPriceError] = useState(null);
 
   const [customer, setCustomer] = useState({ name: "", email: "", phone: "" });
-  const [deliveryId, setDeliveryId] = useState("inpost_locker");
+  const [country, setCountry] = useState(lang === "de" ? "DE" : lang === "en" ? "GB" : "PL");
+  const [deliveryId, setDeliveryId] = useState(lang === "pl" ? "inpost_locker" : "courier");
   const [addr, setAddr] = useState({ line1: "", postalCode: "", city: "", point: "" });
   const [consents, setConsents] = useState({ terms: false, waiveWithdrawal: false });
 
@@ -314,7 +350,12 @@ export default function Order() {
 
   const fileRef = useRef(null);
   const service = getService(serviceId);
-  const delivery = DELIVERY_METHODS.find((d) => d.id === deliveryId) || DELIVERY_METHODS[0];
+  // Metody i ceny zaleza od kraju: paczkomat dziala tylko w Polsce.
+  const options = shippingOptions(country);
+  const deliveryMeta = DELIVERY_METHODS.find((d) => d.id === deliveryId) || DELIVERY_METHODS[0];
+  const delivery = { ...deliveryMeta, id: deliveryId, grosze: shippingGrosze(deliveryId, country) ?? 0 };
+  const abroad = country !== "PL";
+  const customs = needsCustoms(country);
 
   useEffect(() => {
     if (!API || step < 4) return;
@@ -411,6 +452,7 @@ export default function Order() {
           customer,
           delivery: {
             method: deliveryId,
+            country,
             shippingGrosze: delivery.grosze,
             point: addr.point || null,
             addressLine1: addr.line1 || null,
@@ -675,26 +717,56 @@ export default function Order() {
               <Field label={u.phone} value={customer.phone} onChange={(v) => setCustomer((c) => ({ ...c, phone: v }))} type="tel" />
 
               <h2 className="text-white font-semibold mb-3 mt-8">{u.delivery}</h2>
-              <div className="space-y-2 mb-4">
-                {DELIVERY_METHODS.map((d) => (
-                  <button
-                    key={d.id}
-                    type="button"
-                    onClick={() => setDeliveryId(d.id)}
-                    className={`w-full flex items-center justify-between p-3 rounded-lg border text-left transition-all ${
-                      deliveryId === d.id ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
-                    }`}
-                  >
-                    <div>
-                      <div className={`text-sm ${deliveryId === d.id ? "text-blue-300 font-medium" : "text-neutral-300"}`}>{t(d.label, lang)}</div>
-                      <div className="text-neutral-500 text-[11px]">{t(d.note, lang)}</div>
-                    </div>
-                    <div className="text-sm font-semibold text-white">
-                      {money(d.grosze)}
-                    </div>
-                  </button>
+              <label className="block text-xs font-medium text-neutral-400 mb-1.5">{u.country}</label>
+              <select
+                value={country}
+                onChange={(e) => {
+                  setCountry(e.target.value);
+                  const ids = shippingOptions(e.target.value).map((o) => o.id);
+                  if (!ids.includes(deliveryId)) setDeliveryId(ids[0]);
+                }}
+                className="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white mb-4
+                           focus:outline-none focus:border-blue-400/50"
+              >
+                {countryList(lang).map(({ code, name }) => (
+                  <option key={code} value={code}>{name}</option>
                 ))}
+              </select>
+
+              <div className="space-y-2 mb-4">
+                {options.map((o) => {
+                  const meta = DELIVERY_METHODS.find((d) => d.id === o.id);
+                  return (
+                    <button
+                      key={o.id}
+                      type="button"
+                      onClick={() => setDeliveryId(o.id)}
+                      className={`w-full flex items-center justify-between gap-3 p-3 rounded-lg border text-left transition-all ${
+                        deliveryId === o.id ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                      }`}
+                    >
+                      <div>
+                        <div className={`text-sm ${deliveryId === o.id ? "text-blue-300 font-medium" : "text-neutral-300"}`}>
+                          {meta ? t(meta.label, lang) : o.id}
+                        </div>
+                        <div className="text-neutral-500 text-[11px]">
+                          {o.id === "pickup" ? t(meta.note, lang) : `${u.carrier}: ${o.carrier}, ${o.leadDays} ${u.businessDays}`}
+                        </div>
+                      </div>
+                      <div className="text-sm font-semibold text-white whitespace-nowrap">{money(o.grosze)}</div>
+                    </button>
+                  );
+                })}
               </div>
+
+              {abroad && <p className="text-neutral-600 text-[11px] mb-4">{u.handlingNote}</p>}
+
+              {customs && (
+                <div className="rounded-lg border border-amber-400/30 bg-amber-400/10 p-3 mb-4">
+                  <p className="text-amber-200 text-xs font-medium mb-1">{u.customsTitle}</p>
+                  <p className="text-amber-100/80 text-[11px] leading-relaxed">{u.customsBody}</p>
+                </div>
+              )}
 
               {deliveryId === "inpost_locker" && (
                 <Field label={u.lockerCode} value={addr.point} onChange={(v) => setAddr((a) => ({ ...a, point: v }))} required placeholder="WAW01A" />
