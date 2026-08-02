@@ -648,3 +648,49 @@ body {
   background-color: var(--ds-bg-soft);
   color: var(--ds-text-1) !important;
 }
+
+/* ─── Tryb jasny: dopelnienie listy nadpisan ───
+   Wyszukane przez scripts/check-light-theme.mjs. Bez nich jasny tekst
+   zostawal jasnym tekstem takze na kremowym tle, czyli znikal. */
+[data-theme="light"] .text-cyan-300          { color: #155e75 !important; }
+[data-theme="light"] .text-purple-300        { color: #6b21a8 !important; }
+[data-theme="light"] .text-slate-300         { color: #334155 !important; }
+[data-theme="light"] .text-green-300         { color: #166534 !important; }
+[data-theme="light"] .text-red-300           { color: #b91c1c !important; }
+[data-theme="light"] .text-red-200           { color: #991b1b !important; }
+[data-theme="light"] .text-rose-200          { color: #9f1239 !important; }
+[data-theme="light"] .text-rose-200\/90      { color: rgba(159,18,57,0.90) !important; }
+[data-theme="light"] .text-amber-200\/80     { color: rgba(146,64,14,0.85) !important; }
+[data-theme="light"] .text-amber-300\/90     { color: rgba(180,83,9,0.90) !important; }
+[data-theme="light"] .text-blue-300\/80      { color: rgba(30,64,175,0.85) !important; }
+[data-theme="light"] .text-emerald-200\/90   { color: rgba(6,95,70,0.90) !important; }
+
+[data-theme="light"] .bg-neutral-700         { background-color: var(--ds-bg-soft) !important; }
+[data-theme="light"] .bg-neutral-800\/70     { background-color: rgba(240,236,228,0.70) !important; }
+[data-theme="light"] .bg-neutral-900\/80     { background-color: rgba(240,236,228,0.80) !important; }
+[data-theme="light"] .bg-neutral-950\/60     { background-color: rgba(250,247,242,0.60) !important; }
+[data-theme="light"] .hover\:bg-blue-950:hover { background-color: rgba(29,78,216,0.08) !important; }
+
+/* ─── Kafelek Trustpilota w naglowku strony glownej ───
+   Zielen Trustpilota nie istnieje w palecie Tailwinda, wiec kolory szly przez
+   atrybut style. Styl wpisany bezposrednio wygrywa z klasami hover:, przez co
+   kafelek jako jedyny w tym rzedzie nie reagowal na najechanie. */
+.pill-trustpilot {
+  border-color: rgba(0, 182, 122, 0.25);
+  background-color: rgba(0, 182, 122, 0.04);
+}
+.pill-trustpilot:hover {
+  border-color: rgba(0, 182, 122, 0.55);
+  background-color: rgba(0, 182, 122, 0.12);
+}
+.pill-trustpilot .pill-trustpilot-score { color: #4ade9f; }
+
+[data-theme="light"] .pill-trustpilot {
+  border-color: rgba(0, 124, 82, 0.30);
+  background-color: rgba(0, 182, 122, 0.08);
+}
+[data-theme="light"] .pill-trustpilot:hover {
+  border-color: rgba(0, 124, 82, 0.55);
+  background-color: rgba(0, 182, 122, 0.16);
+}
+[data-theme="light"] .pill-trustpilot .pill-trustpilot-score { color: #00694a; }

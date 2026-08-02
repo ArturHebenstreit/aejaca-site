@@ -1,0 +1,6 @@
+{
+  "_comment": "Klasy swiadomie zostawione bez nadpisania w trybie jasnym. Kazdy wpis musi miec powod, bo lista bez uzasadnien zamienia kontrole w atrape.",
+  "bg-blue-700": "Przycisk z bialym tekstem. Ciemne tlo jest tu celowe i czytelne w obu trybach.",
+  "bg-sky-900/30": "Nakladka koloru na zdjecie kamienia, laczona przez mix-blend-multiply. Ma wygladac tak samo niezaleznie od motywu.",
+  "bg-orange-900/25": "To samo co wyzej, druga barwa kamienia."
+}
