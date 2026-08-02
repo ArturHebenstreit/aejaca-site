@@ -94,7 +94,7 @@ const UI = {
 
 export default function Cart() {
   const { lang } = useLanguage();
-  const { money, alt, showEur } = useMoney();
+  const { money } = useMoney();
   const u = UI[lang] || UI.en;
   const { items, subtotalGrosze, remove, setQty, hasVolatile, ready } = useCart();
 
@@ -212,10 +212,7 @@ export default function Cart() {
               <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-neutral-300 text-sm">{u.subtotal}</span>
-                  <span className="text-right">
-                    <span className="block text-white font-bold text-xl">{money(subtotalGrosze)}</span>
-                    {showEur && <span className="block text-neutral-500 text-[11px]">{alt(subtotalGrosze)}</span>}
-                  </span>
+                  <span className="text-white font-bold text-xl">{money(subtotalGrosze)}</span>
                 </div>
                 <p className="text-neutral-600 text-[11px] mb-4">{u.shippingNote}</p>
                 <Link

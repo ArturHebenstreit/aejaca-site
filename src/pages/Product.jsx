@@ -102,7 +102,7 @@ const UI = {
 
 export default function Product() {
   const { lang } = useLanguage();
-  const { money, alt, showEur } = useMoney();
+  const { money } = useMoney();
   const u = UI[lang] || UI.en;
   const { slug } = useParams();
   const product = getProduct(slug);
@@ -191,9 +191,6 @@ export default function Product() {
 
               <div className="mb-1">
                 <span className="text-3xl font-extrabold text-white">{money(product.priceGrosze)}</span>
-                {showEur && (
-                  <div className="text-neutral-500 text-xs mt-1">{alt(product.priceGrosze)}</div>
-                )}
               </div>
 
               <div className="flex flex-wrap items-center gap-2 mb-6">

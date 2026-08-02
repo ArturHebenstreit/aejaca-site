@@ -16,7 +16,7 @@ import { useCart } from "../cart/CartContext.jsx";
 import { DELIVERY_METHODS } from "../data/orderCatalog.js";
 import { t } from "../pricing/config.js";
 import { API_URL, postJSON, submitPaymentForm } from "../utils/api.js";
-import { useMoney, CHARGED_IN_PLN } from "../shop/money.js";
+import { useMoney, formatPln } from "../shop/money.js";
 
 const UI = {
   pl: {
@@ -50,6 +50,18 @@ const UI = {
     blocked: "Nie udało się otworzyć strony płatności. Zamówienie jest zapisane, napisz do nas z jego numerem, a prześlemy link do zapłaty.",
     timeout: "Serwer nie odpowiedział w wyznaczonym czasie. Spróbuj ponownie albo napisz do nas.",
     generic: "Coś poszło nie tak",
+    payInstant: "Płatność natychmiastowa",
+    payInstantNote: "BLIK lub przelew z polskiego banku. Rozliczenie w złotówkach.",
+    payTransfer: "Przelew bankowy w euro",
+    payTransferNote: "Zwykły przelew SEPA. Dane rachunku pokażemy po złożeniu zamówienia.",
+    howItWorks: "Jak przebiega płatność przelewem",
+    step1: "Składasz zamówienie. Nic jeszcze nie płacisz.",
+    step2: "Pokazujemy dane rachunku, kwotę w euro i tytuł przelewu równy numerowi zamówienia. To samo dostajesz mailem.",
+    step3: "Robisz zwykły przelew SEPA ze swojego banku. Kwota jest ostateczna, nic nie dopłacasz.",
+    step4: "Gdy pieniądze wpłyną, potwierdzamy to ręcznie i wysyłamy potwierdzenie przyjęcia wpłaty wraz z informacją o rozpoczęciu prac.",
+    step5: "Termin realizacji liczymy od zaksięgowania wpłaty, nie od złożenia zamówienia.",
+    lockNote: "Kwota w euro jest zamrożona na 7 dni od złożenia zamówienia.",
+    placeOrder: "Zamawiam z płatnością przelewem",
   },
   en: {
     title: "Order",
@@ -82,6 +94,18 @@ const UI = {
     blocked: "We could not open the payment page. Your order is saved, write to us with its number and we will send a payment link.",
     timeout: "The server did not respond in time. Please try again or write to us.",
     generic: "Something went wrong",
+    payInstant: "Instant payment",
+    payInstantNote: "BLIK or a link to a Polish bank. Requires an account in a Polish bank, settled in PLN.",
+    payTransfer: "Bank transfer in EUR",
+    payTransferNote: "An ordinary SEPA transfer. We show the account details once the order is placed.",
+    howItWorks: "How paying by transfer works",
+    step1: "You place the order. Nothing is charged yet.",
+    step2: "We show you the account details, the amount in EUR and a payment reference equal to your order number. The same arrives by email.",
+    step3: "You make an ordinary SEPA transfer from your bank. The amount is final, there is nothing to pay on top.",
+    step4: "Once the money lands, we confirm it by hand and send you a receipt confirmation together with a note that work has started.",
+    step5: "The lead time is counted from the day the money clears, not from the day you order.",
+    lockNote: "The amount in EUR is locked for 7 days from placing the order.",
+    placeOrder: "Place order and pay by transfer",
   },
   de: {
     title: "Bestellung",
@@ -114,6 +138,18 @@ const UI = {
     blocked: "Die Zahlungsseite konnte nicht geöffnet werden. Ihre Bestellung ist gespeichert, schreiben Sie uns mit der Nummer.",
     timeout: "Der Server hat nicht rechtzeitig geantwortet. Bitte erneut versuchen oder uns schreiben.",
     generic: "Etwas ist schiefgelaufen",
+    payInstant: "Sofortzahlung",
+    payInstantNote: "BLIK oder Link zu einer polnischen Bank. Erfordert ein Konto in Polen, Abrechnung in PLN.",
+    payTransfer: "Banküberweisung in EUR",
+    payTransferNote: "Eine gewöhnliche SEPA-Überweisung. Die Kontodaten zeigen wir nach der Bestellung.",
+    howItWorks: "So läuft die Zahlung per Überweisung",
+    step1: "Sie geben die Bestellung auf. Es wird noch nichts abgebucht.",
+    step2: "Wir zeigen Ihnen Kontodaten, den Betrag in EUR und einen Verwendungszweck gleich Ihrer Bestellnummer. Dasselbe kommt per E-Mail.",
+    step3: "Sie überweisen ganz normal per SEPA. Der Betrag ist endgültig, es kommt nichts hinzu.",
+    step4: "Sobald das Geld eingeht, bestätigen wir es persönlich und senden Ihnen die Zahlungsbestätigung samt Hinweis, dass die Arbeit beginnt.",
+    step5: "Die Lieferzeit zählt ab Geldeingang, nicht ab Bestelldatum.",
+    lockNote: "Der Betrag in EUR ist ab Bestellung 7 Tage lang festgeschrieben.",
+    placeOrder: "Bestellen und per Überweisung zahlen",
   },
 };
 
@@ -153,7 +189,7 @@ function Consent({ checked, onChange, children }) {
 
 export default function Checkout() {
   const { lang } = useLanguage();
-  const { money, alt, showEur } = useMoney();
+  const { money, showEur } = useMoney();
   const u = UI[lang] || UI.en;
   const navigate = useNavigate();
   const { items, subtotalGrosze, ready, clear } = useCart();
@@ -163,6 +199,9 @@ export default function Checkout() {
   const [addr, setAddr] = useState({ line1: "", postalCode: "", city: "", point: "" });
   const [consents, setConsents] = useState({ terms: false, waiveWithdrawal: false, digitalImmediate: false });
   const [gatewayId, setGatewayId] = useState(0);
+  // Klient czytajacy strone po angielsku lub niemiecku widzi ceny w euro,
+  // a zadnym kanalem Autopay z zagranicy nie zaplaci, wiec zaczynamy od przelewu.
+  const [payMode, setPayMode] = useState(showEur ? "bank_transfer" : "autopay");
   const [methods, setMethods] = useState([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -230,6 +269,7 @@ export default function Checkout() {
           city: addr.city || null,
         },
         consents,
+        paymentMethod: payMode,
       });
 
       if (!created.ok) {
@@ -239,6 +279,14 @@ export default function Checkout() {
             .join(" — ".replace(" — ", ": "))
         );
         setBusy(false);
+        return;
+      }
+
+      // Przelew nie ma bramki. Zamowienie jest zlozone, wiec czyscimy koszyk
+      // i prowadzimy klienta na strone z danymi rachunku.
+      if (payMode === "bank_transfer") {
+        clear();
+        navigate(`/order/status/?ref=${created.data.orderRef}&token=${created.data.token}`);
         return;
       }
 
@@ -302,16 +350,8 @@ export default function Checkout() {
             </div>
             <div className="flex justify-between font-bold pt-3 mt-3 border-t border-white/10">
               <span className="text-white">{u.total}</span>
-              <span className="text-right">
-                <span className="block text-blue-400 text-xl">{money(totalGrosze)}</span>
-                {showEur && <span className="block text-neutral-500 text-[11px] font-normal">{alt(totalGrosze)}</span>}
-              </span>
+              <span className="text-blue-400 text-xl">{money(totalGrosze)}</span>
             </div>
-            {/* Cena jest w euro, ale obciazenie idzie w zlotowkach: klient musi
-                to wiedziec przed klikiem, a nie z wyciagu z banku. */}
-            {showEur && (
-              <p className="text-neutral-500 text-[11px] leading-relaxed pt-3">{CHARGED_IN_PLN[lang]}</p>
-            )}
           </div>
 
           <h2 className="text-white font-semibold mb-4">{u.yourData}</h2>
@@ -376,6 +416,63 @@ export default function Checkout() {
           )}
 
           <h2 className="text-white font-semibold mb-3 mt-8">{u.payMethod}</h2>
+
+          {/* Wybor metody pokazujemy tylko przy cenach w euro. Dla klienta
+              placacego w zlotowkach przelew zagraniczny bylby tylko szumem. */}
+          {showEur && (
+            <div className="space-y-2 mb-5">
+              <button
+                type="button"
+                onClick={() => setPayMode("bank_transfer")}
+                className={`w-full p-3 rounded-lg border text-left transition-all ${
+                  payMode === "bank_transfer" ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className={`text-sm font-medium ${payMode === "bank_transfer" ? "text-blue-300" : "text-neutral-300"}`}>
+                    {u.payTransfer}
+                  </span>
+                  <span className="text-white text-sm font-semibold">{money(totalGrosze)}</span>
+                </div>
+                <p className="text-neutral-500 text-[11px] mt-1">{u.payTransferNote}</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPayMode("autopay")}
+                className={`w-full p-3 rounded-lg border text-left transition-all ${
+                  payMode === "autopay" ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className={`text-sm font-medium ${payMode === "autopay" ? "text-blue-300" : "text-neutral-300"}`}>
+                    {u.payInstant}
+                  </span>
+                  {/* Ta metoda rozlicza sie w zlotowkach, wiec kwote podajemy
+                      w zlotowkach. Ukrycie jej konczy sie innym obciazeniem
+                      niz to, ktore klient widzial. */}
+                  <span className="text-white text-sm font-semibold">{formatPln(totalGrosze, lang)}</span>
+                </div>
+                <p className="text-neutral-500 text-[11px] mt-1">{u.payInstantNote}</p>
+              </button>
+            </div>
+          )}
+
+          {payMode === "bank_transfer" ? (
+            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 mb-6">
+              <h3 className="text-white text-sm font-medium mb-3">{u.howItWorks}</h3>
+              <ol className="space-y-2">
+                {[u.step1, u.step2, u.step3, u.step4, u.step5].map((step, n) => (
+                  <li key={n} className="flex gap-2.5 text-neutral-400 text-xs leading-relaxed">
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full border border-white/15 text-[10px] text-neutral-300
+                                     flex items-center justify-center tabular-nums">{n + 1}</span>
+                    {step}
+                  </li>
+                ))}
+              </ol>
+              <p className="text-neutral-600 text-[11px] mt-3">{u.lockNote}</p>
+            </div>
+          ) : (
           <div className="space-y-2 mb-6">
             <button
               type="button"
@@ -400,6 +497,7 @@ export default function Checkout() {
               </button>
             ))}
           </div>
+          )}
 
           {error && (
             <div className="rounded-lg border border-red-400/30 bg-red-400/10 p-3 mb-4 flex gap-2.5">
@@ -415,7 +513,13 @@ export default function Checkout() {
             className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-blue-500 hover:bg-blue-400
                        disabled:bg-neutral-800 disabled:text-neutral-500 text-white font-semibold transition-colors"
           >
-            {busy ? <><Loader2 className="w-4 h-4 animate-spin" />{u.processing}</> : <><ShieldCheck className="w-4 h-4" />{u.pay} {money(totalGrosze)}</>}
+            {busy ? (
+              <><Loader2 className="w-4 h-4 animate-spin" />{u.processing}</>
+            ) : payMode === "bank_transfer" ? (
+              <><ShieldCheck className="w-4 h-4" />{u.placeOrder}</>
+            ) : (
+              <><ShieldCheck className="w-4 h-4" />{u.pay} {showEur ? formatPln(totalGrosze, lang) : money(totalGrosze)}</>
+            )}
           </button>
 
           <button

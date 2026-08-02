@@ -187,7 +187,7 @@ const UI = {
 const SLIDER_FIELDS = new Set(["sizeId", "infillId", "precisionId", "layerId", "areaId", "pathId", "volumeId", "quantityId"]);
 
 export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
-  const { money, alt, showEur } = useMoney();
+  const { money } = useMoney();
   const u = UI[lang] || UI.en;
   const service = getService(card.service);
   const cart = useCart();
@@ -698,7 +698,6 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
                   {effectiveQty > 1 ? `${u.total} (${effectiveQty} ${u.pcs})` : u.price}
                 </div>
                 <div className="text-2xl font-extrabold text-white">{money(lineTotal)}</div>
-                {showEur && <div className="text-neutral-500 text-[11px] mt-0.5">{alt(lineTotal)}</div>}
               </div>
               {effectiveQty > 1 && (
                 <div className="text-right">

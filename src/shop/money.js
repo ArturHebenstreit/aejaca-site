@@ -9,9 +9,10 @@
 
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useMarketRates } from "../hooks/useMarketRates.js";
+import { eurCentsFromGrosze, FALLBACK_PLN_PER_EUR } from "../pricing/currency.js";
 
 const LOCALES = { pl: "pl-PL", en: "en-IE", de: "de-DE" };
-export const FALLBACK_PLN_PER_EUR = 4.25;
+export { FALLBACK_PLN_PER_EUR };
 
 function fmt(amount, currency, lang) {
   const locale = LOCALES[lang] || LOCALES.en;
@@ -32,8 +33,11 @@ export function formatPln(grosze, lang = "pl") {
 }
 
 export function formatEur(grosze, plnPerEur, lang = "en") {
-  const rate = plnPerEur || FALLBACK_PLN_PER_EUR;
-  return fmt(Math.round((grosze || 0) / rate) / 100, "EUR", lang);
+  return fmt(eurCentsFromGrosze(grosze, plnPerEur) / 100, "EUR", lang);
+}
+
+export function eurCents(grosze, plnPerEur) {
+  return eurCentsFromGrosze(grosze, plnPerEur);
 }
 
 /**
@@ -56,9 +60,10 @@ export function useMoney() {
   };
 }
 
-// Zdanie przy platnosci: cena jest w euro, obciazenie w zlotowkach.
-export const CHARGED_IN_PLN = {
+// Zdanie o kursie. Cena w euro jest cena ostateczna: klient przelewa
+// dokladnie te kwote i nic nie doplaca.
+export const EUR_PRICE_NOTE = {
   pl: null,
-  en: "Prices are shown in EUR, converted at the National Bank of Poland rate. Your card or bank is charged in PLN.",
-  de: "Preise in EUR, umgerechnet zum Kurs der polnischen Nationalbank. Belastet wird Ihre Karte bzw. Bank in PLN.",
+  en: "Prices in EUR are final. You transfer exactly this amount, with no surcharge on delivery.",
+  de: "Die Preise in EUR sind Endpreise. Sie überweisen genau diesen Betrag, ohne Aufschlag bei Lieferung.",
 };

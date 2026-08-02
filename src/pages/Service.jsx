@@ -96,7 +96,7 @@ const UI = {
 
 export default function Service() {
   const { lang } = useLanguage();
-  const { money, alt, showEur } = useMoney();
+  const { money } = useMoney();
   const u = UI[lang] || UI.en;
   const { id } = useParams();
   const card = getServiceCard(id);
@@ -183,9 +183,6 @@ export default function Service() {
                 <div className="mb-1">
                   <span className="text-neutral-500 text-xs">{u.from} </span>
                   <span className="text-3xl font-extrabold text-white">{money(card.priceFromGrosze)}</span>
-                  {showEur && (
-                    <div className="text-neutral-500 text-xs mt-1">{alt(card.priceFromGrosze)}</div>
-                  )}
                 </div>
               ) : (
                 <div className="text-xl font-bold text-amber-300 mb-1">{u.quotePrice}</div>
