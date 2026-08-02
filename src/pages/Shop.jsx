@@ -17,7 +17,7 @@ import { t } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
 import {
   SHOP_CATEGORIES, productsByCategory, personalizedByCategory, serviceCardsByCategory,
-  PRODUCTS, PERSONALIZED,
+  PRODUCTS, PERSONALIZED, SERVICE_CARDS,
 } from "../data/shopCatalog.js";
 
 const UI = {
@@ -450,7 +450,10 @@ export default function Shop() {
   const category = SHOP_CATEGORIES.find((c) => here === c.path) || null;
   const products = category ? productsByCategory(category.id) : PRODUCTS;
   const personalized = category ? personalizedByCategory(category.id) : PERSONALIZED;
-  const services = category ? serviceCardsByCategory(category.id) : [];
+  // Na hubie pokazujemy wszystkie uslugi. Wczesniej lista byla pusta, wiec
+  // klient wchodzacy na /shop/ widzial sklep bez zadnej pozycji, mimo ze
+  // kart uslug jest kilkanascie.
+  const services = category ? serviceCardsByCategory(category.id) : SERVICE_CARDS;
 
   const pageTitle = category ? `${t(category.title, lang)}, ${u.title.toLowerCase()}` : u.title;
   const path = category ? category.path : "/shop/";
