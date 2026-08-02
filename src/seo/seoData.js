@@ -332,6 +332,11 @@ export const SEO = {
     en: { title: "Products and stock, AEJaCA", description: "Internal panel.", keywords: "", ogAlt: "AEJaCA panel" },
     de: { title: "Produkte und Bestände, AEJaCA", description: "Internes Panel.", keywords: "", ogAlt: "AEJaCA Panel" },
   },
+  adminDiscounts: {
+    pl: { title: "Kody rabatowe, AEJaCA", description: "Panel wewnętrzny.", keywords: "", ogAlt: "Panel AEJaCA" },
+    en: { title: "Discount codes, AEJaCA", description: "Internal panel.", keywords: "", ogAlt: "AEJaCA panel" },
+    de: { title: "Rabattcodes, AEJaCA", description: "Internes Panel.", keywords: "", ogAlt: "AEJaCA Panel" },
+  },
   terms: {
     pl: {
       title: "Regulamin serwisu i sprzedaży, AEJaCA",
