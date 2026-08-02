@@ -762,9 +762,12 @@ export default function Order() {
               {abroad && <p className="text-neutral-600 text-[11px] mb-4">{u.handlingNote}</p>}
 
               {customs && (
-                <div className="rounded-lg border border-amber-400/30 bg-amber-400/10 p-3 mb-4">
+                <div className="rounded-lg border border-amber-400/40 bg-amber-400/10 p-3 mb-4">
                   <p className="text-amber-200 text-xs font-medium mb-1">{u.customsTitle}</p>
-                  <p className="text-amber-100/80 text-[11px] leading-relaxed">{u.customsBody}</p>
+                  {/* Tresc idzie klasa neutralna, nie amber-100: tryb jasny
+                      nadpisuje tylko znane klasy, a jasny bursztyn na kremowym
+                      tle byl nieczytelny. */}
+                  <p className="text-neutral-300 text-[11px] leading-relaxed">{u.customsBody}</p>
                 </div>
               )}
 
