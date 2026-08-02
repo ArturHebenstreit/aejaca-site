@@ -9,6 +9,8 @@
         zadziała dokładnie raz. Kod <strong class="text-neutral-300">akcji</strong> działa w oknie czasowym i ma limit
         na adres e-mail. Zniżka liczy się tylko od pozycji, które obejmuje, i nigdy od wysyłki. Kod rezerwuje się
         przy zamówieniu, a zużywa dopiero przy zapłacie, więc porzucony koszyk go nie spala.
+        Kod, którego nikt jeszcze nie użył, można skasować. Użyty zostaje w bazie razem z historią,
+        bo stoi za kwotą na czyimś zamówieniu, i wtedy zamiast kasowania jest wyłącznik.
       </p>
     </div>
 
@@ -160,15 +162,29 @@
                 <td class="px-3 py-2 text-right text-neutral-500 text-xs"><%= c.pending || 0 %></td>
                 <td class="px-3 py-2 text-right text-neutral-400 text-xs whitespace-nowrap"><%= pln(c.granted_grosze) %></td>
                 <td class="px-3 py-2">
-                  <form method="post" action="/discounts/<%= encodeURIComponent(c.code) %>/toggle">
-                    <input type="hidden" name="active" value="<%= c.active ? 'false' : 'true' %>" />
-                    <button class="px-2.5 py-1.5 rounded-lg border text-[11px] transition-colors
-                      <%= c.active
-                        ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300 hover:border-emerald-400/60'
-                        : 'border-white/10 text-neutral-500 hover:border-white/30' %>">
-                      <%= c.active ? 'aktywny' : 'wyłączony' %>
-                    </button>
-                  </form>
+                  <div class="flex items-center gap-2">
+                    <form method="post" action="/discounts/<%= encodeURIComponent(c.code) %>/toggle">
+                      <input type="hidden" name="active" value="<%= c.active ? 'false' : 'true' %>" />
+                      <button class="px-2.5 py-1.5 rounded-lg border text-[11px] transition-colors
+                        <%= c.active
+                          ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300 hover:border-emerald-400/60'
+                          : 'border-white/10 text-neutral-500 hover:border-white/30' %>">
+                        <%= c.active ? 'aktywny' : 'wyłączony' %>
+                      </button>
+                    </form>
+                    <%# Kasowanie tylko dla kodow bez historii. Uzyty kod stoi za
+                        kwota na czyims zamowieniu, wiec zostaje w bazie. -%>
+                    <% if (!c.used_count && !c.pending) { %>
+                      <form method="post" action="/discounts/<%= encodeURIComponent(c.code) %>/delete"
+                            onsubmit="return confirm('Skasować kod <%= c.code %>? Tej operacji nie da się cofnąć.')">
+                        <button title="Skasuj kod"
+                                class="px-2 py-1.5 rounded-lg border border-white/10 text-neutral-600 text-[11px]
+                                       hover:border-red-400/50 hover:text-red-300 transition-colors">
+                          Kasuj
+                        </button>
+                      </form>
+                    <% } %>
+                  </div>
                 </td>
               </tr>
             <% }); %>
