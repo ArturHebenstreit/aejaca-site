@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-02 | Wersja: 2.2*
+*Wygenerowano: 2026-08-02 | Wersja: 2.3*
 
 ---
 
@@ -635,7 +635,7 @@ Zamówienie w euro:
 1. Klient wybiera przelew, widzi pięć kroków procesu, jeszcze nic nie płaci.
 2. Backend zamraża kwotę w `amount_eur_cents` razem z `eur_rate` i ustawia status `awaiting_transfer`. Numer rachunku pojawia się dopiero teraz: na stronie zamówienia i w mailu.
 3. Kwota i rezerwacja towaru obowiązują **3 dni robocze**, liczone z pominięciem sobót, niedziel i polskich świąt (`src/pricing/businessDays.js`). Czwartego dnia roboczego bez zaksięgowanej wpłaty rezerwacja spada, a towar wraca do sprzedaży. To zdanie stoi w kasie, w mailu z danymi do przelewu, na stronie zamówienia i w regulaminie, w trzech językach.
-4. Po wpływie potwierdzamy ręcznie w `/admin/transfers/` (token administracyjny w nagłówku `X-Admin-Token`). Potwierdzenie robi dokładnie to, co `SUCCESS` z ITN: ustawia `paid`, wysyła maile i przenosi pliki do folderu Zamówienia. Wykonuje się raz, bo pilnuje tego `fulfilled_at`.
+4. Po wpływie potwierdzamy ręcznie w zakładce **Przelewy** w aplikacji AEJaCA Admin. Potwierdzenie robi dokładnie to, co `SUCCESS` z ITN: ustawia `paid`, wysyła maile i przenosi pliki do folderu Zamówienia. Wykonuje się raz, bo pilnuje tego `fulfilled_at`.
 5. Niedopłata do 2% przechodzi bez pytania (opłaty banków pośredniczących), większa wymaga świadomego potwierdzenia.
 
 Termin realizacji liczy się od zaksięgowania wpłaty, nie od złożenia zamówienia, i tak mówi regulamin w trzech językach.
@@ -659,9 +659,17 @@ Dostępność liczy widok `product_availability`: `stock` minus suma aktywnych r
 
 Sprawdzenie dostępności i założenie rezerwacji idą w jednej transakcji z `SELECT ... FOR UPDATE` na wierszu produktu, więc dwa równoległe zamówienia na ostatnią sztukę ustawiają się w kolejce zamiast obydwa zobaczyć ją jako wolną. Gdy towaru zabraknie, świeże zamówienie jest kasowane, a klient dostaje `409 out_of_stock` z liczbą realnie dostępnych sztuk, zamiast linku do zapłaty za coś, czego nie wyślemy.
 
-Endpointy: `GET /api/products`, `GET /api/products/:slug` publicznie; `PUT /api/products/:slug`, `PATCH /api/products/:slug/stock` i `GET /api/admin/products` za nagłówkiem `X-Admin-Token`.
+Endpointy: `GET /api/products`, `GET /api/products/:slug` publicznie; `PUT /api/products/:slug`, `PATCH /api/products/:slug/stock`, `PATCH /api/products/:slug/status` i `GET /api/admin/products` za nagłówkiem `X-Admin-Token`.
 
 Schemat: `scripts/products-schema.sql`, migracje wykonują się też przy starcie backendu.
+
+### Panel administracyjny
+
+Wszystko, co obsługuje się ręcznie, mieszka w jednej aplikacji `admin/` (Express + EJS, osobna usługa na Railway, logowanie przez Google, dostęp po liście adresów). Zakładki: Dashboard, **Produkty**, **Kody**, **Przelewy**, Analytics, Leads, Subscribers, Chat, Email, Laser Matrix, Gems, Filamenty.
+
+Menu siedzi w jednym pliku `admin/views/partials/header.ejs`. Wcześniej każdy widok miał własną, przepisaną ręcznie kopię i kopie się rozjechały: na jednej podstronie brakowało Emaila, na innej Filamentów, co wyglądało, jakby pozycje znikały przy klikaniu. Nowa zakładka dopisuje się teraz raz.
+
+Trzy zakładki sklepowe nie piszą do bazy same, tylko wołają backend sklepu nagłówkiem `X-Admin-Token` (`CHAT_API_URL` i `ADMIN_API_TOKEN` w usłudze panelu). Powód: zapis ma skutki uboczne, których w samym SQL nie ma. Zmiana stanu wchodzi w rezerwacje towaru, potwierdzenie przelewu wysyła maile i przenosi pliki klienta do folderu Zamówienia.
 
 ### Kody rabatowe
 
@@ -687,7 +695,7 @@ Kwota rabatu jest liczona po stronie serwera dwa razy: przy podglądzie w kasie 
 
 **Kod powitalny z newslettera** wystawia `POST /api/discounts/welcome`, wołany przez przepływ n8n, który wysyła maila (nagłówek `X-Newsletter-Token`, sekret w `NEWSLETTER_CODE_TOKEN`). Kod osobisty, 10%, ważny 90 dni. Powtarzalny: drugi zapis tym samym adresem oddaje ten sam kod, zamiast rozdawać kolejne.
 
-Panel: `/admin/discounts/`, ten sam token co reszta. Lista z liczbą użyć, rezerwacji w toku i sumą udzielonych rabatów, tworzenie akcji, generowanie paczki kodów osobistych, włącznik. Kodu nigdy nie kasujemy, tylko wyłączamy, bo historia użyć ma zostać.
+Panel: zakładka **Kody** w aplikacji AEJaCA Admin. Lista z liczbą użyć, rezerwacji w toku i sumą udzielonych rabatów, tworzenie akcji, generowanie paczki kodów osobistych, włącznik. Kodu nigdy nie kasujemy, tylko wyłączamy, bo historia użyć ma zostać.
 
 Schemat: `scripts/discounts-schema.sql`, migracje wykonują się też przy starcie backendu.
 
@@ -739,9 +747,9 @@ Bez wybranego filtru lista dzieli się na półki po podkategorii, z nagłówkie
 
 #### Panel produktów
 
-`/admin/products/`, ten sam token co panel przelewów, `noindex` i `Disallow: /admin/` w robots. Tabela obejmuje **wszystkie** pozycje, także zdjęte ze sprzedaży: miniatura, tytuł, dział z podkategorią i ikoną, rodzaj oferty, cena, stan, rezerwacje, dostępność, licznik sprzedanych i wybór stanu pozycji. Do tego szukanie po nazwie i adresie oraz filtr "poza sprzedażą".
+Zakładka **Produkty** w aplikacji AEJaCA Admin (`admin/`, logowanie przez Google). Tabela obejmuje **wszystkie** pozycje, także zdjęte ze sprzedaży: miniatura, tytuł, dział z podkategorią i ikoną, rodzaj oferty, cena, stan, rezerwacje, dostępność, licznik sprzedanych i wybór stanu pozycji. Do tego szukanie po nazwie i adresie oraz filtr "poza sprzedażą".
 
-Od ręki robi się tu dwie rzeczy, bo są codzienne: korekta stanu (`PATCH /api/products/:slug/stock`) i zmiana stanu pozycji (`PATCH /api/products/:slug/status`). Pięć stanów leży na wierzchu jako przyciski, bez rozwijanej listy, bo rzecz sprzedana na Etsy ma zejść ze sprzedaży jednym kliknięciem, a nie dwoma. Obie zmiany działają w sklepie natychmiast, bo karty pytają o dostępność na żywo. Zmiana treści, ceny albo zdjęć idzie przez `PUT /api/products/:slug` i wymaga jeszcze `npm run products:pull` oraz wdrożenia.
+Od ręki robi się tu dwie rzeczy, bo są codzienne: korekta stanu (`PATCH /api/products/:slug/stock`) i zmiana stanu pozycji (`PATCH /api/products/:slug/status`). Panel administracyjny nie pisze do bazy sam, tylko woła te endpointy backendu sklepu, gdzie siedzą reguły, więc istnieje jedna ich implementacja. Pięć stanów leży na wierzchu jako przyciski, bez rozwijanej listy, bo rzecz sprzedana na Etsy ma zejść ze sprzedaży jednym kliknięciem, a nie dwoma. Obie zmiany działają w sklepie natychmiast, bo karty pytają o dostępność na żywo. Zmiana treści, ceny albo zdjęć idzie przez `PUT /api/products/:slug` i wymaga jeszcze `npm run products:pull` oraz wdrożenia.
 
 #### Zdjęcia produktów
 

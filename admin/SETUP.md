@@ -43,6 +43,13 @@ Dark-themed dashboard to view leads + subscribers from calculators and newslette
 | `ALLOWED_EMAIL` | `aejaca@gmail.com` |
 | `SESSION_SECRET` | *(generate random: `openssl rand -hex 32`)* |
 | `NODE_ENV` | `production` |
+| `CHAT_API_URL` | `https://aejacachatapi-production.up.railway.app` |
+| `ADMIN_API_TOKEN` | *(ta sama wartość co w usłudze chat-api)* |
+
+`CHAT_API_URL` i `ADMIN_API_TOKEN` obsługują zakładki **Produkty**, **Kody** i **Przelewy**. Panel nie pisze wtedy
+do bazy sam, tylko woła backend sklepu, gdzie siedzą reguły: rezerwacje towaru, limity kodów oraz maile
+i przeniesienie plików przy potwierdzeniu przelewu. Bez tych dwóch zmiennych te trzy zakładki pokażą komunikat
+o brakującej konfiguracji, a reszta panelu działa normalnie.
 
 ### Link PostgreSQL
 

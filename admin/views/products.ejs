@@ -1,0 +1,121 @@
+<%- include('partials/header', { user: user, title: 'Produkty', active: 'products' }) %>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-white mb-2">Produkty i stany magazynowe</h1>
+      <p class="text-neutral-500 text-xs leading-relaxed max-w-3xl">
+        Stan magazynowy i stan pozycji działają w sklepie od razu, bo karty pytają o dostępność na żywo.
+        Rzecz sprzedana na Etsy albo na miejscu przestaje być do kupienia w tej samej sekundzie:
+        <strong class="text-neutral-300">Wyprzedany</strong> zostawia kartę z plakietką i obietnicą powrotu,
+        <strong class="text-neutral-300">Ukryty</strong> zdejmuje ją ze sklepu, a <strong class="text-neutral-300">Wycofany</strong>
+        robi to na stałe. Zmiana treści, ceny albo zdjęć wymaga jeszcze <code class="text-neutral-400">npm run products:pull</code>
+        i wdrożenia, bo katalog jest budowany statycznie, a zdjęcia leżą w repozytorium.
+      </p>
+    </div>
+
+    <% if (err) { %>
+      <div class="rounded-lg border border-red-400/30 bg-red-400/10 p-3 mb-5 text-red-300 text-xs"><%= err %></div>
+    <% } %>
+    <% if (msg) { %>
+      <div class="rounded-lg border border-emerald-400/30 bg-emerald-400/10 p-3 mb-5 text-emerald-300 text-xs"><%= msg %></div>
+    <% } %>
+
+    <%
+      // Kolejnosc taka jak w panelu na stronie: od najczestszej decyzji.
+      const STATUSES = [
+        { id: 'live',     label: 'W sprzedaży', tone: 'border-emerald-400/40 bg-emerald-400/10 text-emerald-300' },
+        { id: 'sold_out', label: 'Wyprzedany',  tone: 'border-amber-400/40 bg-amber-400/10 text-amber-300' },
+        { id: 'hidden',   label: 'Ukryty',      tone: 'border-blue-400/40 bg-blue-400/10 text-blue-300' },
+        { id: 'draft',    label: 'Roboczy',     tone: 'border-white/25 bg-white/10 text-neutral-300' },
+        { id: 'retired',  label: 'Wycofany',    tone: 'border-red-400/40 bg-red-400/10 text-red-300' },
+      ];
+      const pln = (g) => ((g || 0) / 100).toFixed(2).replace('.', ',') + ' zł';
+    %>
+
+    <% if (!products.length) { %>
+      <div class="rounded-xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-10 text-center">
+        <p class="text-neutral-500 text-sm mb-1">Baza produktów jest pusta</p>
+        <p class="text-neutral-600 text-xs">Dane startowe wgrasz komendą <code>npm run products:seed</code></p>
+      </div>
+    <% } else { %>
+      <div class="overflow-x-auto rounded-xl border border-white/10">
+        <table class="w-full text-sm min-w-[980px]">
+          <thead>
+            <tr class="text-left text-[11px] uppercase tracking-wider text-neutral-500 border-b border-white/10 bg-neutral-900/60">
+              <th class="px-3 py-2 font-medium">Produkt</th>
+              <th class="px-3 py-2 font-medium">Dział</th>
+              <th class="px-3 py-2 font-medium">Oferta</th>
+              <th class="px-3 py-2 font-medium text-right">Cena</th>
+              <th class="px-3 py-2 font-medium">Stan</th>
+              <th class="px-3 py-2 font-medium text-right">Rezerw.</th>
+              <th class="px-3 py-2 font-medium text-right">Dostępne</th>
+              <th class="px-3 py-2 font-medium text-right">Sprzedane</th>
+              <th class="px-3 py-2 font-medium">Stan pozycji</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5">
+            <% products.forEach(function (p) { %>
+              <tr class="<%= p.status === 'live' ? '' : 'opacity-60' %>">
+                <td class="px-3 py-2">
+                  <div class="flex items-center gap-2.5">
+                    <% if (p.images && p.images[0]) { %>
+                      <img src="https://www.aejaca.com<%= p.images[0] %>" class="w-9 h-9 rounded-md object-cover bg-black" alt="" />
+                    <% } %>
+                    <div>
+                      <div class="text-white text-[13px] leading-tight"><%= (p.title && p.title.pl) || p.slug %></div>
+                      <a href="https://www.aejaca.com/shop/<%= p.slug %>/" target="_blank" rel="noreferrer"
+                         class="text-neutral-600 text-[10px] font-mono hover:text-neutral-400"><%= p.slug %></a>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-3 py-2 text-neutral-300 text-xs">
+                  <%= p.category || '—' %>
+                  <% if (p.subcategory) { %><div class="text-neutral-600 text-[10px]"><%= p.subcategory %></div><% } %>
+                </td>
+                <td class="px-3 py-2 text-neutral-400 text-xs">
+                  <%= p.offer === 'personalized' ? 'personalizowany' : 'gotowy' %>
+                  <div class="text-neutral-600 text-[10px]"><%= p.kind === 'digital' ? 'plik' : 'fizyczny' %></div>
+                </td>
+                <td class="px-3 py-2 text-right text-neutral-200 whitespace-nowrap"><%= pln(p.price_grosze) %></td>
+                <td class="px-3 py-2">
+                  <% if (p.stock === null) { %>
+                    <span class="text-blue-300 text-xs">bez limitu</span>
+                  <% } else { %>
+                    <form method="post" action="/products/<%= p.slug %>/stock" class="flex items-center gap-1">
+                      <input type="number" name="stock" min="0" value="<%= p.stock %>"
+                             class="w-16 bg-transparent border border-white/10 rounded-md px-2 py-1 text-right text-xs text-white" />
+                      <button class="px-2 py-1 rounded-md bg-emerald-500 hover:bg-emerald-400 text-white text-[10px]">Zapisz</button>
+                    </form>
+                  <% } %>
+                </td>
+                <td class="px-3 py-2 text-right text-neutral-400 text-xs"><%= p.reserved || 0 %></td>
+                <td class="px-3 py-2 text-right text-xs font-medium
+                    <%= p.stock === null ? 'text-blue-300' : (p.status !== 'live' || p.available === 0 ? 'text-red-300' : (p.available <= 1 ? 'text-amber-300' : 'text-emerald-300')) %>">
+                  <%= p.stock === null ? (p.status === 'live' ? 'bez limitu' : '—') : (p.status === 'live' ? p.available : 0) %>
+                </td>
+                <td class="px-3 py-2 text-right text-neutral-500 text-xs"><%= p.sold_count || 0 %></td>
+                <td class="px-3 py-2">
+                  <div class="flex flex-wrap gap-1">
+                    <% STATUSES.forEach(function (st) { %>
+                      <% if (st.id === p.status) { %>
+                        <span class="px-2 py-1 rounded-md border text-[10px] <%= st.tone %>"><%= st.label %></span>
+                      <% } else { %>
+                        <form method="post" action="/products/<%= p.slug %>/status" class="inline">
+                          <input type="hidden" name="status" value="<%= st.id %>" />
+                          <button class="px-2 py-1 rounded-md border border-white/10 text-neutral-500 text-[10px] hover:border-white/30 hover:text-neutral-300 transition-colors"><%= st.label %></button>
+                        </form>
+                      <% } %>
+                    <% }); %>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+
+  </main>
+</body>
+</html>
