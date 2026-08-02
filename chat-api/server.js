@@ -75,6 +75,30 @@ if (pool) {
   // stronach: ile odliczono i ktore zamowienie skonsumowalo odliczenie.
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS credit_applied_grosze INTEGER`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS credit_consumed_by BIGINT`).catch(() => {});
+  // Platnosc przelewem. Autopay obsluguje wylacznie polskie banki i BLIK, wiec
+  // klient z zagranicy nie ma czym zaplacic od reki. Kwote naleznosci zamrazamy
+  // w euro w chwili zamowienia, razem z kursem, zeby po tygodniu nie bylo sporu
+  // o to, ile mial przelac. Rozliczenie i tak zostaje w groszach PLN.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(20) NOT NULL DEFAULT 'autopay'`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS amount_eur_cents INTEGER`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS eur_rate NUMERIC(10,4)`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS eur_rate_locked_at TIMESTAMPTZ`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_received_cents INTEGER`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_confirmed_at TIMESTAMPTZ`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_confirmed_by VARCHAR(120)`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_note TEXT`).catch(() => {});
+  // Status posredni: zamowienie zlozone, czekamy na wplyw na konto.
+  pool.query(`
+    DO $$ BEGIN
+      ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_status_check;
+      ALTER TABLE orders ADD CONSTRAINT orders_status_check CHECK (status IN
+        ('draft','awaiting_payment','awaiting_transfer','paid','in_production','shipped','completed','cancelled','expired','refunded'));
+      ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_payment_method_check;
+      ALTER TABLE orders ADD CONSTRAINT orders_payment_method_check CHECK (payment_method IN ('autopay','bank_transfer'));
+    END $$;
+  `).catch((e) => console.error("[migracja] status/payment_method:", e.message));
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_orders_awaiting_transfer
+              ON orders (created_at DESC) WHERE status = 'awaiting_transfer'`).catch(() => {});
 
   pool.query(`CREATE TABLE IF NOT EXISTS email_threads (
     id BIGSERIAL PRIMARY KEY,

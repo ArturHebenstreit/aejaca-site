@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS orders (
   id                BIGSERIAL PRIMARY KEY,
   order_ref         VARCHAR(32)  UNIQUE NOT NULL,   -- OrderID dla Autopay, A-Za-z0-9-_
   status            VARCHAR(20)  NOT NULL DEFAULT 'draft'
-                    CHECK (status IN ('draft','awaiting_payment','paid','in_production','shipped','completed','cancelled','expired','refunded')),
+                    CHECK (status IN ('draft','awaiting_payment','awaiting_transfer','paid','in_production','shipped','completed','cancelled','expired','refunded')),
   -- 'instant' to zamowienie wycenione automatycznie, 'quoted' to wycena wystawiona recznie
   kind              VARCHAR(20)  NOT NULL DEFAULT 'instant' CHECK (kind IN ('instant','quoted')),
   lang              VARCHAR(5)   NOT NULL DEFAULT 'pl',
@@ -60,6 +60,21 @@ CREATE TABLE IF NOT EXISTS orders (
   -- ale zrealizowac zamowienie wolno tylko raz.
   fulfilled_at         TIMESTAMPTZ,
 
+  -- Platnosc przelewem (klient spoza Polski)
+  -- Autopay daje wylacznie BLIK i linki do polskich bankow, wiec zagraniczny
+  -- klient nie ma czym zaplacic natychmiast. Naleznosc zamrazamy w euro razem
+  -- z kursem z dnia zamowienia; rozliczenie i limit obrotu licza sie dalej
+  -- w groszach PLN, a paid_at ustawia dopiero potwierdzenie wplywu.
+  payment_method         VARCHAR(20)  NOT NULL DEFAULT 'autopay'
+                         CHECK (payment_method IN ('autopay','bank_transfer')),
+  amount_eur_cents       INTEGER,
+  eur_rate               NUMERIC(10,4),
+  eur_rate_locked_at     TIMESTAMPTZ,
+  transfer_received_cents INTEGER,
+  transfer_confirmed_at  TIMESTAMPTZ,
+  transfer_confirmed_by  VARCHAR(120),
+  transfer_note          TEXT,
+
   -- Token do ogladania statusu zamowienia bez logowania
   access_token      VARCHAR(64)  NOT NULL,
 
@@ -74,6 +89,8 @@ CREATE INDEX IF NOT EXISTS idx_orders_ref ON orders (order_ref);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders (status);
 CREATE INDEX IF NOT EXISTS idx_orders_email ON orders (customer_email);
 CREATE INDEX IF NOT EXISTS idx_orders_paid ON orders (paid_at DESC) WHERE paid_at IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_orders_awaiting_transfer
+  ON orders (created_at DESC) WHERE status = 'awaiting_transfer';
 
 -- ------------------------------------------------------------
 -- Pozycje zamowienia
