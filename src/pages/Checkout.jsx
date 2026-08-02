@@ -474,10 +474,10 @@ export default function Checkout() {
               {customs && (
                 <div className="rounded-lg border border-amber-400/40 bg-amber-400/10 p-3 mb-4">
                   <p className="text-amber-200 text-xs font-medium mb-1">{u.customsTitle}</p>
-                  {/* Tresc idzie klasa neutralna, nie amber-100: tryb jasny
-                      nadpisuje tylko znane klasy, a jasny bursztyn na kremowym
-                      tle byl nieczytelny. */}
-                  <p className="text-neutral-300 text-[11px] leading-relaxed">{u.customsBody}</p>
+                  {/* amber-200/80, nie amber-100/80: tryb jasny przemalowuje
+                      tylko klasy wypisane w index.css, a ta druga nie byla tam
+                      obecna i akapit znikal na kremowym tle. */}
+                  <p className="text-amber-200/80 text-[11px] leading-relaxed">{u.customsBody}</p>
                 </div>
               )}
 

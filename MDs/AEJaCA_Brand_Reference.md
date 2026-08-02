@@ -642,6 +642,14 @@ Termin realizacji liczy się od zaksięgowania wpłaty, nie od złożenia zamów
 
 Dane rachunku żyją w zmiennych środowiskowych Railwaya: `TRANSFER_IBAN_EUR` (wymagana), `TRANSFER_BIC`, `TRANSFER_ACCOUNT_HOLDER`, `TRANSFER_BANK_NAME`. Bez pierwszej z nich backend odrzuca zamówienie przelewem, zamiast przyjąć je i zostawić klienta bez danych do zapłaty.
 
+### Tryb jasny: kontrola w buildzie
+
+Tryb jasny nie działa przez warianty `dark:`, tylko przez listę nadpisań w `src/index.css` (`[data-theme="light"] .klasa`). Klasa spoza tej listy zostaje w kolorze przeznaczonym na czarne tło, więc jasny tekst na kremowym tle po prostu znika. Zdarzyło się to dwa razy i za każdym razem wyszło dopiero ze zrzutu ekranu.
+
+`scripts/check-light-theme.mjs` wywala build, gdy w `src/` pojawi się jasny tekst (odcienie 50-300) albo ciemne tło panelu (700-950) bez nadpisania. Gradienty i czerń z przezroczystością są pomijane, bo to przyciemnienia zdjęć, które mają wyglądać tak samo w obu trybach. Świadome wyjątki, na przykład ciemny przycisk z białym tekstem, leżą w `scripts/light-theme-allow.json` i każdy musi mieć uzasadnienie.
+
+Uruchomienie osobno: `npm run check:light`.
+
 ### Wysyłka i cło
 
 Strefy i ceny leżą w `src/pricing/shipping.js`, czyli w rdzeniu kopiowanym do `chat-api`. Strona `/shipping/` i kasa czytają te same liczby, więc nie mogą się rozjechać. Wcześniej były wpisane osobno i różniły się kilkukrotnie.
