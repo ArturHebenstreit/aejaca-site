@@ -15,6 +15,7 @@ import { useCart } from "../cart/CartContext.jsx";
 import { getPackaging } from "../pricing/packaging.js";
 import { t } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
+import { useAvailability } from "../shop/availability.js";
 
 const UI = {
   pl: {
@@ -31,6 +32,9 @@ const UI = {
     attachment: "Projekt",
     description: "Opis",
     subtotal: "Wartość zamówienia",
+    gone: "Ta pozycja została w międzyczasie sprzedana",
+    onlyLeft: "Zostało już tylko sztuk:",
+    blocked: "Popraw ilość albo usuń pozycję, której już nie mamy, wtedy przejdziesz do kasy.",
     shippingNote: "Koszt dostawy policzymy w następnym kroku.",
     checkout: "Przejdź do zamówienia",
     soon: "Finalizację zamówienia uruchamiamy w następnym kroku",
@@ -55,6 +59,9 @@ const UI = {
     attachment: "Artwork",
     description: "Description",
     subtotal: "Order value",
+    gone: "This item was sold in the meantime",
+    onlyLeft: "Only this many left:",
+    blocked: "Adjust the quantity or remove the item we no longer have, then you can go to checkout.",
     shippingNote: "Delivery cost is calculated in the next step.",
     checkout: "Proceed to order",
     soon: "Order completion arrives in the next step",
@@ -79,6 +86,9 @@ const UI = {
     attachment: "Vorlage",
     description: "Beschreibung",
     subtotal: "Bestellwert",
+    gone: "Diese Position wurde zwischenzeitlich verkauft",
+    onlyLeft: "Nur noch so viele verfügbar:",
+    blocked: "Menge anpassen oder die nicht mehr verfügbare Position entfernen, dann geht es zur Kasse.",
     shippingNote: "Die Versandkosten berechnen wir im nächsten Schritt.",
     checkout: "Zur Bestellung",
     soon: "Der Bestellabschluss folgt im nächsten Schritt",
@@ -97,6 +107,24 @@ export default function Cart() {
   const { money } = useMoney();
   const u = UI[lang] || UI.en;
   const { items, subtotalGrosze, remove, setQty, hasVolatile, ready } = useCart();
+
+  // Pozycja z polki mogla sprzedac sie komus innemu, odkad wladowala sie do
+  // koszyka. Pytamy o dostepnosc na zywo i blokujemy przejscie do kasy, zeby
+  // klient dowiedzial sie o tym tutaj, a nie po wypelnieniu calego formularza.
+  const availability = useAvailability();
+
+  /** null oznacza pozycje bez limitu albo usluge, czyli nic do sprawdzania. */
+  function shortage(item) {
+    if (!item.productSlug || !availability) return null;
+    const entry = availability[item.productSlug];
+    if (!entry) return { left: 0, gone: true };
+    if (entry.available === null) return null;
+    const qty = item.qty || 1;
+    if (entry.available >= qty) return null;
+    return { left: entry.available, gone: entry.available === 0 };
+  }
+
+  const blocked = items.some((i) => shortage(i));
 
   const regimeLabel = (r) =>
     r === "digital" ? u.returnsDigital : r === "made_to_order" ? u.returnsNone : u.returns14;
@@ -162,6 +190,15 @@ export default function Cart() {
                               <span className="text-white text-sm font-medium truncate">{i.title}</span>
                             </div>
                             <div className="text-neutral-500 text-[11px]">{regimeLabel(i.withdrawal)}</div>
+                            {(() => {
+                              const s = shortage(i);
+                              if (!s) return null;
+                              return (
+                                <div className="text-red-300 text-[11px] mt-1">
+                                  {s.gone ? u.gone : `${u.onlyLeft} ${s.left}`}
+                                </div>
+                              );
+                            })()}
                           </div>
                           <button
                             type="button"
@@ -215,13 +252,26 @@ export default function Cart() {
                   <span className="text-white font-bold text-xl">{money(subtotalGrosze)}</span>
                 </div>
                 <p className="text-neutral-600 text-[11px] mb-4">{u.shippingNote}</p>
-                <Link
-                  to="/checkout/"
-                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-blue-500 hover:bg-blue-400
-                             text-white font-semibold text-sm transition-colors"
-                >
-                  {u.checkout} <ArrowRight className="w-4 h-4" />
-                </Link>
+                {blocked ? (
+                  <>
+                    <span
+                      aria-disabled="true"
+                      className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-neutral-800
+                                 text-neutral-600 font-semibold text-sm cursor-not-allowed"
+                    >
+                      {u.checkout}
+                    </span>
+                    <p className="text-red-300 text-[11px] text-center mt-2">{u.blocked}</p>
+                  </>
+                ) : (
+                  <Link
+                    to="/checkout/"
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-blue-500 hover:bg-blue-400
+                               text-white font-semibold text-sm transition-colors"
+                  >
+                    {u.checkout} <ArrowRight className="w-4 h-4" />
+                  </Link>
+                )}
               </div>
             </>
           )}

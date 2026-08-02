@@ -1,9 +1,12 @@
 // ============================================================
 // KARTA PRODUKTU
 // ============================================================
-// Przycisk "Do koszyka" jest na razie nieaktywny, bo koszyk powstaje
-// w fazie 1. Karta ma jednak od poczatku pokazywac to, co decyduje
-// o zakupie: dostepnosc, czas realizacji i rezim zwrotu.
+// Karta pokazuje to, co decyduje o zakupie: dostepnosc, czas realizacji
+// i rezim zwrotu. Dostepnosc bierzemy z bazy na zywo, wiec sztuka sprzedana
+// przed chwila nie da sie dolozyc do koszyka.
+//
+// Ta sama rzecz dolozona drugi raz podbija ilosc istniejacej pozycji, a nie
+// tworzy drugiej: dwie linie z tym samym pierscionkiem czytaja sie jak pomylka.
 
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -14,6 +17,7 @@ import { buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { t } from "../pricing/config.js";
+import { useCart } from "../cart/CartContext.jsx";
 import { useMoney } from "../shop/money.js";
 import { useAvailability, stockOf, statusOf } from "../shop/availability.js";
 import { getProduct, WITHDRAWAL, SHOP_CATEGORIES } from "../data/shopCatalog.js";
@@ -23,7 +27,11 @@ const UI = {
   pl: {
     shop: "Produkty i usługi",
     addToCart: "Do koszyka",
-    soonAvailable: "Koszyk uruchamiamy wkrótce",
+    addAnother: "Dołóż jeszcze jedną",
+    inCart: "W koszyku",
+    goToCart: "Przejdź do koszyka",
+    allInCart: "Masz w koszyku wszystko, co mamy na półce.",
+    freeShippingHint: "Wysyłka gratis w Polsce od 400 zł.",
     orderNow: "Zamów teraz",
     inStock: "Dostępny od ręki",
     lastOne: "Ostatnia sztuka",
@@ -53,7 +61,11 @@ const UI = {
   en: {
     shop: "Products and services",
     addToCart: "Add to cart",
-    soonAvailable: "The cart is coming soon",
+    addAnother: "Add another one",
+    inCart: "In your cart",
+    goToCart: "Go to cart",
+    allInCart: "Your cart already holds everything we have on the shelf.",
+    freeShippingHint: "Shipping is calculated at checkout, from your country.",
     orderNow: "Order now",
     inStock: "Available now",
     lastOne: "Last one",
@@ -83,7 +95,11 @@ const UI = {
   de: {
     shop: "Produkte und Leistungen",
     addToCart: "In den Warenkorb",
-    soonAvailable: "Der Warenkorb kommt in Kürze",
+    addAnother: "Noch eins hinzufügen",
+    inCart: "Im Warenkorb",
+    goToCart: "Zum Warenkorb",
+    allInCart: "Ihr Warenkorb enthält bereits alles, was wir im Regal haben.",
+    freeShippingHint: "Die Versandkosten werden an der Kasse nach Land berechnet.",
     orderNow: "Jetzt bestellen",
     inStock: "Sofort verfügbar",
     lastOne: "Letztes Stück",
@@ -120,6 +136,7 @@ export default function Product() {
   const { slug } = useParams();
   const product = getProduct(slug);
   const availability = useAvailability();
+  const cart = useCart();
   const [added, setAdded] = useState(false);
   const [shown, setShown] = useState(0);
 
@@ -135,6 +152,36 @@ export default function Product() {
   const soldOut = stock === 0 || status === "sold_out" || withdrawn;
   const category = SHOP_CATEGORIES.find((c) => c.id === product.category);
   const accent = category?.theme === "amber" ? "amber" : "blue";
+
+  // Ta sama rzecz dolozona drugi raz podbija ilosc, zamiast tworzyc druga
+  // pozycje: dwie linie z tym samym pierscionkiem czytaja sie jak pomylka.
+  const inCart = cart.items.find((i) => i.productSlug === product.slug);
+  const inCartQty = inCart?.qty || 0;
+  // Wiecej niz mamy na polce nie damy dolozyc. Produkt cyfrowy nie ma limitu.
+  const canAdd = !soldOut && (stock === null || inCartQty < stock);
+
+  function addToCart() {
+    if (!canAdd) return;
+    if (inCart) {
+      cart.setQty(inCart.id, inCartQty + 1);
+    } else {
+      cart.add({
+        // `kind` opisuje rodzaj pozycji w koszyku, `productSlug` mowi backendowi,
+        // ze cene i dostepnosc ma wziac z katalogu, a nie z kalkulatora.
+        kind: isDigital ? "digital" : "product",
+        productSlug: product.slug,
+        title: t(product.title, lang),
+        image: product.images[0],
+        unitGrosze: product.priceGrosze,
+        qty: 1,
+        withdrawal: product.withdrawal,
+        category: product.category,
+        leadTimeDays: product.leadTimeDays,
+        weightG: product.weightG,
+      });
+    }
+    setAdded(true);
+  }
 
   const returnsText =
     product.withdrawal === WITHDRAWAL.DIGITAL
@@ -265,23 +312,41 @@ export default function Product() {
               {/* Koszyk powstaje w fazie 1, przycisk jest tu, zeby ocenic uklad karty */}
               <button
                 type="button"
-                disabled={soldOut}
-                onClick={() => setAdded(true)}
+                disabled={!canAdd}
+                onClick={addToCart}
                 className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-colors mb-2 ${
-                  soldOut
+                  !canAdd
                     ? "bg-neutral-800 text-neutral-600 cursor-not-allowed"
-                    : added
-                      ? "bg-emerald-500 text-white"
-                      : accent === "amber"
-                        ? "bg-amber-500 hover:bg-amber-400 text-neutral-900"
-                        : "bg-blue-500 hover:bg-blue-400 text-white"
+                    : accent === "amber"
+                      ? "bg-amber-500 hover:bg-amber-400 text-neutral-900"
+                      : "bg-blue-500 hover:bg-blue-400 text-white"
                 }`}
               >
-                {added ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
-                {added ? u.soonAvailable : u.addToCart}
+                <ShoppingCart className="w-4 h-4" />
+                {inCartQty > 0 ? u.addAnother : u.addToCart}
               </button>
+
+              {/* Po dolozeniu nie przerzucamy klienta do koszyka: wiekszosc
+                  chce jeszcze poogladac, a kto chce zaplacic, ma link obok. */}
+              {added && (
+                <div className="flex items-center justify-between gap-3 mb-2 rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-2">
+                  <span className="text-emerald-300 text-xs inline-flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5" />{u.inCart}: {inCartQty}
+                  </span>
+                  <Link to="/cart/" className="text-emerald-300 hover:text-emerald-200 text-xs underline underline-offset-2">
+                    {u.goToCart}
+                  </Link>
+                </div>
+              )}
+
               <p className="text-neutral-600 text-[11px] text-center mb-7">
-                {withdrawn ? u.withdrawnBody : status === "sold_out" ? u.soldOutBody : u.soonAvailable}
+                {withdrawn
+                  ? u.withdrawnBody
+                  : status === "sold_out"
+                    ? u.soldOutBody
+                    : stock !== null && inCartQty >= stock
+                      ? u.allInCart
+                      : u.freeShippingHint}
               </p>
 
               {/* Warunki, ktore realnie decyduja o zakupie */}

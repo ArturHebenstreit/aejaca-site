@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-02 | Wersja: 2.3*
+*Wygenerowano: 2026-08-02 | Wersja: 2.4*
 
 ---
 
@@ -698,6 +698,14 @@ Kwota rabatu jest liczona po stronie serwera dwa razy: przy podglądzie w kasie 
 Panel: zakładka **Kody** w aplikacji AEJaCA Admin. Lista z liczbą użyć, rezerwacji w toku i sumą udzielonych rabatów, tworzenie akcji, generowanie paczki kodów osobistych, włącznik. Kodu nigdy nie kasujemy, tylko wyłączamy, bo historia użyć ma zostać.
 
 Schemat: `scripts/discounts-schema.sql`, migracje wykonują się też przy starcie backendu.
+
+#### Droga produktu do koszyka
+
+Przycisk na karcie dokłada pozycję do tego samego koszyka, co usługi. Ta sama rzecz dołożona drugi raz podbija ilość istniejącej pozycji, a nie tworzy drugiej, i nie da się dołożyć więcej sztuk, niż mamy na półce.
+
+Do zamówienia idzie **sam adres pozycji** (`productSlug`) razem z ilością. Cenę, wagę i dostępność backend bierze z katalogu, więc podmiana kwoty w przeglądarce nic nie daje.
+
+Koszyk pyta o dostępność na żywo i blokuje przejście do kasy, gdy któraś pozycja sprzedała się w międzyczasie: przy linii pojawia się „sprzedane" albo „zostało już tylko sztuk: N". Klient dowiaduje się o tym w koszyku, a nie po wypełnieniu całego formularza w kasie. Backend i tak sprawdza to jeszcze raz przy składaniu zamówienia i odmawia z `409 out_of_stock`, bo między koszykiem a płatnością mija czas.
 
 #### Stan pozycji w ofercie
 
