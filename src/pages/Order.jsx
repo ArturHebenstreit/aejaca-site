@@ -870,7 +870,8 @@ export default function Order() {
                 onClick={submitOrder}
                 disabled={submitting}
                 className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-blue-500 hover:bg-blue-400
-                           disabled:bg-neutral-800 disabled:text-neutral-500 text-white font-semibold transition-colors"
+                           disabled:bg-neutral-800 disabled:text-neutral-500 disabled:border disabled:border-white/10
+                           disabled:cursor-not-allowed text-white font-semibold transition-colors"
               >
                 {submitting ? (
                   <><Loader2 className="w-4 h-4 animate-spin" />{u.redirecting}</>
@@ -899,7 +900,8 @@ export default function Order() {
                   onClick={() => setStep((s) => s + 1)}
                   disabled={(step === 2 && !price) || (step === 3 && !dataValid)}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-400
-                             disabled:bg-neutral-800 disabled:text-neutral-600 text-white text-sm font-medium transition-colors"
+                             disabled:bg-neutral-800 disabled:text-neutral-600 disabled:border disabled:border-white/10
+                             disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
                 >
                   {u.next}<ArrowRight className="w-4 h-4" />
                 </button>

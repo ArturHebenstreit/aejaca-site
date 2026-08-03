@@ -47,7 +47,7 @@ function coveredClasses() {
   while ((m = re.exec(css))) {
     // `.hover\:bg-x:hover` w CSS opisuje klase `hover:bg-x`, wiec koncowa
     // pseudoklase odcinamy, inaczej nadpisanie nie zostaloby rozpoznane.
-    found.add(m[1].replace(/\\/g, "").replace(/:(hover|focus|active|focus-visible)$/, ""));
+    found.add(m[1].replace(/\\/g, "").replace(/:(hover|focus|active|focus-visible|disabled)$/, ""));
   }
   return found;
 }
@@ -57,7 +57,7 @@ function coveredClasses() {
  * bo tylko one daja realny brak kontrastu.
  */
 function isRisky(cls) {
-  const bare = cls.replace(/^(hover|focus|active|group-hover|focus-visible):/, "");
+  const bare = cls.replace(/^(hover|focus|active|group-hover|focus-visible|disabled):/, "");
 
   // Gradienty i czern z przezroczystoscia to prawie zawsze przyciemnienie
   // zdjecia, ktore ma wygladac tak samo w obu trybach. Nie ruszamy ich.
@@ -80,20 +80,53 @@ const covered = coveredClasses();
 const allowed = new Set(Object.keys(JSON.parse(readFileSync(ALLOW, "utf8"))).filter((k) => !k.startsWith("_")));
 const problems = [];
 
+/**
+ * Listy klas czytamy z calego pliku, nie linia po linii.
+ *
+ * Dluga lista klas lamie sie w JSX na kilka linii, a wyrazenie dopasowywane do
+ * pojedynczej linii nie widzi wtedy ani jej poczatku, ani konca. Tak wlasnie
+ * umknal nieczytelny przycisk "Zaplac" w kasie: `disabled:bg-neutral-800`
+ * stalo w drugiej linii atrybutu, wiec kontrola po prostu go nie czytala.
+ */
+function classAttributes(code) {
+  const out = [];
+  const re = /className=(?:"([^"]*)"|\{`([^`]*)`\}|\{"([^"]*)"\})/g;
+  let m;
+  while ((m = re.exec(code))) {
+    const line = code.slice(0, m.index).split("\n").length;
+    out.push({ text: m[1] ?? m[2] ?? m[3] ?? "", line });
+  }
+  return out;
+}
+
 for (const file of walk(SRC)) {
   const code = readFileSync(file, "utf8");
-  const lines = code.split("\n");
-  lines.forEach((line, i) => {
-    // Interesuja nas wylacznie literalne listy klas, nie dowolny tekst.
-    const classAttrs = line.match(/className=(?:"[^"]*"|\{`[^`]*`\}|\{"[^"]*"\})/g) || [];
-    const inline = line.match(/^\s*(?:idle|chip|icon|[a-z]+):\s*"[^"]*"/) ? [line] : [];
-    for (const attr of [...classAttrs, ...inline]) {
+  // Klasy podawane w mapach stylow (np. `idle: "..."`) stoja w jednej linii.
+  const inline = code.split("\n")
+    .map((line, i) => ({ line: i + 1, text: line }))
+    .filter((l) => /^\s*(?:idle|chip|icon|[a-z]+):\s*"[^"]*"/.test(l.text));
+
+  [...classAttributes(code), ...inline].forEach(({ text: attr, line: lineNo }) => {
+    {
+      const i = lineNo - 1;
       const classes = attr.split(/[\s"`{}]+/).filter((c) => c && !c.includes("$") && !c.includes("["));
       const isCovered = (c) => covered.has(c) || allowed.has(c);
 
       for (const cls of classes) {
-        const bare = cls.replace(/^(hover|focus|active|group-hover|focus-visible):/, "");
-        if (isCovered(cls) || isCovered(bare)) continue;
+        const bare = cls.replace(/^(hover|focus|active|group-hover|focus-visible|disabled):/, "");
+        if (isCovered(cls)) continue;
+
+        // Wariant `disabled:` musi miec WLASNA regule. Nadpisanie klasy
+        // podstawowej go nie obejmuje, bo `.disabled\:bg-x:disabled` to inny
+        // selektor niz `.bg-x`. Wlasnie tak nieczynny przycisk "Zaplac" zostal
+        // w kasie czarnym prostokatem na kremowej stronie, czyli wygladal na
+        // gotowy do klikniecia.
+        if (cls.startsWith("disabled:") && isRisky(bare)) {
+          problems.push({ file: relative(ROOT, file), line: i + 1, cls, why: "wariant disabled potrzebuje wlasnej reguly" });
+          continue;
+        }
+
+        if (isCovered(bare)) continue;
 
         if (isRisky(cls)) {
           problems.push({ file: relative(ROOT, file), line: i + 1, cls, why: "brak nadpisania" });
