@@ -18,6 +18,7 @@ import { t } from "../pricing/config.js";
 import { API_URL, postJSON, submitPaymentForm } from "../utils/api.js";
 import { useMoney, formatPln } from "../shop/money.js";
 import { SHIPPING_COUNTRIES, shippingOptions, shippingGrosze, needsCustoms } from "../pricing/shipping.js";
+import PaymentPicker from "../components/shop/PaymentPicker.jsx";
 
 const UI = {
   pl: {
@@ -708,30 +709,13 @@ export default function Checkout() {
               <p className="text-neutral-600 text-[11px] mt-3">{u.lockNote}</p>
             </div>
           ) : (
-          <div className="space-y-2 mb-6">
-            <button
-              type="button"
-              onClick={() => setGatewayId(0)}
-              className={`w-full p-3 rounded-lg border text-left text-sm transition-all ${
-                gatewayId === 0 ? "border-blue-400 bg-blue-400/10 text-blue-300" : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-              }`}
-            >
-              {u.payAny}
-            </button>
-            {methods.map((m) => (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => setGatewayId(m.id)}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left text-sm transition-all ${
-                  gatewayId === m.id ? "border-blue-400 bg-blue-400/10 text-blue-300" : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-                }`}
-              >
-                {m.icon && <img src={m.icon} alt="" className="h-5 w-auto" loading="lazy" />}
-                {m.name}
-              </button>
-            ))}
-          </div>
+          <PaymentPicker
+            methods={methods}
+            value={gatewayId}
+            onChange={setGatewayId}
+            anyLabel={u.payAny}
+            lang={lang}
+          />
           )}
 
           {error && (
