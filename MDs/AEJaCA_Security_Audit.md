@@ -214,8 +214,31 @@ krawędź Railway kasuje `x-forwarded-for` przysłany przez klienta i pisze ła�
 od nowa. Dwa żądania z podstawionym nagłówkiem, jedno spoza sieci i jedno z jej
 wnętrza, nie doniosły podstawionej wartości ani razu.
 
-**Etap 3, limity tam, gdzie ich nie ma.** Sprawdzanie kodu, składanie zamówienia,
-wgrywanie plików, wycena. Do tego licznik nietrafionych prób kodu.
+**Etap 3, zrobiony.** Licznik wyprowadzony do `chat-api/rateLimit.js`, jeden
+zamiast siedmiu kopii tego samego kodu rozsianych po pliku (pięć ręcznych plus
+dwie na `express-rate-limit`, którego już nie potrzebujemy). Wszystkie progi
+stoją teraz obok siebie i dają się porównać wzrokiem.
+
+Dołożone tam, gdzie nie było nic:
+
+- **sprawdzanie kodu rabatowego**, 30 prób na godzinę, a osobno 15 **nietrafień**,
+  bo nadużycie wygląda inaczej niż użycie: klient wpisuje kod raz, może dwa razy
+  przy literówce, a skrypt strzela bez końca i samymi nietrafieniami. Po
+  wyczerpaniu puli odpowiadamy dokładnie tak, jak na kod nieznany, żeby sam
+  komunikat nie mówił zgadującemu, że jest na tropie czegoś istniejącego.
+- **składanie zamówienia**, 10 na godzinę z adresu i 5 na skrzynkę, bo zasypywanie
+  cudzej poczty danymi do przelewu chodzi z jednego adresu, a zapychanie bazy
+  potrafi chodzić z wielu.
+- **rezerwacje towaru**, najwyżej dwie naraz z jednego adresu. To odpowiedź na
+  najcichszy z trzech scenariuszy: przy nakładzie jednej sztuki wystarczyło
+  składać zamówienie co kwadrans, żeby pierścionek był trwale niedostępny.
+  Kupujący tego nie odczuje, bo płaci od razu, a zapłata zamienia rezerwację
+  w sprzedaż i zwalnia miejsce.
+- **zapis miniatury podglądu**, 30 na dziesięć minut, jedyne miejsce gdzie ktoś
+  z ulicy wkładał do bazy kilkaset kilobajtów na żądanie bez żadnego licznika.
+
+Sprawdzenia w `chat-api/rateLimit.test.mjs`, razem z odpowiedzią 429 i nagłówkiem
+`Retry-After`, żeby uczciwy klient wiedział, kiedy wrócić, zamiast próbować w kółko.
 
 **Etap 4, uszczelnienie reszty.** Zdjęcie treści błędów z odpowiedzi, nagłówki
 bezpieczeństwa, żeton dostępu przy odczycie zamówienia, neutralizacja formuł w CSV,

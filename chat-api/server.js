@@ -5,7 +5,6 @@ import pg from "pg";
 import multer from "multer";
 import cron from "node-cron";
 import { createHash } from "crypto";
-import { rateLimit } from "express-rate-limit";
 import { getSystemPrompt, detectHotLead } from "./context.js";
 import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages } from "./gmail.js";
 import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken } from "./orders.js";
@@ -30,6 +29,7 @@ import {
 import { sendOrderPaidEmails, sendTransferInstructions } from "./orderMail.js";
 import { requireAdmin, requireInvalidateToken, requireSecret } from "./auth.js";
 import { extractIP, isPrivateIP, TRUSTED_PROXY_HOPS, TRUST_CLOUDFLARE_HEADERS } from "./clientIp.js";
+import { createLimiter, limitBy } from "./rateLimit.js";
 
 const app = express();
 // `true` znaczylo "wierz calemu lancuchowi X-Forwarded-For", takze temu, co
@@ -400,45 +400,15 @@ if (pool) {
   )`).catch(e => console.error("[filaments] CREATE filament_contribution_votes failed:", e.message));
 }
 
-const rateMap = new Map();
-const RATE_LIMIT = 20;
-const RATE_WINDOW = 60_000;
+// Kazdy limit w jednym miejscu, zeby dalo sie je porownac wzrokiem zamiast
+// szukac po pliku. Rozpietosc jest celowa: rozmowa z asystentem kosztuje nas
+// pieniadze u dostawcy modelu, wiec jest ciasna, a zdarzenia analityczne sa
+// darmowe i licza sie same, wiec sa luzne.
+const chatLimit = createLimiter({ limit: 20, windowMs: 60_000, name: "chat" });
+const analyticsLimit = createLimiter({ limit: 60, windowMs: 60_000, name: "analytics" });
 
-function checkRate(ip) {
-  const now = Date.now();
-  const entry = rateMap.get(ip);
-  if (!entry || now - entry.start > RATE_WINDOW) {
-    rateMap.set(ip, { start: now, count: 1 });
-    return true;
-  }
-  if (entry.count >= RATE_LIMIT) return false;
-  entry.count++;
-  return true;
-}
-
-setInterval(() => {
-  const cutoff = Date.now() - RATE_WINDOW;
-  for (const [ip, entry] of rateMap) {
-    if (entry.start < cutoff) rateMap.delete(ip);
-  }
-}, 60_000);
-
-// --- Analytics rate limiting ---
-const analyticsRateMap = new Map();
-const ANALYTICS_RATE_LIMIT = 60;
-const ANALYTICS_RATE_WINDOW = 60_000;
-
-function checkAnalyticsRate(ip) {
-  const now = Date.now();
-  const entry = analyticsRateMap.get(ip);
-  if (!entry || now - entry.start > ANALYTICS_RATE_WINDOW) {
-    analyticsRateMap.set(ip, { start: now, count: 1 });
-    return true;
-  }
-  if (entry.count >= ANALYTICS_RATE_LIMIT) return false;
-  entry.count++;
-  return true;
-}
+const checkRate = (ip) => chatLimit.check(ip);
+const checkAnalyticsRate = (ip) => analyticsLimit.check(ip);
 
 function detectDevice(ua) {
   if (!ua) return 'unknown';
@@ -590,25 +560,8 @@ app.post("/api/chat", express.json({ limit: "16kb" }), async (req, res) => {
 
 // --- Contact form ---
 const CONTACT_N8N_URL = process.env.N8N_CONTACT_WEBHOOK_URL;
-const CONTACT_RATE_LIMIT = 5;
-const CONTACT_RATE_WINDOW = 60 * 60_000;
-const contactRateMap = new Map();
-
-function checkContactRate(ip) {
-  const now = Date.now();
-  const entry = contactRateMap.get(ip);
-  if (!entry || now - entry.start > CONTACT_RATE_WINDOW) {
-    contactRateMap.set(ip, { start: now, count: 1 });
-    return true;
-  }
-  if (entry.count >= CONTACT_RATE_LIMIT) return false;
-  entry.count++;
-  return true;
-}
-setInterval(() => {
-  const cutoff = Date.now() - CONTACT_RATE_WINDOW;
-  for (const [ip, e] of contactRateMap) if (e.start < cutoff) contactRateMap.delete(ip);
-}, CONTACT_RATE_WINDOW);
+const contactLimit = createLimiter({ limit: 5, windowMs: 60 * 60_000, name: "kontakt" });
+const checkContactRate = (ip) => contactLimit.check(ip);
 
 const ALLOWED_EXT = /\.(stl|3mf|step|stp|obj|svg|ai|dxf|jpg|jpeg|png|pdf)$/i;
 const upload = multer({
@@ -753,25 +706,8 @@ app.post("/api/contact", (req, res, next) => {
 
 // --- Quote email capture ---
 const QUOTE_N8N_URL = process.env.N8N_QUOTE_WEBHOOK_URL;
-const quoteRateMap = new Map();
-const QUOTE_RATE_LIMIT = 10;
-const QUOTE_RATE_WINDOW = 60 * 60_000;
-
-function checkQuoteRate(ip) {
-  const now = Date.now();
-  const entry = quoteRateMap.get(ip);
-  if (!entry || now - entry.start > QUOTE_RATE_WINDOW) {
-    quoteRateMap.set(ip, { start: now, count: 1 });
-    return true;
-  }
-  if (entry.count >= QUOTE_RATE_LIMIT) return false;
-  entry.count++;
-  return true;
-}
-setInterval(() => {
-  const cutoff = Date.now() - QUOTE_RATE_WINDOW;
-  for (const [ip, e] of quoteRateMap) if (e.start < cutoff) quoteRateMap.delete(ip);
-}, QUOTE_RATE_WINDOW);
+const quoteLimit = createLimiter({ limit: 10, windowMs: 60 * 60_000, name: "zapytanie o wycene" });
+const checkQuoteRate = (ip) => quoteLimit.check(ip);
 
 app.post("/api/quote", express.json({ limit: "50mb" }), async (req, res) => {
   const ip = extractIP(req);
@@ -855,25 +791,8 @@ const priceUpload = multer({
   limits: { fileSize: 60 * 1024 * 1024, files: 1 },
 });
 
-const priceRateMap = new Map();
-const PRICE_RATE_LIMIT = 60;
-const PRICE_RATE_WINDOW = 10 * 60_000;
-
-function checkPriceRate(ip) {
-  const now = Date.now();
-  const e = priceRateMap.get(ip);
-  if (!e || now - e.start > PRICE_RATE_WINDOW) {
-    priceRateMap.set(ip, { start: now, count: 1 });
-    return true;
-  }
-  if (e.count >= PRICE_RATE_LIMIT) return false;
-  e.count++;
-  return true;
-}
-setInterval(() => {
-  const cutoff = Date.now() - PRICE_RATE_WINDOW;
-  for (const [ip, e] of priceRateMap) if (e.start < cutoff) priceRateMap.delete(ip);
-}, PRICE_RATE_WINDOW);
+const priceLimit = createLimiter({ limit: 60, windowMs: 10 * 60_000, name: "wycena" });
+const checkPriceRate = (ip) => priceLimit.check(ip);
 
 /** Kursy kruszcow z wlasnej bazy, ten sam zestaw pol, ktory dostaje frontend */
 async function currentMetalRates() {
@@ -1285,7 +1204,15 @@ app.post("/api/uploads", (req, res, next) => {
 const THUMB_PREFIX = /^data:image\/(webp|png|jpeg);base64,[A-Za-z0-9+/=]+$/;
 const MAX_THUMB_CHARS = 300_000; // okolo 220 kB obrazu
 
-app.post("/api/uploads/:token/thumb", express.json({ limit: "400kb" }), async (req, res) => {
+// Zapis miniatury nie wymaga uwierzytelnienia, bo klient nie ma jeszcze konta,
+// a chroni go dlugosc tokenu. Limit dokladamy nie przeciw podszyciu, tylko
+// przeciw zapychaniu: to jedyne miejsce, gdzie ktos z ulicy wklada do bazy
+// kilkaset kilobajtow na zadanie.
+const thumbLimit = createLimiter({ limit: 30, windowMs: 10 * 60_000, name: "miniatura" });
+
+app.post("/api/uploads/:token/thumb", express.json({ limit: "400kb" }),
+  limitBy(thumbLimit, extractIP),
+  async (req, res) => {
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
 
   const dataUrl = String(req.body?.dataUrl || "");
@@ -1498,7 +1425,21 @@ app.get("/api/payment-methods", async (_req, res) => {
  * Cena liczona jest tutaj od nowa, z parametrow i geometrii pliku.
  * Kwota przyslana przez przegladarke jest ignorowana.
  */
-app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
+// Zamowienie sklada sie bez logowania, i tak ma zostac. Ale brak jakiegokolwiek
+// limitu dawal trzy rzeczy naraz: mozna bylo trzymac ostatnia sztuke w wiecznej
+// rezerwacji, zasypywac cudza skrzynke danymi do przelewu (wysylamy je od razu,
+// na adres, ktorego nikt nie potwierdzil) i zapychac baze porzuconymi
+// zamowieniami. Liczymy po adresie i po skrzynce, bo pierwsze dwa naduzycia
+// chodza z jednego adresu, a trzecie potrafi chodzic z wielu.
+const orderLimit = createLimiter({ limit: 10, windowMs: 60 * 60_000, name: "zamowienie" });
+const orderEmailLimit = createLimiter({ limit: 5, windowMs: 60 * 60_000, name: "zamowienie na adres" });
+
+/** Ile rezerwacji towaru wisi jednoczesnie z jednego adresu. */
+const MAX_HELD_RESERVATIONS = 2;
+
+app.post("/api/orders", express.json({ limit: "1mb" }),
+  limitBy(orderLimit, extractIP, { error: "Za duzo zamowien z tego miejsca, sprobuj za chwile" }),
+  async (req, res) => {
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
 
   try {
@@ -1507,6 +1448,15 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
     if (items.length > 20) return res.status(400).json({ error: "Za duzo pozycji" });
     if (!customer?.email || !CONTACT_EMAIL_RE.test(customer.email)) return res.status(400).json({ error: "Nieprawidlowy adres email" });
     if (!consents?.terms) return res.status(400).json({ error: "Akceptacja regulaminu jest wymagana" });
+
+    const customerEmail = customer.email.trim().toLowerCase();
+    if (!orderEmailLimit.check(customerEmail)) {
+      return res.status(429).json({
+        error: "Za duzo zamowien na ten adres, sprobuj za chwile",
+        code: "rate_limited",
+        retryAfterSeconds: orderEmailLimit.retryAfter(customerEmail),
+      });
+    }
 
     const safeLang = ["pl", "en", "de"].includes(lang) ? lang : "pl";
     const rates = items.some((i) => String(i.calculator || "").startsWith("jewelry_")) ? await currentMetalRates() : null;
@@ -1535,6 +1485,29 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
         kind: product.kind,
         category: product.category,
       });
+    }
+
+    // Rezerwacja trzyma towar, wiec przy nakladzie jednej sztuki wystarczyloby
+    // skladac zamowienie co kwadrans, zeby pierscionek byl trwale niedostepny,
+    // i nikt by tego nie zauwazyl. Jeden adres moze wiec trzymac najwyzej dwie
+    // rezerwacje naraz. Kupujacy tego nie odczuje, bo placi od razu, a wtedy
+    // rezerwacja zamienia sie w sprzedaz i zwalnia miejsce.
+    const ipHash = createHash("sha256").update(extractIP(req)).digest("hex").slice(0, 30);
+    if (productItems.length) {
+      const { rows: held } = await pool.query(
+        `SELECT COUNT(*)::INTEGER AS held FROM orders o
+          WHERE o.ip_hash = $1
+            AND o.status IN ('awaiting_payment','awaiting_transfer')
+            AND o.expires_at > NOW()
+            AND EXISTS (SELECT 1 FROM order_items i WHERE i.order_id = o.id AND i.item_type = 'product')`,
+        [ipHash]
+      );
+      if (held[0].held >= MAX_HELD_RESERVATIONS) {
+        return res.status(429).json({
+          error: "Masz juz zamowienia czekajace na zaplate. Oplac je albo poczekaj, az wygasna.",
+          code: "too_many_reservations",
+        });
+      }
     }
 
     const priced = [];
@@ -1685,13 +1658,13 @@ app.post("/api/orders", express.json({ limit: "1mb" }), async (req, res) => {
          $26, $27)
        RETURNING id`,
       [orderRef, safeLang, itemsTotal, shipping, total,
-       customer.email.trim().toLowerCase(), customer.name || null, customer.phone || null,
+       customerEmail, customer.name || null, customer.phone || null,
        delivery?.method || null, delivery?.point || null, delivery?.addressLine1 || null,
        delivery?.addressLine2 || null, delivery?.postalCode || null, delivery?.city || null,
        country,
        consents?.waiveWithdrawal ? new Date() : null,
        consents?.digitalImmediate ? new Date() : null,
-       token, createHash("sha256").update(extractIP(req)).digest("hex").slice(0, 30), expiresAt,
+       token, ipHash, expiresAt,
        // Limit bierzemy z pozycji projektowej, jesli taka jest w koszyku.
        priced.find((i) => i.revisionsIncluded)?.revisionsIncluded ?? null,
        wantsTransfer ? "awaiting_transfer" : "awaiting_payment",
@@ -1993,8 +1966,27 @@ app.get("/api/admin/products", async (req, res) => {
  * powod odmowy co przy zamowieniu, zamiast dowiadywac sie o wygasnieciu kodu
  * dopiero przy platnosci. Kwota nigdy nie pochodzi z przegladarki.
  */
-app.post("/api/discounts/check", express.json({ limit: "16kb" }), async (req, res) => {
+// Dwa liczniki, bo naduzycie wyglada inaczej niz zwykle uzycie. Klient
+// wpisuje kod raz, moze dwa razy przy literowce. Skrypt zgadujacy kody strzela
+// bez konca, i to samymi nietrafieniami. Dlatego zwykly limit jest luzny, zeby
+// nikomu nie przeszkadzal, a nietrafienia maja wlasny, ciasny licznik.
+const discountCheckLimit = createLimiter({ limit: 30, windowMs: 60 * 60_000, name: "sprawdzenie kodu" });
+// Pietnascie nietrafien na godzine to bardzo duzo jak na przepisywanie kodu
+// z maila i zadna liczba jak na zgadywanie: alfabet ma 27 znakow, kod szesc,
+// czyli 387 milionow mozliwosci. Wolimy byc hojni dla omylkowych.
+const discountMissLimit = createLimiter({ limit: 15, windowMs: 60 * 60_000, name: "nietrafiony kod" });
+
+app.post("/api/discounts/check", express.json({ limit: "16kb" }),
+  limitBy(discountCheckLimit, extractIP, { error: "Za duzo prob z kodem, sprobuj za chwile" }),
+  async (req, res) => {
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  const ip = extractIP(req);
+  // Wyczerpanie puli nietrafien konczy zabawe na godzine. Odpowiadamy tak samo
+  // jak na kod nieznany, bo inaczej sam komunikat mowilby zgadujacemu, ze jest
+  // na tropie czegos, co istnieje.
+  if (discountMissLimit.remaining(ip) <= 0) {
+    return res.status(400).json({ error: "Nie znamy takiego kodu", code: "not_found" });
+  }
   const items = Array.isArray(req.body?.items) ? req.body.items : [];
   // Same kwoty pozycji sa tu tylko podgladem. Przy skladaniu zamowienia
   // liczymy je od nowa z katalogu i z kalkulatora, wiec podstawiona kwota
@@ -2016,7 +2008,12 @@ app.post("/api/discounts/check", express.json({ limit: "16kb" }), async (req, re
     });
     res.json({ ok: true, ...preview });
   } catch (e) {
-    if (e instanceof DiscountError) return res.status(400).json({ error: e.message, code: e.code, minGrosze: e.minGrosze });
+    if (e instanceof DiscountError) {
+      // Karzemy wylacznie za kod, ktorego nie ma. Kod wygasly, wyczerpany albo
+      // za maly na ten koszyk to zwykle zycie klienta, nie zgadywanie.
+      if (e.code === "not_found") discountMissLimit.penalize(ip);
+      return res.status(400).json({ error: e.message, code: e.code, minGrosze: e.minGrosze });
+    }
     console.error("[rabaty] sprawdzenie kodu:", e.message);
     res.status(500).json({ error: "Nie udalo sie sprawdzic kodu" });
   }
@@ -2839,7 +2836,7 @@ app.get("/api/filaments/contributions", async (req, res) => {
 });
 
 // POST /api/filaments/contribute — user submission
-const contributeLimit = rateLimit({ windowMs: 60 * 60_000, max: 3, keyGenerator: extractIP, standardHeaders: true, legacyHeaders: false });
+const contributeLimit = limitBy(createLimiter({ limit: 3, windowMs: 60 * 60_000, name: "zgloszenie filamentu" }), extractIP);
 app.post("/api/filaments/contribute", express.json({ limit: "16kb" }), contributeLimit, async (req, res) => {
   try {
     if (!pool) return res.status(503).json({ error: "DB unavailable" });
@@ -2869,7 +2866,7 @@ app.post("/api/filaments/contribute", express.json({ limit: "16kb" }), contribut
 });
 
 // POST /api/filaments/vote — community voting on contributions
-const voteLimit = rateLimit({ windowMs: 60 * 60_000, max: 20, keyGenerator: extractIP, standardHeaders: true, legacyHeaders: false });
+const voteLimit = limitBy(createLimiter({ limit: 20, windowMs: 60 * 60_000, name: "glos na filament" }), extractIP);
 app.post("/api/filaments/vote", express.json({ limit: "4kb" }), voteLimit, async (req, res) => {
   try {
     if (!pool) return res.status(503).json({ error: "DB unavailable" });
