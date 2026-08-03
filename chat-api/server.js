@@ -27,6 +27,7 @@ import {
   releaseOrderRedemptions, normalizeCode, randomCode, DiscountError, APPLIES_TO, MAX_PERCENT,
 } from "./discounts.js";
 import { sendOrderPaidEmails, sendTransferInstructions } from "./orderMail.js";
+import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
 import { requireAdmin, requireInvalidateToken, requireSecret, secretMatches } from "./auth.js";
 import { extractIP, isPrivateIP, TRUSTED_PROXY_HOPS, TRUST_CLOUDFLARE_HEADERS } from "./clientIp.js";
 import { createLimiter, limitBy } from "./rateLimit.js";
@@ -175,6 +176,12 @@ if (pool) {
   // gdy wszyscy dostawali ten sam kod. Przeplyw zapisuje teraz kod wystawiony dla
   // konkretnej osoby, a domyslna wartosc tylko wpisywalaby w tabele nieprawde.
   pool.query(`ALTER TABLE subscribers ALTER COLUMN discount_code DROP DEFAULT`).catch(() => {});
+  // Rezygnacja. Zamowienie zostaje, towar i kod wracaja do puli, a wiersz mowi
+  // kto i kiedy je odwolal. Bez tych trzech kolumn "anulowane" bylo napisem
+  // bez autora, czyli poczatkiem sporu o to, kto co zdjal ze stanu.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMPTZ`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancelled_by VARCHAR(120)`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancel_reason TEXT`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_code VARCHAR(32)`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_grosze INTEGER NOT NULL DEFAULT 0`).catch(() => {});
 
@@ -2216,24 +2223,36 @@ const TRANSFER_TOLERANCE = 0.98;
 app.get("/api/orders/awaiting-transfer", async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
-  const { rows } = await pool.query(
-    `SELECT order_ref, customer_email, customer_name, lang, total_grosze,
-            amount_eur_cents, eur_rate, created_at, expires_at
-       FROM orders WHERE status = 'awaiting_transfer' ORDER BY created_at DESC LIMIT 100`
-  );
-  res.json({
-    orders: rows.map((o) => ({
-      orderRef: o.order_ref,
-      email: o.customer_email,
-      name: o.customer_name,
-      lang: o.lang,
-      totalPLN: (o.total_grosze / 100).toFixed(2),
-      amountEur: o.amount_eur_cents != null ? (o.amount_eur_cents / 100).toFixed(2) : null,
-      eurRate: o.eur_rate,
-      createdAt: o.created_at,
-      expiresAt: o.expires_at,
-    })),
+  const shape = (o) => ({
+    orderRef: o.order_ref,
+    email: o.customer_email,
+    name: o.customer_name,
+    lang: o.lang,
+    status: o.status,
+    totalPLN: (o.total_grosze / 100).toFixed(2),
+    amountEur: o.amount_eur_cents != null ? (o.amount_eur_cents / 100).toFixed(2) : null,
+    eurRate: o.eur_rate,
+    createdAt: o.created_at,
+    expiresAt: o.expires_at,
+    cancelledAt: o.cancelled_at,
+    cancelledBy: o.cancelled_by,
+    cancelReason: o.cancel_reason,
   });
+
+  const COLS = `order_ref, customer_email, customer_name, lang, status, total_grosze,
+                amount_eur_cents, eur_rate, created_at, expires_at,
+                cancelled_at, cancelled_by, cancel_reason`;
+
+  // Druga lista, zamowienia zamkniete bez zaplaty, jest tu celowo. Rezygnacja
+  // ma zdejmowac wiersz z listy roboczej, a nie z oczu: to przy niej sprawdza
+  // sie, czy towar faktycznie wrocil do sprzedazy, i stad kasuje sie pomylki.
+  const [pending, closed] = await Promise.all([
+    pool.query(`SELECT ${COLS} FROM orders WHERE status = 'awaiting_transfer' ORDER BY created_at DESC LIMIT 100`),
+    pool.query(`SELECT ${COLS} FROM orders WHERE status IN ('cancelled','expired')
+                 ORDER BY COALESCE(cancelled_at, created_at) DESC LIMIT 50`),
+  ]);
+
+  res.json({ orders: pending.rows.map(shape), closed: closed.rows.map(shape) });
 });
 
 app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), async (req, res) => {
@@ -2293,6 +2312,105 @@ app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), as
   );
 
   res.json({ ok: true, orderRef: ref, receivedEur: (received / 100).toFixed(2) });
+});
+
+/**
+ * Rezygnacja z zamowienia.
+ *
+ * Towar i kod rabatowy wracaja do puli natychmiast, bez czekania na wygasniecie
+ * rezerwacji. To jest wlasnie sedno: sztuka odlozona na bok przez zamowienie,
+ * ktore nie dojdzie do skutku, ma wrocic na polke tego samego dnia, a nie po
+ * trzech dniach roboczych.
+ *
+ * Wiersz zostaje. Zamowienie jest dokumentem, wiec pytanie "dlaczego ta sztuka
+ * wrocila do sprzedazy" musi miec odpowiedz takze za pol roku.
+ */
+app.post("/api/orders/:ref/cancel", express.json({ limit: "4kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const ref = String(req.params.ref || "");
+  const { rows } = await pool.query(
+    `SELECT id, status, fulfilled_at FROM orders WHERE order_ref = $1`, [ref]
+  );
+  const order = rows[0];
+  if (!order) return res.status(404).json({ error: "Zamowienie nie istnieje" });
+  if (order.fulfilled_at) return res.status(409).json({ error: "Zamowienie zostalo rozliczone", code: "fulfilled" });
+  if (!CANCELLABLE_STATUSES.includes(order.status)) {
+    return res.status(409).json({
+      error: `Zamowienie ma status ${order.status}, nie ma z czego rezygnowac`,
+      code: "not_cancellable",
+    });
+  }
+
+  await pool.query(
+    `UPDATE orders SET status = 'cancelled', cancelled_at = NOW(),
+       cancelled_by = $2, cancel_reason = $3
+     WHERE id = $1`,
+    [order.id, String(req.body?.by || "panel").slice(0, 120),
+     req.body?.reason ? String(req.body.reason).slice(0, 2000) : null]
+  );
+
+  const stock = await releaseOrderReservations(pool, order.id);
+  const codes = await releaseOrderRedemptions(pool, order.id);
+  console.log(`[zamowienia] ${ref} anulowane, zwolniono rezerwacji: ${stock}, kodow: ${codes}`);
+
+  res.json({ ok: true, orderRef: ref, releasedReservations: stock, releasedCodes: codes });
+});
+
+/**
+ * Skasowanie zamowienia, ktore nigdy nie zylo.
+ *
+ * Do pomylek i testow, nie do sprzatania historii. Wiersz zamowienia ciagnie za
+ * soba kaskadowo pozycje, rezerwacje i uzycia kodu, wiec skasowanie czegos, co
+ * zdazylo sie wydarzyc, wymazuje po cichu dowody. Warunki w orderCleanup.js.
+ */
+app.delete("/api/orders/:ref", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const ref = String(req.params.ref || "");
+  const { rows } = await pool.query(
+    `SELECT o.id, o.status, o.paid_at, o.fulfilled_at, o.transfer_confirmed_at,
+            (SELECT COUNT(*)::INTEGER FROM payment_notifications n WHERE n.order_ref = o.order_ref) AS payment_notifications,
+            (SELECT COUNT(*)::INTEGER FROM product_reservations r WHERE r.order_id = o.id AND r.consumed_at IS NOT NULL) AS consumed_reservations,
+            (SELECT COUNT(*)::INTEGER FROM discount_redemptions d WHERE d.order_id = o.id AND d.consumed_at IS NOT NULL) AS consumed_redemptions,
+            (SELECT COUNT(*)::INTEGER FROM downloads w WHERE w.order_id = o.id) AS downloads,
+            (SELECT COUNT(*)::INTEGER FROM orders c WHERE c.parent_order_id = o.id) AS child_orders,
+            (SELECT COUNT(*)::INTEGER FROM quotes q WHERE q.converted_order_id = o.id) AS linked_quotes
+       FROM orders o WHERE o.order_ref = $1`,
+    [ref]
+  );
+  const o = rows[0];
+  if (!o) return res.status(404).json({ error: "Zamowienie nie istnieje" });
+
+  const blockers = deletionBlockers({
+    paidAt: o.paid_at,
+    fulfilledAt: o.fulfilled_at,
+    transferConfirmedAt: o.transfer_confirmed_at,
+    paymentNotifications: o.payment_notifications,
+    consumedReservations: o.consumed_reservations,
+    consumedRedemptions: o.consumed_redemptions,
+    downloads: o.downloads,
+    childOrders: o.child_orders,
+    linkedQuotes: o.linked_quotes,
+  });
+  if (blockers.length) {
+    return res.status(409).json({
+      error: `Tego zamowienia nie da sie skasowac, bo ${blockers.join(", ")}. Zamiast tego zrezygnuj z niego.`,
+      code: "linked",
+      blockers,
+    });
+  }
+
+  // Rezerwacje i tak znikna razem z wierszem, ale zwalniamy je wprost, zeby
+  // dostepnosc policzona w tej samej sekundzie nie zalezala od kolejnosci kaskady.
+  await releaseOrderReservations(pool, o.id);
+  await releaseOrderRedemptions(pool, o.id);
+  await pool.query(`DELETE FROM orders WHERE id = $1`, [o.id]);
+  console.log(`[zamowienia] ${ref} skasowane recznie (status ${o.status})`);
+
+  res.json({ ok: true, orderRef: ref, deleted: true });
 });
 
 /** Parametry startu transakcji, podpisane po stronie serwera */

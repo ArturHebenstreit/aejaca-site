@@ -16,6 +16,7 @@ const LABELS = {
     privacyLink: "politykę prywatności",
     success: "Dziękujemy! Sprawdź swoją skrzynkę — kod jest w drodze.",
     emailRequired: "Podaj poprawny adres e-mail",
+    sendFailed: "Nie udało się wysłać zgłoszenia. Spróbuj za chwilę albo napisz na contact@aejaca.com.",
     consentRequired: "Wymagana zgoda na marketing",
     alreadySubscribed: "Ten adres jest już na naszej liście. Wysłaliśmy do Ciebie wiadomość {date} — sprawdź skrzynkę odbiorczą, a na wszelki wypadek również folder spam.",
     alreadySubscribedNoDate: "Ten adres jest już na naszej liście. Sprawdź skrzynkę odbiorczą i na wszelki wypadek folder spam — nasza wiadomość powinna tam być.",
@@ -30,6 +31,7 @@ const LABELS = {
     privacyLink: "privacy policy",
     success: "Thanks! Check your inbox — the code is on the way.",
     emailRequired: "Please enter a valid email address",
+    sendFailed: "We could not submit the form. Try again in a moment or write to contact@aejaca.com.",
     consentRequired: "Marketing consent required",
     alreadySubscribed: "This email is already on our list. We sent you a message on {date} — check your inbox and your spam folder just in case.",
     alreadySubscribedNoDate: "This email is already on our list. Check your inbox and your spam folder just in case — our message should be there.",
@@ -44,6 +46,7 @@ const LABELS = {
     privacyLink: "Datenschutzerklärung",
     success: "Danke! Prüfe dein Postfach — der Code ist unterwegs.",
     emailRequired: "Bitte eine gültige E-Mail-Adresse eingeben",
+    sendFailed: "Die Anmeldung konnte nicht gesendet werden. Bitte später erneut versuchen oder an contact@aejaca.com schreiben.",
     consentRequired: "Marketing-Einwilligung erforderlich",
     alreadySubscribed: "Diese E-Mail ist bereits auf unserer Liste. Wir haben dir am {date} eine Nachricht geschickt — prüfe deinen Posteingang und zur Sicherheit auch den Spam-Ordner.",
     alreadySubscribedNoDate: "Diese E-Mail ist bereits auf unserer Liste. Prüfe deinen Posteingang und zur Sicherheit auch den Spam-Ordner — unsere Nachricht sollte dort sein.",
@@ -92,12 +95,20 @@ export default function NewsletterForm({ compact = false }) {
             if (typeof window.gtag === "function") window.gtag("event", "newsletter_signup", { lang });
           }
         } else {
+          // Odpowiedz z bledem nie ma nic wspolnego z adresem, wiec nie wolno
+          // o nim mowic. Wysylanie kogos z poprawnym adresem, zeby "podal
+          // poprawny adres", to zapetlenie bez wyjscia.
+          console.error("[newsletter] serwer odpowiedzial", res.status);
           setState("idle");
-          setError(l.emailRequired);
+          setError(l.sendFailed);
         }
-      } catch {
+      } catch (e) {
+        // Tu wpada takze zadanie zablokowane przez polityke tresci strony,
+        // czyli przypadek, w ktorym adres jest w porzadku, a winna jest nasza
+        // wlasna konfiguracja. Zdarzylo sie to naprawde, patrz public/_headers.
+        console.error("[newsletter] zadanie nie doszlo:", e?.message);
         setState("idle");
-        setError(l.emailRequired);
+        setError(l.sendFailed);
       }
     } else {
       const subject = encodeURIComponent(`[AEJaCA] Newsletter opt-in (${lang.toUpperCase()})`);

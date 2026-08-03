@@ -4,7 +4,7 @@
   "description": "AEJaCA - Artisan Elegance Jewelry and Crafted Art",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/sync-pricing.mjs --check && node scripts/check-undefined-calls.mjs && node scripts/check-light-theme.mjs && node scripts/check-shop-images.mjs && node scripts/test-mesh-formats.mjs && node scripts/derive-service-prices.mjs --check && node scripts/sync-sitemap-shop.mjs --check && node scripts/copy-occt-wasm.mjs && vite build && vite build --ssr src/entry-server.jsx --outDir dist/server && node scripts/prerender.mjs",
+    "build": "node scripts/sync-pricing.mjs --check && node scripts/check-undefined-calls.mjs && node scripts/check-light-theme.mjs && node scripts/check-shop-images.mjs && node scripts/test-payment-groups.mjs && node scripts/test-mesh-formats.mjs && node scripts/derive-service-prices.mjs --check && node scripts/sync-sitemap-shop.mjs --check && node scripts/copy-occt-wasm.mjs && vite build && vite build --ssr src/entry-server.jsx --outDir dist/server && node scripts/prerender.mjs",
     "build:client": "vite build",
     "preview": "vite preview",
     "db:seed-laser-matrix": "node scripts/import-laser-matrix.mjs",

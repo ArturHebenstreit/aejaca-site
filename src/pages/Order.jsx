@@ -14,6 +14,7 @@ import SEOHead from "../seo/SEOHead.jsx";
 import { buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
+import PaymentPicker from "../components/shop/PaymentPicker.jsx";
 import { SERVICES, GROUPS, getService, DELIVERY_METHODS } from "../data/orderCatalog.js";
 import { shippingOptions, shippingGrosze, needsCustoms, SHIPPING_COUNTRIES } from "../pricing/shipping.js";
 import { t } from "../pricing/config.js";
@@ -834,30 +835,13 @@ export default function Order() {
               </div>
 
               <h2 className="text-white font-semibold mb-3">{u.payMethod}</h2>
-              <div className="space-y-2 mb-6">
-                <button
-                  type="button"
-                  onClick={() => setGatewayId(0)}
-                  className={`w-full p-3 rounded-lg border text-left text-sm transition-all ${
-                    gatewayId === 0 ? "border-blue-400 bg-blue-400/10 text-blue-300" : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-                  }`}
-                >
-                  {u.payAny}
-                </button>
-                {methods.map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => setGatewayId(m.id)}
-                    className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left text-sm transition-all ${
-                      gatewayId === m.id ? "border-blue-400 bg-blue-400/10 text-blue-300" : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-                    }`}
-                  >
-                    {m.icon && <img src={m.icon} alt="" className="h-5 w-auto" loading="lazy" />}
-                    {m.name}
-                  </button>
-                ))}
-              </div>
+              <PaymentPicker
+                methods={methods}
+                value={gatewayId}
+                onChange={setGatewayId}
+                anyLabel={u.payAny}
+                lang={lang}
+              />
 
               {submitError && (
                 <div className="p-3 rounded-lg border border-red-400/30 bg-red-400/10 text-red-300 text-xs mb-4">
@@ -870,7 +854,8 @@ export default function Order() {
                 onClick={submitOrder}
                 disabled={submitting}
                 className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-blue-500 hover:bg-blue-400
-                           disabled:bg-neutral-800 disabled:text-neutral-500 text-white font-semibold transition-colors"
+                           disabled:bg-neutral-800 disabled:text-neutral-500 disabled:border disabled:border-white/10
+                           disabled:cursor-not-allowed text-white font-semibold transition-colors"
               >
                 {submitting ? (
                   <><Loader2 className="w-4 h-4 animate-spin" />{u.redirecting}</>
@@ -899,7 +884,8 @@ export default function Order() {
                   onClick={() => setStep((s) => s + 1)}
                   disabled={(step === 2 && !price) || (step === 3 && !dataValid)}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-400
-                             disabled:bg-neutral-800 disabled:text-neutral-600 text-white text-sm font-medium transition-colors"
+                             disabled:bg-neutral-800 disabled:text-neutral-600 disabled:border disabled:border-white/10
+                             disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
                 >
                   {u.next}<ArrowRight className="w-4 h-4" />
                 </button>

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "test": "node auth.test.mjs && node clientIp.test.mjs && node rateLimit.test.mjs"
+    "test": "node auth.test.mjs && node clientIp.test.mjs && node rateLimit.test.mjs && node orderCleanup.test.mjs"
   },
   "dependencies": {
     "cors": "^2.8.5",

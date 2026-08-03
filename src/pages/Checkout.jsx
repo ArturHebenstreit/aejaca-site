@@ -18,6 +18,7 @@ import { t } from "../pricing/config.js";
 import { API_URL, postJSON, submitPaymentForm } from "../utils/api.js";
 import { useMoney, formatPln } from "../shop/money.js";
 import { SHIPPING_COUNTRIES, shippingOptions, shippingGrosze, needsCustoms } from "../pricing/shipping.js";
+import PaymentPicker from "../components/shop/PaymentPicker.jsx";
 
 const UI = {
   pl: {
@@ -42,13 +43,14 @@ const UI = {
     shipping: "Dostawa",
     total: "Do zapłaty",
     codeLabel: "Kod rabatowy",
-    codePlaceholder: "np. MATKA15",
+    codeIntro: "Masz kod rabatowy? Wpisz go w poniższym polu:",
+    codePlaceholder: "np. AEJaCA10",
     codeApply: "Zastosuj",
     codeRemove: "Usuń kod",
     codeOk: "Kod naliczony",
     discount: "Rabat",
     payMethod: "Metoda płatności",
-    payAny: "Wybiorę na stronie płatności",
+    payAny: "Wybiorę na stronie płatności Autopay",
     pay: "Zapłać",
     processing: "Przetwarzam",
     back: "Wróć do koszyka",
@@ -100,13 +102,14 @@ const UI = {
     shipping: "Delivery",
     total: "To pay",
     codeLabel: "Discount code",
-    codePlaceholder: "e.g. MATKA15",
+    codeIntro: "Have a discount code? Enter it below:",
+    codePlaceholder: "e.g. AEJaCA10",
     codeApply: "Apply",
     codeRemove: "Remove code",
     codeOk: "Code applied",
     discount: "Discount",
     payMethod: "Payment method",
-    payAny: "I will choose on the payment page",
+    payAny: "I will choose on the Autopay payment page",
     pay: "Pay",
     processing: "Processing",
     back: "Back to cart",
@@ -158,13 +161,14 @@ const UI = {
     shipping: "Lieferung",
     total: "Zu zahlen",
     codeLabel: "Rabattcode",
-    codePlaceholder: "z. B. MATKA15",
+    codeIntro: "Sie haben einen Rabattcode? Geben Sie ihn unten ein:",
+    codePlaceholder: "z. B. AEJaCA10",
     codeApply: "Einlösen",
     codeRemove: "Code entfernen",
     codeOk: "Code angerechnet",
     discount: "Rabatt",
     payMethod: "Zahlungsmethode",
-    payAny: "Ich wähle auf der Zahlungsseite",
+    payAny: "Ich wähle auf der Autopay-Zahlungsseite",
     pay: "Bezahlen",
     processing: "Wird verarbeitet",
     back: "Zurück zum Warenkorb",
@@ -516,16 +520,23 @@ export default function Checkout() {
                   </button>
                 </div>
               ) : (
-                <div className="flex gap-2">
-                  <label className="sr-only" htmlFor="discount-code">{u.codeLabel}</label>
-                  <input
+                <div>
+                  {/* Samo pole bez zdania nad nim czytalo sie jak kolejna rubryka
+                      do wypelnienia. Zdanie mowi wprost, ze to opcja dla tych,
+                      ktorzy kod maja, a reszta moze przejsc dalej. */}
+                  <label htmlFor="discount-code" className="block text-neutral-400 text-xs mb-2">
+                    {u.codeIntro}
+                  </label>
+                  <div className="flex gap-2"><input
                     id="discount-code"
                     value={codeInput}
                     onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
                     onKeyDown={(e) => e.key === "Enter" && checkCode(codeInput)}
                     placeholder={u.codePlaceholder}
+                    // Wpisywany kod idzie wielkimi literami, bo takie sa kody,
+                    // ale podpowiedz zostaje w zapisie marki: AEJaCA10.
                     className="flex-1 bg-transparent border border-white/10 rounded-lg px-3 py-2 text-sm text-white
-                               placeholder:text-neutral-600 focus:outline-none focus:border-blue-400/50 uppercase"
+                               placeholder:text-neutral-600 placeholder:normal-case focus:outline-none focus:border-blue-400/50 uppercase"
                   />
                   <button
                     type="button"
@@ -536,6 +547,7 @@ export default function Checkout() {
                   >
                     {codeBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : u.codeApply}
                   </button>
+                  </div>
                 </div>
               )}
               {codeError && <p className="text-amber-300 text-[11px] mt-2">{codeError}</p>}
@@ -697,30 +709,13 @@ export default function Checkout() {
               <p className="text-neutral-600 text-[11px] mt-3">{u.lockNote}</p>
             </div>
           ) : (
-          <div className="space-y-2 mb-6">
-            <button
-              type="button"
-              onClick={() => setGatewayId(0)}
-              className={`w-full p-3 rounded-lg border text-left text-sm transition-all ${
-                gatewayId === 0 ? "border-blue-400 bg-blue-400/10 text-blue-300" : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-              }`}
-            >
-              {u.payAny}
-            </button>
-            {methods.map((m) => (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => setGatewayId(m.id)}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left text-sm transition-all ${
-                  gatewayId === m.id ? "border-blue-400 bg-blue-400/10 text-blue-300" : "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20"
-                }`}
-              >
-                {m.icon && <img src={m.icon} alt="" className="h-5 w-auto" loading="lazy" />}
-                {m.name}
-              </button>
-            ))}
-          </div>
+          <PaymentPicker
+            methods={methods}
+            value={gatewayId}
+            onChange={setGatewayId}
+            anyLabel={u.payAny}
+            lang={lang}
+          />
           )}
 
           {error && (
@@ -734,8 +729,12 @@ export default function Checkout() {
             type="button"
             onClick={pay}
             disabled={!canPay}
+            // Nieczynny przycisk musi wygladac na nieczynny takze w trybie
+            // jasnym. Samo ciemne tlo na kremowej stronie czyta sie jak
+            // przycisk gotowy do klikniecia, wiec doszly obramowanie i kursor.
             className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-blue-500 hover:bg-blue-400
-                       disabled:bg-neutral-800 disabled:text-neutral-500 text-white font-semibold transition-colors"
+                       disabled:bg-neutral-800 disabled:text-neutral-500 disabled:border disabled:border-white/10
+                       disabled:cursor-not-allowed text-white font-semibold transition-colors"
           >
             {busy ? (
               <><Loader2 className="w-4 h-4 animate-spin" />{u.processing}</>

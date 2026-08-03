@@ -1187,10 +1187,10 @@ app.post("/discounts/:code/toggle", requireAuth, async (req, res) => {
 // maile do klienta i przeniesienie plikow do Zamowien. Wykonuje sie raz.
 app.get("/transfers", requireAuth, async (req, res) => {
   try {
-    const { orders } = await shopApi("/api/orders/awaiting-transfer");
-    res.render("transfers", { user: req.user, orders, msg: req.query.msg, err: req.query.err });
+    const { orders, closed = [] } = await shopApi("/api/orders/awaiting-transfer");
+    res.render("transfers", { user: req.user, orders, closed, msg: req.query.msg, err: req.query.err });
   } catch (err) {
-    res.render("transfers", { user: req.user, orders: [], msg: null, err: err.message });
+    res.render("transfers", { user: req.user, orders: [], closed: [], msg: null, err: err.message });
   }
 });
 
@@ -1204,6 +1204,30 @@ app.post("/transfers/:ref/confirm", requireAuth, async (req, res) => {
       },
     });
     back(res, "/transfers", { msg: `${req.params.ref}: potwierdzony` });
+  } catch (err) { back(res, "/transfers", { err: err.message }); }
+});
+
+// Rezygnacja: towar i kod wracaja do puli od razu, wiersz zostaje z adnotacja.
+app.post("/transfers/:ref/cancel", requireAuth, async (req, res) => {
+  try {
+    const r = await shopApi(`/api/orders/${encodeURIComponent(req.params.ref)}/cancel`, {
+      method: "POST",
+      body: { by: req.user.email, reason: req.body.reason || null },
+    });
+    const wrocilo = r.releasedReservations
+      ? `, towar wrocil do sprzedazy (${r.releasedReservations})`
+      : "";
+    const kod = r.releasedCodes ? ", kod rabatowy zwolniony" : "";
+    back(res, "/transfers", { msg: `${req.params.ref}: rezygnacja${wrocilo}${kod}` });
+  } catch (err) { back(res, "/transfers", { err: err.message }); }
+});
+
+// Kasowanie: tylko pomylki i testy. Backend odmawia, gdy cokolwiek sie wydarzylo,
+// i podaje powod, ktory pokazujemy wprost zamiast suchej odmowy.
+app.post("/transfers/:ref/delete", requireAuth, async (req, res) => {
+  try {
+    await shopApi(`/api/orders/${encodeURIComponent(req.params.ref)}`, { method: "DELETE" });
+    back(res, "/transfers", { msg: `${req.params.ref}: skasowane` });
   } catch (err) { back(res, "/transfers", { err: err.message }); }
 });
 
