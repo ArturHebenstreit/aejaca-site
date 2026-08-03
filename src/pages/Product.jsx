@@ -22,6 +22,7 @@ import { useMoney } from "../shop/money.js";
 import { useAvailability, stockOf, statusOf } from "../shop/availability.js";
 import { getProduct, WITHDRAWAL, SHOP_CATEGORIES } from "../data/shopCatalog.js";
 import NotFound from "./NotFound.jsx";
+import PriceReduction from "../components/shop/PriceReduction.jsx";
 
 const UI = {
   pl: {
@@ -285,6 +286,7 @@ export default function Product() {
               <div className="mb-1">
                 <span className="text-3xl font-extrabold text-white">{money(product.priceGrosze)}</span>
               </div>
+              <PriceReduction product={product} money={money} lang={lang} className="mb-2" />
 
               <div className="flex flex-wrap items-center gap-2 mb-6">
                 {isDigital ? (

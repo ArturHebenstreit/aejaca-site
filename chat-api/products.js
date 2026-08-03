@@ -49,7 +49,12 @@ export function reservationExpiry(paymentMethod, now = new Date()) {
 const PUBLIC_COLUMNS = `
   p.id, p.slug, p.kind, p.category, p.subcategory, p.offer, p.status, p.title, p.short, p.description,
   p.specs, p.note, p.images, p.price_grosze, p.weight_g, p.stock, p.lead_time_days,
-  p.personalization, p.sort_order, p.license
+  p.personalization, p.sort_order, p.license,
+  (SELECT MIN(h.price_grosze) FROM product_price_history h
+    WHERE h.product_id = p.id AND h.changed_at > NOW() - INTERVAL '30 days') AS lowest_30d,
+  (SELECT MAX(h.price_grosze) FROM product_price_history h
+    WHERE h.product_id = p.id AND h.changed_at > NOW() - INTERVAL '30 days') AS highest_30d,
+  GREATEST(0, EXTRACT(DAY FROM NOW() - p.created_at)::INTEGER) AS days_on_sale
 `;
 
 function shape(row) {
@@ -68,6 +73,12 @@ function shape(row) {
     note: row.note,
     images: row.images || [],
     priceGrosze: row.price_grosze,
+    // Dane do informacji o obnizce (art. 4 ustawy o informowaniu o cenach).
+    // Sama regula, kiedy cokolwiek pokazac, siedzi w src/shop/priceHistory.js,
+    // bo to samo pytanie zadaje i karta produktu, i strona produktu.
+    lowest30Grosze: row.lowest_30d ?? null,
+    highest30Grosze: row.highest_30d ?? null,
+    daysOnSale: row.days_on_sale ?? null,
     weightG: row.weight_g,
     stock: row.stock,
     // Wyprzedany poza sklepem nie ma wolnych sztuk, choc w magazynie jeszcze

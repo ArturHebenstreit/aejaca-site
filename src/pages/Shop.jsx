@@ -21,6 +21,7 @@ import {
   SHOP_CATEGORIES, productsByCategory, personalizedByCategory, serviceCardsByCategory,
   PRODUCTS, PERSONALIZED, SERVICE_CARDS,
 } from "../data/shopCatalog.js";
+import PriceReduction from "../components/shop/PriceReduction.jsx";
 
 const UI = {
   pl: {
@@ -559,6 +560,7 @@ function ProductCard({ product, lang, u, money, availability }) {
         <div className="flex items-end justify-between">
           <div>
             <div className="text-white font-bold">{money(product.priceGrosze)}</div>
+            <PriceReduction product={product} money={money} lang={lang} />
             <div className="text-neutral-500 text-[10px] mt-0.5">
               {isDigital ? u.immediate : `${u.ready} ${product.leadTimeDays} ${u.days}`}
             </div>

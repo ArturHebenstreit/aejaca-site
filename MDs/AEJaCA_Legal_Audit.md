@@ -303,20 +303,28 @@ miejsce sięgające do pamięci przeglądarki i wymagająca uzasadnienia dla ka�
   publicznie jest ogłoszeniem obniżki i wymaga podania najniższej ceny z 30 dni,
   a kod wręczony jednej osobie tego nie wymaga.
 
-  Świadomie **nie** wystawiam tej ceny automatycznie na kartach produktów.
-  Dziś żadna akcja nie trwa, a wyświetlanie „najniższej ceny z 30 dni" przy
-  cenie, która nie jest obniżona, wprowadzałoby w błąd bardziej niż jej brak.
-  Historia jest zbierana od teraz, bo odtworzyć jej wstecz się nie da, i to jest
-  ta część, która musiała powstać zawczasu.
+  Karty produktów i strony produktów pokazują tę cenę **same, gdy obniżka
+  faktycznie jest**, czyli gdy cena bieżąca jest niższa od najwyższej z okna
+  porównawczego. Przy cenie niezmienionej nie ma tam nic i to też jest wymóg,
+  a nie oszczędność: napis „najniższa cena z 30 dni" obok ceny, która nie
+  została obniżona, sugeruje promocję, której nie ma.
+
+  Osobne zdanie dostaje pozycja w sprzedaży krócej niż 30 dni: wtedy podajemy
+  cenę od rozpoczęcia sprzedaży, zgodnie z art. 4 ust. 3 ustawy o informowaniu
+  o cenach, zamiast udawać, że mamy pełną historię.
+
+  Reguła siedzi w `src/shop/priceHistory.js` z testami wpiętymi w budowanie,
+  bo to liczba pokazywana klientowi jako fakt. Testy pilnują przede wszystkim
+  przypadków, w których informacji pokazać NIE wolno: brak zmiany ceny, podwyżka,
+  powrót do poprzedniego poziomu i brak historii.
 
 ---
 
 ## Stan po pięciu etapach
 
 Zamknięte: K1, W1, W2, W3, S1, S3, S4, S5, S6. W4 zamknięty korektą ustalenia,
-bez potrzeby zmian w zachowaniu serwisu. S2 zamknięty w części, która ma dziś
-sens: dane są zbierane i widoczne w panelu, wyświetlanie dojdzie razem z pierwszą
-prawdziwą akcją rabatową.
+bez potrzeby zmian w zachowaniu serwisu. S2 zamknięty: historia cen jest zbierana, panel pokazuje kolumnę „Min. 30 dni",
+a sklep wystawia informację o obniżce sam, w chwili gdy obniżka się pojawi.
 
 Do pilnowania przy zmianach: okresy w Polityce Prywatności muszą zgadzać się
 z `chat-api/retention.js`, a strona Zwroty z § 10 Regulaminu. Obie pary już raz
