@@ -18,6 +18,7 @@
 // dokladnie tyle samo, co cena i towar, wiec klient dostaje jedna obietnice,
 // a nie trzy o roznych terminach.
 
+import { randomInt } from "node:crypto";
 import { addBusinessDays, TRANSFER_HOLD_BUSINESS_DAYS } from "./pricing/businessDays.js";
 
 export class DiscountError extends Error {
@@ -235,10 +236,17 @@ export async function releaseOrderRedemptions(pool, orderId) {
 // (0/O, 1/I/L, 5/S, 8/B). Kod ma byc przepisywalny przez telefon, nie ladny.
 const ALPHABET = "ACDEFGHJKMNPQRTUVWXY2346789";
 
+/**
+ * Losujemy generatorem kryptograficznym, nie `Math.random()`.
+ * Kod rabatowy to pieniadz na okaziciela, a `Math.random()` jest przewidywalny:
+ * kto zna kilka wynikow, potrafi odtworzyc stan generatora i wyliczyc nastepne.
+ * Jeden kod dostaje sie legalnie, zapisujac sie do newslettera, wiec punkt
+ * zaczepienia lezy na wierzchu.
+ */
 export function randomCode(prefix = "AEJ", length = 6) {
   let out = "";
   for (let i = 0; i < length; i++) {
-    out += ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
+    out += ALPHABET[randomInt(ALPHABET.length)];
   }
   return `${normalizeCode(prefix)}-${out}`;
 }

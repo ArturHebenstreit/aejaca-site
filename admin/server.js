@@ -3,6 +3,7 @@ import session from "express-session";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import pg from "pg";
+import { randomBytes } from "node:crypto";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
@@ -16,9 +17,25 @@ const ALLOWED_EMAILS = (process.env.ALLOWED_EMAILS || "contact@aejaca.com")
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
 
 // --- Session ---
+// Sekret podpisujacy ciasteczko sesji NIE MOZE miec wartosci zapasowej wpisanej
+// w kod. Kto ja zna, podpisuje sobie ciasteczko zalogowanego administratora
+// i wchodzi do panelu z pominieciem Google, a w panelu sa leady, subskrybenci,
+// kody rabatowe i potwierdzanie przelewow. Gdy zmiennej brakuje, losujemy sekret
+// na czas zycia procesu: panel dziala, podrobienie ciasteczka jest niemozliwe,
+// a jedyna kara to wylogowanie po kazdym wdrozeniu. Ostrzezenie w logu mowi,
+// co ustawic, zeby ta kara znikla.
+const SESSION_SECRET = process.env.SESSION_SECRET || randomBytes(32).toString("hex");
+if (!process.env.SESSION_SECRET) {
+  console.warn("[auth] SESSION_SECRET nie jest ustawiony. Uzywam sekretu losowanego przy starcie, " +
+               "wiec kazde wdrozenie wyloguje wszystkich. Ustaw go w Railway: openssl rand -hex 32");
+}
+if (!process.env.ADMIN_API_TOKEN) {
+  console.warn("[auth] ADMIN_API_TOKEN nie jest ustawiony. Produkty, kody i przelewy nie beda dzialac.");
+}
+
 app.set("trust proxy", 1);
 app.use(session({
-  secret: process.env.SESSION_SECRET || "aejaca-admin-secret-change-me",
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 7 * 24 * 60 * 60 * 1000, secure: process.env.NODE_ENV === "production", sameSite: "lax" },

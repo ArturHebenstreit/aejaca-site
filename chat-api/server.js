@@ -28,9 +28,14 @@ import {
   releaseOrderRedemptions, normalizeCode, randomCode, DiscountError, APPLIES_TO, MAX_PERCENT,
 } from "./discounts.js";
 import { sendOrderPaidEmails, sendTransferInstructions } from "./orderMail.js";
+import { requireAdmin, requireInvalidateToken, requireSecret } from "./auth.js";
+import { extractIP, isPrivateIP, TRUSTED_PROXY_HOPS, TRUST_CLOUDFLARE_HEADERS } from "./clientIp.js";
 
 const app = express();
-app.set("trust proxy", true);
+// `true` znaczylo "wierz calemu lancuchowi X-Forwarded-For", takze temu, co
+// dopisal do niego klient. Liczba mowi, ile wpisow od konca pochodzi od naszej
+// infrastruktury. Wyjasnienie i sposob liczenia adresu: clientIp.js
+app.set("trust proxy", TRUSTED_PROXY_HOPS);
 const PORT = process.env.PORT || 3001;
 
 const ALLOWED_ORIGINS = [
@@ -448,25 +453,6 @@ setInterval(() => {
   if (countryCache.size > 2000) countryCache.clear();
 }, 60 * 60_000);
 
-function extractIP(req) {
-  // x-forwarded-for first entry = original client IP (leftmost in the chain)
-  // x-real-ip on Railway = last connecting proxy (may be Zscaler/CDN, not the real user)
-  const raw = req.headers["cf-connecting-ip"]
-    || req.headers["x-forwarded-for"]?.split(",")[0]
-    || req.headers["x-real-ip"]
-    || req.ip
-    || "";
-  return raw.trim().replace(/^::ffff:/, "");
-}
-
-function isPrivateIP(ip) {
-  if (!ip) return true;
-  if (ip === "::1" || ip === "localhost") return true;
-  if (ip.startsWith("127.") || ip.startsWith("10.") || ip.startsWith("192.168.")) return true;
-  if (/^172\.(1[6-9]|2\d|3[01])\./.test(ip)) return true;
-  return false;
-}
-
 async function lookupCountry(ip) {
   if (!ip || isPrivateIP(ip)) return null;
   if (countryCache.has(ip)) return countryCache.get(ip);
@@ -488,19 +474,25 @@ async function lookupCountry(ip) {
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
-// Diagnostic — shows which IP/headers we see (remove after confirming country works)
+// Sluzy do jednej rzeczy: sprawdzenia, czy liczba warstw posrednich jest dobrana,
+// czyli czy widzimy prawdziwy adres klienta, a nie adres wewnetrzny. Pokazuje
+// wylacznie to, co przyszlo w zadaniu pytajacego, wiec niczego o innych nie zdradza.
 app.get("/api/debug-ip", async (req, res) => {
   const ip = extractIP(req);
   const country = await lookupCountry(ip);
   res.json({
     ip,
     country,
+    // Adres prywatny znaczy, ze widzimy warstwe posrednia zamiast klienta,
+    // czyli ze TRUSTED_PROXY_HOPS jest za male.
     private: isPrivateIP(ip),
-    headers: {
+    trustedProxyHops: TRUSTED_PROXY_HOPS,
+    trustCloudflareHeaders: TRUST_CLOUDFLARE_HEADERS,
+    seen: {
+      "req.ip": req.ip || null,
+      "x-forwarded-for": req.headers["x-forwarded-for"] || null,
       "cf-connecting-ip": req.headers["cf-connecting-ip"] || null,
       "x-real-ip": req.headers["x-real-ip"] || null,
-      "x-forwarded-for": req.headers["x-forwarded-for"] || null,
-      "req.ip": req.ip || null,
     },
   });
 });
@@ -1060,16 +1052,6 @@ app.post("/api/orders/:ref/revision", express.json({ limit: "16kb" }), async (re
 //
 // Tresc i pliki zapisujemy strukturalnie, a nie tylko w mailu, bo po pol
 // roku mail nie wystarczy do ustalenia, co obiecalismy.
-
-/** Wpisywanie kwot i konwersja to czynnosci wlascicielskie, nie klienckie */
-function requireAdmin(req, res) {
-  const token = req.headers["x-admin-token"];
-  if (!token || token !== process.env.ADMIN_API_TOKEN) {
-    res.status(401).json({ error: "Unauthorized" });
-    return false;
-  }
-  return true;
-}
 
 app.post("/api/quotes", express.json({ limit: "1mb" }), async (req, res) => {
   const ip = extractIP(req);
@@ -1877,7 +1859,7 @@ app.get("/api/products/:slug", async (req, res) => {
 /** Dodanie albo aktualizacja produktu. Slug jest kluczem, wiec ten sam wpis
  *  mozna poprawiac wielokrotnie bez tworzenia duplikatow. */
 app.put("/api/products/:slug", express.json({ limit: "256kb" }), async (req, res) => {
-  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
 
   const slug = String(req.params.slug || "").trim().toLowerCase();
@@ -1954,7 +1936,7 @@ app.put("/api/products/:slug", express.json({ limit: "256kb" }), async (req, res
 
 /** Korekta samego stanu magazynowego, bez przepisywania calego produktu. */
 app.patch("/api/products/:slug/stock", express.json({ limit: "4kb" }), async (req, res) => {
-  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
   const { stock } = req.body || {};
   if (!Number.isInteger(stock) || stock < 0) return res.status(400).json({ error: "Stan musi byc liczba nieujemna" });
@@ -1974,7 +1956,7 @@ app.patch("/api/products/:slug/stock", express.json({ limit: "4kb" }), async (re
  * Sklep pyta o dostepnosc na zywo, wiec skutek widac od razu.
  */
 app.patch("/api/products/:slug/status", express.json({ limit: "4kb" }), async (req, res) => {
-  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
   const status = req.body?.status;
   if (!PRODUCT_STATUSES.includes(status)) {
@@ -1990,7 +1972,7 @@ app.patch("/api/products/:slug/status", express.json({ limit: "4kb" }), async (r
 
 /** Lista dla panelu: takze pozycje wylaczone, razem z rezerwacjami. */
 app.get("/api/admin/products", async (req, res) => {
-  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
   const { rows } = await pool.query(
     `SELECT p.slug, p.kind, p.category, p.subcategory, p.offer, p.title, p.short, p.images,
@@ -2050,9 +2032,7 @@ app.post("/api/discounts/check", express.json({ limit: "16kb" }), async (req, re
  * rozdawac kolejne. Inaczej wystarczyloby zapisac sie piec razy.
  */
 app.post("/api/discounts/welcome", express.json({ limit: "4kb" }), async (req, res) => {
-  if (!process.env.NEWSLETTER_CODE_TOKEN || req.headers["x-newsletter-token"] !== process.env.NEWSLETTER_CODE_TOKEN) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
+  if (!requireSecret(req, res, "x-newsletter-token", "NEWSLETTER_CODE_TOKEN")) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
 
   const email = String(req.body?.email || "").trim().toLowerCase();
@@ -2094,7 +2074,7 @@ app.post("/api/discounts/welcome", express.json({ limit: "4kb" }), async (req, r
 
 /** Lista dla panelu, razem z liczba uzyc i rezerwacji w toku. */
 app.get("/api/admin/discounts", async (req, res) => {
-  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
   const { rows } = await pool.query(
     `SELECT c.*,
@@ -2116,7 +2096,7 @@ app.get("/api/admin/discounts", async (req, res) => {
  * dwudziestu roznych kodow ma byc jedna czynnoscia, a nie dwudziestoma.
  */
 app.post("/api/admin/discounts", express.json({ limit: "16kb" }), async (req, res) => {
-  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
 
   const b = req.body || {};
@@ -2169,7 +2149,7 @@ app.post("/api/admin/discounts", express.json({ limit: "16kb" }), async (req, re
  * rabat, ktorego juz nie da sie wytlumaczyc. Uzyte kody sie wylacza, nie kasuje.
  */
 app.delete("/api/admin/discounts/:code", async (req, res) => {
-  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
   const code = normalizeCode(req.params.code);
   const { rows } = await pool.query(
@@ -2194,7 +2174,7 @@ app.delete("/api/admin/discounts/:code", async (req, res) => {
 
 /** Wylaczenie albo wlaczenie kodu. Kod zostaje w bazie razem z historia uzyc. */
 app.patch("/api/admin/discounts/:code", express.json({ limit: "4kb" }), async (req, res) => {
-  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
   const active = req.body?.active;
   if (typeof active !== "boolean") return res.status(400).json({ error: "Pole active musi byc true albo false" });
@@ -2216,7 +2196,7 @@ app.patch("/api/admin/discounts/:code", express.json({ limit: "4kb" }), async (r
 const TRANSFER_TOLERANCE = 0.98;
 
 app.get("/api/orders/awaiting-transfer", async (req, res) => {
-  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
   const { rows } = await pool.query(
     `SELECT order_ref, customer_email, customer_name, lang, total_grosze,
@@ -2239,7 +2219,7 @@ app.get("/api/orders/awaiting-transfer", async (req, res) => {
 });
 
 app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), async (req, res) => {
-  if (req.headers["x-admin-token"] !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
 
   const ref = String(req.params.ref || "");
@@ -2495,8 +2475,7 @@ app.get("/api/orders/:ref", async (req, res) => {
 // --- Lead contact status (for n8n BCC automation) ---
 // Token-authenticated: requires X-Admin-Token header matching ADMIN_API_TOKEN env var
 app.get("/api/leads/contact-status", async (req, res) => {
-  const token = req.headers["x-admin-token"];
-  if (!token || token !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!requireAdmin(req, res)) return;
   const email = (req.query.email || "").trim().toLowerCase();
   if (!email || !CONTACT_EMAIL_RE.test(email)) return res.status(400).json({ error: "Invalid email" });
   if (!pool) return res.json({ contacted: false });
@@ -2509,8 +2488,7 @@ app.get("/api/leads/contact-status", async (req, res) => {
 
 // Mark lead as contacted via API (for n8n BCC automation)
 app.post("/api/leads/mark-contacted", express.json(), async (req, res) => {
-  const token = req.headers["x-admin-token"];
-  if (!token || token !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!requireAdmin(req, res)) return;
   const { email, note } = req.body || {};
   if (!email || !CONTACT_EMAIL_RE.test(email)) return res.status(400).json({ error: "Invalid email" });
   if (!pool) return res.json({ ok: true, updated: 0 });
@@ -2614,10 +2592,7 @@ app.get("/api/laser-matrix/options", async (req, res) => {
 
 // POST /api/laser-matrix/invalidate — clears cache (called by admin after edit)
 app.post("/api/laser-matrix/invalidate", express.json({ limit: "1kb" }), (req, res) => {
-  const token = req.headers["x-invalidate-token"];
-  if (!process.env.MATRIX_INVALIDATE_TOKEN || token !== process.env.MATRIX_INVALIDATE_TOKEN) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
+  if (!requireInvalidateToken(req, res)) return;
   _matrixCache = { ts: 0, rows: null };
   res.json({ ok: true, message: "Cache invalidated" });
 });
@@ -2773,8 +2748,7 @@ app.get("/api/gemstone-prices", async (req, res) => {
 });
 
 app.post("/api/gemstone-prices/invalidate", express.json(), (req, res) => {
-  if (req.headers["x-invalidate-token"] !== process.env.MATRIX_INVALIDATE_TOKEN)
-    return res.status(401).json({ error: "Unauthorized" });
+  if (!requireInvalidateToken(req, res)) return;
   _gemCache = { ts: 0, data: null };
   res.json({ ok: true });
 });
@@ -2956,8 +2930,7 @@ app.post("/api/filaments/vote", express.json({ limit: "4kb" }), voteLimit, async
 
 // POST /api/filaments/invalidate — admin cache invalidation
 app.post("/api/filaments/invalidate", express.json(), (req, res) => {
-  if (req.headers["x-invalidate-token"] !== process.env.MATRIX_INVALIDATE_TOKEN)
-    return res.status(401).json({ error: "Unauthorized" });
+  if (!requireInvalidateToken(req, res)) return;
   _filamentCache = { ts: 0, data: null };
   res.json({ ok: true });
 });
@@ -2998,8 +2971,7 @@ app.post("/api/gmail/push", express.json(), async (req, res) => {
 
 // Setup/renew Gmail watch (token-auth, call once to start and then auto-renewed by cron)
 app.post("/api/gmail/setup-watch", async (req, res) => {
-  const token = req.headers["x-admin-token"];
-  if (!token || token !== process.env.ADMIN_API_TOKEN) return res.status(401).json({ error: "Unauthorized" });
+  if (!requireAdmin(req, res)) return;
   try {
     const gmail = createGmailClient();
     if (!gmail) return res.status(503).json({ error: "Gmail not configured" });
