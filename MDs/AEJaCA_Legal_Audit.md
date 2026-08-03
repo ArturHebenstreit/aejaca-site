@@ -198,9 +198,23 @@ należności. Zgoda marketingowa na newsletter zbierana osobno od regulaminu.
 
 ## Plan naprawy
 
-**Etap 1, dziś.** K1, czyli mail dobierający pouczenie do rodzaju zamówienia,
-razem z wzorem formularza odstąpienia dla zamówień objętych prawem (W2). To
-jedyna pozycja, która wprowadza klienta w błąd co do jego praw.
+**Etap 1, zrobiony.** Mail po zakupie dobiera pouczenie do tego, co faktycznie
+jest w zamówieniu (K1). Rzecz z półki dostaje pełne pouczenie o 14 dniach razem
+ze zwrotem kosztu najtańszej dostawy, rzecz wykonywana pod klienta i treść
+cyfrowa dostają wyłączenie ze wskazaniem podstawy (art. 38 pkt 3 albo pkt 13),
+a zamówienie mieszane wymienia z nazwy, których pozycji dotyczy które zdanie.
+Przy zamówieniach objętych prawem mail niesie **wzór formularza odstąpienia**
+z numerem zamówienia oraz danymi adresata (W2 w części dotyczącej maila).
+
+Reguła doboru siedzi w `chat-api/withdrawal.js`, treści w `orderMail.js`,
+sprawdzenia w `withdrawal.test.mjs` i `orderMail.test.mjs`, uruchamiane przez
+`npm test`. Jeden z testów pilnuje wprost tego, co było błędem: mail dla rzeczy
+z półki nie może zawierać zwrotu „nie przysługuje".
+
+Przy okazji: dane sprzedawcy były w backendzie **ręcznym lustrem**
+`src/data/sellerInfo.js` i zdążyły się rozjechać (brakowało adresu). Skoro stoją
+w pouczeniu i we wzorze formularza, czyli w treści mającej moc wobec konsumenta,
+jadą teraz przez `npm run sync:pricing` jak reszta rdzenia.
 
 **Etap 2.** Nowa Polityka Prywatności realizująca art. 13 RODO, z tabelą celów,
 podstaw, odbiorców i okresów przechowywania (W1), plus jedno zdanie

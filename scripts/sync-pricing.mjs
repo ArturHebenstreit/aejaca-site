@@ -28,6 +28,10 @@ const EXTRA = [
   // Kontrola danych klienta jezdzi tu razem z cenami z tego samego powodu:
   // przegladarka i serwer musza uznawac za poprawne dokladnie to samo.
   { from: join(ROOT, "src", "shop", "customerFields.js"), name: "customerFields.js", source: "src/shop/customerFields.js" },
+  // Dane sprzedawcy jada tu z tego samego powodu: stoja w pouczeniu o odstapieniu
+  // i we wzorze formularza, czyli w tresci, ktora ma moc wobec konsumenta.
+  // Reczne lustro w orderMail.js zdazylo sie juz rozjechac (brak adresu).
+  { from: join(ROOT, "src", "data", "sellerInfo.js"), name: "sellerInfo.js", source: "src/data/sellerInfo.js" },
 ];
 
 /** W kopii wszystko lezy obok siebie, wiec ../data/x.js staje sie ./x.js */
