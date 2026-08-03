@@ -30,6 +30,7 @@ import {
 import { sendOrderPaidEmails, sendTransferInstructions } from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
 import { findLockers, LockerError } from "./lockers.js";
+import { runRetention } from "./retention.js";
 import { requireAdmin, requireInvalidateToken, requireSecret, secretMatches } from "./auth.js";
 import { extractIP, isPrivateIP, TRUSTED_PROXY_HOPS, TRUST_CLOUDFLARE_HEADERS } from "./clientIp.js";
 import { createLimiter, limitBy } from "./rateLimit.js";
@@ -1397,6 +1398,10 @@ async function expireStaleOrders() {
   }
 }
 if (pool) cron.schedule("0 * * * *", expireStaleOrders);
+
+// Sprzatanie danych po terminach z polityki prywatnosci. Raz na dobe w nocy,
+// bo to kasowanie, a nie odswiezanie: ma isc wtedy, gdy nikt nie kupuje.
+if (pool) cron.schedule("15 4 * * *", () => runRetention(pool).catch((e) => console.error("[retencja]", e.message)));
 
 // ============================================================
 // ZAMOWIENIA I PLATNOSCI

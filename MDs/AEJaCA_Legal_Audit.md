@@ -216,9 +216,27 @@ Przy okazji: dane sprzedawcy były w backendzie **ręcznym lustrem**
 w pouczeniu i we wzorze formularza, czyli w treści mającej moc wobec konsumenta,
 jadą teraz przez `npm run sync:pricing` jak reszta rdzenia.
 
-**Etap 2.** Nowa Polityka Prywatności realizująca art. 13 RODO, z tabelą celów,
-podstaw, odbiorców i okresów przechowywania (W1), plus jedno zdanie
-informacyjne w oknie czatu (S5).
+**Etap 2, zrobiony.** Polityka Prywatności napisana od nowa (W1): 11 sekcji
+w trzech językach, administrator z imienia i adresu, pełne wyliczenie celów wraz
+z podstawą prawną i okresem dla każdego, odbiorcy wymienieni z nazwy, osobna
+sekcja o przekazywaniu poza EOG, komplet praw wraz ze skargą do Prezesa UODO,
+informacja o braku profilowania i o tym, co serwis trzyma w przeglądarce.
+Treść w `src/data/privacyContent.js`, strona renderuje ją tak jak Regulamin.
+
+Okno czatu mówi teraz przed pierwszą wiadomością, że rozmowa jest zapisywana na
+12 miesięcy i że odpowiedzi generuje dostawca spoza EOG, z odnośnikiem do
+polityki (S5). Asystent dostał osobną sekcję o danych osobowych, żeby na pytanie
+„co robicie z moimi danymi" odpowiadał zgodnie z polityką, a przy prośbie
+o podanie danych osobowych kierował do formularza zamiast zbierać je w czacie.
+
+**Rzecz, która wyszła przy pisaniu.** Polityka podaje konkretne terminy, a system
+niczego nie kasował: wgrane pliki po 14 dniach dostawały tylko znacznik
+„porzucony", rozmowy leżały bez końca. Termin, którego nikt nie egzekwuje, jest
+przy kontroli gorszy niż brak terminu, bo dowodzi, że wiedzieliśmy. Powstało
+więc `chat-api/retention.js` z zadaniem raz na dobę, z terminami jeden do jednego
+z sekcją 3 polityki. Zamówień i dokumentacji sprzedaży zadanie nie rusza, bo
+trzyma je obowiązek podatkowy i przedawnienie roszczeń. Testy pilnują przede
+wszystkim tego, czego kasować NIE wolno.
 
 **Etap 3.** Strona Zwroty zgodna z Regulaminem, z wzorem formularza (W3),
 oraz informacja o weryfikacji opinii (S1).

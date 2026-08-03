@@ -618,26 +618,6 @@ export default {
   },
 
   // Privacy page
-  privacy: {
-    title: "Privacy Policy",
-    subtitle: "AEJaCA, Artisan Elegance Jewelry and Crafted Art",
-    paragraphs: [
-      "This Privacy Policy describes how AEJaCA collects, uses, and protects your personal data when you interact with our website, services, and communications.",
-      "We process data related to inquiries, personalization requests, orders, and communication with clients. We do not sell or share your personal data with third parties for marketing purposes.",
-      "The data we collect may include your name, email address, phone number, and project details, only when you voluntarily provide this information through our contact form or direct communication channels.",
-      "We use this data solely to respond to your inquiries, fulfill orders, and improve our services. Your data is stored securely and retained only as long as necessary for the stated purposes.",
-    ],
-    contactLine: "For more details or to request data deletion, contact us at",
-    consent: "By using our website and services, you agree to the practices described in this policy.",
-    plTitle: "Wersja polska",
-    plParagraphs: [
-      "Niniejsza Polityka Prywatności opisuje, w jaki sposób AEJaCA gromadzi, wykorzystuje i chroni Twoje dane osobowe podczas korzystania z naszej strony internetowej, usług i komunikacji.",
-      "Przetwarzamy dane związane z zapytaniami, zamówieniami personalizacji oraz komunikacją z klientami. Nie sprzedajemy ani nie udostępniamy Twoich danych osobowych stronom trzecim w celach marketingowych.",
-      "Dane, które gromadzimy, mogą obejmować Twoje imię, adres e-mail, numer telefonu i szczegóły projektu, wyłącznie gdy dobrowolnie podajesz te informacje przez formularz kontaktowy lub bezpośrednie kanały komunikacji.",
-    ],
-    plContactLine: "W sprawach szczegółowych lub w celu żądania usunięcia danych, napisz na",
-    backHome: "Back to Home",
-  },
 
   // Footer
   footer: {
