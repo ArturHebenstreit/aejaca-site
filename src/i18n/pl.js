@@ -614,26 +614,6 @@ export default {
     socialTitle: "Znajdź Nas Online",
   },
 
-  privacy: {
-    title: "Polityka Prywatności",
-    subtitle: "AEJaCA, Artisan Elegance Jewelry and Crafted Art",
-    paragraphs: [
-      "Niniejsza Polityka Prywatności opisuje, w jaki sposób AEJaCA gromadzi, wykorzystuje i chroni Twoje dane osobowe podczas korzystania z naszej strony internetowej, usług i komunikacji.",
-      "Przetwarzamy dane związane z zapytaniami, zamówieniami personalizacji oraz komunikacją z klientami. Nie sprzedajemy ani nie udostępniamy Twoich danych osobowych stronom trzecim w celach marketingowych.",
-      "Dane, które gromadzimy, mogą obejmować Twoje imię, adres e-mail, numer telefonu i szczegóły projektu, wyłącznie gdy dobrowolnie podajesz te informacje przez formularz kontaktowy lub bezpośrednie kanały komunikacji.",
-      "Używamy tych danych wyłącznie do odpowiadania na zapytania, realizacji zamówień i ulepszania naszych usług. Twoje dane są przechowywane bezpiecznie i zachowywane tylko tak długo, jak jest to konieczne.",
-    ],
-    contactLine: "W celu uzyskania szczegółów lub żądania usunięcia danych, skontaktuj się z nami pod adresem",
-    consent: "Korzystając z naszej strony internetowej i usług, zgadzasz się na praktyki opisane w niniejszej polityce.",
-    plTitle: "English version",
-    plParagraphs: [
-      "This Privacy Policy describes how AEJaCA collects, uses, and protects your personal data when you interact with our website, services, and communications.",
-      "We process data related to inquiries, personalization requests, orders, and communication with clients. We do not sell or share your personal data with third parties for marketing purposes.",
-      "The data we collect may include your name, email address, phone number, and project details, only when you voluntarily provide this information through our contact form or direct communication channels.",
-    ],
-    plContactLine: "For more details or to request data deletion, contact us at",
-    backHome: "Powrót na stronę główną",
-  },
 
   footer: {
     shop: "Sklep",
@@ -652,7 +632,7 @@ export default {
   },
 
   newsletter: {
-    alreadySubscribed: "Ten adres jest już na naszej liście (zapis z dnia {date}). Kod AEJACA10 powinien być w Twojej skrzynce.",
-    alreadySubscribedNoDate: "Ten adres jest już na naszej liście. Kod AEJACA10 powinien być w Twojej skrzynce.",
+    alreadySubscribed: "Ten adres jest już na naszej liście (zapis z dnia {date}). Kod rabatowy powinien być w Twojej skrzynce, sprawdź też folder spam.",
+    alreadySubscribedNoDate: "Ten adres jest już na naszej liście. Kod rabatowy powinien być w Twojej skrzynce, sprawdź też folder spam.",
   },
 };

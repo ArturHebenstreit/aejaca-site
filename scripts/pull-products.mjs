@@ -28,7 +28,12 @@ const KEYS = [
   "slug", "category", "subcategory", "offer", "kind", "status",
   "title", "short", "description", "specs", "note",
   "images",
-  "priceGrosze", "weightG", "stock", "leadTimeDays",
+  "priceGrosze",
+  // Okno porownawcze do informacji o obnizce ceny. Jedzie do odcisku razem
+  // z cena, bo strony sklepu sa statyczne: zmiana ceny i tak wymaga wdrozenia,
+  // wiec obie liczby zmieniaja sie w tej samej chwili i nie moga sie rozjechac.
+  "lowest30Grosze", "highest30Grosze", "daysOnSale",
+  "weightG", "stock", "leadTimeDays",
   "personalization", "license",
 ];
 

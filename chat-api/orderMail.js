@@ -12,11 +12,15 @@
 //  3. jesli nic nie jest dostepne, logujemy i nie przerywamy obslugi ITN.
 // Blad wysylki maila NIGDY nie moze wywrocic potwierdzenia platnosci.
 
-// Lustro src/data/sellerInfo.js. Przy zmianie danych sprzedawcy poprawic w obu miejscach.
+// Dane sprzedawcy jada z src/data/sellerInfo.js przez `npm run sync:pricing`.
+// Reczne lustro zdazylo sie juz rozjechac z oryginalem, a te dane stoja
+// w pouczeniu o odstapieniu, wiec musza byc jedne.
+import { SELLER as SELLER_DATA } from "./pricing/sellerInfo.js";
+import { withdrawalSummary, REGIME } from "./withdrawal.js";
+
 const SELLER = {
-  brand: "AEJaCA",
-  email: "contact@aejaca.com",
-  phone: "+48 780 737 786",
+  ...SELLER_DATA,
+  brand: SELLER_DATA.brandName,
   site: "https://www.aejaca.com",
 };
 
@@ -40,8 +44,26 @@ const T = {
     nextBody:
       "Zabieramy się do pracy. Odezwiemy się, gdy zamówienie będzie gotowe do wysyłki lub odbioru. Jeśli coś w Twoim zleceniu będzie wymagało doprecyzowania, napiszemy wcześniej.",
     withdrawal: "Prawo odstąpienia",
-    withdrawalBody:
-      "Zamówienie dotyczy rzeczy wykonywanej według Twojej specyfikacji, więc zgodnie z art. 38 ustawy o prawach konsumenta i złożonym przez Ciebie oświadczeniem prawo odstąpienia od umowy nie przysługuje po rozpoczęciu wykonania.",
+    wdStandard:
+      "Masz 14 dni na odstąpienie od umowy bez podania przyczyny, licząc od dnia, w którym odebrałeś przesyłkę. Wystarczy wiadomość na contact@aejaca.com, nie trzeba podawać powodu ani używać żadnego formularza. Zwracamy wszystkie otrzymane płatności, w tym koszt najtańszej oferowanej dostawy, w ciągu 14 dni od otrzymania oświadczenia. Bezpośredni koszt odesłania rzeczy ponosisz Ty.",
+    wdMadeToOrder:
+      "Zamówienie dotyczy rzeczy wykonywanej według Twojej specyfikacji, więc zgodnie z art. 38 pkt 3 ustawy o prawach konsumenta i złożonym przez Ciebie oświadczeniem prawo odstąpienia od umowy nie przysługuje po rozpoczęciu wykonania.",
+    wdDigital:
+      "Zamówienie obejmuje treść cyfrową dostarczaną poza nośnikiem materialnym. Zgodnie z art. 38 pkt 13 ustawy o prawach konsumenta i Twoją wyraźną zgodą prawo odstąpienia wygasa z chwilą rozpoczęcia pobierania.",
+    wdMixedCovered: "Prawo odstąpienia w terminie 14 dni obejmuje:",
+    wdMixedExcluded: "Prawo odstąpienia nie obejmuje poniższych pozycji, bo powstają pod Twoje zamówienie albo są treścią cyfrową:",
+    wdFormTitle: "Wzór formularza odstąpienia od umowy",
+    wdFormNote: "Formularz jest dobrowolny, wystarczy zwykła wiadomość. Zostawiamy go, żebyś nie musiał go szukać.",
+    wdForm: [
+      "Adresat: {seller}, {address}, contact@aejaca.com",
+      "Ja niniejszym informuję o moim odstąpieniu od umowy sprzedaży następujących rzeczy:",
+      "Numer zamówienia: {ref}",
+      "Data odbioru:",
+      "Imię i nazwisko konsumenta:",
+      "Adres konsumenta:",
+      "Data:",
+      "Podpis (tylko jeżeli formularz jest przesyłany w wersji papierowej):",
+    ],
     questions: "Pytania",
     questionsBody: "Odpisz na tę wiadomość albo zadzwoń.",
     terms: "Regulamin",
@@ -72,8 +94,26 @@ const T = {
     nextBody:
       "We are starting work. We will get in touch once your order is ready for shipping or collection. If anything in your order needs clarification, we will write to you earlier.",
     withdrawal: "Right of withdrawal",
-    withdrawalBody:
-      "This order concerns an item made to your specification, so under Article 38 of the Polish Consumer Rights Act and the statement you submitted, the right of withdrawal does not apply once production has begun.",
+    wdStandard:
+      "You have 14 days to withdraw from the contract without giving a reason, counted from the day you received the parcel. An email to contact@aejaca.com is enough, no reason and no form required. We refund every payment received, including the cost of the cheapest delivery we offer, within 14 days of receiving your statement. You bear the direct cost of returning the goods.",
+    wdMadeToOrder:
+      "This order concerns an item made to your specification, so under Article 38(3) of the Polish Consumer Rights Act and the statement you submitted, the right of withdrawal does not apply once production has begun.",
+    wdDigital:
+      "This order includes digital content supplied without a tangible medium. Under Article 38(13) of the Polish Consumer Rights Act and your express consent, the right of withdrawal ends once the download begins.",
+    wdMixedCovered: "The 14-day right of withdrawal covers:",
+    wdMixedExcluded: "It does not cover the items below, because they are made to your order or are digital content:",
+    wdFormTitle: "Model withdrawal form",
+    wdFormNote: "The form is optional, a plain message is enough. We include it so you do not have to look for it.",
+    wdForm: [
+      "To: {seller}, {address}, contact@aejaca.com",
+      "I hereby give notice that I withdraw from the contract of sale of the following goods:",
+      "Order number: {ref}",
+      "Date of receipt:",
+      "Consumer's name:",
+      "Consumer's address:",
+      "Date:",
+      "Signature (only if this form is sent on paper):",
+    ],
     questions: "Questions",
     questionsBody: "Just reply to this message or call us.",
     terms: "Terms of Service",
@@ -104,8 +144,26 @@ const T = {
     nextBody:
       "Wir beginnen mit der Arbeit. Wir melden uns, sobald Ihre Bestellung zum Versand oder zur Abholung bereit ist. Sollte etwas an Ihrem Auftrag klärungsbedürftig sein, schreiben wir Ihnen vorher.",
     withdrawal: "Widerrufsrecht",
-    withdrawalBody:
-      "Die Bestellung betrifft eine nach Ihren Vorgaben gefertigte Sache. Gemäß Art. 38 des polnischen Verbraucherrechtsgesetzes und Ihrer abgegebenen Erklärung besteht nach Fertigungsbeginn kein Widerrufsrecht.",
+    wdStandard:
+      "Sie haben 14 Tage Zeit, ohne Angabe von Gründen vom Vertrag zurückzutreten, gerechnet ab dem Tag, an dem Sie die Sendung erhalten haben. Eine Nachricht an contact@aejaca.com genügt, ohne Begründung und ohne Formular. Wir erstatten alle erhaltenen Zahlungen einschließlich der Kosten der günstigsten von uns angebotenen Lieferung innerhalb von 14 Tagen nach Eingang Ihrer Erklärung. Die unmittelbaren Kosten der Rücksendung tragen Sie.",
+    wdMadeToOrder:
+      "Die Bestellung betrifft eine nach Ihren Vorgaben gefertigte Sache. Gemäß Art. 38 Nr. 3 des polnischen Verbraucherrechtsgesetzes und Ihrer abgegebenen Erklärung besteht nach Fertigungsbeginn kein Widerrufsrecht.",
+    wdDigital:
+      "Die Bestellung umfasst digitale Inhalte, die nicht auf einem körperlichen Datenträger geliefert werden. Gemäß Art. 38 Nr. 13 des polnischen Verbraucherrechtsgesetzes und Ihrer ausdrücklichen Zustimmung erlischt das Widerrufsrecht mit Beginn des Downloads.",
+    wdMixedCovered: "Das 14-tägige Widerrufsrecht gilt für:",
+    wdMixedExcluded: "Nicht erfasst sind die folgenden Positionen, da sie nach Ihren Vorgaben gefertigt werden oder digitale Inhalte sind:",
+    wdFormTitle: "Muster-Widerrufsformular",
+    wdFormNote: "Das Formular ist freiwillig, eine formlose Nachricht genügt. Wir legen es bei, damit Sie nicht danach suchen müssen.",
+    wdForm: [
+      "An: {seller}, {address}, contact@aejaca.com",
+      "Hiermit widerrufe ich den Vertrag über den Kauf der folgenden Waren:",
+      "Bestellnummer: {ref}",
+      "Erhalten am:",
+      "Name des Verbrauchers:",
+      "Anschrift des Verbrauchers:",
+      "Datum:",
+      "Unterschrift (nur bei Mitteilung auf Papier):",
+    ],
     questions: "Fragen",
     questionsBody: "Antworten Sie einfach auf diese Nachricht oder rufen Sie uns an.",
     terms: "AGB",
@@ -127,6 +185,41 @@ const T = {
 };
 
 const money = (grosze) => `${(grosze / 100).toFixed(2).replace(".", ",")} PLN`;
+
+/**
+ * Pouczenie o odstapieniu, dobrane do tego, co jest w zamowieniu.
+ *
+ * Zwraca akapity i, gdy cokolwiek jest objete prawem, wzor formularza.
+ * Zamowienie mieszane dostaje obie listy z nazwami pozycji, zeby klient
+ * wiedzial, czego dotyczy ktore zdanie, zamiast zgadywac.
+ */
+function withdrawalParts(order, items, l) {
+  const w = withdrawalSummary(items);
+  const paras = [];
+
+  if (w.single === REGIME.STANDARD) paras.push(l.wdStandard);
+  else if (w.single === REGIME.MADE_TO_ORDER) paras.push(l.wdMadeToOrder);
+  else if (w.single === REGIME.DIGITAL) paras.push(l.wdDigital);
+  else if (w.mixed) {
+    if (w.hasCovered) {
+      paras.push(`${l.wdMixedCovered} ${w.covered.map((i) => i.title).join(", ")}.`);
+      paras.push(l.wdStandard);
+    }
+    if (w.hasExcluded) {
+      paras.push(`${l.wdMixedExcluded} ${w.excluded.map((i) => i.title).join(", ")}.`);
+    }
+  }
+
+  const form = w.hasCovered
+    ? l.wdForm.map((line) =>
+        line
+          .replace("{seller}", SELLER.legalName)
+          .replace("{address}", SELLER.addressLines.join(", "))
+          .replace("{ref}", order.order_ref))
+    : null;
+
+  return { paras, form, note: form ? l.wdFormNote : null, title: l.wdFormTitle };
+}
 
 function esc(s) {
   return String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -152,6 +245,7 @@ function customerHtml(order, items, lang) {
     .join("");
 
   const deliveryName = l.deliveryNames[order.delivery_method] || order.delivery_method || "";
+  const wd = withdrawalParts(order, items, l);
 
   return `<!doctype html><html><body style="margin:0;padding:24px;background:#f6f6f6;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111">
   <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px">
@@ -178,7 +272,12 @@ function customerHtml(order, items, lang) {
     <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${l.nextBody}</p>
 
     <h3 style="font-size:14px;margin:20px 0 6px">${l.withdrawal}</h3>
-    <p style="margin:0;line-height:1.6;font-size:13px;color:#666">${l.withdrawalBody}</p>
+    ${wd.paras.map((t) => `<p style="margin:0 0 8px;line-height:1.6;font-size:13px;color:#666">${esc(t)}</p>`).join("")}
+    ${wd.form ? `
+      <p style="margin:12px 0 4px;font-size:12px;color:#888">${esc(wd.title)}. ${esc(wd.note)}</p>
+      <div style="border:1px solid #e5e5e5;border-radius:8px;padding:12px;font-size:12px;color:#555;line-height:1.9">
+        ${wd.form.map((line) => esc(line)).join("<br>")}
+      </div>` : ""}
 
     <h3 style="font-size:14px;margin:20px 0 6px">${l.questions}</h3>
     <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${l.questionsBody}<br>
@@ -194,6 +293,7 @@ function customerHtml(order, items, lang) {
 function customerText(order, items, lang) {
   const l = T[lang] || T.pl;
   const lines = items.map((i) => `- ${i.title} x ${i.qty}: ${money(i.line_grosze)}`);
+  const wd = withdrawalParts(order, items, l);
   return [
     l.hi,
     "",
@@ -208,7 +308,8 @@ function customerText(order, items, lang) {
     "",
     `${l.next}: ${l.nextBody}`,
     "",
-    `${l.withdrawal}: ${l.withdrawalBody}`,
+    `${l.withdrawal}: ${wd.paras.join(" ")}`,
+    ...(wd.form ? ["", `${wd.title}:`, ...wd.form] : []),
     "",
     `${l.questions}: ${SELLER.email}, ${SELLER.phone}`,
     "",
@@ -453,10 +554,15 @@ export async function sendOrderPaidEmails(pool, orderId) {
     if (!order) return false;
 
     const { rows: items } = await pool.query(
+      // `item_type` oraz rodzaj i sposob sprzedazy produktu decyduja o tym,
+      // ktore pouczenie o odstapieniu trafi do maila (withdrawal.js). Bez tych
+      // trzech kolumn mail nie ma z czego wybierac i wysyla jedno dla wszystkich.
       `SELECT oi.title, oi.qty, oi.unit_grosze, oi.line_grosze, oi.calculator, oi.params,
-              oi.file_name, oi.file_sha256, oi.file_url, oi.geometry, u.token AS upload_token
+              oi.file_name, oi.file_sha256, oi.file_url, oi.geometry, u.token AS upload_token,
+              oi.item_type, p.kind AS product_kind, p.offer AS product_offer
          FROM order_items oi
          LEFT JOIN uploads u ON u.id = oi.upload_id
+         LEFT JOIN products p ON p.id = oi.product_id
         WHERE oi.order_id = $1
         ORDER BY oi.id`,
       [orderId]

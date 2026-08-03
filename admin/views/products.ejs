@@ -47,6 +47,7 @@
               <th class="px-3 py-2 font-medium">Dział</th>
               <th class="px-3 py-2 font-medium">Oferta</th>
               <th class="px-3 py-2 font-medium text-right">Cena</th>
+              <th class="px-3 py-2 font-medium text-right">Min. 30 dni</th>
               <th class="px-3 py-2 font-medium">Stan</th>
               <th class="px-3 py-2 font-medium text-right">Rezerw.</th>
               <th class="px-3 py-2 font-medium text-right">Dostępne</th>
@@ -78,6 +79,12 @@
                   <div class="text-neutral-600 text-[10px]"><%= p.kind === 'digital' ? 'plik' : 'fizyczny' %></div>
                 </td>
                 <td class="px-3 py-2 text-right text-neutral-200 whitespace-nowrap"><%= pln(p.price_grosze) %></td>
+                <%# Najnizsza cena z 30 dni. Przy ogloszonej obnizce (np. hasle
+                    promocyjnym dla wszystkich) trzeba ja podac obok ceny po
+                    obnizce, wiec ma byc pod reka, a nie do liczenia z pamieci. %>
+                <td class="px-3 py-2 text-right whitespace-nowrap <%= p.lowest_30d < p.price_grosze ? 'text-amber-300' : 'text-neutral-600' %>">
+                  <%= pln(p.lowest_30d ?? p.price_grosze) %>
+                </td>
                 <td class="px-3 py-2">
                   <% if (p.stock === null) { %>
                     <span class="text-blue-300 text-xs">bez limitu</span>

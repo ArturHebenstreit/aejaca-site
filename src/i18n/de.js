@@ -604,26 +604,6 @@ export default {
     socialTitle: "Finden Sie Uns Online",
   },
 
-  privacy: {
-    title: "Datenschutzrichtlinie",
-    subtitle: "AEJaCA, Artisan Elegance Jewelry and Crafted Art",
-    paragraphs: [
-      "Diese Datenschutzrichtlinie beschreibt, wie AEJaCA Ihre persönlichen Daten sammelt, verwendet und schützt, wenn Sie mit unserer Website, unseren Diensten und unserer Kommunikation interagieren.",
-      "Wir verarbeiten Daten im Zusammenhang mit Anfragen, Personalisierungsaufträgen und der Kommunikation mit Kunden. Wir verkaufen oder teilen Ihre persönlichen Daten nicht an Dritte zu Marketingzwecken.",
-      "Die von uns erhobenen Daten können Ihren Namen, Ihre E-Mail-Adresse, Telefonnummer und Projektdetails umfassen, nur wenn Sie diese Informationen freiwillig über unser Kontaktformular oder direkte Kommunikationskanäle bereitstellen.",
-      "Wir verwenden diese Daten ausschließlich zur Beantwortung Ihrer Anfragen, Auftragserfüllung und Verbesserung unserer Dienste. Ihre Daten werden sicher gespeichert und nur so lange aufbewahrt, wie es für die genannten Zwecke erforderlich ist.",
-    ],
-    contactLine: "Für weitere Details oder zur Anforderung der Datenlöschung kontaktieren Sie uns unter",
-    consent: "Durch die Nutzung unserer Website und Dienste stimmen Sie den in dieser Richtlinie beschriebenen Praktiken zu.",
-    plTitle: "English version",
-    plParagraphs: [
-      "This Privacy Policy describes how AEJaCA collects, uses, and protects your personal data when you interact with our website, services, and communications.",
-      "We process data related to inquiries, personalization requests, orders, and communication with clients. We do not sell or share your personal data with third parties for marketing purposes.",
-      "The data we collect may include your name, email address, phone number, and project details, only when you voluntarily provide this information through our contact form or direct communication channels.",
-    ],
-    plContactLine: "For more details or to request data deletion, contact us at",
-    backHome: "Zurück zur Startseite",
-  },
 
   footer: {
     shop: "Shop",
@@ -642,7 +622,7 @@ export default {
   },
 
   newsletter: {
-    alreadySubscribed: "Diese E-Mail ist bereits auf unserer Liste (angemeldet am {date}). Dein Code AEJACA10 sollte in deinem Posteingang sein.",
-    alreadySubscribedNoDate: "Diese E-Mail ist bereits auf unserer Liste. Dein Code AEJACA10 sollte in deinem Posteingang sein.",
+    alreadySubscribed: "Diese E-Mail ist bereits auf unserer Liste (angemeldet am {date}). Dein Rabattcode sollte in deinem Posteingang sein, prüfe auch den Spam-Ordner.",
+    alreadySubscribedNoDate: "Diese E-Mail ist bereits auf unserer Liste. Dein Rabattcode sollte in deinem Posteingang sein, prüfe auch den Spam-Ordner.",
   },
 };

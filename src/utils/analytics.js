@@ -1,18 +1,27 @@
 // ============================================================
 // AEJaCA ANALYTICS — lightweight event tracking
 // ============================================================
-// Uses Cloudflare Web Analytics custom events via sendBeacon.
-// No cookies, no PII, GDPR-compliant.
-// Events are sent to a CF Workers endpoint for aggregation.
+// Zdarzenia ida przez sendBeacon na wlasny punkt zbiorczy. Bez ciasteczek,
+// bez danych osobowych i BEZ ZAPISU CZEGOKOLWIEK W URZADZENIU.
 //
-// If no CF Worker endpoint is configured, events are stored
-// in localStorage for later export / debugging.
+// To ostatnie jest wymogiem, nie zbiegiem okolicznosci. Art. 398 Prawa
+// komunikacji elektronicznej wymaga zgody na przechowywanie informacji
+// w urzadzeniu koncowym poza tym, co niezbedne do wykonania uslugi zadanej
+// przez uzytkownika. Statystyka niezbedna nie jest, wiec gdyby cokolwiek
+// zapisywala, potrzebowalaby zgody, czyli banera.
+//
+// Kolejka zyje w pamieci strony i ginie razem z nia, identyfikator odwiedzin
+// tak samo: losowany przy wejsciu, nigdzie nie zapisywany, wiec nie laczy
+// dwoch wizyt tej samej osoby. Wczesniej byla tu jeszcze sciezka zapasowa
+// zapisujaca zdarzenia do localStorage, gdy nie skonfigurowano punktu
+// zbiorczego. Nigdy nie dzialala na produkcji, ale jej samo istnienie
+// sprawialo, ze zdanie "nic nie zapisujemy" bylo prawdziwe warunkowo,
+// a nie z konstrukcji. Zostala usunieta.
 // ============================================================
 
 const _chatBase = import.meta.env.VITE_CHAT_API_URL?.replace(/\/$/, '');
 const ENDPOINT = import.meta.env.VITE_ANALYTICS_URL
   || (_chatBase ? `${_chatBase}/api/events` : null);
-const QUEUE_KEY = "aejaca_events";
 const FLUSH_INTERVAL = 30_000;  // flush every 30s
 const MAX_QUEUE = 200;
 
@@ -155,16 +164,9 @@ function flush() {
     } else {
       fetch(ENDPOINT, { method: "POST", body: payload, headers: { "Content-Type": "text/plain" }, keepalive: true }).catch(() => {});
     }
-  } else {
-    // Store locally for debugging / manual export
-    try {
-      const stored = JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]");
-      const merged = [...stored, ...batch].slice(-500);
-      localStorage.setItem(QUEUE_KEY, JSON.stringify(merged));
-    } catch {
-      // localStorage full or unavailable — silently skip
-    }
   }
+  // Bez skonfigurowanego punktu zbiorczego zdarzenia po prostu przepadaja.
+  // Statystyka nie jest warta zapisu w cudzym urzadzeniu.
 }
 
 // Browser-only initialization
@@ -176,17 +178,11 @@ if (typeof window !== "undefined") {
   });
   window.addEventListener("pagehide", flush);
 
-  window.getAnalyticsEvents = () => {
-    flush();
-    try {
-      return JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]");
-    } catch {
-      return [];
-    }
-  };
+  // Podglad tego, co czeka w pamieci, do zajrzenia w konsoli przy diagnozie.
+  window.getAnalyticsEvents = () => [...queue];
 
   window.exportAnalyticsCSV = () => {
-    const events = window.getAnalyticsEvents();
+    const events = [...queue];
     const csv = "timestamp,session,page,category,action,label,value\n" +
       events.map(e => `${new Date(e.t).toISOString()},${e.s},${e.p},${e.c},${e.a},${e.l},${e.v ?? ""}`).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });

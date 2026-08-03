@@ -30,6 +30,7 @@ import {
 import { sendOrderPaidEmails, sendTransferInstructions } from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
 import { findLockers, LockerError } from "./lockers.js";
+import { runRetention } from "./retention.js";
 import { requireAdmin, requireInvalidateToken, requireSecret, secretMatches } from "./auth.js";
 import { extractIP, isPrivateIP, TRUSTED_PROXY_HOPS, TRUST_CLOUDFLARE_HEADERS } from "./clientIp.js";
 import { createLimiter, limitBy } from "./rateLimit.js";
@@ -201,6 +202,19 @@ if (pool) {
   pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 100`).catch(() => {});
   pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS sold_count INTEGER NOT NULL DEFAULT 0`).catch(() => {});
   pool.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS notes TEXT`).catch(() => {});
+  // Historia cen produktow. Ustawa o informowaniu o cenach wymaga, zeby przy
+  // ogloszonej obnizce podac najnizsza cene z 30 dni przed obnizka. Bez zapisu
+  // kazdej zmiany nie ma z czego jej wyliczyc, a odtworzyc sie tego wstecz nie da.
+  pool.query(`
+    CREATE TABLE IF NOT EXISTS product_price_history (
+      id BIGSERIAL PRIMARY KEY,
+      product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+      price_grosze INTEGER NOT NULL,
+      changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_price_history_product
+      ON product_price_history (product_id, changed_at DESC);
+  `).catch((e) => console.error("[migracja] historia cen:", e.message));
   pool.query(`
     DO $$ BEGIN
       ALTER TABLE products DROP CONSTRAINT IF EXISTS products_offer_check;
@@ -1398,6 +1412,10 @@ async function expireStaleOrders() {
 }
 if (pool) cron.schedule("0 * * * *", expireStaleOrders);
 
+// Sprzatanie danych po terminach z polityki prywatnosci. Raz na dobe w nocy,
+// bo to kasowanie, a nie odswiezanie: ma isc wtedy, gdy nikt nie kupuje.
+if (pool) cron.schedule("15 4 * * *", () => runRetention(pool).catch((e) => console.error("[retencja]", e.message)));
+
 // ============================================================
 // ZAMOWIENIA I PLATNOSCI
 // ============================================================
@@ -1961,6 +1979,23 @@ app.put("/api/products/:slug", express.json({ limit: "256kb" }), async (req, res
        Number.isInteger(b.sortOrder) ? b.sortOrder : 100,
        status, b.license || null, b.notes || null]
     );
+    // Historie dopisujemy tylko przy realnej zmianie ceny, zeby zapisanie
+    // opisu produktu nie tworzylo wpisu udajacego zmiane cennika.
+    await pool.query(
+      `INSERT INTO product_price_history (product_id, price_grosze)
+       SELECT $1, $2
+        WHERE NOT EXISTS (
+          SELECT 1 FROM product_price_history h
+           WHERE h.product_id = $1
+           ORDER BY h.changed_at DESC LIMIT 1
+        ) OR (
+          SELECT h.price_grosze FROM product_price_history h
+           WHERE h.product_id = $1
+           ORDER BY h.changed_at DESC LIMIT 1
+        ) <> $2`,
+      [rows[0].id, b.priceGrosze]
+    ).catch((e) => console.error("[produkty] historia ceny:", e.message));
+
     res.json({ ok: true, product: rows[0] });
   } catch (e) {
     console.error("[produkty] zapis:", e.message);
@@ -2009,9 +2044,18 @@ app.get("/api/admin/products", async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
   const { rows } = await pool.query(
+    // `lowest_30d` to najnizsza cena z ostatnich 30 dni. Przy ogloszonej obnizce
+    // trzeba ja podac obok ceny promocyjnej, wiec panel pokazuje ja od reki,
+    // zamiast zmuszac do liczenia z pamieci.
     `SELECT p.slug, p.kind, p.category, p.subcategory, p.offer, p.title, p.short, p.images,
             p.price_grosze, p.weight_g, p.stock, p.status, p.lead_time_days,
-            p.sold_count, p.sort_order, p.notes, p.updated_at, a.reserved, a.available
+            p.sold_count, p.sort_order, p.notes, p.updated_at, a.reserved, a.available,
+            LEAST(
+              p.price_grosze,
+              COALESCE((SELECT MIN(h.price_grosze) FROM product_price_history h
+                         WHERE h.product_id = p.id AND h.changed_at > NOW() - INTERVAL '30 days'),
+                       p.price_grosze)
+            ) AS lowest_30d
        FROM products p LEFT JOIN product_availability a ON a.id = p.id
       ORDER BY p.status = 'live' DESC, p.sort_order, p.slug`
   );
