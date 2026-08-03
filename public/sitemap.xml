@@ -852,6 +852,16 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/studio/" />
   </url>
 
+  <!-- Product: pierscionek-granat-zloto-585 -->
+  <url>
+    <loc>https://www.aejaca.com/shop/pierscionek-granat-zloto-585/</loc>
+    <lastmod>2026-08-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/pierscionek-granat-zloto-585/" />
+  </url>
+
   <!-- Service: print_fdm -->
   <url>
     <loc>https://www.aejaca.com/shop/service/print_fdm/</loc>
