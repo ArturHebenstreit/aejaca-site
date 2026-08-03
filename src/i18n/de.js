@@ -142,7 +142,7 @@ export default {
       { q: "Fertigen Sie individuellen Schmuck an?", a: "Ja. Wir entwerfen und fertigen einzigartigen Schmuck nach Maß — Verlobungsringe, Eheringe, Halsketten, Armbänder und Ohrringe aus 925er Sterlingsilber und 14K/18K-Gold mit echten Edelsteinen. Wir modellieren in 3D (Rhino, Fusion 360) aus einer Skizze oder Idee und fertigen im Wachsausschmelzverfahren mit Handveredelung." },
       { q: "Was bietet AEJaCA sTuDiO?", a: "AEJaCA sTuDiO ist digitale Fertigung auf Bestellung: 3D-Modellierung / CAD technischer und funktionaler Teile (Rhino, Fusion 360), FDM/SLA-3D-Druck, CO2-Lasergravur und -schnitt, Faserlaser-Markierung, Harzguss und Prototyping. Sie können Ihre eigene STL/SVG-Datei hochladen oder ein Modell von Grund auf entwerfen lassen." },
       { q: "Was kostet eine Bestellung und wie schnell erhalte ich ein Angebot?", a: "Mit den AEJaCA-Rechnern erhalten Sie online in etwa 30 Sekunden ein Angebot — ohne auf eine E-Mail zu warten. Der einfache Modus liefert eine schnelle Schätzung, der erweiterte Modus volle Kontrolle über Metall, Steine und Veredelung. Zum Beispiel: ein Silberring mit Edelstein ab 95 €, ein 3D-gedruckter Schlüsselanhänger ab 6 €." },
-      { q: "Wo befindet sich AEJaCA und versenden Sie international?", a: "Das Studio befindet sich in Józefosław bei Warschau und versendet weltweit. Innerhalb Polens: InPost-Kurier ab 7 €, Paketautomat ab 4 €, kostenloser Versand ab 100 €. Wir liefern auch in die EU, nach Großbritannien und in die USA per DHL Express." },
+      { q: "Wo befindet sich AEJaCA und versenden Sie international?", a: "Das Studio befindet sich in Józefosław bei Warschau und versendet weltweit. Innerhalb Polens: InPost-Paketautomat 15,90 PLN, Kurier 24,90 PLN, kostenloser Versand ab 400 PLN. Wir liefern auch in die EU, nach Großbritannien und in die USA per DHL Express." },
     ],
   },
 
@@ -290,7 +290,7 @@ export default {
         { q: "Versenden Sie international?", a: "Ja! Wir versenden weltweit per Sendungsverfolgung und versichert. Versandkosten variieren je nach Zielort." },
         { q: "Wie lange dauert die Auftragsabwicklung?", a: "Bei vorhandenen Materialien (Metall + Steine) bis zu 7 Werktage. Individuell gefertigte oder gravierte Stücke, bis zu 14 Tage. Sie erhalten eine Sendungsverfolgungsnummer, sobald die Bestellung versandt wird." },
         { q: "Kann ich Schmuck zurückgeben?", a: "Universalprodukte, ja, innerhalb von 14 Tagen nach Lieferung (ungetragen, Originalverpackung). Maßanfertigungen (Gravur, Sondergröße) sind vom Umtausch ausgeschlossen. Details auf unserer [Rückgabeseite](/returns)." },
-        { q: "Was kostet der Versand?", a: "InPost-Versand ab 12 PLN. Kostenloser Versand ab 400 PLN Bestellwert. International: ab 35 PLN (EU) per Sendungsverfolgung. Details auf unserer [Versandseite](/shipping)." },
+        { q: "Was kostet der Versand?", a: "InPost-Paketautomat 15,90 PLN, Kurier 24,90 PLN, kostenloser Versand ab 400 PLN. International ab 100 PLN (Deutschland, Tschechien, Slowakei, Litauen), übrige EU 140 PLN. Details auf unserer [Versandseite](/shipping)." },
         { q: "Welche Garantie bieten Sie?", a: "24 Monate auf Herstellungsfehler. Die Garantie deckt strukturelle Mängel, nicht mechanische Beschädigungen oder normalen Verschleiß. Vollständige Details auf unserer [Garantieseite](/warranty)." },
       ],
     },

@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-02 | Wersja: 2.5*
+*Wygenerowano: 2026-08-03 | Wersja: 2.6*
 
 ---
 
@@ -703,6 +703,30 @@ Kasować wolno wyłącznie kod, którego nikt jeszcze nie użył i który nie ma
 
 Schemat: `scripts/discounts-schema.sql`, migracje wykonują się też przy starcie backendu.
 
+### Kasa: dane zamawiającego, paczkomat, płatność (2026-08-03)
+
+**Wymagany komplet danych: adres e-mail, imię i nazwisko, numer telefonu.** Wcześniej wymagany był sam adres e-mail, więc do zamówienia przechodził numer `2342342342342rrrr` i imię bez nazwiska. Kurier dzwoni przed doręczeniem, InPost wysyła numerem kod odbioru, a nazwisko idzie na etykietę przesyłki, więc każde z tych pól ma konkretne zastosowanie i formularz mówi wprost, jakie.
+
+Reguły leżą w `src/shop/customerFields.js` i jadą do backendu razem z rdzeniem cenowym (`npm run sync:pricing`), więc przeglądarka i serwer uznają za poprawne dokładnie to samo. Telefon: dziewięć cyfr krajowo, zapisy `+48`, `0048` oraz numery zagraniczne z plusem (8 do 15 cyfr). Nazwisko: dwa człony, litery dowolnego alfabetu z myślnikiem i apostrofem, bez cyfr. Kontrola w przeglądarce jest uprzejmością, obowiązuje ta na serwerze (`400 customer_invalid` z listą pól).
+
+**Kiedy pokazujemy błąd.** Po wyjściu z pola albo po kliknięciu „Zapłać", nigdy w trakcie pisania. Zieleń odwrotnie, od razu gdy dane są poprawne. Przycisk zapłaty jest szary, dopóki czegokolwiek brakuje, i niebieski gdy komplet jest poprawny, ale przez cały czas pozostaje klikalny: kliknięcie odsłania wszystkie braki naraz i przewija do pierwszego. Wyłączony przycisk nie mówi, czego chce.
+
+**Paczkomat wybiera się z wyszukiwarki.** Klient wpisuje kod pocztowy albo miasto, dostaje listę punktów z adresem i opisem miejsca („przy sklepie Żabka"), wybiera kliknięciem. Zapytanie idzie przez `GET /api/lockers` w chat-api, nie z przeglądarki: polityka treści zostaje szczelna, odpowiedzi leżą godzinę w pamięci, a adres klienta nie wychodzi do InPostu przy każdym naciśnięciu klawisza. Ręczne wpisanie kodu nadal działa i włącza się samo, gdy InPost nie odpowiada.
+
+**Wybór metody płatności.** Na wierzchu „Wybiorę na stronie płatności Autopay", BLIK i portfele, a ponad dwadzieścia banków chowa się pod jednym wierszem „Płacę z banku" z wyszukiwarką ignorującą polskie znaki. Wcześniej cała lista stała jedna pod drugą, czyli kilkanaście ekranów przewijania na telefonie, zanim dojdzie się do przycisku zapłaty. Reguła podziału siedzi w `src/components/shop/paymentGroups.js` i jest objęta testem w buildzie, bo listę kanałów oddaje bramka i zmienia się sama.
+
+**Darmowa dostawa** w Polsce od 400 zł pokazuje się jako „Gratis" z przekreśloną ceną normalną, a nie jako „0,00 zł", które czyta się jak zepsuty cennik. Próg liczy się od wartości pozycji przed rabatem.
+
+### Rezygnacja i kasowanie zamówień (2026-08-03)
+
+Zakładka **Przelewy** w panelu ma przy każdym zamówieniu przycisk **Rezygnacja**: status przechodzi na `cancelled`, towar i kod rabatowy wracają do sprzedaży natychmiast, a wiersz zostaje z zapisem kto, kiedy i dlaczego. To ta sama czynność, którą wykonuje zadanie wygaszające zamówienia po terminie, tylko od ręki.
+
+Pod listą roboczą stoi sekcja **Zamknięte bez zapłaty** (rezygnacje i zamówienia wygasłe) z przyciskiem kasowania. Kasować wolno wyłącznie zamówienie, przy którym nic się nie wydarzyło, czyli pomyłkę albo test. Blokuje dziewięć śladów: zapłata, rozliczenie, ręczne potwierdzenie przelewu, powiadomienie z bramki, zdjęcie towaru ze stanu, użycie kodu, wydane pliki, wisząca dopłata i powiązanie z wyceną. Powód odmowy panel wypisuje z nazwy. Reguła leży w `chat-api/orderCleanup.js` z testami, bo wiersz zamówienia kasuje się kaskadowo razem z pozycjami, rezerwacjami i użyciami kodu, więc skasowanie czegoś, co żyło, wymazałoby dowody.
+
+### Bezpieczeństwo (audyt 2026-08-03)
+
+Pełny zapis w `MDs/AEJaCA_Security_Audit.md`: przegląd chat-api, panelu, integracji Autopay, kodów rabatowych, nagłówków i zależności, razem z pięcioma etapami napraw i uzasadnieniem decyzji. Najważniejsze zmiany, które dotykają sklepu: limity zapytań na sprawdzaniu kodu rabatowego i składaniu zamówień, najwyżej dwie rezerwacje towaru naraz z jednego adresu, kody rabatowe losowane generatorem kryptograficznym oraz kontrola danych zamawiającego po stronie serwera.
+
 #### Droga produktu do koszyka
 
 Przycisk na karcie dokłada pozycję do tego samego koszyka, co usługi. Ta sama rzecz dołożona drugi raz podbija ilość istniejącej pozycji, a nie tworzy drugiej, i nie da się dołożyć więcej sztuk, niż mamy na półce.
@@ -1155,5 +1179,5 @@ Wbudowany chatbot na stronie, oparty o:
 
 ---
 
-*Dokument odzwierciedla stan serwisu aejaca.com z 2026-07-17.*
+*Dokument odzwierciedla stan serwisu aejaca.com z 2026-08-03.*
 *Repozytorium: ArturHebenstreit/aejaca-site, gałąź claude/fix-api-error-oge1r*

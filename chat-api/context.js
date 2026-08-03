@@ -678,6 +678,18 @@ WAZNE dla rozmowy z klientem:
 - Dostawa: paczkomat InPost 15,90 PLN, kurier 24,90 PLN, odbior osobisty 0 PLN
   (Jozefoslaw, gmina Piaseczno, po wczesniejszym uzgodnieniu).
 
+KASA KROK PO KROKU (stan na 2026-08-03), do odpowiadania na pytania "jak kupic":
+1. Klient dodaje pozycje do koszyka z kalkulatora albo z karty produktu, potem przechodzi do kasy pod /checkout.
+2. **Dane zamawiajacego sa wymagane w komplecie: adres e-mail, imie i nazwisko, numer telefonu.** Telefon nie jest kaprysem: kurier dzwoni przed doreczeniem, a InPost wysyla nim kod odbioru. Nazwisko jest potrzebne, bo idzie na etykiete przesylki. Formularz sprawdza je od razu i mowi, co poprawic; przycisk zaplaty jest szary do czasu, az komplet jest poprawny, ale klikniecie go pokazuje, czego brakuje.
+3. **Paczkomat wybiera sie z wyszukiwarki**: klient wpisuje kod pocztowy albo miasto i klika punkt z listy, razem z adresem i opisem miejsca. Nie trzeba pamietac kodu w rodzaju WAW01A, choc recznie nadal mozna go wpisac.
+4. **Darmowa dostawa w Polsce od 400 zl** pokazuje sie w kasie jako "Gratis" z przekreslona cena normalna. Prog liczy sie od wartosci pozycji.
+5. **Kod rabatowy** wpisuje sie w polu pod podsumowaniem zamowienia. Kwota znizki widac przed zaplata. Jeden kod na zamowienie.
+6. **Metoda platnosci**: na wierzchu BLIK oraz opcja "Wybiore na stronie platnosci Autopay", a ponad dwadziescia bankow chowa sie pod jednym wierszem "Place z banku" z wyszukiwarka. Klient nie przewija dlugiej listy, zeby dojsc do BLIKA.
+7. Po zaplacie bramka potwierdza transakcje, dopiero wtedy towar schodzi ze stanu, kod rabatowy liczy sie jako uzyty, a klient i warsztat dostaja maile. Porzucony koszyk niczego nie zabiera: rezerwacja towaru i kodu wygasa sama.
+8. Zamowienie ma wlasny numer (AE20260803-XXXXXXXX) i strone statusu, na ktora klient wraca z bramki.
+
+Czego NIE mowic: nie ma platnosci karta, Google Pay ani Apple Pay. Nie ma tez platnosci za pobraniem.
+
 Co mozna zamowic od razu w kreatorze:
 - druk 3D FDM (Bambu Lab H2D) i druk zywiczny MSLA (Elegoo Saturn 4 Ultra),
 - grawer laserowy CO2 i ciecie laserem CO2,
