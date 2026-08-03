@@ -57,11 +57,63 @@
               </button>
             </form>
 
+            <!-- Rezygnacja stoi osobno od potwierdzenia, bo to ruch w druga
+                 strone i nie ma prawa wyjsc z omylkowego klikniecia obok. -->
+            <form method="post" action="/transfers/<%= encodeURIComponent(o.orderRef) %>/cancel"
+                  class="flex flex-wrap items-center gap-2 mt-2 pt-2 border-t border-white/5"
+                  onsubmit="return confirm('Zrezygnować z <%= o.orderRef %>? Towar i kod rabatowy wrócą do sprzedaży, zamówienie zostanie w historii.')">
+              <input type="text" name="reason" maxlength="200" placeholder="Powód rezygnacji (opcjonalnie)"
+                     class="flex-1 min-w-[220px] bg-neutral-900 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-neutral-300" />
+              <button class="px-3 py-1.5 rounded-lg border border-white/15 text-neutral-300 text-xs hover:border-white/30 hover:text-white transition-colors">
+                Rezygnacja, zwolnij towar
+              </button>
+            </form>
+
             <div class="text-neutral-600 text-[10px] mt-2">
               Złożone <%= fmtDate(o.createdAt) %><% if (o.expiresAt) { %>, kwota ważna do <%= fmtDate(o.expiresAt) %><% } %>
             </div>
           </div>
         <% }); %>
+      </div>
+    <% } %>
+
+    <% if (closed && closed.length) { %>
+      <div class="mt-10">
+        <h2 class="text-lg font-semibold text-white mb-2">Zamknięte bez zapłaty</h2>
+        <p class="text-neutral-500 text-xs leading-relaxed max-w-2xl mb-4">
+          Rezygnacje i zamówienia wygasłe. Towar i kody z nich wróciły już do sprzedaży, a wiersz
+          zostaje, żeby dało się odtworzyć, dlaczego sztuka wróciła na półkę. Skasować da się
+          wyłącznie to, przy czym nic się nie wydarzyło, czyli pomyłki i testy. Przy pozostałych
+          panel odmówi i napisze, co stoi na przeszkodzie.
+        </p>
+
+        <div class="space-y-2">
+          <% closed.forEach(function (o) { %>
+            <div class="rounded-lg border border-white/5 bg-white/[0.01] px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="text-neutral-300 font-mono text-xs"><%= o.orderRef %></span>
+                  <span class="px-1.5 py-0.5 rounded text-[10px] <%= o.status === 'cancelled' ? 'bg-neutral-800 text-neutral-400' : 'bg-amber-950 text-amber-400' %>">
+                    <%= o.status === 'cancelled' ? 'rezygnacja' : 'wygasłe' %>
+                  </span>
+                </div>
+                <div class="text-neutral-600 text-[10px] mt-0.5 truncate">
+                  <%= o.email %> &middot; <%= o.totalPLN %> PLN
+                  <% if (o.cancelledAt) { %>
+                    &middot; <%= fmtDate(o.cancelledAt) %><% if (o.cancelledBy) { %>, <%= o.cancelledBy %><% } %>
+                  <% } %>
+                  <% if (o.cancelReason) { %> &middot; <%= o.cancelReason %><% } %>
+                </div>
+              </div>
+              <form method="post" action="/transfers/<%= encodeURIComponent(o.orderRef) %>/delete"
+                    onsubmit="return confirm('Skasować <%= o.orderRef %> na zawsze? Zostanie tylko wtedy, gdy nic z nim nie jest powiązane.')">
+                <button class="px-3 py-1.5 rounded-lg border border-red-400/30 text-red-300/90 text-xs hover:border-red-400/60 hover:text-red-300 transition-colors">
+                  Skasuj
+                </button>
+              </form>
+            </div>
+          <% }); %>
+        </div>
       </div>
     <% } %>
 
