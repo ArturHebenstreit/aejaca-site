@@ -16,6 +16,8 @@ import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import PaymentPicker from "../components/shop/PaymentPicker.jsx";
 import LockerPicker from "../components/shop/LockerPicker.jsx";
+import CustomerFields, { ValidatedField as Field } from "../components/shop/CustomerFields.jsx";
+import { validateCustomer } from "../shop/customerFields.js";
 import { SERVICES, GROUPS, getService, DELIVERY_METHODS } from "../data/orderCatalog.js";
 import { shippingOptions, shippingGrosze, needsCustoms, SHIPPING_COUNTRIES } from "../pricing/shipping.js";
 import { t } from "../pricing/config.js";
@@ -197,7 +199,6 @@ const UI = {
   },
 };
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Nazwy krajow z przegladarki, posortowane alfabetycznie w jezyku klienta. */
 function countryName(code, lang) {
@@ -276,23 +277,6 @@ function OptionRow({ field, value, onChange, lang }) {
   );
 }
 
-function Field({ label, value, onChange, type = "text", required, placeholder }) {
-  return (
-    <label className="block mb-4">
-      <span className="block text-[11px] uppercase tracking-wide text-neutral-400 mb-1.5">
-        {label}{required && <span className="text-blue-400 ml-1">*</span>}
-      </span>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/10 text-white text-sm
-                   placeholder:text-neutral-600 focus:border-blue-400/50 focus:outline-none transition-colors"
-      />
-    </label>
-  );
-}
 
 /**
  * Zapytanie z twardym limitem czasu.
@@ -425,14 +409,26 @@ export default function Order() {
 
   const totalGrosze = price ? price.lineGrosze + delivery.grosze : 0;
 
+  const [triedToSubmit, setTriedToSubmit] = useState(false);
+  const customerErrors = validateCustomer(customer);
+
   const dataValid =
-    EMAIL_RE.test(customer.email) &&
+    Object.keys(customerErrors).length === 0 &&
     consents.terms &&
     consents.waiveWithdrawal &&
     (deliveryId === "pickup" ||
       (deliveryId === "inpost_locker" ? addr.point.trim().length > 2 : addr.line1 && addr.postalCode && addr.city));
 
   async function submitOrder() {
+    // Puste pole nie tlumaczy sie samo, wiec klikniecie z brakami odslania
+    // wszystkie bledy naraz i przewija do pierwszego z nich.
+    if (!dataValid) {
+      setTriedToSubmit(true);
+      const first = document.querySelector('[aria-invalid="true"], #locker-search, #locker-code');
+      first?.scrollIntoView({ behavior: "smooth", block: "center" });
+      first?.focus?.({ preventScroll: true });
+      return;
+    }
     setSubmitting(true);
     setSubmitError(null);
     try {
@@ -714,9 +710,13 @@ export default function Order() {
           {step === 3 && (
             <div>
               <h2 className="text-white font-semibold mb-4">{u.yourData}</h2>
-              <Field label={u.email} value={customer.email} onChange={(v) => setCustomer((c) => ({ ...c, email: v }))} type="email" required placeholder="twoj@email.com" />
-              <Field label={u.name} value={customer.name} onChange={(v) => setCustomer((c) => ({ ...c, name: v }))} />
-              <Field label={u.phone} value={customer.phone} onChange={(v) => setCustomer((c) => ({ ...c, phone: v }))} type="tel" />
+              <CustomerFields
+                value={customer}
+                onChange={setCustomer}
+                labels={{ email: u.email, name: u.name, phone: u.phone }}
+                lang={lang}
+                showErrors={triedToSubmit}
+              />
 
               <h2 className="text-white font-semibold mb-3 mt-8">{u.delivery}</h2>
               <label className="block text-xs font-medium text-neutral-400 mb-1.5">{u.country}</label>
@@ -887,8 +887,19 @@ export default function Order() {
               {step < 4 && (
                 <button
                   type="button"
-                  onClick={() => setStep((s) => s + 1)}
-                  disabled={(step === 2 && !price) || (step === 3 && !dataValid)}
+                  // Krok dalej z brakami nie jest martwym przyciskiem: pokazuje,
+                  // czego brakuje, zamiast milczec.
+                  onClick={() => {
+                    if (step === 3 && !dataValid) {
+                      setTriedToSubmit(true);
+                      const first = document.querySelector('[aria-invalid="true"], #locker-search, #locker-code');
+                      first?.scrollIntoView({ behavior: "smooth", block: "center" });
+                      first?.focus?.({ preventScroll: true });
+                      return;
+                    }
+                    setStep((s) => s + 1);
+                  }}
+                  disabled={step === 2 && !price}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-400
                              disabled:bg-neutral-800 disabled:text-neutral-600 disabled:border disabled:border-white/10
                              disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
