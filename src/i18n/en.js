@@ -637,7 +637,7 @@ export default {
   },
 
   newsletter: {
-    alreadySubscribed: "This email is already on our list (signed up on {date}). Your AEJACA10 code should be in your inbox.",
-    alreadySubscribedNoDate: "This email is already on our list. Your AEJACA10 code should be in your inbox.",
+    alreadySubscribed: "This email is already on our list (signed up on {date}). Your discount code should be in your inbox, check the spam folder too.",
+    alreadySubscribedNoDate: "This email is already on our list. Your discount code should be in your inbox, check the spam folder too.",
   },
 };

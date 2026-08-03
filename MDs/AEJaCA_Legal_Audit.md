@@ -287,6 +287,37 @@ w urządzeniu, więc zgoda nie była potrzebna. Szczegóły przy W4. Zamiast ban
 powstało zabezpieczenie na przyszłość: kontrola w budowaniu wypisująca każde
 miejsce sięgające do pamięci przeglądarki i wymagająca uzasadnienia dla każdego.
 
-**Etap 5.** Drobiazgi: nazwa przycisku zamówienia (S3), teksty newslettera (S4),
-reklamacje treści cyfrowych (S6), mechanizm najniższej ceny z 30 dni na czas
-akcji rabatowych (S2).
+**Etap 5, zrobiony.**
+
+- **S3.** Przycisk zamówienia mówi teraz o obowiązku zapłaty: „Kupuję i płacę"
+  przy bramce i „Zamawiam z obowiązkiem zapłaty przelewem" przy przelewie,
+  w trzech językach, na obu ścieżkach zakupu.
+- **S4.** Teksty dla powracających subskrybentów nie powołują się już na kod
+  `AEJACA10`, którego nie wystawiamy od czasu wprowadzenia kodów osobistych.
+- **S6.** Regulamin § 11 opisuje osobny reżim odpowiedzialności za treści
+  cyfrowe (rozdział 5b upk), w tym roczne domniemanie przy dostarczeniu
+  jednorazowym, w trzech językach.
+- **S2.** Powstała historia cen produktów (`product_price_history`), zapisywana
+  przy każdej realnej zmianie ceny, oraz kolumna **„Min. 30 dni"** w panelu
+  produktów. Formularz tworzenia kodu akcyjnego przypomina, że hasło ogłoszone
+  publicznie jest ogłoszeniem obniżki i wymaga podania najniższej ceny z 30 dni,
+  a kod wręczony jednej osobie tego nie wymaga.
+
+  Świadomie **nie** wystawiam tej ceny automatycznie na kartach produktów.
+  Dziś żadna akcja nie trwa, a wyświetlanie „najniższej ceny z 30 dni" przy
+  cenie, która nie jest obniżona, wprowadzałoby w błąd bardziej niż jej brak.
+  Historia jest zbierana od teraz, bo odtworzyć jej wstecz się nie da, i to jest
+  ta część, która musiała powstać zawczasu.
+
+---
+
+## Stan po pięciu etapach
+
+Zamknięte: K1, W1, W2, W3, S1, S3, S4, S5, S6. W4 zamknięty korektą ustalenia,
+bez potrzeby zmian w zachowaniu serwisu. S2 zamknięty w części, która ma dziś
+sens: dane są zbierane i widoczne w panelu, wyświetlanie dojdzie razem z pierwszą
+prawdziwą akcją rabatową.
+
+Do pilnowania przy zmianach: okresy w Polityce Prywatności muszą zgadzać się
+z `chat-api/retention.js`, a strona Zwroty z § 10 Regulaminu. Obie pary już raz
+się rozjechały.

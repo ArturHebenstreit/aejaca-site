@@ -696,6 +696,8 @@ ZWROTY I ODSTAPIENIE (od 2026-08-03):
 - Prawo odstapienia NIE przysluguje przy: wydrukach z pliku klienta, wyrobach grawerowanych trescia klienta, bizuterii wedlug indywidualnego projektu (w tym z doborem rozmiaru), wyrobach z kamieniami lub kruszcami sprowadzonymi na zyczenie, uslugach projektowych wykonanych w calosci za wyrazna zgoda, tresciach cyfrowych po rozpoczeciu pobierania.
 - Produkt GOTOWY z polki jest objety pelnym prawem odstapienia. Nigdy nie mow klientowi, ze przy produkcie z polki prawo nie przysluguje.
 - Niezaleznie od odstapienia odpowiadamy dwa lata za niezgodnosc towaru z umowa, a reklamacje rozpatrujemy w 14 dni.
+- Tresci cyfrowe maja osobny rezim reklamacji (rozdzial 5b upk): odpowiadamy dwa lata, a przy dostarczeniu jednorazowym przez rok domniemywa sie, ze wada istniala od poczatku. Reklamacja tak samo, na contact@aejaca.com.
+- Przycisk konczacy zamowienie nazywa sie "Kupuje i place" (bramka) albo "Zamawiam z obowiazkiem zaplaty przelewem" (przelew).
 
 DANE OSOBOWE (od 2026-08-03), gdy klient pyta, co robimy z jego danymi:
 - Administratorem jest Artur Hebenstreit, dzialalnosc nierejestrowana pod marka AEJaCA. Pelna polityka: https://www.aejaca.com/privacy/

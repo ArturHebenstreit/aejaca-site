@@ -732,6 +732,9 @@ Pełny zapis w `MDs/AEJaCA_Legal_Audit.md`. Rzeczy, które zmieniły treść wid
 - **Strona Zwroty** zgodna z Regulaminem (bieg 14 dni od otrzymania oświadczenia, zwrot kosztu najtańszej dostawy) i ze wzorem formularza do skopiowania.
 - **Opinie Google** opatrzone informacją, skąd pochodzą i czego o nich nie wiemy. Po dyrektywie Omnibus prezentowanie opinii bez takiej informacji jest praktyką wprowadzającą w błąd.
 - **Okno czatu** informuje przed pierwszą wiadomością o zapisie na 12 miesięcy i o dostawcy spoza EOG.
+- **Przycisk zamówienia** brzmi „Kupuję i płacę" albo „Zamawiam z obowiązkiem zapłaty przelewem", bo ustawa wymaga oznaczenia wskazującego wprost na obowiązek zapłaty.
+- **Historia cen produktów** (`product_price_history`) zapisywana przy każdej zmianie ceny, a panel produktów pokazuje kolumnę „Min. 30 dni". Potrzebne przy ogłoszonej obniżce, np. przy publicznym haśle promocyjnym.
+- **Analityka nie zapisuje niczego w przeglądarce**, a kontrola w budowaniu (`scripts/check-browser-storage.mjs`) wymaga uzasadnienia dla każdego miejsca sięgającego do pamięci urządzenia. Dołożenie narzędzia innej firmy zatrzyma budowanie.
 
 ### Bezpieczeństwo (audyt 2026-08-03)
 

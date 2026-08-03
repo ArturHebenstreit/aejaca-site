@@ -632,7 +632,7 @@ export default {
   },
 
   newsletter: {
-    alreadySubscribed: "Ten adres jest już na naszej liście (zapis z dnia {date}). Kod AEJACA10 powinien być w Twojej skrzynce.",
-    alreadySubscribedNoDate: "Ten adres jest już na naszej liście. Kod AEJACA10 powinien być w Twojej skrzynce.",
+    alreadySubscribed: "Ten adres jest już na naszej liście (zapis z dnia {date}). Kod rabatowy powinien być w Twojej skrzynce, sprawdź też folder spam.",
+    alreadySubscribedNoDate: "Ten adres jest już na naszej liście. Kod rabatowy powinien być w Twojej skrzynce, sprawdź też folder spam.",
   },
 };

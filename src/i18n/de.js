@@ -622,7 +622,7 @@ export default {
   },
 
   newsletter: {
-    alreadySubscribed: "Diese E-Mail ist bereits auf unserer Liste (angemeldet am {date}). Dein Code AEJACA10 sollte in deinem Posteingang sein.",
-    alreadySubscribedNoDate: "Diese E-Mail ist bereits auf unserer Liste. Dein Code AEJACA10 sollte in deinem Posteingang sein.",
+    alreadySubscribed: "Diese E-Mail ist bereits auf unserer Liste (angemeldet am {date}). Dein Rabattcode sollte in deinem Posteingang sein, prüfe auch den Spam-Ordner.",
+    alreadySubscribedNoDate: "Diese E-Mail ist bereits auf unserer Liste. Dein Rabattcode sollte in deinem Posteingang sein, prüfe auch den Spam-Ordner.",
   },
 };

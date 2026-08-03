@@ -95,6 +95,16 @@
         <label class="block sm:col-span-2">
           <span class="block text-[11px] text-neutral-500 mb-1">Nazwa akcji</span>
           <input name="campaign" placeholder="Dzień Matki 2026" class="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white" />
+          <%# Kod wreczony jednej osobie to rzecz prywatna. Haslo ogloszone
+              publicznie to juz ogloszenie obnizki ceny, a przy takim trzeba
+              podac najnizsza cene z 30 dni przed obnizka. Panel przypomina
+              o tym w chwili tworzenia kodu, a nie po akcji. %>
+          <p class="text-amber-300/80 text-[11px] leading-relaxed mt-2">
+            Jeżeli ogłosisz to hasło publicznie (strona, newsletter, social media),
+            przy objętych nim produktach podaj najniższą cenę z 30 dni przed obniżką.
+            Kolumna „Min. 30 dni" w zakładce Produkty pokazuje ją dla każdej pozycji.
+            Kod wręczony jednej osobie tego nie wymaga.
+          </p>
         </label>
         <label class="block sm:col-span-2">
           <span class="block text-[11px] text-neutral-500 mb-1">Komu wręczony i za co (tylko dla Ciebie)</span>

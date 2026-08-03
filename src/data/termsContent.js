@@ -177,6 +177,7 @@ export const TERMS = {
           "Sprzedawca rozpatruje reklamację w terminie 14 dni od jej otrzymania. Brak odpowiedzi w tym terminie oznacza uznanie reklamacji.",
           "Klient może żądać naprawy albo wymiany. Jeżeli naprawa lub wymiana są niemożliwe albo wymagałyby nadmiernych kosztów, Klient może żądać obniżenia ceny albo odstąpić od umowy, chyba że brak zgodności jest nieistotny.",
           "Niezależnie od powyższego Sprzedawca udziela odrębnej, dobrowolnej gwarancji, której warunki opisuje strona Gwarancja. Gwarancja nie wyłącza ani nie ogranicza uprawnień wynikających z przepisów.",
+          "Treści cyfrowe (pliki do pobrania) mają własny reżim odpowiedzialności, opisany w rozdziale 5b ustawy o prawach konsumenta. Sprzedawca odpowiada za brak zgodności treści cyfrowej z umową, który ujawnił się w ciągu dwóch lat od dostarczenia, a przy dostarczeniu jednorazowym domniemywa się, że brak zgodności istniał w chwili dostarczenia, jeżeli ujawnił się w ciągu roku. Klient może żądać doprowadzenia treści do zgodności, a gdy jest to niemożliwe albo wymagałoby nadmiernych kosztów, obniżenia ceny albo odstąpienia od umowy. Reklamację składa się tak samo, na contact@aejaca.com.",
         ],
       },
       {
@@ -413,6 +414,7 @@ export const TERMS = {
           "The Seller considers a complaint within 14 days of receiving it. Failure to respond within that period means the complaint is upheld.",
           "The Customer may demand repair or replacement. Where repair or replacement is impossible or would entail excessive cost, the Customer may demand a price reduction or withdraw from the contract, unless the lack of conformity is immaterial.",
           "Independently of the above, the Seller grants a separate voluntary warranty, the terms of which are set out on the Warranty page. The warranty neither excludes nor limits statutory rights.",
+          "Digital content (downloadable files) has its own liability regime, set out in Chapter 5b of the Polish Consumer Rights Act. The Seller is liable for a lack of conformity of digital content revealed within two years of delivery, and for a one-off supply it is presumed that the lack of conformity existed at the time of delivery if it appeared within one year. The Customer may demand that the content be brought into conformity and, where that is impossible or would require excessive cost, a price reduction or withdrawal from the contract. Complaints are submitted the same way, to contact@aejaca.com.",
         ],
       },
       {
@@ -649,6 +651,7 @@ export const TERMS = {
           "Der Verkäufer bearbeitet die Reklamation binnen 14 Tagen nach Erhalt. Bleibt eine Antwort innerhalb dieser Frist aus, gilt die Reklamation als anerkannt.",
           "Der Kunde kann Nachbesserung oder Ersatzlieferung verlangen. Sind diese unmöglich oder mit unverhältnismäßigen Kosten verbunden, kann der Kunde eine Preisminderung verlangen oder vom Vertrag zurücktreten, es sei denn, die Vertragswidrigkeit ist unerheblich.",
           "Unabhängig davon gewährt der Verkäufer eine gesonderte freiwillige Garantie, deren Bedingungen die Seite Garantie beschreibt. Die Garantie schließt gesetzliche Rechte weder aus noch schränkt sie diese ein.",
+          "Digitale Inhalte (herunterladbare Dateien) unterliegen einem eigenen Haftungsregime nach Kapitel 5b des polnischen Verbraucherrechtsgesetzes. Der Verkäufer haftet für eine Vertragswidrigkeit digitaler Inhalte, die innerhalb von zwei Jahren nach Lieferung zutage tritt; bei einmaliger Bereitstellung wird vermutet, dass die Vertragswidrigkeit bereits bei Lieferung vorlag, wenn sie innerhalb eines Jahres auftritt. Der Kunde kann die Herstellung der Vertragsmäßigkeit verlangen und, wenn dies unmöglich ist oder unverhältnismäßige Kosten verursachen würde, eine Preisminderung oder den Rücktritt vom Vertrag. Reklamationen erfolgen auf demselben Weg, an contact@aejaca.com.",
         ],
       },
       {
