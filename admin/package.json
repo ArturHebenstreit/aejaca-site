@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "build:css": "tailwindcss -i ./src/input.css -o ./public/tailwind.css --minify"
+    "build:css": "tailwindcss -i ./src/input.css -o ./public/tailwind.css --minify && node check-styles.mjs",
+    "check:styles": "node check-styles.mjs"
   },
   "dependencies": {
     "connect-pg-simple": "^10.0.0",
