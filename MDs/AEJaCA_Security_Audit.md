@@ -272,7 +272,50 @@ a numer rachunku i tak podajemy każdemu, kto ma zapłacić. Przy 32 bitach
 losowości numeru i limicie zapytań zgadywanie jest nierealne. Punkt zamknięty
 jako nadmierny, a nie odłożony.
 
-**Etap 5, zależności.** Aktualizacja `chat-api`.
+**Etap 5, zrobiony.** `chat-api` i panel: **zero** podatności. Osiem zgłoszeń
+w `chat-api` sprowadzało się do jednej biblioteki `uuid`, ciągniętej przez
+`googleapis` i `node-cron`. Zamiast podnosić dwie duże zależności o wersję główną
+(a `node-cron` 4 to przepisany interfejs, ryzyko dla zadań cyklicznych i synchronizacji
+poczty) wymuszona jest poprawiona wersja samej biblioteki przez `overrides`.
+Sprawdzone, że po podmianie działa `googleapis` (klient Gmaila i `OAuth2`),
+`node-cron` (tworzenie i zatrzymanie zadania) oraz sam `uuid`, a usługa wstaje.
+
+Serwis: `xlsx` przeniesiony do zależności narzędziowych, bo używa go wyłącznie
+ręcznie uruchamiany skrypt importu matrycy lasera i nigdy nie trafia do przeglądarki.
+Podatność dotyczy czytania cudzych arkuszy, a my czytamy własne. `react-router-dom`
+podniesiony do najnowszej wersji.
+
+Zgłoszenia dla `react-router` zostają widoczne w audycie i to jest **świadoma
+decyzja**: jedyną "poprawką", jaką proponuje narzędzie, jest cofnięcie się o siedem
+wydań wstecz. Wszystkie wymienione podatności dotyczą trybu serwerowego biblioteki
+(deserializacja `turbo-stream`, `single-fetch`, punkt `__manifest`, RSC, nawodnienie
+po stronie serwera), a serwis go nie uruchamia: używamy wyłącznie `BrowserRouter`,
+`Routes`, `Route` i `StaticRouter` w chwili budowania, a Cloudflare podaje gotowe
+pliki. Jedyne zgłoszenie dotyczące przeglądarki, otwarte przekierowanie przez
+`<Link>`, zamknięte u nas niezależnie od wersji biblioteki, patrz niżej.
+
+**Znalezione przy tej okazji, prawdziwa dziura.** Okno czatu zamienia adresy
+z odpowiedzi asystenta w odsyłacze, a warunek "adres wewnętrzny" brzmiał
+`url.startsWith("/")`. Odsyłacz `[kliknij](//obca-strona.pl)` przechodził ten
+warunek i trafiał do `<Link>`, a przeglądarka czyta dwa ukośniki jako adres innej
+witryny. To samo z ukośnikiem odwrotnym. Treść odpowiedzi pisze model, a to, co
+model napisze, zależy od tego, o co poprosi rozmówca, więc wystarczyło poprosić.
+Ścieżka wewnętrzna to teraz jeden ukośnik, po którym nie stoi drugi ani odwrotny
+(`src/components/ChatWidget.jsx`), sprawdzone na ośmiu przypadkach.
+
+---
+
+## Stan po pięciu etapach
+
+Zamknięte: K1, K2, K3, W1, W2, W3, S1, S3, S4, S5, S6, S8, S10 oraz cała lista
+niska. Zamknięte jako nadmierne, z uzasadnieniem: S7, S9. Zostaje S2, świadomie:
+panel pokazuje treść błędu, ale widzi ją wyłącznie zalogowany właściciel, więc
+to nie wyciek, tylko wygoda przy diagnozie.
+
+Doszły trzy rzeczy spoza pierwotnej listy, dwie z nich poważniejsze niż połowa
+tego, co na niej stało: skrypt panelu ciągnięty z cudzego serwera, otwarte
+przekierowanie w oknie czatu i niedziałające od zawsze czyszczenie pamięci
+podręcznej cen kamieni.
 
 **Poza kodem, do zrobienia w Railway:** sprawdzić, że `SESSION_SECRET` i
 `ADMIN_API_TOKEN` są rzeczywiście ustawione i różne w każdej usłudze, dołożyć

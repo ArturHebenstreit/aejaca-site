@@ -6,6 +6,21 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 const AEJACA_ORIGIN = "https://www.aejaca.com";
 const LINK_CLS = "text-amber-400 underline underline-offset-2 hover:text-amber-300 transition-colors";
 
+/**
+ * Sciezka wewnatrz serwisu albo nic.
+ *
+ * Tresc wiadomosci pisze model, a to, co model napisze, zalezy od tego, o co
+ * poprosi rozmowca. Wystarczy namowic go na `[kliknij](//obca-strona.pl)`:
+ * napis zaczyna sie od ukosnika, wiec dawny warunek uznawal go za adres
+ * wewnetrzny, a przegladarka czyta dwa ukosniki jako adres innej witryny.
+ * To samo robi ukosnik odwrotny. Sciezka wewnetrzna to JEDEN ukosnik, po
+ * ktorym nie stoi drugi ani odwrotny.
+ */
+function internalPath(raw) {
+  const url = raw.startsWith(AEJACA_ORIGIN) ? (raw.slice(AEJACA_ORIGIN.length) || "/") : raw;
+  return /^\/(?![/\\])/.test(url) ? url : null;
+}
+
 function renderMessage(text) {
   const parts = [];
   const re = /\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*|(https?:\/\/[^\s<>"']+)/g;
@@ -15,9 +30,8 @@ function renderMessage(text) {
     if (m[1] != null) {
       // Markdown link [text](url)
       const url = m[2].trim();
-      const isInternal = url.startsWith(AEJACA_ORIGIN) || url.startsWith("/");
-      const to = url.startsWith(AEJACA_ORIGIN) ? (url.slice(AEJACA_ORIGIN.length) || "/") : url;
-      parts.push(isInternal
+      const to = internalPath(url);
+      parts.push(to
         ? <Link key={m.index} to={to} className={LINK_CLS}>{m[1]}</Link>
         : /^https?:\/\//.test(url)
           ? <a key={m.index} href={url} target="_blank" rel="noopener noreferrer" className={LINK_CLS}>{m[1]}</a>
@@ -26,9 +40,8 @@ function renderMessage(text) {
       parts.push(<strong key={m.index} className="font-semibold text-white">{m[3]}</strong>);
     } else if (m[4] != null) {
       const url = m[4];
-      const isInternal = url.startsWith(AEJACA_ORIGIN);
-      const to = isInternal ? (url.slice(AEJACA_ORIGIN.length) || "/") : url;
-      parts.push(isInternal
+      const to = url.startsWith(AEJACA_ORIGIN) ? internalPath(url) : null;
+      parts.push(to
         ? <Link key={m.index} to={to} className={LINK_CLS}>{url}</Link>
         : <a key={m.index} href={url} target="_blank" rel="noopener noreferrer" className={`${LINK_CLS} break-all`}>{url}</a>);
     }
