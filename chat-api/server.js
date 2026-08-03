@@ -28,6 +28,7 @@ import {
 } from "./discounts.js";
 import { sendOrderPaidEmails, sendTransferInstructions } from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
+import { findLockers, LockerError } from "./lockers.js";
 import { requireAdmin, requireInvalidateToken, requireSecret, secretMatches } from "./auth.js";
 import { extractIP, isPrivateIP, TRUSTED_PROXY_HOPS, TRUST_CLOUDFLARE_HEADERS } from "./clientIp.js";
 import { createLimiter, limitBy } from "./rateLimit.js";
@@ -1432,6 +1433,29 @@ async function currentEurRate() {
 }
 
 /** Kanaly platnosci dostepne na serwisie, prosto z Autopay */
+/**
+ * Paczkomaty pasujace do wpisanego kodu pocztowego albo miasta.
+ * Wolane z kasy przy kazdej zmianie w polu, wiec limit jest luzny, ale jest:
+ * to pytanie do cudzej uslugi, ktora nie ma obowiazku nas obslugiwac bez konca.
+ */
+const lockerLimit = createLimiter({ limit: 60, windowMs: 10 * 60_000, name: "paczkomaty" });
+
+app.get("/api/lockers", limitBy(lockerLimit, extractIP), async (req, res) => {
+  try {
+    const points = await findLockers(req.query.q);
+    // Lista zmienia sie rzadko, wiec przegladarka moze ja potrzymac.
+    res.set("Cache-Control", "public, max-age=3600");
+    res.json({ points });
+  } catch (e) {
+    if (e instanceof LockerError) {
+      const status = e.code === "too_short" ? 400 : 502;
+      return res.status(status).json({ error: e.message, code: e.code });
+    }
+    console.error("[paczkomaty] blad:", e.message);
+    res.status(500).json({ error: "Nie udalo sie pobrac listy paczkomatow" });
+  }
+});
+
 app.get("/api/payment-methods", async (_req, res) => {
   const list = await fetchGatewayList();
   if (!list) return res.json({ available: false, gateways: [] });

@@ -144,6 +144,10 @@ export function shippingOptions(country = "PL", itemsTotalGrosze = 0) {
     .map((id) => ({
       id,
       grosze: shippingGrosze(id, country, itemsTotalGrosze),
+      // Cena bez rabatu za prog darmowej wysylki. Kasa pokazuje ja przekreslona
+      // obok slowa "Gratis", zeby bylo widac, ile klient zaoszczedzil; samo zero
+      // wyglada jak zepsuty cennik.
+      listGrosze: shippingGrosze(id, country, 0),
       carrier: zone.carrier,
       leadDays: zone.leadDays,
     }))

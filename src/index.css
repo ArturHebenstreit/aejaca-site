@@ -592,6 +592,7 @@ body {
 [data-theme="light"] .hover\:border-emerald-400\/30:hover { border-color: rgba(4,120,87,0.30) !important; }
 [data-theme="light"] .hover\:shadow-emerald-900\/10:hover { box-shadow: 0 10px 15px -3px rgba(4,120,87,0.08) !important; }
 [data-theme="light"] .text-emerald-300       { color: #065f46 !important; } /* emerald-800 for hover states */
+[data-theme="light"] .text-emerald-300\/80    { color: rgba(6,95,70,0.90) !important; }
 
 /* ── Klasy, ktore odslonila poprawiona kontrola trybu jasnego ──
    Wszystkie stoja w listach klas lamanych na kilka linii, wiec dawna wersja
