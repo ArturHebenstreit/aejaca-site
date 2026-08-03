@@ -192,9 +192,17 @@ w panelu nie zadziała. Wcześniej było ono otwarte dla wszystkich, teraz jest
 zamknięte dla wszystkich, łącznie z nami. Ceny i tak odświeżają się same po
 wygaśnięciu wpisu, więc jedynym skutkiem jest opóźnienie.
 
-**Etap 2, ustalenie tożsamości żądania.** Poprawne `trust proxy`, zaufanie do
-`cf-connecting-ip` tylko wtedy, gdy ruch przyszedł przez Cloudflare. Bez tego etap
-trzeci nic nie daje.
+**Etap 2, zrobiony.** Ustalanie adresu wyprowadzone do `chat-api/clientIp.js`.
+`trust proxy` z `true` na liczbę rzeczywistych warstw (`TRUSTED_PROXY_HOPS`,
+domyślnie 1), adres brany z `req.ip`, czyli od końca łańcucha, a nie z nagłówka
+podanego przez klienta. `cf-connecting-ip` honorowany dopiero po włączeniu
+`TRUST_CLOUDFLARE_HEADERS`, w dniu w którym API faktycznie stanie za Cloudflare.
+Sprawdzenia w `chat-api/clientIp.test.mjs` idą przez prawdziwy serwer, bo rzecz
+dotyczy tego, jak Express przycina łańcuch, czego atrapa żądania by nie odtworzyła.
+
+Do potwierdzenia po wdrożeniu: `/api/debug-ip` ma pokazać prawdziwy adres
+publiczny i `private: false`. Gdyby pokazał adres prywatny, warstw jest więcej
+niż jedna i podnosimy `TRUSTED_PROXY_HOPS`.
 
 **Etap 3, limity tam, gdzie ich nie ma.** Sprawdzanie kodu, składanie zamówienia,
 wgrywanie plików, wycena. Do tego licznik nietrafionych prób kodu.

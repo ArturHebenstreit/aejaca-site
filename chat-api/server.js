@@ -29,9 +29,13 @@ import {
 } from "./discounts.js";
 import { sendOrderPaidEmails, sendTransferInstructions } from "./orderMail.js";
 import { requireAdmin, requireInvalidateToken, requireSecret } from "./auth.js";
+import { extractIP, isPrivateIP, TRUSTED_PROXY_HOPS, TRUST_CLOUDFLARE_HEADERS } from "./clientIp.js";
 
 const app = express();
-app.set("trust proxy", true);
+// `true` znaczylo "wierz calemu lancuchowi X-Forwarded-For", takze temu, co
+// dopisal do niego klient. Liczba mowi, ile wpisow od konca pochodzi od naszej
+// infrastruktury. Wyjasnienie i sposob liczenia adresu: clientIp.js
+app.set("trust proxy", TRUSTED_PROXY_HOPS);
 const PORT = process.env.PORT || 3001;
 
 const ALLOWED_ORIGINS = [
@@ -449,25 +453,6 @@ setInterval(() => {
   if (countryCache.size > 2000) countryCache.clear();
 }, 60 * 60_000);
 
-function extractIP(req) {
-  // x-forwarded-for first entry = original client IP (leftmost in the chain)
-  // x-real-ip on Railway = last connecting proxy (may be Zscaler/CDN, not the real user)
-  const raw = req.headers["cf-connecting-ip"]
-    || req.headers["x-forwarded-for"]?.split(",")[0]
-    || req.headers["x-real-ip"]
-    || req.ip
-    || "";
-  return raw.trim().replace(/^::ffff:/, "");
-}
-
-function isPrivateIP(ip) {
-  if (!ip) return true;
-  if (ip === "::1" || ip === "localhost") return true;
-  if (ip.startsWith("127.") || ip.startsWith("10.") || ip.startsWith("192.168.")) return true;
-  if (/^172\.(1[6-9]|2\d|3[01])\./.test(ip)) return true;
-  return false;
-}
-
 async function lookupCountry(ip) {
   if (!ip || isPrivateIP(ip)) return null;
   if (countryCache.has(ip)) return countryCache.get(ip);
@@ -489,19 +474,25 @@ async function lookupCountry(ip) {
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
-// Diagnostic — shows which IP/headers we see (remove after confirming country works)
+// Sluzy do jednej rzeczy: sprawdzenia, czy liczba warstw posrednich jest dobrana,
+// czyli czy widzimy prawdziwy adres klienta, a nie adres wewnetrzny. Pokazuje
+// wylacznie to, co przyszlo w zadaniu pytajacego, wiec niczego o innych nie zdradza.
 app.get("/api/debug-ip", async (req, res) => {
   const ip = extractIP(req);
   const country = await lookupCountry(ip);
   res.json({
     ip,
     country,
+    // Adres prywatny znaczy, ze widzimy warstwe posrednia zamiast klienta,
+    // czyli ze TRUSTED_PROXY_HOPS jest za male.
     private: isPrivateIP(ip),
-    headers: {
+    trustedProxyHops: TRUSTED_PROXY_HOPS,
+    trustCloudflareHeaders: TRUST_CLOUDFLARE_HEADERS,
+    seen: {
+      "req.ip": req.ip || null,
+      "x-forwarded-for": req.headers["x-forwarded-for"] || null,
       "cf-connecting-ip": req.headers["cf-connecting-ip"] || null,
       "x-real-ip": req.headers["x-real-ip"] || null,
-      "x-forwarded-for": req.headers["x-forwarded-for"] || null,
-      "req.ip": req.ip || null,
     },
   });
 });
