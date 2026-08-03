@@ -26,6 +26,10 @@ Problemy leżą tam, gdzie tekst wiążący rozjechał się z tekstem, który kl
 faktycznie czyta, oraz w Polityce Prywatności, która nie nadąża za tym, ile
 usług obcych obsługuje dziś ten serwis.
 
+Uwaga do czytającego: punkt W4 pierwszej wersji tego audytu był błędny, co
+opisuję przy nim wprost zamiast po cichu poprawiać. Zostawiam ślad, bo audyt bez
+śladu po własnych pomyłkach jest mniej wart niż audyt, który je pokazuje.
+
 ---
 
 ## Krytyczne
@@ -117,23 +121,42 @@ w miejscu, do którego go wysłaliśmy. Dodatkowo lista wyłączeń na stronie Z
 jest szersza niż w Regulaminie („produkty z elementami sprowadzonymi na specjalne
 życzenie"), a wyłączenia z art. 38 są zamknięte i nie podlegają rozszerzaniu.
 
-### W4. Brak zgody na przechowywanie informacji w urządzeniu
+### W4. Zgoda na przechowywanie informacji w urządzeniu
 
-Art. 398 PKE (od 10.11.2024, wcześniej art. 173 Prawa telekomunikacyjnego)
-wymaga zgody na przechowywanie informacji w urządzeniu końcowym i dostęp do
-nich, poza tym, co jest niezbędne do wykonania usługi żądanej przez użytkownika.
+**Ten punkt był w pierwszej wersji audytu napisany błędnie i to jest jego
+korekta.** Napisałem, że analityka zapisuje w przeglądarce kolejkę zdarzeń
+`aejaca_events` razem z identyfikatorem sesji, więc wymaga zgody. Sprawdzenie
+kodu linia po linii pokazało co innego.
 
-Serwis zapisuje w przeglądarce: koszyk, ustawienia kalkulatorów, wybrany motyw
-(to jest niezbędne albo wprost żądane przez użytkownika, bez zgody) oraz
-**kolejkę zdarzeń analitycznych `aejaca_events` razem z identyfikatorem sesji**,
-wysyłaną potem na własny serwer. Analityka nie jest niezbędna do świadczenia
-usługi, więc wymaga zgody, a zgody nie ma, bo nie ma żadnego mechanizmu jej
-zbierania.
+Kolejka zdarzeń żyje w zmiennej w pamięci strony i ginie razem z nią.
+Identyfikator odwiedzin jest losowany przy wejściu, też wyłącznie w pamięci,
+więc nie łączy dwóch wizyt tej samej osoby. Zapis do `localStorage` istniał
+w kodzie jedynie jako ścieżka zapasowa na wypadek braku skonfigurowanego punktu
+zbiorczego i na produkcji nigdy się nie wykonywał.
 
-Do rozstrzygnięcia jest tylko sposób: albo baner zgody wyłącznie dla analityki
-(reszta bez zgody, bo niezbędna), albo rezygnacja z identyfikatora sesji na rzecz
-zliczania bez przechowywania czegokolwiek w urządzeniu. Druga droga jest tańsza
-w utrzymaniu i nie psuje pierwszego wrażenia ze strony.
+Wniosek: **baner zgody nie jest potrzebny** i nie był potrzebny. Art. 398 PKE
+dotyczy przechowywania informacji w urządzeniu, a statystyka niczego tam nie
+przechowywała.
+
+Co zostało zrobione mimo to:
+
+- Ścieżka zapasowa z zapisem do `localStorage` usunięta. Zdanie „statystyka nic
+  nie zapisuje w Twoim urządzeniu" było prawdziwe **warunkowo**, zależnie od
+  konfiguracji. Teraz jest prawdziwe z konstrukcji, bo w kodzie nie ma czym tego
+  zapisać.
+- Powstał `scripts/check-browser-storage.mjs`, wpięty w budowanie. Wypisuje
+  każde miejsce, które sięga do pamięci przeglądarki, i wymaga, żeby każde miało
+  wpisane uzasadnienie. Dziś jest ich osiem: koszyk, ustawienia dwóch
+  kalkulatorów, przeniesienie wyceny do koszyka, okno czatu, wybrany motyw,
+  wybrany język i pamięć podręczna publicznych cen kamieni. Wszystkie to rzeczy,
+  o które odwiedzający sam prosi albo bez których usługa nie działa, czyli
+  zwolnione z obowiązku zgody.
+- Skrypt pilnuje też wpisów bez pokrycia w kodzie, żeby lista nie stała się po
+  roku fikcją, której nikt nie ufa.
+
+Dzięki temu dołożenie kiedyś narzędzia analitycznego innej firmy albo piksela
+reklamowego zatrzyma budowanie z komunikatem, zamiast po cichu wprowadzić
+obowiązek, o którym nikt się nie dowie do kontroli.
 
 ---
 
@@ -258,8 +281,11 @@ Zsynchronizowane: `llms.txt` (nowa odpowiedź o zwrotach), `chat-api/context.js`
 (sekcja o zwrotach z wyraźnym zakazem mówienia, że przy produkcie z półki prawo
 nie przysługuje), `sitemap.xml`, dokument marki.
 
-**Etap 4.** Zgoda na analitykę albo rezygnacja z identyfikatora w przeglądarce
-(W4). Do decyzji właściciela, bo to wybór między banerem a dokładnością danych.
+**Etap 4, zrobiony, z korektą ustalenia.** Okazało się, że wybór między banerem
+a dokładnością danych w ogóle nie istniał: analityka niczego nie zapisywała
+w urządzeniu, więc zgoda nie była potrzebna. Szczegóły przy W4. Zamiast banera
+powstało zabezpieczenie na przyszłość: kontrola w budowaniu wypisująca każde
+miejsce sięgające do pamięci przeglądarki i wymagająca uzasadnienia dla każdego.
 
 **Etap 5.** Drobiazgi: nazwa przycisku zamówienia (S3), teksty newslettera (S4),
 reklamacje treści cyfrowych (S6), mechanizm najniższej ceny z 30 dni na czas

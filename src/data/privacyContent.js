@@ -131,7 +131,7 @@ export const PRIVACY = {
             "zapis rozmowy z asystentem na czas jednej wizyty.",
           ],
           "To zapisy niezbędne do świadczenia usługi, o którą sam prosisz, więc nie wymagają zgody. Nie używamy plików śledzących, nie mamy reklam ani narzędzi reklamowych innych firm, nie osadzamy pikseli sieci społecznościowych.",
-          "Statystykę odwiedzin prowadzimy we własnym zakresie, bez identyfikowania osoby i bez przekazywania czegokolwiek na zewnątrz.",
+          "Statystykę odwiedzin prowadzimy we własnym zakresie, bez identyfikowania osoby i bez przekazywania czegokolwiek na zewnątrz. Nie zapisuje ona w Twojej przeglądarce niczego: zdarzenia idą prosto na nasz serwer, a identyfikator odwiedzin ginie razem z zamknięciem strony, więc nie łączy dwóch wizyt tej samej osoby.",
         ],
       },
       {
@@ -263,7 +263,7 @@ export const PRIVACY = {
             "the assistant conversation, for the duration of one visit.",
           ],
           "These are necessary for the service you asked for, so they require no consent. We use no tracking files, we have no advertising or third-party advertising tools, and we embed no social network pixels.",
-          "Visit statistics are kept in-house, without identifying a person and without sending anything outside.",
+          "Visit statistics are kept in-house, without identifying a person and without sending anything outside. They store nothing in your browser: events go straight to our server, and the visit identifier dies with the page, so it cannot link two visits by the same person.",
         ],
       },
       {
@@ -395,7 +395,7 @@ export const PRIVACY = {
             "das Gespräch mit dem Assistenten für die Dauer eines Besuchs.",
           ],
           "Diese Speicherungen sind für die von Ihnen angeforderte Leistung erforderlich und bedürfen daher keiner Einwilligung. Wir verwenden keine Tracking-Dateien, keine Werbung und keine Werbewerkzeuge Dritter und binden keine Social-Media-Pixel ein.",
-          "Die Besuchsstatistik führen wir selbst, ohne Identifizierung einer Person und ohne Weitergabe nach außen.",
+          "Die Besuchsstatistik führen wir selbst, ohne Identifizierung einer Person und ohne Weitergabe nach außen. Sie speichert nichts in Ihrem Browser: Ereignisse gehen direkt an unseren Server, und die Besuchskennung endet mit der Seite, kann also zwei Besuche derselben Person nicht verknüpfen.",
         ],
       },
       {
