@@ -12,17 +12,33 @@
 // `true`, czyli "wierz calemu lancuchowi".
 //
 // Teraz adres bierze sie z `req.ip`. Express liczy go od KONCA lancucha,
-// odrzucajac tyle wpisow, ile mamy naprawde warstw posrednich. Krawedz Railway
-// dopisuje adres polaczenia na koniec, wiec przy jednej warstwie dostajemy
-// adres, ktory ona zobaczyla. Cokolwiek klient dopisze z przodu, laduje przed
-// nim i nie ma znaczenia.
+// odrzucajac tyle wpisow, ile mamy naprawde warstw posrednich.
+//
+// Ile ich jest, ustalone pomiarem na zywej usludze 2026-08-03, bo zgadywanie
+// myli sie w obie strony: za malo warstw daje adres krawedzi zamiast klienta
+// i wsadza wszystkich do wspolnego worka, za duzo daje adres, ktory klient
+// moze napisac sam.
+//
+//   x-forwarded-for:  152.55.185.159, 152.233.12.242
+//   x-real-ip:        152.55.185.159
+//
+// Zapytanie puszczone z konsoli Railway przez adres publiczny uslugi. Kontener
+// ma adres wyjsciowy 152.55.185.159 (sprawdzony niezaleznie), czyli KLIENTEM
+// jest wpis PIERWSZY, a ostatni nalezy do Railway. To samo widac po tym, ze
+// `x-real-ip`, czyli adres polaczenia widziany przez konczacy serwer, rowna sie
+// pierwszemu wpisowi w kazdym pomiarze. Stad dwie warstwy, nie jedna.
+//
+// Podszycie sie odpada niezaleznie od liczby warstw: krawedz Railway kasuje
+// `x-forwarded-for` przyslany przez klienta i pisze lancuch od nowa. Sprawdzone
+// dwoma zadaniami z podstawionym naglowkiem, spoza sieci i z jej wnetrza:
+// podstawiona wartosc nie dotarla ani razu.
 //
 // `cf-connecting-ip` wroci do laski dopiero wtedy, gdy ruch faktycznie pojdzie
 // przez Cloudflare, bo wtedy naglowek dopisuje Cloudflare. Wlacza sie to
 // swiadomie, zmienna srodowiskowa, tego samego dnia.
 
-/** Ile wpisow z konca lancucha pochodzi od naszej infrastruktury. Railway ma jedna. */
-export const TRUSTED_PROXY_HOPS = Number(process.env.TRUSTED_PROXY_HOPS) || 1;
+/** Ile wpisow z konca lancucha pochodzi od naszej infrastruktury. */
+export const TRUSTED_PROXY_HOPS = Number(process.env.TRUSTED_PROXY_HOPS) || 2;
 
 export const TRUST_CLOUDFLARE_HEADERS = process.env.TRUST_CLOUDFLARE_HEADERS === "true";
 
