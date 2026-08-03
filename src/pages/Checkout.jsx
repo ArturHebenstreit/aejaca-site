@@ -17,8 +17,9 @@ import { DELIVERY_METHODS } from "../data/orderCatalog.js";
 import { t } from "../pricing/config.js";
 import { API_URL, postJSON, submitPaymentForm } from "../utils/api.js";
 import { useMoney, formatPln } from "../shop/money.js";
-import { SHIPPING_COUNTRIES, shippingOptions, shippingGrosze, needsCustoms } from "../pricing/shipping.js";
+import { SHIPPING_COUNTRIES, shippingOptions, shippingGrosze, needsCustoms, FREE_SHIPPING_FROM_GROSZE } from "../pricing/shipping.js";
 import PaymentPicker from "../components/shop/PaymentPicker.jsx";
+import LockerPicker from "../components/shop/LockerPicker.jsx";
 
 const UI = {
   pl: {
@@ -34,6 +35,8 @@ const UI = {
     postal: "Kod pocztowy",
     city: "Miasto",
     lockerCode: "Kod paczkomatu",
+    freeShipping: "Gratis",
+    freeShippingWhy: (kwota) => `w prezencie, bo zamówienie przekracza ${kwota}`,
     consents: "Zgody",
     consentTerms: "Akceptuję regulamin i politykę prywatności",
     consentMade: "Zamawiam rzecz wykonywaną według mojej specyfikacji i przyjmuję do wiadomości, że po rozpoczęciu wykonania tracę prawo odstąpienia od umowy",
@@ -93,6 +96,8 @@ const UI = {
     postal: "Postal code",
     city: "City",
     lockerCode: "Locker code",
+    freeShipping: "Free",
+    freeShippingWhy: (kwota) => `on us, your order is over ${kwota}`,
     consents: "Consents",
     consentTerms: "I accept the Terms of Service and the Privacy Policy",
     consentMade: "I am ordering an item made to my specification and acknowledge that once production begins I lose the right of withdrawal",
@@ -152,6 +157,8 @@ const UI = {
     postal: "Postleitzahl",
     city: "Stadt",
     lockerCode: "Paketstationscode",
+    freeShipping: "Gratis",
+    freeShippingWhy: (kwota) => `geschenkt, Ihre Bestellung liegt über ${kwota}`,
     consents: "Einwilligungen",
     consentTerms: "Ich akzeptiere die AGB und die Datenschutzerklärung",
     consentMade: "Ich bestelle eine nach meinen Vorgaben gefertigte Sache und nehme zur Kenntnis, dass mit Fertigungsbeginn das Widerrufsrecht erlischt",
@@ -495,7 +502,9 @@ export default function Checkout() {
             )}
             <div className="flex justify-between text-sm pt-2 mt-2 border-t border-white/5">
               <span className="text-neutral-400">{u.shipping}: {t(delivery.label, lang)}</span>
-              <span className="text-white">{money(delivery.grosze)}</span>
+              {delivery.grosze === 0 && !onlyDigital && delivery.id !== "pickup"
+                ? <span className="text-emerald-300">{u.freeShipping}</span>
+                : <span className="text-white">{money(delivery.grosze)}</span>}
             </div>
             <div className="flex justify-between font-bold pt-3 mt-3 border-t border-white/10">
               <span className="text-white">{u.total}</span>
@@ -597,11 +606,31 @@ export default function Checkout() {
                             : `${u.carrier}: ${o.carrier}, ${o.leadDays} ${u.businessDays}`}
                         </div>
                       </div>
-                      <div className="text-sm font-semibold text-white whitespace-nowrap">{money(o.grosze)}</div>
+                      {/* Samo "0,00 zl" obok nazwy przewoznika czyta sie jak
+                          zepsuty cennik, a nie jak prezent. Slowo zamiast zera,
+                          a pod nim powod. */}
+                      <div className="text-sm font-semibold whitespace-nowrap text-right">
+                        {o.grosze === 0 && o.id !== "pickup" ? (
+                          <>
+                            <span className="text-emerald-300">{u.freeShipping}</span>
+                            <span className="block text-neutral-500 text-[10px] font-normal line-through">
+                              {money(o.listGrosze ?? 0)}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-white">{money(o.grosze)}</span>
+                        )}
+                      </div>
                     </button>
                   );
                 })}
               </div>
+
+              {options.some((o) => o.grosze === 0 && o.id !== "pickup") && (
+                <p className="text-emerald-300/80 text-[11px] mb-4">
+                  {u.freeShippingWhy(money(FREE_SHIPPING_FROM_GROSZE))}
+                </p>
+              )}
 
               {abroad && <p className="text-neutral-600 text-[11px] mb-4">{u.handlingNote}</p>}
 
@@ -618,7 +647,12 @@ export default function Checkout() {
               )}
 
               {deliveryId === "inpost_locker" && (
-                <Field label={u.lockerCode} value={addr.point} onChange={(v) => setAddr((a) => ({ ...a, point: v }))} required placeholder="WAW01A" />
+                <LockerPicker
+                  api={API_URL}
+                  value={addr.point}
+                  onChange={(v) => setAddr((a) => ({ ...a, point: v }))}
+                  lang={lang}
+                />
               )}
               {deliveryId === "courier" && (
                 <>

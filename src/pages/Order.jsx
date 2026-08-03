@@ -15,6 +15,7 @@ import { buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import PaymentPicker from "../components/shop/PaymentPicker.jsx";
+import LockerPicker from "../components/shop/LockerPicker.jsx";
 import { SERVICES, GROUPS, getService, DELIVERY_METHODS } from "../data/orderCatalog.js";
 import { shippingOptions, shippingGrosze, needsCustoms, SHIPPING_COUNTRIES } from "../pricing/shipping.js";
 import { t } from "../pricing/config.js";
@@ -773,7 +774,12 @@ export default function Order() {
               )}
 
               {deliveryId === "inpost_locker" && (
-                <Field label={u.lockerCode} value={addr.point} onChange={(v) => setAddr((a) => ({ ...a, point: v }))} required placeholder="WAW01A" />
+                <LockerPicker
+                  api={API}
+                  value={addr.point}
+                  onChange={(v) => setAddr((a) => ({ ...a, point: v }))}
+                  lang={lang}
+                />
               )}
               {deliveryId === "courier" && (
                 <>
