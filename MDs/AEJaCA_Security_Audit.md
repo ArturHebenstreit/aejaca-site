@@ -45,11 +45,20 @@ warunek przepuszcza żądanie **bez żadnego nagłówka**. Zapis produktów, wys
 kodów rabatowych, lista zamówień czekających na przelew i ich potwierdzanie stają
 się publiczne.
 
-To nie jest teoria. Dokładnie tak wygląda dziś sytuacja z drugim tokenem:
-`MATRIX_INVALIDATE_TOKEN` nie jest ustawiony w żadnej usłudze, a linie 2776 i 2959
-sprawdzają go tym samym wzorcem. Te dwa punkty końcowe są w tej chwili otwarte dla
-każdego. Skutek jest na szczęście mały (czyszczenie pamięci podręcznej cen kamieni
-i filamentów, czyli dodatkowe zapytania do bazy), ale mechanizm jest ten sam.
+Sprawdzone w Railway 2026-08-03: `ADMIN_API_TOKEN` jest ustawiony w obu usługach,
+`SESSION_SECRET` w panelu też, więc żadne z tych drzwi nie stało otworem. To jest
+wada odporności, nie czynne włamanie: koszt jednej literówki przy przenoszeniu
+usługi albo zakładaniu środowiska testowego to publiczny dostęp do zapisu produktów
+i wystawiania kodów rabatowych, bez żadnego ostrzeżenia po drodze.
+
+Przy okazji wyszła usterka, która siedziała cicho od dawna.
+`MATRIX_INVALIDATE_TOKEN` był ustawiony w `chat-api`, ale nie w panelu, a panel
+przy braku tej zmiennej po prostu nie wysyła żądania i nic nie mówi. Czyszczenie
+pamięci podręcznej nie działało nigdy. Przy matrycy lasera i filamentach było to
+niewidoczne, bo one i tak odświeżają się co pięć minut, ale ceny kamieni leżą
+w pamięci **dobę** (`server.js:2744`), więc zmiana ceny kamienia w panelu dochodziła
+do kalkulatora biżuterii nawet po dwudziestu czterech godzinach. Naprawione
+dodaniem zmiennej w panelu jako odwołania do usługi `chat-api`, sprawdzone na żywo.
 
 Naprawa: jedna funkcja `requireAdmin`, która najpierw sprawdza, czy token w ogóle
 istnieje, potem porównuje go `crypto.timingSafeEqual`.
@@ -140,6 +149,7 @@ z niepotwierdzonego adresu, sprzątanie porzuconych zamówień.
 | S7 | `GET /api/orders/:ref` bez żetonu dostępu wydaje status i dane do przelewu, choć `/pay` żetonu wymaga | `server.js:2458` |
 | S8 | `/api/debug-ip` publicznie odbija nagłówki żądania | `server.js:492` |
 | S9 | Ciasteczko sesji `sameSite: "lax"`, przy panelu wyłącznie do klikania wystarczy `strict` | `admin/server.js:24` |
+| S10 | Polityka treści dopuszcza `https://api.aejaca.com`, nazwę, która nie istnieje w DNS i nigdy nie została uruchomiona. Martwy wpis w regule bezpieczeństwa jest gorszy niż jego brak, bo sugeruje, że coś tam stoi | `public/_headers:13` |
 
 ## Niskie
 
