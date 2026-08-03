@@ -52,6 +52,7 @@ function Stars({ rating = 5, size = "w-4 h-4" }) {
 const LABELS = {
   pl: {
     tag: "Opinie z Google",
+    verification: "Wszystkie opinie pochodzą z profilu AEJaCA w Google Maps i wyświetlamy je w całości, bez wybierania korzystnych. Opinię może tam wystawić każdy, kto ma konto Google, a my nie mamy możliwości ani usunięcia opinii, ani sprawdzenia, czy jej autor faktycznie u nas kupił. Nie zamawiamy opinii i nie płacimy za nie.",
     title: "Co mówią nasi klienci",
     basedOn: "opinii na Google",
     showMore: "Pokaż więcej opinii",
@@ -69,6 +70,7 @@ const LABELS = {
   },
   en: {
     tag: "Google Reviews",
+    verification: "Every review comes from the AEJaCA profile on Google Maps and is shown in full, without cherry-picking the flattering ones. Anyone with a Google account can post one there; we can neither remove a review nor verify that its author actually bought from us. We do not solicit or pay for reviews.",
     title: "What our clients say",
     basedOn: "reviews on Google",
     showMore: "Show more reviews",
@@ -86,6 +88,7 @@ const LABELS = {
   },
   de: {
     tag: "Google-Bewertungen",
+    verification: "Alle Bewertungen stammen aus dem AEJaCA-Profil bei Google Maps und werden vollständig angezeigt, ohne Auswahl der vorteilhaften. Dort kann jeder mit einem Google-Konto eine Bewertung abgeben; wir können weder eine Bewertung entfernen noch prüfen, ob die Person tatsächlich bei uns gekauft hat. Wir bestellen keine Bewertungen und bezahlen nicht dafür.",
     title: "Was unsere Kunden sagen",
     basedOn: "Bewertungen auf Google",
     showMore: "Mehr Bewertungen anzeigen",
@@ -230,6 +233,14 @@ export default function GoogleReviews({
             </button>
           </div>
         )}
+
+        {/* Skad sa te opinie i czego o nich NIE wiemy. Po dyrektywie Omnibus
+            prezentowanie opinii bez informacji o sposobie ich weryfikacji jest
+            wymienione wprost jako praktyka wprowadzajaca w blad, a napisanie
+            "zweryfikowane", gdy nie sposob tego sprawdzic, byloby gorsze. */}
+        <p className="text-neutral-500 text-xs leading-relaxed max-w-2xl mx-auto text-center mb-6">
+          {l.verification}
+        </p>
 
         {/* Dual CTA: View all + Write review */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">

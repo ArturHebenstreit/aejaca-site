@@ -238,8 +238,25 @@ z sekcją 3 polityki. Zamówień i dokumentacji sprzedaży zadanie nie rusza, bo
 trzyma je obowiązek podatkowy i przedawnienie roszczeń. Testy pilnują przede
 wszystkim tego, czego kasować NIE wolno.
 
-**Etap 3.** Strona Zwroty zgodna z Regulaminem, z wzorem formularza (W3),
-oraz informacja o weryfikacji opinii (S1).
+**Etap 3, zrobiony.** Strona Zwroty przepisana tak, żeby mówiła to samo co
+Regulamin (W3): bieg 14 dni od odebrania przesyłki na złożenie oświadczenia,
+zwrot wszystkich płatności **wraz z kosztem najtańszej oferowanej dostawy**
+w ciągu 14 dni od otrzymania oświadczenia, prawo wstrzymania zwrotu do czasu
+otrzymania towaru albo dowodu odesłania, odpowiedzialność za zmniejszenie
+wartości rzeczy. Lista wyłączeń zawężona do wyliczenia z art. 38; zniknął zapis
+o „elementach sprowadzonych na specjalne życzenie" w brzmieniu szerszym niż
+ustawa. Doszła sekcja ze **wzorem formularza odstąpienia** (załącznik nr 2),
+z danymi adresata i przyciskiem kopiowania (W2 w części dotyczącej strony).
+
+Opinie Google opatrzone informacją, skąd pochodzą i czego o nich nie wiemy (S1):
+że pokazujemy je w całości bez wybierania korzystnych, że wystawić je może każdy
+z kontem Google, że nie możemy ich usunąć ani sprawdzić, czy autor u nas kupił,
+i że ich nie zamawiamy ani za nie nie płacimy. Napisanie „zweryfikowane" byłoby
+tu gorsze niż milczenie, bo weryfikacji nie da się przeprowadzić.
+
+Zsynchronizowane: `llms.txt` (nowa odpowiedź o zwrotach), `chat-api/context.js`
+(sekcja o zwrotach z wyraźnym zakazem mówienia, że przy produkcie z półki prawo
+nie przysługuje), `sitemap.xml`, dokument marki.
 
 **Etap 4.** Zgoda na analitykę albo rezygnacja z identyfikatora w przeglądarce
 (W4). Do decyzji właściciela, bo to wybór między banerem a dokładnością danych.

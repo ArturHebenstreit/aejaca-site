@@ -723,6 +723,16 @@ Zakładka **Przelewy** w panelu ma przy każdym zamówieniu przycisk **Rezygnacj
 
 Pod listą roboczą stoi sekcja **Zamknięte bez zapłaty** (rezygnacje i zamówienia wygasłe) z przyciskiem kasowania. Kasować wolno wyłącznie zamówienie, przy którym nic się nie wydarzyło, czyli pomyłkę albo test. Blokuje dziewięć śladów: zapłata, rozliczenie, ręczne potwierdzenie przelewu, powiadomienie z bramki, zdjęcie towaru ze stanu, użycie kodu, wydane pliki, wisząca dopłata i powiązanie z wyceną. Powód odmowy panel wypisuje z nazwy. Reguła leży w `chat-api/orderCleanup.js` z testami, bo wiersz zamówienia kasuje się kaskadowo razem z pozycjami, rezerwacjami i użyciami kodu, więc skasowanie czegoś, co żyło, wymazałoby dowody.
 
+### Zgodność prawna (audyt 2026-08-03)
+
+Pełny zapis w `MDs/AEJaCA_Legal_Audit.md`. Rzeczy, które zmieniły treść widoczną dla klienta:
+
+- **Mail po zakupie** dobiera pouczenie o odstąpieniu do rodzaju zamówienia i przy rzeczach z półki dołącza wzór formularza. Wcześniej odbierał prawo odstąpienia każdemu, także tym, którym przysługuje.
+- **Polityka Prywatności** napisana od nowa, 11 sekcji w trzech językach, z podstawami prawnymi, odbiorcami i okresami przechowywania. Okresy egzekwuje zadanie `chat-api/retention.js`, więc zmiana terminu w polityce wymaga zmiany także tam.
+- **Strona Zwroty** zgodna z Regulaminem (bieg 14 dni od otrzymania oświadczenia, zwrot kosztu najtańszej dostawy) i ze wzorem formularza do skopiowania.
+- **Opinie Google** opatrzone informacją, skąd pochodzą i czego o nich nie wiemy. Po dyrektywie Omnibus prezentowanie opinii bez takiej informacji jest praktyką wprowadzającą w błąd.
+- **Okno czatu** informuje przed pierwszą wiadomością o zapisie na 12 miesięcy i o dostawcy spoza EOG.
+
 ### Bezpieczeństwo (audyt 2026-08-03)
 
 Pełny zapis w `MDs/AEJaCA_Security_Audit.md`: przegląd chat-api, panelu, integracji Autopay, kodów rabatowych, nagłówków i zależności, razem z pięcioma etapami napraw i uzasadnieniem decyzji. Najważniejsze zmiany, które dotykają sklepu: limity zapytań na sprawdzaniu kodu rabatowego i składaniu zamówień, najwyżej dwie rezerwacje towaru naraz z jednego adresu, kody rabatowe losowane generatorem kryptograficznym oraz kontrola danych zamawiającego po stronie serwera.
