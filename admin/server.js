@@ -38,7 +38,18 @@ app.use(session({
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000, secure: process.env.NODE_ENV === "production", sameSite: "lax" },
+  // `lax`, a nie `strict`, i to swiadomie. `strict` nie wysyla ciasteczka przy
+  // wejsciu z obcej strony, a powrot z logowania Google jest wlasnie takim
+  // wejsciem, wiec grozi zamknieciem sie na zewnatrz wlasnego panelu.
+  // Zysk bylby zreszta zaden: `lax` juz teraz nie przepuszcza zadania POST
+  // z cudzej strony, a kazda zmiana w panelu idzie przez POST.
+  // `httpOnly` odcina ciasteczko od skryptow w przegladarce.
+  cookie: {
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    httpOnly: true,
+  },
 }));
 
 // --- Passport Google OAuth ---
@@ -76,6 +87,46 @@ app.use((req, res, next) => {
 // --- View engine ---
 app.set("view engine", "ejs");
 app.set("views", join(__dirname, "views"));
+
+// Arkusz stylow podajemy z wlasnego katalogu. Wczesniej kazda strona ciagnela
+// Tailwind ze zdalnego serwera, bez przypietej wersji i bez sumy kontrolnej,
+// czyli panel z dostepem do leadow, kodow i potwierdzania przelewow wykonywal
+// kod, nad ktorym nie mielismy zadnej kontroli. Plik jest zbudowany i wpisany
+// do repozytorium (`npm run build:css`), wiec wdrozenie niczego nie sciaga.
+app.use(express.static(join(__dirname, "public"), { maxAge: "1h" }));
+
+// Naglowki bezpieczenstwa. Panel siega do jednego obcego serwera po zdjecie
+// profilowe z Google i po miniatury produktow z naszej strony, i na tym koniec.
+// Skrypty tylko wlasne, wiec wstrzykniety napis nie ma jak sie wykonac, nawet
+// gdyby kiedys ominal filtrowanie szablonu.
+//
+// `unsafe-inline` przy skryptach zostaje, bo szesc widokow ma male wstawki
+// w tresci strony. To ustepstwo, ale nadal domyka cala reszte: zaden kod
+// z zewnetrznego adresu sie nie wykona.
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: https://lh3.googleusercontent.com https://www.aejaca.com",
+  "connect-src 'self'",
+  "frame-ancestors 'none'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join("; ");
+
+app.use((req, res, next) => {
+  res.set("Content-Security-Policy", CSP);
+  res.set("X-Content-Type-Options", "nosniff");
+  res.set("X-Frame-Options", "DENY");
+  res.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  // Panel nie ma czego pokazywac wyszukiwarce ani asystentowi.
+  res.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+  if (process.env.NODE_ENV === "production") {
+    res.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  }
+  next();
+});
 
 // --- Auth middleware ---
 function requireAuth(req, res, next) {
@@ -319,13 +370,26 @@ app.post("/conversations/bulk-delete", requireAuth, async (req, res) => {
 });
 
 // --- Export CSV ---
+/**
+ * Komorka arkusza, nie napis.
+ *
+ * Wartosci w eksporcie pochodza od obcych ludzi: imie, tresc zapytania, notatka.
+ * Excel i Arkusze Google traktuja komorke zaczynajaca sie od `=`, `+`, `-` lub
+ * `@` jak formule i wykonuja ja przy otwarciu pliku, na TWOIM komputerze,
+ * z Twoimi uprawnieniami. Apostrof z przodu mowi arkuszowi "to jest tekst".
+ */
+function csvCell(value) {
+  const s = String(value ?? "").replace(/"/g, '""');
+  return /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
+}
+
 app.get("/export/:table", requireAuth, async (req, res) => {
   const table = req.params.table === "subscribers" ? "subscribers" : "leads";
   try {
     const { rows } = await pool.query(`SELECT * FROM ${table} ORDER BY ${table === "leads" ? "created_at" : "subscribed_at"} DESC`);
     if (!rows.length) return res.status(404).send("No data");
     const headers = Object.keys(rows[0]);
-    const csv = [headers.join(","), ...rows.map(r => headers.map(h => `"${String(r[h] ?? "").replace(/"/g, '""')}"`).join(","))].join("\n");
+    const csv = [headers.join(","), ...rows.map(r => headers.map(h => `"${csvCell(r[h])}"`).join(","))].join("\n");
     res.setHeader("Content-Type", "text/csv");
     res.setHeader("Content-Disposition", `attachment; filename=${table}_${new Date().toISOString().slice(0, 10)}.csv`);
     res.send(csv);
@@ -500,7 +564,7 @@ app.get("/laser-matrix/export", requireAuth, async (req, res) => {
     const { rows } = await pool.query("SELECT * FROM laser_matrix ORDER BY id");
     if (!rows.length) return res.status(404).send("No data");
     const headers = Object.keys(rows[0]);
-    const csv = [headers.join(","), ...rows.map(r => headers.map(h => `"${String(r[h] ?? "").replace(/"/g, '""')}"`).join(","))].join("\n");
+    const csv = [headers.join(","), ...rows.map(r => headers.map(h => `"${csvCell(r[h])}"`).join(","))].join("\n");
     res.setHeader("Content-Type", "text/csv");
     res.setHeader("Content-Disposition", `attachment; filename=laser-matrix_${new Date().toISOString().slice(0, 10)}.csv`);
     res.send(csv);

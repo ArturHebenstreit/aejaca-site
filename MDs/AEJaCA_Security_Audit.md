@@ -143,7 +143,7 @@ z niepotwierdzonego adresu, sprzątanie porzuconych zamówień.
 | S1 | Treść błędu bazy wraca do przeglądarki (`detail: e.message`), zdradza nazwy kolumn i ograniczeń | `server.js:1845, 1951` |
 | S2 | Panel pokazuje `err.message` na stronie błędu | `admin/server.js`, wszystkie `catch` |
 | S3 | Osiem podatności w zależnościach `chat-api`: `body-parser` (odmowa usługi), `qs` (zanieczyszczenie prototypu), `form-data`, `uuid` | `chat-api/package-lock.json` |
-| S4 | `admin` nie ma pliku blokady zależności, więc wdrożenie instaluje za każdym razem inne wersje i nie da się go zbadać | `admin/` |
+| S4 | ~~`admin` bez pliku blokady zależności~~ dodany w etapie 4 | `admin/package-lock.json` |
 | S5 | Brak nagłówków bezpieczeństwa na obu usługach, panel bez polityki treści | obie usługi |
 | S6 | Eksport CSV nie neutralizuje formuł, komórka zaczynająca się od `=` wykona się po otwarciu pliku u Ciebie | `admin/server.js:311` |
 | S7 | `GET /api/orders/:ref` bez żetonu dostępu wydaje status i dane do przelewu, choć `/pay` żetonu wymaga | `server.js:2458` |
@@ -240,11 +240,39 @@ Dołożone tam, gdzie nie było nic:
 Sprawdzenia w `chat-api/rateLimit.test.mjs`, razem z odpowiedzią 429 i nagłówkiem
 `Retry-After`, żeby uczciwy klient wiedział, kiedy wrócić, zamiast próbować w kółko.
 
-**Etap 4, uszczelnienie reszty.** Zdjęcie treści błędów z odpowiedzi, nagłówki
-bezpieczeństwa, żeton dostępu przy odczycie zamówienia, neutralizacja formuł w CSV,
-usunięcie `/api/debug-ip`, `sameSite: "strict"`.
+**Etap 4, zrobiony.** Treść błędów bazy zdjęta z odpowiedzi (zostaje w logu),
+nagłówki bezpieczeństwa na obu usługach, `/api/debug-ip` za żetonem, formuły
+w eksporcie CSV zneutralizowane, `httpOnly` na ciasteczku sesji, `..` odrzucane
+w ścieżce zdjęcia produktu, porównanie żetonu zamówienia i wyceny stałoczasowe,
+martwy `api.aejaca.com` usunięty z polityki treści.
 
-**Etap 5, zależności.** Aktualizacja `chat-api`, plik blokady dla `admin`.
+**Znalezione przy okazji, poważniejsze niż połowa tej listy.** Każda strona panelu
+ładowała Tailwind z `cdn.tailwindcss.com`, bez przypiętej wersji i bez sumy
+kontrolnej. Kto kontrolowałby tamten skrypt, kontrolowałby panel: czytałby leady
+i subskrybentów, a wysyłając formularze z sesją zalogowanego potwierdzałby przelewy
+i wystawiał kody rabatowe. Arkusz jest teraz budowany u nas (`npm run build:css`,
+24 kB zamiast kilkuset) i leży w repozytorium, więc wdrożenie niczego nie ściąga,
+a polityka treści panelu dopuszcza wyłącznie własne skrypty. Przy okazji doszedł
+brakujący plik blokady zależności panelu (S4).
+
+**Dwie rzeczy zrobione inaczej, niż zapowiadał plan.**
+
+`sameSite: "strict"` (S9) **wycofane po napisaniu**. Przy `strict` przeglądarka nie
+wysyła ciasteczka przy wejściu z obcej strony, a powrót z logowania Google jest
+właśnie takim wejściem, więc groziło to zamknięciem się na zewnątrz własnego panelu.
+Zysk byłby zresztą żaden: `lax` już teraz nie przepuszcza żądania POST z cudzej
+strony, a każda zmiana w panelu idzie przez POST.
+
+Żeton przy odczycie zamówienia (S7) **nie został wprowadzony**, i to jest korekta
+samego ustalenia. Strona statusu dostaje wyłącznie numer zamówienia, bo klient
+trafia na nią z powrotu z bramki płatniczej, gdzie żetonu nie ma. Wymaganie go
+zepsułoby ten przepływ. Sprawdzone, co ten punkt naprawdę wydaje: status, kwotę
+i nasz numer rachunku. Ani nazwiska, ani adresu, ani zawartości zamówienia,
+a numer rachunku i tak podajemy każdemu, kto ma zapłacić. Przy 32 bitach
+losowości numeru i limicie zapytań zgadywanie jest nierealne. Punkt zamknięty
+jako nadmierny, a nie odłożony.
+
+**Etap 5, zależności.** Aktualizacja `chat-api`.
 
 **Poza kodem, do zrobienia w Railway:** sprawdzić, że `SESSION_SECRET` i
 `ADMIN_API_TOKEN` są rzeczywiście ustawione i różne w każdej usłudze, dołożyć

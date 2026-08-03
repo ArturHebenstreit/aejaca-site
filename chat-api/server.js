@@ -27,7 +27,7 @@ import {
   releaseOrderRedemptions, normalizeCode, randomCode, DiscountError, APPLIES_TO, MAX_PERCENT,
 } from "./discounts.js";
 import { sendOrderPaidEmails, sendTransferInstructions } from "./orderMail.js";
-import { requireAdmin, requireInvalidateToken, requireSecret } from "./auth.js";
+import { requireAdmin, requireInvalidateToken, requireSecret, secretMatches } from "./auth.js";
 import { extractIP, isPrivateIP, TRUSTED_PROXY_HOPS, TRUST_CLOUDFLARE_HEADERS } from "./clientIp.js";
 import { createLimiter, limitBy } from "./rateLimit.js";
 
@@ -61,6 +61,21 @@ app.use(cors({
   allowedHeaders: ["Content-Type"],
 }));
 // Body parsers are applied per-route to avoid global limit conflicts.
+
+// To jest API, nie strona: nie ma tu czego osadzac w ramce ani czego wyswietlac.
+// Naglowki mowia to wprost, zeby odpowiedz uzyta w niewlasciwym miejscu nie
+// zamienila sie w narzedzie. `nosniff` liczy sie najbardziej: bez niego
+// przegladarka potrafi uznac odpowiedz za HTML i wykonac jej tresc.
+app.use((req, res, next) => {
+  res.set("X-Content-Type-Options", "nosniff");
+  res.set("X-Frame-Options", "DENY");
+  res.set("Referrer-Policy", "no-referrer");
+  res.set("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");
+  if (process.env.NODE_ENV === "production") {
+    res.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  }
+  next();
+});
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -445,9 +460,14 @@ async function lookupCountry(ip) {
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
 // Sluzy do jednej rzeczy: sprawdzenia, czy liczba warstw posrednich jest dobrana,
-// czyli czy widzimy prawdziwy adres klienta, a nie adres wewnetrzny. Pokazuje
-// wylacznie to, co przyszlo w zadaniu pytajacego, wiec niczego o innych nie zdradza.
+// czyli czy widzimy prawdziwy adres klienta, a nie adres wewnetrzny.
+//
+// Za zetonem, bo choc pokazuje wylacznie zadanie pytajacego, mowi tez, jak
+// jestesmy poustawiani. To gotowa instrukcja dla kogos, kto dopiero sprawdza,
+// czy da sie podstawic adres. Do uzycia:
+//   curl -H "x-admin-token: <zeton>" https://.../api/debug-ip
 app.get("/api/debug-ip", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
   const ip = extractIP(req);
   const country = await lookupCountry(ip);
   res.json({
@@ -1002,7 +1022,7 @@ app.post("/api/quotes", express.json({ limit: "1mb" }), async (req, res) => {
 app.get("/api/quotes/:ref", async (req, res) => {
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
   const quote = await getQuoteByRef(pool, req.params.ref);
-  if (!quote || !quote.access_token || quote.access_token !== req.query.token) {
+  if (!quote || !secretMatches(String(req.query.token || ""), quote.access_token)) {
     return res.status(404).json({ error: "Nie ma takiej wyceny" });
   }
   res.json({
@@ -1791,14 +1811,12 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
     });
   } catch (e) {
     if (e instanceof PricingError) return res.status(400).json({ error: e.message, code: e.code });
-    // Pelny blad do logow, skrocony do odpowiedzi. Komunikaty Postgresa
-    // mowia o kolumnach i ograniczeniach, nie o poswiadczeniach, wiec
-    // ich pokazanie przyspiesza diagnoze bez ryzyka wycieku sekretow.
+    // Pelny blad do logow, do odpowiedzi nic. Komunikaty Postgresa nie niosa
+    // hasel, ale niosa nazwy kolumn i ograniczen, czyli darmowa mape bazy dla
+    // kogos, kto dopiero szuka, gdzie przycisnac. Klientowi i tak nic nie mowia,
+    // a diagnoza ma miejsce w logu, gdzie stoi caly slad wykonania.
     console.error("[orders] create failed:", e?.code, e?.message, e?.detail, e?.stack);
-    res.status(500).json({
-      error: "Nie udalo sie utworzyc zamowienia",
-      detail: [e?.code, e?.message, e?.detail].filter(Boolean).join(" | ").slice(0, 300),
-    });
+    res.status(500).json({ error: "Nie udalo sie utworzyc zamowienia" });
   }
 });
 
@@ -1869,7 +1887,10 @@ app.put("/api/products/:slug", express.json({ limit: "256kb" }), async (req, res
   if (images.length < 1 || images.length > 5) {
     return res.status(400).json({ error: "Produkt potrzebuje od 1 do 5 zdjec" });
   }
-  if (images.some((s) => !/^\/img\/[\w./-]+\.(webp|jpg|jpeg|png)$/i.test(s))) {
+  // Bez `..` w sciezce. Dzis zdjecie trafia tylko do znacznika `img`, wiec
+  // wyjscie z katalogu nic nie daje, ale ta sama sciezka pojedzie kiedys do
+  // odczytu pliku albo do generatora miniatur i wtedy juz bedzie dawac.
+  if (images.some((s) => !/^\/img\/[\w./-]+\.(webp|jpg|jpeg|png)$/i.test(s) || s.includes(".."))) {
     return res.status(400).json({ error: "Zdjecie musi byc sciezka /img/... do pliku w repozytorium" });
   }
 
@@ -1903,7 +1924,7 @@ app.put("/api/products/:slug", express.json({ limit: "256kb" }), async (req, res
     res.json({ ok: true, product: rows[0] });
   } catch (e) {
     console.error("[produkty] zapis:", e.message);
-    res.status(500).json({ error: "Nie udalo sie zapisac produktu", detail: e.message.slice(0, 200) });
+    res.status(500).json({ error: "Nie udalo sie zapisac produktu" });
   }
 });
 
@@ -2133,7 +2154,7 @@ app.post("/api/admin/discounts", express.json({ limit: "16kb" }), async (req, re
     }
   } catch (e) {
     console.error("[rabaty] tworzenie kodu:", e.message);
-    return res.status(400).json({ error: "Nie udalo sie zapisac kodu", detail: e.message.slice(0, 200) });
+    return res.status(400).json({ error: "Nie udalo sie zapisac kodu" });
   }
 
   if (!created.length) return res.status(409).json({ error: "Taki kod juz istnieje", code: "duplicate" });
@@ -2289,7 +2310,7 @@ app.post("/api/orders/:ref/pay", express.json({ limit: "8kb" }), async (req, res
   );
   const order = rows[0];
   if (!order) return res.status(404).json({ error: "Zamowienie nie istnieje" });
-  if (order.access_token !== token) return res.status(403).json({ error: "Brak dostepu" });
+  if (!secretMatches(token, order.access_token)) return res.status(403).json({ error: "Brak dostepu" });
   if (order.status === "paid") return res.status(409).json({ error: "Zamowienie jest juz oplacone", code: "already_paid" });
   if (order.expires_at && new Date(order.expires_at) < new Date()) {
     return res.status(410).json({ error: "Wycena wygasla", code: "expired" });
@@ -2564,7 +2585,10 @@ app.get("/api/laser-matrix", async (req, res) => {
     res.setHeader("Cache-Control", "public, max-age=300");
     res.json({ rows, count: rows.length, cachedAt: new Date(_matrixCache.ts).toISOString() });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    // Komunikat wyjatku zostaje w logu. Do odpowiedzi trafia zdanie, ktore nie
+    // opowiada obcemu o strukturze bazy ani o tym, gdzie sie potknelismy.
+    console.error("[api] blad trasy:", err.message);
+    res.status(500).json({ error: "Nie udalo sie pobrac danych" });
   }
 });
 
@@ -2583,7 +2607,10 @@ app.get("/api/laser-matrix/options", async (req, res) => {
     res.setHeader("Cache-Control", "public, max-age=300");
     res.json({ lasers, actions, materials, watts, lenses });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    // Komunikat wyjatku zostaje w logu. Do odpowiedzi trafia zdanie, ktore nie
+    // opowiada obcemu o strukturze bazy ani o tym, gdzie sie potknelismy.
+    console.error("[api] blad trasy:", err.message);
+    res.status(500).json({ error: "Nie udalo sie pobrac danych" });
   }
 });
 
@@ -2793,7 +2820,7 @@ app.get("/api/filaments", async (req, res) => {
     res.json({ types, count: types.length, cachedAt: new Date(_filamentCache.ts).toISOString() });
   } catch (e) {
     console.error("[filaments] GET /api/filaments error:", e.message);
-    res.status(500).json({ error: "Failed to fetch filaments", detail: e.message });
+    res.status(500).json({ error: "Failed to fetch filaments" });
   }
 });
 
@@ -2976,7 +3003,10 @@ app.post("/api/gmail/setup-watch", async (req, res) => {
     _lastHistoryId = result.historyId;
     res.json({ ok: true, historyId: result.historyId, expiration: result.expiration });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    // Komunikat wyjatku zostaje w logu. Do odpowiedzi trafia zdanie, ktore nie
+    // opowiada obcemu o strukturze bazy ani o tym, gdzie sie potknelismy.
+    console.error("[api] blad trasy:", err.message);
+    res.status(500).json({ error: "Nie udalo sie pobrac danych" });
   }
 });
 
