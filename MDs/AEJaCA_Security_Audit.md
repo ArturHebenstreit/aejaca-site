@@ -200,9 +200,19 @@ podanego przez klienta. `cf-connecting-ip` honorowany dopiero po włączeniu
 Sprawdzenia w `chat-api/clientIp.test.mjs` idą przez prawdziwy serwer, bo rzecz
 dotyczy tego, jak Express przycina łańcuch, czego atrapa żądania by nie odtworzyła.
 
-Do potwierdzenia po wdrożeniu: `/api/debug-ip` ma pokazać prawdziwy adres
-publiczny i `private: false`. Gdyby pokazał adres prywatny, warstw jest więcej
-niż jedna i podnosimy `TRUSTED_PROXY_HOPS`.
+Liczba warstw ustalona pomiarem na żywej usłudze, nie założeniem. Pierwsze
+ustawienie, jedna warstwa, było błędne: brało adres węzła krawędziowego Railway
+zamiast adresu klienta, przez co wielu odwiedzających wpadłoby do wspólnego
+licznika i limit uderzałby w niewinnych. Dowód rozstrzygający: żądanie puszczone
+z konsoli Railway przez publiczny adres usługi dało łańcuch
+`152.55.185.159, 152.233.12.242`, a niezależnie sprawdzony adres wyjściowy tego
+kontenera to `152.55.185.159`, czyli wpis **pierwszy**. To samo mówi `x-real-ip`,
+który w każdym pomiarze równa się pierwszemu wpisowi. Stąd dwie warstwy.
+
+Przy okazji potwierdzone, że podszycie się odpada niezależnie od liczby warstw:
+krawędź Railway kasuje `x-forwarded-for` przysłany przez klienta i pisze łańcuch
+od nowa. Dwa żądania z podstawionym nagłówkiem, jedno spoza sieci i jedno z jej
+wnętrza, nie doniosły podstawionej wartości ani razu.
 
 **Etap 3, limity tam, gdzie ich nie ma.** Sprawdzanie kodu, składanie zamówienia,
 wgrywanie plików, wycena. Do tego licznik nietrafionych prób kodu.
