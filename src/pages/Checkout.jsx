@@ -18,6 +18,8 @@ import { t } from "../pricing/config.js";
 import { API_URL, postJSON, submitPaymentForm } from "../utils/api.js";
 import { useMoney, formatPln } from "../shop/money.js";
 import { SHIPPING_COUNTRIES, shippingOptions, shippingGrosze, needsCustoms, FREE_SHIPPING_FROM_GROSZE } from "../pricing/shipping.js";
+import { validateCustomer } from "../shop/customerFields.js";
+import CustomerFields, { ValidatedField as Field } from "../components/shop/CustomerFields.jsx";
 import PaymentPicker from "../components/shop/PaymentPicker.jsx";
 import LockerPicker from "../components/shop/LockerPicker.jsx";
 
@@ -35,6 +37,7 @@ const UI = {
     postal: "Kod pocztowy",
     city: "Miasto",
     lockerCode: "Kod paczkomatu",
+    missingTitle: "Zanim zapłacisz, uzupełnij:",
     freeShipping: "Gratis",
     freeShippingWhy: (kwota) => `w prezencie, bo zamówienie przekracza ${kwota}`,
     consents: "Zgody",
@@ -96,6 +99,7 @@ const UI = {
     postal: "Postal code",
     city: "City",
     lockerCode: "Locker code",
+    missingTitle: "Before you pay, please complete:",
     freeShipping: "Free",
     freeShippingWhy: (kwota) => `on us, your order is over ${kwota}`,
     consents: "Consents",
@@ -157,6 +161,7 @@ const UI = {
     postal: "Postleitzahl",
     city: "Stadt",
     lockerCode: "Paketstationscode",
+    missingTitle: "Vor der Zahlung bitte ergänzen:",
     freeShipping: "Gratis",
     freeShippingWhy: (kwota) => `geschenkt, Ihre Bestellung liegt über ${kwota}`,
     consents: "Einwilligungen",
@@ -227,24 +232,6 @@ function countryList(lang) {
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function Field({ label, value, onChange, type = "text", required, placeholder }) {
-  return (
-    <label className="block mb-4">
-      <span className="block text-[11px] uppercase tracking-wide text-neutral-500 mb-1.5">
-        {label}{required && <span className="text-blue-400 ml-1">*</span>}
-      </span>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/10 text-white text-sm
-                   placeholder:text-neutral-600 focus:border-blue-400/50 focus:outline-none transition-colors"
-      />
-    </label>
-  );
-}
 
 function Consent({ checked, onChange, children }) {
   return (
@@ -373,9 +360,37 @@ export default function Checkout() {
     (!hasMadeToOrder || consents.waiveWithdrawal) &&
     (!hasDigital || consents.digitalImmediate);
 
-  const canPay = items.length > 0 && EMAIL_RE.test(customer.email) && addressOk && consentsOk && !busy;
+  // Blad pokazujemy po wyjsciu z pola albo po probie zaplaty, nie w trakcie
+  // pisania. Formularz ma pomagac, a nie poprawiac kazda litere.
+  const [triedToPay, setTriedToPay] = useState(false);
+
+  const fieldErrors = validateCustomer(customer);
+
+  const customerOk = Object.keys(fieldErrors).length === 0;
+
+  // Lista tego, czego brakuje. Przycisk zostaje czynny: wylaczony przycisk nie
+  // mowi, czego chce, wiec klient klika w martwy prostokat i zgaduje. Klikniecie
+  // z brakami odslania bledy i przewija do pierwszego z nich.
+  const missing = [
+    fieldErrors.email && u.email,
+    fieldErrors.name && u.name,
+    fieldErrors.phone && u.phone,
+    !addressOk && u.delivery,
+    !consentsOk && u.consents,
+  ].filter(Boolean);
+
+  const canPay = items.length > 0 && customerOk && addressOk && consentsOk && !busy;
 
   async function pay() {
+    if (!canPay) {
+      // Nie karcimy w ciszy: pokazujemy wszystkie braki naraz i idziemy
+      // do pierwszego z nich, zeby klient nie szukal ich sam po stronie.
+      setTriedToPay(true);
+      const first = document.querySelector('[aria-invalid="true"], #locker-search, #locker-code');
+      first?.scrollIntoView({ behavior: "smooth", block: "center" });
+      first?.focus?.({ preventScroll: true });
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -564,9 +579,13 @@ export default function Checkout() {
           </div>
 
           <h2 className="text-white font-semibold mb-4">{u.yourData}</h2>
-          <Field label={u.email} value={customer.email} onChange={(v) => setCustomer((c) => ({ ...c, email: v }))} type="email" required placeholder="twoj@email.com" />
-          <Field label={u.name} value={customer.name} onChange={(v) => setCustomer((c) => ({ ...c, name: v }))} />
-          <Field label={u.phone} value={customer.phone} onChange={(v) => setCustomer((c) => ({ ...c, phone: v }))} type="tel" />
+          <CustomerFields
+            value={customer}
+            onChange={setCustomer}
+            labels={{ email: u.email, name: u.name, phone: u.phone }}
+            lang={lang}
+            showErrors={triedToPay}
+          />
 
           {!onlyDigital && (
             <>
@@ -759,10 +778,20 @@ export default function Checkout() {
             </div>
           )}
 
+          {/* Lista brakow stoi tuz nad przyciskiem, w kolorze ostrzezenia,
+              nie bledu: to jeszcze nie pomylka, tylko niedokonczona robota. */}
+          {missing.length > 0 && (
+            <div className="rounded-lg border border-amber-400/30 bg-amber-400/10 p-3 mb-3">
+              <p className="text-amber-200 text-xs">
+                {u.missingTitle} <span className="font-medium">{missing.join(", ")}</span>
+              </p>
+            </div>
+          )}
+
           <button
             type="button"
             onClick={pay}
-            disabled={!canPay}
+            disabled={busy || items.length === 0}
             // Nieczynny przycisk musi wygladac na nieczynny takze w trybie
             // jasnym. Samo ciemne tlo na kremowej stronie czyta sie jak
             // przycisk gotowy do klikniecia, wiec doszly obramowanie i kursor.

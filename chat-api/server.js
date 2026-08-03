@@ -15,6 +15,7 @@ import {
   verifyReturn, parseITN, buildITNConfirmation, fetchGatewayList,
 } from "./autopay.js";
 import { packagingGrosze, sanitizePersonalization } from "./pricing/packaging.js";
+import { validateCustomer, normalizePhone } from "./pricing/customerFields.js";
 import { eurCentsFromGrosze } from "./pricing/currency.js";
 import { shippingGrosze as shippingCost, needsCustoms, zoneForCountry } from "./pricing/shipping.js";
 import { addBusinessDays, TRANSFER_HOLD_BUSINESS_DAYS } from "./pricing/businessDays.js";
@@ -1497,7 +1498,15 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
     const { items, customer, delivery, consents, lang, paymentMethod } = req.body || {};
     if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: "Zamowienie bez pozycji" });
     if (items.length > 20) return res.status(400).json({ error: "Za duzo pozycji" });
-    if (!customer?.email || !CONTACT_EMAIL_RE.test(customer.email)) return res.status(400).json({ error: "Nieprawidlowy adres email" });
+    // Te same reguly co w kasie (pricing/customerFields.js, kopia z src/shop).
+    // Kontrola w przegladarce jest uprzejmoscia, ta tutaj obowiazuje: zamowienie
+    // bez numeru telefonu albo z samym imieniem to nieodebrana paczka.
+    const customerErrors = validateCustomer(customer);
+    if (Object.keys(customerErrors).length) {
+      return res.status(400).json({
+        error: "Dane zamawiajacego sa niekompletne", code: "customer_invalid", fields: customerErrors,
+      });
+    }
     if (!consents?.terms) return res.status(400).json({ error: "Akceptacja regulaminu jest wymagana" });
 
     const customerEmail = customer.email.trim().toLowerCase();
@@ -1709,7 +1718,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
          $26, $27)
        RETURNING id`,
       [orderRef, safeLang, itemsTotal, shipping, total,
-       customerEmail, customer.name || null, customer.phone || null,
+       customerEmail, customer.name.trim().replace(/\s+/g, " "), normalizePhone(customer.phone),
        delivery?.method || null, delivery?.point || null, delivery?.addressLine1 || null,
        delivery?.addressLine2 || null, delivery?.postalCode || null, delivery?.city || null,
        country,

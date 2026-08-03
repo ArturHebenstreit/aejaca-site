@@ -23,7 +23,12 @@ const HEADER = `// PLIK GENEROWANY, NIE EDYTOWAC RECZNIE.
 `;
 
 /** Pliki spoza src/pricing, ktorych rdzen cenowy potrzebuje */
-const EXTRA = [{ from: join(ROOT, "src", "data", "resins.js"), name: "resins.js", source: "src/data/resins.js" }];
+const EXTRA = [
+  { from: join(ROOT, "src", "data", "resins.js"), name: "resins.js", source: "src/data/resins.js" },
+  // Kontrola danych klienta jezdzi tu razem z cenami z tego samego powodu:
+  // przegladarka i serwer musza uznawac za poprawne dokladnie to samo.
+  { from: join(ROOT, "src", "shop", "customerFields.js"), name: "customerFields.js", source: "src/shop/customerFields.js" },
+];
 
 /** W kopii wszystko lezy obok siebie, wiec ../data/x.js staje sie ./x.js */
 function rewriteImports(code) {
