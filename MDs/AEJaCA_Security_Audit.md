@@ -166,11 +166,21 @@ stanu idą metodą POST, a ciasteczko `lax` nie pojedzie z obcej witryny.
 
 ## Plan naprawy
 
-**Etap 1, dziś, zamyka trzy rzeczy krytyczne.** Wspólna funkcja `requireAdmin`
-z porównaniem stałoczasowym i twardym wymogiem obecności żetonu, ta sama poprawka
-dla żetonu unieważniającego pamięć podręczną, zatrzymanie startu obu usług przy
-braku sekretu, `crypto.randomInt` w losowaniu kodów. Zmiany są małe i nie dotykają
-zachowania widocznego dla klienta.
+**Etap 1, zrobiony.** Sprawdzanie żetonów wyprowadzone do `chat-api/auth.js`:
+brak zmiennej środowiskowej daje odmowę 503 zamiast przepuszczenia żądania,
+porównanie idzie `timingSafeEqual`. Podpięte w siedemnastu miejscach, w tym pod
+żeton unieważniający pamięć podręczną (K2) i żeton przepływu newslettera.
+Sekret sesji panelu bez wartości zapasowej wpisanej w kod: gdy zmiennej brakuje,
+losuje się przy starcie, więc panel działa, a ciasteczka nie da się podrobić (K1).
+Kody rabatowe losowane `crypto.randomInt` (K3). Sprawdzenia w `chat-api/auth.test.mjs`,
+uruchamiane przez `npm test`, z osobnym przypadkiem na to, co przepuszczała stara
+wersja: brak nagłówka przy braku zmiennej.
+
+Uwaga wdrożeniowa: dopóki `MATRIX_INVALIDATE_TOKEN` nie jest ustawiony w obu
+usługach, czyszczenie pamięci podręcznej cen kamieni i filamentów po zmianie
+w panelu nie zadziała. Wcześniej było ono otwarte dla wszystkich, teraz jest
+zamknięte dla wszystkich, łącznie z nami. Ceny i tak odświeżają się same po
+wygaśnięciu wpisu, więc jedynym skutkiem jest opóźnienie.
 
 **Etap 2, ustalenie tożsamości żądania.** Poprawne `trust proxy`, zaufanie do
 `cf-connecting-ip` tylko wtedy, gdy ruch przyszedł przez Cloudflare. Bez tego etap
