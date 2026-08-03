@@ -792,12 +792,19 @@ export default function Checkout() {
             type="button"
             onClick={pay}
             disabled={busy || items.length === 0}
-            // Nieczynny przycisk musi wygladac na nieczynny takze w trybie
-            // jasnym. Samo ciemne tlo na kremowej stronie czyta sie jak
-            // przycisk gotowy do klikniecia, wiec doszly obramowanie i kursor.
-            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-blue-500 hover:bg-blue-400
-                       disabled:bg-neutral-800 disabled:text-neutral-500 disabled:border disabled:border-white/10
-                       disabled:cursor-not-allowed text-white font-semibold transition-colors"
+            // Niebieski znaczy "mozna placic". Dopoki czegos brakuje, przycisk
+            // jest szary, ale nadal czynny: klikniecie pokazuje, czego brakuje.
+            // Wylaczony przycisk milczy, a szary mowi "jeszcze nie" i tlumaczy
+            // sie po nacisnieciu.
+            className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold transition-colors
+                       disabled:cursor-not-allowed ${
+              // `busy` liczy sie jak komplet: w trakcie przetwarzania przycisk
+              // nie ma prawa poszarzec, bo wygladaloby to jak cofniecie sie
+              // formularza tuz po klinieciu.
+              canPay || busy
+                ? "bg-blue-500 hover:bg-blue-400 text-white"
+                : "bg-neutral-800 text-neutral-400 border border-white/10 hover:border-white/20"
+            }`}
           >
             {busy ? (
               <><Loader2 className="w-4 h-4 animate-spin" />{u.processing}</>

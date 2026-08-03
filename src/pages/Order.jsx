@@ -859,9 +859,12 @@ export default function Order() {
                 type="button"
                 onClick={submitOrder}
                 disabled={submitting}
-                className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-blue-500 hover:bg-blue-400
-                           disabled:bg-neutral-800 disabled:text-neutral-500 disabled:border disabled:border-white/10
-                           disabled:cursor-not-allowed text-white font-semibold transition-colors"
+                className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold transition-colors
+                           disabled:cursor-not-allowed ${
+                  dataValid || submitting
+                    ? "bg-blue-500 hover:bg-blue-400 text-white"
+                    : "bg-neutral-800 text-neutral-400 border border-white/10 hover:border-white/20"
+                }`}
               >
                 {submitting ? (
                   <><Loader2 className="w-4 h-4 animate-spin" />{u.redirecting}</>
@@ -900,9 +903,13 @@ export default function Order() {
                     setStep((s) => s + 1);
                   }}
                   disabled={step === 2 && !price}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-400
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors
                              disabled:bg-neutral-800 disabled:text-neutral-600 disabled:border disabled:border-white/10
-                             disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+                             disabled:cursor-not-allowed ${
+                    step === 3 && !dataValid
+                      ? "bg-neutral-800 text-neutral-400 border border-white/10 hover:border-white/20"
+                      : "bg-blue-500 hover:bg-blue-400 text-white"
+                  }`}
                 >
                   {u.next}<ArrowRight className="w-4 h-4" />
                 </button>
