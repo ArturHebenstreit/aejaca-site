@@ -89,6 +89,39 @@ for (const [opis, wpadka] of [
   assert.match(zly.stderr, /NIE zapisuje kopii/, opis);
 }
 
+// --- Sekret wpisany wprost w parametr naglowka ---
+// Przypadek z zycia: zeton oddzwonienia wklejony w naglowek `x-upload-token`
+// w przeplywie od plikow zamowien. Zwykly losowy ciag, ktorego zaden wzorzec
+// po ksztalcie nie zlapie, wiec szukamy po nazwie parametru.
+const zNaglowkiem = run([przeplyw({
+  nodes: [{
+    name: "Oddzwonienie do AEJaCA",
+    parameters: {
+      sendHeaders: true,
+      headerParameters: { parameters: [{ name: "x-upload-token", value: "losowy-ciag-ktory-jest-sekretem" }] },
+    },
+  }],
+})]);
+assert.equal(zNaglowkiem.status, 1, "zeton w naglowku musi zatrzymac kopie");
+assert.match(zNaglowkiem.stderr, /x-upload-token/);
+
+// Wyrazenie n8n w tym samym miejscu to NIE sekret: wartosc bierze sie z poswiadczen
+const zWyrazeniem = run([przeplyw({
+  nodes: [{
+    name: "Oddzwonienie",
+    parameters: {
+      headerParameters: { parameters: [{ name: "x-upload-token", value: "={{ $credentials.token }}" }] },
+    },
+  }],
+})]);
+assert.equal(zWyrazeniem.status, 0, "wyrazenie nie moze byc uznane za sekret");
+
+// Nazwa parametru bez zwiazku z sekretem nie moze wywolywac falszywego alarmu
+const niewinny = run([przeplyw({
+  nodes: [{ name: "Webhook", parameters: { headerParameters: { parameters: [{ name: "content-type", value: "application/json" }] } } }],
+})]);
+assert.equal(niewinny.status, 0, "zwykly naglowek to nie sekret");
+
 // Poprzednia kopia musi przetrwac odmowe: skrypt sprawdza sekrety PRZED kasowaniem
 assert.ok(readdirSync(OUT).length > 0, "odmowa nie moze zostawic pustego katalogu");
 

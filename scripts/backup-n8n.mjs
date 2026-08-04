@@ -101,13 +101,58 @@ async function fetchAll() {
   return workflows;
 }
 
-function scanForSecrets(text, where) {
+/**
+ * Nazwy parametrow, ktore z natury niosa sekret. Wartosc przy takiej nazwie
+ * ma byc odwolaniem do poswiadczenia albo wyrazeniem, nigdy naplem.
+ */
+const SECRET_NAMES = /^(x-)?(api[-_]?key|auth|authorization|token|secret|password|passwd|signature|.*[-_]token|.*[-_]key|.*[-_]secret)$/i;
+
+/** Wyrazenie n8n, a nie wartosc: zaczyna sie od `=` albo zawiera `{{ }}`. */
+function isExpression(v) {
+  return typeof v === "string" && (v.startsWith("=") || v.includes("{{"));
+}
+
+/**
+ * Sekret wpisany wprost w parametr wezla.
+ *
+ * Znaleziony w praktyce: zeton oddzwonienia wklejony w naglowek `x-upload-token`
+ * w przeplywie od plikow zamowien. Zwykly losowy ciag, bez przedrostka, wiec
+ * zaden wzorzec z SECRET_PATTERNS by go nie zlapal. Szukamy wiec po NAZWIE
+ * parametru, a nie po ksztalcie wartosci.
+ */
+function scanNamedSecrets(node, where, hits) {
+  const walk = (value, path) => {
+    if (Array.isArray(value)) return value.forEach((v, i) => walk(v, path));
+    if (!value || typeof value !== "object") return;
+
+    // Ksztalt n8n: { name: "x-upload-token", value: "..." }
+    if (typeof value.name === "string" && SECRET_NAMES.test(value.name.trim())) {
+      const v = value.value;
+      if (typeof v === "string" && v.length >= 8 && !isExpression(v)) {
+        hits.push(`${where}: wartosc wpisana wprost w parametr "${value.name}"`);
+      }
+    }
+    for (const [k, v] of Object.entries(value)) {
+      if (SECRET_NAMES.test(k) && typeof v === "string" && v.length >= 8 && !isExpression(v)) {
+        hits.push(`${where}: wartosc wpisana wprost w polu "${k}"`);
+      }
+      walk(v, `${path}.${k}`);
+    }
+  };
+  walk(node, "");
+}
+
+function scanForSecrets(wf) {
+  const where = wf.name || wf.id;
   const hits = [];
+  const text = JSON.stringify(wf);
   for (const { name, re } of SECRET_PATTERNS) {
-    const m = text.match(re);
-    if (m) hits.push(`${where}: ${name} (${m[0].slice(0, 12)}...)`);
+    if (re.test(text)) hits.push(`${where}: ${name}`);
   }
-  return hits;
+  // Poswiadczenia n8n (`credentials`) to same odwolania po identyfikatorze,
+  // wiec ich nie przegladamy. Chodzi wylacznie o parametry wezlow.
+  for (const node of wf.nodes || []) scanNamedSecrets(node.parameters, `${where} / ${node.name || "?"}`, hits);
+  return [...new Set(hits)];
 }
 
 if (!API_URL || !API_KEY) {
@@ -126,7 +171,7 @@ if (!workflows.length) {
 
 // Sekrety sprawdzamy PRZED zapisem czegokolwiek. Polowiczna kopia z kluczem
 // w srodku jest gorsza niz brak kopii.
-const problems = workflows.flatMap((wf) => scanForSecrets(JSON.stringify(wf), wf.name || wf.id));
+const problems = workflows.flatMap(scanForSecrets);
 if (problems.length) {
   console.error(`\nZnaleziono ${problems.length} rzeczy wygladajacych na sekret. NIE zapisuje kopii:\n`);
   for (const p of problems) console.error(`  ${p}`);
