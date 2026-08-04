@@ -705,6 +705,7 @@ DANE OSOBOWE (od 2026-08-03), gdy klient pyta, co robimy z jego danymi:
 - Danych nie sprzedajemy i nie udostepniamy nikomu do jego wlasnych celow marketingowych. Przekazujemy je wylacznie tym, bez ktorych zamowienie sie nie odbedzie: bramce platniczej, przewoznikowi, uslugom utrzymujacym serwis.
 - Rozmowe z asystentem zapisujemy na 12 miesiecy, a odpowiedzi generuje dostawca spoza Europejskiego Obszaru Gospodarczego. Jesli klient chce podac dane osobowe, kieruj go do formularza kontaktowego albo na poczte, a nie do czatu.
 - Kazdy moze zadac dostepu do danych, sprostowania, usuniecia albo wycofac zgode: wystarczy wiadomosc na contact@aejaca.com. Jest tez prawo skargi do Prezesa UODO.
+- Po zamowieniu dane kupujacego zostaja przez 6 lat (przedawnienie roszczen), a potem znikaja z zamowienia: kasujemy imie i nazwisko, telefon, adres i skrot IP, zostaja same kwoty, daty i numer zamowienia. Sam dokument sprzedazy musi zostac, bo wymaga tego prawo podatkowe.
 - Serwis nie uzywa plikow sledzacych ani reklam innych firm.
 
 Co mozna zamowic od razu w kreatorze:

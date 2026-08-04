@@ -734,6 +734,7 @@ Pełny zapis w `MDs/AEJaCA_Legal_Audit.md`. Rzeczy, które zmieniły treść wid
 - **Okno czatu** informuje przed pierwszą wiadomością o zapisie na 12 miesięcy i o dostawcy spoza EOG.
 - **Przycisk zamówienia** brzmi „Kupuję i płacę" albo „Zamawiam z obowiązkiem zapłaty przelewem", bo ustawa wymaga oznaczenia wskazującego wprost na obowiązek zapłaty.
 - **Historia cen produktów** (`product_price_history`) zapisywana przy każdej zmianie ceny, a panel produktów pokazuje kolumnę „Min. 30 dni". Potrzebne przy ogłoszonej obniżce, np. przy publicznym haśle promocyjnym.
+- **Dane kupujących** znikają z zamówienia po 6 latach (anonimizacja, nie kasowanie: zostają kwoty, daty i numer, bo dokument sprzedaży musi przetrwać). Surowe komunikaty od bramki czyszczone po 12 miesiącach. Wszystko w `chat-api/retention.js`.
 - **Analityka nie zapisuje niczego w przeglądarce**, a kontrola w budowaniu (`scripts/check-browser-storage.mjs`) wymaga uzasadnienia dla każdego miejsca sięgającego do pamięci urządzenia. Dołożenie narzędzia innej firmy zatrzyma budowanie.
 
 ### Bezpieczeństwo (audyt 2026-08-03)
