@@ -23,7 +23,9 @@ import {
 } from "../data/shopCatalog.js";
 import PriceReduction from "../components/shop/PriceReduction.jsx";
 
-const UI = {
+// Eksportowane, bo strona glowna pokazuje wycinek sklepu i ma uzywac tych
+// samych etykiet. Wlasny zestaw rozjechalby sie przy pierwszym tlumaczeniu.
+export const UI = {
   pl: {
     title: "Produkty i usługi",
     lead: "Kup gotowe wyroby albo zamów usługę z wyceną w kilka minut. Płatność BLIK-iem lub szybkim przelewem.",

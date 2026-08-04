@@ -16,8 +16,16 @@ import {
 import { SITE, getSEO } from "../seo/seoData.js";
 import GoogleReviews from "../components/GoogleReviews.jsx";
 import TrustpilotWidget from "../components/TrustpilotWidget.jsx";
+import NewsletterForm from "../components/NewsletterForm.jsx";
+import ShopEntry from "../components/home/ShopEntry.jsx";
 import { GOOGLE_BUSINESS, REVIEWS, TRUSTPILOT_BUSINESS } from "../data/googleReviews.js";
 import { reviewCountLabel } from "../utils/reviewCount.js";
+
+// Prog, od ktorego Trustpilot pomaga zamiast szkodzic. Ponizej niego odznaka
+// obok "5,0 z 25 opinii Google" kaze czytelnikowi porownac liczby i wyciagnac
+// wniosek, ktorego nie chcemy, a sekcja widgetu renderuje sie pusta. Odznaka
+// i sekcja wroca same, gdy liczba opinii przekroczy prog. Bez TODO do zapomnienia.
+const TRUSTPILOT_MIN_REVIEWS = 10;
 
 // Trustpilot trust pill, sits next to the Google one. Anchors to the Trustpilot
 // widget further down the page rather than leaving the site, same as the Google
@@ -78,7 +86,7 @@ export default function Home() {
       <div className="pt-16">
         {/* Hero intro, visible StoryBrand tagline (H1 now visible, not sr-only).
             One H1 per page = SEO rule; value prop is front-and-center for humans + LLMs. */}
-        <section className="bg-neutral-950 pt-10 pb-6 md:pt-14 md:pb-8 px-4 text-center" aria-labelledby="hero-tagline">
+        <section className="bg-neutral-950 pt-8 pb-5 md:pt-10 md:pb-6 px-4 text-center" aria-labelledby="hero-tagline">
           <h1
             id="hero-tagline"
             className="font-serif text-3xl md:text-5xl lg:text-6xl font-semibold text-white tracking-tight max-w-4xl mx-auto leading-[1.1]"
@@ -97,7 +105,9 @@ export default function Home() {
               <span className="text-neutral-400">·</span>
               <span className="text-neutral-400">{GOOGLE_BUSINESS.totalReviews} {h.brandReviewsBadge}</span>
             </a>
-            <TrustpilotPill lang={lang} />
+            {TRUSTPILOT_BUSINESS.totalReviews >= TRUSTPILOT_MIN_REVIEWS && (
+              <TrustpilotPill lang={lang} />
+            )}
           </div>
         </section>
 
@@ -106,7 +116,7 @@ export default function Home() {
           <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
             {/* Jewelry Card */}
             <Link to="/jewelry/" onClick={() => trackCTA("hero_jewelry")} className="group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg shadow-black/40 hover:shadow-2xl hover:shadow-amber-900/40 transition-all duration-500 hover:-translate-y-1">
-              <div className="aspect-[3/4] relative overflow-hidden">
+              <div className="aspect-[3/4] md:aspect-square relative overflow-hidden">
                 <img
                   src="/hero-home-jewelry.webp"
                   alt="AEJaCA Jewelry"
@@ -133,7 +143,7 @@ export default function Home() {
 
             {/* Studio Card */}
             <Link to="/studio/" onClick={() => trackCTA("hero_studio")} className="group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg shadow-black/40 hover:shadow-2xl hover:shadow-blue-900/40 transition-all duration-500 hover:-translate-y-1">
-              <div className="aspect-[3/4] relative overflow-hidden">
+              <div className="aspect-[3/4] md:aspect-square relative overflow-hidden">
                 <img
                   src="/hero-home-studio.webp"
                   alt="AEJaCA sTuDiO"
@@ -159,27 +169,6 @@ export default function Home() {
             </Link>
           </div>
         </section>
-
-      {/* Brand Statement */}
-      <section className="py-12 px-4 text-center bg-neutral-950">
-        <div ref={brandRef} className="reveal max-w-3xl mx-auto">
-          {/* Below-the-fold image: lazy loaded to save bandwidth, no LCP impact */}
-          <img src="/brand-sign.webp" alt="AEJaCA brand mark" loading="lazy" decoding="async" className="w-36 h-36 mx-auto mb-8 brightness-0 invert opacity-80 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]" />
-          <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-6">{h.brandHeading}</h2>
-          <p className="text-neutral-400 text-lg leading-relaxed">{h.brandText}</p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-sm">
-            <a href="#reviews" className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-amber-400/20 bg-amber-400/[0.03] hover:bg-amber-400/10 hover:border-amber-400/40 transition-all duration-300">
-              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-              <span className="font-bold text-amber-300">{GOOGLE_BUSINESS.rating}</span>
-              <span className="text-neutral-400">·</span>
-              <span className="text-neutral-400">{GOOGLE_BUSINESS.totalReviews} {h.brandReviewsBadge}</span>
-            </a>
-            <TrustpilotPill lang={lang} className="text-sm" />
-          </div>
-        </div>
-      </section>
-
-      <div className="gradient-divider" />
 
       {/* Quick Quote, showcase calculators + STL/SVG upload (conversion driver) */}
       <section className="py-12 px-4 bg-gradient-to-b from-neutral-950 via-neutral-900/30 to-neutral-950">
@@ -263,6 +252,35 @@ export default function Home() {
               ))}
             </div>
           </div>
+
+          {/* Waski zapis na kod 10%, tuz pod wycena. Pelna sekcja zostaje
+              w stopce; ta jest tu, bo moment po zobaczeniu ceny to najlepszy
+              moment na rabat, a do stopki dociera niewielu. Zgoda marketingowa
+              zostaje takze w wariancie waskim, jest wymagana. */}
+          <div className="mt-8 max-w-2xl mx-auto">
+            <NewsletterForm compact />
+          </div>
+        </div>
+      </section>
+
+      <div className="gradient-divider" />
+
+      {/* Wejscie do sklepu. Do tej pory strona glowna prowadzila wylacznie do
+          kalkulatorow, wiec kto chcial po prostu kupic, nie mial dokad pojsc. */}
+      <ShopEntry />
+
+      <div className="gradient-divider" />
+
+      {/* Brand Statement */}
+      <section className="py-12 px-4 text-center bg-neutral-950">
+        <div ref={brandRef} className="reveal max-w-3xl mx-auto">
+          {/* Below-the-fold image: lazy loaded to save bandwidth, no LCP impact */}
+          <img src="/brand-sign.webp" alt="AEJaCA brand mark" loading="lazy" decoding="async" className="w-36 h-36 mx-auto mb-8 brightness-0 invert opacity-80 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]" />
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-6">{h.brandHeading}</h2>
+          <p className="text-neutral-400 text-lg leading-relaxed">{h.brandText}</p>
+          {/* Odznaki zaufania stoja juz w hero i wracaja przy opiniach nizej.
+              Trzecie powtorzenie tej samej liczby niczego nie dokladalo,
+              a odsuwalo kalkulatory od gory strony. */}
         </div>
       </section>
 
@@ -339,12 +357,19 @@ export default function Home() {
 
       <div className="gradient-divider" />
 
-      {/* Trustpilot, second trust layer after Google reviews */}
-      <div id="trustpilot" className="scroll-mt-20">
-        <TrustpilotWidget />
-      </div>
+      {/* Trustpilot, druga warstwa zaufania po opiniach Google. Pokazujemy ja
+          dopiero od TRUSTPILOT_MIN_REVIEWS opinii. Ponizej progu sekcja
+          renderowala sam naglowek i przycisk, bez ani jednej opinii, wiec
+          czytelnik widzial dziure w srodku strony i czytal ja jak awarie. */}
+      {TRUSTPILOT_BUSINESS.totalReviews >= TRUSTPILOT_MIN_REVIEWS && (
+        <>
+          <div id="trustpilot" className="scroll-mt-20">
+            <TrustpilotWidget />
+          </div>
 
-      <div className="gradient-divider" />
+          <div className="gradient-divider" />
+        </>
+      )}
 
       {/* FAQ — brand-level Q&A; visible content mirrors the FAQPage JSON-LD
           (parity = SEO-safe) and targets AI-engine "what is AEJaCA" queries. */}
