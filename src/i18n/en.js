@@ -73,6 +73,14 @@ export default {
   home: {
     h1: "Wear what matters. Print what no shop sells.",
     heroSubtitle: "Jewelry, 3D printing and engraving. Priced online, no waiting.",
+    shopEntry: {
+      tag: "Shop",
+      title: "Order online, no quote emails",
+      subtitle: "The price is binding straight away and you pay by card or instant transfer. No enquiry forms, no waiting for a reply.",
+      readyHeading: "In stock, ships right away",
+      servicesHeading: "Ordered online, binding price",
+      cta: "See the whole shop",
+    },
     heroAria: "AEJaCA, two worlds under one brand: jewelry and sTuDiO",
     jewelryTitle: "AEJaCA",
     jewelrySubtitle: "AEJaCA Jewelry",

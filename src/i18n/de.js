@@ -71,6 +71,14 @@ export default {
   home: {
     h1: "Trage, was bedeutsam ist. Drucke, was es nirgends gibt.",
     heroSubtitle: "Schmuck, 3D-Druck und Gravur. Preis online, ohne Wartezeit.",
+    shopEntry: {
+      tag: "Shop",
+      title: "Online bestellen, ohne Angebots-E-Mail",
+      subtitle: "Der Preis ist sofort verbindlich, Sie zahlen per Karte oder Sofortüberweisung. Keine Anfrageformulare, kein Warten auf Antwort.",
+      readyHeading: "Auf Lager, sofort versandfertig",
+      servicesHeading: "Online bestellt, verbindlicher Preis",
+      cta: "Zum ganzen Shop",
+    },
     heroAria: "AEJaCA, zwei Welten unter einer Marke: Schmuck und sTuDiO",
     jewelryTitle: "AEJaCA",
     jewelrySubtitle: "AEJaCA Schmuck",

@@ -17,6 +17,7 @@ import { SITE, getSEO } from "../seo/seoData.js";
 import GoogleReviews from "../components/GoogleReviews.jsx";
 import TrustpilotWidget from "../components/TrustpilotWidget.jsx";
 import NewsletterForm from "../components/NewsletterForm.jsx";
+import ShopEntry from "../components/home/ShopEntry.jsx";
 import { GOOGLE_BUSINESS, REVIEWS, TRUSTPILOT_BUSINESS } from "../data/googleReviews.js";
 import { reviewCountLabel } from "../utils/reviewCount.js";
 
@@ -261,6 +262,12 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <div className="gradient-divider" />
+
+      {/* Wejscie do sklepu. Do tej pory strona glowna prowadzila wylacznie do
+          kalkulatorow, wiec kto chcial po prostu kupic, nie mial dokad pojsc. */}
+      <ShopEntry />
 
       <div className="gradient-divider" />
 

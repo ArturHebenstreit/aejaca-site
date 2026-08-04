@@ -73,6 +73,14 @@ export default {
   home: {
     h1: "Noś to, co znaczące. Drukuj to, czego nie ma w sklepie.",
     heroSubtitle: "Biżuteria, druk 3D i grawerowanie. Wycena online, bez czekania.",
+    shopEntry: {
+      tag: "Sklep",
+      title: "Zamów online, bez wyceny mailowej",
+      subtitle: "Cena jest wiążąca od razu, płacisz BLIK-iem albo szybkim przelewem. Bez zapytań ofertowych i czekania na odpowiedź.",
+      readyHeading: "Gotowe, wysyłka od ręki",
+      servicesHeading: "Zamawiane online, cena wiążąca",
+      cta: "Zobacz cały sklep",
+    },
     heroAria: "AEJaCA, dwa światy pod jedną marką: biżuteria i sTuDiO",
     jewelryTitle: "AEJaCA",
     jewelrySubtitle: "AEJaCA Biżuteria",
