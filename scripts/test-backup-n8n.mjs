@@ -78,49 +78,26 @@ const poPodmianie = readdirSync(OUT).filter((f) => f.endsWith(".json") && f !== 
 assert.deepEqual(poPodmianie.length, 1, "stary plik ma zniknac, inaczej kopia opisuje system, ktorego nie ma");
 assert.match(poPodmianie[0], /^inny1--/);
 
-// --- Sekret w eksporcie zatrzymuje zapis ---
+// --- Sekret pod nazwa mowiaca o sekrecie: zamiana, nie odmowa ---
+const podAuth = run([przeplyw({
+  nodes: [{ name: "HTTP", parameters: { headerParameters: { parameters: [{ name: "authorization", value: "sk-proj-AAAABBBBCCCCDDDDEEEE" }] } } }],
+})]);
+assert.equal(podAuth.status, 0, "wartosc pod nazwa 'authorization' da sie zamienic, wiec kopia ma powstac");
+const trescAuth = readFileSync(join(OUT, readdirSync(OUT).find((f) => f.startsWith("abc123--"))), "utf8");
+assert.doesNotMatch(trescAuth, /sk-proj-AAAA/, "klucz nie moze trafic do pliku");
+assert.match(trescAuth, /__USTAW_PRZY_ODTWARZANIU__/);
+
+// --- Sekret w polu, ktorego nazwa nic nie mowi: odmowa ---
+// Zamiana po nazwie tego nie zlapie, a zgadywanie po ksztalcie w dowolnym polu
+// dawaloby falszywe alarmy. Lepiej zatrzymac kopie i kazac to poprawic u zrodla.
 for (const [opis, wpadka] of [
-  ["klucz OpenAI", { nodes: [{ parameters: { auth: "sk-proj-AAAABBBBCCCCDDDDEEEEFFFF" } }] }],
-  ["adres bazy z haslem", { nodes: [{ parameters: { conn: "postgresql://user:tajne@host:5432/db" } }] }],
-  ["klucz Google", { nodes: [{ parameters: { key: "AIzaSyA1234567890123456789012345678901" } }] }],
+  ["adres bazy z haslem", { nodes: [{ name: "PG", parameters: { conn: "postgresql://user:tajne@host:5432/db" } }] }],
+  ["klucz Google", { nodes: [{ name: "Maps", parameters: { url: "https://x.test?k=AIzaSyA1234567890123456789012345678901" } }] }],
 ]) {
   const zly = run([przeplyw(wpadka)]);
   assert.equal(zly.status, 1, `${opis}: skrypt powinien odmowic`);
-  assert.match(zly.stderr, /NIE zapisuje kopii/, opis);
+  assert.match(zly.stderr, /nie da sie zamienic po nazwie/, opis);
 }
-
-// --- Sekret wpisany wprost w parametr naglowka ---
-// Przypadek z zycia: zeton oddzwonienia wklejony w naglowek `x-upload-token`
-// w przeplywie od plikow zamowien. Zwykly losowy ciag, ktorego zaden wzorzec
-// po ksztalcie nie zlapie, wiec szukamy po nazwie parametru.
-const zNaglowkiem = run([przeplyw({
-  nodes: [{
-    name: "Oddzwonienie do AEJaCA",
-    parameters: {
-      sendHeaders: true,
-      headerParameters: { parameters: [{ name: "x-upload-token", value: "losowy-ciag-ktory-jest-sekretem" }] },
-    },
-  }],
-})]);
-assert.equal(zNaglowkiem.status, 1, "zeton w naglowku musi zatrzymac kopie");
-assert.match(zNaglowkiem.stderr, /x-upload-token/);
-
-// Wyrazenie n8n w tym samym miejscu to NIE sekret: wartosc bierze sie z poswiadczen
-const zWyrazeniem = run([przeplyw({
-  nodes: [{
-    name: "Oddzwonienie",
-    parameters: {
-      headerParameters: { parameters: [{ name: "x-upload-token", value: "={{ $credentials.token }}" }] },
-    },
-  }],
-})]);
-assert.equal(zWyrazeniem.status, 0, "wyrazenie nie moze byc uznane za sekret");
-
-// Nazwa parametru bez zwiazku z sekretem nie moze wywolywac falszywego alarmu
-const niewinny = run([przeplyw({
-  nodes: [{ name: "Webhook", parameters: { headerParameters: { parameters: [{ name: "content-type", value: "application/json" }] } } }],
-})]);
-assert.equal(niewinny.status, 0, "zwykly naglowek to nie sekret");
 
 // Poprzednia kopia musi przetrwac odmowe: skrypt sprawdza sekrety PRZED kasowaniem
 assert.ok(readdirSync(OUT).length > 0, "odmowa nie moze zostawic pustego katalogu");

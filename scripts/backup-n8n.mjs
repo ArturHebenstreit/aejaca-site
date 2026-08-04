@@ -37,6 +37,9 @@ const OUT = process.env.N8N_BACKUP_DIR || join(ROOT, "n8n-backup");
 const API_URL = (process.env.N8N_API_URL || "").replace(/\/$/, "");
 const API_KEY = process.env.N8N_API_KEY || "";
 
+/** Znacznik w miejscu sekretu. Widoczny od razu i nie do pomylenia z wartoscia. */
+const REDACTED = "__USTAW_PRZY_ODTWARZANIU__";
+
 /**
  * Wzorce, ktore w eksporcie oznaczaja wpadke: klucz wklejony wprost zamiast
  * uzycia poswiadczenia. Kazde trafienie zatrzymuje zapis.
@@ -112,6 +115,11 @@ function isExpression(v) {
   return typeof v === "string" && (v.startsWith("=") || v.includes("{{"));
 }
 
+/** Wartosc, ktora juz zamienilismy. Bez tego skaner zglaszalby wlasny znacznik. */
+function isRedacted(v) {
+  return v === REDACTED;
+}
+
 /**
  * Sekret wpisany wprost w parametr wezla.
  *
@@ -128,18 +136,49 @@ function scanNamedSecrets(node, where, hits) {
     // Ksztalt n8n: { name: "x-upload-token", value: "..." }
     if (typeof value.name === "string" && SECRET_NAMES.test(value.name.trim())) {
       const v = value.value;
-      if (typeof v === "string" && v.length >= 8 && !isExpression(v)) {
+      if (typeof v === "string" && v.length >= 8 && !isExpression(v) && !isRedacted(v)) {
         hits.push(`${where}: wartosc wpisana wprost w parametr "${value.name}"`);
       }
     }
     for (const [k, v] of Object.entries(value)) {
-      if (SECRET_NAMES.test(k) && typeof v === "string" && v.length >= 8 && !isExpression(v)) {
+      if (SECRET_NAMES.test(k) && typeof v === "string" && v.length >= 8 && !isExpression(v) && !isRedacted(v)) {
         hits.push(`${where}: wartosc wpisana wprost w polu "${k}"`);
       }
       walk(v, `${path}.${k}`);
     }
   };
   walk(node, "");
+}
+
+/**
+ * Zamienia wartosci sekretow na znacznik i oddaje liste miejsc do uzupelnienia.
+ *
+ * Odmowa zapisu chronila repozytorium, ale zostawiala nas bez kopii. Zamiana
+ * daje jedno i drugie: struktura przeplywu jest zachowana w calosci, a w miejscu
+ * klucza stoi napis, ktory przy odtwarzaniu mowi, co trzeba wpisac recznie.
+ */
+function redactNode(node, where, notes) {
+  const walk = (value) => {
+    if (Array.isArray(value)) return value.forEach(walk);
+    if (!value || typeof value !== "object") return;
+
+    if (typeof value.name === "string" && SECRET_NAMES.test(value.name.trim())) {
+      const v = value.value;
+      if (typeof v === "string" && v.length >= 8 && !isExpression(v)) {
+        value.value = REDACTED;
+        notes.push({ where, field: value.name });
+      }
+    }
+    for (const [k, v] of Object.entries(value)) {
+      if (SECRET_NAMES.test(k) && typeof v === "string" && v.length >= 8 && !isExpression(v)) {
+        value[k] = REDACTED;
+        notes.push({ where, field: k });
+      } else {
+        walk(v);
+      }
+    }
+  };
+  walk(node);
 }
 
 function scanForSecrets(wf) {
@@ -169,13 +208,22 @@ if (!workflows.length) {
   process.exit(1);
 }
 
-// Sekrety sprawdzamy PRZED zapisem czegokolwiek. Polowiczna kopia z kluczem
-// w srodku jest gorsza niz brak kopii.
+// Najpierw zamiana wartosci przy nazwach mowiacych o sekrecie.
+const notes = [];
+for (const wf of workflows) {
+  for (const node of wf.nodes || []) redactNode(node.parameters, `${wf.name} / ${node.name || "?"}`, notes);
+  // `activeVersion` niesie kopie wezlow, wiec trzeba przejsc i po niej.
+  for (const node of wf.activeVersion?.nodes || []) redactNode(node.parameters, `${wf.name} / ${node.name || "?"}`, notes);
+}
+
+// To, czego zamiana nie objela, nadal zatrzymuje kopie. Klucz o ksztalcie
+// `sk-...` w dowolnym miejscu tresci znaczy, ze zamiana czegos nie zlapala,
+// a wpisanie go do repozytorium byloby gorsze niz brak kopii.
 const problems = workflows.flatMap(scanForSecrets);
 if (problems.length) {
-  console.error(`\nZnaleziono ${problems.length} rzeczy wygladajacych na sekret. NIE zapisuje kopii:\n`);
+  console.error(`\nZostaly wartosci wygladajace na sekret, ktorych nie da sie zamienic po nazwie:\n`);
   for (const p of problems) console.error(`  ${p}`);
-  console.error("\nPrzenies te wartosci do poswiadczen n8n (Credentials) i powtorz.");
+  console.error("\nPrzenies je do poswiadczen n8n (Credentials) i powtorz.");
   process.exit(1);
 }
 
@@ -199,6 +247,32 @@ writeFileSync(
   JSON.stringify({ exportedFrom: API_URL, count: index.length, workflows: index }, null, 2) + "\n"
 );
 
+// Notatka odtworzeniowa: co trzeba wpisac recznie po wgraniu przeplywow.
+// Bez niej odtworzony przeplyw wyglada poprawnie i po cichu nie dziala.
+const byFlow = new Map();
+for (const n of notes) {
+  if (!byFlow.has(n.where)) byFlow.set(n.where, new Set());
+  byFlow.get(n.where).add(n.field);
+}
+const restore = [
+  "# Odtworzenie przeplywow n8n",
+  "",
+  "Pliki JSON w tym katalogu wgrywa sie w n8n przez Import from File.",
+  "",
+  `Wartosci sekretow zostaly zamienione na \`${REDACTED}\`. Po wgraniu trzeba je`,
+  "uzupelnic, najlepiej przenoszac do poswiadczen n8n (Credentials) zamiast wpisywac",
+  "wprost, bo wpisana wartosc wroci do kopii przy nastepnym eksporcie.",
+  "",
+  byFlow.size ? "## Miejsca do uzupelnienia" : "## Brak miejsc do uzupelnienia",
+  "",
+];
+for (const [where, fields] of [...byFlow].sort()) {
+  restore.push(`- **${where}**: ${[...fields].sort().join(", ")}`);
+}
+restore.push("", "Zrodlo wartosci: zmienne srodowiskowe uslugi chat-api w Railway.", "");
+writeFileSync(join(OUT, "ODTWORZENIE.md"), restore.join("\n"));
+
 const active = index.filter((w) => w.active).length;
 console.log(`Zapisano ${index.length} przeplywow (${active} aktywnych) do n8n-backup/`);
+console.log(`Zamieniono sekretow: ${notes.length}. Lista w n8n-backup/ODTWORZENIE.md`);
 console.log("Sprawdz `git diff`, potem zatwierdz razem z reszta kodu.");
