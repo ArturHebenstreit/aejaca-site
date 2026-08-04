@@ -203,7 +203,7 @@ Full glossary index: https://www.aejaca.com/glossary/
 
 ## Crawl policy
 
-All LLM and AI-search crawlers are explicitly welcome to crawl, index, and cite this site in their answers. Full allow, no restrictions:
+All LLM and AI-search crawlers are explicitly welcome to crawl, index, and cite this site in their answers. Every public page is open; the only path closed to all crawlers is the internal admin panel at `/admin/`, which carries `noindex` and sits behind a login anyway:
 
 - **OpenAI / ChatGPT** — GPTBot, OAI-SearchBot, ChatGPT-User
 - **Anthropic / Claude** — ClaudeBot, Claude-SearchBot, Claude-User
@@ -257,4 +257,4 @@ https://www.aejaca.com/contact/
 
 ---
 
-Last updated: 2026-08-03
+Last updated: 2026-08-04
