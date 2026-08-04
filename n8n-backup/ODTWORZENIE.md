@@ -13,15 +13,37 @@ eksporcie.
 pliki zamówień, przepisane ręcznie w trakcie pracy nad kopią zapasową i
 sprawdzone maszynowo (poprawność JSON, liczba węzłów, brak sekretu).
 
-Pozostałych sześć aktywnych przepływów oraz szesnaście nieaktywnych czeka na
-uruchomienie `npm run backup:n8n`. Powód jest konkretny: one niosą w sobie
-szablony wiadomości HTML długości tysięcy znaków, z wyrażeniami n8n w środku.
-Przepisywanie takiej treści ręcznie to dokładnie ten rodzaj pracy, przy którym
-powstaje kopia wyglądająca dobrze i niedająca się odtworzyć. Skrypt przenosi
-bajty zamiast je przepisywać.
+Pozostałych sześć aktywnych przepływów czeka na uruchomienie `npm run backup:n8n`.
+Powód jest konkretny: one niosą w sobie szablony wiadomości HTML długości tysięcy
+znaków, z wyrażeniami n8n w środku. Przepisywanie takiej treści ręcznie to
+dokładnie ten rodzaj pracy, przy którym powstaje kopia wyglądająca dobrze
+i niedająca się odtworzyć. Skrypt przenosi bajty zamiast je przepisywać.
 
 Brakuje: newslettera z kodami rabatowymi, formularza kontaktowego, wycen,
 automatycznej odpowiedzi, raportu tygodniowego i alertu anomalii.
+
+## Czego celowo nie ma w kopii
+
+W sierpniu 2026 zarchiwizowano szesnaście przepływów pomocniczych: piętnaście
+z rodziny `Laser Matrix` oraz `Chat API — diagnostic`. Były to jednorazowe
+narzędzia do zasypania tabeli `laser_matrix` w maju 2026 i do sprawdzenia
+wyniku. Żaden nie miał wyzwalacza, więc strona nie miała jak ich zawołać.
+
+Nie odtwarzamy ich, bo zasyp tabeli robi się dziś z repozytorium i jednym
+poleceniem:
+
+```
+DATABASE_URL="…" node scripts/import-laser-matrix.mjs
+```
+
+Źródłem jest `docs/Laser_Matryca_Materialowa_20260509_v.1.0.xlsx`, schemat
+tabeli leży w `scripts/laser-matrix-schema.sql`. To jest pełniejsze niż tamte
+przepływy: obejmuje wszystkie 1034 wiersze naraz, zamiast pięciu wstawek po
+dwieście i łatki na brakujące pięćdziesiąt dwa.
+
+Doszedł przy okazji drugi powód. Wśród zarchiwizowanych siedział przepływ
+kasujący wiersz z produkcyjnej bazy po ręcznym uruchomieniu, sąsiadujący na
+liście z przepływami uruchamianymi naprawdę.
 
 ## Miejsca do uzupełnienia po wgraniu
 
