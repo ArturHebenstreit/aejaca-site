@@ -1,0 +1,127 @@
+{
+  "active": true,
+  "connections": {
+    "Daily 9am": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Query Analytics Metrics",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Detect Anomalies & Build Alert": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Send Alert Email",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Query Analytics Metrics": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Detect Anomalies & Build Alert",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2026-05-06T10:19:39.510Z",
+  "description": "Runs daily at 9am, compares today's analytics metrics to the 30-day average, and sends an alert email if any metric spikes 2x or drops below 50%.",
+  "id": "6dw2RcNCSZgP5gxV",
+  "isArchived": false,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "name": "AEJaCA Anomaly Alert",
+  "nodes": [
+    {
+      "id": "87b009ed-a30d-4869-b9a3-a418d9d2ec58",
+      "name": "Daily 9am",
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "daysInterval": 1,
+              "field": "days",
+              "triggerAtHour": 9,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "position": [
+        0,
+        0
+      ],
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3
+    },
+    {
+      "id": "ba479463-ab87-44f7-891d-2dd09acda388",
+      "name": "Query Analytics Metrics",
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  COUNT(DISTINCT session) FILTER (WHERE ts >= CURRENT_DATE) AS visitors_today,\n  COUNT(*) FILTER (WHERE category = 'page' AND ts >= CURRENT_DATE) AS pageviews_today,\n  COUNT(DISTINCT session) FILTER (WHERE category = 'inquiry' AND ts >= CURRENT_DATE) AS inquiries_today,\n  ROUND(COUNT(DISTINCT session) FILTER (WHERE ts >= NOW() - INTERVAL '30 days') / 30.0, 1) AS visitors_avg30,\n  ROUND(COUNT(*) FILTER (WHERE category = 'page' AND ts >= NOW() - INTERVAL '30 days') / 30.0, 1) AS pageviews_avg30,\n  ROUND(COUNT(DISTINCT session) FILTER (WHERE category = 'inquiry' AND ts >= NOW() - INTERVAL '30 days') / 30.0, 1) AS inquiries_avg30\nFROM events"
+      },
+      "position": [
+        224,
+        0
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6
+    },
+    {
+      "id": "7d5b5037-7e5f-4c41-938a-a83de5dc156c",
+      "name": "Detect Anomalies & Build Alert",
+      "parameters": {
+        "jsCode": "const row = $input.all()[0].json;\nconst anomalies = [];\n\nfunction check(today, avg, label) {\n  const t = parseFloat(today), a = parseFloat(avg);\n  if (a < 1) return;\n  const ratio = t / a;\n  if (ratio >= 2) anomalies.push({ type: 'spike', label, today: t, avg: a.toFixed(1), ratio: ratio.toFixed(1) });\n  else if (ratio <= 0.5) anomalies.push({ type: 'drop', label, today: t, avg: a.toFixed(1), ratio: ratio.toFixed(1) });\n}\n\ncheck(row.visitors_today, row.visitors_avg30, 'Unikalni odwiedzajacy');\ncheck(row.pageviews_today, row.pageviews_avg30, 'Odslony stron');\ncheck(row.inquiries_today, row.inquiries_avg30, 'Zapytania (kalkulator)');\n\nif (anomalies.length === 0) return [];\n\nconst today = new Date().toLocaleDateString('pl-PL');\nconst rows = anomalies.map(function(a) {\n  const icon = a.type === 'spike' ? 'SKOK' : 'SPADEK';\n  const color = a.type === 'spike' ? '#16a34a' : '#dc2626';\n  return '<tr><td style=\"padding:8px 12px\">' + a.label + '</td>'\n    + '<td style=\"padding:8px 12px;font-weight:bold\">' + a.today + '</td>'\n    + '<td style=\"padding:8px 12px;color:#6b7280\">' + a.avg + '</td>'\n    + '<td style=\"padding:8px 12px;font-weight:bold;color:' + color + '\">x' + a.ratio + ' (' + icon + ')</td></tr>';\n}).join('');\n\nconst html = '<!DOCTYPE html><html><head><meta charset=\"UTF-8\"/><style>'\n  + 'body{font-family:Arial,sans-serif;background:#f5f5f5;padding:20px}'\n  + '.card{background:#fff;border-radius:8px;padding:20px;margin:10px 0;box-shadow:0 1px 3px rgba(0,0,0,.1)}'\n  + 'h1{color:#dc2626;margin:0 0 4px}table{width:100%;border-collapse:collapse}'\n  + 'th{background:#f9fafb;padding:8px 12px;text-align:left;font-size:12px;text-transform:uppercase;color:#6b7280}'\n  + '</style></head><body>'\n  + '<div class=\"card\"><h1>ALERT AEJaCA — Anomalie Analityczne</h1>'\n  + '<p style=\"color:#6b7280;margin:0\">Wykryto ' + anomalies.length + ' anomalie - ' + today + '</p></div>'\n  + '<div class=\"card\"><table><thead><tr><th>Metryka</th><th>Dzis</th><th>Sr. 30d</th><th>Zmiana</th></tr></thead>'\n  + '<tbody>' + rows + '</tbody></table></div>'\n  + '<div class=\"card\" style=\"background:#fef9c3\"><p style=\"color:#92400e;font-size:13px;margin:0\">'\n  + 'Panel admina: https://aejaca-admin.up.railway.app/analytics</p></div>'\n  + '</body></html>';\n\nreturn [{ json: { html, subject: 'ALERT AEJaCA — ' + anomalies.length + ' anomalie (' + today + ')' } }];",
+        "mode": "runOnceForAllItems"
+      },
+      "position": [
+        448,
+        0
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "7546ae58-d826-47d3-8856-e6a83575436a",
+      "name": "Send Alert Email",
+      "parameters": {
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "operation": "send",
+        "options": {
+          "appendAttribution": false
+        },
+        "resource": "message",
+        "sendTo": "aejaca@gmail.com",
+        "subject": "={{ $json.subject }}"
+      },
+      "position": [
+        672,
+        0
+      ],
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "webhookId": "37a523df-da30-4f5e-96a1-59855839be98"
+    }
+  ],
+  "parentFolderId": null,
+  "settings": {
+    "availableInMCP": true,
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

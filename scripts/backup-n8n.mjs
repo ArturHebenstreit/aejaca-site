@@ -269,7 +269,17 @@ const restore = [
 for (const [where, fields] of [...byFlow].sort()) {
   restore.push(`- **${where}**: ${[...fields].sort().join(", ")}`);
 }
-restore.push("", "Zrodlo wartosci: zmienne srodowiskowe uslugi chat-api w Railway.", "");
+restore.push(
+  "",
+  "Zrodlo wartosci: zmienne srodowiskowe uslugi chat-api w Railway.",
+  "",
+  "---",
+  "",
+  "Ten plik powstaje na nowo przy kazdym uruchomieniu skryptu, wiec nie dopisuj",
+  "tu niczego recznie. Uwagi trwale, ktore maja przetrwac kolejna kopie, ida do",
+  "`n8n-backup/README.md`.",
+  ""
+);
 writeFileSync(join(OUT, "ODTWORZENIE.md"), restore.join("\n"));
 
 const active = index.filter((w) => w.active).length;

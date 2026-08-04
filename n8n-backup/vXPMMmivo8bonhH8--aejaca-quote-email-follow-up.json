@@ -1,0 +1,439 @@
+{
+  "active": true,
+  "connections": {
+    "Create Drive Folder": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Prepare File for Upload",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Follow-up 48h": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Wait 5 more days",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Has File?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Create Drive Folder",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Notify Owner — no file",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Prepare Attachment": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Has File?",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "Send Quote Email",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Prepare File for Upload": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Upload to Drive",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Respond OK": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Prepare Attachment",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Send Quote Email": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Wait 48h",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Upload to Drive": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Notify Owner — with Drive link",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Wait 48h": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Follow-up 48h",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Wait 5 more days": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Discount offer (7d)",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Webhook — Quote Received": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Respond OK",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2026-05-03T23:14:40.968Z",
+  "description": "Webhook receives quotes from AEJaCA calculators. Files are uploaded to Google Drive (dedicated subfolder per quote). Owner gets email with Drive link only — no attachment. Customer gets confirmation email with 48h and 7d follow-ups.",
+  "id": "vXPMMmivo8bonhH8",
+  "isArchived": false,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "name": "AEJaCA — Quote Email Follow-up",
+  "nodes": [
+    {
+      "id": "677d3552-9cab-4ace-8412-18b18ce59e10",
+      "name": "Webhook — Quote Received",
+      "parameters": {
+        "httpMethod": "POST",
+        "options": {
+          "allowedOrigins": "https://www.aejaca.com"
+        },
+        "path": "quote-capture",
+        "responseMode": "responseNode"
+      },
+      "position": [
+        0,
+        192
+      ],
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "3e0e18ee-42f9-4605-b255-d5ba962506c7"
+    },
+    {
+      "id": "1ae73af8-f6c9-4cda-b75c-54d91fed8c89",
+      "name": "Respond OK",
+      "parameters": {
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "https://www.aejaca.com"
+              }
+            ]
+          }
+        },
+        "respondWith": "json",
+        "responseBody": "{\"ok\": true}"
+      },
+      "position": [
+        224,
+        192
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1
+    },
+    {
+      "id": "c1413a46-d3ea-497b-a13b-97168c2eeba8",
+      "name": "Prepare Attachment",
+      "parameters": {
+        "jsCode": "const body = $('Webhook — Quote Received').item.json.body;\nconst output = { json: { body, hasFile: !!(body.file && body.file.data) }, binary: {} };\nif (body.file && body.file.data) {\n  const base64 = body.file.data.replace(/^data:[^;]+;base64,/, '');\n  output.binary.attachment = await this.helpers.prepareBinaryData(\n    Buffer.from(base64, 'base64'),\n    body.file.name || 'attachment',\n    body.file.type || 'application/octet-stream'\n  );\n}\nreturn [output];"
+      },
+      "position": [
+        448,
+        192
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "b62fc2db-b1fc-4d18-a5f9-171bd079e86f",
+      "name": "Has File?",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "hasfile-check",
+              "leftValue": "={{ $json.hasFile }}",
+              "operator": {
+                "operation": "true",
+                "type": "boolean"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      },
+      "position": [
+        672,
+        96
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "id": "b65291e1-e832-436b-906c-bf59c3aaf92b",
+      "name": "Create Drive Folder",
+      "parameters": {
+        "folderId": {
+          "__rl": true,
+          "cachedResultName": "Wyceny",
+          "mode": "id",
+          "value": "1KU4O3P2YGSpKLuPo5d_Wjdt8Nc6oV-y9"
+        },
+        "name": "={{ $json.body.ts.substring(0, 10) + ' | ' + $json.body.calculator + ' | ' + $json.body.email }}",
+        "operation": "create",
+        "options": {
+          "simplifyOutput": true
+        },
+        "resource": "folder"
+      },
+      "position": [
+        896,
+        0
+      ],
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3
+    },
+    {
+      "id": "ae712927-e913-4c37-b521-e516e3e6d405",
+      "name": "Prepare File for Upload",
+      "parameters": {
+        "jsCode": "const body = $('Webhook — Quote Received').item.json.body;\nconst folderId = $json.id;\nconst folderName = $json.name;\nconst base64 = body.file.data.replace(/^data:[^;]+;base64,/, '');\nconst binary = await this.helpers.prepareBinaryData(\n  Buffer.from(base64, 'base64'),\n  body.file.name || 'attachment',\n  body.file.type || 'application/octet-stream'\n);\nreturn [{ json: { folderId, folderName, body }, binary: { data: binary } }];"
+      },
+      "position": [
+        1120,
+        0
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "f1762c5c-f60d-4ccf-9c04-dcc8cb660a70",
+      "name": "Upload to Drive",
+      "parameters": {
+        "folderId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.folderId }}"
+        },
+        "inputDataFieldName": "data",
+        "name": "={{ $('Webhook — Quote Received').item.json.body.file.name }}",
+        "operation": "upload",
+        "options": {
+          "simplifyOutput": false
+        },
+        "resource": "file"
+      },
+      "position": [
+        1344,
+        0
+      ],
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3
+    },
+    {
+      "id": "2b6eef38-d525-47dd-af03-30cbbf0f11e4",
+      "name": "Notify Owner — with Drive link",
+      "parameters": {
+        "message": "=<h3>Nowy lead z kalkulatora</h3><p><b>Email:</b> {{ $('Prepare File for Upload').item.json.body.email }}<br><b>Kalkulator:</b> {{ $('Prepare File for Upload').item.json.body.calculator }}<br><b>Parametry:</b> {{ $('Prepare File for Upload').item.json.body.params }}<br><b>Cena:</b> {{ $('Prepare File for Upload').item.json.body.price.perPcPLN.min }}–{{ $('Prepare File for Upload').item.json.body.price.perPcPLN.max }} PLN ({{ $('Prepare File for Upload').item.json.body.price.perPcEUR.min }}–{{ $('Prepare File for Upload').item.json.body.price.perPcEUR.max }} EUR)<br><b>Ilość:</b> {{ $('Prepare File for Upload').item.json.body.price.qty }}<br><b>Czas:</b> {{ $('Prepare File for Upload').item.json.body.ts }}<br><b>Plik:</b> {{ $('Prepare File for Upload').item.json.body.file.name }}</p><p style=\"margin-top:16px;\"><a href=\"https://drive.google.com/drive/folders/{{ $('Prepare File for Upload').item.json.folderId }}\" style=\"display:inline-block;padding:10px 20px;background:#1a73e8;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;\">📁 Otwórz folder na Drive</a></p>",
+        "operation": "send",
+        "options": {
+          "appendAttribution": false
+        },
+        "sendTo": "contact@aejaca.com",
+        "subject": "=🔔 Nowa wycena: {{ $('Prepare File for Upload').item.json.body.calculator }} — {{ $('Prepare File for Upload').item.json.body.price.perPcPLN.min }}–{{ $('Prepare File for Upload').item.json.body.price.perPcPLN.max }} PLN"
+      },
+      "position": [
+        1568,
+        0
+      ],
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "webhookId": "92fb43f8-5dfc-4c4e-ab33-93aa2a301166"
+    },
+    {
+      "id": "ca3890bd-2b95-4c4e-9ac1-cefb1ca3b59c",
+      "name": "Notify Owner — no file",
+      "parameters": {
+        "message": "=<h3>Nowy lead z kalkulatora</h3><p><b>Email:</b> {{ $json.body.email }}<br><b>Kalkulator:</b> {{ $json.body.calculator }}<br><b>Parametry:</b> {{ $json.body.params }}<br><b>Cena:</b> {{ $json.body.price.perPcPLN.min }}–{{ $json.body.price.perPcPLN.max }} PLN ({{ $json.body.price.perPcEUR.min }}–{{ $json.body.price.perPcEUR.max }} EUR)<br><b>Ilość:</b> {{ $json.body.price.qty }}<br><b>Czas:</b> {{ $json.body.ts }}</p>",
+        "operation": "send",
+        "options": {
+          "appendAttribution": false
+        },
+        "sendTo": "contact@aejaca.com",
+        "subject": "=🔔 Nowa wycena: {{ $json.body.calculator }} — {{ $json.body.price.perPcPLN.min }}–{{ $json.body.price.perPcPLN.max }} PLN"
+      },
+      "position": [
+        896,
+        192
+      ],
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "webhookId": "8ba249b7-0d6c-4b35-91ab-e476dee0b5ca"
+    },
+    {
+      "id": "dfe07ce7-dd4c-4b37-b2b6-2b30c759accd",
+      "name": "Send Quote Email",
+      "parameters": {
+        "message": "=<div style=\"font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 560px; margin: 0 auto; background: #0a0a0a; color: #e5e5e5; border-radius: 16px; overflow: hidden;\"><div style=\"background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%); padding: 32px 24px 20px; text-align: center;\"><img src=\"https://www.aejaca.com/brand-sign.webp\" alt=\"AEJaCA\" width=\"48\" height=\"48\" style=\"display: inline-block; margin-bottom: 12px; filter: brightness(0) invert(1);\" /><h1 style=\"font-size: 20px; font-weight: 700; color: #ffffff; margin: 0 0 4px;\">{{ $json.body.lang === 'de' ? 'Ihr Angebot von AEJaCA' : $json.body.lang === 'en' ? 'Your AEJaCA Quote' : 'Twoja wycena z AEJaCA' }}</h1><p style=\"font-size: 12px; color: #a3a3a3; margin: 0;\">Artisan Elegance Jewelry and Crafted Art</p></div><div style=\"padding: 24px;\"><div style=\"background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; margin-bottom: 20px;\"><div style=\"font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #60a5fa; margin-bottom: 12px;\">{{ $json.body.calculator }}</div><div style=\"font-size: 13px; color: #a3a3a3; margin-bottom: 16px; line-height: 1.5;\">{{ $json.body.params }}</div><div style=\"text-align: center; padding: 16px 0; border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05);\"><div style=\"font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #737373; margin-bottom: 8px;\">{{ $json.body.lang === 'de' ? 'Geschätzter Preis' : $json.body.lang === 'en' ? 'Estimated price' : 'Szacowana cena' }}</div><div style=\"font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;\">{{ $json.body.price.perPcPLN.min }} &mdash; {{ $json.body.price.perPcPLN.max }} PLN</div><div style=\"font-size: 14px; color: #737373; margin-top: 4px;\">{{ $json.body.price.perPcEUR.min }} &mdash; {{ $json.body.price.perPcEUR.max }} EUR</div></div></div>{{ $json.body.file && $json.body.file.name ? '<div style=\"background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:12px;color:#93c5fd;\">&#128206; ' + $json.body.file.name + '</div>' : '' }}<div style=\"text-align: center; margin-bottom: 20px;\"><a href=\"https://www.aejaca.com/contact/\" style=\"display: inline-block; padding: 12px 28px; background: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 999px; font-size: 14px; font-weight: 600;\">{{ $json.body.lang === 'de' ? 'Projekt besprechen' : $json.body.lang === 'en' ? 'Discuss your project' : 'Omów projekt' }} &rarr;</a></div><p style=\"font-size: 12px; color: #525252; text-align: center; line-height: 1.6;\">{{ $json.body.lang === 'de' ? 'Dies ist eine automatische Schätzung.' : $json.body.lang === 'en' ? 'This is an automated estimate.' : 'To automatyczna wycena szacunkowa.'}}</p></div><div style=\"padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center;\"><p style=\"font-size: 11px; color: #404040; margin: 0;\">AEJaCA &mdash; <a href=\"https://www.aejaca.com\" style=\"color: #525252; text-decoration: none;\">www.aejaca.com</a> &middot; <a href=\"mailto:contact@aejaca.com\" style=\"color: #525252; text-decoration: none;\">contact@aejaca.com</a></p></div></div>",
+        "operation": "send",
+        "options": {
+          "appendAttribution": false,
+          "replyTo": "contact@aejaca.com"
+        },
+        "sendTo": "={{ $json.body.email }}",
+        "subject": "={{ $json.body.lang === 'de' ? 'Ihr Angebot von AEJaCA' : $json.body.lang === 'en' ? 'Your AEJaCA Quote' : 'Twoja wycena z AEJaCA' }}"
+      },
+      "position": [
+        672,
+        384
+      ],
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "webhookId": "1a88dddf-49ad-4573-8a72-b9faf3d0102c"
+    },
+    {
+      "id": "5395ef91-c76e-4b78-8191-c080fec73ec7",
+      "name": "Wait 48h",
+      "parameters": {
+        "amount": 48,
+        "unit": "hours"
+      },
+      "position": [
+        896,
+        384
+      ],
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "webhookId": "c34725cb-52c7-4668-952a-63af8f0989e6"
+    },
+    {
+      "id": "62ea82c8-db7e-493c-ac61-95c6deff4cb5",
+      "name": "Follow-up 48h",
+      "parameters": {
+        "message": "=<div style=\"font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 560px; margin: 0 auto; background: #0a0a0a; color: #e5e5e5; border-radius: 16px; overflow: hidden;\"><div style=\"padding: 32px 24px 20px; text-align: center;\"><img src=\"https://www.aejaca.com/brand-sign.webp\" alt=\"AEJaCA\" width=\"40\" height=\"40\" style=\"display: inline-block; margin-bottom: 12px; filter: brightness(0) invert(1);\" /></div><div style=\"padding: 0 24px 24px;\"><h2 style=\"font-size: 18px; color: #fff; text-align: center; margin: 0 0 16px;\">{{ $('Webhook — Quote Received').item.json.body.lang === 'de' ? 'Haben Sie Fragen zu Ihrem Angebot?' : $('Webhook — Quote Received').item.json.body.lang === 'en' ? 'Any questions about your quote?' : 'Masz pytania dotyczące wyceny?' }}</h2><div style=\"text-align: center; margin: 24px 0;\"><a href=\"https://www.aejaca.com/contact/\" style=\"display: inline-block; padding: 12px 28px; background: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 999px; font-size: 14px; font-weight: 600;\">{{ $('Webhook — Quote Received').item.json.body.lang === 'de' ? 'Jetzt antworten' : $('Webhook — Quote Received').item.json.body.lang === 'en' ? 'Reply now' : 'Odpowiedz teraz' }} &rarr;</a></div></div><div style=\"padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center;\"><p style=\"font-size: 11px; color: #404040; margin: 0;\">AEJaCA &mdash; <a href=\"https://www.aejaca.com\" style=\"color: #525252; text-decoration: none;\">www.aejaca.com</a></p></div></div>",
+        "operation": "send",
+        "options": {
+          "appendAttribution": false,
+          "replyTo": "contact@aejaca.com"
+        },
+        "sendTo": "={{ $('Webhook — Quote Received').item.json.body.email }}",
+        "subject": "={{ $('Webhook — Quote Received').item.json.body.lang === 'de' ? 'Haben Sie Fragen zu Ihrem Angebot?' : $('Webhook — Quote Received').item.json.body.lang === 'en' ? 'Any questions about your quote?' : 'Masz pytania dotyczące wyceny?' }}"
+      },
+      "position": [
+        1120,
+        384
+      ],
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "webhookId": "c73094fb-d40b-4d4d-a862-5962049659ee"
+    },
+    {
+      "id": "6b145e64-6ffa-49ec-90a6-f4dbd7dedb0b",
+      "name": "Wait 5 more days",
+      "parameters": {
+        "amount": 5,
+        "unit": "days"
+      },
+      "position": [
+        1344,
+        384
+      ],
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "webhookId": "3c2d63b2-8eed-4950-a8a5-79971d21fee3"
+    },
+    {
+      "id": "b5fd1135-198b-4025-a2d4-4caeb4160261",
+      "name": "Discount offer (7d)",
+      "parameters": {
+        "message": "=<div style=\"font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 560px; margin: 0 auto; background: #0a0a0a; color: #e5e5e5; border-radius: 16px; overflow: hidden;\"><div style=\"padding: 32px 24px 20px; text-align: center;\"><img src=\"https://www.aejaca.com/brand-sign.webp\" alt=\"AEJaCA\" width=\"40\" height=\"40\" style=\"display: inline-block; margin-bottom: 12px; filter: brightness(0) invert(1);\" /></div><div style=\"padding: 0 24px 24px;\"><div style=\"text-align: center; margin-bottom: 20px;\"><div style=\"display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #0a0a0a; font-size: 28px; font-weight: 800; padding: 12px 32px; border-radius: 12px;\">-5%</div></div><h2 style=\"font-size: 18px; color: #fff; text-align: center; margin: 0 0 16px;\">{{ $('Webhook — Quote Received').item.json.body.lang === 'de' ? 'Exklusiver Rabatt auf Ihr Projekt' : $('Webhook — Quote Received').item.json.body.lang === 'en' ? 'Exclusive discount on your project' : 'Ekskluzywny rabat na Twój projekt' }}</h2><div style=\"background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); border-radius: 12px; padding: 16px; margin: 20px 0; text-align: center;\"><div style=\"font-size: 22px; font-weight: 700; color: #ffffff; font-family: monospace; letter-spacing: 3px;\">AEJACA5</div></div><div style=\"text-align: center; margin: 24px 0;\"><a href=\"https://www.aejaca.com/contact/\" style=\"display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #0a0a0a; text-decoration: none; border-radius: 999px; font-size: 14px; font-weight: 700;\">{{ $('Webhook — Quote Received').item.json.body.lang === 'de' ? 'Rabatt einlösen' : $('Webhook — Quote Received').item.json.body.lang === 'en' ? 'Claim discount' : 'Wykorzystaj rabat' }} &rarr;</a></div></div><div style=\"padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center;\"><p style=\"font-size: 11px; color: #404040; margin: 0;\">AEJaCA &mdash; <a href=\"https://www.aejaca.com\" style=\"color: #525252; text-decoration: none;\">www.aejaca.com</a></p></div></div>",
+        "operation": "send",
+        "options": {
+          "appendAttribution": false,
+          "replyTo": "contact@aejaca.com"
+        },
+        "sendTo": "={{ $('Webhook — Quote Received').item.json.body.email }}",
+        "subject": "={{ $('Webhook — Quote Received').item.json.body.lang === 'de' ? '5% Rabatt auf Ihr AEJaCA-Projekt' : $('Webhook — Quote Received').item.json.body.lang === 'en' ? '5% off your AEJaCA project' : '5% rabatu na Twój projekt w AEJaCA' }}"
+      },
+      "position": [
+        1568,
+        384
+      ],
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "webhookId": "d013506e-ea80-415a-a529-5dd027c991a8"
+    }
+  ],
+  "parentFolderId": null,
+  "settings": {
+    "availableInMCP": true,
+    "binaryMode": "separate",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed"
+  },
+  "tags": []
+}
