@@ -1,5 +1,7 @@
 export const meta = {
   slug: "materialy-laser-cutting",
+  // Usluga domykajaca wpis, pokazywana pod trescia.
+  service: "laser_cut",
   category: "studio",
   accent: "blue",
   publishedAt: "2026-04-20",

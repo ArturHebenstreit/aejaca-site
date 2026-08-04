@@ -2,6 +2,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import RingSizeCalc from "../components/calculators/RingSizeCalc.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
+import ContentCTA from "../components/ContentCTA.jsx";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
@@ -164,6 +165,7 @@ export default function RingSizePage() {
         {/* Footer CTA */}
         <section className="py-10 px-4 bg-neutral-950 text-center">
           <div ref={ctaRef} className="reveal max-w-xl mx-auto">
+            <ContentCTA service="jewelry_stones" category="jewelry" className="mb-8 text-left" />
             <h2 className="font-sans text-xl font-semibold text-white mb-2">{L.footerCtaTitle}</h2>
             <p className="text-neutral-400 text-sm mb-6">{L.footerCtaText}</p>
             <a

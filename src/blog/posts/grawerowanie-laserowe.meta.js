@@ -1,5 +1,7 @@
 export const meta = {
   slug: "grawerowanie-laserowe-przewodnik",
+  // Usluga domykajaca wpis, pokazywana pod trescia.
+  service: "laser_engrave",
   category: "studio",
   accent: "blue",
   publishedAt: "2026-04-17",

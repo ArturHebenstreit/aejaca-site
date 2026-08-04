@@ -3,6 +3,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import { GLOSSARY, CATEGORIES } from "../data/glossary.js";
 import SEOHead from "../seo/SEOHead.jsx";
+import ContentCTA from "../components/ContentCTA.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
@@ -123,6 +124,11 @@ export default function GlossaryTerm() {
               <p className="text-neutral-300 text-lg leading-relaxed mb-8">
                 {termDef}
               </p>
+
+              {/* Haslo slownika to najwezsza mozliwa intencja: ktos szuka
+                  konkretnego pojecia z naszego rzemiosla. Dwadziescia dziewiec
+                  hasel prowadzilo dotad wylacznie do innych hasel. */}
+              <ContentCTA service={term.service} category={term.category} className="mb-10" />
 
               {term.relatedBlog && (
                 <div className="mb-10 p-5 rounded-xl bg-neutral-900/60 border border-neutral-800">

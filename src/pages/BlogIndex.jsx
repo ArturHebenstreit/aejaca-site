@@ -4,6 +4,7 @@ import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getSortedPostsMeta } from "../blog/postsMeta.js";
 import BlogCard from "../components/blog/BlogCard.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
+import ContentCTA from "../components/ContentCTA.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 
@@ -91,7 +92,14 @@ export default function BlogIndex() {
               ))}
             </div>
           </div>
-        </section>
+        
+            {/* Lista wpisow i slownik nie prowadzily dotad nigdzie poza
+                soba: osiemnascie odnosnikow do wpisow i dwadziescia dziewiec
+                do hasel, ani jednego do oferty. */}
+            <div className="max-w-3xl mx-auto mt-14">
+              <ContentCTA />
+            </div>
+          </section>
       </div>
     </>
   );

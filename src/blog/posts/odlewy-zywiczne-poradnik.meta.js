@@ -1,5 +1,7 @@
 export const meta = {
   slug: "odlewy-zywiczne-poradnik",
+  // Usluga domykajaca wpis, pokazywana pod trescia.
+  service: "epoxy",
   category: "studio",
   accent: "blue",
   publishedAt: "2026-04-20",

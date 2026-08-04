@@ -1,5 +1,7 @@
 export const meta = {
   slug: "pierscionek-zareczynowy-na-zamowienie",
+  // Usluga domykajaca wpis, pokazywana pod trescia.
+  service: "jewelry_stones",
   category: "jewelry",
   accent: "amber",
   publishedAt: "2026-04-17",

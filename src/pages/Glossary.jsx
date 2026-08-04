@@ -4,6 +4,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { GLOSSARY, CATEGORIES } from "../data/glossary.js";
 import SEOHead from "../seo/SEOHead.jsx";
+import ContentCTA from "../components/ContentCTA.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
@@ -171,6 +172,13 @@ export default function Glossary() {
                 ))}
               </div>
             )}
+          </div>
+        
+          {/* Lista wpisow i slownik nie prowadzily dotad nigdzie poza
+              soba: osiemnascie odnosnikow do wpisow i dwadziescia dziewiec
+              do hasel, ani jednego do oferty. */}
+          <div className="max-w-3xl mx-auto mt-14">
+            <ContentCTA />
           </div>
         </section>
       </div>
