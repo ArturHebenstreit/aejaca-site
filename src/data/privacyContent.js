@@ -58,6 +58,8 @@ export const PRIVACY = {
             "Zabezpieczenie przed nadużyciami, w tym skrócony zapis adresu IP przy zamówieniu i rozmowie. Podstawa: art. 6 ust. 1 lit. f RODO. Okres: 12 miesięcy.",
           ],
           "Adres IP zapisujemy wyłącznie jako skrót nieodwracalny, służący do liczenia zapytań z jednego miejsca, a nie do ustalania, kto je wysłał.",
+          "Co dzieje się po upływie terminu przy zamówieniu: sam dokument sprzedaży zostaje, bo wymaga tego prawo podatkowe, ale znikają z niego Twoje dane. Po sześciu latach kasujemy z zamówienia imię i nazwisko, telefon, adres dostawy i skrót adresu IP, a adres e-mail zastępujemy adresem zastępczym. Zostają wyłącznie kwoty, daty, numer zamówienia i to, co kupiono. Robi to zadanie uruchamiane raz na dobę, a nie ręczna pamięć.",
+          "Surowe komunikaty od operatora płatności, które służą do wyjaśnienia spornej wpłaty, czyścimy po 12 miesiącach. Sam ślad, że płatność była i jaka, zostaje przy zamówieniu.",
         ],
       },
       {
@@ -190,6 +192,8 @@ export const PRIVACY = {
             "Abuse prevention, including a shortened record of the IP address with an order or a conversation. Basis: Article 6(1)(f) GDPR. Period: 12 months.",
           ],
           "The IP address is stored only as an irreversible hash, used to count requests from one place, not to establish who sent them.",
+          "What happens to an order once its period runs out: the sales record itself stays, because tax law requires it, but your data leaves it. After six years we erase the name, phone number, delivery address and hashed IP from the order, and replace the email address with a placeholder. Only amounts, dates, the order number and what was bought remain. A job does this daily; it does not depend on anyone remembering.",
+          "Raw messages from the payment provider, kept to settle a disputed payment, are cleared after 12 months. The record that a payment happened, and for how much, stays with the order.",
         ],
       },
       {
@@ -322,6 +326,8 @@ export const PRIVACY = {
             "Missbrauchsabwehr, einschließlich einer verkürzten Speicherung der IP-Adresse bei Bestellung und Gespräch. Grundlage: Art. 6 Abs. 1 lit. f DSGVO. Dauer: 12 Monate.",
           ],
           "Die IP-Adresse wird ausschließlich als nicht umkehrbarer Hashwert gespeichert und dient dem Zählen von Anfragen aus einer Quelle, nicht der Feststellung, wer sie gesendet hat.",
+          "Was nach Ablauf der Frist mit einer Bestellung geschieht: Der Verkaufsbeleg bleibt, da das Steuerrecht dies verlangt, Ihre Daten verlassen ihn jedoch. Nach sechs Jahren löschen wir Namen, Telefonnummer, Lieferanschrift und den IP-Hashwert aus der Bestellung und ersetzen die E-Mail-Adresse durch eine Platzhalteradresse. Es bleiben nur Beträge, Daten, die Bestellnummer und der Inhalt. Das erledigt ein täglich laufender Vorgang, nicht das Gedächtnis eines Menschen.",
+          "Rohe Meldungen des Zahlungsdienstleisters, die der Klärung strittiger Zahlungen dienen, löschen wir nach 12 Monaten. Der Nachweis, dass und in welcher Höhe gezahlt wurde, bleibt bei der Bestellung.",
         ],
       },
       {

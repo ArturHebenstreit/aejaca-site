@@ -320,6 +320,55 @@ miejsce sięgające do pamięci przeglądarki i wymagająca uzasadnienia dla ka�
 
 ---
 
+## Uzupełnienie: dane kupujących (2026-08-03)
+
+Pytanie właściciela po zamknięciu planu: czy retencja obejmuje też osoby, które
+kupiły. Odpowiedź brzmiała „częściowo" i to była luka warta domknięcia.
+
+Zadanie sprzątające celowo omijało zamówienia, bo trzyma je obowiązek podatkowy
+i termin przedawnienia roszczeń. Skutek uboczny był jednak taki, że **dane
+kupującego nie miały żadnej daty końcowej**: polityka mówiła o pięciu i sześciu
+latach, a w praktyce imię, nazwisko, telefon, adres dostawy i skrót adresu IP
+leżałyby w bazie w nieskończoność. Termin, którego nikt nie egzekwuje, jest przy
+kontroli gorszy niż brak terminu.
+
+Rozwiązaniem jest **anonimizacja zamiast kasowania**, bo dwa obowiązki idą tu
+w przeciwne strony. Dokument sprzedaży ma przetrwać (kwoty, daty, numer
+zamówienia, co kupiono), bo wymaga tego prawo podatkowe. Dane osoby mają zniknąć,
+bo po upływie terminu nie mają już podstawy. Po sześciu latach od zapłaty
+zamówienie traci więc imię i nazwisko, telefon, adres, skrót IP, a adres e-mail
+zostaje zastąpiony adresem w domenie `.invalid`, która z definicji donikąd nie
+prowadzi. Przebieg jest powtarzalny: wiersze już zanonimizowane wypadają z warunku.
+
+Osobno: surowe komunikaty od operatora płatności (`payment_notifications.raw_xml`)
+czyszczone po 12 miesiącach. Służą do wyjaśnienia spornej wpłaty, a nie do
+archiwum, a niosą dane płatnika od bramki. Sam ślad, że płatność była i jaka,
+zostaje przy zamówieniu.
+
+Testy pilnują obu stron tej granicy: że dane osoby znikają, i że `total_grosze`,
+`order_ref`, `paid_at` oraz `status` pozostają nietknięte. Polityka Prywatności
+opisuje to teraz wprost w sekcji 3, w trzech językach, bo klient ma prawo
+wiedzieć, że po latach zostaje po nim rachunek bez nazwiska, a nie że „usuwamy
+wszystko", co byłoby nieprawdą.
+
+### Co zostaje po Twojej stronie, poza kodem
+
+Trzy rzeczy, których nie da się zrobić w repozytorium:
+
+1. **Umowy powierzenia przetwarzania** z dostawcami wymienionymi w polityce
+   (Railway, Cloudflare, Google, OpenAI, n8n). Zwykle akceptuje się je
+   w ustawieniach konta jako DPA. Autopay i przewoźnicy występują jako odrębni
+   administratorzy, więc tam powierzenia nie potrzeba.
+2. **Rejestr czynności przetwarzania**. Przy tej skali wystarczy tabela na jednej
+   stronie, a sekcja 3 polityki jest gotowym szkieletem: cel, podstawa, kategorie
+   danych, odbiorcy, termin.
+3. **Procedura na żądanie klienta** (dostęp, usunięcie, sprzeciw). Dziś odpowiada
+   się ręcznie zapytaniem do bazy. Przy jednym zamówieniu miesięcznie to
+   wystarcza; przy kilkudziesięciu warto dołożyć w panelu wyszukiwarkę po adresie
+   e-mail, która pokaże wszystko, co o kimś mamy.
+
+---
+
 ## Stan po pięciu etapach
 
 Zamknięte: K1, W1, W2, W3, S1, S3, S4, S5, S6. W4 zamknięty korektą ustalenia,
@@ -329,3 +378,5 @@ a sklep wystawia informację o obniżce sam, w chwili gdy obniżka się pojawi.
 Do pilnowania przy zmianach: okresy w Polityce Prywatności muszą zgadzać się
 z `chat-api/retention.js`, a strona Zwroty z § 10 Regulaminu. Obie pary już raz
 się rozjechały.
+
+Retencja danych kupujących domknięta osobno, patrz uzupełnienie powyżej.

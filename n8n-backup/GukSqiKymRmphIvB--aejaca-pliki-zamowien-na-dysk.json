@@ -1,0 +1,133 @@
+{
+  "active": true,
+  "connections": {
+    "Base64 na plik": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Zapis na Dysku",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Base64 na plik",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Zapis na Dysku": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Oddzwonienie do AEJaCA",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2026-07-31T14:41:48.983Z",
+  "id": "GukSqiKymRmphIvB",
+  "isArchived": false,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "name": "AEJaCA: pliki zamowien na Dysk",
+  "nodes": [
+    {
+      "id": "465655f4-142c-4ba4-a6c8-29695066287c",
+      "name": "Webhook",
+      "parameters": {
+        "httpMethod": "POST",
+        "options": {
+          "rawBody": false
+        },
+        "path": "aejaca-order-file"
+      },
+      "position": [0, 0],
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "aejaca-order-file"
+    },
+    {
+      "id": "683a42e8-b91c-4796-85f5-2c01519d2afb",
+      "name": "Base64 na plik",
+      "parameters": {
+        "operation": "toBinary",
+        "options": {
+          "fileName": "={{ $json.body.fileName }}",
+          "mimeType": "={{ $json.body.mimeType || 'application/octet-stream' }}"
+        },
+        "sourceProperty": "body.data"
+      },
+      "position": [224, 0],
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1
+    },
+    {
+      "id": "9e2e03e6-baba-4051-9c41-c494aab32235",
+      "name": "Zapis na Dysku",
+      "notes": "Wybierz swoje poswiadczenia Google Drive oraz katalog AEJaCA / Zamowienia.",
+      "parameters": {
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "cachedResultName": "Zamowienia",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1t0QptQE5A2D3A5lUEMjfra4U-s7H1nwd",
+          "mode": "list",
+          "value": "1t0QptQE5A2D3A5lUEMjfra4U-s7H1nwd"
+        },
+        "name": "={{ $('Webhook').item.json.body.fileName }}",
+        "options": {}
+      },
+      "position": [448, 0],
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3
+    },
+    {
+      "id": "a4033f50-0a13-4fe6-a41e-8fb81c88a35b",
+      "name": "Oddzwonienie do AEJaCA",
+      "notes": "Przekazuje link do Dysku, zeby trafil do maila zamowienia obok reszty danych.",
+      "parameters": {
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-upload-token",
+              "value": "__USTAW_PRZY_ODTWARZANIU__"
+            }
+          ]
+        },
+        "jsonBody": "={{ JSON.stringify({ driveUrl: $json.webViewLink, driveFileId: $json.id }) }}",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "url": "=https://aejacachatapi-production.up.railway.app/api/uploads/{{ $('Webhook').item.json.body.token }}/stored"
+      },
+      "position": [672, 0],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    }
+  ],
+  "parentFolderId": null,
+  "settings": {
+    "availableInMCP": true,
+    "binaryMode": "separate",
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

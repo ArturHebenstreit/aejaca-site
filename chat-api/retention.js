@@ -9,9 +9,13 @@
 // zeby dalo sie je zestawic wzrokiem. Zmiana terminu w polityce bez zmiany
 // tutaj (albo odwrotnie) to blad, nie drobiazg.
 //
-// Zamowien i dokumentacji sprzedazy NIE kasujemy tym zadaniem: trzyma je
-// obowiazek podatkowy i termin przedawnienia roszczen, liczone w latach.
-// Kasowanie pojedynczego zamowienia jest czynnoscia recznta, z panelu,
+// Zamowien tym zadaniem NIE KASUJEMY, i to jest rozroznienie, na ktorym cala
+// rzecz stoi. Dokument sprzedazy ma przetrwac (kwoty, daty, numer), bo wymaga
+// tego prawo podatkowe. Dane OSOBY przy nim maja zniknac po uplywie terminu,
+// bo ich dluzsze trzymanie nie ma juz podstawy. Dlatego zamowienie po terminie
+// jest anonimizowane, a nie usuwane.
+//
+// Kasowanie pojedynczego zamowienia jest osobna czynnoscia, reczna, z panelu,
 // i ma wlasne zabezpieczenia (orderCleanup.js).
 
 /** Terminy w dniach, jeden do jednego z sekcja 3 polityki prywatnosci. */
@@ -24,7 +28,27 @@ export const RETENTION_DAYS = {
   events: 730,
   /** Pliki wgrane do wyceny, z ktorych nie powstalo zamowienie: 30 dni. */
   uploads: 30,
+  /**
+   * Dane osobowe przy zamowieniu: 6 lat, czyli do uplywu terminu przedawnienia
+   * roszczen. Dluzszy z dwoch terminow z polityki (5 lat podatkowe, 6 lat
+   * przedawnienie), bo krotszy nie zwalnia z dluzszego.
+   *
+   * UWAGA: zamowienia NIE kasujemy. Wiersz zostaje jako dokument sprzedazy
+   * (kwoty, daty, numer), a znikaja z niego dane osoby. Skasowanie calego
+   * wiersza zabraloby dowod na to, ile i kiedy sprzedano, czego wymaga prawo
+   * podatkowe, a anonimizacja godzi jedno z drugim.
+   */
+  orderPersonalData: 2190,
+  /**
+   * Surowy komunikat od bramki platniczej: 12 miesiecy. Sluzy do wyjasnienia
+   * spornej platnosci, a nie do archiwum. Wiersz zostaje razem ze statusem
+   * i kwota, znika sam zaladunek.
+   */
+  paymentPayloads: 365,
 };
+
+/** Adres wstawiany w miejsce prawdziwego. `.invalid` jest zarezerwowane i nigdzie nie prowadzi. */
+export const ANONYMISED_EMAIL = "dane-usuniete@aejaca.invalid";
 
 /**
  * Jeden przebieg sprzatania. Zwraca liczbe usunietych wierszy w rozbiciu na
@@ -79,6 +103,32 @@ export async function runRetention(pool, { days = RETENTION_DAYS, now = "NOW()" 
       WHERE order_id IS NULL
         AND created_at < ${now} - ($1 || ' days')::INTERVAL`,
     [String(days.uploads)]
+  );
+
+  // Anonimizacja, nie kasowanie: wiersz zamowienia zostaje jako dokument
+  // sprzedazy, wychodza z niego dane osoby. Warunek na adres zastepczy sprawia,
+  // ze przebieg jest powtarzalny i nie liczy w kolko tych samych wierszy.
+  await sweep(
+    "orderPersonalData",
+    `UPDATE orders
+        SET customer_email = $2,
+            customer_name = NULL,
+            customer_phone = NULL,
+            address_line1 = NULL,
+            address_line2 = NULL,
+            postal_code = NULL,
+            city = NULL,
+            ip_hash = NULL
+      WHERE COALESCE(paid_at, created_at) < ${now} - ($1 || ' days')::INTERVAL
+        AND customer_email <> $2`,
+    [String(days.orderPersonalData), ANONYMISED_EMAIL]
+  );
+
+  await sweep(
+    "paymentPayloads",
+    `UPDATE payment_notifications SET raw_xml = NULL
+      WHERE received_at < ${now} - ($1 || ' days')::INTERVAL AND raw_xml IS NOT NULL`,
+    [String(days.paymentPayloads)]
   );
 
   const total = Object.values(removed).reduce((s, n) => s + (n || 0), 0);
