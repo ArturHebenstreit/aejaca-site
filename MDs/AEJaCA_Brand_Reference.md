@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-03 | Wersja: 2.6*
+*Wygenerowano: 2026-08-04 | Wersja: 2.6*
 
 ---
 
@@ -9,7 +9,7 @@
 **AEJaCA** - Artisan Elegance Jewelry and Crafted Art
 
 ### Tagline / slogan
-- PL: "Noś to, co znaczące. Nie to, co seryjne."
+- PL: "Noś to, co znaczące. Drukuj to, czego nie ma w sklepie."
 - Sub: "Biżuteria i przedmioty projektowane pod Ciebie, od pomysłu do gotowego."
 - Footer: "Gdzie rzemiosło spotyka technologię."
 
@@ -1133,7 +1133,7 @@ Pozostałe 14 recenzji: ocena 5★ bez tekstu
 ## 12. KLUCZOWE PRZEKAZY COPYWRITERSKIE
 
 ### Strona główna
-- H1: "Noś to, co znaczące. Nie to, co seryjne."
+- H1: "Noś to, co znaczące. Drukuj to, czego nie ma w sklepie."
 - Sub: "Biżuteria i przedmioty projektowane pod Ciebie, od pomysłu do gotowego."
 
 ### Biżuteria

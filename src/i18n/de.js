@@ -69,8 +69,8 @@ export default {
   },
 
   home: {
-    h1: "Trage, was bedeutsam ist. Nicht was in Serie geht.",
-    heroSubtitle: "Schmuck und Objekte, für dich entworfen, von der Idee bis zum fertigen Stück.",
+    h1: "Trage, was bedeutsam ist. Drucke, was es nirgends gibt.",
+    heroSubtitle: "Schmuck, 3D-Druck und Gravur. Preis online, ohne Wartezeit.",
     heroAria: "AEJaCA, zwei Welten unter einer Marke: Schmuck und sTuDiO",
     jewelryTitle: "AEJaCA",
     jewelrySubtitle: "AEJaCA Schmuck",

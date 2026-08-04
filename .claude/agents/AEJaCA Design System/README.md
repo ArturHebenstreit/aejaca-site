@@ -39,7 +39,7 @@ Copy on AEJaCA is **warm, declarative, and confident** — never breezy,
 never salesy. Two voices, one shared cadence.
 
 ### Voice — Jewelry side
-- **Editorial and emotive.** Headlines are short, almost aphoristic, often a sentence with a period: _"Wear what matters. Not what's mass-made."_ / _"Your vision. Our precision."_ / _"Where art meets craftsmanship."_
+- **Editorial and emotive.** Headlines are short, almost aphoristic, often a sentence with a period: _"Wear what matters. Print what no shop sells."_ / _"Your vision. Our precision."_ / _"Where art meets craftsmanship."_
 - **Story-led.** Process is described as a "conversation, not a catalog." Pieces "carry meaning," "tell a story," become "timeless companions." Values come in single nouns with a one-line definition — _Uniqueness · Emotion · Symbolism · Timelessness._
 - **Romance without flowery prose.** No "exquisite," no "luxurious." The work earns those words by being shown.
 

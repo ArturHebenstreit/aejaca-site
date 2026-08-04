@@ -253,7 +253,9 @@ export default function ChatWidget() {
     <>
       {/* Chat bubble */}
       {!open && (
-        <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
+        // Na telefonie dymek siedzial na przycisku w kaflu hero i zaslanial jego
+        // prawa krawedz. Nizej i blizej rogu na waskim ekranie, bez zmian od sm.
+        <div className="fixed bottom-3 right-3 sm:bottom-5 sm:right-5 z-50 flex flex-col items-end gap-3">
           {showBubble && (
             <div className="max-w-[220px] animate-[fadeSlideUp_0.3s_ease-out]">
               <div className="relative bg-white text-neutral-800 text-sm rounded-2xl px-4 py-3"

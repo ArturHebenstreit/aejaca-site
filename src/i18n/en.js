@@ -71,8 +71,8 @@ export default {
 
   // Home page
   home: {
-    h1: "Wear what matters. Not what's mass-made.",
-    heroSubtitle: "Jewelry and objects designed for you, from idea to finished piece.",
+    h1: "Wear what matters. Print what no shop sells.",
+    heroSubtitle: "Jewelry, 3D printing and engraving. Priced online, no waiting.",
     heroAria: "AEJaCA, two worlds under one brand: jewelry and sTuDiO",
     jewelryTitle: "AEJaCA",
     jewelrySubtitle: "AEJaCA Jewelry",

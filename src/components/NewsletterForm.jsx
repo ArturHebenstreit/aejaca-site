@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useId } from "react";
 import { Link } from "react-router-dom";
 import { Gift, CheckCircle2, Loader2 } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
@@ -8,6 +8,7 @@ const NEWSLETTER_API_URL = import.meta.env.VITE_NEWSLETTER_API_URL;
 const LABELS = {
   pl: {
     hook: "Odbierz 10% zniżki",
+    descShort: "Kod 10% na pierwsze zamówienie, prosto na Twój e-mail.",
     title: "Zapisz się i odbierz kod rabatowy",
     desc: "Zostaw adres e-mail — wyślemy Ci kod 10% zniżki na pierwsze zamówienie oraz nowinki ze studia AEJaCA.",
     placeholder: "twój@email.pl",
@@ -23,6 +24,7 @@ const LABELS = {
   },
   en: {
     hook: "Get 10% off",
+    descShort: "A 10% code for your first order, straight to your inbox.",
     title: "Join the list & unlock your discount",
     desc: "Drop your email — we'll send a 10% code for your first order plus updates from the AEJaCA studio.",
     placeholder: "your@email.com",
@@ -38,6 +40,7 @@ const LABELS = {
   },
   de: {
     hook: "10% Rabatt sichern",
+    descShort: "10% Code für Ihre erste Bestellung, direkt per E-Mail.",
     title: "Abonnieren & Rabatt freischalten",
     desc: "Gib deine E-Mail ein — wir schicken dir einen 10%-Code für deine erste Bestellung plus Neuigkeiten aus dem AEJaCA Studio.",
     placeholder: "deine@email.de",
@@ -57,6 +60,10 @@ const LABELS = {
 const EMAIL_RX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function NewsletterForm({ compact = false }) {
+  // Formularz stoi teraz w dwoch miejscach strony glownej, przy kalkulatorach
+  // i w stopce. Staly identyfikator dawalby dwa te same id w jednym dokumencie,
+  // przez co etykieta wskazywalaby zawsze pierwsze pole.
+  const emailId = `nl-email-${useId()}`;
   const { lang } = useLanguage();
   const l = LABELS[lang] || LABELS.en;
   const [email, setEmail] = useState("");
@@ -146,13 +153,15 @@ export default function NewsletterForm({ compact = false }) {
         <Gift className="w-4 h-4 text-amber-300" aria-hidden="true" />
         <span className="text-[11px] uppercase tracking-[0.2em] text-amber-300 font-semibold">{l.hook}</span>
       </div>
-      <h3 className="font-serif text-lg md:text-xl font-semibold text-white mb-2">{l.title}</h3>
-      <p className="text-neutral-400 text-sm leading-relaxed mb-4">{l.desc}</p>
+      {!compact && (
+        <h3 className="font-serif text-lg md:text-xl font-semibold text-white mb-2">{l.title}</h3>
+      )}
+      <p className="text-neutral-400 text-sm leading-relaxed mb-4">{compact ? l.descShort : l.desc}</p>
 
       <div className="flex flex-col sm:flex-row gap-2">
-        <label className="sr-only" htmlFor="nl-email">Email</label>
+        <label className="sr-only" htmlFor={emailId}>Email</label>
         <input
-          id="nl-email"
+          id={emailId}
           type="email"
           inputMode="email"
           autoComplete="email"

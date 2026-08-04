@@ -71,8 +71,8 @@ export default {
   },
 
   home: {
-    h1: "Noś to, co znaczące. Nie to, co seryjne.",
-    heroSubtitle: "Biżuteria i przedmioty projektowane pod Ciebie, od pomysłu do gotowego.",
+    h1: "Noś to, co znaczące. Drukuj to, czego nie ma w sklepie.",
+    heroSubtitle: "Biżuteria, druk 3D i grawerowanie. Wycena online, bez czekania.",
     heroAria: "AEJaCA, dwa światy pod jedną marką: biżuteria i sTuDiO",
     jewelryTitle: "AEJaCA",
     jewelrySubtitle: "AEJaCA Biżuteria",
