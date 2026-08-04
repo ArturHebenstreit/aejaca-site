@@ -4,7 +4,7 @@
   "description": "AEJaCA - Artisan Elegance Jewelry and Crafted Art",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/sync-pricing.mjs --check && node scripts/check-undefined-calls.mjs && node scripts/check-light-theme.mjs && node scripts/check-browser-storage.mjs && node admin/check-styles.mjs && node scripts/check-shop-images.mjs && node scripts/test-payment-groups.mjs && node scripts/test-customer-fields.mjs && node scripts/test-price-history.mjs && node scripts/test-backup-n8n.mjs && node scripts/test-mesh-formats.mjs && node scripts/derive-service-prices.mjs --check && node scripts/sync-sitemap-shop.mjs --check && node scripts/copy-occt-wasm.mjs && vite build && vite build --ssr src/entry-server.jsx --outDir dist/server && node scripts/prerender.mjs",
+    "build": "node scripts/sync-pricing.mjs --check && node scripts/check-undefined-calls.mjs && node scripts/check-light-theme.mjs && node scripts/check-browser-storage.mjs && node scripts/check-reveal.mjs && node admin/check-styles.mjs && node scripts/check-shop-images.mjs && node scripts/test-payment-groups.mjs && node scripts/test-customer-fields.mjs && node scripts/test-price-history.mjs && node scripts/test-backup-n8n.mjs && node scripts/test-mesh-formats.mjs && node scripts/derive-service-prices.mjs --check && node scripts/sync-sitemap-shop.mjs --check && node scripts/copy-occt-wasm.mjs && vite build && vite build --ssr src/entry-server.jsx --outDir dist/server && node scripts/prerender.mjs",
     "build:client": "vite build",
     "preview": "vite preview",
     "db:seed-laser-matrix": "node scripts/import-laser-matrix.mjs",
@@ -23,6 +23,7 @@
     "db:schema-products": "psql $DATABASE_URL -f scripts/products-schema.sql",
     "db:schema-discounts": "psql $DATABASE_URL -f scripts/discounts-schema.sql",
     "check:storage": "node scripts/check-browser-storage.mjs",
+    "audit:serve": "node scripts/audit-server.mjs",
     "backup:n8n": "node scripts/backup-n8n.mjs"
   },
   "dependencies": {
