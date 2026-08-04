@@ -17,7 +17,7 @@ import { DELIVERY_METHODS } from "../data/orderCatalog.js";
 import { t } from "../pricing/config.js";
 import { API_URL, postJSON, submitPaymentForm } from "../utils/api.js";
 import { useMoney, formatPln } from "../shop/money.js";
-import { SHIPPING_COUNTRIES, shippingOptions, shippingGrosze, needsCustoms, FREE_SHIPPING_FROM_GROSZE } from "../pricing/shipping.js";
+import { SHIPPING_COUNTRIES, shippingOptions, shippingGrosze, needsCustoms, FREE_SHIPPING_FROM_GROSZE, leadDaysLabel } from "../pricing/shipping.js";
 import { validateCustomer } from "../shop/customerFields.js";
 import CustomerFields, { ValidatedField as Field } from "../components/shop/CustomerFields.jsx";
 import PaymentPicker from "../components/shop/PaymentPicker.jsx";
@@ -622,7 +622,7 @@ export default function Checkout() {
                         <div className="text-neutral-500 text-[11px]">
                           {o.id === "pickup"
                             ? t(meta.note, lang)
-                            : `${u.carrier}: ${o.carrier}, ${o.leadDays} ${u.businessDays}`}
+                            : `${u.carrier}: ${o.carrier}, ${leadDaysLabel(o)} ${u.businessDays}`}
                         </div>
                       </div>
                       {/* Samo "0,00 zl" obok nazwy przewoznika czyta sie jak

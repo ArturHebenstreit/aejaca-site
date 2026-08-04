@@ -19,7 +19,7 @@ import LockerPicker from "../components/shop/LockerPicker.jsx";
 import CustomerFields, { ValidatedField as Field } from "../components/shop/CustomerFields.jsx";
 import { validateCustomer } from "../shop/customerFields.js";
 import { SERVICES, GROUPS, getService, DELIVERY_METHODS } from "../data/orderCatalog.js";
-import { shippingOptions, shippingGrosze, needsCustoms, SHIPPING_COUNTRIES } from "../pricing/shipping.js";
+import { shippingOptions, shippingGrosze, needsCustoms, SHIPPING_COUNTRIES, leadDaysLabel } from "../pricing/shipping.js";
 import { t } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
 
@@ -752,7 +752,7 @@ export default function Order() {
                           {meta ? t(meta.label, lang) : o.id}
                         </div>
                         <div className="text-neutral-500 text-[11px]">
-                          {o.id === "pickup" ? t(meta.note, lang) : `${u.carrier}: ${o.carrier}, ${o.leadDays} ${u.businessDays}`}
+                          {o.id === "pickup" ? t(meta.note, lang) : `${u.carrier}: ${o.carrier}, ${leadDaysLabel(o)} ${u.businessDays}`}
                         </div>
                       </div>
                       <div className="text-sm font-semibold text-white whitespace-nowrap">{money(o.grosze)}</div>

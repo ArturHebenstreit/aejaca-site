@@ -626,7 +626,7 @@ Artur Hebenstreit — founder and lead designer of AEJaCA. Jeweler, digital fabr
 **Poland (InPost):**
 - Courier: from PLN 30 (≈€7)
 - Parcel locker: from PLN 17 (≈€4)
-- Personal pickup (Józefosław): free
+- Personal pickup (Warsaw area): free
 - **Free shipping on orders over PLN 400 (≈€100)**
 
 **EU (InPost-covered countries):** from PLN 50 (≈€12), 5–10 business days
