@@ -1,0 +1,292 @@
+{
+  "active": true,
+  "connections": {
+    "Already Subscribed?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Respond Already Subscribed",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Respond OK",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Check Subscriber": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Already Subscribed?",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Kod powitalny": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Send Welcome + Discount",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "Save to PostgreSQL",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Respond OK": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Notify Owner",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "Kod powitalny",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Webhook — Newsletter": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Check Subscriber",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2026-05-04T00:42:13.850Z",
+  "description": "Newsletter signup with duplicate detection. Responds OK, then saves the subscriber, asks the shop backend for a personal single-use 10% code, mails it and notifies the owner.",
+  "id": "Hbwb2Y3S7Kix3MJg",
+  "isArchived": false,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "name": "AEJaCA — Newsletter Signup (10% discount)",
+  "nodes": [
+    {
+      "id": "f559babd-1899-453d-b7a3-170d50256ba5",
+      "name": "Webhook — Newsletter",
+      "parameters": {
+        "httpMethod": "POST",
+        "options": {
+          "allowedOrigins": "https://www.aejaca.com"
+        },
+        "path": "newsletter-signup",
+        "responseMode": "responseNode"
+      },
+      "position": [
+        0,
+        96
+      ],
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "webhookId": "d88eac31-4789-4b61-875f-541cf76b7f6b"
+    },
+    {
+      "id": "72d20790-7d04-42d3-9b34-fe73572fa60c",
+      "name": "Check Subscriber",
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {},
+        "query": "SELECT COUNT(*) as count, MAX(subscribed_at) as since FROM subscribers WHERE email = '{{ $json.body.email }}' AND unsubscribed = FALSE"
+      },
+      "position": [
+        224,
+        96
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5
+    },
+    {
+      "id": "3b37cc52-210f-4134-8a4b-a236d02a85b0",
+      "name": "Already Subscribed?",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "check-count",
+              "leftValue": "={{ Number($json.count) }}",
+              "operator": {
+                "operation": "gt",
+                "type": "number"
+              },
+              "rightValue": 0
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        448,
+        96
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "id": "44da79d8-3d85-4e91-b178-0e358913ef7a",
+      "name": "Respond Already Subscribed",
+      "parameters": {
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "https://www.aejaca.com"
+              }
+            ]
+          }
+        },
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ok: false, reason: 'already_subscribed', since: $json.since}) }}"
+      },
+      "position": [
+        672,
+        0
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1
+    },
+    {
+      "id": "6815c6b4-b020-4538-b26e-99b93bae149f",
+      "name": "Respond OK",
+      "parameters": {
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "https://www.aejaca.com"
+              }
+            ]
+          }
+        },
+        "respondWith": "json",
+        "responseBody": "{\"ok\": true}"
+      },
+      "position": [
+        672,
+        192
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1
+    },
+    {
+      "id": "c7e28d14-e43c-4c5c-8d03-fffd7eca63d8",
+      "name": "Save to PostgreSQL",
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {},
+        "query": "INSERT INTO subscribers (email, lang, source, discount_code) VALUES ('{{ $('Webhook — Newsletter').item.json.body.email }}', '{{ $('Webhook — Newsletter').item.json.body.lang }}', '{{ $('Webhook — Newsletter').item.json.body.source || \"footer\" }}', '{{ $('Kod powitalny').item.json.code }}') ON CONFLICT (email) DO NOTHING"
+      },
+      "position": [
+        1104,
+        384
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5
+    },
+    {
+      "id": "458e85a8-5f93-4e69-8aa7-b2f30bd56c98",
+      "name": "Send Welcome + Discount",
+      "parameters": {
+        "message": "=<!--   AEJaCA — Newsletter welcome + 10% discount code --> <div style=\"font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 560px; margin: 0 auto; background: #0a0a0a; color: #e5e5e5; border-radius: 16px; overflow: hidden;\">    <!-- Header -->   <div style=\"background: linear-gradient(135deg, #0a0a0a 0%, #2a1a0a 100%); padding: 32px 24px 20px; text-align: center;\">     <img src=\"https://www.aejaca.com/brand-sign.webp\" alt=\"AEJaCA\" width=\"48\" height=\"48\" style=\"display: inline-block; margin-bottom: 12px; filter: brightness(0) invert(1);\" />     <h1 style=\"font-size: 20px; font-weight: 700; color: #ffffff; margin: 0 0 4px;\">       {{ $('Webhook — Newsletter').item.json.body.lang === 'de' ? 'Willkommen bei AEJaCA!' : $('Webhook — Newsletter').item.json.body.lang === 'en' ? 'Welcome to AEJaCA!' : 'Witaj w AEJaCA!' }}     </h1>     <p style=\"font-size: 12px; color: #a3a3a3; margin: 0;\">Artisan Elegance Jewelry and Crafted Art</p>   </div>    <div style=\"padding: 24px;\">      <p style=\"font-size: 14px; color: #d4d4d4; line-height: 1.7; text-align: center; margin-bottom: 24px;\">       {{ $('Webhook — Newsletter').item.json.body.lang === 'de'         ? 'Vielen Dank für Ihre Anmeldung! Hier ist Ihr exklusiver Rabattcode für Ihre erste Bestellung:'         : $('Webhook — Newsletter').item.json.body.lang === 'en'         ? 'Thank you for signing up! Here is your exclusive discount code for your first order:'         : 'Dziękujemy za zapisanie się! Oto Twój ekskluzywny kod rabatowy na pierwsze zamówienie:'       }}     </p>      <!-- Discount code -->     <div style=\"background: linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(245,158,11,0.05) 100%); border: 2px solid rgba(245,158,11,0.3); border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 24px;\">       <div style=\"font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #f59e0b; margin-bottom: 12px;\">         {{ $('Webhook — Newsletter').item.json.body.lang === 'de' ? 'Dein Rabattcode' : $('Webhook — Newsletter').item.json.body.lang === 'en' ? 'Your discount code' : 'Twój kod rabatowy' }}       </div>       <div style=\"font-size: 32px; font-weight: 800; color: #f59e0b; font-family: monospace; letter-spacing: 3px; margin-bottom: 8px;\">         {{ $('Kod powitalny').item.json.code }}       </div>       <div style=\"font-size: 24px; font-weight: 700; color: #ffffff;\">         -10%       </div>       <div style=\"font-size: 12px; color: #737373; margin-top: 8px;\">         {{ $('Webhook — Newsletter').item.json.body.lang === 'de' ? 'Gültig auf alle Produkte und Dienstleistungen' : $('Webhook — Newsletter').item.json.body.lang === 'en' ? 'Valid on all products and services' : 'Ważny na wszystkie produkty i usługi' }}       </div>     </div>      <!-- CTAs -->     <div style=\"text-align: center; margin-bottom: 20px;\">       <a href=\"https://www.aejaca.com/shop/jewelry/\" style=\"display: inline-block; padding: 12px 24px; background: #f59e0b; color: #0a0a0a; text-decoration: none; border-radius: 999px; font-size: 14px; font-weight: 700; margin: 4px;\">         {{ $('Webhook — Newsletter').item.json.body.lang === 'de' ? 'Schmuck entdecken' : $('Webhook — Newsletter').item.json.body.lang === 'en' ? 'Explore jewelry' : 'Zobacz biżuterię' }}       </a>       <a href=\"https://www.aejaca.com/shop/studio/\" style=\"display: inline-block; padding: 12px 24px; background: transparent; border: 1px solid #3b82f6; color: #93c5fd; text-decoration: none; border-radius: 999px; font-size: 14px; font-weight: 600; margin: 4px;\">         {{ $('Webhook — Newsletter').item.json.body.lang === 'de' ? 'sTuDiO besuchen' : $('Webhook — Newsletter').item.json.body.lang === 'en' ? 'Visit sTuDiO' : 'Odwiedź sTuDiO' }}       </a>     </div>      <p style=\"font-size: 12px; color: #525252; text-align: center; line-height: 1.6;\">       {{ (() => { const l = $('Webhook — Newsletter').item.json.body.lang; const d = DateTime.fromISO($('Kod powitalny').item.json.validTo).setLocale(l === 'de' ? 'de' : l === 'en' ? 'en' : 'pl'); return l === 'de' ? 'Geben Sie den Code im Warenkorb an. Er gilt einmalig und nur bis zum ' + d.toFormat('d. LLLL yyyy') + '.' : l === 'en' ? 'Enter the code in the basket at checkout. It works once and is valid until ' + d.toFormat('d LLLL yyyy') + '.' : 'Podaj kod w koszyku przy składaniu zamówienia. Działa jeden raz i jest ważny do ' + d.toFormat('d LLLL yyyy') + '.'; })() }}     </p>   </div>    <!-- Footer -->   <div style=\"padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center;\">     <p style=\"font-size: 11px; color: #404040; margin: 0;\">       AEJaCA &mdash; Artisan Elegance Jewelry and Crafted Art<br />       <a href=\"https://www.aejaca.com\" style=\"color: #525252; text-decoration: none;\">www.aejaca.com</a> &middot;       <a href=\"mailto:contact@aejaca.com\" style=\"color: #525252; text-decoration: none;\">contact@aejaca.com</a>     </p>   </div> </div>",
+        "options": {
+          "appendAttribution": false,
+          "replyTo": "contact@aejaca.com"
+        },
+        "sendTo": "={{ $('Webhook — Newsletter').item.json.body.email }}",
+        "subject": "={{ $('Webhook — Newsletter').item.json.body.lang === 'de' ? 'Dein 10% Rabattcode von AEJaCA' : $('Webhook — Newsletter').item.json.body.lang === 'en' ? 'Your 10% discount code from AEJaCA' : 'Twój kod 10% zniżki od AEJaCA' }}"
+      },
+      "position": [
+        1104,
+        192
+      ],
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "webhookId": "51c012bd-66cd-438a-89c5-3825405b3a09"
+    },
+    {
+      "id": "cdf1d042-897f-4ba9-b76e-331fbb55c23e",
+      "name": "Notify Owner",
+      "parameters": {
+        "message": "=<p><b>Nowy subskrybent newslettera</b></p><p>Email: {{ $('Webhook — Newsletter').item.json.body.email }}<br>Język: {{ $('Webhook — Newsletter').item.json.body.lang }}<br>Źródło: {{ $('Webhook — Newsletter').item.json.body.source || 'footer' }}<br>Czas: {{ $('Webhook — Newsletter').item.json.body.ts }}</p>",
+        "options": {
+          "appendAttribution": false
+        },
+        "sendTo": "contact@aejaca.com",
+        "subject": "=📬 Nowy subskrybent: {{ $('Webhook — Newsletter').item.json.body.email }} ({{ $('Webhook — Newsletter').item.json.body.lang }})"
+      },
+      "position": [
+        1104,
+        576
+      ],
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "webhookId": "e43d7b24-eb0a-47ff-91bd-2bb6ceee74ac"
+    },
+    {
+      "id": "81687f5e-7598-4988-a1b0-4ee57a933905",
+      "name": "Kod powitalny",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "={{ $('Webhook — Newsletter').item.json.body.email }}"
+            }
+          ]
+        },
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "url": "https://aejacachatapi-production.up.railway.app/api/discounts/welcome"
+      },
+      "position": [
+        880,
+        192
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4
+    }
+  ],
+  "parentFolderId": null,
+  "settings": {
+    "availableInMCP": true,
+    "binaryMode": "separate",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed"
+  },
+  "tags": []
+}

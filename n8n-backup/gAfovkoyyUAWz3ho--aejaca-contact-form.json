@@ -1,0 +1,355 @@
+{
+  "active": true,
+  "connections": {
+    "Create Drive Folder": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Prepare File for Upload",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Has File?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Create Drive Folder",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Notify Owner — no file",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Prepare Attachment": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Has File?",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "Send Confirmation to User",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Prepare File for Upload": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Upload to Drive",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Respond OK": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Prepare Attachment",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Strip Binary": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Notify Owner — with Drive link",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Upload to Drive": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Strip Binary",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Webhook — Contact Form": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Respond OK",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2026-05-04T11:58:24.280Z",
+  "description": "Contact form with Drive upload; Strip Binary node ensures no file attachment in owner email — link only.",
+  "id": "gAfovkoyyUAWz3ho",
+  "isArchived": false,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "name": "AEJaCA — Contact Form",
+  "nodes": [
+    {
+      "id": "780595cc-cf27-4121-b242-8f6d40cad5e4",
+      "name": "Webhook — Contact Form",
+      "parameters": {
+        "httpMethod": "POST",
+        "options": {
+          "allowedOrigins": "https://www.aejaca.com"
+        },
+        "path": "contact-form",
+        "responseMode": "responseNode"
+      },
+      "position": [
+        0,
+        192
+      ],
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "webhookId": "f5ae5045-a418-48ee-b06f-08a3746f2edd"
+    },
+    {
+      "id": "91fce3c4-7c68-4c15-9543-cec598710827",
+      "name": "Respond OK",
+      "parameters": {
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "https://www.aejaca.com"
+              }
+            ]
+          }
+        },
+        "respondWith": "json",
+        "responseBody": "{\"ok\": true}"
+      },
+      "position": [
+        224,
+        192
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5
+    },
+    {
+      "id": "54049ef8-07d6-4d2b-ab29-516c62739075",
+      "name": "Prepare Attachment",
+      "parameters": {
+        "jsCode": "const body = $('Webhook — Contact Form').item.json.body;\n\nconst output = {\n  json: {\n    name: body.name || '',\n    email: body.email || '',\n    subject: body.subject || '',\n    message: body.message || '',\n    lang: body.lang || 'pl',\n    source: body.source || 'contact',\n    hasFile: !!(body.file && body.file.data),\n    fileName: body.file ? body.file.name : '',\n    ts: new Date().toISOString(),\n  },\n  binary: {}\n};\n\nif (body.file && body.file.data) {\n  const base64 = body.file.data.replace(/^data:[^;]+;base64,/, '');\n  output.binary.attachment = await this.helpers.prepareBinaryData(\n    Buffer.from(base64, 'base64'),\n    body.file.name || 'attachment',\n    body.file.type || 'application/octet-stream'\n  );\n}\n\nreturn [output];",
+        "mode": "runOnceForAllItems"
+      },
+      "position": [
+        448,
+        192
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "064ce470-f640-4764-8e1d-9fb9ddd2efdc",
+      "name": "Has File?",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "check-file",
+              "leftValue": "={{ $json.hasFile }}",
+              "operator": {
+                "operation": "true",
+                "type": "boolean"
+              },
+              "rightValue": true
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        672,
+        96
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "id": "f4b34e5e-c616-430f-941f-4347cbe1eb66",
+      "name": "Create Drive Folder",
+      "parameters": {
+        "folderId": {
+          "__rl": true,
+          "cachedResultName": "Kontakty",
+          "mode": "id",
+          "value": "14soVEHLGlKeD-3PDRwaUTTSFQZcyNZLe"
+        },
+        "name": "={{ $json.ts.substring(0, 10) + \" | Kontakt | \" + $json.email + \" | \" + $json.subject }}",
+        "operation": "create",
+        "options": {
+          "simplifyOutput": true
+        },
+        "resource": "folder"
+      },
+      "position": [
+        896,
+        0
+      ],
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3
+    },
+    {
+      "id": "7cbc1e70-7b9d-4208-9134-9f44eb0cea8e",
+      "name": "Prepare File for Upload",
+      "parameters": {
+        "jsCode": "const body = $('Webhook — Contact Form').item.json.body;\nconst folderId = $json.id;\nconst folderName = $json.name;\nconst base64 = body.file.data.replace(/^data:[^;]+;base64,/, '');\nconst binary = await this.helpers.prepareBinaryData(\n  Buffer.from(base64, 'base64'),\n  body.file.name || 'attachment',\n  body.file.type || 'application/octet-stream'\n);\nreturn [{ json: { folderId, folderName, name: body.name || '', email: body.email || '', subject: body.subject || '', message: body.message || '', lang: body.lang || 'pl', source: body.source || 'contact', fileName: body.file.name }, binary: { data: binary } }];"
+      },
+      "position": [
+        1120,
+        0
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "ea730415-2ed8-4baa-abab-23b0d2de63f1",
+      "name": "Upload to Drive",
+      "parameters": {
+        "folderId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.folderId }}"
+        },
+        "inputDataFieldName": "data",
+        "name": "={{ $('Webhook — Contact Form').item.json.body.file.name }}",
+        "operation": "upload",
+        "options": {
+          "simplifyOutput": false
+        },
+        "resource": "file"
+      },
+      "position": [
+        1344,
+        0
+      ],
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3
+    },
+    {
+      "id": "f73c9d74-41f8-4d53-a299-605a17b6c1dd",
+      "name": "Strip Binary",
+      "parameters": {
+        "jsCode": "const prev = $('Prepare File for Upload').item.json;\nreturn [{ json: prev }];"
+      },
+      "position": [
+        1568,
+        0
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "e8d06666-f9a3-47e0-93aa-19b5e4b42f1b",
+      "name": "Notify Owner — with Drive link",
+      "parameters": {
+        "emailType": "html",
+        "message": "=<h2 style=\"font-family:Arial,sans-serif\">[AEJaCA] Contact Form</h2><table style=\"font-family:Arial,sans-serif;font-size:14px\"><tr><td><b>Name:</b></td><td>{{ $json.name }}</td></tr><tr><td><b>Email:</b></td><td><a href=\"mailto:{{ $json.email }}\">{{ $json.email }}</a></td></tr><tr><td><b>Subject:</b></td><td>{{ $json.subject }}</td></tr><tr><td><b>Language:</b></td><td>{{ $json.lang }}</td></tr><tr><td><b>Source:</b></td><td>{{ $json.source }}</td></tr><tr><td><b>File:</b></td><td>{{ $json.fileName }}</td></tr></table><hr style=\"margin:16px 0\"><p style=\"font-family:Arial,sans-serif;white-space:pre-wrap\">{{ $json.message }}</p><p style=\"margin-top:16px;\"><a href=\"https://drive.google.com/drive/folders/{{ $json.folderId }}\" style=\"display:inline-block;padding:10px 20px;background:#1a73e8;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;\">📁 Otwórz folder na Drive</a></p>",
+        "operation": "send",
+        "options": {
+          "appendAttribution": false,
+          "replyTo": "={{ $json.email }}"
+        },
+        "resource": "message",
+        "sendTo": "contact@aejaca.com",
+        "subject": "={{ \"📬 Kontakt: \" + $json.subject + \" — \" + $json.name + \" <\" + $json.email + \">\" }}"
+      },
+      "position": [
+        1792,
+        0
+      ],
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "webhookId": "dfad782d-4e0d-4b72-bd42-1826db40e8e0"
+    },
+    {
+      "id": "893b2811-ff4c-4d8b-a5e9-614be36811b2",
+      "name": "Notify Owner — no file",
+      "parameters": {
+        "emailType": "html",
+        "message": "=<h2 style=\"font-family:Arial,sans-serif\">[AEJaCA] Contact Form</h2><table style=\"font-family:Arial,sans-serif;font-size:14px\"><tr><td><b>Name:</b></td><td>{{ $json.name }}</td></tr><tr><td><b>Email:</b></td><td><a href=\"mailto:{{ $json.email }}\">{{ $json.email }}</a></td></tr><tr><td><b>Subject:</b></td><td>{{ $json.subject }}</td></tr><tr><td><b>Language:</b></td><td>{{ $json.lang }}</td></tr><tr><td><b>Source:</b></td><td>{{ $json.source }}</td></tr></table><hr style=\"margin:16px 0\"><p style=\"font-family:Arial,sans-serif;white-space:pre-wrap\">{{ $json.message }}</p>",
+        "operation": "send",
+        "options": {
+          "appendAttribution": false,
+          "replyTo": "={{ $json.email }}"
+        },
+        "resource": "message",
+        "sendTo": "contact@aejaca.com",
+        "subject": "={{ \"📬 Kontakt: \" + $json.subject + \" — \" + $json.name + \" <\" + $json.email + \">\" }}"
+      },
+      "position": [
+        896,
+        192
+      ],
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "webhookId": "e693ef40-7953-463f-ab56-06ed5b7ab3c4"
+    },
+    {
+      "id": "af503fc8-52a0-4ca8-ad4b-7cbbdc303465",
+      "name": "Send Confirmation to User",
+      "parameters": {
+        "emailType": "html",
+        "message": "={{ '<div style=\"font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#0a0a0a;color:#e5e5e5;border-radius:16px;overflow:hidden;\"><div style=\"padding:32px 24px 20px;text-align:center;\"><img src=\"https://www.aejaca.com/brand-sign.webp\" alt=\"AEJaCA\" width=\"48\" height=\"48\" style=\"display:inline-block;margin-bottom:12px;filter:brightness(0) invert(1);\" /><h1 style=\"font-size:20px;font-weight:700;color:#fff;margin:0 0 4px;\">' + ($json.lang === 'de' ? 'Danke für Ihre Anfrage!' : $json.lang === 'en' ? 'Thank you for your inquiry!' : 'Dziękujemy za Twoje zapytanie!') + '</h1><p style=\"font-size:12px;color:#a3a3a3;margin:0;\">Artisan Elegance Jewelry and Crafted Art</p></div><div style=\"padding:24px;\"><p style=\"font-size:14px;color:#a3a3a3;line-height:1.7;\">' + ($json.lang === 'de' ? 'Wir haben Ihre Anfrage erhalten und melden uns so bald wie möglich.' : $json.lang === 'en' ? 'We received your inquiry and will reply as soon as possible.' : 'Otrzymaliśmy Twoje zapytanie i odpiszemy tak szybko, jak to możliwe.') + '</p><blockquote style=\"border-left:3px solid #3b82f6;margin:12px 0;padding:12px 16px;background:rgba(59,130,246,0.05);border-radius:0 8px 8px 0;\"><p style=\"font-size:13px;color:#d4d4d4;margin:0;white-space:pre-wrap;\">' + $json.message + '</p></blockquote></div><div style=\"padding:16px 24px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;\"><p style=\"font-size:11px;color:#404040;margin:0;\">AEJaCA &mdash; <a href=\"https://www.aejaca.com\" style=\"color:#525252;text-decoration:none;\">www.aejaca.com</a> &middot; <a href=\"mailto:contact@aejaca.com\" style=\"color:#525252;text-decoration:none;\">contact@aejaca.com</a></p></div></div>' }}",
+        "operation": "send",
+        "options": {
+          "appendAttribution": false,
+          "replyTo": "contact@aejaca.com"
+        },
+        "resource": "message",
+        "sendTo": "={{ $json.email }}",
+        "subject": "={{ $json.lang === 'de' ? 'Danke — wir haben Ihre Anfrage erhalten' : $json.lang === 'en' ? 'Thank you — we received your inquiry' : 'Dziękujemy — otrzymaliśmy Twoje zapytanie' }}"
+      },
+      "position": [
+        672,
+        288
+      ],
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "webhookId": "0c965b94-a866-4501-aaf9-1597ff80f9f7"
+    }
+  ],
+  "parentFolderId": null,
+  "settings": {
+    "availableInMCP": true,
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

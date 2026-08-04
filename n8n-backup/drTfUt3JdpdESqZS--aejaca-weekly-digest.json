@@ -1,0 +1,130 @@
+{
+  "active": true,
+  "connections": {
+    "Build Digest Email": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Send Digest Email",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Every Monday 8am": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Query Weekly Stats",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Query Weekly Stats": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Build Digest Email",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "createdAt": "2026-05-06T10:19:27.486Z",
+  "description": "Sends a weekly HTML digest email every Monday at 8am with leads, subscribers, chat conversations, and analytics stats from the last 7 days.",
+  "id": "drTfUt3JdpdESqZS",
+  "isArchived": false,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  },
+  "name": "AEJaCA Weekly Digest",
+  "nodes": [
+    {
+      "id": "ff155472-2dd8-44e7-98de-29e2c6f90b8f",
+      "name": "Every Monday 8am",
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 8,
+              "triggerAtMinute": 0,
+              "weeksInterval": 1
+            }
+          ]
+        }
+      },
+      "position": [
+        0,
+        0
+      ],
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3
+    },
+    {
+      "id": "ad3d5be9-8912-4062-8d24-b9e4384e5bef",
+      "name": "Query Weekly Stats",
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  (SELECT COUNT(*) FROM leads WHERE created_at >= NOW() - INTERVAL '7 days') AS leads_week,\n  (SELECT COUNT(*) FROM leads) AS leads_total,\n  (SELECT COUNT(*) FROM subscribers WHERE unsubscribed = FALSE AND subscribed_at >= NOW() - INTERVAL '7 days') AS subs_week,\n  (SELECT COUNT(*) FROM subscribers WHERE unsubscribed = FALSE) AS subs_total,\n  (SELECT COUNT(*) FROM conversations WHERE created_at >= NOW() - INTERVAL '7 days') AS convs_week,\n  (SELECT COUNT(*) FILTER (WHERE hot_lead = TRUE) FROM conversations WHERE created_at >= NOW() - INTERVAL '7 days') AS hot_leads_week,\n  (SELECT COUNT(DISTINCT session) FROM events WHERE ts >= NOW() - INTERVAL '7 days') AS visitors_week,\n  (SELECT COUNT(*) FROM events WHERE category = 'page' AND ts >= NOW() - INTERVAL '7 days') AS pageviews_week,\n  (SELECT COUNT(DISTINCT session) FROM events WHERE category = 'inquiry' AND ts >= NOW() - INTERVAL '7 days') AS inquiries_week,\n  (SELECT path FROM events WHERE category = 'page' AND ts >= NOW() - INTERVAL '7 days' GROUP BY path ORDER BY COUNT(*) DESC LIMIT 1) AS top_page"
+      },
+      "position": [
+        224,
+        0
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6
+    },
+    {
+      "id": "ad69c61e-e888-42c3-a1ce-318268400db9",
+      "name": "Build Digest Email",
+      "parameters": {
+        "jsCode": "const row = $input.all()[0].json;\nconst today = new Date().toLocaleDateString('pl-PL');\nconst html = `<!DOCTYPE html>\n<html><head><meta charset=\"UTF-8\"/><style>\nbody{font-family:Arial,sans-serif;background:#f5f5f5;padding:20px;color:#111}\n.card{background:#fff;border-radius:8px;padding:20px;margin:10px 0;box-shadow:0 1px 3px rgba(0,0,0,.1)}\nh1{color:#b45309;margin:0 0 4px}h2{color:#374151;font-size:13px;text-transform:uppercase;margin-bottom:12px}\n.stat{display:inline-block;margin:0 16px 0 0}.num{font-size:28px;font-weight:bold}\n.label{font-size:12px;color:#6b7280}.hot{color:#dc2626}\n</style></head>\n<body>\n<div class=\"card\"><h1>AEJaCA — Tygodniowy Digest</h1><p style=\"color:#6b7280;margin:0\">Raport za ostatnie 7 dni &middot; ${today}</p></div>\n<div class=\"card\"><h2>Leady</h2>\n  <div class=\"stat\"><div class=\"num\">${row.leads_week}</div><div class=\"label\">nowych w tygodniu</div></div>\n  <div class=\"stat\"><div class=\"num\">${row.leads_total}</div><div class=\"label\">wszystkich lacznie</div></div>\n</div>\n<div class=\"card\"><h2>Subskrybenci</h2>\n  <div class=\"stat\"><div class=\"num\">${row.subs_week}</div><div class=\"label\">nowych w tygodniu</div></div>\n  <div class=\"stat\"><div class=\"num\">${row.subs_total}</div><div class=\"label\">aktywnych lacznie</div></div>\n</div>\n<div class=\"card\"><h2>Rozmowy (Chat)</h2>\n  <div class=\"stat\"><div class=\"num\">${row.convs_week}</div><div class=\"label\">rozmow w tygodniu</div></div>\n  <div class=\"stat\"><div class=\"num ${parseInt(row.hot_leads_week) > 0 ? 'hot' : ''}\">${row.hot_leads_week}</div><div class=\"label\">hot leadow</div></div>\n</div>\n<div class=\"card\"><h2>Analityka</h2>\n  <div class=\"stat\"><div class=\"num\">${row.visitors_week}</div><div class=\"label\">unikalnych wizyt</div></div>\n  <div class=\"stat\"><div class=\"num\">${row.pageviews_week}</div><div class=\"label\">odslon stron</div></div>\n  <div class=\"stat\"><div class=\"num\">${row.inquiries_week}</div><div class=\"label\">zapytan kalk.</div></div>\n  ${row.top_page ? '<p style=\"margin:12px 0 0;color:#6b7280;font-size:13px\">Top strona: <strong>' + row.top_page + '</strong></p>' : ''}\n</div>\n</body></html>`;\nreturn [{ json: { html, subject: 'AEJaCA Digest — ' + today } }];",
+        "mode": "runOnceForAllItems"
+      },
+      "position": [
+        448,
+        0
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "bd7bd3ac-4c99-4adc-afc4-eebd7a2049a8",
+      "name": "Send Digest Email",
+      "parameters": {
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "operation": "send",
+        "options": {
+          "appendAttribution": false
+        },
+        "resource": "message",
+        "sendTo": "aejaca@gmail.com",
+        "subject": "={{ $json.subject }}"
+      },
+      "position": [
+        672,
+        0
+      ],
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "webhookId": "ec34d436-90c5-46d5-b8b8-f384c16bffc2"
+    }
+  ],
+  "parentFolderId": null,
+  "settings": {
+    "availableInMCP": true,
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

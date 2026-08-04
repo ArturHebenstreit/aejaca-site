@@ -1,0 +1,54 @@
+{
+  "exportedFrom": "https://primary-fhhi-production.up.railway.app",
+  "count": 8,
+  "workflows": [
+    {
+      "id": "gAfovkoyyUAWz3ho",
+      "name": "AEJaCA — Contact Form",
+      "active": true,
+      "file": "gAfovkoyyUAWz3ho--aejaca-contact-form.json"
+    },
+    {
+      "id": "Hbwb2Y3S7Kix3MJg",
+      "name": "AEJaCA — Newsletter Signup (10% discount)",
+      "active": true,
+      "file": "Hbwb2Y3S7Kix3MJg--aejaca-newsletter-signup-10-discount.json"
+    },
+    {
+      "id": "vXPMMmivo8bonhH8",
+      "name": "AEJaCA — Quote Email Follow-up",
+      "active": true,
+      "file": "vXPMMmivo8bonhH8--aejaca-quote-email-follow-up.json"
+    },
+    {
+      "id": "6dw2RcNCSZgP5gxV",
+      "name": "AEJaCA Anomaly Alert",
+      "active": true,
+      "file": "6dw2RcNCSZgP5gxV--aejaca-anomaly-alert.json"
+    },
+    {
+      "id": "Ve9vKUgz3j0iB9Bq",
+      "name": "AEJaCA Auto-reply (thank you)",
+      "active": true,
+      "file": "Ve9vKUgz3j0iB9Bq--aejaca-auto-reply-thank-you.json"
+    },
+    {
+      "id": "drTfUt3JdpdESqZS",
+      "name": "AEJaCA Weekly Digest",
+      "active": true,
+      "file": "drTfUt3JdpdESqZS--aejaca-weekly-digest.json"
+    },
+    {
+      "id": "n0rybI2OZTFGRFSJ",
+      "name": "AEJaCA: pliki oplaconego zamowienia do folderu Zamowienia",
+      "active": true,
+      "file": "n0rybI2OZTFGRFSJ--aejaca-pliki-oplaconego-zamowienia-do-folderu-zamowienia.json"
+    },
+    {
+      "id": "GukSqiKymRmphIvB",
+      "name": "AEJaCA: pliki zamowien na Dysk",
+      "active": true,
+      "file": "GukSqiKymRmphIvB--aejaca-pliki-zamowien-na-dysk.json"
+    }
+  ]
+}

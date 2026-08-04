@@ -52,7 +52,10 @@
         "options": {},
         "path": "aejaca-order-files-ready"
       },
-      "position": [0, 0],
+      "position": [
+        0,
+        0
+      ],
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "webhookId": "aejaca-order-files-ready"
@@ -78,7 +81,10 @@
         "options": {},
         "resource": "folder"
       },
-      "position": [224, 0],
+      "position": [
+        224,
+        0
+      ],
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3
     },
@@ -90,7 +96,10 @@
         "fieldToSplitOut": "body.files",
         "options": {}
       },
-      "position": [448, 0],
+      "position": [
+        448,
+        0
+      ],
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1
     },
@@ -116,7 +125,10 @@
         },
         "operation": "move"
       },
-      "position": [672, 0],
+      "position": [
+        672,
+        0
+      ],
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3
     }
