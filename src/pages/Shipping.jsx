@@ -37,6 +37,7 @@ const LABELS = {
     from: "od",
     courierLabel: "Kurier InPost",
     days: "dni roboczych",
+    typically: "typowo",
     zoneNames: {
       eu_near: "Niemcy, Czechy, Słowacja, Litwa",
       eu_far: "Pozostałe kraje Unii Europejskiej",
@@ -64,7 +65,7 @@ const LABELS = {
     ],
     timesNote: "Powyższe wartości są orientacyjne — podstawowy czas realizacji ustalamy indywidualnie dla każdego projektu.",
     ratesTitle: "Koszty międzynarodowe",
-    ratesIntro: "Koszt przewoźnika zależy od wagi i wymiarów przesyłki. Poniżej kwoty orientacyjne, które warto wziąć pod uwagę.",
+    ratesIntro: "Koszt przewoźnika zależy od wagi i wymiarów przesyłki. Poniżej kwoty orientacyjne wraz z typowym czasem doręczenia. Czas liczymy od nadania i nie obejmuje on odprawy celnej, która poza Unią potrafi przesyłkę zatrzymać.",
     upTo: "do",
     ukRatesTitle: "Wielka Brytania",
     usaRatesTitle: "USA",
@@ -89,6 +90,7 @@ const LABELS = {
     from: "from",
     courierLabel: "InPost Courier",
     days: "business days",
+    typically: "typically",
     zoneNames: {
       eu_near: "Germany, Czechia, Slovakia, Lithuania",
       eu_far: "Other European Union countries",
@@ -141,6 +143,7 @@ const LABELS = {
     from: "ab",
     courierLabel: "InPost Kurier",
     days: "Werktage",
+    typically: "typischerweise",
     zoneNames: {
       eu_near: "Deutschland, Tschechien, Slowakei, Litauen",
       eu_far: "Übrige Länder der Europäischen Union",
@@ -291,8 +294,10 @@ export default function Shipping() {
               </div>
             </div>
 
-            {/* Free shipping banner */}
-            <div className="reveal bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-6 py-4 mb-5 text-center">
+            {/* Free shipping banner. BEZ klasy `reveal`: obietnica handlowa nie moze
+                zalezec od tego, czy animacja sie odpali. Wczesniej miala `reveal`
+                bez `ref`, wiec zostawala z opacity 0 na zawsze. */}
+            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-6 py-4 mb-5 text-center">
               <span className="text-emerald-400 font-semibold text-sm tracking-wide">
                 {l.freeShipping}
               </span>
@@ -347,7 +352,7 @@ export default function Shipping() {
                   <div key={z.id} className="flex items-baseline justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
                     <div>
                       <div className="text-sm text-neutral-300">{l.zoneNames[z.id]}</div>
-                      <div className="text-neutral-500 text-[11px]">{z.carrier}, {z.eta} {l.days}</div>
+                      <div className="text-neutral-500 text-[11px]">{z.carrier}, {l.typically} {z.eta} {l.days}</div>
                     </div>
                     <span className="text-sm text-amber-400 font-medium whitespace-nowrap">{fmtFrom(z.pln)}</span>
                   </div>
@@ -356,8 +361,9 @@ export default function Shipping() {
               <p className="text-neutral-500 text-xs mt-5">{l.calcNote}</p>
             </div>
 
-            {/* Customs notice (non-EU) */}
-            <div className="reveal bg-amber-500/10 border border-amber-500/30 rounded-xl px-6 py-4 mb-5">
+            {/* Customs notice (non-EU). BEZ `reveal`: to obowiazek informacyjny
+                o cle i VAT, musi byc widoczny bezwarunkowo. */}
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-6 py-4 mb-5">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
                 <div>
@@ -391,7 +397,7 @@ export default function Shipping() {
             </div>
 
             {/* FAQ — visible Q&A mirrors the FAQPage JSON-LD (parity = SEO-safe) */}
-            <div className="reveal mt-5">
+            <div className="mt-5">
               <h2 className="text-white font-semibold text-lg mb-4">{l.faqTitle}</h2>
               <div className="space-y-3">
                 {faqItems.map((item, i) => (
