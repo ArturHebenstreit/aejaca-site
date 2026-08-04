@@ -608,7 +608,7 @@ Zamówić i zapłacić od razu można: druk FDM, druk MSLA, grawer CO2, cięcie 
 
 Ścieżką wyceny indywidualnej idą: biżuteria z kamieniami, łańcuszki, projekty CAD i konfiguracje oznaczone przez kalkulator jako niestandardowe.
 
-Dostawa: paczkomat InPost 15,90 PLN, kurier 24,90 PLN, odbiór osobisty 0 PLN.
+Dostawa: paczkomat InPost 16,49 PLN, kurier 19,49 PLN, odbiór osobisty 0 PLN.
 
 ### Zgody
 
@@ -845,7 +845,7 @@ Strefy i ceny leżą w `src/pricing/shipping.js`, czyli w rdzeniu kopiowanym do 
 
 | Strefa | Kurier | Cena do 2 kg |
 |---|---|---|
-| Polska | InPost | paczkomat 15,90, kurier 24,90, od 400 zł za darmo |
+| Polska | InPost | paczkomat 16,49, kurier 19,49, od 400 zł za darmo |
 | Niemcy, Czechy, Słowacja, Litwa | DHL | 100 zł |
 | Pozostała UE | DHL | 140 zł |
 | Europa poza UE | DHL | 190 zł |

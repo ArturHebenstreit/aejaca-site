@@ -41,12 +41,15 @@ export const ZONES = {
   // wlasciciel na podstawie realnych dostaw, nie cennika przewoznika: deklarowany
   // czas DHL bywa krotszy niz to, co widzi klient po odprawie celnej.
   // Brak leadDaysMax znaczy wartosc dokladna, nie zakres.
+  // Ceny detaliczne InPost dla gabarytu A, cennik od 1 marca 2026.
+  // Zrodlo: doniesienia o cenniku, strony InPostu byly niedostepne przy
+  // aktualizacji. Do potwierdzenia w aplikacji InPost Mobile.
   pl: {
     id: "pl",
     carrier: "InPost",
     locker: true,
-    courierGrosze: 2490,
-    lockerGrosze: 1590,
+    courierGrosze: 1949,
+    lockerGrosze: 1649,
     leadDays: 2,
     countries: ["PL"],
   },
