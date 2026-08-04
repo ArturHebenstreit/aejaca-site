@@ -1,5 +1,7 @@
 export const meta = {
   slug: "rodzaje-splotow-lancuszkow",
+  // Usluga domykajaca wpis, pokazywana pod trescia.
+  service: "jewelry_chain_custom",
   category: "jewelry",
   accent: "amber",
   publishedAt: "2026-06-12",

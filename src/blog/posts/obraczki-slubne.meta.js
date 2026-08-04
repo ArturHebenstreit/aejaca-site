@@ -1,5 +1,7 @@
 export const meta = {
   slug: "obraczki-slubne",
+  // Usluga domykajaca wpis, pokazywana pod trescia.
+  service: "jewelry_plain",
   category: "jewelry",
   accent: "amber",
   publishedAt: "2026-04-20",

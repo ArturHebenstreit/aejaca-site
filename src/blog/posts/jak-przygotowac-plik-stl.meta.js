@@ -1,5 +1,7 @@
 export const meta = {
   slug: "jak-przygotowac-plik-stl",
+  // Usluga domykajaca wpis, pokazywana pod trescia.
+  service: "print_fdm",
   category: "studio",
   accent: "blue",
   publishedAt: "2026-04-20",

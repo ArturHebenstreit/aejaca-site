@@ -1,5 +1,7 @@
 export const meta = {
   slug: "jak-dbac-o-bizuterie",
+  // Usluga domykajaca wpis, pokazywana pod trescia.
+  service: "jewelry_renovation",
   category: "jewelry",
   accent: "amber",
   publishedAt: "2026-04-20",

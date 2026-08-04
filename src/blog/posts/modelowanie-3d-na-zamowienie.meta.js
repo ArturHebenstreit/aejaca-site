@@ -1,5 +1,7 @@
 export const meta = {
   slug: "modelowanie-3d-na-zamowienie",
+  // Usluga domykajaca wpis, pokazywana pod trescia.
+  service: "cad_project",
   category: "studio",
   accent: "blue",
   publishedAt: "2026-06-11",

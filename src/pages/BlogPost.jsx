@@ -6,6 +6,7 @@ import Prose from "../components/blog/Prose.jsx";
 import BlogCard from "../components/blog/BlogCard.jsx";
 import FAQ from "../components/FAQ.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
+import ContentCTA from "../components/ContentCTA.jsx";
 import {
   buildArticleSchema,
   buildFAQSchema,
@@ -180,6 +181,12 @@ export default function BlogPost() {
             <Prose accent={accent}>
               <Body lang={lang} />
             </Prose>
+
+            {/* Domkniecie wpisu. Czytelnik, ktory doszedl do konca dziesieciu
+                ekranow o splotach albo o druku zywicznym, jest najlepiej
+                przygotowanym klientem tego dnia. Wczesniej konczylo sie to
+                niczym: wpisy prowadzily dalej najwyzej jednym odnosnikiem. */}
+            <ContentCTA service={post.service} category={post.category} className="mt-12" />
           </div>
         </article>
 

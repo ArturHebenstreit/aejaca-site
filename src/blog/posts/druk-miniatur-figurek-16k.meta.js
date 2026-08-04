@@ -1,5 +1,7 @@
 export const meta = {
   slug: "druk-miniatur-figurek-16k",
+  // Usluga domykajaca wpis, pokazywana pod trescia.
+  service: "print_msla",
   category: "studio",
   accent: "blue",
   publishedAt: "2026-07-14",
