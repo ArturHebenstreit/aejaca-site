@@ -662,6 +662,18 @@ export default function Shop() {
   const products = byQuery(allProducts, query, lang);
   const personalized = byQuery(allPersonalized, query, lang);
   const services = byQuery(allServices, query, lang);
+
+  // KOLEJNOSC SEKCJI. Naturalna kolejnosc to rosnaca ilosc naszej pracy:
+  // gotowe, personalizowane, wykonywane od nowa. Ale sekcja z jedna pozycja
+  // albo pusta, postawiona na gorze, kaze odwiedzajacemu przewinac przez to,
+  // czego nie mamy, zanim zobaczy to, co mamy. Ponizej progu sekcja wiec
+  // zostaje, tylko schodzi pod uslugi. Wroci na gore sama, gdy urosnie.
+  const SECTION_MIN = 3;
+  const sectionOrder = (count, naturalne, ubogie, puste) =>
+    count >= SECTION_MIN ? naturalne : count > 0 ? ubogie : puste;
+  const orderProducts = sectionOrder(products.length, 1, 4, 6);
+  const orderPersonalized = sectionOrder(personalized.length, 2, 5, 7);
+  const ORDER_SERVICES = 3;
   const found = products.length + personalized.length + services.length;
 
   const subDefs = subcategoriesFor(category?.id);
@@ -775,10 +787,14 @@ export default function Shop() {
             </div>
           )}
 
+          {/* Sekcje leza w kolumnie flex, wiec o kolejnosci decyduje `order`,
+              a nie miejsce w pliku. Dzieki temu naturalna kolejnosc zostaje
+              opisana w jednym miejscu wyzej. */}
+          <div className="flex flex-col">
           {/* Produkty gotowe. Sekcja zostaje takze wtedy, gdy nic nie mamy:
               milczenie wygladaloby jak brak dzialu, a nie jak stan przejsciowy. */}
           {!query && products.length === 0 && (
-            <section id="produkty" className="mb-16 scroll-mt-36">
+            <section id="produkty" style={{ order: orderProducts }} className="mb-16 scroll-mt-36">
               <SectionHead
                 icon={Package}
                 title={u.products}
@@ -804,7 +820,7 @@ export default function Shop() {
           )}
 
           {products.length > 0 && (
-            <section id="produkty" className="mb-16 scroll-mt-36">
+            <section id="produkty" style={{ order: orderProducts }} className="mb-16 scroll-mt-36">
               <SectionHead
                 icon={Package}
                 title={u.products}
@@ -829,7 +845,7 @@ export default function Shop() {
           {/* Kolejnosc sekcji odpowiada rosnacej ilosci naszej pracy:
               gotowe, gotowe z personalizacja, wykonywane od nowa. */}
           {(!query || personalized.length > 0) && (
-          <section id="personalizowane" className="mb-16 scroll-mt-36">
+          <section id="personalizowane" style={{ order: orderPersonalized }} className="mb-16 scroll-mt-36">
             <SectionHead
               icon={Sparkles}
               title={u.personalized}
@@ -861,7 +877,7 @@ export default function Shop() {
           )}
 
           {services.length > 0 && (
-            <section id="uslugi" className="scroll-mt-36">
+            <section id="uslugi" style={{ order: ORDER_SERVICES }} className="scroll-mt-36">
               <SectionHead
                 icon={Wrench}
                 title={u.services}
@@ -877,6 +893,7 @@ export default function Shop() {
               </div>
             </section>
           )}
+          </div>
         </div>
       </div>
     </>
