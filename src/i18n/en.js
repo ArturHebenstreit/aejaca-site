@@ -152,7 +152,7 @@ export default {
       { q: "Do you make custom jewelry?", a: "Yes. We design and craft one-of-a-kind custom jewelry — engagement rings, wedding bands, necklaces, bracelets and earrings in 925 sterling silver and 14K/18K gold with natural gemstones. We model in 3D (Rhino, Fusion 360) from a sketch or idea, then produce via lost-wax casting with hand finishing." },
       { q: "What does AEJaCA sTuDiO offer?", a: "AEJaCA sTuDiO is on-demand digital fabrication: 3D modeling / CAD of technical and functional parts (Rhino, Fusion 360), FDM/SLA 3D printing, CO2 laser engraving and cutting, fiber-laser marking, resin casting and prototyping. You can upload your own STL/SVG file or commission a model designed from scratch." },
       { q: "How much does an order cost and how fast is a quote?", a: "You get an online quote in about 30 seconds with AEJaCA's calculators — no waiting for email. Simple mode gives a quick estimate; advanced mode gives full control over metal, stones and finish. For example: a silver ring with a gemstone from €95, a 3D-printed keychain from €6." },
-      { q: "Where is AEJaCA based and do you ship internationally?", a: "The studio is in Józefosław near Warsaw and ships worldwide. Within Poland: InPost parcel locker PLN 15.90, courier PLN 24.90, free delivery on orders over PLN 400. We also deliver to the EU, the UK and the USA via DHL Express." },
+      { q: "Where is AEJaCA based and do you ship internationally?", a: "The studio is in Józefosław near Warsaw and ships worldwide. Within Poland: InPost parcel locker PLN 16.49, courier PLN 19.49, free delivery on orders over PLN 400. We also deliver to the EU, the UK and the USA via DHL Express." },
     ],
   },
 
@@ -305,7 +305,7 @@ export default {
         { q: "Do you ship internationally?", a: "Yes! We ship worldwide via tracked and insured postal services. Shipping costs vary by destination." },
         { q: "How long does order fulfillment take?", a: "If we have the materials (metal + stones), fulfillment takes up to 7 business days. Custom or engraved pieces, up to 14 days. You'll receive a tracking number as soon as the order ships." },
         { q: "Can I return jewelry?", a: "Universal products, yes, within 14 days of delivery (unworn, original packaging). Custom-made pieces (engraving, non-standard size) are excluded from returns. Details on our [Returns](/returns) page." },
-        { q: "How much does shipping cost?", a: "InPost parcel locker 15.90 PLN, courier 24.90 PLN, free delivery on orders over 400 PLN. International from 100 PLN (Germany, Czechia, Slovakia, Lithuania), rest of the EU 140 PLN. Details on our [Shipping](/shipping) page." },
+        { q: "How much does shipping cost?", a: "InPost parcel locker 16.49 PLN, courier 19.49 PLN, free delivery on orders over 400 PLN. International from 100 PLN (Germany, Czechia, Slovakia, Lithuania), rest of the EU 140 PLN. Details on our [Shipping](/shipping) page." },
         { q: "What warranty do you offer?", a: "24 months on manufacturing defects. The warranty covers structural faults, not mechanical damage or normal wear. Full details on our [Warranty](/warranty) page." },
       ],
     },

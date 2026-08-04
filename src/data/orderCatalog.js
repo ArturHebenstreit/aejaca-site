@@ -263,8 +263,8 @@ export function getService(id) {
 export const DELIVERY_METHODS = [
   { id: "pickup", grosze: 0, label: L("Odbiór osobisty", "Personal pickup", "Selbstabholung"),
     note: L("Józefosław, gmina Piaseczno, po wcześniejszym uzgodnieniu", "Józefosław near Warsaw, by prior arrangement", "Józefosław bei Warschau, nach Absprache") },
-  { id: "inpost_locker", grosze: 1590, label: L("Paczkomat InPost", "InPost locker", "InPost-Paketstation"),
+  { id: "inpost_locker", grosze: 1649, label: L("Paczkomat InPost", "InPost locker", "InPost-Paketstation"),
     note: L("2 dni robocze", "2 business days", "2 Werktage") },
-  { id: "courier", grosze: 2490, label: L("Kurier", "Courier", "Kurier"),
+  { id: "courier", grosze: 1949, label: L("Kurier", "Courier", "Kurier"),
     note: L("1 dzień roboczy", "1 business day", "1 Werktag") },
 ];

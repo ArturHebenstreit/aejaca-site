@@ -16,6 +16,10 @@ import { getPackaging } from "../pricing/packaging.js";
 import { t } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
 import { useAvailability } from "../shop/availability.js";
+import { FREE_SHIPPING_FROM_GROSZE, ZONES } from "../pricing/shipping.js";
+
+const LOCKER_GROSZE = ZONES.pl.lockerGrosze;
+const COURIER_GROSZE = ZONES.pl.courierGrosze;
 
 const UI = {
   pl: {
@@ -35,7 +39,9 @@ const UI = {
     gone: "Ta pozycja została w międzyczasie sprzedana",
     onlyLeft: "Zostało już tylko sztuk:",
     blocked: "Popraw ilość albo usuń pozycję, której już nie mamy, wtedy przejdziesz do kasy.",
-    shippingNote: "Koszt dostawy policzymy w następnym kroku.",
+    shippingFrom: "Dostawa: odbiór osobisty 0 zł, Paczkomat InPost {locker}, kurier {courier}.",
+    freeLeft: "Brakuje {amount} do darmowej dostawy w Polsce.",
+    freeReached: "Masz darmową dostawę w Polsce.",
     checkout: "Przejdź do zamówienia",
     soon: "Finalizację zamówienia uruchamiamy w następnym kroku",
     remove: "Usuń",
@@ -62,7 +68,9 @@ const UI = {
     gone: "This item was sold in the meantime",
     onlyLeft: "Only this many left:",
     blocked: "Adjust the quantity or remove the item we no longer have, then you can go to checkout.",
-    shippingNote: "Delivery cost is calculated in the next step.",
+    shippingFrom: "Delivery: pickup free, InPost locker {locker}, courier {courier}.",
+    freeLeft: "{amount} more for free delivery within Poland.",
+    freeReached: "Free delivery within Poland unlocked.",
     checkout: "Proceed to order",
     soon: "Order completion arrives in the next step",
     remove: "Remove",
@@ -89,7 +97,9 @@ const UI = {
     gone: "Diese Position wurde zwischenzeitlich verkauft",
     onlyLeft: "Nur noch so viele verfügbar:",
     blocked: "Menge anpassen oder die nicht mehr verfügbare Position entfernen, dann geht es zur Kasse.",
-    shippingNote: "Die Versandkosten berechnen wir im nächsten Schritt.",
+    shippingFrom: "Versand: Abholung kostenlos, InPost-Paketstation {locker}, Kurier {courier}.",
+    freeLeft: "Noch {amount} bis zum kostenlosen Versand innerhalb Polens.",
+    freeReached: "Kostenloser Versand innerhalb Polens erreicht.",
     checkout: "Zur Bestellung",
     soon: "Der Bestellabschluss folgt im nächsten Schritt",
     remove: "Entfernen",
@@ -107,6 +117,8 @@ export default function Cart() {
   const { money } = useMoney();
   const u = UI[lang] || UI.en;
   const { items, subtotalGrosze, remove, setQty, hasVolatile, ready } = useCart();
+  // Prog dotyczy wylacznie Polski, dlatego tekst mowi o Polsce wprost.
+  const freeLeftGrosze = Math.max(0, FREE_SHIPPING_FROM_GROSZE - subtotalGrosze);
 
   // Pozycja z polki mogla sprzedac sie komus innemu, odkad wladowala sie do
   // koszyka. Pytamy o dostepnosc na zywo i blokujemy przejscie do kasy, zeby
@@ -251,7 +263,30 @@ export default function Cart() {
                   <span className="text-neutral-300 text-sm">{u.subtotal}</span>
                   <span className="text-white font-bold text-xl">{money(subtotalGrosze)}</span>
                 </div>
-                <p className="text-neutral-600 text-[11px] mb-4">{u.shippingNote}</p>
+                {/* Koszt dostawy pokazujemy TU, a nie dopiero na kasie.
+                    Paczkomat to 15,90 zl, co przy malym zamowieniu bywa polowa
+                    jego wartosci; niespodzianka na kasie jest najczestsza
+                    przyczyna porzucenia koszyka. Prog darmowej dostawy istnial
+                    od dawna, ale koszyk o nim milczal, czyli akurat tam, gdzie
+                    zdanie "brakuje Ci X" cokolwiek zmienia. */}
+                <p className="text-neutral-500 text-[11px] mb-2">
+                  {u.shippingFrom.replace("{locker}", money(LOCKER_GROSZE)).replace("{courier}", money(COURIER_GROSZE))}
+                </p>
+                {freeLeftGrosze > 0 ? (
+                  <div className="mb-4">
+                    <div className="h-1.5 rounded-full bg-white/10 overflow-hidden mb-1.5">
+                      <div
+                        className="h-full rounded-full bg-emerald-400/70 transition-all duration-500"
+                        style={{ width: `${Math.min(100, Math.round((subtotalGrosze / FREE_SHIPPING_FROM_GROSZE) * 100))}%` }}
+                      />
+                    </div>
+                    <p className="text-emerald-400 text-[11px]">
+                      {u.freeLeft.replace("{amount}", money(freeLeftGrosze))}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-emerald-400 text-[11px] font-medium mb-4">{u.freeReached}</p>
+                )}
                 {blocked ? (
                   <>
                     <span

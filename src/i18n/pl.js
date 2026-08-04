@@ -152,7 +152,7 @@ export default {
       { q: "Czy tworzycie biżuterię na zamówienie?", a: "Tak. Projektujemy i wykonujemy unikatową biżuterię na zamówienie — pierścionki zaręczynowe, obrączki ślubne, naszyjniki, bransoletki i kolczyki ze srebra 925 oraz złota 14K/18K, z naturalnymi kamieniami szlachetnymi. Modelujemy w 3D (Rhino, Fusion 360) od szkicu lub pomysłu, a całość powstaje w technologii traconego wosku z ręcznym wykończeniem." },
       { q: "Co oferuje AEJaCA sTuDiO?", a: "AEJaCA sTuDiO to cyfrowa produkcja na zamówienie: modelowanie 3D / CAD części technicznych i funkcjonalnych (Rhino, Fusion 360), druk 3D FDM/SLA, grawerowanie i cięcie laserem CO2, znakowanie laserem fiber, odlewy z żywicy oraz prototypowanie. Możesz przesłać własny plik STL/SVG albo zlecić nam zaprojektowanie modelu od podstaw." },
       { q: "Ile kosztuje zamówienie i jak szybko dostanę wycenę?", a: "Wycenę otrzymasz online w około 30 sekund dzięki kalkulatorom AEJaCA — bez czekania na e-mail. Tryb prosty daje szybki szacunek, a tryb zaawansowany pełną kontrolę nad metalem, kamieniami i wykończeniem. Przykładowo: srebrny pierścionek z kamieniem od 400 zł, brelok z druku 3D od 25 zł." },
-      { q: "Gdzie znajduje się AEJaCA i czy wysyłacie za granicę?", a: "Studio mieści się w Józefosławiu pod Warszawą i wysyła na cały świat. W Polsce: paczkomat InPost 15,90 zł, kurier 24,90 zł, darmowa wysyłka od 400 zł. Realizujemy też dostawy do UE, Wielkiej Brytanii i USA kurierem DHL Express." },
+      { q: "Gdzie znajduje się AEJaCA i czy wysyłacie za granicę?", a: "Studio mieści się w Józefosławiu pod Warszawą i wysyła na cały świat. W Polsce: paczkomat InPost 16,49 zł, kurier 19,49 zł, darmowa wysyłka od 400 zł. Realizujemy też dostawy do UE, Wielkiej Brytanii i USA kurierem DHL Express." },
     ],
   },
 
@@ -304,7 +304,7 @@ export default {
         { q: "Czy wysyłacie za granicę?", a: "Tak! Wysyłamy na cały świat przesyłkami śledzonymi i ubezpieczonymi. Koszty wysyłki zależą od miejsca docelowego." },
         { q: "Ile trwa realizacja zamówienia?", a: "Jeśli posiadamy materiały (kruszec + kamienie), realizacja trwa do 7 dni roboczych. Jeśli materiały wymagają zamówienia, proces wydłuża się o 3–7 dni roboczych." },
         { q: "Czy mogę zwrócić biżuterię?", a: "Produkty uniwersalne, tak, w ciągu 14 dni. Biżuteria personalizowana wykonana na indywidualne zamówienie nie podlega zwrotowi. Szczegóły na stronie [Zwroty](/returns)." },
-        { q: "Ile kosztuje wysyłka?", a: "Paczkomat InPost 15,90 zł, kurier 24,90 zł, darmowa wysyłka od 400 zł. Za granicę od 100 zł (Niemcy, Czechy, Słowacja, Litwa), reszta Unii 140 zł. Szczegóły na stronie [Wysyłka](/shipping)." },
+        { q: "Ile kosztuje wysyłka?", a: "Paczkomat InPost 16,49 zł, kurier 19,49 zł, darmowa wysyłka od 400 zł. Za granicę od 100 zł (Niemcy, Czechy, Słowacja, Litwa), reszta Unii 140 zł. Szczegóły na stronie [Wysyłka](/shipping)." },
         { q: "Jaka jest gwarancja?", a: "24 miesiące na wady produkcyjne. Bezpłatne pierwsze czyszczenie w ciągu 12 miesięcy. Szczegóły na stronie [Gwarancja](/warranty)." },
       ],
     },
