@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-05 | Wersja: 3.0*
+*Wygenerowano: 2026-08-05 | Wersja: 3.1*
 
 ---
 
@@ -964,7 +964,7 @@ klienta, albo nas:
 |---|---|
 | Bon różnego przeznaczenia (art. 2 pkt 44 ustawy o VAT) | rozstrzyga moment powstania obowiązku podatkowego; **do potwierdzenia z księgową** |
 | Karta **na okaziciela** | realizujemy dla każdego, kto poda numer, i nie badamy uprawnienia; bez tego zapisu każde wręczenie karty dalej byłoby sporne |
-| Po 12 miesiącach środki **przepadają** | UOKiK wymaga, żeby to było powiedziane **przed zakupem**, a nie w mailu po fakcie |
+| Po 12 miesiącach karta nie działa w kasie, ale **środki nie przepadają** | patrz niżej: klauzula o przepadku jest w Polsce uznawana za abuzywną |
 | Brak wymiany na gotówkę | inaczej karta byłaby instrumentem płatniczym, a to zupełnie inny reżim prawny |
 | **14 dni na odstąpienie** od zakupu karty, o ile niewykorzystana | prawo konsumenta przy sprzedaży na odległość; wcześniej strona obiecywała to jako dobrą wolę |
 | Zwrot rzeczy kupionej kartą wraca **na kartę** | bez tego zapisu klient płacący kartą byłby w gorszej sytuacji niż płacący przelewem, co jest niedozwolone |
@@ -974,6 +974,36 @@ Strona karty linkuje do sekcji 7a w dwóch miejscach, a formularz zamówienia ma
 potwierdzenie zapoznania się z regulaminem**. Bez zaznaczenia nie da się wysłać zapytania.
 
 Kartą nie można kupić innej karty. To jedyne wyłączenie przedmiotowe.
+
+#### Przegląd rynku i korekta klauzuli o przepadku (2026-08-05)
+
+Porównanie z praktyką rynkową potwierdziło konstrukcję, ale wykryło **jeden realny błąd prawny
+w pierwszej wersji regulaminu**, który sam wprowadziłem.
+
+**Zgodne z rynkiem, bez zmian:** 12 miesięcy ważności (Martes Sport, sklepzrowerami.pl, Gatta, DUKA
+mają dokładnie tyle), karta na okaziciela, brak wymiany na gotówkę, częściowe wykorzystanie
+z resztą na karcie. To standard, a nie eksperyment.
+
+**Błąd:** pierwsza wersja § 7a ust. 5 mówiła, że po terminie ważności niewykorzystane środki
+„nie podlegają zwrotowi ani wypłacie". To jest dokładnie ta klauzula, którą polskie sądy uznają za
+**niedozwoloną** (art. 385(1) k.c.) i za **bezpodstawne wzbogacenie** (art. 405 k.c.):
+
+- Sąd Rejonowy w Słupsku, 6 marca 2020, sprawa przeciwko Empik
+- Sąd Rejonowy dla Warszawy-Mokotowa, 2022, przeciwko innej dużej sieci
+
+Uzasadnienie jest krótkie i trudne do podważenia: zatrzymanie pieniędzy klienta bez żadnego
+świadczenia wzajemnego rażąco narusza dobre obyczaje. Stosowanie klauzuli abuzywnej to również
+ryzyko postępowania UOKiK, z karą do 10% obrotu.
+
+**Poprawka:** upływ ważności odbiera możliwość zapłaty kartą bezpośrednio w kasie, ale **nie
+powoduje przepadku**. Na wniosek przedłużamy ważność, wydajemy nową kartę na pozostałą kwotę albo
+zwracamy środki. Zapis jest w regulaminie, w zasadach na stronie i w FAQ.
+
+To nie jest ustępstwo, tylko przewaga: większość sieciówek te pieniądze zabiera, a my możemy
+napisać wprost, że tego nie robimy. Data na karcie ma przypominać, a nie zarabiać.
+
+**Dla porównania poza Polską:** Shopify domyślnie ustawia karty jako bezterminowe, bo w części
+jurysdykcji termin ważności jest wprost nielegalny; w USA minimum ustawowe to 5 lat.
 
 ---
 
