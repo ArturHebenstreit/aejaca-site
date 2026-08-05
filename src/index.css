@@ -772,3 +772,54 @@ body {
 [data-theme="light"] .hover\:border-blue-600:hover    { border-color: #1e40af !important; }
 [data-theme="light"] .hover\:border-neutral-600:hover { border-color: var(--ds-border-hi) !important; }
 [data-theme="light"] .hover\:text-red-400:hover       { color: #b91c1c !important; }
+
+/* ============================================================
+   MIARKA DO PIERSCIONKOW, ARKUSZ DO WYDRUKU
+   ============================================================
+   Arkusz jest zawsze czarnym drukiem na bialym papierze, niezaleznie od
+   motywu strony, bo taki wychodzi z drukarki. Na ekranie wyglada jak
+   podglad kartki, i to jest zamierzone: uzytkownik widzi dokladnie to,
+   co dostanie.
+
+   Rysunki maja szerokosc podana w milimetrach, wiec na telefonie sa
+   szersze niz ekran. Przewijaja sie w swoim kontenerze, a przy druku
+   przewijanie znika, inaczej wydruk bylby przyciety.
+
+   Wydruk chowa cala strone przez `visibility`, nie przez `display`.
+   `display: none` na rodzicu zabralby ze soba arkusz. */
+
+.rs-print { background: #fff; color: #111; border-radius: 1rem; padding: 1.25rem; }
+.rs-sheet + .rs-sheet { margin-top: 1.5rem; border-top: 1px dashed #bbb; padding-top: 1.5rem; }
+.rs-head { display: flex; flex-wrap: wrap; gap: .5rem 1rem; justify-content: space-between;
+           align-items: baseline; border-bottom: 1px solid #ddd; padding-bottom: .5rem; margin-bottom: .75rem; }
+.rs-head strong { color: #111; font-size: .95rem; }
+.rs-head span { color: #666; font-size: .75rem; }
+.rs-h { color: #111; font-size: .9rem; font-weight: 600; margin: 1rem 0 .35rem; }
+.rs-p { color: #333; font-size: .8rem; line-height: 1.5; margin: 0 0 .35rem; }
+.rs-list { color: #333; font-size: .8rem; line-height: 1.55; margin: 0 0 .5rem; padding-left: 1.1rem; }
+.rs-list li { margin-bottom: .15rem; }
+.rs-list { list-style: revert; }
+.rs-scroll { overflow-x: auto; margin: .5rem 0 1rem; }
+.rs-svg { display: block; }
+.rs-ink { stroke: #111; }
+.rs-t { fill: #111; font-family: ui-sans-serif, system-ui, sans-serif; }
+.rs-t-sm { font-size: 2.6px; }
+.rs-t-xs { font-size: 2.1px; }
+
+@media print {
+  @page { size: A4 portrait; margin: 12mm; }
+  /* Arkusz siedzi w kontenerze z odslonieciem przy przewijaniu. Bez tego
+     dwie rzeczy ida zle naraz: `transform` rodzica staje sie blokiem
+     zawierajacym dla pozycjonowania absolutnego i spycha arkusz w dol,
+     a `opacity: 0` przed przewinieciem drukuje pusta kartke. */
+  .reveal, .reveal-scale, .reveal-left, .reveal-right {
+    opacity: 1 !important; transform: none !important; }
+  body * { visibility: hidden !important; }
+  .rs-print, .rs-print * { visibility: visible !important; }
+  .rs-print { position: absolute !important; left: 0; top: 0; width: 100%;
+              margin: 0 !important; padding: 0 !important; border-radius: 0 !important; }
+  .rs-hide-print { display: none !important; }
+  .rs-scroll { overflow: visible !important; }
+  .rs-page { break-inside: avoid; }
+  .rs-page + .rs-page { break-before: page; border-top: 0; padding-top: 0; margin-top: 0; }
+}

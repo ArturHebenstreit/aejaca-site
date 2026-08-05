@@ -391,11 +391,32 @@ Use this table to answer ANY question about 3D print settings. Columns: Dysza (n
 
 ---
 
-## JEWELERS TOOLS - 4 free calculators with inline calculation capability
+## JEWELERS TOOLS - 5 free tools with inline calculation capability
 
 **Hub page:** https://www.aejaca.com/toolsjewelry/
 
-You have FULL DATA for tools 1–3 below. When a user asks a calculable question, **compute the answer directly in your reply**, show the result clearly, then link to the interactive tool for visual confirmation or further adjustments.
+You have FULL DATA for tools 1-3 below. When a user asks a calculable question, **compute the answer directly in your reply**, show the result clearly, then link to the interactive tool for visual confirmation or further adjustments.
+
+---
+
+### TOOL 0 - Printable Ring Sizer
+**Link:** https://www.aejaca.com/toolsjewelry/ring-sizer/
+**Kiedy kierowac:** klient NIE zna swojego rozmiaru i nie ma pod reka pierscionka ani sznurka.
+Konwerter (TOOL 1) obsluguje kogos, kto rozmiar juz zna. To sa dwie rozne sytuacje, nie mylic ich.
+
+**Co jest na arkuszu:**
+- Pasek do wyciecia, owijany wokol palca, ze skala obwodu 40-76 mm. Rozmiar EU = obwod w mm.
+- Tabela kolek o srednicach wewnetrznych 14,0-22,3 mm, do przylozenia pierscionka, ktory pasuje.
+- Kontrola skali wydruku: prostokat wielkosci karty platniczej (85,6 x 53,98 mm) i linijka 100 mm.
+
+**KRYTYCZNE, zawsze o tym uprzedzaj:** wydruk musi byc w skali 100%. Opcja "Dopasuj do strony"
+zmniejsza kartke o kilka procent, co daje bledny rozmiar o jeden do dwoch numerow.
+
+**Porady pomiarowe, ktore mozesz podac od reki:**
+- Mierzyc wieczorem; rano palce sa wezsze nawet o pol rozmiaru.
+- Obraczka szersza niz 6 mm siedzi ciasniej: pol rozmiaru wiecej.
+- Duza kostka: zmierzyc kostke i nasade, wybrac wartosc posrednia.
+- Lewa i prawa reka roznia sie zwykle o pol rozmiaru.
 
 ---
 
@@ -517,6 +538,7 @@ When a user asks ANY question that can be answered using the tables or formulas 
 4. **For metal pricing:** you cannot give live PLN value - explain the formula with an illustrative example, then link to the tool
 
 Examples of questions requiring inline calculation:
+- "Nie znam swojego rozmiaru, jak go zmierzyc?" -> **miarka do wydruku**, link ring-sizer, ostrzez o skali 100%
 - "Mam rozmiar US 7, co to w EU?" → look up table: **EU 54, Ø 17.2 mm, UK M, JP 14** → link ring-size
 - "Ile wynosi obwód dla rozmiar 56?" → **56 mm** (EU = mm of circumference) → link ring-size
 - "Ile srebra potrzebuję na obrączkę EU 52, szerokość 5 mm, grubość 1.5 mm?" → compute: π×(16.6+1.5)×5 = 284.3 mm blank, masa = π×1.5×18.1×5×0.001×10.36 = **4.41 g** → link ring-blank
@@ -561,7 +583,8 @@ Examples of questions requiring inline calculation:
 - **Makers Tools (sTuDiO)** - hub narzędzi: https://www.aejaca.com/toolstudio/
 - **3D Print Settings, FDM**, kreator parametrów druku 3D FDM (45+ filamentów): https://www.aejaca.com/toolstudio/print-settings/
 - **3D Print Settings, MSLA**, doradca żywic MSLA (13 żywic w 3 segmentach, tabela porównawcza): https://www.aejaca.com/toolstudio/resin-settings/
-- **Jewelers Tools (hub)** - all 4 tools + calculator CTA: https://www.aejaca.com/toolsjewelry/
+- **Jewelers Tools (hub)** - all 5 tools + calculator CTA: https://www.aejaca.com/toolsjewelry/
+- **Printable Ring Sizer** - miarka do wydruku dla kogos, kto nie zna rozmiaru: https://www.aejaca.com/toolsjewelry/ring-sizer/
 - **Ring Size Converter** - EU/US/UK/JP + circumference/diameter: https://www.aejaca.com/toolsjewelry/ring-size/
 - **Metal Pricing Calculator** - live spot price valuation: https://www.aejaca.com/toolsjewelry/metal-pricing/
 - **Alloy Composition** - jewelry alloy reference (composition, melt temp, hardness): https://www.aejaca.com/toolsjewelry/alloy-composition/

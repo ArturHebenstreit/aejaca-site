@@ -659,7 +659,7 @@
   <!-- Jewelry Tools -->
   <url>
     <loc>https://www.aejaca.com/toolsjewelry/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.60</priority>
 
@@ -672,6 +672,14 @@
     <priority>0.60</priority>
 
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/ring-size/" />
+  </url>
+  <url>
+    <loc>https://www.aejaca.com/toolsjewelry/ring-sizer/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/ring-sizer/" />
   </url>
   <url>
     <loc>https://www.aejaca.com/toolsjewelry/alloy-composition/</loc>

@@ -44,6 +44,7 @@ const STATIC_ROUTES = [
   "/toolsjewelry/alloy-composition",
   "/toolsjewelry/metal-pricing",
   "/toolsjewelry/ring-size",
+  "/toolsjewelry/ring-sizer",
   "/toolstudio",
   "/toolstudio/print-settings",
   "/toolstudio/resin-settings",
