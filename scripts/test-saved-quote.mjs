@@ -14,7 +14,7 @@
 //
 //   node scripts/test-saved-quote.mjs
 
-import { repriceSavedItem } from "../chat-api/quotes.js";
+import { repriceSavedItem, priceQuote } from "../chat-api/quotes.js";
 import { priceItem } from "../chat-api/orders.js";
 import { SERVICES } from "../src/data/orderCatalog.js";
 
@@ -148,6 +148,48 @@ console.log("Kruszec sie rusza, robocizna nie\n");
   const base = item();
   const r = repriceSavedItem(base, { ratesAtSave: RATES_AT_SAVE, ratesNow: { ...RATES_AT_SAVE } });
   ok("ten sam kurs nie rusza kwoty", r.unitGrosze === base.unit_grosze && !r.repriced);
+}
+
+// ------------------------------------------------------------
+// 6. Identyfikatory pozycji przychodza z bazy jako TEKST
+// ------------------------------------------------------------
+// `quote_items.id` to BIGSERIAL, a node-postgres oddaje bigint jako string,
+// nie jako liczbe. Mapa zbudowana po surowym `id` ma wtedy klucze "1", a
+// odpytywana jest liczba 1 i nie trafia nigdy. Skutek: kazde wycenianie
+// konczy sie bledem "pozycja nie nalezy do wyceny", czyli zapisac wycene
+// da sie tylko na bazie, ktorej nie mamy. Tego nie zlapie zaden test
+// arytmetyki, bo blad siedzi w typie, nie w liczbie.
+{
+  const updates = [];
+  const fakePool = {
+    query: async (sql, params) => {
+      if (sql.includes("FROM quotes WHERE quote_ref")) {
+        return { rows: [{ id: "7", quote_ref: params[0], status: "new" }] };
+      }
+      if (sql.includes("FROM quote_items")) {
+        // Tak samo jak z prawdziwej bazy: identyfikatory jako tekst.
+        return { rows: [{ id: "11", qty: 1 }, { id: "12", qty: 2 }] };
+      }
+      updates.push({ sql, params });
+      return { rows: [], rowCount: 1 };
+    },
+  };
+
+  let err = null;
+  let result = null;
+  try {
+    result = await priceQuote(fakePool, "WY20260805-TEST", [
+      { id: 11, unitGrosze: 1000 },
+      { id: 12, unitGrosze: 2500 },
+    ]);
+  } catch (e) {
+    err = e;
+  }
+
+  ok("tekstowe id pozycji nie wywraca wyceniania", !err, err ? err.message : "");
+  ok("suma liczy sie z nakladem", result?.totalGrosze === 1000 + 2500 * 2,
+     result ? `${result.totalGrosze} gr` : "brak wyniku");
+  ok("obie pozycje dostaly kwote", updates.filter((u) => u.sql.includes("UPDATE quote_items")).length === 2);
 }
 
 console.log(failed ? `\n${failed} bledow` : "\nWszystko sie zgadza");

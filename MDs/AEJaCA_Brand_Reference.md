@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-05 | Wersja: 3.5*
+*Wygenerowano: 2026-08-05 | Wersja: 3.6*
 
 ---
 
@@ -596,6 +596,51 @@ i trzy wpisy blogowe cicho zgubiły odnośnik do wyceny metalu.
 wpisu lub haśle słownika, że każdy identyfikator narzędzia istnieje, że komplet tłumaczeń
 (pl/en/de) jest na miejscu i że `audience` ma dozwoloną wartość. Nie wymaga, żeby każdy wpis
 miał narzędzie, bo brak przypisania bywa decyzją.
+
+### Zapisana wycena z linkiem (od 2026-08-05)
+
+Pod kwotą wiążącą w **każdym** kalkulatorze jest przycisk „Zapisz wycenę". Klient dostaje
+prywatny adres `/quote/?ref=WY...&token=...`, opcjonalnie także mailem. Strona jest `noindex`,
+w `robots.txt` ma `Disallow: /quote/` we wszystkich grupach.
+
+**Adres e-mail jest dobrowolny.** Sam link nie wymaga zostawiania danych. Żądanie adresu za
+możliwość wrócenia do własnej kalkulacji zamieniłoby narzędzie w bramkę na dane, a część ludzi
+po prostu zamknęłaby kartę, czyli zrobiła dokładnie to, czemu mamy zapobiec.
+
+**Zasada cenowa: robocizna wiążąca 14 dni, kruszec z dnia otwarcia.** Blokada ceny złota na dwa
+tygodnie byłaby otwartą pozycją na rynku towarowym. Różnicy nie liczymy przez przeliczenie
+pozycji od nowa, bo wtedy zmiana **naszego** cennika po cichu podniosłaby też obiecaną
+robociznę. Wyceniamy pozycję dwa razy, kursami z chwili zapisu i z dzisiaj, i do kwoty zapisanej
+dokładamy samą różnicę. Po terminie ważności nie przeliczamy nic.
+
+Kwotę liczy **serwer**, tym samym silnikiem co `/api/price`. Liczba przysłana przez przeglądarkę
+nie jest czytana: przyjmując ją, wystawialibyśmy ofertę na kwotę wpisaną przez kupującego.
+
+**Retencja:** wyceny zapisane 90 dni, zapytania o wycenę ręczną 24 miesiące, przekute
+w zamówienie nie znikają nigdy.
+
+#### Dwa uśpione błędy znalezione przy tej pracy
+
+Silnik wycen (`chat-api/quotes.js`, cztery endpointy, tabele `quotes` i `quote_items`) istniał
+od dawna i **nic go nie wywoływało**. Podłączanie go ujawniło dwie rzeczy:
+
+1. **Kursy kruszcu nie docierały do kalkulatora.** `calcNew` i `calcChain` przyjmują kursy
+   trzecim argumentem, a `priceItem` wkładał je do obiektu parametrów, gdzie destrukturyzacja
+   ich nie wymienia. Przeglądarka liczyła cenę z bieżącego kursu, serwer ze stałej z konfiguracji
+   (Au 645 PLN/g, Ag 10,15 PLN/g). Ta sama pozycja: 325,43 PLN z serwera niezależnie od tego,
+   czy srebro kosztowało 1 czy 40 PLN/g. Po naprawie ceny biżuterii ze złota realnie rosną,
+   bo stała była poniżej rynku.
+2. **`priceQuote` nie potrafiło wycenić żadnej pozycji.** `quote_items.id` to BIGSERIAL,
+   a node-postgres oddaje bigint jako **tekst**. Mapa po surowym `id` miała klucze `"1"`,
+   a odpytywana była liczba `1`. Każde wycenianie kończyło się błędem „pozycja nie należy
+   do wyceny". Wykrył to dopiero test na prawdziwej bazie.
+
+**Strażnicy:** `scripts/test-saved-quote.mjs` w buildzie (pierwszy test sprawdza, czy kurs
+w ogóle dociera do kalkulatora, bo bez tego cała reszta przechodzi na zielono) oraz
+`scripts/it-quotes-db.mjs` poza buildem, do uruchomienia na bazie przy zmianach w `quotes.js`.
+
+**Do zrobienia osobno:** ten sam wzorzec dotyczy **cen kamieni**. Przeglądarka nakłada na nie
+żywe ceny w EUR (`useGemPrices`), serwer bierze statyczne `basePLN` z konfiguracji.
 
 ---
 

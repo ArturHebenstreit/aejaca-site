@@ -19,6 +19,7 @@ import { JobDescription, FileDrop, BlockedReasons } from "../shop/ConfigControls
 import { getService } from "../../data/orderCatalog.js";
 import { ENGRAVING_LIMITS } from "../../pricing/packaging.js";
 import { PersonalizationField } from "../shop/ConfigControls.jsx";
+import SaveQuote from "./SaveQuote.jsx";
 import { t } from "../../pricing/config.js";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
@@ -497,6 +498,20 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
               {u.goToCart} <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           )}
+
+          {/* Zapis jest dostepny takze wtedy, gdy do koszyka jeszcze nie mozna
+              dodac. Brak opisu albo niepotwierdzone uwagi do modelu wstrzymuja
+              ZAMOWIENIE, a nie prawo do zachowania wlasnej kalkulacji. */}
+          <SaveQuote
+            calculator={calculator}
+            params={params}
+            uploadToken={uploadToken}
+            fileName={file?.name || null}
+            scale={scale}
+            description={description.trim() || null}
+            lang={lang}
+            accent={accent}
+          />
         </>
       )}
     </div>

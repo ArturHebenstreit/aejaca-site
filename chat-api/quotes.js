@@ -110,7 +110,11 @@ export async function priceQuote(pool, quoteRef, lines, note = null, validDays =
   if (!quote) throw new QuoteError("not_found", "Nie ma takiej wyceny");
   if (quote.status === "converted") throw new QuoteError("already_converted", "Ta wycena stala sie juz zamowieniem");
 
-  const byId = new Map(quote.items.map((i) => [i.id, i]));
+  // Klucze liczbowe po obu stronach. `quote_items.id` to BIGSERIAL, a
+  // node-postgres oddaje bigint jako TEKST, wiec mapa po surowym `i.id`
+  // miala klucze "1", a odpytywana byla liczba 1 i nie trafiala nigdy.
+  // Kazde wycenianie konczylo sie wtedy bledem "pozycja nie nalezy do wyceny".
+  const byId = new Map(quote.items.map((i) => [Number(i.id), i]));
   let total = 0;
 
   for (const line of lines || []) {

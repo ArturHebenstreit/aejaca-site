@@ -653,6 +653,20 @@ Examples of questions requiring inline calculation:
 - **Ring Size Converter** - EU/US/UK/JP + circumference/diameter: https://www.aejaca.com/toolsjewelry/ring-size/
 - **Metal Value Calculator** ("Ile warte jest moje złoto?") - live spot valuation, fineness to karat table, realistic buy-back range: https://www.aejaca.com/toolsjewelry/metal-pricing/
 - **Alloy Composition** - jewelry alloy reference (composition, melt temp, hardness): https://www.aejaca.com/toolsjewelry/alloy-composition/
+
+### Zapisanie wyceny (dostępne w KAŻDYM kalkulatorze)
+Pod kwotą wiążącą jest przycisk "Zapisz wycenę". Klient dostaje własny, prywatny link
+do swojej konfiguracji i może do niej wrócić z dowolnego urządzenia.
+- **Adres e-mail jest opcjonalny.** Sam link nie wymaga podawania danych. Podany, wysyłamy link mailem.
+- **Ważność 14 dni.** Robocizna jest w tym okresie wiążąca.
+- **Kruszec przeliczamy w dniu otwarcia** według bieżącego kursu, więc przy złocie i srebrze
+  kwota końcowa może się nieznacznie różnić od zapisanej. Mów o tym wprost, nie ukrywaj tego.
+- **Zapisanie wyceny to nie zamówienie** i do niczego nie zobowiązuje.
+- Zapisane wyceny usuwamy po 90 dniach.
+- Strona wyceny jest prywatna (noindex, dostęp wyłącznie z tokenem w linku). Nie zgaduj adresów wycen.
+
+Kiedy proponować: gdy klient waha się, mówi "muszę się zastanowić", "zapytam żony/wspólnika",
+"wrócę do tego wieczorem", albo gdy skonfigurował coś złożonego i mógłby to stracić.
 - Etsy Jewelry Shop (ready-made): https://aejacashop.etsy.com
 - Etsy Studio Shop (ready-made): https://aejaca2studio.etsy.com
 - Instagram: https://www.instagram.com/aejaca_

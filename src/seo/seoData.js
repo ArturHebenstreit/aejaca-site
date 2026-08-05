@@ -322,6 +322,13 @@ export const SEO = {
     en: { title: "Order status, AEJaCA", description: "The status of your AEJaCA order and payment.", keywords: "order status", ogAlt: "AEJaCA order status" },
     de: { title: "Bestellstatus, AEJaCA", description: "Der Status Ihrer AEJaCA-Bestellung und Zahlung.", keywords: "bestellstatus", ogAlt: "AEJaCA Bestellstatus" },
   },
+  // Strona prywatna, dostepna wylacznie z tokenem w adresie. Opis istnieje
+  // dla porzadku, bo strona jest `noindex` i nigdy nie trafi do wynikow.
+  quote: {
+    pl: { title: "Twoja wycena, AEJaCA", description: "Wycena zapisana w kalkulatorze AEJaCA.", keywords: "wycena", ogAlt: "Zapisana wycena AEJaCA" },
+    en: { title: "Your quote, AEJaCA", description: "A quote saved in the AEJaCA calculator.", keywords: "quote", ogAlt: "Saved AEJaCA quote" },
+    de: { title: "Ihr Angebot, AEJaCA", description: "Ein im AEJaCA-Rechner gespeichertes Angebot.", keywords: "angebot", ogAlt: "Gespeichertes AEJaCA-Angebot" },
+  },
   terms: {
     pl: {
       title: "Regulamin serwisu i sprzedaży, AEJaCA",
