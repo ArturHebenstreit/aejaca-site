@@ -489,34 +489,46 @@ zmniejsza kartke o kilka procent, co daje bledny rozmiar o jeden do dwoch numero
 
 ---
 
-### TOOL 3 - Metal Pricing Calculator
+### TOOL 3 - Metal Value Calculator ("Ile warte jest moje złoto?")
 **Link:** https://www.aejaca.com/toolsjewelry/metal-pricing/
 
-**What it calculates:** Value of a precious metal piece in PLN (and EUR) based on live spot prices.
+**What it calculates:** Value of a precious metal piece in PLN (and EUR) based on live spot prices, PLUS the realistic buy-back range a scrap buyer would pay.
 
 **FORMULA:**
 - Price per gram of alloy = (spot_price_USD_per_troy_oz ÷ 31.1035) × USD_PLN_rate × (fineness ÷ 1000)
-- Value of piece = price_per_gram × weight_in_grams
+- Metal value of piece = price_per_gram × weight_in_grams
+- Realistic buy-back = 70% to 90% of the metal value
 
 **PURITY TABLE (fineness = parts per 1000):**
-| Metal     | Mark       | Fineness |
-|-----------|------------|----------|
-| Gold 24k  | Au 999     | 999      |
-| Gold 22k  | Au 916     | 916      |
-| Gold 18k  | Au 750     | 750      |
-| Gold 14k  | Au 585     | 585      |
-| Gold 9k   | Au 375     | 375      |
-| Silver    | Ag 999     | 999      |
-| Silver    | Ag 958 Britannia | 958 |
-| Silver    | Ag 925 Sterling | 925 |
-| Silver    | Ag 800     | 800      |
-| Platinum  | Pt 950     | 950      |
-| Platinum  | Pt 900     | 900      |
-| Palladium | Pd 950     | 950      |
+| Metal     | Mark       | Fineness | Karat | Where common |
+|-----------|------------|----------|-------|--------------|
+| Gold      | Au 999     | 999      | 24K   | bars, investment coins |
+| Gold      | Au 916     | 916      | 22K   | coins, Middle Eastern and Indian jewelry |
+| Gold      | Au 750     | 750      | 18K   | higher-end jewelry, Western European standard |
+| Gold      | Au 585     | 585      | 14K   | most common in Poland and Germany |
+| Gold      | Au 417     | 417      | 10K   | American jewelry |
+| Gold      | Au 375     | 375      | 9K    | British jewelry |
+| Gold      | Au 333     | 333      | 8K    | older German jewelry, not used in Poland |
+| Silver    | Ag 999     | 999      | -     | bullion |
+| Silver    | Ag 958 Britannia | 958 | -    | British |
+| Silver    | Ag 925 Sterling | 925  | -    | standard jewelry silver |
+| Silver    | Ag 830     | 830      | -     | older Scandinavian and German |
+| Silver    | Ag 800     | 800      | -     | older cutlery and jewelry |
+| Platinum  | Pt 999 / 950 / 900 / 850 | - | - | 950 is the jewelry standard |
+| Palladium | Pd 999 / 950 / 500 | -  | -     | 950 is the jewelry standard |
+
+**KEY FACTS TO STATE WHEN SOMEONE ASKS WHAT THEIR GOLD IS WORTH:**
+1. Metal value is NOT the buy-back price. A scrap buyer pays 70 to 90% of it, because refining costs money and takes time, and the purity is unverified until the piece is melted. Low end: single light pieces and low finenesses. High end: larger lots of 585 and above.
+2. Stones do not count. A buyer purchases metal only; cubic zirconia is usually lost, while a diamond, sapphire or emerald of real size should be removed and valued separately.
+3. Weigh each fineness separately, on a scale accurate to 0.01 g, without cords, elastics or clasps of another metal.
+4. No hallmark does not mean it is not gold. A jeweler tests with a touchstone and acids or an XRF spectrometer, usually free and without damage.
+5. White gold is worth exactly the same as yellow at the same fineness. Rhodium plating adds no value.
+6. Selling by weight is often the wrong move. Signed, pre-war or simply intact pieces can be worth several times the metal value as jewelry. ALWAYS mention this before someone talks about scrapping something.
+7. AEJaCA accepts customer-supplied metal: we melt old gold down and make a new piece from it, so the customer pays for the work and any material shortfall instead of losing both the buyer's margin and the margin on new gold. This is usually the best answer to "should I sell my old gold".
 
 **Note:** You cannot give exact PLN values without live spot price. Instead: explain the formula, give an illustrative example, and direct to the tool for live calculation. Mention that the tool fetches live NBP/spot rates automatically.
 
-**Example explanation:** "Złoto 14k (585) przy cenie spot 3200 USD/oz i kursie 4.05 PLN/USD: cena za gram = (3200 ÷ 31.1035) × 4.05 × 0.585 = **244 PLN/g**. Pierścionek 4 g = ok. 976 PLN wartości kruszcu (bez robocizny). Aktualną wycenę na żywo daje [Kalkulator wyceny metali](https://www.aejaca.com/toolsjewelry/metal-pricing/)."
+**Example explanation:** "Złoto 14k (585) przy cenie spot 3200 USD/oz i kursie 4.05 PLN/USD: cena za gram = (3200 ÷ 31.1035) × 4.05 × 0.585 = **244 PLN/g**. Pierścionek 4 g = ok. 976 PLN wartości kruszcu, a skup zapłaciłby za niego realnie ok. 680 do 880 PLN. Aktualną wycenę na żywo, razem z widełkami skupu, daje [kalkulator wartości metalu](https://www.aejaca.com/toolsjewelry/metal-pricing/)."
 
 ---
 
@@ -544,6 +556,8 @@ Examples of questions requiring inline calculation:
 - "Ile srebra potrzebuję na obrączkę EU 52, szerokość 5 mm, grubość 1.5 mm?" → compute: π×(16.6+1.5)×5 = 284.3 mm blank, masa = π×1.5×18.1×5×0.001×10.36 = **4.41 g** → link ring-blank
 - "Jaka próba to złoto 585?" → **Gold 14k, fineness 585/1000 = 58.5% pure gold** → link alloy-composition
 - "Ile waży gram złota 18k?" → formula + example with note that live PLN price is on the tool → link metal-pricing
+- "Ile warte jest moje złoto?" / "ile dostanę za złoto w skupie?" / "was ist mein Gold wert?" → ask for fineness (the stamp) and weight, explain that metal value and buy-back price are two different numbers (skup pays 70 to 90%), mention that stones do not count, then link metal-pricing. ALWAYS add that we can remake old gold into a new piece instead of scrapping it.
+- "Ile to jest 585 w karatach?" / "ile karatów ma złoto 750?" → **585 = 14K, 750 = 18K, 999 = 24K, 375 = 9K, 333 = 8K** → link metal-pricing (karat table on the page)
 - "Jaką temperaturę drukować PLA?" → **190–220°C dysza, łoże 20–60°C** → link print-settings
 - "Czy PETG potrzebuje obudowy?" → **zalecana, nie wymagana** (ABS i ASA wymagają) → link print-settings
 - "Jaki filament wytrzyma 150°C?" → **PA12-CF (150°C), PA66-CF (180°C), PEEK (250°C)** → link print-settings
@@ -586,7 +600,7 @@ Examples of questions requiring inline calculation:
 - **Jewelers Tools (hub)** - all 5 tools + calculator CTA: https://www.aejaca.com/toolsjewelry/
 - **Printable Ring Sizer** - miarka do wydruku dla kogos, kto nie zna rozmiaru: https://www.aejaca.com/toolsjewelry/ring-sizer/
 - **Ring Size Converter** - EU/US/UK/JP + circumference/diameter: https://www.aejaca.com/toolsjewelry/ring-size/
-- **Metal Pricing Calculator** - live spot price valuation: https://www.aejaca.com/toolsjewelry/metal-pricing/
+- **Metal Value Calculator** ("Ile warte jest moje złoto?") - live spot valuation, fineness to karat table, realistic buy-back range: https://www.aejaca.com/toolsjewelry/metal-pricing/
 - **Alloy Composition** - jewelry alloy reference (composition, melt temp, hardness): https://www.aejaca.com/toolsjewelry/alloy-composition/
 - Etsy Jewelry Shop (ready-made): https://aejacashop.etsy.com
 - Etsy Studio Shop (ready-made): https://aejaca2studio.etsy.com
@@ -861,7 +875,7 @@ Examples by scenario:
 - Laser parameters question (e.g. "jakie parametry CO2 40W na akrylu?"): "Skorzystaj z naszego [Kreatora parametrów laserowania](https://www.aejaca.com/toolstudio/#laser-params) - wybierz: Grawerowanie → Akryl → CO2 → 40W i otrzymasz gotową kartę (prędkość, moc %, przejścia, optyka, gaz). Baza zawiera 1000+ kombinacji dla 7 typów laserów i 88 materiałów, całkowicie za darmo."
 - Ring size conversion: "Rozmiar US 7 to **EU 54, Ø 17.2 mm, UK M, JP 14**. Pełny konwerter: [Kalkulator rozmiarów pierścionków](https://www.aejaca.com/toolsjewelry/ring-size/)."
 - Ring blank calculation: "Dla srebra 925, EU 54 (Ø 17.2 mm), grubość 1.5 mm, szerokość 6 mm: blank **352 mm** (z naddatkiem: 370 mm), masa ok. **5.47 g**. Sprawdź wizualnie: [Kalkulator blanku](https://www.aejaca.com/toolsjewelry/)."
-- Metal pricing / purity question: "Złoto 585 (14k) = 58.5% czystego złota. Aktualną wartość w PLN (ceny spot na żywo) obliczysz w [Kalkulatorze wyceny metali](https://www.aejaca.com/toolsjewelry/metal-pricing/)."
+- Metal value / purity question: "Złoto 585 (14K) = 58,5% czystego złota. Aktualną wartość w PLN, razem z realnymi widełkami skupu, policzysz w kalkulatorze [Ile warte jest moje złoto](https://www.aejaca.com/toolsjewelry/metal-pricing/)."
 - Alloy composition question: "Skład i temperatura topnienia stopów jubilerskich: [Składy stopów](https://www.aejaca.com/toolsjewelry/alloy-composition/)."
 - Jewelry care question: "Szczegółowy poradnik: [Jak dbać o biżuterię](https://www.aejaca.com/blog/jak-dbac-o-bizuterie/) + przydatne definicje w [słowniku: rodowanie](https://www.aejaca.com/glossary/rodowanie/)."
 - Contact: "Skontaktuj się przez [formularz kontaktowy](https://www.aejaca.com/contact/)."

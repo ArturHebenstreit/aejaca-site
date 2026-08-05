@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-05 | Wersja: 2.7*
+*Wygenerowano: 2026-08-05 | Wersja: 2.8*
 
 ---
 
@@ -414,7 +414,7 @@ SEO title PL: "Kalkulator kompensacji skurczu odlewniczego | AEJaCA sTuDiO"
 | Narzędzie | URL | Opis |
 |---|---|---|
 | Skład stopów jubilerskich | /toolsjewelry/alloy-composition/ | Skład, temperatura topnienia i twardość stopów Au, Ag, Pt |
-| Wycena surowca | /toolsjewelry/metal-pricing/ | Wartość kruszcu z ceny spot XAU/XAG/XPT i kursu NBP |
+| **Ile warte jest moje złoto** | /toolsjewelry/metal-pricing/ | Wartość kruszcu z ceny spot XAU/XAG/XPT/XPD i kursu NBP, plus realne widełki skupu (70-90%). Próby Au 333-999 z karatami, Ag 800-999, Pt 850-999, Pd 500-999. Tabela ceny za gram dla każdej próby, przelicznik próba↔karat. Schematy HowTo + FAQPage (7 pytań x 3 języki). |
 | Kalkulator blanku obrączki | /toolsjewelry/ring-blank/ | Długość pręta i masa blanku dla metalu, średnicy i szerokości |
 | Konwerter rozmiarów pierścionków | /toolsjewelry/ring-size/ | EU / US / UK / JP, z obwodu lub średnicy |
 | **Miarka do pierścionków do wydruku** | /toolsjewelry/ring-sizer/ | Pasek owijany (obwód 40-76 mm) i tabela kółek (Ø 14,0-22,3 mm), z wbudowaną kontrolą skali wydruku: prostokąt karty płatniczej 85,6 x 53,98 mm i linijka 100 mm. Schematy HowTo + FAQPage. |
@@ -425,6 +425,27 @@ Obie strony linkują do siebie nawzajem. Wspólna tabela rozmiarów siedzi w `sr
 
 **Warunek działania:** wydruk w skali 100%. „Dopasuj do strony" zmniejsza arkusz o kilka procent,
 co daje błąd o jeden do dwóch rozmiarów. Stąd kontrola skali na samej górze arkusza.
+
+#### Wartość metalu: jedna strona, dwie intencje
+
+Strona `/toolsjewelry/metal-pricing/` nazywała się wcześniej „Wycena surowca" i była napisana dla
+jubilera liczącego koszt materiału. Zapytanie, które realnie generuje ruch, brzmi jednak
+„ile warte jest moje złoto" i zadaje je osoba ze złomem w szufladzie. Osobna strona pod tę intencję
+została **odrzucona świadomie**: kalkulator byłby w 95% ten sam, a dwie strony o wartości złota na
+jednej domenie konkurują ze sobą w wynikach zamiast się sumować. Zamiast tego nagłówek pod intencję
+konsumencką i sekcje obsługujące obie.
+
+**Zasada, której nie wolno złamać:** wartość kruszcu i cena skupu to dwie różne liczby i obie muszą
+być widoczne z tą samą wagą wizualną. Skup płaci 70 do 90% wartości kruszcu (rafinacja kosztuje,
+a próba jest niepotwierdzona do przetopu). Klient, który zobaczy 4500 PLN i dostanie 3200, poczuje
+się oszukany przez nas, choć to nie my skupujemy.
+
+Kalkulator celowo **nie korzysta** z hooka `useMarketRates`, bo ten ma wartości zapasowe
+(au 645 PLN/g). W pasku w stopce są akceptowalne, w wycenie czyjegoś majątku już nie. Przy braku
+kursu dla danego metalu strona prosi o ręczne wpisanie ceny uncji troy.
+
+Próba Au 333 jest w tabeli dlatego, że to najczęstsza próba w starszej biżuterii niemieckiej,
+a niemiecki to jeden z trzech języków serwisu. W Polsce ta próba nie występuje.
 
 ---
 
