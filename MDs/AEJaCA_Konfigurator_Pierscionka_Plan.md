@@ -1,6 +1,11 @@
 # Wizualny konfigurator pierścionka zaręczynowego: plan
 
-*Sporządzono: 2026-08-05. Status: plan po prototypie, przed decyzją o budowie.*
+*Sporządzono: 2026-08-05. Status: **ODŁOŻONY** po prototypie, przed decyzją o budowie.*
+
+> **Temat odłożony 2026-08-05.** Badanie jest zamknięte i kompletne, nic nie zostało
+> w toku. Kod prototypu, instrukcja wznowienia i wszystkie odkrycia:
+> `parked/ring-poc/README.md`. Zanim zaczniemy budować, trzeba jeden telefon do
+> Pencil po cennik.
 
 ---
 
