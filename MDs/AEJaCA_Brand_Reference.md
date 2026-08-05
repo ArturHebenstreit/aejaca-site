@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-05 | Wersja: 2.8*
+*Wygenerowano: 2026-08-05 | Wersja: 3.2*
 
 ---
 
@@ -910,6 +910,28 @@ Siedem z dziewięciu narzędzi miało dokładnie dwie strony przychodzące: hub 
 
 Pole `audience` rozdziela odbiorców: `buyer`, `maker`, `both`. Sklep pokazuje wyłącznie narzędzia dla kupującego, B2B odwrotnie, bo po drugiej stronie siedzi pracownia. Dwa wpisy blogowe (projektowanie z AI, warsztat od kuchni) celowo nie mają przypisanych narzędzi.
 
+### Karta podarunkowa: ODŁOŻONA
+
+Zbudowana i **wycofana z kodu 2026-08-05**, bez wdrożenia. Powód: temat okazał się grząski
+(bon VAT, klauzule abuzywne, zobowiązanie w księgach) i przy braku sygnału o popycie nie był wart
+zaangażowania. Nic z pracy nie przepadło.
+
+Całość leży w `parked/gift-card/`: kod strony, moduł API, schemat bazy, testy, sekcja 7a regulaminu
+w trzech językach, wiedza asystenta, wpisy do `llms.txt` i pełny opis konstrukcji razem z
+przeglądem rynku. `parked/gift-card/README.md` zawiera listę kroków do wznowienia.
+
+**Trzy ustalenia z tamtej pracy, które warto pamiętać niezależnie od karty:**
+
+1. Klauzula o przepadku niewykorzystanych środków po terminie ważności jest w Polsce uznawana za
+   **niedozwoloną** (SR w Słupsku 6.03.2020, SR dla Warszawy-Mokotowa 2022) i za bezpodstawne
+   wzbogacenie. Dotyczy każdego bonu, nie tylko karty podarunkowej.
+2. Bon na ofertę mieszaną (towary i usługi o różnych stawkach) to **bon różnego przeznaczenia**,
+   więc VAT rozlicza się przy realizacji, nie przy sprzedaży. Nadal do potwierdzenia z księgową.
+3. Strażnik `check-terms-parity` powstał przy tej pracy i **zostaje w buildzie**, bo pilnuje
+   całego regulaminu, a nie samej karty.
+
+---
+
 ### Pozostali strażnicy w buildzie
 
 | Strażnik | Czego pilnuje | Skąd się wziął |
@@ -917,6 +939,7 @@ Pole `audience` rozdziela odbiorców: `buyer`, `maker`, `both`. Sklep pokazuje w
 | `scripts/check-reveal.mjs` | klasa `reveal` bez `ref` z `useScrollReveal()` | trzy bloki na `/shipping/` były trwale niewidoczne, w tym obowiązkowa informacja o cle i sekcja FAQ odbijana w schemacie `FAQPage` |
 | `scripts/check-emdash.mjs` | długie myślniki (U+2014) i ich encja HTML w całym repozytorium | jednorazowe sprzątanie objęło 2720 znaków w 234 plikach; bez strażnika wracają, bo w kodzie źródłowym nikt ich nie widzi aż do publikacji |
 | `scripts/check-tool-links.mjs` | klucze `TOOLS_BY_POST` i `TOOLS_BY_TERM` wskazujące na realne slugi i hasła, komplet tłumaczeń pl/en/de, dozwolone `audience` | trzy klucze wskazywały na nieistniejące slugi, a fallback po cichu podstawiał domyślne narzędzia, więc trzy wpisy zgubiły odnośnik do wyceny metalu przy zielonym buildzie |
+| `scripts/check-terms-parity.mjs` | te same sekcje, ustępy i punkty list w pl, en i de | regulamin żyje w trzech wersjach w jednym pliku, a dodanie sekcji tylko do jednej niczego nie wywala: build przechodzi, a dokument jest niekompletny w dwóch językach na trzy |
 | `npm run lint:undef` (`eslint.undef.config.js`) | reguła `no-undef`, czyli sięganie po nazwę spoza zasięgu | odnośnik dodany do pola rozmiaru w kalkulatorze użył `lang`, którego funkcja nie przyjmowała; efekt to biała strona po przełączeniu na tryb zaawansowany, a build, prerender i wszyscy pozostali strażnicy przeszli bez słowa |
 
 Włączona jest wyłącznie reguła `no-undef`. Pełny eslint daje w tym repozytorium ponad 1400 zgłoszeń, prawie same `react/prop-types`, więc zaszumiłby build zamiast go chronić. `eslint` i `@eslint/js` muszą trzymać tę samą główną wersję, inaczej czysta instalacja na Cloudflare wywala się na `ERESOLVE`, a build lokalny z `--legacy-peer-deps` tego nie pokaże.

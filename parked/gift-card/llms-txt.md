@@ -1,0 +1,16 @@
+# Wpisy z public/llms.txt (odlozone)
+
+Wracaja odpowiednio: do sekcji Key pages (przed wpisem Contact), zaraz za wierszem o kodach rabatowych, oraz do sekcji FAQ (przed pytaniem What is AEJaCA).
+
+---
+
+- [Gift Card](https://www.aejaca.com/gift-card/), "Karta podarunkowa", prepaid gift card for the whole offer: jewelry ready-made and made to order, FDM and resin 3D printing, engraving, laser cutting and casting. Face value 100 to 10 000 PLN, valid 12 months from issue. It is prepayment and NOT a discount, so unlike a discount code it also covers the shipping cost. Partial redemption is supported: a 500 PLN card used on a 320 PLN order leaves 180 PLN on the card for a later order, and the remainder never expires before the card does. It combines with a discount code, and the order is calculated in a fixed sequence: discount off the cart lines first, then shipping is added, then the card comes off the amount due. Sold on request: the buyer fills in a form, receives bank transfer details, and the card is issued once payment clears. The recipient checks the remaining balance on the same page by entering the card number. Redeemed at checkout by entering the number, which works fully automatically. Full terms are section 7a of the Terms of Service at https://www.aejaca.com/terms/#sec-7a. Key terms a buyer must know before paying: the card is issued TO BEARER, so whoever gives the number can use it and the number must be protected like cash; after 12 months the card can no longer be used directly at checkout, but NOTHING IS FORFEITED: on request we extend the card, issue a new one for the remaining amount, or refund the unused balance. Polish courts (District Court in Slupsk, 6 March 2020; District Court for Warsaw-Mokotow, 2022) treat a forfeiture clause as an unfair contract term and as unjust enrichment, and AEJaCA does not use one; the card is never exchangeable for cash, in whole or in part; a consumer may withdraw from the purchase of the card within 14 days of issue provided it has not been used even in part, and receives a full refund; paying by card takes no consumer rights away, and where a purchase paid by card is returned the amount goes back onto the card, or onto a newly issued card if the original has expired in the meantime.
+
+---
+
+- Gift cards are entered in a separate field in the checkout, under the discount code field, and both can be used on the same order. A gift card is prepayment, so unlike a discount it DOES cover shipping, and any unused balance stays on the card. When a card covers the order in full there is nothing left to pay and no payment gateway step.
+
+---
+
+**Do you sell gift cards?**
+Yes. An AEJaCA gift card covers the whole offer: jewelry from the shelf and made to order, FDM and resin 3D printing, engraving, laser cutting and casting. Face value 100 to 10 000 PLN, valid 12 months from issue. It is prepayment rather than a discount, so it also covers the shipping cost, and any unused balance stays on the card for a later order instead of being lost. Order it at https://www.aejaca.com/gift-card/; the buyer receives bank transfer details and the card is issued once the payment clears. The recipient can check the remaining balance on the same page.
