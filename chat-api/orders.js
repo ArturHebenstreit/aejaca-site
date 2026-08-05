@@ -146,11 +146,18 @@ export function priceItem({ calculator, params, lang = "pl", geometry = null, sc
   if (geometry && FILE_AWARE.has(calculator)) {
     callParams.stlData = scaleGeometry(geometry, scale);
   }
-  if (rates && calculator.startsWith("jewelry_")) callParams.rates = rates;
+  // Kursy kruszcow ida TRZECIM ARGUMENTEM, a nie w parametrach.
+  //
+  // `calcNew` i `calcChain` maja sygnature (params, lang, rates), wiec kurs
+  // wlozony do obiektu parametrow byl po cichu ignorowany: destrukturyzacja
+  // go nie wymienia. Przegladarka liczyla wtedy cene z biezacego kursu, a
+  // serwer, ktory wystawia kwote wiazaca, z wartosci zapasowej z konfiguracji.
+  // Rozjazd nie rzucal bledu i nie bylo go widac w niczym poza kwota.
+  const callRates = rates && calculator.startsWith("jewelry_") ? rates : undefined;
 
   let result;
   try {
-    result = entry.fn(callParams, safeLang);
+    result = entry.fn(callParams, safeLang, callRates);
   } catch (e) {
     throw new PricingError("calc_failed", `Wycena nie powiodła się: ${e.message}`);
   }

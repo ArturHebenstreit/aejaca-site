@@ -8,7 +8,7 @@ import { createHash } from "crypto";
 import { getSystemPrompt, detectHotLead } from "./context.js";
 import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages } from "./gmail.js";
 import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken } from "./orders.js";
-import { createQuote, priceQuote, getQuoteByRef, convertQuoteToOrder, availableDesignCredit, QuoteError } from "./quotes.js";
+import { createQuote, priceQuote, getQuoteByRef, convertQuoteToOrder, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
 import { extraRevisionGrosze, CAD_CONFIG } from "./pricing/cadDesign.js";
 import {
   autopayConfigured, buildStartTransaction, formatValidityTime,
@@ -27,7 +27,7 @@ import {
   previewDiscount, reserveDiscount, consumeDiscount, releaseExpiredRedemptions,
   releaseOrderRedemptions, normalizeCode, randomCode, DiscountError, APPLIES_TO, MAX_PERCENT,
 } from "./discounts.js";
-import { sendOrderPaidEmails, sendTransferInstructions } from "./orderMail.js";
+import { sendOrderPaidEmails, sendTransferInstructions, sendQuoteLink } from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
 import { findLockers, LockerError } from "./lockers.js";
 import { runRetention } from "./retention.js";
@@ -187,6 +187,14 @@ if (pool) {
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancel_reason TEXT`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_code VARCHAR(32)`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_grosze INTEGER NOT NULL DEFAULT 0`).catch(() => {});
+
+  // Wycena zapisana z kalkulatora. Kursy kruszcow z chwili zapisu pozwalaja
+  // odroznic ruch ceny zlota od zmiany naszego cennika, skala trzyma to,
+  // co klient realnie widzial, a adres e-mail przestaje byc obowiazkowy,
+  // bo sam link do wlasnej kalkulacji nie wymaga zostawiania danych.
+  pool.query(`ALTER TABLE quotes ADD COLUMN IF NOT EXISTS rates_snapshot JSONB`).catch(() => {});
+  pool.query(`ALTER TABLE quotes ALTER COLUMN customer_email DROP NOT NULL`).catch(() => {});
+  pool.query(`ALTER TABLE quote_items ADD COLUMN IF NOT EXISTS scale NUMERIC(6,3)`).catch(() => {});
 
   // Katalog produktow: tresc, zdjecia i stan magazynowy zyja w bazie, a nie
   // w repozytorium, zeby zmiana stanu nie wymagala wdrozenia.
@@ -1041,6 +1049,115 @@ app.post("/api/quotes", express.json({ limit: "1mb" }), async (req, res) => {
   }
 });
 
+// ------------------------------------------------------------
+// Wycena zapisana przez klienta z kalkulatora
+// ------------------------------------------------------------
+// Konfiguracja druku z plikiem to kilka minut pracy klienta i do tej pory
+// ginela przy zamknieciu karty. Tutaj zostaje: klient dostaje adres, pod
+// ktorym znajdzie ja takze jutro i na innym urzadzeniu.
+//
+// Kwoty licza sie NA SERWERZE, tym samym silnikiem co /api/price. Liczba
+// przyslana przez przegladarke nie jest nawet czytana: przyjmujac ja,
+// wystawialibysmy oferte na kwote wpisana przez kupujacego.
+
+app.post("/api/quotes/save", express.json({ limit: "1mb" }), async (req, res) => {
+  const ip = extractIP(req);
+  if (!checkQuoteRate(ip)) return res.status(429).json({ error: "Za duzo zapytan, sprobuj za chwile" });
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const { email, name, lang, items } = req.body || {};
+  if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: "Wycena bez pozycji" });
+  if (items.length > 10) return res.status(400).json({ error: "Za duzo pozycji w jednej wycenie" });
+  // Adres jest dobrowolny: sam link nie wymaga zostawiania danych. Podany
+  // musi byc jednak poprawny, bo inaczej mail znika bez sladu.
+  if (email && !CONTACT_EMAIL_RE.test(String(email))) {
+    return res.status(400).json({ error: "Nieprawidlowy adres e-mail" });
+  }
+
+  try {
+    const rates = await currentMetalRates();
+    const priced = [];
+
+    for (const raw of items.slice(0, 10)) {
+      const calculator = String(raw?.calculator || "");
+      let params = raw?.params;
+      if (typeof params === "string") {
+        try { params = JSON.parse(params); } catch { return res.status(400).json({ error: "Nieprawidlowy format parametrow" }); }
+      }
+
+      // Plik wgrany wczesniej przez /api/uploads. Geometrie czytamy z bazy,
+      // tak samo jak przy wycenie, wiec zapisana kwota jest ta sama liczba,
+      // ktora klient zobaczyl w kalkulatorze.
+      let geometry = null;
+      let uploadId = null;
+      let fileName = raw?.fileName ? String(raw.fileName).slice(0, 255) : null;
+      if (raw?.uploadToken) {
+        const { rows } = await pool.query(
+          "SELECT id, geometry, file_name FROM uploads WHERE token = $1",
+          [String(raw.uploadToken)]
+        );
+        if (!rows[0]) return res.status(404).json({ error: "Nieznany plik", code: "unknown_upload" });
+        uploadId = rows[0].id;
+        geometry = rows[0].geometry || null;
+        fileName = fileName || rows[0].file_name || null;
+      }
+
+      const scale = Number(raw?.scale) > 0 ? Number(raw.scale) : 1;
+      const item = priceItem({ calculator, params, lang, geometry, scale, rates });
+      priced.push({
+        calculator, params, scale, uploadId, fileName,
+        title: item.title, qty: item.qty, unitGrosze: item.unitGrosze,
+        description: raw?.description ? String(raw.description).slice(0, 2000) : null,
+      });
+    }
+
+    const created = await createQuote(pool, {
+      email: email || null,
+      name: name || null,
+      lang,
+      source: SAVED_QUOTE_SOURCE,
+      allowAnonymous: true,
+      items: priced,
+      // Kursy zapisujemy tylko wtedy, gdy jakas pozycja realnie od nich zalezy.
+      ratesSnapshot: priced.some((p) => p.calculator.startsWith("jewelry_")) ? rates : null,
+      ipHash: createHash("sha256").update(ip).digest("hex").slice(0, 30),
+    });
+
+    // Kwoty wpisujemy po id pozycji, a te znamy dopiero po zapisie.
+    const stored = await getQuoteByRef(pool, created.quoteRef);
+    const result = await priceQuote(
+      pool, created.quoteRef,
+      stored.items.map((row, idx) => ({ id: row.id, unitGrosze: priced[idx].unitGrosze })),
+      null, QUOTE_VALIDITY_DAYS
+    );
+
+    const url = `${SITE_URL}/quote/?ref=${created.quoteRef}&token=${created.accessToken}`;
+    console.log(`[wycena] zapisano ${created.quoteRef} na ${(result.totalGrosze / 100).toFixed(2)} PLN${email ? ", z mailem" : ", sam link"}`);
+
+    // Mail nie blokuje odpowiedzi: wycena jest juz zapisana, a klient ma link
+    // przed soba niezaleznie od tego, czy poczta zadziala.
+    if (email) sendQuoteLink(pool, created.quoteRef, url).catch(() => {});
+
+    res.json({
+      ok: true,
+      quoteRef: created.quoteRef,
+      token: created.accessToken,
+      url,
+      totalGrosze: result.totalGrosze,
+      validUntil: result.validUntil,
+      emailed: Boolean(email),
+    });
+  } catch (e) {
+    if (e instanceof PricingError) {
+      const status = e.code === "needs_quote" ? 409 : 400;
+      return res.status(status).json({ error: e.message, code: e.code });
+    }
+    if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
+    console.error("[wycena] zapis kalkulacji nie powiodl sie:", e.message);
+    res.status(500).json({ error: "Nie udalo sie zapisac wyceny" });
+  }
+});
+
 /** Podglad wyceny dla klienta. Bez logowania, wiec adres musi znac token. */
 app.get("/api/quotes/:ref", async (req, res) => {
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
@@ -1048,19 +1165,51 @@ app.get("/api/quotes/:ref", async (req, res) => {
   if (!quote || !secretMatches(String(req.query.token || ""), quote.access_token)) {
     return res.status(404).json({ error: "Nie ma takiej wyceny" });
   }
+
+  // Kruszec liczy sie z dnia otwarcia, robocizna zostaje ta obiecana.
+  // Po terminie waznosci nie przeliczamy juz niczego: wycena wygasla,
+  // a pokazywanie swiezej kwoty pod stara data udawaloby, ze nadal obowiazuje.
+  const expired = quote.valid_until && String(quote.valid_until).slice(0, 10) < new Date().toISOString().slice(0, 10);
+  const ratesNow = !expired && quote.rates_snapshot ? await currentMetalRates() : null;
+
+  let total = 0;
+  let metalDelta = 0;
+  const items = quote.items.map((i) => {
+    const re = ratesNow
+      ? repriceSavedItem(i, { ratesAtSave: quote.rates_snapshot, ratesNow, lang: quote.lang })
+      : { unitGrosze: i.unit_grosze, metalDeltaGrosze: 0, repriced: false };
+    const unit = re.unitGrosze ?? i.unit_grosze;
+    const line = unit != null ? unit * i.qty : null;
+    if (line) total += line;
+    metalDelta += re.metalDeltaGrosze * i.qty;
+    return {
+      id: i.id, title: i.title, qty: i.qty,
+      unitGrosze: unit, lineGrosze: line,
+      savedUnitGrosze: i.unit_grosze,
+      repriced: re.repriced,
+      description: i.description, fileName: i.file_name,
+      uploadToken: i.upload_token || null,
+      calculator: i.calculator,
+      params: i.params ?? null,
+      scale: i.scale != null ? Number(i.scale) : null,
+    };
+  });
+
   res.json({
     ok: true,
     quoteRef: quote.quote_ref,
     status: quote.status,
+    source: quote.source,
     lang: quote.lang,
-    totalGrosze: quote.total_grosze,
+    // Kwota zapisana zostaje widoczna obok biezacej, zeby roznica byla
+    // widoczna, a nie do wykrycia z pamieci.
+    savedTotalGrosze: quote.total_grosze,
+    totalGrosze: total || quote.total_grosze,
+    metalDeltaGrosze: metalDelta,
     priceNote: quote.price_note,
     validUntil: quote.valid_until,
-    items: quote.items.map((i) => ({
-      id: i.id, title: i.title, qty: i.qty,
-      unitGrosze: i.unit_grosze, lineGrosze: i.line_grosze,
-      description: i.description, fileName: i.file_name,
-    })),
+    expired: Boolean(expired),
+    items,
   });
 });
 

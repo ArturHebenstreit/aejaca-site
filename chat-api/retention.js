@@ -26,6 +26,22 @@ export const RETENTION_DAYS = {
   leads: 730,
   /** Zdarzenia statystyczne: 24 miesiace. */
   events: 730,
+  /**
+   * Zapytania o wycene reczna, z ktorych nie powstalo zamowienie: 24 miesiace,
+   * czyli ten sam termin co dla `leads`, bo to ta sama sprawa widziana z dwoch
+   * stron. Wycena przekuta w zamowienie NIE jest kasowana: zyje razem z nim.
+   */
+  quotes: 730,
+  /**
+   * Wyceny zapisane przez klienta z kalkulatora: 90 dni.
+   *
+   * Krocej niz reszta, i celowo. Taka wycena jest wazna 14 dni, a klient
+   * potrafi zapisac ja dziesiec razy przy przesuwaniu suwaka. Trzymanie
+   * adresu e-mail przez dwa lata przy czyms, co po dwoch tygodniach nie
+   * obowiazuje, byloby zbieraniem danych bez celu. Trzy miesiace zostawiaja
+   * zapas na powrot po terminie, a potem nie ma po co.
+   */
+  savedQuotes: 90,
   /** Pliki wgrane do wyceny, z ktorych nie powstalo zamowienie: 30 dni. */
   uploads: 30,
   /**
@@ -122,6 +138,27 @@ export async function runRetention(pool, { days = RETENTION_DAYS, now = "NOW()" 
       WHERE COALESCE(paid_at, created_at) < ${now} - ($1 || ' days')::INTERVAL
         AND customer_email <> $2`,
     [String(days.orderPersonalData), ANONYMISED_EMAIL]
+  );
+
+  // Wycena, z ktorej powstalo zamowienie, zostaje: to juz nie jest zapytanie,
+  // tylko czesc dokumentacji transakcji, ktora ma wlasny, dluzszy termin.
+  // Pozycje znikaja same przez ON DELETE CASCADE.
+  await sweep(
+    "savedQuotes",
+    `DELETE FROM quotes
+      WHERE source = 'saved'
+        AND converted_order_id IS NULL
+        AND created_at < ${now} - ($1 || ' days')::INTERVAL`,
+    [String(days.savedQuotes)]
+  );
+
+  await sweep(
+    "quotes",
+    `DELETE FROM quotes
+      WHERE COALESCE(source, '') <> 'saved'
+        AND converted_order_id IS NULL
+        AND created_at < ${now} - ($1 || ' days')::INTERVAL`,
+    [String(days.quotes)]
   );
 
   await sweep(

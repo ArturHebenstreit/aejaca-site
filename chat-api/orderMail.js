@@ -726,3 +726,130 @@ export async function sendOrderPaidEmails(pool, orderId) {
     return false;
   }
 }
+
+// ============================================================
+// MAIL Z ZAPISANA WYCENA
+// ============================================================
+// To nie jest potwierdzenie zamowienia i nie moze go przypominac. Klient
+// niczego nie kupil i niczym sie nie zobowiazal, wiec mail ma jedno zadanie:
+// oddac mu link do wlasnej kalkulacji.
+//
+// Kopii do warsztatu tu nie ma. Zapisanie wyceny to czynnosc, ktora klient
+// moze powtorzyc dziesiec razy przy przesuwaniu suwaka, a skrzynka zasypana
+// wlasnymi powiadomieniami przestaje byc czytana takze wtedy, gdy przyjdzie
+// prawdziwe zamowienie.
+
+const QUOTE_T = {
+  pl: {
+    subject: (ref) => `Twoja wycena ${ref}, AEJaCA`,
+    hi: "Dzień dobry,",
+    intro: "poniżej wycena, którą zapisałeś na aejaca.com. Link otwiera ją w każdej chwili, także na innym urządzeniu.",
+    items: "Wyceniane pozycje",
+    total: "Razem",
+    open: "Otwórz wycenę",
+    validUntil: (d) => `Wycena obowiązuje do ${d}.`,
+    metalNote:
+      "Robocizna w tej kwocie jest wiążąca przez cały okres ważności. Wartość kruszcu przeliczamy w dniu zamówienia według bieżącego kursu, więc przy złocie i srebrze kwota końcowa może się nieznacznie różnić.",
+    noObligation: "Zapisanie wyceny nie jest zamówieniem i do niczego nie zobowiązuje.",
+    questions: "Pytania",
+    bye: "Pozdrawiamy",
+  },
+  en: {
+    subject: (ref) => `Your quote ${ref}, AEJaCA`,
+    hi: "Hello,",
+    intro: "here is the quote you saved on aejaca.com. The link opens it any time, on any device.",
+    items: "Quoted items",
+    total: "Total",
+    open: "Open the quote",
+    validUntil: (d) => `The quote is valid until ${d}.`,
+    metalNote:
+      "The labour in this amount is binding for the whole validity period. Precious metal is recalculated on the day of the order at the current rate, so for gold and silver the final amount may differ slightly.",
+    noObligation: "Saving a quote is not an order and commits you to nothing.",
+    questions: "Questions",
+    bye: "Best regards",
+  },
+  de: {
+    subject: (ref) => `Ihr Angebot ${ref}, AEJaCA`,
+    hi: "Guten Tag,",
+    intro: "hier ist das Angebot, das Sie auf aejaca.com gespeichert haben. Der Link öffnet es jederzeit, auch auf einem anderen Gerät.",
+    items: "Kalkulierte Positionen",
+    total: "Gesamt",
+    open: "Angebot öffnen",
+    validUntil: (d) => `Das Angebot gilt bis ${d}.`,
+    metalNote:
+      "Die Arbeitsleistung in diesem Betrag ist für den gesamten Gültigkeitszeitraum verbindlich. Edelmetall wird am Tag der Bestellung zum aktuellen Kurs neu berechnet, bei Gold und Silber kann der Endbetrag daher leicht abweichen.",
+    noObligation: "Das Speichern eines Angebots ist keine Bestellung und verpflichtet zu nichts.",
+    questions: "Fragen",
+    bye: "Mit freundlichen Grüßen",
+  },
+};
+
+function quoteMessage(quote, items, url) {
+  const l = QUOTE_T[quote.lang] || QUOTE_T.pl;
+  const rows = items.map((i) => ({
+    label: `${i.title}${i.qty > 1 ? ` x ${i.qty}` : ""}`,
+    value: money(i.line_grosze ?? i.unit_grosze ?? 0),
+  }));
+
+  const html = [
+    `<p>${esc(l.hi)}</p>`,
+    `<p>${esc(l.intro)}</p>`,
+    `<h3>${esc(l.items)}</h3>`,
+    "<table cellpadding=\"6\" style=\"border-collapse:collapse\">",
+    ...rows.map((r) => `<tr><td>${esc(r.label)}</td><td align="right"><strong>${esc(r.value)}</strong></td></tr>`),
+    `<tr><td style="border-top:1px solid #ddd">${esc(l.total)}</td><td align="right" style="border-top:1px solid #ddd"><strong>${esc(money(quote.total_grosze))}</strong></td></tr>`,
+    "</table>",
+    `<p><a href="${esc(url)}">${esc(l.open)}</a></p>`,
+    quote.valid_until ? `<p>${esc(l.validUntil(String(quote.valid_until).slice(0, 10)))}</p>` : "",
+    `<p style="color:#555">${esc(l.metalNote)}</p>`,
+    `<p style="color:#555">${esc(l.noObligation)}</p>`,
+    `<p>${esc(l.questions)}: ${esc(SELLER.email)}<br>${esc(l.bye)}, ${esc(SELLER.brand)}</p>`,
+  ].filter(Boolean).join("\n");
+
+  const text = [
+    l.hi, "", l.intro, "",
+    l.items + ":",
+    ...rows.map((r) => `- ${r.label}: ${r.value}`),
+    `${l.total}: ${money(quote.total_grosze)}`,
+    "", `${l.open}: ${url}`,
+    quote.valid_until ? `\n${l.validUntil(String(quote.valid_until).slice(0, 10))}` : "",
+    "", l.metalNote,
+    "", l.noObligation,
+    "", `${l.questions}: ${SELLER.email}`,
+    "", `${l.bye}, ${SELLER.brand}`,
+  ].filter((line) => line !== null).join("\n");
+
+  return { to: quote.customer_email, from: FROM, replyTo: SELLER.email, subject: l.subject(quote.quote_ref), text, html };
+}
+
+/**
+ * Wysyla klientowi link do zapisanej wyceny.
+ * Nigdy nie rzuca wyjatkiem: wycena jest juz zapisana, a nieudany mail nie
+ * moze skasowac tego, co klient wlasnie zrobil.
+ */
+export async function sendQuoteLink(pool, quoteRef, url) {
+  try {
+    const { rows } = await pool.query("SELECT * FROM quotes WHERE quote_ref = $1", [String(quoteRef)]);
+    const quote = rows[0];
+    if (!quote?.customer_email) return false;
+
+    const { rows: items } = await pool.query(
+      "SELECT title, qty, unit_grosze, line_grosze FROM quote_items WHERE quote_id = $1 ORDER BY id",
+      [quote.id]
+    );
+
+    try {
+      if (await sendViaGmail([quoteMessage(quote, items, url)])) {
+        console.log(`[wycena-mail] wyslano link do ${quote.quote_ref}`);
+        return true;
+      }
+    } catch (e) {
+      console.error("[wycena-mail] Gmail nie zadzialal:", e.message);
+    }
+    console.error(`[wycena-mail] BRAK KANALU WYSYLKI dla ${quote.quote_ref}`);
+    return false;
+  } catch (e) {
+    console.error("[wycena-mail] blad:", e.message);
+    return false;
+  }
+}

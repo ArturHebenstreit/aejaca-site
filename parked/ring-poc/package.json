@@ -1,0 +1,13 @@
+{
+  "name": "aejaca-ring-poc",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Parametryczny prototyp pierscionka zareczynowego. Nie wchodzi do builda serwisu.",
+  "scripts": {
+    "start": "node ring.mjs"
+  },
+  "dependencies": {
+    "manifold-3d": "3.5.1"
+  }
+}

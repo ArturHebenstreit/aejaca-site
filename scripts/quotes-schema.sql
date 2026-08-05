@@ -18,9 +18,12 @@ CREATE TABLE IF NOT EXISTS quotes (
                     CHECK (status IN ('new','priced','sent','accepted','converted','expired','cancelled')),
 
   lang              VARCHAR(5) NOT NULL DEFAULT 'pl',
-  source            VARCHAR(30),               -- contact, quote, configurator, chat
+  source            VARCHAR(30),               -- contact, quote, configurator, chat, saved
 
-  customer_email    VARCHAR(255) NOT NULL,
+  -- Adres jest obowiazkowy przy zapytaniu o wycene reczna, bo bez niego nie ma
+  -- jak odpisac. Przy wycenie zapisanej z kalkulatora (source = 'saved') klient
+  -- moze chciec sam link, wiec kolumna dopuszcza NULL.
+  customer_email    VARCHAR(255),
   customer_name     VARCHAR(150),
   customer_phone    VARCHAR(40),
 
@@ -34,6 +37,11 @@ CREATE TABLE IF NOT EXISTS quotes (
 
   valid_until       DATE,
   sent_at           TIMESTAMPTZ,
+
+  -- Kursy kruszcow z chwili zapisu. Bez nich nie da sie odroznic ruchu ceny
+  -- zlota od zmiany naszego wlasnego cennika, a to jest cala roznica miedzy
+  -- "kruszec podrozal" a "podniesliscie mi robocizne po fakcie".
+  rates_snapshot    JSONB,
 
   -- Zamowienie powstale z tej wyceny. Jedna wycena rodzi najwyzej jedno.
   converted_order_id BIGINT REFERENCES orders(id) ON DELETE SET NULL,
@@ -66,6 +74,9 @@ CREATE TABLE IF NOT EXISTS quote_items (
 
   upload_id     BIGINT REFERENCES uploads(id) ON DELETE SET NULL,
   file_name     VARCHAR(255),
+  -- Skala wydruku. Bez niej ta sama geometria wyceniona ponownie dalaby inna
+  -- kwote niz ta, ktora klient widzial.
+  scale         NUMERIC(6,3),
 
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
