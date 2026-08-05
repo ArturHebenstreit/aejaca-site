@@ -447,6 +447,21 @@ kursu dla danego metalu strona prosi o ręczne wpisanie ceny uncji troy.
 Próba Au 333 jest w tabeli dlatego, że to najczęstsza próba w starszej biżuterii niemieckiej,
 a niemiecki to jeden z trzech języków serwisu. W Polsce ta próba nie występuje.
 
+**Odnośniki przychodzące:** 20 stron (blog x6, słownik x4, sklep x6, B2B, /jewelry/, hub, sama strona).
+
+#### Strażnik `check-tool-links`
+
+Rejestr `toolLinks.js` miał trzy klucze wskazujące na slugi, które nie istnieją
+(`pierscionek-zareczynowy` zamiast `pierscionek-zareczynowy-na-zamowienie` i dwa podobne).
+Nic się nie wywaliło, bo `getToolsForPost` ma fallback na domyślne narzędzia z tej samej
+kategorii. Strony renderowały się poprawnie, tylko z innymi narzędziami niż przypisane ręcznie,
+i trzy wpisy blogowe cicho zgubiły odnośnik do wyceny metalu.
+
+`scripts/check-tool-links.mjs` sprawdza w buildzie, że każdy klucz odpowiada realnemu slugowi
+wpisu lub haśle słownika, że każdy identyfikator narzędzia istnieje, że komplet tłumaczeń
+(pl/en/de) jest na miejscu i że `audience` ma dozwoloną wartość. Nie wymaga, żeby każdy wpis
+miał narzędzie, bo brak przypisania bywa decyzją.
+
 ---
 
 ## 8. STRATEGIA SEO
@@ -901,6 +916,7 @@ Pole `audience` rozdziela odbiorców: `buyer`, `maker`, `both`. Sklep pokazuje w
 |---|---|---|
 | `scripts/check-reveal.mjs` | klasa `reveal` bez `ref` z `useScrollReveal()` | trzy bloki na `/shipping/` były trwale niewidoczne, w tym obowiązkowa informacja o cle i sekcja FAQ odbijana w schemacie `FAQPage` |
 | `scripts/check-emdash.mjs` | długie myślniki (U+2014) i ich encja HTML w całym repozytorium | jednorazowe sprzątanie objęło 2720 znaków w 234 plikach; bez strażnika wracają, bo w kodzie źródłowym nikt ich nie widzi aż do publikacji |
+| `scripts/check-tool-links.mjs` | klucze `TOOLS_BY_POST` i `TOOLS_BY_TERM` wskazujące na realne slugi i hasła, komplet tłumaczeń pl/en/de, dozwolone `audience` | trzy klucze wskazywały na nieistniejące slugi, a fallback po cichu podstawiał domyślne narzędzia, więc trzy wpisy zgubiły odnośnik do wyceny metalu przy zielonym buildzie |
 | `npm run lint:undef` (`eslint.undef.config.js`) | reguła `no-undef`, czyli sięganie po nazwę spoza zasięgu | odnośnik dodany do pola rozmiaru w kalkulatorze użył `lang`, którego funkcja nie przyjmowała; efekt to biała strona po przełączeniu na tryb zaawansowany, a build, prerender i wszyscy pozostali strażnicy przeszli bez słowa |
 
 Włączona jest wyłącznie reguła `no-undef`. Pełny eslint daje w tym repozytorium ponad 1400 zgłoszeń, prawie same `react/prop-types`, więc zaszumiłby build zamiast go chronić. `eslint` i `@eslint/js` muszą trzymać tę samą główną wersję, inaczej czysta instalacja na Cloudflare wywala się na `ERESOLVE`, a build lokalny z `--legacy-peer-deps` tego nie pokaże.
