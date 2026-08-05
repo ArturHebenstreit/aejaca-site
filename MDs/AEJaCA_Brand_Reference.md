@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-05 | Wersja: 2.9*
+*Wygenerowano: 2026-08-05 | Wersja: 3.0*
 
 ---
 
@@ -951,6 +951,30 @@ Panel: `POST /api/admin/giftcards` wydaje kartę i zwraca numer **raz**, `GET` l
 i historią obciążeń, `PATCH` blokuje kartę zgłoszoną jako zgubioną. Numer losujemy generatorem
 kryptograficznym, bo karta jest pieniądzem na okaziciela.
 
+#### Regulamin karty: sekcja 7a
+
+Karta nie mogła wejść na produkcję bez dokumentu, który wiąże strony. Sekcja „Zasady bez gwiazdek"
+i FAQ na stronie karty to materiał informacyjny, nie regulamin. **Wiążąca jest sekcja 7a
+`/terms/#sec-7a`**, 15 ustępów w trzech językach, obowiązuje od 2026-08-05.
+
+Warunki, których nie wolno zgubić przy żadnej późniejszej zmianie, bo każdy z nich chroni albo
+klienta, albo nas:
+
+| Warunek | Dlaczego jest w dokumencie |
+|---|---|
+| Bon różnego przeznaczenia (art. 2 pkt 44 ustawy o VAT) | rozstrzyga moment powstania obowiązku podatkowego; **do potwierdzenia z księgową** |
+| Karta **na okaziciela** | realizujemy dla każdego, kto poda numer, i nie badamy uprawnienia; bez tego zapisu każde wręczenie karty dalej byłoby sporne |
+| Po 12 miesiącach środki **przepadają** | UOKiK wymaga, żeby to było powiedziane **przed zakupem**, a nie w mailu po fakcie |
+| Brak wymiany na gotówkę | inaczej karta byłaby instrumentem płatniczym, a to zupełnie inny reżim prawny |
+| **14 dni na odstąpienie** od zakupu karty, o ile niewykorzystana | prawo konsumenta przy sprzedaży na odległość; wcześniej strona obiecywała to jako dobrą wolę |
+| Zwrot rzeczy kupionej kartą wraca **na kartę** | bez tego zapisu klient płacący kartą byłby w gorszej sytuacji niż płacący przelewem, co jest niedozwolone |
+| Kolejność: rabat → wysyłka → karta | ta sama reguła co w kodzie i w teście, żeby dokument i program mówiły to samo |
+
+Strona karty linkuje do sekcji 7a w dwóch miejscach, a formularz zamówienia ma **wymagane
+potwierdzenie zapoznania się z regulaminem**. Bez zaznaczenia nie da się wysłać zapytania.
+
+Kartą nie można kupić innej karty. To jedyne wyłączenie przedmiotowe.
+
 ---
 
 ### Pozostali strażnicy w buildzie
@@ -961,6 +985,7 @@ kryptograficznym, bo karta jest pieniądzem na okaziciela.
 | `scripts/check-emdash.mjs` | długie myślniki (U+2014) i ich encja HTML w całym repozytorium | jednorazowe sprzątanie objęło 2720 znaków w 234 plikach; bez strażnika wracają, bo w kodzie źródłowym nikt ich nie widzi aż do publikacji |
 | `scripts/check-tool-links.mjs` | klucze `TOOLS_BY_POST` i `TOOLS_BY_TERM` wskazujące na realne slugi i hasła, komplet tłumaczeń pl/en/de, dozwolone `audience` | trzy klucze wskazywały na nieistniejące slugi, a fallback po cichu podstawiał domyślne narzędzia, więc trzy wpisy zgubiły odnośnik do wyceny metalu przy zielonym buildzie |
 | `scripts/test-giftcards.mjs` | arytmetyka kart: pokrycie, kolejność rabat→wysyłka→karta, format numeru, ważność | błąd tutaj kosztuje realne pieniądze w jedną albo drugą stronę, a przy przedpłacie klient już zapłacił |
+| `scripts/check-terms-parity.mjs` | te same sekcje, ustępy i punkty list w pl, en i de | regulamin żyje w trzech wersjach w jednym pliku, a dodanie sekcji tylko do jednej niczego nie wywala: build przechodzi, a dokument jest niekompletny w dwóch językach na trzy |
 | `npm run lint:undef` (`eslint.undef.config.js`) | reguła `no-undef`, czyli sięganie po nazwę spoza zasięgu | odnośnik dodany do pola rozmiaru w kalkulatorze użył `lang`, którego funkcja nie przyjmowała; efekt to biała strona po przełączeniu na tryb zaawansowany, a build, prerender i wszyscy pozostali strażnicy przeszli bez słowa |
 
 Włączona jest wyłącznie reguła `no-undef`. Pełny eslint daje w tym repozytorium ponad 1400 zgłoszeń, prawie same `react/prop-types`, więc zaszumiłby build zamiast go chronić. `eslint` i `@eslint/js` muszą trzymać tę samą główną wersję, inaczej czysta instalacja na Cloudflare wywala się na `ERESOLVE`, a build lokalny z `--legacy-peer-deps` tego nie pokaże.
