@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Cpu, Droplet, Printer, Shrink, Zap } from "lucide-react";
+import { ScanSearch, ArrowRight, Cpu, Droplet, Printer, Shrink, Zap } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -25,6 +25,10 @@ const LABELS = {
     breadHome: "Strona główna",
     breadStudio: "sTuDiO",
     breadTools: "Narzędzia sTuDiO",
+    printabilityCardTitle: "Sprawdzarka modeli 3D",
+    printabilityCardDesc: "Czy Twój model się wydrukuje: szczelność siatki, grubość ścianek pod daną dyszę, gabaryty, nawisy. Plik zostaje w przeglądarce.",
+    printabilityCardTitle: "Sprawdzarka modeli 3D",
+    printabilityCardDesc: "Czy Twój model się wydrukuje: szczelność siatki, grubość ścianek pod daną dyszę, gabaryty, nawisy. Plik zostaje w przeglądarce.",
     printCardTitle: "Parametry druku 3D FDM",
     printCardDesc: "Dobór materiału, karty parametrów i kalkulator filamentu dla 38+ filamentów.",
     printCardBtn: "Otwórz narzędzie",
@@ -52,6 +56,8 @@ const LABELS = {
     breadHome: "Home",
     breadStudio: "sTuDiO",
     breadTools: "sTuDiO Tools",
+    printabilityCardTitle: "3D model checker",
+    printabilityCardDesc: "Will your model print: watertight mesh, wall thickness for a given nozzle, build volume, overhangs. The file stays in your browser.",
     printCardTitle: "3D Print Settings FDM",
     printCardDesc: "Material selector, parameter cards and filament calculator for 38+ filaments.",
     printCardBtn: "Open tool",
@@ -79,6 +85,8 @@ const LABELS = {
     breadHome: "Startseite",
     breadStudio: "sTuDiO",
     breadTools: "sTuDiO-Tools",
+    printabilityCardTitle: "3D-Modellprüfung",
+    printabilityCardDesc: "Druckbar oder nicht: geschlossenes Netz, Wandstärke je Düse, Bauraum, Überhänge. Die Datei bleibt im Browser.",
     printCardTitle: "3D-Druckparameter FDM",
     printCardDesc: "Materialauswahl, Parameterkarten und Filamentrechner für 38+ Filamente.",
     printCardBtn: "Tool öffnen",
@@ -164,6 +172,16 @@ export default function ToolsStudio() {
           <div className="max-w-3xl mx-auto">
             <div ref={printCardRef} className="reveal">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <Link
+                  to="/toolstudio/printability/"
+                  className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/20 hover:-translate-y-1 transition-all duration-300"
+                >
+                  <ScanSearch className="w-8 h-8 text-blue-400 transition-transform duration-300 group-hover:scale-110" />
+                  <div>
+                    <div className="text-white font-semibold text-sm group-hover:text-blue-300 transition-colors">{L.printabilityCardTitle}</div>
+                    <div className="text-neutral-400 text-xs mt-1 leading-relaxed">{L.printabilityCardDesc}</div>
+                  </div>
+                </Link>
                 <Link
                   to="/toolstudio/print-settings/"
                   className="group flex flex-col gap-3 p-5 rounded-2xl glass hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/20 hover:-translate-y-1 transition-all duration-300"
