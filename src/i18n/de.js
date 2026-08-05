@@ -615,6 +615,7 @@ export default {
 
   footer: {
     shop: "Shop",
+    giftCard: "Geschenkkarte",
     tagline: "Artisan Elegance Jewelry and Crafted Art. Wo Handwerkskunst auf Technologie trifft.",
     quickLinks: "Schnelllinks",
     followUs: "Folgen Sie Uns",

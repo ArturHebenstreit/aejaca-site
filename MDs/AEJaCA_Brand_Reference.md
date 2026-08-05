@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-05 | Wersja: 2.8*
+*Wygenerowano: 2026-08-05 | Wersja: 2.9*
 
 ---
 
@@ -910,6 +910,49 @@ Siedem z dziewięciu narzędzi miało dokładnie dwie strony przychodzące: hub 
 
 Pole `audience` rozdziela odbiorców: `buyer`, `maker`, `both`. Sklep pokazuje wyłącznie narzędzia dla kupującego, B2B odwrotnie, bo po drugiej stronie siedzi pracownia. Dwa wpisy blogowe (projektowanie z AI, warsztat od kuchni) celowo nie mają przypisanych narzędzi.
 
+### Karta podarunkowa (od 2026-08-05)
+
+Strona: `/gift-card/`. Nominał 100 do 10 000 zł, ważność **12 miesięcy** od wydania.
+
+**Fundamentalna różnica wobec kodu rabatowego, i wynikają z niej wszystkie pozostałe:**
+karta jest **przedpłatą**, czyli naszym zobowiązaniem, a nie zniżką od ceny.
+
+| | Kod rabatowy | Karta podarunkowa |
+|---|---|---|
+| Pokrywa wysyłkę | nigdy | **tak** |
+| Reszta przy mniejszym zamówieniu | nie dotyczy | **zostaje na karcie** |
+| Kolejność naliczania | od pozycji koszyka | **na końcu, od kwoty do zapłaty** |
+| Kolizja z drugim mechanizmem | jeden kod na zamówienie | **można łączyć z kodem** |
+
+Kolejność jest twarda i pilnuje jej test `scripts/test-giftcards.mjs`:
+**rabat od pozycji → plus wysyłka → karta od kwoty do zapłaty**. Odwrotna kolejność kazałaby karcie
+dopłacać rabat, którego nikt nie kupił.
+
+**Sprzedaż idzie ręcznie, realizacja automatycznie.** Klient wypełnia formularz na stronie karty
+(idzie tym samym kanałem, co formularz kontaktowy, `subject: giftcard`), dostaje dane do przelewu,
+a kartę wystawiasz z panelu po zaksięgowaniu wpłaty. Odbiór karty w kasie działa już w pełni
+automatycznie. Karta w koszyku wymagałaby obejścia wysyłki (katalog nie zna dziś pojęcia towaru
+cyfrowego) i osobnej ścieżki w Autopay, więc czekamy na sygnał, że popyt istnieje.
+
+**Zamówienie pokryte kartą w całości** omija bramkę: serwer oznacza je jako opłacone, uruchamia te
+same haki co potwierdzona płatność (maile, zdjęcie ze stanu, obciążenie karty) i prowadzi klienta
+prosto na stronę statusu. Autopay z kwotą zero kończy się błędem, a klient zostałby z zamówieniem,
+którego nie da się opłacić, mimo że już za nie zapłacił, kupując kartę.
+
+**Rezerwacja, nie obciążenie.** Saldo schodzi dopiero przy potwierdzonej zapłacie, tak samo jak
+towar i kod rabatowy. Porzucony koszyk nie zjada karty, a rezerwacja wygasa sama: 20 minut przy
+płatności natychmiastowej, 3 dni robocze przy przelewie.
+
+**Księgowo to bon różnego przeznaczenia** (sprzedajemy towary i usługi o różnych stawkach VAT),
+więc podatek rozlicza się przy realizacji bonu, a nie przy jego sprzedaży. **Do potwierdzenia
+z księgową.**
+
+Panel: `POST /api/admin/giftcards` wydaje kartę i zwraca numer **raz**, `GET` listuje karty z saldem
+i historią obciążeń, `PATCH` blokuje kartę zgłoszoną jako zgubioną. Numer losujemy generatorem
+kryptograficznym, bo karta jest pieniądzem na okaziciela.
+
+---
+
 ### Pozostali strażnicy w buildzie
 
 | Strażnik | Czego pilnuje | Skąd się wziął |
@@ -917,6 +960,7 @@ Pole `audience` rozdziela odbiorców: `buyer`, `maker`, `both`. Sklep pokazuje w
 | `scripts/check-reveal.mjs` | klasa `reveal` bez `ref` z `useScrollReveal()` | trzy bloki na `/shipping/` były trwale niewidoczne, w tym obowiązkowa informacja o cle i sekcja FAQ odbijana w schemacie `FAQPage` |
 | `scripts/check-emdash.mjs` | długie myślniki (U+2014) i ich encja HTML w całym repozytorium | jednorazowe sprzątanie objęło 2720 znaków w 234 plikach; bez strażnika wracają, bo w kodzie źródłowym nikt ich nie widzi aż do publikacji |
 | `scripts/check-tool-links.mjs` | klucze `TOOLS_BY_POST` i `TOOLS_BY_TERM` wskazujące na realne slugi i hasła, komplet tłumaczeń pl/en/de, dozwolone `audience` | trzy klucze wskazywały na nieistniejące slugi, a fallback po cichu podstawiał domyślne narzędzia, więc trzy wpisy zgubiły odnośnik do wyceny metalu przy zielonym buildzie |
+| `scripts/test-giftcards.mjs` | arytmetyka kart: pokrycie, kolejność rabat→wysyłka→karta, format numeru, ważność | błąd tutaj kosztuje realne pieniądze w jedną albo drugą stronę, a przy przedpłacie klient już zapłacił |
 | `npm run lint:undef` (`eslint.undef.config.js`) | reguła `no-undef`, czyli sięganie po nazwę spoza zasięgu | odnośnik dodany do pola rozmiaru w kalkulatorze użył `lang`, którego funkcja nie przyjmowała; efekt to biała strona po przełączeniu na tryb zaawansowany, a build, prerender i wszyscy pozostali strażnicy przeszli bez słowa |
 
 Włączona jest wyłącznie reguła `no-undef`. Pełny eslint daje w tym repozytorium ponad 1400 zgłoszeń, prawie same `react/prop-types`, więc zaszumiłby build zamiast go chronić. `eslint` i `@eslint/js` muszą trzymać tę samą główną wersję, inaczej czysta instalacja na Cloudflare wywala się na `ERESOLVE`, a build lokalny z `--legacy-peer-deps` tego nie pokaże.

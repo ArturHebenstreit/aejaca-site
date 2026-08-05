@@ -630,6 +630,7 @@ export default {
   // Footer
   footer: {
     shop: "Shop",
+    giftCard: "Gift card",
     tagline: "Artisan Elegance Jewelry and Crafted Art. Where craftsmanship meets technology.",
     quickLinks: "Quick Links",
     followUs: "Follow Us",

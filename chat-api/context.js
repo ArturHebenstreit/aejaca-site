@@ -594,6 +594,7 @@ Examples of questions requiring inline calculation:
 - Jewelry shop (Sklep): https://www.aejaca.com/jewelry/#shop
 - Studio shop (Sklep): https://www.aejaca.com/studio/#shop
 - Newsletter / 10% discount signup: https://www.aejaca.com/#newsletter
+- **Karta podarunkowa** - prezent bez zgadywania rozmiaru, 100 do 10 000 zl, wazna 12 miesiecy, pokrywa takze wysylke, reszta zostaje na karcie: https://www.aejaca.com/gift-card/
 - **Makers Tools (sTuDiO)** - hub narzędzi: https://www.aejaca.com/toolstudio/
 - **3D Print Settings, FDM**, kreator parametrów druku 3D FDM (45+ filamentów): https://www.aejaca.com/toolstudio/print-settings/
 - **3D Print Settings, MSLA**, doradca żywic MSLA (13 żywic w 3 segmentach, tabela porównawcza): https://www.aejaca.com/toolstudio/resin-settings/
@@ -721,9 +722,23 @@ KASA KROK PO KROKU (stan na 2026-08-03), do odpowiadania na pytania "jak kupic":
 3. **Paczkomat wybiera sie z wyszukiwarki**: klient wpisuje kod pocztowy albo miasto i klika punkt z listy, razem z adresem i opisem miejsca. Nie trzeba pamietac kodu w rodzaju WAW01A, choc recznie nadal mozna go wpisac.
 4. **Darmowa dostawa w Polsce od 400 zl** pokazuje sie w kasie jako "Gratis" z przekreslona cena normalna. Prog liczy sie od wartosci pozycji.
 5. **Kod rabatowy** wpisuje sie w polu pod podsumowaniem zamowienia. Kwota znizki widac przed zaplata. Jeden kod na zamowienie.
+5b. **Karta podarunkowa** ma wlasne pole, tuz pod polem kodu rabatowego, i obu mozna uzyc na tym samym zamowieniu. Karta jest przedplata, wiec jako JEDYNA pokrywa takze wysylke. Kolejnosc naliczania jest stala: najpierw rabat od pozycji, potem dochodzi wysylka, a karta schodzi na koncu od kwoty do zaplaty. Reszta zostaje na karcie na kolejne zamowienie. Gdy karta pokryje calosc, nie ma czego doplacac i krok z bramka platnicza w ogole sie nie pojawia.
 6. **Metoda platnosci**: na wierzchu BLIK oraz opcja "Wybiore na stronie platnosci Autopay", a ponad dwadziescia bankow chowa sie pod jednym wierszem "Place z banku" z wyszukiwarka. Klient nie przewija dlugiej listy, zeby dojsc do BLIKA.
 7. Po zaplacie bramka potwierdza transakcje, dopiero wtedy towar schodzi ze stanu, kod rabatowy liczy sie jako uzyty, a klient i warsztat dostaja maile. Porzucony koszyk niczego nie zabiera: rezerwacja towaru i kodu wygasa sama.
 8. Zamowienie ma wlasny numer (AE20260803-XXXXXXXX) i strone statusu, na ktora klient wraca z bramki.
+
+KARTA PODARUNKOWA (od 2026-08-05), strona: https://www.aejaca.com/gift-card/
+- Obejmuje CALA oferte: bizuterie z polki i na zamowienie, druk 3D FDM i zywiczny, grawerowanie, ciecie laserem, odlewy. To jej glowna przewaga przy prezencie dla kogos, kto majsterkuje.
+- Nominal od 100 do 10 000 zl, dowolny, nie musi byc okragly. Waznosc 12 miesiecy od wydania, data jest wypisana na karcie.
+- **To przedplata, a NIE rabat.** Roznice, ktore trzeba znac: karta pokrywa takze koszt wysylki (rabat nie pokrywa jej nigdy), a reszta zostaje na karcie zamiast przepasc.
+- Przyklad, ktory warto podac wprost: karta 500 zl uzyta na zamowienie 320 zl zostawia 180 zl do wykorzystania pozniej. Klient nie musi dobierac niczego na sile.
+- Mozna laczyc z kodem rabatowym na jednym zamowieniu.
+- **Sprzedaz idzie przez zapytanie, nie przez kase**: klient wypelnia formularz na stronie karty, dostaje dane do przelewu, a karte wystawiamy po zaksiegowaniu wplaty. Odpowiadamy zwykle w 24 godziny w dni robocze.
+- **Realizacja jest automatyczna**: obdarowany wpisuje numer w kasie i kwota schodzi od razu. Numer ma postac AEJ-XXXX-XXXX.
+- Saldo mozna sprawdzic na stronie karty, wpisujac numer. Nie trzeba do tego konta ani maila.
+- Zgubiony numer odzyskujemy: wystarczy napisac z adresu, na ktory karta poszla, albo podac dane kupujacego. Karty zgloszone jako zgubione blokujemy i wydajemy nowa na pozostale saldo.
+- Kart NIE wymieniamy na gotowke. Przy karcie zupelnie niewykorzystanej i mniej niz 14 dni od zakupu prosimy o kontakt, rozwiazujemy indywidualnie.
+- Gdy ktos pyta o prezent i nie zna rozmiaru palca, kamienia ani proby: karta jest tu lepsza niz konkretny wyrob i warto to powiedziec wprost, zamiast zgadywac za niego.
 
 Czego NIE mowic: nie ma platnosci karta, Google Pay ani Apple Pay. Nie ma tez platnosci za pobraniem.
 
@@ -875,6 +890,8 @@ Examples by scenario:
 - Laser parameters question (e.g. "jakie parametry CO2 40W na akrylu?"): "Skorzystaj z naszego [Kreatora parametrów laserowania](https://www.aejaca.com/toolstudio/#laser-params) - wybierz: Grawerowanie → Akryl → CO2 → 40W i otrzymasz gotową kartę (prędkość, moc %, przejścia, optyka, gaz). Baza zawiera 1000+ kombinacji dla 7 typów laserów i 88 materiałów, całkowicie za darmo."
 - Ring size conversion: "Rozmiar US 7 to **EU 54, Ø 17.2 mm, UK M, JP 14**. Pełny konwerter: [Kalkulator rozmiarów pierścionków](https://www.aejaca.com/toolsjewelry/ring-size/)."
 - Ring blank calculation: "Dla srebra 925, EU 54 (Ø 17.2 mm), grubość 1.5 mm, szerokość 6 mm: blank **352 mm** (z naddatkiem: 370 mm), masa ok. **5.47 g**. Sprawdź wizualnie: [Kalkulator blanku](https://www.aejaca.com/toolsjewelry/)."
+- Prezent, "nie wiem co kupic", "nie znam rozmiaru", "Geschenk", "gift idea": "Jeżeli nie znasz rozmiaru palca ani upodobań, [karta podarunkowa](https://www.aejaca.com/gift-card/) jest tu bezpieczniejsza niż konkretny wyrób. Obejmuje całą ofertę, jest ważna 12 miesięcy, a reszta zostaje na karcie."
+- Sprawdzenie salda karty: "Wpisz numer karty na [stronie karty podarunkowej](https://www.aejaca.com/gift-card/), zobaczysz pozostałą kwotę i datę ważności. Konto nie jest potrzebne."
 - Metal value / purity question: "Złoto 585 (14K) = 58,5% czystego złota. Aktualną wartość w PLN, razem z realnymi widełkami skupu, policzysz w kalkulatorze [Ile warte jest moje złoto](https://www.aejaca.com/toolsjewelry/metal-pricing/)."
 - Alloy composition question: "Skład i temperatura topnienia stopów jubilerskich: [Składy stopów](https://www.aejaca.com/toolsjewelry/alloy-composition/)."
 - Jewelry care question: "Szczegółowy poradnik: [Jak dbać o biżuterię](https://www.aejaca.com/blog/jak-dbac-o-bizuterie/) + przydatne definicje w [słowniku: rodowanie](https://www.aejaca.com/glossary/rodowanie/)."

@@ -55,6 +55,13 @@ const UI = {
     codeRemove: "Usuń kod",
     codeOk: "Kod naliczony",
     discount: "Rabat",
+    giftIntro: "Masz kartę podarunkową? Wpisz jej numer:",
+    giftPlaceholder: "AEJ-XXXX-XXXX",
+    giftOk: "Karta naliczona",
+    giftRemove: "Usuń kartę",
+    gift: "Karta podarunkowa",
+    giftLeft: "Na karcie zostanie",
+    giftCovered: "Karta pokrywa całość, nie ma czego dopłacać.",
     payMethod: "Metoda płatności",
     payAny: "Wybiorę na stronie płatności Autopay",
     pay: "Kupuję i płacę",
@@ -117,6 +124,13 @@ const UI = {
     codeRemove: "Remove code",
     codeOk: "Code applied",
     discount: "Discount",
+    giftIntro: "Have a gift card? Enter its number:",
+    giftPlaceholder: "AEJ-XXXX-XXXX",
+    giftOk: "Card applied",
+    giftRemove: "Remove card",
+    gift: "Gift card",
+    giftLeft: "Left on the card",
+    giftCovered: "The card covers the whole order, nothing left to pay.",
     payMethod: "Payment method",
     payAny: "I will choose on the Autopay payment page",
     pay: "Buy and pay",
@@ -179,6 +193,13 @@ const UI = {
     codeRemove: "Code entfernen",
     codeOk: "Code angerechnet",
     discount: "Rabatt",
+    giftIntro: "Sie haben eine Geschenkkarte? Nummer eingeben:",
+    giftPlaceholder: "AEJ-XXXX-XXXX",
+    giftOk: "Karte eingelöst",
+    giftRemove: "Karte entfernen",
+    gift: "Geschenkkarte",
+    giftLeft: "Restguthaben",
+    giftCovered: "Die Karte deckt die gesamte Bestellung, es bleibt nichts zu zahlen.",
     payMethod: "Zahlungsmethode",
     payAny: "Ich wähle auf der Autopay-Zahlungsseite",
     pay: "Kaufen und bezahlen",
@@ -272,6 +293,10 @@ export default function Checkout() {
   const [applied, setApplied] = useState(null);   // { code, discountGrosze }
   const [codeBusy, setCodeBusy] = useState(false);
   const [codeError, setCodeError] = useState(null);
+  const [giftInput, setGiftInput] = useState("");
+  const [gift, setGift] = useState(null);      // { code, coverGrosze, availableGrosze }
+  const [giftBusy, setGiftBusy] = useState(false);
+  const [giftError, setGiftError] = useState(null);
 
   // Zgody zalezne od zawartosci koszyka, nie od zamowienia jako calosci.
   const hasMadeToOrder = items.some((i) => i.withdrawal === "made_to_order" || i.kind === "service");
@@ -308,7 +333,13 @@ export default function Checkout() {
   }));
 
   const discountGrosze = applied?.discountGrosze || 0;
-  const totalGrosze = Math.max(subtotalGrosze - discountGrosze, 0) + delivery.grosze;
+  // Kolejnosc jest ustalona po stronie serwera i tu ja tylko odwzorowujemy:
+  // rabat od pozycji, potem wysylka, a karta na samym koncu od kwoty do
+  // zaplaty. Karta jest przedplata, wiec jako jedyna pokrywa TAKZE wysylke.
+  const payableBeforeGift = Math.max(subtotalGrosze - discountGrosze, 0) + delivery.grosze;
+  const giftGrosze = Math.min(gift?.availableGrosze || 0, payableBeforeGift);
+  const totalGrosze = payableBeforeGift - giftGrosze;
+  const giftLeftGrosze = Math.max((gift?.availableGrosze || 0) - giftGrosze, 0);
 
   async function checkCode(raw, { silent = false } = {}) {
     const code = String(raw || "").trim().toUpperCase();
@@ -331,6 +362,31 @@ export default function Checkout() {
       if (!silent) setCodeError(u.generic);
     } finally {
       setCodeBusy(false);
+    }
+  }
+
+  // Karty nie przeliczamy przy kazdej zmianie koszyka: jej saldo nie zalezy
+  // od zawartosci, a pokrycie liczymy w przegladarce z tego samego wzoru, co
+  // serwer. Sprawdzamy wiec raz, przy wpisaniu numeru.
+  async function checkGift(raw) {
+    const code = String(raw || "").trim().toUpperCase();
+    if (!code || !API_URL) return;
+    setGiftBusy(true);
+    setGiftError(null);
+    try {
+      const r = await postJSON(`${API_URL}/api/giftcards/check`, { code });
+      if (r.ok && r.data?.ok) {
+        setGift({ code: r.data.code, availableGrosze: r.data.availableGrosze });
+        setGiftError(null);
+      } else {
+        setGift(null);
+        setGiftError(r.data?.error || u.generic);
+      }
+    } catch {
+      setGift(null);
+      setGiftError(u.generic);
+    } finally {
+      setGiftBusy(false);
     }
   }
 
@@ -435,6 +491,7 @@ export default function Checkout() {
         consents,
         paymentMethod: payMode,
         discountCode: applied?.code || null,
+        giftCardCode: gift?.code || null,
       });
 
       if (!created.ok) {
@@ -444,6 +501,15 @@ export default function Checkout() {
             .join(" - ".replace(" - ", ": "))
         );
         setBusy(false);
+        return;
+      }
+
+      // Zamowienie pokryte karta w calosci nie ma czego wyslac do bramki.
+      // Serwer oznaczyl je juz jako oplacone, wiec prowadzimy klienta prosto
+      // na status zamowienia zamiast na platnosc kwoty zero.
+      if (created.data?.fullyCovered) {
+        clear();
+        navigate(`/order/status/?ref=${created.data.orderRef}&token=${created.data.token}`);
         return;
       }
 
@@ -521,6 +587,12 @@ export default function Checkout() {
                 ? <span className="text-emerald-300">{u.freeShipping}</span>
                 : <span className="text-white">{money(delivery.grosze)}</span>}
             </div>
+            {giftGrosze > 0 && (
+              <div className="flex justify-between text-sm pt-2 mt-2 border-t border-white/5">
+                <span className="text-amber-300">{u.gift}: {gift.code}</span>
+                <span className="text-amber-300">-{money(giftGrosze)}</span>
+              </div>
+            )}
             <div className="flex justify-between font-bold pt-3 mt-3 border-t border-white/10">
               <span className="text-white">{u.total}</span>
               <span className="text-blue-400 text-xl">{money(totalGrosze)}</span>
@@ -575,6 +647,66 @@ export default function Checkout() {
                 </div>
               )}
               {codeError && <p className="text-amber-300 text-[11px] mt-2">{codeError}</p>}
+            </div>
+
+            {/* Karta podarunkowa. Osobne pole, a nie wspolne z kodem, bo to dwie
+                rozne rzeczy i klient moze miec obie naraz. Jedno pole "wpisz kod
+                albo numer karty" kazaloby mu wybrac jedna z nich bez powodu. */}
+            <div className="pt-4 mt-4 border-t border-white/5">
+              {gift ? (
+                <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-amber-300 text-xs inline-flex items-center gap-1.5">
+                      <Check className="w-3.5 h-3.5" />{u.giftOk}: <strong className="font-mono">{gift.code}</strong>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => { setGift(null); setGiftInput(""); setGiftError(null); }}
+                      className="text-neutral-500 hover:text-white text-xs transition-colors"
+                    >
+                      {u.giftRemove}
+                    </button>
+                  </div>
+                  {/* Reszta na karcie jest tu, a nie dopiero w mailu po zakupie:
+                      klient decydujacy, czy dobrac jeszcze jedna rzecz, musi
+                      wiedziec, ile mu zostanie, zanim kliknie "kupuje". */}
+                  {giftLeftGrosze > 0 && (
+                    <p className="text-neutral-500 text-[11px] mt-2">
+                      {u.giftLeft}: {money(giftLeftGrosze)}
+                    </p>
+                  )}
+                  {totalGrosze === 0 && (
+                    <p className="text-emerald-300 text-[11px] mt-2">{u.giftCovered}</p>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <label htmlFor="gift-code" className="block text-neutral-400 text-xs mb-2">
+                    {u.giftIntro}
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      id="gift-code"
+                      value={giftInput}
+                      onChange={(e) => setGiftInput(e.target.value.toUpperCase())}
+                      onKeyDown={(e) => e.key === "Enter" && checkGift(giftInput)}
+                      placeholder={u.giftPlaceholder}
+                      className="flex-1 bg-transparent border border-white/10 rounded-lg px-3 py-2 text-sm text-white font-mono
+                                 placeholder:text-neutral-600 focus:outline-none focus:border-amber-400/50 uppercase"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => checkGift(giftInput)}
+                      disabled={!giftInput.trim() || giftBusy}
+                      className="px-4 py-2 rounded-lg border border-white/15 text-neutral-300 text-sm
+                                 hover:border-white/30 hover:text-white disabled:opacity-40 transition-colors"
+                    >
+                      {giftBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : u.codeApply}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {giftError && <p className="text-amber-300 text-[11px] mt-2">{giftError}</p>}
             </div>
           </div>
 
