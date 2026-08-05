@@ -55,11 +55,11 @@ export const TOOL_LINKS = [
     category: "jewelry",
     audience: "both",
     to: "/toolsjewelry/metal-pricing/",
-    label: { pl: "Wycena metali szlachetnych", en: "Precious metal pricing", de: "Edelmetallbewertung" },
+    label: { pl: "Ile warte jest moje złoto", en: "What is my gold worth", de: "Was ist mein Gold wert" },
     desc: {
-      pl: "Wartość złota, srebra i platyny z ceny spot i kursu NBP, w PLN i EUR.",
-      en: "Gold, silver and platinum value from the spot price, in PLN and EUR.",
-      de: "Gold-, Silber- und Platinwert aus dem Spotpreis, in PLN und EUR.",
+      pl: "Wartość kruszcu z ceny spot i realne widełki skupu. Próby 333 do 999 i karaty.",
+      en: "Metal value from the spot price plus a realistic buy-back range. Fineness 333 to 999 and karats.",
+      de: "Materialwert aus dem Spotpreis und realistische Ankaufsspanne. Feingehalt 333 bis 999 und Karat.",
     },
   },
   {
