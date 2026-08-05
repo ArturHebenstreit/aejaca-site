@@ -16,6 +16,8 @@ import {
   QUANTITY_TIERS, t, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture, LicenseNotice,
 } from "./calcShared.jsx";
 import CalcToCart from "./CalcToCart.jsx";
+import PrintabilityGate from "./PrintabilityGate.jsx";
+import { nozzleFromPrecision } from "../../analysis/printability.js";
 import { calculate as calcPrint3D, calculateMSLA, MSLA_SIZES } from "./Print3DCalc.jsx";
 import { calcEngrave as calcCO2Engrave, calcCut as calcCO2Cut } from "./CO2LaserCalc.jsx";
 import { calculate as calcFiber } from "./FiberLaserCalc.jsx";
@@ -504,6 +506,9 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   // Kwota wiazaca zglaszana przez CalcToCart. Gdy jest, widelki znikaja,
   // bo przedzial obok konkretnej kwoty tylko ja podwaza.
   const [bindingGrosze, setBindingGrosze] = useState(null);
+  // Szybka wycena tez przyjmuje pliki, wiec i tu model trzeba sprawdzic.
+  // Bez tego klient omija bramke, wybierajac lagodniejsza sciezke.
+  const [printability, setPrintability] = useState(null);
 
   const [material, setMaterial] = useState("idk");
   const [finish, setFinish]     = useState("standard");
@@ -807,13 +812,23 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
       <div id={hasFile ? "file-upload" : undefined} className="rounded-2xl border-2 border-emerald-400/30 bg-gradient-to-br from-emerald-400/[0.04] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
+        {stlData?.triangles?.length > 0 && (resolved?.tech === "3dprint" || resolved?.tech === "msla") && (
+          <PrintabilityGate
+            triangles={stlData.triangles}
+            tech={resolved.tech === "msla" ? "msla" : "fdm"}
+            nozzleId={nozzleFromPrecision(resolved.params?.precisionId)}
+            lang={lang}
+            onResult={setPrintability}
+          />
+        )}
         {cartTarget && (
           <CalcToCart
-          onBinding={setBindingGrosze}
+            onBinding={setBindingGrosze}
             calculator={cartTarget.calculator}
             serviceId={cartTarget.serviceId}
-            params={resolved.params}
+            params={printability ? { ...resolved.params, printability } : resolved.params}
             lang={lang}
+            hold={Boolean(printability?.blocked && !printability?.accepted)}
           />
         )}
         <div className="mt-4 pt-3 border-t border-emerald-400/10 text-[11px] text-emerald-400/60 italic text-center">

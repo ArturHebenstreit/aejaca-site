@@ -12,7 +12,7 @@
 import assert from "node:assert/strict";
 import {
   analyzeTopology, analyzeThickness, analyzeOverhangs, signedVolumeMm3,
-  boundsOf, analyzePrintability, NOZZLES, MACHINES,
+  boundsOf, analyzePrintability, nozzleFromPrecision, NOZZLES, MACHINES,
 } from "../src/analysis/printability.js";
 
 // ------------------------------------------------------------
@@ -234,3 +234,27 @@ for (const n of NOZZLES) {
 }
 
 console.log("Drukowalnosc: topologia, objetosc, grubosc, nawisy, gabaryty i progi dysz zgodne");
+
+// ------------------------------------------------------------
+// Odczyt dyszy z ustawien kalkulatora
+// ------------------------------------------------------------
+// Kalkulator opisuje precyzje jako `standard_04`. Bramka w koszyku musi z tego
+// wyciagnac dysze, bo od niej zalezy prog grubosci scianki. Pomylka tutaj
+// znaczy, ze klient dostaje ostrzezenie dla innej dyszy niz zamawia.
+
+
+
+assert.equal(nozzleFromPrecision("standard_04"), "0.4");
+assert.equal(nozzleFromPrecision("draft_04"), "0.4");
+assert.equal(nozzleFromPrecision("quality_04"), "0.4");
+assert.equal(nozzleFromPrecision("fine_04"), "0.4");
+assert.equal(nozzleFromPrecision("standard_02"), "0.2");
+assert.equal(nozzleFromPrecision("fine_02"), "0.2");
+// Brak ustawien i wartosci nieznane schodza do dyszy domyslnej, a nie do
+// najlagodniejszego progu. Ostrzezenie ma dotyczyc tego, co realnie zrobimy.
+assert.equal(nozzleFromPrecision("custom"), "0.4");
+assert.equal(nozzleFromPrecision(null), "0.4");
+assert.equal(nozzleFromPrecision(""), "0.4");
+assert.equal(nozzleFromPrecision("standard_09"), "0.4", "dysza spoza listy nie moze przejsc dalej");
+
+console.log("Bramka w koszyku: odczyt dyszy z ustawien kalkulatora zgodny");

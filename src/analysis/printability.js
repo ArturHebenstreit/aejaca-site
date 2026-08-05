@@ -65,6 +65,22 @@ export const MSLA_LIMITS = {
   cavityWarnCm3: 1.0, // zamknieta pustka powyzej tej objetosci potrzebuje otworu spustowego
 };
 
+/**
+ * Dysza wynikajaca z ustawien wybranych w kalkulatorze.
+ *
+ * Kalkulator opisuje precyzje jako `standard_04`, czyli dysza 0,4 mm i pewna
+ * wysokosc warstwy. Do progu grubosci scianki liczy sie tylko dysza.
+ *
+ * Wartosc nieznana schodzi do 0,4, a nie do najlagodniejszego progu. To nasza
+ * dysza domyslna, wiec ostrzezenie dotyczy tego, co realnie sie wydarzy przy
+ * druku, a nie najkorzystniejszego wariantu na papierze.
+ */
+export function nozzleFromPrecision(precisionId) {
+  const m = String(precisionId || "").match(/_0(\d)$/);
+  const id = m ? `0.${m[1]}` : null;
+  return id && NOZZLES.some((n) => n.id === id) ? id : "0.4";
+}
+
 /** Kat nawisu liczony od pionu. Powyzej niego slicer stawia podpory. */
 export const OVERHANG_DEG = 45;
 

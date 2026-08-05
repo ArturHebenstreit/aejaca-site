@@ -59,6 +59,7 @@ const UI = {
     engravingOver: "Dłuższy grawer wyceniamy indywidualnie: to inne ustawienia lasera i inna kompozycja. Napisz do nas, odpowiemy w 24 godziny.",
     missingEngraving: "Wpisz treść graweru",
     blockedTitle: "Zanim dodasz do koszyka",
+    holdLabel: "Potwierdź uwagi do modelu",
     needDescription: "Opis zlecenia",
     needDescriptionHint: "Wpisz co najmniej 20 znaków w polu opisu powyżej.",
     needArtwork: "Projekt do wykonania",
@@ -95,6 +96,7 @@ const UI = {
     engravingOver: "A longer engraving is quoted individually: different laser settings and a different layout. Write to us, we reply within 24 hours.",
     missingEngraving: "Enter the engraving text",
     blockedTitle: "Before you add this to the cart",
+    holdLabel: "Confirm the notes on the model",
     needDescription: "Job description",
     needDescriptionHint: "Type at least 20 characters in the description above.",
     needArtwork: "Your artwork",
@@ -131,6 +133,7 @@ const UI = {
     engravingOver: "Eine längere Gravur kalkulieren wir individuell: andere Lasereinstellungen, andere Komposition. Schreiben Sie uns, wir antworten binnen 24 Stunden.",
     missingEngraving: "Gravurtext eingeben",
     blockedTitle: "Bevor Sie in den Warenkorb legen",
+    holdLabel: "Hinweise zum Modell bestätigen",
     needDescription: "Auftragsbeschreibung",
     needDescriptionHint: "Mindestens 20 Zeichen im Beschreibungsfeld oben.",
     needArtwork: "Ihre Vorlage",
@@ -158,7 +161,7 @@ const money = (g) => `${(g / 100).toFixed(2).replace(".", ",")} PLN`;
  * @param {number[][][]} [props.triangles] siatka wgranego modelu, jesli kalkulator
  *        juz ja odczytal. Sluzy wylacznie do zrobienia miniatury dla koszyka.
  */
-export default function CalcToCart({ calculator, serviceId, params, file = null, triangles = null, scale = 1, lang, accent = "blue", blocked = false, blockedReason = "vector", onBinding = null }) {
+export default function CalcToCart({ calculator, serviceId, params, file = null, triangles = null, scale = 1, lang, accent = "blue", blocked = false, blockedReason = "vector", onBinding = null, hold = false }) {
   const u = UI[lang] || UI.en;
   const cart = useCart();
   const card = getServiceCard(serviceId);
@@ -301,7 +304,10 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
   const engravingOver = wantsEngraving && engraving.trim().length > ENGRAVING_LIMITS.jewelry;
   const engravingOk = !wantsEngraving || (engraving.trim().length >= 1 && !engravingOver);
 
-  const ready = descriptionOk && artworkOk && engravingOk && !gatedShape;
+  // `hold` wstrzymuje dodanie do koszyka, dopoki klient nie pokwituje
+  // ujawnionej wady swojego pliku. Rozni sie od `blocked`: tam ceny nie ma
+  // wcale, tu cena jest policzona i widoczna, brakuje tylko potwierdzenia.
+  const ready = descriptionOk && artworkOk && engravingOk && !gatedShape && !hold;
 
   const qty = price?.qty || 1;
   const lineGrosze = (price?.unitGrosze || 0) * qty;
@@ -480,7 +486,7 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
             }`}
           >
             {added ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
-            {added ? u.added : !ready ? (requiresArtwork && !artworkOk ? u.missingArtwork : !descriptionOk ? u.missingDescription : u.missingEngraving) : u.addToCart}
+            {added ? u.added : !ready ? (hold ? u.holdLabel : requiresArtwork && !artworkOk ? u.missingArtwork : !descriptionOk ? u.missingDescription : u.missingEngraving) : u.addToCart}
           </button>
 
           {added && (

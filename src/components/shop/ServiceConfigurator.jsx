@@ -16,6 +16,8 @@ import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS } from "..
 import { t, quantityBounds } from "../../pricing/config.js";
 import { TileGroup, StepSlider, QtyStepper, FileDrop, PersonalizationField, JobDescription, BlockedReasons } from "./ConfigControls.jsx";
 import { useMoney } from "../../shop/money.js";
+import PrintabilityGate from "../calculators/PrintabilityGate.jsx";
+import { nozzleFromPrecision } from "../../analysis/printability.js";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
 
@@ -73,6 +75,7 @@ const UI = {
     tierRange: "próg",
     total: "Razem",
     addToCart: "Dodaj do koszyka",
+    printHold: "Potwierdź uwagi do modelu",
     added: "Dodano do koszyka",
     goToCart: "Przejdź do koszyka",
     calculating: "Liczę cenę",
@@ -122,6 +125,7 @@ const UI = {
     tierRange: "tier",
     total: "Total",
     addToCart: "Add to cart",
+    printHold: "Confirm the notes on the model",
     added: "Added to cart",
     goToCart: "Go to cart",
     calculating: "Calculating",
@@ -171,6 +175,7 @@ const UI = {
     tierRange: "Stufe",
     total: "Gesamt",
     addToCart: "In den Warenkorb",
+    printHold: "Hinweise zum Modell bestätigen",
     added: "In den Warenkorb gelegt",
     goToCart: "Zum Warenkorb",
     calculating: "Berechne",
@@ -198,6 +203,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const [uploading, setUploading] = useState(false);
   const [geometry, setGeometry] = useState(null);
   const [triangles, setTriangles] = useState(null);
+  const [printability, setPrintability] = useState(null);
   const [hasThumb, setHasThumb] = useState(false);
   const [thumbData, setThumbData] = useState(null);
   const [vectorFile, setVectorFile] = useState(null);
@@ -340,7 +346,11 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const needsHumanQuote = gateComplex || gateHandmade;
 
   const overLimit = jewelryOver || packOver;
-  const ready = descriptionOk && artworkOk && jewelryEngravingOk && packEngravingOk && !needsHumanQuote;
+  // Pokwitowanie ujawnionej wady pliku wstrzymuje dodanie do koszyka tak samo,
+  // jak brakujacy opis albo brakujacy rysunek: cena jest policzona, brakuje
+  // tylko potwierdzenia od klienta.
+  const printHold = Boolean(printability?.blocked && !printability?.accepted);
+  const ready = descriptionOk && artworkOk && jewelryEngravingOk && packEngravingOk && !needsHumanQuote && !printHold;
 
   const setParam = (key, val) => setParams((p) => ({ ...p, [key]: val }));
 
@@ -444,7 +454,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       serviceId: card.id,
       title: t(card.title, lang),
       image: card.image,
-      params: { ...params, ...(service.fixed || {}) },
+      params: { ...params, ...(service.fixed || {}), ...(printability ? { printability } : {}) },
       geometry,
       fileName: file?.name || null,
       uploadToken,
@@ -497,6 +507,17 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
             )}
             {geometry && <p className="text-neutral-600 text-[10px] mt-2 leading-relaxed">{u.unitsNote}</p>}
           </FileDrop>
+          {/* Analiza tylko dla druku 3D. Przy grawerze albo odlewie te progi
+              nic nie znacza, a ostrzezenie bez znaczenia uczy je ignorowac. */}
+          {triangles?.length > 0 && (service.calculator === "print3d_fdm" || service.calculator === "print3d_msla") && (
+            <PrintabilityGate
+              triangles={triangles}
+              tech={service.calculator === "print3d_msla" ? "msla" : "fdm"}
+              nozzleId={nozzleFromPrecision(params.precisionId)}
+              lang={lang}
+              onResult={setPrintability}
+            />
+          )}
           {!file && <p className="text-neutral-600 text-[11px] -mt-4 mb-6">{u.fileOptional}</p>}
         </>
       )}
@@ -787,7 +808,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
               }`}
             >
               {added ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
-              {added ? u.added : !ready ? (!descriptionOk ? u.missingDescription : !artworkOk ? u.missingArtwork : u.missingEngraving) : u.addToCart}
+              {added ? u.added : !ready ? (printHold ? u.printHold : !descriptionOk ? u.missingDescription : !artworkOk ? u.missingArtwork : u.missingEngraving) : u.addToCart}
             </button>
             )}
 

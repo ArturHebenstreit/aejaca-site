@@ -12,7 +12,7 @@
 // informacyjnymi, ale muszą pokrywać KAŻDĄ sekcję, inaczej regulamin czyta się
 // jak niekompletny w połowie języków.
 
-export const TERMS_EFFECTIVE_DATE = "2026-07-29";
+export const TERMS_EFFECTIVE_DATE = "2026-08-05";
 
 export const TERMS = {
   pl: {
@@ -205,6 +205,8 @@ export const TERMS = {
             "naturalne różnice powierzchni odlewu przed obróbką wykończeniową,",
             "inkluzje, wtrącenia i różnice barwy naturalnych kamieni, będące ich cechą naturalną.",
           ],
+          "Serwis analizuje przesłany model przed dodaniem pozycji do koszyka i wskazuje właściwości, które uniemożliwiają poprawne wykonanie przy wybranych parametrach, w szczególności ścianki cieńsze od minimum dla wybranej średnicy dyszy lub dla druku żywicznego, brak szczelności siatki oraz wymiary przekraczające przestrzeń roboczą. Jeżeli mimo wyświetlonej informacji Klient potwierdzi polecenie wykonania wydruku z tego pliku i z tymi parametrami, wykonanie następuje według jego specyfikacji, a skutek wskazanej właściwości nie stanowi braku zgodności z umową. Treść potwierdzenia Sprzedawca powtarza w wiadomości potwierdzającej zamówienie.",
+          "Postanowienie powyższe nie ogranicza uprawnień Konsumenta z tytułu braku zgodności towaru z umową w zakresie wykraczającym poza wskazaną i potwierdzoną właściwość, ani żadnych innych jego uprawnień wynikających z przepisów bezwzględnie obowiązujących.",
           "Jeżeli zamówienie wymaga tolerancji ściślejszych niż wskazane wyżej, Klient zgłasza to przed Wyceną. Sprzedawca potwierdza wykonalność albo odmawia przyjęcia zamówienia. Tolerancja uzgodniona w Wycenie jest wiążąca.",
           "Sprzedawca nie odpowiada za przydatność wyrobu do zastosowania, o którym nie został poinformowany przed zawarciem umowy, w szczególności do zastosowań konstrukcyjnych, medycznych lub mających kontakt z żywnością.",
         ],
@@ -442,6 +444,8 @@ export const TERMS = {
             "natural surface variation of a casting before finishing,",
             "inclusions and colour variation in natural stones, being their natural characteristic.",
           ],
+          "The Service analyses an uploaded model before the item is added to the cart and points out properties that prevent correct manufacture at the chosen settings, in particular walls thinner than the minimum for the selected nozzle diameter or for resin printing, a mesh that is not watertight, and dimensions exceeding the build volume. If the Customer confirms an instruction to print from that file with those settings despite the information shown, the work is carried out to their specification and the consequence of the identified property does not constitute a lack of conformity. The Seller repeats the wording of that confirmation in the order confirmation message.",
+          "The provision above does not limit the Consumer's rights arising from a lack of conformity of the goods to the extent going beyond the identified and confirmed property, nor any other rights of theirs under mandatory provisions of law.",
           "Where an order requires tighter tolerances than those stated above, the Customer must raise this before the Quotation. The Seller then confirms feasibility or declines the order. A tolerance agreed in the Quotation is binding.",
           "The Seller is not liable for the suitability of an item for a use not disclosed before the contract was concluded, in particular structural, medical or food-contact applications.",
         ],
@@ -679,6 +683,8 @@ export const TERMS = {
             "natürliche Oberflächenunterschiede eines Gussteils vor der Endbearbeitung,",
             "Einschlüsse und Farbunterschiede natürlicher Steine als deren natürliche Eigenschaft.",
           ],
+          "Der Service analysiert ein hochgeladenes Modell, bevor die Position in den Warenkorb gelegt wird, und weist auf Eigenschaften hin, die eine korrekte Fertigung bei den gewählten Einstellungen verhindern, insbesondere Wände dünner als das Minimum für den gewählten Düsendurchmesser oder für den Harzdruck, ein nicht geschlossenes Netz sowie Abmessungen jenseits des Bauraums. Bestätigt der Kunde trotz des angezeigten Hinweises den Auftrag, aus dieser Datei mit diesen Einstellungen zu drucken, erfolgt die Ausführung nach seiner Vorgabe, und die Folge der benannten Eigenschaft stellt keine Vertragswidrigkeit dar. Den Wortlaut dieser Bestätigung wiederholt der Verkäufer in der Bestellbestätigung.",
+          "Die vorstehende Regelung schränkt die Rechte des Verbrauchers wegen Vertragswidrigkeit der Ware nicht ein, soweit sie über die benannte und bestätigte Eigenschaft hinausgehen, und ebenso wenig sonstige Rechte aus zwingenden gesetzlichen Vorschriften.",
           "Erfordert eine Bestellung engere Toleranzen als oben genannt, ist dies vor dem Angebot mitzuteilen. Der Verkäufer bestätigt dann die Machbarkeit oder lehnt die Bestellung ab. Eine im Angebot vereinbarte Toleranz ist verbindlich.",
           "Der Verkäufer haftet nicht für die Eignung eines Erzeugnisses für einen vor Vertragsschluss nicht mitgeteilten Verwendungszweck, insbesondere für konstruktive, medizinische oder lebensmittelberührende Anwendungen.",
         ],
