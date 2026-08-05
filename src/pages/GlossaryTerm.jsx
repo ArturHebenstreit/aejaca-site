@@ -50,6 +50,10 @@ function buildDefinedTermSchema(term, lang) {
       url: `${SITE.url}/glossary/`,
     },
     url: `${SITE.url}/glossary/${term.id}/`,
+    // Kto to twierdzi. Sama definicja daje sie wyciagnac, ale bez wydawcy
+    // asystent cytuje tresc bez zrodla, wiec marka nic z tego nie ma.
+    publisher: { "@type": "Organization", name: SITE.name, url: SITE.url },
+    inLanguage: lang,
   };
 }
 

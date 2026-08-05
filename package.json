@@ -23,6 +23,7 @@
     "db:schema-products": "psql $DATABASE_URL -f scripts/products-schema.sql",
     "db:schema-discounts": "psql $DATABASE_URL -f scripts/discounts-schema.sql",
     "check:storage": "node scripts/check-browser-storage.mjs",
+    "link-graph": "node scripts/link-graph.mjs",
     "audit:serve": "node scripts/audit-server.mjs",
     "backup:n8n": "node scripts/backup-n8n.mjs"
   },

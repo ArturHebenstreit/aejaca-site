@@ -1,5 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+
+// Porownanie sciezek bez koncowego ukosnika.
+//
+// Odnosniki w menu maja ukosnik ("/about/"), a prerender renderuje trasy bez
+// niego ("/about", patrz STATIC_ROUTES w scripts/prerender.mjs). Zwykle ===
+// dawalo wiec na serwerze "nieaktywny", a w przegladarce "aktywny", czyli
+// inny HTML po obu stronach. React zglaszal to jako blad hydracji 418/423,
+// wyrzucal gotowa strone i renderowal wszystko od nowa. Na KAZDEJ stronie,
+// bo pasek nawigacji jest wszedzie i wszedzie jeden odnosnik jest aktywny.
+const samePath = (a, b) => String(a).replace(/\/+$/, "") === String(b).replace(/\/+$/, "");
 import { Menu, X, Globe, ChevronDown, Sun, Moon, ShoppingCart, ExternalLink } from "lucide-react";
 import { useLanguage, LANGUAGES } from "../i18n/LanguageContext.jsx";
 import { useTheme } from "../i18n/ThemeContext.jsx";
@@ -79,7 +89,7 @@ export default function Navbar() {
       return !!el;
     };
 
-    if (pathname === pagePath) {
+    if (samePath(pathname, pagePath)) {
       // Already on the page, small delay for mobile menu close animation
       setTimeout(doScroll, 100);
     } else {
@@ -140,7 +150,7 @@ export default function Navbar() {
       e.preventDefault();
       return;
     }
-    if (pathname === to) {
+    if (samePath(pathname, to)) {
       e.preventDefault();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -169,7 +179,7 @@ export default function Navbar() {
               const dropKey = getDropdownKey(to);
               const hasSections = sections && sections.length > 0;
               const isDropdownOnly = to === "/gallery/" || to === "/resources/";
-              const isActive = pathname === to;
+              const isActive = samePath(pathname, to);
               const accentColor = to === "/studio/" ? "blue" : "amber";
               const triggerClass = `relative text-sm tracking-wide transition-colors hover:text-amber-400 flex items-center gap-1 ${
                 isActive ? "text-amber-400" : "text-neutral-300"
@@ -378,7 +388,7 @@ export default function Navbar() {
                     <button
                       onClick={() => setMobileExpanded(isExpanded ? null : dropKey)}
                       className={`flex items-center w-full px-3 py-3 rounded-lg text-base tracking-wide text-left transition-all ${
-                        pathname === to
+                        samePath(pathname, to)
                           ? "text-amber-400 bg-amber-400/5"
                           : "text-neutral-300 hover:text-amber-400 hover:bg-white/5"
                       }`}
@@ -391,7 +401,7 @@ export default function Navbar() {
                       to={to}
                       onClick={(e) => { handleNavClick(e, to); setMenuOpen(false); setMobileExpanded(null); }}
                       className={`block px-3 py-3 rounded-lg text-base tracking-wide transition-all ${
-                        pathname === to
+                        samePath(pathname, to)
                           ? "text-amber-400 bg-amber-400/5"
                           : "text-neutral-300 hover:text-amber-400 hover:bg-white/5"
                       }`}
