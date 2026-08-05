@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import { useLanguage } from "../../i18n/LanguageContext.jsx";
 import { RING_SIZES as SIZES, MIN_EU, MAX_EU, MIN_DIA, MAX_DIA } from "../../data/ringSizes.js";
 
@@ -28,6 +30,9 @@ const LABELS = {
       "Kostka szersza od nasady? Zmierz obie i wybierz większy rozmiar.",
     ],
     disclaimer: "Rozmiary orientacyjne. Zawsze warto sprawdzić z fizycznym miernikiem jubilerskim.",
+    sizerTitle: "Nie masz czym zmierzyć?",
+    sizerText: "Wydrukuj naszą miarkę. Pasek z podziałką jest dokładniejszy od sznurka, bo nie rozciąga się i nie trzeba go przekładać na linijkę.",
+    sizerBtn: "Miarka do pierścionków do wydruku",
   },
   en: {
     modeCirc: "String / paper",
@@ -53,6 +58,9 @@ const LABELS = {
       "Knuckle wider than base? Measure both; choose the larger size.",
     ],
     disclaimer: "Sizes are approximate. Always verify with a physical ring sizer.",
+    sizerTitle: "Nothing to measure with?",
+    sizerText: "Print our sizer. A printed strip beats string, because it does not stretch and you never transfer the result to a ruler.",
+    sizerBtn: "Printable ring sizer",
   },
   de: {
     modeCirc: "Faden / Papier",
@@ -78,6 +86,9 @@ const LABELS = {
       "Knöchel breiter? Beide Stellen messen und die größere Größe wählen.",
     ],
     disclaimer: "Größen sind Richtwerte. Immer mit einem physischen Ringmaß vergleichen.",
+    sizerTitle: "Nichts zum Messen zur Hand?",
+    sizerText: "Drucken Sie unser Ringmaßband. Ein gedruckter Streifen schlägt den Faden, denn er dehnt sich nicht und muss nicht aufs Lineal übertragen werden.",
+    sizerBtn: "Ringmaßband zum Ausdrucken",
   },
 };
 
@@ -352,6 +363,24 @@ export default function RingSizeCalc({ lang: langProp }) {
       {/* Tips */}
       <div className="p-5 rounded-2xl bg-neutral-900 border border-neutral-800">
         <div className="text-xs uppercase tracking-widest text-amber-400 mb-3">{L.tipsTitle}</div>
+
+        {/* Ta karta uczyla mierzenia sznurkiem i konczyla sie zdaniem, ze warto
+            sprawdzic fizycznym miernikiem, nie proponujac zadnego. Miarka do
+            wydruku jest naszym darmowym odpowiednikiem i musi stac PRZED
+            instrukcja, a nie pod nia: kto doczytal do konca, juz siegnal po
+            sznurek. */}
+        <Link
+          to="/toolsjewelry/ring-sizer/"
+          className="group flex flex-col gap-1 mb-4 p-4 rounded-xl bg-amber-400/5 border border-amber-400/20 hover:border-amber-400/40 hover:bg-amber-400/10 transition-all duration-300"
+        >
+          <span className="text-white text-sm font-medium">{L.sizerTitle}</span>
+          <span className="text-neutral-400 text-xs leading-relaxed">{L.sizerText}</span>
+          <span className="inline-flex items-center gap-1.5 text-amber-400 text-xs font-medium mt-1">
+            {L.sizerBtn}
+            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+          </span>
+        </Link>
+
         <ol className="space-y-2 list-decimal list-inside">
           {L.tips.map((tip, i) => (
             <li key={i} className="text-neutral-400 text-xs leading-relaxed">{tip}</li>

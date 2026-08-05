@@ -484,6 +484,7 @@ co daje błąd o jeden do dwóch rozmiarów. Stąd kontrola skali na samej górz
 ### Blog jako SEO
 18 postów blogowych pokrywających:
 - Biżuteria: pierścionki zaręczynowe, obrączki, srebro vs złoto, pielęgnacja biżuterii, biżuteria inwestycyjna, rodzaje splotów łańcuszkowych, ile kosztuje biżuteria
+- Wpisy o obrączkach i o pierścionku zaręczynowym mają od 2026-08-05 sekcję o rozmiarze, z odesłaniem do miarki do wydruku. Wcześniej oba omawiały metal, kamienie, cenę i termin, a o rozmiarze nie wspominały ani razu, mimo że przy pierścionku na niespodziankę to jest pytanie numer jeden.
 - Studio: druk 3D krok po kroku, grawerowanie laserowe, odlewy żywiczne, jak przygotować plik STL, materiały do laser cuttingu, modelowanie 3D na zamówienie, lost-resin krok po kroku, druk miniatur figurek 16K
 - Specjalne: projektowanie AI, warsztat od kuchni, prezenty personalizowane
 
@@ -855,6 +856,16 @@ Tryb jasny nie działa przez warianty `dark:`, tylko przez listę nadpisań w `s
 `scripts/check-light-theme.mjs` wywala build w dwóch sytuacjach. Pierwsza: jasny tekst (odcienie 50-300) albo ciemne tło panelu (700-950) bez nadpisania. Druga: klasa `hover:` bez własnej reguły na elemencie, którego stan podstawowy nadpisanie ma. Nadpisania niosą `!important`, więc taki hover nigdy nie zadziała i element w trybie jasnym wygląda tak samo z kursorem i bez niego. Tak zniknęło podświetlenie kafelka opinii Google. Gradienty i czerń z przezroczystością są pomijane, bo to przyciemnienia zdjęć, które mają wyglądać tak samo w obu trybach. Świadome wyjątki, na przykład ciemny przycisk z białym tekstem, leżą w `scripts/light-theme-allow.json` i każdy musi mieć uzasadnienie.
 
 Uruchomienie osobno: `npm run check:light`.
+
+### Pozostali strażnicy w buildzie
+
+| Strażnik | Czego pilnuje | Skąd się wziął |
+|---|---|---|
+| `scripts/check-reveal.mjs` | klasa `reveal` bez `ref` z `useScrollReveal()` | trzy bloki na `/shipping/` były trwale niewidoczne, w tym obowiązkowa informacja o cle i sekcja FAQ odbijana w schemacie `FAQPage` |
+| `scripts/check-emdash.mjs` | długie myślniki (U+2014) i ich encja HTML w całym repozytorium | jednorazowe sprzątanie objęło 2720 znaków w 234 plikach; bez strażnika wracają, bo w kodzie źródłowym nikt ich nie widzi aż do publikacji |
+| `npm run lint:undef` (`eslint.undef.config.js`) | reguła `no-undef`, czyli sięganie po nazwę spoza zasięgu | odnośnik dodany do pola rozmiaru w kalkulatorze użył `lang`, którego funkcja nie przyjmowała; efekt to biała strona po przełączeniu na tryb zaawansowany, a build, prerender i wszyscy pozostali strażnicy przeszli bez słowa |
+
+Włączona jest wyłącznie reguła `no-undef`. Pełny eslint daje w tym repozytorium ponad 1400 zgłoszeń, prawie same `react/prop-types`, więc zaszumiłby build zamiast go chronić. `eslint` i `@eslint/js` muszą trzymać tę samą główną wersję, inaczej czysta instalacja na Cloudflare wywala się na `ERESOLVE`, a build lokalny z `--legacy-peer-deps` tego nie pokaże.
 
 ### Wysyłka i cło
 
