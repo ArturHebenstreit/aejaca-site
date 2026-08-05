@@ -10,11 +10,21 @@
 // wpisanie kwoty czyni z wyceny oferte, i dopiero wtedy da sie ja przekuc
 // w zamowienie do zaplaty.
 
-import { generateToken } from "./orders.js";
+import { generateToken, priceItem } from "./orders.js";
 import { CAD_CONFIG } from "./pricing/cadDesign.js";
 
 /** Ile dni obowiazuje wyslana wycena, jesli nie podano inaczej */
 export const QUOTE_VALIDITY_DAYS = 14;
+
+/**
+ * Wycena zapisana przez klienta z kalkulatora, a nie zapytanie o wycene reczna.
+ *
+ * Roznica jest zasadnicza i dlatego ma wlasne zrodlo: tutaj kwote liczy nasz
+ * silnik od razu, wiec wycena rodzi sie w stanie `priced`. Przy `source`
+ * innym niz ten kwote wpisuje czlowiek i pusta kwota znaczy "jeszcze nic
+ * nie obiecalismy".
+ */
+export const SAVED_QUOTE_SOURCE = "saved";
 
 export class QuoteError extends Error {
   constructor(code, message) {
@@ -39,13 +49,19 @@ export function generateQuoteRef(now = new Date()) {
  * @param {string} [input.lang]
  * @param {string} [input.source]  contact | quote | configurator | chat
  * @param {string} [input.message] pelna tresc od klienta
- * @param {Array}  [input.items]   pozycje: { calculator, title, qty, params, description, uploadId, fileName }
+ * @param {Array}  [input.items]   pozycje: { calculator, title, qty, params, description, uploadId, fileName, scale }
  * @param {string} [input.ipHash]
+ * @param {object} [input.ratesSnapshot] kursy kruszcow z chwili zapisu
+ * @param {boolean} [input.allowAnonymous] wolno zapisac bez adresu e-mail
  * @returns {Promise<{id:number, quoteRef:string, accessToken:string}>}
  */
 export async function createQuote(pool, input) {
   if (!pool) throw new QuoteError("no_db", "Baza niedostepna");
-  if (!input?.email) throw new QuoteError("no_email", "Brak adresu e-mail");
+  // Zapytanie o wycene reczna bez adresu jest bez sensu, bo nie ma jak odpisac.
+  // Wycena zapisana z kalkulatora sensu nie traci: klient moze chciec sam link,
+  // i zmuszanie go do podania adresu za mozliwosc wrocenia do wlasnej kalkulacji
+  // to zbieranie danych na zapas.
+  if (!input?.email && !input?.allowAnonymous) throw new QuoteError("no_email", "Brak adresu e-mail");
 
   const quoteRef = generateQuoteRef();
   const accessToken = generateToken();
@@ -53,20 +69,21 @@ export async function createQuote(pool, input) {
 
   const { rows } = await pool.query(
     `INSERT INTO quotes (quote_ref, lang, source, customer_email, customer_name, customer_phone,
-       message, access_token, ip_hash)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+       message, access_token, ip_hash, rates_snapshot)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
      RETURNING id`,
     [quoteRef, lang, input.source || "quote",
-     String(input.email).trim().toLowerCase(),
+     input.email ? String(input.email).trim().toLowerCase() : null,
      input.name || null, input.phone || null,
-     input.message || null, accessToken, input.ipHash || null]
+     input.message || null, accessToken, input.ipHash || null,
+     input.ratesSnapshot ? JSON.stringify(input.ratesSnapshot) : null]
   );
   const quoteId = rows[0].id;
 
   for (const item of input.items || []) {
     await pool.query(
-      `INSERT INTO quote_items (quote_id, calculator, title, qty, params, description, upload_id, file_name)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      `INSERT INTO quote_items (quote_id, calculator, title, qty, params, description, upload_id, file_name, scale)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
       [quoteId,
        item.calculator || null,
        String(item.title || "Zapytanie").slice(0, 255),
@@ -74,7 +91,8 @@ export async function createQuote(pool, input) {
        item.params ? JSON.stringify(item.params) : null,
        item.description || null,
        item.uploadId || null,
-       item.fileName ? String(item.fileName).slice(0, 255) : null]
+       item.fileName ? String(item.fileName).slice(0, 255) : null,
+       Number.isFinite(Number(item.scale)) && Number(item.scale) > 0 ? Number(item.scale) : null]
     );
   }
 
@@ -119,6 +137,55 @@ export async function priceQuote(pool, quoteRef, lines, note = null, validDays =
   );
 
   return { quoteRef, totalGrosze: total, validUntil: validUntil.toISOString().slice(0, 10) };
+}
+
+/**
+ * Cena zapisanej pozycji w dniu otwarcia linku.
+ *
+ * Zasada jest jedna i wynika z tego, czym ryzykujemy: **robocizna jest
+ * wiazaca przez caly okres waznosci, kruszec liczy sie z dnia zamowienia**.
+ * Praca warsztatu nie drozeje przez dwa tygodnie, ale zloto potrafi ruszyc
+ * sie o kilka procent, a blokujac jego cene bralibysmy na siebie pozycje
+ * na rynku towarowym, ktorej nikt tu nie chce miec.
+ *
+ * Roznicy NIE liczymy jako "przelicz wszystko od nowa", bo wtedy zmiana
+ * naszego wlasnego cennika po cichu podniloslaby tez robocizne, ktora
+ * obiecalismy. Liczymy wiec **wylacznie ruch kruszcu**: te sama pozycje
+ * wyceniamy dwa razy, kursami z chwili zapisu i kursami z dzisiaj, a do
+ * zapisanej kwoty dokladamy sama roznice.
+ *
+ * @returns {{unitGrosze:number, metalDeltaGrosze:number, repriced:boolean}}
+ */
+export function repriceSavedItem(item, { ratesAtSave, ratesNow, lang = "pl" } = {}) {
+  const saved = Number(item?.unit_grosze) || 0;
+  const calculator = String(item?.calculator || "");
+  const flat = { unitGrosze: saved, metalDeltaGrosze: 0, repriced: false };
+
+  // Kruszec dotyczy wylacznie bizuterii. Druk i laser licza sie z materialow,
+  // ktorych ceny nie sledzimy na biezaco, wiec nie ma czego przeliczac.
+  if (!saved || !calculator.startsWith("jewelry_")) return flat;
+  if (!ratesNow || !ratesAtSave) return flat;
+
+  const params = item.params && typeof item.params === "object" ? item.params : null;
+  if (!params) return flat;
+
+  let before, after;
+  try {
+    before = priceItem({ calculator, params, lang, rates: ratesAtSave });
+    after = priceItem({ calculator, params, lang, rates: ratesNow });
+  } catch {
+    // Kalkulator sie zmienil na tyle, ze stare parametry juz nie przechodza.
+    // Wtedy trzymamy sie kwoty zapisanej: obiecana cena jest obiecana,
+    // a nie okazja do podniesienia jej przy okazji awarii.
+    return flat;
+  }
+
+  const delta = after.unitGrosze - before.unitGrosze;
+  if (!Number.isFinite(delta) || delta === 0) return flat;
+
+  // Cena nie schodzi ponizej grosza nawet przy gwaltownym spadku kursu.
+  const unit = Math.max(1, saved + delta);
+  return { unitGrosze: unit, metalDeltaGrosze: unit - saved, repriced: true };
 }
 
 /**
