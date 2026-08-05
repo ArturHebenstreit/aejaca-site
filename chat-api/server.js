@@ -27,11 +27,6 @@ import {
   previewDiscount, reserveDiscount, consumeDiscount, releaseExpiredRedemptions,
   releaseOrderRedemptions, normalizeCode, randomCode, DiscountError, APPLIES_TO, MAX_PERCENT,
 } from "./discounts.js";
-import {
-  previewGiftCard, reserveGiftCard, consumeGiftCard, releaseExpiredGiftRedemptions,
-  releaseOrderGiftRedemptions, normalizeGiftCode, issueGiftCard, GiftCardError,
-  MIN_AMOUNT_GROSZE, MAX_AMOUNT_GROSZE, VALIDITY_MONTHS,
-} from "./giftcards.js";
 import { sendOrderPaidEmails, sendTransferInstructions } from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
 import { findLockers, LockerError } from "./lockers.js";
@@ -134,7 +129,7 @@ if (pool) {
       ALTER TABLE orders ADD CONSTRAINT orders_status_check CHECK (status IN
         ('draft','awaiting_payment','awaiting_transfer','paid','in_production','shipped','completed','cancelled','expired','refunded'));
       ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_payment_method_check;
-      ALTER TABLE orders ADD CONSTRAINT orders_payment_method_check CHECK (payment_method IN ('autopay','bank_transfer','gift_card'));
+      ALTER TABLE orders ADD CONSTRAINT orders_payment_method_check CHECK (payment_method IN ('autopay','bank_transfer'));
     END $$;
   `).catch((e) => console.error("[migracja] status/payment_method:", e.message));
   pool.query(`CREATE INDEX IF NOT EXISTS idx_orders_awaiting_transfer
@@ -180,47 +175,6 @@ if (pool) {
     CREATE INDEX IF NOT EXISTS idx_redemptions_order ON discount_redemptions (order_id);
   `).catch((e) => console.error("[migracja] discounts:", e.message));
   pool.query(`ALTER TABLE discount_codes ADD COLUMN IF NOT EXISTS issued_to VARCHAR(255)`).catch(() => {});
-  // Karty podarunkowe. Osobne tabele, bo karta ma saldo i pokrywa wysylke,
-  // czego kod rabatowy nie robi w zadnym wariancie.
-  pool.query(`
-    CREATE TABLE IF NOT EXISTS gift_cards (
-      id BIGSERIAL PRIMARY KEY,
-      code VARCHAR(32) UNIQUE NOT NULL,
-      initial_grosze INTEGER NOT NULL CHECK (initial_grosze > 0),
-      balance_grosze INTEGER NOT NULL CHECK (balance_grosze >= 0),
-      valid_to TIMESTAMPTZ NOT NULL,
-      active BOOLEAN NOT NULL DEFAULT TRUE,
-      purchaser_email VARCHAR(255),
-      purchaser_name VARCHAR(160),
-      recipient_email VARCHAR(255),
-      recipient_name VARCHAR(160),
-      message TEXT,
-      note TEXT,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      CONSTRAINT gift_balance_within_initial CHECK (balance_grosze <= initial_grosze)
-    );
-    CREATE TABLE IF NOT EXISTS gift_card_redemptions (
-      id BIGSERIAL PRIMARY KEY,
-      card_id BIGINT NOT NULL REFERENCES gift_cards(id) ON DELETE CASCADE,
-      order_id BIGINT REFERENCES orders(id) ON DELETE CASCADE,
-      email VARCHAR(255) NOT NULL,
-      amount_grosze INTEGER NOT NULL CHECK (amount_grosze > 0),
-      expires_at TIMESTAMPTZ NOT NULL,
-      consumed_at TIMESTAMPTZ,
-      released_at TIMESTAMPTZ,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
-    CREATE INDEX IF NOT EXISTS idx_gift_redemptions_card ON gift_card_redemptions (card_id) WHERE released_at IS NULL;
-    CREATE INDEX IF NOT EXISTS idx_gift_redemptions_order ON gift_card_redemptions (order_id);
-    CREATE INDEX IF NOT EXISTS idx_gift_redemptions_expiry ON gift_card_redemptions (expires_at) WHERE consumed_at IS NULL AND released_at IS NULL;
-    CREATE OR REPLACE VIEW gift_cards_available AS
-    SELECT c.*, GREATEST(c.balance_grosze - COALESCE(SUM(r.amount_grosze) FILTER (
-        WHERE r.consumed_at IS NULL AND r.released_at IS NULL AND r.expires_at > NOW()), 0), 0)::INTEGER AS available_grosze
-      FROM gift_cards c LEFT JOIN gift_card_redemptions r ON r.card_id = c.id GROUP BY c.id;
-  `).catch((e) => console.error("[migracja] gift_cards:", e.message));
-  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS gift_card_code VARCHAR(32)`).catch(() => {});
-  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS gift_card_grosze INTEGER NOT NULL DEFAULT 0`).catch(() => {});
   // Kolumna `subscribers.discount_code` miala domyslna wartosc 'AEJACA10' z czasow,
   // gdy wszyscy dostawali ten sam kod. Przeplyw zapisuje teraz kod wystawiony dla
   // konkretnej osoby, a domyslna wartosc tylko wpisywalaby w tabele nieprawde.
@@ -717,7 +671,7 @@ async function storeQuoteAttachment(file, lang, ip) {
     return null;
   }
 }
-const SUBJECT_MAP = { jewelry: "Jewelry Inquiry", studio: "Studio Inquiry", both: "Jewelry & Studio Inquiry", other: "General Inquiry", giftcard: "Gift Card Order" };
+const SUBJECT_MAP = { jewelry: "Jewelry Inquiry", studio: "Studio Inquiry", both: "Jewelry & Studio Inquiry", other: "General Inquiry" };
 
 app.post("/api/contact", (req, res, next) => {
   upload.single("file")(req, res, (err) => {
@@ -1436,8 +1390,6 @@ if (pool) cron.schedule("30 3 * * *", markAbandonedUploads);
 if (pool) cron.schedule("*/15 * * * *", () => releaseExpiredReservations(pool).catch(() => {}));
 // Kod z porzuconego koszyka wraca do puli razem z towarem, w tym samym rytmie.
 if (pool) cron.schedule("*/15 * * * *", () => releaseExpiredRedemptions(pool).catch(() => {}));
-// Karta z porzuconego koszyka odzyskuje pelne saldo w tym samym rytmie.
-if (pool) cron.schedule("*/15 * * * *", () => releaseExpiredGiftRedemptions(pool).catch(() => {}));
 
 /** Zamowienie nieoplacone po terminie zamykamy i oddajemy jego towar do sprzedazy. */
 async function expireStaleOrders() {
@@ -1452,7 +1404,6 @@ async function expireStaleOrders() {
       await releaseOrderReservations(pool, o.id);
       // Kod z przeterminowanego zamowienia wraca do puli razem z towarem.
       await releaseOrderRedemptions(pool, o.id);
-      await releaseOrderGiftRedemptions(pool, o.id);
     }
     if (rows.length) console.log(`[zamowienia] wygaslo ${rows.length}: ${rows.map((r) => r.order_ref).join(", ")}`);
   } catch (e) {
@@ -1734,29 +1685,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
       }
     }
 
-    // Karta podarunkowa schodzi na samym koncu, od sumy juz po rabacie i z
-    // wysylka. To przedplata, wiec pokrywa TAKZE wysylke; rabat nie pokrywa
-    // jej nigdy. Odwrotna kolejnosc kazalaby karcie doplacac rabat, ktorego
-    // nikt nie kupil.
-    const payableBeforeGift = itemsTotal - discountGrosze + shipping;
-    const rawGiftCode = normalizeGiftCode(req.body?.giftCardCode);
-    let giftGrosze = 0;
-    let giftCardCode = null;
-    if (rawGiftCode) {
-      try {
-        const preview = await previewGiftCard(pool, {
-          code: rawGiftCode,
-          payableGrosze: payableBeforeGift,
-        });
-        giftGrosze = preview.coverGrosze;
-        giftCardCode = preview.code;
-      } catch (e) {
-        if (e instanceof GiftCardError) return res.status(400).json({ error: e.message, code: e.code });
-        throw e;
-      }
-    }
-
-    const total = payableBeforeGift - giftGrosze;
+    const total = itemsTotal - discountGrosze + shipping;
 
     const limit = await checkQuarterlyLimit(pool, total);
     if (!limit.ok) {
@@ -1773,12 +1702,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
     // Przelew w euro: kwote zamrazamy tu i teraz razem z kursem. Gdybysmy
     // przeliczali ja dopiero przy ksiegowaniu, klient przelalby jedna kwote,
     // a my oczekiwalibysmy innej.
-    // Karta moze pokryc calosc i wtedy nie ma czego wysylac do bramki.
-    // Autopay z kwota zero konczy sie bledem, a klient zostaje z zamowieniem,
-    // ktorego nie da sie oplacic mimo ze juz za nie zaplacil, kupujac karte.
-    const fullyCovered = total === 0 && giftGrosze > 0;
-
-    const wantsTransfer = !fullyCovered && paymentMethod === "bank_transfer";
+    const wantsTransfer = paymentMethod === "bank_transfer";
     if (wantsTransfer && !transferConfigured()) {
       return res.status(503).json({ error: "Platnosc przelewem nie jest skonfigurowana" });
     }
@@ -1805,11 +1729,11 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
          accepted_terms_at, waived_withdrawal_at, digital_immediate_at,
          access_token, ip_hash, expires_at, revisions_included,
          payment_method, amount_eur_cents, eur_rate, eur_rate_locked_at,
-         discount_code, discount_grosze, gift_card_code, gift_card_grosze)
+         discount_code, discount_grosze)
        VALUES ($1,$22,'instant',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
          NOW(), $16, $17, $18, $19, $20, $21,
          $23, $24, $25, CASE WHEN $24::INTEGER IS NULL THEN NULL ELSE NOW() END,
-         $26, $27, $28, $29)
+         $26, $27)
        RETURNING id`,
       [orderRef, safeLang, itemsTotal, shipping, total,
        customerEmail, customer.name.trim().replace(/\s+/g, " "), normalizePhone(customer.phone),
@@ -1821,9 +1745,9 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
        token, ipHash, expiresAt,
        // Limit bierzemy z pozycji projektowej, jesli taka jest w koszyku.
        priced.find((i) => i.revisionsIncluded)?.revisionsIncluded ?? null,
-       fullyCovered ? "paid" : wantsTransfer ? "awaiting_transfer" : "awaiting_payment",
-       fullyCovered ? "gift_card" : wantsTransfer ? "bank_transfer" : "autopay",
-       amountEurCents, eurRate, discountCode, discountGrosze, giftCardCode, giftGrosze]
+       wantsTransfer ? "awaiting_transfer" : "awaiting_payment",
+       wantsTransfer ? "bank_transfer" : "autopay",
+       amountEurCents, eurRate, discountCode, discountGrosze]
     );
     const orderId = rows[0].id;
 
@@ -1831,7 +1755,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
     // dwa rownolegle zamowienia na ostatnia sztuke ustawiaja sie w kolejce.
     // Gdy towaru zabraknie, kasujemy swieze zamowienie zamiast zostawiac
     // klienta z linkiem do zaplaty za cos, czego nie wyslemy.
-    if (productItems.length || discountCode || giftCardCode) {
+    if (productItems.length || discountCode) {
       const client = await pool.connect();
       try {
         await client.query("BEGIN");
@@ -1846,18 +1770,6 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
           });
           if (used.discountGrosze !== discountGrosze) {
             throw new DiscountError("Warunki kodu zmienily sie w trakcie skladania zamowienia", "changed");
-          }
-        }
-        // Karte blokujemy tak samo jak kod i towar. Dwa zamowienia zlozone
-        // w tej samej sekundzie tym samym numerem karty nie wydadza salda
-        // dwa razy, tylko ustawia sie w kolejce.
-        if (giftCardCode) {
-          const used = await reserveGiftCard(client, {
-            code: giftCardCode, email: customer.email, payableGrosze: payableBeforeGift,
-            orderId, paymentMethod: wantsTransfer ? "bank_transfer" : "autopay",
-          });
-          if (used.giftGrosze !== giftGrosze) {
-            throw new GiftCardError("Saldo karty zmienilo sie w trakcie skladania zamowienia", "changed");
           }
         }
         for (const it of productItems) {
@@ -1879,7 +1791,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
         if (e instanceof ProductError) {
           return res.status(409).json({ error: e.message, code: e.code, slug: e.slug, available: e.available });
         }
-        if (e instanceof DiscountError || e instanceof GiftCardError) {
+        if (e instanceof DiscountError) {
           return res.status(409).json({ error: e.message, code: e.code });
         }
         throw e;
@@ -1923,28 +1835,6 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
       );
     }
 
-    // Zamowienie oplacone karta w calosci przechodzi od razu przez te same
-    // haki, co platnosc potwierdzona przez bramke. Inaczej towar zostalby
-    // zarezerwowany zamiast zdjety, a saldo karty nigdy by nie zeszlo.
-    if (fullyCovered) {
-      await pool.query("UPDATE orders SET paid_at = NOW() WHERE id = $1", [orderId]);
-      sendOrderPaidEmails(pool, orderId).catch((e) =>
-        console.error("[karty] wysylka maili nie powiodla sie:", e.message)
-      );
-      consumeReservations(pool, orderId).catch((e) =>
-        console.error("[produkty] zdjecie ze stanu nie powiodlo sie:", e.message)
-      );
-      consumeDiscount(pool, orderId).catch((e) =>
-        console.error("[rabaty] zapisanie uzycia kodu nie powiodlo sie:", e.message)
-      );
-      consumeGiftCard(pool, orderId).catch((e) =>
-        console.error("[karty] obciazenie karty nie powiodlo sie:", e.message)
-      );
-      moveOrderFilesToOrders(pool, orderId, orderRef).catch((e) =>
-        console.error("[dysk] przeniesienie plikow nie powiodlo sie:", e.message)
-      );
-    }
-
     // Dane do przelewu wysylamy od razu: klient zamknie strone, a przelew
     // zrobi wieczorem z telefonu.
     if (wantsTransfer) {
@@ -1964,11 +1854,8 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
       totalPLN: (total / 100).toFixed(2),
       discountCode,
       discountGrosze,
-      giftCardCode,
-      giftGrosze,
-      fullyCovered,
       expiresAt,
-      paymentMethod: fullyCovered ? "gift_card" : wantsTransfer ? "bank_transfer" : "autopay",
+      paymentMethod: wantsTransfer ? "bank_transfer" : "autopay",
       // Numer rachunku wydajemy dopiero razem z zamowieniem, czyli wtedy, gdy
       // klient potwierdzil chec zaplaty. Wczesniej nie ma po co go pokazywac.
       transfer: wantsTransfer
@@ -2237,112 +2124,6 @@ app.post("/api/discounts/check", express.json({ limit: "16kb" }),
   }
 });
 
-// ------------------------------------------------------------
-// Karty podarunkowe
-// ------------------------------------------------------------
-
-// Ten sam uklad dwoch licznikow, co przy kodach rabatowych, ale ciasniejszy.
-// Karta jest pieniadzem na okaziciela: trafiony numer to kwota do wydania,
-// a nie procent znizki. Wlasciciel karty sprawdza saldo raz na jakis czas,
-// zgadujacy strzela bez konca.
-const giftCheckLimit = createLimiter({ limit: 20, windowMs: 60 * 60_000, name: "sprawdzenie karty" });
-const giftMissLimit = createLimiter({ limit: 8, windowMs: 60 * 60_000, name: "nietrafiona karta" });
-
-/**
- * Sprawdzenie salda. Uzywane w dwoch miejscach: w kasie, zeby klient zobaczyl,
- * ile karta pokryje z jego zamowienia, i na stronie karty, zeby obdarowany
- * mogl sprawdzic, ile mu zostalo, zanim zacznie kompletowac koszyk.
- *
- * `payableGrosze` jest opcjonalne. Bez niego zwracamy samo saldo, bo pytanie
- * "ile mam na karcie" jest sensowne rowniez z pustym koszykiem.
- */
-app.post("/api/giftcards/check", express.json({ limit: "4kb" }),
-  limitBy(giftCheckLimit, extractIP, { error: "Za duzo prob z numerem karty, sprobuj za chwile" }),
-  async (req, res) => {
-  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
-  const ip = extractIP(req);
-  // Po wyczerpaniu puli odpowiadamy tak samo, jak na numer nieznany. Inny
-  // komunikat mowilby zgadujacemu, ze trafil w cos istniejacego.
-  if (giftMissLimit.remaining(ip) <= 0) {
-    return res.status(400).json({ error: "Nie znamy takiej karty", code: "not_found" });
-  }
-  // Kwota z przegladarki sluzy wylacznie do pokazania, ile karta pokryje.
-  // Zamowienie liczy ja od nowa z katalogu i z cennika wysylki.
-  const payable = Number.isInteger(req.body?.payableGrosze) ? Math.max(0, req.body.payableGrosze) : 0;
-  try {
-    const preview = await previewGiftCard(pool, { code: req.body?.code, payableGrosze: payable });
-    res.json({ ok: true, ...preview });
-  } catch (e) {
-    if (e instanceof GiftCardError) {
-      if (e.code === "not_found") giftMissLimit.penalize(ip);
-      return res.status(400).json({ error: e.message, code: e.code, validTo: e.validTo });
-    }
-    console.error("[karty] sprawdzenie karty:", e.message);
-    res.status(500).json({ error: "Nie udalo sie sprawdzic karty" });
-  }
-});
-
-/**
- * Wydanie karty. Wolane z panelu po zaksiegowaniu wplaty, bo sprzedaz kart
- * idzie dzis przez zapytanie i przelew, a nie przez kase. Kod wraca w
- * odpowiedzi RAZ: nigdzie go potem nie odczytamy w postaci, ktora da sie
- * wyslac, wiec osoba wydajaca karte ma go od razu przekleic do wiadomosci.
- */
-app.post("/api/admin/giftcards", express.json({ limit: "8kb" }), async (req, res) => {
-  if (!requireAdmin(req, res)) return;
-  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
-  try {
-    const card = await issueGiftCard(pool, {
-      amountGrosze: req.body?.amountGrosze,
-      purchaserEmail: req.body?.purchaserEmail,
-      purchaserName: req.body?.purchaserName,
-      recipientEmail: req.body?.recipientEmail,
-      recipientName: req.body?.recipientName,
-      message: req.body?.message,
-      note: req.body?.note,
-    });
-    console.log(`[karty] wydano karte na ${(card.initial_grosze / 100).toFixed(2)} PLN`);
-    res.json({ ok: true, card });
-  } catch (e) {
-    if (e instanceof GiftCardError) return res.status(400).json({ error: e.message, code: e.code });
-    console.error("[karty] wydanie karty:", e.message);
-    res.status(500).json({ error: "Nie udalo sie wydac karty" });
-  }
-});
-
-/** Lista kart dla panelu, razem z saldem dostepnym i historia obciazen. */
-app.get("/api/admin/giftcards", async (req, res) => {
-  if (!requireAdmin(req, res)) return;
-  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
-  const { rows } = await pool.query(
-    `SELECT c.code, c.initial_grosze, c.balance_grosze, c.available_grosze, c.valid_to, c.active,
-            c.purchaser_email, c.purchaser_name, c.recipient_name, c.note, c.created_at,
-            COALESCE(json_agg(json_build_object(
-              'orderId', r.order_id, 'amountGrosze', r.amount_grosze, 'consumedAt', r.consumed_at
-            ) ORDER BY r.created_at DESC) FILTER (WHERE r.consumed_at IS NOT NULL), '[]') AS redemptions
-       FROM gift_cards_available c
-       LEFT JOIN gift_card_redemptions r ON r.card_id = c.id
-      GROUP BY c.id, c.code, c.initial_grosze, c.balance_grosze, c.available_grosze, c.valid_to,
-               c.active, c.purchaser_email, c.purchaser_name, c.recipient_name, c.note, c.created_at
-      ORDER BY c.created_at DESC`
-  );
-  res.json({ cards: rows, minGrosze: MIN_AMOUNT_GROSZE, maxGrosze: MAX_AMOUNT_GROSZE, validityMonths: VALIDITY_MONTHS });
-});
-
-/** Zablokowanie albo odblokowanie karty, np. po zgloszeniu zgubienia. */
-app.patch("/api/admin/giftcards/:code", express.json({ limit: "2kb" }), async (req, res) => {
-  if (!requireAdmin(req, res)) return;
-  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
-  const active = req.body?.active;
-  if (typeof active !== "boolean") return res.status(400).json({ error: "Podaj active: true albo false" });
-  const { rows } = await pool.query(
-    `UPDATE gift_cards SET active = $2, updated_at = NOW() WHERE code = $1 RETURNING code, active`,
-    [normalizeGiftCode(req.params.code), active]
-  );
-  if (!rows[0]) return res.status(404).json({ error: "Nie znamy takiej karty" });
-  res.json({ ok: true, ...rows[0] });
-});
-
 /**
  * Kod powitalny dla zapisujacych sie do newslettera. Wola go przeplyw w n8n,
  * ktory wysyla maila, i wstawia otrzymany kod do tresci. Obietnica ze strony
@@ -2603,9 +2384,6 @@ app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), as
   consumeDiscount(pool, order.id).catch((e) =>
     console.error("[rabaty] zapisanie uzycia kodu nie powiodlo sie:", e.message)
   );
-  consumeGiftCard(pool, order.id).catch((e) =>
-    console.error("[karty] obciazenie karty nie powiodlo sie:", e.message)
-  );
   moveOrderFilesToOrders(pool, order.id, ref).catch((e) =>
     console.error("[dysk] przeniesienie plikow nie powiodlo sie:", e.message)
   );
@@ -2844,10 +2622,6 @@ app.post("/api/autopay/itn", express.urlencoded({ extended: false, limit: "256kb
           // powodu: porzucony koszyk nie ma prawa spalic kodu jednorazowego.
           consumeDiscount(pool, order.id).catch((e) =>
             console.error("[rabaty] zapisanie uzycia kodu nie powiodlo sie:", e.message)
-          );
-          // Saldo karty schodzi z tego samego powodu dopiero teraz.
-          consumeGiftCard(pool, order.id).catch((e) =>
-            console.error("[karty] obciazenie karty nie powiodlo sie:", e.message)
           );
           // Pliki lezaly dotad w folderze roboczym, bo w chwili wgrania nikt
           // jeszcze niczego nie zamowil. Dopiero zaplata robi z nich zlecenie.

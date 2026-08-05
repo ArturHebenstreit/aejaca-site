@@ -42,7 +42,6 @@ const STATIC_ROUTES = [
   "/b2b",
   "/toolsjewelry",
   "/toolsjewelry/alloy-composition",
-  "/gift-card",
   "/toolsjewelry/metal-pricing",
   "/toolsjewelry/ring-size",
   "/toolsjewelry/ring-sizer",

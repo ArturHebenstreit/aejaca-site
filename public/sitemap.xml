@@ -135,7 +135,7 @@
   <!-- Terms of service and sale -->
   <url>
     <loc>https://www.aejaca.com/terms/</loc>
-    <lastmod>2026-08-05</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.50</priority>
 
@@ -688,14 +688,6 @@
     <priority>0.60</priority>
 
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/alloy-composition/" />
-  </url>
-  <url>
-    <loc>https://www.aejaca.com/gift-card/</loc>
-    <lastmod>2026-08-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.70</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/gift-card/" />
   </url>
   <url>
     <loc>https://www.aejaca.com/toolsjewelry/metal-pricing/</loc>

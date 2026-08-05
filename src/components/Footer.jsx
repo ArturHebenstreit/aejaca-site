@@ -115,7 +115,6 @@ export default function Footer() {
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               <div className="space-y-2">
                 <Link to="/shop/" className="block text-sm text-neutral-300 hover:text-white transition-colors">{t.footer.shop}</Link>
-                <Link to="/gift-card/" className="block text-sm text-neutral-300 hover:text-amber-400 transition-colors">{t.footer.giftCard}</Link>
                 <Link to="/jewelry/" className="block text-sm text-neutral-300 hover:text-amber-400 transition-colors">{t.nav.jewelry}</Link>
                 <Link to="/studio/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.nav.studio}</Link>
                 <Link to="/b2b/" className="block text-sm text-neutral-300 hover:text-blue-400 transition-colors">{t.footer.b2b}</Link>
