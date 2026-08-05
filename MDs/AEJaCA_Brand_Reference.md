@@ -857,6 +857,23 @@ Tryb jasny nie działa przez warianty `dark:`, tylko przez listę nadpisań w `s
 
 Uruchomienie osobno: `npm run check:light`.
 
+### Linkowanie narzędzi
+
+Zasada: treść, która dotyka tematu obsłużonego narzędziem, prowadzi do tego narzędzia. Mapowanie leży w `src/data/toolLinks.js`, renderuje je `src/components/ToolLinks.jsx`, a korzystają z niego wpisy blogowe, hasła słownika, sklep, karty usług, strona B2B oraz sekcje pod oboma kalkulatorami.
+
+Stan przed wprowadzeniem zasady i po, mierzony na zbudowanym serwisie (odnośniki do konkretnych narzędzi, bez hubów):
+
+| Grupa stron | Przed | Po |
+|---|---|---|
+| Wpis blogowy (19) | 0,21 | 1,63 |
+| Hasło słownika (30) | 0,03 | 1,37 |
+| Strona sklepu (16) | 0,75 | 2,12 |
+| B2B | 0 | 7 |
+
+Siedem z dziewięciu narzędzi miało dokładnie dwie strony przychodzące: hub narzędzi i siebie samo. Były zbudowane, opisane w mapie witryny i dla czytelnika praktycznie nieistniejące. Po zmianie najmniej linkowany jest kalkulator blanku obrączki (5 stron), co jest w porządku, bo to narzędzie czysto warsztatowe.
+
+Pole `audience` rozdziela odbiorców: `buyer`, `maker`, `both`. Sklep pokazuje wyłącznie narzędzia dla kupującego, B2B odwrotnie, bo po drugiej stronie siedzi pracownia. Dwa wpisy blogowe (projektowanie z AI, warsztat od kuchni) celowo nie mają przypisanych narzędzi.
+
 ### Pozostali strażnicy w buildzie
 
 | Strażnik | Czego pilnuje | Skąd się wziął |

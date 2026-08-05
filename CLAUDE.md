@@ -88,6 +88,18 @@ Conversion: `eur = pln / pln_per_eur` where `pln_per_eur` comes from the live `/
 
 This applies to: all calculators, pricing displays, result cards, quote forms - any component that shows monetary values. Use the pattern: `const showEur = lang === "en" || lang === "de"`.
 
+## Linkowanie narzędzi - HARD RULE
+
+**Jeżeli treść dotyka tematu, który mamy obsłużony narzędziem, ta treść MUSI do niego prowadzić.** Dotyczy wpisów blogowych, haseł słownika, kalkulatorów, sklepu, kart usług i strony B2B. Zbudowane i nielinkowane narzędzie nie istnieje dla czytelnika.
+
+Mapowanie leży w **jednym pliku**: `src/data/toolLinks.js` (`TOOLS_BY_POST`, `TOOLS_BY_TERM`, `audience`). Renderuje je komponent `src/components/ToolLinks.jsx`, używany przez `BlogPost`, `GlossaryTerm`, `RelatedContent` (sklep i karty usług), `B2B`, `Jewelry` i `Studio`.
+
+**Dodając nowe narzędzie:** dopisz je do `TOOL_LINKS`, ustaw `audience` (`buyer` / `maker` / `both`), a potem przypisz do pasujących wpisów i haseł. To jedna edycja, nie obchodzenie czterdziestu siedmiu plików.
+
+`audience` rozdziela odbiorców i trzeba to uszanować: kupujący nie potrzebuje kalkulatora blanku obrączki ani tabeli parametrów lasera, ale na stronie B2B to są najważniejsze pozycje.
+
+**Nie doklejaj narzędzia na siłę.** Wpisy o projektowaniu z AI i o wyposażeniu pracowni celowo nie mają przypisanych narzędzi, bo żadne im nie odpowiada. Wypełniacz szkodzi bardziej niż brak.
+
 ## Key conventions
 
 - **i18n**: every user-facing string lives in `src/i18n/{pl,en,de}.js`. When adding a key, add it to ALL THREE files - they must stay in sync.

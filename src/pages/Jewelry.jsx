@@ -6,6 +6,8 @@ import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getPostMeta } from "../blog/postsMeta.js";
 import BlogCard from "../components/blog/BlogCard.jsx";
 import JewelryEstimator from "../components/JewelryEstimator.jsx";
+import ToolLinks from "../components/ToolLinks.jsx";
+import { getToolsByCategory } from "../data/toolLinks.js";
 import ProcessGallery from "../components/ProcessGallery.jsx";
 import Portfolio from "../components/Portfolio.jsx";
 import GoogleReviews from "../components/GoogleReviews.jsx";
@@ -270,6 +272,14 @@ export default function Jewelry() {
 
       {/* Jewelry Calculator */}
       <JewelryEstimator />
+
+      {/* Narzedzia obok kalkulatora. Kto wlasnie wycenia pierscionek,
+          czesto potrzebuje najpierw rozmiaru albo ceny kruszcu. */}
+      <section className="py-8 px-4 bg-neutral-950">
+        <div className="max-w-4xl mx-auto">
+          <ToolLinks tools={getToolsByCategory("jewelry")} variant="buyer" />
+        </div>
+      </section>
 
       <div className="gradient-divider" />
 

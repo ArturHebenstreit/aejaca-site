@@ -92,15 +92,6 @@ export const GLOSSARY = [
       de: "Der Innendurchmesser eines Rings in mm. AEJaCA hilft Ihnen, Ihre Größe per Fernmessung zu bestimmen.",
     },
     relatedBlog: null,
-    relatedTool: {
-      to: "/toolsjewelry/ring-sizer/",
-      label: { pl: "Miarka do pierścionków do wydruku", en: "Printable ring sizer", de: "Ringmaßband zum Ausdrucken" },
-      desc: {
-        pl: "Wydrukuj, wytnij pasek i zmierz palec. Arkusz sam sprawdza skalę wydruku.",
-        en: "Print it, cut the strip and measure your finger. The sheet checks its own print scale.",
-        de: "Drucken, Streifen ausschneiden und Finger messen. Das Blatt prüft den Druckmaßstab selbst.",
-      },
-    },
   },
   {
     id: "personalizowany-grawer",

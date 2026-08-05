@@ -6,6 +6,8 @@ import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { getPostMeta } from "../blog/postsMeta.js";
 import BlogCard from "../components/blog/BlogCard.jsx";
 import StudioCalculator from "../components/StudioCalculator.jsx";
+import ToolLinks from "../components/ToolLinks.jsx";
+import { getToolsByCategory } from "../data/toolLinks.js";
 import Portfolio from "../components/Portfolio.jsx";
 import GoogleReviews from "../components/GoogleReviews.jsx";
 import { GOOGLE_BUSINESS } from "../data/googleReviews.js";
@@ -249,6 +251,14 @@ export default function Studio() {
 
       {/* Studio Calculator */}
       <StudioCalculator />
+
+      {/* Narzedzia obok kalkulatora. Kto wycenia druk, czesto nie wie
+          jeszcze, jaki material wybrac, a to zmienia i cene, i wynik. */}
+      <section className="py-8 px-4 bg-neutral-950">
+        <div className="max-w-4xl mx-auto">
+          <ToolLinks tools={getToolsByCategory("studio")} variant="buyer" accent="blue" />
+        </div>
+      </section>
 
       <div className="gradient-divider" />
 
