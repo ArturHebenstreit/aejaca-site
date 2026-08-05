@@ -5,6 +5,8 @@ import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { Upload, X, AlertTriangle } from "lucide-react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture, LicenseNotice } from "./calcShared.jsx";
 import CalcToCart from "./CalcToCart.jsx";
+import PrintabilityGate from "./PrintabilityGate.jsx";
+import { nozzleFromPrecision } from "../../analysis/printability.js";
 
 /** Te same formaty, ktore przyjmuje konfigurator w sklepie */
 const ACCEPT_MODEL = ".stl,.obj,.3mf,.step,.stp";
@@ -335,6 +337,11 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
     setMslaStlScale(1);
   }
 
+  // Wynik bramki drukowalnosci. Jedzie do koszyka w `params`, wiec trafia
+  // do zamowienia i do maili bez osobnej sciezki.
+  const [fdmPrint, setFdmPrint] = useState(null);
+  const [mslaPrint, setMslaPrint] = useState(null);
+
   const scaledStlData = useMemo(() => {
     if (!stlData || stlScale === 1) return stlData;
     const s = stlScale;
@@ -446,15 +453,22 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
           <ResultHeader lang={lang} binding={bindingGrosze != null} />
           <ResultDisplay result={mslaResult} lang={lang} hideRange={bindingGrosze != null} />
           <QuoteEmailCapture result={mslaResult} lang={lang} techLabel={t(TECH_LABEL_MSLA, lang)} preAttachedFile={mslaStlFile} paramsSummary={mslaParamsSummary} />
+          <PrintabilityGate
+            triangles={scaledMslaStlData?.triangles || null}
+            tech="msla"
+            lang={lang}
+            onResult={setMslaPrint}
+          />
           <CalcToCart
-          onBinding={setBindingGrosze}
+            onBinding={setBindingGrosze}
             calculator="print3d_msla"
             serviceId="print_msla"
-            params={{ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId }}
+            params={{ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId, printability: mslaPrint }}
             file={mslaStlFile}
             triangles={mslaStlData?.triangles || null}
             scale={mslaStlScale}
             lang={lang}
+            hold={Boolean(mslaPrint?.blocked && !mslaPrint?.accepted)}
           />
         </div>
 
@@ -501,15 +515,25 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
           t(PRECISION.find(p => p.id === precisionId)?.label, lang),
           t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
         ].join(" | ")} />
+        {/* Analiza idzie na geometrii PO PRZESKALOWANIU, bo to ona zostanie
+            wydrukowana. Model zmniejszony o polowe ma o polowe cienszy mur. */}
+        <PrintabilityGate
+          triangles={scaledStlData?.triangles || null}
+          tech="fdm"
+          nozzleId={nozzleFromPrecision(precisionId)}
+          lang={lang}
+          onResult={setFdmPrint}
+        />
         <CalcToCart
           onBinding={setBindingGrosze}
           calculator="print3d_fdm"
           serviceId="print_fdm"
-          params={{ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId }}
+          params={{ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, printability: fdmPrint }}
           file={stlFile}
           triangles={stlData?.triangles || null}
           scale={stlScale}
           lang={lang}
+          hold={Boolean(fdmPrint?.blocked && !fdmPrint?.accepted)}
         />
       </div>
 

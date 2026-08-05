@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-05 | Wersja: 3.3*
+*Wygenerowano: 2026-08-05 | Wersja: 3.4*
 
 ---
 
@@ -440,6 +440,47 @@ druk, ale niekoniecznie mycie. Przy MSLA dysza nie ma znaczenia.
 **Co sprawdza:** szczelność siatki (krawędzie bez pary i nierozmaitościowe), kierunek normalnych
 i siatkę wywróconą, grubość ścianek, gabaryty wobec realnych stołów z uwzględnieniem obrotu,
 udział powierzchni pod podpory, pole styku ze stołem, podejrzaną skalę.
+
+#### Bramka w kalkulatorze i w sklepie (od 2026-08-05)
+
+Sprawdzarka nie jest już wyspą. Ta sama analiza działa przy zamawianiu, z parametrami, które klient
+właśnie wybrał, razem z dyszą. Objęte są trzy ścieżki: **szybka wycena, tryb zaawansowany
+i karta usługi w sklepie**. Bez tej trzeciej klient omijałby bramkę, wybierając łagodniejszą drogę.
+
+**Blokujemy tylko ustalenia poziomu `blocker`.** Przycisk zmienia napis na „Potwierdź uwagi
+do modelu" i odblokowuje się dopiero po zaznaczeniu potwierdzenia. Ostrzeżenia pokazujemy bez
+kwitowania: 30% nawisów to normalna część, a ostrzeżenie, które pojawia się zawsze, przestaje być
+ostrzeżeniem i uczy klikać bez czytania.
+
+Analiza idzie na geometrii **po przeskalowaniu**, bo to ona zostanie wydrukowana. Model zmniejszony
+o połowę ma o połowę cieńszy mur.
+
+#### Charakter pokwitowania: to NIE jest zrzeczenie się praw
+
+Najważniejsza rzecz w całej konstrukcji i nie wolno jej przeformułować.
+
+**Konsument nie może z góry zrzec się uprawnień z tytułu niezgodności towaru z umową.** Klauzula,
+która tak stanowi, jest abuzywna i nieważna z mocy prawa. Podpis pod nią nie chroni nas, tylko
+tworzy pozór ochrony i wygląda źle przy pierwszym sporze.
+
+Chroni co innego i mocniej: **udokumentowanie, że ujawniliśmy konkretną właściwość JEGO pliku przed
+zamówieniem, a on polecił wykonanie mimo to**. Wynik jest wtedy zgodny z umową, bo to klient określił
+specyfikację. Podstawa w regulaminie: **sekcja 13**, razem z wyraźnym zastrzeżeniem, że pozostałe
+uprawnienia zostają nienaruszone.
+
+Prawo odstąpienia przy wydrukach z pliku klienta i tak jest wyłączone w sekcji 10, więc to
+pokwitowanie dotyczy reklamacji, a nie zwrotu.
+
+Zapis idzie do `params.printability`, czyli tam, gdzie i tak jadą parametry pozycji, więc trafia
+do zamówienia i do maili bez osobnej kolumny. Do maila potwierdzającego trafiają **wyłącznie
+ustalenia blokujące**, bo tylko one wymagały zgody; przypominanie ostrzeżeń w dokumencie
+potwierdzającym sugerowałoby zgodę, której nie było. Zapis jest w wersji HTML **i** tekstowej,
+inaczej dokumentacja zależałaby od ustawień poczty odbiorcy. Mail warsztatowy dostaje osobny
+wiersz `!! KLIENT POTWIERDZIL DRUK MIMO UWAG`, bo w JSON-ie parametrów zostałby przeoczony.
+
+Trzyma to test `scripts/test-print-consent.mjs`, który sprawdza także, że w mailu **nie ma**
+sformułowań o zrzeczeniu się praw, i że zastrzeżenie o zachowaniu uprawnień jest we wszystkich
+trzech językach.
 
 #### Decyzje, których nie wolno cofnąć bez powodu
 
@@ -996,6 +1037,7 @@ przeglądem rynku. `parked/gift-card/README.md` zawiera listę kroków do wznowi
 | `scripts/check-emdash.mjs` | długie myślniki (U+2014) i ich encja HTML w całym repozytorium | jednorazowe sprzątanie objęło 2720 znaków w 234 plikach; bez strażnika wracają, bo w kodzie źródłowym nikt ich nie widzi aż do publikacji |
 | `scripts/check-tool-links.mjs` | klucze `TOOLS_BY_POST` i `TOOLS_BY_TERM` wskazujące na realne slugi i hasła, komplet tłumaczeń pl/en/de, dozwolone `audience` | trzy klucze wskazywały na nieistniejące slugi, a fallback po cichu podstawiał domyślne narzędzia, więc trzy wpisy zgubiły odnośnik do wyceny metalu przy zielonym buildzie |
 | `scripts/test-printability.mjs` | analiza modeli: topologia, objętość, grubość ścianek, nawisy, gabaryty, progi dysz | błędy w geometrii są ciche; źle policzona grubość nie wywala niczego, tylko zapewnia klienta, że model się wydrukuje, a klient dostaje odpad |
+| `scripts/test-print-consent.mjs` | pokwitowanie wady modelu: filtr ustaleń, obecność w obu wersjach maila, brak sformułowań o zrzeczeniu się praw | dokument jest jedynym śladem, na którym opiera się cała konstrukcja; klauzula o zrzeczeniu się praw byłaby nieważna i szkodliwa |
 | `scripts/check-terms-parity.mjs` | te same sekcje, ustępy i punkty list w pl, en i de | regulamin żyje w trzech wersjach w jednym pliku, a dodanie sekcji tylko do jednej niczego nie wywala: build przechodzi, a dokument jest niekompletny w dwóch językach na trzy |
 | `npm run lint:undef` (`eslint.undef.config.js`) | reguła `no-undef`, czyli sięganie po nazwę spoza zasięgu | odnośnik dodany do pola rozmiaru w kalkulatorze użył `lang`, którego funkcja nie przyjmowała; efekt to biała strona po przełączeniu na tryb zaawansowany, a build, prerender i wszyscy pozostali strażnicy przeszli bez słowa |
 

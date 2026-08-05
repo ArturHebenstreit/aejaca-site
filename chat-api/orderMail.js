@@ -41,6 +41,11 @@ const T = {
     delivery: "Dostawa",
     total: "Zapłacono",
     next: "Co dalej",
+    printTitle: "Uwagi do modelu, potwierdzone przy zamówieniu",
+    printIntro: "Przed dodaniem pozycji do koszyka pokazaliśmy poniższe uwagi do przesłanego pliku, a Ty potwierdziłeś polecenie wykonania wydruku mimo nich. Powtarzamy je tutaj, żeby zostały udokumentowane po obu stronach.",
+    printAccepted: "Potwierdzenie zaznaczone przy dodawaniu pozycji do koszyka.",
+    printRights: "To nie ogranicza Twoich uprawnień konsumenta. Oznacza tylko, że wydruk wykonujemy według Twojej specyfikacji, mimo ujawnionej właściwości pliku, więc jej skutek nie będzie traktowany jako nasza wada wykonania.",
+    printSettings: (tech, nozzle) => nozzle ? `Ustawienia: ${tech}, dysza ${nozzle} mm.` : `Ustawienia: ${tech}.`,
     nextBody:
       "Zabieramy się do pracy. Odezwiemy się, gdy zamówienie będzie gotowe do wysyłki lub odbioru. Jeśli coś w Twoim zleceniu będzie wymagało doprecyzowania, napiszemy wcześniej.",
     withdrawal: "Prawo odstąpienia",
@@ -91,6 +96,11 @@ const T = {
     delivery: "Delivery",
     total: "Paid",
     next: "What happens next",
+    printTitle: "Notes on the model, confirmed with the order",
+    printIntro: "Before this item went into the cart we showed you the notes below on the file you supplied, and you confirmed an instruction to print despite them. We repeat them here so the record exists on both sides.",
+    printAccepted: "Confirmation ticked when the item was added to the cart.",
+    printRights: "This does not limit your consumer rights. It only means we print to your specification despite the disclosed property of the file, so its consequence will not be treated as a fault in our workmanship.",
+    printSettings: (tech, nozzle) => nozzle ? `Settings: ${tech}, ${nozzle} mm nozzle.` : `Settings: ${tech}.`,
     nextBody:
       "We are starting work. We will get in touch once your order is ready for shipping or collection. If anything in your order needs clarification, we will write to you earlier.",
     withdrawal: "Right of withdrawal",
@@ -141,6 +151,11 @@ const T = {
     delivery: "Lieferung",
     total: "Bezahlt",
     next: "Wie es weitergeht",
+    printTitle: "Hinweise zum Modell, mit der Bestellung bestätigt",
+    printIntro: "Bevor diese Position in den Warenkorb kam, haben wir Ihnen die folgenden Hinweise zur eingereichten Datei angezeigt, und Sie haben den Druckauftrag trotzdem bestätigt. Wir wiederholen sie hier, damit der Vorgang beidseitig dokumentiert ist.",
+    printAccepted: "Bestätigung beim Hinzufügen zum Warenkorb angekreuzt.",
+    printRights: "Das schränkt Ihre Verbraucherrechte nicht ein. Es bedeutet nur, dass wir nach Ihrer Vorgabe drucken, trotz der offengelegten Eigenschaft der Datei, sodass deren Folge nicht als Mangel unserer Ausführung gilt.",
+    printSettings: (tech, nozzle) => nozzle ? `Einstellungen: ${tech}, Düse ${nozzle} mm.` : `Einstellungen: ${tech}.`,
     nextBody:
       "Wir beginnen mit der Arbeit. Wir melden uns, sobald Ihre Bestellung zum Versand oder zur Abholung bereit ist. Sollte etwas an Ihrem Auftrag klärungsbedürftig sein, schreiben wir Ihnen vorher.",
     withdrawal: "Widerrufsrecht",
@@ -233,6 +248,69 @@ function paidAmount(order) {
     : money(order.total_grosze);
 }
 
+
+// ------------------------------------------------------------
+// Uwagi do modelu potwierdzone przy zamowieniu
+// ------------------------------------------------------------
+// Zapis w `params.printability` trzyma identyfikatory i liczby, a nie gotowe
+// zdania. Tekst powstaje dopiero tutaj, w jezyku zamowienia, dzieki czemu
+// pozniejsza zmiana redakcji nie unieważnia zapisu sprzed roku.
+//
+// Do maila trafiaja wylacznie ustalenia poziomu `blocker`, czyli te, ktore
+// realnie wymagaly pokwitowania. Ostrzezenia klient widzial, ale ich nie
+// potwierdzal, wiec przypominanie ich w dokumencie potwierdzajacym
+// sugerowaloby zgode, ktorej nie bylo.
+const PRINT_FINDINGS = {
+  pl: {
+    holes: (f) => `Siatka nie jest szczelna: ${f.value} krawędzi bez pary.`,
+    nonmanifold: (f) => `Siatka nie jest rozmaitością: ${f.value} krawędzi przy więcej niż dwóch ściankach.`,
+    too_thin: (f) => `Najcieńsze ścianki mają ${num(f.value)} mm przy progu ${num(f.limit)} mm dla wybranych ustawień; dotyczy ${Math.round((f.share || 0) * 100)}% powierzchni.`,
+    too_big: (f) => `Model ${(f.value || []).map((v) => Math.round(v)).join(" x ")} mm przekracza stół roboczy.`,
+    empty: () => "Plik nie zawierał geometrii.",
+  },
+  en: {
+    holes: (f) => `The mesh is not watertight: ${f.value} unpaired edges.`,
+    nonmanifold: (f) => `The mesh is not a manifold: ${f.value} edges with more than two faces.`,
+    too_thin: (f) => `The thinnest walls are ${num(f.value)} mm against a ${num(f.limit)} mm threshold for the chosen settings, affecting ${Math.round((f.share || 0) * 100)}% of the surface.`,
+    too_big: (f) => `At ${(f.value || []).map((v) => Math.round(v)).join(" x ")} mm the model exceeds the build plate.`,
+    empty: () => "The file contained no geometry.",
+  },
+  de: {
+    holes: (f) => `Das Netz ist nicht geschlossen: ${f.value} Kanten ohne Gegenstück.`,
+    nonmanifold: (f) => `Das Netz ist keine Mannigfaltigkeit: ${f.value} Kanten mit mehr als zwei Flächen.`,
+    too_thin: (f) => `Die dünnsten Wände messen ${num(f.value)} mm bei einer Grenze von ${num(f.limit)} mm für die gewählten Einstellungen, betroffen sind ${Math.round((f.share || 0) * 100)}% der Oberfläche.`,
+    too_big: (f) => `Mit ${(f.value || []).map((v) => Math.round(v)).join(" x ")} mm überschreitet das Modell den Bauraum.`,
+    empty: () => "Die Datei enthielt keine Geometrie.",
+  },
+};
+
+function num(v) {
+  return Number(v).toFixed(2);
+}
+
+const TECH_NAME = { fdm: "FDM", msla: "MSLA" };
+
+/**
+ * Pozycje z potwierdzonymi uwagami do modelu, w jezyku zamowienia.
+ * Zwraca puste, gdy nikt niczego nie potwierdzal.
+ */
+function acceptedPrintNotes(items, lang) {
+  const dict = PRINT_FINDINGS[lang] || PRINT_FINDINGS.pl;
+  const out = [];
+  for (const i of items) {
+    const p = i.params?.printability;
+    if (!p || !p.accepted) continue;
+    const lines = (p.findings || [])
+      .filter((f) => f.level === "blocker")
+      .map((f) => dict[f.id]?.(f))
+      .filter(Boolean);
+    if (lines.length) {
+      out.push({ title: i.title, tech: TECH_NAME[p.tech] || p.tech, nozzle: p.nozzle, lines });
+    }
+  }
+  return out;
+}
+
 function customerHtml(order, items, lang) {
   const l = T[lang] || T.pl;
   const rows = items
@@ -246,6 +324,7 @@ function customerHtml(order, items, lang) {
 
   const deliveryName = l.deliveryNames[order.delivery_method] || order.delivery_method || "";
   const wd = withdrawalParts(order, items, l);
+  const printNotes = acceptedPrintNotes(items, lang);
 
   return `<!doctype html><html><body style="margin:0;padding:24px;background:#f6f6f6;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111">
   <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px">
@@ -271,6 +350,21 @@ function customerHtml(order, items, lang) {
     <h3 style="font-size:14px;margin:24px 0 6px">${l.next}</h3>
     <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${l.nextBody}</p>
 
+    ${printNotes.length ? `
+      <h3 style="font-size:14px;margin:24px 0 6px">${l.printTitle}</h3>
+      <p style="margin:0 0 10px;line-height:1.6;font-size:13px;color:#444">${esc(l.printIntro)}</p>
+      ${printNotes.map((n) => `
+        <div style="border:1px solid #e8d5d5;background:#fdf7f7;border-radius:8px;padding:12px;margin:0 0 10px">
+          <p style="margin:0 0 4px;font-size:13px;font-weight:700">${esc(n.title)}</p>
+          <p style="margin:0 0 6px;font-size:12px;color:#777">${esc(l.printSettings(n.tech, n.nozzle))}</p>
+          <ul style="margin:0;padding-left:18px;font-size:13px;color:#444;line-height:1.6">
+            ${n.lines.map((t) => `<li>${esc(t)}</li>`).join("")}
+          </ul>
+          <p style="margin:8px 0 0;font-size:12px;color:#777">${esc(l.printAccepted)}</p>
+        </div>`).join("")}
+      <p style="margin:0 0 4px;line-height:1.6;font-size:12px;color:#777">${esc(l.printRights)}</p>
+    ` : ""}
+
     <h3 style="font-size:14px;margin:20px 0 6px">${l.withdrawal}</h3>
     ${wd.paras.map((t) => `<p style="margin:0 0 8px;line-height:1.6;font-size:13px;color:#666">${esc(t)}</p>`).join("")}
     ${wd.form ? `
@@ -294,6 +388,7 @@ function customerText(order, items, lang) {
   const l = T[lang] || T.pl;
   const lines = items.map((i) => `- ${i.title} x ${i.qty}: ${money(i.line_grosze)}`);
   const wd = withdrawalParts(order, items, l);
+  const printNotes = acceptedPrintNotes(items, lang);
   return [
     l.hi,
     "",
@@ -307,6 +402,22 @@ function customerText(order, items, lang) {
     `${l.total}: ${paidAmount(order)}`,
     "",
     `${l.next}: ${l.nextBody}`,
+    // Wersja tekstowa jest tym, co przeczyta klient z czytnikiem ekranu i to,
+    // co zostaje, gdy klient wylaczy HTML. Zapis o potwierdzonych uwagach musi
+    // byc w obu, inaczej dokumentacja zalezy od ustawien poczty.
+    ...(printNotes.length ? [
+      "",
+      `${l.printTitle}:`,
+      l.printIntro,
+      ...printNotes.flatMap((n) => [
+        "",
+        `${n.title}. ${l.printSettings(n.tech, n.nozzle)}`,
+        ...n.lines.map((t) => `- ${t}`),
+        l.printAccepted,
+      ]),
+      "",
+      l.printRights,
+    ] : []),
     "",
     `${l.withdrawal}: ${wd.paras.join(" ")}`,
     ...(wd.form ? ["", `${wd.title}:`, ...wd.form] : []),
@@ -324,6 +435,14 @@ function internalText(order, items, attachments = []) {
   kalkulator: ${i.calculator}
   parametry: ${JSON.stringify(i.params)}${i.params?.description ? `\n  OPIS OD KLIENTA: ${i.params.description}` : ""}${i.params?.personalization ? `\n  GRAWER NA WYROBIE: ${i.params.personalization}` : ""}${i.params?.packagingText ? `\n  GRAWER NA WIEKU: ${i.params.packagingText}` : ""}${i.params?.packagingTextBack ? `\n  GRAWER WEWNATRZ WIEKA: ${i.params.packagingTextBack}` : ""}${i.file_name ? `\n  plik: ${i.file_name} (sha256 ${String(i.file_sha256 || "").slice(0, 16)})${i.file_url ? `\n  Dysk: ${i.file_url}` : "\n  Dysk: link jeszcze nie dotarl z n8n"}${i.upload_token && API_BASE ? `\n  Podglad: ${API_BASE}/api/uploads/${i.upload_token}/thumb` : ""}` : ""}${
       i.geometry ? `\n  geometria: ${Number(i.geometry.volumeCm3).toFixed(2)} cm3, bbox ${i.geometry.bbox?.x}x${i.geometry.bbox?.y}x${i.geometry.bbox?.z} cm` : ""
+    }${
+      // Wyroznione, bo w warsztacie to jest instrukcja: drukowac mimo wykrytej
+      // wady. Zakopane w JSON-ie parametrow zostaloby przeoczone.
+      i.params?.printability?.accepted
+        ? `\n  !! KLIENT POTWIERDZIL DRUK MIMO UWAG (${(i.params.printability.findings || []).filter((f) => f.level === "blocker").map((f) => f.id).join(", ")}), najcienszy mur ${i.params.printability.thinnestMm ?? "?"} mm, ${i.params.printability.tech}${i.params.printability.nozzle ? ` dysza ${i.params.printability.nozzle}` : ""}`
+        : i.params?.printability?.blocked
+        ? `\n  !! UWAGA: pozycja ma wykryte wady modelu BEZ potwierdzenia klienta, sprawdz przed drukiem`
+        : ""
     }`
   );
   const attachmentLines = attachments.length

@@ -242,6 +242,14 @@ Przyklad, ktory warto podac: **plyta 0,3 mm jest blokada przy dyszy 0,4, a tylko
 
 **Naprawa siatki:** Meshmixer (Analysis, Inspector), Blender (3D Print Toolbox), funkcja naprawy w PrusaSlicer i w Bambu Studio.
 
+**BRAMKA W KALKULATORZE I W SKLEPIE (od 2026-08-05).** Ta sama analiza dziala takze przy zamawianiu, nie tylko na stronie narzedzia:
+- Model wgrany do kalkulatora (szybka wycena i tryb zaawansowany) oraz do karty uslugi w sklepie jest sprawdzany automatycznie, z parametrami, ktore klient WLASNIE wybral, razem z dysza.
+- Ustalenia blokujace (scianka ponizej minimum dla wybranej dyszy albo dla zywicy, nieszczelna siatka, model wiekszy od stolu) **wstrzymuja przycisk "Dodaj do koszyka"**. Przycisk zmienia napis na "Potwierdz uwagi do modelu" i odblokowuje sie dopiero po zaznaczeniu potwierdzenia.
+- Ostrzezenia (duzo nawisow, mala podstawa, jedna sciezka zamiast dwoch) sa pokazywane, ale NIE blokuja. Nie kaz klientowi niczego potwierdzac przy samym ostrzezeniu.
+- Potwierdzenie zapisuje sie przy zamowieniu i **wraca w mailu potwierdzajacym**, w jezyku zamowienia.
+
+**Jak o tym mowic, gdy klient pyta, po co to potwierdzenie:** to NIE jest zrzeczenie sie praw konsumenta i nie wolno tak tego nazywac. Konsument nie moze z gory zrzec sie uprawnien z tytulu niezgodnosci towaru z umowa, taka klauzula byla by niewazna. Potwierdzenie dokumentuje, ze ujawnilismy konkretna wlasciwosc JEGO pliku przed zamowieniem, a on polecil wykonanie mimo to, wiec wykonujemy wedlug jego specyfikacji. Pozostale uprawnienia zostaja nienaruszone. Podstawa: sekcja 13 Regulaminu, https://www.aejaca.com/terms/#sec-13
+
 ---
 
 ### Laser Parameter Wizard (Kreator parametrów laserowania)
