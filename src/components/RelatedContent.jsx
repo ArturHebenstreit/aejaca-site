@@ -25,6 +25,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { getPostsByCategoryMeta } from "../blog/postsMeta.js";
 import { getTermsByCategory } from "../data/glossary.js";
 import { getToolsByCategory } from "../data/toolLinks.js";
+import ToolLinks from "./ToolLinks.jsx";
 
 const UI = {
   pl: { tag: "Zanim zamówisz", posts: "Poradniki", terms: "Pojęcia z tej dziedziny", all: "Cały blog", tools: "Sprawdź przed zamówieniem" },
@@ -55,25 +56,7 @@ export default function RelatedContent({ category = "studio", limit = 3, terms =
         {tools.length > 0 && (
           <>
             <h3 className="text-white font-medium text-sm mb-3">{u.tools}</h3>
-            <div className="grid sm:grid-cols-2 gap-4 mb-8">
-              {tools.map((tool) => (
-                <Link
-                  key={tool.id}
-                  to={tool.to}
-                  className="group rounded-xl border border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04] p-4 transition-all duration-300"
-                >
-                  <h4 className="text-white text-sm font-medium leading-snug mb-1.5">
-                    {tool.label[lang] || tool.label.en}
-                  </h4>
-                  <p className="text-neutral-500 text-xs leading-relaxed">
-                    {tool.desc[lang] || tool.desc.en}
-                  </p>
-                  <span className={`inline-flex items-center gap-1 ${tint} text-xs mt-2`}>
-                    <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
-                  </span>
-                </Link>
-              ))}
-            </div>
+            <ToolLinks tools={tools} accent={category === "studio" ? "blue" : "amber"} heading={false} className="mb-8" />
           </>
         )}
 

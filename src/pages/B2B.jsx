@@ -10,6 +10,8 @@ import {
   buildFAQSchema,
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
+import ToolLinks from "../components/ToolLinks.jsx";
+import { getToolsForPros } from "../data/toolLinks.js";
 import B2BInquiryForm from "../components/B2BInquiryForm.jsx";
 
 // ============================================================
@@ -475,6 +477,19 @@ export default function B2B() {
           <div ref={seriesRef} className="reveal max-w-3xl mx-auto text-center">
             <h2 className="font-sans text-2xl font-bold text-white mb-4 tracking-tight">{t.seriesTitle}</h2>
             <p className="text-neutral-400 text-sm leading-relaxed">{t.seriesText}</p>
+          </div>
+        </section>
+
+        <div className="gradient-divider" />
+
+        {/* Narzedzia warsztatowe. Po drugiej stronie tej strony siedzi
+            pracownia, wiec kalkulator blanku, sklad stopow, kompensacja
+            skurczu i tabela parametrow lasera sa tu na miejscu, inaczej niz
+            w sklepie, gdzie czyta je kupujacy. Strona B2B nie prowadzila
+            wczesniej do zadnego narzedzia. */}
+        <section className="py-12 px-4 bg-neutral-950">
+          <div className="max-w-3xl mx-auto">
+            <ToolLinks tools={getToolsForPros()} variant="pro" />
           </div>
         </section>
 

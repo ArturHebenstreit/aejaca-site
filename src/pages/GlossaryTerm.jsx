@@ -4,6 +4,8 @@ import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import { GLOSSARY, CATEGORIES } from "../data/glossary.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import ContentCTA from "../components/ContentCTA.jsx";
+import ToolLinks from "../components/ToolLinks.jsx";
+import { getToolsForTerm } from "../data/toolLinks.js";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
@@ -13,7 +15,6 @@ const LABELS = {
     glossary: "Słownik pojęć",
     category: "Kategoria",
     relatedArticle: "Powiązany artykuł",
-    relatedTool: "Narzędzie",
     relatedTerms: "Powiązane pojęcia",
     backToGlossary: "← Wróć do glosariusza",
     notFound: "Nie znaleziono pojęcia",
@@ -23,7 +24,6 @@ const LABELS = {
     glossary: "Glossary",
     category: "Category",
     relatedArticle: "Related article",
-    relatedTool: "Tool",
     relatedTerms: "Related terms",
     backToGlossary: "← Back to glossary",
     notFound: "Term not found",
@@ -33,7 +33,6 @@ const LABELS = {
     glossary: "Glossar",
     category: "Kategorie",
     relatedArticle: "Verwandter Artikel",
-    relatedTool: "Werkzeug",
     relatedTerms: "Verwandte Begriffe",
     backToGlossary: "← Zurück zum Glossar",
     notFound: "Begriff nicht gefunden",
@@ -137,22 +136,16 @@ export default function GlossaryTerm() {
                   hasel prowadzilo dotad wylacznie do innych hasel. */}
               <ContentCTA service={term.service} category={term.category} className="mb-10" />
 
-              {/* Narzedzie zwiazane z pojeciem. Haslo tlumaczy, CZYM jest
-                  rozmiar pierscionka, i konczylo sie na definicji. Ktos, kto
-                  tego szuka, zwykle chce go po prostu zmierzyc. */}
-              {term.relatedTool && (
-                <div className="mb-10 p-5 rounded-xl bg-neutral-900/60 border border-neutral-800">
-                  <div className="text-neutral-400 text-xs uppercase tracking-widest mb-2">{l.relatedTool}</div>
-                  <Link to={term.relatedTool.to} className={`${catColorClass} hover:underline font-medium`}>
-                    {term.relatedTool.label[lang] || term.relatedTool.label.en}
-                  </Link>
-                  {term.relatedTool.desc && (
-                    <p className="text-neutral-400 text-sm mt-1.5 leading-relaxed">
-                      {term.relatedTool.desc[lang] || term.relatedTool.desc.en}
-                    </p>
-                  )}
-                </div>
-              )}
+              {/* Narzedzia zwiazane z pojeciem. Haslo tlumaczy, CZYM cos
+                  jest, i konczylo sie na definicji. Kto szuka "zywica
+                  castable", zwykle chce ja potem dobrac. Mapowanie hasel na
+                  narzedzia leży w src/data/toolLinks.js, zeby nowe narzedzie
+                  wpinalo sie w cały slownik jednym wpisem. */}
+              <ToolLinks
+                tools={getToolsForTerm(term.id, term.category)}
+                accent={term.category === "studio" ? "blue" : "amber"}
+                className="mb-10"
+              />
 
               {term.relatedBlog && (
                 <div className="mb-10 p-5 rounded-xl bg-neutral-900/60 border border-neutral-800">

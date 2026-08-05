@@ -7,6 +7,8 @@ import BlogCard from "../components/blog/BlogCard.jsx";
 import FAQ from "../components/FAQ.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import ContentCTA from "../components/ContentCTA.jsx";
+import ToolLinks from "../components/ToolLinks.jsx";
+import { getToolsForPost } from "../data/toolLinks.js";
 import {
   buildArticleSchema,
   buildFAQSchema,
@@ -186,7 +188,17 @@ export default function BlogPost() {
                 ekranow o splotach albo o druku zywicznym, jest najlepiej
                 przygotowanym klientem tego dnia. Wczesniej konczylo sie to
                 niczym: wpisy prowadzily dalej najwyzej jednym odnosnikiem. */}
-            <ContentCTA service={post.service} category={post.category} className="mt-12" />
+            {/* Narzedzia do tematu wpisu. Pomiar przed wprowadzeniem tego
+                bloku: 0,21 odnosnika do narzedzia na wpis, czyli praktycznie
+                zero. Kto wlasnie przeczytal o zywicach castable, ma stad
+                jedno klikniecie do doradcy zywic. */}
+            <ToolLinks
+              tools={getToolsForPost(post.slug, post.category)}
+              accent={post.category === "studio" ? "blue" : "amber"}
+              className="mt-12"
+            />
+
+            <ContentCTA service={post.service} category={post.category} className="mt-8" />
           </div>
         </article>
 
