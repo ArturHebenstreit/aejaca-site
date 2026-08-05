@@ -11,6 +11,7 @@ import { useParams } from "react-router-dom";
 import { ArrowRight, ArrowLeft, Clock, RotateCcw, MessageCircle, Wrench, Calculator } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
+import RelatedContent from "../components/RelatedContent.jsx";
 import { buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
@@ -330,6 +331,11 @@ export default function Service() {
             <ArrowLeft className="w-4 h-4" />{u.back}
           </Link>
         </div>
+
+        {/* Wiedza z tej dziedziny. Szesnascie stron sklepu mialo 499 linkow
+            przychodzacych i nie oddawalo z nich nic do bloga ani slownika,
+            ktore dostawaly odpowiednio 5,6 i 8,7 linku na strone. */}
+        <RelatedContent category={card.category} />
       </div>
     </>
   );

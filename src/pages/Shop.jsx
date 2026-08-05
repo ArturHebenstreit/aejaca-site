@@ -10,6 +10,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ArrowRight, Package, Download, Wrench, MessageCircle, Sparkles, Search, X, LayoutGrid } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
+import RelatedContent from "../components/RelatedContent.jsx";
 import { buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
@@ -895,6 +896,10 @@ export default function Shop() {
           )}
           </div>
         </div>
+
+        {/* Na stronie kategorii pokazujemy wiedze z tej samej dziedziny.
+            Na /shop/ bez kategorii nie ma czego dobrac, wiec pomijamy. */}
+        {category && <RelatedContent category={category.id} />}
       </div>
     </>
   );
