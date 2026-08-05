@@ -81,6 +81,39 @@ export function nozzleFromPrecision(precisionId) {
   return id && NOZZLES.some((n) => n.id === id) ? id : "0.4";
 }
 
+/**
+ * Kalibracja werdyktow. Liczby pochodza z pomiaru na modelach o znanym
+ * wyniku, a nie z przeczucia, i kazda z nich broni przed konkretnym
+ * falszywym alarmem.
+ *
+ * POWOD ZMIANY (2026-08-05). Pierwsza wersja opierala werdykt o grubosci na
+ * percentylu p1. To byl blad konstrukcyjny: percentyl pierwszy z definicji
+ * reaguje, gdy JAKIKOLWIEK jeden procent powierzchni jest cienki. Kostka
+ * 20 mm z wytloczonym logo o wysokosci 0,3 mm dostawala blokade dokladnie
+ * tak samo, jak plyta 0,3 mm, mimo ze drukuje sie bez zadnego problemu, a
+ * logo po prostu sie zaokragla. Zmierzone: udzial powierzchni ponizej progu
+ * wynosil tam 2,6%, a przy plycie 98,5%. Rozroznia je UDZIAL, nie percentyl.
+ *
+ * Zasada nadrzedna: blokujemy wylacznie to, czego naprawde nie da sie
+ * wykonac. Reszta jest informacja. Narzedzie, ktore odrzuca poprawne modele,
+ * szkodzi bardziej niz jego brak, bo klient przestaje mu wierzyc i klika
+ * dalej bez czytania.
+ */
+export const CALIBRATION = {
+  /** Udzial powierzchni ponizej minimum, powyzej ktorego model jest niewykonalny. */
+  thinBlockShare: 0.40,
+  /** Udzial ponizej progu bezpiecznego, od ktorego warto ostrzec. */
+  thinWarnShare: 0.10,
+  /** Ponizej tego udzialu to detal powierzchni, nie scianka. Sama informacja. */
+  thinNoteShare: 0.02,
+  /** Udzial krawedzi brzegowych, powyzej ktorego plik jest powierzchnia, a nie bryla. */
+  openSurfaceRatio: 0.25,
+  /** Do tego udzialu nieszczelnosci slicer naprawia sam i mierzymy grubosc mimo nich. */
+  measurableGapRatio: 0.02,
+  /** Styk ze stolem ponizej tego pola, przy smuklej bryle, grozi oderwaniem. */
+  smallBaseMm2: 100,
+};
+
 /** Kat nawisu liczony od pionu. Powyzej niego slicer stawia podpory. */
 export const OVERHANG_DEG = 45;
 
@@ -477,9 +510,14 @@ export function analyzePrintability(triangles, { tech = "fdm", nozzleId = "0.4",
   const bounds = boundsOf(triangles);
   const signed = signedVolumeMm3(triangles);
   const over = analyzeOverhangs(triangles);
-  // Grubosc mierzona na siatce nieszczelnej klamie, bo promien wylatuje przez
-  // dziure i trafia w przypadkowa scianke po drugiej stronie modelu.
-  const raw = topo.isWatertight ? analyzeThickness(triangles, { samples }) : null;
+  // Drobne nieszczelnosci nie przekreslaja pomiaru. Promien, ktory wyleci
+  // przez dziure, trafia dalej i daje odczyt ZAWYZONY, a werdykt opieramy na
+  // udziale powierzchni, wiec kilka takich probek niczego nie przewraca.
+  // Odmawiamy pomiaru dopiero wtedy, gdy dziur jest tyle, ze wynik przestaje
+  // cokolwiek znaczyc.
+  const gapRatio = topo.edgeCount > 0 ? topo.boundaryEdges / topo.edgeCount : 0;
+  const measurable = gapRatio <= CALIBRATION.measurableGapRatio;
+  const raw = measurable ? analyzeThickness(triangles, { samples }) : null;
 
   const machine = MACHINES[tech === "msla" ? "msla" : "fdm"];
   const nozzle = NOZZLES.find((n) => n.id === nozzleId) || NOZZLES[1];
@@ -497,7 +535,7 @@ export function analyzePrintability(triangles, { tech = "fdm", nozzleId = "0.4",
 
   const maxDim = Math.max(...size);
 
-  const findings = buildFindings({ topo, signed, fits, fitsUnrotated, over, thickness: raw, limits, tech, maxDim, size, machine });
+  const findings = buildFindings({ topo, signed, fits, fitsUnrotated, over, thickness: raw, limits, tech, maxDim, size, machine, gapRatio });
 
   // Wynik przechodzi przez granice workera, a przez `structuredClone` nie
   // przejdzie funkcja. `shareBelow` zostaje wiec wewnatrz modulu, a na zewnatrz
@@ -535,18 +573,30 @@ export function analyzePrintability(triangles, { tech = "fdm", nozzleId = "0.4",
  * Kazde ustalenie niesie `fix`, bo sam komunikat "model ma dziury" nie pomaga
  * nikomu, kto nie wie, ze naprawia sie to w Meshmixerze albo w Blenderze.
  */
-function buildFindings({ topo, signed, fits, fitsUnrotated, over, thickness, limits, tech, maxDim, size, machine }) {
+function buildFindings({ topo, signed, fits, fitsUnrotated, over, thickness, limits, tech, maxDim, size, machine, gapRatio }) {
   const out = [];
 
   if (!topo.triangleCount) {
     out.push({ id: "empty", level: "blocker" });
     return out;
   }
+
+  // ---------- Szczelnosc ----------
+  // Plik, w ktorym brzeg stanowi cwierc wszystkich krawedzi, nie jest bryla,
+  // tylko powierzchnia: skan, plaszczyzna, otwarta skorupa. Tego nie da sie
+  // wydrukowac, bo nie wiadomo, co jest w srodku.
+  //
+  // Kilka niesparowanych krawedzi to zupelnie co innego. Kazdy wspolczesny
+  // slicer naprawia to sam i milczy, wiec i my nie robimy z tego blokady.
   if (topo.boundaryEdges > 0) {
-    out.push({ id: "holes", level: "blocker", value: topo.boundaryEdges });
+    if (gapRatio > CALIBRATION.openSurfaceRatio) {
+      out.push({ id: "open_surface", level: "blocker", value: topo.boundaryEdges, ratio: gapRatio });
+    } else {
+      out.push({ id: "holes", level: "warning", value: topo.boundaryEdges, ratio: gapRatio });
+    }
   }
   if (topo.nonManifoldEdges > 0) {
-    out.push({ id: "nonmanifold", level: "blocker", value: topo.nonManifoldEdges });
+    out.push({ id: "nonmanifold", level: "warning", value: topo.nonManifoldEdges });
   }
   if (topo.reversedFaces > 0) {
     out.push({ id: "reversed", level: "warning", value: topo.reversedFaces });
@@ -557,39 +607,59 @@ function buildFindings({ topo, signed, fits, fitsUnrotated, over, thickness, lim
   if (topo.degenerate > 0) {
     out.push({ id: "degenerate", level: "info", value: topo.degenerate });
   }
+
+  // ---------- Skala ----------
   if (maxDim < 3) {
     out.push({ id: "scale_small", level: "warning", value: maxDim });
   } else if (maxDim > 1000) {
     out.push({ id: "scale_large", level: "warning", value: maxDim });
   }
+
+  // ---------- Gabaryty ----------
   if (!fits) {
     out.push({ id: "too_big", level: "blocker", value: size, machine: machine.name });
   } else if (!fitsUnrotated) {
     out.push({ id: "fits_rotated", level: "info" });
   }
 
+  // ---------- Grubosc ----------
+  // Werdykt opiera sie na UDZIALE powierzchni ponizej progu, a nie na
+  // percentylu. Percentyl mowi tylko, ze gdzies jest cienko, i przy kazdym
+  // napisie, fazce czy fakturze mowi to samo, co przy scianie 0,3 mm.
   if (thickness) {
-    const share = thickness.shareBelow(limits.min);
-    const shareSafe = thickness.shareBelow(limits.safe);
-    if (thickness.p1 < limits.min) {
-      out.push({ id: "too_thin", level: "blocker", value: thickness.p1, limit: limits.min, share, tech });
-    } else if (thickness.p1 < limits.safe) {
-      out.push({ id: "thin", level: "warning", value: thickness.p1, limit: limits.safe, share: shareSafe, tech });
+    const belowMin = thickness.shareBelow(limits.min);
+    const belowSafe = thickness.shareBelow(limits.safe);
+
+    if (belowMin >= CALIBRATION.thinBlockShare) {
+      out.push({ id: "too_thin", level: "blocker", value: thickness.p5, limit: limits.min, share: belowMin, tech });
+    } else if (belowSafe >= CALIBRATION.thinWarnShare) {
+      out.push({ id: "thin", level: "warning", value: thickness.p5, limit: limits.safe, share: belowSafe, tech });
+    } else if (belowMin >= CALIBRATION.thinNoteShare) {
+      // Male wypustki, napisy i faktura. Wydrukuja sie zaokraglone albo
+      // uproszczone, i to jest normalna cecha druku, a nie usterka.
+      out.push({ id: "thin_detail", level: "info", value: thickness.p1, limit: limits.min, share: belowMin, tech });
     } else {
-      out.push({ id: "thickness_ok", level: "info", value: thickness.p1 });
+      out.push({ id: "thickness_ok", level: "info", value: thickness.p5 });
     }
-  } else if (!topo.isWatertight) {
+  } else {
     out.push({ id: "thickness_skipped", level: "info" });
   }
 
+  // ---------- Nawisy i podstawa ----------
   if (over.overhangShare > 0.35) {
     out.push({ id: "overhangs_many", level: "warning", value: over.overhangShare });
   } else if (over.overhangShare > 0.12) {
     out.push({ id: "overhangs_some", level: "info", value: over.overhangShare });
   }
 
-  if (tech === "fdm" && over.bedContactMm2 < 100 && fits) {
-    out.push({ id: "small_base", level: "warning", value: over.bedContactMm2 });
+  // Mala podstawa sama w sobie nie jest problemem: plaski krazek tez ma malo
+  // styku, a trzyma sie doskonale. Ryzykowna jest dopiero mala podstawa POD
+  // smukla bryla, bo taka czesc odrywa sie od wlasnego momentu.
+  if (tech === "fdm" && fits && over.bedContactMm2 > 0 && over.bedContactMm2 < CALIBRATION.smallBaseMm2) {
+    const slenderness = size[2] / Math.sqrt(over.bedContactMm2);
+    if (slenderness > 3) {
+      out.push({ id: "small_base", level: "warning", value: over.bedContactMm2, height: size[2] });
+    }
   }
 
   const order = { blocker: 0, warning: 1, info: 2 };

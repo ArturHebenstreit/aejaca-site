@@ -235,6 +235,122 @@ for (const n of NOZZLES) {
 
 console.log("Drukowalnosc: topologia, objetosc, grubosc, nawisy, gabaryty i progi dysz zgodne");
 
+
+// ------------------------------------------------------------
+// FALSZYWE ALARMY: modele, ktore MUSZA przejsc
+// ------------------------------------------------------------
+// To jest najwazniejsza czesc tego pliku i powstala po realnym bledzie.
+//
+// Pierwsza wersja opierala werdykt o grubosci na percentylu p1. Percentyl
+// pierwszy z definicji reaguje, gdy jakikolwiek jeden procent powierzchni
+// jest cienki, wiec KAZDY model z napisem, fazka albo faktura dostawal
+// blokade. Zmierzone: kostka 20 mm z wytloczonym logo 0,3 mm miala 2,6%
+// powierzchni ponizej progu, a plyta 0,3 mm miala 98,5%. Identyczny
+// percentyl, przeciwne werdykty. Rozroznia je UDZIAL.
+//
+// Narzedzie, ktore odrzuca poprawne modele, szkodzi bardziej niz jego brak,
+// bo klient przestaje mu wierzyc i klika dalej bez czytania.
+
+const rev = (tris) => tris.map(([p, q, r]) => [p, r, q]);
+const blockersOf = (r) => r.findings.filter((f) => f.level === "blocker").map((f) => f.id);
+const warningsOf = (r) => r.findings.filter((f) => f.level === "warning").map((f) => f.id);
+const infoOf = (r) => r.findings.filter((f) => f.level === "info").map((f) => f.id);
+
+{
+  // Kostka z wytloczonym logo 0,3 mm. Drukuje sie bez klopotu, logo zaokragla
+  // sie i tyle. To byl DOKLADNIE ten przypadek, ktory narzedzie blokowalo.
+  const r = analyzePrintability([...box(20, 20, 20), ...box(6, 6, 0.3, 7, 7, 20)],
+    { tech: "fdm", nozzleId: "0.4", samples: 3000 });
+  assert.deepEqual(blockersOf(r), [], "kostka z logo 0,3 mm nie moze byc blokowana");
+  assert.ok(infoOf(r).includes("thin_detail"), "ale warto o detalu wspomniec, jako informacji");
+}
+
+{
+  // Napisy i fazki na plaskiej plycie: to samo, jeszcze mniejszy udzial.
+  const r = analyzePrintability(
+    [...box(30, 30, 10), ...box(8, 2, 0.4, 5, 5, 10), ...box(8, 2, 0.4, 5, 10, 10), ...box(2, 8, 0.35, 20, 5, 10)],
+    { tech: "fdm", nozzleId: "0.4", samples: 3000 });
+  assert.deepEqual(blockersOf(r), [], "napisy na powierzchni nie sa scianka");
+}
+
+{
+  // Typowa obudowa: scianka 1,2 mm. Codzienny przypadek, ma przechodzic czysto.
+  const shell = [...box(40, 30, 20), ...rev(box(37.6, 27.6, 17.6, 1.2, 1.2, 1.2))];
+  const r = analyzePrintability(shell, { tech: "fdm", nozzleId: "0.4", samples: 3000 });
+  assert.deepEqual(blockersOf(r), [], "scianka 1,2 mm przy dyszy 0,4 jest w porzadku");
+  assert.deepEqual(warningsOf(r), [], "i nie ma o czym ostrzegac");
+}
+
+{
+  // Skorupa 0,6 mm, czyli jedna sciezka przy dyszy 0,4. Drukuje sie, bywa
+  // stosowana swiadomie, wiec OSTRZEZENIE, a nie blokada.
+  const shell = [...box(40, 30, 20), ...rev(box(38.8, 28.8, 18.8, 0.6, 0.6, 0.6))];
+  const r = analyzePrintability(shell, { tech: "fdm", nozzleId: "0.4", samples: 3000 });
+  assert.deepEqual(blockersOf(r), [], "jedna sciezka to nie jest powod, zeby odmowic druku");
+  assert.ok(warningsOf(r).includes("thin"), "ale klient ma wiedziec, ze taka scianka peka");
+}
+
+{
+  // Kostka bez jednej sciany: slicer naprawia to sam i drukuje. Ostrzezenie.
+  const r = analyzePrintability(box(20, 20, 20).slice(2), { tech: "fdm", samples: 800 });
+  assert.deepEqual(blockersOf(r), [], "kilka niesparowanych krawedzi to nie blokada");
+  assert.ok(warningsOf(r).includes("holes"));
+}
+
+{
+  // Plaski krazek: maly styk ze stolem w liczbach bezwzglednych bywa, ale
+  // plaska bryla trzyma sie doskonale. Nie ostrzegamy.
+  const r = analyzePrintability(box(30, 30, 3), { tech: "fdm", samples: 800 });
+  assert.ok(!warningsOf(r).includes("small_base"), "plaska bryla nie odrywa sie od stolu");
+}
+
+// ------------------------------------------------------------
+// PRAWDZIWE BLOKADY: to musi zostac zatrzymane
+// ------------------------------------------------------------
+
+{
+  // Plyta 0,3 mm przy dyszy 0,4: 98% powierzchni ponizej jednej sciezki.
+  const r = analyzePrintability(box(40, 40, 0.3), { tech: "fdm", nozzleId: "0.4", samples: 3000 });
+  assert.deepEqual(blockersOf(r), ["too_thin"]);
+  assert.ok(r.findings.find((f) => f.id === "too_thin").share > 0.9, "blokada opiera sie na udziale, nie na percentylu");
+}
+
+{
+  // Sama plaszczyzna: to nie jest bryla, nie wiadomo, co jest w srodku.
+  const r = analyzePrintability(box(40, 40, 0.001).slice(0, 2), { tech: "fdm", samples: 400 });
+  assert.deepEqual(blockersOf(r), ["open_surface"], "powierzchnia zamiast bryly to realna blokada");
+}
+
+{
+  const r = analyzePrintability(box(400, 400, 400), { tech: "fdm", samples: 400 });
+  assert.ok(blockersOf(r).includes("too_big"));
+}
+
+// ------------------------------------------------------------
+// Proporcja blokad: narzedzie nie moze odrzucac polowy modeli
+// ------------------------------------------------------------
+// Zbior przypadkow codziennych. Zaden nie ma prawa byc zablokowany, i to jest
+// warunek, ktory ma sie utrzymac przy kazdej pozniejszej zmianie progow.
+
+{
+  const codzienne = [
+    ["kostka", box(20, 20, 20)],
+    ["kostka z logo", [...box(20, 20, 20), ...box(6, 6, 0.3, 7, 7, 20)]],
+    ["obudowa 1,2 mm", [...box(40, 30, 20), ...rev(box(37.6, 27.6, 17.6, 1.2, 1.2, 1.2))]],
+    ["obudowa 0,6 mm", [...box(40, 30, 20), ...rev(box(38.8, 28.8, 18.8, 0.6, 0.6, 0.6))]],
+    ["plytka 60x40x2", box(60, 40, 2)],
+    ["slupek 4x4x40", box(4, 4, 40)],
+    ["krazek 30x30x3", box(30, 30, 3)],
+    ["duza czesc 250x200x100", box(250, 200, 100)],
+    ["czesc na styk ze stolem 290x310x300", box(290, 310, 300)],
+    ["kostka z dziura po scianie", box(20, 20, 20).slice(2)],
+  ];
+  const zablokowane = codzienne.filter(([, t]) =>
+    analyzePrintability(t, { tech: "fdm", nozzleId: "0.4", samples: 1200 }).findings.some((f) => f.level === "blocker"));
+  assert.deepEqual(zablokowane.map(([n]) => n), [],
+    "zaden model z codziennego zestawu nie moze byc zablokowany");
+}
+
 // ------------------------------------------------------------
 // Odczyt dyszy z ustawien kalkulatora
 // ------------------------------------------------------------

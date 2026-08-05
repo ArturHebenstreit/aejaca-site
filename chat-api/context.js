@@ -244,7 +244,9 @@ Przyklad, ktory warto podac: **plyta 0,3 mm jest blokada przy dyszy 0,4, a tylko
 
 **BRAMKA W KALKULATORZE I W SKLEPIE (od 2026-08-05).** Ta sama analiza dziala takze przy zamawianiu, nie tylko na stronie narzedzia:
 - Model wgrany do kalkulatora (szybka wycena i tryb zaawansowany) oraz do karty uslugi w sklepie jest sprawdzany automatycznie, z parametrami, ktore klient WLASNIE wybral, razem z dysza.
-- Ustalenia blokujace (scianka ponizej minimum dla wybranej dyszy albo dla zywicy, nieszczelna siatka, model wiekszy od stolu) **wstrzymuja przycisk "Dodaj do koszyka"**. Przycisk zmienia napis na "Potwierdz uwagi do modelu" i odblokowuje sie dopiero po zaznaczeniu potwierdzenia.
+- **Blokuja TYLKO trzy rzeczy**, bo tylko przy nich wydruk nie powstanie: model nie miesci sie na stole nawet po obrocie, plik zawiera powierzchnie zamiast zamknietej bryly, albo PRZEWAZAJACA CZESC modelu jest cienciejsza niz jedna sciezka przy wybranych ustawieniach. Wtedy przycisk zmienia napis na "Potwierdz uwagi do modelu" i odblokowuje sie po zaznaczeniu potwierdzenia.
+- **Cala reszta niczego nie blokuje** i tak ma byc: cienkie scianki na fragmencie modelu, jedna sciezka zamiast dwoch, napisy i faktura ponizej progu, drobne nieszczelnosci (slicery naprawiaja je same), duzo nawisow. Werdykt o gruboscia opiera sie na UDZIALE powierzchni ponizej progu, a nie na percentylu, bo percentyl oskarzal kazdy model z fazka albo z wytloczonym logo.
+- Gdy klient pyta, czemu narzedzie czegos nie zglosilo albo zglosilo tylko jako uwage: narzedzie celowo nie odrzuca poprawnych modeli. Odrzucanie poprawnych plikow szkodzi bardziej niz brak sprawdzania, bo klient przestaje ufac ostrzezeniom.
 - Ostrzezenia (duzo nawisow, mala podstawa, jedna sciezka zamiast dwoch) sa pokazywane, ale NIE blokuja. Nie kaz klientowi niczego potwierdzac przy samym ostrzezeniu.
 - Potwierdzenie zapisuje sie przy zamowieniu i **wraca w mailu potwierdzajacym**, w jezyku zamowienia.
 

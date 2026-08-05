@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-05 | Wersja: 3.4*
+*Wygenerowano: 2026-08-05 | Wersja: 3.5*
 
 ---
 
@@ -454,6 +454,44 @@ ostrzeżeniem i uczy klikać bez czytania.
 
 Analiza idzie na geometrii **po przeskalowaniu**, bo to ona zostanie wydrukowana. Model zmniejszony
 o połowę ma o połowę cieńszy mur.
+
+#### Kalibracja: co blokuje, a co jest tylko informacją (korekta 2026-08-05)
+
+Pierwsza wersja **odrzucała poprawne modele** i to był błąd konstrukcyjny, nie przeoczenie.
+Werdykt o grubości opierał się na percentylu p1, a percentyl pierwszy z definicji reaguje, gdy
+jakikolwiek jeden procent powierzchni jest cienki. Skutek: każdy model z napisem, fazką albo
+fakturą dostawał blokadę.
+
+Pomiar, który to ujawnił:
+
+| Model | Percentyl p1 | Udział poniżej progu | Werdykt przed | Werdykt po |
+|---|---|---|---|---|
+| Kostka 20 mm z logo 0,3 mm | 0,30 mm | **2,6%** | BLOKADA | informacja |
+| Płyta 0,3 mm | 0,30 mm | **98,5%** | BLOKADA | BLOKADA |
+
+Identyczny percentyl, przeciwne przypadki. **Rozróżnia je udział, nie percentyl.**
+
+**Blokują wyłącznie trzy rzeczy**, bo tylko przy nich wydruk nie powstanie:
+
+1. model nie mieści się na stole nawet po obrocie,
+2. plik zawiera powierzchnię zamiast zamkniętej bryły (brzeg > 25% krawędzi),
+3. przeważająca część modelu (≥ 40% powierzchni) jest cieńsza niż jedna ścieżka.
+
+**Reszta jest informacją i niczego nie zatrzymuje:** cienkie ścianki na fragmencie modelu, jedna
+ścieżka zamiast dwóch, detale poniżej progu, drobne nieszczelności, dużo nawisów, mała podstawa.
+
+Dwie poprawki poboczne z tej samej korekty. **Nieszczelności przestały być blokadą**, bo współczesne
+slicery naprawiają je same i milczą; grubość mierzymy teraz mimo nich, dopóki brzeg nie przekracza
+2% krawędzi (promień wylatujący przez dziurę daje odczyt ZAWYŻONY, a werdykt oparty na udziale to
+znosi). **Mała podstawa ostrzega tylko przy smukłej bryle** (wysokość > 3× pierwiastek z pola styku),
+bo płaski krążek też ma mało styku, a trzyma się doskonale.
+
+Progi żyją w `CALIBRATION` w `src/analysis/printability.js`, a nie rozsypane po kodzie.
+
+**Zasada nadrzędna, której nie wolno naruszyć:** narzędzie, które odrzuca poprawne modele, szkodzi
+bardziej niż jego brak, bo klient przestaje wierzyć ostrzeżeniom i klika dalej bez czytania. Test
+`test-printability.mjs` zawiera zestaw dziesięciu codziennych modeli i sprawdza, że **żaden**
+nie zostaje zablokowany.
 
 #### Charakter pokwitowania: to NIE jest zrzeczenie się praw
 

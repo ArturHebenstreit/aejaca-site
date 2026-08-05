@@ -6,13 +6,15 @@
 // sie od nas, po zaplacie. Ten komponent wpina te sama analize w kalkulator
 // i w konfigurator sklepu, z parametrami, ktore klient WLASNIE wybral.
 //
-// Zakres blokady jest celowo waski. Blokujemy tylko `blocker`, czyli rzeczy,
-// po ktorych wydruk nie powstanie albo powstanie wadliwy: dziury w siatce,
-// scianka ponizej jednej sciezki, model wiekszy od stolu. Ostrzezenia
-// pokazujemy bez zadnego pokwitowania, bo trzydziesci procent nawisow to
-// normalna czesc, a nie usterka, i wymuszanie tam zgody nauczyloby klienta
-// klikac bez czytania. Ostrzezenie, ktore pojawia sie zawsze, przestaje byc
-// ostrzezeniem.
+// Zakres blokady jest waski i zostal ZWEZONY po tym, jak narzedzie zaczelo
+// odrzucac poprawne modele. Blokujemy wylacznie to, czego naprawde nie da sie
+// wykonac: plik bedacy powierzchnia zamiast bryly, model wiekszy od stolu
+// oraz model, ktorego WIEKSZOSC powierzchni jest ponizej jednej sciezki.
+//
+// Wszystko inne jest informacja: drobne nieszczelnosci (slicer naprawia je
+// sam), pojedyncza sciezka zamiast dwoch, napisy i faktura ponizej progu,
+// duzo nawisow. Narzedzie, ktore odrzuca poprawne modele, szkodzi bardziej
+// niz jego brak, bo klient przestaje mu wierzyc i klika dalej bez czytania.
 //
 // UWAGA CO DO CHARAKTERU POKWITOWANIA. To NIE jest zrzeczenie sie uprawnien
 // konsumenta i nie wolno tak tego formulowac. Konsument nie moze z gory
@@ -65,7 +67,8 @@ const L10N = {
 /** Krotkie opisy do bramki. Pelne wyjasnienia i porady sa na stronie narzedzia. */
 const SHORT = {
   pl: {
-    holes: (f, n) => `Siatka nie jest szczelna (${f.value} krawędzi bez pary). Slicer musi zgadywać, gdzie jest wnętrze, a wycena liczy objętość z bryły, która bryłą nie jest.`,
+    holes: (f, n) => `Siatka nie jest w pełni szczelna (${f.value} krawędzi bez pary). Slicer zwykle naprawia to sam, ale objętość, z której liczymy cenę, jest wtedy przybliżona.`,
+    open_surface: (f, n) => `Plik jest powierzchnią, a nie bryłą (${Math.round((f.ratio || 0) * 100)}% krawędzi to brzeg). Nie wiadomo, co jest wnętrzem, więc nie ma czego wypełnić.`,
     nonmanifold: (f, n) => `Siatka nie jest rozmaitością (${f.value} krawędzi przy więcej niż dwóch ściankach).`,
     reversed: (f, n) => `${f.value} ścianek jest odwróconych względem sąsiadów.`,
     inverted: (f, n) => "Siatka jest wywrócona na lewą stronę: slicer wydrukuje pełną bryłę zamiast skorupy.",
@@ -74,13 +77,14 @@ const SHORT = {
     scale_large: (f, n) => `Największy wymiar to ${n(f.value / 1000, 2)} m. Sprawdź jednostki eksportu.`,
     too_big: (f, n) => `Model ${f.value.map((v) => n(v, 0)).join(" x ")} mm nie mieści się na stole.`,
     fits_rotated: (f, n) => "Mieści się dopiero po obrocie, co zmienia kierunek warstw i wytrzymałość.",
-    too_thin: (f, n) => `Najcieńsze ścianki mają ${n(f.value, 2)} mm przy progu ${n(f.limit, 2)} mm dla wybranych ustawień. Dotyczy ${(f.share * 100).toFixed(0)}% powierzchni; w tych miejscach powstaną dziury.`,
-    thin: (f, n) => `Najcieńsze ścianki mają ${n(f.value, 2)} mm, czyli jedną ścieżkę. Wydrukują się, ale pękają przy nacisku.`,
+    too_thin: (f, n) => `${(f.share * 100).toFixed(0)}% powierzchni modelu jest cieńsze niż ${n(f.limit, 2)} mm, czyli niż jedna ścieżka przy wybranych ustawieniach. W tych miejscach drukarka nie ma czego ułożyć.`,
+    thin: (f, n) => `${(f.share * 100).toFixed(0)}% powierzchni to ścianki poniżej ${n(f.limit, 2)} mm, czyli jedna ścieżka. Wydrukują się, ale pękają przy nacisku.`,
     overhangs_many: (f, n) => `${(f.value * 100).toFixed(0)}% powierzchni wymaga podpór; po ich usunięciu zostaje ślad.`,
     small_base: (f, n) => `Styk ze stołem to tylko ${n(f.value, 0)} mm2, wydruk może się oderwać w trakcie.`,
   },
   en: {
-    holes: (f, n) => `The mesh is not watertight (${f.value} unpaired edges). The slicer has to guess where the inside is, and the price is computed from a solid that is not solid.`,
+    holes: (f, n) => `The mesh is not fully watertight (${f.value} unpaired edges). The slicer usually repairs this itself, but the volume we price from is then approximate.`,
+    open_surface: (f, n) => `The file is a surface, not a solid (${Math.round((f.ratio || 0) * 100)}% of edges are boundary). There is no inside to fill.`,
     nonmanifold: (f, n) => `The mesh is not a manifold (${f.value} edges with more than two faces).`,
     reversed: (f, n) => `${f.value} faces point the opposite way to their neighbours.`,
     inverted: (f, n) => "The mesh is inside out: the slicer will print a solid block instead of a shell.",
@@ -89,13 +93,14 @@ const SHORT = {
     scale_large: (f, n) => `The largest dimension is ${n(f.value / 1000, 2)} m. Check the export units.`,
     too_big: (f, n) => `At ${f.value.map((v) => n(v, 0)).join(" x ")} mm the model does not fit on the plate.`,
     fits_rotated: (f, n) => "It only fits after rotating, which changes the layer direction and the strength.",
-    too_thin: (f, n) => `The thinnest walls are ${n(f.value, 2)} mm against a ${n(f.limit, 2)} mm threshold for the chosen settings. This affects ${(f.share * 100).toFixed(0)}% of the surface and those areas will have holes.`,
-    thin: (f, n) => `The thinnest walls are ${n(f.value, 2)} mm, a single path. They print, but crack under pressure.`,
+    too_thin: (f, n) => `${(f.share * 100).toFixed(0)}% of the model is thinner than ${n(f.limit, 2)} mm, which is one path at the chosen settings. The printer has nothing to lay down there.`,
+    thin: (f, n) => `${(f.share * 100).toFixed(0)}% of the surface is below ${n(f.limit, 2)} mm, a single path. It prints, but cracks under pressure.`,
     overhangs_many: (f, n) => `${(f.value * 100).toFixed(0)}% of the surface needs support, which leaves a mark where removed.`,
     small_base: (f, n) => `Only ${n(f.value, 0)} mm2 touches the bed, so the print can come loose mid-job.`,
   },
   de: {
-    holes: (f, n) => `Das Netz ist nicht geschlossen (${f.value} Kanten ohne Gegenstück). Der Slicer muss raten, wo innen ist, und der Preis rechnet mit einem Körper, der keiner ist.`,
+    holes: (f, n) => `Das Netz ist nicht vollständig geschlossen (${f.value} Kanten ohne Gegenstück). Der Slicer repariert das meist selbst, das Volumen für den Preis ist dann aber angenähert.`,
+    open_surface: (f, n) => `Die Datei ist eine Fläche, kein Körper (${Math.round((f.ratio || 0) * 100)}% der Kanten sind Rand). Es gibt kein Inneres zum Füllen.`,
     nonmanifold: (f, n) => `Das Netz ist keine Mannigfaltigkeit (${f.value} Kanten mit mehr als zwei Flächen).`,
     reversed: (f, n) => `${f.value} Flächen zeigen entgegen ihren Nachbarn.`,
     inverted: (f, n) => "Das Netz ist auf links gedreht: der Slicer druckt einen Vollkörper statt einer Schale.",
@@ -104,8 +109,8 @@ const SHORT = {
     scale_large: (f, n) => `Die größte Abmessung beträgt ${n(f.value / 1000, 2)} m. Exporteinheiten prüfen.`,
     too_big: (f, n) => `Mit ${f.value.map((v) => n(v, 0)).join(" x ")} mm passt das Modell nicht auf die Platte.`,
     fits_rotated: (f, n) => "Passt erst nach Drehung, was Schichtrichtung und Festigkeit ändert.",
-    too_thin: (f, n) => `Die dünnsten Wände messen ${n(f.value, 2)} mm bei einer Grenze von ${n(f.limit, 2)} mm für die gewählten Einstellungen. Betroffen sind ${(f.share * 100).toFixed(0)}% der Oberfläche, dort entstehen Löcher.`,
-    thin: (f, n) => `Die dünnsten Wände messen ${n(f.value, 2)} mm, also eine Bahn. Sie drucken, brechen aber unter Druck.`,
+    too_thin: (f, n) => `${(f.share * 100).toFixed(0)}% des Modells sind dünner als ${n(f.limit, 2)} mm, also dünner als eine Bahn bei den gewählten Einstellungen. Dort kann der Drucker nichts ablegen.`,
+    thin: (f, n) => `${(f.share * 100).toFixed(0)}% der Oberfläche liegen unter ${n(f.limit, 2)} mm, also eine Bahn. Es druckt, bricht aber unter Druck.`,
     overhangs_many: (f, n) => `${(f.value * 100).toFixed(0)}% der Oberfläche brauchen Stützen, deren Entfernung Spuren hinterlässt.`,
     small_base: (f, n) => `Nur ${n(f.value, 0)} mm2 berühren die Platte, der Druck kann sich lösen.`,
   },

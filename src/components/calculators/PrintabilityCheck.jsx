@@ -133,7 +133,8 @@ function pl(n, [one, few, many]) {
 const FINDINGS = {
   pl: {
     empty: { t: (f, n) => "Plik nie zawiera żadnej geometrii.", fix: "Sprawdź, czy eksport się powiódł i czy plik nie jest pusty." },
-    holes: { t: (f, n) => `Siatka nie jest szczelna: ${f.value} ${pl(f.value, ["krawędź", "krawędzie", "krawędzi"])} bez pary.`, fix: "Slicer musi zgadywać, gdzie jest wnętrze, a wycena liczy objętość bryły, która bryłą nie jest. Napraw automatem: Meshmixer (Analysis, Inspector), Blender (3D Print Toolbox) albo funkcja naprawy w PrusaSlicer i Bambu Studio." },
+    holes: { t: (f, n) => `Siatka nie jest w pełni szczelna: ${f.value} ${pl(f.value, ["krawędź", "krawędzie", "krawędzi"])} bez pary.`, fix: "Zwykle nie przeszkadza: współczesne slicery naprawiają takie drobne nieszczelności same i drukują bez uwag. Warto jednak wiedzieć, bo objętość, z której liczy się cena, jest wtedy przybliżona. Naprawa jednym kliknięciem: Meshmixer (Analysis, Inspector), Blender (3D Print Toolbox) albo funkcja naprawy w PrusaSlicer i Bambu Studio." },
+    open_surface: { t: (f, n) => `Plik jest powierzchnią, a nie bryłą: ${Math.round((f.ratio || 0) * 100)}% krawędzi to brzeg.`, fix: "Tego nie da się wydrukować, bo nie wiadomo, co jest wnętrzem. Zwykle to skan, wyeksportowana płaszczyzna albo otwarta skorupa. Nadaj powierzchni grubość (w Blenderze modyfikator Solidify) albo poproś nas o zamknięcie bryły." },
     nonmanifold: { t: (f, n) => `Siatka nie jest rozmaitością: ${f.value} ${pl(f.value, ["krawędź należy", "krawędzie należą", "krawędzi należy"])} do więcej niż dwóch ścianek.`, fix: "Zwykle skutek sklejenia brył bez operacji logicznej. Zrób sumę logiczną (boolean union) zamiast nakładać obiekty na siebie." },
     reversed: { t: (f, n) => `${f.value} ${pl(f.value, ["ścianka jest odwrócona", "ścianki są odwrócone", "ścianek jest odwróconych"])} względem sąsiadów.`, fix: "Ujednolic kierunek normalnych: w Blenderze Shift+N, w Meshmixerze Edit, Make Solid." },
     inverted: { t: (f, n) => "Cała siatka jest wywrócona na lewą stronę.", fix: "Model wygląda poprawnie na podglądzie, ale slicer uzna wnętrze za zewnętrze i wydrukuje pełną bryłę zamiast skorupy. Odwróć normalne." },
@@ -142,13 +143,14 @@ const FINDINGS = {
     scale_large: { t: (f, n) => `Największy wymiar to ${n(f.value / 1000, 2)} m.`, fix: "Sprawdź jednostki eksportu. Jeżeli model naprawdę ma tyle mieć, trzeba go pociąć na części." },
     too_big: { t: (f, n) => `Model ${f.value.map((v) => n(v, 0)).join(" x ")} mm nie mieści się na stole.`, fix: "Zmniejsz model albo potnij go na części i sklej po wydruku. Napisz do nas, podpowiemy, gdzie przeciąć, żeby nie było widać." },
     fits_rotated: { t: (f, n) => "Mieści się dopiero po obrocie.", fix: "To normalne i nic nie kosztuje, ale obrót zmienia kierunek warstw, a więc i wytrzymałość części." },
-    too_thin: { t: (f, n) => `Najcieńsze ścianki mają ${n(f.value, 2)} mm, przy progu ${n(f.limit, 2)} mm. Dotyczy ${(f.share * 100).toFixed(0)}% powierzchni.`, fix: (f) => f.tech === "msla"
+    too_thin: { t: (f, n) => `Większość modelu jest za cienka: ${(f.share * 100).toFixed(0)}% powierzchni poniżej progu ${n(f.limit, 2)} mm, ścianki schodzą do ${n(f.value, 2)} mm.`, fix: (f) => f.tech === "msla"
       ? "Pogrub ścianki. W żywicy granicy nie wyznacza rozdzielczość, tylko siła odklejania od folii przy każdej warstwie: taka ścianka zwykle urywa się w trakcie druku."
       : "Pogrub ścianki albo wybierz cieńszą dyszę. Poniżej progu drukarka nie ma jak ułożyć nawet jednej ścieżki i w tych miejscach powstaną dziury." },
-    thin: { t: (f, n) => `Najcieńsze ścianki mają ${n(f.value, 2)} mm. Wydrukują się jedną ścieżką, próg dla dwóch to ${n(f.limit, 2)} mm.`, fix: (f) => f.tech === "msla"
+    thin: { t: (f, n) => `${(f.share * 100).toFixed(0)}% powierzchni to ścianki poniżej ${n(f.limit, 2)} mm, czyli jedna ścieżka zamiast dwóch. Najcieńsze mają ${n(f.value, 2)} mm.`, fix: (f) => f.tech === "msla"
       ? "Wydrukuje się, ale taka ścianka bywa krucha po utwardzeniu i łatwo ją złamać przy myciu albo przy zdejmowaniu podpór."
       : "Jedna ścieżka to ścianka, która pęka przy nacisku. Świadomie stosuje się ją w obudowach i wzorach ażurowych, ale w częściach użytkowych warto pogrubić." },
-    thickness_ok: { t: (f, n) => `Najcieńsze ścianki mają ${n(f.value, 2)} mm, z zapasem ponad progiem.`, fix: null },
+    thickness_ok: { t: (f, n) => `Ścianki mają ${n(f.value, 2)} mm i więcej, z zapasem ponad progiem.`, fix: null },
+    thin_detail: { t: (f, n) => `Drobne detale poniżej ${n(f.limit, 2)} mm na ${(f.share * 100).toFixed(0)}% powierzchni.`, fix: "To nie są ścianki, tylko faktura, napisy albo fazki. Wydrukują się zaokrąglone lub uproszczone i jest to normalna cecha druku, a nie usterka. Jeżeli ten detal ma być czytelny, cieńsza dysza albo żywica pokażą go lepiej." },
     thickness_skipped: { t: (f, n) => "Grubości ścianek nie zmierzyliśmy.", fix: "Na nieszczelnej siatce promień pomiarowy wylatuje przez dziurę i trafia w przypadkową ściankę po drugiej stronie modelu. Napraw siatkę i wgraj ponownie." },
     overhangs_many: { t: (f, n) => `${(f.value * 100).toFixed(0)}% powierzchni wymaga podpór.`, fix: "Podpory zużywają materiał i czas, a po ich usunięciu zostaje ślad. Rozważ obrót modelu albo pocięcie go na części drukowane osobno." },
     overhangs_some: { t: (f, n) => `${(f.value * 100).toFixed(0)}% powierzchni wymaga podpór.`, fix: null },
@@ -156,7 +158,8 @@ const FINDINGS = {
   },
   en: {
     empty: { t: (f, n) => "The file contains no geometry.", fix: "Check that the export succeeded and the file is not empty." },
-    holes: { t: (f, n) => `The mesh is not watertight: ${f.value} unpaired edges.`, fix: "The slicer has to guess where the inside is, and a price based on volume is computed from a solid that is not solid. Repair it automatically: Meshmixer (Analysis, Inspector), Blender (3D Print Toolbox) or the repair function in PrusaSlicer and Bambu Studio." },
+    holes: { t: (f, n) => `The mesh is not fully watertight: ${f.value} unpaired edges.`, fix: "Usually harmless: modern slicers repair small gaps like these on their own and print without complaint. Worth knowing all the same, because the volume the price is computed from is then approximate. One-click repair: Meshmixer (Analysis, Inspector), Blender (3D Print Toolbox) or the repair function in PrusaSlicer and Bambu Studio." },
+    open_surface: { t: (f, n) => `The file is a surface, not a solid: ${Math.round((f.ratio || 0) * 100)}% of edges are boundary.`, fix: "This cannot be printed, because there is no inside to fill. It is usually a scan, an exported plane or an open shell. Give the surface a thickness (the Solidify modifier in Blender) or ask us to close the solid." },
     nonmanifold: { t: (f, n) => `The mesh is not a manifold: ${f.value} edges belong to more than two faces.`, fix: "Usually the result of merging solids without a boolean operation. Run a boolean union instead of overlapping objects." },
     reversed: { t: (f, n) => `${f.value} faces point the opposite way to their neighbours.`, fix: "Make the normals consistent: Shift+N in Blender, Edit then Make Solid in Meshmixer." },
     inverted: { t: (f, n) => "The whole mesh is turned inside out.", fix: "It looks right in the preview, but the slicer will treat the inside as the outside and print a solid block instead of a shell. Flip the normals." },
@@ -165,13 +168,14 @@ const FINDINGS = {
     scale_large: { t: (f, n) => `The largest dimension is ${n(f.value / 1000, 2)} m.`, fix: "Check the export units. If the model really is that big, it has to be split into parts." },
     too_big: { t: (f, n) => `At ${f.value.map((v) => n(v, 0)).join(" x ")} mm the model does not fit on the build plate.`, fix: "Scale it down or split it and bond the parts after printing. Write to us and we will suggest where to cut so the seam does not show." },
     fits_rotated: { t: (f, n) => "It only fits after rotating.", fix: "That is normal and costs nothing, but rotation changes the layer direction and therefore the strength of the part." },
-    too_thin: { t: (f, n) => `The thinnest walls are ${n(f.value, 2)} mm against a ${n(f.limit, 2)} mm threshold. This affects ${(f.share * 100).toFixed(0)}% of the surface.`, fix: (f) => f.tech === "msla"
+    too_thin: { t: (f, n) => `Most of the model is too thin: ${(f.share * 100).toFixed(0)}% of the surface sits below the ${n(f.limit, 2)} mm threshold, with walls down to ${n(f.value, 2)} mm.`, fix: (f) => f.tech === "msla"
       ? "Thicken the walls. In resin the limit is not resolution but the peel force as each layer separates from the film: a wall this thin usually tears off mid-print."
       : "Thicken the walls or choose a finer nozzle. Below the threshold the printer cannot lay down even one path and those areas will come out with holes." },
-    thin: { t: (f, n) => `The thinnest walls are ${n(f.value, 2)} mm. They print as a single path; two paths need ${n(f.limit, 2)} mm.`, fix: (f) => f.tech === "msla"
+    thin: { t: (f, n) => `${(f.share * 100).toFixed(0)}% of the surface is below ${n(f.limit, 2)} mm, a single path rather than two. The thinnest measure ${n(f.value, 2)} mm.`, fix: (f) => f.tech === "msla"
       ? "It will print, but a wall this thin is brittle once cured and breaks easily during washing or support removal."
       : "A single path is a wall that cracks under pressure. It is used deliberately in enclosures and openwork patterns, but functional parts are better thicker." },
-    thickness_ok: { t: (f, n) => `The thinnest walls are ${n(f.value, 2)} mm, comfortably above the threshold.`, fix: null },
+    thickness_ok: { t: (f, n) => `Walls measure ${n(f.value, 2)} mm and up, comfortably above the threshold.`, fix: null },
+    thin_detail: { t: (f, n) => `Fine detail below ${n(f.limit, 2)} mm on ${(f.share * 100).toFixed(0)}% of the surface.`, fix: "These are not walls but texture, lettering or chamfers. They print rounded or simplified, which is a normal property of the process rather than a fault. If that detail has to stay legible, a finer nozzle or resin will show it better." },
     thickness_skipped: { t: (f, n) => "We did not measure wall thickness.", fix: "On a mesh with holes the measuring ray escapes through the gap and hits a random wall on the far side of the model. Repair the mesh and upload again." },
     overhangs_many: { t: (f, n) => `${(f.value * 100).toFixed(0)}% of the surface needs support.`, fix: "Support costs material and time, and leaves a mark where it is removed. Consider rotating the model or splitting it into separately printed parts." },
     overhangs_some: { t: (f, n) => `${(f.value * 100).toFixed(0)}% of the surface needs support.`, fix: null },
@@ -179,7 +183,8 @@ const FINDINGS = {
   },
   de: {
     empty: { t: (f, n) => "Die Datei enthält keine Geometrie.", fix: "Prüfen Sie, ob der Export gelungen und die Datei nicht leer ist." },
-    holes: { t: (f, n) => `Das Netz ist nicht geschlossen: ${f.value} Kanten ohne Gegenstück.`, fix: "Der Slicer muss raten, wo innen ist, und eine Preisberechnung über das Volumen rechnet mit einem Körper, der keiner ist. Automatisch reparieren: Meshmixer (Analysis, Inspector), Blender (3D Print Toolbox) oder die Reparaturfunktion in PrusaSlicer und Bambu Studio." },
+    holes: { t: (f, n) => `Das Netz ist nicht vollständig geschlossen: ${f.value} Kanten ohne Gegenstück.`, fix: "Meist unkritisch: moderne Slicer reparieren solche kleinen Lücken selbst und drucken ohne Beanstandung. Gut zu wissen ist es dennoch, weil das Volumen, aus dem der Preis entsteht, dann angenähert ist. Reparatur per Klick: Meshmixer (Analysis, Inspector), Blender (3D Print Toolbox) oder die Reparaturfunktion in PrusaSlicer und Bambu Studio." },
+    open_surface: { t: (f, n) => `Die Datei ist eine Fläche, kein Körper: ${Math.round((f.ratio || 0) * 100)}% der Kanten sind Rand.`, fix: "Das lässt sich nicht drucken, weil es kein Inneres gibt. Meist handelt es sich um einen Scan, eine exportierte Ebene oder eine offene Schale. Geben Sie der Fläche eine Dicke (Modifier Solidify in Blender) oder lassen Sie uns den Körper schließen." },
     nonmanifold: { t: (f, n) => `Das Netz ist keine Mannigfaltigkeit: ${f.value} Kanten gehören zu mehr als zwei Flächen.`, fix: "Meist Folge zusammengelegter Körper ohne boolesche Operation. Führen Sie eine boolesche Vereinigung durch, statt Objekte zu überlagern." },
     reversed: { t: (f, n) => `${f.value} Flächen zeigen entgegen ihren Nachbarn.`, fix: "Normalen vereinheitlichen: Shift+N in Blender, Edit und Make Solid in Meshmixer." },
     inverted: { t: (f, n) => "Das gesamte Netz ist auf links gedreht.", fix: "In der Vorschau sieht es richtig aus, der Slicer hält das Innere aber für außen und druckt einen Vollkörper statt einer Schale. Normalen umkehren." },
@@ -188,13 +193,14 @@ const FINDINGS = {
     scale_large: { t: (f, n) => `Die größte Abmessung beträgt ${n(f.value / 1000, 2)} m.`, fix: "Exporteinheiten prüfen. Soll das Modell wirklich so groß sein, muss es geteilt werden." },
     too_big: { t: (f, n) => `Mit ${f.value.map((v) => n(v, 0)).join(" x ")} mm passt das Modell nicht auf die Bauplatte.`, fix: "Verkleinern oder teilen und nach dem Druck fügen. Schreiben Sie uns, wir schlagen eine Trennstelle vor, an der die Naht nicht auffällt." },
     fits_rotated: { t: (f, n) => "Passt erst nach Drehung.", fix: "Das ist normal und kostet nichts, ändert aber die Schichtrichtung und damit die Festigkeit des Teils." },
-    too_thin: { t: (f, n) => `Die dünnsten Wände messen ${n(f.value, 2)} mm bei einer Grenze von ${n(f.limit, 2)} mm. Betroffen sind ${(f.share * 100).toFixed(0)}% der Oberfläche.`, fix: (f) => f.tech === "msla"
+    too_thin: { t: (f, n) => `Der Großteil des Modells ist zu dünn: ${(f.share * 100).toFixed(0)}% der Oberfläche liegen unter der Grenze von ${n(f.limit, 2)} mm, die Wände gehen bis ${n(f.value, 2)} mm herunter.`, fix: (f) => f.tech === "msla"
       ? "Wände verstärken. Bei Harz setzt nicht die Auflösung die Grenze, sondern die Abzugskraft beim Ablösen jeder Schicht von der Folie: so dünne Wände reißen meist während des Drucks ab."
       : "Wände verstärken oder feinere Düse wählen. Unterhalb der Grenze kann der Drucker nicht einmal eine Bahn legen, dort entstehen Löcher." },
-    thin: { t: (f, n) => `Die dünnsten Wände messen ${n(f.value, 2)} mm. Sie drucken als eine Bahn; für zwei sind ${n(f.limit, 2)} mm nötig.`, fix: (f) => f.tech === "msla"
+    thin: { t: (f, n) => `${(f.share * 100).toFixed(0)}% der Oberfläche liegen unter ${n(f.limit, 2)} mm, also eine Bahn statt zwei. Die dünnsten messen ${n(f.value, 2)} mm.`, fix: (f) => f.tech === "msla"
       ? "Sie druckt, ist nach dem Aushärten aber spröde und bricht leicht beim Waschen oder beim Entfernen der Stützen."
       : "Eine Bahn ergibt eine Wand, die unter Druck bricht. In Gehäusen und Durchbruchmustern wird das bewusst genutzt, Funktionsteile sollten dicker sein." },
-    thickness_ok: { t: (f, n) => `Die dünnsten Wände messen ${n(f.value, 2)} mm, mit Reserve über der Grenze.`, fix: null },
+    thickness_ok: { t: (f, n) => `Die Wände messen ${n(f.value, 2)} mm und mehr, mit Reserve über der Grenze.`, fix: null },
+    thin_detail: { t: (f, n) => `Feine Details unter ${n(f.limit, 2)} mm auf ${(f.share * 100).toFixed(0)}% der Oberfläche.`, fix: "Das sind keine Wände, sondern Struktur, Schrift oder Fasen. Sie drucken abgerundet oder vereinfacht, was eine normale Eigenschaft des Verfahrens ist und kein Mangel. Soll das Detail lesbar bleiben, zeigen es eine feinere Düse oder Harz besser." },
     thickness_skipped: { t: (f, n) => "Die Wandstärke wurde nicht gemessen.", fix: "Bei einem offenen Netz entweicht der Messstrahl durch das Loch und trifft eine beliebige Wand auf der Gegenseite. Netz reparieren und erneut hochladen." },
     overhangs_many: { t: (f, n) => `${(f.value * 100).toFixed(0)}% der Oberfläche brauchen Stützen.`, fix: "Stützen kosten Material und Zeit und hinterlassen Spuren. Erwägen Sie eine Drehung oder eine Teilung des Modells." },
     overhangs_some: { t: (f, n) => `${(f.value * 100).toFixed(0)}% der Oberfläche brauchen Stützen.`, fix: null },
