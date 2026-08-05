@@ -709,11 +709,19 @@
   <!-- Studio Tools -->
   <url>
     <loc>https://www.aejaca.com/toolstudio/</loc>
-    <lastmod>2026-07-17</lastmod>
+    <lastmod>2026-08-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.60</priority>
 
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/" />
+  </url>
+  <url>
+    <loc>https://www.aejaca.com/toolstudio/printability/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/printability/" />
   </url>
   <url>
     <loc>https://www.aejaca.com/toolstudio/print-settings/</loc>

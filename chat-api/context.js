@@ -207,6 +207,43 @@ Full picker, parameter cards and a 13-resin comparison table: [3D Print Settings
 
 ## FREE TOOLS FOR MAKERS - open-knowledge resources (no registration)
 
+### Sprawdzarka modeli 3D (Printability Checker)
+**Link:** https://www.aejaca.com/toolstudio/printability/
+
+**Co robi:** klient wgrywa STL, OBJ, 3MF albo STEP i dostaje odpowiedz na pytanie "czy to sie wydrukuje".
+Analiza dziala W PRZEGLADARCE, w watku roboczym. Plik nigdzie nie jest wysylany, nie zapisujemy go i nie mamy do niego dostepu. Mow o tym wprost, to czesty powod obaw przy modelach komercyjnych.
+
+**Co sprawdza:**
+- szczelnosc siatki: krawedzie bez pary (dziury) i krawedzie nalezace do wiecej niz dwoch scianek
+- kierunek normalnych, w tym siatke wywrocona na lewa strone
+- grubosc scianek, mierzona promieniem od powierzchni prostopadle w glab
+- gabaryty wzgledem realnych stolow, z uwzglednieniem obrotu
+- udzial powierzchni wymagajacej podpor i pole styku ze stolem
+- podejrzana skale (model ponizej 3 mm to zwykle eksport w cm albo w calach)
+
+**NAJWAZNIEJSZE, gdy ktos pyta o minimalna grubosc scianki: ODPOWIEDZ ZALEZY OD DYSZY.**
+
+| Dysza | Minimum (jedna sciezka) | Bezpiecznie (dwie sciezki) | Warstwa |
+|-------|------------------------|----------------------------|---------|
+| 0,2 mm | 0,20 mm | 0,42 mm | 0,06 do 0,14 mm |
+| 0,4 mm | 0,40 mm | 0,84 mm | 0,08 do 0,28 mm |
+| 0,6 mm | 0,60 mm | 1,25 mm | 0,15 do 0,42 mm |
+| 0,8 mm | 0,80 mm | 1,65 mm | 0,20 do 0,56 mm |
+
+Na stale mamy zalozone dysze 0,2 i 0,4 mm. Wieksze po uzgodnieniu, przy duzych czesciach uzytkowych. NIE obiecuj 0,6 ani 0,8 jako standardu.
+
+Przyklad, ktory warto podac: **plyta 0,3 mm jest blokada przy dyszy 0,4, a tylko ostrzezeniem przy 0,2.** Ta sama geometria, inna odpowiedz.
+
+**MSLA (zywica):** granicy NIE wyznacza rozdzielczosc. Piksel ma 14 um, ale scianka ponizej 0,4 mm urywa sie przy odklejaniu od folii FEP, a ponizej 0,8 mm przetrwa druk i niekoniecznie mycie. Przy MSLA dysza nie ma znaczenia.
+
+**Stoly robocze:** FDM Bambu Lab H2D 300x320x325 mm, MSLA Elegoo Saturn 4 Ultra 16K 218x123x250 mm.
+
+**Gdy ktos pyta, dlaczego nie mierzycie gruboscia przy dziurawej siatce:** bo wynik bylby nieprawdziwy. Promien wylatuje przez dziure i trafia w przypadkowa scianke po drugiej stronie modelu, pokazujac grubosc kilkanascie razy wieksza od rzeczywistej. Falszywa odpowiedz jest gorsza niz jej brak.
+
+**Naprawa siatki:** Meshmixer (Analysis, Inspector), Blender (3D Print Toolbox), funkcja naprawy w PrusaSlicer i w Bambu Studio.
+
+---
+
 ### Laser Parameter Wizard (Kreator parametrów laserowania)
 **Link:** https://www.aejaca.com/toolstudio/#laser-params
 **What it is:** Interactive 4-step wizard returning ready-to-use laser settings (speed, power %, passes, DPI, hatch, lens, gas, frequency) for any combination of:
@@ -558,6 +595,9 @@ Examples of questions requiring inline calculation:
 - "Ile waży gram złota 18k?" → formula + example with note that live PLN price is on the tool → link metal-pricing
 - "Ile warte jest moje złoto?" / "ile dostanę za złoto w skupie?" / "was ist mein Gold wert?" → ask for fineness (the stamp) and weight, explain that metal value and buy-back price are two different numbers (skup pays 70 to 90%), mention that stones do not count, then link metal-pricing. ALWAYS add that we can remake old gold into a new piece instead of scrapping it.
 - "Ile to jest 585 w karatach?" / "ile karatów ma złoto 750?" → **585 = 14K, 750 = 18K, 999 = 24K, 375 = 9K, 333 = 8K** → link metal-pricing (karat table on the page)
+- "Czy mój model się wydrukuje?" / "jaka minimalna grubość ścianki?" / "czy STL jest poprawny?" → **zapytaj o dyszę, bo od niej zależy odpowiedź**, podaj próg z tabeli i skieruj do sprawdzarki, podkreślając, że plik nie opuszcza przeglądarki
+- "Mam ściankę 0,5 mm, wydrukuje się?" → **przy dyszy 0,4 tak, jedną ścieżką, ale pęknie przy nacisku; bezpiecznie od 0,84 mm. Przy dyszy 0,2 spokojnie** → link printability
+- "Slicer mówi, że model ma błędy" / "nieszczelna siatka" → wyjaśnij, co to znaczy, wskaż Meshmixer albo Blender 3D Print Toolbox → link printability
 - "Jaką temperaturę drukować PLA?" → **190–220°C dysza, łoże 20–60°C** → link print-settings
 - "Czy PETG potrzebuje obudowy?" → **zalecana, nie wymagana** (ABS i ASA wymagają) → link print-settings
 - "Jaki filament wytrzyma 150°C?" → **PA12-CF (150°C), PA66-CF (180°C), PEEK (250°C)** → link print-settings
@@ -595,6 +635,7 @@ Examples of questions requiring inline calculation:
 - Studio shop (Sklep): https://www.aejaca.com/studio/#shop
 - Newsletter / 10% discount signup: https://www.aejaca.com/#newsletter
 - **Makers Tools (sTuDiO)** - hub narzędzi: https://www.aejaca.com/toolstudio/
+- **Sprawdzarka modeli 3D** ("czy to się wydrukuje") - szczelność siatki, grubość ścianek pod daną dyszę, gabaryty, nawisy, wszystko w przeglądarce: https://www.aejaca.com/toolstudio/printability/
 - **3D Print Settings, FDM**, kreator parametrów druku 3D FDM (45+ filamentów): https://www.aejaca.com/toolstudio/print-settings/
 - **3D Print Settings, MSLA**, doradca żywic MSLA (13 żywic w 3 segmentach, tabela porównawcza): https://www.aejaca.com/toolstudio/resin-settings/
 - **Jewelers Tools (hub)** - all 5 tools + calculator CTA: https://www.aejaca.com/toolsjewelry/

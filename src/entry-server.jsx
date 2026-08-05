@@ -34,6 +34,7 @@ import AlloyCompositionPage from "./pages/AlloyCompositionPage.jsx";
 import MetalPricingPage from "./pages/MetalPricingPage.jsx";
 import RingSizePage from "./pages/RingSizePage.jsx";
 import RingSizerPage from "./pages/RingSizerPage.jsx";
+import PrintabilityPage from "./pages/PrintabilityPage.jsx";
 import PrintSettingsPage from "./pages/PrintSettingsPage.jsx";
 import LaserParametersPage from "./pages/LaserParametersPage.jsx";
 import RingBlankPage from "./pages/RingBlankPage.jsx";
@@ -82,6 +83,7 @@ export function render(url) {
               <Route path="/toolsjewelry/metal-pricing/" element={<MetalPricingPage />} />
               <Route path="/toolsjewelry/ring-size/" element={<RingSizePage />} />
               <Route path="/toolsjewelry/ring-sizer/" element={<RingSizerPage />} />
+              <Route path="/toolstudio/printability/" element={<PrintabilityPage />} />
               <Route path="/toolstudio/" element={<ToolsStudio />} />
               <Route path="/toolstudio/print-settings/" element={<PrintSettingsPage />} />
               <Route path="/toolstudio/resin-settings/" element={<ResinSettingsPage />} />

@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-05 | Wersja: 3.2*
+*Wygenerowano: 2026-08-05 | Wersja: 3.3*
 
 ---
 
@@ -408,6 +408,62 @@ Opis: 7 typów laserów, 88 materiałów, ponad 1000 kombinacji. Wybór akcji, m
 URL: /toolstudio/shrinkage/
 Opis: Przelicznik wymiaru wzorca na wymiar po odlewie, tabela rozmiarów EU 48-58 dla 4 stopów.
 SEO title PL: "Kalkulator kompensacji skurczu odlewniczego | AEJaCA sTuDiO"
+
+### 5. Sprawdzarka modeli 3D (od 2026-08-05)
+
+`/toolstudio/printability/`. Odpowiada na pytanie, które dziś przychodzi mailem po wgraniu pliku
+do wyceny: **czy to się wydrukuje**. Kalkulator mówi ILE TO KOSZTUJE i zakłada, że model jest
+poprawny. To narzędzie sprawdza, czy założenie jest prawdziwe.
+
+**Plik nie opuszcza przeglądarki.** Parsowanie i analiza idą lokalnie, w Web Workerze. To warunek
+użyteczności, nie hasło: konstruktor sprawdzający część przed zapytaniem ofertowym nie wyśle jej
+na cudzy serwer. Potwierdzone w teście: zero żądań POST poza domenę.
+
+**Odpowiedź zależy od dyszy i to jest sedno narzędzia.** Płyta 0,3 mm jest blokadą przy dyszy 0,4
+i tylko ostrzeżeniem przy 0,2. Ta sama geometria, inna odpowiedź.
+
+| Dysza | Minimum (jedna ścieżka) | Bezpiecznie (dwie ścieżki) | Warstwa | U nas |
+|---|---|---|---|---|
+| 0,2 mm | 0,20 mm | 0,42 mm | 0,06 do 0,14 mm | **na stałe** |
+| 0,4 mm | 0,40 mm | 0,84 mm | 0,08 do 0,28 mm | **na stałe** |
+| 0,6 mm | 0,60 mm | 1,25 mm | 0,15 do 0,42 mm | po uzgodnieniu |
+| 0,8 mm | 0,80 mm | 1,65 mm | 0,20 do 0,56 mm | po uzgodnieniu |
+
+Rozróżnienie minimum i bezpiecznie nie jest ozdobą. Ścianka o szerokości jednej ścieżki powstanie,
+ale nie ma w niej wiązania poprzecznego i pęka przy nacisku. Świadomie stosuje się ją w obudowach
+i wzorach ażurowych.
+
+**MSLA rządzi się inaczej:** granicy nie wyznacza rozdzielczość (piksel 14 µm), tylko siła
+odklejania od folii FEP. Ścianka poniżej 0,4 mm urywa się w trakcie druku, poniżej 0,8 mm przetrwa
+druk, ale niekoniecznie mycie. Przy MSLA dysza nie ma znaczenia.
+
+**Co sprawdza:** szczelność siatki (krawędzie bez pary i nierozmaitościowe), kierunek normalnych
+i siatkę wywróconą, grubość ścianek, gabaryty wobec realnych stołów z uwzględnieniem obrotu,
+udział powierzchni pod podpory, pole styku ze stołem, podejrzaną skalę.
+
+#### Decyzje, których nie wolno cofnąć bez powodu
+
+**Grubości NIE mierzymy na nieszczelnej siatce.** Promień pomiarowy wylatuje przez dziurę i trafia
+w przypadkową ściankę po drugiej stronie modelu, dając odczyt kilkanaście razy za duży. Fałszywe
+zapewnienie, że model się wydrukuje, jest gorsze niż brak odpowiedzi, bo klient dostaje wtedy odpad.
+
+**Promień idzie po siatce przestrzennej algorytmem DDA**, komórka po komórce w kolejności od
+najbliższej, a nie krokiem stałej długości. Krok stały jest prostszy, ale potrafi przeskoczyć
+cienką ściankę, czyli pomylić się w stronę zawyżenia grubości. Dokładnie tej pomyłki nie wolno
+popełnić. Zweryfikowane na torusie o znanej grubości: mediana 6,00 mm przy teorii 6,00 mm.
+
+**Losowanie próbek jest deterministyczne** (własny generator, stałe ziarno). Ten sam plik musi dać
+ten sam wynik przy każdym wgraniu, inaczej klient dostaje dwie różne odpowiedzi.
+
+**Moduł leży w `src/analysis`, nie w `src/pricing`.** Katalog `pricing` jest kopiowany do
+`chat-api` przez `sync-pricing`, bo backend musi umieć przeliczyć cenę. Drukowalność ceny nie
+dotyka, a trzymanie jej w rdzeniu cenowym wysyłałoby na serwer martwy kod.
+
+**Topologia liczy się na kluczach całkowitych, nie tekstowych.** Pierwsza wersja składała miliony
+łańcuchów i przy 490 tys. trójkątów zajmowała 6,5 s. Po zmianie 3,0 s, a całość i tak idzie
+w Web Workerze, więc karta nie zamarza.
+
+---
 
 ### Narzędzia jubilerskie (/toolsjewelry/)
 
@@ -939,6 +995,7 @@ przeglądem rynku. `parked/gift-card/README.md` zawiera listę kroków do wznowi
 | `scripts/check-reveal.mjs` | klasa `reveal` bez `ref` z `useScrollReveal()` | trzy bloki na `/shipping/` były trwale niewidoczne, w tym obowiązkowa informacja o cle i sekcja FAQ odbijana w schemacie `FAQPage` |
 | `scripts/check-emdash.mjs` | długie myślniki (U+2014) i ich encja HTML w całym repozytorium | jednorazowe sprzątanie objęło 2720 znaków w 234 plikach; bez strażnika wracają, bo w kodzie źródłowym nikt ich nie widzi aż do publikacji |
 | `scripts/check-tool-links.mjs` | klucze `TOOLS_BY_POST` i `TOOLS_BY_TERM` wskazujące na realne slugi i hasła, komplet tłumaczeń pl/en/de, dozwolone `audience` | trzy klucze wskazywały na nieistniejące slugi, a fallback po cichu podstawiał domyślne narzędzia, więc trzy wpisy zgubiły odnośnik do wyceny metalu przy zielonym buildzie |
+| `scripts/test-printability.mjs` | analiza modeli: topologia, objętość, grubość ścianek, nawisy, gabaryty, progi dysz | błędy w geometrii są ciche; źle policzona grubość nie wywala niczego, tylko zapewnia klienta, że model się wydrukuje, a klient dostaje odpad |
 | `scripts/check-terms-parity.mjs` | te same sekcje, ustępy i punkty list w pl, en i de | regulamin żyje w trzech wersjach w jednym pliku, a dodanie sekcji tylko do jednej niczego nie wywala: build przechodzi, a dokument jest niekompletny w dwóch językach na trzy |
 | `npm run lint:undef` (`eslint.undef.config.js`) | reguła `no-undef`, czyli sięganie po nazwę spoza zasięgu | odnośnik dodany do pola rozmiaru w kalkulatorze użył `lang`, którego funkcja nie przyjmowała; efekt to biała strona po przełączeniu na tryb zaawansowany, a build, prerender i wszyscy pozostali strażnicy przeszli bez słowa |
 
