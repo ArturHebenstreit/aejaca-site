@@ -77,7 +77,7 @@ app.use(passport.session());
 // Make fmtDate available in all EJS templates
 app.use((req, res, next) => {
   res.locals.fmtDate = (d) => {
-    if (!d) return '—';
+    if (!d) return ' - ';
     const dt = new Date(d);
     return dt.toLocaleDateString('pl-PL') + ' ' + dt.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
   };
@@ -558,7 +558,7 @@ app.get("/laser-matrix", requireAuth, async (req, res) => {
   }
 });
 
-// EXPORT CSV — must be before /:id routes
+// EXPORT CSV - must be before /:id routes
 app.get("/laser-matrix/export", requireAuth, async (req, res) => {
   try {
     const { rows } = await pool.query("SELECT * FROM laser_matrix ORDER BY id");
@@ -713,7 +713,7 @@ app.get("/filaments", requireAuth, async (req, res) => {
   }
 });
 
-// CONTRIBUTIONS list — before /:id routes
+// CONTRIBUTIONS list - before /:id routes
 app.get("/filaments/contributions", requireAuth, async (req, res) => {
   const statusFilter = req.query.status || "pending";
   const where = statusFilter === "all" ? "" : `WHERE fc.status = $1`;
@@ -777,13 +777,13 @@ app.post("/filaments/contributions/:id/reject", requireAuth, express.urlencoded(
   }
 });
 
-// NEW type form — before /:id
+// NEW type form - before /:id
 app.get("/filaments/new", requireAuth, async (req, res) => {
   const pendingCount = await pool.query("SELECT COUNT(*) FROM filament_contributions WHERE status='pending'").catch(() => ({ rows: [{ count: 0 }] }));
   res.render("filament-edit", { user: req.user, row: null, flash: null, pendingContributions: parseInt(pendingCount.rows[0].count) });
 });
 
-// BRAND edit form — before /:typeId/brands
+// BRAND edit form - before /:typeId/brands
 app.get("/filaments/brands/:id/edit", requireAuth, async (req, res) => {
   try {
     const [brandRes, pendingCount] = await Promise.all([

@@ -8,9 +8,9 @@ export function Body({ lang }) {
   return (
     <>
       <Lead>{t(
-        "Nie każdy materiał nadaje się do lasera — a ten sam materiał zachowuje się inaczej pod CO2 i Fiber. Oto kompletny przegląd.",
-        "Not every material works with a laser — and the same material behaves differently under CO2 vs Fiber. Here's the complete overview.",
-        "Nicht jedes Material eignet sich für den Laser — und dasselbe Material verhält sich unter CO2 und Faserlaser unterschiedlich. Hier der komplette Überblick."
+        "Nie każdy materiał nadaje się do lasera - a ten sam materiał zachowuje się inaczej pod CO2 i Fiber. Oto kompletny przegląd.",
+        "Not every material works with a laser - and the same material behaves differently under CO2 vs Fiber. Here's the complete overview.",
+        "Nicht jedes Material eignet sich für den Laser - und dasselbe Material verhält sich unter CO2 und Faserlaser unterschiedlich. Hier der komplette Überblick."
       )}</Lead>
 
       <H2 id="co2">{t("Materiały do lasera CO2", "CO2 Laser Materials", "CO2-Laser-Materialien")}</H2>
@@ -31,16 +31,16 @@ export function Body({ lang }) {
           [t("Skóra naturalna", "Natural leather", "Naturleder"), "✓", "✓", "4mm", t("Bez PVC! (toksyczne opary)", "No PVC! (toxic fumes)", "Kein PVC! (giftige Dämpfe)")],
           [t("Filc/tkanina", "Felt/fabric", "Filz/Stoff"), "✓", "✓", "3mm", t("Syntetyki mogą się topić", "Synthetics may melt", "Synthetik kann schmelzen")],
           [t("Papier/karton", "Paper/cardboard", "Papier/Karton"), "✓", "✓", "2mm", t("Idealne na zaproszenia, modele", "Perfect for invitations, models", "Ideal für Einladungen, Modelle")],
-          [t("Szkło", "Glass", "Glas"), "✓", "✗", "—", t("Matowienie powierzchni", "Surface frosting", "Oberflächenmattierung")],
-          [t("Anodyzowany aluminium", "Anodized aluminum", "Eloxiertes Aluminium"), "✓", "✗", "—", t("Usuwa warstwę barwiącą", "Removes color layer", "Entfernt Farbschicht")],
+          [t("Szkło", "Glass", "Glas"), "✓", "✗", " - ", t("Matowienie powierzchni", "Surface frosting", "Oberflächenmattierung")],
+          [t("Anodyzowany aluminium", "Anodized aluminum", "Eloxiertes Aluminium"), "✓", "✗", " - ", t("Usuwa warstwę barwiącą", "Removes color layer", "Entfernt Farbschicht")],
         ]}
       />
 
       <H2 id="fiber">{t("Materiały do lasera Fiber", "Fiber Laser Materials", "Faserlaser-Materialien")}</H2>
       <P>{t(
-        <><A href="/glossary/laser-fiber">Fiber laser</A> (Raycus 30W) to precyzyjne narzędzie do metali i twardych materiałów. Tylko grawer — nie tnie.</>,
-        <>The <A href="/glossary/laser-fiber">fiber laser</A> (Raycus 30W) is a precision tool for metals and hard materials. Engraving only — no cutting.</>,
-        <>Der <A href="/glossary/laser-fiber">Faserlaser</A> (Raycus 30W) ist ein Präzisionswerkzeug für Metalle und harte Materialien. Nur Gravur — kein Schnitt.</>
+        <><A href="/glossary/laser-fiber">Fiber laser</A> (Raycus 30W) to precyzyjne narzędzie do metali i twardych materiałów. Tylko grawer - nie tnie.</>,
+        <>The <A href="/glossary/laser-fiber">fiber laser</A> (Raycus 30W) is a precision tool for metals and hard materials. Engraving only - no cutting.</>,
+        <>Der <A href="/glossary/laser-fiber">Faserlaser</A> (Raycus 30W) ist ein Präzisionswerkzeug für Metalle und harte Materialien. Nur Gravur - kein Schnitt.</>
       )}</P>
       <Table
         headers={t(
@@ -62,16 +62,16 @@ export function Body({ lang }) {
       <H2 id={t("nie-nadaje", "avoid", "vermeiden")}>{t("Czego unikać", "What to Avoid", "Was vermeiden")}</H2>
       <Callout accent="blue" title={t("Ostrzeżenie", "Warning", "Warnung")}>
         {t(
-          "Nigdy nie tnij laserowo PVC, winylu ani poliwęglanu — wydziela trujący chlorowodór (HCl). Materiały odbijające (lustra, polerowana miedź) mogą uszkodzić optykę CO2.",
-          "Never laser cut PVC, vinyl, or polycarbonate — they release toxic hydrogen chloride (HCl). Reflective materials (mirrors, polished copper) can damage CO2 optics.",
-          "Niemals PVC, Vinyl oder Polycarbonat laserschneiden — sie setzen giftigen Chlorwasserstoff (HCl) frei. Reflektierende Materialien (Spiegel, poliertes Kupfer) können die CO2-Optik beschädigen."
+          "Nigdy nie tnij laserowo PVC, winylu ani poliwęglanu - wydziela trujący chlorowodór (HCl). Materiały odbijające (lustra, polerowana miedź) mogą uszkodzić optykę CO2.",
+          "Never laser cut PVC, vinyl, or polycarbonate - they release toxic hydrogen chloride (HCl). Reflective materials (mirrors, polished copper) can damage CO2 optics.",
+          "Niemals PVC, Vinyl oder Polycarbonat laserschneiden - sie setzen giftigen Chlorwasserstoff (HCl) frei. Reflektierende Materialien (Spiegel, poliertes Kupfer) können die CO2-Optik beschädigen."
         )}
       </Callout>
       <UL>
-        <LI><Strong>PVC / Vinyl</Strong> — {t("toksyczne opary, zakazane", "toxic fumes, forbidden", "giftige Dämpfe, verboten")}</LI>
-        <LI><Strong>{t("Poliwęglan (Lexan)", "Polycarbonate (Lexan)", "Polycarbonat (Lexan)")}</Strong> — {t("żółknie, nie tnie się czysto", "yellows, doesn't cut cleanly", "vergilbt, schneidet nicht sauber")}</LI>
-        <LI><Strong>ABS</Strong> — {t("topi się, wydziela opary", "melts, releases fumes", "schmilzt, setzt Dämpfe frei")}</LI>
-        <LI><Strong>{t("Styropian/pianka", "Styrofoam/foam", "Styropor/Schaum")}</Strong> — {t("ryzyko pożaru", "fire hazard", "Brandgefahr")}</LI>
+        <LI><Strong>PVC / Vinyl</Strong> - {t("toksyczne opary, zakazane", "toxic fumes, forbidden", "giftige Dämpfe, verboten")}</LI>
+        <LI><Strong>{t("Poliwęglan (Lexan)", "Polycarbonate (Lexan)", "Polycarbonat (Lexan)")}</Strong> - {t("żółknie, nie tnie się czysto", "yellows, doesn't cut cleanly", "vergilbt, schneidet nicht sauber")}</LI>
+        <LI><Strong>ABS</Strong> - {t("topi się, wydziela opary", "melts, releases fumes", "schmilzt, setzt Dämpfe frei")}</LI>
+        <LI><Strong>{t("Styropian/pianka", "Styrofoam/foam", "Styropor/Schaum")}</Strong> - {t("ryzyko pożaru", "fire hazard", "Brandgefahr")}</LI>
       </UL>
 
       <H2 id={t("grubosci", "thickness", "staerken")}>{t("Grubości i limity", "Thickness Limits", "Stärken & Limits")}</H2>
@@ -107,9 +107,9 @@ export function Body({ lang }) {
         accent="blue"
         title={t("Wycena grawerowania i cięcia", "Engraving & Cutting Quote", "Gravur- & Schnitt-Angebot")}
         text={t(
-          "Wybierz materiał i wymiar w kalkulatorze sTuDiO — otrzymasz wycenę w kilka sekund.",
-          "Pick your material and size in the sTuDiO calculator — get a quote in seconds.",
-          "Wählen Sie Material und Größe im sTuDiO-Kalkulator — Angebot in Sekunden."
+          "Wybierz materiał i wymiar w kalkulatorze sTuDiO - otrzymasz wycenę w kilka sekund.",
+          "Pick your material and size in the sTuDiO calculator - get a quote in seconds.",
+          "Wählen Sie Material und Größe im sTuDiO-Kalkulator - Angebot in Sekunden."
         )}
         href="/studio#calculator"
         cta={t("Otwórz kalkulator", "Open calculator", "Kalkulator öffnen")}

@@ -1,5 +1,5 @@
 /* ============================================================
-   AEJaCA Design System — Colors & Type
+   AEJaCA Design System - Colors & Type
    ------------------------------------------------------------
    Dual-brand under one site, on a dark canvas.
    - AEJaCA Jewelry → amber/gold accents, Playfair Display serif
@@ -9,16 +9,16 @@
    ============================================================ */
 
 /* -----------------------------------------------------------
-   Web fonts — match the live site exactly.
+   Web fonts - match the live site exactly.
    ----------------------------------------------------------- */
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap");
 
 :root {
   /* ---------- Surfaces (dark canvas) ----------
      Site bg is neutral-950. We layer with subtle tints + glass. */
-  --bg-page:            #0a0a0a;       /* neutral-950 — canonical canvas */
-  --bg-page-soft:       #171717;       /* neutral-900 — second tier */
-  --bg-elevated:        #262626;       /* neutral-800 — cards w/o glass */
+  --bg-page:            #0a0a0a;       /* neutral-950 - canonical canvas */
+  --bg-page-soft:       #171717;       /* neutral-900 - second tier */
+  --bg-elevated:        #262626;       /* neutral-800 - cards w/o glass */
   --bg-glass:           rgba(255,255,255,0.03);     /* .glass utility */
   --bg-glass-amber:     rgba(245,158,11,0.06);      /* .glass-amber */
   --bg-glass-blue:      rgba(59,130,246,0.06);      /* .glass-blue */
@@ -35,12 +35,12 @@
 
   /* ---------- Foregrounds (text on dark) ---------- */
   --fg-1:               #ffffff;     /* primary text */
-  --fg-2:               #d4d4d4;     /* neutral-300 — body */
-  --fg-3:               #a3a3a3;     /* neutral-400 — supporting */
-  --fg-4:               #737373;     /* neutral-500 — captions/meta */
-  --fg-5:               #525252;     /* neutral-600 — tertiary meta */
+  --fg-2:               #d4d4d4;     /* neutral-300 - body */
+  --fg-3:               #a3a3a3;     /* neutral-400 - supporting */
+  --fg-4:               #737373;     /* neutral-500 - captions/meta */
+  --fg-5:               #525252;     /* neutral-600 - tertiary meta */
 
-  /* ---------- Jewelry — amber/gold ----------
+  /* ---------- Jewelry - amber/gold ----------
      Used for AEJaCA Jewelry surfaces, focus rings, and the
      site's primary accent across shared chrome. */
   --amber-50:           #fffbeb;
@@ -55,7 +55,7 @@
   --amber-900:          #78350f;
   --amber-950:          #451a03;
 
-  /* ---------- sTuDiO — blue ----------
+  /* ---------- sTuDiO - blue ----------
      Used for AEJaCA sTuDiO surfaces, technical/utility CTAs. */
   --blue-50:            #eff6ff;
   --blue-100:           #dbeafe;
@@ -119,10 +119,10 @@
   /* ---------- Radii ----------
      Tailwind defaults; site uses rounded-2xl extensively. */
   --radius-sm:          0.25rem;     /* 4px  */
-  --radius-md:          0.5rem;      /* 8px  — default */
+  --radius-md:          0.5rem;      /* 8px  - default */
   --radius-lg:          0.75rem;     /* 12px */
   --radius-xl:          1rem;        /* 16px */
-  --radius-2xl:         1rem;        /* 16px — CARD DEFAULT */
+  --radius-2xl:         1rem;        /* 16px - CARD DEFAULT */
   --radius-3xl:         1.5rem;      /* 24px */
   --radius-pill:        9999px;
 
@@ -156,7 +156,7 @@
   --blur-nav:           20px;
 
   /* ---------- Motion ----------
-     Site uses cubic-bezier(0.16, 1, 0.3, 1) for reveals — a
+     Site uses cubic-bezier(0.16, 1, 0.3, 1) for reveals - a
      soft "ease-out-quint" that gives the editorial feel. */
   --ease-editorial:     cubic-bezier(0.16, 1, 0.3, 1);
   --ease-standard:      cubic-bezier(0.4, 0, 0.2, 1);
@@ -198,7 +198,7 @@
   color: var(--fg-1);
 }
 
-/* sTuDiO/technical section headings — same scale, sans. */
+/* sTuDiO/technical section headings - same scale, sans. */
 .ds-h2-sans {
   font-family: var(--font-sans);
   font-weight: 600;
@@ -247,7 +247,7 @@
   color: var(--fg-3);
 }
 
-/* Brand eyebrow — appears above every section title.
+/* Brand eyebrow - appears above every section title.
    AMBER for Jewelry context, BLUE for sTuDiO context. */
 .ds-eyebrow {
   font-family: var(--font-sans);
@@ -275,7 +275,7 @@
 }
 
 /* ============================================================
-   Utility surfaces — match live `.glass*` and gradient dividers.
+   Utility surfaces - match live `.glass*` and gradient dividers.
    ============================================================ */
 
 .ds-glass {

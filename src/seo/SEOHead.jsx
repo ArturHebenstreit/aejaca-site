@@ -1,8 +1,8 @@
 // ============================================================
-// SEOHead — per-page meta + JSON-LD via react-helmet-async
+// SEOHead - per-page meta + JSON-LD via react-helmet-async
 // ------------------------------------------------------------
 // SEO / AIO impact:
-// - Dynamic <title> & <meta description> per route + language —
+// - Dynamic <title> & <meta description> per route + language - 
 //   critical for SPA ranking (Googlebot now renders JS, but the
 //   head must change between routes to avoid duplicate-title).
 // - Canonical + hreflang prevent duplicate-content penalties
@@ -23,7 +23,7 @@ export default function SEOHead({
   image,           // optional override (e.g. product image)
   schemas = [],    // array of JSON-LD objects (Service / FAQ / Product / Breadcrumb)
   noindex = false, // true for thank-you / draft pages
-  // Dynamic pages (blog posts, products) supply meta directly — bypass seoData map.
+  // Dynamic pages (blog posts, products) supply meta directly - bypass seoData map.
   title,
   description,
   keywords,
@@ -47,10 +47,10 @@ export default function SEOHead({
 
   return (
     <Helmet>
-      {/* Document language — signals lang to accessibility tools & crawlers */}
+      {/* Document language - signals lang to accessibility tools & crawlers */}
       <html lang={lang} />
 
-      {/* Primary tags — front-loaded keywords boost ranking */}
+      {/* Primary tags - front-loaded keywords boost ranking */}
       <title>{seo.title}</title>
       <meta name="title" content={seo.title} />
       <meta name="description" content={seo.description} />
@@ -62,14 +62,14 @@ export default function SEOHead({
           : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"}
       />
 
-      {/* Canonical — dedupes language variants behind one URL.
+      {/* Canonical - dedupes language variants behind one URL.
           No hreflang: pl/en/de all live at this same URL (client-side
           language switch), and hreflang requires distinct per-language
-          URLs — pointing multiple languages at one URL is invalid and
+          URLs - pointing multiple languages at one URL is invalid and
           flagged by crawlers as ambiguous language targeting. */}
       <link rel="canonical" href={canonical} />
 
-      {/* Open Graph — Facebook, LinkedIn, WhatsApp, Discord previews */}
+      {/* Open Graph - Facebook, LinkedIn, WhatsApp, Discord previews */}
       <meta property="og:type" content={ogType} />
       {articleMeta?.publishedTime && (
         <meta property="article:published_time" content={articleMeta.publishedTime} />
@@ -109,7 +109,7 @@ export default function SEOHead({
       <meta name="twitter:image" content={ogImage} />
       <meta name="twitter:image:alt" content={seo.ogAlt || seo.title} />
 
-      {/* JSON-LD structured data — per-page schemas for rich SERP + AIO */}
+      {/* JSON-LD structured data - per-page schemas for rich SERP + AIO */}
       {schemas
         .filter(Boolean)
         .map((schema, i) => (

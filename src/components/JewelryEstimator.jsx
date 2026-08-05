@@ -11,7 +11,7 @@ const LABELS = {
     tag: "Kalkulator Biżuterii",
     title: "Estymator Kosztów",
     modeSimple: "Szybka wycena",
-    modeSimpleDesc: "Kilka prostych pytań — dla każdego",
+    modeSimpleDesc: "Kilka prostych pytań - dla każdego",
     modeAdvanced: "Dla zaawansowanych",
     modeAdvancedDesc: "Pełna kontrola parametrów",
     modeHint: "Szybka wycena daje orientacyjną cenę w 30 sekund. Tryb zaawansowany pozwala kontrolować każdy parametr (metal, próba, kamienie, praca jubilerska).",
@@ -23,7 +23,7 @@ const LABELS = {
     tag: "Jewelry Calculator",
     title: "Cost Estimator",
     modeSimple: "Quick quote",
-    modeSimpleDesc: "A few simple questions — for everyone",
+    modeSimpleDesc: "A few simple questions - for everyone",
     modeAdvanced: "For advanced users",
     modeAdvancedDesc: "Full control over parameters",
     modeHint: "Quick quote gives a rough estimate in 30 seconds. Advanced mode lets you control every parameter (metal, karat, stones, labor).",
@@ -35,7 +35,7 @@ const LABELS = {
     tag: "Schmuckkalkulator",
     title: "Kostenschätzer",
     modeSimple: "Schnellkalkulation",
-    modeSimpleDesc: "Ein paar einfache Fragen — für jeden",
+    modeSimpleDesc: "Ein paar einfache Fragen - für jeden",
     modeAdvanced: "Für Fortgeschrittene",
     modeAdvancedDesc: "Volle Kontrolle über Parameter",
     modeHint: "Schnellkalkulation liefert eine grobe Schätzung in 30 Sekunden. Der erweiterte Modus bietet volle Kontrolle über jeden Parameter (Metall, Karat, Steine, Arbeit).",
@@ -96,7 +96,7 @@ export default function JewelryEstimator() {
           </button>
         </div>
 
-        {/* Mode hint — clarifies when to use each (audit: UX friction) */}
+        {/* Mode hint - clarifies when to use each (audit: UX friction) */}
         <div className="mb-6 flex items-start gap-2 px-3 text-[11px] text-neutral-400 leading-relaxed">
           <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-neutral-400" />
           <span>{l.modeHint}</span>

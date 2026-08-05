@@ -1,5 +1,5 @@
 // ============================================================
-// SIMPLE STUDIO CALCULATOR — "Szybka wycena" for laypeople
+// SIMPLE STUDIO CALCULATOR - "Szybka wycena" for laypeople
 // Maps 5 plain-language questions → advanced calculator params
 // Reuses pricing engines from Print3D / CO2 / Fiber / Epoxy.
 // ============================================================
@@ -62,7 +62,7 @@ const MATERIALS = [
   { id: "metal",   icon: Wrench,     img: "/img/calc/studio_materials/metal.webp",   label: { pl: "Metal",         en: "Metal",          de: "Metall" } },
   { id: "glass",   icon: GlassWater, img: "/img/calc/studio_materials/glass.webp",   label: { pl: "Szkło / kamień", en: "Glass / stone", de: "Glas / Stein" } },
   { id: "resin",   icon: Droplet,    img: "/img/calc/studio_materials/resin.webp",   label: { pl: "Żywica",        en: "Resin",          de: "Harz" } },
-  { id: "idk",     icon: HelpCircle, label: { pl: "Nie wiem — doradźcie", en: "I'm not sure — advise me", de: "Weiß nicht — beraten Sie mich" } },
+  { id: "idk",     icon: HelpCircle, label: { pl: "Nie wiem - doradźcie", en: "I'm not sure - advise me", de: "Weiß nicht - beraten Sie mich" } },
 ];
 
 const FINISH = [
@@ -79,7 +79,7 @@ const QUANTITY = [
 ];
 
 // ============================================================
-// MAPPING ENGINE — layperson answers → advanced params
+// MAPPING ENGINE - layperson answers → advanced params
 // ============================================================
 
 const TECH_FROM_MATERIAL = {
@@ -125,8 +125,8 @@ const CO2_MODE_FROM_ITEM = {
 
 /** Given Simple-Mode answers, return { tech, mode?, params } or { custom: true } */
 export function resolveTechAndParams({ item, size, material, finish, quantity, fileType, stlData, svgData }) {
-  // STL — route to 3D print (plastic) or epoxy (resin)
-  // Note: we don't pass stlData to the calculator — sizeId presets drive pricing.
+  // STL - route to 3D print (plastic) or epoxy (resin)
+  // Note: we don't pass stlData to the calculator - sizeId presets drive pricing.
   if (fileType === "stl" && stlData) {
     if (!size || !material || !finish || !quantity) return { custom: true };
     const quantityId = QTY_MAP[quantity];
@@ -162,8 +162,8 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
     };
   }
 
-  // SVG — route based on material (CO2 or Fiber)
-  // Note: we don't pass svgData to the calculator — sizeId presets drive pricing.
+  // SVG - route based on material (CO2 or Fiber)
+  // Note: we don't pass svgData to the calculator - sizeId presets drive pricing.
   if (fileType === "svg" && svgData) {
     if (!size || !material || !finish || !quantity) return { custom: true };
     const tech = material === "idk" ? (DEFAULT_TECH_FROM_ITEM[item] || "co2") : TECH_FROM_MATERIAL[material];
@@ -201,7 +201,7 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
     return { custom: true };
   }
 
-  // No file — original logic
+  // No file - original logic
   if (!item || item === "other" || !size || !material || !finish || !quantity) {
     return { custom: true };
   }
@@ -334,7 +334,7 @@ function runCalc(resolved, lang) {
 }
 
 // ============================================================
-// UI — emerald-themed tile grid
+// UI - emerald-themed tile grid
 // ============================================================
 
 const TECH_BADGE = {
@@ -375,9 +375,9 @@ const TECH_RATIONALE = {
 
 const LBL = {
   pl: {
-    q0: "Masz gotowy plik?", q0hint: "Wrzuć plik STL lub SVG — wycenimy automatycznie",
+    q0: "Masz gotowy plik?", q0hint: "Wrzuć plik STL lub SVG - wycenimy automatycznie",
     q0drop: "Przeciągnij plik tutaj", q0tap: "Kliknij, aby wybrać plik", q0or: "lub kliknij, aby wybrać", q0accept: ".stl, .svg",
-    q0skip: "Nie mam pliku — opiszę co potrzebuję",
+    q0skip: "Nie mam pliku - opiszę co potrzebuję",
     q0detected: "Wykryto", q0stl: "Model 3D (STL)", q0svg: "Grafika wektorowa (SVG)",
     q0dims: "Wymiary", q0vol: "Objętość", q0area: "Powierzchnia", q0paths: "Ścieżki",
     q0remove: "Usuń plik", q0selected: "Wybrano", q0selSize: "Rozmiar", q0selMat: "Materiał",
@@ -385,13 +385,13 @@ const LBL = {
     suggestion: "Sugerowana technologia",
     why: "Dlaczego?",
     switchHint: 'Chcesz podać dokładniejsze parametry? Przełącz na tryb "Dla zaawansowanych" u góry.',
-    note: 'Tryb Szybkiej Wyceny dobiera technologię i parametry automatycznie — dla dokładnej kontroli użyj trybu zaawansowanego.',
+    note: 'Tryb Szybkiej Wyceny dobiera technologię i parametry automatycznie - dla dokładnej kontroli użyj trybu zaawansowanego.',
     mslaHint: "Ten model zmieści się na drukarce żywicznej MSLA 16K, to opcja z wyższą precyzją i gładszą powierzchnią niż odlew z żywicy.",
   },
   en: {
-    q0: "Got a file ready?", q0hint: "Drop an STL or SVG file — we'll quote it automatically",
+    q0: "Got a file ready?", q0hint: "Drop an STL or SVG file - we'll quote it automatically",
     q0drop: "Drag your file here", q0tap: "Tap to choose a file", q0or: "or click to browse", q0accept: ".stl, .svg",
-    q0skip: "No file — I'll describe what I need",
+    q0skip: "No file - I'll describe what I need",
     q0detected: "Detected", q0stl: "3D model (STL)", q0svg: "Vector graphic (SVG)",
     q0dims: "Dimensions", q0vol: "Volume", q0area: "Area", q0paths: "Paths",
     q0remove: "Remove file", q0selected: "Selected", q0selSize: "Size", q0selMat: "Material",
@@ -399,13 +399,13 @@ const LBL = {
     suggestion: "Suggested technology",
     why: "Why?",
     switchHint: 'Want more precise parameters? Switch to "Advanced" mode at the top.',
-    note: 'Quick Quote mode picks technology and parameters automatically — for full control, use the advanced mode.',
+    note: 'Quick Quote mode picks technology and parameters automatically - for full control, use the advanced mode.',
     mslaHint: "This model fits the MSLA 16K resin printer, an option with higher precision and a smoother surface than a resin cast.",
   },
   de: {
-    q0: "Haben Sie eine Datei?", q0hint: "Laden Sie eine STL- oder SVG-Datei hoch — wir kalkulieren automatisch",
+    q0: "Haben Sie eine Datei?", q0hint: "Laden Sie eine STL- oder SVG-Datei hoch - wir kalkulieren automatisch",
     q0drop: "Datei hierher ziehen", q0tap: "Tippen um Datei auszuwählen", q0or: "oder klicken zum Auswählen", q0accept: ".stl, .svg",
-    q0skip: "Keine Datei — ich beschreibe was ich brauche",
+    q0skip: "Keine Datei - ich beschreibe was ich brauche",
     q0detected: "Erkannt", q0stl: "3D-Modell (STL)", q0svg: "Vektorgrafik (SVG)",
     q0dims: "Maße", q0vol: "Volumen", q0area: "Fläche", q0paths: "Pfade",
     q0remove: "Datei entfernen", q0selected: "Ausgewählt", q0selSize: "Größe", q0selMat: "Material",
@@ -413,12 +413,12 @@ const LBL = {
     suggestion: "Empfohlene Technologie",
     why: "Warum?",
     switchHint: 'Genauere Parameter? Wechseln Sie oben in den "Fortgeschrittenen"-Modus.',
-    note: 'Der Schnellkalkulationsmodus wählt Technologie und Parameter automatisch — für volle Kontrolle verwenden Sie den erweiterten Modus.',
+    note: 'Der Schnellkalkulationsmodus wählt Technologie und Parameter automatisch - für volle Kontrolle verwenden Sie den erweiterten Modus.',
     mslaHint: "Dieses Modell passt auf den MSLA-16K-Harzdrucker, eine Option mit höherer Präzision und glatterer Oberfläche als ein Harzguss.",
   },
 };
 
-/** Emerald-themed tile grid — pure visual, used for all 5 questions. */
+/** Emerald-themed tile grid - pure visual, used for all 5 questions. */
 function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false, disabledIds }) {
   const gridCls = cols === 3
     ? "grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3"
@@ -670,7 +670,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
             </label>
             {fileError && (
               <div className="mt-2 text-center text-[11px] text-red-400">
-                {{ pl: "Plik za duży — maksymalny rozmiar to 50 MB.", en: "File too large — maximum size is 50 MB.", de: "Datei zu groß — maximale Größe beträgt 50 MB." }[lang] || "File too large — max 50 MB."}
+                {{ pl: "Plik za duży - maksymalny rozmiar to 50 MB.", en: "File too large - maximum size is 50 MB.", de: "Datei zu groß - maximale Größe beträgt 50 MB." }[lang] || "File too large - max 50 MB."}
               </div>
             )}
             <div className="text-center mt-3 text-[11px] text-neutral-400">{l.q0hint}</div>
@@ -819,12 +819,12 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
         <div className="mt-4 pt-3 border-t border-emerald-400/10 text-[11px] text-emerald-400/60 italic text-center">
           {l.switchHint}
         </div>
-        <QuoteEmailCapture result={result} lang={lang} techLabel={techLabel ? `Szybka wycena — ${techLabel}` : "Szybka wycena"} paramsSummary={paramsSummary} preAttachedFile={uploadedFile} />
+        <QuoteEmailCapture result={result} lang={lang} techLabel={techLabel ? `Szybka wycena - ${techLabel}` : "Szybka wycena"} paramsSummary={paramsSummary} preAttachedFile={uploadedFile} />
       </div>
 
       <InquiryForm
         lang={lang}
-        techLabel={techLabel ? `Szybka wycena — ${techLabel}` : "Szybka wycena"}
+        techLabel={techLabel ? `Szybka wycena - ${techLabel}` : "Szybka wycena"}
         paramsSummary={paramsSummary}
         preAttachedFile={uploadedFile}
         requireLicenseConsent={isMslaPath}

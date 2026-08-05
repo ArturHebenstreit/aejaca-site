@@ -1,9 +1,9 @@
--- AEJaCA — Extra Filament Brand Seed
+-- AEJaCA - Extra Filament Brand Seed
 -- Run against production DB to populate brands for all filament types.
 -- Existing rows (pla x5, petg x4, tpu-95a x3) are already in DB.
 -- This file covers: all remaining types + asa (1 extra) + pa6-cf (2 extra).
 -- Pattern: INSERT ... ON CONFLICT DO NOTHING
--- Conflict key is (filament_type_id, brand, product_name) — add unique constraint if missing.
+-- Conflict key is (filament_type_id, brand, product_name) - add unique constraint if missing.
 
 -- ── PLA+ ─────────────────────────────────────────────────────────────────────
 INSERT INTO filament_brands (filament_type_id, brand, product_name, nozzle_min, nozzle_max, bed_min, bed_max, is_verified, notes_en)
@@ -65,7 +65,7 @@ FROM filament_types ft WHERE ft.type_id = 'pla-ht'
 ON CONFLICT DO NOTHING;
 
 INSERT INTO filament_brands (filament_type_id, brand, product_name, nozzle_min, nozzle_max, bed_min, bed_max, is_verified, notes_en)
-SELECT ft.id, 'ColorFabb', 'HT (High Temp co-polyester)', 220, 250, 55, 75, true, 'ColorFabb HT co-polyester — HDT ~100°C. Better than PLA HT for thermal stability.'
+SELECT ft.id, 'ColorFabb', 'HT (High Temp co-polyester)', 220, 250, 55, 75, true, 'ColorFabb HT co-polyester - HDT ~100°C. Better than PLA HT for thermal stability.'
 FROM filament_types ft WHERE ft.type_id = 'pla-ht'
 ON CONFLICT DO NOTHING;
 
@@ -139,7 +139,7 @@ FROM filament_types ft WHERE ft.type_id = 'tpu-85a'
 ON CONFLICT DO NOTHING;
 
 INSERT INTO filament_brands (filament_type_id, brand, product_name, nozzle_min, nozzle_max, bed_min, bed_max, is_verified, notes_en)
-SELECT ft.id, 'Polymaker', 'PolyFlex TPU90', 215, 235, 25, 45, true, '90A variant — softer than TPU95. Good for very flexible parts. Direct drive recommended.'
+SELECT ft.id, 'Polymaker', 'PolyFlex TPU90', 215, 235, 25, 45, true, '90A variant - softer than TPU95. Good for very flexible parts. Direct drive recommended.'
 FROM filament_types ft WHERE ft.type_id = 'tpu-85a'
 ON CONFLICT DO NOTHING;
 
@@ -202,7 +202,7 @@ SELECT ft.id, 'Spectrum Filaments', 'PETG CF15', 240, 260, 70, 90, true, 'Spectr
 FROM filament_types ft WHERE ft.type_id = 'petg-gf'
 ON CONFLICT DO NOTHING;
 
--- ── ASA (1 extra — brings total from 2 to 3) ─────────────────────────────────
+-- ── ASA (1 extra - brings total from 2 to 3) ─────────────────────────────────
 INSERT INTO filament_brands (filament_type_id, brand, product_name, nozzle_min, nozzle_max, bed_min, bed_max, is_verified, notes_en)
 SELECT ft.id, 'Fillamentum', 'ASA Extrafill', 240, 260, 90, 110, true, 'Czech brand. Excellent color range. Very good UV and weather resistance. Enclosure required.'
 FROM filament_types ft WHERE ft.type_id = 'asa'
@@ -241,7 +241,7 @@ FROM filament_types ft WHERE ft.type_id = 'abs'
 ON CONFLICT DO NOTHING;
 
 INSERT INTO filament_brands (filament_type_id, brand, product_name, nozzle_min, nozzle_max, bed_min, bed_max, is_verified, notes_en)
-SELECT ft.id, 'Polymaker', 'PolyLite ABS', 230, 250, 100, 120, true, 'Reliable ABS with good layer adhesion. Acetone-smoothable. Fumes — ensure ventilation.'
+SELECT ft.id, 'Polymaker', 'PolyLite ABS', 230, 250, 100, 120, true, 'Reliable ABS with good layer adhesion. Acetone-smoothable. Fumes - ensure ventilation.'
 FROM filament_types ft WHERE ft.type_id = 'abs'
 ON CONFLICT DO NOTHING;
 
@@ -316,7 +316,7 @@ FROM filament_types ft WHERE ft.type_id = 'pc-cf'
 ON CONFLICT DO NOTHING;
 
 INSERT INTO filament_brands (filament_type_id, brand, product_name, nozzle_min, nozzle_max, bed_min, bed_max, is_verified, notes_en)
-SELECT ft.id, 'BASF Ultrafuse', 'PC CF', 280, 310, 100, 120, true, 'Industrial grade PC-CF from BASF. Very demanding to print — 300°C+ hotend and heated enclosure required.'
+SELECT ft.id, 'BASF Ultrafuse', 'PC CF', 280, 310, 100, 120, true, 'Industrial grade PC-CF from BASF. Very demanding to print - 300°C+ hotend and heated enclosure required.'
 FROM filament_types ft WHERE ft.type_id = 'pc-cf'
 ON CONFLICT DO NOTHING;
 
@@ -357,7 +357,7 @@ SELECT ft.id, 'Markforged', 'Nylon White', 255, 270, 45, 60, true, 'Industrial P
 FROM filament_types ft WHERE ft.type_id = 'pa6'
 ON CONFLICT DO NOTHING;
 
--- ── PA6-CF (2 extra — brings total from 3 to 5) ──────────────────────────────
+-- ── PA6-CF (2 extra - brings total from 3 to 5) ──────────────────────────────
 INSERT INTO filament_brands (filament_type_id, brand, product_name, nozzle_min, nozzle_max, bed_min, bed_max, is_verified, notes_en)
 SELECT ft.id, 'BASF Ultrafuse', 'PAHT CF15', 265, 285, 80, 100, true, 'BASF industrial PA-HT with 15% carbon fiber. Excellent high-temperature PA performance.'
 FROM filament_types ft WHERE ft.type_id = 'pa6-cf'
@@ -369,7 +369,7 @@ FROM filament_types ft WHERE ft.type_id = 'pa6-cf'
 ON CONFLICT DO NOTHING;
 
 INSERT INTO filament_brands (filament_type_id, brand, product_name, nozzle_min, nozzle_max, bed_min, bed_max, is_verified, notes_en)
-SELECT ft.id, 'Markforged', 'Onyx', 265, 280, 45, 60, true, 'Markforged''s micro carbon fiber PA6 — industry standard for PA-CF performance. Matte black only.'
+SELECT ft.id, 'Markforged', 'Onyx', 265, 280, 45, 60, true, 'Markforged''s micro carbon fiber PA6 - industry standard for PA-CF performance. Matte black only.'
 FROM filament_types ft WHERE ft.type_id = 'pa6-cf'
 ON CONFLICT DO NOTHING;
 
@@ -385,7 +385,7 @@ FROM filament_types ft WHERE ft.type_id = 'pa12'
 ON CONFLICT DO NOTHING;
 
 INSERT INTO filament_brands (filament_type_id, brand, product_name, nozzle_min, nozzle_max, bed_min, bed_max, is_verified, notes_en)
-SELECT ft.id, 'Taulman3D', '645 Nylon', 245, 265, 45, 60, true, 'Taulman 645 — semi-rigid nylon with lower warping. Good for bearings, gears and flexible joints.'
+SELECT ft.id, 'Taulman3D', '645 Nylon', 245, 265, 45, 60, true, 'Taulman 645 - semi-rigid nylon with lower warping. Good for bearings, gears and flexible joints.'
 FROM filament_types ft WHERE ft.type_id = 'pa12'
 ON CONFLICT DO NOTHING;
 
@@ -433,7 +433,7 @@ FROM filament_types ft WHERE ft.type_id = 'ppa-cf'
 ON CONFLICT DO NOTHING;
 
 INSERT INTO filament_brands (filament_type_id, brand, product_name, nozzle_min, nozzle_max, bed_min, bed_max, is_verified, notes_en)
-SELECT ft.id, 'Solvay', 'Amodel PPA', 280, 310, 100, 130, true, 'Solvay/Syensqo PPA compounds used in high-temp FFF — best-in-class thermal performance for PPA.'
+SELECT ft.id, 'Solvay', 'Amodel PPA', 280, 310, 100, 130, true, 'Solvay/Syensqo PPA compounds used in high-temp FFF - best-in-class thermal performance for PPA.'
 FROM filament_types ft WHERE ft.type_id = 'ppa-cf'
 ON CONFLICT DO NOTHING;
 
@@ -476,12 +476,12 @@ FROM filament_types ft WHERE ft.type_id = 'pps'
 ON CONFLICT DO NOTHING;
 
 INSERT INTO filament_brands (filament_type_id, brand, product_name, nozzle_min, nozzle_max, bed_min, bed_max, is_verified, notes_en)
-SELECT ft.id, 'BASF Ultrafuse', 'PPS', 305, 340, 120, 150, true, 'BASF Ultrafuse PPS — one of few consumer-accessible PPS options. Extreme heat and chemical resistance.'
+SELECT ft.id, 'BASF Ultrafuse', 'PPS', 305, 340, 120, 150, true, 'BASF Ultrafuse PPS - one of few consumer-accessible PPS options. Extreme heat and chemical resistance.'
 FROM filament_types ft WHERE ft.type_id = 'pps'
 ON CONFLICT DO NOTHING;
 
 INSERT INTO filament_brands (filament_type_id, brand, product_name, nozzle_min, nozzle_max, bed_min, bed_max, is_verified, notes_en)
-SELECT ft.id, 'Solvay', 'Ryton PPS', 310, 345, 130, 150, true, 'Solvay Ryton PPS — industry reference for PPS. Requires 400°C+ printer. Unmatched chemical and heat resistance.'
+SELECT ft.id, 'Solvay', 'Ryton PPS', 310, 345, 130, 150, true, 'Solvay Ryton PPS - industry reference for PPS. Requires 400°C+ printer. Unmatched chemical and heat resistance.'
 FROM filament_types ft WHERE ft.type_id = 'pps'
 ON CONFLICT DO NOTHING;
 
@@ -503,12 +503,12 @@ ON CONFLICT DO NOTHING;
 
 -- ── PEI / Ultem ──────────────────────────────────────────────────────────────
 INSERT INTO filament_brands (filament_type_id, brand, product_name, nozzle_min, nozzle_max, bed_min, bed_max, is_verified, notes_en)
-SELECT ft.id, '3DXTech', 'PEI 9085', 360, 400, 140, 160, true, 'Ultem 9085 PEI — FAA-certified flame retardant. Aerospace standard. Requires specialist 400°C printer.'
+SELECT ft.id, '3DXTech', 'PEI 9085', 360, 400, 140, 160, true, 'Ultem 9085 PEI - FAA-certified flame retardant. Aerospace standard. Requires specialist 400°C printer.'
 FROM filament_types ft WHERE ft.type_id = 'pei-ultem'
 ON CONFLICT DO NOTHING;
 
 INSERT INTO filament_brands (filament_type_id, brand, product_name, nozzle_min, nozzle_max, bed_min, bed_max, is_verified, notes_en)
-SELECT ft.id, 'BASF Ultrafuse', 'PEI 1010', 355, 395, 140, 160, true, 'Ultem 1010 PEI from BASF. Highest heat resistance PEI variant — HDT 217°C. Medical and aerospace grade.'
+SELECT ft.id, 'BASF Ultrafuse', 'PEI 1010', 355, 395, 140, 160, true, 'Ultem 1010 PEI from BASF. Highest heat resistance PEI variant - HDT 217°C. Medical and aerospace grade.'
 FROM filament_types ft WHERE ft.type_id = 'pei-ultem'
 ON CONFLICT DO NOTHING;
 

@@ -1,4 +1,4 @@
-/* AEJaCA — home page cards (light variant).
+/* AEJaCA - home page cards (light variant).
    accent="amber" uses jewelry tokens; accent="blue" overrides locally
    to studio tokens by wrapping in .brand-studio. */
 
@@ -12,7 +12,7 @@ function BrandScope({ brand, children, style = {} }) {
   );
 }
 
-/* Gateway tile — 3:4 photo + dark scrim + bright accent eyebrow + white title */
+/* Gateway tile - 3:4 photo + dark scrim + bright accent eyebrow + white title */
 function GatewayTile({ img, eyebrow, desc, ctaLabel, accent = "amber", onClick }) {
   const [hover, setHover] = React.useState(false);
   const isStudio = accent === "blue";
@@ -85,7 +85,7 @@ function GatewayTile({ img, eyebrow, desc, ctaLabel, accent = "amber", onClick }
   );
 }
 
-/* QuickQuote card — light surface, accent gradient corner */
+/* QuickQuote card - light surface, accent gradient corner */
 function QuickQuoteCardInner({ tag, title, desc, ctaLabel, icon: IconComp = Sparkles, serif = false, onClick }) {
   const [hover, setHover] = React.useState(false);
   return (
@@ -156,7 +156,7 @@ function QuickQuoteCard({ accent = "amber", ...props }) {
   return <QuickQuoteCardInner {...props} />;
 }
 
-/* Two-worlds feature card — light surface, brand-tinted border + bullets */
+/* Two-worlds feature card - light surface, brand-tinted border + bullets */
 function GlassFeatureCardInner({ eyebrow, title, items, ctaLabel, serif = false, onClick }) {
   const [hover, setHover] = React.useState(false);
   return (

@@ -1,5 +1,5 @@
 // ============================================================
-// SVG PARSER — client-side geometry extraction from SVG files
+// SVG PARSER - client-side geometry extraction from SVG files
 // Extracts bounding box, path lengths, and area for laser pricing.
 // ============================================================
 

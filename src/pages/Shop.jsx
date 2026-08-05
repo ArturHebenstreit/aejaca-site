@@ -512,7 +512,7 @@ function StickySectionTabs({ items, u, navRef }) {
             >
               <it.icon className="w-3.5 h-3.5" />
               {it.tab}
-              <span className="text-[10px] text-neutral-500 tabular-nums">{it.count > 0 ? it.count : "—"}</span>
+              <span className="text-[10px] text-neutral-500 tabular-nums">{it.count > 0 ? it.count : " - "}</span>
             </a>
           );
         })}

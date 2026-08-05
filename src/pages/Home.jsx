@@ -371,7 +371,7 @@ export default function Home() {
         </>
       )}
 
-      {/* FAQ — brand-level Q&A; visible content mirrors the FAQPage JSON-LD
+      {/* FAQ - brand-level Q&A; visible content mirrors the FAQPage JSON-LD
           (parity = SEO-safe) and targets AI-engine "what is AEJaCA" queries. */}
       <section className="py-16 px-4 bg-neutral-950">
         <div className="max-w-3xl mx-auto">

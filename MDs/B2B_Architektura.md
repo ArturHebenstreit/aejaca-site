@@ -118,7 +118,7 @@ Styl domowy: czarne tlo, swiatlo z gory-lewej, premium product photography, bez 
 Konwersja: webp quality 82 (sharp). Rozmiar kazdej < 150 kB.
 
 ## Twarde reguly
-- NIGDY dlugi myslnik " — " w trisciach (uzyj przecinka, dwukropka, nawiasu)
+- NIGDY dlugi myslnik " - " w trisciach (uzyj przecinka, dwukropka, nawiasu)
 - Kazdy string pl/en/de (konwencja: sprawdz czy strona uzywa i18n plikow czy inline; nowa strona
   moze trzymac wlasny slownik inline jak Reviews.jsx - wybierz konwencje zgodna z podobna strona)
 - Waluty: pl = PLN (netto przy B2B!), en/de = EUR wg CONFIG.EUR_PLN_RATE, z dopiskiem "netto/net"

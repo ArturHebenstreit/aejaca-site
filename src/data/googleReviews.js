@@ -1,9 +1,9 @@
 // ============================================================
-// GOOGLE REVIEWS — statyczne dane z Google Business Profile
+// GOOGLE REVIEWS - statyczne dane z Google Business Profile
 // ------------------------------------------------------------
 // Dlaczego statyczne:
 // - Google Places API ma limit 5 recenzji / zapytanie (nie 22)
-// - ToS Places API: cache max 30 dni — trzeba regenerować regularnie
+// - ToS Places API: cache max 30 dni - trzeba regenerować regularnie
 // - Statyczny JSON = pełna kontrola, wszystkie 22 opinie, zero kosztów
 //
 // AKTUALIZACJA:
@@ -12,13 +12,13 @@
 // 3. Commit → Cloudflare automatycznie przebuduje stronę
 //
 // STRUKTURA OPINII:
-//   id           — unikalny identyfikator (r1, r2…)
-//   author       — imię i inicjał nazwiska (jak na Google Maps)
-//   rating       — 1–5
-//   date         — data publikacji (ISO: YYYY-MM-DD)
-//   originalLang — język oryginalny ("pl" | "en" | "de" | "fr"…)
-//   text         — treść oryginalna 1:1 z Google (pusty string = rating-only)
-//   translations — { en, pl, de } — opcjonalne tłumaczenia (fallback: oryginał)
+//   id           - unikalny identyfikator (r1, r2…)
+//   author       - imię i inicjał nazwiska (jak na Google Maps)
+//   rating       - 1–5
+//   date         - data publikacji (ISO: YYYY-MM-DD)
+//   originalLang - język oryginalny ("pl" | "en" | "de" | "fr"…)
+//   text         - treść oryginalna 1:1 z Google (pusty string = rating-only)
+//   translations - { en, pl, de } - opcjonalne tłumaczenia (fallback: oryginał)
 //
 // SCHEMA.ORG:
 // - aggregateRating pokazuje 5.0 / 25 w SERP (gwiazdki)
@@ -37,7 +37,7 @@ export const GOOGLE_BUSINESS = {
   // CID decimal = 9087352033228805430 (z feature ID 0x7e1cc2870186d536)
   // Uwaga: dla 100% bezpośredniego linku na formularz, właściciel GBP
   // może skopiować "Link do opinii" z panelu Google Business Profile
-  // (Home → Get more reviews → Share review form) — wtedy wkleić tutaj.
+  // (Home → Get more reviews → Share review form) - wtedy wkleić tutaj.
   writeReviewUrl: "https://search.google.com/local/writereview?placeid=ChIJE7k_bwABwGwRNtWGAYfCHH4",
   // Agregaty (aktualizuj przy zmianach)
   rating: 5.0,
@@ -45,7 +45,7 @@ export const GOOGLE_BUSINESS = {
 };
 
 // ============================================================
-// TRUSTPILOT — osobne źródło, świadomie NIE łączone z Google
+// TRUSTPILOT - osobne źródło, świadomie NIE łączone z Google
 // ------------------------------------------------------------
 // Dlaczego osobno: buildReviewsAugmentedOrganization emituje każdą
 // opinię z publisher: "Google". Dopisanie tu opinii z Trustpilota
@@ -110,7 +110,7 @@ export const TRUSTPILOT_REVIEWS = [
 // -------------------------------------------------------------------
 // 25 rzeczywistych opinii z Google Maps (stan: lipiec 2026)
 // 11 z treścią + 14 rating-only (5★, bez tekstu, normalne na Google)
-// Daty szacunkowe "miesiąc temu" — wszystkie w marcu 2026,
+// Daty szacunkowe "miesiąc temu" - wszystkie w marcu 2026,
 // oprócz Artur Hebenstreit (2 mies. temu wg odpowiedzi właściciela).
 // -------------------------------------------------------------------
 
@@ -137,7 +137,7 @@ export const REVIEWS = [
     text: "Świetny sklep z biżuterią – możliwość graweru i druku 3D pozwala stworzyć naprawdę wyjątkowe, spersonalizowane projekty. Profesjonalna obsługa, wysoka jakość wykonania i szybka realizacja zamówienia sprawiają, że z czystym sumieniem polecam to miejsce.",
     translations: {
       en: "Great jewelry shop – engraving and 3D printing options let you create truly unique, personalized designs. Professional service, high-quality workmanship and fast order fulfillment make me recommend this place with a clear conscience.",
-      de: "Großartiges Schmuckgeschäft – Gravur und 3D-Druck ermöglichen wirklich einzigartige, personalisierte Designs. Professioneller Service, hochwertige Verarbeitung und schnelle Auftragsabwicklung — ich empfehle diesen Ort mit gutem Gewissen.",
+      de: "Großartiges Schmuckgeschäft – Gravur und 3D-Druck ermöglichen wirklich einzigartige, personalisierte Designs. Professioneller Service, hochwertige Verarbeitung und schnelle Auftragsabwicklung - ich empfehle diesen Ort mit gutem Gewissen.",
     },
   },
   {
@@ -193,7 +193,7 @@ export const REVIEWS = [
     author: "Artur Hebenstreit",
     rating: 5,
     // Google: "Edytowano 4 godziny temu"; odpowiedź właściciela "2 miesiące temu"
-    // — więc oryginalna publikacja to ~luty 2026.
+    // - więc oryginalna publikacja to ~luty 2026.
     date: "2026-02-15",
     originalLang: "en",
     text: "Highly recommend!",
@@ -239,7 +239,7 @@ export const REVIEWS = [
     },
   },
 
-  // --- RATING-ONLY (14) — 5★ bez tekstu, widoczne jako nagłówek z gwiazdkami ---
+  // --- RATING-ONLY (14) - 5★ bez tekstu, widoczne jako nagłówek z gwiazdkami ---
   { id: "r9",  author: "Bartosz Kowalczyk",   rating: 5, date: "2026-03-16", originalLang: "pl", text: "" },
   { id: "r10", author: "M O",                 rating: 5, date: "2026-03-15", originalLang: "pl", text: "" },
   { id: "r11", author: "Aleksandra Kwaśnica", rating: 5, date: "2026-03-14", originalLang: "pl", text: "" },

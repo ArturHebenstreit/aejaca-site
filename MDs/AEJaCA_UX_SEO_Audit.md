@@ -1,4 +1,4 @@
-# AEJaCA — audyt UI/UX, SEO i AIEO
+# AEJaCA - audyt UI/UX, SEO i AIEO
 
 *Przeprowadzono: 2026-08-04 i 2026-08-05 · Zakres: aejaca.com, pięć etapów*
 

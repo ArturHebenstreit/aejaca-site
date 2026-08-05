@@ -1,4 +1,4 @@
-/* AEJaCA Footer — light variant with brand-aware accents.
+/* AEJaCA Footer - light variant with brand-aware accents.
    Newsletter block + 3-column nav + market rates ticker. */
 
 const FOOTER_COPY = {
@@ -7,7 +7,7 @@ const FOOTER_COPY = {
     quickLinks: "Szybkie linki",
     followUs: "Obserwuj nas",
     rights: "Wszelkie prawa zastrzeżone.",
-    newsletterTitle: "Zapisz się — kod AEJACA10 −10%",
+    newsletterTitle: "Zapisz się - kod AEJACA10 −10%",
     newsletterDesc: "Newsletter raz w miesiącu. Najpierw o nowych projektach, kalkulatorach i poradnikach.",
     newsletterCta: "Zapisz mnie",
     newsletterPlaceholder: "twoj@email.pl",
@@ -18,7 +18,7 @@ const FOOTER_COPY = {
     quickLinks: "Quick Links",
     followUs: "Follow Us",
     rights: "All rights reserved.",
-    newsletterTitle: "Subscribe — AEJACA10 code for −10%",
+    newsletterTitle: "Subscribe - AEJACA10 code for −10%",
     newsletterDesc: "One newsletter a month. First word on new pieces, calculators, and how-tos.",
     newsletterCta: "Subscribe",
     newsletterPlaceholder: "your@email.com",
@@ -29,7 +29,7 @@ const FOOTER_COPY = {
     quickLinks: "Schnellzugriff",
     followUs: "Folge uns",
     rights: "Alle Rechte vorbehalten.",
-    newsletterTitle: "Abonnieren — Code AEJACA10 für −10 %",
+    newsletterTitle: "Abonnieren - Code AEJACA10 für −10 %",
     newsletterDesc: "Ein Newsletter pro Monat. Neue Stücke, Rechner und Anleitungen zuerst.",
     newsletterCta: "Abonnieren",
     newsletterPlaceholder: "ihre@email.de",
@@ -173,7 +173,7 @@ function Footer({ lang }) {
         </div>
 
         <div style={{ marginTop: 40, paddingTop: 20, borderTop: "1px solid var(--border-faint)", textAlign: "center", color: "var(--fg-4)", fontSize: 12 }}>
-          &copy; {new Date().getFullYear()} AEJaCA — {t.rights}
+          &copy; {new Date().getFullYear()} AEJaCA - {t.rights}
         </div>
       </div>
     </footer>

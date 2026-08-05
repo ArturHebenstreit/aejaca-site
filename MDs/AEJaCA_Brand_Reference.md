@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-04 | Wersja: 2.6*
+*Wygenerowano: 2026-08-05 | Wersja: 2.7*
 
 ---
 
@@ -408,6 +408,23 @@ Opis: 7 typów laserów, 88 materiałów, ponad 1000 kombinacji. Wybór akcji, m
 URL: /toolstudio/shrinkage/
 Opis: Przelicznik wymiaru wzorca na wymiar po odlewie, tabela rozmiarów EU 48-58 dla 4 stopów.
 SEO title PL: "Kalkulator kompensacji skurczu odlewniczego | AEJaCA sTuDiO"
+
+### Narzędzia jubilerskie (/toolsjewelry/)
+
+| Narzędzie | URL | Opis |
+|---|---|---|
+| Skład stopów jubilerskich | /toolsjewelry/alloy-composition/ | Skład, temperatura topnienia i twardość stopów Au, Ag, Pt |
+| Wycena surowca | /toolsjewelry/metal-pricing/ | Wartość kruszcu z ceny spot XAU/XAG/XPT i kursu NBP |
+| Kalkulator blanku obrączki | /toolsjewelry/ring-blank/ | Długość pręta i masa blanku dla metalu, średnicy i szerokości |
+| Konwerter rozmiarów pierścionków | /toolsjewelry/ring-size/ | EU / US / UK / JP, z obwodu lub średnicy |
+| **Miarka do pierścionków do wydruku** | /toolsjewelry/ring-sizer/ | Pasek owijany (obwód 40-76 mm) i tabela kółek (Ø 14,0-22,3 mm), z wbudowaną kontrolą skali wydruku: prostokąt karty płatniczej 85,6 x 53,98 mm i linijka 100 mm. Schematy HowTo + FAQPage. |
+
+Miarka i konwerter odpowiadają na dwa różne zapytania: „jaki mam rozmiar" kontra „ile to jest w US".
+Obie strony linkują do siebie nawzajem. Wspólna tabela rozmiarów siedzi w `src/data/ringSizes.js`,
+żeby narzędzia nie rozjechały się przy pierwszej korekcie.
+
+**Warunek działania:** wydruk w skali 100%. „Dopasuj do strony" zmniejsza arkusz o kilka procent,
+co daje błąd o jeden do dwóch rozmiarów. Stąd kontrola skali na samej górze arkusza.
 
 ---
 

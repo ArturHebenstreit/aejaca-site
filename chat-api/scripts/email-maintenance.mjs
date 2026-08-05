@@ -11,7 +11,7 @@
 //                     correspondence is stored. Default window: 30d.
 //   --dry             Print what would happen without writing.
 //
-// Safe to run repeatedly — processGmailMessage dedups on gmail_message_id.
+// Safe to run repeatedly - processGmailMessage dedups on gmail_message_id.
 
 import pg from "pg";
 import { createGmailClient, pollRecentMessages } from "../gmail.js";

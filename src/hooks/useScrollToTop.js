@@ -8,7 +8,7 @@ export default function useScrollToTop() {
       window.scrollTo(0, 0);
       return;
     }
-    // Lazy-loaded pages render asynchronously — retry until element appears
+    // Lazy-loaded pages render asynchronously - retry until element appears
     let attempts = 0;
     const tryScroll = () => {
       const el = document.querySelector(hash);

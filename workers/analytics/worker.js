@@ -1,11 +1,11 @@
 // ============================================================
-// AEJaCA Analytics Worker — Cloudflare Workers + D1
+// AEJaCA Analytics Worker - Cloudflare Workers + D1
 // ============================================================
-// POST /events        — receive event batches from frontend
-// GET  /dash?token=X  — analytics dashboard
-// GET  /api/stats     — JSON API for dashboard data
-// GET  /api/events    — raw events query
-// GET  /api/export    — CSV export
+// POST /events        - receive event batches from frontend
+// GET  /dash?token=X  - analytics dashboard
+// GET  /api/stats     - JSON API for dashboard data
+// GET  /api/events    - raw events query
+// GET  /api/export    - CSV export
 // ============================================================
 
 export default {
@@ -13,7 +13,7 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // CORS headers — accept both www and non-www origins
+    // CORS headers - accept both www and non-www origins
     const origin = request.headers.get("Origin") || "";
     const allowedOrigins = [
       env.ALLOWED_ORIGIN || "https://www.aejaca.com",
@@ -322,7 +322,7 @@ tr:hover td{background:#1a1a1a}
 </head>
 <body>
 <h1>AEJaCA Analytics</h1>
-<div class="subtitle">Event tracking dashboard — aejaca.com</div>
+<div class="subtitle">Event tracking dashboard - aejaca.com</div>
 
 <div class="controls">
   <button onclick="load(1)" id="btn-1">Today</button>
@@ -338,10 +338,10 @@ tr:hover td{background:#1a1a1a}
 
   <!-- Overview cards -->
   <div class="grid">
-    <div class="card"><div class="num blue" id="v-visitors">—</div><div class="lbl">Unique visitors</div></div>
-    <div class="card"><div class="num" id="v-pageviews">—</div><div class="lbl">Page views</div></div>
-    <div class="card"><div class="num amber" id="v-inquiries">—</div><div class="lbl">Inquiries</div></div>
-    <div class="card"><div class="num" id="v-events">—</div><div class="lbl">Total events</div></div>
+    <div class="card"><div class="num blue" id="v-visitors"> - </div><div class="lbl">Unique visitors</div></div>
+    <div class="card"><div class="num" id="v-pageviews"> - </div><div class="lbl">Page views</div></div>
+    <div class="card"><div class="num amber" id="v-inquiries"> - </div><div class="lbl">Inquiries</div></div>
+    <div class="card"><div class="num" id="v-events"> - </div><div class="lbl">Total events</div></div>
   </div>
 
   <!-- Daily chart -->
@@ -436,7 +436,7 @@ async function load(days) {
   fillTable("t-inquiries", d.inquiries, r => [
     new Date(r.ts).toLocaleString(),
     '<span class="tag">'+esc(r.label)+'</span>',
-    r.country||"—"
+    r.country||" - "
   ]);
 
   // Countries
@@ -459,7 +459,7 @@ function fillTable(id, rows, mapper) {
   tbody.innerHTML = "";
   (rows||[]).forEach(r => {
     const tr = document.createElement("tr");
-    tr.innerHTML = mapper(r).map(v => "<td>"+(v??"—")+"</td>").join("");
+    tr.innerHTML = mapper(r).map(v => "<td>"+(v??" - ")+"</td>").join("");
     tbody.appendChild(tr);
   });
   if (!rows?.length) tbody.innerHTML = '<tr><td colspan="9" style="color:#525252;text-align:center">No data</td></tr>';

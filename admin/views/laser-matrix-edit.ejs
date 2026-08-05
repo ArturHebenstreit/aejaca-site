@@ -1,4 +1,4 @@
-<%- include('partials/header', { user: user, title: `${ row ? 'Edytuj #' + row.id : 'Nowy wiersz' } — Laser Matrix`, active: 'laser' }) %>
+<%- include('partials/header', { user: user, title: `${ row ? 'Edytuj #' + row.id : 'Nowy wiersz' } - Laser Matrix`, active: 'laser' }) %>
 
   <main class="max-w-4xl mx-auto px-6 py-8">
 
@@ -23,13 +23,13 @@
 
       <!-- SEKCJA 1: Identyfikacja -->
       <fieldset class="bg-neutral-900 border border-white/10 rounded-xl p-6">
-        <legend class="text-sm font-semibold text-blue-400 uppercase tracking-wider px-2 mb-4">Sekcja 1 — Identyfikacja</legend>
+        <legend class="text-sm font-semibold text-blue-400 uppercase tracking-wider px-2 mb-4">Sekcja 1 - Identyfikacja</legend>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
           <div>
             <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Typ lasera</label>
             <select name="laser_type" class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50">
-              <option value="">— wybierz —</option>
+              <option value=""> - wybierz - </option>
               <% ['CO2','DIODE','Fiber Raycus','MOPA','GREEN','IR','UV'].forEach(function(t) { %>
               <option value="<%= t %>" <%= (row && row.laser_type === t) ? 'selected' : '' %>><%= t %></option>
               <% }); %>
@@ -55,7 +55,7 @@
           <div>
             <label class="block text-xs text-neutral-400 mb-1.5 uppercase tracking-wider">Kinematyka</label>
             <select name="kinematics" class="w-full bg-neutral-800 border border-white/10 text-neutral-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-amber-400/50">
-              <option value="">— wybierz —</option>
+              <option value=""> - wybierz - </option>
               <option value="XY (Plotery)" <%= (row && row.kinematics === 'XY (Plotery)') ? 'selected' : '' %>>XY (Plotery)</option>
               <option value="Galvo" <%= (row && row.kinematics === 'Galvo') ? 'selected' : '' %>>Galvo</option>
             </select>
@@ -87,7 +87,7 @@
 
       <!-- SEKCJA 2: Moc i Prędkość -->
       <fieldset class="bg-neutral-900 border border-white/10 rounded-xl p-6">
-        <legend class="text-sm font-semibold text-amber-400 uppercase tracking-wider px-2 mb-4">Sekcja 2 — Moc i Prędkość</legend>
+        <legend class="text-sm font-semibold text-amber-400 uppercase tracking-wider px-2 mb-4">Sekcja 2 - Moc i Prędkość</legend>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
 
           <div>
@@ -123,7 +123,7 @@
 
       <!-- SEKCJA 3: Kinematyka szczegółowa -->
       <fieldset class="bg-neutral-900 border border-white/10 rounded-xl p-6">
-        <legend class="text-sm font-semibold text-emerald-400 uppercase tracking-wider px-2 mb-4">Sekcja 3 — Kinematyka</legend>
+        <legend class="text-sm font-semibold text-emerald-400 uppercase tracking-wider px-2 mb-4">Sekcja 3 - Kinematyka</legend>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
 
           <div>
@@ -173,7 +173,7 @@
 
       <!-- SEKCJA 4: Optyka i Oś Z -->
       <fieldset class="bg-neutral-900 border border-white/10 rounded-xl p-6">
-        <legend class="text-sm font-semibold text-purple-400 uppercase tracking-wider px-2 mb-4">Sekcja 4 — Optyka i Oś Z</legend>
+        <legend class="text-sm font-semibold text-purple-400 uppercase tracking-wider px-2 mb-4">Sekcja 4 - Optyka i Oś Z</legend>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
           <div>
@@ -202,7 +202,7 @@
 
       <!-- SEKCJA 5: Asysta Gazowa -->
       <fieldset class="bg-neutral-900 border border-white/10 rounded-xl p-6">
-        <legend class="text-sm font-semibold text-cyan-400 uppercase tracking-wider px-2 mb-4">Sekcja 5 — Asysta Gazowa</legend>
+        <legend class="text-sm font-semibold text-cyan-400 uppercase tracking-wider px-2 mb-4">Sekcja 5 - Asysta Gazowa</legend>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
           <div>
@@ -231,7 +231,7 @@
 
       <!-- SEKCJA 6: Uwagi -->
       <fieldset class="bg-neutral-900 border border-white/10 rounded-xl p-6">
-        <legend class="text-sm font-semibold text-rose-400 uppercase tracking-wider px-2 mb-4">Sekcja 6 — Uwagi</legend>
+        <legend class="text-sm font-semibold text-rose-400 uppercase tracking-wider px-2 mb-4">Sekcja 6 - Uwagi</legend>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
           <div>
@@ -258,7 +258,7 @@
       <!-- Translacje (collapsible) -->
       <details class="bg-neutral-900 border border-white/10 rounded-xl">
         <summary class="px-6 py-4 cursor-pointer text-sm font-semibold text-neutral-400 hover:text-white transition-colors select-none">
-          Translacje — materiał i akcja (EN / DE)
+          Translacje - materiał i akcja (EN / DE)
         </summary>
         <div class="px-6 pb-6 pt-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
 

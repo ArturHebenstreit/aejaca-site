@@ -4,7 +4,7 @@
 
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-xl font-semibold text-white">Gemstone Prices</h2>
-      <p class="text-xs text-neutral-500">Prices in EUR — frontend converts to PLN using live NBP rate</p>
+      <p class="text-xs text-neutral-500">Prices in EUR - frontend converts to PLN using live NBP rate</p>
     </div>
 
     <div class="bg-neutral-900 border border-white/10 rounded-xl overflow-hidden">
@@ -38,25 +38,25 @@
                     <span class="text-amber-400 font-semibold"><%= parseFloat(gem.base_eur).toFixed(2) %></span>
                     <span class="text-neutral-600 text-xs ml-0.5">€</span>
                   <% } else { %>
-                    <span class="text-neutral-600">—</span>
+                    <span class="text-neutral-600"> - </span>
                   <% } %>
                 </td>
                 <td class="px-4 py-3 text-center">
                   <% if (gem.precious) { %>
                     <span class="text-amber-400 text-xs font-medium">YES</span>
                   <% } else { %>
-                    <span class="text-neutral-700 text-xs">—</span>
+                    <span class="text-neutral-700 text-xs"> - </span>
                   <% } %>
                 </td>
                 <td class="px-4 py-3 text-center">
                   <% if (gem.lab) { %>
                     <span class="px-1.5 py-0.5 bg-emerald-950 text-emerald-400 rounded text-[10px] font-medium">LAB</span>
                   <% } else { %>
-                    <span class="text-neutral-700 text-xs">—</span>
+                    <span class="text-neutral-700 text-xs"> - </span>
                   <% } %>
                 </td>
                 <td class="px-4 py-3 text-neutral-500 text-xs max-w-[160px] truncate" title="<%= gem.notes || '' %>">
-                  <%= gem.notes || '—' %>
+                  <%= gem.notes || ' - ' %>
                 </td>
                 <td class="px-4 py-3 text-neutral-600 text-xs whitespace-nowrap">
                   <%= fmtDate(gem.updated_at) %>

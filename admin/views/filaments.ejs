@@ -81,12 +81,12 @@
           <tbody>
             <% if (rows && rows.length > 0) { %>
               <% var catColors = { standard: 'text-blue-300 bg-blue-950', engineering: 'text-purple-300 bg-purple-950', flexible: 'text-emerald-300 bg-emerald-950', specialty: 'text-amber-300 bg-amber-950' }; %>
-              <% var enclosureLabel = { no: '—', recommended: 'zalec.', required: 'wymagana' }; %>
+              <% var enclosureLabel = { no: ' - ', recommended: 'zalec.', required: 'wymagana' }; %>
               <% rows.forEach(function(row, i) { %>
               <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors group <%= i % 2 === 1 ? 'bg-white/[0.015]' : '' %>">
                 <td class="px-4 py-3 text-neutral-600 text-xs font-mono"><%= row.id %></td>
                 <td class="px-4 py-3">
-                  <div class="font-medium text-neutral-200"><%= row.name || '—' %></div>
+                  <div class="font-medium text-neutral-200"><%= row.name || ' - ' %></div>
                   <div class="text-xs text-neutral-600 font-mono"><%= row.type_id || '' %></div>
                   <% if (!row.is_active) { %>
                   <span class="text-xs text-red-500">nieaktywny</span>
@@ -96,27 +96,27 @@
                   <% if (row.category) { %>
                   <span class="px-2 py-0.5 rounded text-xs font-medium uppercase <%= catColors[row.category] || 'text-neutral-300 bg-neutral-800' %>"><%= row.category %></span>
                   <% } else { %>
-                  <span class="text-neutral-600">—</span>
+                  <span class="text-neutral-600"> - </span>
                   <% } %>
                 </td>
                 <td class="px-4 py-3">
                   <% if (row.difficulty) { %>
                   <span class="text-amber-400 tracking-widest text-xs"><%= '●'.repeat(row.difficulty) %><%= '○'.repeat(5 - row.difficulty) %></span>
                   <% } else { %>
-                  <span class="text-neutral-600">—</span>
+                  <span class="text-neutral-600"> - </span>
                   <% } %>
                 </td>
                 <td class="px-4 py-3 text-right text-neutral-300 whitespace-nowrap text-xs">
-                  <% if (row.nozzle_min || row.nozzle_max) { %><%= row.nozzle_min || '?' %>–<%= row.nozzle_max || '?' %>°C<% } else { %><span class="text-neutral-600">—</span><% } %>
+                  <% if (row.nozzle_min || row.nozzle_max) { %><%= row.nozzle_min || '?' %>–<%= row.nozzle_max || '?' %>°C<% } else { %><span class="text-neutral-600"> - </span><% } %>
                 </td>
                 <td class="px-4 py-3 text-right text-neutral-400 text-xs whitespace-nowrap">
-                  <% if (row.bed_min || row.bed_max) { %><%= row.bed_min || '?' %>–<%= row.bed_max || '?' %>°C<% } else { %><span class="text-neutral-600">—</span><% } %>
+                  <% if (row.bed_min || row.bed_max) { %><%= row.bed_min || '?' %>–<%= row.bed_max || '?' %>°C<% } else { %><span class="text-neutral-600"> - </span><% } %>
                 </td>
                 <td class="px-4 py-3 text-right text-neutral-400 text-xs whitespace-nowrap">
-                  <%= enclosureLabel[row.enclosure] || row.enclosure || '—' %>
+                  <%= enclosureLabel[row.enclosure] || row.enclosure || ' - ' %>
                 </td>
                 <td class="px-4 py-3 text-right text-neutral-300 text-xs whitespace-nowrap">
-                  <% if (row.price_per_kg) { %><%= row.price_per_kg %> zł<% } else { %><span class="text-neutral-600">—</span><% } %>
+                  <% if (row.price_per_kg) { %><%= row.price_per_kg %> zł<% } else { %><span class="text-neutral-600"> - </span><% } %>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-right">
                   <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">

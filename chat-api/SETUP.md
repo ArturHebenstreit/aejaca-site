@@ -1,4 +1,4 @@
-# AEJaCA Chat API — Setup
+# AEJaCA Chat API - Setup
 
 ## Architecture
 
@@ -12,7 +12,7 @@ Streaming AI chat assistant embedded in aejaca.com. Knows AEJaCA's full offer, p
 
 ---
 
-## Step 1: Railway — Deploy Chat API Service
+## Step 1: Railway - Deploy Chat API Service
 
 1. In Railway project, click **+ New → GitHub Repo** or **Empty Service**
 2. Set **Root Directory** to `chat-api`
@@ -56,7 +56,7 @@ CREATE INDEX IF NOT EXISTS idx_conv_date ON conversations (created_at DESC);
 
 ---
 
-## Step 3: Cloudflare Pages — Set env var
+## Step 3: Cloudflare Pages - Set env var
 
 In Cloudflare Pages → Settings → Environment variables:
 
@@ -73,7 +73,7 @@ Trigger a new deployment after adding the variable.
 1. Go to https://platform.openai.com/api-keys
 2. Create a new API key
 3. Set it as `OPENAI_API_KEY` in Railway
-4. GPT-4o-mini costs ~$0.15 per 1M input tokens, ~$0.60 per 1M output tokens — very affordable
+4. GPT-4o-mini costs ~$0.15 per 1M input tokens, ~$0.60 per 1M output tokens - very affordable
 
 ---
 

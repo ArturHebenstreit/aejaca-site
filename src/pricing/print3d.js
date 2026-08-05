@@ -213,11 +213,11 @@ export const FILAMENTS = {
 };
 
 export const SIZES = [
-  { id: "XS", label: { pl: "XS — do 5 cm", en: "XS — up to 5 cm", de: "XS — bis 5 cm" }, volumeRef: 30, timeBase: 1.5, pcsPerPlate: 8 },
-  { id: "S",  label: { pl: "S — 5–10 cm", en: "S — 5–10 cm", de: "S — 5–10 cm" }, volumeRef: 150, timeBase: 4, pcsPerPlate: 4 },
-  { id: "M",  label: { pl: "M — 10–20 cm", en: "M — 10–20 cm", de: "M — 10–20 cm" }, volumeRef: 800, timeBase: 10, pcsPerPlate: 2 },
-  { id: "L",  label: { pl: "L — 20–30 cm", en: "L — 20–30 cm", de: "L — 20–30 cm" }, volumeRef: 3000, timeBase: 24, pcsPerPlate: 1 },
-  { id: "XL", label: { pl: "XL — powyżej 30 cm", en: "XL — over 30 cm", de: "XL — über 30 cm" }, volumeRef: null, timeBase: null, pcsPerPlate: 1, custom: true },
+  { id: "XS", label: { pl: "XS - do 5 cm", en: "XS - up to 5 cm", de: "XS - bis 5 cm" }, volumeRef: 30, timeBase: 1.5, pcsPerPlate: 8 },
+  { id: "S",  label: { pl: "S - 5–10 cm", en: "S - 5–10 cm", de: "S - 5–10 cm" }, volumeRef: 150, timeBase: 4, pcsPerPlate: 4 },
+  { id: "M",  label: { pl: "M - 10–20 cm", en: "M - 10–20 cm", de: "M - 10–20 cm" }, volumeRef: 800, timeBase: 10, pcsPerPlate: 2 },
+  { id: "L",  label: { pl: "L - 20–30 cm", en: "L - 20–30 cm", de: "L - 20–30 cm" }, volumeRef: 3000, timeBase: 24, pcsPerPlate: 1 },
+  { id: "XL", label: { pl: "XL - powyżej 30 cm", en: "XL - over 30 cm", de: "XL - über 30 cm" }, volumeRef: null, timeBase: null, pcsPerPlate: 1, custom: true },
 ];
 
 export const INFILL = [

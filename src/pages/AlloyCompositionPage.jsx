@@ -54,16 +54,16 @@ const LABELS = {
 
 const SEO_META = {
   pl: {
-    title: "Skład stopów jubilerskich — złoto, srebro, platyna | AEJaCA",
-    description: "Kalkulator składu stopów jubilerskich. Złoto 585, 750, 925 srebro, platyna 950 — skład %, temperatura topnienia, twardość Vickers.",
+    title: "Skład stopów jubilerskich - złoto, srebro, platyna | AEJaCA",
+    description: "Kalkulator składu stopów jubilerskich. Złoto 585, 750, 925 srebro, platyna 950 - skład %, temperatura topnienia, twardość Vickers.",
   },
   en: {
-    title: "Jewelry Alloy Composition — Gold, Silver, Platinum | AEJaCA",
-    description: "Alloy composition calculator for jewelers. Gold 585, 750, silver 925, platinum 950 — composition %, melting range, Vickers hardness.",
+    title: "Jewelry Alloy Composition - Gold, Silver, Platinum | AEJaCA",
+    description: "Alloy composition calculator for jewelers. Gold 585, 750, silver 925, platinum 950 - composition %, melting range, Vickers hardness.",
   },
   de: {
-    title: "Legierungszusammensetzung Schmuck — Gold, Silber, Platin | AEJaCA",
-    description: "Legierungsrechner für Goldschmiede. Gold 585, 750, Silber 925, Platin 950 — Zusammensetzung %, Schmelzbereich, Vickers-Härte.",
+    title: "Legierungszusammensetzung Schmuck - Gold, Silber, Platin | AEJaCA",
+    description: "Legierungsrechner für Goldschmiede. Gold 585, 750, Silber 925, Platin 950 - Zusammensetzung %, Schmelzbereich, Vickers-Härte.",
   },
 };
 
@@ -105,7 +105,7 @@ export default function AlloyCompositionPage() {
         <section className="relative overflow-hidden min-h-[340px]">
           <img
             src="/hero-toolsjewelry.webp"
-            alt="Skład stopów jubilerskich — AEJaCA"
+            alt="Skład stopów jubilerskich - AEJaCA"
             className="absolute inset-0 w-full h-full object-cover"
             loading="eager"
             fetchpriority="high"

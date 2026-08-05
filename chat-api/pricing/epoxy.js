@@ -27,7 +27,7 @@ export const LBL = {
     energy: "Energia / szt.", depreciation: "Amortyzacja narzędzi",
     workshop: "Usługi warsztatowe", estCost: "Koszt szacunkowy / szt.", discount: "Rabat seryjny",
     totalProd: "Czas produkcji łącznie",
-    customResin: "Inna żywica — wycena indywidualna" },
+    customResin: "Inna żywica - wycena indywidualna" },
   en: { resinType: "Resin type", volume: "Cast volume", mold: "Mold",
     inclusions: "Inclusions / additives", finish: "Finish", qty: "Quantity",
     resinCost: "Resin / pc", moldAmort: "Mold amortization / pc",
@@ -37,7 +37,7 @@ export const LBL = {
     energy: "Energy / pc", depreciation: "Tool depreciation",
     workshop: "Workshop services", estCost: "Estimated cost / pc", discount: "Series discount",
     totalProd: "Total production time",
-    customResin: "Other resin — individual quote" },
+    customResin: "Other resin - individual quote" },
   de: { resinType: "Harztyp", volume: "Gussvolumen", mold: "Form",
     inclusions: "Einschlüsse / Zusätze", finish: "Finish", qty: "Auflage",
     resinCost: "Harz / Stk.", moldAmort: "Formamortisation / Stk.",
@@ -47,7 +47,7 @@ export const LBL = {
     energy: "Energie / Stk.", depreciation: "Werkzeugabschreibung",
     workshop: "Werkstattleistungen", estCost: "Geschätzte Kosten / Stk.", discount: "Serienrabatt",
     totalProd: "Gesamte Produktionszeit",
-    customResin: "Anderes Harz — individuelle Kalkulation" },
+    customResin: "Anderes Harz - individuelle Kalkulation" },
 };
 
 export const RESINS = [
@@ -55,11 +55,11 @@ export const RESINS = [
     pricePerMl: 0.35, density: 1.10, cureH: 0.1,
     desc: { pl: "Szybkie utwardzanie, cienkie warstwy", en: "Fast curing, thin layers", de: "Schnelle Aushärtung, dünne Schichten" },
     img: "/img/calc/resin_types/uv.webp" },
-  { id: "epoxy_clear", label: { pl: "Epoksyd — transparentny", en: "Epoxy — transparent", de: "Epoxid — transparent" },
+  { id: "epoxy_clear", label: { pl: "Epoksyd - transparentny", en: "Epoxy - transparent", de: "Epoxid - transparent" },
     pricePerMl: 0.18, density: 1.15, cureH: 48,
     desc: { pl: "Krystalicznie czysty, 24-72h utwardzania", en: "Crystal clear, 24-72h curing", de: "Kristallklar, 24-72h Aushärtung" },
     img: "/img/calc/resin_types/epoxy_clear.webp" },
-  { id: "epoxy_color", label: { pl: "Epoksyd — kolorowy", en: "Epoxy — colored", de: "Epoxid — farbig" },
+  { id: "epoxy_color", label: { pl: "Epoksyd - kolorowy", en: "Epoxy - colored", de: "Epoxid - farbig" },
     pricePerMl: 0.22, density: 1.15, cureH: 48,
     desc: { pl: "Z pigmentem, efekty artystyczne", en: "With pigment, artistic effects", de: "Mit Pigment, künstlerische Effekte" },
     img: "/img/calc/resin_types/epoxy_color.webp" },
@@ -68,18 +68,18 @@ export const RESINS = [
 ];
 
 export const VOLUMES = [
-  { id: "XS", label: { pl: "XS — biżuteria (do 10 ml)", en: "XS — jewelry (up to 10 ml)", de: "XS — Schmuck (bis 10 ml)" }, vol: 7 },
-  { id: "S",  label: { pl: "S — brelok / mały (10-50 ml)", en: "S — keychain / small (10-50 ml)", de: "S — Schlüsselanhänger / klein (10-50 ml)" }, vol: 30 },
-  { id: "M",  label: { pl: "M — podkładka / deko (50-250 ml)", en: "M — coaster / deco (50-250 ml)", de: "M — Untersetzer / Deko (50-250 ml)" }, vol: 150 },
-  { id: "L",  label: { pl: "L — duży obiekt (250 ml - 1L)", en: "L — large object (250 ml - 1L)", de: "L — großes Objekt (250 ml - 1L)" }, vol: 600 },
-  { id: "XL", label: { pl: "XL — powyżej 1L (river table itp.)", en: "XL — over 1L (river table etc.)", de: "XL — über 1L (River Table usw.)" }, vol: null, custom: true },
+  { id: "XS", label: { pl: "XS - biżuteria (do 10 ml)", en: "XS - jewelry (up to 10 ml)", de: "XS - Schmuck (bis 10 ml)" }, vol: 7 },
+  { id: "S",  label: { pl: "S - brelok / mały (10-50 ml)", en: "S - keychain / small (10-50 ml)", de: "S - Schlüsselanhänger / klein (10-50 ml)" }, vol: 30 },
+  { id: "M",  label: { pl: "M - podkładka / deko (50-250 ml)", en: "M - coaster / deco (50-250 ml)", de: "M - Untersetzer / Deko (50-250 ml)" }, vol: 150 },
+  { id: "L",  label: { pl: "L - duży obiekt (250 ml - 1L)", en: "L - large object (250 ml - 1L)", de: "L - großes Objekt (250 ml - 1L)" }, vol: 600 },
+  { id: "XL", label: { pl: "XL - powyżej 1L (river table itp.)", en: "XL - over 1L (river table etc.)", de: "XL - über 1L (River Table usw.)" }, vol: null, custom: true },
 ];
 
 export const MOLD_TYPES = [
   { id: "existing", label: { pl: "Istniejąca forma", en: "Existing mold", de: "Vorhandene Form" },           moldCost: 0,   pourLife: 1,  img: "/img/calc/resin_molds/existing.webp" },
-  { id: "new_s",    label: { pl: "Nowa forma — mała", en: "New mold — small", de: "Neue Form — klein" },     moldCost: 60,  pourLife: 40, img: "/img/calc/resin_molds/new_s.webp" },
-  { id: "new_m",    label: { pl: "Nowa forma — średnia", en: "New mold — medium", de: "Neue Form — mittel" }, moldCost: 150, pourLife: 35, img: "/img/calc/resin_molds/new_m.webp" },
-  { id: "new_l",    label: { pl: "Nowa forma — duża", en: "New mold — large", de: "Neue Form — groß" },     moldCost: 350, pourLife: 25, img: "/img/calc/resin_molds/new_l.webp" },
+  { id: "new_s",    label: { pl: "Nowa forma - mała", en: "New mold - small", de: "Neue Form - klein" },     moldCost: 60,  pourLife: 40, img: "/img/calc/resin_molds/new_s.webp" },
+  { id: "new_m",    label: { pl: "Nowa forma - średnia", en: "New mold - medium", de: "Neue Form - mittel" }, moldCost: 150, pourLife: 35, img: "/img/calc/resin_molds/new_m.webp" },
+  { id: "new_l",    label: { pl: "Nowa forma - duża", en: "New mold - large", de: "Neue Form - groß" },     moldCost: 350, pourLife: 25, img: "/img/calc/resin_molds/new_l.webp" },
   { id: "client",   label: { pl: "Forma klienta", en: "Client mold", de: "Kundenform" },                      moldCost: 0,   pourLife: 1,  img: "/img/calc/resin_molds/client.webp" },
   { id: "custom",   label: { pl: "Forma niestandardowa", en: "Custom mold", de: "Individuelle Form" },        moldCost: null, pourLife: null, custom: true },
 ];

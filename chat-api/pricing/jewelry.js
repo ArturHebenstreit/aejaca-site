@@ -117,7 +117,7 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
   if (!line || !jType || !metal || !weight || !method || !plat || !qTier) return null;
   if (metal.custom || weight.custom || method.custom || plat.custom || qTier.custom) return { type: "custom" };
 
-  // Metal cost — use live rates when available, fall back to static config
+  // Metal cost - use live rates when available, fall back to static config
   const plnPerG = resolveMetalPricePerG(metal.metal, rates);
   // Use geometric weight override if provided (from WeightEngine), else fall back to baseWeight × mul
   const weightG = (overrideWeightG != null && overrideWeightG > 0)
@@ -125,10 +125,10 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
     : jType.baseWeight * weight.mul;
   const metalCost = clientSuppliesMetal ? 0 : weightG * plnPerG * metal.purity;
 
-  // Labor cost (weight affects labor — lighter pieces need less finishing)
+  // Labor cost (weight affects labor - lighter pieces need less finishing)
   const laborCost = jType.laborH * method.laborRate * method.laborMul * metal.laborMul * jType.complexity * (weight.laborMul || 1);
 
-  // Stone costs — iterate all rows
+  // Stone costs - iterate all rows
   let gemCost = 0;
   let settingCost = 0;
   const _gems = gemstones || GEMSTONES;
@@ -166,7 +166,7 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
     }
 
     // Setting cost always applies (regardless of who supplies the stone).
-    // Per-stone rate tapers with count — micro-pavé is far cheaper per stone than a solitaire.
+    // Per-stone rate tapers with count - micro-pavé is far cheaper per stone than a solitaire.
     const perStone = stoneSize.ct >= 0.3 ? 110 : (count <= 3 ? 55 : count <= 10 ? 35 : 22);
     settingCost += count * perStone;
   }
@@ -272,7 +272,7 @@ export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engrav
   const effectiveClientMetal = fromStock ? true : clientSuppliesMetal;
   const metalCost = effectiveClientMetal ? 0 : grossMassG * plnPerG * metal.purity;
 
-  const BASE_CHAIN_LABOR_RATE = 48;   // PLN per 10 cm — calibrated to simple chains
+  const BASE_CHAIN_LABOR_RATE = 48;   // PLN per 10 cm - calibrated to simple chains
   const MASS_LABOR_PLN_PER_G  = 6.0;  // PLN per gram of finished chain (before massLaborMul)
   // Mass-based component captures that complex weaves need far more operations per gram
   // (Byzantine 200g = ~1000 links × manual threading × soldering vs. simple curb 15g = ~200 links)
@@ -302,11 +302,11 @@ export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engrav
         ), value: "", bold: false },
       // Wire diameter warning (from_stock only)
       ...(wireDWarning ? [{ label: ln(
-          `⚠ Grubość drutu ${wireDMm.toFixed(2)} mm jest ${wireDMm < WIRE_D_MIN_MM ? "zbyt mała" : "zbyt duża"} — zmień długość lub masę`,
-          `⚠ Wire ${wireDMm.toFixed(2)} mm is ${wireDMm < WIRE_D_MIN_MM ? "too thin" : "too thick"} — adjust length or mass`,
-          `⚠ Draht ${wireDMm.toFixed(2)} mm ist ${wireDMm < WIRE_D_MIN_MM ? "zu dünn" : "zu dick"} — Länge oder Masse anpassen`
+          `⚠ Grubość drutu ${wireDMm.toFixed(2)} mm jest ${wireDMm < WIRE_D_MIN_MM ? "zbyt mała" : "zbyt duża"} - zmień długość lub masę`,
+          `⚠ Wire ${wireDMm.toFixed(2)} mm is ${wireDMm < WIRE_D_MIN_MM ? "too thin" : "too thick"} - adjust length or mass`,
+          `⚠ Draht ${wireDMm.toFixed(2)} mm ist ${wireDMm < WIRE_D_MIN_MM ? "zu dünn" : "zu dick"} - Länge oder Masse anpassen`
         ), value: "", accent: true }] : []),
-      // Waste row (from_stock — key client information)
+      // Waste row (from_stock - key client information)
       ...(fromStock ? [{ label: ln(
           `♻ Twój kruszec: ${inputMassG.toFixed(1)} g → łańcuszek: ${netMassG.toFixed(1)} g + odpady: ${wasteG.toFixed(1)} g (szlam jubilerski)`,
           `♻ Your metal: ${inputMassG.toFixed(1)} g → chain: ${netMassG.toFixed(1)} g + waste: ${wasteG.toFixed(1)} g (polishing swarf)`,

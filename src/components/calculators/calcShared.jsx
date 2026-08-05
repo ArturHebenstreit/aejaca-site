@@ -204,7 +204,7 @@ export function ResultDisplay({ result, lang = "pl", hideRange = false }) {
           </div>
           <div className="flex items-baseline justify-center gap-1.5 sm:gap-3 mb-4 flex-wrap">
             <span className="text-2xl sm:text-4xl font-extrabold tracking-tight">{fmtNum(mainPc.min)}</span>
-            <span className="text-lg sm:text-xl text-neutral-400">&mdash;</span>
+            <span className="text-lg sm:text-xl text-neutral-400"> - </span>
             <span className="text-2xl sm:text-4xl font-extrabold tracking-tight">{fmtNum(mainPc.max)}</span>
             <span className="text-sm sm:text-base font-semibold text-neutral-400">{mainCurr}</span>
           </div>
@@ -219,7 +219,7 @@ export function ResultDisplay({ result, lang = "pl", hideRange = false }) {
           </div>
           <div className="flex items-baseline justify-center gap-1.5 sm:gap-3 flex-wrap">
             <span className="text-xl sm:text-2xl font-extrabold text-blue-400">{fmtNum(mainTotal.min)}</span>
-            <span className="text-neutral-400">&mdash;</span>
+            <span className="text-neutral-400"> - </span>
             <span className="text-xl sm:text-2xl font-extrabold text-blue-400">{fmtNum(mainTotal.max)}</span>
             <span className="text-xs sm:text-sm font-semibold text-neutral-400">{mainCurr}</span>
           </div>
@@ -444,7 +444,7 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
           <div className="flex items-center gap-1.5 text-[11px] text-blue-300/80 bg-blue-400/[0.04] border border-blue-400/15 rounded-md px-2 py-1.5">
             <span aria-hidden="true">📎</span>
             <span className="truncate font-medium">{preAttachedFile.name}</span>
-            <span className="text-neutral-500 truncate">— {lbl.fileNote}</span>
+            <span className="text-neutral-500 truncate"> - {lbl.fileNote}</span>
           </div>
         )}
 

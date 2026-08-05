@@ -1,5 +1,5 @@
 // ============================================================
-// GoogleReviews — embed opinii z Google Business Profile
+// GoogleReviews - embed opinii z Google Business Profile
 // ------------------------------------------------------------
 // CRO / Trust impact:
 // - Social proof nad foldem = +34% konwersji (Baymard Institute)
@@ -138,7 +138,7 @@ function ReviewCard({ review, lang, labels }) {
         <GoogleLogo className="w-4 h-4 shrink-0 opacity-80" />
       </header>
 
-      {/* Original text — lang attribute tells browsers + screen readers the language */}
+      {/* Original text - lang attribute tells browsers + screen readers the language */}
       {hasText ? (
         <blockquote
           lang={review.originalLang}
@@ -147,7 +147,7 @@ function ReviewCard({ review, lang, labels }) {
           &ldquo;{review.text}&rdquo;
         </blockquote>
       ) : (
-        // Rating-only review (normalne na Google — klient dał 5★ bez komentarza)
+        // Rating-only review (normalne na Google - klient dał 5★ bez komentarza)
         <div className="text-neutral-400 text-xs italic">{labels.ratingOnly}</div>
       )}
 

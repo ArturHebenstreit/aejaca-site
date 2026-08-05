@@ -1,6 +1,6 @@
 ---
 name: dev
-description: Standard development tasks — implementing features, fixing bugs, writing components, adding i18n keys, creating tests, code review, refactoring. Use for typical coding work that needs good reasoning but not deep architecture.
+description: Standard development tasks - implementing features, fixing bugs, writing components, adding i18n keys, creating tests, code review, refactoring. Use for typical coding work that needs good reasoning but not deep architecture.
 model: sonnet
 tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 ---
@@ -16,7 +16,7 @@ Context:
 - Images: public/img/
 
 Rules:
-- Write clean, minimal code — no unnecessary abstractions
+- Write clean, minimal code - no unnecessary abstractions
 - Keep all 3 languages in sync when touching i18n
 - Use existing patterns (useScrollReveal, SEOHead, etc.)
 - Test with `npm run build` when making structural changes

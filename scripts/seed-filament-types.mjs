@@ -1,5 +1,5 @@
 /**
- * AEJaCA — Filament Types Seed Script
+ * AEJaCA - Filament Types Seed Script
  * Usage: DATABASE_URL=postgres://... node scripts/seed-filament-types.mjs
  *
  * Idempotent: uses INSERT ... ON CONFLICT (type_id) DO UPDATE
@@ -29,9 +29,9 @@ const TYPES = [
     uses_pl: "Modele dekoracyjne, prototypy, figurki, breloki, zabawki",
     uses_en: "Decorative models, prototypes, figurines, keychains, toys",
     uses_de: "Dekorationsmodelle, Prototypen, Figuren, Schlüsselanhänger, Spielzeug",
-    notes_pl: "Najłatwiejszy w druku. Niska odporność na temperaturę — nie do zastosowań zewnętrznych ani w samochodzie.",
-    notes_en: "Easiest to print. Low heat resistance — not for outdoor or car use.",
-    notes_de: "Einfachstes Material. Geringe Wärmebeständigkeit — nicht für Außen- oder Fahrzeuganwendungen.",
+    notes_pl: "Najłatwiejszy w druku. Niska odporność na temperaturę - nie do zastosowań zewnętrznych ani w samochodzie.",
+    notes_en: "Easiest to print. Low heat resistance - not for outdoor or car use.",
+    notes_de: "Einfachstes Material. Geringe Wärmebeständigkeit - nicht für Außen- oder Fahrzeuganwendungen.",
   },
   {
     type_id: "pla-plus", name: "PLA+", category: "standard",
@@ -57,8 +57,8 @@ const TYPES = [
     uses_pl: "Ozdoby, biżuteria, trofea, figurki kolekcjonerskie, rekwizyty",
     uses_en: "Decorations, jewelry, trophies, collectibles, props",
     uses_de: "Dekorationen, Schmuck, Trophäen, Sammelstücke",
-    notes_pl: "Efekt jedwabistego połysku. Wyższa temperatura niż PLA standard. Słabe mostki — wymaga wolniejszej prędkości.",
-    notes_en: "Silky shine effect. Higher temp than standard PLA. Poor bridging — requires slower speed.",
+    notes_pl: "Efekt jedwabistego połysku. Wyższa temperatura niż PLA standard. Słabe mostki - wymaga wolniejszej prędkości.",
+    notes_en: "Silky shine effect. Higher temp than standard PLA. Poor bridging - requires slower speed.",
     notes_de: "Seidiger Glanzeffekt. Höhere Temp. als Standard-PLA. Schlechte Überbrückung.",
   },
   {
@@ -82,9 +82,9 @@ const TYPES = [
     retraction_min: 3.0, retraction_max: 6.0, cooling: 80, enclosure: "recommended",
     difficulty: 3, density: 1.24, price_per_kg: 120,
     props: ["rigid", "heat-tolerant", "low-warp"],
-    uses_pl: "Elementy narażone na wyższe temperatury — wnętrze samochodu, obudowy sprzętu",
-    uses_en: "Parts exposed to higher temps — car interior, equipment housings",
-    uses_de: "Teile die höheren Temperaturen ausgesetzt sind — Fahrzeuginnenraum, Gerätegehäuse",
+    uses_pl: "Elementy narażone na wyższe temperatury - wnętrze samochodu, obudowy sprzętu",
+    uses_en: "Parts exposed to higher temps - car interior, equipment housings",
+    uses_de: "Teile die höheren Temperaturen ausgesetzt sind - Fahrzeuginnenraum, Gerätegehäuse",
     notes_pl: "Wymaga wyżej temperaturę łoża. Po wydrukowaniu wymaga annealingu (wygrzewania) dla maksymalnej odporności.",
     notes_en: "Requires higher bed temp. Annealing after printing maximizes heat resistance.",
     notes_de: "Höhere Betttemperatur erforderlich. Wärmebehandlung nach dem Druck maximiert Wärmebeständigkeit.",
@@ -99,9 +99,9 @@ const TYPES = [
     uses_pl: "Dekoracje imitujące drewno, meble miniaturowe, figurki, gadżety",
     uses_en: "Wood-look decorations, miniature furniture, figurines, gadgets",
     uses_de: "Holzoptik-Dekorationen, Miniaturmöbel, Figuren, Gadgets",
-    notes_pl: "Zawiera włókna drzewne — efekt drewna. Można szlifować, bejcować i malować. Może korkować dysze — otwarta dysza ≥0.4mm.",
-    notes_en: "Contains wood fibers — wood feel. Can be sanded, stained and painted. May clog nozzle — use ≥0.4mm nozzle.",
-    notes_de: "Enthält Holzfasern — Holzoptik. Schleifbar, beizbar und lackierbar. Kann Düse verstopfen — ≥0,4mm Düse verwenden.",
+    notes_pl: "Zawiera włókna drzewne - efekt drewna. Można szlifować, bejcować i malować. Może korkować dysze - otwarta dysza ≥0.4mm.",
+    notes_en: "Contains wood fibers - wood feel. Can be sanded, stained and painted. May clog nozzle - use ≥0.4mm nozzle.",
+    notes_de: "Enthält Holzfasern - Holzoptik. Schleifbar, beizbar und lackierbar. Kann Düse verstopfen - ≥0,4mm Düse verwenden.",
   },
   {
     type_id: "pla-metal", name: "PLA Metal", category: "specialty",
@@ -113,9 +113,9 @@ const TYPES = [
     uses_pl: "Dekoracje imitujące metal (miedź, brąz, żelazo), figurki, biżuteria, ozdoby",
     uses_en: "Metal-look decorations (copper, bronze, iron), figurines, jewelry, ornaments",
     uses_de: "Metalloptik-Dekorationen (Kupfer, Bronze, Eisen), Figuren, Schmuck",
-    notes_pl: "Wypełniony proszkiem metalowym — bardzo ciężki. Wymaga hardened nozzle. Można polerować do połysku metalicznego.",
-    notes_en: "Filled with metal powder — very heavy. Requires hardened nozzle. Can be polished to metallic shine.",
-    notes_de: "Mit Metallpulver gefüllt — sehr schwer. Gehärtete Düse erforderlich. Kann zu Metallglanz poliert werden.",
+    notes_pl: "Wypełniony proszkiem metalowym - bardzo ciężki. Wymaga hardened nozzle. Można polerować do połysku metalicznego.",
+    notes_en: "Filled with metal powder - very heavy. Requires hardened nozzle. Can be polished to metallic shine.",
+    notes_de: "Mit Metallpulver gefüllt - sehr schwer. Gehärtete Düse erforderlich. Kann zu Metallglanz poliert werden.",
   },
   {
     type_id: "pla-marble", name: "PLA Marble", category: "specialty",
@@ -143,8 +143,8 @@ const TYPES = [
     uses_pl: "Uszczelki, etui na telefon, podeszwy, amortyzatory, koła robotów",
     uses_en: "Gaskets, phone cases, soles, shock absorbers, robot wheels",
     uses_de: "Dichtungen, Handyhüllen, Sohlen, Stoßdämpfer, Roboterräder",
-    notes_pl: "Bardzo wolna prędkość druku. Minimalna retrakcja. Direct drive zalecany — Bowden problematyczny.",
-    notes_en: "Very slow print speed. Minimal retraction. Direct drive recommended — Bowden problematic.",
+    notes_pl: "Bardzo wolna prędkość druku. Minimalna retrakcja. Direct drive zalecany - Bowden problematyczny.",
+    notes_en: "Very slow print speed. Minimal retraction. Direct drive recommended - Bowden problematic.",
     notes_de: "Sehr langsame Druckgeschwindigkeit. Minimale Retraktion. Direktantrieb empfohlen.",
   },
   {
@@ -157,9 +157,9 @@ const TYPES = [
     uses_pl: "Miękkie uszczelki, wkładki do butów, elementy antypoślizgowe",
     uses_en: "Soft gaskets, shoe insoles, anti-slip elements",
     uses_de: "Weiche Dichtungen, Schuheinlagen, rutschfeste Elemente",
-    notes_pl: "Bardzo miękki — wymaga wyłącznie direct drive. Bardzo niska prędkość. Bez retrakcji.",
-    notes_en: "Very soft — requires direct drive extruder only. Very low speed. No retraction.",
-    notes_de: "Sehr weich — nur Direktantrieb. Sehr niedrige Geschwindigkeit. Keine Retraktion.",
+    notes_pl: "Bardzo miękki - wymaga wyłącznie direct drive. Bardzo niska prędkość. Bez retrakcji.",
+    notes_en: "Very soft - requires direct drive extruder only. Very low speed. No retraction.",
+    notes_de: "Sehr weich - nur Direktantrieb. Sehr niedrige Geschwindigkeit. Keine Retraktion.",
   },
   {
     type_id: "tpu-45d", name: "TPU 45D", category: "flexible",
@@ -190,7 +190,7 @@ const TYPES = [
     notes_de: "Thermoplastisches Elastomer. Ähnlich wie TPU aber etwas härter. Direktantrieb empfohlen.",
   },
 
-  // ── ENGINEERING — PETG FAMILY ────────────────────────────
+  // ── ENGINEERING - PETG FAMILY ────────────────────────────
   {
     type_id: "petg", name: "PETG", category: "engineering",
     nozzle_min: 230, nozzle_max: 250, bed_min: 70, bed_max: 90, temp_resistance: 80,
@@ -201,9 +201,9 @@ const TYPES = [
     uses_pl: "Części mechaniczne, pojemniki, elementy zewnętrzne, opakowania",
     uses_en: "Mechanical parts, containers, outdoor parts, packaging",
     uses_de: "Mechanische Teile, Behälter, Außenteile, Verpackungen",
-    notes_pl: "Świetna alternatywa dla ABS — brak warpage. Bardzo dobra adhezja warstw. Lekki stringing.",
-    notes_en: "Great ABS alternative — no warping. Excellent layer adhesion. Slight stringing.",
-    notes_de: "Gute ABS-Alternative — kein Warping. Ausgezeichnete Schichthaftung. Leichtes Stringing.",
+    notes_pl: "Świetna alternatywa dla ABS - brak warpage. Bardzo dobra adhezja warstw. Lekki stringing.",
+    notes_en: "Great ABS alternative - no warping. Excellent layer adhesion. Slight stringing.",
+    notes_de: "Gute ABS-Alternative - kein Warping. Ausgezeichnete Schichthaftung. Leichtes Stringing.",
   },
   {
     type_id: "petg-cf", name: "PETG-CF", category: "engineering",
@@ -234,7 +234,7 @@ const TYPES = [
     notes_de: "Glasfaser statt Kohlenstoff. Gehärtete Düse erforderlich. Günstiger als PETG-CF.",
   },
 
-  // ── ENGINEERING — ASA/ABS ────────────────────────────────
+  // ── ENGINEERING - ASA/ABS ────────────────────────────────
   {
     type_id: "asa", name: "ASA", category: "engineering",
     nozzle_min: 240, nozzle_max: 260, bed_min: 90, bed_max: 110, temp_resistance: 100,
@@ -245,8 +245,8 @@ const TYPES = [
     uses_pl: "Elementy zewnętrzne, części samochodowe, osłony, znaki",
     uses_en: "Outdoor parts, car components, covers, signs",
     uses_de: "Außenteile, Fahrzeugteile, Abdeckungen, Schilder",
-    notes_pl: "Konieczna zamknięta obudowa. Odporny na UV i warunki atmosferyczne. Opary — wentylacja wymagana.",
-    notes_en: "Enclosed chamber required. UV and weather resistant. Fumes — ventilation mandatory.",
+    notes_pl: "Konieczna zamknięta obudowa. Odporny na UV i warunki atmosferyczne. Opary - wentylacja wymagana.",
+    notes_en: "Enclosed chamber required. UV and weather resistant. Fumes - ventilation mandatory.",
     notes_de: "Geschlossenes Gehäuse erforderlich. UV- und wetterbeständig. Belüftung obligatorisch.",
   },
   {
@@ -273,9 +273,9 @@ const TYPES = [
     uses_pl: "Części techniczne, obudowy elektroniki, elementy do wygładzania acetonem",
     uses_en: "Technical parts, electronics housings, acetone-smoothable parts",
     uses_de: "Technische Teile, Elektronikgehäuse, Acetonglättung",
-    notes_pl: "Silny warpage bez obudowy. Opary szkodliwe — wentylacja wymagana. Wygładzanie acetonem po druku.",
+    notes_pl: "Silny warpage bez obudowy. Opary szkodliwe - wentylacja wymagana. Wygładzanie acetonem po druku.",
     notes_en: "Heavy warping without enclosure. Harmful fumes. Acetone smoothing possible after printing.",
-    notes_de: "Starkes Warping ohne Gehäuse. Schädliche Dämpfe — Belüftung erforderlich. Acetonglättung möglich.",
+    notes_de: "Starkes Warping ohne Gehäuse. Schädliche Dämpfe - Belüftung erforderlich. Acetonglättung möglich.",
   },
   {
     type_id: "abs-cf", name: "ABS-CF", category: "engineering",
@@ -292,7 +292,7 @@ const TYPES = [
     notes_de: "ABS mit Kohlenstofffasern. Gehärtete Düse obligatorisch. Schwerer als ABS. Kein Aceton.",
   },
 
-  // ── ENGINEERING — CPE ────────────────────────────────────
+  // ── ENGINEERING - CPE ────────────────────────────────────
   {
     type_id: "cpe", name: "CPE", category: "engineering",
     nozzle_min: 230, nozzle_max: 255, bed_min: 75, bed_max: 95, temp_resistance: 90,
@@ -308,7 +308,7 @@ const TYPES = [
     notes_de: "Co-Polyester. Bessere Chemikalienbeständigkeit als PETG. Kann transparent sein.",
   },
 
-  // ── ENGINEERING — POLYCARBONATE ──────────────────────────
+  // ── ENGINEERING - POLYCARBONATE ──────────────────────────
   {
     type_id: "pc", name: "PC", category: "engineering",
     nozzle_min: 270, nozzle_max: 300, bed_min: 100, bed_max: 120, temp_resistance: 130,
@@ -352,7 +352,7 @@ const TYPES = [
     notes_de: "Polycarbonat mit Kohlenstofffasern. Gehärtete Düse obligatorisch. Extrem schwer zu drucken.",
   },
 
-  // ── ENGINEERING — PET ────────────────────────────────────
+  // ── ENGINEERING - PET ────────────────────────────────────
   {
     type_id: "pet-cf", name: "PET-CF", category: "engineering",
     nozzle_min: 250, nozzle_max: 270, bed_min: 70, bed_max: 85, temp_resistance: 110,
@@ -368,7 +368,7 @@ const TYPES = [
     notes_de: "Bessere Chemikalienbeständigkeit als PETG-CF. Gehärtete Düse erforderlich.",
   },
 
-  // ── ENGINEERING — NYLON/PA ───────────────────────────────
+  // ── ENGINEERING - NYLON/PA ───────────────────────────────
   {
     type_id: "pa6", name: "PA6 (Nylon 6)", category: "engineering",
     nozzle_min: 240, nozzle_max: 270, bed_min: 70, bed_max: 90, temp_resistance: 120,
@@ -379,9 +379,9 @@ const TYPES = [
     uses_pl: "Koła zębate, łożyska ślizgowe, wsporniki, elementy mechaniczne",
     uses_en: "Gears, slide bearings, brackets, mechanical parts",
     uses_de: "Zahnräder, Gleitlager, Halterungen, mechanische Teile",
-    notes_pl: "Bardzo higroskopijny — suszyć 70°C/6h. Łoże z klejem PVA lub PEI. Wymagana obudowa.",
-    notes_en: "Very hygroscopic — dry at 70°C/6h. Bed needs PVA glue or PEI. Enclosure required.",
-    notes_de: "Sehr hygroskopisch — 70°C/6h trocknen. Bett mit PVA-Kleber oder PEI. Gehäuse erforderlich.",
+    notes_pl: "Bardzo higroskopijny - suszyć 70°C/6h. Łoże z klejem PVA lub PEI. Wymagana obudowa.",
+    notes_en: "Very hygroscopic - dry at 70°C/6h. Bed needs PVA glue or PEI. Enclosure required.",
+    notes_de: "Sehr hygroskopisch - 70°C/6h trocknen. Bett mit PVA-Kleber oder PEI. Gehäuse erforderlich.",
   },
   {
     type_id: "pa6-cf", name: "PA6-CF", category: "engineering",
@@ -435,12 +435,12 @@ const TYPES = [
     uses_pl: "Componenty przemysłowe wysokotemperaturowe, motoryzacja",
     uses_en: "High-temp industrial components, automotive",
     uses_de: "Hochtemperatur-Industriekomponenten, Automobilindustrie",
-    notes_pl: "Nylon 66 z CF — wyższa temp. pracy niż PA6-CF. Hardened nozzle. Bardzo trudny.",
-    notes_en: "Nylon 66 with CF — higher service temp than PA6-CF. Hardened nozzle. Very difficult.",
-    notes_de: "Nylon 66 mit CF — höhere Einsatztemperatur als PA6-CF. Gehärtete Düse. Sehr schwierig.",
+    notes_pl: "Nylon 66 z CF - wyższa temp. pracy niż PA6-CF. Hardened nozzle. Bardzo trudny.",
+    notes_en: "Nylon 66 with CF - higher service temp than PA6-CF. Hardened nozzle. Very difficult.",
+    notes_de: "Nylon 66 mit CF - höhere Einsatztemperatur als PA6-CF. Gehärtete Düse. Sehr schwierig.",
   },
 
-  // ── ENGINEERING — HIGH TEMP ──────────────────────────────
+  // ── ENGINEERING - HIGH TEMP ──────────────────────────────
   {
     type_id: "ppa-cf", name: "PPA-CF", category: "engineering",
     nozzle_min: 280, nozzle_max: 310, bed_min: 100, bed_max: 120, temp_resistance: 200,
@@ -465,9 +465,9 @@ const TYPES = [
     uses_pl: "Pojemniki chemoodporne, elementy kontaktu z żywnością, zawiasy",
     uses_en: "Chemical-resistant containers, food-contact parts, living hinges",
     uses_de: "Chemikalienbeständige Behälter, Lebensmittelkontaktteile, Filmscharniere",
-    notes_pl: "Bardzo trudna adhezja — wymaga specjalnego łoża (PP sheet, klej PP). Silny warpage.",
-    notes_en: "Very difficult adhesion — requires special bed (PP sheet, PP glue). Heavy warping.",
-    notes_de: "Sehr schwierige Haftung — spezielles Bett erforderlich (PP-Folie, PP-Kleber). Starkes Warping.",
+    notes_pl: "Bardzo trudna adhezja - wymaga specjalnego łoża (PP sheet, klej PP). Silny warpage.",
+    notes_en: "Very difficult adhesion - requires special bed (PP sheet, PP glue). Heavy warping.",
+    notes_de: "Sehr schwierige Haftung - spezielles Bett erforderlich (PP-Folie, PP-Kleber). Starkes Warping.",
   },
   {
     type_id: "pp-cf", name: "PP-CF", category: "engineering",
@@ -537,9 +537,9 @@ const TYPES = [
     uses_pl: "Materiał podporowy do rozpuszczania w wodzie (dual extrusion)",
     uses_en: "Water-soluble support material (dual extrusion)",
     uses_de: "Wasserlösliches Stützmaterial (Doppelextrusion)",
-    notes_pl: "Wyłącznie jako support. Bardzo higroskopijny — przechowywać szczelnie. Kompatybilny z PLA.",
-    notes_en: "Support material only. Very hygroscopic — store airtight. Compatible with PLA.",
-    notes_de: "Nur Stützmaterial. Sehr hygroskopisch — luftdicht lagern. Kompatibel mit PLA.",
+    notes_pl: "Wyłącznie jako support. Bardzo higroskopijny - przechowywać szczelnie. Kompatybilny z PLA.",
+    notes_en: "Support material only. Very hygroscopic - store airtight. Compatible with PLA.",
+    notes_de: "Nur Stützmaterial. Sehr hygroskopisch - luftdicht lagern. Kompatibel mit PLA.",
   },
   {
     type_id: "hips", name: "HIPS (support)", category: "specialty",
@@ -551,8 +551,8 @@ const TYPES = [
     uses_pl: "Materiał podporowy do ABS (rozpuszczalny w limonenie D)",
     uses_en: "Support material for ABS (dissolves in D-limonene)",
     uses_de: "Stützmaterial für ABS (löst sich in D-Limonen)",
-    notes_pl: "Kompatybilny z ABS (podobna temperatura). Rozpuszcza się w D-limonenie, nie wodzie. Opary — wentylacja.",
-    notes_en: "Compatible with ABS (similar temp). Dissolves in D-limonene, not water. Fumes — ventilation.",
+    notes_pl: "Kompatybilny z ABS (podobna temperatura). Rozpuszcza się w D-limonenie, nie wodzie. Opary - wentylacja.",
+    notes_en: "Compatible with ABS (similar temp). Dissolves in D-limonene, not water. Fumes - ventilation.",
     notes_de: "Kompatibel mit ABS (ähnliche Temp.). Löst sich in D-Limonen, nicht Wasser. Belüftung erforderlich.",
   },
   {
@@ -595,14 +595,14 @@ const BRANDS = [
   { type_id: "pla-silk", brand: "SunLu", product_name: "Silk PLA", nozzle_min: 210, nozzle_max: 230, bed_min: 25, bed_max: 60, is_verified: true, notes_en: "Very affordable silk PLA. Wide color range including dual-color silk options." },
 
   // ── PLA-CF ────────────────────────────────────────────────
-  { type_id: "pla-cf", brand: "Bambu Lab", product_name: "PLA-CF", nozzle_min: 220, nozzle_max: 240, bed_min: 35, bed_max: 45, is_verified: true, notes_en: "Very popular CF option. Matte black only. Requires hardened nozzle — included with X1C." },
+  { type_id: "pla-cf", brand: "Bambu Lab", product_name: "PLA-CF", nozzle_min: 220, nozzle_max: 240, bed_min: 35, bed_max: 45, is_verified: true, notes_en: "Very popular CF option. Matte black only. Requires hardened nozzle - included with X1C." },
   { type_id: "pla-cf", brand: "eSUN", product_name: "ePLA-CF", nozzle_min: 210, nozzle_max: 230, bed_min: 50, bed_max: 60, is_verified: true, notes_en: "Budget CF-PLA option. Good stiffness improvement over base PLA." },
   { type_id: "pla-cf", brand: "Polymaker", product_name: "PolyMax PLA-CF", nozzle_min: 205, nozzle_max: 225, bed_min: 25, bed_max: 60, is_verified: true, notes_en: "Combines PolyMax toughness with carbon fiber stiffness. Good surface finish for a CF material." },
   { type_id: "pla-cf", brand: "Overture", product_name: "PLA Carbon Fiber", nozzle_min: 210, nozzle_max: 230, bed_min: 45, bed_max: 65, is_verified: true, notes_en: "Affordable PLA-CF with good stiffness. Hardened nozzle required. Matte finish." },
 
   // ── PLA HT ────────────────────────────────────────────────
   { type_id: "pla-ht", brand: "Polymaker", product_name: "PolyMax PLA HT", nozzle_min: 210, nozzle_max: 240, bed_min: 45, bed_max: 80, is_verified: true, notes_en: "Heat-tolerant PLA with HDT around 85°C after annealing. Good for functional parts." },
-  { type_id: "pla-ht", brand: "ColorFabb", product_name: "HT (High Temp co-polyester)", nozzle_min: 220, nozzle_max: 250, bed_min: 55, bed_max: 75, is_verified: true, notes_en: "ColorFabb HT co-polyester — HDT ~100°C. Better than PLA HT for thermal stability." },
+  { type_id: "pla-ht", brand: "ColorFabb", product_name: "HT (High Temp co-polyester)", nozzle_min: 220, nozzle_max: 250, bed_min: 55, bed_max: 75, is_verified: true, notes_en: "ColorFabb HT co-polyester - HDT ~100°C. Better than PLA HT for thermal stability." },
   { type_id: "pla-ht", brand: "Extrudr", product_name: "PLA NX2", nozzle_min: 210, nozzle_max: 240, bed_min: 50, bed_max: 80, is_verified: true, notes_en: "Austrian brand. PLA NX2 HDT ~130°C after annealing. Good quality and consistency." },
 
   // ── PLA Wood ──────────────────────────────────────────────
@@ -629,7 +629,7 @@ const BRANDS = [
   // ── TPU 85A ───────────────────────────────────────────────
   { type_id: "tpu-85a", brand: "Ninjatek", product_name: "Chinchilla TPU 75A", nozzle_min: 225, nozzle_max: 240, bed_min: 30, bed_max: 50, is_verified: true, notes_en: "Ultra-soft NinjaFlex-family material. Shore 75A. Direct drive only. Extremely flexible." },
   { type_id: "tpu-85a", brand: "eSUN", product_name: "eTPU-85A", nozzle_min: 210, nozzle_max: 235, bed_min: 30, bed_max: 50, is_verified: true, notes_en: "Soft 85A TPU. Needs direct drive extruder. Very low print speed required." },
-  { type_id: "tpu-85a", brand: "Polymaker", product_name: "PolyFlex TPU90", nozzle_min: 215, nozzle_max: 235, bed_min: 25, bed_max: 45, is_verified: true, notes_en: "90A variant — softer than TPU95. Good for very flexible parts. Direct drive recommended." },
+  { type_id: "tpu-85a", brand: "Polymaker", product_name: "PolyFlex TPU90", nozzle_min: 215, nozzle_max: 235, bed_min: 25, bed_max: 45, is_verified: true, notes_en: "90A variant - softer than TPU95. Good for very flexible parts. Direct drive recommended." },
 
   // ── TPU 45D ───────────────────────────────────────────────
   { type_id: "tpu-45d", brand: "Ninjatek", product_name: "Eel TPU 60D", nozzle_min: 220, nozzle_max: 240, bed_min: 30, bed_max: 50, is_verified: true, notes_en: "Very soft shore 60D elastomer. Excellent for waterproof gaskets and soft grips. Direct drive essential." },
@@ -642,7 +642,7 @@ const BRANDS = [
   { type_id: "tpe", brand: "Sainsmart", product_name: "Flexible TPE", nozzle_min: 220, nozzle_max: 245, bed_min: 40, bed_max: 60, is_verified: true, notes_en: "Affordable TPE option. Rubbery feel. Works on direct drive printers at slow speeds." },
 
   // ── PETG ──────────────────────────────────────────────────
-  { type_id: "petg", brand: "Prusament", product_name: "PETG Jet Black", nozzle_min: 240, nozzle_max: 250, bed_min: 80, bed_max: 90, is_verified: true, notes_en: "Prusament PETG — excellent clarity on transparent variants. 240-250°C nozzle recommended." },
+  { type_id: "petg", brand: "Prusament", product_name: "PETG Jet Black", nozzle_min: 240, nozzle_max: 250, bed_min: 80, bed_max: 90, is_verified: true, notes_en: "Prusament PETG - excellent clarity on transparent variants. 240-250°C nozzle recommended." },
   { type_id: "petg", brand: "eSUN", product_name: "ePETG", nozzle_min: 230, nozzle_max: 250, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Good all-round PETG. Budget-friendly." },
   { type_id: "petg", brand: "Bambu Lab", product_name: "PETG HF", nozzle_min: 240, nozzle_max: 260, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "High-flow PETG. Optimized for speed on Bambu printers." },
   { type_id: "petg", brand: "Polymaker", product_name: "PolyLite PETG", nozzle_min: 230, nozzle_max: 250, bed_min: 70, bed_max: 85, is_verified: true, notes_en: "Reliable PETG. Low stringing." },
@@ -672,7 +672,7 @@ const BRANDS = [
   { type_id: "abs", brand: "Bambu Lab", product_name: "ABS", nozzle_min: 240, nozzle_max: 260, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "Well-tuned ABS for Bambu printers. Lower warping tendency than generic ABS. Enclosure required." },
   { type_id: "abs", brand: "eSUN", product_name: "ABS+", nozzle_min: 230, nozzle_max: 250, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "ABS+ with reduced warping. One of the most popular ABS options. Wide color range." },
   { type_id: "abs", brand: "Hatchbox", product_name: "ABS", nozzle_min: 230, nozzle_max: 250, bed_min: 100, bed_max: 115, is_verified: true, notes_en: "Consistent quality ABS. Good dimensional accuracy. Enclosure and ventilation required." },
-  { type_id: "abs", brand: "Polymaker", product_name: "PolyLite ABS", nozzle_min: 230, nozzle_max: 250, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "Reliable ABS with good layer adhesion. Acetone-smoothable. Fumes — ensure ventilation." },
+  { type_id: "abs", brand: "Polymaker", product_name: "PolyLite ABS", nozzle_min: 230, nozzle_max: 250, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "Reliable ABS with good layer adhesion. Acetone-smoothable. Fumes - ensure ventilation." },
 
   // ── ABS-CF ────────────────────────────────────────────────
   { type_id: "abs-cf", brand: "Bambu Lab", product_name: "ABS-CF", nozzle_min: 240, nozzle_max: 260, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "Carbon fiber reinforced ABS. Significantly stiffer than ABS. Hardened nozzle and enclosure required." },
@@ -698,7 +698,7 @@ const BRANDS = [
   // ── PC-CF ─────────────────────────────────────────────────
   { type_id: "pc-cf", brand: "Polymaker", product_name: "PolyMax PC-CF", nozzle_min: 280, nozzle_max: 310, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "Carbon fiber reinforced PC. Extremely stiff and heat resistant. Hardened nozzle and high-temp printer required." },
   { type_id: "pc-cf", brand: "3DXTech", product_name: "CarbonX PC-CF", nozzle_min: 285, nozzle_max: 315, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "High-performance PC-CF from specialized engineering filament brand. Aerospace-grade rigidity." },
-  { type_id: "pc-cf", brand: "BASF Ultrafuse", product_name: "PC CF", nozzle_min: 280, nozzle_max: 310, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "Industrial grade PC-CF from BASF. Very demanding to print — 300°C+ hotend and heated enclosure required." },
+  { type_id: "pc-cf", brand: "BASF Ultrafuse", product_name: "PC CF", nozzle_min: 280, nozzle_max: 310, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "Industrial grade PC-CF from BASF. Very demanding to print - 300°C+ hotend and heated enclosure required." },
 
   // ── PET-CF ────────────────────────────────────────────────
   { type_id: "pet-cf", brand: "Bambu Lab", product_name: "PET-CF", nozzle_min: 255, nozzle_max: 270, bed_min: 70, bed_max: 85, is_verified: true, notes_en: "Bambu's carbon fiber PET. Excellent chemical resistance and stiffness. Hardened nozzle required." },
@@ -716,12 +716,12 @@ const BRANDS = [
   { type_id: "pa6-cf", brand: "Polymaker", product_name: "PolyMide PA6-CF", nozzle_min: 260, nozzle_max: 275, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Very stiff and lightweight. Excellent layer adhesion for a CF material." },
   { type_id: "pa6-cf", brand: "BASF Ultrafuse", product_name: "PAHT CF15", nozzle_min: 265, nozzle_max: 285, bed_min: 80, bed_max: 100, is_verified: true, notes_en: "BASF industrial PA-HT with 15% carbon fiber. Excellent high-temperature PA performance." },
   { type_id: "pa6-cf", brand: "3DXTech", product_name: "CarbonX PA6-CF", nozzle_min: 260, nozzle_max: 280, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Specialized engineering-grade PA6-CF. High fiber loading. Very stiff with low creep at elevated temps." },
-  { type_id: "pa6-cf", brand: "Markforged", product_name: "Onyx", nozzle_min: 265, nozzle_max: 280, bed_min: 45, bed_max: 60, is_verified: true, notes_en: "Markforged's micro carbon fiber PA6 — industry standard for PA-CF performance. Matte black only." },
+  { type_id: "pa6-cf", brand: "Markforged", product_name: "Onyx", nozzle_min: 265, nozzle_max: 280, bed_min: 45, bed_max: 60, is_verified: true, notes_en: "Markforged's micro carbon fiber PA6 - industry standard for PA-CF performance. Matte black only." },
 
   // ── PA12 ──────────────────────────────────────────────────
   { type_id: "pa12", brand: "Polymaker", product_name: "PolyMide PA12", nozzle_min: 240, nozzle_max: 265, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Lower moisture absorption than PA6. Better surface finish. Good for flexible-tough parts and tubing." },
   { type_id: "pa12", brand: "Fiberlogy", product_name: "Nylon PA12", nozzle_min: 240, nozzle_max: 265, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Polish brand PA12. Consistent quality. Dry thoroughly before use. Good chemical resistance." },
-  { type_id: "pa12", brand: "Taulman3D", product_name: "645 Nylon", nozzle_min: 245, nozzle_max: 265, bed_min: 45, bed_max: 60, is_verified: true, notes_en: "Taulman 645 — semi-rigid nylon with lower warping. Good for bearings, gears and flexible joints." },
+  { type_id: "pa12", brand: "Taulman3D", product_name: "645 Nylon", nozzle_min: 245, nozzle_max: 265, bed_min: 45, bed_max: 60, is_verified: true, notes_en: "Taulman 645 - semi-rigid nylon with lower warping. Good for bearings, gears and flexible joints." },
 
   // ── PA12-CF ───────────────────────────────────────────────
   { type_id: "pa12-cf", brand: "Polymaker", product_name: "PolyMide PA12-CF", nozzle_min: 255, nozzle_max: 275, bed_min: 70, bed_max: 90, is_verified: true, notes_en: "Carbon fiber PA12 with low moisture uptake. Better surface finish than PA6-CF. Stiff and lightweight." },
@@ -736,7 +736,7 @@ const BRANDS = [
   // ── PPA-CF ────────────────────────────────────────────────
   { type_id: "ppa-cf", brand: "BASF Ultrafuse", product_name: "PPA CF", nozzle_min: 285, nozzle_max: 315, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "BASF Polyphthalamide with CF reinforcement. Up to 200°C continuous service. Industrial use only." },
   { type_id: "ppa-cf", brand: "3DXTech", product_name: "CarbonX PPA-CF", nozzle_min: 280, nozzle_max: 315, bed_min: 100, bed_max: 120, is_verified: true, notes_en: "Specialty PPA-CF from 3DXTech. Aerospace-grade heat resistance. Requires 350°C hotend and heated chamber." },
-  { type_id: "ppa-cf", brand: "Solvay", product_name: "Amodel PPA", nozzle_min: 280, nozzle_max: 310, bed_min: 100, bed_max: 130, is_verified: true, notes_en: "Solvay/Syensqo PPA compounds used in high-temp FFF — best-in-class thermal performance for PPA." },
+  { type_id: "ppa-cf", brand: "Solvay", product_name: "Amodel PPA", nozzle_min: 280, nozzle_max: 310, bed_min: 100, bed_max: 130, is_verified: true, notes_en: "Solvay/Syensqo PPA compounds used in high-temp FFF - best-in-class thermal performance for PPA." },
 
   // ── PP ────────────────────────────────────────────────────
   { type_id: "pp", brand: "BASF Ultrafuse", product_name: "PP GF30", nozzle_min: 225, nozzle_max: 250, bed_min: 85, bed_max: 100, is_verified: true, notes_en: "Glass-fiber reinforced PP from BASF. Reduced warping vs pure PP. Chemical-resistant structural parts." },
@@ -750,8 +750,8 @@ const BRANDS = [
 
   // ── PPS ───────────────────────────────────────────────────
   { type_id: "pps", brand: "3DXTech", product_name: "PPS-CF", nozzle_min: 300, nozzle_max: 340, bed_min: 120, bed_max: 150, is_verified: true, notes_en: "PPS with carbon fiber from 3DXTech. Flame retardant UL94-V0. Up to 220°C service. Specialist printer required." },
-  { type_id: "pps", brand: "BASF Ultrafuse", product_name: "PPS", nozzle_min: 305, nozzle_max: 340, bed_min: 120, bed_max: 150, is_verified: true, notes_en: "BASF Ultrafuse PPS — one of few consumer-accessible PPS options. Extreme heat and chemical resistance." },
-  { type_id: "pps", brand: "Solvay", product_name: "Ryton PPS", nozzle_min: 310, nozzle_max: 345, bed_min: 130, bed_max: 150, is_verified: true, notes_en: "Solvay Ryton PPS — industry reference for PPS. Requires 400°C+ printer. Unmatched chemical and heat resistance." },
+  { type_id: "pps", brand: "BASF Ultrafuse", product_name: "PPS", nozzle_min: 305, nozzle_max: 340, bed_min: 120, bed_max: 150, is_verified: true, notes_en: "BASF Ultrafuse PPS - one of few consumer-accessible PPS options. Extreme heat and chemical resistance." },
+  { type_id: "pps", brand: "Solvay", product_name: "Ryton PPS", nozzle_min: 310, nozzle_max: 345, bed_min: 130, bed_max: 150, is_verified: true, notes_en: "Solvay Ryton PPS - industry reference for PPS. Requires 400°C+ printer. Unmatched chemical and heat resistance." },
 
   // ── PEEK ──────────────────────────────────────────────────
   { type_id: "peek", brand: "3DXTech", product_name: "PEEK", nozzle_min: 360, nozzle_max: 400, bed_min: 120, bed_max: 160, is_verified: true, notes_en: "Pure PEEK filament. Medical and aerospace grade available. Requires dedicated PEEK-capable printer at 380-400°C." },
@@ -759,8 +759,8 @@ const BRANDS = [
   { type_id: "peek", brand: "BASF Ultrafuse", product_name: "PEEK Ultrafuse", nozzle_min: 365, nozzle_max: 400, bed_min: 120, bed_max: 160, is_verified: true, notes_en: "BASF industrial PEEK. Excellent batch-to-batch consistency. UL94-V0 and biocompatible certifications." },
 
   // ── PEI / Ultem ───────────────────────────────────────────
-  { type_id: "pei-ultem", brand: "3DXTech", product_name: "PEI 9085", nozzle_min: 360, nozzle_max: 400, bed_min: 140, bed_max: 160, is_verified: true, notes_en: "Ultem 9085 PEI — FAA-certified flame retardant. Aerospace standard. Requires specialist 400°C printer." },
-  { type_id: "pei-ultem", brand: "BASF Ultrafuse", product_name: "PEI 1010", nozzle_min: 355, nozzle_max: 395, bed_min: 140, bed_max: 160, is_verified: true, notes_en: "Ultem 1010 PEI from BASF. Highest heat resistance PEI variant — HDT 217°C. Medical and aerospace grade." },
+  { type_id: "pei-ultem", brand: "3DXTech", product_name: "PEI 9085", nozzle_min: 360, nozzle_max: 400, bed_min: 140, bed_max: 160, is_verified: true, notes_en: "Ultem 9085 PEI - FAA-certified flame retardant. Aerospace standard. Requires specialist 400°C printer." },
+  { type_id: "pei-ultem", brand: "BASF Ultrafuse", product_name: "PEI 1010", nozzle_min: 355, nozzle_max: 395, bed_min: 140, bed_max: 160, is_verified: true, notes_en: "Ultem 1010 PEI from BASF. Highest heat resistance PEI variant - HDT 217°C. Medical and aerospace grade." },
   { type_id: "pei-ultem", brand: "Polymaker", product_name: "PolyUltem", nozzle_min: 360, nozzle_max: 400, bed_min: 140, bed_max: 160, is_verified: true, notes_en: "Consumer-accessible PEI/Ultem from Polymaker. Requires 400°C hotend and heated chamber above 140°C." },
 
   // ── PVA ───────────────────────────────────────────────────
@@ -863,7 +863,7 @@ async function seed() {
         ]
       );
       brandSuccess++;
-      console.log(`  ✓ ${b.brand} — ${b.product_name || b.type_id}`);
+      console.log(`  ✓ ${b.brand} - ${b.product_name || b.type_id}`);
     } catch (err) {
       brandFailed++;
       console.error(`  ✗ ${b.brand}: ${err.message}`);

@@ -24,34 +24,34 @@ export const PATH_NEEDS_EXTENDED = { XS: false, S: false, M: false, L: true, XL:
 export const AREA_NEEDS_EXTENDED = { XS: false, S: false, M: false, L: true, XL: true };
 export const LBL = {
   pl: { mode: "Tryb pracy", engrave: "Grawerowanie", cut: "Cięcie",
-    engraveDesc: "Raster — znakowanie powierzchni", cutDesc: "Wektor — wycinanie kształtów",
+    engraveDesc: "Raster - znakowanie powierzchni", cutDesc: "Wektor - wycinanie kształtów",
     material: "Materiał", matThick: "Materiał i grubość", area: "Powierzchnia grawerowania",
     detail: "Poziom detali", pathLen: "Długość ścieżki cięcia", complexity: "Złożoność",
     qty: "Nakład", workArea: "Obszar roboczy",
     stdArea: "Standardowy (600×288 mm)", extArea: "Rozszerzony (riser/passthrough)",
-    stdAreaDesc: "Standardowe pole robocze xTool P2", extAreaDesc: "Wymaga podłączenia dodatkowego sprzętu — dłuższy setup i wyższy koszt",
+    stdAreaDesc: "Standardowe pole robocze xTool P2", extAreaDesc: "Wymaga podłączenia dodatkowego sprzętu - dłuższy setup i wyższy koszt",
     engraveTime: "Czas grawerowania", timeSetup: "Czas + setup / szt.", prepMat: "Przygotowanie mat.",
     energy: "Energia / szt.", depreciation: "Amortyzacja / szt.", workshop: "Usługi warsztatowe",
     estCost: "Koszt szacunkowy / szt.", discount: "Rabat seryjny", totalProd: "Czas produkcji łącznie",
     cutTime: "Czas cięcia", materialCost: "Materiał / szt.", extSurcharge: "Narzut rozszerzony obszar" },
   en: { mode: "Work mode", engrave: "Engraving", cut: "Cutting",
-    engraveDesc: "Raster — surface marking", cutDesc: "Vector — shape cutting",
+    engraveDesc: "Raster - surface marking", cutDesc: "Vector - shape cutting",
     material: "Material", matThick: "Material & thickness", area: "Engraving area",
     detail: "Detail level", pathLen: "Cut path length", complexity: "Complexity",
     qty: "Quantity", workArea: "Work area",
     stdArea: "Standard (600×288 mm)", extArea: "Extended (riser/passthrough)",
-    stdAreaDesc: "Standard xTool P2 work area", extAreaDesc: "Requires additional equipment — longer setup and higher cost",
+    stdAreaDesc: "Standard xTool P2 work area", extAreaDesc: "Requires additional equipment - longer setup and higher cost",
     engraveTime: "Engraving time", timeSetup: "Time + setup / pc", prepMat: "Material prep",
     energy: "Energy / pc", depreciation: "Depreciation / pc", workshop: "Workshop services",
     estCost: "Estimated cost / pc", discount: "Series discount", totalProd: "Total production time",
     cutTime: "Cut time", materialCost: "Material / pc", extSurcharge: "Extended area surcharge" },
   de: { mode: "Arbeitsmodus", engrave: "Gravur", cut: "Schnitt",
-    engraveDesc: "Raster — Oberflächenmarkierung", cutDesc: "Vektor — Formenschnitt",
+    engraveDesc: "Raster - Oberflächenmarkierung", cutDesc: "Vektor - Formenschnitt",
     material: "Material", matThick: "Material & Stärke", area: "Gravurfläche",
     detail: "Detailgrad", pathLen: "Schnittpfadlänge", complexity: "Komplexität",
     qty: "Auflage", workArea: "Arbeitsbereich",
     stdArea: "Standard (600×288 mm)", extArea: "Erweitert (Riser/Passthrough)",
-    stdAreaDesc: "Standard xTool P2 Arbeitsbereich", extAreaDesc: "Erfordert Zusatzausrüstung — längeres Setup und höhere Kosten",
+    stdAreaDesc: "Standard xTool P2 Arbeitsbereich", extAreaDesc: "Erfordert Zusatzausrüstung - längeres Setup und höhere Kosten",
     engraveTime: "Gravurzeit", timeSetup: "Zeit + Setup / Stk.", prepMat: "Materialvorbereitung",
     energy: "Energie / Stk.", depreciation: "Abschreibung / Stk.", workshop: "Werkstattleistungen",
     estCost: "Geschätzte Kosten / Stk.", discount: "Serienrabatt", totalProd: "Gesamte Produktionszeit",
@@ -71,11 +71,11 @@ export const ENGRAVE_MATERIALS = [
 ];
 
 export const ENGRAVE_AREAS = [
-  { id: "XS", label: { pl: "XS — do 25 cm²", en: "XS — up to 25 cm²", de: "XS — bis 25 cm²" }, area: 15 },
-  { id: "S",  label: { pl: "S — 25–100 cm²", en: "S — 25–100 cm²", de: "S — 25–100 cm²" }, area: 60 },
-  { id: "M",  label: { pl: "M — 100–400 cm²", en: "M — 100–400 cm²", de: "M — 100–400 cm²" }, area: 250 },
-  { id: "L",  label: { pl: "L — 400–1000 cm²", en: "L — 400–1000 cm²", de: "L — 400–1000 cm²" }, area: 700 },
-  { id: "XL", label: { pl: "XL — powyżej 1000 cm²", en: "XL — over 1000 cm²", de: "XL — über 1000 cm²" }, area: null, custom: true },
+  { id: "XS", label: { pl: "XS - do 25 cm²", en: "XS - up to 25 cm²", de: "XS - bis 25 cm²" }, area: 15 },
+  { id: "S",  label: { pl: "S - 25–100 cm²", en: "S - 25–100 cm²", de: "S - 25–100 cm²" }, area: 60 },
+  { id: "M",  label: { pl: "M - 100–400 cm²", en: "M - 100–400 cm²", de: "M - 100–400 cm²" }, area: 250 },
+  { id: "L",  label: { pl: "L - 400–1000 cm²", en: "L - 400–1000 cm²", de: "L - 400–1000 cm²" }, area: 700 },
+  { id: "XL", label: { pl: "XL - powyżej 1000 cm²", en: "XL - over 1000 cm²", de: "XL - über 1000 cm²" }, area: null, custom: true },
 ];
 
 export const ENGRAVE_DETAIL = [
@@ -104,11 +104,11 @@ export const CUT_MATERIALS = [
 ];
 
 export const CUT_PATHS = [
-  { id: "XS", label: { pl: "XS — do 50 cm", en: "XS — up to 50 cm", de: "XS — bis 50 cm" }, pathCm: 30, sheetCm2: 50 },
-  { id: "S",  label: { pl: "S — 50–200 cm", en: "S — 50–200 cm", de: "S — 50–200 cm" }, pathCm: 120, sheetCm2: 200 },
-  { id: "M",  label: { pl: "M — 200–500 cm", en: "M — 200–500 cm", de: "M — 200–500 cm" }, pathCm: 350, sheetCm2: 600 },
-  { id: "L",  label: { pl: "L — 500–1500 cm", en: "L — 500–1500 cm", de: "L — 500–1500 cm" }, pathCm: 1000, sheetCm2: 1500 },
-  { id: "XL", label: { pl: "XL — powyżej 1500 cm", en: "XL — over 1500 cm", de: "XL — über 1500 cm" }, pathCm: null, sheetCm2: null, custom: true },
+  { id: "XS", label: { pl: "XS - do 50 cm", en: "XS - up to 50 cm", de: "XS - bis 50 cm" }, pathCm: 30, sheetCm2: 50 },
+  { id: "S",  label: { pl: "S - 50–200 cm", en: "S - 50–200 cm", de: "S - 50–200 cm" }, pathCm: 120, sheetCm2: 200 },
+  { id: "M",  label: { pl: "M - 200–500 cm", en: "M - 200–500 cm", de: "M - 200–500 cm" }, pathCm: 350, sheetCm2: 600 },
+  { id: "L",  label: { pl: "L - 500–1500 cm", en: "L - 500–1500 cm", de: "L - 500–1500 cm" }, pathCm: 1000, sheetCm2: 1500 },
+  { id: "XL", label: { pl: "XL - powyżej 1500 cm", en: "XL - over 1500 cm", de: "XL - über 1500 cm" }, pathCm: null, sheetCm2: null, custom: true },
 ];
 
 export const CUT_COMPLEXITY = [

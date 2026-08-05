@@ -1,4 +1,4 @@
--- AEJaCA Quote Leads — PostgreSQL schema
+-- AEJaCA Quote Leads - PostgreSQL schema
 -- Run once on your Railway Postgres instance
 
 CREATE TABLE IF NOT EXISTS leads (
@@ -23,7 +23,7 @@ CREATE INDEX IF NOT EXISTS idx_leads_email ON leads (email);
 CREATE INDEX IF NOT EXISTS idx_leads_status ON leads (status);
 CREATE INDEX IF NOT EXISTS idx_leads_created ON leads (created_at DESC);
 
--- Newsletter subscribers — 10% discount opt-in
+-- Newsletter subscribers - 10% discount opt-in
 CREATE TABLE IF NOT EXISTS subscribers (
   id            SERIAL PRIMARY KEY,
   email         VARCHAR(255) NOT NULL UNIQUE,

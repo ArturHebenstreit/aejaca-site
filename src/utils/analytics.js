@@ -1,5 +1,5 @@
 // ============================================================
-// AEJaCA ANALYTICS — lightweight event tracking
+// AEJaCA ANALYTICS - lightweight event tracking
 // ============================================================
 // Zdarzenia ida przez sendBeacon na wlasny punkt zbiorczy. Bez ciasteczek,
 // bez danych osobowych i BEZ ZAPISU CZEGOKOLWIEK W URZADZENIU.
@@ -111,7 +111,7 @@ export function trackFunnel(funnel, step) {
 /**
  * Initialize scroll-depth tracking for the current page.
  * Fires once per milestone (25 / 50 / 75 / 90 %) per page navigation.
- * Call on every route change — it replaces the previous listener.
+ * Call on every route change - it replaces the previous listener.
  */
 let _scrollCleanup = null;
 export function initScrollTracking() {
@@ -152,7 +152,7 @@ function flush() {
   queue = [];
 
   if (ENDPOINT) {
-    // Send to CF Worker — use text/plain Blob to avoid CORS preflight
+    // Send to CF Worker - use text/plain Blob to avoid CORS preflight
     // (application/json triggers OPTIONS preflight which complicates credentials)
     const payload = JSON.stringify({ events: batch });
     const blob = new Blob([payload], { type: "text/plain" });

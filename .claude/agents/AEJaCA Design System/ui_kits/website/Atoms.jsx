@@ -1,4 +1,4 @@
-/* AEJaCA — small atoms */
+/* AEJaCA - small atoms */
 
 function Eyebrow({ children, variant = "amber", icon = null, style = {}, className = "" }) {
   const color =

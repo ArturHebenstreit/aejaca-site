@@ -1,5 +1,5 @@
 // ============================================================
-// JEWELRY ESTIMATOR — AEJaCA Jewelry
+// JEWELRY ESTIMATOR - AEJaCA Jewelry
 // ============================================================
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -126,12 +126,12 @@ function ChainSilhouette({ lengthMm, gender = "women" }) {
 const TECH_LABEL = { pl: "Biżuteria AEJaCA", en: "AEJaCA Jewelry", de: "AEJaCA Schmuck" };
 
 const RATE_NOTE = {
-  pl: "Kursy na podstawie danych rynkowych — szczegóły w stopce strony",
-  en: "Prices based on live market data — details in site footer",
-  de: "Preise basierend auf Marktdaten — Details in der Fußzeile",
+  pl: "Kursy na podstawie danych rynkowych - szczegóły w stopce strony",
+  en: "Prices based on live market data - details in site footer",
+  de: "Preise basierend auf Marktdaten - Details in der Fußzeile",
 };
 
-// Consigned-material (materiał powierzony) disclaimer — shown wherever the client
+// Consigned-material (materiał powierzony) disclaimer - shown wherever the client
 // declares they will supply their own precious metal. Worded in the name of the
 // AEJaCA team. Reused by both the chain "from stock" mode and the supply toggle.
 const CONSIGNED_NOTE = {
@@ -192,10 +192,10 @@ export default function JewelryCalc({ lang = "pl" }) {
     Object.values(JEWELRY_TYPES).flat().some((x) => x.id === urlType) ? urlType : "ring"
   );
 
-  // Geometry + client supply — productForm is derived from typeId (no separate selection needed)
+  // Geometry + client supply - productForm is derived from typeId (no separate selection needed)
   const productForm = useMemo(() => TYPE_TO_FORM[typeId] ?? null, [typeId]);
   const [dimensions, setDimensions] = useState({});     // fieldId: value
-  // Reset dimensions whenever the jewelry type changes — populate defaults immediately
+  // Reset dimensions whenever the jewelry type changes - populate defaults immediately
   useEffect(() => {
     if (!productForm) { setDimensions({}); return; }
     const pt = getProductType(productForm);
@@ -225,7 +225,7 @@ export default function JewelryCalc({ lang = "pl" }) {
   const [chainLengthMm, setChainLengthMm] = useState(450);
   const [chainWidthMm, setChainWidthMm] = useState(3.0); // visible chain width (mm), wire diameter auto-derived via AR
   const [weaveModal, setWeaveModal] = useState(null);
-  // Stone rows — up to 10 different stone entries
+  // Stone rows - up to 10 different stone entries
   const [stoneRows, setStoneRows] = useState([
     { rowId: "row0", gemId: "none", stoneSizeId: "small", count: 1, suppliedBy: "studio",
       clarityId: "VS", colorId: "GH", qualityId: "A", certId: "none" }
@@ -391,7 +391,7 @@ export default function JewelryCalc({ lang = "pl" }) {
             </div>
           </CalcCard>
 
-          {/* Calc mode tabs — visible only for chain types */}
+          {/* Calc mode tabs - visible only for chain types */}
           {isChainType(typeId) && (
             <div className="flex gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/8 mb-2">
               {[
@@ -453,7 +453,7 @@ export default function JewelryCalc({ lang = "pl" }) {
             ? ({ pl: "Długość łańcuszka", en: "Chain length", de: "Kettenlänge" }[lang])
             : ({ pl: "Kształt i wymiary", en: "Shape & Dimensions", de: "Form & Abmessungen" }[lang] || "Shape & Dimensions")}>
             {isChainType(typeId) ? (() => {
-              // Gender is already known from the selected product line — no separate toggle needed
+              // Gender is already known from the selected product line - no separate toggle needed
               const necklaceGender = lineId === "men" ? "men" : "women";
               const necklacePresets = necklaceGender === "men" ? NECKLACE_LENGTHS_MEN : NECKLACE_LENGTHS_WOMEN;
               return (
@@ -461,7 +461,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                 {/* Necklace/chain: SVG silhouette + preset lengths (gender derived from lineId) */}
                 {isNecklaceChain(typeId) && (
                   <div className="flex gap-3 items-start">
-                    {/* Silhouette — always dark container, always readable */}
+                    {/* Silhouette - always dark container, always readable */}
                     <div className="w-24 sm:w-28 flex-shrink-0">
                       <ChainSilhouette lengthMm={chainLengthMm} gender={necklaceGender} />
                     </div>
@@ -508,7 +508,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                   </div>
                 )}
 
-                {/* Chain WIDTH input — standard mode only; wire diameter & thickness auto-derived from AR */}
+                {/* Chain WIDTH input - standard mode only; wire diameter & thickness auto-derived from AR */}
                 {calcMode === "standard" && (
                   <div className="mt-3 space-y-3">
                     {/* Section separator */}
@@ -529,15 +529,15 @@ export default function JewelryCalc({ lang = "pl" }) {
                         onChange={e => { const n = parseFloat(e.target.value); if (n > 0) setChainWidthMm(n); }}
                         className="w-28 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50" />
                     </label>
-                    {/* Derived values — 5-cell grid */}
+                    {/* Derived values - 5-cell grid */}
                     {result && result.type === "calculated" && !result.fromStock && (
                       <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 text-[11px]">
                         {[
                           { label: `Ø ${{ pl: "drut", en: "wire", de: "Draht" }[lang]}`, val: `${result.wireDMm?.toFixed(2)} mm` },
                           { label: { pl: "Grubość splotu", en: "Weave thickness", de: "Flechtdicke" }[lang], val: `${result.thicknessMm?.toFixed(1)} mm` },
-                          { label: "AR", val: CHAIN_WEAVES.find(w => w.id === weaveId)?.ar?.toFixed(1) ?? "—" },
-                          { label: "WF", val: `×${CHAIN_WEAVES.find(w => w.id === weaveId)?.weaveFactor ?? "—"}` },
-                          { label: { pl: "Potrzeba kruszcu", en: "Metal needed", de: "Metall benötigt" }[lang], val: result.grossMassG != null ? `${result.grossMassG.toFixed(1)} g` : "—" },
+                          { label: "AR", val: CHAIN_WEAVES.find(w => w.id === weaveId)?.ar?.toFixed(1) ?? " - " },
+                          { label: "WF", val: `×${CHAIN_WEAVES.find(w => w.id === weaveId)?.weaveFactor ?? " - "}` },
+                          { label: { pl: "Potrzeba kruszcu", en: "Metal needed", de: "Metall benötigt" }[lang], val: result.grossMassG != null ? `${result.grossMassG.toFixed(1)} g` : " - " },
                         ].map(d => (
                           <div key={d.label} className="text-center px-2 py-1.5 rounded-lg bg-white/[0.03] border border-white/8">
                             <div className="text-neutral-500 text-[9px]">{d.label}</div>
@@ -562,9 +562,9 @@ export default function JewelryCalc({ lang = "pl" }) {
                     </div>
                     <div className="p-3 rounded-xl border border-white/10 bg-neutral-900 space-y-3">
                       <p className="text-[11px] text-neutral-300">
-                        {{ pl: "Podaj masę posiadanego kruszcu — grubość drutu i wymiary łańcuszka zostaną dobrane automatycznie na podstawie AR splotu.",
-                           en: "Enter your available metal mass — wire diameter and chain dimensions will be auto-calculated from weave AR.",
-                           de: "Geben Sie Ihre Metallmasse ein — Drahtdurchmesser und Kettenmaße werden aus dem AR automatisch berechnet." }[lang]}
+                        {{ pl: "Podaj masę posiadanego kruszcu - grubość drutu i wymiary łańcuszka zostaną dobrane automatycznie na podstawie AR splotu.",
+                           en: "Enter your available metal mass - wire diameter and chain dimensions will be auto-calculated from weave AR.",
+                           de: "Geben Sie Ihre Metallmasse ein - Drahtdurchmesser und Kettenmaße werden aus dem AR automatisch berechnet." }[lang]}
                       </p>
                       <label className="flex items-center gap-3">
                         <span className="text-xs text-neutral-400 whitespace-nowrap">
@@ -579,17 +579,17 @@ export default function JewelryCalc({ lang = "pl" }) {
                             if (!isNaN(n) && n >= 0) setStockMassG(n);
                           }}
                           className="w-28 bg-white/8 border border-amber-400/40 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/80" />
-                        <span className="text-sm text-amber-400 font-bold">{stockMassG || "—"} g</span>
+                        <span className="text-sm text-amber-400 font-bold">{stockMassG || " - "} g</span>
                       </label>
-                      {/* Live derived dimensions — 5-cell grid */}
+                      {/* Live derived dimensions - 5-cell grid */}
                       {result && result.type === "calculated" && result.fromStock && (
                         <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                           {[
                             { label: { pl: "Ø drut", en: "Ø wire", de: "Ø Draht" }[lang], val: `${result.wireDMm?.toFixed(2)} mm` },
                             { label: { pl: "Szerokość", en: "Width", de: "Breite" }[lang], val: `${result.widthMm?.toFixed(1)} mm` },
                             { label: { pl: "Grubość splotu", en: "Weave thk.", de: "Flechtdicke" }[lang], val: `${result.thicknessMm?.toFixed(1)} mm` },
-                            { label: "AR", val: CHAIN_WEAVES.find(w => w.id === weaveId)?.ar?.toFixed(1) ?? "—" },
-                            { label: "WF", val: `×${CHAIN_WEAVES.find(w => w.id === weaveId)?.weaveFactor ?? "—"}` },
+                            { label: "AR", val: CHAIN_WEAVES.find(w => w.id === weaveId)?.ar?.toFixed(1) ?? " - " },
+                            { label: "WF", val: `×${CHAIN_WEAVES.find(w => w.id === weaveId)?.weaveFactor ?? " - "}` },
                           ].map(d => (
                             <div key={d.label} className="text-center p-1.5 rounded-lg bg-neutral-800 border border-white/8">
                               <div className="text-[9px] text-neutral-400">{d.label}</div>
@@ -601,9 +601,9 @@ export default function JewelryCalc({ lang = "pl" }) {
                       {/* Waste summary */}
                       {result && result.type === "calculated" && result.fromStock && result.wasteG > 0 && (
                         <div className="text-[11px] text-neutral-200 border-t border-white/10 pt-2">
-                          {{ pl: `Z ${stockMassG} g kruszcu powstanie ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g gotowego łańcuszka — ${result.wasteG.toFixed(1)} g to nieodwracalne straty technologiczne: ubytek na topieniu (utlenianie miedzi i zgar), odpady przy ciągnieniu drutu oraz szlam i trociny z polerowania.`,
-                             en: `From ${stockMassG} g you'll receive ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g as a finished chain — ${result.wasteG.toFixed(1)} g is irreversible process loss: melt/fire loss (copper oxidation + slag), wire-drawing offcuts, and polishing swarf + filings.`,
-                             de: `Von ${stockMassG} g erhalten Sie ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g als fertige Kette — ${result.wasteG.toFixed(1)} g sind unwiederbringliche Prozessverluste: Schmelzverlust (Kupferoxidation + Schlacke), Drahtzieh-Verschnitt sowie Polierschlamm + Feilspäne.` }[lang]}
+                          {{ pl: `Z ${stockMassG} g kruszcu powstanie ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g gotowego łańcuszka - ${result.wasteG.toFixed(1)} g to nieodwracalne straty technologiczne: ubytek na topieniu (utlenianie miedzi i zgar), odpady przy ciągnieniu drutu oraz szlam i trociny z polerowania.`,
+                             en: `From ${stockMassG} g you'll receive ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g as a finished chain - ${result.wasteG.toFixed(1)} g is irreversible process loss: melt/fire loss (copper oxidation + slag), wire-drawing offcuts, and polishing swarf + filings.`,
+                             de: `Von ${stockMassG} g erhalten Sie ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g als fertige Kette - ${result.wasteG.toFixed(1)} g sind unwiederbringliche Prozessverluste: Schmelzverlust (Kupferoxidation + Schlacke), Drahtzieh-Verschnitt sowie Polierschlamm + Feilspäne.` }[lang]}
                         </div>
                       )}
                       <ConsignedNote lang={lang} />
@@ -620,7 +620,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     const pt = getProductType(productForm);
                     return pt ? (
                       <p className="text-xs text-neutral-400">
-                        {pt.icon} {t(pt.label, lang)} — {t(pt.notes, lang)}
+                        {pt.icon} {t(pt.label, lang)} - {t(pt.notes, lang)}
                       </p>
                     ) : null;
                   })()}
@@ -650,11 +650,11 @@ export default function JewelryCalc({ lang = "pl" }) {
             )}
           </CalcCard>
 
-          {/* Weave selection — chain types only */}
+          {/* Weave selection - chain types only */}
           {isChainType(typeId) && (
             <CalcCard stepNum={step()} label={{ pl: "Splot łańcuszka", en: "Chain weave", de: "Kettenmuster" }[lang]}>
               <p className="text-[10px] text-neutral-500 mb-2">
-                {{ pl: "Kliknij dwukrotnie na zdjęcie — powiększ podgląd splotu", en: "Double-click an image to preview the weave pattern", de: "Doppelklick auf ein Bild zum Vergrößern" }[lang]}
+                {{ pl: "Kliknij dwukrotnie na zdjęcie - powiększ podgląd splotu", en: "Double-click an image to preview the weave pattern", de: "Doppelklick auf ein Bild zum Vergrößern" }[lang]}
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
                 {CHAIN_WEAVES.map(w => {
@@ -695,9 +695,9 @@ export default function JewelryCalc({ lang = "pl" }) {
               </div>
               {clientSuppliesMetal && !CHAIN_WEAVES.find(w=>w.id===weaveId)?.custom && (
                 <div className="mt-3 p-3 rounded-xl border border-amber-400/20 bg-amber-400/5 text-xs text-amber-300">
-                  {{ pl: `Odpad technologiczny splotu ${CHAIN_WEAVES.find(w=>w.id===weaveId)?.label.pl}: ~${CHAIN_WEAVES.find(w=>w.id===weaveId)?.materialWaste}% materiału — uwzględnij zapas przy dostarczaniu kruszcu.`,
-                     en: `Weave waste for ${CHAIN_WEAVES.find(w=>w.id===weaveId)?.label.en}: ~${CHAIN_WEAVES.find(w=>w.id===weaveId)?.materialWaste}% — account for this when supplying metal.`,
-                     de: `Webabfall für ${CHAIN_WEAVES.find(w=>w.id===weaveId)?.label.de}: ~${CHAIN_WEAVES.find(w=>w.id===weaveId)?.materialWaste}% — beim Liefern des Metalls berücksichtigen.`
+                  {{ pl: `Odpad technologiczny splotu ${CHAIN_WEAVES.find(w=>w.id===weaveId)?.label.pl}: ~${CHAIN_WEAVES.find(w=>w.id===weaveId)?.materialWaste}% materiału - uwzględnij zapas przy dostarczaniu kruszcu.`,
+                     en: `Weave waste for ${CHAIN_WEAVES.find(w=>w.id===weaveId)?.label.en}: ~${CHAIN_WEAVES.find(w=>w.id===weaveId)?.materialWaste}% - account for this when supplying metal.`,
+                     de: `Webabfall für ${CHAIN_WEAVES.find(w=>w.id===weaveId)?.label.de}: ~${CHAIN_WEAVES.find(w=>w.id===weaveId)?.materialWaste}% - beim Liefern des Metalls berücksichtigen.`
                   }[lang]}
                 </div>
               )}
@@ -717,9 +717,9 @@ export default function JewelryCalc({ lang = "pl" }) {
                   <div className="mt-4 text-center">
                     <p className="text-white font-bold text-xl">{t(wm.label, lang)}</p>
                     <p className="text-neutral-400 text-sm mt-1">
-                      {{ pl: `AR ${wm.ar ?? "—"} · czynnik ×${wm.weaveFactor} · szer. ×${wm.widthMul ?? "—"} · gr. ×${wm.thicknessMul ?? "—"} · odpad ~${wm.materialWaste}%`,
-                         en: `AR ${wm.ar ?? "—"} · factor ×${wm.weaveFactor} · width ×${wm.widthMul ?? "—"} · thk ×${wm.thicknessMul ?? "—"} · waste ~${wm.materialWaste}%`,
-                         de: `AR ${wm.ar ?? "—"} · Faktor ×${wm.weaveFactor} · Breite ×${wm.widthMul ?? "—"} · Dicke ×${wm.thicknessMul ?? "—"} · Abfall ~${wm.materialWaste}%`
+                      {{ pl: `AR ${wm.ar ?? " - "} · czynnik ×${wm.weaveFactor} · szer. ×${wm.widthMul ?? " - "} · gr. ×${wm.thicknessMul ?? " - "} · odpad ~${wm.materialWaste}%`,
+                         en: `AR ${wm.ar ?? " - "} · factor ×${wm.weaveFactor} · width ×${wm.widthMul ?? " - "} · thk ×${wm.thicknessMul ?? " - "} · waste ~${wm.materialWaste}%`,
+                         de: `AR ${wm.ar ?? " - "} · Faktor ×${wm.weaveFactor} · Breite ×${wm.widthMul ?? " - "} · Dicke ×${wm.thicknessMul ?? " - "} · Abfall ~${wm.materialWaste}%`
                       }[lang]}
                     </p>
                   </div>
@@ -730,7 +730,7 @@ export default function JewelryCalc({ lang = "pl" }) {
             );
           })()}
 
-          {/* Clasp selection — chain types only */}
+          {/* Clasp selection - chain types only */}
           {isChainType(typeId) && (
             <CalcCard stepNum={step()} label={{ pl: "Zapięcie", en: "Clasp", de: "Verschluss" }[lang]}>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
@@ -813,7 +813,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                 );
               })}
             </div>
-            {/* Client supplies metal toggle — hidden in from_stock mode (metal is always client-supplied there) */}
+            {/* Client supplies metal toggle - hidden in from_stock mode (metal is always client-supplied there) */}
             {!(isChainType(typeId) && calcMode === "from_stock") && <div className="mt-4 flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200
               border-white/8 hover:border-amber-400/20"
               onClick={() => setClientSuppliesMetal(v => !v)}
@@ -838,7 +838,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                 </div>
                 {clientSuppliesMetal && (
                   <div className="text-xs text-neutral-500 mt-0.5">
-                    {{ pl: "Odejmiemy koszt metalu — dostarcz kruszec przed realizacją", en: "Metal cost excluded — supply raw metal before production", de: "Metallkosten entfallen — Rohmetall vor der Produktion liefern" }[lang]}
+                    {{ pl: "Odejmiemy koszt metalu - dostarcz kruszec przed realizacją", en: "Metal cost excluded - supply raw metal before production", de: "Metallkosten entfallen - Rohmetall vor der Produktion liefern" }[lang]}
                   </div>
                 )}
                 {clientSuppliesMetal && (
@@ -883,7 +883,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                 const active = platingId === pl.id;
                 const label = t(pl.label, lang);
                 if (!pl.img && !pl.custom) {
-                  // "none" — simple chip
+                  // "none" - simple chip
                   return (
                     <button key={pl.id} onClick={() => setPlatingId(pl.id)}
                       className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl border transition-all text-xs ${
@@ -929,9 +929,9 @@ export default function JewelryCalc({ lang = "pl" }) {
             : l.engraving}>
             {typeId === "signet" && (
               <p className="text-[11px] text-neutral-500 mb-3">
-                {{ pl: "Grawer nakładany jest bezpośrednio na oczko sygnetu — może współistnieć z kamieniem lub zastąpić go.",
-                   en: "Engraving is applied directly to the signet bezel — it can coexist with a stone or replace it.",
-                   de: "Gravur wird direkt auf den Siegelkopf aufgetragen — kann mit einem Stein kombiniert werden oder ihn ersetzen." }[lang]}
+                {{ pl: "Grawer nakładany jest bezpośrednio na oczko sygnetu - może współistnieć z kamieniem lub zastąpić go.",
+                   en: "Engraving is applied directly to the signet bezel - it can coexist with a stone or replace it.",
+                   de: "Gravur wird direkt auf den Siegelkopf aufgetragen - kann mit einem Stein kombiniert werden oder ihn ersetzen." }[lang]}
               </p>
             )}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">

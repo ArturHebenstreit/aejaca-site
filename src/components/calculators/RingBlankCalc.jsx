@@ -2,7 +2,7 @@
 // RING BLANK CALCULATOR
 // Calculates the blank length needed to make a ring/band.
 // Formula: length_mm = PI * (d_inner + thickness) * width
-// This is a free tool — no pricing, just geometry + mass estimate.
+// This is a free tool - no pricing, just geometry + mass estimate.
 // ============================================================
 import { useState, useMemo } from "react";
 import { CalcCard, Chips, InquiryForm, t } from "./calcShared.jsx";
@@ -100,12 +100,12 @@ export default function RingBlankCalc({ lang = "pl" }) {
 
   return (
     <div>
-      {/* Step 1 — Material */}
+      {/* Step 1 - Material */}
       <CalcCard stepNum="①" label={l.step1}>
         <Chips options={METAL_CHIPS} value={metalId} onChange={setMetalId} lang={lang} />
       </CalcCard>
 
-      {/* Step 2 — Dimensions */}
+      {/* Step 2 - Dimensions */}
       <CalcCard stepNum="②" label={l.step2}>
         <div className="space-y-5">
           {/* Inner diameter */}
@@ -173,7 +173,7 @@ export default function RingBlankCalc({ lang = "pl" }) {
         </div>
       </CalcCard>
 
-      {/* Step 3 — Result */}
+      {/* Step 3 - Result */}
       <CalcCard stepNum="③" label={l.step3}>
         <div className="bg-amber-400/10 border border-amber-400/20 rounded-xl p-4" aria-live="polite" aria-atomic="true">
           <div className="space-y-3">

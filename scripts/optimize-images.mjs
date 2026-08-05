@@ -106,7 +106,7 @@ for (const img of images) {
     totalWebp += result.webp;
     const pct = ((result.saved / result.original) * 100).toFixed(0);
     const webpPct = ((result.webpSaved / result.original) * 100).toFixed(0);
-    console.log(`  ${result.resized ? "↓" : "✓"} ${result.file} — ${(result.original / 1024).toFixed(0)}KB → ${(result.optimized / 1024).toFixed(0)}KB (${pct}%) | WebP: ${(result.webp / 1024).toFixed(0)}KB (${webpPct}%)`);
+    console.log(`  ${result.resized ? "↓" : "✓"} ${result.file} - ${(result.original / 1024).toFixed(0)}KB → ${(result.optimized / 1024).toFixed(0)}KB (${pct}%) | WebP: ${(result.webp / 1024).toFixed(0)}KB (${webpPct}%)`);
   }
 }
 

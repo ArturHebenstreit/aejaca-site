@@ -1,5 +1,5 @@
 // ============================================================
-// Prose — shared typography wrapper for blog article bodies
+// Prose - shared typography wrapper for blog article bodies
 // ------------------------------------------------------------
 // Why custom (nie @tailwindcss/typography):
 // - AEJaCA-specific palette (amber for jewelry, blue for studio)
@@ -20,7 +20,7 @@ export default function Prose({ accent = "amber", children }) {
   );
 }
 
-// Section heading (H2) — auto-scrollable via id; renders anchor for TOC
+// Section heading (H2) - auto-scrollable via id; renders anchor for TOC
 export function H2({ id, children }) {
   return (
     <h2
@@ -85,7 +85,7 @@ export function Strong({ children }) {
   return <strong className="text-white font-semibold">{children}</strong>;
 }
 
-// Callout — highlighted insight box; great for AIO (LLMs love structured facts)
+// Callout - highlighted insight box; great for AIO (LLMs love structured facts)
 export function Callout({ accent = "amber", title, children }) {
   const palette = accent === "blue"
     ? "border-blue-400/30 bg-blue-500/5"
@@ -103,7 +103,7 @@ export function Callout({ accent = "amber", title, children }) {
   );
 }
 
-// Comparison table — minimal styling, semantic HTML for accessibility
+// Comparison table - minimal styling, semantic HTML for accessibility
 export function Table({ headers, rows }) {
   return (
     <div className="my-8 overflow-x-auto rounded-xl border border-white/10">
@@ -133,7 +133,7 @@ export function Table({ headers, rows }) {
   );
 }
 
-// Inline CTA block — drives from article → calculator / contact
+// Inline CTA block - drives from article → calculator / contact
 export function CTABox({ accent = "amber", title, text, href, cta }) {
   const palette = accent === "blue"
     ? "from-blue-950/40 to-neutral-900 border-blue-400/30"

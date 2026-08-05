@@ -7,7 +7,7 @@ const LABELS = {
   pl: {
     tag: "Powiedz nam szczerze",
     headline: "Jak nam poszło? Jak nas oceniasz?",
-    sub: "Czy byłeś zadowolony? Jak nas oceniasz? Twoja opinia — dobra lub zła — pomaga nam być lepszymi i dociera do kolejnych klientów. Zajmie to dosłownie minutę.",
+    sub: "Czy byłeś zadowolony? Jak nas oceniasz? Twoja opinia - dobra lub zła - pomaga nam być lepszymi i dociera do kolejnych klientów. Zajmie to dosłownie minutę.",
     google: "Oceń na Google",
     trustpilot: "Oceń na Trustpilot",
     thanks: "Dziękujemy z całego serca 🙏",
@@ -15,7 +15,7 @@ const LABELS = {
   en: {
     tag: "Be honest with us",
     headline: "How did we do?",
-    sub: "Did you enjoy working with AEJaCA? How would you rate us? Your feedback — good or bad — helps us improve and reach new customers. It takes just a minute.",
+    sub: "Did you enjoy working with AEJaCA? How would you rate us? Your feedback - good or bad - helps us improve and reach new customers. It takes just a minute.",
     google: "Review on Google",
     trustpilot: "Review on Trustpilot",
     thanks: "Thank you from the bottom of our hearts 🙏",
@@ -23,7 +23,7 @@ const LABELS = {
   de: {
     tag: "Sagen Sie uns ehrlich",
     headline: "Wie haben wir abgeschnitten? Wie bewerten Sie uns?",
-    sub: "Hat Ihnen die Zusammenarbeit gefallen? Wie würden Sie uns bewerten? Ihre Meinung — positiv oder negativ — hilft uns besser zu werden. Es dauert nur eine Minute.",
+    sub: "Hat Ihnen die Zusammenarbeit gefallen? Wie würden Sie uns bewerten? Ihre Meinung - positiv oder negativ - hilft uns besser zu werden. Es dauert nur eine Minute.",
     google: "Auf Google bewerten",
     trustpilot: "Auf Trustpilot bewerten",
     thanks: "Herzlichen Dank 🙏",

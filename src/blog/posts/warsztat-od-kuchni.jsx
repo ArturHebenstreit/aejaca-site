@@ -15,9 +15,9 @@ export function Body({ lang }) {
 
       <H2 id={t("drukarki", "printers", "drucker")}>{t("Drukarki 3D", "3D Printers", "3D-Drucker")}</H2>
       <P>{t(
-        <>Serce naszego sTuDiO to Bambu Lab H2D — drukarka <A href="/glossary/druk-3d-fdm">FDM</A> nowej generacji.</>,
-        <>The heart of our sTuDiO is the Bambu Lab H2D — a next-gen <A href="/glossary/druk-3d-fdm">FDM</A> printer.</>,
-        <>Das Herz unseres sTuDiOs ist der Bambu Lab H2D — ein <A href="/glossary/druk-3d-fdm">FDM</A>-Drucker der nächsten Generation.</>
+        <>Serce naszego sTuDiO to Bambu Lab H2D - drukarka <A href="/glossary/druk-3d-fdm">FDM</A> nowej generacji.</>,
+        <>The heart of our sTuDiO is the Bambu Lab H2D - a next-gen <A href="/glossary/druk-3d-fdm">FDM</A> printer.</>,
+        <>Das Herz unseres sTuDiOs ist der Bambu Lab H2D - ein <A href="/glossary/druk-3d-fdm">FDM</A>-Drucker der nächsten Generation.</>
       )}</P>
       <Table
         headers={t(
@@ -35,9 +35,9 @@ export function Body({ lang }) {
         ]}
       />
       <P>{t(
-        "Multi-materiał oznacza, że w jednym wydruku łączymy kolory, twardości i materiały — np. elastyczny uchwyt z twardą obudową.",
-        "Multi-material means we combine colors, hardnesses, and materials in a single print — e.g., a flexible grip with a hard housing.",
-        "Multi-Material bedeutet, dass wir Farben, Härtegrade und Materialien in einem Druck kombinieren — z.B. einen flexiblen Griff mit einem harten Gehäuse."
+        "Multi-materiał oznacza, że w jednym wydruku łączymy kolory, twardości i materiały - np. elastyczny uchwyt z twardą obudową.",
+        "Multi-material means we combine colors, hardnesses, and materials in a single print - e.g., a flexible grip with a hard housing.",
+        "Multi-Material bedeutet, dass wir Farben, Härtegrade und Materialien in einem Druck kombinieren - z.B. einen flexiblen Griff mit einem harten Gehäuse."
       )}</P>
 
       <H2 id={t("lasery", "lasers", "laser")}>{t("Lasery", "Lasers", "Laser")}</H2>
@@ -67,42 +67,42 @@ export function Body({ lang }) {
         "Neben digitaler Technik umfasst unsere Schmuckwerkbank klassische Handwerkzeuge:"
       )}</P>
       <UL>
-        <LI><Strong>{t("Palnik jubilerski", "Jeweler's torch", "Juwelierbrenner")}</Strong> — {t("lutowanie srebra i złota, podgrzewanie do kucia", "soldering silver and gold, heating for forging", "Löten von Silber und Gold, Erhitzen zum Schmieden")}</LI>
-        <LI><Strong>{t("Piłki i pilniki", "Saws & files", "Sägen & Feilen")}</Strong> — {t("precyzyjne cięcie i kształtowanie metalu", "precision cutting and shaping metal", "Präzisionsschnitt und Metallformung")}</LI>
-        <LI><Strong>{t("Polerka / tumbler", "Polisher / tumbler", "Poliermaschine / Tumbler")}</Strong> — {t("wykończenie powierzchni od matu do lustra", "surface finishing from matte to mirror", "Oberflächenbearbeitung von matt bis Spiegel")}</LI>
-        <LI><Strong>{t("Narzędzia do osadzania", "Setting tools", "Fasswerkzeuge")}</Strong> — {t("oprawki, pchacze, kołki do kamieni szlachetnych", "bezels, pushers, prongs for gemstones", "Zargenfasser, Drücker, Krappen für Edelsteine")}</LI>
-        <LI><Strong>{t("Lupa jubilerska 10×", "Jeweler's loupe 10×", "Juwelierlupe 10×")}</Strong> — {t("kontrola jakości kamieni i lutów", "quality control of stones and solder joints", "Qualitätskontrolle von Steinen und Lötstellen")}</LI>
+        <LI><Strong>{t("Palnik jubilerski", "Jeweler's torch", "Juwelierbrenner")}</Strong> - {t("lutowanie srebra i złota, podgrzewanie do kucia", "soldering silver and gold, heating for forging", "Löten von Silber und Gold, Erhitzen zum Schmieden")}</LI>
+        <LI><Strong>{t("Piłki i pilniki", "Saws & files", "Sägen & Feilen")}</Strong> - {t("precyzyjne cięcie i kształtowanie metalu", "precision cutting and shaping metal", "Präzisionsschnitt und Metallformung")}</LI>
+        <LI><Strong>{t("Polerka / tumbler", "Polisher / tumbler", "Poliermaschine / Tumbler")}</Strong> - {t("wykończenie powierzchni od matu do lustra", "surface finishing from matte to mirror", "Oberflächenbearbeitung von matt bis Spiegel")}</LI>
+        <LI><Strong>{t("Narzędzia do osadzania", "Setting tools", "Fasswerkzeuge")}</Strong> - {t("oprawki, pchacze, kołki do kamieni szlachetnych", "bezels, pushers, prongs for gemstones", "Zargenfasser, Drücker, Krappen für Edelsteine")}</LI>
+        <LI><Strong>{t("Lupa jubilerska 10×", "Jeweler's loupe 10×", "Juwelierlupe 10×")}</Strong> - {t("kontrola jakości kamieni i lutów", "quality control of stones and solder joints", "Qualitätskontrolle von Steinen und Lötstellen")}</LI>
       </UL>
 
       <H2 id={t("materialy", "materials", "materialien")}>{t("Materiały na stanie", "Materials in Stock", "Materialien auf Lager")}</H2>
       <UL>
-        <LI><Strong>{t("Metale", "Metals", "Metalle")}</Strong> — {t("Ag 925, Au 585, Au 750, mosiądz, miedź, stal nierdzewna", "Ag 925, Au 585, Au 750, brass, copper, stainless steel", "Ag 925, Au 585, Au 750, Messing, Kupfer, Edelstahl")}</LI>
-        <LI><Strong>{t("Kamienie", "Stones", "Steine")}</Strong> — {t("diamenty, moissanity, szafiry, szmaragdy, rubiny, turmaliny, opale, perły", "diamonds, moissanites, sapphires, emeralds, rubies, tourmalines, opals, pearls", "Diamanten, Moissanite, Saphire, Smaragde, Rubine, Turmaline, Opale, Perlen")}</LI>
-        <LI><Strong>{t("Filamenty 3D", "3D filaments", "3D-Filamente")}</Strong> — {t(<><A href="/glossary/pla">PLA</A>, <A href="/glossary/petg">PETG</A>, ABS, TPU, PA (nylon), ASA — ponad 40 kolorów</>, <><A href="/glossary/pla">PLA</A>, <A href="/glossary/petg">PETG</A>, ABS, TPU, PA (nylon), ASA — over 40 colors</>, <><A href="/glossary/pla">PLA</A>, <A href="/glossary/petg">PETG</A>, ABS, TPU, PA (Nylon), ASA — über 40 Farben</>)}</LI>
-        <LI><Strong>{t("Żywice", "Resins", "Harze")}</Strong> — {t("UV (ABS-like, flex), epoksydowa dwukomponentowa, barwniki i pigmenty", "UV (ABS-like, flex), 2K epoxy, dyes and pigments", "UV (ABS-artig, flex), 2K-Epoxid, Farbstoffe und Pigmente")}</LI>
-        <LI><Strong>{t("Materiały laserowe", "Laser materials", "Lasermaterialien")}</Strong> — {t("sklejka brzozowa, akryl, skóra, filc, anodyzowane aluminium", "birch plywood, acrylic, leather, felt, anodized aluminum", "Birkensperrholz, Acryl, Leder, Filz, eloxiertes Aluminium")}</LI>
+        <LI><Strong>{t("Metale", "Metals", "Metalle")}</Strong> - {t("Ag 925, Au 585, Au 750, mosiądz, miedź, stal nierdzewna", "Ag 925, Au 585, Au 750, brass, copper, stainless steel", "Ag 925, Au 585, Au 750, Messing, Kupfer, Edelstahl")}</LI>
+        <LI><Strong>{t("Kamienie", "Stones", "Steine")}</Strong> - {t("diamenty, moissanity, szafiry, szmaragdy, rubiny, turmaliny, opale, perły", "diamonds, moissanites, sapphires, emeralds, rubies, tourmalines, opals, pearls", "Diamanten, Moissanite, Saphire, Smaragde, Rubine, Turmaline, Opale, Perlen")}</LI>
+        <LI><Strong>{t("Filamenty 3D", "3D filaments", "3D-Filamente")}</Strong> - {t(<><A href="/glossary/pla">PLA</A>, <A href="/glossary/petg">PETG</A>, ABS, TPU, PA (nylon), ASA - ponad 40 kolorów</>, <><A href="/glossary/pla">PLA</A>, <A href="/glossary/petg">PETG</A>, ABS, TPU, PA (nylon), ASA - over 40 colors</>, <><A href="/glossary/pla">PLA</A>, <A href="/glossary/petg">PETG</A>, ABS, TPU, PA (Nylon), ASA - über 40 Farben</>)}</LI>
+        <LI><Strong>{t("Żywice", "Resins", "Harze")}</Strong> - {t("UV (ABS-like, flex), epoksydowa dwukomponentowa, barwniki i pigmenty", "UV (ABS-like, flex), 2K epoxy, dyes and pigments", "UV (ABS-artig, flex), 2K-Epoxid, Farbstoffe und Pigmente")}</LI>
+        <LI><Strong>{t("Materiały laserowe", "Laser materials", "Lasermaterialien")}</Strong> - {t("sklejka brzozowa, akryl, skóra, filc, anodyzowane aluminium", "birch plywood, acrylic, leather, felt, anodized aluminum", "Birkensperrholz, Acryl, Leder, Filz, eloxiertes Aluminium")}</LI>
       </UL>
 
       <H2 id={t("flow", "flow", "ablauf")}>{t("Typowy dzień w warsztacie", "A Day in the Workshop", "Ein Tag in der Werkstatt")}</H2>
       <P>{t(
-        "Nie ma dwóch takich samych dni — ale typowy flow wygląda mniej więcej tak:",
-        "No two days are the same — but a typical flow looks roughly like this:",
-        "Kein Tag gleicht dem anderen — aber ein typischer Ablauf sieht ungefähr so aus:"
+        "Nie ma dwóch takich samych dni - ale typowy flow wygląda mniej więcej tak:",
+        "No two days are the same - but a typical flow looks roughly like this:",
+        "Kein Tag gleicht dem anderen - aber ein typischer Ablauf sieht ungefähr so aus:"
       )}</P>
       <UL>
-        <LI><Strong>{t("Rano", "Morning", "Morgens")}</Strong> — {t("sprawdzenie zamówień, odpowiedzi na maile, planowanie kolejności", "check orders, reply to emails, plan sequence", "Bestellungen prüfen, E-Mails beantworten, Reihenfolge planen")}</LI>
-        <LI><Strong>{t("Przed południem", "Late morning", "Vormittags")}</Strong> — {t("praca jubilerska: lutowanie, pilowanie, osadzanie kamieni", "jewelry work: soldering, filing, stone setting", "Schmuckarbeit: Löten, Feilen, Steinfassung")}</LI>
-        <LI><Strong>{t("Po południu", "Afternoon", "Nachmittags")}</Strong> — {t("druk 3D i laser: przygotowanie plików, uruchomienie maszyn, kontrola jakości", "3D printing and laser: file prep, machine runs, quality control", "3D-Druck und Laser: Dateivorbereitung, Maschinenlauf, Qualitätskontrolle")}</LI>
-        <LI><Strong>{t("Wieczorem", "Evening", "Abends")}</Strong> — {t("długie wydruki na noc, dokumentacja fotograficzna, wysyłka", "overnight prints, photo documentation, shipping", "Übernacht-Drucke, Fotodokumentation, Versand")}</LI>
+        <LI><Strong>{t("Rano", "Morning", "Morgens")}</Strong> - {t("sprawdzenie zamówień, odpowiedzi na maile, planowanie kolejności", "check orders, reply to emails, plan sequence", "Bestellungen prüfen, E-Mails beantworten, Reihenfolge planen")}</LI>
+        <LI><Strong>{t("Przed południem", "Late morning", "Vormittags")}</Strong> - {t("praca jubilerska: lutowanie, pilowanie, osadzanie kamieni", "jewelry work: soldering, filing, stone setting", "Schmuckarbeit: Löten, Feilen, Steinfassung")}</LI>
+        <LI><Strong>{t("Po południu", "Afternoon", "Nachmittags")}</Strong> - {t("druk 3D i laser: przygotowanie plików, uruchomienie maszyn, kontrola jakości", "3D printing and laser: file prep, machine runs, quality control", "3D-Druck und Laser: Dateivorbereitung, Maschinenlauf, Qualitätskontrolle")}</LI>
+        <LI><Strong>{t("Wieczorem", "Evening", "Abends")}</Strong> - {t("długie wydruki na noc, dokumentacja fotograficzna, wysyłka", "overnight prints, photo documentation, shipping", "Übernacht-Drucke, Fotodokumentation, Versand")}</LI>
       </UL>
 
       <CTABox
         accent="blue"
         title={t("Zamów projekt w sTuDiO", "Order a sTuDiO Project", "Bestellen Sie ein sTuDiO-Projekt")}
         text={t(
-          "Wrzuć plik STL/SVG do kalkulatora lub napisz do nas z opisem projektu — wycenimy go w ciągu 24h.",
-          "Upload an STL/SVG to the calculator or write to us with your project description — we'll quote within 24h.",
-          "Laden Sie eine STL/SVG in den Kalkulator hoch oder schreiben Sie uns mit Ihrer Projektbeschreibung — wir kalkulieren innerhalb von 24 Stunden."
+          "Wrzuć plik STL/SVG do kalkulatora lub napisz do nas z opisem projektu - wycenimy go w ciągu 24h.",
+          "Upload an STL/SVG to the calculator or write to us with your project description - we'll quote within 24h.",
+          "Laden Sie eine STL/SVG in den Kalkulator hoch oder schreiben Sie uns mit Ihrer Projektbeschreibung - wir kalkulieren innerhalb von 24 Stunden."
         )}
         href="/studio#calculator"
         cta={t("Otwórz kalkulator", "Open calculator", "Kalkulator öffnen")}

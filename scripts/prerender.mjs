@@ -44,6 +44,7 @@ const STATIC_ROUTES = [
   "/toolsjewelry/alloy-composition",
   "/toolsjewelry/metal-pricing",
   "/toolsjewelry/ring-size",
+  "/toolsjewelry/ring-sizer",
   "/toolstudio",
   "/toolstudio/print-settings",
   "/toolstudio/resin-settings",
@@ -109,7 +110,7 @@ function buildPage(route) {
   let page = template.replace("<!--ssr-outlet-->", html);
 
   // Strip the static fallback <title>/description/OG/Twitter tags from
-  // index.html — every route is now SSR-prerendered, so Helmet always
+  // index.html - every route is now SSR-prerendered, so Helmet always
   // supplies the real per-page tags below. Leaving the static ones in
   // produces duplicate title/description/OG tags on every page.
   page = page

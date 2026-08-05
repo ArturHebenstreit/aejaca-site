@@ -19,7 +19,7 @@
               <%= thread.lead_email %>
             </a>
           <% } else { %>
-            <span class="text-neutral-600">— (brak powiązania)</span>
+            <span class="text-neutral-600"> - (brak powiązania)</span>
           <% } %>
         </div>
         <% if (thread.lead_calculator) { %>
@@ -71,11 +71,11 @@
             <div class="px-5 py-2 border-b border-white/5 text-xs space-y-0.5">
               <div class="flex gap-2">
                 <span class="text-neutral-600 w-8 shrink-0">Od:</span>
-                <span class="text-neutral-300 break-all"><%= msg.from_addr || '—' %></span>
+                <span class="text-neutral-300 break-all"><%= msg.from_addr || ' - ' %></span>
               </div>
               <div class="flex gap-2">
                 <span class="text-neutral-600 w-8 shrink-0">Do:</span>
-                <span class="text-neutral-300 break-all"><%= msg.to_addr || '—' %></span>
+                <span class="text-neutral-300 break-all"><%= msg.to_addr || ' - ' %></span>
               </div>
               <% if (msg.cc_addr) { %>
               <div class="flex gap-2">

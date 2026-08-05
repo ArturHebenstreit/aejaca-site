@@ -1,5 +1,5 @@
 // ============================================================
-// STONE COMPOSER — multi-row gemstone selector for JewelryCalc
+// STONE COMPOSER - multi-row gemstone selector for JewelryCalc
 // ============================================================
 // Props:
 //   stoneRows: array of { rowId, gemId, stoneSizeId, count, suppliedBy,
@@ -43,7 +43,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
   const isConfigured = row.gemId !== "none";
   const { isDark } = useTheme();
 
-  // Theme-aware pill classes — match JewelryCalc "Brak" card style in light mode
+  // Theme-aware pill classes - match JewelryCalc "Brak" card style in light mode
   const activePill = isDark
     ? "border-amber-400 bg-amber-400/25 text-amber-200 font-semibold shadow-sm shadow-amber-400/25"
     : "border-amber-400 bg-amber-400/10 text-amber-700 font-medium";
@@ -89,7 +89,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
         ∅ {{ pl: "Bez kamienia", en: "No gemstone", de: "Ohne Stein" }[lang]}
       </button>
 
-      {/* Gem selector — horizontal scrollable strip */}
+      {/* Gem selector - horizontal scrollable strip */}
       <div className="overflow-x-auto pb-1">
         <div className="flex gap-1.5 min-w-max">
           {gemstones.filter(g => g.id !== "none").map(g => {
@@ -142,10 +142,10 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
         </div>
       </div>
 
-      {/* Stone details — only when gem is configured (not "none") */}
+      {/* Stone details - only when gem is configured (not "none") */}
       {isConfigured && (
         <>
-          {/* Size pills — always shown for configured stones incl. custom */}
+          {/* Size pills - always shown for configured stones incl. custom */}
           <div>
             <div className="text-[10px] text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
               {{ pl: "Wielkość", en: "Size", de: "Größe" }[lang]}
@@ -174,7 +174,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
             </div>
           </div>
 
-          {/* Count — always shown for configured stones incl. custom */}
+          {/* Count - always shown for configured stones incl. custom */}
           <div>
             <div className="text-[10px] text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
               {{ pl: "Liczba kamieni", en: "Count", de: "Anzahl" }[lang]}
@@ -202,7 +202,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
             </div>
           </div>
 
-          {/* Who supplies — always shown for configured stones incl. custom */}
+          {/* Who supplies - always shown for configured stones incl. custom */}
           <div>
             <div className="text-[10px] text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">
               {{ pl: "Kto dostarcza kamień", en: "Who supplies stone", de: "Wer liefert den Stein" }[lang]}
@@ -222,7 +222,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
             )}
           </div>
 
-          {/* Quality grades + cert — only for known (non-custom) gems */}
+          {/* Quality grades + cert - only for known (non-custom) gems */}
           {!selectedGem?.custom && (
             <>
               {/* Diamond grades */}
@@ -274,7 +274,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                 </div>
               )}
 
-              {/* Certificate — only for diamond / lab_diamond */}
+              {/* Certificate - only for diamond / lab_diamond */}
               {isDiamond && (
                 <div>
                   <div className="text-[10px] text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide font-medium">

@@ -38,7 +38,7 @@ function run(workflows) {
 
 const przeplyw = (over = {}) => ({
   id: "abc123",
-  name: "AEJaCA — Newsletter Signup (10% discount)",
+  name: "AEJaCA - Newsletter Signup (10% discount)",
   active: true,
   updatedAt: "2026-08-03T10:00:00.000Z",
   versionId: "losowa-wartosc",
@@ -57,7 +57,7 @@ assert.equal(pliki.length, 1);
 assert.match(pliki[0], /^abc123--aejaca-newsletter-signup/, "nazwa pliku niesie identyfikator i czytelny tytul");
 
 const zapisany = JSON.parse(readFileSync(join(OUT, pliki[0]), "utf8"));
-assert.equal(zapisany.name, "AEJaCA — Newsletter Signup (10% discount)");
+assert.equal(zapisany.name, "AEJaCA - Newsletter Signup (10% discount)");
 assert.equal(zapisany.updatedAt, undefined, "znacznik czasu zmienia sie sam i tylko zasmieca diff");
 assert.equal(zapisany.versionId, undefined);
 assert.equal(zapisany.triggerCount, undefined);

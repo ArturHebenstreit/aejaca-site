@@ -94,17 +94,17 @@
               <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors group <%= i % 2 === 1 ? 'bg-white/[0.015]' : '' %>">
                 <td class="px-4 py-3 text-neutral-600 text-xs font-mono"><%= row.id %></td>
                 <td class="px-4 py-3">
-                  <span class="px-2 py-0.5 bg-blue-950 text-blue-300 rounded text-xs font-medium whitespace-nowrap"><%= row.laser_type || '—' %></span>
+                  <span class="px-2 py-0.5 bg-blue-950 text-blue-300 rounded text-xs font-medium whitespace-nowrap"><%= row.laser_type || ' - ' %></span>
                 </td>
                 <td class="px-4 py-3">
-                  <span class="px-2 py-0.5 bg-amber-950 text-amber-300 rounded text-xs font-medium whitespace-nowrap"><%= row.action_type || '—' %></span>
+                  <span class="px-2 py-0.5 bg-amber-950 text-amber-300 rounded text-xs font-medium whitespace-nowrap"><%= row.action_type || ' - ' %></span>
                 </td>
-                <td class="px-4 py-3 text-neutral-200 max-w-[160px] truncate"><%= row.material || '—' %></td>
-                <td class="px-4 py-3 text-right text-neutral-300 whitespace-nowrap"><%= row.watts != null ? row.watts : '—' %></td>
-                <td class="px-4 py-3 text-right text-neutral-400 text-xs whitespace-nowrap"><%= row.speed != null ? row.speed : '—' %></td>
-                <td class="px-4 py-3 text-right text-neutral-400 text-xs whitespace-nowrap"><%= row.power_pct != null ? row.power_pct + '%' : '—' %></td>
+                <td class="px-4 py-3 text-neutral-200 max-w-[160px] truncate"><%= row.material || ' - ' %></td>
+                <td class="px-4 py-3 text-right text-neutral-300 whitespace-nowrap"><%= row.watts != null ? row.watts : ' - ' %></td>
+                <td class="px-4 py-3 text-right text-neutral-400 text-xs whitespace-nowrap"><%= row.speed != null ? row.speed : ' - ' %></td>
+                <td class="px-4 py-3 text-right text-neutral-400 text-xs whitespace-nowrap"><%= row.power_pct != null ? row.power_pct + '%' : ' - ' %></td>
                 <td class="px-4 py-3 text-neutral-500 text-xs max-w-[200px] truncate" title="<%= row.notes || '' %>">
-                  <%= row.notes ? row.notes.substring(0, 60) + (row.notes.length > 60 ? '…' : '') : '—' %>
+                  <%= row.notes ? row.notes.substring(0, 60) + (row.notes.length > 60 ? '…' : '') : ' - ' %>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-right">
                   <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">

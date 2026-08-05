@@ -66,17 +66,17 @@
               <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors group <%= i % 2 === 1 ? 'bg-white/[0.015]' : '' %>">
                 <td class="px-4 py-3 text-neutral-600 text-xs font-mono"><%= row.id %></td>
                 <td class="px-4 py-3 text-neutral-300 text-xs">
-                  <%= row.type_name || '—' %>
+                  <%= row.type_name || ' - ' %>
                 </td>
-                <td class="px-4 py-3 font-medium text-neutral-200"><%= row.brand_name || '—' %></td>
+                <td class="px-4 py-3 font-medium text-neutral-200"><%= row.brand_name || ' - ' %></td>
                 <td class="px-4 py-3 text-neutral-400 text-xs max-w-[160px] truncate" title="<%= row.product_name || '' %>">
-                  <%= row.product_name || '—' %>
+                  <%= row.product_name || ' - ' %>
                 </td>
                 <td class="px-4 py-3 text-right text-neutral-300 text-xs whitespace-nowrap">
-                  <% if (row.nozzle_min || row.nozzle_max) { %><%= row.nozzle_min || '?' %>–<%= row.nozzle_max || '?' %>°C<% } else { %><span class="text-neutral-600">—</span><% } %>
+                  <% if (row.nozzle_min || row.nozzle_max) { %><%= row.nozzle_min || '?' %>–<%= row.nozzle_max || '?' %>°C<% } else { %><span class="text-neutral-600"> - </span><% } %>
                 </td>
                 <td class="px-4 py-3 text-right text-neutral-400 text-xs whitespace-nowrap">
-                  <% if (row.bed_min || row.bed_max) { %><%= row.bed_min || '?' %>–<%= row.bed_max || '?' %>°C<% } else { %><span class="text-neutral-600">—</span><% } %>
+                  <% if (row.bed_min || row.bed_max) { %><%= row.bed_min || '?' %>–<%= row.bed_max || '?' %>°C<% } else { %><span class="text-neutral-600"> - </span><% } %>
                 </td>
                 <td class="px-4 py-3 text-center whitespace-nowrap">
                   <span class="text-emerald-400 text-xs font-medium">&#128077; <%= row.vote_confirm_count || row.vote_confirm || 0 %></span>
@@ -84,14 +84,14 @@
                   <span class="text-red-400 text-xs font-medium">&#128078; <%= row.vote_dispute_count || row.vote_dispute || 0 %></span>
                 </td>
                 <td class="px-4 py-3 text-neutral-500 text-xs max-w-[160px] truncate" title="<%= row.contributor_email || '' %>">
-                  <%= row.contributor_email || '—' %>
+                  <%= row.contributor_email || ' - ' %>
                 </td>
                 <td class="px-4 py-3 text-neutral-600 text-xs whitespace-nowrap">
-                  <%= row.created_at ? new Date(row.created_at).toLocaleDateString('pl-PL') : '—' %>
+                  <%= row.created_at ? new Date(row.created_at).toLocaleDateString('pl-PL') : ' - ' %>
                 </td>
                 <td class="px-4 py-3">
                   <span class="px-2 py-0.5 rounded text-xs font-medium <%= statusColors[row.status] || 'bg-neutral-800 text-neutral-400' %>">
-                    <%= row.status || '—' %>
+                    <%= row.status || ' - ' %>
                   </span>
                 </td>
                 <td class="px-4 py-3 text-right">

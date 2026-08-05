@@ -86,7 +86,7 @@
                   <a href="mailto:<%= lead.email %>" class="hover:text-amber-400 transition-colors"><%= lead.email %></a>
                 </td>
                 <td class="px-4 py-3">
-                  <span class="text-xs text-neutral-400 uppercase"><%= lead.lang || '—' %></span>
+                  <span class="text-xs text-neutral-400 uppercase"><%= lead.lang || ' - ' %></span>
                 </td>
                 <td class="px-4 py-3">
                   <span class="px-2 py-0.5 bg-amber-950 text-amber-300 rounded text-xs font-medium whitespace-nowrap">
@@ -104,26 +104,26 @@
                       <%= lead.params %>
                     <% } %>
                   <% } else { %>
-                    <span class="text-neutral-600">—</span>
+                    <span class="text-neutral-600"> - </span>
                   <% } %>
                 </td>
                 <td class="px-4 py-3 text-right text-neutral-300">
-                  <% if (lead.price_min_pln != null) { %><%= lead.price_min_pln %><% } else { %><span class="text-neutral-600">—</span><% } %>
+                  <% if (lead.price_min_pln != null) { %><%= lead.price_min_pln %><% } else { %><span class="text-neutral-600"> - </span><% } %>
                 </td>
                 <td class="px-4 py-3 text-right text-neutral-300">
-                  <% if (lead.price_max_pln != null) { %><%= lead.price_max_pln %><% } else { %><span class="text-neutral-600">—</span><% } %>
+                  <% if (lead.price_max_pln != null) { %><%= lead.price_max_pln %><% } else { %><span class="text-neutral-600"> - </span><% } %>
                 </td>
                 <td class="px-4 py-3 text-right text-neutral-300">
-                  <% if (lead.priceMinEur != null) { %><%= lead.priceMinEur %><% } else { %><span class="text-neutral-600">—</span><% } %>
+                  <% if (lead.priceMinEur != null) { %><%= lead.priceMinEur %><% } else { %><span class="text-neutral-600"> - </span><% } %>
                 </td>
                 <td class="px-4 py-3 text-right text-neutral-300">
-                  <% if (lead.priceMaxEur != null) { %><%= lead.priceMaxEur %><% } else { %><span class="text-neutral-600">—</span><% } %>
+                  <% if (lead.priceMaxEur != null) { %><%= lead.priceMaxEur %><% } else { %><span class="text-neutral-600"> - </span><% } %>
                 </td>
                 <td class="px-4 py-3 text-right text-neutral-300">
-                  <% if (lead.quantity != null) { %><%= lead.quantity %><% } else { %><span class="text-neutral-600">—</span><% } %>
+                  <% if (lead.quantity != null) { %><%= lead.quantity %><% } else { %><span class="text-neutral-600"> - </span><% } %>
                 </td>
                 <td class="px-4 py-3 text-right text-neutral-300">
-                  <% if (lead.discount != null) { %><%= lead.discount %>%<% } else { %><span class="text-neutral-600">—</span><% } %>
+                  <% if (lead.discount != null) { %><%= lead.discount %>%<% } else { %><span class="text-neutral-600"> - </span><% } %>
                 </td>
                 <td class="px-4 py-3">
                   <% var statusMap = { new: 'bg-blue-950 text-blue-300', contacted: 'bg-amber-950 text-amber-300', closed: 'bg-emerald-950 text-emerald-300', spam: 'bg-neutral-800 text-neutral-500' }; %>
@@ -220,7 +220,7 @@
 
   <script>
     function fmtDate(d) {
-      if (!d) return '—';
+      if (!d) return ' - ';
       const dt = new Date(d);
       return dt.toLocaleDateString('pl-PL') + ' ' + dt.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
     }

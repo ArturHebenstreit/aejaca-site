@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import RingSizeCalc from "../components/calculators/RingSizeCalc.jsx";
@@ -19,8 +20,11 @@ const LABELS = {
     breadJewelry: "Biżuteria",
     breadTools: "Narzędzia jubilerskie",
     breadThis: "Rozmiary pierścionków",
+    sizerTitle: "Nie znasz swojego rozmiaru?",
+    sizerText: "Wydrukuj miarkę, wytnij pasek i zmierz palec w minutę. Arkusz ma wbudowane sprawdzenie skali wydruku.",
+    sizerBtn: "Miarka do wydruku",
     footerCtaTitle: "Potrzebujesz pierścionka na miarę?",
-    footerCtaText: "Znając swój rozmiar, możemy stworzyć pierścionek idealnie dopasowany — od projektu po gotowy wyrób.",
+    footerCtaText: "Znając swój rozmiar, możemy stworzyć pierścionek idealnie dopasowany - od projektu po gotowy wyrób.",
     footerCtaBtn: "Napisz do nas",
   },
   en: {
@@ -33,8 +37,11 @@ const LABELS = {
     breadJewelry: "Jewelry",
     breadTools: "Jewelry Tools",
     breadThis: "Ring Size Converter",
+    sizerTitle: "Not sure of your size?",
+    sizerText: "Print the sizer, cut the strip and measure your finger in a minute. The sheet checks the print scale for you.",
+    sizerBtn: "Printable sizer",
     footerCtaTitle: "Need a custom-fit ring?",
-    footerCtaText: "Knowing your size, we can create a perfectly fitted ring — from design to finished piece.",
+    footerCtaText: "Knowing your size, we can create a perfectly fitted ring - from design to finished piece.",
     footerCtaBtn: "Contact us",
   },
   de: {
@@ -47,23 +54,26 @@ const LABELS = {
     breadJewelry: "Schmuck",
     breadTools: "Schmuck-Tools",
     breadThis: "Ringgrößen-Konverter",
+    sizerTitle: "Größe unbekannt?",
+    sizerText: "Maßband ausdrucken, Streifen ausschneiden und den Finger in einer Minute messen. Das Blatt prüft den Druckmaßstab.",
+    sizerBtn: "Maßband zum Ausdrucken",
     footerCtaTitle: "Einen maßgefertigten Ring bestellen?",
-    footerCtaText: "Mit Ihrer Größe erstellen wir einen perfekt passenden Ring — vom Entwurf bis zum fertigen Stück.",
+    footerCtaText: "Mit Ihrer Größe erstellen wir einen perfekt passenden Ring - vom Entwurf bis zum fertigen Stück.",
     footerCtaBtn: "Kontakt",
   },
 };
 
 const SEO_META = {
   pl: {
-    title: "Rozmiary pierścionków — Konwerter EU / US / UK / JP | AEJaCA",
+    title: "Rozmiary pierścionków - Konwerter EU / US / UK / JP | AEJaCA",
     description: "Kalkulator i konwerter rozmiarów pierścionków. Oblicz rozmiar EU ze sznurka lub średnicy. Przelicznik EU, US, UK, JP.",
   },
   en: {
-    title: "Ring Size Converter — EU / US / UK / JP | AEJaCA",
+    title: "Ring Size Converter - EU / US / UK / JP | AEJaCA",
     description: "Ring size calculator and converter. Calculate EU size from string measurement or diameter. EU, US, UK, JP chart.",
   },
   de: {
-    title: "Ringgrößen-Konverter — EU / US / UK / JP | AEJaCA",
+    title: "Ringgrößen-Konverter - EU / US / UK / JP | AEJaCA",
     description: "Ringgrößen Rechner und Konverter. EU-Größe aus Fadenmaß oder Durchmesser berechnen. EU, US, UK, JP Tabelle.",
   },
 };
@@ -106,7 +116,7 @@ export default function RingSizePage() {
         <section className="relative overflow-hidden min-h-[340px]">
           <img
             src="/hero-toolsjewelry.webp"
-            alt="Rozmiary pierścionków — AEJaCA"
+            alt="Rozmiary pierścionków - AEJaCA"
             className="absolute inset-0 w-full h-full object-cover"
             loading="eager"
             fetchpriority="high"
@@ -160,6 +170,20 @@ export default function RingSizePage() {
         {/* Review CTA */}
         <section className="px-4 bg-neutral-950">
           <ToolReviewCTA />
+        </section>
+
+        {/* Miarka do wydruku, druga polowa tej samej intencji */}
+        <section className="py-8 px-4 bg-neutral-950">
+          <div className="max-w-3xl mx-auto">
+            <Link
+              to="/toolsjewelry/ring-sizer/"
+              className="group flex flex-col gap-2 p-5 rounded-2xl glass hover:border-amber-500/30 transition-all duration-300"
+            >
+              <div className="text-white font-semibold text-sm group-hover:text-amber-300 transition-colors">{L.sizerTitle}</div>
+              <div className="text-neutral-400 text-xs leading-relaxed">{L.sizerText}</div>
+              <div className="text-amber-400 text-xs font-medium">{L.sizerBtn}</div>
+            </Link>
+          </div>
         </section>
 
         {/* Footer CTA */}

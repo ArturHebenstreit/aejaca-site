@@ -10,7 +10,7 @@ const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const PLN_PER_EUR = 4.25;
 
 // ============================================================
-// LABELS (pl/en/de — self-contained)
+// LABELS (pl/en/de - self-contained)
 // ============================================================
 const LABELS = {
   pl: {
@@ -24,7 +24,7 @@ const LABELS = {
     step4: "Parametry",
 
     step1Title: "Co chcesz wydrukować?",
-    step1Hint: "Wybierz wymagania ważne dla Twojego projektu — lub przejdź od razu do listy",
+    step1Hint: "Wybierz wymagania ważne dla Twojego projektu - lub przejdź od razu do listy",
     skipStep1: "Pokaż wszystkie materiały →",
     selectAll: "Zaznacz wszystkie",
     deselectAll: "Odznacz wszystkie",
@@ -41,7 +41,7 @@ const LABELS = {
     collapse: "Zwiń",
 
     step3Title: "Wybierz markę / producenta",
-    step3Hint: "Opcjonalne — wybierz markę dla parametrów specyficznych lub zostań przy ogólnych",
+    step3Hint: "Opcjonalne - wybierz markę dla parametrów specyficznych lub zostań przy ogólnych",
     genericParams: "Parametry ogólne",
     genericDesc: "Uniwersalne parametry startowe dla tego materiału",
     verified: "Zweryfikowane ✓",
@@ -146,7 +146,7 @@ const LABELS = {
     step4: "Parameters",
 
     step1Title: "What do you want to print?",
-    step1Hint: "Select requirements important for your project — or go straight to the full list",
+    step1Hint: "Select requirements important for your project - or go straight to the full list",
     skipStep1: "Show all materials →",
     selectAll: "Select all",
     deselectAll: "Deselect all",
@@ -163,7 +163,7 @@ const LABELS = {
     collapse: "Collapse",
 
     step3Title: "Choose brand / manufacturer",
-    step3Hint: "Optional — pick a brand for specific parameters or stick with generic",
+    step3Hint: "Optional - pick a brand for specific parameters or stick with generic",
     genericParams: "Generic parameters",
     genericDesc: "Universal starting parameters for this material",
     verified: "Verified ✓",
@@ -268,7 +268,7 @@ const LABELS = {
     step4: "Parameter",
 
     step1Title: "Was möchten Sie drucken?",
-    step1Hint: "Wählen Sie die für Ihr Projekt wichtigen Anforderungen — oder gehen Sie direkt zur Liste",
+    step1Hint: "Wählen Sie die für Ihr Projekt wichtigen Anforderungen - oder gehen Sie direkt zur Liste",
     skipStep1: "Alle Materialien anzeigen →",
     selectAll: "Alle auswählen",
     deselectAll: "Alle abwählen",
@@ -285,7 +285,7 @@ const LABELS = {
     collapse: "Einklappen",
 
     step3Title: "Marke / Hersteller wählen",
-    step3Hint: "Optional — Marke wählen für spezifische Parameter oder generisch bleiben",
+    step3Hint: "Optional - Marke wählen für spezifische Parameter oder generisch bleiben",
     genericParams: "Generische Parameter",
     genericDesc: "Universelle Startparameter für dieses Material",
     verified: "Verifiziert ✓",
@@ -526,7 +526,7 @@ function LegendPopup({ L }) {
               <span className="text-neutral-400">{L.legendEncRec}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-12 text-[10px] text-neutral-600 italic">—</span>
+              <span className="w-12 text-[10px] text-neutral-600 italic"> - </span>
               <span className="text-neutral-400">{L.legendEncNo}</span>
             </div>
           </div>
@@ -541,7 +541,7 @@ function LegendPopup({ L }) {
 }
 
 // ============================================================
-// RangeBar — visual slider-style range indicator
+// RangeBar - visual slider-style range indicator
 // ============================================================
 function RangeBar({ min, max, scaleMin, scaleMax, unit, label }) {
   const safeMin = min ?? scaleMin;
@@ -699,7 +699,7 @@ function BreadcrumbChips({ step, selectedType, selectedBrand, brandChoice, onJum
 }
 
 // ============================================================
-// STEP 1 — REQUIREMENTS
+// STEP 1 - REQUIREMENTS
 // ============================================================
 function Step1Requirements({ requirements, selected, onToggle, onDeselectAll, onShowAll, L }) {
   return (
@@ -752,7 +752,7 @@ function Step1Requirements({ requirements, selected, onToggle, onDeselectAll, on
 }
 
 // ============================================================
-// STEP 2 — MATERIALS
+// STEP 2 - MATERIALS
 // ============================================================
 function MaterialMiniCard({ type, onSelect, L }) {
   return (
@@ -872,7 +872,7 @@ function Step2Materials({ types, allTypes, selectedReqs, onSelect, onClearReqs, 
 }
 
 // ============================================================
-// STEP 3 — BRANDS
+// STEP 3 - BRANDS
 // ============================================================
 function BrandCard({ active, onClick, title, subtitle, badge, badgeColor, rangePreview }) {
   return (
@@ -1335,7 +1335,7 @@ function CommunityContributions({ typeId, L }) {
 }
 
 // ============================================================
-// STEP 4 — PARAMETERS
+// STEP 4 - PARAMETERS
 // ============================================================
 function Step4Parameters({ type, brand, params, lang, showEur, L }) {
   const encLabel = params.enclosure === "no" ? L.encNo : params.enclosure === "recommended" ? L.encRec : L.encReq;

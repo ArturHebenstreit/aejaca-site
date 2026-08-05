@@ -1,5 +1,5 @@
 {
-  "name": "AEJaCA — Newsletter Signup (10% discount)",
+  "name": "AEJaCA - Newsletter Signup (10% discount)",
   "nodes": [
     {
       "parameters": {
@@ -11,7 +11,7 @@
         }
       },
       "id": "webhook-newsletter",
-      "name": "Webhook — Newsletter",
+      "name": "Webhook - Newsletter",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [200, 300],
@@ -122,7 +122,7 @@
     }
   ],
   "connections": {
-    "Webhook — Newsletter": {
+    "Webhook - Newsletter": {
       "main": [[{ "node": "Respond OK", "type": "main", "index": 0 }]]
     },
     "Respond OK": {

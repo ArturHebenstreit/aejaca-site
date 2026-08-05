@@ -11,9 +11,9 @@ const METAL_LABEL = {
 };
 
 const METAL_NOTE = {
-  pl: "Odejmiemy koszt metalu — dostarcz kruszec przed realizacją",
-  en: "Metal cost excluded — supply raw metal before production",
-  de: "Metallkosten entfallen — liefern Sie Rohmetall vor der Produktion",
+  pl: "Odejmiemy koszt metalu - dostarcz kruszec przed realizacją",
+  en: "Metal cost excluded - supply raw metal before production",
+  de: "Metallkosten entfallen - liefern Sie Rohmetall vor der Produktion",
 };
 
 const STONES_LABEL = {
@@ -23,9 +23,9 @@ const STONES_LABEL = {
 };
 
 const STONES_NOTE = {
-  pl: "Odejmiemy koszt kamieni — ubezpieczamy je na czas realizacji",
-  en: "Stone cost excluded — we insure them during production",
-  de: "Steinkosten entfallen — wir versichern sie während der Produktion",
+  pl: "Odejmiemy koszt kamieni - ubezpieczamy je na czas realizacji",
+  en: "Stone cost excluded - we insure them during production",
+  de: "Steinkosten entfallen - wir versichern sie während der Produktion",
 };
 
 function ToggleSwitch({ checked, onChange }) {

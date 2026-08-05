@@ -95,12 +95,12 @@ const ALLOYS = [
   { id: "Au750W", metal: "Au", color: "white", label: "Au 750 białe (18k, Pd)", fineness: 750,
     comp: { Au: 75.0, Pd: 12.5, Ag: 8.5, Cu: 4.0 },
     meltRange: [910, 940], hv: 145, density: 15.9,
-    notes: { pl: "Pallad-białe złoto — bez niklu, hipoalergiczne. Standard EU. Często rodowane dla bielszego wyglądu.", en: "Palladium white gold — nickel-free, hypoallergenic. EU standard. Often rhodium-plated for whiter appearance.", de: "Palladium-Weißgold — nickelfrei, hypoallergen. EU-Standard. Oft rhodiniert für weißeres Aussehen." }
+    notes: { pl: "Pallad-białe złoto - bez niklu, hipoalergiczne. Standard EU. Często rodowane dla bielszego wyglądu.", en: "Palladium white gold - nickel-free, hypoallergenic. EU standard. Often rhodium-plated for whiter appearance.", de: "Palladium-Weißgold - nickelfrei, hypoallergen. EU-Standard. Oft rhodiniert für weißeres Aussehen." }
   },
   { id: "Au585W", metal: "Au", color: "white", label: "Au 585 białe (14k)", fineness: 585,
     comp: { Au: 58.5, Pd: 8.0, Ag: 28.5, Cu: 5.0 },
     meltRange: [870, 900], hv: 140, density: 13.8,
-    notes: { pl: "Ekonomiczna alternatywa dla 18k białego. Wymaga rodowania — bez warstwy Rh ma żółtawy odcień.", en: "Economical alternative to 18k white. Requires rhodium plating — without Rh layer has yellowish tint.", de: "Wirtschaftliche Alternative zu 18k Weiß. Benötigt Rhodinierung — ohne Rh-Schicht gelblicher Ton." }
+    notes: { pl: "Ekonomiczna alternatywa dla 18k białego. Wymaga rodowania - bez warstwy Rh ma żółtawy odcień.", en: "Economical alternative to 18k white. Requires rhodium plating - without Rh layer has yellowish tint.", de: "Wirtschaftliche Alternative zu 18k Weiß. Benötigt Rhodinierung - ohne Rh-Schicht gelblicher Ton." }
   },
   // === GOLD - ROSE ===
   { id: "Au750R", metal: "Au", color: "rose", label: "Au 750 różowe (18k)", fineness: 750,
@@ -117,13 +117,13 @@ const ALLOYS = [
   { id: "Au750G", metal: "Au", color: "green", label: "Au 750 zielone (18k, elektrum)", fineness: 750,
     comp: { Au: 75.0, Ag: 25.0 },
     meltRange: [880, 900], hv: 80, density: 15.8,
-    notes: { pl: "Elektrum — złoto-srebro bez miedzi. Subtelny zielonawy odcień, rzadko stosowane, ale efektowne w biżuterii artystycznej.", en: "Electrum — gold-silver without copper. Subtle greenish tint, rarely used but striking in artistic jewelry.", de: "Elektrum — Gold-Silber ohne Kupfer. Subtiler Grünton, selten verwendet, aber eindrucksvoll in Kunstschmuck." }
+    notes: { pl: "Elektrum - złoto-srebro bez miedzi. Subtelny zielonawy odcień, rzadko stosowane, ale efektowne w biżuterii artystycznej.", en: "Electrum - gold-silver without copper. Subtle greenish tint, rarely used but striking in artistic jewelry.", de: "Elektrum - Gold-Silber ohne Kupfer. Subtiler Grünton, selten verwendet, aber eindrucksvoll in Kunstschmuck." }
   },
   // === SILVER ===
   { id: "Ag999", metal: "Ag", color: null, label: "Ag 999 (fine silver)", fineness: 999,
     comp: { Ag: 99.9 },
     meltRange: [960, 962], hv: 25, density: 10.49,
-    notes: { pl: "Czyste srebro. Zbyt miękkie do większości biżuterii — używane w emalierstwie i platerach.", en: "Pure silver. Too soft for most jewelry — used in enameling and plating.", de: "Reines Silber. Zu weich für die meisten Schmuckstücke — verwendet in der Emaillierung und Beschichtung." }
+    notes: { pl: "Czyste srebro. Zbyt miękkie do większości biżuterii - używane w emalierstwie i platerach.", en: "Pure silver. Too soft for most jewelry - used in enameling and plating.", de: "Reines Silber. Zu weich für die meisten Schmuckstücke - verwendet in der Emaillierung und Beschichtung." }
   },
   { id: "Ag958", metal: "Ag", color: null, label: "Ag 958 (Britannia)", fineness: 958,
     comp: { Ag: 95.8, Cu: 4.2 },
@@ -149,7 +149,7 @@ const ALLOYS = [
   { id: "Pt900", metal: "Pt", color: null, label: "Pt 900", fineness: 900,
     comp: { Pt: 90.0, Ir: 10.0 },
     meltRange: [1720, 1755], hv: 110, density: 21.1,
-    notes: { pl: "Platyna z irydem — twardsza niż Pt950. Używana w Japonii i USA do wyrobów precyzyjnych.", en: "Platinum with iridium — harder than Pt950. Used in Japan and USA for precision pieces.", de: "Platin mit Iridium — härter als Pt950. Wird in Japan und den USA für Präzisionsstücke verwendet." }
+    notes: { pl: "Platyna z irydem - twardsza niż Pt950. Używana w Japonii i USA do wyrobów precyzyjnych.", en: "Platinum with iridium - harder than Pt950. Used in Japan and USA for precision pieces.", de: "Platin mit Iridium - härter als Pt950. Wird in Japan und den USA für Präzisionsstücke verwendet." }
   },
   // === PALLADIUM ===
   { id: "Pd950", metal: "Pd", color: null, label: "Pd 950", fineness: 950,

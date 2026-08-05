@@ -1,4 +1,4 @@
-# AEJaCA — Pełne podsumowanie projektu (Handoff)
+# AEJaCA - Pełne podsumowanie projektu (Handoff)
 
 Dokument dla nowej sesji Claude Code z dostępem do n8n MCP.
 
@@ -46,12 +46,12 @@ Dokument dla nowej sesji Claude Code z dostępem do n8n MCP.
 
 ---
 
-## 2. Usługi Railway — adresy i konfiguracja
+## 2. Usługi Railway - adresy i konfiguracja
 
 ### 2a. n8n (workflow automation)
 - **URL**: `https://primary-fhhi-production.up.railway.app`
 - **MCP endpoint**: `https://primary-fhhi-production.up.railway.app/mcp-server/http`
-- **MCP Auth**: Bearer token (JWT) — patrz `.mcp.json` w repo
+- **MCP Auth**: Bearer token (JWT) - patrz `.mcp.json` w repo
 - **Webhook URLs** (produkcja, po aktywacji workflow):
   - Newsletter: `/webhook/newsletter-signup`
   - Quote: `/webhook/quote-capture`
@@ -61,28 +61,28 @@ Dokument dla nowej sesji Claude Code z dostępem do n8n MCP.
 - **URL**: `https://aejacachatapi-production.up.railway.app`
 - **Root Directory**: `chat-api`
 - **Env vars wymagane**:
-  - `OPENAI_API_KEY` — klucz OpenAI
-  - `DATABASE_URL` — connection string do Postgres-AEJaCA (musi kończyć się na `/railway`)
+  - `OPENAI_API_KEY` - klucz OpenAI
+  - `DATABASE_URL` - connection string do Postgres-AEJaCA (musi kończyć się na `/railway`)
   - `NODE_ENV=production`
 
 ### 2c. Admin Panel
 - **URL**: `https://aejacaadmin-production.up.railway.app`
 - **Root Directory**: `admin`
 - **Env vars wymagane**:
-  - `DATABASE_URL` — connection string do Postgres-AEJaCA (musi kończyć się na `/railway`)
-  - `GOOGLE_CLIENT_ID` — Google OAuth client ID
-  - `GOOGLE_CLIENT_SECRET` — Google OAuth client secret
-  - `CALLBACK_URL` — `https://aejacaadmin-production.up.railway.app/auth/google/callback`
-  - `SESSION_SECRET` — losowy string
-  - `ALLOWED_EMAIL` — `aejaca@gmail.com`
+  - `DATABASE_URL` - connection string do Postgres-AEJaCA (musi kończyć się na `/railway`)
+  - `GOOGLE_CLIENT_ID` - Google OAuth client ID
+  - `GOOGLE_CLIENT_SECRET` - Google OAuth client secret
+  - `CALLBACK_URL` - `https://aejacaadmin-production.up.railway.app/auth/google/callback`
+  - `SESSION_SECRET` - losowy string
+  - `ALLOWED_EMAIL` - `aejaca@gmail.com`
   - `NODE_ENV=production`
 - **Google Console**: Redirect URI musi pasować do CALLBACK_URL
-- **Uwaga**: `trust proxy` + `secure: true` + `sameSite: "lax"` — już naprawione w kodzie
+- **Uwaga**: `trust proxy` + `secure: true` + `sameSite: "lax"` - już naprawione w kodzie
 
 ### 2d. PostgreSQL (Postgres-AEJaCA)
 - Tabele: `leads`, `subscribers`, `conversations`
 - Schema: `/home/user/aejaca-site/n8n/db/init.sql`
-- **WAŻNE**: DATABASE_URL z Railway reference variable czasem nie ma nazwy bazy — trzeba ręcznie dodać `/railway` na końcu
+- **WAŻNE**: DATABASE_URL z Railway reference variable czasem nie ma nazwy bazy - trzeba ręcznie dodać `/railway` na końcu
 
 ---
 
@@ -99,7 +99,7 @@ VITE_CHAT_API_URL=https://aejacachatapi-production.up.railway.app
 
 ---
 
-## 4. Pliki kluczowe — mapa
+## 4. Pliki kluczowe - mapa
 
 ### Frontend (Cloudflare Pages)
 ```
@@ -145,7 +145,7 @@ n8n/
 
 ---
 
-## 5. n8n MCP — konfiguracja połączenia
+## 5. n8n MCP - konfiguracja połączenia
 
 Plik `.mcp.json` w repozytorium zawiera konfigurację n8n MCP:
 ```json
@@ -166,20 +166,20 @@ Token JWT jest w pliku `.mcp.json`. Nowa sesja powinna automatycznie go pobrać 
 
 ---
 
-## 6. AKTUALNY STATUS — co działa, co nie
+## 6. AKTUALNY STATUS - co działa, co nie
 
 ### ✅ Działa
-- **Admin panel** — logowanie Google OAuth, dashboard, listy leads/subscribers/conversations, eksport CSV
-- **Chat widget** — streaming GPT-4o-mini, zapis do PostgreSQL, hot lead detection
-- **Strona frontendowa** — kalkulatory, blog, SEO, i18n (pl/en/de)
-- **n8n webhooks** — odbierają requesty, zwracają 200 OK (po naprawie "Respond OK" → "No Data")
+- **Admin panel** - logowanie Google OAuth, dashboard, listy leads/subscribers/conversations, eksport CSV
+- **Chat widget** - streaming GPT-4o-mini, zapis do PostgreSQL, hot lead detection
+- **Strona frontendowa** - kalkulatory, blog, SEO, i18n (pl/en/de)
+- **n8n webhooks** - odbierają requesty, zwracają 200 OK (po naprawie "Respond OK" → "No Data")
 
 ### ❌ Wymaga naprawy w n8n
 
-#### Problem 1: Newsletter workflow — Validate Email node
+#### Problem 1: Newsletter workflow - Validate Email node
 **Objaw**: Dane przechodzą webhook → Respond OK → Validate Email, ale ZAWSZE idą do False Branch. Downstream node'y (PostgreSQL, Gmail x2) się nie wykonują.
 
-**Przyczyna**: Node "Validate Email" (IF) miał pustą konfigurację warunków po imporcie. Dodaliśmy warunek `{{ $json.body.email }}` is not empty, ale nadal nie działa — prawdopodobnie pole nie jest w trybie Expression (n8n traktuje wyrażenie jako tekst).
+**Przyczyna**: Node "Validate Email" (IF) miał pustą konfigurację warunków po imporcie. Dodaliśmy warunek `{{ $json.body.email }}` is not empty, ale nadal nie działa - prawdopodobnie pole nie jest w trybie Expression (n8n traktuje wyrażenie jako tekst).
 
 **Rozwiązanie**: **Usunąć node "Validate Email"** i połączyć "Respond OK" bezpośrednio z 3 downstream node'ami:
 - Respond OK → Save to PostgreSQL
@@ -188,7 +188,7 @@ Token JWT jest w pliku `.mcp.json`. Nowa sesja powinna automatycznie go pobrać 
 
 Frontend już waliduje email (regex + `required`), więc walidacja w n8n jest zbędna.
 
-#### Problem 2: Quote workflow — Validate Data node
+#### Problem 2: Quote workflow - Validate Data node
 **Prawdopodobnie ten sam problem** co w Newsletter. Warunek IF może nie działać po imporcie. Trzeba sprawdzić i ewentualnie też usunąć.
 
 #### Problem 3: Gmail OAuth2 credentials
@@ -210,26 +210,26 @@ Node'y "Save to PostgreSQL" w obu workflow wymagają Railway PostgreSQL credenti
 2. Połączyć Respond OK → 3 downstream node'y
 3. Sprawdzić credentials PostgreSQL w node "Save to PostgreSQL"
 4. Sprawdzić credentials Gmail w "Send Welcome + Discount" i "Notify Owner"
-5. Aktywować workflow (WAŻNE — bez aktywacji webhook jest nieaktywny!)
+5. Aktywować workflow (WAŻNE - bez aktywacji webhook jest nieaktywny!)
 6. Przetestować: newsletter signup na stronie → sprawdzić czy:
    - Subscriber pojawia się w tabeli `subscribers`
    - Email z kodem AEJACA10 dochodzi do subskrybenta
    - Owner dostaje notyfikację
 
 ### Priorytet 2: Naprawić Quote workflow
-1. Sprawdzić node "Validate Data" — ten sam problem co Validate Email?
-2. Jeśli tak — usunąć i połączyć bezpośrednio
+1. Sprawdzić node "Validate Data" - ten sam problem co Validate Email?
+2. Jeśli tak - usunąć i połączyć bezpośrednio
 3. Sprawdzić credentials PostgreSQL i Gmail
 4. Przetestować: kalkulator → podanie emaila → sprawdzić czy:
    - Lead pojawia się w tabeli `leads`
    - Email z wyceną dochodzi
    - Owner dostaje notyfikację
-   - Po 48h wysyła się follow-up (nie trzeba czekać — można skrócić wait dla testu)
+   - Po 48h wysyła się follow-up (nie trzeba czekać - można skrócić wait dla testu)
 
 ### Priorytet 3: Sprawdzić VITE_* URL-e
 - Porównać URL-e w `.env` z aktualnymi URL-ami na Railway
-- Jeśli się różnią — zaktualizować `.env` i przebudować na Cloudflare Pages
-- `VITE_CHAT_API_URL` nie jest w `.env` — dodać!
+- Jeśli się różnią - zaktualizować `.env` i przebudować na Cloudflare Pages
+- `VITE_CHAT_API_URL` nie jest w `.env` - dodać!
 
 ### Priorytet 4: Merge do main
 - Branch `claude/review-repository-ZAITI` ma wszystkie zmiany
@@ -284,7 +284,7 @@ Frontend: `ChatWidget.jsx`
 
 ---
 
-## 9. Szablony emaili — zmienne n8n
+## 9. Szablony emaili - zmienne n8n
 
 ### newsletter-welcome.html
 Zmienne: `{{ $json.body.email }}`, `{{ $json.body.lang }}`
@@ -294,27 +294,27 @@ Kod rabatowy: **AEJACA10** (stały, -10%, bez daty ważności)
 Zmienne: `$json.body.email`, `.lang`, `.calculator`, `.params`, `.price.perPcPLN.min/max`, `.price.perPcEUR.min/max`, `.price.qty`
 
 ### followup-48h.html / discount-7d.html
-Zmienne przez referencję do webhook node'a: `$('Webhook — Quote Received').item.json.body.*`
+Zmienne przez referencję do webhook node'a: `$('Webhook - Quote Received').item.json.body.*`
 Kod rabatowy (7d): **AEJACA5** (stały, -5%)
 
 ---
 
-## 10. Git — stan
+## 10. Git - stan
 
 - **Branch roboczy**: `claude/review-repository-ZAITI`
 - **Ostatni commit**: `Add founder info to chat assistant knowledge base`
 - **Branch produkcyjny**: `main` (Cloudflare Pages auto-deploy)
 - **Status**: Working tree clean, wszystko commitnięte
-- **Railway deploy**: z brancha wskazanego w Railway settings (prawdopodobnie `main` — trzeba zmerge'ować)
+- **Railway deploy**: z brancha wskazanego w Railway settings (prawdopodobnie `main` - trzeba zmerge'ować)
 
 ---
 
 ## 11. Znane pułapki
 
-1. **Railway DATABASE_URL** — reference variable z Railway czasem nie zawiera nazwy bazy. Trzeba ręcznie dodać `/railway` na końcu.
-2. **n8n expression mode** — wpisanie `{{ $json.body.email }}` w polu IF node nie działa jeśli pole jest w trybie "Fixed" zamiast "Expression". Import workflow JSON nie zawsze prawidłowo ustawia typ pola.
-3. **n8n "Respond to Webhook" + JSON** — `responseBody: "={ ... }"` powoduje "Invalid JSON in Response Body". Rozwiązanie: "Respond With" = "No Data" (frontend sprawdza tylko `res.ok`, nie parsuje body).
-4. **n8n workflow activation** — po każdej zmianie workflow MUSI być aktywowany (toggle w prawym górnym rogu). Bez tego webhoki nie działają (zwracają 404).
-5. **Cloudflare Pages VITE_*** — zmienne są bake'owane w build. Po zmianie trzeba przebudować (redeploy).
-6. **Google OAuth consent screen** — jeśli w trybie "Testing", tylko dodane test users mogą się logować. Dodać `aejaca@gmail.com` jako test user.
-7. **Railway reverse proxy** — wymaga `trust proxy: 1` + `secure: true` + `sameSite: "lax"` dla cookies sesji (już naprawione w kodzie admin).
+1. **Railway DATABASE_URL** - reference variable z Railway czasem nie zawiera nazwy bazy. Trzeba ręcznie dodać `/railway` na końcu.
+2. **n8n expression mode** - wpisanie `{{ $json.body.email }}` w polu IF node nie działa jeśli pole jest w trybie "Fixed" zamiast "Expression". Import workflow JSON nie zawsze prawidłowo ustawia typ pola.
+3. **n8n "Respond to Webhook" + JSON** - `responseBody: "={ ... }"` powoduje "Invalid JSON in Response Body". Rozwiązanie: "Respond With" = "No Data" (frontend sprawdza tylko `res.ok`, nie parsuje body).
+4. **n8n workflow activation** - po każdej zmianie workflow MUSI być aktywowany (toggle w prawym górnym rogu). Bez tego webhoki nie działają (zwracają 404).
+5. **Cloudflare Pages VITE_*** - zmienne są bake'owane w build. Po zmianie trzeba przebudować (redeploy).
+6. **Google OAuth consent screen** - jeśli w trybie "Testing", tylko dodane test users mogą się logować. Dodać `aejaca@gmail.com` jako test user.
+7. **Railway reverse proxy** - wymaga `trust proxy: 1` + `secure: true` + `sameSite: "lax"` dla cookies sesji (już naprawione w kodzie admin).

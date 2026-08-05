@@ -1,5 +1,5 @@
 /* ============================================================
-   AEJaCA Design System — Colors & Type (v2 · light defaults)
+   AEJaCA Design System - Colors & Type (v2 · light defaults)
    ------------------------------------------------------------
    Two brand themes, one toggleable dark "night mode" alternate.
 
@@ -20,7 +20,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap");
 
 /* -----------------------------------------------------------
-   Shared base — fonts + scales + motion (theme-agnostic)
+   Shared base - fonts + scales + motion (theme-agnostic)
    ----------------------------------------------------------- */
 :root {
   --font-serif:  "Playfair Display", "Noto Serif", Georgia, serif;
@@ -51,7 +51,7 @@
   --tracking-eyebrow:     0.28em;
   --tracking-eyebrow-x:   0.32em;
 
-  /* Radii — same in both themes */
+  /* Radii - same in both themes */
   --radius-sm:   4px;
   --radius-md:   8px;
   --radius-lg:   12px;
@@ -79,7 +79,7 @@
 }
 
 /* ============================================================
-   THEME 1 — AEJaCA Jewelry · Warm cream (default for Jewelry)
+   THEME 1 - AEJaCA Jewelry · Warm cream (default for Jewelry)
    ============================================================ */
 .brand-jewelry,
 :root.brand-jewelry {
@@ -105,13 +105,13 @@
   --fg-on-accent:   #FFFFFF;      /* text on the gold accent */
   --fg-inverse:     #F8F4ED;      /* text on espresso panels */
 
-  /* Accent — champagne gold */
+  /* Accent - champagne gold */
   --accent:         #A87425;      /* primary  */
   --accent-hover:   #7A5217;      /* eyebrows / hover deeper */
   --accent-soft:    #EDDDB6;      /* tinted background */
   --accent-light:   #E6C580;      /* luminous tone for hero white-on-dark */
 
-  /* Hero scrim — darkens the photo so white text reads */
+  /* Hero scrim - darkens the photo so white text reads */
   --hero-scrim:     linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.28) 40%, rgba(248,244,237,0.55) 75%, #F8F4ED 100%);
 
   /* Button defaults */
@@ -120,12 +120,12 @@
   --btn-accent-bg:  #A87425;
   --btn-accent-fg:  #FFFFFF;
 
-  /* Shadow system — lighter, warmer */
+  /* Shadow system - lighter, warmer */
   --shadow-card:        0 1px 2px rgba(31,26,20,0.04), 0 8px 24px -8px rgba(31,26,20,0.08);
   --shadow-card-hover:  0 4px 8px rgba(31,26,20,0.06), 0 24px 48px -12px rgba(31,26,20,0.14);
   --shadow-accent-glow: 0 20px 40px -16px rgba(168,116,37,0.30);
 
-  /* Type-by-family — Jewelry leads with Playfair */
+  /* Type-by-family - Jewelry leads with Playfair */
   --font-display:   var(--font-serif);
   --font-h2:        var(--font-serif);
   --font-h3:        var(--font-serif);
@@ -135,7 +135,7 @@
 }
 
 /* ============================================================
-   THEME 2 — AEJaCA sTuDiO · Light blueprint (default for sTuDiO)
+   THEME 2 - AEJaCA sTuDiO · Light blueprint (default for sTuDiO)
    ============================================================ */
 .brand-studio,
 :root.brand-studio {
@@ -161,7 +161,7 @@
   --fg-on-accent:   #FFFFFF;
   --fg-inverse:     #F4F6F9;
 
-  /* Accent — blueprint cobalt */
+  /* Accent - blueprint cobalt */
   --accent:         #2563EB;
   --accent-hover:   #1D4ED8;
   --accent-soft:    #DBEAFE;
@@ -188,7 +188,7 @@
 }
 
 /* ============================================================
-   DARK ALTERNATE — night mode for either brand
+   DARK ALTERNATE - night mode for either brand
    Activate with data-theme="dark" on any ancestor.
    ============================================================ */
 .brand-jewelry[data-theme="dark"],
@@ -244,7 +244,7 @@
 }
 
 /* ============================================================
-   Semantic helpers — drop these classes on elements for instant
+   Semantic helpers - drop these classes on elements for instant
    on-brand typography. They consume the variables above.
    ============================================================ */
 
@@ -305,7 +305,7 @@
   color: var(--fg-3);
 }
 
-/* Eyebrow — uppercase tracked tag. Use the .ds-eyebrow-rule
+/* Eyebrow - uppercase tracked tag. Use the .ds-eyebrow-rule
    variant to add the flanking hairlines used on every section
    title in the live design. */
 .ds-eyebrow {

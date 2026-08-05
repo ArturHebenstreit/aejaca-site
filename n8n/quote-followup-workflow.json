@@ -1,5 +1,5 @@
 {
-  "name": "AEJaCA — Quote Email Follow-up",
+  "name": "AEJaCA - Quote Email Follow-up",
   "nodes": [
     {
       "parameters": {
@@ -11,7 +11,7 @@
         }
       },
       "id": "webhook-trigger",
-      "name": "Webhook — Quote Received",
+      "name": "Webhook - Quote Received",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [200, 300],
@@ -106,7 +106,7 @@
         }
       },
       "notesInFlow": true,
-      "notes": "CONFIGURE: Set your Gmail OAuth2 credential. The HTML template is in the 'message' field — see SETUP.md for the template."
+      "notes": "CONFIGURE: Set your Gmail OAuth2 credential. The HTML template is in the 'message' field - see SETUP.md for the template."
     },
     {
       "parameters": {
@@ -121,8 +121,8 @@
     },
     {
       "parameters": {
-        "sendTo": "={{ $('Webhook — Quote Received').item.json.body.email }}",
-        "subject": "={{ $('Webhook — Quote Received').item.json.body.lang === 'de' ? 'Haben Sie Fragen zu Ihrem Angebot?' : $('Webhook — Quote Received').item.json.body.lang === 'en' ? 'Any questions about your quote?' : 'Masz pytania dotyczące wyceny?' }}",
+        "sendTo": "={{ $('Webhook - Quote Received').item.json.body.email }}",
+        "subject": "={{ $('Webhook - Quote Received').item.json.body.lang === 'de' ? 'Haben Sie Fragen zu Ihrem Angebot?' : $('Webhook - Quote Received').item.json.body.lang === 'en' ? 'Any questions about your quote?' : 'Masz pytania dotyczące wyceny?' }}",
         "message": "",
         "options": {
           "appendAttribution": false,
@@ -154,8 +154,8 @@
     },
     {
       "parameters": {
-        "sendTo": "={{ $('Webhook — Quote Received').item.json.body.email }}",
-        "subject": "={{ $('Webhook — Quote Received').item.json.body.lang === 'de' ? '5% Rabatt auf Ihr AEJaCA-Projekt' : $('Webhook — Quote Received').item.json.body.lang === 'en' ? '5% off your AEJaCA project' : '5% rabatu na Twój projekt w AEJaCA' }}",
+        "sendTo": "={{ $('Webhook - Quote Received').item.json.body.email }}",
+        "subject": "={{ $('Webhook - Quote Received').item.json.body.lang === 'de' ? '5% Rabatt auf Ihr AEJaCA-Projekt' : $('Webhook - Quote Received').item.json.body.lang === 'en' ? '5% off your AEJaCA project' : '5% rabatu na Twój projekt w AEJaCA' }}",
         "message": "",
         "options": {
           "appendAttribution": false,
@@ -177,7 +177,7 @@
     {
       "parameters": {
         "sendTo": "contact@aejaca.com",
-        "subject": "=🔔 Nowa wycena: {{ $json.body.calculator }} — {{ $json.body.price.perPcPLN.min }}–{{ $json.body.price.perPcPLN.max }} PLN",
+        "subject": "=🔔 Nowa wycena: {{ $json.body.calculator }} - {{ $json.body.price.perPcPLN.min }}–{{ $json.body.price.perPcPLN.max }} PLN",
         "message": "=<h3>Nowy lead z kalkulatora</h3><p><b>Email:</b> {{ $json.body.email }}<br><b>Kalkulator:</b> {{ $json.body.calculator }}<br><b>Parametry:</b> {{ $json.body.params }}<br><b>Cena:</b> {{ $json.body.price.perPcPLN.min }}–{{ $json.body.price.perPcPLN.max }} PLN ({{ $json.body.price.perPcEUR.min }}–{{ $json.body.price.perPcEUR.max }} EUR)<br><b>Ilość:</b> {{ $json.body.price.qty }}<br><b>Czas:</b> {{ $json.body.ts }}</p>",
         "options": {
           "appendAttribution": false
@@ -197,7 +197,7 @@
     }
   ],
   "connections": {
-    "Webhook — Quote Received": {
+    "Webhook - Quote Received": {
       "main": [
         [
           {

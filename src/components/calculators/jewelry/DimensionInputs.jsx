@@ -1,6 +1,12 @@
 import { getProductType, EU_RING_SIZES, US_RING_SIZES, UK_RING_SIZES, JP_RING_SIZES, getRingInnerDiameter } from "./productConfig.js";
 import { t } from "../calcShared.jsx";
 
+const SIZER_LINK = {
+  pl: "Nie znasz rozmiaru?",
+  en: "Do not know your size?",
+  de: "Größe unbekannt?",
+};
+
 function NumberField({ field, value, onChange, lang }) {
   const val = value !== undefined ? value : field.default;
 
@@ -110,7 +116,7 @@ const SYSTEM_DEFAULTS = {
   mm: 17.2,
 };
 
-function RingSizeField({ field, value, onChange }) {
+function RingSizeField({ field, value, onChange, lang }) {
   const val = (value && typeof value === "object") ? value : field.default;
   const system = val.system || "EU";
   const sizeValue = val.value !== undefined ? val.value : SYSTEM_DEFAULTS[system];
@@ -134,9 +140,21 @@ function RingSizeField({ field, value, onChange }) {
     <div className="space-y-3">
       {/* System selector pills */}
       <div>
-        <label className="block text-xs font-medium text-neutral-400 [data-theme='light']:text-neutral-600 mb-1.5 uppercase tracking-wide">
-          {typeof field.label === "object" ? (field.label.en || field.label.pl) : field.label}
-        </label>
+        <div className="flex items-baseline justify-between gap-3 mb-1.5">
+          <label className="block text-xs font-medium text-neutral-400 [data-theme='light']:text-neutral-600 uppercase tracking-wide">
+            {typeof field.label === "object" ? (field.label.en || field.label.pl) : field.label}
+          </label>
+          {/* Pytamy o rozmiar, wiec musimy powiedziec, skad go wziac. Nowa karta,
+              bo skonfigurowana wycena zginelaby przy nawigacji w tej samej. */}
+          <a
+            href="/toolsjewelry/ring-sizer/"
+            target="_blank"
+            rel="noopener"
+            className="text-[11px] text-amber-400 hover:text-amber-300 underline underline-offset-2 whitespace-nowrap"
+          >
+            {SIZER_LINK[lang] || SIZER_LINK.en}
+          </a>
+        </div>
         <div className="flex gap-2 flex-wrap">
           {RING_SYSTEMS.map((sys) => (
             <button

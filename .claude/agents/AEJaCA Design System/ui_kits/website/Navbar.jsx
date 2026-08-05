@@ -1,4 +1,4 @@
-/* AEJaCA Navbar — fixed translucent top bar with brand dropdowns + lang switcher.
+/* AEJaCA Navbar - fixed translucent top bar with brand dropdowns + lang switcher.
    Cosmetic recreation; dropdowns are simulated state, no router. */
 
 const NAV_LINKS = [

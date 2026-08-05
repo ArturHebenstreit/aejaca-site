@@ -8,9 +8,9 @@ export const meta = {
   coverImage: "/img/blog/jak-przygotowac-plik-stl.webp",
   readingTime: { pl: 7, en: 5, de: 5 },
   title: {
-    pl: "Jak przygotować plik STL do druku 3D — poradnik",
-    en: "How to Prepare an STL File for 3D Printing — Guide",
-    de: "STL-Datei für den 3D-Druck vorbereiten — Anleitung",
+    pl: "Jak przygotować plik STL do druku 3D - poradnik",
+    en: "How to Prepare an STL File for 3D Printing - Guide",
+    de: "STL-Datei für den 3D-Druck vorbereiten - Anleitung",
   },
   description: {
     pl: "Wszystko o plikach STL: formaty, naprawianie błędów, optymalizacja siatki, eksport z popularnych programów. Prześlij gotowy plik do kalkulatora AEJaCA.",
@@ -48,20 +48,20 @@ export const meta = {
   faq: {
     pl: [
       { q: "Jakie formaty plików akceptujecie do druku 3D?", a: "STL, 3MF, STEP i OBJ. Najlepszy wybór to STL (uniwersalny) lub 3MF (multi-materiał z kolorami)." },
-      { q: "Jaka jest minimalna grubość ścianki dla druku FDM?", a: "Zalecamy minimum 1,2 mm (3 ścieżki dyszy 0,4 mm). Dla detali strukturalnych — 2 mm." },
-      { q: "Mój plik STL ma błędy — czy możecie go naprawić?", a: "Tak — sprawdzamy każdy plik przed drukiem. Drobne naprawy są bezpłatne. Większe przebudowy siatki wyceniamy indywidualnie." },
+      { q: "Jaka jest minimalna grubość ścianki dla druku FDM?", a: "Zalecamy minimum 1,2 mm (3 ścieżki dyszy 0,4 mm). Dla detali strukturalnych - 2 mm." },
+      { q: "Mój plik STL ma błędy - czy możecie go naprawić?", a: "Tak - sprawdzamy każdy plik przed drukiem. Drobne naprawy są bezpłatne. Większe przebudowy siatki wyceniamy indywidualnie." },
       { q: "Jak wyeksportować STL z Fusion 360 / Blender?", a: "Fusion 360: File → Export → STL, ustaw dokładność 'High'. Blender: File → Export → STL, zaznacz 'Apply Modifiers'." },
     ],
     en: [
       { q: "What file formats do you accept for 3D printing?", a: "STL, 3MF, STEP, and OBJ. Best choice is STL (universal) or 3MF (multi-material with colors)." },
-      { q: "What's the minimum wall thickness for FDM printing?", a: "We recommend at least 1.2 mm (3 passes of a 0.4 mm nozzle). For structural details — 2 mm." },
-      { q: "My STL has errors — can you fix it?", a: "Yes — we check every file before printing. Minor repairs are free. Major mesh rebuilds are quoted individually." },
+      { q: "What's the minimum wall thickness for FDM printing?", a: "We recommend at least 1.2 mm (3 passes of a 0.4 mm nozzle). For structural details - 2 mm." },
+      { q: "My STL has errors - can you fix it?", a: "Yes - we check every file before printing. Minor repairs are free. Major mesh rebuilds are quoted individually." },
       { q: "How do I export STL from Fusion 360 / Blender?", a: "Fusion 360: File → Export → STL, set refinement to 'High'. Blender: File → Export → STL, check 'Apply Modifiers'." },
     ],
     de: [
       { q: "Welche Dateiformate akzeptieren Sie für den 3D-Druck?", a: "STL, 3MF, STEP und OBJ. Beste Wahl: STL (universell) oder 3MF (Multi-Material mit Farben)." },
-      { q: "Wie dick muss die Wand beim FDM-Druck mindestens sein?", a: "Wir empfehlen mindestens 1,2 mm (3 Bahnen einer 0,4-mm-Düse). Für strukturelle Details — 2 mm." },
-      { q: "Meine STL-Datei hat Fehler — können Sie sie reparieren?", a: "Ja — wir prüfen jede Datei vor dem Druck. Kleine Reparaturen sind kostenlos. Größere Netz-Umbauten werden individuell berechnet." },
+      { q: "Wie dick muss die Wand beim FDM-Druck mindestens sein?", a: "Wir empfehlen mindestens 1,2 mm (3 Bahnen einer 0,4-mm-Düse). Für strukturelle Details - 2 mm." },
+      { q: "Meine STL-Datei hat Fehler - können Sie sie reparieren?", a: "Ja - wir prüfen jede Datei vor dem Druck. Kleine Reparaturen sind kostenlos. Größere Netz-Umbauten werden individuell berechnet." },
       { q: "Wie exportiere ich STL aus Fusion 360 / Blender?", a: "Fusion 360: Datei → Exportieren → STL, Genauigkeit auf ‚Hoch'. Blender: Datei → Exportieren → STL, ‚Modifikatoren anwenden' aktivieren." },
     ],
   },
