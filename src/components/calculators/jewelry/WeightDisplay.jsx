@@ -16,7 +16,7 @@ const CLIENT_METAL_NOTE = {
   de: "Wir prüfen Reinheit und Gewicht (+1–2 Werktage)",
 };
 
-// Consigned-material (materiał powierzony) liability note — in the name of the AEJaCA team
+// Consigned-material (materiał powierzony) liability note - in the name of the AEJaCA team
 const CONSIGNED_NOTE = {
   pl: "Materiał powierzony: kruszec przyjmujemy na podstawie deklarowanej próby. Przy odbiorze ważymy i fotografujemy każdy element oraz weryfikujemy stop (gęstość, próba kwasowa); w razie wątpliwości proponujemy analizę w Urzędzie Probierczym przed wykonaniem (koszt po stronie Klienta). Zespół AEJaCA nie odpowiada za wady wyrobu wynikające z faktycznego składu powierzonego materiału, jeśli odbiega on od deklaracji.",
   en: "Consigned material: we accept metal based on its declared fineness. On receipt we weigh and photograph each item and verify the alloy (density, acid test); if in doubt we propose an assay at the State Assay Office before production (cost borne by the Client). The AEJaCA team is not liable for defects in the finished piece resulting from the supplied material's actual composition differing from the declaration.",
@@ -44,7 +44,7 @@ export default function WeightDisplay({ nettoG, bruttoG, metalName, lang, client
         {TITLE[l]}
       </div>
 
-      {/* Weight bars — only render when valid */}
+      {/* Weight bars - only render when valid */}
       {nettoG > 0 && bruttoG > 0 && (
         <>
           {/* Netto row */}

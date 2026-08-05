@@ -465,7 +465,7 @@ async function lookupCountry(ip) {
   if (!ip || isPrivateIP(ip)) return null;
   if (countryCache.has(ip)) return countryCache.get(ip);
   try {
-    // ipapi.co — HTTPS, free 1k/day, plain-text country code response
+    // ipapi.co - HTTPS, free 1k/day, plain-text country code response
     const res = await fetch(`https://ipapi.co/${encodeURIComponent(ip)}/country_code/`, {
       headers: { "User-Agent": "aejaca-analytics/1.0" },
       signal: AbortSignal.timeout(3000),
@@ -691,7 +691,7 @@ app.post("/api/contact", (req, res, next) => {
   if ((name?.length ?? 0) > 100 || message.length > 5000) return res.status(400).json({ error: "Input too long" });
 
   const payload = {
-    name: (name || "").trim().slice(0, 100) || "—",
+    name: (name || "").trim().slice(0, 100) || " - ",
     email: email.trim().toLowerCase(),
     subject: SUBJECT_MAP[subject] || (subject || "General Inquiry").slice(0, 100),
     message: message.trim().slice(0, 5000),
@@ -702,7 +702,7 @@ app.post("/api/contact", (req, res, next) => {
     payload.file = { name: req.file.originalname, type: req.file.mimetype, data: req.file.buffer.toString("base64") };
   }
 
-  // Check if this email was already contacted — pass flag to n8n so it skips follow-up
+  // Check if this email was already contacted - pass flag to n8n so it skips follow-up
   const alreadyContacted = pool
     ? pool.query("SELECT contacted_at FROM leads WHERE email = $1 AND contacted_at IS NOT NULL LIMIT 1", [payload.email])
         .then(r => r.rows.length > 0)
@@ -774,7 +774,7 @@ app.post("/api/quote", express.json({ limit: "50mb" }), async (req, res) => {
     ...(file?.data ? { file: { name: String(file.name || "attachment").slice(0, 255), type: String(file.type || "application/octet-stream"), data: file.data } } : {}),
   };
 
-  // Check if this email was already contacted — pass flag to n8n so it skips follow-up
+  // Check if this email was already contacted - pass flag to n8n so it skips follow-up
   const alreadyContactedQuote = pool
     ? pool.query("SELECT contacted_at FROM leads WHERE email = $1 AND contacted_at IS NOT NULL LIMIT 1", [payload.email])
         .then(r => r.rows.length > 0)
@@ -2767,7 +2767,7 @@ async function ensureMatrixCache() {
   }
 }
 
-// GET /api/laser-matrix — all rows, optional ?laser=CO2&action=Grawerowanie&material=Akryl
+// GET /api/laser-matrix - all rows, optional ?laser=CO2&action=Grawerowanie&material=Akryl
 app.get("/api/laser-matrix", async (req, res) => {
   if (!pool) return res.status(503).json({ error: "DB unavailable" });
   try {
@@ -2787,7 +2787,7 @@ app.get("/api/laser-matrix", async (req, res) => {
   }
 });
 
-// GET /api/laser-matrix/options — unique filter values for wizard dropdowns
+// GET /api/laser-matrix/options - unique filter values for wizard dropdowns
 app.get("/api/laser-matrix/options", async (req, res) => {
   if (!pool) return res.status(503).json({ error: "DB unavailable" });
   try {
@@ -2809,7 +2809,7 @@ app.get("/api/laser-matrix/options", async (req, res) => {
   }
 });
 
-// POST /api/laser-matrix/invalidate — clears cache (called by admin after edit)
+// POST /api/laser-matrix/invalidate - clears cache (called by admin after edit)
 app.post("/api/laser-matrix/invalidate", express.json({ limit: "1kb" }), (req, res) => {
   if (!requireInvalidateToken(req, res)) return;
   _matrixCache = { ts: 0, rows: null };
@@ -2852,7 +2852,7 @@ async function fetchPlatinumPalladiumSilver() {
   if (!pool) return;
   const apiKey = process.env.METAL_PRICE_API_KEY;
   if (!apiKey) {
-    console.warn("[rates] METAL_PRICE_API_KEY not set — skipping Pt/Pd/Ag fetch");
+    console.warn("[rates] METAL_PRICE_API_KEY not set - skipping Pt/Pd/Ag fetch");
     return;
   }
   try {
@@ -3001,7 +3001,7 @@ async function getFilamentData() {
   return _filamentCache.data;
 }
 
-// GET /api/filaments — public
+// GET /api/filaments - public
 app.get("/api/filaments", async (req, res) => {
   try {
     const data = await getFilamentData();
@@ -3019,7 +3019,7 @@ app.get("/api/filaments", async (req, res) => {
   }
 });
 
-// GET /api/filaments/options — unique values for wizard
+// GET /api/filaments/options - unique values for wizard
 app.get("/api/filaments/options", async (req, res) => {
   try {
     const data = await getFilamentData();
@@ -3034,7 +3034,7 @@ app.get("/api/filaments/options", async (req, res) => {
   }
 });
 
-// GET /api/filaments/contributions?type_id=X — pending contributions (public)
+// GET /api/filaments/contributions?type_id=X - pending contributions (public)
 app.get("/api/filaments/contributions", async (req, res) => {
   try {
     if (!pool) return res.status(503).json({ error: "DB unavailable" });
@@ -3057,7 +3057,7 @@ app.get("/api/filaments/contributions", async (req, res) => {
   }
 });
 
-// POST /api/filaments/contribute — user submission
+// POST /api/filaments/contribute - user submission
 const contributeLimit = limitBy(createLimiter({ limit: 3, windowMs: 60 * 60_000, name: "zgloszenie filamentu" }), extractIP);
 app.post("/api/filaments/contribute", express.json({ limit: "16kb" }), contributeLimit, async (req, res) => {
   try {
@@ -3087,7 +3087,7 @@ app.post("/api/filaments/contribute", express.json({ limit: "16kb" }), contribut
   }
 });
 
-// POST /api/filaments/vote — community voting on contributions
+// POST /api/filaments/vote - community voting on contributions
 const voteLimit = limitBy(createLimiter({ limit: 20, windowMs: 60 * 60_000, name: "glos na filament" }), extractIP);
 app.post("/api/filaments/vote", express.json({ limit: "4kb" }), voteLimit, async (req, res) => {
   try {
@@ -3147,7 +3147,7 @@ app.post("/api/filaments/vote", express.json({ limit: "4kb" }), voteLimit, async
   }
 });
 
-// POST /api/filaments/invalidate — admin cache invalidation
+// POST /api/filaments/invalidate - admin cache invalidation
 app.post("/api/filaments/invalidate", express.json(), (req, res) => {
   if (!requireInvalidateToken(req, res)) return;
   _filamentCache = { ts: 0, data: null };

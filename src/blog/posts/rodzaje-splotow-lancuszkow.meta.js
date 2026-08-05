@@ -52,43 +52,43 @@ export const meta = {
     pl: [
       {
         q: "Który splot łańcuszka jest najtrwalszy?",
-        a: "Pancerka i kostka należą do najodporniejszych — spłaszczone lub kwadratowe ogniwa dobrze rozkładają naprężenia. Sploty okrągłe (ankier, rolo) są nieco bardziej podatne na rozciąganie, ale nadal solidne. Bizmark i bizantyjski, mimo złożoności, są zaskakująco wytrzymałe dzięki gęstemu przeplataniu.",
+        a: "Pancerka i kostka należą do najodporniejszych - spłaszczone lub kwadratowe ogniwa dobrze rozkładają naprężenia. Sploty okrągłe (ankier, rolo) są nieco bardziej podatne na rozciąganie, ale nadal solidne. Bizmark i bizantyjski, mimo złożoności, są zaskakująco wytrzymałe dzięki gęstemu przeplataniu.",
       },
       {
         q: "Jaki splot wybrać do wisiorka?",
-        a: "Do delikatnych wisiorków i medalików idealnie pasuje klasyczny, ankier lub singapur — nie przyciągają uwagi, są dyskretnym tłem dla zawieszki. Do cięższych pendant'ów (powyżej 5g) lepsza będzie pancerka lub rolo. Sploty masywne (lisi ogon, kordel, bizmark) nosi się zazwyczaj solo — bez zawieszki.",
+        a: "Do delikatnych wisiorków i medalików idealnie pasuje klasyczny, ankier lub singapur - nie przyciągają uwagi, są dyskretnym tłem dla zawieszki. Do cięższych pendant'ów (powyżej 5g) lepsza będzie pancerka lub rolo. Sploty masywne (lisi ogon, kordel, bizmark) nosi się zazwyczaj solo - bez zawieszki.",
       },
       {
         q: "Czy łańcuszek ręcznie robiony różni się od fabrycznego?",
-        a: "Tak, i to znacznie. W ręcznym wykonaniu każde ogniwo jest formowane i lutowane osobno — możemy swobodnie dobrać grubość drutu, szerokość, długość, a nawet mieszać sploty w jednym łańcuszku. Łańcuchy fabryczne wychodzą z walcarki w standardowych rozmiarach; ręczne to biżuteria na wymiar.",
+        a: "Tak, i to znacznie. W ręcznym wykonaniu każde ogniwo jest formowane i lutowane osobno - możemy swobodnie dobrać grubość drutu, szerokość, długość, a nawet mieszać sploty w jednym łańcuszku. Łańcuchy fabryczne wychodzą z walcarki w standardowych rozmiarach; ręczne to biżuteria na wymiar.",
       },
     ],
     en: [
       {
         q: "Which chain weave is the most durable?",
-        a: "Curb (pancerka) and box (kostka) chains are among the most resistant — their flat or square links distribute stress well. Round-link chains (anchor, rolo) are slightly more prone to stretching but still solid. Bismark and Byzantine, despite their complexity, are surprisingly strong thanks to dense interlocking.",
+        a: "Curb (pancerka) and box (kostka) chains are among the most resistant - their flat or square links distribute stress well. Round-link chains (anchor, rolo) are slightly more prone to stretching but still solid. Bismark and Byzantine, despite their complexity, are surprisingly strong thanks to dense interlocking.",
       },
       {
         q: "Which weave should I choose for a pendant?",
-        a: "For delicate pendants and medallions, classic, anchor, or Singapore chains work best — they are discreet backgrounds for the pendant. For heavier pendants (over 5g), curb or rolo are better choices. Bold weaves (foxtail, rope, Bismark) are usually worn solo — without any pendant.",
+        a: "For delicate pendants and medallions, classic, anchor, or Singapore chains work best - they are discreet backgrounds for the pendant. For heavier pendants (over 5g), curb or rolo are better choices. Bold weaves (foxtail, rope, Bismark) are usually worn solo - without any pendant.",
       },
       {
         q: "Does a handmade chain differ from a factory one?",
-        a: "Yes, significantly. In handmade chains, each link is individually formed and soldered — we can freely adjust wire thickness, width, length, and even mix weave patterns in one chain. Factory chains come off a rolling mill in standard sizes; handmade ones are true custom jewelry.",
+        a: "Yes, significantly. In handmade chains, each link is individually formed and soldered - we can freely adjust wire thickness, width, length, and even mix weave patterns in one chain. Factory chains come off a rolling mill in standard sizes; handmade ones are true custom jewelry.",
       },
     ],
     de: [
       {
         q: "Welches Kettenmuster ist am haltbarsten?",
-        a: "Panzer- und Kastenketten gehören zu den widerstandsfähigsten — ihre flachen oder quadratischen Glieder verteilen Belastungen gut. Rundglieder (Anker, Rolo) sind etwas dehnungsanfälliger, aber immer noch solide. Bismark und Byzantiner sind trotz ihrer Komplexität durch die dichte Verflechtung überraschend stabil.",
+        a: "Panzer- und Kastenketten gehören zu den widerstandsfähigsten - ihre flachen oder quadratischen Glieder verteilen Belastungen gut. Rundglieder (Anker, Rolo) sind etwas dehnungsanfälliger, aber immer noch solide. Bismark und Byzantiner sind trotz ihrer Komplexität durch die dichte Verflechtung überraschend stabil.",
       },
       {
         q: "Welches Muster wähle ich für einen Anhänger?",
-        a: "Für zarte Anhänger und Medaillons eignen sich klassisches, Anker- oder Singapurmuster am besten — sie sind dezente Hintergründe für den Anhänger. Für schwerere Anhänger (über 5g) sind Panzer- oder Roloketten besser geeignet. Massive Muster (Fuchsschwanz, Kordel, Bismark) werden meist solo getragen — ohne Anhänger.",
+        a: "Für zarte Anhänger und Medaillons eignen sich klassisches, Anker- oder Singapurmuster am besten - sie sind dezente Hintergründe für den Anhänger. Für schwerere Anhänger (über 5g) sind Panzer- oder Roloketten besser geeignet. Massive Muster (Fuchsschwanz, Kordel, Bismark) werden meist solo getragen - ohne Anhänger.",
       },
       {
         q: "Unterscheidet sich eine handgefertigte Kette von einer Fabrikware?",
-        a: "Ja, erheblich. Bei handgefertigten Ketten wird jedes Glied einzeln geformt und gelötet — wir können Drahtdicke, Breite, Länge frei anpassen und sogar Muster innerhalb einer Kette kombinieren. Fabriketten kommen in Standardmaßen vom Walzwerk; handgefertigte sind echte Maßschmuckstücke.",
+        a: "Ja, erheblich. Bei handgefertigten Ketten wird jedes Glied einzeln geformt und gelötet - wir können Drahtdicke, Breite, Länge frei anpassen und sogar Muster innerhalb einer Kette kombinieren. Fabriketten kommen in Standardmaßen vom Walzwerk; handgefertigte sind echte Maßschmuckstücke.",
       },
     ],
   },

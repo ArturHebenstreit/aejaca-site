@@ -19,7 +19,7 @@ const LABELS = {
     breadTools: "Narzędzia jubilerskie",
     breadThis: "Wycena surowca",
     footerCtaTitle: "Chcesz sprzedać lub kupić metal szlachetny?",
-    footerCtaText: "Skontaktuj się z nami — wycenimy surowiec i doradzimy w wyborze stopu do projektu.",
+    footerCtaText: "Skontaktuj się z nami - wycenimy surowiec i doradzimy w wyborze stopu do projektu.",
     footerCtaBtn: "Napisz do nas",
   },
   en: {
@@ -33,7 +33,7 @@ const LABELS = {
     breadTools: "Jewelry Tools",
     breadThis: "Metal Pricing",
     footerCtaTitle: "Want to sell or buy precious metal?",
-    footerCtaText: "Contact us — we will value the material and advise on alloy choice for your project.",
+    footerCtaText: "Contact us - we will value the material and advise on alloy choice for your project.",
     footerCtaBtn: "Contact us",
   },
   de: {
@@ -47,22 +47,22 @@ const LABELS = {
     breadTools: "Schmuck-Tools",
     breadThis: "Metallbewertung",
     footerCtaTitle: "Edelmetall kaufen oder verkaufen?",
-    footerCtaText: "Kontaktieren Sie uns — wir bewerten das Material und beraten bei der Legierungswahl.",
+    footerCtaText: "Kontaktieren Sie uns - wir bewerten das Material und beraten bei der Legierungswahl.",
     footerCtaBtn: "Kontakt",
   },
 };
 
 const SEO_META = {
   pl: {
-    title: "Wycena metali szlachetnych — złoto, srebro, platyna PLN | AEJaCA",
+    title: "Wycena metali szlachetnych - złoto, srebro, platyna PLN | AEJaCA",
     description: "Kalkulator wartości metali szlachetnych. Oblicz cenę złota 585/750/999, srebra 925, platyny 950 w PLN na podstawie ceny spot.",
   },
   en: {
-    title: "Precious Metal Pricing Calculator — Gold, Silver, Platinum | AEJaCA",
+    title: "Precious Metal Pricing Calculator - Gold, Silver, Platinum | AEJaCA",
     description: "Calculate the value of gold, silver and platinum alloys in PLN and EUR based on live spot prices.",
   },
   de: {
-    title: "Edelmetall-Preiskalkulator — Gold, Silber, Platin PLN | AEJaCA",
+    title: "Edelmetall-Preiskalkulator - Gold, Silber, Platin PLN | AEJaCA",
     description: "Berechnen Sie den Wert von Gold, Silber und Platin in PLN und EUR auf Basis aktueller Spotpreise.",
   },
 };
@@ -105,7 +105,7 @@ export default function MetalPricingPage() {
         <section className="relative overflow-hidden min-h-[340px]">
           <img
             src="/hero-toolsjewelry.webp"
-            alt="Wycena metali szlachetnych — AEJaCA"
+            alt="Wycena metali szlachetnych - AEJaCA"
             className="absolute inset-0 w-full h-full object-cover"
             loading="eager"
             fetchpriority="high"

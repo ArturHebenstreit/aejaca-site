@@ -43,7 +43,7 @@ const LENSES = [
   { id: "330", label: "330mm", area: "220×220mm" },
 ];
 
-// power density ∝ 1/f² — data calibrated for 163mm baseline
+// power density ∝ 1/f² - data calibrated for 163mm baseline
 const LENS_SPEED_FACTOR = { "110": 2.20, "163": 1.00, "254": 0.41, "330": 0.24 };
 
 const MAT_LABELS = {
@@ -75,11 +75,11 @@ const MAT_LABELS = {
 
 // watts = exact calibrated wattage (not minimum). galvo entries calibrated for 163mm lens.
 const MATRIX = [
-  // ── Diode engraving std — per-wattage ───────────────────────────────────
+  // ── Diode engraving std - per-wattage ───────────────────────────────────
   { action:"engrave", mat:"wood",     subtype:{pl:"sosna/brzoza",    en:"pine/birch",      de:"Kiefer/Birke"},     thick:null, laserType:"diode", watts:5,  delivery:"std",   power:90, speed:60,   passes:1, airAssist:10,  frequency:null, wobble:null, dpi:300, hatch:false, scanAngle:null, note:{pl:"powolne",      en:"slow",       de:"langsam"} },
   { action:"engrave", mat:"wood",     subtype:{pl:"sosna/brzoza",    en:"pine/birch",      de:"Kiefer/Birke"},     thick:null, laserType:"diode", watts:10, delivery:"std",   power:75, speed:120,  passes:1, airAssist:10,  frequency:null, wobble:null, dpi:300, hatch:false, scanAngle:null, note:{} },
   { action:"engrave", mat:"wood",     subtype:{pl:"sosna/brzoza",    en:"pine/birch",      de:"Kiefer/Birke"},     thick:null, laserType:"diode", watts:20, delivery:"std",   power:60, speed:250,  passes:1, airAssist:10,  frequency:null, wobble:null, dpi:300, hatch:false, scanAngle:null, note:{} },
-  { action:"engrave", mat:"wood",     subtype:{pl:"sosna/brzoza",    en:"pine/birch",      de:"Kiefer/Birke"},     thick:null, laserType:"diode", watts:40, delivery:"std",   power:42, speed:450,  passes:1, airAssist:10,  frequency:null, wobble:null, dpi:300, hatch:false, scanAngle:null, note:{pl:"40W — wysoka prędkość", en:"40W — high speed", de:"40W — hohe Geschwindigkeit"} },
+  { action:"engrave", mat:"wood",     subtype:{pl:"sosna/brzoza",    en:"pine/birch",      de:"Kiefer/Birke"},     thick:null, laserType:"diode", watts:40, delivery:"std",   power:42, speed:450,  passes:1, airAssist:10,  frequency:null, wobble:null, dpi:300, hatch:false, scanAngle:null, note:{pl:"40W - wysoka prędkość", en:"40W - high speed", de:"40W - hohe Geschwindigkeit"} },
   { action:"engrave", mat:"plywood",  subtype:{pl:"sklejka brzozowa",en:"birch plywood",   de:"Birkensperrholz"},  thick:null, laserType:"diode", watts:5,  delivery:"std",   power:92, speed:50,   passes:1, airAssist:10,  frequency:null, wobble:null, dpi:300, hatch:false, scanAngle:null, note:{} },
   { action:"engrave", mat:"plywood",  subtype:{pl:"sklejka brzozowa",en:"birch plywood",   de:"Birkensperrholz"},  thick:null, laserType:"diode", watts:10, delivery:"std",   power:78, speed:100,  passes:1, airAssist:10,  frequency:null, wobble:null, dpi:300, hatch:false, scanAngle:null, note:{} },
   { action:"engrave", mat:"plywood",  subtype:{pl:"sklejka brzozowa",en:"birch plywood",   de:"Birkensperrholz"},  thick:null, laserType:"diode", watts:20, delivery:"std",   power:62, speed:200,  passes:1, airAssist:10,  frequency:null, wobble:null, dpi:300, hatch:false, scanAngle:null, note:{} },
@@ -97,7 +97,7 @@ const MATRIX = [
   { action:"engrave", mat:"aluminum", subtype:{pl:"anodowane czarne",en:"black anodized",  de:"schwarz eloxiert"},  thick:null, laserType:"diode", watts:20, delivery:"std",   power:85, speed:120,  passes:1, airAssist:0,   frequency:null, wobble:null, dpi:300, hatch:false, scanAngle:null, note:{pl:"wymaga ciemnego anodowania", en:"requires dark anodizing", de:"erfordert dunkle Eloxierung"} },
   { action:"engrave", mat:"aluminum", subtype:{pl:"anodowane czarne",en:"black anodized",  de:"schwarz eloxiert"},  thick:null, laserType:"diode", watts:40, delivery:"std",   power:68, speed:200,  passes:1, airAssist:0,   frequency:null, wobble:null, dpi:300, hatch:false, scanAngle:null, note:{pl:"wymaga ciemnego anodowania", en:"requires dark anodizing", de:"erfordert dunkle Eloxierung"} },
 
-  // ── Diode cutting std — per-wattage ─────────────────────────────────────
+  // ── Diode cutting std - per-wattage ─────────────────────────────────────
   { action:"cut", mat:"cardboard", subtype:{pl:"tektura 2mm",   en:"cardboard 2mm", de:"Pappe 2mm"},   thick:2, laserType:"diode", watts:5,  delivery:"std", power:72, speed:25,  passes:1, airAssist:30,  frequency:null, wobble:null, dpi:null, hatch:null, scanAngle:null, note:{} },
   { action:"cut", mat:"cardboard", subtype:{pl:"tektura 2mm",   en:"cardboard 2mm", de:"Pappe 2mm"},   thick:2, laserType:"diode", watts:10, delivery:"std", power:60, speed:45,  passes:1, airAssist:30,  frequency:null, wobble:null, dpi:null, hatch:null, scanAngle:null, note:{} },
   { action:"cut", mat:"cardboard", subtype:{pl:"tektura 2mm",   en:"cardboard 2mm", de:"Pappe 2mm"},   thick:2, laserType:"diode", watts:20, delivery:"std", power:45, speed:80,  passes:1, airAssist:30,  frequency:null, wobble:null, dpi:null, hatch:null, scanAngle:null, note:{} },
@@ -116,7 +116,7 @@ const MATRIX = [
   { action:"cut", mat:"plywood",   subtype:{pl:"sklejka 5mm",   en:"plywood 5mm",   de:"Sperrholz 5mm"},thick:5, laserType:"diode", watts:20, delivery:"std", power:100,speed:6,   passes:4, airAssist:90,  frequency:null, wobble:null, dpi:null, hatch:null, scanAngle:null, note:{} },
   { action:"cut", mat:"plywood",   subtype:{pl:"sklejka 5mm",   en:"plywood 5mm",   de:"Sperrholz 5mm"},thick:5, laserType:"diode", watts:40, delivery:"std", power:100,speed:10,  passes:3, airAssist:90,  frequency:null, wobble:null, dpi:null, hatch:null, scanAngle:null, note:{} },
 
-  // ── CO2 engraving std — per-wattage ─────────────────────────────────────
+  // ── CO2 engraving std - per-wattage ─────────────────────────────────────
   { action:"engrave", mat:"wood",    subtype:{pl:"sosna/brzoza",  en:"pine/birch",     de:"Kiefer/Birke"},    thick:null, laserType:"co2", watts:20,  delivery:"std",   power:30, speed:300,  passes:1, airAssist:20, frequency:null, wobble:null, dpi:300, hatch:false, scanAngle:null, note:{} },
   { action:"engrave", mat:"wood",    subtype:{pl:"sosna/brzoza",  en:"pine/birch",     de:"Kiefer/Birke"},    thick:null, laserType:"co2", watts:40,  delivery:"std",   power:22, speed:500,  passes:1, airAssist:20, frequency:null, wobble:null, dpi:300, hatch:false, scanAngle:null, note:{} },
   { action:"engrave", mat:"wood",    subtype:{pl:"sosna/brzoza",  en:"pine/birch",     de:"Kiefer/Birke"},    thick:null, laserType:"co2", watts:60,  delivery:"std",   power:18, speed:800,  passes:1, airAssist:20, frequency:null, wobble:null, dpi:300, hatch:false, scanAngle:null, note:{} },
@@ -140,11 +140,11 @@ const MATRIX = [
   { action:"engrave", mat:"cork",    subtype:{pl:"korek",         en:"cork",           de:"Kork"},             thick:null, laserType:"co2", watts:40,  delivery:"std",   power:16, speed:400,  passes:1, airAssist:10, frequency:null, wobble:null, dpi:300, hatch:false, scanAngle:null, note:{} },
 
   // ── CO2 engraving galvo ──────────────────────────────────────────────────
-  { action:"engrave", mat:"wood",    subtype:{pl:"lite/sklejka",  en:"solid/plywood",  de:"Massivholz"},       thick:null, laserType:"co2", watts:30,  delivery:"galvo", power:32, speed:1800, passes:1, airAssist:null, frequency:null, wobble:null, dpi:300, hatch:true,  scanAngle:null, note:{pl:"galvo CO2 — duża prędkość", en:"galvo CO2 — high speed", de:"Galvo CO2 — hohe Geschwindigkeit"} },
+  { action:"engrave", mat:"wood",    subtype:{pl:"lite/sklejka",  en:"solid/plywood",  de:"Massivholz"},       thick:null, laserType:"co2", watts:30,  delivery:"galvo", power:32, speed:1800, passes:1, airAssist:null, frequency:null, wobble:null, dpi:300, hatch:true,  scanAngle:null, note:{pl:"galvo CO2 - duża prędkość", en:"galvo CO2 - high speed", de:"Galvo CO2 - hohe Geschwindigkeit"} },
   { action:"engrave", mat:"acrylic", subtype:{pl:"lany",          en:"cast",           de:"gegossen"},         thick:null, laserType:"co2", watts:30,  delivery:"galvo", power:24, speed:1400, passes:1, airAssist:null, frequency:null, wobble:null, dpi:254, hatch:false, scanAngle:null, note:{} },
   { action:"engrave", mat:"glass",   subtype:{pl:"szkło",         en:"glass",          de:"Glas"},             thick:null, laserType:"co2", watts:30,  delivery:"galvo", power:20, speed:1600, passes:1, airAssist:null, frequency:null, wobble:null, dpi:300, hatch:false, scanAngle:null, note:{} },
 
-  // ── CO2 cutting std — per-wattage ────────────────────────────────────────
+  // ── CO2 cutting std - per-wattage ────────────────────────────────────────
   { action:"cut", mat:"plywood",   subtype:{pl:"sosna/brzoza 3mm",en:"pine/birch 3mm", de:"Kiefer/Birke 3mm"}, thick:3,  laserType:"co2", watts:40,  delivery:"std", power:65, speed:18,  passes:1, airAssist:80,  frequency:null, wobble:null, dpi:null, hatch:null, scanAngle:null, note:{} },
   { action:"cut", mat:"plywood",   subtype:{pl:"sosna/brzoza 3mm",en:"pine/birch 3mm", de:"Kiefer/Birke 3mm"}, thick:3,  laserType:"co2", watts:60,  delivery:"std", power:55, speed:28,  passes:1, airAssist:80,  frequency:null, wobble:null, dpi:null, hatch:null, scanAngle:null, note:{} },
   { action:"cut", mat:"plywood",   subtype:{pl:"sosna/brzoza 3mm",en:"pine/birch 3mm", de:"Kiefer/Birke 3mm"}, thick:3,  laserType:"co2", watts:80,  delivery:"std", power:48, speed:40,  passes:1, airAssist:80,  frequency:null, wobble:null, dpi:null, hatch:null, scanAngle:null, note:{} },
@@ -173,7 +173,7 @@ const MATRIX = [
   { action:"cut", mat:"cork",      subtype:{pl:"korek 5mm",       en:"cork 5mm",      de:"Kork 5mm"},          thick:5,  laserType:"co2", watts:40,  delivery:"std", power:35, speed:48,  passes:1, airAssist:30,  frequency:null, wobble:null, dpi:null, hatch:null, scanAngle:null, note:{} },
   { action:"cut", mat:"rubber",    subtype:{pl:"kauczuk 3mm",     en:"rubber 3mm",    de:"Gummi 3mm"},         thick:3,  laserType:"co2", watts:40,  delivery:"std", power:55, speed:18,  passes:1, airAssist:80,  frequency:null, wobble:null, dpi:null, hatch:null, scanAngle:null, note:{pl:"mocna wentylacja!", en:"strong ventilation!", de:"starke Lüftung!"} },
 
-  // ── Fiber engraving std — per-wattage ────────────────────────────────────
+  // ── Fiber engraving std - per-wattage ────────────────────────────────────
   { action:"engrave", mat:"steel",    subtype:{pl:"stal nierdzewna",    en:"stainless steel",    de:"Edelstahl"},           thick:null, laserType:"fiber", watts:20,  delivery:"std",   power:80, speed:1200, passes:1, airAssist:null, frequency:50, wobble:null, dpi:300, hatch:true,  scanAngle:45, note:{pl:"hatch 45°", en:"hatch 45°", de:"Hatch 45°"} },
   { action:"engrave", mat:"steel",    subtype:{pl:"stal nierdzewna",    en:"stainless steel",    de:"Edelstahl"},           thick:null, laserType:"fiber", watts:60,  delivery:"std",   power:70, speed:2500, passes:1, airAssist:null, frequency:50, wobble:null, dpi:300, hatch:true,  scanAngle:45, note:{} },
   { action:"engrave", mat:"steel",    subtype:{pl:"stal nierdzewna",    en:"stainless steel",    de:"Edelstahl"},           thick:null, laserType:"fiber", watts:100, delivery:"std",   power:60, speed:4000, passes:1, airAssist:null, frequency:50, wobble:null, dpi:300, hatch:true,  scanAngle:45, note:{} },
@@ -190,7 +190,7 @@ const MATRIX = [
   { action:"engrave", mat:"ceramic",  subtype:{pl:"ceramika",           en:"ceramics",           de:"Keramik"},             thick:null, laserType:"fiber", watts:30,  delivery:"std",   power:75, speed:700,  passes:1, airAssist:null, frequency:35, wobble:null, dpi:300, hatch:true,  scanAngle:45, note:{} },
 
   // ── Fiber engraving galvo ────────────────────────────────────────────────
-  { action:"engrave", mat:"steel",    subtype:{pl:"stal nierdzewna",    en:"stainless steel",    de:"Edelstahl"},           thick:null, laserType:"fiber", watts:20,  delivery:"galvo", power:72, speed:2500, passes:1, airAssist:null, frequency:50, wobble:null, dpi:300, hatch:true,  scanAngle:45, note:{pl:"galvo — bardzo szybko", en:"galvo — very fast", de:"Galvo — sehr schnell"} },
+  { action:"engrave", mat:"steel",    subtype:{pl:"stal nierdzewna",    en:"stainless steel",    de:"Edelstahl"},           thick:null, laserType:"fiber", watts:20,  delivery:"galvo", power:72, speed:2500, passes:1, airAssist:null, frequency:50, wobble:null, dpi:300, hatch:true,  scanAngle:45, note:{pl:"galvo - bardzo szybko", en:"galvo - very fast", de:"Galvo - sehr schnell"} },
   { action:"engrave", mat:"steel",    subtype:{pl:"stal nierdzewna",    en:"stainless steel",    de:"Edelstahl"},           thick:null, laserType:"fiber", watts:60,  delivery:"galvo", power:62, speed:5000, passes:1, airAssist:null, frequency:50, wobble:null, dpi:300, hatch:true,  scanAngle:45, note:{} },
   { action:"engrave", mat:"aluminum", subtype:{pl:"aluminium anodowane",en:"anodized aluminum",  de:"eloxiertes Aluminium"},thick:null, laserType:"fiber", watts:20,  delivery:"galvo", power:55, speed:3500, passes:1, airAssist:null, frequency:60, wobble:null, dpi:300, hatch:false, scanAngle:0,  note:{} },
   { action:"engrave", mat:"brass",    subtype:{pl:"mosiądz",            en:"brass",              de:"Messing"},             thick:null, laserType:"fiber", watts:20,  delivery:"galvo", power:88, speed:1800, passes:1, airAssist:null, frequency:30, wobble:null, dpi:300, hatch:true,  scanAngle:45, note:{} },
@@ -210,11 +210,11 @@ const MATRIX = [
   { action:"cut", mat:"titanium", subtype:{pl:"tytan 0.5mm",          en:"titanium 0.5mm",  de:"Titan 0.5mm"},     thick:0.5, laserType:"fiber", watts:30,  delivery:"std", power:100, speed:550,  passes:1, airAssist:80,  frequency:20, wobble:false, dpi:null, hatch:null, scanAngle:null, note:{} },
 
   // ── Fiber cutting galvo ──────────────────────────────────────────────────
-  { action:"cut", mat:"steel",    subtype:{pl:"stal nierdzewna 0.3mm",en:"stainless 0.3mm", de:"Edelstahl 0.3mm"}, thick:0.3, laserType:"fiber", watts:20, delivery:"galvo", power:100, speed:300, passes:1, airAssist:null, frequency:30, wobble:false, dpi:null, hatch:null, scanAngle:null, note:{pl:"galvo — cienka blacha", en:"galvo — thin sheet", de:"Galvo — dünnes Blech"} },
+  { action:"cut", mat:"steel",    subtype:{pl:"stal nierdzewna 0.3mm",en:"stainless 0.3mm", de:"Edelstahl 0.3mm"}, thick:0.3, laserType:"fiber", watts:20, delivery:"galvo", power:100, speed:300, passes:1, airAssist:null, frequency:30, wobble:false, dpi:null, hatch:null, scanAngle:null, note:{pl:"galvo - cienka blacha", en:"galvo - thin sheet", de:"Galvo - dünnes Blech"} },
   { action:"cut", mat:"brass",    subtype:{pl:"mosiądz 0.3mm",        en:"brass 0.3mm",     de:"Messing 0.3mm"},   thick:0.3, laserType:"fiber", watts:20, delivery:"galvo", power:100, speed:250, passes:1, airAssist:null, frequency:30, wobble:false, dpi:null, hatch:null, scanAngle:null, note:{} },
 
-  // ── UV engraving galvo — per-wattage ─────────────────────────────────────
-  { action:"engrave", mat:"glass",       subtype:{pl:"szkło sodowe",  en:"soda-lime glass", de:"Kalk-Natron-Glas"}, thick:null, laserType:"uv", watts:3,  delivery:"galvo", power:65, speed:400,  passes:1, airAssist:null, frequency:30, wobble:null, dpi:300, hatch:false, scanAngle:0,  note:{pl:"UV galvo — głęboka grawitacja", en:"UV galvo — deep engraving", de:"UV Galvo — tiefe Gravur"} },
+  // ── UV engraving galvo - per-wattage ─────────────────────────────────────
+  { action:"engrave", mat:"glass",       subtype:{pl:"szkło sodowe",  en:"soda-lime glass", de:"Kalk-Natron-Glas"}, thick:null, laserType:"uv", watts:3,  delivery:"galvo", power:65, speed:400,  passes:1, airAssist:null, frequency:30, wobble:null, dpi:300, hatch:false, scanAngle:0,  note:{pl:"UV galvo - głęboka grawitacja", en:"UV galvo - deep engraving", de:"UV Galvo - tiefe Gravur"} },
   { action:"engrave", mat:"glass",       subtype:{pl:"szkło sodowe",  en:"soda-lime glass", de:"Kalk-Natron-Glas"}, thick:null, laserType:"uv", watts:5,  delivery:"galvo", power:52, speed:650,  passes:1, airAssist:null, frequency:35, wobble:null, dpi:300, hatch:false, scanAngle:0,  note:{} },
   { action:"engrave", mat:"glass",       subtype:{pl:"szkło sodowe",  en:"soda-lime glass", de:"Kalk-Natron-Glas"}, thick:null, laserType:"uv", watts:10, delivery:"galvo", power:38, speed:1000, passes:1, airAssist:null, frequency:40, wobble:null, dpi:300, hatch:false, scanAngle:0,  note:{} },
   { action:"engrave", mat:"crystal",     subtype:{pl:"kryształ",      en:"crystal",         de:"Kristall"},          thick:null, laserType:"uv", watts:5,  delivery:"galvo", power:70, speed:300,  passes:1, airAssist:null, frequency:25, wobble:null, dpi:300, hatch:false, scanAngle:0,  note:{} },
@@ -227,7 +227,7 @@ const MATRIX = [
   // ── 3D Glass engraving (engrave3d, galvo) ───────────────────────────────
   { action:"engrave3d", mat:"crystal", subtype:{pl:"kryształ optyczny",  en:"optical crystal",   de:"optisches Kristall"},    thick:null, laserType:"uv",    watts:5,  delivery:"galvo", power:68, speed:200, passes:3, airAssist:null, frequency:20, wobble:null, dpi:600, hatch:true, scanAngle:45, note:{pl:"warstwy 3D, głębokość", en:"3D layers, depth", de:"3D-Schichten, Tiefe"} },
   { action:"engrave3d", mat:"glass",   subtype:{pl:"szkło borokrzemowe", en:"borosilicate glass", de:"Borosilikatglas"},       thick:null, laserType:"uv",    watts:5,  delivery:"galvo", power:78, speed:150, passes:3, airAssist:null, frequency:15, wobble:null, dpi:600, hatch:true, scanAngle:45, note:{pl:"precyzyjne ogniskowanie Z", en:"precise Z-focus", de:"präzise Z-Fokussierung"} },
-  { action:"engrave3d", mat:"crystal", subtype:{pl:"kryształ — Fiber IR",en:"crystal — Fiber IR", de:"Kristall — Fiber IR"},   thick:null, laserType:"fiber", watts:20, delivery:"galvo", power:80, speed:280, passes:3, airAssist:null, frequency:30, wobble:null, dpi:600, hatch:true, scanAngle:45, note:{pl:"fiber IR 1064nm", en:"fiber IR 1064nm", de:"Fiber IR 1064nm"} },
+  { action:"engrave3d", mat:"crystal", subtype:{pl:"kryształ - Fiber IR",en:"crystal - Fiber IR", de:"Kristall - Fiber IR"},   thick:null, laserType:"fiber", watts:20, delivery:"galvo", power:80, speed:280, passes:3, airAssist:null, frequency:30, wobble:null, dpi:600, hatch:true, scanAngle:45, note:{pl:"fiber IR 1064nm", en:"fiber IR 1064nm", de:"Fiber IR 1064nm"} },
 
   // ── CO2 2.5D relief ──────────────────────────────────────────────────────
   { action:"engrave25", mat:"wood",    subtype:{pl:"lite drewno", en:"solid wood", de:"Massivholz"}, thick:null, laserType:"co2", watts:40, delivery:"std", power:40, speed:200, passes:1, airAssist:15, frequency:null, wobble:null, dpi:254, hatch:true, scanAngle:null, note:{pl:"mapa głębokości z szarości", en:"depth map from grayscale", de:"Tiefenkarte aus Graustufen"} },
@@ -238,7 +238,7 @@ const MATRIX = [
   { action:"engrave25", mat:"foam",    subtype:{pl:"pianka PUR",  en:"PUR foam",   de:"PUR-Schaum"}, thick:null, laserType:"co2", watts:20, delivery:"std", power:25, speed:280, passes:1, airAssist:0,  frequency:null, wobble:null, dpi:300, hatch:true, scanAngle:null, note:{} },
 
   // ── Fiber 200W engraving std ─────────────────────────────────────────────
-  { action:"engrave", mat:"steel",    subtype:{pl:"stal nierdzewna",    en:"stainless steel",    de:"Edelstahl"},           thick:null, laserType:"fiber", watts:200, delivery:"std",   power:45, speed:8000,  passes:1, airAssist:null, frequency:50, wobble:null, dpi:300, hatch:true,  scanAngle:45, note:{pl:"200W — bardzo wysoka prędkość", en:"200W — very high speed", de:"200W — sehr hohe Geschwindigkeit"} },
+  { action:"engrave", mat:"steel",    subtype:{pl:"stal nierdzewna",    en:"stainless steel",    de:"Edelstahl"},           thick:null, laserType:"fiber", watts:200, delivery:"std",   power:45, speed:8000,  passes:1, airAssist:null, frequency:50, wobble:null, dpi:300, hatch:true,  scanAngle:45, note:{pl:"200W - bardzo wysoka prędkość", en:"200W - very high speed", de:"200W - sehr hohe Geschwindigkeit"} },
   { action:"engrave", mat:"aluminum", subtype:{pl:"aluminium anodowane",en:"anodized aluminum",  de:"eloxiertes Aluminium"},thick:null, laserType:"fiber", watts:200, delivery:"std",   power:35, speed:14000, passes:1, airAssist:null, frequency:60, wobble:null, dpi:300, hatch:false, scanAngle:0,  note:{} },
   { action:"engrave", mat:"brass",    subtype:{pl:"mosiądz",            en:"brass",              de:"Messing"},             thick:null, laserType:"fiber", watts:200, delivery:"std",   power:55, speed:5000,  passes:1, airAssist:null, frequency:30, wobble:null, dpi:300, hatch:true,  scanAngle:45, note:{} },
   { action:"engrave", mat:"titanium", subtype:{pl:"tytan",              en:"titanium",           de:"Titan"},               thick:null, laserType:"fiber", watts:200, delivery:"std",   power:40, speed:6000,  passes:1, airAssist:null, frequency:40, wobble:null, dpi:300, hatch:true,  scanAngle:45, note:{} },
@@ -246,7 +246,7 @@ const MATRIX = [
   { action:"engrave", mat:"silver",   subtype:{pl:"srebro 925",         en:"sterling silver",    de:"Sterlingsilber"},      thick:null, laserType:"fiber", watts:200, delivery:"std",   power:30, speed:5000,  passes:1, airAssist:null, frequency:50, wobble:null, dpi:300, hatch:false, scanAngle:0,  note:{} },
 
   // ── Fiber 200W engraving galvo ───────────────────────────────────────────
-  { action:"engrave", mat:"steel",    subtype:{pl:"stal nierdzewna",    en:"stainless steel",    de:"Edelstahl"},           thick:null, laserType:"fiber", watts:200, delivery:"galvo", power:38, speed:15000, passes:1, airAssist:null, frequency:50, wobble:null, dpi:300, hatch:true,  scanAngle:45, note:{pl:"200W galvo — masowa produkcja", en:"200W galvo — mass production", de:"200W Galvo — Massenproduktion"} },
+  { action:"engrave", mat:"steel",    subtype:{pl:"stal nierdzewna",    en:"stainless steel",    de:"Edelstahl"},           thick:null, laserType:"fiber", watts:200, delivery:"galvo", power:38, speed:15000, passes:1, airAssist:null, frequency:50, wobble:null, dpi:300, hatch:true,  scanAngle:45, note:{pl:"200W galvo - masowa produkcja", en:"200W galvo - mass production", de:"200W Galvo - Massenproduktion"} },
   { action:"engrave", mat:"aluminum", subtype:{pl:"aluminium anodowane",en:"anodized aluminum",  de:"eloxiertes Aluminium"},thick:null, laserType:"fiber", watts:200, delivery:"galvo", power:28, speed:20000, passes:1, airAssist:null, frequency:60, wobble:null, dpi:300, hatch:false, scanAngle:0,  note:{} },
   { action:"engrave", mat:"brass",    subtype:{pl:"mosiądz",            en:"brass",              de:"Messing"},             thick:null, laserType:"fiber", watts:200, delivery:"galvo", power:50, speed:8000,  passes:1, airAssist:null, frequency:30, wobble:null, dpi:300, hatch:true,  scanAngle:45, note:{} },
   { action:"engrave", mat:"titanium", subtype:{pl:"tytan",              en:"titanium",           de:"Titan"},               thick:null, laserType:"fiber", watts:200, delivery:"galvo", power:35, speed:10000, passes:1, airAssist:null, frequency:40, wobble:null, dpi:300, hatch:true,  scanAngle:45, note:{} },
@@ -260,8 +260,8 @@ const MATRIX = [
   { action:"cut", mat:"copper",   subtype:{pl:"miedź 1mm",            en:"copper 1mm",      de:"Kupfer 1mm"},      thick:1,   laserType:"fiber", watts:200, delivery:"std", power:85, speed:2000, passes:1, airAssist:90,  frequency:25, wobble:false, dpi:null, hatch:null, scanAngle:null, note:{} },
   { action:"cut", mat:"titanium", subtype:{pl:"tytan 1mm",            en:"titanium 1mm",    de:"Titan 1mm"},       thick:1,   laserType:"fiber", watts:200, delivery:"std", power:82, speed:2500, passes:1, airAssist:80,  frequency:20, wobble:false, dpi:null, hatch:null, scanAngle:null, note:{} },
 
-  // ── engrave25 — Fiber galvo (2.5D surface relief) ────────────────────────
-  { action:"engrave25", mat:"steel",    subtype:{pl:"stal nierdzewna",    en:"stainless steel",    de:"Edelstahl"},           thick:null, laserType:"fiber", watts:20,  delivery:"galvo", power:72, speed:800,  passes:1, airAssist:null, frequency:50, wobble:null, dpi:300, hatch:true, scanAngle:45, note:{pl:"galvo 2.5D — mapa głębokości", en:"galvo 2.5D — depth map", de:"Galvo 2.5D — Tiefenkarte"} },
+  // ── engrave25 - Fiber galvo (2.5D surface relief) ────────────────────────
+  { action:"engrave25", mat:"steel",    subtype:{pl:"stal nierdzewna",    en:"stainless steel",    de:"Edelstahl"},           thick:null, laserType:"fiber", watts:20,  delivery:"galvo", power:72, speed:800,  passes:1, airAssist:null, frequency:50, wobble:null, dpi:300, hatch:true, scanAngle:45, note:{pl:"galvo 2.5D - mapa głębokości", en:"galvo 2.5D - depth map", de:"Galvo 2.5D - Tiefenkarte"} },
   { action:"engrave25", mat:"steel",    subtype:{pl:"stal nierdzewna",    en:"stainless steel",    de:"Edelstahl"},           thick:null, laserType:"fiber", watts:60,  delivery:"galvo", power:62, speed:1800, passes:1, airAssist:null, frequency:50, wobble:null, dpi:300, hatch:true, scanAngle:45, note:{} },
   { action:"engrave25", mat:"steel",    subtype:{pl:"stal nierdzewna",    en:"stainless steel",    de:"Edelstahl"},           thick:null, laserType:"fiber", watts:100, delivery:"galvo", power:50, speed:3500, passes:1, airAssist:null, frequency:50, wobble:null, dpi:300, hatch:true, scanAngle:45, note:{} },
   { action:"engrave25", mat:"aluminum", subtype:{pl:"aluminium",          en:"aluminum",           de:"Aluminium"},           thick:null, laserType:"fiber", watts:20,  delivery:"galvo", power:60, speed:1000, passes:1, airAssist:null, frequency:60, wobble:null, dpi:300, hatch:true, scanAngle:45, note:{} },
@@ -274,21 +274,21 @@ const MATRIX = [
   { action:"engrave25", mat:"stone",    subtype:{pl:"granit/marmur",      en:"granite/marble",     de:"Granit/Marmor"},       thick:null, laserType:"fiber", watts:60,  delivery:"galvo", power:68, speed:900,  passes:1, airAssist:null, frequency:30, wobble:null, dpi:300, hatch:true, scanAngle:45, note:{} },
   { action:"engrave25", mat:"ceramic",  subtype:{pl:"ceramika",           en:"ceramics",           de:"Keramik"},             thick:null, laserType:"fiber", watts:30,  delivery:"galvo", power:78, speed:500,  passes:1, airAssist:null, frequency:35, wobble:null, dpi:300, hatch:true, scanAngle:45, note:{} },
 
-  // ── engrave25 — UV galvo (2.5D) ───────────────────────────────────────────
-  { action:"engrave25", mat:"glass",       subtype:{pl:"szkło",         en:"glass",           de:"Glas"},         thick:null, laserType:"uv", watts:5,  delivery:"galvo", power:68, speed:200, passes:2, airAssist:null, frequency:25, wobble:null, dpi:400, hatch:true, scanAngle:45, note:{pl:"2.5D UV galvo — szklane reliefy", en:"2.5D UV galvo — glass relief", de:"2.5D UV Galvo — Glasrelief"} },
+  // ── engrave25 - UV galvo (2.5D) ───────────────────────────────────────────
+  { action:"engrave25", mat:"glass",       subtype:{pl:"szkło",         en:"glass",           de:"Glas"},         thick:null, laserType:"uv", watts:5,  delivery:"galvo", power:68, speed:200, passes:2, airAssist:null, frequency:25, wobble:null, dpi:400, hatch:true, scanAngle:45, note:{pl:"2.5D UV galvo - szklane reliefy", en:"2.5D UV galvo - glass relief", de:"2.5D UV Galvo - Glasrelief"} },
   { action:"engrave25", mat:"glass",       subtype:{pl:"szkło",         en:"glass",           de:"Glas"},         thick:null, laserType:"uv", watts:10, delivery:"galvo", power:52, speed:400, passes:2, airAssist:null, frequency:30, wobble:null, dpi:400, hatch:true, scanAngle:45, note:{} },
   { action:"engrave25", mat:"crystal",     subtype:{pl:"kryształ",      en:"crystal",         de:"Kristall"},     thick:null, laserType:"uv", watts:5,  delivery:"galvo", power:75, speed:150, passes:2, airAssist:null, frequency:20, wobble:null, dpi:500, hatch:true, scanAngle:45, note:{} },
   { action:"engrave25", mat:"acrylic",     subtype:{pl:"akryl lany",    en:"cast acrylic",    de:"Acryl gegossen"},thick:null,laserType:"uv", watts:5,  delivery:"galvo", power:45, speed:400, passes:1, airAssist:null, frequency:30, wobble:null, dpi:300, hatch:true, scanAngle:45, note:{pl:"podświetlane efekty 3D", en:"backlit 3D effects", de:"3D-Hintergrundbeleuchtung"} },
 
-  // ── engrave25 — CO2 galvo ─────────────────────────────────────────────────
-  { action:"engrave25", mat:"wood",    subtype:{pl:"lite/sklejka",   en:"solid/plywood",   de:"Massivholz"},    thick:null, laserType:"co2", watts:30, delivery:"galvo", power:35, speed:1500, passes:1, airAssist:null, frequency:null, wobble:null, dpi:300, hatch:true, scanAngle:null, note:{pl:"CO2 galvo 2.5D — duża prędkość", en:"CO2 galvo 2.5D — high speed", de:"CO2 Galvo 2.5D — hohe Geschwindigkeit"} },
+  // ── engrave25 - CO2 galvo ─────────────────────────────────────────────────
+  { action:"engrave25", mat:"wood",    subtype:{pl:"lite/sklejka",   en:"solid/plywood",   de:"Massivholz"},    thick:null, laserType:"co2", watts:30, delivery:"galvo", power:35, speed:1500, passes:1, airAssist:null, frequency:null, wobble:null, dpi:300, hatch:true, scanAngle:null, note:{pl:"CO2 galvo 2.5D - duża prędkość", en:"CO2 galvo 2.5D - high speed", de:"CO2 Galvo 2.5D - hohe Geschwindigkeit"} },
   { action:"engrave25", mat:"acrylic", subtype:{pl:"lany",           en:"cast",            de:"gegossen"},      thick:null, laserType:"co2", watts:30, delivery:"galvo", power:26, speed:1200, passes:1, airAssist:null, frequency:null, wobble:null, dpi:254, hatch:true, scanAngle:null, note:{} },
 
-  // ── engrave25 — IR galvo ──────────────────────────────────────────────────
+  // ── engrave25 - IR galvo ──────────────────────────────────────────────────
   { action:"engrave25", mat:"plastic_abs", subtype:{pl:"ABS",  en:"ABS",           de:"ABS"},           thick:null, laserType:"ir", watts:20, delivery:"galvo", power:42, speed:600, passes:1, airAssist:null, frequency:20, wobble:null, dpi:300, hatch:true, scanAngle:0, note:{pl:"IR galvo 2.5D na plastiku", en:"IR galvo 2.5D on plastic", de:"IR Galvo 2.5D auf Kunststoff"} },
   { action:"engrave25", mat:"plastic_pc",  subtype:{pl:"PC",   en:"Polycarbonate",  de:"Polycarbonat"},  thick:null, laserType:"ir", watts:20, delivery:"galvo", power:38, speed:700, passes:1, airAssist:null, frequency:20, wobble:null, dpi:300, hatch:true, scanAngle:0, note:{} },
 
-  // ── IR Diode engraving — per-wattage ─────────────────────────────────────
+  // ── IR Diode engraving - per-wattage ─────────────────────────────────────
   { action:"engrave", mat:"plastic_abs", subtype:{pl:"ABS cz/b",      en:"ABS black/white", de:"ABS schwarz/weiß"}, thick:null, laserType:"ir", watts:10, delivery:"std", power:35, speed:800,  passes:1, airAssist:null, frequency:20, wobble:null, dpi:300, hatch:false, scanAngle:0, note:{pl:"IR 1064nm na ABS", en:"IR 1064nm on ABS", de:"IR 1064nm auf ABS"} },
   { action:"engrave", mat:"plastic_abs", subtype:{pl:"ABS cz/b",      en:"ABS black/white", de:"ABS schwarz/weiß"}, thick:null, laserType:"ir", watts:20, delivery:"std", power:25, speed:1500, passes:1, airAssist:null, frequency:25, wobble:null, dpi:300, hatch:false, scanAngle:0, note:{} },
   { action:"engrave", mat:"plastic_pc",  subtype:{pl:"Poliwęglan",    en:"Polycarbonate",   de:"Polycarbonat"},     thick:null, laserType:"ir", watts:10, delivery:"std", power:30, speed:900,  passes:1, airAssist:null, frequency:20, wobble:null, dpi:300, hatch:false, scanAngle:0, note:{} },
@@ -302,10 +302,10 @@ const MATRIX = [
 // ---------------------------------------------------------------------------
 const UI = {
   pl: {
-    step1: "1 — Rodzaj operacji", step2: "2 — Typ lasera i moc", step3: "3 — System prowadzenia",
+    step1: "1 - Rodzaj operacji", step2: "2 - Typ lasera i moc", step3: "3 - System prowadzenia",
     wattNote:     "Wybierz nominalną moc maksymalną urządzenia. Parametry w tabeli podane są jako % tej mocy.",
     lensLabel:    "Obiektyw F-Theta:",
-    lensNote:     "Zmiana obiektywu zmienia rozmiar plamki i gęstość mocy — prędkości korygowane automatycznie względem 163mm.",
+    lensNote:     "Zmiana obiektywu zmienia rozmiar plamki i gęstość mocy - prędkości korygowane automatycznie względem 163mm.",
     noData:       "Brak danych dla tej kombinacji. Spróbuj innej mocy lub akcji.",
     colMat:       "Materiał", colSubtype: "Wariant", colPower: "Moc (%)", colSpeed: "Prędkość (mm/s)",
     colPasses: "Przejścia", colThick: "Grubość (mm)", colAirAssist: "Nadmuch (%)",
@@ -316,10 +316,10 @@ const UI = {
     incompatible: "Niekompatybilny z wybraną akcją", workArea: "Pole robocze:", selectWatt: "Moc lasera:",
   },
   en: {
-    step1: "1 — Operation type", step2: "2 — Laser type & wattage", step3: "3 — Delivery system",
+    step1: "1 - Operation type", step2: "2 - Laser type & wattage", step3: "3 - Delivery system",
     wattNote:     "Select your device's nominal maximum power. Table parameters are given as % of this power.",
     lensLabel:    "F-Theta lens:",
-    lensNote:     "Lens change alters spot size and power density — table speeds auto-corrected relative to 163mm baseline.",
+    lensNote:     "Lens change alters spot size and power density - table speeds auto-corrected relative to 163mm baseline.",
     noData:       "No data for this combination. Try a different wattage or action.",
     colMat:       "Material", colSubtype: "Variant", colPower: "Power (%)", colSpeed: "Speed (mm/s)",
     colPasses: "Passes", colThick: "Thickness (mm)", colAirAssist: "Air Assist (%)",
@@ -330,10 +330,10 @@ const UI = {
     incompatible: "Incompatible with selected action", workArea: "Work area:", selectWatt: "Laser wattage:",
   },
   de: {
-    step1: "1 — Operationstyp", step2: "2 — Lasertyp & Leistung", step3: "3 — Führungssystem",
+    step1: "1 - Operationstyp", step2: "2 - Lasertyp & Leistung", step3: "3 - Führungssystem",
     wattNote:     "Wählen Sie die nominale Maximalleistung Ihres Geräts. Parameter sind als % dieser Leistung angegeben.",
     lensLabel:    "F-Theta-Objektiv:",
-    lensNote:     "Objektivwechsel ändert Spotgröße und Leistungsdichte — Geschwindigkeiten automatisch relativ zu 163mm korrigiert.",
+    lensNote:     "Objektivwechsel ändert Spotgröße und Leistungsdichte - Geschwindigkeiten automatisch relativ zu 163mm korrigiert.",
     noData:       "Keine Daten für diese Kombination. Andere Leistung oder Aktion wählen.",
     colMat:       "Material", colSubtype: "Variante", colPower: "Leistung (%)", colSpeed: "Geschw. (mm/s)",
     colPasses: "Durchgänge", colThick: "Stärke (mm)", colAirAssist: "Luftunterstützung (%)",
@@ -413,7 +413,7 @@ export default function LaserMaterialMatrix({ lang = "pl" }) {
       (r.delivery === effectiveDelivery || r.delivery === "both")
     );
     if (candidates.length === 0) return [];
-    // For each (mat, subtype) pair keep only the highest-wattage row — best params at selected power
+    // For each (mat, subtype) pair keep only the highest-wattage row - best params at selected power
     const best = new Map();
     for (const r of candidates) {
       const key = `${r.mat}|${r.subtype?.en ?? ""}|${r.thick ?? ""}`;
@@ -425,7 +425,7 @@ export default function LaserMaterialMatrix({ lang = "pl" }) {
   const lensFactor = LENS_SPEED_FACTOR[lens] ?? 1.0;
   const isGalvo = effectiveDelivery === "galvo";
   const wattageOptions = laserType ? (LASER_WATTAGES[laserType] || []) : [];
-  const boolCell = (val) => val === null || val === undefined ? "—" : val ? ui.yes : ui.no;
+  const boolCell = (val) => val === null || val === undefined ? " - " : val ? ui.yes : ui.no;
 
   const cols = [
     { key: "mat",       label: ui.colMat,       always: true },
@@ -601,14 +601,14 @@ export default function LaserMaterialMatrix({ lang = "pl" }) {
                               case "power":    cell = <span className={`tabular-nums font-semibold ${powerColor(row.power)}`}>{row.power}%</span>; break;
                               case "speed":    cell = <span className="tabular-nums text-neutral-300">{displaySpeed}</span>; break;
                               case "passes":   cell = <span className="tabular-nums text-neutral-300">{row.passes}</span>; break;
-                              case "thick":    cell = <span className="tabular-nums text-neutral-300">{row.thick ?? "—"}</span>; break;
-                              case "airAssist":cell = <span className="tabular-nums text-neutral-300">{row.airAssist ?? "—"}</span>; break;
-                              case "frequency":cell = <span className="tabular-nums text-neutral-300">{row.frequency ?? "—"}</span>; break;
+                              case "thick":    cell = <span className="tabular-nums text-neutral-300">{row.thick ?? " - "}</span>; break;
+                              case "airAssist":cell = <span className="tabular-nums text-neutral-300">{row.airAssist ?? " - "}</span>; break;
+                              case "frequency":cell = <span className="tabular-nums text-neutral-300">{row.frequency ?? " - "}</span>; break;
                               case "wobble":   cell = <span className="text-neutral-300">{boolCell(row.wobble)}</span>; break;
-                              case "dpi":      cell = <span className="tabular-nums text-neutral-300">{row.dpi ?? "—"}</span>; break;
+                              case "dpi":      cell = <span className="tabular-nums text-neutral-300">{row.dpi ?? " - "}</span>; break;
                               case "hatch":    cell = <span className="text-neutral-300">{boolCell(row.hatch)}</span>; break;
-                              case "scanAngle":cell = <span className="tabular-nums text-neutral-300">{row.scanAngle ?? "—"}</span>; break;
-                              case "note":     cell = <span className="text-neutral-500 text-xs">{t(row.note, lang) || "—"}</span>; break;
+                              case "scanAngle":cell = <span className="tabular-nums text-neutral-300">{row.scanAngle ?? " - "}</span>; break;
+                              case "note":     cell = <span className="text-neutral-500 text-xs">{t(row.note, lang) || " - "}</span>; break;
                               default:         cell = null;
                             }
                             return (

@@ -15,12 +15,12 @@ const RATES_LABELS = {
 const SOURCE_LABEL = { nbp: "NBP", "gold-api": "gold-api.com", metalpriceapi: "metalpriceapi.com" };
 
 function fmt(n, dec = 2) {
-  if (n == null) return "—";
+  if (n == null) return " - ";
   return n.toLocaleString("pl-PL", { minimumFractionDigits: dec, maximumFractionDigits: dec });
 }
 
 function fmtTime(iso) {
-  if (!iso) return "—";
+  if (!iso) return " - ";
   const d = new Date(iso);
   return d.toLocaleString("pl-PL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 }
@@ -153,7 +153,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-10 pt-6 border-t border-white/5 text-center text-neutral-400 text-xs">
-          &copy; {new Date().getFullYear()} AEJaCA &mdash; {t.footer.rights}
+          &copy; {new Date().getFullYear()} AEJaCA - {t.footer.rights}
         </div>
       </div>
     </footer>

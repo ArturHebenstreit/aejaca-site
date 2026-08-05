@@ -12,17 +12,17 @@ const LABELS = {
   pl: {
     tag: "Blog",
     title: "Wiedza, porady i inspiracje",
-    description: "Praktyczne przewodniki po biżuterii na zamówienie, druku 3D i grawerowaniu laserowym. Ceny, procesy, materiały — wszystko w jednym miejscu.",
+    description: "Praktyczne przewodniki po biżuterii na zamówienie, druku 3D i grawerowaniu laserowym. Ceny, procesy, materiały - wszystko w jednym miejscu.",
   },
   en: {
     tag: "Blog",
     title: "Knowledge, tips & inspiration",
-    description: "Practical guides to custom jewelry, 3D printing, and laser engraving. Pricing, processes, materials — all in one place.",
+    description: "Practical guides to custom jewelry, 3D printing, and laser engraving. Pricing, processes, materials - all in one place.",
   },
   de: {
     tag: "Blog",
     title: "Wissen, Tipps & Inspiration",
-    description: "Praktische Leitfäden zu individuellem Schmuck, 3D-Druck und Lasergravur. Preise, Prozesse, Materialien — alles an einem Ort.",
+    description: "Praktische Leitfäden zu individuellem Schmuck, 3D-Druck und Lasergravur. Preise, Prozesse, Materialien - alles an einem Ort.",
   },
 };
 
@@ -42,7 +42,7 @@ export default function BlogIndex() {
 
   const pageUrl = `${SITE.url}/blog/`;
   const schemas = [
-    buildWebPageSchema({ title: `${l.tag} — ${l.title} — ${SITE.name}`, description: l.description, url: pageUrl, lang }),
+    buildWebPageSchema({ title: `${l.tag} - ${l.title} - ${SITE.name}`, description: l.description, url: pageUrl, lang }),
     buildBreadcrumbSchema([
       { name: "Home", url: SITE.url },
       { name: "Blog", url: pageUrl },
@@ -54,7 +54,7 @@ export default function BlogIndex() {
       <SEOHead
         pageKey="home"
         path="/blog"
-        title={`${l.tag} — ${l.title} — ${SITE.name}`}
+        title={`${l.tag} - ${l.title} - ${SITE.name}`}
         description={l.description}
         schemas={schemas}
       />

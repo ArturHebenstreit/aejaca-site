@@ -1,4 +1,4 @@
-<%- include('partials/header', { user: user, title: `Marki — ${ type.name || type.type_id }`, active: 'filaments' }) %>
+<%- include('partials/header', { user: user, title: `Marki - ${ type.name || type.type_id }`, active: 'filaments' }) %>
 
   <main class="max-w-7xl mx-auto px-6 py-8">
 
@@ -28,8 +28,8 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <div>
-        <h2 class="text-xl font-semibold text-white">Marki — <span class="text-amber-400"><%= type.name || type.type_id %></span></h2>
-        <p class="text-sm text-neutral-500 mt-1 font-mono"><%= type.type_id %> &middot; <%= type.category || '—' %></p>
+        <h2 class="text-xl font-semibold text-white">Marki - <span class="text-amber-400"><%= type.name || type.type_id %></span></h2>
+        <p class="text-sm text-neutral-500 mt-1 font-mono"><%= type.type_id %> &middot; <%= type.category || ' - ' %></p>
       </div>
       <a href="/filaments/<%= type.id %>/brands/new" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition-colors">
         + Nowa marka
@@ -86,9 +86,9 @@
               <% brands.forEach(function(brand, i) { %>
               <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors group <%= i % 2 === 1 ? 'bg-white/[0.015]' : '' %>">
                 <td class="px-4 py-3 text-neutral-600 text-xs font-mono"><%= brand.id %></td>
-                <td class="px-4 py-3 font-medium text-neutral-200"><%= brand.brand || '—' %></td>
+                <td class="px-4 py-3 font-medium text-neutral-200"><%= brand.brand || ' - ' %></td>
                 <td class="px-4 py-3 text-neutral-300 max-w-[200px]">
-                  <div class="truncate"><%= brand.product_name || '—' %></div>
+                  <div class="truncate"><%= brand.product_name || ' - ' %></div>
                   <% if (brand.product_url) { %>
                   <a href="<%= brand.product_url %>" target="_blank" rel="noopener" class="text-xs text-blue-400 hover:text-blue-300 truncate block">&#128279; link</a>
                   <% } %>
@@ -111,7 +111,7 @@
                   <% if (brand.speed_min || brand.speed_max) { %>
                   <span class="text-amber-300"><%= brand.speed_min || '?' %>–<%= brand.speed_max || '?' %></span>
                   <% } else { %>
-                  <span class="text-neutral-600">—</span>
+                  <span class="text-neutral-600"> - </span>
                   <% } %>
                 </td>
                 <td class="px-4 py-3">
@@ -120,7 +120,7 @@
                   <% } else if (brand.auto_approved) { %>
                   <span class="bg-amber-500/20 text-amber-300 text-[10px] px-1.5 py-0.5 rounded">Soc. &#10003; (<%= brand.vote_confirm_count || 0 %> głosów)</span>
                   <% } else { %>
-                  <span class="text-neutral-600 text-xs">—</span>
+                  <span class="text-neutral-600 text-xs"> - </span>
                   <% } %>
                 </td>
                 <td class="px-4 py-3">

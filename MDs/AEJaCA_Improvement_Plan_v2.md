@@ -1,4 +1,4 @@
-# AEJaCA.com — Plan Ulepszeń Strony v2.0
+# AEJaCA.com - Plan Ulepszeń Strony v2.0
 ## Dokument roboczy do wdrożenia przez Claude Code
 
 _Wersja: 2.0 | Data: 24 kwietnia 2026_
@@ -23,7 +23,7 @@ _Źródła: analiza kodu CSS/HTML, 37 screenshotów, robots.txt, sitemap.xml, pr
 
 ## 1. PROBLEMY KRYTYCZNE
 
-### 1.1 Brak SSR/SSG — strona niewidoczna dla wyszukiwarek
+### 1.1 Brak SSR/SSG - strona niewidoczna dla wyszukiwarek
 
 **Problem:** Cała treść renderowana client-side przez React (SPA z `<div id="root">`). Google crawler otrzymuje pusty HTML. Treść sekcji, nagłówki H1-H6, tekst paragrafów, linki wewnętrzne nie istnieją w statycznym HTML.
 
@@ -118,13 +118,13 @@ _Źródła: analiza kodu CSS/HTML, 37 screenshotów, robots.txt, sitemap.xml, pr
     Druk 3D, grawerowanie laserowe i produkcja na zamówienie"
 
 2. Badge Google Reviews above the fold:
-   "★ 5.0 — 22 opinie na Google"
+   "★ 5.0 - 22 opinie na Google"
 
 3. CTA biżuteria: "Zaprojektuj biżuterię →" → "Zobacz kolekcję →"
    CTA studio: "Zleć projekt studia →" → "Wyceń projekt online →"
 ```
 
-### 2.2 Dropdown menu — ciemny motyw
+### 2.2 Dropdown menu - ciemny motyw
 ```
 - Tło: neutral-900/95 z backdrop-blur-xl
 - Tekst: neutral-300 (idle), white (hover)
@@ -141,7 +141,7 @@ Zmień wszystkie secondary text:
 Żaden tekst na ciemnym tle nie może być ciemniejszy niż neutral-400.
 ```
 
-### 2.4 Glassmorphism — redukcja
+### 2.4 Glassmorphism - redukcja
 ```
 Zachowaj glass na: navbar (po scrollu), karty kalkulatora, floating CTA
 Pozostałe: bg-neutral-900 lub bg-neutral-900/80 z border-white/10 (bez blur)
@@ -160,7 +160,7 @@ Pozostałe: bg-neutral-900 lub bg-neutral-900/80 z border-white/10 (bez blur)
 
 ## 3. BRAKUJĄCE TREŚCI I ELEMENTY INFORMACYJNE
 
-### 3.1 Strona /about — O AEJaCA
+### 3.1 Strona /about - O AEJaCA
 
 **Treść od właściciela (do wdrożenia):**
 
@@ -178,18 +178,18 @@ Kluczowe elementy bio:
 Utwórz stronę /about:
 - Hero z zdjęciem warsztatu (do dostarczenia przez Artura)
 - Bio Artura (z dostarczonego tekstu, zachowaj ton)
-- Sekcja "Dwie linie — jedna filozofia" (AEJaCA + sTuDiO)
+- Sekcja "Dwie linie - jedna filozofia" (AEJaCA + sTuDiO)
 - Sekcja "Jakość i zgodność" (Urząd Probierczy, Urząd Patentowy)
 - Sekcja "Sprzęt" (Bambu Lab H2D, laser fiber Raycus 30W, laser CO2 xTool P2 55W)
 - Person schema (Artur Hebenstreit, founder, AEJaCA)
 - CTA: "Rozpocznij projekt →" i "Wyceń online →"
 
-Title: "O AEJaCA — Artur Hebenstreit, twórca biżuterii i studio produkcji"
+Title: "O AEJaCA - Artur Hebenstreit, twórca biżuterii i studio produkcji"
 Meta: "AEJaCA to marka łącząca rzemiosło jubilerskie z technologią. 
        Ponad 3 lata doświadczenia, 150+ projektów, 5.0 na Google."
 ```
 
-### 3.2 Strona /warranty — Gwarancja
+### 3.2 Strona /warranty - Gwarancja
 
 **Dane + benchmarki rynkowe:**
 
@@ -219,10 +219,10 @@ GWARANCJA AEJaCA
 
 Dodaj sekcję "Jak dbać o biżuterię" (link do bloga /blog/jak-dbac-o-bizuterie)
 
-Title: "Gwarancja na biżuterię — 24 miesiące | AEJaCA"
+Title: "Gwarancja na biżuterię - 24 miesiące | AEJaCA"
 ```
 
-### 3.3 Strona /returns — Polityka zwrotów
+### 3.3 Strona /returns - Polityka zwrotów
 
 **Dane od Artura:**
 - Produkty personalizowane na zamówienie: brak zwrotów
@@ -248,10 +248,10 @@ Wyłączenia z prawa zwrotu:
 
 Reklamacje: osobna procedura (link do /warranty)
 
-Title: "Zwroty i wymiany — polityka AEJaCA"
+Title: "Zwroty i wymiany - polityka AEJaCA"
 ```
 
-### 3.4 Strona /shipping — Informacje o wysyłce
+### 3.4 Strona /shipping - Informacje o wysyłce
 
 **Dane od Artura:**
 - Wysyłka krajowa: InPost, od 12 zł (mała przesyłka)
@@ -286,7 +286,7 @@ Czas realizacji:
 - Studio (materiały na stanie): 3-5 dni roboczych
 - Studio (zamawianie materiałów): 6-12 dni roboczych
 
-Title: "Wysyłka i dostawa — Polska, Europa, świat | AEJaCA"
+Title: "Wysyłka i dostawa - Polska, Europa, świat | AEJaCA"
 ```
 
 ### 3.5 Uzupełnienie FAQ na istniejących stronach
@@ -300,7 +300,7 @@ A: "Jeśli posiadamy materiały (kruszec + kamienie), realizacja trwa do 7 dni
    dni roboczych (dostawcy krajowi)."
 
 Q: "Czy mogę zwrócić biżuterię?"
-A: "Produkty uniwersalne — tak, w ciągu 14 dni. Biżuteria personalizowana 
+A: "Produkty uniwersalne - tak, w ciągu 14 dni. Biżuteria personalizowana 
    wykonana na indywidualne zamówienie nie podlega zwrotowi. 
    Szczegóły: [link do /returns]"
 
@@ -351,11 +351,11 @@ Uwaga: "Ceny orientacyjne, ostateczna wycena po konsultacji."
 
 **Zadanie dla Claude Code:**
 ```
-/ → title: "AEJaCA — biżuteria na zamówienie i studio produkcji kreatywnej"
+/ → title: "AEJaCA - biżuteria na zamówienie i studio produkcji kreatywnej"
     desc: "Ręcznie robiona biżuteria ze srebra 925, złota i kamieni naturalnych. 
            Druk 3D, grawerowanie laserowe. Wycena online w 30 sekund. ★ 5.0 Google."
 
-/jewelry → title: "Biżuteria na zamówienie — srebrna, złota, z kamieniami | AEJaCA"
+/jewelry → title: "Biżuteria na zamówienie - srebrna, złota, z kamieniami | AEJaCA"
            desc: "Unikatowa biżuteria ręcznie robiona. Pierścionki, wisiorki, 
                   obrączki ze srebra 925 i złota 14k/18k. Kalkulator cen online."
 
@@ -363,19 +363,19 @@ Uwaga: "Ceny orientacyjne, ostateczna wycena po konsultacji."
           desc: "Druk 3D FDM, grawerowanie fiber/CO2, odlewy żywiczne. 
                  Prototypy, produkcja małoseryjna. Wycena STL/SVG w 30 sekund."
 
-/blog → title: "Blog — biżuteria, druk 3D, grawerowanie | AEJaCA"
+/blog → title: "Blog - biżuteria, druk 3D, grawerowanie | AEJaCA"
         desc: "Poradniki: jak dbać o biżuterię, jak przygotować plik STL, 
                porównanie materiałów. Wiedza od rzemieślnika z 3-letnim doświadczeniem."
 
-/glossary → title: "Słownik biżuterii i fabrykacji — od A do Z | AEJaCA"
+/glossary → title: "Słownik biżuterii i fabrykacji - od A do Z | AEJaCA"
             desc: "Srebro 925, laser fiber vs CO2, druk FDM vs SLA, moissanit, 
                    rodowanie. Kluczowe pojęcia wyjaśnione prosto."
 
-/contact → title: "Kontakt — biżuteria na zamówienie, wycena projektu | AEJaCA"
+/contact → title: "Kontakt - biżuteria na zamówienie, wycena projektu | AEJaCA"
            desc: "Napisz: biżuteria na zamówienie, druk 3D, grawerowanie. 
                   WhatsApp, email, formularz. Józefosław."
 
-/about → title: "O AEJaCA — Artur Hebenstreit, rzemiosło + technologia"
+/about → title: "O AEJaCA - Artur Hebenstreit, rzemiosło + technologia"
          desc: "Ponad 3 lata doświadczenia, 150+ projektów. Biżuteria ze srebra 
                 i złota + studio druku 3D i grawerowania. ★ 5.0 Google."
 
@@ -391,7 +391,7 @@ Każda strona: dokładnie 1x <h1> z frazą kluczową.
 /studio → "Druk 3D, grawerowanie laserowe i produkcja na zamówienie"
 /blog → "Blog: biżuteria, druk 3D, grawerowanie laserowe"
 /glossary → "Słownik pojęć biżuterii i fabrykacji"
-/about → "O AEJaCA — rzemiosło i technologia od ponad 3 lat"
+/about → "O AEJaCA - rzemiosło i technologia od ponad 3 lat"
 ```
 
 ### 4.3 Linkowanie wewnętrzne
@@ -417,7 +417,7 @@ Styl: text-neutral-500, separator ">",
 link text-amber-400/80 hover:text-amber-300
 ```
 
-### 4.5 Hreflang — korekta
+### 4.5 Hreflang - korekta
 ```
 ZACHOWAJ hreflang pl/en/de (rynki UE + UK + DE to priorytet).
 Ale: upewnij się, że każdy hreflang href prowadzi do treści 
@@ -429,7 +429,7 @@ Jeśli DE content nie istnieje jeszcze → tymczasowo wskaż na EN.
 
 ## 5. AI SEO
 
-### 5.1 Robots.txt — OK ✓
+### 5.1 Robots.txt - OK ✓
 Wszystkie AI crawlery mają Allow: /. Bez zmian.
 
 ### 5.2 Struktura treści pod AI cytowanie
@@ -450,7 +450,7 @@ Dla artykułów i stron informacyjnych:
 6. Autor: "Artur Hebenstreit, założyciel AEJaCA" z linkiem do /about
 ```
 
-### 5.3 Glossary — osobne strony terminów
+### 5.3 Glossary - osobne strony terminów
 ```
 1. Każdy termin → osobny URL: /glossary/[slug]
 2. Na stronie terminu:
@@ -467,14 +467,14 @@ Dla artykułów i stron informacyjnych:
 
 ## 6. KONWERSJA I ZATRZYMANIE
 
-### 6.1 Kalkulatory — uzupełnienia
+### 6.1 Kalkulatory - uzupełnienia
 ```
 Pod wyceną szacunkową dodaj:
 - Czas realizacji: "Do 7 dni roboczych (materiały na stanie)" / 
   "10-14 dni (zamawianie materiałów)"
 - "Darmowa wysyłka od 400 zł"
 - Prepopulowany formularz z danymi z kalkulatora
-- Social proof: "★ 5.0 — 22 zadowolonych klientów"
+- Social proof: "★ 5.0 - 22 zadowolonych klientów"
 - Po wysłaniu: "Odpowiemy w ciągu 24h"
 ```
 
@@ -486,7 +486,7 @@ Pod wyceną szacunkową dodaj:
 3. Info w formularzu: "Nowinki z warsztatu, porady. Max 2 emaile/miesiąc."
 ```
 
-### 6.3 Blog — optymalizacja
+### 6.3 Blog - optymalizacja
 ```
 1. Filtrowanie: "Wszystkie | Biżuteria | Studio"
 2. W artykułach:
@@ -499,11 +499,11 @@ Pod wyceną szacunkową dodaj:
 
 3. Nowe artykuły do napisania:
    - "Ile kosztuje biżuteria na zamówienie? Kompletny cennik 2026"
-   - "Biżuteria personalizowana — kompletny przewodnik"
-   - "Grawerowanie na biżuterii — co warto wiedzieć"
-   - "Druk 3D w biżuterii — jak technologia zmienia rzemiosło"
-   - "NFC breloki i smart tagi — co to jest i jak działa"
-   - "Prezent na rocznicę / zaręczyny — przewodnik"
+   - "Biżuteria personalizowana - kompletny przewodnik"
+   - "Grawerowanie na biżuterii - co warto wiedzieć"
+   - "Druk 3D w biżuterii - jak technologia zmienia rzemiosło"
+   - "NFC breloki i smart tagi - co to jest i jak działa"
+   - "Prezent na rocznicę / zaręczyny - przewodnik"
 ```
 
 ---

@@ -105,7 +105,7 @@ export default function PrintSettingsPage() {
         <section className="relative overflow-hidden min-h-[340px]">
           <img
             src="/hero-print-settings.webp"
-            alt="Druk 3D FDM — parametry filamentów, AEJaCA sTuDiO"
+            alt="Druk 3D FDM - parametry filamentów, AEJaCA sTuDiO"
             className="absolute inset-0 w-full h-full object-cover"
             loading="eager"
             fetchpriority="high"

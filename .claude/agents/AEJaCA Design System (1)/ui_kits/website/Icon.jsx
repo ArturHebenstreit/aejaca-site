@@ -1,4 +1,4 @@
-/* AEJaCA UI Kit — minimal Lucide-style icon set (inline SVG).
+/* AEJaCA UI Kit - minimal Lucide-style icon set (inline SVG).
    Default stroke 2, currentColor, no fill. Sized via `size` prop. */
 
 function Icon({ d, size = 16, strokeWidth = 2, ...rest }) {

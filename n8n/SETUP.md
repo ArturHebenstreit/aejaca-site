@@ -1,4 +1,4 @@
-# AEJaCA Quote Follow-up — n8n + Gmail + PostgreSQL
+# AEJaCA Quote Follow-up - n8n + Gmail + PostgreSQL
 
 ## Architecture
 
@@ -13,11 +13,11 @@ User calculates price on aejaca.com
       → 7 days later: 5% discount email
 ```
 
-**Cost: ~0 PLN** — n8n (Railway) + Gmail (free) + PostgreSQL (Railway free tier: 1 GB).
+**Cost: ~0 PLN** - n8n (Railway) + Gmail (free) + PostgreSQL (Railway free tier: 1 GB).
 
 ---
 
-## Step 1: Railway — Add PostgreSQL
+## Step 1: Railway - Add PostgreSQL
 
 1. Open Railway dashboard → your project
 2. Click **+ New** → **Database** → **PostgreSQL**
@@ -56,7 +56,7 @@ CREATE INDEX IF NOT EXISTS idx_leads_created ON leads (created_at DESC);
 
 ---
 
-## Step 2: n8n — Import Workflow
+## Step 2: n8n - Import Workflow
 
 1. Open n8n: `https://primary-production-634f2.up.railway.app`
 2. Go to **Workflows → Import from File**
@@ -65,7 +65,7 @@ CREATE INDEX IF NOT EXISTS idx_leads_created ON leads (created_at DESC);
 
 ---
 
-## Step 3: n8n — Configure PostgreSQL Credential
+## Step 3: n8n - Configure PostgreSQL Credential
 
 1. In n8n: **Settings → Credentials → Add New → Postgres**
 2. Fill in from Railway's `DATABASE_URL`:
@@ -80,7 +80,7 @@ CREATE INDEX IF NOT EXISTS idx_leads_created ON leads (created_at DESC);
 
 ---
 
-## Step 4: n8n — Configure Gmail Credential
+## Step 4: n8n - Configure Gmail Credential
 
 ### Option A: OAuth2 (recommended)
 1. In n8n: **Settings → Credentials → Add New → Gmail OAuth2**
@@ -110,7 +110,7 @@ If not already set up in Gmail:
 
 ---
 
-## Step 5: n8n — Configure Email Templates
+## Step 5: n8n - Configure Email Templates
 
 Each Gmail node has a `message` field. Paste the HTML from:
 - **Send Quote Email** → `n8n/emails/quote-immediate.html`
@@ -130,7 +130,7 @@ In n8n's Gmail node: toggle to **HTML** mode, then paste the template content.
 
 ---
 
-## Step 7: Frontend — Set Environment Variable
+## Step 7: Frontend - Set Environment Variable
 
 Add to your Cloudflare Pages environment variables:
 

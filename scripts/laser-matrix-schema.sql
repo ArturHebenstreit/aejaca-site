@@ -1,4 +1,4 @@
--- Laser Matrix table — 1034 rows from Laser_Matryca_Materialowa_20260509_v.1.0.xlsx
+-- Laser Matrix table - 1034 rows from Laser_Matryca_Materialowa_20260509_v.1.0.xlsx
 -- Run: psql $DATABASE_URL -f scripts/laser-matrix-schema.sql
 
 CREATE TABLE IF NOT EXISTS laser_matrix (
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS laser_matrix (
   -- SEKCJA 6: Uwagi
   notes           TEXT,
 
-  -- Translations (optional — filled by admin; null = fallback to PL)
+  -- Translations (optional - filled by admin; null = fallback to PL)
   material_en     VARCHAR(200),
   material_de     VARCHAR(200),
   action_en       VARCHAR(100),

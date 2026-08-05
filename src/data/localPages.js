@@ -1,5 +1,5 @@
 // ============================================================
-// LOCAL LANDING PAGES — druk 3D, treść per miasto
+// LOCAL LANDING PAGES - druk 3D, treść per miasto
 // ------------------------------------------------------------
 // Dlaczego osobny plik danych, a nie i18n:
 // tak samo jak glossary.js i resins.js, to jest treść sterowana

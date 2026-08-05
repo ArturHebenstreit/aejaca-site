@@ -1,25 +1,25 @@
-/* AEJaCA — Home page (assembled). */
+/* AEJaCA - Home page (assembled). */
 
 const HOME_COPY = {
   pl: {
     h1: "Noszą ważne. Nie masowe.",
-    sub: "Biżuteria i przedmioty zaprojektowane dla Ciebie — od pomysłu do gotowego dzieła.",
+    sub: "Biżuteria i przedmioty zaprojektowane dla Ciebie - od pomysłu do gotowego dzieła.",
     brandHeading: "Twoja wizja. Nasza precyzja.",
-    brandText: "Każdy projekt to rozmowa — nie katalog. Zaczynamy od Twojego pomysłu, szkicu lub inspiracji. Wspólnie dopracowujemy detal, materiał i wymiary. Widzisz render 3D zanim cokolwiek powstanie. Otrzymujesz przedmiot, który istnieje tylko dla Ciebie.",
+    brandText: "Każdy projekt to rozmowa - nie katalog. Zaczynamy od Twojego pomysłu, szkicu lub inspiracji. Wspólnie dopracowujemy detal, materiał i wymiary. Widzisz render 3D zanim cokolwiek powstanie. Otrzymujesz przedmiot, który istnieje tylko dla Ciebie.",
     quickQuoteTag: "Wycena online w 30 sekund",
-    quickQuoteTitle: "Wycena online — bez wymiany maili",
-    quickQuoteSub: "Nasze kalkulatory liczą realny koszt na podstawie Twoich parametrów. Biżuteria lub produkcja cyfrowa — wybierz jedną i zaczynaj.",
+    quickQuoteTitle: "Wycena online - bez wymiany maili",
+    quickQuoteSub: "Nasze kalkulatory liczą realny koszt na podstawie Twoich parametrów. Biżuteria lub produkcja cyfrowa - wybierz jedną i zaczynaj.",
     jewelryTag: "Biżuteria",
     jewelryQuoteTitle: "Kalkulator biżuterii",
     jewelryQuoteDesc: "Pierścionki, bransoletki, naszyjniki. Tryb prosty (szybka wycena) lub zaawansowany (metal, próba, kamienie, robocizna).",
     jewelryQuoteCta: "Policz biżuterię",
     studioTag: "sTuDiO",
     studioQuoteTitle: "Druk 3D i grawer laserowy",
-    studioQuoteDesc: "Wgraj STL lub SVG — natychmiastowa wycena druku 3D, grawerowania i odlewania żywicy.",
+    studioQuoteDesc: "Wgraj STL lub SVG - natychmiastowa wycena druku 3D, grawerowania i odlewania żywicy.",
     studioQuoteCta: "Wyceń projekt",
     stlTag: "STL / SVG → cena",
     stlTitle: "Masz już plik 3D lub wektorowy?",
-    stlDesc: "Wgraj STL lub SVG — wymiary, materiał i wykończenie liczone automatycznie. Pełna przejrzystość kosztów.",
+    stlDesc: "Wgraj STL lub SVG - wymiary, materiał i wykończenie liczone automatycznie. Pełna przejrzystość kosztów.",
     twoWorldsAmber: "Artystyczne i Luksusowe",
     twoWorldsBlue: "Techniczne i Inżynierskie",
     jewelryListTitle: "AEJaCA Jewelry",
@@ -39,10 +39,10 @@ const HOME_COPY = {
     learnMoreJewelry: "Zobacz biżuterię",
     learnMoreStudio: "Poznaj sTuDiO",
     ctaHeading: "Masz pomysł? Stwórzmy go razem.",
-    ctaText: "Niezależnie czy potrzebujesz biżuterii na zamówienie czy prototypu technicznego — jesteśmy tu, żeby pomóc.",
+    ctaText: "Niezależnie czy potrzebujesz biżuterii na zamówienie czy prototypu technicznego - jesteśmy tu, żeby pomóc.",
     ctaBtn: "Napisz do nas",
     quickQuotePiles: {
-      print3d: { title: "Druk 3D", desc: "Wgraj STL — wycena FDM", cta: "Wyceń druk" },
+      print3d: { title: "Druk 3D", desc: "Wgraj STL - wycena FDM", cta: "Wyceń druk" },
       co2eng: { title: "Grawer CO₂", desc: "Drewno, akryl, skóra", cta: "Wyceń CO₂" },
       fiber:  { title: "Grawer Fiber", desc: "Metal, biżuteria, kamień", cta: "Wyceń Fiber" },
       cut:    { title: "Cięcie laserowe", desc: "Sklejka, akryl, filc", cta: "Wyceń cięcie" },
@@ -50,23 +50,23 @@ const HOME_COPY = {
   },
   en: {
     h1: "Wear what matters. Not what's mass-made.",
-    sub: "Jewelry and objects designed for you — from idea to finished piece.",
+    sub: "Jewelry and objects designed for you - from idea to finished piece.",
     brandHeading: "Your vision. Our precision.",
-    brandText: "Every project is a conversation — not a catalog. We start from your idea, sketch, or inspiration. Together we refine the detail, material, and dimensions. You see the 3D render before anything is made. You receive an object that exists only for you.",
+    brandText: "Every project is a conversation - not a catalog. We start from your idea, sketch, or inspiration. Together we refine the detail, material, and dimensions. You see the 3D render before anything is made. You receive an object that exists only for you.",
     quickQuoteTag: "Instant quote in 30 seconds",
-    quickQuoteTitle: "Get a price online — skip the email back-and-forth",
-    quickQuoteSub: "Our calculators compute a real estimate from your parameters. Jewelry or digital fabrication — pick one and start.",
+    quickQuoteTitle: "Get a price online - skip the email back-and-forth",
+    quickQuoteSub: "Our calculators compute a real estimate from your parameters. Jewelry or digital fabrication - pick one and start.",
     jewelryTag: "Jewelry",
     jewelryQuoteTitle: "Jewelry price calculator",
     jewelryQuoteDesc: "Rings, bracelets, necklaces. Simple mode (fast estimate) or advanced (metal, karat, stones, labor).",
     jewelryQuoteCta: "Calculate jewelry price",
     studioTag: "sTuDiO",
     studioQuoteTitle: "3D print & laser engraving calculator",
-    studioQuoteDesc: "Upload an STL or SVG — get an instant quote for 3D printing, laser engraving, and resin casting.",
+    studioQuoteDesc: "Upload an STL or SVG - get an instant quote for 3D printing, laser engraving, and resin casting.",
     studioQuoteCta: "Quote a project online",
     stlTag: "STL / SVG → price",
     stlTitle: "Already have a 3D or vector file?",
-    stlDesc: "Upload STL or SVG — dimensions, material, and finish computed automatically. Full cost transparency.",
+    stlDesc: "Upload STL or SVG - dimensions, material, and finish computed automatically. Full cost transparency.",
     twoWorldsAmber: "Artistic & Luxury",
     twoWorldsBlue: "Technical & Engineering",
     jewelryListTitle: "AEJaCA Jewelry",
@@ -86,10 +86,10 @@ const HOME_COPY = {
     learnMoreJewelry: "Discover our jewelry",
     learnMoreStudio: "Explore sTuDiO services",
     ctaHeading: "Have an idea? Let's create it together.",
-    ctaText: "Whether you need custom jewelry or a technical prototype — we're here to help.",
+    ctaText: "Whether you need custom jewelry or a technical prototype - we're here to help.",
     ctaBtn: "Get in Touch",
     quickQuotePiles: {
-      print3d: { title: "3D Printing", desc: "Upload STL — instant FDM quote", cta: "Quote 3D print" },
+      print3d: { title: "3D Printing", desc: "Upload STL - instant FDM quote", cta: "Quote 3D print" },
       co2eng: { title: "CO2 Engraving", desc: "Wood, acrylic, leather", cta: "Quote CO2 engrave" },
       fiber:  { title: "Fiber Engraving", desc: "Metal, jewelry, stone", cta: "Quote Fiber engrave" },
       cut:    { title: "Laser Cutting", desc: "Plywood, acrylic, felt", cta: "Quote CO2 cut" },
@@ -97,23 +97,23 @@ const HOME_COPY = {
   },
   de: {
     h1: "Trag, was zählt. Nicht das, was am Fließband gefertigt wird.",
-    sub: "Schmuck und Objekte für Sie entworfen — von der Idee zum fertigen Stück.",
+    sub: "Schmuck und Objekte für Sie entworfen - von der Idee zum fertigen Stück.",
     brandHeading: "Ihre Vision. Unsere Präzision.",
-    brandText: "Jedes Projekt ist ein Gespräch — kein Katalog. Wir beginnen mit Ihrer Idee, Skizze oder Inspiration. Gemeinsam verfeinern wir Detail, Material und Maße. Sie sehen das 3D-Render, bevor irgendetwas gefertigt wird. Sie erhalten ein Objekt, das nur für Sie existiert.",
+    brandText: "Jedes Projekt ist ein Gespräch - kein Katalog. Wir beginnen mit Ihrer Idee, Skizze oder Inspiration. Gemeinsam verfeinern wir Detail, Material und Maße. Sie sehen das 3D-Render, bevor irgendetwas gefertigt wird. Sie erhalten ein Objekt, das nur für Sie existiert.",
     quickQuoteTag: "Sofortangebot in 30 Sekunden",
-    quickQuoteTitle: "Online-Preis — ohne E-Mail-Pingpong",
-    quickQuoteSub: "Unsere Rechner ermitteln eine echte Schätzung aus Ihren Parametern. Schmuck oder digitale Fertigung — wählen Sie eines und legen Sie los.",
+    quickQuoteTitle: "Online-Preis - ohne E-Mail-Pingpong",
+    quickQuoteSub: "Unsere Rechner ermitteln eine echte Schätzung aus Ihren Parametern. Schmuck oder digitale Fertigung - wählen Sie eines und legen Sie los.",
     jewelryTag: "Schmuck",
     jewelryQuoteTitle: "Schmuck-Preisrechner",
     jewelryQuoteDesc: "Ringe, Armbänder, Halsketten. Einfacher Modus (schnelle Schätzung) oder erweitert (Metall, Karat, Steine, Arbeit).",
     jewelryQuoteCta: "Schmuckpreis berechnen",
     studioTag: "sTuDiO",
     studioQuoteTitle: "3D-Druck & Lasergravur-Rechner",
-    studioQuoteDesc: "STL oder SVG hochladen — Sofortangebot für 3D-Druck, Lasergravur und Harzguss.",
+    studioQuoteDesc: "STL oder SVG hochladen - Sofortangebot für 3D-Druck, Lasergravur und Harzguss.",
     studioQuoteCta: "Projekt anfragen",
     stlTag: "STL / SVG → Preis",
     stlTitle: "Sie haben bereits eine 3D- oder Vektordatei?",
-    stlDesc: "STL oder SVG hochladen — Maße, Material und Finish automatisch berechnet. Volle Kostentransparenz.",
+    stlDesc: "STL oder SVG hochladen - Maße, Material und Finish automatisch berechnet. Volle Kostentransparenz.",
     twoWorldsAmber: "Künstlerisch & Luxuriös",
     twoWorldsBlue: "Technisch & Ingenieurkunst",
     jewelryListTitle: "AEJaCA Jewelry",
@@ -133,10 +133,10 @@ const HOME_COPY = {
     learnMoreJewelry: "Schmuck entdecken",
     learnMoreStudio: "sTuDiO erkunden",
     ctaHeading: "Sie haben eine Idee? Lassen Sie uns sie gemeinsam erschaffen.",
-    ctaText: "Ob individueller Schmuck oder technischer Prototyp — wir sind für Sie da.",
+    ctaText: "Ob individueller Schmuck oder technischer Prototyp - wir sind für Sie da.",
     ctaBtn: "Kontakt aufnehmen",
     quickQuotePiles: {
-      print3d: { title: "3D-Druck", desc: "STL hochladen — FDM-Angebot", cta: "3D-Druck anfragen" },
+      print3d: { title: "3D-Druck", desc: "STL hochladen - FDM-Angebot", cta: "3D-Druck anfragen" },
       co2eng: { title: "CO₂-Gravur", desc: "Holz, Acryl, Leder", cta: "CO₂ anfragen" },
       fiber:  { title: "Faser-Gravur", desc: "Metall, Schmuck, Stein", cta: "Faser anfragen" },
       cut:    { title: "Laserschneiden", desc: "Sperrholz, Acryl, Filz", cta: "Schneiden anfragen" },
@@ -149,7 +149,7 @@ function HomePage({ lang, setActivePage }) {
 
   return (
     <div>
-      {/* Hero — H1 + subtitle + rating */}
+      {/* Hero - H1 + subtitle + rating */}
       <section style={{ background: "var(--bg-page)", padding: "56px 16px 32px", textAlign: "center" }}>
         <h1 style={{
           fontFamily: "var(--font-serif)", fontWeight: 600,
@@ -167,9 +167,9 @@ function HomePage({ lang, setActivePage }) {
           <GatewayTile
             img="../../assets/hero-home-jewelry.webp"
             eyebrow="AEJaCA Jewelry"
-            desc={lang === "pl" ? "Srebro, złoto, kamienie naturalne. Każdy egzemplarz wykonany ręcznie — tylko dla Ciebie."
-              : lang === "de" ? "Silber, Gold, Naturedelsteine. Jedes Stück handgefertigt — nur für Sie."
-              : "Silver, gold, natural gemstones. Every piece handcrafted — just for you."}
+            desc={lang === "pl" ? "Srebro, złoto, kamienie naturalne. Każdy egzemplarz wykonany ręcznie - tylko dla Ciebie."
+              : lang === "de" ? "Silber, Gold, Naturedelsteine. Jedes Stück handgefertigt - nur für Sie."
+              : "Silver, gold, natural gemstones. Every piece handcrafted - just for you."}
             ctaLabel={lang === "pl" ? "Zobacz biżuterię" : lang === "de" ? "Schmuck entdecken" : "Discover jewelry"}
             accent="amber"
             onClick={() => setActivePage("jewelry")}

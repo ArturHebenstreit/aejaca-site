@@ -1,4 +1,4 @@
--- AEJaCA Analytics — D1 Schema
+-- AEJaCA Analytics - D1 Schema
 -- Run: wrangler d1 execute aejaca-analytics --file=workers/analytics/schema.sql
 
 CREATE TABLE IF NOT EXISTS events (

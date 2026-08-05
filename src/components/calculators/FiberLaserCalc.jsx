@@ -1,5 +1,5 @@
 // ============================================================
-// FIBER LASER ESTIMATOR — Raycus 30W Galvo  v1.1
+// FIBER LASER ESTIMATOR - Raycus 30W Galvo  v1.1
 // Max work area: 150 × 150 mm
 // ============================================================
 import { useState, useEffect, useMemo } from "react";

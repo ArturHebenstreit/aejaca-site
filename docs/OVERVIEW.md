@@ -1,6 +1,6 @@
-# AEJaCA — Pełny przegląd projektu
+# AEJaCA - Pełny przegląd projektu
 
-Dokument opisuje **całość projektu aejaca.com** — aktualny stan techniczny, treściowy i biznesowy oraz plan rozwoju. Służy jako:
+Dokument opisuje **całość projektu aejaca.com** - aktualny stan techniczny, treściowy i biznesowy oraz plan rozwoju. Służy jako:
 
 - **onboarding** dla nowego dewelopera lub agenta AI wchodzącego w projekt,
 - **strategic overview** dla właściciela marki,
@@ -17,7 +17,7 @@ Polskie studio łączące dwie komplementarne marki:
 | Marka | Specjalizacja | Paleta wizualna |
 |---|---|---|
 | **AEJaCA Jewelry** | Ręcznie robiona biżuteria ze srebra 925 i złota 14k/18k z kamieniami naturalnymi (pierścionki zaręczynowe, kolczyki, wisiorki, bransoletki, biżuteria na zamówienie, renowacje, naprawy) | amber / rose |
-| **AEJaCA sTuDiO** | Digital fabrication — druk 3D (FDM/SLA, Bambu Lab H2D), grawerowanie laserowe (CO2 xTool P2, Fiber Raycus), odlewy żywiczne UV/2K, prototypowanie | blue / emerald |
+| **AEJaCA sTuDiO** | Digital fabrication - druk 3D (FDM/SLA, Bambu Lab H2D), grawerowanie laserowe (CO2 xTool P2, Fiber Raycus), odlewy żywiczne UV/2K, prototypowanie | blue / emerald |
 
 **Pozycjonowanie**: premium, rzemiosło + technologia, dwujęzyczność (PL/EN/DE), online-first (kalkulatory + STL/SVG upload + AI assistant).
 
@@ -59,7 +59,7 @@ Polskie studio łączące dwie komplementarne marki:
 |---|---|
 | **PostgreSQL** (Railway) | `leads`, `subscribers`, `conversations`, `analytics_events` |
 | **Google Drive** | Załączniki kontaktów (folder Kontakty) i wycen (folder Wyceny) |
-| **i18n** w repo | `src/i18n/{pl,en,de}.js` — pełna treść użytkownicka |
+| **i18n** w repo | `src/i18n/{pl,en,de}.js` - pełna treść użytkownicka |
 | `src/blog/posts.js` | Rejestr postów blogowych |
 | `src/data/googleReviews.js` | Recenzje Google (do `aggregateRating` i UI) |
 
@@ -67,10 +67,10 @@ Polskie studio łączące dwie komplementarne marki:
 
 | Co | Gdzie |
 |---|---|
-| Frontend (statyczny) | **Cloudflare Pages** — `public/_headers`, `public/_redirects`, build = `npm run build`, deploy z `main` |
-| Chat API | **Railway** — `aejacachatapi-production.up.railway.app` |
-| Admin Panel | **Railway** — `aejacaadmin-production.up.railway.app` |
-| n8n | **Railway** — `primary-fhhi-production.up.railway.app` |
+| Frontend (statyczny) | **Cloudflare Pages** - `public/_headers`, `public/_redirects`, build = `npm run build`, deploy z `main` |
+| Chat API | **Railway** - `aejacachatapi-production.up.railway.app` |
+| Admin Panel | **Railway** - `aejacaadmin-production.up.railway.app` |
+| n8n | **Railway** - `primary-fhhi-production.up.railway.app` |
 | PostgreSQL | **Railway** (Postgres-AEJaCA) |
 
 ### Zmienne środowiskowe (frontend, baked-in)
@@ -90,21 +90,21 @@ Po zmianie wymagany rebuild Cloudflare Pages.
 ### Routing (`src/App.jsx`)
 
 ```
-/                       Home              — hero dwustronny (Jewelry / Studio), tipy, CTA
-/jewelry/               Jewelry           — sekcje, kalkulator JewelryCalc, FAQ
-/studio/                Studio            — sekcje, kalkulatory studyjne, FAQ
-/about/                 About             — historia, sprzęt, certyfikaty, recenzje Google
-/gallery/               Gallery           — realizacje (planowane lub w trakcie)
-/contact/               Contact           — formularz → n8n → Drive → email
-/blog/                  BlogIndex         — lista postów (PL/EN/DE)
-/blog/:slug/            BlogPost          — pojedynczy artykuł, Article schema
-/glossary/              Glossary          — słownik pojęć (jubilerstwo, druk 3D, laser)
+/                       Home              - hero dwustronny (Jewelry / Studio), tipy, CTA
+/jewelry/               Jewelry           - sekcje, kalkulator JewelryCalc, FAQ
+/studio/                Studio            - sekcje, kalkulatory studyjne, FAQ
+/about/                 About             - historia, sprzęt, certyfikaty, recenzje Google
+/gallery/               Gallery           - realizacje (planowane lub w trakcie)
+/contact/               Contact           - formularz → n8n → Drive → email
+/blog/                  BlogIndex         - lista postów (PL/EN/DE)
+/blog/:slug/            BlogPost          - pojedynczy artykuł, Article schema
+/glossary/              Glossary          - słownik pojęć (jubilerstwo, druk 3D, laser)
 /glossary/:term/        GlossaryTerm
-/privacy/               Privacy           — RODO, cookies
-/warranty/              Warranty          — gwarancja 24m
-/returns/               Returns           — 14-dniowe odstąpienie
-/shipping/              Shipping          — InPost, paczkomat, darmowa od 400 PLN
-*                       NotFound          — 404 z linkami nawigacyjnymi
+/privacy/               Privacy           - RODO, cookies
+/warranty/              Warranty          - gwarancja 24m
+/returns/               Returns           - 14-dniowe odstąpienie
+/shipping/              Shipping          - InPost, paczkomat, darmowa od 400 PLN
+*                       NotFound          - 404 z linkami nawigacyjnymi
 ```
 
 ### Navbar (`src/components/Navbar.jsx`)
@@ -113,24 +113,24 @@ Pasek górny zawiera następujące pozycje (z dropdown sections):
 
 | Pozycja | Sekcje (drilldown) |
 |---|---|
-| Home | — |
+| Home | - |
 | Jewelry | sekcje strony jewelry (anchor scroll) |
 | Studio | sekcje strony studio (anchor scroll) |
 | Gallery | sub-linki (placeholder, route preventDefault) |
 | About | sekcje about |
 | **Resources** | **Blog**, **Glossary** (planowane: **Tools**) |
-| Contact | — |
+| Contact | - |
 
 Po prawej: język (PL/EN/DE) z flagami, mobilny hamburger.
 
-### Strony — cele i CTA
+### Strony - cele i CTA
 
 | Strona | Cel | Główne CTA |
 |---|---|---|
 | Home | First impression, podział marek, prowadzi do Jewelry / Studio / Calc | "Wyceń online", "Zobacz biżuterię", "Zobacz studio" |
 | Jewelry | Konwersja na zamówienie biżuterii | `JewelryCalc` + InquiryForm |
 | Studio | Konwersja na druk 3D / laser / odlewy | `StudioCalc` (STL/SVG upload) + InquiryForm |
-| About | Trust signals — założyciel, sprzęt, recenzje | "Skontaktuj się", "Sprawdź wycenę" |
+| About | Trust signals - założyciel, sprzęt, recenzje | "Skontaktuj się", "Sprawdź wycenę" |
 | Blog / Glossary | SEO (long-tail keywords, AI Overviews) | Subskrypcja newslettera, link do kalkulatorów |
 | Contact | Ostatnia bramka konwersji | Formularz + email + chat |
 
@@ -140,17 +140,17 @@ Po prawej: język (PL/EN/DE) z flagami, mobilny hamburger.
 
 | Plik | Rola |
 |---|---|
-| `JewelryCalc.jsx` | Pełny kalkulator biżuterii — wybór typu (pierścionek/kolczyki/wisiorek/bransoletka), materiał (Ag925, 14k/18k yellow/white/rose), kamień, rozmiar, grawer |
+| `JewelryCalc.jsx` | Pełny kalkulator biżuterii - wybór typu (pierścionek/kolczyki/wisiorek/bransoletka), materiał (Ag925, 14k/18k yellow/white/rose), kamień, rozmiar, grawer |
 | `SimpleJewelryCalc.jsx` | Wersja uproszczona (osadzona na Home / cards) |
-| `Print3DCalc.jsx` | Druk 3D — STL upload (objętość, czas), materiał (PLA/PETG/ABS/ASA/TPU/żywica), infill, post-processing |
-| `CO2LaserCalc.jsx` | Laser CO2 — SVG/AI/PDF upload, materiał (drewno/akryl/skóra/MDF), długość cięć + powierzchnia grawerunku |
-| `FiberLaserCalc.jsx` | Laser Fiber — grawerowanie metali, oznaczenia anodowane, plotter |
-| `EpoxyCastCalc.jsx` | Odlewy żywiczne — geometria formy, objętość żywicy, pigmenty |
+| `Print3DCalc.jsx` | Druk 3D - STL upload (objętość, czas), materiał (PLA/PETG/ABS/ASA/TPU/żywica), infill, post-processing |
+| `CO2LaserCalc.jsx` | Laser CO2 - SVG/AI/PDF upload, materiał (drewno/akryl/skóra/MDF), długość cięć + powierzchnia grawerunku |
+| `FiberLaserCalc.jsx` | Laser Fiber - grawerowanie metali, oznaczenia anodowane, plotter |
+| `EpoxyCastCalc.jsx` | Odlewy żywiczne - geometria formy, objętość żywicy, pigmenty |
 | `SimpleStudioCalc.jsx` | Wersja uproszczona kalkulatorów studyjnych (na Home) |
-| `STLViewer.jsx` | Three.js viewer — drag & drop STL, obrót, statystyki (objętość, BB) |
+| `STLViewer.jsx` | Three.js viewer - drag & drop STL, obrót, statystyki (objętość, BB) |
 | `SVGUploadCard.jsx` | Upload SVG/PDF/AI z parsowaniem długości ścieżek (cięcie laserem) |
 | `calcShared.jsx` | **Wspólne primitivy**: `MaterialCards`, `HeroCards`, `ResultDisplay`, `InquiryForm`, `QuoteEmailCapture`, `CalcCard`, helper `t()` |
-| `jewelryConfig.js` | Współczynniki cenowe — gęstości metali, ceny rynkowe, narzuty robocizny |
+| `jewelryConfig.js` | Współczynniki cenowe - gęstości metali, ceny rynkowe, narzuty robocizny |
 
 ### Przepływ wyceny
 
@@ -202,14 +202,14 @@ Renderuje przez `react-helmet-async`:
 | Schemat | Funkcja | Gdzie używany |
 |---|---|---|
 | `buildOrganizationSchema` | Tożsamość firmy (logo, sameAs, founder) | Każda strona |
-| `buildLocalBusinessSchema` | Geo, godziny otwarcia, zakres usług, oferta — local pack | Home, Contact |
+| `buildLocalBusinessSchema` | Geo, godziny otwarcia, zakres usług, oferta - local pack | Home, Contact |
 | `buildWebPageSchema` | Per-page wrapper, lang, canonical | Każda strona |
 | `buildBreadcrumbSchema` | Hierarchia stron | Sub-strony |
-| `buildServiceSchema` | Usługa + cena (min/max) — SERP "service" | Jewelry, Studio |
+| `buildServiceSchema` | Usługa + cena (min/max) - SERP "service" | Jewelry, Studio |
 | `buildArticleSchema` | Artykuł blog (headline, dates, author) | Blog posts |
 | `buildProductSchema` | Produkt + offer + aggregateRating | (planowane: shop) |
 | `buildHowToSchema` | Krok-po-kroku procesu | Strony procesowe |
-| `buildFAQSchema` | Para pytań + odpowiedzi — AI Overviews | Jewelry, Studio, blog |
+| `buildFAQSchema` | Para pytań + odpowiedzi - AI Overviews | Jewelry, Studio, blog |
 | `buildItemListSchema` | Karuzele produktów | Listy |
 | `buildReviewsAugmentedOrganization` | Org + aggregateRating + Review[] z Google | Home, About |
 
@@ -226,11 +226,11 @@ Renderuje przez `react-helmet-async`:
 
 ### Strategia słów kluczowych
 
-**PL** — biżuteria na zamówienie, pierścionek zaręczynowy, kalkulator biżuterii online, druk 3D na zamówienie, kalkulator wyceny druku 3D online, wycena STL online, grawerowanie laserowe cena, kalkulator stopu złota, ring blank calculator pl.
+**PL** - biżuteria na zamówienie, pierścionek zaręczynowy, kalkulator biżuterii online, druk 3D na zamówienie, kalkulator wyceny druku 3D online, wycena STL online, grawerowanie laserowe cena, kalkulator stopu złota, ring blank calculator pl.
 
-**EN** — engagement rings online, custom jewelry calculator, 3D printing cost calculator online, STL upload instant quote, laser engraving price calculator, ring blank calculator, alloy calculator jewelry.
+**EN** - engagement rings online, custom jewelry calculator, 3D printing cost calculator online, STL upload instant quote, laser engraving price calculator, ring blank calculator, alloy calculator jewelry.
 
-**DE** — Verlobungsring auf Bestellung, Schmuck-Preisrechner, 3D-Druck Preisrechner online, STL Sofort-Angebot, Lasergravur Preis Rechner.
+**DE** - Verlobungsring auf Bestellung, Schmuck-Preisrechner, 3D-Druck Preisrechner online, STL Sofort-Angebot, Lasergravur Preis Rechner.
 
 ---
 
@@ -244,7 +244,7 @@ src/i18n/
 └── de.js                 # tłumaczenie
 ```
 
-**Reguła**: każdy string user-facing siedzi w `src/i18n/{pl,en,de}.js`. Trzy pliki **muszą być w sync** — dodanie klucza wymaga uzupełnienia wszystkich trzech.
+**Reguła**: każdy string user-facing siedzi w `src/i18n/{pl,en,de}.js`. Trzy pliki **muszą być w sync** - dodanie klucza wymaga uzupełnienia wszystkich trzech.
 
 Hook `useLanguage()`:
 
@@ -258,7 +258,7 @@ Wybrany język trzymany w `localStorage` + sync z `<html lang>`. Hreflang w `<he
 
 ---
 
-## 7. Asystent AI — `ChatWidget`
+## 7. Asystent AI - `ChatWidget`
 
 Komponent: `src/components/ChatWidget.jsx`. Floating button w prawym dolnym rogu z efektem `animate-ping` (puls amber).
 
@@ -266,10 +266,10 @@ Komponent: `src/components/ChatWidget.jsx`. Floating button w prawym dolnym rogu
 |---|---|
 | Backend | Express (`chat-api/server.js`) na Railway |
 | Model | OpenAI **GPT-4o-mini** (planowane: Claude przez Anthropic API jako tańszy/lepszy fallback) |
-| Streaming | **SSE** (Server-Sent Events) — `text/event-stream`, format `data: {"content": "..."}\n\n` |
+| Streaming | **SSE** (Server-Sent Events) - `text/event-stream`, format `data: {"content": "..."}\n\n` |
 | Konfiguracja | `VITE_CHAT_API_URL` → `${API_URL}/api/chat` |
 | Multilang | Headery + system prompt zależne od `lang` (pl/en/de) |
-| Kontekst | `chat-api/context.js` — system prompt z wiedzą o AEJaCA, kalkulatorach, cenach + hot lead detection |
+| Kontekst | `chat-api/context.js` - system prompt z wiedzą o AEJaCA, kalkulatorach, cenach + hot lead detection |
 | Persystencja | Zapis pełnych konwersacji do `conversations` w PostgreSQL |
 | UX | Quick chips (4 propozycje pytań), markdown links → React Router (internal), zewnętrzne `target="_blank"` |
 | Sesja | `sessionId = chat_<ts>_<rand>` per otwarcie |
@@ -280,7 +280,7 @@ Komponent: `src/components/ChatWidget.jsx`. Floating button w prawym dolnym rogu
 
 Hostowany na Railway: `https://primary-fhhi-production.up.railway.app`. Workflow definiowane w `/n8n/*.json` (eksportowalne, wersjonowane w repo).
 
-### 8a. Workflow: AEJaCA — Contact Form
+### 8a. Workflow: AEJaCA - Contact Form
 
 ```
 Webhook (POST /webhook/contact) → Validate
@@ -289,7 +289,7 @@ Webhook (POST /webhook/contact) → Validate
    → Email notify owner z linkiem do Drive
 ```
 
-### 8b. Workflow: AEJaCA — Quote Email Follow-up
+### 8b. Workflow: AEJaCA - Quote Email Follow-up
 
 ```
 Webhook (POST /webhook/quote-capture)
@@ -347,7 +347,7 @@ Hostowany na Railway: `https://aejacaadmin-production.up.railway.app`.
 
 | Aspekt | Wartość |
 |---|---|
-| Auth | **Google OAuth** (Passport.js) — dostęp tylko `contact@aejaca.com` (`ALLOWED_EMAIL`) |
+| Auth | **Google OAuth** (Passport.js) - dostęp tylko `contact@aejaca.com` (`ALLOWED_EMAIL`) |
 | Templating | EJS |
 | Sesja | Express-session + `trust proxy: 1`, `secure: true`, `sameSite: lax` |
 
@@ -374,28 +374,28 @@ analytics_events (id, event_name, data_json, created_at)
 
 ---
 
-## 10. Planowane: `/tools/` — narzędzia dla jubilerów
+## 10. Planowane: `/tools/` - narzędzia dla jubilerów
 
 ### Myśl przewodnia
 
-> Gdy zaczynałem jako samouk jubilerski, napotykałem brak wiedzy, narzędzi i kalkulatorów. Przez lata zbierałem wiedzę od mistrzów. Teraz przyszedł czas, by się nią podzielić — część bezpłatnie, bo wiem jak to jest zaczynać. Perełki zostawiam dla tych, którzy cenią trud ich zebrania.
+> Gdy zaczynałem jako samouk jubilerski, napotykałem brak wiedzy, narzędzi i kalkulatorów. Przez lata zbierałem wiedzę od mistrzów. Teraz przyszedł czas, by się nią podzielić - część bezpłatnie, bo wiem jak to jest zaczynać. Perełki zostawiam dla tych, którzy cenią trud ich zebrania.
 
 ### Struktura
 
 ```
 /tools/
-├── DARMOWE — bez logowania:
+├── DARMOWE - bez logowania:
 │   ├── Ring Blank Calculator     (długość paska metalu → rozmiar pierścionka)
 │   ├── Alloy Calculator          (skład stopu: 14k yellow / white / rose)
 │   ├── Gemstone Weight Calculator (waga z wymiarów × gęstość)
 │   └── Casting Shrinkage Calc    (kompensacja skurczu odlewu)
 │
-├── PREMIUM — jednorazowy zakup (Stripe Checkout):
+├── PREMIUM - jednorazowy zakup (Stripe Checkout):
 │   ├── eBooki jubilerskie (PDF)
 │   ├── Pliki SVG do laserów
 │   └── Modele 3D (STL/STEP)
 │
-└── SUBSKRYPCJA — Stripe Billing (miesięczna / roczna):
+└── SUBSKRYPCJA - Stripe Billing (miesięczna / roczna):
     ├── Wszystkie kalkulatory pro
     ├── Cała biblioteka eBooków
     └── Nowe materiały co miesiąc
@@ -411,7 +411,7 @@ Rozszerzenie sekcji **Resources**: `Blog · Glossary` → `Blog · Glossary · T
 
 ---
 
-## 11. Planowane: `/shop/` — szybki sklep fizyczny
+## 11. Planowane: `/shop/` - szybki sklep fizyczny
 
 Produkty: **szkatułki z grawerem**, **bransoletki z kamieni**, **standy NFC**, **breloki NFC**, **gotowa biżuteria** (mała seria).
 
@@ -514,8 +514,8 @@ Stripe Tax oblicza VAT per kraj; **Fakturownia API** generuje faktury KSeF-kompa
 
 ### Zwroty
 
-- **Cyfrowe** — 14 dni, **jeśli nie pobrano** (prawo EU + flag `downloaded_at`).
-- **Fizyczne** — 14 dni prawo konsumenckie (oprócz personalizowanych).
+- **Cyfrowe** - 14 dni, **jeśli nie pobrano** (prawo EU + flag `downloaded_at`).
+- **Fizyczne** - 14 dni prawo konsumenckie (oprócz personalizowanych).
 - Mechanizm: `stripe.refunds.create()` → webhook `charge.refunded` → DB update + email klientowi.
 
 ---
@@ -536,7 +536,7 @@ Stripe Tax oblicza VAT per kraj; **Fakturownia API** generuje faktury KSeF-kompa
 
 ## 14. Roadmap implementacji
 
-### Faza 1 — gotowe
+### Faza 1 - gotowe
 
 - [x] Strona główna + podstrony (PL/EN/DE)
 - [x] Kalkulatory wyceny (Jewelry: full + simple; Studio: 3D Print, CO2 Laser, Fiber Laser, Epoxy Cast + simple)
@@ -551,23 +551,23 @@ Stripe Tax oblicza VAT per kraj; **Fakturownia API** generuje faktury KSeF-kompa
 - [x] Sitemap, hreflang, llms.txt
 - [x] Cloudflare Pages deployment z prerenderem
 
-### Faza 2 — w toku / zaplanowane
+### Faza 2 - w toku / zaplanowane
 
-- [ ] `/tools/` — darmowe kalkulatory jubilerskie (Ring Blank, Alloy, Gemstone Weight, Casting Shrinkage)
+- [ ] `/tools/` - darmowe kalkulatory jubilerskie (Ring Blank, Alloy, Gemstone Weight, Casting Shrinkage)
 - [ ] Google Sign-In na stronie publicznej (poza admin)
 - [ ] Tabele `users`, `purchases`, `subscriptions`, `orders`
-- [ ] Stripe integracja — Checkout + Billing + Elements + Tax
-- [ ] `/shop/` — sklep fizyczny z BLIK
+- [ ] Stripe integracja - Checkout + Billing + Elements + Tax
+- [ ] `/shop/` - sklep fizyczny z BLIK
 - [ ] Fakturownia API + KSeF
 - [ ] Webhook endpoint `/api/stripe/webhook` (Railway)
 - [ ] Pełne `/gallery/` z realizacjami (zdjęcia + opis)
 
-### Faza 3 — przyszłość
+### Faza 3 - przyszłość
 
-- [ ] eBooki jubilerskie — pierwsze produkty premium
+- [ ] eBooki jubilerskie - pierwsze produkty premium
 - [ ] Pliki SVG / Modele 3D do sprzedaży (zaczynając od najpopularniejszych)
 - [ ] Subskrypcja jubilerska (miesięczna / roczna)
-- [ ] **Gemini AI w n8n** — analiza projektów klienta (zdjęcie referencyjne → wycena AI)
+- [ ] **Gemini AI w n8n** - analiza projektów klienta (zdjęcie referencyjne → wycena AI)
 - [ ] Etsy integration (auto-sync SVG bundles)
 - [ ] AI Overviews monitoring (czy ChatGPT/Perplexity cytują aejaca.com)
 - [ ] A/B testing CTA via Cloudflare Workers
@@ -581,7 +581,7 @@ Stripe Tax oblicza VAT per kraj; **Fakturownia API** generuje faktury KSeF-kompa
 - Branch roboczy: `claude/<topic>-<short-id>`
 - Commit message: 1–2 zdania **dlaczego**, nie co
 - Footer commitów: `https://claude.ai/code/session_...`
-- Push: `git push -u origin <branch>` — branch musi zaczynać się od `claude/`
+- Push: `git push -u origin <branch>` - branch musi zaczynać się od `claude/`
 - Merge do `main` → auto-deploy Cloudflare Pages
 - Po zmianie `VITE_*` env → manual rebuild w Cloudflare
 

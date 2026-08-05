@@ -3,19 +3,19 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 const LABELS = {
   pl: {
     title: "Czy narzędzie okazało się przydatne?",
-    desc: "Jeśli narzędzie Ci pomogło — zostaw opinię na Google lub Trustpilot. Pomaga nam to rozwijać witrynę i wspierać społeczność twórców.",
+    desc: "Jeśli narzędzie Ci pomogło - zostaw opinię na Google lub Trustpilot. Pomaga nam to rozwijać witrynę i wspierać społeczność twórców.",
     google: "Oceń na Google",
     trustpilot: "Oceń na Trustpilot",
   },
   en: {
     title: "Did you find this tool useful?",
-    desc: "If this tool helped you — leave a review on Google or Trustpilot. It helps us grow the site and support the maker community.",
+    desc: "If this tool helped you - leave a review on Google or Trustpilot. It helps us grow the site and support the maker community.",
     google: "Review on Google",
     trustpilot: "Review on Trustpilot",
   },
   de: {
     title: "War das Werkzeug hilfreich?",
-    desc: "Wenn Ihnen dieses Tool geholfen hat — hinterlassen Sie eine Bewertung bei Google oder Trustpilot. Es hilft uns, die Website weiterzuentwickeln.",
+    desc: "Wenn Ihnen dieses Tool geholfen hat - hinterlassen Sie eine Bewertung bei Google oder Trustpilot. Es hilft uns, die Website weiterzuentwickeln.",
     google: "Auf Google bewerten",
     trustpilot: "Auf Trustpilot bewerten",
   },

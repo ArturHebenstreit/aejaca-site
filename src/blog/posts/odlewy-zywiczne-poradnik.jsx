@@ -9,16 +9,16 @@ export function Body({ lang }) {
   return (
     <>
       <Lead>{t(
-        "Odlewy żywiczne zamieniają ciecz w trwałą, przejrzystą jak szkło materię. Od elementów biżuterii po dekoracyjne obiekty — to jedna z najwszechstronniejszych technik w naszym sTuDiO.",
-        "Resin casting turns liquid into solid, glass-clear material. From jewelry components to decorative objects — it's one of the most versatile techniques in our sTuDiO.",
-        "Harzguss verwandelt Flüssigkeit in festes, glasklares Material. Von Schmuckkomponenten bis zu dekorativen Objekten — eine der vielseitigsten Techniken in unserem sTuDiO."
+        "Odlewy żywiczne zamieniają ciecz w trwałą, przejrzystą jak szkło materię. Od elementów biżuterii po dekoracyjne obiekty - to jedna z najwszechstronniejszych technik w naszym sTuDiO.",
+        "Resin casting turns liquid into solid, glass-clear material. From jewelry components to decorative objects - it's one of the most versatile techniques in our sTuDiO.",
+        "Harzguss verwandelt Flüssigkeit in festes, glasklares Material. Von Schmuckkomponenten bis zu dekorativen Objekten - eine der vielseitigsten Techniken in unserem sTuDiO."
       )}</Lead>
 
       <H2 id="uv-vs-2k">{t("Żywica UV vs dwukomponentowa", "UV vs 2K Epoxy Resin", "UV-Harz vs 2K-Epoxid")}</H2>
       <P>{t(
-        <>Pracujemy z dwoma rodzajami <A href="/glossary/zywica-uv">żywic</A> — każda ma swoje mocne strony:</>,
-        <>We work with two types of <A href="/glossary/zywica-uv">resin</A> — each has its strengths:</>,
-        <>Wir arbeiten mit zwei <A href="/glossary/zywica-uv">Harz</A>typen — jeder hat seine Stärken:</>
+        <>Pracujemy z dwoma rodzajami <A href="/glossary/zywica-uv">żywic</A> - każda ma swoje mocne strony:</>,
+        <>We work with two types of <A href="/glossary/zywica-uv">resin</A> - each has its strengths:</>,
+        <>Wir arbeiten mit zwei <A href="/glossary/zywica-uv">Harz</A>typen - jeder hat seine Stärken:</>
       )}</P>
       <Table
         headers={[
@@ -37,30 +37,30 @@ export function Body({ lang }) {
 
       <H2 id={id("materialy", "materials", "materialien")}>{t("Materiały i pigmenty", "Materials & Pigments", "Materialien & Pigmente")}</H2>
       <P>{t(
-        "Żywica to baza — ale magia zaczyna się, gdy dodasz kolor i wypełnienia:",
-        "Resin is the base — but the magic starts when you add color and inclusions:",
-        "Harz ist die Basis — aber die Magie beginnt mit Farbe und Einschlüssen:"
+        "Żywica to baza - ale magia zaczyna się, gdy dodasz kolor i wypełnienia:",
+        "Resin is the base - but the magic starts when you add color and inclusions:",
+        "Harz ist die Basis - aber die Magie beginnt mit Farbe und Einschlüssen:"
       )}</P>
       <UL>
-        <LI><Strong>{t("Tusze alkoholowe", "Alcohol inks", "Alkoholtinten")}</Strong> — {t("intensywne, przezroczyste kolory z efektem marmuru", "intense, translucent colors with marble effect", "intensive, durchscheinende Farben mit Marmoreffekt")}</LI>
-        <LI><Strong>{t("Pyły mika", "Mica powders", "Glimmerpulver")}</Strong> — {t("metaliczny połysk w złocie, srebrze, miedzi, brązie", "metallic shimmer in gold, silver, copper, bronze", "metallischer Schimmer in Gold, Silber, Kupfer, Bronze")}</LI>
-        <LI><Strong>{t("Suszone kwiaty", "Dried flowers", "Trockenblumen")}</Strong> — {t("zakapslowane na zawsze w przejrzystej żywicy", "encapsulated forever in clear resin", "für immer in klarem Harz eingeschlossen")}</LI>
-        <LI><Strong>{t("Wkładki metalowe / drewno", "Metal / wood inserts", "Metall-/Holzeinlagen")}</Strong> — {t("hybrydowe obiekty łączące materiały", "hybrid objects combining materials", "hybride Objekte aus verschiedenen Materialien")}</LI>
-        <LI><Strong>{t("Pigmenty fosforyzujące", "Glow-in-the-dark pigments", "Nachleuchtpigmente")}</Strong> — {t("świecą w ciemności przez kilka godzin", "glow for hours in the dark", "leuchten stundenlang im Dunkeln")}</LI>
+        <LI><Strong>{t("Tusze alkoholowe", "Alcohol inks", "Alkoholtinten")}</Strong> - {t("intensywne, przezroczyste kolory z efektem marmuru", "intense, translucent colors with marble effect", "intensive, durchscheinende Farben mit Marmoreffekt")}</LI>
+        <LI><Strong>{t("Pyły mika", "Mica powders", "Glimmerpulver")}</Strong> - {t("metaliczny połysk w złocie, srebrze, miedzi, brązie", "metallic shimmer in gold, silver, copper, bronze", "metallischer Schimmer in Gold, Silber, Kupfer, Bronze")}</LI>
+        <LI><Strong>{t("Suszone kwiaty", "Dried flowers", "Trockenblumen")}</Strong> - {t("zakapslowane na zawsze w przejrzystej żywicy", "encapsulated forever in clear resin", "für immer in klarem Harz eingeschlossen")}</LI>
+        <LI><Strong>{t("Wkładki metalowe / drewno", "Metal / wood inserts", "Metall-/Holzeinlagen")}</Strong> - {t("hybrydowe obiekty łączące materiały", "hybrid objects combining materials", "hybride Objekte aus verschiedenen Materialien")}</LI>
+        <LI><Strong>{t("Pigmenty fosforyzujące", "Glow-in-the-dark pigments", "Nachleuchtpigmente")}</Strong> - {t("świecą w ciemności przez kilka godzin", "glow for hours in the dark", "leuchten stundenlang im Dunkeln")}</LI>
       </UL>
       <Callout accent="blue" title={t("Jakość", "Quality", "Qualität")}>{t(
-        "Używamy wyłącznie żywic premium o niskim skurczu i doskonałej przejrzystości — żadnych tanich zamienników.",
-        "We use only premium casting resins with low shrinkage and excellent clarity — no cheap alternatives.",
-        "Wir verwenden ausschließlich Premium-Gießharze mit geringem Schrumpf und hervorragender Klarheit — keine billigen Alternativen."
+        "Używamy wyłącznie żywic premium o niskim skurczu i doskonałej przejrzystości - żadnych tanich zamienników.",
+        "We use only premium casting resins with low shrinkage and excellent clarity - no cheap alternatives.",
+        "Wir verwenden ausschließlich Premium-Gießharze mit geringem Schrumpf und hervorragender Klarheit - keine billigen Alternativen."
       )}</Callout>
 
       <H2 id={id("zastosowania", "applications", "anwendungen")}>{t("Zastosowania", "Applications", "Anwendungen")}</H2>
       <UL>
-        <LI><Strong>{t("Biżuteria", "Jewelry", "Schmuck")}</Strong> — {t("wisiorki, wkładki do pierścionków, kolczyki z żywicy", "pendants, ring inserts, resin earring drops", "Anhänger, Ringeinsätze, Harz-Ohrringe")}</LI>
-        <LI><Strong>{t("Obiekty dekoracyjne", "Decorative objects", "Dekorationsobjekte")}</Strong> — {t("podkładki, zakładki, breloki", "coasters, bookmarks, keychains", "Untersetzer, Lesezeichen, Schlüsselanhänger")}</LI>
-        <LI><Strong>{t("Sztuka żywiczna", "Resin art", "Harzkunst")}</Strong> — {t("obrazy żywiczne, miniatury river table", "resin paintings, river table miniatures", "Harzgemälde, River-Table-Miniaturen")}</LI>
-        <LI><Strong><A href="/glossary/prototypowanie">{t("Prototypowanie", "Prototyping", "Prototyping")}</A></Strong> — {t("przezroczyste obudowy, modele demonstracyjne", "transparent housings, display models", "transparente Gehäuse, Ausstellungsmodelle")}</LI>
-        <LI><Strong>{t("Utrwalanie pamiątek", "Preservation", "Konservierung")}</Strong> — {t("kwiaty, bilety, zdjęcia zakapslowane w żywicy", "flowers, tickets, photos encapsulated in resin", "Blumen, Tickets, Fotos in Harz eingeschlossen")}</LI>
+        <LI><Strong>{t("Biżuteria", "Jewelry", "Schmuck")}</Strong> - {t("wisiorki, wkładki do pierścionków, kolczyki z żywicy", "pendants, ring inserts, resin earring drops", "Anhänger, Ringeinsätze, Harz-Ohrringe")}</LI>
+        <LI><Strong>{t("Obiekty dekoracyjne", "Decorative objects", "Dekorationsobjekte")}</Strong> - {t("podkładki, zakładki, breloki", "coasters, bookmarks, keychains", "Untersetzer, Lesezeichen, Schlüsselanhänger")}</LI>
+        <LI><Strong>{t("Sztuka żywiczna", "Resin art", "Harzkunst")}</Strong> - {t("obrazy żywiczne, miniatury river table", "resin paintings, river table miniatures", "Harzgemälde, River-Table-Miniaturen")}</LI>
+        <LI><Strong><A href="/glossary/prototypowanie">{t("Prototypowanie", "Prototyping", "Prototyping")}</A></Strong> - {t("przezroczyste obudowy, modele demonstracyjne", "transparent housings, display models", "transparente Gehäuse, Ausstellungsmodelle")}</LI>
+        <LI><Strong>{t("Utrwalanie pamiątek", "Preservation", "Konservierung")}</Strong> - {t("kwiaty, bilety, zdjęcia zakapslowane w żywicy", "flowers, tickets, photos encapsulated in resin", "Blumen, Tickets, Fotos in Harz eingeschlossen")}</LI>
       </UL>
 
       <H2 id={id("proces", "process", "prozess")}>{t("Proces realizacji", "Our Process", "Unser Prozess")}</H2>
@@ -70,14 +70,14 @@ export function Body({ lang }) {
         "Jeder Guss durchläuft 4 Phasen:"
       )}</P>
       <UL>
-        <LI><Strong>{t("1. Konsultacja", "1. Consultation", "1. Beratung")}</Strong> — {t(
+        <LI><Strong>{t("1. Konsultacja", "1. Consultation", "1. Beratung")}</Strong> - {t(
           <>omawiamy projekt + przygotowujemy formę (silikonową lub drukowaną w <A href="/glossary/druk-3d-fdm">druku 3D</A>)</>,
           <>we discuss the design + prepare the mold (silicone or <A href="/glossary/druk-3d-fdm">3D-printed</A>)</>,
           <>wir besprechen das Design + bereiten die Form vor (Silikon oder per <A href="/glossary/druk-3d-fdm">3D-Druck</A> gedruckt)</>
         )}</LI>
-        <LI><Strong>{t("2. Dobór materiałów", "2. Material selection", "2. Materialwahl")}</Strong> — {t("typ żywicy, pigmenty, wkładki, wykończenie", "resin type, pigments, inserts, finish", "Harztyp, Pigmente, Einlagen, Finish")}</LI>
-        <LI><Strong>{t("3. Odlew + utwardzanie", "3. Casting + curing", "3. Guss + Aushärtung")}</Strong> — {t("lampa UV lub 24h utwardzanie chemiczne", "UV lamp or 24-hour chemical cure", "UV-Lampe oder 24-stündige chemische Aushärtung")}</LI>
-        <LI><Strong>{t("4. Wykończenie", "4. Finishing", "4. Nachbearbeitung")}</Strong> — {t("wyjęcie z formy, szlifowanie, polerowanie, ewentualnie lakierowanie", "demolding, sanding, polishing, optional coating", "Entformen, Schleifen, Polieren, optionale Beschichtung")}</LI>
+        <LI><Strong>{t("2. Dobór materiałów", "2. Material selection", "2. Materialwahl")}</Strong> - {t("typ żywicy, pigmenty, wkładki, wykończenie", "resin type, pigments, inserts, finish", "Harztyp, Pigmente, Einlagen, Finish")}</LI>
+        <LI><Strong>{t("3. Odlew + utwardzanie", "3. Casting + curing", "3. Guss + Aushärtung")}</Strong> - {t("lampa UV lub 24h utwardzanie chemiczne", "UV lamp or 24-hour chemical cure", "UV-Lampe oder 24-stündige chemische Aushärtung")}</LI>
+        <LI><Strong>{t("4. Wykończenie", "4. Finishing", "4. Nachbearbeitung")}</Strong> - {t("wyjęcie z formy, szlifowanie, polerowanie, ewentualnie lakierowanie", "demolding, sanding, polishing, optional coating", "Entformen, Schleifen, Polieren, optionale Beschichtung")}</LI>
       </UL>
 
       <H2 id={id("ceny", "pricing", "preise")}>{t("Ceny i terminy", "Pricing & Turnaround", "Preise & Lieferzeit")}</H2>

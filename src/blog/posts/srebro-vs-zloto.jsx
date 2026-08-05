@@ -9,9 +9,9 @@ export function Body({ lang }) {
   return (
     <>
       <Lead>{t(
-        "Srebro czy złoto? To pierwsze pytanie przy tworzeniu biżuterii na zamówienie — i nie ma jednej uniwersalnej odpowiedzi. Właściwy metal zależy od stylu życia, skóry, budżetu i gustu.",
-        "Silver or gold? It's the first question in custom jewelry — and there's no universal answer. The right metal depends on your lifestyle, skin, budget, and taste.",
-        "Silber oder Gold? Die erste Frage bei individuellem Schmuck — und es gibt keine universelle Antwort. Das richtige Metall hängt von Lebensstil, Haut, Budget und Geschmack ab."
+        "Srebro czy złoto? To pierwsze pytanie przy tworzeniu biżuterii na zamówienie - i nie ma jednej uniwersalnej odpowiedzi. Właściwy metal zależy od stylu życia, skóry, budżetu i gustu.",
+        "Silver or gold? It's the first question in custom jewelry - and there's no universal answer. The right metal depends on your lifestyle, skin, budget, and taste.",
+        "Silber oder Gold? Die erste Frage bei individuellem Schmuck - und es gibt keine universelle Antwort. Das richtige Metall hängt von Lebensstil, Haut, Budget und Geschmack ab."
       )}</Lead>
 
       <H2 id={id("porownanie", "comparison", "vergleich")}>{t("Porównanie właściwości", "Properties Comparison", "Eigenschaftsvergleich")}</H2>
@@ -34,21 +34,21 @@ export function Body({ lang }) {
 
       <H2 id={id("trwalosc", "durability", "haltbarkeit")}>{t("Trwałość w praktyce", "Practical Durability", "Haltbarkeit in der Praxis")}</H2>
       <UL>
-        <LI><Strong>{t("Srebro 925", "Silver 925", "Silber 925")}</Strong> — {t("miękkie, łatwiej się rysuje, wymaga polerowania — ale bardzo łatwe w naprawie", "soft, scratches more easily, needs polishing — but very easy to repair", "weich, verkratzt leichter, braucht Politur — aber sehr einfach zu reparieren")}</LI>
-        <LI><Strong>{t("Złoto 14k", "14k gold", "14-Karat-Gold")}</Strong> — {t("najtwardszy stop ze wszystkich trzech — najlepszy na codzienne noszenie", "hardest alloy of the three — best for daily wear", "härteste Legierung der drei — am besten für den Alltag")}</LI>
-        <LI><Strong>{t("Złoto 18k", "18k gold", "18-Karat-Gold")}</Strong> — {t("miększe od 14k, ale bogatszy kolor — idealne na wyjątkowe elementy", "softer than 14k but richer color — ideal for special pieces", "weicher als 14k, aber sattere Farbe — ideal für besondere Stücke")}</LI>
+        <LI><Strong>{t("Srebro 925", "Silver 925", "Silber 925")}</Strong> - {t("miękkie, łatwiej się rysuje, wymaga polerowania - ale bardzo łatwe w naprawie", "soft, scratches more easily, needs polishing - but very easy to repair", "weich, verkratzt leichter, braucht Politur - aber sehr einfach zu reparieren")}</LI>
+        <LI><Strong>{t("Złoto 14k", "14k gold", "14-Karat-Gold")}</Strong> - {t("najtwardszy stop ze wszystkich trzech - najlepszy na codzienne noszenie", "hardest alloy of the three - best for daily wear", "härteste Legierung der drei - am besten für den Alltag")}</LI>
+        <LI><Strong>{t("Złoto 18k", "18k gold", "18-Karat-Gold")}</Strong> - {t("miększe od 14k, ale bogatszy kolor - idealne na wyjątkowe elementy", "softer than 14k but richer color - ideal for special pieces", "weicher als 14k, aber sattere Farbe - ideal für besondere Stücke")}</LI>
       </UL>
       <Callout accent="amber" title={t("Rekomendacja", "Recommendation", "Empfehlung")}>{t(
-        "Na pierścionki zaręczynowe noszone codziennie polecamy złoto 14k — najlepsza równowaga piękna i wytrzymałości.",
-        "For engagement rings worn daily, we recommend 14k gold — the best balance of beauty and durability.",
-        "Für täglich getragene Verlobungsringe empfehlen wir 14-Karat-Gold — die beste Balance aus Schönheit und Haltbarkeit."
+        "Na pierścionki zaręczynowe noszone codziennie polecamy złoto 14k - najlepsza równowaga piękna i wytrzymałości.",
+        "For engagement rings worn daily, we recommend 14k gold - the best balance of beauty and durability.",
+        "Für täglich getragene Verlobungsringe empfehlen wir 14-Karat-Gold - die beste Balance aus Schönheit und Haltbarkeit."
       )}</Callout>
 
       <H2 id={id("alergie", "allergies", "allergien")}>{t("Alergie i skóra", "Allergies & Skin", "Allergien & Haut")}</H2>
       <UL>
         <LI>{t("Czyste srebro i złoto o wysokiej próbie są hipoalergiczne", "Pure silver and high-karat gold are hypoallergenic", "Reines Silber und hochkarätiges Gold sind hypoallergen")}</LI>
-        <LI>{t("Nikiel w niektórych stopach złota wywołuje reakcje — w AEJaCA używamy wyłącznie stopów bez niklu", "Nickel in some gold alloys causes reactions — at AEJaCA we use nickel-free alloys exclusively", "Nickel in manchen Goldlegierungen verursacht Reaktionen — bei AEJaCA verwenden wir ausschließlich nickelfreie Legierungen")}</LI>
-        <LI>{t("pH skóry wpływa na matowienie — niektóre osoby przyciemniają srebro szybciej", "Skin pH affects tarnishing — some people darken silver faster", "Der Haut-pH beeinflusst das Anlaufen — manche Menschen verdunkeln Silber schneller")}</LI>
+        <LI>{t("Nikiel w niektórych stopach złota wywołuje reakcje - w AEJaCA używamy wyłącznie stopów bez niklu", "Nickel in some gold alloys causes reactions - at AEJaCA we use nickel-free alloys exclusively", "Nickel in manchen Goldlegierungen verursacht Reaktionen - bei AEJaCA verwenden wir ausschließlich nickelfreie Legierungen")}</LI>
+        <LI>{t("pH skóry wpływa na matowienie - niektóre osoby przyciemniają srebro szybciej", "Skin pH affects tarnishing - some people darken silver faster", "Der Haut-pH beeinflusst das Anlaufen - manche Menschen verdunkeln Silber schneller")}</LI>
         <LI>{t(<><A href="/glossary/rodowanie">Rodowanie</A> (na srebrze lub białym złocie) dodaje dodatkową ochronę</>, <><A href="/glossary/rodowanie">Rhodium plating</A> (on silver or white gold) adds extra protection</>, <><A href="/glossary/rodowanie">Rhodinierung</A> (auf Silber oder Weißgold) bietet zusätzlichen Schutz</>)}</LI>
       </UL>
 
@@ -102,9 +102,9 @@ export function Body({ lang }) {
         accent="amber"
         title={t("Porównaj metale dla swojego projektu", "Compare metals for your design", "Vergleichen Sie Metalle für Ihr Design")}
         text={t(
-          "Kalkulator biżuterii AEJaCA pokaże cenę w srebrze, złocie 14k i 18k — w 30 sekund.",
-          "AEJaCA's jewelry calculator shows the price in silver, 14k, and 18k gold — in 30 seconds.",
-          "Der AEJaCA-Schmuckkalkulator zeigt den Preis in Silber, 14k und 18k Gold — in 30 Sekunden."
+          "Kalkulator biżuterii AEJaCA pokaże cenę w srebrze, złocie 14k i 18k - w 30 sekund.",
+          "AEJaCA's jewelry calculator shows the price in silver, 14k, and 18k gold - in 30 seconds.",
+          "Der AEJaCA-Schmuckkalkulator zeigt den Preis in Silber, 14k und 18k Gold - in 30 Sekunden."
         )}
         href="/jewelry#calculator"
         cta={t("Kalkulator biżuterii", "Jewelry calculator", "Schmuckkalkulator")}

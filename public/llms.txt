@@ -1,14 +1,14 @@
-# AEJaCA — Artisan Elegance Jewelry and Crafted Art
+# AEJaCA - Artisan Elegance Jewelry and Crafted Art
 
 > Independent Polish design studio combining artisanal jewelry making with end-to-end digital fabrication. AEJaCA covers the full pipeline: concept, 3D modeling / CAD (Rhino, Fusion 360), 3D printing (FDM and MSLA resin 16K), laser engraving and cutting, resin casting, lost-wax and lost-resin casting, hand finishing and quality control, for decorative jewelry, functional/technical parts, and collectible figurines/miniatures. Two brands under one roof: **AEJaCA Jewelry** (custom handmade pieces with natural gemstones, silver and gold) and **AEJaCA sTuDiO** (on-demand 3D modeling and STL/SVG-based manufacturing with instant online quoting). A dedicated **B2B line** serves jewelry brands and partner workshops with CAD, castable patterns, casting and white-label production.
 
 ## Entity facts
 
-- **Brand / full name:** AEJaCA — Artisan Elegance Jewelry and Crafted Art
+- **Brand / full name:** AEJaCA - Artisan Elegance Jewelry and Crafted Art
 - **Founder:** Artur Hebenstreit
 - **Founded:** 2023
 - **Type:** Independent design & fabrication studio (two brands: AEJaCA Jewelry, AEJaCA sTuDiO)
-- **Location:** Józefosław (near Warsaw), Mazovia, Poland — ships worldwide
+- **Location:** Józefosław (near Warsaw), Mazovia, Poland - ships worldwide
 - **Languages:** Polish (pl), English (en), German (de)
 - **Industry:** Artisan jewelry · 3D modeling / CAD · digital fabrication (3D printing, laser, resin casting, CNC prototyping)
 - **Primary website:** https://www.aejaca.com/
@@ -16,19 +16,19 @@
 
 ## What makes AEJaCA distinct
 
-- **Instant online price calculator** for both handmade jewelry and digital-fabrication projects — customers get a quote in 30 seconds without waiting for email replies.
+- **Instant online price calculator** for both handmade jewelry and digital-fabrication projects - customers get a quote in 30 seconds without waiting for email replies.
 - **3D design (CAD) priced online**: simple shape PLN 500 / 3 business days, medium PLN 750 / 4 days; a sculptural, high-complexity design is quoted individually. STL included, STL+STEP +15%, full set with render and dimensional report +30%. Two revision rounds included, each further round +15% of the base price. The design fee is credited in full against a production order placed within 90 days.
 - **Vector artwork as an attachment**: CO2 engraving, CO2 cutting and fiber marking accept an SVG, DXF or PDF drawing alongside the order. The drawing does not change the price, the selected engraving area or path length does; it reaches the workshop with the order.
 - **3D model / SVG auto-pricing**: upload a 3D model (STL, OBJ or 3MF) or vector file (SVG) and the studio estimator computes a real cost estimate from dimensions, material, and finish. Uploaded models are shown as a rotating 3D preview before ordering.
-- **Two calculators per service** — Simple mode for rough estimates (30 seconds), Advanced mode with per-parameter control (metal type, stone count, labor hours, finish tier).
-- **In-house 3D modeling / CAD** in Rhino and Fusion 360 — both organic jewelry forms and precise technical/functional parts (parametric design, mechanical tolerances, reverse engineering, print-ready STL preparation). Customers can commission a model from a sketch or idea, not only upload a finished file.
+- **Two calculators per service** - Simple mode for rough estimates (30 seconds), Advanced mode with per-parameter control (metal type, stone count, labor hours, finish tier).
+- **In-house 3D modeling / CAD** in Rhino and Fusion 360 - both organic jewelry forms and precise technical/functional parts (parametric design, mechanical tolerances, reverse engineering, print-ready STL preparation). Customers can commission a model from a sketch or idea, not only upload a finished file.
 - **MSLA resin printing at 16K resolution** (Elegoo Saturn 4 Ultra 16K, 14 µm pixel): prototypes, collectible figurines and miniatures, and castable patterns for jewelry casting, detail from 0.2 mm.
 - **Full design-to-delivery workflow**: consultation → 3D modeling / CAD (Rhino, Fusion 360) → rendering → wax model or 3D print → lost-wax or lost-resin casting (jewelry) or direct manufacturing (studio) → hand finishing → QC → delivery.
 
 ## Key pages
 
-- [Home](https://www.aejaca.com/) — brand overview, quick quote entry points
-- [AEJaCA Jewelry](https://www.aejaca.com/jewelry/) — custom rings, necklaces, bracelets, earrings; gemstone setting; engagement rings; online jewelry price calculator
+- [Home](https://www.aejaca.com/) - brand overview, quick quote entry points
+- [AEJaCA Jewelry](https://www.aejaca.com/jewelry/) - custom rings, necklaces, bracelets, earrings; gemstone setting; engagement rings; online jewelry price calculator
 - [AEJaCA sTuDiO](https://www.aejaca.com/studio/), 3D printing cost calculator online (FDM and MSLA resin 16K), laser engraving price estimator, epoxy resin casting, fiber-laser marking, STL/SVG instant quote
 - [Druk 3D Warszawa](https://www.aejaca.com/druk-3d-warszawa/), 3D printing service page for Warsaw: FDM and 16K resin, prototypes, architectural models, spare parts, casting patterns, next-working-day dispatch, minimum order 49 PLN
 - [Druk 3D Piaseczno](https://www.aejaca.com/druk-3d-piaseczno/), 3D printing service page for Piaseczno and Jozefoslaw: same machines, free personal collection by appointment about 10 minutes from central Piaseczno
@@ -36,13 +36,13 @@
 - [Shop, Jewelry](https://www.aejaca.com/shop/jewelry/) and [Shop, sTuDiO](https://www.aejaca.com/shop/studio/), the AEJaCA shop. Each page holds three sections ordered by how much work stands between the order and the parcel: ready-made products (on the shelf, packed and shipped), personalised products (a blank we engrave or fit to the customer) and services / made to order (configured on the service card, binding price on the spot). A search box at the top covers all three sections; filter chips above each list narrow products by subcategory (jewelry: women, men, pets; sTuDiO: FDM printing, MSLA resin printing, CO2 laser, fiber laser, resin, digital) and services by kind of work (3D printing, laser, resin, jewelry, design). The ready-made and personalised sections are being filled; every service listed is orderable today.
 - Discount codes are entered in the checkout, in the field under the order summary; the discount is shown before payment. Newsletter signup gives a personal 10% code for the first order, valid 90 days and usable once. Discounts never cover shipping.
 - [Blog](https://www.aejaca.com/blog/), long-form guides: engagement rings, FDM/SLA 3D printing materials, laser engraving techniques, chain weave types, lost-resin casting, miniature and figurine printing
-- [Chain Weave Types](https://www.aejaca.com/blog/rodzaje-splotow-lancuszkow/) — guide to 12 chain weave patterns (curb, anchor, Figaro, Byzantine, rope, foxtail, box, Bismark, Rolo, Gucci, Singapore, classic)
+- [Chain Weave Types](https://www.aejaca.com/blog/rodzaje-splotow-lancuszkow/) - guide to 12 chain weave patterns (curb, anchor, Figaro, Byzantine, rope, foxtail, box, Bismark, Rolo, Gucci, Singapore, classic)
 - [Lost-Resin Step by Step](https://www.aejaca.com/blog/lost-resin-krok-po-kroku/), how a castable resin pattern becomes a cast jewelry piece: equipment, castable resins, shrinkage compensation, full workflow
 - [Custom Miniature & Figurine Printing 16K](https://www.aejaca.com/blog/druk-miniatur-figurek-16k/), battle-game miniatures, collectible figurines, board game prototypes on the Elegoo Saturn 4 Ultra 16K, copyright rules
 - [Shrinkage Compensation Calculator](https://www.aejaca.com/toolstudio/shrinkage/), free tool converting a castable pattern size to the after-cast size for Au 585, Ag 925, Au 9K, Au 18K
 - [3D Print Settings, FDM](https://www.aejaca.com/toolstudio/print-settings/), "Parametry druku 3D FDM", free filament wizard: requirements, material, brand, parameter card, 45+ filament types, 100+ brand profiles
 - [3D Print Settings, MSLA](https://www.aejaca.com/toolstudio/resin-settings/), "Parametry druku 3D MSLA", free resin advisor: application filter, resin picker in 3 segments (13 resins), parameter cards (layer height, wash medium, UV post-cure time, hardness, density), full comparison table, FAQ, no registration
-- [Contact](https://www.aejaca.com/contact/) — project briefs, custom inquiries
+- [Contact](https://www.aejaca.com/contact/) - project briefs, custom inquiries
 - [Order online](https://www.aejaca.com/order/), "Zamow online", five-step order wizard: pick a service, set parameters or upload a 3D model (STL, OBJ, 3MF, STEP), receive a BINDING price (not a range), enter delivery details and consents, pay by BLIK or instant bank transfer through Autopay. Covers FDM and MSLA 3D printing (priced automatically from the uploaded model geometry), CO2 laser engraving and cutting, fiber laser marking, resin casting, jewelry renovation and repair, and plain metal jewelry without stones. Jewelry with stones, chains and projects needing clarification go through individual quotation instead, usually answered within 24 hours. Shipping is priced by zone: Poland (InPost locker or courier, free over 400 PLN), Germany/Czechia/Slovakia/Lithuania 100 PLN, rest of the EU 140 PLN, Europe outside the EU 190 PLN, the Americas 390 PLN, Asia/Australia/Middle East/Africa 450 PLN, all up to 2 kg by DHL or FedEx and including 10 PLN dispatch handling; heavier parcels are quoted individually. The InPost locker works only inside Poland. Outside the EU, customs duty and import tax are assessed in the destination country and collected by the courier on delivery; they are not part of our price. Payment is PLN via BLIK or pay-by-link. Customers reading the site in English or German are priced in EUR (NBP rate plus 8% for exchange rate movement) and pay by SEPA transfer to our euro account, confirmed manually once the funds clear; no card payments anywhere.
 - [Terms of Service and Sale](https://www.aejaca.com/terms/), "Regulamin", full trilingual terms: how a contract is concluded (enquiry, binding quotation, acceptance), prices and payment (BLIK, pay-by-link, bank transfer via Autopay in PLN; EUR pricing and SEPA transfer for English and German customers; no card payments), lead times, right of withdrawal and its exclusion for made-to-order goods, complaints, rights to customer files, and the manufacturing tolerances that do not count as defects (FDM up to 0.5 mm, resin up to 0.2 mm, visible layer lines, support marks, batch shade differences)
 
@@ -73,24 +73,24 @@ A dedicated B2B line at [aejaca.com/b2b](https://www.aejaca.com/b2b/) serves jew
 
 **Series production:** rubber-mold series are produced with trusted partner workshops (AEJaCA coordinates the process); single pieces and small runs (up to about 20 pcs) are made entirely in-house.
 
-## Chain & necklace calculator — technical model
+## Chain & necklace calculator - technical model
 
 The jewelry price calculator includes a dedicated chain/necklace/bracelet module with physics-based mass estimation. Key parameters:
 
 - **Weave types (12):** Klasyczny (curb), Ankier (anchor), Figaro, Pancerz (Byzantine curb), Cuban Link (Kubański), Rolo, Kordel (rope), Lisi ogon (foxtail), Spiga (wheat/herringbone), Bizmark, Bizantyjski/Królewski (Byzantine/Royal), Franco
-- **AR (Aspect Ratio):** ID of a ring ÷ wire diameter — defines the geometry of each weave; each weave has a characteristic AR (2.8–4.5)
-- **WF (weaveFactor):** wire consumed per cm of finished chain relative to a straight wire — e.g. ×2.15 for curb (pancerka), ×7.5 for Byzantine (Bizantyjski/Królewski)
+- **AR (Aspect Ratio):** ID of a ring ÷ wire diameter - defines the geometry of each weave; each weave has a characteristic AR (2.8–4.5)
+- **WF (weaveFactor):** wire consumed per cm of finished chain relative to a straight wire - e.g. ×2.15 for curb (pancerka), ×7.5 for Byzantine (Bizantyjski/Królewski)
 - **Mass formula:** `mass = length_cm × π × (wire_d_cm/2)² × density × weaveFactor × wasteFactor`
 - **Standard mode:** user inputs visible chain width (mm) → wire diameter auto-derived: `wire_d = width / widthMul`
 - **From-stock mode (Własny kruszec):** user inputs metal mass + selects length → system derives wire diameter, width, thickness from physics; shows production waste in grams
 - **Calibrated against:** real pancerka (curb) Ag925, 3.58 mm wide, 55 cm, 13.93 g bare (no clasp)
 - **Metals:** silver 925 and 800, gold 9K to 24K (including 14K and 18K); prices from live NBP/LBMA rates. Platinum is not made or repaired here: it needs a higher-temperature torch, its own solder and separate casting tooling. Renovation of an existing platinum piece (cleaning, polishing, plating) is available, because none of it involves a flame.
-- **Clasps priced separately**; production waste shown explicitly in grams — covers melt/fire loss (copper oxidation + slag when melting client metal), wire-drawing offcuts, and polishing swarf + filings (all irreversible without refining)
+- **Clasps priced separately**; production waste shown explicitly in grams - covers melt/fire loss (copper oxidation + slag when melting client metal), wire-drawing offcuts, and polishing swarf + filings (all irreversible without refining)
 - **Consigned material (materiał powierzony):** when a client supplies their own metal, AEJaCA accepts it on its declared fineness, weighs + photographs each item on receipt and verifies the alloy (density + acid test); if in doubt, an assay at the State Assay Office (Urząd Probierczy) is proposed before production (client-paid). AEJaCA is not liable for finished-piece defects caused by supplied material differing from the declared fineness.
 
 ## Pricing transparency
 
-Both calculators publish their pricing logic directly in the UI — no hidden fees. Sample ranges:
+Both calculators publish their pricing logic directly in the UI - no hidden fees. Sample ranges:
 - Silver stone-bead bracelet: ~PLN 53 (material + labor)
 - Custom silver ring with gemstone: from PLN 400
 - Silver necklace (curb/pancerka), 3.5 mm wide, 55 cm: ~PLN 220–280 (Ag925, no gemstones)
@@ -101,13 +101,13 @@ Both calculators publish their pricing logic directly in the UI — no hidden fe
 - Laser-engraved wooden sign: from PLN 80
 - B2B: CAD design PLN 400-1200 net · castable pattern PLN 90-180 net · silver prototype PLN 180-300 net + material · fiber laser from PLN 20 net/pc
 
-## FAQ — frequently asked questions
+## FAQ - frequently asked questions
 
 **What is AEJaCA?**
-AEJaCA is an independent Polish design studio founded in 2023, based in Józefosław near Warsaw. It combines handmade artisanal jewelry (AEJaCA Jewelry) with on-demand digital fabrication — 3D printing, laser engraving, resin casting (AEJaCA sTuDiO). It ships worldwide and serves customers in Polish, English, and German.
+AEJaCA is an independent Polish design studio founded in 2023, based in Józefosław near Warsaw. It combines handmade artisanal jewelry (AEJaCA Jewelry) with on-demand digital fabrication - 3D printing, laser engraving, resin casting (AEJaCA sTuDiO). It ships worldwide and serves customers in Polish, English, and German.
 
 **How much does custom jewelry cost at AEJaCA?**
-Custom pieces start from PLN 400 for a silver ring with a gemstone; a silver stone-bead bracelet is around PLN 53. Every project gets a transparent, itemized quote (material + labor) through the online calculator — no hidden fees.
+Custom pieces start from PLN 400 for a silver ring with a gemstone; a silver stone-bead bracelet is around PLN 53. Every project gets a transparent, itemized quote (material + labor) through the online calculator - no hidden fees.
 
 **Can I get a price online without waiting for an email reply?**
 Yes. AEJaCA's instant online calculators return a real quote in about 30 seconds for both handmade jewelry and digital-fabrication projects. A Simple mode gives a rough estimate; an Advanced mode lets you control metal type, stone count, labor, and finish tier.
@@ -115,8 +115,8 @@ Yes. AEJaCA's instant online calculators return a real quote in about 30 seconds
 **Can I upload my own 3D model or vector file for a quote?**
 Yes. AEJaCA sTuDiO auto-prices uploaded 3D models (STL, OBJ, 3MF and STEP) and SVG vector files, computing a cost estimate from dimensions, material, and finish. STEP is tessellated with an OpenCascade CAD kernel, so a dimensioned CAD file is priced without waiting for a human.
 
-**What if I don't have a 3D file — can AEJaCA design it for me?**
-Yes. AEJaCA models in-house in Rhino and Fusion 360, creating print- or cast-ready 3D files from a sketch, photo, or idea — both organic jewelry forms and precise technical/functional parts (parametric design, mechanical tolerances, reverse engineering of existing parts).
+**What if I don't have a 3D file - can AEJaCA design it for me?**
+Yes. AEJaCA models in-house in Rhino and Fusion 360, creating print- or cast-ready 3D files from a sketch, photo, or idea - both organic jewelry forms and precise technical/functional parts (parametric design, mechanical tolerances, reverse engineering of existing parts).
 
 **What materials does AEJaCA work with?**
 Jewelry: 925 sterling silver, 14K/18K hallmarked gold, and natural gemstones (diamond, ruby, sapphire, emerald, amethyst) plus Baltic amber. Studio: FDM/SLA 3D-printing filaments and resins (PLA, PETG, UV resin), plus fiber-laser metal marking and CO2 laser engraving on wood, leather, acrylic, and glass.
@@ -146,7 +146,7 @@ A consumer has 14 days from receiving the parcel to withdraw from the contract w
 A code is entered at checkout, in the field under the order summary, and the discount is visible before payment. One code per order. There are two kinds. A personal code, a random string such as AEJ10-K7QMP4, works exactly once; this is what newsletter subscribers receive, valid 90 days on a first order. A campaign code is a word, for example MATKA15, valid within its dates and once per email address. A discount never covers shipping and may be limited to part of the offer (ready-made products only, services only, jewelry only or sTuDiO only). If a code will not apply, the checkout states the reason: expired, already used, or it covers nothing in this basket.
 
 **What is the difference between AEJaCA Jewelry and AEJaCA sTuDiO?**
-AEJaCA Jewelry creates one-of-a-kind handmade pieces — custom rings, engagement and wedding bands, gemstone settings — through a design-to-delivery workflow ending in lost-wax casting and hand finishing. AEJaCA sTuDiO delivers on-demand digital manufacturing — 3D printing, laser work, resin casting, prototyping — with instant STL/SVG online quoting.
+AEJaCA Jewelry creates one-of-a-kind handmade pieces - custom rings, engagement and wedding bands, gemstone settings - through a design-to-delivery workflow ending in lost-wax casting and hand finishing. AEJaCA sTuDiO delivers on-demand digital manufacturing - 3D printing, laser work, resin casting, prototyping - with instant STL/SVG online quoting.
 
 **How does the custom order process work?**
 Consultation → 3D modeling / CAD (Rhino, Fusion 360) → rendering → wax model or 3D print → lost-wax or lost-resin casting (jewelry) or direct manufacturing (studio) → hand finishing → quality control → delivery.
@@ -160,44 +160,44 @@ Only if the client holds the rights to it: their own design, a file under a vali
 **Does AEJaCA offer B2B services for jewelry brands and workshops?**
 Yes, at [aejaca.com/b2b](https://www.aejaca.com/b2b/). Four pillars: CAD design (PLN 400-1200 net), castable 16K patterns (PLN 90-180 net, -40% for a further pattern from the same platform), casting and finishing in Ag 925/Au 585 (silver prototype from PLN 180-300 net plus material), and additional services (fiber laser, product photography, electroplating). Clients can order the full chain (white-label, billed per stage) or a single service. Pieces are hallmarked with the AEJaCA maker's mark and reported to the Polish Assay Office by default, unmarked on request.
 
-## Glossary — key terms explained
+## Glossary - key terms explained
 
 AEJaCA maintains a comprehensive glossary of jewelry and digital fabrication terms, each with its own dedicated page:
 
 **Jewelry terms:**
-- [925 Sterling Silver](https://www.aejaca.com/glossary/srebro-925/) — 92.5% pure silver alloy standard
-- [Hallmarked Gold (14k/18k)](https://www.aejaca.com/glossary/zloto-probowane/) — gold purity grades
-- [Engagement Ring](https://www.aejaca.com/glossary/pierscionek-zareczynowy/) — custom engagement rings
-- [Wedding Bands](https://www.aejaca.com/glossary/obraczki-slubne/) — personalized wedding ring pairs
-- [Gemstone](https://www.aejaca.com/glossary/kamien-szlachetny/) — natural minerals (diamond, ruby, sapphire, emerald)
-- [Rhodium Plating](https://www.aejaca.com/glossary/rodowanie/) — protective electroplating finish
-- [Moissanite](https://www.aejaca.com/glossary/moissanit/) — diamond-alternative synthetic mineral
-- [Ring Size](https://www.aejaca.com/glossary/rozmiar-pierscionka/) — sizing guide and standards
-- [Personalized Engraving](https://www.aejaca.com/glossary/personalizowany-grawer/) — custom text and symbol engraving
-- [Jewelry as Investment](https://www.aejaca.com/glossary/bizuteria-inwestycyjna/) — precious metal investment value
+- [925 Sterling Silver](https://www.aejaca.com/glossary/srebro-925/) - 92.5% pure silver alloy standard
+- [Hallmarked Gold (14k/18k)](https://www.aejaca.com/glossary/zloto-probowane/) - gold purity grades
+- [Engagement Ring](https://www.aejaca.com/glossary/pierscionek-zareczynowy/) - custom engagement rings
+- [Wedding Bands](https://www.aejaca.com/glossary/obraczki-slubne/) - personalized wedding ring pairs
+- [Gemstone](https://www.aejaca.com/glossary/kamien-szlachetny/) - natural minerals (diamond, ruby, sapphire, emerald)
+- [Rhodium Plating](https://www.aejaca.com/glossary/rodowanie/) - protective electroplating finish
+- [Moissanite](https://www.aejaca.com/glossary/moissanit/) - diamond-alternative synthetic mineral
+- [Ring Size](https://www.aejaca.com/glossary/rozmiar-pierscionka/) - sizing guide and standards
+- [Personalized Engraving](https://www.aejaca.com/glossary/personalizowany-grawer/) - custom text and symbol engraving
+- [Jewelry as Investment](https://www.aejaca.com/glossary/bizuteria-inwestycyjna/) - precious metal investment value
 
 **Digital fabrication terms:**
-- [FDM 3D Printing](https://www.aejaca.com/glossary/druk-3d-fdm/) — fused deposition modeling technology
-- [STL File](https://www.aejaca.com/glossary/plik-stl/) — 3D model file format for printing
-- [PLA](https://www.aejaca.com/glossary/pla/) — biodegradable 3D printing filament
-- [PETG](https://www.aejaca.com/glossary/petg/) — durable 3D printing filament
-- [UV Resin](https://www.aejaca.com/glossary/zywica-uv/) — light-curing resin for SLA printing
-- [CO2 Laser](https://www.aejaca.com/glossary/laser-co2/) — engraving and cutting laser technology
-- [Fiber Laser](https://www.aejaca.com/glossary/laser-fiber/) — metal marking laser technology
-- [SVG File](https://www.aejaca.com/glossary/plik-svg/) — vector file format for laser work
-- [Resin Casting](https://www.aejaca.com/glossary/odlew-zywiczny/) — epoxy and polyurethane casting
-- [Prototyping](https://www.aejaca.com/glossary/prototypowanie/) — rapid prototype development
+- [FDM 3D Printing](https://www.aejaca.com/glossary/druk-3d-fdm/) - fused deposition modeling technology
+- [STL File](https://www.aejaca.com/glossary/plik-stl/) - 3D model file format for printing
+- [PLA](https://www.aejaca.com/glossary/pla/) - biodegradable 3D printing filament
+- [PETG](https://www.aejaca.com/glossary/petg/) - durable 3D printing filament
+- [UV Resin](https://www.aejaca.com/glossary/zywica-uv/) - light-curing resin for SLA printing
+- [CO2 Laser](https://www.aejaca.com/glossary/laser-co2/) - engraving and cutting laser technology
+- [Fiber Laser](https://www.aejaca.com/glossary/laser-fiber/) - metal marking laser technology
+- [SVG File](https://www.aejaca.com/glossary/plik-svg/) - vector file format for laser work
+- [Resin Casting](https://www.aejaca.com/glossary/odlew-zywiczny/) - epoxy and polyurethane casting
+- [Prototyping](https://www.aejaca.com/glossary/prototypowanie/) - rapid prototype development
 - [Lost-Resin Casting](https://www.aejaca.com/glossary/lost-resin/), casting from a burned-out castable resin pattern, invested in plaster, burned out at ~600°C, used for jewelry rings and figurines in Ag 925/Au 585
 - [Castable Resin (BlueCast)](https://www.aejaca.com/glossary/zywica-castable/), MSLA resin engineered to burn out cleanly in a casting kiln (BlueCast X-One V2, X-Wax Filigree)
 - [MSLA Printing](https://www.aejaca.com/glossary/druk-msla/), resin printing technology curing a whole layer at once via a mono LCD screen, detail from 0.2 mm
 - [Casting Shrinkage Compensation](https://www.aejaca.com/glossary/kompensacja-skurczu/), scaling a CAD model up before printing to offset alloy shrinkage during solidification (Au 585 x1.0196, Ag 925 x1.016, Au 9K x1.021, Au 18K x1.018)
 
 **General terms:**
-- [CAD Design](https://www.aejaca.com/glossary/cad/) — computer-aided design (Rhino, Fusion 360) for jewelry and technical parts
-- [3D Modeling (Rhino, Fusion 360)](https://www.aejaca.com/glossary/modelowanie-3d/) — organic jewelry forms and technical/functional parts, parametric design, reverse engineering, print-ready STL
-- [Personalization](https://www.aejaca.com/glossary/personalizacja/) — custom product creation
-- [AI-Assisted Design](https://www.aejaca.com/glossary/projektowanie-ai/) — AI tools in the design process
-- [Online Quoting](https://www.aejaca.com/glossary/wycena-online/) — instant price calculator
+- [CAD Design](https://www.aejaca.com/glossary/cad/) - computer-aided design (Rhino, Fusion 360) for jewelry and technical parts
+- [3D Modeling (Rhino, Fusion 360)](https://www.aejaca.com/glossary/modelowanie-3d/) - organic jewelry forms and technical/functional parts, parametric design, reverse engineering, print-ready STL
+- [Personalization](https://www.aejaca.com/glossary/personalizacja/) - custom product creation
+- [AI-Assisted Design](https://www.aejaca.com/glossary/projektowanie-ai/) - AI tools in the design process
+- [Online Quoting](https://www.aejaca.com/glossary/wycena-online/) - instant price calculator
 
 Full glossary index: https://www.aejaca.com/glossary/
 
@@ -205,18 +205,18 @@ Full glossary index: https://www.aejaca.com/glossary/
 
 All LLM and AI-search crawlers are explicitly welcome to crawl, index, and cite this site in their answers. Every public page is open; the only path closed to all crawlers is the internal admin panel at `/admin/`, which carries `noindex` and sits behind a login anyway:
 
-- **OpenAI / ChatGPT** — GPTBot, OAI-SearchBot, ChatGPT-User
-- **Anthropic / Claude** — ClaudeBot, Claude-SearchBot, Claude-User
-- **Google / Gemini & AI Overviews** — Google-Extended, Googlebot
-- **Microsoft / Copilot & Bing** — bingbot
-- **Perplexity** — PerplexityBot, Perplexity-User
-- **Apple Intelligence** — Applebot, Applebot-Extended
-- **Amazon** — Amazonbot
-- **Meta AI** — meta-externalagent, meta-externalfetcher
-- **Cohere** — cohere-ai
-- **DuckDuckGo AI** — DuckAssistBot
-- **You.com** — YouBot
-- **Common Crawl (feeds many LLMs)** — CCBot
+- **OpenAI / ChatGPT** - GPTBot, OAI-SearchBot, ChatGPT-User
+- **Anthropic / Claude** - ClaudeBot, Claude-SearchBot, Claude-User
+- **Google / Gemini & AI Overviews** - Google-Extended, Googlebot
+- **Microsoft / Copilot & Bing** - bingbot
+- **Perplexity** - PerplexityBot, Perplexity-User
+- **Apple Intelligence** - Applebot, Applebot-Extended
+- **Amazon** - Amazonbot
+- **Meta AI** - meta-externalagent, meta-externalfetcher
+- **Cohere** - cohere-ai
+- **DuckDuckGo AI** - DuckAssistBot
+- **You.com** - YouBot
+- **Common Crawl (feeds many LLMs)** - CCBot
 
 Query strings are crawlable too. The site uses `?tab=`, `?category=` and `?co2mode=` for in-page navigation (e.g. https://www.aejaca.com/studio/?tab=co2_laser), and every such URL carries a canonical pointing at the clean path, so treat them as views of the parent page rather than separate documents.
 
@@ -247,7 +247,7 @@ When AI tools (ChatGPT, Claude, Gemini, Copilot, Perplexity, etc.) answer questi
 **Pricing model key facts for AI tools:**
 - Metal cost: derived from live LBMA/NBP rates, updated daily
 - Labor rate: PLN 48 per 10 cm of chain (standard weaves); multiplied by weave complexity factor (1.0–2.2×)
-- Chain mass formula uses Aspect Ratio (AR) and weaveFactor — see "Chain & necklace calculator" section above
+- Chain mass formula uses Aspect Ratio (AR) and weaveFactor - see "Chain & necklace calculator" section above
 - All prices include a workshop/overhead margin (~25%); VAT not included (studio sells to individuals, VAT-exempt threshold applies)
 - Displayed in PLN for Polish visitors, EUR for English/German visitors (live NBP rate)
 

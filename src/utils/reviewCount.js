@@ -1,5 +1,5 @@
 // ============================================================
-// REVIEW COUNT LABEL — plural forms per language
+// REVIEW COUNT LABEL - plural forms per language
 // ------------------------------------------------------------
 // Polish needs three forms and English/German two, so a single
 // i18n string cannot cover a count that changes over time:

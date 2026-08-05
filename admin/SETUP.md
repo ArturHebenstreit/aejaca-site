@@ -1,4 +1,4 @@
-# AEJaCA Admin Panel — Setup
+# AEJaCA Admin Panel - Setup
 
 ## Architecture
 
@@ -12,7 +12,7 @@ Dark-themed dashboard to view leads + subscribers from calculators and newslette
 
 ---
 
-## Step 1: Google Cloud — Create OAuth2 Credentials
+## Step 1: Google Cloud - Create OAuth2 Credentials
 
 1. Go to https://console.cloud.google.com/apis/credentials
 2. Create project "AEJaCA Admin" (or use existing)
@@ -25,7 +25,7 @@ Dark-themed dashboard to view leads + subscribers from calculators and newslette
 
 ---
 
-## Step 2: Railway — Deploy Admin Service
+## Step 2: Railway - Deploy Admin Service
 
 1. In your Railway project, click **+ New → GitHub Repo** (or Empty Service)
 2. If GitHub: point to the `admin/` directory in the repo

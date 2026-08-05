@@ -1,5 +1,5 @@
 // ============================================================
-// STL PARSER — client-side volume & bounding box from STL files
+// STL PARSER - client-side volume & bounding box from STL files
 // Supports both binary and ASCII STL formats.
 // ============================================================
 

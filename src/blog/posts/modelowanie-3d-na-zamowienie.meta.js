@@ -9,14 +9,14 @@ export const meta = {
   coverImage: "/img/blog/modelowanie-3d-na-zamowienie.webp",
   readingTime: { pl: 8, en: 6, de: 6 },
   title: {
-    pl: "Modelowanie 3D na zamówienie — Rhino, Fusion 360 (przewodnik)",
-    en: "3D Modeling on Demand — Rhino, Fusion 360 (Guide)",
-    de: "3D-Modellierung nach Maß — Rhino, Fusion 360 (Leitfaden)",
+    pl: "Modelowanie 3D na zamówienie - Rhino, Fusion 360 (przewodnik)",
+    en: "3D Modeling on Demand - Rhino, Fusion 360 (Guide)",
+    de: "3D-Modellierung nach Maß - Rhino, Fusion 360 (Leitfaden)",
   },
   description: {
-    pl: "Nie masz pliku 3D? Zaprojektujemy model od szkicu. Modelowanie 3D / CAD w Rhino i Fusion 360 — proces, formaty, koszt.",
-    en: "No 3D file? We design the model from a sketch. 3D modeling / CAD in Rhino and Fusion 360 for jewelry and technical parts — process, formats, cost.",
-    de: "Keine 3D-Datei? Wir modellieren ab Skizze. 3D-Modellierung / CAD in Rhino und Fusion 360 für Schmuck und technische Teile — Prozess, Formate, Kosten.",
+    pl: "Nie masz pliku 3D? Zaprojektujemy model od szkicu. Modelowanie 3D / CAD w Rhino i Fusion 360 - proces, formaty, koszt.",
+    en: "No 3D file? We design the model from a sketch. 3D modeling / CAD in Rhino and Fusion 360 for jewelry and technical parts - process, formats, cost.",
+    de: "Keine 3D-Datei? Wir modellieren ab Skizze. 3D-Modellierung / CAD in Rhino und Fusion 360 für Schmuck und technische Teile - Prozess, Formate, Kosten.",
   },
   keywords: {
     pl: "modelowanie 3D na zamówienie, projektowanie modelu 3D do druku, modelowanie CAD biżuterii, Rhino Fusion 360 Polska, reverse engineering części, model STL na zamówienie",
@@ -25,22 +25,22 @@ export const meta = {
   },
   faq: {
     pl: [
-      { q: "Czym jest modelowanie 3D na zamówienie?", a: "To usługa stworzenia gotowego modelu 3D (CAD) na podstawie Twojego pomysłu, szkicu, zdjęcia lub fizycznego przedmiotu. W AEJaCA modelujemy w Rhino i Fusion 360 — zarówno organiczne formy biżuteryjne, jak i precyzyjne części techniczne. Otrzymujesz plik gotowy do druku 3D lub odlewu, nawet jeśli zaczynasz od zera." },
+      { q: "Czym jest modelowanie 3D na zamówienie?", a: "To usługa stworzenia gotowego modelu 3D (CAD) na podstawie Twojego pomysłu, szkicu, zdjęcia lub fizycznego przedmiotu. W AEJaCA modelujemy w Rhino i Fusion 360 - zarówno organiczne formy biżuteryjne, jak i precyzyjne części techniczne. Otrzymujesz plik gotowy do druku 3D lub odlewu, nawet jeśli zaczynasz od zera." },
       { q: "Czy mogę zamówić model, jeśli nie mam żadnego pliku ani rysunku technicznego?", a: "Tak. Wystarczy szkic na kartce, zdjęcie inspiracji, wymiary albo opis słowny. Na tej podstawie tworzymy model CAD i pokazujemy render do akceptacji przed produkcją. Możemy też odtworzyć geometrię z istniejącego przedmiotu (reverse engineering)." },
-      { q: "W jakim formacie otrzymam gotowy model?", a: "Do druku 3D dostarczamy STL lub 3MF, do dalszej edycji parametrycznej STEP, a dla biżuterii pliki gotowe pod odlew. Format dobieramy do celu — powiedz, do czego model ma służyć, a przygotujemy właściwy plik." },
-      { q: "Ile kosztuje modelowanie 3D na zamówienie?", a: "Koszt zależy od złożoności — prosty element to mniejszy nakład pracy niż mechanizm z tolerancjami czy ażurowa biżuteria z wieloma kamieniami. Wycenę przygotowujemy indywidualnie po zapoznaniu się ze szkicem lub opisem. Modelowanie można połączyć z drukiem lub odlewem w jednym zleceniu." },
+      { q: "W jakim formacie otrzymam gotowy model?", a: "Do druku 3D dostarczamy STL lub 3MF, do dalszej edycji parametrycznej STEP, a dla biżuterii pliki gotowe pod odlew. Format dobieramy do celu - powiedz, do czego model ma służyć, a przygotujemy właściwy plik." },
+      { q: "Ile kosztuje modelowanie 3D na zamówienie?", a: "Koszt zależy od złożoności - prosty element to mniejszy nakład pracy niż mechanizm z tolerancjami czy ażurowa biżuteria z wieloma kamieniami. Wycenę przygotowujemy indywidualnie po zapoznaniu się ze szkicem lub opisem. Modelowanie można połączyć z drukiem lub odlewem w jednym zleceniu." },
     ],
     en: [
-      { q: "What is 3D modeling on demand?", a: "It's a service that turns your idea, sketch, photo, or physical object into a ready-to-use 3D (CAD) model. At AEJaCA we model in Rhino and Fusion 360 — both organic jewelry forms and precise technical parts. You receive a print- or cast-ready file even if you start from nothing." },
+      { q: "What is 3D modeling on demand?", a: "It's a service that turns your idea, sketch, photo, or physical object into a ready-to-use 3D (CAD) model. At AEJaCA we model in Rhino and Fusion 360 - both organic jewelry forms and precise technical parts. You receive a print- or cast-ready file even if you start from nothing." },
       { q: "Can I order a model if I have no file or technical drawing?", a: "Yes. A sketch on paper, an inspiration photo, dimensions, or a written description is enough. From that we build the CAD model and show you a render to approve before production. We can also rebuild geometry from an existing object (reverse engineering)." },
-      { q: "In what format will I receive the finished model?", a: "For 3D printing we deliver STL or 3MF, for further parametric editing STEP, and for jewelry, cast-ready files. We match the format to your goal — tell us what the model is for and we prepare the right file." },
-      { q: "How much does custom 3D modeling cost?", a: "Cost depends on complexity — a simple part takes far less work than a toleranced mechanism or openwork jewelry with many stones. We quote individually after seeing your sketch or brief. Modeling can be combined with printing or casting in a single order." },
+      { q: "In what format will I receive the finished model?", a: "For 3D printing we deliver STL or 3MF, for further parametric editing STEP, and for jewelry, cast-ready files. We match the format to your goal - tell us what the model is for and we prepare the right file." },
+      { q: "How much does custom 3D modeling cost?", a: "Cost depends on complexity - a simple part takes far less work than a toleranced mechanism or openwork jewelry with many stones. We quote individually after seeing your sketch or brief. Modeling can be combined with printing or casting in a single order." },
     ],
     de: [
-      { q: "Was ist 3D-Modellierung nach Maß?", a: "Es ist ein Service, der Ihre Idee, Skizze, ein Foto oder ein physisches Objekt in ein einsatzbereites 3D-(CAD-)Modell verwandelt. Bei AEJaCA modellieren wir in Rhino und Fusion 360 — sowohl organische Schmuckformen als auch präzise technische Teile. Sie erhalten eine druck- oder gussfertige Datei, auch wenn Sie bei null beginnen." },
+      { q: "Was ist 3D-Modellierung nach Maß?", a: "Es ist ein Service, der Ihre Idee, Skizze, ein Foto oder ein physisches Objekt in ein einsatzbereites 3D-(CAD-)Modell verwandelt. Bei AEJaCA modellieren wir in Rhino und Fusion 360 - sowohl organische Schmuckformen als auch präzise technische Teile. Sie erhalten eine druck- oder gussfertige Datei, auch wenn Sie bei null beginnen." },
       { q: "Kann ich ein Modell bestellen, wenn ich keine Datei oder technische Zeichnung habe?", a: "Ja. Eine Skizze auf Papier, ein Inspirationsfoto, Maße oder eine Beschreibung genügen. Daraus erstellen wir das CAD-Modell und zeigen Ihnen vor der Produktion einen Render zur Freigabe. Wir können die Geometrie auch von einem vorhandenen Objekt rekonstruieren (Reverse Engineering)." },
-      { q: "In welchem Format erhalte ich das fertige Modell?", a: "Für den 3D-Druck liefern wir STL oder 3MF, für die weitere parametrische Bearbeitung STEP und für Schmuck gussfertige Dateien. Wir passen das Format an Ihr Ziel an — sagen Sie uns, wofür das Modell ist, und wir bereiten die richtige Datei vor." },
-      { q: "Was kostet 3D-Modellierung nach Maß?", a: "Die Kosten hängen von der Komplexität ab — ein einfaches Teil ist deutlich weniger Aufwand als ein toleranzbehafteter Mechanismus oder durchbrochener Schmuck mit vielen Steinen. Wir kalkulieren individuell nach Sichtung Ihrer Skizze oder Ihres Briefings. Die Modellierung lässt sich mit Druck oder Guss in einem Auftrag kombinieren." },
+      { q: "In welchem Format erhalte ich das fertige Modell?", a: "Für den 3D-Druck liefern wir STL oder 3MF, für die weitere parametrische Bearbeitung STEP und für Schmuck gussfertige Dateien. Wir passen das Format an Ihr Ziel an - sagen Sie uns, wofür das Modell ist, und wir bereiten die richtige Datei vor." },
+      { q: "Was kostet 3D-Modellierung nach Maß?", a: "Die Kosten hängen von der Komplexität ab - ein einfaches Teil ist deutlich weniger Aufwand als ein toleranzbehafteter Mechanismus oder durchbrochener Schmuck mit vielen Steinen. Wir kalkulieren individuell nach Sichtung Ihrer Skizze oder Ihres Briefings. Die Modellierung lässt sich mit Druck oder Guss in einem Auftrag kombinieren." },
     ],
   },
   toc: {

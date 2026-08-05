@@ -49,5 +49,5 @@ Kolory (paleta ~20 wariantów Elegoo): atrybut żywic standard/ABS-like, NIE oso
 Lekcje z poprzednich etapów (obowiązują):
 - pliki współdzielone rejestruje orchestrator PO zakończeniu agentów
 - nie edytować drzewa, gdy działa agent z krokami build
-- zakaz długich pauz " — " w każdej nowej treści
+- zakaz długich pauz " - " w każdej nowej treści
 - ceny: pl=PLN, en/de=EUR (kurs 4.28)

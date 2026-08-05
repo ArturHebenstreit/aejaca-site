@@ -1,5 +1,5 @@
 // ============================================================
-// 3D PRINT ESTIMATOR — Bambu Lab H2D  v1.3
+// 3D PRINT ESTIMATOR - Bambu Lab H2D  v1.3
 // ============================================================
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { Upload, X, AlertTriangle } from "lucide-react";
@@ -476,7 +476,7 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
         <HeroCards options={SEGMENTS} value={segment} onChange={setSegment} lang={lang} cols="grid-cols-2" minH={170} />
       </CalcCard>
 
-      <CalcCard stepNum="③" label={`${l.filament} — ${FILAMENTS[segment].label}`}>
+      <CalcCard stepNum="③" label={`${l.filament} - ${FILAMENTS[segment].label}`}>
         <MaterialCards options={matOptions} value={materialKey} onChange={setMaterialKey} lang={lang} cols="grid-cols-3 sm:grid-cols-4 md:grid-cols-6" />
       </CalcCard>
 

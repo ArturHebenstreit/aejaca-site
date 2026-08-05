@@ -138,7 +138,7 @@ export default function ChatWidget() {
     if (open && inputRef.current) inputRef.current.focus();
   }, [open]);
 
-  // Lock body scroll on mobile when panel is open — prevents iOS layout shift
+  // Lock body scroll on mobile when panel is open - prevents iOS layout shift
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
@@ -399,7 +399,7 @@ export default function ChatWidget() {
                 )}
               </button>
             </div>
-            {/* Mobile-only close button — always reachable even when keyboard is open */}
+            {/* Mobile-only close button - always reachable even when keyboard is open */}
             <button
               type="button"
               onClick={() => setOpen(false)}

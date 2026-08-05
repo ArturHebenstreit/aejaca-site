@@ -1,7 +1,7 @@
-/* AEJaCA — atoms (eyebrow, button, divider, rating pill).
+/* AEJaCA - atoms (eyebrow, button, divider, rating pill).
    All consume CSS variables from the active brand class. */
 
-/* Section eyebrow with flanking hairlines — used above every section
+/* Section eyebrow with flanking hairlines - used above every section
    title across the site. Uppercase, tracked tight on 0.32em, weight 600.
    Color defaults to --accent-hover so it reads boldly on light bg. */
 function Eyebrow({ children, variant = "auto", color, style = {} }) {

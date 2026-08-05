@@ -53,9 +53,9 @@ export const PRODUCT_TYPES = [
     icon: "💍",
     label: { pl: "Pierścionek", en: "Ring", de: "Ring" },
     description: {
-      pl: "Klasyczny pierścionek — oblicz wagę na podstawie rozmiaru i grubości ścianki.",
-      en: "Classic ring — estimate weight from size and wall thickness.",
-      de: "Klassischer Ring — Gewicht anhand von Größe und Wandstärke berechnen.",
+      pl: "Klasyczny pierścionek - oblicz wagę na podstawie rozmiaru i grubości ścianki.",
+      en: "Classic ring - estimate weight from size and wall thickness.",
+      de: "Klassischer Ring - Gewicht anhand von Größe und Wandstärke berechnen.",
     },
     fields: [
       {
@@ -98,9 +98,9 @@ export const PRODUCT_TYPES = [
     icon: "🪢",
     label: { pl: "Obrączka", en: "Wedding ring", de: "Trauring" },
     description: {
-      pl: "Obrączka ślubna lub wieczności — gładka lub z delikatnym zdobieniem, oblicz wagę z rozmiaru i szerokości.",
-      en: "Wedding band or eternity ring — plain or lightly decorated, estimate weight from size and width.",
-      de: "Trauring oder Ewigkeitsring — schlicht oder leicht verziert, Gewicht aus Größe und Breite berechnen.",
+      pl: "Obrączka ślubna lub wieczności - gładka lub z delikatnym zdobieniem, oblicz wagę z rozmiaru i szerokości.",
+      en: "Wedding band or eternity ring - plain or lightly decorated, estimate weight from size and width.",
+      de: "Trauring oder Ewigkeitsring - schlicht oder leicht verziert, Gewicht aus Größe und Breite berechnen.",
     },
     fields: [
       {
@@ -143,9 +143,9 @@ export const PRODUCT_TYPES = [
     icon: "🔰",
     label: { pl: "Sygnet", en: "Signet", de: "Siegelring" },
     description: {
-      pl: "Sygnet z oczkiem — uwzględnia bryłę pierścienia i płytkę czołową.",
-      en: "Signet ring with face plate — accounts for ring body and face.",
-      de: "Siegelring mit Kopfplatte — berücksichtigt Ringkörper und Kopffläche.",
+      pl: "Sygnet z oczkiem - uwzględnia bryłę pierścienia i płytkę czołową.",
+      en: "Signet ring with face plate - accounts for ring body and face.",
+      de: "Siegelring mit Kopfplatte - berücksichtigt Ringkörper und Kopffläche.",
     },
     fields: [
       {
@@ -209,9 +209,9 @@ export const PRODUCT_TYPES = [
     icon: "📿",
     label: { pl: "Wisiorek", en: "Pendant", de: "Anhänger" },
     description: {
-      pl: "Wisiorek — bryła prostopadłościenna przemnożona przez współczynnik stylu.",
-      en: "Pendant — bounding box volume scaled by style fill factor.",
-      de: "Anhänger — Quadervolumen skaliert mit dem Stil-Füllfaktor.",
+      pl: "Wisiorek - bryła prostopadłościenna przemnożona przez współczynnik stylu.",
+      en: "Pendant - bounding box volume scaled by style fill factor.",
+      de: "Anhänger - Quadervolumen skaliert mit dem Stil-Füllfaktor.",
     },
     fields: [
       {
@@ -269,9 +269,9 @@ export const PRODUCT_TYPES = [
     icon: "⭕",
     label: { pl: "Bransoletka", en: "Bracelet", de: "Armband" },
     description: {
-      pl: "Bransoletka — objętość wydłużonego prostopadłościanu z korektą stylu.",
-      en: "Bracelet — elongated box volume with style correction.",
-      de: "Armband — längliches Quadervolumen mit Stilkorrektur.",
+      pl: "Bransoletka - objętość wydłużonego prostopadłościanu z korektą stylu.",
+      en: "Bracelet - elongated box volume with style correction.",
+      de: "Armband - längliches Quadervolumen mit Stilkorrektur.",
     },
     fields: [
       {
@@ -319,9 +319,9 @@ export const PRODUCT_TYPES = [
     fillFactors: { solid: 0.85, link: 0.62, bangle: 0.75 },
     defaultFill: "link",
     notes: {
-      pl: "Model prostoliniowy — dla bransolet o skomplikowanej formie wynik jest przybliżony.",
-      en: "Linear model — results are approximate for complex shaped bracelets.",
-      de: "Lineares Modell — Ergebnisse bei komplex geformten Armbändern sind Näherungswerte.",
+      pl: "Model prostoliniowy - dla bransolet o skomplikowanej formie wynik jest przybliżony.",
+      en: "Linear model - results are approximate for complex shaped bracelets.",
+      de: "Lineares Modell - Ergebnisse bei komplex geformten Armbändern sind Näherungswerte.",
     },
   },
   {
@@ -329,9 +329,9 @@ export const PRODUCT_TYPES = [
     icon: "✨",
     label: { pl: "Kolczyki", en: "Earrings", de: "Ohrringe" },
     description: {
-      pl: "Kolczyki — waga jednej sztuki lub pary, z korektą dla stylu.",
-      en: "Earrings — weight per piece or pair, scaled by style.",
-      de: "Ohrringe — Gewicht pro Stück oder Paar, nach Stil skaliert.",
+      pl: "Kolczyki - waga jednej sztuki lub pary, z korektą dla stylu.",
+      en: "Earrings - weight per piece or pair, scaled by style.",
+      de: "Ohrringe - Gewicht pro Stück oder Paar, nach Stil skaliert.",
     },
     fields: [
       {
@@ -395,9 +395,9 @@ export const PRODUCT_TYPES = [
     icon: "🌸",
     label: { pl: "Broszka", en: "Brooch", de: "Brosche" },
     description: {
-      pl: "Broszka — płaska lub rzeźbiona forma z korektą wypełnienia.",
-      en: "Brooch — flat or sculptural form with fill correction.",
-      de: "Brosche — flache oder skulpturale Form mit Füllfaktorkorrektur.",
+      pl: "Broszka - płaska lub rzeźbiona forma z korektą wypełnienia.",
+      en: "Brooch - flat or sculptural form with fill correction.",
+      de: "Brosche - flache oder skulpturale Form mit Füllfaktorkorrektur.",
     },
     fields: [
       {

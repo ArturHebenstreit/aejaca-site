@@ -1,15 +1,15 @@
-/* AEJaCA — Light/premium variant exploration.
+/* AEJaCA - Light/premium variant exploration.
    Each artboard renders the same "title page" content under a
    different theme so the user can compare palette + type + tone. */
 
 /* ----------------------------------------------------------------
-   Theme tokens — one object per variant.
+   Theme tokens - one object per variant.
    ---------------------------------------------------------------- */
 
 const THEMES = {
   dark: {
     label: "Current dark",
-    vibe: "AEJaCA today — premium, editorial, low-key",
+    vibe: "AEJaCA today - premium, editorial, low-key",
     brandSplit: "Same canvas for Jewelry + sTuDiO; only typography & accent differ",
     bg: "#0a0a0a",
     surface: "rgba(255,255,255,0.02)",
@@ -33,7 +33,7 @@ const THEMES = {
   museum: {
     label: "Museum white",
     vibe: "Cartier · Van Cleef · Bvlgari",
-    brandSplit: "Restrained — black wordmark, refined gold serif accent",
+    brandSplit: "Restrained - black wordmark, refined gold serif accent",
     bg: "#ffffff",
     surface: "#FAFAF8",
     surfaceHover: "#F4F2EC",
@@ -57,7 +57,7 @@ const THEMES = {
   cream: {
     label: "Warm cream",
     vibe: "Mejuri · Catbird · Missoma",
-    brandSplit: "Hospitable, lifestyle — cream canvas, champagne gold, warm gray text",
+    brandSplit: "Hospitable, lifestyle - cream canvas, champagne gold, warm gray text",
     bg: "#F8F4ED",
     surface: "#FFFFFF",
     surfaceHover: "#FBF7EF",
@@ -81,7 +81,7 @@ const THEMES = {
   boutique: {
     label: "Champagne boutique",
     vibe: "Ana Khouri · Aurate · Loquet",
-    brandSplit: "Editorial-rich — sand canvas, sage accent, brass details",
+    brandSplit: "Editorial-rich - sand canvas, sage accent, brass details",
     bg: "#EDE6D5",
     surface: "#F7F2E3",
     surfaceHover: "#F2EBDA",
@@ -105,7 +105,7 @@ const THEMES = {
   studioLight: {
     label: "sTuDiO Light (technical)",
     vibe: "Bambu Lab · Formlabs · Prusa",
-    brandSplit: "Cool light, blueprint blue — keeps a hard split from Jewelry",
+    brandSplit: "Cool light, blueprint blue - keeps a hard split from Jewelry",
     bg: "#F4F6F9",
     surface: "#FFFFFF",
     surfaceHover: "#EEF1F5",
@@ -135,7 +135,7 @@ const JEWELRY_CONTENT = {
   eyebrow: "ARTISTIC & LUXURY",
   title: "AEJaCA Jewelry",
   subtitle:
-    "Handcrafted jewelry with soul. Natural gemstones, precious metals, and artistic design — each piece is a unique story.",
+    "Handcrafted jewelry with soul. Natural gemstones, precious metals, and artistic design - each piece is a unique story.",
   aboutEyebrow: "THE PHILOSOPHY",
   aboutTitle: "Where Art Meets Craftsmanship",
   aboutBody:
@@ -156,7 +156,7 @@ const STUDIO_CONTENT = {
   eyebrow: "TECHNOLOGY & ENGINEERING",
   title: "AEJaCA sTuDiO",
   subtitle:
-    "Advanced creative fabrication studio. 3D printing, laser engraving, prototyping, and custom manufacturing — from idea to physical product.",
+    "Advanced creative fabrication studio. 3D printing, laser engraving, prototyping, and custom manufacturing - from idea to physical product.",
   aboutEyebrow: "THE APPROACH",
   aboutTitle: "Innovation Meets Precision",
   aboutBody:
@@ -217,7 +217,7 @@ function ThemedTitlePage({ theme, content, accentName = "amber" }) {
   const isLight = t.bg !== "#0a0a0a";
   // INNER sections (about, pricing): darker eyebrow on light bg / accent on dark.
   const innerEyebrowColor = isLight ? t.accentHover : t.accent;
-  // HERO eyebrow sits on a darkened scrim regardless of theme — use the light
+  // HERO eyebrow sits on a darkened scrim regardless of theme - use the light
   // accent variant so it pops against a dark background.
   const heroEyebrowColor = t.accentLight || t.accent;
   // Hero text is ALWAYS white-over-scrim (dark theme: white anyway; light themes:
@@ -245,7 +245,7 @@ function ThemedTitlePage({ theme, content, accentName = "amber" }) {
         />
         <div style={{ position: "absolute", inset: 0, background: t.heroScrim }} />
         <div style={{ position: "relative", padding: "70px 40px 60px", textAlign: "center" }}>
-          {/* Hero eyebrow — smaller, lighter accent on the darkened scrim */}
+          {/* Hero eyebrow - smaller, lighter accent on the darkened scrim */}
           <div style={{ marginBottom: 18 }}>
             <SectionEyebrow color={heroEyebrowColor} fontBody={t.fontBody} isLight={true} hairlineWidth={28}>
               {content.eyebrow}
@@ -437,7 +437,7 @@ function ThemedTitlePage({ theme, content, accentName = "amber" }) {
 }
 
 /* ----------------------------------------------------------------
-   App — assemble canvas
+   App - assemble canvas
    ---------------------------------------------------------------- */
 
 const STUDIO_DARK_THEME = {
@@ -460,8 +460,8 @@ function App() {
     <DesignCanvas>
       <DCSection
         id="jewelry-light"
-        title="AEJaCA Jewelry — light premium directions"
-        subtitle="Three light variants plus the current dark for reference. Same content, same hero photo, same components — only palette and typography change."
+        title="AEJaCA Jewelry - light premium directions"
+        subtitle="Three light variants plus the current dark for reference. Same content, same hero photo, same components - only palette and typography change."
       >
         {jewelryThemes.map(({ id, theme }) => (
           <DCArtboard
@@ -478,15 +478,15 @@ function App() {
 
       <DCSection
         id="studio-split"
-        title="AEJaCA sTuDiO — keep the brand split visible"
-        subtitle="Whichever direction you pick for Jewelry, sTuDiO needs its own visual handwriting. Two options: stay with the current dark technical, or move to the light blueprint variant — both read instantly different from any Jewelry variant."
+        title="AEJaCA sTuDiO - keep the brand split visible"
+        subtitle="Whichever direction you pick for Jewelry, sTuDiO needs its own visual handwriting. Two options: stay with the current dark technical, or move to the light blueprint variant - both read instantly different from any Jewelry variant."
       >
-        <DCArtboard id="studio-dark" label="sTuDiO Dark — current" width={720} height={1100}>
+        <DCArtboard id="studio-dark" label="sTuDiO Dark - current" width={720} height={1100}>
           <ThemedTitlePage theme={STUDIO_DARK_THEME} content={STUDIO_CONTENT} />
         </DCArtboard>
         <DCArtboard
           id="studio-light"
-          label="sTuDiO Light — blueprint, Bambu Lab-ish"
+          label="sTuDiO Light - blueprint, Bambu Lab-ish"
           width={720}
           height={1100}
         >

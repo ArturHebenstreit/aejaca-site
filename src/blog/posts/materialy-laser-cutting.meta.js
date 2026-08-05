@@ -8,9 +8,9 @@ export const meta = {
   coverImage: "/img/blog/materialy-laser-cutting.webp",
   readingTime: { pl: 7, en: 5, de: 5 },
   title: {
-    pl: "Materiały do cięcia laserowego — co się nadaje?",
-    en: "Laser Cutting & Engraving Materials — What Works?",
-    de: "Laserschnitt- & Gravurmaterialien — Was funktioniert?",
+    pl: "Materiały do cięcia laserowego - co się nadaje?",
+    en: "Laser Cutting & Engraving Materials - What Works?",
+    de: "Laserschnitt- & Gravurmaterialien - Was funktioniert?",
   },
   description: {
     pl: "Przegląd materiałów do lasera CO2 i Fiber: drewno, akryl, skóra, metal, szkło, kamień. Grubości, ograniczenia i ceny w AEJaCA sTuDiO.",
@@ -49,19 +49,19 @@ export const meta = {
     pl: [
       { q: "Czy laser CO2 tnie metal?", a: "Nie. CO2 55W tnie materiały organiczne (drewno, akryl, skóra) do 10mm. Do metalu potrzebny jest fiber laser." },
       { q: "Jaka jest maksymalna grubość cięcia?", a: "Drewno do 10mm, akryl do 12mm, skóra do 4mm. Powyżej tych wartości jakość krawędzi spada." },
-      { q: "Czy można grawerować na szkle?", a: "Tak — laser CO2 graweruje na szkle (matowienie), ale go nie tnie. Fiber radzi sobie z ceramiką i kamieniem." },
+      { q: "Czy można grawerować na szkle?", a: "Tak - laser CO2 graweruje na szkle (matowienie), ale go nie tnie. Fiber radzi sobie z ceramiką i kamieniem." },
       { q: "Jakie pliki potrzebuję do cięcia?", a: "Wektorowe: SVG, AI, DXF. Do grawerowania rastrowego: PNG, JPG (min. 300 DPI)." },
     ],
     en: [
       { q: "Can CO2 laser cut metal?", a: "No. CO2 55W cuts organic materials (wood, acrylic, leather) up to 10mm. Metal requires a fiber laser." },
       { q: "What's the maximum cutting thickness?", a: "Wood up to 10mm, acrylic up to 12mm, leather up to 4mm. Beyond these, edge quality drops." },
-      { q: "Can you engrave on glass?", a: "Yes — CO2 laser engraves glass (frosting effect) but doesn't cut it. Fiber handles ceramics and stone." },
+      { q: "Can you engrave on glass?", a: "Yes - CO2 laser engraves glass (frosting effect) but doesn't cut it. Fiber handles ceramics and stone." },
       { q: "What files do I need for cutting?", a: "Vector: SVG, AI, DXF. For raster engraving: PNG, JPG (min. 300 DPI)." },
     ],
     de: [
       { q: "Kann der CO2-Laser Metall schneiden?", a: "Nein. CO2 55W schneidet organische Materialien (Holz, Acryl, Leder) bis 10mm. Für Metall braucht man einen Faserlaser." },
       { q: "Was ist die maximale Schnittstärke?", a: "Holz bis 10mm, Acryl bis 12mm, Leder bis 4mm. Darüber hinaus nimmt die Kantenqualität ab." },
-      { q: "Kann man auf Glas gravieren?", a: "Ja — der CO2-Laser graviert Glas (Mattierungseffekt), schneidet es aber nicht. Faserlaser bearbeitet Keramik und Stein." },
+      { q: "Kann man auf Glas gravieren?", a: "Ja - der CO2-Laser graviert Glas (Mattierungseffekt), schneidet es aber nicht. Faserlaser bearbeitet Keramik und Stein." },
       { q: "Welche Dateien brauche ich zum Schneiden?", a: "Vektor: SVG, AI, DXF. Für Rastergravur: PNG, JPG (min. 300 DPI)." },
     ],
   },

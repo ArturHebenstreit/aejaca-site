@@ -1,4 +1,4 @@
-/* AEJaCA — Subpages. Light theme by default; brand-jewelry / brand-studio
+/* AEJaCA - Subpages. Light theme by default; brand-jewelry / brand-studio
    wrappers swap accent + typography. */
 
 /* ----------------------------------------------------------------
@@ -202,8 +202,8 @@ function ServicesGrid({ tag, title, items, serif = true }) {
    ---------------------------------------------------------------- */
 
 const JEWELRY_HERO = {
-  pl: { tag: "Artystyczne & Luksusowe", title: "AEJaCA Jewelry", desc: "Biżuteria z duszą, robiona ręcznie. Naturalne kamienie, metale szlachetne i artystyczny projekt — każdy egzemplarz to osobna historia." },
-  en: { tag: "Artistic & Luxury", title: "AEJaCA Jewelry", desc: "Handcrafted jewelry with soul. Natural gemstones, precious metals, and artistic design — each piece is a unique story." },
+  pl: { tag: "Artystyczne & Luksusowe", title: "AEJaCA Jewelry", desc: "Biżuteria z duszą, robiona ręcznie. Naturalne kamienie, metale szlachetne i artystyczny projekt - każdy egzemplarz to osobna historia." },
+  en: { tag: "Artistic & Luxury", title: "AEJaCA Jewelry", desc: "Handcrafted jewelry with soul. Natural gemstones, precious metals, and artistic design - each piece is a unique story." },
   de: { tag: "Künstlerisch & Luxuriös", title: "AEJaCA Jewelry", desc: "Handgefertigter Schmuck mit Seele. Naturedelsteine, Edelmetalle und künstlerisches Design." },
 };
 const JEWELRY_ABOUT = {
@@ -222,38 +222,38 @@ const JEWELRY_SERVICES = {
     { title: "Biżuteria ręcznie wykonywana", desc: "Pierścionki, kolczyki, wisiorki i bransoletki ze srebra i złota, kończone ręcznie z precyzją." },
     { title: "Kamienie naturalne", desc: "Starannie dobrane szmaragdy, szafiry, ametysty i inne, oprawione w unikalne kompozycje." },
     { title: "Projekty na zamówienie", desc: "Od Twojej wizji do gotowego dzieła. Projektujemy i wykonujemy biżuterię na miarę Twojej historii." },
-    { title: "Spersonalizowane prezenty", desc: "Wyjątkowe prezenty — grawerowane, dopasowane, niosące emocję." },
-    { title: "Projekt 3D i prototypowanie", desc: "Tradycyjne rzemiosło spotyka modelowanie 3D — prototyp przed produkcją." },
-    { title: "Przedmioty symboliczne", desc: "Artystyczne obiekty i symbole, które wykraczają poza biżuterię — ponadczasowe pamiątki." },
+    { title: "Spersonalizowane prezenty", desc: "Wyjątkowe prezenty - grawerowane, dopasowane, niosące emocję." },
+    { title: "Projekt 3D i prototypowanie", desc: "Tradycyjne rzemiosło spotyka modelowanie 3D - prototyp przed produkcją." },
+    { title: "Przedmioty symboliczne", desc: "Artystyczne obiekty i symbole, które wykraczają poza biżuterię - ponadczasowe pamiątki." },
   ]},
   en: { tag: "What We Create", title: "Products & Services", items: [
     { title: "Handcrafted Jewelry", desc: "Rings, earrings, pendants and bracelets in silver and gold, finished by hand with precision." },
-    { title: "Natural Gemstones", desc: "Carefully selected stones — emeralds, sapphires, amethysts — set into unique designs." },
+    { title: "Natural Gemstones", desc: "Carefully selected stones - emeralds, sapphires, amethysts - set into unique designs." },
     { title: "Custom Projects", desc: "From your vision to a finished piece. Jewelry tailored to your story." },
-    { title: "Personalized Gifts", desc: "Meaningful, one-of-a-kind gifts — engraved, customized, made to carry emotion." },
+    { title: "Personalized Gifts", desc: "Meaningful, one-of-a-kind gifts - engraved, customized, made to carry emotion." },
     { title: "3D Design & Prototyping", desc: "Traditional craft meets modern 3D modeling to prototype every piece." },
-    { title: "Symbolic Objects", desc: "Artistic objects and symbolic creations beyond jewelry — timeless keepsakes." },
+    { title: "Symbolic Objects", desc: "Artistic objects and symbolic creations beyond jewelry - timeless keepsakes." },
   ]},
   de: { tag: "Was wir erschaffen", title: "Produkte & Dienste", items: [
     { title: "Handgefertigter Schmuck", desc: "Ringe, Ohrringe, Anhänger und Armbänder aus Silber und Gold." },
     { title: "Naturedelsteine", desc: "Sorgfältig ausgewählte Smaragde, Saphire, Amethyste." },
     { title: "Individuelle Projekte", desc: "Schmuck, der Ihre Geschichte erzählt." },
-    { title: "Personalisierte Geschenke", desc: "Bedeutungsvolle Unikate — graviert, angepasst." },
+    { title: "Personalisierte Geschenke", desc: "Bedeutungsvolle Unikate - graviert, angepasst." },
     { title: "3D-Design & Prototyping", desc: "Tradition trifft modernes 3D-Modeling." },
     { title: "Symbolische Objekte", desc: "Künstlerische Objekte jenseits klassischen Schmucks." },
   ]},
 };
 const JEWELRY_PROCESS = {
   pl: { tag: "Od pomysłu do dzieła", title: "Jak powstaje Twoja biżuteria", steps: [
-    { num: "01", title: "Konsultacja", desc: "Zaczynamy od rozmowy — Twoja wizja, symbolika, styl życia i budżet.", when: "Każdy projekt na zamówienie" },
+    { num: "01", title: "Konsultacja", desc: "Zaczynamy od rozmowy - Twoja wizja, symbolika, styl życia i budżet.", when: "Każdy projekt na zamówienie" },
     { num: "02", title: "Projekt i CAD", desc: "Ręczne szkice ewoluują w precyzyjne modele 3D CAD.", when: "Każdy projekt na zamówienie" },
-    { num: "03", title: "Wzór z wosku / druk 3D", desc: "Powstaje fizyczny prototyp — ręcznie rzeźbiony lub drukowany w żywicy.", when: "Pierścionki, wisiorki, formy złożone" },
+    { num: "03", title: "Wzór z wosku / druk 3D", desc: "Powstaje fizyczny prototyp - ręcznie rzeźbiony lub drukowany w żywicy.", when: "Pierścionki, wisiorki, formy złożone" },
     { num: "04", title: "Odlew metodą traconego wosku", desc: "Zatwierdzony model w ceramicznej skorupie, do której wlewamy stopione srebro lub złoto.", when: "Elementy odlewane" },
     { num: "05", title: "Wykonanie ręczne i wykończenie", desc: "Polerowanie, lutowanie, teksturowanie. Powierzchnie polerowane środkami tripoli.", when: "Każdy egzemplarz" },
     { num: "06", title: "Osadzanie kamieni i kontrola jakości", desc: "Kamienie osadzane ręcznie w łapach, koronkach lub kanale. Inspekcja pod lupą.", when: "Egzemplarze z kamieniami" },
   ]},
   en: { tag: "From Idea to Masterpiece", title: "How Your Jewelry Is Made", steps: [
-    { num: "01", title: "Consultation", desc: "We start with a conversation — your vision, symbolism, lifestyle, and budget.", when: "Every custom project" },
+    { num: "01", title: "Consultation", desc: "We start with a conversation - your vision, symbolism, lifestyle, and budget.", when: "Every custom project" },
     { num: "02", title: "Design & CAD", desc: "Hand sketches evolve into precise 3D CAD models. We iterate until the design is perfect.", when: "Every custom project" },
     { num: "03", title: "Wax Model / 3D Print", desc: "A physical prototype is hand-carved in wax or 3D-printed in resin.", when: "Cast pieces" },
     { num: "04", title: "Lost-Wax Casting", desc: "The model is encased in a ceramic shell; molten silver or gold is poured in.", when: "Cast pieces" },
@@ -270,9 +270,9 @@ const JEWELRY_PROCESS = {
   ]},
 };
 const JEWELRY_PRICING_COPY = {
-  pl: { tag: "Orientacyjne ceny", title: "Ile kosztuje biżuteria?", note: "Ceny orientacyjne — dokładna wycena w kalkulatorze.", cta: "Wyceń w kalkulatorze", from: "od" },
-  en: { tag: "Indicative pricing", title: "How much does jewelry cost?", note: "Indicative prices — use the calculator for an exact quote.", cta: "Get a quote", from: "from" },
-  de: { tag: "Richtpreise", title: "Was kostet Schmuck?", note: "Richtpreise — der Rechner liefert ein exaktes Angebot.", cta: "Zum Rechner", from: "ab" },
+  pl: { tag: "Orientacyjne ceny", title: "Ile kosztuje biżuteria?", note: "Ceny orientacyjne - dokładna wycena w kalkulatorze.", cta: "Wyceń w kalkulatorze", from: "od" },
+  en: { tag: "Indicative pricing", title: "How much does jewelry cost?", note: "Indicative prices - use the calculator for an exact quote.", cta: "Get a quote", from: "from" },
+  de: { tag: "Richtpreise", title: "Was kostet Schmuck?", note: "Richtpreise - der Rechner liefert ein exaktes Angebot.", cta: "Zum Rechner", from: "ab" },
 };
 const JEWELRY_PRICING_ITEMS = [
   { pl: "Srebrny pierścionek", en: "Silver ring", de: "Silberring", pln: 250, eur: 60 },
@@ -284,20 +284,20 @@ const JEWELRY_PRICING_ITEMS = [
 ];
 
 const STUDIO_HERO = {
-  pl: { tag: "Technologia & Inżynieria", title: "AEJaCA sTuDiO", desc: "Zaawansowane studio produkcji kreatywnej. Druk 3D, grawer laserowy, prototypowanie i produkcja na zamówienie — od pomysłu do fizycznego produktu." },
-  en: { tag: "Technology & Engineering", title: "AEJaCA sTuDiO", desc: "Advanced creative fabrication studio. 3D printing, laser engraving, prototyping, and custom manufacturing — from idea to physical product." },
-  de: { tag: "Technologie & Ingenieurkunst", title: "AEJaCA sTuDiO", desc: "Studio für kreative Fertigung — von der Idee zum physischen Produkt." },
+  pl: { tag: "Technologia & Inżynieria", title: "AEJaCA sTuDiO", desc: "Zaawansowane studio produkcji kreatywnej. Druk 3D, grawer laserowy, prototypowanie i produkcja na zamówienie - od pomysłu do fizycznego produktu." },
+  en: { tag: "Technology & Engineering", title: "AEJaCA sTuDiO", desc: "Advanced creative fabrication studio. 3D printing, laser engraving, prototyping, and custom manufacturing - from idea to physical product." },
+  de: { tag: "Technologie & Ingenieurkunst", title: "AEJaCA sTuDiO", desc: "Studio für kreative Fertigung - von der Idee zum physischen Produkt." },
 };
 const STUDIO_ABOUT = {
   pl: { eyebrow: "Podejście", title: "Innowacja spotyka precyzję",
         p1: "AEJaCA sTuDiO to techniczne i inżynierskie ramię marki. Łączymy fabrykację cyfrową, szybkie prototypowanie i kreatywną produkcję, by zmieniać idee w działające produkty.",
-        p2: "Pojedynczy prototyp, krótka seria czy w pełni zindywidualizowane rozwiązanie techniczne — mamy narzędzia, wiedzę i doświadczenie." },
+        p2: "Pojedynczy prototyp, krótka seria czy w pełni zindywidualizowane rozwiązanie techniczne - mamy narzędzia, wiedzę i doświadczenie." },
   en: { eyebrow: "The Approach", title: "Innovation Meets Precision",
         p1: "AEJaCA sTuDiO is the technical and engineering arm of the brand. We combine digital fabrication, rapid prototyping, and creative production to transform ideas into real, functional products.",
-        p2: "Whether you need a single prototype, a small production run, or a fully customized solution — our studio has the tools, knowledge, and experience." },
+        p2: "Whether you need a single prototype, a small production run, or a fully customized solution - our studio has the tools, knowledge, and experience." },
   de: { eyebrow: "Der Ansatz", title: "Innovation trifft Präzision",
         p1: "AEJaCA sTuDiO ist der technische Zweig der Marke. Digitale Fertigung, Rapid Prototyping und kreative Produktion.",
-        p2: "Ob Einzelprototyp oder Kleinserie — wir haben die Werkzeuge und das Wissen." },
+        p2: "Ob Einzelprototyp oder Kleinserie - wir haben die Werkzeuge und das Wissen." },
 };
 const STUDIO_TECHS = {
   pl: { tag: "Nasze możliwości", title: "Technologie", items: [
@@ -327,28 +327,28 @@ const STUDIO_TECHS = {
 };
 const STUDIO_PROCESS = {
   pl: { tag: "Jak działamy", title: "Od pomysłu do produktu", steps: [
-    { num: "01", title: "Pomysł", desc: "Podziel się koncepcją, szkicem lub referencją — słuchamy i doradzamy." },
+    { num: "01", title: "Pomysł", desc: "Podziel się koncepcją, szkicem lub referencją - słuchamy i doradzamy." },
     { num: "02", title: "Projekt 3D", desc: "Profesjonalne modelowanie CAD z iteracjami do zatwierdzenia." },
     { num: "03", title: "Prototyp", desc: "Druk 3D lub element wycięty laserem do testów." },
     { num: "04", title: "Produkcja", desc: "Finalny produkt wyprodukowany zgodnie ze specyfikacją." },
   ]},
   en: { tag: "How We Work", title: "From Idea to Product", steps: [
-    { num: "01", title: "Idea", desc: "Share your concept, sketch, or reference — we listen and advise." },
+    { num: "01", title: "Idea", desc: "Share your concept, sketch, or reference - we listen and advise." },
     { num: "02", title: "3D Design", desc: "Professional CAD modeling with iterations until you approve." },
     { num: "03", title: "Prototype", desc: "3D printed or laser-cut prototype for testing and validation." },
     { num: "04", title: "Production", desc: "Final product manufactured to exact specifications." },
   ]},
   de: { tag: "Wie wir arbeiten", title: "Von der Idee zum Produkt", steps: [
-    { num: "01", title: "Idee", desc: "Teilen Sie Ihre Vision — wir hören zu." },
+    { num: "01", title: "Idee", desc: "Teilen Sie Ihre Vision - wir hören zu." },
     { num: "02", title: "3D-Design", desc: "Professionelles CAD-Modeling mit Iterationen." },
     { num: "03", title: "Prototyp", desc: "3D-Druck oder Laserschnitt-Prototyp." },
     { num: "04", title: "Produktion", desc: "Finales Produkt nach exakter Spezifikation." },
   ]},
 };
 const STUDIO_PRICING_COPY = {
-  pl: { tag: "Orientacyjne ceny", title: "Ile kosztują usługi sTuDiO?", note: "Ceny orientacyjne — dokładna wycena po wgraniu pliku STL/SVG.", cta: "Wyceń swój projekt", from: "od" },
-  en: { tag: "Indicative pricing", title: "How much do sTuDiO services cost?", note: "Indicative prices — upload your STL/SVG for an exact quote.", cta: "Quote your project", from: "from" },
-  de: { tag: "Richtpreise", title: "Was kosten sTuDiO-Dienste?", note: "Richtpreise — laden Sie Ihre STL/SVG für ein exaktes Angebot hoch.", cta: "Projekt kalkulieren", from: "ab" },
+  pl: { tag: "Orientacyjne ceny", title: "Ile kosztują usługi sTuDiO?", note: "Ceny orientacyjne - dokładna wycena po wgraniu pliku STL/SVG.", cta: "Wyceń swój projekt", from: "od" },
+  en: { tag: "Indicative pricing", title: "How much do sTuDiO services cost?", note: "Indicative prices - upload your STL/SVG for an exact quote.", cta: "Quote your project", from: "from" },
+  de: { tag: "Richtpreise", title: "Was kosten sTuDiO-Dienste?", note: "Richtpreise - laden Sie Ihre STL/SVG für ein exaktes Angebot hoch.", cta: "Projekt kalkulieren", from: "ab" },
 };
 const STUDIO_PRICING_ITEMS = [
   { pl: "Druk 3D FDM (PLA/PETG)", en: "3D print FDM (PLA/PETG)", de: "3D-Druck FDM (PLA/PETG)", pln: 25, eur: 6 },
@@ -420,7 +420,7 @@ function ContactPage() {
         <div style={{ textAlign: "center", marginBottom: 44 }}>
           <Eyebrow style={{ marginBottom: 18 }}>Get in Touch</Eyebrow>
           <h1 style={{ fontFamily: "var(--font-serif)", fontSize: 52, fontWeight: 600, color: "var(--fg-1)", margin: "0 0 14px", letterSpacing: "-0.02em" }}>Contact Us</h1>
-          <p style={{ color: "var(--fg-2)", fontSize: 16, lineHeight: 1.65, maxWidth: 520, margin: "0 auto" }}>Custom jewelry, personalized products, technical prototypes, or just a question — we'd love to hear from you.</p>
+          <p style={{ color: "var(--fg-2)", fontSize: 16, lineHeight: 1.65, maxWidth: 520, margin: "0 auto" }}>Custom jewelry, personalized products, technical prototypes, or just a question - we'd love to hear from you.</p>
         </div>
         {sent ? (
           <div style={{ textAlign: "center", padding: 48, background: "var(--accent-soft)", border: "1px solid var(--border-accent)", borderRadius: 16 }}>
@@ -441,7 +441,7 @@ function ContactPage() {
                 {[
                   { v: "jewelry", l: "Custom Jewelry" },
                   { v: "studio", l: "Technical Services (sTuDiO)" },
-                  { v: "both", l: "Both — Jewelry & Studio" },
+                  { v: "both", l: "Both - Jewelry & Studio" },
                   { v: "other", l: "Other" },
                 ].map((o) => (
                   <button key={o.v} type="button" onClick={() => setInterest(o.v)}
@@ -475,9 +475,9 @@ function AboutPage() {
         <Eyebrow style={{ marginBottom: 18 }}>The Studio</Eyebrow>
         <h1 style={{ fontFamily: "var(--font-serif)", fontSize: 52, fontWeight: 600, color: "var(--fg-1)", margin: "0 0 22px", letterSpacing: "-0.02em" }}>About AEJaCA</h1>
         <p style={{ color: "var(--fg-2)", fontSize: 18, lineHeight: 1.7, margin: "0 0 22px" }}>
-          AEJaCA is a small Polish studio that combines two crafts under one roof — fine handcrafted jewelry and digital fabrication. Founded by Artur Hebenstreit in Chełmża, Poland, with clients across the EU, UK, and beyond.
+          AEJaCA is a small Polish studio that combines two crafts under one roof - fine handcrafted jewelry and digital fabrication. Founded by Artur Hebenstreit in Chełmża, Poland, with clients across the EU, UK, and beyond.
         </p>
-        <p style={{ color: "var(--fg-4)", fontSize: 13, fontStyle: "italic", margin: 0 }}>This page in the kit is a stub — the live site has full content here.</p>
+        <p style={{ color: "var(--fg-4)", fontSize: 13, fontStyle: "italic", margin: 0 }}>This page in the kit is a stub - the live site has full content here.</p>
       </div>
     </section>
   );

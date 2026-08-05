@@ -1,5 +1,5 @@
 // ============================================================
-// JEWELRY CALCULATOR — CONFIG, DATA & PRICING
+// JEWELRY CALCULATOR - CONFIG, DATA & PRICING
 // ============================================================
 // Metal prices source: LBMA / Kitco (April 2026)
 // Gemstone prices source: Rapaport / GemVal / IGS
@@ -21,7 +21,7 @@ export const EUR_PLN = 4.28;
 export const MARGIN = 0.40;            // workshop margin on labor + setting + plating + engraving
 export const MATERIAL_MARKUP = 0.15;   // markup on raw metal + gemstone (handling, casting loss)
 export const REPAIR_MARGIN = 0.15;     // repair/renovation margin (labor IS the product)
-// Estimate tolerance band — tight, leans slightly cheap (market-style "od–do" quote)
+// Estimate tolerance band - tight, leans slightly cheap (market-style "od–do" quote)
 export const TOL_LOW = 0.15;
 export const TOL_HIGH = 0.12;
 
@@ -136,7 +136,7 @@ export const ENGRAVING_OPTIONS = [
 ];
 
 // --- GEMSTONES ---
-// basePLN: static fallback only — live prices fetched from /api/gemstone-prices and override these
+// basePLN: static fallback only - live prices fetched from /api/gemstone-prices and override these
 // basePLN = approximate wholesale PLN per carat for medium quality, ~0.5ct
 export const GEMSTONES = [
   { id: "none", label: { pl: "Bez kamienia", en: "No gemstone", de: "Ohne Stein" }, basePLN: 0, precious: false, hasGrades: false },
@@ -174,7 +174,7 @@ export const GEMSTONES = [
 // visual: gemD = diameter in px for stone size preview circle
 // priceMul = total stone price relative to the medium (0.5 ct) anchor. Gemstone
 // prices scale super-linearly with size (rarity premium), so small/accent stones
-// cost far less per carat than a 0.5 ct centre — the low end must stay shallow,
+// cost far less per carat than a 0.5 ct centre - the low end must stay shallow,
 // otherwise multi-stone pavé of natural diamonds is grossly overpriced.
 export const STONE_SIZES = [
   { id: "accent", label: { pl: "Akcent (0.01-0.05 ct)", en: "Accent (0.01-0.05 ct)", de: "Akzent (0.01-0.05 ct)" }, ct: 0.03, priceMul: 0.05, visual: { gemD: 4 } },
@@ -286,11 +286,11 @@ export const RENOVATION_METALS = GENERIC_METALS;
 /** Metale przyjmowane do naprawy: wszystko, co wymaga lutowania */
 export const REPAIR_METALS = GENERIC_METALS.filter((m) => !m.renovationOnly);
 
-// ar = ID/wire_diameter (Aspect Ratio — controls what link size is achievable)
+// ar = ID/wire_diameter (Aspect Ratio - controls what link size is achievable)
 // widthMul: chain width = widthMul × wire_diameter_mm
 // thicknessMul: chain thickness = thicknessMul × wire_diameter_mm
 // weaveFactor: wire mass per chain length vs straight wire of same Ø
-// massLaborMul: mass-based labor multiplier — scales extra labor per gram of finished chain
+// massLaborMul: mass-based labor multiplier - scales extra labor per gram of finished chain
 //   (complex weaves like Byzantine need far more operations per gram than simple curb chains)
 // CALIBRATED:
 //   pancerka Ag925 w=3.58mm L=55cm → 13.93g bare (weaveFactor=2.15, widthMul=3.0)
@@ -351,7 +351,7 @@ export const CHAIN_DEFAULT_LENGTH = {
   bracelet_m: 200,
 };
 
-// Preset necklace/chain lengths (in mm) — per gender
+// Preset necklace/chain lengths (in mm) - per gender
 export const NECKLACE_LENGTHS_WOMEN = [400, 420, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900];
 export const NECKLACE_LENGTHS_MEN   = [500, 550, 600, 650, 700, 750];
 export const BRACELET_LENGTHS       = [160, 170, 180, 190, 200, 210, 220];

@@ -71,7 +71,7 @@
                   </div>
                 </td>
                 <td class="px-3 py-2 text-neutral-300 text-xs">
-                  <%= p.category || '—' %>
+                  <%= p.category || ' - ' %>
                   <% if (p.subcategory) { %><div class="text-neutral-600 text-[10px]"><%= p.subcategory %></div><% } %>
                 </td>
                 <td class="px-3 py-2 text-neutral-400 text-xs">
@@ -99,7 +99,7 @@
                 <td class="px-3 py-2 text-right text-neutral-400 text-xs"><%= p.reserved || 0 %></td>
                 <td class="px-3 py-2 text-right text-xs font-medium
                     <%= p.stock === null ? 'text-blue-300' : (p.status !== 'live' || p.available === 0 ? 'text-red-300' : (p.available <= 1 ? 'text-amber-300' : 'text-emerald-300')) %>">
-                  <%= p.stock === null ? (p.status === 'live' ? 'bez limitu' : '—') : (p.status === 'live' ? p.available : 0) %>
+                  <%= p.stock === null ? (p.status === 'live' ? 'bez limitu' : ' - ') : (p.status === 'live' ? p.available : 0) %>
                 </td>
                 <td class="px-3 py-2 text-right text-neutral-500 text-xs"><%= p.sold_count || 0 %></td>
                 <td class="px-3 py-2">

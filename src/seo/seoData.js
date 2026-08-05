@@ -30,22 +30,22 @@ export const SITE = {
 export const SEO = {
   home: {
     pl: {
-      title: "AEJaCA — Biżuteria Artystyczna & sTuDiO Fabrykacji Cyfrowej",
+      title: "AEJaCA - Biżuteria Artystyczna & sTuDiO Fabrykacji Cyfrowej",
       description: "Dwie marki, jedno studio. AEJaCA Biżuteria: srebro, złoto, kamienie szlachetne, żywica epoksydowa. AEJaCA sTuDiO: druk 3D, grawer CO2 & Fiber.",
       keywords: "biżuteria ręcznie robiona, srebro, złoto, kamienie szlachetne, żywica epoksydowa, druk 3D, materiały inżynierskie, grawerowanie laserowe CO2, Fiber laser, modelowanie 3D, Rhino, Fusion 360, AEJaCA",
-      ogAlt: "AEJaCA Biżuteria i sTuDiO — dwie marki, jedno studio rzemiosła",
+      ogAlt: "AEJaCA Biżuteria i sTuDiO - dwie marki, jedno studio rzemiosła",
     },
     en: {
-      title: "AEJaCA — Handcrafted Jewelry & Digital Fabrication Studio",
+      title: "AEJaCA - Handcrafted Jewelry & Digital Fabrication Studio",
       description: "Two brands, one studio. AEJaCA Jewelry: silver, gold, natural gemstones, epoxy resin. AEJaCA sTuDiO: 3D printing, CO2 & Fiber laser engraving.",
       keywords: "handmade jewelry, silver, gold, natural gemstones, epoxy resin, 3D printing, engineering materials, CO2 laser engraving, Fiber laser, 3D modeling, Rhino, Fusion 360, AEJaCA",
-      ogAlt: "AEJaCA Jewelry and sTuDiO — two brands, one craft studio",
+      ogAlt: "AEJaCA Jewelry and sTuDiO - two brands, one craft studio",
     },
     de: {
-      title: "AEJaCA — Handgefertigter Schmuck & Studio für Digitalfertigung",
+      title: "AEJaCA - Handgefertigter Schmuck & Studio für Digitalfertigung",
       description: "Zwei Marken, ein Studio. AEJaCA Schmuck: Silber, Gold, Edelsteine, Epoxidharz. AEJaCA sTuDiO: 3D-Druck, CO2- & Fiber-Lasergravur.",
       keywords: "handgefertigter Schmuck, Silber, Gold, Edelsteine, Epoxidharz, 3D-Druck, Ingenieurswerkstoffe, CO2-Lasergravur, Fiber-Laser, 3D-Modellierung, Rhino, Fusion 360, AEJaCA",
-      ogAlt: "AEJaCA Schmuck und sTuDiO — zwei Marken, ein Handwerksstudio",
+      ogAlt: "AEJaCA Schmuck und sTuDiO - zwei Marken, ein Handwerksstudio",
     },
   },
 

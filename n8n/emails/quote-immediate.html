@@ -1,10 +1,10 @@
 <!--
-  AEJaCA — Immediate quote confirmation email
+  AEJaCA - Immediate quote confirmation email
   n8n expression variables available:
     {{ $json.body.email }}
-    {{ $json.body.lang }}          — "pl" | "en" | "de"
-    {{ $json.body.calculator }}    — e.g. "Druk 3D FDM", "AEJaCA Jewelry"
-    {{ $json.body.params }}        — e.g. "PLA | S | 15% | 1 color"
+    {{ $json.body.lang }}          - "pl" | "en" | "de"
+    {{ $json.body.calculator }}    - e.g. "Druk 3D FDM", "AEJaCA Jewelry"
+    {{ $json.body.params }}        - e.g. "PLA | S | 15% | 1 color"
     {{ $json.body.price.perPcPLN.min / .max }}
     {{ $json.body.price.perPcEUR.min / .max }}
     {{ $json.body.price.qty }}
@@ -39,10 +39,10 @@
           {{ $json.body.lang === 'de' ? 'Geschätzter Preis' : $json.body.lang === 'en' ? 'Estimated price' : 'Szacowana cena' }}
         </div>
         <div style="font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
-          {{ $json.body.price.perPcPLN.min }} &mdash; {{ $json.body.price.perPcPLN.max }} PLN
+          {{ $json.body.price.perPcPLN.min }} - {{ $json.body.price.perPcPLN.max }} PLN
         </div>
         <div style="font-size: 14px; color: #737373; margin-top: 4px;">
-          {{ $json.body.price.perPcEUR.min }} &mdash; {{ $json.body.price.perPcEUR.max }} EUR
+          {{ $json.body.price.perPcEUR.min }} - {{ $json.body.price.perPcEUR.max }} EUR
         </div>
       </div>
 
@@ -65,7 +65,7 @@
   <!-- Footer -->
   <div style="padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center;">
     <p style="font-size: 11px; color: #404040; margin: 0;">
-      AEJaCA &mdash; Artisan Elegance Jewelry and Crafted Art<br />
+      AEJaCA - Artisan Elegance Jewelry and Crafted Art<br />
       <a href="https://www.aejaca.com" style="color: #525252; text-decoration: none;">www.aejaca.com</a> &middot;
       <a href="mailto:contact@aejaca.com" style="color: #525252; text-decoration: none;">contact@aejaca.com</a>
     </p>

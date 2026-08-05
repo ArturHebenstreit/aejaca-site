@@ -22,7 +22,7 @@ const xml = fs.readFileSync(sitemapPath, "utf-8");
 const urlList = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
 
 if (urlList.length === 0) {
-  console.error("Brak URL-i w sitemap.xml — nic do zgłoszenia.");
+  console.error("Brak URL-i w sitemap.xml - nic do zgłoszenia.");
   process.exit(1);
 }
 

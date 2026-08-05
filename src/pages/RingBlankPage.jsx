@@ -19,7 +19,7 @@ const LABELS = {
     breadTools: "Narzędzia Jubilerskie",
     breadThis: "Kalkulator Rozwinięcia Obrączki",
     footerCtaTitle: "Chcesz zamówić obrączkę?",
-    footerCtaText: "Znając wymiary, możemy wykonać obrączkę na miarę — od projektu po gotowy wyrób.",
+    footerCtaText: "Znając wymiary, możemy wykonać obrączkę na miarę - od projektu po gotowy wyrób.",
     footerCtaBtn: "Napisz do nas",
   },
   en: {
@@ -33,7 +33,7 @@ const LABELS = {
     breadTools: "Jewelry Tools",
     breadThis: "Ring Blank Calculator",
     footerCtaTitle: "Want to order a ring?",
-    footerCtaText: "Knowing your dimensions, we can create a custom ring — from design to finished piece.",
+    footerCtaText: "Knowing your dimensions, we can create a custom ring - from design to finished piece.",
     footerCtaBtn: "Contact us",
   },
   de: {
@@ -47,22 +47,22 @@ const LABELS = {
     breadTools: "Schmuck-Tools",
     breadThis: "Ring-Rohling-Rechner",
     footerCtaTitle: "Einen Ring bestellen?",
-    footerCtaText: "Mit Ihren Maßen erstellen wir einen maßgefertigten Ring — vom Entwurf bis zum fertigen Stück.",
+    footerCtaText: "Mit Ihren Maßen erstellen wir einen maßgefertigten Ring - vom Entwurf bis zum fertigen Stück.",
     footerCtaBtn: "Kontakt",
   },
 };
 
 const SEO_META = {
   pl: {
-    title: "Kalkulator Rozwinięcia Obrączki — Długość Paska Metalu | AEJaCA",
+    title: "Kalkulator Rozwinięcia Obrączki - Długość Paska Metalu | AEJaCA",
     description: "Oblicz długość paska metalu do wykonania obrączki metodą walcowania. Kalkulator uwzględnia grubość materiału, rozmiar palca i szerokość obrączki.",
   },
   en: {
-    title: "Ring Blank Calculator — Metal Strip Length | AEJaCA",
+    title: "Ring Blank Calculator - Metal Strip Length | AEJaCA",
     description: "Calculate the metal strip length for making a ring by rolling. Accounts for material thickness, finger size and band width.",
   },
   de: {
-    title: "Ring-Rohling-Rechner — Metallstreifenlänge | AEJaCA",
+    title: "Ring-Rohling-Rechner - Metallstreifenlänge | AEJaCA",
     description: "Berechnen Sie die Metallstreifenlänge für einen Ring durch Walzen. Berücksichtigt Materialstärke, Fingergröße und Ringbreite.",
   },
 };
@@ -105,7 +105,7 @@ export default function RingBlankPage() {
         <section className="relative overflow-hidden min-h-[340px]">
           <img
             src="/hero-home-jewelry.webp"
-            alt="Kalkulator Rozwinięcia Obrączki — AEJaCA"
+            alt="Kalkulator Rozwinięcia Obrączki - AEJaCA"
             className="absolute inset-0 w-full h-full object-cover"
             loading="eager"
             fetchpriority="high"

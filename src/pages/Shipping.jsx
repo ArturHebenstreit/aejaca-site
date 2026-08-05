@@ -11,8 +11,8 @@ import PolicyLinks from "../components/PolicyLinks.jsx";
 import { ZONES, HANDLING_GROSZE, FREE_SHIPPING_FROM_GROSZE, MAX_PARCEL_G, leadDaysLabel } from "../pricing/shipping.js";
 
 // All shipping costs are stored in PLN (base). For en/de the EUR amount is
-// computed live from the NBP rate (pln_per_eur) via useMarketRates — never
-// hardcoded — so quoted prices track the real exchange rate.
+// computed live from the NBP rate (pln_per_eur) via useMarketRates - never
+// hardcoded - so quoted prices track the real exchange rate.
 // Liczby pochodza z tego samego pliku, ktory liczy wysylke w kasie. Zanim
 // tu byly wpisane recznie i rozjechaly sie z tym, co klient realnie placil.
 const pln = (grosze) => Math.round(grosze / 100);
@@ -63,7 +63,7 @@ const LABELS = {
       { label: "Studio (materiały na stanie)", value: "3–5 dni roboczych" },
       { label: "Studio (zamawianie materiałów)", value: "6–12 dni roboczych" },
     ],
-    timesNote: "Powyższe wartości są orientacyjne — podstawowy czas realizacji ustalamy indywidualnie dla każdego projektu.",
+    timesNote: "Powyższe wartości są orientacyjne - podstawowy czas realizacji ustalamy indywidualnie dla każdego projektu.",
     ratesTitle: "Koszty międzynarodowe",
     ratesIntro: "Koszt przewoźnika zależy od wagi i wymiarów przesyłki. Poniżej kwoty orientacyjne wraz z typowym czasem doręczenia. Czas liczymy od nadania i nie obejmuje on odprawy celnej, która poza Unią potrafi przesyłkę zatrzymać.",
     upTo: "do",
@@ -116,7 +116,7 @@ const LABELS = {
       { label: "Studio (materials in stock)", value: "3–5 business days" },
       { label: "Studio (ordering materials)", value: "6–12 business days" },
     ],
-    timesNote: "The values above are indicative — the base lead time is agreed individually for each project.",
+    timesNote: "The values above are indicative - the base lead time is agreed individually for each project.",
     ratesTitle: "International Costs",
     ratesIntro: "Carrier cost depends on parcel weight and dimensions. Indicative amounts to budget for are shown below.",
     upTo: "up to",
@@ -125,7 +125,7 @@ const LABELS = {
     calcNote: "We confirm the exact cost individually before shipping.",
     customsTitle: "Customs outside the EU",
     customsDesc: "Shipments outside the EU (including the UK, USA, Asia) may be subject to customs duties and import taxes charged by the destination country. These are paid by the recipient and are not included in the shipping price.",
-    faqTitle: "Shipping — frequently asked questions",
+    faqTitle: "Shipping - frequently asked questions",
     faq: [
       { q: "How much does shipping cost within Poland?", a: (f) => `Within Poland: InPost courier from ${f.courier}, InPost parcel locker from ${f.locker}, and personal pickup in the Warsaw area is free. Orders over ${f.free} ship free within Poland.` },
       { q: "Do you ship to EU countries?", a: (f) => `Yes. Shipping to the EU from ${f.eu}, usually 5–10 business days. We use InPost where available, otherwise DHL.` },
@@ -169,7 +169,7 @@ const LABELS = {
       { label: "Studio (Material auf Lager)", value: "3–5 Werktage" },
       { label: "Studio (Materialbestellung)", value: "6–12 Werktage" },
     ],
-    timesNote: "Die obigen Werte sind Richtwerte — die grundlegende Bearbeitungszeit wird für jedes Projekt individuell vereinbart.",
+    timesNote: "Die obigen Werte sind Richtwerte - die grundlegende Bearbeitungszeit wird für jedes Projekt individuell vereinbart.",
     ratesTitle: "Internationale Kosten",
     ratesIntro: "Die Kosten des Spediteurs hängen von Gewicht und Maßen ab. Nachfolgend Richtwerte zur Orientierung.",
     upTo: "bis",
@@ -213,7 +213,7 @@ export default function Shipping() {
     { label: l.pickupLabel, price: l.freeLabel },
   ];
 
-  // Shared formatted values — used by BOTH the visible FAQ section and the
+  // Shared formatted values - used by BOTH the visible FAQ section and the
   // FAQPage JSON-LD, so the structured data always matches what users see.
   const freeDisp = showEur ? `€${FREE_SHIP.eur}` : `${FREE_SHIP.pln} zł`;
   const faqValues = {
@@ -396,7 +396,7 @@ export default function Shipping() {
               <p className="text-neutral-500 text-xs mt-4">{l.timesNote}</p>
             </div>
 
-            {/* FAQ — visible Q&A mirrors the FAQPage JSON-LD (parity = SEO-safe) */}
+            {/* FAQ - visible Q&A mirrors the FAQPage JSON-LD (parity = SEO-safe) */}
             <div className="mt-5">
               <h2 className="text-white font-semibold text-lg mb-4">{l.faqTitle}</h2>
               <div className="space-y-3">

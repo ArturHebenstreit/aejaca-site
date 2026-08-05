@@ -6,7 +6,7 @@
     <div class="flex items-center gap-2 text-sm text-neutral-500 mb-6">
       <a href="/filaments" class="hover:text-amber-400 transition-colors">&larr; Filamenty</a>
       <span>&rsaquo;</span>
-      <a href="/filaments/<%= typeId %>/brands" class="hover:text-amber-400 transition-colors">&larr; Marki<% if (brand && brand.type_name) { %> — <%= brand.type_name %><% } %></a>
+      <a href="/filaments/<%= typeId %>/brands" class="hover:text-amber-400 transition-colors">&larr; Marki<% if (brand && brand.type_name) { %> - <%= brand.type_name %><% } %></a>
       <span>&rsaquo;</span>
       <% if (brand) { %>
         <span class="text-neutral-300">Edytuj markę #<%= brand.id %></span>

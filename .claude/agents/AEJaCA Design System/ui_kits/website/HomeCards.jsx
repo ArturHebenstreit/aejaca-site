@@ -1,4 +1,4 @@
-/* AEJaCA — Home page sections + a single Footer */
+/* AEJaCA - Home page sections + a single Footer */
 
 function GatewayTile({ img, eyebrow, desc, ctaLabel, accent = "amber", onClick }) {
   const [hover, setHover] = React.useState(false);

@@ -393,9 +393,9 @@ function ParameterCard({ row, lang, onInquiry }) {
       `Materiał: ${row.material}`,
       `Kinematyka: ${row.kinematics}`,
       ``,
-      `Moc: ${row.power_pct || "—"} %`,
-      `Prędkość: ${row.speed || "—"} mm/s`,
-      `Przejścia: ${row.passes || "—"}`,
+      `Moc: ${row.power_pct || " - "} %`,
+      `Prędkość: ${row.speed || " - "} mm/s`,
+      `Przejścia: ${row.passes || " - "}`,
       row.dpi            ? `DPI: ${row.dpi}` : null,
       row.hatch_mm       ? `Hatch: ${row.hatch_mm} mm` : null,
       row.scan_angle_deg ? `Kąt skanowania: ${row.scan_angle_deg}°` : null,
@@ -503,7 +503,7 @@ function ParameterCardCarousel({ rows, lang }) {
           <span className="text-sm text-neutral-400">
             Wariant {idx + 1} z {rows.length}
             <span className="ml-2 text-neutral-600 text-xs">
-              ({row?.kinematics} · {row?.optics_lens || "—"})
+              ({row?.kinematics} · {row?.optics_lens || " - "})
             </span>
           </span>
           <div className="flex items-center gap-1">

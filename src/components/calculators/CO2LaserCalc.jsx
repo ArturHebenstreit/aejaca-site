@@ -1,5 +1,5 @@
 // ============================================================
-// CO2 LASER ESTIMATOR — xTool P2 55W  v1.1
+// CO2 LASER ESTIMATOR - xTool P2 55W  v1.1
 // Work area: 600 × 288 mm (standard), extended with riser
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
@@ -149,7 +149,7 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
-        <QuoteEmailCapture result={result} lang={lang} techLabel={`${t(TECH_LABEL, lang)} — ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={paramsSummary} preAttachedFile={svgFile} />
+        <QuoteEmailCapture result={result} lang={lang} techLabel={`${t(TECH_LABEL, lang)} - ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={paramsSummary} preAttachedFile={svgFile} />
         <CalcToCart
           onBinding={setBindingGrosze}
           calculator={mode === "engrave" ? "laser_co2_engrave" : "laser_co2_cut"}
@@ -162,7 +162,7 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
         />
       </div>
 
-      <InquiryForm lang={lang} techLabel={`${t(TECH_LABEL, lang)} — ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={paramsSummary} preAttachedFile={svgFile} />
+      <InquiryForm lang={lang} techLabel={`${t(TECH_LABEL, lang)} - ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={paramsSummary} preAttachedFile={svgFile} />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 // ============================================================
-// SIMPLE JEWELRY CALCULATOR — "Szybka wycena" for laypeople
+// SIMPLE JEWELRY CALCULATOR - "Szybka wycena" for laypeople
 // Maps plain-language answers → advanced calcNew / calcRenovation / calcRepair
 // ============================================================
 import { useState, useMemo } from "react";
@@ -99,7 +99,7 @@ const REPAIR_ISSUES = [
   { id: "solder",    icon: Scissors, label: { pl: "Lutowanie / łączenie",        en: "Soldering / joining",    de: "Löten / Verbinden" } },
 ];
 
-// --- Q5 for NEW: quality tier (uses weight images — quality→weight mapping: budget=light, standard=standard, premium=heavy) ---
+// --- Q5 for NEW: quality tier (uses weight images - quality→weight mapping: budget=light, standard=standard, premium=heavy) ---
 const QUALITY_TIERS = [
   { id: "budget",   icon: ZapOff,      img: "/img/calc/weights/light.webp",
     label: { pl: "Przystępny",    en: "Affordable", de: "Erschwinglich" },
@@ -236,14 +236,14 @@ const CORD_ITEMS = {
   },
 };
 
-/** Main engine — given Simple answers, return advanced params + which calc to run */
+/** Main engine - given Simple answers, return advanced params + which calc to run */
 export function resolveJewelryParams(state) {
   const { service, piece, metal, gemCategory, renoScope, repairIssue, quality, quantity } = state;
 
   if (!service || service === "unsure") return { custom: true };
   if (!piece || piece === "other") return { custom: true };
 
-  // CORD JEWELRY — fixed pricing, no metal/gem questions needed
+  // CORD JEWELRY - fixed pricing, no metal/gem questions needed
   if (piece === "cord_bracelet" || piece === "cord_necklace") {
     if (service !== "new") return { custom: true };
     const tier = quality || "standard";
@@ -369,7 +369,7 @@ function runCalc(resolved, lang) {
 }
 
 // ============================================================
-// UI — rose theme
+// UI - rose theme
 // ============================================================
 
 const LBL = {
@@ -385,7 +385,7 @@ const LBL = {
     summary:   "Podsumowanie",
     pickAll:   "Odpowiedz na wszystkie pytania",
     switchHint: 'Chcesz podać dokładniejsze parametry? Przełącz na tryb "Dla zaawansowanych" u góry.',
-    note: 'Tryb Szybkiej Wyceny dobiera próbę kruszcu, metodę i parametry kamienia automatycznie — dla pełnej kontroli użyj trybu zaawansowanego.',
+    note: 'Tryb Szybkiej Wyceny dobiera próbę kruszcu, metodę i parametry kamienia automatycznie - dla pełnej kontroli użyj trybu zaawansowanego.',
   },
   en: {
     q1: "What do you need?",
@@ -399,7 +399,7 @@ const LBL = {
     summary:   "Summary",
     pickAll:   "Answer all questions",
     switchHint: 'Want more precise parameters? Switch to "Advanced" mode at the top.',
-    note: 'Quick Quote mode picks metal purity, method and stone parameters automatically — for full control use the advanced mode.',
+    note: 'Quick Quote mode picks metal purity, method and stone parameters automatically - for full control use the advanced mode.',
   },
   de: {
     q1: "Was benötigen Sie?",
@@ -413,7 +413,7 @@ const LBL = {
     summary:   "Zusammenfassung",
     pickAll:   "Beantworten Sie alle Fragen",
     switchHint: 'Genauere Parameter? Wechseln Sie oben in den "Fortgeschrittenen"-Modus.',
-    note: 'Der Schnellkalkulationsmodus wählt Feingehalt, Methode und Steinparameter automatisch — für volle Kontrolle verwenden Sie den erweiterten Modus.',
+    note: 'Der Schnellkalkulationsmodus wählt Feingehalt, Methode und Steinparameter automatisch - für volle Kontrolle verwenden Sie den erweiterten Modus.',
   },
 };
 
@@ -620,12 +620,12 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
         <div className="mt-4 pt-3 border-t border-rose-400/10 text-[11px] text-rose-400/60 italic text-center">
           {l.switchHint}
         </div>
-        <QuoteEmailCapture result={result} lang={lang} techLabel={`Szybka wycena biżuterii — ${serviceLabel}`} paramsSummary={paramsSummary} />
+        <QuoteEmailCapture result={result} lang={lang} techLabel={`Szybka wycena biżuterii - ${serviceLabel}`} paramsSummary={paramsSummary} />
       </div>
 
       <InquiryForm
         lang={lang}
-        techLabel={`Szybka wycena biżuterii — ${serviceLabel}`}
+        techLabel={`Szybka wycena biżuterii - ${serviceLabel}`}
         paramsSummary={paramsSummary}
       />
 

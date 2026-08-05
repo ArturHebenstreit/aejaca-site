@@ -29,7 +29,7 @@ export function getHeader(headers, name) {
 }
 
 // Senders that are clearly machines, not clients. Matches the local-part or
-// full address — deliberately does NOT match generic business addresses like
+// full address - deliberately does NOT match generic business addresses like
 // info@ or contact@ which can be real correspondence.
 const AUTOMATED_SENDER_RE = /(no-?reply|do-?not-?reply|donotreply|no_reply|mailer-daemon|postmaster@|bounce|notifications?@|newsletter|mailchimp|sendgrid|mailerlite|sendinblue|amazonses|dmarc|abuse@|@(?:bounce|email|mail|reports?|news)\.)/i;
 
@@ -124,7 +124,7 @@ const SELF_DOMAINS = (process.env.AUTOREPLY_SELF_DOMAINS || "aejaca.com")
 // Send an AEJaCA "thank you for contacting us" acknowledgement for a fresh
 // client inquiry. The actual email is sent by n8n (same channel as the contact
 // and quote forms); here we only decide *whether* to send and guard against
-// duplicates and loops. Never throws — a failure here must not break ingestion.
+// duplicates and loops. Never throws - a failure here must not break ingestion.
 export async function maybeSendAutoReply(pool, { threadDbId, toEmail, subject, lang, messageIdHeader, gmailMessageId, snippet }) {
   try {
     if (process.env.AUTOREPLY_ENABLED !== "true") return;
@@ -145,7 +145,7 @@ export async function maybeSendAutoReply(pool, { threadDbId, toEmail, subject, l
       [toEmail]
     );
     if (recent.rows.length > 0) {
-      console.log(`[autoreply] skip ${toEmail} — already acknowledged in last 24h`);
+      console.log(`[autoreply] skip ${toEmail} - already acknowledged in last 24h`);
       return;
     }
 
@@ -220,7 +220,7 @@ export async function processGmailMessage(gmail, pool, messageId) {
     const direction = labelIds.includes("SENT") ? "outbound" : "inbound";
 
     // Skip automated inbound mail (newsletters, DMARC/domain reports,
-    // autoresponders, mailing lists) — not real client correspondence.
+    // autoresponders, mailing lists) - not real client correspondence.
     // Outbound (our own SENT replies) is always kept.
     if (direction === "inbound" && isAutomatedEmail(headers, from)) {
       return null;
@@ -285,7 +285,7 @@ export async function processGmailMessage(gmail, pool, messageId) {
           await pool.query("UPDATE email_threads SET tag = $1 WHERE id = $2", [tag, threadDbId]);
         }
         // Acknowledge genuine client inquiries with an AEJaCA thank-you note.
-        // Only for brand-new inbound lead threads — never on ongoing replies,
+        // Only for brand-new inbound lead threads - never on ongoing replies,
         // never on not_lead/spam. Sending itself is delegated to n8n.
         if (tag === "lead") {
           await maybeSendAutoReply(pool, {
@@ -363,7 +363,7 @@ export async function setupGmailWatch(gmail) {
   return { historyId: data.historyId, expiration: data.expiration };
 }
 
-// Poll Gmail for recent messages — used as fallback when Pub/Sub is unavailable.
+// Poll Gmail for recent messages - used as fallback when Pub/Sub is unavailable.
 // opts.query: Gmail search query (default last 15 min, for the 5-min cron).
 // opts.maxPages: how many 100-message pages to walk per label (default 1;
 //   raise for a one-time backfill over a wider window).

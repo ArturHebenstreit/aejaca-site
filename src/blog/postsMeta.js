@@ -1,4 +1,4 @@
-// Metadata-only blog post aggregator — for teasers/cards that never render
+// Metadata-only blog post aggregator - for teasers/cards that never render
 // a post's Body (Home, Jewelry, Studio, BlogIndex). Importing only `meta`
 // (not `Body`) from each post module lets Rollup tree-shake the full
 // article JSX out of every chunk that reaches this file. BlogPost.jsx

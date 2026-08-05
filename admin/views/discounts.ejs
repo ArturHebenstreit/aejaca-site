@@ -123,7 +123,7 @@
 
     <%
       const pln = (g) => ((g || 0) / 100).toFixed(2).replace('.', ',') + ' zł';
-      const day = (d) => (d ? new Date(d).toLocaleDateString('pl-PL') : '—');
+      const day = (d) => (d ? new Date(d).toLocaleDateString('pl-PL') : ' - ');
       const SCOPE = { all: 'Wszystko', products: 'Produkty', services: 'Usługi', jewelry: 'Biżuteria', studio: 'sTuDiO' };
       const kindLabel = (c) => (c.campaign === 'newsletter' ? 'powitalny' : (c.max_uses === 1 ? 'osobisty' : 'akcja'));
     %>

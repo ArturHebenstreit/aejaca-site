@@ -441,7 +441,7 @@ export default function Checkout() {
         setError(
           [created.data?.error || `${u.generic} (${created.status})`, created.data?.detail]
             .filter(Boolean)
-            .join(" — ".replace(" — ", ": "))
+            .join(" - ".replace(" - ", ": "))
         );
         setBusy(false);
         return;

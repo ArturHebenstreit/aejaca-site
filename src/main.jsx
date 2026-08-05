@@ -12,7 +12,7 @@ import ScrollToHash from "./components/ScrollToHash.jsx";
 import Home from "./pages/Home.jsx";
 import Contact from "./pages/Contact.jsx";
 
-// Lazy-loaded routes — split into separate chunks to reduce initial bundle.
+// Lazy-loaded routes - split into separate chunks to reduce initial bundle.
 // Blog + Privacy are not on critical landing paths; loading them on-demand
 // saves ~70KB from the main chunk (3 article bodies + Prose components).
 const Jewelry = lazy(() => import("./pages/Jewelry.jsx"));

@@ -62,10 +62,10 @@
                   <span class="text-neutral-600"><%= new Date(c.created_at).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }) %></span>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-neutral-300">
-                  <%= c.country || '—' %>
+                  <%= c.country || ' - ' %>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-xs font-mono text-neutral-500" title="<%= c.session_id || '' %>">
-                  <%= c.session_id ? c.session_id.slice(0, 8) : '—' %>
+                  <%= c.session_id ? c.session_id.slice(0, 8) : ' - ' %>
                 </td>
                 <td class="px-4 py-3">
                   <span class="px-2 py-0.5 bg-blue-950 text-blue-300 rounded text-xs font-medium uppercase">
@@ -73,10 +73,10 @@
                   </span>
                 </td>
                 <td class="px-4 py-3 text-neutral-200 text-xs max-w-[280px]">
-                  <div class="line-clamp-3 whitespace-pre-wrap"><%= c.last_user_message || '—' %></div>
+                  <div class="line-clamp-3 whitespace-pre-wrap"><%= c.last_user_message || ' - ' %></div>
                 </td>
                 <td class="px-4 py-3 text-neutral-400 text-xs max-w-[320px]">
-                  <div class="line-clamp-3 whitespace-pre-wrap"><%= c.assistant_response ? c.assistant_response.slice(0, 200) : '—' %></div>
+                  <div class="line-clamp-3 whitespace-pre-wrap"><%= c.assistant_response ? c.assistant_response.slice(0, 200) : ' - ' %></div>
                 </td>
                 <td class="px-4 py-3 text-center text-neutral-300 text-xs">
                   <%= c.messages_count %>
@@ -85,7 +85,7 @@
                   <% if (c.hot_lead) { %>
                     <span class="px-2 py-0.5 bg-red-950 text-red-300 rounded text-xs font-medium">HOT</span>
                   <% } else { %>
-                    <span class="text-neutral-700">—</span>
+                    <span class="text-neutral-700"> - </span>
                   <% } %>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-right">

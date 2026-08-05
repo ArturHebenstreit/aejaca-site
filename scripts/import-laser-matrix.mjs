@@ -1,5 +1,5 @@
 /**
- * One-shot seed script — reads docs/Laser_Matryca_Materialowa_20260509_v.1.0.xlsx
+ * One-shot seed script - reads docs/Laser_Matryca_Materialowa_20260509_v.1.0.xlsx
  * and imports all rows into PostgreSQL laser_matrix table.
  *
  * Usage:
@@ -45,9 +45,9 @@ function normalize(val) {
   if (val === null || val === undefined) return null;
   const s = String(val).trim();
   if (s === "" || s === "N/A" || s === "n/a") return null;
-  // Excel dates can appear as Date objects — convert pulse_width_ns numbers back to string
+  // Excel dates can appear as Date objects - convert pulse_width_ns numbers back to string
   if (val instanceof Date) {
-    // MOPA pulse_width_ns got imported as date in Excel — extract the numeric month-day
+    // MOPA pulse_width_ns got imported as date in Excel - extract the numeric month-day
     // e.g. "2026-06-02" was likely "2-6" ns (pulse width range)
     // Keep as-is but stringify safely
     return s;
@@ -58,9 +58,9 @@ function normalize(val) {
 function parseWatts(raw) {
   if (!raw) return null;
   const s = String(raw).trim();
-  // Already has "W" suffix — normalize
+  // Already has "W" suffix - normalize
   if (s.endsWith("W")) return s;
-  // Numeric — add W
+  // Numeric - add W
   const n = parseFloat(s);
   if (!isNaN(n)) return `${n}W`;
   return s;
@@ -74,7 +74,7 @@ if (!ws) {
   process.exit(1);
 }
 
-// Read as array of arrays — row 1 = section headers, row 2 = column headers, row 3+ = data
+// Read as array of arrays - row 1 = section headers, row 2 = column headers, row 3+ = data
 const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: false });
 
 // Row 2 (index 1) = column headers
@@ -116,7 +116,7 @@ const records = dataRows.map((r, i) => {
 console.log(`Parsed ${records.length} valid records`);
 
 if (DRY_RUN) {
-  console.log("DRY RUN — first 3 records:");
+  console.log("DRY RUN - first 3 records:");
   records.slice(0, 3).forEach((r, i) => console.log(` [${i}]`, JSON.stringify(r)));
   console.log("DRY RUN complete, no DB writes.");
   process.exit(0);

@@ -30,7 +30,7 @@ const LABELS = {
     jewelryLine: "AEJaCA Biżuteria",
     jewelryLineDesc: "Ręcznie robiona biżuteria ze srebra 925, złota 14k/18k i kamieni naturalnych. Pierścionki zaręczynowe, obrączki, wisiorki, każdy projekt indywidualny.",
     studioLine: "AEJaCA sTuDiO",
-    studioLineDesc: "Własne modelowanie 3D (Rhino, Fusion 360) — formy biżuteryjne i techniczne części funkcjonalne. Druk 3D FDM/SLA, grawerowanie laserowe CO₂ i fiber, odlewy żywiczne. Od szkicu po gotowy produkt.",
+    studioLineDesc: "Własne modelowanie 3D (Rhino, Fusion 360) - formy biżuteryjne i techniczne części funkcjonalne. Druk 3D FDM/SLA, grawerowanie laserowe CO₂ i fiber, odlewy żywiczne. Od szkicu po gotowy produkt.",
     qualityTitle: "Jakość i zgodność",
     qualityItems: [
       "Weryfikacja przez Urząd Probierczy",
@@ -84,7 +84,7 @@ const LABELS = {
     jewelryLine: "AEJaCA Jewelry",
     jewelryLineDesc: "Handmade jewelry from 925 silver, 14k/18k gold, and natural gemstones. Engagement rings, wedding bands, pendants, every design is unique.",
     studioLine: "AEJaCA sTuDiO",
-    studioLineDesc: "In-house 3D modeling (Rhino, Fusion 360) — jewelry forms and functional technical parts. FDM/SLA 3D printing, CO₂ and fiber laser engraving, resin casting. From sketch to finished product.",
+    studioLineDesc: "In-house 3D modeling (Rhino, Fusion 360) - jewelry forms and functional technical parts. FDM/SLA 3D printing, CO₂ and fiber laser engraving, resin casting. From sketch to finished product.",
     qualityTitle: "Quality & Compliance",
     qualityItems: [
       "Verified by the Polish Assay Office",
@@ -138,7 +138,7 @@ const LABELS = {
     jewelryLine: "AEJaCA Schmuck",
     jewelryLineDesc: "Handgefertigter Schmuck aus 925 Silber, 14k/18k Gold und natürlichen Edelsteinen. Verlobungsringe, Eheringe, Anhänger, jedes Design ist einzigartig.",
     studioLine: "AEJaCA sTuDiO",
-    studioLineDesc: "Eigenes 3D-Modellieren (Rhino, Fusion 360) — Schmuckformen und funktionale technische Teile. FDM/SLA 3D-Druck, CO₂- und Faserlasergravur, Harzguss. Von der Skizze zum fertigen Produkt.",
+    studioLineDesc: "Eigenes 3D-Modellieren (Rhino, Fusion 360) - Schmuckformen und funktionale technische Teile. FDM/SLA 3D-Druck, CO₂- und Faserlasergravur, Harzguss. Von der Skizze zum fertigen Produkt.",
     qualityTitle: "Qualität & Konformität",
     qualityItems: [
       "Verifiziert durch das polnische Prüfamt",

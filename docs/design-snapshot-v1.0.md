@@ -1,4 +1,4 @@
-# AEJaCA Site — Design Snapshot v1.0
+# AEJaCA Site - Design Snapshot v1.0
 
 > **Data utworzenia**: 2026-05-20  
 > **Commit**: `a5eaa9f9d4ef611067a6e174a66cdc763e955329`  
@@ -20,15 +20,15 @@
 | SEO | react-helmet-async | 2.x |
 | Ikony | lucide-react | 0.536 |
 | Baza danych | PostgreSQL (via `pg`) | 8.x |
-| Deployment | Cloudflare Pages | — |
-| Języki | PL / EN / DE | — |
+| Deployment | Cloudflare Pages | - |
+| Języki | PL / EN / DE | - |
 
 **Kluczowe pliki konfiguracyjne:**
-- `vite.config.js` — chunking: `three`, `react-vendor`, `helmet`
-- `src/index.css` — Tailwind v4 CSS-first (import + `@theme` + `:root` tokens)
-- `.npmrc` — `optional=true` (niezbędne dla lightningcss na Cloudflare Pages)
-- `public/_headers`, `public/_redirects` — Cloudflare Pages
-- `public/sitemap.xml`, `public/robots.txt` — SEO
+- `vite.config.js` - chunking: `three`, `react-vendor`, `helmet`
+- `src/index.css` - Tailwind v4 CSS-first (import + `@theme` + `:root` tokens)
+- `.npmrc` - `optional=true` (niezbędne dla lightningcss na Cloudflare Pages)
+- `public/_headers`, `public/_redirects` - Cloudflare Pages
+- `public/sitemap.xml`, `public/robots.txt` - SEO
 
 ---
 
@@ -41,7 +41,7 @@
 | Biżuteria | **AEJaCA Biżuteria** | Artystyczny, luksusowy | Amber (złoty) |
 | Studio | **AEJaCA sTuDiO** | Techniczny, inżynieryjny | Blue (niebieski) |
 
-> **WAŻNE** — intercap `sTuDiO` (małe t, D, i) jest wymagany wszędzie tam, gdzie to nazwa własna (navbar, footer, eyebrows, H1). Nie dotyczy opisów usług.
+> **WAŻNE** - intercap `sTuDiO` (małe t, D, i) jest wymagany wszędzie tam, gdzie to nazwa własna (navbar, footer, eyebrows, H1). Nie dotyczy opisów usług.
 
 ### 2.2 Logo / Brand mark
 
@@ -56,8 +56,8 @@ Hover navbar: scale-105
 
 | Rodzina | Rola | Klasa Tailwind |
 |---------|------|----------------|
-| **Playfair Display** / Noto Serif / Georgia | Biżuteria — nagłówki, display | `font-serif` |
-| **Inter** / system-ui / sans-serif | sTuDiO — nagłówki, UI | `font-sans` |
+| **Playfair Display** / Noto Serif / Georgia | Biżuteria - nagłówki, display | `font-serif` |
+| **Inter** / system-ui / sans-serif | sTuDiO - nagłówki, UI | `font-sans` |
 
 **Hierarchia rozmiaru nagłówków (zdefiniowane praktyki):**
 
@@ -78,7 +78,7 @@ Hover navbar: scale-105
 ### 3.1 Kolory bazowe (dark canvas)
 
 ```css
-bg-neutral-950   /* #0a0a0a — główne tło strony */
+bg-neutral-950   /* #0a0a0a - główne tło strony */
 bg-neutral-900   /* Sekcje z lekkim kontrastem */
 text-white        /* Główny kolor tekstu */
 text-neutral-300  /* Body text (jasny) */
@@ -222,7 +222,7 @@ Waluty: PLN (lang=pl), EUR (lang=en lub de)
 
 **Social icons (kolejność):** Etsy Jewelry, Etsy Studio, Instagram, TikTok, Facebook, YouTube, WhatsApp, Email
 
-### 5.3 Sekcje strony — górny padding
+### 5.3 Sekcje strony - górny padding
 
 ```
 Wszystkie strony: pt-16 (kompensacja fixed navbar 64px)
@@ -230,11 +230,11 @@ Wszystkie strony: pt-16 (kompensacja fixed navbar 64px)
 
 ---
 
-## 6. Komponenty UI — specyfikacja
+## 6. Komponenty UI - specyfikacja
 
 ### 6.1 Gateway Cards (strona główna)
 
-Dwie karty z obrazem 3:4 — entry pointy do dwóch sub-marek.
+Dwie karty z obrazem 3:4 - entry pointy do dwóch sub-marek.
 
 ```jsx
 /* Kontener karty */
@@ -262,7 +262,7 @@ width="768" height="1024"
     <div className="text-amber-400 text-[10px] uppercase tracking-[0.25em] mb-3">{eyebrow}</div>
     <p className="text-neutral-200 text-sm leading-relaxed max-w-xs mx-auto">{desc}</p>
   </div>
-  <span className="...button...">  {/* przycisk — zawsze na dole */}
+  <span className="...button...">  {/* przycisk - zawsze na dole */}
 ```
 
 **Kluczowy trick**: eyebrow + description są w jednym `<div>` (flex child top), przycisk jest osobnym flex child (bottom). Dzięki temu eyebrow zawsze zaczyna się na tej samej wysokości Y, niezależnie od długości opisu.
@@ -357,62 +357,62 @@ Hook: `useScrollReveal()` (IntersectionObserver), `useStaggerReveal(delayMs)` dl
 
 ---
 
-## 7. Układ strony głównej (Home.jsx) — sekcje
+## 7. Układ strony głównej (Home.jsx) - sekcje
 
 ```
 [Navbar h-16 fixed]
 [pt-16 wrapper]
-  1. Hero intro         — bg-neutral-950, pt-10 pb-6 md:pt-14 md:pb-8, text-center
+  1. Hero intro         - bg-neutral-950, pt-10 pb-6 md:pt-14 md:pb-8, text-center
      H1 (font-serif), subtitle, badge Google rating
-  2. Gateway Cards      — bg-neutral-950, px-4, pb-3 md:pb-4
+  2. Gateway Cards      - bg-neutral-950, px-4, pb-3 md:pb-4
      max-w-5xl, grid 1→2 cols, gap-5 md:gap-6
   [gradient-divider]
-  3. Brand Statement    — bg-neutral-950, py-12 px-4, text-center
+  3. Brand Statement    - bg-neutral-950, py-12 px-4, text-center
      Logo 144×144, H2, body text, badge Google
   [gradient-divider]
-  4. Quick Quote        — bg-gradient-to-b from-neutral-950 via-neutral-900/30 to-neutral-950
+  4. Quick Quote        - bg-gradient-to-b from-neutral-950 via-neutral-900/30 to-neutral-950
      py-12, eyebrow emerald, H2, 2 cards (Jewelry+Studio), STL banner
   [gradient-divider]
-  5. Blog Highlights    — bg-neutral-950, py-16
+  5. Blog Highlights    - bg-neutral-950, py-16
      3 ostatnie posty BlogCard
   [gradient-divider]
-  6. World Cards        — bg-neutral-950, py-16
+  6. World Cards        - bg-neutral-950, py-16
      2 feature cards: AEJaCA Biżuteria + AEJaCA sTuDiO (lista punktów)
   [gradient-divider]
-  7. Google Reviews     — <GoogleReviews /> z anchor id="reviews"
+  7. Google Reviews     - <GoogleReviews /> z anchor id="reviews"
   [gradient-divider]
-  8. CTA końcowe        — py-16, bg-gradient-to-b from-neutral-950 to-neutral-900/30
+  8. CTA końcowe        - py-16, bg-gradient-to-b from-neutral-950 to-neutral-900/30
      H2, tekst, przycisk → /contact/
 [Footer]
 ```
 
 ---
 
-## 8. Układ strony Jewelry (Jewelry.jsx) — sekcje
+## 8. Układ strony Jewelry (Jewelry.jsx) - sekcje
 
 ```
 [pt-16]
-  1. Hero               — min-h-[540px], /hero-jewelry.webp, overlay gradient-to-b
+  1. Hero               - min-h-[540px], /hero-jewelry.webp, overlay gradient-to-b
      Eyebrow amber, H1 font-serif, subtitle
-  2. About              — py-20, max-w-4xl, sekcja o marce
+  2. About              - py-20, max-w-4xl, sekcja o marce
   [gradient-divider]
-  3. Services           — id="services", 6 kart usług (ikony Lucide, grid 2/3 cols)
+  3. Services           - id="services", 6 kart usług (ikony Lucide, grid 2/3 cols)
   [gradient-divider]
-  4. Pricing            — id="pricing", orientacyjne ceny (tabelka)
+  4. Pricing            - id="pricing", orientacyjne ceny (tabelka)
   [gradient-divider]
-  5. Calculator         — id="calculator", <JewelryEstimator />
+  5. Calculator         - id="calculator", <JewelryEstimator />
   [gradient-divider]
-  6. FAQ                — id="faq", <FAQ />
+  6. FAQ                - id="faq", <FAQ />
   [gradient-divider]
-  7. Process            — id="process", 6 kroków zero-padded (01..06)
+  7. Process            - id="process", 6 kroków zero-padded (01..06)
   [gradient-divider]
-  8. Portfolio          — id="portfolio", <Portfolio />
+  8. Portfolio          - id="portfolio", <Portfolio />
   [gradient-divider]
-  9. Tips               — id="tips", <Tips />
+  9. Tips               - id="tips", <Tips />
   [gradient-divider]
-  10. Reviews            — id="testimonials", <GoogleReviews />
+  10. Reviews            - id="testimonials", <GoogleReviews />
   [gradient-divider]
-  11. Shop (Etsy)        — id="shop"
+  11. Shop (Etsy)        - id="shop"
   [gradient-divider]
   12. CTA końcowe
 [Footer]
@@ -420,33 +420,33 @@ Hook: `useScrollReveal()` (IntersectionObserver), `useStaggerReveal(delayMs)` dl
 
 ---
 
-## 9. Układ strony Studio (Studio.jsx) — sekcje
+## 9. Układ strony Studio (Studio.jsx) - sekcje
 
 ```
 [pt-16]
-  1. Hero               — min-h-[540px], /hero-studio.webp, overlay gradient-to-b
+  1. Hero               - min-h-[540px], /hero-studio.webp, overlay gradient-to-b
      Eyebrow blue, H1 font-sans, "AEJaCA <span text-blue-400>sTuDiO</span>"
-  2. About              — py-20, max-w-4xl
+  2. About              - py-20, max-w-4xl
   [gradient-divider]
-  3. Technologies       — id="technologies", grid kart technologii (Printer, Zap, Box, Cpu, Layers, Wrench)
+  3. Technologies       - id="technologies", grid kart technologii (Printer, Zap, Box, Cpu, Layers, Wrench)
   [gradient-divider]
-  4. Pricing            — id="pricing", orientacyjne ceny
+  4. Pricing            - id="pricing", orientacyjne ceny
   [gradient-divider]
-  5. Calculator         — id="calculator", <StudioCalculator />
+  5. Calculator         - id="calculator", <StudioCalculator />
   [gradient-divider]
-  6. FAQ                — id="faq", <FAQ />
+  6. FAQ                - id="faq", <FAQ />
   [gradient-divider]
-  7. Portfolio          — id="portfolio", <Portfolio />
+  7. Portfolio          - id="portfolio", <Portfolio />
   [gradient-divider]
-  8. Services           — id="services"
+  8. Services           - id="services"
   [gradient-divider]
-  9. Process            — id="process", kroki zero-padded (01..05)
+  9. Process            - id="process", kroki zero-padded (01..05)
   [gradient-divider]
-  10. Tips              — id="tips", <Tips />
+  10. Tips              - id="tips", <Tips />
   [gradient-divider]
-  11. Reviews           — id="testimonials", <GoogleReviews />
+  11. Reviews           - id="testimonials", <GoogleReviews />
   [gradient-divider]
-  12. Shop (Etsy)       — id="shop"
+  12. Shop (Etsy)       - id="shop"
   [gradient-divider]
   13. CTA końcowe
 [Footer]
@@ -463,10 +463,10 @@ Hook: `useScrollReveal()` (IntersectionObserver), `useStaggerReveal(delayMs)` dl
 | `/hero-jewelry.webp` | Hero na /jewelry/ | eager, fetchpriority=high |
 | `/hero-studio.webp` | Hero na /studio/ | eager, fetchpriority=high |
 | `/brand-sign.webp` | Logo wszędzie | lazy (poza navbarem) |
-| `/img/calc/home/print3d.webp` | Kafelek STL — druk 3D | lazy |
-| `/img/calc/home/co2engrave.webp` | Kafelek STL — CO2 engrave | lazy |
-| `/img/calc/home/fiber.webp` | Kafelek STL — fiber | lazy |
-| `/img/calc/home/co2cut.webp` | Kafelek STL — CO2 cut | lazy |
+| `/img/calc/home/print3d.webp` | Kafelek STL - druk 3D | lazy |
+| `/img/calc/home/co2engrave.webp` | Kafelek STL - CO2 engrave | lazy |
+| `/img/calc/home/fiber.webp` | Kafelek STL - fiber | lazy |
+| `/img/calc/home/co2cut.webp` | Kafelek STL - CO2 cut | lazy |
 | `/img/calc/<kategoria>/<id>.png` | Kafelki kalkulatorów | lazy |
 
 **Styl fotografii kafelków**: czarne tło, light top-left, premium product photography. AspectRatio `1:1` (kafelki) lub `21:9` (banery).
@@ -509,17 +509,17 @@ Hook: `useScrollReveal()` (IntersectionObserver), `useStaggerReveal(delayMs)` dl
 
 **Zasady:**
 - KAŻDY tekst widoczny dla użytkownika ma klucz w WSZYSTKICH trzech plikach
-- Nazwy własne filamentów (PLA, PETG, PA6-CF) — bez tłumaczenia
-- Nazwy marek (AEJaCA Biżuteria, AEJaCA sTuDiO) — bez tłumaczenia
-- Tytuły narzędzi technicznych — bez tłumaczenia
-- Brak em-daszów (` — `) w tekstach widocznych (usunięte v1.0) — zastąpione `, `
+- Nazwy własne filamentów (PLA, PETG, PA6-CF) - bez tłumaczenia
+- Nazwy marek (AEJaCA Biżuteria, AEJaCA sTuDiO) - bez tłumaczenia
+- Tytuły narzędzi technicznych - bez tłumaczenia
+- Brak em-daszów (` - `) w tekstach widocznych (usunięte v1.0) - zastąpione `, `
 
 **Wyjątki od zasady braku em-daszów:**
-- `src/blog/posts/` — artykuły long-form (poprawna typografia)
-- `src/data/googleReviews.js` — treść pisana przez użytkowników
+- `src/blog/posts/` - artykuły long-form (poprawna typografia)
+- `src/data/googleReviews.js` - treść pisana przez użytkowników
 
 **Provider**: `useLanguage()` hook z `src/i18n/LanguageContext.jsx`  
-**Helper**: `t(obj, lang)` z `calcShared.jsx` — multilingual label lookup
+**Helper**: `t(obj, lang)` z `calcShared.jsx` - multilingual label lookup
 
 **Waluta:**
 ```js
@@ -530,7 +530,7 @@ const showEur = lang === "en" || lang === "de";
 
 ---
 
-## 13. Calculatory — wspólne prymitywy (`calcShared.jsx`)
+## 13. Calculatory - wspólne prymitywy (`calcShared.jsx`)
 
 ```js
 // Konfiguracja bazowa
@@ -554,10 +554,10 @@ applyPricing(...)         // margin + discount + tolerance range
 ```
 
 **Komponenty UI współdzielone:**
-- `<Chips>` — wybór opcji (multi-style)
-- `<CalcCard>` — karta kalkulatora (amber lub blue)
-- `<ResultDisplay>` — wynik wyceny (cena + zakres)
-- `<InquiryForm>` — formularz zapytania ofertowego
+- `<Chips>` - wybór opcji (multi-style)
+- `<CalcCard>` - karta kalkulatora (amber lub blue)
+- `<ResultDisplay>` - wynik wyceny (cena + zakres)
+- `<InquiryForm>` - formularz zapytania ofertowego
 
 ---
 
@@ -599,10 +599,10 @@ Sekcje mobile: max-h-96 accordion
 | Skip link | `.skip-to-content` (pokazuje się na :focus, absolute top:-100%) |
 | Focus ring | `outline: 2px solid #f59e0b; outline-offset: 2px; border-radius: 4px` |
 | Aria labels | `aria-label` na wszystkich ikonach i nawigacji |
-| Reduced motion | `@media (prefers-reduced-motion)` — wyłącza animations, transitions |
+| Reduced motion | `@media (prefers-reduced-motion)` - wyłącza animations, transitions |
 | LCP images | `loading="eager" fetchpriority="high"` na hero images |
 | Code splitting | `three`, `react-vendor`, `helmet` (oddzielne chunki) |
-| Sitemapa | `/public/sitemap.xml` — 57 stron |
+| Sitemapa | `/public/sitemap.xml` - 57 stron |
 | Cloudflare | `.npmrc: optional=true` (fix dla lightningcss na CI) |
 
 ---
@@ -677,7 +677,7 @@ public/
 Build command: npm run build
 Build output: dist/
 Node version: 18+
-.npmrc: optional=true  ← WYMAGANE — bez tego lightningcss nie instaluje się na Cloudflare
+.npmrc: optional=true  ← WYMAGANE - bez tego lightningcss nie instaluje się na Cloudflare
 
 npm run build wykonuje:
   1. vite build           → dist/ (client bundle, 57+ stron)
@@ -686,8 +686,8 @@ npm run build wykonuje:
 ```
 
 **Pliki Cloudflare:**
-- `public/_headers` — Cache-Control, CSP, security headers
-- `public/_redirects` — trailing slash normalizacja, SPA fallback
+- `public/_headers` - Cache-Control, CSP, security headers
+- `public/_redirects` - trailing slash normalizacja, SPA fallback
 
 ---
 
@@ -723,12 +723,12 @@ npm run build
 ```
 
 **Kluczowe pliki do weryfikacji po przywróceniu:**
-- `src/index.css` — tokeny CSS, glassmorphism utility, .gradient-divider
-- `src/pages/Home.jsx` — gateway cards (overlay h-48 md:h-52, flex justify-between)
-- `src/i18n/{pl,en,de}.js` — brak em-daszów w wartościach widocznych dla użytkownika
-- `.npmrc` — `optional=true`
-- `src/components/Navbar.jsx` — h-16, scrolled state, dropdown logic
-- `src/components/Footer.jsx` — MarketRatesBar, socials, NewsletterForm
+- `src/index.css` - tokeny CSS, glassmorphism utility, .gradient-divider
+- `src/pages/Home.jsx` - gateway cards (overlay h-48 md:h-52, flex justify-between)
+- `src/i18n/{pl,en,de}.js` - brak em-daszów w wartościach widocznych dla użytkownika
+- `.npmrc` - `optional=true`
+- `src/components/Navbar.jsx` - h-16, scrolled state, dropdown logic
+- `src/components/Footer.jsx` - MarketRatesBar, socials, NewsletterForm
 
 ---
 
@@ -736,17 +736,17 @@ npm run build
 
 | # | Zmiana | Pliki |
 |---|--------|-------|
-| 1 | Kompaktowy hero — zastąpiono pełnoekranowe hero obrazem fade-to-page | `Home.jsx`, `Jewelry.jsx`, `Studio.jsx` |
+| 1 | Kompaktowy hero - zastąpiono pełnoekranowe hero obrazem fade-to-page | `Home.jsx`, `Jewelry.jsx`, `Studio.jsx` |
 | 2 | Gateway cards: vignette radial-gradient + premium glow buttons | `Home.jsx` |
 | 3 | Gateway cards: wyrównanie eyebrow + opis (flex justify-between trick) | `Home.jsx` |
 | 4 | Gateway cards: zmniejszony overlay (h-48/h-52), mniejsza przerwa desc→button | `Home.jsx` |
 | 5 | Zmniejszone odstępy sekcji (py-12 zamiast py-20, pb-3 zamiast pb-10) | `Home.jsx` |
-| 6 | Usunięcie em-daszów (` — ` → `, `) w całym serwisie | 19 plików i18n + stron |
+| 6 | Usunięcie em-daszów (` - ` → `, `) w całym serwisie | 19 plików i18n + stron |
 | 7 | CSS Design Tokens dodane do `:root` | `src/index.css` |
 | 8 | Glassmorphism utility classes | `src/index.css` |
 | 9 | Gradient divider `.gradient-divider` | `src/index.css` |
 | 10 | Fix Cloudflare Pages build (lightningcss optional) | `.npmrc` |
-| 11 | Brand name `AEJaCA sTuDiO` (intercap) — audit i poprawki | i18n, Navbar, Footer, Studio.jsx |
+| 11 | Brand name `AEJaCA sTuDiO` (intercap) - audit i poprawki | i18n, Navbar, Footer, Studio.jsx |
 | 12 | Process steps zero-padded (`01`..`06`) | `Jewelry.jsx`, `Studio.jsx` |
 | 13 | Eyebrow typography standaryzacja | `Home.jsx`, `Jewelry.jsx`, `Studio.jsx` |
 

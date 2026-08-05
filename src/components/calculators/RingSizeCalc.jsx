@@ -53,10 +53,10 @@ const LABELS = {
     systemPrompt: "Wybierz system, kliknij rozmiar:",
     tipsTitle: "Jak zmierzyć rozmiar palca?",
     tips: [
-      "Mierz po południu — palce są wtedy najgrubsze.",
-      "Sznurek: owiń wokół nasady palca, zaznacz złączenie, odetnij i zmierz linijką — wynik w mm = rozmiar EU.",
-      "Pasek papieru (1 cm szer.) zamiast sznurka — łatwiej zmierzyć prosto.",
-      "Pierścionek: zmierz suwmiarką wewnętrzną średnicę. Bez suwmiarki — połóż na kartce, obrysuj, zmierz.",
+      "Mierz po południu - palce są wtedy najgrubsze.",
+      "Sznurek: owiń wokół nasady palca, zaznacz złączenie, odetnij i zmierz linijką - wynik w mm = rozmiar EU.",
+      "Pasek papieru (1 cm szer.) zamiast sznurka - łatwiej zmierzyć prosto.",
+      "Pierścionek: zmierz suwmiarką wewnętrzną średnicę. Bez suwmiarki - połóż na kartce, obrysuj, zmierz.",
       "Kostka szersza od nasady? Zmierz obie i wybierz większy rozmiar.",
     ],
     disclaimer: "Rozmiary orientacyjne. Zawsze warto sprawdzić z fizycznym miernikiem jubilerskim.",
@@ -78,9 +78,9 @@ const LABELS = {
     systemPrompt: "Select system, tap your size:",
     tipsTitle: "How to measure your ring size",
     tips: [
-      "Measure in the afternoon — fingers are largest then.",
+      "Measure in the afternoon - fingers are largest then.",
       "String method: wrap snugly around the base of your finger, mark where it meets, cut and measure in mm = EU size.",
-      "Paper strip (1 cm wide) instead of string — easier to measure straight.",
+      "Paper strip (1 cm wide) instead of string - easier to measure straight.",
       "Existing ring: measure inner diameter with calipers. No calipers? Trace on paper, measure the circle.",
       "Knuckle wider than base? Measure both; choose the larger size.",
     ],
@@ -103,9 +103,9 @@ const LABELS = {
     systemPrompt: "System wählen, Größe antippen:",
     tipsTitle: "Wie misst man die Ringgröße?",
     tips: [
-      "Nachmittags messen — Finger sind dann am dicksten.",
+      "Nachmittags messen - Finger sind dann am dicksten.",
       "Fadenmethode: Faden eng um den Finger wickeln, Treffpunkt markieren, abschneiden und in mm messen = EU-Größe.",
-      "Papierstreifen (1 cm breit) statt Faden — einfacher gerade zu messen.",
+      "Papierstreifen (1 cm breit) statt Faden - einfacher gerade zu messen.",
       "Vorhandener Ring: Innendurchmesser mit Messschieber messen. Auf Papier legen und abzeichnen wenn kein Messschieber.",
       "Knöchel breiter? Beide Stellen messen und die größere Größe wählen.",
     ],
@@ -139,7 +139,7 @@ function findBySystem(system, value) {
   return SIZES.find(row => String(row[system]) === String(value)) || null;
 }
 
-// SVG ring visualisation — scales between min/max dia
+// SVG ring visualisation - scales between min/max dia
 function RingVisual({ dia }) {
   const minD = MIN_DIA, maxD = MAX_DIA;
   const t = (dia - minD) / (maxD - minD); // 0..1
@@ -292,7 +292,7 @@ function MeasureSlider({ mode, value, onChange, L }) {
           }}
           className="w-24 bg-neutral-800 border border-neutral-700 rounded-xl px-3 py-1.5 text-white text-sm font-mono focus:outline-none focus:border-amber-400/60 text-center"
         />
-        <span className="text-neutral-500 text-xs">{unit} — {hint}</span>
+        <span className="text-neutral-500 text-xs">{unit} - {hint}</span>
       </div>
     </div>
   );

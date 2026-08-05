@@ -58,10 +58,10 @@ export const MATERIALS = [
 ];
 
 export const LENSES = [
-  { id: "70mm",  label: { pl: "70mm — precyzyjne detale", en: "70mm — precision details", de: "70mm — Präzisionsdetails" },
+  { id: "70mm",  label: { pl: "70mm - precyzyjne detale", en: "70mm - precision details", de: "70mm - Präzisionsdetails" },
     desc: { pl: "Pole ~50×50mm (25 cm²), ultra fine", en: "Field ~50×50mm (25 cm²), ultra fine", de: "Feld ~50×50mm (25 cm²), ultra fein" },
     fieldMm: 50, maxAreaCm2: 25, speedMul: 1.0, img: "/img/calc/fiber_lens/lens_70.webp" },
-  { id: "150mm", label: { pl: "150mm — większe pole", en: "150mm — larger field", de: "150mm — größeres Feld" },
+  { id: "150mm", label: { pl: "150mm - większe pole", en: "150mm - larger field", de: "150mm - größeres Feld" },
     desc: { pl: "Pole ~110×110mm (~121 cm²), standard", en: "Field ~110×110mm (~121 cm²), standard", de: "Feld ~110×110mm (~121 cm²), Standard" },
     fieldMm: 110, maxAreaCm2: 121, speedMul: 0.85, img: "/img/calc/fiber_lens/lens_150.webp" },
 ];
@@ -77,17 +77,17 @@ export const MARK_TYPES = [
     desc: { pl: "Trwały ślad 0,5–1 mm", en: "Permanent mark 0.5–1 mm", de: "Dauerhaft 0,5–1 mm" },
     depthMul: 6.0, img: "/img/calc/fiber_marks/deep.webp" },
   { id: "color",    label: { pl: "Znakowanie kolorowe", en: "Color marking", de: "Farbmarkierung" },
-    desc: { pl: "Tytan / stal — tęczowe kolory", en: "Titanium / steel — rainbow colors", de: "Titan / Stahl — Regenbogenfarben" },
+    desc: { pl: "Tytan / stal - tęczowe kolory", en: "Titanium / steel - rainbow colors", de: "Titan / Stahl - Regenbogenfarben" },
     depthMul: 1.8, img: "/img/calc/fiber_marks/color.webp" },
   { id: "custom",   label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" },                               depthMul: null, custom: true },
 ];
 
 export const AREAS = [
-  { id: "XS", label: { pl: "XS — do 5 cm²", en: "XS — up to 5 cm²", de: "XS — bis 5 cm²" },          area: 3 },
-  { id: "S",  label: { pl: "S — 5–25 cm²", en: "S — 5–25 cm²", de: "S — 5–25 cm²" },                  area: 15 },
-  { id: "M",  label: { pl: "M — 25–60 cm²", en: "M — 25–60 cm²", de: "M — 25–60 cm²" },               area: 40 },
-  { id: "L",  label: { pl: "L — powyżej 60 cm²", en: "L — over 60 cm²", de: "L — über 60 cm²" },      area: 80 },
-  { id: "XL", label: { pl: "XL — wielokrotne pola", en: "XL — multiple fields", de: "XL — mehrere Felder" }, area: null, custom: true },
+  { id: "XS", label: { pl: "XS - do 5 cm²", en: "XS - up to 5 cm²", de: "XS - bis 5 cm²" },          area: 3 },
+  { id: "S",  label: { pl: "S - 5–25 cm²", en: "S - 5–25 cm²", de: "S - 5–25 cm²" },                  area: 15 },
+  { id: "M",  label: { pl: "M - 25–60 cm²", en: "M - 25–60 cm²", de: "M - 25–60 cm²" },               area: 40 },
+  { id: "L",  label: { pl: "L - powyżej 60 cm²", en: "L - over 60 cm²", de: "L - über 60 cm²" },      area: 80 },
+  { id: "XL", label: { pl: "XL - wielokrotne pola", en: "XL - multiple fields", de: "XL - mehrere Felder" }, area: null, custom: true },
 ];
 
 export function calculate({ matId, lensId, markId, areaId, quantityId, svgData }, lang) {

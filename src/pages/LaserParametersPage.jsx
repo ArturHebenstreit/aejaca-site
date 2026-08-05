@@ -11,58 +11,58 @@ const LABELS = {
   pl: {
     heroTag: "Narzędzia dla makerów",
     heroTitle: "Kreator parametrów laserowania",
-    heroDesc: "Dobierz parametry dla 7 typów laserów i 88 materiałów — bezpłatnie, bez rejestracji.",
+    heroDesc: "Dobierz parametry dla 7 typów laserów i 88 materiałów - bezpłatnie, bez rejestracji.",
     introTitle: "Parametry jako punkt startowy",
-    introText: "Dobierz parametry dla 7 typów laserów, 88 materiałów i ponad 1000 kombinacji. Wyniki są punktem startowym — zawsze wykonaj test przed produkcją.",
+    introText: "Dobierz parametry dla 7 typów laserów, 88 materiałów i ponad 1000 kombinacji. Wyniki są punktem startowym - zawsze wykonaj test przed produkcją.",
     breadHome: "Strona główna",
     breadStudio: "sTuDiO",
     breadTools: "Narzędzia sTuDiO",
     breadThis: "Kreator parametrów laserowania",
     footerCtaTitle: "Masz projekt do realizacji?",
-    footerCtaText: "Parametry to teoria — wykonanie to nasza specjalność.",
+    footerCtaText: "Parametry to teoria - wykonanie to nasza specjalność.",
     footerCtaBtn: "AEJaCA sTuDiO",
   },
   en: {
     heroTag: "Tools for Makers",
     heroTitle: "Laser Parameter Wizard",
-    heroDesc: "Find parameters for 7 laser types and 88 materials — free, no registration required.",
+    heroDesc: "Find parameters for 7 laser types and 88 materials - free, no registration required.",
     introTitle: "Parameters as a starting point",
-    introText: "Find parameters for 7 laser types, 88 materials and over 1000 combinations. Results are a starting point — always run a test before production.",
+    introText: "Find parameters for 7 laser types, 88 materials and over 1000 combinations. Results are a starting point - always run a test before production.",
     breadHome: "Home",
     breadStudio: "sTuDiO",
     breadTools: "sTuDiO Tools",
     breadThis: "Laser Parameter Wizard",
     footerCtaTitle: "Have a project to execute?",
-    footerCtaText: "Parameters are theory — execution is our specialty.",
+    footerCtaText: "Parameters are theory - execution is our specialty.",
     footerCtaBtn: "AEJaCA sTuDiO",
   },
   de: {
     heroTag: "Tools für Maker",
     heroTitle: "Laserparameter-Assistent",
-    heroDesc: "Parameter für 7 Lasertypen und 88 Materialien finden — kostenlos, ohne Registrierung.",
+    heroDesc: "Parameter für 7 Lasertypen und 88 Materialien finden - kostenlos, ohne Registrierung.",
     introTitle: "Parameter als Ausgangspunkt",
-    introText: "Parameter für 7 Lasertypen, 88 Materialien und über 1000 Kombinationen finden. Ergebnisse sind Ausgangspunkte — führen Sie immer einen Test vor der Produktion durch.",
+    introText: "Parameter für 7 Lasertypen, 88 Materialien und über 1000 Kombinationen finden. Ergebnisse sind Ausgangspunkte - führen Sie immer einen Test vor der Produktion durch.",
     breadHome: "Startseite",
     breadStudio: "sTuDiO",
     breadTools: "sTuDiO-Tools",
     breadThis: "Laserparameter-Assistent",
     footerCtaTitle: "Projekt zur Ausführung?",
-    footerCtaText: "Parameter sind Theorie — Ausführung ist unsere Spezialität.",
+    footerCtaText: "Parameter sind Theorie - Ausführung ist unsere Spezialität.",
     footerCtaBtn: "AEJaCA sTuDiO",
   },
 };
 
 const SEO_META = {
   pl: {
-    title: "Kreator parametrów laserowania — 88 materiałów, 7 laserów | AEJaCA",
+    title: "Kreator parametrów laserowania - 88 materiałów, 7 laserów | AEJaCA",
     description: "Dobierz parametry laserowania dla CO₂, fiber, diodowych i innych. Ponad 1000 kombinacji materiał–laser. Darmowy kreator bez rejestracji.",
   },
   en: {
-    title: "Laser Parameter Wizard — 88 Materials, 7 Laser Types | AEJaCA",
+    title: "Laser Parameter Wizard - 88 Materials, 7 Laser Types | AEJaCA",
     description: "Find laser parameters for CO₂, fiber, diode and more. Over 1000 material–laser combinations. Free tool, no sign-up.",
   },
   de: {
-    title: "Laserparameter-Assistent — 88 Materialien, 7 Lasertypen | AEJaCA",
+    title: "Laserparameter-Assistent - 88 Materialien, 7 Lasertypen | AEJaCA",
     description: "Laserparameter für CO₂, Faser, Diode und mehr finden. Über 1000 Material-Laser-Kombinationen. Kostenloses Tool ohne Anmeldung.",
   },
 };
@@ -105,7 +105,7 @@ export default function LaserParametersPage() {
         <section className="relative overflow-hidden min-h-[340px]">
           <img
             src="/hero-toolstudio.webp"
-            alt="Kreator parametrów laserowania — AEJaCA sTuDiO"
+            alt="Kreator parametrów laserowania - AEJaCA sTuDiO"
             className="absolute inset-0 w-full h-full object-cover"
             loading="eager"
             fetchpriority="high"

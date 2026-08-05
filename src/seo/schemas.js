@@ -1,11 +1,11 @@
 // ============================================================
-// JSON-LD SCHEMA BUILDERS — structured data for SEO & AIO
+// JSON-LD SCHEMA BUILDERS - structured data for SEO & AIO
 // ------------------------------------------------------------
 // Why this exists:
 // - Structured data is THE signal Google/Bing use to render rich
 //   results (stars, FAQs, breadcrumbs) in SERP.
 // - ChatGPT, Claude, Gemini heavily rely on JSON-LD to understand
-//   entities, offers, and pricing — critical for AI Search (AIO).
+//   entities, offers, and pricing - critical for AI Search (AIO).
 // - FAQPage schema is especially important: LLM crawlers ingest
 //   Q&A pairs directly as ground-truth answers.
 //
@@ -136,7 +136,7 @@ export function buildLocalBusinessSchema() {
 }
 
 // ---------- Per-page WebPage wrapper ----------
-// Ties together language, canonical URL, breadcrumbs — signals page-level intent to crawlers.
+// Ties together language, canonical URL, breadcrumbs - signals page-level intent to crawlers.
 export function buildWebPageSchema({ title, description, url, lang }) {
   return {
     "@context": "https://schema.org",
@@ -267,7 +267,7 @@ export function buildServiceSchema({ name, description, serviceType, url, offers
 // Critical for both Google (AI Overviews + rich snippets) and LLM ingestion.
 // ChatGPT, Claude, Perplexity heavily weight Article JSON-LD for fact retrieval.
 // Headline ≤ 110 chars (Google requirement). Include both datePublished and
-// dateModified — LLMs privilege recently updated content.
+// dateModified - LLMs privilege recently updated content.
 export function buildArticleSchema({
   headline,
   description,
@@ -316,7 +316,7 @@ export function buildArticleSchema({
 
 // ---------- Product schema (for individual jewelry pieces / studio products) ----------
 // Required for Merchant listings + Google Shopping. `aggregateRating` + `offers`
-// combo triggers rich "star review" snippet in SERP — big CTR boost.
+// combo triggers rich "star review" snippet in SERP - big CTR boost.
 export function buildProductSchema({ name, description, image, sku, price, currency = "EUR", inStock = true, rating, reviewCount, url }) {
   const schema = {
     "@context": "https://schema.org",
@@ -352,7 +352,7 @@ export function buildProductSchema({ name, description, image, sku, price, curre
 
 // ---------- HowTo (step-by-step process) ----------
 // Critical for AI assistants answering "how is X made?" / "what's the process for Y?"
-// queries — they cite HowTo schemas verbatim. Google renders HowTo steps directly
+// queries - they cite HowTo schemas verbatim. Google renders HowTo steps directly
 // in SERP (with images & estimated time) for DIY/service/recipe pages.
 // Use for: design → production workflows, service delivery steps, process gallery pages.
 export function buildHowToSchema({ name, description, steps, totalTime, estimatedCost, image }) {
@@ -422,9 +422,9 @@ export function buildItemListSchema({ name, url, items }) {
   };
 }
 
-// ---------- Google Reviews — aggregateRating + Review[] ----------
+// ---------- Google Reviews - aggregateRating + Review[] ----------
 // Critical: stars in SERP (+20-30% CTR uplift per Google case studies).
-// SEO-safe gray zone — requires 4 conditions:
+// SEO-safe gray zone - requires 4 conditions:
 //   1) All claimed reviews must be VISIBLE on the page (parity)
 //   2) Explicit attribution via `publisher: Google` per review
 //   3) Real author names + dates + verbatim text (no fakes)
@@ -435,10 +435,10 @@ export function buildReviewsAugmentedOrganization({ rating, reviewCount, reviews
   const base = buildOrganizationSchema();
   if (!reviews || !reviews.length) return base;
 
-  // Only reviews with actual body text go into JSON-LD Review[] —
+  // Only reviews with actual body text go into JSON-LD Review[] - 
   // Google's structured data guidelines require `reviewBody` to be
   // meaningful content. Rating-only reviews (5★ bez komentarza) nadal
-  // liczą się w aggregateRating (reviewCount) — to rzeczywista liczba
+  // liczą się w aggregateRating (reviewCount) - to rzeczywista liczba
   // opinii na Google Business Profile.
   const textReviews = reviews.filter((r) => r.text && r.text.trim());
 

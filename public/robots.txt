@@ -1,4 +1,4 @@
-# AEJaCA — https://www.aejaca.com/
+# AEJaCA - https://www.aejaca.com/
 # Full crawl allowed, no staging paths.
 #
 # Query strings are intentionally NOT disallowed. The only parameters the site
@@ -19,7 +19,7 @@ Allow: /
 # jakikolwiek robot ja odwiedzal.
 Disallow: /admin/
 
-# Allow known AI / LLM crawlers explicitly (AEO / LLMEO — AI Search Optimization).
+# Allow known AI / LLM crawlers explicitly (AEO / LLMEO - AI Search Optimization).
 # Grouped User-agent lines share the rule block below them (valid robots.txt syntax).
 
 # OpenAI / ChatGPT

@@ -3,7 +3,7 @@
 // Regeneracja: npm run sync:pricing
 
 // ============================================================
-// PARSER MODELI — STL, OBJ, 3MF, STEP
+// PARSER MODELI - STL, OBJ, 3MF, STEP
 // ============================================================
 // Jeden wejsciowy punkt dla wszystkich formatow. Przegladarka uzywa go,
 // zeby pokazac model, a backend zamowien, zeby policzyc wiazaca cene.
