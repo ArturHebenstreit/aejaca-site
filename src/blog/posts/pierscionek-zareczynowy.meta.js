@@ -5,7 +5,7 @@ export const meta = {
   category: "jewelry",
   accent: "amber",
   publishedAt: "2026-04-17",
-  updatedAt: "2026-04-17",
+  updatedAt: "2026-08-05",
   coverImage: "/img/blog/pierscionek-zareczynowy.webp",
   readingTime: { pl: 7, en: 5, de: 5 },
   title: {

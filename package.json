@@ -4,7 +4,7 @@
   "description": "AEJaCA - Artisan Elegance Jewelry and Crafted Art",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/sync-pricing.mjs --check && node scripts/check-undefined-calls.mjs && node scripts/check-light-theme.mjs && node scripts/check-browser-storage.mjs && node scripts/check-reveal.mjs && node scripts/check-emdash.mjs && node admin/check-styles.mjs && node scripts/check-shop-images.mjs && node scripts/test-payment-groups.mjs && node scripts/test-customer-fields.mjs && node scripts/test-price-history.mjs && node scripts/test-backup-n8n.mjs && node scripts/test-mesh-formats.mjs && node scripts/derive-service-prices.mjs --check && node scripts/sync-sitemap-shop.mjs --check && node scripts/copy-occt-wasm.mjs && vite build && vite build --ssr src/entry-server.jsx --outDir dist/server && node scripts/prerender.mjs",
+    "build": "node scripts/sync-pricing.mjs --check && node scripts/check-undefined-calls.mjs && node scripts/check-light-theme.mjs && node scripts/check-browser-storage.mjs && node scripts/check-reveal.mjs && node scripts/check-emdash.mjs && npm run --silent lint:undef && node admin/check-styles.mjs && node scripts/check-shop-images.mjs && node scripts/test-payment-groups.mjs && node scripts/test-customer-fields.mjs && node scripts/test-price-history.mjs && node scripts/test-backup-n8n.mjs && node scripts/test-mesh-formats.mjs && node scripts/derive-service-prices.mjs --check && node scripts/sync-sitemap-shop.mjs --check && node scripts/copy-occt-wasm.mjs && vite build && vite build --ssr src/entry-server.jsx --outDir dist/server && node scripts/prerender.mjs",
     "build:client": "vite build",
     "preview": "vite preview",
     "db:seed-laser-matrix": "node scripts/import-laser-matrix.mjs",
@@ -25,7 +25,8 @@
     "check:storage": "node scripts/check-browser-storage.mjs",
     "link-graph": "node scripts/link-graph.mjs",
     "audit:serve": "node scripts/audit-server.mjs",
-    "backup:n8n": "node scripts/backup-n8n.mjs"
+    "backup:n8n": "node scripts/backup-n8n.mjs",
+    "lint:undef": "eslint --config eslint.undef.config.js --no-warn-ignored src scripts chat-api workers admin"
   },
   "dependencies": {
     "fflate": "^0.8.3",
@@ -39,9 +40,15 @@
     "three": "^0.184.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@tailwindcss/postcss": "^4.1.11",
     "@vitejs/plugin-react": "^4.2.0",
     "autoprefixer": "^10.4.21",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
+    "globals": "^17.9.0",
     "playwright": "^1.62.1",
     "postcss": "^8.5.6",
     "sharp": "^0.34.5",

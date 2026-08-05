@@ -317,7 +317,7 @@ export default {
           name: "Rozmiar pierścionka",
           img: "/img/calc/tips_jewelry/ring_sizing.webp",
           tips: [
-            { q: "Jak zmierzyć rozmiar pierścionka w domu?", a: "Owiń cienki pasek papieru lub nitkę wokół palca w najszerszym miejscu (zwykle na kostce). Zaznacz punkt nakładania, zmierz długość w mm i podziel przez 3,14, otrzymasz średnicę wewnętrzną. Porównaj z tabelą rozmiarów. Mierz wieczorem, gdy palce są nieco większe." },
+            { q: "Jak zmierzyć rozmiar pierścionka w domu?", a: "Owiń cienki pasek papieru lub nitkę wokół palca w najszerszym miejscu (zwykle na kostce). Zaznacz punkt nakładania, zmierz długość w mm i podziel przez 3,14, otrzymasz średnicę wewnętrzną. Porównaj z tabelą rozmiarów. Mierz wieczorem, gdy palce są nieco większe.", link: { to: "/toolsjewelry/ring-sizer/", label: "Wydrukuj gotową miarkę" } },
             { q: "Co jeśli mój rozmiar jest między dwoma numerami?", a: "Zawsze zaokrąglaj w górę, łatwiej jest zmniejszyć pierścionek (np. kulkami dystansowymi) niż go rozciągnąć. Przy szerokich obrączkach (6mm+) wybierz pół rozmiaru więcej, bo siedzą ciaśniej." },
             { q: "Czy temperatura wpływa na dopasowanie pierścionka?", a: "Tak! Palce puchną w upale i kurczą się na zimnie. Mierz w temperaturze pokojowej, najlepiej wieczorem. Jeśli mieszkasz w klimacie z dużymi wahaniami, wybierz nieco luźniejsze dopasowanie." },
             { q: "Czy pierścionki można zmieniać rozmiar po zakupie?", a: "Pierścionki ze srebra i złota zwykle da się zmienić o 1–2 rozmiary w górę lub w dół. Pierścionki z kamieniami dookoła (obrączki eternity) lub bardzo cienkie są trudniejsze do zmiany rozmiaru. Zawsze zapytaj jubilera przed zakupem." },

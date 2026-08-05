@@ -66,6 +66,14 @@ function BodyPL() {
         W AEJaCA dobieramy kamienie indywidualnie - widzisz zdjęcia konkretnego egzemplarza, nie stockowe fotki.
       </P>
 
+      <H2 id="rozmiar">Jak poznać rozmiar, gdy pierścionek ma być niespodzianką</H2>
+      <P>
+        Przy zaręczynach to jest realny problem, bo zapytać wprost nie można. Trzy sposoby, które działają: pożycz na jeden wieczór pierścionek, który ona nosi na tym samym palcu, i połóż go na <A href="/toolsjewelry/ring-sizer/">tabeli kółek z naszej miarki do wydruku</A>. Zapytaj kogoś z rodziny albo przyjaciółkę, bo bardzo często ktoś ten rozmiar zna. Albo zamów rozmiar pośredni, czyli 54 lub 56, i zaplanuj korektę po oświadczynach.
+      </P>
+      <P>
+        Ostatni wariant jest mniej ryzykowny, niż się wydaje. Zmiana rozmiaru o jeden lub dwa numery to u nas standardowa robota, pod warunkiem że pierścionek nie ma kamieni osadzonych wokół całego obwodu ani grawera w środku. Dlatego <Strong>grawer wykonujemy po oświadczynach</Strong>, kiedy rozmiar jest już pewny. Jeżeli rozmiar znasz, ale w innym systemie, przelicz go w <A href="/toolsjewelry/ring-size/">konwerterze EU, US, UK i JP</A>.
+      </P>
+
       <H2 id="czas">Ile trwa realizacja?</H2>
       <UL>
         <LI><Strong>Prosty pierścionek srebrny</Strong> - 1–2 tygodnie</LI>
@@ -136,6 +144,14 @@ function BodyEN() {
         <LI><Strong>Sapphire / emerald / ruby</Strong> - color adds character. Blue and pink sapphires are an engagement hit. Emeralds (7.5 Mohs) need a protective setting.</LI>
       </UL>
 
+      <H2 id="sizing">Finding the size when the ring is a surprise</H2>
+      <P>
+        With a proposal this is a real problem, because you cannot simply ask. Three approaches that work: borrow a ring she wears on the same finger for one evening and lay it on the <A href="/toolsjewelry/ring-sizer/">circle chart from our printable sizer</A>. Ask a relative or a close friend, since someone usually knows. Or order a middle size, 54 or 56, and plan the adjustment after the proposal.
+      </P>
+      <P>
+        That last option is less risky than it sounds. Resizing by one or two sizes is routine work for us, as long as the ring has no stones set all around and no inside engraving. That is why we <Strong>engrave after the proposal</Strong>, once the size is certain. If you know the size but in another system, convert it in the <A href="/toolsjewelry/ring-size/">EU, US, UK and JP converter</A>.
+      </P>
+
       <H2 id="timeline">Timeline</H2>
       <UL>
         <LI><Strong>Simple silver ring</Strong> - 1–2 weeks</LI>
@@ -199,6 +215,14 @@ function BodyDE() {
         <LI><Strong><A href="/glossary/moissanit">Moissanit</A></Strong> - 9,25 Mohs, mehr Feuer als Diamant, 3–5× günstiger. Mit bloßem Auge nicht unterscheidbar.</LI>
         <LI><Strong>Saphir / Smaragd / Rubin</Strong> - Farbe verleiht Charakter. Smaragde (7,5 Mohs) brauchen eine schützende Fassung.</LI>
       </UL>
+
+      <H2 id="groesse">Die Größe herausfinden, wenn der Ring eine Überraschung ist</H2>
+      <P>
+        Bei einem Antrag ist das ein echtes Problem, denn fragen kann man nicht. Drei Wege, die funktionieren: leihen Sie sich für einen Abend einen Ring, den sie am selben Finger trägt, und legen Sie ihn auf die <A href="/toolsjewelry/ring-sizer/">Kreistabelle unseres Ringmaßbands zum Ausdrucken</A>. Fragen Sie jemanden aus der Familie oder eine enge Freundin, meistens weiß es jemand. Oder bestellen Sie eine mittlere Größe, 54 oder 56, und planen Sie die Anpassung nach dem Antrag ein.
+      </P>
+      <P>
+        Die letzte Variante ist weniger riskant, als sie klingt. Eine Änderung um ein bis zwei Größen ist für uns Routine, solange der Ring keine rundum gefassten Steine und keine Innengravur hat. Deshalb <Strong>gravieren wir nach dem Antrag</Strong>, wenn die Größe feststeht. Kennen Sie die Größe, aber in einem anderen System, rechnen Sie sie im <A href="/toolsjewelry/ring-size/">EU-, US-, UK- und JP-Konverter</A> um.
+      </P>
 
       <H2 id="zeitrahmen">Zeitrahmen</H2>
       <UL>

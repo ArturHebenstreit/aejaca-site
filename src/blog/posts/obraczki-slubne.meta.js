@@ -5,6 +5,7 @@ export const meta = {
   category: "jewelry",
   accent: "amber",
   publishedAt: "2026-04-20",
+  updatedAt: "2026-08-05",
   coverImage: "/img/blog/obraczki-slubne.webp",
   readingTime: { pl: 6, en: 5, de: 5 },
   title: {

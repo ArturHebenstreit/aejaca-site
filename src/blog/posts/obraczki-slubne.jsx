@@ -82,6 +82,18 @@ export function Body({ lang }) {
         ]}
       />
 
+      <H2 id={t("rozmiar", "sizing", "groesse")}>{t("Rozmiar obrączek", "Ring Sizing", "Ringgröße")}</H2>
+      <P>{t(
+        <>Obrączka jest jedyną biżuterią noszoną bez przerwy, więc rozmiar musi być trafiony za pierwszym razem. Zmiana rozmiaru po wykonaniu bywa możliwa, ale przy grawerze w środku albo kamieniach osadzonych wokół całego obwodu oznacza ingerencję w zdobienie. <A href="/toolsjewelry/ring-sizer/">Wydrukuj naszą miarkę</A>, wytnij pasek i zmierz palec, a jeśli rozmiar już znasz, sprawdź go w <A href="/toolsjewelry/ring-size/">konwerterze EU, US, UK i JP</A>.</>,
+        <>A wedding band is the one piece worn without a break, so the size has to be right the first time. Resizing afterwards is often possible, but with an inside engraving or stones set all around it means touching the decoration. <A href="/toolsjewelry/ring-sizer/">Print our sizer</A>, cut the strip and measure your finger; if you already know the size, check it in the <A href="/toolsjewelry/ring-size/">EU, US, UK and JP converter</A>.</>,
+        <>Ein Ehering ist das einzige Schmuckstück, das ununterbrochen getragen wird, die Größe muss also beim ersten Mal stimmen. Eine spätere Weitenänderung ist oft möglich, greift bei einer Innengravur oder rundum gefassten Steinen aber in den Schmuck ein. <A href="/toolsjewelry/ring-sizer/">Drucken Sie unser Ringmaßband</A>, schneiden Sie den Streifen aus und messen Sie den Finger; kennen Sie die Größe bereits, prüfen Sie sie im <A href="/toolsjewelry/ring-size/">EU-, US-, UK- und JP-Konverter</A>.</>
+      )}</P>
+      <P>{t(
+        "Dwie rzeczy, na których najczęściej się przewracamy: mierzenie rano, kiedy palce są węższe nawet o pół rozmiaru, oraz szerokość obrączki. Obrączka powyżej 6 mm siedzi ciaśniej niż wąska w tym samym numerze, więc weź pół rozmiaru więcej.",
+        "Two things trip people up most often: measuring in the morning, when fingers are up to half a size slimmer, and the width of the band. A band over 6 mm sits tighter than a narrow one in the same number, so go half a size up.",
+        "Zwei Dinge gehen am häufigsten schief: morgens zu messen, wenn die Finger bis zu einer halben Größe schlanker sind, und die Ringbreite. Ein Ring über 6 mm sitzt enger als ein schmaler derselben Größe, nehmen Sie also eine halbe Größe mehr."
+      )}</P>
+
       <H2 id={t("proces", "process", "prozess")}>{t("Proces zamówienia", "Order Process", "Bestellprozess")}</H2>
       <P>{t(
         "Zamawianie obrączek w AEJaCA to 5 kroków:",

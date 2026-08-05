@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import { ChevronDown, Lightbulb } from "lucide-react";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
@@ -104,7 +105,19 @@ export default function Tips({ data, accent = "amber", id }) {
                     isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
                   }`}
                 >
-                  <p className="px-5 pb-5 pl-12 text-neutral-400 text-sm leading-relaxed">{tip.a}</p>
+                  <p className="px-5 pb-5 pl-12 text-neutral-400 text-sm leading-relaxed">
+                    {tip.a}
+                    {/* Porada, ktora konczy sie instrukcja "porownaj z tabela",
+                        powinna prowadzic do tej tabeli, a nie zostawiac z niczym. */}
+                    {tip.link && (
+                      <>
+                        {" "}
+                        <Link to={tip.link.to} className={`${chevronColor} underline underline-offset-2 hover:opacity-80`}>
+                          {tip.link.label}
+                        </Link>
+                      </>
+                    )}
+                  </p>
                 </div>
               </div>
             );

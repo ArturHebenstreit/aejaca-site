@@ -13,6 +13,7 @@ const LABELS = {
     glossary: "Słownik pojęć",
     category: "Kategoria",
     relatedArticle: "Powiązany artykuł",
+    relatedTool: "Narzędzie",
     relatedTerms: "Powiązane pojęcia",
     backToGlossary: "← Wróć do glosariusza",
     notFound: "Nie znaleziono pojęcia",
@@ -22,6 +23,7 @@ const LABELS = {
     glossary: "Glossary",
     category: "Category",
     relatedArticle: "Related article",
+    relatedTool: "Tool",
     relatedTerms: "Related terms",
     backToGlossary: "← Back to glossary",
     notFound: "Term not found",
@@ -31,6 +33,7 @@ const LABELS = {
     glossary: "Glossar",
     category: "Kategorie",
     relatedArticle: "Verwandter Artikel",
+    relatedTool: "Werkzeug",
     relatedTerms: "Verwandte Begriffe",
     backToGlossary: "← Zurück zum Glossar",
     notFound: "Begriff nicht gefunden",
@@ -133,6 +136,23 @@ export default function GlossaryTerm() {
                   konkretnego pojecia z naszego rzemiosla. Dwadziescia dziewiec
                   hasel prowadzilo dotad wylacznie do innych hasel. */}
               <ContentCTA service={term.service} category={term.category} className="mb-10" />
+
+              {/* Narzedzie zwiazane z pojeciem. Haslo tlumaczy, CZYM jest
+                  rozmiar pierscionka, i konczylo sie na definicji. Ktos, kto
+                  tego szuka, zwykle chce go po prostu zmierzyc. */}
+              {term.relatedTool && (
+                <div className="mb-10 p-5 rounded-xl bg-neutral-900/60 border border-neutral-800">
+                  <div className="text-neutral-400 text-xs uppercase tracking-widest mb-2">{l.relatedTool}</div>
+                  <Link to={term.relatedTool.to} className={`${catColorClass} hover:underline font-medium`}>
+                    {term.relatedTool.label[lang] || term.relatedTool.label.en}
+                  </Link>
+                  {term.relatedTool.desc && (
+                    <p className="text-neutral-400 text-sm mt-1.5 leading-relaxed">
+                      {term.relatedTool.desc[lang] || term.relatedTool.desc.en}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {term.relatedBlog && (
                 <div className="mb-10 p-5 rounded-xl bg-neutral-900/60 border border-neutral-800">

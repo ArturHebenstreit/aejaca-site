@@ -311,7 +311,7 @@ export default {
           name: "Ringgröße",
           img: "/img/calc/tips_jewelry/ring_sizing.webp",
           tips: [
-            { q: "Wie messe ich meine Ringgröße zu Hause?", a: "Wickeln Sie einen dünnen Papierstreifen oder Faden um den Finger an der breitesten Stelle (meist am Knöchel). Markieren Sie die Überlappung, messen Sie die Länge in mm und teilen Sie durch 3,14 für den Innendurchmesser. Vergleichen Sie mit einer Größentabelle. Messen Sie abends, wenn die Finger etwas dicker sind." },
+            { q: "Wie messe ich meine Ringgröße zu Hause?", a: "Wickeln Sie einen dünnen Papierstreifen oder Faden um den Finger an der breitesten Stelle (meist am Knöchel). Markieren Sie die Überlappung, messen Sie die Länge in mm und teilen Sie durch 3,14 für den Innendurchmesser. Vergleichen Sie mit einer Größentabelle. Messen Sie abends, wenn die Finger etwas dicker sind.", link: { to: "/toolsjewelry/ring-sizer/", label: "Fertiges Ringmaß drucken" } },
             { q: "Was tun, wenn meine Größe zwischen zwei Nummern liegt?", a: "Immer aufrunden, einen Ring etwas kleiner zu machen (z.B. mit Kügelchen) ist einfacher als ihn zu dehnen. Bei breiten Ringen (6mm+) eine halbe Größe größer wählen, da sie enger sitzen." },
             { q: "Beeinflusst die Temperatur die Passform?", a: "Ja! Finger schwellen bei Hitze an und schrumpfen bei Kälte. Messen Sie bei Raumtemperatur, idealerweise abends. Bei großen jahreszeitlichen Schwankungen eine etwas lockere Passform wählen." },
             { q: "Können Ringe nach dem Kauf geändert werden?", a: "Silber- und Goldringe können meist 1–2 Größen verändert werden. Ringe mit Steinen rundherum (Eternity-Ringe) oder sehr dünne Ringe sind schwieriger zu ändern. Fragen Sie immer vorher Ihren Juwelier." },

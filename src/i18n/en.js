@@ -318,7 +318,7 @@ export default {
           name: "Ring Sizing",
           img: "/img/calc/tips_jewelry/ring_sizing.webp",
           tips: [
-            { q: "How to measure your ring size at home?", a: "Wrap a thin strip of paper or string around your finger at the widest point (usually the knuckle). Mark where it overlaps, measure the length in mm, and divide by 3.14 to get the inner diameter. Compare with a ring size chart. Measure in the evening when fingers are slightly larger." },
+            { q: "How to measure your ring size at home?", a: "Wrap a thin strip of paper or string around your finger at the widest point (usually the knuckle). Mark where it overlaps, measure the length in mm, and divide by 3.14 to get the inner diameter. Compare with a ring size chart. Measure in the evening when fingers are slightly larger.", link: { to: "/toolsjewelry/ring-sizer/", label: "Print a ready-made sizer" } },
             { q: "What if my ring size is between two sizes?", a: "Always round up to the larger size, it's easier to make a ring slightly smaller with sizing beads than to stretch it. For wide bands (6mm+), go a half-size up as they fit more snugly." },
             { q: "Does temperature affect ring fit?", a: "Yes! Fingers swell in heat and shrink in cold. Measure at room temperature, ideally in the evening. If you live in a climate with big seasonal swings, consider a slightly looser fit for comfort year-round." },
             { q: "Can rings be resized after purchase?", a: "Silver and gold rings can usually be resized 1–2 sizes up or down. Rings with stones all around (eternity bands) or very thin bands are harder to resize. Always ask your jeweler before buying." },

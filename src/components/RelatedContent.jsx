@@ -24,11 +24,12 @@ import { ArrowRight, BookOpen } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { getPostsByCategoryMeta } from "../blog/postsMeta.js";
 import { getTermsByCategory } from "../data/glossary.js";
+import { getToolsByCategory } from "../data/toolLinks.js";
 
 const UI = {
-  pl: { tag: "Zanim zamówisz", posts: "Poradniki", terms: "Pojęcia z tej dziedziny", all: "Cały blog" },
-  en: { tag: "Before you order", posts: "Guides", terms: "Terms from this field", all: "All articles" },
-  de: { tag: "Vor der Bestellung", posts: "Ratgeber", terms: "Begriffe aus diesem Bereich", all: "Alle Artikel" },
+  pl: { tag: "Zanim zamówisz", posts: "Poradniki", terms: "Pojęcia z tej dziedziny", all: "Cały blog", tools: "Sprawdź przed zamówieniem" },
+  en: { tag: "Before you order", posts: "Guides", terms: "Terms from this field", all: "All articles", tools: "Check before you order" },
+  de: { tag: "Vor der Bestellung", posts: "Ratgeber", terms: "Begriffe aus diesem Bereich", all: "Alle Artikel", tools: "Vor der Bestellung prüfen" },
 };
 
 export default function RelatedContent({ category = "studio", limit = 3, terms = 4, className = "" }) {
@@ -36,7 +37,8 @@ export default function RelatedContent({ category = "studio", limit = 3, terms =
   const u = UI[lang] || UI.en;
   const posts = getPostsByCategoryMeta(category).slice(0, limit);
   const slownik = getTermsByCategory(category).slice(0, terms);
-  if (!posts.length && !slownik.length) return null;
+  const tools = getToolsByCategory(category);
+  if (!posts.length && !slownik.length && !tools.length) return null;
 
   const tint = category === "studio" ? "text-blue-400" : "text-amber-400";
 
@@ -47,6 +49,33 @@ export default function RelatedContent({ category = "studio", limit = 3, terms =
           <BookOpen className={`w-4 h-4 ${tint}`} />
           <h2 id="powiazane-heading" className={`text-xs uppercase tracking-[0.2em] ${tint}`}>{u.tag}</h2>
         </div>
+
+        {/* Narzedzia ida pierwsze: odpowiadaja na watpliwosc, ktora blokuje
+            zamowienie tu i teraz (jaki mam rozmiar), a nie na ciekawosc. */}
+        {tools.length > 0 && (
+          <>
+            <h3 className="text-white font-medium text-sm mb-3">{u.tools}</h3>
+            <div className="grid sm:grid-cols-2 gap-4 mb-8">
+              {tools.map((tool) => (
+                <Link
+                  key={tool.id}
+                  to={tool.to}
+                  className="group rounded-xl border border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04] p-4 transition-all duration-300"
+                >
+                  <h4 className="text-white text-sm font-medium leading-snug mb-1.5">
+                    {tool.label[lang] || tool.label.en}
+                  </h4>
+                  <p className="text-neutral-500 text-xs leading-relaxed">
+                    {tool.desc[lang] || tool.desc.en}
+                  </p>
+                  <span className={`inline-flex items-center gap-1 ${tint} text-xs mt-2`}>
+                    <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </>
+        )}
 
         {posts.length > 0 && (
           <>
