@@ -267,7 +267,11 @@ export default function Navbar() {
                             </Link>
                           ) : (
                             <button
-                              key={sec.id}
+                              // Sam `sec.id` nie wystarcza: w menu Galeria dwie
+                              // pozycje maja id "portfolio" i roznia sie wylacznie
+                              // strona docelowa. React z dwoma takimi samymi kluczami
+                              // moze pominac jedna pozycje albo zdublowac druga.
+                              key={`${sec.pagePath || to}#${sec.id}`}
                               onClick={() => scrollToSection(sec.pagePath || to, sec.id)}
                               className={`w-full text-left px-4 py-2 text-sm transition-colors ${
                                 accentColor === "blue"
@@ -448,7 +452,11 @@ export default function Navbar() {
                             </Link>
                           ) : (
                             <button
-                              key={sec.id}
+                              // Sam `sec.id` nie wystarcza: w menu Galeria dwie
+                              // pozycje maja id "portfolio" i roznia sie wylacznie
+                              // strona docelowa. React z dwoma takimi samymi kluczami
+                              // moze pominac jedna pozycje albo zdublowac druga.
+                              key={`${sec.pagePath || to}#${sec.id}`}
                               onClick={() => scrollToSection(sec.pagePath || to, sec.id)}
                               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                                 accentColor === "blue"

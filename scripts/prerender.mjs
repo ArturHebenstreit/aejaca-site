@@ -176,5 +176,29 @@ try {
   console.error(`  ✗ 404.html: ${err.message}`);
 }
 
+// ------------------------------------------------------------
+// Granica Suspense musi byc po obu stronach
+// ------------------------------------------------------------
+// Klient owija `<Routes>` w `<Suspense>`, bo trasy sa ladowane leniwie.
+// Renderowanie na serwerze znaczy granice komentarzami <!--$--> i <!--/$-->.
+// Gdy `entry-server.jsx` tej granicy nie ma, hydratacja szuka znacznika,
+// nie znajduje go, przewraca sie i React RYSUJE CALA STRONE OD NOWA,
+// wyrzucajac gotowy HTML. Strona dziala, wiec nic nie wyglada na zepsute,
+// a caly prerender przestaje sluzyc odwiedzajacym.
+//
+// Przez dlugi czas objawialo sie to wylacznie bledami #418 i #423 w konsoli.
+const clientShell = fs.readFileSync(path.resolve(__dirname, "../src/main.jsx"), "utf8");
+if (/<Suspense/.test(clientShell)) {
+  const home = fs.readFileSync(path.resolve(distPath, "index.html"), "utf8");
+  if (!home.includes("<!--$-->")) {
+    console.error(
+      "\n  ✗ Klient ma <Suspense>, a wyrenderowany HTML nie ma znacznikow granicy.\n" +
+      "    Dodaj te sama granice w src/entry-server.jsx, inaczej hydratacja\n" +
+      "    odrzuci prerender i przerysuje strone od zera."
+    );
+    failed++;
+  }
+}
+
 console.log(`\nPrerendered: ${success} pages, ${failed} errors`);
 if (failed > 0) process.exit(1);

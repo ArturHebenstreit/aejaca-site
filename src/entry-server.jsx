@@ -1,5 +1,7 @@
+import { StrictMode, Suspense } from "react";
 import { renderToString } from "react-dom/server";
 import { StaticRouter } from "react-router";
+import ScrollToHash from "./components/ScrollToHash.jsx";
 import { Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { LanguageProvider } from "./i18n/LanguageContext.jsx";
@@ -50,11 +52,25 @@ export function render(url) {
   const helmetContext = {};
 
   const html = renderToString(
+    // StrictMode jest w drzewie klienta, wiec musi byc i tutaj. Na serwerze nic
+    // nie robi, ale liczy sie jako wezel przy nadawaniu identyfikatorow `useId`.
+    <StrictMode>
     <HelmetProvider context={helmetContext}>
       <ThemeProvider>
         <LanguageProvider>
           <CartProvider>
           <StaticRouter location={url}>
+          {/* Nic nie rysuje, ale zajmuje miejsce w drzewie, a `useId` liczy
+              identyfikatory z polozenia wezla. Bez niego serwer i klient
+              nadawaly polom formularzy rozne id i etykiety przestawaly je wskazywac. */}
+          <ScrollToHash />
+          {/* Ta sama granica Suspense co po stronie klienta, i to jest jej cala rola.
+              Renderowanie na serwerze znaczy granice komentarzami <!--$--> i <!--/$-->.
+              Gdy klient ma Suspense, a serwerowy HTML nie ma znacznikow, hydratacja
+              nie znajduje czego szukala, przewraca sie i React RYSUJE CALA STRONE
+              OD NOWA, wyrzucajac gotowy HTML. Tutaj nic sie nie zawiesza, bo strony
+              sa importowane statycznie: chodzi wylacznie o to, zeby drzewa byly zgodne. */}
+          <Suspense>
           <Routes>
             <Route element={<Layout />}>
               <Route path="/" element={<Home />} />
@@ -100,11 +116,13 @@ export function render(url) {
                 <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
+          </Suspense>
           </StaticRouter>
           </CartProvider>
         </LanguageProvider>
       </ThemeProvider>
     </HelmetProvider>
+    </StrictMode>
   );
 
   const { helmet } = helmetContext;

@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-05 | Wersja: 3.7*
+*Wygenerowano: 2026-08-05 | Wersja: 3.8*
 
 ---
 
@@ -669,6 +669,40 @@ do przeglądarki o dobę wcześniej niż do rachunku.
 o kursy pobiera komplet pięciu pól. Ma też warunek wstępny sprawdzający, czy kamień
 w ogóle wchodzi do wyceny, bo bez `stoneSizeId` kalkulator go pomija i test przeszedłby
 na zielono, niczego nie sprawdzając.
+
+### Hydratacja: prerender był wyrzucany do kosza (częściowo naprawione 2026-08-05)
+
+Błędy React **#418** i **#423** w konsoli na każdej stronie były objawem, nie usterką
+kosmetyczną. Znaczą one: *hydratacja się nie powiodła, cała zawartość zostaje narysowana
+od nowa po stronie klienta*. Gotowy HTML z prerenderu leciał do kosza u każdego
+odwiedzającego. Roboty wyszukiwarek nadal widziały treść, więc SEO nie cierpiało i nic
+nie wyglądało na zepsute.
+
+**Znaleziona i naprawiona przyczyna: brak granicy `Suspense` po stronie serwera.**
+`src/main.jsx` owija `<Routes>` w `<Suspense>` (trasy ładowane leniwie), a
+`src/entry-server.jsx` nie miał tej granicy w ogóle. Renderowanie na serwerze znaczy
+granice komentarzami `<!--$-->` i `<!--/$-->`; klient ich szukał, nie znajdował
+i przewracał się. Przy okazji wyrównane zostały dwa inne węzły drzewa, `StrictMode`
+i `ScrollToHash`, bo `useId` liczy identyfikatory z położenia w drzewie i pola
+formularzy dostawały różne id na serwerze i u klienta.
+
+Efekt sprawdzony na zbudowanym serwisie: **strona główna jest czysta**, wcześniej nie była.
+
+**Nie naprawione:** pozostałe 15 z 16 sprawdzonych stron nadal zgłasza niezgodność.
+Diagnoza doprowadziła do konkretnego miejsca: `Navbar`, wskaźnik aktywnej pozycji menu
+(`<span>` wewnątrz `<Link>`). Porównanie drzewa DOM po hydratacji pokazuje **identyczną
+strukturę** po obu stronach (869 węzłów do 869 na `/contact/`), a wyjście SSR jest takie
+samo z ukośnikiem na końcu adresu i bez niego. Niezgodność jest więc **przejściowa**:
+pojawia się w pierwszym renderze klienta i znika po nim. Ustalenie, co ją powoduje,
+wymaga instrumentacji pierwszego renderu i jest osobnym zadaniem.
+
+**Strażnik:** `scripts/prerender.mjs` kończy build błędem, gdy `main.jsx` ma `<Suspense>`,
+a wyrenderowany HTML nie ma znaczników granicy. Sprawdzone kontrolą pozytywną.
+
+Uwaga do diagnozowania: `scripts/prerender.mjs` czyta szablon z `dist/index.html`,
+który sam potem nadpisuje. **Uruchomiony bez wcześniejszego `vite build` pracuje na
+własnym poprzednim wyniku** i pokazuje nieaktualny HTML. Pierwsza kontrola pozytywna
+tego strażnika wypadła fałszywie zielono właśnie z tego powodu.
 
 ---
 
