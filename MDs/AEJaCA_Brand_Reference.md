@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-05 | Wersja: 3.6*
+*Wygenerowano: 2026-08-05 | Wersja: 3.8*
 
 ---
 
@@ -639,8 +639,70 @@ od dawna i **nic go nie wywoływało**. Podłączanie go ujawniło dwie rzeczy:
 w ogóle dociera do kalkulatora, bo bez tego cała reszta przechodzi na zielono) oraz
 `scripts/it-quotes-db.mjs` poza buildem, do uruchomienia na bazie przy zmianach w `quotes.js`.
 
-**Do zrobienia osobno:** ten sam wzorzec dotyczy **cen kamieni**. Przeglądarka nakłada na nie
-żywe ceny w EUR (`useGemPrices`), serwer bierze statyczne `basePLN` z konfiguracji.
+#### Trzeci błąd tej samej klasy: ceny kamieni (naprawiony 2026-08-05)
+
+`calcNew` ma sygnaturę `(params, lang, rates, gemstones)`. `priceItem` **nie przekazywał
+czwartego argumentu w ogóle**, więc kamień wyceniał się po cenie wpisanej w kod
+(`GEMSTONES` w `jewelryConfig.js`), a nie po tej z tabeli `gemstone_prices`, którą
+przeglądarka nakłada przez `useGemPrices`.
+
+Skala, ten sam pierścionek z jednym brylantem 0,5 ct:
+
+| Źródło ceny kamienia | Kwota wiążąca |
+|---|---|
+| statyczna z kodu (12 800 PLN/ct) | 15 199,43 PLN |
+| z bazy, gdyby wynosiła 25 000 PLN/ct | 29 229,43 PLN |
+
+Czternaście tysięcy złotych różnicy na jednej pozycji, bez żadnego błędu w logu.
+
+Przy okazji wyszło, że `currentMetalRates` pobierała cztery kruszce i **pomijała
+`pln_per_eur`**. Ceny kamieni leżą w bazie w euro, więc nawet po przekazaniu ich do
+kalkulatora nie byłoby czym ich przeliczyć. Kurs dołączony do tego samego zapytania.
+
+Ceny kamieni trafiają teraz do **wszystkich trzech** miejsc, w których serwer liczy kwotę
+wiążącą: `/api/price`, zapis wyceny i zamiana koszyka w zamówienie. Pamięć podręczna cen
+bazowych czyści się razem z tą dla `/api/gemstone-prices`, więc zmiana ceny nie dociera
+do przeglądarki o dobę wcześniej niż do rachunku.
+
+**Strażnik:** `scripts/test-live-pricing.mjs` w buildzie. Pilnuje całej klasy błędu:
+że kurs kruszcu zmienia kwotę, że cena kamienia z bazy zmienia kwotę, i że zapytanie
+o kursy pobiera komplet pięciu pól. Ma też warunek wstępny sprawdzający, czy kamień
+w ogóle wchodzi do wyceny, bo bez `stoneSizeId` kalkulator go pomija i test przeszedłby
+na zielono, niczego nie sprawdzając.
+
+### Hydratacja: prerender był wyrzucany do kosza (częściowo naprawione 2026-08-05)
+
+Błędy React **#418** i **#423** w konsoli na każdej stronie były objawem, nie usterką
+kosmetyczną. Znaczą one: *hydratacja się nie powiodła, cała zawartość zostaje narysowana
+od nowa po stronie klienta*. Gotowy HTML z prerenderu leciał do kosza u każdego
+odwiedzającego. Roboty wyszukiwarek nadal widziały treść, więc SEO nie cierpiało i nic
+nie wyglądało na zepsute.
+
+**Znaleziona i naprawiona przyczyna: brak granicy `Suspense` po stronie serwera.**
+`src/main.jsx` owija `<Routes>` w `<Suspense>` (trasy ładowane leniwie), a
+`src/entry-server.jsx` nie miał tej granicy w ogóle. Renderowanie na serwerze znaczy
+granice komentarzami `<!--$-->` i `<!--/$-->`; klient ich szukał, nie znajdował
+i przewracał się. Przy okazji wyrównane zostały dwa inne węzły drzewa, `StrictMode`
+i `ScrollToHash`, bo `useId` liczy identyfikatory z położenia w drzewie i pola
+formularzy dostawały różne id na serwerze i u klienta.
+
+Efekt sprawdzony na zbudowanym serwisie: **strona główna jest czysta**, wcześniej nie była.
+
+**Nie naprawione:** pozostałe 15 z 16 sprawdzonych stron nadal zgłasza niezgodność.
+Diagnoza doprowadziła do konkretnego miejsca: `Navbar`, wskaźnik aktywnej pozycji menu
+(`<span>` wewnątrz `<Link>`). Porównanie drzewa DOM po hydratacji pokazuje **identyczną
+strukturę** po obu stronach (869 węzłów do 869 na `/contact/`), a wyjście SSR jest takie
+samo z ukośnikiem na końcu adresu i bez niego. Niezgodność jest więc **przejściowa**:
+pojawia się w pierwszym renderze klienta i znika po nim. Ustalenie, co ją powoduje,
+wymaga instrumentacji pierwszego renderu i jest osobnym zadaniem.
+
+**Strażnik:** `scripts/prerender.mjs` kończy build błędem, gdy `main.jsx` ma `<Suspense>`,
+a wyrenderowany HTML nie ma znaczników granicy. Sprawdzone kontrolą pozytywną.
+
+Uwaga do diagnozowania: `scripts/prerender.mjs` czyta szablon z `dist/index.html`,
+który sam potem nadpisuje. **Uruchomiony bez wcześniejszego `vite build` pracuje na
+własnym poprzednim wyniku** i pokazuje nieaktualny HTML. Pierwsza kontrola pozytywna
+tego strażnika wypadła fałszywie zielono właśnie z tego powodu.
 
 ---
 

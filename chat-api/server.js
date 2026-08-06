@@ -10,6 +10,7 @@ import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages 
 import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken } from "./orders.js";
 import { createQuote, priceQuote, getQuoteByRef, convertQuoteToOrder, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
 import { extraRevisionGrosze, CAD_CONFIG } from "./pricing/cadDesign.js";
+import { GEMSTONES } from "./pricing/jewelryConfig.js";
 import {
   autopayConfigured, buildStartTransaction, formatValidityTime,
   verifyReturn, parseITN, buildITNConfirmation, fetchGatewayList,
@@ -855,6 +856,10 @@ async function currentMetalRates() {
         UNION ALL SELECT 'ag_pln_per_g', ag_pln_per_g::float, fetched_at FROM market_rates WHERE ag_pln_per_g IS NOT NULL
         UNION ALL SELECT 'pt_pln_per_g', pt_pln_per_g::float, fetched_at FROM market_rates WHERE pt_pln_per_g IS NOT NULL
         UNION ALL SELECT 'pd_pln_per_g', pd_pln_per_g::float, fetched_at FROM market_rates WHERE pd_pln_per_g IS NOT NULL
+        -- Kurs euro nalezy do tego samego zestawu, co kruszce. Bez niego
+        -- kalkulator siega po wartosc zapasowa i widelki w euro rozjezdzaja
+        -- sie z tymi, ktore klient widzial w przegladarce.
+        UNION ALL SELECT 'pln_per_eur', pln_per_eur::float, fetched_at FROM market_rates WHERE pln_per_eur IS NOT NULL
       ) sub ORDER BY field, fetched_at DESC
     `);
     const rates = {};
@@ -864,6 +869,46 @@ async function currentMetalRates() {
     console.error("[price] rates query failed:", e.message);
     return null;
   }
+}
+
+// --- Ceny kamieni dla wyceny po stronie serwera ---
+// Kalkulator w przegladarce naklada na statyczna liste `GEMSTONES` ceny
+// z tabeli `gemstone_prices`, przeliczone biezacym kursem euro. Serwer tego
+// nie robil, wiec kwota wiazaca liczyla sie z cen wpisanych w kod. Przy
+// kamieniu roznica idzie w setki zlotych i nie widac jej nigdzie poza rachunkiem.
+//
+// Ceny bazowe zmieniaja sie rzadko, kurs euro co godzine, wiec w pamieci
+// trzymamy same euro, a kurs nakladamy przy kazdym wywolaniu.
+let _gemBaseCache = { ts: 0, eur: null };
+
+async function currentGemstones(plnPerEur) {
+  if (!pool) return null;
+  const rate = Number(plnPerEur) > 0 ? Number(plnPerEur) : null;
+  if (!rate) return null;
+
+  const now = Date.now();
+  if (!_gemBaseCache.eur || now - _gemBaseCache.ts > 24 * 60 * 60 * 1000) {
+    try {
+      const { rows } = await pool.query("SELECT gem_id, base_eur FROM gemstone_prices WHERE base_eur IS NOT NULL");
+      const eur = {};
+      for (const r of rows) eur[r.gem_id] = parseFloat(r.base_eur);
+      _gemBaseCache = { ts: now, eur };
+    } catch (e) {
+      console.error("[price] gemstone query failed:", e.message);
+      return null;
+    }
+  }
+
+  const eur = _gemBaseCache.eur;
+  if (!eur || !Object.keys(eur).length) return null;
+
+  // Ten sam warunek co w przegladarce: kamien bez ceny w bazie zostaje
+  // przy swojej cenie z konfiguracji, zamiast zniknac z wyceny.
+  return GEMSTONES.map((g) => {
+    if (g.id === "none" || g.custom || g.basePLN === null) return g;
+    const base = eur[g.id];
+    return base == null ? g : { ...g, basePLN: Math.round(base * rate) };
+  });
 }
 
 app.get("/api/price/calculators", (_req, res) => {
@@ -908,7 +953,8 @@ app.post("/api/price", (req, res, next) => {
     }
 
     const rates = calculator.startsWith("jewelry_") ? await currentMetalRates() : null;
-    const item = priceItem({ calculator, params, lang, geometry, scale, rates });
+    const gemstones = rates ? await currentGemstones(rates.pln_per_eur) : null;
+    const item = priceItem({ calculator, params, lang, geometry, scale, rates, gemstones });
 
     // Informacyjnie: ile jeszcze zmiesci sie w limicie kwartalnym.
     const limit = pool ? await checkQuarterlyLimit(pool, item.lineGrosze) : null;
@@ -1076,6 +1122,7 @@ app.post("/api/quotes/save", express.json({ limit: "1mb" }), async (req, res) =>
 
   try {
     const rates = await currentMetalRates();
+    const gemstones = rates ? await currentGemstones(rates.pln_per_eur) : null;
     const priced = [];
 
     for (const raw of items.slice(0, 10)) {
@@ -1103,7 +1150,7 @@ app.post("/api/quotes/save", express.json({ limit: "1mb" }), async (req, res) =>
       }
 
       const scale = Number(raw?.scale) > 0 ? Number(raw.scale) : 1;
-      const item = priceItem({ calculator, params, lang, geometry, scale, rates });
+      const item = priceItem({ calculator, params, lang, geometry, scale, rates, gemstones });
       priced.push({
         calculator, params, scale, uploadId, fileName,
         title: item.title, qty: item.qty, unitGrosze: item.unitGrosze,
@@ -1687,6 +1734,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
 
     const safeLang = ["pl", "en", "de"].includes(lang) ? lang : "pl";
     const rates = items.some((i) => String(i.calculator || "").startsWith("jewelry_")) ? await currentMetalRates() : null;
+    const gemstones = rates ? await currentGemstones(rates.pln_per_eur) : null;
 
     // Pozycje produktowe wyceniamy z bazy, nie z przegladarki: cena i stan
     // moga sie zmienic miedzy dodaniem do koszyka a zaplata.
@@ -1756,6 +1804,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
         geometry: itemGeometry,
         scale: raw.scale || 1,
         rates,
+        gemstones,
       });
       // Opakowanie i personalizacja licza sie tutaj, nie w przegladarce.
       // Bez tego klient widzialby cene z doplata, a placil bez niej.
@@ -3118,6 +3167,10 @@ app.get("/api/gemstone-prices", async (req, res) => {
 app.post("/api/gemstone-prices/invalidate", express.json(), (req, res) => {
   if (!requireInvalidateToken(req, res)) return;
   _gemCache = { ts: 0, data: null };
+  // Wycena po stronie serwera ma wlasna pamiec podreczna cen bazowych.
+  // Bez wyczyszczenia jej razem z tamta zmiana ceny kamienia dotarlaby
+  // do przegladarki od razu, a do kwoty wiazacej dopiero po dobie.
+  _gemBaseCache = { ts: 0, eur: null };
   res.json({ ok: true });
 });
 
