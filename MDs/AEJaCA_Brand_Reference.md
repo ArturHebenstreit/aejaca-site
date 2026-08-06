@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-05 | Wersja: 3.6*
+*Wygenerowano: 2026-08-05 | Wersja: 3.7*
 
 ---
 
@@ -639,8 +639,36 @@ od dawna i **nic go nie wywoływało**. Podłączanie go ujawniło dwie rzeczy:
 w ogóle dociera do kalkulatora, bo bez tego cała reszta przechodzi na zielono) oraz
 `scripts/it-quotes-db.mjs` poza buildem, do uruchomienia na bazie przy zmianach w `quotes.js`.
 
-**Do zrobienia osobno:** ten sam wzorzec dotyczy **cen kamieni**. Przeglądarka nakłada na nie
-żywe ceny w EUR (`useGemPrices`), serwer bierze statyczne `basePLN` z konfiguracji.
+#### Trzeci błąd tej samej klasy: ceny kamieni (naprawiony 2026-08-05)
+
+`calcNew` ma sygnaturę `(params, lang, rates, gemstones)`. `priceItem` **nie przekazywał
+czwartego argumentu w ogóle**, więc kamień wyceniał się po cenie wpisanej w kod
+(`GEMSTONES` w `jewelryConfig.js`), a nie po tej z tabeli `gemstone_prices`, którą
+przeglądarka nakłada przez `useGemPrices`.
+
+Skala, ten sam pierścionek z jednym brylantem 0,5 ct:
+
+| Źródło ceny kamienia | Kwota wiążąca |
+|---|---|
+| statyczna z kodu (12 800 PLN/ct) | 15 199,43 PLN |
+| z bazy, gdyby wynosiła 25 000 PLN/ct | 29 229,43 PLN |
+
+Czternaście tysięcy złotych różnicy na jednej pozycji, bez żadnego błędu w logu.
+
+Przy okazji wyszło, że `currentMetalRates` pobierała cztery kruszce i **pomijała
+`pln_per_eur`**. Ceny kamieni leżą w bazie w euro, więc nawet po przekazaniu ich do
+kalkulatora nie byłoby czym ich przeliczyć. Kurs dołączony do tego samego zapytania.
+
+Ceny kamieni trafiają teraz do **wszystkich trzech** miejsc, w których serwer liczy kwotę
+wiążącą: `/api/price`, zapis wyceny i zamiana koszyka w zamówienie. Pamięć podręczna cen
+bazowych czyści się razem z tą dla `/api/gemstone-prices`, więc zmiana ceny nie dociera
+do przeglądarki o dobę wcześniej niż do rachunku.
+
+**Strażnik:** `scripts/test-live-pricing.mjs` w buildzie. Pilnuje całej klasy błędu:
+że kurs kruszcu zmienia kwotę, że cena kamienia z bazy zmienia kwotę, i że zapytanie
+o kursy pobiera komplet pięciu pól. Ma też warunek wstępny sprawdzający, czy kamień
+w ogóle wchodzi do wyceny, bo bez `stoneSizeId` kalkulator go pomija i test przeszedłby
+na zielono, niczego nie sprawdzając.
 
 ---
 

@@ -132,8 +132,9 @@ function scaleGeometry(geometry, scale) {
  * @param {object} [input.geometry] wynik geometryFromFile, gdy pozycja ma plik
  * @param {number} [input.scale]    skala wydruku
  * @param {object} [input.rates]    kursy kruszcow dla bizuterii
+ * @param {Array}  [input.gemstones] kamienie z cenami z bazy, przeliczone na PLN
  */
-export function priceItem({ calculator, params, lang = "pl", geometry = null, scale = 1, rates = null }) {
+export function priceItem({ calculator, params, lang = "pl", geometry = null, scale = 1, rates = null, gemstones = null }) {
   const entry = CALCULATORS[calculator];
   if (!entry) throw new PricingError("unknown_calculator", `Nieznany kalkulator: ${calculator}`);
   if (!params || typeof params !== "object") throw new PricingError("bad_params", "Brak parametrów");
@@ -155,9 +156,15 @@ export function priceItem({ calculator, params, lang = "pl", geometry = null, sc
   // Rozjazd nie rzucal bledu i nie bylo go widac w niczym poza kwota.
   const callRates = rates && calculator.startsWith("jewelry_") ? rates : undefined;
 
+  // Ceny kamieni ida CZWARTYM ARGUMENTEM, tym samym mechanizmem i z tego
+  // samego powodu. `calcNew` bez nich siega po `GEMSTONES` z konfiguracji,
+  // czyli po ceny wpisane w kod, podczas gdy przegladarka pokazuje ceny
+  // z bazy przeliczone biezacym kursem euro.
+  const callGems = gemstones && calculator.startsWith("jewelry_") ? gemstones : undefined;
+
   let result;
   try {
-    result = entry.fn(callParams, safeLang, callRates);
+    result = entry.fn(callParams, safeLang, callRates, callGems);
   } catch (e) {
     throw new PricingError("calc_failed", `Wycena nie powiodła się: ${e.message}`);
   }
