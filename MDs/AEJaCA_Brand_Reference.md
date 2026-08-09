@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-05 | Wersja: 3.8*
+*Wygenerowano: 2026-08-06 | Wersja: 3.9*
 
 ---
 
@@ -655,6 +655,16 @@ Skala, ten sam pierścionek z jednym brylantem 0,5 ct:
 
 Czternaście tysięcy złotych różnicy na jednej pozycji, bez żadnego błędu w logu.
 
+**Ile to znaczy przy DZISIEJSZYCH danych:** 25 000 PLN/ct powyżej to wartość testowa,
+dobrana tak, żeby różnica była widoczna. Ceny zasiane w bazie przeliczone kursem 4,25
+różnią się od tych z kodu o pojedyncze złote (brylant 12 750 wobec 12 800, rubin 6 375
+wobec 6 400), czyli **poniżej jednego procenta**. Realny skutek naprawy jest więc dziś
+niewielki i sprowadza się do dwóch rzeczy: ceny kamieni **zaczynają zależeć od kursu euro**
+(bo w bazie leżą w euro), i **zmiana ceny w bazie wreszcie działa**. Wcześniej edycja
+tabeli `gemstone_prices` zmieniała tylko to, co widział klient w kalkulatorze, a nie kwotę,
+którą płacił. To jest właściwy powód, dla którego trzeba było to naprawić: mechanizm był
+martwy, nie kwota była zła.
+
 Przy okazji wyszło, że `currentMetalRates` pobierała cztery kruszce i **pomijała
 `pln_per_eur`**. Ceny kamieni leżą w bazie w euro, więc nawet po przekazaniu ich do
 kalkulatora nie byłoby czym ich przeliczyć. Kurs dołączony do tego samego zapytania.
@@ -698,6 +708,12 @@ wymaga instrumentacji pierwszego renderu i jest osobnym zadaniem.
 
 **Strażnik:** `scripts/prerender.mjs` kończy build błędem, gdy `main.jsx` ma `<Suspense>`,
 a wyrenderowany HTML nie ma znaczników granicy. Sprawdzone kontrolą pozytywną.
+
+**Narzędzie do dalszej pracy:** `scripts/check-hydration.mjs`, poza buildem, bo wymaga
+zbudowanego `dist/`, serwera statycznego i przeglądarki. Robi przegląd 16 stron
+(`node scripts/check-hydration.mjs`) i porównuje drzewa (`--diff /contact/`). W nagłówku
+ma instrukcję zbudowania Reacta w wersji rozwojowej, bez której w konsoli widać tylko
+„Minified React error #418" zamiast nazwy komponentu.
 
 Uwaga do diagnozowania: `scripts/prerender.mjs` czyta szablon z `dist/index.html`,
 który sam potem nadpisuje. **Uruchomiony bez wcześniejszego `vite build` pracuje na
