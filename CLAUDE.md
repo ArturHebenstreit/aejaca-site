@@ -163,3 +163,15 @@ After a deploy that changes page content, adds/removes pages, or updates `sitema
 - Descriptive English commit messages (1-2 lines why, not what)
 - Footer: `https://claude.ai/code/session_...`
 - Push via `git push -u origin <branch>`; branch must start with `claude/` for push to succeed
+
+### Kto scala do `main` - HARD RULE (user preference)
+
+**Claude pracuje wyłącznie na gałęziach `claude/*` i pushuje tam.** Scalanie do `main`
+oraz kontrolę nad tym, co trafia na produkcję, prowadzi użytkownik. Claude scala do `main`
+albo tworzy pull request **tylko na wyraźną prośbę**, nigdy z własnej inicjatywy.
+
+Po zakończeniu zadania Claude mówi, co jest gotowe do scalenia, i na tym kończy.
+
+Uwaga na pułapkę, w którą już raz wpadłem: merge potrafi pojawić się kilkanaście sekund
+po pushu i wygląda to jak automat. To użytkownik scala ręcznie. Pole `merged_by` w PR
+rozstrzyga, więc czytaj je, zamiast wnioskować z czasu.
