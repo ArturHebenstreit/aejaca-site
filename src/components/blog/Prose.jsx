@@ -155,3 +155,53 @@ export function CTABox({ accent = "amber", title, text, href, cta }) {
     </aside>
   );
 }
+
+// ------------------------------------------------------------
+// Zrodla pod wpisem
+// ------------------------------------------------------------
+// Cytowanie zrodel jest najsilniejsza pojedyncza dzwignia widocznosci
+// w wyszukiwarkach opartych na modelach jezykowych (badanie GEO, KDD 2024:
+// +40% cytowan, a przy witrynach o niskiej pozycji wyjsciowej nawet +115%).
+// Dziala tez w druga strone, na czytelnika: twierdzenie o twardosci stopu
+// albo o przepisie unijnym jest warte tyle, ile jego zrodlo.
+//
+// Blok jest jeden i wspolny, zeby zrodla wygladaly tak samo we wszystkich
+// wpisach i zeby dalo sie je pozniej wystawic maszynowo w danych
+// strukturalnych, zamiast wylawiac odnosniki z tresci.
+//
+//   <Sources lang={lang} items={[
+//     { title: "PN-EN ISO 9202, proby stopow metali szlachetnych", href: "https://..." },
+//     { title: "REACH, zalacznik XVII, pozycja 27 (nikiel)", href: "https://...", note: "limit uwalniania niklu" },
+//   ]} />
+
+const SOURCES_LABEL = {
+  pl: "Źródła",
+  en: "Sources",
+  de: "Quellen",
+};
+
+export function Sources({ lang = "pl", items = [] }) {
+  if (!items.length) return null;
+  const label = SOURCES_LABEL[lang] || SOURCES_LABEL.en;
+
+  return (
+    <section className="my-10 rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+      <h2 className="text-[11px] uppercase tracking-[0.2em] text-neutral-500 mb-4">{label}</h2>
+      <ol className="space-y-2.5 list-decimal list-inside marker:text-neutral-600">
+        {items.map((s) => (
+          <li key={s.href} className="text-sm text-neutral-400 leading-relaxed">
+            <a
+              href={s.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-neutral-200 hover:text-amber-400 underline decoration-white/20 underline-offset-4 transition-colors"
+            >
+              {s.title}
+            </a>
+            {s.note ? <span className="text-neutral-500">, {s.note}</span> : null}
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}

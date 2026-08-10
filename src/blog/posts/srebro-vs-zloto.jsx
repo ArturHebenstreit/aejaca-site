@@ -1,4 +1,4 @@
-import { H2, P, Lead, UL, LI, Strong, A, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
+import { H2, P, Lead, UL, LI, Strong, A, Callout, Table, CTABox, Sources } from "../../components/blog/Prose.jsx";
 
 export { meta } from "./srebro-vs-zloto.meta.js";
 
@@ -108,6 +108,51 @@ export function Body({ lang }) {
         )}
         href="/jewelry#calculator"
         cta={t("Kalkulator biżuterii", "Jewelry calculator", "Schmuckkalkulator")}
+      />
+
+      <Sources
+        lang={lang}
+        items={[
+          {
+            title: t(
+              "Ustawa z dnia 1 kwietnia 2011 r. Prawo probiercze",
+              "Polish Hallmarking Act of 1 April 2011",
+              "Polnisches Punzierungsgesetz vom 1. April 2011"
+            ),
+            href: "https://orka.sejm.gov.pl/proc6.nsf/ustawy/3359_u.htm",
+            note: t(
+              "obowiązujące próby: złoto 333, 375, 500, 585, 750, 960, 999; srebro 800, 830, 875, 925, 999",
+              "legal finenesses: gold 333, 375, 500, 585, 750, 960, 999; silver 800, 830, 875, 925, 999",
+              "gesetzliche Feingehalte: Gold 333, 375, 500, 585, 750, 960, 999; Silber 800, 830, 875, 925, 999"
+            ),
+          },
+          {
+            title: t(
+              "ECHA, załącznik XVII do rozporządzenia REACH, pozycja 27 (nikiel)",
+              "ECHA, REACH Annex XVII, entry 27 (nickel)",
+              "ECHA, REACH Anhang XVII, Eintrag 27 (Nickel)"
+            ),
+            href: "https://www.echa.europa.eu/documents/10162/3bbe9024-52a6-8e63-5581-e686331eb459",
+            note: t(
+              "limit uwalniania niklu przy długim kontakcie ze skórą: 0,5 µg/cm² na tydzień, a dla biżuterii do przekłuwania 0,2 µg/cm²",
+              "nickel release limit for prolonged skin contact: 0.5 µg/cm² per week, and 0.2 µg/cm² for piercing jewellery",
+              "Nickelfreisetzungsgrenze bei längerem Hautkontakt: 0,5 µg/cm² pro Woche, bei Piercingschmuck 0,2 µg/cm²"
+            ),
+          },
+          {
+            title: t(
+              "Twardość Vickersa w wyrobach jubilerskich",
+              "Vickers hardness in jewellery manufacturing",
+              "Vickershärte in der Schmuckherstellung"
+            ),
+            href: "https://galvinjewellery.com/hardness-vickers-scale-in-jewelry-manufacturing/",
+            note: t(
+              "złoto 14k osiąga 150 do 200 HV, złoto 18k 125 do 180 HV, co potwierdza większą odporność 14k na zarysowania",
+              "14k gold reaches 150 to 200 HV against 125 to 180 HV for 18k, which confirms 14k is the more scratch-resistant of the two",
+              "14-karätiges Gold erreicht 150 bis 200 HV gegenüber 125 bis 180 HV bei 18 Karat, was die höhere Kratzfestigkeit von 14k bestätigt"
+            ),
+          },
+        ]}
       />
     </>
   );
