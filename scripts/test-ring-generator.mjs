@@ -16,7 +16,7 @@
 //
 // Wchodzi do builda.
 
-import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, taperFor, buildShank } from "../src/geometry/ring/build.js";
+import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, taperFor, buildShank, buildGallery } from "../src/geometry/ring/build.js";
 import { CUTS, SETTINGS, validate } from "../src/geometry/ring/params.js";
 import { CASTING_ALLOYS, METAL_COLORS, colorsFor, densityFor } from "../src/data/castingAlloys.js";
 import { GEMSTONES } from "../src/pricing/jewelryConfig.js";
@@ -452,6 +452,44 @@ console.log("\n12. Kamienie boczne trzymają się zwężonej szyny");
       else bad(`${taper} ${setting}: bryla rozsypana, genus ${g}`);
     }
   }
+}
+
+// ------------------------------------------------------------
+// 13. Galeria wtapia sie w szyne
+// ------------------------------------------------------------
+// Luk galerii ma zanurzyc sie w szynie, a nie usiasc na niej. Kula
+// postawiona na powierzchni styka sie z nia w punkcie, wiec suma rozpada sie
+// na kawalki albo, co gorsza, laczy sie ledwie skorupka i odlew peka w tym
+// samym miejscu, w ktorym pekalby bez galerii.
+console.log("\n13. Galeria wtapia się w szynę");
+{
+  const w = await kernel();
+  const p = { innerDia: 17.2, width: 2.0, thickness: 1.5, profile: "round", taper: "tapered", kind: "ring" };
+  const g = buildGallery(w, p, 1.6);
+  const m = g.getMesh(), v = m.vertProperties;
+
+  let min = Infinity, max = -Infinity;
+  for (let i = 0; i < m.numVert; i++) {
+    const d = Math.hypot(v[i * 3], v[i * 3 + 1]);
+    if (d < min) min = d;
+    if (d > max) max = d;
+  }
+  const szyna = p.innerDia / 2 + p.thickness * taperFor(p)(0).t;
+
+  if (g.genus() === 0) ok("łuk jest jedną bryłą");
+  else bad(`luk ma genus ${g.genus()}, czyli rozpadl sie na paciorki`);
+
+  if (min < szyna - 0.3) ok(`łuk zanurza się w szynie do ${min.toFixed(2)} mm, przy powierzchni ${szyna.toFixed(2)} mm`);
+  else bad(`luk siedzi na powierzchni: siega ${min.toFixed(2)} mm przy szynie ${szyna.toFixed(2)} mm`);
+
+  if (max > szyna) ok(`łuk wznosi się ponad szynę do ${max.toFixed(2)} mm`);
+  else bad(`luk nie wznosi sie ponad szyne: ${max.toFixed(2)} mm`);
+
+  // Kaseta ma wlasny trzon siegajacy szyny, wiec galeria bylaby tam naroslem.
+  const zKaseta = await buildRing({ innerDia: 17.2, setting: "bezel" }, { segments: 48 });
+  const zLapkami = await buildRing({ innerDia: 17.2, setting: "prong4" }, { segments: 48 });
+  if (zKaseta.metal.genus() >= 0 && zLapkami.metal.genus() >= 0) ok("kaseta i łapki dają spójne bryły");
+  else bad("kaseta albo lapki daja bryle rozsypana");
 }
 
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");

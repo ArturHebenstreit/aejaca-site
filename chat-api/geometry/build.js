@@ -633,6 +633,59 @@ function buildSignetHead(w, p) {
 // ------------------------------------------------------------
 
 
+
+/**
+ * Galeria, czyli luk laczacy kosz z ramionami.
+ *
+ * Kosz stoi na szynie i dotyka jej tylko w linii srodkowej, bo szyna jest
+ * okragla, a kosz plaski od spodu. Na zdjeciach katalogowych w tym miejscu
+ * jest lagodny luk schodzacy z glowicy na ramiona i to on odpowiada za
+ * sylwetke, ktora czyta sie jako "katedralna".
+ *
+ * To nie jest wylacznie wyglad. Styk punktowy jest najslabszym miejscem
+ * odlewu: glowica odlamuje sie wlasnie tam, przy pierwszym mocniejszym
+ * uderzeniu, bo caly moment przechodzi przez kilka dziesiatych milimetra
+ * metalu.
+ *
+ * Znowu ciag zachodzacych kul, z tego samego powodu co przy lapce: jadro nie
+ * zamiata po krzywej, a kule daja gladki przekroj i same sie zaokraglaja.
+ * Luk idzie po OBWODZIE pierscionka, wiec promien kazdej kuli bierzemy
+ * z profilu szyny w tym miejscu, razem ze zwezeniem.
+ */
+function buildGallery(w, p, basketH) {
+  const { Manifold } = w;
+  const ri = p.innerDia / 2;
+  const kG = taperFor(p);
+  const N = 15;
+  const rozpietosc = 34 * DEG;                 // jak daleko luk schodzi po obwodzie
+  const wznios = Math.max(0.3, basketH * 0.5);
+
+  let solid = null;
+  for (const s of [-1, 1]) {
+    for (let i = 0; i < N; i++) {
+      const t = i / (N - 1);
+      const th = Math.PI / 2 + s * t * rozpietosc;
+      const u = (t * rozpietosc) / Math.PI;
+      const k = kG ? kG(u) : { w: 1, t: 1 };
+
+      // Powierzchnia szyny w tym miejscu, i wzniesienie ku glowicy.
+      const rSzyna = ri + (shankRadiusAt(p, 0) - ri) * k.t;
+      const podniesienie = wznios * (1 - t) ** 1.6;
+      // Kula ma sie ZANURZYC w szynie, a nie usiasc na niej. Plytsze
+      // zanurzenie dawalo walek z widocznymi paciorkami zamiast pogrubienia.
+      const r = rSzyna - 0.5 + podniesienie;
+      // Kula chudnie ku dolowi, zeby luk wtopil sie w szyne, a nie usiadl
+      // na niej jako osobny walek.
+      const rad = Math.max(0.22, (p.width * k.w) / 2 * (1.0 - 0.30 * t));
+
+      const ball = Manifold.sphere(rad, 16)
+        .translate([Math.cos(th) * r, Math.sin(th) * r, 0]);
+      solid = solid ? solid.add(ball) : ball;
+    }
+  }
+  return solid;
+}
+
 /**
  * Kamienie po OBWODZIE szyny, czyli eternity i half eternity.
  *
@@ -844,7 +897,17 @@ export async function buildRing(input, opts = {}) {
     const side = buildSideStones(w, p);
     if (p.side.count > 0) stoneVolumesMm3.side = stoneSolid(w, "round", p.side.size).solid.volume();
     if (side.addMetal) metal = metal.add(side.addMetal);
-    if (crown) metal = metal.add(place(crown.translate([0, 0, standoff])));
+    if (crown) {
+      metal = metal.add(place(crown.translate([0, 0, standoff])));
+      // Galeria ma sens tylko wtedy, gdy jest co podeprzec: przy briolecie
+      // kosza nie ma, a przy kasecie rant siega szyny wlasnym trzonem.
+      if (basketH > 0 && p.setting !== "bezel") {
+        // Wysokosc kosza, a NIE kosz plus podniesienie: kosz jest juz
+        // przesuniety o `standoff`, wiec zsumowanie obu podnosilo luk
+        // dwukrotnie i zamiast wtopic sie w szyne siadal na niej guzkami.
+        metal = metal.add(buildGallery(w, p, basketH));
+      }
+    }
 
     // Gniazda WYCINAMY dopiero po zlaczeniu wszystkiego, zeby siegaly takze
     // szyny. Odwrotna kolejnosc daje bryle cieszsza o kilkanascie procent.
