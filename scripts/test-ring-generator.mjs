@@ -179,5 +179,47 @@ for (const [id, a] of Object.entries(CASTING_ALLOYS)) {
   else bad(`${id}: wzorzec x${ratio.toFixed(4)}, oczekiwano x${want.toFixed(4)}`);
 }
 
+
+// ------------------------------------------------------------
+console.log("\n6. Kamienie osadzone taflą na zewnątrz");
+// ------------------------------------------------------------
+// Kamien odwrocony wyglada na renderze prawie tak samo, ale gniazdo wycina
+// sie wtedy w druga strone, wiec zmienia sie objetosc metalu, a z niej cena.
+// Rozroznienie jest jednoznaczne: pawilon konczy sie PUNKTEM (koleta),
+// a korona plaska TAFLA. Mierzymy wiec rozrzut prostopadly na obu koncach.
+{
+  const cases = [
+    ["środkowy", { stone: { cut: "round", size: 6.5 }, setting: "prong4" }, 0],
+    ["boczne pavé", { stone: { cut: "round", size: 5 }, setting: "prong4",
+      side: { count: 3, setting: "pave", size: 1.8 } }, 1],
+  ];
+  for (const [label, cfg, idx] of cases) {
+    const r = await buildRing({ innerDia: 17.2, ...cfg }, { segments: 64 });
+    const mesh = r.stones[idx].getMesh();
+    const v = mesh.vertProperties, n = mesh.numVert;
+
+    // Kierunek promieniowy liczymy ze srodka ciezkosci kamienia.
+    let cx = 0, cy = 0, cz = 0;
+    for (let i = 0; i < n; i++) { cx += v[i * 3]; cy += v[i * 3 + 1]; cz += v[i * 3 + 2]; }
+    cx /= n; cy /= n; cz /= n;
+    const L = Math.hypot(cx, cy) || 1;
+    const ux = cx / L, uy = cy / L;
+
+    const pts = [];
+    for (let i = 0; i < n; i++) {
+      const x = v[i * 3] - cx, y = v[i * 3 + 1] - cy, z = v[i * 3 + 2] - cz;
+      pts.push({ proj: x * ux + y * uy, perp: Math.hypot(-x * uy + y * ux, z) });
+    }
+    pts.sort((p, q) => p.proj - q.proj);
+    const k = Math.max(3, Math.round(n * 0.05));
+    const spread = (arr) => arr.reduce((s, p) => s + p.perp, 0) / arr.length;
+    const wewn = spread(pts.slice(0, k));          // koniec blizej osi pierscionka
+    const zewn = spread(pts.slice(-k));            // koniec dalej od osi
+
+    if (zewn > wewn * 1.6) ok(`${label.padEnd(12)} tafla na zewnątrz: rozrzut ${zewn.toFixed(2)} wobec kolety ${wewn.toFixed(2)} mm`);
+    else bad(`${label}: kamień ODWROCONY, koleta na zewnątrz (rozrzut zewn. ${zewn.toFixed(2)}, wewn. ${wewn.toFixed(2)} mm)`);
+  }
+}
+
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");
 process.exit(failed ? 1 : 0);

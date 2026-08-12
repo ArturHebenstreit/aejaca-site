@@ -344,15 +344,19 @@ function buildSideStones(w, p) {
       const x = Math.cos(a) * rMid, y = Math.sin(a) * rMid;
       const tilt = [0, 0, 0];
 
+      // OBROT MUSI BYC TAKI SAM JAK PRZY KORONIE SRODKOWEJ. `rotate([90,0,0])`
+      // odwraca kamien: tafla patrzy wtedy w glab palca, a koleta na zewnatrz.
+      // Na renderze wyglada to prawie tak samo, ale gniazdo wycina sie odwrotnie,
+      // wiec zmienia sie objetosc metalu, a z niej cena.
       const { solid } = stoneSolid(w, "round", size);
       const placed = solid
-        .rotate([90, 0, 0])                         // tafla w gore promienia
+        .rotate([-90, 0, 0])                        // tafla na zewnatrz promienia
         .rotate([0, 0, (a / DEG) - 90])
         .translate([x * (ro / rMid), y * (ro / rMid), 0]);
       stones.push(placed);
 
       const cutter = seatCutter(w, "round", size)
-        .rotate([90, 0, 0])
+        .rotate([-90, 0, 0])
         .rotate([0, 0, (a / DEG) - 90])
         .translate([x * (ro / rMid), y * (ro / rMid), 0]);
       addS(cutter);
