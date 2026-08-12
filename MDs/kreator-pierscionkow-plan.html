@@ -3,8 +3,7 @@
   :root{
     --ground:#0a0908; --surface:#141110; --surface-2:#1c1816; --line:#2b2523;
     --ink:#ece6dd; --ink-dim:#a2968a; --ink-faint:#6f645b;
-    --amber:#dfa44f; --amber-dim:#8a6a3c;
-    --amber-soft:rgba(223,164,79,.12);
+    --amber:#dfa44f; --amber-soft:rgba(223,164,79,.12);
     --sage:#7f9f83; --rust:#c0674f; --steel:#6f8ba3;
     --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
     --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -12,15 +11,11 @@
   }
   *{box-sizing:border-box}
   html{ -webkit-text-size-adjust:100% }
-  body{
-    margin:0; background:var(--ground); color:var(--ink);
-    font-family:var(--sans); font-size:17px; line-height:1.65;
-    -webkit-font-smoothing:antialiased;
-  }
+  body{ margin:0; background:var(--ground); color:var(--ink);
+    font-family:var(--sans); font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased }
   .wrap{ max-width:1080px; margin:0 auto; padding:0 24px }
   .col{ max-width:68ch; margin-left:auto; margin-right:auto }
 
-  /* ---------- masthead ---------- */
   header.mast{ border-bottom:1px solid var(--line); padding:72px 0 40px; margin-bottom:56px }
   .kicker{ font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
     color:var(--amber); margin:0 0 20px }
@@ -31,40 +26,36 @@
     font-family:var(--mono); font-size:12px; color:var(--ink-faint) }
   .meta b{ color:var(--ink-dim); font-weight:400 }
 
-  /* ---------- rhythm ---------- */
   section{ margin-bottom:72px }
-  h2{ font-family:var(--serif); font-weight:400; font-size:30px; line-height:1.2;
-    margin:0 0 8px; text-wrap:balance }
+  h2{ font-family:var(--serif); font-weight:400; font-size:30px; line-height:1.2; margin:0 0 8px; text-wrap:balance }
   .sec-num{ font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--amber);
     text-transform:uppercase; margin:0 0 10px }
-  h3{ font-family:var(--sans); font-weight:600; font-size:17px; margin:36px 0 10px; letter-spacing:.005em }
+  h3{ font-family:var(--sans); font-weight:600; font-size:17px; margin:36px 0 10px }
   p{ margin:0 0 18px; text-wrap:pretty }
   a{ color:var(--amber); text-decoration:none; border-bottom:1px solid rgba(223,164,79,.35) }
   a:hover{ border-bottom-color:var(--amber) }
-  a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{
-    outline:2px solid var(--amber); outline-offset:2px }
+  a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{ outline:2px solid var(--amber); outline-offset:2px }
   strong{ color:#fff; font-weight:600 }
   ul,ol{ margin:0 0 18px; padding-left:22px }
-  li{ margin-bottom:9px }
-  li::marker{ color:var(--ink-faint) }
+  li{ margin-bottom:9px } li::marker{ color:var(--ink-faint) }
   code{ font-family:var(--mono); font-size:.86em; background:var(--surface-2);
     border:1px solid var(--line); border-radius:4px; padding:1px 5px; color:var(--ink) }
 
-  /* ---------- verdict ---------- */
   .verdict{ background:var(--surface); border:1px solid var(--line);
     border-left:3px solid var(--amber); padding:28px 30px; margin:0 0 28px }
   .verdict p:last-child{ margin-bottom:0 }
   .verdict .lead{ font-family:var(--serif); font-size:22px; line-height:1.35; color:#fff; margin-bottom:14px }
+  .verdict.alarm{ border-left-color:var(--rust) }
 
   .note{ background:var(--surface); border:1px solid var(--line); padding:20px 24px; margin:24px 0 }
   .note p:last-child{ margin-bottom:0 }
   .note .tag{ font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
     color:var(--rust); display:block; margin-bottom:8px }
   .note.ok .tag{ color:var(--sage) }
+  .note.info .tag{ color:var(--steel) }
 
-  /* ---------- tables ---------- */
   .scroll{ overflow-x:auto; margin:0 0 22px; border:1px solid var(--line); background:var(--surface) }
-  table{ border-collapse:collapse; width:100%; min-width:640px; font-size:15px }
+  table{ border-collapse:collapse; width:100%; min-width:600px; font-size:15px }
   th,td{ text-align:left; padding:12px 16px; border-bottom:1px solid var(--line); vertical-align:top }
   thead th{ font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
     color:var(--ink-faint); font-weight:400; background:var(--surface-2) }
@@ -75,8 +66,8 @@
   .pill.no{ background:rgba(192,103,79,.14); color:var(--rust) }
   .pill.yes{ background:rgba(127,159,131,.15); color:var(--sage) }
   .pill.part{ background:rgba(111,139,163,.15); color:var(--steel) }
+  .pill.new{ background:var(--amber-soft); color:var(--amber) }
 
-  /* ---------- layer stack ---------- */
   .stack{ display:grid; gap:2px; background:var(--line); border:1px solid var(--line); margin:0 0 24px }
   .layer{ background:var(--surface); padding:22px 26px; display:grid; grid-template-columns:132px 1fr; gap:24px }
   .layer .who{ font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
@@ -85,55 +76,61 @@
   .layer p{ margin:0; color:var(--ink-dim); font-size:15px }
   @media(max-width:640px){ .layer{ grid-template-columns:1fr; gap:8px } }
 
-  /* ---------- configurator ---------- */
+  /* configurator */
   .demo{ border:1px solid var(--line); background:var(--surface); margin:0 0 18px }
   .demo-bar{ display:flex; align-items:center; justify-content:space-between; gap:16px;
     padding:12px 18px; border-bottom:1px solid var(--line); background:var(--surface-2) }
-  .demo-bar span{ font-family:var(--mono); font-size:11px; letter-spacing:.13em;
-    text-transform:uppercase; color:var(--ink-faint) }
+  .demo-bar span{ font-family:var(--mono); font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-faint) }
   .demo-bar .live{ color:var(--sage) }
-  .demo-body{ display:grid; grid-template-columns:290px 1fr }
-  @media(max-width:820px){ .demo-body{ grid-template-columns:1fr } }
-  .ctrls{ border-right:1px solid var(--line); padding:20px; display:flex; flex-direction:column; gap:20px }
-  @media(max-width:820px){ .ctrls{ border-right:0; border-bottom:1px solid var(--line) } }
+  .demo-body{ display:grid; grid-template-columns:300px 1fr }
+  @media(max-width:860px){ .demo-body{ grid-template-columns:1fr } }
+  .ctrls{ border-right:1px solid var(--line); padding:20px; display:flex; flex-direction:column; gap:18px }
+  @media(max-width:860px){ .ctrls{ border-right:0; border-bottom:1px solid var(--line) } }
   .grp label.h{ display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.13em;
     text-transform:uppercase; color:var(--ink-faint); margin-bottom:9px }
+  .grp[hidden]{ display:none }
   .seg{ display:flex; flex-wrap:wrap; gap:5px }
   .seg button{ font-family:var(--sans); font-size:13px; padding:6px 11px; cursor:pointer;
     background:var(--surface-2); color:var(--ink-dim); border:1px solid var(--line); border-radius:2px;
-    transition:background .12s,color .12s,border-color .12s }
-  .seg button:hover{ color:var(--ink); border-color:#3d3532 }
+    transition:background .12s,color .12s,border-color .12s,opacity .12s }
+  .seg button:hover:not(:disabled){ color:var(--ink); border-color:#3d3532 }
   .seg button[aria-pressed="true"]{ background:var(--amber-soft); color:var(--amber); border-color:rgba(223,164,79,.5) }
+  .seg button:disabled{ opacity:.28; cursor:not-allowed; text-decoration:line-through }
   input[type=range]{ width:100%; accent-color:var(--amber); margin:2px 0 0 }
   .rowval{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:2px }
-  .rowval b{ font-family:var(--mono); font-size:13px; font-weight:400; color:var(--amber);
-    font-variant-numeric:tabular-nums }
+  .rowval b{ font-family:var(--mono); font-size:13px; font-weight:400; color:var(--amber); font-variant-numeric:tabular-nums }
+  .hint{ font-family:var(--mono); font-size:10.5px; color:var(--ink-faint); margin:7px 0 0; line-height:1.5 }
+
   .stage{ padding:20px; display:flex; flex-direction:column; gap:16px; min-width:0 }
   .views{ display:grid; grid-template-columns:1fr 1fr; gap:14px }
-  @media(max-width:520px){ .views{ grid-template-columns:1fr } }
-  .view{ background:#000; border:1px solid var(--line); position:relative; aspect-ratio:1/1 }
+  @media(max-width:540px){ .views{ grid-template-columns:1fr } }
+  .view{ background:#000; border:1px solid var(--line); position:relative; aspect-ratio:1/1; margin:0 }
   .view figcaption{ position:absolute; left:9px; top:8px; font-family:var(--mono); font-size:10px;
     letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint); margin:0 }
   .view svg{ width:100%; height:100%; display:block }
-  .readout{ display:grid; grid-template-columns:repeat(auto-fit,minmax(112px,1fr)); gap:1px;
-    background:var(--line); border:1px solid var(--line) }
+  .readout{ display:grid; grid-template-columns:repeat(auto-fit,minmax(104px,1fr)); gap:1px;
+    background:var(--line); border:1px solid var(--line); margin:0 }
   .cell{ background:var(--surface-2); padding:11px 13px }
-  .cell dt{ font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
-    color:var(--ink-faint); margin:0 0 5px }
+  .cell dt{ font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:0 0 5px }
   .cell dd{ margin:0; font-family:var(--mono); font-size:16px; font-variant-numeric:tabular-nums; color:var(--ink) }
   .cell dd small{ font-size:11px; color:var(--ink-faint) }
-  .cell.hero dd{ color:var(--amber); font-size:19px }
-  .acts{ display:flex; flex-wrap:wrap; gap:9px }
-  .btn{ font-family:var(--sans); font-size:14px; padding:10px 18px; border-radius:2px; cursor:pointer;
-    border:1px solid var(--line); background:var(--surface-2); color:var(--ink) }
-  .btn.primary{ background:var(--amber); color:#17110a; border-color:var(--amber); font-weight:600 }
-  .btn:hover{ border-color:#4a403c }
-  .btn.primary:hover{ background:#e9b466; border-color:#e9b466 }
+
+  /* finalisation */
+  .outs{ display:grid; gap:1px; background:var(--line); border:1px solid var(--line) }
+  .out{ background:var(--surface-2); padding:13px 15px; display:grid;
+    grid-template-columns:1fr auto auto; gap:14px; align-items:center }
+  .out .t{ min-width:0 }
+  .out h5{ margin:0 0 2px; font-size:14.5px; font-weight:600 }
+  .out p{ margin:0; font-size:12.5px; color:var(--ink-faint); line-height:1.45 }
+  .out .pr{ font-family:var(--mono); font-size:16px; color:var(--amber); font-variant-numeric:tabular-nums; white-space:nowrap }
+  .out .pr.quote{ font-size:12px; color:var(--steel); letter-spacing:.06em; text-transform:uppercase }
+  .out .go{ font-family:var(--sans); font-size:13px; padding:7px 14px; border-radius:2px; cursor:pointer;
+    border:1px solid var(--line); background:var(--surface); color:var(--ink); white-space:nowrap }
+  .out.lead .go{ background:var(--amber); color:#17110a; border-color:var(--amber); font-weight:600 }
+  @media(max-width:600px){ .out{ grid-template-columns:1fr auto; } .out .go{ grid-column:1/-1 } }
   .caption{ font-size:14px; color:var(--ink-faint); margin:0 0 40px; max-width:66ch }
 
-  /* ---------- phases ---------- */
-  .phase{ display:grid; grid-template-columns:56px 1fr; gap:22px; padding:24px 0;
-    border-top:1px solid var(--line) }
+  .phase{ display:grid; grid-template-columns:56px 1fr; gap:22px; padding:24px 0; border-top:1px solid var(--line) }
   .phase:last-of-type{ border-bottom:1px solid var(--line) }
   .phase .n{ font-family:var(--serif); font-size:30px; color:var(--amber); line-height:1; padding-top:2px }
   .phase h4{ margin:0 0 6px; font-size:17px; font-weight:600 }
@@ -149,184 +146,152 @@
 
 <header class="mast">
   <div class="wrap">
-    <p class="kicker">Plan do zatwierdzenia, nie kod</p>
+    <p class="kicker">Wersja 2, po Twoich uwagach</p>
     <h1>Kreator Pierścionków</h1>
-    <p class="standfirst">Narzędzie, w którym klient składa pierścionek z parametrów, widzi go na bieżąco, a potem kupuje plik STL albo gotowy odlew ze srebra. Poniżej: rozstrzygnięcie sporu o AI, weryfikacja rynku, architektura, klikalny prototyp interfejsu i podział pracy.</p>
+    <p class="standfirst">Klient składa pierścionek albo sygnet z parametrów, widzi go na bieżąco, a na końcu wybiera jedno z czterech wyjść: plik, odlew, gotowy wyrób z zakutymi kamieniami albo zapytanie o indywidualną wycenę. Wszystko wpięte w istniejący sklep i kalkulatory.</p>
     <div class="meta">
-      <span><b>Przygotował</b> Claude dla AEJaCA</span>
       <span><b>Data</b> 12 sierpnia 2026</span>
-      <span><b>Status</b> czeka na akceptację</span>
+      <span><b>Zatwierdzone</b> punkty 1 do 5</span>
+      <span><b>Do rozstrzygnięcia</b> jądro geometryczne</span>
     </div>
   </div>
 </header>
 
 <div class="wrap">
 
-<!-- 1 -->
+<!-- ZMIANY -->
 <section class="col">
-  <p class="sec-num">Rozstrzygnięcie</p>
-  <h2>Czy geometrię wygeneruje AI?</h2>
+  <p class="sec-num">Co dopisałeś</p>
+  <h2>Zakres urósł i jedna rzecz się rozjechała</h2>
 
-  <div class="verdict">
-    <p class="lead">Nie. Bryłę liczy deterministyczny kod parametryczny. AI dostaje osobną, węższą rolę: tłumaczy zdanie klienta na parametry.</p>
-    <p style="margin:0;color:var(--ink-dim)">Podpięty ChatGPT zostaje w projekcie, ale nie dotyka geometrii.</p>
-  </div>
-
-  <p>Pytałeś wprost, czy użyć podpiętego już ChatGPT albo innego modelu do generowania modeli. Odpowiadam równie wprost, bo od tej decyzji zależy cała reszta planu.</p>
-
-  <p>Pierścionek to nie obrazek. To bryła, która musi spełnić cztery warunki naraz, a model generatywny nie umie zagwarantować żadnego z nich:</p>
-
-  <ul>
-    <li><strong>Wymiar wewnętrzny</strong> musi trafić w rozmiar palca. Pomyłka o 0,3 mm to pierścionek nie do noszenia i srebro do przetopu.</li>
-    <li><strong>Gniazdo kamienia</strong> musi odpowiadać rondyście co do setnych. Za ciasno, kamień nie wejdzie. Za luźno, wypadnie.</li>
-    <li><strong>Siatka musi być zamknięta.</strong> Model nie-manifold nie nadaje się ani do druku, ani do odlewu.</li>
-    <li><strong>Wynik musi być powtarzalny.</strong> Te same parametry mają dawać ten sam plik. W prototypie już to potwierdziliśmy: ponowne uruchomienie dało plik identyczny co do bajtu.</li>
-  </ul>
-
-  <p>Model generatywny produkuje geometrię <em>prawdopodobną</em>, nie <em>poprawną</em>. Meshy i podobne narzędzia zamieniają tekst na siatkę w minutę, ale ta siatka jest do wizualizacji, nie do odlewu.</p>
-
-  <h3>Gdzie AI naprawdę pomoże</h3>
-  <p>Trzy miejsca, w każdym z nich to samo zadanie: zamiana języka na dane, nigdy na kształt.</p>
-  <ul>
-    <li><strong>Furtka językowa.</strong> „Chcę klasyczny pierścionek z granatem, rozmiar 14, wąska szyna" zamienione na obiekt parametrów, którym karmimy generator. To jest ekstrakcja ustrukturyzowana, w której modele są bardzo dobre, a my mamy już do tego <code>chat-api</code>.</li>
-    <li><strong>Opis produktu.</strong> Nazwa i opis skonfigurowanego pierścionka do koszyka, karty zamówienia i maila.</li>
-    <li><strong>Wizualizacja marketingowa.</strong> Render techniczny przerobiony na zdjęcie aranżacyjne, osobno, poza ścieżką zakupu.</li>
-  </ul>
-
-  <div class="note ok">
-    <span class="tag">Zasada architektoniczna</span>
-    <p>AI interpretuje intencję. Kod wytwarza geometrię. Te dwie warstwy nigdy się nie mieszają, a granica między nimi to jeden obiekt JSON z parametrami.</p>
-  </div>
-</section>
-
-<!-- 2 -->
-<section class="col">
-  <p class="sec-num">Weryfikacja rynku</p>
-  <h2>Co już istnieje i czego nie robi nikt</h2>
-
-  <p>Sprawdziłem trzy grupy rozwiązań. Wniosek jest dla nas korzystny: <strong>każdy robi dwie z trzech rzeczy, nikt wszystkich trzech.</strong></p>
+  <p>Twoje uzupełnienia wchodzą do planu w całości. Cztery z nich są prostym rozszerzeniem, jedno wywraca zatwierdzony punkt drugi i musi wrócić do decyzji.</p>
 
   <div class="scroll">
     <table>
-      <thead>
-        <tr>
-          <th>Rozwiązanie</th><th>Model działania</th>
-          <th>Generuje parametrycznie</th><th>Oddaje plik</th><th>Sprzedaje wyrób</th>
-        </tr>
-      </thead>
+      <thead><tr><th>Uzupełnienie</th><th>Skutek</th></tr></thead>
       <tbody>
-        <tr>
-          <td><strong>Blue Nile</strong>, Brilliant Earth</td>
-          <td>Katalog opraw × katalog kamieni, gotowe rendery i filmy 360°</td>
-          <td><span class="pill no">Nie</span></td><td><span class="pill no">Nie</span></td><td><span class="pill yes">Tak</span></td>
-        </tr>
-        <tr>
-          <td><strong>Threekit</strong>, Expivi, Zakeke</td>
-          <td>SaaS nakładany na gotowe modele 3D, klient zmienia materiał i podzespoły</td>
-          <td><span class="pill part">Częściowo</span></td><td><span class="pill no">Nie</span></td><td><span class="pill yes">Tak</span></td>
-        </tr>
-        <tr>
-          <td><strong>Printables</strong>, customizer OpenSCAD</td>
-          <td>Suwaki nad skryptem, plik za darmo</td>
-          <td><span class="pill yes">Tak</span></td><td><span class="pill yes">Tak</span></td><td><span class="pill no">Nie</span></td>
-        </tr>
-        <tr>
-          <td><strong>Meshy</strong> i generatory AI</td>
-          <td>Tekst albo zdjęcie zamienione na siatkę</td>
-          <td><span class="pill no">Nie</span></td><td><span class="pill yes">Tak</span></td><td><span class="pill no">Nie</span></td>
-        </tr>
-        <tr>
-          <td><strong>CGTrader</strong>, Shapeways, Cults3D</td>
-          <td>Sklep z gotowymi plikami, zero konfiguracji</td>
-          <td><span class="pill no">Nie</span></td><td><span class="pill yes">Tak</span></td><td><span class="pill part">Częściowo</span></td>
-        </tr>
-        <tr style="background:var(--surface-2)">
-          <td><strong style="color:var(--amber)">AEJaCA</strong></td>
-          <td>Generacja z parametrów, plik do pobrania albo odlew z naszego warsztatu</td>
-          <td><span class="pill yes">Tak</span></td><td><span class="pill yes">Tak</span></td><td><span class="pill yes">Tak</span></td>
-        </tr>
+        <tr><td>Wybór kształtu kamienia, a z niego gniazdo i sposób zakucia</td><td>Rozszerza model danych i wprowadza reguły warsztatowe. <span class="pill yes">bez przeszkód</span></td></tr>
+        <tr><td>Zamówienie gotowego pierścionka z zakutymi kamieniami</td><td>Czwarta ścieżka wyjścia i cennik kamieni. <span class="pill yes">bez przeszkód</span></td></tr>
+        <tr><td>Kamień bez znanej ceny idzie do indywidualnej wyceny</td><td>Wpina się w istniejący system wycen. <span class="pill yes">schemat już to obsługuje</span></td></tr>
+        <tr><td>Sygnety męskie w tym samym kreatorze</td><td>Drugi generator dzielący kod szyny. <span class="pill part">nowy etap</span></td></tr>
+        <tr><td><strong>Pobranie pliku STEP</strong></td><td>Manifold nie potrafi zapisać STEP. <span class="pill no">konflikt z punktem 2</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- STEP -->
+<section class="col">
+  <p class="sec-num">Do rozstrzygnięcia</p>
+  <h2>STEP kontra wybrane jądro</h2>
+
+  <div class="verdict alarm">
+    <p class="lead">STL i 3MF to formaty siatkowe, a STEP opisuje prawdziwe powierzchnie. Manifold jest jądrem siatkowym, więc STEP z niego nie wyjdzie.</p>
+    <p style="margin:0;color:var(--ink-dim)">Da się zapisać siatkę w opakowaniu STEP, ale jubiler, który kupuje STEP, oczekuje modelu do edycji w Rhino czy Matrixie. Taki plik byłby wprowadzeniem w błąd, więc tej drogi nie proponuję.</p>
+  </div>
+
+  <p>Dobra wiadomość jest taka, że to wychodzi <strong>zanim napisaliśmy linijkę kodu</strong>, czyli w jedynym momencie, w którym zmiana jądra nic nie kosztuje.</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Jądro</th><th>STL, 3MF</th><th>STEP</th><th>Zaokrąglenia</th><th>Szybkość</th><th>Rozmiar</th></tr></thead>
+      <tbody>
+        <tr><td><strong>manifold-3d</strong></td><td><span class="pill yes">natywnie</span></td><td><span class="pill no">nie</span></td><td><span class="pill no">brak operatora</span></td><td><span class="pill yes">bardzo szybko</span></td><td class="num">~1 MB</td></tr>
+        <tr><td><strong>OpenCascade</strong>, replicad</td><td><span class="pill yes">tak</span></td><td><span class="pill yes">tak</span></td><td><span class="pill yes">prawdziwe</span></td><td><span class="pill part">wolniej</span></td><td class="num">~15 MB</td></tr>
       </tbody>
     </table>
   </div>
 
-  <h3>Co warto podpatrzeć</h3>
-  <p>Blue Nile prowadzi klienta <strong>krokami, nie formularzem</strong>: najpierw kamień albo oprawa, potem reszta, i na każdym etapie pokazuje, co się właśnie zmieniło. Brilliant Earth pozwala <strong>obrócić oprawę i zobaczyć profil</strong> zanim klient wybierze kamień. Obie rzeczy przenoszę do naszego układu.</p>
+  <p>Zwróć uwagę, że OpenCascade rozwiązuje <strong>nie tylko STEP, ale i ryzyko numer jeden z pierwszej wersji planu</strong>, czyli brak zaokrągleń na przejściu korony w szynę. To były dwa osobne problemy z jednym rozwiązaniem.</p>
 
-  <p>Czego <strong>nie</strong> kopiujemy: modelu Zakeke, czyli 69,90 do 299,90 USD miesięcznie plus 1,5 do 1,9 procent od zamówienia. Przy naszym limicie przychodu abonament w dolarach zjadałby marżę, a i tak nie oddałby pliku klientowi.</p>
+  <h3>Co proponuję</h3>
+  <p>Nie zgaduję, tylko mierzę. <strong>Etap pierwszy zaczyna się od bezpośredniego porównania obu jąder na tym samym pierścionku</strong>: ten sam zestaw parametrów, pomiar czasu generowania, ocena wyglądu przejść i sprawdzenie eksportu. Generator piszemy za interfejsem, więc jądro jest wymienne, a nie wbetonowane.</p>
+
+  <p>Moje przypuszczenie przed pomiarem: <strong>wygra OpenCascade dla pliku, który klient kupuje</strong>, a podgląd na ekranie i tak nie musi używać tego samego jądra, bo jego jedynym zadaniem jest pokazać kształt, a nie wyprodukować wyrób. Ale to jest przypuszczenie i tak je traktuję.</p>
+
+  <div class="note info">
+    <span class="tag">Cennik formatów</span>
+    <p>Skoro STEP jest droższy w wytworzeniu i trafia do innego odbiorcy, niech kosztuje więcej. STL i 3MF dla osoby, która chce wydrukować. STEP dla warsztatu, który chce model przerobić. To dwa różne produkty w jednej cenie byłyby błędem.</p>
+  </div>
 </section>
 
-<!-- 3 -->
+<!-- KAMIENIE -->
 <section class="col">
-  <p class="sec-num">Architektura</p>
-  <h2>Cztery warstwy, każda z jednym zadaniem</h2>
+  <p class="sec-num">Kamienie</p>
+  <h2>Szlif narzuca zakucie, nie odwrotnie</h2>
 
-  <div class="stack">
-    <div class="layer">
-      <div class="who">Wejście</div>
-      <div>
-        <h4>Formularz albo zdanie</h4>
-        <p>Klient klika parametry, albo opisuje pierścionek słowami i ChatGPT zamienia zdanie na te same parametry. Oba wejścia kończą się identycznym obiektem JSON.</p>
-      </div>
-    </div>
-    <div class="layer">
-      <div class="who">Geometria</div>
-      <div>
-        <h4>Generator parametryczny na manifold-3d</h4>
-        <p>Czysta funkcja: parametry na wejściu, zamknięta bryła na wyjściu. Działa w przeglądarce przy podglądzie i na serwerze przy zakupie, z tego samego kodu.</p>
-      </div>
-    </div>
-    <div class="layer">
-      <div class="who">Podgląd</div>
-      <div>
-        <h4>Three.js, komponent, który już mamy</h4>
-        <p><code>STLViewer.jsx</code> renderuje dziś modele klientów w checkerze drukowalności. Tu dostaje siatkę prosto z generatora, bez pośrednictwa pliku.</p>
-      </div>
-    </div>
-    <div class="layer">
-      <div class="who">Wyjście</div>
-      <div>
-        <h4>Plik albo zamówienie</h4>
-        <p>Serwer przelicza bryłę jeszcze raz, wycenia z masy i bieżącej ceny metalu, wystawia płatność i dopiero po niej wydaje STL. Albo zamienia to samo w zlecenie odlewu.</p>
-      </div>
-    </div>
+  <p>Prosiłeś, żeby wybór kształtu kamienia budował gniazdo i sposób zakucia. To jest właściwa kolejność i warto ją w narzędziu wymusić, bo część kombinacji jest po prostu błędna warsztatowo.</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Szlif</th><th>Dopuszczalne zakucie</th><th>Dlaczego tak</th></tr></thead>
+      <tbody>
+        <tr><td>Okrągły brylantowy</td><td>4 łapki, 6 łapek, kaseta, pavé</td><td>rondysta na całym obwodzie, wszystko trzyma</td></tr>
+        <tr><td>Owal</td><td>4 łapki, 6 łapek, kaseta</td><td>jak wyżej, ale łapki idą na osiach dłuższej i krótszej</td></tr>
+        <tr><td>Princess</td><td>łapki narożne, kaseta</td><td>narożniki są najbardziej kruche, muszą być zakryte</td></tr>
+        <tr><td>Szmaragdowy</td><td>łapki narożne, kaseta</td><td>ścięte narożniki dają naturalne oparcie dla łapki</td></tr>
+        <tr><td>Markiza</td><td>łapki V na szpicach, kaseta</td><td><strong>szpice bez łapki V odpryskują</strong>, zwykła łapka ich nie chroni</td></tr>
+        <tr><td>Kaboszon</td><td>wyłącznie kaseta</td><td>brak rondysty i kąta pawilonu, nie ma czego chwycić łapką</td></tr>
+      </tbody>
+    </table>
   </div>
 
-  <div class="note">
-    <span class="tag">Reguła, której nie łamiemy</span>
-    <p>Przeglądarka nigdy nie podaje ceny ani pliku. Podgląd w przeglądarce służy oczom klienta. <strong>Wiążącą bryłę, masę i cenę liczy serwer</strong>, tak jak przy zapisanych wycenach. Inaczej ktoś podmieni parametry w konsoli i kupi złoto w cenie srebra.</p>
+  <p>W prototypie niżej te reguły już działają: niedozwolone zakucia są wygaszone i przekreślone. To jest tania funkcja, która <strong>ustawia nas jako warsztat, a nie sklep z opcjami</strong>.</p>
+
+  <h3>Trzy stany dostępności kamienia</h3>
+  <p>Sprawdziłem bazę. Tabela <code>gemstone_prices</code> ma kolumnę <code>base_eur</code>, która może być pusta, a zapytanie o ceny pomija puste wiersze. <strong>Trzeci stan już istnieje w schemacie</strong>, trzeba go tylko obsłużyć w interfejsie.</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Stan</th><th>Co widzi klient</th><th>Termin</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Mamy na stanie</strong></td><td>cena ostateczna, przycisk zamówienia</td><td>krótki, kamień leży w warsztacie</td></tr>
+        <tr><td><strong>Znamy cenę zakupu</strong></td><td>cena ostateczna, informacja o sprowadzeniu</td><td>dłuższy o czas dostawy</td></tr>
+        <tr><td><strong>Brak ceny</strong>, czyli puste <code>base_eur</code></td><td>zamiast ceny przycisk indywidualnej wyceny</td><td>po naszej odpowiedzi</td></tr>
+      </tbody>
+    </table>
   </div>
 
-  <h3>Dlaczego manifold-3d, a nie OpenCascade</h3>
-  <p>Rozważyłem oba. <code>replicad</code> na OpenCascade daje prawdziwe powierzchnie B-Rep, eksport do STEP i porządne zaokrąglenia. Kosztuje za to rozmiarem i czasem.</p>
-  <p><code>manifold-3d</code> wygrywa tam, gdzie nam zależy: <strong>gwarantuje zamkniętą siatkę</strong>, czyli dokładnie to, czego wymaga odlew i druk, i jest o rzędy wielkości szybszy, co przy podglądzie odświeżanym przy każdym ruchu suwaka decyduje o wszystkim. Mamy go już sprawdzonego w prototypie.</p>
-  <p>Jego słabość jest znana: brak operatora zaokrąglenia. Rozwiązujemy ją tak jak w prototypie, czyli wpisując zaokrąglenia w profil przekroju, zamiast doklejać je po fakcie.</p>
+  <div class="note ok">
+    <span class="tag">Nie budujemy tego od zera</span>
+    <p>Ścieżka indywidualnej wyceny to <strong>system wycen, który już działa</strong>: zapis konfiguracji, ważność robocizny, przeliczenie metalu przy otwarciu, mail z odnośnikiem. Kreator dokłada tylko powód powstania wyceny, nie nowy mechanizm.</p>
+  </div>
+
+  <p>Czwarty przypadek, o którym warto pamiętać: <strong>kamień powierzony przez klienta</strong>. Wtedy nie sprzedajemy kamienia, tylko robociznę, a przy okazji bierzemy na siebie ryzyko cudzej własności. To wymaga osobnego protokołu przyjęcia, tak samo jak przy biżuterii pamiątkowej.</p>
 </section>
 
-<!-- 4 -->
+<!-- PROTOTYP -->
 <section>
   <div class="col">
     <p class="sec-num">Prototyp</p>
     <h2>Jak to ma wyglądać i działać</h2>
-    <p>Poniżej działający szkic interfejsu. Suwaki i przyciski są prawdziwe: rysunek, wymiary, masa i cena przeliczają się na bieżąco, tą samą arytmetyką, której użyje docelowe narzędzie. To rysunek techniczny, nie render, bo na tym etapie decydujemy o układzie i logice, nie o połysku srebra.</p>
+    <p>Szkic jest klikalny. Zmień szlif, a zobaczysz, że część zakuć się wyłącza. Przełącz na sygnet, a lewa kolumna wymieni parametry. Na dole cztery wyjścia, z cenami przeliczanymi na bieżąco i z indywidualną wyceną tam, gdzie ceny kamienia nie znamy.</p>
   </div>
 
   <div class="demo">
     <div class="demo-bar">
-      <span>Kreator pierścionka, szkic układu</span>
+      <span>Kreator, szkic układu</span>
       <span class="live">● przelicza na żywo</span>
     </div>
     <div class="demo-body">
       <div class="ctrls">
         <div class="grp">
+          <label class="h">Typ wyrobu</label>
+          <div class="seg" id="s-kind">
+            <button data-v="ring" aria-pressed="true">Pierścionek</button>
+            <button data-v="signet" aria-pressed="false">Sygnet</button>
+          </div>
+        </div>
+        <div class="grp">
           <div class="rowval"><label class="h" for="dia">Średnica wewnętrzna</label><b id="v-dia">17,2 mm</b></div>
-          <input type="range" id="dia" min="14" max="22" step="0.2" value="17.2">
+          <input type="range" id="dia" min="14" max="23" step="0.2" value="17.2">
         </div>
         <div class="grp">
           <label class="h">Metal</label>
           <div class="seg" id="s-metal">
-            <button data-v="ag925" aria-pressed="true">Srebro 925</button>
-            <button data-v="au585" aria-pressed="false">Złoto 585</button>
-            <button data-v="au750" aria-pressed="false">Złoto 750</button>
+            <button data-v="ag925" aria-pressed="true">Ag 925</button>
+            <button data-v="au585" aria-pressed="false">Au 585</button>
+            <button data-v="au750" aria-pressed="false">Au 750</button>
           </div>
         </div>
         <div class="grp">
@@ -339,34 +304,52 @@
         </div>
         <div class="grp">
           <div class="rowval"><label class="h" for="width">Szerokość szyny</label><b id="v-width">2,2 mm</b></div>
-          <input type="range" id="width" min="1.4" max="6" step="0.1" value="2.2">
+          <input type="range" id="width" min="1.4" max="8" step="0.1" value="2.2">
         </div>
         <div class="grp">
           <div class="rowval"><label class="h" for="thick">Grubość szyny</label><b id="v-thick">1,6 mm</b></div>
-          <input type="range" id="thick" min="1" max="3" step="0.1" value="1.6">
+          <input type="range" id="thick" min="1" max="4" step="0.1" value="1.6">
         </div>
-        <div class="grp">
-          <label class="h">Kamień centralny</label>
-          <div class="seg" id="s-stone">
+
+        <div class="grp" id="g-cut">
+          <label class="h">Szlif kamienia</label>
+          <div class="seg" id="s-cut">
             <button data-v="brilliant" aria-pressed="true">Brylantowy</button>
             <button data-v="oval" aria-pressed="false">Owal</button>
             <button data-v="princess" aria-pressed="false">Princess</button>
+            <button data-v="emerald" aria-pressed="false">Szmaragdowy</button>
+            <button data-v="marquise" aria-pressed="false">Markiza</button>
+            <button data-v="cabochon" aria-pressed="false">Kaboszon</button>
             <button data-v="none" aria-pressed="false">Bez kamienia</button>
           </div>
         </div>
-        <div class="grp">
-          <div class="rowval"><label class="h" for="sdia">Średnica kamienia</label><b id="v-sdia">6,5 mm</b></div>
-          <input type="range" id="sdia" min="2" max="10" step="0.5" value="6.5">
-        </div>
-        <div class="grp">
-          <label class="h">Łapki korony</label>
-          <div class="seg" id="s-prongs">
-            <button data-v="4" aria-pressed="true">4 łapki</button>
-            <button data-v="6" aria-pressed="false">6 łapek</button>
+        <div class="grp" id="g-set">
+          <label class="h">Zakucie</label>
+          <div class="seg" id="s-set">
+            <button data-v="prong4" aria-pressed="true">4 łapki</button>
+            <button data-v="prong6" aria-pressed="false">6 łapek</button>
+            <button data-v="corner" aria-pressed="false">Narożne</button>
+            <button data-v="vprong" aria-pressed="false">Łapki V</button>
             <button data-v="bezel" aria-pressed="false">Kaseta</button>
           </div>
+          <p class="hint" id="set-hint">Szlif okrągły przyjmuje każde zakucie.</p>
         </div>
-        <div class="grp">
+        <div class="grp" id="g-sdia">
+          <div class="rowval"><label class="h" for="sdia">Rozmiar kamienia</label><b id="v-sdia">6,5 mm</b></div>
+          <input type="range" id="sdia" min="2" max="10" step="0.5" value="6.5">
+        </div>
+        <div class="grp" id="g-mat">
+          <label class="h">Kamień</label>
+          <div class="seg" id="s-mat">
+            <button data-v="cz" aria-pressed="true">Cyrkonia</button>
+            <button data-v="garnet" aria-pressed="false">Granat</button>
+            <button data-v="moiss" aria-pressed="false">Moissanit</button>
+            <button data-v="diamond" aria-pressed="false">Brylant</button>
+            <button data-v="sapphire" aria-pressed="false">Szafir</button>
+          </div>
+          <p class="hint" id="mat-hint">Na stanie w warsztacie.</p>
+        </div>
+        <div class="grp" id="g-side">
           <label class="h">Kamienie na szynie</label>
           <div class="seg" id="s-side">
             <button data-v="0" aria-pressed="true">Brak</button>
@@ -374,401 +357,505 @@
             <button data-v="12" aria-pressed="false">Po 6</button>
           </div>
         </div>
+
+        <div class="grp" id="g-table" hidden>
+          <label class="h">Tarcza sygnetu</label>
+          <div class="seg" id="s-table">
+            <button data-v="oval" aria-pressed="true">Owalna</button>
+            <button data-v="cushion" aria-pressed="false">Poduszka</button>
+            <button data-v="rect" aria-pressed="false">Prostokątna</button>
+          </div>
+        </div>
+        <div class="grp" id="g-tsize" hidden>
+          <div class="rowval"><label class="h" for="tsize">Długość tarczy</label><b id="v-tsize">14,0 mm</b></div>
+          <input type="range" id="tsize" min="9" max="20" step="0.5" value="14">
+        </div>
+        <div class="grp" id="g-engrave" hidden>
+          <label class="h">Grawer tarczy</label>
+          <div class="seg" id="s-engrave">
+            <button data-v="none" aria-pressed="true">Gładka</button>
+            <button data-v="mono" aria-pressed="false">Monogram</button>
+            <button data-v="crest" aria-pressed="false">Herb</button>
+          </div>
+          <p class="hint">Grawer wykonujemy laserem fibrowym po odlaniu.</p>
+        </div>
       </div>
 
       <div class="stage">
         <div class="views">
-          <figure class="view" style="margin:0">
+          <figure class="view">
             <figcaption>Widok z góry</figcaption>
-            <svg id="front" viewBox="0 0 300 300" aria-label="Schemat pierścionka od góry"></svg>
+            <svg id="front" viewBox="0 0 300 300" aria-label="Schemat wyrobu od góry"></svg>
           </figure>
-          <figure class="view" style="margin:0">
+          <figure class="view">
             <figcaption>Przekrój szyny</figcaption>
             <svg id="side" viewBox="0 0 300 300" aria-label="Przekrój szyny"></svg>
           </figure>
         </div>
 
-        <dl class="readout" style="margin:0">
+        <dl class="readout">
           <div class="cell"><dt>Obwód</dt><dd id="r-circ">54,0<small> mm</small></dd></div>
-          <div class="cell"><dt>Masa metalu</dt><dd id="r-mass">3,1<small> g</small></dd></div>
+          <div class="cell"><dt>Masa metalu</dt><dd id="r-mass">3,10<small> g</small></dd></div>
           <div class="cell"><dt>Kamieni</dt><dd id="r-stones">1</dd></div>
-          <div class="cell hero"><dt>Plik STL</dt><dd id="r-file">49<small> zł</small></dd></div>
-          <div class="cell hero"><dt>Odlew</dt><dd id="r-cast">–<small> zł</small></dd></div>
+          <div class="cell"><dt>Metal</dt><dd id="r-metal">35<small> zł</small></dd></div>
         </dl>
 
-        <div class="acts">
-          <button class="btn primary">Kup plik STL</button>
-          <button class="btn">Zamów odlew ze srebra</button>
-          <button class="btn">Zapisz wycenę</button>
+        <div class="outs">
+          <div class="out lead">
+            <div class="t"><h5>Plik do pobrania</h5><p id="p-file-d">STL i 3MF, gotowe do druku i odlewu</p></div>
+            <div class="pr" id="p-file">49 zł</div>
+            <button class="go">Kup plik</button>
+          </div>
+          <div class="out">
+            <div class="t"><h5>Plik STEP</h5><p>model do edycji w Rhino albo Matrixie</p></div>
+            <div class="pr" id="p-step">129 zł</div>
+            <button class="go">Kup STEP</button>
+          </div>
+          <div class="out">
+            <div class="t"><h5>Odlew bez kamieni</h5><p id="p-cast-d">odlany i wypolerowany, gniazda gotowe pod zakucie</p></div>
+            <div class="pr" id="p-cast">195 zł</div>
+            <button class="go">Zamów odlew</button>
+          </div>
+          <div class="out">
+            <div class="t"><h5>Gotowy wyrób z zakutymi kamieniami</h5><p id="p-full-d">odlew, kamienie i zakucie, do noszenia</p></div>
+            <div class="pr" id="p-full">265 zł</div>
+            <button class="go" id="p-full-btn">Zamów wyrób</button>
+          </div>
         </div>
-        <p style="margin:0;font-size:13px;color:var(--ink-faint)">Ceny w szkicu są poglądowe. W narzędziu liczy je serwer z bieżącego kursu metalu z NBP, tak jak w pozostałych kalkulatorach.</p>
+        <p style="margin:0;font-size:13px;color:var(--ink-faint)">Ceny w szkicu są poglądowe. W narzędziu liczy je serwer przez <code>/api/price</code>, z kursu NBP i tabeli kamieni.</p>
       </div>
     </div>
   </div>
 
   <div class="col">
-    <p class="caption">Układ jest celowo dwudzielny: parametry po lewej zostają w jednym miejscu, żeby klient widział wszystkie swoje decyzje naraz, a scena po prawej pokazuje skutek. Odczyty siedzą pod podglądem, bo masa i cena to konsekwencja rysunku, a nie osobny temat.</p>
-  </div>
-
-  <div class="col">
-    <h3>Gotowe modele, gdzie klient podaje tylko rozmiar</h3>
-    <p>Obok pełnego kreatora ta sama maszyneria obsługuje krótką ścieżkę, o którą pytałeś: kilka naszych projektów z zablokowanymi parametrami, gdzie klient wybiera wyłącznie rozmiar i metal. To jest osobny wpis w katalogu z <code>preset</code>, nie osobny kod.</p>
-    <p>To dobra ścieżka na start, bo pozwala sprzedawać pliki, zanim pełny kreator obsłuży wszystkie oprawy.</p>
+    <p class="caption">Cztery wyjścia leżą obok siebie, a nie w osobnych krokach, bo to jest dokładnie ten moment, w którym klient porównuje: plik za kilkadziesiąt złotych kontra gotowy wyrób za kilkaset. Ukrycie tej różnicy w osobnych ekranach zmusiłoby go do klikania w tę i z powrotem.</p>
   </div>
 </section>
 
-<!-- 5 -->
+<!-- INTEGRACJA -->
 <section class="col">
-  <p class="sec-num">Model danych</p>
-  <h2>Jedna umowa między warstwami</h2>
-  <p>Wszystko, co robi kreator, przechodzi przez jeden obiekt. To on jedzie do generatora, on ląduje w zapisanej wycenie, on trafia do zamówienia i to on jest tym, co ChatGPT ma wypełnić, gdy klient opisze pierścionek słowami.</p>
+  <p class="sec-num">Integracja</p>
+  <h2>Żeby to nie było osobnym bytem</h2>
+
+  <p>Napisałeś to wprost i to jest najważniejsze zdanie w Twoich uwagach. Narzędzie doklejone z boku umiera: nikt do niego nie trafia, nikt go nie linkuje, a jego ceny rozjeżdżają się z resztą serwisu. Konkretne punkty styku:</p>
 
   <div class="scroll">
     <table>
-      <thead><tr><th>Pole</th><th>Typ</th><th>Zakres</th><th>Po co</th></tr></thead>
+      <thead><tr><th>Punkt styku</th><th>Jak wpinamy</th></tr></thead>
       <tbody>
-        <tr><td><code>innerDia</code></td><td class="num">mm</td><td class="num">14,0–22,0</td><td>rozmiar, z naszej tabeli rozmiarów</td></tr>
-        <tr><td><code>metal</code></td><td>enum</td><td>ag925, au585, au750</td><td>gęstość, cena, skurcz odlewniczy</td></tr>
-        <tr><td><code>profile</code></td><td>enum</td><td>round, flat, knife, comfort</td><td>kształt przekroju szyny</td></tr>
-        <tr><td><code>width</code></td><td class="num">mm</td><td class="num">1,4–6,0</td><td>szerokość szyny</td></tr>
-        <tr><td><code>thickness</code></td><td class="num">mm</td><td class="num">1,0–3,0</td><td>grubość, decyduje o wytrzymałości</td></tr>
-        <tr><td><code>stone.cut</code></td><td>enum</td><td>brilliant, oval, princess, none</td><td>profil bryły kamienia</td></tr>
-        <tr><td><code>stone.dia</code></td><td class="num">mm</td><td class="num">2,0–10,0</td><td>rondysta, z niej liczymy gniazdo</td></tr>
-        <tr><td><code>head.type</code></td><td>enum</td><td>prong4, prong6, bezel</td><td>rodzaj korony</td></tr>
-        <tr><td><code>head.prongDia</code></td><td class="num">mm</td><td class="num">0,7–1,4</td><td>grubość łapki</td></tr>
-        <tr><td><code>side.count</code></td><td class="num">szt</td><td class="num">0–24</td><td>kamienie na szynie</td></tr>
-        <tr><td><code>side.dia</code></td><td class="num">mm</td><td class="num">1,0–3,0</td><td>średnica kamieni bocznych</td></tr>
+        <tr><td><code>/api/price</code></td><td>Kreator nie liczy ceny u siebie. Woła ten sam rdzeń wyceny, co kalkulatory i koszyk, więc jedna zmiana cennika działa wszędzie.</td></tr>
+        <tr><td><code>CalcToCart.jsx</code></td><td>Gotowy komponent kwoty wiążącej i koszyka. Kreator kończy się nim, a nie własnym formularzem.</td></tr>
+        <tr><td><code>gemstone_prices</code></td><td>Jedno źródło cen kamieni dla kreatora, kalkulatora biżuterii i sklepu.</td></tr>
+        <tr><td>System wycen</td><td>Ścieżka indywidualnej wyceny i zapis konfiguracji na później.</td></tr>
+        <tr><td>Kalkulator rozmiaru i przymiarka</td><td>Klient, który nie zna rozmiaru, wychodzi do przymiarki i wraca z liczbą, zamiast zgadywać.</td></tr>
+        <tr><td>Kalkulator blanku obrączki</td><td>Ta sama arytmetyka szyny. Jeden rdzeń, dwa wejścia.</td></tr>
+        <tr><td><code>toolLinks.js</code></td><td>Twarda reguła projektu: wpisy o pierścionkach, obrączkach, sygnetach i szlifach muszą prowadzić do kreatora. Narzędzie niepolinkowane nie istnieje.</td></tr>
+        <tr><td>Sklep</td><td>Presety z zablokowanymi parametrami stają się kartami produktu, a nie osobną listą.</td></tr>
+        <tr><td>Prerender</td><td>Nowe trasy dopisane w trzech miejscach naraz, inaczej Cloudflare odda twarde 404.</td></tr>
       </tbody>
     </table>
   </div>
 
   <div class="note">
-    <span class="tag">Wymiar, który ratuje odlewy</span>
-    <p>Gniazdo nie jest równe rondyście. Model musi być <strong>odrobinę mniejszy niż kamień</strong>, a do tego uwzględniać skurcz metalu przy stygnięciu. Kąt oparcia ma odpowiadać kątowi pawilonu poniżej rondysty, a rondysta ma siedzieć około 1 mm nad galerią. To są reguły warsztatowe, które wchodzą do generatora jako stałe, osobne dla każdego stopu. <strong>Bez nich kreator produkuje ładne pliki i nienadające się odlewy.</strong></p>
+    <span class="tag">Pułapka, którą już raz na tym projekcie zaliczyliśmy</span>
+    <p>Rdzeń wyceny biżuterii przyjmuje kursy i kamienie jako <strong>argumenty pozycyjne</strong>. Pominięty argument nie zgłasza błędu, tylko po cichu wraca do stałych z konfiguracji i oddaje wiarygodnie wyglądającą, nieprawdziwą cenę. Trafiliśmy na to trzy razy w jeden dzień. Kreator wołający tę ścieżkę <strong>dostaje własny test na to samo</strong>, jeszcze zanim powstanie interfejs.</p>
   </div>
 </section>
 
-<!-- 6 -->
+<!-- MODEL -->
 <section class="col">
-  <p class="sec-num">Narzędzia</p>
-  <h2>Czego użyjemy, co już mamy</h2>
+  <p class="sec-num">Model danych</p>
+  <h2>Jedna umowa, teraz szersza</h2>
   <div class="scroll">
     <table>
-      <thead><tr><th>Narzędzie</th><th>Rola</th><th>Stan</th></tr></thead>
+      <thead><tr><th>Pole</th><th>Zakres</th><th>Po co</th></tr></thead>
       <tbody>
-        <tr><td><code>manifold-3d</code> 3.5.1</td><td>jądro geometryczne, bryła z parametrów</td><td><span class="pill part">jest w prototypie</span></td></tr>
-        <tr><td><code>three</code> 0.184</td><td>podgląd 3D, obracanie, oświetlenie</td><td><span class="pill yes">w projekcie</span></td></tr>
-        <tr><td><code>STLViewer.jsx</code></td><td>gotowy komponent podglądu i miniatur</td><td><span class="pill yes">w projekcie</span></td></tr>
-        <tr><td><code>occt-import-js</code></td><td>wczytywanie STEP, przyda się przy imporcie</td><td><span class="pill yes">w projekcie</span></td></tr>
-        <tr><td>chat-api, OpenAI</td><td>zdanie klienta zamienione na parametry</td><td><span class="pill yes">w projekcie</span></td></tr>
-        <tr><td>PostgreSQL, tabele wycen</td><td>zapis konfiguracji, ważność, odtworzenie</td><td><span class="pill yes">w projekcie</span></td></tr>
-        <tr><td>Autopay</td><td>płatność przed wydaniem pliku</td><td><span class="pill yes">w projekcie</span></td></tr>
-        <tr><td><code>offerKinds.js</code></td><td>reżim odstąpienia dla treści cyfrowej</td><td><span class="pill yes">w projekcie</span></td></tr>
-        <tr><td>NBP, kursy metali</td><td>wycena z bieżącej ceny srebra i złota</td><td><span class="pill yes">w projekcie</span></td></tr>
-        <tr><td>Web Worker</td><td>liczenie bryły poza wątkiem interfejsu</td><td><span class="pill no">do dodania</span></td></tr>
+        <tr><td><code>kind</code></td><td>ring, signet</td><td>wybór generatora</td></tr>
+        <tr><td><code>innerDia</code></td><td class="num">14,0–23,0 mm</td><td>rozmiar, z naszej tabeli</td></tr>
+        <tr><td><code>metal</code></td><td>ag925, au585, au750</td><td>gęstość, cena, skurcz odlewniczy</td></tr>
+        <tr><td><code>profile</code></td><td>round, flat, knife, comfort</td><td>przekrój szyny</td></tr>
+        <tr><td><code>width</code>, <code>thickness</code></td><td class="num">1,4–8,0 / 1,0–4,0 mm</td><td>wymiary szyny</td></tr>
+        <tr><td><code>stone.cut</code></td><td>brilliant, oval, princess, emerald, marquise, cabochon, none</td><td>bryła kamienia i dozwolone zakucia</td></tr>
+        <tr><td><code>stone.size</code></td><td class="num">2,0–10,0 mm</td><td>rondysta, z niej gniazdo</td></tr>
+        <tr><td><code>stone.material</code></td><td>klucz z <code>gemstone_prices</code></td><td>cena i dostępność</td></tr>
+        <tr><td><code>stone.origin</code></td><td>stock, order, customer</td><td>czy sprzedajemy kamień, czy tylko robociznę</td></tr>
+        <tr><td><code>setting</code></td><td>prong4, prong6, corner, vprong, bezel</td><td>korona, walidowana względem szlifu</td></tr>
+        <tr><td><code>side.count</code>, <code>side.size</code></td><td class="num">0–24 szt / 1,0–3,0 mm</td><td>kamienie na szynie</td></tr>
+        <tr><td><code>signet.table</code></td><td>oval, cushion, rect</td><td>kształt tarczy</td></tr>
+        <tr><td><code>signet.length</code></td><td class="num">9,0–20,0 mm</td><td>rozmiar tarczy</td></tr>
+        <tr><td><code>signet.engraving</code></td><td>none, mono, crest</td><td>zlecenie na laser fibrowy</td></tr>
+        <tr><td><code>output</code></td><td>mesh, step, cast, finished, quote</td><td>wybrane wyjście</td></tr>
       </tbody>
     </table>
   </div>
-  <p>Jedyna nowa zależność produkcyjna to <code>manifold-3d</code>, i to biblioteka, którą już przetestowaliśmy. <strong>Nie kupujemy żadnego SaaS.</strong></p>
+  <p>Ten sam obiekt jedzie do generatora, do wyceny, do koszyka i do zapisanej wyceny. To on jest też tym, co model językowy ma wypełnić, gdy klient opisze pierścionek zdaniem.</p>
 </section>
 
-<!-- 7 -->
+<!-- ETAPY -->
 <section class="col">
   <p class="sec-num">Realizacja</p>
-  <h2>Pięć etapów, każdy z własnym progiem</h2>
-  <p>Kolejność nie jest dowolna. Każdy etap kończy się czymś, co da się uruchomić i ocenić, a etap czwarty ma sens dopiero, gdy trzeci działa.</p>
+  <h2>Sześć etapów, każdy z progiem</h2>
 
   <div class="phase">
     <div class="n">1</div>
     <div>
-      <h4>Generator jako biblioteka, bez interfejsu</h4>
-      <p>Prototyp z <code>parked/ring-poc</code> przerobiony na moduł z pełnym modelem parametrów, profilami szyny, trzema szlifami, koroną i kamieniami na szynie. Wyjście: bryła i masa. Próg: test, który dla dwudziestu zestawów parametrów sprawdza, że siatka jest zamknięta, a średnica wewnętrzna trafia w zadaną wartość.</p>
-      <div class="who-row"><span class="agent"><b>architect</b> model parametrów, reguły gniazd</span><span class="agent"><b>dev</b> implementacja i testy</span></div>
+      <h4>Porównanie jąder i generator jako biblioteka</h4>
+      <p>Najpierw pomiar: ten sam pierścionek na manifoldzie i na OpenCascade, czas generowania, wygląd przejść, eksport STL, 3MF i STEP. Decyzja z liczb. Potem generator za wymiennym interfejsem, z pełnym modelem parametrów, sześcioma szlifami i regułami zakucia. Próg: dla dwudziestu zestawów parametrów siatka zamknięta, średnica wewnętrzna trafiona, niedozwolone zakucia odrzucone.</p>
+      <div class="who-row"><span class="agent"><b>architect</b> porównanie, model danych, reguły gniazd</span><span class="agent"><b>dev</b> implementacja i testy</span></div>
     </div>
   </div>
-
   <div class="phase">
     <div class="n">2</div>
     <div>
-      <h4>Wycena po stronie serwera</h4>
-      <p>Masa z generatora wpięta w istniejącą ścieżkę cenową, z kursem NBP i regułą walutową. Endpoint przyjmuje parametry, oddaje cenę pliku i cenę odlewu. Próg: test, który udowadnia, że podmiana parametrów w przeglądarce nie zmienia ceny.</p>
+      <h4>Wycena i cennik kamieni po stronie serwera</h4>
+      <p>Masa z generatora plus kamienie z <code>gemstone_prices</code>, w tym trzeci stan bez ceny. Cztery ceny wyjściowe z jednego wywołania. Próg: test, że podmiana parametrów w przeglądarce nie zmienia ceny, i drugi, że kursy i kamienie faktycznie docierają do rdzenia.</p>
       <div class="who-row"><span class="agent"><b>dev</b> endpoint i wycena</span><span class="agent"><b>architect</b> przegląd bezpieczeństwa</span></div>
     </div>
   </div>
-
   <div class="phase">
     <div class="n">3</div>
     <div>
       <h4>Interfejs kreatora</h4>
-      <p>Układ z prototypu wyżej, podgląd w Three.js, liczenie bryły w Web Workerze, żeby suwak nie zacinał strony. Próg: pełna konfiguracja na telefonie bez przewijania w bok.</p>
+      <p>Układ z prototypu, podgląd w Three.js, liczenie poza wątkiem interfejsu, wygaszanie niedozwolonych zakuć. Próg: pełna konfiguracja na telefonie bez przewijania w bok.</p>
       <div class="who-row"><span class="agent"><b>aejaca-design</b> zgodność z systemem marki</span><span class="agent"><b>dev</b> komponenty i worker</span><span class="agent"><b>quick</b> klucze i18n w pl, en, de</span></div>
     </div>
   </div>
-
   <div class="phase">
     <div class="n">4</div>
     <div>
-      <h4>Sprzedaż pliku i zamówienie odlewu</h4>
-      <p>Płatność, wydanie STL dopiero po zaksięgowaniu, zgoda na natychmiastowe wykonanie z utratą prawa odstąpienia, druga ścieżka jako zlecenie warsztatowe. Próg: pełny zakup na końcu z realnym plikiem i mailem.</p>
-      <div class="who-row"><span class="agent"><b>dev</b> płatność i wydanie pliku</span><span class="agent"><b>architect</b> ścieżka prawna i zgody</span></div>
+      <h4>Cztery wyjścia i wpięcie w sklep</h4>
+      <p>Płatność, wydanie pliku po zaksięgowaniu, zgoda na natychmiastowe wykonanie, odlew i gotowy wyrób jako zlecenia warsztatowe, brak ceny kamienia jako indywidualna wycena. Wszystko przez istniejący koszyk, nie obok niego. Próg: cztery pełne przejścia, po jednym na każde wyjście.</p>
+      <div class="who-row"><span class="agent"><b>dev</b> płatność, koszyk, wydanie pliku</span><span class="agent"><b>architect</b> ścieżka prawna i zgody</span></div>
     </div>
   </div>
-
   <div class="phase">
     <div class="n">5</div>
     <div>
-      <h4>Furtka językowa i gotowe modele</h4>
-      <p>Opis słowami zamieniany przez chat-api na parametry, z podglądem do potwierdzenia, nigdy bez. Do tego kilka presetów, gdzie klient wskazuje tylko rozmiar. Próg: dwadzieścia zdań testowych, z których żadne nie daje parametrów poza dozwolonym zakresem.</p>
-      <div class="who-row"><span class="agent"><b>architect</b> schemat wyjścia i walidacja</span><span class="agent"><b>dev</b> wpięcie w chat-api</span></div>
+      <h4>Sygnety</h4>
+      <p>Drugi generator na wspólnym kodzie szyny: tarcza owalna, poduszkowa i prostokątna, zbieżność szyny ku tarczy, ramiona, grawer jako zlecenie na laser fibrowy. Próg: trzy sygnety odlane z plików z kreatora.</p>
+      <div class="who-row"><span class="agent"><b>architect</b> geometria tarczy i ramion</span><span class="agent"><b>dev</b> generator i interfejs</span></div>
     </div>
   </div>
-
-  <h3>Podział na agentów, skrótem</h3>
-  <ul>
-    <li><strong>architect</strong>, model danych, reguły warsztatowe, bezpieczeństwo wyceny, schemat wyjścia dla AI. To są decyzje, których późniejsza zmiana boli najbardziej.</li>
-    <li><strong>dev</strong>, cała implementacja: generator, endpoint, komponenty, płatność.</li>
-    <li><strong>aejaca-design</strong>, zgodność z bursztynowym systemem Jewelry.</li>
-    <li><strong>quick</strong>, tłumaczenia, drobne poprawki, przebiegi buildów.</li>
-    <li><strong>researcher</strong>, ustalanie proporcji szlifów i wymiarów opraw, gdy zabraknie danych.</li>
-  </ul>
+  <div class="phase">
+    <div class="n">6</div>
+    <div>
+      <h4>Furtka językowa, presety i linkowanie</h4>
+      <p>Opis słowami zamieniany na parametry, zawsze z podglądem do potwierdzenia. Presety z zablokowanymi parametrami jako karty w sklepie. Wpisy blogowe i hasła słownika podpięte w <code>toolLinks.js</code>. Próg: dwadzieścia zdań testowych, żadne nie daje parametrów poza zakresem, i zero pustych powiązań w kontroli linkowania.</p>
+      <div class="who-row"><span class="agent"><b>architect</b> schemat wyjścia i walidacja</span><span class="agent"><b>dev</b> wpięcie w chat-api</span><span class="agent"><b>quick</b> mapowanie narzędzi i treści</span></div>
+    </div>
+  </div>
 </section>
 
-<!-- 8 -->
+<!-- RYZYKA -->
 <section class="col">
   <p class="sec-num">Ryzyka</p>
   <h2>Co może to wywrócić</h2>
   <ul>
-    <li><strong>Zaokrąglenia.</strong> Manifold ich nie ma. Jeśli okaże się, że przejścia korony w szynę wyglądają surowo, wracamy do OpenCascade dla tego jednego węzła. Sprawdzamy to na etapie pierwszym, nie po zbudowaniu interfejsu.</li>
-    <li><strong>Wydajność na telefonie.</strong> WASM plus WebGL to na słabszym telefonie realny problem. Stąd Web Worker i przycięcie liczby segmentów w podglądzie.</li>
-    <li><strong>Odpowiedzialność za plik.</strong> Klient wydrukuje nasz STL u siebie, źle dobierze żywicę i wróci z pretensją. Potrzebny jasny zapis, za co odpowiadamy, a za co nie.</li>
-    <li><strong>Sprzedaż cyfrowa do UE.</strong> Serwis jest trójjęzyczny i celuje w Niemcy. Rozliczenie usług elektronicznych dla konsumentów z UE to pytanie do księgowej, do wyjaśnienia przed pierwszą sprzedażą, nie przed pierwszą linijką kodu.</li>
-    <li><strong>Kanibalizacja.</strong> Plik za 49 zł może zabrać zamówienie odlewu za kilkaset. Dlatego cena pliku ma być odczuwalna, a przy zamówieniu odlewu odliczana.</li>
+    <li><strong>Wybór jądra.</strong> Jeżeli OpenCascade okaże się za wolny, a manifold za surowy, zostaje wariant mieszany: szybki podgląd na jednym, kupowany plik na drugim. Kosztuje utrzymaniem dwóch opisów tej samej bryły, więc sięgamy po niego dopiero, gdy pomiar nie zostawi wyboru.</li>
+    <li><strong>Cena kamienia i termin.</strong> Kamień sprowadzany zmienia cenę i termin między wyceną a zamówieniem. Robocizna wiąże na czternaście dni, kamień musi się przeliczać przy otwarciu, tak jak metal.</li>
+    <li><strong>Kamień powierzony przez klienta.</strong> Cudza własność w naszym warsztacie, przy zakuciu ryzyko odprysku. Wymaga protokołu przyjęcia i jasnego zapisu o odpowiedzialności.</li>
+    <li><strong>Odpowiedzialność za plik.</strong> Klient wydrukuje nasz STL u siebie, dobierze złą żywicę i wróci z pretensją. Potrzebny jasny zapis granicy.</li>
+    <li><strong>Kanibalizacja.</strong> Plik za kilkadziesiąt złotych może zabrać zamówienie za kilkaset. Dlatego cena pliku ma być odczuwalna, a przy zamówieniu wyrobu odliczana.</li>
+    <li><strong>Sprzedaż cyfrowa do UE.</strong> Serwis jest trójjęzyczny i celuje w Niemcy. Pytanie do księgowej przed pierwszą sprzedażą, nie przed pierwszą linijką kodu.</li>
   </ul>
 </section>
 
-<!-- 9 -->
+<!-- DECYZJA -->
 <section class="col">
   <p class="sec-num">Decyzja</p>
-  <h2>Co zatwierdzasz</h2>
+  <h2>Jedna rzecz do rozstrzygnięcia</h2>
+  <p>Punkty 1, 3, 4 i 5 masz zatwierdzone i wchodzą bez zmian. Twoje uzupełnienia są w planie w całości. Zostaje jedno:</p>
   <ol>
-    <li><strong>Geometria z kodu, nie z AI.</strong> ChatGPT tylko jako furtka językowa i opisy.</li>
-    <li><strong>manifold-3d</strong> jako jądro, bez SaaS i bez abonamentu.</li>
-    <li><strong>Wycena i wydanie pliku wyłącznie po stronie serwera.</strong></li>
-    <li><strong>Układ interfejsu</strong> taki jak w prototypie wyżej.</li>
-    <li><strong>Kolejność etapów</strong>, z generatorem przed interfejsem.</li>
+    <li><strong>Zgoda na to, że etap pierwszy zaczyna się od porównania jąder</strong>, a punkt drugi, czyli manifold, przestaje być przesądzony i staje się kandydatem obok OpenCascade. Powód: STEP, o który poprosiłeś, i zaokrąglenia, które i tak były ryzykiem numer jeden.</li>
   </ol>
-  <p>Po akceptacji zaczynam od etapu pierwszego i wracam z działającym generatorem oraz testami, zanim powstanie jakikolwiek ekran.</p>
+  <p>Jeżeli wolisz nie otwierać tego wątku, alternatywa jest prosta i uczciwa: <strong>zostajemy przy manifoldzie, a z oferty znika STEP</strong>. Klient dostaje STL i 3MF, czyli wszystko, czego potrzeba do druku i odlewu. Tylko jubiler chcący edytować model odchodzi z niczym.</p>
+  <p>Po Twojej odpowiedzi zaczynam od etapu pierwszego i wracam z pomiarem oraz działającym generatorem, zanim powstanie jakikolwiek ekran.</p>
 </section>
 
 </div>
 
 <footer>
   <div class="wrap col">
-    <p style="margin:0">AEJaCA, plan wewnętrzny. Nic z tego nie jest jeszcze zaimplementowane. Prototyp powyżej liczy poglądowo i służy wyłącznie ocenie układu.</p>
+    <p style="margin:0">AEJaCA, plan wewnętrzny, wersja 2. Nic z tego nie jest zaimplementowane. Prototyp powyżej liczy poglądowo i służy wyłącznie ocenie układu i logiki.</p>
   </div>
 </footer>
 
 <script>
 (function(){
   "use strict";
-  var S = { dia:17.2, metal:"ag925", profile:"round", width:2.2, thick:1.6,
-            stone:"brilliant", sdia:6.5, prongs:"4", side:0 };
 
-  var METAL = { ag925:{ d:10.36, pln:11.4, name:"Ag 925" },
-                au585:{ d:13.10, pln:452,  name:"Au 585" },
-                au750:{ d:15.50, pln:580,  name:"Au 750" } };
+  var S = { kind:"ring", dia:17.2, metal:"ag925", profile:"round", width:2.2, thick:1.6,
+            cut:"brilliant", set:"prong4", sdia:6.5, mat:"cz", side:0,
+            table:"oval", tsize:14, engrave:"none" };
+
+  var METAL = { ag925:{d:10.36, pln:11.4}, au585:{d:13.10, pln:452}, au750:{d:15.50, pln:580} };
+
+  // Dopuszczalne zakucia wynikaja ze szlifu. Puste base = brak ceny w bazie.
+  var ALLOWED = {
+    brilliant:["prong4","prong6","bezel"],
+    oval:     ["prong4","prong6","bezel"],
+    princess: ["corner","bezel"],
+    emerald:  ["corner","bezel"],
+    marquise: ["vprong","bezel"],
+    cabochon: ["bezel"],
+    none:     []
+  };
+  var CUT_HINT = {
+    brilliant:"Rondysta na całym obwodzie, każde zakucie trzyma.",
+    oval:"Łapki idą na osiach dłuższej i krótszej.",
+    princess:"Narożniki są kruche, muszą być zakryte łapką narożną.",
+    emerald:"Ścięte narożniki dają naturalne oparcie dla łapki.",
+    marquise:"Szpice bez łapki V odpryskują. Zwykła łapka ich nie chroni.",
+    cabochon:"Brak rondysty i kąta pawilonu, nie ma czego chwycić łapką.",
+    none:"Bez kamienia zakucie nie występuje."
+  };
+  // base = cena za kamien 6,5 mm; null = brak ceny, idzie do wyceny
+  var STONE = {
+    cz:      { base:15,    avail:"stock",  label:"Na stanie w warsztacie." },
+    garnet:  { base:120,   avail:"stock",  label:"Na stanie w warsztacie." },
+    moiss:   { base:450,   avail:"order",  label:"Sprowadzamy, cena znana, termin dłuższy." },
+    diamond: { base:12800, avail:"order",  label:"Sprowadzamy, cena zależy od klasy." },
+    sapphire:{ base:null,  avail:"quote",  label:"Ceny nie mamy w bazie, idzie do indywidualnej wyceny." }
+  };
 
   var nf = function(n,d){ return n.toLocaleString("pl-PL",{minimumFractionDigits:d,maximumFractionDigits:d}); };
   var $ = function(id){ return document.getElementById(id); };
+  var press = function(w,v){ Array.prototype.forEach.call(w.querySelectorAll("button"), function(b){
+    b.setAttribute("aria-pressed", String(b.dataset.v === String(v))); }); };
 
-  function segment(wrapId, key, cast){
-    var w = $(wrapId);
+  function segment(id, key, cast){
+    var w = $(id);
     w.addEventListener("click", function(e){
-      var b = e.target.closest("button"); if(!b) return;
-      Array.prototype.forEach.call(w.querySelectorAll("button"), function(x){
-        x.setAttribute("aria-pressed", String(x === b));
-      });
+      var b = e.target.closest("button");
+      if(!b || b.disabled) return;
       S[key] = cast ? cast(b.dataset.v) : b.dataset.v;
+      press(w, b.dataset.v);
+      if (key === "cut") reconcileSetting();
       render();
     });
   }
-  function slider(id, key, unit, dec){
-    var el = $(id), out = $("v-" + id);
+  function slider(id, key, dec){
+    var el = $(id), out = $("v-"+id);
     el.addEventListener("input", function(){
       S[key] = parseFloat(el.value);
-      out.textContent = nf(S[key], dec) + " " + unit;
+      out.textContent = nf(S[key],dec)+" mm";
       render();
     });
   }
 
-  // ---- geometry-ish maths, same shape as the real generator ----
-  function metrics(){
-    var m = METAL[S.metal];
-    var ri = S.dia/2, rmid = ri + S.thick/2;
-    // profile area factor: half-round and knife carry less metal than a flat band
-    var f = S.profile === "flat" ? 1 : (S.profile === "knife" ? 0.55 : 0.82);
-    var bandMm3 = 2*Math.PI*rmid * S.width * S.thick * f;
-
-    var stones = 0, headMm3 = 0;
-    if (S.stone !== "none"){
-      stones += 1;
-      var pr = S.prongs === "bezel" ? 0 : parseInt(S.prongs,10);
-      if (S.prongs === "bezel"){
-        headMm3 = Math.PI * S.sdia * 0.8 * (S.sdia*0.35); // rim band
-      } else {
-        headMm3 = pr * (Math.PI*0.5*0.5) * (S.sdia*0.9) + Math.PI*Math.pow(S.sdia*0.55,2)*0.5;
-      }
-    }
-    var sideMm3 = 0;
-    if (S.side > 0){ stones += S.side; sideMm3 = S.side * 0.9; }
-
-    var mm3 = bandMm3 + headMm3 + sideMm3;
-    var grams = mm3/1000 * m.d;
-    var metalCost = grams * m.pln;
-    var filePLN = 49 + (S.side>0?20:0) + (S.prongs==="bezel"?0:0) + (S.stone==="none"?-20:0);
-    var castPLN = S.stone === "none" && S.side === 0
-      ? Math.round((metalCost + 160)/10)*10
-      : Math.round((metalCost + 160 + 90 + stones*35)/10)*10;
-    return { grams:grams, stones:stones, circ:Math.PI*S.dia, file:filePLN, cast:castPLN };
+  // Zakucie musi byc zgodne ze szlifem, wiec przy zmianie szlifu poprawiamy je sami.
+  function reconcileSetting(){
+    var ok = ALLOWED[S.cut] || [];
+    Array.prototype.forEach.call($("s-set").querySelectorAll("button"), function(b){
+      b.disabled = ok.indexOf(b.dataset.v) === -1;
+    });
+    if (ok.length && ok.indexOf(S.set) === -1){ S.set = ok[0]; press($("s-set"), S.set); }
+    $("set-hint").textContent = CUT_HINT[S.cut];
   }
 
-  // ---- drawings ----
+  function toggleKind(){
+    var signet = S.kind === "signet";
+    ["g-cut","g-set","g-sdia","g-mat","g-side"].forEach(function(id){ $(id).hidden = signet; });
+    ["g-table","g-tsize","g-engrave"].forEach(function(id){ $(id).hidden = !signet; });
+  }
+
+  function metrics(){
+    var m = METAL[S.metal];
+    var rmid = S.dia/2 + S.thick/2;
+    var f = S.profile === "flat" ? 1 : (S.profile === "knife" ? 0.55 : 0.82);
+    var mm3 = 2*Math.PI*rmid * S.width * S.thick * f;
+    var stones = 0, gemPLN = 0, quote = false;
+
+    if (S.kind === "signet"){
+      var L = S.tsize, W = L*0.82, T = 2.4;
+      mm3 += L*W*T * (S.table === "rect" ? 1 : 0.8) + L*W*0.5; // tarcza plus ramiona
+    } else {
+      if (S.cut !== "none"){
+        stones += 1;
+        var st = STONE[S.mat];
+        if (st.base === null) quote = true;
+        else gemPLN += st.base * Math.pow(S.sdia/6.5, 2.6); // cena rosnie szybciej niz srednica
+        mm3 += S.set === "bezel"
+          ? Math.PI * S.sdia * 0.8 * (S.sdia*0.35)
+          : 4 * (Math.PI*0.25) * (S.sdia*0.9) + Math.PI*Math.pow(S.sdia*0.55,2)*0.5;
+      }
+      if (S.side > 0){ stones += S.side; mm3 += S.side*0.9; gemPLN += S.side*8; }
+    }
+
+    var grams = mm3/1000 * m.d;
+    var metalPLN = grams * m.pln;
+    var complexity = (S.side>0?1:0) + (S.cut==="marquise"||S.cut==="emerald"?1:0) + (S.kind==="signet"?1:0);
+    var filePLN = 49 + complexity*20;
+    var stepPLN = filePLN + 80;
+    var castPLN = Math.round((metalPLN + 150 + (S.kind==="signet"?60:0) + stones*12)/5)*5;
+    var fullPLN = Math.round((castPLN + gemPLN + stones*35)/5)*5;
+    return { grams:grams, stones:stones, metalPLN:metalPLN, file:filePLN, step:stepPLN,
+             cast:castPLN, full:fullPLN, quote:quote, circ:Math.PI*S.dia };
+  }
+
   var NS = "http://www.w3.org/2000/svg";
-  function el(n,a){ var e = document.createElementNS(NS,n); for(var k in a) e.setAttribute(k,a[k]); return e; }
+  function el(n,a){ var e=document.createElementNS(NS,n); for(var k in a) e.setAttribute(k,a[k]); return e; }
+  function txt(x,y,s,o){ var t=el("text",{x:x,y:y,fill:(o&&o.fill)||"#a2968a","font-size":(o&&o.size)||"10",
+    "text-anchor":(o&&o.anchor)||"middle","font-family":"ui-monospace,monospace"}); t.textContent=s; return t; }
+
+  function stoneShape(cx,cy,r,cut){
+    var g = el("g",{}), F={fill:"#101a22",stroke:"#9fb6c9","stroke-width":1.4};
+    if (cut === "princess"){
+      g.appendChild(el("rect",Object.assign({x:cx-r,y:cy-r,width:r*2,height:r*2},F)));
+      g.appendChild(el("rect",{x:cx-r*.5,y:cy-r*.5,width:r,height:r,fill:"none",stroke:"#6f8ba3","stroke-width":.9}));
+    } else if (cut === "emerald"){
+      var c=r*.34, p=[[cx-r+c,cy-r],[cx+r-c,cy-r],[cx+r,cy-r+c],[cx+r,cy+r-c],[cx+r-c,cy+r],[cx-r+c,cy+r],[cx-r,cy+r-c],[cx-r,cy-r+c]];
+      g.appendChild(el("polygon",Object.assign({points:p.map(function(q){return q.join(",");}).join(" ")},F)));
+      g.appendChild(el("rect",{x:cx-r*.55,y:cy-r*.55,width:r*1.1,height:r*1.1,fill:"none",stroke:"#6f8ba3","stroke-width":.9}));
+    } else if (cut === "oval"){
+      g.appendChild(el("ellipse",Object.assign({cx:cx,cy:cy,rx:r*.78,ry:r*1.05},F)));
+      g.appendChild(el("ellipse",{cx:cx,cy:cy,rx:r*.4,ry:r*.55,fill:"none",stroke:"#6f8ba3","stroke-width":.9}));
+    } else if (cut === "marquise"){
+      g.appendChild(el("path",{d:"M "+cx+" "+(cy-r*1.25)+" Q "+(cx+r*.72)+" "+cy+" "+cx+" "+(cy+r*1.25)+
+        " Q "+(cx-r*.72)+" "+cy+" "+cx+" "+(cy-r*1.25)+" Z", fill:F.fill,stroke:F.stroke,"stroke-width":1.4}));
+      g.appendChild(el("line",{x1:cx,y1:cy-r*1.25,x2:cx,y2:cy+r*1.25,stroke:"#6f8ba3","stroke-width":.9}));
+    } else if (cut === "cabochon"){
+      g.appendChild(el("circle",Object.assign({cx:cx,cy:cy,r:r},F)));
+      g.appendChild(el("ellipse",{cx:cx-r*.3,cy:cy-r*.3,rx:r*.26,ry:r*.17,fill:"#3d5464",
+        transform:"rotate(-30 "+(cx-r*.3)+" "+(cy-r*.3)+")"}));
+    } else {
+      g.appendChild(el("circle",Object.assign({cx:cx,cy:cy,r:r},F)));
+      g.appendChild(el("circle",{cx:cx,cy:cy,r:r*.57,fill:"none",stroke:"#6f8ba3","stroke-width":.9}));
+      for (var i=0;i<8;i++){ var a=(i/8)*Math.PI*2-Math.PI/8;
+        g.appendChild(el("line",{x1:cx+Math.cos(a)*r*.57,y1:cy+Math.sin(a)*r*.57,
+          x2:cx+Math.cos(a)*r,y2:cy+Math.sin(a)*r,stroke:"#4d6577","stroke-width":.7})); }
+    }
+    return g;
+  }
+
+  function prongs(g,cx,cy,r,cut,set){
+    if (set === "bezel"){
+      var rr = cut==="marquise" ? r*1.3 : r+3;
+      if (cut==="oval") g.appendChild(el("ellipse",{cx:cx,cy:cy,rx:r*.78+3,ry:r*1.05+3,fill:"none",stroke:"#dfa44f","stroke-width":3}));
+      else g.appendChild(el("circle",{cx:cx,cy:cy,r:rr,fill:"none",stroke:"#dfa44f","stroke-width":3}));
+      return;
+    }
+    var pts = [];
+    if (set === "vprong") pts = [[0,-r*1.25],[0,r*1.25],[-r*.6,0],[r*.6,0]];
+    else if (set === "corner") pts = [[-r,-r],[r,-r],[r,r],[-r,r]];
+    else {
+      var n = set==="prong6" ? 6 : 4;
+      var rx = cut==="oval" ? r*.78 : r, ry = cut==="oval" ? r*1.05 : r;
+      for (var p=0;p<n;p++){ var a=(p/n)*Math.PI*2+Math.PI/4; pts.push([Math.cos(a)*rx, Math.sin(a)*ry]); }
+    }
+    pts.forEach(function(q){
+      g.appendChild(el("circle",{cx:cx+q[0],cy:cy+q[1],r:3.2,fill:"#dfa44f",stroke:"#0a0908","stroke-width":.8}));
+    });
+  }
 
   function drawFront(){
     var svg = $("front"); svg.textContent = "";
-    var cx=150, cy=165, k=6.4;                    // mm to px
-    var ri = S.dia/2*k, ro = ri + S.thick*k;
-
+    var cx=150, cy=170, k=6.0;
+    var ri=S.dia/2*k, ro=ri+S.thick*k;
     var g = el("g",{});
-    g.appendChild(el("circle",{cx:cx,cy:cy,r:ro,fill:"none",stroke:"#dfa44f","stroke-width":Math.max(2,S.width*1.5)}));
+
+    g.appendChild(el("circle",{cx:cx,cy:cy,r:ro,fill:"none",stroke:"#dfa44f","stroke-width":Math.max(2,S.width*1.4)}));
     g.appendChild(el("circle",{cx:cx,cy:cy,r:ri,fill:"none",stroke:"#5a4a35","stroke-width":1,"stroke-dasharray":"3 3"}));
+    g.appendChild(el("line",{x1:cx-ri,y1:cy,x2:cx+ri,y2:cy,stroke:"#5a4a35","stroke-width":.8}));
+    g.appendChild(txt(cx,cy+14,"⌀"+nf(S.dia,1)+" mm"));
 
-    // side stones along the shank
-    if (S.side > 0){
-      var half = S.side/2, span = 62;
-      for (var s=0;s<S.side;s++){
-        var side = s < half ? -1 : 1;
-        var i = s % half;
-        var ang = -90 + side * (18 + (i*(span/half)));
-        var a = ang*Math.PI/180;
-        g.appendChild(el("circle",{cx:cx+Math.cos(a)*(ri+S.thick*k/2), cy:cy+Math.sin(a)*(ri+S.thick*k/2),
-          r:4, fill:"#0a0908", stroke:"#9fb6c9","stroke-width":1.2}));
+    if (S.kind === "signet"){
+      var L=S.tsize*k*.55, W=L*.82, ty=cy-ro-L*.5+4;
+      var shape;
+      if (S.table === "rect") shape = el("rect",{x:cx-W,y:ty-L*.72,width:W*2,height:L*1.44,rx:2});
+      else if (S.table === "cushion") shape = el("rect",{x:cx-W,y:ty-L*.72,width:W*2,height:L*1.44,rx:L*.42});
+      else shape = el("ellipse",{cx:cx,cy:ty,rx:W,ry:L*.72});
+      ["fill","stroke","stroke-width"].forEach(function(a,i){ shape.setAttribute(a,["rgba(223,164,79,.2)","#dfa44f","2"][i]); });
+      g.appendChild(shape);
+      if (S.engrave !== "none"){
+        g.appendChild(txt(cx,ty+5,S.engrave==="mono"?"AH":"⚜",{fill:"#8a6a3c",size:S.engrave==="mono"?"17":"20"}));
       }
-    }
-
-    // centre stone at 12 o'clock
-    if (S.stone !== "none"){
-      var sy = cy - ro - (S.sdia*k)/2 - 2, sr = S.sdia*k/2;
-      if (S.stone === "princess"){
-        g.appendChild(el("rect",{x:cx-sr,y:sy-sr,width:sr*2,height:sr*2,fill:"#101a22",stroke:"#9fb6c9","stroke-width":1.4}));
-        g.appendChild(el("rect",{x:cx-sr*0.5,y:sy-sr*0.5,width:sr,height:sr,fill:"none",stroke:"#6f8ba3","stroke-width":.9}));
-      } else if (S.stone === "oval"){
-        g.appendChild(el("ellipse",{cx:cx,cy:sy,rx:sr*0.78,ry:sr*1.05,fill:"#101a22",stroke:"#9fb6c9","stroke-width":1.4}));
-        g.appendChild(el("ellipse",{cx:cx,cy:sy,rx:sr*0.4,ry:sr*0.55,fill:"none",stroke:"#6f8ba3","stroke-width":.9}));
-      } else {
-        g.appendChild(el("circle",{cx:cx,cy:sy,r:sr,fill:"#101a22",stroke:"#9fb6c9","stroke-width":1.4}));
-        g.appendChild(el("circle",{cx:cx,cy:sy,r:sr*0.57,fill:"none",stroke:"#6f8ba3","stroke-width":.9}));
-        for (var f=0;f<8;f++){
-          var fa = (f/8)*Math.PI*2 - Math.PI/8;
-          g.appendChild(el("line",{x1:cx+Math.cos(fa)*sr*0.57,y1:sy+Math.sin(fa)*sr*0.57,
-            x2:cx+Math.cos(fa)*sr, y2:sy+Math.sin(fa)*sr, stroke:"#4d6577","stroke-width":.7}));
+      g.appendChild(el("line",{x1:cx-W,y1:ty-L*.72-13,x2:cx+W,y2:ty-L*.72-13,stroke:"#6f645b","stroke-width":.8}));
+      g.appendChild(txt(cx,ty-L*.72-18,nf(S.tsize,1)+" mm"));
+    } else {
+      if (S.side > 0){
+        var half=S.side/2, span=62;
+        for (var s=0;s<S.side;s++){
+          var sd = s<half ? -1:1, i = s%half;
+          var a=(-90 + sd*(18 + i*(span/half)))*Math.PI/180;
+          g.appendChild(el("circle",{cx:cx+Math.cos(a)*(ri+S.thick*k/2), cy:cy+Math.sin(a)*(ri+S.thick*k/2),
+            r:3.8, fill:"#0a0908", stroke:"#9fb6c9","stroke-width":1.2}));
         }
       }
-      if (S.prongs === "bezel"){
-        g.appendChild(el("circle",{cx:cx,cy:sy,r:sr+3,fill:"none",stroke:"#dfa44f","stroke-width":3}));
-      } else {
-        // laapki siedza na obrysie kamienia, wiec promien zalezy od szlifu
-        var rx = S.stone === "oval" ? sr*0.78 : sr;
-        var ry = S.stone === "oval" ? sr*1.05 : sr;
-        var n = parseInt(S.prongs,10);
-        for (var p=0;p<n;p++){
-          var pa = (p/n)*Math.PI*2 + Math.PI/4;
-          g.appendChild(el("circle",{cx:cx+Math.cos(pa)*rx, cy:sy+Math.sin(pa)*ry, r:3.1,
-            fill:"#dfa44f", stroke:"#0a0908","stroke-width":.8}));
-        }
+      if (S.cut !== "none"){
+        var sr=S.sdia*k/2, sy=cy-ro-sr*(S.cut==="marquise"?1.3:1.1)-3;
+        g.appendChild(stoneShape(cx,sy,sr,S.cut));
+        prongs(g,cx,sy,sr,S.cut,S.set);
+        g.appendChild(txt(cx, sy-sr*(S.cut==="marquise"?1.3:1)-11, "⌀"+nf(S.sdia,1)));
       }
-      // dimension line for the stone
-      g.appendChild(el("line",{x1:cx-sr,y1:sy-sr-13,x2:cx+sr,y2:sy-sr-13,stroke:"#6f645b","stroke-width":.8}));
-      var lbl = el("text",{x:cx,y:sy-sr-18,fill:"#a2968a","font-size":"10","text-anchor":"middle",
-        "font-family":"ui-monospace,monospace"});
-      lbl.textContent = "⌀" + nf(S.sdia,1);
-      g.appendChild(lbl);
     }
-
-    // inner diameter callout
-    var dl = el("line",{x1:cx-ri,y1:cy,x2:cx+ri,y2:cy,stroke:"#5a4a35","stroke-width":.8});
-    g.appendChild(dl);
-    var t2 = el("text",{x:cx,y:cy+14,fill:"#a2968a","font-size":"10","text-anchor":"middle",
-      "font-family":"ui-monospace,monospace"});
-    t2.textContent = "⌀" + nf(S.dia,1) + " mm";
-    g.appendChild(t2);
     svg.appendChild(g);
   }
 
   function drawSide(){
     var svg = $("side"); svg.textContent = "";
-    var cx=150, cy=150, k=26;                       // heavy zoom, it is a cross-section
-    var w = S.width*k, t = S.thick*k;
-    var g = el("g",{}), shape;
+    var cx=150, cy=150, k=22;
+    var w=S.width*k, t=S.thick*k, g=el("g",{}), shape;
 
-    if (S.profile === "flat"){
-      shape = el("rect",{x:cx-w/2,y:cy-t/2,width:w,height:t,fill:"rgba(223,164,79,.16)",
-        stroke:"#dfa44f","stroke-width":2});
-    } else if (S.profile === "knife"){
-      shape = el("polygon",{points:[cx-w/2,cy+t/2,cx,cy-t/2,cx+w/2,cy+t/2].join(" "),
-        fill:"rgba(223,164,79,.16)",stroke:"#dfa44f","stroke-width":2});
-    } else {
-      shape = el("path",{d:"M "+(cx-w/2)+" "+(cy+t/2)+" L "+(cx+w/2)+" "+(cy+t/2)+
-        " A "+(w/2)+" "+t+" 0 0 0 "+(cx-w/2)+" "+(cy+t/2)+" Z",
-        fill:"rgba(223,164,79,.16)",stroke:"#dfa44f","stroke-width":2});
-    }
+    if (S.profile === "flat") shape = el("rect",{x:cx-w/2,y:cy-t/2,width:w,height:t});
+    else if (S.profile === "knife") shape = el("polygon",{points:[cx-w/2,cy+t/2,cx,cy-t/2,cx+w/2,cy+t/2].join(" ")});
+    else shape = el("path",{d:"M "+(cx-w/2)+" "+(cy+t/2)+" L "+(cx+w/2)+" "+(cy+t/2)+
+      " A "+(w/2)+" "+t+" 0 0 0 "+(cx-w/2)+" "+(cy+t/2)+" Z"});
+    shape.setAttribute("fill","rgba(223,164,79,.16)");
+    shape.setAttribute("stroke","#dfa44f"); shape.setAttribute("stroke-width","2");
     g.appendChild(shape);
 
-    // finger side marker
     g.appendChild(el("line",{x1:cx-w/2-22,y1:cy+t/2,x2:cx+w/2+22,y2:cy+t/2,
       stroke:"#5a4a35","stroke-width":1,"stroke-dasharray":"4 4"}));
-    var fin = el("text",{x:cx+w/2+26,y:cy+t/2+4,fill:"#6f645b","font-size":"9.5",
-      "font-family":"ui-monospace,monospace"}); fin.textContent="palec";
-    g.appendChild(fin);
-
-    // dimensions
+    g.appendChild(txt(cx+w/2+26,cy+t/2+4,"palec",{anchor:"start",fill:"#6f645b",size:"9.5"}));
     g.appendChild(el("line",{x1:cx-w/2,y1:cy+t/2+34,x2:cx+w/2,y2:cy+t/2+34,stroke:"#6f645b","stroke-width":.9}));
-    var tw = el("text",{x:cx,y:cy+t/2+50,fill:"#a2968a","font-size":"11","text-anchor":"middle",
-      "font-family":"ui-monospace,monospace"}); tw.textContent = nf(S.width,1)+" mm";
-    g.appendChild(tw);
+    g.appendChild(txt(cx,cy+t/2+50,nf(S.width,1)+" mm",{size:"11"}));
     g.appendChild(el("line",{x1:cx-w/2-30,y1:cy-t/2,x2:cx-w/2-30,y2:cy+t/2,stroke:"#6f645b","stroke-width":.9}));
-    var th = el("text",{x:cx-w/2-38,y:cy+4,fill:"#a2968a","font-size":"11","text-anchor":"end",
-      "font-family":"ui-monospace,monospace"}); th.textContent = nf(S.thick,1);
-    g.appendChild(th);
-
-    var nm = el("text",{x:cx,y:36,fill:"#6f645b","font-size":"10","text-anchor":"middle",
-      "font-family":"ui-monospace,monospace"});
-    nm.textContent = ({round:"PÓŁOKRĄGŁY",flat:"PŁASKI",knife:"NOŻOWY"})[S.profile];
-    g.appendChild(nm);
+    g.appendChild(txt(cx-w/2-38,cy+4,nf(S.thick,1),{anchor:"end",size:"11"}));
+    g.appendChild(txt(cx,36,({round:"PÓŁOKRĄGŁY",flat:"PŁASKI",knife:"NOŻOWY"})[S.profile],{fill:"#6f645b"}));
     svg.appendChild(g);
   }
 
   function render(){
-    drawFront(); drawSide();
+    toggleKind(); drawFront(); drawSide();
     var m = metrics();
-    $("r-circ").innerHTML = nf(m.circ,1) + "<small> mm</small>";
-    $("r-mass").innerHTML = nf(m.grams,2) + "<small> g</small>";
+    $("r-circ").innerHTML  = nf(m.circ,1)+"<small> mm</small>";
+    $("r-mass").innerHTML  = nf(m.grams,2)+"<small> g</small>";
     $("r-stones").textContent = String(m.stones);
-    $("r-file").innerHTML = m.file + "<small> zł</small>";
-    $("r-cast").innerHTML = nf(m.cast,0) + "<small> zł</small>";
+    $("r-metal").innerHTML = nf(m.metalPLN,0)+"<small> zł</small>";
+
+    $("p-file").textContent = m.file+" zł";
+    $("p-step").textContent = m.step+" zł";
+    $("p-cast").textContent = nf(m.cast,0)+" zł";
+
+    if (S.kind !== "signet" && S.cut !== "none") $("mat-hint").textContent = STONE[S.mat].label;
+    else $("mat-hint").textContent = "";
+
+    var full = $("p-full"), btn = $("p-full-btn"), desc = $("p-full-d");
+    if (m.quote){
+      full.textContent = "wycena indywidualna";
+      full.className = "pr quote";
+      btn.textContent = "Poproś o wycenę";
+      desc.textContent = "Ceny tego kamienia nie mamy w bazie, więc odpowiadamy ręcznie.";
+    } else {
+      full.textContent = nf(m.full,0)+" zł";
+      full.className = "pr";
+      btn.textContent = "Zamów wyrób";
+      desc.textContent = S.kind === "signet"
+        ? "odlew, polerowanie i grawer laserem fibrowym"
+        : "odlew, kamienie i zakucie, do noszenia";
+    }
+    $("p-cast-d").textContent = S.kind === "signet"
+      ? "odlany i wypolerowany, tarcza gotowa pod grawer"
+      : "odlany i wypolerowany, gniazda gotowe pod zakucie";
   }
 
-  slider("dia","dia","mm",1);
-  slider("width","width","mm",1);
-  slider("thick","thick","mm",1);
-  slider("sdia","sdia","mm",1);
-  segment("s-metal","metal");
-  segment("s-profile","profile");
-  segment("s-stone","stone");
-  segment("s-prongs","prongs");
+  slider("dia","dia",1); slider("width","width",1); slider("thick","thick",1);
+  slider("sdia","sdia",1); slider("tsize","tsize",1);
+  segment("s-kind","kind"); segment("s-metal","metal"); segment("s-profile","profile");
+  segment("s-cut","cut"); segment("s-set","set"); segment("s-mat","mat");
   segment("s-side","side",function(v){ return parseInt(v,10); });
-  render();
+  segment("s-table","table"); segment("s-engrave","engrave");
+  reconcileSetting(); render();
 })();
 </script>
