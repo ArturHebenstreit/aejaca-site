@@ -217,6 +217,54 @@ function radiusAt(pts, deg) {
   return best || Math.max(...pts.map(([x, y]) => Math.hypot(x, y)));
 }
 
+/**
+ * Lapka: pret, ktory podnosi sie wzdluz kamienia, ZAGINA nad rondysta
+ * i konczy sie zaokraglonym pazurkiem lezacym na koronie.
+ *
+ * Poprzednia wersja byla prostym walcem sciętym plasko na wysokosci korony.
+ * Wygladalo to jak cztery gwozdzie wbite obok kamienia i, co wazniejsze,
+ * TAK BY TO ODLANO: prosta lapka niczego nie trzyma, bo kamien wychodzi
+ * gora przy pierwszym zaczepieniu. Zagiecie nad rondysta jest tym, co
+ * fizycznie utrzymuje kamien w oprawie.
+ *
+ * Bryle skladamy z ciagu kul wzdluz toru. Jadro nie ma operacji otoczki
+ * wypuklej ani zamiatania po krzywej, a kule zachodza na siebie, wiec daja
+ * gladki pret bez szwow i zaokraglaja koniec za darmo. Kul jest dziewiec:
+ * mniej widac jako paciorki, wiecej nie zmienia juz ksztaltu, a kazda to
+ * osobna suma logiczna. Kule sa gladkie, bo lapka jest tu najblizej oka
+ * i granie na jej powierzchni widac od razu.
+ */
+export function prongSolid(w, { radius, prongR, base, girdleTop, crownH }) {
+  const { Manifold } = w;
+  const N = 11;
+
+  // Nad rondysta lapka pochyla sie do srodka o tyle promienia kamienia.
+  const overhang = prongR * 1.25;
+  // Pazurek konczy sie mniej wiecej w polowie korony. Wyzej zaslanialby
+  // tafle, nizej nie trzymalby kamienia.
+  const top = girdleTop + crownH * 0.5;
+  // Do konca rondysty pret idzie prosto, dopiero potem sie zagina.
+  const bend = (girdleTop - base) / (top - base);
+
+  let solid = null;
+  for (let i = 0; i < N; i++) {
+    const t = i / (N - 1);
+    const z = base + (top - base) * t;
+    // Wygladzenie zamiast zalamania: zagiecie narasta lagodnie.
+    const u = t <= bend ? 0 : (t - bend) / (1 - bend);
+    const r = radius - overhang * (u * u * (3 - 2 * u));
+    // Pret zweza sie ku gorze, tak jak zweza sie odlana lapka po opilowaniu.
+    const rad = prongR * (1 - 0.28 * t);
+    // Lapke budujemy na osi +X i dopiero gotowa obracamy na miejsce.
+    // Kazda kula to osobna suma logiczna, wiec liczenie szesciu lapek od zera
+    // kosztowalo szescdziesiat kilka operacji i podglad reagowal z polsekundowym
+    // opoznieniem. Ten sam ksztalt starczy raz.
+    const ball = Manifold.sphere(rad, 24).translate([r, 0, z]);
+    solid = solid ? solid.add(ball) : ball;
+  }
+  return solid;
+}
+
 function buildCrown(w, p, stone) {
   const { Manifold, CrossSection } = w;
   const cut = CUTS[p.stone.cut];
@@ -253,12 +301,23 @@ function buildCrown(w, p, stone) {
   add(basket);
 
   if (p.setting === "bezel") {
-    // Kaseta: scianka dookola rondysty, zawinieta nad kamien. Wnetrze
-    // wycina dopiero gniazdo, wiec tu zostawiamy pelny walec obrysu.
+    // Kaseta: scianka dookola rondysty, zawinieta nad kamien.
+    //
+    // Wczesniej byla prostym walcem o plaskiej gornej krawedzi, czyli tulejka.
+    // Prawdziwa kaseta zweza sie ku gorze, bo jubiler DOCISKA rant na kamien,
+    // a metal przy tym plynie do srodka. Plaska krawedz nie tylko wyglada
+    // technicznie, ale i sugeruje, ze kamien mozna wyjac bez rozgiecia oprawy.
+    //
+    // Wnetrze wycina dopiero gniazdo, wiec tu zostawiamy pelny obrys.
     const wall = 0.5;
     const h = stone.girdleH + stone.crownH * 0.35 + 0.4;
     const outer = CrossSection.ofPolygons([ccw(outlineFor(p.stone.cut, size + 2 * wall))]);
-    add(Manifold.extrude(outer, h + SEAT.aboveGalleryMm).translate([0, 0, -SEAT.aboveGalleryMm]));
+    const trzon = h * 0.7 + SEAT.aboveGalleryMm;
+    add(Manifold.extrude(outer, trzon).translate([0, 0, -SEAT.aboveGalleryMm]));
+    // Rant dociskany na kamien: ta sama scianka, ale zbiegajaca do wewnatrz.
+    const zbieg = 1 - (wall * 0.85) / (size / 2 + wall);
+    add(Manifold.extrude(outer, h * 0.3, 0, 0, [zbieg, zbieg])
+      .translate([0, 0, trzon - SEAT.aboveGalleryMm]));
     return { solid: crown, basketH };
   }
 
@@ -284,14 +343,26 @@ function buildCrown(w, p, stone) {
     return { solid: ring.rotate([90, 0, 0]).translate([0, 0, r * 0.6]), basketH: 0 };
   }
 
+  // Lapki o tym samym promieniu roznia sie wylacznie obrotem, a przy szlifie
+  // okraglym promien jest jeden dla wszystkich. Budujemy wiec ksztalt raz
+  // na promien i powielamy obrotem.
+  const wzorce = new Map();
   for (const deg of prongAngles(cut, p.setting)) {
     const a = deg * DEG;
     const rr = radiusAt(pts, deg) - rP * 0.15;
-    const h = stone.girdleH + stone.crownH * 0.75 + SEAT.aboveGalleryMm;
-    let prong = Manifold.cylinder(h, rP, rP * 0.82, 20, false)
-      .translate([Math.cos(a) * rr, Math.sin(a) * rr, -SEAT.aboveGalleryMm]);
+    const klucz = rr.toFixed(4);
+    if (!wzorce.has(klucz)) {
+      wzorce.set(klucz, prongSolid(w, {
+        radius: rr, prongR: rP,
+        base: -SEAT.aboveGalleryMm,
+        girdleTop: stone.girdleH,
+        crownH: stone.crownH,
+      }));
+    }
+    let prong = wzorce.get(klucz).rotate([0, 0, deg]);
     if (p.setting === "vprong") {
       // Lapka V obejmuje szpic z dwoch stron, wiec dokladamy klin.
+      const h = stone.girdleH + stone.crownH * 0.75 + SEAT.aboveGalleryMm;
       const wedge = Manifold.cube([rP * 2.6, rP * 2.6, h], false)
         .rotate([0, 0, deg])
         .translate([Math.cos(a) * (rr + rP * 0.2), Math.sin(a) * (rr + rP * 0.2), -SEAT.aboveGalleryMm]);
@@ -423,11 +494,40 @@ function buildSignetHead(w, p) {
     });
   }
   const cs = CrossSection.ofPolygons([ccw(pts)]);
-  // Tarcza zwezajaca sie ku szynie, zeby ramiona plynnie w nia przechodzily.
-  const head = Manifold.extrude(cs, T, 0, 0, [1, 1]);
-  const skirt = Manifold.extrude(CrossSection.ofPolygons([ccw(scalePts(pts, 1.0))]),
-    2.0, 0, 0, [0.62, 0.62]).translate([0, 0, -2.0]);
-  return head.add(skirt).translate([0, 0, -T * 0.15]);
+
+  // Trzy czesci, bo tak wyglada odlany sygnet i tak sie go poleruje.
+  //
+  // 1. Tarcza, plaska, w ktora idzie grawer.
+  // 2. FAZA na krawedzi tarczy. Bez niej krawedz jest ostra jak po
+  //    wykrojniku i cala glowica wyglada jak plytka doklejona do szyny.
+  //    Na kazdym sygnecie z polki ta faza jest, bo powstaje sama przy
+  //    polerowaniu kanta.
+  // 3. Ramiona, ktore rozszerzaja sie ku tarczy. Wczesniej byl tu krotki,
+  //    dwumilimetrowy stozek i przejscie w szyne bylo urwane. Wyzszy
+  //    i lagodniejszy daje sylwetke, ktora widac na kazdym zdjeciu:
+  //    szyna waska od spodu, masywna pod tarcza.
+  const faza = Math.min(0.45, T * 0.22);
+  const zbieg = 1 - faza / Math.min(W, L);
+
+  const tarcza = Manifold.extrude(cs, T - faza);
+  const kant = Manifold.extrude(cs, faza, 0, 0, [zbieg, zbieg]).translate([0, 0, T - faza]);
+
+  // Ramiona budujemy OD DOLU do gory, a nie przez odbicie gotowej bryly.
+  // Odbicie odwraca kierunek nawiniecia scian i jadro oddaje wtedy bryle
+  // pusta, po cichu, bez bledu. Ten sam mechanizm zjadl juz raz cala szyne.
+  // Wysokosc i zwezenie dobrane pod sylwetke ze zdjec katalogowych: ramiona
+  // maja WTAPIAC sie w tarcze, a nie podpierac ja jak nozka kieliszka.
+  // Przy 3,4 mm i zwezeniu do 0,46 glowica wygladala jak grzyb postawiony
+  // na cienkiej szynie.
+  const ramionaH = 2.2;
+  const wask = 0.76;
+  const ramiona = Manifold.extrude(
+    CrossSection.ofPolygons([ccw(scalePts(pts, wask))]),
+    ramionaH, 0, 0, [1 / wask, 1 / wask],
+  ).translate([0, 0, -ramionaH]);
+
+  // Glowica siedzi GLEBIEJ w szynie, zeby przejscie bylo plynne.
+  return tarcza.add(kant).add(ramiona).translate([0, 0, -T * 0.45]);
 }
 
 // ------------------------------------------------------------

@@ -16,7 +16,7 @@
 //
 // Wchodzi do builda.
 
-import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel } from "../src/geometry/ring/build.js";
+import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid } from "../src/geometry/ring/build.js";
 import { CUTS, SETTINGS, validate } from "../src/geometry/ring/params.js";
 import { CASTING_ALLOYS, METAL_COLORS, colorsFor, densityFor } from "../src/data/castingAlloys.js";
 import { GEMSTONES } from "../src/pricing/jewelryConfig.js";
@@ -286,6 +286,44 @@ console.log("\n8. Katalog kamieni pokrywa sie z optyką");
   const zle = nieprzezr.filter((id) => gemOptics(id).transmission > 0);
   if (!zle.length) ok("kamienie nieprzezroczyste nie przepuszczaja swiatla");
   else bad(`przezroczyste, a nie powinny: ${zle.join(", ")}`);
+}
+
+// ------------------------------------------------------------
+// 9. Lapka zagina sie nad kamieniem
+// ------------------------------------------------------------
+// Prosta lapka, sciecie plaskie na wysokosci korony, niczego nie trzyma:
+// kamien wychodzi gora przy pierwszym zaczepieniu. To jest wada WYROBU,
+// nie rysunku, wiec musi ja lapac test, a nie oko na zrzucie ekranu.
+console.log("\n9. Łapka zagina się nad kamieniem");
+{
+  const w = await kernel();
+  const prong = prongSolid(w, {
+    radius: 3.25, prongR: 0.45, base: -1.0, girdleTop: 0.2, crownH: 1.04,
+  });
+  const m = prong.getMesh();
+  const v = m.vertProperties, n = m.numVert;
+  let zMin = Infinity, zMax = -Infinity;
+  for (let i = 0; i < n; i++) { const z = v[i * 3 + 2]; if (z < zMin) zMin = z; if (z > zMax) zMax = z; }
+
+  // Promien mierzymy przy podstawie i przy pazurku.
+  const przy = (zc) => {
+    let s = 0, k = 0;
+    for (let i = 0; i < n; i++) {
+      if (Math.abs(v[i * 3 + 2] - zc) < 0.12) { s += v[i * 3]; k++; }
+    }
+    return k ? s / k : NaN;
+  };
+  const dol = przy(zMin + 0.25), gora = przy(zMax - 0.25);
+  const pochyl = dol - gora;
+
+  if (pochyl > 0.25) ok(`pazurek pochylony do środka o ${pochyl.toFixed(2)} mm wobec podstawy`);
+  else bad(`łapka prosta: podstawa na ${dol.toFixed(2)}, pazurek na ${gora.toFixed(2)} mm`);
+
+  if (zMax > 0.2) ok(`pazurek sięga ponad rondystę, do ${zMax.toFixed(2)} mm`);
+  else bad(`pazurek konczy sie na ${zMax.toFixed(2)} mm, czyli ponizej rondysty`);
+
+  if (prong.genus() === 0) ok("łapka jest jedną bryłą, kule zachodzą na siebie");
+  else bad(`łapka ma genus ${prong.genus()}, czyli rozpadla sie na paciorki albo ma dziure`);
 }
 
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");
