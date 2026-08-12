@@ -1,4 +1,4 @@
-import { H2, H3, P, Lead, OL, UL, LI, Strong, A, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
+import { H2, H3, P, Lead, OL, UL, LI, Strong, A, Callout, Table, CTABox, Sources } from "../../components/blog/Prose.jsx";
 
 export { meta } from "./druk-3d-krok-po-kroku.meta.js";
 
@@ -56,7 +56,7 @@ function BodyPL() {
       <UL>
         <LI>Serie &gt; 500 szt. - wtedy forma wtryskowa jest tańsza per sztukę</LI>
         <LI>Elementy nośne pod dużym obciążeniem mechanicznym - metal CNC będzie trwalszy</LI>
-        <LI>Kontakt z żywnością - większość filamentów nie jest food-safe (ale PETG certyfikowany tak)</LI>
+        <LI>Kontakt z żywnością - dopuszczenie do kontaktu z żywnością dotyczy surowego tworzywa, a nie gotowego wydruku. Bruzdy między warstwami zatrzymują bakterie i nie dają się domyć, a mosiężna dysza zawiera ołów</LI>
       </UL>
 
       <H2 id="ceny">Ile kosztuje druk 3D?</H2>
@@ -127,7 +127,7 @@ function BodyEN() {
       <H2 id="what-can">What you can (and can't) print</H2>
       <P>
         Great for: product prototypes, miniatures, jewelry casting molds, NFC gadgets, custom gifts, replacement parts.
-        Not ideal for: 500+ unit runs (injection molding is cheaper), heavy load-bearing parts (CNC metal is stronger), or food-contact items (most filaments aren't food-safe).
+        Not ideal for: 500+ unit runs (injection molding is cheaper), heavy load-bearing parts (CNC metal is stronger), or food-contact items (food-contact approval covers the raw polymer, not the printed part: layer grooves harbour bacteria and brass nozzles contain lead).
       </P>
 
       <H2 id="pricing">Pricing</H2>
@@ -206,8 +206,51 @@ function BodyDE() {
   );
 }
 
+const SOURCES = (t) => [
+  {
+    title: "ISO/ASTM 52900:2021, Additive manufacturing. General principles. Fundamentals and vocabulary",
+    href: "https://www.iso.org/standard/74514.html",
+    note: t(
+      "obowiązujące nazewnictwo wytwarzania przyrostowego, w tym rozróżnienie technik warstwowych",
+      "the current additive manufacturing terminology, including the distinction between layer-based techniques",
+      "die geltende Terminologie der additiven Fertigung, einschließlich der Unterscheidung schichtbasierter Verfahren"
+    ),
+  },
+  {
+    title: t(
+      "Rozporządzenie Komisji (UE) nr 10/2011 w sprawie materiałów i wyrobów z tworzyw sztucznych przeznaczonych do kontaktu z żywnością",
+      "Commission Regulation (EU) No 10/2011 on plastic materials and articles intended to come into contact with food",
+      "Verordnung (EU) Nr. 10/2011 über Materialien und Gegenstände aus Kunststoff, die dazu bestimmt sind, mit Lebensmitteln in Berührung zu kommen"
+    ),
+    href: "https://eur-lex.europa.eu/eli/reg/2011/10/oj",
+    note: t(
+      "limit migracji globalnej: 10 mg substancji na dm² powierzchni kontaktu. Dopuszczenie obejmuje tworzywo, nie technologię jego formowania",
+      "overall migration limit: 10 mg of constituents per dm² of contact surface. Approval covers the polymer, not the process used to shape it",
+      "Gesamtmigrationsgrenzwert: 10 mg Bestandteile je dm² Kontaktfläche. Die Zulassung betrifft den Kunststoff, nicht das Formgebungsverfahren"
+    ),
+  },
+  {
+    title: t(
+      "Prusa Research, Jak tworzyć wydruki dopuszczone do kontaktu z żywnością",
+      "Prusa Research, How to make food-grade 3D printed models",
+      "Prusa Research, Wie man lebensmittelechte 3D-Drucke herstellt"
+    ),
+    href: "https://blog.prusa3d.com/how-to-make-food-grade-3d-printed-models_40666/",
+    note: t(
+      "praktyczne omówienie dyszy ze stali nierdzewnej, powłok i ograniczeń mycia",
+      "a practical account of stainless steel nozzles, coatings and the limits of cleaning",
+      "praktische Darstellung zu Edelstahldüsen, Beschichtungen und den Grenzen der Reinigung"
+    ),
+  },
+];
+
 export function Body({ lang }) {
-  if (lang === "en") return <BodyEN />;
-  if (lang === "de") return <BodyDE />;
-  return <BodyPL />;
+  const t = (pl, en, de) => (lang === "pl" ? pl : lang === "de" ? de : en);
+  const body = lang === "en" ? <BodyEN /> : lang === "de" ? <BodyDE /> : <BodyPL />;
+  return (
+    <>
+      {body}
+      <Sources lang={lang} items={SOURCES(t)} />
+    </>
+  );
 }
