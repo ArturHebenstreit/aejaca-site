@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import pg from "pg";
 import multer from "multer";
 import cron from "node-cron";
+import { staleRates, ageHours, STARTUP_REFETCH_AFTER_H } from "./rates.js";
 import { createHash } from "crypto";
 import { getSystemPrompt, detectHotLead } from "./context.js";
 import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages } from "./gmail.js";
@@ -851,7 +852,7 @@ async function currentMetalRates() {
   if (!pool) return null;
   try {
     const { rows } = await pool.query(`
-      SELECT DISTINCT ON (field) field, value FROM (
+      SELECT DISTINCT ON (field) field, value, fetched_at FROM (
         SELECT 'au_pln_per_g' AS field, au_pln_per_g::float AS value, fetched_at FROM market_rates WHERE au_pln_per_g IS NOT NULL
         UNION ALL SELECT 'ag_pln_per_g', ag_pln_per_g::float, fetched_at FROM market_rates WHERE ag_pln_per_g IS NOT NULL
         UNION ALL SELECT 'pt_pln_per_g', pt_pln_per_g::float, fetched_at FROM market_rates WHERE pt_pln_per_g IS NOT NULL
@@ -863,8 +864,22 @@ async function currentMetalRates() {
       ) sub ORDER BY field, fetched_at DESC
     `);
     const rates = {};
-    for (const r of rows) rates[r.field] = r.value;
-    return Object.keys(rates).length ? rates : null;
+    const ages = {};
+    for (const r of rows) {
+      rates[r.field] = r.value;
+      ages[r.field] = ageHours(r.fetched_at);
+    }
+
+    // Zapytanie bierze NAJNOWSZA niepusta wartosc, nie patrzac na jej wiek.
+    // Gdy pobieranie pada od tygodni, kurs sprzed miesiaca wyglada dokladnie
+    // tak samo jak dzisiejszy i wycena po cichu liczy ze starej ceny kruszcu.
+    // AEJaCA pracuje glownie w srebrze, wiec akurat ten kurs musi byc swiezy.
+    const stale = staleRates(ages);
+    if (stale.length) {
+      console.error(`[rates] KURSY PRZETERMINOWANE, wycena liczy ze starych cen: ${stale.join(", ")}`);
+    }
+    rates._ageH = ages;
+    return Object.keys(rates).length > 1 ? rates : null;
   } catch (e) {
     console.error("[price] rates query failed:", e.message);
     return null;
@@ -3063,7 +3078,13 @@ async function fetchPlatinumPalladiumSilver() {
       `https://api.metalpriceapi.com/v1/latest?api_key=${apiKey}&base=USD&currencies=XPT,XPD,XAG`
     );
     const json = await resp.json();
-    if (!json.success) throw new Error(json.error?.info || "API error");
+    if (!json.success) {
+      // Samo "API error" nie pozwala odroznic wyczerpanego limitu od zlego
+      // klucza, a to sa dwa zupelnie rozne problemy. Logujemy, co przyszlo.
+      const detail = json.error?.info || json.error?.message || json.message
+        || `HTTP ${resp.status}, tresc: ${JSON.stringify(json).slice(0, 200)}`;
+      throw new Error(detail);
+    }
     const pt_usd_per_oz = json.rates?.XPT ? 1 / json.rates.XPT : null;
     const pd_usd_per_oz = json.rates?.XPD ? 1 / json.rates.XPD : null;
     const ag_usd_per_oz = json.rates?.XAG ? 1 / json.rates.XAG : null;
@@ -3088,7 +3109,23 @@ async function fetchPlatinumPalladiumSilver() {
 // NBP: hourly (gold PLN/g + currencies). metalpriceapi: twice daily (Pt/Pd/Ag, 60 req/month)
 if (pool) {
   fetchNBP();
-  fetchPlatinumPalladiumSilver();
+  // Pobranie przy starcie tylko wtedy, gdy nie mamy swiezego odczytu.
+  // Metalpriceapi ma sto zapytan na miesiac, a harmonogram zjada juz okolo
+  // osiemdziesieciu. Kazdy deploy dokladal kolejne, wiec w dniu z kilkoma
+  // wdrozeniami limit konczyl sie sam z siebie.
+  (async () => {
+    try {
+      const { rows } = await pool.query(
+        `SELECT fetched_at FROM market_rates WHERE ag_pln_per_g IS NOT NULL
+          ORDER BY fetched_at DESC LIMIT 1`,
+      );
+      const ageH = ageHours(rows[0]?.fetched_at);
+      if (ageH > STARTUP_REFETCH_AFTER_H) fetchPlatinumPalladiumSilver();
+      else console.log(`[rates] pomijam pobranie przy starcie, ostatnie sprzed ${ageH.toFixed(1)} h`);
+    } catch {
+      fetchPlatinumPalladiumSilver();
+    }
+  })();
 
   cron.schedule("5 * * * *", fetchNBP);
   // Weekdays: 3× (London market open / mid / close) = 66 req/month
