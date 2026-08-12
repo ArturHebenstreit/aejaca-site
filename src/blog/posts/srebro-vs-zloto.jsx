@@ -119,7 +119,7 @@ export function Body({ lang }) {
               "Polish Hallmarking Act of 1 April 2011",
               "Polnisches Punzierungsgesetz vom 1. April 2011"
             ),
-            href: "https://orka.sejm.gov.pl/proc6.nsf/ustawy/3359_u.htm",
+            href: "https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20110920529",
             note: t(
               "obowiązujące próby: złoto 333, 375, 500, 585, 750, 960, 999; srebro 800, 830, 875, 925, 999",
               "legal finenesses: gold 333, 375, 500, 585, 750, 960, 999; silver 800, 830, 875, 925, 999",

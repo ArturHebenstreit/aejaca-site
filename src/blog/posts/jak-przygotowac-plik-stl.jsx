@@ -1,4 +1,4 @@
-import { H2, H3, P, Lead, UL, LI, Strong, A, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
+import { H2, H3, P, Lead, UL, LI, Strong, A, Callout, Table, CTABox, Sources } from "../../components/blog/Prose.jsx";
 
 export { meta } from "./jak-przygotowac-plik-stl.meta.js";
 
@@ -98,6 +98,38 @@ export function Body({ lang }) {
         )}
         href="/studio#calculator"
         cta={t("Kalkulator druku 3D", "3D print calculator", "3D-Druck-Kalkulator")}
+      />
+
+      <Sources
+        lang={lang}
+        items={[
+          {
+            title: t(
+              "3MF Consortium, 3MF Core Specification",
+              "3MF Consortium, 3MF Core Specification",
+              "3MF Consortium, 3MF Core Specification"
+            ),
+            href: "https://github.com/3MFConsortium/spec_core/blob/master/3MF%20Core%20Specification.md",
+            note: t(
+              "definicja siatki manifold: każda krawędź trójkąta musi mieć wspólne wierzchołki z krawędzią dokładnie jednego innego trójkąta. Specyfikacja ustala też milimetr jako jednostkę, czego STL nie robi",
+              "definition of a manifold mesh: every triangle edge must share vertex endpoints with the edge of exactly one other triangle. The specification also fixes the millimetre as the unit, which STL does not",
+              "Definition eines manifolden Netzes: jede Dreieckskante muss gemeinsame Eckpunkte mit der Kante genau eines anderen Dreiecks teilen. Die Spezifikation legt zudem den Millimeter als Einheit fest, was STL nicht tut"
+            ),
+          },
+          {
+            title: t(
+              "ISO/ASTM 52900:2021, Additive manufacturing. General principles. Fundamentals and vocabulary",
+              "ISO/ASTM 52900:2021, Additive manufacturing. General principles. Fundamentals and vocabulary",
+              "ISO/ASTM 52900:2021, Additive manufacturing. General principles. Fundamentals and vocabulary"
+            ),
+            href: "https://www.iso.org/standard/74514.html",
+            note: t(
+              "obowiązujące nazewnictwo druku przyrostowego, druga edycja z listopada 2021, zastępuje ISO/ASTM 52900:2015",
+              "the current additive manufacturing terminology, second edition of November 2021, superseding ISO/ASTM 52900:2015",
+              "die geltende Terminologie der additiven Fertigung, zweite Ausgabe von November 2021, ersetzt ISO/ASTM 52900:2015"
+            ),
+          },
+        ]}
       />
     </>
   );
