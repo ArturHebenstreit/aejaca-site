@@ -1,0 +1,39 @@
+================================================================
+POROWNANIE JADER GEOMETRYCZNYCH, ten sam pierscionek
+szyna polokragla 17,2 x 2,2 x 1,6 mm, gniazdo 6,5 mm, 4 lapki
+================================================================
+--- manifold-3d 3.5.1 ---
+  pierwsze uruchomienie (z wczytaniem wasm):    33.3 ms
+  trojkatow:     3932
+  objetosc:      196.63 mm3
+  genus:         1   (1 = bryla ma dziure, czyli to obraczka)
+  pusta bryla:   false
+  generowanie:   mediana    27.5 ms  (min 25.2 / max 34.0)
+  segmentow  48: 2400 trojkatow,     9.2 ms
+  segmentow  96: 3932 trojkatow,     9.9 ms
+  segmentow 192: 6996 trojkatow,    11.9 ms
+--- OpenCascade (replicad 0.23.1) ---
+  wczytanie wasm:    264.5 ms
+  pierwsza budowa:  1241.1 ms
+  scian B-Rep:     23
+  objetosc:        195.28 mm3
+  trojkatow po teselacji (tol 0,05 mm): 2022
+  generowanie:     mediana  1063.6 ms  (min 1060.7 / max 1075.1)
+  tolerancja 0.2  : 2022 trojkatow
+  tolerancja 0.05 : 2022 trojkatow
+  tolerancja 0.01 : 11342 trojkatow
+--- zaokraglenie przejsc (fillet) ---
+  manifold-3d:  brak operatora, zaokraglenie trzeba wpisac w profil
+  OpenCascade:  fillet 0,3 mm wykonany w  1968.8 ms, objetosc 192.13 mm3
+--- eksport ---
+  manifold STL:   192 kB
+  manifold STEP:  NIEMOZLIWY, jadro siatkowe nie zna powierzchni
+  OpenCascade STEP: 115 kB
+================================================================
+  out-manifold.stl     192 kB
+  out-occt.step        115 kB
+--- kontrola objetosci wzorem (twierdzenie Pappusa) ---
+  szyna wedlug wzoru:        161.18 mm3
+  manifold, sama szyna:      160.00 mm3   odchylka -0.74 %
+  OpenCascade, sama szyna:   161.02 mm3   odchylka -0.10 %
+  prog akceptacji: 2 %. Powyzej tego build ma sie wywalic.

@@ -146,13 +146,13 @@
 
 <header class="mast">
   <div class="wrap">
-    <p class="kicker">Wersja 2, po Twoich uwagach</p>
+    <p class="kicker">Wersja 3, jądra zmierzone</p>
     <h1>Kreator Pierścionków</h1>
     <p class="standfirst">Klient składa pierścionek albo sygnet z parametrów, widzi go na bieżąco, a na końcu wybiera jedno z czterech wyjść: plik, odlew, gotowy wyrób z zakutymi kamieniami albo zapytanie o indywidualną wycenę. Wszystko wpięte w istniejący sklep i kalkulatory.</p>
     <div class="meta">
       <span><b>Data</b> 12 sierpnia 2026</span>
       <span><b>Zatwierdzone</b> punkty 1 do 5</span>
-      <span><b>Do rozstrzygnięcia</b> jądro geometryczne</span>
+      <span><b>Jądro</b> rozstrzygnięte pomiarem</span>
     </div>
   </div>
 </header>
@@ -181,41 +181,51 @@
 </section>
 
 <!-- STEP -->
+<!-- WYNIK POMIARU -->
 <section class="col">
-  <p class="sec-num">Do rozstrzygnięcia</p>
-  <h2>STEP kontra wybrane jądro</h2>
+  <p class="sec-num">Wynik pomiaru</p>
+  <h2>Jądra zmierzone, podział rozstrzygnięty</h2>
 
-  <div class="verdict alarm">
-    <p class="lead">STL i 3MF to formaty siatkowe, a STEP opisuje prawdziwe powierzchnie. Manifold jest jądrem siatkowym, więc STEP z niego nie wyjdzie.</p>
-    <p style="margin:0;color:var(--ink-dim)">Da się zapisać siatkę w opakowaniu STEP, ale jubiler, który kupuje STEP, oczekuje modelu do edycji w Rhino czy Matrixie. Taki plik byłby wprowadzeniem w błąd, więc tej drogi nie proponuję.</p>
-  </div>
-
-  <p>Dobra wiadomość jest taka, że to wychodzi <strong>zanim napisaliśmy linijkę kodu</strong>, czyli w jedynym momencie, w którym zmiana jądra nic nie kosztuje.</p>
+  <p>Zbudowałem <strong>ten sam pierścionek na obu jądrach</strong>: szyna półokrągła 17,2 na 2,2 na 1,6 mm, gniazdo 6,5 mm, cztery łapki. Kod i surowy protokół leżą w <code>parked/kernel-bench/</code>.</p>
 
   <div class="scroll">
     <table>
-      <thead><tr><th>Jądro</th><th>STL, 3MF</th><th>STEP</th><th>Zaokrąglenia</th><th>Szybkość</th><th>Rozmiar</th></tr></thead>
+      <thead><tr><th></th><th>manifold-3d 3.5.1</th><th>OpenCascade, replicad 0.23.1</th></tr></thead>
       <tbody>
-        <tr><td><strong>manifold-3d</strong></td><td><span class="pill yes">natywnie</span></td><td><span class="pill no">nie</span></td><td><span class="pill no">brak operatora</span></td><td><span class="pill yes">bardzo szybko</span></td><td class="num">~1 MB</td></tr>
-        <tr><td><strong>OpenCascade</strong>, replicad</td><td><span class="pill yes">tak</span></td><td><span class="pill yes">tak</span></td><td><span class="pill yes">prawdziwe</span></td><td><span class="pill part">wolniej</span></td><td class="num">~15 MB</td></tr>
+        <tr><td>Rozmiar wasm</td><td class="num">0,5 MB</td><td class="num">10,3 MB</td></tr>
+        <tr><td>Wczytanie</td><td class="num">28 ms</td><td class="num">282 ms</td></tr>
+        <tr><td><strong>Budowa pierścionka</strong></td><td class="num" style="color:var(--sage)"><strong>27 ms</strong></td><td class="num" style="color:var(--rust)"><strong>1087 ms</strong></td></tr>
+        <tr><td>Objętość wobec wzoru</td><td class="num">-0,74 %</td><td class="num" style="color:var(--sage)"><strong>-0,10 %</strong></td></tr>
+        <tr><td>STL i 3MF</td><td><span class="pill yes">tak</span></td><td><span class="pill yes">tak</span></td></tr>
+        <tr><td>STEP</td><td><span class="pill no">nie, i nigdy</span></td><td><span class="pill yes">tak, 115 kB</span></td></tr>
+        <tr><td>Zaokrąglenia</td><td><span class="pill no">brak operatora</span></td><td><span class="pill part">tak, 2069 ms, tylko przed złączeniem</span></td></tr>
+        <tr><td>Praca po stronie serwera</td><td><span class="pill yes">bez zabiegów</span></td><td><span class="pill part">wymaga podstawień</span></td></tr>
+        <tr><td>Gwarancja zamkniętej siatki</td><td><span class="pill yes">tak, sprawdzalna</span></td><td><span class="pill no">brak odpowiednika</span></td></tr>
       </tbody>
     </table>
   </div>
 
-  <p>Zwróć uwagę, że OpenCascade rozwiązuje <strong>nie tylko STEP, ale i ryzyko numer jeden z pierwszej wersji planu</strong>, czyli brak zaokrągleń na przejściu korony w szynę. To były dwa osobne problemy z jednym rozwiązaniem.</p>
+  <div class="verdict">
+    <p class="lead">Czterdziestokrotna różnica w czasie budowy rozstrzyga sprawę i to dokładnie po linii, którą wyznaczyłeś.</p>
+    <p style="margin:0;color:var(--ink-dim)"><strong>manifold</strong> liczy podgląd i pliki siatkowe, bo 27 ms znosi suwak poruszany w czasie rzeczywistym, a 1087 ms nie. <strong>OpenCascade</strong> robi STEP na żądanie po stronie serwera, w późniejszym etapie, gdzie sekunda czekania na płatny plik nikomu nie przeszkadza.</p>
+  </div>
 
-  <h3>Co proponuję</h3>
-  <p>Nie zgaduję, tylko mierzę. <strong>Etap pierwszy zaczyna się od bezpośredniego porównania obu jąder na tym samym pierścionku</strong>: ten sam zestaw parametrów, pomiar czasu generowania, ocena wyglądu przejść i sprawdzenie eksportu. Generator piszemy za interfejsem, więc jądro jest wymienne, a nie wbetonowane.</p>
+  <p>Zaokrąglenia, czyli ryzyko numer jeden z wersji pierwszej, przestają być powodem do zmiany jądra: skoro OpenCascade i tak wchodzi przy STEP, to tam też zrobi zaokrąglone przejścia, a podgląd ich nie potrzebuje.</p>
 
-  <p>Moje przypuszczenie przed pomiarem: <strong>wygra OpenCascade dla pliku, który klient kupuje</strong>, a podgląd na ekranie i tak nie musi używać tego samego jądra, bo jego jedynym zadaniem jest pokazać kształt, a nie wyprodukować wyrób. Ale to jest przypuszczenie i tak je traktuję.</p>
+  <h3>Trzy pułapki, które ten pomiar wyciągnął</h3>
+  <p>Ważniejsze od tabeli. <strong>Każda z trzech oddała bryłę wyglądającą poprawnie i żadna nie zgłosiła błędu.</strong></p>
+  <ol>
+    <li><strong>manifold, kierunek nawinięcia profilu.</strong> Profil zgodny z ruchem wskazówek zegara daje bryłę <strong>pustą</strong>. Bez ostrzeżenia.</li>
+    <li><strong>manifold, kolejność operacji.</strong> Gniazdo cięte przed złączeniem korony z szyną nie sięga szyny. Bryła wychodzi o kilkanaście procent cięższa, czyli też droższa.</li>
+    <li><strong>OpenCascade, flaga <code>sweep</code>.</strong> Odwrócona daje inny łuk i pierścionek <strong>lżejszy o 15 procent</strong>. Model wygląda dobrze, cena jest fałszywa.</li>
+  </ol>
 
-  <div class="note info">
-    <span class="tag">Cennik formatów</span>
-    <p>Skoro STEP jest droższy w wytworzeniu i trafia do innego odbiorcy, niech kosztuje więcej. STL i 3MF dla osoby, która chce wydrukować. STEP dla warsztatu, który chce model przerobić. To dwa różne produkty w jednej cenie byłyby błędem.</p>
+  <div class="note ok">
+    <span class="tag">Strażnik, który z tego wynika</span>
+    <p>Objętość szyny da się policzyć <strong>wzorem</strong>: półelipsa obrócona wokół osi ma objętość z twierdzenia Pappusa, <code>2πR̄A</code>. Dla naszych wymiarów wychodzi <strong>161,18 mm³</strong>. Manifold oddaje 160,00, OpenCascade 161,02. Porównanie z tą liczbą <strong>wchodzi do builda</strong>, próg 2 procent. To jedyna obrona przed jądrem, które po cichu buduje coś innego, niż mu zlecono, i wycenia to na podstawie zmyślonej masy.</p>
   </div>
 </section>
 
-<!-- KAMIENIE -->
 <section class="col">
   <p class="sec-num">Kamienie</p>
   <h2>Szlif narzuca zakucie, nie odwrotnie</h2>
@@ -494,14 +504,14 @@
 <!-- ETAPY -->
 <section class="col">
   <p class="sec-num">Realizacja</p>
-  <h2>Sześć etapów, każdy z progiem</h2>
+  <h2>Siedem etapów, każdy z progiem</h2>
 
   <div class="phase">
     <div class="n">1</div>
     <div>
-      <h4>Porównanie jąder i generator jako biblioteka</h4>
-      <p>Najpierw pomiar: ten sam pierścionek na manifoldzie i na OpenCascade, czas generowania, wygląd przejść, eksport STL, 3MF i STEP. Decyzja z liczb. Potem generator za wymiennym interfejsem, z pełnym modelem parametrów, sześcioma szlifami i regułami zakucia. Próg: dla dwudziestu zestawów parametrów siatka zamknięta, średnica wewnętrzna trafiona, niedozwolone zakucia odrzucone.</p>
-      <div class="who-row"><span class="agent"><b>architect</b> porównanie, model danych, reguły gniazd</span><span class="agent"><b>dev</b> implementacja i testy</span></div>
+      <h4>Generator jako biblioteka</h4>
+      <p>Pomiar jest za nami, więc od razu budowa: generator na manifoldzie, z pełnym modelem parametrów, sześcioma szlifami i regułami zakucia, za wymiennym interfejsem. Próg: dla dwudziestu zestawów parametrów siatka zamknięta, średnica wewnętrzna trafiona, niedozwolone zakucia odrzucone, a <strong>objętość zgodna ze wzorem w granicy 2 procent</strong>.</p>
+      <div class="who-row"><span class="agent"><b>architect</b> model danych, reguły gniazd</span><span class="agent"><b>dev</b> implementacja i testy</span></div>
     </div>
   </div>
   <div class="phase">
@@ -531,13 +541,21 @@
   <div class="phase">
     <div class="n">5</div>
     <div>
+      <h4>STEP na drugim jądrze, po stronie serwera</h4>
+      <p>OpenCascade wchodzi wyłącznie tutaj: osobna ścieżka serwerowa, która z tych samych parametrów buduje bryłę powierzchniową, zaokrągla przejścia i zapisuje STEP. Wolna, bo płatna i generowana raz po zakupie. Cena wyraźnie wyższa niż za pliki siatkowe, bo to inny produkt dla innego odbiorcy. Próg: STEP otwarty w zewnętrznym programie, z objętością zgodną ze wzorem.</p>
+      <div class="who-row"><span class="agent"><b>architect</b> zgodność obu generatorów</span><span class="agent"><b>dev</b> ścieżka serwerowa i eksport</span></div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="n">6</div>
+    <div>
       <h4>Sygnety</h4>
       <p>Drugi generator na wspólnym kodzie szyny: tarcza owalna, poduszkowa i prostokątna, zbieżność szyny ku tarczy, ramiona, grawer jako zlecenie na laser fibrowy. Próg: trzy sygnety odlane z plików z kreatora.</p>
       <div class="who-row"><span class="agent"><b>architect</b> geometria tarczy i ramion</span><span class="agent"><b>dev</b> generator i interfejs</span></div>
     </div>
   </div>
   <div class="phase">
-    <div class="n">6</div>
+    <div class="n">7</div>
     <div>
       <h4>Furtka językowa, presety i linkowanie</h4>
       <p>Opis słowami zamieniany na parametry, zawsze z podglądem do potwierdzenia. Presety z zablokowanymi parametrami jako karty w sklepie. Wpisy blogowe i hasła słownika podpięte w <code>toolLinks.js</code>. Próg: dwadzieścia zdań testowych, żadne nie daje parametrów poza zakresem, i zero pustych powiązań w kontroli linkowania.</p>
@@ -551,7 +569,7 @@
   <p class="sec-num">Ryzyka</p>
   <h2>Co może to wywrócić</h2>
   <ul>
-    <li><strong>Wybór jądra.</strong> Jeżeli OpenCascade okaże się za wolny, a manifold za surowy, zostaje wariant mieszany: szybki podgląd na jednym, kupowany plik na drugim. Kosztuje utrzymaniem dwóch opisów tej samej bryły, więc sięgamy po niego dopiero, gdy pomiar nie zostawi wyboru.</li>
+    <li><strong>Dwa jądra, dwa opisy tej samej bryły.</strong> To jest cena podziału, który wybraliśmy, i trzeba ją nazwać: manifold i OpenCascade muszą oddawać ten sam pierścionek. Broni nas przed tym kontrola objętości wzorem, bo obie ścieżki mierzymy tą samą liczbą. Etap piąty zaczyna się od porównania obu wyjść dla dwudziestu zestawów parametrów.</li>
     <li><strong>Cena kamienia i termin.</strong> Kamień sprowadzany zmienia cenę i termin między wyceną a zamówieniem. Robocizna wiąże na czternaście dni, kamień musi się przeliczać przy otwarciu, tak jak metal.</li>
     <li><strong>Kamień powierzony przez klienta.</strong> Cudza własność w naszym warsztacie, przy zakuciu ryzyko odprysku. Wymaga protokołu przyjęcia i jasnego zapisu o odpowiedzialności.</li>
     <li><strong>Odpowiedzialność za plik.</strong> Klient wydrukuje nasz STL u siebie, dobierze złą żywicę i wróci z pretensją. Potrzebny jasny zapis granicy.</li>
@@ -563,13 +581,9 @@
 <!-- DECYZJA -->
 <section class="col">
   <p class="sec-num">Decyzja</p>
-  <h2>Jedna rzecz do rozstrzygnięcia</h2>
-  <p>Punkty 1, 3, 4 i 5 masz zatwierdzone i wchodzą bez zmian. Twoje uzupełnienia są w planie w całości. Zostaje jedno:</p>
-  <ol>
-    <li><strong>Zgoda na to, że etap pierwszy zaczyna się od porównania jąder</strong>, a punkt drugi, czyli manifold, przestaje być przesądzony i staje się kandydatem obok OpenCascade. Powód: STEP, o który poprosiłeś, i zaokrąglenia, które i tak były ryzykiem numer jeden.</li>
-  </ol>
-  <p>Jeżeli wolisz nie otwierać tego wątku, alternatywa jest prosta i uczciwa: <strong>zostajemy przy manifoldzie, a z oferty znika STEP</strong>. Klient dostaje STL i 3MF, czyli wszystko, czego potrzeba do druku i odlewu. Tylko jubiler chcący edytować model odchodzi z niczym.</p>
-  <p>Po Twojej odpowiedzi zaczynam od etapu pierwszego i wracam z pomiarem oraz działającym generatorem, zanim powstanie jakikolwiek ekran.</p>
+  <h2>Nic nie zostało otwarte</h2>
+  <p>Punkty 1 do 5 masz zatwierdzone, Twoje uzupełnienia są w planie w całości, a pytanie o jądro zamknął pomiar, nie dyskusja. Podział wyszedł dokładnie taki, o jaki prosiłeś: <strong>STEP jako opcja wyraźnie droższa, realizowana w osobnym, późniejszym etapie</strong>.</p>
+  <p>Zaczynam od etapu pierwszego i wracam z działającym generatorem, testami i kontrolą objętości, zanim powstanie jakikolwiek ekran.</p>
 </section>
 
 </div>

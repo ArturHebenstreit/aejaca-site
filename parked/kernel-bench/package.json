@@ -1,0 +1,12 @@
+{
+  "name": "aejaca-kernel-bench",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Porownanie jader geometrycznych pod kreator pierscionkow. Nie wchodzi do builda serwisu.",
+  "dependencies": {
+    "manifold-3d": "^3.5.1",
+    "replicad": "^0.23.1",
+    "replicad-opencascadejs": "^0.23.0"
+  }
+}
