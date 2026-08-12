@@ -240,14 +240,19 @@ export default function RingPreview3D({
     const box = new THREE.Box3().setFromObject(group);
     group.position.sub(box.getCenter(new THREE.Vector3()));
     const radius = box.getSize(new THREE.Vector3()).length() / 2;
-    // Kamere ustawiamy tylko przy pierwszej bryle. Przy kolejnych klient juz
-    // ja obrocil, jak chcial, i cofanie tego przy kazdym ruchu suwaka
-    // byloby walka z uzytkownikiem.
-    if (!st.framed) {
+    // Kamery NIE ruszamy przy drobnych zmianach: klient ja obrocil, jak chcial,
+    // a cofanie tego przy kazdym ruchu suwaka byloby walka z uzytkownikiem.
+    //
+    // Skok o cwierc rozmiaru to juz jednak inny wyrob, na przyklad przejscie
+    // z solitera na sygnet po kliknieciu wzoru, i wtedy bryla po prostu
+    // wychodzi poza kadr. Widac bylo sama szyne, bez glowicy.
+    const skok = st.radius ? Math.abs(radius - st.radius) / st.radius : 1;
+    if (!st.framed || skok > 0.25) {
       camera.position.set(radius * 1.6, -radius * 2.1, radius * 1.5);
       controls.target.set(0, 0, 0);
       st.framed = true;
     }
+    st.radius = radius;
     controls.minDistance = radius * 1.4;
     controls.maxDistance = radius * 6;
     controls.update();

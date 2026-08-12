@@ -103,10 +103,92 @@ export function shankRadiusAt(p, z) {
   return Number.isFinite(best) ? best : p.innerDia / 2 + p.thickness;
 }
 
-function buildShank(w, p, segments) {
-  const { Manifold, CrossSection } = w;
-  const cs = CrossSection.ofPolygons([ccw(shankProfile(p))]);
-  return Manifold.revolve(cs, segments);
+/**
+ * Szyna o przekroju ZMIENNYM wzdluz obwodu.
+ *
+ * `revolve` obraca jeden przekroj, wiec daje szyne rownej grubosci na calym
+ * obwodzie. Na zdjeciach katalogowych tak nie jest prawie nigdy: szyna
+ * pierscionka zareczynowego zweza sie ku glowicy, a sygnet odwrotnie,
+ * gestnieje pod tarcza. To nie jest ozdobnik, tylko powod, dla ktorego
+ * pierscionek wyglada na zaprojektowany, a nie wyciety z rurki.
+ *
+ * Siatke skladamy sami, bo jadro nie ma przeciagniecia po sciezce. Przekroj
+ * jest zamknietym obrysem, obwod tez jest zamkniety, wiec powstaje z tego
+ * torus i nie trzeba domykac konców. Kolejnosc wierzcholkow w czworokacie
+ * decyduje o stronie scian: przy odwrotnej jadro oddaje bryle o ujemnej
+ * objetosci, co lapie test.
+ *
+ * Mnozniki dzialaja na ODLEGLOSC OD SRODKA PRZEKROJU, nie na wspolrzedne,
+ * zeby wnetrze szyny zostalo okragle. Palec ma byc w otworze o stalej
+ * srednicy niezaleznie od tego, co dzieje sie na zewnatrz.
+ */
+const TAPERS = {
+  none: null,
+  /** Zwezana: waska przy glowicy, pelna z tylu. Klasyka pierscionka z kamieniem. */
+  // Zwezenie do 0,58 szerokosci zostawialo pod koszem szczeline: kosz ma
+  // okolo czterech milimetrow, a szyna przy glowicy schodzila do jednego
+  // i kosz opieral sie na niej tylko srodkiem.
+  tapered: (u) => ({ w: 0.70 + 0.30 * u, t: 0.84 + 0.16 * u }),
+  /** Katedralna: ramiona podnosza sie luklem do glowicy, szerokosc bez zmian. */
+  cathedral: (u) => {
+    const s = Math.max(0, 1 - u / 0.45);
+    return { w: 1, t: 1 + 0.95 * s * s };
+  },
+  /** Sygnetowa: pod tarcza szyna gestnieje i rozszerza sie w ramiona. */
+  signet: (u) => {
+    const s = Math.max(0, 1 - u / 0.55);
+    const k = s * s * (3 - 2 * s);
+    return { w: 1 + 0.62 * k, t: 1 + 1.05 * k };
+  },
+};
+
+export function taperFor(p) {
+  const nazwa = p.taper === "auto" ? (p.kind === "signet" ? "signet" : "none") : p.taper;
+  return TAPERS[nazwa] || null;
+}
+
+export function buildShank(w, p, segments) {
+  const { Manifold, CrossSection, Mesh } = w;
+  const pts = ccw(shankProfile(p));
+  const taper = taperFor(p);
+
+  // Bez zwezenia zostaje obrot: jedna operacja jadra zamiast recznej siatki,
+  // wiec szybciej i bez ryzyka pomylki w orientacji scian.
+  if (!taper) return Manifold.revolve(CrossSection.ofPolygons([pts]), segments);
+
+  const ri = p.innerDia / 2;
+  const K = pts.length, M = Math.max(48, segments);
+  const vert = new Float32Array(M * K * 3);
+  const tri = new Uint32Array(M * K * 2 * 3);
+
+  for (let i = 0; i < M; i++) {
+    const th = (i / M) * Math.PI * 2;
+    // Godzina dwunasta, czyli miejsce glowicy, lezy na +Y.
+    let d = Math.abs(((th - Math.PI / 2) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI);
+    const u = 1 - d / Math.PI;              // 0 przy glowicy, 1 po przeciwnej stronie
+    const k = taper(u);
+    const ct = Math.cos(th), st = Math.sin(th);
+
+    for (let j = 0; j < K; j++) {
+      const [r, z] = pts[j];
+      const rr = ri + (r - ri) * k.t;
+      const o = (i * K + j) * 3;
+      vert[o] = rr * ct; vert[o + 1] = rr * st; vert[o + 2] = z * k.w;
+    }
+  }
+
+  let n = 0;
+  for (let i = 0; i < M; i++) {
+    const i2 = (i + 1) % M;
+    for (let j = 0; j < K; j++) {
+      const j2 = (j + 1) % K;
+      const a = i * K + j, b = i2 * K + j, c = i2 * K + j2, d = i * K + j2;
+      tri[n++] = a; tri[n++] = b; tri[n++] = c;
+      tri[n++] = a; tri[n++] = c; tri[n++] = d;
+    }
+  }
+
+  return new Manifold(new Mesh({ numProp: 3, vertProperties: vert, triVerts: tri }));
 }
 
 // ------------------------------------------------------------
@@ -387,8 +469,12 @@ function buildSideStones(w, p) {
   const { count, size, setting } = p.side;
   if (!count) return { addMetal: null, cutSeats: null, stones: [] };
 
-  const ro = p.innerDia / 2 + p.thickness;
-  const rMid = p.innerDia / 2 + p.thickness * 0.62;
+  // Kamienie boczne ida po obwodzie, wiec ich promien tez musi isc za
+  // zwezeniem, inaczej pierwszy zostaje na szynie, a ostatni wisi obok niej.
+  const kBok = taperFor(p);
+  const gr = (u) => p.thickness * (kBok ? kBok(u).t : 1);
+  const ro = p.innerDia / 2 + gr(0);
+  const rMid = p.innerDia / 2 + gr(0) * 0.62;
   const step = Math.asin(Math.min(0.45, (size * 0.62) / rMid)) * 2;
   const start = 0.34;
   let metal = null, seats = null;
@@ -415,8 +501,14 @@ function buildSideStones(w, p) {
 
   for (let side = -1; side <= 1; side += 2) {
     for (let i = 0; i < count; i++) {
-      const a = Math.PI / 2 + side * (start + step * i);
-      const x = Math.cos(a) * rMid, y = Math.sin(a) * rMid;
+      // Kazdy kamien lezy pod innym katem od glowicy, wiec przy zwezonej
+      // szynie kazdy siedzi na innym promieniu. Jeden wspolny promien
+      // zostawialby ostatni kamien wiszacy obok metalu.
+      const odchyl = start + step * i;
+      const a = Math.PI / 2 + side * odchyl;
+      const roI = p.innerDia / 2 + gr(odchyl / Math.PI);
+      const rMidI = p.innerDia / 2 + gr(odchyl / Math.PI) * 0.62;
+      const x = Math.cos(a) * rMidI, y = Math.sin(a) * rMidI;
       const tilt = [0, 0, 0];
 
       // OBROT MUSI BYC TAKI SAM JAK PRZY KORONIE SRODKOWEJ. `rotate([90,0,0])`
@@ -427,13 +519,13 @@ function buildSideStones(w, p) {
       const placed = solid
         .rotate([-90, 0, 0])                        // tafla na zewnatrz promienia
         .rotate([0, 0, (a / DEG) - 90])
-        .translate([x * (ro / rMid), y * (ro / rMid), 0]);
+        .translate([x * (roI / rMidI), y * (roI / rMidI), 0]);
       stones.push(placed);
 
       const cutter = seatCutter(w, "round", size)
         .rotate([-90, 0, 0])
         .rotate([0, 0, (a / DEG) - 90])
-        .translate([x * (ro / rMid), y * (ro / rMid), 0]);
+        .translate([x * (roI / rMidI), y * (roI / rMidI), 0]);
       addS(cutter);
 
       // Kuleczki i lapki musza WCHODZIC w szyne, a nie stac na niej. Walec
@@ -441,9 +533,15 @@ function buildSideStones(w, p) {
       // suma daje bryle rozsypana na kawalki, co `genus` natychmiast pokazuje.
       // Promien bierzemy z PROFILU na tej wysokosci, nie z `ro`. Kuleczka
       // ma wejsc w metal, a nie stanac obok niego.
+      // Przy szynie zwezonej promien profilu trzeba PRZELICZYC: obrys jest
+      // rozciagniety w szerokosc razy `w` i odsuniety od srodka razy `t`,
+      // wiec wysokosc wzdluz osi wraca do ukladu obrysu przez podzielenie.
+      // Bez tego kuleczki na zwezonej szynie stoja obok metalu.
+      const kk = kBok ? kBok(odchyl / Math.PI) : { w: 1, t: 1 };
+      const ri0 = p.innerDia / 2;
       const SINK = 0.22;
       const at = (tang, axial) => {
-        const rad = shankRadiusAt(p, axial) - SINK;
+        const rad = ri0 + (shankRadiusAt(p, axial / kk.w) - ri0) * kk.t - SINK;
         return [
           Math.cos(a) * rad - Math.sin(a) * tang,
           Math.sin(a) * rad + Math.cos(a) * tang,
@@ -543,7 +641,13 @@ export async function buildRing(input, opts = {}) {
   const w = await kernel();
   const segments = opts.segments || SEG;
 
-  const ro = p.innerDia / 2 + p.thickness;
+  // Promien szyny NA GODZINIE DWUNASTEJ, czyli tam, gdzie siada glowica.
+  // Przy zwezonej szynie to NIE jest `ri + grubosc`: zwezenie sciaga metal
+  // do srodka i korona postawiona na starej wysokosci wisi nad szyna, ze
+  // szczelina, ktora widac golym okiem. Ten sam blad w druga strone, przy
+  // sylwetce sygnetowej, wpychalby glowice w szyne.
+  const kGlowica = taperFor(p);
+  const ro = p.innerDia / 2 + p.thickness * (kGlowica ? kGlowica(0).t : 1);
   let metal = buildShank(w, p, segments);
   const stones = [];
   // Objetosci kamieni sa potrzebne wycenie, bo karat to jednostka MASY:

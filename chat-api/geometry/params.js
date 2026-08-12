@@ -191,6 +191,11 @@ export const SIDE_SETTINGS = {
 };
 
 export const SHANK_PROFILES = ["round", "flat", "knife", "comfort"];
+
+// Profil szyny to jej PRZEKROJ, czyli ksztalt w dloni. To jest co innego niz
+// sylwetka ogladana z boku, o ktorej decyduje ponizsze zwezenie. Katalogi
+// mieszaja te dwie rzeczy, a klient wybiera glownie sylwetke.
+export const SHANK_TAPERS = ["auto", "none", "tapered", "cathedral", "signet"];
 export const SIGNET_TABLES = ["oval", "cushion", "rect"];
 
 // ------------------------------------------------------------
@@ -226,6 +231,7 @@ export const DEFAULTS = {
   alloy: "ag925",
   color: "yellow",
   profile: "round",
+  taper: "auto",
   width: 2.2,
   thickness: 1.6,
   stone: { cut: "round", size: 6.5, material: "cz", origin: "stock" },
@@ -258,6 +264,7 @@ export function validate(input = {}) {
   p.thickness = clamp(num(p.thickness, DEFAULTS.thickness), LIMITS.thickness);
   p.prongDia = clamp(num(p.prongDia, DEFAULTS.prongDia), LIMITS.prongDia);
   if (!SHANK_PROFILES.includes(p.profile)) p.profile = DEFAULTS.profile;
+  if (!SHANK_TAPERS.includes(p.taper)) p.taper = DEFAULTS.taper;
 
   // Kolor stopu wchodzi do masy przez gestosc, wiec musi byc sprawdzony tutaj,
   // a nie tylko w formularzu. Kolor niedostepny dla danej proby sprowadzamy do

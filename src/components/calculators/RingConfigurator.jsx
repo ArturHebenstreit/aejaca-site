@@ -11,6 +11,7 @@
 
 import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import { CUTS, SETTINGS, SIDE_SETTINGS, SHANK_PROFILES, SIGNET_TABLES, DEFAULTS, LIMITS } from "../../geometry/ring/params.js";
+import { RING_PRESETS, applyPreset } from "../../data/ringPresets.js";
 import { CASTING_ALLOYS, METAL_COLORS, colorsFor } from "../../data/castingAlloys.js";
 import { GEMSTONES } from "../../pricing/jewelryConfig.js";
 import { gemOptics } from "../../data/gemOptics.js";
@@ -24,6 +25,8 @@ const L = {
     kind: "Typ wyrobu", ring: "Pierścionek", signet: "Sygnet",
     size: "Rozmiar", alloy: "Metal", color: "Kolor metalu", profile: "Profil szyny",
     gem: "Kamień centralny", sideGem: "Kamienie boczne",
+    preset: "Zacznij od wzoru", taper: "Sylwetka szyny",
+      tapers: { none: "Prosta", tapered: "Zwężana", cathedral: "Katedralna" },
     rhodiumNote: "Białe złoto rodujemy, bo bez powłoki ma lekko ciepły odcień. Rodowanie zużywa się i po latach odnawia się je jak lakier.",
     gemGroups: { precious: "Szlachetne", lab: "Hodowane i syntetyczne", semi: "Półszlachetne i ozdobne" },
     width: "Szerokość szyny", thickness: "Grubość szyny",
@@ -41,6 +44,8 @@ const L = {
     kind: "Piece", ring: "Ring", signet: "Signet",
     size: "Size", alloy: "Metal", color: "Metal colour", profile: "Shank profile",
     gem: "Centre stone", sideGem: "Side stones",
+    preset: "Start from a design", taper: "Shank silhouette",
+      tapers: { none: "Straight", tapered: "Tapered", cathedral: "Cathedral" },
     rhodiumNote: "White gold is rhodium plated, since the bare alloy has a faintly warm tint. The plating wears and is renewed over the years, much like a lacquer.",
     gemGroups: { precious: "Precious", lab: "Lab-grown and synthetic", semi: "Semi-precious and decorative" },
     width: "Shank width", thickness: "Shank thickness",
@@ -58,6 +63,8 @@ const L = {
     kind: "Stück", ring: "Ring", signet: "Siegelring",
     size: "Größe", alloy: "Metall", color: "Metallfarbe", profile: "Schienenprofil",
     gem: "Hauptstein", sideGem: "Seitensteine",
+    preset: "Mit einem Entwurf beginnen", taper: "Schienensilhouette",
+      tapers: { none: "Gerade", tapered: "Verjüngt", cathedral: "Kathedrale" },
     rhodiumNote: "Weißgold wird rhodiniert, da die blanke Legierung einen leicht warmen Ton hat. Die Schicht nutzt sich ab und wird über die Jahre erneuert, ähnlich wie ein Lack.",
     gemGroups: { precious: "Edelsteine", lab: "Laborgezüchtet und synthetisch", semi: "Halbedel und dekorativ" },
     width: "Schienenbreite", thickness: "Schienenstärke",
@@ -169,6 +176,7 @@ function Slider({ label, value, min, max, step, unit, lang, decimals = 1, onChan
 export default function RingConfigurator({ lang = "pl" }) {
   const t = L[lang] || L.pl;
   const [p, setP] = useState(DEFAULTS);
+  const [presetId, setPresetId] = useState(null);
   const [mesh, setMesh] = useState(null);
   const [info, setInfo] = useState(null);
   const [busy, setBusy] = useState(true);
@@ -177,10 +185,13 @@ export default function RingConfigurator({ lang = "pl" }) {
   const workerRef = useRef(null);
   const seqRef = useRef(0);
 
-  const set = (patch) => setP((prev) => ({ ...prev, ...patch }));
-  const setStone = (patch) => setP((prev) => ({ ...prev, stone: { ...prev.stone, ...patch } }));
-  const setSide = (patch) => setP((prev) => ({ ...prev, side: { ...prev.side, ...patch } }));
-  const setSignet = (patch) => setP((prev) => ({ ...prev, signet: { ...prev.signet, ...patch } }));
+  // Reczna zmiana czegokolwiek odznacza wzor: od tego momentu to juz nie jest
+  // "soliter klasyczny", tylko projekt klienta, i podswietlony kafelek
+  // klamalby o tym, co widac na podgladzie.
+  const set = (patch) => { setPresetId(null); setP((prev) => ({ ...prev, ...patch })); };
+  const setStone = (patch) => { setPresetId(null); setP((prev) => ({ ...prev, stone: { ...prev.stone, ...patch } })); };
+  const setSide = (patch) => { setPresetId(null); setP((prev) => ({ ...prev, side: { ...prev.side, ...patch } })); };
+  const setSignet = (patch) => { setPresetId(null); setP((prev) => ({ ...prev, signet: { ...prev.signet, ...patch } })); };
 
   // Zakucie musi pasowac do szlifu, wiec przy zmianie szlifu poprawiamy je
   // sami, zamiast pokazywac klientowi blad z generatora.
@@ -235,6 +246,7 @@ export default function RingConfigurator({ lang = "pl" }) {
   // dodanie platyny nie bedzie wymagalo dotykania formularza.
   const metalColors = colorsFor(p.alloy);
 
+  const aktywny = RING_PRESETS.find((x) => x.id === presetId) || null;
   const signet = p.kind === "signet";
   const noSide = signet || p.setting === "drilled" || p.side.count === 0;
 
@@ -244,6 +256,13 @@ export default function RingConfigurator({ lang = "pl" }) {
 
         {/* ---------- parametry ---------- */}
         <div className="border-b lg:border-b-0 lg:border-r border-white/10 p-5">
+          <Group label={t.preset} hint={aktywny ? nameOf(aktywny.note, lang) : null}>
+            <Seg value={presetId} onChange={(id) => {
+              const wzor = RING_PRESETS.find((x) => x.id === id);
+              if (wzor) { setPresetId(id); setP((prev) => applyPreset(wzor, prev)); }
+            }} options={RING_PRESETS.map((x) => ({ id: x.id, label: nameOf(x.label, lang) }))} />
+          </Group>
+
           <Group label={t.kind}>
             <Seg value={p.kind} onChange={(id) => set({ kind: id })}
               options={[{ id: "ring", label: t.ring }, { id: "signet", label: t.signet }]} />
@@ -280,6 +299,16 @@ export default function RingConfigurator({ lang = "pl" }) {
             <Seg value={p.profile} onChange={(id) => set({ profile: id })}
               options={SHANK_PROFILES.map((id) => ({ id, label: t.profiles[id] }))} />
           </Group>
+
+          {/* Sygnet ma sylwetke wynikajaca z konstrukcji: ramiona MUSZA
+              zgestniec pod tarcza, inaczej glowica stoi na patyku. */}
+          {!signet ? (
+            <Group label={t.taper}>
+              <Seg value={p.taper === "auto" ? "none" : p.taper}
+                onChange={(id) => set({ taper: id })}
+                options={["none", "tapered", "cathedral"].map((id) => ({ id, label: t.tapers[id] }))} />
+            </Group>
+          ) : null}
 
           <Slider label={t.width} lang={lang} unit="mm" value={p.width}
             min={LIMITS.width[0]} max={LIMITS.width[1]} step={0.1} onChange={(v) => set({ width: v })} />

@@ -16,10 +16,11 @@
 //
 // Wchodzi do builda.
 
-import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid } from "../src/geometry/ring/build.js";
+import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, taperFor, buildShank } from "../src/geometry/ring/build.js";
 import { CUTS, SETTINGS, validate } from "../src/geometry/ring/params.js";
 import { CASTING_ALLOYS, METAL_COLORS, colorsFor, densityFor } from "../src/data/castingAlloys.js";
 import { GEMSTONES } from "../src/pricing/jewelryConfig.js";
+import { RING_PRESETS, applyPreset } from "../src/data/ringPresets.js";
 import { gemOptics, GEM_OPTICS } from "../src/data/gemOptics.js";
 
 const PROG_OBJETOSC = 2.0;      // procent
@@ -324,6 +325,133 @@ console.log("\n9. Łapka zagina się nad kamieniem");
 
   if (prong.genus() === 0) ok("łapka jest jedną bryłą, kule zachodzą na siebie");
   else bad(`łapka ma genus ${prong.genus()}, czyli rozpadla sie na paciorki albo ma dziure`);
+}
+
+// ------------------------------------------------------------
+// 10. Szyna o zmiennym przekroju
+// ------------------------------------------------------------
+// Siatke szyny skladamy tu recznie, wiec nie chroni nas juz zadna operacja
+// jadra. Blad w kolejnosci wierzcholkow albo w skalowaniu daje bryle, ktora
+// wyglada poprawnie, a ma inna objetosc, czyli inna mase i inna cene.
+//
+// Sprawdzamy uogolnionym twierdzeniem Pappusa: objetosc bryly obrotowej
+// o zmiennym przekroju to calka z pola przekroju razy promien jego srodka
+// ciezkosci. Liczymy ja z samych parametrow, bez udzialu jadra, wiec to jest
+// naprawde niezalezna kontrola.
+console.log("\n10. Szyna zwężana ma policzalną objętość");
+{
+  const pole = (pts) => {
+    let a = 0;
+    for (let i = 0; i < pts.length; i++) {
+      const [x1, y1] = pts[i], [x2, y2] = pts[(i + 1) % pts.length];
+      a += x1 * y2 - x2 * y1;
+    }
+    return Math.abs(a) / 2;
+  };
+  const srodek = (pts) => {
+    let a = 0, cx = 0;
+    for (let i = 0; i < pts.length; i++) {
+      const [x1, y1] = pts[i], [x2, y2] = pts[(i + 1) % pts.length];
+      const k = x1 * y2 - x2 * y1;
+      a += k; cx += (x1 + x2) * k;
+    }
+    return cx / (3 * a);
+  };
+
+  for (const nazwa of ["tapered", "cathedral", "signet"]) {
+    const p = { innerDia: 17.2, width: 2.2, thickness: 1.6, profile: "round", taper: nazwa };
+    const bazowy = shankProfile(p);
+    const ri = p.innerDia / 2;
+    const fn = taperFor({ ...p, kind: "ring" });
+
+    let calka = 0;
+    const N = 2000;
+    for (let i = 0; i < N; i++) {
+      const th = ((i + 0.5) / N) * Math.PI * 2;
+      const d = Math.abs(((th - Math.PI / 2) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI);
+      const k = fn(1 - d / Math.PI);
+      const skal = bazowy.map(([r, z]) => [ri + (r - ri) * k.t, z * k.w]);
+      calka += pole(skal) * srodek(skal) * ((Math.PI * 2) / N);
+    }
+
+    // Sama szyna, bez glowicy i bez kamieni.
+    const jadro = buildShank(await kernel(), { ...p, kind: "ring" }, 256).volume();
+    const blad = Math.abs(jadro - calka) / calka * 100;
+    if (blad < 1.5) ok(`${nazwa.padEnd(10)} calka ${calka.toFixed(1)}, jadro ${jadro.toFixed(1)} mm3, roznica ${blad.toFixed(1)} procent`);
+    else bad(`${nazwa}: calka ${calka.toFixed(1)}, jadro ${jadro.toFixed(1)} mm3, roznica ${blad.toFixed(1)} procent`);
+  }
+
+  // Otwor na palec MUSI zostac nietkniety, inaczej pierscionek nie wejdzie.
+  for (const nazwa of ["none", "tapered", "cathedral", "signet"]) {
+    const r = await buildRing({ innerDia: 17.2, taper: nazwa }, { segments: 96, withStones: false });
+    const m = r.metal.getMesh();
+    const v = m.vertProperties;
+    let min = Infinity;
+    for (let i = 0; i < m.numVert; i++) {
+      const x = v[i * 3], y = v[i * 3 + 1];
+      const d = Math.hypot(x, y);
+      if (d < min) min = d;
+    }
+    if (Math.abs(min - 8.6) < 0.05) ok(`${nazwa.padEnd(10)} otwór nienaruszony, promień ${min.toFixed(2)} mm`);
+    else bad(`${nazwa}: zwezenie weszlo w otwor, promien ${min.toFixed(2)} zamiast 8.60 mm`);
+  }
+}
+
+// ------------------------------------------------------------
+// 11. Kazdy preset daje sie zbudowac
+// ------------------------------------------------------------
+// Preset to obietnica zlozona klientowi jednym kliknieciem. Zestaw, ktory
+// nie przechodzi przez walidacje albo daje bryle rozsypana na kawalki,
+// jest gorszy niz brak presetu, bo psuje sie na oczach kupujacego.
+console.log("\n11. Presety budują poprawne bryły");
+{
+  const start = validate({});
+  for (const preset of RING_PRESETS) {
+    try {
+      const p = applyPreset(preset, start);
+      const r = await buildRing(p, { segments: 48 });
+      const g = r.metal.genus();
+      const spojna = g >= 0;
+      const sensowna = r.massG > 0.4 && r.massG < 40;
+      if (spojna && sensowna) ok(`${preset.id.padEnd(11)} ${r.massG.toFixed(2)} g, genus ${g}`);
+      else bad(`${preset.id}: genus ${g}, masa ${r.massG.toFixed(2)} g`);
+    } catch (e) {
+      bad(`${preset.id}: ${e.message}`);
+    }
+  }
+
+  // Preset nie moze ruszac metalu ani rozmiaru, bo to wybor klienta, a nie
+  // element wzoru. Wyjatkiem jest pinky, ktory z definicji jest na inny palec.
+  const moj = validate({ alloy: "au750", color: "rose", innerDia: 19.0 });
+  for (const preset of RING_PRESETS) {
+    const p = applyPreset(preset, moj);
+    const trzyma = p.alloy === "au750" && p.color === "rose"
+      && (preset.id === "pinky" || p.innerDia === 19.0);
+    if (trzyma) ok(`${preset.id.padEnd(11)} zachowuje metal i rozmiar klienta`);
+    else bad(`${preset.id}: nadpisal wybor klienta (${p.alloy}, ${p.color}, ${p.innerDia} mm)`);
+  }
+}
+
+// ------------------------------------------------------------
+// 12. Kamienie boczne trzymaja sie zwezonej szyny
+// ------------------------------------------------------------
+// Zwezenie sciaga metal do srodka i to o kilka dziesiatych milimetra, czyli
+// dokladnie tyle, ile wynosi zaglebienie kuleczki w szynie. Kuleczka liczona
+// wzgledem szyny prostej stanelaby OBOK metalu, a suma takich bryl rozpada sie
+// na kawalki. Ujemny `genus` mowi o tym od razu, oko na renderze nie.
+console.log("\n12. Kamienie boczne trzymają się zwężonej szyny");
+{
+  for (const taper of ["none", "tapered", "cathedral"]) {
+    for (const setting of ["pave", "prong"]) {
+      const r = await buildRing(
+        { innerDia: 17.2, taper, side: { count: 4, size: 1.5, setting } },
+        { segments: 64 },
+      );
+      const g = r.metal.genus();
+      if (g >= 0) ok(`${taper.padEnd(10)} ${setting.padEnd(6)} bryła spójna, genus ${g}`);
+      else bad(`${taper} ${setting}: bryla rozsypana, genus ${g}`);
+    }
+  }
 }
 
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");
