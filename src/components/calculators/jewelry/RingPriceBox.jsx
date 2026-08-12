@@ -19,15 +19,17 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingCart, Check, Loader2, FileDown, Boxes, Gem, Mail } from "lucide-react";
 import { useCart } from "../../../cart/CartContext.jsx";
+import { OUTPUT_AVAILABLE } from "../../../pricing/ringConfigurator.js";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
 
-const WYJSCIA = [
-  { id: "mesh", icon: FileDown },
-  { id: "step", icon: FileDown },
-  { id: "cast", icon: Boxes },
-  { id: "finished", icon: Gem },
-];
+// Kolejnosc od najtanszego, bo tak sie te wyjscia czyta. Lista tego, co
+// naprawde da sie kupic, idzie z rdzenia wyceny: wyjscie wylaczone nie ma
+// prawa pojawic sie w interfejsie jako kafelek bez ceny.
+const IKONY = { mesh: FileDown, step: FileDown, cast: Boxes, finished: Gem };
+const WYJSCIA = ["mesh", "step", "cast", "finished"]
+  .filter((id) => OUTPUT_AVAILABLE[id])
+  .map((id) => ({ id, icon: IKONY[id] }));
 
 const L = {
   pl: {
@@ -42,6 +44,8 @@ const L = {
     quoteWhy: "Tego kamienia nie mamy w cenniku, więc kwotę podajemy ręcznie. Odpowiadamy w 24 godziny.",
     note: "Kwota wiążąca, obowiązuje 7 dni. Masa metalu policzona z tej samej bryły, którą widzisz obok.",
     mass: "Masa metalu", stones: "Kamieni",
+    nominal: "Model jest nominalny, w wymiarach gotowego pierścionka, bez kompensacji skurczu odlewu. Jeśli odlewasz u siebie, powiększ go najpierw:",
+    nominalLink: "kalkulator skurczu",
   },
   en: {
     title: "What would you like to order",
@@ -55,6 +59,8 @@ const L = {
     quoteWhy: "This stone is not in our price list, so we quote it by hand. We reply within 24 hours.",
     note: "Binding price, valid for 7 days. Metal mass taken from the same solid you see alongside.",
     mass: "Metal mass", stones: "Stones",
+    nominal: "The model is nominal, at finished ring dimensions, without casting shrinkage compensation. If you cast it yourself, scale it up first:",
+    nominalLink: "shrinkage calculator",
   },
   de: {
     title: "Was möchten Sie bestellen",
@@ -68,6 +74,8 @@ const L = {
     quoteWhy: "Diesen Stein führen wir nicht in der Preisliste, daher rechnen wir von Hand. Antwort binnen 24 Stunden.",
     note: "Verbindlicher Preis, 7 Tage gültig. Metallmasse aus demselben Körper, den Sie daneben sehen.",
     mass: "Metallmasse", stones: "Steine",
+    nominal: "Das Modell ist nominal, in den Maßen des fertigen Rings, ohne Schwindungskompensation. Wenn Sie selbst gießen, skalieren Sie es zuerst:",
+    nominalLink: "Schwindungsrechner",
   },
 };
 
@@ -182,6 +190,17 @@ export default function RingPriceBox({ params, lang = "pl" }) {
           );
         })}
       </div>
+
+      {/* Model nominalny to decyzja, nie przeoczenie, wiec mowimy o niej
+          wprost i kierujemy do narzedzia, ktore liczy kompensacje. */}
+      {wybor === "mesh" ? (
+        <p className="mt-3 text-[11px] leading-relaxed text-neutral-500">
+          {t.nominal}{" "}
+          <Link to="/toolstudio/shrinkage" className="text-amber-300/90 underline underline-offset-2">
+            {t.nominalLink}
+          </Link>
+        </p>
+      ) : null}
 
       {blad ? <p className="mt-3 text-[12px] text-neutral-400">{t.err}</p> : null}
 

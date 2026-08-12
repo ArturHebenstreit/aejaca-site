@@ -99,6 +99,22 @@ export const RING_RATES = {
   engravingPLN: { none: 0, mono: 60, crest: 180 },
 };
 
+// Wyjscia z konfiguracji i to, czy DA SIE je dzis sprzedac.
+//
+// STEP jest policzony i stawka stoi, ale generator STEP-a nie istnieje:
+// bryla powstaje w manifoldzie, ktory operuje na siatce, a plik STEP to
+// opis powierzchni. Do tego potrzeba jadra B-Rep, czyli OpenCascade, i to
+// jest osobny etap. Sprzedanie pliku, ktorego nie umiemy wygenerowac,
+// skonczyloby sie zwrotem i tlumaczeniem.
+//
+// Zostawiamy stawke i kod, bo wroca w calosci, gdy generator powstanie.
+export const OUTPUT_AVAILABLE = {
+  mesh: true,
+  step: false,
+  cast: true,
+  finished: true,
+};
+
 const OUTPUTS = ["mesh", "step", "cast", "finished"];
 
 const LBL = {
@@ -133,6 +149,10 @@ function metalPricePerG(metalKey, rates) {
 export function calculate(params, lang = "pl", rates, gemstones) {
   const l = LBL[lang] || LBL.pl;
   const output = OUTPUTS.includes(params?.output) ? params.output : "mesh";
+  // Wyjscie wylaczone nie moze przejsc przez wycene nawet przy recznie
+  // spreparowanym zapytaniu: kwota wiazaca jest oferta, a oferty na plik,
+  // ktorego nie zbudujemy, skladac nie wolno.
+  if (!OUTPUT_AVAILABLE[output]) return null;
   const geo = params?.ringGeometry;
 
   // Bez geometrii z serwera nie ma wyceny. To NIE jest blad do naprawienia

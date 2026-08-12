@@ -118,14 +118,29 @@ console.log("\n4. Przegladarka nie ma wplywu na cene");
 console.log("\n5. Cztery wyjscia, rosnaca cena");
 // ------------------------------------------------------------
 {
+  const { OUTPUT_AVAILABLE } = await import("../src/pricing/ringConfigurator.js");
+  const czynne = Object.keys(OUTPUT_AVAILABLE).filter((o) => OUTPUT_AVAILABLE[o]);
   const geometry = await geoFor({});
   const p = {};
-  for (const out of ["mesh", "step", "cast", "finished"]) {
-    p[out] = price({ output: out }, { geometry }).unitGrosze;
+  for (const out of czynne) p[out] = price({ output: out }, { geometry }).unitGrosze;
+
+  let kolejnosc = true, opis = [];
+  for (let i = 0; i < czynne.length; i++) {
+    opis.push(`${czynne[i]} ${zl(p[czynne[i]])}`);
+    if (i && p[czynne[i - 1]] >= p[czynne[i]]) kolejnosc = false;
   }
-  const kolejnosc = p.mesh < p.step && p.step < p.cast && p.cast < p.finished;
-  const opis = `plik ${zl(p.mesh)} < STEP ${zl(p.step)} < odlew ${zl(p.cast)} < wyrób ${zl(p.finished)}`;
-  if (kolejnosc) ok(opis); else bad(`kolejnosc wyjsc niepoprawna: ${opis}`);
+  if (kolejnosc) ok(opis.join(" < ")); else bad(`kolejnosc wyjsc niepoprawna: ${opis.join(", ")}`);
+
+  // STEP jest policzony, ale generatora STEP-a nie ma, wiec nie wolno go
+  // sprzedac. Kwota wiazaca jest oferta, a oferta na plik, ktorego nie
+  // zbudujemy, konczy sie zwrotem i tlumaczeniem.
+  for (const [id, czy] of Object.entries(OUTPUT_AVAILABLE)) {
+    if (czy) continue;
+    let padlo = false;
+    try { price({ output: id }, { geometry }); } catch { padlo = true; }
+    if (padlo) ok(`wyjście "${id}" jest wyłączone i nie da się go wycenić`);
+    else bad(`wyjscie "${id}" jest wylaczone, a mimo to zwrocilo kwote`);
+  }
 }
 
 // ------------------------------------------------------------
@@ -241,18 +256,8 @@ console.log("\nCztery wyjścia z jednej bryły");
   };
   const geo = await ringGeometryFromParams(params);
 
-  const kwoty = {};
-  for (const output of ["mesh", "step", "cast", "finished"]) {
-    const it = priceItem({ calculator: "jewelry_ring_config", params: { ...params, output },
-                           lang: "pl", geometry: geo });
-    kwoty[output] = it.lineGrosze;
-  }
-
-  const pary = [["mesh", "step"], ["step", "cast"], ["cast", "finished"]];
-  for (const [a, b] of pary) {
-    if (kwoty[a] < kwoty[b]) ok(`${a} tańsze od ${b}: ${(kwoty[a]/100).toFixed(0)} < ${(kwoty[b]/100).toFixed(0)} PLN`);
-    else bad(`${a} nie jest tansze od ${b}: ${(kwoty[a]/100).toFixed(0)} vs ${(kwoty[b]/100).toFixed(0)} PLN`);
-  }
+  const kwoty = { mesh: priceItem({ calculator: "jewelry_ring_config",
+    params: { ...params, output: "mesh" }, lang: "pl", geometry: geo }).lineGrosze };
 
   // Kruszec wchodzi dopiero od odlewu: plik nie wazy nic i jego cena nie moze
   // zalezec od tego, czy klient wybral srebro, czy zloto 750.

@@ -9,6 +9,7 @@ import { createHash } from "crypto";
 import { getSystemPrompt, detectHotLead } from "./context.js";
 import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages } from "./gmail.js";
 import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken, ringGeometryFromParams, RING_CALCULATORS } from "./orders.js";
+import { OUTPUT_AVAILABLE } from "./pricing/ringConfigurator.js";
 import { createQuote, priceQuote, getQuoteByRef, convertQuoteToOrder, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
 import { extraRevisionGrosze, CAD_CONFIG } from "./pricing/cadDesign.js";
 import { GEMSTONES } from "./pricing/jewelryConfig.js";
@@ -1034,7 +1035,9 @@ app.post("/api/price/ring", express.json({ limit: "256kb" }), async (req, res) =
     const gemstones = await currentGemstones(rates.pln_per_eur);
 
     const items = {};
-    for (const output of ["mesh", "step", "cast", "finished"]) {
+    // Lista wyjsc pochodzi z rdzenia wyceny, wiec wlaczenie STEP-a w jednym
+    // miejscu wystarczy, zeby pojawil sie i w cenie, i w interfejsie.
+    for (const output of Object.keys(OUTPUT_AVAILABLE).filter((o) => OUTPUT_AVAILABLE[o])) {
       try {
         items[output] = priceItem({
           calculator: "jewelry_ring_config",

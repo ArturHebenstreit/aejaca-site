@@ -492,5 +492,58 @@ console.log("\n13. Galeria wtapia się w szynę");
   else bad("kaseta albo lapki daja bryle rozsypana");
 }
 
+// ------------------------------------------------------------
+// 14. Plik zawiera te bryle, za ktora klient zaplacil
+// ------------------------------------------------------------
+// Kwota bierze sie z objetosci policzonej przez jadro, a klient dostaje plik.
+// Gdyby eksport gubil trojkaty albo mylil kolejnosc wierzcholkow, dostalby
+// bryle o innej objetosci niz ta, ktora wycenilismy, i nikt by tego nie
+// zauwazyl: STL otwiera sie normalnie, tylko model jest inny.
+//
+// Objetosc czytamy z SAMEGO PLIKU, twierdzeniem o dywergencji, czyli sumujac
+// objetosci czworoscianow rozpietych na trojkatach i poczatku ukladu. To jest
+// pomiar niezalezny od jadra.
+console.log("\n14. Plik do pobrania zgadza się z wyceną");
+{
+  const { ringFiles } = await import("../chat-api/ringExport.js");
+  const { unzipSync, strFromU8 } = await import("fflate");
+
+  const params = { innerDia: 17.2, alloy: "au585", taper: "tapered", width: 2.0, thickness: 1.5 };
+  const r = await ringFiles(params);
+  const stl = r.files.find((f) => f.name.endsWith(".stl")).buffer;
+
+  const n = stl.readUInt32LE(80);
+  if (stl.length === 84 + n * 50) ok(`STL spójny: ${n} trójkątów, ${(stl.length / 1024).toFixed(0)} kB`);
+  else bad(`STL uszkodzony: deklaruje ${n} trojkatow, a ma ${stl.length} bajtow`);
+
+  let v6 = 0;
+  for (let i = 0; i < n; i++) {
+    const o = 84 + i * 50 + 12;
+    const p = [];
+    for (let k = 0; k < 3; k++) {
+      p.push([stl.readFloatLE(o + k * 12), stl.readFloatLE(o + k * 12 + 4), stl.readFloatLE(o + k * 12 + 8)]);
+    }
+    const [a, b, c] = p;
+    v6 += a[0] * (b[1] * c[2] - b[2] * c[1])
+        - a[1] * (b[0] * c[2] - b[2] * c[0])
+        + a[2] * (b[0] * c[1] - b[1] * c[0]);
+  }
+  const zPliku = Math.abs(v6) / 6;
+
+  const wzorzec = await buildRing(params, { segments: 96, withStones: false });
+  const blad = Math.abs(zPliku - wzorzec.volumeMm3) / wzorzec.volumeMm3 * 100;
+  if (blad < 0.05) ok(`objętość z pliku ${zPliku.toFixed(1)} mm3 zgodna z wyceną ${wzorzec.volumeMm3.toFixed(1)} mm3`);
+  else bad(`plik ma inna objetosc niz wycena: ${zPliku.toFixed(1)} wobec ${wzorzec.volumeMm3.toFixed(1)} mm3, roznica ${blad.toFixed(2)} procent`);
+
+  // 3MF niesie jednostke, STL nie. Brak jednostki to modele wczytane w calach.
+  const tmf = r.files.find((f) => f.name.endsWith(".3mf")).buffer;
+  const wpisy = unzipSync(new Uint8Array(tmf));
+  const model = strFromU8(wpisy["3D/3dmodel.model"] || new Uint8Array());
+  if (wpisy["[Content_Types].xml"] && wpisy["_rels/.rels"] && model) ok("3MF ma komplet wpisów");
+  else bad(`3MF niekompletny, wpisy: ${Object.keys(wpisy).join(", ")}`);
+  if (/unit="millimeter"/.test(model)) ok("3MF deklaruje milimetry");
+  else bad("3MF nie deklaruje jednostki, slicer zgadnie skale");
+}
+
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");
 process.exit(failed ? 1 : 0);
