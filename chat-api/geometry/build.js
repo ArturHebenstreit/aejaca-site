@@ -652,7 +652,7 @@ function buildSignetHead(w, p) {
  * Luk idzie po OBWODZIE pierscionka, wiec promien kazdej kuli bierzemy
  * z profilu szyny w tym miejscu, razem ze zwezeniem.
  */
-function buildGallery(w, p, basketH) {
+export function buildGallery(w, p, basketH) {
   const { Manifold } = w;
   const ri = p.innerDia / 2;
   const kG = taperFor(p);

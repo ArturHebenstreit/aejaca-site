@@ -55,6 +55,9 @@ const FILE_AWARE = new Set(["print3d_fdm", "print3d_msla"]);
 /** Kalkulatory, ktore dostaja bryle policzona na serwerze, a nie z pliku */
 const RING_AWARE = new Set(["jewelry_ring_config"]);
 
+/** Kalkulatory, ktorych bryle serwer liczy SAM, zamiast czytac z pliku. */
+export const RING_CALCULATORS = RING_AWARE;
+
 const MAX_FILE_BYTES = 60 * 1024 * 1024;
 
 export class PricingError extends Error {

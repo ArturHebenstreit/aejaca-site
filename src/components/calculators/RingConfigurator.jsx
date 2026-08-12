@@ -5,9 +5,10 @@
 // watek roboczy tym samym kodem, ktory na serwerze zbuduje kupowany plik,
 // wiec podglad i wyrob nie moga sie rozjechac.
 //
-// CENY TU NIE MA i to nie jest przeoczenie. Masa decyduje o koszcie kruszcu,
-// wiec kwota musi pochodzic z serwera, a nie z przegladarki, ktora jest o
-// jedno `fetch` od podmiany. Odczyty ponizej sa informacja o geometrii.
+// CENY TU NIE LICZYMY i to nie jest przeoczenie. Masa decyduje o koszcie
+// kruszcu, wiec kwota musi pochodzic z serwera, a nie z przegladarki, ktora
+// jest o jedno `fetch` od podmiany. Odczyty ponizej sa informacja o geometrii,
+// a kwote wiazaca pobiera `RingPriceBox` z `/api/price/ring`.
 
 import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import { CUTS, SETTINGS, SIDE_SETTINGS, SHANK_PROFILES, SIGNET_TABLES, DEFAULTS, LIMITS } from "../../geometry/ring/params.js";
@@ -19,6 +20,9 @@ import { RING_SIZES } from "../../data/ringSizes.js";
 import CutIcon from "./jewelry/CutIcon.jsx";
 
 const RingPreview3D = lazy(() => import("./jewelry/RingPreview3D.jsx"));
+// Kwota wiazaca schodzi z serwera, wiec komponent i tak czeka na siec.
+// Doladowanie go osobno nie opoznia podgladu.
+const RingPriceBox = lazy(() => import("./jewelry/RingPriceBox.jsx"));
 
 const L = {
   pl: {
@@ -490,6 +494,15 @@ export default function RingConfigurator({ lang = "pl" }) {
               </div>
             ))}
           </dl>
+
+          {/* Kwota wiazaca pojawia sie dopiero, gdy bryla sie policzyla:
+              wczesniej nie ma czego wyceniac, a pusta ramka z kreskami
+              wyglada jak usterka. */}
+          {info ? (
+            <Suspense fallback={null}>
+              <RingPriceBox params={p} lang={lang} />
+            </Suspense>
+          ) : null}
         </div>
       </div>
     </div>

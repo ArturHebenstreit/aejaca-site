@@ -223,5 +223,58 @@ console.log("\n10. Kreator niewidoczny dla klientow, dopoki nie ma interfejsu");
   else ok("lock chat-api zgodny z package.json, npm ci przejdzie");
 }
 
+// ------------------------------------------------------------
+// Cztery wyjscia z jednej bryly
+// ------------------------------------------------------------
+// Ta sama konfiguracja daje cztery produkty i klient widzi je obok siebie.
+// Kolejnosc kwot NIE jest przypadkowa i musi taka zostac: plik jest tanszy
+// od odlewu, a odlew od gotowego wyrobu. Odwrocenie ktorejkolwiek pary
+// znaczy blad w stawkach, ktorego nikt nie zauwazy poza ksiegowoscia.
+console.log("\nCztery wyjścia z jednej bryły");
+{
+  const { ringGeometryFromParams, priceItem, PricingError } = await import("../chat-api/orders.js");
+
+  const params = {
+    innerDia: 17.2, alloy: "au585", color: "yellow", taper: "tapered",
+    stone: { cut: "round", size: 6.5, material: "lab_diamond", origin: "stock" },
+    setting: "prong4", side: { count: 0 },
+  };
+  const geo = await ringGeometryFromParams(params);
+
+  const kwoty = {};
+  for (const output of ["mesh", "step", "cast", "finished"]) {
+    const it = priceItem({ calculator: "jewelry_ring_config", params: { ...params, output },
+                           lang: "pl", geometry: geo });
+    kwoty[output] = it.lineGrosze;
+  }
+
+  const pary = [["mesh", "step"], ["step", "cast"], ["cast", "finished"]];
+  for (const [a, b] of pary) {
+    if (kwoty[a] < kwoty[b]) ok(`${a} tańsze od ${b}: ${(kwoty[a]/100).toFixed(0)} < ${(kwoty[b]/100).toFixed(0)} PLN`);
+    else bad(`${a} nie jest tansze od ${b}: ${(kwoty[a]/100).toFixed(0)} vs ${(kwoty[b]/100).toFixed(0)} PLN`);
+  }
+
+  // Kruszec wchodzi dopiero od odlewu: plik nie wazy nic i jego cena nie moze
+  // zalezec od tego, czy klient wybral srebro, czy zloto 750.
+  const wSrebrze = priceItem({ calculator: "jewelry_ring_config",
+    params: { ...params, alloy: "ag925", output: "mesh" }, lang: "pl",
+    geometry: await ringGeometryFromParams({ ...params, alloy: "ag925" }) });
+  if (wSrebrze.lineGrosze === kwoty.mesh) ok("cena pliku nie zalezy od kruszcu");
+  else bad(`plik w srebrze ${(wSrebrze.lineGrosze/100).toFixed(0)} PLN, w zlocie ${(kwoty.mesh/100).toFixed(0)} PLN`);
+
+  // Kamien spoza cennika blokuje gotowy wyrob, ale NIE plik i nie odlew.
+  // Trasa zwraca wtedy pozostale wyjscia, zamiast oddac blad na calosc.
+  const dziwny = { ...params, stone: { ...params.stone, material: "custom_gem" } };
+  const geo2 = await ringGeometryFromParams(dziwny);
+  let plik = null, gotowy = null;
+  try { plik = priceItem({ calculator: "jewelry_ring_config", params: { ...dziwny, output: "mesh" }, lang: "pl", geometry: geo2 }); } catch { /* zapisze nizej */ }
+  try { gotowy = priceItem({ calculator: "jewelry_ring_config", params: { ...dziwny, output: "finished" }, lang: "pl", geometry: geo2 }); } catch (e) { gotowy = e instanceof PricingError ? e.code : "blad"; }
+
+  if (plik?.lineGrosze > 0) ok("kamień spoza cennika nie blokuje ceny pliku");
+  else bad("kamien spoza cennika zablokowal takze plik, a plik nie zawiera kamienia");
+  if (gotowy === "needs_quote") ok("gotowy wyrób z takim kamieniem idzie do wyceny indywidualnej");
+  else bad(`gotowy wyrob powinien isc do wyceny recznej, a wyszlo: ${JSON.stringify(gotowy)?.slice(0, 60)}`);
+}
+
 console.log(failed ? `\n${failed} bledow\n` : "\nWycena kreatora: wszystko sie zgadza\n");
 process.exit(failed ? 1 : 0);
