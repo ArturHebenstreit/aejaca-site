@@ -87,6 +87,13 @@
   # wiec jak wezsza i blokowala dokladnie to, co miala przepuscic.
   #
   # Watek dostaje teraz polityke ogolna, ktora `unsafe-eval` dopuszcza.
+  #
+  # ZMIENIAJAC POLITYKE, podbij `WORKER_VERSION` w src/workers/*.worker.js.
+  # Odpowiedzi spod `/assets/*` leza w cache BRZEGOWYM razem z naglowkami,
+  # a nazwa pliku to skrot jego tresci. Plik o niezmienionej tresci wychodzi
+  # wiec spod starej nazwy, ze starymi naglowkami, i nowa polityka do niego
+  # nie dociera. Nie pomoze ani twarde odswiezenie, ani inna przegladarka,
+  # bo cache nie jest po stronie klienta. Kosztowalo nas to jedno wdrozenie.
 
 # Images - cache 30 days + stale-while-revalidate for instant loads during refresh
 /*.jpg
