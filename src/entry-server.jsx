@@ -41,6 +41,7 @@ import PrintabilityPage from "./pages/PrintabilityPage.jsx";
 import PrintSettingsPage from "./pages/PrintSettingsPage.jsx";
 import LaserParametersPage from "./pages/LaserParametersPage.jsx";
 import RingBlankPage from "./pages/RingBlankPage.jsx";
+import RingConfiguratorPage from "./pages/RingConfiguratorPage.jsx";
 import ShrinkagePage from "./pages/ShrinkagePage.jsx";
 import ResinSettingsPage from "./pages/ResinSettingsPage.jsx";
 import Reviews from "./pages/Reviews.jsx";
@@ -108,6 +109,7 @@ export function render(url) {
               <Route path="/toolstudio/laser-parameters/" element={<LaserParametersPage />} />
               <Route path="/toolstudio/shrinkage/" element={<ShrinkagePage />} />
               <Route path="/toolsjewelry/ring-blank/" element={<RingBlankPage />} />
+              <Route path="/toolsjewelry/kreator/" element={<RingConfiguratorPage />} />
               <Route path="/privacy/" element={<Privacy />} />
               <Route path="/reviews/" element={<Reviews />} />
               <Route path="/b2b/" element={<B2B />} />

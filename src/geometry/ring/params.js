@@ -100,56 +100,85 @@ export const OUTLINES = {
 //   rose       niska korona fasetowa na plaskim spodzie
 //   rosePav    rozeta z pawilonem: plaska gora, stozek pod spodem
 //
+// Etykiety i podpowiedzi sa w trzech jezykach, bo interfejs jest trojjezyczny,
+// a nazwa szlifu po polsku przy angielskim ekranie wyglada jak usterka.
+//
+// `hint` to zdanie warsztatowe pokazywane przy wyborze szlifu. Nie jest
+// ozdoba: tlumaczy, DLACZEGO lista zakuc jest taka, a nie inna.
+//
 // `points` to naroza wymagajace lapki V, podane jako kat w stopniach
 // liczony od osi +Y obrysu. Bez nich generator nie wie, gdzie ta lapka ma
 // stanac, a to wlasnie w tych miejscach kamien odpryskuje.
 export const CUTS = {
-  round:     { pl: "okrągły", outline: "round", profile: "brilliant", table: 0.57,
-               settings: ["prong4", "prong6", "bezel"], corners: 4 },
-  oval:      { pl: "owal", outline: "oval", profile: "brilliant", table: 0.55,
-               settings: ["prong4", "prong6", "bezel"], corners: 4 },
-  cushion:   { pl: "poduszka", outline: "cushion", profile: "brilliant", table: 0.58,
-               settings: ["prong4", "corner", "bezel"], corners: 4 },
-  square:    { pl: "kwadrat", outline: "square", profile: "brilliant", table: 0.6,
-               settings: ["corner", "bezel"], corners: 4 },
-  octagon:   { pl: "ośmiokąt", outline: "octagon", profile: "step", table: 0.62,
-               settings: ["corner", "bezel"], corners: 4 },
-  baguette:  { pl: "bagietka", outline: "baguette", profile: "step", table: 0.66,
-               settings: ["channel", "corner", "bezel"], corners: 4 },
-  pentagon:  { pl: "pięciokąt", outline: "pentagon", profile: "brilliant", table: 0.58,
-               settings: ["corner", "bezel"], corners: 5 },
-  trillion:  { pl: "trylion", outline: "trillion", profile: "brilliant", table: 0.58,
-               settings: ["vprong", "bezel"], points: [90, 210, 330] },
-  pear:      { pl: "gruszka", outline: "pear", profile: "brilliant", table: 0.55,
-               settings: ["vprong", "bezel"], points: [90] },
-  marquise:  { pl: "markiza", outline: "marquise", profile: "brilliant", table: 0.5,
-               settings: ["vprong", "bezel"], points: [90, 270] },
-  heart:     { pl: "serce", outline: "heart", profile: "brilliant", table: 0.54,
-               settings: ["vprong", "bezel"], points: [90] },
-  briolette: { pl: "briolet", outline: "briolette", profile: "drop", table: 0,
-               settings: ["drilled"] },
-  roseP:     { pl: "rozeta z pawilonem", outline: "round", profile: "rosePav", table: 0,
-               settings: ["prong4", "bezel"], corners: 4 },
-  bufftop:   { pl: "bufftop", outline: "oval", profile: "dome", table: 0,
-               settings: ["bezel"] },
-  roseFlat:  { pl: "rozeta płaska", outline: "round", profile: "rose", table: 0,
-               settings: ["bezel"] },
+  round:     { pl: "okrągły", en: "round", de: "rund", outline: "round", profile: "brilliant", table: 0.57,
+               settings: ["prong4", "prong6", "bezel"], corners: 4,
+               hint: "Rondysta na całym obwodzie, każde zakucie trzyma.", hintEn: "The girdle runs all the way round, so any setting holds it.", hintDe: "Die Rundiste läuft rundum, jede Fassung hält." },
+  oval:      { pl: "owal", en: "oval", de: "oval", outline: "oval", profile: "brilliant", table: 0.55,
+               settings: ["prong4", "prong6", "bezel"], corners: 4,
+               hint: "Łapki idą na osiach dłuższej i krótszej.", hintEn: "Claws sit on the long and short axes.", hintDe: "Krappen sitzen auf der langen und der kurzen Achse." },
+  cushion:   { pl: "poduszka", en: "cushion", de: "Kissen", outline: "cushion", profile: "brilliant", table: 0.58,
+               settings: ["prong4", "corner", "bezel"], corners: 4,
+               hint: "Zaokrąglone naroża wybaczają więcej niż kwadrat.", hintEn: "Rounded corners forgive more than a square cut does.", hintDe: "Runde Ecken verzeihen mehr als ein Quadratschliff." },
+  square:    { pl: "kwadrat", en: "square", de: "Quadrat", outline: "square", profile: "brilliant", table: 0.6,
+               settings: ["corner", "bezel"], corners: 4,
+               hint: "Naroża są najbardziej kruche, muszą być zakryte łapką narożną.", hintEn: "The corners are the most fragile part and must be covered.", hintDe: "Die Ecken sind am empfindlichsten und müssen bedeckt sein." },
+  octagon:   { pl: "ośmiokąt", en: "octagon", de: "Achteck", outline: "octagon", profile: "step", table: 0.62,
+               settings: ["corner", "bezel"], corners: 4,
+               hint: "Ścięte naroża dają naturalne oparcie dla łapki.", hintEn: "Cut corners give a claw something to rest against.", hintDe: "Abgeschrägte Ecken geben der Krappe Halt." },
+  baguette:  { pl: "bagietka", en: "baguette", de: "Baguette", outline: "baguette", profile: "step", table: 0.66,
+               settings: ["channel", "corner", "bezel"], corners: 4,
+               hint: "Bagietki układa się w oprawę kanałową, obok siebie.", hintEn: "Baguettes are laid side by side in a channel.", hintDe: "Baguetten werden nebeneinander in eine Schiene gelegt." },
+  pentagon:  { pl: "pięciokąt", en: "pentagon", de: "Fünfeck", outline: "pentagon", profile: "brilliant", table: 0.58,
+               settings: ["corner", "bezel"], corners: 5,
+               hint: "Pięć naroży, pięć łapek narożnych.", hintEn: "Five corners, five corner claws.", hintDe: "Fünf Ecken, fünf Eckkrappen." },
+  trillion:  { pl: "trylion", en: "trillion", de: "Trillant", outline: "trillion", profile: "brilliant", table: 0.58,
+               settings: ["vprong", "bezel"], points: [90, 210, 330],
+               hint: "Trzy ostre naroża, każde pod łapką V.", hintEn: "Three sharp corners, each under a V-claw.", hintDe: "Drei scharfe Ecken, jede unter einer V-Krappe." },
+  pear:      { pl: "gruszka", en: "pear", de: "Tropfen", outline: "pear", profile: "brilliant", table: 0.55,
+               settings: ["vprong", "bezel"], points: [90],
+               hint: "Szpic musi mieć łapkę V, inaczej odpryskuje.", hintEn: "The point needs a V-claw or it chips.", hintDe: "Die Spitze braucht eine V-Krappe, sonst bricht sie aus." },
+  marquise:  { pl: "markiza", en: "marquise", de: "Navette", outline: "marquise", profile: "brilliant", table: 0.5,
+               settings: ["vprong", "bezel"], points: [90, 270],
+               hint: "Dwa szpice, dwie łapki V. Zwykła łapka ich nie chroni.", hintEn: "Two points, two V-claws. An ordinary claw will not protect them.", hintDe: "Zwei Spitzen, zwei V-Krappen. Eine gewöhnliche Krappe schützt sie nicht." },
+  heart:     { pl: "serce", en: "heart", de: "Herz", outline: "heart", profile: "brilliant", table: 0.54,
+               settings: ["vprong", "bezel"], points: [90],
+               hint: "Wcięcie u góry wymaga łapki V, bo tam kamień jest najcieńszy.", hintEn: "The cleft is the thinnest part of the stone and needs a V-claw.", hintDe: "Die Einbuchtung ist die dünnste Stelle und braucht eine V-Krappe." },
+  briolette: { pl: "briolet", en: "briolette", de: "Briolett", outline: "briolette", profile: "drop", table: 0,
+               settings: ["drilled"],
+               hint: "Brioleta się nie osadza. Jest wiercona i wisi na kabłąku.", hintEn: "A briolette is not set. It is drilled and hangs from a bail.", hintDe: "Ein Briolett wird nicht gefasst. Es wird gebohrt und hängt an einer Öse." },
+  roseP:     { pl: "rozeta z pawilonem", en: "rose with pavilion", de: "Rosette mit Pavillon", outline: "round", profile: "rosePav", table: 0,
+               settings: ["prong4", "bezel"], corners: 4,
+               hint: "Płaska góra, pawilon pod spodem, więc łapka ma się o co oprzeć.", hintEn: "Flat top, pavilion beneath, so a claw has something to grip.", hintDe: "Flache Oberseite, Pavillon darunter, die Krappe findet Halt." },
+  bufftop:   { pl: "bufftop", en: "buff top", de: "Buff Top", outline: "oval", profile: "dome", table: 0,
+               settings: ["bezel"],
+               hint: "Kopulasta góra bez rondysty, trzyma tylko kaseta.", hintEn: "A domed top with no girdle. Only a bezel will hold it.", hintDe: "Gewölbte Oberseite ohne Rundiste. Nur eine Zarge hält sie." },
+  roseFlat:  { pl: "rozeta płaska", en: "flat rose", de: "flache Rosette", outline: "round", profile: "rose", table: 0,
+               settings: ["bezel"],
+               hint: "Płaski spód, brak pawilonu. Nie ma czego chwycić łapką.", hintEn: "Flat back, no pavilion. There is nothing for a claw to catch.", hintDe: "Flache Unterseite, kein Pavillon. Für eine Krappe gibt es nichts zu greifen." },
 };
 
 export const SETTINGS = {
-  prong4:  { pl: "4 łapki", prongs: 4 },
-  prong6:  { pl: "6 łapek", prongs: 6 },
-  corner:  { pl: "narożne", prongs: 0 },   // liczba lapek z `corners` szlifu
-  vprong:  { pl: "łapki V", prongs: 0 },   // lapki siadaja na `points` szlifu
-  bezel:   { pl: "kaseta", prongs: 0 },
-  channel: { pl: "kanałowa", prongs: 0 },
-  drilled: { pl: "wiercony", prongs: 0 },
+  prong4:  { pl: "4 łapki", en: "4 claws", de: "4 Krappen", prongs: 4 },
+  prong6:  { pl: "6 łapek", en: "6 claws", de: "6 Krappen", prongs: 6 },
+  corner:  { pl: "narożne", en: "corner claws", de: "Eckkrappen", prongs: 0 },   // liczba lapek z `corners` szlifu
+  vprong:  { pl: "łapki V", en: "V-claws", de: "V-Krappen", prongs: 0 },   // lapki siadaja na `points` szlifu
+  bezel:   { pl: "kaseta", en: "bezel", de: "Zarge", prongs: 0 },
+  channel: { pl: "kanałowa", en: "Channel", de: "Kanal", en: "channel", de: "Kanal", prongs: 0 },
+  drilled: { pl: "wiercony", en: "drilled", de: "gebohrt", prongs: 0 },
 };
 
 export const SIDE_SETTINGS = {
-  pave:    { pl: "pavé", metalPerStone: 0.8 },
-  channel: { pl: "kanałowa", metalPerStone: 2.2 },
-  prong:   { pl: "łapkowa", metalPerStone: 1.4 },
+  pave:    { pl: "Pavé", en: "Pavé", de: "Pavé", metalPerStone: 0.8,
+             hint: "Kamienie tuż obok siebie, trzymane kuleczkami wyciętymi z metalu szyny.",
+             hintEn: "Stones between two rails with no metal between them. The most durable.", hintDe: "Steine zwischen zwei Stegen, ohne Metall dazwischen. Am widerstandsfähigsten.",
+             hintEn: "Stones set edge to edge, held by beads raised from the shank.", hintDe: "Steine dicht an dicht, gehalten von Körnern aus dem Schienenmetall." },
+  channel: { pl: "Kanałowa", en: "Channel", de: "Kanal", metalPerStone: 2.2,
+             hint: "Kamienie między dwiema szynkami, bez metalu pomiędzy. Najbardziej odporna.",
+             hintEn: "Stones between two rails with no metal between them. The most durable.",
+             hintDe: "Steine zwischen zwei Stegen, ohne Metall dazwischen. Am widerstandsfähigsten." },
+  prong:   { pl: "Łapkowa", en: "Claws", de: "Krappen", metalPerStone: 1.4,
+             hint: "Każdy kamień we własnych łapkach. Najwięcej blasku, najmniej ochrony.",
+             hintEn: "Each stone in its own claws. Most sparkle, least protection.", hintDe: "Jeder Stein in eigenen Krappen. Am meisten Glanz, am wenigsten Schutz." },
 };
 
 export const SHANK_PROFILES = ["round", "flat", "knife", "comfort"];

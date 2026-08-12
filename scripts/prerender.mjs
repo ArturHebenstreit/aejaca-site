@@ -53,6 +53,10 @@ const STATIC_ROUTES = [
   "/toolstudio/laser-parameters",
   "/toolstudio/shrinkage",
   "/toolsjewelry/ring-blank",
+  // Wersja robocza kreatora. Strona jest prerenderowana, bo bez tego
+  // Cloudflare oddalby twarde 404, ale niesie `noindex`, nie ma jej
+  // w sitemapie i nic do niej nie linkuje.
+  "/toolsjewelry/kreator",
   "/druk-3d-piaseczno",
   "/druk-3d-warszawa",
 ];

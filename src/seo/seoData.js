@@ -28,6 +28,30 @@ export const SITE = {
 
 // Pages × languages, keep titles ≤ 60 chars, descriptions ≤ 155 chars
 export const SEO = {
+  // Wersja robocza, strona niesie `noindex` i nie jest nigdzie linkowana.
+  // Wpis istnieje, bo `SEOHead` go wymaga, a nie dlatego, ze chcemy
+  // te strone indeksowac.
+  ringConfigurator: {
+    pl: {
+      title: "Kreator pierścionków - wersja robocza | AEJaCA",
+      description: "Narzędzie w budowie. Pierścionek składany z parametrów, z podglądem 3D.",
+      keywords: "kreator pierścionków, konfigurator biżuterii, AEJaCA",
+      ogAlt: "Kreator pierścionków AEJaCA, wersja robocza",
+    },
+    en: {
+      title: "Ring configurator - draft | AEJaCA",
+      description: "Tool under construction. A ring built from parameters, with a 3D preview.",
+      keywords: "ring configurator, jewelry configurator, AEJaCA",
+      ogAlt: "AEJaCA ring configurator, draft",
+    },
+    de: {
+      title: "Ring-Konfigurator - Entwurf | AEJaCA",
+      description: "Werkzeug im Aufbau. Ein Ring aus Parametern, mit 3D-Vorschau.",
+      keywords: "Ring-Konfigurator, Schmuckkonfigurator, AEJaCA",
+      ogAlt: "AEJaCA Ring-Konfigurator, Entwurf",
+    },
+  },
+
   home: {
     pl: {
       title: "AEJaCA - Biżuteria Artystyczna & sTuDiO Fabrykacji Cyfrowej",

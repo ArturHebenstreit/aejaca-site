@@ -45,6 +45,8 @@ const PrintabilityPage = lazy(() => import("./pages/PrintabilityPage.jsx"));
 const PrintSettingsPage = lazy(() => import("./pages/PrintSettingsPage.jsx"));
 const LaserParametersPage = lazy(() => import("./pages/LaserParametersPage.jsx"));
 const RingBlankPage = lazy(() => import("./pages/RingBlankPage.jsx"));
+// Wersja robocza: trasa istnieje, ale nic do niej nie prowadzi.
+const RingConfiguratorPage = lazy(() => import("./pages/RingConfiguratorPage.jsx"));
 const ShrinkagePage = lazy(() => import("./pages/ShrinkagePage.jsx"));
 const ResinSettingsPage = lazy(() => import("./pages/ResinSettingsPage.jsx"));
 const Reviews = lazy(() => import("./pages/Reviews.jsx"));
@@ -106,6 +108,7 @@ const app = (
                 <Route path="/toolstudio/laser-parameters/" element={<LaserParametersPage />} />
                 <Route path="/toolstudio/shrinkage/" element={<ShrinkagePage />} />
                 <Route path="/toolsjewelry/ring-blank/" element={<RingBlankPage />} />
+                <Route path="/toolsjewelry/kreator/" element={<RingConfiguratorPage />} />
                 <Route path="/privacy/" element={<Privacy />} />
                 <Route path="/reviews/" element={<Reviews />} />
                 <Route path="/b2b/" element={<B2B />} />
