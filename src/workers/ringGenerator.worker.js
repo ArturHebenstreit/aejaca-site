@@ -28,7 +28,12 @@ import { buildRing } from "../geometry/ring/build.js";
 // bajt w bajt taki sam i cala sztuczka nic nie da. Odsylamy ja wiec w kazdej
 // odpowiedzi, co przy okazji pozwala sprawdzic w konsoli, ktora wersja
 // watku odpowiedziala.
-const WORKER_VERSION = 2;
+//
+// 3: naglowki tego pliku byly starsze niz polityka na stronie. Dokument ma
+// `must-revalidate`, wiec dostawal polityke nowa, ale watek siedzial w cache
+// BRZEGOWYM Cloudflare, razem z polityka z dnia, w ktorym plik tam trafil.
+// Nowa przegladarka niczego nie zmieniala, bo cache nie byl po jej stronie.
+const WORKER_VERSION = 3;
 
 /** Podglad nie potrzebuje gestosci docelowej: mniej segmentow, szybsza reakcja. */
 const PREVIEW_SEGMENTS = 64;
