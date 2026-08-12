@@ -1,3 +1,7 @@
+// PLIK GENEROWANY, NIE EDYTOWAC RECZNIE.
+// Zrodlo: src/data/castingAlloys.js
+// Regeneracja: npm run sync:pricing
+
 // ============================================================
 // STOPY ODLEWNICZE: skurcz i gestosc
 // ============================================================

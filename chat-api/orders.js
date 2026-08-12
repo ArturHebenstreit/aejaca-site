@@ -15,6 +15,8 @@ import * as laserCo2 from "./pricing/laserCo2.js";
 import * as laserFiber from "./pricing/laserFiber.js";
 import * as epoxy from "./pricing/epoxy.js";
 import * as cadDesign from "./pricing/cadDesign.js";
+import * as ringConfigurator from "./pricing/ringConfigurator.js";
+import { buildRing } from "./geometry/build.js";
 
 /** Limit obrotu dzialalnosci nierejestrowanej, od 2026-01-01 rozliczany kwartalnie */
 export const QUARTERLY_LIMIT_GROSZE = 1_081_350; // 10 813,50 PLN
@@ -38,10 +40,16 @@ export const CALCULATORS = {
   laser_fiber:        { fn: laserFiber.calculate,   needsFile: false, label: { pl: "Znakowanie laserem fiber", en: "Fiber laser marking", de: "Faserlaser-Markierung" } },
   epoxy:              { fn: epoxy.calculate,        needsFile: false, label: { pl: "Odlew żywiczny", en: "Resin casting", de: "Harzguss" } },
   cad_design:         { fn: cadDesign.calculate,    needsFile: false, label: { pl: "Projekt 3D (CAD)", en: "3D design (CAD)", de: "3D-Entwurf (CAD)" } },
+  // Nazwa MUSI zaczynac sie od `jewelry_`, bo od tego przedrostka zalezy,
+  // czy kursy kruszcow i ceny kamieni w ogole trafia do kalkulatora.
+  jewelry_ring_config: { fn: ringConfigurator.calculate, needsFile: false, label: { pl: "Pierścionek z kreatora", en: "Ring from the configurator", de: "Ring aus dem Konfigurator" } },
 };
 
 /** Kalkulatory, w ktorych plik klienta zastepuje wybor rozmiaru */
 const FILE_AWARE = new Set(["print3d_fdm", "print3d_msla"]);
+
+/** Kalkulatory, ktore dostaja bryle policzona na serwerze, a nie z pliku */
+const RING_AWARE = new Set(["jewelry_ring_config"]);
 
 const MAX_FILE_BYTES = 60 * 1024 * 1024;
 
@@ -50,6 +58,46 @@ export class PricingError extends Error {
     super(message);
     this.code = code;
   }
+}
+
+/**
+ * Bryla pierscionka policzona z parametrow, po stronie serwera.
+ *
+ * Odpowiednik `geometryFromFile` dla kreatora: przegladarka liczy to samo
+ * dla podgladu, ale jej wynik jest o jedno `fetch` od podmiany, a masa
+ * decyduje o cenie kruszcu.
+ *
+ * @param {object} params konfiguracja wedlug geometry/params.js
+ */
+export async function ringGeometryFromParams(params) {
+  let r;
+  try {
+    r = await buildRing(params || {});
+  } catch (e) {
+    throw new PricingError("bad_ring_params", e.message);
+  }
+  if (r.isEmpty || !(r.volumeMm3 > 0)) {
+    throw new PricingError("empty_solid", "Ta konfiguracja nie daje zamkniętej bryły");
+  }
+
+  const stones = [];
+  if (r.params.kind !== "signet" && r.params.setting !== "drilled") {
+    stones.push({ role: "center", cut: r.params.stone.cut, size: r.params.stone.size,
+                  volumeMm3: r.stoneVolumesMm3.center, count: 1 });
+    if (r.params.side.count > 0) {
+      stones.push({ role: "side", cut: "round", size: r.params.side.size,
+                    volumeMm3: r.stoneVolumesMm3.side, count: r.params.side.count * 2 });
+    }
+  }
+  return {
+    volumeMm3: r.volumeMm3,
+    massG: r.massG,
+    patternVolumeMm3: r.patternVolumeMm3,
+    kind: r.params.kind,
+    cut: r.params.stone.cut,
+    sideStoneCount: r.params.side.count * 2,
+    stones,
+  };
 }
 
 /**
@@ -146,6 +194,13 @@ export function priceItem({ calculator, params, lang = "pl", geometry = null, sc
   delete callParams.stlData;
   if (geometry && FILE_AWARE.has(calculator)) {
     callParams.stlData = scaleGeometry(geometry, scale);
+  }
+  // Tak samo z bryla kreatora: masa decyduje o cenie, wiec nie moze pochodzic
+  // z przegladarki. Kasujemy to, co przyszlo, i wstawiamy wlasny pomiar.
+  delete callParams.ringGeometry;
+  if (RING_AWARE.has(calculator)) {
+    if (!geometry) throw new PricingError("no_geometry", "Brak bryły policzonej po stronie serwera");
+    callParams.ringGeometry = geometry;
   }
   // Kursy kruszcow ida TRZECIM ARGUMENTEM, a nie w parametrach.
   //

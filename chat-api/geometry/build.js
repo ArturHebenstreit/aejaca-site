@@ -1,3 +1,7 @@
+// PLIK GENEROWANY, NIE EDYTOWAC RECZNIE.
+// Zrodlo: src/geometry/ring/build.js
+// Regeneracja: npm run sync:pricing
+
 // ============================================================
 // KREATOR PIERSCIONKOW: budowa bryly
 // ============================================================
@@ -14,7 +18,7 @@
 
 import Module from "manifold-3d";
 import { CUTS, SEAT, SIDE_SETTINGS, outlineFor, resample, scalePts, validate } from "./params.js";
-import { CASTING_ALLOYS, massGrams } from "../../data/castingAlloys.js";
+import { CASTING_ALLOYS, massGrams } from "../pricing/castingAlloys.js";
 
 const DEG = Math.PI / 180;
 const SEG = 96;                 // segmentow obrotu szyny w wydaniu docelowym
