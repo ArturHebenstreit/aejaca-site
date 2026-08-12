@@ -58,7 +58,16 @@ const sections = [];
   }
 }
 const docSection = sections.find((s) => s.path === "/*" && s.csp);
-const assetSection = sections.find((s) => s.path.startsWith("/assets") && s.csp);
+
+/** Polityka rozbita na dyrektywy: `script-src` -> zbior zrodel. */
+const directives = (csp) => {
+  const out = new Map();
+  for (const part of csp.split(";")) {
+    const [name, ...src] = part.trim().split(/\s+/);
+    if (name) out.set(name.toLowerCase(), new Set(src));
+  }
+  return out;
+};
 
 if (!docSection) {
   console.error("  ✗ Brak naglowka Content-Security-Policy dla dokumentu w public/_headers");
@@ -75,35 +84,68 @@ if (!/'wasm-unsafe-eval'|'unsafe-eval'/.test(scriptSrc)) {
     "    a lokalnie beda dzialac, bo `_headers` nie jest tam stosowany.",
   );
 }
-// Polityka OGOLNA nie moze miec `unsafe-eval`: pod nia chodzi koszyk,
-// checkout i platnosci. Poluzowanie wolno tylko sekcji konkretnej strony.
-if (/'unsafe-eval'/.test(scriptSrc)) {
+// Embind buduje funkcje wywolujace przez `new Function`, wiec samo
+// `wasm-unsafe-eval` nie wystarcza i przegladarka odmawia z komunikatem
+// "Evaluating a string as JavaScript violates...". Dyrektywy potrzebuje
+// kalkulator druku, sprawdzarka drukowalnosci, konfigurator uslugi w sklepie
+// i kreator pierscionkow, czyli szeroki kawalek serwisu, a nie jedna strona.
+if (!/'unsafe-eval'/.test(scriptSrc)) {
   problems.push(
-    "polityka ogolna /* ma 'unsafe-eval'. Pod nia chodza koszyk i platnosci,\n" +
-    "    wiec poluzowanie musi dotyczyc konkretnego adresu, a nie calego serwisu.",
+    "polityka ogolna nie ma 'unsafe-eval'. Embind tworzy funkcje przez\n" +
+    "    `new Function`, wiec bez tego kreator i czytanie plikow STEP przewroca sie\n" +
+    "    na produkcji. Wezsza sekcja tego NIE naprawi, patrz sprawdzenie nizej.",
   );
 }
 
-// Watek roboczy DZIEDZICZY polityke strony, ktora go utworzyla, a wlasne
-// naglowki moga ja tylko zawezic. Strona kreatora musi wiec sama dopuszczac
-// `unsafe-eval`, inaczej generator nie zbuduje bryly, mimo poprawnej sekcji
-// /assets. Zalozenie odwrotne kosztowalo nas dwa wdrozenia.
-const toolSection = sections.find((x) => x.path.startsWith("/toolsjewelry/kreator") && x.csp);
-if (!toolSection || !/'unsafe-eval'/.test(toolSection.csp)) {
-  problems.push(
-    "strona kreatora nie ma wlasnej polityki z 'unsafe-eval'. Watek dziedziczy\n" +
-    "    polityke dokumentu, wiec sama sekcja /assets nie wystarczy.",
-  );
+// NAJWAZNIEJSZE sprawdzenie w tym pliku, bo kosztowalo trzy wdrozenia.
+//
+// Cloudflare stosuje wszystkie pasujace reguly, wiec przy dwoch politykach
+// przegladarka egzekwuje ich CZESC WSPOLNA. Wezsza sekcja moze polityke
+// wylacznie zawezic. Zrodlo dopisane w wezszej sekcji, a nieobecne w ogolnej,
+// nie dziala i nie daje o sobie znac inaczej niz bledem na produkcji.
+const docDirectives = directives(csp);
+for (const s of sections) {
+  if (s.path === "/*" || !s.csp) continue;
+  for (const [name, sources] of directives(s.csp)) {
+    const allowed = docDirectives.get(name);
+    if (!allowed) continue;
+    const extra = [...sources].filter((x) => !allowed.has(x));
+    if (extra.length) {
+      problems.push(
+        `sekcja ${s.path} dopisuje do ${name} zrodla, ktorych nie ma w regule ogolnej:\n` +
+        `    ${extra.join(" ")}\n` +
+        "    Wezsza regula moze polityke tylko ZAWEZIC, bo przegladarka dostaje obie\n" +
+        "    i egzekwuje czesc wspolna. To poluzowanie nie zadziala.",
+      );
+    }
+  }
 }
 
-// Embind buduje funkcje przez `new Function`, wiec sam `wasm-unsafe-eval` nie
-// wystarcza. Bez tej sekcji kreator przewraca sie z komunikatem
-// "Refused to evaluate a string as JavaScript", i to WYLACZNIE na produkcji.
-if (!assetSection || !/'unsafe-eval'/.test(assetSection.csp)) {
-  problems.push(
-    "sekcja /assets/* nie daje watkom roboczym 'unsafe-eval'. Generator pierscionkow\n" +
-    "    nie zbuduje bryly, bo embind tworzy funkcje przez `new Function`.",
-  );
+// Strony platnicze zostaja ostrzejsze. To jedyne miejsca, gdzie klient podaje
+// dane i placi, a zadne z nich nie czyta plikow ani nie liczy geometrii.
+for (const path of ["/cart", "/checkout", "/order"]) {
+  const sec = sections.find((s) => s.path.startsWith(path) && s.csp);
+  if (!sec) {
+    problems.push(
+      `brak wlasnej, ostrzejszej polityki dla ${path}*. Regula ogolna ma 'unsafe-eval',\n` +
+      "    wiec bez tej sekcji dostaja je takze strony platnicze.",
+    );
+    continue;
+  }
+  const secScript = (sec.csp.match(/script-src ([^;]+)/) || [])[1] || "";
+  if (/'unsafe-eval'/.test(secScript)) {
+    problems.push(`sekcja ${sec.path} ma 'unsafe-eval'. Strony platnicze maja byc bez niego.`);
+  }
+  // Przy laczeniu polityk brakujacy adres jest ZABRONIONY, a nie pominiety,
+  // wiec zgubienie domen platnosci zatrzymaloby przelew bez komunikatu.
+  for (const need of ["https://pay.autopay.eu", "https://testpay.autopay.eu"]) {
+    if (!sec.csp.includes(need)) {
+      problems.push(
+        `sekcja ${sec.path} nie wymienia ${need} w form-action. Przy laczeniu polityk\n` +
+        "    brak adresu znaczy zakaz, wiec formularz platnosci zostalby zablokowany.",
+      );
+    }
+  }
 }
 
 // Polityka moze byc poprawna i mimo to nie dotrzec: przychodzi razem
