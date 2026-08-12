@@ -16,6 +16,20 @@
 
 import { buildRing } from "../geometry/ring/build.js";
 
+// Znacznik wersji, ODSYLANY w odpowiedzi.
+//
+// Nazwa pliku po zbudowaniu zawiera skrot jego TRESCI, a `/assets/*` jest
+// oznaczone jako `immutable` na rok. Gdy tresc sie nie zmienia, przegladarka
+// serwuje plik z dysku RAZEM ze starymi naglowkami, wiec poprawka polityki
+// bezpieczenstwa do niego nie dociera. Podbicie tej liczby zmienia skrot
+// i wymusza pobranie na nowo.
+//
+// Wartosc musi byc REALNIE uzyta, inaczej minifikator ja usunie, plik wyjdzie
+// bajt w bajt taki sam i cala sztuczka nic nie da. Odsylamy ja wiec w kazdej
+// odpowiedzi, co przy okazji pozwala sprawdzic w konsoli, ktora wersja
+// watku odpowiedziala.
+const WORKER_VERSION = 2;
+
 /** Podglad nie potrzebuje gestosci docelowej: mniej segmentow, szybsza reakcja. */
 const PREVIEW_SEGMENTS = 64;
 
@@ -45,7 +59,7 @@ self.onmessage = async (e) => {
     if (stones) transfer.push(stones.positions.buffer, stones.indices.buffer);
 
     self.postMessage({
-      seq, ok: true, metal, stones,
+      seq, ok: true, workerVersion: WORKER_VERSION, metal, stones,
       volumeMm3: r.volumeMm3,
       massG: r.massG,
       genus: r.genus,
@@ -54,6 +68,6 @@ self.onmessage = async (e) => {
   } catch (err) {
     // Niedozwolone zakucie rzuca stad z czytelnym komunikatem po polsku,
     // wiec nie tlumaczymy go ponownie na watku glownym.
-    self.postMessage({ seq, ok: false, error: String(err?.message || err) });
+    self.postMessage({ seq, ok: false, workerVersion: WORKER_VERSION, error: String(err?.message || err) });
   }
 };

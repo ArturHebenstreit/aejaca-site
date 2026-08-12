@@ -75,12 +75,24 @@ if (!/'wasm-unsafe-eval'|'unsafe-eval'/.test(scriptSrc)) {
     "    a lokalnie beda dzialac, bo `_headers` nie jest tam stosowany.",
   );
 }
-// Dokument NIE moze miec `unsafe-eval`. Strony platnosci chodza pod ta sama
-// polityka, a embind potrzebuje `eval` wylacznie w watku roboczym.
+// Polityka OGOLNA nie moze miec `unsafe-eval`: pod nia chodzi koszyk,
+// checkout i platnosci. Poluzowanie wolno tylko sekcji konkretnej strony.
 if (/'unsafe-eval'/.test(scriptSrc)) {
   problems.push(
-    "polityka DOKUMENTU ma 'unsafe-eval'. Watek roboczy bierze polityke z naglowkow\n" +
-    "    wlasnego pliku, wiec poluzowanie nalezy do sekcji /assets, a nie tutaj.",
+    "polityka ogolna /* ma 'unsafe-eval'. Pod nia chodza koszyk i platnosci,\n" +
+    "    wiec poluzowanie musi dotyczyc konkretnego adresu, a nie calego serwisu.",
+  );
+}
+
+// Watek roboczy DZIEDZICZY polityke strony, ktora go utworzyla, a wlasne
+// naglowki moga ja tylko zawezic. Strona kreatora musi wiec sama dopuszczac
+// `unsafe-eval`, inaczej generator nie zbuduje bryly, mimo poprawnej sekcji
+// /assets. Zalozenie odwrotne kosztowalo nas dwa wdrozenia.
+const toolSection = sections.find((x) => x.path.startsWith("/toolsjewelry/kreator") && x.csp);
+if (!toolSection || !/'unsafe-eval'/.test(toolSection.csp)) {
+  problems.push(
+    "strona kreatora nie ma wlasnej polityki z 'unsafe-eval'. Watek dziedziczy\n" +
+    "    polityke dokumentu, wiec sama sekcja /assets nie wystarczy.",
   );
 }
 
