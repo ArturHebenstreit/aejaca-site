@@ -11,7 +11,9 @@
 
 import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import { CUTS, SETTINGS, SIDE_SETTINGS, SHANK_PROFILES, SIGNET_TABLES, DEFAULTS, LIMITS } from "../../geometry/ring/params.js";
-import { CASTING_ALLOYS } from "../../data/castingAlloys.js";
+import { CASTING_ALLOYS, METAL_COLORS, colorsFor } from "../../data/castingAlloys.js";
+import { GEMSTONES } from "../../pricing/jewelryConfig.js";
+import { gemOptics } from "../../data/gemOptics.js";
 import { RING_SIZES } from "../../data/ringSizes.js";
 import CutIcon from "./jewelry/CutIcon.jsx";
 
@@ -20,7 +22,10 @@ const RingPreview3D = lazy(() => import("./jewelry/RingPreview3D.jsx"));
 const L = {
   pl: {
     kind: "Typ wyrobu", ring: "Pierścionek", signet: "Sygnet",
-    size: "Rozmiar", alloy: "Metal", profile: "Profil szyny",
+    size: "Rozmiar", alloy: "Metal", color: "Kolor metalu", profile: "Profil szyny",
+    gem: "Kamień centralny", sideGem: "Kamienie boczne",
+    rhodiumNote: "Białe złoto rodujemy, bo bez powłoki ma lekko ciepły odcień. Rodowanie zużywa się i po latach odnawia się je jak lakier.",
+    gemGroups: { precious: "Szlachetne", lab: "Hodowane i syntetyczne", semi: "Półszlachetne i ozdobne" },
     width: "Szerokość szyny", thickness: "Grubość szyny",
     cut: "Szlif kamienia centralnego", setting: "Zakucie", stoneSize: "Rozmiar kamienia",
     side: "Kamienie na szynie, na stronę", sideSetting: "Oprawa kamieni bocznych",
@@ -34,7 +39,10 @@ const L = {
   },
   en: {
     kind: "Piece", ring: "Ring", signet: "Signet",
-    size: "Size", alloy: "Metal", profile: "Shank profile",
+    size: "Size", alloy: "Metal", color: "Metal colour", profile: "Shank profile",
+    gem: "Centre stone", sideGem: "Side stones",
+    rhodiumNote: "White gold is rhodium plated, since the bare alloy has a faintly warm tint. The plating wears and is renewed over the years, much like a lacquer.",
+    gemGroups: { precious: "Precious", lab: "Lab-grown and synthetic", semi: "Semi-precious and decorative" },
     width: "Shank width", thickness: "Shank thickness",
     cut: "Centre stone cut", setting: "Setting", stoneSize: "Stone size",
     side: "Side stones, per side", sideSetting: "Side stone setting",
@@ -48,7 +56,10 @@ const L = {
   },
   de: {
     kind: "Stück", ring: "Ring", signet: "Siegelring",
-    size: "Größe", alloy: "Metall", profile: "Schienenprofil",
+    size: "Größe", alloy: "Metall", color: "Metallfarbe", profile: "Schienenprofil",
+    gem: "Hauptstein", sideGem: "Seitensteine",
+    rhodiumNote: "Weißgold wird rhodiniert, da die blanke Legierung einen leicht warmen Ton hat. Die Schicht nutzt sich ab und wird über die Jahre erneuert, ähnlich wie ein Lack.",
+    gemGroups: { precious: "Edelsteine", lab: "Laborgezüchtet und synthetisch", semi: "Halbedel und dekorativ" },
     width: "Schienenbreite", thickness: "Schienenstärke",
     cut: "Schliff des Hauptsteins", setting: "Fassung", stoneSize: "Steingröße",
     side: "Steine auf der Schiene, je Seite", sideSetting: "Fassung der Seitensteine",
@@ -99,6 +110,41 @@ function Seg({ options, value, onChange }) {
           {o.label}
         </button>
       ))}
+    </div>
+  );
+}
+
+// Kamieni jest dwadziescia kilka, wiec przyciski rozlalyby sie na pol ekranu.
+// Lista rozwijana grupuje je tak, jak dzieli je rynek, a kropka obok pokazuje
+// barwe, ktora zobaczysz na modelu. Barwa i nazwa ida z tego samego zrodla,
+// wiec nie moga sie rozjechac.
+const GEM_GROUPS = [
+  { key: "precious", ids: GEMSTONES.filter((g) => g.precious).map((g) => g.id) },
+  { key: "lab",      ids: GEMSTONES.filter((g) => g.lab).map((g) => g.id) },
+  { key: "semi",     ids: GEMSTONES.filter((g) => !g.precious && !g.lab && !g.custom && g.id !== "none").map((g) => g.id) },
+];
+const GEM_BY_ID = Object.fromEntries(GEMSTONES.map((g) => [g.id, g]));
+
+function GemSelect({ value, onChange, lang, groupLabels }) {
+  const o = gemOptics(value);
+  return (
+    <div className="flex items-center gap-2">
+      <span aria-hidden="true" className="w-3.5 h-3.5 shrink-0 rounded-full border border-black/40"
+        style={{ background: o?.color || "#888" }} />
+      <select
+        value={value} onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-sm border border-white/10 bg-white/[0.03] px-2 py-1.5 text-[13px] text-neutral-200"
+      >
+        {GEM_GROUPS.map((g) => (
+          <optgroup key={g.key} label={groupLabels[g.key]}>
+            {g.ids.map((id) => (
+              <option key={id} value={id} className="bg-neutral-900">
+                {GEM_BY_ID[id].label[lang] || GEM_BY_ID[id].label.pl}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
     </div>
   );
 }
@@ -155,7 +201,7 @@ export default function RingConfigurator({ lang = "pl" }) {
       setBusy(false);
       if (!e.data.ok) { setError(e.data.error); return; }
       setError(null);
-      setMesh({ metal: e.data.metal, stones: e.data.stones });
+      setMesh({ metal: e.data.metal, stones: e.data.stones, sideStones: e.data.sideStones });
       setInfo({
         massG: e.data.massG, volumeMm3: e.data.volumeMm3,
         triangles: e.data.metal.triangles,
@@ -185,6 +231,10 @@ export default function RingConfigurator({ lang = "pl" }) {
     [p.innerDia],
   );
 
+  // Srebro ma jeden kolor, zloto trzy. Lista idzie z danych stopu, wiec
+  // dodanie platyny nie bedzie wymagalo dotykania formularza.
+  const metalColors = colorsFor(p.alloy);
+
   const signet = p.kind === "signet";
   const noSide = signet || p.setting === "drilled" || p.side.count === 0;
 
@@ -207,6 +257,24 @@ export default function RingConfigurator({ lang = "pl" }) {
             <Seg value={p.alloy} onChange={(id) => set({ alloy: id })}
               options={Object.entries(CASTING_ALLOYS).map(([id, a]) => ({ id, label: a.label[lang] || a.label.pl }))} />
           </Group>
+
+          {/* Srebro ma jeden kolor, wiec przelacznik z jednym przyciskiem
+              bylby atrapa wyboru. Chowamy go zamiast blokowac. */}
+          {metalColors.length > 1 ? (
+            <Group label={t.color} hint={p.color === "white" ? t.rhodiumNote : null}>
+              <Seg value={p.color} onChange={(id) => set({ color: id })}
+                options={metalColors.map((id) => ({
+                  id,
+                  label: (
+                    <span className="inline-flex items-center gap-1.5">
+                      <span aria-hidden="true" className="w-3 h-3 rounded-full border border-black/30"
+                        style={{ background: METAL_COLORS[id].tone }} />
+                      {METAL_COLORS[id].label[lang] || METAL_COLORS[id].label.pl}
+                    </span>
+                  ),
+                }))} />
+            </Group>
+          ) : null}
 
           <Group label={t.profile}>
             <Seg value={p.profile} onChange={(id) => set({ profile: id })}
@@ -244,6 +312,11 @@ export default function RingConfigurator({ lang = "pl" }) {
                   options={allowed.map((id) => ({ id, label: nameOf(SETTINGS[id], lang) }))} />
               </Group>
 
+              <Group label={t.gem}>
+                <GemSelect value={p.stone.material} lang={lang} groupLabels={t.gemGroups}
+                  onChange={(id) => setStone({ material: id })} />
+              </Group>
+
               <Slider label={t.stoneSize} lang={lang} unit="mm" value={p.stone.size}
                 min={LIMITS.stoneSize[0]} max={LIMITS.stoneSize[1]} step={0.5}
                 onChange={(v) => setStone({ size: v })} />
@@ -262,6 +335,11 @@ export default function RingConfigurator({ lang = "pl" }) {
                     <Seg value={p.side.setting} onChange={(id) => setSide({ setting: id })}
                       options={Object.entries(SIDE_SETTINGS).map(([id, v]) => ({ id, label: nameOf(v, lang) }))} />
                   </Group>
+                  <Group label={t.sideGem}>
+                    <GemSelect value={p.side.material} lang={lang} groupLabels={t.gemGroups}
+                      onChange={(id) => setSide({ material: id })} />
+                  </Group>
+
                   <Slider label={t.sideSize} lang={lang} unit="mm" value={p.side.size}
                     min={LIMITS.sideSize[0]} max={LIMITS.sideSize[1]} step={0.1}
                     onChange={(v) => setSide({ size: v })} />
@@ -291,7 +369,13 @@ export default function RingConfigurator({ lang = "pl" }) {
         <div className="p-5">
           <div className="relative aspect-square lg:aspect-[4/3] rounded-xl border border-white/10 bg-black overflow-hidden">
             <Suspense fallback={null}>
-              {mesh ? <RingPreview3D metal={mesh.metal} stones={mesh.stones} alloy={p.alloy} /> : null}
+              {mesh ? (
+                <RingPreview3D
+                  metal={mesh.metal} stones={mesh.stones} sideStones={mesh.sideStones}
+                  alloy={p.alloy} color={p.color}
+                  gem={p.stone.material} sideGem={p.side.material}
+                />
+              ) : null}
             </Suspense>
             <div className="pointer-events-none absolute left-3 top-3 text-[10px] uppercase tracking-[0.12em] text-neutral-500">
               {busy ? t.building : t.dragHint}

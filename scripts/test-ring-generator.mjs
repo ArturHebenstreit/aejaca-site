@@ -18,7 +18,9 @@
 
 import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel } from "../src/geometry/ring/build.js";
 import { CUTS, SETTINGS, validate } from "../src/geometry/ring/params.js";
-import { CASTING_ALLOYS } from "../src/data/castingAlloys.js";
+import { CASTING_ALLOYS, METAL_COLORS, colorsFor, densityFor } from "../src/data/castingAlloys.js";
+import { GEMSTONES } from "../src/pricing/jewelryConfig.js";
+import { gemOptics, GEM_OPTICS } from "../src/data/gemOptics.js";
 
 const PROG_OBJETOSC = 2.0;      // procent
 const PROG_SREDNICA = 0.05;     // mm
@@ -219,6 +221,71 @@ console.log("\n6. Kamienie osadzone taflą na zewnątrz");
     if (zewn > wewn * 1.6) ok(`${label.padEnd(12)} tafla na zewnątrz: rozrzut ${zewn.toFixed(2)} wobec kolety ${wewn.toFixed(2)} mm`);
     else bad(`${label}: kamień ODWROCONY, koleta na zewnątrz (rozrzut zewn. ${zewn.toFixed(2)}, wewn. ${wewn.toFixed(2)} mm)`);
   }
+}
+
+// ------------------------------------------------------------
+// 7. Kolor stopu wchodzi do masy, a nie tylko do renderu
+// ------------------------------------------------------------
+// Bialy stop bierze gestsze domieszki. Gdyby kolor byl wylacznie kosmetyka,
+// biale zloto liczyloby sie jak zolte, a metal jest tu glownym skladnikiem
+// ceny, wiec kazdy taki pierscionek bylby wyceniony ponizej kosztu.
+console.log("\n7. Kolor stopu zmienia mase");
+{
+  const baza = { innerDia: 17.2, alloy: "au585", width: 2.2, thickness: 1.6 };
+  const masy = {};
+  for (const color of ["yellow", "white", "rose"]) {
+    const r = await buildRing({ ...baza, color }, { segments: 48 });
+    masy[color] = r.massG;
+  }
+  const wzrost = (masy.white / masy.yellow - 1) * 100;
+  if (wzrost > 8) ok(`białe cięższe od żółtego o ${wzrost.toFixed(1)} procent (${masy.yellow.toFixed(2)} -> ${masy.white.toFixed(2)} g)`);
+  else bad(`kolor nie wplywa na mase: żółte ${masy.yellow.toFixed(3)} g, białe ${masy.white.toFixed(3)} g`);
+
+  if (masy.rose < masy.yellow) ok(`różowe lżejsze od żółtego (${masy.rose.toFixed(2)} g)`);
+  else bad(`różowe powinno byc lzejsze od zoltego, jest ${masy.rose.toFixed(3)} g`);
+
+  // Srebro ma jeden kolor i nie jest to wybor. Zla nazwa nie moze zmienic masy.
+  const ag1 = (await buildRing({ ...baza, alloy: "ag925", color: "yellow" }, { segments: 48 })).massG;
+  const ag2 = (await buildRing({ ...baza, alloy: "ag925", color: "rose" }, { segments: 48 })).massG;
+  if (Math.abs(ag1 - ag2) < 1e-9) ok("srebro ignoruje kolor, jedna masa niezaleznie od wyboru");
+  else bad(`srebro zmienia mase z kolorem: ${ag1} vs ${ag2} g`);
+
+  const zly = validate({ alloy: "au750", color: "fioletowe" });
+  if (colorsFor("au750").includes(zly.color)) ok(`nieznany kolor sprowadzony do "${zly.color}"`);
+  else bad(`nieznany kolor przeszedl przez validate jako "${zly.color}"`);
+
+  for (const [id, a] of Object.entries(CASTING_ALLOYS)) {
+    const brak = colorsFor(id).filter((c) => !METAL_COLORS[c]);
+    if (brak.length) bad(`${id}: kolory bez definicji w METAL_COLORS: ${brak.join(", ")}`);
+    const gest = colorsFor(id).map((c) => densityFor(id, c));
+    if (gest.every((d) => d > 5 && d < 25)) ok(`${id.padEnd(6)} gestosci w zakresie ${gest.map((d) => d.toFixed(2)).join(", ")} g/cm3`);
+    else bad(`${id}: gestosc poza rozsadnym zakresem: ${gest.join(", ")}`);
+  }
+}
+
+// ------------------------------------------------------------
+// 8. Kazdy kamien z katalogu ma wlasciwosci optyczne
+// ------------------------------------------------------------
+// Kamien bez wpisu narysuje sie domyslnym bladym szklem. To wyglada jak
+// decyzja projektowa, a jest przeoczeniem, wiec nikt tego nie zglosi.
+console.log("\n8. Katalog kamieni pokrywa sie z optyką");
+{
+  const katalog = GEMSTONES.filter((g) => g.id !== "none").map((g) => g.id);
+  const brak = katalog.filter((id) => !GEM_OPTICS[id]);
+  if (!brak.length) ok(`${katalog.length} kamieni z katalogu ma zdefiniowaną barwę`);
+  else bad(`kamienie bez optyki: ${brak.join(", ")}`);
+
+  const zbedne = Object.keys(GEM_OPTICS).filter((id) => id !== "none" && !katalog.includes(id));
+  if (!zbedne.length) ok("optyka nie opisuje kamieni spoza katalogu");
+  else bad(`optyka opisuje kamienie, ktorych nie ma w katalogu: ${zbedne.join(", ")}`);
+
+  if (gemOptics("none") === null) ok("brak kamienia nie ma materialu");
+  else bad("gemOptics('none') powinno zwrocic null");
+
+  const nieprzezr = ["onyx", "lapis", "turquoise", "tiger_eye"];
+  const zle = nieprzezr.filter((id) => gemOptics(id).transmission > 0);
+  if (!zle.length) ok("kamienie nieprzezroczyste nie przepuszczaja swiatla");
+  else bad(`przezroczyste, a nie powinny: ${zle.join(", ")}`);
 }
 
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");

@@ -489,7 +489,9 @@ export async function buildRing(input, opts = {}) {
     stones,
     stoneVolumesMm3,
     volumeMm3,
-    massG: massGrams(volumeMm3, p.alloy) ?? 0,
+    // Kolor stopu zmienia gestosc, wiec i mase. Bez niego biale zloto
+    // liczyloby sie jak zolte i wycena bylaby zanizona o kilkanascie procent.
+    massG: massGrams(volumeMm3, p.alloy, p.color) ?? 0,
     /** Objetosc WZORCA do druku, czyli po kompensacji skurczu odlewniczego. */
     patternVolumeMm3: volumeMm3 * alloyDef.shrink ** 3,
     genus: metal.genus(),

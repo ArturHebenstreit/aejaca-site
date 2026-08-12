@@ -14,6 +14,11 @@
 // listami punktow w ukladzie jednostkowym (promien 1), przeskalowanymi
 // dopiero przy budowie bryly.
 
+// Stopy sa danymi, nie geometria, wiec import nie lamie zasady wyzej: nadal
+// nie siegamy po jadro. Kolor stopu musi byc jednak sprawdzany razem z reszta
+// parametrow, bo wchodzi do masy.
+import { CASTING_ALLOYS, colorsFor } from "../pricing/castingAlloys.js";
+
 const TAU = Math.PI * 2;
 
 const ngon = (n, rot = 0) =>
@@ -167,15 +172,15 @@ export const SETTINGS = {
   corner:  { pl: "narożne", en: "corner claws", de: "Eckkrappen", prongs: 0 },   // liczba lapek z `corners` szlifu
   vprong:  { pl: "łapki V", en: "V-claws", de: "V-Krappen", prongs: 0 },   // lapki siadaja na `points` szlifu
   bezel:   { pl: "kaseta", en: "bezel", de: "Zarge", prongs: 0 },
-  channel: { pl: "kanałowa", en: "Channel", de: "Kanal", en: "channel", de: "Kanal", prongs: 0 },
+  channel: { pl: "kanałowa", en: "channel", de: "Kanal", prongs: 0 },
   drilled: { pl: "wiercony", en: "drilled", de: "gebohrt", prongs: 0 },
 };
 
 export const SIDE_SETTINGS = {
   pave:    { pl: "Pavé", en: "Pavé", de: "Pavé", metalPerStone: 0.8,
              hint: "Kamienie tuż obok siebie, trzymane kuleczkami wyciętymi z metalu szyny.",
-             hintEn: "Stones between two rails with no metal between them. The most durable.", hintDe: "Steine zwischen zwei Stegen, ohne Metall dazwischen. Am widerstandsfähigsten.",
-             hintEn: "Stones set edge to edge, held by beads raised from the shank.", hintDe: "Steine dicht an dicht, gehalten von Körnern aus dem Schienenmetall." },
+             hintEn: "Stones set edge to edge, held by beads raised from the shank.",
+             hintDe: "Steine dicht an dicht, gehalten von Körnern aus dem Schienenmetall." },
   channel: { pl: "Kanałowa", en: "Channel", de: "Kanal", metalPerStone: 2.2,
              hint: "Kamienie między dwiema szynkami, bez metalu pomiędzy. Najbardziej odporna.",
              hintEn: "Stones between two rails with no metal between them. The most durable.",
@@ -219,6 +224,7 @@ export const DEFAULTS = {
   kind: "ring",
   innerDia: 17.2,
   alloy: "ag925",
+  color: "yellow",
   profile: "round",
   width: 2.2,
   thickness: 1.6,
@@ -252,6 +258,15 @@ export function validate(input = {}) {
   p.thickness = clamp(num(p.thickness, DEFAULTS.thickness), LIMITS.thickness);
   p.prongDia = clamp(num(p.prongDia, DEFAULTS.prongDia), LIMITS.prongDia);
   if (!SHANK_PROFILES.includes(p.profile)) p.profile = DEFAULTS.profile;
+
+  // Kolor stopu wchodzi do masy przez gestosc, wiec musi byc sprawdzony tutaj,
+  // a nie tylko w formularzu. Kolor niedostepny dla danej proby sprowadzamy do
+  // pierwszego dopuszczalnego: srebro ma wylacznie bialy i nie jest to wybor,
+  // tylko fakt. Cicha korekta jest tu wlasciwa, bo zla nazwa koloru nie psuje
+  // bryly, a jedynie material.
+  if (!CASTING_ALLOYS[p.alloy]) p.alloy = DEFAULTS.alloy;
+  const allowed = colorsFor(p.alloy);
+  if (!allowed.includes(p.color)) p.color = allowed[0] || DEFAULTS.color;
 
   if (p.kind === "signet") {
     p.signet.length = clamp(num(p.signet.length, 14), LIMITS.signetLength);
