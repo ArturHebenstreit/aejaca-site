@@ -27,7 +27,8 @@
     "audit:serve": "node scripts/audit-server.mjs",
     "backup:n8n": "node scripts/backup-n8n.mjs",
     "lint:undef": "eslint --config eslint.undef.config.js --no-warn-ignored src scripts chat-api workers admin",
-    "test:ring": "node scripts/test-ring-generator.mjs"
+    "test:ring": "node scripts/test-ring-generator.mjs",
+    "ring:preview": "node scripts/preview-ring-generator.mjs"
   },
   "dependencies": {
     "fflate": "^0.8.3",
