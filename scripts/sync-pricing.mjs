@@ -16,6 +16,8 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SRC_PRICING = join(ROOT, "src", "pricing");
 const DEST = join(ROOT, "chat-api", "pricing");
+const GEO_SRC = join(ROOT, "src", "geometry", "ring");
+const GEO_DEST = join(ROOT, "chat-api", "geometry");
 
 const HEADER = `// PLIK GENEROWANY, NIE EDYTOWAC RECZNIE.
 // Zrodlo: %SOURCE%
@@ -32,11 +34,30 @@ const EXTRA = [
   // i we wzorze formularza, czyli w tresci, ktora ma moc wobec konsumenta.
   // Reczne lustro w orderMail.js zdazylo sie juz rozjechac (brak adresu).
   { from: join(ROOT, "src", "data", "sellerInfo.js"), name: "sellerInfo.js", source: "src/data/sellerInfo.js" },
+  // Skurcz i gestosc stopow: korzysta z nich i wycena, i generator pierscionkow.
+  { from: join(ROOT, "src", "data", "castingAlloys.js"), name: "castingAlloys.js", source: "src/data/castingAlloys.js" },
 ];
 
 /** W kopii wszystko lezy obok siebie, wiec ../data/x.js staje sie ./x.js */
 function rewriteImports(code) {
   return code.replace(/from\s+"\.\.\/data\//g, 'from "./');
+}
+
+// Generator pierscionkow ma wlasny katalog, bo `build.js` w folderze z cenami
+// bylby nazwa myląca, a rozbicie na pliki ma tu sens. Lustro zachowuje nazwy,
+// zmienia tylko sciezke do wspoldzielonych danych.
+function rewriteGeometry(code) {
+  return code.replace(/from\s+"\.\.\/\.\.\/data\//g, 'from "../pricing/');
+}
+
+function buildGeometry() {
+  return readdirSync(GEO_SRC)
+    .filter((f) => f.endsWith(".js"))
+    .map((name) => ({
+      name,
+      content: HEADER.replace("%SOURCE%", `src/geometry/ring/${name}`) + "\n"
+        + rewriteGeometry(readFileSync(join(GEO_SRC, name), "utf8")),
+    }));
 }
 
 function build() {
@@ -54,30 +75,36 @@ function build() {
 }
 
 const check = process.argv.includes("--check");
-const files = build();
-
-if (!existsSync(DEST)) mkdirSync(DEST, { recursive: true });
-
 const drift = [];
-for (const f of files) {
-  const path = join(DEST, f.name);
-  const current = existsSync(path) ? readFileSync(path, "utf8") : null;
-  if (current === f.content) continue;
-  if (check) drift.push(f.name);
-  else writeFileSync(path, f.content);
+
+function mirror(files, dest, label) {
+  if (!existsSync(dest)) mkdirSync(dest, { recursive: true });
+  for (const f of files) {
+    const path = join(dest, f.name);
+    const current = existsSync(path) ? readFileSync(path, "utf8") : null;
+    if (current === f.content) continue;
+    if (check) drift.push(`${label}/${f.name}`);
+    else writeFileSync(path, f.content);
+  }
+  // Plik w kopii, ktory zniknal ze zrodla, tez jest dryfem
+  const expected = new Set(files.map((f) => f.name));
+  for (const name of readdirSync(dest).filter((f) => f.endsWith(".js"))) {
+    if (!expected.has(name)) drift.push(`${label}/${name} (osierocony)`);
+  }
 }
 
-// Plik w kopii, ktory zniknal ze zrodla, tez jest dryfem
-const expected = new Set(files.map((f) => f.name));
-for (const name of existsSync(DEST) ? readdirSync(DEST).filter((f) => f.endsWith(".js")) : []) {
-  if (!expected.has(name)) drift.push(`${name} (osierocony)`);
-}
+const files = build();
+const geoFiles = buildGeometry();
+mirror(files, DEST, "pricing");
+mirror(geoFiles, GEO_DEST, "geometry");
 
 if (check && drift.length) {
-  console.error("\nRdzen cenowy rozjechal sie z kopia w chat-api/pricing/:");
+  console.error("\nRdzen rozjechal sie z kopia w chat-api/:");
   for (const d of drift) console.error(`  - ${d}`);
   console.error("\nUruchom: npm run sync:pricing\n");
   process.exit(1);
 }
 
-console.log(check ? "Rdzen cenowy zgodny z chat-api/pricing/" : `Zsynchronizowano ${files.length} plikow do chat-api/pricing/`);
+console.log(check
+  ? "Rdzen cenowy i generator zgodne z kopiami w chat-api/"
+  : `Zsynchronizowano ${files.length} plikow cenowych i ${geoFiles.length} plikow generatora`);

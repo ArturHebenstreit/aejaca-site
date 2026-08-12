@@ -913,7 +913,12 @@ async function currentGemstones(plnPerEur) {
 
 app.get("/api/price/calculators", (_req, res) => {
   res.json({
-    calculators: Object.entries(CALCULATORS).map(([id, c]) => ({ id, label: c.label })),
+    // Kalkulatory oznaczone `internal` sa gotowe w kodzie, ale nie maja jeszcze
+    // interfejsu. Lista jest publiczna, wiec nie moga sie na niej pojawiac,
+    // zanim beda dzialac od strony klienta.
+    calculators: Object.entries(CALCULATORS)
+      .filter(([, c]) => !c.internal)
+      .map(([id, c]) => ({ id, label: c.label })),
   });
 });
 

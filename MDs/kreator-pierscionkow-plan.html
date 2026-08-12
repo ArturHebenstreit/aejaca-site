@@ -1,0 +1,1171 @@
+<title>Kreator Pierścionków</title>
+<style>
+  :root{
+    --ground:#0a0908; --surface:#141110; --surface-2:#1c1816; --line:#2b2523;
+    --ink:#ece6dd; --ink-dim:#a2968a; --ink-faint:#6f645b;
+    --amber:#dfa44f; --amber-soft:rgba(223,164,79,.12);
+    --sage:#7f9f83; --rust:#c0674f; --steel:#6f8ba3;
+    --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{ -webkit-text-size-adjust:100% }
+  body{ margin:0; background:var(--ground); color:var(--ink);
+    font-family:var(--sans); font-size:17px; line-height:1.65; -webkit-font-smoothing:antialiased }
+  .wrap{ max-width:1080px; margin:0 auto; padding:0 24px }
+  .col{ max-width:68ch; margin-left:auto; margin-right:auto }
+
+  header.mast{ border-bottom:1px solid var(--line); padding:72px 0 40px; margin-bottom:56px }
+  .kicker{ font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--amber); margin:0 0 20px }
+  h1{ font-family:var(--serif); font-weight:400; font-size:clamp(34px,6vw,56px); line-height:1.08;
+    margin:0 0 20px; text-wrap:balance; letter-spacing:-.01em }
+  .standfirst{ font-size:19px; color:var(--ink-dim); margin:0; max-width:60ch; text-wrap:pretty }
+  .meta{ display:flex; flex-wrap:wrap; gap:8px 28px; margin-top:32px;
+    font-family:var(--mono); font-size:12px; color:var(--ink-faint) }
+  .meta b{ color:var(--ink-dim); font-weight:400 }
+
+  section{ margin-bottom:72px }
+  h2{ font-family:var(--serif); font-weight:400; font-size:30px; line-height:1.2; margin:0 0 8px; text-wrap:balance }
+  .sec-num{ font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--amber);
+    text-transform:uppercase; margin:0 0 10px }
+  h3{ font-family:var(--sans); font-weight:600; font-size:17px; margin:36px 0 10px }
+  p{ margin:0 0 18px; text-wrap:pretty }
+  a{ color:var(--amber); text-decoration:none; border-bottom:1px solid rgba(223,164,79,.35) }
+  a:hover{ border-bottom-color:var(--amber) }
+  a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{ outline:2px solid var(--amber); outline-offset:2px }
+  strong{ color:#fff; font-weight:600 }
+  ul,ol{ margin:0 0 18px; padding-left:22px }
+  li{ margin-bottom:9px } li::marker{ color:var(--ink-faint) }
+  code{ font-family:var(--mono); font-size:.86em; background:var(--surface-2);
+    border:1px solid var(--line); border-radius:4px; padding:1px 5px; color:var(--ink) }
+
+  .verdict{ background:var(--surface); border:1px solid var(--line);
+    border-left:3px solid var(--amber); padding:28px 30px; margin:0 0 28px }
+  .verdict p:last-child{ margin-bottom:0 }
+  .verdict .lead{ font-family:var(--serif); font-size:22px; line-height:1.35; color:#fff; margin-bottom:14px }
+  .verdict.alarm{ border-left-color:var(--rust) }
+
+  .note{ background:var(--surface); border:1px solid var(--line); padding:20px 24px; margin:24px 0 }
+  .note p:last-child{ margin-bottom:0 }
+  .note .tag{ font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--rust); display:block; margin-bottom:8px }
+  .note.ok .tag{ color:var(--sage) }
+  .note.info .tag{ color:var(--steel) }
+
+  .scroll{ overflow-x:auto; margin:0 0 22px; border:1px solid var(--line); background:var(--surface) }
+  table{ border-collapse:collapse; width:100%; min-width:600px; font-size:15px }
+  th,td{ text-align:left; padding:12px 16px; border-bottom:1px solid var(--line); vertical-align:top }
+  thead th{ font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--ink-faint); font-weight:400; background:var(--surface-2) }
+  tbody tr:last-child td{ border-bottom:0 }
+  td.num{ font-family:var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap }
+  .pill{ display:inline-block; font-family:var(--mono); font-size:10.5px; letter-spacing:.08em;
+    text-transform:uppercase; padding:3px 8px; border-radius:2px; white-space:nowrap }
+  .pill.no{ background:rgba(192,103,79,.14); color:var(--rust) }
+  .pill.yes{ background:rgba(127,159,131,.15); color:var(--sage) }
+  .pill.part{ background:rgba(111,139,163,.15); color:var(--steel) }
+  .pill.new{ background:var(--amber-soft); color:var(--amber) }
+
+  .stack{ display:grid; gap:2px; background:var(--line); border:1px solid var(--line); margin:0 0 24px }
+  .layer{ background:var(--surface); padding:22px 26px; display:grid; grid-template-columns:132px 1fr; gap:24px }
+  .layer .who{ font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--amber); padding-top:3px }
+  .layer h4{ margin:0 0 6px; font-size:16px; font-weight:600 }
+  .layer p{ margin:0; color:var(--ink-dim); font-size:15px }
+  @media(max-width:640px){ .layer{ grid-template-columns:1fr; gap:8px } }
+
+  /* configurator */
+  .demo{ border:1px solid var(--line); background:var(--surface); margin:0 0 18px }
+  .demo-bar{ display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:12px 18px; border-bottom:1px solid var(--line); background:var(--surface-2) }
+  .demo-bar span{ font-family:var(--mono); font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-faint) }
+  .demo-bar .live{ color:var(--sage) }
+  .demo-body{ display:grid; grid-template-columns:300px 1fr }
+  @media(max-width:860px){ .demo-body{ grid-template-columns:1fr } }
+  .ctrls{ border-right:1px solid var(--line); padding:20px; display:flex; flex-direction:column; gap:18px }
+  @media(max-width:860px){ .ctrls{ border-right:0; border-bottom:1px solid var(--line) } }
+  .grp label.h{ display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.13em;
+    text-transform:uppercase; color:var(--ink-faint); margin-bottom:9px }
+  .grp[hidden]{ display:none }
+  .seg{ display:flex; flex-wrap:wrap; gap:5px }
+  .seg button{ font-family:var(--sans); font-size:13px; padding:6px 11px; cursor:pointer;
+    background:var(--surface-2); color:var(--ink-dim); border:1px solid var(--line); border-radius:2px;
+    transition:background .12s,color .12s,border-color .12s,opacity .12s }
+  .seg button:hover:not(:disabled){ color:var(--ink); border-color:#3d3532 }
+  .seg button[aria-pressed="true"]{ background:var(--amber-soft); color:var(--amber); border-color:rgba(223,164,79,.5) }
+  .seg button:disabled{ opacity:.28; cursor:not-allowed; text-decoration:line-through }
+  input[type=range]{ width:100%; accent-color:var(--amber); margin:2px 0 0 }
+  .rowval{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:2px }
+  .rowval b{ font-family:var(--mono); font-size:13px; font-weight:400; color:var(--amber); font-variant-numeric:tabular-nums }
+  .hint{ font-family:var(--mono); font-size:10.5px; color:var(--ink-faint); margin:7px 0 0; line-height:1.5 }
+  .picker{ display:grid; grid-template-columns:repeat(4,1fr); gap:4px }
+  .picker .tile{ background:var(--surface-2); border:1px solid var(--line); border-radius:2px;
+    padding:5px 3px 4px; cursor:pointer; color:var(--ink-faint); display:flex; flex-direction:column;
+    align-items:center; gap:2px; transition:color .12s,border-color .12s,background .12s }
+  .picker .tile svg{ width:100%; height:auto; aspect-ratio:1; display:block }
+  .picker .tile span{ font-family:var(--mono); font-size:8.5px; line-height:1.15; text-align:center;
+    color:var(--ink-faint); letter-spacing:.01em }
+  .picker .tile:hover{ color:var(--ink-dim); border-color:#3d3532 }
+  .picker .tile[aria-pressed="true"]{ color:var(--amber); border-color:rgba(223,164,79,.55);
+    background:var(--amber-soft) }
+  .picker .tile[aria-pressed="true"] span{ color:var(--amber) }
+
+  .stage{ padding:20px; display:flex; flex-direction:column; gap:16px; min-width:0 }
+  .views{ display:grid; grid-template-columns:1fr 1fr; gap:14px }
+  @media(max-width:540px){ .views{ grid-template-columns:1fr } }
+  .view{ background:#000; border:1px solid var(--line); position:relative; aspect-ratio:1/1; margin:0 }
+  .view figcaption{ position:absolute; left:9px; top:8px; font-family:var(--mono); font-size:10px;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint); margin:0 }
+  .view svg{ width:100%; height:100%; display:block }
+  .readout{ display:grid; grid-template-columns:repeat(auto-fit,minmax(104px,1fr)); gap:1px;
+    background:var(--line); border:1px solid var(--line); margin:0 }
+  .cell{ background:var(--surface-2); padding:11px 13px }
+  .cell dt{ font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin:0 0 5px }
+  .cell dd{ margin:0; font-family:var(--mono); font-size:16px; font-variant-numeric:tabular-nums; color:var(--ink) }
+  .cell dd small{ font-size:11px; color:var(--ink-faint) }
+
+  /* finalisation */
+  .outs{ display:grid; gap:1px; background:var(--line); border:1px solid var(--line) }
+  .out{ background:var(--surface-2); padding:13px 15px; display:grid;
+    grid-template-columns:1fr auto auto; gap:14px; align-items:center }
+  .out .t{ min-width:0 }
+  .out h5{ margin:0 0 2px; font-size:14.5px; font-weight:600 }
+  .out p{ margin:0; font-size:12.5px; color:var(--ink-faint); line-height:1.45 }
+  .out .pr{ font-family:var(--mono); font-size:16px; color:var(--amber); font-variant-numeric:tabular-nums; white-space:nowrap }
+  .out .pr.quote{ font-size:12px; color:var(--steel); letter-spacing:.06em; text-transform:uppercase }
+  .out .go{ font-family:var(--sans); font-size:13px; padding:7px 14px; border-radius:2px; cursor:pointer;
+    border:1px solid var(--line); background:var(--surface); color:var(--ink); white-space:nowrap }
+  .out.lead .go{ background:var(--amber); color:#17110a; border-color:var(--amber); font-weight:600 }
+  @media(max-width:600px){ .out{ grid-template-columns:1fr auto; } .out .go{ grid-column:1/-1 } }
+  .caption{ font-size:14px; color:var(--ink-faint); margin:0 0 40px; max-width:66ch }
+
+  .phase{ display:grid; grid-template-columns:56px 1fr; gap:22px; padding:24px 0; border-top:1px solid var(--line) }
+  .phase:last-of-type{ border-bottom:1px solid var(--line) }
+  .phase .n{ font-family:var(--serif); font-size:30px; color:var(--amber); line-height:1; padding-top:2px }
+  .phase h4{ margin:0 0 6px; font-size:17px; font-weight:600 }
+  .phase p{ margin:0 0 12px; color:var(--ink-dim); font-size:15px }
+  .who-row{ display:flex; flex-wrap:wrap; gap:6px }
+  .agent{ font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; padding:3px 9px;
+    border:1px solid var(--line); background:var(--surface); color:var(--ink-dim); border-radius:2px }
+  .agent b{ color:var(--amber); font-weight:400 }
+  @media(max-width:560px){ .phase{ grid-template-columns:1fr; gap:8px } }
+
+  footer{ border-top:1px solid var(--line); padding:36px 0 72px; color:var(--ink-faint); font-size:14px }
+</style>
+
+<header class="mast">
+  <div class="wrap">
+    <p class="kicker">Wersja 3, jądra zmierzone</p>
+    <h1>Kreator Pierścionków</h1>
+    <p class="standfirst">Klient składa pierścionek albo sygnet z parametrów, widzi go na bieżąco, a na końcu wybiera jedno z czterech wyjść: plik, odlew, gotowy wyrób z zakutymi kamieniami albo zapytanie o indywidualną wycenę. Wszystko wpięte w istniejący sklep i kalkulatory.</p>
+    <div class="meta">
+      <span><b>Data</b> 12 sierpnia 2026</span>
+      <span><b>Zatwierdzone</b> punkty 1 do 5</span>
+      <span><b>Jądro</b> rozstrzygnięte pomiarem</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ZMIANY -->
+<section class="col">
+  <p class="sec-num">Co dopisałeś</p>
+  <h2>Zakres urósł i jedna rzecz się rozjechała</h2>
+
+  <p>Twoje uzupełnienia wchodzą do planu w całości. Cztery z nich są prostym rozszerzeniem, jedno wywraca zatwierdzony punkt drugi i musi wrócić do decyzji.</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Uzupełnienie</th><th>Skutek</th></tr></thead>
+      <tbody>
+        <tr><td>Wybór kształtu kamienia, a z niego gniazdo i sposób zakucia</td><td>Rozszerza model danych i wprowadza reguły warsztatowe. <span class="pill yes">bez przeszkód</span></td></tr>
+        <tr><td>Zamówienie gotowego pierścionka z zakutymi kamieniami</td><td>Czwarta ścieżka wyjścia i cennik kamieni. <span class="pill yes">bez przeszkód</span></td></tr>
+        <tr><td>Kamień bez znanej ceny idzie do indywidualnej wyceny</td><td>Wpina się w istniejący system wycen. <span class="pill yes">schemat już to obsługuje</span></td></tr>
+        <tr><td>Sygnety męskie w tym samym kreatorze</td><td>Drugi generator dzielący kod szyny. <span class="pill part">nowy etap</span></td></tr>
+        <tr><td><strong>Pobranie pliku STEP</strong></td><td>Manifold nie potrafi zapisać STEP. <span class="pill no">konflikt z punktem 2</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- STEP -->
+<!-- WYNIK POMIARU -->
+<section class="col">
+  <p class="sec-num">Wynik pomiaru</p>
+  <h2>Jądra zmierzone, podział rozstrzygnięty</h2>
+
+  <p>Zbudowałem <strong>ten sam pierścionek na obu jądrach</strong>: szyna półokrągła 17,2 na 2,2 na 1,6 mm, gniazdo 6,5 mm, cztery łapki. Kod i surowy protokół leżą w <code>parked/kernel-bench/</code>.</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th></th><th>manifold-3d 3.5.1</th><th>OpenCascade, replicad 0.23.1</th></tr></thead>
+      <tbody>
+        <tr><td>Rozmiar wasm</td><td class="num">0,5 MB</td><td class="num">10,3 MB</td></tr>
+        <tr><td>Wczytanie</td><td class="num">28 ms</td><td class="num">282 ms</td></tr>
+        <tr><td><strong>Budowa pierścionka</strong></td><td class="num" style="color:var(--sage)"><strong>27 ms</strong></td><td class="num" style="color:var(--rust)"><strong>1087 ms</strong></td></tr>
+        <tr><td>Objętość wobec wzoru</td><td class="num">-0,74 %</td><td class="num" style="color:var(--sage)"><strong>-0,10 %</strong></td></tr>
+        <tr><td>STL i 3MF</td><td><span class="pill yes">tak</span></td><td><span class="pill yes">tak</span></td></tr>
+        <tr><td>STEP</td><td><span class="pill no">nie, i nigdy</span></td><td><span class="pill yes">tak, 115 kB</span></td></tr>
+        <tr><td>Zaokrąglenia</td><td><span class="pill no">brak operatora</span></td><td><span class="pill part">tak, 2069 ms, tylko przed złączeniem</span></td></tr>
+        <tr><td>Praca po stronie serwera</td><td><span class="pill yes">bez zabiegów</span></td><td><span class="pill part">wymaga podstawień</span></td></tr>
+        <tr><td>Gwarancja zamkniętej siatki</td><td><span class="pill yes">tak, sprawdzalna</span></td><td><span class="pill no">brak odpowiednika</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="verdict">
+    <p class="lead">Czterdziestokrotna różnica w czasie budowy rozstrzyga sprawę i to dokładnie po linii, którą wyznaczyłeś.</p>
+    <p style="margin:0;color:var(--ink-dim)"><strong>manifold</strong> liczy podgląd i pliki siatkowe, bo 27 ms znosi suwak poruszany w czasie rzeczywistym, a 1087 ms nie. <strong>OpenCascade</strong> robi STEP na żądanie po stronie serwera, w późniejszym etapie, gdzie sekunda czekania na płatny plik nikomu nie przeszkadza.</p>
+  </div>
+
+  <p>Zaokrąglenia, czyli ryzyko numer jeden z wersji pierwszej, przestają być powodem do zmiany jądra: skoro OpenCascade i tak wchodzi przy STEP, to tam też zrobi zaokrąglone przejścia, a podgląd ich nie potrzebuje.</p>
+
+  <h3>Trzy pułapki, które ten pomiar wyciągnął</h3>
+  <p>Ważniejsze od tabeli. <strong>Każda z trzech oddała bryłę wyglądającą poprawnie i żadna nie zgłosiła błędu.</strong></p>
+  <ol>
+    <li><strong>manifold, kierunek nawinięcia profilu.</strong> Profil zgodny z ruchem wskazówek zegara daje bryłę <strong>pustą</strong>. Bez ostrzeżenia.</li>
+    <li><strong>manifold, kolejność operacji.</strong> Gniazdo cięte przed złączeniem korony z szyną nie sięga szyny. Bryła wychodzi o kilkanaście procent cięższa, czyli też droższa.</li>
+    <li><strong>OpenCascade, flaga <code>sweep</code>.</strong> Odwrócona daje inny łuk i pierścionek <strong>lżejszy o 15 procent</strong>. Model wygląda dobrze, cena jest fałszywa.</li>
+  </ol>
+
+  <div class="note ok">
+    <span class="tag">Strażnik, który z tego wynika</span>
+    <p>Objętość szyny da się policzyć <strong>wzorem</strong>: półelipsa obrócona wokół osi ma objętość z twierdzenia Pappusa, <code>2πR̄A</code>. Dla naszych wymiarów wychodzi <strong>161,18 mm³</strong>. Manifold oddaje 160,00, OpenCascade 161,02. Porównanie z tą liczbą <strong>wchodzi do builda</strong>, próg 2 procent. To jedyna obrona przed jądrem, które po cichu buduje coś innego, niż mu zlecono, i wycenia to na podstawie zmyślonej masy.</p>
+  </div>
+</section>
+
+<section class="col">
+  <p class="sec-num">Kamienie</p>
+  <h2>Piętnaście szlifów, każdy narzuca swoje zakucie</h2>
+
+  <p>Prosiłeś, żeby wybór kształtu kamienia budował gniazdo i sposób zakucia. To jest właściwa kolejność i warto ją wymusić, bo część kombinacji jest po prostu błędna warsztatowo.</p>
+  <p><strong>Szlif wybiera się rysunkiem, nie nazwą.</strong> Kupujący nie wie, czym różni się trylion od pięciokąta, ale widzi to od razu. Kafelki w prototypie niżej rysują fasety każdego szlifu, a lista dozwolonych zakuć przebudowuje się przy każdym wyborze.</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Szlif</th><th>Dopuszczalne zakucie</th><th>Dlaczego tak</th></tr></thead>
+      <tbody>
+        <tr><td>Okrągły</td><td>4 łapki, 6 łapek, kaseta, pavé</td><td>rondysta na całym obwodzie, wszystko trzyma</td></tr>
+        <tr><td>Owal</td><td>4 łapki, 6 łapek, kaseta</td><td>łapki na osiach dłuższej i krótszej</td></tr>
+        <tr><td>Poduszka</td><td>4 łapki, narożne, kaseta</td><td>zaokrąglone naroża wybaczają więcej niż kwadrat</td></tr>
+        <tr><td>Kwadrat</td><td>narożne, kaseta</td><td>naroża najbardziej kruche, muszą być zakryte</td></tr>
+        <tr><td>Ośmiokąt</td><td>narożne, kaseta</td><td>ścięte naroża dają naturalne oparcie dla łapki</td></tr>
+        <tr><td>Bagietka</td><td>kanałowa, narożne, kaseta</td><td>układa się w rząd, obok siebie</td></tr>
+        <tr><td>Pięciokąt</td><td>narożne, kaseta</td><td>pięć naroży, pięć łapek</td></tr>
+        <tr><td>Gruszka</td><td>łapka V, kaseta</td><td><strong>szpic bez łapki V odpryskuje</strong></td></tr>
+        <tr><td>Markiza</td><td>łapki V, kaseta</td><td>dwa szpice, dwie łapki V</td></tr>
+        <tr><td>Trylion</td><td>łapki V, kaseta</td><td>trzy ostre naroża, każde pod łapką V</td></tr>
+        <tr><td>Serce</td><td>łapka V, kaseta</td><td>wcięcie u góry jest najcieńszym miejscem kamienia</td></tr>
+        <tr><td>Rozeta z pawilonem</td><td>4 łapki, kaseta</td><td>pawilon daje łapce o co się oprzeć</td></tr>
+        <tr><td>Bufftop</td><td>wyłącznie kaseta</td><td>kopulasta góra bez rondysty</td></tr>
+        <tr><td>Rozeta płaska</td><td>wyłącznie kaseta</td><td>płaski spód, brak pawilonu, nie ma czego chwycić</td></tr>
+        <tr><td>Briolet</td><td><strong>nie osadza się</strong></td><td>kamień wiercony, wisi na kabłąku</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>W prototypie niżej te reguły już działają: niedozwolone zakucia są wygaszone i przekreślone. To jest tania funkcja, która <strong>ustawia nas jako warsztat, a nie sklep z opcjami</strong>.</p>
+
+  <h3>Trzy stany dostępności kamienia</h3>
+  <p>Sprawdziłem bazę. Tabela <code>gemstone_prices</code> ma kolumnę <code>base_eur</code>, która może być pusta, a zapytanie o ceny pomija puste wiersze. <strong>Trzeci stan już istnieje w schemacie</strong>, trzeba go tylko obsłużyć w interfejsie.</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Stan</th><th>Co widzi klient</th><th>Termin</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Mamy na stanie</strong></td><td>cena ostateczna, przycisk zamówienia</td><td>krótki, kamień leży w warsztacie</td></tr>
+        <tr><td><strong>Znamy cenę zakupu</strong></td><td>cena ostateczna, informacja o sprowadzeniu</td><td>dłuższy o czas dostawy</td></tr>
+        <tr><td><strong>Brak ceny</strong>, czyli puste <code>base_eur</code></td><td>zamiast ceny przycisk indywidualnej wyceny</td><td>po naszej odpowiedzi</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note ok">
+    <span class="tag">Nie budujemy tego od zera</span>
+    <p>Ścieżka indywidualnej wyceny to <strong>system wycen, który już działa</strong>: zapis konfiguracji, ważność robocizny, przeliczenie metalu przy otwarciu, mail z odnośnikiem. Kreator dokłada tylko powód powstania wyceny, nie nowy mechanizm.</p>
+  </div>
+
+  <p>Czwarty przypadek, o którym warto pamiętać: <strong>kamień powierzony przez klienta</strong>. Wtedy nie sprzedajemy kamienia, tylko robociznę, a przy okazji bierzemy na siebie ryzyko cudzej własności. To wymaga osobnego protokołu przyjęcia, tak samo jak przy biżuterii pamiątkowej.</p>
+</section>
+
+<!-- PROTOTYP -->
+<section>
+  <div class="col">
+    <p class="sec-num">Prototyp</p>
+    <h2>Jak to ma wyglądać i działać</h2>
+    <div class="note info">
+      <span class="tag">Odpowiedź na Twoje pytanie o podgląd</span>
+      <p>Tak. Lewe pole to <strong>docelowo pełny podgląd 3D wygenerowanego pierścionka</strong>, rysowany w Three.js prosto z siatki, którą oddał generator, obracany myszą i palcem. W tym prototypie stoi tam rysunek techniczny, bo na tym etapie oceniamy układ i logikę, a nie połysk srebra, a schemat pokazuje wymiary, których render by nie pokazał. Komponent podglądu, <code>STLViewer.jsx</code>, już w projekcie jest i dziś renderuje modele klientów w checkerze drukowalności.</p>
+    </div>
+    <p>Szkic jest klikalny. Zmień szlif, a zobaczysz, że część zakuć się wyłącza. Przełącz na sygnet, a lewa kolumna wymieni parametry. Na dole cztery wyjścia, z cenami przeliczanymi na bieżąco i z indywidualną wyceną tam, gdzie ceny kamienia nie znamy.</p>
+  </div>
+
+  <div class="demo">
+    <div class="demo-bar">
+      <span>Kreator, szkic układu</span>
+      <span class="live">● przelicza na żywo</span>
+    </div>
+    <div class="demo-body">
+      <div class="ctrls">
+        <div class="grp">
+          <label class="h">Typ wyrobu</label>
+          <div class="seg" id="s-kind">
+            <button data-v="ring" aria-pressed="true">Pierścionek</button>
+            <button data-v="signet" aria-pressed="false">Sygnet</button>
+          </div>
+        </div>
+        <div class="grp">
+          <div class="rowval"><label class="h" for="dia">Średnica wewnętrzna</label><b id="v-dia">17,2 mm</b></div>
+          <input type="range" id="dia" min="14" max="23" step="0.2" value="17.2">
+        </div>
+        <div class="grp">
+          <label class="h">Metal</label>
+          <div class="seg" id="s-metal">
+            <button data-v="ag925" aria-pressed="true">Ag 925</button>
+            <button data-v="au585" aria-pressed="false">Au 585</button>
+            <button data-v="au750" aria-pressed="false">Au 750</button>
+          </div>
+        </div>
+        <div class="grp">
+          <label class="h">Profil szyny</label>
+          <div class="seg" id="s-profile">
+            <button data-v="round" aria-pressed="true">Półokrągły</button>
+            <button data-v="flat" aria-pressed="false">Płaski</button>
+            <button data-v="knife" aria-pressed="false">Nożowy</button>
+          </div>
+        </div>
+        <div class="grp">
+          <div class="rowval"><label class="h" for="width">Szerokość szyny</label><b id="v-width">2,2 mm</b></div>
+          <input type="range" id="width" min="1.4" max="8" step="0.1" value="2.2">
+        </div>
+        <div class="grp">
+          <div class="rowval"><label class="h" for="thick">Grubość szyny</label><b id="v-thick">1,6 mm</b></div>
+          <input type="range" id="thick" min="1" max="4" step="0.1" value="1.6">
+        </div>
+
+        <div class="grp" id="g-cut">
+          <label class="h">Szlif kamienia centralnego</label>
+          <div class="picker" id="s-cut"></div>
+          <p class="hint" id="cut-hint"></p>
+        </div>
+        <div class="grp" id="g-set">
+          <label class="h">Zakucie</label>
+          <div class="seg" id="s-set"></div>
+        </div>
+        <div class="grp" id="g-sdia">
+          <div class="rowval"><label class="h" for="sdia">Rozmiar kamienia</label><b id="v-sdia">6,5 mm</b></div>
+          <input type="range" id="sdia" min="2" max="10" step="0.5" value="6.5">
+        </div>
+        <div class="grp" id="g-mat">
+          <label class="h">Kamień</label>
+          <div class="seg" id="s-mat">
+            <button data-v="cz" aria-pressed="true">Cyrkonia</button>
+            <button data-v="garnet" aria-pressed="false">Granat</button>
+            <button data-v="moiss" aria-pressed="false">Moissanit</button>
+            <button data-v="diamond" aria-pressed="false">Brylant</button>
+            <button data-v="sapphire" aria-pressed="false">Szafir</button>
+          </div>
+          <p class="hint" id="mat-hint">Na stanie w warsztacie.</p>
+        </div>
+
+        <div class="grp" id="g-side">
+          <label class="h">Kamienie na szynie, na stronę</label>
+          <div class="seg" id="s-side">
+            <button data-v="0" aria-pressed="true">Brak</button>
+            <button data-v="3" aria-pressed="false">3</button>
+            <button data-v="4" aria-pressed="false">4</button>
+            <button data-v="5" aria-pressed="false">5</button>
+          </div>
+        </div>
+        <div class="grp" id="g-sideset">
+          <label class="h">Oprawa kamieni bocznych</label>
+          <div class="seg" id="s-sideset">
+            <button data-v="pave" aria-pressed="true">Pavé</button>
+            <button data-v="channel" aria-pressed="false">Kanałowa</button>
+            <button data-v="prong" aria-pressed="false">Łapkowa</button>
+          </div>
+          <p class="hint" id="sideset-hint"></p>
+        </div>
+        <div class="grp" id="g-sidedia">
+          <div class="rowval"><label class="h" for="sidedia">Średnica bocznych</label><b id="v-sidedia">1,6 mm</b></div>
+          <input type="range" id="sidedia" min="1" max="2.6" step="0.1" value="1.6">
+        </div>
+        <div class="grp" id="g-sidemat">
+          <label class="h">Kamień boczny</label>
+          <div class="seg" id="s-sidemat">
+            <button data-v="cz" aria-pressed="true">Cyrkonia</button>
+            <button data-v="moiss" aria-pressed="false">Moissanit</button>
+            <button data-v="diamond" aria-pressed="false">Brylant</button>
+          </div>
+        </div>
+
+        <div class="grp" id="g-table" hidden>
+          <label class="h">Tarcza sygnetu</label>
+          <div class="seg" id="s-table">
+            <button data-v="oval" aria-pressed="true">Owalna</button>
+            <button data-v="cushion" aria-pressed="false">Poduszka</button>
+            <button data-v="rect" aria-pressed="false">Prostokątna</button>
+          </div>
+        </div>
+        <div class="grp" id="g-tsize" hidden>
+          <div class="rowval"><label class="h" for="tsize">Długość tarczy</label><b id="v-tsize">14,0 mm</b></div>
+          <input type="range" id="tsize" min="9" max="20" step="0.5" value="14">
+        </div>
+        <div class="grp" id="g-engrave" hidden>
+          <label class="h">Grawer tarczy</label>
+          <div class="seg" id="s-engrave">
+            <button data-v="none" aria-pressed="true">Gładka</button>
+            <button data-v="mono" aria-pressed="false">Monogram</button>
+            <button data-v="crest" aria-pressed="false">Herb</button>
+          </div>
+          <p class="hint">Grawer wykonujemy laserem fibrowym po odlaniu.</p>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="views">
+          <figure class="view">
+            <figcaption>Podgląd, docelowo 3D</figcaption>
+            <svg id="front" viewBox="0 0 300 300" aria-label="Schemat wyrobu od góry"></svg>
+          </figure>
+          <figure class="view">
+            <figcaption>Przekrój szyny</figcaption>
+            <svg id="side" viewBox="0 0 300 300" aria-label="Przekrój szyny"></svg>
+          </figure>
+        </div>
+
+        <dl class="readout">
+          <div class="cell"><dt>Obwód</dt><dd id="r-circ">54,0<small> mm</small></dd></div>
+          <div class="cell"><dt>Masa metalu</dt><dd id="r-mass">3,10<small> g</small></dd></div>
+          <div class="cell"><dt>Kamieni</dt><dd id="r-stones">1</dd></div>
+          <div class="cell"><dt>Metal</dt><dd id="r-metal">35<small> zł</small></dd></div>
+        </dl>
+
+        <div class="outs">
+          <div class="out lead">
+            <div class="t"><h5>Plik do pobrania</h5><p id="p-file-d">STL i 3MF, gotowe do druku i odlewu</p></div>
+            <div class="pr" id="p-file">49 zł</div>
+            <button class="go">Kup plik</button>
+          </div>
+          <div class="out">
+            <div class="t"><h5>Plik STEP</h5><p>model do edycji w Rhino albo Matrixie</p></div>
+            <div class="pr" id="p-step">129 zł</div>
+            <button class="go">Kup STEP</button>
+          </div>
+          <div class="out">
+            <div class="t"><h5>Odlew bez kamieni</h5><p id="p-cast-d">odlany i wypolerowany, gniazda gotowe pod zakucie</p></div>
+            <div class="pr" id="p-cast">195 zł</div>
+            <button class="go">Zamów odlew</button>
+          </div>
+          <div class="out">
+            <div class="t"><h5>Gotowy wyrób z zakutymi kamieniami</h5><p id="p-full-d">odlew, kamienie i zakucie, do noszenia</p></div>
+            <div class="pr" id="p-full">265 zł</div>
+            <button class="go" id="p-full-btn">Zamów wyrób</button>
+          </div>
+        </div>
+        <p style="margin:0;font-size:13px;color:var(--ink-faint)">Ceny w szkicu są poglądowe. W narzędziu liczy je serwer przez <code>/api/price</code>, z kursu NBP i tabeli kamieni.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <p class="caption">Cztery wyjścia leżą obok siebie, a nie w osobnych krokach, bo to jest dokładnie ten moment, w którym klient porównuje: plik za kilkadziesiąt złotych kontra gotowy wyrób za kilkaset. Ukrycie tej różnicy w osobnych ekranach zmusiłoby go do klikania w tę i z powrotem.</p>
+  </div>
+</section>
+
+<!-- INTEGRACJA -->
+<section class="col">
+  <p class="sec-num">Integracja</p>
+  <h2>Żeby to nie było osobnym bytem</h2>
+
+  <p>Napisałeś to wprost i to jest najważniejsze zdanie w Twoich uwagach. Narzędzie doklejone z boku umiera: nikt do niego nie trafia, nikt go nie linkuje, a jego ceny rozjeżdżają się z resztą serwisu. Konkretne punkty styku:</p>
+
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Punkt styku</th><th>Jak wpinamy</th></tr></thead>
+      <tbody>
+        <tr><td><code>/api/price</code></td><td>Kreator nie liczy ceny u siebie. Woła ten sam rdzeń wyceny, co kalkulatory i koszyk, więc jedna zmiana cennika działa wszędzie.</td></tr>
+        <tr><td><code>CalcToCart.jsx</code></td><td>Gotowy komponent kwoty wiążącej i koszyka. Kreator kończy się nim, a nie własnym formularzem.</td></tr>
+        <tr><td><code>gemstone_prices</code></td><td>Jedno źródło cen kamieni dla kreatora, kalkulatora biżuterii i sklepu.</td></tr>
+        <tr><td>System wycen</td><td>Ścieżka indywidualnej wyceny i zapis konfiguracji na później.</td></tr>
+        <tr><td>Kalkulator rozmiaru i przymiarka</td><td>Klient, który nie zna rozmiaru, wychodzi do przymiarki i wraca z liczbą, zamiast zgadywać.</td></tr>
+        <tr><td>Kalkulator blanku obrączki</td><td>Ta sama arytmetyka szyny. Jeden rdzeń, dwa wejścia.</td></tr>
+        <tr><td><code>toolLinks.js</code></td><td>Twarda reguła projektu: wpisy o pierścionkach, obrączkach, sygnetach i szlifach muszą prowadzić do kreatora. Narzędzie niepolinkowane nie istnieje.</td></tr>
+        <tr><td>Sklep</td><td>Presety z zablokowanymi parametrami stają się kartami produktu, a nie osobną listą.</td></tr>
+        <tr><td>Prerender</td><td>Nowe trasy dopisane w trzech miejscach naraz, inaczej Cloudflare odda twarde 404.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <span class="tag">Pułapka, którą już raz na tym projekcie zaliczyliśmy</span>
+    <p>Rdzeń wyceny biżuterii przyjmuje kursy i kamienie jako <strong>argumenty pozycyjne</strong>. Pominięty argument nie zgłasza błędu, tylko po cichu wraca do stałych z konfiguracji i oddaje wiarygodnie wyglądającą, nieprawdziwą cenę. Trafiliśmy na to trzy razy w jeden dzień. Kreator wołający tę ścieżkę <strong>dostaje własny test na to samo</strong>, jeszcze zanim powstanie interfejs.</p>
+  </div>
+</section>
+
+<!-- MODEL -->
+<section class="col">
+  <p class="sec-num">Model danych</p>
+  <h2>Jedna umowa, teraz szersza</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Pole</th><th>Zakres</th><th>Po co</th></tr></thead>
+      <tbody>
+        <tr><td><code>kind</code></td><td>ring, signet</td><td>wybór generatora</td></tr>
+        <tr><td><code>innerDia</code></td><td class="num">14,0–23,0 mm</td><td>rozmiar, z naszej tabeli</td></tr>
+        <tr><td><code>metal</code></td><td>ag925, au585, au750</td><td>gęstość, cena, skurcz odlewniczy</td></tr>
+        <tr><td><code>profile</code></td><td>round, flat, knife, comfort</td><td>przekrój szyny</td></tr>
+        <tr><td><code>width</code>, <code>thickness</code></td><td class="num">1,4–8,0 / 1,0–4,0 mm</td><td>wymiary szyny</td></tr>
+        <tr><td><code>stone.size</code></td><td class="num">2,0–10,0 mm</td><td>rondysta, z niej gniazdo</td></tr>
+        <tr><td><code>stone.material</code></td><td>klucz z <code>gemstone_prices</code></td><td>cena i dostępność</td></tr>
+        <tr><td><code>stone.origin</code></td><td>stock, order, customer</td><td>czy sprzedajemy kamień, czy tylko robociznę</td></tr>
+        <tr><td><code>setting</code></td><td>prong4, prong6, corner, vprong, bezel</td><td>korona, walidowana względem szlifu</td></tr>
+        <tr><td><code>stone.cut</code></td><td>15 szlifów z tabeli wyżej</td><td>bryła kamienia i dozwolone zakucia</td></tr>
+        <tr><td><code>side.count</code></td><td class="num">0–5 na stronę</td><td>kamienie na szynie, symetrycznie</td></tr>
+        <tr><td><code>side.size</code></td><td class="num">1,0–2,6 mm</td><td>średnica bocznych</td></tr>
+        <tr><td><code>side.setting</code></td><td>pave, channel, prong</td><td>sposób osadzenia w szynie</td></tr>
+        <tr><td><code>side.material</code></td><td>klucz z <code>gemstone_prices</code></td><td>cyrkonia, moissanit, brylant</td></tr>
+        <tr><td><code>signet.table</code></td><td>oval, cushion, rect</td><td>kształt tarczy</td></tr>
+        <tr><td><code>signet.length</code></td><td class="num">9,0–20,0 mm</td><td>rozmiar tarczy</td></tr>
+        <tr><td><code>signet.engraving</code></td><td>none, mono, crest</td><td>zlecenie na laser fibrowy</td></tr>
+        <tr><td><code>output</code></td><td>mesh, step, cast, finished, quote</td><td>wybrane wyjście</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Ten sam obiekt jedzie do generatora, do wyceny, do koszyka i do zapisanej wyceny. To on jest też tym, co model językowy ma wypełnić, gdy klient opisze pierścionek zdaniem.</p>
+</section>
+
+<!-- ETAPY -->
+<section class="col">
+  <p class="sec-num">Realizacja</p>
+  <h2>Siedem etapów, każdy z progiem</h2>
+
+  <div class="phase">
+    <div class="n">1</div>
+    <div>
+      <h4>Generator jako biblioteka</h4>
+      <p>Pomiar jest za nami, więc od razu budowa: generator na manifoldzie, z pełnym modelem parametrów, sześcioma szlifami i regułami zakucia, za wymiennym interfejsem. Próg: dla dwudziestu zestawów parametrów siatka zamknięta, średnica wewnętrzna trafiona, niedozwolone zakucia odrzucone, a <strong>objętość zgodna ze wzorem w granicy 2 procent</strong>.</p>
+      <div class="who-row"><span class="agent"><b>architect</b> model danych, reguły gniazd</span><span class="agent"><b>dev</b> implementacja i testy</span></div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="n">2</div>
+    <div>
+      <h4>Wycena i cennik kamieni po stronie serwera</h4>
+      <p>Masa z generatora plus kamienie z <code>gemstone_prices</code>, w tym trzeci stan bez ceny. Cztery ceny wyjściowe z jednego wywołania. Próg: test, że podmiana parametrów w przeglądarce nie zmienia ceny, i drugi, że kursy i kamienie faktycznie docierają do rdzenia.</p>
+      <div class="who-row"><span class="agent"><b>dev</b> endpoint i wycena</span><span class="agent"><b>architect</b> przegląd bezpieczeństwa</span></div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="n">3</div>
+    <div>
+      <h4>Interfejs kreatora</h4>
+      <p>Układ z prototypu, podgląd w Three.js, liczenie poza wątkiem interfejsu, wygaszanie niedozwolonych zakuć. Próg: pełna konfiguracja na telefonie bez przewijania w bok.</p>
+      <div class="who-row"><span class="agent"><b>aejaca-design</b> zgodność z systemem marki</span><span class="agent"><b>dev</b> komponenty i worker</span><span class="agent"><b>quick</b> klucze i18n w pl, en, de</span></div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="n">4</div>
+    <div>
+      <h4>Cztery wyjścia i wpięcie w sklep</h4>
+      <p>Płatność, wydanie pliku po zaksięgowaniu, zgoda na natychmiastowe wykonanie, odlew i gotowy wyrób jako zlecenia warsztatowe, brak ceny kamienia jako indywidualna wycena. Wszystko przez istniejący koszyk, nie obok niego. Próg: cztery pełne przejścia, po jednym na każde wyjście.</p>
+      <div class="who-row"><span class="agent"><b>dev</b> płatność, koszyk, wydanie pliku</span><span class="agent"><b>architect</b> ścieżka prawna i zgody</span></div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="n">5</div>
+    <div>
+      <h4>STEP na drugim jądrze, po stronie serwera</h4>
+      <p>OpenCascade wchodzi wyłącznie tutaj: osobna ścieżka serwerowa, która z tych samych parametrów buduje bryłę powierzchniową, zaokrągla przejścia i zapisuje STEP. Wolna, bo płatna i generowana raz po zakupie. Cena wyraźnie wyższa niż za pliki siatkowe, bo to inny produkt dla innego odbiorcy. Próg: STEP otwarty w zewnętrznym programie, z objętością zgodną ze wzorem.</p>
+      <div class="who-row"><span class="agent"><b>architect</b> zgodność obu generatorów</span><span class="agent"><b>dev</b> ścieżka serwerowa i eksport</span></div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="n">6</div>
+    <div>
+      <h4>Sygnety</h4>
+      <p>Drugi generator na wspólnym kodzie szyny: tarcza owalna, poduszkowa i prostokątna, zbieżność szyny ku tarczy, ramiona, grawer jako zlecenie na laser fibrowy. Próg: trzy sygnety odlane z plików z kreatora.</p>
+      <div class="who-row"><span class="agent"><b>architect</b> geometria tarczy i ramion</span><span class="agent"><b>dev</b> generator i interfejs</span></div>
+    </div>
+  </div>
+  <div class="phase">
+    <div class="n">7</div>
+    <div>
+      <h4>Furtka językowa, presety i linkowanie</h4>
+      <p>Opis słowami zamieniany na parametry, zawsze z podglądem do potwierdzenia. Presety z zablokowanymi parametrami jako karty w sklepie. Wpisy blogowe i hasła słownika podpięte w <code>toolLinks.js</code>. Próg: dwadzieścia zdań testowych, żadne nie daje parametrów poza zakresem, i zero pustych powiązań w kontroli linkowania.</p>
+      <div class="who-row"><span class="agent"><b>architect</b> schemat wyjścia i walidacja</span><span class="agent"><b>dev</b> wpięcie w chat-api</span><span class="agent"><b>quick</b> mapowanie narzędzi i treści</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- RYZYKA -->
+<section class="col">
+  <p class="sec-num">Ryzyka</p>
+  <h2>Co może to wywrócić</h2>
+  <ul>
+    <li><strong>Dwa jądra, dwa opisy tej samej bryły.</strong> To jest cena podziału, który wybraliśmy, i trzeba ją nazwać: manifold i OpenCascade muszą oddawać ten sam pierścionek. Broni nas przed tym kontrola objętości wzorem, bo obie ścieżki mierzymy tą samą liczbą. Etap piąty zaczyna się od porównania obu wyjść dla dwudziestu zestawów parametrów.</li>
+    <li><strong>Cena kamienia i termin.</strong> Kamień sprowadzany zmienia cenę i termin między wyceną a zamówieniem. Robocizna wiąże na czternaście dni, kamień musi się przeliczać przy otwarciu, tak jak metal.</li>
+    <li><strong>Kamień powierzony przez klienta.</strong> Cudza własność w naszym warsztacie, przy zakuciu ryzyko odprysku. Wymaga protokołu przyjęcia i jasnego zapisu o odpowiedzialności.</li>
+    <li><strong>Odpowiedzialność za plik.</strong> Klient wydrukuje nasz STL u siebie, dobierze złą żywicę i wróci z pretensją. Potrzebny jasny zapis granicy.</li>
+    <li><strong>Kanibalizacja.</strong> Plik za kilkadziesiąt złotych może zabrać zamówienie za kilkaset. Dlatego cena pliku ma być odczuwalna, a przy zamówieniu wyrobu odliczana.</li>
+    <li><strong>Sprzedaż cyfrowa do UE.</strong> Serwis jest trójjęzyczny i celuje w Niemcy. Pytanie do księgowej przed pierwszą sprzedażą, nie przed pierwszą linijką kodu.</li>
+  </ul>
+</section>
+
+<!-- DECYZJA -->
+<section class="col">
+  <p class="sec-num">Decyzja</p>
+  <h2>Nic nie zostało otwarte</h2>
+  <p>Punkty 1 do 5 masz zatwierdzone, Twoje uzupełnienia są w planie w całości, a pytanie o jądro zamknął pomiar, nie dyskusja. Podział wyszedł dokładnie taki, o jaki prosiłeś: <strong>STEP jako opcja wyraźnie droższa, realizowana w osobnym, późniejszym etapie</strong>.</p>
+  <p>Zaczynam od etapu pierwszego i wracam z działającym generatorem, testami i kontrolą objętości, zanim powstanie jakikolwiek ekran.</p>
+</section>
+
+</div>
+
+<footer>
+  <div class="wrap col">
+    <p style="margin:0">AEJaCA, plan wewnętrzny, wersja 2. Nic z tego nie jest zaimplementowane. Prototyp powyżej liczy poglądowo i służy wyłącznie ocenie układu i logiki.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var NS = "http://www.w3.org/2000/svg";
+  function el(n,a){ var e=document.createElementNS(NS,n); for(var k in a) e.setAttribute(k,a[k]); return e; }
+
+  // ============================================================
+  // SZLIFY: rysunki fasetowe
+  // ============================================================
+  // Kazdy szlif opisujemy obrysem i sposobem fasetowania. Rysunek powstaje
+  // z tych dwoch rzeczy, wiec ten sam opis obsluguje i mala kafelke w
+  // wyborze, i duzy podglad na pierscionku.
+  //
+  //   brylant  tafla w srodku, lapki-kliny do obrysu, gwiazdy do polowy boku
+  //   schodek  koncentryczne obrysy, naroza polaczone
+  //   rozeta   rysowana z PROFILU, bo o rozecie decyduje przekroj, nie obrys
+
+  var TAU = Math.PI * 2;
+
+  function ngon(n, rot) {
+    var p = [];
+    for (var i = 0; i < n; i++) { var a = (i / n) * TAU + (rot || 0); p.push([Math.cos(a), Math.sin(a)]); }
+    return p;
+  }
+  function smooth(fn, n) {
+    var p = [];
+    for (var i = 0; i < n; i++) p.push(fn(i / n));
+    return p;
+  }
+  // Obrys wielokata rozciagniety na `n` punktow, zeby fasety mialy gdzie siegac.
+  function resample(pts, n) {
+    var out = [], m = pts.length;
+    for (var i = 0; i < n; i++) {
+      var t = (i / n) * m, k = Math.floor(t), f = t - k;
+      var a = pts[k % m], b = pts[(k + 1) % m];
+      out.push([a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]);
+    }
+    return out;
+  }
+  var scale = function (p, s) { return p.map(function (q) { return [q[0] * s, q[1] * s]; }); };
+
+  var SHAPES = {
+    round:    function () { return smooth(function (t) { var a = t * TAU; return [Math.cos(a), Math.sin(a)]; }, 32); },
+    oval:     function () { return smooth(function (t) { var a = t * TAU; return [0.74 * Math.cos(a), 1.06 * Math.sin(a)]; }, 32); },
+    cushion:  function () { return smooth(function (t) {
+                var a = t * TAU, c = Math.cos(a), s = Math.sin(a), p = 2.7;
+                var k = Math.pow(Math.pow(Math.abs(c), p) + Math.pow(Math.abs(s), p), -1 / p);
+                return [k * c * 0.96, k * s * 0.96]; }, 32); },
+    square:   function () { return resample(ngon(4, Math.PI / 4).map(function (q) { return [q[0] * 0.99, q[1] * 0.99]; }), 24); },
+    octagon:  function () { var c = 0.42, x = 0.78, y = 1.0;   // szmaragdowy: sciete naroza
+                return resample([[-x+c,-y],[x-c,-y],[x,-y+c],[x,y-c],[x-c,y],[-x+c,y],[-x,y-c],[-x,-y+c]], 24); },
+    baguette: function () { return resample([[-0.5,-1.1],[0.5,-1.1],[0.5,1.1],[-0.5,1.1]], 24); },
+    pentagon: function () { return resample(ngon(5, -Math.PI / 2), 25); },
+    // Trylion: trojkat o BOKACH WYPUKLYCH. Wzor biegunowy daje tu grudke,
+    // wiec idziemy bokiem po boku i wypychamy kazdy punkt wzdluz normalnej.
+    trillion: function () {
+      var v = ngon(3, -Math.PI / 2), pts = [];
+      for (var i = 0; i < 3; i++) {
+        var a = v[i], b = v[(i + 1) % 3];
+        var dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy);
+        var nx = dy / L, ny = -dx / L;                 // normalna na zewnatrz przy obiegu CCW
+        for (var s = 0; s < 12; s++) {
+          var t = s / 12, g = 0.17 * Math.sin(Math.PI * t);
+          pts.push([a[0] + dx * t + nx * g, a[1] + dy * t + ny * g]);
+        }
+      }
+      return pts;
+    },
+    pear:     function () { return smooth(function (t) {
+                var a = t * TAU - Math.PI / 2;
+                var w = 0.76 * (1 - 0.52 * Math.pow(Math.max(0, Math.cos(a / 2)), 3.2));
+                return [w * Math.sin(a) * -1, -Math.cos(a) * 1.08]; }, 40); },
+    marquise: function () { return smooth(function (t) {
+                var a = t * TAU;
+                return [0.52 * Math.sin(a) * Math.abs(Math.sin(a)), -Math.cos(a) * 1.22]; }, 40); },
+    heart:    function () { return smooth(function (t) {
+                var a = t * TAU;
+                var x = 16 * Math.pow(Math.sin(a), 3);
+                var y = 13 * Math.cos(a) - 5 * Math.cos(2*a) - 2 * Math.cos(3*a) - Math.cos(4*a);
+                return [x / 17, -y / 15]; }, 44); },
+    briolette: function () { return smooth(function (t) {
+                var a = t * TAU - Math.PI / 2;
+                var w = 0.62 * (1 - 0.62 * Math.pow(Math.max(0, Math.cos(a / 2)), 2.4));
+                return [w * Math.sin(a) * -1, -Math.cos(a) * 1.34]; }, 40); },
+  };
+
+  // szlif -> obrys, styl fasetowania, dozwolone zakucia, uwaga warsztatowa
+  var CUTS = {
+    oval:      { pl:"owal",     shape:"oval",     facet:"brilliant", n:8,
+                 set:["prong4","prong6","bezel"],
+                 hint:"Łapki idą na osiach dłuższej i krótszej." },
+    round:     { pl:"okrągły",  shape:"round",    facet:"brilliant", n:8,
+                 set:["prong4","prong6","bezel","pave"],
+                 hint:"Rondysta na całym obwodzie, każde zakucie trzyma." },
+    pear:      { pl:"gruszka",  shape:"pear",     facet:"brilliant", n:8,
+                 set:["vprong","bezel"],
+                 hint:"Szpic musi mieć łapkę V, inaczej odpryskuje." },
+    marquise:  { pl:"markiza",  shape:"marquise", facet:"brilliant", n:8,
+                 set:["vprong","bezel"],
+                 hint:"Dwa szpice, dwie łapki V. Zwykła łapka ich nie chroni." },
+    cushion:   { pl:"poduszka", shape:"cushion",  facet:"brilliant", n:8,
+                 set:["prong4","corner","bezel"],
+                 hint:"Zaokrąglone naroża wybaczają więcej niż princess." },
+    square:    { pl:"kwadrat",  shape:"square",   facet:"brilliant", n:8,
+                 set:["corner","bezel"],
+                 hint:"Naroża są najbardziej kruche, muszą być zakryte." },
+    octagon:   { pl:"ośmiokąt", shape:"octagon",  facet:"step", n:8,
+                 set:["corner","bezel"],
+                 hint:"Ścięte naroża dają naturalne oparcie dla łapki." },
+    baguette:  { pl:"bagietka", shape:"baguette", facet:"step", n:4,
+                 set:["channel","corner","bezel"],
+                 hint:"Bagietki układa się w oprawę kanałową, obok siebie." },
+    pentagon:  { pl:"pięciokąt", shape:"pentagon", facet:"brilliant", n:5,
+                 set:["corner","bezel"],
+                 hint:"Pięć naroży, pięć łapek narożnych." },
+    trillion:  { pl:"trylion",  shape:"trillion", facet:"brilliant", n:6,
+                 set:["vprong","bezel"],
+                 hint:"Trzy ostre naroża, każde pod łapką V." },
+    heart:     { pl:"serce",    shape:"heart",    facet:"brilliant", n:8,
+                 set:["vprong","bezel"],
+                 hint:"Wcięcie u góry wymaga łapki V, bo tam kamień jest najcieńszy." },
+    briolette: { pl:"briolet",  shape:"briolette", facet:"drop", n:8,
+                 set:["drilled"],
+                 hint:"Brioleta się nie osadza. Jest wiercona i wisi na kabłąku." },
+    roseP:     { pl:"rozeta z pawilonem", profile:"rosePav",
+                 set:["prong4","bezel"],
+                 hint:"Płaska góra, pawilon pod spodem, więc łapka ma się o co oprzeć." },
+    bufftop:   { pl:"bufftop",  profile:"bufftop",
+                 set:["bezel"],
+                 hint:"Kopulasta góra bez rondysty, trzyma tylko kaseta." },
+    roseFlat:  { pl:"rozeta płaska", profile:"roseFlat",
+                 set:["bezel"],
+                 hint:"Płaski spód, brak pawilonu. Nie ma czego chwycić łapką." },
+  };
+
+  var SET_LABEL = { prong4:"4 łapki", prong6:"6 łapek", corner:"Narożne", vprong:"Łapki V",
+                    bezel:"Kaseta", pave:"Pavé", channel:"Kanałowa", drilled:"Wiercony" };
+
+  /** Rysuje szlif w widoku z gory albo z profilu, zaleznie od opisu. */
+  function drawCut(g, id, cx, cy, R, opt) {
+    var c = CUTS[id]; if (!c) return;
+    var o = opt || {};
+    var stroke = o.stroke || "#9fb6c9", sw = o.sw || 1;
+    var ln = function (a, b, w) { g.appendChild(el("line", { x1:cx+a[0]*R, y1:cy+a[1]*R,
+        x2:cx+b[0]*R, y2:cy+b[1]*R, stroke:stroke, "stroke-width":(w||sw*0.62) })); };
+    var poly = function (pts, w, fill) {
+      g.appendChild(el("polygon", { points: pts.map(function (q) {
+        return (cx+q[0]*R).toFixed(2)+","+(cy+q[1]*R).toFixed(2); }).join(" "),
+        fill: fill || "none", stroke: stroke, "stroke-width": w || sw }));
+    };
+
+    if (c.profile) { drawProfile(g, c.profile, cx, cy, R, stroke, sw, poly, ln); return; }
+
+    var out = SHAPES[c.shape]();
+    poly(out, sw, o.fill || "none");
+
+    if (c.facet === "step") {
+      // Szlif schodkowy: koncentryczne obrysy i naroza je laczace.
+      [0.74, 0.5].forEach(function (s) { poly(scale(out, s), sw * 0.62); });
+      var k = resample(out, c.n), k2 = resample(scale(out, 0.74), c.n);
+      for (var i = 0; i < c.n; i++) ln(k[i], k2[i]);
+      return;
+    }
+
+    if (c.facet === "drop") {
+      // Brioleta: poziome rzedy fasetek, bo kamien jest oszlifowany dookola.
+      [0.72, 0.46, 0.24].forEach(function (s) {
+        poly(out.map(function (q) { return [q[0]*s, q[1]*0.98 - (1-s)*0.06]; }), sw*0.55);
+      });
+      var kd = resample(out, 8);
+      for (var d = 0; d < 8; d++) ln(kd[d], [kd[d][0]*0.24, kd[d][1]*0.24]);
+      return;
+    }
+
+    // Szlif brylantowy: tafla, kliny do obrysu, gwiazdy do polowy boku.
+    var N = c.n;
+    var edge = resample(out, N * 2);            // wierzcholki i srodki bokow
+    var table = resample(scale(out, 0.5), N);
+    poly(scale(out, 0.5), sw * 0.8);
+    for (var j = 0; j < N; j++) {
+      ln(edge[j * 2], table[j]);                                  // klin
+      ln(edge[j * 2 + 1], table[j]);                              // gwiazda w lewo
+      ln(edge[j * 2 + 1], table[(j + 1) % N]);                    // gwiazda w prawo
+    }
+    // Rondysta zaznaczona cienkim obrysem tuz przy krawedzi.
+    poly(scale(out, 0.88), sw * 0.45);
+  }
+
+  function drawProfile(g, kind, cx, cy, R, stroke, sw, poly, ln) {
+    if (kind === "rosePav") {
+      poly([[-1,-0.16],[1,-0.16],[0,1.05]], sw);                 // pawilon
+      poly([[-1,-0.16],[-0.55,-0.8],[0.55,-0.8],[1,-0.16]], sw); // korona rozety
+      [-0.55, 0, 0.55].forEach(function (x) { ln([x, -0.8], [x * 0.55, -0.16]); });
+      [-0.5, 0, 0.5].forEach(function (x) { ln([x, -0.16], [0, 1.05]); });
+    } else if (kind === "bufftop") {
+      g.appendChild(el("path", { d:"M "+(cx-R)+" "+(cy+R*0.5)+
+        " Q "+cx+" "+(cy-R*1.15)+" "+(cx+R)+" "+(cy+R*0.5)+" Z",
+        fill:"none", stroke:stroke, "stroke-width":sw }));
+      [-0.55, 0, 0.55].forEach(function (x) { ln([x, 0.5], [x * 0.72, -0.48]); });
+    } else {
+      poly([[-1,0.34],[1,0.34],[0.62,-0.2],[-0.62,-0.2]], sw);   // niska rozeta
+      poly([[-0.62,-0.2],[0.62,-0.2],[0,-0.56]], sw);
+      [-0.3, 0.3].forEach(function (x) { ln([x, -0.2], [0, -0.56]); });
+      [-0.55, 0.55].forEach(function (x) { ln([x, 0.34], [x * 0.62, -0.2]); });
+    }
+  }
+
+
+  // ============================================================
+  // STAN KREATORA
+  // ============================================================
+  var S = { kind:"ring", dia:17.2, metal:"ag925", profile:"round", width:2.2, thick:1.6,
+            cut:"round", set:"prong4", sdia:6.5, mat:"cz",
+            side:0, sideSet:"pave", sideDia:1.6, sideMat:"cz",
+            table:"oval", tsize:14, engrave:"none" };
+
+  var METAL = { ag925:{d:10.36, pln:11.4}, au585:{d:13.10, pln:452}, au750:{d:15.50, pln:580} };
+  // base = cena za kamien 6,5 mm; null = brak ceny w bazie, idzie do wyceny
+  var STONE = {
+    cz:      { base:15,    label:"Na stanie w warsztacie." },
+    garnet:  { base:120,   label:"Na stanie w warsztacie." },
+    moiss:   { base:450,   label:"Sprowadzamy, cena znana, termin dłuższy." },
+    diamond: { base:12800, label:"Sprowadzamy, cena zależy od klasy." },
+    sapphire:{ base:null,  label:"Ceny nie mamy w bazie, idzie do indywidualnej wyceny." }
+  };
+  var SIDE_HINT = {
+    pave:    "Kamienie tuż obok siebie, trzymane kuleczkami wyciętymi z metalu szyny.",
+    channel: "Kamienie między dwiema szynkami, bez metalu pomiędzy. Najbardziej odporna.",
+    prong:   "Każdy kamień we własnych łapkach. Najwięcej blasku, najmniej ochrony."
+  };
+
+  var nf = function(n,d){ return n.toLocaleString("pl-PL",{minimumFractionDigits:d,maximumFractionDigits:d}); };
+  var $ = function(id){ return document.getElementById(id); };
+  var press = function(w,v){ Array.prototype.forEach.call(w.querySelectorAll("[data-v]"), function(b){
+    b.setAttribute("aria-pressed", String(b.dataset.v === String(v))); }); };
+
+  function segment(id, key, cast){
+    var w = $(id);
+    w.addEventListener("click", function(e){
+      var b = e.target.closest("[data-v]");
+      if(!b || b.disabled) return;
+      S[key] = cast ? cast(b.dataset.v) : b.dataset.v;
+      press(w, b.dataset.v);
+      if (key === "cut") reconcileSetting();
+      render();
+    });
+  }
+  function slider(id, key, dec){
+    var e2 = $(id), out = $("v-"+id);
+    e2.addEventListener("input", function(){
+      S[key] = parseFloat(e2.value);
+      out.textContent = nf(S[key],dec)+" mm";
+      render();
+    });
+  }
+
+  // ============================================================
+  // WYBOR SZLIFU: kafelki z rysunkiem, nie lista nazw
+  // ============================================================
+  // Nazwa szlifu nic nie mowi wiekszosci kupujacych, a rysunek mowi wszystko.
+  // Ten sam opis obslugue kafelke i duzy podglad, wiec nie ma czego rozjechac.
+  function buildPicker(){
+    var w = $("s-cut");
+    Object.keys(CUTS).forEach(function(id){
+      var b = document.createElement("button");
+      b.type = "button"; b.dataset.v = id; b.className = "tile";
+      b.setAttribute("aria-pressed", String(id === S.cut));
+      b.title = CUTS[id].pl;
+      var svg = document.createElementNS(NS,"svg");
+      svg.setAttribute("viewBox","0 0 100 100"); svg.setAttribute("aria-hidden","true");
+      var g = el("g",{}); svg.appendChild(g);
+      drawCut(g, id, 50, 50, 34, { stroke:"currentColor", sw:1.4 });
+      b.appendChild(svg);
+      var s = document.createElement("span"); s.textContent = CUTS[id].pl; b.appendChild(s);
+      w.appendChild(b);
+    });
+  }
+
+  // Zakucie wynika ze szlifu, wiec przyciski buduje szlif, a nie odwrotnie.
+  function reconcileSetting(){
+    var c = CUTS[S.cut], w = $("s-set");
+    w.textContent = "";
+    c.set.forEach(function(k){
+      var b = document.createElement("button");
+      b.type="button"; b.dataset.v = k; b.textContent = SET_LABEL[k];
+      w.appendChild(b);
+    });
+    if (c.set.indexOf(S.set) === -1) S.set = c.set[0];
+    press(w, S.set);
+    $("cut-hint").textContent = c.hint;
+    // Brioleta nie ma korony ani gniazda, wiec kamienie boczne tez nie maja sensu.
+    $("g-side").hidden = S.set === "drilled";
+  }
+
+  function toggleKind(){
+    var signet = S.kind === "signet";
+    ["g-cut","g-set","g-sdia","g-mat","g-side","g-sideset","g-sidedia","g-sidemat"]
+      .forEach(function(id){ $(id).hidden = signet; });
+    ["g-table","g-tsize","g-engrave"].forEach(function(id){ $(id).hidden = !signet; });
+    if (!signet) {
+      var noSide = S.side === 0 || S.set === "drilled";
+      ["g-sideset","g-sidedia","g-sidemat"].forEach(function(id){ $(id).hidden = noSide; });
+      $("g-side").hidden = S.set === "drilled";
+    }
+  }
+
+  // ============================================================
+  // ARYTMETYKA
+  // ============================================================
+  function metrics(){
+    var m = METAL[S.metal];
+    var rmid = S.dia/2 + S.thick/2;
+    var f = S.profile === "flat" ? 1 : (S.profile === "knife" ? 0.55 : 0.82);
+    var mm3 = 2*Math.PI*rmid * S.width * S.thick * f;
+    var stones = 0, gemPLN = 0, quote = false, setLabour = 0;
+
+    if (S.kind === "signet"){
+      var L = S.tsize, W = L*0.82, T = 2.4;
+      mm3 += L*W*T * (S.table === "rect" ? 1 : 0.8) + L*W*0.5;
+    } else {
+      var st = STONE[S.mat];
+      stones += 1;
+      if (st.base === null) quote = true;
+      else gemPLN += st.base * Math.pow(S.sdia/6.5, 2.6);   // cena rosnie szybciej niz srednica
+      setLabour += 45;
+      mm3 += S.set === "bezel"
+        ? Math.PI * S.sdia * 0.8 * (S.sdia*0.35)
+        : 4 * (Math.PI*0.25) * (S.sdia*0.9) + Math.PI*Math.pow(S.sdia*0.55,2)*0.5;
+
+      if (S.side > 0 && S.set !== "drilled"){
+        var n = S.side * 2;                                 // po obu stronach szyny
+        stones += n;
+        var sm = STONE[S.sideMat];
+        if (sm.base === null) quote = true;
+        else gemPLN += n * sm.base * Math.pow(S.sideDia/6.5, 2.6);
+        // Kanalowa zjada wiecej metalu (dwie szynki), pave najmniej.
+        mm3 += n * (S.sideSet === "channel" ? 2.2 : S.sideSet === "prong" ? 1.4 : 0.8);
+        setLabour += n * (S.sideSet === "pave" ? 22 : S.sideSet === "channel" ? 18 : 26);
+      }
+    }
+
+    var grams = mm3/1000 * m.d;
+    var metalPLN = grams * m.pln;
+    var complexity = (S.side>0?1:0) + (S.kind==="signet"?1:0)
+                   + (["marquise","heart","trillion","pear"].indexOf(S.cut)>=0 ?1:0);
+    var filePLN = 49 + complexity*20;
+    var castPLN = Math.round((metalPLN + 150 + (S.kind==="signet"?60:0))/5)*5;
+    var fullPLN = Math.round((castPLN + gemPLN + setLabour)/5)*5;
+    return { grams:grams, stones:stones, metalPLN:metalPLN, file:filePLN, step:filePLN+80,
+             cast:castPLN, full:fullPLN, quote:quote, circ:Math.PI*S.dia };
+  }
+
+  // ============================================================
+  // RYSUNKI
+  // ============================================================
+  function txt(x,y,s,o){ var t=el("text",{x:x,y:y,fill:(o&&o.fill)||"#a2968a","font-size":(o&&o.size)||"10",
+    "text-anchor":(o&&o.anchor)||"middle","font-family":"ui-monospace,monospace"}); t.textContent=s; return t; }
+
+  /** Lapki wokol kamienia, rozstawione wedlug rodzaju zakucia. */
+  function prongs(g,cx,cy,r,set){
+    if (set === "bezel"){
+      g.appendChild(el("circle",{cx:cx,cy:cy,r:r*1.12,fill:"none",stroke:"#dfa44f","stroke-width":3}));
+      return;
+    }
+    if (set === "drilled"){                       // brioleta wisi na kabłąku
+      g.appendChild(el("path",{d:"M "+(cx-4)+" "+(cy-r*1.15)+" a 4 4 0 0 1 8 0",
+        fill:"none",stroke:"#dfa44f","stroke-width":2}));
+      return;
+    }
+    var pts = [];
+    if (set === "vprong") pts = [[0,-r*1.1],[0,r*1.1],[-r*0.72,0],[r*0.72,0]];
+    else if (set === "corner") pts = [[-r*.78,-r*.78],[r*.78,-r*.78],[r*.78,r*.78],[-r*.78,r*.78]];
+    else if (set === "pave" || set === "channel") return;
+    else {
+      var n = set==="prong6" ? 6 : 4;
+      for (var p=0;p<n;p++){ var a=(p/n)*Math.PI*2+Math.PI/4; pts.push([Math.cos(a)*r*.92, Math.sin(a)*r*.92]); }
+    }
+    pts.forEach(function(q){
+      g.appendChild(el("circle",{cx:cx+q[0],cy:cy+q[1],r:3.2,fill:"#dfa44f",stroke:"#0a0908","stroke-width":.8}));
+    });
+  }
+
+  /**
+   * Kamienie na szynie. Rysujemy je OSADZONE, czyli wtopione w obrys szyny,
+   * a nie polozone na wierzchu: pave dostaje kuleczki, kanalowa dwie szynki,
+   * lapkowa wlasne lapki przy kazdym kamieniu.
+   */
+  function sideStones(g,cx,cy,rMid,k){
+    if (!S.side || S.set === "drilled") return;
+    var r = S.sideDia*k/2;
+    var step = Math.asin(Math.min(0.5, (r*1.25)/rMid));       // odstep katowy z geometrii, nie z oka
+    var start = 0.30;                                          // odsuniecie od korony
+
+    if (S.sideSet === "channel"){
+      var span = start + step*(S.side-0.1);
+      [-1,1].forEach(function(sd){
+        [-1,1].forEach(function(off){
+          var d = "";
+          for (var t=0;t<=16;t++){
+            var a = -Math.PI/2 + sd*(start - step*0.6 + (span-start+step*0.6)*(t/16));
+            var rr = rMid + off*r*1.15;
+            d += (t?" L ":"M ")+(cx+Math.cos(a)*rr).toFixed(1)+" "+(cy+Math.sin(a)*rr).toFixed(1);
+          }
+          g.appendChild(el("path",{d:d,fill:"none",stroke:"#dfa44f","stroke-width":1.6}));
+        });
+      });
+    }
+    for (var sd=-1; sd<=1; sd+=2){
+      for (var i=0;i<S.side;i++){
+        var a = -Math.PI/2 + sd*(start + step*i);
+        var x = cx+Math.cos(a)*rMid, y = cy+Math.sin(a)*rMid;
+        g.appendChild(el("circle",{cx:x,cy:y,r:r,fill:"#101a22",stroke:"#9fb6c9","stroke-width":1}));
+        g.appendChild(el("circle",{cx:x,cy:y,r:r*0.55,fill:"none",stroke:"#6f8ba3","stroke-width":.7}));
+        if (S.sideSet === "pave"){
+          [[-1,-1],[1,-1],[1,1],[-1,1]].forEach(function(q){
+            g.appendChild(el("circle",{cx:x+q[0]*r*0.82,cy:y+q[1]*r*0.82,r:1.1,fill:"#dfa44f"}));
+          });
+        } else if (S.sideSet === "prong"){
+          [[-1,0],[1,0]].forEach(function(q){
+            g.appendChild(el("circle",{cx:x+q[0]*r*1.05,cy:y,r:1.5,fill:"#dfa44f"}));
+          });
+        }
+      }
+    }
+  }
+
+  function drawFront(){
+    var svg = $("front"); svg.textContent = "";
+    var cx=150, cy=172, k=5.6;
+    var ri=S.dia/2*k, ro=ri+S.thick*k, rMid=(ri+ro)/2;
+    var g = el("g",{});
+
+    g.appendChild(el("circle",{cx:cx,cy:cy,r:rMid,fill:"none",stroke:"#dfa44f","stroke-width":Math.max(2,S.thick*k)}));
+    g.appendChild(el("circle",{cx:cx,cy:cy,r:ri,fill:"none",stroke:"#5a4a35","stroke-width":1,"stroke-dasharray":"3 3"}));
+    g.appendChild(el("line",{x1:cx-ri,y1:cy,x2:cx+ri,y2:cy,stroke:"#5a4a35","stroke-width":.8}));
+    g.appendChild(txt(cx,cy+14,"⌀"+nf(S.dia,1)+" mm"));
+
+    if (S.kind === "signet"){
+      var L=S.tsize*k*.5, W=L*.82, ty=cy-ro-L*.55+4, shape;
+      if (S.table === "rect") shape = el("rect",{x:cx-W,y:ty-L*.72,width:W*2,height:L*1.44,rx:2});
+      else if (S.table === "cushion") shape = el("rect",{x:cx-W,y:ty-L*.72,width:W*2,height:L*1.44,rx:L*.42});
+      else shape = el("ellipse",{cx:cx,cy:ty,rx:W,ry:L*.72});
+      shape.setAttribute("fill","rgba(223,164,79,.2)");
+      shape.setAttribute("stroke","#dfa44f"); shape.setAttribute("stroke-width","2");
+      g.appendChild(shape);
+      if (S.engrave !== "none") g.appendChild(txt(cx,ty+5,S.engrave==="mono"?"AH":"⚜",
+        {fill:"#8a6a3c",size:S.engrave==="mono"?"17":"20"}));
+      g.appendChild(el("line",{x1:cx-W,y1:ty-L*.72-13,x2:cx+W,y2:ty-L*.72-13,stroke:"#6f645b","stroke-width":.8}));
+      g.appendChild(txt(cx,ty-L*.72-18,nf(S.tsize,1)+" mm"));
+    } else {
+      sideStones(g,cx,cy,rMid,k);
+      var sr=S.sdia*k/2, sy=cy-ro-sr*1.15-3;
+      drawCut(g, S.cut, cx, sy, sr, { stroke:"#9fb6c9", sw:1.3 });
+      prongs(g,cx,sy,sr,S.set);
+      g.appendChild(txt(cx, sy-sr*1.3-10, "⌀"+nf(S.sdia,1)));
+    }
+    svg.appendChild(g);
+  }
+
+  function drawSide(){
+    var svg = $("side"); svg.textContent = "";
+    var cx=150, cy=150, k=22;
+    var w=S.width*k, t=S.thick*k, g=el("g",{}), shape;
+
+    if (S.profile === "flat") shape = el("rect",{x:cx-w/2,y:cy-t/2,width:w,height:t});
+    else if (S.profile === "knife") shape = el("polygon",{points:[cx-w/2,cy+t/2,cx,cy-t/2,cx+w/2,cy+t/2].join(" ")});
+    else shape = el("path",{d:"M "+(cx-w/2)+" "+(cy+t/2)+" L "+(cx+w/2)+" "+(cy+t/2)+
+      " A "+(w/2)+" "+t+" 0 0 0 "+(cx-w/2)+" "+(cy+t/2)+" Z"});
+    shape.setAttribute("fill","rgba(223,164,79,.16)");
+    shape.setAttribute("stroke","#dfa44f"); shape.setAttribute("stroke-width","2");
+    g.appendChild(shape);
+
+    // Kamien boczny w przekroju, zeby bylo widac GLEBOKOSC osadzenia.
+    if (S.kind !== "signet" && S.side > 0 && S.set !== "drilled"){
+      var r = S.sideDia*k/2, top = cy - t/2;
+      if (S.sideSet === "channel"){
+        [-1,1].forEach(function(o){ g.appendChild(el("line",{x1:cx+o*r*1.15,y1:top+2,
+          x2:cx+o*r*1.15,y2:cy+t/2-2,stroke:"#dfa44f","stroke-width":2})); });
+      }
+      g.appendChild(el("circle",{cx:cx,cy:top+r*0.55,r:r,fill:"#101a22",stroke:"#9fb6c9","stroke-width":1.2}));
+      g.appendChild(el("line",{x1:cx-r,y1:top+r*0.55,x2:cx+r,y2:top+r*0.55,stroke:"#6f8ba3","stroke-width":.8}));
+      g.appendChild(txt(cx+r+34, top+r*0.6+4, "kamień", {anchor:"start",fill:"#6f645b",size:"9.5"}));
+    }
+
+    g.appendChild(el("line",{x1:cx-w/2-22,y1:cy+t/2,x2:cx+w/2+22,y2:cy+t/2,
+      stroke:"#5a4a35","stroke-width":1,"stroke-dasharray":"4 4"}));
+    g.appendChild(txt(cx+w/2+26,cy+t/2+4,"palec",{anchor:"start",fill:"#6f645b",size:"9.5"}));
+    g.appendChild(el("line",{x1:cx-w/2,y1:cy+t/2+34,x2:cx+w/2,y2:cy+t/2+34,stroke:"#6f645b","stroke-width":.9}));
+    g.appendChild(txt(cx,cy+t/2+50,nf(S.width,1)+" mm",{size:"11"}));
+    g.appendChild(el("line",{x1:cx-w/2-30,y1:cy-t/2,x2:cx-w/2-30,y2:cy+t/2,stroke:"#6f645b","stroke-width":.9}));
+    g.appendChild(txt(cx-w/2-38,cy+4,nf(S.thick,1),{anchor:"end",size:"11"}));
+    g.appendChild(txt(cx,34,({round:"PÓŁOKRĄGŁY",flat:"PŁASKI",knife:"NOŻOWY"})[S.profile],{fill:"#6f645b"}));
+    svg.appendChild(g);
+  }
+
+  function render(){
+    toggleKind(); drawFront(); drawSide();
+    var m = metrics();
+    $("r-circ").innerHTML  = nf(m.circ,1)+"<small> mm</small>";
+    $("r-mass").innerHTML  = nf(m.grams,2)+"<small> g</small>";
+    $("r-stones").textContent = String(m.stones);
+    $("r-metal").innerHTML = nf(m.metalPLN,0)+"<small> zł</small>";
+
+    $("p-file").textContent = m.file+" zł";
+    $("p-step").textContent = m.step+" zł";
+    $("p-cast").textContent = nf(m.cast,0)+" zł";
+    $("mat-hint").textContent = S.kind === "signet" ? "" : STONE[S.mat].label;
+    $("sideset-hint").textContent = SIDE_HINT[S.sideSet] || "";
+
+    var full = $("p-full"), btn = $("p-full-btn"), desc = $("p-full-d");
+    if (m.quote){
+      full.textContent = "wycena indywidualna"; full.className = "pr quote";
+      btn.textContent = "Poproś o wycenę";
+      desc.textContent = "Ceny tego kamienia nie mamy w bazie, więc odpowiadamy ręcznie.";
+    } else {
+      full.textContent = nf(m.full,0)+" zł"; full.className = "pr";
+      btn.textContent = "Zamów wyrób";
+      desc.textContent = S.kind === "signet"
+        ? "odlew, polerowanie i grawer laserem fibrowym"
+        : "odlew, kamienie i zakucie, do noszenia";
+    }
+    $("p-cast-d").textContent = S.kind === "signet"
+      ? "odlany i wypolerowany, tarcza gotowa pod grawer"
+      : "odlany i wypolerowany, gniazda gotowe pod zakucie";
+  }
+
+  buildPicker();
+  slider("dia","dia",1); slider("width","width",1); slider("thick","thick",1);
+  slider("sdia","sdia",1); slider("tsize","tsize",1); slider("sidedia","sideDia",1);
+  segment("s-kind","kind"); segment("s-metal","metal"); segment("s-profile","profile");
+  segment("s-cut","cut"); segment("s-set","set"); segment("s-mat","mat");
+  segment("s-side","side",function(v){ return parseInt(v,10); });
+  segment("s-sideset","sideSet"); segment("s-sidemat","sideMat");
+  segment("s-table","table"); segment("s-engrave","engrave");
+  reconcileSetting(); render();
+})();
+</script>

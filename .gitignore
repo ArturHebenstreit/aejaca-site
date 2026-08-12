@@ -35,3 +35,6 @@ dist-ssr
 
 # Dokumentacja dostawcow, nie trzymamy jej w repo
 *.pdf
+
+# Podglad generatora, sklejany z Three.js, 3,8 MB
+MDs/kreator-podglad.html
