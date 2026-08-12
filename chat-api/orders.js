@@ -16,7 +16,6 @@ import * as laserFiber from "./pricing/laserFiber.js";
 import * as epoxy from "./pricing/epoxy.js";
 import * as cadDesign from "./pricing/cadDesign.js";
 import * as ringConfigurator from "./pricing/ringConfigurator.js";
-import { buildRing } from "./geometry/build.js";
 
 /** Limit obrotu dzialalnosci nierejestrowanej, od 2026-01-01 rozliczany kwartalnie */
 export const QUARTERLY_LIMIT_GROSZE = 1_081_350; // 10 813,50 PLN
@@ -75,8 +74,13 @@ export class PricingError extends Error {
  * @param {object} params konfiguracja wedlug geometry/params.js
  */
 export async function ringGeometryFromParams(params) {
+  // Jadro geometryczne wczytujemy DOPIERO przy pierwszym uzyciu, a nie przy
+  // starcie procesu. To nie jest optymalizacja, tylko odgrodzenie: chat-api
+  // obsluguje zamowienia i platnosci, wiec problem z wasm-owym jadrem CAD
+  // nie moze przewracac calego API. Bez tego nieudany import zabija sklep.
   let r;
   try {
+    const { buildRing } = await import("./geometry/build.js");
     r = await buildRing(params || {});
   } catch (e) {
     throw new PricingError("bad_ring_params", e.message);

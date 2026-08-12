@@ -203,10 +203,24 @@ console.log("\n10. Kreator niewidoczny dla klientow, dopoki nie ma interfejsu");
   if (wpis?.internal) ok("kalkulator oznaczony jako `internal`, wiec nie trafia na publiczna liste");
   else bad("kalkulator BEZ znacznika `internal`, pokaze sie w /api/price/calculators");
 
-  const server = await import("node:fs").then((fs) =>
-    fs.readFileSync(new URL("../chat-api/server.js", import.meta.url), "utf8"));
+  const fs = await import("node:fs");
+  const server = fs.readFileSync(new URL("../chat-api/server.js", import.meta.url), "utf8");
   if (/filter\(\(\[, c\]\) => !c\.internal\)/.test(server)) ok("endpoint listy odsiewa kalkulatory wewnetrzne");
   else bad("endpoint /api/price/calculators NIE odsiewa kalkulatorow wewnetrznych");
+
+  // Jadro CAD nie moze byc warunkiem startu API, ktore obsluguje platnosci.
+  const orders = fs.readFileSync(new URL("../chat-api/orders.js", import.meta.url), "utf8");
+  if (/^import .*geometry\//m.test(orders)) {
+    bad("orders.js importuje generator na starcie, wiec awaria jadra CAD zabija cale chat-api");
+  } else ok("generator wczytywany dopiero przy uzyciu, awaria nie zabija chat-api");
+
+  // Lock chat-api musi znac kazda zaleznosc z package.json, bo Railway
+  // buduje przez `npm ci`, ktory przy rozjezdzie nie instaluje, tylko pada.
+  const pkg = JSON.parse(fs.readFileSync(new URL("../chat-api/package.json", import.meta.url), "utf8"));
+  const lock = JSON.parse(fs.readFileSync(new URL("../chat-api/package-lock.json", import.meta.url), "utf8"));
+  const brak = Object.keys(pkg.dependencies || {}).filter((d) => !lock.packages?.[`node_modules/${d}`]);
+  if (brak.length) bad(`chat-api/package-lock.json nie zna: ${brak.join(", ")}. Railway padnie na npm ci`);
+  else ok("lock chat-api zgodny z package.json, npm ci przejdzie");
 }
 
 console.log(failed ? `\n${failed} bledow\n` : "\nWycena kreatora: wszystko sie zgadza\n");
