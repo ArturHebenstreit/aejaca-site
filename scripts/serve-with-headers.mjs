@@ -24,6 +24,10 @@ const matchRules = (url) => rules.filter(r => {
   const rx = new RegExp("^" + r.path.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*") + "$");
   return rx.test(url);
 });
+// 4190 to port ManageSieve, blokowany z zasady przez przegladarki i przez
+// `fetch` ("bad port"), wiec sprawdzenie przez przegladarke nie mialo jak
+// sie polaczyc i cala weryfikacja opierala sie na samym `curl`.
+const PORT = Number(process.env.PORT || 4191);
 const MIME = { ".html":"text/html", ".js":"text/javascript", ".css":"text/css",
   ".wasm":"application/wasm", ".json":"application/json", ".svg":"image/svg+xml",
   ".webp":"image/webp", ".png":"image/png", ".jpg":"image/jpeg", ".ico":"image/x-icon", ".txt":"text/plain" };
@@ -31,9 +35,20 @@ createServer((req, res) => {
   let p = join(ROOT, decodeURIComponent(req.url.split("?")[0]));
   if (existsSync(p) && statSync(p).isDirectory()) p = join(p, "index.html");
   if (!existsSync(p)) p = join(ROOT, "404.html");
+  // Cloudflare stosuje WSZYSTKIE pasujace reguly, a nie tylko najwezsza.
+  // Gdy dwie reguly pasuja do tego samego adresu, przegladarka dostaje DWIE
+  // polityki i egzekwuje ICH CZESC WSPOLNA, czyli te ostrzejsza. Poluzowanie
+  // w wezszej sekcji nie moze wiec odblokowac niczego, co blokuje `/*`.
+  //
+  // Ten serwer wczesniej NADPISYWAL naglowek, czyli wygrywala ostatnia regula,
+  // i wlasnie dlatego kreator dzialal lokalnie, a na produkcji nie. Polityki
+  // dokladamy teraz osobno, zeby lokalnie widziec to samo co na produkcji.
   for (const r of matchRules(req.url.split("?")[0])) {
-    for (const [k, v] of Object.entries(r.headers)) res.setHeader(k, v);
+    for (const [k, v] of Object.entries(r.headers)) {
+      if (k.toLowerCase() === "content-security-policy") res.appendHeader(k, v);
+      else res.setHeader(k, v);
+    }
   }
   res.setHeader("Content-Type", MIME[extname(p)] || "application/octet-stream");
   res.end(readFileSync(p));
-}).listen(4190, () => console.log("CSP serve na 4190"));
+}).listen(PORT, () => console.log(`CSP serve na ${PORT}`));

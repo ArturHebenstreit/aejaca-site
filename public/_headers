@@ -33,46 +33,60 @@
   # kompilacji modulu i oba narzedzia przestaja dzialac. Lokalny serwer
   # statyczny nie stosuje tego pliku, wiec widac to dopiero na produkcji.
   #
-  # Swiadomie NIE dodajemy `unsafe-eval`. Ta szersza dyrektywa wpuszczalaby
-  # takze `eval()` na zwyklym JavaScripcie, a potrzebujemy wylacznie WebAssembly.
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://images.autopay.eu https://testimages.autopay.eu; connect-src 'self' https://aejaca-analytics.aejaca.workers.dev https://cloudflareinsights.com https://primary-production-634f2.up.railway.app https://primary-fhhi-production.up.railway.app https://aejacachatapi-production.up.railway.app; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://pay.autopay.eu https://testpay.autopay.eu
+  # `unsafe-eval` stoi TUTAJ, w regule ogolnej, i to jest decyzja przemyslana,
+  # nie kapitulacja. Dwa poprzednie wdrozenia probowaly poluzowac polityke
+  # w wezszej sekcji, raz dla `/assets/*`, raz dla strony kreatora, i oba razy
+  # bez skutku, bo Cloudflare stosuje WSZYSTKIE pasujace reguly naraz.
+  # Przegladarka dostaje wtedy dwie polityki i egzekwuje ich CZESC WSPOLNA,
+  # czyli ostrzejsza. Wezsza regula moze wiec polityke tylko ZAWEZIC.
+  # Nigdy poszerzyc. Lokalny serwer naglowek nadpisywal, przez co wygladalo
+  # to poprawnie na komputerze i przewracalo sie na produkcji.
+  #
+  # Dyrektywy potrzebuje szeroki kawalek serwisu, nie jedna strona: kalkulator
+  # druku, sprawdzarka drukowalnosci, konfigurator uslugi w sklepie i kreator
+  # pierscionkow. Wszedzie tam embind laczy WebAssembly z JavaScriptem przez
+  # `new Function`, na co samo `wasm-unsafe-eval` nie wystarcza.
+  #
+  # Strony platnicze zostaja przy polityce BEZ `unsafe-eval`, w sekcjach nizej.
+  # One polityke ogolna zawezaja, wiec dzialaja niezaleznie od tego, jak
+  # Cloudflare laczy reguly.
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://images.autopay.eu https://testimages.autopay.eu; connect-src 'self' https://aejaca-analytics.aejaca.workers.dev https://cloudflareinsights.com https://primary-production-634f2.up.railway.app https://primary-fhhi-production.up.railway.app https://aejacachatapi-production.up.railway.app; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://pay.autopay.eu https://testpay.autopay.eu
   Cross-Origin-Opener-Policy: same-origin
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 
-# Kreator pierscionkow: polityka DOKUMENTU dla jednej strony.
+# Strony platnicze: polityka OSTRZEJSZA niz ogolna, bez `unsafe-eval`.
 #
-# Watek roboczy DZIEDZICZY polityke dokumentu, ktory go utworzyl, a wlasne
-# naglowki moga ja tylko ZAWEZIC, nigdy poszerzyc. Poluzowanie samej sekcji
-# /assets/* bylo wiec zalozeniem blednym: dzialalo lokalnie, a na produkcji
-# watek nadal podlegal polityce strony.
+# To sa jedyne adresy, na ktorych klient podaje dane i placi, i zadne z nich
+# nie czyta plikow ani nie liczy geometrii, wiec `eval` nie jest tam do niczego
+# potrzebny. Reguly ZAWEZAJA polityke ogolna, a nie poszerzaja, wiec dzialaja
+# niezaleznie od tego, czy Cloudflare reguly laczy, czy nadpisuje: przy laczeniu
+# przegladarka egzekwuje czesc wspolna, czyli te ostrzejsza, a przy nadpisaniu
+# wygrywa regula wezsza, czyli znowu ta ostrzejsza.
 #
-# `unsafe-eval` jest konieczne, bo embind w Emscriptenie buduje funkcje
-# wywolujace przez `new Function`. Poluzowanie obejmuje WYLACZNIE ten adres:
-# strona jest wersja robocza, nie ma na niej formularzy, platnosci ani
-# danych klienta. Koszyk, checkout i cala reszta serwisu zostaja przy
-# polityce bez `unsafe-eval`.
-/toolsjewelry/kreator/*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://aejacachatapi-production.up.railway.app; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'
+# Reszta dyrektyw musi byc IDENTYCZNA jak w regule ogolnej. Przy laczeniu polityk
+# brakujacy adres nie jest pominiety, tylko zabroniony, wiec zgubienie domen
+# autopay.eu w `form-action` zatrzymaloby platnosc bez zadnego komunikatu.
+/cart*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://images.autopay.eu https://testimages.autopay.eu; connect-src 'self' https://aejaca-analytics.aejaca.workers.dev https://cloudflareinsights.com https://primary-production-634f2.up.railway.app https://primary-fhhi-production.up.railway.app https://aejacachatapi-production.up.railway.app; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://pay.autopay.eu https://testpay.autopay.eu
+
+/checkout*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://images.autopay.eu https://testimages.autopay.eu; connect-src 'self' https://aejaca-analytics.aejaca.workers.dev https://cloudflareinsights.com https://primary-production-634f2.up.railway.app https://primary-fhhi-production.up.railway.app https://aejacachatapi-production.up.railway.app; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://pay.autopay.eu https://testpay.autopay.eu
+
+/order*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://images.autopay.eu https://testimages.autopay.eu; connect-src 'self' https://aejaca-analytics.aejaca.workers.dev https://cloudflareinsights.com https://primary-production-634f2.up.railway.app https://primary-fhhi-production.up.railway.app https://aejacachatapi-production.up.railway.app; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self' mailto: https://pay.autopay.eu https://testpay.autopay.eu
 
 # Cache immutable hashed assets aggressively (Vite adds content hash)
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
-  # WLASNA polityka dla watkow roboczych.
+  # CELOWO nie ma tu wlasnej polityki bezpieczenstwa.
   #
-  # Watek roboczy nie dziedziczy polityki dokumentu: bierze ja z naglowkow
-  # WLASNEGO pliku. Ten naglowek nie ma wiec zadnego wplywu na zwykle skrypty
-  # strony, bo te podlegaja polityce dokumentu. Dziala tylko dla `new Worker`.
+  # Watek roboczy bierze polityke z naglowkow WLASNEGO pliku, wiec sekcja
+  # wygladala na wlasciwe miejsce. Rzecz w tym, ze do `/assets/*` pasuje
+  # takze regula `/*`, a Cloudflare wysyla wtedy OBIE polityki i przegladarka
+  # egzekwuje ich czesc wspolna. Polityka pisana tutaj jako szersza dzialala
+  # wiec jak wezsza i blokowala dokladnie to, co miala przepuscic.
   #
-  # `unsafe-eval` jest tu konieczne, bo embind, czyli warstwa laczaca
-  # WebAssembly z JavaScriptem w Emscriptenie, buduje funkcje wywolujace
-  # przez `new Function` w czasie dzialania. Samo `wasm-unsafe-eval` na to
-  # nie wystarcza, co widac po komunikacie "Refused to evaluate a string
-  # as JavaScript". Przebudowa biblioteki bez embind nie wchodzi w gre.
-  #
-  # Poluzowanie jest WASKIE i celowe: watek roboczy nie ma dostepu do drzewa
-  # dokumentu ani do ciasteczek, liczy wylacznie geometrie, a dokument, w tym
-  # strony platnosci, zostaje przy polityce bez `unsafe-eval`.
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval'; connect-src 'self'; object-src 'none'; base-uri 'none'
+  # Watek dostaje teraz polityke ogolna, ktora `unsafe-eval` dopuszcza.
 
 # Images - cache 30 days + stale-while-revalidate for instant loads during refresh
 /*.jpg
