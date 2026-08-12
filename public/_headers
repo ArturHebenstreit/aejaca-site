@@ -3,6 +3,15 @@
 
 # Security headers (all pages)
 /*
+  # HTML musi byc ODSWIEZANY, i to dotyczy wszystkich stron, nie tylko glownej.
+  #
+  # Naglowki bezpieczenstwa, w tym polityka CSP, przychodza RAZEM z dokumentem.
+  # Gdy dokument siedzi w cache, siedzi tam takze stara polityka, i poprawka
+  # wdrozona na serwerze nie dociera do nikogo, kto strone juz odwiedzil.
+  # Wczesniej regule mial wylacznie `/index.html`, czyli jedna z dziewiecdziesieciu
+  # siedmiu prerenderowanych stron. Zasoby z `/assets`, obrazy i fonty maja
+  # wlasne reguly NIZEJ w tym pliku i one wygrywaja, wiec nic nie traci na cache.
+  Cache-Control: public, max-age=0, must-revalidate
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
