@@ -9,13 +9,15 @@
 // ============================================================
 import { useState, useMemo } from "react";
 import { CalcCard, Chips, InquiryForm, t } from "./calcShared.jsx";
+import { CASTING_ALLOYS } from "../../data/castingAlloys.js";
 
-const ALLOYS = {
-  au585: { factor: 1.0196, label: { pl: "Au 585 (14K)", en: "Au 585 (14K)", de: "Au 585 (14K)" } },
-  ag925: { factor: 1.016, label: { pl: "Ag 925", en: "Ag 925", de: "Ag 925" } },
-  au9k: { factor: 1.021, label: { pl: "Au 9K", en: "Au 9K", de: "Au 9K" } },
-  au18k: { factor: 1.018, label: { pl: "Au 18K", en: "Au 18K", de: "Au 18K" } },
-};
+// Wspolczynniki mieszkaja w `castingAlloys.js`, bo korzysta z nich takze
+// generator pierscionkow. Dwie kopie tych samych liczb rozjechalyby sie
+// przy pierwszej korekcie, a odlew wyszedlby nie na wymiar.
+const ORDER = ["au585", "ag925", "au9k", "au750"];
+const ALLOYS = Object.fromEntries(
+  ORDER.map((id) => [id, { factor: CASTING_ALLOYS[id].shrink, label: CASTING_ALLOYS[id].label }]),
+);
 
 const ALLOY_CHIPS = Object.entries(ALLOYS).map(([id, v]) => ({ id, label: v.label }));
 
