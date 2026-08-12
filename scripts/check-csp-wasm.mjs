@@ -49,9 +49,11 @@ const sections = [];
 {
   let cur = null;
   for (const line of headers.split("\n")) {
-    if (/^\//.test(line)) { cur = { path: line.trim(), csp: null }; sections.push(cur); }
+    if (/^\//.test(line)) { cur = { path: line.trim(), csp: null, cache: null }; sections.push(cur); }
     else if (cur && line.trim().startsWith("Content-Security-Policy:")) {
       cur.csp = line.slice(line.indexOf(":") + 1).trim();
+    } else if (cur && line.trim().startsWith("Cache-Control:")) {
+      cur.cache = line.slice(line.indexOf(":") + 1).trim();
     }
   }
 }
@@ -89,6 +91,17 @@ if (!assetSection || !/'unsafe-eval'/.test(assetSection.csp)) {
   problems.push(
     "sekcja /assets/* nie daje watkom roboczym 'unsafe-eval'. Generator pierscionkow\n" +
     "    nie zbuduje bryly, bo embind tworzy funkcje przez `new Function`.",
+  );
+}
+
+// Polityka moze byc poprawna i mimo to nie dotrzec: przychodzi razem
+// z dokumentem, wiec dokument w cache niesie takze stara polityke.
+const docCache = sections.find((x) => x.path === "/*")?.cache;
+if (!docCache || !/max-age=0|no-cache|must-revalidate/.test(docCache)) {
+  problems.push(
+    "sekcja /* nie wymusza odswiezania HTML. Polityka bezpieczenstwa jedzie razem\n" +
+    "    z dokumentem, wiec bez tego jej poprawka nie dotrze do nikogo, kto strone\n" +
+    "    juz odwiedzil, a wyglada to jak niewdrozona zmiana.",
   );
 }
 
