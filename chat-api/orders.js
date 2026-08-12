@@ -42,7 +42,12 @@ export const CALCULATORS = {
   cad_design:         { fn: cadDesign.calculate,    needsFile: false, label: { pl: "Projekt 3D (CAD)", en: "3D design (CAD)", de: "3D-Entwurf (CAD)" } },
   // Nazwa MUSI zaczynac sie od `jewelry_`, bo od tego przedrostka zalezy,
   // czy kursy kruszcow i ceny kamieni w ogole trafia do kalkulatora.
-  jewelry_ring_config: { fn: ringConfigurator.calculate, needsFile: false, label: { pl: "Pierścionek z kreatora", en: "Ring from the configurator", de: "Ring aus dem Konfigurator" } },
+  //
+  // `internal` trzyma go poza publiczna lista kalkulatorow do czasu, az powstanie
+  // interfejs. Bez tego pozycja "Pierścionek z kreatora" pokazywalaby sie
+  // w `/api/price/calculators`, a wywolanie jej i tak konczyloby sie bledem,
+  // bo bez bryly policzonej na serwerze wycena odmawia.
+  jewelry_ring_config: { fn: ringConfigurator.calculate, needsFile: false, internal: true, label: { pl: "Pierścionek z kreatora", en: "Ring from the configurator", de: "Ring aus dem Konfigurator" } },
 };
 
 /** Kalkulatory, w ktorych plik klienta zastepuje wybor rozmiaru */

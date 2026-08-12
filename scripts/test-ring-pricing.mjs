@@ -194,5 +194,20 @@ console.log("\n9. Kamien powierzony przez klienta: sama robocizna");
   else bad(`kamien powierzony nie obnizyl ceny: ${zl(nasz)} wobec ${zl(jego)}`);
 }
 
+// ------------------------------------------------------------
+console.log("\n10. Kreator niewidoczny dla klientow, dopoki nie ma interfejsu");
+// ------------------------------------------------------------
+{
+  const { CALCULATORS } = await import("../chat-api/orders.js");
+  const wpis = CALCULATORS.jewelry_ring_config;
+  if (wpis?.internal) ok("kalkulator oznaczony jako `internal`, wiec nie trafia na publiczna liste");
+  else bad("kalkulator BEZ znacznika `internal`, pokaze sie w /api/price/calculators");
+
+  const server = await import("node:fs").then((fs) =>
+    fs.readFileSync(new URL("../chat-api/server.js", import.meta.url), "utf8"));
+  if (/filter\(\(\[, c\]\) => !c\.internal\)/.test(server)) ok("endpoint listy odsiewa kalkulatory wewnetrzne");
+  else bad("endpoint /api/price/calculators NIE odsiewa kalkulatorow wewnetrznych");
+}
+
 console.log(failed ? `\n${failed} bledow\n` : "\nWycena kreatora: wszystko sie zgadza\n");
 process.exit(failed ? 1 : 0);
