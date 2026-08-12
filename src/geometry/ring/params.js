@@ -188,6 +188,18 @@ export const SIDE_SETTINGS = {
 
 export const SHANK_PROFILES = ["round", "flat", "knife", "comfort"];
 
+// Typ wyrobu decyduje o tym, CO w ogole powstaje nad szyna.
+//   ring    szyna z glowica i kamieniem centralnym
+//   signet  szyna z tarcza, bez kamienia centralnego
+//   band    sama szyna: obraczka gladka albo wysadzana po obwodzie
+export const RING_KINDS = ["ring", "signet", "band"];
+
+// Pokrycie obwodu kamieniami dla typu `band`.
+//   none  obraczka gladka
+//   half  kamienie na gornej polowie, czyli half eternity
+//   full  kamienie dookola, czyli eternity
+export const BAND_COVERAGE = ["none", "half", "full"];
+
 // Profil szyny to jej PRZEKROJ, czyli ksztalt w dloni. To jest co innego niz
 // sylwetka ogladana z boku, o ktorej decyduje ponizsze zwezenie. Katalogi
 // mieszaja te dwie rzeczy, a klient wybiera glownie sylwetke.
@@ -216,7 +228,9 @@ export const LIMITS = {
   thickness: [1.0, 4.0],
   stoneSize: [2.0, 10.0],
   sideCount: [0, 5],
-  sideSize: [1.0, 2.6],
+  sideSize: [1.0, 4.5],
+  haloSize: [0.9, 2.2],
+  bandSize: [1.2, 3.2],
   signetLength: [9.0, 20.0],
   prongDia: [0.7, 1.4],
 };
@@ -234,6 +248,8 @@ export const DEFAULTS = {
   setting: "prong4",
   prongDia: 0.9,
   side: { count: 0, size: 1.6, setting: "pave", material: "cz" },
+  halo: { on: false, size: 1.4, material: "cz" },
+  band: { coverage: "none", size: 1.8, setting: "pave", material: "cz" },
   signet: { table: "oval", length: 14, engraving: "none" },
 };
 
@@ -251,10 +267,12 @@ const num = (v, d) => (Number.isFinite(Number(v)) ? Number(v) : d);
 export function validate(input = {}) {
   const p = { ...DEFAULTS, ...input };
   p.stone = { ...DEFAULTS.stone, ...(input.stone || {}) };
+  p.halo = { ...DEFAULTS.halo, ...(input.halo || {}) };
+  p.band = { ...DEFAULTS.band, ...(input.band || {}) };
   p.side = { ...DEFAULTS.side, ...(input.side || {}) };
   p.signet = { ...DEFAULTS.signet, ...(input.signet || {}) };
 
-  p.kind = p.kind === "signet" ? "signet" : "ring";
+  if (!RING_KINDS.includes(p.kind)) p.kind = "ring";
   p.innerDia = clamp(num(p.innerDia, DEFAULTS.innerDia), LIMITS.innerDia);
   p.width = clamp(num(p.width, DEFAULTS.width), LIMITS.width);
   p.thickness = clamp(num(p.thickness, DEFAULTS.thickness), LIMITS.thickness);
@@ -271,10 +289,22 @@ export function validate(input = {}) {
   const allowed = colorsFor(p.alloy);
   if (!allowed.includes(p.color)) p.color = allowed[0] || DEFAULTS.color;
 
+  if (p.kind === "band") {
+    // Obraczka nie ma glowicy, wiec nie ma tez kamienia centralnego ani
+    // niczego na ramionach: kamienie ida po obwodzie i opisuje je `band`.
+    if (!BAND_COVERAGE.includes(p.band.coverage)) p.band.coverage = "none";
+    p.band.size = clamp(num(p.band.size, 1.8), LIMITS.bandSize);
+    if (!SIDE_SETTINGS[p.band.setting]) p.band.setting = "pave";
+    p.side = { ...p.side, count: 0 };
+    p.halo = { ...p.halo, on: false };
+    return p;
+  }
+
   if (p.kind === "signet") {
     p.signet.length = clamp(num(p.signet.length, 14), LIMITS.signetLength);
     if (!SIGNET_TABLES.includes(p.signet.table)) p.signet.table = "oval";
     p.side = { ...p.side, count: 0 };
+    p.halo = { ...p.halo, on: false };
     return p;
   }
 
@@ -295,6 +325,13 @@ export function validate(input = {}) {
   p.side.count = Math.round(clamp(num(p.side.count, 0), LIMITS.sideCount));
   p.side.size = clamp(num(p.side.size, 1.6), LIMITS.sideSize);
   if (!SIDE_SETTINGS[p.side.setting]) p.side.setting = "pave";
+
+  // Halo to wieniec drobnych kamieni WOKOL korony, wiec musi byc na czym go
+  // oprzec. Przy briolecie nie ma korony, tylko kabłąk, a przy oprawie
+  // kanalowej wieniec kolidowalby z szynkami.
+  p.halo.size = clamp(num(p.halo.size, 1.4), LIMITS.haloSize);
+  if (p.setting === "drilled" || p.setting === "channel") p.halo = { ...p.halo, on: false };
+  p.halo.on = Boolean(p.halo.on);
 
   return p;
 }

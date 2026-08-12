@@ -10,7 +10,6 @@
 // dla presetu rozjechalaby sie z reszta przy pierwszej korekcie.
 //
 // CZEGO TU NIE MA i dlaczego:
-//   halo, trylogia, eternity  brak geometrii, doloza sie razem z nia
 //   cluster, fantasy          uklady swobodne, to jest projekt indywidualny,
 //                             a nie konfiguracja, i idzie sciezka wyceny
 //   monogram, odcisk palca    wymagaja wejscia z pliku, to osobna funkcja
@@ -104,6 +103,79 @@ export const RING_PRESETS = [
     },
   },
   {
+    id: "halo",
+    label: { pl: "Halo", en: "Halo", de: "Halo" },
+    note: { pl: "Wieniec drobnych kamieni powiększa optycznie kamień centralny o pół karata.",
+            en: "A wreath of small stones makes the centre stone look about half a carat larger.",
+            de: "Ein Kranz kleiner Steine lässt den Hauptstein rund ein halbes Karat größer wirken." },
+    params: {
+      kind: "ring", profile: "round", taper: "tapered", width: 2.0, thickness: 1.6,
+      stone: { cut: "round", size: 5.5 }, setting: "prong4", prongDia: 0.8,
+      halo: { on: true, size: 1.3 }, side: { count: 0 },
+    },
+  },
+  {
+    id: "diana",
+    label: { pl: "Owal w halo, z pavé", en: "Oval halo with pavé", de: "Ovales Halo mit Pavé" },
+    note: { pl: "Owal w wieńcu, kamienie na ramionach. Wzór znany z pierścionka księżnej Diany.",
+            en: "An oval in a wreath with stones along the shoulders, the pattern known from Princess Diana's ring.",
+            de: "Ein Oval im Kranz mit Steinen an den Schultern, bekannt vom Ring von Prinzessin Diana." },
+    params: {
+      kind: "ring", profile: "round", taper: "tapered", width: 2.1, thickness: 1.6,
+      stone: { cut: "oval", size: 6.5, material: "sapphire" }, setting: "prong4", prongDia: 0.8,
+      halo: { on: true, size: 1.3 },
+      side: { count: 3, size: 1.4, setting: "pave" },
+    },
+  },
+  {
+    id: "trilogy",
+    label: { pl: "Trylogia", en: "Trilogy", de: "Trilogie" },
+    note: { pl: "Trzy kamienie: przeszłość, teraźniejszość, przyszłość. Boczne we własnych łapkach.",
+            en: "Three stones for past, present and future, the side ones in claws of their own.",
+            de: "Drei Steine für Vergangenheit, Gegenwart und Zukunft, die seitlichen in eigenen Krappen." },
+    params: {
+      kind: "ring", profile: "round", taper: "tapered", width: 2.2, thickness: 1.7,
+      stone: { cut: "round", size: 6.0 }, setting: "prong4", prongDia: 0.9,
+      side: { count: 1, size: 4.0, setting: "prong" },
+    },
+  },
+  {
+    id: "band",
+    label: { pl: "Obrączka gładka", en: "Plain band", de: "Glatter Ring" },
+    note: { pl: "Bez kamieni. Profil comfort zsuwa się po palcu zamiast go ścinać krawędzią.",
+            en: "No stones. A comfort profile slides over the finger instead of cutting into it.",
+            de: "Ohne Steine. Das Comfort-Profil gleitet über den Finger, statt einzuschneiden." },
+    params: {
+      profile: "comfort", taper: "none", width: 4.0, thickness: 1.8,
+      band: { coverage: "none" },
+    },
+    kind: "band",
+  },
+  {
+    id: "halfEternity",
+    label: { pl: "Half eternity", en: "Half eternity", de: "Half Eternity" },
+    note: { pl: "Kamienie na górnej połowie. Dół zostaje gładki, więc rozmiar da się później zmienić.",
+            en: "Stones across the upper half. The lower half stays plain, so the size can be altered later.",
+            de: "Steine auf der oberen Hälfte. Die untere bleibt glatt, die Größe lässt sich später ändern." },
+    params: {
+      profile: "round", taper: "none", width: 2.4, thickness: 1.8,
+      band: { coverage: "half", size: 1.8, setting: "pave" },
+    },
+    kind: "band",
+  },
+  {
+    id: "eternity",
+    label: { pl: "Eternity", en: "Eternity", de: "Eternity" },
+    note: { pl: "Kamienie dookoła. UWAGA: takiego pierścionka nie da się później zwęzić ani rozciągnąć, bo nie ma gładkiego odcinka.",
+            en: "Stones all the way round. Note that such a ring cannot be sized later, as there is no plain stretch to work on.",
+            de: "Steine rundum. Achtung: ein solcher Ring lässt sich später nicht weiten, es fehlt der glatte Abschnitt." },
+    params: {
+      profile: "round", taper: "none", width: 2.4, thickness: 1.8,
+      band: { coverage: "full", size: 1.8, setting: "pave" },
+    },
+    kind: "band",
+  },
+  {
     id: "signet",
     label: { pl: "Sygnet męski", en: "Men's signet", de: "Herren-Siegelring" },
     note: { pl: "Masywna tarcza i ramiona, które gęstnieją pod nią.",
@@ -155,5 +227,9 @@ export function applyPreset(preset, current) {
   p.stone = { ...current.stone, ...(preset.params.stone || {}) };
   p.side = { ...current.side, ...(preset.params.side || {}) };
   p.signet = { ...current.signet, ...(preset.params.signet || {}) };
+  // Halo i obwod nie sa dziedziczone: preset bez halo ma byc BEZ halo,
+  // a nie z resztka po poprzednim kliknieciu.
+  p.halo = { ...current.halo, on: false, ...(preset.params.halo || {}) };
+  p.band = { ...current.band, coverage: "none", ...(preset.params.band || {}) };
   return p;
 }

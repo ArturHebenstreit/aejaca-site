@@ -26,6 +26,10 @@ const L = {
     size: "Rozmiar", alloy: "Metal", color: "Kolor metalu", profile: "Profil szyny",
     gem: "Kamień centralny", sideGem: "Kamienie boczne",
     preset: "Zacznij od wzoru", taper: "Sylwetka szyny",
+    band: "Obrączka", halo: "Halo", haloSize: "Kamienie halo", on: "Tak", off: "Nie",
+    coverage: "Kamienie na obwodzie", bandSize: "Średnica kamieni",
+    coverages: { none: "Brak", half: "Górna połowa", full: "Dookoła" },
+    eternityWarn: "Pierścionka z kamieniami dookoła nie da się później zwęzić ani rozciągnąć: nie ma gładkiego odcinka, w który jubiler mógłby wejść.",
       tapers: { none: "Prosta", tapered: "Zwężana", cathedral: "Katedralna" },
     rhodiumNote: "Białe złoto rodujemy, bo bez powłoki ma lekko ciepły odcień. Rodowanie zużywa się i po latach odnawia się je jak lakier.",
     gemGroups: { precious: "Szlachetne", lab: "Hodowane i syntetyczne", semi: "Półszlachetne i ozdobne" },
@@ -45,6 +49,10 @@ const L = {
     size: "Size", alloy: "Metal", color: "Metal colour", profile: "Shank profile",
     gem: "Centre stone", sideGem: "Side stones",
     preset: "Start from a design", taper: "Shank silhouette",
+    band: "Band", halo: "Halo", haloSize: "Halo stones", on: "Yes", off: "No",
+    coverage: "Stones around the band", bandSize: "Stone diameter",
+    coverages: { none: "None", half: "Upper half", full: "All the way round" },
+    eternityWarn: "A ring with stones all the way round cannot be sized later: there is no plain stretch for a jeweller to work on.",
       tapers: { none: "Straight", tapered: "Tapered", cathedral: "Cathedral" },
     rhodiumNote: "White gold is rhodium plated, since the bare alloy has a faintly warm tint. The plating wears and is renewed over the years, much like a lacquer.",
     gemGroups: { precious: "Precious", lab: "Lab-grown and synthetic", semi: "Semi-precious and decorative" },
@@ -64,6 +72,10 @@ const L = {
     size: "Größe", alloy: "Metall", color: "Metallfarbe", profile: "Schienenprofil",
     gem: "Hauptstein", sideGem: "Seitensteine",
     preset: "Mit einem Entwurf beginnen", taper: "Schienensilhouette",
+    band: "Ring", halo: "Halo", haloSize: "Halo-Steine", on: "Ja", off: "Nein",
+    coverage: "Steine am Umfang", bandSize: "Steindurchmesser",
+    coverages: { none: "Keine", half: "Obere Hälfte", full: "Rundum" },
+    eternityWarn: "Ein Ring mit Steinen rundum lässt sich später nicht ändern: es fehlt der glatte Abschnitt zum Ansetzen.",
       tapers: { none: "Gerade", tapered: "Verjüngt", cathedral: "Kathedrale" },
     rhodiumNote: "Weißgold wird rhodiniert, da die blanke Legierung einen leicht warmen Ton hat. Die Schicht nutzt sich ab und wird über die Jahre erneuert, ähnlich wie ein Lack.",
     gemGroups: { precious: "Edelsteine", lab: "Laborgezüchtet und synthetisch", semi: "Halbedel und dekorativ" },
@@ -216,8 +228,9 @@ export default function RingConfigurator({ lang = "pl" }) {
       setInfo({
         massG: e.data.massG, volumeMm3: e.data.volumeMm3,
         triangles: e.data.metal.triangles,
-        stones: e.data.params.kind === "signet" ? 0
-          : (e.data.params.setting === "drilled" ? 0 : 1 + e.data.params.side.count * 2),
+        // Liczbe kamieni bierzemy z GENERATORA, bo dla halo i obwodu wynika
+        // ona z obwodu wienca, a nie z niczego, co klient wpisal.
+        stones: e.data.stoneCount,
       });
     };
     return () => { w.terminate(); workerRef.current = null; };
@@ -248,6 +261,7 @@ export default function RingConfigurator({ lang = "pl" }) {
 
   const aktywny = RING_PRESETS.find((x) => x.id === presetId) || null;
   const signet = p.kind === "signet";
+  const obraczka = p.kind === "band";
   const noSide = signet || p.setting === "drilled" || p.side.count === 0;
 
   return (
@@ -265,7 +279,8 @@ export default function RingConfigurator({ lang = "pl" }) {
 
           <Group label={t.kind}>
             <Seg value={p.kind} onChange={(id) => set({ kind: id })}
-              options={[{ id: "ring", label: t.ring }, { id: "signet", label: t.signet }]} />
+              options={[{ id: "ring", label: t.ring }, { id: "signet", label: t.signet },
+                        { id: "band", label: t.band }]} />
           </Group>
 
           <Slider label={t.size} lang={lang} unit={`mm (EU ${sizeRow.eu})`}
@@ -302,7 +317,7 @@ export default function RingConfigurator({ lang = "pl" }) {
 
           {/* Sygnet ma sylwetke wynikajaca z konstrukcji: ramiona MUSZA
               zgestniec pod tarcza, inaczej glowica stoi na patyku. */}
-          {!signet ? (
+          {!signet && !obraczka ? (
             <Group label={t.taper}>
               <Seg value={p.taper === "auto" ? "none" : p.taper}
                 onChange={(id) => set({ taper: id })}
@@ -315,7 +330,7 @@ export default function RingConfigurator({ lang = "pl" }) {
           <Slider label={t.thickness} lang={lang} unit="mm" value={p.thickness}
             min={LIMITS.thickness[0]} max={LIMITS.thickness[1]} step={0.1} onChange={(v) => set({ thickness: v })} />
 
-          {!signet && (
+          {!signet && !obraczka && (
             <>
               <Group label={t.cut} hint={CUTS[p.stone.cut] ? hintOf(CUTS[p.stone.cut], lang) : null}>
                 <div className="grid grid-cols-4 gap-1">
@@ -335,6 +350,27 @@ export default function RingConfigurator({ lang = "pl" }) {
                   ))}
                 </div>
               </Group>
+
+              <Group label={t.halo}>
+                <Seg value={p.halo.on ? "on" : "off"}
+                  onChange={(id) => setP((prev) => { setPresetId(null);
+                    return { ...prev, halo: { ...prev.halo, on: id === "on" } }; })}
+                  options={[{ id: "off", label: t.off }, { id: "on", label: t.on }]} />
+              </Group>
+
+              {p.halo.on ? (
+                <>
+                  <Slider label={t.haloSize} lang={lang} unit="mm" value={p.halo.size}
+                    min={LIMITS.haloSize[0]} max={LIMITS.haloSize[1]} step={0.1} decimals={1}
+                    onChange={(v) => setP((prev) => { setPresetId(null);
+                      return { ...prev, halo: { ...prev.halo, size: v } }; })} />
+                  <Group label={t.gem}>
+                    <GemSelect value={p.halo.material} lang={lang} groupLabels={t.gemGroups}
+                      onChange={(id) => setP((prev) => { setPresetId(null);
+                        return { ...prev, halo: { ...prev.halo, material: id } }; })} />
+                  </Group>
+                </>
+              ) : null}
 
               <Group label={t.setting}>
                 <Seg value={p.setting} onChange={(id) => set({ setting: id })}
@@ -374,6 +410,31 @@ export default function RingConfigurator({ lang = "pl" }) {
                     onChange={(v) => setSide({ size: v })} />
                 </>
               )}
+            </>
+          )}
+
+          {obraczka && (
+            <>
+              <Group label={t.coverage} hint={p.band.coverage === "full" ? t.eternityWarn : null}>
+                <Seg value={p.band.coverage}
+                  onChange={(id) => setP((prev) => { setPresetId(null);
+                    return { ...prev, band: { ...prev.band, coverage: id } }; })}
+                  options={["none", "half", "full"].map((id) => ({ id, label: t.coverages[id] }))} />
+              </Group>
+
+              {p.band.coverage !== "none" ? (
+                <>
+                  <Slider label={t.bandSize} lang={lang} unit="mm" value={p.band.size}
+                    min={LIMITS.bandSize[0]} max={LIMITS.bandSize[1]} step={0.1}
+                    onChange={(v) => setP((prev) => { setPresetId(null);
+                      return { ...prev, band: { ...prev.band, size: v } }; })} />
+                  <Group label={t.gem}>
+                    <GemSelect value={p.band.material} lang={lang} groupLabels={t.gemGroups}
+                      onChange={(id) => setP((prev) => { setPresetId(null);
+                        return { ...prev, band: { ...prev.band, material: id } }; })} />
+                  </Group>
+                </>
+              ) : null}
             </>
           )}
 

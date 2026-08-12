@@ -631,6 +631,149 @@ function buildSignetHead(w, p) {
 // ------------------------------------------------------------
 // Zlozenie
 // ------------------------------------------------------------
+
+
+/**
+ * Kamienie po OBWODZIE szyny, czyli eternity i half eternity.
+ *
+ * Rozne od kamieni bocznych tym, ze nie odnosza sie do glowicy: nie ma tu
+ * zadnej glowicy. Kamienie ida rownomiernie po calym obwodzie albo po jego
+ * gornej polowie, a ich liczbe wyznacza obwod podzielony przez srednice.
+ *
+ * Eternity ma wade, ktora trzeba znac przed zakupem, i mowimy o niej wprost
+ * w opisie presetu: pierscionka z kamieniami dookola NIE DA SIE rozciagnac
+ * ani zwezic, bo nie ma gladkiego odcinka, w ktory jubiler moglby wejsc.
+ * Half eternity tej wady nie ma.
+ */
+function buildBandStones(w, p) {
+  const { Manifold } = w;
+  if (p.band.coverage === "none") {
+    return { addMetal: null, cutSeats: null, stones: [], stoneVolume: 0 };
+  }
+
+  const d = p.band.size;
+  const kB = taperFor(p);
+  const ri = p.innerDia / 2;
+  const promien = (u) => ri + p.thickness * (kB ? kB(u).t : 1);
+
+  // Kamienie siadaja na promieniu szyny, a rozstaw liczymy po srodkowej.
+  const rMid = promien(0.5) * 0.985;
+  const krok = Math.asin(Math.min(0.5, (d * 0.56) / rMid)) * 2;
+  const pelny = p.band.coverage === "full";
+  const n = Math.max(3, Math.floor((pelny ? Math.PI * 2 : Math.PI) / krok));
+
+  let metal = null, seats = null;
+  const stones = [];
+  const addM = (m) => { metal = metal ? metal.add(m) : m; };
+
+  for (let i = 0; i < n; i++) {
+    // Pelny obwod liczymy od godziny dwunastej w obie strony, polowe tylko
+    // po gorze, zeby dol szyny zostal gladki i dal sie chwycic przy zmianie
+    // rozmiaru.
+    const a = pelny
+      ? Math.PI / 2 + (i / n) * Math.PI * 2
+      : Math.PI / 2 - Math.PI / 2 + ((i + 0.5) / n) * Math.PI;
+    const odchyl = Math.abs(((a - Math.PI / 2 + Math.PI * 3) % (Math.PI * 2)) - Math.PI);
+    const u = 1 - odchyl / Math.PI;
+    // Kamien siada NIECO PONIZEJ powierzchni szyny. Postawiony dokladnie na
+    // niej wystaje poza obrys obraczki i zaczepia o wszystko, a przy okazji
+    // wyglada jak doklejony.
+    const ro2 = promien(u) - Math.min(0.22, d * 0.12);
+    const x = Math.cos(a) * ro2, y = Math.sin(a) * ro2;
+
+    const maly = stoneSolid(w, "round", d);
+    stones.push(maly.solid.rotate([-90, 0, 0]).rotate([0, 0, (a / DEG) - 90]).translate([x, y, 0]));
+
+    const cut = seatCutter(w, "round", d).rotate([-90, 0, 0]).rotate([0, 0, (a / DEG) - 90])
+      .translate([x, y, 0]);
+    seats = seats ? seats.add(cut) : cut;
+
+    if (p.band.setting === "pave") {
+      // Promien MUSI byc wziety z profilu na wysokosci kuleczki, a nie ze
+      // szczytu szyny. Szyna polokragla opada ku krawedziom, wiec kuleczka
+      // postawiona na promieniu szczytu wisi obok metalu i bryla rozpada sie
+      // na kilkadziesiat czesci. Widac to w ujemnym `genus`, nie na renderze.
+      const kk = kB ? kB(u) : { w: 1, t: 1 };
+      const off = Math.min(d * 0.56, (p.width * kk.w) / 2 - 0.16);
+      const rad = ri + (shankRadiusAt(p, off / kk.w) - ri) * kk.t - 0.2;
+      for (const s of [-1, 1]) {
+        addM(Manifold.sphere(0.28, 14)
+          .translate([Math.cos(a) * rad, Math.sin(a) * rad, s * off]));
+      }
+    }
+  }
+
+  return {
+    addMetal: metal, cutSeats: seats, stones,
+    stoneVolume: stoneSolid(w, "round", d).solid.volume(),
+  };
+}
+
+/**
+ * Halo: wieniec drobnych kamieni WOKOL korony.
+ *
+ * Buduje sie go w ukladzie korony, czyli rondysta kamienia centralnego na
+ * z = 0, tafla w gore. Cala grupa jedzie potem tym samym przeksztalceniem
+ * co korona, wiec nie trzeba jej ustawiac osobno.
+ *
+ * Liczba kamieni NIE jest parametrem. Wynika z obwodu wienca podzielonego
+ * przez srednice kamienia: to jest ta sama arytmetyka, ktora robi jubiler
+ * przy stole, a zostawienie jej klientowi konczy sie albo dziura w wiencu,
+ * albo kamieniami zachodzacymi na siebie.
+ */
+function buildHalo(w, p, stone, girdleR) {
+  const { Manifold, CrossSection } = w;
+  const d = p.halo.size;
+  const luz = 0.18;                                // odstep wienca od rondysty
+  const rW = girdleR + luz + d / 2;                // promien, na ktorym siedza kamienie
+  const n = Math.max(8, Math.floor((Math.PI * 2 * rW) / (d * 1.06)));
+
+  // Plyta wienca: pierscien metalu z otworem na kamien centralny. Otwor musi
+  // byc mniejszy od rondysty, inaczej kamien centralny nie ma na czym usiasc,
+  // a wieniec wisi na samych lapkach.
+  const kolo = (r) => smoothCircle(r, 64);
+  const rZewn = rW + d / 2 + 0.34;
+  const rWewn = Math.max(0.4, girdleR - 0.12);
+  const grubosc = Math.max(0.9, d * 0.72);
+  const plyta = Manifold.extrude(
+    CrossSection.ofPolygons([ccw(kolo(rZewn)), ccw(kolo(rWewn)).reverse()]),
+    grubosc,
+  ).translate([0, 0, -grubosc + stone.girdleH * 0.5]);
+
+  let metal = plyta;
+  let seats = null;
+  const stones = [];
+  const zK = stone.girdleH * 0.5 - 0.06;           // rondysta kamyka wienca
+
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const x = Math.cos(a) * rW, y = Math.sin(a) * rW;
+
+    const maly = stoneSolid(w, "round", d);
+    stones.push(maly.solid.translate([x, y, zK]));
+
+    const cut = seatCutter(w, "round", d).translate([x, y, zK]);
+    seats = seats ? seats.add(cut) : cut;
+
+    // Kuleczki trzymajace, po dwie na kamien, na zewnetrznej krawedzi wienca.
+    for (const s of [-1, 1]) {
+      const b = a + s * (Math.PI / n) * 0.82;
+      metal = metal.add(Manifold.sphere(0.26, 12)
+        .translate([Math.cos(b) * (rW + d * 0.42), Math.sin(b) * (rW + d * 0.42), zK + 0.1]));
+    }
+  }
+
+  return { metal, seats, stones, count: n, stoneVolume: stones.length ? stoneSolid(w, "round", d).solid.volume() : 0 };
+}
+
+/** Okrag jako lista punktow. Uzywany tam, gdzie potrzebny jest przekroj z otworem. */
+function smoothCircle(r, n) {
+  return Array.from({ length: n }, (_, i) => {
+    const a = (i / n) * Math.PI * 2;
+    return [Math.cos(a) * r, Math.sin(a) * r];
+  });
+}
+
 /**
  * @param {object} input parametry wedlug `params.js`
  * @param {object} [opts] `{ segments, withStones }`
@@ -654,11 +797,20 @@ export async function buildRing(input, opts = {}) {
   // liczy sie go z objetosci razy gestosc, a nie z szerokosci kamienia.
   // Zbieramy je zawsze, takze gdy podglad kamieni jest wylaczony.
   const stoneVolumesMm3 = { center: 0, side: 0 };
+  let haloSeats = null;
 
   // Korona i kamien lezyskuja na godzinie dwunastej, czyli w osi +Y.
   const place = (m) => m.rotate([-90, 0, 0]).translate([0, ro, 0]);
 
-  if (p.kind === "signet") {
+  if (p.kind === "band") {
+    // Obraczka: sama szyna. Kamienie, jesli sa, ida po obwodzie.
+    const b = buildBandStones(w, p);
+    if (b.addMetal) metal = metal.add(b.addMetal);
+    if (b.cutSeats) metal = metal.subtract(b.cutSeats);
+    if (opts.withStones !== false) stones.push(...b.stones);
+    stoneVolumesMm3.side = b.stoneVolume;
+    stoneVolumesMm3.sideCount = b.stones.length;
+  } else if (p.kind === "signet") {
     metal = metal.add(place(buildSignetHead(w, p)));
   } else {
     const stone = stoneSolid(w, p.stone.cut, p.stone.size);
@@ -675,6 +827,20 @@ export async function buildRing(input, opts = {}) {
       stones.push(place(stone.solid.translate([0, 0, standoff])));
     }
 
+    // Halo obejmuje korone, wiec jedzie razem z nia: tym samym obrotem
+    // i o te sama wysokosc, o ktora kosz podnosi kamien nad szyne.
+    if (p.halo.on) {
+      const girdleR = Math.max(...outlineFor(p.stone.cut, p.stone.size).map(([x, y]) => Math.hypot(x, y)));
+      const halo = buildHalo(w, p, stone, girdleR);
+      metal = metal.add(place(halo.metal.translate([0, 0, standoff])));
+      haloSeats = place(halo.seats.translate([0, 0, standoff]));
+      if (opts.withStones !== false) {
+        stones.push(...halo.stones.map((sn) => place(sn.translate([0, 0, standoff]))));
+      }
+      stoneVolumesMm3.halo = halo.stoneVolume;
+      stoneVolumesMm3.haloCount = halo.count;
+    }
+
     const side = buildSideStones(w, p);
     if (p.side.count > 0) stoneVolumesMm3.side = stoneSolid(w, "round", p.side.size).solid.volume();
     if (side.addMetal) metal = metal.add(side.addMetal);
@@ -686,6 +852,8 @@ export async function buildRing(input, opts = {}) {
       metal = metal.subtract(place(seatCutter(w, p.stone.cut, p.stone.size).translate([0, 0, standoff])));
     }
     if (side.cutSeats) metal = metal.subtract(side.cutSeats);
+    // Gniazda wienca tez po zlaczeniu, z tego samego powodu co srodkowe.
+    if (haloSeats) metal = metal.subtract(haloSeats);
     if (opts.withStones !== false) stones.push(...side.stones);
   }
 

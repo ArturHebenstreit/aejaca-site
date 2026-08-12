@@ -35,7 +35,7 @@ import { buildRing } from "../geometry/ring/build.js";
 // Nowa przegladarka niczego nie zmieniala, bo cache nie byl po jej stronie.
 // 4: kamien centralny i boczne ida osobnymi siatkami, zeby mogly miec
 // rozne materialy.
-const WORKER_VERSION = 4;
+const WORKER_VERSION = 5;
 
 /** Podglad nie potrzebuje gestosci docelowej: mniej segmentow, szybsza reakcja. */
 const PREVIEW_SEGMENTS = 64;
@@ -76,6 +76,7 @@ self.onmessage = async (e) => {
 
     self.postMessage({
       seq, ok: true, workerVersion: WORKER_VERSION, metal, stones, sideStones,
+      stoneCount: r.stones.length,
       volumeMm3: r.volumeMm3,
       massG: r.massG,
       genus: r.genus,

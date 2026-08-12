@@ -90,12 +90,28 @@ export async function ringGeometryFromParams(params) {
   }
 
   const stones = [];
-  if (r.params.kind !== "signet" && r.params.setting !== "drilled") {
+  if (r.params.kind === "band") {
+    // Obraczka wysadzana: kamieni NIE podaje klient, wynikaja z obwodu, wiec
+    // liczbe bierzemy z generatora. Wpisanie jej recznie bylo drogą do
+    // wyceny na piętnaście kamieni i wyrobu z trzydziestoma.
+    const ile = r.stoneVolumesMm3.sideCount || 0;
+    if (ile > 0) {
+      stones.push({ role: "band", cut: "round", size: r.params.band.size,
+                    volumeMm3: r.stoneVolumesMm3.side, count: ile,
+                    material: r.params.band.material });
+    }
+  } else if (r.params.kind !== "signet" && r.params.setting !== "drilled") {
     stones.push({ role: "center", cut: r.params.stone.cut, size: r.params.stone.size,
                   volumeMm3: r.stoneVolumesMm3.center, count: 1 });
     if (r.params.side.count > 0) {
       stones.push({ role: "side", cut: "round", size: r.params.side.size,
                     volumeMm3: r.stoneVolumesMm3.side, count: r.params.side.count * 2 });
+    }
+    // Wieniec halo tak samo: liczba kamieni wynika z obwodu wienca.
+    if (r.params.halo.on && r.stoneVolumesMm3.haloCount > 0) {
+      stones.push({ role: "halo", cut: "round", size: r.params.halo.size,
+                    volumeMm3: r.stoneVolumesMm3.halo, count: r.stoneVolumesMm3.haloCount,
+                    material: r.params.halo.material });
     }
   }
   return {

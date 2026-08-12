@@ -207,7 +207,11 @@ export function calculate(params, lang = "pl", rates, gemstones) {
   // ---- kamienie i zakucie ----
   let gemCost = 0, settingCost = 0, caratTotal = 0;
   for (const s of geo.stones || []) {
-    const id = s.role === "side" ? params.side?.material : params.stone?.material;
+    // Materiał wienca i obwodu przychodzi RAZEM z kamieniem, bo tam liczba
+    // kamieni wynika z geometrii, a nie z formularza. Dla centralnego
+    // i bocznych zostaje po staremu, z parametrow.
+    const id = s.material
+      || (s.role === "side" ? params.side?.material : params.stone?.material);
     const gem = gems.find((g) => g.id === id);
 
     // Kamien bez ceny w bazie nie idzie na wartosc zapasowa. Cala pozycja
@@ -219,13 +223,21 @@ export function calculate(params, lang = "pl", rates, gemstones) {
     const ct = caratFromVolume(s.volumeMm3, gem.id);
     caratTotal += ct * count;
 
-    // Kamien powierzony przez klienta wycenia sie tylko robocizna.
-    const owned = s.role === "side" ? params.side?.origin : params.stone?.origin;
+    // Kamien powierzony przez klienta wycenia sie tylko robocizna. Wieniec
+    // i obwod licza sie zawsze jako nasze: klient nie przynosi trzydziestu
+    // dobranych kamyków, a jesli przyniesie, idzie to wycena indywidualna.
+    const owned = s.role === "side" ? params.side?.origin
+      : s.role === "center" ? params.stone?.origin : "studio";
     if (owned !== "customer") gemCost += gem.basePLN * priceMulForCarat(ct) * count;
 
-    settingCost += count * (s.role === "side"
-      ? (RING_RATES.sideSettingPLN[params.side?.setting] ?? 22)
-      : (RING_RATES.settingPLN[params.setting] ?? 45));
+    // Zakucie drobnicy wycenia sie od sztuki, tak samo jak pave na ramionach:
+    // to jest ta sama robota, tylko powtorzona wiecej razy.
+    settingCost += count * (
+      s.role === "center"
+        ? (RING_RATES.settingPLN[params.setting] ?? 45)
+        : s.role === "band"
+          ? (RING_RATES.sideSettingPLN[params.band?.setting] ?? 22)
+          : (RING_RATES.sideSettingPLN[params.side?.setting] ?? 22));
   }
   cost += gemCost + settingCost;
   if (gemCost > 0) breakdown.push({ label: `${l.gems} (${caratTotal.toFixed(2)} ct)`, value: fmt(gemCost, lang) });
