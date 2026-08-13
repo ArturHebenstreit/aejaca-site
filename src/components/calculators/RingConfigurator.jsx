@@ -44,6 +44,10 @@ const L = {
     table: "Tarcza sygnetu", tableLen: "Długość tarczy", engraving: "Grawer tarczy",
     mass: "Masa metalu", circ: "Obwód", stones: "Kamieni", tri: "Trójkątów",
     massTotal: "Masa pierścionka", carats: "Karaty",
+    castingTitle: "Dodatki do pliku", sprues: "Kanał wlewowy", button: "Stopka odlewnicza",
+    stonesIn: "Kamienie w modelu",
+    castingHint: "Kanał i stopka są potrzebne, gdy odlewasz samodzielnie. Nie wchodzą do masy wyrobu ani do ceny: metal z kanału wraca po odcięciu do tygla.",
+    buttonNeedsSprue: "Stopka wymaga kanału, bo to on ją łączy z odlewem.",
     building: "Liczę bryłę…", dragHint: "Przeciągnij, żeby obrócić",
     profiles: { round: "Półokrągły", flat: "Płaski", knife: "Nożowy", comfort: "Comfort" },
     tables: { oval: "Owalna", cushion: "Poduszka", rect: "Prostokątna" },
@@ -68,6 +72,10 @@ const L = {
     table: "Signet table", tableLen: "Table length", engraving: "Table engraving",
     mass: "Metal mass", circ: "Circumference", stones: "Stones", tri: "Triangles",
     massTotal: "Ring mass", carats: "Carats",
+    castingTitle: "Additions to the file", sprues: "Sprue", button: "Casting button",
+    stonesIn: "Stones in the model",
+    castingHint: "A sprue and button are needed if you cast the piece yourself. They do not enter the mass of the piece or its price: the metal returns to the crucible once cut off.",
+    buttonNeedsSprue: "The button needs a sprue, which is what joins it to the casting.",
     building: "Building the solid…", dragHint: "Drag to rotate",
     profiles: { round: "Half-round", flat: "Flat", knife: "Knife-edge", comfort: "Comfort" },
     tables: { oval: "Oval", cushion: "Cushion", rect: "Rectangular" },
@@ -92,6 +100,10 @@ const L = {
     table: "Siegelplatte", tableLen: "Plattenlänge", engraving: "Gravur der Platte",
     mass: "Metallmasse", circ: "Umfang", stones: "Steine", tri: "Dreiecke",
     massTotal: "Ringmasse", carats: "Karat",
+    castingTitle: "Ergänzungen zur Datei", sprues: "Gusskanal", button: "Gussknopf",
+    stonesIn: "Steine im Modell",
+    castingHint: "Kanal und Knopf brauchen Sie, wenn Sie selbst gießen. Sie zählen weder zur Masse des Stücks noch zum Preis: das Metall geht nach dem Abtrennen zurück in den Tiegel.",
+    buttonNeedsSprue: "Der Knopf braucht einen Kanal, der ihn mit dem Guss verbindet.",
     building: "Körper wird berechnet…", dragHint: "Zum Drehen ziehen",
     profiles: { round: "Halbrund", flat: "Flach", knife: "Messerkante", comfort: "Comfort" },
     tables: { oval: "Oval", cushion: "Kissen", rect: "Rechteckig" },
@@ -446,6 +458,41 @@ export default function RingConfigurator({ lang = "pl" }) {
               ) : null}
             </>
           )}
+
+          {/* DODATKI DO PLIKU. Osobna sekcja, bo nie sa czescia wyrobu:
+              nie zmieniaja ani jego wygladu na palcu, ani ceny. Potrzebuje
+              ich wylacznie ten, kto sam odlewa. */}
+          <Group label={t.castingTitle} hint={t.castingHint}>
+            <div className="space-y-1.5">
+              {[
+                ["stones", t.stonesIn, false],
+                ["sprues", t.sprues, false],
+                ["button", t.button, !p.casting.sprues],
+              ].map(([id, etykieta, zablokowany]) => (
+                <label key={id}
+                  className={`flex items-center gap-2.5 rounded-sm border px-2.5 py-2 text-[13px] transition-colors ${
+                    zablokowany
+                      ? "border-white/5 bg-white/[0.01] text-neutral-600 cursor-not-allowed"
+                      : p.casting[id]
+                        ? "border-amber-400/50 bg-amber-400/10 text-amber-200 cursor-pointer"
+                        : "border-white/10 bg-white/[0.03] text-neutral-400 hover:border-white/20 cursor-pointer"
+                  }`}
+                  title={zablokowany ? t.buttonNeedsSprue : undefined}
+                >
+                  <input type="checkbox" className="accent-amber-400"
+                    checked={Boolean(p.casting[id])} disabled={zablokowany}
+                    onChange={(e) => setP((prev) => {
+                      setPresetId(null);
+                      const casting = { ...prev.casting, [id]: e.target.checked };
+                      // Stopka bez kanalu wisi w powietrzu, wiec gasnie razem z nim.
+                      if (id === "sprues" && !e.target.checked) casting.button = false;
+                      return { ...prev, casting };
+                    })} />
+                  {etykieta}
+                </label>
+              ))}
+            </div>
+          </Group>
 
           {signet && (
             <>

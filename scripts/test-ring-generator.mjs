@@ -508,7 +508,11 @@ console.log("\n14. Plik do pobrania zgadza się z wyceną");
   const { ringFiles } = await import("../chat-api/ringExport.js");
   const { unzipSync, strFromU8 } = await import("fflate");
 
-  const params = { innerDia: 17.2, alloy: "au585", taper: "tapered", width: 2.0, thickness: 1.5 };
+  // Plik BEZ kamieni, zeby porownac go wprost z objetoscia metalu, z ktorej
+  // wyszla cena. Z kamieniami plik jest wiekszy i tak ma byc: kamieni sie
+  // nie odlewa, ale w modelu do obejrzenia maja prawo byc.
+  const params = { innerDia: 17.2, alloy: "au585", taper: "tapered", width: 2.0, thickness: 1.5,
+                   casting: { stones: false } };
   const r = await ringFiles(params);
   const stl = r.files.find((f) => f.name.endsWith(".stl")).buffer;
 
@@ -530,7 +534,7 @@ console.log("\n14. Plik do pobrania zgadza się z wyceną");
   }
   const zPliku = Math.abs(v6) / 6;
 
-  const wzorzec = await buildRing(params, { segments: 96, withStones: false });
+  const wzorzec = await buildRing(params, { segments: 96 });
   const blad = Math.abs(zPliku - wzorzec.volumeMm3) / wzorzec.volumeMm3 * 100;
   if (blad < 0.05) ok(`objętość z pliku ${zPliku.toFixed(1)} mm3 zgodna z wyceną ${wzorzec.volumeMm3.toFixed(1)} mm3`);
   else bad(`plik ma inna objetosc niz wycena: ${zPliku.toFixed(1)} wobec ${wzorzec.volumeMm3.toFixed(1)} mm3, roznica ${blad.toFixed(2)} procent`);
@@ -543,6 +547,13 @@ console.log("\n14. Plik do pobrania zgadza się z wyceną");
   else bad(`3MF niekompletny, wpisy: ${Object.keys(wpisy).join(", ")}`);
   if (/unit="millimeter"/.test(model)) ok("3MF deklaruje milimetry");
   else bad("3MF nie deklaruje jednostki, slicer zgadnie skale");
+
+  // Z kamieniami plik MUSI byc wiekszy, inaczej przelacznik niczego nie robi.
+  const zKamieniami = await ringFiles({ ...params, casting: { stones: true } });
+  if (zKamieniami.triangles > r.triangles) ok(`z kamieniami plik większy: ${zKamieniami.triangles} wobec ${r.triangles} trójkątów`);
+  else bad(`przelacznik kamieni nic nie zmienia w pliku: ${zKamieniami.triangles} wobec ${r.triangles}`);
+  if (Math.abs(zKamieniami.massG - r.massG) < 1e-9) ok("masa wyrobu w obu plikach identyczna");
+  else bad(`masa rozni sie miedzy plikami: ${zKamieniami.massG} vs ${r.massG} g`);
 }
 
 // ------------------------------------------------------------
@@ -578,6 +589,64 @@ console.log("\n15. Zwężenie działa od strony głowicy");
     if (sprawdz(gora, dol)) ok(`${taper.padEnd(10)} ${opis}: głowica ${gora.toFixed(2)}, dół ${dol.toFixed(2)} mm`);
     else bad(`${taper}: sylwetka ODWROCONA, glowica ${gora.toFixed(2)}, dol ${dol.toFixed(2)} mm`);
   }
+}
+
+// ------------------------------------------------------------
+// 16. Dodatki odlewnicze nie ruszaja wyrobu
+// ------------------------------------------------------------
+// Kanal wlewowy i kamienie sa w PLIKU, ale nie sa wyrobem. Metal z kanalu
+// wraca po odcieciu do tygla, a kamieni sie nie odlewa. Gdyby ktorekolwiek
+// z nich weszlo do objetosci metalu, podnioslby sie koszt kruszcu, a z nim
+// cena, i to bez zadnego sladu w interfejsie.
+//
+// Druga rzecz, rownie cicha: kanal ma byc WTOPIONY w odlew. Postawiony obok
+// daje plik z dwoma osobnymi przedmiotami, ktory otwiera sie normalnie
+// i drukuje jako dwie lezace obok siebie bryly.
+console.log("\n16. Dodatki odlewnicze nie ruszają wyrobu");
+{
+  const baza = { innerDia: 17.2, taper: "tapered", alloy: "au585" };
+  const goly = await buildRing(baza, { segments: 64 });
+
+  for (const [opis, casting] of [
+    ["sam kanał", { sprues: true }],
+    ["kanał i stopka", { sprues: true, button: true }],
+    ["bez kamieni", { stones: false }],
+    ["wszystko naraz", { sprues: true, button: true, stones: false }],
+  ]) {
+    const r = await buildRing({ ...baza, casting }, { segments: 64 });
+    if (Math.abs(r.massG - goly.massG) < 1e-9) ok(`${opis.padEnd(15)} masa wyrobu bez zmian: ${r.massG.toFixed(3)} g`);
+    else bad(`${opis}: masa wyrobu zmienila sie na ${r.massG.toFixed(3)} g wobec ${goly.massG.toFixed(3)} g`);
+  }
+
+  // Stopka bez kanalu wisialaby w powietrzu, wiec walidacja ma ja wylaczyc.
+  const sama = validate({ casting: { button: true } });
+  if (!sama.casting.button) ok("stopka bez kanału zostaje wyłączona");
+  else bad("stopka przeszla bez kanalu, wiec wisialaby w powietrzu");
+
+  // Kanal MUSI byc wtopiony w odlew, przy kazdej sylwetce szyny.
+  for (const taper of ["none", "tapered", "cathedral", "signet"]) {
+    const r = await buildRing({ innerDia: 17.2, taper, casting: { sprues: true, button: true } }, { segments: 64 });
+    const razem = r.metal.add(r.casting);
+    const czesci = razem.decompose().length;
+    if (czesci === 1) ok(`${taper.padEnd(10)} kanał wtopiony, plik ma jedną bryłę`);
+    else bad(`${taper}: plik ma ${czesci} osobne bryly, kanal stoi obok odlewu`);
+  }
+
+  // Kanal wchodzi w NAJGRUBSZE miejsce. Przy szynie zwezanej ku glowicy
+  // najgrubszy jest dol, przy sygnetowej gora.
+  const strona = async (taper) => {
+    const r = await buildRing({ innerDia: 17.2, taper, casting: { sprues: true } }, { segments: 48 });
+    const m = r.casting.getMesh(), v = m.vertProperties;
+    let y = 0;
+    for (let i = 0; i < m.numVert; i++) y += v[i * 3 + 1];
+    return y / m.numVert;
+  };
+  const yZwezana = await strona("tapered");
+  const ySygnet = await strona("signet");
+  if (yZwezana < 0) ok(`przy szynie zwężanej kanał wchodzi od dołu (y = ${yZwezana.toFixed(1)} mm)`);
+  else bad(`kanal przy szynie zwezanej wchodzi od gory, gdzie metal jest cienszy (y = ${yZwezana.toFixed(1)})`);
+  if (ySygnet > 0) ok(`przy sylwetce sygnetowej kanał wchodzi od głowicy (y = ${ySygnet.toFixed(1)} mm)`);
+  else bad(`kanal przy sygnecie wchodzi od dolu, a tam metal jest cienszy (y = ${ySygnet.toFixed(1)})`);
 }
 
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");

@@ -204,6 +204,19 @@ export const RING_KINDS = ["ring", "signet", "band"];
 //   full  kamienie dookola, czyli eternity
 export const BAND_COVERAGE = ["none", "half", "full"];
 
+// Dodatki ODLEWNICZE. Nie sa czescia wyrobu i nie wchodza do jego masy ani
+// do ceny: kanal wlewowy odcina sie po odlaniu, a metal z niego wraca do
+// tygla. Sluza wylacznie plikowi dla kogos, kto sam odlewa.
+//
+// `stones` decyduje, czy w pliku sa BRYLY KAMIENI. Kamieni sie nie odlewa,
+// wiec przy odlewie chce sie ich zwykle nie miec, ale przy druku modelu do
+// przymiarki albo do pokazania klientowi juz tak. Domyslnie sa, bo tak
+// wyglada wyrob.
+//
+// Wyjecie kamieni NIE zmienia bryly metalu: gniazda sa wyciete niezaleznie
+// od tego, czy kamien w nich siedzi.
+export const CASTING_DEFAULTS = { sprues: false, button: false, stones: true };
+
 // Profil szyny to jej PRZEKROJ, czyli ksztalt w dloni. To jest co innego niz
 // sylwetka ogladana z boku, o ktorej decyduje ponizsze zwezenie. Katalogi
 // mieszaja te dwie rzeczy, a klient wybiera glownie sylwetke.
@@ -252,6 +265,7 @@ export const DEFAULTS = {
   setting: "prong4",
   prongDia: 0.9,
   side: { count: 0, size: 1.6, setting: "pave", material: "cz" },
+  casting: { ...CASTING_DEFAULTS },
   halo: { on: false, size: 1.4, material: "cz" },
   band: { coverage: "none", size: 1.8, setting: "pave", material: "cz" },
   signet: { table: "oval", length: 14, engraving: "none" },
@@ -272,6 +286,12 @@ export function validate(input = {}) {
   const p = { ...DEFAULTS, ...input };
   p.stone = { ...DEFAULTS.stone, ...(input.stone || {}) };
   p.halo = { ...DEFAULTS.halo, ...(input.halo || {}) };
+  p.casting = { ...CASTING_DEFAULTS, ...(input.casting || {}) };
+  p.casting.sprues = Boolean(p.casting.sprues);
+  // Stopka bez kanalu wisialaby w powietrzu: to ona jest zbiornikiem metalu,
+  // z ktorego kanal karmi odlew, wiec jedno bez drugiego nie ma sensu.
+  p.casting.button = Boolean(p.casting.button) && p.casting.sprues;
+  p.casting.stones = p.casting.stones !== false;
   p.band = { ...DEFAULTS.band, ...(input.band || {}) };
   p.side = { ...DEFAULTS.side, ...(input.side || {}) };
   p.signet = { ...DEFAULTS.signet, ...(input.signet || {}) };

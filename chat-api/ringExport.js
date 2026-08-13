@@ -118,18 +118,31 @@ export function to3MF(manifold, nazwa = "AEJaCA ring") {
  */
 export async function ringFiles(params) {
   const { buildRing } = await import("./geometry/build.js");
-  const r = await buildRing(params, { segments: SEGMENTS, withStones: false });
+  const r = await buildRing(params, { segments: SEGMENTS });
+
+  // Bryla pliku to metal, a do tego, JESLI klient je wybral, kamienie
+  // i dodatki odlewnicze. Masa i cena ida nadal z samego metalu: kanal
+  // odcina sie po odlaniu, a kamieni sie nie odlewa.
+  let bryla = r.metal;
+  if (r.casting) bryla = bryla.add(r.casting);
+  for (const kamien of r.stones) bryla = bryla.add(kamien);
 
   const rozmiar = r.params.innerDia.toFixed(1).replace(".", ",");
-  const baza = `aejaca-${r.params.kind}-${rozmiar}mm`;
+  const dodatki = [
+    r.casting ? "wlew" : null,
+    r.stones.length ? null : "bez-kamieni",
+  ].filter(Boolean);
+  // Nazwa pliku mowi, co jest w srodku. Klient, ktory pobierze dwie wersje
+  // tego samego pierscionka, inaczej nie odrozni ich bez otwierania.
+  const baza = [`aejaca-${r.params.kind}-${rozmiar}mm`, ...dodatki].join("-");
 
   return {
     massG: r.massG,
     volumeMm3: r.volumeMm3,
-    triangles: r.metal.getMesh().numTri,
+    triangles: bryla.getMesh().numTri,
     files: [
-      { name: `${baza}.stl`, buffer: toSTL(r.metal, baza) },
-      { name: `${baza}.3mf`, buffer: to3MF(r.metal, baza) },
+      { name: `${baza}.stl`, buffer: toSTL(bryla, baza) },
+      { name: `${baza}.3mf`, buffer: to3MF(bryla, baza) },
     ],
   };
 }
