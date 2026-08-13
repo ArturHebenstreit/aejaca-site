@@ -253,6 +253,33 @@ console.log("\n6. Kamienie osadzone taflą na zewnątrz");
   }
 }
 
+// KOLEJNOSC KAMIENI NA LISCIE jest umowa z podgladem i z eksportem: centralny,
+// potem wieniec, potem boczne. Kazdy z tych trzech ma w formularzu wlasny
+// material, a rozroznia sie je WYLACZNIE po pozycji na liscie. Przestawienie
+// ich nie psuje ani bryly, ani masy, ani topologii: szafirowy soliter po prostu
+// rysuje sie barwa cyrkonii z halo i nikt nie wie, dlaczego.
+{
+  const r = await buildRing({
+    innerDia: 17.2, stone: { cut: "oval", size: 7 }, setting: "prong4",
+    halo: { on: true, size: 1.4 }, width: 2.6, side: { count: 3, size: 1.4, setting: "pave" },
+  }, { segments: 48 });
+  const ileHalo = r.stoneVolumesMm3.haloCount || 0;
+  const objCentr = r.stones[0].volume();
+  const problemy = [];
+  if (Math.abs(objCentr / r.stoneVolumesMm3.center - 1) > 0.01) {
+    problemy.push(`pierwszy kamien na liscie nie jest centralnym (${objCentr.toFixed(1)} wobec ${r.stoneVolumesMm3.center.toFixed(1)} mm3)`);
+  }
+  const objHalo = r.stoneVolumesMm3.halo || 0;
+  if (r.stones.slice(1, 1 + ileHalo).some((k) => Math.abs(k.volume() / objHalo - 1) > 0.01)) {
+    problemy.push("na pozycjach wienca leza kamienie o innej objetosci");
+  }
+  const boczne = r.stones.length - 1 - ileHalo;
+  if (boczne !== 6) problemy.push(`kamieni bocznych ${boczne}, oczekiwano 6`);
+  if (problemy.length) bad(`kolejnosc kamieni: ${problemy.join("; ")}`);
+  else ok(`kolejność kamieni: centralny, ${ileHalo} w wieńcu, ${boczne} bocznych`);
+  zwolnij(r);
+}
+
 // ------------------------------------------------------------
 // 7. Kolor stopu wchodzi do masy, a nie tylko do renderu
 // ------------------------------------------------------------
@@ -631,8 +658,14 @@ console.log("\n14. Plik do pobrania zgadza się z wyceną");
   const zKamieniami = await ringFiles({ ...params, casting: { stones: true } });
   if (zKamieniami.triangles > r.triangles) ok(`z kamieniami plik większy: ${zKamieniami.triangles} wobec ${r.triangles} trójkątów`);
   else bad(`przelacznik kamieni nic nie zmienia w pliku: ${zKamieniami.triangles} wobec ${r.triangles}`);
-  if (Math.abs(zKamieniami.massG - r.massG) < 1e-9) ok("masa wyrobu w obu plikach identyczna");
-  else bad(`masa rozni sie miedzy plikami: ${zKamieniami.massG} vs ${r.massG} g`);
+  // Masy nie sa juz identyczne i tak ma byc: plik z kamieniem ma lapki
+  // ZAKUTE, a plik bez kamienia otwarte, bo pod zamknieta lapke nie da sie
+  // kamienia wlozyc. Rozni je koncowka lapki, czyli ulamek grama, i wlasnie
+  // ten rzad wielkosci tu pilnujemy. Kilka procent znaczyloby, ze zmienil sie
+  // ksztalt czegos wiekszego niz zakucie.
+  const roznicaMas = Math.abs(zKamieniami.massG / r.massG - 1) * 100;
+  if (roznicaMas < 3) ok(`masa różni się o ${roznicaMas.toFixed(2)} % (same końcówki łapek)`);
+  else bad(`masa rozni sie miedzy plikami o ${roznicaMas.toFixed(2)} procent: ${zKamieniami.massG.toFixed(3)} vs ${r.massG.toFixed(3)} g`);
 }
 
 // ------------------------------------------------------------
@@ -690,13 +723,34 @@ console.log("\n16. Dodatki odlewnicze nie ruszają wyrobu");
     ["sam kanał", { sprues: true }],
     ["kanał i stopka", { sprues: true, button: true }],
     ["kanały wewnętrzne", { sprues: true, innerSprues: true }],
-    ["bez kamieni", { stones: false }],
-    ["wszystko naraz", { sprues: true, button: true, stones: false }],
   ]) {
     const r = await buildRing({ ...baza, casting }, { segments: 64 });
-    if (Math.abs(r.massG - goly.massG) < 1e-9) ok(`${opis.padEnd(15)} masa wyrobu bez zmian: ${r.massG.toFixed(3)} g`);
+    if (Math.abs(r.massG - goly.massG) < 1e-9) ok(`${opis.padEnd(17)} masa wyrobu bez zmian: ${r.massG.toFixed(3)} g`);
     else bad(`${opis}: masa wyrobu zmienila sie na ${r.massG.toFixed(3)} g wobec ${goly.massG.toFixed(3)} g`);
     zwolnij(r);
+  }
+
+  // KAMIENIE W MODELU sa jedynym przelacznikiem, ktory MA prawo ruszyc metal,
+  // i to jest zmiana swiadoma, a nie usterka.
+  //
+  // Model bez kamieni to odlew do zakucia i lapki musza byc w nim otwarte,
+  // bo pod zamknieta lapke nie da sie wlozyc kamienia. Model z kamieniem
+  // pokazuje wyrob gotowy, wiec lapki sa docisniete. To sa dwa rozne ksztalty
+  // tej samej lapki i roznia sie objetoscia, bo zagieta jest krotsza.
+  //
+  // Roznica ma byc MALA: dotyczy koncowek lapek, a nie calego wyrobu. Kilka
+  // procent znaczyloby, ze zmienil sie ksztalt czegos wiekszego.
+  {
+    const otwarte = await buildRing({ ...baza, casting: { stones: false } }, { segments: 64 });
+    const roznica = (goly.massG / otwarte.massG - 1) * 100;
+    if (Math.abs(roznica) > 3) {
+      bad(`stan zakucia zmienia mase o ${roznica.toFixed(1)} procent, czyli o wiecej niz same koncowki lapek`);
+    } else if (!(otwarte.massG > goly.massG)) {
+      bad(`odlew z otwartymi lapkami powinien byc CIEZSZY od zakutego, a jest ${otwarte.massG.toFixed(3)} wobec ${goly.massG.toFixed(3)} g`);
+    } else {
+      ok(`otwarte łapki cięższe o ${Math.abs(roznica).toFixed(1)} % (${otwarte.massG.toFixed(3)} wobec ${goly.massG.toFixed(3)} g)`);
+    }
+    zwolnij(otwarte);
   }
 
   // Stopka i kanaly wewnetrzne bez kanalu glownego wisialyby w powietrzu.
@@ -951,11 +1005,18 @@ console.log("\n19. Kamień wchodzi do gniazda, siada i nie wypada");
   ];
 
   for (const [nazwa, cfg] of UKLADY) {
-    const r = await buildRing({ innerDia: 17.2, ...cfg }, { segments: 64 });
+    // Model z kamieniem daje nam BRYLY KAMIENI i ich polozenie. Plik bez
+    // kamieni ich nie zawiera, bo nie ma czego pokazywac, wiec bierzemy je
+    // stad i przykladamy do jednego i drugiego metalu. Polozenie jest to samo,
+    // rozni sie tylko stan lapek.
+    const zakuty = await buildRing({ innerDia: 17.2, ...cfg }, { segments: 64 });
+    // Plik do ZAKUCIA, czyli bez kamieni: lapki otwarte, kamien wchodzi z gory.
+    const r = await buildRing({ innerDia: 17.2, ...cfg, casting: { stones: false } },
+      { segments: 64, withStones: false });
     // Przy halo i eternity kamieni sa dziesiatki, a kazde sprawdzenie to trzy
     // bryle w pamieci jadra, ktorej ono samo nie oddaje. Pierwsza szostka
     // wystarczy: wszystkie powstaja tym samym kodem.
-    const proba = r.stones.slice(0, 6);
+    const proba = zakuty.stones.slice(0, 6);
     let objetosc = 0, naMiejscu = 0, nizej = 0, wyzej = 0;
     for (const k of proba) {
       objetosc += k.volume();
@@ -977,8 +1038,19 @@ console.log("\n19. Kamień wchodzi do gniazda, siada i nie wypada");
       problemy.push(`gniazdo NIE ZATRZYMUJE kamienia: po zejsciu o 0,25 mm kolizja ${proc(nizej).toFixed(2)} % wobec ${proc(naMiejscu).toFixed(2)} % na miejscu`);
     }
     if (proc(wyzej) > 0.05) problemy.push(`kamienia nie da sie wlozyc z gory, metal zachodzi na niego (${proc(wyzej).toFixed(2)} %)`);
+    // Ten sam uklad Z KAMIENIEM ma zachowywac sie ODWROTNIE od gory: lapki sa
+    // docisniete, wiec kamienia nie da sie juz wyjac. Bez tej pary sprawdzian
+    // przepuscilby model, w ktorym lapki nigdy sie nie zamykaja.
+    let trzymane = 0;
+    for (const k of proba) trzymane += kolizja(zakuty.metal, k, 0.6);
+    const trzyma = (trzymane / objetosc) * 100;
+    if (!(trzyma > 0.3)) {
+      problemy.push(`po zakuciu kamien nadal wychodzi gora (kolizja ${trzyma.toFixed(2)} %)`);
+    }
+    zwolnij(zakuty);
+
     if (problemy.length) bad(`${nazwa}: ${problemy.join("; ")}`);
-    else ok(`${nazwa.padEnd(16)} pasuje ${proc(naMiejscu).toFixed(2)} %, opór w dół ${proc(nizej).toFixed(2)} %, wolne od góry`);
+    else ok(`${nazwa.padEnd(16)} otwarte: wchodzi i siada (opór ${proc(nizej).toFixed(2)} %); zakute: trzyma (${trzyma.toFixed(2)} %)`);
     zwolnij(r);
   }
 }
