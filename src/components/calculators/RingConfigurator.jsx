@@ -12,12 +12,13 @@
 
 import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import { CUTS, SETTINGS, SIDE_SETTINGS, SHANK_PROFILES, SIGNET_TABLES, DEFAULTS, LIMITS } from "../../geometry/ring/params.js";
-import { RING_PRESETS, applyPreset } from "../../data/ringPresets.js";
+import { RING_PRESETS, PRESET_GROUPS, applyPreset } from "../../data/ringPresets.js";
 import { CASTING_ALLOYS, METAL_COLORS, colorsFor } from "../../data/castingAlloys.js";
 import { GEMSTONES } from "../../pricing/jewelryConfig.js";
 import { gemOptics } from "../../data/gemOptics.js";
 import { RING_SIZES } from "../../data/ringSizes.js";
 import CutIcon from "./jewelry/CutIcon.jsx";
+import PresetIcon from "./jewelry/PresetIcon.jsx";
 
 const RingPreview3D = lazy(() => import("./jewelry/RingPreview3D.jsx"));
 // Kwota wiazaca schodzi z serwera, wiec komponent i tak czeka na siec.
@@ -208,6 +209,9 @@ export default function RingConfigurator({ lang = "pl" }) {
   const t = L[lang] || L.pl;
   const [p, setP] = useState(DEFAULTS);
   const [presetId, setPresetId] = useState(null);
+  // Otwarta grupa wzorow. Zaczynamy od pierscionkow z jednym kamieniem, bo
+  // po nie siega wiekszosc odwiedzajacych.
+  const [grupa, setGrupa] = useState(PRESET_GROUPS[0].id);
   const [mesh, setMesh] = useState(null);
   const [info, setInfo] = useState(null);
   const [busy, setBusy] = useState(true);
@@ -291,11 +295,33 @@ export default function RingConfigurator({ lang = "pl" }) {
 
         {/* ---------- parametry ---------- */}
         <div className="border-b lg:border-b-0 lg:border-r border-white/10 p-5">
+          {/* Wybor wzoru jest DWUPOZIOMOWY. Szesnascie kafelkow obok siebie
+              tworzy sciane, w ktorej nie widac zadnej roznicy, a klient
+              i tak najpierw wie, czy chce pierscionek z kamieniem, obraczke,
+              czy sygnet. Piktogramy rysuja sie z tych samych parametrow,
+              z ktorych powstaje bryla, wiec nie moga obiecac czegos innego. */}
           <Group label={t.preset} hint={aktywny ? nameOf(aktywny.note, lang) : null}>
-            <Seg value={presetId} onChange={(id) => {
-              const wzor = RING_PRESETS.find((x) => x.id === id);
-              if (wzor) { setPresetId(id); setP((prev) => applyPreset(wzor, prev)); }
-            }} options={RING_PRESETS.map((x) => ({ id: x.id, label: nameOf(x.label, lang) }))} />
+            <Seg value={grupa} onChange={setGrupa}
+              options={PRESET_GROUPS.map((g) => ({ id: g.id, label: nameOf(g.label, lang) }))} />
+
+            <div className="mt-2 grid grid-cols-3 gap-1.5">
+              {RING_PRESETS.filter((x) => x.group === grupa).map((wzor) => (
+                <button
+                  key={wzor.id} type="button"
+                  onClick={() => { setPresetId(wzor.id); setP((prev) => applyPreset(wzor, prev)); }}
+                  aria-pressed={wzor.id === presetId}
+                  title={nameOf(wzor.note, lang)}
+                  className={`flex flex-col items-center gap-1 rounded-sm border px-1 py-2 transition-colors ${
+                    wzor.id === presetId
+                      ? "border-amber-400/55 bg-amber-400/10 text-amber-300"
+                      : "border-white/10 bg-white/[0.03] text-neutral-400 hover:border-white/25 hover:text-neutral-200"
+                  }`}
+                >
+                  <PresetIcon preset={wzor} size={40} />
+                  <span className="text-[10px] leading-tight text-center">{nameOf(wzor.label, lang)}</span>
+                </button>
+              ))}
+            </div>
           </Group>
 
           <Group label={t.kind}>

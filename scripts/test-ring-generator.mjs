@@ -20,7 +20,7 @@ import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, ker
 import { CUTS, SETTINGS, SEAT, validate } from "../src/geometry/ring/params.js";
 import { CASTING_ALLOYS, METAL_COLORS, colorsFor, densityFor } from "../src/data/castingAlloys.js";
 import { GEMSTONES } from "../src/pricing/jewelryConfig.js";
-import { RING_PRESETS, applyPreset } from "../src/data/ringPresets.js";
+import { RING_PRESETS, PRESET_GROUPS, applyPreset } from "../src/data/ringPresets.js";
 import { gemOptics, GEM_OPTICS } from "../src/data/gemOptics.js";
 
 const PROG_OBJETOSC = 2.0;      // procent
@@ -418,6 +418,19 @@ console.log("\n11. Presety budują poprawne bryły");
     } catch (e) {
       bad(`${preset.id}: ${e.message}`);
     }
+  }
+
+  // Kazdy wzor musi nalezec do jednej z grup, inaczej po prostu zniknie
+  // z interfejsu: lista rysuje wylacznie te, ktore pasuja do otwartej grupy.
+  const grupy = new Set(PRESET_GROUPS.map((g) => g.id));
+  const bezGrupy = RING_PRESETS.filter((x) => !grupy.has(x.group));
+  if (!bezGrupy.length) ok(`wszystkie ${RING_PRESETS.length} wzory należą do znanej grupy`);
+  else bad(`wzory bez grupy, niewidoczne w interfejsie: ${bezGrupy.map((x) => x.id).join(", ")}`);
+
+  for (const g of PRESET_GROUPS) {
+    const ile = RING_PRESETS.filter((x) => x.group === g.id).length;
+    if (ile > 0) ok(`grupa "${g.id}" ma ${ile} wzorów`);
+    else bad(`grupa "${g.id}" jest pusta, wiec jej zakladka nic nie pokazuje`);
   }
 
   // Preset nie moze ruszac metalu ani rozmiaru, bo to wybor klienta, a nie
