@@ -325,6 +325,26 @@ function seatCutter(w, cutId, sizeMm, zamkniete = false) {
       .translate([0, 0, sizeMm * 2]);
     wlot = duzy.solid.intersect(noz);
     duzy.solid.delete?.(); noz.delete?.();
+
+    // NAD TAFLA MUSI BYC POWIETRZE, i to nie jest kosmetyka.
+    //
+    // Sam ksztalt kamienia wystarczyl wszedzie tam, gdzie kamien wystawal
+    // ponad metal. Przy pave jest odwrotnie: kuleczki zakucia sa wyzsze od
+    // calego kamyka, wiec gniazdo wyciete dokladnie w jego obrysie konczylo
+    // sie POD nimi i zostawalo ZAMKNIETYM PECHERZEM w srodku szyny.
+    // Zmierzone: dwie jamy po 0,66 mm3 przy pierwszym kamieniu z kazdej
+    // strony. Objetosc, masa i wyglad byly bez zarzutu, a plik zawieral
+    // pustke, ktora slicer zglasza jako blad, i gniazdo, ktore nie bylo
+    // otwarte.
+    //
+    // Nad tafla kamienia nie ma czego trzymac, bo zakucie chwyta rondyste,
+    // wiec slup o przekroju tafli mozna wybrac az na wylot i zadne zakucie
+    // na tym nie traci.
+    const tbl = Math.max(CUTS[cutId].table || 0, 0.42);
+    const slup = Manifold.extrude(
+      CrossSection.ofPolygons([ccw(scalePts(outlineFor(cutId, sizeMm + 2 * luz), tbl))]),
+      sizeMm * 4);
+    wlot = zlacz(wlot, slup);
   } else {
     wlot = Manifold.extrude(
       CrossSection.ofPolygons([ccw(outlineFor(cutId, sizeMm + 2 * luz))]), sizeMm * 2);
@@ -524,36 +544,67 @@ function vprongSolid(w, pts, deg, prongR, base, top, zamkniete = false) {
   // Ramiona obejmuja szpic na dlugosci mniej wiecej trzech srednic preta.
   const ramie = Math.max(0.8, prongR * 3.0);
   const n = pts.length;
-  const idx = [iTip];
-  for (const kier of [-1, 1]) {
+
+  // Punkt obrysu odlegly o `dl` od szpica, mierzac PO OBRYSIE.
+  const wzdluz = (kier, dl) => {
     let dlug = 0, i = iTip;
-    const lista = [];
-    while (dlug < ramie && lista.length < n / 3) {
+    for (let k = 0; k < n / 2; k++) {
       const j = ((i + kier) % n + n) % n;
       dlug += Math.hypot(pts[j][0] - pts[i][0], pts[j][1] - pts[i][1]);
-      lista.push(j);
       i = j;
+      if (dlug >= dl) break;
     }
-    idx.push(...lista);
-  }
+    return i;
+  };
 
-  let solid = null;
-  for (const i of idx) {
+  // SLUPKI STOJA DWA, po jednym na kazdym ramieniu V, a nie po jednym na
+  // kazdym wierzcholku obrysu.
+  //
+  // Poprzednia wersja stawiala pret w KAZDYM punkcie obrysu miedzy szpicem
+  // a koncem ramienia. Obrys markizy jest tam gesty, wiec przy szpicu ladowalo
+  // ich kilkanascie, jeden w drugim, i wygladalo to jak narosl, a nie jak
+  // lapka. Tak tez zostalo zglszone: "krapy sa nalozone na siebie".
+  //
+  // Prawdziwa lapka V to dwa prety schodzace sie w szpicu i spinajaca je
+  // ponizej sciezka metalu. Tyle wystarczy, zeby kamien nie wyszedl bokiem,
+  // a szpic byl osloniety.
+  const idx = [wzdluz(-1, ramie), wzdluz(1, ramie)];
+
+  // Punkt na obrysie odsuniety na zewnatrz o `d`, razem z jego normalna.
+  const naZewnatrz = (i, d) => {
     const prev = pts[(i - 1 + n) % n], next = pts[(i + 1) % n];
     const tx = next[0] - prev[0], ty = next[1] - prev[1];
     const L = Math.hypot(tx, ty) || 1;
     // Obrys biegnie przeciwnie do zegara, wiec normalna zewnetrzna to (ty, -tx).
     const nx = ty / L, ny = -tx / L;
-    const x = pts[i][0] + nx * prongR * 0.6, y = pts[i][1] + ny * prongR * 0.6;
+    return { x: pts[i][0] + nx * d, y: pts[i][1] + ny * d, nx, ny };
+  };
+
+  let solid = null;
+  const dodaj = (m) => { if (m) solid = solid ? zlacz(solid, m) : m; };
+
+  const stopy = [];
+  for (const i of idx) {
+    const { x, y, nx, ny } = naZewnatrz(i, prongR * 0.6);
+    stopy.push([x, y, base]);
     // Zakuta lapka V klania sie do srodka, czyli jej koniec przesuwa sie
     // wzdluz normalnej do wewnatrz i lezy na koronie.
     const dx = zamkniete ? -nx * prongR * 1.15 : 0;
     const dy = zamkniete ? -ny * prongR * 1.15 : 0;
-    const slup = tubeAlong(w,
+    dodaj(tubeAlong(w,
       [[x, y, base], [x, y, base + (top - base) * 0.62], [x + dx, y + dy, top]],
-      [prongR * 0.92, prongR * 0.8, prongR * 0.66]);
-    solid = solid ? zlacz(solid, slup) : slup;
+      [prongR * 0.92, prongR * 0.8, prongR * 0.66]));
   }
+
+  // Spinka: metal biegnacy od jednej stopy do drugiej DOOKOLA szpica, nisko,
+  // tuz nad koszem. To ona robi z dwoch pretow litere V i to ona oslania
+  // naroze, w ktorym kamien jest najciensszy.
+  const szpic = naZewnatrz(iTip, prongR * 0.6);
+  const zSpinki = base + (top - base) * 0.30;
+  dodaj(tubeAlong(w,
+    [stopy[0], [szpic.x, szpic.y, zSpinki], stopy[1]],
+    [prongR * 0.85, prongR * 0.85, prongR * 0.85]));
+
   return solid;
 }
 
@@ -585,25 +636,54 @@ function buildCrown(w, p, stone) {
   // Gorny promien MUSI siegac rondysty, bo na nim staja lapki. Wezszy kosz
   // zostawia je w powietrzu i bryla rozpada sie na kawalki.
   const girdleR = Math.max(...pts.map(([x, y]) => Math.hypot(x, y)));
+  const girdleMin = Math.min(...pts.map(([x, y]) => Math.hypot(x, y)));
   const basketH = SEAT.aboveGalleryMm + stone.pavH * 0.45;
-  // Gorny promien kosza siega POZA rondyste o grubosc scianki. Rowno
-  // z rondysta zostawia po wycieciu gniazda scianke o szesciu setnych
-  // milimetra, ktora nie przetrwa ani odlewu, ani zakuwania.
-  let basket = Manifold.cylinder(basketH, girdleR * 0.62, girdleR + 0.22, 48, false)
-    .translate([0, 0, -basketH]);
+
+  // KOSZ IDZIE ZA OBRYSEM SZLIFU, a nie za jego najwiekszym promieniem.
+  //
+  // Byl tu walec o promieniu rownym polowie DLUZSZEJ osi kamienia i to jest
+  // blad, ktory widac na pierwszy rzut oka przy kazdym szlifie wydluzonym.
+  // Markiza osiem na cztery milimetry dostawala pod siebie tarcze o srednicy
+  // osmiu milimetrow, czyli dwa razy szersza od samego kamienia. Na renderze
+  // wygladalo to jak kamien polozony na monecie, a nie osadzony w koszu,
+  // i tak tez zostalo zglszone: "pierscionek ma jakas dziwna tarcze".
+  // To samo dotyczylo kaboszonu w kasecie, gdzie tarcza wystawala spod rantu.
+  //
+  // Obrys odsuniety na zewnatrz o `scianka` daje kosz, ktory wszedzie ma te
+  // sama grubosc scianki, wiec przy markizie jest waski, a przy poduszce
+  // pelny. Odsuniecie idzie przez `offset`, nie przez skalowanie: skalowanie
+  // dodaje przy szpicu kilka razy wiecej metalu niz na boku.
+  const scianka = 0.3;
+  const csRondysta = CrossSection.ofPolygons([ccw(pts)]);
+  let csKosz = csRondysta;
+  try {
+    const o = csRondysta.offset(scianka, "Round", 2, 16);
+    if (o && !o.isEmpty()) csKosz = o; else o?.delete?.();
+  } catch { /* jadro bez offsetu: zostaje sam obrys */ }
+
+  // Dol kosza jest wezszy, bo pod kamieniem nie ma czego podpierac, a metal
+  // tam tylko wazy. Gora musi siegac poza rondyste, inaczej wlot gniazda
+  // zostawia scianke o kilku setnych milimetra.
+  let basket = loftLevels(w, csKosz, [[-basketH, 0.58, 0.58], [0, 1, 1]]);
 
   // Okna galerii. Bez nich kosz jest pelna bryla i caly wyrob wyglada jak
   // guzik, a do tego wazy o kilkadziesiat procent za duzo. Zostawiamy cztery
   // slupki miedzy oknami, wiec kosz dalej trzyma sie kupy.
+  //
+  // Grubosc okna liczymy z NAJKROTSZEGO promienia obrysu, nie z najdluzszego.
+  // Przy markizie okno o szerokosci polowy dlugiej osi wycielo by caly kosz
+  // wszerz i zostalyby z niego dwa kawalki.
   const winH = basketH * 0.62;
-  for (let k = 0; k < 4; k++) {
-    basket = basket.subtract(
-      Manifold.cube([girdleR * 2.4, girdleR * 0.62, winH], true)
-        .rotate([0, 0, 45 + 90 * k])
-        .translate([0, 0, -basketH + winH / 2 + basketH * 0.12]),
-    );
+  const winT = Math.max(0.35, girdleMin * 0.62);
+  for (const kat of [45, 135]) {
+    basket = odejmij(basket,
+      Manifold.cube([girdleR * 2.6, winT, winH], true)
+        .rotate([0, 0, kat])
+        .translate([0, 0, -basketH + winH / 2 + basketH * 0.12]));
   }
   add(basket);
+  if (csKosz !== csRondysta) csKosz.delete?.();
+  csRondysta.delete?.();
 
   if (p.setting === "bezel") {
     // Kaseta: scianka dookola rondysty, zawinieta nad kamien.
@@ -614,8 +694,15 @@ function buildCrown(w, p, stone) {
     // technicznie, ale i sugeruje, ze kamien mozna wyjac bez rozgiecia oprawy.
     //
     // Wnetrze wycina dopiero gniazdo, wiec tu zostawiamy pelny obrys.
-    const wall = 0.5;
-    const h = stone.girdleH + stone.crownH * 0.35 + 0.4;
+    // Rant ma OBRAMOWAC kamien, a nie go przykryc.
+    //
+    // Byla tu scianka 0,5 mm siegajaca na 35 procent wysokosci korony. Po
+    // odjeciu kamienia zostawal z tego szeroki kolnierz lezacy na koronie
+    // i to on czytal sie jako "grube zamkniecie dookola". Kaseta jubilerska
+    // zachodzi na kamien o kilka dziesiatych milimetra, tyle, zeby go
+    // przytrzymac, i wlasnie tyle tu zostaje.
+    const wall = 0.4;
+    const h = stone.girdleH + stone.crownH * 0.20 + 0.3;
     const outer = CrossSection.ofPolygons([ccw(outlineFor(p.stone.cut, size + 2 * wall))]);
     const trzon = h * 0.7 + SEAT.aboveGalleryMm;
     add(Manifold.extrude(outer, trzon).translate([0, 0, -SEAT.aboveGalleryMm]));
@@ -709,8 +796,32 @@ function buildSideStones(w, p) {
   const gr = (u) => p.thickness * (kBok ? kBok(u).t : 1);
   const ro = p.innerDia / 2 + gr(0);
   const rMid = p.innerDia / 2 + gr(0) * 0.62;
-  const step = Math.asin(Math.min(0.45, (size * 0.62) / rMid)) * 2;
-  const start = 0.34;
+
+  // ODSUNIECIE OD KORONY liczy sie z jej rzeczywistej szerokosci, nie z kata
+  // wzietego z sufitu.
+  //
+  // Stalo tu `start = 0.34` radiana, czyli okolo trzech milimetrow po obwodzie
+  // niezaleznie od tego, co stoi na godzinie dwunastej. Kosz kamienia
+  // szesciomilimetrowego siega po obwodzie na 3,5 mm od osi, wiec pierwszy
+  // kamien na szynie WCHODZIL w mocowanie korony. Widac to na kazdym renderze
+  // solitera z pave i tak wlasnie zostalo zglszone.
+  //
+  // Korona jest obrocona tak, ze jej lokalna os X biegnie po obwodzie
+  // pierscionka, wiec to wlasnie polowa zasiegu obrysu w tej osi wyznacza,
+  // gdzie moze zaczac sie szyna. Do tego dochodzi scianka kosza i szczelina,
+  // ktora klient ustawia sam.
+  const polKorony = p.setting === "drilled"
+    ? 0
+    : Math.max(...outlineFor(p.stone.cut, p.stone.size).map(([x]) => Math.abs(x)))
+      + (p.setting === "bezel" ? 0.4 : 0.3)
+      + (p.halo.on ? p.halo.size + 0.4 : 0);
+  const luzOdKorony = Number.isFinite(p.side.gap) ? p.side.gap : 0.35;
+  const rozsuniecie = Number.isFinite(p.side.spread) ? p.side.spread : 0;
+
+  // Stycznosc kamieni plus rozsuniecie, oba mierzone po obwodzie i dopiero
+  // potem zamieniane na kat.
+  const step = Math.asin(Math.min(0.45, (size * 0.62) / rMid)) * 2 + rozsuniecie / rMid;
+  const start = (polKorony + luzOdKorony + size / 2) / rMid;
   let metal = null, seats = null;
   const stones = [];
   const addM = (m) => { metal = metal ? zlacz(metal, m) : m; };
@@ -1421,6 +1532,37 @@ function buildCasting(w, p) {
 }
 
 /**
+ * Bryla bez SKORUP O ZEROWEJ OBJETOSCI.
+ *
+ * Gdy dwie powierzchnie zetkna sie stycznie, jadro potrafi domknac to
+ * zetkniecie jako osobna, zerowej grubosci skorupe. Widzialem to juz przy
+ * kulach na wspolliniowym torze i zalatalem u zrodla, ale to nie jest jedno
+ * miejsce w kodzie, tylko wlasnosc dzialan na siatkach: przy oprawie kanalowej
+ * wychodza cztery takie odpryski wielkosci pieciu setnych milimetra i to przy
+ * JEDNYM konkretnym ustawieniu suwaka, a przy sasiednim juz nie.
+ *
+ * Nie da sie wiec temu zapobiec dobierajac wymiary, bo klient dobiera je sam.
+ * Odpryski usuwamy na koniec, przed policzeniem objetosci. Prog jest przy tym
+ * celowo mikroskopijny: chodzi o to, zeby wyrzucic to, co nie jest geometria,
+ * a nie o to, zeby zamiesc pod dywan bryle rozpadnieta na kawalki. Tamto ma
+ * dalej wychodzic w tescie.
+ */
+function bezSmieci(m) {
+  if (!m) return m;
+  const czesci = m.decompose();
+  const zdrowe = czesci.filter((c) => Math.abs(c.volume()) > 0.002);
+  if (!zdrowe.length || zdrowe.length === czesci.length) {
+    for (const c of czesci) c.delete?.();
+    return m;
+  }
+  for (const c of czesci) if (!zdrowe.includes(c)) c.delete?.();
+  let sklejone = zdrowe[0];
+  for (let i = 1; i < zdrowe.length; i++) sklejone = zlacz(sklejone, zdrowe[i]);
+  m.delete?.();
+  return sklejone;
+}
+
+/**
  * @param {object} input parametry wedlug `params.js`
  * @param {object} [opts] `{ segments, withStones }`
  * @returns {Promise<{metal, stones, params, volumeMm3, massG, patternVolumeMm3}>}
@@ -1533,6 +1675,7 @@ export async function buildRing(input, opts = {}) {
     else for (const k of side.stones) k.delete?.();
   }
 
+  metal = bezSmieci(metal);
   const volumeMm3 = metal.volume();
   const alloyDef = CASTING_ALLOYS[p.alloy] || CASTING_ALLOYS.ag925;
 
@@ -1563,7 +1706,7 @@ export async function buildRing(input, opts = {}) {
   // Kanal i stopka wracaja OSOBNO. Gdyby weszly do `metal`, podniosly by
   // objetosc o kilkadziesiat procent, a wraz z nia mase i cene, za metal,
   // ktory po odcieciu wraca do tygla.
-  const casting = p.casting.sprues ? buildCasting(w, p) : null;
+  const casting = p.casting.sprues ? bezSmieci(buildCasting(w, p)) : null;
 
   return {
     params: p,

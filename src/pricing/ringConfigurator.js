@@ -111,18 +111,44 @@ const OUTPUTS = ["mesh", "step", "cast", "finished"];
 const LBL = {
   pl: { metal: "Kruszec", cast: "Odlew i obróbka", gems: "Kamienie", setting: "Zakucie",
         file: "Przygotowanie pliku", step: "Konwersja do STEP", engrave: "Grawer",
-        pattern: "Wzorzec po kompensacji skurczu", total: "Razem" },
+        pattern: "Wzorzec po kompensacji skurczu", workshop: "Pracownia", total: "Razem" },
   en: { metal: "Metal", cast: "Casting and finishing", gems: "Stones", setting: "Setting",
         file: "File preparation", step: "STEP conversion", engrave: "Engraving",
-        pattern: "Pattern after shrinkage compensation", total: "Total" },
+        pattern: "Pattern after shrinkage compensation", workshop: "Workshop", total: "Total" },
   de: { metal: "Edelmetall", cast: "Guss und Finish", gems: "Steine", setting: "Fassen",
         file: "Dateiaufbereitung", step: "STEP-Konvertierung", engrave: "Gravur",
-        pattern: "Modell nach Schwundkompensation", total: "Gesamt" },
+        pattern: "Modell nach Schwundkompensation", workshop: "Werkstatt", total: "Gesamt" },
 };
 
 const fmt = (pln, lang) =>
   `${pln.toLocaleString(lang === "pl" ? "pl-PL" : lang === "de" ? "de-DE" : "en-US",
     { maximumFractionDigits: 0 })} zł`;
+
+/**
+ * Domkniecie rozpiski: marza pracowni i suma, ktora ZGADZA SIE z cena na
+ * kafelku.
+ *
+ * Rozpiska konczyla sie na sumie KOSZTOW, a kafelek pokazywal cene, czyli te
+ * sume powiekszona o marze. Roznica wynosila rowne czterdziesci procent i przy
+ * gotowym wyrobie byla to roznica miedzy 6 727 zl a 9 418 zl, czyli prawie trzy
+ * tysiace zlotych rozjazdu na dokumencie, ktory ma tlumaczyc cene. Klient,
+ * ktory to zsumuje, ma prawo uznac, ze cena jest wzieta z sufitu.
+ *
+ * Praca pracowni jest osobnym wierszem, bo nim jest: to nie jest doliczony
+ * narzut do materialu, tylko projekt, obsluga zamowienia i gwarancja.
+ */
+function domknij(cost, breakdown, l, lang) {
+  const pricing = applyPricing(cost, CONFIG.BASE_MARGIN, 0, 1);
+  return {
+    pricing,
+    breakdown: [
+      ...breakdown,
+      { label: l.workshop, value: fmt(cost * CONFIG.BASE_MARGIN, lang) },
+      { divider: true },
+      { label: l.total, value: fmt(pricing.unitGrosze / 100, lang), bold: true },
+    ],
+  };
+}
 
 
 /**
@@ -163,12 +189,11 @@ export function calculate(params, lang = "pl", rates, gemstones) {
       cost += RING_RATES.stepPremiumPLN;
       breakdown.push({ label: l.step, value: fmt(RING_RATES.stepPremiumPLN, lang) });
     }
-    const pricing = applyPricing(cost, CONFIG.BASE_MARGIN, 0, 1);
+    const d = domknij(cost, breakdown, l, lang);
     return {
-      type: "calculated", ...pricing, qty: 1, output,
+      type: "calculated", ...d.pricing, qty: 1, output,
       massG: geo.massG, caratTotal: 0,
-      breakdown: [...breakdown, { divider: true },
-        { label: l.total, value: fmt(cost, lang), bold: true }],
+      breakdown: d.breakdown,
     };
   }
 
@@ -200,12 +225,11 @@ export function calculate(params, lang = "pl", rates, gemstones) {
   }
 
   if (output === "cast") {
-    const pricing = applyPricing(cost, CONFIG.BASE_MARGIN, 0, 1);
+    const d = domknij(cost, breakdown, l, lang);
     return {
-      type: "calculated", ...pricing, qty: 1, output,
+      type: "calculated", ...d.pricing, qty: 1, output,
       massG: geo.massG, patternMassG, caratTotal: 0,
-      breakdown: [...breakdown, { divider: true },
-        { label: l.total, value: fmt(cost, lang), bold: true }],
+      breakdown: d.breakdown,
     };
   }
 
@@ -248,11 +272,10 @@ export function calculate(params, lang = "pl", rates, gemstones) {
   if (gemCost > 0) breakdown.push({ label: `${l.gems} (${caratTotal.toFixed(2)} ct)`, value: fmt(gemCost, lang) });
   if (settingCost > 0) breakdown.push({ label: l.setting, value: fmt(settingCost, lang) });
 
-  const pricing = applyPricing(cost, CONFIG.BASE_MARGIN, 0, 1);
+  const d = domknij(cost, breakdown, l, lang);
   return {
-    type: "calculated", ...pricing, qty: 1, output,
+    type: "calculated", ...d.pricing, qty: 1, output,
     massG: geo.massG, patternMassG, caratTotal,
-    breakdown: [...breakdown, { divider: true },
-      { label: l.total, value: fmt(cost, lang), bold: true }],
+    breakdown: d.breakdown,
   };
 }

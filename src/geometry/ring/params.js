@@ -388,6 +388,19 @@ export const LIMITS = {
   stoneSize: [2.0, 10.0],
   sideCount: [0, 5],
   sideSize: [1.0, 4.5],
+  /**
+   * Odsuniecie PIERWSZEGO kamienia bocznego od korony, liczone jako szczelina
+   * metalu miedzy koszem a rondysta tego kamienia.
+   *
+   * Do tej pory pierwszy kamien stal pod stalym katem 0,34 radiana od
+   * godziny dwunastej, czyli okolo trzech milimetrow po obwodzie. Kosz
+   * kamienia szesciomilimetrowego ma polowe szerokosci wieksza niz to,
+   * wiec pierwszy kamien na szynie WCHODZIL w korone. Teraz kat liczy sie
+   * z rzeczywistej szerokosci korony, a to jest szczelina ponad nia.
+   */
+  sideGap: [0.0, 3.0],
+  /** Dodatkowy odstep MIEDZY kamieniami na szynie, ponad ich stycznosc. */
+  sideSpread: [0.0, 2.0],
   haloSize: [0.9, 2.2],
   bandSize: [1.2, 3.2],
   signetLength: [9.0, 20.0],
@@ -406,7 +419,7 @@ export const DEFAULTS = {
   stone: { cut: "round", size: 6.5, material: "cz", origin: "stock" },
   setting: "prong4",
   prongDia: 0.9,
-  side: { count: 0, size: 1.6, setting: "pave", material: "cz" },
+  side: { count: 0, size: 1.6, setting: "pave", material: "cz", gap: 0.35, spread: 0.0 },
   casting: { ...CASTING_DEFAULTS },
   halo: { on: false, size: 1.4, material: "cz" },
   band: { coverage: "none", size: 1.8, setting: "pave", material: "cz" },
@@ -509,6 +522,8 @@ export function validate(input = {}) {
     : LIMITS.sideSize[1];
   p.side.size = clamp(num(p.side.size, 1.6), [LIMITS.sideSize[0], Math.min(LIMITS.sideSize[1], maxBok)]);
   if (!SIDE_SETTINGS[p.side.setting]) p.side.setting = "pave";
+  p.side.gap = clamp(num(p.side.gap, DEFAULTS.side.gap), LIMITS.sideGap);
+  p.side.spread = clamp(num(p.side.spread, DEFAULTS.side.spread), LIMITS.sideSpread);
 
   // Halo to wieniec drobnych kamieni WOKOL korony, wiec musi byc na czym go
   // oprzec. Przy briolecie nie ma korony, tylko kabłąk, a przy oprawie

@@ -1055,5 +1055,112 @@ console.log("\n19. Kamień wchodzi do gniazda, siada i nie wypada");
   }
 }
 
+// ------------------------------------------------------------
+console.log("\n20. Kamienie na szynie nie wchodzą w koronę");
+// ------------------------------------------------------------
+// Pierwszy kamien na szynie stal pod stalym katem 0,34 radiana od godziny
+// dwunastej, czyli okolo trzech milimetrow po obwodzie, NIEZALEZNIE od tego,
+// co stoi na glowicy. Kamien centralny 6,5 mm ma sam promien rondysty 3,25 mm,
+// a kosz jeszcze wiecej, wiec pierwszy kamien z pave siedzial w mocowaniu
+// korony. Bryla byla przy tym poprawna: gniazda po prostu wycinaly sie jedno
+// w drugim, wiec ani objetosc, ani `genus` niczego nie zglaszaly.
+//
+// Sprawdzian jest najprostszy z mozliwych i wlasnie dlatego dobry: DWA
+// KAMIENIE NIE MOGA ZAJMOWAC TEGO SAMEGO MIEJSCA.
+{
+  const UKLADY = [
+    ["pavé 6,5 mm", { stone: { cut: "round", size: 6.5 }, setting: "prong4",
+                      side: { count: 4, size: 1.6, setting: "pave", material: "cz" } }],
+    ["trylogia", { stone: { cut: "round", size: 6.5 }, setting: "prong4",
+                   side: { count: 1, size: 3.5, setting: "prong", material: "cz" } }],
+    ["kanałowa", { stone: { cut: "oval", size: 7 }, setting: "prong6",
+                   side: { count: 4, size: 1.6, setting: "channel", material: "cz" } }],
+    ["halo z pavé", { stone: { cut: "round", size: 6 }, setting: "prong4",
+                      halo: { on: true, size: 1.3, material: "cz" },
+                      side: { count: 4, size: 1.4, setting: "pave", material: "cz" } }],
+    ["markiza z pavé", { stone: { cut: "marquise", size: 8 }, setting: "vprong",
+                         side: { count: 3, size: 1.4, setting: "pave", material: "cz" } }],
+  ];
+
+  for (const [nazwa, params] of UKLADY) {
+    const r = await buildRing({ innerDia: 17.2, ...params }, { segments: 64 });
+    // Kolejnosc listy jest umowa: centralny, potem wieniec, potem boczne.
+    const centralny = r.stones[0];
+    let najgorsza = 0;
+    for (let i = 1; i < r.stones.length; i++) {
+      const wspolne = centralny.intersect(r.stones[i]);
+      najgorsza = Math.max(najgorsza, wspolne.volume());
+      wspolne.delete?.();
+    }
+    // Rozsuniecie o zero musi wystarczyc: szczelina jest w parametrze `gap`,
+    // a nie w nadziei, ze kamien sie zmiesci.
+    if (najgorsza > 0.001) {
+      bad(`${nazwa}: kamień boczny wchodzi w centralny na ${najgorsza.toFixed(3)} mm3`);
+    } else if (ileCzesci(r.metal) !== 1) {
+      bad(`${nazwa}: bryla rozpadla sie na kawalki`);
+    } else {
+      ok(`${nazwa.padEnd(14)} kamienie się nie przenikają, jedna bryła, ${r.massG.toFixed(2)} g`);
+    }
+    zwolnij(r);
+  }
+
+  // Suwak odsuniecia musi cos ROBIC, i to w dobra strone.
+  const blisko = await buildRing({ innerDia: 17.2, stone: { cut: "round", size: 6.5 }, setting: "prong4",
+    side: { count: 4, size: 1.6, setting: "pave", material: "cz", gap: 0 } }, { segments: 64 });
+  const daleko = await buildRing({ innerDia: 17.2, stone: { cut: "round", size: 6.5 }, setting: "prong4",
+    side: { count: 4, size: 1.6, setting: "pave", material: "cz", gap: 1.5 } }, { segments: 64 });
+  const promien = (r) => {
+    const k = r.stones[1].boundingBox();
+    return Math.abs((k.min[0] + k.max[0]) / 2);       // odleglosc od osi glowicy po obwodzie
+  };
+  if (promien(daleko) > promien(blisko) + 1.0) {
+    ok(`odsunięcie przesuwa pierwszy kamień z ${promien(blisko).toFixed(2)} na ${promien(daleko).toFixed(2)} mm`);
+  } else {
+    bad(`suwak odsuniecia nic nie zmienia: ${promien(blisko).toFixed(2)} wobec ${promien(daleko).toFixed(2)} mm`);
+  }
+  zwolnij(blisko); zwolnij(daleko);
+}
+
+// ------------------------------------------------------------
+console.log("\n21. Łapka V to DWA pręty, a nie narośl na szpicu");
+// ------------------------------------------------------------
+// Poprzednia wersja stawiala pret w kazdym punkcie obrysu miedzy szpicem
+// a koncem ramienia. Obrys markizy jest tam gesty, wiec przy szpicu ladowalo
+// ich kilkanascie, jeden w drugim, i zlewaly sie w jedna narosl. Bryla byla
+// poprawna, masa wiarygodna, a zakucie nie do wykonania.
+//
+// Liczymy slupki na przekroju ponad rondysta: kazde ramie V ma byc osobnym
+// pretem, wiec markiza z dwoma szpicami daje CZTERY, a gruszka z jednym DWA.
+// Zlanie sie ich w jedno spadnie tu natychmiast.
+{
+  const w = await kernel();
+  for (const [nazwa, cut, size, szpice] of [
+    ["markiza", "marquise", 8, 2],
+    ["gruszka", "pear", 7, 1],
+    ["serce", "heart", 6.5, 1],
+  ]) {
+    // Mierzymy MODEL ODLEWNICZY, czyli ten z lapkami otwartymi. Lapka zakuta
+    // ma sie nad kamieniem schodzic i jej zlanie sie u gory jest wtedy
+    // poprawne, wiec ten sam pomiar znaczylby na niej co innego.
+    const r = await buildRing(
+      { innerDia: 17.2, stone: { cut, size }, setting: "vprong", casting: { stones: false } },
+      { segments: 64 });
+    const bb = r.metal.boundingBox();
+    const roGlowicy = 17.2 / 2 + 1.6;
+    let zle = null;
+    for (const frac of [0.6, 0.85]) {
+      const y = bb.max[1] - (bb.max[1] - roGlowicy) * (1 - frac);
+      const noz = w.Manifold.cube([40, 0.08, 40], true).translate([0, y, 0]);
+      const plaster = r.metal.intersect(noz);
+      const ile = ileCzesci(plaster);
+      noz.delete?.(); plaster.delete?.();
+      if (ile !== szpice * 2) zle = `na wysokosci ${(frac * 100).toFixed(0)} % korony ${ile} pretow zamiast ${szpice * 2}`;
+    }
+    if (zle) bad(`${nazwa}: ${zle}`);
+    else ok(`${nazwa.padEnd(8)} ${szpice * 2} osobne pręty, po dwa na każdy szpic`);
+    zwolnij(r);
+  }
+}
+
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");
 process.exit(failed ? 1 : 0);
