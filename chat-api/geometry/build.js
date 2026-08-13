@@ -854,6 +854,30 @@ function buildHalo(w, p, stone, girdleR) {
       metal = metal.add(Manifold.sphere(0.26, 12)
         .translate([Math.cos(b) * (rW + d * 0.42), Math.sin(b) * (rW + d * 0.42), zK + 0.1]));
     }
+
+  }
+
+  // GALERIA, czyli wybranie od spodu.
+  //
+  // Wieniec byl pelna tarcza i to jest blad rzeczowy, nie kosmetyczny.
+  // Pelny metal pod kamieniami odcina im swiatlo od dolu, a wlasnie stamtad
+  // bierze sie blask halo: kamien oswietlony tylko z gory jest szary.
+  // Do tego tarcza wazy kilkadziesiat procent wiecej, a to sa dziesiate
+  // grama razy cena zlota.
+  //
+  // Okien NIE wiercimy miedzy kamieniami, bo miedzy gniazdami zostaje
+  // dwadziescia kilka setnych milimetra i kazde takie okno rozcina wieniec
+  // na kawalki. Sprawdzilem to: bryla rozpadala sie na dwie czesci.
+  // Wybieramy wiec pierscien od spodu i zostawiamy plyte, w ktorej siedza
+  // gniazda.
+  const plytaH = 0.55;
+  if (grubosc > plytaH + 0.2) {
+    const kolo2 = (r) => smoothCircle(r, 48);
+    const wybranie = Manifold.extrude(
+      CrossSection.ofPolygons([ccw(kolo2(rZewn - 0.3)), ccw(kolo2(rWewn + 0.25)).reverse()]),
+      grubosc - plytaH,
+    ).translate([0, 0, -grubosc + stone.girdleH * 0.5]);
+    metal = metal.subtract(wybranie);
   }
 
   return { metal, seats, stones, count: n, stoneVolume: stones.length ? stoneSolid(w, "round", d).solid.volume() : 0 };
@@ -928,6 +952,44 @@ function buildCasting(w, p) {
   // kolejnosci: najdalej od odlewu najpozniej.
   const start = promien - 0.8;
   let solid = odcinek(dlugosc, rKanal * 0.62, rKanal, start);
+
+  // Kanaly WEWNETRZNE biegna w swietle pierscionka i wpinaja szyne w kanal
+  // glowny w dwoch dodatkowych miejscach.
+  //
+  // Robi sie tak z dwoch powodow. Metal ma krotsza droge do przeciwleglej
+  // strony obraczki, wiec front zalewania nie spotyka sie po drugiej stronie
+  // ze zimnym czolem, co daje zimny zgrzew, czyli szew widoczny dopiero po
+  // wypolerowaniu. Drugi powod jest prozaiczny: cienka obraczka na jednym
+  // kanale drga przy zalewaniu i potrafi sie wygiac.
+  //
+  // Odcina sie je razem z kanalem glownym, wiec tak samo nie wchodza do masy
+  // wyrobu.
+  if (p.casting.innerSprues) {
+    const rInner = 0.85;
+    // Wchodza w szyne pod katem, mniej wiecej na godzinie czwartej i osmej
+    // liczac od kanalu glownego, zeby nie zbiegly sie z nim w jednym punkcie.
+    for (const strona of [-1, 1]) {
+      const kat = znak * (Math.PI / 2) + strona * 1.15 * znak;
+      const wejscie = [Math.cos(kat) * (ri + 0.4), Math.sin(kat) * (ri + 0.4), 0];
+      const zbieg = [0, znak * (promien + 2.2), 0];
+
+      // Pret jako ciag kul: jadro nie zamiata po odcinku, a kule zachodzace
+      // na siebie daja gladki walek i same zaokraglaja koncowki.
+      // Kul musi byc tyle, zeby zachodzily na siebie z zapasem. Przy dwunastu
+      // na kilkanascie milimetrow toru odstep dorownywal ich promieniowi
+      // i pret wygladal jak sznur paciorkow.
+      const dl = Math.hypot(zbieg[0] - wejscie[0], zbieg[1] - wejscie[1]);
+      const N = Math.max(12, Math.ceil(dl / (rInner * 0.75)));
+      for (let i = 0; i < N; i++) {
+        const t = i / (N - 1);
+        solid = solid.add(Manifold.sphere(rInner * (1 - 0.15 * t), 14).translate([
+          wejscie[0] + (zbieg[0] - wejscie[0]) * t,
+          wejscie[1] + (zbieg[1] - wejscie[1]) * t,
+          0,
+        ]));
+      }
+    }
+  }
 
   if (p.casting.button) {
     // Przejscie stozkowe, zeby przekroj nie zmienial sie skokiem: ostry

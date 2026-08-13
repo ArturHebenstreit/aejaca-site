@@ -211,7 +211,7 @@ export const BAND_COVERAGE = ["none", "half", "full"];
 //
 // Wyjecie kamieni NIE zmienia bryly metalu: gniazda sa wyciete niezaleznie
 // od tego, czy kamien w nich siedzi.
-export const CASTING_DEFAULTS = { sprues: false, button: false, stones: true };
+export const CASTING_DEFAULTS = { sprues: false, innerSprues: false, button: false, stones: true };
 
 // Profil szyny to jej PRZEKROJ, czyli ksztalt w dloni. To jest co innego niz
 // sylwetka ogladana z boku, o ktorej decyduje ponizsze zwezenie. Katalogi
@@ -316,6 +316,9 @@ export function validate(input = {}) {
   // Stopka bez kanalu wisialaby w powietrzu: to ona jest zbiornikiem metalu,
   // z ktorego kanal karmi odlew, wiec jedno bez drugiego nie ma sensu.
   p.casting.button = Boolean(p.casting.button) && p.casting.sprues;
+  // Kanaly wewnetrzne wpinaja sie w kanal glowny, wiec bez niego nie maja
+  // do czego dochodzic i zostalyby w pliku jako dwa pretki w powietrzu.
+  p.casting.innerSprues = Boolean(p.casting.innerSprues) && p.casting.sprues;
   p.casting.stones = p.casting.stones !== false;
   p.band = { ...DEFAULTS.band, ...(input.band || {}) };
   p.side = { ...DEFAULTS.side, ...(input.side || {}) };

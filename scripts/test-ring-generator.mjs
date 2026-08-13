@@ -18,6 +18,31 @@
 
 import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, taperFor, buildShank, buildGallery } from "../src/geometry/ring/build.js";
 import { CUTS, SETTINGS, SEAT, validate } from "../src/geometry/ring/params.js";
+
+/**
+ * Zwolnienie bryly po pomiarze.
+ *
+ * Jadro trzyma bryly w pamieci WebAssembly i NIE oddaje jej samo: zbieracz
+ * smieci JavaScriptu o tej pamieci nie wie. Przy kilkudziesieciu bryłach
+ * w jednym przebiegu proces wywracal sie z "memory access out of bounds",
+ * i to w losowym miejscu, bo zalezalo od tego, ktora bryla przelala szale.
+ */
+function ileCzesci(m) {
+  // `decompose` tworzy NOWA bryle na kazda czesc skladowa i one tez zostaja
+  // w pamieci jadra. Przy szesnastu ukladach po kilkanascie czesci to setki
+  // nieoddanych brył, czyli szybsza droga do wyczerpania pamieci niz same
+  // pierscionki. Liczymy i od razu zwalniamy.
+  const czesci = m.decompose();
+  const ile = czesci.length;
+  for (const c of czesci) c.delete?.();
+  return ile;
+}
+
+function zwolnij(r) {
+  r?.metal?.delete?.();
+  r?.casting?.delete?.();
+  for (const s of r?.stones || []) s?.delete?.();
+}
 import { CASTING_ALLOYS, METAL_COLORS, colorsFor, densityFor } from "../src/data/castingAlloys.js";
 import { GEMSTONES } from "../src/pricing/jewelryConfig.js";
 import { RING_PRESETS, PRESET_GROUPS, applyPreset } from "../src/data/ringPresets.js";
@@ -415,6 +440,7 @@ console.log("\n11. Presety budują poprawne bryły");
       const sensowna = r.massG > 0.4 && r.massG < 40;
       if (spojna && sensowna) ok(`${preset.id.padEnd(11)} ${r.massG.toFixed(2)} g, genus ${g}`);
       else bad(`${preset.id}: genus ${g}, masa ${r.massG.toFixed(2)} g`);
+      zwolnij(r);
     } catch (e) {
       bad(`${preset.id}: ${e.message}`);
     }
@@ -463,6 +489,7 @@ console.log("\n12. Kamienie boczne trzymają się zwężonej szyny");
       const g = r.metal.genus();
       if (g >= 0) ok(`${taper.padEnd(10)} ${setting.padEnd(6)} bryła spójna, genus ${g}`);
       else bad(`${taper} ${setting}: bryla rozsypana, genus ${g}`);
+      zwolnij(r);
     }
   }
 }
@@ -623,26 +650,47 @@ console.log("\n16. Dodatki odlewnicze nie ruszają wyrobu");
   for (const [opis, casting] of [
     ["sam kanał", { sprues: true }],
     ["kanał i stopka", { sprues: true, button: true }],
+    ["kanały wewnętrzne", { sprues: true, innerSprues: true }],
     ["bez kamieni", { stones: false }],
     ["wszystko naraz", { sprues: true, button: true, stones: false }],
   ]) {
     const r = await buildRing({ ...baza, casting }, { segments: 64 });
     if (Math.abs(r.massG - goly.massG) < 1e-9) ok(`${opis.padEnd(15)} masa wyrobu bez zmian: ${r.massG.toFixed(3)} g`);
     else bad(`${opis}: masa wyrobu zmienila sie na ${r.massG.toFixed(3)} g wobec ${goly.massG.toFixed(3)} g`);
+    zwolnij(r);
   }
 
-  // Stopka bez kanalu wisialaby w powietrzu, wiec walidacja ma ja wylaczyc.
-  const sama = validate({ casting: { button: true } });
+  // Stopka i kanaly wewnetrzne bez kanalu glownego wisialyby w powietrzu.
+  const sama = validate({ casting: { button: true, innerSprues: true } });
   if (!sama.casting.button) ok("stopka bez kanału zostaje wyłączona");
   else bad("stopka przeszla bez kanalu, wiec wisialaby w powietrzu");
+  if (!sama.casting.innerSprues) ok("kanały wewnętrzne bez głównego zostają wyłączone");
+  else bad("kanaly wewnetrzne przeszly bez glownego, wiec nie maja do czego dojsc");
+
+  // Kanaly wewnetrzne musza dodac metalu i zostac czescia jednej bryly.
+  const bezWewn = await buildRing({ ...baza, casting: { sprues: true } }, { segments: 64 });
+  const zWewn = await buildRing({ ...baza, casting: { sprues: true, innerSprues: true } }, { segments: 64 });
+  // Unie tez sa bryłami i tez zajmuja pamiec jadra, wiec trzymamy je
+  // w zmiennych i zwalniamy, zamiast gubic w wyrazeniu.
+  const ukladA = bezWewn.metal.add(bezWewn.casting);
+  const ukladB = zWewn.metal.add(zWewn.casting);
+  const przyrost = ukladB.volume() - ukladA.volume();
+  if (przyrost > 5) ok(`kanały wewnętrzne dokładają ${przyrost.toFixed(0)} mm3 układu wlewowego`);
+  else bad(`kanaly wewnetrzne nic nie dodaly: ${przyrost.toFixed(1)} mm3`);
+  if (ileCzesci(ukladB) === 1) ok("kanały wewnętrzne wtopione w szynę i w kanał główny");
+  else bad("kanaly wewnetrzne stoja luzem w swietle pierscionka");
+  ukladA.delete?.(); ukladB.delete?.();
+  zwolnij(bezWewn); zwolnij(zWewn);
 
   // Kanal MUSI byc wtopiony w odlew, przy kazdej sylwetce szyny.
   for (const taper of ["none", "tapered", "cathedral", "signet"]) {
     const r = await buildRing({ innerDia: 17.2, taper, casting: { sprues: true, button: true } }, { segments: 64 });
     const razem = r.metal.add(r.casting);
-    const czesci = razem.decompose().length;
+    const czesci = ileCzesci(razem);
+    razem.delete?.();
     if (czesci === 1) ok(`${taper.padEnd(10)} kanał wtopiony, plik ma jedną bryłę`);
     else bad(`${taper}: plik ma ${czesci} osobne bryly, kanal stoi obok odlewu`);
+    zwolnij(r);
   }
 
   // Kanal wchodzi w NAJGRUBSZE miejsce. Przy szynie zwezanej ku glowicy
@@ -687,9 +735,10 @@ console.log("\n17. Gniazda nie rozcinają wyrobu");
   for (const [opis, cfg] of uklady) {
     for (const taper of ["none", "tapered"]) {
       const r = await buildRing({ innerDia: 17.2, taper, ...cfg }, { segments: 64 });
-      const czesci = r.metal.decompose().length;
+      const czesci = ileCzesci(r.metal);
       if (czesci === 1) ok(`${opis.padEnd(13)} ${taper.padEnd(8)} jedna bryła, ${r.massG.toFixed(2)} g`);
       else bad(`${opis} ${taper}: wyrob rozpadl sie na ${czesci} czesci`);
+      zwolnij(r);
     }
   }
 
