@@ -8,7 +8,8 @@ import { staleRates, ageHours, STARTUP_REFETCH_AFTER_H, fetchCronExpressions, mo
 import { createHash } from "crypto";
 import { getSystemPrompt, detectHotLead } from "./context.js";
 import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages } from "./gmail.js";
-import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken } from "./orders.js";
+import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken, ringGeometryFromParams, RING_CALCULATORS } from "./orders.js";
+import { OUTPUT_AVAILABLE } from "./pricing/ringConfigurator.js";
 import { createQuote, priceQuote, getQuoteByRef, convertQuoteToOrder, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
 import { extraRevisionGrosze, CAD_CONFIG } from "./pricing/cadDesign.js";
 import { GEMSTONES } from "./pricing/jewelryConfig.js";
@@ -972,6 +973,12 @@ app.post("/api/price", (req, res, next) => {
       geometry = rows[0].geometry || null;
     }
 
+    // Bryla kreatora NIE przychodzi z przegladarki. Masa decyduje o cenie,
+    // wiec liczymy ja tu, tym samym kodem, ktorego uzywa podglad.
+    if (RING_CALCULATORS.has(calculator) && !geometry) {
+      geometry = await ringGeometryFromParams(params);
+    }
+
     const rates = calculator.startsWith("jewelry_") ? await currentMetalRates() : null;
     const gemstones = rates ? await currentGemstones(rates.pln_per_eur) : null;
     const item = priceItem({ calculator, params, lang, geometry, scale, rates, gemstones });
@@ -996,6 +1003,77 @@ app.post("/api/price", (req, res, next) => {
       return res.status(status).json({ error: e.message, code: e.code });
     }
     console.error("[price] unexpected:", e);
+    res.status(500).json({ error: "Wycena chwilowo niedostepna" });
+  }
+});
+
+
+// ------------------------------------------------------------
+// KREATOR PIERSCIONKOW: cztery wyjscia z jednej bryly
+// ------------------------------------------------------------
+// Klient wybiera miedzy plikiem, odlewem i gotowym wyrobem, wiec musi widziec
+// wszystkie kwoty naraz. Cztery osobne zapytania znaczylyby cztery przebiegi
+// jadra geometrycznego, po kilkaset milisekund kazdy, na te sama bryle.
+// Liczymy ja raz i wyceniamy z niej kazde wyjscie.
+//
+// To NIE jest druga sciezka wyceny: kazde wyjscie idzie przez to samo
+// `priceItem`, co pojedyncze zapytanie. Rozni je wylacznie to, ze bryla
+// powstaje jeden raz.
+app.post("/api/price/ring", express.json({ limit: "256kb" }), async (req, res) => {
+  const ip = extractIP(req);
+  if (!checkPriceRate(ip)) return res.status(429).json({ error: "Za duzo zapytan, sprobuj za chwile" });
+
+  const lang = String(req.body?.lang || "pl");
+  const params = req.body?.params;
+  if (!params || typeof params !== "object") {
+    return res.status(400).json({ error: "Brak parametrow", code: "bad_params" });
+  }
+
+  try {
+    const geometry = await ringGeometryFromParams(params);
+    const rates = await currentMetalRates();
+    const gemstones = await currentGemstones(rates.pln_per_eur);
+
+    const items = {};
+    // Lista wyjsc pochodzi z rdzenia wyceny, wiec wlaczenie STEP-a w jednym
+    // miejscu wystarczy, zeby pojawil sie i w cenie, i w interfejsie.
+    for (const output of Object.keys(OUTPUT_AVAILABLE).filter((o) => OUTPUT_AVAILABLE[o])) {
+      try {
+        items[output] = priceItem({
+          calculator: "jewelry_ring_config",
+          params: { ...params, output },
+          lang, geometry, rates, gemstones,
+        });
+      } catch (e) {
+        // Wyjscie bez ceny nie moze zabrac pozostalych. Kamien spoza cennika
+        // blokuje gotowy wyrob, ale plik i odlew wyceniamy normalnie.
+        items[output] = e instanceof PricingError
+          ? { unavailable: e.code, message: e.message }
+          : { unavailable: "error" };
+      }
+    }
+
+    const wycenione = Object.values(items).filter((i) => i.lineGrosze);
+    const limit = pool && wycenione.length
+      ? await checkQuarterlyLimit(pool, Math.max(...wycenione.map((i) => i.lineGrosze)))
+      : null;
+
+    res.json({
+      ok: true,
+      items,
+      geometry: {
+        massG: Number(geometry.massG.toFixed(3)),
+        volumeMm3: Number(geometry.volumeMm3.toFixed(1)),
+        patternVolumeMm3: Number(geometry.patternVolumeMm3.toFixed(1)),
+        stones: geometry.stones.map((s) => ({ role: s.role, count: s.count, size: s.size })),
+      },
+      capacity: limit && { ok: limit.ok, remainingPLN: Math.round(limit.remainingGrosze / 100) },
+    });
+  } catch (e) {
+    if (e instanceof PricingError) {
+      return res.status(400).json({ error: e.message, code: e.code });
+    }
+    console.error("[price/ring] unexpected:", e);
     res.status(500).json({ error: "Wycena chwilowo niedostepna" });
   }
 });

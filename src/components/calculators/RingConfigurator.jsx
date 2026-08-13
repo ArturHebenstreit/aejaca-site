@@ -5,22 +5,38 @@
 // watek roboczy tym samym kodem, ktory na serwerze zbuduje kupowany plik,
 // wiec podglad i wyrob nie moga sie rozjechac.
 //
-// CENY TU NIE MA i to nie jest przeoczenie. Masa decyduje o koszcie kruszcu,
-// wiec kwota musi pochodzic z serwera, a nie z przegladarki, ktora jest o
-// jedno `fetch` od podmiany. Odczyty ponizej sa informacja o geometrii.
+// CENY TU NIE LICZYMY i to nie jest przeoczenie. Masa decyduje o koszcie
+// kruszcu, wiec kwota musi pochodzic z serwera, a nie z przegladarki, ktora
+// jest o jedno `fetch` od podmiany. Odczyty ponizej sa informacja o geometrii,
+// a kwote wiazaca pobiera `RingPriceBox` z `/api/price/ring`.
 
 import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import { CUTS, SETTINGS, SIDE_SETTINGS, SHANK_PROFILES, SIGNET_TABLES, DEFAULTS, LIMITS } from "../../geometry/ring/params.js";
-import { CASTING_ALLOYS } from "../../data/castingAlloys.js";
+import { RING_PRESETS, applyPreset } from "../../data/ringPresets.js";
+import { CASTING_ALLOYS, METAL_COLORS, colorsFor } from "../../data/castingAlloys.js";
+import { GEMSTONES } from "../../pricing/jewelryConfig.js";
+import { gemOptics } from "../../data/gemOptics.js";
 import { RING_SIZES } from "../../data/ringSizes.js";
 import CutIcon from "./jewelry/CutIcon.jsx";
 
 const RingPreview3D = lazy(() => import("./jewelry/RingPreview3D.jsx"));
+// Kwota wiazaca schodzi z serwera, wiec komponent i tak czeka na siec.
+// Doladowanie go osobno nie opoznia podgladu.
+const RingPriceBox = lazy(() => import("./jewelry/RingPriceBox.jsx"));
 
 const L = {
   pl: {
     kind: "Typ wyrobu", ring: "Pierścionek", signet: "Sygnet",
-    size: "Rozmiar", alloy: "Metal", profile: "Profil szyny",
+    size: "Rozmiar", alloy: "Metal", color: "Kolor metalu", profile: "Profil szyny",
+    gem: "Kamień centralny", sideGem: "Kamienie boczne",
+    preset: "Zacznij od wzoru", taper: "Sylwetka szyny",
+    band: "Obrączka", halo: "Halo", haloSize: "Kamienie halo", on: "Tak", off: "Nie",
+    coverage: "Kamienie na obwodzie", bandSize: "Średnica kamieni",
+    coverages: { none: "Brak", half: "Górna połowa", full: "Dookoła" },
+    eternityWarn: "Pierścionka z kamieniami dookoła nie da się później zwęzić ani rozciągnąć: nie ma gładkiego odcinka, w który jubiler mógłby wejść.",
+      tapers: { none: "Prosta", tapered: "Zwężana", cathedral: "Katedralna" },
+    rhodiumNote: "Białe złoto rodujemy, bo bez powłoki ma lekko ciepły odcień. Rodowanie zużywa się i po latach odnawia się je jak lakier.",
+    gemGroups: { precious: "Szlachetne", lab: "Hodowane i syntetyczne", semi: "Półszlachetne i ozdobne" },
     width: "Szerokość szyny", thickness: "Grubość szyny",
     cut: "Szlif kamienia centralnego", setting: "Zakucie", stoneSize: "Rozmiar kamienia",
     side: "Kamienie na szynie, na stronę", sideSetting: "Oprawa kamieni bocznych",
@@ -34,7 +50,16 @@ const L = {
   },
   en: {
     kind: "Piece", ring: "Ring", signet: "Signet",
-    size: "Size", alloy: "Metal", profile: "Shank profile",
+    size: "Size", alloy: "Metal", color: "Metal colour", profile: "Shank profile",
+    gem: "Centre stone", sideGem: "Side stones",
+    preset: "Start from a design", taper: "Shank silhouette",
+    band: "Band", halo: "Halo", haloSize: "Halo stones", on: "Yes", off: "No",
+    coverage: "Stones around the band", bandSize: "Stone diameter",
+    coverages: { none: "None", half: "Upper half", full: "All the way round" },
+    eternityWarn: "A ring with stones all the way round cannot be sized later: there is no plain stretch for a jeweller to work on.",
+      tapers: { none: "Straight", tapered: "Tapered", cathedral: "Cathedral" },
+    rhodiumNote: "White gold is rhodium plated, since the bare alloy has a faintly warm tint. The plating wears and is renewed over the years, much like a lacquer.",
+    gemGroups: { precious: "Precious", lab: "Lab-grown and synthetic", semi: "Semi-precious and decorative" },
     width: "Shank width", thickness: "Shank thickness",
     cut: "Centre stone cut", setting: "Setting", stoneSize: "Stone size",
     side: "Side stones, per side", sideSetting: "Side stone setting",
@@ -48,7 +73,16 @@ const L = {
   },
   de: {
     kind: "Stück", ring: "Ring", signet: "Siegelring",
-    size: "Größe", alloy: "Metall", profile: "Schienenprofil",
+    size: "Größe", alloy: "Metall", color: "Metallfarbe", profile: "Schienenprofil",
+    gem: "Hauptstein", sideGem: "Seitensteine",
+    preset: "Mit einem Entwurf beginnen", taper: "Schienensilhouette",
+    band: "Ring", halo: "Halo", haloSize: "Halo-Steine", on: "Ja", off: "Nein",
+    coverage: "Steine am Umfang", bandSize: "Steindurchmesser",
+    coverages: { none: "Keine", half: "Obere Hälfte", full: "Rundum" },
+    eternityWarn: "Ein Ring mit Steinen rundum lässt sich später nicht ändern: es fehlt der glatte Abschnitt zum Ansetzen.",
+      tapers: { none: "Gerade", tapered: "Verjüngt", cathedral: "Kathedrale" },
+    rhodiumNote: "Weißgold wird rhodiniert, da die blanke Legierung einen leicht warmen Ton hat. Die Schicht nutzt sich ab und wird über die Jahre erneuert, ähnlich wie ein Lack.",
+    gemGroups: { precious: "Edelsteine", lab: "Laborgezüchtet und synthetisch", semi: "Halbedel und dekorativ" },
     width: "Schienenbreite", thickness: "Schienenstärke",
     cut: "Schliff des Hauptsteins", setting: "Fassung", stoneSize: "Steingröße",
     side: "Steine auf der Schiene, je Seite", sideSetting: "Fassung der Seitensteine",
@@ -103,6 +137,41 @@ function Seg({ options, value, onChange }) {
   );
 }
 
+// Kamieni jest dwadziescia kilka, wiec przyciski rozlalyby sie na pol ekranu.
+// Lista rozwijana grupuje je tak, jak dzieli je rynek, a kropka obok pokazuje
+// barwe, ktora zobaczysz na modelu. Barwa i nazwa ida z tego samego zrodla,
+// wiec nie moga sie rozjechac.
+const GEM_GROUPS = [
+  { key: "precious", ids: GEMSTONES.filter((g) => g.precious).map((g) => g.id) },
+  { key: "lab",      ids: GEMSTONES.filter((g) => g.lab).map((g) => g.id) },
+  { key: "semi",     ids: GEMSTONES.filter((g) => !g.precious && !g.lab && !g.custom && g.id !== "none").map((g) => g.id) },
+];
+const GEM_BY_ID = Object.fromEntries(GEMSTONES.map((g) => [g.id, g]));
+
+function GemSelect({ value, onChange, lang, groupLabels }) {
+  const o = gemOptics(value);
+  return (
+    <div className="flex items-center gap-2">
+      <span aria-hidden="true" className="w-3.5 h-3.5 shrink-0 rounded-full border border-black/40"
+        style={{ background: o?.color || "#888" }} />
+      <select
+        value={value} onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-sm border border-white/10 bg-white/[0.03] px-2 py-1.5 text-[13px] text-neutral-200"
+      >
+        {GEM_GROUPS.map((g) => (
+          <optgroup key={g.key} label={groupLabels[g.key]}>
+            {g.ids.map((id) => (
+              <option key={id} value={id} className="bg-neutral-900">
+                {GEM_BY_ID[id].label[lang] || GEM_BY_ID[id].label.pl}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 function Slider({ label, value, min, max, step, unit, lang, decimals = 1, onChange }) {
   return (
     <div className="mb-5">
@@ -123,6 +192,7 @@ function Slider({ label, value, min, max, step, unit, lang, decimals = 1, onChan
 export default function RingConfigurator({ lang = "pl" }) {
   const t = L[lang] || L.pl;
   const [p, setP] = useState(DEFAULTS);
+  const [presetId, setPresetId] = useState(null);
   const [mesh, setMesh] = useState(null);
   const [info, setInfo] = useState(null);
   const [busy, setBusy] = useState(true);
@@ -131,10 +201,13 @@ export default function RingConfigurator({ lang = "pl" }) {
   const workerRef = useRef(null);
   const seqRef = useRef(0);
 
-  const set = (patch) => setP((prev) => ({ ...prev, ...patch }));
-  const setStone = (patch) => setP((prev) => ({ ...prev, stone: { ...prev.stone, ...patch } }));
-  const setSide = (patch) => setP((prev) => ({ ...prev, side: { ...prev.side, ...patch } }));
-  const setSignet = (patch) => setP((prev) => ({ ...prev, signet: { ...prev.signet, ...patch } }));
+  // Reczna zmiana czegokolwiek odznacza wzor: od tego momentu to juz nie jest
+  // "soliter klasyczny", tylko projekt klienta, i podswietlony kafelek
+  // klamalby o tym, co widac na podgladzie.
+  const set = (patch) => { setPresetId(null); setP((prev) => ({ ...prev, ...patch })); };
+  const setStone = (patch) => { setPresetId(null); setP((prev) => ({ ...prev, stone: { ...prev.stone, ...patch } })); };
+  const setSide = (patch) => { setPresetId(null); setP((prev) => ({ ...prev, side: { ...prev.side, ...patch } })); };
+  const setSignet = (patch) => { setPresetId(null); setP((prev) => ({ ...prev, signet: { ...prev.signet, ...patch } })); };
 
   // Zakucie musi pasowac do szlifu, wiec przy zmianie szlifu poprawiamy je
   // sami, zamiast pokazywac klientowi blad z generatora.
@@ -155,12 +228,13 @@ export default function RingConfigurator({ lang = "pl" }) {
       setBusy(false);
       if (!e.data.ok) { setError(e.data.error); return; }
       setError(null);
-      setMesh({ metal: e.data.metal, stones: e.data.stones });
+      setMesh({ metal: e.data.metal, stones: e.data.stones, sideStones: e.data.sideStones });
       setInfo({
         massG: e.data.massG, volumeMm3: e.data.volumeMm3,
         triangles: e.data.metal.triangles,
-        stones: e.data.params.kind === "signet" ? 0
-          : (e.data.params.setting === "drilled" ? 0 : 1 + e.data.params.side.count * 2),
+        // Liczbe kamieni bierzemy z GENERATORA, bo dla halo i obwodu wynika
+        // ona z obwodu wienca, a nie z niczego, co klient wpisal.
+        stones: e.data.stoneCount,
       });
     };
     return () => { w.terminate(); workerRef.current = null; };
@@ -185,7 +259,13 @@ export default function RingConfigurator({ lang = "pl" }) {
     [p.innerDia],
   );
 
+  // Srebro ma jeden kolor, zloto trzy. Lista idzie z danych stopu, wiec
+  // dodanie platyny nie bedzie wymagalo dotykania formularza.
+  const metalColors = colorsFor(p.alloy);
+
+  const aktywny = RING_PRESETS.find((x) => x.id === presetId) || null;
   const signet = p.kind === "signet";
+  const obraczka = p.kind === "band";
   const noSide = signet || p.setting === "drilled" || p.side.count === 0;
 
   return (
@@ -194,9 +274,17 @@ export default function RingConfigurator({ lang = "pl" }) {
 
         {/* ---------- parametry ---------- */}
         <div className="border-b lg:border-b-0 lg:border-r border-white/10 p-5">
+          <Group label={t.preset} hint={aktywny ? nameOf(aktywny.note, lang) : null}>
+            <Seg value={presetId} onChange={(id) => {
+              const wzor = RING_PRESETS.find((x) => x.id === id);
+              if (wzor) { setPresetId(id); setP((prev) => applyPreset(wzor, prev)); }
+            }} options={RING_PRESETS.map((x) => ({ id: x.id, label: nameOf(x.label, lang) }))} />
+          </Group>
+
           <Group label={t.kind}>
             <Seg value={p.kind} onChange={(id) => set({ kind: id })}
-              options={[{ id: "ring", label: t.ring }, { id: "signet", label: t.signet }]} />
+              options={[{ id: "ring", label: t.ring }, { id: "signet", label: t.signet },
+                        { id: "band", label: t.band }]} />
           </Group>
 
           <Slider label={t.size} lang={lang} unit={`mm (EU ${sizeRow.eu})`}
@@ -208,17 +296,45 @@ export default function RingConfigurator({ lang = "pl" }) {
               options={Object.entries(CASTING_ALLOYS).map(([id, a]) => ({ id, label: a.label[lang] || a.label.pl }))} />
           </Group>
 
+          {/* Srebro ma jeden kolor, wiec przelacznik z jednym przyciskiem
+              bylby atrapa wyboru. Chowamy go zamiast blokowac. */}
+          {metalColors.length > 1 ? (
+            <Group label={t.color} hint={p.color === "white" ? t.rhodiumNote : null}>
+              <Seg value={p.color} onChange={(id) => set({ color: id })}
+                options={metalColors.map((id) => ({
+                  id,
+                  label: (
+                    <span className="inline-flex items-center gap-1.5">
+                      <span aria-hidden="true" className="w-3 h-3 rounded-full border border-black/30"
+                        style={{ background: METAL_COLORS[id].tone }} />
+                      {METAL_COLORS[id].label[lang] || METAL_COLORS[id].label.pl}
+                    </span>
+                  ),
+                }))} />
+            </Group>
+          ) : null}
+
           <Group label={t.profile}>
             <Seg value={p.profile} onChange={(id) => set({ profile: id })}
               options={SHANK_PROFILES.map((id) => ({ id, label: t.profiles[id] }))} />
           </Group>
+
+          {/* Sygnet ma sylwetke wynikajaca z konstrukcji: ramiona MUSZA
+              zgestniec pod tarcza, inaczej glowica stoi na patyku. */}
+          {!signet && !obraczka ? (
+            <Group label={t.taper}>
+              <Seg value={p.taper === "auto" ? "none" : p.taper}
+                onChange={(id) => set({ taper: id })}
+                options={["none", "tapered", "cathedral"].map((id) => ({ id, label: t.tapers[id] }))} />
+            </Group>
+          ) : null}
 
           <Slider label={t.width} lang={lang} unit="mm" value={p.width}
             min={LIMITS.width[0]} max={LIMITS.width[1]} step={0.1} onChange={(v) => set({ width: v })} />
           <Slider label={t.thickness} lang={lang} unit="mm" value={p.thickness}
             min={LIMITS.thickness[0]} max={LIMITS.thickness[1]} step={0.1} onChange={(v) => set({ thickness: v })} />
 
-          {!signet && (
+          {!signet && !obraczka && (
             <>
               <Group label={t.cut} hint={CUTS[p.stone.cut] ? hintOf(CUTS[p.stone.cut], lang) : null}>
                 <div className="grid grid-cols-4 gap-1">
@@ -239,9 +355,35 @@ export default function RingConfigurator({ lang = "pl" }) {
                 </div>
               </Group>
 
+              <Group label={t.halo}>
+                <Seg value={p.halo.on ? "on" : "off"}
+                  onChange={(id) => setP((prev) => { setPresetId(null);
+                    return { ...prev, halo: { ...prev.halo, on: id === "on" } }; })}
+                  options={[{ id: "off", label: t.off }, { id: "on", label: t.on }]} />
+              </Group>
+
+              {p.halo.on ? (
+                <>
+                  <Slider label={t.haloSize} lang={lang} unit="mm" value={p.halo.size}
+                    min={LIMITS.haloSize[0]} max={LIMITS.haloSize[1]} step={0.1} decimals={1}
+                    onChange={(v) => setP((prev) => { setPresetId(null);
+                      return { ...prev, halo: { ...prev.halo, size: v } }; })} />
+                  <Group label={t.gem}>
+                    <GemSelect value={p.halo.material} lang={lang} groupLabels={t.gemGroups}
+                      onChange={(id) => setP((prev) => { setPresetId(null);
+                        return { ...prev, halo: { ...prev.halo, material: id } }; })} />
+                  </Group>
+                </>
+              ) : null}
+
               <Group label={t.setting}>
                 <Seg value={p.setting} onChange={(id) => set({ setting: id })}
                   options={allowed.map((id) => ({ id, label: nameOf(SETTINGS[id], lang) }))} />
+              </Group>
+
+              <Group label={t.gem}>
+                <GemSelect value={p.stone.material} lang={lang} groupLabels={t.gemGroups}
+                  onChange={(id) => setStone({ material: id })} />
               </Group>
 
               <Slider label={t.stoneSize} lang={lang} unit="mm" value={p.stone.size}
@@ -262,11 +404,41 @@ export default function RingConfigurator({ lang = "pl" }) {
                     <Seg value={p.side.setting} onChange={(id) => setSide({ setting: id })}
                       options={Object.entries(SIDE_SETTINGS).map(([id, v]) => ({ id, label: nameOf(v, lang) }))} />
                   </Group>
+                  <Group label={t.sideGem}>
+                    <GemSelect value={p.side.material} lang={lang} groupLabels={t.gemGroups}
+                      onChange={(id) => setSide({ material: id })} />
+                  </Group>
+
                   <Slider label={t.sideSize} lang={lang} unit="mm" value={p.side.size}
                     min={LIMITS.sideSize[0]} max={LIMITS.sideSize[1]} step={0.1}
                     onChange={(v) => setSide({ size: v })} />
                 </>
               )}
+            </>
+          )}
+
+          {obraczka && (
+            <>
+              <Group label={t.coverage} hint={p.band.coverage === "full" ? t.eternityWarn : null}>
+                <Seg value={p.band.coverage}
+                  onChange={(id) => setP((prev) => { setPresetId(null);
+                    return { ...prev, band: { ...prev.band, coverage: id } }; })}
+                  options={["none", "half", "full"].map((id) => ({ id, label: t.coverages[id] }))} />
+              </Group>
+
+              {p.band.coverage !== "none" ? (
+                <>
+                  <Slider label={t.bandSize} lang={lang} unit="mm" value={p.band.size}
+                    min={LIMITS.bandSize[0]} max={LIMITS.bandSize[1]} step={0.1}
+                    onChange={(v) => setP((prev) => { setPresetId(null);
+                      return { ...prev, band: { ...prev.band, size: v } }; })} />
+                  <Group label={t.gem}>
+                    <GemSelect value={p.band.material} lang={lang} groupLabels={t.gemGroups}
+                      onChange={(id) => setP((prev) => { setPresetId(null);
+                        return { ...prev, band: { ...prev.band, material: id } }; })} />
+                  </Group>
+                </>
+              ) : null}
             </>
           )}
 
@@ -291,7 +463,13 @@ export default function RingConfigurator({ lang = "pl" }) {
         <div className="p-5">
           <div className="relative aspect-square lg:aspect-[4/3] rounded-xl border border-white/10 bg-black overflow-hidden">
             <Suspense fallback={null}>
-              {mesh ? <RingPreview3D metal={mesh.metal} stones={mesh.stones} alloy={p.alloy} /> : null}
+              {mesh ? (
+                <RingPreview3D
+                  metal={mesh.metal} stones={mesh.stones} sideStones={mesh.sideStones}
+                  alloy={p.alloy} color={p.color}
+                  gem={p.stone.material} sideGem={p.side.material}
+                />
+              ) : null}
             </Suspense>
             <div className="pointer-events-none absolute left-3 top-3 text-[10px] uppercase tracking-[0.12em] text-neutral-500">
               {busy ? t.building : t.dragHint}
@@ -316,6 +494,15 @@ export default function RingConfigurator({ lang = "pl" }) {
               </div>
             ))}
           </dl>
+
+          {/* Kwota wiazaca pojawia sie dopiero, gdy bryla sie policzyla:
+              wczesniej nie ma czego wyceniac, a pusta ramka z kreskami
+              wyglada jak usterka. */}
+          {info ? (
+            <Suspense fallback={null}>
+              <RingPriceBox params={p} lang={lang} />
+            </Suspense>
+          ) : null}
         </div>
       </div>
     </div>

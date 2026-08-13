@@ -118,14 +118,29 @@ console.log("\n4. Przegladarka nie ma wplywu na cene");
 console.log("\n5. Cztery wyjscia, rosnaca cena");
 // ------------------------------------------------------------
 {
+  const { OUTPUT_AVAILABLE } = await import("../src/pricing/ringConfigurator.js");
+  const czynne = Object.keys(OUTPUT_AVAILABLE).filter((o) => OUTPUT_AVAILABLE[o]);
   const geometry = await geoFor({});
   const p = {};
-  for (const out of ["mesh", "step", "cast", "finished"]) {
-    p[out] = price({ output: out }, { geometry }).unitGrosze;
+  for (const out of czynne) p[out] = price({ output: out }, { geometry }).unitGrosze;
+
+  let kolejnosc = true, opis = [];
+  for (let i = 0; i < czynne.length; i++) {
+    opis.push(`${czynne[i]} ${zl(p[czynne[i]])}`);
+    if (i && p[czynne[i - 1]] >= p[czynne[i]]) kolejnosc = false;
   }
-  const kolejnosc = p.mesh < p.step && p.step < p.cast && p.cast < p.finished;
-  const opis = `plik ${zl(p.mesh)} < STEP ${zl(p.step)} < odlew ${zl(p.cast)} < wyrób ${zl(p.finished)}`;
-  if (kolejnosc) ok(opis); else bad(`kolejnosc wyjsc niepoprawna: ${opis}`);
+  if (kolejnosc) ok(opis.join(" < ")); else bad(`kolejnosc wyjsc niepoprawna: ${opis.join(", ")}`);
+
+  // STEP jest policzony, ale generatora STEP-a nie ma, wiec nie wolno go
+  // sprzedac. Kwota wiazaca jest oferta, a oferta na plik, ktorego nie
+  // zbudujemy, konczy sie zwrotem i tlumaczeniem.
+  for (const [id, czy] of Object.entries(OUTPUT_AVAILABLE)) {
+    if (czy) continue;
+    let padlo = false;
+    try { price({ output: id }, { geometry }); } catch { padlo = true; }
+    if (padlo) ok(`wyjście "${id}" jest wyłączone i nie da się go wycenić`);
+    else bad(`wyjscie "${id}" jest wylaczone, a mimo to zwrocilo kwote`);
+  }
 }
 
 // ------------------------------------------------------------
@@ -221,6 +236,49 @@ console.log("\n10. Kreator niewidoczny dla klientow, dopoki nie ma interfejsu");
   const brak = Object.keys(pkg.dependencies || {}).filter((d) => !lock.packages?.[`node_modules/${d}`]);
   if (brak.length) bad(`chat-api/package-lock.json nie zna: ${brak.join(", ")}. Railway padnie na npm ci`);
   else ok("lock chat-api zgodny z package.json, npm ci przejdzie");
+}
+
+// ------------------------------------------------------------
+// Cztery wyjscia z jednej bryly
+// ------------------------------------------------------------
+// Ta sama konfiguracja daje cztery produkty i klient widzi je obok siebie.
+// Kolejnosc kwot NIE jest przypadkowa i musi taka zostac: plik jest tanszy
+// od odlewu, a odlew od gotowego wyrobu. Odwrocenie ktorejkolwiek pary
+// znaczy blad w stawkach, ktorego nikt nie zauwazy poza ksiegowoscia.
+console.log("\nCztery wyjścia z jednej bryły");
+{
+  const { ringGeometryFromParams, priceItem, PricingError } = await import("../chat-api/orders.js");
+
+  const params = {
+    innerDia: 17.2, alloy: "au585", color: "yellow", taper: "tapered",
+    stone: { cut: "round", size: 6.5, material: "lab_diamond", origin: "stock" },
+    setting: "prong4", side: { count: 0 },
+  };
+  const geo = await ringGeometryFromParams(params);
+
+  const kwoty = { mesh: priceItem({ calculator: "jewelry_ring_config",
+    params: { ...params, output: "mesh" }, lang: "pl", geometry: geo }).lineGrosze };
+
+  // Kruszec wchodzi dopiero od odlewu: plik nie wazy nic i jego cena nie moze
+  // zalezec od tego, czy klient wybral srebro, czy zloto 750.
+  const wSrebrze = priceItem({ calculator: "jewelry_ring_config",
+    params: { ...params, alloy: "ag925", output: "mesh" }, lang: "pl",
+    geometry: await ringGeometryFromParams({ ...params, alloy: "ag925" }) });
+  if (wSrebrze.lineGrosze === kwoty.mesh) ok("cena pliku nie zalezy od kruszcu");
+  else bad(`plik w srebrze ${(wSrebrze.lineGrosze/100).toFixed(0)} PLN, w zlocie ${(kwoty.mesh/100).toFixed(0)} PLN`);
+
+  // Kamien spoza cennika blokuje gotowy wyrob, ale NIE plik i nie odlew.
+  // Trasa zwraca wtedy pozostale wyjscia, zamiast oddac blad na calosc.
+  const dziwny = { ...params, stone: { ...params.stone, material: "custom_gem" } };
+  const geo2 = await ringGeometryFromParams(dziwny);
+  let plik = null, gotowy = null;
+  try { plik = priceItem({ calculator: "jewelry_ring_config", params: { ...dziwny, output: "mesh" }, lang: "pl", geometry: geo2 }); } catch { /* zapisze nizej */ }
+  try { gotowy = priceItem({ calculator: "jewelry_ring_config", params: { ...dziwny, output: "finished" }, lang: "pl", geometry: geo2 }); } catch (e) { gotowy = e instanceof PricingError ? e.code : "blad"; }
+
+  if (plik?.lineGrosze > 0) ok("kamień spoza cennika nie blokuje ceny pliku");
+  else bad("kamien spoza cennika zablokowal takze plik, a plik nie zawiera kamienia");
+  if (gotowy === "needs_quote") ok("gotowy wyrób z takim kamieniem idzie do wyceny indywidualnej");
+  else bad(`gotowy wyrob powinien isc do wyceny recznej, a wyszlo: ${JSON.stringify(gotowy)?.slice(0, 60)}`);
 }
 
 console.log(failed ? `\n${failed} bledow\n` : "\nWycena kreatora: wszystko sie zgadza\n");
