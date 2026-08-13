@@ -17,7 +17,7 @@
 // Wchodzi do builda.
 
 import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, taperFor, buildShank, buildGallery } from "../src/geometry/ring/build.js";
-import { CUTS, SETTINGS, SEAT, validate } from "../src/geometry/ring/params.js";
+import { CUTS, SETTINGS, SEAT, SIGNET_TABLES, validate } from "../src/geometry/ring/params.js";
 
 /**
  * Zwolnienie bryly po pomiarze.
@@ -142,6 +142,7 @@ for (const z of ZESTAWY) {
     if (!(r.massG > 0.2) || !(r.massG < 60)) problems.push(`masa ${r.massG.toFixed(2)} g poza rozsadkiem`);
     if (problems.length) bad(`${name}: ${problems.join("; ")}`);
     else ok(`${name.padEnd(38)} ${r.volumeMm3.toFixed(1)} mm3, ${r.massG.toFixed(2)} g, genus ${r.genus}`);
+    zwolnij(r);
   } catch (e) {
     bad(`${name}: ${e.message}`);
   }
@@ -165,6 +166,7 @@ for (const dia of [14.0, 16.6, 17.2, 19.1, 23.0]) {
   const err = got - dia;
   if (Math.abs(err) <= PROG_SREDNICA) ok(`zadano ${dia.toFixed(1)} mm, zmierzono ${got.toFixed(3)} mm`);
   else bad(`zadano ${dia.toFixed(1)} mm, zmierzono ${got.toFixed(3)} mm, blad ${err.toFixed(3)} mm (prog ${PROG_SREDNICA})`);
+  zwolnij(r);
 }
 
 // ------------------------------------------------------------
@@ -753,6 +755,89 @@ console.log("\n17. Gniazda nie rozcinają wyrobu");
   // Sprawdza to juz wpis "szesc lapek" powyzej, a kazda kolejna bryla to
   // kilkanascie megabajtow w pamieci WebAssembly, ktorej to jadro samo nie
   // oddaje. Przy czterdziestu bryłach w jednym przebiegu proces sie wywracal.
+}
+
+// ------------------------------------------------------------
+console.log("\n18. Sygnety: każda tarcza i każda powierzchnia");
+// ------------------------------------------------------------
+// Komplet sygnetow to jeden korpus i kilkanascie tarcz, wiec bledy nie siedza
+// w wyjatkach, tylko w tym, co dotyczy wszystkich naraz: orientacji tarczy,
+// spojnosci bryly i sylwetce plyty.
+{
+  const w = await kernel();
+
+  /**
+   * Wymiary SAMEJ TARCZY, a nie calej bryly.
+   *
+   * Pudelko calego pierscionka jest po obwodzie szerokie na jego srednice,
+   * czyli dwadziescia milimetrow niezaleznie od tarczy. Pierwsza wersja tego
+   * pomiaru brala wlasnie je i orzekla, ze kazda tarcza lezy w poprzek.
+   * Mierzymy wiec plaster wziety z wysokosci plyty.
+   */
+  const plaster = (metal, y) => {
+    const noz = w.Manifold.cube([60, 0.1, 60], true).translate([0, y, 0]);
+    const kawalek = metal.intersect(noz);
+    const b = kawalek.boundingBox();
+    const puste = kawalek.isEmpty();
+    const out = { obwod: puste ? 0 : b.max[0] - b.min[0], palec: puste ? 0 : b.max[2] - b.min[2] };
+    noz.delete?.(); kawalek.delete?.();
+    return out;
+  };
+
+  const wymiar = async (sygnet) => {
+    const r = await buildRing({ kind: "signet", width: 2.6, thickness: 1.7, signet: sygnet },
+      { segments: 48, withStones: false });
+    const bb = r.metal.boundingBox();
+    const tarcza = plaster(r.metal, bb.max[1] - 0.8);
+    const ramiona = plaster(r.metal, bb.max[1] - 2.8);
+    const dane = { czesci: ileCzesci(r.metal), genus: r.genus, masa: r.massG, gora: bb.max[1], tarcza, ramiona };
+    zwolnij(r);
+    return dane;
+  };
+
+  for (const [id, def] of Object.entries(SIGNET_TABLES)) {
+    const t = await wymiar({ table: id, length: 14, face: "flat" });
+    const problemy = [];
+    if (t.czesci !== 1) problemy.push(`bryla w ${t.czesci} czesciach`);
+    if (t.genus !== 1) problemy.push(`genus ${t.genus}`);
+    if (!(t.masa > 1) || !(t.masa < 40)) problemy.push(`masa ${t.masa.toFixed(2)} g poza rozsadkiem`);
+
+    // ORIENTACJA. Tarcza poprzeczna ma lezec wzdluz obwodu, a nie wzdluz
+    // palca, i odwrotnie. Zamiana osi daje bryle poprawna pod kazdym innym
+    // wzgledem, wiec nie zlapie jej ani objetosc, ani topologia, a wyrob
+    // jest wtedy po prostu innym wyrobem.
+    const wpoprzek = t.tarcza.obwod > t.tarcza.palec;
+    if (def.across && !wpoprzek) problemy.push("tarcza poprzeczna lezy wzdluz palca");
+    if (!def.across && def.ratio < 0.95 && wpoprzek) problemy.push("tarcza wzdluzna lezy w poprzek");
+
+    // PODCIECIE POD TARCZA. Plyta ma wystawac poza ramiona, bo to cien pod jej
+    // krawedzia odrozniA plyte polozona na pierscionku od klina wycietego
+    // razem z nim.
+    const wystaje = (t.tarcza.palec - t.ramiona.palec) / 2;
+    if (!(wystaje > 0.1)) problemy.push(`plyta nie wystaje poza ramiona (${wystaje.toFixed(2)} mm)`);
+
+    if (problemy.length) bad(`sygnet ${id}: ${problemy.join("; ")}`);
+    else ok(`sygnet ${id.padEnd(8)} ${t.masa.toFixed(2)} g, tarcza ${t.tarcza.palec.toFixed(1)} x ${t.tarcza.obwod.toFixed(1)} mm, występ ${wystaje.toFixed(2)} mm`);
+  }
+
+  // Wykonczenie powierzchni idzie tym samym kodem dla kazdego obrysu, wiec
+  // sprawdzamy je na trzech skrajnych: okraglej, poprzecznej i kwadratowej.
+  // Kazda bryla to kilkanascie megabajtow w pamieci jadra, ktorej ono samo
+  // nie oddaje, a caly przebieg juz raz o to rozbil sie na ostatniej sekcji.
+  for (const id of ["round", "bar", "square"]) {
+    const plaska = await wymiar({ table: id, length: 14, face: "flat" });
+    const wpust = await wymiar({ table: id, length: 14, face: "recessed" });
+    const kopula = await wymiar({ table: id, length: 14, face: "domed" });
+    if (wpust.czesci !== 1 || kopula.czesci !== 1) {
+      bad(`sygnet ${id}: powierzchnia rozbila bryle (wpust ${wpust.czesci}, kopula ${kopula.czesci})`);
+    } else if (!(wpust.masa < plaska.masa - 0.05)) {
+      bad(`sygnet ${id}: wpuszczone pole nie ubralo metalu (${wpust.masa.toFixed(2)} wobec ${plaska.masa.toFixed(2)} g)`);
+    } else if (!(kopula.masa > plaska.masa + 0.05) || !(kopula.gora > plaska.gora + 0.05)) {
+      bad(`sygnet ${id}: kopula nie wystaje ponad plaska tarcze`);
+    } else {
+      ok(`${id.padEnd(10)} wpust −${(plaska.masa - wpust.masa).toFixed(2)} g, kopuła +${(kopula.masa - plaska.masa).toFixed(2)} g`);
+    }
+  }
 }
 
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");
