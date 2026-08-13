@@ -625,7 +625,8 @@ export default {
     addressTitle: "Addresses",
     postalLabel: "Correspondence address",
     lockerLabel: "Sending items to us",
-    lockerHint: "Send your item here when ordering engraving, repair or restoration on material you supply. Courier and postal deliveries go to the correspondence address.",
+    lockerHint: "Send your item here when ordering engraving, repair or restoration on material you supply. This is our default route.",
+    postalHint: "We accept courier and postal deliveries as an exception: from abroad, and from places InPost does not serve. Within Poland, please use the locker.",
     socialTitle: "Find Us Online",
   },
 

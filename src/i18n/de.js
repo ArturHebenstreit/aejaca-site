@@ -612,7 +612,8 @@ export default {
     addressTitle: "Adressen",
     postalLabel: "Korrespondenzadresse",
     lockerLabel: "Gegenstände an uns senden",
-    lockerHint: "Hierhin senden Sie Ihr Objekt, wenn Sie Gravur, Reparatur oder Restaurierung auf beigestelltem Material bestellen. Kurier- und Postsendungen gehen an die Korrespondenzadresse.",
+    lockerHint: "Hierhin senden Sie Ihr Objekt, wenn Sie Gravur, Reparatur oder Restaurierung auf beigestelltem Material bestellen. Das ist unser Standardweg.",
+    postalHint: "Kurier- und Postsendungen nehmen wir ausnahmsweise an: aus dem Ausland und von dort, wo InPost nicht zustellt. Innerhalb Polens bitte die Paketstation nutzen.",
     socialTitle: "Finden Sie Uns Online",
   },
 

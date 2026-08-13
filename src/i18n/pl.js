@@ -622,7 +622,8 @@ export default {
     addressTitle: "Adresy",
     postalLabel: "Adres korespondencyjny",
     lockerLabel: "Wysyłka przedmiotów do nas",
-    lockerHint: "Tu wysyłasz swój przedmiot, gdy zamawiasz grawer, naprawę lub renowację na materiale powierzonym. Kurierem i pocztą przyjmujemy przesyłki pod adresem korespondencyjnym.",
+    lockerHint: "Tu wysyłasz swój przedmiot, gdy zamawiasz grawer, naprawę lub renowację na materiale powierzonym. To jest dla nas droga podstawowa.",
+    postalHint: "Kurierem i pocztą przyjmujemy przesyłki wyjątkowo: z zagranicy oraz stamtąd, gdzie InPost nie dowozi. W kraju prosimy o paczkomat.",
     socialTitle: "Znajdź Nas Online",
   },
 

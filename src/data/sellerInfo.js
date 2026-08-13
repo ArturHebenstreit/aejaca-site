@@ -34,6 +34,18 @@ export const SELLER = {
   addressLines: ["ul. Nowy Świat 33 lok. 13", "00-029 Warszawa"],
   hasFullPostalAddress: true,
 
+  // Kraj podajemy WPROST, bo przesylki przychodza takze z zagranicy, a bez
+  // niego adres jest niepelny dla kazdego nadawcy spoza Polski.
+  country: { pl: "Polska", en: "Poland", de: "Polen" },
+  countryCode: "PL",
+
+  // Nazwa na PACZCE, celowo inna niz `legalName`. Kurier i paczkomat szukaja
+  // odbiorcy, a klient zna nas jako AEJaCA i tak podpisze przesylke. Dane
+  // identyfikujace przedsiebiorce, wymagane przy sprzedazy konsumenckiej,
+  // to `legalName` i one zostaja tam, gdzie ich miejsce: w regulaminie
+  // i w informacji o sprzedawcy.
+  shippingName: "AEJaCA",
+
   // Miejsce wykonywania prac i odbioru osobistego, celowo osobne pole.
   workshopLocality: "Józefosław, gmina Piaseczno",
 

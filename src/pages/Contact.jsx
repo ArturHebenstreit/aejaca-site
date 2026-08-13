@@ -212,9 +212,11 @@ export default function Contact() {
                   <div>
                     <div className="text-[11px] uppercase tracking-[0.1em] text-neutral-500 mb-1">{c.postalLabel}</div>
                     <address className="not-italic text-neutral-300 text-sm leading-relaxed">
-                      {SELLER.legalName}<br />
+                      {SELLER.shippingName}<br />
                       {SELLER.addressLines.map((line) => <span key={line}>{line}<br /></span>)}
+                      {SELLER.country[lang] || SELLER.country.pl}
                     </address>
+                    <p className="mt-2 text-[12px] leading-relaxed text-neutral-500">{c.postalHint}</p>
                   </div>
                 </div>
 
