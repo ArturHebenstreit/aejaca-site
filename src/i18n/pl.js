@@ -619,6 +619,10 @@ export default {
     sendError: "Coś poszło nie tak. Spróbuj jeszcze raz.",
     sendBtn: "Wyślij Wiadomość",
     directTitle: "Kontakt Bezpośredni",
+    addressTitle: "Adresy",
+    postalLabel: "Adres korespondencyjny",
+    lockerLabel: "Wysyłka przedmiotów do nas",
+    lockerHint: "Tu wysyłasz swój przedmiot, gdy zamawiasz grawer, naprawę lub renowację na materiale powierzonym. Kurierem i pocztą przyjmujemy przesyłki pod adresem korespondencyjnym.",
     socialTitle: "Znajdź Nas Online",
   },
 

@@ -36,6 +36,9 @@ const EXTRA = [
   { from: join(ROOT, "src", "data", "sellerInfo.js"), name: "sellerInfo.js", source: "src/data/sellerInfo.js" },
   // Skurcz i gestosc stopow: korzysta z nich i wycena, i generator pierscionkow.
   { from: join(ROOT, "src", "data", "castingAlloys.js"), name: "castingAlloys.js", source: "src/data/castingAlloys.js" },
+  // Gestosci kamieni siedza razem z ich barwa, bo to wlasciwosci tego samego
+  // materialu. Wycena potrzebuje gestosci, zeby policzyc karaty z bryly.
+  { from: join(ROOT, "src", "data", "gemOptics.js"), name: "gemOptics.js", source: "src/data/gemOptics.js" },
 ];
 
 /** W kopii wszystko lezy obok siebie, wiec ../data/x.js staje sie ./x.js */

@@ -16,6 +16,7 @@ import {
   QUANTITY_TIERS, t, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture, LicenseNotice,
 } from "./calcShared.jsx";
 import CalcToCart from "./CalcToCart.jsx";
+import MaterialNotice from "../MaterialNotice.jsx";
 import PrintabilityGate from "./PrintabilityGate.jsx";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
 import { calculate as calcPrint3D, calculateMSLA, MSLA_SIZES } from "./Print3DCalc.jsx";
@@ -811,6 +812,11 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
       {/* Result */}
       <div id={hasFile ? "file-upload" : undefined} className="rounded-2xl border-2 border-emerald-400/30 bg-gradient-to-br from-emerald-400/[0.04] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
+        {/* Tylko przy laserze. Przy druku 3D materiał jest NASZ i wchodzi
+            w cenę, więc ta sama informacja byłaby tam po prostu nieprawdą. */}
+        {(resolved?.tech === "co2" || resolved?.tech === "fiber") && (
+          <MaterialNotice lang={lang} className="mb-4" />
+        )}
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
         {stlData?.triangles?.length > 0 && (resolved?.tech === "3dprint" || resolved?.tech === "msla") && (
           <PrintabilityGate

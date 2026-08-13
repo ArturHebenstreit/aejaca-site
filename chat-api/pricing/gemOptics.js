@@ -1,3 +1,7 @@
+// PLIK GENEROWANY, NIE EDYTOWAC RECZNIE.
+// Zrodlo: src/data/gemOptics.js
+// Regeneracja: npm run sync:pricing
+
 // ============================================================
 // KAMIENIE: wlasciwosci optyczne do podgladu
 // ============================================================

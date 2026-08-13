@@ -281,5 +281,49 @@ console.log("\nCztery wyjścia z jednej bryły");
   else bad(`gotowy wyrob powinien isc do wyceny recznej, a wyszlo: ${JSON.stringify(gotowy)?.slice(0, 60)}`);
 }
 
+// ------------------------------------------------------------
+// Spojnosc wycen w calym serwisie
+// ------------------------------------------------------------
+// Ten sam pierscionek wyceniony przez kalkulator bizuterii i przez kreator
+// musi opierac sie na tych samych stawkach. Nie chodzi o identyczna kwote,
+// bo wejscia sa inne: kalkulator pyta o "wage" z listy, kreator liczy ja
+// z bryly. Chodzi o to, zeby SKLADNIKI liczyly sie tak samo, bo klient
+// trafia do nas roznymi drzwiami i dwie kwoty za to samo to utrata zaufania.
+console.log("\nSpójność wycen w całym serwisie");
+{
+  const cfg = await import("../src/pricing/jewelryConfig.js");
+  const jew = await import("../src/pricing/jewelry.js");
+  const ring = await import("../src/pricing/ringConfigurator.js");
+
+  // 1. Stawka kruszcu: jedna funkcja, wiec z definicji ta sama liczba.
+  //    Sprawdzamy, ze oba moduly siegaja PO TE SAMA, a nie po wlasna kopie.
+  const kursy = { au_pln_per_g: 333.33, ag_pln_per_g: 4.44, pt_pln_per_g: 111.11 };
+  const zJew = jew.resolveMetalPricePerG("gold", kursy);
+  const zCfg = cfg.metalPricePerG("gold", kursy);
+  if (zJew === zCfg && zJew === 333.33) ok(`stawka kruszcu wspólna dla obu kalkulatorów: ${zJew} zł/g`);
+  else bad(`stawki sie roznia: kalkulator ${zJew}, wspolna ${zCfg}`);
+
+  for (const metal of ["gold", "silver", "platinum"]) {
+    if (jew.resolveMetalPricePerG(metal, null) === cfg.metalPricePerG(metal, null)) continue;
+    bad(`${metal}: wartosc zapasowa rozjechala sie miedzy modulami`);
+  }
+  ok("wartości zapasowe kruszców zgodne przy braku kursów");
+
+  // 2. Kamien: ta sama cena bazowa i ta sama krzywa masy.
+  //    Kreator liczy karaty z bryly, kalkulator bierze je z listy rozmiarow,
+  //    ale mnoznik dla tej samej masy MUSI byc ten sam.
+  for (const s of cfg.STONE_SIZES.filter((x) => !x.custom)) {
+    const mul = ring.priceMulForCarat(s.ct);
+    if (Math.abs(mul - s.priceMul) < 0.001) ok(`mnożnik dla ${s.ct} ct zgodny z tabelą: ${mul.toFixed(2)}`);
+    else bad(`mnoznik dla ${s.ct} ct: kreator ${mul.toFixed(3)}, tabela ${s.priceMul}`);
+  }
+
+  // 3. Gestosci: karat to masa, wiec obie strony musza liczyc go tak samo.
+  const { gemDensity } = await import("../src/data/gemOptics.js");
+  const brak = cfg.GEMSTONES.filter((g) => g.id !== "none" && !(gemDensity(g.id) > 0));
+  if (!brak.length) ok(`gęstość znana dla wszystkich ${cfg.GEMSTONES.length - 1} kamieni z katalogu`);
+  else bad(`kamienie bez gestosci: ${brak.map((g) => g.id).join(", ")}`);
+}
+
 console.log(failed ? `\n${failed} bledow\n` : "\nWycena kreatora: wszystko sie zgadza\n");
 process.exit(failed ? 1 : 0);

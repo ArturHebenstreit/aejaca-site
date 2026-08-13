@@ -14,8 +14,9 @@
 // bo jest o jedno `fetch` od podmiany.
 
 import { CONFIG, applyPricing } from "./config.js";
-import { GEMSTONES, STONE_SIZES, METAL_PRICES } from "./jewelryConfig.js";
+import { GEMSTONES, STONE_SIZES, metalPricePerG } from "./jewelryConfig.js";
 import { CASTING_ALLOYS } from "../data/castingAlloys.js";
+import { gemDensity } from "../data/gemOptics.js";
 
 // ------------------------------------------------------------
 // Kamien: karaty z objetosci
@@ -24,23 +25,13 @@ import { CASTING_ALLOYS } from "../data/castingAlloys.js";
 // ktora i tak wygenerowalismy, razy gestosc kamienia. Kontrola: brylant
 // okragly 6,5 mm wychodzi z tego okolo 1,00 ct, czyli tyle, ile podaje
 // kazda tabela jubilerska.
-const GEM_DENSITY = {
-  diamond: 3.52, lab_diamond: 3.52,
-  moissanite: 3.21,
-  cz: 5.68,
-  ruby: 4.00, lab_ruby: 4.00,
-  sapphire: 4.00, lab_sapphire: 4.00,
-  emerald: 2.72,
-  garnet: 3.90,
-  amber: 1.08,
-  topaz: 3.55,
-  amethyst: 2.65,
-};
-const DEFAULT_GEM_DENSITY = 3.6;   // typowy kamien fasetowany
+// Gestosci mieszkaja w `gemOptics.js`, razem z barwa i wspolczynnikiem
+// zalamania, bo to sa wlasciwosci TEGO SAMEGO materialu. Dwie listy
+// rozjechalyby sie przy pierwszym dolozonym kamieniu.
 const CT_PER_GRAM = 5;             // 1 ct = 0,2 g
 
 export function caratFromVolume(volumeMm3, gemId) {
-  const d = GEM_DENSITY[gemId] ?? DEFAULT_GEM_DENSITY;
+  const d = gemDensity(gemId);
   return (Math.max(0, volumeMm3) / 1000) * d * CT_PER_GRAM;
 }
 
@@ -133,12 +124,6 @@ const fmt = (pln, lang) =>
   `${pln.toLocaleString(lang === "pl" ? "pl-PL" : lang === "de" ? "de-DE" : "en-US",
     { maximumFractionDigits: 0 })} zł`;
 
-function metalPricePerG(metalKey, rates) {
-  if (metalKey === "gold") return rates?.au_pln_per_g ?? METAL_PRICES.gold.plnPerG;
-  if (metalKey === "silver") return rates?.ag_pln_per_g ?? METAL_PRICES.silver.plnPerG;
-  if (metalKey === "platinum") return rates?.pt_pln_per_g ?? METAL_PRICES.platinum.plnPerG;
-  return METAL_PRICES[metalKey]?.plnPerG ?? 0;
-}
 
 /**
  * @param {object} params        konfiguracja pierscionka plus `output`

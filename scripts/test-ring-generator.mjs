@@ -369,7 +369,7 @@ console.log("\n10. Szyna zwężana ma policzalną objętość");
     for (let i = 0; i < N; i++) {
       const th = ((i + 0.5) / N) * Math.PI * 2;
       const d = Math.abs(((th - Math.PI / 2) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI);
-      const k = fn(1 - d / Math.PI);
+      const k = fn(d / Math.PI);
       const skal = bazowy.map(([r, z]) => [ri + (r - ri) * k.t, z * k.w]);
       calka += pole(skal) * srodek(skal) * ((Math.PI * 2) / N);
     }
@@ -543,6 +543,41 @@ console.log("\n14. Plik do pobrania zgadza się z wyceną");
   else bad(`3MF niekompletny, wpisy: ${Object.keys(wpisy).join(", ")}`);
   if (/unit="millimeter"/.test(model)) ok("3MF deklaruje milimetry");
   else bad("3MF nie deklaruje jednostki, slicer zgadnie skale");
+}
+
+// ------------------------------------------------------------
+// 15. Zwezenie po WLASCIWEJ stronie
+// ------------------------------------------------------------
+// Objetosc bryly nie mowi, ktora strona jest gora, wiec calka z punktu 10
+// zgadzala sie idealnie takze wtedy, gdy sylwetka byla odwrocona: sygnet
+// gestnial na dole palca zamiast pod tarcza. Blad widac wylacznie na oku
+// albo takim pomiarem jak ten.
+console.log("\n15. Zwężenie działa od strony głowicy");
+{
+  const w = await kernel();
+  const bok = (taper) => {
+    const p = { innerDia: 17.2, width: 3.2, thickness: 2.0, profile: "round", taper, kind: "ring" };
+    const mesh = buildShank(w, p, 96).getMesh(), v = mesh.vertProperties;
+    let gora = 0, dol = 0;
+    for (let i = 0; i < mesh.numVert; i++) {
+      const x = v[i * 3], y = v[i * 3 + 1], r = Math.hypot(x, y);
+      if (y > 0 && Math.abs(x) < 1.0) gora = Math.max(gora, r);
+      if (y < 0 && Math.abs(x) < 1.0) dol = Math.max(dol, r);
+    }
+    return { gora, dol };
+  };
+
+  const oczekiwane = [
+    ["signet", "grubsza pod tarczą", (g, d) => g > d + 0.5],
+    ["cathedral", "podniesiona przy głowicy", (g, d) => g > d + 0.5],
+    ["tapered", "węższa przy głowicy", (g, d) => g < d - 0.1],
+    ["none", "równa na całym obwodzie", (g, d) => Math.abs(g - d) < 0.01],
+  ];
+  for (const [taper, opis, sprawdz] of oczekiwane) {
+    const { gora, dol } = bok(taper);
+    if (sprawdz(gora, dol)) ok(`${taper.padEnd(10)} ${opis}: głowica ${gora.toFixed(2)}, dół ${dol.toFixed(2)} mm`);
+    else bad(`${taper}: sylwetka ODWROCONA, glowica ${gora.toFixed(2)}, dol ${dol.toFixed(2)} mm`);
+  }
 }
 
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");

@@ -11,6 +11,7 @@ import {
   METAL_PRICES, EUR_PLN, MARGIN, MATERIAL_MARKUP, REPAIR_MARGIN, TOL_LOW, TOL_HIGH,
   SERVICE_TYPES, PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING,
   ENGRAVING_OPTIONS,
+  metalPricePerG,
   GEMSTONES, STONE_SIZES, DIAMOND_CLARITY, DIAMOND_COLOR, GEM_QUALITY, CERTIFICATIONS,
   RENOVATION_SERVICES, REPAIR_SERVICES,
   REPAIR_METAL_MUL, QTY_TIERS, GENERIC_TYPES, GENERIC_METALS,
@@ -89,13 +90,11 @@ function applyJewelryPricing(sellPrice, discountRate, qty, eurPln = EUR_PLN) {
   };
 }
 
-export // Map metal.metal key to live rates field
-function resolveMetalPricePerG(metalKey, rates) {
-  if (metalKey === "gold")     return rates?.au_pln_per_g ?? METAL_PRICES.gold.plnPerG;
-  if (metalKey === "silver")   return rates?.ag_pln_per_g ?? METAL_PRICES.silver.plnPerG;
-  if (metalKey === "platinum") return rates?.pt_pln_per_g ?? METAL_PRICES.platinum.plnPerG;
-  return METAL_PRICES[metalKey]?.plnPerG ?? 0;
-}
+// Stawka kruszcu jest JEDNA dla calego serwisu i mieszka w `jewelryConfig.js`.
+// Ta funkcja byla tu skopiowana slowo w slowo z wyceny kreatora; zostaje
+// wylacznie jako nazwa, ktorej uzywa reszta tego pliku i ktora eksportujemy
+// dalej, zeby nie ruszac wywolan.
+export const resolveMetalPricePerG = metalPricePerG;
 
 // ---- NEW CREATION CALCULATOR ----
 export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,

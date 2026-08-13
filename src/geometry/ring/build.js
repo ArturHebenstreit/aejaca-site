@@ -15,6 +15,7 @@
 import Module from "manifold-3d";
 import { CUTS, SEAT, SIDE_SETTINGS, outlineFor, resample, scalePts, validate } from "./params.js";
 import { CASTING_ALLOYS, massGrams } from "../../data/castingAlloys.js";
+import { gemDensity } from "../../data/gemOptics.js";
 
 const DEG = Math.PI / 180;
 const SEG = 96;                 // segmentow obrotu szyny w wydaniu docelowym
@@ -160,8 +161,14 @@ export function buildShank(w, p, segments) {
   for (let i = 0; i < M; i++) {
     const th = (i / M) * Math.PI * 2;
     // Godzina dwunasta, czyli miejsce glowicy, lezy na +Y.
-    let d = Math.abs(((th - Math.PI / 2) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI);
-    const u = 1 - d / Math.PI;              // 0 przy glowicy, 1 po przeciwnej stronie
+    // ODLEGLOSC KATOWA OD GLOWICY, i to jest cala subtelnosc tego miejsca.
+    // Bylo tu `1 - d / PI`, czyli u = 1 dokladnie tam, gdzie siedzi glowica,
+    // podczas gdy wszystkie zwezenia opisane wyzej licza u = 0 przy glowicy.
+    // Sylwetki wychodzily wiec ODWROCONE: sygnet gestnial na dole zamiast
+    // pod tarcza, a szyna zwezana byla waska z tylu. Objetosc sie zgadzala,
+    // bo calka nie wie, ktora strona jest gora, i dlatego test tego nie lapal.
+    const d = Math.abs(((th - Math.PI / 2) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI);
+    const u = d / Math.PI;                  // 0 przy glowicy, 1 po przeciwnej stronie
     const k = taper(u);
     const ct = Math.cos(th), st = Math.sin(th);
 
@@ -723,7 +730,7 @@ function buildBandStones(w, p) {
       ? Math.PI / 2 + (i / n) * Math.PI * 2
       : Math.PI / 2 - Math.PI / 2 + ((i + 0.5) / n) * Math.PI;
     const odchyl = Math.abs(((a - Math.PI / 2 + Math.PI * 3) % (Math.PI * 2)) - Math.PI);
-    const u = 1 - odchyl / Math.PI;
+    const u = odchyl / Math.PI;             // 0 przy glowicy, jak wszedzie indziej
     // Kamien siada NIECO PONIZEJ powierzchni szyny. Postawiony dokladnie na
     // niej wystaje poza obrys obraczki i zaczepia o wszystko, a przy okazji
     // wyglada jak doklejony.
@@ -918,6 +925,31 @@ export async function buildRing(input, opts = {}) {
 
   const volumeMm3 = metal.volume();
   const alloyDef = CASTING_ALLOYS[p.alloy] || CASTING_ALLOYS.ag925;
+
+  // MASA KAMIENI, osobno od metalu.
+  //
+  // Do tej pory podawalismy "mase metalu" i to bylo uczciwe, ale niepelne:
+  // klient trzyma w reku pierscionek, nie sam odlew, a kamienie waza. Karat
+  // to jednostka masy, wiec liczy sie ja z objetosci razy gestosc.
+  //
+  // Rozdzial jest istotny takze technicznie: WYJECIE kamienia zmienia mase
+  // gotowego wyrobu, ale NIE mase odlewu z gniazdami. Gniazda sa wyciete
+  // niezaleznie od tego, czy kamien w nich siedzi.
+  const wagaKamieni = (id, objetosc, ile) => (objetosc / 1000) * gemDensity(id) * ile;
+  let stoneMassG = 0, caratTotal = 0;
+  const dolicz = (id, objetosc, ile) => {
+    if (!(objetosc > 0) || !(ile > 0)) return;
+    const g = wagaKamieni(id, objetosc, ile);
+    stoneMassG += g;
+    caratTotal += g * 5;                  // 1 ct = 0,2 g
+  };
+  if (p.kind === "band") {
+    dolicz(p.band.material, stoneVolumesMm3.side, stoneVolumesMm3.sideCount || 0);
+  } else if (p.kind !== "signet") {
+    dolicz(p.stone.material, stoneVolumesMm3.center, p.setting === "drilled" ? 0 : 1);
+    dolicz(p.side.material, stoneVolumesMm3.side, p.side.count * 2);
+    dolicz(p.halo.material, stoneVolumesMm3.halo || 0, stoneVolumesMm3.haloCount || 0);
+  }
   return {
     params: p,
     metal,
@@ -927,6 +959,8 @@ export async function buildRing(input, opts = {}) {
     // Kolor stopu zmienia gestosc, wiec i mase. Bez niego biale zloto
     // liczyloby sie jak zolte i wycena bylaby zanizona o kilkanascie procent.
     massG: massGrams(volumeMm3, p.alloy, p.color) ?? 0,
+    stoneMassG,
+    caratTotal,
     /** Objetosc WZORCA do druku, czyli po kompensacji skurczu odlewniczego. */
     patternVolumeMm3: volumeMm3 * alloyDef.shrink ** 3,
     genus: metal.genus(),

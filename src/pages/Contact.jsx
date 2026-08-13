@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 
 const CONTACT_API_URL = import.meta.env.VITE_CHAT_API_URL;
 import { Link } from "react-router-dom";
-import { Store, Instagram, Music2, Facebook, Youtube, MapPin, Mail, MessageCircleMore, Phone, Send, ArrowRight } from "lucide-react";
+import { Store, Instagram, Music2, Facebook, Youtube, MapPin, Mail, MessageCircleMore, Phone, Send, ArrowRight, Package, Building2 } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildBreadcrumbSchema, buildWebPageSchema, buildOrganizationSchema } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
+import { SELLER } from "../data/sellerInfo.js";
 
 const contactLinks = [
   { icon: Mail, label: "contact@aejaca.com", href: "mailto:contact@aejaca.com" },
@@ -196,6 +197,43 @@ export default function Contact() {
                 ))}
               </div>
             </div>
+            {/* ADRESY. Dwa i celowo rozdzielone, bo sluza do czego innego:
+                pod jeden idzie korespondencja, pod drugi przedmioty do
+                grawerowania i naprawy. Wczesniej nie bylo tu zadnego, wiec
+                klient, ktory kupil usluge na materiale powierzonym, nie mial
+                dokad wyslac swojej rzeczy i pisal maila. */}
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">{c.addressTitle}</h3>
+              <div className="space-y-4">
+                <div className="flex items-start gap-4 p-4 rounded-lg glass">
+                  <div className="w-10 h-10 rounded-full bg-amber-400/10 flex items-center justify-center shrink-0">
+                    <Building2 className="w-5 h-5 text-amber-400" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] uppercase tracking-[0.1em] text-neutral-500 mb-1">{c.postalLabel}</div>
+                    <address className="not-italic text-neutral-300 text-sm leading-relaxed">
+                      {SELLER.legalName}<br />
+                      {SELLER.addressLines.map((line) => <span key={line}>{line}<br /></span>)}
+                    </address>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 p-4 rounded-lg glass">
+                  <div className="w-10 h-10 rounded-full bg-amber-400/10 flex items-center justify-center shrink-0">
+                    <Package className="w-5 h-5 text-amber-400" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] uppercase tracking-[0.1em] text-neutral-500 mb-1">{c.lockerLabel}</div>
+                    <p className="text-neutral-300 text-sm">
+                      {SELLER.inpostLocker.label[lang] || SELLER.inpostLocker.label.pl}{" "}
+                      <b className="font-mono text-amber-300">{SELLER.inpostLocker.code}</b>
+                    </p>
+                    <p className="mt-1 text-[12px] leading-relaxed text-neutral-500">{c.lockerHint}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">{c.socialTitle}</h3>
               <div className="grid grid-cols-2 gap-3">
