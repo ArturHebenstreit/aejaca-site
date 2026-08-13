@@ -46,6 +46,7 @@ const L = {
     mass: "Masa metalu", stones: "Kamieni",
     nominal: "Model jest nominalny, w wymiarach gotowego pierścionka, bez kompensacji skurczu odlewu. Jeśli odlewasz u siebie, powiększ go najpierw:",
     nominalLink: "kalkulator skurczu",
+    breakdown: "Z czego składa się ta kwota",
   },
   en: {
     title: "What would you like to order",
@@ -61,6 +62,7 @@ const L = {
     mass: "Metal mass", stones: "Stones",
     nominal: "The model is nominal, at finished ring dimensions, without casting shrinkage compensation. If you cast it yourself, scale it up first:",
     nominalLink: "shrinkage calculator",
+    breakdown: "What this amount consists of",
   },
   de: {
     title: "Was möchten Sie bestellen",
@@ -76,6 +78,7 @@ const L = {
     mass: "Metallmasse", stones: "Steine",
     nominal: "Das Modell ist nominal, in den Maßen des fertigen Rings, ohne Schwindungskompensation. Wenn Sie selbst gießen, skalieren Sie es zuerst:",
     nominalLink: "Schwindungsrechner",
+    breakdown: "Woraus sich der Betrag zusammensetzt",
   },
 };
 
@@ -190,6 +193,24 @@ export default function RingPriceBox({ params, lang = "pl" }) {
           );
         })}
       </div>
+
+      {/* Rozbicie kwoty NIE jest ozdobnikiem. Gotowy wyrob potrafi kosztowac
+          dziesiec razy tyle co odlew i bez tej listy liczba wyglada jak blad,
+          a klient nie ma jak sprawdzic, ze kamien jest tu drozszy od metalu.
+          Kalkulatory pokazuja to od zawsze, kreator byl wyjatkiem. */}
+      {wybrany?.breakdown?.length ? (
+        <dl className="mt-3 rounded-lg border border-white/10 bg-black/20 px-3 py-2">
+          <dt className="text-[10px] uppercase tracking-[0.1em] text-neutral-500 mb-1.5">{t.breakdown}</dt>
+          {wybrany.breakdown.map((w, i) => (
+            w.divider ? <hr key={i} className="my-1.5 border-white/10" /> : (
+              <div key={i} className="flex justify-between gap-3 py-0.5">
+                <dd className={`text-[12px] ${w.bold ? "text-neutral-200" : "text-neutral-400"}`}>{w.label}</dd>
+                <dd className={`text-[12px] tabular-nums ${w.bold ? "text-neutral-100 font-medium" : "text-neutral-300"}`}>{w.value}</dd>
+              </div>
+            )
+          ))}
+        </dl>
+      ) : null}
 
       {/* Model nominalny to decyzja, nie przeoczenie, wiec mowimy o niej
           wprost i kierujemy do narzedzia, ktore liczy kompensacje. */}

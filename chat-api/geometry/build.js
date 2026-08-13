@@ -164,8 +164,14 @@ export function buildShank(w, p, segments) {
   for (let i = 0; i < M; i++) {
     const th = (i / M) * Math.PI * 2;
     // Godzina dwunasta, czyli miejsce glowicy, lezy na +Y.
-    let d = Math.abs(((th - Math.PI / 2) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI);
-    const u = 1 - d / Math.PI;              // 0 przy glowicy, 1 po przeciwnej stronie
+    // ODLEGLOSC KATOWA OD GLOWICY, i to jest cala subtelnosc tego miejsca.
+    // Bylo tu `1 - d / PI`, czyli u = 1 dokladnie tam, gdzie siedzi glowica,
+    // podczas gdy wszystkie zwezenia opisane wyzej licza u = 0 przy glowicy.
+    // Sylwetki wychodzily wiec ODWROCONE: sygnet gestnial na dole zamiast
+    // pod tarcza, a szyna zwezana byla waska z tylu. Objetosc sie zgadzala,
+    // bo calka nie wie, ktora strona jest gora, i dlatego test tego nie lapal.
+    const d = Math.abs(((th - Math.PI / 2) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI);
+    const u = d / Math.PI;                  // 0 przy glowicy, 1 po przeciwnej stronie
     const k = taper(u);
     const ct = Math.cos(th), st = Math.sin(th);
 
@@ -727,7 +733,7 @@ function buildBandStones(w, p) {
       ? Math.PI / 2 + (i / n) * Math.PI * 2
       : Math.PI / 2 - Math.PI / 2 + ((i + 0.5) / n) * Math.PI;
     const odchyl = Math.abs(((a - Math.PI / 2 + Math.PI * 3) % (Math.PI * 2)) - Math.PI);
-    const u = 1 - odchyl / Math.PI;
+    const u = odchyl / Math.PI;             // 0 przy glowicy, jak wszedzie indziej
     // Kamien siada NIECO PONIZEJ powierzchni szyny. Postawiony dokladnie na
     // niej wystaje poza obrys obraczki i zaczepia o wszystko, a przy okazji
     // wyglada jak doklejony.
