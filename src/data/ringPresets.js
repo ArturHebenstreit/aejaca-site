@@ -17,9 +17,21 @@
 // Lepiej pokazac osiem pozycji, ktore daja dokladnie to, co obiecuja, niz
 // dwanascie, z ktorych cztery udaja cos, czego generator nie zbuduje.
 
+// GRUPY STYLOW. Klient najpierw wybiera rodzaj wyrobu, a dopiero potem
+// wariant, bo szesnascie kafelkow obok siebie to sciana, w ktorej nie widac
+// zadnej roznicy. Podzial idzie po tym, CZYM rzecz jest, a nie po tym, jak
+// ja zbudowalismy: obraczka i eternity to dla kupujacego jedna polka.
+export const PRESET_GROUPS = [
+  { id: "solitaire", label: { pl: "Z jednym kamieniem", en: "Single stone", de: "Mit einem Stein" } },
+  { id: "multi",     label: { pl: "Z kilkoma kamieniami", en: "Several stones", de: "Mehrere Steine" } },
+  { id: "bands",     label: { pl: "Obrączki", en: "Bands", de: "Ringe" } },
+  { id: "signets",   label: { pl: "Sygnety", en: "Signets", de: "Siegelringe" } },
+];
+
 export const RING_PRESETS = [
   {
     id: "solitaire",
+    group: "solitaire",
     label: { pl: "Soliter klasyczny", en: "Classic solitaire", de: "Klassischer Solitär" },
     note: { pl: "Jeden kamień, cztery łapki, szyna zwężana ku głowicy.",
             en: "One stone, four claws, shank tapering towards the head.",
@@ -32,6 +44,7 @@ export const RING_PRESETS = [
   },
   {
     id: "six",
+    group: "solitaire",
     label: { pl: "Soliter na sześciu łapkach", en: "Six-claw solitaire", de: "Solitär mit sechs Krappen" },
     note: { pl: "Więcej metalu nad rondystą, więc kamień siedzi pewniej.",
             en: "More metal over the girdle, so the stone sits more securely.",
@@ -44,6 +57,7 @@ export const RING_PRESETS = [
   },
   {
     id: "pave",
+    group: "multi",
     label: { pl: "Soliter z pavé", en: "Pavé solitaire", de: "Pavé-Solitär" },
     note: { pl: "Kamienie na ramionach prowadzą wzrok do głównego.",
             en: "Stones along the shoulders lead the eye to the centre stone.",
@@ -56,6 +70,7 @@ export const RING_PRESETS = [
   },
   {
     id: "bezel",
+    group: "solitaire",
     label: { pl: "Kaseta nowoczesna", en: "Modern bezel", de: "Moderne Zarge" },
     note: { pl: "Rant dookoła kamienia. Nic nie wystaje, więc nie zaczepia.",
             en: "A rim all the way round. Nothing protrudes, so nothing catches.",
@@ -68,6 +83,7 @@ export const RING_PRESETS = [
   },
   {
     id: "emerald",
+    group: "solitaire",
     label: { pl: "Ośmiokąt w kasecie", en: "Octagon in a bezel", de: "Achteck in Zarge" },
     note: { pl: "Szlif schodkowy pokazuje czystość kamienia zamiast ognia.",
             en: "A step cut shows the clarity of the stone rather than its fire.",
@@ -80,6 +96,7 @@ export const RING_PRESETS = [
   },
   {
     id: "marquise",
+    group: "solitaire",
     label: { pl: "Markiza w łapkach V", en: "Marquise in V-claws", de: "Navette in V-Krappen" },
     note: { pl: "Szpice muszą być zakryte, bo to najbardziej kruche miejsce kamienia.",
             en: "The points must be covered, being the most fragile part of the stone.",
@@ -92,6 +109,7 @@ export const RING_PRESETS = [
   },
   {
     id: "cabochon",
+    group: "solitaire",
     label: { pl: "Kaboszon, kamień urodzeniowy", en: "Cabochon birthstone", de: "Cabochon-Geburtsstein" },
     note: { pl: "Kamień polerowany na gładko, bez fasetek. Tak nosi się ametyst czy turkus.",
             en: "Polished smooth, without facets. This is how amethyst or turquoise is worn.",
@@ -104,6 +122,7 @@ export const RING_PRESETS = [
   },
   {
     id: "halo",
+    group: "multi",
     label: { pl: "Halo", en: "Halo", de: "Halo" },
     note: { pl: "Wieniec drobnych kamieni powiększa optycznie kamień centralny o pół karata.",
             en: "A wreath of small stones makes the centre stone look about half a carat larger.",
@@ -116,6 +135,7 @@ export const RING_PRESETS = [
   },
   {
     id: "diana",
+    group: "multi",
     label: { pl: "Owal w halo, z pavé", en: "Oval halo with pavé", de: "Ovales Halo mit Pavé" },
     note: { pl: "Owal w wieńcu, kamienie na ramionach. Wzór znany z pierścionka księżnej Diany.",
             en: "An oval in a wreath with stones along the shoulders, the pattern known from Princess Diana's ring.",
@@ -129,6 +149,7 @@ export const RING_PRESETS = [
   },
   {
     id: "trilogy",
+    group: "multi",
     label: { pl: "Trylogia", en: "Trilogy", de: "Trilogie" },
     note: { pl: "Trzy kamienie: przeszłość, teraźniejszość, przyszłość. Boczne we własnych łapkach.",
             en: "Three stones for past, present and future, the side ones in claws of their own.",
@@ -141,6 +162,7 @@ export const RING_PRESETS = [
   },
   {
     id: "band",
+    group: "bands",
     label: { pl: "Obrączka gładka", en: "Plain band", de: "Glatter Ring" },
     note: { pl: "Bez kamieni. Profil comfort zsuwa się po palcu zamiast go ścinać krawędzią.",
             en: "No stones. A comfort profile slides over the finger instead of cutting into it.",
@@ -153,6 +175,7 @@ export const RING_PRESETS = [
   },
   {
     id: "halfEternity",
+    group: "bands",
     label: { pl: "Half eternity", en: "Half eternity", de: "Half Eternity" },
     note: { pl: "Kamienie na górnej połowie. Dół zostaje gładki, więc rozmiar da się później zmienić.",
             en: "Stones across the upper half. The lower half stays plain, so the size can be altered later.",
@@ -165,6 +188,7 @@ export const RING_PRESETS = [
   },
   {
     id: "eternity",
+    group: "bands",
     label: { pl: "Eternity", en: "Eternity", de: "Eternity" },
     note: { pl: "Kamienie dookoła. UWAGA: takiego pierścionka nie da się później zwęzić ani rozciągnąć, bo nie ma gładkiego odcinka.",
             en: "Stones all the way round. Note that such a ring cannot be sized later, as there is no plain stretch to work on.",
@@ -177,37 +201,40 @@ export const RING_PRESETS = [
   },
   {
     id: "signet",
+    group: "signets",
     label: { pl: "Sygnet męski", en: "Men's signet", de: "Herren-Siegelring" },
     note: { pl: "Masywna tarcza i ramiona, które gęstnieją pod nią.",
             en: "A solid table with shoulders that thicken beneath it.",
             de: "Eine massive Platte mit Schultern, die darunter kräftiger werden." },
     params: {
-      kind: "ring", profile: "round", taper: "signet", width: 3.2, thickness: 2.0,
-      signet: { table: "cushion", length: 16 },
+      kind: "ring", profile: "round", taper: "signet", width: 2.9, thickness: 1.8,
+      signet: { table: "cushion", length: 14 },
     },
     kind: "signet",
   },
   {
     id: "signetLady",
+    group: "signets",
     label: { pl: "Sygnet damski", en: "Women's signet", de: "Damen-Siegelring" },
     note: { pl: "Ta sama konstrukcja, mniejsza tarcza i lżejsza szyna.",
             en: "The same construction with a smaller table and a lighter shank.",
             de: "Gleiche Konstruktion, kleinere Platte, leichtere Schiene." },
     params: {
-      profile: "round", taper: "signet", width: 2.2, thickness: 1.6,
-      signet: { table: "oval", length: 11 },
+      profile: "round", taper: "signet", width: 2.0, thickness: 1.5,
+      signet: { table: "oval", length: 10.5 },
     },
     kind: "signet",
   },
   {
     id: "pinky",
+    group: "signets",
     label: { pl: "Pinky, na mały palec", en: "Pinky ring", de: "Pinky-Ring" },
     note: { pl: "Mniejszy rozmiar i drobna tarcza. Nosi się go zamiast sygnetu pieczętnego.",
             en: "A smaller size and a small table, worn in place of a seal signet.",
             de: "Kleinere Größe und kleine Platte, statt eines Siegelrings getragen." },
     params: {
-      innerDia: 15.6, profile: "round", taper: "signet", width: 2.0, thickness: 1.5,
-      signet: { table: "oval", length: 9.5 },
+      innerDia: 15.6, profile: "round", taper: "signet", width: 1.8, thickness: 1.35,
+      signet: { table: "oval", length: 9.0 },
     },
     kind: "signet",
   },

@@ -12,12 +12,13 @@
 
 import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import { CUTS, SETTINGS, SIDE_SETTINGS, SHANK_PROFILES, SIGNET_TABLES, DEFAULTS, LIMITS } from "../../geometry/ring/params.js";
-import { RING_PRESETS, applyPreset } from "../../data/ringPresets.js";
+import { RING_PRESETS, PRESET_GROUPS, applyPreset } from "../../data/ringPresets.js";
 import { CASTING_ALLOYS, METAL_COLORS, colorsFor } from "../../data/castingAlloys.js";
 import { GEMSTONES } from "../../pricing/jewelryConfig.js";
 import { gemOptics } from "../../data/gemOptics.js";
 import { RING_SIZES } from "../../data/ringSizes.js";
 import CutIcon from "./jewelry/CutIcon.jsx";
+import PresetIcon from "./jewelry/PresetIcon.jsx";
 
 const RingPreview3D = lazy(() => import("./jewelry/RingPreview3D.jsx"));
 // Kwota wiazaca schodzi z serwera, wiec komponent i tak czeka na siec.
@@ -48,6 +49,7 @@ const L = {
     stonesIn: "Kamienie w modelu",
     castingHint: "Kanał i stopka są potrzebne, gdy odlewasz samodzielnie. Nie wchodzą do masy wyrobu ani do ceny: metal z kanału wraca po odcięciu do tygla.",
     buttonNeedsSprue: "Stopka wymaga kanału, bo to on ją łączy z odlewem.",
+    innerSprues: "Kanały wewnętrzne", innerNeedsSprue: "Kanały wewnętrzne wpinają się w kanał główny, więc bez niego nie mają do czego dojść.",
     building: "Liczę bryłę…", dragHint: "Przeciągnij, żeby obrócić",
     profiles: { round: "Półokrągły", flat: "Płaski", knife: "Nożowy", comfort: "Comfort" },
     tables: { oval: "Owalna", cushion: "Poduszka", rect: "Prostokątna" },
@@ -76,6 +78,7 @@ const L = {
     stonesIn: "Stones in the model",
     castingHint: "A sprue and button are needed if you cast the piece yourself. They do not enter the mass of the piece or its price: the metal returns to the crucible once cut off.",
     buttonNeedsSprue: "The button needs a sprue, which is what joins it to the casting.",
+    innerSprues: "Inner channels", innerNeedsSprue: "Inner channels join the main sprue, so without it they lead nowhere.",
     building: "Building the solid…", dragHint: "Drag to rotate",
     profiles: { round: "Half-round", flat: "Flat", knife: "Knife-edge", comfort: "Comfort" },
     tables: { oval: "Oval", cushion: "Cushion", rect: "Rectangular" },
@@ -104,6 +107,7 @@ const L = {
     stonesIn: "Steine im Modell",
     castingHint: "Kanal und Knopf brauchen Sie, wenn Sie selbst gießen. Sie zählen weder zur Masse des Stücks noch zum Preis: das Metall geht nach dem Abtrennen zurück in den Tiegel.",
     buttonNeedsSprue: "Der Knopf braucht einen Kanal, der ihn mit dem Guss verbindet.",
+    innerSprues: "Innere Kanäle", innerNeedsSprue: "Innere Kanäle münden in den Hauptkanal, ohne ihn führen sie ins Leere.",
     building: "Körper wird berechnet…", dragHint: "Zum Drehen ziehen",
     profiles: { round: "Halbrund", flat: "Flach", knife: "Messerkante", comfort: "Comfort" },
     tables: { oval: "Oval", cushion: "Kissen", rect: "Rechteckig" },
@@ -208,6 +212,9 @@ export default function RingConfigurator({ lang = "pl" }) {
   const t = L[lang] || L.pl;
   const [p, setP] = useState(DEFAULTS);
   const [presetId, setPresetId] = useState(null);
+  // Otwarta grupa wzorow. Zaczynamy od pierscionkow z jednym kamieniem, bo
+  // po nie siega wiekszosc odwiedzajacych.
+  const [grupa, setGrupa] = useState(PRESET_GROUPS[0].id);
   const [mesh, setMesh] = useState(null);
   const [info, setInfo] = useState(null);
   const [busy, setBusy] = useState(true);
@@ -291,11 +298,33 @@ export default function RingConfigurator({ lang = "pl" }) {
 
         {/* ---------- parametry ---------- */}
         <div className="border-b lg:border-b-0 lg:border-r border-white/10 p-5">
+          {/* Wybor wzoru jest DWUPOZIOMOWY. Szesnascie kafelkow obok siebie
+              tworzy sciane, w ktorej nie widac zadnej roznicy, a klient
+              i tak najpierw wie, czy chce pierscionek z kamieniem, obraczke,
+              czy sygnet. Piktogramy rysuja sie z tych samych parametrow,
+              z ktorych powstaje bryla, wiec nie moga obiecac czegos innego. */}
           <Group label={t.preset} hint={aktywny ? nameOf(aktywny.note, lang) : null}>
-            <Seg value={presetId} onChange={(id) => {
-              const wzor = RING_PRESETS.find((x) => x.id === id);
-              if (wzor) { setPresetId(id); setP((prev) => applyPreset(wzor, prev)); }
-            }} options={RING_PRESETS.map((x) => ({ id: x.id, label: nameOf(x.label, lang) }))} />
+            <Seg value={grupa} onChange={setGrupa}
+              options={PRESET_GROUPS.map((g) => ({ id: g.id, label: nameOf(g.label, lang) }))} />
+
+            <div className="mt-2 grid grid-cols-3 gap-1.5">
+              {RING_PRESETS.filter((x) => x.group === grupa).map((wzor) => (
+                <button
+                  key={wzor.id} type="button"
+                  onClick={() => { setPresetId(wzor.id); setP((prev) => applyPreset(wzor, prev)); }}
+                  aria-pressed={wzor.id === presetId}
+                  title={nameOf(wzor.note, lang)}
+                  className={`flex flex-col items-center gap-1 rounded-sm border px-1 py-2 transition-colors ${
+                    wzor.id === presetId
+                      ? "border-amber-400/55 bg-amber-400/10 text-amber-300"
+                      : "border-white/10 bg-white/[0.03] text-neutral-400 hover:border-white/25 hover:text-neutral-200"
+                  }`}
+                >
+                  <PresetIcon preset={wzor} size={40} />
+                  <span className="text-[10px] leading-tight text-center">{nameOf(wzor.label, lang)}</span>
+                </button>
+              ))}
+            </div>
           </Group>
 
           <Group label={t.kind}>
@@ -465,10 +494,11 @@ export default function RingConfigurator({ lang = "pl" }) {
           <Group label={t.castingTitle} hint={t.castingHint}>
             <div className="space-y-1.5">
               {[
-                ["stones", t.stonesIn, false],
-                ["sprues", t.sprues, false],
-                ["button", t.button, !p.casting.sprues],
-              ].map(([id, etykieta, zablokowany]) => (
+                ["stones", t.stonesIn, false, null],
+                ["sprues", t.sprues, false, null],
+                ["innerSprues", t.innerSprues, !p.casting.sprues, t.innerNeedsSprue],
+                ["button", t.button, !p.casting.sprues, t.buttonNeedsSprue],
+              ].map(([id, etykieta, zablokowany, powod]) => (
                 <label key={id}
                   className={`flex items-center gap-2.5 rounded-sm border px-2.5 py-2 text-[13px] transition-colors ${
                     zablokowany
@@ -477,15 +507,19 @@ export default function RingConfigurator({ lang = "pl" }) {
                         ? "border-amber-400/50 bg-amber-400/10 text-amber-200 cursor-pointer"
                         : "border-white/10 bg-white/[0.03] text-neutral-400 hover:border-white/20 cursor-pointer"
                   }`}
-                  title={zablokowany ? t.buttonNeedsSprue : undefined}
+                  title={zablokowany ? powod : undefined}
                 >
                   <input type="checkbox" className="accent-amber-400"
                     checked={Boolean(p.casting[id])} disabled={zablokowany}
                     onChange={(e) => setP((prev) => {
                       setPresetId(null);
                       const casting = { ...prev.casting, [id]: e.target.checked };
-                      // Stopka bez kanalu wisi w powietrzu, wiec gasnie razem z nim.
-                      if (id === "sprues" && !e.target.checked) casting.button = false;
+                      // Stopka i kanaly wewnetrzne wpinaja sie w kanal glowny,
+                      // wiec gasna razem z nim.
+                      if (id === "sprues" && !e.target.checked) {
+                        casting.button = false;
+                        casting.innerSprues = false;
+                      }
                       return { ...prev, casting };
                     })} />
                   {etykieta}
