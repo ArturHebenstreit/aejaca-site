@@ -368,3 +368,21 @@ export const CHAIN_SVG_Y_WOMEN = {
 export const CHAIN_SVG_Y_MEN = {
   500: 150, 550: 170, 600: 190, 650: 208, 700: 225, 750: 241,
 };
+
+// ------------------------------------------------------------
+// Stawka kruszcu, JEDNA dla calego serwisu
+// ------------------------------------------------------------
+// Ta funkcja stala wczesniej w dwoch plikach, slowo w slowo: w kalkulatorze
+// bizuterii i w wycenie kreatora. Duplikat nie boli w dniu, w ktorym powstaje,
+// tylko pol roku pozniej, gdy ktos poprawi jedna kopie. Klient dostawalby
+// wtedy dwie rozne kwoty za ten sam pierscionek w zaleznosci od tego, ktorym
+// wejsciem trafil na strone.
+//
+// `rates` to kursy z NBP i metalpriceapi. Bez nich schodzimy na wartosci
+// zapasowe z konfiguracji, zeby wycena dzialala takze przy awarii dostawcy.
+export function metalPricePerG(metalKey, rates) {
+  if (metalKey === "gold") return rates?.au_pln_per_g ?? METAL_PRICES.gold.plnPerG;
+  if (metalKey === "silver") return rates?.ag_pln_per_g ?? METAL_PRICES.silver.plnPerG;
+  if (metalKey === "platinum") return rates?.pt_pln_per_g ?? METAL_PRICES.platinum.plnPerG;
+  return METAL_PRICES[metalKey]?.plnPerG ?? 0;
+}

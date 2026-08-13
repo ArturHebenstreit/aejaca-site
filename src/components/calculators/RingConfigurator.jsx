@@ -43,6 +43,7 @@ const L = {
     sideSize: "Średnica bocznych", none: "Brak",
     table: "Tarcza sygnetu", tableLen: "Długość tarczy", engraving: "Grawer tarczy",
     mass: "Masa metalu", circ: "Obwód", stones: "Kamieni", tri: "Trójkątów",
+    massTotal: "Masa pierścionka", carats: "Karaty",
     building: "Liczę bryłę…", dragHint: "Przeciągnij, żeby obrócić",
     profiles: { round: "Półokrągły", flat: "Płaski", knife: "Nożowy", comfort: "Comfort" },
     tables: { oval: "Owalna", cushion: "Poduszka", rect: "Prostokątna" },
@@ -66,6 +67,7 @@ const L = {
     sideSize: "Side stone diameter", none: "None",
     table: "Signet table", tableLen: "Table length", engraving: "Table engraving",
     mass: "Metal mass", circ: "Circumference", stones: "Stones", tri: "Triangles",
+    massTotal: "Ring mass", carats: "Carats",
     building: "Building the solid…", dragHint: "Drag to rotate",
     profiles: { round: "Half-round", flat: "Flat", knife: "Knife-edge", comfort: "Comfort" },
     tables: { oval: "Oval", cushion: "Cushion", rect: "Rectangular" },
@@ -89,6 +91,7 @@ const L = {
     sideSize: "Durchmesser der Seitensteine", none: "Keine",
     table: "Siegelplatte", tableLen: "Plattenlänge", engraving: "Gravur der Platte",
     mass: "Metallmasse", circ: "Umfang", stones: "Steine", tri: "Dreiecke",
+    massTotal: "Ringmasse", carats: "Karat",
     building: "Körper wird berechnet…", dragHint: "Zum Drehen ziehen",
     profiles: { round: "Halbrund", flat: "Flach", knife: "Messerkante", comfort: "Comfort" },
     tables: { oval: "Oval", cushion: "Kissen", rect: "Rechteckig" },
@@ -231,6 +234,8 @@ export default function RingConfigurator({ lang = "pl" }) {
       setMesh({ metal: e.data.metal, stones: e.data.stones, sideStones: e.data.sideStones });
       setInfo({
         massG: e.data.massG, volumeMm3: e.data.volumeMm3,
+        stoneMassG: e.data.stoneMassG || 0,
+        caratTotal: e.data.caratTotal || 0,
         triangles: e.data.metal.triangles,
         // Liczbe kamieni bierzemy z GENERATORA, bo dla halo i obwodu wynika
         // ona z obwodu wienca, a nie z niczego, co klient wpisal.
@@ -481,12 +486,18 @@ export default function RingConfigurator({ lang = "pl" }) {
             ) : null}
           </div>
 
-          <dl className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-px bg-white/10 border border-white/10 rounded-lg overflow-hidden">
+          {/* Masa PIERSCIONKA i masa METALU osobno.
+              Klient trzyma w reku pierscionek, wiec interesuje go pierwsza,
+              ale to druga decyduje o koszcie kruszcu i to ona zostaje bez
+              zmian, gdy kamienie wyjmiemy z modelu. Jedna liczba nie moze
+              odpowiedziec na oba pytania naraz. */}
+          <dl className="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-px bg-white/10 border border-white/10 rounded-lg overflow-hidden">
             {[
+              [t.massTotal, info ? `${nf(lang, info.massG + info.stoneMassG, 2)} g` : "–"],
               [t.mass, info ? `${nf(lang, info.massG, 2)} g` : "–"],
-              [t.circ, `${nf(lang, Math.PI * p.innerDia, 1)} mm`],
+              [t.carats, info ? `${nf(lang, info.caratTotal, 2)} ct` : "–"],
               [t.stones, info ? String(info.stones) : "–"],
-              [t.tri, info ? info.triangles.toLocaleString(lang === "pl" ? "pl-PL" : "en-US") : "–"],
+              [t.circ, `${nf(lang, Math.PI * p.innerDia, 1)} mm`],
             ].map(([k, v]) => (
               <div key={k} className="bg-neutral-950 px-3 py-2.5">
                 <dt className="text-[10px] uppercase tracking-[0.1em] text-neutral-500 mb-1">{k}</dt>

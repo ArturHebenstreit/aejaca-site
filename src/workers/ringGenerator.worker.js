@@ -35,7 +35,9 @@ import { buildRing } from "../geometry/ring/build.js";
 // Nowa przegladarka niczego nie zmieniala, bo cache nie byl po jej stronie.
 // 4: kamien centralny i boczne ida osobnymi siatkami, zeby mogly miec
 // rozne materialy.
-const WORKER_VERSION = 5;
+// 5: liczba kamieni z generatora
+// 6: masa kamieni i karaty, zeby podac mase PIERSCIONKA, a nie samego odlewu
+const WORKER_VERSION = 6;
 
 /** Podglad nie potrzebuje gestosci docelowej: mniej segmentow, szybsza reakcja. */
 const PREVIEW_SEGMENTS = 64;
@@ -77,6 +79,8 @@ self.onmessage = async (e) => {
     self.postMessage({
       seq, ok: true, workerVersion: WORKER_VERSION, metal, stones, sideStones,
       stoneCount: r.stones.length,
+      stoneMassG: r.stoneMassG,
+      caratTotal: r.caratTotal,
       volumeMm3: r.volumeMm3,
       massG: r.massG,
       genus: r.genus,
