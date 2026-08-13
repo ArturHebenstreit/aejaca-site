@@ -17,7 +17,7 @@
 // Wchodzi do builda.
 
 import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, taperFor, buildShank, buildGallery } from "../src/geometry/ring/build.js";
-import { CUTS, SETTINGS, SEAT, SIGNET_TABLES, validate } from "../src/geometry/ring/params.js";
+import { CUTS, SETTINGS, SEAT, SIGNET_TABLES, DEFAULTS, validate } from "../src/geometry/ring/params.js";
 
 /**
  * Zwolnienie bryly po pomiarze.
@@ -805,21 +805,71 @@ console.log("\n16. Dodatki odlewnicze nie ruszają wyrobu");
     zwolnij(r);
   }
 
-  // Kanal wchodzi w NAJGRUBSZE miejsce. Przy szynie zwezanej ku glowicy
-  // najgrubszy jest dol, przy sygnetowej gora.
-  const strona = async (taper) => {
-    const r = await buildRing({ innerDia: 17.2, taper, casting: { sprues: true } }, { segments: 48 });
+  // KANAL NIE MOZE WYJSC Z KORONY, i to jest regula silniejsza od reguly
+  // "najgrubsze miejsce".
+  //
+  // Bylo tu odwrotnie: strone wybieral pomiar grubosci, wiec przy sylwetce
+  // katedralnej, gdzie najgrubsza jest wlasnie glowica, kanal wychodzil
+  // klientowi prosto z korony, miedzy lapkami. Takiego kanalu nie da sie
+  // odcia bez sladu na widoku i zaden jubiler tak pierscionka nie wiesza.
+  // Test to POTWIERDZAL, bo sprawdzal regule, a nie wyrob.
+  //
+  // Mierzymy wiec rzecz, ktora ma znaczenie w warsztacie: czy uklad wlewowy
+  // dotyka czegokolwiek powyzej szyny.
+  // Kierunek mierzymy na SAMYM kanale glownym. Kanaly wewnetrzne przechodza
+  // przez otwor na wylot, wiec ich srodek ciezkosci lezy blisko zera i zatarlby
+  // to, o co tu chodzi.
+  const uklad = async (params, wewnetrzne = false) => {
+    const r = await buildRing({ innerDia: 17.2, ...params, casting: { sprues: true, innerSprues: wewnetrzne } },
+      { segments: 48 });
     const m = r.casting.getMesh(), v = m.vertProperties;
-    let y = 0;
-    for (let i = 0; i < m.numVert; i++) y += v[i * 3 + 1];
-    return y / m.numVert;
+    let y = 0, gora = -Infinity;
+    for (let i = 0; i < m.numVert; i++) {
+      y += v[i * 3 + 1];
+      if (v[i * 3 + 1] > gora) gora = v[i * 3 + 1];
+    }
+    const wynik = { sredniaY: y / m.numVert, gora, params: r.params };
+    zwolnij(r);
+    return wynik;
   };
-  const yZwezana = await strona("tapered");
-  const ySygnet = await strona("signet");
-  if (yZwezana < 0) ok(`przy szynie zwężanej kanał wchodzi od dołu (y = ${yZwezana.toFixed(1)} mm)`);
-  else bad(`kanal przy szynie zwezanej wchodzi od gory, gdzie metal jest cienszy (y = ${yZwezana.toFixed(1)})`);
-  if (ySygnet > 0) ok(`przy sylwetce sygnetowej kanał wchodzi od głowicy (y = ${ySygnet.toFixed(1)} mm)`);
-  else bad(`kanal przy sygnecie wchodzi od dolu, a tam metal jest cienszy (y = ${ySygnet.toFixed(1)})`);
+
+  for (const taper of ["none", "tapered", "cathedral", "signet"]) {
+    const wyrob = { taper, stone: { cut: "round", size: 6.5 }, setting: "prong4" };
+    const u = await uklad(wyrob);
+    const zWew = await uklad(wyrob, true);
+    u.gora = Math.max(u.gora, zWew.gora);
+    // Powierzchnia szyny na godzinie dwunastej. Wszystko powyzej to korona.
+    const roGlowicy = 17.2 / 2 + u.params.thickness * (taperFor(u.params)?.(0)?.t ?? 1);
+    if (u.sredniaY >= 0) {
+      bad(`${taper}: kanal wchodzi od gory, czyli przez korone (srednie y = ${u.sredniaY.toFixed(1)} mm)`);
+    } else if (u.gora > roGlowicy + 0.05) {
+      bad(`${taper}: uklad wlewowy siega ${u.gora.toFixed(2)} mm, ponad szyne (${roGlowicy.toFixed(2)} mm)`);
+    } else {
+      ok(`${taper.padEnd(10)} kanał od dołu, nic nie sięga korony (${u.gora.toFixed(2)} ≤ ${roGlowicy.toFixed(2)} mm)`);
+    }
+  }
+
+  // Sygnet nie ma korony, ma tarcze, i tam kanal wchodzi od gory, w jej kant.
+  const sygnet = await uklad({ kind: "signet", signet: { table: "oval", length: 14 } });
+  if (sygnet.sredniaY > 0) ok(`sygnet: kanał wchodzi od tarczy (średnie y = ${sygnet.sredniaY.toFixed(1)} mm)`);
+  else bad(`kanal przy sygnecie wchodzi od dolu, a tam metal jest cienszy (y = ${sygnet.sredniaY.toFixed(1)})`);
+
+  // Kanaly wewnetrzne maja PRZECHODZIC przez otwor na palec i dochodzic pod
+  // glowice, a nie stercac przy wlewie. Sprawdzamy, ze siegaja przeciwleglej
+  // strony otworu.
+  {
+    const bez = await buildRing({ innerDia: 17.2, taper: "cathedral", stone: { cut: "round", size: 6.5 },
+      setting: "prong4", casting: { sprues: true } }, { segments: 48 });
+    const zWewn = await buildRing({ innerDia: 17.2, taper: "cathedral", stone: { cut: "round", size: 6.5 },
+      setting: "prong4", casting: { sprues: true, innerSprues: true } }, { segments: 48 });
+    const gora = (r) => r.casting.boundingBox().max[1];
+    // Bez kanalow wewnetrznych uklad konczy sie na dole. Z nimi musi siegnac
+    // gornej scianki otworu, czyli okolo `ri`.
+    const zasieg = gora(zWewn) - gora(bez);
+    if (gora(zWewn) > 17.2 / 2 - 1.2) ok(`kanały wewnętrzne dochodzą pod głowicę (y = ${gora(zWewn).toFixed(2)} mm, otwór kończy się na ${(17.2 / 2).toFixed(2)})`);
+    else bad(`kanaly wewnetrzne siegaja tylko ${gora(zWewn).toFixed(2)} mm, czyli nie przechodza przez otwor (przyrost ${zasieg.toFixed(2)} mm)`);
+    zwolnij(bez); zwolnij(zWewn);
+  }
 }
 
 // ------------------------------------------------------------
@@ -1158,6 +1208,42 @@ console.log("\n21. Łapka V to DWA pręty, a nie narośl na szpicu");
     }
     if (zle) bad(`${nazwa}: ${zle}`);
     else ok(`${nazwa.padEnd(8)} ${szpice * 2} osobne pręty, po dwa na każdy szpic`);
+    zwolnij(r);
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n22. Układ wlewowy dla KAŻDEGO wzoru z listy");
+// ------------------------------------------------------------
+// Poprzednie sprawdziany brały kilka sylwetek dobranych ręcznie i przez to
+// przepuscily uklad, ktory klient widzi na ekranie: wzor "soliter z pave"
+// ma sylwetke katedralna, przy niej najgrubsza jest glowica, a kanal szedl
+// w najgrubsze miejsce, wiec wychodzil z korony. Skoro wzory sa lista, to
+// sprawdzian tez ma isc po liscie, a nie po moim wyobrazeniu o niej.
+{
+  for (const preset of RING_PRESETS) {
+    const wejscie = applyPreset(preset, { ...DEFAULTS });
+    const r = await buildRing(
+      { ...wejscie, casting: { sprues: true, innerSprues: true, button: true } },
+      { segments: 48 });
+    const p = r.params;
+    const bb = r.casting.boundingBox();
+    const roGlowicy = p.innerDia / 2 + p.thickness * (taperFor(p)?.(0)?.t ?? 1);
+
+    const razem = r.metal.add(r.casting);
+    const czesci = ileCzesci(razem);
+    razem.delete?.();
+
+    const problemy = [];
+    // Sygnet karmi sie od tarczy i tam kanal MA byc wysoko. Pierscionek
+    // i obraczka: nic z ukladu wlewowego nie ma prawa siegnac ponad szyne.
+    if (p.kind !== "signet" && bb.max[1] > roGlowicy + 0.05) {
+      problemy.push(`kanał sięga ${bb.max[1].toFixed(2)} mm, a szyna kończy się na ${roGlowicy.toFixed(2)} mm`);
+    }
+    if (czesci !== 1) problemy.push(`plik ma ${czesci} osobne bryły`);
+
+    if (problemy.length) bad(`${preset.id}: ${problemy.join("; ")}`);
+    else ok(`${String(preset.id).padEnd(14)} ${p.kind.padEnd(6)} kanał poza koroną, plik w jednej bryle`);
     zwolnij(r);
   }
 }

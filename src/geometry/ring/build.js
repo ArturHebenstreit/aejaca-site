@@ -1382,12 +1382,62 @@ function smoothCircle(r, n) {
  * ostatni, zeby do konca dokarmial kurczacy sie odlew. Wpiety w cienka szyne
  * zakrzepnie pierwszy i pod glowica zostanie jama skurczowa.
  *
- * Przy szynie zwezanej ku glowicy najgrubszy jest DOL pierscionka, przy
- * sygnetowej odwrotnie. Wybieramy wiec strone z pomiaru, a nie z zalozenia.
+ * TYLE TEORII, i wlasnie ona wprowadzila mnie w blad. Reguly "najgrubsze
+ * miejsce" nie wolno stosowac na slepo, bo przy sylwetce katedralnej
+ * najgrubsza jest GLOWICA, i kanal wychodzil klientowi prosto z korony,
+ * miedzy lapkami, przez powierzchnie, na ktorej siedzi kamien. Takiego kanalu
+ * nie da sie odcia, bo nie ma gdzie wejsc pilnikiem, a slad po nim zostaje na
+ * widoku. Zaden jubiler tak nie wiesza pierscionka.
+ *
+ * Miejsce wlewu wynika wiec z TYPU WYROBU, a nie z pomiaru grubosci:
+ *
+ *   pierscionek  zawsze od dolu szyny, czyli po przeciwnej stronie glowicy
+ *   sygnet       w kant tarczy, nigdy w jej powierzchnie
+ *   obraczka     nie ma glowicy, wiec decyduje grubosc
+ *
+ * Glowice karmi sie kanalami WEWNETRZNYMI, przez swiatlo pierscionka, i to
+ * jest odpowiedz na to samo pytanie metalurgiczne, tylko taka, ktora nie
+ * niszczy wyrobu.
  *
  * Stopka to zbiornik metalu pod kanalem. Jej rola jest ta sama, tylko na
  * wieksza skale: trzyma cieklo najdluzej i oddaje metal w glab formy.
  */
+/**
+ * Kanaly WEWNETRZNE: dwa prety przez SWIATLO pierscionka, od strony wlewu
+ * do przeciwleglej.
+ *
+ * Byly tu dwa krotkie kikuty przy samym wlewie, wpiete w szyne kilkanascie
+ * stopni obok kanalu glownego. Robily polowe roboty: usztywnialy odlew, ale
+ * nie dowozily metalu tam, gdzie trzeba, czyli pod glowice. Klient zglosil to
+ * wprost, ze "kanaly wewnetrzne sa tylko lekko po bokach".
+ *
+ * Prawidlowy uklad, ten ze zdjecia z pociete drzewka: dwa prety wychodza po
+ * obu stronach wlewu, przechodza przez otwor na palec i ZBIEGAJA SIE po
+ * przeciwnej stronie, tuz pod najgrubszym miejscem odlewu. To one karmia
+ * glowice, dzieki czemu kanal glowny nie musi w nia wchodzic i moze zostac
+ * na dole szyny, gdzie da sie go odcia bez sladu.
+ *
+ * `znak` mowi, po ktorej stronie siedzi wlew: +1 gora, -1 dol. Prety zawsze
+ * biegna OD niego DO strony przeciwnej.
+ */
+function kanalyWewnetrzne(w, p, znak) {
+  const ri = p.innerDia / 2;
+  const r = Math.max(1.0, ri - 0.3);          // tuz pod powierzchnia otworu
+  const rInner = Math.min(0.95, Math.max(0.55, ri * 0.11));
+  // Wierzcholek po stronie przeciwnej do wlewu, czyli pod glowica albo pod
+  // tarcza. Tam metal ma dojsc i tam prety sie spotykaja.
+  const szczyt = [0, -znak * r, 0];
+  let solid = null;
+  for (const strona of [-1, 1]) {
+    const kat = znak * (Math.PI / 2) + strona * 0.85;
+    const stopa = [Math.cos(kat) * r, Math.sin(kat) * r, 0];
+    // Grubszy przy wlewie, cienszy przy wyrobie: tam sie go odcina.
+    const pret = tubeAlong(w, [stopa, szczyt], [rInner, rInner * 0.8]);
+    solid = solid ? zlacz(solid, pret) : pret;
+  }
+  return solid;
+}
+
 function buildCasting(w, p) {
   const { Manifold } = w;
   const ri = p.innerDia / 2;
@@ -1395,9 +1445,12 @@ function buildCasting(w, p) {
   const przyGlowicy = ri + p.thickness * (k ? k(0).t : 1);
   const naDole = ri + p.thickness * (k ? k(1).t : 1);
 
-  // Strona grubsza wygrywa. Przy remisie schodzimy na dol, bo tam kanal nie
-  // koliduje z glowica i latwiej go odcinac.
-  const doGory = przyGlowicy > naDole + 0.05;
+  // Obraczka nie ma glowicy, wiec tam i tylko tam decyduje grubosc. Sygnet
+  // wchodzi w kant tarczy, czyli od gory. Pierscionek z kamieniem zawsze od
+  // dolu: nad nim jest korona i kamien.
+  const doGory = p.kind === "signet"
+    ? true
+    : p.kind === "band" ? przyGlowicy > naDole + 0.05 : false;
   const promien = doGory ? przyGlowicy : naDole;
   const znak = doGory ? 1 : -1;
 
@@ -1461,18 +1514,7 @@ function buildCasting(w, p) {
     // dna szyny. Tarcza jest tu zbiornikiem metalu, a dno krzepnie pierwsze,
     // wiec to ono potrzebuje dokarmienia. Dwa prety zamiast jednego, bo szyna
     // sygnetu jest u gory szeroka i jeden zasilalby tylko jej srodek.
-    if (p.casting.innerSprues) {
-      // Dwa prety zbiegajace sie pod tarcza, jak na drzewku odlewniczym:
-      // tarcza jest tu zbiornikiem metalu, a dno szyny krzepnie pierwsze,
-      // wiec to ono potrzebuje dokarmienia i to do niego prowadzimy metal.
-      const rInner = 0.95;
-      const szczyt = [0, ri - 0.3, 0];
-      for (const strona of [-1, 1]) {
-        const kat = -Math.PI / 2 + strona * 0.85;
-        const stopa = [Math.cos(kat) * (ri - 0.3), Math.sin(kat) * (ri - 0.3), 0];
-        syg = zlacz(syg, tubeAlong(w, [stopa, szczyt], [rInner * 0.8, rInner * 0.95]));
-      }
-    }
+    if (p.casting.innerSprues) syg = zlacz(syg, kanalyWewnetrzne(w, p, 1));
 
     if (p.casting.button) {
       syg = zlacz(syg, wBok(2.0, rSyg, rStopka * 0.92, wejscie + dlugosc - 0.3));
@@ -1487,34 +1529,7 @@ function buildCasting(w, p) {
   const start = promien - 0.8;
   let solid = odcinek(dlugosc, rKanal * 0.62, rKanal, start);
 
-  // Kanaly WEWNETRZNE biegna w swietle pierscionka i wpinaja szyne w kanal
-  // glowny w dwoch dodatkowych miejscach.
-  //
-  // Robi sie tak z dwoch powodow. Metal ma krotsza droge do przeciwleglej
-  // strony obraczki, wiec front zalewania nie spotyka sie po drugiej stronie
-  // ze zimnym czolem, co daje zimny zgrzew, czyli szew widoczny dopiero po
-  // wypolerowaniu. Drugi powod jest prozaiczny: cienka obraczka na jednym
-  // kanale drga przy zalewaniu i potrafi sie wygiac.
-  //
-  // Odcina sie je razem z kanalem glownym, wiec tak samo nie wchodza do masy
-  // wyrobu.
-  if (p.casting.innerSprues) {
-    const rInner = 0.85;
-    // Wchodza w szyne pod katem, mniej wiecej na godzinie czwartej i osmej
-    // liczac od kanalu glownego, zeby nie zbiegly sie z nim w jednym punkcie.
-    for (const strona of [-1, 1]) {
-      const kat = znak * (Math.PI / 2) + strona * 1.15 * znak;
-      const wejscie = [Math.cos(kat) * (ri + 0.4), Math.sin(kat) * (ri + 0.4), 0];
-      const zbieg = [0, znak * (promien + 2.2), 0];
-
-      // Pret gladki, zwezajacy sie ku szynie: najgrubszy przy kanale glownym,
-      // bo stamtad idzie metal, i najciensszy tam, gdzie wchodzi w wyrob, bo
-      // tam sie go odcina. Wczesniej byl to ciag kul i widac bylo na nim
-      // karbowanie, mimo ze kule zachodzily na siebie: odstep miedzy nimi
-      // dorownywal ich promieniowi, wiec powierzchnia falowala.
-      solid = zlacz(solid, tubeAlong(w, [wejscie, zbieg], [rInner * 0.8, rInner]));
-    }
-  }
+  if (p.casting.innerSprues) solid = zlacz(solid, kanalyWewnetrzne(w, p, znak));
 
   if (p.casting.button) {
     // Przejscie stozkowe, zeby przekroj nie zmienial sie skokiem: ostry
