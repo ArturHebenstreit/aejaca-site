@@ -28,7 +28,7 @@ const L = {
     ownWhy: "Wymagamy wtedy próbki do testu materiałowego: ten sam laser na dwóch deskach z tego samego gatunku daje inny kontrast, a nieznane tworzywo potrafi przy wypalaniu uwolnić chlor.",
     how: "Jak dostarczyć przedmiot",
     locker: "Paczkomat InPost",
-    courier: "Kurierem lub pocztą na adres korespondencyjny",
+    courier: "Kurierem lub pocztą wyjątkowo, z zagranicy i stamtąd, gdzie InPost nie dowozi",
     contact: "dane kontaktowe",
   },
   en: {
@@ -38,7 +38,7 @@ const L = {
     ownWhy: "We then need a sample for a material test: the same laser gives a different contrast on two boards of the same species, and an unknown plastic can release chlorine when burned.",
     how: "How to send us the item",
     locker: "InPost parcel locker",
-    courier: "By courier or post to our correspondence address",
+    courier: "By courier or post as an exception, from abroad and where InPost does not deliver",
     contact: "contact details",
   },
   de: {
@@ -48,7 +48,7 @@ const L = {
     ownWhy: "Dann brauchen wir eine Probe für einen Materialtest: derselbe Laser ergibt auf zwei Brettern derselben Holzart einen anderen Kontrast, und ein unbekannter Kunststoff kann beim Brennen Chlor freisetzen.",
     how: "So senden Sie uns das Objekt",
     locker: "InPost-Paketstation",
-    courier: "Per Kurier oder Post an unsere Korrespondenzadresse",
+    courier: "Per Kurier oder Post ausnahmsweise, aus dem Ausland und wo InPost nicht zustellt",
     contact: "Kontaktdaten",
   },
 };
@@ -79,7 +79,8 @@ export default function MaterialNotice({ lang = "pl", className = "" }) {
           <b className="font-mono font-medium text-amber-300">{SELLER.inpostLocker.code}</b>
         </p>
         <p className="mt-1 text-[12.5px] text-neutral-300">
-          {t.courier}: {SELLER.addressLines.join(", ")}.{" "}
+          {t.courier}: {SELLER.shippingName}, {SELLER.addressLines.join(", ")},{" "}
+          {SELLER.country[lang] || SELLER.country.pl}.{" "}
           <Link to="/contact" className="text-amber-300/90 underline underline-offset-2">{t.contact}</Link>
         </p>
       </div>
