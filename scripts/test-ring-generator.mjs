@@ -253,6 +253,33 @@ console.log("\n6. Kamienie osadzone taflą na zewnątrz");
   }
 }
 
+// KOLEJNOSC KAMIENI NA LISCIE jest umowa z podgladem i z eksportem: centralny,
+// potem wieniec, potem boczne. Kazdy z tych trzech ma w formularzu wlasny
+// material, a rozroznia sie je WYLACZNIE po pozycji na liscie. Przestawienie
+// ich nie psuje ani bryly, ani masy, ani topologii: szafirowy soliter po prostu
+// rysuje sie barwa cyrkonii z halo i nikt nie wie, dlaczego.
+{
+  const r = await buildRing({
+    innerDia: 17.2, stone: { cut: "oval", size: 7 }, setting: "prong4",
+    halo: { on: true, size: 1.4 }, width: 2.6, side: { count: 3, size: 1.4, setting: "pave" },
+  }, { segments: 48 });
+  const ileHalo = r.stoneVolumesMm3.haloCount || 0;
+  const objCentr = r.stones[0].volume();
+  const problemy = [];
+  if (Math.abs(objCentr / r.stoneVolumesMm3.center - 1) > 0.01) {
+    problemy.push(`pierwszy kamien na liscie nie jest centralnym (${objCentr.toFixed(1)} wobec ${r.stoneVolumesMm3.center.toFixed(1)} mm3)`);
+  }
+  const objHalo = r.stoneVolumesMm3.halo || 0;
+  if (r.stones.slice(1, 1 + ileHalo).some((k) => Math.abs(k.volume() / objHalo - 1) > 0.01)) {
+    problemy.push("na pozycjach wienca leza kamienie o innej objetosci");
+  }
+  const boczne = r.stones.length - 1 - ileHalo;
+  if (boczne !== 6) problemy.push(`kamieni bocznych ${boczne}, oczekiwano 6`);
+  if (problemy.length) bad(`kolejnosc kamieni: ${problemy.join("; ")}`);
+  else ok(`kolejność kamieni: centralny, ${ileHalo} w wieńcu, ${boczne} bocznych`);
+  zwolnij(r);
+}
+
 // ------------------------------------------------------------
 // 7. Kolor stopu wchodzi do masy, a nie tylko do renderu
 // ------------------------------------------------------------
@@ -336,15 +363,20 @@ console.log("\n9. Łapka jest otwarta, czyli da się nią zakuć");
   let zMin = Infinity, zMax = -Infinity;
   for (let i = 0; i < n; i++) { const z = v[i * 3 + 2]; if (z < zMin) zMin = z; if (z > zMax) zMax = z; }
 
-  // Promien mierzymy przy podstawie i przy pazurku.
-  const przy = (zc) => {
+  // Promien mierzymy przy podstawie i przy koncowce, biorac wierzcholki
+  // z dolnej i gornej CZESCI zakresu, a nie z waskiego paska na zadanej
+  // wysokosci. Gladki stozek ma wierzcholki tylko na obu koncach i na czubku,
+  // wiec pasek wypadal pusty i srednia wychodzila nieliczbą.
+  const h = zMax - zMin;
+  const srednia = (od, do_) => {
     let s = 0, k = 0;
     for (let i = 0; i < n; i++) {
-      if (Math.abs(v[i * 3 + 2] - zc) < 0.12) { s += v[i * 3]; k++; }
+      const z = v[i * 3 + 2];
+      if (z >= od && z <= do_) { s += v[i * 3]; k++; }
     }
     return k ? s / k : NaN;
   };
-  const dol = przy(zMin + 0.25), gora = przy(zMax - 0.25);
+  const dol = srednia(zMin, zMin + h * 0.3), gora = srednia(zMax - h * 0.3, zMax);
 
   // Lapka NIE MOZE zamykac sie nad kamieniem, i to jest odwrotnosc tego, czego
   // wymagalismy tu wczesniej. Zagieta lapka wyglada jak gotowy, zakuty
@@ -456,6 +488,28 @@ console.log("\n11. Presety budują poprawne bryły");
       bad(`${preset.id}: ${e.message}`);
     }
   }
+
+  // WZOR NIE MOZE BYC PO CICHU PRZYCINANY.
+  //
+  // Trylogia prosila o kamienie boczne 4 mm i dostawala 1,3 mm, bo tyle
+  // zostawalo z szyny 2,2 mm po odjeciu dwoch szynek. Bryla byla poprawna,
+  // masa policzona, testy zielone, a wzor nazwany "trylogia" pokazywal soliter
+  // z dwoma okruszkami. Kontrola granic jest tu nadal potrzebna, ale wzor,
+  // ktory sam w nia wpada, jest bledem wzoru, a nie wyborem klienta.
+  let przyciete = 0;
+  for (const preset of RING_PRESETS) {
+    const zadane = preset.params;
+    const p = validate(applyPreset(preset, validate({})));
+    const rozjazdy = [];
+    if (zadane.side?.size && Math.abs(p.side.size - zadane.side.size) > 1e-6) {
+      rozjazdy.push(`kamien boczny ${zadane.side.size} -> ${p.side.size.toFixed(2)} mm`);
+    }
+    if (zadane.band?.size && Math.abs(p.band.size - zadane.band.size) > 1e-6) {
+      rozjazdy.push(`kamien obwodu ${zadane.band.size} -> ${p.band.size.toFixed(2)} mm`);
+    }
+    if (rozjazdy.length) { przyciete++; bad(`${preset.id}: wzor przyciety po cichu (${rozjazdy.join(", ")})`); }
+  }
+  if (!przyciete) ok(`żaden z ${RING_PRESETS.length} wzorów nie jest po cichu przycinany do granic szyny`);
 
   // Kazdy wzor musi nalezec do jednej z grup, inaczej po prostu zniknie
   // z interfejsu: lista rysuje wylacznie te, ktore pasuja do otwartej grupy.
@@ -604,8 +658,14 @@ console.log("\n14. Plik do pobrania zgadza się z wyceną");
   const zKamieniami = await ringFiles({ ...params, casting: { stones: true } });
   if (zKamieniami.triangles > r.triangles) ok(`z kamieniami plik większy: ${zKamieniami.triangles} wobec ${r.triangles} trójkątów`);
   else bad(`przelacznik kamieni nic nie zmienia w pliku: ${zKamieniami.triangles} wobec ${r.triangles}`);
-  if (Math.abs(zKamieniami.massG - r.massG) < 1e-9) ok("masa wyrobu w obu plikach identyczna");
-  else bad(`masa rozni sie miedzy plikami: ${zKamieniami.massG} vs ${r.massG} g`);
+  // Masy nie sa juz identyczne i tak ma byc: plik z kamieniem ma lapki
+  // ZAKUTE, a plik bez kamienia otwarte, bo pod zamknieta lapke nie da sie
+  // kamienia wlozyc. Rozni je koncowka lapki, czyli ulamek grama, i wlasnie
+  // ten rzad wielkosci tu pilnujemy. Kilka procent znaczyloby, ze zmienil sie
+  // ksztalt czegos wiekszego niz zakucie.
+  const roznicaMas = Math.abs(zKamieniami.massG / r.massG - 1) * 100;
+  if (roznicaMas < 3) ok(`masa różni się o ${roznicaMas.toFixed(2)} % (same końcówki łapek)`);
+  else bad(`masa rozni sie miedzy plikami o ${roznicaMas.toFixed(2)} procent: ${zKamieniami.massG.toFixed(3)} vs ${r.massG.toFixed(3)} g`);
 }
 
 // ------------------------------------------------------------
@@ -663,13 +723,34 @@ console.log("\n16. Dodatki odlewnicze nie ruszają wyrobu");
     ["sam kanał", { sprues: true }],
     ["kanał i stopka", { sprues: true, button: true }],
     ["kanały wewnętrzne", { sprues: true, innerSprues: true }],
-    ["bez kamieni", { stones: false }],
-    ["wszystko naraz", { sprues: true, button: true, stones: false }],
   ]) {
     const r = await buildRing({ ...baza, casting }, { segments: 64 });
-    if (Math.abs(r.massG - goly.massG) < 1e-9) ok(`${opis.padEnd(15)} masa wyrobu bez zmian: ${r.massG.toFixed(3)} g`);
+    if (Math.abs(r.massG - goly.massG) < 1e-9) ok(`${opis.padEnd(17)} masa wyrobu bez zmian: ${r.massG.toFixed(3)} g`);
     else bad(`${opis}: masa wyrobu zmienila sie na ${r.massG.toFixed(3)} g wobec ${goly.massG.toFixed(3)} g`);
     zwolnij(r);
+  }
+
+  // KAMIENIE W MODELU sa jedynym przelacznikiem, ktory MA prawo ruszyc metal,
+  // i to jest zmiana swiadoma, a nie usterka.
+  //
+  // Model bez kamieni to odlew do zakucia i lapki musza byc w nim otwarte,
+  // bo pod zamknieta lapke nie da sie wlozyc kamienia. Model z kamieniem
+  // pokazuje wyrob gotowy, wiec lapki sa docisniete. To sa dwa rozne ksztalty
+  // tej samej lapki i roznia sie objetoscia, bo zagieta jest krotsza.
+  //
+  // Roznica ma byc MALA: dotyczy koncowek lapek, a nie calego wyrobu. Kilka
+  // procent znaczyloby, ze zmienil sie ksztalt czegos wiekszego.
+  {
+    const otwarte = await buildRing({ ...baza, casting: { stones: false } }, { segments: 64 });
+    const roznica = (goly.massG / otwarte.massG - 1) * 100;
+    if (Math.abs(roznica) > 3) {
+      bad(`stan zakucia zmienia mase o ${roznica.toFixed(1)} procent, czyli o wiecej niz same koncowki lapek`);
+    } else if (!(otwarte.massG > goly.massG)) {
+      bad(`odlew z otwartymi lapkami powinien byc CIEZSZY od zakutego, a jest ${otwarte.massG.toFixed(3)} wobec ${goly.massG.toFixed(3)} g`);
+    } else {
+      ok(`otwarte łapki cięższe o ${Math.abs(roznica).toFixed(1)} % (${otwarte.massG.toFixed(3)} wobec ${goly.massG.toFixed(3)} g)`);
+    }
+    zwolnij(otwarte);
   }
 
   // Stopka i kanaly wewnetrzne bez kanalu glownego wisialyby w powietrzu.
@@ -680,6 +761,25 @@ console.log("\n16. Dodatki odlewnicze nie ruszają wyrobu");
   else bad("kanaly wewnetrzne przeszly bez glownego, wiec nie maja do czego dojsc");
 
   // Kanaly wewnetrzne musza dodac metalu i zostac czescia jednej bryly.
+
+  // KANAL PRZY SYGNECIE nie moze wyjsc ponad tafle. Tarcza jest powierzchnia
+  // pod grawer, a kanal wchodzil w nia promieniowo i przebijal ja na wylot:
+  // po odcieciu zostawalby guzek dokladnie tam, gdzie idzie rysunek.
+  for (const casting of [{ sprues: true }, { sprues: true, innerSprues: true }]) {
+    const r = await buildRing({ kind: "signet", width: 2.8, thickness: 1.8, casting },
+      { segments: 48, withStones: false });
+    const tafla = r.metal.boundingBox().max[1];
+    const zWlewem = r.metal.add(r.casting);
+    const gora = zWlewem.boundingBox().max[1];
+    const czesci = ileCzesci(zWlewem);
+    const opis = casting.innerSprues ? "z kanałami wewnętrznymi" : "sam kanał";
+    if (gora > tafla + 0.02) bad(`sygnet ${opis}: uklad wlewowy wychodzi ${(gora - tafla).toFixed(2)} mm PONAD tarcze`);
+    else if (czesci !== 1) bad(`sygnet ${opis}: uklad wlewowy nie jest wtopiony, ${czesci} czesci`);
+    else ok(`sygnet ${opis.padEnd(22)} kanał w kancie płyty, tafla nietknięta`);
+    zWlewem.delete?.();
+    zwolnij(r);
+  }
+
   const bezWewn = await buildRing({ ...baza, casting: { sprues: true } }, { segments: 64 });
   const zWewn = await buildRing({ ...baza, casting: { sprues: true, innerSprues: true } }, { segments: 64 });
   // Unie tez sa bryłami i tez zajmuja pamiec jadra, wiec trzymamy je
@@ -799,7 +899,10 @@ console.log("\n18. Sygnety: każda tarcza i każda powierzchnia");
       { segments: 48, withStones: false });
     const bb = r.metal.boundingBox();
     const tarcza = plaster(r.metal, bb.max[1] - 0.8);
-    const ramiona = plaster(r.metal, bb.max[1] - 2.8);
+    // Wysokosc POWIERZCHNI SZYNY przy glowicy. To na niej rozstrzyga sie,
+    // czy sygnet jest zrosniety z obraczka, czy postawiony na niej.
+    const roGlowicy = 17.2 / 2 + 1.7 * (taperFor({ ...r.params, kind: "signet" })?.(0)?.t ?? 1);
+    const ramiona = plaster(r.metal, roGlowicy);
     const dane = { czesci: ileCzesci(r.metal), genus: r.genus, masa: r.massG, gora: bb.max[1], tarcza, ramiona };
     zwolnij(r);
     return dane;
@@ -820,14 +923,21 @@ console.log("\n18. Sygnety: każda tarcza i każda powierzchnia");
     if (def.across && !wpoprzek) problemy.push("tarcza poprzeczna lezy wzdluz palca");
     if (!def.across && def.ratio < 0.95 && wpoprzek) problemy.push("tarcza wzdluzna lezy w poprzek");
 
-    // PODCIECIE POD TARCZA. Plyta ma wystawac poza ramiona, bo to cien pod jej
-    // krawedzia odrozniA plyte polozona na pierscionku od klina wycietego
-    // razem z nim.
-    const wystaje = (t.tarcza.palec - t.ramiona.palec) / 2;
-    if (!(wystaje > 0.1)) problemy.push(`plyta nie wystaje poza ramiona (${wystaje.toFixed(2)} mm)`);
+    // ZROSNIECIE Z SZYNA. To jest cecha, po ktorej poznaje sie sygnet: tarcza
+    // ma byc zakonczeniem obraczki, a nie glowica na niej postawiona.
+    //
+    // Mierzymy szerokosc metalu NA POWIERZCHNI SZYNY przy glowicy i dzielimy
+    // przez szerokosc tarczy. Wersja z podcieciem i wkleslym lukiem dawala
+    // tu 38 procent, czyli wyrazna szyjke, i tak tez wygladala: pierscionek
+    // z korona. Ta sama liczba jest wiec jedynym progiem, jaki ma tu sens,
+    // i lapie dokladnie te usterke, ktora zglosil klient.
+    const zrosniecie = t.ramiona.palec / t.tarcza.palec;
+    if (!(zrosniecie > 0.6)) {
+      problemy.push(`tarcza stoi na szyjce: przy szynie ${t.ramiona.palec.toFixed(1)} mm wobec tarczy ${t.tarcza.palec.toFixed(1)} mm (${(zrosniecie * 100).toFixed(0)} %)`);
+    }
 
     if (problemy.length) bad(`sygnet ${id}: ${problemy.join("; ")}`);
-    else ok(`sygnet ${id.padEnd(8)} ${t.masa.toFixed(2)} g, tarcza ${t.tarcza.palec.toFixed(1)} x ${t.tarcza.obwod.toFixed(1)} mm, występ ${wystaje.toFixed(2)} mm`);
+    else ok(`sygnet ${id.padEnd(8)} ${t.masa.toFixed(2)} g, tarcza ${t.tarcza.palec.toFixed(1)} x ${t.tarcza.obwod.toFixed(1)} mm, zrośnięcie ${(zrosniecie * 100).toFixed(0)} %`);
   }
 
   // Wykonczenie powierzchni idzie tym samym kodem dla kazdego obrysu, wiec
@@ -895,11 +1005,18 @@ console.log("\n19. Kamień wchodzi do gniazda, siada i nie wypada");
   ];
 
   for (const [nazwa, cfg] of UKLADY) {
-    const r = await buildRing({ innerDia: 17.2, ...cfg }, { segments: 64 });
+    // Model z kamieniem daje nam BRYLY KAMIENI i ich polozenie. Plik bez
+    // kamieni ich nie zawiera, bo nie ma czego pokazywac, wiec bierzemy je
+    // stad i przykladamy do jednego i drugiego metalu. Polozenie jest to samo,
+    // rozni sie tylko stan lapek.
+    const zakuty = await buildRing({ innerDia: 17.2, ...cfg }, { segments: 64 });
+    // Plik do ZAKUCIA, czyli bez kamieni: lapki otwarte, kamien wchodzi z gory.
+    const r = await buildRing({ innerDia: 17.2, ...cfg, casting: { stones: false } },
+      { segments: 64, withStones: false });
     // Przy halo i eternity kamieni sa dziesiatki, a kazde sprawdzenie to trzy
     // bryle w pamieci jadra, ktorej ono samo nie oddaje. Pierwsza szostka
     // wystarczy: wszystkie powstaja tym samym kodem.
-    const proba = r.stones.slice(0, 6);
+    const proba = zakuty.stones.slice(0, 6);
     let objetosc = 0, naMiejscu = 0, nizej = 0, wyzej = 0;
     for (const k of proba) {
       objetosc += k.volume();
@@ -921,8 +1038,19 @@ console.log("\n19. Kamień wchodzi do gniazda, siada i nie wypada");
       problemy.push(`gniazdo NIE ZATRZYMUJE kamienia: po zejsciu o 0,25 mm kolizja ${proc(nizej).toFixed(2)} % wobec ${proc(naMiejscu).toFixed(2)} % na miejscu`);
     }
     if (proc(wyzej) > 0.05) problemy.push(`kamienia nie da sie wlozyc z gory, metal zachodzi na niego (${proc(wyzej).toFixed(2)} %)`);
+    // Ten sam uklad Z KAMIENIEM ma zachowywac sie ODWROTNIE od gory: lapki sa
+    // docisniete, wiec kamienia nie da sie juz wyjac. Bez tej pary sprawdzian
+    // przepuscilby model, w ktorym lapki nigdy sie nie zamykaja.
+    let trzymane = 0;
+    for (const k of proba) trzymane += kolizja(zakuty.metal, k, 0.6);
+    const trzyma = (trzymane / objetosc) * 100;
+    if (!(trzyma > 0.3)) {
+      problemy.push(`po zakuciu kamien nadal wychodzi gora (kolizja ${trzyma.toFixed(2)} %)`);
+    }
+    zwolnij(zakuty);
+
     if (problemy.length) bad(`${nazwa}: ${problemy.join("; ")}`);
-    else ok(`${nazwa.padEnd(16)} pasuje ${proc(naMiejscu).toFixed(2)} %, opór w dół ${proc(nizej).toFixed(2)} %, wolne od góry`);
+    else ok(`${nazwa.padEnd(16)} otwarte: wchodzi i siada (opór ${proc(nizej).toFixed(2)} %); zakute: trzyma (${trzyma.toFixed(2)} %)`);
     zwolnij(r);
   }
 }

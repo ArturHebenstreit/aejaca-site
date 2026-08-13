@@ -63,7 +63,7 @@ export const RING_PRESETS = [
             en: "Stones along the shoulders lead the eye to the centre stone.",
             de: "Steine an den Schultern führen den Blick zum Hauptstein." },
     params: {
-      kind: "ring", profile: "round", taper: "tapered", width: 2.1, thickness: 1.6,
+      kind: "ring", profile: "round", taper: "tapered", width: 2.4, thickness: 1.6,
       stone: { cut: "round", size: 6.0 }, setting: "prong4", prongDia: 0.85,
       side: { count: 4, size: 1.5, setting: "pave" },
     },
@@ -141,7 +141,7 @@ export const RING_PRESETS = [
             en: "An oval in a wreath with stones along the shoulders, the pattern known from Princess Diana's ring.",
             de: "Ein Oval im Kranz mit Steinen an den Schultern, bekannt vom Ring von Prinzessin Diana." },
     params: {
-      kind: "ring", profile: "round", taper: "tapered", width: 2.1, thickness: 1.6,
+      kind: "ring", profile: "round", taper: "tapered", width: 2.4, thickness: 1.6,
       stone: { cut: "oval", size: 6.5, material: "sapphire" }, setting: "prong4", prongDia: 0.8,
       halo: { on: true, size: 1.3 },
       side: { count: 3, size: 1.4, setting: "pave" },
@@ -181,7 +181,7 @@ export const RING_PRESETS = [
             en: "Stones across the upper half. The lower half stays plain, so the size can be altered later.",
             de: "Steine auf der oberen Hälfte. Die untere bleibt glatt, die Größe lässt sich später ändern." },
     params: {
-      profile: "round", taper: "none", width: 2.4, thickness: 1.8,
+      profile: "round", taper: "none", width: 2.8, thickness: 1.8,
       band: { coverage: "half", size: 1.8, setting: "pave" },
     },
     kind: "band",
@@ -194,7 +194,7 @@ export const RING_PRESETS = [
             en: "Stones all the way round. Note that such a ring cannot be sized later, as there is no plain stretch to work on.",
             de: "Steine rundum. Achtung: ein solcher Ring lässt sich später nicht weiten, es fehlt der glatte Abschnitt." },
     params: {
-      profile: "round", taper: "none", width: 2.4, thickness: 1.8,
+      profile: "round", taper: "none", width: 2.8, thickness: 1.8,
       band: { coverage: "full", size: 1.8, setting: "pave" },
     },
     kind: "band",

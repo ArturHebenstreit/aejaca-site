@@ -138,11 +138,19 @@ const TAPERS = {
     const s = Math.max(0, 1 - u / 0.45);
     return { w: 1, t: 1 + 0.95 * s * s };
   },
-  /** Sygnetowa: pod tarcza szyna gestnieje i rozszerza sie w ramiona. */
+  /**
+   * Sygnetowa: szyna PUCHNIE ku tarczy i to ona jest polowa sygnetu.
+   *
+   * Zakres podnioslem z 0,55 do 0,78 obwodu i rozszerzenie z 0,62 do 1,15.
+   * Powod jest taki, ze sygnet rozpoznaje sie po tym, iz tarcza jest zrosnieta
+   * z szyna, a nie postawiona na niej. Gdy szyna rozszerza sie tylko tuz pod
+   * glowica, przejscie musi nadrobic cala roznice na dwoch milimetrach wysokosci
+   * i powstaje szyjka, czyli sylwetka pierscionka z korona.
+   */
   signet: (u) => {
-    const s = Math.max(0, 1 - u / 0.55);
+    const s = Math.max(0, 1 - u / 0.78);
     const k = s * s * (3 - 2 * s);
-    return { w: 1 + 0.62 * k, t: 1 + 1.05 * k };
+    return { w: 1 + 1.15 * k, t: 1 + 1.05 * k };
   },
 };
 
@@ -287,7 +295,7 @@ export function stoneSolid(w, cutId, sizeMm) {
  * a powyzej przelot, zeby przez kamien szlo swiatlo i zeby dalo sie go
  * wypchnac od spodu przy przekladaniu.
  */
-function seatCutter(w, cutId, sizeMm) {
+function seatCutter(w, cutId, sizeMm, zamkniete = false) {
   const { Manifold, CrossSection } = w;
   const pr = PROPORTIONS[CUTS[cutId].profile];
 
@@ -303,9 +311,24 @@ function seatCutter(w, cutId, sizeMm) {
   //
   // Wlot jest wiec SZERSZY od kamienia o luz montazowy. Lapki staja poza nim
   // i zostaja cale, a kamien wchodzi z gory tak, jak wchodzi w warsztacie.
+  //
+  // W modelu Z KAMIENIEM wlot ma inny ksztalt, bo i zadanie ma inne. Kamien
+  // jest juz w srodku, wiec nie trzeba mu drogi z gory, a lapki maja LEZEC
+  // na koronie. Odejmujemy wtedy sam kamien, powiekszony o luz i uciety
+  // plaszczyzna rondysty: metal znika dokladnie tam, gdzie siedzi kamien,
+  // a pazurek zostaje oparty na jego koronie.
   const luz = 0.05;
-  const wlot = Manifold.extrude(
-    CrossSection.ofPolygons([ccw(outlineFor(cutId, sizeMm + 2 * luz))]), sizeMm * 2);
+  let wlot;
+  if (zamkniete) {
+    const duzy = stoneSolid(w, cutId, sizeMm + 2 * luz);
+    const noz = Manifold.cube([sizeMm * 4, sizeMm * 4, sizeMm * 4], true)
+      .translate([0, 0, sizeMm * 2]);
+    wlot = duzy.solid.intersect(noz);
+    duzy.solid.delete?.(); noz.delete?.();
+  } else {
+    wlot = Manifold.extrude(
+      CrossSection.ofPolygons([ccw(outlineFor(cutId, sizeMm + 2 * luz))]), sizeMm * 2);
+  }
 
   // 2. LOZE. Srednica gniazda jest MNIEJSZA od kamienia o podciecie, wiec
   //    rondysta siada na jego krawedzi. Gniazdo w wymiar kamienia to kamien
@@ -374,6 +397,55 @@ function radiusAt(pts, deg) {
 }
 
 /**
+ * Gladka rura poprowadzona po lamanej.
+ *
+ * Kazdy odcinek jest scinanym stozkiem, a w zlaczach siedzi kula o TAKIM SAMYM
+ * promieniu jak rura w tym miejscu. To jest cala sztuczka: kula rowna przekrojowi
+ * pokrywa sie z nim dokladnie, wiec powierzchnia nie ma na zlaczu ani uskoku,
+ * ani wybrzuszenia. Sam ciag kul, bez odcinkow miedzy nimi, falowal na
+ * powierzchni i wygladal jak sznur paciorkow.
+ */
+function tubeAlong(w, punkty, promienie) {
+  const { Manifold } = w;
+  let solid = null;
+  const dodaj = (m) => { solid = solid ? zlacz(solid, m) : m; };
+
+  for (let i = 0; i < punkty.length - 1; i++) {
+    const a = punkty[i], b = punkty[i + 1];
+    const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
+    const L = Math.hypot(dx, dy, dz);
+    if (L < 1e-4) continue;
+    // Walec rosnie wzdluz +Z, wiec obracamy go na kierunek odcinka: najpierw
+    // pochylenie od osi Z, potem obrot wokol niej.
+    const pochyl = Math.acos(Math.max(-1, Math.min(1, dz / L))) / DEG;
+    const obrot = Math.atan2(dy, dx) / DEG;
+    dodaj(Manifold.cylinder(L, promienie[i], promienie[i + 1], 24, false)
+      .rotate([0, pochyl, obrot])
+      .translate(a));
+  }
+  // Kula tylko tam, gdzie tor NAPRAWDE skreca, oraz na koncu.
+  //
+  // Na zlaczu dwoch wspolliniowych odcinkow kula jest dokladnie styczna do
+  // obu, a takie styczne zetkniecie jadro potrafi zamknac jako osobna,
+  // zerowej grubosci skorupe. W pliku wygladalo to jak druga bryla o ujemnej
+  // objetosci i o wymiarach trzech setnych milimetra, czyli jak smiec, ktory
+  // slicer zglosi jako blad siatki.
+  for (let i = 1; i < punkty.length; i++) {
+    const koniec = i === punkty.length - 1;
+    if (!koniec) {
+      const a = punkty[i - 1], b = punkty[i], c = punkty[i + 1];
+      const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+      const v = [c[0] - b[0], c[1] - b[1], c[2] - b[2]];
+      const lu = Math.hypot(...u) || 1, lv = Math.hypot(...v) || 1;
+      const cos = (u[0] * v[0] + u[1] * v[1] + u[2] * v[2]) / (lu * lv);
+      if (cos > 0.9998) continue;                 // prosto, nie ma czego lagodzic
+    }
+    dodaj(Manifold.sphere(promienie[i], 20).translate(punkty[i]));
+  }
+  return solid;
+}
+
+/**
  * Lapka, tak jak WYCHODZI Z ODLEWU: prosty pret stojacy przy rondyscie,
  * siegajacy ponad korone, zwezony i zaokraglony na koncu.
  *
@@ -387,33 +459,46 @@ function radiusAt(pts, deg) {
  * Konsekwencja dla podgladu jest swiadoma: pierscionek na ekranie wyglada
  * jak odlew przed zakuciem, bo tym wlasnie jest plik, ktory klient dostaje.
  *
- * Bryle skladamy z ciagu kul wzdluz toru. Jadro nie ma operacji otoczki
- * wypuklej ani zamiatania po krzywej, a kule zachodza na siebie, wiec daja
- * gladki pret bez szwow i zaokraglaja koniec za darmo.
+ * Pret jest JEDNYM stozkiem scietym z kulista koncowka, a nie ciagiem kul.
+ * Ciag kul byl potrzebny, dopoki lapka sie zaginala, bo tor byl krzywa. Prosta
+ * lapka krzywej nie ma, a kule zostawialy na niej widoczne karbowanie: przy
+ * srednicy 0,9 mm sasiednie kule roznily sie promieniem na tyle, ze powierzchnia
+ * falowala. Na renderze wygladalo to jak sznur paciorkow, a na wydruku byloby
+ * karbem, ktory jubiler musialby zeszlifowac przed zakuciem.
  */
-export function prongSolid(w, { radius, prongR, base, girdleTop, crownH }) {
+export function prongSolid(w, { radius, prongR, base, girdleTop, crownH, zamkniete }) {
   const { Manifold } = w;
-  const N = 9;
+
+  if (zamkniete) {
+    // Lapka ZAKUTA, czyli taka, jaka jest po osadzeniu kamienia: pret idzie
+    // prosto do rondysty, a nad nia lagodnie klania sie do srodka i konczy
+    // pazurkiem lezacym na koronie. Tego stanu nie da sie odlac z kamieniem
+    // w srodku, wiec ma on sens wylacznie w modelu, ktory kamien juz zawiera.
+    const top = girdleTop + crownH * 0.55;
+    const zagiecie = prongR * 1.25;
+    const zalamanie = (girdleTop - base) / (top - base);
+    const N = 7;
+    const punkty = [], promienie = [];
+    for (let i = 0; i < N; i++) {
+      const t = i / (N - 1);
+      const u = t <= zalamanie ? 0 : (t - zalamanie) / (1 - zalamanie);
+      punkty.push([radius - zagiecie * (u * u * (3 - 2 * u)), 0, base + (top - base) * t]);
+      promienie.push(prongR * (1 - 0.3 * t));
+    }
+    return tubeAlong(w, punkty, promienie);
+  }
 
   // Koniec siega WYZEJ niz korona, bo to jest material do zagiecia. Lapka
   // ucieta rowno z tafla nie ma czym objac kamienia.
   const top = girdleTop + crownH * 1.05;
+  // Pret zweza sie ku gorze, tak jak zweza sie odlana lapka po opilowaniu.
+  // Cienszy koniec latwiej sie dociska i mniej zaslania kamien.
+  const rTop = prongR * 0.72;
 
-  let solid = null;
-  for (let i = 0; i < N; i++) {
-    const t = i / (N - 1);
-    const z = base + (top - base) * t;
-    // Pret zweza sie ku gorze, tak jak zweza sie odlana lapka po opilowaniu.
-    // Cienszy koniec latwiej sie dociska i mniej zaslania kamien.
-    const rad = prongR * (1 - 0.3 * t);
-    // Lapke budujemy na osi +X i dopiero gotowa obracamy na miejsce.
-    // Kazda kula to osobna suma logiczna, wiec liczenie szesciu lapek od zera
-    // kosztowalo szescdziesiat kilka operacji i podglad reagowal z polsekundowym
-    // opoznieniem. Ten sam ksztalt starczy raz.
-    const ball = Manifold.sphere(rad, 24).translate([radius, 0, z]);
-    solid = solid ? zlacz(solid, ball) : ball;
-  }
-  return solid;
+  const trzon = Manifold.cylinder(top - base, prongR, rTop, 32, false)
+    .translate([radius, 0, base]);
+  const czubek = Manifold.sphere(rTop, 24).translate([radius, 0, top]);
+  return zlacz(trzon, czubek);
 }
 
 /**
@@ -428,7 +513,7 @@ export function prongSolid(w, { radius, prongR, base, girdleTop, crownH }) {
  * jego zewnetrznej normalnej. Ksztalt bierze sie z samego szlifu, wiec V przy
  * gruszce jest lagodniejsze niz przy markizie, dokladnie tak jak w metalu.
  */
-function vprongSolid(w, pts, deg, prongR, base, top) {
+function vprongSolid(w, pts, deg, prongR, base, top, zamkniete = false) {
   const { Manifold } = w;
   const a = deg * DEG, dx = Math.cos(a), dy = Math.sin(a);
 
@@ -460,13 +545,27 @@ function vprongSolid(w, pts, deg, prongR, base, top) {
     // Obrys biegnie przeciwnie do zegara, wiec normalna zewnetrzna to (ty, -tx).
     const nx = ty / L, ny = -tx / L;
     const x = pts[i][0] + nx * prongR * 0.6, y = pts[i][1] + ny * prongR * 0.6;
-    const slup = Manifold.cylinder(top - base, prongR * 0.92, prongR * 0.68, 16, false)
-      .translate([x, y, base])
-      .add(Manifold.sphere(prongR * 0.68, 16).translate([x, y, top]));
+    // Zakuta lapka V klania sie do srodka, czyli jej koniec przesuwa sie
+    // wzdluz normalnej do wewnatrz i lezy na koronie.
+    const dx = zamkniete ? -nx * prongR * 1.15 : 0;
+    const dy = zamkniete ? -ny * prongR * 1.15 : 0;
+    const slup = tubeAlong(w,
+      [[x, y, base], [x, y, base + (top - base) * 0.62], [x + dx, y + dy, top]],
+      [prongR * 0.92, prongR * 0.8, prongR * 0.66]);
     solid = solid ? zlacz(solid, slup) : slup;
   }
   return solid;
 }
+
+/**
+ * Czy zakucia maja byc ZAMKNIETE nad kamieniem.
+ *
+ * Rozstrzyga o tym jedna rzecz: czy w pliku jest kamien. Model bez kamienia
+ * to odlew do zakucia i lapki musza byc otwarte, bo inaczej kamienia nie da
+ * sie wlozyc. Model z kamieniem pokazuje wyrob gotowy i lapki maja byc
+ * dociśnięte, bo inaczej kamien z niego wypada.
+ */
+const zakute = (p) => p.casting?.stones !== false;
 
 function buildCrown(w, p, stone) {
   const { Manifold, CrossSection } = w;
@@ -555,7 +654,8 @@ function buildCrown(w, p, stone) {
     const ccwPts = ccw(pts);
     for (const deg of prongAngles(cut, p.setting)) {
       add(vprongSolid(w, ccwPts, deg, rP,
-        -SEAT.aboveGalleryMm, stone.girdleH + stone.crownH * 1.05));
+        -SEAT.aboveGalleryMm, stone.girdleH + stone.crownH * (zakute(p) ? 0.6 : 1.05),
+        zakute(p)));
     }
     return { solid: crown, basketH };
   }
@@ -578,6 +678,7 @@ function buildCrown(w, p, stone) {
         base: -SEAT.aboveGalleryMm,
         girdleTop: stone.girdleH,
         crownH: stone.crownH,
+        zamkniete: zakute(p),
       }));
     }
     add(wzorce.get(klucz).rotate([0, 0, deg]));
@@ -644,22 +745,52 @@ function buildSideStones(w, p) {
       const x = Math.cos(a) * rMidI, y = Math.sin(a) * rMidI;
       const tilt = [0, 0, 0];
 
+      // PODNIESIENIE kamienia ponad szyne.
+      //
+      // Kamien w lapkach stoi we WLASNEJ oprawce, a nie w wybraniu szyny,
+      // i wlasnie dlatego moze byc od niej szerszy. Trylogia z kamieniami
+      // czteromilimetrowymi na szynie 2,2 mm nie jest bledem klienta, tylko
+      // opisem takiej wlasnie konstrukcji: dwie male koronki obok glowicy.
+      // Dopoki wpuszczalismy kazdy kamien w szyne, taki uklad byl niemozliwy
+      // i wymiar spadal po cichu do 1,3 mm, czyli do rozmiaru okruszka.
+      //
+      // Pave i oprawa kanalowa siedza w metalu szyny i tam ograniczenie
+      // szerokosci obowiazuje dalej, bo tam kamien naprawde wycina sie w szyne.
+      const podniesienie = setting === "prong" ? Math.max(0.5, size * 0.3) : 0;
+      const rKam = roI + podniesienie;
+
       // OBROT MUSI BYC TAKI SAM JAK PRZY KORONIE SRODKOWEJ. `rotate([90,0,0])`
       // odwraca kamien: tafla patrzy wtedy w glab palca, a koleta na zewnatrz.
       // Na renderze wyglada to prawie tak samo, ale gniazdo wycina sie odwrotnie,
       // wiec zmienia sie objetosc metalu, a z niej cena.
-      const { solid } = stoneSolid(w, "round", size);
-      const placed = solid
+      const naMiejsce = (m) => m
         .rotate([-90, 0, 0])                        // tafla na zewnatrz promienia
         .rotate([0, 0, (a / DEG) - 90])
-        .translate([x * (roI / rMidI), y * (roI / rMidI), 0]);
-      stones.push(placed);
+        .translate([Math.cos(a) * rKam, Math.sin(a) * rKam, 0]);
 
-      const cutter = seatCutter(w, "round", size)
-        .rotate([-90, 0, 0])
-        .rotate([0, 0, (a / DEG) - 90])
-        .translate([x * (roI / rMidI), y * (roI / rMidI), 0]);
-      addS(cutter);
+      const kam = stoneSolid(w, "round", size);
+      stones.push(naMiejsce(kam.solid));
+      addS(naMiejsce(seatCutter(w, "round", size, zakute(p))));
+
+      if (podniesienie > 0) {
+        // Oprawka: stozek od szyny do rondysty i cztery lapki dookola.
+        // Budujemy ja w ukladzie kamienia, czyli z rondysta na wysokosci zera,
+        // i przenosimy tym samym obrotem, wiec nie da sie jej postawic krzywo.
+        const rG = size / 2;
+        const gleboko = podniesienie + 0.45;        // wchodzi w szyne, nie stoi na niej
+        const kosz = Manifold.cylinder(gleboko, rG * 0.55, rG + 0.18, 32, false)
+          .translate([0, 0, -gleboko]);
+        let oprawka = kosz;
+        const rL = Math.min(0.42, Math.max(0.24, size * 0.11));
+        for (const deg of [45, 135, 225, 315]) {
+          oprawka = zlacz(oprawka, prongSolid(w, {
+            radius: rG + rL * 0.5, prongR: rL,
+            base: -gleboko + 0.1, girdleTop: kam.girdleH, crownH: kam.crownH,
+            zamkniete: zakute(p),
+          }).rotate([0, 0, deg]));
+        }
+        addM(naMiejsce(oprawka));
+      }
 
       // Kuleczki i lapki musza WCHODZIC w szyne, a nie stac na niej. Walec
       // postawiony na wypuklej powierzchni styka sie z nia wzdluz linii, wiec
@@ -696,16 +827,28 @@ function buildSideStones(w, p) {
       const rB = (rG + kula * 0.32) * Math.SQRT1_2;
 
       if (setting === "pave") {
+        // Kuleczka pave musi STERCZEC W GORE, czyli wzdluz promienia
+        // pierscionka, a nie kłaść sie na boki. Zakucia lezacego plasko nie da
+        // sie docisnac: narzedzie nie ma jak podejsc, a metal nie ma dokad
+        // plynac. Sama kula, bez wysokosci, tez sie do tego nie nadaje, bo nie
+        // ma czego przesunac nad kamien. Wysokosc liczymy od powierzchni szyny,
+        // w ktorej zakucie siedzi zanurzone o `SINK`.
+        const wysokosc = size * 0.55;
         for (const [dt, dz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
-          addM(Manifold.sphere(kula, 16).translate(at(dt * rB, dz * rB)));
-        }
-      } else if (setting === "prong") {
-        // Cztery lapki, a nie dwie po bokach: kamien trzymany z dwoch stron
-        // obraca sie w gniezdzie i wypada przy pierwszym zaczepieniu.
-        for (const [dt, dz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
-          addM(Manifold.cylinder(size * 0.75, kula, kula * 0.72, 16, false)
-            .rotate([0, 90, a / DEG])
-            .translate(at(dt * rB, dz * rB)));
+          const stopa = at(dt * rB, dz * rB);
+          const rGora = kula * 0.7;
+          const os = [Math.cos(a), Math.sin(a), 0];
+          const szczyt = [
+            stopa[0] + os[0] * (wysokosc + SINK),
+            stopa[1] + os[1] * (wysokosc + SINK),
+            stopa[2],
+          ];
+          addM(zlacz(
+            Manifold.cylinder(wysokosc + SINK, kula, rGora, 20, false)
+              .rotate([0, 90, a / DEG])
+              .translate(stopa),
+            Manifold.sphere(rGora, 16).translate(szczyt),
+          ));
         }
       }
       void tilt;
@@ -761,64 +904,69 @@ function loftLevels(w, cs, poziomy) {
  * trzeba, tylko wygladala jak klin, bo w calej sylwetce nie bylo ani jednego
  * miejsca, w ktorym cos by sie zmienialo.
  */
+/**
+ * Wymiary glowicy sygnetu, liczone raz.
+ *
+ * Korzysta z nich i bryla, i uklad wlewowy. Kanal musi wiedziec, GDZIE lezy
+ * tarcza, bo inaczej wchodzi w nia na oslep, i wlasnie tak bylo: kanal szedl
+ * promieniowo od srodka pierscionka, czyli prosto przez plyte, i wychodzil
+ * po jej drugiej stronie, przez powierzchnie pod grawer.
+ */
+function signetMetrics(p) {
+  const { W, L } = tableSize(p.signet);
+  const T = Math.max(1.4, Math.min(2.4, L * 0.26));
+  const faza = Math.min(0.42, T * 0.3);
+  const scianka = T - faza;
+  const zanurzenie = Math.min(1.5, p.thickness * 0.85);
+  const rozlanie = zanurzenie + Math.max(1.3, Math.min(2.4, L * 0.24));
+  return { W, L, T, faza, scianka, zanurzenie, rozlanie, gora: rozlanie + scianka + faza };
+}
+
 function buildSignetHead(w, p) {
   const { CrossSection } = w;
-  const { W, L } = tableSize(p.signet);
+  const { W, L, faza, scianka, zanurzenie, rozlanie } = signetMetrics(p);
   const pts = signetOutline(p.signet, 64);
   const cs = CrossSection.ofPolygons([ccw(pts)]);
   const min = Math.min(W, L);
-
-  // Grubosc PLYTY, czyli tego, co widac jako pionowa scianka pod tarcza.
-  // Rosnie z tarcza, ale nie wprost proporcjonalnie: sygnet dwudziestomilimetrowy
-  // o plycie trzymilimetrowej wazylby tyle, ze nikt by go nie nosil.
-  const T = Math.max(1.4, Math.min(2.4, L * 0.26));
-  // Faza gornej krawedzi. Bez niej kant jest ostry jak po wykrojniku.
-  const faza = Math.min(0.42, T * 0.3);
-  const scianka = T - faza;
-
-  // Glowica wchodzi w szyne na tyle gleboko, zeby dol rozlania zostal ukryty
-  // w metalu. Zanurzenie DOLICZAMY do wysokosci luku, zamiast odejmowac je od
-  // niej: inaczej polowa sylwetki, ktora ma byc widoczna, siedzi pod szyna
-  // i z zewnatrz zostaje sam klin.
-  const zanurzenie = Math.min(1.5, p.thickness * 0.85);
-  // Wysokosc rozlania ramion nad szyna. Ponizej dwoch milimetrow tarcza siedzi
-  // na szynie jak naklejka, powyzej czterech glowica robi sie wieza.
-  const rozlanie = zanurzenie + Math.max(2.0, Math.min(3.6, L * 0.34));
 
   // Dol rozlania ma miec przekroj SZYNY, nie tarczy. Wzdluz palca (os L) jest
   // to polowa szerokosci szyny w miejscu glowicy, po obwodzie (os W) troche
   // wiecej, bo tam ramiona i tak schodza w szyne stycznie.
   const kw = taperFor(p)?.(0)?.w ?? 1;
-  const syDol = Math.max(0.24, Math.min(0.86, (p.width * kw) / 2 / L));
-  const sxDol = Math.max(0.3, Math.min(0.9, syDol * 1.25));
+  const syDol = Math.max(0.34, Math.min(0.9, (p.width * kw) / 2 / L));
+  const sxDol = Math.max(0.42, Math.min(0.92, syDol * 1.3));
 
   // Luk WKLESLY: wykladnik powyzej jedynki trzyma ramie waskie nisko i rozlewa
   // je dopiero pod tarcza. Wykladnik ponizej jedynki dalby ksztalt trabki
   // odwroconej, czyli szeroko od razu przy szynie.
   //
-  // Luk konczy sie PONIZEJ pelnej szerokosci tarczy, a ostatnia dziesiata
-  // milimetra dochodzi krotkim podcieciem. Dzieki temu plyta WYSTAJE poza
-  // ramiona i pod jej krawedzia klada sie cien. Na zdjeciach katalogowych to
-  // jest cala roznica miedzy plyta polozona na pierscionku a klinem wycietym
-  // razem z nim, i widac ja nawet na miniaturze.
-  const sLuk = 0.93;
-  const podciecie = Math.min(0.35, scianka * 0.35);
-
+  // Luk jest WYPUKLY i dochodzi do pelnej szerokosci tarczy, bez podciecia.
+  //
+  // Bylo tu odwrotnie: luk wklesly, konczacy sie ponizej szerokosci tarczy,
+  // i krotkie podciecie, dzieki ktoremu plyta wystawala poza ramiona i rzucala
+  // cien. To jest sylwetka PIERSCIONKA Z KORONA, czyli glowicy postawionej na
+  // szynie, a sygnet jest czyms innym: metal wzbiera z szyny i staje sie
+  // tarcza, jednym ciaglym ruchem, bez uskoku i bez cienia pod krawedzia.
+  // Na zdjeciach katalogowych ramie wychodzi z obraczki i puchnie ku gorze,
+  // a jedyna wyrazna krawedzia w calej bryle jest kant tarczy.
+  //
+  // Wykladnik ponizej jedynki daje wlasnie to: szybkie rozlanie tuz nad szyna
+  // i lagodne dojscie do plyty. Powyzej jedynki metal trzyma sie waski nisko
+  // i dopiero pod tarcza wyskakuje na boki, czyli robi szyjke.
   const poziomy = [];
-  const KROKI = 9;
+  const KROKI = 10;
   for (let i = 0; i <= KROKI; i++) {
     const u = i / KROKI;
-    const k = (u ** 1.9) * sLuk;
+    const k = u ** 0.62;
     poziomy.push([u * rozlanie, sxDol + (1 - sxDol) * k, syDol + (1 - syDol) * k]);
   }
-  poziomy.push([rozlanie + podciecie, 1, 1]);
   // Pionowa scianka plyty, potem faza. Faza schodzi o `faza` mm na kazda
   // strone, wiec liczy sie ja osobno dla obu osi.
-  poziomy.push([rozlanie + podciecie + scianka, 1, 1]);
-  poziomy.push([rozlanie + podciecie + scianka + faza, 1 - faza / W, 1 - faza / L]);
+  poziomy.push([rozlanie + scianka, 1, 1]);
+  poziomy.push([rozlanie + scianka + faza, 1 - faza / W, 1 - faza / L]);
 
   let glowica = loftLevels(w, cs, poziomy);
-  const gora = rozlanie + podciecie + scianka + faza;
+  const gora = rozlanie + scianka + faza;
 
   if (p.signet.face === "recessed") {
     // Pole wpuszczone: rant dookola, w srodku plaskie dno pod grawer. Rant
@@ -980,7 +1128,7 @@ function buildBandStones(w, p) {
     const maly = stoneSolid(w, "round", d);
     stones.push(maly.solid.rotate([-90, 0, 0]).rotate([0, 0, (a / DEG) - 90]).translate([x, y, 0]));
 
-    const cut = seatCutter(w, "round", d).rotate([-90, 0, 0]).rotate([0, 0, (a / DEG) - 90])
+    const cut = seatCutter(w, "round", d, zakute(p)).rotate([-90, 0, 0]).rotate([0, 0, (a / DEG) - 90])
       .translate([x, y, 0]);
     seats = seats ? zlacz(seats, cut) : cut;
 
@@ -1048,7 +1196,7 @@ function buildHalo(w, p, stone, girdleR) {
     const maly = stoneSolid(w, "round", d);
     stones.push(maly.solid.translate([x, y, zK]));
 
-    const cut = seatCutter(w, "round", d).translate([x, y, zK]);
+    const cut = seatCutter(w, "round", d, zakute(p)).translate([x, y, zK]);
     seats = seats ? zlacz(seats, cut) : cut;
 
   }
@@ -1060,13 +1208,20 @@ function buildHalo(w, p, stone, girdleR) {
   // Wczesniej siedzialy na promieniu `rW + d * 0.42`, czyli WEWNATRZ obrysu
   // kamyka, ktorego promien to `d / 2`. Wlot gniazda scinal je wiec do zera
   // i wieniec zostawal bez zadnego zakucia.
+  //
+  // Kuleczka ZAKUTA lezy czesciowo NA kamieniu, bo tylko wtedy cokolwiek
+  // trzyma. Miedzy sasiednimi kamykami zostaje kilka setnych milimetra, wiec
+  // kuleczka postawiona dokladnie w polowie odstepu i odsunieta o pelny promien
+  // rondysty mija oba kamienie i wisi w metalu plyty. Przy zakuciu schodzimy
+  // wiec blizej osi wienca i podnosimy ja ponad rondyste.
   const kulaH = Math.min(0.28, d * 0.24);
+  const zam = zakute(p);
   for (let i = 0; i < n; i++) {
     const b = ((i + 0.5) / n) * Math.PI * 2;
     for (const s of [-1, 1]) {
-      const rr = rW + s * (d / 2 + kulaH * 0.3);
+      const rr = rW + s * (zam ? d * 0.42 : d / 2 + kulaH * 0.3);
       metal = zlacz(metal, Manifold.sphere(kulaH, 12)
-        .translate([Math.cos(b) * rr, Math.sin(b) * rr, zK + 0.08]));
+        .translate([Math.cos(b) * rr, Math.sin(b) * rr, zK + (zam ? 0.18 : 0.08)]));
     }
   }
 
@@ -1160,6 +1315,65 @@ function buildCasting(w, p) {
       .rotate([znak > 0 ? -90 : 90, 0, 0])
       .translate([0, znak * od, 0]);
 
+  // ------------------------------------------------------------
+  // SYGNET: kanal wchodzi w KANT tarczy, nigdy w jej powierzchnie
+  // ------------------------------------------------------------
+  // Sygnet lamie zalozenie, na ktorym stoi cala reszta tego kodu, czyli ze
+  // najgrubsze miejsce lezy na promieniu i kanal moze do niego dojsc prosto
+  // od srodka pierscionka. Przy sygnecie najgrubszym miejscem jest tarcza,
+  // ale droga promieniowa prowadzi przez NIA NA WYLOT: kanal wchodzil od
+  // spodu, przebijal plyte i wychodzil przez powierzchnie, na ktorej robi sie
+  // grawer. Na modelu wygladalo to jak grzyb wyrastajacy z tafli.
+  //
+  // Kanal idzie wiec w bok, w kant plyty, wzdluz obwodu pierscionka. Tarcza
+  // dalej jest karmiona bezposrednio, bo to ona krzepnie najpozniej, a jej
+  // powierzchnia zostaje nietknieta. Tak wlasnie wiesza sie sygnet na drzewku.
+  if (p.kind === "signet") {
+    const m = signetMetrics(p);
+    const yTafla = promien + m.gora - m.zanurzenie;
+    // Os kanalu leży tak nisko, żeby jego górna tworząca NIE WYSZLA ponad
+    // taflę. Inaczej po odcięciu zostaje na powierzchni pod grawer guzek,
+    // czyli dokładnie to, czego mieliśmy tu uniknąć.
+    const yPlyta = Math.min(
+      promien + m.rozlanie - m.zanurzenie + m.scianka * 0.5,
+      yTafla - 2.1,
+    );
+    // Kanal dla sygnetu musi byc grubszy: dziewiec gramow zasila sie inaczej
+    // niz poltora. Ponizej tej srednicy kanal krzepnie przed plyta i cala
+    // jego funkcja znika.
+    const rSyg = 2.1;
+    const wBok = (h, r0, r1, od) =>
+      Manifold.cylinder(h, r0, r1, 28, false)
+        .rotate([0, 90, 0])
+        .translate([od, yPlyta, 0]);
+
+    const wejscie = m.W - 0.9;                 // zaczyna sie W metalu plyty
+    let syg = wBok(dlugosc, rSyg * 0.7, rSyg, wejscie);
+
+    // Kanaly wewnetrzne biegna w SWIETLE pierscionka, od tarczy do cienkiego
+    // dna szyny. Tarcza jest tu zbiornikiem metalu, a dno krzepnie pierwsze,
+    // wiec to ono potrzebuje dokarmienia. Dwa prety zamiast jednego, bo szyna
+    // sygnetu jest u gory szeroka i jeden zasilalby tylko jej srodek.
+    if (p.casting.innerSprues) {
+      // Dwa prety zbiegajace sie pod tarcza, jak na drzewku odlewniczym:
+      // tarcza jest tu zbiornikiem metalu, a dno szyny krzepnie pierwsze,
+      // wiec to ono potrzebuje dokarmienia i to do niego prowadzimy metal.
+      const rInner = 0.95;
+      const szczyt = [0, ri - 0.3, 0];
+      for (const strona of [-1, 1]) {
+        const kat = -Math.PI / 2 + strona * 0.85;
+        const stopa = [Math.cos(kat) * (ri - 0.3), Math.sin(kat) * (ri - 0.3), 0];
+        syg = zlacz(syg, tubeAlong(w, [stopa, szczyt], [rInner * 0.8, rInner * 0.95]));
+      }
+    }
+
+    if (p.casting.button) {
+      syg = zlacz(syg, wBok(2.0, rSyg, rStopka * 0.92, wejscie + dlugosc - 0.3));
+      syg = zlacz(syg, wBok(hStopka, rStopka, rStopka * 0.88, wejscie + dlugosc + 1.5));
+    }
+    return syg;
+  }
+
   // Kanal zaczyna sie POD powierzchnia odlewu, zeby polaczenie bylo pewne,
   // i zweza sie ku niemu, bo tak plynie metal i tak zastyga we wlasciwej
   // kolejnosci: najdalej od odlewu najpozniej.
@@ -1186,21 +1400,12 @@ function buildCasting(w, p) {
       const wejscie = [Math.cos(kat) * (ri + 0.4), Math.sin(kat) * (ri + 0.4), 0];
       const zbieg = [0, znak * (promien + 2.2), 0];
 
-      // Pret jako ciag kul: jadro nie zamiata po odcinku, a kule zachodzace
-      // na siebie daja gladki walek i same zaokraglaja koncowki.
-      // Kul musi byc tyle, zeby zachodzily na siebie z zapasem. Przy dwunastu
-      // na kilkanascie milimetrow toru odstep dorownywal ich promieniowi
-      // i pret wygladal jak sznur paciorkow.
-      const dl = Math.hypot(zbieg[0] - wejscie[0], zbieg[1] - wejscie[1]);
-      const N = Math.max(12, Math.ceil(dl / (rInner * 0.75)));
-      for (let i = 0; i < N; i++) {
-        const t = i / (N - 1);
-        solid = solid.add(Manifold.sphere(rInner * (1 - 0.15 * t), 14).translate([
-          wejscie[0] + (zbieg[0] - wejscie[0]) * t,
-          wejscie[1] + (zbieg[1] - wejscie[1]) * t,
-          0,
-        ]));
-      }
+      // Pret gladki, zwezajacy sie ku szynie: najgrubszy przy kanale glownym,
+      // bo stamtad idzie metal, i najciensszy tam, gdzie wchodzi w wyrob, bo
+      // tam sie go odcina. Wczesniej byl to ciag kul i widac bylo na nim
+      // karbowanie, mimo ze kule zachodzily na siebie: odstep miedzy nimi
+      // dorownywal ich promieniowi, wiec powierzchnia falowala.
+      solid = zlacz(solid, tubeAlong(w, [wejscie, zbieg], [rInner * 0.8, rInner]));
     }
   }
 
@@ -1277,9 +1482,15 @@ export async function buildRing(input, opts = {}) {
     // wchodzi na palec. Zabiera 0,35 mm, zeby kosz wtopil sie w szyne.
     const standoff = basketH > 0 ? basketH - 0.35 : 0;
 
+    // KOLEJNOSC KAMIENI NA LISCIE JEST CZESCIA UMOWY z reszta programu:
+    // centralny, potem wieniec, potem boczne. Podglad rysuje po niej materialy,
+    // wiec wieniec wlozony przed kamieniem centralnym daje szafirowy soliter
+    // pomalowany barwa cyrkonii z halo, i nic tego nie zglasza.
+    if (zKamieniami) stones.push(place(podnies(stone.solid, standoff)));
+    else stone.solid.delete?.();
+
     // Halo obejmuje korone, wiec jedzie razem z nia: tym samym obrotem
     // i o te sama wysokosc, o ktora kosz podnosi kamien nad szyne.
-    // Liczymy je PRZED oddaniem kamienia centralnego, bo bierze z niego miary.
     if (p.halo.on) {
       const girdleR = Math.max(...outlineFor(p.stone.cut, p.stone.size).map(([x, y]) => Math.hypot(x, y)));
       const halo = buildHalo(w, p, stone, girdleR);
@@ -1290,9 +1501,6 @@ export async function buildRing(input, opts = {}) {
       stoneVolumesMm3.halo = halo.stoneVolume;
       stoneVolumesMm3.haloCount = halo.count;
     }
-
-    if (zKamieniami) stones.push(place(podnies(stone.solid, standoff)));
-    else stone.solid.delete?.();
 
     const side = buildSideStones(w, p);
     if (p.side.count > 0) {
@@ -1316,7 +1524,7 @@ export async function buildRing(input, opts = {}) {
     // Gniazda WYCINAMY dopiero po zlaczeniu wszystkiego, zeby siegaly takze
     // szyny. Odwrotna kolejnosc daje bryle cieszsza o kilkanascie procent.
     if (p.setting !== "drilled") {
-      metal = odejmij(metal, place(podnies(seatCutter(w, p.stone.cut, p.stone.size), standoff)));
+      metal = odejmij(metal, place(podnies(seatCutter(w, p.stone.cut, p.stone.size, zakute(p)), standoff)));
     }
     if (side.cutSeats) metal = odejmij(metal, side.cutSeats);
     // Gniazda wienca tez po zlaczeniu, z tego samego powodu co srodkowe.
