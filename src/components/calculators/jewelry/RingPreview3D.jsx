@@ -20,15 +20,30 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { toCreasedNormals } from "three/addons/utils/BufferGeometryUtils.js";
 import { METAL_COLORS, CASTING_ALLOYS } from "../../../data/castingAlloys.js";
 import { gemOptics } from "../../../data/gemOptics.js";
 
-function geometryFrom(pack) {
+/**
+ * Siatka z jadra, z normalnymi liczonymi WEDLUG KATA miedzy scianami.
+ *
+ * `computeVertexNormals` usrednia normalne we wszystkich wierzcholkach, wiec
+ * wygladza takze te krawedzie, ktore maja byc ostre. Dla metalu to bylo
+ * niegroźne, dla kamienia zabojcze: brylant sklada sie wylacznie z plaskich
+ * fasetek, a po usrednieniu wygladal jak polerowany otoczak. Tak tez zostalo
+ * zglszone: "w kamieniach w ogole nie widac szlifu".
+ *
+ * `toCreasedNormals` usrednia tylko tam, gdzie sciany schodza sie plasko.
+ * Obrys kamienia ma kilkadziesiat bokow, wiec rondysta zostaje gladka, a
+ * fasetki, ktore roznia sie o kilkanascie stopni, zostaja plaskie.
+ */
+function geometryFrom(pack, katOstry = 32) {
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.BufferAttribute(pack.positions, 3));
   g.setIndex(new THREE.BufferAttribute(pack.indices, 1));
-  g.computeVertexNormals();
-  return g;
+  const gotowa = toCreasedNormals(g, (katOstry * Math.PI) / 180);
+  g.dispose();
+  return gotowa;
 }
 
 /**
@@ -131,8 +146,20 @@ function stoneMaterial(gemId, sizeMm = 6) {
   // im mniej kamien przepuszcza, tym krotsza droga do wysycenia barwy.
   // Roznica miedzy brylantem a granatem zostaje, ale idzie tam, gdzie jest
   // naprawde, czyli w gestosc barwy, a nie w matowosc powierzchni.
+  //
+  // POPRAWKA DO POPRAWKI: pierwsza wersja tego rachunku szla za daleko.
+  // Droga swiatla rosla razem z kamieniem, a dystans wysycenia byl z niej
+  // wyliczany, wiec wykladnik nie zalezal od rozmiaru, tylko byl staly i za
+  // duzy: szmaragd osiem milimetrow przepuszczal szesc procent swiatla, czyli
+  // na renderze byl czarny. Zglszone wprost: "wcale nie widac, ze to szmaragd".
+  //
+  // Dystans wysycenia jest wiec teraz WLASNOSCIA MATERIALU, stala dla danego
+  // kamienia, a rozmiar wchodzi wylacznie przez droge swiatla. Dzieki temu
+  // wraca zaleznosc, o ktora chodzilo od poczatku: kamyk w halo jest blady,
+  // a ten sam material w duzym kamieniu gesty, i zaden nie jest czarny.
   const droga = Math.max(0.8, sizeMm * 0.8);
   const pochlanianie = Math.max(0.04, 1 - o.transmission);
+  const ODNIESIENIE = 4.5;                 // kamien, przy ktorym barwa jest "wlasciwa"
   return new THREE.MeshPhysicalMaterial({
     color: przezroczysty ? new THREE.Color("#ffffff") : new THREE.Color(o.color),
     metalness: 0,
@@ -141,10 +168,9 @@ function stoneMaterial(gemId, sizeMm = 6) {
     transmission: przezroczysty ? 0.97 : o.transmission,
     thickness: droga,
     attenuationColor: new THREE.Color(o.color),
-    // Droga, na ktorej barwa wysyca sie do wartosci z tabeli. Dziewiec razy
-    // pochlanianie daje szafirowi wykladnik okolo 2,7, brylantowi okolo 0,7,
-    // czyli dokladnie te roznice, ktora widac w rzeczywistosci.
-    attenuationDistance: przezroczysty ? droga / (9 * pochlanianie) : Infinity,
+    // Droga, na ktorej barwa wysyca sie do wartosci z tabeli. Stala dla
+    // materialu: szmaragd 5,9 mm, szafir 6,4 mm, brylant 23 mm.
+    attenuationDistance: przezroczysty ? ODNIESIENIE / (2.4 * pochlanianie) : Infinity,
     specularIntensity: 1,
     envMapIntensity: 1.9,
   });

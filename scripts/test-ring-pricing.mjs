@@ -325,5 +325,42 @@ console.log("\nSpójność wycen w całym serwisie");
   else bad(`kamienie bez gestosci: ${brak.map((g) => g.id).join(", ")}`);
 }
 
+// ------------------------------------------------------------
+console.log("\nRozpiska sumuje sie do ceny, ktora widzi klient");
+// ------------------------------------------------------------
+// Kafelek pokazywal cene z marza, a rozpiska konczyla sie na sumie KOSZTOW.
+// Przy gotowym wyrobie roznica siegala trzech tysiecy zlotych na dokumencie,
+// ktorego jedynym zadaniem jest wytlumaczyc cene. Zaden inny test tego nie
+// widzial, bo obie liczby byly z osobna poprawne.
+{
+  const doLiczby = (s) => Number(String(s).replace(/[^\d,.-]/g, "").replace(/\s/g, "").replace(",", ".")) || 0;
+
+  for (const [nazwa, params] of [
+    ["plik", { output: "mesh" }],
+    ["odlew", { output: "cast" }],
+    ["gotowy wyrób", { output: "finished" }],
+    ["gotowy wyrób z pavé", { output: "finished", side: { count: 4, size: 1.4, setting: "pave", material: "cz" } }],
+  ]) {
+    const geometry = await geoFor(params);
+    const p = price(params, { geometry });
+    const wiersze = p.breakdown.filter((b) => !b.divider);
+    const suma = wiersze.slice(0, -1).reduce((s, b) => s + doLiczby(b.value), 0);
+    const razem = doLiczby(wiersze[wiersze.length - 1].value);
+    const cena = p.unitGrosze / 100;
+
+    // Wiersze musza sumowac sie do wiersza "Razem"...
+    if (Math.abs(suma - razem) > 1.5) {
+      bad(`${nazwa}: wiersze sumuja sie do ${suma.toFixed(0)} zl, a "Razem" pokazuje ${razem.toFixed(0)} zl`);
+      continue;
+    }
+    // ...a "Razem" musi byc ta sama liczba, ktora stoi na kafelku.
+    if (Math.abs(razem - cena) > 1.5) {
+      bad(`${nazwa}: "Razem" ${razem.toFixed(0)} zl, a kafelek pokazuje ${cena.toFixed(0)} zl`);
+      continue;
+    }
+    ok(`${nazwa}: rozpiska sumuje sie do ${razem.toFixed(0)} zł, tyle samo co cena`);
+  }
+}
+
 console.log(failed ? `\n${failed} bledow\n` : "\nWycena kreatora: wszystko sie zgadza\n");
 process.exit(failed ? 1 : 0);

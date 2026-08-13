@@ -42,6 +42,7 @@ const L = {
     cut: "Szlif kamienia centralnego", setting: "Zakucie", stoneSize: "Rozmiar kamienia",
     side: "Kamienie na szynie, na stronę", sideSetting: "Oprawa kamieni bocznych",
     sideSize: "Średnica bocznych", none: "Brak",
+    sideGap: "Odsunięcie od korony", sideSpread: "Rozsunięcie kamieni",
     table: "Tarcza sygnetu", tableLen: "Dłuższa oś tarczy", engraving: "Grawer tarczy",
     face: "Powierzchnia tarczy",
     mass: "Masa metalu", circ: "Obwód", stones: "Kamieni", tri: "Trójkątów",
@@ -71,6 +72,7 @@ const L = {
     cut: "Centre stone cut", setting: "Setting", stoneSize: "Stone size",
     side: "Side stones, per side", sideSetting: "Side stone setting",
     sideSize: "Side stone diameter", none: "None",
+    sideGap: "Gap from the head", sideSpread: "Spacing between stones",
     table: "Signet table", tableLen: "Long axis of the table", engraving: "Table engraving",
     face: "Table surface",
     mass: "Metal mass", circ: "Circumference", stones: "Stones", tri: "Triangles",
@@ -100,6 +102,7 @@ const L = {
     cut: "Schliff des Hauptsteins", setting: "Fassung", stoneSize: "Steingröße",
     side: "Steine auf der Schiene, je Seite", sideSetting: "Fassung der Seitensteine",
     sideSize: "Durchmesser der Seitensteine", none: "Keine",
+    sideGap: "Abstand zum Kopf", sideSpread: "Abstand zwischen den Steinen",
     table: "Siegelplatte", tableLen: "Längere Achse der Platte", engraving: "Gravur der Platte",
     face: "Plattenoberfläche",
     mass: "Metallmasse", circ: "Umfang", stones: "Steine", tri: "Dreiecke",
@@ -459,6 +462,16 @@ export default function RingConfigurator({ lang = "pl" }) {
                   <Slider label={t.sideSize} lang={lang} unit="mm" value={p.side.size}
                     min={LIMITS.sideSize[0]} max={LIMITS.sideSize[1]} step={0.1}
                     onChange={(v) => setSide({ size: v })} />
+
+                  {/* Odsuniecie od korony i rozstaw. Generator liczy oba
+                      z prawdziwej szerokosci glowicy, wiec zero znaczy
+                      "tuz przy koronie", a nie "w koronie". */}
+                  <Slider label={t.sideGap} lang={lang} unit="mm" value={p.side.gap}
+                    min={LIMITS.sideGap[0]} max={LIMITS.sideGap[1]} step={0.05}
+                    onChange={(v) => setSide({ gap: v })} />
+                  <Slider label={t.sideSpread} lang={lang} unit="mm" value={p.side.spread}
+                    min={LIMITS.sideSpread[0]} max={LIMITS.sideSpread[1]} step={0.05}
+                    onChange={(v) => setSide({ spread: v })} />
                 </>
               )}
             </>
