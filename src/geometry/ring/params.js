@@ -233,6 +233,35 @@ export const SEAT = {
   aboveGalleryMm: 1.0,
   /** Luz na obrobke, doliczany do otworu przelotowego pod kamieniem. */
   throughClearance: 0.25,
+  /**
+   * Wysokosc PROSTEJ scianki gniazda pod rondysta, czyli tego, co jubiler
+   * wycina frezem kulistym jako ostatnie. Kamien opiera sie na krawedzi
+   * miedzy ta scianka a stozkiem, a nie na samym stozku.
+   *
+   * Bez tej scianki kamien siada na linii i przy dociskaniu lapek obraca sie
+   * w gniezdzie. Przy odlewie ma jeszcze jedno zadanie: daje frezowi material
+   * do poprawki, bo odlew nigdy nie wychodzi w tolerancji zakucia.
+   */
+  ledge: 0.35,
+  /**
+   * Najwezsza szynka, jaka zostawiamy z boku gniazda w szynie.
+   *
+   * Gniazdo wycina sie w metal na wylot, wiec z szyny zostaja dwa paski po
+   * bokach kamienia. Ponizej niecalego polmilimetra taki pasek nie utrzyma
+   * kamienia i pierwszy raczej sie wygina niz trzyma, a przy odlewie potrafi
+   * po prostu nie wypelnic sie metalem.
+   *
+   * Praktycznie znaczy to tyle: w szynie 2,1 mm nie osadzi sie kamienia
+   * 1,5 mm. Zamiast pozwolic na taka konfiguracje i oddac plik z bryla
+   * rozsypana na dwadziescia kawalkow, przycinamy kamien do wykonalnego.
+   */
+  minRail: 0.45,
+  /**
+   * Ile metalu ZOSTAWIAMY pod kamieniem, liczac od kolety w dol, zanim
+   * zacznie sie otwor przelotowy. Otwor idzie na wylot dla swiatla i po to,
+   * zeby dalo sie kamien wypchnac od spodu przy przekladaniu.
+   */
+  throughRatio: 0.32,
 };
 
 export const LIMITS = {
@@ -313,7 +342,10 @@ export function validate(input = {}) {
     // Obraczka nie ma glowicy, wiec nie ma tez kamienia centralnego ani
     // niczego na ramionach: kamienie ida po obwodzie i opisuje je `band`.
     if (!BAND_COVERAGE.includes(p.band.coverage)) p.band.coverage = "none";
-    p.band.size = clamp(num(p.band.size, 1.8), LIMITS.bandSize);
+    // To samo ograniczenie na obwodzie: kamien szerszy od szyny minus dwie
+    // szynki dalby obraczke przecieta na kawalki.
+    const maxObw = Math.max(LIMITS.bandSize[0], p.width - 2 * SEAT.minRail);
+    p.band.size = clamp(num(p.band.size, 1.8), [LIMITS.bandSize[0], Math.min(LIMITS.bandSize[1], maxObw)]);
     if (!SIDE_SETTINGS[p.band.setting]) p.band.setting = "pave";
     p.side = { ...p.side, count: 0 };
     p.halo = { ...p.halo, on: false };
@@ -343,7 +375,9 @@ export function validate(input = {}) {
   if (p.setting === "drilled") p.side = { ...p.side, count: 0 };
 
   p.side.count = Math.round(clamp(num(p.side.count, 0), LIMITS.sideCount));
-  p.side.size = clamp(num(p.side.size, 1.6), LIMITS.sideSize);
+  // Kamien boczny musi zostawic szynke po obu stronach gniazda.
+  const maxBok = Math.max(LIMITS.sideSize[0], p.width - 2 * SEAT.minRail);
+  p.side.size = clamp(num(p.side.size, 1.6), [LIMITS.sideSize[0], Math.min(LIMITS.sideSize[1], maxBok)]);
   if (!SIDE_SETTINGS[p.side.setting]) p.side.setting = "pave";
 
   // Halo to wieniec drobnych kamieni WOKOL korony, wiec musi byc na czym go

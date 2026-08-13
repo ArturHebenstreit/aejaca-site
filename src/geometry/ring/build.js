@@ -263,16 +263,41 @@ export function stoneSolid(w, cutId, sizeMm) {
  */
 function seatCutter(w, cutId, sizeMm) {
   const { Manifold, CrossSection } = w;
+
+  // Srednica gniazda jest MNIEJSZA od kamienia o podciecie. Kamien ma na czym
+  // usiasc; gniazdo w wymiar kamienia oznacza kamien przelatujacy na wylot.
   const shrunk = Math.max(0.4, sizeMm - 2 * SEAT.undercut);
   const pts = outlineFor(cutId, shrunk);
   const cs = CrossSection.ofPolygons([ccw(pts)]);
 
-  const through = Manifold.extrude(cs, sizeMm * 1.5);                       // w gore, na wylot
+  // 1. Otwor NAD rondysta, przez ktory kamien wchodzi do gniazda.
+  const through = Manifold.extrude(cs, sizeMm * 1.5);
+
+  // 2. Prosta scianka pod rondysta. To na jej dolnej krawedzi siada kamien.
+  //    Wczesniej gniazdo bylo samym stozkiem i kamien opieral sie na linii
+  //    stycznej, wiec przy dociskaniu lapek potrafil sie obrocic. Frez
+  //    jubilerski wycina wlasnie taka scianke i dopiero pod nia stozek.
+  // Wysokosc zero dalaby bryle pusta, a `add` z pusta bryla zwraca pustke,
+  // wiec cale gniazdo znika bez sladu. Zabezpieczenie jest tanie, a bez niego
+  // zmiana jednej stalej na zero kasuje wszystkie gniazda naraz.
+  const ledge = SEAT.ledge > 0.001
+    ? Manifold.extrude(cs, SEAT.ledge).translate([0, 0, -SEAT.ledge])
+    : null;
+
+  // 3. Stozek o kacie pawilonu. Tu wchodzi dolna czesc kamienia.
   const depth = (shrunk / 2) * Math.tan(SEAT.bearingDeg * DEG) + SEAT.throughClearance;
-  const bearing = cone(Manifold, CrossSection, pts, depth, true);
-  const belowHole = Manifold.cylinder(sizeMm, shrunk * 0.28, shrunk * 0.28, 24, false)
-    .translate([0, 0, -sizeMm - depth + 0.01]);
-  return through.add(bearing).add(belowHole);
+  const bearing = cone(Manifold, CrossSection, pts, depth, true)
+    .translate([0, 0, -SEAT.ledge]);
+
+  // 4. Otwor przelotowy pod koleta: swiatlo od spodu i mozliwosc wypchniecia
+  //    kamienia przy przekladaniu. Wezszy od stozka, zeby nie zabrac metalu
+  //    z galerii.
+  const rThrough = shrunk * SEAT.throughRatio;
+  const belowHole = Manifold.cylinder(sizeMm, rThrough, rThrough, 24, false)
+    .translate([0, 0, -sizeMm - depth - SEAT.ledge + 0.01]);
+
+  const razem = ledge ? through.add(ledge) : through;
+  return razem.add(bearing).add(belowHole);
 }
 
 // ------------------------------------------------------------
@@ -369,7 +394,10 @@ function buildCrown(w, p, stone) {
   // zostawia je w powietrzu i bryla rozpada sie na kawalki.
   const girdleR = Math.max(...pts.map(([x, y]) => Math.hypot(x, y)));
   const basketH = SEAT.aboveGalleryMm + stone.pavH * 0.45;
-  let basket = Manifold.cylinder(basketH, girdleR * 0.62, girdleR, 48, false)
+  // Gorny promien kosza siega POZA rondyste o grubosc scianki. Rowno
+  // z rondysta zostawia po wycieciu gniazda scianke o szesciu setnych
+  // milimetra, ktora nie przetrwa ani odlewu, ani zakuwania.
+  let basket = Manifold.cylinder(basketH, girdleR * 0.62, girdleR + 0.22, 48, false)
     .translate([0, 0, -basketH]);
 
   // Okna galerii. Bez nich kosz jest pelna bryla i caly wyrob wyglada jak
@@ -434,7 +462,12 @@ function buildCrown(w, p, stone) {
   const wzorce = new Map();
   for (const deg of prongAngles(cut, p.setting)) {
     const a = deg * DEG;
-    const rr = radiusAt(pts, deg) - rP * 0.15;
+    // Lapka stoi NA ZEWNATRZ rondysty, a nie w jej obrysie. Tak jest
+    // w rzeczywistosci i tak musi byc tutaj: gniazdo wycinamy do srednicy
+    // rondysty pomniejszonej o podciecie, wiec lapka wpuszczona w ten obrys
+    // zostaje przez to gniazdo PRZECIETA. Bryla rozpadala sie wtedy na
+    // czternascie czesci: kazda lapka osobno i kosz w kawalkach.
+    const rr = radiusAt(pts, deg) + rP * 0.28;
     const klucz = rr.toFixed(4);
     if (!wzorce.has(klucz)) {
       wzorce.set(klucz, prongSolid(w, {

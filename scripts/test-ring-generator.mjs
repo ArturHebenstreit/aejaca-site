@@ -17,7 +17,7 @@
 // Wchodzi do builda.
 
 import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, taperFor, buildShank, buildGallery } from "../src/geometry/ring/build.js";
-import { CUTS, SETTINGS, validate } from "../src/geometry/ring/params.js";
+import { CUTS, SETTINGS, SEAT, validate } from "../src/geometry/ring/params.js";
 import { CASTING_ALLOYS, METAL_COLORS, colorsFor, densityFor } from "../src/data/castingAlloys.js";
 import { GEMSTONES } from "../src/pricing/jewelryConfig.js";
 import { RING_PRESETS, applyPreset } from "../src/data/ringPresets.js";
@@ -647,6 +647,50 @@ console.log("\n16. Dodatki odlewnicze nie ruszają wyrobu");
   else bad(`kanal przy szynie zwezanej wchodzi od gory, gdzie metal jest cienszy (y = ${yZwezana.toFixed(1)})`);
   if (ySygnet > 0) ok(`przy sylwetce sygnetowej kanał wchodzi od głowicy (y = ${ySygnet.toFixed(1)} mm)`);
   else bad(`kanal przy sygnecie wchodzi od dolu, a tam metal jest cienszy (y = ${ySygnet.toFixed(1)})`);
+}
+
+// ------------------------------------------------------------
+// 17. Gniazdo daje sie wykonac, a bryla zostaje jedna
+// ------------------------------------------------------------
+// Gniazdo wycina sie NA WYLOT, wiec kazdy jego milimetr jest metalem, ktorego
+// nie ma. Kamien za duzy do szyny zostawia po bokach paski cienkie jak papier,
+// a te w odlewie albo sie nie wypelnia, albo odpadaja przy zakuwaniu. Bryla
+// rozsypuje sie wtedy na kilkanascie czesci i taki plik drukuje sie jako
+// garsc luznych kawalkow.
+//
+// `genus` tego nie pokaze, bo liczy dziury, a nie czesci. Liczymy czesci.
+console.log("\n17. Gniazda nie rozcinają wyrobu");
+{
+  const uklady = [
+    ["soliter", { setting: "prong4" }],
+    ["sześć łapek", { setting: "prong6" }],
+    ["kaseta", { setting: "bezel" }],
+    ["markiza w V", { stone: { cut: "marquise", size: 8 }, setting: "vprong" }],
+    ["halo", { halo: { on: true } }],
+    ["pavé", { width: 2.4, side: { count: 4, size: 1.5, setting: "pave" } }],
+    ["łapki boczne", { width: 3.2, side: { count: 2, size: 1.8, setting: "prong" } }],
+    ["eternity", { kind: "band", width: 2.4, band: { coverage: "full" } }],
+  ];
+  for (const [opis, cfg] of uklady) {
+    for (const taper of ["none", "tapered"]) {
+      const r = await buildRing({ innerDia: 17.2, taper, ...cfg }, { segments: 64 });
+      const czesci = r.metal.decompose().length;
+      if (czesci === 1) ok(`${opis.padEnd(13)} ${taper.padEnd(8)} jedna bryła, ${r.massG.toFixed(2)} g`);
+      else bad(`${opis} ${taper}: wyrob rozpadl sie na ${czesci} czesci`);
+    }
+  }
+
+  // Kamien szerszy niz szyna minus dwie szynki jest NIEWYKONALNY i musi
+  // zostac przyciety, a nie oddany jako bryla w kawalkach.
+  const waska = validate({ width: 2.1, side: { count: 4, size: 1.5, setting: "pave" } });
+  const zostaje = 2.1 - 2 * SEAT.minRail;
+  if (waska.side.size <= zostaje + 1e-9) ok(`w szynie 2,1 mm kamień przycięty do ${waska.side.size.toFixed(2)} mm`);
+  else bad(`kamien 1,5 mm przeszedl w szynie 2,1 mm, zostalyby szynki po ${((2.1 - waska.side.size) / 2).toFixed(2)} mm`);
+
+  // Lapka musi stac poza obrysem rondysty, inaczej gniazdo ja przecina.
+  // Sprawdza to juz wpis "szesc lapek" powyzej, a kazda kolejna bryla to
+  // kilkanascie megabajtow w pamieci WebAssembly, ktorej to jadro samo nie
+  // oddaje. Przy czterdziestu bryłach w jednym przebiegu proces sie wywracal.
 }
 
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");

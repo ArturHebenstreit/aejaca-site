@@ -199,7 +199,7 @@ export default function RingPriceBox({ params, lang = "pl" }) {
           a klient nie ma jak sprawdzic, ze kamien jest tu drozszy od metalu.
           Kalkulatory pokazuja to od zawsze, kreator byl wyjatkiem. */}
       {wybrany?.breakdown?.length ? (
-        <dl className="mt-3 rounded-lg border border-white/10 bg-black/20 px-3 py-2">
+        <dl className="mt-3 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
           <dt className="text-[10px] uppercase tracking-[0.1em] text-neutral-500 mb-1.5">{t.breakdown}</dt>
           {wybrany.breakdown.map((w, i) => (
             w.divider ? <hr key={i} className="my-1.5 border-white/10" /> : (
