@@ -336,15 +336,20 @@ console.log("\n9. Łapka jest otwarta, czyli da się nią zakuć");
   let zMin = Infinity, zMax = -Infinity;
   for (let i = 0; i < n; i++) { const z = v[i * 3 + 2]; if (z < zMin) zMin = z; if (z > zMax) zMax = z; }
 
-  // Promien mierzymy przy podstawie i przy pazurku.
-  const przy = (zc) => {
+  // Promien mierzymy przy podstawie i przy koncowce, biorac wierzcholki
+  // z dolnej i gornej CZESCI zakresu, a nie z waskiego paska na zadanej
+  // wysokosci. Gladki stozek ma wierzcholki tylko na obu koncach i na czubku,
+  // wiec pasek wypadal pusty i srednia wychodzila nieliczbą.
+  const h = zMax - zMin;
+  const srednia = (od, do_) => {
     let s = 0, k = 0;
     for (let i = 0; i < n; i++) {
-      if (Math.abs(v[i * 3 + 2] - zc) < 0.12) { s += v[i * 3]; k++; }
+      const z = v[i * 3 + 2];
+      if (z >= od && z <= do_) { s += v[i * 3]; k++; }
     }
     return k ? s / k : NaN;
   };
-  const dol = przy(zMin + 0.25), gora = przy(zMax - 0.25);
+  const dol = srednia(zMin, zMin + h * 0.3), gora = srednia(zMax - h * 0.3, zMax);
 
   // Lapka NIE MOZE zamykac sie nad kamieniem, i to jest odwrotnosc tego, czego
   // wymagalismy tu wczesniej. Zagieta lapka wyglada jak gotowy, zakuty
@@ -456,6 +461,28 @@ console.log("\n11. Presety budują poprawne bryły");
       bad(`${preset.id}: ${e.message}`);
     }
   }
+
+  // WZOR NIE MOZE BYC PO CICHU PRZYCINANY.
+  //
+  // Trylogia prosila o kamienie boczne 4 mm i dostawala 1,3 mm, bo tyle
+  // zostawalo z szyny 2,2 mm po odjeciu dwoch szynek. Bryla byla poprawna,
+  // masa policzona, testy zielone, a wzor nazwany "trylogia" pokazywal soliter
+  // z dwoma okruszkami. Kontrola granic jest tu nadal potrzebna, ale wzor,
+  // ktory sam w nia wpada, jest bledem wzoru, a nie wyborem klienta.
+  let przyciete = 0;
+  for (const preset of RING_PRESETS) {
+    const zadane = preset.params;
+    const p = validate(applyPreset(preset, validate({})));
+    const rozjazdy = [];
+    if (zadane.side?.size && Math.abs(p.side.size - zadane.side.size) > 1e-6) {
+      rozjazdy.push(`kamien boczny ${zadane.side.size} -> ${p.side.size.toFixed(2)} mm`);
+    }
+    if (zadane.band?.size && Math.abs(p.band.size - zadane.band.size) > 1e-6) {
+      rozjazdy.push(`kamien obwodu ${zadane.band.size} -> ${p.band.size.toFixed(2)} mm`);
+    }
+    if (rozjazdy.length) { przyciete++; bad(`${preset.id}: wzor przyciety po cichu (${rozjazdy.join(", ")})`); }
+  }
+  if (!przyciete) ok(`żaden z ${RING_PRESETS.length} wzorów nie jest po cichu przycinany do granic szyny`);
 
   // Kazdy wzor musi nalezec do jednej z grup, inaczej po prostu zniknie
   // z interfejsu: lista rysuje wylacznie te, ktore pasuja do otwartej grupy.
@@ -680,6 +707,25 @@ console.log("\n16. Dodatki odlewnicze nie ruszają wyrobu");
   else bad("kanaly wewnetrzne przeszly bez glownego, wiec nie maja do czego dojsc");
 
   // Kanaly wewnetrzne musza dodac metalu i zostac czescia jednej bryly.
+
+  // KANAL PRZY SYGNECIE nie moze wyjsc ponad tafle. Tarcza jest powierzchnia
+  // pod grawer, a kanal wchodzil w nia promieniowo i przebijal ja na wylot:
+  // po odcieciu zostawalby guzek dokladnie tam, gdzie idzie rysunek.
+  for (const casting of [{ sprues: true }, { sprues: true, innerSprues: true }]) {
+    const r = await buildRing({ kind: "signet", width: 2.8, thickness: 1.8, casting },
+      { segments: 48, withStones: false });
+    const tafla = r.metal.boundingBox().max[1];
+    const zWlewem = r.metal.add(r.casting);
+    const gora = zWlewem.boundingBox().max[1];
+    const czesci = ileCzesci(zWlewem);
+    const opis = casting.innerSprues ? "z kanałami wewnętrznymi" : "sam kanał";
+    if (gora > tafla + 0.02) bad(`sygnet ${opis}: uklad wlewowy wychodzi ${(gora - tafla).toFixed(2)} mm PONAD tarcze`);
+    else if (czesci !== 1) bad(`sygnet ${opis}: uklad wlewowy nie jest wtopiony, ${czesci} czesci`);
+    else ok(`sygnet ${opis.padEnd(22)} kanał w kancie płyty, tafla nietknięta`);
+    zWlewem.delete?.();
+    zwolnij(r);
+  }
+
   const bezWewn = await buildRing({ ...baza, casting: { sprues: true } }, { segments: 64 });
   const zWewn = await buildRing({ ...baza, casting: { sprues: true, innerSprues: true } }, { segments: 64 });
   // Unie tez sa bryłami i tez zajmuja pamiec jadra, wiec trzymamy je
@@ -799,7 +845,10 @@ console.log("\n18. Sygnety: każda tarcza i każda powierzchnia");
       { segments: 48, withStones: false });
     const bb = r.metal.boundingBox();
     const tarcza = plaster(r.metal, bb.max[1] - 0.8);
-    const ramiona = plaster(r.metal, bb.max[1] - 2.8);
+    // Wysokosc POWIERZCHNI SZYNY przy glowicy. To na niej rozstrzyga sie,
+    // czy sygnet jest zrosniety z obraczka, czy postawiony na niej.
+    const roGlowicy = 17.2 / 2 + 1.7 * (taperFor({ ...r.params, kind: "signet" })?.(0)?.t ?? 1);
+    const ramiona = plaster(r.metal, roGlowicy);
     const dane = { czesci: ileCzesci(r.metal), genus: r.genus, masa: r.massG, gora: bb.max[1], tarcza, ramiona };
     zwolnij(r);
     return dane;
@@ -820,14 +869,21 @@ console.log("\n18. Sygnety: każda tarcza i każda powierzchnia");
     if (def.across && !wpoprzek) problemy.push("tarcza poprzeczna lezy wzdluz palca");
     if (!def.across && def.ratio < 0.95 && wpoprzek) problemy.push("tarcza wzdluzna lezy w poprzek");
 
-    // PODCIECIE POD TARCZA. Plyta ma wystawac poza ramiona, bo to cien pod jej
-    // krawedzia odrozniA plyte polozona na pierscionku od klina wycietego
-    // razem z nim.
-    const wystaje = (t.tarcza.palec - t.ramiona.palec) / 2;
-    if (!(wystaje > 0.1)) problemy.push(`plyta nie wystaje poza ramiona (${wystaje.toFixed(2)} mm)`);
+    // ZROSNIECIE Z SZYNA. To jest cecha, po ktorej poznaje sie sygnet: tarcza
+    // ma byc zakonczeniem obraczki, a nie glowica na niej postawiona.
+    //
+    // Mierzymy szerokosc metalu NA POWIERZCHNI SZYNY przy glowicy i dzielimy
+    // przez szerokosc tarczy. Wersja z podcieciem i wkleslym lukiem dawala
+    // tu 38 procent, czyli wyrazna szyjke, i tak tez wygladala: pierscionek
+    // z korona. Ta sama liczba jest wiec jedynym progiem, jaki ma tu sens,
+    // i lapie dokladnie te usterke, ktora zglosil klient.
+    const zrosniecie = t.ramiona.palec / t.tarcza.palec;
+    if (!(zrosniecie > 0.6)) {
+      problemy.push(`tarcza stoi na szyjce: przy szynie ${t.ramiona.palec.toFixed(1)} mm wobec tarczy ${t.tarcza.palec.toFixed(1)} mm (${(zrosniecie * 100).toFixed(0)} %)`);
+    }
 
     if (problemy.length) bad(`sygnet ${id}: ${problemy.join("; ")}`);
-    else ok(`sygnet ${id.padEnd(8)} ${t.masa.toFixed(2)} g, tarcza ${t.tarcza.palec.toFixed(1)} x ${t.tarcza.obwod.toFixed(1)} mm, występ ${wystaje.toFixed(2)} mm`);
+    else ok(`sygnet ${id.padEnd(8)} ${t.masa.toFixed(2)} g, tarcza ${t.tarcza.palec.toFixed(1)} x ${t.tarcza.obwod.toFixed(1)} mm, zrośnięcie ${(zrosniecie * 100).toFixed(0)} %`);
   }
 
   // Wykonczenie powierzchni idzie tym samym kodem dla kazdego obrysu, wiec

@@ -500,8 +500,17 @@ export function validate(input = {}) {
   if (p.setting === "drilled") p.side = { ...p.side, count: 0 };
 
   p.side.count = Math.round(clamp(num(p.side.count, 0), LIMITS.sideCount));
-  // Kamien boczny musi zostawic szynke po obu stronach gniazda.
-  const maxBok = Math.max(LIMITS.sideSize[0], p.width - 2 * SEAT.minRail);
+  // Kamien WPUSZCZANY w szyne musi zostawic szynke po obu stronach gniazda.
+  //
+  // Nie dotyczy to kamienia we WLASNYCH LAPKACH: ten stoi w osobnej oprawce
+  // ponad szyna i moze byc od niej szerszy. Tak wlasnie zbudowana jest
+  // trylogia, w ktorej boczne kamienie sa niewiele mniejsze od glownego,
+  // a szyna zostaje waska. Objecie ich ta sama granica przycinalo trylogie
+  // do 1,3 mm po cichu, czyli zamienialo ja w soliter z dwoma okruszkami.
+  const wpuszczany = p.side.setting !== "prong";
+  const maxBok = wpuszczany
+    ? Math.max(LIMITS.sideSize[0], p.width - 2 * SEAT.minRail)
+    : LIMITS.sideSize[1];
   p.side.size = clamp(num(p.side.size, 1.6), [LIMITS.sideSize[0], Math.min(LIMITS.sideSize[1], maxBok)]);
   if (!SIDE_SETTINGS[p.side.setting]) p.side.setting = "pave";
 

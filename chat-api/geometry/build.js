@@ -138,11 +138,19 @@ const TAPERS = {
     const s = Math.max(0, 1 - u / 0.45);
     return { w: 1, t: 1 + 0.95 * s * s };
   },
-  /** Sygnetowa: pod tarcza szyna gestnieje i rozszerza sie w ramiona. */
+  /**
+   * Sygnetowa: szyna PUCHNIE ku tarczy i to ona jest polowa sygnetu.
+   *
+   * Zakres podnioslem z 0,55 do 0,78 obwodu i rozszerzenie z 0,62 do 1,15.
+   * Powod jest taki, ze sygnet rozpoznaje sie po tym, iz tarcza jest zrosnieta
+   * z szyna, a nie postawiona na niej. Gdy szyna rozszerza sie tylko tuz pod
+   * glowica, przejscie musi nadrobic cala roznice na dwoch milimetrach wysokosci
+   * i powstaje szyjka, czyli sylwetka pierscionka z korona.
+   */
   signet: (u) => {
-    const s = Math.max(0, 1 - u / 0.55);
+    const s = Math.max(0, 1 - u / 0.78);
     const k = s * s * (3 - 2 * s);
-    return { w: 1 + 0.62 * k, t: 1 + 1.05 * k };
+    return { w: 1 + 1.15 * k, t: 1 + 1.05 * k };
   },
 };
 
@@ -387,33 +395,27 @@ function radiusAt(pts, deg) {
  * Konsekwencja dla podgladu jest swiadoma: pierscionek na ekranie wyglada
  * jak odlew przed zakuciem, bo tym wlasnie jest plik, ktory klient dostaje.
  *
- * Bryle skladamy z ciagu kul wzdluz toru. Jadro nie ma operacji otoczki
- * wypuklej ani zamiatania po krzywej, a kule zachodza na siebie, wiec daja
- * gladki pret bez szwow i zaokraglaja koniec za darmo.
+ * Pret jest JEDNYM stozkiem scietym z kulista koncowka, a nie ciagiem kul.
+ * Ciag kul byl potrzebny, dopoki lapka sie zaginala, bo tor byl krzywa. Prosta
+ * lapka krzywej nie ma, a kule zostawialy na niej widoczne karbowanie: przy
+ * srednicy 0,9 mm sasiednie kule roznily sie promieniem na tyle, ze powierzchnia
+ * falowala. Na renderze wygladalo to jak sznur paciorkow, a na wydruku byloby
+ * karbem, ktory jubiler musialby zeszlifowac przed zakuciem.
  */
 export function prongSolid(w, { radius, prongR, base, girdleTop, crownH }) {
   const { Manifold } = w;
-  const N = 9;
 
   // Koniec siega WYZEJ niz korona, bo to jest material do zagiecia. Lapka
   // ucieta rowno z tafla nie ma czym objac kamienia.
   const top = girdleTop + crownH * 1.05;
+  // Pret zweza sie ku gorze, tak jak zweza sie odlana lapka po opilowaniu.
+  // Cienszy koniec latwiej sie dociska i mniej zaslania kamien.
+  const rTop = prongR * 0.72;
 
-  let solid = null;
-  for (let i = 0; i < N; i++) {
-    const t = i / (N - 1);
-    const z = base + (top - base) * t;
-    // Pret zweza sie ku gorze, tak jak zweza sie odlana lapka po opilowaniu.
-    // Cienszy koniec latwiej sie dociska i mniej zaslania kamien.
-    const rad = prongR * (1 - 0.3 * t);
-    // Lapke budujemy na osi +X i dopiero gotowa obracamy na miejsce.
-    // Kazda kula to osobna suma logiczna, wiec liczenie szesciu lapek od zera
-    // kosztowalo szescdziesiat kilka operacji i podglad reagowal z polsekundowym
-    // opoznieniem. Ten sam ksztalt starczy raz.
-    const ball = Manifold.sphere(rad, 24).translate([radius, 0, z]);
-    solid = solid ? zlacz(solid, ball) : ball;
-  }
-  return solid;
+  const trzon = Manifold.cylinder(top - base, prongR, rTop, 32, false)
+    .translate([radius, 0, base]);
+  const czubek = Manifold.sphere(rTop, 24).translate([radius, 0, top]);
+  return zlacz(trzon, czubek);
 }
 
 /**
@@ -644,22 +646,51 @@ function buildSideStones(w, p) {
       const x = Math.cos(a) * rMidI, y = Math.sin(a) * rMidI;
       const tilt = [0, 0, 0];
 
+      // PODNIESIENIE kamienia ponad szyne.
+      //
+      // Kamien w lapkach stoi we WLASNEJ oprawce, a nie w wybraniu szyny,
+      // i wlasnie dlatego moze byc od niej szerszy. Trylogia z kamieniami
+      // czteromilimetrowymi na szynie 2,2 mm nie jest bledem klienta, tylko
+      // opisem takiej wlasnie konstrukcji: dwie male koronki obok glowicy.
+      // Dopoki wpuszczalismy kazdy kamien w szyne, taki uklad byl niemozliwy
+      // i wymiar spadal po cichu do 1,3 mm, czyli do rozmiaru okruszka.
+      //
+      // Pave i oprawa kanalowa siedza w metalu szyny i tam ograniczenie
+      // szerokosci obowiazuje dalej, bo tam kamien naprawde wycina sie w szyne.
+      const podniesienie = setting === "prong" ? Math.max(0.5, size * 0.3) : 0;
+      const rKam = roI + podniesienie;
+
       // OBROT MUSI BYC TAKI SAM JAK PRZY KORONIE SRODKOWEJ. `rotate([90,0,0])`
       // odwraca kamien: tafla patrzy wtedy w glab palca, a koleta na zewnatrz.
       // Na renderze wyglada to prawie tak samo, ale gniazdo wycina sie odwrotnie,
       // wiec zmienia sie objetosc metalu, a z niej cena.
-      const { solid } = stoneSolid(w, "round", size);
-      const placed = solid
+      const naMiejsce = (m) => m
         .rotate([-90, 0, 0])                        // tafla na zewnatrz promienia
         .rotate([0, 0, (a / DEG) - 90])
-        .translate([x * (roI / rMidI), y * (roI / rMidI), 0]);
-      stones.push(placed);
+        .translate([Math.cos(a) * rKam, Math.sin(a) * rKam, 0]);
 
-      const cutter = seatCutter(w, "round", size)
-        .rotate([-90, 0, 0])
-        .rotate([0, 0, (a / DEG) - 90])
-        .translate([x * (roI / rMidI), y * (roI / rMidI), 0]);
-      addS(cutter);
+      const kam = stoneSolid(w, "round", size);
+      stones.push(naMiejsce(kam.solid));
+      addS(naMiejsce(seatCutter(w, "round", size)));
+
+      if (podniesienie > 0) {
+        // Oprawka: stozek od szyny do rondysty i cztery lapki dookola.
+        // Budujemy ja w ukladzie kamienia, czyli z rondysta na wysokosci zera,
+        // i przenosimy tym samym obrotem, wiec nie da sie jej postawic krzywo.
+        const rG = size / 2;
+        const gleboko = podniesienie + 0.45;        // wchodzi w szyne, nie stoi na niej
+        const kosz = Manifold.cylinder(gleboko, rG * 0.55, rG + 0.18, 32, false)
+          .translate([0, 0, -gleboko]);
+        let oprawka = kosz;
+        const rL = Math.min(0.42, Math.max(0.24, size * 0.11));
+        for (const deg of [45, 135, 225, 315]) {
+          oprawka = zlacz(oprawka, prongSolid(w, {
+            radius: rG + rL * 0.5, prongR: rL,
+            base: -gleboko + 0.1, girdleTop: kam.girdleH, crownH: kam.crownH,
+          }).rotate([0, 0, deg]));
+        }
+        addM(naMiejsce(oprawka));
+      }
 
       // Kuleczki i lapki musza WCHODZIC w szyne, a nie stac na niej. Walec
       // postawiony na wypuklej powierzchni styka sie z nia wzdluz linii, wiec
@@ -696,16 +727,28 @@ function buildSideStones(w, p) {
       const rB = (rG + kula * 0.32) * Math.SQRT1_2;
 
       if (setting === "pave") {
+        // Kuleczka pave musi STERCZEC W GORE, czyli wzdluz promienia
+        // pierscionka, a nie kłaść sie na boki. Zakucia lezacego plasko nie da
+        // sie docisnac: narzedzie nie ma jak podejsc, a metal nie ma dokad
+        // plynac. Sama kula, bez wysokosci, tez sie do tego nie nadaje, bo nie
+        // ma czego przesunac nad kamien. Wysokosc liczymy od powierzchni szyny,
+        // w ktorej zakucie siedzi zanurzone o `SINK`.
+        const wysokosc = size * 0.55;
         for (const [dt, dz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
-          addM(Manifold.sphere(kula, 16).translate(at(dt * rB, dz * rB)));
-        }
-      } else if (setting === "prong") {
-        // Cztery lapki, a nie dwie po bokach: kamien trzymany z dwoch stron
-        // obraca sie w gniezdzie i wypada przy pierwszym zaczepieniu.
-        for (const [dt, dz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
-          addM(Manifold.cylinder(size * 0.75, kula, kula * 0.72, 16, false)
-            .rotate([0, 90, a / DEG])
-            .translate(at(dt * rB, dz * rB)));
+          const stopa = at(dt * rB, dz * rB);
+          const rGora = kula * 0.7;
+          const os = [Math.cos(a), Math.sin(a), 0];
+          const szczyt = [
+            stopa[0] + os[0] * (wysokosc + SINK),
+            stopa[1] + os[1] * (wysokosc + SINK),
+            stopa[2],
+          ];
+          addM(zlacz(
+            Manifold.cylinder(wysokosc + SINK, kula, rGora, 20, false)
+              .rotate([0, 90, a / DEG])
+              .translate(stopa),
+            Manifold.sphere(rGora, 16).translate(szczyt),
+          ));
         }
       }
       void tilt;
@@ -761,64 +804,69 @@ function loftLevels(w, cs, poziomy) {
  * trzeba, tylko wygladala jak klin, bo w calej sylwetce nie bylo ani jednego
  * miejsca, w ktorym cos by sie zmienialo.
  */
+/**
+ * Wymiary glowicy sygnetu, liczone raz.
+ *
+ * Korzysta z nich i bryla, i uklad wlewowy. Kanal musi wiedziec, GDZIE lezy
+ * tarcza, bo inaczej wchodzi w nia na oslep, i wlasnie tak bylo: kanal szedl
+ * promieniowo od srodka pierscionka, czyli prosto przez plyte, i wychodzil
+ * po jej drugiej stronie, przez powierzchnie pod grawer.
+ */
+function signetMetrics(p) {
+  const { W, L } = tableSize(p.signet);
+  const T = Math.max(1.4, Math.min(2.4, L * 0.26));
+  const faza = Math.min(0.42, T * 0.3);
+  const scianka = T - faza;
+  const zanurzenie = Math.min(1.5, p.thickness * 0.85);
+  const rozlanie = zanurzenie + Math.max(1.3, Math.min(2.4, L * 0.24));
+  return { W, L, T, faza, scianka, zanurzenie, rozlanie, gora: rozlanie + scianka + faza };
+}
+
 function buildSignetHead(w, p) {
   const { CrossSection } = w;
-  const { W, L } = tableSize(p.signet);
+  const { W, L, faza, scianka, zanurzenie, rozlanie } = signetMetrics(p);
   const pts = signetOutline(p.signet, 64);
   const cs = CrossSection.ofPolygons([ccw(pts)]);
   const min = Math.min(W, L);
-
-  // Grubosc PLYTY, czyli tego, co widac jako pionowa scianka pod tarcza.
-  // Rosnie z tarcza, ale nie wprost proporcjonalnie: sygnet dwudziestomilimetrowy
-  // o plycie trzymilimetrowej wazylby tyle, ze nikt by go nie nosil.
-  const T = Math.max(1.4, Math.min(2.4, L * 0.26));
-  // Faza gornej krawedzi. Bez niej kant jest ostry jak po wykrojniku.
-  const faza = Math.min(0.42, T * 0.3);
-  const scianka = T - faza;
-
-  // Glowica wchodzi w szyne na tyle gleboko, zeby dol rozlania zostal ukryty
-  // w metalu. Zanurzenie DOLICZAMY do wysokosci luku, zamiast odejmowac je od
-  // niej: inaczej polowa sylwetki, ktora ma byc widoczna, siedzi pod szyna
-  // i z zewnatrz zostaje sam klin.
-  const zanurzenie = Math.min(1.5, p.thickness * 0.85);
-  // Wysokosc rozlania ramion nad szyna. Ponizej dwoch milimetrow tarcza siedzi
-  // na szynie jak naklejka, powyzej czterech glowica robi sie wieza.
-  const rozlanie = zanurzenie + Math.max(2.0, Math.min(3.6, L * 0.34));
 
   // Dol rozlania ma miec przekroj SZYNY, nie tarczy. Wzdluz palca (os L) jest
   // to polowa szerokosci szyny w miejscu glowicy, po obwodzie (os W) troche
   // wiecej, bo tam ramiona i tak schodza w szyne stycznie.
   const kw = taperFor(p)?.(0)?.w ?? 1;
-  const syDol = Math.max(0.24, Math.min(0.86, (p.width * kw) / 2 / L));
-  const sxDol = Math.max(0.3, Math.min(0.9, syDol * 1.25));
+  const syDol = Math.max(0.34, Math.min(0.9, (p.width * kw) / 2 / L));
+  const sxDol = Math.max(0.42, Math.min(0.92, syDol * 1.3));
 
   // Luk WKLESLY: wykladnik powyzej jedynki trzyma ramie waskie nisko i rozlewa
   // je dopiero pod tarcza. Wykladnik ponizej jedynki dalby ksztalt trabki
   // odwroconej, czyli szeroko od razu przy szynie.
   //
-  // Luk konczy sie PONIZEJ pelnej szerokosci tarczy, a ostatnia dziesiata
-  // milimetra dochodzi krotkim podcieciem. Dzieki temu plyta WYSTAJE poza
-  // ramiona i pod jej krawedzia klada sie cien. Na zdjeciach katalogowych to
-  // jest cala roznica miedzy plyta polozona na pierscionku a klinem wycietym
-  // razem z nim, i widac ja nawet na miniaturze.
-  const sLuk = 0.93;
-  const podciecie = Math.min(0.35, scianka * 0.35);
-
+  // Luk jest WYPUKLY i dochodzi do pelnej szerokosci tarczy, bez podciecia.
+  //
+  // Bylo tu odwrotnie: luk wklesly, konczacy sie ponizej szerokosci tarczy,
+  // i krotkie podciecie, dzieki ktoremu plyta wystawala poza ramiona i rzucala
+  // cien. To jest sylwetka PIERSCIONKA Z KORONA, czyli glowicy postawionej na
+  // szynie, a sygnet jest czyms innym: metal wzbiera z szyny i staje sie
+  // tarcza, jednym ciaglym ruchem, bez uskoku i bez cienia pod krawedzia.
+  // Na zdjeciach katalogowych ramie wychodzi z obraczki i puchnie ku gorze,
+  // a jedyna wyrazna krawedzia w calej bryle jest kant tarczy.
+  //
+  // Wykladnik ponizej jedynki daje wlasnie to: szybkie rozlanie tuz nad szyna
+  // i lagodne dojscie do plyty. Powyzej jedynki metal trzyma sie waski nisko
+  // i dopiero pod tarcza wyskakuje na boki, czyli robi szyjke.
   const poziomy = [];
-  const KROKI = 9;
+  const KROKI = 10;
   for (let i = 0; i <= KROKI; i++) {
     const u = i / KROKI;
-    const k = (u ** 1.9) * sLuk;
+    const k = u ** 0.62;
     poziomy.push([u * rozlanie, sxDol + (1 - sxDol) * k, syDol + (1 - syDol) * k]);
   }
-  poziomy.push([rozlanie + podciecie, 1, 1]);
   // Pionowa scianka plyty, potem faza. Faza schodzi o `faza` mm na kazda
   // strone, wiec liczy sie ja osobno dla obu osi.
-  poziomy.push([rozlanie + podciecie + scianka, 1, 1]);
-  poziomy.push([rozlanie + podciecie + scianka + faza, 1 - faza / W, 1 - faza / L]);
+  poziomy.push([rozlanie + scianka, 1, 1]);
+  poziomy.push([rozlanie + scianka + faza, 1 - faza / W, 1 - faza / L]);
 
   let glowica = loftLevels(w, cs, poziomy);
-  const gora = rozlanie + podciecie + scianka + faza;
+  const gora = rozlanie + scianka + faza;
 
   if (p.signet.face === "recessed") {
     // Pole wpuszczone: rant dookola, w srodku plaskie dno pod grawer. Rant
@@ -1159,6 +1207,62 @@ function buildCasting(w, p) {
     Manifold.cylinder(h, r0, r1, 28, false)
       .rotate([znak > 0 ? -90 : 90, 0, 0])
       .translate([0, znak * od, 0]);
+
+  // ------------------------------------------------------------
+  // SYGNET: kanal wchodzi w KANT tarczy, nigdy w jej powierzchnie
+  // ------------------------------------------------------------
+  // Sygnet lamie zalozenie, na ktorym stoi cala reszta tego kodu, czyli ze
+  // najgrubsze miejsce lezy na promieniu i kanal moze do niego dojsc prosto
+  // od srodka pierscionka. Przy sygnecie najgrubszym miejscem jest tarcza,
+  // ale droga promieniowa prowadzi przez NIA NA WYLOT: kanal wchodzil od
+  // spodu, przebijal plyte i wychodzil przez powierzchnie, na ktorej robi sie
+  // grawer. Na modelu wygladalo to jak grzyb wyrastajacy z tafli.
+  //
+  // Kanal idzie wiec w bok, w kant plyty, wzdluz obwodu pierscionka. Tarcza
+  // dalej jest karmiona bezposrednio, bo to ona krzepnie najpozniej, a jej
+  // powierzchnia zostaje nietknieta. Tak wlasnie wiesza sie sygnet na drzewku.
+  if (p.kind === "signet") {
+    const m = signetMetrics(p);
+    const yTafla = promien + m.gora - m.zanurzenie;
+    // Os kanalu leży tak nisko, żeby jego górna tworząca NIE WYSZLA ponad
+    // taflę. Inaczej po odcięciu zostaje na powierzchni pod grawer guzek,
+    // czyli dokładnie to, czego mieliśmy tu uniknąć.
+    const yPlyta = Math.min(
+      promien + m.rozlanie - m.zanurzenie + m.scianka * 0.5,
+      yTafla - 2.1,
+    );
+    // Kanal dla sygnetu musi byc grubszy: dziewiec gramow zasila sie inaczej
+    // niz poltora. Ponizej tej srednicy kanal krzepnie przed plyta i cala
+    // jego funkcja znika.
+    const rSyg = 2.1;
+    const wBok = (h, r0, r1, od) =>
+      Manifold.cylinder(h, r0, r1, 28, false)
+        .rotate([0, 90, 0])
+        .translate([od, yPlyta, 0]);
+
+    const wejscie = m.W - 0.9;                 // zaczyna sie W metalu plyty
+    let syg = wBok(dlugosc, rSyg * 0.7, rSyg, wejscie);
+
+    // Kanaly wewnetrzne biegna w SWIETLE pierscionka, od tarczy do cienkiego
+    // dna szyny. Tarcza jest tu zbiornikiem metalu, a dno krzepnie pierwsze,
+    // wiec to ono potrzebuje dokarmienia. Dwa prety zamiast jednego, bo szyna
+    // sygnetu jest u gory szeroka i jeden zasilalby tylko jej srodek.
+    if (p.casting.innerSprues) {
+      const rInner = 0.9;
+      const odsun = Math.min(1.2, p.width * 0.42);
+      for (const z of [-odsun, odsun]) {
+        syg = zlacz(syg, Manifold.cylinder(2 * ri + 1.0, rInner, rInner, 20, true)
+          .rotate([90, 0, 0])
+          .translate([0, 0, z]));
+      }
+    }
+
+    if (p.casting.button) {
+      syg = zlacz(syg, wBok(2.0, rSyg, rStopka * 0.92, wejscie + dlugosc - 0.3));
+      syg = zlacz(syg, wBok(hStopka, rStopka, rStopka * 0.88, wejscie + dlugosc + 1.5));
+    }
+    return syg;
+  }
 
   // Kanal zaczyna sie POD powierzchnia odlewu, zeby polaczenie bylo pewne,
   // i zweza sie ku niemu, bo tak plynie metal i tak zastyga we wlasciwej
