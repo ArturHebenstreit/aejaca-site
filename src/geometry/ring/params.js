@@ -116,13 +116,13 @@ export const OUTLINES = {
 // stanac, a to wlasnie w tych miejscach kamien odpryskuje.
 export const CUTS = {
   round:     { pl: "okrągły", en: "round", de: "rund", outline: "round", profile: "brilliant", table: 0.57,
-               settings: ["prong4", "prong6", "bezel"], corners: 4,
+               settings: ["prong4", "prong6", "prong8", "prong8pair", "bezel"], corners: 4,
                hint: "Rondysta na całym obwodzie, każde zakucie trzyma.", hintEn: "The girdle runs all the way round, so any setting holds it.", hintDe: "Die Rundiste läuft rundum, jede Fassung hält." },
   oval:      { pl: "owal", en: "oval", de: "oval", outline: "oval", profile: "brilliant", table: 0.55,
-               settings: ["prong4", "prong6", "bezel"], corners: 4,
+               settings: ["prong4", "prong6", "prong8", "prong8pair", "bezel"], corners: 4,
                hint: "Łapki idą na osiach dłuższej i krótszej.", hintEn: "Claws sit on the long and short axes.", hintDe: "Krappen sitzen auf der langen und der kurzen Achse." },
   cushion:   { pl: "poduszka", en: "cushion", de: "Kissen", outline: "cushion", profile: "brilliant", table: 0.58,
-               settings: ["prong4", "corner", "bezel"], corners: 4,
+               settings: ["prong4", "prong6", "prong8", "prong8pair", "corner", "bezel"], corners: 4,
                hint: "Zaokrąglone naroża wybaczają więcej niż kwadrat.", hintEn: "Rounded corners forgive more than a square cut does.", hintDe: "Runde Ecken verzeihen mehr als ein Quadratschliff." },
   square:    { pl: "kwadrat", en: "square", de: "Quadrat", outline: "square", profile: "brilliant", table: 0.6,
                settings: ["corner", "bezel"], corners: 4,
@@ -152,7 +152,7 @@ export const CUTS = {
                settings: ["drilled"],
                hint: "Brioleta się nie osadza. Jest wiercona i wisi na kabłąku.", hintEn: "A briolette is not set. It is drilled and hangs from a bail.", hintDe: "Ein Briolett wird nicht gefasst. Es wird gebohrt und hängt an einer Öse." },
   roseP:     { pl: "rozeta z pawilonem", en: "rose with pavilion", de: "Rosette mit Pavillon", outline: "round", profile: "rosePav", table: 0,
-               settings: ["prong4", "bezel"], corners: 4,
+               settings: ["prong4", "prong6", "prong8", "prong8pair", "bezel"], corners: 4,
                hint: "Płaska góra, pawilon pod spodem, więc łapka ma się o co oprzeć.", hintEn: "Flat top, pavilion beneath, so a claw has something to grip.", hintDe: "Flache Oberseite, Pavillon darunter, die Krappe findet Halt." },
   bufftop:   { pl: "bufftop", en: "buff top", de: "Buff Top", outline: "oval", profile: "dome", table: 0,
                settings: ["bezel"],
@@ -165,6 +165,18 @@ export const CUTS = {
 export const SETTINGS = {
   prong4:  { pl: "4 łapki", en: "4 claws", de: "4 Krappen", prongs: 4 },
   prong6:  { pl: "6 łapek", en: "6 claws", de: "6 Krappen", prongs: 6 },
+  prong8:  { pl: "8 łapek", en: "8 claws", de: "8 Krappen", prongs: 8,
+             hint: "Osiem łapek rozłożonych równomiernie. Kamień trzyma się pewniej i mniej go widać z boku.",
+             hintEn: "Eight claws spaced evenly. A firmer hold, and slightly less of the stone seen from the side.",
+             hintDe: "Acht gleichmäßig verteilte Krappen. Sicherer Halt, dafür etwas weniger Stein von der Seite." },
+  // Osiem lapek USTAWIONYCH PARAMI to inny wyrob niz osiem rozlozonych
+  // rownomiernie, mimo tej samej liczby. Para dziala jak jedna szeroka lapka,
+  // ale obejmuje kamien w dwoch punktach, wiec trzyma pewniej i nie obraca go
+  // przy dociskaniu. Z gory czyta sie to jako cztery zakucia, a nie osiem.
+  prong8pair: { pl: "8 łapek parami", en: "8 claws in pairs", de: "8 Krappen paarweise", prongs: 8,
+             hint: "Cztery pary blisko siebie. Wygląda jak cztery zakucia, a trzyma jak osiem.",
+             hintEn: "Four close pairs. It reads as four settings and holds like eight.",
+             hintDe: "Vier enge Paare. Wirkt wie vier Fassungen, hält wie acht." },
   corner:  { pl: "narożne", en: "corner claws", de: "Eckkrappen", prongs: 0 },   // liczba lapek z `corners` szlifu
   vprong:  { pl: "łapki V", en: "V-claws", de: "V-Krappen", prongs: 0 },   // lapki siadaja na `points` szlifu
   bezel:   { pl: "kaseta", en: "bezel", de: "Zarge", prongs: 0 },
@@ -185,6 +197,35 @@ export const SIDE_SETTINGS = {
              hint: "Każdy kamień we własnych łapkach. Najwięcej blasku, najmniej ochrony.",
              hintEn: "Each stone in its own claws. Most sparkle, least protection.", hintDe: "Jeder Stein in eigenen Krappen. Am meisten Glanz, am wenigsten Schutz." },
 };
+
+/**
+ * Kierunki, w ktorych staja lapki, jako katy w stopniach liczone od osi +X
+ * obrysu szlifu.
+ *
+ * Mieszka to TUTAJ, a nie w generatorze, bo z tej samej listy korzysta
+ * piktogram wzoru. Piktogram rysowal wczesniej lapki rozlozone rownomiernie
+ * z samej ich liczby i przy zakuciu parami klamalby: pokazywalby osiem
+ * pojedynczych lapek zamiast czterech par, czyli inny wyrob niz ten, ktory
+ * zbuduje generator.
+ */
+export function prongAngles(cut = {}, setting) {
+  if (setting === "prong4") return [45, 135, 225, 315];
+  if (setting === "prong6") return [0, 60, 120, 180, 240, 300];
+  if (setting === "prong8") return [0, 45, 90, 135, 180, 225, 270, 315];
+  if (setting === "prong8pair") {
+    // Cztery pary. Rozstaw w parze jest ciasny, bo o to wlasnie chodzi:
+    // dwie lapki maja pracowac jak jedna szeroka, obejmujac kamien
+    // w dwoch punktach.
+    const rozstaw = 13;
+    return [45, 135, 225, 315].flatMap((a) => [a - rozstaw, a + rozstaw]);
+  }
+  if (setting === "vprong") return cut.points || [90, 270];
+  if (setting === "corner") {
+    const n = cut.corners || 4;
+    return Array.from({ length: n }, (_, i) => 90 + (360 / n) * i);
+  }
+  return [];
+}
 
 export const SHANK_PROFILES = ["round", "flat", "knife", "comfort"];
 

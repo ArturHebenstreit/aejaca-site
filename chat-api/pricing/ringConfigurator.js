@@ -86,7 +86,8 @@ export const RING_RATES = {
   finishingPLN: 45,
 
   /** Zakucie liczone od kamienia, bo tyle trwa niezaleznie od jego ceny. */
-  settingPLN: { prong4: 45, prong6: 55, corner: 60, vprong: 65, bezel: 50, channel: 40, drilled: 25 },
+  settingPLN: { prong4: 45, prong6: 55, prong8: 68, prong8pair: 75, corner: 60, vprong: 65,
+                bezel: 50, channel: 40, drilled: 25 },
   sideSettingPLN: { pave: 22, channel: 18, prong: 26 },
 
   /** Sygnet ma wiecej polerowania niz pierscionek z kamieniem. */

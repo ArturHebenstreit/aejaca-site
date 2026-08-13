@@ -37,7 +37,7 @@ import { gemOptics } from "../../../data/gemOptics.js";
  * Obrys kamienia ma kilkadziesiat bokow, wiec rondysta zostaje gladka, a
  * fasetki, ktore roznia sie o kilkanascie stopni, zostaja plaskie.
  */
-function geometryFrom(pack, katOstry = 32) {
+function geometryFrom(pack, katOstry = 35) {
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.BufferAttribute(pack.positions, 3));
   g.setIndex(new THREE.BufferAttribute(pack.indices, 1));
@@ -279,8 +279,13 @@ export default function RingPreview3D({
       [haloStones, haloGem, haloSize],
       [sideStones, sideGem, sideSize],
     ]) {
+      // Kamien dostaje NIZSZY prog niz metal. Sasiednie fasetki rondysty
+      // roznia sie o 22 stopnie, wiec przy progu metalu (35) zostalyby
+      // wygladzone i caly szlif znowu by zniknal. Przy 18 stopniach fasetki
+      // sa plaskie, a kopula kaboszonu, ktorej warstwy roznia sie o 15,
+      // zostaje gladka, bo taka jest naprawde.
       const mat = siatka && stoneMaterial(kamien, mm);
-      if (mat) group.add(new THREE.Mesh(geometryFrom(siatka), mat));
+      if (mat) group.add(new THREE.Mesh(geometryFrom(siatka, 18), mat));
     }
 
     const box = new THREE.Box3().setFromObject(group);

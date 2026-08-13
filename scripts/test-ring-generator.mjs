@@ -16,8 +16,8 @@
 //
 // Wchodzi do builda.
 
-import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, taperFor, buildShank, buildGallery } from "../src/geometry/ring/build.js";
-import { CUTS, SETTINGS, SEAT, SIGNET_TABLES, DEFAULTS, validate } from "../src/geometry/ring/params.js";
+import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, stoneSolid, taperFor, buildShank, buildGallery } from "../src/geometry/ring/build.js";
+import { CUTS, SETTINGS, SEAT, SIGNET_TABLES, DEFAULTS, prongAngles, outlineFor, validate } from "../src/geometry/ring/params.js";
 
 /**
  * Zwolnienie bryly po pomiarze.
@@ -1244,6 +1244,99 @@ console.log("\n22. Układ wlewowy dla KAŻDEGO wzoru z listy");
 
     if (problemy.length) bad(`${preset.id}: ${problemy.join("; ")}`);
     else ok(`${String(preset.id).padEnd(14)} ${p.kind.padEnd(6)} kanał poza koroną, plik w jednej bryle`);
+    zwolnij(r);
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n23. Kamień ma fasety, a nie gładki bok");
+// ------------------------------------------------------------
+// Zglszone dwa razy: "w kamieniach w ogole nie widac szlifu". Za pierwszym
+// razem poprawilem CIENIOWANIE, zakladajac, ze fasetki sa, tylko sa wygladzone.
+// Nie bylo ich wcale: kamien powstawal z tego samego obrysu co gniazdo, czyli
+// z pieciudziesieciu punktow, wiec byl stozkiem o powierzchni ciaglej. Zadne
+// cieniowanie nie pokaze fasetki, ktorej nie ma w bryle.
+//
+// Mierzymy to na wierzcholkach rondysty: kamien fasetowany ma ich tyle, ile
+// ma fasetek, a kamien gladki kilkadziesiat.
+{
+  const w = await kernel();
+  for (const [cut, size, gladki] of [
+    ["round", 6.5, false], ["oval", 7, false], ["octagon", 7, false],
+    ["marquise", 8, false], ["square", 6, false],
+    ["bufftop", 7, true],          // kaboszon JEST gladki i ma taki zostac
+  ]) {
+    const s = stoneSolid(w, cut, size);
+    const m = s.solid.getMesh(), v = m.vertProperties;
+    // Wierzcholki na wysokosci rondysty, zliczane po polozeniu w rzucie z gory.
+    const naRondyscie = new Set();
+    for (let i = 0; i < m.numVert; i++) {
+      const z = v[i * 3 + 2];
+      if (z < -0.001 || z > s.girdleH + 0.001) continue;
+      naRondyscie.add(`${v[i * 3].toFixed(3)},${v[i * 3 + 1].toFixed(3)}`);
+    }
+    const n = naRondyscie.size / 2;          // gora i dol rondysty
+    // Prog nie jest przypadkowy: obrys szlifu ma 48 punktow albo wiecej,
+    // a kamien fasetowany dostaje ich szesnascie, wiec miedzy jednym a drugim
+    // jest przepasc, nie granica na wlos.
+    if (gladki) {
+      if (n >= 20) ok(`${cut.padEnd(9)} gładki bok, ${n} punktów rondysty, tak ma być`);
+      else bad(`${cut}: kaboszon dostal fasety (${n} punktow rondysty)`);
+    } else if (n > 18) {
+      bad(`${cut}: rondysta ma ${n} punktow, czyli kamien jest gladki i szlifu nie widac`);
+    } else if (n < 6) {
+      bad(`${cut}: rondysta ma tylko ${n} punktow, obrys szlifu sie rozjechal`);
+    } else {
+      ok(`${cut.padEnd(9)} ${n} fasetek na obwodzie, ${s.solid.decompose().length} bryła`);
+    }
+    s.solid.delete?.();
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n24. Łapka ma na czym stać");
+// ------------------------------------------------------------
+// "Krapy zawieszone sa tylko na obramowaniu a pozostala czesc wisi
+// w powietrzu." Kosz zwezal sie od rondysty w dol, a lapka zaczynala sie tuz
+// pod rondysta, wiec przylegala do metalu gornym skrajem i niczym wiecej.
+// Przy zakuwaniu cala sila dociskania idzie w to jedno miejsce.
+//
+// Sprawdzamy to sonda: w osi kazdej lapki, na kolejnych glebokosciach pod
+// rondysta, MUSI byc metal.
+{
+  const w = await kernel();
+  for (const [nazwa, cut, size, setting] of [
+    ["4 łapki", "round", 6.5, "prong4"],
+    ["6 łapek", "oval", 7, "prong6"],
+    ["8 łapek", "round", 7, "prong8"],
+    ["8 parami", "round", 7, "prong8pair"],
+    ["narożne", "square", 6, "corner"],
+  ]) {
+    const r = await buildRing({ innerDia: 17.2, stone: { cut, size }, setting }, { segments: 64 });
+    const wzor = stoneSolid(w, cut, size);
+    const basketH = SEAT.aboveGalleryMm + wzor.pavH * 0.45;
+    // Plaszczyzna rondysty w ukladzie pierscionka: kamien konczy sie tafla,
+    // wiec cofamy sie od gory jego pudelka o korone.
+    const bbK = r.stones[0].boundingBox();
+    const yRondysta = bbK.max[1] - (wzor.girdleH + wzor.crownH);
+
+    const braki = [];
+    for (const deg of prongAngles(CUTS[cut], setting)) {
+      const R = Math.max(...outlineFor(cut, size)
+        .map(([x, y]) => x * Math.cos(deg * Math.PI / 180) + y * Math.sin(deg * Math.PI / 180)));
+      for (const ulamek of [0.3, 0.6, 0.85]) {
+        const y = yRondysta - basketH * ulamek;
+        const sonda = w.Manifold.sphere(0.18, 8).translate([
+          R * Math.cos(deg * Math.PI / 180), y, -R * Math.sin(deg * Math.PI / 180)]);
+        const wspolne = r.metal.intersect(sonda);
+        const puste = wspolne.isEmpty();
+        sonda.delete?.(); wspolne.delete?.();
+        if (puste) braki.push(`${deg}° na ${(ulamek * 100).toFixed(0)} % kosza`);
+      }
+    }
+    if (braki.length) bad(`${nazwa}: łapka wisi w powietrzu (${braki.slice(0, 3).join(", ")})`);
+    else ok(`${nazwa.padEnd(9)} każda łapka oparta na całej wysokości kosza, ${r.massG.toFixed(2)} g`);
+    wzor.solid.delete?.();
     zwolnij(r);
   }
 }
