@@ -37,7 +37,8 @@ import { buildRing } from "../geometry/ring/build.js";
 // rozne materialy.
 // 5: liczba kamieni z generatora
 // 6: masa kamieni i karaty, zeby podac mase PIERSCIONKA, a nie samego odlewu
-const WORKER_VERSION = 6;
+// 7: kanal wlewowy i stopka w podgladzie
+const WORKER_VERSION = 7;
 
 /** Podglad nie potrzebuje gestosci docelowej: mniej segmentow, szybsza reakcja. */
 const PREVIEW_SEGMENTS = 64;
@@ -56,7 +57,10 @@ self.onmessage = async (e) => {
   try {
     const r = await buildRing(params, { segments: PREVIEW_SEGMENTS });
 
-    const metal = pack(r.metal);
+    // Kanal i stopka ida do podgladu razem z metalem, bo sa z tego samego
+    // materialu i klient ma zobaczyc, co dostanie w pliku. Do MASY nie
+    // wchodza: ta idzie z `r.massG`, liczonej z samego wyrobu.
+    const metal = pack(r.casting ? r.metal.add(r.casting) : r.metal);
 
     // Kamien centralny idzie OSOBNO od bocznych, bo moga byc z innego
     // materialu. Zlaczone w jedna siatke daloby sie narysowac tylko jedna

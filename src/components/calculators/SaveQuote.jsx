@@ -143,7 +143,7 @@ export default function SaveQuote({ calculator, params, uploadToken = null, file
           <span className="text-white text-sm font-semibold">{u.savedTitle}</span>
         </div>
 
-        <div className="rounded-lg bg-black/30 px-3 py-2 mb-2">
+        <div className="rounded-lg bg-white/[0.03] px-3 py-2 mb-2">
           <code className="text-[11px] text-neutral-300 break-all">{saved.url}</code>
         </div>
 
@@ -199,7 +199,7 @@ export default function SaveQuote({ calculator, params, uploadToken = null, file
         value={email}
         onChange={(e) => { setEmail(e.target.value); setError(null); }}
         placeholder={u.emailPlaceholder}
-        className="w-full rounded-lg bg-black/30 border border-white/10 px-3 py-2 text-sm text-white
+        className="w-full rounded-lg bg-white/[0.03] border border-white/10 px-3 py-2 text-sm text-white
                    placeholder:text-neutral-600 focus:outline-none focus:border-white/25 mb-3"
       />
 

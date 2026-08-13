@@ -263,16 +263,41 @@ export function stoneSolid(w, cutId, sizeMm) {
  */
 function seatCutter(w, cutId, sizeMm) {
   const { Manifold, CrossSection } = w;
+
+  // Srednica gniazda jest MNIEJSZA od kamienia o podciecie. Kamien ma na czym
+  // usiasc; gniazdo w wymiar kamienia oznacza kamien przelatujacy na wylot.
   const shrunk = Math.max(0.4, sizeMm - 2 * SEAT.undercut);
   const pts = outlineFor(cutId, shrunk);
   const cs = CrossSection.ofPolygons([ccw(pts)]);
 
-  const through = Manifold.extrude(cs, sizeMm * 1.5);                       // w gore, na wylot
+  // 1. Otwor NAD rondysta, przez ktory kamien wchodzi do gniazda.
+  const through = Manifold.extrude(cs, sizeMm * 1.5);
+
+  // 2. Prosta scianka pod rondysta. To na jej dolnej krawedzi siada kamien.
+  //    Wczesniej gniazdo bylo samym stozkiem i kamien opieral sie na linii
+  //    stycznej, wiec przy dociskaniu lapek potrafil sie obrocic. Frez
+  //    jubilerski wycina wlasnie taka scianke i dopiero pod nia stozek.
+  // Wysokosc zero dalaby bryle pusta, a `add` z pusta bryla zwraca pustke,
+  // wiec cale gniazdo znika bez sladu. Zabezpieczenie jest tanie, a bez niego
+  // zmiana jednej stalej na zero kasuje wszystkie gniazda naraz.
+  const ledge = SEAT.ledge > 0.001
+    ? Manifold.extrude(cs, SEAT.ledge).translate([0, 0, -SEAT.ledge])
+    : null;
+
+  // 3. Stozek o kacie pawilonu. Tu wchodzi dolna czesc kamienia.
   const depth = (shrunk / 2) * Math.tan(SEAT.bearingDeg * DEG) + SEAT.throughClearance;
-  const bearing = cone(Manifold, CrossSection, pts, depth, true);
-  const belowHole = Manifold.cylinder(sizeMm, shrunk * 0.28, shrunk * 0.28, 24, false)
-    .translate([0, 0, -sizeMm - depth + 0.01]);
-  return through.add(bearing).add(belowHole);
+  const bearing = cone(Manifold, CrossSection, pts, depth, true)
+    .translate([0, 0, -SEAT.ledge]);
+
+  // 4. Otwor przelotowy pod koleta: swiatlo od spodu i mozliwosc wypchniecia
+  //    kamienia przy przekladaniu. Wezszy od stozka, zeby nie zabrac metalu
+  //    z galerii.
+  const rThrough = shrunk * SEAT.throughRatio;
+  const belowHole = Manifold.cylinder(sizeMm, rThrough, rThrough, 24, false)
+    .translate([0, 0, -sizeMm - depth - SEAT.ledge + 0.01]);
+
+  const razem = ledge ? through.add(ledge) : through;
+  return razem.add(bearing).add(belowHole);
 }
 
 // ------------------------------------------------------------
@@ -369,7 +394,10 @@ function buildCrown(w, p, stone) {
   // zostawia je w powietrzu i bryla rozpada sie na kawalki.
   const girdleR = Math.max(...pts.map(([x, y]) => Math.hypot(x, y)));
   const basketH = SEAT.aboveGalleryMm + stone.pavH * 0.45;
-  let basket = Manifold.cylinder(basketH, girdleR * 0.62, girdleR, 48, false)
+  // Gorny promien kosza siega POZA rondyste o grubosc scianki. Rowno
+  // z rondysta zostawia po wycieciu gniazda scianke o szesciu setnych
+  // milimetra, ktora nie przetrwa ani odlewu, ani zakuwania.
+  let basket = Manifold.cylinder(basketH, girdleR * 0.62, girdleR + 0.22, 48, false)
     .translate([0, 0, -basketH]);
 
   // Okna galerii. Bez nich kosz jest pelna bryla i caly wyrob wyglada jak
@@ -434,7 +462,12 @@ function buildCrown(w, p, stone) {
   const wzorce = new Map();
   for (const deg of prongAngles(cut, p.setting)) {
     const a = deg * DEG;
-    const rr = radiusAt(pts, deg) - rP * 0.15;
+    // Lapka stoi NA ZEWNATRZ rondysty, a nie w jej obrysie. Tak jest
+    // w rzeczywistosci i tak musi byc tutaj: gniazdo wycinamy do srednicy
+    // rondysty pomniejszonej o podciecie, wiec lapka wpuszczona w ten obrys
+    // zostaje przez to gniazdo PRZECIETA. Bryla rozpadala sie wtedy na
+    // czternascie czesci: kazda lapka osobno i kosz w kawalkach.
+    const rr = radiusAt(pts, deg) + rP * 0.28;
     const klucz = rr.toFixed(4);
     if (!wzorce.has(klucz)) {
       wzorce.set(klucz, prongSolid(w, {
@@ -830,6 +863,79 @@ function smoothCircle(r, n) {
   });
 }
 
+
+// ------------------------------------------------------------
+// Dodatki odlewnicze: kanal wlewowy i stopka
+// ------------------------------------------------------------
+/**
+ * Kanal wlewowy i stopka odlewnicza.
+ *
+ * NIE sa czescia wyrobu. Kanal odcina sie po odlaniu, a metal z niego wraca
+ * do tygla, wiec nie wchodzi ani do masy pierscionka, ani do jego ceny.
+ * Bryla wraca stad OSOBNO i dolacza sie wylacznie do pliku.
+ *
+ * Kanal wchodzi w NAJGRUBSZE miejsce odlewu i to nie jest wybor estetyczny.
+ * Metal krzepnie od cienkich scianek ku grubym, a kanal musi zastygnac jako
+ * ostatni, zeby do konca dokarmial kurczacy sie odlew. Wpiety w cienka szyne
+ * zakrzepnie pierwszy i pod glowica zostanie jama skurczowa.
+ *
+ * Przy szynie zwezanej ku glowicy najgrubszy jest DOL pierscionka, przy
+ * sygnetowej odwrotnie. Wybieramy wiec strone z pomiaru, a nie z zalozenia.
+ *
+ * Stopka to zbiornik metalu pod kanalem. Jej rola jest ta sama, tylko na
+ * wieksza skale: trzyma cieklo najdluzej i oddaje metal w glab formy.
+ */
+function buildCasting(w, p) {
+  const { Manifold } = w;
+  const ri = p.innerDia / 2;
+  const k = taperFor(p);
+  const przyGlowicy = ri + p.thickness * (k ? k(0).t : 1);
+  const naDole = ri + p.thickness * (k ? k(1).t : 1);
+
+  // Strona grubsza wygrywa. Przy remisie schodzimy na dol, bo tam kanal nie
+  // koliduje z glowica i latwiej go odcinac.
+  const doGory = przyGlowicy > naDole + 0.05;
+  const promien = doGory ? przyGlowicy : naDole;
+  const znak = doGory ? 1 : -1;
+
+  // Srednice kanalow sa warsztatowe, nie dowolne. Ponizej trzech milimetrow
+  // kanal krzepnie przed odlewem i cala jego funkcja znika.
+  const rKanal = 1.6;
+  const dlugosc = 9.0;
+  const rStopka = 5.0;                        // stopka o srednicy 10 mm
+  const hStopka = 3.0;
+
+  /**
+   * Odcinek stozkowy ulozony wzdluz osi wlewu, liczony od srodka pierscionka.
+   *
+   * `Manifold.cylinder` rosnie wzdluz +Z od zera, a obrot przenosi go na os Y.
+   * Przy pierwszym podejsciu przesuwalem bryle o `promien + dlugosc`, czyli
+   * o dlugosc kanalu ZA DUZO, i kanal stal obok pierscionka, nie w nim.
+   * Widac to bylo dopiero po policzeniu czesci skladowych: dwie zamiast
+   * jednej, czyli w pliku dwa osobne przedmioty.
+   */
+  const odcinek = (h, r0, r1, od) =>
+    Manifold.cylinder(h, r0, r1, 28, false)
+      .rotate([znak > 0 ? -90 : 90, 0, 0])
+      .translate([0, znak * od, 0]);
+
+  // Kanal zaczyna sie POD powierzchnia odlewu, zeby polaczenie bylo pewne,
+  // i zweza sie ku niemu, bo tak plynie metal i tak zastyga we wlasciwej
+  // kolejnosci: najdalej od odlewu najpozniej.
+  const start = promien - 0.8;
+  let solid = odcinek(dlugosc, rKanal * 0.62, rKanal, start);
+
+  if (p.casting.button) {
+    // Przejscie stozkowe, zeby przekroj nie zmienial sie skokiem: ostry
+    // uskok to miejsce, w ktorym odlew rwie sie przy stygnieciu.
+    solid = solid
+      .add(odcinek(2.0, rKanal, rStopka * 0.92, start + dlugosc - 0.3))
+      .add(odcinek(hStopka, rStopka, rStopka * 0.88, start + dlugosc + 1.5));
+  }
+
+  return solid;
+}
+
 /**
  * @param {object} input parametry wedlug `params.js`
  * @param {object} [opts] `{ segments, withStones }`
@@ -837,6 +943,10 @@ function smoothCircle(r, n) {
  */
 export async function buildRing(input, opts = {}) {
   const p = validate(input);
+  // Kamienie moga zniknac z modelu na dwa sposoby: przez parametr klienta
+  // i przez wywolanie wewnetrzne, ktore ich nie potrzebuje. Oba znacza to
+  // samo, wiec skladamy je w jedno.
+  const zKamieniami = opts.withStones !== false && p.casting.stones !== false;
   const w = await kernel();
   const segments = opts.segments || SEG;
 
@@ -863,7 +973,7 @@ export async function buildRing(input, opts = {}) {
     const b = buildBandStones(w, p);
     if (b.addMetal) metal = metal.add(b.addMetal);
     if (b.cutSeats) metal = metal.subtract(b.cutSeats);
-    if (opts.withStones !== false) stones.push(...b.stones);
+    if (zKamieniami) stones.push(...b.stones);
     stoneVolumesMm3.side = b.stoneVolume;
     stoneVolumesMm3.sideCount = b.stones.length;
   } else if (p.kind === "signet") {
@@ -879,7 +989,7 @@ export async function buildRing(input, opts = {}) {
     // wchodzi na palec. Zabiera 0,35 mm, zeby kosz wtopil sie w szyne.
     const standoff = basketH > 0 ? basketH - 0.35 : 0;
 
-    if (opts.withStones !== false) {
+    if (zKamieniami) {
       stones.push(place(stone.solid.translate([0, 0, standoff])));
     }
 
@@ -890,7 +1000,7 @@ export async function buildRing(input, opts = {}) {
       const halo = buildHalo(w, p, stone, girdleR);
       metal = metal.add(place(halo.metal.translate([0, 0, standoff])));
       haloSeats = place(halo.seats.translate([0, 0, standoff]));
-      if (opts.withStones !== false) {
+      if (zKamieniami) {
         stones.push(...halo.stones.map((sn) => place(sn.translate([0, 0, standoff]))));
       }
       stoneVolumesMm3.halo = halo.stoneVolume;
@@ -920,7 +1030,7 @@ export async function buildRing(input, opts = {}) {
     if (side.cutSeats) metal = metal.subtract(side.cutSeats);
     // Gniazda wienca tez po zlaczeniu, z tego samego powodu co srodkowe.
     if (haloSeats) metal = metal.subtract(haloSeats);
-    if (opts.withStones !== false) stones.push(...side.stones);
+    if (zKamieniami) stones.push(...side.stones);
   }
 
   const volumeMm3 = metal.volume();
@@ -950,9 +1060,15 @@ export async function buildRing(input, opts = {}) {
     dolicz(p.side.material, stoneVolumesMm3.side, p.side.count * 2);
     dolicz(p.halo.material, stoneVolumesMm3.halo || 0, stoneVolumesMm3.haloCount || 0);
   }
+  // Kanal i stopka wracaja OSOBNO. Gdyby weszly do `metal`, podniosly by
+  // objetosc o kilkadziesiat procent, a wraz z nia mase i cene, za metal,
+  // ktory po odcieciu wraca do tygla.
+  const casting = p.casting.sprues ? buildCasting(w, p) : null;
+
   return {
     params: p,
     metal,
+    casting,
     stones,
     stoneVolumesMm3,
     volumeMm3,

@@ -200,6 +200,19 @@ export const RING_KINDS = ["ring", "signet", "band"];
 //   full  kamienie dookola, czyli eternity
 export const BAND_COVERAGE = ["none", "half", "full"];
 
+// Dodatki ODLEWNICZE. Nie sa czescia wyrobu i nie wchodza do jego masy ani
+// do ceny: kanal wlewowy odcina sie po odlaniu, a metal z niego wraca do
+// tygla. Sluza wylacznie plikowi dla kogos, kto sam odlewa.
+//
+// `stones` decyduje, czy w pliku sa BRYLY KAMIENI. Kamieni sie nie odlewa,
+// wiec przy odlewie chce sie ich zwykle nie miec, ale przy druku modelu do
+// przymiarki albo do pokazania klientowi juz tak. Domyslnie sa, bo tak
+// wyglada wyrob.
+//
+// Wyjecie kamieni NIE zmienia bryly metalu: gniazda sa wyciete niezaleznie
+// od tego, czy kamien w nich siedzi.
+export const CASTING_DEFAULTS = { sprues: false, button: false, stones: true };
+
 // Profil szyny to jej PRZEKROJ, czyli ksztalt w dloni. To jest co innego niz
 // sylwetka ogladana z boku, o ktorej decyduje ponizsze zwezenie. Katalogi
 // mieszaja te dwie rzeczy, a klient wybiera glownie sylwetke.
@@ -220,6 +233,35 @@ export const SEAT = {
   aboveGalleryMm: 1.0,
   /** Luz na obrobke, doliczany do otworu przelotowego pod kamieniem. */
   throughClearance: 0.25,
+  /**
+   * Wysokosc PROSTEJ scianki gniazda pod rondysta, czyli tego, co jubiler
+   * wycina frezem kulistym jako ostatnie. Kamien opiera sie na krawedzi
+   * miedzy ta scianka a stozkiem, a nie na samym stozku.
+   *
+   * Bez tej scianki kamien siada na linii i przy dociskaniu lapek obraca sie
+   * w gniezdzie. Przy odlewie ma jeszcze jedno zadanie: daje frezowi material
+   * do poprawki, bo odlew nigdy nie wychodzi w tolerancji zakucia.
+   */
+  ledge: 0.35,
+  /**
+   * Najwezsza szynka, jaka zostawiamy z boku gniazda w szynie.
+   *
+   * Gniazdo wycina sie w metal na wylot, wiec z szyny zostaja dwa paski po
+   * bokach kamienia. Ponizej niecalego polmilimetra taki pasek nie utrzyma
+   * kamienia i pierwszy raczej sie wygina niz trzyma, a przy odlewie potrafi
+   * po prostu nie wypelnic sie metalem.
+   *
+   * Praktycznie znaczy to tyle: w szynie 2,1 mm nie osadzi sie kamienia
+   * 1,5 mm. Zamiast pozwolic na taka konfiguracje i oddac plik z bryla
+   * rozsypana na dwadziescia kawalkow, przycinamy kamien do wykonalnego.
+   */
+  minRail: 0.45,
+  /**
+   * Ile metalu ZOSTAWIAMY pod kamieniem, liczac od kolety w dol, zanim
+   * zacznie sie otwor przelotowy. Otwor idzie na wylot dla swiatla i po to,
+   * zeby dalo sie kamien wypchnac od spodu przy przekladaniu.
+   */
+  throughRatio: 0.32,
 };
 
 export const LIMITS = {
@@ -248,6 +290,7 @@ export const DEFAULTS = {
   setting: "prong4",
   prongDia: 0.9,
   side: { count: 0, size: 1.6, setting: "pave", material: "cz" },
+  casting: { ...CASTING_DEFAULTS },
   halo: { on: false, size: 1.4, material: "cz" },
   band: { coverage: "none", size: 1.8, setting: "pave", material: "cz" },
   signet: { table: "oval", length: 14, engraving: "none" },
@@ -268,6 +311,12 @@ export function validate(input = {}) {
   const p = { ...DEFAULTS, ...input };
   p.stone = { ...DEFAULTS.stone, ...(input.stone || {}) };
   p.halo = { ...DEFAULTS.halo, ...(input.halo || {}) };
+  p.casting = { ...CASTING_DEFAULTS, ...(input.casting || {}) };
+  p.casting.sprues = Boolean(p.casting.sprues);
+  // Stopka bez kanalu wisialaby w powietrzu: to ona jest zbiornikiem metalu,
+  // z ktorego kanal karmi odlew, wiec jedno bez drugiego nie ma sensu.
+  p.casting.button = Boolean(p.casting.button) && p.casting.sprues;
+  p.casting.stones = p.casting.stones !== false;
   p.band = { ...DEFAULTS.band, ...(input.band || {}) };
   p.side = { ...DEFAULTS.side, ...(input.side || {}) };
   p.signet = { ...DEFAULTS.signet, ...(input.signet || {}) };
@@ -293,7 +342,10 @@ export function validate(input = {}) {
     // Obraczka nie ma glowicy, wiec nie ma tez kamienia centralnego ani
     // niczego na ramionach: kamienie ida po obwodzie i opisuje je `band`.
     if (!BAND_COVERAGE.includes(p.band.coverage)) p.band.coverage = "none";
-    p.band.size = clamp(num(p.band.size, 1.8), LIMITS.bandSize);
+    // To samo ograniczenie na obwodzie: kamien szerszy od szyny minus dwie
+    // szynki dalby obraczke przecieta na kawalki.
+    const maxObw = Math.max(LIMITS.bandSize[0], p.width - 2 * SEAT.minRail);
+    p.band.size = clamp(num(p.band.size, 1.8), [LIMITS.bandSize[0], Math.min(LIMITS.bandSize[1], maxObw)]);
     if (!SIDE_SETTINGS[p.band.setting]) p.band.setting = "pave";
     p.side = { ...p.side, count: 0 };
     p.halo = { ...p.halo, on: false };
@@ -323,7 +375,9 @@ export function validate(input = {}) {
   if (p.setting === "drilled") p.side = { ...p.side, count: 0 };
 
   p.side.count = Math.round(clamp(num(p.side.count, 0), LIMITS.sideCount));
-  p.side.size = clamp(num(p.side.size, 1.6), LIMITS.sideSize);
+  // Kamien boczny musi zostawic szynke po obu stronach gniazda.
+  const maxBok = Math.max(LIMITS.sideSize[0], p.width - 2 * SEAT.minRail);
+  p.side.size = clamp(num(p.side.size, 1.6), [LIMITS.sideSize[0], Math.min(LIMITS.sideSize[1], maxBok)]);
   if (!SIDE_SETTINGS[p.side.setting]) p.side.setting = "pave";
 
   // Halo to wieniec drobnych kamieni WOKOL korony, wiec musi byc na czym go

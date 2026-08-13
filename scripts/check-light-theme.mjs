@@ -62,6 +62,15 @@ function isRisky(cls) {
   // Gradienty i czern z przezroczystoscia to prawie zawsze przyciemnienie
   // zdjecia, ktore ma wygladac tak samo w obu trybach. Nie ruszamy ich.
   if (/^(from|to|via)-/.test(bare)) return false;
+  // Czern z przezroczystoscia ma DWA rozne zastosowania i tylko jedno z nich
+  // jest bezpieczne. Gesta, powyzej mniej wiecej czterdziestu procent, to
+  // przyciemnienie zdjecia albo tlo modalu: ma wygladac tak samo w obu
+  // trybach i nie ruszamy jej. Rzadka to TINT PANELU, ktory na kremowej
+  // stronie robi sie szara plama, a tekst dobrany pod ciemne tlo znika na
+  // niej razem z nagłowkiem sekcji. Tak wlasnie zniknal blok "jak dostarczyc
+  // przedmiot" w komunikacie o materiale.
+  const czern = bare.match(/^bg-black\/(\d{1,3})$/);
+  if (czern) return Number(czern[1]) <= 40;
   if (/-black(\/\d{1,3})?$/.test(bare)) return false;
 
   const m = bare.match(/^(text|bg|border|divide)-([a-z]+)-(\d{2,3})(\/\d{1,3})?$/);
