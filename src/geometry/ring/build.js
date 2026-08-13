@@ -202,6 +202,25 @@ export function buildShank(w, p, segments) {
 // ------------------------------------------------------------
 // Bryla kamienia w ukladzie lokalnym: rondysta na z = 0, korona w gore,
 // pawilon w dol. Kamienia NIE odlewamy, sluzy podgladowi i wycieciu gniazda.
+/**
+ * Suma i roznica ODDAJACE skladniki.
+ *
+ * Jadro trzyma bryly w pamieci WebAssembly i nie oddaje jej samo, bo zbieracz
+ * smieci JavaScriptu o tej pamieci nie wie. Kazde `a.add(b)` zwraca NOWA bryle,
+ * a stara `a` i `b` zostaja w pamieci na zawsze. Jeden pierscionek z halo to
+ * kilkadziesiat takich sum, czyli kilkadziesiat porzuconych bryl.
+ *
+ * W przegladarce ma to skutek gorszy niz w tescie: podglad przelicza sie przy
+ * KAZDYM ruchu suwaka, wiec pamiec rosla przez cala sesje az do zalamania
+ * kontekstu. W zestawie testow konczylo sie to bledem dostepu do pamieci
+ * w losowym miejscu, zaleznie od tego, ktora bryla przelala szale.
+ *
+ * Uzywamy ich WYLACZNIE tam, gdzie oba skladniki sa tymczasowe i nikt inny
+ * ich nie trzyma. Bryly wspoldzielone, jak wzorce lapek, zwalniamy osobno.
+ */
+const zlacz = (a, b) => { const c = a.add(b); a.delete?.(); b.delete?.(); return c; };
+const odejmij = (a, b) => { const c = a.subtract(b); a.delete?.(); b.delete?.(); return c; };
+
 const PROPORTIONS = {
   brilliant: { pav: 0.43, girdle: 0.03, crown: 0.16 },
   step:      { pav: 0.45, girdle: 0.04, crown: 0.12 },
@@ -231,11 +250,11 @@ export function stoneSolid(w, cutId, sizeMm) {
   const pavH = pr.pav * sizeMm, girdleH = pr.girdle * sizeMm, crownH = pr.crown * sizeMm;
   let solid = Manifold.extrude(cs, girdleH);          // rondysta, z = 0..girdleH
 
-  if (pavH > 0) solid = solid.add(cone(Manifold, CrossSection, pts, pavH, true));
-  else solid = solid.add(Manifold.extrude(cs, 0.02).translate([0, 0, -0.02]));
+  if (pavH > 0) solid = zlacz(solid, cone(Manifold, CrossSection, pts, pavH, true));
+  else solid = zlacz(solid, Manifold.extrude(cs, 0.02).translate([0, 0, -0.02]));
 
   if (cut.profile === "drop") {
-    solid = solid.add(cone(Manifold, CrossSection, pts, crownH, false).translate([0, 0, girdleH]));
+    solid = zlacz(solid, cone(Manifold, CrossSection, pts, crownH, false).translate([0, 0, girdleH]));
   } else if (cut.profile === "dome" || cut.profile === "rose") {
     // Kopula: kilka warstw zwezajacych sie ku gorze, bo `extrude` ze
     // `scaleTop` daje stozek, a nam potrzeba lagodnego luku.
@@ -247,11 +266,11 @@ export function stoneSolid(w, cutId, sizeMm) {
         CrossSection.ofPolygons([ccw(scalePts(pts, Math.max(r0, 0.02)))]),
         crownH / layers, 0, 0, [Math.max(r1 / r0, 0.02), Math.max(r1 / r0, 0.02)],
       ).translate([0, 0, girdleH + (crownH * i) / layers]);
-      solid = solid.add(layer);
+      solid = zlacz(solid, layer);
     }
   } else {
     const tbl = Math.max(cut.table, 0.05);
-    solid = solid.add(Manifold.extrude(cs, crownH, 0, 0, [tbl, tbl]).translate([0, 0, girdleH]));
+    solid = zlacz(solid, Manifold.extrude(cs, crownH, 0, 0, [tbl, tbl]).translate([0, 0, girdleH]));
   }
   return { solid, pavH, girdleH, crownH };
 }
@@ -266,41 +285,61 @@ export function stoneSolid(w, cutId, sizeMm) {
  */
 function seatCutter(w, cutId, sizeMm) {
   const { Manifold, CrossSection } = w;
+  const pr = PROPORTIONS[CUTS[cutId].profile];
 
-  // Srednica gniazda jest MNIEJSZA od kamienia o podciecie. Kamien ma na czym
-  // usiasc; gniazdo w wymiar kamienia oznacza kamien przelatujacy na wylot.
+  // 1. WLOT, czyli droga kamienia z gory do gniazda.
+  //
+  // Tu siedzial blad, ktory unieruchamial caly kreator jako narzedzie
+  // warsztatowe. Otwor nad rondysta byl WEZSZY od kamienia o podciecie, i to
+  // na calej wysokosci korony. Kamien nie mial wiec jak zjechac do gniazda:
+  // siadal na gornych krawedziach lapek, poltora milimetra za wysoko, a to,
+  // co zostawalo z lapek po wycieciu gniazda, bylo pierscieniem zrosnietym
+  // z koszem. Zmierzone na bryle: otwor 3,18 mm na calej wysokosci przy
+  // rondyscie 3,25 mm.
+  //
+  // Wlot jest wiec SZERSZY od kamienia o luz montazowy. Lapki staja poza nim
+  // i zostaja cale, a kamien wchodzi z gory tak, jak wchodzi w warsztacie.
+  const luz = 0.05;
+  const wlot = Manifold.extrude(
+    CrossSection.ofPolygons([ccw(outlineFor(cutId, sizeMm + 2 * luz))]), sizeMm * 2);
+
+  // 2. LOZE. Srednica gniazda jest MNIEJSZA od kamienia o podciecie, wiec
+  //    rondysta siada na jego krawedzi. Gniazdo w wymiar kamienia to kamien
+  //    przelatujacy na wylot.
   const shrunk = Math.max(0.4, sizeMm - 2 * SEAT.undercut);
   const pts = outlineFor(cutId, shrunk);
   const cs = CrossSection.ofPolygons([ccw(pts)]);
 
-  // 1. Otwor NAD rondysta, przez ktory kamien wchodzi do gniazda.
-  const through = Manifold.extrude(cs, sizeMm * 1.5);
-
-  // 2. Prosta scianka pod rondysta. To na jej dolnej krawedzi siada kamien.
-  //    Wczesniej gniazdo bylo samym stozkiem i kamien opieral sie na linii
-  //    stycznej, wiec przy dociskaniu lapek potrafil sie obrocic. Frez
-  //    jubilerski wycina wlasnie taka scianke i dopiero pod nia stozek.
+  // Prosta scianka pod rondysta, na ktorej krawedzi siada kamien. Bez niej
+  // kamien opiera sie na linii stycznej stozka i przy dociskaniu lapek obraca
+  // sie w gniezdzie. Frez jubilerski wycina wlasnie taka scianke.
   // Wysokosc zero dalaby bryle pusta, a `add` z pusta bryla zwraca pustke,
-  // wiec cale gniazdo znika bez sladu. Zabezpieczenie jest tanie, a bez niego
-  // zmiana jednej stalej na zero kasuje wszystkie gniazda naraz.
+  // wiec cale gniazdo znika bez sladu.
   const ledge = SEAT.ledge > 0.001
     ? Manifold.extrude(cs, SEAT.ledge).translate([0, 0, -SEAT.ledge])
     : null;
 
-  // 3. Stozek o kacie pawilonu. Tu wchodzi dolna czesc kamienia.
-  const depth = (shrunk / 2) * Math.tan(SEAT.bearingDeg * DEG) + SEAT.throughClearance;
-  const bearing = cone(Manifold, CrossSection, pts, depth, true)
-    .translate([0, 0, -SEAT.ledge]);
+  // 3. STOZEK pod scianka, zwezajacy sie zgodnie z pawilonem. Otwor prosty na
+  //    calej glebokosci nie daje kamieniowi oparcia i zabiera metal z galerii,
+  //    a stozek robi jedno i drugie na raz.
+  const pavH = pr.pav * sizeMm;
+  const glebokosc = pavH > 0.05
+    ? pavH
+    : (shrunk / 2) * Math.tan(SEAT.bearingDeg * DEG) + SEAT.throughClearance;
+  const stozekH = glebokosc * (1 - SEAT.throughPart);
+  const dolPts = scalePts(pts, SEAT.throughPart);
+  const dolCs = CrossSection.ofPolygons([ccw(dolPts)]);
+  const stozek = Manifold.extrude(dolCs, stozekH, 0, 0, [1 / SEAT.throughPart, 1 / SEAT.throughPart])
+    .translate([0, 0, -SEAT.ledge - stozekH]);
 
-  // 4. Otwor przelotowy pod koleta: swiatlo od spodu i mozliwosc wypchniecia
-  //    kamienia przy przekladaniu. Wezszy od stozka, zeby nie zabrac metalu
-  //    z galerii.
-  const rThrough = shrunk * SEAT.throughRatio;
-  const belowHole = Manifold.cylinder(sizeMm, rThrough, rThrough, 24, false)
-    .translate([0, 0, -sizeMm - depth - SEAT.ledge + 0.01]);
+  // 4. PRZELOT. Ostatni odcinek idzie na wylot prosto: przez niego wchodzi
+  //    swiatlo od spodu i przez niego wypycha sie kamien przy przekladaniu.
+  //    Wezszy od stozka, zeby nie zabrac metalu z galerii.
+  const przelot = Manifold.extrude(dolCs, sizeMm * 2)
+    .translate([0, 0, -SEAT.ledge - stozekH - sizeMm * 2 + 0.01]);
 
-  const razem = ledge ? through.add(ledge) : through;
-  return razem.add(bearing).add(belowHole);
+  const razem = ledge ? zlacz(wlot, ledge) : wlot;
+  return zlacz(zlacz(razem, stozek), przelot);
 }
 
 // ------------------------------------------------------------
@@ -331,49 +370,96 @@ function radiusAt(pts, deg) {
 }
 
 /**
- * Lapka: pret, ktory podnosi sie wzdluz kamienia, ZAGINA nad rondysta
- * i konczy sie zaokraglonym pazurkiem lezacym na koronie.
+ * Lapka, tak jak WYCHODZI Z ODLEWU: prosty pret stojacy przy rondyscie,
+ * siegajacy ponad korone, zwezony i zaokraglony na koncu.
  *
- * Poprzednia wersja byla prostym walcem sciętym plasko na wysokosci korony.
- * Wygladalo to jak cztery gwozdzie wbite obok kamienia i, co wazniejsze,
- * TAK BY TO ODLANO: prosta lapka niczego nie trzyma, bo kamien wychodzi
- * gora przy pierwszym zaczepieniu. Zagiecie nad rondysta jest tym, co
- * fizycznie utrzymuje kamien w oprawie.
+ * Byla tu lapka ZAGIETA nad rondysta, czyli taka, jaka wyglada gotowy,
+ * zakuty pierscionek. Wygladala lepiej i byla nie do uzycia: lapka zamknieta
+ * nad kamieniem nie pozwala tego kamienia wlozyc. Model odlewniczy musi byc
+ * otwarty, bo zakuwanie polega wlasnie na tym, ze jubiler dociska koncowki
+ * po osadzeniu kamienia. Zagiecie jest ostatnia czynnoscia przy stole,
+ * a nie stanem, w ktorym oddaje sie odlew.
+ *
+ * Konsekwencja dla podgladu jest swiadoma: pierscionek na ekranie wyglada
+ * jak odlew przed zakuciem, bo tym wlasnie jest plik, ktory klient dostaje.
  *
  * Bryle skladamy z ciagu kul wzdluz toru. Jadro nie ma operacji otoczki
  * wypuklej ani zamiatania po krzywej, a kule zachodza na siebie, wiec daja
- * gladki pret bez szwow i zaokraglaja koniec za darmo. Kul jest dziewiec:
- * mniej widac jako paciorki, wiecej nie zmienia juz ksztaltu, a kazda to
- * osobna suma logiczna. Kule sa gladkie, bo lapka jest tu najblizej oka
- * i granie na jej powierzchni widac od razu.
+ * gladki pret bez szwow i zaokraglaja koniec za darmo.
  */
 export function prongSolid(w, { radius, prongR, base, girdleTop, crownH }) {
   const { Manifold } = w;
-  const N = 11;
+  const N = 9;
 
-  // Nad rondysta lapka pochyla sie do srodka o tyle promienia kamienia.
-  const overhang = prongR * 1.25;
-  // Pazurek konczy sie mniej wiecej w polowie korony. Wyzej zaslanialby
-  // tafle, nizej nie trzymalby kamienia.
-  const top = girdleTop + crownH * 0.5;
-  // Do konca rondysty pret idzie prosto, dopiero potem sie zagina.
-  const bend = (girdleTop - base) / (top - base);
+  // Koniec siega WYZEJ niz korona, bo to jest material do zagiecia. Lapka
+  // ucieta rowno z tafla nie ma czym objac kamienia.
+  const top = girdleTop + crownH * 1.05;
 
   let solid = null;
   for (let i = 0; i < N; i++) {
     const t = i / (N - 1);
     const z = base + (top - base) * t;
-    // Wygladzenie zamiast zalamania: zagiecie narasta lagodnie.
-    const u = t <= bend ? 0 : (t - bend) / (1 - bend);
-    const r = radius - overhang * (u * u * (3 - 2 * u));
     // Pret zweza sie ku gorze, tak jak zweza sie odlana lapka po opilowaniu.
-    const rad = prongR * (1 - 0.28 * t);
+    // Cienszy koniec latwiej sie dociska i mniej zaslania kamien.
+    const rad = prongR * (1 - 0.3 * t);
     // Lapke budujemy na osi +X i dopiero gotowa obracamy na miejsce.
     // Kazda kula to osobna suma logiczna, wiec liczenie szesciu lapek od zera
     // kosztowalo szescdziesiat kilka operacji i podglad reagowal z polsekundowym
     // opoznieniem. Ten sam ksztalt starczy raz.
-    const ball = Manifold.sphere(rad, 24).translate([r, 0, z]);
-    solid = solid ? solid.add(ball) : ball;
+    const ball = Manifold.sphere(rad, 24).translate([radius, 0, z]);
+    solid = solid ? zlacz(solid, ball) : ball;
+  }
+  return solid;
+}
+
+/**
+ * Lapka V, czyli scianka biegnaca po OBRYSIE wokol szpica.
+ *
+ * Poprzednia wersja doklejala do zwyklej lapki szescian, w dodatku nie
+ * wysrodkowany, wiec wisial rogiem na szpicu i z zadnej strony nie przypominal
+ * litery V. Prawdziwa lapka V obejmuje naroze z obu stron, bo tam kamien jest
+ * najciensszy i odpryskuje: markiza i gruszka nie moga stac w niczym innym.
+ *
+ * Idziemy wiec obrysem szlifu w obie strony od szpica i stawiamy slupki na
+ * jego zewnetrznej normalnej. Ksztalt bierze sie z samego szlifu, wiec V przy
+ * gruszce jest lagodniejsze niz przy markizie, dokladnie tak jak w metalu.
+ */
+function vprongSolid(w, pts, deg, prongR, base, top) {
+  const { Manifold } = w;
+  const a = deg * DEG, dx = Math.cos(a), dy = Math.sin(a);
+
+  // Szpic: punkt obrysu najdalej wysuniety w zadanym kierunku.
+  let iTip = 0, best = -Infinity;
+  pts.forEach(([x, y], i) => { const rzut = x * dx + y * dy; if (rzut > best) { best = rzut; iTip = i; } });
+
+  // Ramiona obejmuja szpic na dlugosci mniej wiecej trzech srednic preta.
+  const ramie = Math.max(0.8, prongR * 3.0);
+  const n = pts.length;
+  const idx = [iTip];
+  for (const kier of [-1, 1]) {
+    let dlug = 0, i = iTip;
+    const lista = [];
+    while (dlug < ramie && lista.length < n / 3) {
+      const j = ((i + kier) % n + n) % n;
+      dlug += Math.hypot(pts[j][0] - pts[i][0], pts[j][1] - pts[i][1]);
+      lista.push(j);
+      i = j;
+    }
+    idx.push(...lista);
+  }
+
+  let solid = null;
+  for (const i of idx) {
+    const prev = pts[(i - 1 + n) % n], next = pts[(i + 1) % n];
+    const tx = next[0] - prev[0], ty = next[1] - prev[1];
+    const L = Math.hypot(tx, ty) || 1;
+    // Obrys biegnie przeciwnie do zegara, wiec normalna zewnetrzna to (ty, -tx).
+    const nx = ty / L, ny = -tx / L;
+    const x = pts[i][0] + nx * prongR * 0.6, y = pts[i][1] + ny * prongR * 0.6;
+    const slup = Manifold.cylinder(top - base, prongR * 0.92, prongR * 0.68, 16, false)
+      .translate([x, y, base])
+      .add(Manifold.sphere(prongR * 0.68, 16).translate([x, y, top]));
+    solid = solid ? zlacz(solid, slup) : slup;
   }
   return solid;
 }
@@ -385,7 +471,7 @@ function buildCrown(w, p, stone) {
   const pts = outlineFor(p.stone.cut, size);
   const rP = p.prongDia / 2;
   let crown = null;
-  const add = (m) => { crown = crown ? crown.add(m) : m; };
+  const add = (m) => { crown = crown ? zlacz(crown, m) : m; };
 
   // Kosz, czyli galeria pod kamieniem. Bez niego lapki dotykaja szyny
   // punktowo i odlew pęka przy pierwszym uderzeniu.
@@ -459,18 +545,28 @@ function buildCrown(w, p, stone) {
     return { solid: ring.rotate([90, 0, 0]).translate([0, 0, r * 0.6]), basketH: 0 };
   }
 
+  if (p.setting === "vprong") {
+    // Lapka V nie jest lapka obroconą, tylko scianka po obrysie, wiec ma
+    // wlasna budowe i nie przechodzi przez powielanie ponizej.
+    const ccwPts = ccw(pts);
+    for (const deg of prongAngles(cut, p.setting)) {
+      add(vprongSolid(w, ccwPts, deg, rP,
+        -SEAT.aboveGalleryMm, stone.girdleH + stone.crownH * 1.05));
+    }
+    return { solid: crown, basketH };
+  }
+
   // Lapki o tym samym promieniu roznia sie wylacznie obrotem, a przy szlifie
   // okraglym promien jest jeden dla wszystkich. Budujemy wiec ksztalt raz
   // na promien i powielamy obrotem.
   const wzorce = new Map();
   for (const deg of prongAngles(cut, p.setting)) {
-    const a = deg * DEG;
     // Lapka stoi NA ZEWNATRZ rondysty, a nie w jej obrysie. Tak jest
     // w rzeczywistosci i tak musi byc tutaj: gniazdo wycinamy do srednicy
     // rondysty pomniejszonej o podciecie, wiec lapka wpuszczona w ten obrys
     // zostaje przez to gniazdo PRZECIETA. Bryla rozpadala sie wtedy na
     // czternascie czesci: kazda lapka osobno i kosz w kawalkach.
-    const rr = radiusAt(pts, deg) + rP * 0.28;
+    const rr = radiusAt(pts, deg) + rP * 0.5;
     const klucz = rr.toFixed(4);
     if (!wzorce.has(klucz)) {
       wzorce.set(klucz, prongSolid(w, {
@@ -480,17 +576,11 @@ function buildCrown(w, p, stone) {
         crownH: stone.crownH,
       }));
     }
-    let prong = wzorce.get(klucz).rotate([0, 0, deg]);
-    if (p.setting === "vprong") {
-      // Lapka V obejmuje szpic z dwoch stron, wiec dokladamy klin.
-      const h = stone.girdleH + stone.crownH * 0.75 + SEAT.aboveGalleryMm;
-      const wedge = Manifold.cube([rP * 2.6, rP * 2.6, h], false)
-        .rotate([0, 0, deg])
-        .translate([Math.cos(a) * (rr + rP * 0.2), Math.sin(a) * (rr + rP * 0.2), -SEAT.aboveGalleryMm]);
-      prong = prong.add(wedge);
-    }
-    add(prong);
+    add(wzorce.get(klucz).rotate([0, 0, deg]));
   }
+  // Wzorce sluzyly wylacznie do powielania i nikt ich juz nie trzyma. Bez tego
+  // zostawalyby w pamieci jadra po kazdym przeliczeniu podgladu.
+  for (const wzor of wzorce.values()) wzor.delete?.();
   return { solid: crown, basketH };
 }
 
@@ -518,8 +608,8 @@ function buildSideStones(w, p) {
   const start = 0.34;
   let metal = null, seats = null;
   const stones = [];
-  const addM = (m) => { metal = metal ? metal.add(m) : m; };
-  const addS = (m) => { seats = seats ? seats.add(m) : m; };
+  const addM = (m) => { metal = metal ? zlacz(metal, m) : m; };
+  const addS = (m) => { seats = seats ? zlacz(seats, m) : m; };
 
   if (setting === "channel") {
     const span = start + step * (count - 0.2);
@@ -588,17 +678,30 @@ function buildSideStones(w, p) {
         ];
       };
 
+      // Kuleczki i lapki siadaja NA KRAWEDZI RONDYSTY, po przekatnych.
+      //
+      // Byly ustawione na `size * 0.58` od srodka kamienia W KAZDEJ OSI, czyli
+      // po przekatnej na odleglosci 0,82 srednicy: pol milimetra ZA kamieniem,
+      // bez kontaktu z nim. Trzymaly wiec powietrze. Sprawdzian jest prosty:
+      // odleglosc od osi kamienia musi wynosic tyle co promien rondysty,
+      // a nie tyle co polowa boku kwadratu opisanego na kamieniu.
+      const rG = size / 2;
+      const kula = Math.min(0.34, Math.max(0.2, size * 0.2));
+      // Odrobine POZA rondysta, bo wlot gniazda scina wszystko, co wchodzi
+      // w obrys kamienia, i kuleczka postawiona na nim zniknelaby po polowie.
+      const rB = (rG + kula * 0.32) * Math.SQRT1_2;
+
       if (setting === "pave") {
-        const off = Math.min(size * 0.58, p.width / 2 - 0.18);
         for (const [dt, dz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
-          addM(Manifold.sphere(0.3, 16).translate(at(dt * off, dz * off)));
+          addM(Manifold.sphere(kula, 16).translate(at(dt * rB, dz * rB)));
         }
       } else if (setting === "prong") {
-        const off = Math.min(size * 0.6, p.width / 2 - 0.2);
-        for (const dz of [-1, 1]) {
-          addM(Manifold.cylinder(0.9, 0.24, 0.19, 16, false)
+        // Cztery lapki, a nie dwie po bokach: kamien trzymany z dwoch stron
+        // obraca sie w gniezdzie i wypada przy pierwszym zaczepieniu.
+        for (const [dt, dz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+          addM(Manifold.cylinder(size * 0.75, kula, kula * 0.72, 16, false)
             .rotate([0, 90, a / DEG])
-            .translate(at(0, dz * off)));
+            .translate(at(dt * rB, dz * rB)));
         }
       }
       void tilt;
@@ -631,7 +734,7 @@ function loftLevels(w, cs, poziomy) {
     const plaster = Manifold.extrude(cs, h, 0, 0, [sx1 / sx0, sy1 / sy0])
       .scale([sx0, sy0, 1])
       .translate([0, 0, z0]);
-    bryla = bryla ? bryla.add(plaster) : plaster;
+    bryla = bryla ? zlacz(bryla, plaster) : plaster;
   }
   return bryla;
 }
@@ -725,7 +828,7 @@ function buildSignetHead(w, p) {
         [gora - glebokosc, 1, 1],
         [gora + 0.2, 1 + 0.1 / W, 1 + 0.1 / L],
       ]);
-      if (pole) glowica = glowica.subtract(pole);
+      if (pole) glowica = odejmij(glowica, pole);
     }
   } else if (p.signet.face === "domed") {
     // Czasza kulista o wysokosci `h` nad tarcza: promien liczymy z cieciwy,
@@ -740,7 +843,7 @@ function buildSignetHead(w, p) {
       kopula.push([gora - 0.05 + z, s * (1 - faza / W), s * (1 - faza / L)]);
     }
     const czasza = loftLevels(w, cs, kopula);
-    if (czasza) glowica = glowica.add(czasza);
+    if (czasza) glowica = zlacz(glowica, czasza);
   }
 
   return glowica.translate([0, 0, -zanurzenie]);
@@ -816,7 +919,7 @@ export function buildGallery(w, p, basketH) {
 
       const ball = Manifold.sphere(rad, 16)
         .translate([Math.cos(th) * r, Math.sin(th) * r, 0]);
-      solid = solid ? solid.add(ball) : ball;
+      solid = solid ? zlacz(solid, ball) : ball;
     }
   }
   return solid;
@@ -853,7 +956,7 @@ function buildBandStones(w, p) {
 
   let metal = null, seats = null;
   const stones = [];
-  const addM = (m) => { metal = metal ? metal.add(m) : m; };
+  const addM = (m) => { metal = metal ? zlacz(metal, m) : m; };
 
   for (let i = 0; i < n; i++) {
     // Pelny obwod liczymy od godziny dwunastej w obie strony, polowe tylko
@@ -875,7 +978,7 @@ function buildBandStones(w, p) {
 
     const cut = seatCutter(w, "round", d).rotate([-90, 0, 0]).rotate([0, 0, (a / DEG) - 90])
       .translate([x, y, 0]);
-    seats = seats ? seats.add(cut) : cut;
+    seats = seats ? zlacz(seats, cut) : cut;
 
     if (p.band.setting === "pave") {
       // Promien MUSI byc wziety z profilu na wysokosci kuleczki, a nie ze
@@ -942,15 +1045,25 @@ function buildHalo(w, p, stone, girdleR) {
     stones.push(maly.solid.translate([x, y, zK]));
 
     const cut = seatCutter(w, "round", d).translate([x, y, zK]);
-    seats = seats ? seats.add(cut) : cut;
+    seats = seats ? zlacz(seats, cut) : cut;
 
-    // Kuleczki trzymajace, po dwie na kamien, na zewnetrznej krawedzi wienca.
+  }
+
+  // Kuleczki wienca stoja MIEDZY kamieniami, po jednej od zewnatrz i od
+  // srodka, wiec kazda trzyma dwa sasiednie kamienie. Tak sie zakuwa halo
+  // i tylko tak kuleczek nie trzeba dwa razy tyle.
+  //
+  // Wczesniej siedzialy na promieniu `rW + d * 0.42`, czyli WEWNATRZ obrysu
+  // kamyka, ktorego promien to `d / 2`. Wlot gniazda scinal je wiec do zera
+  // i wieniec zostawal bez zadnego zakucia.
+  const kulaH = Math.min(0.28, d * 0.24);
+  for (let i = 0; i < n; i++) {
+    const b = ((i + 0.5) / n) * Math.PI * 2;
     for (const s of [-1, 1]) {
-      const b = a + s * (Math.PI / n) * 0.82;
-      metal = metal.add(Manifold.sphere(0.26, 12)
-        .translate([Math.cos(b) * (rW + d * 0.42), Math.sin(b) * (rW + d * 0.42), zK + 0.1]));
+      const rr = rW + s * (d / 2 + kulaH * 0.3);
+      metal = zlacz(metal, Manifold.sphere(kulaH, 12)
+        .translate([Math.cos(b) * rr, Math.sin(b) * rr, zK + 0.08]));
     }
-
   }
 
   // GALERIA, czyli wybranie od spodu.
@@ -973,7 +1086,7 @@ function buildHalo(w, p, stone, girdleR) {
       CrossSection.ofPolygons([ccw(kolo2(rZewn - 0.3)), ccw(kolo2(rWewn + 0.25)).reverse()]),
       grubosc - plytaH,
     ).translate([0, 0, -grubosc + stone.girdleH * 0.5]);
-    metal = metal.subtract(wybranie);
+    metal = odejmij(metal, wybranie);
   }
 
   return { metal, seats, stones, count: n, stoneVolume: stones.length ? stoneSolid(w, "round", d).solid.volume() : 0 };
@@ -1128,18 +1241,27 @@ export async function buildRing(input, opts = {}) {
   let haloSeats = null;
 
   // Korona i kamien lezyskuja na godzinie dwunastej, czyli w osi +Y.
-  const place = (m) => m.rotate([-90, 0, 0]).translate([0, ro, 0]);
+  // Obrot i przesuniecie tez zwracaja NOWE bryly, wiec wejscie oddajemy.
+  const place = (m) => {
+    const obrocona = m.rotate([-90, 0, 0]);
+    m.delete?.();
+    const gotowa = obrocona.translate([0, ro, 0]);
+    obrocona.delete?.();
+    return gotowa;
+  };
+  const podnies = (m, dz) => { const g = m.translate([0, 0, dz]); m.delete?.(); return g; };
 
   if (p.kind === "band") {
     // Obraczka: sama szyna. Kamienie, jesli sa, ida po obwodzie.
     const b = buildBandStones(w, p);
-    if (b.addMetal) metal = metal.add(b.addMetal);
-    if (b.cutSeats) metal = metal.subtract(b.cutSeats);
-    if (zKamieniami) stones.push(...b.stones);
+    if (b.addMetal) metal = zlacz(metal, b.addMetal);
+    if (b.cutSeats) metal = odejmij(metal, b.cutSeats);
     stoneVolumesMm3.side = b.stoneVolume;
     stoneVolumesMm3.sideCount = b.stones.length;
+    if (zKamieniami) stones.push(...b.stones);
+    else for (const k of b.stones) k.delete?.();
   } else if (p.kind === "signet") {
-    metal = metal.add(place(buildSignetHead(w, p)));
+    metal = zlacz(metal, place(buildSignetHead(w, p)));
   } else {
     const stone = stoneSolid(w, p.stone.cut, p.stone.size);
     stoneVolumesMm3.center = stone.solid.volume();
@@ -1151,48 +1273,52 @@ export async function buildRing(input, opts = {}) {
     // wchodzi na palec. Zabiera 0,35 mm, zeby kosz wtopil sie w szyne.
     const standoff = basketH > 0 ? basketH - 0.35 : 0;
 
-    if (zKamieniami) {
-      stones.push(place(stone.solid.translate([0, 0, standoff])));
-    }
-
     // Halo obejmuje korone, wiec jedzie razem z nia: tym samym obrotem
     // i o te sama wysokosc, o ktora kosz podnosi kamien nad szyne.
+    // Liczymy je PRZED oddaniem kamienia centralnego, bo bierze z niego miary.
     if (p.halo.on) {
       const girdleR = Math.max(...outlineFor(p.stone.cut, p.stone.size).map(([x, y]) => Math.hypot(x, y)));
       const halo = buildHalo(w, p, stone, girdleR);
-      metal = metal.add(place(halo.metal.translate([0, 0, standoff])));
-      haloSeats = place(halo.seats.translate([0, 0, standoff]));
-      if (zKamieniami) {
-        stones.push(...halo.stones.map((sn) => place(sn.translate([0, 0, standoff]))));
-      }
+      metal = zlacz(metal, place(podnies(halo.metal, standoff)));
+      haloSeats = place(podnies(halo.seats, standoff));
+      if (zKamieniami) stones.push(...halo.stones.map((sn) => place(podnies(sn, standoff))));
+      else for (const k of halo.stones) k.delete?.();
       stoneVolumesMm3.halo = halo.stoneVolume;
       stoneVolumesMm3.haloCount = halo.count;
     }
 
+    if (zKamieniami) stones.push(place(podnies(stone.solid, standoff)));
+    else stone.solid.delete?.();
+
     const side = buildSideStones(w, p);
-    if (p.side.count > 0) stoneVolumesMm3.side = stoneSolid(w, "round", p.side.size).solid.volume();
-    if (side.addMetal) metal = metal.add(side.addMetal);
+    if (p.side.count > 0) {
+      const wzor = stoneSolid(w, "round", p.side.size);
+      stoneVolumesMm3.side = wzor.solid.volume();
+      wzor.solid.delete?.();
+    }
+    if (side.addMetal) metal = zlacz(metal, side.addMetal);
     if (crown) {
-      metal = metal.add(place(crown.translate([0, 0, standoff])));
+      metal = zlacz(metal, place(podnies(crown, standoff)));
       // Galeria ma sens tylko wtedy, gdy jest co podeprzec: przy briolecie
       // kosza nie ma, a przy kasecie rant siega szyny wlasnym trzonem.
       if (basketH > 0 && p.setting !== "bezel") {
         // Wysokosc kosza, a NIE kosz plus podniesienie: kosz jest juz
         // przesuniety o `standoff`, wiec zsumowanie obu podnosilo luk
         // dwukrotnie i zamiast wtopic sie w szyne siadal na niej guzkami.
-        metal = metal.add(buildGallery(w, p, basketH));
+        metal = zlacz(metal, buildGallery(w, p, basketH));
       }
     }
 
     // Gniazda WYCINAMY dopiero po zlaczeniu wszystkiego, zeby siegaly takze
     // szyny. Odwrotna kolejnosc daje bryle cieszsza o kilkanascie procent.
     if (p.setting !== "drilled") {
-      metal = metal.subtract(place(seatCutter(w, p.stone.cut, p.stone.size).translate([0, 0, standoff])));
+      metal = odejmij(metal, place(podnies(seatCutter(w, p.stone.cut, p.stone.size), standoff)));
     }
-    if (side.cutSeats) metal = metal.subtract(side.cutSeats);
+    if (side.cutSeats) metal = odejmij(metal, side.cutSeats);
     // Gniazda wienca tez po zlaczeniu, z tego samego powodu co srodkowe.
-    if (haloSeats) metal = metal.subtract(haloSeats);
+    if (haloSeats) metal = odejmij(metal, haloSeats);
     if (zKamieniami) stones.push(...side.stones);
+    else for (const k of side.stones) k.delete?.();
   }
 
   const volumeMm3 = metal.volume();

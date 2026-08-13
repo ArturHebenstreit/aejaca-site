@@ -250,7 +250,8 @@ export default function RingConfigurator({ lang = "pl" }) {
       setBusy(false);
       if (!e.data.ok) { setError(e.data.error); return; }
       setError(null);
-      setMesh({ metal: e.data.metal, stones: e.data.stones, sideStones: e.data.sideStones });
+      setMesh({ metal: e.data.metal, stones: e.data.stones,
+        haloStones: e.data.haloStones, sideStones: e.data.sideStones });
       setInfo({
         massG: e.data.massG, volumeMm3: e.data.volumeMm3,
         stoneMassG: e.data.stoneMassG || 0,
@@ -555,9 +556,11 @@ export default function RingConfigurator({ lang = "pl" }) {
             <Suspense fallback={null}>
               {mesh ? (
                 <RingPreview3D
-                  metal={mesh.metal} stones={mesh.stones} sideStones={mesh.sideStones}
+                  metal={mesh.metal} stones={mesh.stones}
+                  haloStones={mesh.haloStones} sideStones={mesh.sideStones}
                   alloy={p.alloy} color={p.color}
-                  gem={p.stone.material} sideGem={p.side.material}
+                  gem={p.stone.material} haloGem={p.halo.material} sideGem={p.side.material}
+                  gemSize={p.stone.size} haloSize={p.halo.size} sideSize={p.side.size}
                 />
               ) : null}
             </Suspense>

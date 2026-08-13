@@ -367,6 +367,18 @@ export const SEAT = {
    * zeby dalo sie kamien wypchnac od spodu przy przekladaniu.
    */
   throughRatio: 0.32,
+  /**
+   * Jaka CZESC glebokosci gniazda idzie na wylot prosto, zamiast zwezac sie
+   * dalej stozkiem. Reszta jest stozkiem o kacie pawilonu.
+   *
+   * Gniazdo wiercone prosto na calej glebokosci nie daje kamieniowi zadnego
+   * oparcia poza gorna krawedzia i wybiera metal z galerii tam, gdzie jest on
+   * potrzebny. Stozek robi odwrotnie: kamien opiera sie na duzej powierzchni,
+   * a metal zostaje. Ostatni odcinek musi jednak byc prosty, bo stozek
+   * ciagniety do konca zamknalby sie w szpic i nie byloby czym wypchnac
+   * kamienia od spodu ani czym doswietlic go od dolu.
+   */
+  throughPart: 1 / 6,
 };
 
 export const LIMITS = {

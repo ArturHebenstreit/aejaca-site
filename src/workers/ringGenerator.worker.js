@@ -38,7 +38,8 @@ import { buildRing } from "../geometry/ring/build.js";
 // 5: liczba kamieni z generatora
 // 6: masa kamieni i karaty, zeby podac mase PIERSCIONKA, a nie samego odlewu
 // 7: kanal wlewowy i stopka w podgladzie
-const WORKER_VERSION = 7;
+// 8: wieniec halo osobno od kamieni bocznych, bo ma wlasny material
+const WORKER_VERSION = 8;
 
 /** Podglad nie potrzebuje gestosci docelowej: mniej segmentow, szybsza reakcja. */
 const PREVIEW_SEGMENTS = 64;
@@ -66,22 +67,32 @@ self.onmessage = async (e) => {
     // materialu. Zlaczone w jedna siatke daloby sie narysowac tylko jedna
     // barwa i szafir w otoczeniu brylantow wygladalby jak brylant.
     // `buildRing` wklada centralny jako pierwszy, a boczne za nim.
-    let stones = null, sideStones = null;
+    // `buildRing` uklada je w stalej kolejnosci: centralny, potem wieniec,
+    // potem boczne. Kazda z tych trzech grup ma w formularzu WLASNY wybor
+    // kamienia, wiec zlaczenie ich w jedna siatke odbieraloby dwom z nich
+    // barwe: szafirowe halo wokol brylantu rysowaloby sie jak brylanty.
+    const scal = (lista) => {
+      let s = lista[0];
+      for (let i = 1; i < lista.length; i++) s = s.add(lista[i]);
+      return pack(s);
+    };
+    const ileHalo = r.stoneVolumesMm3.haloCount || 0;
+    let stones = null, haloStones = null, sideStones = null;
     if (r.stones.length) {
       stones = pack(r.stones[0]);
-      if (r.stones.length > 1) {
-        let s = r.stones[1];
-        for (let i = 2; i < r.stones.length; i++) s = s.add(r.stones[i]);
-        sideStones = pack(s);
-      }
+      const wieniec = r.stones.slice(1, 1 + ileHalo);
+      const boczne = r.stones.slice(1 + ileHalo);
+      if (wieniec.length) haloStones = scal(wieniec);
+      if (boczne.length) sideStones = scal(boczne);
     }
 
     const transfer = [metal.positions.buffer, metal.indices.buffer];
-    if (stones) transfer.push(stones.positions.buffer, stones.indices.buffer);
-    if (sideStones) transfer.push(sideStones.positions.buffer, sideStones.indices.buffer);
+    for (const g of [stones, haloStones, sideStones]) {
+      if (g) transfer.push(g.positions.buffer, g.indices.buffer);
+    }
 
     self.postMessage({
-      seq, ok: true, workerVersion: WORKER_VERSION, metal, stones, sideStones,
+      seq, ok: true, workerVersion: WORKER_VERSION, metal, stones, haloStones, sideStones,
       stoneCount: r.stones.length,
       stoneMassG: r.stoneMassG,
       caratTotal: r.caratTotal,
