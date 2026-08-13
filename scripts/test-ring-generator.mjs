@@ -207,6 +207,7 @@ for (const [id, a] of Object.entries(CASTING_ALLOYS)) {
   const want = a.shrink ** 3;
   if (Math.abs(ratio - want) < 1e-9) ok(`${id.padEnd(6)} masa ${r.massG.toFixed(2)} g, wzorzec x${ratio.toFixed(4)} objetosciowo`);
   else bad(`${id}: wzorzec x${ratio.toFixed(4)}, oczekiwano x${want.toFixed(4)}`);
+  zwolnij(r);
 }
 
 
@@ -248,6 +249,7 @@ console.log("\n6. Kamienie osadzone taflą na zewnątrz");
 
     if (zewn > wewn * 1.6) ok(`${label.padEnd(12)} tafla na zewnątrz: rozrzut ${zewn.toFixed(2)} wobec kolety ${wewn.toFixed(2)} mm`);
     else bad(`${label}: kamień ODWROCONY, koleta na zewnątrz (rozrzut zewn. ${zewn.toFixed(2)}, wewn. ${wewn.toFixed(2)} mm)`);
+    zwolnij(r);
   }
 }
 
@@ -264,6 +266,7 @@ console.log("\n7. Kolor stopu zmienia mase");
   for (const color of ["yellow", "white", "rose"]) {
     const r = await buildRing({ ...baza, color }, { segments: 48 });
     masy[color] = r.massG;
+    zwolnij(r);
   }
   const wzrost = (masy.white / masy.yellow - 1) * 100;
   if (wzrost > 8) ok(`białe cięższe od żółtego o ${wzrost.toFixed(1)} procent (${masy.yellow.toFixed(2)} -> ${masy.white.toFixed(2)} g)`);
@@ -322,7 +325,7 @@ console.log("\n8. Katalog kamieni pokrywa sie z optyką");
 // Prosta lapka, sciecie plaskie na wysokosci korony, niczego nie trzyma:
 // kamien wychodzi gora przy pierwszym zaczepieniu. To jest wada WYROBU,
 // nie rysunku, wiec musi ja lapac test, a nie oko na zrzucie ekranu.
-console.log("\n9. Łapka zagina się nad kamieniem");
+console.log("\n9. Łapka jest otwarta, czyli da się nią zakuć");
 {
   const w = await kernel();
   const prong = prongSolid(w, {
@@ -342,13 +345,19 @@ console.log("\n9. Łapka zagina się nad kamieniem");
     return k ? s / k : NaN;
   };
   const dol = przy(zMin + 0.25), gora = przy(zMax - 0.25);
-  const pochyl = dol - gora;
 
-  if (pochyl > 0.25) ok(`pazurek pochylony do środka o ${pochyl.toFixed(2)} mm wobec podstawy`);
-  else bad(`łapka prosta: podstawa na ${dol.toFixed(2)}, pazurek na ${gora.toFixed(2)} mm`);
+  // Lapka NIE MOZE zamykac sie nad kamieniem, i to jest odwrotnosc tego, czego
+  // wymagalismy tu wczesniej. Zagieta lapka wyglada jak gotowy, zakuty
+  // pierscionek i jest nie do uzycia: kamienia nie da sie pod nia wlozyc.
+  // Model odlewniczy oddaje sie otwarty, a zagiecie jest ostatnia czynnoscia
+  // przy stole. Dopuszczamy dziesiate milimetra od zwezenia preta ku gorze.
+  if (gora >= dol - 0.12) ok(`łapka otwarta: podstawa ${dol.toFixed(2)}, koniec ${gora.toFixed(2)} mm`);
+  else bad(`lapka zamyka sie nad kamieniem o ${(dol - gora).toFixed(2)} mm, wiec kamienia nie da sie wlozyc`);
 
-  if (zMax > 0.2) ok(`pazurek sięga ponad rondystę, do ${zMax.toFixed(2)} mm`);
-  else bad(`pazurek konczy sie na ${zMax.toFixed(2)} mm, czyli ponizej rondysty`);
+  // Koniec musi siegac PONAD korone, bo to jest material do zagiecia. Lapka
+  // ucieta na wysokosci rondysty nie ma czym objac kamienia.
+  if (zMax > 0.2 + 1.04) ok(`koniec sięga ponad koronę, do ${zMax.toFixed(2)} mm`);
+  else bad(`koniec konczy sie na ${zMax.toFixed(2)} mm, czyli nie ma czym objac kamienia`);
 
   if (prong.genus() === 0) ok("łapka jest jedną bryłą, kule zachodzą na siebie");
   else bad(`łapka ma genus ${prong.genus()}, czyli rozpadla sie na paciorki albo ma dziure`);
@@ -532,6 +541,7 @@ console.log("\n13. Galeria wtapia się w szynę");
   const zLapkami = await buildRing({ innerDia: 17.2, setting: "prong4" }, { segments: 48 });
   if (zKaseta.metal.genus() >= 0 && zLapkami.metal.genus() >= 0) ok("kaseta i łapki dają spójne bryły");
   else bad("kaseta albo lapki daja bryle rozsypana");
+  zwolnij(zKaseta); zwolnij(zLapkami);
 }
 
 // ------------------------------------------------------------
@@ -837,6 +847,83 @@ console.log("\n18. Sygnety: każda tarcza i każda powierzchnia");
     } else {
       ok(`${id.padEnd(10)} wpust −${(plaska.masa - wpust.masa).toFixed(2)} g, kopuła +${(kopula.masa - plaska.masa).toFixed(2)} g`);
     }
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n19. Kamień wchodzi do gniazda, siada i nie wypada");
+// ------------------------------------------------------------
+// To jest sprawdzian WARSZTATOWY, a nie geometryczny, i powstal dlatego, ze
+// bryla przechodzila wszystkie poprzednie, a osadzic w niej kamienia sie nie
+// dalo. Otwor nad rondysta byl WEZSZY od kamienia o podciecie, wiec kamien
+// nie mial jak zjechac do gniazda: siadal na gornych krawedziach lapek,
+// poltora milimetra za wysoko. Zadna miara objetosci, masy ani topologii
+// tego nie widziala, bo bryla byla poprawna. Byla tylko bezuzyteczna.
+//
+// Sprawdzamy trzy polozenia kamienia wzgledem metalu:
+//   na miejscu   pasuje, czyli styka sie z metalem tylko podcieciem
+//   nizej        NIE MIESCI SIE, czyli gniazdo go zatrzymuje
+//   wyzej        wychodzi swobodnie, czyli da sie go wlozyc z gory
+{
+  // Kazdy kamien siedzi pod innym katem, wiec "w dol" znaczy dla niego
+  // w strone srodka pierscionka. Kierunek bierzemy ze srodka jego pudelka.
+  const wDol = (k) => {
+    const b = k.boundingBox();
+    const x = (b.min[0] + b.max[0]) / 2, y = (b.min[1] + b.max[1]) / 2;
+    const L = Math.hypot(x, y) || 1;
+    return [x / L, y / L];
+  };
+  const kolizja = (metal, k, d) => {
+    const [ux, uy] = wDol(k);
+    const przesuniety = k.translate([ux * d, uy * d, 0]);
+    const wspolne = metal.intersect(przesuniety);
+    const v = wspolne.volume();
+    przesuniety.delete?.(); wspolne.delete?.();
+    return v;
+  };
+
+  const UKLADY = [
+    ["okrągły 4 łapki", { stone: { cut: "round", size: 6.5 }, setting: "prong4" }],
+    ["owal 6 łapek", { stone: { cut: "oval", size: 7 }, setting: "prong6" }],
+    ["markiza łapki V", { stone: { cut: "marquise", size: 6 }, setting: "vprong" }],
+    ["gruszka łapki V", { stone: { cut: "pear", size: 7 }, setting: "vprong" }],
+    ["kwadrat narożne", { stone: { cut: "square", size: 5.5 }, setting: "corner" }],
+    ["kaseta", { stone: { cut: "round", size: 6.5 }, setting: "bezel" }],
+    ["pavé na szynie", { stone: { cut: "round", size: 5 }, setting: "prong4",
+                         width: 2.4, side: { count: 4, size: 1.5, setting: "pave" } }],
+    ["halo", { stone: { cut: "oval", size: 7 }, setting: "prong4", halo: { on: true, size: 1.4 } }],
+  ];
+
+  for (const [nazwa, cfg] of UKLADY) {
+    const r = await buildRing({ innerDia: 17.2, ...cfg }, { segments: 64 });
+    // Przy halo i eternity kamieni sa dziesiatki, a kazde sprawdzenie to trzy
+    // bryle w pamieci jadra, ktorej ono samo nie oddaje. Pierwsza szostka
+    // wystarczy: wszystkie powstaja tym samym kodem.
+    const proba = r.stones.slice(0, 6);
+    let objetosc = 0, naMiejscu = 0, nizej = 0, wyzej = 0;
+    for (const k of proba) {
+      objetosc += k.volume();
+      naMiejscu += kolizja(r.metal, k, 0);
+      nizej += kolizja(r.metal, k, -0.25);
+      wyzej += kolizja(r.metal, k, 0.6);
+    }
+    const proc = (v) => (v / objetosc) * 100;
+    const problemy = [];
+    // Podciecie to kilka setnych milimetra na promieniu, wiec przy najmniejszych
+    // kamieniach potrafi zajac ponad procent ich objetosci. Powyzej trzech
+    // kamien juz nie pasuje do gniazda i trzeba by go dociskac.
+    if (proc(naMiejscu) > 3) problemy.push(`kamien nie miesci sie w gniezdzie (${proc(naMiejscu).toFixed(2)} %)`);
+    // Opor mierzymy WZGLEDEM luzu na miejscu, bo podciecie jest ulamkiem
+    // milimetra i przy kamieniu 1,4 mm zajmuje procent objetosci, a przy
+    // 7 mm setna. Bezwzgledny prog musialby wiec byc albo za ostry dla
+    // duzych, albo bezuzyteczny dla malych.
+    if (!(nizej > naMiejscu * 3) || proc(nizej) < 0.15) {
+      problemy.push(`gniazdo NIE ZATRZYMUJE kamienia: po zejsciu o 0,25 mm kolizja ${proc(nizej).toFixed(2)} % wobec ${proc(naMiejscu).toFixed(2)} % na miejscu`);
+    }
+    if (proc(wyzej) > 0.05) problemy.push(`kamienia nie da sie wlozyc z gory, metal zachodzi na niego (${proc(wyzej).toFixed(2)} %)`);
+    if (problemy.length) bad(`${nazwa}: ${problemy.join("; ")}`);
+    else ok(`${nazwa.padEnd(16)} pasuje ${proc(naMiejscu).toFixed(2)} %, opór w dół ${proc(nizej).toFixed(2)} %, wolne od góry`);
+    zwolnij(r);
   }
 }
 

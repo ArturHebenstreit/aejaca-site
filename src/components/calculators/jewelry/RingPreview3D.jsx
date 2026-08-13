@@ -106,42 +106,55 @@ function metalMaterial(alloyId, color) {
   });
 }
 
-function stoneMaterial(gemId) {
+function stoneMaterial(gemId, sizeMm = 6) {
   const o = gemOptics(gemId);
   if (!o) return null;
   const przezroczysty = o.transmission > 0.5;
 
-  // Kamien przezroczysty NIE ma barwy powierzchni. Rubin jest czerwony,
-  // bo swiatlo przechodzac przez niego traci reszte barw, i wlasnie dlatego
-  // maly rubin jest jasniejszy od duzego. Wpisanie czerwieni w `color` daje
-  // efekt odwrotny do zamierzonego: powierzchnia przestaje przepuszczac
-  // swiatlo i kamien robi sie ciemna plama, co widac bylo na pierwszym
-  // renderze. Barwa idzie wiec do pochlaniania w objetosci, a powierzchnia
-  // zostaje bezbarwna.
+  // Kamienie NIEPRZEZROCZYSTE, onyks czy lapis, biora cala barwe
+  // z rozproszenia na powierzchni i dlatego ida tu inna droga.
   //
-  // Kamienie nieprzezroczyste, onyks czy lapis, dzialaja odwrotnie: tam cala
-  // barwa pochodzi z rozproszenia na powierzchni.
+  // POWIERZCHNIA kamienia przezroczystego jest bezbarwna i przepuszcza
+  // niemal wszystko. Cala barwa bierze sie z POCHLANIANIA w objetosci, bo
+  // stad bierze sie w rzeczywistosci: rubin jest czerwony, bo swiatlo idac
+  // przez niego traci reszte barw, i dlatego maly rubin jest jasniejszy
+  // od duzego.
+  //
+  // Wczesniej `transmission` szlo tu wprost z danych, a szafir ma tam 0,70.
+  // Pozostale trzydziesci procent rysowalo sie jako BIALE rozproszenie
+  // powierzchniowe i kladlo na kamieniu mleczny welon, ktory zjadal barwe.
+  // Do tego droga swiatla byla stala, 1,6 mm przy dystansie 2,2 mm, wiec
+  // pochlanianie ledwie zaczynalo dzialac. Szafir wychodzil z tego prawie
+  // bezbarwny, i tak tez wygladal na renderze.
+  //
+  // Teraz `transmission` z danych opisuje SILE POCHLANIANIA, a nie mleczność:
+  // im mniej kamien przepuszcza, tym krotsza droga do wysycenia barwy.
+  // Roznica miedzy brylantem a granatem zostaje, ale idzie tam, gdzie jest
+  // naprawde, czyli w gestosc barwy, a nie w matowosc powierzchni.
+  const droga = Math.max(0.8, sizeMm * 0.8);
+  const pochlanianie = Math.max(0.04, 1 - o.transmission);
   return new THREE.MeshPhysicalMaterial({
     color: przezroczysty ? new THREE.Color("#ffffff") : new THREE.Color(o.color),
     metalness: 0,
     roughness: o.roughness,
     ior: o.ior,
-    transmission: o.transmission,
-    // Droga swiatla w kamieniu, w milimetrach. Krotsza daje barwe gleboka
-    // i ciemna, dluzsza rozjasnia. Przy szesciu milimetrach rubin wychodzil
-    // rozowy, bo swiatlo nie zdazylo stracic zieleni i blekitu.
-    thickness: 1.6,
+    transmission: przezroczysty ? 0.97 : o.transmission,
+    thickness: droga,
     attenuationColor: new THREE.Color(o.color),
-    attenuationDistance: przezroczysty ? 2.2 : Infinity,
+    // Droga, na ktorej barwa wysyca sie do wartosci z tabeli. Dziewiec razy
+    // pochlanianie daje szafirowi wykladnik okolo 2,7, brylantowi okolo 0,7,
+    // czyli dokladnie te roznice, ktora widac w rzeczywistosci.
+    attenuationDistance: przezroczysty ? droga / (9 * pochlanianie) : Infinity,
     specularIntensity: 1,
     envMapIntensity: 1.9,
   });
 }
 
 export default function RingPreview3D({
-  metal, stones, sideStones,
+  metal, stones, haloStones, sideStones,
   alloy = "ag925", color = "yellow",
-  gem = "cz", sideGem = "cz",
+  gem = "cz", haloGem = "cz", sideGem = "cz",
+  gemSize = 6.5, haloSize = 1.4, sideSize = 1.6,
 }) {
   const hostRef = useRef(null);
   const stateRef = useRef(null);
@@ -232,10 +245,17 @@ export default function RingPreview3D({
 
     group.add(new THREE.Mesh(geometryFrom(metal), metalMaterial(alloy, color)));
 
-    const centre = stones && stoneMaterial(gem);
-    if (centre) group.add(new THREE.Mesh(geometryFrom(stones), centre));
-    const sides = sideStones && stoneMaterial(sideGem);
-    if (sides) group.add(new THREE.Mesh(geometryFrom(sideStones), sides));
+    // Rozmiar wchodzi do materialu, bo pochlanianie zalezy od drogi swiatla:
+    // ten sam szafir jest ciemny przy siedmiu milimetrach i blady przy
+    // poltora, i wlasnie tak wyglada halo z szafirow wokol duzego kamienia.
+    for (const [siatka, kamien, mm] of [
+      [stones, gem, gemSize],
+      [haloStones, haloGem, haloSize],
+      [sideStones, sideGem, sideSize],
+    ]) {
+      const mat = siatka && stoneMaterial(kamien, mm);
+      if (mat) group.add(new THREE.Mesh(geometryFrom(siatka), mat));
+    }
 
     const box = new THREE.Box3().setFromObject(group);
     group.position.sub(box.getCenter(new THREE.Vector3()));
@@ -256,7 +276,8 @@ export default function RingPreview3D({
     controls.minDistance = radius * 1.4;
     controls.maxDistance = radius * 6;
     controls.update();
-  }, [metal, stones, sideStones, alloy, color, gem, sideGem]);
+  }, [metal, stones, haloStones, sideStones, alloy, color,
+      gem, haloGem, sideGem, gemSize, haloSize, sideSize]);
 
   return <div ref={hostRef} className="absolute inset-0" />;
 }
