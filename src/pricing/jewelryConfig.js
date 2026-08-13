@@ -138,6 +138,20 @@ export const ENGRAVING_OPTIONS = [
 // --- GEMSTONES ---
 // basePLN: static fallback only - live prices fetched from /api/gemstone-prices and override these
 // basePLN = approximate wholesale PLN per carat for medium quality, ~0.5ct
+// CENY KAMIENI. To jest jedyna tabela cen kamieni w serwisie i wszystkie
+// wyceny opieraja sie na niej: kalkulator bizuterii, kreator pierscionkow,
+// karty uslug i asystent. Ceny w bazie danych, jesli sa, nadpisuja te
+// wartosci, ale ich UKLAD jest ten sam.
+//
+// `basePLN` to cena kamienia ODNIESIENIA o masie 0,5 ct, czyli wpisu
+// "medium" z `STONE_SIZES`, gdzie mnoznik wynosi 1,0. Kamien o innej masie
+// liczy sie przez ten mnoznik, a nie liniowo, bo wieksze kamienie sa rzadsze.
+//
+// Kamienie HODOWANE zostaly urealnione: korund syntetyczny, czyli szafir
+// i rubin z laboratorium, kosztuje kilkanascie zlotych za karat, a nie
+// kilkaset. Wczesniejsze wartosci byly bliskie naturalnym i zawyzaly kazda
+// wycene z takim kamieniem kilkakrotnie. Ceny diamentow hodowanych spadly
+// przez ostatnie lata na tyle, ze i one wymagaly korekty w dol.
 export const GEMSTONES = [
   { id: "none", label: { pl: "Bez kamienia", en: "No gemstone", de: "Ohne Stein" }, basePLN: 0, precious: false, hasGrades: false },
   // --- Natural precious ---
@@ -146,12 +160,12 @@ export const GEMSTONES = [
   { id: "sapphire",  label: { pl: "Szafir", en: "Sapphire", de: "Saphir" }, basePLN: 4300, precious: true, hasGrades: true, img: "/img/calc/gems/sapphire.webp" },
   { id: "emerald",   label: { pl: "Szmaragd", en: "Emerald", de: "Smaragd" }, basePLN: 3400, precious: true, hasGrades: true, img: "/img/calc/gems/emerald.webp" },
   // --- Lab-grown (synthetic) ---
-  { id: "lab_diamond",  label: { pl: "Diament lab-grown", en: "Lab-grown diamond", de: "Labor-Diamant" }, basePLN: 1500, precious: false, hasGrades: true, lab: true, img: "/img/calc/gems/diamond.webp" },
-  { id: "moissanite",   label: { pl: "Mosanit", en: "Moissanite", de: "Moissanit" }, basePLN: 400, precious: false, hasGrades: false, lab: true, img: "/img/calc/gems/moissanite.webp" },
+  { id: "lab_diamond",  label: { pl: "Diament lab-grown", en: "Lab-grown diamond", de: "Labor-Diamant" }, basePLN: 700, precious: false, hasGrades: true, lab: true, img: "/img/calc/gems/diamond.webp" },
+  { id: "moissanite",   label: { pl: "Mosanit", en: "Moissanite", de: "Moissanit" }, basePLN: 300, precious: false, hasGrades: false, lab: true, img: "/img/calc/gems/moissanite.webp" },
   { id: "cz",           label: { pl: "Cyrkonia (CZ)", en: "Cubic zirconia (CZ)", de: "Zirkonia (CZ)" }, basePLN: 10, precious: false, hasGrades: false, lab: true, img: "/img/calc/gems/cz.webp" },
-  { id: "lab_ruby",     label: { pl: "Rubin lab-grown", en: "Lab-grown ruby", de: "Labor-Rubin" }, basePLN: 800, precious: false, hasGrades: true, lab: true, img: "/img/calc/gems/ruby.webp" },
-  { id: "lab_sapphire", label: { pl: "Szafir lab-grown", en: "Lab-grown sapphire", de: "Labor-Saphir" }, basePLN: 600, precious: false, hasGrades: true, lab: true, img: "/img/calc/gems/sapphire.webp" },
-  { id: "lab_emerald",  label: { pl: "Szmaragd lab-grown", en: "Lab-grown emerald", de: "Labor-Smaragd" }, basePLN: 500, precious: false, hasGrades: true, lab: true, img: "/img/calc/gems/emerald.webp" },
+  { id: "lab_ruby",     label: { pl: "Rubin lab-grown", en: "Lab-grown ruby", de: "Labor-Rubin" }, basePLN: 90, precious: false, hasGrades: true, lab: true, img: "/img/calc/gems/ruby.webp" },
+  { id: "lab_sapphire", label: { pl: "Szafir lab-grown", en: "Lab-grown sapphire", de: "Labor-Saphir" }, basePLN: 90, precious: false, hasGrades: true, lab: true, img: "/img/calc/gems/sapphire.webp" },
+  { id: "lab_emerald",  label: { pl: "Szmaragd lab-grown", en: "Lab-grown emerald", de: "Labor-Smaragd" }, basePLN: 220, precious: false, hasGrades: true, lab: true, img: "/img/calc/gems/emerald.webp" },
   // --- Natural semi-precious ---
   { id: "tanzanite", label: { pl: "Tanzanit", en: "Tanzanite", de: "Tansanit" }, basePLN: 1700, precious: false, hasGrades: true, img: "/img/calc/gems/tanzanite.webp" },
   { id: "aquamarine",label: { pl: "Akwamaryn", en: "Aquamarine", de: "Aquamarin" }, basePLN: 430, precious: false, hasGrades: false, img: "/img/calc/gems/aquamarine.webp" },

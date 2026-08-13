@@ -609,6 +609,10 @@ export default {
     sendError: "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
     sendBtn: "Nachricht Senden",
     directTitle: "Direkter Kontakt",
+    addressTitle: "Adressen",
+    postalLabel: "Korrespondenzadresse",
+    lockerLabel: "Gegenstände an uns senden",
+    lockerHint: "Hierhin senden Sie Ihr Objekt, wenn Sie Gravur, Reparatur oder Restaurierung auf beigestelltem Material bestellen. Kurier- und Postsendungen gehen an die Korrespondenzadresse.",
     socialTitle: "Finden Sie Uns Online",
   },
 

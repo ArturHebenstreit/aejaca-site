@@ -37,6 +37,18 @@ export const SELLER = {
   // Miejsce wykonywania prac i odbioru osobistego, celowo osobne pole.
   workshopLocality: "Józefosław, gmina Piaseczno",
 
+  // Gdzie klient MA WYSLAC swoj przedmiot, gdy zamawia grawer, naprawe albo
+  // renowacje na materiale powierzonym. To jest inna sprawa niz adres
+  // korespondencyjny i inna niz adres pracowni: paczkomat odbieramy my,
+  // a klient nie musi z nikim sie umawiac.
+  //
+  // Bez tej informacji klient placi za usluge i nie wie, co dalej, wiec
+  // pisze maila i czeka. Kazda taka wiadomosc to opozniona realizacja.
+  inpostLocker: {
+    code: "JUZ04M",
+    label: { pl: "Paczkomat InPost", en: "InPost parcel locker", de: "InPost-Paketstation" },
+  },
+
   // Bramka płatnicza. Patrz Shop Plan 5.3a. Klucz (hash) NIGDY tutaj,
   // wyłącznie w zmiennych środowiskowych backendu.
   paymentProvider: {

@@ -5,6 +5,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
 import CalcToCart from "./CalcToCart.jsx";
+import MaterialNotice from "../MaterialNotice.jsx";
 import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
 
 import { FIBER_CONFIG, MATERIALS, LENSES, MARK_TYPES, AREAS, calculate,
@@ -121,6 +122,7 @@ export default function FiberLaserCalc({ lang = "pl" }) {
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
+        <MaterialNotice lang={lang} className="mb-4" />
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
         <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={paramsSummary} preAttachedFile={svgFile} />
         <CalcToCart

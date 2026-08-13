@@ -622,6 +622,10 @@ export default {
     sendError: "Something went wrong. Please try again.",
     sendBtn: "Send Message",
     directTitle: "Direct Contact",
+    addressTitle: "Addresses",
+    postalLabel: "Correspondence address",
+    lockerLabel: "Sending items to us",
+    lockerHint: "Send your item here when ordering engraving, repair or restoration on material you supply. Courier and postal deliveries go to the correspondence address.",
     socialTitle: "Find Us Online",
   },
 
