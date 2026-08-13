@@ -16,7 +16,7 @@
 // eternity to kropki dookola. Widok z boku pokazalby glownie szyne, ktora
 // w wiekszosci wzorow wyglada tak samo.
 
-import { OUTLINES, CUTS, SETTINGS } from "../../../geometry/ring/params.js";
+import { OUTLINES, CUTS, SETTINGS, signetOutline } from "../../../geometry/ring/params.js";
 
 const R = 50;                       // srodek kadru 100 x 100
 
@@ -69,22 +69,29 @@ export default function PresetIcon({ preset, size = 44, className = "" }) {
     );
   }
 
-  // ---- sygnet: tarcza, ksztalt wprost z `signet.table` ----
+  // ---- sygnet: tarcza w swoim prawdziwym obrysie ----
+  //
+  // Rysujemy TYM SAMYM obrysem, z ktorego powstaje bryla, bo w sygnecie
+  // roznica miedzy wzorami sprowadza sie wlasnie do ksztaltu tarczy. Recznie
+  // przepisany prostokat rozjechalby sie z generatorem przy pierwszej zmianie
+  // proporcji, a widok z gory jest jedynym miejscem, gdzie klient te roznice
+  // w ogole zobaczy.
   if (kind === "signet") {
-    const tarcza = p.signet?.table || "oval";
-    const dlugi = (p.signet?.length || 14) > 12 ? 30 : 24;
+    const sygnet = { table: "oval", length: 14, face: "flat", ...(p.signet || {}) };
+    const pts = signetOutline(sygnet, 48);
+    const zasieg = Math.max(...pts.map(([x, y]) => Math.max(Math.abs(x), Math.abs(y))));
+    const skala = ((sygnet.length > 12 ? 30 : 25) / zasieg);
+    const doSvg = (k) => pts
+      .map(([x, y]) => `${(R + x * skala * k).toFixed(1)},${(R + y * skala * k).toFixed(1)}`)
+      .join(" ");
     return (
       <svg viewBox="0 0 100 100" width={size} height={size} className={className} aria-hidden="true">
         {szyna}
-        {tarcza === "rect" ? (
-          <rect x={R - dlugi * 0.78} y={R - dlugi} width={dlugi * 1.56} height={dlugi * 2}
-            rx="3" fill="currentColor" opacity="0.85" />
-        ) : tarcza === "cushion" ? (
-          <rect x={R - dlugi * 0.82} y={R - dlugi} width={dlugi * 1.64} height={dlugi * 2}
-            rx={dlugi * 0.42} fill="currentColor" opacity="0.85" />
-        ) : (
-          <ellipse cx={R} cy={R} rx={dlugi * 0.78} ry={dlugi} fill="currentColor" opacity="0.85" />
-        )}
+        <polygon points={doSvg(1)} fill="currentColor" opacity="0.85" />
+        {sygnet.face === "recessed" ? (
+          <polygon points={doSvg(0.72)} fill="none" stroke="currentColor" strokeWidth="2"
+            opacity="0.45" />
+        ) : null}
       </svg>
     );
   }

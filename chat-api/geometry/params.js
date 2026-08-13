@@ -221,7 +221,112 @@ export const CASTING_DEFAULTS = { sprues: false, innerSprues: false, button: fal
 // sylwetka ogladana z boku, o ktorej decyduje ponizsze zwezenie. Katalogi
 // mieszaja te dwie rzeczy, a klient wybiera glownie sylwetke.
 export const SHANK_TAPERS = ["auto", "none", "tapered", "cathedral", "signet"];
-export const SIGNET_TABLES = ["oval", "cushion", "rect"];
+
+// ------------------------------------------------------------
+// Tarcze sygnetow
+// ------------------------------------------------------------
+// Katalogowy komplet sygnetow to jeden korpus i kilkanascie tarcz. Roznica
+// miedzy nimi jest w obrysie i w tym, ktora os jest dluzsza, wiec opisujemy
+// je danymi, a nie osobnymi funkcjami w generatorze.
+//
+// `ratio`  krotsza os podzielona przez dluzsza
+// `across` czy dluzsza os biegnie W POPRZEK palca, czyli po obwodzie
+//          pierscionka. Tak nosi sie sygnet "poprzeczny", ktory z gory czyta
+//          sie jako lezaca sztabka, i to jest inny wyrob niz ten sam prostokat
+//          postawiony wzdluz palca.
+// `corner` promien zaokraglenia naroza w milimetrach, nie w ulamku rozmiaru:
+//          jubiler zaokragla kant pilnikiem o stalej krzywiznie, wiec mala
+//          tarcza nie ma naroza dwa razy ostrzejszego niz duza.
+export const SIGNET_TABLES = {
+  oval:    { pl: "owalna", en: "oval", de: "oval", ratio: 0.76, across: false, shape: "ellipse" },
+  round:   { pl: "okrągła", en: "round", de: "rund", ratio: 1, across: false, shape: "ellipse" },
+  cushion: { pl: "poduszka", en: "cushion", de: "Kissen", ratio: 0.94, across: false, shape: "cushion" },
+  square:  { pl: "kwadratowa", en: "square", de: "quadratisch", ratio: 1, across: false, shape: "rect", corner: 1.1 },
+  rect:    { pl: "prostokątna", en: "rectangular", de: "rechteckig", ratio: 0.72, across: false, shape: "rect", corner: 0.9 },
+  bar:     { pl: "poprzeczna", en: "bar", de: "Querplatte", ratio: 0.42, across: true, shape: "rect", corner: 0.7 },
+  ovalBar: { pl: "owalna poprzeczna", en: "east-west oval", de: "Queroval", ratio: 0.58, across: true, shape: "ellipse" },
+  hex:     { pl: "sześciokątna", en: "hexagonal", de: "sechseckig", ratio: 0.86, across: false, shape: "hex", corner: 0.5 },
+  heart:   { pl: "serce", en: "heart", de: "Herz", ratio: 1.0, across: false, shape: "heart" },
+};
+
+// Wykonczenie gornej powierzchni tarczy.
+//   flat      plaska, jak wyszla z odlewu i polerki
+//   recessed  pole WPUSZCZONE w rancie: w tym zaglebieniu siada grawer albo
+//             emalia, a rant chroni go przed starciem o klamke
+//   domed     lekko wypukla, klasyczna tarcza pieczetna
+export const SIGNET_FACES = {
+  flat:     { pl: "płaska", en: "flat", de: "flach" },
+  recessed: { pl: "wpuszczone pole", en: "recessed panel", de: "vertieftes Feld" },
+  domed:    { pl: "wypukła", en: "domed", de: "gewölbt" },
+};
+
+/**
+ * Polowa szerokosci i dlugosci tarczy w mm, z jednego miejsca dla bryly
+ * i dla piktogramu.
+ *
+ * `W` biegnie po obwodzie pierscionka, `L` wzdluz palca. Suwak zawsze podaje
+ * os DLUZSZA, bo tak sie mierzy sygnet i tak podaja to katalogi.
+ */
+export function tableSize(signet = {}) {
+  const def = SIGNET_TABLES[signet.table] || SIGNET_TABLES.oval;
+  const dluga = (Number(signet.length) || 14) / 2;
+  const krotka = dluga * def.ratio;
+  return def.across ? { W: dluga, L: krotka, def } : { W: krotka, L: dluga, def };
+}
+
+/** Obrys tarczy w mm, wokol srodka ukladu. */
+export function signetOutline(signet = {}, n = 64) {
+  const { W, L, def } = tableSize(signet);
+  const r = Math.min(def.corner ?? 0, Math.min(W, L) * 0.42);
+
+  if (def.shape === "cushion") {
+    return smooth((t) => {
+      const a = t * TAU, c = Math.cos(a), s = Math.sin(a), e = 2.7;
+      const k = (Math.abs(c) ** e + Math.abs(s) ** e) ** (-1 / e);
+      return [k * c * W, k * s * L];
+    }, n);
+  }
+  if (def.shape === "heart") return scalePts(OUTLINES.heart(), 1).map(([x, y]) => [x * W, y * L]);
+  if (def.shape === "rect") return roundedRect(W, L, r, n);
+  if (def.shape === "hex") {
+    const v = [[0, L], [W, L * 0.45], [W, -L * 0.45], [0, -L], [-W, -L * 0.45], [-W, L * 0.45]];
+    return roundPolygon(v, r, n);
+  }
+  return smooth((t) => { const a = t * TAU; return [W * Math.cos(a), L * Math.sin(a)]; }, n);
+}
+
+/** Prostokat o zaokraglonych narozach, obiegany przeciwnie do zegara. */
+function roundedRect(W, L, r, n) {
+  const rr = Math.max(0, Math.min(r, W * 0.95, L * 0.95));
+  if (rr < 1e-3) return resample([[-W, -L], [W, -L], [W, L], [-W, L]], n);
+  const naLuk = Math.max(3, Math.round(n / 8));
+  const rogi = [[W - rr, L - rr, 0], [-W + rr, L - rr, Math.PI / 2],
+                [-W + rr, -L + rr, Math.PI], [W - rr, -L + rr, -Math.PI / 2]];
+  const pts = [];
+  for (const [cx, cy, a0] of rogi) {
+    for (let i = 0; i <= naLuk; i++) {
+      const a = a0 + (i / naLuk) * (Math.PI / 2);
+      pts.push([cx + rr * Math.cos(a), cy + rr * Math.sin(a)]);
+    }
+  }
+  return resample(pts, n);
+}
+
+/** Wielokat ze scietymi narozami, przyciety promieniem `r`. */
+function roundPolygon(verts, r, n) {
+  if (r < 1e-3) return resample(verts, n);
+  const m = verts.length, pts = [];
+  for (let i = 0; i < m; i++) {
+    const prev = verts[(i - 1 + m) % m], cur = verts[i], next = verts[(i + 1) % m];
+    const doPrev = [prev[0] - cur[0], prev[1] - cur[1]];
+    const doNext = [next[0] - cur[0], next[1] - cur[1]];
+    const lp = Math.hypot(...doPrev), ln = Math.hypot(...doNext);
+    const d = Math.min(r, lp * 0.45, ln * 0.45);
+    pts.push([cur[0] + (doPrev[0] / lp) * d, cur[1] + (doPrev[1] / lp) * d]);
+    pts.push([cur[0] + (doNext[0] / ln) * d, cur[1] + (doNext[1] / ln) * d]);
+  }
+  return resample(pts, n);
+}
 
 // ------------------------------------------------------------
 // Stale warsztatowe
@@ -297,7 +402,7 @@ export const DEFAULTS = {
   casting: { ...CASTING_DEFAULTS },
   halo: { on: false, size: 1.4, material: "cz" },
   band: { coverage: "none", size: 1.8, setting: "pave", material: "cz" },
-  signet: { table: "oval", length: 14, engraving: "none" },
+  signet: { table: "oval", length: 14, face: "flat", engraving: "none" },
 };
 
 const clamp = (v, [lo, hi]) => Math.min(hi, Math.max(lo, v));
@@ -361,7 +466,8 @@ export function validate(input = {}) {
 
   if (p.kind === "signet") {
     p.signet.length = clamp(num(p.signet.length, 14), LIMITS.signetLength);
-    if (!SIGNET_TABLES.includes(p.signet.table)) p.signet.table = "oval";
+    if (!SIGNET_TABLES[p.signet.table]) p.signet.table = "oval";
+    if (!SIGNET_FACES[p.signet.face]) p.signet.face = "flat";
     p.side = { ...p.side, count: 0 };
     p.halo = { ...p.halo, on: false };
     return p;

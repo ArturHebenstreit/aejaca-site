@@ -13,7 +13,10 @@
 // rozsypana na kawalki, co juz raz nas kosztowalo wieczor.
 
 import Module from "manifold-3d";
-import { CUTS, SEAT, SIDE_SETTINGS, outlineFor, resample, scalePts, validate } from "./params.js";
+import {
+  CUTS, SEAT, SIDE_SETTINGS, outlineFor, scalePts, validate,
+  signetOutline, tableSize,
+} from "./params.js";
 import { CASTING_ALLOYS, massGrams } from "../../data/castingAlloys.js";
 import { gemDensity } from "../../data/gemOptics.js";
 
@@ -604,64 +607,161 @@ function buildSideStones(w, p) {
   return { addMetal: metal, cutSeats: seats, stones };
 }
 
+/**
+ * Bryla zlozona z warstw o zadanej skali, czyli przeciagniecie obrysu wzdluz
+ * SYLWETKI.
+ *
+ * `poziomy` to lista [z, sx, sy]. Kazda para sasiednich poziomow daje jeden
+ * scinany stozek, bo `extrude` ze skala gory interpoluje liniowo, wiec sciana
+ * boczna jest plaska, a nie schodkowa. Zageszczenie listy wygladza sylwetke
+ * bez zmiany sposobu budowy.
+ *
+ * Skala jest osobna dla obu osi, bo dol glowicy sygnetu ma szerokosc SZYNY,
+ * a nie tarczy: jednakowa skala robi z ramion stozek, ktory od strony palca
+ * wystaje poza szyne.
+ */
+function loftLevels(w, cs, poziomy) {
+  const { Manifold } = w;
+  let bryla = null;
+  for (let i = 0; i < poziomy.length - 1; i++) {
+    const [z0, sx0, sy0] = poziomy[i];
+    const [z1, sx1, sy1] = poziomy[i + 1];
+    const h = z1 - z0;
+    if (h <= 1e-4 || sx0 <= 1e-4 || sy0 <= 1e-4) continue;
+    const plaster = Manifold.extrude(cs, h, 0, 0, [sx1 / sx0, sy1 / sy0])
+      .scale([sx0, sy0, 1])
+      .translate([0, 0, z0]);
+    bryla = bryla ? bryla.add(plaster) : plaster;
+  }
+  return bryla;
+}
+
 // ------------------------------------------------------------
 // Sygnet
 // ------------------------------------------------------------
+/**
+ * Glowica sygnetu.
+ *
+ * Sylwetka jest tu cala rzecza, bo tarcza to plaski owal, ktory kazdy zrobi
+ * tak samo. Sygnet ze zdjecia katalogowego czyta sie po tym, co dzieje sie
+ * MIEDZY szyna a tarcza: waskie ramie wychodzi z szyny, rozlewa sie ku gorze
+ * lukiem WKLESLYM i dopiero pod tarcza przechodzi w pionowa scianke. Tarcza
+ * WYSTAJE poza to rozlanie, wiec pod jej krawedzia jest cien i to on daje
+ * wrazenie plyty polozonej na pierscionku, a nie wycietej razem z nim.
+ *
+ * Poprzednia wersja szla ze stalym zbieznym stozkiem od 0,76 do 1,0, czyli
+ * linia prosta bez zadnego wystepu. Bryla byla poprawna i wazyla tyle co
+ * trzeba, tylko wygladala jak klin, bo w calej sylwetce nie bylo ani jednego
+ * miejsca, w ktorym cos by sie zmienialo.
+ */
 function buildSignetHead(w, p) {
-  const { Manifold, CrossSection } = w;
-  const { table, length } = p.signet;
-  const L = length / 2, W = L * 0.82, T = 2.4;
-
-  let pts;
-  if (table === "rect") {
-    pts = resample([[-W, -L], [W, -L], [W, L], [-W, L]], 40);
-  } else if (table === "cushion") {
-    pts = Array.from({ length: 48 }, (_, i) => {
-      const a = (i / 48) * Math.PI * 2, c = Math.cos(a), s = Math.sin(a), e = 2.7;
-      const k = (Math.abs(c) ** e + Math.abs(s) ** e) ** (-1 / e);
-      return [k * c * W, k * s * L];
-    });
-  } else {
-    pts = Array.from({ length: 48 }, (_, i) => {
-      const a = (i / 48) * Math.PI * 2;
-      return [W * Math.cos(a), L * Math.sin(a)];
-    });
-  }
+  const { CrossSection } = w;
+  const { W, L } = tableSize(p.signet);
+  const pts = signetOutline(p.signet, 64);
   const cs = CrossSection.ofPolygons([ccw(pts)]);
+  const min = Math.min(W, L);
 
-  // Trzy czesci, bo tak wyglada odlany sygnet i tak sie go poleruje.
+  // Grubosc PLYTY, czyli tego, co widac jako pionowa scianka pod tarcza.
+  // Rosnie z tarcza, ale nie wprost proporcjonalnie: sygnet dwudziestomilimetrowy
+  // o plycie trzymilimetrowej wazylby tyle, ze nikt by go nie nosil.
+  const T = Math.max(1.4, Math.min(2.4, L * 0.26));
+  // Faza gornej krawedzi. Bez niej kant jest ostry jak po wykrojniku.
+  const faza = Math.min(0.42, T * 0.3);
+  const scianka = T - faza;
+
+  // Glowica wchodzi w szyne na tyle gleboko, zeby dol rozlania zostal ukryty
+  // w metalu. Zanurzenie DOLICZAMY do wysokosci luku, zamiast odejmowac je od
+  // niej: inaczej polowa sylwetki, ktora ma byc widoczna, siedzi pod szyna
+  // i z zewnatrz zostaje sam klin.
+  const zanurzenie = Math.min(1.5, p.thickness * 0.85);
+  // Wysokosc rozlania ramion nad szyna. Ponizej dwoch milimetrow tarcza siedzi
+  // na szynie jak naklejka, powyzej czterech glowica robi sie wieza.
+  const rozlanie = zanurzenie + Math.max(2.0, Math.min(3.6, L * 0.34));
+
+  // Dol rozlania ma miec przekroj SZYNY, nie tarczy. Wzdluz palca (os L) jest
+  // to polowa szerokosci szyny w miejscu glowicy, po obwodzie (os W) troche
+  // wiecej, bo tam ramiona i tak schodza w szyne stycznie.
+  const kw = taperFor(p)?.(0)?.w ?? 1;
+  const syDol = Math.max(0.24, Math.min(0.86, (p.width * kw) / 2 / L));
+  const sxDol = Math.max(0.3, Math.min(0.9, syDol * 1.25));
+
+  // Luk WKLESLY: wykladnik powyzej jedynki trzyma ramie waskie nisko i rozlewa
+  // je dopiero pod tarcza. Wykladnik ponizej jedynki dalby ksztalt trabki
+  // odwroconej, czyli szeroko od razu przy szynie.
   //
-  // 1. Tarcza, plaska, w ktora idzie grawer.
-  // 2. FAZA na krawedzi tarczy. Bez niej krawedz jest ostra jak po
-  //    wykrojniku i cala glowica wyglada jak plytka doklejona do szyny.
-  //    Na kazdym sygnecie z polki ta faza jest, bo powstaje sama przy
-  //    polerowaniu kanta.
-  // 3. Ramiona, ktore rozszerzaja sie ku tarczy. Wczesniej byl tu krotki,
-  //    dwumilimetrowy stozek i przejscie w szyne bylo urwane. Wyzszy
-  //    i lagodniejszy daje sylwetke, ktora widac na kazdym zdjeciu:
-  //    szyna waska od spodu, masywna pod tarcza.
-  const faza = Math.min(0.45, T * 0.22);
-  const zbieg = 1 - faza / Math.min(W, L);
+  // Luk konczy sie PONIZEJ pelnej szerokosci tarczy, a ostatnia dziesiata
+  // milimetra dochodzi krotkim podcieciem. Dzieki temu plyta WYSTAJE poza
+  // ramiona i pod jej krawedzia klada sie cien. Na zdjeciach katalogowych to
+  // jest cala roznica miedzy plyta polozona na pierscionku a klinem wycietym
+  // razem z nim, i widac ja nawet na miniaturze.
+  const sLuk = 0.93;
+  const podciecie = Math.min(0.35, scianka * 0.35);
 
-  const tarcza = Manifold.extrude(cs, T - faza);
-  const kant = Manifold.extrude(cs, faza, 0, 0, [zbieg, zbieg]).translate([0, 0, T - faza]);
+  const poziomy = [];
+  const KROKI = 9;
+  for (let i = 0; i <= KROKI; i++) {
+    const u = i / KROKI;
+    const k = (u ** 1.9) * sLuk;
+    poziomy.push([u * rozlanie, sxDol + (1 - sxDol) * k, syDol + (1 - syDol) * k]);
+  }
+  poziomy.push([rozlanie + podciecie, 1, 1]);
+  // Pionowa scianka plyty, potem faza. Faza schodzi o `faza` mm na kazda
+  // strone, wiec liczy sie ja osobno dla obu osi.
+  poziomy.push([rozlanie + podciecie + scianka, 1, 1]);
+  poziomy.push([rozlanie + podciecie + scianka + faza, 1 - faza / W, 1 - faza / L]);
 
-  // Ramiona budujemy OD DOLU do gory, a nie przez odbicie gotowej bryly.
-  // Odbicie odwraca kierunek nawiniecia scian i jadro oddaje wtedy bryle
-  // pusta, po cichu, bez bledu. Ten sam mechanizm zjadl juz raz cala szyne.
-  // Wysokosc i zwezenie dobrane pod sylwetke ze zdjec katalogowych: ramiona
-  // maja WTAPIAC sie w tarcze, a nie podpierac ja jak nozka kieliszka.
-  // Przy 3,4 mm i zwezeniu do 0,46 glowica wygladala jak grzyb postawiony
-  // na cienkiej szynie.
-  const ramionaH = 2.2;
-  const wask = 0.76;
-  const ramiona = Manifold.extrude(
-    CrossSection.ofPolygons([ccw(scalePts(pts, wask))]),
-    ramionaH, 0, 0, [1 / wask, 1 / wask],
-  ).translate([0, 0, -ramionaH]);
+  let glowica = loftLevels(w, cs, poziomy);
+  const gora = rozlanie + podciecie + scianka + faza;
 
-  // Glowica siedzi GLEBIEJ w szynie, zeby przejscie bylo plynne.
-  return tarcza.add(kant).add(ramiona).translate([0, 0, -T * 0.45]);
+  if (p.signet.face === "recessed") {
+    // Pole wpuszczone: rant dookola, w srodku plaskie dno pod grawer. Rant
+    // musi zostac na tyle szeroki, zeby dalo sie go wypolerowac, a dno na tyle
+    // plytkie, zeby plyta nie zrobila sie wanienka.
+    const rant = Math.max(0.7, Math.min(1.3, min * 0.2));
+    const glebokosc = Math.min(0.5, scianka * 0.4);
+    const wnetrze = wciety(w, cs, W, L, rant);
+    if (wnetrze) {
+      const pole = loftLevels(w, wnetrze, [
+        [gora - glebokosc, 1, 1],
+        [gora + 0.2, 1 + 0.1 / W, 1 + 0.1 / L],
+      ]);
+      if (pole) glowica = glowica.subtract(pole);
+    }
+  } else if (p.signet.face === "domed") {
+    // Czasza kulista o wysokosci `h` nad tarcza: promien liczymy z cieciwy,
+    // zeby przejscie w krawedz plyty bylo styczne, a nie zalamane.
+    const h = Math.min(0.9, min * 0.16);
+    const a = 1;                                  // promien podstawy w skali obrysu
+    const R = (a * a + h * h) / (2 * h);
+    const kopula = [];
+    for (let i = 0; i <= 6; i++) {
+      const z = (i / 6) * h;
+      const s = Math.sqrt(Math.max(0, R * R - (z - (h - R)) ** 2)) / a;
+      kopula.push([gora - 0.05 + z, s * (1 - faza / W), s * (1 - faza / L)]);
+    }
+    const czasza = loftLevels(w, cs, kopula);
+    if (czasza) glowica = glowica.add(czasza);
+  }
+
+  return glowica.translate([0, 0, -zanurzenie]);
+}
+
+/**
+ * Obrys wciety o `d` mm do srodka, do pola wpuszczonego w tarczy.
+ *
+ * Idziemy prawdziwym odsunieciem, a nie przeskalowaniem: przy tarczy
+ * poprzecznej, dlugiej i waskiej, skalowanie zostawia rant kilka razy szerszy
+ * na koncach niz na bokach i wyglada to jak blad, bo nim jest.
+ */
+function wciety(w, cs, W, L, d) {
+  try {
+    const o = cs.offset(-d, "Round", 2, 16);
+    if (o && !o.isEmpty() && o.area() > 0.5) return o;
+    o?.delete?.();
+  } catch { /* jadro bez offsetu: schodzimy do skalowania */ }
+  const sx = (W - d) / W, sy = (L - d) / L;
+  if (sx <= 0.2 || sy <= 0.2) return null;
+  return cs.scale([sx, sy]);
 }
 
 // ------------------------------------------------------------

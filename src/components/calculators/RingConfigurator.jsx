@@ -11,7 +11,7 @@
 // a kwote wiazaca pobiera `RingPriceBox` z `/api/price/ring`.
 
 import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
-import { CUTS, SETTINGS, SIDE_SETTINGS, SHANK_PROFILES, SIGNET_TABLES, DEFAULTS, LIMITS } from "../../geometry/ring/params.js";
+import { CUTS, SETTINGS, SIDE_SETTINGS, SHANK_PROFILES, SIGNET_TABLES, SIGNET_FACES, DEFAULTS, LIMITS } from "../../geometry/ring/params.js";
 import { RING_PRESETS, PRESET_GROUPS, applyPreset } from "../../data/ringPresets.js";
 import { CASTING_ALLOYS, METAL_COLORS, colorsFor } from "../../data/castingAlloys.js";
 import { GEMSTONES } from "../../pricing/jewelryConfig.js";
@@ -42,7 +42,8 @@ const L = {
     cut: "Szlif kamienia centralnego", setting: "Zakucie", stoneSize: "Rozmiar kamienia",
     side: "Kamienie na szynie, na stronę", sideSetting: "Oprawa kamieni bocznych",
     sideSize: "Średnica bocznych", none: "Brak",
-    table: "Tarcza sygnetu", tableLen: "Długość tarczy", engraving: "Grawer tarczy",
+    table: "Tarcza sygnetu", tableLen: "Dłuższa oś tarczy", engraving: "Grawer tarczy",
+    face: "Powierzchnia tarczy",
     mass: "Masa metalu", circ: "Obwód", stones: "Kamieni", tri: "Trójkątów",
     massTotal: "Masa pierścionka", carats: "Karaty",
     castingTitle: "Dodatki do pliku", sprues: "Kanał wlewowy", button: "Stopka odlewnicza",
@@ -52,7 +53,6 @@ const L = {
     innerSprues: "Kanały wewnętrzne", innerNeedsSprue: "Kanały wewnętrzne wpinają się w kanał główny, więc bez niego nie mają do czego dojść.",
     building: "Liczę bryłę…", dragHint: "Przeciągnij, żeby obrócić",
     profiles: { round: "Półokrągły", flat: "Płaski", knife: "Nożowy", comfort: "Comfort" },
-    tables: { oval: "Owalna", cushion: "Poduszka", rect: "Prostokątna" },
     engravings: { none: "Gładka", mono: "Monogram", crest: "Herb" },
   },
   en: {
@@ -71,7 +71,8 @@ const L = {
     cut: "Centre stone cut", setting: "Setting", stoneSize: "Stone size",
     side: "Side stones, per side", sideSetting: "Side stone setting",
     sideSize: "Side stone diameter", none: "None",
-    table: "Signet table", tableLen: "Table length", engraving: "Table engraving",
+    table: "Signet table", tableLen: "Long axis of the table", engraving: "Table engraving",
+    face: "Table surface",
     mass: "Metal mass", circ: "Circumference", stones: "Stones", tri: "Triangles",
     massTotal: "Ring mass", carats: "Carats",
     castingTitle: "Additions to the file", sprues: "Sprue", button: "Casting button",
@@ -81,7 +82,6 @@ const L = {
     innerSprues: "Inner channels", innerNeedsSprue: "Inner channels join the main sprue, so without it they lead nowhere.",
     building: "Building the solid…", dragHint: "Drag to rotate",
     profiles: { round: "Half-round", flat: "Flat", knife: "Knife-edge", comfort: "Comfort" },
-    tables: { oval: "Oval", cushion: "Cushion", rect: "Rectangular" },
     engravings: { none: "Plain", mono: "Monogram", crest: "Crest" },
   },
   de: {
@@ -100,7 +100,8 @@ const L = {
     cut: "Schliff des Hauptsteins", setting: "Fassung", stoneSize: "Steingröße",
     side: "Steine auf der Schiene, je Seite", sideSetting: "Fassung der Seitensteine",
     sideSize: "Durchmesser der Seitensteine", none: "Keine",
-    table: "Siegelplatte", tableLen: "Plattenlänge", engraving: "Gravur der Platte",
+    table: "Siegelplatte", tableLen: "Längere Achse der Platte", engraving: "Gravur der Platte",
+    face: "Plattenoberfläche",
     mass: "Metallmasse", circ: "Umfang", stones: "Steine", tri: "Dreiecke",
     massTotal: "Ringmasse", carats: "Karat",
     castingTitle: "Ergänzungen zur Datei", sprues: "Gusskanal", button: "Gussknopf",
@@ -110,7 +111,6 @@ const L = {
     innerSprues: "Innere Kanäle", innerNeedsSprue: "Innere Kanäle münden in den Hauptkanal, ohne ihn führen sie ins Leere.",
     building: "Körper wird berechnet…", dragHint: "Zum Drehen ziehen",
     profiles: { round: "Halbrund", flat: "Flach", knife: "Messerkante", comfort: "Comfort" },
-    tables: { oval: "Oval", cushion: "Kissen", rect: "Rechteckig" },
     engravings: { none: "Glatt", mono: "Monogramm", crest: "Wappen" },
   },
 };
@@ -532,11 +532,15 @@ export default function RingConfigurator({ lang = "pl" }) {
             <>
               <Group label={t.table}>
                 <Seg value={p.signet.table} onChange={(id) => setSignet({ table: id })}
-                  options={SIGNET_TABLES.map((id) => ({ id, label: t.tables[id] }))} />
+                  options={Object.entries(SIGNET_TABLES).map(([id, def]) => ({ id, label: def[lang] || def.pl }))} />
               </Group>
               <Slider label={t.tableLen} lang={lang} unit="mm" value={p.signet.length}
                 min={LIMITS.signetLength[0]} max={LIMITS.signetLength[1]} step={0.5}
                 onChange={(v) => setSignet({ length: v })} />
+              <Group label={t.face}>
+                <Seg value={p.signet.face} onChange={(id) => setSignet({ face: id })}
+                  options={Object.entries(SIGNET_FACES).map(([id, def]) => ({ id, label: def[lang] || def.pl }))} />
+              </Group>
               <Group label={t.engraving}>
                 <Seg value={p.signet.engraving} onChange={(id) => setSignet({ engraving: id })}
                   options={["none", "mono", "crest"].map((id) => ({ id, label: t.engravings[id] }))} />
