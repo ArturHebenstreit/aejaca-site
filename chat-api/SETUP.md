@@ -25,6 +25,13 @@ Streaming AI chat assistant embedded in aejaca.com. Knows AEJaCA's full offer, p
 | `OPENAI_API_KEY` | Your OpenAI API key |
 | `DATABASE_URL` | *(link from PostgreSQL service)* |
 | `NODE_ENV` | `production` |
+| `API_URL` | Public address of THIS service, e.g. `https://api.aejaca.com` |
+
+`API_URL` is what the order confirmation email uses to build the download link
+for purchased files. Railway usually supplies `RAILWAY_PUBLIC_DOMAIN`, which is
+used as a fallback, but a custom domain has to be set here explicitly. If
+neither is present the email simply omits the download section and logs a
+warning, rather than sending a link that leads nowhere.
 
 ### Link PostgreSQL
 

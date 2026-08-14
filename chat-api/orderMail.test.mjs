@@ -64,4 +64,43 @@ assert.match(de, /Muster-Widerrufsformular/);
 const bezDanych = mailDo([{ title: "Coś", qty: 1, unit_grosze: 100, line_grosze: 100 }]);
 assert.doesNotMatch(bezDanych, /14 dni na odstąpienie/);
 
+// --- Link do pliku ---
+//
+// Kupiony plik nie ma innej drogi do klienta niz ten mail, wiec sekcja
+// z linkiem jest tu tak samo obowiazkowa jak pouczenie. Sprawdzamy oba
+// warianty: link jest tam, gdzie plik zostal wydany, i NIE MA GO tam,
+// gdzie nic do wydania nie bylo.
+{
+  process.env.API_URL = "https://api.example.com";
+  const { buildOrderMessages: swiezy } = await import(`./orderMail.js?apiurl=${Date.now()}`);
+  const zLinkiem = (items) => {
+    const msgs = swiezy(order, items);
+    const klient = msgs.find((m) => m.to === order.customer_email);
+    return `${klient.html}\n${klient.text}`;
+  };
+
+  const plik = { title: "Plik STL i 3MF", qty: 1, unit_grosze: 8100, line_grosze: 8100,
+    item_type: "service", calculator: "jewelry_ring_config", params: { output: "mesh" },
+    download_token: "b".repeat(48), download_max: 5 };
+
+  const zPlikiem = zLinkiem([plik]);
+  assert.match(zPlikiem, /https:\/\/api\.example\.com\/api\/download\/b{48}/, "link musi byc w mailu");
+  assert.match(zPlikiem, /Pliki do pobrania/);
+  assert.match(zPlikiem, /Pobierz pliki/);
+  // Wersja tekstowa jest tym, co zostaje przy wylaczonym HTML.
+  const tylkoTekst = swiezy(order, [plik]).find((m) => m.to === order.customer_email).text;
+  assert.match(tylkoTekst, /api\/download\/b{48}/, "link musi byc takze w wersji tekstowej");
+  // Plik to tresc cyfrowa, wiec pouczenie idzie z art. 38 pkt 13, a nie pkt 3.
+  assert.match(zPlikiem, /art\. 38 pkt 13/, "sprzedaz pliku to tresc cyfrowa");
+
+  // Odlew nie jest plikiem: zaden link nie ma prawa sie tu pojawic.
+  const odlew = { title: "Odlew bez kamieni", qty: 1, unit_grosze: 23000, line_grosze: 23000,
+    item_type: "service", calculator: "jewelry_ring_config", params: { output: "cast" } };
+  const bezPliku = zLinkiem([odlew]);
+  assert.doesNotMatch(bezPliku, /api\/download\//, "przesylka nie dostaje linku do pobrania");
+  assert.doesNotMatch(bezPliku, /Pliki do pobrania/);
+  assert.match(bezPliku, /art\. 38 pkt 3/, "odlew powstaje wedlug specyfikacji klienta");
+  delete process.env.API_URL;
+}
+
 console.log("Mail po zakupie: wszystkie sprawdzenia przeszly");

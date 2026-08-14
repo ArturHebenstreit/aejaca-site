@@ -15,6 +15,7 @@
 // Dane sprzedawcy jada z src/data/sellerInfo.js przez `npm run sync:pricing`.
 // Reczne lustro zdazylo sie juz rozjechac z oryginalem, a te dane stoja
 // w pouczeniu o odstapieniu, wiec musza byc jedne.
+import { DOWNLOAD_DAYS, MAX_DOWNLOADS } from "./digitalDelivery.js";
 import { SELLER as SELLER_DATA } from "./pricing/sellerInfo.js";
 import { withdrawalSummary, REGIME } from "./withdrawal.js";
 
@@ -48,6 +49,11 @@ const T = {
     printSettings: (tech, nozzle) => nozzle ? `Ustawienia: ${tech}, dysza ${nozzle} mm.` : `Ustawienia: ${tech}.`,
     nextBody:
       "Zabieramy się do pracy. Odezwiemy się, gdy zamówienie będzie gotowe do wysyłki lub odbioru. Jeśli coś w Twoim zleceniu będzie wymagało doprecyzowania, napiszemy wcześniej.",
+    filesTitle: "Pliki do pobrania",
+    filesIntro: (dni, ile) =>
+      `Zamówione pliki są gotowe. Link działa ${dni} dni i wystarcza na ${ile} pobrań, więc spokojnie pobierz je od razu i zachowaj kopię. Paczka ZIP zawiera STL i 3MF: STL rozumie każdy program, a 3MF niesie jednostkę, więc drukarka nie pomyli milimetrów z calami.`,
+    filesCta: "Pobierz pliki",
+    filesNominal: "Model jest nominalny, w wymiarach gotowego pierścionka, bez kompensacji skurczu odlewniczego. Jeśli odlewasz u siebie, powiększ go najpierw naszym kalkulatorem skurczu.",
     withdrawal: "Prawo odstąpienia",
     wdStandard:
       "Masz 14 dni na odstąpienie od umowy bez podania przyczyny, licząc od dnia, w którym odebrałeś przesyłkę. Wystarczy wiadomość na contact@aejaca.com, nie trzeba podawać powodu ani używać żadnego formularza. Zwracamy wszystkie otrzymane płatności, w tym koszt najtańszej oferowanej dostawy, w ciągu 14 dni od otrzymania oświadczenia. Bezpośredni koszt odesłania rzeczy ponosisz Ty.",
@@ -103,6 +109,11 @@ const T = {
     printSettings: (tech, nozzle) => nozzle ? `Settings: ${tech}, ${nozzle} mm nozzle.` : `Settings: ${tech}.`,
     nextBody:
       "We are starting work. We will get in touch once your order is ready for shipping or collection. If anything in your order needs clarification, we will write to you earlier.",
+    filesTitle: "Your files",
+    filesIntro: (dni, ile) =>
+      `Your files are ready. The link is valid for ${dni} days and allows ${ile} downloads, so download them now and keep a copy. The ZIP holds an STL and a 3MF: every program reads STL, while 3MF carries the unit, so your printer will not mistake millimetres for inches.`,
+    filesCta: "Download the files",
+    filesNominal: "The model is nominal, at finished ring dimensions, with no casting shrinkage compensation. If you cast it yourself, scale it up first with our shrinkage calculator.",
     withdrawal: "Right of withdrawal",
     wdStandard:
       "You have 14 days to withdraw from the contract without giving a reason, counted from the day you received the parcel. An email to contact@aejaca.com is enough, no reason and no form required. We refund every payment received, including the cost of the cheapest delivery we offer, within 14 days of receiving your statement. You bear the direct cost of returning the goods.",
@@ -158,6 +169,11 @@ const T = {
     printSettings: (tech, nozzle) => nozzle ? `Einstellungen: ${tech}, Düse ${nozzle} mm.` : `Einstellungen: ${tech}.`,
     nextBody:
       "Wir beginnen mit der Arbeit. Wir melden uns, sobald Ihre Bestellung zum Versand oder zur Abholung bereit ist. Sollte etwas an Ihrem Auftrag klärungsbedürftig sein, schreiben wir Ihnen vorher.",
+    filesTitle: "Ihre Dateien",
+    filesIntro: (dni, ile) =>
+      `Ihre Dateien sind fertig. Der Link gilt ${dni} Tage und erlaubt ${ile} Downloads, laden Sie sie also gleich herunter und bewahren Sie eine Kopie auf. Das ZIP enthält STL und 3MF: STL liest jedes Programm, 3MF trägt die Einheit, damit Ihr Drucker Millimeter nicht für Zoll hält.`,
+    filesCta: "Dateien herunterladen",
+    filesNominal: "Das Modell ist nominal, in den Maßen des fertigen Rings, ohne Schwindungskompensation. Wenn Sie selbst gießen, skalieren Sie es zuerst mit unserem Schwindungsrechner.",
     withdrawal: "Widerrufsrecht",
     wdStandard:
       "Sie haben 14 Tage Zeit, ohne Angabe von Gründen vom Vertrag zurückzutreten, gerechnet ab dem Tag, an dem Sie die Sendung erhalten haben. Eine Nachricht an contact@aejaca.com genügt, ohne Begründung und ohne Formular. Wir erstatten alle erhaltenen Zahlungen einschließlich der Kosten der günstigsten von uns angebotenen Lieferung innerhalb von 14 Tagen nach Eingang Ihrer Erklärung. Die unmittelbaren Kosten der Rücksendung tragen Sie.",
@@ -314,6 +330,34 @@ function acceptedPrintNotes(items, lang) {
   return out;
 }
 
+/**
+ * Adres, pod ktorym stoi API. Link do pliku prowadzi WPROST do niego, a nie
+ * przez strone: strona i tak musialaby tylko przekierowac, a kazde ogniwo
+ * miedzy mailem a plikiem to kolejne miejsce, w ktorym link moze umrzec.
+ *
+ * Braku adresu NIE zastepujemy zgadywaniem. Link zbudowany z bledna domena
+ * wyglada jak dzialajacy i klient dowiaduje sie o usterce dopiero po
+ * kliknieciu, a my nie dowiadujemy sie wcale. Bez adresu sekcja plikow po
+ * prostu nie powstaje, a w dzienniku zostaje ostrzezenie.
+ */
+const API_URL = process.env.API_URL
+  || (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : null);
+
+function downloadLinks(items) {
+  const cyfrowe = items.filter((i) => i.download_token);
+  if (!cyfrowe.length) return [];
+  if (!API_URL) {
+    console.warn("[mail] jest plik do wydania, ale brak API_URL, wiec link nie powstal");
+    return [];
+  }
+  return cyfrowe.map((i) => ({
+    title: i.title,
+    url: `${API_URL}/api/download/${i.download_token}`,
+    days: i.download_days ?? DOWNLOAD_DAYS,
+    max: i.download_max ?? MAX_DOWNLOADS,
+  }));
+}
+
 function customerHtml(order, items, lang) {
   const l = T[lang] || T.pl;
   const rows = items
@@ -328,6 +372,7 @@ function customerHtml(order, items, lang) {
   const deliveryName = l.deliveryNames[order.delivery_method] || order.delivery_method || "";
   const wd = withdrawalParts(order, items, l);
   const printNotes = acceptedPrintNotes(items, lang);
+  const pliki = downloadLinks(items);
 
   return `<!doctype html><html><body style="margin:0;padding:24px;background:#f6f6f6;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111">
   <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px">
@@ -349,6 +394,17 @@ function customerHtml(order, items, lang) {
         <td style="padding:12px 0;text-align:right;font-weight:700;font-size:16px">${paidAmount(order)}</td>
       </tr>
     </table>
+
+    ${pliki.length ? `
+      <h3 style="font-size:14px;margin:24px 0 6px">${l.filesTitle}</h3>
+      <p style="margin:0 0 12px;line-height:1.6;font-size:13px;color:#444">${esc(l.filesIntro(pliki[0].days, pliki[0].max))}</p>
+      ${pliki.map((f) => `
+        <p style="margin:0 0 10px">
+          <a href="${esc(f.url)}" style="display:inline-block;background:#b58a3c;color:#fff;text-decoration:none;border-radius:6px;padding:10px 18px;font-size:14px;font-weight:700">${l.filesCta}</a>
+          <span style="display:block;margin-top:4px;font-size:12px;color:#777">${esc(f.title)}</span>
+        </p>`).join("")}
+      <p style="margin:0 0 4px;line-height:1.6;font-size:12px;color:#777">${esc(l.filesNominal)}</p>
+    ` : ""}
 
     <h3 style="font-size:14px;margin:24px 0 6px">${l.next}</h3>
     <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${l.nextBody}</p>
@@ -392,6 +448,7 @@ function customerText(order, items, lang) {
   const lines = items.map((i) => `- ${i.title} x ${i.qty}: ${money(i.line_grosze)}`);
   const wd = withdrawalParts(order, items, l);
   const printNotes = acceptedPrintNotes(items, lang);
+  const pliki = downloadLinks(items);
   return [
     l.hi,
     "",
@@ -403,6 +460,15 @@ function customerText(order, items, lang) {
     ...lines,
     `${l.delivery}: ${l.deliveryNames[order.delivery_method] || order.delivery_method || ""} ${money(order.shipping_grosze)}`,
     `${l.total}: ${paidAmount(order)}`,
+    // Link MUSI byc takze tutaj. Wersja tekstowa jest tym, co zostaje przy
+    // wylaczonym HTML i w czytniku ekranu, a bez linku klient nie ma jak
+    // dojsc do tego, za co zaplacil.
+    ...(pliki.length ? [
+      "",
+      `${l.filesTitle}: ${l.filesIntro(pliki[0].days, pliki[0].max)}`,
+      ...pliki.map((f) => `${f.title}: ${f.url}`),
+      l.filesNominal,
+    ] : []),
     "",
     `${l.next}: ${l.nextBody}`,
     // Wersja tekstowa jest tym, co przeczyta klient z czytnikiem ekranu i to,
@@ -679,12 +745,17 @@ export async function sendOrderPaidEmails(pool, orderId) {
       // `item_type` oraz rodzaj i sposob sprzedazy produktu decyduja o tym,
       // ktore pouczenie o odstapieniu trafi do maila (withdrawal.js). Bez tych
       // trzech kolumn mail nie ma z czego wybierac i wysyla jedno dla wszystkich.
+      // `download_token` decyduje o sekcji z plikami. Wiersz w `downloads`
+      // powstaje tuz przed wyslaniem maila, wiec jesli go tu nie ma, to plik
+      // nie zostal wydany i linku nie wolno obiecywac.
       `SELECT oi.title, oi.qty, oi.unit_grosze, oi.line_grosze, oi.calculator, oi.params,
               oi.file_name, oi.file_sha256, oi.file_url, oi.geometry, u.token AS upload_token,
-              oi.item_type, p.kind AS product_kind, p.offer AS product_offer
+              oi.item_type, p.kind AS product_kind, p.offer AS product_offer,
+              d.token AS download_token, d.max_downloads AS download_max
          FROM order_items oi
          LEFT JOIN uploads u ON u.id = oi.upload_id
          LEFT JOIN products p ON p.id = oi.product_id
+         LEFT JOIN downloads d ON d.order_item_id = oi.id
         WHERE oi.order_id = $1
         ORDER BY oi.id`,
       [orderId]

@@ -18,7 +18,7 @@
 
 import Module from "manifold-3d";
 import {
-  CUTS, SEAT, SIDE_SETTINGS, outlineFor, scalePts, validate,
+  CUTS, SEAT, SIDE_SETTINGS, outlineFor, scalePts, resample, prongAngles, validate,
   signetOutline, tableSize,
 } from "./params.js";
 import { CASTING_ALLOYS, massGrams } from "../pricing/castingAlloys.js";
@@ -252,15 +252,99 @@ function cone(Manifold, CrossSection, pts, height, downward) {
   return downward ? c.translate([0, 0, -height]) : c;
 }
 
+/**
+ * Ile fasetek ma obwod kamienia.
+ *
+ * To jest jedyny powod, dla ktorego kamien na renderze wygladal jak otoczak.
+ * Obrysy szlifow maja po kilkadziesiat punktow, bo z nich powstaje takze
+ * gniazdo, ktore ma byc gladkie. Kamien budowany z tego samego obrysu to
+ * stozek o pieciudziesieciu bokach, czyli powierzchnia ciagla: fasetek nie ma
+ * na nim wcale, wiec zaden sposob cieniowania ich nie pokaze. Piktogram
+ * rysowal szlif, a bryla go nie miala.
+ *
+ * Szesnascie sektorow to kompromis: prawdziwy brylant ma trzydziesci dwie
+ * fasetki rondysty, ale przy szesnastu widac je na ekranie wyraznie, a bryla
+ * kamienia jest dwa razy lzejsza dla jadra. Dla szlifow schodkowych liczba
+ * musi byc wielokrotnoscia liczby naroznikow, inaczej scinamy naroze.
+ */
+const FASETY = 16;
+
+/** Obrys szlifu sprowadzony do fasetek. Naroza zostaja, bo `resample` idzie po indeksach. */
+function fasetowany(cutId, sizeMm, n = FASETY) {
+  return resample(outlineFor(cutId, sizeMm), n);
+}
+
+/**
+ * Wieniec fasetek: przeciagniecie obrysu ze SKRETEM.
+ *
+ * Skret o polowe sektora przesuwa gorny wielokat o pol fasetki wzgledem
+ * dolnego i wlasnie stad bierze sie zygzak, po ktorym poznaje sie szlif
+ * brylantowy: dolne fasetki rondysty i fasetki glowne pawilonu spotykaja sie
+ * na przemian. Bez skretu powstaja same trapezy, czyli szlif schodkowy,
+ * i tak wlasnie budujemy szmaragd czy bagietke.
+ */
+function wieniec(w, pts, h, skalaGora, skret) {
+  const cs = w.CrossSection.ofPolygons([ccw(pts)]);
+  const m = w.Manifold.extrude(cs, h, 1, skret, [skalaGora, skalaGora]);
+  cs.delete?.();
+  return m;
+}
+
+/** Obrys obrocony o zadany kat, do ustawienia zalamania miedzy wiencami. */
+const obrocPts = (pts, deg) => {
+  const a = deg * DEG, c = Math.cos(a), s = Math.sin(a);
+  return pts.map(([x, y]) => [x * c - y * s, x * s + y * c]);
+};
+
 export function stoneSolid(w, cutId, sizeMm) {
   const { Manifold, CrossSection } = w;
   const cut = CUTS[cutId];
   const pr = PROPORTIONS[cut.profile];
-  const pts = outlineFor(cutId, sizeMm);
+  const fasetowy = cut.profile === "brilliant" || cut.profile === "step";
+  const pts = fasetowy ? fasetowany(cutId, sizeMm) : outlineFor(cutId, sizeMm);
   const cs = CrossSection.ofPolygons([ccw(pts)]);
 
   const pavH = pr.pav * sizeMm, girdleH = pr.girdle * sizeMm, crownH = pr.crown * sizeMm;
   let solid = Manifold.extrude(cs, girdleH);          // rondysta, z = 0..girdleH
+
+  if (fasetowy) {
+    // Skret o POLOWE sektora. Zalamanie pawilonu i korony jest wtedy przesuniete
+    // o pol fasetki wzgledem rondysty, wiec fasetki schodza sie na przemian
+    // ostrzem, tak jak w kamieniu. Szlif schodkowy skretu nie ma z definicji:
+    // tam fasetki sa rownoleglymi trapezami.
+    const skret = cut.profile === "step" ? 0 : 180 / FASETY;
+    const tbl = Math.max(cut.table, 0.05);
+
+    if (pavH > 0) {
+      // PAWILON: od rondysty do zalamania, dalej od zalamania do kolety.
+      // Zalamanie jest wspolne dla obu wiencow co do wierzcholka, bo gorny
+      // konczy sie dokladnie na tym samym obrocie, od ktorego zaczyna dolny.
+      // Zalamanie lezy MINIMALNIE powyzej linii prostego stozka: na glebokosci
+      // 0,55 pawilonu stozek ma promien 0,45, a fasetki dolne rondysty czynia
+      // pawilon odrobine pelniejszym. Wiecej nie wolno, bo objetosc kamienia to
+      // jego karat, a karat to cena: przy zalamaniu 0,56 brylant 6,5 mm wychodzil
+      // 1,15 ct zamiast tabelarycznego 1,00.
+      const zZalam = -pavH * 0.55;
+      const sZalam = 0.47;
+      const zalamanie = obrocPts(scalePts(pts, sZalam), skret);
+      solid = zlacz(solid, wieniec(w, zalamanie, -zZalam, 1 / sZalam, -skret)
+        .translate([0, 0, zZalam]));
+      solid = zlacz(solid, wieniec(w, scalePts(zalamanie, 0.03 / sZalam),
+        zZalam + pavH, sZalam / 0.03, 0).translate([0, 0, -pavH]));
+    } else {
+      solid = zlacz(solid, Manifold.extrude(cs, 0.02).translate([0, 0, -0.02]));
+    }
+
+    // KORONA tak samo: wieniec fasetek rondysty, zalamanie, wieniec fasetek
+    // gornych do tafli. Tafla zostaje plaska, bo nia jest.
+    const sKor = tbl + (1 - tbl) * 0.42;
+    const zalamanieK = obrocPts(scalePts(pts, sKor), skret);
+    solid = zlacz(solid, wieniec(w, pts, crownH * 0.5, sKor, skret)
+      .translate([0, 0, girdleH]));
+    solid = zlacz(solid, wieniec(w, zalamanieK, crownH * 0.5, tbl / sKor, -skret)
+      .translate([0, 0, girdleH + crownH * 0.5]));
+    return { solid, pavH, girdleH, crownH };
+  }
 
   if (pavH > 0) solid = zlacz(solid, cone(Manifold, CrossSection, pts, pavH, true));
   else solid = zlacz(solid, Manifold.extrude(cs, 0.02).translate([0, 0, -0.02]));
@@ -392,18 +476,6 @@ function seatCutter(w, cutId, sizeMm, zamkniete = false) {
 // ------------------------------------------------------------
 // Korona
 // ------------------------------------------------------------
-/** Kierunki, w ktorych maja stanac lapki, jako katy w stopniach. */
-function prongAngles(cut, setting) {
-  if (setting === "prong4") return [45, 135, 225, 315];
-  if (setting === "prong6") return [0, 60, 120, 180, 240, 300];
-  if (setting === "vprong") return cut.points || [90, 270];
-  if (setting === "corner") {
-    const n = cut.corners || 4;
-    return Array.from({ length: n }, (_, i) => 90 + (360 / n) * i);
-  }
-  return [];
-}
-
 /** Promien obrysu szlifu w zadanym kierunku, zeby lapka siadla NA kamieniu. */
 function radiusAt(pts, deg) {
   const a = deg * DEG, dx = Math.cos(a), dy = Math.sin(a);
@@ -661,25 +733,37 @@ function buildCrown(w, p, stone) {
     if (o && !o.isEmpty()) csKosz = o; else o?.delete?.();
   } catch { /* jadro bez offsetu: zostaje sam obrys */ }
 
-  // Dol kosza jest wezszy, bo pod kamieniem nie ma czego podpierac, a metal
-  // tam tylko wazy. Gora musi siegac poza rondyste, inaczej wlot gniazda
-  // zostawia scianke o kilku setnych milimetra.
-  let basket = loftLevels(w, csKosz, [[-basketH, 0.58, 0.58], [0, 1, 1]]);
+  // KOLNIERZ, czyli prosta scianka pod rondysta, i dopiero pod nim zwezenie.
+  //
+  // Kosz zwezal sie od samej rondysty w dol, wiec lapka, ktora zaczyna sie
+  // nizej, opierala sie o nia tylko gornym skrajem, a cala reszta jej stopy
+  // wisiala obok metalu. Klient zglosil to wprost: lapki wisza na obramowaniu.
+  // Prosty odcinek daje im scianke, do ktorej przylegaja na calej wysokosci,
+  // a przy okazji jest to ta sama scianka, o ktora opiera sie rondysta.
+  const kolnierz = Math.min(basketH * 0.75, SEAT.aboveGalleryMm + stone.pavH * 0.18);
+  let basket = loftLevels(w, csKosz, [
+    [-basketH, 0.55, 0.55],
+    [-kolnierz, 1, 1],
+    [0, 1, 1],
+  ]);
 
   // Okna galerii. Bez nich kosz jest pelna bryla i caly wyrob wyglada jak
-  // guzik, a do tego wazy o kilkadziesiat procent za duzo. Zostawiamy cztery
-  // slupki miedzy oknami, wiec kosz dalej trzyma sie kupy.
+  // guzik, a do tego wazy o kilkadziesiat procent za duzo.
+  //
+  // Okna sa teraz WIEKSZE, bo ciezar przejely nogi lapek. To jest ta sama
+  // wymiana, o ktora prosil klient: lepiej otworzyc oprawe tam, gdzie metal
+  // niczego nie trzyma, a dolozyc go tam, gdzie stoi lapka.
   //
   // Grubosc okna liczymy z NAJKROTSZEGO promienia obrysu, nie z najdluzszego.
   // Przy markizie okno o szerokosci polowy dlugiej osi wycielo by caly kosz
   // wszerz i zostalyby z niego dwa kawalki.
-  const winH = basketH * 0.62;
-  const winT = Math.max(0.35, girdleMin * 0.62);
+  const winH = basketH * 0.72;
+  const winT = Math.max(0.35, girdleMin * 0.78);
   for (const kat of [45, 135]) {
     basket = odejmij(basket,
       Manifold.cube([girdleR * 2.6, winT, winH], true)
         .rotate([0, 0, kat])
-        .translate([0, 0, -basketH + winH / 2 + basketH * 0.12]));
+        .translate([0, 0, -basketH + winH / 2 + basketH * 0.1]));
   }
   add(basket);
   if (csKosz !== csRondysta) csKosz.delete?.();
@@ -735,13 +819,25 @@ function buildCrown(w, p, stone) {
     return { solid: ring.rotate([90, 0, 0]).translate([0, 0, r * 0.6]), basketH: 0 };
   }
 
+  // NOGA LAPKI: stozek od dna kosza do rondysty, dokladnie pod lapka.
+  //
+  // Lapka zaczynala sie na wysokosci `aboveGalleryMm`, czyli tuz pod rondysta,
+  // i nie mial jej co podpierac: pod nia byla juz zwezona sciana kosza. Przy
+  // zakuwaniu jubiler dociska koncowke, a cala sila idzie wtedy w to jedno
+  // miejsce. Noga prowadzi ja az na dno kosza, wiec lapka ma na czym stac
+  // i przy dociskaniu nie ustepuje.
+  const noga = (radius, promien) => Manifold
+    .cylinder(basketH - 0.05, promien * 1.35, promien * 1.05, 24, false)
+    .translate([radius, 0, -basketH + 0.05]);
+
   if (p.setting === "vprong") {
     // Lapka V nie jest lapka obroconą, tylko scianka po obrysie, wiec ma
-    // wlasna budowe i nie przechodzi przez powielanie ponizej.
+    // wlasna budowe i nie przechodzi przez powielanie ponizej. Noga jest jej
+    // potrzebna tak samo, wiec zaczyna sie na dnie kosza.
     const ccwPts = ccw(pts);
     for (const deg of prongAngles(cut, p.setting)) {
       add(vprongSolid(w, ccwPts, deg, rP,
-        -SEAT.aboveGalleryMm, stone.girdleH + stone.crownH * (zakute(p) ? 0.6 : 1.05),
+        -basketH + 0.05, stone.girdleH + stone.crownH * (zakute(p) ? 0.6 : 1.05),
         zakute(p)));
     }
     return { solid: crown, basketH };
@@ -760,13 +856,13 @@ function buildCrown(w, p, stone) {
     const rr = radiusAt(pts, deg) + rP * 0.5;
     const klucz = rr.toFixed(4);
     if (!wzorce.has(klucz)) {
-      wzorce.set(klucz, prongSolid(w, {
+      wzorce.set(klucz, zlacz(prongSolid(w, {
         radius: rr, prongR: rP,
         base: -SEAT.aboveGalleryMm,
         girdleTop: stone.girdleH,
         crownH: stone.crownH,
         zamkniete: zakute(p),
-      }));
+      }), noga(rr, rP)));
     }
     add(wzorce.get(klucz).rotate([0, 0, deg]));
   }
@@ -1149,21 +1245,27 @@ function wciety(w, cs, W, L, d) {
  * uderzeniu, bo caly moment przechodzi przez kilka dziesiatych milimetra
  * metalu.
  *
- * Znowu ciag zachodzacych kul, z tego samego powodu co przy lapce: jadro nie
- * zamiata po krzywej, a kule daja gladki przekroj i same sie zaokraglaja.
- * Luk idzie po OBWODZIE pierscionka, wiec promien kazdej kuli bierzemy
- * z profilu szyny w tym miejscu, razem ze zwezeniem.
+ * Byl to CIAG KUL i wlasnie to zglosil klient: "górna szyna doprowadzająca do
+ * korony jest karbowana". Kule zachodzily na siebie, ale odstep miedzy nimi
+ * dorownywal ich promieniowi, a promien do tego malal wzdluz luku, wiec kazda
+ * wystawala spod sasiedniej. Na renderze wychodzil z tego sznur paciorkow
+ * w miejscu, ktore ma byc jedna gladka linia wychodzaca z szyny.
+ *
+ * Teraz jest to rura poprowadzona po luku: odcinki stozkowe miedzy punktami
+ * i kule TYLKO w zalamaniach, o promieniu rownym rurze w tym miejscu, wiec
+ * powierzchnia nie ma ani uskoku, ani wybrzuszenia. Ta sama sztuczka, ktora
+ * wyprostowala lapki i kanaly wewnetrzne.
  */
 export function buildGallery(w, p, basketH) {
-  const { Manifold } = w;
   const ri = p.innerDia / 2;
   const kG = taperFor(p);
-  const N = 15;
+  const N = 13;
   const rozpietosc = 34 * DEG;                 // jak daleko luk schodzi po obwodzie
   const wznios = Math.max(0.3, basketH * 0.5);
 
   let solid = null;
   for (const s of [-1, 1]) {
+    const punkty = [], promienie = [];
     for (let i = 0; i < N; i++) {
       const t = i / (N - 1);
       const th = Math.PI / 2 + s * t * rozpietosc;
@@ -1173,17 +1275,15 @@ export function buildGallery(w, p, basketH) {
       // Powierzchnia szyny w tym miejscu, i wzniesienie ku glowicy.
       const rSzyna = ri + (shankRadiusAt(p, 0) - ri) * k.t;
       const podniesienie = wznios * (1 - t) ** 1.6;
-      // Kula ma sie ZANURZYC w szynie, a nie usiasc na niej. Plytsze
-      // zanurzenie dawalo walek z widocznymi paciorkami zamiast pogrubienia.
+      // Os rury ma byc ZANURZONA w szynie, a nie lezec na niej.
       const r = rSzyna - 0.5 + podniesienie;
-      // Kula chudnie ku dolowi, zeby luk wtopil sie w szyne, a nie usiadl
+      // Rura chudnie ku dolowi, zeby luk wtopil sie w szyne, a nie usiadl
       // na niej jako osobny walek.
-      const rad = Math.max(0.22, (p.width * k.w) / 2 * (1.0 - 0.30 * t));
-
-      const ball = Manifold.sphere(rad, 16)
-        .translate([Math.cos(th) * r, Math.sin(th) * r, 0]);
-      solid = solid ? zlacz(solid, ball) : ball;
+      punkty.push([Math.cos(th) * r, Math.sin(th) * r, 0]);
+      promienie.push(Math.max(0.22, (p.width * k.w) / 2 * (1.0 - 0.30 * t)));
     }
+    const ramie = tubeAlong(w, punkty, promienie);
+    solid = solid ? zlacz(solid, ramie) : ramie;
   }
   return solid;
 }

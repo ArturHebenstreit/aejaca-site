@@ -16,7 +16,7 @@
 // eternity to kropki dookola. Widok z boku pokazalby glownie szyne, ktora
 // w wiekszosci wzorow wyglada tak samo.
 
-import { OUTLINES, CUTS, SETTINGS, signetOutline } from "../../../geometry/ring/params.js";
+import { OUTLINES, CUTS, prongAngles, signetOutline } from "../../../geometry/ring/params.js";
 
 const R = 50;                       // srodek kadru 100 x 100
 
@@ -41,7 +41,10 @@ export default function PresetIcon({ preset, size = 44, className = "" }) {
   const kind = preset.kind || p.kind || "ring";
   const cut = p.stone?.cut || "round";
   const setting = p.setting || "prong4";
-  const lapki = SETTINGS[setting]?.prongs || 0;
+  // Katy bierzemy Z GENERATORA, nie z samej liczby lapek. Zakucie parami ma
+  // ich osiem, ale nie sa rozlozone rownomiernie, wiec rysunek z rownego
+  // podzialu pokazywalby inny wyrob niz ten, ktory powstanie.
+  const katyLapek = prongAngles(CUTS[cut] || CUTS.round, setting);
 
   // Szyna: dwa pasy schodzace z kadru, zwezone albo nie, zgodnie z sylwetka.
   const zwezona = p.taper === "tapered";
@@ -132,13 +135,11 @@ export default function PresetIcon({ preset, size = 44, className = "" }) {
         <polygon points={obrys(cut, duzy + 4)} fill="none" stroke="currentColor"
           strokeWidth="2.6" opacity="0.7" />
       ) : null}
-      {lapki > 0
-        ? Array.from({ length: lapki }, (_, i) => {
-            const kat = ((360 / lapki) * i + (lapki === 4 ? 45 : 0)) * Math.PI / 180;
-            return <circle key={i} cx={R + Math.cos(kat) * (duzy + 1)} cy={R + Math.sin(kat) * (duzy + 1)}
-              r="3.4" fill="currentColor" />;
-          })
-        : null}
+      {katyLapek.map((deg, i) => {
+        const kat = (deg * Math.PI) / 180;
+        return <circle key={i} cx={R + Math.cos(kat) * (duzy + 1)} cy={R + Math.sin(kat) * (duzy + 1)}
+          r={katyLapek.length > 6 ? 2.8 : 3.4} fill="currentColor" />;
+      })}
     </svg>
   );
 }
