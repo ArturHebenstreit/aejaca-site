@@ -31,8 +31,30 @@ export const REGIME = {
  * na zamowienie. Przy produkcie decyduje katalog: cyfrowy, personalizowany
  * albo gotowy.
  */
+/**
+ * Usluga, ktorej wynikiem jest PLIK, a nie rzecz.
+ *
+ * Kreator pierscionkow sprzedaje z jednej konfiguracji cztery rzeczy: dwie
+ * z nich sa plikiem do pobrania, dwie jada kurierem. Rozstrzyga `output`,
+ * bo to on decyduje, co klient dostanie.
+ */
+export function isDigitalService(item = {}) {
+  if (item.calculator !== "jewelry_ring_config") return false;
+  const output = item.params?.output;
+  return output === "mesh" || output === "step";
+}
+
 export function regimeForItem(item = {}) {
-  if (item.item_type !== "product") return REGIME.MADE_TO_ORDER;
+  // WYJATEK, ktory pojawil sie razem z kreatorem pierscionkow: usluga tez
+  // potrafi byc trescia cyfrowa. Klient, ktory kupuje sam plik STL, dostaje
+  // go od razu po zaplacie i nie ma tu zadnego wykonania na zamowienie
+  // w rozumieniu art. 38 pkt 3, tylko dostarczenie tresci cyfrowej, czyli
+  // pkt 13. Roznica nie jest akademicka: przy pkt 13 prawo wygasa dopiero
+  // Z CHWILA ROZPOCZECIA POBIERANIA i wylacznie po wyraznej zgodzie klienta,
+  // a te zgode formularz zamowienia musi wtedy zebrac osobno.
+  if (item.item_type !== "product") {
+    return isDigitalService(item) ? REGIME.DIGITAL : REGIME.MADE_TO_ORDER;
+  }
   if (item.product_kind === "digital") return REGIME.DIGITAL;
   if (item.product_offer === "personalized") return REGIME.MADE_TO_ORDER;
   return REGIME.STANDARD;

@@ -147,7 +147,16 @@ export default function RingPriceBox({ params, lang = "pl" }) {
       unitGrosze: wybrany.unitGrosze,
       packagingId: "paper",
       packagingGrosze: 0,
-      withdrawal: "made_to_order",
+      // POUCZENIE ZALEZY OD WYJSCIA, nie od kalkulatora.
+      //
+      // Wszystkie cztery wyjscia szly dotad jako rzecz wykonywana na
+      // zamowienie. Dla odlewu i gotowego wyrobu to prawda, dla PLIKU nie:
+      // plik jest trescia cyfrowa dostarczana poza nosnikiem materialnym,
+      // czyli art. 38 pkt 13, a nie pkt 3. Roznica nie jest formalna, bo przy
+      // tresci cyfrowej sklep musi zebrac OSOBNA, wyrazna zgode na
+      // dostarczenie przed uplywem terminu, i to wlasnie ta wartosc decyduje,
+      // czy koszyk o nia zapyta.
+      withdrawal: wybor === "mesh" || wybor === "step" ? "digital" : "made_to_order",
       qty: 1,
       source: "ring-configurator",
     });

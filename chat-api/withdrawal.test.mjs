@@ -11,6 +11,12 @@ assert.equal(regimeForItem(pierscionek), REGIME.STANDARD, "rzecz z polki: pelne 
 assert.equal(regimeForItem(szkatulka), REGIME.MADE_TO_ORDER);
 assert.equal(regimeForItem(plik), REGIME.DIGITAL, "przy tresci cyfrowej decyduje rodzaj, nie sposob sprzedazy");
 assert.equal(regimeForItem(grawer), REGIME.MADE_TO_ORDER, "usluga z kalkulatora zawsze powstaje pod klienta");
+// Usluga TEZ potrafi byc trescia cyfrowa: kreator pierscionkow sprzedaje z tej
+// samej konfiguracji plik i przesylke, a podstawa prawna jest inna dla kazdego.
+const plikZKreatora = { item_type: "service", calculator: "jewelry_ring_config", params: { output: "mesh" }, title: "Plik STL" };
+const odlewZKreatora = { item_type: "service", calculator: "jewelry_ring_config", params: { output: "cast" }, title: "Odlew" };
+assert.equal(regimeForItem(plikZKreatora), REGIME.DIGITAL, "sprzedany plik to tresc cyfrowa, art. 38 pkt 13");
+assert.equal(regimeForItem(odlewZKreatora), REGIME.MADE_TO_ORDER, "odlew jedzie kurierem, art. 38 pkt 3");
 assert.equal(regimeForItem({}), REGIME.MADE_TO_ORDER, "brak danych nie moze dac przypadkiem 'przysluguje'");
 
 // --- Zamowienie jednorodne ---

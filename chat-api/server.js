@@ -37,6 +37,9 @@ import { runRetention } from "./retention.js";
 import { requireAdmin, requireInvalidateToken, requireSecret, secretMatches } from "./auth.js";
 import { extractIP, isPrivateIP, TRUSTED_PROXY_HOPS, TRUST_CLOUDFLARE_HEADERS } from "./clientIp.js";
 import { createLimiter, limitBy } from "./rateLimit.js";
+import { issueDownloads, takeDownload, downloadName } from "./digitalDelivery.js";
+import { ringFiles } from "./ringExport.js";
+import { zipSync } from "fflate";
 
 const app = express();
 // `true` znaczylo "wierz calemu lancuchowi X-Forwarded-For", takze temu, co
@@ -2671,6 +2674,9 @@ app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), as
   console.log(`[przelew] ${ref} potwierdzony recznie, ${(received / 100).toFixed(2)} EUR`);
 
   // Dalej dokladnie to samo, co po SUCCESS z bramki.
+  await issueDownloads(pool, order.id).catch((e) =>
+    console.error("[pobranie] zalozenie linkow nie powiodlo sie:", e.message)
+  );
   sendOrderPaidEmails(pool, order.id).catch((e) =>
     console.error("[przelew] wysylka maili nie powiodla sie:", e.message)
   );
@@ -2903,6 +2909,16 @@ app.post("/api/autopay/itn", express.urlencoded({ extended: false, limit: "256kb
           );
           console.log(`[autopay] zamowienie ${parsed.orderID} oplacone, ${(amountGrosze / 100).toFixed(2)} PLN`);
 
+          // LINKI PRZED MAILEM, i to jest jedyna kolejnosc, ktora ma sens:
+          // to wlasnie mail niesie link do klienta. Odwrotna kolejnosc dawalaby
+          // potwierdzenie zaplaty bez tego, za co klient zaplacil.
+          //
+          // Czekamy tu na wynik, w odroznieniu od reszty: gdyby zalozenie
+          // linkow sie nie udalo, mail i tak ma pojsc, ale bez sekcji plikow,
+          // a nie z linkiem prowadzacym donikad.
+          await issueDownloads(pool, order.id).catch((e) => {
+            console.error("[pobranie] zalozenie linkow nie powiodlo sie:", e.message);
+          });
           // Maile wysylamy po ustawieniu fulfilled_at, wiec kolejny SUCCESS
           // tego zamowienia juz tu nie wejdzie. Nie czekamy na wynik: ITN
           // trzeba potwierdzic niezaleznie od tego, czy poczta zadziala.
@@ -2924,7 +2940,6 @@ app.post("/api/autopay/itn", express.urlencoded({ extended: false, limit: "256kb
           moveOrderFilesToOrders(pool, order.id, parsed.orderID).catch((e) =>
             console.error("[dysk] przeniesienie plikow nie powiodlo sie:", e.message)
           );
-          // TODO: wydanie plikow cyfrowych po dodaniu produktow do katalogu
         } else {
           await pool.query(
             `UPDATE orders SET payment_status = COALESCE($2, payment_status),
@@ -2941,6 +2956,79 @@ app.post("/api/autopay/itn", express.urlencoded({ extended: false, limit: "256kb
 
   // Potwierdzamy zawsze, takze komunikat, ktory niczego nie zmienil.
   res.type("application/xml").send(buildITNConfirmation(parsed.orderID));
+});
+
+// ------------------------------------------------------------
+// POBRANIE ZAKUPIONEGO PLIKU
+// ------------------------------------------------------------
+// Link nie ma hasla, bo hasla nie ma tez klient: token W ADRESIE jest tu
+// jedynym uwierzytelnieniem i dlatego ma dwadziescia cztery bajty losowe,
+// termin waznosci i licznik. Ograniczenie liczby prob dokladamy mimo to,
+// bo nic nie kosztuje, a zamienia zgadywanie z beznadziejnego na niemozliwe.
+//
+// Plik POWSTAJE TERAZ, z parametrow zapisanych w zamowieniu, tym samym kodem,
+// ktory policzyl cene. Gdyby lezal na dysku, rozjechalby sie z wycena przy
+// pierwszej poprawce generatora i nikt by tego nie zauwazyl.
+const downloadLimit = createLimiter({ limit: 30, windowMs: 10 * 60_000, name: "pobranie pliku" });
+
+const POWOD = {
+  unknown: { status: 404, pl: "Taki link nie istnieje." },
+  expired: { status: 410, pl: "Link wygasł. Napisz do nas, wystawimy nowy." },
+  exhausted: { status: 410, pl: "Limit pobrań wyczerpany. Napisz do nas, wystawimy nowy link." },
+};
+
+app.get("/api/download/:token", async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  if (!downloadLimit.check(extractIP(req))) {
+    return res.status(429).json({ error: "Za duzo prob, sprobuj za chwile" });
+  }
+
+  let wynik;
+  try {
+    wynik = await takeDownload(pool, req.params.token);
+  } catch (e) {
+    console.error("[pobranie] baza:", e.message);
+    return res.status(500).json({ error: "Pobranie chwilowo niedostepne" });
+  }
+
+  if (!wynik.ok) {
+    const p = POWOD[wynik.reason] || POWOD.unknown;
+    return res.status(p.status).json({ error: p.pl, code: wynik.reason });
+  }
+
+  // Plik budujemy WYLACZNIE dla pozycji z kreatora. Wpis w katalogu oznaczony
+  // jako cyfrowy dostanie kiedys wlasny plik i wlasna sciezke; do tego czasu
+  // nie wolno oddac mu pierscionka z domyslnych parametrow, bo bylby to inny
+  // przedmiot niz kupiony, wydany bez jednego ostrzezenia.
+  if (wynik.item.calculator !== "jewelry_ring_config" || !wynik.item.params) {
+    console.error(`[pobranie] ${wynik.item.order_ref}: pozycja bez parametrow kreatora`);
+    return res.status(500).json({ error: "Tego pliku nie umiemy jeszcze wydac. Napisz do nas." });
+  }
+
+  try {
+    const komplet = await ringFiles(wynik.item.params);
+    const wpisy = {};
+    for (const f of komplet.files) wpisy[f.name] = new Uint8Array(f.buffer);
+    const paczka = Buffer.from(zipSync(wpisy, { level: 6 }));
+
+    res.setHeader("Content-Type", "application/zip");
+    res.setHeader("Content-Disposition",
+      `attachment; filename="${downloadName(wynik.item.order_ref)}"`);
+    // Kopia w cache posrednika przezylaby licznik pobran, wiec jej nie chcemy.
+    res.setHeader("Cache-Control", "no-store, private");
+    res.setHeader("X-Downloads-Left", String(wynik.pozostalo));
+    res.send(paczka);
+    console.log(`[pobranie] ${wynik.item.order_ref}: wydano paczke, zostalo ${wynik.pozostalo}`);
+  } catch (e) {
+    // Pobranie zostalo juz odliczone, a pliku nie ma. Oddajemy je z powrotem,
+    // bo inaczej klient traci proba za nasza usterke.
+    console.error("[pobranie] budowa pliku nie powiodla sie:", e.message);
+    await pool.query(
+      "UPDATE downloads SET download_count = GREATEST(0, download_count - 1) WHERE token = $1",
+      [String(req.params.token || "")]
+    ).catch(() => {});
+    res.status(500).json({ error: "Nie udalo sie zbudowac pliku. Napisz do nas." });
+  }
 });
 
 /** Status zamowienia dla strony powrotu */

@@ -29,6 +29,8 @@ const GLOBALS = new Set([
   "parseInt", "parseFloat", "isNaN", "isFinite", "encodeURIComponent", "decodeURIComponent",
   "String", "Number", "Boolean", "Array", "Object", "JSON", "Math", "Date", "Promise", "Error",
   "Map", "Set", "RegExp", "Buffer", "URL", "URLSearchParams", "AbortController", "TextDecoder",
+  // Tablice typowane sa wszedzie tam, gdzie przechodzi siatka albo plik binarny.
+  "Uint8Array", "Uint16Array", "Uint32Array", "Int32Array", "Float32Array", "Float64Array",
   "TextEncoder", "structuredClone", "queueMicrotask", "console", "process", "if", "for", "while",
   "switch", "catch", "return", "typeof", "function", "await", "super", "this", "new", "do", "else",
   // slowa kluczowe, ktore w zapisie `async (` albo `constructor(` wygladaja jak wywolanie
