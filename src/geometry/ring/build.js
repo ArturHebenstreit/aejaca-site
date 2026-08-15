@@ -1787,7 +1787,7 @@ function buildBandStones(w, p) {
  * przy stole, a zostawienie jej klientowi konczy sie albo dziura w wiencu,
  * albo kamieniami zachodzacymi na siebie.
  */
-function buildHalo(w, p, stone, girdleR) {
+export function buildHalo(w, p, stone, girdleR) {
   const { Manifold, CrossSection } = w;
   const d = p.halo.size;
   const luz = 0.18;                                // odstep wienca od rondysty
@@ -1800,7 +1800,9 @@ function buildHalo(w, p, stone, girdleR) {
   const kolo = (r) => smoothCircle(r, 64);
   const rZewn = rW + d / 2 + 0.34;
   const rWewn = Math.max(0.4, girdleR - 0.12);
-  const grubosc = Math.max(0.9, d * 0.72);
+  // Plyta musi pomiescic gniazdo I wybranie pod nim. Bylo `d * 0.72`, czyli
+  // mniej, niz samo gniazdo potrzebuje na wlot, prosty pas i stozek.
+  const grubosc = Math.max(1.05, d * 0.95);
   const plyta = Manifold.extrude(
     CrossSection.ofPolygons([ccw(kolo(rZewn)), ccw(kolo(rWewn)).reverse()]),
     grubosc,
@@ -1858,8 +1860,28 @@ function buildHalo(w, p, stone, girdleR) {
       // Stopa stoi POZA obrysem kamyka, bo wlot gniazda scina wszystko, co
       // w ten obrys wchodzi. Szczyt zakutego slupka pochyla sie do srodka
       // odstepu, czyli nad oba sasiednie kamienie naraz.
-      const rStopy = rW + s * (d / 2 + kulaH * 0.35);
-      const rSzczytu = rW + s * (zam ? d * 0.34 : d / 2 + kulaH * 0.35);
+      //
+      // ODSUNIECIE LICZYMY, a nie zgadujemy. Bylo `d / 2 + kulaH * 0.35`,
+      // czyli pelny promien kamienia z naddatkiem, mierzony PROSTOPADLE do
+      // wienca. To jest za duzo, bo kuleczka stoi w polowie odstepu miedzy
+      // kamieniami, wiec ma juz zapas wzdluz obwodu i drugi raz go nie
+      // potrzebuje. Kuleczka odsunieta o pelny promien lezy daleko od obu
+      // gniazd, a zakuwa sie tym, co jest przy krawedzi kamienia.
+      //
+      // Liczymy wiec najmniejsze odsuniecie, przy ktorym stopa jeszcze mija
+      // wlot obu sasiadow, i bierzemy dokladnie tyle. Podloga jest jedna:
+      // dwie kuleczki tej samej pary nie moga sie zlac w jeden walek. Przy
+      // 1,15 promienia jeszcze sie zlewaly (przy kamyku 1,8 mm z pary
+      // zostawal jeden walek), wiec podloga jest 1,6.
+      const polKroku = (Math.PI / n) * rW;         // polowa odstepu po obwodzie
+      const wlot = d / 2 + 0.05 + 0.04;            // wlot gniazda plus margines
+      const minOdsun = Math.sqrt(Math.max(0, wlot * wlot - polKroku * polKroku));
+      const odsun = Math.max(minOdsun, kulaH * 1.6);
+      const rStopy = rW + s * odsun;
+      // Zakuty slupek pochyla sie nad kamien, ale nie tak daleko, zeby zejsc
+      // sie z drugim slupkiem pary: dwa czubki w jednym walku to nie zakucie.
+      const odsunCzubka = zam ? Math.max(odsun - d * 0.30, kulaH * 1.1) : odsun;
+      const rSzczytu = rW + s * odsunCzubka;
       const zStopy = zK - 0.12;
       metal = zlacz(metal, tubeAlong(w,
         [
@@ -1884,7 +1906,20 @@ function buildHalo(w, p, stone, girdleR) {
   // na kawalki. Sprawdzilem to: bryla rozpadala sie na dwie czesci.
   // Wybieramy wiec pierscien od spodu i zostawiamy plyte, w ktorej siedza
   // gniazda.
-  const plytaH = 0.55;
+  // GRUBOSC PLYTY POD GNIAZDEM decyduje o tym, czy gniazdo w ogole jest.
+  //
+  // Bylo tu 0,55 mm na sztywno. Przy kamyku 1,3 mm gniazdo potrzebuje wlotu,
+  // prostego pasa `SEAT.ledge` i stozka, czyli wiecej niz 0,55: stozek nie
+  // miescil sie w plycie i konczyl sie tam, gdzie zaczynalo sie wybranie.
+  // Zmierzone na wiencu: otwor zwezal sie do 0,85 mm i NATYCHMIAST otwieral
+  // z powrotem do 1,39 mm, bo dalej bylo juz tylko wybranie. Kamien lezal
+  // wiec na krawedzi grubosci dwoch dziesiatych zamiast na stozku i przy
+  // zakuwaniu wpadal do srodka.
+  //
+  // Plyta idzie za rozmiarem kamienia, bo gniazdo tez za nim idzie. Wybranie
+  // zostaje, tylko plytsze: swiatlo od dolu jest wazne, ale nie wazniejsze
+  // od tego, zeby kamien mial na czym usiasc.
+  const plytaH = Math.max(0.55, d * 0.62);
   if (grubosc > plytaH + 0.2) {
     const kolo2 = (r) => smoothCircle(r, 48);
     const wybranie = Manifold.extrude(

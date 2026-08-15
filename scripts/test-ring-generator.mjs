@@ -16,7 +16,7 @@
 //
 // Wchodzi do builda.
 
-import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, stoneSolid, taperFor, buildShank, buildGallery, tubeAlong } from "../src/geometry/ring/build.js";
+import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, stoneSolid, taperFor, buildShank, buildGallery, tubeAlong, buildHalo } from "../src/geometry/ring/build.js";
 import { CUTS, SETTINGS, SEAT, SIGNET_TABLES, DEFAULTS, prongAngles, outlineFor, validate } from "../src/geometry/ring/params.js";
 
 /**
@@ -1677,6 +1677,69 @@ console.log("\n29. Rura na zgietym torze nie ma karbow na zlaczach");
 
   zwolnij(stozki);
   zwolnij(gladka);
+}
+
+
+// ------------------------------------------------------------
+console.log("\n30. Wieniec halo: gniazdo ma stozek, a kulki stoja przy nim");
+// ------------------------------------------------------------
+// Dwie rzeczy naraz, bo obie wynikaja z grubosci plyty wienca.
+//
+// GNIAZDO. Plyta byla wybierana od spodu do 0,55 mm i tyle zostawalo na cale
+// gniazdo. Stozek sie w tym nie miescil: otwor zwezal sie do 0,85 mm i zaraz
+// otwieral z powrotem do 1,39, czyli kamien lezal na krawedzi zamiast na
+// stozku. Mierzymy szerokosc otworu przy DNIE plyty: ma byc wyraznie wezsza
+// od kamienia, inaczej kamien przez nia przechodzi.
+//
+// KULKI. Maja byc dwie na kamien i maja przezyc wlot gniazda. Przysuniete za
+// blisko sa scinane do zera, odsuniete za daleko nie maja czym zakuwac.
+{
+  const w = await kernel();
+  const { Manifold } = w;
+  for (const d of [1.0, 1.3, 1.8, 2.4]) {
+    const p = validate(applyPreset(RING_PRESETS.find((x) => x.id === "halo"), DEFAULTS));
+    p.halo = { ...p.halo, size: d };
+    p.casting = { ...p.casting, stones: false };
+    const stone = stoneSolid(w, p.stone.cut, p.stone.size);
+    const gR = Math.max(...outlineFor(p.stone.cut, p.stone.size).map(([x, y]) => Math.hypot(x, y)));
+    const h = buildHalo(w, p, stone, gR);
+    const wieniec = h.metal.subtract(h.seats);
+    const gora = stone.girdleH * 0.5;                 // gorna plaszczyzna plyty
+    const rW = gR + 0.18 + d / 2;
+
+    // Szerokosc otworu tuz nad wybraniem, czyli u dolu gniazda.
+    const plytaH = Math.max(0.55, d * 0.62);
+    const zDna = gora - plytaH + 0.08;
+    const plaster = Manifold.cube([6, 0.04, 0.04], true).translate([rW, 0, zDna]);
+    const trafienie = wieniec.intersect(plaster);
+    const kawalki = trafienie.decompose().map((c) => c.boundingBox()).sort((a, b) => a.min[0] - b.min[0]);
+    let otwor = 0;
+    for (let i = 1; i < kawalki.length; i++) otwor = Math.max(otwor, kawalki[i].min[0] - kawalki[i - 1].max[0]);
+    if (otwor > d * 0.8) bad(`halo d=${d}: otwor u dna gniazda ma ${otwor.toFixed(2)} mm przy kamieniu ${d} mm, czyli kamien przez niego przechodzi`);
+    else if (otwor < 0.15) bad(`halo d=${d}: gniazdo nie jest przewiercone (otwor ${otwor.toFixed(2)} mm)`);
+    else ok(`d=${d} mm  otwór u dna gniazda ${otwor.toFixed(2)} mm, czyli ${Math.round((otwor / d) * 100)} % kamienia`);
+
+    // Kulki. Ciecie 0,06 mm NAD plyta: dokladnie po jej licu boolean zostawia
+    // warstwe zerowej grubosci, ktora zlepia wszystkie kulki w jedna bryle
+    // i pomiar przestaje cokolwiek znaczyc. Wpadlem w to przy pisaniu tego testu.
+    const nad = Manifold.cube([60, 60, 12], true).translate([0, 0, gora + 0.06 + 6]);
+    const zakucia = wieniec.intersect(nad);
+    const realne = zakucia.decompose().filter((c) => c.volume() > 0.002);
+    if (realne.length !== 2 * h.count) {
+      bad(`halo d=${d}: ${realne.length} kulek zamiast ${2 * h.count}`);
+    } else {
+      const objs = realne.map((c) => c.volume());
+      const naj = Math.min(...objs);
+      if (naj < 0.01) bad(`halo d=${d}: najmniejsza kulka ma ${naj.toFixed(4)} mm3, czyli zostala scieta do niczego`);
+      else ok(`d=${d} mm  ${realne.length} kulek na ${h.count} kamieni, najmniejsza ${naj.toFixed(3)} mm3`);
+    }
+
+    for (const c of zakucia.decompose()) c.delete?.();
+    for (const c of trafienie.decompose()) c.delete?.();
+    zwolnij(zakucia); zwolnij(trafienie); zwolnij(nad); zwolnij(plaster);
+    zwolnij(wieniec); zwolnij(h.metal); zwolnij(h.seats); zwolnij(stone.solid);
+    for (const k of h.stones) k.delete?.();
+  }
 }
 
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");
