@@ -16,7 +16,7 @@
 //
 // Wchodzi do builda.
 
-import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, stoneSolid, taperFor, buildShank, buildGallery } from "../src/geometry/ring/build.js";
+import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, stoneSolid, taperFor, buildShank, buildGallery, tubeAlong } from "../src/geometry/ring/build.js";
 import { CUTS, SETTINGS, SEAT, SIGNET_TABLES, DEFAULTS, prongAngles, outlineFor, validate } from "../src/geometry/ring/params.js";
 
 /**
@@ -1606,6 +1606,77 @@ console.log("\n28. Łuk z szyny do korony jest gładki, a nie karbowany");
     else ok(`${nazwa.padEnd(11)} łuk schodzi gładko, ${zwroty} zmiany kierunku`);
     zwolnij(r);
   }
+}
+
+
+// ------------------------------------------------------------
+console.log("\n29. Rura na zgietym torze nie ma karbow na zlaczach");
+// ------------------------------------------------------------
+// Test 28 mierzy PROMIEN luku i przechodzil takze wtedy, gdy powierzchnia byla
+// karbowana: karb jest lokalnym rowkiem, a nie zmiana kierunku, wiec pomiar
+// maksimum w klinie go nie widzi. Ten test mierzy to, co karb naprawde robi:
+// UBYTEK OBJETOSCI wzgledem lancucha scietych stozkow. Suma stozkow gubi na
+// kazdym zlaczu klin po zewnetrznej stronie zgiecia; powloka przeciagnieta
+// nie gubi nic.
+{
+  const w = await kernel();
+  const DEG2 = Math.PI / 180;
+  const N = 13, rozp = 34 * DEG2, rLuku = 10;
+  const punkty = [], prom = [];
+  for (let i = 0; i < N; i++) {
+    const t = i / (N - 1), th = Math.PI / 2 + t * rozp;
+    punkty.push([Math.cos(th) * rLuku, Math.sin(th) * rLuku, 0]);
+    prom.push(1.2 * (1 - 0.30 * t));
+  }
+  // Objetosc odniesienia: lancuch scietych stozkow po cieciwach, poprawiony
+  // o DYSKRETYZACJE. Rura jest 32-katem wpisanym w okrag, a taki wielokat ma
+  // pole o 0,64 % mniejsze od kola. Pierwsza wersja tego testu porownywala
+  // z kolem i mierzyla wlasnie te 0,64 %, czyli nie karb, tylko liczbe scian.
+  const N32 = 32;
+  const dyskret = (0.5 * N32 * Math.sin((2 * Math.PI) / N32)) / Math.PI;
+  let idealna = 0;
+  for (let i = 0; i < N - 1; i++) {
+    const [dx, dy, dz] = [punkty[i + 1][0] - punkty[i][0], punkty[i + 1][1] - punkty[i][1], punkty[i + 1][2] - punkty[i][2]];
+    const L = Math.hypot(dx, dy, dz);
+    const a = prom[i], b = prom[i + 1];
+    idealna += (Math.PI * L / 3) * (a * a + a * b + b * b) * dyskret;
+  }
+
+  // Kontrola: te same stozki, ale SKLEJONE i bez kul w zlaczach. Tak wygladala
+  // rura, ktora klient zglaszal jako karbowana. Kule z `tubeSklejana` nie
+  // nadaja sie na kontrole, bo dokladaja wiecej materialu, niz karb zabiera,
+  // i ubytek chowa sie pod nadmiarem.
+  const { Manifold } = w;
+  let stozki = null;
+  for (let i = 0; i < N - 1; i++) {
+    const a = punkty[i], b = punkty[i + 1];
+    const [dx, dy, dz] = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+    const L = Math.hypot(dx, dy, dz);
+    const pochyl = (Math.acos(dz / L) * 180) / Math.PI;
+    const obrot = (Math.atan2(dy, dx) * 180) / Math.PI;
+    const c = Manifold.cylinder(L, prom[i], prom[i + 1], N32, false).rotate([0, pochyl, obrot]).translate(a);
+    stozki = stozki ? stozki.add(c) : c;
+  }
+
+  const gladka = tubeAlong(w, punkty, prom, { czubek: false });
+  const ubytekG = (1 - gladka.volume() / idealna) * 100;
+  const ubytekS = (1 - stozki.volume() / idealna) * 100;
+
+  if (gladka.decompose().length !== 1) bad("rura przeciagnieta rozpada sie na kawalki");
+  if (gladka.genus() !== 0) bad(`rura przeciagnieta ma genus ${gladka.genus()}, powinna byc pelna`);
+
+  // Powloka moze byc od odniesienia odrobine WIEKSZA, bo mitra wypelnia zakola.
+  // Nie wolno jej natomiast gubic materialu na zlaczach.
+  if (ubytekG > 0.15) bad(`rura przeciagnieta gubi ${ubytekG.toFixed(2)} % objetosci, czyli ma karby`);
+  else ok(`przeciągnięta   odchyłka ${(-ubytekG).toFixed(2)} % od odniesienia`);
+
+  // Kontrola samego pomiaru: sklejone stozki MUSZA ten prog przekroczyc.
+  // Gdyby nie przekraczaly, test nie mierzylby karbu, tylko nic.
+  if (ubytekS <= 0.5) bad(`pomiar nic nie wykrywa: sklejone stozki gubia tylko ${ubytekS.toFixed(2)} %`);
+  else ok(`sklejone stożki gubią ${ubytekS.toFixed(2)} % objętości, czyli pomiar działa`);
+
+  zwolnij(stozki);
+  zwolnij(gladka);
 }
 
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");
