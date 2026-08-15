@@ -849,10 +849,20 @@ console.log("\n16. Dodatki odlewnicze nie ruszają wyrobu");
     }
   }
 
-  // Sygnet nie ma korony, ma tarcze, i tam kanal wchodzi od gory, w jej kant.
+  // SYGNET WIESZA SIE TAK SAMO, za dol szyny. Przez chwile mial wlasna sciezke,
+  // kanal wchodzacy poziomo w kant tarczy, i nawet ten test tego pilnowal.
+  // Kant tarczy tez jest jednak miejscem, ktore jubiler oglada i poleruje,
+  // a tarcze karmia kanaly wewnetrzne, wiec kanal glowny nie ma tam czego
+  // szukac. Jedno miejsce wlewu dla wszystkiego, co ma szyne.
   const sygnet = await uklad({ kind: "signet", signet: { table: "oval", length: 14 } });
-  if (sygnet.sredniaY > 0) ok(`sygnet: kanał wchodzi od tarczy (średnie y = ${sygnet.sredniaY.toFixed(1)} mm)`);
-  else bad(`kanal przy sygnecie wchodzi od dolu, a tam metal jest cienszy (y = ${sygnet.sredniaY.toFixed(1)})`);
+  const tarcza = sygnet.params.innerDia / 2 + sygnet.params.thickness;
+  if (sygnet.sredniaY >= 0) {
+    bad(`kanal przy sygnecie wchodzi od gory, czyli przy tarczy (y = ${sygnet.sredniaY.toFixed(1)})`);
+  } else if (sygnet.gora > tarcza + 0.05) {
+    bad(`uklad wlewowy sygnetu siega ${sygnet.gora.toFixed(2)} mm, czyli w tarcze`);
+  } else {
+    ok(`sygnet: kanał od dołu szyny jak w pierścionku (średnie y = ${sygnet.sredniaY.toFixed(1)} mm)`);
+  }
 
   // Kanaly wewnetrzne maja PRZECHODZIC przez otwor na palec i dochodzic pod
   // glowice, a nie stercac przy wlewie. Sprawdzamy, ze siegaja przeciwleglej
@@ -863,11 +873,33 @@ console.log("\n16. Dodatki odlewnicze nie ruszają wyrobu");
     const zWewn = await buildRing({ innerDia: 17.2, taper: "cathedral", stone: { cut: "round", size: 6.5 },
       setting: "prong4", casting: { sprues: true, innerSprues: true } }, { segments: 48 });
     const gora = (r) => r.casting.boundingBox().max[1];
-    // Bez kanalow wewnetrznych uklad konczy sie na dole. Z nimi musi siegnac
-    // gornej scianki otworu, czyli okolo `ri`.
+    // Kanaly wewnetrzne maja PRZEJSC przez otwor na palec: rozwidlaja sie przy
+    // wlewie, na dole, a koncza po przeciwnej stronie, pod glowica. Sprawdzamy
+    // wiec, ze uklad przekroczyl srodek pierscionka i doszedl do gornej polowy
+    // otworu, a nie ze siega samego szczytu: tam wchodzi glowica, nie kanal.
+    const ri = 17.2 / 2;
     const zasieg = gora(zWewn) - gora(bez);
-    if (gora(zWewn) > 17.2 / 2 - 1.2) ok(`kanały wewnętrzne dochodzą pod głowicę (y = ${gora(zWewn).toFixed(2)} mm, otwór kończy się na ${(17.2 / 2).toFixed(2)})`);
+    if (gora(zWewn) > ri * 0.5) ok(`kanały wewnętrzne przechodzą przez otwór (y = ${gora(zWewn).toFixed(2)} mm przy promieniu ${ri.toFixed(2)})`);
     else bad(`kanaly wewnetrzne siegaja tylko ${gora(zWewn).toFixed(2)} mm, czyli nie przechodza przez otwor (przyrost ${zasieg.toFixed(2)} mm)`);
+    // Rozwidlenie ma byc PRZY WLEWIE, nie przy glowicy: metal idzie z jednego
+    // zrodla w dwa miejsca, a nie odwrotnie. Mierzymy szerokosc ukladu tuz nad
+    // wlewem i tuz pod glowica.
+    const jadro = await kernel();
+    const szerokoscNa = (r, y) => {
+      const noz = jadro.Manifold.cube([40, 0.4, 40], true).translate([0, y, 0]);
+      const pl = r.casting.intersect(noz);
+      const b = pl.boundingBox();
+      const puste = pl.isEmpty();
+      noz.delete?.(); pl.delete?.();
+      return puste ? 0 : b.max[0] - b.min[0];
+    };
+    const przyWlewie = szerokoscNa(zWewn, -ri * 0.6);
+    const przyGlowicy = szerokoscNa(zWewn, ri * 0.6);
+    if (przyGlowicy > przyWlewie + 1.0) {
+      ok(`rozwidlenie przy wlewie: ${przyWlewie.toFixed(1)} mm na dole, ${przyGlowicy.toFixed(1)} mm pod głowicą`);
+    } else {
+      bad(`litera V stoi do gory nogami: ${przyWlewie.toFixed(1)} mm przy wlewie, ${przyGlowicy.toFixed(1)} mm pod glowica`);
+    }
     zwolnij(bez); zwolnij(zWewn);
   }
 }
@@ -1337,6 +1369,101 @@ console.log("\n24. Łapka ma na czym stać");
     if (braki.length) bad(`${nazwa}: łapka wisi w powietrzu (${braki.slice(0, 3).join(", ")})`);
     else ok(`${nazwa.padEnd(9)} każda łapka oparta na całej wysokości kosza, ${r.massG.toFixed(2)} g`);
     wzor.solid.delete?.();
+    zwolnij(r);
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n25. Wylot gniazda jest OTWOREM, a nie dziurką po szpilce");
+// ------------------------------------------------------------
+// `throughPart` pelnil dwie role naraz: opisywal i ostatnia szosta czesc
+// GLEBOKOSCI, i szerokosc wylotu. Kamyk halo o srednicy 1,4 mm dostawal wiec
+// otwor o srednicy 0,23 mm. Z gory wygladalo to jak gniazdo zaslepione i tak
+// tez zostalo zglszone: "brakuje gniazd, sa zamkniete".
+//
+// Sonda idzie osia gniazda od rondysty w dol. Ma przejsc na wylot.
+{
+  const w = await kernel();
+  const UKLADY = [
+    ["halo", { stone: { cut: "round", size: 6 }, setting: "prong4", halo: { on: true, size: 1.4, material: "cz" } }],
+    ["pavé na szynie", { width: 2.6, stone: { cut: "round", size: 5 }, setting: "prong4",
+                         side: { count: 4, size: 1.6, setting: "pave", material: "cz" } }],
+    ["eternity", { kind: "band", width: 2.6, band: { coverage: "full", size: 1.8, setting: "pave", material: "cz" } }],
+  ];
+  for (const [nazwa, cfg] of UKLADY) {
+    const r = await buildRing({ innerDia: 17.2, ...cfg }, { segments: 64 });
+    // Kamienie sa w modelu, wiec kazdy z nich pokazuje, GDZIE jest gniazdo
+    // i ktoredy biegnie jego os.
+    const drobne = r.stones.slice(1);
+    // KOLEJNOSC LISTY jest tu potrzebna, a nie wygodna: kamien centralny,
+    // potem wieniec, potem boczne. Wieniec jedzie razem z korona, wiec os
+    // KAZDEGO jego kamyka wskazuje na godzine dwunasta, a nie na zewnatrz
+    // promienia. Sonda puszczona promieniowo szla w takim razie w poprzek
+    // gniazda i meldowala zaslepienie tam, gdzie go nie bylo.
+    const ileHalo = r.stoneVolumesMm3.haloCount || 0;
+    let zaslepione = 0;
+    for (const [nr, k] of drobne.entries()) {
+      const b = k.boundingBox();
+      const sr = [(b.min[0] + b.max[0]) / 2, (b.min[1] + b.max[1]) / 2, (b.min[2] + b.max[2]) / 2];
+      const dl = Math.hypot(sr[0], sr[1]) || 1;
+      const os = nr < ileHalo ? [0, -1] : [-sr[0] / dl, -sr[1] / dl];
+      const promien = Math.max(0.12, (b.max[0] - b.min[0]) * 0.18);
+      const sonda = w.Manifold.cylinder(2.5, promien, promien, 12, false)
+        .rotate([0, 90, 0])
+        .rotate([0, 0, Math.atan2(os[1], os[0]) / (Math.PI / 180)])
+        .translate(sr);
+      const wspolne = r.metal.intersect(sonda);
+      if (wspolne.volume() > 0.02) zaslepione++;
+      sonda.delete?.(); wspolne.delete?.();
+    }
+    if (!drobne.length) bad(`${nazwa}: brak drobnych kamieni do sprawdzenia`);
+    else if (zaslepione > drobne.length * 0.15) {
+      bad(`${nazwa}: ${zaslepione} z ${drobne.length} gniazd bez przelotu`);
+    } else {
+      ok(`${nazwa.padEnd(14)} ${drobne.length - zaslepione} z ${drobne.length} gniazd przewiercone na wylot`);
+    }
+    zwolnij(r);
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n26. Ramię sygnetu jest KANCIASTE, a nie beczkowate");
+// ------------------------------------------------------------
+// Rozlanie skalowalo ten sam obrys tarczy od szyny do plyty, wiec sygnet
+// owalny mial ramiona owalne od samego dolu: pekaty klosz, na ktorym stoi
+// tarcza. Zglszone wprost: korona ma powstawac z rozszerzenia szyny "bardziej
+// kwadratowo niz oblo".
+//
+// Mierzymy WYPELNIENIE prostokata opisanego: elipsa wypelnia go w 79
+// procentach, prostokat o zaokraglonych narozach powyzej 85.
+{
+  const w = await kernel();
+  const wypelnienie = (metal, y) => {
+    const noz = w.Manifold.cube([60, 0.25, 60], true).translate([0, y, 0]);
+    const plaster = metal.intersect(noz);
+    const b = plaster.boundingBox();
+    const puste = plaster.isEmpty();
+    // Objetosc plastra podzielona przez objetosc jego wlasnego pudelka.
+    const wynik = puste ? 0
+      : plaster.volume() / ((b.max[0] - b.min[0]) * (b.max[2] - b.min[2]) * 0.25);
+    noz.delete?.(); plaster.delete?.();
+    return wynik;
+  };
+
+  for (const table of ["oval", "round", "cushion", "rect"]) {
+    const r = await buildRing({ innerDia: 17.2, kind: "signet", width: 2.6, thickness: 1.7,
+      signet: { table, length: 14, face: "flat" } }, { segments: 48, withStones: false });
+    const bb = r.metal.boundingBox();
+    const roGlowicy = 17.2 / 2 + 1.7 * (taperFor(r.params)?.(0)?.t ?? 1);
+    // Polowa drogi miedzy powierzchnia szyny a tarcza, czyli sam srodek ramienia.
+    // Tuz nad powierzchnia szyny, czyli tam, gdzie ramie wychodzi z obraczki
+    // i gdzie widac je najlepiej. Wyzej obrys musi juz przechodzic w tarcze,
+    // bo tarcza ma taki ksztalt, jaki ma, wiec pomiar zrobiony pod sama plyta
+    // mowilby o plycie, a nie o ramieniu.
+    const y = roGlowicy + (bb.max[1] - roGlowicy) * 0.15;
+    const w2 = wypelnienie(r.metal, y);
+    if (w2 >= 0.83) ok(`sygnet ${table.padEnd(8)} ramię wypełnia ${(w2 * 100).toFixed(0)} % opisanego prostokąta`);
+    else bad(`sygnet ${table}: ramie wypelnia tylko ${(w2 * 100).toFixed(0)} %, czyli jest beczkowate`);
     zwolnij(r);
   }
 }

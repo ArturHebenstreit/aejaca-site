@@ -453,10 +453,27 @@ function seatCutter(w, cutId, sizeMm, zamkniete = false) {
   const glebokosc = pavH > 0.05
     ? pavH
     : (shrunk / 2) * Math.tan(SEAT.bearingDeg * DEG) + SEAT.throughClearance;
-  const stozekH = glebokosc * (1 - SEAT.throughPart);
-  const dolPts = scalePts(pts, SEAT.throughPart);
+  // STOZEK MUSI ZWEZAC SIE SZYBCIEJ NIZ PAWILON KAMIENIA, inaczej kamien
+  // w nim zjezdza.
+  //
+  // Kamien opiera sie na gornej krawedzi lozа, ale opiera sie tylko wtedy, gdy
+  // otwor pod nia ucieka od niego szybciej, niz on sam sie zweza. Gdy stozek
+  // jest lagodniejszy od pawilonu, kamien wchodzi w niego jak korek i siada
+  // dopiero na wierzcholku. Zlapal to sprawdzian osadzania: po poszerzeniu
+  // wylotu owal i gruszka przestaly sie zatrzymywac, bo przy tej samej
+  // glebokosci stozek zrobil sie lagodniejszy.
+  //
+  // Wysokosc liczymy wiec z tego, ile stozek ma do przebycia w POPRZEK,
+  // a nie z ulamka glebokosci: schodzi do wylotu na 0,9 tej drogi, czyli
+  // zawsze stromiej niz kamien.
+  const stozekH = glebokosc * Math.min(1 - SEAT.throughPart, 0.9 * (1 - SEAT.throughWidth));
+  // GLEBOKOSC i SZEROKOSC to dwie rozne rzeczy, mimo ze przez chwile opisywala
+  // je jedna liczba: stozek zajmuje piec szostych GLEBOKOSCI, a otwor pod nim
+  // ma polowe SZEROKOSCI gniazda. Wspolna wartosc dawala kamykowi 1,4 mm wylot
+  // o srednicy 0,23 mm, czyli gniazdo, ktore z gory wyglada na zaslepione.
+  const dolPts = scalePts(pts, SEAT.throughWidth);
   const dolCs = CrossSection.ofPolygons([ccw(dolPts)]);
-  const stozek = Manifold.extrude(dolCs, stozekH, 0, 0, [1 / SEAT.throughPart, 1 / SEAT.throughPart])
+  const stozek = Manifold.extrude(dolCs, stozekH, 0, 0, [1 / SEAT.throughWidth, 1 / SEAT.throughWidth])
     .translate([0, 0, -SEAT.ledge - stozekH]);
 
   // 4. PRZELOT. Ostatni odcinek idzie na wylot prosto: przez niego wchodzi
@@ -822,9 +839,22 @@ function buildCrown(w, p, stone) {
   // zakuwaniu jubiler dociska koncowke, a cala sila idzie wtedy w to jedno
   // miejsce. Noga prowadzi ja az na dno kosza, wiec lapka ma na czym stac
   // i przy dociskaniu nie ustepuje.
-  const noga = (radius, promien) => Manifold
-    .cylinder(basketH - 0.05, promien * 1.35, promien * 1.05, 24, false)
-    .translate([radius, 0, -basketH + 0.05]);
+  //
+  // POPRAWKA: pierwsza wersja byla walcem o promieniu 1,35 raza grubszym od
+  // lapki i wygladala dokladnie tak, jak zostala zglszona, czyli jak klocek
+  // z doklejona lapka. Lapka ma WYRASTAC z dna gniazda jednym ciagiem, a nie
+  // stac na cokole: u dolu schodzi lekko do srodka, bo tam jest scianka kosza,
+  // i rozszerza sie dopiero przy rondyscie, gdzie musi objac kamien.
+  //
+  // Grubosc u podstawy schodzi z 1,35 do 1,05 promienia lapki. Tyle wystarczy,
+  // zeby przy zakuwaniu nie ustapila, a wiecej robi z korony guzka.
+  const noga = (radius, promien) => tubeAlong(w,
+    [
+      [radius - promien * 0.35, 0, -basketH + 0.05],
+      [radius - promien * 0.12, 0, -basketH * 0.45],
+      [radius, 0, 0.02],
+    ],
+    [promien * 1.05, promien * 0.95, promien * 0.98]);
 
   if (p.setting === "vprong") {
     // Lapka V nie jest lapka obroconą, tylko scianka po obrysie, wiec ma
@@ -1125,6 +1155,53 @@ function signetMetrics(p) {
   return { W, L, T, faza, scianka, zanurzenie, rozlanie, gora: rozlanie + scianka + faza };
 }
 
+/** Czy obrys jest WYPUKLY. Otoczka wypuklosciowa wypelnia wciecia, wiec przy
+ *  tarczy w ksztalcie serca nie wolno jej uzyc. */
+function wypukly(pts) {
+  let znak = 0;
+  const n = pts.length;
+  for (let i = 0; i < n; i++) {
+    const a = pts[i], b = pts[(i + 1) % n], c = pts[(i + 2) % n];
+    const v = (b[0] - a[0]) * (c[1] - b[1]) - (b[1] - a[1]) * (c[0] - b[0]);
+    if (Math.abs(v) < 1e-9) continue;
+    const s = Math.sign(v);
+    if (znak && s !== znak) return false;
+    znak = s;
+  }
+  return true;
+}
+
+/**
+ * Przeciagniecie miedzy OBRYSAMI, a nie miedzy skalami jednego obrysu.
+ *
+ * `extrude` umie tylko skalowac i skrecac, wiec nie przejdzie z prostokata
+ * w owal. Kazdy plaster budujemy wiec jako otoczke wypuklosciowa dwoch
+ * cienkich przekrojow: dla ksztaltow wypuklych jest to DOKLADNIE liniowe
+ * przeciagniecie, bez zadnego przyblizenia.
+ *
+ * @returns {object|null} null, gdy ktorykolwiek obrys jest wklesly
+ */
+function loftObrysow(w, obrysy, zetki) {
+  const { Manifold, CrossSection } = w;
+  if (!obrysy.every(wypukly)) return null;
+  const plaster = (pts, z) => {
+    const cs = CrossSection.ofPolygons([ccw(pts)]);
+    const m = Manifold.extrude(cs, 0.02).translate([0, 0, z]);
+    cs.delete?.();
+    return m;
+  };
+  let bryla = null, dol = plaster(obrysy[0], zetki[0]);
+  for (let i = 1; i < obrysy.length; i++) {
+    const gora = plaster(obrysy[i], zetki[i]);
+    const kawalek = Manifold.hull([dol, gora]);
+    bryla = bryla ? zlacz(bryla, kawalek) : kawalek;
+    dol.delete?.();
+    dol = gora;
+  }
+  dol.delete?.();
+  return bryla;
+}
+
 function buildSignetHead(w, p) {
   const { CrossSection } = w;
   const { W, L, faza, scianka, zanurzenie, rozlanie } = signetMetrics(p);
@@ -1156,19 +1233,86 @@ function buildSignetHead(w, p) {
   // Wykladnik ponizej jedynki daje wlasnie to: szybkie rozlanie tuz nad szyna
   // i lagodne dojscie do plyty. Powyzej jedynki metal trzyma sie waski nisko
   // i dopiero pod tarcza wyskakuje na boki, czyli robi szyjke.
-  const poziomy = [];
-  const KROKI = 10;
+  // ROZLANIE MORFUJE KSZTALT, a nie tylko go skaluje.
+  //
+  // Poprzednia wersja skalowala TEN SAM obrys tarczy od dolu do gory, wiec
+  // ramiona sygnetu owalnego byly owalne od samej szyny: pekaty klosz, na
+  // ktorym stoi plyta. Zglszone wprost: korona ma powstawac z rozszerzenia
+  // szyny "bardziej kwadratowo niz oblo".
+  //
+  // Na dole jest wiec PRZEKROJ SZYNY, czyli prostokat o zaokraglonych
+  // narozach, i dopiero ku gorze przechodzi on w obrys tarczy. Posrednie
+  // poziomy sa mieszanka obu, czyli ksztaltami kanciastymi, a nie eliptycznymi.
+  // Wzniesienie jest przy tym LINIOWE: luk wypukly robil brzuch, a prosta linia
+  // daje ramie, ktore czyta sie jak wyrastajace z obraczki.
+  const kw2 = taperFor(p)?.(0)?.w ?? 1;
+  const Ldol = Math.max(0.6, (p.width * kw2) / 2);
+  const Wdol = Math.min(W * 0.95, Ldol * 1.35);
+
+  // Dol budujemy PUNKT W PUNKT pod obrysem tarczy, czyli po tym samym kacie.
+  //
+  // Pierwsza wersja brala gotowy prostokat o zaokraglonych narozach i mieszala
+  // go z tarcza po indeksach. Obie listy zaczynaja sie jednak w innym miejscu
+  // obwodu, wiec ramie SKRECALO sie w gore o jakies czterdziesci piec stopni,
+  // a przekroj posredni wychodzil z tego rozmazany i znowu okragly. Mierzone:
+  // 78 procent wypelnienia, czyli tyle co elipsa.
+  //
+  // Superelipsa daje ten sam kanciasty ksztalt, ale jest z definicji opisana
+  // katem, wiec nie ma czego przesuwac.
+  const KANT = 8;
+  const dolPts = pts.map(([x, y]) => {
+    const t = Math.atan2(y, x);
+    const c = Math.cos(t), sn = Math.sin(t);
+    const k = (Math.abs(c) ** KANT + Math.abs(sn) ** KANT) ** (-1 / KANT);
+    return [Wdol * k * c, Ldol * k * sn];
+  });
+
+  // KSZTALT i ROZMIAR morfuja OSOBNO, i to jest sedno tego miejsca.
+  //
+  // Jedna mieszanka robila obie rzeczy naraz: przy wykladniku 1 ramie
+  // zaokraglalo sie od razu nad szyna, a przy wyzszym zostawalo kanciaste,
+  // ale i CIENKIE, czyli wracala szyjka, ktora juz raz odrzucilismy. Rozmiar
+  // rosnie wiec liniowo, a ksztalt przechodzi w tarcze dopiero pod nia.
+  const mieszaj = (u) => {
+    const k = u ** 2.6;                       // ksztalt zostaje kanciasty dluzej
+    const surowe = pts.map(([x, y], i) => [
+      dolPts[i][0] + (x - dolPts[i][0]) * k,
+      dolPts[i][1] + (y - dolPts[i][1]) * k,
+    ]);
+    // Przeskalowanie do rozmiaru z LINIOWEJ interpolacji: ramie puchnie rowno,
+    // niezaleznie od tego, jak szybko zmienia sie jego przekroj.
+    const maxX = Math.max(...surowe.map(([x]) => Math.abs(x))) || 1;
+    const maxY = Math.max(...surowe.map(([, y]) => Math.abs(y))) || 1;
+    const celX = Wdol + (W - Wdol) * u, celY = Ldol + (L - Ldol) * u;
+    return surowe.map(([x, y]) => [(x / maxX) * celX, (y / maxY) * celY]);
+  };
+
+  const KROKI = 8;
+  const obrysy = [], zetki = [];
   for (let i = 0; i <= KROKI; i++) {
     const u = i / KROKI;
-    const k = u ** 0.62;
-    poziomy.push([u * rozlanie, sxDol + (1 - sxDol) * k, syDol + (1 - syDol) * k]);
+    obrysy.push(mieszaj(u));
+    zetki.push(u * rozlanie);
   }
   // Pionowa scianka plyty, potem faza. Faza schodzi o `faza` mm na kazda
   // strone, wiec liczy sie ja osobno dla obu osi.
-  poziomy.push([rozlanie + scianka, 1, 1]);
-  poziomy.push([rozlanie + scianka + faza, 1 - faza / W, 1 - faza / L]);
+  obrysy.push(pts); zetki.push(rozlanie + scianka);
+  obrysy.push(pts.map(([x, y]) => [x * (1 - faza / W), y * (1 - faza / L)]));
+  zetki.push(rozlanie + scianka + faza);
 
-  let glowica = loftLevels(w, cs, poziomy);
+  let glowica = loftObrysow(w, obrysy, zetki);
+  if (!glowica) {
+    // Tarcza WKLESLA, czyli serce: otoczka wypuklosciowa wypelnilaby wciecie,
+    // wiec dla niej zostaje stara droga, samo skalowanie obrysu.
+    const poziomy = [];
+    for (let i = 0; i <= KROKI; i++) {
+      const u = i / KROKI;
+      poziomy.push([u * rozlanie, sxDol + (1 - sxDol) * u, syDol + (1 - syDol) * u]);
+    }
+    poziomy.push([rozlanie + scianka, 1, 1]);
+    poziomy.push([rozlanie + scianka + faza, 1 - faza / W, 1 - faza / L]);
+    glowica = loftLevels(w, cs, poziomy);
+  }
   const gora = rozlanie + scianka + faza;
 
   if (p.signet.face === "recessed") {
@@ -1421,14 +1565,33 @@ function buildHalo(w, p, stone, girdleR) {
   // kuleczka postawiona dokladnie w polowie odstepu i odsunieta o pelny promien
   // rondysty mija oba kamienie i wisi w metalu plyty. Przy zakuciu schodzimy
   // wiec blizej osi wienca i podnosimy ja ponad rondyste.
+  //
+  // KULECZKA MUSI STERCZEC W GORE, a nie lezec plasko na plycie.
+  //
+  // Byla to sama kula wtopiona w wieniec, czyli guzek, ktorego nie da sie
+  // zakuc: narzedzie nie ma jak podejsc, a metal nie ma dokad plynac. To sama
+  // usterka, ktora poprawilismy juz przy pave na szynie, tylko w wiencu
+  // zostala. Zakucie jest slupkiem: stoi ponad plyta, zweza sie ku gorze
+  // i przy zakuwaniu KLANIA SIE nad kamien, bo ma czym.
   const kulaH = Math.min(0.28, d * 0.24);
   const zam = zakute(p);
+  const wysokoscZ = Math.max(0.35, d * 0.5);
   for (let i = 0; i < n; i++) {
     const b = ((i + 0.5) / n) * Math.PI * 2;
     for (const s of [-1, 1]) {
-      const rr = rW + s * (zam ? d * 0.42 : d / 2 + kulaH * 0.3);
-      metal = zlacz(metal, Manifold.sphere(kulaH, 12)
-        .translate([Math.cos(b) * rr, Math.sin(b) * rr, zK + (zam ? 0.18 : 0.08)]));
+      // Stopa stoi POZA obrysem kamyka, bo wlot gniazda scina wszystko, co
+      // w ten obrys wchodzi. Szczyt zakutego slupka pochyla sie do srodka
+      // odstepu, czyli nad oba sasiednie kamienie naraz.
+      const rStopy = rW + s * (d / 2 + kulaH * 0.35);
+      const rSzczytu = rW + s * (zam ? d * 0.34 : d / 2 + kulaH * 0.35);
+      const zStopy = zK - 0.12;
+      metal = zlacz(metal, tubeAlong(w,
+        [
+          [Math.cos(b) * rStopy, Math.sin(b) * rStopy, zStopy],
+          [Math.cos(b) * rStopy, Math.sin(b) * rStopy, zStopy + wysokoscZ * 0.55],
+          [Math.cos(b) * rSzczytu, Math.sin(b) * rSzczytu, zStopy + wysokoscZ],
+        ],
+        [kulaH, kulaH * 0.86, kulaH * 0.72]));
     }
   }
 
@@ -1492,8 +1655,15 @@ function smoothCircle(r, n) {
  * Miejsce wlewu wynika wiec z TYPU WYROBU, a nie z pomiaru grubosci:
  *
  *   pierscionek  zawsze od dolu szyny, czyli po przeciwnej stronie glowicy
- *   sygnet       w kant tarczy, nigdy w jej powierzchnie
+ *   sygnet       tak samo od dolu szyny
  *   obraczka     nie ma glowicy, wiec decyduje grubosc
+ *
+ * SYGNET PRZESZEDL TE SAMA DROGE co pierscionek, tylko o jeden krok pozniej.
+ * Kanal wchodzil w KANT tarczy, zeby nie tknac powierzchni pod grawer, i to
+ * bylo lepsze od wersji przez plyte na wylot, ale nadal zle: wisial poziomo
+ * przy glowicy, czyli w miejscu, ktore jubiler oglada i poleruje. Sygnet
+ * wiesza sie tak samo jak pierscionek, za dol szyny, a tarcze karmia kanaly
+ * wewnetrzne. Jedno miejsce wlewu dla wszystkiego, co ma szyne.
  *
  * Glowice karmi sie kanalami WEWNETRZNYMI, przez swiatlo pierscionka, i to
  * jest odpowiedz na to samo pytanie metalurgiczne, tylko taka, ktora nie
@@ -1511,28 +1681,32 @@ function smoothCircle(r, n) {
  * nie dowozily metalu tam, gdzie trzeba, czyli pod glowice. Klient zglosil to
  * wprost, ze "kanaly wewnetrzne sa tylko lekko po bokach".
  *
- * Prawidlowy uklad, ten ze zdjecia z pociete drzewka: dwa prety wychodza po
- * obu stronach wlewu, przechodza przez otwor na palec i ZBIEGAJA SIE po
- * przeciwnej stronie, tuz pod najgrubszym miejscem odlewu. To one karmia
- * glowice, dzieki czemu kanal glowny nie musi w nia wchodzic i moze zostac
- * na dole szyny, gdzie da sie go odcia bez sladu.
+ * Prawidlowy uklad, ten z drzewka odlewniczego: JEDEN pret wychodzi z wlewu
+ * i ROZWIDLA SIE na dwa, ktore przechodza przez otwor na palec i wchodza
+ * w szyne po przeciwnej stronie, pod glowica albo pod tarcza. To one karmia
+ * najgrubsze miejsce odlewu, dzieki czemu kanal glowny nie musi w nie wchodzic
+ * i moze zostac na dole szyny, gdzie da sie go odcia bez sladu.
  *
- * `znak` mowi, po ktorej stronie siedzi wlew: +1 gora, -1 dol. Prety zawsze
- * biegna OD niego DO strony przeciwnej.
+ * PIERWSZA WERSJA MIALA TE LITERE V DO GORY NOGAMI: rozwidlenie bylo przy
+ * glowicy, a dwa prety zbiegaly sie przy wlewie. Wygladalo to podobnie i bylo
+ * odwrotnoscia tego, jak plynie metal: z jednego zrodla w dwa miejsca, a nie
+ * z dwoch miejsc w jedno.
+ *
+ * `znak` mowi, po ktorej stronie siedzi wlew: +1 gora, -1 dol. Rozwidlenie
+ * jest ZAWSZE przy nim.
  */
 function kanalyWewnetrzne(w, p, znak) {
   const ri = p.innerDia / 2;
   const r = Math.max(1.0, ri - 0.3);          // tuz pod powierzchnia otworu
   const rInner = Math.min(0.95, Math.max(0.55, ri * 0.11));
-  // Wierzcholek po stronie przeciwnej do wlewu, czyli pod glowica albo pod
-  // tarcza. Tam metal ma dojsc i tam prety sie spotykaja.
-  const szczyt = [0, -znak * r, 0];
+  // Rozwidlenie po stronie WLEWU: stad idzie metal.
+  const rozwidlenie = [0, znak * r, 0];
   let solid = null;
   for (const strona of [-1, 1]) {
-    const kat = znak * (Math.PI / 2) + strona * 0.85;
-    const stopa = [Math.cos(kat) * r, Math.sin(kat) * r, 0];
+    const kat = -znak * (Math.PI / 2) + strona * 0.85;
+    const koniec = [Math.cos(kat) * r, Math.sin(kat) * r, 0];
     // Grubszy przy wlewie, cienszy przy wyrobie: tam sie go odcina.
-    const pret = tubeAlong(w, [stopa, szczyt], [rInner, rInner * 0.8]);
+    const pret = tubeAlong(w, [rozwidlenie, koniec], [rInner, rInner * 0.8]);
     solid = solid ? zlacz(solid, pret) : pret;
   }
   return solid;
@@ -1548,9 +1722,9 @@ function buildCasting(w, p) {
   // Obraczka nie ma glowicy, wiec tam i tylko tam decyduje grubosc. Sygnet
   // wchodzi w kant tarczy, czyli od gory. Pierscionek z kamieniem zawsze od
   // dolu: nad nim jest korona i kamien.
-  const doGory = p.kind === "signet"
-    ? true
-    : p.kind === "band" ? przyGlowicy > naDole + 0.05 : false;
+  // Obraczka nie ma ani glowicy, ani tarczy, wiec tam i tylko tam decyduje
+  // grubosc. Wszystko, co ma cos na godzinie dwunastej, wiesza sie za dol.
+  const doGory = p.kind === "band" ? przyGlowicy > naDole + 0.05 : false;
   const promien = doGory ? przyGlowicy : naDole;
   const znak = doGory ? 1 : -1;
 
@@ -1575,59 +1749,24 @@ function buildCasting(w, p) {
       .rotate([znak > 0 ? -90 : 90, 0, 0])
       .translate([0, znak * od, 0]);
 
-  // ------------------------------------------------------------
-  // SYGNET: kanal wchodzi w KANT tarczy, nigdy w jej powierzchnie
-  // ------------------------------------------------------------
-  // Sygnet lamie zalozenie, na ktorym stoi cala reszta tego kodu, czyli ze
-  // najgrubsze miejsce lezy na promieniu i kanal moze do niego dojsc prosto
-  // od srodka pierscionka. Przy sygnecie najgrubszym miejscem jest tarcza,
-  // ale droga promieniowa prowadzi przez NIA NA WYLOT: kanal wchodzil od
-  // spodu, przebijal plyte i wychodzil przez powierzchnie, na ktorej robi sie
-  // grawer. Na modelu wygladalo to jak grzyb wyrastajacy z tafli.
+  // Sygnet dostaje GRUBSZY kanal, ale w tym samym miejscu co pierscionek.
   //
-  // Kanal idzie wiec w bok, w kant plyty, wzdluz obwodu pierscionka. Tarcza
-  // dalej jest karmiona bezposrednio, bo to ona krzepnie najpozniej, a jej
-  // powierzchnia zostaje nietknieta. Tak wlasnie wiesza sie sygnet na drzewku.
-  if (p.kind === "signet") {
-    const m = signetMetrics(p);
-    const yTafla = promien + m.gora - m.zanurzenie;
-    // Os kanalu leży tak nisko, żeby jego górna tworząca NIE WYSZLA ponad
-    // taflę. Inaczej po odcięciu zostaje na powierzchni pod grawer guzek,
-    // czyli dokładnie to, czego mieliśmy tu uniknąć.
-    const yPlyta = Math.min(
-      promien + m.rozlanie - m.zanurzenie + m.scianka * 0.5,
-      yTafla - 2.1,
-    );
-    // Kanal dla sygnetu musi byc grubszy: dziewiec gramow zasila sie inaczej
-    // niz poltora. Ponizej tej srednicy kanal krzepnie przed plyta i cala
-    // jego funkcja znika.
-    const rSyg = 2.1;
-    const wBok = (h, r0, r1, od) =>
-      Manifold.cylinder(h, r0, r1, 28, false)
-        .rotate([0, 90, 0])
-        .translate([od, yPlyta, 0]);
-
-    const wejscie = m.W - 0.9;                 // zaczyna sie W metalu plyty
-    let syg = wBok(dlugosc, rSyg * 0.7, rSyg, wejscie);
-
-    // Kanaly wewnetrzne biegna w SWIETLE pierscionka, od tarczy do cienkiego
-    // dna szyny. Tarcza jest tu zbiornikiem metalu, a dno krzepnie pierwsze,
-    // wiec to ono potrzebuje dokarmienia. Dwa prety zamiast jednego, bo szyna
-    // sygnetu jest u gory szeroka i jeden zasilalby tylko jej srodek.
-    if (p.casting.innerSprues) syg = zlacz(syg, kanalyWewnetrzne(w, p, 1));
-
-    if (p.casting.button) {
-      syg = zlacz(syg, wBok(2.0, rSyg, rStopka * 0.92, wejscie + dlugosc - 0.3));
-      syg = zlacz(syg, wBok(hStopka, rStopka, rStopka * 0.88, wejscie + dlugosc + 1.5));
-    }
-    return syg;
-  }
+  // Przez chwile mial wlasna sciezke: kanal wchodzil poziomo w kant tarczy,
+  // zeby nie tknac powierzchni pod grawer. Bylo to lepsze od wersji przez
+  // plyte na wylot, ale wisialo przy glowicy, czyli tam, gdzie sie poleruje.
+  // Sygnet wiesza sie za dol szyny tak samo jak pierscionek, a tarcze karmia
+  // kanaly wewnetrzne.
+  //
+  // Grubosc jest jedyna roznica i wynika z masy: dziewiec gramow zasila sie
+  // inaczej niz poltora, a ponizej tej srednicy kanal krzepnie przed tarcza
+  // i cala jego funkcja znika.
+  const rGlowny = p.kind === "signet" ? 2.1 : rKanal;
 
   // Kanal zaczyna sie POD powierzchnia odlewu, zeby polaczenie bylo pewne,
   // i zweza sie ku niemu, bo tak plynie metal i tak zastyga we wlasciwej
   // kolejnosci: najdalej od odlewu najpozniej.
   const start = promien - 0.8;
-  let solid = odcinek(dlugosc, rKanal * 0.62, rKanal, start);
+  let solid = odcinek(dlugosc, rGlowny * 0.62, rGlowny, start);
 
   if (p.casting.innerSprues) solid = zlacz(solid, kanalyWewnetrzne(w, p, znak));
 
@@ -1635,7 +1774,7 @@ function buildCasting(w, p) {
     // Przejscie stozkowe, zeby przekroj nie zmienial sie skokiem: ostry
     // uskok to miejsce, w ktorym odlew rwie sie przy stygnieciu.
     solid = solid
-      .add(odcinek(2.0, rKanal, rStopka * 0.92, start + dlugosc - 0.3))
+      .add(odcinek(2.0, rGlowny, rStopka * 0.92, start + dlugosc - 0.3))
       .add(odcinek(hStopka, rStopka, rStopka * 0.88, start + dlugosc + 1.5));
   }
 
