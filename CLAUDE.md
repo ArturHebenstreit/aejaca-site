@@ -108,7 +108,8 @@ Mapowanie leży w **jednym pliku**: `src/data/toolLinks.js` (`TOOLS_BY_POST`, `T
 - **Images**: `/public/img/calc/<category>/<id>.png`. Product style: black background, upper-left key light, premium photography aesthetic. Use Gemini MCP (`mcp__nano-banana-pro__generate_image`) with `aspectRatio: "1:1"` (tiles) or `"21:9"` (banners), `imageSize: "1K"`.
 - **Tailwind themes**: Jewelry = amber/rose, Studio = blue/emerald, Tips = amber (jewelry) / blue (studio).
 - **Calculators**: shared primitives in `src/components/calculators/calcShared.jsx` (MaterialCards, HeroCards, ResultDisplay, InquiryForm, CalcCard, t() helper).
-- **Routing / prerender**: there is no SPA catch-all in `public/_redirects`. Every route must be prerendered to its own `index.html`, otherwise Cloudflare Pages serves a real 404. When adding a page, add the route to `src/main.jsx`, `src/entry-server.jsx` AND `STATIC_ROUTES` in `scripts/prerender.mjs`. The prerender script cross-checks those lists and fails the build on drift; blog slugs and glossary IDs are derived automatically from `POSTS_META` / `GLOSSARY`, so they need no manual entry. `dist/404.html` is generated from the `NotFound` component.
+- **Routing / prerender**: there is no SPA catch-all in `public/_redirects`.
+- **Geometria kreatora pierścionków** (`src/geometry/ring/`): **przeczytaj `MDs/AEJaCA_Geometria_Kreatora_Zasady.md` PRZED każdą zmianą bryły.** Plik zbiera reguły warsztatowe, pułapki jądra manifold-3d, klasę awarii cichych (objętość i topologia poprawne, wyrób nie do użycia) i dziennik wniosków. Buduj z wiedzy, nie z eksperymentu. Every route must be prerendered to its own `index.html`, otherwise Cloudflare Pages serves a real 404. When adding a page, add the route to `src/main.jsx`, `src/entry-server.jsx` AND `STATIC_ROUTES` in `scripts/prerender.mjs`. The prerender script cross-checks those lists and fails the build on drift; blog slugs and glossary IDs are derived automatically from `POSTS_META` / `GLOSSARY`, so they need no manual entry. `dist/404.html` is generated from the `NotFound` component.
 - **Scroll reveal**: `useScrollReveal()` hook + `.reveal` class.
 - **Branch**: work on `claude/review-repository-*` branches. All commits include session footer link.
 - **Build**: `npm run build` after structural changes. Dev server: `npm run dev`.
@@ -141,6 +142,7 @@ Mapowanie leży w **jednym pliku**: `src/data/toolLinks.js` (`TOOLS_BY_POST`, `T
 | New AI crawler | `llms.txt` (Crawl policy) + `robots.txt` + `Brand_Reference.md` (section 8 Crawlers) |
 | Page content significantly updated | `sitemap.xml` (`<lastmod>`) + `llms.txt` if factual content changed + `Brand_Reference.md` if factual content changed |
 | New equipment / machine | `About.jsx` + `Brand_Reference.md` (section 4 Equipment) |
+| Zmiana geometrii kreatora (`src/geometry/ring/`) | `npm run sync:pricing` + `WORKER_VERSION` w `src/workers/ringGenerator.worker.js` + **wpis w dzienniku na końcu `MDs/AEJaCA_Geometria_Kreatora_Zasady.md`** (co było, co jest, czego się nauczyliśmy) |
 | New review (Google) | `googleReviews.js` + `Brand_Reference.md` (section 11, update total count) |
 
 ### Pre-deploy verification checklist
