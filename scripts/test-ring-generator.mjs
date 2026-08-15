@@ -16,7 +16,7 @@
 //
 // Wchodzi do builda.
 
-import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, stoneSolid, taperFor, buildShank, buildGallery, tubeAlong, buildHalo } from "../src/geometry/ring/build.js";
+import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, stoneSolid, taperFor, buildShank, buildGallery, tubeAlong, buildHalo, buildCrown } from "../src/geometry/ring/build.js";
 import { CUTS, SETTINGS, SEAT, SIGNET_TABLES, DEFAULTS, prongAngles, outlineFor, validate } from "../src/geometry/ring/params.js";
 
 /**
@@ -1739,6 +1739,63 @@ console.log("\n30. Wieniec halo: gniazdo ma stozek, a kulki stoja przy nim");
     zwolnij(zakucia); zwolnij(trafienie); zwolnij(nad); zwolnij(plaster);
     zwolnij(wieniec); zwolnij(h.metal); zwolnij(h.seats); zwolnij(stone.solid);
     for (const k of h.stones) k.delete?.();
+  }
+}
+
+
+// ------------------------------------------------------------
+console.log("\n31. Noga lapki idzie po scianie kosza, a nie obok niego");
+// ------------------------------------------------------------
+// Klient zglosil to jako "dolna czesc krap wisi, ma wychodzic od dolnej czesci
+// koszyka". I wisiala: noga szla w dol po niemal stalym promieniu, a kosz zweza
+// sie do 0,55 obrysu, wiec na dnie kosza miedzy noga a sciana bylo 0,6-0,7 mm
+// powietrza. Sonda idzie wzdluz promienia pod katem lapki: dopoki noga trzyma
+// sie sciany, na kazdej wysokosci jest JEDEN kawalek metalu. Dwa kawalki znacza
+// szczeline, czyli lapke doklejona do oprawy dopiero pod rondysta.
+{
+  const w = await kernel();
+  const { Manifold } = w;
+  for (const id of ["solitaire", "six", "trilogy", "marquise"]) {
+    const pr = RING_PRESETS.find((x) => x.id === id);
+    if (!pr) continue;
+    const p = validate(applyPreset(pr, DEFAULTS));
+    p.casting = { ...p.casting, stones: false };
+    const stone = stoneSolid(w, p.stone.cut, p.stone.size);
+    const { solid, basketH } = buildCrown(w, p, stone);
+    if (!solid || basketH <= 0) { zwolnij(stone.solid); continue; }
+
+    let najwiekszaSzczelina = 0, gdzie = 0;
+    for (const deg of prongAngles(p.stone.cut, p.setting)) {
+      const a = (deg * Math.PI) / 180;
+      for (let z = -basketH + 0.1; z < -0.1; z += 0.2) {
+        const sonda = Manifold.cube([10, 0.06, 0.06], true)
+          .rotate([0, 0, deg]).translate([Math.cos(a) * 5, Math.sin(a) * 5, z]);
+        const tr = solid.intersect(sonda);
+        const cz = tr.decompose().filter((c) => Math.abs(c.volume()) > 1e-5);
+        if (cz.length > 1) {
+          const zakresy = cz.map((c) => {
+            const b = c.boundingBox();
+            const r1 = Math.hypot(b.min[0], b.min[1]), r2 = Math.hypot(b.max[0], b.max[1]);
+            return [Math.min(r1, r2), Math.max(r1, r2)];
+          }).sort((x, y) => x[0] - y[0]);
+          for (let i = 1; i < zakresy.length; i++) {
+            const luka = zakresy[i][0] - zakresy[i - 1][1];
+            if (luka > najwiekszaSzczelina) { najwiekszaSzczelina = luka; gdzie = z; }
+          }
+        }
+        for (const c of tr.decompose()) c.delete?.();
+        tr.delete?.(); sonda.delete?.();
+      }
+    }
+    // Okna galerii tna kosz wszerz, wiec pod pewnymi katami rozdzielenie jest
+    // zamierzone. Prog jest na tyle luzny, zeby okna przepuscic, i na tyle
+    // ciasny, zeby zlapac noge wiszaca dwie trzecie milimetra od sciany.
+    if (najwiekszaSzczelina > 0.30) {
+      bad(`${id}: noga lapki wisi ${najwiekszaSzczelina.toFixed(2)} mm od kosza na wysokosci ${gdzie.toFixed(2)}`);
+    } else {
+      ok(`${id.padEnd(10)} noga przylega do kosza, największa szczelina ${najwiekszaSzczelina.toFixed(2)} mm`);
+    }
+    zwolnij(solid); zwolnij(stone.solid);
   }
 }
 
