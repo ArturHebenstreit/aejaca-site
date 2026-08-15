@@ -434,7 +434,7 @@ export function stoneSolid(w, cutId, sizeMm) {
  * a powyzej przelot, zeby przez kamien szlo swiatlo i zeby dalo sie go
  * wypchnac od spodu przy przekladaniu.
  */
-function seatCutter(w, cutId, sizeMm, zamkniete = false) {
+function seatCutter(w, cutId, sizeMm, zamkniete = false, wylot = SEAT.throughWidth) {
   const { Manifold, CrossSection } = w;
   const pr = PROPORTIONS[CUTS[cutId].profile];
 
@@ -525,14 +525,14 @@ function seatCutter(w, cutId, sizeMm, zamkniete = false) {
   // Wysokosc liczymy wiec z tego, ile stozek ma do przebycia w POPRZEK,
   // a nie z ulamka glebokosci: schodzi do wylotu na 0,9 tej drogi, czyli
   // zawsze stromiej niz kamien.
-  const stozekH = glebokosc * Math.min(1 - SEAT.throughPart, 0.9 * (1 - SEAT.throughWidth));
+  const stozekH = glebokosc * Math.min(1 - SEAT.throughPart, 0.9 * (1 - wylot));
   // GLEBOKOSC i SZEROKOSC to dwie rozne rzeczy, mimo ze przez chwile opisywala
   // je jedna liczba: stozek zajmuje piec szostych GLEBOKOSCI, a otwor pod nim
   // ma polowe SZEROKOSCI gniazda. Wspolna wartosc dawala kamykowi 1,4 mm wylot
   // o srednicy 0,23 mm, czyli gniazdo, ktore z gory wyglada na zaslepione.
-  const dolPts = scalePts(pts, SEAT.throughWidth);
+  const dolPts = scalePts(pts, wylot);
   const dolCs = CrossSection.ofPolygons([ccw(dolPts)]);
-  const stozek = Manifold.extrude(dolCs, stozekH, 0, 0, [1 / SEAT.throughWidth, 1 / SEAT.throughWidth])
+  const stozek = Manifold.extrude(dolCs, stozekH, 0, 0, [1 / wylot, 1 / wylot])
     .translate([0, 0, -SEAT.ledge - stozekH]);
 
   // 4. PRZELOT. Ostatni odcinek idzie na wylot prosto: przez niego wchodzi
@@ -569,7 +569,7 @@ function radiusAt(pts, deg) {
  * ani wybrzuszenia. Sam ciag kul, bez odcinkow miedzy nimi, falowal na
  * powierzchni i wygladal jak sznur paciorkow.
  */
-function tubeAlong(w, punkty, promienie) {
+function tubeAlong(w, punkty, promienie, opcje = {}) {
   const { Manifold } = w;
   let solid = null;
   const dodaj = (m) => { solid = solid ? zlacz(solid, m) : m; };
@@ -583,7 +583,7 @@ function tubeAlong(w, punkty, promienie) {
     // pochylenie od osi Z, potem obrot wokol niej.
     const pochyl = Math.acos(Math.max(-1, Math.min(1, dz / L))) / DEG;
     const obrot = Math.atan2(dy, dx) / DEG;
-    dodaj(Manifold.cylinder(L, promienie[i], promienie[i + 1], 24, false)
+    dodaj(Manifold.cylinder(L, promienie[i], promienie[i + 1], 32, false)
       .rotate([0, pochyl, obrot])
       .translate(a));
   }
@@ -594,17 +594,37 @@ function tubeAlong(w, punkty, promienie) {
   // zerowej grubosci skorupe. W pliku wygladalo to jak druga bryla o ujemnej
   // objetosci i o wymiarach trzech setnych milimetra, czyli jak smiec, ktory
   // slicer zglosi jako blad siatki.
+  //
+  // PROG SKRETU JEST TU RZECZA GLOWNA, a nie drobiazgiem.
+  //
+  // Kula o promieniu rury siega wzdluz toru tak samo daleko jak w poprzek,
+  // wiec przy rurze ZWEZAJACEJ SIE wychodzi spod sasiednich odcinkow i robi
+  // paciorek. Luk galerii ma trzynascie punktow i promien malejacy o trzydziesci
+  // procent, wiec kazda kula wystawala spod nastepnej: powstawal z tego sznur
+  // koralikow w miejscu, ktore ma byc jedna gladka linia. Klient zglosil to
+  // dwa razy jako "karbowana szyna".
+  //
+  // Dwa sasiednie stozki dziela ten sam okrag na zlaczu, wiec ich suma jest
+  // bryla poprawna takze BEZ kuli: kula wygladza jedynie zalamanie na
+  // zewnetrznej stronie luku. Przy skrecie ponizej dziesieciu stopni tego
+  // zalamania i tak nie widac, a paciorek widac zawsze.
+  const PROG = Math.cos(10 * DEG);
   for (let i = 1; i < punkty.length; i++) {
     const koniec = i === punkty.length - 1;
-    if (!koniec) {
+    if (koniec) {
+      // Czubek zaokraglamy tylko tam, gdzie rura sie KONCZY w powietrzu,
+      // czyli na lapce. Luk galerii wchodzi koncem w szyne i kula robi na nim
+      // guzek.
+      if (opcje.czubek === false) continue;
+    } else {
       const a = punkty[i - 1], b = punkty[i], c = punkty[i + 1];
       const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
       const v = [c[0] - b[0], c[1] - b[1], c[2] - b[2]];
       const lu = Math.hypot(...u) || 1, lv = Math.hypot(...v) || 1;
       const cos = (u[0] * v[0] + u[1] * v[1] + u[2] * v[2]) / (lu * lv);
-      if (cos > 0.9998) continue;                 // prosto, nie ma czego lagodzic
+      if (cos > PROG) continue;                   // lagodnie, nie ma czego lagodzic
     }
-    dodaj(Manifold.sphere(promienie[i], 20).translate(punkty[i]));
+    dodaj(Manifold.sphere(promienie[i], 28).translate(punkty[i]));
   }
   return solid;
 }
@@ -797,7 +817,13 @@ function buildCrown(w, p, stone) {
   // sama grubosc scianki, wiec przy markizie jest waski, a przy poduszce
   // pelny. Odsuniecie idzie przez `offset`, nie przez skalowanie: skalowanie
   // dodaje przy szpicu kilka razy wiecej metalu niz na boku.
-  const scianka = 0.3;
+  // Scianka kosza jest CIENKA, i to nie jest oszczedzanie metalu.
+  //
+  // Przy grubosci 0,3 mm kosz siegal niemal tam, gdzie stoi lapka, wiec lapka
+  // tonela w nim do polowy i z boku wygladala jak pret wbity w klocek. Cienka
+  // scianka zostawia ja na wierzchu jako zebro biegnace po koszu, czyli tak,
+  // jak wyglada gotowa korona.
+  const scianka = 0.16;
   const csRondysta = CrossSection.ofPolygons([ccw(pts)]);
   let csKosz = csRondysta;
   try {
@@ -909,11 +935,11 @@ function buildCrown(w, p, stone) {
   // zeby przy zakuwaniu nie ustapila, a wiecej robi z korony guzka.
   const noga = (radius, promien) => tubeAlong(w,
     [
-      [radius - promien * 0.35, 0, -basketH + 0.05],
-      [radius - promien * 0.12, 0, -basketH * 0.45],
+      [radius - promien * 0.55, 0, -basketH + 0.05],
+      [radius - promien * 0.2, 0, -basketH * 0.45],
       [radius, 0, 0.02],
     ],
-    [promien * 1.05, promien * 0.95, promien * 0.98]);
+    [promien * 0.92, promien * 0.86, promien * 0.96], { czubek: false });
 
   if (p.setting === "vprong") {
     // Lapka V nie jest lapka obroconą, tylko scianka po obrysie, wiec ma
@@ -1003,6 +1029,23 @@ function buildSideStones(w, p) {
   // potem zamieniane na kat.
   const step = Math.asin(Math.min(0.45, (size * 0.62) / rMid)) * 2 + rozsuniecie / rMid;
   const start = (polKorony + luzOdKorony + size / 2) / rMid;
+
+  // WYLOT GNIAZDA MUSI ZOSTAWIC PASEK METALU NA WEWNETRZNEJ STRONIE SZYNY.
+  //
+  // Otwor przelotowy wychodzi na palec i przy kamieniu wpuszczonym w szyne
+  // wychodzi tam, gdzie klient go dotyka. Przy stalej szerokosci polowy
+  // gniazda otwory sasiednich kamieni spotykaly sie po wewnetrznej stronie
+  // i zamiast obraczki zostawal grzebien: zmierzone na wieńcu eternity,
+  // trzydziesci cztery procent obwodu bez metalu na powierzchni palca.
+  // Klient zglosil to jako obraczke, ktora "bedzie sie niewygodnie nosilo".
+  //
+  // Wylot liczymy wiec z ODSTEPU miedzy kamieniami po stronie palca: tyle,
+  // ile zostaje po odjeciu paska. Kamien w lapkach stoi ponad szyna i jego
+  // gniazdo nie ma tego problemu, wiec tam zostaje pelna szerokosc.
+  const odstepWewn = step * (p.innerDia / 2);
+  const wylotWSzynie = setting === "prong"
+    ? SEAT.throughWidth
+    : Math.max(0.18, Math.min(SEAT.throughWidth, (odstepWewn - SEAT.minInnerStrip) / size));
   let metal = null, seats = null;
   const stones = [];
   const addM = (m) => { metal = metal ? zlacz(metal, m) : m; };
@@ -1062,7 +1105,7 @@ function buildSideStones(w, p) {
 
       const kam = stoneSolid(w, "round", size);
       stones.push(naMiejsce(kam.solid));
-      addS(naMiejsce(seatCutter(w, "round", size, zakute(p))));
+      addS(naMiejsce(seatCutter(w, "round", size, zakute(p), wylotWSzynie)));
 
       if (podniesienie > 0) {
         // Oprawka: stozek od szyny do rondysty i cztery lapki dookola.
@@ -1503,7 +1546,7 @@ export function buildGallery(w, p, basketH) {
       punkty.push([Math.cos(th) * r, Math.sin(th) * r, 0]);
       promienie.push(Math.max(0.22, (p.width * k.w) / 2 * (1.0 - 0.30 * t)));
     }
-    const ramie = tubeAlong(w, punkty, promienie);
+    const ramie = tubeAlong(w, punkty, promienie, { czubek: false });
     solid = solid ? zlacz(solid, ramie) : ramie;
   }
   return solid;
@@ -1538,6 +1581,14 @@ function buildBandStones(w, p) {
   const pelny = p.band.coverage === "full";
   const n = Math.max(3, Math.floor((pelny ? Math.PI * 2 : Math.PI) / krok));
 
+  // Ten sam rachunek co przy kamieniach na ramionach: otwory przelotowe
+  // sasiednich gniazd nie moga sie spotkac po stronie palca, bo z obraczki
+  // robi sie wtedy grzebien. Odstep liczymy po WEWNETRZNYM promieniu, bo tam
+  // kamienie sa najgesciej.
+  const odstepWewn = ((pelny ? Math.PI * 2 : Math.PI) / n) * ri;
+  const wylotObwod = Math.max(0.18,
+    Math.min(SEAT.throughWidth, (odstepWewn - SEAT.minInnerStrip) / d));
+
   let metal = null, seats = null;
   const stones = [];
   const addM = (m) => { metal = metal ? zlacz(metal, m) : m; };
@@ -1560,7 +1611,8 @@ function buildBandStones(w, p) {
     const maly = stoneSolid(w, "round", d);
     stones.push(maly.solid.rotate([-90, 0, 0]).rotate([0, 0, (a / DEG) - 90]).translate([x, y, 0]));
 
-    const cut = seatCutter(w, "round", d, zakute(p)).rotate([-90, 0, 0]).rotate([0, 0, (a / DEG) - 90])
+    const cut = seatCutter(w, "round", d, zakute(p), wylotObwod)
+      .rotate([-90, 0, 0]).rotate([0, 0, (a / DEG) - 90])
       .translate([x, y, 0]);
     seats = seats ? zlacz(seats, cut) : cut;
 
@@ -2004,7 +2056,24 @@ export async function buildRing(input, opts = {}) {
     // Gniazda WYCINAMY dopiero po zlaczeniu wszystkiego, zeby siegaly takze
     // szyny. Odwrotna kolejnosc daje bryle cieszsza o kilkanascie procent.
     if (p.setting !== "drilled") {
-      metal = odejmij(metal, place(podnies(seatCutter(w, p.stone.cut, p.stone.size, zakute(p)), standoff)));
+      // OTWOR PRZELOTOWY NIE MOZE PRZECIAC SZYNY.
+      //
+      // Gniazdo kamienia szesciomilimetrowego ma wylot szerokosci trzech
+      // milimetrow, a szyna bywa szeroka na dwa i pol. Otwor byl wiec SZERSZY
+      // OD SZYNY i przecinal ja na wylot: pod glowica zostawaly dwa osobne
+      // ramiona, trzymajace sie tylko koszem. Bryla dalej byla jedna calascia,
+      // wiec zaden dotychczasowy sprawdzian tego nie widzial, a pierscionek
+      // mial na palcu otwarta szczeline na calej szerokosci.
+      //
+      // Wylot zweza sie wiec do tego, co szyna udzwignie, zostawiajac po obu
+      // stronach pasek metalu. Pasek jest cienki i nie siega calej grubosci
+      // szyny: wnetrze zostaje gladkie, a gniazdo dalej jest przewiercone.
+      const wylotSrodka = Math.max(0.16, Math.min(
+        SEAT.throughWidth,
+        (p.width - 2 * SEAT.minInnerStrip) / p.stone.size,
+      ));
+      metal = odejmij(metal, place(podnies(
+        seatCutter(w, p.stone.cut, p.stone.size, zakute(p), wylotSrodka), standoff)));
     }
     if (side.cutSeats) metal = odejmij(metal, side.cutSeats);
     // Gniazda wienca tez po zlaczeniu, z tego samego powodu co srodkowe.

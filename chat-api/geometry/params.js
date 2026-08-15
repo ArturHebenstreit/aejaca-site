@@ -438,6 +438,17 @@ export const SEAT = {
    * kamien wypchnac przy przekladaniu. Wiecej podcielo by rondyste.
    */
   throughWidth: 0.5,
+  /**
+   * Ile metalu ma ZOSTAC miedzy sasiednimi otworami przelotowymi po stronie
+   * palca, w milimetrach.
+   *
+   * Otwor gniazda wychodzi na wewnetrzna powierzchnie obraczki, czyli tam,
+   * gdzie klient jej dotyka. Przy stalej szerokosci otwory sasiednich kamieni
+   * spotykaja sie i zamiast obraczki zostaje grzebien: na wieńcu eternity
+   * wyszlo z tego trzydziesci cztery procent obwodu bez metalu na palcu.
+   * Ten pasek jest tym, co trzyma wnetrze gladkim.
+   */
+  minInnerStrip: 0.55,
 };
 
 export const LIMITS = {

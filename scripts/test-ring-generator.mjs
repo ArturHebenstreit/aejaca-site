@@ -1511,5 +1511,102 @@ console.log("\n26. Ramię sygnetu jest KANCIASTE, a nie beczkowate");
   }
 }
 
+// ------------------------------------------------------------
+console.log("\n27. Wnętrze obrączki jest ciągłe, czyli da się ją nosić");
+// ------------------------------------------------------------
+// Otwor przelotowy gniazda centralnego ma szerokosc polowy kamienia, czyli
+// przy kamieniu szesciomilimetrowym ponad trzy milimetry. Szyna bywa szeroka
+// na dwa i pol, wiec otwor byl SZERSZY OD NIEJ i przecinal ja na wylot: pod
+// glowica zostawaly dwa ramiona trzymajace sie samym koszem. Bryla nadal byla
+// jedna calascia, wiec ani `genus`, ani liczba czesci tego nie widzialy,
+// a pierscionek mial na palcu szczeline na calej szerokosci szyny.
+//
+// Mierzymy to od strony palca, bo tam ma znaczenie: sonda obiega wnetrze
+// i szuka NAJDLUZSZEJ przerwy. Male otwory po wiertle sa w porzadku,
+// przerwana szyna nie.
+{
+  const w = await kernel();
+  const PROG_MM = 1.8;              // dluzsza przerwa to juz nie otwor, tylko szczelina
+  for (const preset of RING_PRESETS) {
+    const wejscie = applyPreset(preset, { ...DEFAULTS });
+    const r = await buildRing({ ...wejscie, casting: { stones: false } }, { segments: 96 });
+    const ri = r.params.innerDia / 2;
+    const N = 360;
+    let biezaca = 0, najdluzsza = 0;
+    for (let k = 0; k < N * 2; k++) {          // dwa obiegi, zeby zlapac przerwe na styku
+      const a = ((k % N) / N) * Math.PI * 2;
+      const sonda = w.Manifold.sphere(0.1, 8)
+        .translate([Math.cos(a) * (ri + 0.1), Math.sin(a) * (ri + 0.1), 0]);
+      const wspolne = r.metal.intersect(sonda);
+      if (wspolne.isEmpty()) { biezaca++; najdluzsza = Math.max(najdluzsza, biezaca); }
+      else biezaca = 0;
+      sonda.delete?.(); wspolne.delete?.();
+    }
+    const mm = (najdluzsza / N) * 2 * Math.PI * ri;
+    if (mm > PROG_MM) bad(`${preset.id}: szczelina ${mm.toFixed(2)} mm na powierzchni palca`);
+    else ok(`${String(preset.id).padEnd(14)} najdłuższa przerwa ${mm.toFixed(2)} mm, wnętrze gładkie`);
+    zwolnij(r);
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n28. Łuk z szyny do korony jest gładki, a nie karbowany");
+// ------------------------------------------------------------
+// Luk skladal sie z rury poprowadzonej po sciezce, ale w kazdym jej punkcie
+// siedziala kula o promieniu rury. Kula siega wzdluz toru tak samo daleko jak
+// w poprzek, wiec przy rurze ZWEZAJACEJ SIE wychodzila spod sasiednich
+// odcinkow i robila paciorek. Zglszone dwa razy jako "karbowana szyna".
+//
+// Mierzymy promien powierzchni wzdluz luku: gladki luk schodzi monotonicznie,
+// karbowany faluje.
+{
+  const w = await kernel();
+  for (const [nazwa, cfg] of [
+    ["soliter", { stone: { cut: "round", size: 6.5 }, setting: "prong4" }],
+    ["halo", { stone: { cut: "round", size: 6 }, setting: "prong4", halo: { on: true, size: 1.4, material: "cz" } }],
+    ["katedralna", { taper: "cathedral", stone: { cut: "round", size: 6.5 }, setting: "prong4" }],
+  ]) {
+    const r = await buildRing({ innerDia: 17.2, ...cfg }, { segments: 96, withStones: false });
+    const ri = 17.2 / 2;
+    // PROMIEN POWIERZCHNI POD DANYM KATEM.
+    //
+    // Pierwsza wersja tego pomiaru brala plaster w osi Z i mierzyla jego
+    // pudelko, czyli caly pierscionek: kazda probka dawala te sama liczbe
+    // i test przechodzil takze wtedy, gdy luk byl karbowany. Klin musi byc
+    // WASKI i siegac tylko w jedna strone, inaczej nie mierzy niczego.
+    const promienie = [];
+    for (let k = 0; k <= 26; k++) {
+      const a = Math.PI / 2 - (k / 26) * 40 * Math.PI / 180;
+      const st = (a * 180) / Math.PI;
+      const klin = w.Manifold.cube([26, 0.25, 0.6], true)
+        .translate([13, 0, 0])
+        .rotate([0, 0, st]);
+      const kawalek = r.metal.intersect(klin);
+      let rmax = 0;
+      if (!kawalek.isEmpty()) {
+        const me = kawalek.getMesh(), v = me.vertProperties;
+        for (let i = 0; i < me.numVert; i++) {
+          rmax = Math.max(rmax, Math.hypot(v[i * 3], v[i * 3 + 1]));
+        }
+      }
+      promienie.push(rmax);
+      klin.delete?.(); kawalek.delete?.();
+    }
+    // Ile razy zmienia sie kierunek zmiany promienia. Gladki luk schodzi
+    // w dol i zmienia kierunek najwyzej raz, przy przejsciu w szyne.
+    let zwroty = 0, poprzedni = 0;
+    for (let i = 1; i < promienie.length; i++) {
+      const d = promienie[i] - promienie[i - 1];
+      if (Math.abs(d) < 0.008) continue;
+      const znak = Math.sign(d);
+      if (poprzedni && znak !== poprzedni) zwroty++;
+      poprzedni = znak;
+    }
+    if (zwroty > 3) bad(`${nazwa}: promien luku zmienia kierunek ${zwroty} razy, czyli luk faluje`);
+    else ok(`${nazwa.padEnd(11)} łuk schodzi gładko, ${zwroty} zmiany kierunku`);
+    zwolnij(r);
+  }
+}
+
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");
 process.exit(failed ? 1 : 0);
