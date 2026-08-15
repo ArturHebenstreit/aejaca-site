@@ -275,6 +275,25 @@ function fasetowany(cutId, sizeMm, n = FASETY) {
 }
 
 /**
+ * Obrys sprowadzony do `n` wierzcholkow, z PRZESUNIECIEM o ulamek sektora.
+ *
+ * Przesuniecie o pol sektora daje wierzcholki dokladnie miedzy poprzednimi
+ * i wlasnie na tym stoi caly szlif brylantowy: fasetki gornego wienca schodza
+ * sie ostrzem tam, gdzie dolny ma srodek boku. Obrotem tego nie zalatwimy,
+ * bo obrot owalu daje owal krzywo postawiony, a przesuniecie po obrysie
+ * dziala tak samo dobrze dla kola, owalu i markizy.
+ */
+function probka(cutId, sizeMm, n, przesun = 0) {
+  const src = outlineFor(cutId, sizeMm), m = src.length;
+  return Array.from({ length: n }, (_, i) => {
+    const t = ((i + przesun) / n) * m;
+    const k = Math.floor(t), f = t - k;
+    const a = src[((k % m) + m) % m], b = src[(((k + 1) % m) + m) % m];
+    return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
+  });
+}
+
+/**
  * Wieniec fasetek: przeciagniecie obrysu ze SKRETEM.
  *
  * Skret o polowe sektora przesuwa gorny wielokat o pol fasetki wzgledem
@@ -307,23 +326,61 @@ export function stoneSolid(w, cutId, sizeMm) {
   const pavH = pr.pav * sizeMm, girdleH = pr.girdle * sizeMm, crownH = pr.crown * sizeMm;
   let solid = Manifold.extrude(cs, girdleH);          // rondysta, z = 0..girdleH
 
+  if (fasetowy && cut.profile === "brilliant" && wypukly(pts)) {
+    // ------------------------------------------------------------
+    // SZLIF BRYLANTOWY, uklad fasetek taki jak w kamieniu
+    // ------------------------------------------------------------
+    // Poprzednia wersja miala fasetki, ale wszystkie jednakowe: szesnascie
+    // identycznych trapezow w koronie i szesnascie w pawilonie, czyli kamien
+    // pociety jak tort. Prawdziwy brylant czyta sie po czym innym: tafla jest
+    // OSMIOKATEM, pod nia leza cztery rzedy fasetek o roznych ksztaltach,
+    // a gwiazda i romby uklada sie w osmiokrotny wzor. To wlasnie ten wzor
+    // widac na zdjeciach katalogowych i o niego chodzilo w uwadze.
+    //
+    // Buduje sie to tak, jak szlifuje: rondysta na szesnascie fasetek, zalamanie
+    // przesuniete o POL sektora, i tafla na osiem. Otoczka wypuklosciowa dwoch
+    // sasiednich obrysow sama tworzy wlasciwe scianki, bo kamien jest bryla
+    // wypukla, a jej otoczka to ona sama.
+    const tbl = Math.max(cut.table, 0.05);
+    const P16 = probka(cutId, sizeMm, 16, 0);            // rondysta
+    const P16m = probka(cutId, sizeMm, 16, 0.5);         // zalamania, o pol sektora dalej
+    const P8t = probka(cutId, sizeMm, 8, 0);             // tafla, co drugi wierzcholek rondysty
+    const P8k = probka(cutId, sizeMm, 8, 0.5);           // koleta, pod fasetkami gwiazdy
+
+    // Kamien jest bryla WYPUKLA, wiec nie trzeba go skladac z plastrow:
+    // wystarczy jedna otoczka wszystkich poziomow. Lancuch otoczek zostawialby
+    // na kazdym zalamaniu progek grubosci przekroju pomocniczego, czyli
+    // czterdziesci dodatkowych scianek, ktorych w kamieniu nie ma.
+    //
+    // ZALAMANIA MUSZA LEZEC POZA prosta rondysta-tafla, inaczej otoczka je
+    // POLKNIE i zostanie zwykly dwustozek. Pierwsze liczby dobralem tak, zeby
+    // zgadzala sie masa, i wyszly za male: 0,755 przy prostej 0,806, czyli
+    // wierzcholek schowany pod powierzchnia. Fasetki gwiazdy znikaly bez sladu,
+    // bo bryla byla poprawna, tylko gladsza. Teraz zalamania sa tam, gdzie sa
+    // w kamieniu, czyli minimalnie NA ZEWNATRZ prostej, i to one robia romb
+    // i gwiazde.
+    const poziomy = [scalePts(P16, 1), P16, scalePts(P16m, 0.835), scalePts(P8t, tbl)];
+    const zetki = [0, girdleH, girdleH + crownH * 0.45, girdleH + crownH];
+    if (pavH > 0) {
+      poziomy.unshift(scalePts(P8k, 0.05), scalePts(P16m, 0.335));
+      zetki.unshift(-pavH, -pavH * 0.70);
+    } else {
+      poziomy.unshift(scalePts(P16, 0.98));
+      zetki.unshift(-0.02);
+    }
+    solid.delete?.();
+    return { solid: hullPoziomow(w, poziomy, zetki), pavH, girdleH, crownH };
+    return { solid, pavH, girdleH, crownH };
+  }
+
   if (fasetowy) {
-    // Skret o POLOWE sektora. Zalamanie pawilonu i korony jest wtedy przesuniete
-    // o pol fasetki wzgledem rondysty, wiec fasetki schodza sie na przemian
-    // ostrzem, tak jak w kamieniu. Szlif schodkowy skretu nie ma z definicji:
-    // tam fasetki sa rownoleglymi trapezami.
+    // Szlif SCHODKOWY, a takze kazdy wklesly obrys, ktoremu otoczka
+    // wypuklosciowa wypelnilaby wciecie. Tu fasetki sa rownoleglymi trapezami
+    // i buduje sie je przeciagnieciem ze skretem albo bez.
     const skret = cut.profile === "step" ? 0 : 180 / FASETY;
     const tbl = Math.max(cut.table, 0.05);
 
     if (pavH > 0) {
-      // PAWILON: od rondysty do zalamania, dalej od zalamania do kolety.
-      // Zalamanie jest wspolne dla obu wiencow co do wierzcholka, bo gorny
-      // konczy sie dokladnie na tym samym obrocie, od ktorego zaczyna dolny.
-      // Zalamanie lezy MINIMALNIE powyzej linii prostego stozka: na glebokosci
-      // 0,55 pawilonu stozek ma promien 0,45, a fasetki dolne rondysty czynia
-      // pawilon odrobine pelniejszym. Wiecej nie wolno, bo objetosc kamienia to
-      // jego karat, a karat to cena: przy zalamaniu 0,56 brylant 6,5 mm wychodzil
-      // 1,15 ct zamiast tabelarycznego 1,00.
       const zZalam = -pavH * 0.55;
       const sZalam = 0.47;
       const zalamanie = obrocPts(scalePts(pts, sZalam), skret);
@@ -335,8 +392,6 @@ export function stoneSolid(w, cutId, sizeMm) {
       solid = zlacz(solid, Manifold.extrude(cs, 0.02).translate([0, 0, -0.02]));
     }
 
-    // KORONA tak samo: wieniec fasetek rondysty, zalamanie, wieniec fasetek
-    // gornych do tafli. Tafla zostaje plaska, bo nia jest.
     const sKor = tbl + (1 - tbl) * 0.42;
     const zalamanieK = obrocPts(scalePts(pts, sKor), skret);
     solid = zlacz(solid, wieniec(w, pts, crownH * 0.5, sKor, skret)
@@ -379,7 +434,7 @@ export function stoneSolid(w, cutId, sizeMm) {
  * a powyzej przelot, zeby przez kamien szlo swiatlo i zeby dalo sie go
  * wypchnac od spodu przy przekladaniu.
  */
-function seatCutter(w, cutId, sizeMm, zamkniete = false) {
+function seatCutter(w, cutId, sizeMm, zamkniete = false, wylot = SEAT.throughWidth) {
   const { Manifold, CrossSection } = w;
   const pr = PROPORTIONS[CUTS[cutId].profile];
 
@@ -470,14 +525,14 @@ function seatCutter(w, cutId, sizeMm, zamkniete = false) {
   // Wysokosc liczymy wiec z tego, ile stozek ma do przebycia w POPRZEK,
   // a nie z ulamka glebokosci: schodzi do wylotu na 0,9 tej drogi, czyli
   // zawsze stromiej niz kamien.
-  const stozekH = glebokosc * Math.min(1 - SEAT.throughPart, 0.9 * (1 - SEAT.throughWidth));
+  const stozekH = glebokosc * Math.min(1 - SEAT.throughPart, 0.9 * (1 - wylot));
   // GLEBOKOSC i SZEROKOSC to dwie rozne rzeczy, mimo ze przez chwile opisywala
   // je jedna liczba: stozek zajmuje piec szostych GLEBOKOSCI, a otwor pod nim
   // ma polowe SZEROKOSCI gniazda. Wspolna wartosc dawala kamykowi 1,4 mm wylot
   // o srednicy 0,23 mm, czyli gniazdo, ktore z gory wyglada na zaslepione.
-  const dolPts = scalePts(pts, SEAT.throughWidth);
+  const dolPts = scalePts(pts, wylot);
   const dolCs = CrossSection.ofPolygons([ccw(dolPts)]);
-  const stozek = Manifold.extrude(dolCs, stozekH, 0, 0, [1 / SEAT.throughWidth, 1 / SEAT.throughWidth])
+  const stozek = Manifold.extrude(dolCs, stozekH, 0, 0, [1 / wylot, 1 / wylot])
     .translate([0, 0, -SEAT.ledge - stozekH]);
 
   // 4. PRZELOT. Ostatni odcinek idzie na wylot prosto: przez niego wchodzi
@@ -514,7 +569,7 @@ function radiusAt(pts, deg) {
  * ani wybrzuszenia. Sam ciag kul, bez odcinkow miedzy nimi, falowal na
  * powierzchni i wygladal jak sznur paciorkow.
  */
-function tubeAlong(w, punkty, promienie) {
+function tubeAlong(w, punkty, promienie, opcje = {}) {
   const { Manifold } = w;
   let solid = null;
   const dodaj = (m) => { solid = solid ? zlacz(solid, m) : m; };
@@ -528,7 +583,7 @@ function tubeAlong(w, punkty, promienie) {
     // pochylenie od osi Z, potem obrot wokol niej.
     const pochyl = Math.acos(Math.max(-1, Math.min(1, dz / L))) / DEG;
     const obrot = Math.atan2(dy, dx) / DEG;
-    dodaj(Manifold.cylinder(L, promienie[i], promienie[i + 1], 24, false)
+    dodaj(Manifold.cylinder(L, promienie[i], promienie[i + 1], 32, false)
       .rotate([0, pochyl, obrot])
       .translate(a));
   }
@@ -539,17 +594,37 @@ function tubeAlong(w, punkty, promienie) {
   // zerowej grubosci skorupe. W pliku wygladalo to jak druga bryla o ujemnej
   // objetosci i o wymiarach trzech setnych milimetra, czyli jak smiec, ktory
   // slicer zglosi jako blad siatki.
+  //
+  // PROG SKRETU JEST TU RZECZA GLOWNA, a nie drobiazgiem.
+  //
+  // Kula o promieniu rury siega wzdluz toru tak samo daleko jak w poprzek,
+  // wiec przy rurze ZWEZAJACEJ SIE wychodzi spod sasiednich odcinkow i robi
+  // paciorek. Luk galerii ma trzynascie punktow i promien malejacy o trzydziesci
+  // procent, wiec kazda kula wystawala spod nastepnej: powstawal z tego sznur
+  // koralikow w miejscu, ktore ma byc jedna gladka linia. Klient zglosil to
+  // dwa razy jako "karbowana szyna".
+  //
+  // Dwa sasiednie stozki dziela ten sam okrag na zlaczu, wiec ich suma jest
+  // bryla poprawna takze BEZ kuli: kula wygladza jedynie zalamanie na
+  // zewnetrznej stronie luku. Przy skrecie ponizej dziesieciu stopni tego
+  // zalamania i tak nie widac, a paciorek widac zawsze.
+  const PROG = Math.cos(10 * DEG);
   for (let i = 1; i < punkty.length; i++) {
     const koniec = i === punkty.length - 1;
-    if (!koniec) {
+    if (koniec) {
+      // Czubek zaokraglamy tylko tam, gdzie rura sie KONCZY w powietrzu,
+      // czyli na lapce. Luk galerii wchodzi koncem w szyne i kula robi na nim
+      // guzek.
+      if (opcje.czubek === false) continue;
+    } else {
       const a = punkty[i - 1], b = punkty[i], c = punkty[i + 1];
       const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
       const v = [c[0] - b[0], c[1] - b[1], c[2] - b[2]];
       const lu = Math.hypot(...u) || 1, lv = Math.hypot(...v) || 1;
       const cos = (u[0] * v[0] + u[1] * v[1] + u[2] * v[2]) / (lu * lv);
-      if (cos > 0.9998) continue;                 // prosto, nie ma czego lagodzic
+      if (cos > PROG) continue;                   // lagodnie, nie ma czego lagodzic
     }
-    dodaj(Manifold.sphere(promienie[i], 20).translate(punkty[i]));
+    dodaj(Manifold.sphere(promienie[i], 28).translate(punkty[i]));
   }
   return solid;
 }
@@ -742,7 +817,13 @@ function buildCrown(w, p, stone) {
   // sama grubosc scianki, wiec przy markizie jest waski, a przy poduszce
   // pelny. Odsuniecie idzie przez `offset`, nie przez skalowanie: skalowanie
   // dodaje przy szpicu kilka razy wiecej metalu niz na boku.
-  const scianka = 0.3;
+  // Scianka kosza jest CIENKA, i to nie jest oszczedzanie metalu.
+  //
+  // Przy grubosci 0,3 mm kosz siegal niemal tam, gdzie stoi lapka, wiec lapka
+  // tonela w nim do polowy i z boku wygladala jak pret wbity w klocek. Cienka
+  // scianka zostawia ja na wierzchu jako zebro biegnace po koszu, czyli tak,
+  // jak wyglada gotowa korona.
+  const scianka = 0.16;
   const csRondysta = CrossSection.ofPolygons([ccw(pts)]);
   let csKosz = csRondysta;
   try {
@@ -854,11 +935,11 @@ function buildCrown(w, p, stone) {
   // zeby przy zakuwaniu nie ustapila, a wiecej robi z korony guzka.
   const noga = (radius, promien) => tubeAlong(w,
     [
-      [radius - promien * 0.35, 0, -basketH + 0.05],
-      [radius - promien * 0.12, 0, -basketH * 0.45],
+      [radius - promien * 0.55, 0, -basketH + 0.05],
+      [radius - promien * 0.2, 0, -basketH * 0.45],
       [radius, 0, 0.02],
     ],
-    [promien * 1.05, promien * 0.95, promien * 0.98]);
+    [promien * 0.92, promien * 0.86, promien * 0.96], { czubek: false });
 
   if (p.setting === "vprong") {
     // Lapka V nie jest lapka obroconą, tylko scianka po obrysie, wiec ma
@@ -948,6 +1029,23 @@ function buildSideStones(w, p) {
   // potem zamieniane na kat.
   const step = Math.asin(Math.min(0.45, (size * 0.62) / rMid)) * 2 + rozsuniecie / rMid;
   const start = (polKorony + luzOdKorony + size / 2) / rMid;
+
+  // WYLOT GNIAZDA MUSI ZOSTAWIC PASEK METALU NA WEWNETRZNEJ STRONIE SZYNY.
+  //
+  // Otwor przelotowy wychodzi na palec i przy kamieniu wpuszczonym w szyne
+  // wychodzi tam, gdzie klient go dotyka. Przy stalej szerokosci polowy
+  // gniazda otwory sasiednich kamieni spotykaly sie po wewnetrznej stronie
+  // i zamiast obraczki zostawal grzebien: zmierzone na wieńcu eternity,
+  // trzydziesci cztery procent obwodu bez metalu na powierzchni palca.
+  // Klient zglosil to jako obraczke, ktora "bedzie sie niewygodnie nosilo".
+  //
+  // Wylot liczymy wiec z ODSTEPU miedzy kamieniami po stronie palca: tyle,
+  // ile zostaje po odjeciu paska. Kamien w lapkach stoi ponad szyna i jego
+  // gniazdo nie ma tego problemu, wiec tam zostaje pelna szerokosc.
+  const odstepWewn = step * (p.innerDia / 2);
+  const wylotWSzynie = setting === "prong"
+    ? SEAT.throughWidth
+    : Math.max(0.18, Math.min(SEAT.throughWidth, (odstepWewn - SEAT.minInnerStrip) / size));
   let metal = null, seats = null;
   const stones = [];
   const addM = (m) => { metal = metal ? zlacz(metal, m) : m; };
@@ -1007,7 +1105,7 @@ function buildSideStones(w, p) {
 
       const kam = stoneSolid(w, "round", size);
       stones.push(naMiejsce(kam.solid));
-      addS(naMiejsce(seatCutter(w, "round", size, zakute(p))));
+      addS(naMiejsce(seatCutter(w, "round", size, zakute(p), wylotWSzynie)));
 
       if (podniesienie > 0) {
         // Oprawka: stozek od szyny do rondysty i cztery lapki dookola.
@@ -1203,6 +1301,28 @@ function loftObrysow(w, obrysy, zetki) {
     dol = gora;
   }
   dol.delete?.();
+  return bryla;
+}
+
+/**
+ * Bryla WYPUKLA rozpieta na kilku obrysach: jedna otoczka, nie lancuch.
+ *
+ * `loftObrysow` sklada plaster po plastrze i na kazdym zlaczu zostaje po nim
+ * pierscionek grubosci przekroju pomocniczego. Przy sygnecie to nie szkodzi,
+ * bo jego sylwetka i tak nie jest wypukla. Kamien wypukly JEST, wiec cala
+ * bryla to jedna otoczka wszystkich poziomow naraz: fasetki wychodza dokladne,
+ * a miedzy nimi nie ma zadnych progow.
+ */
+function hullPoziomow(w, obrysy, zetki) {
+  const { Manifold, CrossSection } = w;
+  const plastry = obrysy.map((pts, i) => {
+    const cs = CrossSection.ofPolygons([ccw(pts)]);
+    const m = Manifold.extrude(cs, 0.004).translate([0, 0, zetki[i]]);
+    cs.delete?.();
+    return m;
+  });
+  const bryla = Manifold.hull(plastry);
+  for (const m of plastry) m.delete?.();
   return bryla;
 }
 
@@ -1426,7 +1546,7 @@ export function buildGallery(w, p, basketH) {
       punkty.push([Math.cos(th) * r, Math.sin(th) * r, 0]);
       promienie.push(Math.max(0.22, (p.width * k.w) / 2 * (1.0 - 0.30 * t)));
     }
-    const ramie = tubeAlong(w, punkty, promienie);
+    const ramie = tubeAlong(w, punkty, promienie, { czubek: false });
     solid = solid ? zlacz(solid, ramie) : ramie;
   }
   return solid;
@@ -1461,6 +1581,14 @@ function buildBandStones(w, p) {
   const pelny = p.band.coverage === "full";
   const n = Math.max(3, Math.floor((pelny ? Math.PI * 2 : Math.PI) / krok));
 
+  // Ten sam rachunek co przy kamieniach na ramionach: otwory przelotowe
+  // sasiednich gniazd nie moga sie spotkac po stronie palca, bo z obraczki
+  // robi sie wtedy grzebien. Odstep liczymy po WEWNETRZNYM promieniu, bo tam
+  // kamienie sa najgesciej.
+  const odstepWewn = ((pelny ? Math.PI * 2 : Math.PI) / n) * ri;
+  const wylotObwod = Math.max(0.18,
+    Math.min(SEAT.throughWidth, (odstepWewn - SEAT.minInnerStrip) / d));
+
   let metal = null, seats = null;
   const stones = [];
   const addM = (m) => { metal = metal ? zlacz(metal, m) : m; };
@@ -1483,7 +1611,8 @@ function buildBandStones(w, p) {
     const maly = stoneSolid(w, "round", d);
     stones.push(maly.solid.rotate([-90, 0, 0]).rotate([0, 0, (a / DEG) - 90]).translate([x, y, 0]));
 
-    const cut = seatCutter(w, "round", d, zakute(p)).rotate([-90, 0, 0]).rotate([0, 0, (a / DEG) - 90])
+    const cut = seatCutter(w, "round", d, zakute(p), wylotObwod)
+      .rotate([-90, 0, 0]).rotate([0, 0, (a / DEG) - 90])
       .translate([x, y, 0]);
     seats = seats ? zlacz(seats, cut) : cut;
 
@@ -1544,17 +1673,22 @@ function buildHalo(w, p, stone, girdleR) {
   const stones = [];
   const zK = stone.girdleH * 0.5 - 0.06;           // rondysta kamyka wienca
 
+  // Kamyk i gniazdo sa dla calego wienca TAKIE SAME, wiec budujemy je RAZ
+  // i powielamy przesunieciem. Wieniec potrafi miec dwadziescia kamieni,
+  // a kamien fasetowany to kilkadziesiat operacji jadra: budowany od nowa dla
+  // kazdego kamyka kosztowal tyle, co caly pierscionek.
+  const wzorKam = stoneSolid(w, "round", d);
+  const wzorGniazdo = seatCutter(w, "round", d, zakute(p));
   for (let i = 0; i < n; i++) {
     const a = (i / n) * Math.PI * 2;
     const x = Math.cos(a) * rW, y = Math.sin(a) * rW;
 
-    const maly = stoneSolid(w, "round", d);
-    stones.push(maly.solid.translate([x, y, zK]));
+    stones.push(wzorKam.solid.translate([x, y, zK]));
 
-    const cut = seatCutter(w, "round", d, zakute(p)).translate([x, y, zK]);
+    const cut = wzorGniazdo.translate([x, y, zK]);
     seats = seats ? zlacz(seats, cut) : cut;
-
   }
+  wzorGniazdo.delete?.();
 
   // Kuleczki wienca stoja MIEDZY kamieniami, po jednej od zewnatrz i od
   // srodka, wiec kazda trzyma dwa sasiednie kamienie. Tak sie zakuwa halo
@@ -1622,7 +1756,9 @@ function buildHalo(w, p, stone, girdleR) {
     metal = odejmij(metal, wybranie);
   }
 
-  return { metal, seats, stones, count: n, stoneVolume: stones.length ? stoneSolid(w, "round", d).solid.volume() : 0 };
+  const objetoscKamyka = wzorKam.solid.volume();
+  wzorKam.solid.delete?.();
+  return { metal, seats, stones, count: n, stoneVolume: stones.length ? objetoscKamyka : 0 };
 }
 
 /** Okrag jako lista punktow. Uzywany tam, gdzie potrzebny jest przekroj z otworem. */
@@ -1920,7 +2056,24 @@ export async function buildRing(input, opts = {}) {
     // Gniazda WYCINAMY dopiero po zlaczeniu wszystkiego, zeby siegaly takze
     // szyny. Odwrotna kolejnosc daje bryle cieszsza o kilkanascie procent.
     if (p.setting !== "drilled") {
-      metal = odejmij(metal, place(podnies(seatCutter(w, p.stone.cut, p.stone.size, zakute(p)), standoff)));
+      // OTWOR PRZELOTOWY NIE MOZE PRZECIAC SZYNY.
+      //
+      // Gniazdo kamienia szesciomilimetrowego ma wylot szerokosci trzech
+      // milimetrow, a szyna bywa szeroka na dwa i pol. Otwor byl wiec SZERSZY
+      // OD SZYNY i przecinal ja na wylot: pod glowica zostawaly dwa osobne
+      // ramiona, trzymajace sie tylko koszem. Bryla dalej byla jedna calascia,
+      // wiec zaden dotychczasowy sprawdzian tego nie widzial, a pierscionek
+      // mial na palcu otwarta szczeline na calej szerokosci.
+      //
+      // Wylot zweza sie wiec do tego, co szyna udzwignie, zostawiajac po obu
+      // stronach pasek metalu. Pasek jest cienki i nie siega calej grubosci
+      // szyny: wnetrze zostaje gladkie, a gniazdo dalej jest przewiercone.
+      const wylotSrodka = Math.max(0.16, Math.min(
+        SEAT.throughWidth,
+        (p.width - 2 * SEAT.minInnerStrip) / p.stone.size,
+      ));
+      metal = odejmij(metal, place(podnies(
+        seatCutter(w, p.stone.cut, p.stone.size, zakute(p), wylotSrodka), standoff)));
     }
     if (side.cutSeats) metal = odejmij(metal, side.cutSeats);
     // Gniazda wienca tez po zlaczeniu, z tego samego powodu co srodkowe.

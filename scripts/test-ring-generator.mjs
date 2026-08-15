@@ -1307,19 +1307,62 @@ console.log("\n23. Kamień ma fasety, a nie gładki bok");
       if (z < -0.001 || z > s.girdleH + 0.001) continue;
       naRondyscie.add(`${v[i * 3].toFixed(3)},${v[i * 3 + 1].toFixed(3)}`);
     }
-    const n = naRondyscie.size / 2;          // gora i dol rondysty
+    // Liczymy POLOZENIA w rzucie z gory, a gora i dol rondysty maja te same,
+    // wiec nie ma czego dzielic: kolo daje szesnascie, kwadrat cztery,
+    // a kaboszon kilkadziesiat.
+    const n = naRondyscie.size;
     // Prog nie jest przypadkowy: obrys szlifu ma 48 punktow albo wiecej,
     // a kamien fasetowany dostaje ich szesnascie, wiec miedzy jednym a drugim
     // jest przepasc, nie granica na wlos.
     if (gladki) {
-      if (n >= 20) ok(`${cut.padEnd(9)} gładki bok, ${n} punktów rondysty, tak ma być`);
+      if (n >= 30) ok(`${cut.padEnd(9)} gładki bok, ${n} punktów rondysty, tak ma być`);
       else bad(`${cut}: kaboszon dostal fasety (${n} punktow rondysty)`);
-    } else if (n > 18) {
+    } else if (n > 20) {
       bad(`${cut}: rondysta ma ${n} punktow, czyli kamien jest gladki i szlifu nie widac`);
-    } else if (n < 6) {
+    } else if (n < 4) {
+      // Dolna granica jest niska celowo: kwadrat ma na rondyscie CZTERY
+      // wierzcholki i wiecej miec nie moze, bo tyle ma sam obrys. Wyzszy prog
+      // mowilby, ze kwadrat jest zle zbudowany, a on jest po prostu kwadratem.
       bad(`${cut}: rondysta ma tylko ${n} punktow, obrys szlifu sie rozjechal`);
     } else {
       ok(`${cut.padEnd(9)} ${n} fasetek na obwodzie, ${s.solid.decompose().length} bryła`);
+    }
+
+    // WZOR FASETEK, a nie sama ich obecnosc.
+    //
+    // Kamien z samej rondysty, tafli i kolety tez ma fasetki, tylko wszystkie
+    // jednakowe: pociety jak tort. Brylant poznaje sie po tym, ze miedzy
+    // rondysta a tafla leza jeszcze dwa rzedy o innych ksztaltach, czyli romby
+    // i gwiazda. Zdarzylo sie juz, ze zalamania miedzy nimi wpadly POD
+    // powierzchnie bryly i otoczka je polknela: bryla zostala poprawna, masa
+    // wiarygodna, a caly wzor zniknal. Liczymy wiec PLASZCZYZNY.
+    if (!gladki && CUTS[cut].profile === "brilliant") {
+      const me = s.solid.getMesh(), vv = me.vertProperties, tt = me.triVerts;
+      const plaszczyzny = new Map();
+      let pole = 0;
+      for (let i = 0; i < tt.length; i += 3) {
+        const q = (k) => [vv[tt[i + k] * 3], vv[tt[i + k] * 3 + 1], vv[tt[i + k] * 3 + 2]];
+        const [a0, b0, c0] = [q(0), q(1), q(2)];
+        const u = [b0[0] - a0[0], b0[1] - a0[1], b0[2] - a0[2]];
+        const d0 = [c0[0] - a0[0], c0[1] - a0[1], c0[2] - a0[2]];
+        const nn = [u[1] * d0[2] - u[2] * d0[1], u[2] * d0[0] - u[0] * d0[2], u[0] * d0[1] - u[1] * d0[0]];
+        const L = Math.hypot(...nn);
+        if (L < 1e-9) continue;
+        pole += L / 2;
+        const klucz = nn.map((x) => Math.round((x / L) * 200)).join(",");
+        plaszczyzny.set(klucz, (plaszczyzny.get(klucz) || 0) + L / 2);
+      }
+      const najwieksza = Math.max(...plaszczyzny.values()) / pole;
+      // Prog idzie od LICZBY FASETEK OBWODU, bo kwadrat ma ich cztery i wiecej
+      // scianek miec nie moze. Pelny uklad daje ich okolo siedmiu na kazda
+      // fasetke rondysty, sam dwustozek okolo czterech.
+      if (plaszczyzny.size < n * 5) {
+        bad(`${cut}: tylko ${plaszczyzny.size} scianek przy ${n} fasetkach obwodu, czyli zalamania zniknely`);
+      } else if (najwieksza < 0.05) {
+        bad(`${cut}: najwieksza scianka to ${(najwieksza * 100).toFixed(1)} % powierzchni, czyli nie ma tafli`);
+      } else {
+        ok(`${cut.padEnd(9)} ${plaszczyzny.size} ścianek, tafla ${(najwieksza * 100).toFixed(0)} % powierzchni`);
+      }
     }
     s.solid.delete?.();
   }
@@ -1464,6 +1507,103 @@ console.log("\n26. Ramię sygnetu jest KANCIASTE, a nie beczkowate");
     const w2 = wypelnienie(r.metal, y);
     if (w2 >= 0.83) ok(`sygnet ${table.padEnd(8)} ramię wypełnia ${(w2 * 100).toFixed(0)} % opisanego prostokąta`);
     else bad(`sygnet ${table}: ramie wypelnia tylko ${(w2 * 100).toFixed(0)} %, czyli jest beczkowate`);
+    zwolnij(r);
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n27. Wnętrze obrączki jest ciągłe, czyli da się ją nosić");
+// ------------------------------------------------------------
+// Otwor przelotowy gniazda centralnego ma szerokosc polowy kamienia, czyli
+// przy kamieniu szesciomilimetrowym ponad trzy milimetry. Szyna bywa szeroka
+// na dwa i pol, wiec otwor byl SZERSZY OD NIEJ i przecinal ja na wylot: pod
+// glowica zostawaly dwa ramiona trzymajace sie samym koszem. Bryla nadal byla
+// jedna calascia, wiec ani `genus`, ani liczba czesci tego nie widzialy,
+// a pierscionek mial na palcu szczeline na calej szerokosci szyny.
+//
+// Mierzymy to od strony palca, bo tam ma znaczenie: sonda obiega wnetrze
+// i szuka NAJDLUZSZEJ przerwy. Male otwory po wiertle sa w porzadku,
+// przerwana szyna nie.
+{
+  const w = await kernel();
+  const PROG_MM = 1.8;              // dluzsza przerwa to juz nie otwor, tylko szczelina
+  for (const preset of RING_PRESETS) {
+    const wejscie = applyPreset(preset, { ...DEFAULTS });
+    const r = await buildRing({ ...wejscie, casting: { stones: false } }, { segments: 96 });
+    const ri = r.params.innerDia / 2;
+    const N = 360;
+    let biezaca = 0, najdluzsza = 0;
+    for (let k = 0; k < N * 2; k++) {          // dwa obiegi, zeby zlapac przerwe na styku
+      const a = ((k % N) / N) * Math.PI * 2;
+      const sonda = w.Manifold.sphere(0.1, 8)
+        .translate([Math.cos(a) * (ri + 0.1), Math.sin(a) * (ri + 0.1), 0]);
+      const wspolne = r.metal.intersect(sonda);
+      if (wspolne.isEmpty()) { biezaca++; najdluzsza = Math.max(najdluzsza, biezaca); }
+      else biezaca = 0;
+      sonda.delete?.(); wspolne.delete?.();
+    }
+    const mm = (najdluzsza / N) * 2 * Math.PI * ri;
+    if (mm > PROG_MM) bad(`${preset.id}: szczelina ${mm.toFixed(2)} mm na powierzchni palca`);
+    else ok(`${String(preset.id).padEnd(14)} najdłuższa przerwa ${mm.toFixed(2)} mm, wnętrze gładkie`);
+    zwolnij(r);
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n28. Łuk z szyny do korony jest gładki, a nie karbowany");
+// ------------------------------------------------------------
+// Luk skladal sie z rury poprowadzonej po sciezce, ale w kazdym jej punkcie
+// siedziala kula o promieniu rury. Kula siega wzdluz toru tak samo daleko jak
+// w poprzek, wiec przy rurze ZWEZAJACEJ SIE wychodzila spod sasiednich
+// odcinkow i robila paciorek. Zglszone dwa razy jako "karbowana szyna".
+//
+// Mierzymy promien powierzchni wzdluz luku: gladki luk schodzi monotonicznie,
+// karbowany faluje.
+{
+  const w = await kernel();
+  for (const [nazwa, cfg] of [
+    ["soliter", { stone: { cut: "round", size: 6.5 }, setting: "prong4" }],
+    ["halo", { stone: { cut: "round", size: 6 }, setting: "prong4", halo: { on: true, size: 1.4, material: "cz" } }],
+    ["katedralna", { taper: "cathedral", stone: { cut: "round", size: 6.5 }, setting: "prong4" }],
+  ]) {
+    const r = await buildRing({ innerDia: 17.2, ...cfg }, { segments: 96, withStones: false });
+    const ri = 17.2 / 2;
+    // PROMIEN POWIERZCHNI POD DANYM KATEM.
+    //
+    // Pierwsza wersja tego pomiaru brala plaster w osi Z i mierzyla jego
+    // pudelko, czyli caly pierscionek: kazda probka dawala te sama liczbe
+    // i test przechodzil takze wtedy, gdy luk byl karbowany. Klin musi byc
+    // WASKI i siegac tylko w jedna strone, inaczej nie mierzy niczego.
+    const promienie = [];
+    for (let k = 0; k <= 26; k++) {
+      const a = Math.PI / 2 - (k / 26) * 40 * Math.PI / 180;
+      const st = (a * 180) / Math.PI;
+      const klin = w.Manifold.cube([26, 0.25, 0.6], true)
+        .translate([13, 0, 0])
+        .rotate([0, 0, st]);
+      const kawalek = r.metal.intersect(klin);
+      let rmax = 0;
+      if (!kawalek.isEmpty()) {
+        const me = kawalek.getMesh(), v = me.vertProperties;
+        for (let i = 0; i < me.numVert; i++) {
+          rmax = Math.max(rmax, Math.hypot(v[i * 3], v[i * 3 + 1]));
+        }
+      }
+      promienie.push(rmax);
+      klin.delete?.(); kawalek.delete?.();
+    }
+    // Ile razy zmienia sie kierunek zmiany promienia. Gladki luk schodzi
+    // w dol i zmienia kierunek najwyzej raz, przy przejsciu w szyne.
+    let zwroty = 0, poprzedni = 0;
+    for (let i = 1; i < promienie.length; i++) {
+      const d = promienie[i] - promienie[i - 1];
+      if (Math.abs(d) < 0.008) continue;
+      const znak = Math.sign(d);
+      if (poprzedni && znak !== poprzedni) zwroty++;
+      poprzedni = znak;
+    }
+    if (zwroty > 3) bad(`${nazwa}: promien luku zmienia kierunek ${zwroty} razy, czyli luk faluje`);
+    else ok(`${nazwa.padEnd(11)} łuk schodzi gładko, ${zwroty} zmiany kierunku`);
     zwolnij(r);
   }
 }
