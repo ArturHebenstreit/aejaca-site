@@ -1307,19 +1307,62 @@ console.log("\n23. Kamień ma fasety, a nie gładki bok");
       if (z < -0.001 || z > s.girdleH + 0.001) continue;
       naRondyscie.add(`${v[i * 3].toFixed(3)},${v[i * 3 + 1].toFixed(3)}`);
     }
-    const n = naRondyscie.size / 2;          // gora i dol rondysty
+    // Liczymy POLOZENIA w rzucie z gory, a gora i dol rondysty maja te same,
+    // wiec nie ma czego dzielic: kolo daje szesnascie, kwadrat cztery,
+    // a kaboszon kilkadziesiat.
+    const n = naRondyscie.size;
     // Prog nie jest przypadkowy: obrys szlifu ma 48 punktow albo wiecej,
     // a kamien fasetowany dostaje ich szesnascie, wiec miedzy jednym a drugim
     // jest przepasc, nie granica na wlos.
     if (gladki) {
-      if (n >= 20) ok(`${cut.padEnd(9)} gładki bok, ${n} punktów rondysty, tak ma być`);
+      if (n >= 30) ok(`${cut.padEnd(9)} gładki bok, ${n} punktów rondysty, tak ma być`);
       else bad(`${cut}: kaboszon dostal fasety (${n} punktow rondysty)`);
-    } else if (n > 18) {
+    } else if (n > 20) {
       bad(`${cut}: rondysta ma ${n} punktow, czyli kamien jest gladki i szlifu nie widac`);
-    } else if (n < 6) {
+    } else if (n < 4) {
+      // Dolna granica jest niska celowo: kwadrat ma na rondyscie CZTERY
+      // wierzcholki i wiecej miec nie moze, bo tyle ma sam obrys. Wyzszy prog
+      // mowilby, ze kwadrat jest zle zbudowany, a on jest po prostu kwadratem.
       bad(`${cut}: rondysta ma tylko ${n} punktow, obrys szlifu sie rozjechal`);
     } else {
       ok(`${cut.padEnd(9)} ${n} fasetek na obwodzie, ${s.solid.decompose().length} bryła`);
+    }
+
+    // WZOR FASETEK, a nie sama ich obecnosc.
+    //
+    // Kamien z samej rondysty, tafli i kolety tez ma fasetki, tylko wszystkie
+    // jednakowe: pociety jak tort. Brylant poznaje sie po tym, ze miedzy
+    // rondysta a tafla leza jeszcze dwa rzedy o innych ksztaltach, czyli romby
+    // i gwiazda. Zdarzylo sie juz, ze zalamania miedzy nimi wpadly POD
+    // powierzchnie bryly i otoczka je polknela: bryla zostala poprawna, masa
+    // wiarygodna, a caly wzor zniknal. Liczymy wiec PLASZCZYZNY.
+    if (!gladki && CUTS[cut].profile === "brilliant") {
+      const me = s.solid.getMesh(), vv = me.vertProperties, tt = me.triVerts;
+      const plaszczyzny = new Map();
+      let pole = 0;
+      for (let i = 0; i < tt.length; i += 3) {
+        const q = (k) => [vv[tt[i + k] * 3], vv[tt[i + k] * 3 + 1], vv[tt[i + k] * 3 + 2]];
+        const [a0, b0, c0] = [q(0), q(1), q(2)];
+        const u = [b0[0] - a0[0], b0[1] - a0[1], b0[2] - a0[2]];
+        const d0 = [c0[0] - a0[0], c0[1] - a0[1], c0[2] - a0[2]];
+        const nn = [u[1] * d0[2] - u[2] * d0[1], u[2] * d0[0] - u[0] * d0[2], u[0] * d0[1] - u[1] * d0[0]];
+        const L = Math.hypot(...nn);
+        if (L < 1e-9) continue;
+        pole += L / 2;
+        const klucz = nn.map((x) => Math.round((x / L) * 200)).join(",");
+        plaszczyzny.set(klucz, (plaszczyzny.get(klucz) || 0) + L / 2);
+      }
+      const najwieksza = Math.max(...plaszczyzny.values()) / pole;
+      // Prog idzie od LICZBY FASETEK OBWODU, bo kwadrat ma ich cztery i wiecej
+      // scianek miec nie moze. Pelny uklad daje ich okolo siedmiu na kazda
+      // fasetke rondysty, sam dwustozek okolo czterech.
+      if (plaszczyzny.size < n * 5) {
+        bad(`${cut}: tylko ${plaszczyzny.size} scianek przy ${n} fasetkach obwodu, czyli zalamania zniknely`);
+      } else if (najwieksza < 0.05) {
+        bad(`${cut}: najwieksza scianka to ${(najwieksza * 100).toFixed(1)} % powierzchni, czyli nie ma tafli`);
+      } else {
+        ok(`${cut.padEnd(9)} ${plaszczyzny.size} ścianek, tafla ${(najwieksza * 100).toFixed(0)} % powierzchni`);
+      }
     }
     s.solid.delete?.();
   }
