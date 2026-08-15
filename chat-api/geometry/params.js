@@ -424,6 +424,20 @@ export const SEAT = {
    * kamienia od spodu ani czym doswietlic go od dolu.
    */
   throughPart: 1 / 6,
+  /**
+   * SZEROKOSC otworu przelotowego, jako ulamek szerokosci gniazda.
+   *
+   * To jest osobna liczba od `throughPart` i rozdzielenie ich nie jest
+   * pedanteria. Jedna wartosc pelnila obie role: opisywala i ostatnia szosta
+   * czesc GLEBOKOSCI, i szerokosc otworu, wiec kamyk halo o srednicy 1,4 mm
+   * dostawal wylot o srednicy 0,23 mm. Z gory wygladalo to jak gniazdo
+   * zaslepione z dziurka po szpilce i tak tez zostalo zglszone, dwa razy.
+   *
+   * Jubiler przewierca gniazdo pave borem o mniej wiecej polowie srednicy
+   * kamienia: tyle trzeba, zeby od spodu weszlo swiatlo i zeby dalo sie
+   * kamien wypchnac przy przekladaniu. Wiecej podcielo by rondyste.
+   */
+  throughWidth: 0.5,
 };
 
 export const LIMITS = {
