@@ -556,70 +556,212 @@ function radiusAt(pts, deg) {
   return best || Math.max(...pts.map(([x, y]) => Math.hypot(x, y)));
 }
 
+// Drobna algebra wektorowa. Rura potrzebuje ramki w kazdym punkcie toru,
+// a to sie bez niej nie da napisac czytelnie.
+const wAdd = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const wSub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const wMul = (a, s) => [a[0] * s, a[1] * s, a[2] * s];
+const wDot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const wCross = (a, b) => [
+  a[1] * b[2] - a[2] * b[1],
+  a[2] * b[0] - a[0] * b[2],
+  a[0] * b[1] - a[1] * b[0],
+];
+const wNorm = (a) => { const l = Math.hypot(...a) || 1; return wMul(a, 1 / l); };
+
+/** Obrot wektora `v` o ten sam obrot, ktory przeprowadza `a` na `b`. */
+function obrocZDo(a, b, v) {
+  const os = wCross(a, b);
+  const s = Math.hypot(...os);
+  if (s < 1e-9) return v;                       // tor sie nie zmienil
+  const k = wMul(os, 1 / s);
+  const kat = Math.atan2(s, wDot(a, b));
+  const c = Math.cos(kat), sn = Math.sin(kat);
+  // Rodrigues
+  return wAdd(
+    wAdd(wMul(v, c), wMul(wCross(k, v), sn)),
+    wMul(k, wDot(k, v) * (1 - c)),
+  );
+}
+
 /**
- * Gladka rura poprowadzona po lamanej.
+ * Gladka rura poprowadzona po lamanej: JEDNA powloka przeciagnieta po torze,
+ * a nie suma stozkow.
  *
- * Kazdy odcinek jest scinanym stozkiem, a w zlaczach siedzi kula o TAKIM SAMYM
- * promieniu jak rura w tym miejscu. To jest cala sztuczka: kula rowna przekrojowi
- * pokrywa sie z nim dokladnie, wiec powierzchnia nie ma na zlaczu ani uskoku,
- * ani wybrzuszenia. Sam ciag kul, bez odcinkow miedzy nimi, falowal na
- * powierzchni i wygladal jak sznur paciorkow.
+ * DLACZEGO NIE SUMA STOZKOW. Dwa stozki na zalamanym torze maja na zlaczu
+ * okregi o tym samym promieniu, ale lezace w ROZNYCH PLASZCZYZNACH, bo kazdy
+ * jest prostopadly do swojego odcinka. Po zewnetrznej stronie zgiecia miedzy
+ * koncem jednego a poczatkiem drugiego zostaje klin, ktorego suma nie wypelnia:
+ * na powierzchni robi sie rowek glebokosci `r * tan(kat)` z ostra krawedzia.
+ * Zmierzone na luku galerii, przy skrecie 2,8 stopnia i rurze 1,2 mm, daje to
+ * karb szescdziesieciu tysiecznych milimetra i ubytek 0,056 mm3 na jednym
+ * zlaczu. Trzynascie punktow luku to dwanascie takich karbow jeden za drugim,
+ * czyli dokladnie ta "karbowana szyna", ktora klient zglaszal trzy razy.
+ *
+ * Lataliem to najpierw kula w zlaczu: kula wypelnia klin, ale przy rurze
+ * ZWEZAJACEJ SIE wychodzi spod sasiednich odcinkow i robi paciorek. Potem
+ * progiem skretu: ponizej dziesieciu stopni kula znikala, a karb wracal.
+ * Jedno i drugie bylo leczeniem objawu. Suma brylek nigdy nie da gladkiej
+ * rury, bo kazde zlacze jest szwem.
+ *
+ * Zamiast tego stawiamy pierscien wierzcholkow w KAZDYM punkcie toru, w
+ * plaszczyznie mitry (prostopadlej do usrednionego kierunku), i zszywamy je
+ * czworokatami. Sasiednie pierscienie dziela wierzcholki co do jednego, wiec
+ * szwu nie ma w ogole. Ramka jest przenoszona rownolegle wzdluz toru, zeby
+ * rura sie nie skrecala.
  */
-function tubeAlong(w, punkty, promienie, opcje = {}) {
+export function tubeAlong(w, punkty, promienie, opcje = {}) {
+  const { Manifold, Mesh } = w;
+
+  // Powtorzone punkty daja odcinek zerowej dlugosci, czyli kierunek bez sensu.
+  const P = [], R = [];
+  for (let i = 0; i < punkty.length; i++) {
+    const q = punkty[i];
+    if (P.length && Math.hypot(...wSub(q, P[P.length - 1])) < 1e-4) continue;
+    P.push(q);
+    R.push(Math.max(1e-3, promienie[i]));
+  }
+  if (P.length < 2) return null;
+
+  const N = 32;                                 // wierzcholkow w obwodzie rury
+  const KOPULA = 5;                             // pierscieni czubka
+  const kierunki = [];
+  for (let i = 0; i < P.length - 1; i++) kierunki.push(wNorm(wSub(P[i + 1], P[i])));
+
+  // Styczna w punkcie: na koncach kierunek odcinka, w srodku srednia sasiadow.
+  const T = [kierunki[0]];
+  for (let i = 1; i < P.length - 1; i++) T.push(wNorm(wAdd(kierunki[i - 1], kierunki[i])));
+  T.push(kierunki[kierunki.length - 1]);
+
+  const wierzcholki = [];
+  const push = (p) => { wierzcholki.push(p[0], p[1], p[2]); return wierzcholki.length / 3 - 1; };
+  const tri = [];
+  const face = (a, b, c) => { tri.push(a, b, c); };
+
+  // Ramka startowa: cokolwiek prostopadlego do stycznej.
+  let U = Math.abs(T[0][2]) < 0.9 ? wCross(T[0], [0, 0, 1]) : wCross(T[0], [1, 0, 0]);
+  U = wNorm(U);
+
+  const pierscienie = [];
+  for (let i = 0; i < P.length; i++) {
+    if (i > 0) U = obrocZDo(T[i - 1], T[i], U);
+    // Reortogonalizacja: bez niej blad numeryczny zbiera sie wzdluz toru.
+    U = wNorm(wSub(U, wMul(T[i], wDot(U, T[i]))));
+    const V = wCross(T[i], U);
+
+    // MITRA. Przekroj prostopadly do usrednionej stycznej jest w miejscu
+    // zgiecia ELIPSA, a nie okregiem: kolo odcinka wchodzacego rzutuje sie
+    // na te plaszczyzne rozciagniete o 1/cos(polowy skretu). Bez tego rura
+    // chudnie w kazdym zakolu, a to jest przeciez to samo miejsce, w ktorym
+    // wczesniej robil sie karb.
+    let os = null, rozciag = 1;
+    if (i > 0 && i < P.length - 1) {
+      const cosA = Math.max(0.2, wDot(kierunki[i - 1], T[i]));
+      rozciag = 1 / cosA;
+      const rzut = wSub(kierunki[i - 1], wMul(T[i], wDot(kierunki[i - 1], T[i])));
+      if (Math.hypot(...rzut) > 1e-6) os = wNorm(rzut);
+    }
+
+    const ring = [];
+    for (let j = 0; j < N; j++) {
+      const a = (j / N) * Math.PI * 2;
+      let q = wAdd(wMul(U, Math.cos(a) * R[i]), wMul(V, Math.sin(a) * R[i]));
+      if (os) q = wAdd(q, wMul(os, (rozciag - 1) * wDot(q, os)));
+      ring.push(push(wAdd(P[i], q)));
+    }
+    pierscienie.push(ring);
+  }
+
+  // Plaszcz. Nawiniecie tak, zeby normalna wychodzila na zewnatrz.
+  for (let i = 0; i < pierscienie.length - 1; i++) {
+    const a = pierscienie[i], b = pierscienie[i + 1];
+    for (let j = 0; j < N; j++) {
+      const k = (j + 1) % N;
+      face(a[j], a[k], b[k]);
+      face(a[j], b[k], b[j]);
+    }
+  }
+
+  // Denko: rura zaczyna sie zawsze plasko, bo tam wchodzi w inna bryle.
+  {
+    const a = pierscienie[0];
+    const c = push(P[0]);
+    for (let j = 0; j < N; j++) face(c, a[(j + 1) % N], a[j]);
+  }
+
+  // Czubek. Zaokraglony tylko tam, gdzie rura KONCZY SIE W POWIETRZU, czyli
+  // na lapce. Luk galerii wchodzi koncem w szyne i kopula robi na nim guzek.
+  const ostatni = pierscienie[pierscienie.length - 1];
+  const Pk = P[P.length - 1], Tk = T[T.length - 1], Rk = R[R.length - 1];
+  if (opcje.czubek === false) {
+    const c = push(Pk);
+    for (let j = 0; j < N; j++) face(c, ostatni[j], ostatni[(j + 1) % N]);
+  } else {
+    let Uk = wNorm(wSub(
+      [wierzcholki[ostatni[0] * 3], wierzcholki[ostatni[0] * 3 + 1], wierzcholki[ostatni[0] * 3 + 2]],
+      Pk,
+    ));
+    Uk = wNorm(wSub(Uk, wMul(Tk, wDot(Uk, Tk))));
+    const Vk = wCross(Tk, Uk);
+    let poprz = ostatni;
+    for (let s = 1; s < KOPULA; s++) {
+      const fi = (s / KOPULA) * (Math.PI / 2);
+      const sr = wAdd(Pk, wMul(Tk, Rk * Math.sin(fi)));
+      const rr = Rk * Math.cos(fi);
+      const ring = [];
+      for (let j = 0; j < N; j++) {
+        const a = (j / N) * Math.PI * 2;
+        ring.push(push(wAdd(sr, wAdd(wMul(Uk, Math.cos(a) * rr), wMul(Vk, Math.sin(a) * rr)))));
+      }
+      for (let j = 0; j < N; j++) {
+        const k = (j + 1) % N;
+        face(poprz[j], poprz[k], ring[k]);
+        face(poprz[j], ring[k], ring[j]);
+      }
+      poprz = ring;
+    }
+    const szczyt = push(wAdd(Pk, wMul(Tk, Rk)));
+    for (let j = 0; j < N; j++) face(poprz[j], poprz[(j + 1) % N], szczyt);
+  }
+
+  const siatka = new Mesh({
+    numProp: 3,
+    vertProperties: new Float32Array(wierzcholki),
+    triVerts: new Uint32Array(tri),
+  });
+  const solid = Manifold.ofMesh(siatka);
+
+  // Przeciagniecie ZAWODZI, gdy tor skreca ciasniej niz wynosi promien rury:
+  // pierscienie wchodza wtedy jeden w drugi i powloka przecina sama siebie.
+  // Zadna sciezka w tym pliku tego nie robi, ale sciezki zaleza od suwakow,
+  // wiec zamiast ufac trzymamy stary sposob jako zapase. Karb jest brzydki,
+  // brak bryly jest gorszy.
+  if (!solid || solid.isEmpty() || solid.volume() <= 0) {
+    solid?.delete?.();
+    return tubeSklejana(w, P, R, opcje);
+  }
+  return solid;
+}
+
+/** Zapas: rura jako suma stozkow. Ma karby na zlaczach, ale nie ma jak sie
+ *  wywrocic na ciasnym skrecie. */
+function tubeSklejana(w, punkty, promienie, opcje = {}) {
   const { Manifold } = w;
   let solid = null;
   const dodaj = (m) => { solid = solid ? zlacz(solid, m) : m; };
-
   for (let i = 0; i < punkty.length - 1; i++) {
     const a = punkty[i], b = punkty[i + 1];
-    const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
+    const [dx, dy, dz] = wSub(b, a);
     const L = Math.hypot(dx, dy, dz);
     if (L < 1e-4) continue;
-    // Walec rosnie wzdluz +Z, wiec obracamy go na kierunek odcinka: najpierw
-    // pochylenie od osi Z, potem obrot wokol niej.
     const pochyl = Math.acos(Math.max(-1, Math.min(1, dz / L))) / DEG;
     const obrot = Math.atan2(dy, dx) / DEG;
     dodaj(Manifold.cylinder(L, promienie[i], promienie[i + 1], 32, false)
       .rotate([0, pochyl, obrot])
       .translate(a));
   }
-  // Kula tylko tam, gdzie tor NAPRAWDE skreca, oraz na koncu.
-  //
-  // Na zlaczu dwoch wspolliniowych odcinkow kula jest dokladnie styczna do
-  // obu, a takie styczne zetkniecie jadro potrafi zamknac jako osobna,
-  // zerowej grubosci skorupe. W pliku wygladalo to jak druga bryla o ujemnej
-  // objetosci i o wymiarach trzech setnych milimetra, czyli jak smiec, ktory
-  // slicer zglosi jako blad siatki.
-  //
-  // PROG SKRETU JEST TU RZECZA GLOWNA, a nie drobiazgiem.
-  //
-  // Kula o promieniu rury siega wzdluz toru tak samo daleko jak w poprzek,
-  // wiec przy rurze ZWEZAJACEJ SIE wychodzi spod sasiednich odcinkow i robi
-  // paciorek. Luk galerii ma trzynascie punktow i promien malejacy o trzydziesci
-  // procent, wiec kazda kula wystawala spod nastepnej: powstawal z tego sznur
-  // koralikow w miejscu, ktore ma byc jedna gladka linia. Klient zglosil to
-  // dwa razy jako "karbowana szyna".
-  //
-  // Dwa sasiednie stozki dziela ten sam okrag na zlaczu, wiec ich suma jest
-  // bryla poprawna takze BEZ kuli: kula wygladza jedynie zalamanie na
-  // zewnetrznej stronie luku. Przy skrecie ponizej dziesieciu stopni tego
-  // zalamania i tak nie widac, a paciorek widac zawsze.
-  const PROG = Math.cos(10 * DEG);
   for (let i = 1; i < punkty.length; i++) {
-    const koniec = i === punkty.length - 1;
-    if (koniec) {
-      // Czubek zaokraglamy tylko tam, gdzie rura sie KONCZY w powietrzu,
-      // czyli na lapce. Luk galerii wchodzi koncem w szyne i kula robi na nim
-      // guzek.
-      if (opcje.czubek === false) continue;
-    } else {
-      const a = punkty[i - 1], b = punkty[i], c = punkty[i + 1];
-      const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
-      const v = [c[0] - b[0], c[1] - b[1], c[2] - b[2]];
-      const lu = Math.hypot(...u) || 1, lv = Math.hypot(...v) || 1;
-      const cos = (u[0] * v[0] + u[1] * v[1] + u[2] * v[2]) / (lu * lv);
-      if (cos > PROG) continue;                   // lagodnie, nie ma czego lagodzic
-    }
+    if (i === punkty.length - 1 && opcje.czubek === false) continue;
     dodaj(Manifold.sphere(promienie[i], 28).translate(punkty[i]));
   }
   return solid;
@@ -1645,7 +1787,7 @@ function buildBandStones(w, p) {
  * przy stole, a zostawienie jej klientowi konczy sie albo dziura w wiencu,
  * albo kamieniami zachodzacymi na siebie.
  */
-function buildHalo(w, p, stone, girdleR) {
+export function buildHalo(w, p, stone, girdleR) {
   const { Manifold, CrossSection } = w;
   const d = p.halo.size;
   const luz = 0.18;                                // odstep wienca od rondysty
@@ -1658,7 +1800,9 @@ function buildHalo(w, p, stone, girdleR) {
   const kolo = (r) => smoothCircle(r, 64);
   const rZewn = rW + d / 2 + 0.34;
   const rWewn = Math.max(0.4, girdleR - 0.12);
-  const grubosc = Math.max(0.9, d * 0.72);
+  // Plyta musi pomiescic gniazdo I wybranie pod nim. Bylo `d * 0.72`, czyli
+  // mniej, niz samo gniazdo potrzebuje na wlot, prosty pas i stozek.
+  const grubosc = Math.max(1.05, d * 0.95);
   const plyta = Manifold.extrude(
     CrossSection.ofPolygons([ccw(kolo(rZewn)), ccw(kolo(rWewn)).reverse()]),
     grubosc,
@@ -1716,8 +1860,28 @@ function buildHalo(w, p, stone, girdleR) {
       // Stopa stoi POZA obrysem kamyka, bo wlot gniazda scina wszystko, co
       // w ten obrys wchodzi. Szczyt zakutego slupka pochyla sie do srodka
       // odstepu, czyli nad oba sasiednie kamienie naraz.
-      const rStopy = rW + s * (d / 2 + kulaH * 0.35);
-      const rSzczytu = rW + s * (zam ? d * 0.34 : d / 2 + kulaH * 0.35);
+      //
+      // ODSUNIECIE LICZYMY, a nie zgadujemy. Bylo `d / 2 + kulaH * 0.35`,
+      // czyli pelny promien kamienia z naddatkiem, mierzony PROSTOPADLE do
+      // wienca. To jest za duzo, bo kuleczka stoi w polowie odstepu miedzy
+      // kamieniami, wiec ma juz zapas wzdluz obwodu i drugi raz go nie
+      // potrzebuje. Kuleczka odsunieta o pelny promien lezy daleko od obu
+      // gniazd, a zakuwa sie tym, co jest przy krawedzi kamienia.
+      //
+      // Liczymy wiec najmniejsze odsuniecie, przy ktorym stopa jeszcze mija
+      // wlot obu sasiadow, i bierzemy dokladnie tyle. Podloga jest jedna:
+      // dwie kuleczki tej samej pary nie moga sie zlac w jeden walek. Przy
+      // 1,15 promienia jeszcze sie zlewaly (przy kamyku 1,8 mm z pary
+      // zostawal jeden walek), wiec podloga jest 1,6.
+      const polKroku = (Math.PI / n) * rW;         // polowa odstepu po obwodzie
+      const wlot = d / 2 + 0.05 + 0.04;            // wlot gniazda plus margines
+      const minOdsun = Math.sqrt(Math.max(0, wlot * wlot - polKroku * polKroku));
+      const odsun = Math.max(minOdsun, kulaH * 1.6);
+      const rStopy = rW + s * odsun;
+      // Zakuty slupek pochyla sie nad kamien, ale nie tak daleko, zeby zejsc
+      // sie z drugim slupkiem pary: dwa czubki w jednym walku to nie zakucie.
+      const odsunCzubka = zam ? Math.max(odsun - d * 0.30, kulaH * 1.1) : odsun;
+      const rSzczytu = rW + s * odsunCzubka;
       const zStopy = zK - 0.12;
       metal = zlacz(metal, tubeAlong(w,
         [
@@ -1742,7 +1906,20 @@ function buildHalo(w, p, stone, girdleR) {
   // na kawalki. Sprawdzilem to: bryla rozpadala sie na dwie czesci.
   // Wybieramy wiec pierscien od spodu i zostawiamy plyte, w ktorej siedza
   // gniazda.
-  const plytaH = 0.55;
+  // GRUBOSC PLYTY POD GNIAZDEM decyduje o tym, czy gniazdo w ogole jest.
+  //
+  // Bylo tu 0,55 mm na sztywno. Przy kamyku 1,3 mm gniazdo potrzebuje wlotu,
+  // prostego pasa `SEAT.ledge` i stozka, czyli wiecej niz 0,55: stozek nie
+  // miescil sie w plycie i konczyl sie tam, gdzie zaczynalo sie wybranie.
+  // Zmierzone na wiencu: otwor zwezal sie do 0,85 mm i NATYCHMIAST otwieral
+  // z powrotem do 1,39 mm, bo dalej bylo juz tylko wybranie. Kamien lezal
+  // wiec na krawedzi grubosci dwoch dziesiatych zamiast na stozku i przy
+  // zakuwaniu wpadal do srodka.
+  //
+  // Plyta idzie za rozmiarem kamienia, bo gniazdo tez za nim idzie. Wybranie
+  // zostaje, tylko plytsze: swiatlo od dolu jest wazne, ale nie wazniejsze
+  // od tego, zeby kamien mial na czym usiasc.
+  const plytaH = Math.max(0.55, d * 0.62);
   if (grubosc > plytaH + 0.2) {
     const kolo2 = (r) => smoothCircle(r, 48);
     const wybranie = Manifold.extrude(
