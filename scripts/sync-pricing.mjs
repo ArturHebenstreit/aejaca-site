@@ -39,6 +39,11 @@ const EXTRA = [
   // Gestosci kamieni siedza razem z ich barwa, bo to wlasciwosci tego samego
   // materialu. Wycena potrzebuje gestosci, zeby policzyc karaty z bryly.
   { from: join(ROOT, "src", "data", "gemOptics.js"), name: "gemOptics.js", source: "src/data/gemOptics.js" },
+  // Deklaracja dostarczenia przedmiotu przez klienta. Jedzie tu, bo regule
+  // krajowa (Polska: paczkomat albo osobiscie, zagranica: kurier) musza liczyc
+  // TYM SAMYM kodem formularz i serwer. Dwie kopie rozjechalyby sie przy
+  // pierwszej zmianie, a objawem bylby blad dopiero przy platnosci.
+  { from: join(ROOT, "src", "data", "inboundDelivery.js"), name: "inboundDelivery.js", source: "src/data/inboundDelivery.js" },
 ];
 
 /** W kopii wszystko lezy obok siebie, wiec ../data/x.js staje sie ./x.js */

@@ -18,6 +18,7 @@ import {
   verifyReturn, parseITN, buildITNConfirmation, fetchGatewayList,
 } from "./autopay.js";
 import { packagingGrosze, sanitizePersonalization } from "./pricing/packaging.js";
+import { inboundAllowed, wymagaPrzesylki } from "./pricing/inboundDelivery.js";
 import { validateCustomer, normalizePhone } from "./pricing/customerFields.js";
 import { eurCentsFromGrosze } from "./pricing/currency.js";
 import { shippingGrosze as shippingCost, needsCustoms, zoneForCountry } from "./pricing/shipping.js";
@@ -97,6 +98,9 @@ if (pool) {
   pool.query(`ALTER TABLE conversations ADD COLUMN IF NOT EXISTS country VARCHAR(10)`).catch(() => {});
   pool.query(`CREATE TABLE IF NOT EXISTS events (id BIGSERIAL PRIMARY KEY, ts TIMESTAMPTZ NOT NULL DEFAULT NOW(), session VARCHAR(50) NOT NULL, path VARCHAR(500), category VARCHAR(50), action VARCHAR(200), label VARCHAR(500), value NUMERIC, country VARCHAR(10), device VARCHAR(20))`).catch(() => {});
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS session_id VARCHAR(50)`).catch(() => {});
+  // Jak klient dostarczy NAM swoj przedmiot: paczkomat, osobiscie, kurier.
+  // Kierunek odwrotny do `delivery_method`, ktory opisuje droge od nas do niego.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS inbound_delivery VARCHAR(30)`).catch(() => {});
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS contacted_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS contact_note TEXT`).catch(() => {});
   // Zapytanie o wycene to zobowiazanie tak samo jak zamowienie, wiec musi dac
@@ -1995,6 +1999,30 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
       });
     }
 
+    // DEKLARACJA DOSTARCZENIA, gdy klient ma nam cos przyslac.
+    //
+    // Naprawa i renowacja nie maja innego wejscia niz wlasna bizuteria klienta,
+    // a przy laserze material bywa powierzony. Bez tej deklaracji zamowienie
+    // jest oplacone, a robota stoi: nie wiadomo, czy czekac na paczke, czy na
+    // klienta pod drzwiami, ani kiedy.
+    //
+    // Regule krajowa liczy `inboundAllowed` z lustra `src/data`, a nie wlasna
+    // kopia listy: Polska to paczkomat albo osobiscie, zagranica wylacznie
+    // kurier. Sprawdzamy TU, bo formularz da sie ominac.
+    //
+    // Kraj liczymy TUTAJ, a nie siegamy po `country` nizej: tamta stala jest
+    // deklarowana pod tym miejscem, wiec odwolanie do niej wywrocilo by kazde
+    // zamowienie przy pierwszym uruchomieniu. Zlapane przed wypchnieciem.
+    const krajPrzesylki = String(delivery?.country || "PL").toUpperCase();
+    const przesylkaOd = priced.some((i) => wymagaPrzesylki(i));
+    const inbound = String(delivery?.inbound || "").trim();
+    if (przesylkaOd && !inboundAllowed(inbound, krajPrzesylki)) {
+      return res.status(400).json({
+        error: "Zamowienie wymaga deklaracji, w jaki sposob dostarczysz nam swoj przedmiot.",
+        code: "inbound_required",
+      });
+    }
+
     const itemsTotal =
       priced.reduce((sum, i) => sum + i.lineGrosze, 0) +
       productItems.reduce((sum, i) => sum + i.lineGrosze, 0);
@@ -2084,11 +2112,11 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
          accepted_terms_at, waived_withdrawal_at, digital_immediate_at,
          access_token, ip_hash, expires_at, revisions_included,
          payment_method, amount_eur_cents, eur_rate, eur_rate_locked_at,
-         discount_code, discount_grosze)
+         discount_code, discount_grosze, inbound_delivery)
        VALUES ($1,$22,'instant',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
          NOW(), $16, $17, $18, $19, $20, $21,
          $23, $24, $25, CASE WHEN $24::INTEGER IS NULL THEN NULL ELSE NOW() END,
-         $26, $27)
+         $26, $27, $28)
        RETURNING id`,
       [orderRef, safeLang, itemsTotal, shipping, total,
        customerEmail, customer.name.trim().replace(/\s+/g, " "), normalizePhone(customer.phone),
@@ -2102,7 +2130,8 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
        priced.find((i) => i.revisionsIncluded)?.revisionsIncluded ?? null,
        wantsTransfer ? "awaiting_transfer" : "awaiting_payment",
        wantsTransfer ? "bank_transfer" : "autopay",
-       amountEurCents, eurRate, discountCode, discountGrosze]
+       amountEurCents, eurRate, discountCode, discountGrosze,
+       przesylkaOd ? inbound : null]
     );
     const orderId = rows[0].id;
 
