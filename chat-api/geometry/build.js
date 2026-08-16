@@ -915,25 +915,26 @@ function vprongSolid(w, pts, deg, prongR, base, top, zamkniete = false) {
 }
 
 /**
- * Czy zakucia maja byc ZAMKNIETE nad kamieniem. NIGDY.
+ * Czy zakucia maja byc ZAMKNIETE nad kamieniem.
  *
- * Do 2026-08-16 rozstrzygal o tym przelacznik "Kamienie w modelu", ktory
- * domyslnie stoi na TAK. Zamiar byl taki, ze plik z kamieniem pokazuje wyrob
- * gotowy, wiec lapki leza na koronie. Skutek byl inny: KAZDY uklad otwierany
- * domyslnie pokazywal gniazda zakryte, bo wlot zamkniety to sam obrys kamienia
- * plus slupek w szerokosci tafli. Wlasciciel zglosil to na pieciu ukladach po
- * kolei, za kazdym razem jako "nie widac gniazda, jest zakryte".
+ * Rozstrzyga o tym przelacznik "Kamienie w modelu" i tak ma byc:
  *
- * Wniosek jest szerszy od tego jednego objawu. To, co ten kreator wydaje, jest
- * MODELEM ODLEWNICZYM: plikiem, ktory idzie na wosk. On musi miec gniazda
- * otwarte zawsze, bo inaczej nie da sie w niego wlozyc kamienia. Podglad
- * kamienia to warstwa RYSUNKU, a nie stan bryly, i nie ma prawa ruszac metalu.
+ * - kamien W MODELU  -> wyrob GOTOWY, lapki docisniete na koronie,
+ * - kamien WYLACZONY -> MODEL ODLEWNICZY, lapki otwarte, gniazda gotowe
+ *   do zakucia.
  *
- * Zostawiam parametr `zamkniete` w `seatCutter`, bo wyciecie pod lapke lezaca
- * na koronie jest poprawna geometria i moze sie przydac do wizualizacji wyrobu
- * gotowego. Nie wchodzi tylko do wyrobu, ktory wydajemy.
+ * Przez jeden dzien stalo tu `false` na sztywno. Wyszlo to z blednej
+ * diagnozy: wlasciciel zglaszal zakryte gniazda przy WYLACZONYCH kamieniach,
+ * a ja policzylem, ze skoro przelacznik domyslnie stoi na TAK, to musial go
+ * miec wlaczonego. Nie mial. Prawdziwe przyczyny byly dwie i obie leza gdzie
+ * indziej: cienki jak ostrze rant kasety i lita bryla oprawki kamieni
+ * bocznych. Obie poprawione, a ta linijka wraca tam, gdzie byla.
+ *
+ * Wniosek na przyszlosc jest w dzienniku: gdy zgloszenie nie zgadza sie
+ * z ustawieniem domyslnym, to jest powod, zeby SPRAWDZIC, a nie zeby
+ * poprawiac ustawienie.
  */
-const zakute = () => false;
+const zakute = (p) => p.casting?.stones !== false;
 
 export function buildCrown(w, p, stone) {
   const { Manifold, CrossSection } = w;
@@ -1303,9 +1304,14 @@ function buildSideStones(w, p) {
         .rotate([0, 0, (a / DEG) - 90])
         .translate([Math.cos(a) * rKam, Math.sin(a) * rKam, 0]);
 
-      const kam = stoneSolid(w, "round", size);
+      // SZLIF KAMIENI BOCZNYCH jest wyborem klienta, tak samo jak przy
+      // kamieniu centralnym. Kamien i jego gniazdo musza brac ten sam szlif,
+      // bo gniazdo w innym obrysie albo kamienia nie utrzyma, albo wytnie
+      // dziure wieksza od niego.
+      const szlifBoku = CUTS[p.side.cut] ? p.side.cut : "round";
+      const kam = stoneSolid(w, szlifBoku, size);
       stones.push(naMiejsce(kam.solid));
-      addS(naMiejsce(seatCutter(w, "round", size, zakute(p), wylotWSzynie)));
+      addS(naMiejsce(seatCutter(w, szlifBoku, size, zakute(p), wylotWSzynie)));
 
       if (podniesienie > 0) {
         // Oprawka: stozek od szyny do rondysty i cztery lapki dookola.
@@ -1313,7 +1319,24 @@ function buildSideStones(w, p) {
         // i przenosimy tym samym obrotem, wiec nie da sie jej postawic krzywo.
         const rG = size / 2;
         const gleboko = podniesienie + 0.45;        // wchodzi w szyne, nie stoi na niej
-        const kosz = Manifold.cylinder(gleboko, rG * 0.55, rG + 0.18, 32, false)
+        // KOSZYK, A NIE LITY STOZEK.
+        //
+        // Byl tu pelny scinany stozek. Gniazdo wycinalo w nim kieszen i kamien
+        // rzeczywiscie wchodzil, wiec kazdy pomiar to przepuszczal, a wyrob
+        // czytal sie jak zamkniety kubek z lapkami. Wlasciciel zglosil to
+        // czterokrotnie jako "nie pokazuje sie gniazdo w kamieniach bocznych",
+        // i mial racje: gniazdo, przez ktore nie przechodzi swiatlo, nie
+        // wyglada na gniazdo. Kamien centralny mial okna od poczatku i wlasnie
+        // dlatego wygladal dobrze przy tych samych ustawieniach.
+        //
+        // Okna tna NA WYLOT, wiec nie moga zamknac pustki w srodku. Pusty
+        // stozek z otworem tylko u gory bylby cicha awaria: objetosc, masa
+        // i `genus` w porzadku, a w bryle zapieczetowany pecherz.
+        //
+        // Rant tez byl za cienki: 0,18 mm ponad rondyste przy wlocie gniazda
+        // szerszym o 0,05 mm zostawialo 0,13 mm sciany. Ten sam blad co
+        // w kasecie, w trzecim juz miejscu. Teraz zostaje 0,27 mm.
+        const kosz = Manifold.cylinder(gleboko, rG * 0.55, rG + 0.32, 32, false)
           .translate([0, 0, -gleboko]);
         let oprawka = kosz;
         const rL = Math.min(0.42, Math.max(0.24, size * 0.11));
@@ -1323,6 +1346,17 @@ function buildSideStones(w, p) {
             base: -gleboko + 0.1, girdleTop: kam.girdleH, crownH: kam.crownH,
             zamkniete: zakute(p),
           }).rotate([0, 0, deg]));
+        }
+        // Okna miedzy lapkami. Lapki stoja po przekatnych (45, 135, 225, 315),
+        // wiec noze ida wzdluz osi 0 i 90 i zadnej z nich nie ruszaja.
+        // Wysokosc okna zostawia pelny pierscien pod rondysta, bo to on trzyma
+        // kamien, i pelna stopke, bo ta wchodzi w szyne.
+        const winH = Math.max(0.4, gleboko * 0.45);
+        const winT = Math.max(0.5, rG * 0.62);
+        for (const kat of [0, 90]) {
+          oprawka = odejmij(oprawka, Manifold.cube([rG * 6, winT, winH], true)
+            .rotate([0, 0, kat])
+            .translate([0, 0, -gleboko + winH / 2 + gleboko * 0.16]));
         }
         addM(naMiejsce(oprawka));
       }
@@ -2270,7 +2304,13 @@ export async function buildRing(input, opts = {}) {
   // Kamienie moga zniknac z modelu na dwa sposoby: przez parametr klienta
   // i przez wywolanie wewnetrzne, ktore ich nie potrzebuje. Oba znacza to
   // samo, wiec skladamy je w jedno.
-  const zKamieniami = opts.withStones !== false && p.casting.stones !== false;
+  //
+  // `withStones: true` jest MOCNIEJSZE od przelacznika klienta i sluzy tylko
+  // pomiarom: sprawdzian potrzebuje bryl kamieni po to, zeby przylozyc je do
+  // metalu ODLEWNICZEGO, czyli takiego, w ktorym klient kamieni nie chce.
+  // Bez tego sonda dostawala pusta liste i przechodzila, nie mierzac niczego.
+  const zKamieniami = opts.withStones === true
+    || (opts.withStones !== false && p.casting.stones !== false);
   const w = await kernel();
   const segments = opts.segments || SEG;
 
@@ -2344,7 +2384,7 @@ export async function buildRing(input, opts = {}) {
 
     const side = buildSideStones(w, p);
     if (p.side.count > 0) {
-      const wzor = stoneSolid(w, "round", p.side.size);
+      const wzor = stoneSolid(w, CUTS[p.side.cut] ? p.side.cut : "round", p.side.size);
       stoneVolumesMm3.side = wzor.solid.volume();
       wzor.solid.delete?.();
     }
@@ -2414,7 +2454,14 @@ export async function buildRing(input, opts = {}) {
   if (p.kind === "band") {
     dolicz(p.band.material, stoneVolumesMm3.side, stoneVolumesMm3.sideCount || 0);
   } else if (p.kind !== "signet") {
-    dolicz(p.stone.material, stoneVolumesMm3.center, p.setting === "drilled" ? 0 : 1);
+    // Brioleta tez jest kamieniem, ktory klient dostaje.
+    //
+    // Stalo tu `p.setting === "drilled" ? 0 : 1`, wiec pierscionek z brioleta
+    // pokazywal 0,00 ct przy kamieniu widocznym na podgladzie. Brioleta nie
+    // jest OSADZANA, tylko wiercona i zawieszona na kablaku, i stad zapewne
+    // wzielo sie to zero: nie ma gniazda, wiec ktos uznal, ze nie ma kamienia.
+    // Kamien jednak wisi, wazy i kosztuje, wiec liczy sie tak samo jak kazdy.
+    dolicz(p.stone.material, stoneVolumesMm3.center, 1);
     dolicz(p.side.material, stoneVolumesMm3.side, p.side.count * 2);
     dolicz(p.halo.material, stoneVolumesMm3.halo || 0, stoneVolumesMm3.haloCount || 0);
   }
