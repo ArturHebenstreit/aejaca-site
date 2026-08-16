@@ -1036,14 +1036,31 @@ export function buildCrown(w, p, stone) {
     // i to on czytal sie jako "grube zamkniecie dookola". Kaseta jubilerska
     // zachodzi na kamien o kilka dziesiatych milimetra, tyle, zeby go
     // przytrzymac, i wlasnie tyle tu zostaje.
-    const wall = 0.4;
-    const h = stone.girdleH + stone.crownH * 0.20 + 0.3;
+    // RANT MUSI ZOSTAC RANTEM PO WYCIECIU GNIAZDA.
+    //
+    // Byla tu scianka 0,4 mm zbiegajaca u gory o `wall * 0,85`, czyli do
+    // promienia `size / 2 + 0,06`. Wlot gniazda ma promien `size / 2 + 0,05`,
+    // wiec z rantu zostawalo u gory JEDNA SETNA MILIMETRA. Policzone, nie
+    // zgadniete: 3,06 wobec 3,05 mm przy kamieniu 6 mm.
+    //
+    // Skutek jest dokladnie taki, jak zglosil wlasciciel: w soliterze gniazdo
+    // widac, w kasecie nie. Nie dlatego, ze gniazdo bylo zamkniete (kamien
+    // wchodzil, sprawdzian 33 to potwierdza), tylko dlatego, ze WOKOL niego
+    // nie bylo zadnej sciany. Kaseta czytala sie jak plaska plyta z dziura,
+    // a przy odlewie ostrze o grubosci setnej milimetra i tak by nie wyszlo.
+    //
+    // Scianka idzie teraz za rozmiarem kamienia, bo kaseta pod kamien 8 mm
+    // potrzebuje grubszej sciany niz pod 4 mm, i zbiega tylko do 0,6 swojej
+    // grubosci. Po odjeciu wlotu zostaje ponad 0,3 mm litego metalu u gory:
+    // tyle, ile jubiler dociska na kamien.
+    const wall = Math.max(0.45, size * 0.1);
+    const h = stone.girdleH + stone.crownH * 0.35 + 0.35;
     const outer = CrossSection.ofPolygons([ccw(outlineFor(p.stone.cut, size + 2 * wall))]);
-    const trzon = h * 0.7 + SEAT.aboveGalleryMm;
+    const trzon = h * 0.6 + SEAT.aboveGalleryMm;
     add(Manifold.extrude(outer, trzon).translate([0, 0, -SEAT.aboveGalleryMm]));
     // Rant dociskany na kamien: ta sama scianka, ale zbiegajaca do wewnatrz.
-    const zbieg = 1 - (wall * 0.85) / (size / 2 + wall);
-    add(Manifold.extrude(outer, h * 0.3, 0, 0, [zbieg, zbieg])
+    const zbieg = (size / 2 + wall * 0.6) / (size / 2 + wall);
+    add(Manifold.extrude(outer, h * 0.4, 0, 0, [zbieg, zbieg])
       .translate([0, 0, trzon - SEAT.aboveGalleryMm]));
     return { solid: crown, basketH };
   }
