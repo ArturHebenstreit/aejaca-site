@@ -305,6 +305,13 @@ może znaczyć brak metalu, brak światła albo brak fasetek, a rozróżnia to
 wyłącznie pomiar bryły. Kolejność jest więc odwrotna niż zwykle: zobacz na
 renderze, ŻE coś jest nie tak, ale nigdy nie wnioskuj z renderu, CO.
 
+**Potwierdzone na podglądzie** (co oglądać przy następnej zmianie tych trzech
+rzeczy): kaseta z gruszką ma cienki rant obrysowujący kamień, a nie studnię
+i symetryczny obrys po obu bokach szpica; eternity z włączonymi kamieniami
+pokazuje pary rozdzielonych krap dogniętych na sąsiednie kamienie, a nie proste
+słupki; trylogia z bocznymi gruszkami ma oprawki boczne o obrysie gruszki,
+wyraźnie nieokrągłe.
+
 ## 2026-08-16 (wieczór) - kamień bezbarwny wyglądał jak zaślepka, i trzy poprawki zakucia
 
 **Najważniejsza lekcja tej rundy nie jest geometryczna.** Właściciel czwarty raz
