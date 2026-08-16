@@ -280,6 +280,42 @@ dodając nową bryłę:
 Dopisujemy **na górze**, jeden wpis na zmianę geometrii. Format: co było, co jest,
 i **czego się z tego dowiedzieliśmy na przyszłość**.
 
+## 2026-08-16 - kaseta: rant zbiegał do setnej milimetra
+
+**Co było.** Ścianka kasety miała 0,4 mm i zbiegała u góry o `wall * 0,85`,
+czyli do promienia `size / 2 + 0,06`. Wlot gniazda ma promień `size / 2 + 0,05`,
+więc **z rantu zostawała u góry jedna setna milimetra**: 3,06 wobec 3,05 mm przy
+kamieniu 6 mm. Kontrola negatywna zmierzyła średnio 0,148 mm na plastrze 0,1 mm.
+
+**Co jest.** Ścianka idzie za rozmiarem kamienia (`max(0,45; size * 0,1)`),
+rant jest wyższy (`crownH * 0,35 + 0,35`) i zbiega tylko do 0,6 swojej grubości.
+Po odjęciu wlotu zostaje 0,34-0,40 mm litego metalu na wysokości 0,75-1,44 mm
+ponad rondystą.
+
+**Czego się dowiedzieliśmy.**
+
+- **„Kamień wchodzi do gniazda" to za mało.** Sprawdzian 33 przepuszczał kasetę,
+  bo kamień faktycznie wchodził. Wada polegała na tym, że WOKÓŁ niego nie było
+  ściany: kaseta czytała się jak płaska płyta z dziurą. Gniazdo to otwór **plus**
+  metal, który ten otwór obudowuje, i jedno bez drugiego nie jest gniazdem.
+- **Każdy element stykający się z wlotem gniazda trzeba policzyć względem
+  promienia wlotu**, a nie względem obrysu kamienia. Wlot ma `size / 2 + luz`
+  i zjada wszystko, co w niego wchodzi. Ten sam błąd co przy krapach eternity
+  (`d * 0,56` wobec wlotu `d / 2 + 0,05`), popełniony w drugim miejscu
+  niezależnie.
+- **Sprawdzian 33 idzie po WSZYSTKICH presetach.** Poprzedni brał osiem układów
+  ułożonych ręcznie i przechodził, gdy właściciel patrzył na presety. Nowy
+  preset wchodzi teraz do sprawdzianu sam.
+- **Oś kamienia bierzemy z kamienia, nie z jego położenia.** Wieniec halo jest
+  równoległy do kamienia centralnego, więc kamyk z boku wieńca ma oś odchyloną
+  od własnego promienia. Sonda podnosząca go „na zewnątrz" jechała ukosem
+  i meldowała gniazdo zakryte przy poprawnej bryle. Oś liczymy z tafli
+  (największe płaskie lice), a jej zwrot z położenia, bo kaboszon tafli nie ma
+  i jego największym licem jest spód.
+- **Poziom rondysty znajdujemy, a nie liczymy z proporcji szlifu**: to miejsce,
+  w którym kamień jest najszerszy. Wzór wzięty z brylanta wypadał przy kaboszonie
+  o pół milimetra obok.
+
 ## 2026-08-16 - krapy eternity: między kamieniami, wystające, do rozdzielenia
 
 **Co było.** Dwie gładkie kule o promieniu 0,28 mm, na tym samym kącie co

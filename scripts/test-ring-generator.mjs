@@ -1893,5 +1893,173 @@ console.log("\n32. Eternity: cztery krapy na kazdy kamien, i da sie nimi zakuc")
   }
 }
 
+// ------------------------------------------------------------
+console.log("\n33. KAZDY preset ma gniazda, w ktore da sie osadzic kamien");
+// ------------------------------------------------------------
+// Sprawdzian 19 bral osiem ukladow ulozonych recznie i wszystkie przechodzil,
+// a wlasciciel dalej pokazywal zdjecia z zamknietymi gniazdami. Powod byl
+// prozaiczny: pokazywal PRESETY, a preset to inna kombinacja niz te osiem.
+// "W soliterze jest idealnie, w kasecie juz nie."
+//
+// Ten sprawdzian nie wybiera. Idzie po calej liscie presetow i po kazdym
+// rodzaju kamienia, jaki dany preset zawiera: centralnym, bocznych, wiencu
+// halo, obwodzie. Nowy preset wchodzi tu sam, bez dopisywania.
+{
+  // OS KAMIENIA BIERZEMY Z KAMIENIA, a nie z jego polozenia w pierscionku.
+  //
+  // Sprawdzian 19 zaklada, ze "w gore" znaczy dla kamienia "od srodka
+  // pierscionka na zewnatrz". Dla kamienia centralnego to prawda, dla kamieni
+  // na szynie tez. Dla wienca halo NIE: caly wieniec jest rownolegly do
+  // kamienia centralnego, wiec kamyk z boku wienca ma os odchylona od
+  // wlasnego promienia o kilkanascie stopni. Podnoszony "na zewnatrz" jedzie
+  // ukosem i zahacza o sasiedni metal, co czyta sie jako gniazdo zakryte,
+  // choc gniazdo jest w porzadku.
+  //
+  // Os bierzemy z TAFLI: to najwieksze plaskie lice kamienia. Sumujemy pola
+  // trojkatow wedlug kierunku normalnej i wybieramy kierunek o najwiekszej
+  // sumie. Probowalem najpierw kuleta jako wierzcholka najdalszego od srodka
+  // ciezkosci i to sie NIE UDALO: rondysta lezy dalej niz kulet, wiec
+  // wychodzila z tego os pozioma i sprawdzian oblewal wszystko, lacznie
+  // z soliterem, o ktorym wiadomo, ze jest dobry.
+  const osKamienia = (k) => {
+    const mesh = k.getMesh();
+    const vp = mesh.vertProperties, np = mesh.numProp, tv = mesh.triVerts;
+    const kubelki = new Map();
+    for (let t = 0; t < tv.length; t += 3) {
+      const a = tv[t], b = tv[t + 1], c = tv[t + 2];
+      const ax = vp[a * np], ay = vp[a * np + 1], az = vp[a * np + 2];
+      const ux = vp[b * np] - ax, uy = vp[b * np + 1] - ay, uz = vp[b * np + 2] - az;
+      const wx = vp[c * np] - ax, wy = vp[c * np + 1] - ay, wz = vp[c * np + 2] - az;
+      const nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx;
+      const dl = Math.hypot(nx, ny, nz);
+      if (dl < 1e-9) continue;
+      const klucz = [Math.round((nx / dl) * 40), Math.round((ny / dl) * 40), Math.round((nz / dl) * 40)].join(":");
+      const acc = kubelki.get(klucz) || [0, 0, 0, 0];
+      acc[0] += dl / 2; acc[1] += nx / dl; acc[2] += ny / dl; acc[3] += nz / dl;
+      kubelki.set(klucz, acc);
+    }
+    let naj = null, pole = -1;
+    for (const acc of kubelki.values()) if (acc[0] > pole) { pole = acc[0]; naj = acc; }
+    const L = Math.hypot(naj[1], naj[2], naj[3]) || 1;
+    const os = [naj[1] / L, naj[2] / L, naj[3] / L];
+    // ZWROT bierzemy z polozenia, bo z samego lica go nie widac. Kaboszon nie
+    // ma tafli: jego najwieksze plaskie lice to SPOD, a normalna spodu patrzy
+    // w palec. Bez tej poprawki sonda podnosila kaboszon w dol, w szyne,
+    // i meldowala gniazdo zakryte na 2,45 procent przy poprawnej bryle.
+    const b = k.boundingBox();
+    const sx = (b.min[0] + b.max[0]) / 2, sy = (b.min[1] + b.max[1]) / 2;
+    const promL = Math.hypot(sx, sy) || 1;
+    if (os[0] * (sx / promL) + os[1] * (sy / promL) < 0) {
+      return [-os[0], -os[1], -os[2]];
+    }
+    return os;
+  };
+  const kolizja = (metal, k, os, d) => {
+    const przesuniety = k.translate([os[0] * d, os[1] * d, os[2] * d]);
+    const wspolne = metal.intersect(przesuniety);
+    const v = wspolne.volume();
+    przesuniety.delete?.(); wspolne.delete?.();
+    return v;
+  };
+
+  const wynik = [];
+  for (const pr of RING_PRESETS) {
+    const p = validate(applyPreset(pr, DEFAULTS));
+    const r = await buildRing(p, { segments: 64 });
+    if (!r.stones.length) { zwolnij(r); continue; }
+    // Kamienie tego samego rodzaju powstaja tym samym kodem, wiec bierzemy
+    // pierwszy, srodkowy i ostatni. Wieniec halo potrafi miec dwadziescia
+    // kamieni, a kazde sprawdzenie to trzy bryly w pamieci jadra.
+    const idx = [...new Set([0, Math.floor(r.stones.length / 2), r.stones.length - 1])];
+    const problemy = [];
+    for (const i of idx) {
+      const k = r.stones[i];
+      const os = osKamienia(k);
+      const v = k.volume();
+      const naMiejscu = (kolizja(r.metal, k, os, 0) / v) * 100;
+      const nizej = (kolizja(r.metal, k, os, -0.25) / v) * 100;
+      const wyzej = (kolizja(r.metal, k, os, 0.6) / v) * 100;
+      if (wyzej > 0.05) problemy.push(`kamień ${i}: gniazdo ZAKRYTE od góry (${wyzej.toFixed(2)} %)`);
+      else if (naMiejscu > 3) problemy.push(`kamień ${i}: nie mieści się w gnieździe (${naMiejscu.toFixed(2)} %)`);
+      else if (!(nizej > naMiejscu * 3) || nizej < 0.15) problemy.push(`kamień ${i}: gniazdo nie zatrzymuje kamienia (${nizej.toFixed(2)} wobec ${naMiejscu.toFixed(2)} %)`);
+    }
+    zwolnij(r);
+    if (problemy.length) wynik.push([pr.id, problemy]);
+  }
+  if (wynik.length) {
+    for (const [id, problemy] of wynik) bad(`${id}: ${problemy.join("; ")}`);
+  } else {
+    ok(`wszystkie presety: kamień wchodzi z góry, siada i nie przelatuje`);
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n34. Kaseta ma rant, a nie ostrze o grubosci setnej milimetra");
+// ------------------------------------------------------------
+// Sprawdzian 33 mowi tylko, czy kamien wchodzi do gniazda. W kasecie wchodzil,
+// a wlasciciel i tak widzial "brak gniazda". Powod byl inny: rant zbiegal do
+// promienia `size / 2 + 0,06`, a wlot gniazda ma `size / 2 + 0,05`, wiec
+// u gory zostawala z niego setna milimetra. Kaseta czytala sie jak plaska
+// plyta z dziura i nie wyszlaby z odlewu.
+//
+// Sonda tnie oprawe poziomo tuz pod szczytem rantu i mierzy, ile metalu lezy
+// miedzy wlotem gniazda a krawedzia zewnetrzna. To jest ta sciana, ktora
+// jubiler dociska na kamien.
+{
+  const w = await kernel();
+  const { Manifold } = w;
+  for (const id of ["bezel", "emerald", "cabochon"]) {
+    const pr = RING_PRESETS.find((x) => x.id === id);
+    if (!pr) continue;
+    const p = validate(applyPreset(pr, DEFAULTS));
+    const r = await buildRing(p, { segments: 96 });
+    const kam = r.stones[0];
+    const bb = kam.boundingBox();
+    const kat = Math.atan2((bb.min[1] + bb.max[1]) / 2, (bb.min[0] + bb.max[0]) / 2);
+    // POZIOM RONDYSTY ZNAJDUJEMY, a nie liczymy z proporcji szlifu. Kaboszon
+    // nie ma ani tafli, ani korony, wiec wzor wziety z brylanta wypadal przy
+    // nim o pol milimetra obok i sonda meldowala rant wysoki na 0,09 mm przy
+    // rancie poprawnym. Rondysta to po prostu miejsce, w ktorym kamien jest
+    // NAJSZERSZY, i tak ja tu szukamy: plaster po plastrze.
+    const doOsi = (bryla) => bryla.rotate([0, 0, (-kat * 180) / Math.PI]).rotate([0, -90, 0]);
+    const ks = doOsi(kam);
+    const bbs = ks.boundingBox();
+    let zRondysty = 0, najPole = -1;
+    for (let i = 1; i < 40; i++) {
+      const z = bbs.min[2] + ((bbs.max[2] - bbs.min[2]) * i) / 40;
+      const noz = Manifold.cube([p.stone.size * 4, p.stone.size * 4, 0.04], true).translate([0, 0, z]);
+      const plask = ks.intersect(noz);
+      const pole = plask.volume();
+      if (pole > najPole) { najPole = pole; zRondysty = z; }
+      noz.delete?.(); plask.delete?.();
+    }
+    ks.delete?.();
+    const m = doOsi(r.metal).translate([0, 0, -zRondysty]);
+
+    // Szczyt rantu: najwyzszy metal w promieniu kamienia od jego osi.
+    const walec = Manifold.cylinder(40, p.stone.size, p.stone.size, 64, true);
+    const wokol = m.intersect(walec);
+    const szczyt = wokol.boundingBox().max[2];
+    // Plaster 0,1 mm pod szczytem. Nizej rant jest grubszy, wiec mierzymy
+    // tam, gdzie jest najciensszy.
+    const plaster = Manifold.cube([p.stone.size * 6, p.stone.size * 6, 0.1], true)
+      .translate([0, 0, szczyt - 0.08]);
+    const przekroj = wokol.intersect(plaster);
+    const pole = przekroj.volume() / 0.1;
+    // Grubosc sredniej sciany: pole pierscienia podzielone przez jego obwod
+    // liczony po promieniu wlotu.
+    const rWlotu = p.stone.size / 2 + 0.05;
+    const grubosc = pole / (2 * Math.PI * rWlotu);
+    walec.delete?.(); wokol.delete?.(); plaster.delete?.(); przekroj.delete?.(); m.delete?.();
+    zwolnij(r);
+
+    const problemy = [];
+    if (szczyt < 0.3) problemy.push(`rant sięga tylko ${szczyt.toFixed(2)} mm ponad rondystę`);
+    if (grubosc < 0.25) problemy.push(`rant ma u góry ${grubosc.toFixed(3)} mm, czyli nie ma czego dociskać`);
+    if (problemy.length) bad(`${id}: ${problemy.join("; ")}`);
+    else ok(`${id.padEnd(9)} rant ${grubosc.toFixed(2)} mm gruby, ${szczyt.toFixed(2)} mm ponad rondystą`);
+  }
+}
+
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");
 process.exit(failed ? 1 : 0);
