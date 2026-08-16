@@ -1812,5 +1812,86 @@ console.log("\n31. Noga lapki idzie po scianie kosza, a nie obok niego");
   }
 }
 
+// ------------------------------------------------------------
+console.log("\n32. Eternity: cztery krapy na kazdy kamien, i da sie nimi zakuc");
+// ------------------------------------------------------------
+// Wlasciciel: "nie da sie za ich pomoca zakuc kamieni, krapy powinny byc 4 przy
+// kazdym otworze albo po dwa po srodku miedzy kamieniami, ale blizej srodka
+// i wiekszych wymiarow, tak aby przy osadzaniu mozna bylo krape rozdzielic
+// na dwa".
+//
+// Sonda sprawdza trzy rzeczy naraz, bo poprzednia wersja zawodzila na wszystkich
+// trzech: ILE osobnych krap otacza kamien, czy STERCZA ponad lico szyny (kula
+// wtopiona w metal nie da sie rozdzielic rylcem) i czy sa dosc GRUBE.
+{
+  const w = await kernel();
+  const { Manifold } = w;
+  for (const [nazwa, cfg] of [
+    ["eternity 2,0", { coverage: "full", size: 2.0 }],
+    ["eternity 1,3", { coverage: "full", size: 1.3 }],
+    ["half 2,4", { coverage: "half", size: 2.4 }],
+  ]) {
+    const p = validate({
+      innerDia: 17.2, kind: "band", width: 2.6, thickness: 1.9,
+      band: { ...cfg, setting: "pave", material: "diamond" },
+    });
+    const zK = await buildRing(p, { segments: 96, withStones: true });
+    const kam = zK.stones[0];
+    const bb = kam.boundingBox();
+    const kat = Math.atan2((bb.min[1] + bb.max[1]) / 2, (bb.min[0] + bb.max[0]) / 2);
+    // PROMIEN RONDYSTY, a nie srodka bryly kamienia. Kamien lezy tafla na
+    // zewnatrz, wiec jego bryla siega od pawilonu pod rondysta po tafle nad
+    // nia i srodek pudelka wypada gdzie indziej niz rondysta. Pierwsza wersja
+    // sondy brala wlasnie srodek pudelka i mierzyla plaster kilka dziesiatych
+    // milimetra obok, a to przy krapie wysokiej na pol milimetra jest roznica
+    // miedzy czterema kawalkami a dwoma.
+    const wzor = stoneSolid(w, "round", cfg.size);
+    const bbObr = kam.rotate([0, 0, (-kat * 180) / Math.PI]).boundingBox();
+    const rOsi = bbObr.max[0] - (wzor.girdleH + wzor.crownH);
+    const cz = 0;
+    zwolnij(wzor.solid);
+
+    // Uklad kamienia: os idzie WZDLUZ promienia pierscionka. Obracamy metal
+    // tak, zeby ta os stala sie osia Z, i wtedy wszystko liczymy w plaskim.
+    // Obrot o -kat wokol Z stawia kamien na osi +X, a obrot o -90 wokol Y
+    // zamienia +X na +Z, czyli promien pierscionka staje sie pionem. Kamien
+    // ladowal wtedy w (-cz, 0, rOsi), wiec przesuwamy go do poczatku ukladu.
+    // Pierwsza wersja miala tu bledny znak i sonda mierzyla metal po drugiej
+    // stronie obraczki, pokazujac dwie krapy zamiast czterech.
+    const m = zK.metal.rotate([0, 0, (-kat * 180) / Math.PI]).rotate([0, -90, 0])
+      .translate([cz, 0, -rOsi]);
+    // Plaster TUZ NAD LICEM SZYNY, a nie tuz nad rondysta. Kamien jest
+    // zanurzony, wiec na wysokosci rondysty stoi jeszcze lita szyna i sonda
+    // policzylaby ja jako jeden kawalek. Krapy rozdzielaja sie dopiero powyzej
+    // powierzchni i wlasnie ta czesc jest ta, ktora jubiler bierze rylcem.
+    const zanurzenie = Math.min(0.22, cfg.size * 0.12);
+    const h0 = zanurzenie + 0.12, h1 = h0 + 0.16;
+    const plaster = Manifold.cube([cfg.size * 6, cfg.size * 6, h1 - h0], true)
+      .translate([0, 0, (h0 + h1) / 2]);
+    const wokol = Manifold.cylinder(h1 - h0 + 1, cfg.size * 1.25, cfg.size * 1.25, 64, true)
+      .translate([0, 0, (h0 + h1) / 2]);
+    const wycinek = m.intersect(plaster).intersect(wokol);
+    const czesci = wycinek.decompose();
+    const objetosci = czesci.map((c) => c.volume()).sort((a, b) => b - a);
+    // Bierzemy CZTERY NAJWIEKSZE, a nie najmniejszy kawalek w ogole. Walec
+    // sondy przecina czasem skraj piatej krapy z sasiedniej przerwy i taki
+    // okrawek ma objetosc rzedu setnych, co nie mowi nic o krapie, ktora
+    // trzyma nasz kamien.
+    const najciensza = objetosci[3] ?? 0;
+    // Wysokosc: najwyzszy punkt metalu wokol kamienia ponad rondysta.
+    const gora = m.intersect(wokol.scale([1, 1, 20])).boundingBox().max[2];
+    for (const c of czesci) c.delete?.();
+    wycinek.delete?.(); plaster.delete?.(); wokol.delete?.(); m.delete?.();
+    zwolnij(zK);
+
+    const problemy = [];
+    if (czesci.length < 4) problemy.push(`tylko ${czesci.length} krap wokol kamienia`);
+    if (gora < 0.3) problemy.push(`krapa nie stercza ponad rondyste (${gora.toFixed(2)} mm)`);
+    if (najciensza < 0.02) problemy.push(`najchudsza krapa ma ${najciensza.toFixed(3)} mm3`);
+    if (problemy.length) bad(`${nazwa}: ${problemy.join("; ")}`);
+    else ok(`${nazwa.padEnd(13)} ${czesci.length} krapy, wystaja ${gora.toFixed(2)} mm, najchudsza ${najciensza.toFixed(3)} mm3`);
+  }
+}
+
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");
 process.exit(failed ? 1 : 0);
