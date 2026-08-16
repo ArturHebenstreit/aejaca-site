@@ -1242,7 +1242,25 @@ function buildSideStones(w, p) {
       // Pave i oprawa kanalowa siedza w metalu szyny i tam ograniczenie
       // szerokosci obowiazuje dalej, bo tam kamien naprawde wycina sie w szyne.
       const podniesienie = setting === "prong" ? Math.max(0.5, size * 0.3) : 0;
-      const rKam = roI + podniesienie;
+
+      // KAMIEN W SZYNIE MUSI BYC ZANURZONY, inaczej gniazda nie ma.
+      //
+      // Rondysta siedziala DOKLADNIE na powierzchni szyny, czyli zanurzenie
+      // wynosilo zero. Wlot gniazda zaczyna sie na wysokosci rondysty i idzie
+      // w gore, wiec caly lezal ponad metalem, a w szynie zostawal sam otwor
+      // lozowy, wezszy od kamienia o podciecie. Kamien nie mial jak zjechac
+      // do gniazda: siadal na krawedzi otworu i stal na wierzchu.
+      //
+      // To ta sama wada, ktora poprawilismy juz w wiencu halo (tam zanurzenie
+      // wynosilo 0,06 mm) i ktorej kamienie po obwodzie nigdy nie mialy, bo
+      // tam zanurzenie bylo od poczatku. Zostala w JEDNYM miejscu, przy
+      // kamieniach na ramionach, i tak tez zostala zgloszona: "gniazda na
+      // szynie nie poprawione".
+      //
+      // Lapka podnosi kamien ponad szyne i tam zanurzenie nie ma sensu: kamien
+      // stoi we wlasnej oprawie, a nie w metalu szyny.
+      const zanurzenie = podniesienie > 0 ? 0 : Math.max(0.10, size * 0.11);
+      const rKam = roI + podniesienie - zanurzenie;
 
       // OBROT MUSI BYC TAKI SAM JAK PRZY KORONIE SRODKOWEJ. `rotate([90,0,0])`
       // odwraca kamien: tafla patrzy wtedy w glab palca, a koleta na zewnatrz.
