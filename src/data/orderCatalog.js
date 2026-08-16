@@ -5,7 +5,7 @@
 // wprost z rdzenia cenowego, wiec kreator nigdy nie zaproponuje
 // wyboru, ktorego kalkulator nie zna.
 
-import { QUANTITY_TIERS } from "../pricing/config.js";
+import { QUANTITY_TIERS, OWN_MATERIAL_LABEL, OWN_MATERIAL_OPTIONS } from "../pricing/config.js";
 import {
   APPLICATIONS, LAYER_HEIGHTS, MSLA_SIZES, SIZES, INFILL_OPTIONS, COLORS, PRECISION, FILAMENTS,
 } from "../pricing/print3d.js";
@@ -175,8 +175,9 @@ export const SERVICES = [
       { key: "areaId", label: L("Pole grawerowania", "Engraving area", "Gravurfläche"), options: ENGRAVE_AREAS },
       { key: "detailId", label: L("Szczegółowość", "Detail", "Detailgrad"), options: ENGRAVE_DETAIL },
       { key: "quantityId", label: L("Nakład", "Quantity", "Auflage"), options: QUANTITY_TIERS },
+      { key: "ownMaterial", label: OWN_MATERIAL_LABEL, options: OWN_MATERIAL_OPTIONS },
     ],
-    defaults: { matId: "wood", areaId: "S", detailId: "standard", quantityId: "proto", extended: false },
+    defaults: { matId: "wood", areaId: "S", detailId: "standard", quantityId: "proto", extended: false, ownMaterial: false },
   },
   {
     id: "laser_cut",
@@ -195,8 +196,9 @@ export const SERVICES = [
       { key: "pathId", label: L("Długość ścieżki", "Path length", "Pfadlänge"), options: CUT_PATHS },
       { key: "complexId", label: L("Złożoność", "Complexity", "Komplexität"), options: CUT_COMPLEXITY },
       { key: "quantityId", label: L("Nakład", "Quantity", "Auflage"), options: QUANTITY_TIERS },
+      { key: "ownMaterial", label: OWN_MATERIAL_LABEL, options: OWN_MATERIAL_OPTIONS },
     ],
-    defaults: { matId: "ply3", pathId: "S", complexId: "moderate", quantityId: "proto", extended: false },
+    defaults: { matId: "ply3", pathId: "S", complexId: "moderate", quantityId: "proto", extended: false, ownMaterial: false },
   },
   {
     id: "laser_fiber",
@@ -216,8 +218,9 @@ export const SERVICES = [
       { key: "markId", label: L("Rodzaj znakowania", "Marking type", "Markierungsart"), options: MARK_TYPES },
       { key: "areaId", label: L("Pole", "Area", "Fläche"), options: FIBER_AREAS },
       { key: "quantityId", label: L("Nakład", "Quantity", "Auflage"), options: QUANTITY_TIERS },
+      { key: "ownMaterial", label: OWN_MATERIAL_LABEL, options: OWN_MATERIAL_OPTIONS },
     ],
-    defaults: { matId: "stainless", lensId: "70mm", markId: "surface", areaId: "S", quantityId: "proto" },
+    defaults: { matId: "stainless", lensId: "70mm", markId: "surface", areaId: "S", quantityId: "proto", ownMaterial: false },
   },
   {
     id: "epoxy",
@@ -255,8 +258,31 @@ export const SERVICES = [
   },
 ];
 
+/**
+ * OPIS ZLECENIA JEST WYMAGANY DOMYSLNIE, dla kazdej uslugi.
+ *
+ * Zasada wlasciciela z 2026-08-16, po zdarzeniu, ktore ja wymusilo: przyszlo
+ * oplacone BLIKiem zlecenie na znakowanie laserem fiber, w ktorym byl sam plik
+ * i ani slowa o tym, co z nim zrobic. Pieniadze na koncie, zlecenia nie da sie
+ * wykonac, a klientke trzeba dopytywac po fakcie.
+ *
+ * Flaga jest wiec ODWROCONA: brak wpisu znaczy "wymagany". Usluga dopisana za
+ * pol roku bedzie objeta zasada, nie czekajac, az ktos pamieta o dopisaniu
+ * pola. Zwolnic z opisu mozna tylko przez jawne `requiresDescription: false`,
+ * co zmusza do napisania w kodzie, dlaczego akurat ta usluga go nie potrzebuje.
+ *
+ * Sam plik nie zastepuje opisu i to jest sedno. Plik mowi, JAKI jest ksztalt.
+ * Nie mowi, co ma byc na czym, ktora strona, jaka glebokosc, ile sztuk z jednej
+ * deski ani co zrobic, gdy material okaze sie inny, niz klient sadzil.
+ */
+export function wymagaOpisu(svc) {
+  return Boolean(svc) && svc.requiresDescription !== false;
+}
+
 export function getService(id) {
-  return SERVICES.find((s) => s.id === id) || null;
+  const svc = SERVICES.find((s) => s.id === id) || null;
+  if (!svc) return null;
+  return { ...svc, requiresDescription: wymagaOpisu(svc) };
 }
 
 /** Metody dostawy, koszt w groszach */

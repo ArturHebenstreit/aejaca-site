@@ -280,6 +280,67 @@ dodając nową bryłę:
 Dopisujemy **na górze**, jeden wpis na zmianę geometrii. Format: co było, co jest,
 i **czego się z tego dowiedzieliśmy na przyszłość**.
 
+## 2026-08-16 (noc) - kaseta zakuta odsłania kamień, i jedna hipoteza obalona pomiarem
+
+**Zgłoszenie:** "zbyt mocno zakute, zbyt mało światła, musi być widać kamień",
+dotyczy wszystkich osadzeń kasetowych.
+
+**Co jest.** Rant w stanie zakutym schodzi z `girdleH + 0,42` na `girdleH + 0,34`
+i zbiega do `wall * (-0,05)`, czyli minimalnie ZA obrys kamienia. Chwyt bierze
+się teraz z zachodzenia na koronę, a nie z wysokości ściany, więc kamień jest
+trzymany tak samo, a widać go więcej. Zmierzone (objętość kamienia ponad licem
+metalu): kaseta okrągła 15,6 -> 19,0 %, ośmiokąt 10,8 -> 13,5 %, kaboszon
+53,3 -> 58,3 %. Sprawdzian trzymania: 0,43 % przy progu 0,30 %.
+
+**Obalona hipoteza, warta zapisania.** Zobaczyłem ciemny kaboszon na renderze
+i uznałem, że to moja wcześniejsza zmiana rantu zakopała kamień w studni.
+Wysłałem nawet agenta do poprawiania materiałów kamieni bezbarwnych, który
+stracił godzinę bez rezultatu. **Pomiar to obalił**: kaboszon miał wtedy 53 %
+objętości ponad licem metalu, czyli był odsłonięty bardziej niż w stanie
+otwartym. Ciemny wygląd bierze się z gładkiej kopuły bez fasetek, która na
+ciemnym tle nie ma czego odbić, i nie jest to regresja.
+
+**Wniosek:** render jest kiepskim czujnikiem geometrii. Ciemna plama na obrazku
+może znaczyć brak metalu, brak światła albo brak fasetek, a rozróżnia to
+wyłącznie pomiar bryły. Kolejność jest więc odwrotna niż zwykle: zobacz na
+renderze, ŻE coś jest nie tak, ale nigdy nie wnioskuj z renderu, CO.
+
+**Potwierdzone na podglądzie** (co oglądać przy następnej zmianie tych trzech
+rzeczy): kaseta z gruszką ma cienki rant obrysowujący kamień, a nie studnię
+i symetryczny obrys po obu bokach szpica; eternity z włączonymi kamieniami
+pokazuje pary rozdzielonych krap dogniętych na sąsiednie kamienie, a nie proste
+słupki; trylogia z bocznymi gruszkami ma oprawki boczne o obrysie gruszki,
+wyraźnie nieokrągłe.
+
+## 2026-08-16 (wieczór) - kamień bezbarwny wyglądał jak zaślepka, i trzy poprawki zakucia
+
+**Najważniejsza lekcja tej rundy nie jest geometryczna.** Właściciel czwarty raz
+zgłosił "gniazda zakryte" na układach, które pomiarowo były otwarte. Odtworzyłem
+jego widoki u siebie i przyczyną okazał się RENDER: kamień bezbarwny (cyrkonia,
+brylant) na ciemnym tle rysował się jako szara, nieprzezroczysta bryła nie do
+odróżnienia od metalu. Osadzony kamień wyglądał jak metalowy korek, więc każdy
+układ z bezbarwnym kamieniem czytał się jako "gniazdo zamknięte". Ametyst
+wyglądał dobrze, bo barwę niesie attenuacja. **Zanim szuka się wady w bryle,
+trzeba obejrzeć dokładnie ten widok, który widzi zgłaszający, z tym samym
+kamieniem i tym samym przełącznikiem.** Pomiar bryły nie widzi materiałów.
+
+**Kaseta po zakuciu odsłania koronę.** Rant miał jedną wysokość w obu stanach,
+więc kamień po zakuciu siedział na dnie studni i widać było tylko taflę.
+Teraz stan otwarty stoi wysoko (metal do dogięcia), a stan zakuty nisko:
+`girdleH + 0.42`, ze zbiegiem do `wall * 0.15` nad obrysem kamienia. Trzyma
+(kolizja podniesionego kamienia 0,3+ %), a korona świeci.
+
+**Krapy eternity w stanie zakutym są rozdzielone na dwa.** Tak jak robi to
+jubiler: każda połówka krótsza (0,72 długości), cieńsza (0,8 promienia)
+i pochylona o 26 stopni ku swojemu kamieniowi. Stan otwarty zostaje prosty
+i pełnej długości. Sprawdzian 32 mierzy oba stany: otwarty ma sterczeć,
+zakuty ma trzymać (zmierzone 3,2-8,3 % kolizji podniesionego kamienia).
+
+**Oprawka boczna idzie za obrysem kamienia.** Kosz był walcem niezależnie od
+szlifu, więc markiza na boku siedziała w okrągłej tulei. Teraz dno i rant to
+przeskalowany obrys (`outlineFor`), a łapki stoją na promieniu obrysu pod swoim
+kątem (`radiusAt`), tak samo jak przy koronie centralnej.
+
 ## 2026-08-16 - oprawka boczna, symetria obrysów, i cofnięcie mojej własnej poprawki
 
 **Zakucie wraca pod przełącznik.** Dzień wcześniej wpisałem `zakute() => false`

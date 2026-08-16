@@ -12,8 +12,8 @@ import { trackInquiry, trackFunnel } from "../../utils/analytics.js";
 // Rdzen cenowy zyje w src/pricing/config.js, bo ten sam kod liczy cene
 // na backendzie zamowien. Tutaj tylko re-eksport, zeby kalkulatory
 // importowaly jak dotad.
-import { CONFIG, QUANTITY_TIERS, t, fmtNum, fmtCost, applyPricing } from "../../pricing/config.js";
-export { CONFIG, QUANTITY_TIERS, t, fmtNum, fmtCost, applyPricing };
+import { CONFIG, QUANTITY_TIERS, t, fmtNum, fmtCost, applyPricing, OWN_MATERIAL_LABEL, OWN_MATERIAL_OPTIONS } from "../../pricing/config.js";
+export { CONFIG, QUANTITY_TIERS, t, fmtNum, fmtCost, applyPricing, OWN_MATERIAL_LABEL, OWN_MATERIAL_OPTIONS };
 
 // ============================================================
 // SHARED UI COMPONENTS

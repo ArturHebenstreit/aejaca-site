@@ -18,6 +18,7 @@ import {
   verifyReturn, parseITN, buildITNConfirmation, fetchGatewayList,
 } from "./autopay.js";
 import { packagingGrosze, sanitizePersonalization } from "./pricing/packaging.js";
+import { inboundAllowed, wymagaPrzesylki } from "./pricing/inboundDelivery.js";
 import { validateCustomer, normalizePhone } from "./pricing/customerFields.js";
 import { eurCentsFromGrosze } from "./pricing/currency.js";
 import { shippingGrosze as shippingCost, needsCustoms, zoneForCountry } from "./pricing/shipping.js";
@@ -97,6 +98,9 @@ if (pool) {
   pool.query(`ALTER TABLE conversations ADD COLUMN IF NOT EXISTS country VARCHAR(10)`).catch(() => {});
   pool.query(`CREATE TABLE IF NOT EXISTS events (id BIGSERIAL PRIMARY KEY, ts TIMESTAMPTZ NOT NULL DEFAULT NOW(), session VARCHAR(50) NOT NULL, path VARCHAR(500), category VARCHAR(50), action VARCHAR(200), label VARCHAR(500), value NUMERIC, country VARCHAR(10), device VARCHAR(20))`).catch(() => {});
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS session_id VARCHAR(50)`).catch(() => {});
+  // Jak klient dostarczy NAM swoj przedmiot: paczkomat, osobiscie, kurier.
+  // Kierunek odwrotny do `delivery_method`, ktory opisuje droge od nas do niego.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS inbound_delivery VARCHAR(30)`).catch(() => {});
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS contacted_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS contact_note TEXT`).catch(() => {});
   // Zapytanie o wycene to zobowiazanie tak samo jak zamowienie, wiec musi dac
@@ -1804,6 +1808,28 @@ const orderEmailLimit = createLimiter({ limit: 5, windowMs: 60 * 60_000, name: "
 /** Ile rezerwacji towaru wisi jednoczesnie z jednego adresu. */
 const MAX_HELD_RESERVATIONS = 2;
 
+/**
+ * Najkrotszy opis zlecenia, ktory przyjmujemy. Ta sama liczba stoi
+ * w przegladarce (`MIN_DESCRIPTION` w CalcToCart i ServiceConfigurator),
+ * i to jest zamierzone: formularz ma odbic zlecenie zanim klient zaplaci,
+ * a serwer ma je odbic takze wtedy, gdy formularz ktos ominie.
+ */
+const MIN_JOB_DESCRIPTION = 20;
+
+/**
+ * Uslugi ZWOLNIONE z wymogu opisu, kazda z powodem napisanym obok.
+ *
+ * Lista jest krotka celowo. Zwolnienie znaczy, ze zlecenie trafi do pracowni
+ * bez ani jednego zdania od klienta, wiec wolno je dac tylko wtedy, gdy tresc
+ * zlecenia wynika jednoznacznie z czegos innego niz tekst.
+ *
+ * `jewelry_ring_config`: kreator pierscionkow. Parametry pozycji sa PELNYM
+ * opisem wyrobu, co do dziesiatych milimetra, i to z nich powstaje bryla,
+ * ktora klient widzial na ekranie. Opis slowny nie dodalby tu niczego, czego
+ * nie ma juz w `params`, a wymuszanie go zablokowaloby sprzedaz z kreatora.
+ */
+const USLUGI_BEZ_OPISU = new Set(["jewelry_ring_config"]);
+
 app.post("/api/orders", express.json({ limit: "1mb" }),
   limitBy(orderLimit, extractIP, { error: "Za duzo zamowien z tego miejsca, sprobuj za chwile" }),
   async (req, res) => {
@@ -1917,6 +1943,39 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
       // Opis zlecenia to tresc od klienta, nie parametr wyceny, wiec przycinamy
       // go do rozsadnej dlugosci i zapisujemy razem z parametrami pozycji.
       const description = String(raw.description || "").slice(0, 2000).trim() || null;
+
+      // OPIS JEST WARUNKIEM PRZYJECIA ZLECENIA NA USLUGE.
+      //
+      // Sprawdzamy to TUTAJ, a nie tylko w przegladarce, bo formularz da sie
+      // ominac, a skutkiem jest zamowienie oplacone i niewykonalne: pieniadze
+      // na koncie, plik w chmurze i nikt nie wie, co z nim zrobic. Dokladnie
+      // to sie wydarzylo 2026-08-16 przy znakowaniu laserem fiber.
+      //
+      // Pozycja z polki (`productSlug`) jest z tego zwolniona i nigdy tu nie
+      // trafia: to gotowy przedmiot z katalogu, jego tresc jest znana.
+      //
+      // Pozycja z WYCENY tez jest zwolniona: przeszla przez czlowieka, ktory ja
+      // policzyl, wiec pracownia ma kontekst nawet bez opisu. Bez tego wyjatku
+      // stara wycena, zapisana zanim opis stal sie obowiazkowy, odbijalaby sie
+      // od kasy w ostatnim kroku, juz po podaniu danych do platnosci.
+      const bezOpisu = USLUGI_BEZ_OPISU.has(String(raw.calculator || ""))
+        || Boolean(raw.quoteRef);
+      if (!bezOpisu && (!description || description.length < MIN_JOB_DESCRIPTION)) {
+        return res.status(400).json({
+          error: "Zlecenie na usluge wymaga opisu tego, co mamy wykonac (min. "
+            + MIN_JOB_DESCRIPTION + " znakow).",
+          code: "description_required",
+        });
+      }
+
+      // Zalaczniki zbieramy do listy i odsiewamy puste, zeby nizej isc jedna
+      // petla niezaleznie od tego, czy pozycja przyszla ze starego koszyka
+      // z jednym polem, czy z nowego z lista.
+      const attachmentTokens = [
+        ...(Array.isArray(raw.attachmentTokens) ? raw.attachmentTokens : []),
+        raw.attachmentToken,
+      ].map((t) => (t ? String(t) : null)).filter(Boolean);
+      const uniqueAttachments = [...new Set(attachmentTokens)];
       const qty = Number.isInteger(raw.qty) && raw.qty > 0 ? Math.min(999, raw.qty) : item.qty;
       const unitGrosze = item.unitGrosze + packGrosze;
 
@@ -1935,7 +1994,32 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
         geometry: raw.geometry || null,
         fileName: raw.fileName || null,
         uploadToken: raw.uploadToken || null,
-        attachmentToken: raw.attachmentToken || null,
+        attachmentToken: uniqueAttachments[0] || null,
+        attachmentTokens: uniqueAttachments,
+      });
+    }
+
+    // DEKLARACJA DOSTARCZENIA, gdy klient ma nam cos przyslac.
+    //
+    // Naprawa i renowacja nie maja innego wejscia niz wlasna bizuteria klienta,
+    // a przy laserze material bywa powierzony. Bez tej deklaracji zamowienie
+    // jest oplacone, a robota stoi: nie wiadomo, czy czekac na paczke, czy na
+    // klienta pod drzwiami, ani kiedy.
+    //
+    // Regule krajowa liczy `inboundAllowed` z lustra `src/data`, a nie wlasna
+    // kopia listy: Polska to paczkomat albo osobiscie, zagranica wylacznie
+    // kurier. Sprawdzamy TU, bo formularz da sie ominac.
+    //
+    // Kraj liczymy TUTAJ, a nie siegamy po `country` nizej: tamta stala jest
+    // deklarowana pod tym miejscem, wiec odwolanie do niej wywrocilo by kazde
+    // zamowienie przy pierwszym uruchomieniu. Zlapane przed wypchnieciem.
+    const krajPrzesylki = String(delivery?.country || "PL").toUpperCase();
+    const przesylkaOd = priced.some((i) => wymagaPrzesylki(i));
+    const inbound = String(delivery?.inbound || "").trim();
+    if (przesylkaOd && !inboundAllowed(inbound, krajPrzesylki)) {
+      return res.status(400).json({
+        error: "Zamowienie wymaga deklaracji, w jaki sposob dostarczysz nam swoj przedmiot.",
+        code: "inbound_required",
       });
     }
 
@@ -2028,11 +2112,11 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
          accepted_terms_at, waived_withdrawal_at, digital_immediate_at,
          access_token, ip_hash, expires_at, revisions_included,
          payment_method, amount_eur_cents, eur_rate, eur_rate_locked_at,
-         discount_code, discount_grosze)
+         discount_code, discount_grosze, inbound_delivery)
        VALUES ($1,$22,'instant',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,
          NOW(), $16, $17, $18, $19, $20, $21,
          $23, $24, $25, CASE WHEN $24::INTEGER IS NULL THEN NULL ELSE NOW() END,
-         $26, $27)
+         $26, $27, $28)
        RETURNING id`,
       [orderRef, safeLang, itemsTotal, shipping, total,
        customerEmail, customer.name.trim().replace(/\s+/g, " "), normalizePhone(customer.phone),
@@ -2046,7 +2130,8 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
        priced.find((i) => i.revisionsIncluded)?.revisionsIncluded ?? null,
        wantsTransfer ? "awaiting_transfer" : "awaiting_payment",
        wantsTransfer ? "bank_transfer" : "autopay",
-       amountEurCents, eurRate, discountCode, discountGrosze]
+       amountEurCents, eurRate, discountCode, discountGrosze,
+       przesylkaOd ? inbound : null]
     );
     const orderId = rows[0].id;
 
@@ -2112,10 +2197,16 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
 
       // Rysunek techniczny nie jest pozycja zamowienia, tylko materialem do
       // wykonania, wiec wiazemy go z zamowieniem, a nie z linia.
-      if (i.attachmentToken) {
+      //
+      // ZALACZNIKOW MOZE BYC WIECEJ NIZ JEDEN. Zlecenie na laser niesie plik
+      // wektorowy DO WYKONANIA i osobno zdjecie przedmiotu, na ktorym ma sie
+      // znalezc. Wczesniej oba szly w jedno pole i drugi plik po cichu
+      // zastepowal pierwszy. Pojedyncze pole zostaje obslugiwane, bo tak
+      // wygladaja pozycje lezace juz w koszykach klientow.
+      for (const tok of i.attachmentTokens) {
         await pool.query(
           `UPDATE uploads SET status = 'ordered', order_id = $2 WHERE token = $1`,
-          [i.attachmentToken, orderId]
+          [tok, orderId]
         );
       }
 

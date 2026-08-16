@@ -532,6 +532,15 @@ function internalText(order, items, attachments = []) {
     "",
     `Dostawa: ${order.delivery_method || "-"}`,
     order.delivery_point ? `Paczkomat: ${order.delivery_point}` : "",
+    // KIERUNEK ODWROTNY: jak klient dostarczy NAM swoj przedmiot. Pojawia sie
+    // tylko przy zamowieniach, ktore tego wymagaja (naprawa, renowacja,
+    // material powierzony), wiec pusta linia znaczy, ze nic nie przysyla.
+    order.inbound_delivery
+      ? `KLIENT DOSTARCZA NAM PRZEDMIOT: ${
+          { inpost_locker: "paczkomat InPost", in_person: "osobiscie", courier: "kurierem" }[order.inbound_delivery]
+          || order.inbound_delivery
+        }`
+      : "",
     order.address_line1 ? `Adres: ${order.address_line1}, ${order.postal_code || ""} ${order.city || ""}` : "",
     "",
     `Platnosc: ${order.payment_status} / ${order.payment_status_details || "-"}, remoteID ${order.payment_remote_id || "-"}`,

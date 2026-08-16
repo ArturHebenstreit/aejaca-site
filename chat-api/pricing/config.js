@@ -53,6 +53,21 @@ export function quantityBounds(quantityId) {
   return { min: 1, max: 999 };
 }
 
+// Wybor materialu przy uslugach laserowych: nasz albo powierzony przez
+// klienta. Ten sam zestaw opcji zasila kalkulatory (CO2LaserCalc,
+// FiberLaserCalc, SimpleStudioCalc) i karte uslugi w sklepie
+// (ServiceConfigurator, przez orderCatalog.js), zeby etykiety nie rozjechaly
+// sie miedzy dwiema drogami zamowienia tej samej uslugi.
+//
+// Wybor NIE wplywa na cene: kalkulatory laserowe wycenia robocizne, material
+// jest osobna pozycja ustalana na etapie realizacji (patrz MaterialNotice.jsx).
+// Funkcje kalkulujace w laserCo2.js i laserFiber.js nie czytaja tego pola.
+export const OWN_MATERIAL_LABEL = { pl: "Materiał", en: "Material", de: "Material" };
+export const OWN_MATERIAL_OPTIONS = [
+  { id: false, label: { pl: "Wasz materiał", en: "Your material", de: "Ihr Material" } },
+  { id: true, label: { pl: "Mój materiał, prześlę go", en: "My own, I will send it", de: "Mein eigenes, ich sende es" } },
+];
+
 /** Lookup helper for multilingual labels */
 export function t(obj, lang) {
   if (!obj) return "";

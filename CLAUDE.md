@@ -35,6 +35,11 @@ decyzje, diagnozę i pomiar, a wykonanie idzie w dół: wyszukiwanie, edycje
 jednoplikowe, i18n, powtarzalne poprawki, sprawdzanie stanu. Nie rób ręcznie
 tego, co da się opisać agentowi w trzech zdaniach.
 
+Doprecyzowanie właściciela (2026-08-16): kryterium jest **stosunek jakości do
+zużytych tokenów**. Sesja główna wykonuje zadanie sama tylko wtedy, gdy zrobi
+je taniej niż zlecenie i kontrola agenta razem wzięte, albo gdy zadanie leży
+w obszarze wysokiego ryzyka błędnej diagnozy (geometria kreatora, wycena).
+
 Agent dostaje w zleceniu trzy rzeczy, inaczej odda pracę do wyrzucenia:
 zakaz długich myślników, wymóg `npm run sync:pricing` po dotknięciu
 `src/geometry`, i nazwę gałęzi. Wynik zawsze sprawdzamy sami, bo agent

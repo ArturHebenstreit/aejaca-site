@@ -1055,12 +1055,25 @@ export function buildCrown(w, p, stone) {
     // grubosci. Po odjeciu wlotu zostaje ponad 0,3 mm litego metalu u gory:
     // tyle, ile jubiler dociska na kamien.
     const wall = Math.max(0.45, size * 0.1);
-    const h = stone.girdleH + stone.crownH * 0.35 + 0.35;
+    // WYSOKOSC RANTU ZALEZY OD STANU ZAKUCIA i to jest zamierzone.
+    //
+    // Rant przed zakuciem stoi wysoko, bo jubiler potrzebuje metalu, ktory
+    // dopiero DOGNIE na kamien. Po zakuciu ten sam metal lezy nisko: obejmuje
+    // rondyste i kilka dziesiatych milimetra korony, a reszta korony jest
+    // odslonieta i swieci. Poprzednio rant w obu stanach mial pelna wysokosc,
+    // wiec kamien po zakuciu siedzial na dnie studni i widac bylo tylko tafle.
+    // Zgloszone wprost: "zbyt mocno zakute, zbyt malo swiatla, musi byc widac
+    // kamien".
+    const h = zakute(p)
+      ? stone.girdleH + 0.34
+      : stone.girdleH + stone.crownH * 0.35 + 0.35;
     const outer = CrossSection.ofPolygons([ccw(outlineFor(p.stone.cut, size + 2 * wall))]);
     const trzon = h * 0.6 + SEAT.aboveGalleryMm;
     add(Manifold.extrude(outer, trzon).translate([0, 0, -SEAT.aboveGalleryMm]));
     // Rant dociskany na kamien: ta sama scianka, ale zbiegajaca do wewnatrz.
-    const zbieg = (size / 2 + wall * 0.6) / (size / 2 + wall);
+    // Po zakuciu rant zbiega mocniej, bo lezy NA koronie, a nie obok niej:
+    // gorna krawedz konczy sie tuz nad obrysem kamienia i to ona go trzyma.
+    const zbieg = (size / 2 + wall * (zakute(p) ? -0.05 : 0.6)) / (size / 2 + wall);
     add(Manifold.extrude(outer, h * 0.4, 0, 0, [zbieg, zbieg])
       .translate([0, 0, trzon - SEAT.aboveGalleryMm]));
     return { solid: crown, basketH };
@@ -1336,13 +1349,24 @@ function buildSideStones(w, p) {
         // Rant tez byl za cienki: 0,18 mm ponad rondyste przy wlocie gniazda
         // szerszym o 0,05 mm zostawialo 0,13 mm sciany. Ten sam blad co
         // w kasecie, w trzecim juz miejscu. Teraz zostaje 0,27 mm.
-        const kosz = Manifold.cylinder(gleboko, rG * 0.55, rG + 0.32, 32, false)
-          .translate([0, 0, -gleboko]);
+        // OPRAWKA IDZIE ZA OBRYSEM KAMIENIA, nie za okregiem.
+        //
+        // Kosz byl walcem niezaleznie od szlifu, wiec markiza czy gruszka
+        // na boku siedziala w okraglej tulei: gniazdo mialo wlasciwy ksztalt,
+        // ale cala oprawka zostawala "na bazie okregu". Zgloszone wprost.
+        // Robimy to samo, co przy koronie centralnej: obrys kamienia,
+        // przeskalowany do dna i rozszerzony na rant.
+        const ptsBoku = outlineFor(szlifBoku, size);
+        const skalaRantu = (size + 0.64) / size;
+        const csDno = CrossSection.ofPolygons([ccw(scalePts(ptsBoku, 0.55))]);
+        const kosz = Manifold.extrude(csDno, gleboko, 0, 0,
+          [skalaRantu / 0.55, skalaRantu / 0.55]).translate([0, 0, -gleboko]);
+        csDno.delete?.();
         let oprawka = kosz;
         const rL = Math.min(0.42, Math.max(0.24, size * 0.11));
         for (const deg of [45, 135, 225, 315]) {
           oprawka = zlacz(oprawka, prongSolid(w, {
-            radius: rG + rL * 0.5, prongR: rL,
+            radius: radiusAt(ptsBoku, deg) + rL * 0.5, prongR: rL,
             base: -gleboko + 0.1, girdleTop: kam.girdleH, crownH: kam.crownH,
             zamkniete: zakute(p),
           }).rotate([0, 0, deg]));
@@ -1907,18 +1931,31 @@ function buildBandStones(w, p) {
         const rad = ri + (shankRadiusAt(p, off / kk.w) - ri) * kk.t - SINK_B;
         const os = [Math.cos(ab), Math.sin(ab), 0];
         const rGora = kula * 0.72;
+        // Stan ZAKUTY to krapa ROZDZIELONA NA DWA i dognieta na oba sasiednie
+        // kamienie, dokladnie tak, jak robi to jubiler rylcem. Kazda polowka
+        // jest krotsza od krapy otwartej i pochyla sie ku swojemu kamieniowi.
+        // Stan otwarty zostaje prosty i pelnej dlugosci, bo to z niego
+        // te polowki dopiero powstana.
+        const zam = zakute(p);
+        const pochyl = 26;
+        const dlug = zam ? wysokosc * 0.72 : wysokosc;
+        const kierunki = zam ? [-pochyl, pochyl] : [0];
         for (const s of [-1, 1]) {
           const stopa = [os[0] * rad, os[1] * rad, s * off];
-          addM(zlacz(
-            Manifold.cylinder(wysokosc + SINK_B, kula, rGora, 20, false)
-              .rotate([0, 90, ab / DEG])
-              .translate(stopa),
-            Manifold.sphere(rGora, 16).translate([
-              stopa[0] + os[0] * (wysokosc + SINK_B),
-              stopa[1] + os[1] * (wysokosc + SINK_B),
-              stopa[2],
-            ]),
-          ));
+          for (const kat of kierunki) {
+            const azym = ab / DEG + kat;
+            const osK = [Math.cos(azym * DEG), Math.sin(azym * DEG), 0];
+            addM(zlacz(
+              Manifold.cylinder(dlug + SINK_B, zam ? kula * 0.8 : kula, rGora, 20, false)
+                .rotate([0, 90, azym])
+                .translate(stopa),
+              Manifold.sphere(rGora, 16).translate([
+                stopa[0] + osK[0] * (dlug + SINK_B),
+                stopa[1] + osK[1] * (dlug + SINK_B),
+                stopa[2],
+              ]),
+            ));
+          }
         }
       }
     }

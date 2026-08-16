@@ -18,6 +18,7 @@ import { t } from "../pricing/config.js";
 import { API_URL, postJSON, submitPaymentForm } from "../utils/api.js";
 import { useMoney, formatPln } from "../shop/money.js";
 import { SHIPPING_COUNTRIES, shippingOptions, shippingGrosze, needsCustoms, FREE_SHIPPING_FROM_GROSZE, leadDaysLabel } from "../pricing/shipping.js";
+import { inboundOptionsFor, wymagaPrzesylki } from "../data/inboundDelivery.js";
 import { validateCustomer } from "../shop/customerFields.js";
 import CustomerFields, { ValidatedField as Field } from "../components/shop/CustomerFields.jsx";
 import PaymentPicker from "../components/shop/PaymentPicker.jsx";
@@ -41,6 +42,8 @@ const UI = {
     freeShipping: "Gratis",
     freeShippingWhy: (kwota) => `w prezencie, bo zamówienie przekracza ${kwota}`,
     consents: "Zgody",
+    inboundTitle: "Jak dostarczysz nam swój przedmiot",
+    inboundWhy: "To zamówienie wymaga, żebyś przysłał nam materiał albo przedmiot. Bez tej deklaracji nie wiemy, czy czekać na paczkę, czy na Ciebie.",
     consentTerms: "Akceptuję regulamin i politykę prywatności",
     consentMade: "Zamawiam rzecz wykonywaną według mojej specyfikacji i przyjmuję do wiadomości, że po rozpoczęciu wykonania tracę prawo odstąpienia od umowy",
     consentDigital: "Żądam dostarczenia treści cyfrowej przed upływem terminu na odstąpienie i przyjmuję do wiadomości, że z chwilą rozpoczęcia pobierania tracę prawo odstąpienia",
@@ -103,6 +106,8 @@ const UI = {
     freeShipping: "Free",
     freeShippingWhy: (kwota) => `on us, your order is over ${kwota}`,
     consents: "Consents",
+    inboundTitle: "How you will send us your item",
+    inboundWhy: "This order needs you to send us material or an item. Without this we do not know whether to wait for a parcel or for you.",
     consentTerms: "I accept the Terms of Service and the Privacy Policy",
     consentMade: "I am ordering an item made to my specification and acknowledge that once production begins I lose the right of withdrawal",
     consentDigital: "I request delivery of the digital content before the withdrawal period ends and acknowledge that once the download starts I lose the right of withdrawal",
@@ -165,6 +170,8 @@ const UI = {
     freeShipping: "Gratis",
     freeShippingWhy: (kwota) => `geschenkt, Ihre Bestellung liegt über ${kwota}`,
     consents: "Einwilligungen",
+    inboundTitle: "Wie Sie uns Ihr Objekt zusenden",
+    inboundWhy: "Für diese Bestellung müssen Sie uns Material oder ein Objekt zusenden. Ohne diese Angabe wissen wir nicht, ob wir auf ein Paket oder auf Sie warten.",
     consentTerms: "Ich akzeptiere die AGB und die Datenschutzerklärung",
     consentMade: "Ich bestelle eine nach meinen Vorgaben gefertigte Sache und nehme zur Kenntnis, dass mit Fertigungsbeginn das Widerrufsrecht erlischt",
     consentDigital: "Ich verlange die Lieferung des digitalen Inhalts vor Ablauf der Widerrufsfrist und nehme zur Kenntnis, dass mit Beginn des Downloads das Widerrufsrecht erlischt",
@@ -261,6 +268,10 @@ export default function Checkout() {
   const [deliveryId, setDeliveryId] = useState(lang === "pl" ? "inpost_locker" : "courier");
   const [addr, setAddr] = useState({ line1: "", postalCode: "", city: "", point: "" });
   const [consents, setConsents] = useState({ terms: false, waiveWithdrawal: false, digitalImmediate: false });
+  // Jak klient dostarczy NAM swoj przedmiot. Pytamy tutaj, a nie w kalkulatorze,
+  // bo dopiero tu znany jest kraj, a od kraju zalezy lista mozliwosci. Pytanie
+  // o kraj drugi raz dawaloby dwie odpowiedzi, ktore moglyby sie roznic.
+  const [inbound, setInbound] = useState("");
   const [gatewayId, setGatewayId] = useState(0);
   // Klient czytajacy strone po angielsku lub niemiecku widzi ceny w euro,
   // a zadnym kanalem Autopay z zagranicy nie zaplaci, wiec zaczynamy od przelewu.
@@ -360,6 +371,19 @@ export default function Checkout() {
     (!hasMadeToOrder || consents.waiveWithdrawal) &&
     (!hasDigital || consents.digitalImmediate);
 
+  // Deklaracja dostarczenia obowiazuje tylko wtedy, gdy klient rzeczywiscie ma
+  // nam cos przyslac. Regule liczy ta sama funkcja co serwer, wiec formularz
+  // nie przepusci zamowienia, ktore serwer odrzuci, ani odwrotnie.
+  const wymagaInbound = items.some((i) => wymagaPrzesylki(i));
+  const inboundOpcje = inboundOptionsFor(country);
+  // Zmiana kraju zmienia liste, wiec wybor sprzed zmiany trzeba wyczyscic.
+  // Inaczej klient zaznacza paczkomat, przelacza sie na Niemcy i widzi liste
+  // bez zaznaczenia, ale z wartoscia w stanie, ktora poszlaby do zamowienia.
+  useEffect(() => {
+    if (inbound && !inboundOptionsFor(country).some((m) => m.id === inbound)) setInbound("");
+  }, [country, inbound]);
+  const inboundOk = !wymagaInbound || inboundOpcje.some((m) => m.id === inbound);
+
   // Blad pokazujemy po wyjsciu z pola albo po probie zaplaty, nie w trakcie
   // pisania. Formularz ma pomagac, a nie poprawiac kazda litere.
   const [triedToPay, setTriedToPay] = useState(false);
@@ -376,10 +400,11 @@ export default function Checkout() {
     fieldErrors.name && u.name,
     fieldErrors.phone && u.phone,
     !addressOk && u.delivery,
+    !inboundOk && u.inboundTitle,
     !consentsOk && u.consents,
   ].filter(Boolean);
 
-  const canPay = items.length > 0 && customerOk && addressOk && consentsOk && !busy;
+  const canPay = items.length > 0 && customerOk && addressOk && consentsOk && inboundOk && !busy;
 
   async function pay() {
     if (!canPay) {
@@ -419,6 +444,32 @@ export default function Checkout() {
                 uploadToken: i.uploadToken || null,
                 packagingId: i.packagingId || null,
                 personalization: i.personalization || null,
+                // OPIS I ZALACZNIKI MUSZA TU BYC.
+                //
+                // Ich brak w tym miejscu byl cicha wada przez caly czas
+                // istnienia koszyka: kalkulator zbieral opis, wymagal go przed
+                // dodaniem pozycji, koszyk go trzymal, serwer umial go zapisac,
+                // a poczta zamowieniowa umiala go wydrukowac. Tylko ten jeden
+                // obiekt go nie przekazywal, wiec do pracowni szlo zamowienie
+                // bez ani jednego zdania od klienta. Wyszlo dopiero wtedy, gdy
+                // przyszlo oplacone BLIKiem zlecenie na laser z samym plikiem.
+                //
+                // Zaden sprawdzian tego nie widzial, bo kazdy element osobno
+                // dzialal poprawnie. Wada byla w SZWIE miedzy nimi.
+                description: i.description || null,
+                packagingText: i.packagingText || null,
+                packagingTextBack: i.packagingTextBack || null,
+                attachmentToken: i.attachmentToken || null,
+                attachmentTokens: i.attachmentTokens || null,
+                // Skala modelu wchodzi do CENY: serwer liczy pozycje jeszcze
+                // raz i bez niej przeliczylby powiekszony wydruk jak zwykly.
+                // Wycena zapisana (`QuotePage`) przekazywala ja od poczatku,
+                // koszyk nie, wiec ta sama pozycja kosztowala inaczej zaleznie
+                // od drogi, ktora klient poszedl.
+                scale: i.scale || 1,
+                // Numer wyceny zwalnia pozycje z wymogu opisu po stronie
+                // serwera: przeszla przez czlowieka, ktory ja policzyl.
+                quoteRef: i.quoteRef || null,
                 qty: i.qty || 1,
               }
         ),
@@ -426,6 +477,8 @@ export default function Checkout() {
         delivery: {
           method: delivery.id,
           country,
+          // Kierunek odwrotny: jak klient dostarczy NAM swoj przedmiot.
+          inbound: wymagaInbound ? inbound : null,
           shippingGrosze: delivery.grosze,
           point: addr.point || null,
           addressLine1: addr.line1 || null,
@@ -682,6 +735,32 @@ export default function Checkout() {
                   </div>
                 </>
               )}
+            </>
+          )}
+
+          {wymagaInbound && (
+            <>
+              <h2 className="text-white font-semibold mb-1 mt-8">{u.inboundTitle}</h2>
+              <p className="text-neutral-400 text-[12px] mb-3">{u.inboundWhy}</p>
+              <div className="space-y-2">
+                {inboundOpcje.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setInbound(m.id)}
+                    className={`w-full text-left rounded-xl border px-4 py-3 transition-colors ${
+                      inbound === m.id
+                        ? "border-blue-400/60 bg-blue-400/10"
+                        : "border-white/10 bg-white/[0.02] hover:border-white/25"
+                    }`}
+                  >
+                    <span className={`block text-sm font-medium ${inbound === m.id ? "text-blue-200" : "text-neutral-200"}`}>
+                      {t(m.label, lang)}
+                    </span>
+                    <span className="block text-neutral-400 text-[11px] mt-0.5">{t(m.note, lang)}</span>
+                  </button>
+                ))}
+              </div>
             </>
           )}
 

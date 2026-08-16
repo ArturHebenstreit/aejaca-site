@@ -3,7 +3,7 @@
 // Work area: 600 × 288 mm (standard), extended with riser
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture, OWN_MATERIAL_LABEL, OWN_MATERIAL_OPTIONS } from "./calcShared.jsx";
 import CalcToCart from "./CalcToCart.jsx";
 import MaterialNotice from "../MaterialNotice.jsx";
 import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
@@ -37,6 +37,9 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
   const [cComplexId, setCComplexId] = useState("moderate");
   const [cQtyId, setCQtyId] = useState("proto");
   const [extended, setExtended] = useState(false);
+  // Nasz material albo powierzony przez klienta. Nie wplywa na wycene
+  // ponizej, ta liczy wylacznie robocizne, patrz MaterialNotice.
+  const [ownMaterial, setOwnMaterial] = useState(false);
   const [svgData, setSvgData] = useState(null);
   const [svgFileName, setSvgFileName] = useState("");
   const [svgFile, setSvgFile] = useState(null);
@@ -97,9 +100,10 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
       : `SVG: ${svgFileName} (${(svgData.pathLengthCm * svgScale).toFixed(0)} cm${svgScale !== 1 ? ` ${Math.round(svgScale*100)}%` : ""})`)
     : null;
 
+  const ownMaterialSummary = t(OWN_MATERIAL_OPTIONS.find(o => o.id === ownMaterial)?.label, lang);
   const paramsSummary = mode === "engrave"
-    ? [t(ENGRAVE_MATERIALS.find(m => m.id === eMatId)?.label, lang), svgSummary || t(ENGRAVE_AREAS.find(a => a.id === eAreaId)?.label, lang), t(ENGRAVE_DETAIL.find(d => d.id === eDetailId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === eQtyId)?.label, lang)].join(" | ")
-    : [t(CUT_MATERIALS.find(m => m.id === cMatId)?.label, lang), svgSummary || t(CUT_PATHS.find(p => p.id === cPathId)?.label, lang), t(CUT_COMPLEXITY.find(c => c.id === cComplexId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === cQtyId)?.label, lang)].join(" | ");
+    ? [t(ENGRAVE_MATERIALS.find(m => m.id === eMatId)?.label, lang), svgSummary || t(ENGRAVE_AREAS.find(a => a.id === eAreaId)?.label, lang), t(ENGRAVE_DETAIL.find(d => d.id === eDetailId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === eQtyId)?.label, lang), ownMaterialSummary].join(" | ")
+    : [t(CUT_MATERIALS.find(m => m.id === cMatId)?.label, lang), svgSummary || t(CUT_PATHS.find(p => p.id === cPathId)?.label, lang), t(CUT_COMPLEXITY.find(c => c.id === cComplexId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === cQtyId)?.label, lang), ownMaterialSummary].join(" | ");
 
   return (
     <div>
@@ -147,6 +151,10 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
           : <Chips options={QUANTITY_TIERS} value={cQtyId} onChange={setCQtyId} lang={lang} />}
       </CalcCard>
 
+      <CalcCard stepNum="⑦" label={t(OWN_MATERIAL_LABEL, lang)}>
+        <Chips options={OWN_MATERIAL_OPTIONS} value={ownMaterial} onChange={setOwnMaterial} lang={lang} />
+      </CalcCard>
+
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
@@ -159,8 +167,8 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
           calculator={mode === "engrave" ? "laser_co2_engrave" : "laser_co2_cut"}
           serviceId={mode === "engrave" ? "laser_engrave" : "laser_cut"}
           params={mode === "engrave"
-            ? { matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, extended }
-            : { matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended }}
+            ? { matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, extended, ownMaterial }
+            : { matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended, ownMaterial }}
           blocked={Boolean(svgData)}
           lang={lang}
         />

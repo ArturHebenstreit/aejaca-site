@@ -1890,12 +1890,35 @@ console.log("\n32. Eternity: cztery krapy na kazdy kamien, i da sie nimi zakuc")
     wycinek.delete?.(); plaster.delete?.(); wokol.delete?.(); m.delete?.();
     zwolnij(zK);
 
+    // Ta sama obraczka Z KAMIENIAMI ma trzymac: krapy sa wtedy rozdzielone
+    // i dogniete na oba sasiednie kamienie, wiec kamien podniesiony o 0,6 mm
+    // musi wejsc w metal. Bez tej pary zasada "kamien wlaczony = zakute"
+    // istnialaby tylko w formularzu, a bryla by o niej nie wiedziala.
+    const pZ = validate({
+      innerDia: 17.2, kind: "band", width: 2.6, thickness: 1.9,
+      band: { ...cfg, setting: "pave", material: "diamond" },
+    });
+    const zZak = await buildRing(pZ, { segments: 96 });
+    let trzymane = 0, objKam = 0;
+    for (const kk of zZak.stones.slice(0, 4)) {
+      const b2 = kk.boundingBox();
+      const kx = (b2.min[0] + b2.max[0]) / 2, ky = (b2.min[1] + b2.max[1]) / 2;
+      const L2 = Math.hypot(kx, ky) || 1;
+      const wyzej = kk.translate([(kx / L2) * 0.6, (ky / L2) * 0.6, 0]);
+      const wsp = zZak.metal.intersect(wyzej);
+      trzymane += wsp.volume(); objKam += kk.volume();
+      wyzej.delete?.(); wsp.delete?.();
+    }
+    const trzyma = (trzymane / objKam) * 100;
+    zwolnij(zZak);
+
     const problemy = [];
     if (czesci.length < 4) problemy.push(`tylko ${czesci.length} krap wokol kamienia`);
     if (gora < 0.3) problemy.push(`krapa nie stercza ponad rondyste (${gora.toFixed(2)} mm)`);
     if (najciensza < 0.02) problemy.push(`najchudsza krapa ma ${najciensza.toFixed(3)} mm3`);
+    if (!(trzyma > 0.15)) problemy.push(`po zakuciu kamien wychodzi gora (kolizja ${trzyma.toFixed(2)} %)`);
     if (problemy.length) bad(`${nazwa}: ${problemy.join("; ")}`);
-    else ok(`${nazwa.padEnd(13)} ${czesci.length} krapy, wystaja ${gora.toFixed(2)} mm, najchudsza ${najciensza.toFixed(3)} mm3`);
+    else ok(`${nazwa.padEnd(13)} ${czesci.length} krapy, wystaja ${gora.toFixed(2)} mm, zakute trzymaja ${trzyma.toFixed(2)} %`);
   }
 }
 

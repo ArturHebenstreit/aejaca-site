@@ -3,7 +3,7 @@
 // Max work area: 150 × 150 mm
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture, OWN_MATERIAL_LABEL, OWN_MATERIAL_OPTIONS } from "./calcShared.jsx";
 import CalcToCart from "./CalcToCart.jsx";
 import MaterialNotice from "../MaterialNotice.jsx";
 import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
@@ -29,6 +29,9 @@ export default function FiberLaserCalc({ lang = "pl" }) {
   const [markId, setMarkId] = useState("surface");
   const [areaId, setAreaId] = useState("S");
   const [quantityId, setQuantityId] = useState("proto");
+  // Nasz material albo powierzony przez klienta. Nie wplywa na wycene
+  // ponizej, ta liczy wylacznie robocizne, patrz MaterialNotice.
+  const [ownMaterial, setOwnMaterial] = useState(false);
   const [svgData, setSvgData] = useState(null);
   const [svgFileName, setSvgFileName] = useState("");
   const [svgFile, setSvgFile] = useState(null);
@@ -93,6 +96,7 @@ export default function FiberLaserCalc({ lang = "pl" }) {
       ? `SVG: ${svgFileName} (${(svgData.engravAreaCm2 * svgScale * svgScale).toFixed(1)} cm²${svgScale !== 1 ? ` ${Math.round(svgScale*100)}%` : ""})`
       : t(AREAS.find(a => a.id === areaId)?.label, lang),
     t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
+    t(OWN_MATERIAL_OPTIONS.find(o => o.id === ownMaterial)?.label, lang),
   ].join(" | ");
 
   return (
@@ -120,6 +124,10 @@ export default function FiberLaserCalc({ lang = "pl" }) {
         <Chips options={QUANTITY_TIERS} value={quantityId} onChange={setQuantityId} lang={lang} />
       </CalcCard>
 
+      <CalcCard stepNum="⑥" label={t(OWN_MATERIAL_LABEL, lang)}>
+        <Chips options={OWN_MATERIAL_OPTIONS} value={ownMaterial} onChange={setOwnMaterial} lang={lang} />
+      </CalcCard>
+
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
         <MaterialNotice lang={lang} className="mb-4" />
@@ -129,7 +137,7 @@ export default function FiberLaserCalc({ lang = "pl" }) {
           onBinding={setBindingGrosze}
           calculator="laser_fiber"
           serviceId="laser_fiber"
-          params={{ matId, lensId, markId, areaId, quantityId }}
+          params={{ matId, lensId, markId, areaId, quantityId, ownMaterial }}
           blocked={Boolean(svgData)}
           lang={lang}
         />
