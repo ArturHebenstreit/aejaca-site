@@ -17,7 +17,7 @@
 // Wchodzi do builda.
 
 import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, stoneSolid, taperFor, buildShank, buildGallery, tubeAlong, buildHalo, buildCrown } from "../src/geometry/ring/build.js";
-import { CUTS, SETTINGS, SEAT, SIGNET_TABLES, DEFAULTS, prongAngles, outlineFor, validate } from "../src/geometry/ring/params.js";
+import { CUTS, SIDE_CUTS, SETTINGS, SEAT, SIGNET_TABLES, DEFAULTS, prongAngles, outlineFor, validate } from "../src/geometry/ring/params.js";
 
 /**
  * Zwolnienie bryly po pomiarze.
@@ -730,21 +730,25 @@ console.log("\n16. Dodatki odlewnicze nie ruszają wyrobu");
     zwolnij(r);
   }
 
-  // KAMIENIE W MODELU nie ruszaja metalu. ZADEN przelacznik go nie rusza.
+  // KAMIENIE W MODELU sa jedynym przelacznikiem, ktory MA prawo ruszyc metal,
+  // i to jest zmiana swiadoma, a nie usterka.
   //
-  // Wczesniej ten sprawdzian wymagal czegos odwrotnego: plik z kamieniem mial
-  // miec lapki docisniete, wiec byc LZEJSZY. Wygladalo to rozsadnie, bo tak
-  // wyglada wyrob gotowy, a kosztowalo tyle, ze kazdy uklad otwierany
-  // domyslnie pokazywal gniazda zakryte. Podglad kamienia jest warstwa
-  // rysunku i tak ma zostac: bryla, ktora wydajemy, to model odlewniczy
-  // z gniazdami otwartymi, niezaleznie od tego, co widac na ekranie.
+  // Model bez kamieni to odlew do zakucia i lapki musza byc w nim otwarte,
+  // bo pod zamknieta lapke nie da sie wlozyc kamienia. Model z kamieniem
+  // pokazuje wyrob gotowy, wiec lapki sa docisniete. To sa dwa rozne ksztalty
+  // tej samej lapki i roznia sie objetoscia, bo zagieta jest krotsza.
+  //
+  // Roznica ma byc MALA: dotyczy koncowek lapek, a nie calego wyrobu. Kilka
+  // procent znaczyloby, ze zmienil sie ksztalt czegos wiekszego.
   {
     const otwarte = await buildRing({ ...baza, casting: { stones: false } }, { segments: 64 });
-    const roznica = Math.abs(goly.massG / otwarte.massG - 1) * 100;
-    if (roznica > 0.01) {
-      bad(`podglad kamieni rusza metal o ${roznica.toFixed(2)} procent, a nie ma prawa ruszac go wcale`);
+    const roznica = (goly.massG / otwarte.massG - 1) * 100;
+    if (Math.abs(roznica) > 3) {
+      bad(`stan zakucia zmienia mase o ${roznica.toFixed(1)} procent, czyli o wiecej niz same koncowki lapek`);
+    } else if (!(otwarte.massG > goly.massG)) {
+      bad(`odlew z otwartymi lapkami powinien byc CIEZSZY od zakutego, a jest ${otwarte.massG.toFixed(3)} wobec ${goly.massG.toFixed(3)} g`);
     } else {
-      ok(`podgląd kamieni nie rusza metalu (${otwarte.massG.toFixed(3)} g w obu plikach)`);
+      ok(`otwarte łapki cięższe o ${Math.abs(roznica).toFixed(1)} % (${otwarte.massG.toFixed(3)} wobec ${goly.massG.toFixed(3)} g)`);
     }
     zwolnij(otwarte);
   }
@@ -1115,17 +1119,19 @@ console.log("\n19. Kamień wchodzi do gniazda, siada i nie wypada");
       problemy.push(`gniazdo NIE ZATRZYMUJE kamienia: po zejsciu o 0,25 mm kolizja ${proc(nizej).toFixed(2)} % wobec ${proc(naMiejscu).toFixed(2)} % na miejscu`);
     }
     if (proc(wyzej) > 0.05) problemy.push(`kamienia nie da sie wlozyc z gory, metal zachodzi na niego (${proc(wyzej).toFixed(2)} %)`);
-    // Podglad kamienia nie ma prawa ruszyc metalu. Tu to sprawdzamy na kazdym
-    // ukladzie z osobna, bo wlasnie tedy wchodzila poprzednia wersja: gniazdo
-    // zamykalo sie samo, gdy tylko kamien pojawil sie w pliku.
-    const dryf = Math.abs(zPodgladem.metal.volume() / r.metal.volume() - 1) * 100;
-    if (dryf > 0.01) {
-      problemy.push(`podglad kamieni zmienia metal o ${dryf.toFixed(2)} %`);
+    // Ten sam uklad Z KAMIENIEM ma zachowywac sie ODWROTNIE od gory: lapki sa
+    // docisniete, wiec kamienia nie da sie juz wyjac. Bez tej pary sprawdzian
+    // przepuscilby model, w ktorym lapki nigdy sie nie zamykaja.
+    let trzymane = 0;
+    for (const k of proba) trzymane += kolizja(zPodgladem.metal, k, 0.6);
+    const trzyma = (trzymane / objetosc) * 100;
+    if (!(trzyma > 0.3)) {
+      problemy.push(`po zakuciu kamien nadal wychodzi gora (kolizja ${trzyma.toFixed(2)} %)`);
     }
     zwolnij(zPodgladem);
 
     if (problemy.length) bad(`${nazwa}: ${problemy.join("; ")}`);
-    else ok(`${nazwa.padEnd(16)} wchodzi i siada (opór ${proc(nizej).toFixed(2)} %), podgląd nie rusza metalu`);
+    else ok(`${nazwa.padEnd(16)} otwarte: wchodzi i siada (opór ${proc(nizej).toFixed(2)} %); zakute: trzyma (${trzyma.toFixed(2)} %)`);
     zwolnij(r);
   }
 }
@@ -1963,10 +1969,18 @@ console.log("\n33. KAZDY preset ma gniazda, w ktore da sie osadzic kamien");
   };
 
   const wynik = [];
+  const bezKamieni = [];
   for (const pr of RING_PRESETS) {
-    const p = validate(applyPreset(pr, DEFAULTS));
-    const r = await buildRing(p, { segments: 64 });
-    if (!r.stones.length) { zwolnij(r); continue; }
+    // MODEL ODLEWNICZY, czyli bez kamieni: to on ma miec gniazda otwarte.
+    // Plik Z kamieniem pokazuje wyrob gotowy, wiec lapki sa w nim docisniete
+    // i tam zachodzenie na kamien jest zamierzone. Sprawdza to sekcja 19.
+    const p = validate({ ...applyPreset(pr, DEFAULTS), casting: { stones: false } });
+    const r = await buildRing(p, { segments: 64, withStones: true });
+    // Preset bez kamieni to obraczka gladka albo sygnet i wtedy nie ma czego
+    // mierzyc. LICZYMY je jednak, bo pusta lista jest tym samym, czym byl
+    // wczesniej pusty przebieg: sprawdzian melduje wynik pozytywny, nie
+    // zmierzywszy niczego. Raz juz mnie to nabralo.
+    if (!r.stones.length) { bezKamieni.push(pr.id); zwolnij(r); continue; }
     // Kamienie tego samego rodzaju powstaja tym samym kodem, wiec bierzemy
     // pierwszy, srodkowy i ostatni. Wieniec halo potrafi miec dwadziescia
     // kamieni, a kazde sprawdzenie to trzy bryly w pamieci jadra.
@@ -1989,7 +2003,8 @@ console.log("\n33. KAZDY preset ma gniazda, w ktore da sie osadzic kamien");
   if (wynik.length) {
     for (const [id, problemy] of wynik) bad(`${id}: ${problemy.join("; ")}`);
   } else {
-    ok(`wszystkie presety: kamień wchodzi z góry, siada i nie przelatuje`);
+    ok(`${RING_PRESETS.length - bezKamieni.length} presetów zmierzonych: kamień wchodzi z góry, siada i nie przelatuje`);
+    ok(`bez kamieni, więc nie było czego mierzyć: ${bezKamieni.join(", ") || "brak"}`);
   }
 }
 
@@ -2011,8 +2026,8 @@ console.log("\n34. Kaseta ma rant, a nie ostrze o grubosci setnej milimetra");
   for (const id of ["bezel", "emerald", "cabochon"]) {
     const pr = RING_PRESETS.find((x) => x.id === id);
     if (!pr) continue;
-    const p = validate(applyPreset(pr, DEFAULTS));
-    const r = await buildRing(p, { segments: 96 });
+    const p = validate({ ...applyPreset(pr, DEFAULTS), casting: { stones: false } });
+    const r = await buildRing(p, { segments: 96, withStones: true });
     const kam = r.stones[0];
     const bb = kam.boundingBox();
     const kat = Math.atan2((bb.min[1] + bb.max[1]) / 2, (bb.min[0] + bb.max[0]) / 2);
@@ -2059,6 +2074,74 @@ console.log("\n34. Kaseta ma rant, a nie ostrze o grubosci setnej milimetra");
     if (problemy.length) bad(`${id}: ${problemy.join("; ")}`);
     else ok(`${id.padEnd(9)} rant ${grubosc.toFixed(2)} mm gruby, ${szczyt.toFixed(2)} mm ponad rondystą`);
   }
+}
+
+// ------------------------------------------------------------
+console.log("\n35. Kazdy obrys kamienia jest symetryczny wzgledem swojej osi");
+// ------------------------------------------------------------
+// Gruszka i brioleta mialy we wzorze `Math.max(0, Math.cos(a / 2))`. Kat
+// biegnie od -PI/2 do 3PI/2, wiec na ostatniej cwiartce cosinus jest ujemny
+// i obciecie do zera zostawialo tam PELNA szerokosc, podczas gdy po drugiej
+// stronie ksztalt zwezal sie normalnie. Jeden bok wychodzil grubszy od
+// drugiego o 0,19 mm przy kamieniu 7 mm.
+//
+// Wady nie widac na samym kamieniu, bo fasetki rozpraszaja wzrok. Widac ja na
+// KASECIE, bo rant powtarza obrys i powiela jego skrzywienie. Wlasciciel
+// zglosil to jako "dziwne wybrzuszenie w oprawie gruszki".
+//
+// Wszystkie nasze szlify sa symetryczne wzgledem osi pionowej, wiec sprawdzian
+// moze isc po calej liscie bez wyjatkow.
+{
+  const zle = [];
+  for (const id of Object.keys(CUTS)) {
+    const pts = outlineFor(id, 7);
+    const xs = pts.map(([x]) => x);
+    const szer = Math.max(...xs) - Math.min(...xs);
+    // Pole i srodek ciezkosci liczymy wzorem Gaussa: dla figury symetrycznej
+    // wzgledem osi pionowej srodek ciezkosci lezy dokladnie na tej osi.
+    let pole = 0, cx = 0;
+    for (let i = 0; i < pts.length; i++) {
+      const [x0, y0] = pts[i], [x1, y1] = pts[(i + 1) % pts.length];
+      const k = x0 * y1 - x1 * y0;
+      pole += k; cx += (x0 + x1) * k;
+    }
+    pole /= 2; cx /= 6 * pole;
+    const odchylka = Math.abs(cx) / szer * 100;
+    const brzegi = Math.abs(Math.max(...xs) + Math.min(...xs)) / szer * 100;
+    if (odchylka > 1 || brzegi > 1) {
+      zle.push(`${id}: środek ciężkości ${odchylka.toFixed(2)} %, brzegi ${brzegi.toFixed(2)} % szerokości od osi`);
+    }
+  }
+  if (zle.length) for (const z of zle) bad(z);
+  else ok(`wszystkie ${Object.keys(CUTS).length} szlifów symetrycznych względem osi`);
+}
+
+// ------------------------------------------------------------
+console.log("\n36. Kazdy dozwolony szlif kamieni bocznych daje wyrob w jednym kawalku");
+// ------------------------------------------------------------
+// Wybor szlifu kamieni bocznych jest nowy i od razu pokazal, ze nie kazdy
+// szlif tu pasuje: bagietka rozsypywala pierscionek na DZIEWIEC czesci, bo jej
+// gniazdo jest dlugie i waskie, a lapki stoja po przekatnych poza jego obrysem
+// i wyciecie przecina im nogi. Bagietka i brioleta sa wiec poza lista.
+//
+// Ten sprawdzian pilnuje, zeby lista nie rozjechala sie z rzeczywistoscia:
+// kazdy szlif, ktory OFERUJEMY, ma dac wyrob w jednym kawalku.
+{
+  const zle = [];
+  for (const cut of SIDE_CUTS) {
+    const r = await buildRing({
+      innerDia: 17.2, stone: { cut: "round", size: 6 }, setting: "prong4",
+      side: { count: 2, size: 3, setting: "prong", cut },
+      casting: { stones: false },
+    }, { segments: 64, withStones: true });
+    const czesci = r.metal.decompose();
+    const n = czesci.length;
+    for (const c of czesci) c.delete?.();
+    if (n !== 1) zle.push(`${cut}: wyrob rozpada sie na ${n} czesci`);
+    zwolnij(r);
+  }
+  if (zle.length) for (const z of zle) bad(z);
+  else ok(`${SIDE_CUTS.length} szlifów bocznych, każdy daje wyrób w jednym kawałku`);
 }
 
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");

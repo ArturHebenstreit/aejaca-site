@@ -280,6 +280,60 @@ dodając nową bryłę:
 Dopisujemy **na górze**, jeden wpis na zmianę geometrii. Format: co było, co jest,
 i **czego się z tego dowiedzieliśmy na przyszłość**.
 
+## 2026-08-16 - oprawka boczna, symetria obrysów, i cofnięcie mojej własnej poprawki
+
+**Zakucie wraca pod przełącznik.** Dzień wcześniej wpisałem `zakute() => false`
+na sztywno, uznając, że model odlewniczy ma mieć gniazda otwarte zawsze.
+Rozumowanie było poprawne, ale **diagnoza fałszywa**: właściciel zgłaszał zakryte
+gniazda przy WYŁĄCZONYCH kamieniach, a ja policzyłem, że skoro przełącznik
+domyślnie stoi na TAK, to musiał go mieć włączonego. Nie miał. Obowiązuje
+z powrotem: kamień w modelu = wyrób gotowy, łapki dociśnięte; kamień wyłączony =
+model odlewniczy, łapki otwarte.
+
+**Wniosek, którego nie chcę powtórzyć:** gdy zgłoszenie nie zgadza się
+z ustawieniem domyślnym, to jest powód, żeby SPRAWDZIĆ, a nie żeby poprawić
+ustawienie. Poprawka trafiła w objaw wspólny dla pięciu układów i przez to
+wyglądała na przyczynę wspólną. Prawdziwe przyczyny były trzy, wszystkie lokalne.
+
+**Oprawka kamieni bocznych była litym stożkiem.** Gniazdo wycinało w niej
+kieszeń i kamień naprawdę wchodził, więc każdy pomiar to przepuszczał, a wyrób
+czytał się jak zamknięty kubek z łapkami. Kamień centralny miał okna galerii od
+początku i właśnie dlatego przy tych samych ustawieniach wyglądał dobrze.
+Oprawka ma teraz dwa okna na wylot między łapkami i rant grubszy o 0,14 mm.
+
+**Trzecie z rzędu miejsce z rantem za cienkim.** Kaseta miała 0,13 mm, oprawka
+boczna 0,13 mm, krapy eternity stały dokładnie na promieniu wlotu. Za każdym
+razem ten sam błąd: element policzony względem obrysu kamienia zamiast względem
+promienia wlotu gniazda, który ma `size / 2 + luz` i zjada wszystko, co w niego
+wejdzie. To jest reguła, nie zbieg okoliczności.
+
+**Gruszka i brioleta miały obrys niesymetryczny.** We wzorze stało
+`Math.max(0, Math.cos(a / 2))`, a kąt biegnie od `-PI/2` do `3PI/2`, więc na
+ostatniej ćwiartce cosinus jest ujemny i obcięcie do zera zostawiało tam PEŁNĄ
+szerokość, podczas gdy po drugiej stronie kształt zwężał się normalnie. Jeden
+bok wychodził grubszy o 0,19 mm przy kamieniu 7 mm. Poprawka to `Math.abs`.
+
+Na samym kamieniu tego nie widać, bo fasetki rozpraszają wzrok. **Widać to na
+kasecie**, bo rant powtarza obrys i powiela jego skrzywienie. Stąd zgłoszenie
+brzmiało "dziwne wybrzuszenie w oprawie gruszki", czyli wskazywało oprawę,
+podczas gdy wada siedziała w kamieniu.
+
+**Brioleta ważyła zero karatów.** W liczeniu masy stało
+`p.setting === "drilled" ? 0 : 1`. Briolety się nie osadza, tylko wierci
+i wiesza na kabłąku, więc ktoś uznał, że skoro nie ma gniazda, to nie ma
+kamienia. Kamień wisi, waży i kosztuje.
+
+**Szlif kamieni bocznych** jest teraz wyborem klienta. Lista jest węższa od
+listy szlifów centralnych i to nie kwestia gustu: bagietka rozsypuje wyrób na
+dziewięć części, bo jej gniazdo jest długie i wąskie, a łapki stoją po
+przekątnych poza obrysem i wycięcie przecina im nogi. Bagietka wróci razem
+z oprawą kanałową. Brioleta jako kamień boczny nie ma sensu w ogóle.
+
+**Sprawdzian przechodzący na pustej liście to sprawdzian, który kłamie.** Sekcja
+33 raportowała wynik pozytywny, bo `withStones` nie przebijało przełącznika
+klienta i dostawała zero kamieni do zmierzenia. Teraz liczy, ile presetów
+faktycznie zmierzyła, i wypisuje te, które pominęła.
+
 ## 2026-08-16 - kaseta: rant zbiegał do setnej milimetra
 
 **Co było.** Ścianka kasety miała 0,4 mm i zbiegała u góry o `wall * 0,85`,

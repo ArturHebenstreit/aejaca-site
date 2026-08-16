@@ -72,9 +72,22 @@ export const OUTLINES = {
     }
     return pts;
   },
+  // WARTOSC BEZWZGLEDNA, NIE OBCIECIE DO ZERA.
+  //
+  // Stalo tu `Math.max(0, Math.cos(a / 2))` i to lamalo symetrie obrysu.
+  // Kat biegnie od -PI/2 do 3PI/2, wiec `cos(a / 2)` jest ujemny na ostatniej
+  // cwiartce i obciecie do zera zostawialo tam PELNA szerokosc, podczas gdy
+  // po drugiej stronie gruszka zwezala sie normalnie. Jeden bok wychodzil
+  // grubszy od drugiego: zmierzone 2,45 wobec 2,26 mm od osi przy kamieniu
+  // 7 mm. Wlasciciel zobaczyl to jako "dziwne wybrzuszenie w oprawie gruszki",
+  // bo rant kasety powtarza obrys kamienia i powiela jego skrzywienie.
+  //
+  // `Math.abs` jest parzysta wzgledem `a` i ma okres 2PI, wiec obrys wychodzi
+  // symetryczny, a ksztalt pozostaje ten sam: waski przy szpicu, pelny przy
+  // zaokragleniu.
   pear: () => smooth((t) => {
     const a = t * TAU - Math.PI / 2;
-    const w = 0.76 * (1 - 0.52 * Math.max(0, Math.cos(a / 2)) ** 3.2);
+    const w = 0.76 * (1 - 0.52 * Math.abs(Math.cos(a / 2)) ** 3.2);
     return [-w * Math.sin(a), -Math.cos(a) * 1.08];
   }, 56),
   marquise: () => smooth((t) => {
@@ -87,9 +100,11 @@ export const OUTLINES = {
     const y = 13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a);
     return [x / 17, -y / 15];
   }, 60),
+  // Ten sam blad co przy gruszce i ta sama poprawka. Brioleta ma szpic z jednej
+  // strony, wiec obcinanie do zera dawalo tu bryle skrecona wzdluz osi.
   briolette: () => smooth((t) => {
     const a = t * TAU - Math.PI / 2;
-    const w = 0.62 * (1 - 0.62 * Math.max(0, Math.cos(a / 2)) ** 2.4);
+    const w = 0.62 * (1 - 0.62 * Math.abs(Math.cos(a / 2)) ** 2.4);
     return [-w * Math.sin(a), -Math.cos(a) * 1.34];
   }, 56),
 };
@@ -161,6 +176,25 @@ export const CUTS = {
                settings: ["bezel"],
                hint: "Płaski spód, brak pawilonu. Nie ma czego chwycić łapką.", hintEn: "Flat back, no pavilion. There is nothing for a claw to catch.", hintDe: "Flache Unterseite, kein Pavillon. Für eine Krappe gibt es nichts zu greifen." },
 };
+
+/**
+ * Szlify DOZWOLONE dla kamieni bocznych.
+ *
+ * Nie kazdy szlif kamienia centralnego nadaje sie na bok, i nie jest to kwestia
+ * gustu, tylko bryly. Zmierzone na pierscionku z dwoma kamieniami na strone,
+ * lapki, kamien 3 mm:
+ *
+ * - `baguette` rozsypuje wyrob na DZIEWIEC czesci. Gniazdo bagietki jest dlugie
+ *   i waskie, a lapki stoja po przekatnych poza jego obrysem, wiec wyciecie
+ *   przecina im nogi. Bagietke osadza sie w kanale albo miedzy sztabkami,
+ *   nie w lapkach, wiec wroci tu razem z ta oprawa, a nie wczesniej.
+ * - `briolette` nie jest szlifem do osadzania w ogole: wierci sie ja i wiesza
+ *   na kablaku. Jako kamien boczny nie ma sensu ani warsztatowego, ani zadnego.
+ *
+ * Reszta przechodzi: sprawdzone na wszystkich pietnastu szlifach, kazdy pozostaly
+ * daje wyrob w jednym kawalku.
+ */
+export const SIDE_CUTS = Object.keys(CUTS).filter((id) => id !== "baguette" && id !== "briolette");
 
 export const SETTINGS = {
   prong4:  { pl: "4 łapki", en: "4 claws", de: "4 Krappen", prongs: 4 },
@@ -485,7 +519,7 @@ export const DEFAULTS = {
   stone: { cut: "round", size: 6.5, material: "cz", origin: "stock" },
   setting: "prong4",
   prongDia: 0.9,
-  side: { count: 0, size: 1.6, setting: "pave", material: "cz", gap: 0.35, spread: 0.0 },
+  side: { count: 0, size: 1.6, setting: "pave", material: "cz", gap: 0.35, spread: 0.0, cut: "round" },
   casting: { ...CASTING_DEFAULTS },
   halo: { on: false, size: 1.4, material: "cz" },
   band: { coverage: "none", size: 1.8, setting: "pave", material: "cz" },
@@ -519,6 +553,12 @@ export function validate(input = {}) {
   p.band = { ...DEFAULTS.band, ...(input.band || {}) };
   p.side = { ...DEFAULTS.side, ...(input.side || {}) };
   p.signet = { ...DEFAULTS.signet, ...(input.signet || {}) };
+
+  // Szlif kamieni bocznych: ta sama walidacja co przy kamieniu centralnym,
+  // bo nieznany szlif bocznych nie ma czym sie skonczyc w generatorze bryly.
+  if (!SIDE_CUTS.includes(p.side.cut)) {
+    throw new Error(`Nieznany albo niedozwolony szlif kamieni bocznych: ${p.side.cut}`);
+  }
 
   if (!RING_KINDS.includes(p.kind)) p.kind = "ring";
   p.innerDia = clamp(num(p.innerDia, DEFAULTS.innerDia), LIMITS.innerDia);

@@ -11,7 +11,7 @@
 // a kwote wiazaca pobiera `RingPriceBox` z `/api/price/ring`.
 
 import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
-import { CUTS, SETTINGS, SIDE_SETTINGS, SHANK_PROFILES, SIGNET_TABLES, SIGNET_FACES, DEFAULTS, LIMITS } from "../../geometry/ring/params.js";
+import { CUTS, SIDE_CUTS, SETTINGS, SIDE_SETTINGS, SHANK_PROFILES, SIGNET_TABLES, SIGNET_FACES, DEFAULTS, LIMITS } from "../../geometry/ring/params.js";
 import { RING_PRESETS, PRESET_GROUPS, applyPreset } from "../../data/ringPresets.js";
 import { CASTING_ALLOYS, METAL_COLORS, colorsFor } from "../../data/castingAlloys.js";
 import { GEMSTONES } from "../../pricing/jewelryConfig.js";
@@ -41,6 +41,7 @@ const L = {
     width: "Szerokość szyny", thickness: "Grubość szyny",
     cut: "Szlif kamienia centralnego", setting: "Zakucie", stoneSize: "Rozmiar kamienia",
     side: "Kamienie na szynie, na stronę", sideSetting: "Oprawa kamieni bocznych",
+    sideCut: "Szlif kamieni bocznych",
     sideSize: "Średnica bocznych", none: "Brak",
     sideGap: "Odsunięcie od korony", sideSpread: "Rozsunięcie kamieni",
     table: "Tarcza sygnetu", tableLen: "Dłuższa oś tarczy", engraving: "Grawer tarczy",
@@ -71,6 +72,7 @@ const L = {
     width: "Shank width", thickness: "Shank thickness",
     cut: "Centre stone cut", setting: "Setting", stoneSize: "Stone size",
     side: "Side stones, per side", sideSetting: "Side stone setting",
+    sideCut: "Side stone cut",
     sideSize: "Side stone diameter", none: "None",
     sideGap: "Gap from the head", sideSpread: "Spacing between stones",
     table: "Signet table", tableLen: "Long axis of the table", engraving: "Table engraving",
@@ -101,6 +103,7 @@ const L = {
     width: "Schienenbreite", thickness: "Schienenstärke",
     cut: "Schliff des Hauptsteins", setting: "Fassung", stoneSize: "Steingröße",
     side: "Steine auf der Schiene, je Seite", sideSetting: "Fassung der Seitensteine",
+    sideCut: "Schliff der Seitensteine",
     sideSize: "Durchmesser der Seitensteine", none: "Keine",
     sideGap: "Abstand zum Kopf", sideSpread: "Abstand zwischen den Steinen",
     table: "Siegelplatte", tableLen: "Längere Achse der Platte", engraving: "Gravur der Platte",
@@ -450,6 +453,25 @@ export default function RingConfigurator({ lang = "pl" }) {
 
               {!noSide && (
                 <>
+                  <Group label={t.sideCut} hint={CUTS[p.side.cut] ? hintOf(CUTS[p.side.cut], lang) : null}>
+                    <div className="grid grid-cols-4 gap-1">
+                      {SIDE_CUTS.map((id) => [id, CUTS[id]]).map(([id, c]) => (
+                        <button
+                          key={id} type="button" onClick={() => setSide({ cut: id })}
+                          aria-pressed={id === p.side.cut} title={nameOf(c, lang)}
+                          className={`flex flex-col items-center gap-0.5 rounded-sm border px-1 py-1.5 transition-colors ${
+                            id === p.side.cut
+                              ? "border-amber-400/55 bg-amber-400/10 text-amber-300"
+                              : "border-white/10 bg-white/[0.03] text-neutral-500 hover:border-white/20 hover:text-neutral-300"
+                          }`}
+                        >
+                          <CutIcon cut={id} className="w-full h-auto" />
+                          <span className="text-[8.5px] leading-tight text-center">{nameOf(c, lang)}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </Group>
+
                   <Group label={t.sideSetting} hint={SIDE_SETTINGS[p.side.setting] ? hintOf(SIDE_SETTINGS[p.side.setting], lang) : null}>
                     <Seg value={p.side.setting} onChange={(id) => setSide({ setting: id })}
                       options={Object.entries(SIDE_SETTINGS).map(([id, v]) => ({ id, label: nameOf(v, lang) }))} />
@@ -572,8 +594,12 @@ export default function RingConfigurator({ lang = "pl" }) {
                   metal={mesh.metal} stones={mesh.stones}
                   haloStones={mesh.haloStones} sideStones={mesh.sideStones}
                   alloy={p.alloy} color={p.color}
-                  gem={p.stone.material} haloGem={p.halo.material} sideGem={p.side.material}
-                  gemSize={p.stone.size} haloSize={p.halo.size} sideSize={p.side.size}
+                  gem={p.kind === "band" ? p.band.material : p.stone.material}
+                  haloGem={p.halo.material}
+                  sideGem={p.kind === "band" ? p.band.material : p.side.material}
+                  gemSize={p.kind === "band" ? p.band.size : p.stone.size}
+                  haloSize={p.halo.size}
+                  sideSize={p.kind === "band" ? p.band.size : p.side.size}
                 />
               ) : null}
             </Suspense>

@@ -28,6 +28,18 @@ Pilnuje tego `scripts/check-emdash.mjs` i **wywala build**, więc złamanie zasa
 
 ## Model routing (cost optimization)
 
+### Delegowanie - HARD RULE (polecenie właściciela, 2026-08-16, obowiązuje do odwołania)
+
+**Proste zadania zlecaj agentom. Ty jesteś mózgiem.** Sesja główna trzyma
+decyzje, diagnozę i pomiar, a wykonanie idzie w dół: wyszukiwanie, edycje
+jednoplikowe, i18n, powtarzalne poprawki, sprawdzanie stanu. Nie rób ręcznie
+tego, co da się opisać agentowi w trzech zdaniach.
+
+Agent dostaje w zleceniu trzy rzeczy, inaczej odda pracę do wyrzucenia:
+zakaz długich myślników, wymóg `npm run sync:pricing` po dotknięciu
+`src/geometry`, i nazwę gałęzi. Wynik zawsze sprawdzamy sami, bo agent
+raportuje własną pracę i bywa w tym optymistą.
+
 **Claude MUST automatically route tasks to the most cost-effective model** - the user does not need to ask. Default behavior:
 
 | Model | Role | Use for |
