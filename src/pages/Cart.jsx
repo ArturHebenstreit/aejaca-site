@@ -12,6 +12,10 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { useCart } from "../cart/CartContext.jsx";
+
+/** Ta sama liczba co w kalkulatorze i na serwerze. Rozjazd znaczylby, ze koszyk
+ *  przepuszcza opis, ktory serwer odrzuci przy platnosci. */
+const MIN_OPIS = 20;
 import { getPackaging } from "../pricing/packaging.js";
 import { t } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
@@ -39,6 +43,10 @@ const UI = {
     gone: "Ta pozycja została w międzyczasie sprzedana",
     onlyLeft: "Zostało już tylko sztuk:",
     blocked: "Popraw ilość albo usuń pozycję, której już nie mamy, wtedy przejdziesz do kasy.",
+    needDescription: "Opisz, co mamy wykonać",
+    needDescriptionWhy: "Bez opisu nie przyjmiemy zlecenia do realizacji. Ta pozycja trafiła do koszyka, zanim wprowadziliśmy ten wymóg.",
+    needDescriptionHint: "np. znak z logo 15x10 cm w sklejce 3 mm, grawer po jednej stronie",
+    blockedDescription: "Uzupełnij opis przy zaznaczonych pozycjach, wtedy przejdziesz do kasy.",
     shippingFrom: "Dostawa: odbiór osobisty 0 zł, Paczkomat InPost {locker}, kurier {courier}.",
     freeLeft: "Brakuje {amount} do darmowej dostawy w Polsce.",
     freeReached: "Masz darmową dostawę w Polsce.",
@@ -68,6 +76,10 @@ const UI = {
     gone: "This item was sold in the meantime",
     onlyLeft: "Only this many left:",
     blocked: "Adjust the quantity or remove the item we no longer have, then you can go to checkout.",
+    needDescription: "Describe what we are to make",
+    needDescriptionWhy: "Without a description we cannot accept the job. This item went into the cart before we introduced the requirement.",
+    needDescriptionHint: "e.g. logo sign 15x10 cm in 3 mm plywood, engraved on one side",
+    blockedDescription: "Fill in the description on the marked items, then you can go to checkout.",
     shippingFrom: "Delivery: pickup free, InPost locker {locker}, courier {courier}.",
     freeLeft: "{amount} more for free delivery within Poland.",
     freeReached: "Free delivery within Poland unlocked.",
@@ -97,6 +109,10 @@ const UI = {
     gone: "Diese Position wurde zwischenzeitlich verkauft",
     onlyLeft: "Nur noch so viele verfügbar:",
     blocked: "Menge anpassen oder die nicht mehr verfügbare Position entfernen, dann geht es zur Kasse.",
+    needDescription: "Beschreiben Sie, was wir anfertigen sollen",
+    needDescriptionWhy: "Ohne Beschreibung können wir den Auftrag nicht annehmen. Diese Position kam in den Warenkorb, bevor wir diese Anforderung eingeführt haben.",
+    needDescriptionHint: "z. B. Logo-Schild 15x10 cm aus 3 mm Sperrholz, einseitig graviert",
+    blockedDescription: "Beschreibung bei den markierten Positionen ergänzen, dann geht es zur Kasse.",
     shippingFrom: "Versand: Abholung kostenlos, InPost-Paketstation {locker}, Kurier {courier}.",
     freeLeft: "Noch {amount} bis zum kostenlosen Versand innerhalb Polens.",
     freeReached: "Kostenloser Versand innerhalb Polens erreicht.",
@@ -116,7 +132,7 @@ export default function Cart() {
   const { lang } = useLanguage();
   const { money } = useMoney();
   const u = UI[lang] || UI.en;
-  const { items, subtotalGrosze, remove, setQty, hasVolatile, ready } = useCart();
+  const { items, subtotalGrosze, remove, setQty, update, hasVolatile, ready } = useCart();
   // Prog dotyczy wylacznie Polski, dlatego tekst mowi o Polsce wprost.
   const freeLeftGrosze = Math.max(0, FREE_SHIPPING_FROM_GROSZE - subtotalGrosze);
 
@@ -136,7 +152,22 @@ export default function Cart() {
     return { left: entry.available, gone: entry.available === 0 };
   }
 
-  const blocked = items.some((i) => shortage(i));
+  // POZYCJA USLUGOWA BEZ OPISU NIE PRZECHODZI DO KASY.
+  //
+  // Wymog opisu wszedl 2026-08-16, a w koszykach klientow leza pozycje dodane
+  // wczesniej. Bez tego pola dowiedzieliby sie o braku dopiero od serwera,
+  // w ostatnim kroku, po wpisaniu danych do platnosci, i musieliby usunac
+  // pozycje i zlozyc ja od nowa. Tutaj uzupelniaja opis bez utraty czegokolwiek.
+  //
+  // Zwolnienia sa te same co na serwerze i musza takie zostac, inaczej koszyk
+  // blokowalby zamowienie, ktore serwer i tak by przyjal: kreator pierscionkow
+  // opisuje wyrob parametrami, a pozycja z wyceny przeszla przez czlowieka.
+  const brakOpisu = (i) => i.kind === "service"
+    && i.calculator !== "jewelry_ring_config"
+    && !i.quoteRef
+    && String(i.description || "").trim().length < MIN_OPIS;
+
+  const blocked = items.some((i) => shortage(i) || brakOpisu(i));
 
   const regimeLabel = (r) =>
     r === "digital" ? u.returnsDigital : r === "made_to_order" ? u.returnsNone : u.returns14;
@@ -232,6 +263,26 @@ export default function Cart() {
                           {i.description && <div className="line-clamp-2">{u.description}: {i.description}</div>}
                         </div>
 
+                        {brakOpisu(i) && (
+                          <div className="mt-3 rounded-lg border border-amber-400/40 bg-amber-400/[0.06] p-3">
+                            <label className="block text-amber-200 text-[12px] font-medium mb-1">
+                              {u.needDescription}
+                            </label>
+                            <p className="text-neutral-400 text-[11px] mb-2">{u.needDescriptionWhy}</p>
+                            <textarea
+                              rows={3}
+                              value={i.description || ""}
+                              onChange={(e) => update(i.id, { description: e.target.value })}
+                              placeholder={u.needDescriptionHint}
+                              className="w-full rounded-md border border-white/15 bg-white/[0.03] px-2.5 py-2 text-[12px]
+                                         text-white placeholder:text-neutral-600 focus:border-amber-400/60 focus:outline-none"
+                            />
+                            <p className="text-neutral-500 text-[11px] mt-1">
+                              {String(i.description || "").trim().length} / {MIN_OPIS}
+                            </p>
+                          </div>
+                        )}
+
                         <div className="flex items-center justify-between mt-3">
                           <div className="flex items-center gap-2">
                             <button
@@ -296,7 +347,9 @@ export default function Cart() {
                     >
                       {u.checkout}
                     </span>
-                    <p className="text-red-300 text-[11px] text-center mt-2">{u.blocked}</p>
+                    <p className="text-red-300 text-[11px] text-center mt-2">
+                      {items.some((i) => brakOpisu(i)) ? u.blockedDescription : u.blocked}
+                    </p>
                   </>
                 ) : (
                   <Link
