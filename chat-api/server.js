@@ -1804,6 +1804,28 @@ const orderEmailLimit = createLimiter({ limit: 5, windowMs: 60 * 60_000, name: "
 /** Ile rezerwacji towaru wisi jednoczesnie z jednego adresu. */
 const MAX_HELD_RESERVATIONS = 2;
 
+/**
+ * Najkrotszy opis zlecenia, ktory przyjmujemy. Ta sama liczba stoi
+ * w przegladarce (`MIN_DESCRIPTION` w CalcToCart i ServiceConfigurator),
+ * i to jest zamierzone: formularz ma odbic zlecenie zanim klient zaplaci,
+ * a serwer ma je odbic takze wtedy, gdy formularz ktos ominie.
+ */
+const MIN_JOB_DESCRIPTION = 20;
+
+/**
+ * Uslugi ZWOLNIONE z wymogu opisu, kazda z powodem napisanym obok.
+ *
+ * Lista jest krotka celowo. Zwolnienie znaczy, ze zlecenie trafi do pracowni
+ * bez ani jednego zdania od klienta, wiec wolno je dac tylko wtedy, gdy tresc
+ * zlecenia wynika jednoznacznie z czegos innego niz tekst.
+ *
+ * `jewelry_ring_config`: kreator pierscionkow. Parametry pozycji sa PELNYM
+ * opisem wyrobu, co do dziesiatych milimetra, i to z nich powstaje bryla,
+ * ktora klient widzial na ekranie. Opis slowny nie dodalby tu niczego, czego
+ * nie ma juz w `params`, a wymuszanie go zablokowaloby sprzedaz z kreatora.
+ */
+const USLUGI_BEZ_OPISU = new Set(["jewelry_ring_config"]);
+
 app.post("/api/orders", express.json({ limit: "1mb" }),
   limitBy(orderLimit, extractIP, { error: "Za duzo zamowien z tego miejsca, sprobuj za chwile" }),
   async (req, res) => {
@@ -1917,6 +1939,39 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
       // Opis zlecenia to tresc od klienta, nie parametr wyceny, wiec przycinamy
       // go do rozsadnej dlugosci i zapisujemy razem z parametrami pozycji.
       const description = String(raw.description || "").slice(0, 2000).trim() || null;
+
+      // OPIS JEST WARUNKIEM PRZYJECIA ZLECENIA NA USLUGE.
+      //
+      // Sprawdzamy to TUTAJ, a nie tylko w przegladarce, bo formularz da sie
+      // ominac, a skutkiem jest zamowienie oplacone i niewykonalne: pieniadze
+      // na koncie, plik w chmurze i nikt nie wie, co z nim zrobic. Dokladnie
+      // to sie wydarzylo 2026-08-16 przy znakowaniu laserem fiber.
+      //
+      // Pozycja z polki (`productSlug`) jest z tego zwolniona i nigdy tu nie
+      // trafia: to gotowy przedmiot z katalogu, jego tresc jest znana.
+      //
+      // Pozycja z WYCENY tez jest zwolniona: przeszla przez czlowieka, ktory ja
+      // policzyl, wiec pracownia ma kontekst nawet bez opisu. Bez tego wyjatku
+      // stara wycena, zapisana zanim opis stal sie obowiazkowy, odbijalaby sie
+      // od kasy w ostatnim kroku, juz po podaniu danych do platnosci.
+      const bezOpisu = USLUGI_BEZ_OPISU.has(String(raw.calculator || ""))
+        || Boolean(raw.quoteRef);
+      if (!bezOpisu && (!description || description.length < MIN_JOB_DESCRIPTION)) {
+        return res.status(400).json({
+          error: "Zlecenie na usluge wymaga opisu tego, co mamy wykonac (min. "
+            + MIN_JOB_DESCRIPTION + " znakow).",
+          code: "description_required",
+        });
+      }
+
+      // Zalaczniki zbieramy do listy i odsiewamy puste, zeby nizej isc jedna
+      // petla niezaleznie od tego, czy pozycja przyszla ze starego koszyka
+      // z jednym polem, czy z nowego z lista.
+      const attachmentTokens = [
+        ...(Array.isArray(raw.attachmentTokens) ? raw.attachmentTokens : []),
+        raw.attachmentToken,
+      ].map((t) => (t ? String(t) : null)).filter(Boolean);
+      const uniqueAttachments = [...new Set(attachmentTokens)];
       const qty = Number.isInteger(raw.qty) && raw.qty > 0 ? Math.min(999, raw.qty) : item.qty;
       const unitGrosze = item.unitGrosze + packGrosze;
 
@@ -1935,7 +1990,8 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
         geometry: raw.geometry || null,
         fileName: raw.fileName || null,
         uploadToken: raw.uploadToken || null,
-        attachmentToken: raw.attachmentToken || null,
+        attachmentToken: uniqueAttachments[0] || null,
+        attachmentTokens: uniqueAttachments,
       });
     }
 
@@ -2112,10 +2168,16 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
 
       // Rysunek techniczny nie jest pozycja zamowienia, tylko materialem do
       // wykonania, wiec wiazemy go z zamowieniem, a nie z linia.
-      if (i.attachmentToken) {
+      //
+      // ZALACZNIKOW MOZE BYC WIECEJ NIZ JEDEN. Zlecenie na laser niesie plik
+      // wektorowy DO WYKONANIA i osobno zdjecie przedmiotu, na ktorym ma sie
+      // znalezc. Wczesniej oba szly w jedno pole i drugi plik po cichu
+      // zastepowal pierwszy. Pojedyncze pole zostaje obslugiwane, bo tak
+      // wygladaja pozycje lezace juz w koszykach klientow.
+      for (const tok of i.attachmentTokens) {
         await pool.query(
           `UPDATE uploads SET status = 'ordered', order_id = $2 WHERE token = $1`,
-          [i.attachmentToken, orderId]
+          [tok, orderId]
         );
       }
 

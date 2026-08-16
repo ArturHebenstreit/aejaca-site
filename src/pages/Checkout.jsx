@@ -419,6 +419,32 @@ export default function Checkout() {
                 uploadToken: i.uploadToken || null,
                 packagingId: i.packagingId || null,
                 personalization: i.personalization || null,
+                // OPIS I ZALACZNIKI MUSZA TU BYC.
+                //
+                // Ich brak w tym miejscu byl cicha wada przez caly czas
+                // istnienia koszyka: kalkulator zbieral opis, wymagal go przed
+                // dodaniem pozycji, koszyk go trzymal, serwer umial go zapisac,
+                // a poczta zamowieniowa umiala go wydrukowac. Tylko ten jeden
+                // obiekt go nie przekazywal, wiec do pracowni szlo zamowienie
+                // bez ani jednego zdania od klienta. Wyszlo dopiero wtedy, gdy
+                // przyszlo oplacone BLIKiem zlecenie na laser z samym plikiem.
+                //
+                // Zaden sprawdzian tego nie widzial, bo kazdy element osobno
+                // dzialal poprawnie. Wada byla w SZWIE miedzy nimi.
+                description: i.description || null,
+                packagingText: i.packagingText || null,
+                packagingTextBack: i.packagingTextBack || null,
+                attachmentToken: i.attachmentToken || null,
+                attachmentTokens: i.attachmentTokens || null,
+                // Skala modelu wchodzi do CENY: serwer liczy pozycje jeszcze
+                // raz i bez niej przeliczylby powiekszony wydruk jak zwykly.
+                // Wycena zapisana (`QuotePage`) przekazywala ja od poczatku,
+                // koszyk nie, wiec ta sama pozycja kosztowala inaczej zaleznie
+                // od drogi, ktora klient poszedl.
+                scale: i.scale || 1,
+                // Numer wyceny zwalnia pozycje z wymogu opisu po stronie
+                // serwera: przeszla przez czlowieka, ktory ja policzyl.
+                quoteRef: i.quoteRef || null,
                 qty: i.qty || 1,
               }
         ),
