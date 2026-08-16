@@ -911,14 +911,25 @@ function vprongSolid(w, pts, deg, prongR, base, top, zamkniete = false) {
 }
 
 /**
- * Czy zakucia maja byc ZAMKNIETE nad kamieniem.
+ * Czy zakucia maja byc ZAMKNIETE nad kamieniem. NIGDY.
  *
- * Rozstrzyga o tym jedna rzecz: czy w pliku jest kamien. Model bez kamienia
- * to odlew do zakucia i lapki musza byc otwarte, bo inaczej kamienia nie da
- * sie wlozyc. Model z kamieniem pokazuje wyrob gotowy i lapki maja byc
- * dociśnięte, bo inaczej kamien z niego wypada.
+ * Do 2026-08-16 rozstrzygal o tym przelacznik "Kamienie w modelu", ktory
+ * domyslnie stoi na TAK. Zamiar byl taki, ze plik z kamieniem pokazuje wyrob
+ * gotowy, wiec lapki leza na koronie. Skutek byl inny: KAZDY uklad otwierany
+ * domyslnie pokazywal gniazda zakryte, bo wlot zamkniety to sam obrys kamienia
+ * plus slupek w szerokosci tafli. Wlasciciel zglosil to na pieciu ukladach po
+ * kolei, za kazdym razem jako "nie widac gniazda, jest zakryte".
+ *
+ * Wniosek jest szerszy od tego jednego objawu. To, co ten kreator wydaje, jest
+ * MODELEM ODLEWNICZYM: plikiem, ktory idzie na wosk. On musi miec gniazda
+ * otwarte zawsze, bo inaczej nie da sie w niego wlozyc kamienia. Podglad
+ * kamienia to warstwa RYSUNKU, a nie stan bryly, i nie ma prawa ruszac metalu.
+ *
+ * Zostawiam parametr `zamkniete` w `seatCutter`, bo wyciecie pod lapke lezaca
+ * na koronie jest poprawna geometria i moze sie przydac do wizualizacji wyrobu
+ * gotowego. Nie wchodzi tylko do wyrobu, ktory wydajemy.
  */
-const zakute = (p) => p.casting?.stones !== false;
+const zakute = () => false;
 
 export function buildCrown(w, p, stone) {
   const { Manifold, CrossSection } = w;
@@ -1791,16 +1802,69 @@ function buildBandStones(w, p) {
     seats = seats ? zlacz(seats, cut) : cut;
 
     if (p.band.setting === "pave") {
-      // Promien MUSI byc wziety z profilu na wysokosci kuleczki, a nie ze
-      // szczytu szyny. Szyna polokragla opada ku krawedziom, wiec kuleczka
-      // postawiona na promieniu szczytu wisi obok metalu i bryla rozpada sie
-      // na kilkadziesiat czesci. Widac to w ujemnym `genus`, nie na renderze.
-      const kk = kB ? kB(u) : { w: 1, t: 1 };
-      const off = Math.min(d * 0.56, (p.width * kk.w) / 2 - 0.16);
-      const rad = ri + (shankRadiusAt(p, off / kk.w) - ri) * kk.t - 0.2;
-      for (const s of [-1, 1]) {
-        addM(Manifold.sphere(0.28, 14)
-          .translate([Math.cos(a) * rad, Math.sin(a) * rad, s * off]));
+      // KRAPY STOJA MIEDZY KAMIENIAMI, nie obok kamienia.
+      //
+      // Bylo tak: dwie gladkie kule o promieniu 0,28 mm, na tym samym kacie co
+      // kamien, odsuniete od srodkowej o `d * 0,56`. Zadna z tych trzech rzeczy
+      // nie byla dobra.
+      //
+      // Po pierwsze STALY PRZY JEDNYM KAMIENIU, wiec na kazdy otwor przypadaly
+      // dwie krapy zamiast czterech i kamien byl trzymany z dwoch stron, a nie
+      // z czterech. Krapa postawiona MIEDZY sasiednimi kamieniami trzyma oba,
+      // wiec ta sama liczba metalu daje kazdemu kamieniowi cztery punkty.
+      //
+      // Po drugie `d * 0,56` to promien wlotu gniazda co do setnych: wlot ma
+      // `d / 2 + 0,05`. Kula stala wiec dokladnie na krawedzi otworu i wyciecie
+      // gniazda zjadalo ja niemal w calosci.
+      //
+      // Po trzecie KULA NIE JEST KRAPA. Zeby jubiler mial czym zakuc, musi miec
+      // slupek WYSTAJACY ponad lico szyny: taki, ktory da sie rozdzielic
+      // rylcem na dwa i przelozyc nad rondyste. Kulka wtopiona w metal nie daje
+      // sie ani rozdzielic, ani przesunac. Wlasciciel zglosil to wprost.
+      //
+      // Odsuniecie od srodkowej LICZYMY. Chcemy, zeby krapa stala tuz za
+      // rondysta obu sasiadow: w odleglosci `d / 2 + 0,32 * kula` od osi
+      // kazdego z nich, tak samo jak przy pave na ramionach. Polowa odstepu
+      // wzdluz obwodu jest dana, wiec zostaje twierdzenie Pitagorasa. Przy
+      // kamieniach gesto upakowanych sam odstep obwodowy juz wystarcza i wynik
+      // schodzi do zera, czyli krapa ladowalaby na srodkowej: podnosimy ja
+      // wtedy do `kula * 1,15`, zeby dwie krapy z jednej przerwy byly osobne.
+      const kula = Math.min(0.4, Math.max(0.26, d * 0.28));
+      const wysokosc = Math.max(0.34, d * 0.42);
+      const SINK_B = 0.2;
+      const krokKata = (pelny ? Math.PI * 2 : Math.PI) / n;
+      // Pelny obwod: jedna przerwa za kazdym kamieniem, wiec przerw jest tyle
+      // co kamieni i kazda krapa ma po sasiedzie z obu stron. Polowa obwodu ma
+      // o jedna przerwe wiecej, bo przed pierwszym kamieniem tez trzeba stanac.
+      for (const g of (pelny || i > 0 ? [0.5] : [-0.5, 0.5])) {
+        const ab = a + g * krokKata;
+        const ub = Math.abs(((ab - Math.PI / 2 + Math.PI * 3) % (Math.PI * 2)) - Math.PI) / Math.PI;
+        const kk = kB ? kB(ub) : { w: 1, t: 1 };
+        const polOdstepu = (krokKata / 2) * (promien(ub) - Math.min(0.22, d * 0.12));
+        const cel = d / 2 + kula * 0.32;
+        let off = Math.sqrt(Math.max(0, cel * cel - polOdstepu * polOdstepu));
+        off = Math.max(off, kula * 1.15);
+        off = Math.min(off, (p.width * kk.w) / 2 - kula * 0.6);
+        // Promien MUSI byc wziety z profilu na wysokosci krapy, a nie ze
+        // szczytu szyny. Szyna polokragla opada ku krawedziom, wiec slupek
+        // postawiony na promieniu szczytu wisi obok metalu i bryla rozpada sie
+        // na kilkadziesiat czesci. Widac to w ujemnym `genus`, nie na renderze.
+        const rad = ri + (shankRadiusAt(p, off / kk.w) - ri) * kk.t - SINK_B;
+        const os = [Math.cos(ab), Math.sin(ab), 0];
+        const rGora = kula * 0.72;
+        for (const s of [-1, 1]) {
+          const stopa = [os[0] * rad, os[1] * rad, s * off];
+          addM(zlacz(
+            Manifold.cylinder(wysokosc + SINK_B, kula, rGora, 20, false)
+              .rotate([0, 90, ab / DEG])
+              .translate(stopa),
+            Manifold.sphere(rGora, 16).translate([
+              stopa[0] + os[0] * (wysokosc + SINK_B),
+              stopa[1] + os[1] * (wysokosc + SINK_B),
+              stopa[2],
+            ]),
+          ));
+        }
       }
     }
   }

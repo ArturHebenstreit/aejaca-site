@@ -280,6 +280,75 @@ dodając nową bryłę:
 Dopisujemy **na górze**, jeden wpis na zmianę geometrii. Format: co było, co jest,
 i **czego się z tego dowiedzieliśmy na przyszłość**.
 
+## 2026-08-16 - krapy eternity: między kamieniami, wystające, do rozdzielenia
+
+**Co było.** Dwie gładkie kule o promieniu 0,28 mm, na tym samym kącie co
+kamień, odsunięte od środkowej o `d * 0,56`. Trzy błędy naraz, każdy sam
+w sobie wystarczający:
+
+1. **Stały przy jednym kamieniu**, więc na otwór przypadały dwie krapy zamiast
+   czterech.
+2. `d * 0,56` **to promień wlotu gniazda co do setnych** (`d / 2 + 0,05`), więc
+   wycięcie gniazda zjadało kulę niemal w całości.
+3. **Kula nie jest krapą.** Zmierzone kontrolą negatywną: ponad licem szyny nie
+   zostawało ANI JEDNEGO osobnego kawałka metalu przy kamieniu. Nie było czego
+   wziąć rylcem.
+
+**Co jest.** Krapy stoją **w przerwie między sąsiednimi kamieniami**, więc każda
+trzyma dwa kamienie i każdy kamień ma cztery punkty podparcia przy tej samej
+liczbie krap. Odsunięcie od środkowej jest **liczone**, nie zgadywane: chcemy
+odległości `d / 2 + 0,32 * kula` od osi każdego z sąsiadów, połowa odstępu
+obwodowego jest dana, więc zostaje Pitagoras. Przy ciasnym rozstawie wynik
+schodzi do zera i podnosimy go do `kula * 1,15`, żeby dwie krapy z jednej
+przerwy były osobne. Krapa to stożek ścięty zwieńczony kulką, wystający
+`max(0,34; d * 0,42)` ponad lico: jest co rozdzielić i jest co przełożyć nad
+rondystę.
+
+**Czego się dowiedzieliśmy.**
+
+- **Krapa musi wystawać.** Element wtopiony w metal wygląda na renderze jak
+  zakucie i nie jest zakuciem. To już drugi raz ta sama pomyłka: pierwszy przy
+  pavé na ramionach, drugi tutaj. Wzorzec jest wspólny i trzeba go stosować
+  wszędzie, gdzie coś ma trzymać kamień.
+- **Model odlewniczy nie ma metalu nad rondystą** i tak ma być. Wlot gniazda
+  wycina wszystko w promieniu `d / 2 + luz`, więc żadna krapa nie może w nim
+  leżeć. Przełożenie nad kamień to robota jubilera, nie geometria pliku.
+  Sprawdzać więc liczbę, wysokość i grubość krap, a nie zachodzenie na kamień.
+- **Sonda musi trafić w rondystę, a nie w środek bryły kamienia.** Kamień leży
+  taflą na zewnątrz, więc środek jego pudełka wypada gdzie indziej niż rondysta.
+  Pierwsza wersja sondy myliła się o kilka dziesiątych milimetra i pokazywała
+  dwie krapy zamiast czterech, przy poprawnej bryle. Promień rondysty liczymy
+  jako `bbox.max[0] - (girdleH + crownH)`.
+- **Plaster liczący krapy kładziemy nad LICEM SZYNY**, nie nad rondystą: kamień
+  jest zanurzony, więc na wysokości rondysty stoi jeszcze lita szyna i wszystko
+  zlewa się w jeden kawałek.
+
+## 2026-08-16 - podgląd kamienia przestaje zamykać gniazda
+
+**Co było.** `zakute(p)` zwracało `p.casting.stones !== false`, a ten przełącznik
+domyślnie stoi na TAK. Model z kamieniem dostawał więc wlot w kształcie samego
+kamienia plus słupek w szerokości tafli, czyli gniazdo widziane z góry było
+zakryte, a łapki leżały na koronie. Wyglądało to jak wyrób gotowy i taki był
+zamiar.
+
+**Co jest.** `zakute()` zwraca zawsze `false`. Metal nie zależy od niczego, co
+jest tylko podglądem. Parametr `zamkniete` w `seatCutter` zostaje, bo to
+poprawna geometria łapki leżącej na koronie, ale nic w wyrobie go nie używa.
+
+**Czego się dowiedzieliśmy.** To, co kreator wydaje, jest **modelem
+odlewniczym**. Gniazda mają być otwarte zawsze, bo inaczej nie ma jak włożyć
+kamienia. Podgląd jest warstwą rysunku i nie ma prawa ruszać bryły, a już na
+pewno nie masy, po której liczymy cenę. Właściciel zgłosił to pięć razy pod rząd
+na pięciu różnych układach, zanim znalazłem wspólną przyczynę: szukałem wady
+w każdym gnieździe z osobna, a wada siedziała w jednej linijce wspólnej dla
+wszystkich.
+
+Sprawdziany też trzeba było odwrócić. Wymagały wcześniej, żeby plik z kamieniem
+był LŻEJSZY (docisnięte łapki), więc broniły dokładnie tego zachowania, które
+było wadą. Teraz wymagają czegoś mocniejszego i prostszego: **przełącznik
+podglądu nie zmienia metalu o więcej niż 0,01 %**, i jest to sprawdzane osobno
+na ośmiu układach.
+
 ## 2026-08-15 - noga lapki po scianie kosza, i jedna poprawka WYCOFANA
 
 **Było:** noga łapki schodziła na dno kosza po niemal stałym promieniu, a kosz

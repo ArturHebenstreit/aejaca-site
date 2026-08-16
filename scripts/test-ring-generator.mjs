@@ -730,25 +730,21 @@ console.log("\n16. Dodatki odlewnicze nie ruszają wyrobu");
     zwolnij(r);
   }
 
-  // KAMIENIE W MODELU sa jedynym przelacznikiem, ktory MA prawo ruszyc metal,
-  // i to jest zmiana swiadoma, a nie usterka.
+  // KAMIENIE W MODELU nie ruszaja metalu. ZADEN przelacznik go nie rusza.
   //
-  // Model bez kamieni to odlew do zakucia i lapki musza byc w nim otwarte,
-  // bo pod zamknieta lapke nie da sie wlozyc kamienia. Model z kamieniem
-  // pokazuje wyrob gotowy, wiec lapki sa docisniete. To sa dwa rozne ksztalty
-  // tej samej lapki i roznia sie objetoscia, bo zagieta jest krotsza.
-  //
-  // Roznica ma byc MALA: dotyczy koncowek lapek, a nie calego wyrobu. Kilka
-  // procent znaczyloby, ze zmienil sie ksztalt czegos wiekszego.
+  // Wczesniej ten sprawdzian wymagal czegos odwrotnego: plik z kamieniem mial
+  // miec lapki docisniete, wiec byc LZEJSZY. Wygladalo to rozsadnie, bo tak
+  // wyglada wyrob gotowy, a kosztowalo tyle, ze kazdy uklad otwierany
+  // domyslnie pokazywal gniazda zakryte. Podglad kamienia jest warstwa
+  // rysunku i tak ma zostac: bryla, ktora wydajemy, to model odlewniczy
+  // z gniazdami otwartymi, niezaleznie od tego, co widac na ekranie.
   {
     const otwarte = await buildRing({ ...baza, casting: { stones: false } }, { segments: 64 });
-    const roznica = (goly.massG / otwarte.massG - 1) * 100;
-    if (Math.abs(roznica) > 3) {
-      bad(`stan zakucia zmienia mase o ${roznica.toFixed(1)} procent, czyli o wiecej niz same koncowki lapek`);
-    } else if (!(otwarte.massG > goly.massG)) {
-      bad(`odlew z otwartymi lapkami powinien byc CIEZSZY od zakutego, a jest ${otwarte.massG.toFixed(3)} wobec ${goly.massG.toFixed(3)} g`);
+    const roznica = Math.abs(goly.massG / otwarte.massG - 1) * 100;
+    if (roznica > 0.01) {
+      bad(`podglad kamieni rusza metal o ${roznica.toFixed(2)} procent, a nie ma prawa ruszac go wcale`);
     } else {
-      ok(`otwarte łapki cięższe o ${Math.abs(roznica).toFixed(1)} % (${otwarte.massG.toFixed(3)} wobec ${goly.massG.toFixed(3)} g)`);
+      ok(`podgląd kamieni nie rusza metalu (${otwarte.massG.toFixed(3)} g w obu plikach)`);
     }
     zwolnij(otwarte);
   }
@@ -1089,16 +1085,15 @@ console.log("\n19. Kamień wchodzi do gniazda, siada i nie wypada");
   for (const [nazwa, cfg] of UKLADY) {
     // Model z kamieniem daje nam BRYLY KAMIENI i ich polozenie. Plik bez
     // kamieni ich nie zawiera, bo nie ma czego pokazywac, wiec bierzemy je
-    // stad i przykladamy do jednego i drugiego metalu. Polozenie jest to samo,
-    // rozni sie tylko stan lapek.
-    const zakuty = await buildRing({ innerDia: 17.2, ...cfg }, { segments: 64 });
+    // stad i przykladamy do metalu. Metal ma byc w obu plikach ten sam.
+    const zPodgladem = await buildRing({ innerDia: 17.2, ...cfg }, { segments: 64 });
     // Plik do ZAKUCIA, czyli bez kamieni: lapki otwarte, kamien wchodzi z gory.
     const r = await buildRing({ innerDia: 17.2, ...cfg, casting: { stones: false } },
       { segments: 64, withStones: false });
     // Przy halo i eternity kamieni sa dziesiatki, a kazde sprawdzenie to trzy
     // bryle w pamieci jadra, ktorej ono samo nie oddaje. Pierwsza szostka
     // wystarczy: wszystkie powstaja tym samym kodem.
-    const proba = zakuty.stones.slice(0, 6);
+    const proba = zPodgladem.stones.slice(0, 6);
     let objetosc = 0, naMiejscu = 0, nizej = 0, wyzej = 0;
     for (const k of proba) {
       objetosc += k.volume();
@@ -1120,19 +1115,17 @@ console.log("\n19. Kamień wchodzi do gniazda, siada i nie wypada");
       problemy.push(`gniazdo NIE ZATRZYMUJE kamienia: po zejsciu o 0,25 mm kolizja ${proc(nizej).toFixed(2)} % wobec ${proc(naMiejscu).toFixed(2)} % na miejscu`);
     }
     if (proc(wyzej) > 0.05) problemy.push(`kamienia nie da sie wlozyc z gory, metal zachodzi na niego (${proc(wyzej).toFixed(2)} %)`);
-    // Ten sam uklad Z KAMIENIEM ma zachowywac sie ODWROTNIE od gory: lapki sa
-    // docisniete, wiec kamienia nie da sie juz wyjac. Bez tej pary sprawdzian
-    // przepuscilby model, w ktorym lapki nigdy sie nie zamykaja.
-    let trzymane = 0;
-    for (const k of proba) trzymane += kolizja(zakuty.metal, k, 0.6);
-    const trzyma = (trzymane / objetosc) * 100;
-    if (!(trzyma > 0.3)) {
-      problemy.push(`po zakuciu kamien nadal wychodzi gora (kolizja ${trzyma.toFixed(2)} %)`);
+    // Podglad kamienia nie ma prawa ruszyc metalu. Tu to sprawdzamy na kazdym
+    // ukladzie z osobna, bo wlasnie tedy wchodzila poprzednia wersja: gniazdo
+    // zamykalo sie samo, gdy tylko kamien pojawil sie w pliku.
+    const dryf = Math.abs(zPodgladem.metal.volume() / r.metal.volume() - 1) * 100;
+    if (dryf > 0.01) {
+      problemy.push(`podglad kamieni zmienia metal o ${dryf.toFixed(2)} %`);
     }
-    zwolnij(zakuty);
+    zwolnij(zPodgladem);
 
     if (problemy.length) bad(`${nazwa}: ${problemy.join("; ")}`);
-    else ok(`${nazwa.padEnd(16)} otwarte: wchodzi i siada (opór ${proc(nizej).toFixed(2)} %); zakute: trzyma (${trzyma.toFixed(2)} %)`);
+    else ok(`${nazwa.padEnd(16)} wchodzi i siada (opór ${proc(nizej).toFixed(2)} %), podgląd nie rusza metalu`);
     zwolnij(r);
   }
 }
@@ -1816,6 +1809,87 @@ console.log("\n31. Noga lapki idzie po scianie kosza, a nie obok niego");
       ok(`${id.padEnd(10)} noga przylega do kosza, największa szczelina ${najwiekszaSzczelina.toFixed(2)} mm`);
     }
     zwolnij(solid); zwolnij(stone.solid);
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n32. Eternity: cztery krapy na kazdy kamien, i da sie nimi zakuc");
+// ------------------------------------------------------------
+// Wlasciciel: "nie da sie za ich pomoca zakuc kamieni, krapy powinny byc 4 przy
+// kazdym otworze albo po dwa po srodku miedzy kamieniami, ale blizej srodka
+// i wiekszych wymiarow, tak aby przy osadzaniu mozna bylo krape rozdzielic
+// na dwa".
+//
+// Sonda sprawdza trzy rzeczy naraz, bo poprzednia wersja zawodzila na wszystkich
+// trzech: ILE osobnych krap otacza kamien, czy STERCZA ponad lico szyny (kula
+// wtopiona w metal nie da sie rozdzielic rylcem) i czy sa dosc GRUBE.
+{
+  const w = await kernel();
+  const { Manifold } = w;
+  for (const [nazwa, cfg] of [
+    ["eternity 2,0", { coverage: "full", size: 2.0 }],
+    ["eternity 1,3", { coverage: "full", size: 1.3 }],
+    ["half 2,4", { coverage: "half", size: 2.4 }],
+  ]) {
+    const p = validate({
+      innerDia: 17.2, kind: "band", width: 2.6, thickness: 1.9,
+      band: { ...cfg, setting: "pave", material: "diamond" },
+    });
+    const zK = await buildRing(p, { segments: 96, withStones: true });
+    const kam = zK.stones[0];
+    const bb = kam.boundingBox();
+    const kat = Math.atan2((bb.min[1] + bb.max[1]) / 2, (bb.min[0] + bb.max[0]) / 2);
+    // PROMIEN RONDYSTY, a nie srodka bryly kamienia. Kamien lezy tafla na
+    // zewnatrz, wiec jego bryla siega od pawilonu pod rondysta po tafle nad
+    // nia i srodek pudelka wypada gdzie indziej niz rondysta. Pierwsza wersja
+    // sondy brala wlasnie srodek pudelka i mierzyla plaster kilka dziesiatych
+    // milimetra obok, a to przy krapie wysokiej na pol milimetra jest roznica
+    // miedzy czterema kawalkami a dwoma.
+    const wzor = stoneSolid(w, "round", cfg.size);
+    const bbObr = kam.rotate([0, 0, (-kat * 180) / Math.PI]).boundingBox();
+    const rOsi = bbObr.max[0] - (wzor.girdleH + wzor.crownH);
+    const cz = 0;
+    zwolnij(wzor.solid);
+
+    // Uklad kamienia: os idzie WZDLUZ promienia pierscionka. Obracamy metal
+    // tak, zeby ta os stala sie osia Z, i wtedy wszystko liczymy w plaskim.
+    // Obrot o -kat wokol Z stawia kamien na osi +X, a obrot o -90 wokol Y
+    // zamienia +X na +Z, czyli promien pierscionka staje sie pionem. Kamien
+    // ladowal wtedy w (-cz, 0, rOsi), wiec przesuwamy go do poczatku ukladu.
+    // Pierwsza wersja miala tu bledny znak i sonda mierzyla metal po drugiej
+    // stronie obraczki, pokazujac dwie krapy zamiast czterech.
+    const m = zK.metal.rotate([0, 0, (-kat * 180) / Math.PI]).rotate([0, -90, 0])
+      .translate([cz, 0, -rOsi]);
+    // Plaster TUZ NAD LICEM SZYNY, a nie tuz nad rondysta. Kamien jest
+    // zanurzony, wiec na wysokosci rondysty stoi jeszcze lita szyna i sonda
+    // policzylaby ja jako jeden kawalek. Krapy rozdzielaja sie dopiero powyzej
+    // powierzchni i wlasnie ta czesc jest ta, ktora jubiler bierze rylcem.
+    const zanurzenie = Math.min(0.22, cfg.size * 0.12);
+    const h0 = zanurzenie + 0.12, h1 = h0 + 0.16;
+    const plaster = Manifold.cube([cfg.size * 6, cfg.size * 6, h1 - h0], true)
+      .translate([0, 0, (h0 + h1) / 2]);
+    const wokol = Manifold.cylinder(h1 - h0 + 1, cfg.size * 1.25, cfg.size * 1.25, 64, true)
+      .translate([0, 0, (h0 + h1) / 2]);
+    const wycinek = m.intersect(plaster).intersect(wokol);
+    const czesci = wycinek.decompose();
+    const objetosci = czesci.map((c) => c.volume()).sort((a, b) => b - a);
+    // Bierzemy CZTERY NAJWIEKSZE, a nie najmniejszy kawalek w ogole. Walec
+    // sondy przecina czasem skraj piatej krapy z sasiedniej przerwy i taki
+    // okrawek ma objetosc rzedu setnych, co nie mowi nic o krapie, ktora
+    // trzyma nasz kamien.
+    const najciensza = objetosci[3] ?? 0;
+    // Wysokosc: najwyzszy punkt metalu wokol kamienia ponad rondysta.
+    const gora = m.intersect(wokol.scale([1, 1, 20])).boundingBox().max[2];
+    for (const c of czesci) c.delete?.();
+    wycinek.delete?.(); plaster.delete?.(); wokol.delete?.(); m.delete?.();
+    zwolnij(zK);
+
+    const problemy = [];
+    if (czesci.length < 4) problemy.push(`tylko ${czesci.length} krap wokol kamienia`);
+    if (gora < 0.3) problemy.push(`krapa nie stercza ponad rondyste (${gora.toFixed(2)} mm)`);
+    if (najciensza < 0.02) problemy.push(`najchudsza krapa ma ${najciensza.toFixed(3)} mm3`);
+    if (problemy.length) bad(`${nazwa}: ${problemy.join("; ")}`);
+    else ok(`${nazwa.padEnd(13)} ${czesci.length} krapy, wystaja ${gora.toFixed(2)} mm, najchudsza ${najciensza.toFixed(3)} mm3`);
   }
 }
 
