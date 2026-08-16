@@ -39,7 +39,7 @@ import { buildRing } from "../geometry/ring/build.js";
 // 6: masa kamieni i karaty, zeby podac mase PIERSCIONKA, a nie samego odlewu
 // 7: kanal wlewowy i stopka w podgladzie
 // 8: wieniec halo osobno od kamieni bocznych, bo ma wlasny material
-const WORKER_VERSION = 17;
+const WORKER_VERSION = 18;
 
 /** Podglad nie potrzebuje gestosci docelowej: mniej segmentow, szybsza reakcja. */
 const PREVIEW_SEGMENTS = 64;
