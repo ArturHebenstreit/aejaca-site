@@ -110,10 +110,42 @@ const routes = [
   ...SERVICE_IDS.map((id) => `/shop/service/${id}`),
 ];
 
+// ------------------------------------------------------------
+// PRELOAD OBRAZU BOHATERSKIEGO TYLKO TAM, GDZIE TEN OBRAZ JEST
+// ------------------------------------------------------------
+// `index.html` jest szablonem WSZYSTKICH stron, a stały w nim dwa
+// `<link rel="preload" as="image" fetchpriority="high">` na obrazy strony
+// głównej. Zamiar był słuszny (to są kandydaci na LCP na `/`), skutek nie:
+// 465 kB pobierane z wysokim priorytetem na 95 stronach, które tych obrazów
+// nie pokazują, i konkurujące tam z prawdziwym obrazem LCP.
+//
+// Nic się przez to nie psuło i żaden sprawdzian tego nie widział, bo strona
+// działa. Znalazł to dopiero podgląd w przeglądarce: ostrzeżenie o preloadzie
+// nieużytym w ciągu kilku sekund.
+//
+// Klucz to obraz, wartość to trasy, które go RENDERUJĄ. Ring blank pokazuje
+// tylko jeden z dwóch, więc drugiego tam nie preładujemy.
+//
+// TRASY BEZ KOŃCOWEGO UKOŚNIKA. `routes` jest normalizowane wyżej
+// (`p.replace(/\/$/, "")`), więc wpis z ukośnikiem nigdy się nie dopasuje
+// i strona po cichu traci preload, który jej się należy. Wpadłem w to od razu.
+const PRELOAD_BOHATERSKI = {
+  "/hero-home-jewelry.webp": ["/", "/toolsjewelry/ring-blank"],
+  "/hero-home-studio.webp": ["/"],
+};
+
 function buildPage(route) {
   const { html, helmet } = render(route);
 
   let page = template.replace("<!--ssr-outlet-->", html);
+
+  for (const [obraz, trasy] of Object.entries(PRELOAD_BOHATERSKI)) {
+    if (trasy.includes(route)) continue;
+    page = page.replace(
+      new RegExp(`\\s*<link rel="preload"[^>]*href="${obraz}"[^>]*/?>`, "g"),
+      "",
+    );
+  }
 
   // Strip the static fallback <title>/description/OG/Twitter tags from
   // index.html - every route is now SSR-prerendered, so Helmet always
@@ -201,6 +233,53 @@ if (/<Suspense/.test(clientShell)) {
       "    odrzuci prerender i przerysuje strone od zera."
     );
     failed++;
+  }
+}
+
+// ------------------------------------------------------------
+// Żadna strona nie preładuje obrazu, którego nie pokazuje
+// ------------------------------------------------------------
+// Mapa wyżej wystarczy, dopóki ktoś jej pilnuje. Ten sprawdzian pilnuje jej
+// za nas i nie zależy od niej: idzie po GOTOWYCH plikach i porównuje preloady
+// z tym, co na stronie faktycznie jest. Wychwyci więc także preload dodany
+// z innego miejsca niż `index.html`.
+//
+// Preload obrazu, którego strona nie rysuje, to nie jest drobiazg kosmetyczny:
+// `fetchpriority="high"` stawia go PRZED prawdziwym obrazem LCP tej strony.
+{
+  const wszystkie = [];
+  const zbierz = (dir) => {
+    for (const wpis of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, wpis.name);
+      if (wpis.isDirectory()) zbierz(p);
+      else if (wpis.name.endsWith(".html")) wszystkie.push(p);
+    }
+  };
+  zbierz(distPath);
+
+  const winne = [];
+  for (const plik of wszystkie) {
+    const tresc = fs.readFileSync(plik, "utf8");
+    const preloady = [...tresc.matchAll(/<link rel="preload"[^>]*as="image"[^>]*href="([^"]+)"/g)]
+      .map((m) => m[1]);
+    for (const obraz of new Set(preloady)) {
+      // Obraz liczy się jako użyty, gdy pojawia się poza samym znacznikiem
+      // preload: w `src`, w `srcset` albo w tle inline.
+      const bezPreloadow = tresc.replace(/<link rel="preload"[^>]*>/g, "");
+      if (!bezPreloadow.includes(obraz)) {
+        winne.push(`${path.relative(distPath, plik)} preładuje ${obraz}, ale go nie pokazuje`);
+      }
+    }
+  }
+
+  if (winne.length) {
+    console.error(`\n  ✗ Preload obrazu bez użycia na ${winne.length} stronach:`);
+    for (const w of winne.slice(0, 8)) console.error(`    ${w}`);
+    if (winne.length > 8) console.error(`    ...i ${winne.length - 8} więcej`);
+    console.error("    Dopisz trasę do PRELOAD_BOHATERSKI albo usuń preload.");
+    failed++;
+  } else {
+    console.log(`  ✓ preloady obrazów: każdy na stronie, która go pokazuje`);
   }
 }
 
