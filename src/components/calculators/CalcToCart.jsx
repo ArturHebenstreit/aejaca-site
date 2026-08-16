@@ -47,6 +47,7 @@ const UI = {
     pcs: "szt.",
     describeLabel: "Opisz, co mamy wykonać",
     describeHint: "np. pierścionek zaręczynowy, szyna 2,5 mm, matowa powierzchnia, grawer wewnątrz \"A+M 2026\", rozmiar 15",
+    describeHintStudio: "np. znak z logo 15x10 cm w sklejce 3 mm, projekt gotowy, termin za 2 tygodnie",
     describeWhy: "Cena jest policzona, ale z samych parametrów nie wynika, jak przedmiot ma wyglądać. Bez opisu nie przyjmiemy zlecenia do realizacji.",
     addImage: "Dołącz zdjęcie lub szkic (opcjonalnie)",
     artworkLabel: "Projekt do wykonania",
@@ -84,6 +85,7 @@ const UI = {
     pcs: "pcs",
     describeLabel: "Describe what we are to make",
     describeHint: "e.g. engagement ring, 2.5 mm band, matte finish, inside engraving \"A+M 2026\", size 15",
+    describeHintStudio: "e.g. logo sign 15x10 cm in 3 mm plywood, artwork ready, needed in 2 weeks",
     describeWhy: "The price is calculated, but the parameters alone do not say how the piece should look. Without a description we cannot accept the job.",
     addImage: "Attach a photo or sketch (optional)",
     artworkLabel: "Your artwork",
@@ -121,6 +123,7 @@ const UI = {
     pcs: "Stk.",
     describeLabel: "Beschreiben Sie, was wir anfertigen sollen",
     describeHint: "z. B. Verlobungsring, Schiene 2,5 mm, matt, Innengravur \"A+M 2026\", Größe 15",
+    describeHintStudio: "z. B. Logo-Schild 15x10 cm aus 3 mm Sperrholz, Vorlage fertig, benötigt in 2 Wochen",
     describeWhy: "Der Preis steht, aber aus den Parametern allein geht nicht hervor, wie das Stück aussehen soll. Ohne Beschreibung nehmen wir den Auftrag nicht an.",
     addImage: "Foto oder Skizze anhängen (optional)",
     artworkLabel: "Ihre Vorlage",
@@ -170,6 +173,7 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
   const svc = getService(card?.service || serviceId);
   const requiresDescription = Boolean(svc?.requiresDescription);
   const requiresArtwork = Boolean(svc?.requiresVector);
+  const isJewelry = String(calculator || "").startsWith("jewelry");
 
   const [price, setPrice] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -181,6 +185,10 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
   const [refImage, setRefImage] = useState(null);
   const [artworkFile, setArtworkFile] = useState(null);
   const [artworkToken, setArtworkToken] = useState(null);
+  // Zdjecie referencyjne z opisu ma wlasny token. Kiedys laser wymagal tylko
+  // opisu, a biezuteria tylko projektu, wiec dzielily jeden token bez szkody.
+  // Teraz laser wymaga obu naraz, wiec wspolny token kasowal plik projektu.
+  const [refToken, setRefToken] = useState(null);
   const [attachBusy, setAttachBusy] = useState(false);
   const [thumbData, setThumbData] = useState(null);
   const [uploadToken, setUploadToken] = useState(null);
@@ -322,6 +330,7 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
       title: t(card.title, lang),
       image: card.image,
       params,
+      scale,
       fileName: file?.name || null,
       uploadToken,
       thumbData,
@@ -329,7 +338,8 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
       unitGrosze: price.unitGrosze,
       description: description.trim() || null,
       personalization: engraving.trim() || null,
-      attachmentToken: artworkToken,
+      attachmentToken: artworkToken || refToken,
+      attachmentTokens: [artworkToken, refToken].filter(Boolean),
       attachmentName: artworkFile?.name || refImage?.name || null,
       packagingId: "paper",
       packagingGrosze: 0,
@@ -406,7 +416,7 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
           {requiresDescription && (
             <JobDescription
               label={u.describeLabel}
-              hint={u.describeHint}
+              hint={isJewelry ? u.describeHint : u.describeHintStudio}
               value={description}
               onChange={setDescription}
               minLength={MIN_DESCRIPTION}
@@ -417,9 +427,9 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
                 const f = e.target.files?.[0];
                 if (!f) return;
                 setRefImage(f);
-                uploadAttachment(f, setArtworkToken);
+                uploadAttachment(f, setRefToken);
               }}
-              onClearImage={() => { setRefImage(null); setArtworkToken(null); }}
+              onClearImage={() => { setRefImage(null); setRefToken(null); }}
               lang={lang}
             />
           )}

@@ -45,6 +45,7 @@ const UI = {
     vectorNote: "Rysunek nie zmienia ceny, wyznacza ją wybrane pole grawerowania. Trafia do warsztatu razem z zamówieniem.",
     describeLabel: "Opisz, co mamy wykonać",
     describeHint: "np. pierścionek zaręczynowy, szyna 2,5 mm, matowa powierzchnia, grawer wewnątrz, rozmiar 15",
+    describeHintStudio: "np. znak z logo 15x10 cm w sklejce 3 mm, projekt gotowy, termin za 2 tygodnie",
     describeWhy: "Cena jest policzona, ale z samych parametrów nie wynika, jak przedmiot ma wyglądać. Bez opisu nie przyjmiemy zlecenia.",
     addImage: "Dołącz zdjęcie lub szkic (opcjonalnie)",
     missingDescription: "Uzupełnij opis, żeby dodać do koszyka",
@@ -95,6 +96,7 @@ const UI = {
     vectorNote: "The drawing does not change the price, the selected engraving area does. It travels to the workshop with the order.",
     describeLabel: "Describe what we are to make",
     describeHint: "e.g. engagement ring, 2.5 mm band, matte finish, inside engraving, size 15",
+    describeHintStudio: "e.g. logo sign 15x10 cm in 3 mm plywood, artwork ready, needed in 2 weeks",
     describeWhy: "The price is calculated, but the parameters alone do not say how the piece should look. Without a description we cannot accept the job.",
     addImage: "Attach a photo or sketch (optional)",
     missingDescription: "Add a description to put this in the cart",
@@ -145,6 +147,7 @@ const UI = {
     vectorNote: "Die Zeichnung ändert den Preis nicht, das gewählte Gravurfeld bestimmt ihn. Sie geht mit der Bestellung in die Werkstatt.",
     describeLabel: "Beschreiben Sie, was wir anfertigen sollen",
     describeHint: "z. B. Verlobungsring, Schiene 2,5 mm, matt, Innengravur, Größe 15",
+    describeHintStudio: "z. B. Logo-Schild 15x10 cm aus 3 mm Sperrholz, Vorlage fertig, benötigt in 2 Wochen",
     describeWhy: "Der Preis steht, aber aus den Parametern allein geht nicht hervor, wie das Stück aussehen soll. Ohne Beschreibung nehmen wir den Auftrag nicht an.",
     addImage: "Foto oder Skizze anhängen (optional)",
     missingDescription: "Beschreibung ergänzen, um in den Warenkorb zu legen",
@@ -209,6 +212,10 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const [vectorFile, setVectorFile] = useState(null);
   const [vectorToken, setVectorToken] = useState(null);
   const [vectorBusy, setVectorBusy] = useState(false);
+  // Zdjecie referencyjne z opisu ma wlasny token, osobny od pliku wektorowego.
+  // Uslugi laserowe wymagaja teraz obu naraz, wspolny token kasowal projekt.
+  const [refToken, setRefToken] = useState(null);
+  const [refBusy, setRefBusy] = useState(false);
   const [thumbTick, setThumbTick] = useState(0);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [packagingId, setPackagingId] = useState(DEFAULT_PACKAGING);
@@ -404,6 +411,34 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
     }
   }
 
+  /** Zdjecie lub szkic z opisu, ten sam kanal co plik wektorowy, wlasny token. */
+  async function onPickRef(e) {
+    const f = e.target.files?.[0];
+    if (!f || !API) return;
+    setRefImage(f);
+    setRefToken(null);
+    setRefBusy(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", f);
+      fd.append("lang", lang);
+      fd.append("kind", "attachment");
+      const resp = await fetch(`${API}/api/uploads`, { method: "POST", body: fd });
+      const data = await resp.json();
+      if (!resp.ok) {
+        setError({ message: data.error, code: data.code });
+        setRefImage(null);
+        return;
+      }
+      setRefToken(data.uploadToken);
+    } catch {
+      setError({ message: u.uploadFailed });
+      setRefImage(null);
+    } finally {
+      setRefBusy(false);
+    }
+  }
+
   async function onPickFile(e) {
     const f = e.target.files?.[0];
     if (!f) return;
@@ -461,8 +496,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       // Zrzut modelu zamiast zdjecia katalogowego, zeby w koszyku bylo
       // widac wlasny model, a nie ikone uslugi.
       description: description.trim() || null,
-      attachmentToken: vectorToken,
-      attachmentName: vectorFile?.name || null,
+      attachmentToken: vectorToken || refToken,
+      attachmentTokens: [vectorToken, refToken].filter(Boolean),
+      attachmentName: vectorFile?.name || refImage?.name || null,
       thumbData,
       thumbUrl: hasThumb ? `${API}/api/uploads/${uploadToken}/thumb` : null,
       needsFile: Boolean(file),
@@ -481,6 +517,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   }
 
   const visibleFields = service.fields.filter((f) => !(f.hiddenWithFile && uploadToken));
+  const isJewelry = String(service.calculator || "").startsWith("jewelry");
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6">
@@ -601,20 +638,15 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       {service.requiresDescription && (
         <JobDescription
           label={u.describeLabel}
-          hint={u.describeHint}
+          hint={isJewelry ? u.describeHint : u.describeHintStudio}
           value={description}
           onChange={setDescription}
           minLength={20}
           accent={accent}
           image={refImage}
           imageLabel={u.addImage}
-          onPickImage={(e) => {
-            const f = e.target.files?.[0];
-            if (!f) return;
-            setRefImage(f);
-            onPickVector({ target: { files: [f] } });
-          }}
-          onClearImage={() => { setRefImage(null); setVectorToken(null); }}
+          onPickImage={onPickRef}
+          onClearImage={() => { setRefImage(null); setRefToken(null); }}
           lang={lang}
         />
       )}
