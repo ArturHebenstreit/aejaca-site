@@ -14,7 +14,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { INBOUND_METHODS, inboundOptionsFor, inboundAllowed } from "../src/data/inboundDelivery.js";
+import { INBOUND_METHODS, inboundOptionsFor, inboundAllowed, wymagaPrzesylki } from "../src/data/inboundDelivery.js";
+import { OWN_MATERIAL_OPTIONS } from "../src/pricing/config.js";
 
 const tu = path.dirname(fileURLToPath(import.meta.url));
 const czytaj = (p) => readFileSync(path.resolve(tu, "..", p), "utf8");
@@ -58,6 +59,25 @@ for (const m of INBOUND_METHODS) {
   }
 }
 if (!bledy) ok(`${INBOUND_METHODS.length} sposoby opisane w trzech jezykach`);
+
+// --- Kto wymaga przesylki ---
+assert.equal(wymagaPrzesylki({ calculator: "jewelry_repair" }), true, "naprawa: klient przysyla swoja bizuterie");
+assert.equal(wymagaPrzesylki({ calculator: "jewelry_renovation" }), true, "renowacja: to samo");
+assert.equal(wymagaPrzesylki({ calculator: "laser_co2_engrave", params: { ownMaterial: true } }), true);
+assert.equal(wymagaPrzesylki({ calculator: "laser_co2_engrave", params: { ownMaterial: false } }), false);
+assert.equal(wymagaPrzesylki({ calculator: "print3d_fdm", params: {} }), false, "druk z pliku: nic nie przysyla");
+assert.equal(wymagaPrzesylki(null), false);
+// Napis zamiast wartosci logicznej to najkrotsza droga do cichej awarii:
+// wybor przechodzi przez formularz, koszyk i JSON.
+assert.equal(wymagaPrzesylki({ params: { ownMaterial: "true" } }), true, "napis tez ma zadzialac");
+ok("wymagaPrzesylki rozpoznaje naprawe, renowacje i material powierzony");
+
+// Katalog MUSI trzymac wartosci logiczne. Tolerancja wyzej lata skutek,
+// a to jest sprawdzian na przyczyne: gdy ktos wpisze tu napisy, dowiemy sie
+// tutaj, a nie z zamowienia, ktore przyszlo bez deklaracji.
+const idki = OWN_MATERIAL_OPTIONS.map((o) => o.id);
+assert.deepEqual(idki, [false, true], "opcje materialu maja byc wartosciami logicznymi");
+ok("katalog trzyma wybor materialu jako wartosc logiczna");
 
 // --- Serwer liczy regule TYM SAMYM kodem, a nie wlasnym ---
 // Gdyby serwer mial wlasna kopie listy krajow, obie zaczelyby sie rozjezdzac

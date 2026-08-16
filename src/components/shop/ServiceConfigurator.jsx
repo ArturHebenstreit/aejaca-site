@@ -18,6 +18,7 @@ import { TileGroup, StepSlider, QtyStepper, FileDrop, PersonalizationField, JobD
 import { useMoney } from "../../shop/money.js";
 import PrintabilityGate from "../calculators/PrintabilityGate.jsx";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
+import MaterialNotice from "../MaterialNotice.jsx";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
 
@@ -575,6 +576,10 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
           <p className="text-neutral-600 text-[11px] -mt-4 mb-6 leading-relaxed">{u.vectorNote}</p>
         </>
       )}
+
+      {/* Ta sama informacja o materiale co w kalkulatorze laserowym, bo klient
+          moze kupic te sama usluge tu, bez przechodzenia przez kalkulator. */}
+      {service.group === "laser" && <MaterialNotice lang={lang} className="mb-6" />}
 
       {visibleFields.map((f) => {
         const options = f.optionsFrom ? f.optionsFrom(params) : f.options;

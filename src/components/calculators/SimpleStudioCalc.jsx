@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import {
   QUANTITY_TIERS, t, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture, LicenseNotice,
+  OWN_MATERIAL_LABEL, OWN_MATERIAL_OPTIONS,
 } from "./calcShared.jsx";
 import CalcToCart from "./CalcToCart.jsx";
 import MaterialNotice from "../MaterialNotice.jsx";
@@ -514,6 +515,9 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   const [material, setMaterial] = useState("idk");
   const [finish, setFinish]     = useState("standard");
   const [quantity, setQuantity] = useState("one");
+  // Tylko przy laserze. Nasz material albo powierzony przez klienta, nie
+  // wplywa na wycene, patrz MaterialNotice.
+  const [ownMaterial, setOwnMaterial] = useState(false);
 
   // Smart Upload state
   const [fileType, setFileType] = useState(null); // "stl" | "svg" | null
@@ -815,7 +819,13 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
         {/* Tylko przy laserze. Przy druku 3D materiał jest NASZ i wchodzi
             w cenę, więc ta sama informacja byłaby tam po prostu nieprawdą. */}
         {(resolved?.tech === "co2" || resolved?.tech === "fiber") && (
-          <MaterialNotice lang={lang} className="mb-4" />
+          <>
+            <MaterialNotice lang={lang} className="mb-4" />
+            <div className="mb-4">
+              <div className="text-[11px] uppercase tracking-wide text-emerald-400/60 mb-2">{t(OWN_MATERIAL_LABEL, lang)}</div>
+              <Chips options={OWN_MATERIAL_OPTIONS} value={ownMaterial} onChange={setOwnMaterial} lang={lang} />
+            </div>
+          </>
         )}
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
         {stlData?.triangles?.length > 0 && (resolved?.tech === "3dprint" || resolved?.tech === "msla") && (
@@ -832,7 +842,11 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
             onBinding={setBindingGrosze}
             calculator={cartTarget.calculator}
             serviceId={cartTarget.serviceId}
-            params={printability ? { ...resolved.params, printability } : resolved.params}
+            params={{
+              ...resolved.params,
+              ...((resolved?.tech === "co2" || resolved?.tech === "fiber") ? { ownMaterial } : {}),
+              ...(printability ? { printability } : {}),
+            }}
             lang={lang}
             hold={Boolean(printability?.blocked && !printability?.accepted)}
           />

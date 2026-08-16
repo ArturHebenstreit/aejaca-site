@@ -97,5 +97,13 @@ export const USLUGI_Z_PRZESYLKA = ["jewelry_repair", "jewelry_renovation"];
 export function wymagaPrzesylki(item) {
   if (!item) return false;
   if (USLUGI_Z_PRZESYLKA.includes(String(item.calculator || ""))) return true;
-  return item.params?.ownMaterial === true;
+  // Porownanie jest TOLERANCYJNE celowo. Wybor jedzie przez formularz, koszyk
+  // i JSON, a po tej drodze logiczna prawda potrafi zamienic sie w napis.
+  // Gdyby zostalo samo `=== true`, napis "true" znaczylby "material nasz"
+  // i deklaracja dostarczenia po cichu by sie nie wlaczyla, czyli wrocilaby
+  // dokladnie ta wada, ktora tu naprawiamy. Sprawdzian pilnuje osobno, ze
+  // katalog trzyma wartosci logiczne, wiec tolerancja lata skutek, a nie
+  // przykrywa przyczyne.
+  const w = item.params?.ownMaterial;
+  return w === true || w === "true";
 }

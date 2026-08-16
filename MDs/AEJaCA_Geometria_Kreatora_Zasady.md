@@ -280,6 +280,31 @@ dodając nową bryłę:
 Dopisujemy **na górze**, jeden wpis na zmianę geometrii. Format: co było, co jest,
 i **czego się z tego dowiedzieliśmy na przyszłość**.
 
+## 2026-08-16 (noc) - kaseta zakuta odsłania kamień, i jedna hipoteza obalona pomiarem
+
+**Zgłoszenie:** "zbyt mocno zakute, zbyt mało światła, musi być widać kamień",
+dotyczy wszystkich osadzeń kasetowych.
+
+**Co jest.** Rant w stanie zakutym schodzi z `girdleH + 0,42` na `girdleH + 0,34`
+i zbiega do `wall * (-0,05)`, czyli minimalnie ZA obrys kamienia. Chwyt bierze
+się teraz z zachodzenia na koronę, a nie z wysokości ściany, więc kamień jest
+trzymany tak samo, a widać go więcej. Zmierzone (objętość kamienia ponad licem
+metalu): kaseta okrągła 15,6 -> 19,0 %, ośmiokąt 10,8 -> 13,5 %, kaboszon
+53,3 -> 58,3 %. Sprawdzian trzymania: 0,43 % przy progu 0,30 %.
+
+**Obalona hipoteza, warta zapisania.** Zobaczyłem ciemny kaboszon na renderze
+i uznałem, że to moja wcześniejsza zmiana rantu zakopała kamień w studni.
+Wysłałem nawet agenta do poprawiania materiałów kamieni bezbarwnych, który
+stracił godzinę bez rezultatu. **Pomiar to obalił**: kaboszon miał wtedy 53 %
+objętości ponad licem metalu, czyli był odsłonięty bardziej niż w stanie
+otwartym. Ciemny wygląd bierze się z gładkiej kopuły bez fasetek, która na
+ciemnym tle nie ma czego odbić, i nie jest to regresja.
+
+**Wniosek:** render jest kiepskim czujnikiem geometrii. Ciemna plama na obrazku
+może znaczyć brak metalu, brak światła albo brak fasetek, a rozróżnia to
+wyłącznie pomiar bryły. Kolejność jest więc odwrotna niż zwykle: zobacz na
+renderze, ŻE coś jest nie tak, ale nigdy nie wnioskuj z renderu, CO.
+
 ## 2026-08-16 (wieczór) - kamień bezbarwny wyglądał jak zaślepka, i trzy poprawki zakucia
 
 **Najważniejsza lekcja tej rundy nie jest geometryczna.** Właściciel czwarty raz

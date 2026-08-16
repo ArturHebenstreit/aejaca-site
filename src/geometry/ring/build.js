@@ -1061,7 +1061,7 @@ export function buildCrown(w, p, stone) {
     // Zgloszone wprost: "zbyt mocno zakute, zbyt malo swiatla, musi byc widac
     // kamien".
     const h = zakute(p)
-      ? stone.girdleH + 0.42
+      ? stone.girdleH + 0.34
       : stone.girdleH + stone.crownH * 0.35 + 0.35;
     const outer = CrossSection.ofPolygons([ccw(outlineFor(p.stone.cut, size + 2 * wall))]);
     const trzon = h * 0.6 + SEAT.aboveGalleryMm;
@@ -1069,7 +1069,7 @@ export function buildCrown(w, p, stone) {
     // Rant dociskany na kamien: ta sama scianka, ale zbiegajaca do wewnatrz.
     // Po zakuciu rant zbiega mocniej, bo lezy NA koronie, a nie obok niej:
     // gorna krawedz konczy sie tuz nad obrysem kamienia i to ona go trzyma.
-    const zbieg = (size / 2 + wall * (zakute(p) ? 0.15 : 0.6)) / (size / 2 + wall);
+    const zbieg = (size / 2 + wall * (zakute(p) ? -0.05 : 0.6)) / (size / 2 + wall);
     add(Manifold.extrude(outer, h * 0.4, 0, 0, [zbieg, zbieg])
       .translate([0, 0, trzon - SEAT.aboveGalleryMm]));
     return { solid: crown, basketH };
