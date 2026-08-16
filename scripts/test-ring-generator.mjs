@@ -1707,6 +1707,26 @@ console.log("\n30. Wieniec halo: gniazdo ma stozek, a kulki stoja przy nim");
     const gora = stone.girdleH * 0.5;                 // gorna plaszczyzna plyty
     const rW = gR + 0.18 + d / 2;
 
+    // WLOT u gory: kamien musi miec czym wjechac do gniazda.
+    //
+    // Wlot jest szerszy od kamienia o luz montazowy, ale zaczyna sie na
+    // wysokosci rondysty. Przy zbyt plytkim osadzeniu caly ten wlot siedzi
+    // PONAD licem plyty, czyli w powietrzu, a w metalu zostaje sam otwor
+    // lozowy, wezszy od kamienia. Kamien siada wtedy na krawedzi zamiast
+    // zjechac do gniazda i z gory wyglada to na gniazdo zaslepione.
+    {
+      const zLica = gora - 0.03;
+      const pl = Manifold.cube([6, 0.04, 0.04], true).translate([rW, 0, zLica]);
+      const tr = wieniec.intersect(pl);
+      const kaw = tr.decompose().map((c) => c.boundingBox()).sort((a, b) => a.min[0] - b.min[0]);
+      let wlot = 0;
+      for (let i = 1; i < kaw.length; i++) wlot = Math.max(wlot, kaw[i].min[0] - kaw[i - 1].max[0]);
+      if (wlot < d) bad(`halo d=${d}: wlot gniazda ma ${wlot.toFixed(2)} mm przy kamieniu ${d} mm, kamien tam nie wejdzie`);
+      else ok(`d=${d} mm  wlot ${wlot.toFixed(2)} mm, czyli ${Math.round((wlot / d) * 100)} % kamienia`);
+      for (const c of tr.decompose()) c.delete?.();
+      zwolnij(tr); zwolnij(pl);
+    }
+
     // Szerokosc otworu tuz nad wybraniem, czyli u dolu gniazda.
     const plytaH = Math.max(0.55, d * 0.62);
     const zDna = gora - plytaH + 0.08;

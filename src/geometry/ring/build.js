@@ -1829,7 +1829,21 @@ export function buildHalo(w, p, stone, girdleR) {
   let metal = plyta;
   let seats = null;
   const stones = [];
-  const zK = stone.girdleH * 0.5 - 0.06;           // rondysta kamyka wienca
+  // GLEBOKOSC OSADZENIA KAMYKA, czyli ile WLOTU jest w metalu.
+  //
+  // Bylo 0,06 mm i to jest za malo, zeby gniazdo bylo gniazdem. Wlot gniazda
+  // jest szerszy od kamienia o luz montazowy i zaczyna sie na wysokosci
+  // rondysty; przy zanurzeniu 0,06 mm caly ten wlot siedzial PONAD licem
+  // plyty, czyli w powietrzu. W metalu zostawal sam otwor lozowy, wezszy od
+  // kamienia o podciecie: zmierzone 1,18 mm przy kamyku 1,30 mm.
+  //
+  // Skutek jest warsztatowy, nie kosmetyczny: kamien nie ma jak zjechac do
+  // gniazda, siada na krawedzi otworu i stoi na wierzchu. Z gory czyta sie to
+  // jako "brak otwartych gniazd do osadzania kamieni" i tak zostalo zgloszone.
+  //
+  // Plyta jest teraz na tyle gruba, ze mozna zanurzyc kamien porzadnie.
+  // Zanurzenie idzie za rozmiarem kamienia, bo za nim idzie i wlot.
+  const zK = stone.girdleH * 0.5 - Math.max(0.12, d * 0.11);
 
   // Kamyk i gniazdo sa dla calego wienca TAKIE SAME, wiec budujemy je RAZ
   // i powielamy przesunieciem. Wieniec potrafi miec dwadziescia kamieni,
