@@ -280,6 +280,35 @@ dodając nową bryłę:
 Dopisujemy **na górze**, jeden wpis na zmianę geometrii. Format: co było, co jest,
 i **czego się z tego dowiedzieliśmy na przyszłość**.
 
+## 2026-08-16 (wieczór) - kamień bezbarwny wyglądał jak zaślepka, i trzy poprawki zakucia
+
+**Najważniejsza lekcja tej rundy nie jest geometryczna.** Właściciel czwarty raz
+zgłosił "gniazda zakryte" na układach, które pomiarowo były otwarte. Odtworzyłem
+jego widoki u siebie i przyczyną okazał się RENDER: kamień bezbarwny (cyrkonia,
+brylant) na ciemnym tle rysował się jako szara, nieprzezroczysta bryła nie do
+odróżnienia od metalu. Osadzony kamień wyglądał jak metalowy korek, więc każdy
+układ z bezbarwnym kamieniem czytał się jako "gniazdo zamknięte". Ametyst
+wyglądał dobrze, bo barwę niesie attenuacja. **Zanim szuka się wady w bryle,
+trzeba obejrzeć dokładnie ten widok, który widzi zgłaszający, z tym samym
+kamieniem i tym samym przełącznikiem.** Pomiar bryły nie widzi materiałów.
+
+**Kaseta po zakuciu odsłania koronę.** Rant miał jedną wysokość w obu stanach,
+więc kamień po zakuciu siedział na dnie studni i widać było tylko taflę.
+Teraz stan otwarty stoi wysoko (metal do dogięcia), a stan zakuty nisko:
+`girdleH + 0.42`, ze zbiegiem do `wall * 0.15` nad obrysem kamienia. Trzyma
+(kolizja podniesionego kamienia 0,3+ %), a korona świeci.
+
+**Krapy eternity w stanie zakutym są rozdzielone na dwa.** Tak jak robi to
+jubiler: każda połówka krótsza (0,72 długości), cieńsza (0,8 promienia)
+i pochylona o 26 stopni ku swojemu kamieniowi. Stan otwarty zostaje prosty
+i pełnej długości. Sprawdzian 32 mierzy oba stany: otwarty ma sterczeć,
+zakuty ma trzymać (zmierzone 3,2-8,3 % kolizji podniesionego kamienia).
+
+**Oprawka boczna idzie za obrysem kamienia.** Kosz był walcem niezależnie od
+szlifu, więc markiza na boku siedziała w okrągłej tulei. Teraz dno i rant to
+przeskalowany obrys (`outlineFor`), a łapki stoją na promieniu obrysu pod swoim
+kątem (`radiusAt`), tak samo jak przy koronie centralnej.
+
 ## 2026-08-16 - oprawka boczna, symetria obrysów, i cofnięcie mojej własnej poprawki
 
 **Zakucie wraca pod przełącznik.** Dzień wcześniej wpisałem `zakute() => false`
