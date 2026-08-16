@@ -280,6 +280,31 @@ dodając nową bryłę:
 Dopisujemy **na górze**, jeden wpis na zmianę geometrii. Format: co było, co jest,
 i **czego się z tego dowiedzieliśmy na przyszłość**.
 
+## 2026-08-15 - noga lapki po scianie kosza, i jedna poprawka WYCOFANA
+
+**Było:** noga łapki schodziła na dno kosza po niemal stałym promieniu, a kosz
+zwęża się do 0,55 obrysu. Zmierzone sondą wzdłuż promienia: na dnie kosza dwa
+osobne kawałki metalu, między nimi **0,62 mm powietrza przy soliterze i 0,70 mm
+przy sześciu łapkach**. Łapka zaczepiała się o oprawę dopiero pod rondystą.
+
+**Jest:** noga idzie po ścianie kosza, od `0.55 * obrys + ścianka` na dnie do
+pełnego obrysu przy kołnierzu. Sonda widzi jeden kawałek na każdej wysokości.
+
+**Nauka, dwie i obie o metodzie:**
+
+1. **Zobaczyć, zanim się poprawi.** Trzy rundy zgłoszeń przerobiłem, czytając
+   kod i licząc, i za każdym razem trafiałem obok. Dopiero wyrenderowanie
+   podglądu u siebie (Playwright plus Chromium z `/opt/pw-browsers`, `vite
+   preview` na `dist`) pokazało wprost, co wisi i gdzie. **To jest tania
+   czynność i ma być pierwsza, a nie ostatnia.**
+2. **Poprawka bez pomiaru bywa szkodą.** Przy okazji "naprawiłem" koniec łuku
+   galerii, bo wyglądał mi na wystający korek. Pomiar po fakcie pokazał, że
+   wystawanie łuku spada gładko do zera na 32 stopniach od głowicy, czyli
+   żadnego korka nie było, a poprawka zabrała łukowi 10% metalu i przy pierwszym
+   podejściu wepchnęła rurę w otwór na palec (średnica wewnętrzna mniejsza
+   o 0,11 mm na każdym rozmiarze). **Zmiana została wycofana.** Okrągły element
+   widoczny w szynie przy głowicy to przewiercone gniazdo i ma tam być.
+
 ## 2026-08-15 - wieniec halo: gniazdo i kuleczki (`d67d91b`)
 
 **Było:** płyta wieńca wybierana od spodu do sztywnych 0,55 mm. Przy kamyku 1,3 mm

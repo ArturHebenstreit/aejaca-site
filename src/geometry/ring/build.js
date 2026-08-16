@@ -920,7 +920,7 @@ function vprongSolid(w, pts, deg, prongR, base, top, zamkniete = false) {
  */
 const zakute = (p) => p.casting?.stones !== false;
 
-function buildCrown(w, p, stone) {
+export function buildCrown(w, p, stone) {
   const { Manifold, CrossSection } = w;
   const cut = CUTS[p.stone.cut];
   const size = p.stone.size;
@@ -1071,13 +1071,25 @@ function buildCrown(w, p, stone) {
   //
   // Grubosc u podstawy schodzi z 1,35 do 1,05 promienia lapki. Tyle wystarczy,
   // zeby przy zakuwaniu nie ustapila, a wiecej robi z korony guzka.
-  const noga = (radius, promien) => tubeAlong(w,
-    [
-      [radius - promien * 0.55, 0, -basketH + 0.05],
-      [radius - promien * 0.2, 0, -basketH * 0.45],
-      [radius, 0, 0.02],
-    ],
-    [promien * 0.92, promien * 0.86, promien * 0.96], { czubek: false });
+  // POPRAWKA DRUGA, zglszona jako "dolna czesc krap wisi": noga szla w dol
+  // po niemal STALYM promieniu, a kosz zweza sie do 0,55 obrysu. Przy kamieniu
+  // 5,5 mm dawalo to na dnie kosza ponad milimetr powietrza miedzy noga
+  // a sciana: noga wisiala obok kosza i dotykala go dopiero pod rondysta.
+  // Noga musi IsC PO SCIANIE kosza, czyli zwezac sie razem z nim, bo tylko
+  // wtedy lapka wyrasta z dolu oprawy, a nie jest do niej doklejona u gory.
+  const noga = (rObrys, radius, promien) => {
+    const rDno = rObrys * 0.55 + scianka;        // sciana kosza na jego dnie
+    const rKolnierz = rObrys + scianka;          // sciana kosza pod rondysta
+    return tubeAlong(w,
+      [
+        [rDno + promien * 0.10, 0, -basketH + 0.05],
+        [(rDno + rKolnierz) / 2, 0, -(basketH + kolnierz) / 2],
+        [rKolnierz + promien * 0.10, 0, -kolnierz],
+        [radius, 0, 0.02],
+      ],
+      [promien * 0.92, promien * 0.88, promien * 0.90, promien * 0.96],
+      { czubek: false });
+  };
 
   if (p.setting === "vprong") {
     // Lapka V nie jest lapka obroconą, tylko scianka po obrysie, wiec ma
@@ -1111,7 +1123,7 @@ function buildCrown(w, p, stone) {
         girdleTop: stone.girdleH,
         crownH: stone.crownH,
         zamkniete: zakute(p),
-      }), noga(rr, rP)));
+      }), noga(radiusAt(pts, deg), rr, rP)));
     }
     add(wzorce.get(klucz).rotate([0, 0, deg]));
   }
@@ -1678,6 +1690,12 @@ export function buildGallery(w, p, basketH) {
       const rSzyna = ri + (shankRadiusAt(p, 0) - ri) * k.t;
       const podniesienie = wznios * (1 - t) ** 1.6;
       // Os rury ma byc ZANURZONA w szynie, a nie lezec na niej.
+      //
+      // Podejrzewalem tu kiedys plaskie denko wystajace z szyny i "poprawilem"
+      // je glebszym zanurzeniem. Pomiar pokazal, ze zarzut byl bezpodstawny:
+      // wystawanie luku spada gladko do zera na trzydziestu dwoch stopniach
+      // od glowicy, wiec zadnego denka na wierzchu nie ma. Poprawka zabrala
+      // za to luku dziesiec procent metalu. Zostaje wiec tak, jak bylo.
       const r = rSzyna - 0.5 + podniesienie;
       // Rura chudnie ku dolowi, zeby luk wtopil sie w szyne, a nie usiadl
       // na niej jako osobny walek.

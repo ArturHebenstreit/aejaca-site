@@ -11,6 +11,16 @@
 //
 // Wyjatki: n8n-backup to zrzut z zywej instancji n8n, ma odpowiadac temu,
 // co stoi na serwerze, i nie wolno go recznie modyfikowac.
+//
+// Ta sama kategoria co n8n-backup: SKILLE SCIAGNIETE Z ZEWNATRZ. Pliki
+// w `.claude/skills/` sa kopiami 1:1 cudzych repozytoriow i maja takie
+// pozostac. Poprawianie w nich pisowni rozjezdzalo by je z gora przy kazdej
+// aktualizacji, a przy licencji CC BY oznaczaloby ciche modyfikowanie cudzego
+// utworu bez adnotacji. Zasada pisowni dotyczy tego, co PISZEMY, a nie tego,
+// co wciagamy w niezmienionej postaci.
+//
+// Wyjatek NIE obejmuje `ORIGIN.md`: te pliki piszemy sami i podlegaja zasadzie
+// jak cala reszta repozytorium.
 
 import { readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
@@ -19,11 +29,12 @@ const DASH = "\u2014";
 const ENTITY = "&" + "mdash;";
 
 const SKIP = /^(n8n-backup)\//;
+const OBCY_SKILL = /^\.claude\/skills\/[^/]+\/(?!ORIGIN\.md$)/;
 const BINARY = /\.(png|jpe?g|webp|avif|gif|ico|svg|woff2?|ttf|otf|pdf|stl|3mf|step|zip|wasm|xlsx)$/i;
 
 const files = execSync("git ls-files", { encoding: "utf8" })
   .split("\n")
-  .filter((f) => f && !SKIP.test(f) && !BINARY.test(f));
+  .filter((f) => f && !SKIP.test(f) && !OBCY_SKILL.test(f) && !BINARY.test(f));
 
 const problems = [];
 for (const file of files) {
