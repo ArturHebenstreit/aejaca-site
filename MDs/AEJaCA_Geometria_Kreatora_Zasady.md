@@ -280,6 +280,32 @@ dodając nową bryłę:
 Dopisujemy **na górze**, jeden wpis na zmianę geometrii. Format: co było, co jest,
 i **czego się z tego dowiedzieliśmy na przyszłość**.
 
+## 2026-08-16 - podgląd kamienia przestaje zamykać gniazda
+
+**Co było.** `zakute(p)` zwracało `p.casting.stones !== false`, a ten przełącznik
+domyślnie stoi na TAK. Model z kamieniem dostawał więc wlot w kształcie samego
+kamienia plus słupek w szerokości tafli, czyli gniazdo widziane z góry było
+zakryte, a łapki leżały na koronie. Wyglądało to jak wyrób gotowy i taki był
+zamiar.
+
+**Co jest.** `zakute()` zwraca zawsze `false`. Metal nie zależy od niczego, co
+jest tylko podglądem. Parametr `zamkniete` w `seatCutter` zostaje, bo to
+poprawna geometria łapki leżącej na koronie, ale nic w wyrobie go nie używa.
+
+**Czego się dowiedzieliśmy.** To, co kreator wydaje, jest **modelem
+odlewniczym**. Gniazda mają być otwarte zawsze, bo inaczej nie ma jak włożyć
+kamienia. Podgląd jest warstwą rysunku i nie ma prawa ruszać bryły, a już na
+pewno nie masy, po której liczymy cenę. Właściciel zgłosił to pięć razy pod rząd
+na pięciu różnych układach, zanim znalazłem wspólną przyczynę: szukałem wady
+w każdym gnieździe z osobna, a wada siedziała w jednej linijce wspólnej dla
+wszystkich.
+
+Sprawdziany też trzeba było odwrócić. Wymagały wcześniej, żeby plik z kamieniem
+był LŻEJSZY (docisnięte łapki), więc broniły dokładnie tego zachowania, które
+było wadą. Teraz wymagają czegoś mocniejszego i prostszego: **przełącznik
+podglądu nie zmienia metalu o więcej niż 0,01 %**, i jest to sprawdzane osobno
+na ośmiu układach.
+
 ## 2026-08-15 - noga lapki po scianie kosza, i jedna poprawka WYCOFANA
 
 **Było:** noga łapki schodziła na dno kosza po niemal stałym promieniu, a kosz

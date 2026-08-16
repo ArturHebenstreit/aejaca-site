@@ -911,14 +911,25 @@ function vprongSolid(w, pts, deg, prongR, base, top, zamkniete = false) {
 }
 
 /**
- * Czy zakucia maja byc ZAMKNIETE nad kamieniem.
+ * Czy zakucia maja byc ZAMKNIETE nad kamieniem. NIGDY.
  *
- * Rozstrzyga o tym jedna rzecz: czy w pliku jest kamien. Model bez kamienia
- * to odlew do zakucia i lapki musza byc otwarte, bo inaczej kamienia nie da
- * sie wlozyc. Model z kamieniem pokazuje wyrob gotowy i lapki maja byc
- * dociśnięte, bo inaczej kamien z niego wypada.
+ * Do 2026-08-16 rozstrzygal o tym przelacznik "Kamienie w modelu", ktory
+ * domyslnie stoi na TAK. Zamiar byl taki, ze plik z kamieniem pokazuje wyrob
+ * gotowy, wiec lapki leza na koronie. Skutek byl inny: KAZDY uklad otwierany
+ * domyslnie pokazywal gniazda zakryte, bo wlot zamkniety to sam obrys kamienia
+ * plus slupek w szerokosci tafli. Wlasciciel zglosil to na pieciu ukladach po
+ * kolei, za kazdym razem jako "nie widac gniazda, jest zakryte".
+ *
+ * Wniosek jest szerszy od tego jednego objawu. To, co ten kreator wydaje, jest
+ * MODELEM ODLEWNICZYM: plikiem, ktory idzie na wosk. On musi miec gniazda
+ * otwarte zawsze, bo inaczej nie da sie w niego wlozyc kamienia. Podglad
+ * kamienia to warstwa RYSUNKU, a nie stan bryly, i nie ma prawa ruszac metalu.
+ *
+ * Zostawiam parametr `zamkniete` w `seatCutter`, bo wyciecie pod lapke lezaca
+ * na koronie jest poprawna geometria i moze sie przydac do wizualizacji wyrobu
+ * gotowego. Nie wchodzi tylko do wyrobu, ktory wydajemy.
  */
-const zakute = (p) => p.casting?.stones !== false;
+const zakute = () => false;
 
 export function buildCrown(w, p, stone) {
   const { Manifold, CrossSection } = w;

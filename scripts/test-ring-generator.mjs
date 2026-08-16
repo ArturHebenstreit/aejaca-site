@@ -730,25 +730,21 @@ console.log("\n16. Dodatki odlewnicze nie ruszają wyrobu");
     zwolnij(r);
   }
 
-  // KAMIENIE W MODELU sa jedynym przelacznikiem, ktory MA prawo ruszyc metal,
-  // i to jest zmiana swiadoma, a nie usterka.
+  // KAMIENIE W MODELU nie ruszaja metalu. ZADEN przelacznik go nie rusza.
   //
-  // Model bez kamieni to odlew do zakucia i lapki musza byc w nim otwarte,
-  // bo pod zamknieta lapke nie da sie wlozyc kamienia. Model z kamieniem
-  // pokazuje wyrob gotowy, wiec lapki sa docisniete. To sa dwa rozne ksztalty
-  // tej samej lapki i roznia sie objetoscia, bo zagieta jest krotsza.
-  //
-  // Roznica ma byc MALA: dotyczy koncowek lapek, a nie calego wyrobu. Kilka
-  // procent znaczyloby, ze zmienil sie ksztalt czegos wiekszego.
+  // Wczesniej ten sprawdzian wymagal czegos odwrotnego: plik z kamieniem mial
+  // miec lapki docisniete, wiec byc LZEJSZY. Wygladalo to rozsadnie, bo tak
+  // wyglada wyrob gotowy, a kosztowalo tyle, ze kazdy uklad otwierany
+  // domyslnie pokazywal gniazda zakryte. Podglad kamienia jest warstwa
+  // rysunku i tak ma zostac: bryla, ktora wydajemy, to model odlewniczy
+  // z gniazdami otwartymi, niezaleznie od tego, co widac na ekranie.
   {
     const otwarte = await buildRing({ ...baza, casting: { stones: false } }, { segments: 64 });
-    const roznica = (goly.massG / otwarte.massG - 1) * 100;
-    if (Math.abs(roznica) > 3) {
-      bad(`stan zakucia zmienia mase o ${roznica.toFixed(1)} procent, czyli o wiecej niz same koncowki lapek`);
-    } else if (!(otwarte.massG > goly.massG)) {
-      bad(`odlew z otwartymi lapkami powinien byc CIEZSZY od zakutego, a jest ${otwarte.massG.toFixed(3)} wobec ${goly.massG.toFixed(3)} g`);
+    const roznica = Math.abs(goly.massG / otwarte.massG - 1) * 100;
+    if (roznica > 0.01) {
+      bad(`podglad kamieni rusza metal o ${roznica.toFixed(2)} procent, a nie ma prawa ruszac go wcale`);
     } else {
-      ok(`otwarte łapki cięższe o ${Math.abs(roznica).toFixed(1)} % (${otwarte.massG.toFixed(3)} wobec ${goly.massG.toFixed(3)} g)`);
+      ok(`podgląd kamieni nie rusza metalu (${otwarte.massG.toFixed(3)} g w obu plikach)`);
     }
     zwolnij(otwarte);
   }
@@ -1089,16 +1085,15 @@ console.log("\n19. Kamień wchodzi do gniazda, siada i nie wypada");
   for (const [nazwa, cfg] of UKLADY) {
     // Model z kamieniem daje nam BRYLY KAMIENI i ich polozenie. Plik bez
     // kamieni ich nie zawiera, bo nie ma czego pokazywac, wiec bierzemy je
-    // stad i przykladamy do jednego i drugiego metalu. Polozenie jest to samo,
-    // rozni sie tylko stan lapek.
-    const zakuty = await buildRing({ innerDia: 17.2, ...cfg }, { segments: 64 });
+    // stad i przykladamy do metalu. Metal ma byc w obu plikach ten sam.
+    const zPodgladem = await buildRing({ innerDia: 17.2, ...cfg }, { segments: 64 });
     // Plik do ZAKUCIA, czyli bez kamieni: lapki otwarte, kamien wchodzi z gory.
     const r = await buildRing({ innerDia: 17.2, ...cfg, casting: { stones: false } },
       { segments: 64, withStones: false });
     // Przy halo i eternity kamieni sa dziesiatki, a kazde sprawdzenie to trzy
     // bryle w pamieci jadra, ktorej ono samo nie oddaje. Pierwsza szostka
     // wystarczy: wszystkie powstaja tym samym kodem.
-    const proba = zakuty.stones.slice(0, 6);
+    const proba = zPodgladem.stones.slice(0, 6);
     let objetosc = 0, naMiejscu = 0, nizej = 0, wyzej = 0;
     for (const k of proba) {
       objetosc += k.volume();
@@ -1120,19 +1115,17 @@ console.log("\n19. Kamień wchodzi do gniazda, siada i nie wypada");
       problemy.push(`gniazdo NIE ZATRZYMUJE kamienia: po zejsciu o 0,25 mm kolizja ${proc(nizej).toFixed(2)} % wobec ${proc(naMiejscu).toFixed(2)} % na miejscu`);
     }
     if (proc(wyzej) > 0.05) problemy.push(`kamienia nie da sie wlozyc z gory, metal zachodzi na niego (${proc(wyzej).toFixed(2)} %)`);
-    // Ten sam uklad Z KAMIENIEM ma zachowywac sie ODWROTNIE od gory: lapki sa
-    // docisniete, wiec kamienia nie da sie juz wyjac. Bez tej pary sprawdzian
-    // przepuscilby model, w ktorym lapki nigdy sie nie zamykaja.
-    let trzymane = 0;
-    for (const k of proba) trzymane += kolizja(zakuty.metal, k, 0.6);
-    const trzyma = (trzymane / objetosc) * 100;
-    if (!(trzyma > 0.3)) {
-      problemy.push(`po zakuciu kamien nadal wychodzi gora (kolizja ${trzyma.toFixed(2)} %)`);
+    // Podglad kamienia nie ma prawa ruszyc metalu. Tu to sprawdzamy na kazdym
+    // ukladzie z osobna, bo wlasnie tedy wchodzila poprzednia wersja: gniazdo
+    // zamykalo sie samo, gdy tylko kamien pojawil sie w pliku.
+    const dryf = Math.abs(zPodgladem.metal.volume() / r.metal.volume() - 1) * 100;
+    if (dryf > 0.01) {
+      problemy.push(`podglad kamieni zmienia metal o ${dryf.toFixed(2)} %`);
     }
-    zwolnij(zakuty);
+    zwolnij(zPodgladem);
 
     if (problemy.length) bad(`${nazwa}: ${problemy.join("; ")}`);
-    else ok(`${nazwa.padEnd(16)} otwarte: wchodzi i siada (opór ${proc(nizej).toFixed(2)} %); zakute: trzyma (${trzyma.toFixed(2)} %)`);
+    else ok(`${nazwa.padEnd(16)} wchodzi i siada (opór ${proc(nizej).toFixed(2)} %), podgląd nie rusza metalu`);
     zwolnij(r);
   }
 }
