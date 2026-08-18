@@ -22,6 +22,11 @@ import { SERVICES, GROUPS, getService, DELIVERY_METHODS } from "../data/orderCat
 import { shippingOptions, shippingGrosze, needsCustoms, SHIPPING_COUNTRIES, leadDaysLabel } from "../pricing/shipping.js";
 import { t } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
+import { wymagaPrzesylki, inboundOptionsFor } from "../data/inboundDelivery.js";
+
+// Ten sam prog co w koszyku i na serwerze. Rozjazd znaczylby, ze formularz
+// przepuszcza opis, ktory kasa odrzuci, czyli blad przy platnosci.
+const MIN_DESCRIPTION = 20;
 
 const API = import.meta.env.VITE_CHAT_API_URL;
 
@@ -34,6 +39,12 @@ const UI = {
     quotePath: "Nie widzisz swojej usługi?",
     quotePathDesc: "Biżuteria z kamieniami, łańcuszki i projekty wymagające doprecyzowania wyceniamy indywidualnie, zwykle w ciągu 24 godzin.",
     quotePathCta: "Poproś o wycenę",
+    descTitle: "Co mamy wykonać",
+    descHint: "Napisz, co ma powstać: co grawerujemy, na czym, jaki napis, jakie wymiary. Bez tego zlecenie trafia do pracowni bez ani jednego zdania od Ciebie.",
+    descPlaceholder: "Np. grawer imienia na drewnianej desce 30 x 20 cm, napis wysokosci okolo 3 cm, czcionka jak w zalaczonym pliku.",
+    descTooShort: "Opisz zlecenie w co najmniej " + MIN_DESCRIPTION + " znakach.",
+    inboundTitle: "Jak dostarczysz nam swój przedmiot",
+    inboundWhy: "To zamówienie wymaga, żebyś przysłał nam materiał albo przedmiot. Bez tej deklaracji nie wiemy, czy czekać na paczkę, czy na Ciebie.",
     dropFile: "Kliknij lub przeciągnij plik STL",
     dropSub: "Cenę policzymy z objętości i wymiarów modelu",
     fileOptional: "Plik jest opcjonalny. Bez niego wybierzesz rozmiar z listy.",
@@ -91,6 +102,12 @@ const UI = {
     quotePath: "Not seeing your service?",
     quotePathDesc: "Jewelry with stones, chains and projects that need clarification are quoted individually, usually within 24 hours.",
     quotePathCta: "Request a quote",
+    descTitle: "What we are to make",
+    descHint: "Write what should be produced: what we engrave, on what, what text, what size. Without it the job reaches the workshop without a single sentence from you.",
+    descPlaceholder: "E.g. a name engraved on a 30 x 20 cm wooden board, letters about 3 cm high, typeface as in the attached file.",
+    descTooShort: "Describe the job in at least " + MIN_DESCRIPTION + " characters.",
+    inboundTitle: "How you will send us your item",
+    inboundWhy: "This order needs you to send us material or an item. Without this we do not know whether to wait for a parcel or for you.",
     dropFile: "Click or drag an STL file",
     dropSub: "We price it from the model volume and dimensions",
     fileOptional: "The file is optional. Without it, pick a size from the list.",
@@ -148,6 +165,12 @@ const UI = {
     quotePath: "Ihre Leistung ist nicht dabei?",
     quotePathDesc: "Schmuck mit Steinen, Ketten und Projekte mit Klärungsbedarf kalkulieren wir individuell, meist innerhalb von 24 Stunden.",
     quotePathCta: "Angebot anfordern",
+    descTitle: "Was wir anfertigen sollen",
+    descHint: "Beschreiben Sie, was entstehen soll: was wir gravieren, worauf, welcher Text, welche Masse. Ohne das erreicht der Auftrag die Werkstatt ohne einen einzigen Satz von Ihnen.",
+    descPlaceholder: "Z. B. ein Name auf einem Holzbrett 30 x 20 cm, Buchstaben etwa 3 cm hoch, Schrift wie in der angehaengten Datei.",
+    descTooShort: "Beschreiben Sie den Auftrag in mindestens " + MIN_DESCRIPTION + " Zeichen.",
+    inboundTitle: "Wie Sie uns Ihr Objekt zusenden",
+    inboundWhy: "Fuer diese Bestellung muessen Sie uns Material oder ein Objekt zusenden. Ohne diese Angabe wissen wir nicht, ob wir auf ein Paket oder auf Sie warten.",
     dropFile: "STL-Datei klicken oder hierher ziehen",
     dropSub: "Wir berechnen den Preis aus Volumen und Maßen",
     fileOptional: "Die Datei ist optional. Ohne sie wählen Sie eine Größe aus der Liste.",
@@ -317,6 +340,10 @@ export default function Order() {
   const [serviceId, setServiceId] = useState(null);
   const [params, setParams] = useState({});
   const [file, setFile] = useState(null);
+  // Opis zlecenia i deklaracja dostarczenia. Obu tu nie bylo, a serwer obu
+  // wymaga, wiec KAZDE zamowienie z tej strony konczylo sie bledem 400.
+  const [description, setDescription] = useState("");
+  const [inbound, setInbound] = useState("");
   const [scale, setScale] = useState(1);
   const [geometry, setGeometry] = useState(null);
   const [price, setPrice] = useState(null);
@@ -412,7 +439,21 @@ export default function Order() {
   const [triedToSubmit, setTriedToSubmit] = useState(false);
   const customerErrors = validateCustomer(customer);
 
+  // Opis i deklaracja dostarczenia licza sie TA SAMA regula co w koszyku
+  // i na serwerze, z tego samego modulu. Wlasna kopia rozjechalaby sie przy
+  // pierwszej nowej usludze, a objawem bylby blad dopiero przy platnosci.
+  const opisOk = description.trim().length >= MIN_DESCRIPTION;
+  // Zmiana kraju zmienia liste sposobow dostarczenia: paczkomat istnieje tylko
+  // w Polsce. Wybor zrobiony przed zmiana kraju zostalby wyborem, ktorego
+  // serwer nie przyjmie, a klient nie mialby powodu zajrzec tam ponownie.
+  useEffect(() => { setInbound(""); }, [country]);
+  const wymagaInbound = Boolean(service) && wymagaPrzesylki({ calculator: service.calculator, params });
+  const inboundOpcje = inboundOptionsFor(country);
+  const inboundOk = !wymagaInbound || inboundOpcje.some((m) => m.id === inbound);
+
   const dataValid =
+    opisOk &&
+    inboundOk &&
     Object.keys(customerErrors).length === 0 &&
     consents.terms &&
     consents.waiveWithdrawal &&
@@ -443,6 +484,7 @@ export default function Order() {
           items: [{
             calculator: service.calculator,
             params: { ...params, ...(service.fixed || {}) },
+            description,
             geometry,
             scale,
             fileName: file?.name || null,
@@ -451,6 +493,7 @@ export default function Order() {
           delivery: {
             method: deliveryId,
             country,
+            inbound: inbound || null,
             shippingGrosze: delivery.grosze,
             point: addr.point || null,
             addressLine1: addr.line1 || null,
@@ -629,6 +672,29 @@ export default function Order() {
                 .map((f) => (
                   <OptionRow key={f.key} field={f} value={params} onChange={setParam} lang={lang} />
                 ))}
+
+              {/* OPIS ZLECENIA. Parametry mowia, ILE to kosztuje, a nie CO mamy
+                  zrobic. Bez tego pola do pracowni trafialo zamowienie oplacone
+                  i niewykonalne, i tak sie to raz skonczylo naprawde. */}
+              <div className="mt-2">
+                <div className="text-[11px] uppercase tracking-wide text-neutral-400 mb-2">{u.descTitle}</div>
+                <textarea
+                  id="job-description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={4}
+                  placeholder={u.descPlaceholder}
+                  aria-invalid={triedToSubmit && !opisOk ? "true" : undefined}
+                  className={`w-full bg-neutral-900 border rounded-lg px-3 py-2 text-sm text-white
+                             placeholder:text-neutral-600 focus:outline-none focus:border-blue-400/60 ${
+                    triedToSubmit && !opisOk ? "border-red-400/60" : "border-white/10"
+                  }`}
+                />
+                <p className="text-neutral-500 text-[11px] mt-1.5">{u.descHint}</p>
+                {triedToSubmit && !opisOk && (
+                  <p className="text-red-400 text-[11px] mt-1">{u.descTooShort}</p>
+                )}
+              </div>
             </div>
           )}
 
@@ -791,6 +857,32 @@ export default function Order() {
                 </>
               )}
 
+              {wymagaInbound && (
+                <>
+                  <h2 className="text-white font-semibold mb-1 mt-8">{u.inboundTitle}</h2>
+                  <p className="text-neutral-400 text-[12px] mb-3">{u.inboundWhy}</p>
+                  <div className="space-y-2">
+                    {inboundOpcje.map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setInbound(m.id)}
+                        className={`w-full text-left rounded-xl border px-4 py-3 transition-colors ${
+                          inbound === m.id
+                            ? "border-blue-400/60 bg-blue-400/10"
+                            : "border-white/10 bg-white/[0.02] hover:border-white/25"
+                        }`}
+                      >
+                        <span className={`block text-sm font-medium ${inbound === m.id ? "text-blue-200" : "text-neutral-200"}`}>
+                          {t(m.label, lang)}
+                        </span>
+                        <span className="block text-neutral-400 text-[11px] mt-0.5">{t(m.note, lang)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+
               <h2 className="text-white font-semibold mb-3 mt-8">{u.consents}</h2>
               <label className="flex items-start gap-3 mb-3 cursor-pointer">
                 <input
@@ -893,6 +985,16 @@ export default function Order() {
                   // Krok dalej z brakami nie jest martwym przyciskiem: pokazuje,
                   // czego brakuje, zamiast milczec.
                   onClick={() => {
+                    // Opis mieszka na kroku parametrow, wiec brak zatrzymujemy
+                    // TUTAJ. Zatrzymanie dopiero przy platnosci odsylaloby
+                    // klienta trzy kroki wstecz, do pola, ktorego juz nie widzi.
+                    if (step === 1 && !opisOk) {
+                      setTriedToSubmit(true);
+                      const pole = document.getElementById("job-description");
+                      pole?.scrollIntoView({ behavior: "smooth", block: "center" });
+                      pole?.focus?.({ preventScroll: true });
+                      return;
+                    }
                     if (step === 3 && !dataValid) {
                       setTriedToSubmit(true);
                       const first = document.querySelector('[aria-invalid="true"], #locker-search, #locker-code');

@@ -124,5 +124,48 @@ if (!progSerwera || !progKlienta || progSerwera !== progKlienta) {
   ok(`prog dlugosci opisu ten sam po obu stronach (${progSerwera} znakow)`);
 }
 
+// ------------------------------------------------------------
+// 5. DRUGA DROGA DO KASY: kreator `/order/`
+// ------------------------------------------------------------
+// Sprawdzian powyzej pilnowal JEDNEJ drogi, koszyka, i przez to przegapil
+// druga. Strona `/order/` sklada zamowienie WPROST do `/api/orders`, z pominie-
+// ciem koszyka, a linkuje do niej kazda karta uslugi (`Service.jsx`). Gdy opis
+// i deklaracja dostarczenia staly sie obowiazkowe, ta droga przestala dzialac
+// calkowicie: serwer odbijal kazde zamowienie bledem 400, bo `Order.jsx` nie
+// zbieral ani jednego, ani drugiego.
+//
+// Nauka jest prosta i dlatego jest tu zapisana: straznik postawiony na jednej
+// sciezce nie pilnuje pozostalych. Kazda droga do `/api/orders` musi wysylac
+// to, czego `/api/orders` wymaga.
+{
+  const order = czytaj("src/pages/Order.jsx");
+  const cialoStart = order.indexOf("await postJSON(`${API}/api/orders`");
+  const cialoKoniec = order.indexOf("consents,", cialoStart);
+  if (cialoStart < 0 || cialoKoniec < 0) {
+    zle("nie znalazlem w Order.jsx ciala zadania do /api/orders");
+  } else {
+    const cialo = order.slice(cialoStart, cialoKoniec);
+    if (!/\bdescription\b/.test(cialo)) {
+      zle("Order.jsx nie wysyla opisu zlecenia, wiec kazde zamowienie z /order/ dostanie 400");
+    } else {
+      ok("Order.jsx wysyla opis zlecenia");
+    }
+    if (!/\binbound\b/.test(cialo)) {
+      zle("Order.jsx nie wysyla deklaracji dostarczenia, wiec material powierzony z /order/ dostanie 400");
+    } else {
+      ok("Order.jsx wysyla deklaracje dostarczenia");
+    }
+  }
+
+  // Prog musi byc ten sam co na serwerze takze tutaj, inaczej formularz
+  // przepusci opis, ktory kasa odrzuci.
+  const progOrder = Number(/const MIN_DESCRIPTION = (\d+)/.exec(order)?.[1]);
+  if (progOrder !== progSerwera) {
+    zle(`prog dlugosci opisu w Order.jsx (${progOrder}) rozjechal sie z serwerem (${progSerwera})`);
+  } else {
+    ok(`prog dlugosci opisu w /order/ ten sam co na serwerze (${progOrder} znakow)`);
+  }
+}
+
 console.log(bledy ? `\n${bledy} bledow\n` : "\nSzew koszyk-zamowienie: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);
