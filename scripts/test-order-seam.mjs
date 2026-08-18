@@ -256,5 +256,67 @@ if (!progSerwera || !progKlienta || progSerwera !== progKlienta) {
   }
 }
 
+// ------------------------------------------------------------
+// 8. Wgranie pliku: wlasny limit, wlasny komunikat, plik zostaje
+// ------------------------------------------------------------
+// Model pokazywal sie w podgladzie i znikal. Podglad rysuje sie lokalnie,
+// wiec pojawial sie zawsze, a znikal dopiero wtedy, gdy serwer odmowil
+// przyjecia pliku, bo przegladarka kasowala wtedy caly wybor. Powod odmowy
+// stal osobno, nizej, przy cenie. Klient widzial znikajacy model i nie mial
+// jak polaczyc jednego z drugim.
+//
+// Odmowa brala sie z licznika WSPOLNEGO z wycena. Wycena odswieza sie po
+// kazdym ruchu suwaka, wiec zjadala budzet, a wgranie pliku odbijalo sie od
+// 429, chociaz klient wgrywal pierwszy plik w zyciu.
+{
+  console.log("\n8. Wgranie pliku");
+
+  const blokUploadu = server.slice(server.indexOf('app.post("/api/uploads"'));
+  const handler = blokUploadu.slice(0, blokUploadu.indexOf("app.post", 10));
+
+  if (/checkPriceRate/.test(handler)) {
+    zle("wgrywanie plikow dzieli licznik zapytan z wycena");
+    console.error("    Konfigurowanie uslugi wyczerpie budzet i plik sie nie wgra.");
+  } else if (!/uploadLimit\.check/.test(handler)) {
+    zle("wgrywanie plikow nie ma zadnego licznika zapytan");
+  } else {
+    ok("wgrywanie plikow ma wlasny licznik, osobny od wyceny");
+  }
+
+  // Zalacznik i zdjecie nie maja geometrii. Bezwarunkowe siegniecie po
+  // `geometry.sha256` wywalalo handler wyjatkiem przy kazdym zdjeciu.
+  if (/sha256: geometry\.sha256/.test(handler)) {
+    zle("wysylka na Dysk czyta geometry.sha256 bez sprawdzenia, czy geometria jest");
+    console.error("    Zdjecie i rysunek nie maja geometrii, wiec dostana 500.");
+  } else {
+    ok("wysylka na Dysk radzi sobie z plikiem bez geometrii");
+  }
+
+  const konfig = czytaj("src/components/shop/ServiceConfigurator.jsx");
+  const onPick = konfig.slice(konfig.indexOf("async function onPickFile"));
+  const cialo = onPick.slice(0, onPick.indexOf("\n  function addToCart"));
+  if (/if \(!resp\.ok\)[\s\S]{0,400}?resetFile\(\)/.test(cialo)) {
+    zle("karta uslugi kasuje plik i podglad, gdy serwer go odrzuci");
+    console.error("    To wlasnie wyglada jak znikajacy model bez powodu.");
+  } else {
+    ok("odrzucony plik zostaje w polu razem z podgladem");
+  }
+  if (!/!fileError/.test(konfig)) {
+    zle("odrzucony plik nie blokuje dodania do koszyka");
+  } else {
+    ok("odrzucony plik blokuje dodanie do koszyka");
+  }
+
+  // Milczaca odmowa w kalkulatorze byla grozniejsza: bez tokenu cena liczyla
+  // sie z wybranego rozmiaru, wiec przestawala dotyczyc wgranego modelu,
+  // a nic tego nie pokazywalo.
+  const calc = czytaj("src/components/calculators/CalcToCart.jsx");
+  if (!/setModelError\(/.test(calc) || !/!modelError/.test(calc)) {
+    zle("kalkulator polyka odmowe przyjecia modelu");
+  } else {
+    ok("kalkulator pokazuje odmowe przyjecia modelu i wstrzymuje zakup");
+  }
+}
+
 console.log(bledy ? `\n${bledy} bledow\n` : "\nSzew koszyk-zamowienie: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);

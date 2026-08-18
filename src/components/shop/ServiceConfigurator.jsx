@@ -95,6 +95,8 @@ const UI = {
     priceNote: "Cena wiążąca, obowiązuje 7 dni.",
     engravingHint: "Grawer wykonujemy dokładnie tak, jak wpiszesz. Sprawdź pisownię.",
     uploadFailed: "Nie udało się przyjąć pliku. Spróbuj ponownie albo napisz do nas.",
+    parsingFile: "Analizuję model",
+    sendingFile: "Wysyłam plik do wyceny",
   },
   en: {
     configure: "Configure and add to cart",
@@ -154,6 +156,8 @@ const UI = {
     priceNote: "Binding price, valid for 7 days.",
     engravingHint: "We engrave exactly what you type. Please check the spelling.",
     uploadFailed: "We could not accept the file. Try again or write to us.",
+    parsingFile: "Analysing the model",
+    sendingFile: "Sending the file for pricing",
   },
   de: {
     configure: "Konfigurieren und in den Warenkorb",
@@ -213,6 +217,8 @@ const UI = {
     priceNote: "Verbindlicher Preis, 7 Tage gültig.",
     engravingHint: "Wir gravieren genau das, was Sie eingeben. Bitte Schreibweise prüfen.",
     uploadFailed: "Die Datei konnte nicht angenommen werden. Bitte erneut versuchen oder uns schreiben.",
+    parsingFile: "Modell wird analysiert",
+    sendingFile: "Datei wird zur Kalkulation gesendet",
   },
 };
 
@@ -230,6 +236,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const [file, setFile] = useState(null);
   const [uploadToken, setUploadToken] = useState(null);
   const [uploading, setUploading] = useState(false);
+  // Odczyt lokalny i wysylka to dwa rozne oczekiwania, o roznej dlugosci.
+  const [parsing, setParsing] = useState(false);
+  const [fileError, setFileError] = useState(null);
   const [geometry, setGeometry] = useState(null);
   const [triangles, setTriangles] = useState(null);
   const [printability, setPrintability] = useState(null);
@@ -394,7 +403,11 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   // pilnuje pozostalych.
   const substrateGap = brakPodloza({ calculator: service.calculator, params });
 
-  const ready = descriptionOk && artworkOk && jewelryEngravingOk && packEngravingOk && !substrateGap && !needsHumanQuote && !printHold;
+  // Plik odrzucony przez serwer zostaje w polu, zeby bylo widac, o ktory chodzi,
+  // ale zamowic go nie mozna: wycena poszlaby wtedy z samego rozmiaru, a klient
+  // bylby przekonany, ze kupuje wydruk swojego modelu.
+  const ready = descriptionOk && artworkOk && jewelryEngravingOk && packEngravingOk
+    && !substrateGap && !needsHumanQuote && !printHold && !fileError;
 
   // Zmiana podloza czysci pola, ktore od niego zaleza. Bez tego po przelaczeniu
   // z przedmiotu klienta na nasz material zostawalby wybor sposobu proby,
@@ -411,6 +424,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
     setUploadToken(null);
     setHasThumb(false);
     setThumbData(null);
+    setFileError(null);
     pendingThumb.current = null;
   }
 
@@ -491,6 +505,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
     if (!f) return;
     resetFile();
     setFile(f);
+    setParsing(true);
     setUploading(true);
     setError(null);
 
@@ -503,7 +518,8 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
         const parsed = await parseMeshAsync(await f.arrayBuffer(), f.name);
         setTriangles(parsed.triangles);
       })
-      .catch(() => setTriangles(null));
+      .catch(() => setTriangles(null))
+      .finally(() => setParsing(false));
 
     try {
       // Wysylamy raz. Serwer liczy geometrie, zapisuje plik na Dysku
@@ -514,15 +530,20 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       const resp = await fetch(`${API}/api/uploads`, { method: "POST", body: fd });
       const data = await resp.json();
       if (!resp.ok) {
-        setError({ message: data.error, code: data.code });
-        resetFile();
+        // Plik i podglad ZOSTAJA. Wyrzucenie ich razem z komunikatem znaczylo,
+        // ze klient widzial znikajacy model i szukal powodu gdzie indziej.
+        setFileError(data.error || u.uploadFailed);
+        setUploadToken(null);
+        setGeometry(null);
+        setPrice(null);
         return;
       }
+      setFileError(null);
       setUploadToken(data.uploadToken);
       setGeometry(data.geometry);
     } catch {
-      setError({ message: u.uploadFailed });
-      resetFile();
+      setFileError(u.uploadFailed);
+      setUploadToken(null);
     } finally {
       setUploading(false);
     }
@@ -577,7 +598,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
             hint={u.fileHint}
             file={file}
             geometry={geometry}
-            busy={uploading}
+            busy={parsing || uploading}
+            busyLabel={parsing ? u.parsingFile : u.sendingFile}
+            error={fileError}
             onPick={onPickFile}
             onClear={resetFile}
             accent={accent}

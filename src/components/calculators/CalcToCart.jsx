@@ -44,6 +44,7 @@ const UI = {
     unavailable: "Tej konfiguracji nie wycenimy automatycznie. Napisz do nas, odpowiemy w 24 godziny.",
     contact: "Wyślij do wyceny",
     uploading: "Przygotowuję plik",
+    modelRejected: "Nie przyjęliśmy tego pliku, więc nie da się go zamówić: kwota poniżej dotyczyłaby wybranego rozmiaru, a nie Twojego modelu. Wgraj inny plik albo napisz do nas.",
     perPc: "za sztukę",
     pcs: "szt.",
     describeLabel: "Opisz, co mamy wykonać",
@@ -89,6 +90,7 @@ const UI = {
     unavailable: "We cannot price this configuration automatically. Write to us and we reply within 24 hours.",
     contact: "Request a quote",
     uploading: "Preparing the file",
+    modelRejected: "We could not accept this file, so it cannot be ordered: the amount below would cover the selected size, not your model. Upload another file or write to us.",
     perPc: "per piece",
     pcs: "pcs",
     describeLabel: "Describe what we are to make",
@@ -134,6 +136,7 @@ const UI = {
     unavailable: "Diese Konfiguration können wir nicht automatisch bepreisen. Schreiben Sie uns, wir antworten binnen 24 Stunden.",
     contact: "Angebot anfordern",
     uploading: "Datei wird vorbereitet",
+    modelRejected: "Diese Datei konnten wir nicht annehmen, sie laesst sich daher nicht bestellen: der Betrag unten wuerde fuer die gewaehlte Groesse gelten, nicht fuer Ihr Modell. Laden Sie eine andere Datei hoch oder schreiben Sie uns.",
     perPc: "pro Stück",
     pcs: "Stk.",
     describeLabel: "Beschreiben Sie, was wir anfertigen sollen",
@@ -213,6 +216,7 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
   const [refToken, setRefToken] = useState(null);
   const [attachBusy, setAttachBusy] = useState(false);
   const [attachError, setAttachError] = useState(null);
+  const [modelError, setModelError] = useState(null);
   const [thumbData, setThumbData] = useState(null);
   const [uploadToken, setUploadToken] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -227,16 +231,25 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
     }
     let cancelled = false;
     setUploading(true);
+    setModelError(null);
     const fd = new FormData();
     fd.append("file", file);
     fd.append("lang", lang);
     fetch(`${API}/api/uploads`, { method: "POST", body: fd })
-      .then((r) => r.json())
-      .then((d) => { if (!cancelled && d?.uploadToken) setUploadToken(d.uploadToken); })
-      .catch(() => {})
+      .then(async (r) => ({ ok: r.ok, data: await r.json().catch(() => ({})) }))
+      .then(({ ok, data }) => {
+        if (cancelled) return;
+        // ODRZUCONY MODEL MUSI BYC WIDOCZNY. Bez tokenu cena liczy sie
+        // z wybranego rozmiaru, a nie z modelu, wiec po cichu przestawala
+        // dotyczyc tego, co klient wgral, a on nie mial jak tego zauwazyc.
+        if (ok && data?.uploadToken) { setUploadToken(data.uploadToken); return; }
+        setUploadToken(null);
+        setModelError(data?.error || u.modelRejected);
+      })
+      .catch(() => { if (!cancelled) setModelError(u.modelRejected); })
       .finally(() => { if (!cancelled) setUploading(false); });
     return () => { cancelled = true; };
-  }, [file, lang]);
+  }, [file, lang, u.modelRejected]);
 
   /**
    * Zalaczniki nie wplywaja na cene, ida na Dysk jako material do wykonania.
@@ -371,7 +384,7 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
   // `hold` wstrzymuje dodanie do koszyka, dopoki klient nie pokwituje
   // ujawnionej wady swojego pliku. Rozni sie od `blocked`: tam ceny nie ma
   // wcale, tu cena jest policzona i widoczna, brakuje tylko potwierdzenia.
-  const ready = descriptionOk && artworkOk && engravingOk && substrateOk && !gatedShape && !hold;
+  const ready = descriptionOk && artworkOk && engravingOk && substrateOk && !gatedShape && !hold && !modelError;
 
   const qty = price?.qty || 1;
   const lineGrosze = (price?.unitGrosze || 0) * qty;
@@ -491,6 +504,10 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
 
           {attachError && (
             <p className="text-red-400 text-[11px] -mt-2">{attachError}</p>
+          )}
+
+          {modelError && (
+            <p className="text-amber-300 text-[11px] -mt-2">{modelError}</p>
           )}
 
           {wantsEngraving && (

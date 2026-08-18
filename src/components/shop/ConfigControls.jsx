@@ -109,7 +109,7 @@ export function QtyStepper({ label, value, onChange, min = 1, max = 999, accent 
 }
 
 /** Wgrywanie pliku z podgladem geometrii policzonej przez serwer */
-export function FileDrop({ label, hint, file, geometry, onPick, onClear, busy, accent = "blue", lang, accept = ".stl", children }) {
+export function FileDrop({ label, hint, file, geometry, onPick, onClear, busy, busyLabel, error, accent = "blue", lang, accept = ".stl", children }) {
   const ref = useRef(null);
   const ring = accent === "amber" ? "border-amber-400/30 hover:border-amber-400/50" : "border-blue-400/30 hover:border-blue-400/50";
   const tint = accent === "amber" ? "text-amber-400" : "text-blue-400";
@@ -145,7 +145,27 @@ export function FileDrop({ label, hint, file, geometry, onPick, onClear, busy, a
         {busy && (
           <div className="flex items-center gap-2 text-neutral-500 text-xs mt-2">
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            {t({ pl: "Analizuję model", en: "Analysing the model", de: "Modell wird analysiert" }, lang)}
+            {/* Etykieta ma mowic, co sie dzieje TERAZ. Jeden napis na oba etapy
+                znaczyl, ze przy kilkunastu megabajtach klient patrzyl na
+                "Analizuję model" dlugo po tym, jak model juz widzial. */}
+            {busyLabel || t({ pl: "Analizuję model", en: "Analysing the model", de: "Modell wird analysiert" }, lang)}
+          </div>
+        )}
+        {/* Odrzucony plik ZOSTAJE w polu razem z podgladem. Skasowanie go bylo
+            mylace: znikal model, a powod znikniecia stal osobno, nizej. */}
+        {error && !busy && (
+          <div className="flex gap-2 mt-2 text-[11px] text-amber-300">
+            <CircleAlert className="w-3.5 h-3.5 flex-shrink-0 mt-px" />
+            <span>
+              {error}
+              <span className="block text-neutral-500 mt-0.5">
+                {t({
+                  pl: "Ten plik nie wejdzie do zamówienia. Usuń go krzyżykiem i wybierz inny albo opisz zlecenie.",
+                  en: "This file cannot be ordered. Remove it and pick another, or describe the job instead.",
+                  de: "Diese Datei kann nicht bestellt werden. Entfernen Sie sie und waehlen eine andere, oder beschreiben Sie den Auftrag.",
+                }, lang)}
+              </span>
+            </span>
           </div>
         )}
         {geometry && !busy && (
