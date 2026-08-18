@@ -280,10 +280,32 @@ export function wymagaOpisu(svc) {
   return Boolean(svc) && svc.requiresDescription !== false;
 }
 
+/**
+ * Uslugi z domysznym `requiresDescription`, policzonym RAZ przy wczytaniu modulu.
+ *
+ * TOZSAMOSC ZWRACANEGO OBIEKTU JEST TU CZESCIA UMOWY, a nie szczegolem.
+ *
+ * Bylo tu `return { ...svc, requiresDescription: wymagaOpisu(svc) }`, czyli
+ * NOWY obiekt przy kazdym wywolaniu. `ServiceConfigurator` i `Order` wolaja
+ * `getService` w trakcie renderowania, a wynik wchodzi do zaleznosci
+ * `useCallback`, ktory buduje zapytanie o cene. Nowa tozsamosc przy kazdym
+ * renderze znaczyla wiec: nowy `fetchPrice`, nowe uruchomienie efektu, nowe
+ * zapytanie do `/api/price`, nowy stan, nowy render. Petla co 350 ms.
+ *
+ * Objawem bylo migotanie konfiguratora i blad "Za duzo zapytan, sprobuj za
+ * chwile", czyli wlasny limit zapytan uderzajacy we wlasnego klienta. Cena
+ * i parametry byly przez caly czas poprawne, wiec zaden sprawdzian tego nie
+ * widzial: to bylo widac dopiero na zywej stronie.
+ *
+ * Mapa liczy sie raz, wiec `getService(id) === getService(id)`. Sprawdzian
+ * `test-order-seam.mjs` pilnuje tej rownosci.
+ */
+const SERVICES_BY_ID = new Map(
+  SERVICES.map((s) => [s.id, { ...s, requiresDescription: wymagaOpisu(s) }]),
+);
+
 export function getService(id) {
-  const svc = SERVICES.find((s) => s.id === id) || null;
-  if (!svc) return null;
-  return { ...svc, requiresDescription: wymagaOpisu(svc) };
+  return SERVICES_BY_ID.get(id) || null;
 }
 
 /** Metody dostawy, koszt w groszach */
