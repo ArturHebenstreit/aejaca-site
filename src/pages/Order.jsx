@@ -54,7 +54,7 @@ const UI = {
     materialNotePlaceholder: "Np. sklejka brzozowa 4 mm, akryl bezbarwny 3 mm",
     inboundTitle: "Jak dostarczysz nam swój przedmiot",
     inboundWhy: "To zamówienie wymaga, żebyś przysłał nam materiał albo przedmiot. Bez tej deklaracji nie wiemy, czy czekać na paczkę, czy na Ciebie.",
-    dropFile: "Kliknij lub przeciągnij plik STL",
+    dropFile: "Kliknij lub przeciągnij plik STL, OBJ, 3MF lub STEP",
     dropSub: "Cenę policzymy z objętości i wymiarów modelu",
     fileOptional: "Plik jest opcjonalny. Bez niego wybierzesz rozmiar z listy.",
     remove: "Usuń",
@@ -125,7 +125,7 @@ const UI = {
     materialNotePlaceholder: "E.g. 4 mm birch plywood, 3 mm clear acrylic",
     inboundTitle: "How you will send us your item",
     inboundWhy: "This order needs you to send us material or an item. Without this we do not know whether to wait for a parcel or for you.",
-    dropFile: "Click or drag an STL file",
+    dropFile: "Click or drag an STL, OBJ, 3MF or STEP file",
     dropSub: "We price it from the model volume and dimensions",
     fileOptional: "The file is optional. Without it, pick a size from the list.",
     remove: "Remove",
@@ -196,7 +196,7 @@ const UI = {
     materialNotePlaceholder: "Z. B. Birkensperrholz 4 mm, Acryl klar 3 mm",
     inboundTitle: "Wie Sie uns Ihr Objekt zusenden",
     inboundWhy: "Fuer diese Bestellung muessen Sie uns Material oder ein Objekt zusenden. Ohne diese Angabe wissen wir nicht, ob wir auf ein Paket oder auf Sie warten.",
-    dropFile: "STL-Datei klicken oder hierher ziehen",
+    dropFile: "STL-, OBJ-, 3MF- oder STEP-Datei klicken oder hierher ziehen",
     dropSub: "Wir berechnen den Preis aus Volumen und Maßen",
     fileOptional: "Die Datei ist optional. Ohne sie wählen Sie eine Größe aus der Liste.",
     remove: "Entfernen",
@@ -693,7 +693,7 @@ export default function Order() {
                           <div className="text-neutral-400 text-[11px] mt-1">{u.dropSub}</div>
                         </div>
                       </button>
-                      <input ref={fileRef} type="file" accept=".stl" className="hidden" onChange={onFile} />
+                      <input ref={fileRef} type="file" accept=".stl,.obj,.3mf,.step,.stp" className="hidden" onChange={onFile} />
                       <p className="text-neutral-600 text-[11px] mt-2 text-center">{u.fileOptional}</p>
                     </>
                   ) : (

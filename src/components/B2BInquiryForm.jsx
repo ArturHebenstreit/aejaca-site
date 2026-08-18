@@ -82,7 +82,7 @@ const LABELS = {
     desc: "Opisz projekt",
     descPlaceholder: "Wizja, inspiracje, budżet docelowy, kamień milowy, inne szczegóły...",
     file: "Załącz plik projektu",
-    fileHint: "STL, 3MF, STEP, OBJ, JPG, PNG, PDF",
+    fileHint: "STL, 3MF, STEP, OBJ, SVG, DXF, AI, JPG, PNG, PDF",
     consent: "Zgadzam się na przetwarzanie danych osobowych w celu przygotowania wyceny i kontaktu w sprawie zapytania (RODO).",
     send: "Wyślij zapytanie B2B",
     sending: "Wysyłanie...",
@@ -116,7 +116,7 @@ const LABELS = {
     desc: "Describe your project",
     descPlaceholder: "Vision, inspirations, target budget, first milestone, other details...",
     file: "Attach project file",
-    fileHint: "STL, 3MF, STEP, OBJ, JPG, PNG, PDF",
+    fileHint: "STL, 3MF, STEP, OBJ, SVG, DXF, AI, JPG, PNG, PDF",
     consent: "I agree to the processing of my personal data to prepare a quote and follow up on this inquiry (GDPR).",
     send: "Send B2B inquiry",
     sending: "Sending...",
@@ -150,7 +150,7 @@ const LABELS = {
     desc: "Beschreiben Sie Ihr Projekt",
     descPlaceholder: "Vision, Inspirationen, Zielbudget, erster Meilenstein, weitere Details...",
     file: "Projektdatei anhängen",
-    fileHint: "STL, 3MF, STEP, OBJ, JPG, PNG, PDF",
+    fileHint: "STL, 3MF, STEP, OBJ, SVG, DXF, AI, JPG, PNG, PDF",
     consent: "Ich stimme der Verarbeitung meiner personenbezogenen Daten zur Erstellung eines Angebots und zur Kontaktaufnahme zu (DSGVO).",
     send: "B2B-Anfrage senden",
     sending: "Wird gesendet...",
@@ -407,7 +407,7 @@ export default function B2BInquiryForm({ lang = "pl", id }) {
             </button>
           )}
           <input ref={fileRef} type="file" className="hidden"
-            accept=".stl,.3mf,.step,.stp,.obj,.jpg,.jpeg,.png,.pdf" onChange={handleFileChange} />
+            accept=".stl,.3mf,.step,.stp,.obj,.svg,.ai,.dxf,.jpg,.jpeg,.png,.pdf" onChange={handleFileChange} />
         </div>
         <div className="text-[10px] text-neutral-400 mt-1">{L.fileHint}</div>
         {fileName && <div className="text-[10px] text-blue-400/70 mt-1">{L.attachNote}</div>}

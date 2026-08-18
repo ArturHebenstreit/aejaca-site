@@ -299,6 +299,44 @@ kwoty wiążącej kodem `too_large_for_printer` w `priceItem`. Kontrolka to `Sca
 w `src/components/shop/ConfigControls.jsx`, obecna na karcie usługi i w `/order/`.
 Pilnuje tego `scripts/test-print-scale.mjs` w buildzie.
 
+### 6.0c Szybka wycena liczy teraz z geometrii pliku, jednym silnikiem (od 2026-08-18)
+
+Szybka wycena (`SimpleStudioCalc.jsx`, zakładka /studio/) wgrywała plik, pokazywała jego
+wymiary i objętość, po czym je odrzucała i liczyła cenę z widełek wielkości ("pudełko po
+butach" itd.). Widełki zakładają bryłę WYPEŁNIAJĄCĄ pudełko, więc płaska płyta 30 x 2 x 14 cm
+(420 cm3) trafiała w przedział "pudełko po butach" i wychodziła na 187-374 zł zamiast
+poprawnych 43-85 zł liczonych z rzeczywistej objętości. To była **awaria cicha**: dane wejściowe
+(wymiary, objętość) były poprawnie odczytane i wyświetlone klientowi, ale nie brały udziału w
+liczeniu ceny, więc nic na ekranie nie sygnalizowało błędu.
+
+Naprawa: oba tryby (szybka wycena i tryb zaawansowany) liczą teraz **tym samym silnikiem** z tej
+samej geometrii, w `src/pricing/simpleQuote.js` (mapowanie pięciu pytań na parametry, bez
+warstwy interfejsu, testowalne w node przez `scripts/test-simple-quote.mjs`) i
+`src/pricing/scaleGeometry.js` (skalowanie siatki/wektora). Widełki wielkości zostają wyłącznie
+dla klientów bez pliku.
+
+**Nowy układ pytań:** ① co wykonać (z dwoma kafelkami na skróty: plik 3D albo plik wektorowy)
+→ ② jak duże → ③ materiał → ④ jakość → ⑤ ile sztuk. Wcześniej wgrywanie pliku stało PRZED
+pytaniami, jako osobna sekcja, więc pierwszym ekranem dla klienta bez pliku (większości
+odwiedzających) było pole, którego nie dało się wypełnić.
+
+**Wielkość to suwak, nie pięć kafelków** (`SizeSlider.jsx`). Skala logarytmiczna 1-100 cm,
+pokazuje konkretny wymiar i nazwę przedziału ("Jak moneta" do 3 cm, "Jak dłoń" 3-10, "Jak
+książka" 10-25, "Pudełko po butach" 25-40, "Większe" powyżej 40). Wgranie pliku ustawia suwak
+na oryginale i daje znacznik powrotu jednym kliknięciem. Suwak **realnie skaluje geometrię**;
+cena liczy się z przeskalowanego modelu, nie z etykiety.
+
+**Powyżej pola roboczego (30 x 32 x 32,5 cm, FDM) nie pokazujemy ceny.** Zamiast kwoty: przycisk
+"Zmniejsz do największej, która się mieści" i informacja, że przy dużych obiektach tniemy model
+na części i sklejamy po wydruku, ze szwem na krawędzi. Cena za rzecz, której nie da się wykonać
+w całości, byłaby obietnicą bez pokrycia.
+
+**Formaty wyrównane w górę:** pole modelu 3D w koszyku (`/order/`) przyjmuje teraz
+`.stl,.obj,.3mf,.step,.stp` (wcześniej samo `.stl`), formularz B2B dodatkowo `.svg,.ai,.dxf`,
+pole zdjęcia referencyjnego w sklepie `.heic,.heif`, a `.ai` przyjmują wszystkie pola wektorowe
+i serwer. Szybka wycena przyjmuje pełny zestaw modeli i wektorów; DXF, AI i PDF (bez parsera
+geometrii) idą jako załącznik do wyceny przez człowieka, co ekran mówi klientowi wprost.
+
 ### 6.1 Kalkulator MSLA (Print3DCalc - ścieżka MSLA)
 
 **Konfiguracja silnika (MSLA_CONFIG):**

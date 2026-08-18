@@ -32,7 +32,7 @@ const STLViewer = lazy(() => import("../calculators/STLViewer.jsx"));
 const ACCEPT_MESH = ".stl,.obj,.3mf,.step,.stp";
 
 /** Rysunki techniczne, ktore przyjmujemy jako zalacznik do zlecenia */
-const ACCEPT_VECTOR = ".svg,.dxf,.pdf";
+const ACCEPT_VECTOR = ".svg,.dxf,.ai,.pdf";
 
 /** Gorna granica miniatury trzymanej w koszyku, zeby nie przepelnic localStorage */
 const MAX_CART_THUMB_CHARS = 80_000;
@@ -44,7 +44,7 @@ const UI = {
     fileHint: "Kliknij lub przeciągnij plik STL, OBJ, 3MF lub STEP",
     unitsNote: "Pliki STL i OBJ nie zapisują jednostki. Przyjmujemy milimetry, sprawdź wymiary powyżej.",
     vector: "Projekt do wykonania",
-    vectorHint: "Kliknij lub przeciągnij plik SVG, DXF lub PDF",
+    vectorHint: "Kliknij lub przeciągnij plik SVG, DXF, AI lub PDF",
     vectorNote: "Rysunek nie zmienia ceny, wyznacza ją wybrane pole grawerowania. Trafia do warsztatu razem z zamówieniem.",
     describeLabel: "Opisz, co mamy wykonać",
     describeHint: "np. pierścionek zaręczynowy, szyna 2,5 mm, matowa powierzchnia, grawer wewnątrz, rozmiar 15",
@@ -106,7 +106,7 @@ const UI = {
     fileHint: "Click or drag an STL, OBJ, 3MF or STEP file",
     unitsNote: "STL and OBJ carry no unit. We read them as millimetres, please check the dimensions above.",
     vector: "Your artwork",
-    vectorHint: "Click or drag an SVG, DXF or PDF file",
+    vectorHint: "Click or drag an SVG, DXF, AI or PDF file",
     vectorNote: "The drawing does not change the price, the selected engraving area does. It travels to the workshop with the order.",
     describeLabel: "Describe what we are to make",
     describeHint: "e.g. engagement ring, 2.5 mm band, matte finish, inside engraving, size 15",
@@ -168,7 +168,7 @@ const UI = {
     fileHint: "STL-, OBJ-, 3MF- oder STEP-Datei klicken oder hierher ziehen",
     unitsNote: "STL und OBJ speichern keine Einheit. Wir lesen Millimeter, bitte prüfen Sie die Maße oben.",
     vector: "Ihre Vorlage",
-    vectorHint: "SVG-, DXF- oder PDF-Datei klicken oder hierher ziehen",
+    vectorHint: "SVG-, DXF-, AI- oder PDF-Datei klicken oder hierher ziehen",
     vectorNote: "Die Zeichnung ändert den Preis nicht, das gewählte Gravurfeld bestimmt ihn. Sie geht mit der Bestellung in die Werkstatt.",
     describeLabel: "Beschreiben Sie, was wir anfertigen sollen",
     describeHint: "z. B. Verlobungsring, Schiene 2,5 mm, matt, Innengravur, Größe 15",
