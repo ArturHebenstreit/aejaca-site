@@ -7,14 +7,14 @@
 // Cena pochodzi wylacznie z /api/price. Ten komponent jej nie liczy,
 // tylko pokazuje to, co odpowiedzial backend.
 
-import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense, Fragment } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingCart, Check, Loader2, AlertTriangle, ArrowRight } from "lucide-react";
 import { useCart } from "../../cart/CartContext.jsx";
 import { getService } from "../../data/orderCatalog.js";
 import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS } from "../../pricing/packaging.js";
-import { t, quantityBounds } from "../../pricing/config.js";
-import { TileGroup, StepSlider, QtyStepper, FileDrop, PersonalizationField, JobDescription, BlockedReasons } from "./ConfigControls.jsx";
+import { t, tierForQty, qtyForTier, qtyLimit, qtyOpenValue, QUANTITY_TIERS } from "../../pricing/config.js";
+import { TileGroup, StepSlider, QuantityStepper, FileDrop, PersonalizationField, JobDescription, BlockedReasons } from "./ConfigControls.jsx";
 import { useMoney } from "../../shop/money.js";
 import PrintabilityGate from "../calculators/PrintabilityGate.jsx";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
@@ -351,11 +351,23 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const tierKey = service.fields.some((f) => f.key === "quantityId")
     ? "quantityId"
     : service.fields.some((f) => f.key === "qtyId") ? "qtyId" : null;
-  const bounds = tierKey ? quantityBounds(params[tierKey]) : { min: 1, max: 999 };
-  // Gdy prog wskazuje dokladnie jedna sztuke, osobny licznik jest zbedny
-  // i wyglada jak druga, sprzeczna kontrolka o tej samej nazwie.
-  const showQtyStepper = bounds.min !== bounds.max;
-  const effectiveQty = Math.min(bounds.max, Math.max(bounds.min, qty));
+  // LICZBA SZTUK JEST ZRODLEM PRAWDY, prog nakladu z niej wynika. Odwrotny
+  // kierunek dawal formularz, ktory sam sobie zmienia liczbe: klient przesuwal
+  // suwak na przedzial 2-10, a licznik siadal na dwoch sztukach, ktorych nikt
+  // nie zamawial. Licznik stoi teraz zawsze, takze przy jednej sztuce.
+  const tierField = tierKey ? service.fields.find((f) => f.key === tierKey) : null;
+  const tiers = tierField?.options || QUANTITY_TIERS;
+  const qtyMax = qtyLimit(tiers);
+  const qtyOpen = qtyOpenValue(tiers);
+  const effectiveQty = qty;
+
+  // Jedno wejscie na zmiane liczby sztuk, zeby prog nie mogl sie z nia rozjechac.
+  // Robimy to funkcja, a nie efektem: efekt ustawiajacy stan z innego stanu to
+  // dodatkowy przebieg renderowania i klasa bledu, ktora ta karta juz raz miala.
+  const changeQty = (n) => {
+    setQty(n);
+    if (tierKey) setParams((p) => ({ ...p, [tierKey]: tierForQty(n, tiers).id }));
+  };
   const lineTotal = unitTotal * effectiveQty;
 
   // Pozycja w koszyku ma byc gotowa do kupienia, a nie do dopytania mailem.
@@ -412,9 +424,14 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   // Zmiana podloza czysci pola, ktore od niego zaleza. Bez tego po przelaczeniu
   // z przedmiotu klienta na nasz material zostawalby wybor sposobu proby,
   // ktory przy naszym materiale nie ma sensu, a serwer i tak by go odrzucil.
-  const setParam = (key, val) => setParams((p) => (
-    key === "podloze" ? { ...p, podloze: val, spare: "", materialNote: "" } : { ...p, [key]: val }
-  ));
+  const setParam = (key, val) => {
+    // Suwak nakladu mowi "chce co najmniej tyle", wiec ustawia licznik na dolna
+    // granice przedzialu. To jedyny kierunek, w ktorym prog dotyka liczby.
+    if (key === tierKey) setQty(qtyForTier(val, tiers));
+    setParams((p) => (
+      key === "podloze" ? { ...p, podloze: val, spare: "", materialNote: "" } : { ...p, [key]: val }
+    ));
+  };
 
   function resetFile() {
     setFile(null);
@@ -652,6 +669,22 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
 
       {visibleFields.map((f) => {
         const options = f.optionsFrom ? f.optionsFrom(params) : f.options;
+        // Licznik sztuk stoi TUZ POD progiem nakladu, bo to jedna decyzja
+        // pokazana dwoma kontrolkami. Rozdzielone przez pol formularza
+        // wygladaly jak dwa niezalezne pola o tym samym znaczeniu.
+        const licznik = f.key === tierKey ? (
+          <QuantityStepper
+            key={`${f.key}-licznik`}
+            label={u.qty}
+            value={qty}
+            onChange={changeQty}
+            min={1}
+            max={qtyMax}
+            openValue={qtyOpen}
+            lang={lang}
+            accent={accent}
+          />
+        ) : null;
         if (f.multi) {
           return (
             <div key={f.key} className="mb-6">
@@ -684,28 +717,32 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
         }
         if (SLIDER_FIELDS.has(f.key) && options.length >= 3 && options.length <= 7) {
           return (
-            <StepSlider
-              key={f.key}
+            <Fragment key={f.key}>
+              <StepSlider
+                label={t(f.label, lang)}
+                options={options}
+                value={params[f.key]}
+                onChange={(v) => setParam(f.key, v)}
+                lang={lang}
+                accent={accent}
+              />
+              {licznik}
+            </Fragment>
+          );
+        }
+        return (
+          <Fragment key={f.key}>
+            <TileGroup
               label={t(f.label, lang)}
               options={options}
               value={params[f.key]}
               onChange={(v) => setParam(f.key, v)}
               lang={lang}
               accent={accent}
+              columns={options.length > 8 ? 4 : 3}
             />
-          );
-        }
-        return (
-          <TileGroup
-            key={f.key}
-            label={t(f.label, lang)}
-            options={options}
-            value={params[f.key]}
-            onChange={(v) => setParam(f.key, v)}
-            lang={lang}
-            accent={accent}
-            columns={options.length > 8 ? 4 : 3}
-          />
+            {licznik}
+          </Fragment>
         );
       })}
 
@@ -810,16 +847,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
         </>
       )}
 
-      {showQtyStepper && (
-      <QtyStepper
-        label={bounds.min > 1 ? `${u.qty} (${u.tierRange} ${bounds.min}-${bounds.max})` : u.qty}
-        value={effectiveQty}
-        onChange={setQty}
-        min={bounds.min}
-        max={bounds.max}
-        accent={accent}
-      />
-      )}
+
 
       {/* Cena */}
       <div className="border-t border-white/10 pt-5">

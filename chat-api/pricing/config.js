@@ -29,7 +29,7 @@ export const QUANTITY_TIERS = [
   { id: "small",  label: { pl: "11-20 szt.", en: "11-20 pcs", de: "11-20 Stk." }, qty: 15, discount: 0.10, min: 11, max: 20 },
   { id: "medium", label: { pl: "21-50 szt.", en: "21-50 pcs", de: "21-50 Stk." }, qty: 35, discount: 0.15, min: 21, max: 50 },
   { id: "large",  label: { pl: "51-100 szt.", en: "51-100 pcs", de: "51-100 Stk." }, qty: null, discount: null, custom: true, min: 51, max: 100 },
-  { id: "custom", label: { pl: "100+ / niestandardowe", en: "100+ / custom", de: "100+ / individuell" }, qty: null, discount: null, custom: true, min: 100, max: 999 },
+  { id: "custom", label: { pl: "100+ / niestandardowe", en: "100+ / custom", de: "100+ / individuell" }, qty: null, discount: null, custom: true, min: 101, max: 9999 },
 ];
 
 /**
@@ -51,6 +51,79 @@ export function quantityBounds(quantityId) {
   if (/^\d+$/.test(id)) return { min: Number(id), max: Number(id) };
 
   return { min: 1, max: 999 };
+}
+
+// ============================================================
+// LICZBA SZTUK RZADZI, PROG NAKLADU ZA NIA PODAZA
+// ============================================================
+// Wczesniej bylo odwrotnie: klient przesuwal suwak nakladu, a licznik sztuk
+// przeskakiwal na dolna granice przedzialu. Wygladalo to jak zycie wlasne
+// formularza, bo nikt nie prosil o dwie sztuki, tylko o przedzial 2-10.
+//
+// Zrodlem prawdy jest teraz LICZBA SZTUK. Prog wynika z niej, a nie odwrotnie,
+// wiec obie kontrolki nigdy nie moga pokazac sprzecznych rzeczy. Suwak dalej
+// dziala: ustawia licznik na dolna granice wybranego przedzialu, czyli mowi
+// "chce co najmniej tyle".
+//
+// Ostatni prog na liscie jest progiem OTWARTYM: nie ma gornej granicy, ktora
+// dalibysmy z automatu, wiec zamiast liczby pokazujemy nieskonczonosc i
+// kierujemy zlecenie do wyceny. Dziala tak samo dla progow studia
+// (1, 2-10, ..., 51-100, 100+) i jubilerskich (1, 2-5, 6-10, 10+).
+
+/** Ostatni prog listy, czyli ten bez gornej granicy */
+export function openTier(tiers = QUANTITY_TIERS) {
+  return tiers[tiers.length - 1];
+}
+
+/**
+ * Najwieksza liczba sztuk, ktora umiemy wycenic z automatu.
+ * To gorna granica progu SASIADUJACEGO z progiem otwartym, a nie ostatniego
+ * progu z rabatem: 51-100 idzie do wyceny recznej, ale nadal jest liczba sztuk.
+ */
+export function qtyLimit(tiers = QUANTITY_TIERS) {
+  const przedostatni = tiers[tiers.length - 2];
+  return przedostatni ? quantityBounds(przedostatni.id).max : 1;
+}
+
+/** Liczba oznaczajaca "wiecej niz umiemy policzyc", pokazywana jako nieskonczonosc */
+export function qtyOpenValue(tiers = QUANTITY_TIERS) {
+  return qtyLimit(tiers) + 1;
+}
+
+/** Czy ta liczba sztuk wpada juz w prog otwarty */
+export function isOpenQty(qty, tiers = QUANTITY_TIERS) {
+  return Number(qty) > qtyLimit(tiers);
+}
+
+/**
+ * Najmniejsza liczba sztuk, ktora nalezy do danego progu.
+ *
+ * To nie zawsze jest `quantityBounds(id).min`. Progi jubilerskie zachodza na
+ * siebie ("6-10" i "10+" obejmuja dziesiec sztuk), a dziesiatka nalezy do progu
+ * z rabatem. Wybranie progu "10+" musi wiec ustawic jedenascie, inaczej suwak
+ * wracalby na sasiedni przedzial zaraz po tym, jak klient go przesunal.
+ */
+export function qtyForTier(tierId, tiers = QUANTITY_TIERS) {
+  const dol = quantityBounds(tierId).min;
+  return openTier(tiers).id === tierId ? Math.max(dol, qtyOpenValue(tiers)) : dol;
+}
+
+/**
+ * Prog nakladu dla danej liczby sztuk.
+ *
+ * Najpierw szukamy progu, ktory te liczbe ZAWIERA, i dopiero potem schodzimy
+ * do progu otwartego. Progi jubilerskie zachodza na siebie ("6-10" i "10+"
+ * obejmuja dziesiec sztuk), a bez tej kolejnosci dziesiata sztuka wypadalaby
+ * do wyceny recznej, chociaz ma swoj rabat.
+ */
+export function tierForQty(qty, tiers = QUANTITY_TIERS) {
+  const n = Math.max(1, Math.floor(Number(qty) || 1));
+  const zawiera = tiers.find((tier) => {
+    const b = quantityBounds(tier.id);
+    return n >= b.min && n <= b.max;
+  });
+  if (zawiera) return zawiera;
+  return n > 1 ? openTier(tiers) : tiers[0];
 }
 
 // Wybor podloza przy uslugach laserowych (przedmiot klienta, material klienta,

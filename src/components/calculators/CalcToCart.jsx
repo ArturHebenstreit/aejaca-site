@@ -190,7 +190,7 @@ const money = (g) => `${(g / 100).toFixed(2).replace(".", ",")} PLN`;
  * @param {number[][][]} [props.triangles] siatka wgranego modelu, jesli kalkulator
  *        juz ja odczytal. Sluzy wylacznie do zrobienia miniatury dla koszyka.
  */
-export default function CalcToCart({ calculator, serviceId, params, file = null, triangles = null, scale = 1, lang, accent = "blue", blocked = false, blockedReason = "vector", onBinding = null, hold = false }) {
+export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp = null, file = null, triangles = null, scale = 1, lang, accent = "blue", blocked = false, blockedReason = "vector", onBinding = null, hold = false }) {
   const u = UI[lang] || UI.en;
   const cart = useCart();
   const card = getServiceCard(serviceId);
@@ -386,7 +386,10 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
   // wcale, tu cena jest policzona i widoczna, brakuje tylko potwierdzenia.
   const ready = descriptionOk && artworkOk && engravingOk && substrateOk && !gatedShape && !hold && !modelError;
 
-  const qty = price?.qty || 1;
+  // Licznik z kalkulatora ma pierwszenstwo przed nakladem reprezentatywnym
+  // progu. `price.qty` to srodek przedzialu, na ktorym opiera sie rabat, wiec
+  // klient proszacy o trzy sztuki dostawal do koszyka szesc.
+  const qty = qtyProp != null ? Math.max(1, Math.floor(qtyProp)) : (price?.qty || 1);
   const lineGrosze = (price?.unitGrosze || 0) * qty;
 
   function addToCart() {

@@ -840,6 +840,13 @@ Co idzie sciezka wyceny indywidualnej (formularz kontaktowy, odpowiedz zwykle w 
 - projekty CAD wymagajace doprecyzowania,
 - konfiguracje, ktore kalkulator oznacza jako niestandardowe (rozmiar XL, nietypowy naklad).
 
+Liczba sztuk: klient wpisuje ja wprost licznikiem (przyciski minus i plus) na kazdej
+drodze zamowienia, a prog nakladu z rabatem wynika z tej liczby, a nie odwrotnie.
+Studio liczy od 1 do 100 sztuk, powyzej stu jest jeden stan otwarty (pokazywany jako
+nieskonczonosc) i takie zlecenie idzie do wyceny indywidualnej. Bizuteria liczy do 10
+sztuk, powyzej dziesieciu tak samo do wyceny. Rabaty progow studia: 2-10 szt. 5%,
+11-20 szt. 10%, 21-50 szt. 15%, od 51 szt. wycena indywidualna.
+
 Prawo odstapienia: przy zamowieniu w kreatorze klient sklada ODREBNE oswiadczenie
 (osobny checkbox, nie schowany w akceptacji regulaminu), ze zamawia rzecz wykonywana
 wedlug jego specyfikacji i traci prawo odstapienia po rozpoczeciu wykonania (art. 38 UPK).

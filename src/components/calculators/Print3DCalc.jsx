@@ -4,6 +4,8 @@
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { Upload, X, AlertTriangle } from "lucide-react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture, LicenseNotice } from "./calcShared.jsx";
+import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
+import { QuantityStepper } from "../shop/ConfigControls.jsx";
 import CalcToCart from "./CalcToCart.jsx";
 import PrintabilityGate from "./PrintabilityGate.jsx";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
@@ -238,6 +240,7 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
 
 const TECH_LABEL = { pl: "Druk 3D", en: "3D Print", de: "3D-Druck" };
 const TECH_LABEL_MSLA = { pl: "Druk żywiczny MSLA", en: "MSLA Resin Print", de: "MSLA-Harzdruck" };
+const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stueckzahl" };
 
 export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
   const l = LBL[lang] || LBL.en;
@@ -256,7 +259,10 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
   const [infillId, setInfillId] = useState("low");
   const [colorId, setColorId] = useState(1);
   const [precisionId, setPrecisionId] = useState("standard_04");
-  const [quantityId, setQuantityId] = useState("proto");
+  // Liczba sztuk rzadzi, prog wynika z niej (tierForQty), zeby chipsy i
+  // licznik nigdy nie pokazaly sprzecznych wartosci.
+  const [fdmQty, setFdmQty] = useState(1);
+  const quantityId = tierForQty(fdmQty, QUANTITY_TIERS).id;
   const [stlData, setStlData] = useState(null);
   const [stlFile, setStlFile] = useState(null);
   const [stlFileName, setStlFileName] = useState("");
@@ -269,7 +275,8 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
   const [resinColor, setResinColor] = useState("");
   const [layerId, setLayerId] = useState("standard");
   const [mslaSizeId, setMslaSizeId] = useState("S");
-  const [mslaQuantityId, setMslaQuantityId] = useState("proto");
+  const [mslaQty, setMslaQty] = useState(1);
+  const mslaQuantityId = tierForQty(mslaQty, QUANTITY_TIERS).id;
   const [mslaStlData, setMslaStlData] = useState(null);
   const [mslaStlFile, setMslaStlFile] = useState(null);
   const [mslaStlFileName, setMslaStlFileName] = useState("");
@@ -447,7 +454,11 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
           {!mslaStlData && <Chips options={MSLA_SIZES} value={mslaSizeId} onChange={setMslaSizeId} lang={lang} />}
         </CalcCard>
 
-        <CalcCard stepNum="⑦" label={ml.qty}><Chips options={QUANTITY_TIERS} value={mslaQuantityId} onChange={setMslaQuantityId} lang={lang} /></CalcCard>
+        <CalcCard stepNum="⑦" label={ml.qty}>
+          <Chips options={QUANTITY_TIERS} value={mslaQuantityId} onChange={(id) => setMslaQty(qtyForTier(id, QUANTITY_TIERS))} lang={lang} />
+          <QuantityStepper label={t(QTY_STEPPER_LBL, lang)} value={mslaQty} onChange={setMslaQty}
+            min={1} max={qtyLimit(QUANTITY_TIERS)} openValue={qtyOpenValue(QUANTITY_TIERS)} lang={lang} accent="blue" />
+        </CalcCard>
 
         <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
           <ResultHeader lang={lang} binding={bindingGrosze != null} />
@@ -464,6 +475,7 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
             calculator="print3d_msla"
             serviceId="print_msla"
             params={{ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId, printability: mslaPrint }}
+            qty={mslaQty}
             file={mslaStlFile}
             triangles={mslaStlData?.triangles || null}
             scale={mslaStlScale}
@@ -502,7 +514,11 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
       <CalcCard stepNum="⑤" label={l.infill}><HeroCards options={INFILL_OPTIONS} value={infillId} onChange={setInfillId} lang={lang} cols="grid-cols-2 sm:grid-cols-4" minH={150} /></CalcCard>
       <CalcCard stepNum="⑥" label={l.colors}><Chips options={COLORS} value={colorId} onChange={setColorId} lang={lang} /></CalcCard>
       <CalcCard stepNum="⑦" label={l.precision}><Chips options={PRECISION} value={precisionId} onChange={setPrecisionId} lang={lang} /></CalcCard>
-      <CalcCard stepNum="⑧" label={l.qty}><Chips options={QUANTITY_TIERS} value={quantityId} onChange={setQuantityId} lang={lang} /></CalcCard>
+      <CalcCard stepNum="⑧" label={l.qty}>
+        <Chips options={QUANTITY_TIERS} value={quantityId} onChange={(id) => setFdmQty(qtyForTier(id, QUANTITY_TIERS))} lang={lang} />
+        <QuantityStepper label={t(QTY_STEPPER_LBL, lang)} value={fdmQty} onChange={setFdmQty}
+          min={1} max={qtyLimit(QUANTITY_TIERS)} openValue={qtyOpenValue(QUANTITY_TIERS)} lang={lang} accent="blue" />
+      </CalcCard>
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
@@ -529,6 +545,7 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
           calculator="print3d_fdm"
           serviceId="print_fdm"
           params={{ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, printability: fdmPrint }}
+          qty={fdmQty}
           file={stlFile}
           triangles={stlData?.triangles || null}
           scale={stlScale}

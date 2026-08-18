@@ -20,10 +20,11 @@ import CustomerFields, { ValidatedField as Field } from "../components/shop/Cust
 import { validateCustomer } from "../shop/customerFields.js";
 import { SERVICES, GROUPS, getService, DELIVERY_METHODS } from "../data/orderCatalog.js";
 import { shippingOptions, shippingGrosze, needsCustoms, SHIPPING_COUNTRIES, leadDaysLabel } from "../pricing/shipping.js";
-import { t } from "../pricing/config.js";
+import { t, tierForQty, qtyForTier, qtyLimit, qtyOpenValue, QUANTITY_TIERS } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
 import { wymagaPrzesylki, inboundOptionsFor } from "../data/inboundDelivery.js";
 import { SPARE_LABEL, spareOptionsFor, brakPodloza } from "../data/laserSubstrate.js";
+import { QuantityStepper } from "../components/shop/ConfigControls.jsx";
 
 // Ten sam prog co w koszyku i na serwerze. Rozjazd znaczylby, ze formularz
 // przepuszcza opis, ktory kasa odrzuci, czyli blad przy platnosci.
@@ -63,6 +64,7 @@ const UI = {
     perPc: "za sztukę",
     total: "Razem",
     pcs: "szt.",
+    qty: "Liczba sztuk",
     prodTime: "Szacowany czas produkcji",
     priceNote: "Cena zawiera materiał, pracę i przygotowanie. Obowiązuje 7 dni.",
     yourData: "Twoje dane",
@@ -132,6 +134,7 @@ const UI = {
     perPc: "per piece",
     total: "Total",
     pcs: "pcs",
+    qty: "Quantity",
     prodTime: "Estimated production time",
     priceNote: "Includes material, labour and setup. Valid for 7 days.",
     yourData: "Your details",
@@ -201,6 +204,7 @@ const UI = {
     perPc: "pro Stück",
     total: "Gesamt",
     pcs: "Stk.",
+    qty: "Stueckzahl",
     prodTime: "Geschätzte Produktionszeit",
     priceNote: "Enthält Material, Arbeit und Einrichtung. 7 Tage gültig.",
     yourData: "Ihre Daten",
@@ -358,6 +362,9 @@ export default function Order() {
   const [step, setStep] = useState(0);
   const [serviceId, setServiceId] = useState(null);
   const [params, setParams] = useState({});
+  // Liczba sztuk jest zrodlem prawdy, prog nakladu z niej wynika. Ta sama
+  // regula co na karcie uslugi, liczona tym samym kodem z `pricing/config.js`.
+  const [qty, setQty] = useState(1);
   const [file, setFile] = useState(null);
   // Opis zlecenia i deklaracja dostarczenia. Obu tu nie bylo, a serwer obu
   // wymaga, wiec KAZDE zamowienie z tej strony konczylo sie bledem 400.
@@ -382,6 +389,11 @@ export default function Order() {
 
   const fileRef = useRef(null);
   const service = getService(serviceId);
+  // Prog nakladu nazywa sie inaczej w studiu (quantityId) niz w bizuterii (qtyId).
+  const tierKey = service?.fields.some((f) => f.key === "quantityId")
+    ? "quantityId"
+    : service?.fields.some((f) => f.key === "qtyId") ? "qtyId" : null;
+  const tiers = (tierKey && service.fields.find((f) => f.key === tierKey)?.options) || QUANTITY_TIERS;
   // Metody i ceny zaleza od kraju: paczkomat dziala tylko w Polsce.
   const options = shippingOptions(country);
   const deliveryMeta = DELIVERY_METHODS.find((d) => d.id === deliveryId) || DELIVERY_METHODS[0];
@@ -405,7 +417,12 @@ export default function Order() {
     setParams((p) => (
       key === "podloze" ? { ...p, podloze: val, spare: "", materialNote: "" } : { ...p, [key]: val }
     ));
-  }, []);
+    // Prog nakladu mowi "chce co najmniej tyle", wiec ustawia licznik na dolna
+    // granice przedzialu. To jedyny kierunek, w ktorym prog dotyka liczby.
+    if (key === "quantityId" || key === "qtyId") setQty(qtyForTier(val, tiers));
+    // `tiers` jest stale dla danej uslugi (katalog oddaje ten sam obiekt),
+    // wiec ta zaleznosc nie powoduje przeliczania przy kazdym renderowaniu.
+  }, [tiers]);
 
   /** Wycena zawsze po stronie serwera, nawet dla konfiguracji bez pliku */
   const fetchPrice = useCallback(async () => {
@@ -444,6 +461,7 @@ export default function Order() {
   function pickService(s) {
     setServiceId(s.id);
     setParams({ ...s.defaults });
+    setQty(1);
     setFile(null);
     setGeometry(null);
     setScale(1);
@@ -459,7 +477,10 @@ export default function Order() {
     setPrice(null);
   }
 
-  const totalGrosze = price ? price.lineGrosze + delivery.grosze : 0;
+  // Kwota do zaplaty liczy sie z licznika sztuk, bo to jego wysylamy w
+  // zamowieniu. `price.lineGrosze` niesie naklad reprezentatywny progu i byloby
+  // to podsumowanie innego zamowienia niz to skladane.
+  const totalGrosze = price ? price.unitGrosze * qty + delivery.grosze : 0;
 
   const [triedToSubmit, setTriedToSubmit] = useState(false);
   const customerErrors = validateCustomer(customer);
@@ -519,6 +540,7 @@ export default function Order() {
             geometry,
             scale,
             fileName: file?.name || null,
+            qty,
           }],
           customer,
           delivery: {
@@ -704,6 +726,21 @@ export default function Order() {
                   <OptionRow key={f.key} field={f} value={params} onChange={setParam} lang={lang} />
                 ))}
 
+              {tierKey && (
+                <QuantityStepper
+                  label={u.qty}
+                  value={qty}
+                  onChange={(n) => {
+                    setQty(n);
+                    setParams((p) => ({ ...p, [tierKey]: tierForQty(n, tiers).id }));
+                  }}
+                  min={1}
+                  max={qtyLimit(tiers)}
+                  openValue={qtyOpenValue(tiers)}
+                  lang={lang}
+                />
+              )}
+
               {/* Sztuka na proby albo nazwa materialu, zaleznie od podloza.
                   Samo podloze renderuje `OptionRow` wyzej razem z reszta
                   parametrow, bo siedzi w katalogu uslug. */}
@@ -798,12 +835,16 @@ export default function Order() {
                     </div>
                     <div className="text-neutral-500 text-xs mt-1">{u.perPc}</div>
 
-                    {price.qty > 1 && (
+                    {/* Razem liczy sie z LICZNIKA, nie z progu. Prog niesie tylko
+                        rabat, a jego reprezentatywny naklad to inna liczba niz
+                        ta, ktora klient wpisal, wiec pokazanie jej tutaj znaczylo
+                        podsumowanie niezgodne z rachunkiem. */}
+                    {qty > 1 && (
                       <div className="mt-4 pt-4 border-t border-white/5">
                         <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-1">
-                          {u.total}: {price.qty} {u.pcs}
+                          {u.total}: {qty} {u.pcs}
                         </div>
-                        <div className="text-2xl font-bold text-blue-400">{money(price.lineGrosze)}</div>
+                        <div className="text-2xl font-bold text-blue-400">{money(price.unitGrosze * qty)}</div>
                       </div>
                     )}
 
@@ -982,8 +1023,8 @@ export default function Order() {
               <h2 className="text-white font-semibold mb-4">{u.summary}</h2>
               <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 mb-6 text-sm">
                 <div className="flex justify-between mb-2">
-                  <span className="text-neutral-400">{price.title} × {price.qty}</span>
-                  <span className="text-white">{money(price.lineGrosze)}</span>
+                  <span className="text-neutral-400">{price.title} × {qty}</span>
+                  <span className="text-white">{money(price.unitGrosze * qty)}</span>
                 </div>
                 <div className="flex justify-between mb-3 pb-3 border-b border-white/5">
                   <span className="text-neutral-400">{u.shipping}: {t(delivery.label, lang)}</span>
