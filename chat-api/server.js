@@ -19,6 +19,7 @@ import {
 } from "./autopay.js";
 import { packagingGrosze, sanitizePersonalization } from "./pricing/packaging.js";
 import { inboundAllowed, wymagaPrzesylki } from "./pricing/inboundDelivery.js";
+import { brakPodloza } from "./pricing/laserSubstrate.js";
 import { validateCustomer, normalizePhone } from "./pricing/customerFields.js";
 import { eurCentsFromGrosze } from "./pricing/currency.js";
 import { shippingGrosze as shippingCost, needsCustoms, zoneForCountry } from "./pricing/shipping.js";
@@ -1965,6 +1966,29 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
           error: "Zlecenie na usluge wymaga opisu tego, co mamy wykonac (min. "
             + MIN_JOB_DESCRIPTION + " znakow).",
           code: "description_required",
+        });
+      }
+
+      // PODLOZE USLUGI LASEROWEJ.
+      //
+      // Grawer na przedmiocie klienta, na jego materiale i na naszym materiale
+      // to trzy rozne zlecenia, kazde z innym obowiazkiem po stronie klienta:
+      // przyslanie rzeczy, sztuka na proby albo nazwa materialu. Formularz
+      // pilnuje tego przy dodawaniu do koszyka, ale formularz da sie ominac,
+      // a pozycje sprzed zmiany leza w koszykach w `localStorage`.
+      //
+      // Regule liczy `brakPodloza` z lustra `src/data`, a nie wlasna kopia:
+      // dwie kopie rozjechalyby sie przy pierwszej zmianie, a objawem bylby
+      // blad dopiero przy platnosci.
+      const brakPodl = brakPodloza({ calculator: raw.calculator, params: raw.params });
+      if (brakPodl) {
+        return res.status(400).json({
+          error: {
+            substrate_required: "Wybierz, na czym mamy pracowac: na Twoim przedmiocie, na Twoim materiale czy na naszym.",
+            spare_required: "Przy materiale powierzonym potrzebujemy sztuki na proby albo deklaracji, ze przedmiot jest niepowtarzalny.",
+            material_note_required: "Napisz, na jakim konkretnie materiale mamy wykonac usluge.",
+          }[brakPodl] || "Zlecenie laserowe jest niekompletne.",
+          code: brakPodl,
         });
       }
 

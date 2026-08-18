@@ -19,6 +19,7 @@ import { useMoney } from "../../shop/money.js";
 import PrintabilityGate from "../calculators/PrintabilityGate.jsx";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
 import MaterialNotice from "../MaterialNotice.jsx";
+import { SPARE_LABEL, spareOptionsFor, brakPodloza } from "../../data/laserSubstrate.js";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
 
@@ -61,6 +62,14 @@ const UI = {
     needDescriptionHint: "Wpisz co najmniej 20 znaków w polu \u201eOpisz, co mamy wykonać\u201d powyżej.",
     needArtwork: "Projekt do wykonania",
     needArtworkHint: "Wgraj plik SVG, DXF lub PDF w polu \u201eProjekt do wykonania\u201d powyżej albo opisz zlecenie.",
+    needSubstrate: "Podłoże usługi",
+    needSubstrateHint: "Wybierz, na czym pracujemy: na Twoim przedmiocie, na Twoim materiale czy na naszym.",
+    needSpare: "Sztuka na próby",
+    needSpareHint: "Przy materiale powierzonym potrzebujemy sztuki ponad zamówienie albo deklaracji, że przedmiot jest niepowtarzalny.",
+    needMaterialNote: "Materiał do wykonania usługi",
+    materialNoteLabel: "Na jakim materiale",
+    materialNotePlaceholder: "Np. sklejka brzozowa 4 mm, akryl bezbarwny 3 mm",
+    materialNoteHint: "Napisz konkretnie, z czego mamy wykonać. \u201eCoś z drewna\u201d znaczy wymianę maili, zanim cokolwiek zaczniemy.",
     needEngraving: "Treść graweru",
     needEngravingHint: "Wybrałeś grawer, więc wpisz, co ma zostać wygrawerowane.",
     toQuote: "Wyślij do wyceny",
@@ -112,6 +121,14 @@ const UI = {
     needDescriptionHint: "Type at least 20 characters in \u201cDescribe what we are to make\u201d above.",
     needArtwork: "Your artwork",
     needArtworkHint: "Upload an SVG, DXF or PDF in the artwork field above, or describe the job.",
+    needSubstrate: "Service substrate",
+    needSubstrateHint: "Choose what we work on: your own item, your own material, or ours.",
+    needSpare: "Test piece",
+    needSpareHint: "With supplied material we need one piece beyond the order, or a declaration that the item is one of a kind.",
+    needMaterialNote: "Material for the job",
+    materialNoteLabel: "Which material",
+    materialNotePlaceholder: "E.g. 4 mm birch plywood, 3 mm clear acrylic",
+    materialNoteHint: "Be specific. \u201eSomething wooden\u201d means an exchange of emails before anything starts.",
     needEngraving: "Engraving text",
     needEngravingHint: "You chose an engraving, so tell us what to engrave.",
     toQuote: "Request a quote",
@@ -163,6 +180,14 @@ const UI = {
     needDescriptionHint: "Mindestens 20 Zeichen im Feld \u201eBeschreiben Sie, was wir anfertigen sollen\u201c oben.",
     needArtwork: "Ihre Vorlage",
     needArtworkHint: "Laden Sie oben eine SVG-, DXF- oder PDF-Datei hoch oder beschreiben Sie den Auftrag.",
+    needSubstrate: "Untergrund der Leistung",
+    needSubstrateHint: "Wählen Sie, worauf wir arbeiten: auf Ihrem Objekt, auf Ihrem Material oder auf unserem.",
+    needSpare: "Probestück",
+    needSpareHint: "Bei beigestelltem Material brauchen wir ein Stück ueber die Bestellung hinaus oder die Erklaerung, dass das Objekt einzigartig ist.",
+    needMaterialNote: "Material für den Auftrag",
+    materialNoteLabel: "Welches Material",
+    materialNotePlaceholder: "Z. B. Birkensperrholz 4 mm, Acryl klar 3 mm",
+    materialNoteHint: "Bitte konkret. \u201eIrgendwas aus Holz\u201d bedeutet einen Mailwechsel, bevor wir anfangen.",
     needEngraving: "Gravurtext",
     needEngravingHint: "Sie haben eine Gravur gewählt, bitte geben Sie den Text an.",
     toQuote: "Angebot anfordern",
@@ -363,9 +388,20 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   // jak brakujacy opis albo brakujacy rysunek: cena jest policzona, brakuje
   // tylko potwierdzenia od klienta.
   const printHold = Boolean(printability?.blocked && !printability?.accepted);
-  const ready = descriptionOk && artworkOk && jewelryEngravingOk && packEngravingOk && !needsHumanQuote && !printHold;
+  // PODLOZE USLUGI LASEROWEJ. Ta sama regula co w kalkulatorze i na serwerze,
+  // liczona tym samym kodem: karta uslugi w sklepie to druga rownolegla droga
+  // do tego samego zlecenia, a straznik postawiony na jednej sciezce nie
+  // pilnuje pozostalych.
+  const substrateGap = brakPodloza({ calculator: service.calculator, params });
 
-  const setParam = (key, val) => setParams((p) => ({ ...p, [key]: val }));
+  const ready = descriptionOk && artworkOk && jewelryEngravingOk && packEngravingOk && !substrateGap && !needsHumanQuote && !printHold;
+
+  // Zmiana podloza czysci pola, ktore od niego zaleza. Bez tego po przelaczeniu
+  // z przedmiotu klienta na nasz material zostawalby wybor sposobu proby,
+  // ktory przy naszym materiale nie ma sensu, a serwer i tak by go odrzucil.
+  const setParam = (key, val) => setParams((p) => (
+    key === "podloze" ? { ...p, podloze: val, spare: "", materialNote: "" } : { ...p, [key]: val }
+  ));
 
   function resetFile() {
     setFile(null);
@@ -645,6 +681,36 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
         );
       })}
 
+      {/* Sztuka na proby albo nazwa materialu, zaleznie od wybranego podloza.
+          Pole `podloze` renderuje sie wyzej razem z reszta parametrow uslugi,
+          bo siedzi w katalogu; te dwa zaleza od jego wartosci, wiec stoja tu. */}
+      {spareOptionsFor(params.podloze).length > 0 && (
+        <TileGroup
+          label={t(SPARE_LABEL, lang)}
+          options={spareOptionsFor(params.podloze)}
+          value={params.spare || ""}
+          onChange={(v) => setParams((p) => ({ ...p, spare: v }))}
+          lang={lang}
+          accent={accent}
+          columns={2}
+        />
+      )}
+
+      {params.podloze === "our_stock" && (
+        <div className="mb-6">
+          <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">{u.materialNoteLabel}</div>
+          <input
+            type="text"
+            value={params.materialNote || ""}
+            onChange={(e) => setParams((p) => ({ ...p, materialNote: e.target.value }))}
+            placeholder={u.materialNotePlaceholder}
+            className="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white
+                       placeholder:text-neutral-600 focus:outline-none focus:border-blue-400/60"
+          />
+          <p className="text-neutral-500 text-[11px] mt-1.5">{u.materialNoteHint}</p>
+        </div>
+      )}
+
       {service.requiresDescription && (
         <JobDescription
           label={u.describeLabel}
@@ -807,6 +873,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
                     ? [{ ok: descriptionOk, label: u.needDescription, hint: u.needDescriptionHint }] : []),
                   ...(service.requiresVector
                     ? [{ ok: artworkOk, label: u.needArtwork, hint: u.needArtworkHint }] : []),
+                ...(substrateGap === "substrate_required" ? [{ ok: false, label: u.needSubstrate, hint: u.needSubstrateHint }] : []),
+                ...(substrateGap === "spare_required" ? [{ ok: false, label: u.needSpare, hint: u.needSpareHint }] : []),
+                ...(substrateGap === "material_note_required" ? [{ ok: false, label: u.needMaterialNote, hint: u.materialNoteHint }] : []),
                   ...(wantsEngraving || pack?.personalizable
                     ? [{ ok: jewelryEngravingOk && packEngravingOk, label: u.needEngraving, hint: u.needEngravingHint }] : []),
                 ]}

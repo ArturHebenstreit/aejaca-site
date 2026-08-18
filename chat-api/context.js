@@ -137,6 +137,16 @@ Full picker, parameter cards and a 13-resin comparison table: [3D Print Settings
 **Figurine/miniature licensing rule (shown as a notice in the calculator and required as a consent checkbox before sending an inquiry):** AEJaCA only prints (a) the client's own design, (b) a file under a valid commercial license (e.g. a merchant-tier Patreon release), or (c) AEJaCA's own designs. Miniatures from protected tabletop wargame systems or other copyrighted IP are NOT printed without the client holding the license. If a user asks to print a specific commercial miniature line, remind them of this rule before quoting.
 **Output:** per-piece price + total + estimated production time; detail from ~0.2 mm
 
+### Laser substrate rule (CO2 and fiber, ALL order paths)
+Every laser order must declare **what we work on**. Three choices, and they are exclusive:
+- **On the client's own item** (plates, a board, a watch, jewelry): "our material" is NOT offered at all, because there is no material to supply. The client must declare how the item reaches AEJaCA (Poland: InPost locker or in person; abroad: courier only).
+- **On the client's own material** (sheet, panel, strip): same delivery declaration.
+- **On AEJaCA material**: the client must state exactly which material the job should use. Nothing is shipped to us.
+
+**Test piece (required whenever the client sends anything).** Laser power, speed and pass count are set by trial on the same substrate, so the client sends one unit beyond the order: five plates to engrave means six plates in the parcel, the sixth for parameter tests. When the item is one of a kind (an heirloom ring, a keepsake) there is no sixth piece: the client instead declares the item is unique and accepts a test in a hidden spot (underside or edge). That exception exists only for the client's own ITEM, never for material in sheets.
+
+When asked "can you engrave on my own thing": yes, and explain the test piece up front, it is the part people do not expect.
+
 ### CO2 Laser Calculator
 **Two modes:** Engraving (raster) | Cutting (vector)
 **Engraving materials:** Wood · Plywood · Acrylic · Glass · Leather · Paper/cardboard · Fabric · Rubber/stamps · Stone/slate · Other

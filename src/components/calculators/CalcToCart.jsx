@@ -18,6 +18,7 @@ import { getServiceCard } from "../../data/serviceCatalog.js";
 import { JobDescription, FileDrop, BlockedReasons } from "../shop/ConfigControls.jsx";
 import { getService } from "../../data/orderCatalog.js";
 import { ENGRAVING_LIMITS } from "../../pricing/packaging.js";
+import { brakPodloza } from "../../data/laserSubstrate.js";
 import { PersonalizationField } from "../shop/ConfigControls.jsx";
 import SaveQuote from "./SaveQuote.jsx";
 import { t } from "../../pricing/config.js";
@@ -55,6 +56,13 @@ const UI = {
     artworkWhy: "Bez projektu nie wiemy, co wygrawerować ani wyciąć. Rozmiar pola wybrałeś wyżej, on decyduje o cenie.",
     missingDescription: "Uzupełnij opis, żeby dodać do koszyka",
     missingArtwork: "Wgraj projekt, żeby dodać do koszyka",
+    missingSubstrate: "Uzupełnij podłoże, żeby dodać do koszyka",
+    needSubstrate: "Podłoże usługi",
+    needSubstrateHint: "Wybierz, na czym pracujemy, wyżej w kalkulatorze.",
+    needSpare: "Sztuka na próby",
+    needSpareHint: "Wybierz sposób próby przy podłożu klienta, wyżej w kalkulatorze.",
+    needMaterialNote: "Materiał do wykonania usługi",
+    needMaterialNoteHint: "Napisz, na jakim materiale mamy wykonać usługę, wyżej w kalkulatorze.",
     engravingLabel: "Treść graweru",
     engravingPlaceholder: "np. A + M, 12.06.2026",
     engravingHint: "Grawer wykonujemy dokładnie tak, jak wpiszesz. Sprawdź pisownię.",
@@ -93,6 +101,13 @@ const UI = {
     artworkWhy: "Without the artwork we do not know what to engrave or cut. You picked the area above, and that is what sets the price.",
     missingDescription: "Add a description to put this in the cart",
     missingArtwork: "Upload the artwork to put this in the cart",
+    missingSubstrate: "Fill in the substrate to put this in the cart",
+    needSubstrate: "Service substrate",
+    needSubstrateHint: "Choose what we work on, above in the calculator.",
+    needSpare: "Test piece",
+    needSpareHint: "Choose how you provide a test piece, above in the calculator.",
+    needMaterialNote: "Material for the job",
+    needMaterialNoteHint: "Tell us which material we should use, above in the calculator.",
     engravingLabel: "Engraving text",
     engravingPlaceholder: "e.g. A + M, 12.06.2026",
     engravingHint: "We engrave exactly what you type. Please check the spelling.",
@@ -131,6 +146,13 @@ const UI = {
     artworkWhy: "Ohne Vorlage wissen wir nicht, was graviert oder geschnitten werden soll. Die Fläche haben Sie oben gewählt, sie bestimmt den Preis.",
     missingDescription: "Beschreibung ergänzen, um in den Warenkorb zu legen",
     missingArtwork: "Vorlage hochladen, um in den Warenkorb zu legen",
+    missingSubstrate: "Untergrund angeben, um in den Warenkorb zu legen",
+    needSubstrate: "Untergrund der Leistung",
+    needSubstrateHint: "Wählen Sie oben im Kalkulator, worauf wir arbeiten.",
+    needSpare: "Probestück",
+    needSpareHint: "Wählen Sie oben im Kalkulator, wie Sie ein Probestück bereitstellen.",
+    needMaterialNote: "Material für den Auftrag",
+    needMaterialNoteHint: "Sagen Sie uns oben im Kalkulator, welches Material wir verwenden sollen.",
     engravingLabel: "Gravurtext",
     engravingPlaceholder: "z. B. A + M, 12.06.2026",
     engravingHint: "Wir gravieren genau das, was Sie eingeben. Bitte Schreibweise prüfen.",
@@ -326,10 +348,16 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
   const engravingOver = wantsEngraving && engraving.trim().length > ENGRAVING_LIMITS.jewelry;
   const engravingOk = !wantsEngraving || (engraving.trim().length >= 1 && !engravingOver);
 
+  // Zabezpieczenie wspolne dla wszystkich kalkulatorow: gdyby ktorys
+  // zapomnial wlasnego sprawdzenia podloza, ta sama regula z laserSubstrate.js
+  // i tak zatrzyma dodanie do koszyka.
+  const substrateGap = brakPodloza({ calculator, params });
+  const substrateOk = !substrateGap;
+
   // `hold` wstrzymuje dodanie do koszyka, dopoki klient nie pokwituje
   // ujawnionej wady swojego pliku. Rozni sie od `blocked`: tam ceny nie ma
   // wcale, tu cena jest policzona i widoczna, brakuje tylko potwierdzenia.
-  const ready = descriptionOk && artworkOk && engravingOk && !gatedShape && !hold;
+  const ready = descriptionOk && artworkOk && engravingOk && substrateOk && !gatedShape && !hold;
 
   const qty = price?.qty || 1;
   const lineGrosze = (price?.unitGrosze || 0) * qty;
@@ -487,6 +515,9 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
                 ...(requiresDescription ? [{ ok: descriptionOk, label: u.needDescription, hint: u.needDescriptionHint }] : []),
                 ...(requiresArtwork ? [{ ok: artworkOk, label: u.needArtwork, hint: u.needArtworkHint }] : []),
                 ...(wantsEngraving ? [{ ok: engravingOk, label: u.needEngraving, hint: u.needEngravingHint }] : []),
+                ...(substrateGap === "substrate_required" ? [{ ok: false, label: u.needSubstrate, hint: u.needSubstrateHint }] : []),
+                ...(substrateGap === "spare_required" ? [{ ok: false, label: u.needSpare, hint: u.needSpareHint }] : []),
+                ...(substrateGap === "material_note_required" ? [{ ok: false, label: u.needMaterialNote, hint: u.needMaterialNoteHint }] : []),
               ]}
             />
           )}
