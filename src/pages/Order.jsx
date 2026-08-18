@@ -23,6 +23,7 @@ import { shippingOptions, shippingGrosze, needsCustoms, SHIPPING_COUNTRIES, lead
 import { t } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
 import { wymagaPrzesylki, inboundOptionsFor } from "../data/inboundDelivery.js";
+import { SPARE_LABEL, spareOptionsFor, brakPodloza } from "../data/laserSubstrate.js";
 
 // Ten sam prog co w koszyku i na serwerze. Rozjazd znaczylby, ze formularz
 // przepuszcza opis, ktory kasa odrzuci, czyli blad przy platnosci.
@@ -43,6 +44,12 @@ const UI = {
     descHint: "Napisz, co ma powstać: co grawerujemy, na czym, jaki napis, jakie wymiary. Bez tego zlecenie trafia do pracowni bez ani jednego zdania od Ciebie.",
     descPlaceholder: "Np. grawer imienia na drewnianej desce 30 x 20 cm, napis wysokosci okolo 3 cm, czcionka jak w zalaczonym pliku.",
     descTooShort: "Opisz zlecenie w co najmniej " + MIN_DESCRIPTION + " znakach.",
+    substrateGapTitle: "Zlecenie laserowe jest niekompletne",
+    needSubstrate: "Wybierz, na czym mamy pracować.",
+    needSpare: "Wybierz sposób próby: sztuka ponad zamówienie albo przedmiot niepowtarzalny.",
+    needMaterialNote: "Napisz, na jakim konkretnie materiale mamy wykonać usługę.",
+    materialNoteLabel: "Na jakim materiale",
+    materialNotePlaceholder: "Np. sklejka brzozowa 4 mm, akryl bezbarwny 3 mm",
     inboundTitle: "Jak dostarczysz nam swój przedmiot",
     inboundWhy: "To zamówienie wymaga, żebyś przysłał nam materiał albo przedmiot. Bez tej deklaracji nie wiemy, czy czekać na paczkę, czy na Ciebie.",
     dropFile: "Kliknij lub przeciągnij plik STL",
@@ -106,6 +113,12 @@ const UI = {
     descHint: "Write what should be produced: what we engrave, on what, what text, what size. Without it the job reaches the workshop without a single sentence from you.",
     descPlaceholder: "E.g. a name engraved on a 30 x 20 cm wooden board, letters about 3 cm high, typeface as in the attached file.",
     descTooShort: "Describe the job in at least " + MIN_DESCRIPTION + " characters.",
+    substrateGapTitle: "The laser job is incomplete",
+    needSubstrate: "Choose what we are to work on.",
+    needSpare: "Choose the test piece: one beyond the order, or a one of a kind item.",
+    needMaterialNote: "Tell us exactly which material the job should use.",
+    materialNoteLabel: "Which material",
+    materialNotePlaceholder: "E.g. 4 mm birch plywood, 3 mm clear acrylic",
     inboundTitle: "How you will send us your item",
     inboundWhy: "This order needs you to send us material or an item. Without this we do not know whether to wait for a parcel or for you.",
     dropFile: "Click or drag an STL file",
@@ -169,6 +182,12 @@ const UI = {
     descHint: "Beschreiben Sie, was entstehen soll: was wir gravieren, worauf, welcher Text, welche Masse. Ohne das erreicht der Auftrag die Werkstatt ohne einen einzigen Satz von Ihnen.",
     descPlaceholder: "Z. B. ein Name auf einem Holzbrett 30 x 20 cm, Buchstaben etwa 3 cm hoch, Schrift wie in der angehaengten Datei.",
     descTooShort: "Beschreiben Sie den Auftrag in mindestens " + MIN_DESCRIPTION + " Zeichen.",
+    substrateGapTitle: "Der Laserauftrag ist unvollstaendig",
+    needSubstrate: "Waehlen Sie, worauf wir arbeiten sollen.",
+    needSpare: "Waehlen Sie das Probestueck: eines ueber die Bestellung hinaus oder ein einzigartiges Objekt.",
+    needMaterialNote: "Sagen Sie uns genau, welches Material verwendet werden soll.",
+    materialNoteLabel: "Welches Material",
+    materialNotePlaceholder: "Z. B. Birkensperrholz 4 mm, Acryl klar 3 mm",
     inboundTitle: "Wie Sie uns Ihr Objekt zusenden",
     inboundWhy: "Fuer diese Bestellung muessen Sie uns Material oder ein Objekt zusenden. Ohne diese Angabe wissen wir nicht, ob wir auf ein Paket oder auf Sie warten.",
     dropFile: "STL-Datei klicken oder hierher ziehen",
@@ -379,7 +398,13 @@ export default function Order() {
   }, [step]);
 
   const setParam = useCallback((key, val) => {
-    setParams((p) => ({ ...p, [key]: val }));
+    // Zmiana podloza czysci pola, ktore od niego zaleza. Po przelaczeniu
+    // z przedmiotu klienta na nasz material zostawalby inaczej wybor sposobu
+    // proby, ktory przy naszym materiale nie ma sensu, a serwer i tak by go
+    // odrzucil, juz po podaniu danych do platnosci.
+    setParams((p) => (
+      key === "podloze" ? { ...p, podloze: val, spare: "", materialNote: "" } : { ...p, [key]: val }
+    ));
   }, []);
 
   /** Wycena zawsze po stronie serwera, nawet dla konfiguracji bez pliku */
@@ -443,6 +468,11 @@ export default function Order() {
   // i na serwerze, z tego samego modulu. Wlasna kopia rozjechalaby sie przy
   // pierwszej nowej usludze, a objawem bylby blad dopiero przy platnosci.
   const opisOk = description.trim().length >= MIN_DESCRIPTION;
+  // Podloze uslugi laserowej: ta sama regula co w koszyku i na serwerze.
+  // Pole `podloze` renderuje sie samo z `service.fields`, ale `spare`
+  // i `materialNote` od niego zaleza, wiec stoja osobno, nizej w kroku
+  // parametrow.
+  const brakPodl = service ? brakPodloza({ calculator: service.calculator, params }) : null;
   // Zmiana kraju zmienia liste sposobow dostarczenia: paczkomat istnieje tylko
   // w Polsce. Wybor zrobiony przed zmiana kraju zostalby wyborem, ktorego
   // serwer nie przyjmie, a klient nie mialby powodu zajrzec tam ponownie.
@@ -453,6 +483,7 @@ export default function Order() {
 
   const dataValid =
     opisOk &&
+    !brakPodl &&
     inboundOk &&
     Object.keys(customerErrors).length === 0 &&
     consents.terms &&
@@ -673,6 +704,32 @@ export default function Order() {
                   <OptionRow key={f.key} field={f} value={params} onChange={setParam} lang={lang} />
                 ))}
 
+              {/* Sztuka na proby albo nazwa materialu, zaleznie od podloza.
+                  Samo podloze renderuje `OptionRow` wyzej razem z reszta
+                  parametrow, bo siedzi w katalogu uslug. */}
+              {spareOptionsFor(params.podloze).length > 0 && (
+                <OptionRow
+                  field={{ key: "spare", label: SPARE_LABEL, options: spareOptionsFor(params.podloze) }}
+                  value={params}
+                  onChange={setParam}
+                  lang={lang}
+                />
+              )}
+
+              {params.podloze === "our_stock" && (
+                <div className="mb-5">
+                  <div className="text-[11px] uppercase tracking-wide text-neutral-400 mb-2">{u.materialNoteLabel}</div>
+                  <input
+                    type="text"
+                    value={params.materialNote || ""}
+                    onChange={(e) => setParam("materialNote", e.target.value)}
+                    placeholder={u.materialNotePlaceholder}
+                    className="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white
+                               placeholder:text-neutral-600 focus:outline-none focus:border-blue-400/60"
+                  />
+                </div>
+              )}
+
               {/* OPIS ZLECENIA. Parametry mowia, ILE to kosztuje, a nie CO mamy
                   zrobic. Bez tego pola do pracowni trafialo zamowienie oplacone
                   i niewykonalne, i tak sie to raz skonczylo naprawde. */}
@@ -695,6 +752,12 @@ export default function Order() {
                   <p className="text-red-400 text-[11px] mt-1">{u.descTooShort}</p>
                 )}
               </div>
+
+              {triedToSubmit && brakPodl && (
+                <p className="text-red-400 text-[11px] mt-3">
+                  {{ substrate_required: u.needSubstrate, spare_required: u.needSpare, material_note_required: u.needMaterialNote }[brakPodl]}
+                </p>
+              )}
             </div>
           )}
 
@@ -988,7 +1051,7 @@ export default function Order() {
                     // Opis mieszka na kroku parametrow, wiec brak zatrzymujemy
                     // TUTAJ. Zatrzymanie dopiero przy platnosci odsylaloby
                     // klienta trzy kroki wstecz, do pola, ktorego juz nie widzi.
-                    if (step === 1 && !opisOk) {
+                    if (step === 1 && (!opisOk || brakPodl)) {
                       setTriedToSubmit(true);
                       const pole = document.getElementById("job-description");
                       pole?.scrollIntoView({ behavior: "smooth", block: "center" });

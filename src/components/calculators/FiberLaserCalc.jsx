@@ -3,10 +3,24 @@
 // Max work area: 150 × 150 mm
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture, OWN_MATERIAL_LABEL, OWN_MATERIAL_OPTIONS } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
 import CalcToCart from "./CalcToCart.jsx";
 import MaterialNotice from "../MaterialNotice.jsx";
 import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
+import {
+  SUBSTRATE_LABEL, SUBSTRATES, SPARE_LABEL, spareOptionsFor, MIN_MATERIAL_NOTE,
+} from "../../data/laserSubstrate.js";
+
+const MATERIAL_NOTE_LBL = {
+  pl: "Napisz, na jakim konkretnie materiale ma być wykonana usługa",
+  en: "Tell us exactly which material the job should use",
+  de: "Sagen Sie uns genau, welches Material verwendet werden soll",
+};
+const MATERIAL_NOTE_PLACEHOLDER = {
+  pl: "np. sklejka brzozowa 3 mm, czarny plexi 5 mm",
+  en: "e.g. 3 mm birch plywood, 5 mm black acrylic",
+  de: "z. B. 3 mm Birkensperrholz, 5 mm schwarzes Acrylglas",
+};
 
 import { FIBER_CONFIG, MATERIALS, LENSES, MARK_TYPES, AREAS, calculate,
   LBL,
@@ -29,9 +43,19 @@ export default function FiberLaserCalc({ lang = "pl" }) {
   const [markId, setMarkId] = useState("surface");
   const [areaId, setAreaId] = useState("S");
   const [quantityId, setQuantityId] = useState("proto");
-  // Nasz material albo powierzony przez klienta. Nie wplywa na wycene
-  // ponizej, ta liczy wylacznie robocizne, patrz MaterialNotice.
-  const [ownMaterial, setOwnMaterial] = useState(false);
+  // Podloze uslugi: przedmiot klienta, material klienta albo material nasz.
+  // Nie wplywa na wycene ponizej, ta liczy wylacznie robocizne, patrz MaterialNotice.
+  const [podloze, setPodloze] = useState("our_stock");
+  const [spare, setSpare] = useState("");
+  const [materialNote, setMaterialNote] = useState("");
+
+  // Zmiana podloza kasuje wybory zwiazane z poprzednim, inaczej po
+  // przelaczeniu zostaje wybor niedozwolony przy nowym podlozu.
+  function handlePodlozeChange(id) {
+    setPodloze(id);
+    setSpare("");
+    setMaterialNote("");
+  }
   const [svgData, setSvgData] = useState(null);
   const [svgFileName, setSvgFileName] = useState("");
   const [svgFile, setSvgFile] = useState(null);
@@ -96,7 +120,7 @@ export default function FiberLaserCalc({ lang = "pl" }) {
       ? `SVG: ${svgFileName} (${(svgData.engravAreaCm2 * svgScale * svgScale).toFixed(1)} cm²${svgScale !== 1 ? ` ${Math.round(svgScale*100)}%` : ""})`
       : t(AREAS.find(a => a.id === areaId)?.label, lang),
     t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
-    t(OWN_MATERIAL_OPTIONS.find(o => o.id === ownMaterial)?.label, lang),
+    t(SUBSTRATES.find(s => s.id === podloze)?.label, lang),
   ].join(" | ");
 
   return (
@@ -124,8 +148,26 @@ export default function FiberLaserCalc({ lang = "pl" }) {
         <Chips options={QUANTITY_TIERS} value={quantityId} onChange={setQuantityId} lang={lang} />
       </CalcCard>
 
-      <CalcCard stepNum="⑥" label={t(OWN_MATERIAL_LABEL, lang)}>
-        <Chips options={OWN_MATERIAL_OPTIONS} value={ownMaterial} onChange={setOwnMaterial} lang={lang} />
+      <CalcCard stepNum="⑥" label={t(SUBSTRATE_LABEL, lang)}>
+        <Chips options={SUBSTRATES} value={podloze} onChange={handlePodlozeChange} lang={lang} />
+        {podloze !== "our_stock" ? (
+          <div className="mt-3">
+            <div className="text-[11px] uppercase tracking-wide text-neutral-400 mb-2">{t(SPARE_LABEL, lang)}</div>
+            <Chips options={spareOptionsFor(podloze)} value={spare} onChange={setSpare} lang={lang} />
+          </div>
+        ) : (
+          <div className="mt-3">
+            <div className="text-[11px] uppercase tracking-wide text-neutral-400 mb-2">{t(MATERIAL_NOTE_LBL, lang)}</div>
+            <textarea
+              value={materialNote}
+              onChange={(e) => setMaterialNote(e.target.value)}
+              placeholder={t(MATERIAL_NOTE_PLACEHOLDER, lang)}
+              rows={2}
+              minLength={MIN_MATERIAL_NOTE}
+              className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-blue-400/50 focus:outline-none focus:ring-1 focus:ring-blue-400/30 resize-none transition-colors"
+            />
+          </div>
+        )}
       </CalcCard>
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
@@ -137,7 +179,7 @@ export default function FiberLaserCalc({ lang = "pl" }) {
           onBinding={setBindingGrosze}
           calculator="laser_fiber"
           serviceId="laser_fiber"
-          params={{ matId, lensId, markId, areaId, quantityId, ownMaterial }}
+          params={{ matId, lensId, markId, areaId, quantityId, podloze, spare, materialNote }}
           blocked={Boolean(svgData)}
           lang={lang}
         />

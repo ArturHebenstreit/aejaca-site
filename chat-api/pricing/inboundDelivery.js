@@ -26,6 +26,8 @@
 // Odbior osobisty z zagranicy nie jest wylaczony z uprzejmosci, tylko dlatego,
 // ze nikt nie przyjedzie z Berlina z deska pod pache.
 
+import { podlozeWymagaPrzesylki } from "./laserSubstrate.js";
+
 const L = (pl, en, de) => ({ pl, en, de });
 
 export const INBOUND_METHODS = [
@@ -101,13 +103,14 @@ export const USLUGI_Z_PRZESYLKA = ["jewelry_repair", "jewelry_renovation"];
 export function wymagaPrzesylki(item) {
   if (!item) return false;
   if (USLUGI_Z_PRZESYLKA.includes(String(item.calculator || ""))) return true;
-  // Porownanie jest TOLERANCYJNE celowo. Wybor jedzie przez formularz, koszyk
-  // i JSON, a po tej drodze logiczna prawda potrafi zamienic sie w napis.
-  // Gdyby zostalo samo `=== true`, napis "true" znaczylby "material nasz"
-  // i deklaracja dostarczenia po cichu by sie nie wlaczyla, czyli wrocilaby
-  // dokladnie ta wada, ktora tu naprawiamy. Sprawdzian pilnuje osobno, ze
-  // katalog trzyma wartosci logiczne, wiec tolerancja lata skutek, a nie
-  // przykrywa przyczyne.
-  const w = item.params?.ownMaterial;
-  return w === true || w === "true";
+  // Przy laserze obowiazek wynika z PODLOZA, a nie z samej uslugi: przedmiot
+  // klienta i material klienta trzeba przyslac, material nasz juz tu lezy.
+  // Regule liczy `laserSubstrate.js`, zeby deklaracja wlaczala sie z tego
+  // samego zrodla, z ktorego wynika sam obowiazek.
+  //
+  // Stare pole `ownMaterial` obsluguje tam `substrateOf`, razem z tolerancja
+  // na napis "true" zamiast wartosci logicznej: koszyk siedzi w `localStorage`
+  // i przezywa wdrozenie, wiec pozycje sprzed zmiany sa w obiegu jeszcze dlugo
+  // po niej.
+  return podlozeWymagaPrzesylki(item);
 }

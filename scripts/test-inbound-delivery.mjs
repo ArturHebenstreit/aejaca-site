@@ -15,7 +15,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { INBOUND_METHODS, inboundOptionsFor, inboundAllowed, wymagaPrzesylki } from "../src/data/inboundDelivery.js";
-import { OWN_MATERIAL_OPTIONS } from "../src/pricing/config.js";
+import { SUBSTRATES } from "../src/data/laserSubstrate.js";
 
 const tu = path.dirname(fileURLToPath(import.meta.url));
 const czytaj = (p) => readFileSync(path.resolve(tu, "..", p), "utf8");
@@ -63,8 +63,12 @@ if (!bledy) ok(`${INBOUND_METHODS.length} sposoby opisane w trzech jezykach`);
 // --- Kto wymaga przesylki ---
 assert.equal(wymagaPrzesylki({ calculator: "jewelry_repair" }), true, "naprawa: klient przysyla swoja bizuterie");
 assert.equal(wymagaPrzesylki({ calculator: "jewelry_renovation" }), true, "renowacja: to samo");
-assert.equal(wymagaPrzesylki({ calculator: "laser_co2_engrave", params: { ownMaterial: true } }), true);
-assert.equal(wymagaPrzesylki({ calculator: "laser_co2_engrave", params: { ownMaterial: false } }), false);
+assert.equal(wymagaPrzesylki({ calculator: "laser_co2_engrave", params: { podloze: "own_item" } }), true,
+  "grawer na przedmiocie klienta: klient przysyla rzecz");
+assert.equal(wymagaPrzesylki({ calculator: "laser_co2_engrave", params: { podloze: "own_stock" } }), true,
+  "material powierzony: klient przysyla arkusz");
+assert.equal(wymagaPrzesylki({ calculator: "laser_co2_engrave", params: { podloze: "our_stock" } }), false,
+  "material nasz: klient niczego nie przysyla");
 assert.equal(wymagaPrzesylki({ calculator: "print3d_fdm", params: {} }), false, "druk z pliku: nic nie przysyla");
 assert.equal(wymagaPrzesylki(null), false);
 // Napis zamiast wartosci logicznej to najkrotsza droga do cichej awarii:
@@ -72,12 +76,12 @@ assert.equal(wymagaPrzesylki(null), false);
 assert.equal(wymagaPrzesylki({ params: { ownMaterial: "true" } }), true, "napis tez ma zadzialac");
 ok("wymagaPrzesylki rozpoznaje naprawe, renowacje i material powierzony");
 
-// Katalog MUSI trzymac wartosci logiczne. Tolerancja wyzej lata skutek,
-// a to jest sprawdzian na przyczyne: gdy ktos wpisze tu napisy, dowiemy sie
-// tutaj, a nie z zamowienia, ktore przyszlo bez deklaracji.
-const idki = OWN_MATERIAL_OPTIONS.map((o) => o.id);
-assert.deepEqual(idki, [false, true], "opcje materialu maja byc wartosciami logicznymi");
-ok("katalog trzyma wybor materialu jako wartosc logiczna");
+// Podloza musza miec identyfikatory tekstowe, bo jada przez formularz, koszyk
+// i JSON. Wartosc logiczna po tej drodze zamienia sie w napis, i wlasnie na tym
+// polegla poprzednia wersja tego pola.
+const idki = SUBSTRATES.map((o) => o.id);
+assert.deepEqual(idki, ["own_item", "own_stock", "our_stock"], "podloza sa napisami, nie wartosciami logicznymi");
+ok("katalog podloz trzyma identyfikatory tekstowe");
 
 // --- Serwer liczy regule TYM SAMYM kodem, a nie wlasnym ---
 // Gdyby serwer mial wlasna kopie listy krajow, obie zaczelyby sie rozjezdzac

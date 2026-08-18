@@ -14,10 +14,23 @@ import {
 } from "lucide-react";
 import {
   QUANTITY_TIERS, t, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture, LicenseNotice,
-  OWN_MATERIAL_LABEL, OWN_MATERIAL_OPTIONS,
 } from "./calcShared.jsx";
 import CalcToCart from "./CalcToCart.jsx";
 import MaterialNotice from "../MaterialNotice.jsx";
+import {
+  SUBSTRATE_LABEL, SUBSTRATES, SPARE_LABEL, spareOptionsFor, MIN_MATERIAL_NOTE,
+} from "../../data/laserSubstrate.js";
+
+const MATERIAL_NOTE_LBL = {
+  pl: "Napisz, na jakim konkretnie materiale ma być wykonana usługa",
+  en: "Tell us exactly which material the job should use",
+  de: "Sagen Sie uns genau, welches Material verwendet werden soll",
+};
+const MATERIAL_NOTE_PLACEHOLDER = {
+  pl: "np. sklejka brzozowa 3 mm, czarny plexi 5 mm",
+  en: "e.g. 3 mm birch plywood, 5 mm black acrylic",
+  de: "z. B. 3 mm Birkensperrholz, 5 mm schwarzes Acrylglas",
+};
 import PrintabilityGate from "./PrintabilityGate.jsx";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
 import { calculate as calcPrint3D, calculateMSLA, MSLA_SIZES } from "./Print3DCalc.jsx";
@@ -515,9 +528,19 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   const [material, setMaterial] = useState("idk");
   const [finish, setFinish]     = useState("standard");
   const [quantity, setQuantity] = useState("one");
-  // Tylko przy laserze. Nasz material albo powierzony przez klienta, nie
-  // wplywa na wycene, patrz MaterialNotice.
-  const [ownMaterial, setOwnMaterial] = useState(false);
+  // Tylko przy laserze. Podloze uslugi: przedmiot klienta, material klienta
+  // albo material nasz. Nie wplywa na wycene, patrz MaterialNotice.
+  const [podloze, setPodloze] = useState("our_stock");
+  const [spare, setSpare] = useState("");
+  const [materialNote, setMaterialNote] = useState("");
+
+  // Zmiana podloza kasuje wybory zwiazane z poprzednim, inaczej po
+  // przelaczeniu zostaje wybor niedozwolony przy nowym podlozu.
+  function handlePodlozeChange(id) {
+    setPodloze(id);
+    setSpare("");
+    setMaterialNote("");
+  }
 
   // Smart Upload state
   const [fileType, setFileType] = useState(null); // "stl" | "svg" | null
@@ -822,8 +845,26 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
           <>
             <MaterialNotice lang={lang} className="mb-4" />
             <div className="mb-4">
-              <div className="text-[11px] uppercase tracking-wide text-emerald-400/60 mb-2">{t(OWN_MATERIAL_LABEL, lang)}</div>
-              <Chips options={OWN_MATERIAL_OPTIONS} value={ownMaterial} onChange={setOwnMaterial} lang={lang} />
+              <div className="text-[11px] uppercase tracking-wide text-emerald-400/60 mb-2">{t(SUBSTRATE_LABEL, lang)}</div>
+              <Chips options={SUBSTRATES} value={podloze} onChange={handlePodlozeChange} lang={lang} />
+              {podloze !== "our_stock" ? (
+                <div className="mt-3">
+                  <div className="text-[11px] uppercase tracking-wide text-emerald-400/60 mb-2">{t(SPARE_LABEL, lang)}</div>
+                  <Chips options={spareOptionsFor(podloze)} value={spare} onChange={setSpare} lang={lang} />
+                </div>
+              ) : (
+                <div className="mt-3">
+                  <div className="text-[11px] uppercase tracking-wide text-emerald-400/60 mb-2">{t(MATERIAL_NOTE_LBL, lang)}</div>
+                  <textarea
+                    value={materialNote}
+                    onChange={(e) => setMaterialNote(e.target.value)}
+                    placeholder={t(MATERIAL_NOTE_PLACEHOLDER, lang)}
+                    rows={2}
+                    minLength={MIN_MATERIAL_NOTE}
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-emerald-400/50 focus:outline-none focus:ring-1 focus:ring-emerald-400/30 resize-none transition-colors"
+                  />
+                </div>
+              )}
             </div>
           </>
         )}
@@ -844,7 +885,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
             serviceId={cartTarget.serviceId}
             params={{
               ...resolved.params,
-              ...((resolved?.tech === "co2" || resolved?.tech === "fiber") ? { ownMaterial } : {}),
+              ...((resolved?.tech === "co2" || resolved?.tech === "fiber") ? { podloze, spare, materialNote } : {}),
               ...(printability ? { printability } : {}),
             }}
             lang={lang}

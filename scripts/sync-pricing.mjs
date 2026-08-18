@@ -44,6 +44,7 @@ const EXTRA = [
   // TYM SAMYM kodem formularz i serwer. Dwie kopie rozjechalyby sie przy
   // pierwszej zmianie, a objawem bylby blad dopiero przy platnosci.
   { from: join(ROOT, "src", "data", "inboundDelivery.js"), name: "inboundDelivery.js", source: "src/data/inboundDelivery.js" },
+  { from: join(ROOT, "src", "data", "laserSubstrate.js"), name: "laserSubstrate.js", source: "src/data/laserSubstrate.js" },
 ];
 
 /** W kopii wszystko lezy obok siebie, wiec ../data/x.js staje sie ./x.js */

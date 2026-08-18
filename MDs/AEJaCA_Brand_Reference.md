@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-06 | Wersja: 3.9*
+*Wygenerowano: 2026-08-18 | Wersja: 3.9*
 
 ---
 
@@ -184,6 +184,31 @@ Zakres cenowy (schema): EUR 5-2000
 - Rolki 45# nie nadają sie do platyny (zbyt twarda, ściera rolki)
 - Ręczna - przy twardszych stopach (Au 750 zahartowane) wymaga wyżarzania co 3-4 przejścia
 - Drut poniżej 0,3 mm wymaga ciągadła (nie samej walcarki)
+
+### Reguła podłoża dla usług laserowych (CO2 i fiber)
+
+Każde zlecenie grawerowania, cięcia lub znakowania laserem musi deklarować podłoże, na którym ma być wykonane. Wynika to z tego, że moc, prędkość lasera i liczba przejść ustalamy próbnie, na rzeczywistym materiale docelowym.
+
+**Trzy rozłączne możliwości:**
+
+1. **Przedmiot klienta** (talerzyki, drewniana deska, zegarek, biżuteria, brelok itp.)
+   - Nasz materiał nie jest oferowany, bo nie ma czego dostarczać
+   - Klient podaje sposób dostarczenia rzeczy: w Polsce paczkomat InPost lub odbiór osobisty, z zagranicy wyłącznie kurier
+   - Przy każdym takowym zleceniu klient wysyła JEDNĄ SZTUKĘ PONAD zamówienie na próby parametrów (przykład: grawer na pięciu talerzykach to sześć talerzyków w paczce, szósty na próby)
+
+2. **Materiał klienta** (arkusz, płyta, pasek, kawałek skóry itp.)
+   - Klient dostarcza materiał, my wykonujemy usługę na wgranych partach
+   - Ten sam tryb dostarczenia co powyżej: paczkomat, odbiór osobisty lub kurier
+   - Zasada jednej sztuki ponad zamówienie dotyczy także tu: jeśli przysyła pięć arkuszy do grawerowania, szósty arkusz to próby
+
+3. **Nasz materiał** (z naszego magazynu)
+   - Klient musi podać KONKRETNIE jaki materiał: na przykład "czarna płeksiglas 3 mm", "drewno bukowe 2 mm", "anodowany aluminium 2 mm", a nie "jakaś czarna płyta"
+   - Nic się nie wysyła, wykonujemy na materiale, który już posiadamy
+   - Brak zasady dodatkowej sztuki, bo materiał jest pod naszą kontrolą
+
+**Wyjątek: przedmiot niepowtarzalny**
+
+Jeśli klient wysyła rzecz, którą ma tylko jedną egzemplarzę (obrączka po babci, pamiątka, specjalna biżuteria), nie dołączamy szóstej sztuki. Klient deklaruje wtedy w notatce, że przedmiot jest niepowtarzalny, i zgadza się na próbę w miejscu niewidocznym (spód, krawędź). Wyjątek dotyczy WYŁĄCZNIE przedmiotów klienta, nigdy materiału w arkuszach.
 
 ---
 

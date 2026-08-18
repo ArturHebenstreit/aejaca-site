@@ -498,11 +498,25 @@ function customerText(order, items, lang) {
   ].join("\n");
 }
 
+// Podloze uslugi laserowej po ludzku. Bez tego wybor trafialby do pracowni
+// wylacznie w blobie JSON z parametrami, a pole, ktorego sie nie czyta, nie
+// istnieje: to od niego zalezy, czy czekamy na paczke od klienta, czy kupujemy
+// material, i czy jest na czym zrobic probe parametrow.
+const PODLOZE_PL = {
+  own_item: "PRZEDMIOT KLIENTA, klient go przysyla",
+  own_stock: "MATERIAL KLIENTA, klient go przysyla",
+  our_stock: "material nasz",
+};
+const SPARE_PL = {
+  extra: "dosyla sztuke na proby",
+  unique: "PRZEDMIOT NIEPOWTARZALNY, zgoda na probe w miejscu niewidocznym",
+};
+
 function internalText(order, items, attachments = []) {
   const lines = items.map(
     (i) => `- ${i.title} x ${i.qty} = ${money(i.line_grosze)}
   kalkulator: ${i.calculator}
-  parametry: ${JSON.stringify(i.params)}${i.params?.description ? `\n  OPIS OD KLIENTA: ${i.params.description}` : ""}${i.params?.personalization ? `\n  GRAWER NA WYROBIE: ${i.params.personalization}` : ""}${i.params?.packagingText ? `\n  GRAWER NA WIEKU: ${i.params.packagingText}` : ""}${i.params?.packagingTextBack ? `\n  GRAWER WEWNATRZ WIEKA: ${i.params.packagingTextBack}` : ""}${i.file_name ? `\n  plik: ${i.file_name} (sha256 ${String(i.file_sha256 || "").slice(0, 16)})${i.file_url ? `\n  Dysk: ${i.file_url}` : "\n  Dysk: link jeszcze nie dotarl z n8n"}${i.upload_token && API_BASE ? `\n  Podglad: ${API_BASE}/api/uploads/${i.upload_token}/thumb` : ""}` : ""}${
+  parametry: ${JSON.stringify(i.params)}${i.params?.description ? `\n  OPIS OD KLIENTA: ${i.params.description}` : ""}${i.params?.podloze ? `\n  PODLOZE: ${PODLOZE_PL[i.params.podloze] || i.params.podloze}${i.params.spare ? `, ${SPARE_PL[i.params.spare] || i.params.spare}` : ""}${i.params.materialNote ? `, material: ${i.params.materialNote}` : ""}` : ""}${i.params?.personalization ? `\n  GRAWER NA WYROBIE: ${i.params.personalization}` : ""}${i.params?.packagingText ? `\n  GRAWER NA WIEKU: ${i.params.packagingText}` : ""}${i.params?.packagingTextBack ? `\n  GRAWER WEWNATRZ WIEKA: ${i.params.packagingTextBack}` : ""}${i.file_name ? `\n  plik: ${i.file_name} (sha256 ${String(i.file_sha256 || "").slice(0, 16)})${i.file_url ? `\n  Dysk: ${i.file_url}` : "\n  Dysk: link jeszcze nie dotarl z n8n"}${i.upload_token && API_BASE ? `\n  Podglad: ${API_BASE}/api/uploads/${i.upload_token}/thumb` : ""}` : ""}${
       i.geometry ? `\n  geometria: ${Number(i.geometry.volumeCm3).toFixed(2)} cm3, bbox ${i.geometry.bbox?.x}x${i.geometry.bbox?.y}x${i.geometry.bbox?.z} cm` : ""
     }${
       // Wyroznione, bo w warsztacie to jest instrukcja: drukowac mimo wykrytej

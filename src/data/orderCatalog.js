@@ -5,7 +5,8 @@
 // wprost z rdzenia cenowego, wiec kreator nigdy nie zaproponuje
 // wyboru, ktorego kalkulator nie zna.
 
-import { QUANTITY_TIERS, OWN_MATERIAL_LABEL, OWN_MATERIAL_OPTIONS } from "../pricing/config.js";
+import { QUANTITY_TIERS } from "../pricing/config.js";
+import { SUBSTRATE_LABEL, SUBSTRATES } from "./laserSubstrate.js";
 import {
   APPLICATIONS, LAYER_HEIGHTS, MSLA_SIZES, SIZES, INFILL_OPTIONS, COLORS, PRECISION, FILAMENTS,
 } from "../pricing/print3d.js";
@@ -175,9 +176,9 @@ export const SERVICES = [
       { key: "areaId", label: L("Pole grawerowania", "Engraving area", "Gravurfläche"), options: ENGRAVE_AREAS },
       { key: "detailId", label: L("Szczegółowość", "Detail", "Detailgrad"), options: ENGRAVE_DETAIL },
       { key: "quantityId", label: L("Nakład", "Quantity", "Auflage"), options: QUANTITY_TIERS },
-      { key: "ownMaterial", label: OWN_MATERIAL_LABEL, options: OWN_MATERIAL_OPTIONS },
+      { key: "podloze", label: SUBSTRATE_LABEL, options: SUBSTRATES },
     ],
-    defaults: { matId: "wood", areaId: "S", detailId: "standard", quantityId: "proto", extended: false, ownMaterial: false },
+    defaults: { matId: "wood", areaId: "S", detailId: "standard", quantityId: "proto", extended: false, podloze: "our_stock" },
   },
   {
     id: "laser_cut",
@@ -196,9 +197,9 @@ export const SERVICES = [
       { key: "pathId", label: L("Długość ścieżki", "Path length", "Pfadlänge"), options: CUT_PATHS },
       { key: "complexId", label: L("Złożoność", "Complexity", "Komplexität"), options: CUT_COMPLEXITY },
       { key: "quantityId", label: L("Nakład", "Quantity", "Auflage"), options: QUANTITY_TIERS },
-      { key: "ownMaterial", label: OWN_MATERIAL_LABEL, options: OWN_MATERIAL_OPTIONS },
+      { key: "podloze", label: SUBSTRATE_LABEL, options: SUBSTRATES },
     ],
-    defaults: { matId: "ply3", pathId: "S", complexId: "moderate", quantityId: "proto", extended: false, ownMaterial: false },
+    defaults: { matId: "ply3", pathId: "S", complexId: "moderate", quantityId: "proto", extended: false, podloze: "our_stock" },
   },
   {
     id: "laser_fiber",
@@ -218,9 +219,9 @@ export const SERVICES = [
       { key: "markId", label: L("Rodzaj znakowania", "Marking type", "Markierungsart"), options: MARK_TYPES },
       { key: "areaId", label: L("Pole", "Area", "Fläche"), options: FIBER_AREAS },
       { key: "quantityId", label: L("Nakład", "Quantity", "Auflage"), options: QUANTITY_TIERS },
-      { key: "ownMaterial", label: OWN_MATERIAL_LABEL, options: OWN_MATERIAL_OPTIONS },
+      { key: "podloze", label: SUBSTRATE_LABEL, options: SUBSTRATES },
     ],
-    defaults: { matId: "stainless", lensId: "70mm", markId: "surface", areaId: "S", quantityId: "proto", ownMaterial: false },
+    defaults: { matId: "stainless", lensId: "70mm", markId: "surface", areaId: "S", quantityId: "proto", podloze: "our_stock" },
   },
   {
     id: "epoxy",

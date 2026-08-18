@@ -3,10 +3,24 @@
 // Work area: 600 × 288 mm (standard), extended with riser
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture, OWN_MATERIAL_LABEL, OWN_MATERIAL_OPTIONS } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
 import CalcToCart from "./CalcToCart.jsx";
 import MaterialNotice from "../MaterialNotice.jsx";
 import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
+import {
+  SUBSTRATE_LABEL, SUBSTRATES, SPARE_LABEL, spareOptionsFor, MIN_MATERIAL_NOTE,
+} from "../../data/laserSubstrate.js";
+
+const MATERIAL_NOTE_LBL = {
+  pl: "Napisz, na jakim konkretnie materiale ma być wykonana usługa",
+  en: "Tell us exactly which material the job should use",
+  de: "Sagen Sie uns genau, welches Material verwendet werden soll",
+};
+const MATERIAL_NOTE_PLACEHOLDER = {
+  pl: "np. sklejka brzozowa 3 mm, czarny plexi 5 mm",
+  en: "e.g. 3 mm birch plywood, 5 mm black acrylic",
+  de: "z. B. 3 mm Birkensperrholz, 5 mm schwarzes Acrylglas",
+};
 
 import {
   WORK_AREA_MM, EXTENDED_AREA_MM, PATH_NEEDS_EXTENDED, AREA_NEEDS_EXTENDED,
@@ -37,9 +51,19 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
   const [cComplexId, setCComplexId] = useState("moderate");
   const [cQtyId, setCQtyId] = useState("proto");
   const [extended, setExtended] = useState(false);
-  // Nasz material albo powierzony przez klienta. Nie wplywa na wycene
-  // ponizej, ta liczy wylacznie robocizne, patrz MaterialNotice.
-  const [ownMaterial, setOwnMaterial] = useState(false);
+  // Podloze uslugi: przedmiot klienta, material klienta albo material nasz.
+  // Nie wplywa na wycene ponizej, ta liczy wylacznie robocizne, patrz MaterialNotice.
+  const [podloze, setPodloze] = useState("our_stock");
+  const [spare, setSpare] = useState("");
+  const [materialNote, setMaterialNote] = useState("");
+
+  // Zmiana podloza kasuje wybory zwiazane z poprzednim, inaczej po
+  // przelaczeniu zostaje wybor niedozwolony przy nowym podlozu.
+  function handlePodlozeChange(id) {
+    setPodloze(id);
+    setSpare("");
+    setMaterialNote("");
+  }
   const [svgData, setSvgData] = useState(null);
   const [svgFileName, setSvgFileName] = useState("");
   const [svgFile, setSvgFile] = useState(null);
@@ -100,10 +124,10 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
       : `SVG: ${svgFileName} (${(svgData.pathLengthCm * svgScale).toFixed(0)} cm${svgScale !== 1 ? ` ${Math.round(svgScale*100)}%` : ""})`)
     : null;
 
-  const ownMaterialSummary = t(OWN_MATERIAL_OPTIONS.find(o => o.id === ownMaterial)?.label, lang);
+  const substrateSummary = t(SUBSTRATES.find(s => s.id === podloze)?.label, lang);
   const paramsSummary = mode === "engrave"
-    ? [t(ENGRAVE_MATERIALS.find(m => m.id === eMatId)?.label, lang), svgSummary || t(ENGRAVE_AREAS.find(a => a.id === eAreaId)?.label, lang), t(ENGRAVE_DETAIL.find(d => d.id === eDetailId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === eQtyId)?.label, lang), ownMaterialSummary].join(" | ")
-    : [t(CUT_MATERIALS.find(m => m.id === cMatId)?.label, lang), svgSummary || t(CUT_PATHS.find(p => p.id === cPathId)?.label, lang), t(CUT_COMPLEXITY.find(c => c.id === cComplexId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === cQtyId)?.label, lang), ownMaterialSummary].join(" | ");
+    ? [t(ENGRAVE_MATERIALS.find(m => m.id === eMatId)?.label, lang), svgSummary || t(ENGRAVE_AREAS.find(a => a.id === eAreaId)?.label, lang), t(ENGRAVE_DETAIL.find(d => d.id === eDetailId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === eQtyId)?.label, lang), substrateSummary].join(" | ")
+    : [t(CUT_MATERIALS.find(m => m.id === cMatId)?.label, lang), svgSummary || t(CUT_PATHS.find(p => p.id === cPathId)?.label, lang), t(CUT_COMPLEXITY.find(c => c.id === cComplexId)?.label, lang), extended ? l.extArea : l.stdArea, t(QUANTITY_TIERS.find(q => q.id === cQtyId)?.label, lang), substrateSummary].join(" | ");
 
   return (
     <div>
@@ -151,8 +175,26 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
           : <Chips options={QUANTITY_TIERS} value={cQtyId} onChange={setCQtyId} lang={lang} />}
       </CalcCard>
 
-      <CalcCard stepNum="⑦" label={t(OWN_MATERIAL_LABEL, lang)}>
-        <Chips options={OWN_MATERIAL_OPTIONS} value={ownMaterial} onChange={setOwnMaterial} lang={lang} />
+      <CalcCard stepNum="⑦" label={t(SUBSTRATE_LABEL, lang)}>
+        <Chips options={SUBSTRATES} value={podloze} onChange={handlePodlozeChange} lang={lang} />
+        {podloze !== "our_stock" ? (
+          <div className="mt-3">
+            <div className="text-[11px] uppercase tracking-wide text-neutral-400 mb-2">{t(SPARE_LABEL, lang)}</div>
+            <Chips options={spareOptionsFor(podloze)} value={spare} onChange={setSpare} lang={lang} />
+          </div>
+        ) : (
+          <div className="mt-3">
+            <div className="text-[11px] uppercase tracking-wide text-neutral-400 mb-2">{t(MATERIAL_NOTE_LBL, lang)}</div>
+            <textarea
+              value={materialNote}
+              onChange={(e) => setMaterialNote(e.target.value)}
+              placeholder={t(MATERIAL_NOTE_PLACEHOLDER, lang)}
+              rows={2}
+              minLength={MIN_MATERIAL_NOTE}
+              className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-blue-400/50 focus:outline-none focus:ring-1 focus:ring-blue-400/30 resize-none transition-colors"
+            />
+          </div>
+        )}
       </CalcCard>
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
@@ -167,8 +209,8 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
           calculator={mode === "engrave" ? "laser_co2_engrave" : "laser_co2_cut"}
           serviceId={mode === "engrave" ? "laser_engrave" : "laser_cut"}
           params={mode === "engrave"
-            ? { matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, extended, ownMaterial }
-            : { matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended, ownMaterial }}
+            ? { matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, extended, podloze, spare, materialNote }
+            : { matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended, podloze, spare, materialNote }}
           blocked={Boolean(svgData)}
           lang={lang}
         />
