@@ -33,6 +33,7 @@ const ALLOWED = {
   "src/i18n/ThemeContext.jsx": "wybrany tryb jasny albo ciemny",
   "src/hooks/useGemPrices.js": "pamiec podreczna publicznych cen kamieni, zeby kalkulator nie pytal serwera przy kazdym kliknieciu; zadne dane osoby",
   "src/i18n/LanguageContext.jsx": "wybrany jezyk",
+  "src/analysis/modelHandoff.js": "model przenoszony miedzy kartami po kliknieciu odnosnika do pelnej analizy, czyli czynnosc, o ktora klient sam poprosil; rekord kasujemy przy odczycie i odrzucamy po kwadransie",
 };
 
 function walk(dir, out = []) {
@@ -44,7 +45,11 @@ function walk(dir, out = []) {
   return out;
 }
 
-const STORAGE = /\b(localStorage|sessionStorage|document\.cookie)\b/;
+// IndexedDB liczy sie tak samo jak reszta. Przepis mowi o przechowywaniu
+// informacji w urzadzeniu koncowym i nie wymienia technologii, wiec pominiecie
+// jej tutaj znaczyloby tylko tyle, ze najpojemniejszy magazyn w przegladarce
+// jest jedynym, ktorego nikt nie oglada.
+const STORAGE = /\b(localStorage|sessionStorage|document\.cookie|indexedDB)\b/;
 
 const problems = [];
 for (const file of walk(SRC)) {

@@ -299,6 +299,44 @@ kwoty wiążącej kodem `too_large_for_printer` w `priceItem`. Kontrolka to `Sca
 w `src/components/shop/ConfigControls.jsx`, obecna na karcie usługi i w `/order/`.
 Pilnuje tego `scripts/test-print-scale.mjs` w buildzie.
 
+### 6.0c Szybka wycena liczy teraz z geometrii pliku, jednym silnikiem (od 2026-08-18)
+
+Szybka wycena (`SimpleStudioCalc.jsx`, zakładka /studio/) wgrywała plik, pokazywała jego
+wymiary i objętość, po czym je odrzucała i liczyła cenę z widełek wielkości ("pudełko po
+butach" itd.). Widełki zakładają bryłę WYPEŁNIAJĄCĄ pudełko, więc płaska płyta 30 x 2 x 14 cm
+(420 cm3) trafiała w przedział "pudełko po butach" i wychodziła na 187-374 zł zamiast
+poprawnych 43-85 zł liczonych z rzeczywistej objętości. To była **awaria cicha**: dane wejściowe
+(wymiary, objętość) były poprawnie odczytane i wyświetlone klientowi, ale nie brały udziału w
+liczeniu ceny, więc nic na ekranie nie sygnalizowało błędu.
+
+Naprawa: oba tryby (szybka wycena i tryb zaawansowany) liczą teraz **tym samym silnikiem** z tej
+samej geometrii, w `src/pricing/simpleQuote.js` (mapowanie pięciu pytań na parametry, bez
+warstwy interfejsu, testowalne w node przez `scripts/test-simple-quote.mjs`) i
+`src/pricing/scaleGeometry.js` (skalowanie siatki/wektora). Widełki wielkości zostają wyłącznie
+dla klientów bez pliku.
+
+**Nowy układ pytań:** ① co wykonać (z dwoma kafelkami na skróty: plik 3D albo plik wektorowy)
+→ ② jak duże → ③ materiał → ④ jakość → ⑤ ile sztuk. Wcześniej wgrywanie pliku stało PRZED
+pytaniami, jako osobna sekcja, więc pierwszym ekranem dla klienta bez pliku (większości
+odwiedzających) było pole, którego nie dało się wypełnić.
+
+**Wielkość to suwak, nie pięć kafelków** (`SizeSlider.jsx`). Skala logarytmiczna 1-100 cm,
+pokazuje konkretny wymiar i nazwę przedziału ("Jak moneta" do 3 cm, "Jak dłoń" 3-10, "Jak
+książka" 10-25, "Pudełko po butach" 25-40, "Większe" powyżej 40). Wgranie pliku ustawia suwak
+na oryginale i daje znacznik powrotu jednym kliknięciem. Suwak **realnie skaluje geometrię**;
+cena liczy się z przeskalowanego modelu, nie z etykiety.
+
+**Powyżej pola roboczego (30 x 32 x 32,5 cm, FDM) nie pokazujemy ceny.** Zamiast kwoty: przycisk
+"Zmniejsz do największej, która się mieści" i informacja, że przy dużych obiektach tniemy model
+na części i sklejamy po wydruku, ze szwem na krawędzi. Cena za rzecz, której nie da się wykonać
+w całości, byłaby obietnicą bez pokrycia.
+
+**Formaty wyrównane w górę:** pole modelu 3D w koszyku (`/order/`) przyjmuje teraz
+`.stl,.obj,.3mf,.step,.stp` (wcześniej samo `.stl`), formularz B2B dodatkowo `.svg,.ai,.dxf`,
+pole zdjęcia referencyjnego w sklepie `.heic,.heif`, a `.ai` przyjmują wszystkie pola wektorowe
+i serwer. Szybka wycena przyjmuje pełny zestaw modeli i wektorów; DXF, AI i PDF (bez parsera
+geometrii) idą jako załącznik do wyceny przez człowieka, co ekran mówi klientowi wprost.
+
 ### 6.1 Kalkulator MSLA (Print3DCalc - ścieżka MSLA)
 
 **Konfiguracja silnika (MSLA_CONFIG):**
@@ -505,6 +543,27 @@ udział powierzchni pod podpory, pole styku ze stołem, podejrzaną skalę.
 Sprawdzarka nie jest już wyspą. Ta sama analiza działa przy zamawianiu, z parametrami, które klient
 właśnie wybrał, razem z dyszą. Objęte są trzy ścieżki: **szybka wycena, tryb zaawansowany
 i karta usługi w sklepie**. Bez tej trzeciej klient omijałby bramkę, wybierając łagodniejszą drogę.
+
+#### Model jedzie razem z odnośnikiem (od 2026-08-18)
+
+Bramka odsyła po pełną analizę na stronę narzędzia i do tej pory był to goły odnośnik, więc klient
+ładował ten sam plik drugi raz i ręcznie ustawiał tę samą technologię oraz tę samą dyszę. Każdy
+z tych kroków można wykonać inaczej, a wtedy pełna analiza odpowiada na inne pytanie niż to, które
+ją wywołało. Teraz przenosimy **siatkę, technologię, dyszę, wielkość wydruku i nazwę pliku**,
+przez `src/analysis/modelHandoff.js`.
+
+Nośnikiem jest IndexedDB, bo strona otwiera się w nowej karcie: pamięć modułu tego nie przekroczy,
+`sessionStorage` nie przyjmie tablicy typowanej bez kosztownej zamiany na tekst. Rekord kasujemy
+przy odczycie i odrzucamy po kwadransie. Obietnica „plik nie opuszcza przeglądarki" zostaje
+nienaruszona, ale FAQ narzędzia mówi o tym zapisie wprost, a `check-browser-storage.mjs` obejmuje
+teraz także IndexedDB, bo wcześniej najpojemniejszy magazyn w przeglądarce był jedynym, którego
+nikt nie oglądał.
+
+Przy okazji naprawiona **awaria cicha**: analiza szła na siatce w oryginale, mimo że komentarz
+w kodzie twierdził inaczej. Skalowanie przeliczało tylko objętość i gabaryt, więc model zmniejszony
+do połowy miał połowę grubości muru, a bramka widziała grubość sprzed zmniejszenia i przepuszczała
+wydruk, którego nie da się wykonać. Skalowanie siedzi teraz w jednym miejscu, w `flattenTriangles`,
+i pilnuje go `test-model-handoff.mjs`.
 
 **Blokujemy tylko ustalenia poziomu `blocker`.** Przycisk zmienia napis na „Potwierdź uwagi
 do modelu" i odblokowuje się dopiero po zaznaczeniu potwierdzenia. Ostrzeżenia pokazujemy bez
@@ -1257,6 +1316,7 @@ przeglądem rynku. `parked/gift-card/README.md` zawiera listę kroków do wznowi
 | `scripts/check-emdash.mjs` | długie myślniki (U+2014) i ich encja HTML w całym repozytorium | jednorazowe sprzątanie objęło 2720 znaków w 234 plikach; bez strażnika wracają, bo w kodzie źródłowym nikt ich nie widzi aż do publikacji |
 | `scripts/check-tool-links.mjs` | klucze `TOOLS_BY_POST` i `TOOLS_BY_TERM` wskazujące na realne slugi i hasła, komplet tłumaczeń pl/en/de, dozwolone `audience` | trzy klucze wskazywały na nieistniejące slugi, a fallback po cichu podstawiał domyślne narzędzia, więc trzy wpisy zgubiły odnośnik do wyceny metalu przy zielonym buildzie |
 | `scripts/test-printability.mjs` | analiza modeli: topologia, objętość, grubość ścianek, nawisy, gabaryty, progi dysz | błędy w geometrii są ciche; źle policzona grubość nie wywala niczego, tylko zapewnia klienta, że model się wydrukuje, a klient dostaje odpad |
+| `scripts/test-model-handoff.mjs` | przeniesienie modelu z bramki na stronę analizy oraz skala, w której analizujemy siatkę | werdykt policzony na oryginale zamiast na zamawianej wielkości wygląda tak samo jak prawdziwy; model zmniejszony o połowę ma o połowę cieńszy mur |
 | `scripts/test-print-consent.mjs` | pokwitowanie wady modelu: filtr ustaleń, obecność w obu wersjach maila, brak sformułowań o zrzeczeniu się praw | dokument jest jedynym śladem, na którym opiera się cała konstrukcja; klauzula o zrzeczeniu się praw byłaby nieważna i szkodliwa |
 | `scripts/check-terms-parity.mjs` | te same sekcje, ustępy i punkty list w pl, en i de | regulamin żyje w trzech wersjach w jednym pliku, a dodanie sekcji tylko do jednej niczego nie wywala: build przechodzi, a dokument jest niekompletny w dwóch językach na trzy |
 | `npm run lint:undef` (`eslint.undef.config.js`) | reguła `no-undef`, czyli sięganie po nazwę spoza zasięgu | odnośnik dodany do pola rozmiaru w kalkulatorze użył `lang`, którego funkcja nie przyjmowała; efekt to biała strona po przełączeniu na tryb zaawansowany, a build, prerender i wszyscy pozostali strażnicy przeszli bez słowa |

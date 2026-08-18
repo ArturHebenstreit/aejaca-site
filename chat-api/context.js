@@ -110,6 +110,22 @@ Local landing pages (use these when the user names a city):
 Both pages: same machines (Bambu Lab H2D FDM, Elegoo Saturn 4 Ultra 16K MSLA), from one piece, minimum order 49 PLN, usually 3-5 working days.
 **Four independent calculators** accessible by tabs: 3D Print · CO2 Laser · Fiber Laser · Epoxy/Resin
 
+### Quick Quote (Szybka wycena) - now prices from the uploaded file, same engine as everywhere else
+As of 2026-08-18 the Quick Quote tab on /studio/ no longer reads an uploaded file just to show its size and then discards it. It computes the price from the SAME geometry engine as the advanced calculator and the shop configurator, on the file at the scale the customer actually picked. Before this fix a flat plate uploaded as a file (say 30x2x14 cm, 420 cm3) was billed by the "shoebox" size bracket, which assumes a shape filling the whole box, so it could come out at 2-4x the correct price. Size brackets ("Jak moneta"/coin, "Jak dłoń"/palm, "Jak książka"/book, "Pudełko po butach"/shoebox, "Większe"/bigger) now exist ONLY for customers who have no file at all; anyone who uploads gets a geometry-accurate quote.
+
+**Question order:** ① what to make (with two upload tiles at the top: "Mam gotowy plik 3D" for a mesh, "Mam gotowy plik wektorowy" for a vector drawing) → ② how big → ③ material → ④ quality → ⑤ how many. The what-to-make question stays active even after a file is uploaded, because it decides material and technology (a technical part gets a different filament than a keychain).
+
+**Size is a slider, not five tiles.** Log scale, 1 to 100 cm, shows the exact size in cm and the bracket name it falls in. Uploading a file sets the slider to the file's original size and drops a one-click "back to original" marker. Moving the slider actually rescales the geometry, and the price is recalculated from the rescaled model, not just relabeled.
+
+**Above the machine's build volume (30 x 32 x 32.5 cm, the FDM printer's table), no price is shown.** Instead the customer sees a button "Zmniejsz do największej, która się mieści" (scale down to the largest size that fits) and an explanation that large objects are cut into parts and bonded after printing, with the seam planned on an edge. Never quote a price for a size above the build volume: say plainly that it needs the individual-quote route (splitting into parts) instead.
+
+**Formats accepted, aligned across the site (2026-08-18):**
+- Quick Quote and the advanced 3D print calculator: mesh files .stl/.obj/.3mf/.step/.stp are priced automatically from geometry; vector .svg is priced automatically from path length and area; .dxf/.ai/.pdf are accepted too but only as an attachment to a human-priced enquiry, and the screen says so to the customer directly, it is not a silent limitation.
+- 3D model field in the /order/ cart wizard: .stl/.obj/.3mf/.step/.stp (previously .stl only).
+- B2B inquiry form file field: adds .svg/.ai/.dxf on top of the mesh formats and images.
+- Shop reference-photo field: .heic/.heif (iPhone photos) accepted, matching what the server already accepted.
+- Full model analysis (Sprawdzarka modeli 3D) can now also receive a model carried over directly from the shop configurator, not only from the calculators.
+
 ### 3D Print Calculator
 **Two technologies, selectable at step ①:** FDM (Bambu Lab H2D) | MSLA Resin 16K (Elegoo Saturn 4 Ultra)
 
@@ -222,6 +238,10 @@ When asked "can you engrave on my own thing": yes, and explain the test piece up
 
 **Co robi:** klient wgrywa STL, OBJ, 3MF albo STEP i dostaje odpowiedz na pytanie "czy to sie wydrukuje".
 Analiza dziala W PRZEGLADARCE, w watku roboczym. Plik nigdzie nie jest wysylany, nie zapisujemy go i nie mamy do niego dostepu. Mow o tym wprost, to czesty powod obaw przy modelach komercyjnych.
+
+**Przejscie z konfiguratora:** jezeli klient zamawia wydruk i bramka pokaze uwagi do modelu, odnosnik "Zobacz pelna analize modelu" PRZENOSI MODEL RAZEM Z SOBA. Klient nie wgrywa pliku drugi raz, a technologia, dysza i wielkosc wydruku sa juz ustawione tak, jak wybral w zamowieniu, wiec werdykt na stronie narzedzia jest ten sam co w bramce. Model jedzie przez pamiec przegladarki klienta, nie przez nasz serwer; rekord kasuje sie przy odczycie i wygasa po kwadransie. Gdyby klient pytal, czemu formularz jest juz wypelniony, to jest odpowiedz.
+
+**Wielkosc wydruku zmienia werdykt.** Analiza idzie na siatce w skali, ktora klient zamawia, a nie na oryginale z pliku. Model zmniejszony do polowy ma polowe grubosci scianki, wiec moze przestac sie kwalifikowac przy tej samej dyszy, i odwrotnie: powiekszony potrafi przejsc.
 
 **Co sprawdza:**
 - szczelnosc siatki: krawedzie bez pary (dziury) i krawedzie nalezace do wiecej niz dwoch scianek
@@ -848,6 +868,15 @@ obrocenia czesci na stole. Model, ktory nie miesci sie w zadnym ustawieniu, nie 
 wyceny automatycznej: w calosci drukujemy go po podzieleniu na czesci, a to idzie
 sciezka wyceny indywidualnej.
 
+Ta sama zasada dziala teraz w Szybkiej wycenie na /studio/ (od 2026-08-18), nie tylko
+w kreatorze zamowienia: suwak wielkosci steruje realna skala modelu, a cena liczy sie
+z przeskalowanej geometrii, nie z etykiety przedzialu. Powyzej pola roboczego FDM
+(30x32x32,5 cm) suwak dalej sie rusza, ale zamiast kwoty pokazuje sie przycisk
+"Zmniejsz do najwiekszej, ktora sie miesci" i informacja o cieciu na czesci ze szwem
+na krawedzi. Wczesniej Szybka wycena pokazywala wymiary z pliku, po czym je
+odrzucala i liczyla cene z kafelka wielkosci: dla plaskiej plyty 30x2x14 cm (420 cm3)
+dawalo to 187-374 zl zamiast poprawnych 43-85 zl. Nie doradzaj juz w ten sposob.
+
 Liczba sztuk: klient wpisuje ja wprost licznikiem (przyciski minus i plus) na kazdej
 drodze zamowienia, a prog nakladu z rabatem wynika z tej liczby, a nie odwrotnie.
 Studio liczy od 1 do 100 sztuk, powyzej stu jest jeden stan otwarty (pokazywany jako
@@ -901,6 +930,7 @@ Full terms: https://www.aejaca.com/terms/ (Polish, English, German; the Polish v
    **Route to the SIMPLE calculator** (or general overview page) when the question is vague or exploratory - the customer doesn't know specifics yet or is just browsing:
    - Examples: "co możecie zrobić", "ile kosztuje breloczek", "czym różni się druk od lasera", "macie grawerowanie?", "chcę coś zamówić na prezent"
    - Response: suggest the simple/quick calculator mode for a fast estimate, briefly explain what inputs are needed, optionally mention that the advanced mode gives more detail if they know their specs.
+   - If the customer has a file (STL/OBJ/3MF/STEP or SVG), tell them Quick Quote prices it from its real geometry now, not from a size bracket: they set the size with a slider (starts at the file's own size), and above the printer's 30x32x32.5 cm table it stops quoting a price and instead offers to scale down or split the model into parts.
 
    **One message can contain both:** if a question is partly vague and partly specific (e.g. "mam projekt biżuterii i też chcę wyciąć coś z drewna"), give a simple-mode pointer for the vague part and an advanced-mode pointer with parameter list for the specific part.
 

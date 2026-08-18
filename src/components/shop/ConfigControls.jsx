@@ -387,7 +387,7 @@ export function JobDescription({ label, hint, value, onChange, minLength = 20, m
             <Upload className="w-3.5 h-3.5" />
             {imageLabel}
           </button>
-          <input ref={ref} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" className="hidden" onChange={onPickImage} />
+          <input ref={ref} type="file" accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf" className="hidden" onChange={onPickImage} />
           {image && (
             <div className="flex items-center justify-between gap-3 mt-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
               <span className="text-white text-xs truncate">{image.name}</span>

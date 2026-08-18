@@ -318,5 +318,126 @@ if (!progSerwera || !progKlienta || progSerwera !== progKlienta) {
   }
 }
 
+// ------------------------------------------------------------
+// 9. Pola tego samego rodzaju maja ten sam, najszerszy zestaw formatow
+// ------------------------------------------------------------
+// Wlasciciel: "jezeli ladujemy model 3D, to wszedzie musimy dawac mozliwosc
+// zaladowania takich samych typow, rownajac do wiekszej liczby, czyli w gore;
+// i to samo z innymi". Dwa pola tego samego rodzaju z roznymi listami sa
+// pulapka samodzielnie od tego, czy kazde z osobna dziala poprawnie: klient
+// w jednym miejscu wgra format, ktory gdzie indziej byl odrzucony, i nie ma
+// jak sie tego domyslic.
+//
+// Sprawdzian ma dwie czesci dla kazdego rodzaju pola:
+//   a) wszystkie pola tego rodzaju oferuja IDENTYCZNY zestaw formatow,
+//   b) ten zestaw jest PODZBIOREM tego, co faktycznie parsuje albo przyjmuje
+//      serwer, inaczej pole zaprasza do wyboru pliku, ktory zniknie po cichu.
+{
+  console.log("\n9. Zestawy formatow wedlug rodzaju pola");
+
+  const norm = (s) => s.split(",").map((x) => x.trim().replace(/^\./, "").toLowerCase()).filter(Boolean).sort();
+
+  const rownaj = (nazwa, pola) => {
+    const brakujace = pola.filter(([, v]) => !v);
+    if (brakujace.length) {
+      zle(`nie znalazlem pola dla rodzaju "${nazwa}": ${brakujace.map(([n]) => n).join(", ")}`);
+      return;
+    }
+    const zestawy = pola.map(([n, v]) => [n, norm(v).join(",")]);
+    const wzor = zestawy[0][1];
+    const rozjazd = zestawy.filter(([, z]) => z !== wzor);
+    if (rozjazd.length) {
+      zle(`pola rodzaju "${nazwa}" maja rozne zestawy formatow: ${zestawy.map(([n, z]) => `${n}=[${z}]`).join(" vs ")}`);
+    } else {
+      ok(`wszystkie ${pola.length} pola rodzaju "${nazwa}" maja identyczny zestaw formatow (${wzor})`);
+    }
+  };
+
+  const podzbior = (nazwa, kandydat, dozwolone, opisDozwolonych) => {
+    if (!kandydat || !dozwolone) {
+      zle(`nie mam czego porownac dla "${nazwa}" (brak listy pola albo listy serwera)`);
+      return;
+    }
+    const brak = norm(kandydat).filter((ext) => !dozwolone.includes(ext));
+    if (brak.length) {
+      zle(`${nazwa} oferuje formaty spoza ${opisDozwolonych}: ${brak.join(", ")}`);
+      console.error("    Klient wybierze taki plik, a serwer go odrzuci albo przepusci bez odczytu.");
+    } else {
+      ok(`${nazwa} miesci sie w ${opisDozwolonych}`);
+    }
+  };
+
+  // --- MODEL 3D: parsowany do wiazacej wyceny, wiec ograniczony do tego,
+  //     co realnie umie odczytac mesh.js. ---
+  const orderJsx = czytaj("src/pages/Order.jsx");
+  const orderAccept = /accept="([^"]*)"[^>]*onChange=\{onFile\}/.exec(orderJsx)?.[1];
+
+  const svcConf = czytaj("src/components/shop/ServiceConfigurator.jsx");
+  const acceptMesh = /const ACCEPT_MESH = "([^"]*)"/.exec(svcConf)?.[1];
+  const acceptVector = /const ACCEPT_VECTOR = "([^"]*)"/.exec(svcConf)?.[1];
+
+  const print3d = czytaj("src/components/calculators/Print3DCalc.jsx");
+  const acceptModel = /const ACCEPT_MODEL = "([^"]*)"/.exec(print3d)?.[1];
+
+  const printabilityCheck = czytaj("src/components/calculators/PrintabilityCheck.jsx");
+  const acceptCheck = /const ACCEPT = "([^"]*)"/.exec(printabilityCheck)?.[1];
+
+  const meshJs = czytaj("src/pricing/mesh.js");
+  const wyciagnijListe = (re) => [...(re.exec(meshJs)?.[1] ?? "").matchAll(/"([a-z0-9]+)"/g)].map((m) => m[1]);
+  const supportedMesh = [
+    ...wyciagnijListe(/export const MESH_EXTENSIONS = \[([^\]]*)\]/),
+    ...wyciagnijListe(/export const CAD_EXTENSIONS = \[([^\]]*)\]/),
+  ];
+
+  const simple = czytaj("src/components/calculators/SimpleStudioCalc.jsx");
+  const simpleMesh = /const ACCEPT_MESH = "([^"]*)"/.exec(simple)?.[1];
+  const simpleVector = /const ACCEPT_VECTOR = "([^"]*)"/.exec(simple)?.[1];
+
+  rownaj("MODEL 3D", [
+    ["Order.jsx", orderAccept],
+    ["ServiceConfigurator ACCEPT_MESH", acceptMesh],
+    ["Print3DCalc ACCEPT_MODEL", acceptModel],
+    ["PrintabilityCheck ACCEPT", acceptCheck],
+    ["SimpleStudioCalc ACCEPT_MESH", simpleMesh],
+  ]);
+  podzbior("zestaw MODEL 3D", acceptMesh, supportedMesh, "SUPPORTED_EXTENSIONS z mesh.js (formaty, ktore parseMeshAsync realnie czyta)");
+
+  // --- WEKTOR: zalacznik do wyceny w koszyku, nigdy nie parsowany na
+  //     geometrie (kind: "attachment"), wiec ograniczony do tego, co
+  //     przyjmuje ATTACHMENT_EXT na serwerze. ---
+  const calc2cart = czytaj("src/components/calculators/CalcToCart.jsx");
+  const artworkBlok = calc2cart.slice(
+    calc2cart.indexOf("requiresArtwork && ("),
+    calc2cart.indexOf('onClear={() => { setArtworkFile(null)')
+  );
+  const acceptArtwork = /accept="([^"]*)"/.exec(artworkBlok)?.[1];
+
+  const attachmentWzor = /const ATTACHMENT_EXT = \/\\\.\(([^)]*)\)\$\/i/.exec(server)?.[1]?.split("|");
+
+  rownaj("WEKTOR (zalacznik do wyceny)", [
+    ["ServiceConfigurator ACCEPT_VECTOR", acceptVector],
+    ["CalcToCart artwork FileDrop", acceptArtwork],
+    ["SimpleStudioCalc ACCEPT_VECTOR", simpleVector],
+  ]);
+  podzbior("zestaw WEKTOR", acceptVector, attachmentWzor, "ATTACHMENT_EXT na serwerze");
+
+  // --- ZALACZNIK DO ZAPYTANIA: jedzie do czlowieka przez /api/contact,
+  //     wiec to suma wszystkich rodzajow, ograniczona do ALLOWED_EXT. ---
+  const b2b = czytaj("src/components/B2BInquiryForm.jsx");
+  const acceptB2B = /accept="([^"]*)"[^>]*onChange=\{handleFileChange\}/.exec(b2b)?.[1];
+
+  const calcShared = czytaj("src/components/calculators/calcShared.jsx");
+  const acceptInquiry = /accept="([^"]*)"\s*\n\s*onChange=\{handleFileChange\}/.exec(calcShared)?.[1];
+
+  const allowedWzor = /const ALLOWED_EXT = \/\\\.\(([^)]*)\)\$\/i/.exec(server)?.[1]?.split("|");
+
+  rownaj("ZALACZNIK DO ZAPYTANIA", [
+    ["B2BInquiryForm", acceptB2B],
+    ["calcShared InquiryForm", acceptInquiry],
+  ]);
+  podzbior("zestaw ZALACZNIK DO ZAPYTANIA (B2B)", acceptB2B, allowedWzor, "ALLOWED_EXT na serwerze (/api/contact)");
+  podzbior("zestaw ZALACZNIK DO ZAPYTANIA (kalkulator)", acceptInquiry, allowedWzor, "ALLOWED_EXT na serwerze (/api/contact)");
+}
+
 console.log(bledy ? `\n${bledy} bledow\n` : "\nSzew koszyk-zamowienie: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);

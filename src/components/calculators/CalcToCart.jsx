@@ -53,7 +53,7 @@ const UI = {
     describeWhy: "Cena jest policzona, ale z samych parametrów nie wynika, jak przedmiot ma wyglądać. Bez opisu nie przyjmiemy zlecenia do realizacji.",
     addImage: "Dołącz zdjęcie lub szkic (opcjonalnie)",
     artworkLabel: "Projekt do wykonania",
-    artworkHint: "Wgraj plik SVG, DXF lub PDF",
+    artworkHint: "Wgraj plik SVG, DXF, AI lub PDF",
     artworkWhy: "Bez projektu nie wiemy, co wygrawerować ani wyciąć. Rozmiar pola wybrałeś wyżej, on decyduje o cenie.",
     missingDescription: "Uzupełnij opis, żeby dodać do koszyka",
     missingArtwork: "Wgraj projekt, żeby dodać do koszyka",
@@ -99,7 +99,7 @@ const UI = {
     describeWhy: "The price is calculated, but the parameters alone do not say how the piece should look. Without a description we cannot accept the job.",
     addImage: "Attach a photo or sketch (optional)",
     artworkLabel: "Your artwork",
-    artworkHint: "Upload an SVG, DXF or PDF file",
+    artworkHint: "Upload an SVG, DXF, AI or PDF file",
     artworkWhy: "Without the artwork we do not know what to engrave or cut. You picked the area above, and that is what sets the price.",
     missingDescription: "Add a description to put this in the cart",
     missingArtwork: "Upload the artwork to put this in the cart",
@@ -145,7 +145,7 @@ const UI = {
     describeWhy: "Der Preis steht, aber aus den Parametern allein geht nicht hervor, wie das Stück aussehen soll. Ohne Beschreibung nehmen wir den Auftrag nicht an.",
     addImage: "Foto oder Skizze anhängen (optional)",
     artworkLabel: "Ihre Vorlage",
-    artworkHint: "SVG-, DXF- oder PDF-Datei hochladen",
+    artworkHint: "SVG-, DXF-, AI- oder PDF-Datei hochladen",
     artworkWhy: "Ohne Vorlage wissen wir nicht, was graviert oder geschnitten werden soll. Die Fläche haben Sie oben gewählt, sie bestimmt den Preis.",
     missingDescription: "Beschreibung ergänzen, um in den Warenkorb zu legen",
     missingArtwork: "Vorlage hochladen, um in den Warenkorb zu legen",
@@ -532,7 +532,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
               hint={u.artworkHint}
               file={artworkFile}
               busy={attachBusy}
-              accept=".svg,.dxf,.pdf"
+              accept=".svg,.dxf,.ai,.pdf"
               accent={accent}
               lang={lang}
               onPick={(e) => {

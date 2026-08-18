@@ -1444,7 +1444,7 @@ const UPLOAD_CALLBACK_TOKEN = process.env.UPLOAD_CALLBACK_TOKEN;
 const ABANDON_AFTER_DAYS = Number(process.env.UPLOAD_ABANDON_DAYS || 14);
 
 /** Rysunki techniczne przyjmowane jako zalacznik do zlecenia */
-const ATTACHMENT_EXT = /\.(svg|dxf|pdf)$/i;
+const ATTACHMENT_EXT = /\.(svg|dxf|ai|pdf)$/i;
 /**
  * ZDJECIE ALBO SZKIC z pola opisu, czyli zupelnie co innego niz projekt do
  * wykonania.
@@ -1511,7 +1511,7 @@ app.post("/api/uploads", (req, res, next) => {
     const name = (req.file.originalname || "plik").slice(0, 255);
 
     if (isAttachment && !ATTACHMENT_EXT.test(name)) {
-      return res.status(400).json({ error: "Załącznik przyjmujemy jako SVG, DXF lub PDF", code: "unsupported_format" });
+      return res.status(400).json({ error: "Załącznik przyjmujemy jako SVG, DXF, AI lub PDF", code: "unsupported_format" });
     }
     if (isReference && !REFERENCE_EXT.test(name)) {
       return res.status(400).json({ error: "Zdjęcie przyjmujemy jako JPG, PNG, WEBP, HEIC lub PDF", code: "unsupported_format" });

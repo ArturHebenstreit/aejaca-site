@@ -31,6 +31,7 @@
 import { useState, useEffect, useRef } from "react";
 import { AlertTriangle, XCircle, Info, Loader2 } from "lucide-react";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
+import { saveModelHandoff, flattenTriangles, HANDOFF_URL } from "../../analysis/modelHandoff.js";
 
 export { nozzleFromPrecision };
 
@@ -120,9 +121,11 @@ const SHORT = {
  * @param {number[][][]} triangles geometria z parsera, juz po przeskalowaniu
  * @param {"fdm"|"msla"} tech
  * @param {string} [nozzleId] tylko dla FDM
+ * @param {string} [fileName] nazwa pliku, przekazywana na strone pelnej analizy
+ * @param {number} [scale] skala, w ktorej klient zamawia, do opisu na tamtej stronie
  * @param {(record: object|null) => void} onResult zapis do `params.printability`
  */
-export default function PrintabilityGate({ triangles, tech, nozzleId = "0.4", lang = "pl", onResult }) {
+export default function PrintabilityGate({ triangles, tech, nozzleId = "0.4", lang = "pl", fileName = null, scale = 1, onResult }) {
   const L = L10N[lang] || L10N.pl;
   const S = SHORT[lang] || SHORT.pl;
 
@@ -141,13 +144,9 @@ export default function PrintabilityGate({ triangles, tech, nozzleId = "0.4", la
     setBusy(true);
     setAccepted(false);
 
-    const positions = new Float32Array(triangles.length * 9);
-    for (let i = 0, o = 0; i < triangles.length; i++, o += 9) {
-      const [a, b, c] = triangles[i];
-      positions[o] = a[0]; positions[o + 1] = a[1]; positions[o + 2] = a[2];
-      positions[o + 3] = b[0]; positions[o + 4] = b[1]; positions[o + 5] = b[2];
-      positions[o + 6] = c[0]; positions[o + 7] = c[1]; positions[o + 8] = c[2];
-    }
+    // Analiza idzie na geometrii W SKALI ZAMOWIENIA, bo to ona zostanie
+    // wydrukowana. Model zmniejszony o polowe ma o polowe cienszy mur.
+    const positions = flattenTriangles(triangles, scale);
 
     workerRef.current?.terminate();
     const worker = new Worker(new URL("../../workers/printability.worker.js", import.meta.url), { type: "module" });
@@ -165,7 +164,7 @@ export default function PrintabilityGate({ triangles, tech, nozzleId = "0.4", la
     worker.postMessage({ positions, tech, nozzleId, samples: 1500 }, [positions.buffer]);
 
     return () => { cancelled = true; worker.terminate(); };
-  }, [triangles, tech, nozzleId]);
+  }, [triangles, tech, nozzleId, scale]);
 
   // Separator dziesietny z jezyka strony: "0.30 mm" obok "0,4 mm" na
   // przyciskach czyta sie jak dwie rozne jednostki.
@@ -187,6 +186,9 @@ export default function PrintabilityGate({ triangles, tech, nozzleId = "0.4", la
     onResultRef.current?.({
       tech,
       nozzle: tech === "fdm" ? nozzleId : null,
+      // Skala nalezy do zapisu, bo ustalenia dotycza modelu W TEJ wielkosci.
+      // Bez niej nie da sie pozniej odtworzyc, co dokladnie klientowi pokazano.
+      scale: Number(scale) || 1,
       thinnestMm: report.thickness ? Number(report.thickness.p1.toFixed(3)) : null,
       watertight: report.topology.isWatertight,
       findings: [...blockers, ...warnings].map(strip),
@@ -194,7 +196,7 @@ export default function PrintabilityGate({ triangles, tech, nozzleId = "0.4", la
       accepted: needsAccept ? accepted : null,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [report, accepted, tech, nozzleId]);
+  }, [report, accepted, tech, nozzleId, scale]);
 
   if (busy) {
     return (
@@ -238,10 +240,26 @@ export default function PrintabilityGate({ triangles, tech, nozzleId = "0.4", la
         </ul>
       )}
 
+      {/* Model jedzie razem z odnosnikiem. Zapis rusza w obsludze klikniecia i
+          NIE wstrzymuje przejscia: gdyby czekac na jego koniec, przegladarka
+          uznalaby otwarcie karty za wyskakujace okienko i by je zablokowala.
+          Strona docelowa czeka na rekord, wiec wolniejszy zapis niczego nie
+          psuje, a nieudany zostawia ja z pustym formularzem, czyli w stanie
+          sprzed tej zmiany. */}
       <a
-        href="/toolstudio/printability/"
+        href={HANDOFF_URL}
         target="_blank"
         rel="noopener"
+        onClick={() => {
+          if (!triangles?.length) return;
+          saveModelHandoff({
+            positions: flattenTriangles(triangles, scale),
+            tech,
+            nozzleId: tech === "fdm" ? nozzleId : null,
+            name: fileName,
+            scale,
+          });
+        }}
         className="inline-block text-blue-400 hover:text-blue-300 text-xs mb-3"
       >
         {L.checkLink}
