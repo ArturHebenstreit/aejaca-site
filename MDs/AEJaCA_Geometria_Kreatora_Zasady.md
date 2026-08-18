@@ -568,3 +568,38 @@ wewnętrznym.
 
 **Nauka:** to jest wzorcowy przykład awarii cichej. Sprawdzian musi mierzyć
 **powierzchnię, której klient dotyka**, a nie topologię bryły.
+
+## 2026-08-18 - szyna przecięta pod kamieniem podniesionym na łapkach
+
+**Było:** gniazdo kamienia bocznego zawsze kończyło się przelotem o długości
+dwóch średnic kamienia, także wtedy, gdy kamień stoi **ponad** szyną we własnym
+koszu. Przy trylogii, czyli kamieniu 4 mm na szynie 2,2 mm, otwór 1,94 mm
+zostawiał po 0,13 mm metalu z każdej strony. Zmierzone: pasek metalu w warstwie
+0,25 mm nad palcem rozpadał się na **dwa kawałki**, najchudszy przekrój 0,082 mm3
+w plastrze 0,2 mm. Właściciel zgłosił to jako "przerwana szyna pod kamieniami
+bocznymi, przecinanie niedozwolone".
+
+**Jest:** gniazdo kamienia podniesionego jest **ślepe**: kończy się 0,15 mm pod
+koletą i nie idzie dalej w szynę. Światło wchodzi oknami w koszu, które kosz ma
+od poprzedniej poprawki. Kamień **wpuszczony** w szynę ma przelot nadal, bo tam
+jest on jedyną drogą światła i jedyną drogą wypchnięcia kamienia od spodu.
+Po poprawce: pasek ciągły, najchudszy przekrój 0,237 mm3, czyli prawie trzy razy
+więcej metalu.
+
+**Nauka:** sprawdzian 17 liczył części **całej bryły** i przepuścił to, bo bryła
+trzymała się kupy przez koronę, galerię i te dwa włoski metalu. Objętość, masa
+i `genus` były poprawne. Strażnikiem jest teraz sprawdzian 37, który mierzy dwie
+rzeczy, jakich tamten nie mierzył: **ciągłość paska metalu przy palcu** (warstwa
+0,3 mm nad średnicą wewnętrzną) i **najchudszy przekrój po obwodzie** (plaster
+0,2 mm co dwa stopnie, próg 0,10 mm3, czyli pół milimetra kwadratowego). Kontrola
+negatywna: po cofnięciu poprawki sprawdzian wywala trylogię i cztery układy
+z macierzy obciążeniowej.
+
+**Znalezione przy okazji, NIEPOPRAWIONE, czeka na decyzję właściciela:** granica
+rozmiaru kamienia wpuszczanego liczy się z **nominalnej** szerokości szyny,
+a przy szynie zwężanej kamienie siedzą tam, gdzie szyna ma 70-75% tej szerokości.
+Układ 3,2 mm ze zwężeniem i kamieniem kanałowym 2,3 mm zostawia dwa luźne okruchy
+po 0,046 mm3. W presetach `pave` i `diana` szynki obok gniazda schodzą do około
+0,09 mm. Poprawka albo zmniejsza kamienie w istniejących wzorach, albo zmienia
+sylwetkę zwężanej szyny; jedno i drugie widać na wyrobie, więc nie robimy tego
+bez decyzji.

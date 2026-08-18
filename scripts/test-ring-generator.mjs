@@ -2167,5 +2167,97 @@ console.log("\n36. Kazdy dozwolony szlif kamieni bocznych daje wyrob w jednym ka
   else ok(`${SIDE_CUTS.length} szlifów bocznych, każdy daje wyrób w jednym kawałku`);
 }
 
+// ------------------------------------------------------------
+console.log("\n37. Szyna zostaje CIAGLA pod kamieniami bocznymi");
+// ------------------------------------------------------------
+// Wlasciciel zglosil to zdjeciem trylogii: "przerwana szyna pod kamieniami
+// bocznymi, przecinanie niedozwolone". Sledztwo pokazalo, ze gniazdo kamienia
+// PODNIESIONEGO na lapkach mialo przelot dlugosci dwoch srednic, czyli
+// wychodzilo przez cala szyne na wylot. Przy kamieniu 4 mm na szynie 2,2 mm
+// otwor 1,94 mm zostawial po 0,13 mm z kazdej strony i pasek metalu przy palcu
+// rozpadal sie na dwa kawalki.
+//
+// DLACZEGO NIE ZLAPAL TEGO SPRAWDZIAN 17. Bo tam liczymy czesci CALEJ bryly,
+// a cala bryla trzymala sie kupy: przez korone, przez galerie i przez te dwa
+// wloski metalu. Objetosc, masa i `genus` byly poprawne. To jest ta sama klasa
+// awarii cichej, ktora opisuja reguly geometrii: wyrob mierzy sie dobrze
+// i jest nie do noszenia.
+//
+// Mierzymy wiec dwie rzeczy, ktorych tamten sprawdzian nie mierzy:
+//   1. PASEK PRZY PALCU. Wycinamy z bryly warstwe 0,3 mm tuz nad srednica
+//      wewnetrzna. Szyna przecieta rozpada ten pasek na kawalki, nawet gdy
+//      cala bryla zostaje jednym kawalkiem.
+//   2. NAJCHUDSZY PRZEKROJ. Plaster 0,2 mm co dwa stopnie po obwodzie.
+//      Ponizej polowy milimetra kwadratowego przekroju nie ma juz mowy
+//      o pierscionku, ktory da sie nosic.
+{
+  const PROG_PRZEKROJ = 0.10;   // mm3 w plastrze 0,2 mm, czyli 0,5 mm2 przekroju
+  const w = await kernel();
+
+  async function zmierz(opis, cfg) {
+    const p = validate(cfg);
+    const r = await buildRing(p, { withStones: false, segments: 64 });
+    const ri = p.innerDia / 2;
+
+    // 1. Pasek metalu tuz przy palcu.
+    const rura = w.Manifold.cylinder(20, ri + 0.3, ri + 0.3, 128, true)
+      .subtract(w.Manifold.cylinder(30, ri, ri, 128, true));
+    const pasek = r.metal.intersect(rura);
+    const kawalki = ileCzesci(pasek);
+    rura.delete?.(); pasek.delete?.();
+
+    // 2. Najchudszy przekroj po obwodzie.
+    const zewn = ri + p.thickness + 3;
+    let naj = Infinity;
+    for (let deg = 0; deg < 360; deg += 2) {
+      const noz = w.Manifold.cube([zewn, 0.2, 20], true)
+        .translate([zewn / 2, 0, 0])
+        .rotate([0, 0, deg]);
+      const plaster = r.metal.intersect(noz);
+      naj = Math.min(naj, plaster.volume());
+      noz.delete?.(); plaster.delete?.();
+    }
+    zwolnij(r);
+
+    if (kawalki !== 1) {
+      bad(`${opis}: szyna przecieta, pasek przy palcu rozpada sie na ${kawalki} czesci`);
+    } else if (naj < PROG_PRZEKROJ) {
+      bad(`${opis}: najchudszy przekroj ${naj.toFixed(3)} mm3 w plastrze 0,2 mm (prog ${PROG_PRZEKROJ})`);
+    } else {
+      ok(`${opis.padEnd(30)} pasek ciagly, najchudszy przekroj ${naj.toFixed(3)} mm3`);
+    }
+  }
+
+  // Wzory z listy, ktore maja kamienie boczne.
+  for (const wzor of RING_PRESETS) {
+    const p = validate(applyPreset(wzor, DEFAULTS));
+    if (p.kind !== "ring" || !p.side?.count) continue;
+    await zmierz(`wzór ${wzor.id}`, p);
+  }
+
+  // Macierz obciazeniowa: kamien maly, sredni i najwiekszy dozwolony, na szynie
+  // waskiej, typowej i szerokiej. To tutaj wychodzi kazdy uklad, w ktorym
+  // gniazdo jest szersze od metalu, ktory ma je uniesc.
+  //
+  // Oprawa KANALOWA jest poza ta macierza swiadomie, a nie przez przeoczenie.
+  // Przy szynie zwezanej granica rozmiaru kamienia liczy sie z NOMINALNEJ
+  // szerokosci szyny, a nie z tej, ktora szyna ma przy glowicy, gdzie kamienie
+  // faktycznie siedza. Uklad 3,2 mm ze zwezeniem i kamieniem 2,3 mm zostawia
+  // tam dwa luzne okruchy po 0,046 mm3. Poprawka wymaga decyzji wlasciciela,
+  // bo albo zmniejsza kamienie w istniejacych wzorach, albo zmienia sylwetke
+  // zwezanej szyny, i jedno i drugie widac na wyrobie.
+  for (const setting of ["prong", "pave"]) {
+    for (const width of [1.6, 2.2, 3.2]) {
+      for (const size of [1.5, 3.0, 4.5]) {
+        await zmierz(`${setting} szyna ${width} kamień ${size}`, {
+          innerDia: 17.2, width, thickness: 1.6, taper: "tapered",
+          stone: { cut: "round", size: 6 }, setting: "prong4",
+          side: { count: 2, size, setting },
+        });
+      }
+    }
+  }
+}
+
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");
 process.exit(failed ? 1 : 0);

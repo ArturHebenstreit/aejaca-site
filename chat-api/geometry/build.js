@@ -434,7 +434,7 @@ export function stoneSolid(w, cutId, sizeMm) {
  * a powyzej przelot, zeby przez kamien szlo swiatlo i zeby dalo sie go
  * wypchnac od spodu przy przekladaniu.
  */
-function seatCutter(w, cutId, sizeMm, zamkniete = false, wylot = SEAT.throughWidth) {
+function seatCutter(w, cutId, sizeMm, zamkniete = false, wylot = SEAT.throughWidth, slepe = false) {
   const { Manifold, CrossSection } = w;
   const pr = PROPORTIONS[CUTS[cutId].profile];
 
@@ -538,8 +538,28 @@ function seatCutter(w, cutId, sizeMm, zamkniete = false, wylot = SEAT.throughWid
   // 4. PRZELOT. Ostatni odcinek idzie na wylot prosto: przez niego wchodzi
   //    swiatlo od spodu i przez niego wypycha sie kamien przy przekladaniu.
   //    Wezszy od stozka, zeby nie zabrac metalu z galerii.
-  const przelot = Manifold.extrude(dolCs, sizeMm * 2)
-    .translate([0, 0, -SEAT.ledge - stozekH - sizeMm * 2 + 0.01]);
+  //
+  // GNIAZDO SLEPE, czyli takie, ktore konczy sie tuz pod koleta i NIE
+  // przebija metalu dalej.
+  //
+  // Przelot dlugosci dwoch srednic kamienia jest wlasciwy tam, gdzie gniazdo
+  // wycina sie w SZYNIE: wychodzi na palec, wpuszcza swiatlo i pozwala wypchnac
+  // kamien od spodu. Tam, gdzie kamien stoi PONAD szyna we wlasnym koszu, ten
+  // sam przelot nie ma czego przewietrzyc, za to leci przez cala szyne na
+  // wylot. Przy trylogii, czyli kamieniu czteromilimetrowym na szynie 2,2 mm,
+  // otwor o szerokosci 1,94 mm zostawial po 0,13 mm metalu z kazdej strony
+  // i pasek przy palcu rozpadal sie na dwa kawalki. Zmierzone: dwie czesci
+  // w warstwie 0,25 mm nad palcem, przy jednej czesci w kazdym innym ukladzie.
+  // Wlasciciel zglosil to jako "przerwana szyna pod kamieniami bocznymi",
+  // i to nie byla uwaga o wygladzie, tylko o wyrobie nie do noszenia.
+  //
+  // Kosz ma juz okna po bokach, wiec swiatlo wchodzi tam, gdzie ma wchodzic.
+  // Gniazdo konczy sie wiec 0,15 mm pod koleta i szyna zostaje cala.
+  const dlugoscPrzelotu = slepe
+    ? Math.max(0.1, glebokosc + 0.15 - stozekH)
+    : sizeMm * 2;
+  const przelot = Manifold.extrude(dolCs, dlugoscPrzelotu)
+    .translate([0, 0, -SEAT.ledge - stozekH - dlugoscPrzelotu + 0.01]);
 
   const razem = ledge ? zlacz(wlot, ledge) : wlot;
   return zlacz(zlacz(razem, stozek), przelot);
@@ -1249,6 +1269,7 @@ function buildSideStones(w, p) {
 
   if (setting === "channel") {
     const span = start + step * (count - 0.2);
+
     [-1, 1].forEach((side) => {
       [-1, 1].forEach((off) => {
         const rail = Manifold.revolve(
@@ -1324,7 +1345,11 @@ function buildSideStones(w, p) {
       const szlifBoku = CUTS[p.side.cut] ? p.side.cut : "round";
       const kam = stoneSolid(w, szlifBoku, size);
       stones.push(naMiejsce(kam.solid));
-      addS(naMiejsce(seatCutter(w, szlifBoku, size, zakute(p), wylotWSzynie)));
+      // Gniazdo kamienia PODNIESIONEGO konczy sie w koszu i nie idzie dalej
+      // w szyne: przelot na wylot przecinalby ja pod kamieniem (patrz opis
+      // przy `seatCutter`). Kamien wpuszczony w szyne przelot ma nadal, bo
+      // tam jest on jedyna droga swiatla i jedyna droga wypchniecia kamienia.
+      addS(naMiejsce(seatCutter(w, szlifBoku, size, zakute(p), wylotWSzynie, podniesienie > 0)));
 
       if (podniesienie > 0) {
         // Oprawka: stozek od szyny do rondysty i cztery lapki dookola.
