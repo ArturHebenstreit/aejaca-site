@@ -20,6 +20,7 @@ import {
   PRINT_CONFIG, MSLA_CONFIG, MSLA_BUILD_VOL_CM, BUILD_VOL_CM,
   APPLICATIONS, LAYER_HEIGHTS, MSLA_SIZES, FILAMENTS, SIZES, INFILL, INFILL_OPTIONS, COLORS, PRECISION,
   isCastable, getAvailableResins, estimateTimeFromVolume, estimatePcsPerPlate, estimatePcsPerPlateMSLA,
+  maxScaleForBuildVolume,
   calculate, calculateMSLA,
   LBL, MSLA_LBL,
 } from "../../pricing/print3d.js";
@@ -169,7 +170,10 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
 
   const b = stlData.bbox;
   const rawMaxCm = Math.max(b.x, b.y, b.z);
-  const fitScale = Math.min(buildVolCm.x / b.x, buildVolCm.y / b.y, buildVolCm.z / b.z);
+  // Granice pola roboczego liczy `maxScaleForBuildVolume`, ten sam kod, ktorym
+  // serwer odmawia wyceny za duzego modelu. Osobny wzor tutaj znaczylby, ze
+  // kalkulator pokazuje skale, ktora kwota wiazaca odrzuci.
+  const fitScale = maxScaleForBuildVolume(b, buildVolCm);
   const fitFloor = Math.floor(fitScale * 10000) / 10000;
   const scaledB = { x: b.x * scale, y: b.y * scale, z: b.z * scale };
   const TOL = 0.05;

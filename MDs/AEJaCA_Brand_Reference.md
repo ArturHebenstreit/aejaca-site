@@ -285,6 +285,20 @@ Do koszyka idzie **wpisana liczba**, a nie nakład reprezentatywny progu: wcześ
 klient proszący o trzy sztuki dostawał wycenę sześciu.
 
 
+### 6.0b Wielkość wydruku z wgranego pliku
+
+Po wgraniu modelu cena liczy się z **jego własnych wymiarów**, a nie z listy rozmiarów
+(lista chowa się automatycznie, `hiddenWithFile`). Klient zmienia wielkość suwakiem
+skali, którego górną granicę wyznacza realne pole robocze maszyny. Porównujemy wymiary
+**posortowane**, bo część ustawiamy na stole tak, jak nam wygodnie: słupek 24 cm nie
+mieści się wzdłuż osi X drukarki żywicznej (21,8 cm), ale postawiony pionowo mieści się
+w 25 cm.
+
+Regułę liczy `maxScaleForBuildVolume` w `src/pricing/print3d.js`, a serwer odmawia
+kwoty wiążącej kodem `too_large_for_printer` w `priceItem`. Kontrolka to `ScaleControl`
+w `src/components/shop/ConfigControls.jsx`, obecna na karcie usługi i w `/order/`.
+Pilnuje tego `scripts/test-print-scale.mjs` w buildzie.
+
 ### 6.1 Kalkulator MSLA (Print3DCalc - ścieżka MSLA)
 
 **Konfiguracja silnika (MSLA_CONFIG):**

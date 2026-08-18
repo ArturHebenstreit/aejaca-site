@@ -148,6 +148,80 @@ export function QuantityStepper({ label, value, onChange, min = 1, max = 100, op
   );
 }
 
+/**
+ * Wielkosc wydruku wzgledem oryginalu.
+ *
+ * Po wgraniu pliku cena liczy sie z JEGO PRAWDZIWYCH WYMIAROW, a nie z listy
+ * rozmiarow: model juz je ma, wiec pytanie o rozmiar bylo pytaniem o cos, co
+ * wiemy. Zostaje jedno prawdziwe pytanie: czy wydrukowac go w oryginale, czy
+ * inaczej. Gorna granice wyznacza pole robocze maszyny, wiec suwak nie pozwala
+ * zamowic czegos, czego nie da sie wydrukowac.
+ */
+export function ScaleControl({ label, bbox, volumeCm3, scale, onChange, maxScale, lang, accent = "blue" }) {
+  const gora = Math.min(maxScale ?? 4, 4);
+  const dol = 0.25;
+  const zaDuzy = gora < 1;
+  const tekst = accent === "amber" ? "text-amber-300" : "text-blue-300";
+  const track = accent === "amber" ? "accent-amber-400" : "accent-blue-400";
+  const wym = (n) => (n * scale * 10).toFixed(0);
+  const dopasowanie = Math.floor((maxScale ?? 1) * 100) / 100;
+
+  const przycisk = (aktywny) =>
+    `px-2.5 py-1 rounded-lg text-[10px] border transition-colors ${
+      aktywny ? `${accent === "amber" ? "border-amber-400 bg-amber-400/10" : "border-blue-400 bg-blue-400/10"} ${tekst}`
+              : "border-white/10 text-neutral-400 hover:border-white/25 hover:text-neutral-200"
+    }`;
+
+  return (
+    <div className="mb-6">
+      <div className="flex items-baseline justify-between mb-2">
+        <span className="text-[11px] uppercase tracking-wide text-neutral-500">{label}</span>
+        <span className={`text-xs font-medium ${tekst}`}>
+          {Math.abs(scale - 1) < 0.005
+            ? t({ pl: "oryginał", en: "original", de: "Original" }, lang)
+            : `${Math.round(scale * 100)}%`}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={dol}
+        max={Math.max(gora, dol + 0.01)}
+        step={0.01}
+        value={Math.min(scale, gora)}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className={`w-full ${track}`}
+        aria-label={label}
+        disabled={zaDuzy}
+      />
+      <div className="flex flex-wrap items-center gap-1.5 mt-2">
+        <button type="button" className={przycisk(Math.abs(scale - 1) < 0.005)} onClick={() => onChange(1)} disabled={zaDuzy}>
+          {t({ pl: "Oryginał", en: "Original", de: "Original" }, lang)}
+        </button>
+        {maxScale != null && dopasowanie !== 1 && (
+          <button type="button" className={przycisk(Math.abs(scale - dopasowanie) < 0.005)} onClick={() => onChange(dopasowanie)}>
+            {t({ pl: "Do pola roboczego", en: "Fit the build plate", de: "Auf den Bauraum" }, lang)}
+          </button>
+        )}
+        {bbox && (
+          <span className="text-neutral-500 text-[11px] ml-auto">
+            {wym(bbox.x)} × {wym(bbox.y)} × {wym(bbox.z)} mm
+            {volumeCm3 ? `, ${(volumeCm3 * scale ** 3).toFixed(1)} cm³` : ""}
+          </span>
+        )}
+      </div>
+      {zaDuzy && (
+        <p className="text-amber-300 text-[11px] mt-2">
+          {t({
+            pl: `Model w oryginale nie mieści się w polu roboczym. Największa możliwa wielkość to ${Math.round((maxScale ?? 0) * 100)}%, a w całości wydrukujemy go po podzieleniu na części. Napisz do nas, jeżeli ma zostać w oryginale.`,
+            en: `At original size the model does not fit the build plate. The largest possible size is ${Math.round((maxScale ?? 0) * 100)}%; at full size we print it in parts. Write to us if it has to stay original.`,
+            de: `In Originalgroesse passt das Modell nicht in den Bauraum. Moeglich sind hoechstens ${Math.round((maxScale ?? 0) * 100)}%; in voller Groesse drucken wir es geteilt. Schreiben Sie uns, wenn es original bleiben soll.`,
+          }, lang)}
+        </p>
+      )}
+    </div>
+  );
+}
+
 /** Wgrywanie pliku z podgladem geometrii policzonej przez serwer */
 export function FileDrop({ label, hint, file, geometry, onPick, onClear, busy, busyLabel, error, accent = "blue", lang, accept = ".stl", children }) {
   const ref = useRef(null);

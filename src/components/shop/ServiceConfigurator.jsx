@@ -14,10 +14,11 @@ import { useCart } from "../../cart/CartContext.jsx";
 import { getService } from "../../data/orderCatalog.js";
 import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS } from "../../pricing/packaging.js";
 import { t, tierForQty, qtyForTier, qtyLimit, qtyOpenValue, QUANTITY_TIERS } from "../../pricing/config.js";
-import { TileGroup, StepSlider, QuantityStepper, FileDrop, PersonalizationField, JobDescription, BlockedReasons } from "./ConfigControls.jsx";
+import { TileGroup, StepSlider, QuantityStepper, ScaleControl, FileDrop, PersonalizationField, JobDescription, BlockedReasons } from "./ConfigControls.jsx";
 import { useMoney } from "../../shop/money.js";
 import PrintabilityGate from "../calculators/PrintabilityGate.jsx";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
+import { maxScaleForBBox } from "../../pricing/print3d.js";
 import MaterialNotice from "../MaterialNotice.jsx";
 import { SPARE_LABEL, spareOptionsFor, brakPodloza } from "../../data/laserSubstrate.js";
 
@@ -96,6 +97,7 @@ const UI = {
     engravingHint: "Grawer wykonujemy dokładnie tak, jak wpiszesz. Sprawdź pisownię.",
     uploadFailed: "Nie udało się przyjąć pliku. Spróbuj ponownie albo napisz do nas.",
     parsingFile: "Analizuję model",
+    printSize: "Wielkość wydruku",
     sendingFile: "Wysyłam plik do wyceny",
   },
   en: {
@@ -157,6 +159,7 @@ const UI = {
     engravingHint: "We engrave exactly what you type. Please check the spelling.",
     uploadFailed: "We could not accept the file. Try again or write to us.",
     parsingFile: "Analysing the model",
+    printSize: "Print size",
     sendingFile: "Sending the file for pricing",
   },
   de: {
@@ -218,6 +221,7 @@ const UI = {
     engravingHint: "Wir gravieren genau das, was Sie eingeben. Bitte Schreibweise prüfen.",
     uploadFailed: "Die Datei konnte nicht angenommen werden. Bitte erneut versuchen oder uns schreiben.",
     parsingFile: "Modell wird analysiert",
+    printSize: "Druckgroesse",
     sendingFile: "Datei wird zur Kalkulation gesendet",
   },
 };
@@ -240,6 +244,10 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const [parsing, setParsing] = useState(false);
   const [fileError, setFileError] = useState(null);
   const [geometry, setGeometry] = useState(null);
+  // Skala wydruku wzgledem oryginalu. Jeden oznacza "tak, jak w pliku", i to
+  // jest domyslna odpowiedz: model niesie swoje wymiary, wiec nie ma powodu
+  // pytac klienta o rozmiar, ktory juz podal, wgrywajac plik.
+  const [scale, setScale] = useState(1);
   const [triangles, setTriangles] = useState(null);
   const [printability, setPrintability] = useState(null);
   const [hasThumb, setHasThumb] = useState(false);
@@ -285,6 +293,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       body.append("params", JSON.stringify({ ...params, ...(service.fixed || {}) }));
       // Plik poszedl juz raz do /api/uploads, tutaj wystarczy identyfikator.
       if (uploadToken) body.append("uploadToken", uploadToken);
+      if (scale !== 1) body.append("scale", String(scale));
 
       const resp = await fetch(`${API}/api/price`, { method: "POST", body });
       const data = await resp.json();
@@ -301,7 +310,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
     } finally {
       if (mine === reqId.current) setBusy(false);
     }
-  }, [service, params, uploadToken, lang, u.needsQuote]);
+  }, [service, params, uploadToken, scale, lang, u.needsQuote]);
 
   // Cena odswieza sie po kazdej zmianie, z krotkim opoznieniem, zeby
   // przesuwanie suwaka nie wysylalo kilkunastu zapytan.
@@ -310,7 +319,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
     return () => clearTimeout(timer);
   }, [fetchPrice]);
 
-  useEffect(() => setAdded(false), [params, file, packagingId, engraving, packEngraving, lidBackText, description, qty]);
+  useEffect(() => setAdded(false), [params, file, scale, packagingId, engraving, packEngraving, lidBackText, description, qty]);
 
   // Wysylka miniatury czeka na identyfikator uploadu i idzie dokladnie raz.
   useEffect(() => {
@@ -442,6 +451,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
     setHasThumb(false);
     setThumbData(null);
     setFileError(null);
+    setScale(1);
     pendingThumb.current = null;
   }
 
@@ -576,6 +586,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       image: card.image,
       params: { ...params, ...(service.fixed || {}), ...(printability ? { printability } : {}) },
       geometry,
+      scale,
       fileName: file?.name || null,
       uploadToken,
       // Zrzut modelu zamiast zdjecia katalogowego, zeby w koszyku bylo
@@ -602,6 +613,10 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   }
 
   const visibleFields = service.fields.filter((f) => !(f.hiddenWithFile && uploadToken));
+  // Granica skali wynika z pola roboczego maszyny. Ten sam kod liczy ja na
+  // serwerze przy wystawianiu kwoty wiazacej, wiec suwak nie moze obiecac
+  // wielkosci, ktora wycena odrzuci.
+  const maxScale = geometry?.bbox ? maxScaleForBBox(geometry.bbox, service.calculator) : null;
   const isJewelry = String(service.calculator || "").startsWith("jewelry");
 
   return (
@@ -640,6 +655,21 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
               nozzleId={nozzleFromPrecision(params.precisionId)}
               lang={lang}
               onResult={setPrintability}
+            />
+          )}
+          {/* WIELKOSC WYDRUKU. Pojawia sie dopiero, gdy serwer przyjal plik i
+              odeslal jego wymiary: dopoki ich nie ma, nie ma czego skalowac
+              ani z czego wyliczyc granicy pola roboczego. */}
+          {geometry && maxScale != null && (
+            <ScaleControl
+              label={u.printSize}
+              bbox={geometry.bbox}
+              volumeCm3={geometry.volumeCm3}
+              scale={scale}
+              onChange={setScale}
+              maxScale={maxScale}
+              lang={lang}
+              accent={accent}
             />
           )}
           {!file && <p className="text-neutral-600 text-[11px] -mt-4 mb-6">{u.fileOptional}</p>}

@@ -24,7 +24,8 @@ import { t, tierForQty, qtyForTier, qtyLimit, qtyOpenValue, QUANTITY_TIERS } fro
 import { useMoney } from "../shop/money.js";
 import { wymagaPrzesylki, inboundOptionsFor } from "../data/inboundDelivery.js";
 import { SPARE_LABEL, spareOptionsFor, brakPodloza } from "../data/laserSubstrate.js";
-import { QuantityStepper } from "../components/shop/ConfigControls.jsx";
+import { QuantityStepper, ScaleControl } from "../components/shop/ConfigControls.jsx";
+import { maxScaleForBBox } from "../pricing/print3d.js";
 
 // Ten sam prog co w koszyku i na serwerze. Rozjazd znaczylby, ze formularz
 // przepuszcza opis, ktory kasa odrzuci, czyli blad przy platnosci.
@@ -60,6 +61,7 @@ const UI = {
     volume: "Objętość",
     dims: "Wymiary",
     scale: "Skala",
+    printSize: "Wielkość wydruku",
     binding: "Cena wiążąca",
     perPc: "za sztukę",
     total: "Razem",
@@ -130,6 +132,7 @@ const UI = {
     volume: "Volume",
     dims: "Dimensions",
     scale: "Scale",
+    printSize: "Print size",
     binding: "Binding price",
     perPc: "per piece",
     total: "Total",
@@ -200,6 +203,7 @@ const UI = {
     volume: "Volumen",
     dims: "Abmessungen",
     scale: "Maßstab",
+    printSize: "Druckgroesse",
     binding: "Verbindlicher Preis",
     perPc: "pro Stück",
     total: "Gesamt",
@@ -394,6 +398,9 @@ export default function Order() {
     ? "quantityId"
     : service?.fields.some((f) => f.key === "qtyId") ? "qtyId" : null;
   const tiers = (tierKey && service.fields.find((f) => f.key === tierKey)?.options) || QUANTITY_TIERS;
+  // Granica skali wynika z pola roboczego maszyny, tym samym kodem, ktorym
+  // serwer odmawia kwoty wiazacej za model wiekszy niz stol.
+  const maxScale = geometry?.bbox ? maxScaleForBBox(geometry.bbox, service?.calculator) : null;
   // Metody i ceny zaleza od kraju: paczkomat dziala tylko w Polsce.
   const options = shippingOptions(country);
   const deliveryMeta = DELIVERY_METHODS.find((d) => d.id === deliveryId) || DELIVERY_METHODS[0];
@@ -718,6 +725,21 @@ export default function Order() {
                     </div>
                   )}
                 </div>
+              )}
+
+              {/* WIELKOSC WYDRUKU. `/order/` liczylo skale i wysylalo ja do wyceny,
+                  ale nie mialo kontrolki, wiec zawsze byla jedynka i klient nie
+                  mial jak jej zmienic. Ta sama kontrolka co na karcie uslugi. */}
+              {geometry && maxScale != null && (
+                <ScaleControl
+                  label={u.printSize}
+                  bbox={geometry.bbox}
+                  volumeCm3={geometry.volumeCm3}
+                  scale={scale}
+                  onChange={setScale}
+                  maxScale={maxScale}
+                  lang={lang}
+                />
               )}
 
               {service.fields
