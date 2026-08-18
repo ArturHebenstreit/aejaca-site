@@ -1445,6 +1445,23 @@ const ABANDON_AFTER_DAYS = Number(process.env.UPLOAD_ABANDON_DAYS || 14);
 
 /** Rysunki techniczne przyjmowane jako zalacznik do zlecenia */
 const ATTACHMENT_EXT = /\.(svg|dxf|pdf)$/i;
+/**
+ * ZDJECIE ALBO SZKIC z pola opisu, czyli zupelnie co innego niz projekt do
+ * wykonania.
+ *
+ * Przez pomylke obie rzeczy jechaly tu jako `kind: "attachment"` i obie
+ * wpadaly na `ATTACHMENT_EXT`, ktore przyjmuje wylacznie SVG, DXF i PDF.
+ * Pole w formularzu nazywa sie "Dolacz zdjecie lub szkic" i oferuje
+ * .jpg, .png, .webp, wiec klient wybieral zdjecie, widzial je przez ulamek
+ * sekundy i patrzyl, jak znika: przegladarka pokazywala plik od razu,
+ * a po odpowiedzi serwera kasowala go z powrotem. Przechodzil tylko PDF,
+ * i to przez przypadek, bo jest na obu listach.
+ *
+ * Zdjecie nie jest podstawa wyceny ani plikiem produkcyjnym, jest kontekstem
+ * dla pracowni: tak wyglada rzecz, ktora mamy oznaczyc. HEIC jest na liscie,
+ * bo tak fotografuje domyslnie kazdy iPhone.
+ */
+const REFERENCE_EXT = /\.(jpg|jpeg|png|webp|heic|heif|pdf)$/i;
 const MAX_ATTACHMENT_BYTES = 15 * 1024 * 1024;
 
 const uploadStore = multer({
@@ -1471,17 +1488,23 @@ app.post("/api/uploads", (req, res, next) => {
     // licza sie z pola albo dlugosci sciezki wybranej przez klienta, a rysunek
     // mowi warsztatowi, co ma wyciac. Dlatego nie liczymy z niego geometrii
     // i nie wpuszczamy go nigdy do wyceny.
-    const isAttachment = req.body?.kind === "attachment";
+    const kind = String(req.body?.kind || "");
+    const isAttachment = kind === "attachment";
+    const isReference = kind === "reference";
+    const bezGeometrii = isAttachment || isReference;
     const name = (req.file.originalname || "plik").slice(0, 255);
 
     if (isAttachment && !ATTACHMENT_EXT.test(name)) {
       return res.status(400).json({ error: "Załącznik przyjmujemy jako SVG, DXF lub PDF", code: "unsupported_format" });
     }
-    if (isAttachment && req.file.size > MAX_ATTACHMENT_BYTES) {
+    if (isReference && !REFERENCE_EXT.test(name)) {
+      return res.status(400).json({ error: "Zdjęcie przyjmujemy jako JPG, PNG, WEBP, HEIC lub PDF", code: "unsupported_format" });
+    }
+    if (bezGeometrii && req.file.size > MAX_ATTACHMENT_BYTES) {
       return res.status(400).json({ error: "Załącznik przekracza 15 MB", code: "file_too_large" });
     }
 
-    const geometry = isAttachment ? null : await geometryFromFile(req.file.buffer, name);
+    const geometry = bezGeometrii ? null : await geometryFromFile(req.file.buffer, name);
     const token = generateToken();
     const lang = ["pl", "en", "de"].includes(req.body?.lang) ? req.body.lang : "pl";
 

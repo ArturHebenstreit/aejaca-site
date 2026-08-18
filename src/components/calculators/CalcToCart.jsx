@@ -212,6 +212,7 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
   // Teraz laser wymaga obu naraz, wiec wspolny token kasowal plik projektu.
   const [refToken, setRefToken] = useState(null);
   const [attachBusy, setAttachBusy] = useState(false);
+  const [attachError, setAttachError] = useState(null);
   const [thumbData, setThumbData] = useState(null);
   const [uploadToken, setUploadToken] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -237,20 +238,33 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
     return () => { cancelled = true; };
   }, [file, lang]);
 
-  /** Zalaczniki nie wplywaja na cene, ida na Dysk jako material do wykonania. */
-  async function uploadAttachment(f, setToken) {
+  /**
+   * Zalaczniki nie wplywaja na cene, ida na Dysk jako material do wykonania.
+   *
+   * `kind` rozdziela dwie rzeczy, ktore wygladaja podobnie i sa zupelnie inne:
+   * "attachment" to PROJEKT do wykonania (SVG, DXF, PDF), a "reference" to
+   * ZDJECIE albo szkic (JPG, PNG, WEBP, HEIC, PDF). Serwer sprawdza kazde
+   * wlasna lista formatow. Dopoki obie sciezki wysylaly "attachment", zdjecie
+   * z telefonu bylo odrzucane i znikalo klientowi z pola.
+   */
+  async function uploadAttachment(f, setToken, kind = "attachment", clear = null) {
     if (!f || !API) return;
     setAttachBusy(true);
+    setAttachError(null);
     try {
       const fd = new FormData();
       fd.append("file", f);
       fd.append("lang", lang);
-      fd.append("kind", "attachment");
+      fd.append("kind", kind);
       const resp = await fetch(`${API}/api/uploads`, { method: "POST", body: fd });
       const data = await resp.json();
-      if (resp.ok) setToken(data.uploadToken);
+      if (resp.ok) { setToken(data.uploadToken); return; }
+      // MILCZACE ODRZUCENIE JEST GORSZE OD BLEDU. Klient widzi nazwe pliku
+      // w polu i jest pewien, ze plik poszedl, a do pracowni nie dociera nic.
+      setAttachError(data.error || null);
+      clear?.();
     } catch {
-      // Brak zalacznika na Dysku nie moze zablokowac zakupu, mamy jeszcze opis.
+      setAttachError(null);
     } finally {
       setAttachBusy(false);
     }
@@ -468,11 +482,15 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
                 const f = e.target.files?.[0];
                 if (!f) return;
                 setRefImage(f);
-                uploadAttachment(f, setRefToken);
+                uploadAttachment(f, setRefToken, "reference", () => setRefImage(null));
               }}
               onClearImage={() => { setRefImage(null); setRefToken(null); }}
               lang={lang}
             />
+          )}
+
+          {attachError && (
+            <p className="text-red-400 text-[11px] -mt-2">{attachError}</p>
           )}
 
           {wantsEngraving && (
@@ -501,7 +519,7 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
                 const f = e.target.files?.[0];
                 if (!f) return;
                 setArtworkFile(f);
-                uploadAttachment(f, setArtworkToken);
+                uploadAttachment(f, setArtworkToken, "attachment", () => setArtworkFile(null));
               }}
               onClear={() => { setArtworkFile(null); setArtworkToken(null); }}
             />

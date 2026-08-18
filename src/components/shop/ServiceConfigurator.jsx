@@ -464,7 +464,12 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       const fd = new FormData();
       fd.append("file", f);
       fd.append("lang", lang);
-      fd.append("kind", "attachment");
+      // ZDJECIE, a nie projekt do wykonania. To sa dwa rozne rodzaje pliku
+      // i serwer sprawdza je inaczej: projekt musi byc wektorem, zdjecie ma
+      // byc zdjeciem. Obie sciezki wysylaly tu kiedys "attachment", wiec
+      // zdjecie odbijalo sie od listy formatow wektorowych i znikalo klientowi
+      // z pola ulamek sekundy po dodaniu.
+      fd.append("kind", "reference");
       const resp = await fetch(`${API}/api/uploads`, { method: "POST", body: fd });
       const data = await resp.json();
       if (!resp.ok) {
