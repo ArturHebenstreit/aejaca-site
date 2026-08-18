@@ -875,6 +875,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
             tech={resolved.tech === "msla" ? "msla" : "fdm"}
             nozzleId={nozzleFromPrecision(resolved.params?.precisionId)}
             lang={lang}
+            fileName={fileName || null}
             onResult={setPrintability}
           />
         )}

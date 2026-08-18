@@ -223,6 +223,10 @@ When asked "can you engrave on my own thing": yes, and explain the test piece up
 **Co robi:** klient wgrywa STL, OBJ, 3MF albo STEP i dostaje odpowiedz na pytanie "czy to sie wydrukuje".
 Analiza dziala W PRZEGLADARCE, w watku roboczym. Plik nigdzie nie jest wysylany, nie zapisujemy go i nie mamy do niego dostepu. Mow o tym wprost, to czesty powod obaw przy modelach komercyjnych.
 
+**Przejscie z konfiguratora:** jezeli klient zamawia wydruk i bramka pokaze uwagi do modelu, odnosnik "Zobacz pelna analize modelu" PRZENOSI MODEL RAZEM Z SOBA. Klient nie wgrywa pliku drugi raz, a technologia, dysza i wielkosc wydruku sa juz ustawione tak, jak wybral w zamowieniu, wiec werdykt na stronie narzedzia jest ten sam co w bramce. Model jedzie przez pamiec przegladarki klienta, nie przez nasz serwer; rekord kasuje sie przy odczycie i wygasa po kwadransie. Gdyby klient pytal, czemu formularz jest juz wypelniony, to jest odpowiedz.
+
+**Wielkosc wydruku zmienia werdykt.** Analiza idzie na siatce w skali, ktora klient zamawia, a nie na oryginale z pliku. Model zmniejszony do polowy ma polowe grubosci scianki, wiec moze przestac sie kwalifikowac przy tej samej dyszy, i odwrotnie: powiekszony potrafi przejsc.
+
 **Co sprawdza:**
 - szczelnosc siatki: krawedzie bez pary (dziury) i krawedzie nalezace do wiecej niz dwoch scianek
 - kierunek normalnych, w tym siatke wywrocona na lewa strone

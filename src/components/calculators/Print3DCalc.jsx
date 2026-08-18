@@ -469,9 +469,11 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
           <ResultDisplay result={mslaResult} lang={lang} hideRange={bindingGrosze != null} />
           <QuoteEmailCapture result={mslaResult} lang={lang} techLabel={t(TECH_LABEL_MSLA, lang)} preAttachedFile={mslaStlFile} paramsSummary={mslaParamsSummary} />
           <PrintabilityGate
-            triangles={scaledMslaStlData?.triangles || null}
+            triangles={mslaStlData?.triangles || null}
             tech="msla"
             lang={lang}
+            fileName={mslaStlFileName || null}
+            scale={mslaStlScale}
             onResult={setMslaPrint}
           />
           <CalcToCart
@@ -535,13 +537,16 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
           t(PRECISION.find(p => p.id === precisionId)?.label, lang),
           t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
         ].join(" | ")} />
-        {/* Analiza idzie na geometrii PO PRZESKALOWANIU, bo to ona zostanie
-            wydrukowana. Model zmniejszony o polowe ma o polowe cienszy mur. */}
+        {/* Siatke podajemy w oryginale, a skale osobno: bramka skaluje ja sama
+            przed analiza. `scaledStlData` przelicza tylko objetosc i gabaryt,
+            wiec podane stad trojkaty mialy wymiary sprzed zmniejszenia. */}
         <PrintabilityGate
-          triangles={scaledStlData?.triangles || null}
+          triangles={stlData?.triangles || null}
           tech="fdm"
           nozzleId={nozzleFromPrecision(precisionId)}
           lang={lang}
+          fileName={stlFileName || null}
+          scale={stlScale}
           onResult={setFdmPrint}
         />
         <CalcToCart

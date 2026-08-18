@@ -654,6 +654,8 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
               tech={service.calculator === "print3d_msla" ? "msla" : "fdm"}
               nozzleId={nozzleFromPrecision(params.precisionId)}
               lang={lang}
+              fileName={file?.name || null}
+              scale={scale}
               onResult={setPrintability}
             />
           )}

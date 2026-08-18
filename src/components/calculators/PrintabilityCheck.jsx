@@ -17,6 +17,7 @@ import { Upload, X, Loader2, CheckCircle2, AlertTriangle, XCircle, Info } from "
 import { useLanguage } from "../../i18n/LanguageContext.jsx";
 import STLViewer from "./STLViewer.jsx";
 import { NOZZLES, MACHINES } from "../../analysis/printability.js";
+import { wantsHandoff, waitForModelHandoff, trianglesFromPositions } from "../../analysis/modelHandoff.js";
 
 const ACCEPT = ".stl,.obj,.3mf,.step,.stp";
 
@@ -48,6 +49,9 @@ const L10N = {
     statBed: "Styk ze stołem",
     machineLabel: "Stół roboczy",
     error: "Nie udało się odczytać pliku. Sprawdź, czy to poprawny STL, OBJ, 3MF albo STEP.",
+    handoffWait: "Przenoszę model z konfiguratora...",
+    handoffDone: "Model przeniesiony z konfiguratora. Technologia, dysza i wielkość są takie, jak tam wybrałeś, więc wynik odpowiada dokładnie temu zamówieniu.",
+    handoffScale: (p) => `Wielkość wydruku: ${p}% oryginału.`,
     disclaimer: "Analiza opisuje geometrię, nie zastępuje wydruku próbnego. Przy nietypowych kształtach i przy cienkich detalach na granicy progu odezwij się, sprawdzimy to na maszynie.",
   },
   en: {
@@ -77,6 +81,9 @@ const L10N = {
     statBed: "Bed contact",
     machineLabel: "Build volume",
     error: "Could not read the file. Check that it is a valid STL, OBJ, 3MF or STEP.",
+    handoffWait: "Bringing the model over from the configurator...",
+    handoffDone: "Model brought over from the configurator. Technology, nozzle and size are the ones you picked there, so this result matches that order exactly.",
+    handoffScale: (p) => `Print size: ${p}% of the original.`,
     disclaimer: "This analyses geometry and does not replace a test print. For unusual shapes, or thin detail sitting right on the threshold, get in touch and we will check it on the machine.",
   },
   de: {
@@ -106,6 +113,9 @@ const L10N = {
     statBed: "Auflagefläche",
     machineLabel: "Bauraum",
     error: "Datei konnte nicht gelesen werden. Prüfen Sie, ob es eine gültige STL, OBJ, 3MF oder STEP ist.",
+    handoffWait: "Modell wird aus dem Konfigurator übernommen...",
+    handoffDone: "Modell aus dem Konfigurator übernommen. Technologie, Düse und Größe sind die dort gewählten, das Ergebnis passt also genau zu dieser Bestellung.",
+    handoffScale: (p) => `Druckgröße: ${p}% des Originals.`,
     disclaimer: "Die Analyse beschreibt die Geometrie und ersetzt keinen Testdruck. Bei ungewöhnlichen Formen und bei feinen Details direkt an der Grenze melden Sie sich, wir prüfen es auf der Maschine.",
   },
 };
@@ -227,16 +237,42 @@ export default function PrintabilityCheck() {
   const [report, setReport] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  // Model przyslany z bramki w konfiguratorze. `pending` trzyma formularz
+  // wgrywania zamkniety, zeby klient nie zaczal szukac pliku w chwili, gdy on
+  // wlasnie do niego jedzie.
+  const [handoff, setHandoff] = useState(null);
+  const [pending, setPending] = useState(() => wantsHandoff());
   const inputRef = useRef(null);
   const workerRef = useRef(null);
 
   useEffect(() => () => workerRef.current?.terminate(), []);
+
+  // Odbior modelu z konfiguratora. Siatka jest juz PO przeskalowaniu, wiec nie
+  // parsujemy niczego ponownie: powtorne wczytanie pliku daloby oryginal, a
+  // wiec inna odpowiedz na to samo pytanie. Technologie i dysze bierzemy stamtad
+  // z tego samego powodu, bo to one zmieniaja werdykt.
+  useEffect(() => {
+    if (!wantsHandoff()) return;
+    let cancelled = false;
+    (async () => {
+      const record = await waitForModelHandoff();
+      if (cancelled) return;
+      setPending(false);
+      if (!record) return;
+      if (record.tech === "fdm" || record.tech === "msla") setTech(record.tech);
+      if (record.nozzleId) setNozzleId(record.nozzleId);
+      setMesh({ triangles: trianglesFromPositions(record.positions), name: record.name || "model" });
+      setHandoff({ scale: record.scale ?? 1 });
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   async function handleFile(e) {
     const file = e.target.files?.[0];
     if (!file) return;
     setError(null);
     setReport(null);
+    setHandoff(null);
     setBusy(true);
     try {
       const buffer = await file.arrayBuffer();
@@ -291,6 +327,7 @@ export default function PrintabilityCheck() {
     setMesh(null);
     setReport(null);
     setError(null);
+    setHandoff(null);
     setBusy(false);
     if (inputRef.current) inputRef.current.value = "";
   }
@@ -314,7 +351,12 @@ export default function PrintabilityCheck() {
 
       {/* Wgranie pliku */}
       <div className={CARD}>
-        {!mesh ? (
+        {pending && !mesh ? (
+          <div className="flex items-center gap-3 text-neutral-400 text-sm py-4">
+            <Loader2 className="w-4 h-4 animate-spin text-blue-400 shrink-0" />
+            {L.handoffWait}
+          </div>
+        ) : !mesh ? (
           <div className="text-center py-4">
             <Upload className="w-7 h-7 text-blue-400 mx-auto mb-3" />
             <div className="text-white font-medium text-sm mb-1">{L.dropTitle}</div>
@@ -333,6 +375,16 @@ export default function PrintabilityCheck() {
           </div>
         )}
         {error && <p className="text-rose-300 text-xs mt-3">{error}</p>}
+
+        {/* Skad wzial sie ten model. Bez tego zdania klient widzi wypelniony
+            formularz, ktorego nie wypelnial, i nie wie, czy patrzy na swoj plik
+            ani czy w tej samej wielkosci. */}
+        {handoff && (
+          <p className="text-blue-300/80 text-xs leading-relaxed mt-3 pt-3 border-t border-white/10">
+            {L.handoffDone}
+            {Math.abs(handoff.scale - 1) > 0.001 && ` ${L.handoffScale(Math.round(handoff.scale * 100))}`}
+          </p>
+        )}
       </div>
 
       {mesh && (
