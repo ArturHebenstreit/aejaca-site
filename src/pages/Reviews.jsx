@@ -1,6 +1,6 @@
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
-import { TRUSTPILOT_BUSINESS } from "../data/googleReviews.js";
+import { GOOGLE_BUSINESS, TRUSTPILOT_BUSINESS } from "../data/googleReviews.js";
 import { reviewCountLabel } from "../utils/reviewCount.js";
 
 const LABELS = {
@@ -34,6 +34,12 @@ const TRUSTPILOT_SCORE = {
   pl: { allFive: "wszystkie na 5 gwiazdek", on: "Zobacz na" },
   en: { allFive: "all rated 5 stars", on: "See it on" },
   de: { allFive: "alle mit 5 Sternen", on: "Ansehen auf" },
+};
+
+const GOOGLE_SCORE = {
+  pl: { avg: "średnia", on: "Zobacz na" },
+  en: { avg: "average", on: "See it on" },
+  de: { avg: "Durchschnitt", on: "Ansehen auf" },
 };
 
 const TRUSTPILOT_URL = {
@@ -76,7 +82,7 @@ function TrustpilotScore({ lang }) {
       href={profileUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex flex-col items-center gap-2 mb-8 group"
+      className="flex flex-col items-center gap-2 group"
     >
       <TpStar />
       <div className="text-sm text-neutral-300">
@@ -85,6 +91,44 @@ function TrustpilotScore({ lang }) {
       </div>
       <div className="text-xs text-neutral-600 group-hover:text-neutral-400 transition-colors">
         {S.on} Trustpilot
+      </div>
+    </a>
+  );
+}
+
+/**
+ * Ile opinii mamy w Google i jaka jest srednia.
+ *
+ * Trustpilot mial tu swoj blok od poczatku, a Google nie, chociaz to Google
+ * ma dwadziescia kilka opinii, a Trustpilot dwie. Prosba o ocene bez pokazania,
+ * ile osob juz ja wystawilo, traci najmocniejszy argument, jaki mamy.
+ *
+ * Srednia podajemy, bo w Google jest wyliczana wprost z ocen i zgadza sie z
+ * profilem. Przy Trustpilot jej nie podajemy, i to jest napisane nizej.
+ */
+function GoogleScore({ lang }) {
+  const S = GOOGLE_SCORE[lang] || GOOGLE_SCORE.en;
+  const { totalReviews, rating, mapsUrl } = GOOGLE_BUSINESS;
+  const ocena = rating.toFixed(1).replace(".", lang === "en" ? "." : ",");
+
+  return (
+    <a
+      href={mapsUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex flex-col items-center gap-2 group"
+    >
+      <span aria-hidden="true" className="inline-flex items-center justify-center w-6 h-6 rounded-[3px] bg-amber-400/15 border border-amber-400/40">
+        <svg width="14" height="14" viewBox="0 0 24 24" className="fill-amber-400">
+          <path d="M12 2.5l2.9 6.4 6.9.7-5.2 4.7 1.5 6.9L12 17.6 5.9 21.2l1.5-6.9L2.2 9.6l6.9-.7L12 2.5z" />
+        </svg>
+      </span>
+      <div className="text-sm text-neutral-300">
+        <span className="font-semibold text-white">{reviewCountLabel(totalReviews, lang)}</span>
+        <span className="text-neutral-500"> · {ocena}/5 {S.avg}</span>
+      </div>
+      <div className="text-xs text-neutral-600 group-hover:text-neutral-400 transition-colors">
+        {S.on} Google
       </div>
     </a>
   );
@@ -119,8 +163,12 @@ export default function Reviews() {
           {L.sub}
         </p>
 
-        {/* Trustpilot aggregate score */}
-        <TrustpilotScore lang={lang} />
+        {/* Ile opinii juz mamy, osobno na kazdej platformie. Sumowac ich nie
+            wolno: czesc osob wystawila ocene w obu miejscach. */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10 mb-8">
+          <GoogleScore lang={lang} />
+          <TrustpilotScore lang={lang} />
+        </div>
 
         {/* CTA buttons */}
         <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm sm:max-w-none sm:justify-center">
@@ -129,7 +177,10 @@ export default function Reviews() {
             href="https://search.google.com/local/writereview?placeid=ChIJE7k_bwABwGwRNtWGAYfCHH4"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-3 px-6 py-4 rounded-2xl bg-white text-neutral-900 font-semibold text-base hover:bg-neutral-100 transition-colors shadow-lg w-full sm:w-56"
+            className="cta-amber group flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-semibold text-base w-full sm:w-56
+                       hover:shadow-lg hover:shadow-amber-500/30 hover:-translate-y-0.5
+                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent
+                       transition-all duration-300"
           >
             <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
               <path fill="#4285F4" d="M44.5 20H24v8.5h11.7C34.1 33.9 29.6 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.9 2 2 11.9 2 24s9.9 22 22 22c11 0 21-8 21-21 0-1.3-.2-2.7-.5-4z" />
@@ -142,10 +193,18 @@ export default function Reviews() {
             href={trustpilotUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-semibold text-base text-white transition-colors shadow-lg w-full sm:w-56 hover:opacity-90"
-            style={{ backgroundColor: "#00b67a" }}
+            className="cta-trustpilot flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-semibold text-base shadow-lg w-full sm:w-56
+                       hover:shadow-lg hover:shadow-emerald-500/30 hover:-translate-y-0.5
+                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent
+                       transition-all duration-300"
+            style={{ "--tw-ring-color": "#00b67a" }}
           >
-            <span aria-hidden="true" className="text-lg leading-none">★</span>
+            {/* Gwiazdka rysowana wprost, a nie znakiem ★: glif dziedziczy kolor
+                tekstu, a nadpisanie trybu jasnego robilo z niego czarna plamke
+                na zielonym tle. */}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+              <path d="M12 2.5l2.9 6.4 6.9.7-5.2 4.7 1.5 6.9L12 17.6 5.9 21.2l1.5-6.9L2.2 9.6l6.9-.7L12 2.5z" />
+            </svg>
             {L.trustpilot}
           </a>
         </div>
