@@ -1469,6 +1469,20 @@ const uploadStore = multer({
   limits: { fileSize: 60 * 1024 * 1024, files: 1 },
 });
 
+/**
+ * Wgranie pliku ma WLASNY licznik, osobny od wyceny.
+ *
+ * Wczesniej obie sciezki dzielily budzet `priceLimit`, czyli 60 zapytan na
+ * dziesiec minut. Wycena odswieza sie po kazdym ruchu suwaka, wiec zjada ten
+ * budzet setkami, a wtedy wgranie pliku odbijalo sie od 429. Objaw byl mylacy:
+ * model pokazywal sie w podgladzie, bo podglad rysuje sie lokalnie, po czym
+ * znikal, gdy odpowiedz serwera kasowala plik.
+ *
+ * Wgranie pliku to pojedyncza, swiadoma czynnosc klienta, a nie ruch suwaka,
+ * wiec limit jest niski, ale nie da sie go wyczerpac konfigurowaniem.
+ */
+const uploadLimit = createLimiter({ limit: 30, windowMs: 10 * 60_000, name: "wgrywanie plikow" });
+
 app.post("/api/uploads", (req, res, next) => {
   uploadStore.single("file")(req, res, (err) => {
     if (err) {
@@ -1480,7 +1494,9 @@ app.post("/api/uploads", (req, res, next) => {
   });
 }, async (req, res) => {
   const ip = extractIP(req);
-  if (!checkPriceRate(ip)) return res.status(429).json({ error: "Za duzo zapytan, sprobuj za chwile" });
+  if (!uploadLimit.check(ip)) {
+    return res.status(429).json({ error: "Za duzo wgranych plikow, sprobuj za kilka minut", code: "rate_limited" });
+  }
   if (!req.file?.buffer) return res.status(400).json({ error: "Brak pliku" });
 
   try {
@@ -1532,11 +1548,16 @@ app.post("/api/uploads", (req, res, next) => {
           fileName: req.file.originalname,
           mimeType: req.file.mimetype,
           sizeBytes: req.file.size,
-          sha256: geometry.sha256,
+          // Zalacznik i zdjecie nie maja geometrii, wiec skrot liczymy z pliku.
+          // Odwolanie do `geometry.sha256` bez tego rozgalezienia wywalalo caly
+          // handler wyjatkiem, a klient dostawal 500 przy kazdym zdjeciu.
+          sha256: geometry ? geometry.sha256 : createHash("sha256").update(req.file.buffer).digest("hex"),
           lang,
-          geometry: { volumeCm3: geometry.volumeCm3, bbox: geometry.bbox, triangleCount: geometry.triangleCount },
+          geometry: geometry
+            ? { volumeCm3: geometry.volumeCm3, bbox: geometry.bbox, triangleCount: geometry.triangleCount }
+            : null,
           data: req.file.buffer.toString("base64"),
-          source: "order_file",
+          source: bezGeometrii ? (isReference ? "reference_image" : "artwork_file") : "order_file",
         }),
       }).then((r) => {
         if (!r.ok) console.error(`[uploads] webhook n8n ${r.status} dla ${token}`);

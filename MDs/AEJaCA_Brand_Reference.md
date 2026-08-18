@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-18 | Wersja: 3.9*
+*Wygenerowano: 2026-08-18 | Wersja: 4.0*
 
 ---
 
@@ -264,6 +264,40 @@ Via partnerzy - guma silikonowa, wulkanizacja, odlewy galwaniczne w seriach (AEJ
 ---
 
 ## 6. KALKULATORY (szczegóły techniczne)
+
+### 6.0 Liczba sztuk i progi nakładu (obowiązuje wszędzie)
+
+Od 2026-08-18 **liczba sztuk jest źródłem prawdy**, a próg nakładu z niej wynika,
+nie odwrotnie. Klient wpisuje liczbę licznikiem (przyciski minus i plus), a chipsy
+albo suwak progu tylko za nią podążają. Wybór progu ustawia licznik na najniższej
+liczbie należącej do tego przedziału, czyli znaczy "chcę co najmniej tyle".
+
+- Studio (`QUANTITY_TIERS`): 1 (prototyp), 2-10 rabat 5%, 11-20 rabat 10%,
+  21-50 rabat 15%, 51-100 wycena indywidualna. Licznik chodzi od 1 do 100,
+  a kolejne "+" przy setce przełącza w jeden stan otwarty pokazywany jako **∞**
+  (próg `custom`, wycena indywidualna) i wygasza "+".
+- Biżuteria (`QTY_TIERS`): 1, 2-5 rabat 5%, 6-10 rabat 10%, powyżej 10 stan otwarty.
+
+Reguła siedzi w `src/pricing/config.js` (`tierForQty`, `qtyForTier`, `qtyLimit`,
+`qtyOpenValue`), kontrolka w `src/components/shop/ConfigControls.jsx`
+(`QuantityStepper`), a pilnuje jej `scripts/test-quantity.mjs` w buildzie.
+Do koszyka idzie **wpisana liczba**, a nie nakład reprezentatywny progu: wcześniej
+klient proszący o trzy sztuki dostawał wycenę sześciu.
+
+
+### 6.0b Wielkość wydruku z wgranego pliku
+
+Po wgraniu modelu cena liczy się z **jego własnych wymiarów**, a nie z listy rozmiarów
+(lista chowa się automatycznie, `hiddenWithFile`). Klient zmienia wielkość suwakiem
+skali, którego górną granicę wyznacza realne pole robocze maszyny. Porównujemy wymiary
+**posortowane**, bo część ustawiamy na stole tak, jak nam wygodnie: słupek 24 cm nie
+mieści się wzdłuż osi X drukarki żywicznej (21,8 cm), ale postawiony pionowo mieści się
+w 25 cm.
+
+Regułę liczy `maxScaleForBuildVolume` w `src/pricing/print3d.js`, a serwer odmawia
+kwoty wiążącej kodem `too_large_for_printer` w `priceItem`. Kontrolka to `ScaleControl`
+w `src/components/shop/ConfigControls.jsx`, obecna na karcie usługi i w `/order/`.
+Pilnuje tego `scripts/test-print-scale.mjs` w buildzie.
 
 ### 6.1 Kalkulator MSLA (Print3DCalc - ścieżka MSLA)
 

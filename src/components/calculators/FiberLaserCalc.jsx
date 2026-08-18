@@ -4,6 +4,8 @@
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
+import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
+import { QuantityStepper } from "../shop/ConfigControls.jsx";
 import CalcToCart from "./CalcToCart.jsx";
 import MaterialNotice from "../MaterialNotice.jsx";
 import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
@@ -30,6 +32,7 @@ export { MATERIALS, LENSES, MARK_TYPES, AREAS, calculate };
 
 
 const TECH_LABEL = { pl: "Laser Fiber", en: "Fiber Laser", de: "Faserlaser" };
+const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stueckzahl" };
 
 export default function FiberLaserCalc({ lang = "pl" }) {
   const l = LBL[lang] || LBL.en;
@@ -42,7 +45,10 @@ export default function FiberLaserCalc({ lang = "pl" }) {
   const [lensId, setLensId] = useState("150mm");
   const [markId, setMarkId] = useState("surface");
   const [areaId, setAreaId] = useState("S");
-  const [quantityId, setQuantityId] = useState("proto");
+  // Liczba sztuk rzadzi, prog wynika z niej (tierForQty), zeby chipsy i
+  // licznik nigdy nie pokazaly sprzecznych wartosci.
+  const [qty, setQty] = useState(1);
+  const quantityId = tierForQty(qty, QUANTITY_TIERS).id;
   // Podloze uslugi: przedmiot klienta, material klienta albo material nasz.
   // Nie wplywa na wycene ponizej, ta liczy wylacznie robocizne, patrz MaterialNotice.
   const [podloze, setPodloze] = useState("our_stock");
@@ -145,7 +151,9 @@ export default function FiberLaserCalc({ lang = "pl" }) {
       </CalcCard>
 
       <CalcCard stepNum="⑤" label={l.qty}>
-        <Chips options={QUANTITY_TIERS} value={quantityId} onChange={setQuantityId} lang={lang} />
+        <Chips options={QUANTITY_TIERS} value={quantityId} onChange={(id) => setQty(qtyForTier(id, QUANTITY_TIERS))} lang={lang} />
+        <QuantityStepper label={t(QTY_STEPPER_LBL, lang)} value={qty} onChange={setQty}
+          min={1} max={qtyLimit(QUANTITY_TIERS)} openValue={qtyOpenValue(QUANTITY_TIERS)} lang={lang} accent="blue" />
       </CalcCard>
 
       <CalcCard stepNum="⑥" label={t(SUBSTRATE_LABEL, lang)}>
@@ -180,6 +188,7 @@ export default function FiberLaserCalc({ lang = "pl" }) {
           calculator="laser_fiber"
           serviceId="laser_fiber"
           params={{ matId, lensId, markId, areaId, quantityId, podloze, spare, materialNote }}
+          qty={qty}
           blocked={Boolean(svgData)}
           lang={lang}
         />

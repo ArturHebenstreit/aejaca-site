@@ -4,6 +4,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture } from "./calcShared.jsx";
+import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
+import { QuantityStepper } from "../shop/ConfigControls.jsx";
 import { trackCalc } from "../../utils/analytics.js";
 import CalcToCart from "./CalcToCart.jsx";
 import { useMarketRates } from "../../hooks/useMarketRates.js";
@@ -124,6 +126,7 @@ function ChainSilhouette({ lengthMm, gender = "women" }) {
 
 
 const TECH_LABEL = { pl: "Biżuteria AEJaCA", en: "AEJaCA Jewelry", de: "AEJaCA Schmuck" };
+const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stueckzahl" };
 
 const RATE_NOTE = {
   pl: "Kursy na podstawie danych rynkowych - szczegóły w stopce strony",
@@ -182,7 +185,11 @@ export default function JewelryCalc({ lang = "pl" }) {
   const [serviceId, setServiceId] = useState(
     SERVICE_TYPES.some((x) => x.id === urlService) ? urlService : "new"
   );
-  const [qtyId, setQtyId] = useState("1");
+  // Liczba sztuk rzadzi, prog wynika z niej (tierForQty). Bizuteria ma
+  // wlasna liste progow QTY_TIERS ("1", "2-5", "6-10", "10+"), nie
+  // ogolna QUANTITY_TIERS studia, wiec kazde wywolanie dostaje ja wprost.
+  const [qty, setQty] = useState(1);
+  const qtyId = tierForQty(qty, QTY_TIERS).id;
 
   // New creation
   const [lineId, setLineId] = useState("woman");
@@ -1140,7 +1147,9 @@ export default function JewelryCalc({ lang = "pl" }) {
 
       {/* Quantity */}
       <CalcCard stepNum={step()} label={l.qty}>
-        <Chips options={QTY_TIERS} value={qtyId} onChange={setQtyId} lang={lang} />
+        <Chips options={QTY_TIERS} value={qtyId} onChange={(id) => setQty(qtyForTier(id, QTY_TIERS))} lang={lang} />
+        <QuantityStepper label={t(QTY_STEPPER_LBL, lang)} value={qty} onChange={setQty}
+          min={1} max={qtyLimit(QTY_TIERS)} openValue={qtyOpenValue(QTY_TIERS)} lang={lang} accent="amber" />
       </CalcCard>
 
       {/* Result */}
@@ -1161,6 +1170,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                 ? { jewTypeId: repairJewType, metalTypeId: repairMetal, repairId, qtyId }
                 : { lineId, typeId, metalId, weightId, methodId, platingId, engravingId, qtyId }
           }
+          qty={qty}
           blocked={serviceId === "new" && (
             // Wiazaca cena ma pokrycie tylko przy odlewie prostej bryly.
             methodId !== "cast" ||

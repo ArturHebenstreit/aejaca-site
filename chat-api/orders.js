@@ -221,6 +221,17 @@ export function priceItem({ calculator, params, lang = "pl", geometry = null, sc
   // Cokolwiek klient przyslal jako geometrie, nadpisujemy wlasnym odczytem pliku.
   delete callParams.stlData;
   if (geometry && FILE_AWARE.has(calculator)) {
+    // POLE ROBOCZE SPRAWDZAMY TUTAJ, a nie tylko w przegladarce. Suwak skali
+    // zna granice maszyny, ale kwote wiazaca wystawia serwer i to on musi
+    // odmowic, gdy powiekszony model nie miesci sie juz na stole. Inaczej
+    // dowiedzielibysmy sie o tym przy realizacji, po zaplacie.
+    if (!print3d.fitsBuildVolume(geometry.bbox, calculator, scale)) {
+      const max = print3d.maxScaleForBBox(geometry.bbox, calculator);
+      throw new PricingError(
+        "too_large_for_printer",
+        `Model w tej skali nie mieści się w polu roboczym maszyny. Największa możliwa skala dla tego pliku to ${Math.floor(max * 100)}%.`,
+      );
+    }
     callParams.stlData = scaleGeometry(geometry, scale);
   }
   // Tak samo z bryla kreatora: masa decyduje o cenie, wiec nie moze pochodzic

@@ -7,6 +7,8 @@
 // ============================================================
 import { useState, useMemo } from "react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
+import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
+import { QuantityStepper } from "../shop/ConfigControls.jsx";
 import CalcToCart from "./CalcToCart.jsx";
 
 import { EPOXY_CONFIG, RESINS, VOLUMES, MOLD_TYPES, INCLUSIONS, FINISH_OPTIONS, calculate,
@@ -16,6 +18,7 @@ import { EPOXY_CONFIG, RESINS, VOLUMES, MOLD_TYPES, INCLUSIONS, FINISH_OPTIONS, 
 export { RESINS, VOLUMES, MOLD_TYPES, INCLUSIONS, FINISH_OPTIONS, calculate };
 
 const TECH_LABEL = { pl: "Odlewy żywiczne", en: "Resin Casting", de: "Harzguss" };
+const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stueckzahl" };
 
 export default function EpoxyCastCalc({ lang = "pl" }) {
   const l = LBL[lang] || LBL.en;
@@ -28,7 +31,10 @@ export default function EpoxyCastCalc({ lang = "pl" }) {
   const [moldId, setMoldId] = useState("existing");
   const [inclusionId, setInclusionId] = useState("none");
   const [finishId, setFinishId] = useState("raw");
-  const [quantityId, setQuantityId] = useState("proto");
+  // Liczba sztuk rzadzi, prog wynika z niej (tierForQty), zeby chipsy i
+  // licznik nigdy nie pokazaly sprzecznych wartosci.
+  const [qty, setQty] = useState(1);
+  const quantityId = tierForQty(qty, QUANTITY_TIERS).id;
 
   const result = useMemo(() => calculate({ resinId, volumeId, moldId, inclusionId, finishId, quantityId }, lang),
     [resinId, volumeId, moldId, inclusionId, finishId, quantityId, lang]);
@@ -67,7 +73,9 @@ export default function EpoxyCastCalc({ lang = "pl" }) {
       </CalcCard>
 
       <CalcCard stepNum="⑥" label={l.qty}>
-        <Chips options={QUANTITY_TIERS} value={quantityId} onChange={setQuantityId} lang={lang} />
+        <Chips options={QUANTITY_TIERS} value={quantityId} onChange={(id) => setQty(qtyForTier(id, QUANTITY_TIERS))} lang={lang} />
+        <QuantityStepper label={t(QTY_STEPPER_LBL, lang)} value={qty} onChange={setQty}
+          min={1} max={qtyLimit(QUANTITY_TIERS)} openValue={qtyOpenValue(QUANTITY_TIERS)} lang={lang} accent="blue" />
       </CalcCard>
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
@@ -79,6 +87,7 @@ export default function EpoxyCastCalc({ lang = "pl" }) {
           calculator="epoxy"
           serviceId="epoxy"
           params={{ resinId, volumeId, moldId, inclusionId, finishId, quantityId }}
+          qty={qty}
           lang={lang}
         />
       </div>

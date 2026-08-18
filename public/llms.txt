@@ -128,7 +128,7 @@ Custom pieces start from PLN 400 for a silver ring with a gemstone; a silver sto
 Yes. AEJaCA's instant online calculators return a real quote in about 30 seconds for both handmade jewelry and digital-fabrication projects. A Simple mode gives a rough estimate; an Advanced mode lets you control metal type, stone count, labor, and finish tier.
 
 **Can I upload my own 3D model or vector file for a quote?**
-Yes. AEJaCA sTuDiO auto-prices uploaded 3D models (STL, OBJ, 3MF and STEP) and SVG vector files, computing a cost estimate from dimensions, material, and finish. STEP is tessellated with an OpenCascade CAD kernel, so a dimensioned CAD file is priced without waiting for a human.
+Yes. AEJaCA sTuDiO auto-prices uploaded 3D models (STL, OBJ, 3MF and STEP) and SVG vector files, computing a cost estimate from dimensions, material, and finish. STEP is tessellated with an OpenCascade CAD kernel, so a dimensioned CAD file is priced without waiting for a human. The price follows the model's OWN dimensions as uploaded, so no size has to be picked from a list; a print-size control then scales the model up or down, bounded by the real build volume of the machine (Bambu Lab H2D 300x320x325 mm for FDM, Elegoo Saturn 4 Ultra 218x123x250 mm for MSLA, with rotation taken into account). A model that does not fit at any orientation is not priced automatically: at full size it is printed in parts, which is quoted individually.
 
 **What if I don't have a 3D file - can AEJaCA design it for me?**
 Yes. AEJaCA models in-house in Rhino and Fusion 360, creating print- or cast-ready 3D files from a sketch, photo, or idea - both organic jewelry forms and precise technical/functional parts (parametric design, mechanical tolerances, reverse engineering of existing parts).

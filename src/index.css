@@ -165,6 +165,48 @@ body {
   border: 1px solid rgba(59, 130, 246, 0.18);
 }
 
+/* ============================================================
+   PRZYCISK BURSZTYNOWY (wezwanie do dzialania)
+   ============================================================
+   Wlasna klasa, a nie zlozenie klas narzedziowych, bo nadpisania trybu
+   jasnego sa oznaczone `!important` i wygrywaly z wariantem `:hover`.
+   Przycisk zmienial wtedy tylko cien, a wypelnienie zostawalo takie samo:
+   podswietlenie bylo w kodzie, a nie bylo go na ekranie. */
+.cta-amber {
+  border: 1px solid rgba(251, 191, 36, 0.40);
+  background-color: rgba(251, 191, 36, 0.10);
+  color: #fbbf24;
+}
+.cta-amber:hover {
+  background-color: #fbbf24;
+  border-color: #fbbf24;
+  color: #000;
+}
+[data-theme="light"] .cta-amber {
+  border-color: rgba(146, 64, 14, 0.40);
+  background-color: rgba(180, 83, 9, 0.10);
+  color: #92400e;
+}
+[data-theme="light"] .cta-amber:hover {
+  background-color: #f59e0b;
+  border-color: #b45309;
+  color: #1c1917;
+}
+
+/* Przycisk Trustpilot ma barwy marki Trustpilot: bialy napis na zielonym tle.
+   Klasa `text-white` jest w trybie jasnym nadpisana na kolor tekstu strony,
+   wiec napis robil sie czarny na zielonym. Kolory marki nie podlegaja motywowi
+   serwisu, bo to cudzy znak, a nie nasz element interfejsu. */
+.cta-trustpilot,
+[data-theme="light"] .cta-trustpilot {
+  background-color: #00b67a;
+  color: #fff;
+}
+.cta-trustpilot:hover,
+[data-theme="light"] .cta-trustpilot:hover {
+  background-color: #00a06b;
+}
+
 /* ─── Focus visible styles (accessibility) ─── */
 :focus-visible {
   outline: 2px solid #f59e0b;

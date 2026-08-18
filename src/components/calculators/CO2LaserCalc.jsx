@@ -4,6 +4,8 @@
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
+import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
+import { QuantityStepper } from "../shop/ConfigControls.jsx";
 import CalcToCart from "./CalcToCart.jsx";
 import MaterialNotice from "../MaterialNotice.jsx";
 import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
@@ -33,6 +35,7 @@ export { ENGRAVE_MATERIALS, ENGRAVE_AREAS, ENGRAVE_DETAIL, CUT_MATERIALS, CUT_PA
 
 
 const TECH_LABEL = { pl: "Laser CO2", en: "CO2 Laser", de: "CO2-Laser" };
+const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stueckzahl" };
 
 export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
   const l = LBL[lang] || LBL.en;
@@ -45,11 +48,16 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
   const [eMatId, setEMatId] = useState("wood");
   const [eAreaId, setEAreaId] = useState("S");
   const [eDetailId, setEDetailId] = useState("standard");
-  const [eQtyId, setEQtyId] = useState("proto");
+  // Liczba sztuk rzadzi, prog wynika z niej (tierForQty), zeby chipsy i
+  // licznik nigdy nie pokazaly sprzecznych wartosci. Grawer i ciecie maja
+  // wlasny naklad, wiec kazdy dostaje osobna pare liczba/prog.
+  const [engraveQty, setEngraveQty] = useState(1);
+  const eQtyId = tierForQty(engraveQty, QUANTITY_TIERS).id;
   const [cMatId, setCMatId] = useState("ply3");
   const [cPathId, setCPathId] = useState("S");
   const [cComplexId, setCComplexId] = useState("moderate");
-  const [cQtyId, setCQtyId] = useState("proto");
+  const [cutQty, setCutQty] = useState(1);
+  const cQtyId = tierForQty(cutQty, QUANTITY_TIERS).id;
   const [extended, setExtended] = useState(false);
   // Podloze uslugi: przedmiot klienta, material klienta albo material nasz.
   // Nie wplywa na wycene ponizej, ta liczy wylacznie robocizne, patrz MaterialNotice.
@@ -170,9 +178,19 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
       </CalcCard>
 
       <CalcCard stepNum="⑥" label={l.qty}>
-        {mode === "engrave"
-          ? <Chips options={QUANTITY_TIERS} value={eQtyId} onChange={setEQtyId} lang={lang} />
-          : <Chips options={QUANTITY_TIERS} value={cQtyId} onChange={setCQtyId} lang={lang} />}
+        {mode === "engrave" ? (
+          <>
+            <Chips options={QUANTITY_TIERS} value={eQtyId} onChange={(id) => setEngraveQty(qtyForTier(id, QUANTITY_TIERS))} lang={lang} />
+            <QuantityStepper label={t(QTY_STEPPER_LBL, lang)} value={engraveQty} onChange={setEngraveQty}
+              min={1} max={qtyLimit(QUANTITY_TIERS)} openValue={qtyOpenValue(QUANTITY_TIERS)} lang={lang} accent="blue" />
+          </>
+        ) : (
+          <>
+            <Chips options={QUANTITY_TIERS} value={cQtyId} onChange={(id) => setCutQty(qtyForTier(id, QUANTITY_TIERS))} lang={lang} />
+            <QuantityStepper label={t(QTY_STEPPER_LBL, lang)} value={cutQty} onChange={setCutQty}
+              min={1} max={qtyLimit(QUANTITY_TIERS)} openValue={qtyOpenValue(QUANTITY_TIERS)} lang={lang} accent="blue" />
+          </>
+        )}
       </CalcCard>
 
       <CalcCard stepNum="⑦" label={t(SUBSTRATE_LABEL, lang)}>
@@ -211,6 +229,7 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
           params={mode === "engrave"
             ? { matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, extended, podloze, spare, materialNote }
             : { matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended, podloze, spare, materialNote }}
+          qty={mode === "engrave" ? engraveQty : cutQty}
           blocked={Boolean(svgData)}
           lang={lang}
         />

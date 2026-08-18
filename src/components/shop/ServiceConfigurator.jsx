@@ -7,17 +7,18 @@
 // Cena pochodzi wylacznie z /api/price. Ten komponent jej nie liczy,
 // tylko pokazuje to, co odpowiedzial backend.
 
-import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense, Fragment } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingCart, Check, Loader2, AlertTriangle, ArrowRight } from "lucide-react";
 import { useCart } from "../../cart/CartContext.jsx";
 import { getService } from "../../data/orderCatalog.js";
 import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS } from "../../pricing/packaging.js";
-import { t, quantityBounds } from "../../pricing/config.js";
-import { TileGroup, StepSlider, QtyStepper, FileDrop, PersonalizationField, JobDescription, BlockedReasons } from "./ConfigControls.jsx";
+import { t, tierForQty, qtyForTier, qtyLimit, qtyOpenValue, QUANTITY_TIERS } from "../../pricing/config.js";
+import { TileGroup, StepSlider, QuantityStepper, ScaleControl, FileDrop, PersonalizationField, JobDescription, BlockedReasons } from "./ConfigControls.jsx";
 import { useMoney } from "../../shop/money.js";
 import PrintabilityGate from "../calculators/PrintabilityGate.jsx";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
+import { maxScaleForBBox } from "../../pricing/print3d.js";
 import MaterialNotice from "../MaterialNotice.jsx";
 import { SPARE_LABEL, spareOptionsFor, brakPodloza } from "../../data/laserSubstrate.js";
 
@@ -95,6 +96,9 @@ const UI = {
     priceNote: "Cena wiążąca, obowiązuje 7 dni.",
     engravingHint: "Grawer wykonujemy dokładnie tak, jak wpiszesz. Sprawdź pisownię.",
     uploadFailed: "Nie udało się przyjąć pliku. Spróbuj ponownie albo napisz do nas.",
+    parsingFile: "Analizuję model",
+    printSize: "Wielkość wydruku",
+    sendingFile: "Wysyłam plik do wyceny",
   },
   en: {
     configure: "Configure and add to cart",
@@ -154,6 +158,9 @@ const UI = {
     priceNote: "Binding price, valid for 7 days.",
     engravingHint: "We engrave exactly what you type. Please check the spelling.",
     uploadFailed: "We could not accept the file. Try again or write to us.",
+    parsingFile: "Analysing the model",
+    printSize: "Print size",
+    sendingFile: "Sending the file for pricing",
   },
   de: {
     configure: "Konfigurieren und in den Warenkorb",
@@ -213,6 +220,9 @@ const UI = {
     priceNote: "Verbindlicher Preis, 7 Tage gültig.",
     engravingHint: "Wir gravieren genau das, was Sie eingeben. Bitte Schreibweise prüfen.",
     uploadFailed: "Die Datei konnte nicht angenommen werden. Bitte erneut versuchen oder uns schreiben.",
+    parsingFile: "Modell wird analysiert",
+    printSize: "Druckgroesse",
+    sendingFile: "Datei wird zur Kalkulation gesendet",
   },
 };
 
@@ -230,7 +240,14 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const [file, setFile] = useState(null);
   const [uploadToken, setUploadToken] = useState(null);
   const [uploading, setUploading] = useState(false);
+  // Odczyt lokalny i wysylka to dwa rozne oczekiwania, o roznej dlugosci.
+  const [parsing, setParsing] = useState(false);
+  const [fileError, setFileError] = useState(null);
   const [geometry, setGeometry] = useState(null);
+  // Skala wydruku wzgledem oryginalu. Jeden oznacza "tak, jak w pliku", i to
+  // jest domyslna odpowiedz: model niesie swoje wymiary, wiec nie ma powodu
+  // pytac klienta o rozmiar, ktory juz podal, wgrywajac plik.
+  const [scale, setScale] = useState(1);
   const [triangles, setTriangles] = useState(null);
   const [printability, setPrintability] = useState(null);
   const [hasThumb, setHasThumb] = useState(false);
@@ -276,6 +293,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       body.append("params", JSON.stringify({ ...params, ...(service.fixed || {}) }));
       // Plik poszedl juz raz do /api/uploads, tutaj wystarczy identyfikator.
       if (uploadToken) body.append("uploadToken", uploadToken);
+      if (scale !== 1) body.append("scale", String(scale));
 
       const resp = await fetch(`${API}/api/price`, { method: "POST", body });
       const data = await resp.json();
@@ -292,7 +310,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
     } finally {
       if (mine === reqId.current) setBusy(false);
     }
-  }, [service, params, uploadToken, lang, u.needsQuote]);
+  }, [service, params, uploadToken, scale, lang, u.needsQuote]);
 
   // Cena odswieza sie po kazdej zmianie, z krotkim opoznieniem, zeby
   // przesuwanie suwaka nie wysylalo kilkunastu zapytan.
@@ -301,7 +319,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
     return () => clearTimeout(timer);
   }, [fetchPrice]);
 
-  useEffect(() => setAdded(false), [params, file, packagingId, engraving, packEngraving, lidBackText, description, qty]);
+  useEffect(() => setAdded(false), [params, file, scale, packagingId, engraving, packEngraving, lidBackText, description, qty]);
 
   // Wysylka miniatury czeka na identyfikator uploadu i idzie dokladnie raz.
   useEffect(() => {
@@ -342,11 +360,23 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const tierKey = service.fields.some((f) => f.key === "quantityId")
     ? "quantityId"
     : service.fields.some((f) => f.key === "qtyId") ? "qtyId" : null;
-  const bounds = tierKey ? quantityBounds(params[tierKey]) : { min: 1, max: 999 };
-  // Gdy prog wskazuje dokladnie jedna sztuke, osobny licznik jest zbedny
-  // i wyglada jak druga, sprzeczna kontrolka o tej samej nazwie.
-  const showQtyStepper = bounds.min !== bounds.max;
-  const effectiveQty = Math.min(bounds.max, Math.max(bounds.min, qty));
+  // LICZBA SZTUK JEST ZRODLEM PRAWDY, prog nakladu z niej wynika. Odwrotny
+  // kierunek dawal formularz, ktory sam sobie zmienia liczbe: klient przesuwal
+  // suwak na przedzial 2-10, a licznik siadal na dwoch sztukach, ktorych nikt
+  // nie zamawial. Licznik stoi teraz zawsze, takze przy jednej sztuce.
+  const tierField = tierKey ? service.fields.find((f) => f.key === tierKey) : null;
+  const tiers = tierField?.options || QUANTITY_TIERS;
+  const qtyMax = qtyLimit(tiers);
+  const qtyOpen = qtyOpenValue(tiers);
+  const effectiveQty = qty;
+
+  // Jedno wejscie na zmiane liczby sztuk, zeby prog nie mogl sie z nia rozjechac.
+  // Robimy to funkcja, a nie efektem: efekt ustawiajacy stan z innego stanu to
+  // dodatkowy przebieg renderowania i klasa bledu, ktora ta karta juz raz miala.
+  const changeQty = (n) => {
+    setQty(n);
+    if (tierKey) setParams((p) => ({ ...p, [tierKey]: tierForQty(n, tiers).id }));
+  };
   const lineTotal = unitTotal * effectiveQty;
 
   // Pozycja w koszyku ma byc gotowa do kupienia, a nie do dopytania mailem.
@@ -394,14 +424,23 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   // pilnuje pozostalych.
   const substrateGap = brakPodloza({ calculator: service.calculator, params });
 
-  const ready = descriptionOk && artworkOk && jewelryEngravingOk && packEngravingOk && !substrateGap && !needsHumanQuote && !printHold;
+  // Plik odrzucony przez serwer zostaje w polu, zeby bylo widac, o ktory chodzi,
+  // ale zamowic go nie mozna: wycena poszlaby wtedy z samego rozmiaru, a klient
+  // bylby przekonany, ze kupuje wydruk swojego modelu.
+  const ready = descriptionOk && artworkOk && jewelryEngravingOk && packEngravingOk
+    && !substrateGap && !needsHumanQuote && !printHold && !fileError;
 
   // Zmiana podloza czysci pola, ktore od niego zaleza. Bez tego po przelaczeniu
   // z przedmiotu klienta na nasz material zostawalby wybor sposobu proby,
   // ktory przy naszym materiale nie ma sensu, a serwer i tak by go odrzucil.
-  const setParam = (key, val) => setParams((p) => (
-    key === "podloze" ? { ...p, podloze: val, spare: "", materialNote: "" } : { ...p, [key]: val }
-  ));
+  const setParam = (key, val) => {
+    // Suwak nakladu mowi "chce co najmniej tyle", wiec ustawia licznik na dolna
+    // granice przedzialu. To jedyny kierunek, w ktorym prog dotyka liczby.
+    if (key === tierKey) setQty(qtyForTier(val, tiers));
+    setParams((p) => (
+      key === "podloze" ? { ...p, podloze: val, spare: "", materialNote: "" } : { ...p, [key]: val }
+    ));
+  };
 
   function resetFile() {
     setFile(null);
@@ -411,6 +450,8 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
     setUploadToken(null);
     setHasThumb(false);
     setThumbData(null);
+    setFileError(null);
+    setScale(1);
     pendingThumb.current = null;
   }
 
@@ -491,6 +532,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
     if (!f) return;
     resetFile();
     setFile(f);
+    setParsing(true);
     setUploading(true);
     setError(null);
 
@@ -503,7 +545,8 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
         const parsed = await parseMeshAsync(await f.arrayBuffer(), f.name);
         setTriangles(parsed.triangles);
       })
-      .catch(() => setTriangles(null));
+      .catch(() => setTriangles(null))
+      .finally(() => setParsing(false));
 
     try {
       // Wysylamy raz. Serwer liczy geometrie, zapisuje plik na Dysku
@@ -514,15 +557,20 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       const resp = await fetch(`${API}/api/uploads`, { method: "POST", body: fd });
       const data = await resp.json();
       if (!resp.ok) {
-        setError({ message: data.error, code: data.code });
-        resetFile();
+        // Plik i podglad ZOSTAJA. Wyrzucenie ich razem z komunikatem znaczylo,
+        // ze klient widzial znikajacy model i szukal powodu gdzie indziej.
+        setFileError(data.error || u.uploadFailed);
+        setUploadToken(null);
+        setGeometry(null);
+        setPrice(null);
         return;
       }
+      setFileError(null);
       setUploadToken(data.uploadToken);
       setGeometry(data.geometry);
     } catch {
-      setError({ message: u.uploadFailed });
-      resetFile();
+      setFileError(u.uploadFailed);
+      setUploadToken(null);
     } finally {
       setUploading(false);
     }
@@ -538,6 +586,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       image: card.image,
       params: { ...params, ...(service.fixed || {}), ...(printability ? { printability } : {}) },
       geometry,
+      scale,
       fileName: file?.name || null,
       uploadToken,
       // Zrzut modelu zamiast zdjecia katalogowego, zeby w koszyku bylo
@@ -564,6 +613,10 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   }
 
   const visibleFields = service.fields.filter((f) => !(f.hiddenWithFile && uploadToken));
+  // Granica skali wynika z pola roboczego maszyny. Ten sam kod liczy ja na
+  // serwerze przy wystawianiu kwoty wiazacej, wiec suwak nie moze obiecac
+  // wielkosci, ktora wycena odrzuci.
+  const maxScale = geometry?.bbox ? maxScaleForBBox(geometry.bbox, service.calculator) : null;
   const isJewelry = String(service.calculator || "").startsWith("jewelry");
 
   return (
@@ -577,7 +630,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
             hint={u.fileHint}
             file={file}
             geometry={geometry}
-            busy={uploading}
+            busy={parsing || uploading}
+            busyLabel={parsing ? u.parsingFile : u.sendingFile}
+            error={fileError}
             onPick={onPickFile}
             onClear={resetFile}
             accent={accent}
@@ -600,6 +655,21 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
               nozzleId={nozzleFromPrecision(params.precisionId)}
               lang={lang}
               onResult={setPrintability}
+            />
+          )}
+          {/* WIELKOSC WYDRUKU. Pojawia sie dopiero, gdy serwer przyjal plik i
+              odeslal jego wymiary: dopoki ich nie ma, nie ma czego skalowac
+              ani z czego wyliczyc granicy pola roboczego. */}
+          {geometry && maxScale != null && (
+            <ScaleControl
+              label={u.printSize}
+              bbox={geometry.bbox}
+              volumeCm3={geometry.volumeCm3}
+              scale={scale}
+              onChange={setScale}
+              maxScale={maxScale}
+              lang={lang}
+              accent={accent}
             />
           )}
           {!file && <p className="text-neutral-600 text-[11px] -mt-4 mb-6">{u.fileOptional}</p>}
@@ -629,6 +699,22 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
 
       {visibleFields.map((f) => {
         const options = f.optionsFrom ? f.optionsFrom(params) : f.options;
+        // Licznik sztuk stoi TUZ POD progiem nakladu, bo to jedna decyzja
+        // pokazana dwoma kontrolkami. Rozdzielone przez pol formularza
+        // wygladaly jak dwa niezalezne pola o tym samym znaczeniu.
+        const licznik = f.key === tierKey ? (
+          <QuantityStepper
+            key={`${f.key}-licznik`}
+            label={u.qty}
+            value={qty}
+            onChange={changeQty}
+            min={1}
+            max={qtyMax}
+            openValue={qtyOpen}
+            lang={lang}
+            accent={accent}
+          />
+        ) : null;
         if (f.multi) {
           return (
             <div key={f.key} className="mb-6">
@@ -661,28 +747,32 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
         }
         if (SLIDER_FIELDS.has(f.key) && options.length >= 3 && options.length <= 7) {
           return (
-            <StepSlider
-              key={f.key}
+            <Fragment key={f.key}>
+              <StepSlider
+                label={t(f.label, lang)}
+                options={options}
+                value={params[f.key]}
+                onChange={(v) => setParam(f.key, v)}
+                lang={lang}
+                accent={accent}
+              />
+              {licznik}
+            </Fragment>
+          );
+        }
+        return (
+          <Fragment key={f.key}>
+            <TileGroup
               label={t(f.label, lang)}
               options={options}
               value={params[f.key]}
               onChange={(v) => setParam(f.key, v)}
               lang={lang}
               accent={accent}
+              columns={options.length > 8 ? 4 : 3}
             />
-          );
-        }
-        return (
-          <TileGroup
-            key={f.key}
-            label={t(f.label, lang)}
-            options={options}
-            value={params[f.key]}
-            onChange={(v) => setParam(f.key, v)}
-            lang={lang}
-            accent={accent}
-            columns={options.length > 8 ? 4 : 3}
-          />
+            {licznik}
+          </Fragment>
         );
       })}
 
@@ -787,16 +877,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
         </>
       )}
 
-      {showQtyStepper && (
-      <QtyStepper
-        label={bounds.min > 1 ? `${u.qty} (${u.tierRange} ${bounds.min}-${bounds.max})` : u.qty}
-        value={effectiveQty}
-        onChange={setQty}
-        min={bounds.min}
-        max={bounds.max}
-        accent={accent}
-      />
-      )}
+
 
       {/* Cena */}
       <div className="border-t border-white/10 pt-5">

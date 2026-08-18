@@ -80,36 +80,150 @@ export function StepSlider({ label, options, value, onChange, lang, accent = "bl
   );
 }
 
-/** Licznik sztuk. Kciuk trafia w duze przyciski, nie w strzalki pola liczbowego. */
-export function QtyStepper({ label, value, onChange, min = 1, max = 999, accent = "blue" }) {
-  const btn =
-    "w-10 h-10 rounded-lg border border-white/10 bg-white/[0.03] text-neutral-300 hover:border-white/25 hover:text-white transition-colors text-lg leading-none";
+/**
+ * Licznik sztuk. Kciuk trafia w duze przyciski, nie w strzalki pola liczbowego.
+ *
+ * LICZBA JEST ZAWSZE NA FORMULARZU, takze wtedy, gdy wynosi jeden. Ukrywanie
+ * jej przy prototypie znaczylo, ze klient, ktory chce dwie sztuki, musial
+ * najpierw znalezc suwak nakladu i domyslic sie, ze to on odslania licznik.
+ *
+ * Ponad gorna granica jest jeden stan otwarty, pokazywany jako nieskonczonosc:
+ * tyle sztuk wyceniamy recznie, wiec dalsze zliczanie niczego nie zmienia,
+ * a "+" gasnie zamiast udawac, ze cos jeszcze robi.
+ */
+export function QuantityStepper({ label, value, onChange, min = 1, max = 100, openValue = null, lang, accent = "blue", hint }) {
+  const otwarty = openValue != null && value >= openValue;
+  const gora = openValue ?? max;
+  const przyGorze = value >= gora;
+  const btn = (wylaczony) =>
+    `w-10 h-10 rounded-lg border transition-colors text-lg leading-none ${
+      wylaczony
+        ? "border-white/5 bg-white/[0.01] text-neutral-700 cursor-not-allowed"
+        : "border-white/10 bg-white/[0.03] text-neutral-300 hover:border-white/25 hover:text-white"
+    }`;
+
+  // Krok w dol z nieskonczonosci wraca na ostatnia liczbe, ktora umiemy policzyc.
+  const wDol = () => onChange(otwarty ? max : Math.max(min, value - 1));
+  const wGore = () => onChange(przyGorze ? gora : Math.min(gora, value + 1));
+
   return (
     <div className="mb-6">
       <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">{label}</div>
       <div className="flex items-center gap-3">
-        <button type="button" className={btn} onClick={() => onChange(Math.max(min, value - 1))} aria-label="-">
+        <button type="button" className={btn(value <= min)} onClick={wDol} disabled={value <= min} aria-label="-">
           &minus;
         </button>
-        <input
-          type="number"
-          value={value}
-          min={min}
-          max={max}
-          onChange={(e) => onChange(Math.min(max, Math.max(min, Number(e.target.value) || min)))}
-          className={`w-20 text-center py-2.5 rounded-lg bg-white/[0.03] border border-white/10 text-white font-semibold
-                      focus:outline-none ${accent === "amber" ? "focus:border-amber-400/50" : "focus:border-blue-400/50"}`}
-        />
-        <button type="button" className={btn} onClick={() => onChange(Math.min(max, value + 1))} aria-label="+">
+        {otwarty ? (
+          <div
+            className="w-20 text-center py-2.5 rounded-lg bg-white/[0.03] border border-white/10 text-white font-semibold text-lg leading-tight"
+            aria-label={String(value)}
+          >
+            ∞
+          </div>
+        ) : (
+          <input
+            type="number"
+            value={value}
+            min={min}
+            max={gora}
+            onChange={(e) => onChange(Math.min(gora, Math.max(min, Math.floor(Number(e.target.value)) || min)))}
+            className={`w-20 text-center py-2.5 rounded-lg bg-white/[0.03] border border-white/10 text-white font-semibold
+                        focus:outline-none ${accent === "amber" ? "focus:border-amber-400/50" : "focus:border-blue-400/50"}`}
+          />
+        )}
+        <button type="button" className={btn(przyGorze)} onClick={wGore} disabled={przyGorze} aria-label="+">
           +
         </button>
       </div>
+      {otwarty && (
+        <p className="text-neutral-500 text-[11px] mt-2">
+          {hint || t({
+            pl: `Powyżej ${max} sztuk wyceniamy indywidualnie. Napisz, ile dokładnie potrzebujesz.`,
+            en: `Above ${max} pieces we quote individually. Tell us exactly how many you need.`,
+            de: `Ueber ${max} Stueck kalkulieren wir individuell. Sagen Sie uns die genaue Menge.`,
+          }, lang)}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Wielkosc wydruku wzgledem oryginalu.
+ *
+ * Po wgraniu pliku cena liczy sie z JEGO PRAWDZIWYCH WYMIAROW, a nie z listy
+ * rozmiarow: model juz je ma, wiec pytanie o rozmiar bylo pytaniem o cos, co
+ * wiemy. Zostaje jedno prawdziwe pytanie: czy wydrukowac go w oryginale, czy
+ * inaczej. Gorna granice wyznacza pole robocze maszyny, wiec suwak nie pozwala
+ * zamowic czegos, czego nie da sie wydrukowac.
+ */
+export function ScaleControl({ label, bbox, volumeCm3, scale, onChange, maxScale, lang, accent = "blue" }) {
+  const gora = Math.min(maxScale ?? 4, 4);
+  const dol = 0.25;
+  const zaDuzy = gora < 1;
+  const tekst = accent === "amber" ? "text-amber-300" : "text-blue-300";
+  const track = accent === "amber" ? "accent-amber-400" : "accent-blue-400";
+  const wym = (n) => (n * scale * 10).toFixed(0);
+  const dopasowanie = Math.floor((maxScale ?? 1) * 100) / 100;
+
+  const przycisk = (aktywny) =>
+    `px-2.5 py-1 rounded-lg text-[10px] border transition-colors ${
+      aktywny ? `${accent === "amber" ? "border-amber-400 bg-amber-400/10" : "border-blue-400 bg-blue-400/10"} ${tekst}`
+              : "border-white/10 text-neutral-400 hover:border-white/25 hover:text-neutral-200"
+    }`;
+
+  return (
+    <div className="mb-6">
+      <div className="flex items-baseline justify-between mb-2">
+        <span className="text-[11px] uppercase tracking-wide text-neutral-500">{label}</span>
+        <span className={`text-xs font-medium ${tekst}`}>
+          {Math.abs(scale - 1) < 0.005
+            ? t({ pl: "oryginał", en: "original", de: "Original" }, lang)
+            : `${Math.round(scale * 100)}%`}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={dol}
+        max={Math.max(gora, dol + 0.01)}
+        step={0.01}
+        value={Math.min(scale, gora)}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className={`w-full ${track}`}
+        aria-label={label}
+        disabled={zaDuzy}
+      />
+      <div className="flex flex-wrap items-center gap-1.5 mt-2">
+        <button type="button" className={przycisk(Math.abs(scale - 1) < 0.005)} onClick={() => onChange(1)} disabled={zaDuzy}>
+          {t({ pl: "Oryginał", en: "Original", de: "Original" }, lang)}
+        </button>
+        {maxScale != null && dopasowanie !== 1 && (
+          <button type="button" className={przycisk(Math.abs(scale - dopasowanie) < 0.005)} onClick={() => onChange(dopasowanie)}>
+            {t({ pl: "Do pola roboczego", en: "Fit the build plate", de: "Auf den Bauraum" }, lang)}
+          </button>
+        )}
+        {bbox && (
+          <span className="text-neutral-500 text-[11px] ml-auto">
+            {wym(bbox.x)} × {wym(bbox.y)} × {wym(bbox.z)} mm
+            {volumeCm3 ? `, ${(volumeCm3 * scale ** 3).toFixed(1)} cm³` : ""}
+          </span>
+        )}
+      </div>
+      {zaDuzy && (
+        <p className="text-amber-300 text-[11px] mt-2">
+          {t({
+            pl: `Model w oryginale nie mieści się w polu roboczym. Największa możliwa wielkość to ${Math.round((maxScale ?? 0) * 100)}%, a w całości wydrukujemy go po podzieleniu na części. Napisz do nas, jeżeli ma zostać w oryginale.`,
+            en: `At original size the model does not fit the build plate. The largest possible size is ${Math.round((maxScale ?? 0) * 100)}%; at full size we print it in parts. Write to us if it has to stay original.`,
+            de: `In Originalgroesse passt das Modell nicht in den Bauraum. Moeglich sind hoechstens ${Math.round((maxScale ?? 0) * 100)}%; in voller Groesse drucken wir es geteilt. Schreiben Sie uns, wenn es original bleiben soll.`,
+          }, lang)}
+        </p>
+      )}
     </div>
   );
 }
 
 /** Wgrywanie pliku z podgladem geometrii policzonej przez serwer */
-export function FileDrop({ label, hint, file, geometry, onPick, onClear, busy, accent = "blue", lang, accept = ".stl", children }) {
+export function FileDrop({ label, hint, file, geometry, onPick, onClear, busy, busyLabel, error, accent = "blue", lang, accept = ".stl", children }) {
   const ref = useRef(null);
   const ring = accent === "amber" ? "border-amber-400/30 hover:border-amber-400/50" : "border-blue-400/30 hover:border-blue-400/50";
   const tint = accent === "amber" ? "text-amber-400" : "text-blue-400";
@@ -145,7 +259,27 @@ export function FileDrop({ label, hint, file, geometry, onPick, onClear, busy, a
         {busy && (
           <div className="flex items-center gap-2 text-neutral-500 text-xs mt-2">
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            {t({ pl: "Analizuję model", en: "Analysing the model", de: "Modell wird analysiert" }, lang)}
+            {/* Etykieta ma mowic, co sie dzieje TERAZ. Jeden napis na oba etapy
+                znaczyl, ze przy kilkunastu megabajtach klient patrzyl na
+                "Analizuję model" dlugo po tym, jak model juz widzial. */}
+            {busyLabel || t({ pl: "Analizuję model", en: "Analysing the model", de: "Modell wird analysiert" }, lang)}
+          </div>
+        )}
+        {/* Odrzucony plik ZOSTAJE w polu razem z podgladem. Skasowanie go bylo
+            mylace: znikal model, a powod znikniecia stal osobno, nizej. */}
+        {error && !busy && (
+          <div className="flex gap-2 mt-2 text-[11px] text-amber-300">
+            <CircleAlert className="w-3.5 h-3.5 flex-shrink-0 mt-px" />
+            <span>
+              {error}
+              <span className="block text-neutral-500 mt-0.5">
+                {t({
+                  pl: "Ten plik nie wejdzie do zamówienia. Usuń go krzyżykiem i wybierz inny albo opisz zlecenie.",
+                  en: "This file cannot be ordered. Remove it and pick another, or describe the job instead.",
+                  de: "Diese Datei kann nicht bestellt werden. Entfernen Sie sie und waehlen eine andere, oder beschreiben Sie den Auftrag.",
+                }, lang)}
+              </span>
+            </span>
           </div>
         )}
         {geometry && !busy && (

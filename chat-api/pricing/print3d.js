@@ -183,6 +183,46 @@ export const INFILL_OPTIONS = [
 // Bambu Lab H2D dual-nozzle build volume
 export const BUILD_VOL_CM = { x: 30.0, y: 32.0, z: 32.5 };
 
+// ============================================================
+// SKALA WYDRUKU A POLE ROBOCZE MASZYNY
+// ============================================================
+// Klient wgrywa model i chce go czasem powiekszyc albo zmniejszyc. Powiekszac
+// wolno tylko do granicy, w ktorej wydruk jeszcze miesci sie na stole. Bez tej
+// granicy suwak obiecywalby cene za rzecz, ktorej nie da sie wydrukowac,
+// a odkrylibysmy to dopiero przy realizacji, po zaplacie.
+//
+// Porownujemy wymiary POSORTOWANE, bo czesc ustawiamy na stole tak, jak nam
+// wygodnie. Model 24 x 2 x 2 cm nie miesci sie wzdluz osi X drukarki zywicznej
+// (21.8), ale postawiony pionowo miesci sie w 25.0 bez trudu.
+
+export const PRINTER_BUILD_VOL_CM = {
+  print3d_msla: MSLA_BUILD_VOL_CM,
+  print3d_fdm: BUILD_VOL_CM,
+};
+
+/** Najwieksza skala dla podanego pola roboczego. Null, gdy nie da sie policzyc. */
+export function maxScaleForBuildVolume(bbox, vol) {
+  if (!vol || !bbox) return null;
+  const model = [bbox.x, bbox.y, bbox.z].map(Number).sort((a, b) => a - b);
+  if (!model.every((n) => Number.isFinite(n) && n > 0)) return null;
+  const stol = [vol.x, vol.y, vol.z].sort((a, b) => a - b);
+  return Math.min(...model.map((d, i) => stol[i] / d));
+}
+
+/** To samo, ale pole robocze bierzemy z nazwy kalkulatora */
+export function maxScaleForBBox(bbox, calculator) {
+  return maxScaleForBuildVolume(bbox, PRINTER_BUILD_VOL_CM[calculator]);
+}
+
+/** Czy bryla w tej skali miesci sie na stole. Nieznana maszyna nie blokuje wyceny. */
+export function fitsBuildVolume(bbox, calculator, scale = 1) {
+  const max = maxScaleForBBox(bbox, calculator);
+  if (max == null) return true;
+  // Zapas na bledy zaokraglenia, zeby model dokladnie na wymiar stolu nie
+  // odbijal sie od wlasnej granicy.
+  return Number(scale) <= max + 1e-4;
+}
+
 export function estimateTimeFromVolume(volumeCm3) {
   return 0.194 * Math.pow(volumeCm3, 0.602);
 }
