@@ -196,5 +196,65 @@ if (!progSerwera || !progKlienta || progSerwera !== progKlienta) {
   }
 }
 
+// ------------------------------------------------------------
+// 7. Formaty, ktore pole OFERUJE, serwer musi PRZYJAC
+// ------------------------------------------------------------
+// Pole "Dolacz zdjecie lub szkic" oferowalo .jpg, .png i .webp, a serwer
+// przyjmowal wylacznie SVG, DXF i PDF, bo zdjecie jechalo tym samym rodzajem
+// zgloszenia co projekt do wykonania. Klient wybieral zdjecie, widzial je
+// przez ulamek sekundy i patrzyl, jak znika: przegladarka pokazywala plik od
+// razu, a po odpowiedzi serwera kasowala go z powrotem. W kalkulatorze bylo
+// gorzej, bo tam blad byl polykany po cichu i plik po prostu nie docieral.
+//
+// Kazdy format, ktory pole pokazuje w oknie wyboru, ma byc przyjety. Inaczej
+// zapraszamy klienta do czynnosci, ktora nie moze sie udac.
+{
+  const controls = czytaj("src/components/shop/ConfigControls.jsx");
+  const server = czytaj("chat-api/server.js");
+
+  const oferowane = /accept="([^"]*)"[^>]*onChange=\{onPickImage\}/.exec(controls)?.[1]
+    ?? /type="file"\s+accept="([^"]*)"[^>]*onChange=\{onPickImage\}/.exec(controls)?.[1];
+  const wzorzec = /const REFERENCE_EXT = \/\\\.\(([^)]*)\)\$\/i/.exec(server)?.[1];
+
+  if (!oferowane) {
+    zle("nie znalazlem listy formatow pola ze zdjeciem w ConfigControls.jsx");
+  } else if (!wzorzec) {
+    zle("serwer nie ma REFERENCE_EXT, wiec zdjecie jedzie na liste formatow wektorowych");
+  } else {
+    const przyjmowane = wzorzec.split("|");
+    const brak = oferowane.split(",")
+      .map((x) => x.trim().replace(/^\./, "").toLowerCase())
+      .filter(Boolean)
+      .filter((ext) => !przyjmowane.includes(ext));
+    if (brak.length) {
+      zle(`pole oferuje formaty, ktorych serwer nie przyjmuje: ${brak.join(", ")}`);
+      console.error("    Klient wybierze taki plik i zobaczy, jak znika.");
+    } else {
+      ok(`wszystkie ${oferowane.split(",").length} formaty pola ze zdjeciem sa przyjmowane przez serwer`);
+    }
+  }
+
+  // Sam wzorzec nie wystarczy: musi byc UZYTY. Stala zadeklarowana i nigdy
+  // niesprawdzana wyglada w kodzie jak zabezpieczenie, a nim nie jest.
+  if (!/REFERENCE_EXT\.test\(/.test(server)) {
+    zle("serwer deklaruje REFERENCE_EXT, ale nigdzie go nie sprawdza");
+  } else {
+    ok("serwer naprawde sprawdza format zdjecia wlasnym wzorcem");
+  }
+
+  // Zdjecie i projekt to dwa rozne rodzaje zgloszenia. Gdyby przegladarka
+  // wysylala jeden rodzaj dla obu, wracalaby dokladnie ta wada.
+  if (!/kind", "reference"/.test(czytaj("src/components/shop/ServiceConfigurator.jsx"))) {
+    zle("karta uslugi wysyla zdjecie jako projekt do wykonania");
+  } else {
+    ok("karta uslugi wysyla zdjecie wlasnym rodzajem zgloszenia");
+  }
+  if (!/"reference"/.test(czytaj("src/components/calculators/CalcToCart.jsx"))) {
+    zle("kalkulator wysyla zdjecie jako projekt do wykonania");
+  } else {
+    ok("kalkulator wysyla zdjecie wlasnym rodzajem zgloszenia");
+  }
+}
+
 console.log(bledy ? `\n${bledy} bledow\n` : "\nSzew koszyk-zamowienie: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);
