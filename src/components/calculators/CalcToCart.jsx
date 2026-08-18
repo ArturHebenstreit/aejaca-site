@@ -65,7 +65,7 @@ const UI = {
     needDescription: "Opis zlecenia",
     needDescriptionHint: "Wpisz co najmniej 20 znaków w polu opisu powyżej.",
     needArtwork: "Projekt do wykonania",
-    needArtworkHint: "Wgraj plik SVG, DXF lub PDF.",
+    needArtworkHint: "Wgraj plik SVG, DXF lub PDF albo opisz zlecenie w polu powyżej.",
     needEngraving: "Treść graweru",
     needEngravingHint: "Wybrałeś grawer, więc wpisz, co ma zostać wygrawerowane.",
     svgBlocked: "Wgrany plik wektorowy wyceniamy ręcznie, bo liczy się realna długość ścieżki. Usuń plik, żeby kupić po polu z listy, albo wyślij do wyceny.",
@@ -103,7 +103,7 @@ const UI = {
     needDescription: "Job description",
     needDescriptionHint: "Type at least 20 characters in the description above.",
     needArtwork: "Your artwork",
-    needArtworkHint: "Upload an SVG, DXF or PDF file.",
+    needArtworkHint: "Upload an SVG, DXF or PDF file, or describe the job in the field above.",
     needEngraving: "Engraving text",
     needEngravingHint: "You chose an engraving, so tell us what to engrave.",
     svgBlocked: "An uploaded vector file is quoted by hand, because the real path length decides the price. Remove the file to buy by the listed area, or request a quote.",
@@ -141,7 +141,7 @@ const UI = {
     needDescription: "Auftragsbeschreibung",
     needDescriptionHint: "Mindestens 20 Zeichen im Beschreibungsfeld oben.",
     needArtwork: "Ihre Vorlage",
-    needArtworkHint: "Laden Sie eine SVG-, DXF- oder PDF-Datei hoch.",
+    needArtworkHint: "Laden Sie eine SVG-, DXF- oder PDF-Datei hoch oder beschreiben Sie den Auftrag oben.",
     needEngraving: "Gravurtext",
     needEngravingHint: "Sie haben eine Gravur gewählt, bitte geben Sie den Text an.",
     svgBlocked: "Eine hochgeladene Vektordatei kalkulieren wir manuell, denn die tatsächliche Pfadlänge entscheidet. Entfernen Sie die Datei, um nach gelisteter Fläche zu kaufen, oder fordern Sie ein Angebot an.",
@@ -301,7 +301,20 @@ export default function CalcToCart({ calculator, serviceId, params, file = null,
 
   // Pozycja ma trafic do koszyka gotowa do kupienia, a nie do dopytania mailem.
   const descriptionOk = !requiresDescription || description.trim().length >= MIN_DESCRIPTION;
-  const artworkOk = !requiresArtwork || Boolean(artworkFile);
+  // PLIK ALBO OPIS, nie koniecznie jedno i drugie.
+  //
+  // Wczesniej brak pliku wektorowego blokowal koszyk nawet wtedy, gdy klient
+  // opisal zlecenie wlasnymi slowami. To jest odwrotnosc wady, ktora
+  // naprawialismy rano: tam plik szedl bez opisu i nie bylo wiadomo, co z nim
+  // zrobic. Tutaj opis JEST, wiec zlecenie da sie przyjac i dogadac reszte,
+  // a odsylanie klienta po plik na tym etapie kosztuje sprzedaz.
+  //
+  // Opis liczy sie tylko wtedy, gdy naprawde cos mowi, czyli po przekroczeniu
+  // tego samego progu, ktorego pilnuje serwer. Krotkie "grawer" nie zastapi
+  // ani pliku, ani opisu.
+  const artworkOk = !requiresArtwork
+    || Boolean(artworkFile)
+    || description.trim().length >= MIN_DESCRIPTION;
 
   // Grawer wybrany w kalkulatorze musi miec tresc, a zbyt dlugi tekst to juz
   // inna robota niz ta, ktora wlasnie wyceniono.
