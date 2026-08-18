@@ -60,7 +60,7 @@ const UI = {
     needDescription: "Opis zlecenia",
     needDescriptionHint: "Wpisz co najmniej 20 znaków w polu \u201eOpisz, co mamy wykonać\u201d powyżej.",
     needArtwork: "Projekt do wykonania",
-    needArtworkHint: "Wgraj plik SVG, DXF lub PDF w polu \u201eProjekt do wykonania\u201d powyżej.",
+    needArtworkHint: "Wgraj plik SVG, DXF lub PDF w polu \u201eProjekt do wykonania\u201d powyżej albo opisz zlecenie.",
     needEngraving: "Treść graweru",
     needEngravingHint: "Wybrałeś grawer, więc wpisz, co ma zostać wygrawerowane.",
     toQuote: "Wyślij do wyceny",
@@ -111,7 +111,7 @@ const UI = {
     needDescription: "Job description",
     needDescriptionHint: "Type at least 20 characters in \u201cDescribe what we are to make\u201d above.",
     needArtwork: "Your artwork",
-    needArtworkHint: "Upload an SVG, DXF or PDF in the artwork field above.",
+    needArtworkHint: "Upload an SVG, DXF or PDF in the artwork field above, or describe the job.",
     needEngraving: "Engraving text",
     needEngravingHint: "You chose an engraving, so tell us what to engrave.",
     toQuote: "Request a quote",
@@ -162,7 +162,7 @@ const UI = {
     needDescription: "Auftragsbeschreibung",
     needDescriptionHint: "Mindestens 20 Zeichen im Feld \u201eBeschreiben Sie, was wir anfertigen sollen\u201c oben.",
     needArtwork: "Ihre Vorlage",
-    needArtworkHint: "Laden Sie oben eine SVG-, DXF- oder PDF-Datei hoch.",
+    needArtworkHint: "Laden Sie oben eine SVG-, DXF- oder PDF-Datei hoch oder beschreiben Sie den Auftrag.",
     needEngraving: "Gravurtext",
     needEngravingHint: "Sie haben eine Gravur gewählt, bitte geben Sie den Text an.",
     toQuote: "Angebot anfordern",
@@ -326,7 +326,12 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
 
   // Pozycja w koszyku ma byc gotowa do kupienia, a nie do dopytania mailem.
   const descriptionOk = !service.requiresDescription || description.trim().length >= 20;
-  const artworkOk = !service.requiresVector || Boolean(vectorFile);
+  // PLIK ALBO OPIS. Ta sama zasada co w kalkulatorze: opis wystarczajaco
+  // dlugi, zeby serwer go przyjal, zastepuje brakujacy plik na etapie zakupu.
+  // Reszte ustalamy przy realizacji, a klient nie odbija sie od koszyka.
+  const artworkOk = !service.requiresVector
+    || Boolean(vectorFile)
+    || description.trim().length >= 20;
 
   // Grawer na wyrobie. Wybrany wariant bez tresci to zlecenie, ktorego nie da
   // sie wykonac, a tekst dluzszy niz limit to juz inna robota, wiec kierujemy
