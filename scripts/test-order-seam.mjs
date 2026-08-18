@@ -167,5 +167,34 @@ if (!progSerwera || !progKlienta || progSerwera !== progKlienta) {
   }
 }
 
+// ------------------------------------------------------------
+// 6. `getService` musi oddawac TEN SAM obiekt
+// ------------------------------------------------------------
+// `ServiceConfigurator` i `Order` wolaja `getService` w trakcie renderowania,
+// a wynik wchodzi do zaleznosci `useCallback`, ktory buduje zapytanie o cene.
+// Gdy funkcja oddaje nowy obiekt przy kazdym wywolaniu, efekt uruchamia sie
+// przy kazdym renderze i konfigurator wpada w petle: zapytanie o cene, nowy
+// stan, nowy render, znowu zapytanie. Co 350 ms, az do wlasnego limitu zapytan.
+//
+// Tak sie to skonczylo naprawde: klient widzial migotanie strony i komunikat
+// "Za duzo zapytan, sprobuj za chwile". Cena i parametry byly poprawne przez
+// caly czas, wiec nie mial tego jak zlapac zaden sprawdzian tresci.
+{
+  const { getService, SERVICES } = await import("../src/data/orderCatalog.js");
+  const id = SERVICES[0]?.id;
+  if (!id) {
+    zle("katalog uslug jest pusty");
+  } else if (getService(id) !== getService(id)) {
+    zle("getService oddaje nowy obiekt przy kazdym wywolaniu, wiec konfigurator zapetli sie na wycenie");
+  } else {
+    ok("getService oddaje ten sam obiekt, konfigurator nie zapetla sie na wycenie");
+  }
+  if (getService("nie-ma-takiej") !== null) {
+    zle("getService dla nieznanego identyfikatora ma oddawac null");
+  } else {
+    ok("nieznana usluga daje null");
+  }
+}
+
 console.log(bledy ? `\n${bledy} bledow\n` : "\nSzew koszyk-zamowienie: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);
