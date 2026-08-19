@@ -189,15 +189,21 @@ Zakres cenowy (schema): EUR 5-2000
 
 Każde zlecenie grawerowania, cięcia lub znakowania laserem musi deklarować podłoże, na którym ma być wykonane. Wynika to z tego, że moc, prędkość lasera i liczba przejść ustalamy próbnie, na rzeczywistym materiale docelowym.
 
+Pytanie o podłoże stoi **w tej samej sekcji co materiał**, jako doprecyzowanie pierwszego wyboru. Wcześniej były to dwa osobne pytania o materiał (kafelki w kroku trzecim i lista w panelu wyceny), co czytało się jak usterka formularza. Kolejność sekcji szybkiej wyceny: co wykonać, jak duże, cięcie/grawer lub FDM/MSLA, materiał (z podłożem), jakość, ilość, technologia, wycena.
+
+Panel **"jak dostarczyć przedmiot"** (paczkomat, adres) pokazuje się wyłącznie przy podłożach, przy których klient coś do nas wysyła. Przy materiale z naszego magazynu nie ma czego wysyłać, więc instrukcja wysyłki tylko zajmowała głowę przy decyzji zakupowej.
+
 **Trzy rozłączne możliwości:**
 
 1. **Przedmiot klienta** (talerzyki, drewniana deska, zegarek, biżuteria, brelok itp.)
    - Nasz materiał nie jest oferowany, bo nie ma czego dostarczać
+   - Klient opisuje przedmiot, który przyśle (deska, zegarek, brelok), a listy materiałów z magazynu tu nie ma, bo nie ma czego wybierać
    - Klient podaje sposób dostarczenia rzeczy: w Polsce paczkomat InPost lub odbiór osobisty, z zagranicy wyłącznie kurier
    - Przy każdym takowym zleceniu klient wysyła JEDNĄ SZTUKĘ PONAD zamówienie na próby parametrów (przykład: grawer na pięciu talerzykach to sześć talerzyków w paczce, szósty na próby)
 
 2. **Materiał klienta** (arkusz, płyta, pasek, kawałek skóry itp.)
    - Klient dostarcza materiał, my wykonujemy usługę na wgranych partach
+   - Klient opisuje, jaki materiał przyśle (pole nieobowiązkowe, bo opis zlecenia i tak jest wymagany)
    - Ten sam tryb dostarczenia co powyżej: paczkomat, odbiór osobisty lub kurier
    - Zasada jednej sztuki ponad zamówienie dotyczy także tu: jeśli przysyła pięć arkuszy do grawerowania, szósty arkusz to próby
 

@@ -141,5 +141,75 @@ if (!/PODLOZE/.test(mail)) {
   ok("poczta zamowieniowa wypisuje podloze czytelnie");
 }
 
+// ------------------------------------------------------------
+// JEDEN BLOK MATERIALU I DOSTAWA TYLKO WTEDY, GDY JEST PRZESYLKA
+// ------------------------------------------------------------
+// Dwie wady zgloszone przez wlasciciela, obie ciche.
+//
+// 1. O material pytalismy DWA RAZY: raz kafelkami w pytaniu trzecim, drugi raz
+//    nizej, w panelu wyceny. Klient, ktory juz odpowiedzial, widzial to samo
+//    pytanie ponownie i mial prawo sadzic, ze formularz nie zapamietal wyboru.
+// 2. Panel "jak dostarczyc przedmiot", z adresem i kodem paczkomatu, byl
+//    widoczny takze przy materiale z NASZEGO magazynu, kiedy klient nie wysyla
+//    do nas niczego. Instrukcja wysylki bez przesylki nie jest bledem
+//    technicznym, tylko zajmowaniem glowy przy decyzji zakupowej.
+console.log("\nJeden blok materialu i panel dostawy");
+
+{
+  const { readFileSync } = await import("node:fs");
+  const czytajPlik = (sciezka) => readFileSync(new URL(`../${sciezka}`, import.meta.url), "utf8");
+  const simple = czytajPlik("src/components/calculators/SimpleStudioCalc.jsx");
+  const notice = czytajPlik("src/components/MaterialNotice.jsx");
+  const co2 = czytajPlik("src/components/calculators/CO2LaserCalc.jsx");
+  const fiber = czytajPlik("src/components/calculators/FiberLaserCalc.jsx");
+  const sprawdz = (warunek, komunikat, dobry) => (warunek ? ok(dobry) : zle(komunikat));
+
+  sprawdz(/delivery = true/.test(notice) && /\{delivery && \(/.test(notice),
+    "panel dostawy pokazuje sie zawsze, takze gdy klient nic nie wysyla",
+    "panel dostawy da sie wylaczyc, gdy nie ma czego wysylac");
+
+  for (const [nazwa, plik] of [["szybka wycena", simple], ["kalkulator CO2", co2], ["kalkulator fiber", fiber]]) {
+    sprawdz(/<MaterialNotice[^>]*delivery=\{/.test(plik),
+      `${nazwa}: panel dostawy nie jest uzalezniony od podloza`,
+      `${nazwa}: panel dostawy zalezy od podloza`);
+  }
+
+  sprawdz(/przysylaCos = Boolean\(SUBSTRATES\.find\(\(x\) => x\.id === podloze\)\?\.przysyla\)/.test(simple),
+    "szybka wycena liczy warunek dostawy wlasna regula zamiast czytac go z danych podloza",
+    "warunek dostawy pochodzi z tego samego pola `przysyla`, co reszta regul");
+
+  // Blok podloza ma stac W KARCIE MATERIALU, a nie w panelu wyceny.
+  const kartaMaterialu = simple.indexOf('<SimpleCard stepNum="③"');
+  const blokPodloza = simple.indexOf("{t(SUBSTRATE_LABEL, lang)}");
+  const panelWyniku = simple.indexOf("{/* Result */}");
+  sprawdz(kartaMaterialu > 0 && blokPodloza > kartaMaterialu && blokPodloza < panelWyniku,
+    "pytanie o podloze wrocilo do panelu wyceny, wiec o material pytamy znowu dwa razy",
+    "pytanie o podloze stoi w karcie materialu, a nie drugi raz w panelu wyceny");
+
+  sprawdz((simple.match(/\{t\(SUBSTRATE_LABEL, lang\)\}/g) || []).length === 1,
+    "podloze pojawia sie w szybkiej wycenie wiecej niz raz",
+    "podloze pojawia sie w szybkiej wycenie dokladnie raz");
+
+  // Wlasny material i wlasny przedmiot to nie to samo pytanie.
+  sprawdz(/ITEM_NOTE_LBL/.test(simple) && /OWN_STOCK_NOTE_LBL/.test(simple),
+    "przy wlasnym przedmiocie i wlasnym materiale zadajemy to samo pytanie",
+    "wlasny przedmiot i wlasny material maja osobne pytania");
+
+  for (const klucz of ["OWN_STOCK_NOTE_LBL", "ITEM_NOTE_LBL", "ITEM_NOTE_PLACEHOLDER"]) {
+    const blok = new RegExp(`${klucz} = \\{[^}]*pl:[^}]*en:[^}]*de:`, "s");
+    sprawdz(blok.test(simple), `${klucz} nie ma kompletu trzech jezykow`, `${klucz} istnieje w trzech jezykach`);
+  }
+
+  // Kolejnosc sekcji ustalona przez wlasciciela: wielkosc, tryb pracy,
+  // material, jakosc, ilosc. Tryb musi stac PRZED materialem, bo lista
+  // materialow z magazynu zalezy od tego, czy tniemy, czy grawerujemy.
+  const jakDuze = simple.indexOf('<SimpleCard stepNum="②"');
+  const tryb = simple.indexOf('<SimpleCard stepNum="◆"');
+  const jakosc = simple.indexOf('<SimpleCard stepNum="④"');
+  sprawdz(jakDuze < tryb && tryb < kartaMaterialu && kartaMaterialu < jakosc,
+    "kolejnosc sekcji sie rozjechala: ma byc wielkosc, tryb pracy, material, jakosc",
+    "kolejnosc sekcji zgodna z ustalona: wielkosc, tryb pracy, material, jakosc");
+}
+
 console.log(bledy ? `\n${bledy} bledow\n` : "\nPodloze uslugi laserowej: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);

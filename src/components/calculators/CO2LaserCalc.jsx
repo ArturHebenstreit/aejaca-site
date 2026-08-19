@@ -220,7 +220,7 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
         {/* Materiał NIE jest w tej kwocie i klient musi to wiedzieć przed
             zakupem, a nie z regulaminu po fakcie. */}
-        <MaterialNotice lang={lang} className="mt-4" />
+        <MaterialNotice lang={lang} className="mt-4" delivery={Boolean(SUBSTRATES.find((x) => x.id === podloze)?.przysyla)} />
         <NextStepPanel
           lang={lang}
           techLabel={`${t(TECH_LABEL, lang)} - ${mode === "engrave" ? l.engrave : l.cut}`}

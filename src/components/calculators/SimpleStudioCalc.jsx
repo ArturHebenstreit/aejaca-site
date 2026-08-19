@@ -38,6 +38,27 @@ const IDK_HINT = {
   de: "Wählen Sie jetzt, oder lassen Sie \u201eweiß nicht\u201d stehen: dann wählen wir und schreiben, was wir vorschlagen und warum.",
 };
 
+const OWN_STOCK_NOTE_LBL = {
+  pl: "Napisz, jaki materiał do nas przyślesz",
+  en: "Tell us what material you will send",
+  de: "Sagen Sie uns, welches Material Sie schicken",
+};
+const OWN_STOCK_NOTE_PLACEHOLDER = {
+  pl: "np. sklejka brzozowa 4 mm, dwa arkusze 30x40 cm",
+  en: "e.g. 4 mm birch plywood, two 30x40 cm sheets",
+  de: "z. B. 4 mm Birkensperrholz, zwei Bogen 30x40 cm",
+};
+const ITEM_NOTE_LBL = {
+  pl: "Opisz przedmiot, który do nas przyślesz",
+  en: "Describe the item you will send us",
+  de: "Beschreiben Sie das Objekt, das Sie uns senden",
+};
+const ITEM_NOTE_PLACEHOLDER = {
+  pl: "np. drewniana deska 25x35 cm, grawer na środku; albo stalowy zegarek, grawer na kopercie z tyłu",
+  en: "e.g. a 25x35 cm wooden board, engraving in the middle; or a steel watch, engraving on the case back",
+  de: "z. B. Holzbrett 25x35 cm, Gravur mittig; oder eine Stahluhr, Gravur auf dem Gehäuseboden",
+};
+
 const STOCK_LBL = {
   pl: "Na jakim materiale z naszego magazynu",
   en: "Which material from our stock",
@@ -446,6 +467,11 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   // Material wybrany z naszego magazynu. null znaczy "klient jeszcze nie
   // wybral albo wpisuje wlasny", i wtedy wycena zostaje przy domysle.
   const [stockId, setStockId] = useState(null);
+
+  // Czy przy tym podlozu klient cos do nas wysyla. Z tego samego zrodla
+  // korzysta deklaracja dostarczenia w koszyku, wiec panel z adresem
+  // paczkomatu pokazuje sie dokladnie wtedy, kiedy jest do czego.
+  const przysylaCos = Boolean(SUBSTRATES.find((x) => x.id === podloze)?.przysyla);
 
   // Zmiana podloza kasuje wybory zwiazane z poprzednim, inaczej po
   // przelaczeniu zostaje wybor niedozwolony przy nowym podlozu.
@@ -1080,34 +1106,6 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
         )}
       </SimpleCard>
 
-      <SimpleCard stepNum="③" label={l.q3}>
-        <TileGrid options={MATERIALS} value={material} onChange={handleSet(setMaterial, "material")} lang={lang} cols={3} disabledIds={matDisabledIds} />
-
-        {/* "Nie wiem" nie moze byc slepym zaulkiem. Mowimy, co wchodzi w gre,
-            i pozwalamy wybrac od razu, zamiast odsylac klienta do maila. */}
-        {material === "idk" && (
-          <div className="mt-4 rounded-xl border border-emerald-400/25 bg-emerald-400/[0.05] p-4">
-            <p className="text-emerald-200 text-xs font-medium mb-1">
-              {t(hasFile ? IDK_TITLE_FILE : IDK_TITLE, lang)}
-            </p>
-            <p className="text-neutral-400 text-[11px] leading-relaxed mb-3">{t(IDK_HINT, lang)}</p>
-            <div className="flex flex-wrap gap-2">
-              {matSugerowane.map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => handleSet(setMaterial, "material")(m.id)}
-                  className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.03] text-neutral-300
-                             hover:border-white/25 hover:text-white text-xs transition-colors"
-                >
-                  {t(m.label, lang)}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </SimpleCard>
-
       {/* Technologia druku. Do tej pory wybieralismy ja po cichu, a klient
           szybkiej wyceny czesto nie wie, ze filament i zywica to dwie rozne
           rzeczy: inny wyglad, inna wytrzymalosc, inna cena. Dostawal wiec
@@ -1192,6 +1190,90 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
         </SimpleCard>
       )}
 
+      <SimpleCard stepNum="③" label={l.q3}>
+        <TileGrid options={MATERIALS} value={material} onChange={handleSet(setMaterial, "material")} lang={lang} cols={3} disabledIds={matDisabledIds} />
+
+        {/* "Nie wiem" nie moze byc slepym zaulkiem. Mowimy, co wchodzi w gre,
+            i pozwalamy wybrac od razu, zamiast odsylac klienta do maila. */}
+        {material === "idk" && (
+          <div className="mt-4 rounded-xl border border-emerald-400/25 bg-emerald-400/[0.05] p-4">
+            <p className="text-emerald-200 text-xs font-medium mb-1">
+              {t(hasFile ? IDK_TITLE_FILE : IDK_TITLE, lang)}
+            </p>
+            <p className="text-neutral-400 text-[11px] leading-relaxed mb-3">{t(IDK_HINT, lang)}</p>
+            <div className="flex flex-wrap gap-2">
+              {matSugerowane.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => handleSet(setMaterial, "material")(m.id)}
+                  className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.03] text-neutral-300
+                             hover:border-white/25 hover:text-white text-xs transition-colors"
+                >
+                  {t(m.label, lang)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+          {/* JEDEN BLOK MATERIALU, A NIE DWA.
+              Wczesniej klient wybieral material tutaj, a nizej, w panelu
+              wyceny, pytalismy go o material drugi raz. Wygladalo to jak
+              usterka formularza: skoro juz odpowiedzial, po co znowu.
+              Teraz to jest doprecyzowanie pierwszego wyboru, stoi tuz pod
+              nim i zmienia sie zaleznie od tego, kto dostarcza podloze. */}
+          {(resolved?.tech === "co2" || resolved?.tech === "fiber") && (
+            <div className="mt-5 pt-5 border-t border-white/10">
+              {/* Panel dostawy niesie tylko ten, kto nam cos wysyla. Przy
+                  materiale z naszego magazynu klient nie wysyla nic, wiec
+                  adres paczkomatu zajmowal mu glowe bez powodu. */}
+              <MaterialNotice lang={lang} className="mb-4" delivery={przysylaCos} />
+
+              <div className="text-[11px] uppercase tracking-wide text-emerald-400/60 mb-2">{t(SUBSTRATE_LABEL, lang)}</div>
+              <Chips options={SUBSTRATES} value={podloze} onChange={handlePodlozeChange} lang={lang} />
+
+              {podloze === "our_stock" ? (
+                <StockPicker
+                  options={stockOptions({ tech: activeResolved?.tech, mode: activeResolved?.mode })}
+                  value={stockAllowed(stockId, { tech: activeResolved?.tech, mode: activeResolved?.mode }) ? stockId : null}
+                  note={materialNote}
+                  onPick={(id, etykieta) => { setStockId(id); setMaterialNote(etykieta); }}
+                  onOther={() => { setStockId(null); setMaterialNote(""); }}
+                  onNote={setMaterialNote}
+                  lang={lang}
+                />
+              ) : (
+                <>
+                  {/* Przy WLASNYM materiale pytamy, co przyjedzie, a przy
+                      WLASNYM PRZEDMIOCIE, co to za rzecz. To nie jest to samo
+                      pytanie: arkusz opisuje sie gatunkiem i gruboscia,
+                      a zegarek ksztaltem i miejscem graweru. Pole jest
+                      nieobowiazkowe, bo opis zlecenia nizej i tak jest
+                      wymagany i to on blokuje zakup. */}
+                  <div className="mt-3">
+                    <div className="text-[11px] uppercase tracking-wide text-emerald-400/60 mb-2">
+                      {t(podloze === "own_item" ? ITEM_NOTE_LBL : OWN_STOCK_NOTE_LBL, lang)}
+                    </div>
+                    <textarea
+                      value={materialNote}
+                      onChange={(e) => setMaterialNote(e.target.value)}
+                      placeholder={t(podloze === "own_item" ? ITEM_NOTE_PLACEHOLDER : OWN_STOCK_NOTE_PLACEHOLDER, lang)}
+                      rows={2}
+                      className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-emerald-400/50 focus:outline-none focus:ring-1 focus:ring-emerald-400/30 resize-none transition-colors"
+                    />
+                  </div>
+
+                  <div className="mt-3">
+                    <div className="text-[11px] uppercase tracking-wide text-emerald-400/60 mb-2">{t(SPARE_LABEL, lang)}</div>
+                    <Chips options={spareOptionsFor(podloze)} value={spare} onChange={setSpare} lang={lang} />
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+      </SimpleCard>
+
       <SimpleCard stepNum="④" label={l.q4}>
         <TileGrid options={FINISH} value={finish} onChange={handleSet(setFinish, "finish")} lang={lang} cols={3} />
       </SimpleCard>
@@ -1227,33 +1309,6 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
       {/* Result */}
       <div id={hasFile ? "file-upload" : undefined} className="rounded-2xl border-2 border-emerald-400/30 bg-gradient-to-br from-emerald-400/[0.04] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
-        {/* Tylko przy laserze. Przy druku 3D materiał jest NASZ i wchodzi
-            w cenę, więc ta sama informacja byłaby tam po prostu nieprawdą. */}
-        {(resolved?.tech === "co2" || resolved?.tech === "fiber") && (
-          <>
-            <MaterialNotice lang={lang} className="mb-4" />
-            <div className="mb-4">
-              <div className="text-[11px] uppercase tracking-wide text-emerald-400/60 mb-2">{t(SUBSTRATE_LABEL, lang)}</div>
-              <Chips options={SUBSTRATES} value={podloze} onChange={handlePodlozeChange} lang={lang} />
-              {podloze !== "our_stock" ? (
-                <div className="mt-3">
-                  <div className="text-[11px] uppercase tracking-wide text-emerald-400/60 mb-2">{t(SPARE_LABEL, lang)}</div>
-                  <Chips options={spareOptionsFor(podloze)} value={spare} onChange={setSpare} lang={lang} />
-                </div>
-              ) : (
-                <StockPicker
-                  options={stockOptions({ tech: activeResolved?.tech, mode: activeResolved?.mode })}
-                  value={stockAllowed(stockId, { tech: activeResolved?.tech, mode: activeResolved?.mode }) ? stockId : null}
-                  note={materialNote}
-                  onPick={(id, etykieta) => { setStockId(id); setMaterialNote(etykieta); }}
-                  onOther={() => { setStockId(null); setMaterialNote(""); }}
-                  onNote={setMaterialNote}
-                  lang={lang}
-                />
-              )}
-            </div>
-          </>
-        )}
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
         {stlData?.triangles?.length > 0 && (resolved?.tech === "3dprint" || resolved?.tech === "msla") && (
           <PrintabilityGate

@@ -53,7 +53,15 @@ const L = {
   },
 };
 
-export default function MaterialNotice({ lang = "pl", className = "" }) {
+/**
+ * @param {boolean} delivery czy pokazac, jak dostarczyc rzecz do pracowni.
+ *
+ * Panel z adresem i kodem paczkomatu byl widoczny zawsze, takze wtedy, gdy
+ * klient wybral material Z NASZEGO magazynu i nie wysyla do nas niczego.
+ * Instrukcja wysylki bez przesylki nie jest bledem technicznym, tylko
+ * zajmowaniem klientowi glowy w chwili, w ktorej ma podjac decyzje zakupowa.
+ */
+export default function MaterialNotice({ lang = "pl", className = "", delivery = true }) {
   const t = L[lang] || L.pl;
 
   return (
@@ -69,6 +77,7 @@ export default function MaterialNotice({ lang = "pl", className = "" }) {
         <b className="font-medium text-neutral-100">{t.own}</b> {t.ownWhy}
       </p>
 
+      {delivery && (
       <div className="mt-3 rounded-lg border border-white/10 bg-white/[0.03] p-3">
         <div className="flex items-center gap-2 mb-1.5">
           <Package size={14} className="text-amber-300 shrink-0" />
@@ -84,6 +93,7 @@ export default function MaterialNotice({ lang = "pl", className = "" }) {
           <Link to="/contact" className="text-amber-300/90 underline underline-offset-2">{t.contact}</Link>
         </p>
       </div>
+      )}
     </div>
   );
 }
