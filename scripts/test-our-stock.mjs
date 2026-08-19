@@ -158,5 +158,73 @@ for (const klucz of ["STOCK_LBL", "STOCK_OTHER_LBL", "STOCK_HINT"]) {
   else zle(`${klucz} nie ma kompletu trzech jezykow`);
 }
 
+// ------------------------------------------------------------
+// 6. "Nie wiem, doradzcie" nie moze byc wygaszone
+// ------------------------------------------------------------
+// Kafelki materialow niepasujacych do wgranego pliku sa wygaszane i slusznie.
+// Razem z nimi gaslo jednak "nie wiem", czyli JEDYNA odpowiedz osoby, ktora
+// sie nie zna, i to dokladnie w chwili, gdy umiemy doradzic najlepiej: plik
+// juz u nas lezy. Nic sie przy tym nie wywalalo, klient po prostu nie mial
+// w co kliknac.
+console.log("\n6. Nie wiem, doradzcie");
+
+ma(/m\.id !== "idk" && !allowed\.has\(m\.id\)/,
+  "\"nie wiem\" gasnie razem z materialami niepasujacymi do pliku",
+  "\"nie wiem\" zostaje aktywne takze po wgraniu pliku");
+
+ma(/material === "idk" && \(/,
+  "wybor \"nie wiem\" nie pokazuje nic wiecej, wiec jest slepym zaulkiem",
+  "wybor \"nie wiem\" odslania podpowiedz z mozliwymi materialami");
+
+ma(/matSugerowane\.map/,
+  "podpowiedziane materialy nie sa klikalne, klient nadal nie ma jak wybrac",
+  "podpowiedziane materialy da sie wybrac jednym klikiem");
+
+ma(/m\.id !== "idk" && \(!allowed \|\| allowed\.has\(m\.id\)\)/,
+  "podpowiedz nie zawęża sie do materialow pasujacych do wgranego pliku",
+  "podpowiedz pokazuje tylko materialy pasujace do wgranego pliku");
+
+for (const klucz of ["IDK_TITLE", "IDK_TITLE_FILE", "IDK_HINT"]) {
+  const blok = new RegExp(`${klucz} = \\{[^}]*pl:[^}]*en:[^}]*de:`, "s");
+  if (blok.test(widok)) ok(`${klucz} istnieje w trzech jezykach`);
+  else zle(`${klucz} nie ma kompletu trzech jezykow`);
+}
+
+// ------------------------------------------------------------
+// 7. Kafelek, ktory nic nie robi, czyta sie jak usterka
+// ------------------------------------------------------------
+// Po wgraniu SVG drugi kafelek ("Mam gotowy plik 3D") dawal sie klikac
+// i podswietlal sie, ale pole wgrywania pokazuje sie wylacznie przy braku
+// pliku, wiec nie dzialo sie NIC. Reakcja bez skutku jest gorsza od braku
+// reakcji: klient probuje dalej, bo interfejs obiecuje, ze zadziala.
+console.log("\n7. Kafelki rodzaju pliku po wgraniu");
+
+ma(/disabled=\{zablokowany\}/,
+  "kafelki rodzaju pliku nadal daja sie klikac przy wgranym pliku",
+  "kafelki rodzaju pliku sa wylaczone przy wgranym pliku");
+
+ma(/const zablokowany = Boolean\(hasFile \|\| fileForHuman\)/,
+  "blokada nie obejmuje pliku oddanego do wyceny recznej",
+  "blokada obejmuje takze plik oddany do wyceny recznej");
+
+ma(/zablokowany\s*\?\s*"opacity-40 cursor-not-allowed"/,
+  "wylaczony kafelek wyglada jak czynny, wiec klient bedzie go klikal",
+  "wylaczony kafelek jest wyszarzony i ma kursor blokady");
+
+if (/if \(hasFile \|\| fileForHuman\) \{ setFileMode/.test(widok)) {
+  zle("wrocilo ciche przestawianie rodzaju pliku, ktore nie ma zadnego skutku");
+} else {
+  ok("nie ma juz cichego przestawiania rodzaju pliku bez skutku");
+}
+
+ma(/l\.q0locked/, "brak wyjasnienia, jak zmienic rodzaj pliku, wiec blokada jest slepym zaulkiem",
+  "pod kafelkami stoi, jak zmienic rodzaj pliku");
+
+{
+  const n = (widok.match(/q0locked:/g) || []).length;
+  if (n >= 3) ok("q0locked istnieje w trzech jezykach");
+  else zle(`q0locked musi istniec w trzech jezykach, znaleziono ${n}`);
+}
+
 console.log(bledy ? `\n${bledy} bledow\n` : "\nMaterial z magazynu: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);

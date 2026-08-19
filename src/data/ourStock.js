@@ -1,7 +1,7 @@
 // ============================================================
 // CO MAMY NA STANIE, CZYLI WYBOR ZAMIAST PUSTEGO POLA
 // ============================================================
-// Przy "Na waszym materiale" pytalismy pustym polem tekstowym: "napisz, na
+// Przy "Na materiale AEJaCA" pytalismy pustym polem tekstowym: "napisz, na
 // jakim konkretnie materiale ma byc wykonana usluga". To jest najgorsze
 // mozliwe pytanie w tym miejscu, bo trafia w osobe, ktora wlasnie dlatego
 // wybrala szybka wycene, ze na materialach sie nie zna. Odpowiedzia bywalo

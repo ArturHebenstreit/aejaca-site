@@ -38,7 +38,11 @@ const L = (pl, en, de) => ({ pl, en, de });
 /** Uslugi, ktorych to dotyczy. Poza ta lista pole podloza nie istnieje. */
 export const USLUGI_LASEROWE = ["laser_co2_engrave", "laser_co2_cut", "laser_fiber"];
 
-export const SUBSTRATE_LABEL = L("Na czym pracujemy", "What we work on", "Worauf wir arbeiten");
+export const SUBSTRATE_LABEL = L(
+  "Na czym pracujemy (materiał, przedmiot)",
+  "What we work on (material, item)",
+  "Worauf wir arbeiten (Material, Objekt)",
+);
 
 export const SUBSTRATES = [
   {
@@ -67,7 +71,7 @@ export const SUBSTRATES = [
     id: "our_stock",
     przysyla: false,
     dopuszczaJedyna: false,
-    label: L("Na waszym materiale", "On your material", "Auf Ihrem Material"),
+    label: L("Na materiale AEJaCA", "On AEJaCA material", "Auf AEJaCA-Material"),
     note: L(
       "Material nasz. Napisz, na jakim konkretnie ma byc wykonana usluga.",
       "We supply the material. Tell us exactly which one the job should use.",
