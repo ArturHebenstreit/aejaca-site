@@ -87,7 +87,8 @@ import PrintabilityGate from "./PrintabilityGate.jsx";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
 import SizeSlider, { categoryForCm } from "./SizeSlider.jsx";
 import { resolveTechAndParams, runCalc } from "../../pricing/simpleQuote.js";
-import { scaleMesh, scaleVector, meshMaxCm, vectorMaxCm } from "../../pricing/scaleGeometry.js";
+import { getResin } from "../../data/resins.js";
+import { scaleMesh, scaleVector, meshMaxCm, vectorMaxCm, meshForPricing } from "../../pricing/scaleGeometry.js";
 import { looksTooSmall, suspectUnits } from "../../pricing/meshUnits.js";
 import { BUILD_VOL_CM, MSLA_BUILD_VOL_CM, maxScaleForBuildVolume } from "../../pricing/print3d.js";
 import { bedFit } from "../../pricing/laserLimits.js";
@@ -234,7 +235,7 @@ const LBL = {
     q0: "Masz gotowy plik?", q0hint: "Wrzuć plik STL lub SVG - wycenimy automatycznie",
     q0drop: "Przeciągnij plik tutaj", q0tap: "Kliknij, aby wybrać plik", q0or: "lub kliknij, aby wybrać", q0accept: ".stl, .obj, .3mf, .step, .svg, .dxf, .ai, .pdf",
     q0skip: "Nie mam pliku - opiszę co potrzebuję",
-    q0locked: "Rodzaj pliku wynika z tego, co wgrałeś. Żeby wgrać inny, usuń obecny plik krzyżykiem.", q0detected: "Wykryto", q0stl: "Model 3D (STL)", q0model: "Model 3D", q0svg: "Grafika wektorowa (SVG)", q0vector: "Grafika wektorowa",
+    q0locked: "Rodzaj pliku wynika z tego, co wgrałeś. Żeby wgrać inny, usuń obecny plik krzyżykiem.", filamentLbl: "Filament", resinLbl: "Żywica", q0detected: "Wykryto", q0stl: "Model 3D (STL)", q0model: "Model 3D", q0svg: "Grafika wektorowa (SVG)", q0vector: "Grafika wektorowa",
     q0dims: "Wymiary", q0vol: "Objętość", q0area: "Powierzchnia", q0paths: "Ścieżki",
     q0remove: "Usuń plik", q0selected: "Wybrano", q0selSize: "Rozmiar", q0selMat: "Materiał",
     unitTitle: "Ten model ma po odczycie", unitTitleSuffix: "cm",
@@ -278,7 +279,7 @@ const LBL = {
     q0: "Got a file ready?", q0hint: "Drop an STL or SVG file - we'll quote it automatically",
     q0drop: "Drag your file here", q0tap: "Tap to choose a file", q0or: "or click to browse", q0accept: ".stl, .obj, .3mf, .step, .svg, .dxf, .ai, .pdf",
     q0skip: "No file - I'll describe what I need",
-    q0locked: "The file type follows from what you uploaded. To upload a different one, remove the current file with the cross.", q0detected: "Detected", q0stl: "3D model (STL)", q0model: "3D model", q0svg: "Vector graphic (SVG)", q0vector: "Vector graphic",
+    q0locked: "The file type follows from what you uploaded. To upload a different one, remove the current file with the cross.", filamentLbl: "Filament", resinLbl: "Resin", q0detected: "Detected", q0stl: "3D model (STL)", q0model: "3D model", q0svg: "Vector graphic (SVG)", q0vector: "Vector graphic",
     q0dims: "Dimensions", q0vol: "Volume", q0area: "Area", q0paths: "Paths",
     q0remove: "Remove file", q0selected: "Selected", q0selSize: "Size", q0selMat: "Material",
     unitTitle: "This model reads as", unitTitleSuffix: "cm",
@@ -322,7 +323,7 @@ const LBL = {
     q0: "Haben Sie eine Datei?", q0hint: "Laden Sie eine STL- oder SVG-Datei hoch - wir kalkulieren automatisch",
     q0drop: "Datei hierher ziehen", q0tap: "Tippen um Datei auszuwählen", q0or: "oder klicken zum Auswählen", q0accept: ".stl, .obj, .3mf, .step, .svg, .dxf, .ai, .pdf",
     q0skip: "Keine Datei - ich beschreibe was ich brauche",
-    q0locked: "Der Dateityp ergibt sich aus dem Upload. Für eine andere Datei entfernen Sie die aktuelle mit dem Kreuz.", q0detected: "Erkannt", q0stl: "3D-Modell (STL)", q0model: "3D-Modell", q0svg: "Vektorgrafik (SVG)", q0vector: "Vektorgrafik",
+    q0locked: "Der Dateityp ergibt sich aus dem Upload. Für eine andere Datei entfernen Sie die aktuelle mit dem Kreuz.", filamentLbl: "Filament", resinLbl: "Harz", q0detected: "Erkannt", q0stl: "3D-Modell (STL)", q0model: "3D-Modell", q0svg: "Vektorgrafik (SVG)", q0vector: "Vektorgrafik",
     q0dims: "Maße", q0vol: "Volumen", q0area: "Fläche", q0paths: "Pfade",
     q0remove: "Datei entfernen", q0selected: "Ausgewählt", q0selSize: "Größe", q0selMat: "Material",
     unitTitle: "Dieses Modell wird gelesen als", unitTitleSuffix: "cm",
@@ -467,6 +468,9 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   // Material wybrany z naszego magazynu. null znaczy "klient jeszcze nie
   // wybral albo wpisuje wlasny", i wtedy wycena zostaje przy domysle.
   const [stockId, setStockId] = useState(null);
+  // Powod, dla ktorego kwoty wiazacej nie ma. Bez niego kafelek "Dodaj do
+  // koszyka" swiecil sie na niebiesko, a pod nim nie dzialo sie nic.
+  const [cartOffReason, setCartOffReason] = useState(null);
 
   // Czy przy tym podlozu klient cos do nas wysyla. Z tego samego zrodla
   // korzysta deklaracja dostarczenia w koszyku, wiec panel z adresem
@@ -704,6 +708,21 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [isVectorCo2, co2Mode, resolved, item, size, material, finish, quantity, fileType, scaledSvg, stockId]
   );
+
+  // JAKIEGO TWORZYWA UZYJEMY. Karta mowila "z filamentu" i "z zywicy", czyli
+  // nazywala rodzaj, a nie material. Klient szybkiej wyceny nie ma skad
+  // wiedziec, ze filament to kilkanascie roznych tworzyw o roznej cenie
+  // i wytrzymalosci, a my i tak juz wybralismy za niego konkretne.
+  const tworzywoFdm = useMemo(
+    () => resolveTechAndParams({ ...odpowiedzi, printTech: "fdm" })?.params?.materialKey || null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, stockId]
+  );
+  const tworzywoMsla = useMemo(() => {
+    const klucz = resolveTechAndParams({ ...odpowiedzi, printTech: "msla" })?.params?.resinKey;
+    return klucz ? t(getResin(klucz)?.name, lang) || null : null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, stockId, lang]);
 
   // Pole roboczej maszyny, ktora realnie wykona ten wydruk.
   const naZywicy = resolved?.tech === "msla";
@@ -1116,8 +1135,8 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
         <SimpleCard stepNum="◆" label={l.techQ}>
           <div className="grid sm:grid-cols-2 gap-2">
             {[
-              { id: "fdm", tech: "3dprint", nazwa: l.techFdmName, opis: l.techFdmDesc },
-              { id: "msla", tech: "msla", nazwa: l.techMslaName, opis: l.techMslaDesc },
+              { id: "fdm", tech: "3dprint", nazwa: l.techFdmName, opis: l.techFdmDesc, tworzywo: tworzywoFdm, etykieta: l.filamentLbl },
+              { id: "msla", tech: "msla", nazwa: l.techMslaName, opis: l.techMslaDesc, tworzywo: tworzywoMsla, etykieta: l.resinLbl },
             ].map((o) => {
               const aktywna = resolved?.tech === o.tech;
               const wynik = aktywna ? result : drugiWynik;
@@ -1136,6 +1155,11 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
                 >
                   <div className={`text-sm font-medium ${aktywna ? "text-emerald-300" : "text-neutral-200"}`}>{o.nazwa}</div>
                   <div className="text-[11px] text-neutral-500 leading-tight mt-1">{o.opis}</div>
+                  {o.tworzywo && (
+                    <div className="text-[11px] text-neutral-400 mt-1.5">
+                      <span className="text-neutral-500">{o.etykieta}:</span> {o.tworzywo}
+                    </div>
+                  )}
                   {kwota && (
                     <div className={`text-xs mt-2 font-medium ${aktywna ? "text-emerald-300" : "text-neutral-400"}`}>{kwota}</div>
                   )}
@@ -1334,12 +1358,14 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
           fileScale={scale}
           preAttachedFile={uploadedFile}
           requireLicenseConsent={isMslaPath}
-          cartAvailable={!overPlate && !laserOverPlate && !fileForHuman}
+          cartAvailable={!overPlate && !laserOverPlate && !fileForHuman && !cartOffReason}
+          cartOffReason={cartOffReason}
           cart={
             cartTarget ? (
               <CalcToCart
                 embedded
                 onBinding={setBindingGrosze}
+                onUnavailable={setCartOffReason}
                 // Plik glowny jedzie do koszyka. Bez tego koszyk prosil o ten
                 // sam rysunek drugi raz i blokowal zakup, dopoki klient nie
                 // wgral go ponownie.
@@ -1350,6 +1376,10 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
                 serviceId={cartTarget.serviceId}
                 params={{
                   ...activeResolved.params,
+                  // Bez listy trojkatow. Serwer i tak ja wyrzuca i podstawia
+                  // wlasny pomiar z pliku, a po drodze potrafila wywrocic
+                  // zapytanie o cene swoim rozmiarem.
+                  ...(activeResolved.params?.stlData ? { stlData: meshForPricing(activeResolved.params.stlData) } : {}),
                   ...((activeResolved?.tech === "co2" || activeResolved?.tech === "fiber") ? { podloze, spare, materialNote } : {}),
                   ...(printability ? { printability } : {}),
                 }}

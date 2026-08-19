@@ -22,6 +22,26 @@
 // Kto potrzebuje trojkatow w skali, ma je w `flattenTriangles(tri, scale)`.
 
 /**
+ * Siatka OKROJONA DO TEGO, CZEGO POTRZEBUJE WYCENA.
+ *
+ * Kalkulator trzymal w parametrach cala liste trojkatow i wysylal ja do
+ * `/api/price` jako pole formularza. Dla skromnego modelu na piec tysiecy
+ * trojkatow to 303 kB zamiast 218 B, czyli 1423 razy wiecej, a dla modelu
+ * z detalem idzie to w megabajty. Zapytanie potrafilo z tego powodu nie
+ * dojsc, a klient widzial wtedy tylko "tej konfiguracji nie wycenimy
+ * automatycznie" i nie mial jak zgadnac, o co chodzi.
+ *
+ * Trojkaty i tak nie mialy tam nic do roboty: silnik czyta wylacznie
+ * objetosc i gabaryty, a serwer PODMIENIA te wartosci na wlasny pomiar
+ * z wgranego pliku, bo wynikowi z przegladarki nie ufa.
+ */
+export function meshForPricing(mesh) {
+  if (!mesh) return mesh;
+  const { triangles, ...bezTrojkatow } = mesh;
+  return bezTrojkatow;
+}
+
+/**
  * Siatka 3D w nowej skali. Objetosc rosnie z szescianem, gabaryt liniowo.
  *
  * @param {{volumeCm3: number, bbox: {x:number,y:number,z:number}}|null} mesh

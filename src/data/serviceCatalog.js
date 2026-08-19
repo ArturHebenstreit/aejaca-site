@@ -24,7 +24,7 @@ export const SERVICES_FULL = [
     image: "/img/shop/service/print_fdm.webp",
     imagePrompt:
       "Close-up of a Bambu Lab H2D 3D printer mid-print, nozzle laying a fresh layer of black PETG on a partially finished functional part, build plate visible, cool blue rim light from upper left, black background, premium product photography, shallow depth of field",
-    priceFromGrosze: 1600,
+    priceFromGrosze: 1900,
     leadTimeDays: 3,
     title: L("Druk 3D z filamentu", "FDM 3D printing", "FDM-3D-Druck"),
     lead: L(
@@ -68,7 +68,7 @@ export const SERVICES_FULL = [
     image: "/img/shop/service/print_msla.webp",
     imagePrompt:
       "Resin 3D printer build plate lifting out of a vat, a highly detailed miniature figure hanging upside down covered in glossy grey resin, dramatic side lighting, black background, premium product photography, macro detail",
-    priceFromGrosze: 4000,
+    priceFromGrosze: 4700,
     leadTimeDays: 4,
     title: L("Druk żywiczny MSLA", "MSLA resin printing", "MSLA-Harzdruck"),
     lead: L(
@@ -110,7 +110,7 @@ export const SERVICES_FULL = [
     image: "/img/shop/service/laser_engrave.webp",
     imagePrompt:
       "CO2 laser head engraving a wooden board, thin wisp of smoke rising, glowing red laser dot, fine detail appearing in the wood grain, dark workshop, dramatic lighting from upper left, premium product photography",
-    priceFromGrosze: 800,
+    priceFromGrosze: 1000,
     leadTimeDays: 3,
     title: L("Grawer laserowy CO2", "CO2 laser engraving", "CO2-Lasergravur"),
     lead: L(
@@ -151,7 +151,7 @@ export const SERVICES_FULL = [
     image: "/img/shop/service/laser_cut.webp",
     imagePrompt:
       "CO2 laser cutting through 3 mm plywood, bright cutting spark at the kerf, precise intricate shape emerging, thin smoke, dark workshop background, dramatic side light, premium product photography",
-    priceFromGrosze: 800,
+    priceFromGrosze: 1000,
     leadTimeDays: 3,
     title: L("Cięcie laserem CO2", "CO2 laser cutting", "CO2-Laserschnitt"),
     lead: L(
@@ -193,7 +193,7 @@ export const SERVICES_FULL = [
     image: "/img/shop/service/laser_fiber.webp",
     imagePrompt:
       "Fiber laser marking a stainless steel plate, bright white spark trail following the beam, crisp dark engraved lines appearing on brushed metal, black background, cool rim light from upper left, premium macro product photography",
-    priceFromGrosze: 800,
+    priceFromGrosze: 900,
     leadTimeDays: 2,
     title: L("Znakowanie laserem fiber", "Fiber laser marking", "Faserlaser-Markierung"),
     lead: L(
@@ -234,7 +234,7 @@ export const SERVICES_FULL = [
     image: "/img/shop/service/epoxy.webp",
     imagePrompt:
       "Clear epoxy resin being poured into a silicone mold, amber-tinted resin catching warm light, small dried flowers suspended inside, glossy surface, black background, upper left key light, premium product photography",
-    priceFromGrosze: 1800,
+    priceFromGrosze: 2100,
     leadTimeDays: 7,
     title: L("Odlew żywiczny", "Resin casting", "Harzguss"),
     lead: L(

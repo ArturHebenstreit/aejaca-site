@@ -126,8 +126,8 @@ export function calculateMSLA(params, lang) {
   const totalTimeH = (printTimeH * platesNeeded) + 0.5;
 
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
-  const fc = netCostFmt(lang);
   const pricing = applyPricing(baseCost, margin, qTier.discount, qTier.qty, plDiscount);
+  const fc = netCostFmt(lang, pricing.plFactor);
 
   // Minimum order value floor (49 PLN)
   let minOrderApplied = false;
@@ -340,8 +340,8 @@ export function calculate(params, lang) {
   const totalTimeH = (printTime * platesNeeded) + (0.5) + (handlePerPc * qTier.qty);
 
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
-  const fc = netCostFmt(lang);
   const pricing = applyPricing(baseCost, margin, qTier.discount, qTier.qty, plDiscount);
+  const fc = netCostFmt(lang, pricing.plFactor);
   return {
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     totalTimeH: qTier.qty > 1 ? totalTimeH : null,

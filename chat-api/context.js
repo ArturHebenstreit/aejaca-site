@@ -166,6 +166,9 @@ Full picker, parameter cards and a 13-resin comparison table: [3D Print Settings
 **Figurine/miniature licensing rule (shown as a notice in the calculator and required as a consent checkbox before sending an inquiry):** AEJaCA only prints (a) the client's own design, (b) a file under a valid commercial license (e.g. a merchant-tier Patreon release), or (c) AEJaCA's own designs. Miniatures from protected tabletop wargame systems or other copyrighted IP are NOT printed without the client holding the license. If a user asks to print a specific commercial miniature line, remind them of this rule before quoting.
 **Output:** per-piece price + total + estimated production time; detail from ~0.2 mm
 
+### Polish-market discount and its threshold
+Prices for the Polish market carry a 15% discount against the same job priced for export, and we never name it as a separate line: it is simply subtracted from every amount. It applies only from an order value of PLN 150. Below that we do not discount at all, because 15% of a fifteen-zloty print is meaningless to the customer and a real loss on labour that does not shrink with the price. Between PLN 150 and about PLN 176 the amount stays at PLN 150, so a larger order is never cheaper than a smaller one. Never quote a "discount" to a customer as a negotiating chip and never promise one below the threshold.
+
 ### Files with a quote request
 A quote request from any calculator takes up to 6 attachments at once (3D model, vector, drawing, photo), not one. The cart takes several too. Every file is stored and reaches the workshop, so a customer never has to choose which drawing matters most or send the request twice.
 

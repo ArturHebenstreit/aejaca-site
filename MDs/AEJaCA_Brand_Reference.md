@@ -193,6 +193,10 @@ Pytanie o podłoże stoi **w tej samej sekcji co materiał**, jako doprecyzowani
 
 Panel **"jak dostarczyć przedmiot"** (paczkomat, adres) pokazuje się wyłącznie przy podłożach, przy których klient coś do nas wysyła. Przy materiale z naszego magazynu nie ma czego wysyłać, więc instrukcja wysyłki tylko zajmowała głowę przy decyzji zakupowej.
 
+**Rabat na rynek polski (15%) obowiązuje od wartości zlecenia 150 zł.** Poniżej progu nie rabatujemy: piętnaście procent z kilkunastu złotych nic klientowi nie daje, a robocizna nie maleje razem z ceną. Między 150 a ~176 zł płaci się równe 150 zł, żeby większe zlecenie nigdy nie wyszło taniej od mniejszego (naiwny próg dawał dokładnie taki uskok). Rabat nigdzie nie jest nazwany, schodzi równo ze wszystkich kwot w rozpisce. Stała: `CONFIG.PL_DISCOUNT_MIN_PLN`, reguła: `plFactorFor()` w `src/pricing/config.js`, pilnuje jej `scripts/test-price-breakdown.mjs`.
+
+Skutek uboczny wdrożenia progu: ceny "od" na kartach usług wzrosły, bo liczą się z najtańszej realnej konfiguracji, a ta jest poniżej progu. Druk FDM 16 → 19 zł, MSLA 40 → 47 zł, grawer i cięcie CO2 8 → 10 zł, fiber 8 → 9 zł, odlew żywiczny 18 → 21 zł. Liczby wyprowadza `npm run prices:derive`.
+
 **Trzy rozłączne możliwości:**
 
 1. **Przedmiot klienta** (talerzyki, drewniana deska, zegarek, biżuteria, brelok itp.)

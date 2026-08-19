@@ -964,6 +964,7 @@ export function NextStepPanel({
   result = null,
   cart = null,
   cartAvailable = true,
+  cartOffReason = null,
   preAttachedFile = null,
   requireLicenseConsent = false,
   rateSnapshot = null,
@@ -1018,7 +1019,7 @@ export function NextStepPanel({
           onClick={() => setAction("cart")}
           icon={ShoppingCart}
           label={l.cart}
-          sub={canBuy ? l.cartSub : l.cartOff}
+          sub={canBuy ? l.cartSub : (cartOffReason || l.cartOff)}
           accent={accent}
         />
         <ActionTab

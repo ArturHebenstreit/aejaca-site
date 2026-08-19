@@ -153,8 +153,8 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svg
   const batchTimeH = (timeH + handleH) * qTier.qty + (extended ? 0.5 : 0.25);
 
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
-  const fc = netCostFmt(lang);
   const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, qTier.discount, qTier.qty, plDiscount);
+  const fc = netCostFmt(lang, pricing.plFactor);
   return {
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     totalTimeH: qTier.qty > 1 ? batchTimeH : null,
@@ -204,8 +204,8 @@ export function calcCut({ matId, pathId, complexId, quantityId, extended, svgDat
   const batchTimeH = (cutTimeH + handleH) * qTier.qty + (extended ? 0.5 : 0.2);
 
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
-  const fc = netCostFmt(lang);
   const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, qTier.discount, qTier.qty, plDiscount);
+  const fc = netCostFmt(lang, pricing.plFactor);
   return {
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     totalTimeH: qTier.qty > 1 ? batchTimeH : null,
