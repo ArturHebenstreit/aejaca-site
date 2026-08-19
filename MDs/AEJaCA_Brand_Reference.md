@@ -320,6 +320,13 @@ dla klientów bez pliku.
 pytaniami, jako osobna sekcja, więc pierwszym ekranem dla klienta bez pliku (większości
 odwiedzających) było pole, którego nie dało się wypełnić.
 
+**Pole robocze zależy od wybranej drukarki (od 2026-08-19).** Szybka wycena sprawdza model względem pola tej
+maszyny, która realnie go wykona: Bambu Lab H2D 30 x 32 x 32,5 cm, Elegoo Saturn 4 Ultra 21,8 x 12,3 x 25 cm.
+Model 20 x 20 x 20 cm drukuje się z filamentu i nie mieści się na żywicy, bo Saturn ma w osi Y tylko 12,3 cm.
+Wcześniej sprawdzaliśmy zawsze pole drukarki filamentowej, także po przełączeniu na żywicę, więc cena była,
+a zamówienie odbijało się dopiero o serwer. Gdy model zmieściłby się z filamentu, pierwszą proponowaną naprawą
+jest powrót do filamentu jednym kliknięciem, a nie zmniejszanie wyrobu.
+
 **Pole robocze laserów na linii wielkości (od 2026-08-19).** Rysunek wektorowy jest sprawdzany względem
 realnego pola maszyny: CO2 (xTool P2) 600 x 308 mm, przy czym przelotka z podajnikiem wydłuża dłuższą oś
 (do około 3000 mm), a nie poszerza pola, i wydłuża przygotowanie. Laser światłowodowy: pole 150 x 150 mm.

@@ -37,7 +37,7 @@ import SizeSlider, { categoryForCm } from "./SizeSlider.jsx";
 import { resolveTechAndParams, runCalc } from "../../pricing/simpleQuote.js";
 import { scaleMesh, scaleVector, meshMaxCm, vectorMaxCm } from "../../pricing/scaleGeometry.js";
 import { looksTooSmall, suspectUnits } from "../../pricing/meshUnits.js";
-import { BUILD_VOL_CM, maxScaleForBuildVolume } from "../../pricing/print3d.js";
+import { BUILD_VOL_CM, MSLA_BUILD_VOL_CM, maxScaleForBuildVolume } from "../../pricing/print3d.js";
 import { bedFit } from "../../pricing/laserLimits.js";
 import { trackCalc } from "../../utils/analytics.js";
 
@@ -189,6 +189,9 @@ const LBL = {
     dimOriginal: "Wymiar oryginalny", dimTarget: "Wymiar do realizacji",
     manualOnly: "Ten format przyjmujemy, ale ceny z niego nie policzymy automatycznie. Dołączymy plik do zapytania i odpowiemy z wyceną.",
     overPlateTitle: "Ta wielkość nie zmieści się w całości na naszym stole",
+    overPlateTitleMsla: "Ta wielkość nie zmieści się na drukarce żywicznej",
+    overPlateTextMsla: "Drukarka żywiczna (Elegoo Saturn 4 Ultra) ma pole 21,8 x 12,3 x 25 cm, czyli wyraźnie mniejsze niż filamentowa. Są trzy wyjścia.",
+    overPlateSwitchFdm: "Wydrukuj z filamentu, tam ta wielkość się mieści",
     overPlateText: "Największa maszyna ma pole robocze 30 x 32 x 32,5 cm. Są dwa wyjścia i oba u nas działają.",
     overPlateFit: "Zmniejsz do największej, która się mieści",
     overPlateSplit: "Zostaw tę wielkość i poproś o wycenę: przy dużych obiektach tniemy model na części i sklejamy po wydruku. Szew planujemy na krawędzi, żeby go nie było widać.",
@@ -228,6 +231,9 @@ const LBL = {
     dimOriginal: "Original size", dimTarget: "Size we will make",
     manualOnly: "We accept this format, but we cannot price it automatically. We will attach the file to your enquiry and come back with a quote.",
     overPlateTitle: "This size will not fit our build plate in one piece",
+    overPlateTitleMsla: "This size will not fit the resin printer",
+    overPlateTextMsla: "The resin printer (Elegoo Saturn 4 Ultra) has a 21.8 x 12.3 x 25 cm plate, clearly smaller than the filament one. There are three ways out.",
+    overPlateSwitchFdm: "Print it in filament, where this size fits",
     overPlateText: "The largest machine has a 30 x 32 x 32.5 cm build volume. There are two ways out and we do both.",
     overPlateFit: "Scale down to the largest that fits",
     overPlateSplit: "Keep this size and ask for a quote: on large objects we split the model and bond the parts after printing. We place the seam on an edge so it does not show.",
@@ -267,6 +273,9 @@ const LBL = {
     dimOriginal: "Originalmaß", dimTarget: "Maß für die Ausführung",
     manualOnly: "Dieses Format nehmen wir an, automatisch kalkulieren können wir es aber nicht. Wir hängen die Datei an Ihre Anfrage und melden uns mit einem Angebot.",
     overPlateTitle: "Diese Größe passt nicht am Stück auf unsere Bauplatte",
+    overPlateTitleMsla: "Diese Größe passt nicht auf den Harzdrucker",
+    overPlateTextMsla: "Der Harzdrucker (Elegoo Saturn 4 Ultra) hat 21,8 x 12,3 x 25 cm, deutlich weniger als der Filamentdrucker. Es gibt drei Wege.",
+    overPlateSwitchFdm: "Aus Filament drucken, dort passt diese Größe",
     overPlateText: "Die größte Maschine hat einen Bauraum von 30 x 32 x 32,5 cm. Es gibt zwei Wege und beide gehen wir.",
     overPlateFit: "Auf die größte passende Größe verkleinern",
     overPlateSplit: "Diese Größe behalten und ein Angebot anfragen: bei großen Objekten teilen wir das Modell und fügen die Teile nach dem Druck. Die Naht legen wir auf eine Kante, damit sie nicht auffällt.",
@@ -535,13 +544,25 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
 
   // Granica pola roboczego liczona z calej bryly, a nie z jednego wymiaru:
   // czesc za dluga w jednej osi czesto miesci sie po obroceniu.
-  const fitCm = useMemo(() => {
+  //
+  // KAZDA MASZYNA MA WLASNE POLE i to nie jest szczegol. Bambu H2D ma
+  // 30 x 32 x 32.5 cm, a Saturn 4 Ultra 21.8 x 12.3 x 25 cm, czyli w osi Y
+  // niemal trzy razy mniej. Do tej pory szybka wycena sprawdzala ZAWSZE pole
+  // drukarki filamentowej, takze po przelaczeniu na zywice, wiec model
+  // 20 x 20 cm przechodzil, mimo ze na Saturnie nie ma prawa sie zmiescic.
+  // Nic sie nie wywalalo: cena byla, dodanie do koszyka odbijalo sie dopiero
+  // o serwer zamowien i to komunikatem, ktory niczego nie tlumaczyl.
+  const fitCmFor = (vol) => {
     if (fileType !== "stl" || !stlData?.bbox || !originalCm) return null;
-    const max = maxScaleForBuildVolume(stlData.bbox, BUILD_VOL_CM);
+    const max = maxScaleForBuildVolume(stlData.bbox, vol);
     return max ? originalCm * max : null;
-  }, [fileType, stlData, originalCm]);
-
-  const overPlate = fitCm != null && sizeCm > fitCm + 1e-4;
+  };
+  const fitCmFdm = useMemo(() => fitCmFor(BUILD_VOL_CM),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [fileType, stlData, originalCm]);
+  const fitCmMsla = useMemo(() => fitCmFor(MSLA_BUILD_VOL_CM),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [fileType, stlData, originalCm]);
 
   const size = categoryForCm(sizeCm);
 
@@ -610,6 +631,15 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [isVectorCo2, co2Mode, resolved, item, size, material, finish, quantity, fileType, scaledSvg]
   );
+
+  // Pole roboczej maszyny, ktora realnie wykona ten wydruk.
+  const naZywicy = resolved?.tech === "msla";
+  const fitCm = naZywicy ? fitCmMsla : fitCmFdm;
+  const overPlate = fitCm != null && sizeCm > fitCm + 1e-4;
+  // Model, ktory nie miesci sie na zywicy, ale zmiescilby sie na filamencie.
+  // To jest najtansza naprawa, jaka mozemy zaproponowac: jedno klikniecie
+  // zamiast zmniejszania wyrobu.
+  const zmiescSieNaFdm = naZywicy && overPlate && fitCmFdm != null && sizeCm <= fitCmFdm + 1e-4;
 
   // Ponad polem roboczym NIE podajemy kwoty. Cena za rzecz, ktorej nie da sie
   // wykonac w calosci, jest obietnica bez pokrycia, a klient dowiedzialby sie
@@ -902,9 +932,24 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
           <div className="mt-4 rounded-xl border border-amber-400/25 bg-amber-400/[0.06] p-4">
             <div className="flex items-center gap-2 mb-1.5">
               <AlertTriangle className="w-4 h-4 text-amber-300 shrink-0" />
-              <h4 className="text-sm font-semibold text-amber-200">{l.overPlateTitle}</h4>
+              <h4 className="text-sm font-semibold text-amber-200">
+                {naZywicy ? l.overPlateTitleMsla : l.overPlateTitle}
+              </h4>
             </div>
-            <p className="text-[11px] text-neutral-300 leading-relaxed mb-3">{l.overPlateText}</p>
+            <p className="text-[11px] text-neutral-300 leading-relaxed mb-3">
+              {naZywicy ? l.overPlateTextMsla : l.overPlateText}
+            </p>
+            {/* Przejscie na filament jest najtansza naprawa, jaka mozemy
+                zaproponowac: jedno klikniecie zamiast zmniejszania wyrobu.
+                Dlatego stoi PRZED przyciskiem zmniejszania, a nie za nim. */}
+            {zmiescSieNaFdm && (
+              <button
+                onClick={() => { setPrintTech("fdm"); trackCalc("studio_simple", "switch_to_fdm", String(Math.round(sizeCm))); }}
+                className="w-full sm:w-auto mb-2 sm:mb-0 sm:mr-2 px-4 py-2 rounded-lg bg-emerald-400/15 border border-emerald-400/40 text-emerald-200 text-xs font-semibold hover:bg-emerald-400/25 transition-colors"
+              >
+                {l.overPlateSwitchFdm}
+              </button>
+            )}
             <button
               onClick={() => { setSizeCm(fitCm); trackCalc("studio_simple", "fit_to_plate", String(Math.round(fitCm))); }}
               className="w-full sm:w-auto px-4 py-2 rounded-lg bg-amber-400/15 border border-amber-400/40 text-amber-200 text-xs font-semibold hover:bg-amber-400/25 transition-colors"

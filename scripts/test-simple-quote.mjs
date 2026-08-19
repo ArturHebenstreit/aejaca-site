@@ -21,8 +21,9 @@
 //
 //   node scripts/test-simple-quote.mjs
 
+import { readFileSync } from "node:fs";
 import { resolveTechAndParams, runCalc } from "../src/pricing/simpleQuote.js";
-import { calculate as calcPrint3D } from "../src/pricing/print3d.js";
+import { calculate as calcPrint3D, BUILD_VOL_CM, MSLA_BUILD_VOL_CM, maxScaleForBuildVolume } from "../src/pricing/print3d.js";
 import { scaleMesh, scaleVector, meshMaxCm, vectorMaxCm } from "../src/pricing/scaleGeometry.js";
 
 let bledy = 0;
@@ -183,6 +184,43 @@ if (zywicaMniejsza != null && zywicaPelna != null && zywicaMniejsza < zywicaPeln
 } else {
   zle(`cena zywicy nie reaguje na wielkosc: ${zywicaPelna} do ${zywicaMniejsza}`);
 }
+
+// ------------------------------------------------------------
+// 7. Kazda maszyna ma WLASNE pole robocze
+// ------------------------------------------------------------
+// Szybka wycena sprawdzala zawsze pole drukarki filamentowej (Bambu H2D,
+// 30 x 32 x 32.5 cm), takze po przelaczeniu na zywice. Saturn 4 Ultra ma
+// 21.8 x 12.3 x 25 cm, czyli w osi Y niemal trzy razy mniej, wiec model,
+// ktory na filamencie przechodzil, na zywicy nie mial prawa sie zmiescic.
+//
+// Nic sie nie wywalalo. Cena byla, a dodanie do koszyka odbijalo sie dopiero
+// o serwer zamowien, komunikatem, ktory niczego nie tlumaczyl.
+console.log("\n7. Pole robocze zalezy od maszyny");
+
+const dwaPolaRozne = ["x", "y", "z"].some((os) => BUILD_VOL_CM[os] !== MSLA_BUILD_VOL_CM[os]);
+if (dwaPolaRozne) ok("pola robocze obu maszyn sa rozne, wiec jest czego pilnowac");
+else zle("obie maszyny maja to samo pole, test nic nie sprawdza");
+
+// Klocek 20 x 20 x 20 cm: miesci sie na filamencie, na zywicy nie ma szans.
+const KLOCEK = { x: 20, y: 20, z: 20 };
+const naFdm = maxScaleForBuildVolume(KLOCEK, BUILD_VOL_CM);
+const naZywicy = maxScaleForBuildVolume(KLOCEK, MSLA_BUILD_VOL_CM);
+
+if (naFdm >= 1) ok(`klocek 20 cm miesci sie na filamencie (skala do ${naFdm.toFixed(2)})`);
+else zle(`klocek 20 cm nie miesci sie na filamencie, skala ${naFdm}`);
+
+if (naZywicy < 1) ok(`ten sam klocek NIE miesci sie na zywicy (skala tylko do ${naZywicy.toFixed(2)})`);
+else zle(`klocek 20 cm przeszedl na zywicy ze skala ${naZywicy}, a Saturn ma tylko 12.3 cm w osi Y`);
+
+// Widok ma wybierac pole wedlug technologii, nie na sztywno.
+const WIDOK = readFileSync(new URL("../src/components/calculators/SimpleStudioCalc.jsx", import.meta.url), "utf8");
+if (/const fitCm = naZywicy \? fitCmMsla : fitCmFdm/.test(WIDOK)) {
+  ok("szybka wycena bierze pole robocze wybranej maszyny");
+} else {
+  zle("szybka wycena wrocila do jednego pola dla obu technologii");
+}
+if (/MSLA_BUILD_VOL_CM/.test(WIDOK)) ok("pole drukarki zywicznej jest w ogole znane widokowi");
+else zle("widok nie zna pola drukarki zywicznej");
 
 console.log(bledy ? `\n${bledy} bledow\n` : "\nSzybka wycena: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);
