@@ -522,6 +522,8 @@ const LICENSE_CONSENT_LABEL = {
 const MAX_DESC_LENGTH = 2000;
 const COOLDOWN_MS = 15000; // 15s between sends
 const MAX_FILE_SIZE_MB = 50;
+/** Ile zalacznikow przyjmuje jedno zapytanie. Musi zgadzac sie z MAX_QUOTE_FILES na serwerze. */
+const MAX_INQUIRY_FILES = 6;
 
 const INQUIRY_LABELS = {
   pl: {
@@ -532,12 +534,13 @@ const INQUIRY_LABELS = {
     emailPlaceholder: "twoj@email.pl",
     emailRequired: "Podaj poprawny adres e-mail",
     file: "Załącz plik projektu",
+    fileMore: "Dodaj kolejny plik",
     fileHint: "Model 3D (.stl, .3mf, .step) | Wektor (.svg, .ai, .dxf) | Grafika (.jpg, .png, .pdf)",
     send: "Wyślij zapytanie",
     sending: "Wysyłanie...",
     sent: "Wysłano!",
     sendError: "Coś poszło nie tak. Spróbuj jeszcze raz.",
-    attachNote: "Plik zostanie dołączony do wiadomości",
+    attachNote: "Pliki zostaną dołączone do wiadomości",
     cooldown: "Poczekaj chwilę przed ponownym wysłaniem",
     tooLong: "Opis jest za długi (maks. 2000 znaków)",
     fileTooLarge: "Plik jest za duży (maks. 50 MB)",
@@ -551,12 +554,13 @@ const INQUIRY_LABELS = {
     emailPlaceholder: "your@email.com",
     emailRequired: "Please enter a valid email address",
     file: "Attach project file",
+    fileMore: "Add another file",
     fileHint: "3D model (.stl, .3mf, .step) | Vector (.svg, .ai, .dxf) | Image (.jpg, .png, .pdf)",
     send: "Send inquiry",
     sending: "Sending...",
     sent: "Sent!",
     sendError: "Something went wrong. Please try again.",
-    attachNote: "File will be attached to your message",
+    attachNote: "The files will be attached to your message",
     cooldown: "Please wait before sending again",
     tooLong: "Description is too long (max 2000 characters)",
     fileTooLarge: "File is too large (max 50 MB)",
@@ -570,12 +574,13 @@ const INQUIRY_LABELS = {
     emailPlaceholder: "ihre@email.de",
     emailRequired: "Bitte eine gültige E-Mail-Adresse eingeben",
     file: "Projektdatei anhaengen",
+    fileMore: "Weitere Datei hinzufügen",
     fileHint: "3D-Modell (.stl, .3mf, .step) | Vektor (.svg, .ai, .dxf) | Bild (.jpg, .png, .pdf)",
     send: "Anfrage senden",
     sending: "Wird gesendet...",
     sent: "Gesendet!",
     sendError: "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
-    attachNote: "Datei wird Ihrer Nachricht angehängt",
+    attachNote: "Die Dateien werden Ihrer Nachricht angehängt",
     cooldown: "Bitte warten Sie vor dem erneuten Senden",
     tooLong: "Beschreibung ist zu lang (max. 2000 Zeichen)",
     fileTooLarge: "Datei ist zu groß (max. 50 MB)",
@@ -596,8 +601,10 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
   const il = INQUIRY_LABELS[lang] || INQUIRY_LABELS.en;
   const [email, setEmail] = useState("");
   const [description, setDescription] = useState("");
-  const [fileBlob, setFileBlob] = useState(null);
-  const [fileName, setFileName] = useState("");
+  // WIELE ZALACZNIKOW, tak jak przy dodawaniu do koszyka. Jedno pole na jeden
+  // plik kazalo klientowi wybierac, ktory z trzech rysunkow jest wazniejszy,
+  // albo wysylac zapytanie dwa razy.
+  const [files, setFiles] = useState([]);
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [cooldown, setCooldown] = useState(false);
@@ -608,21 +615,17 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
   const lastSendRef = useRef(0);
   const licenseLabel = t(LICENSE_CONSENT_LABEL, lang);
 
+  // Plik wgrany w kalkulatorze wchodzi na liste jako pierwszy: to on jest
+  // podstawa wyceny, wiec ma dojechac nawet wtedy, gdy klient doda kolejne.
   useEffect(() => {
-    if (preAttachedFile) {
-      if (preAttachedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-        setFileBlob(null);
-        setFileName("");
-        setError(il.fileTooLarge);
-      } else {
-        setFileBlob(preAttachedFile);
-        setFileName(preAttachedFile.name);
-        setError("");
-      }
-    } else {
-      setFileBlob(null);
-      setFileName("");
+    if (!preAttachedFile) { setFiles([]); return; }
+    if (preAttachedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      setFiles([]);
+      setError(il.fileTooLarge);
+      return;
     }
+    setFiles([preAttachedFile]);
+    setError("");
   }, [preAttachedFile, il.fileTooLarge]);
 
   useEffect(() => {
@@ -640,23 +643,29 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
   }
 
   function handleFileChange(e) {
-    const file = e.target.files?.[0];
-    if (file && file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-      setError(il.fileTooLarge);
-      setFileBlob(null);
-      setFileName("");
-      if (fileRef.current) fileRef.current.value = "";
-      return;
-    }
-    setFileBlob(file || null);
-    setFileName(file ? file.name : "");
-    setError("");
+    const wybrane = Array.from(e.target.files || []);
+    // Pole czyscimy zawsze, inaczej wybranie tego samego pliku po skasowaniu
+    // go z listy nie wywola juz zdarzenia zmiany.
+    if (fileRef.current) fileRef.current.value = "";
+    if (!wybrane.length) return;
+
+    const zaDuze = wybrane.filter((f) => f.size > MAX_FILE_SIZE_MB * 1024 * 1024);
+    const dobre = wybrane.filter((f) => f.size <= MAX_FILE_SIZE_MB * 1024 * 1024);
+    setError(zaDuze.length ? il.fileTooLarge : "");
+    if (!dobre.length) return;
+
+    setFiles((biezace) => {
+      const wolne = MAX_INQUIRY_FILES - biezace.length;
+      if (wolne <= 0) return biezace;
+      // Ten sam plik wybrany dwa razy poszedlby dwa razy i tak samo wygladal
+      // w skrzynce, wiec odsiewamy po nazwie i rozmiarze.
+      const znane = new Set(biezace.map((f) => `${f.name}|${f.size}`));
+      return [...biezace, ...dobre.filter((f) => !znane.has(`${f.name}|${f.size}`)).slice(0, wolne)];
+    });
   }
 
-  function clearFile() {
-    setFileBlob(null);
-    setFileName("");
-    if (fileRef.current) fileRef.current.value = "";
+  function clearFile(idx) {
+    setFiles((biezace) => biezace.filter((_, i) => i !== idx));
   }
 
   async function handleSend() {
@@ -689,7 +698,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
     if (!CONTACT_API_URL) {
       // Fallback to mailto
       const subject = `#${il.title} - ${techLabel}`;
-      const body = `${il.title}: ${techLabel}\nEmail: ${email}\n\n--- ${paramsSummary} ---\n\n${cleanDesc.trim()}${fileBlob ? `\n[File: ${fileName}]` : ""}`;
+      const body = `${il.title}: ${techLabel}\nEmail: ${email}\n\n--- ${paramsSummary} ---\n\n${cleanDesc.trim()}${files.length ? `\n[Files: ${files.map((f) => f.name).join(", ")}]` : ""}`;
       trackInquiry(techLabel, paramsSummary);
       window.location.href = `mailto:contact@aejaca.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       lastSendRef.current = now;
@@ -709,7 +718,9 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
       fd.append("message", message);
       fd.append("lang", lang);
       fd.append("source", "calculator");
-      if (fileBlob) fd.append("file", fileBlob, fileName);
+      // Kazdy plik osobno pod tym samym kluczem: serwer sklada je z powrotem
+      // w jedna liste, a starsze formularze nadal wysylaja pojedyncze "file".
+      for (const f of files) fd.append("files", f, f.name);
 
       const res = await fetch(`${CONTACT_API_URL}/api/contact`, { method: "POST", body: fd });
       const data = await res.json().catch(() => ({}));
@@ -789,24 +800,39 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
         <div className="flex items-center gap-2">
           <button
             onClick={() => fileRef.current?.click()}
-            aria-label={fileName ? `${il.file}: ${fileName}` : il.file}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-white/10 bg-white/[0.02] text-neutral-400 text-sm hover:border-white/20 hover:text-neutral-200 transition-all"
+            disabled={files.length >= MAX_INQUIRY_FILES}
+            aria-label={il.file}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg border border-white/10 bg-white/[0.02] text-neutral-400 text-sm transition-all ${
+              files.length >= MAX_INQUIRY_FILES
+                ? "opacity-40 cursor-not-allowed"
+                : "hover:border-white/20 hover:text-neutral-200"
+            }`}
           >
             <Paperclip className="w-3.5 h-3.5" />
-            {fileName || il.file}
+            {files.length ? il.fileMore : il.file}
           </button>
-          {fileName && (
-            <button onClick={clearFile} className="text-neutral-400 hover:text-red-400 transition-colors">
-              <X className="w-4 h-4" />
-            </button>
-          )}
-          <input ref={fileRef} type="file" className="hidden"
+          <input ref={fileRef} type="file" className="hidden" multiple
             accept=".stl,.3mf,.step,.stp,.obj,.svg,.ai,.dxf,.jpg,.jpeg,.png,.pdf"
             onChange={handleFileChange}
           />
         </div>
+
+        {files.length > 0 && (
+          <div className="mt-2 space-y-1.5">
+            {files.map((f, i) => (
+              <div key={`${f.name}|${f.size}|${i}`} className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-1.5">
+                <Paperclip className="w-3 h-3 text-neutral-400 shrink-0" />
+                <span className="text-neutral-200 text-xs truncate flex-1">{f.name}</span>
+                <button onClick={() => clearFile(i)} aria-label={`${il.file}: ${f.name}`} className="text-neutral-400 hover:text-red-400 transition-colors shrink-0">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="text-[10px] text-neutral-400 mt-1">{il.fileHint}</div>
-        {fileName && <div className="text-[10px] text-blue-400/70 mt-1">{il.attachNote}</div>}
+        {files.length > 0 && <div className="text-[10px] text-blue-400/70 mt-1">{il.attachNote}</div>}
       </div>
 
       {/* License consent, MSLA figurine/miniature path only */}

@@ -27,7 +27,7 @@ const LABELS = {
     tab3d: "Druk 3D", tabCO2: "Laser CO2", tabFiber: "Laser Fiber", tabMSLA: "Druk żywiczny", tabEpoxy: "Odlewy żywiczne",
     desc3d: "Bambu Lab H2D: FDM i multi-materiał", descCO2: "xTool P2 55W: grawerowanie i cięcie", descFiber: "Raycus 30W: metal, biżuteria, kamień, ceramika", descMSLA: "Saturn 4 Ultra 16K: figurki, wzorce jubilerskie", descEpoxy: "Żywica UV/dwukomponentowa: odlewy artystyczne",
     note: 'Widełki są szacunkiem i zależą od geometrii, złożoności i specyfikacji. Kwota wiążąca, jeśli się pojawi, jest policzona z wgranego pliku i obowiązuje 7 dni. Opcje "niestandardowe" wyceniamy indywidualnie.',
-    vat: "Podane ceny są orientacyjne i nie zawierają stosownych podatków VAT czy ich odpowiedników, które należy doliczyć przy finalizacji zamówienia.",
+    vat: "Kwoty w kalkulatorze są orientacyjne. Wiążąca jest dopiero kwota dodana do koszyka: obowiązuje 7 dni i to ona jest podstawą zamówienia.",
     shipping: "Ceny nie uwzględniają kosztów transportu." },
   en: { tag: "Project Calculators", title: "Cost Estimator",
     modeSimple: "Quick quote",
@@ -38,7 +38,7 @@ const LABELS = {
     tab3d: "3D Print", tabCO2: "CO2 Laser", tabFiber: "Fiber Laser", tabMSLA: "Resin Print", tabEpoxy: "Resin Casting",
     desc3d: "Bambu Lab H2D: FDM & multi-material", descCO2: "xTool P2 55W: engraving & cutting", descFiber: "Raycus 30W: metal, jewelry, stone & ceramics", descMSLA: "Saturn 4 Ultra 16K: figurines, jewelry patterns", descEpoxy: "UV/2K resin: artistic casting",
     note: "The range is an estimate and depends on geometry, complexity and specification. A binding amount, when shown, is calculated from your uploaded file and holds for 7 days. Custom options are quoted individually.",
-    vat: "Prices shown are indicative and do not include applicable VAT or equivalent taxes, which will be added upon order finalization.",
+    vat: "Amounts in the calculator are indicative. Only the amount added to the cart is binding: it holds for 7 days and the order is based on it.",
     shipping: "Prices do not include shipping costs." },
   de: { tag: "Projektkalkulatoren", title: "Kostenschätzer",
     modeSimple: "Schnellkalkulation",
@@ -49,7 +49,7 @@ const LABELS = {
     tab3d: "3D-Druck", tabCO2: "CO2-Laser", tabFiber: "Faserlaser", tabMSLA: "Harzdruck", tabEpoxy: "Harzguss",
     desc3d: "Bambu Lab H2D: FDM & Multi-Material", descCO2: "xTool P2 55W: Gravur & Schnitt", descFiber: "Raycus 30W: Metall, Schmuck, Stein & Keramik", descMSLA: "Saturn 4 Ultra 16K: Figuren, Gussmodelle", descEpoxy: "UV/2K-Harz: Kunstguss",
     note: 'Die Spanne ist eine Schätzung und hängt von Geometrie, Komplexität und Spezifikation ab. Ein verbindlicher Betrag, sofern angezeigt, wird aus Ihrer Datei berechnet und gilt 7 Tage. "Individuelle" Optionen kalkulieren wir separat.',
-    vat: "Die angegebenen Preise sind Richtwerte und enthalten keine Mehrwertsteuer oder gleichwertige Abgaben, die bei der Auftragsabwicklung hinzukommen.",
+    vat: "Die Beträge im Kalkulator sind Richtwerte. Verbindlich ist erst der Betrag im Warenkorb: er gilt 7 Tage und ist die Grundlage der Bestellung.",
     shipping: "Preise verstehen sich ohne Versandkosten." },
 };
 
@@ -181,7 +181,8 @@ export default function StudioCalculator() {
           </>
         )}
 
-        {/* VAT + shipping disclaimer */}
+        {/* Kwota orientacyjna kontra wiazaca, plus transport. O VAT tu nie
+            mowimy: kwoty w kalkulatorze sa tymi, ktore klient placi. */}
         <div className={`mt-4 p-3 rounded-xl border text-[11px] leading-relaxed text-center ${
           isSimple
             ? "border-emerald-400/10 bg-emerald-400/[0.02] text-emerald-400/60"

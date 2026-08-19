@@ -89,6 +89,12 @@ export const ENGRAVE_DETAIL = [
 ];
 
 export const CUT_MATERIALS = [
+  // Sklejka 2 mm dochodzi do listy na polecenie wlasciciela (2026-08-19).
+  // Stawki wyprowadzone z sasiadow, a nie zgadniete: ciecie 3 mm to 0.15,
+  // 5 mm to 0.25, wiec krok na milimetr wynosi 0.05, a material 0.04 przy
+  // 3 mm i 0.06 przy 5 mm, czyli 0.01 na milimetr. Cienszy arkusz tnie sie
+  // szybciej i kosztuje mniej, wiec obie liczby ida o jeden krok w dol.
+  { id: "ply2",     label: { pl: "Sklejka 2mm", en: "Plywood 2mm", de: "Sperrholz 2mm" }, cutRate: 0.10, matCost: 0.03 },
   { id: "ply3",     label: { pl: "Sklejka 3mm", en: "Plywood 3mm", de: "Sperrholz 3mm" }, cutRate: 0.15, matCost: 0.04 },
   { id: "ply5",     label: { pl: "Sklejka 5mm", en: "Plywood 5mm", de: "Sperrholz 5mm" }, cutRate: 0.25, matCost: 0.06 },
   { id: "ply8",     label: { pl: "Sklejka 8mm", en: "Plywood 8mm", de: "Sperrholz 8mm" }, cutRate: 0.50, matCost: 0.09 },

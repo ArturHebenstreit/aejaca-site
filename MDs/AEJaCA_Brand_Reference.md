@@ -204,7 +204,7 @@ Każde zlecenie grawerowania, cięcia lub znakowania laserem musi deklarować po
 3. **Nasz materiał** (z naszego magazynu)
    - Klient WYBIERA materiał z listy, a wybór realnie zmienia kwotę. Lista pochodzi wprost z cennika (`src/data/ourStock.js` czyta `laserCo2.js` i `laserFiber.js`), więc nie da się jej rozjechać z wyceną
    - Grawer CO2: drewno, sklejka, akryl, szkło, skóra, papier, tkanina, guma, kamień
-   - Cięcie CO2 z grubością, bo grubość wchodzi w cenę: sklejka 3/5/8 mm, akryl 3/5/8 mm, skóra 1-2 i 3-4 mm, papier/karton, tkanina/filc, guma 2-3 mm
+   - Cięcie CO2 z grubością, bo grubość wchodzi w cenę: sklejka 2/3/5/8 mm, akryl 3/5/8 mm, skóra 1-2 i 3-4 mm, papier/karton, tkanina/filc, guma 2-3 mm
    - Fiber: stal nierdzewna, aluminium, aluminium anodowane, mosiądz, miedź, tytan. Srebra i złota nie wydajemy z magazynu, mimo że je znakujemy: metal szlachetny ma własne rozliczenie wagowe
    - "Inny materiał" zostaje na końcu listy i odsłania pole tekstowe, bo lista nie wyczerpuje świata
    - Dostępność i koszt samego materiału potwierdzamy przy realizacji. Kwota z kalkulatora obejmuje wyłącznie robociznę

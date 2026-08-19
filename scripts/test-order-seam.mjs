@@ -552,5 +552,61 @@ console.log("\n10. Plik glowny w koszyku");
     "odrzucony plik ma swoj wiersz na liscie przyczyn");
 }
 
+// ============================================================
+// 11. ZAPYTANIE O WYCENE PRZYJMUJE TYLE PLIKOW, ILE OBIECUJE
+// ============================================================
+// Do koszyka dalo sie dolaczyc kilka plikow, a formularz precyzyjnej wyceny
+// przyjmowal jeden. Klient z rysunkiem, zdjeciem przedmiotu i wersja zamienna
+// musial wybrac, ktory z nich jest wazniejszy, albo wysylac zapytanie dwa razy.
+//
+// Szew ma dwie strony i obie musza zgadzac sie co do liczby: formularz wysyla
+// liste pod kluczem "files", serwer musi ja pod tym kluczem przyjac, i limity
+// musza byc te same. Rozjazd nie wywala niczego, po prostu czesc plikow
+// nie dociera, a klient widzi, ze wyslal komplet.
+console.log("\n11. Zalaczniki w zapytaniu o wycene");
+
+{
+  const shared = czytaj("src/components/calculators/calcShared.jsx");
+  const sprawdz = (warunek, komunikat, dobry) => (warunek ? ok(dobry) : zle(komunikat));
+
+  sprawdz(/<input ref=\{fileRef\} type="file" className="hidden" multiple/.test(shared),
+    "formularz wyceny nadal przyjmuje jeden plik naraz",
+    "formularz wyceny przyjmuje wiele plikow naraz");
+
+  sprawdz(/fd\.append\("files", f, f\.name\)/.test(shared),
+    "pliki nie ida na serwer jako lista, wiec dojedzie najwyzej jeden",
+    "pliki ida na serwer jako lista pod kluczem \"files\"");
+
+  sprawdz(/name: "files", maxCount: MAX_QUOTE_FILES/.test(server),
+    "serwer nie przyjmuje pola \"files\", wiec zalaczniki przepadna po cichu",
+    "serwer przyjmuje pole \"files\"");
+
+  sprawdz(/name: "file", maxCount: 1/.test(server),
+    "serwer przestal przyjmowac pojedyncze \"file\", czyli formularz B2B stracil zalacznik",
+    "serwer nadal przyjmuje pojedyncze \"file\" ze starszych formularzy");
+
+  const limitKlient = /const MAX_INQUIRY_FILES = (\d+)/.exec(shared)?.[1];
+  const limitSerwer = /const MAX_QUOTE_FILES = (\d+)/.exec(server)?.[1];
+  sprawdz(limitKlient && limitKlient === limitSerwer,
+    `limity sie rozjechaly: formularz ${limitKlient}, serwer ${limitSerwer}`,
+    `oba konce przyjmuja tyle samo plikow (${limitKlient})`);
+
+  // Kazdy plik ma zostac zapisany, nie tylko pierwszy: to jedyny slad tego,
+  // co klient przyslal, gdy po pol roku trzeba ustalic ustalenia.
+  sprawdz(/zalaczniki\.map\(\(f\) => storeQuoteAttachment/.test(server),
+    "serwer zapisuje tylko pierwszy zalacznik, reszta nie zostawia sladu",
+    "serwer zapisuje kazdy zalacznik osobno");
+
+  sprawdz(/payload\.files = zalaczniki\.map/.test(server),
+    "do n8n jedzie tylko jeden plik i nie ma jak dolaczyc reszty do maila",
+    "do n8n jedzie komplet plikow");
+
+  for (const klucz of ["fileMore"]) {
+    const n = (shared.match(new RegExp(`${klucz}:`, "g")) || []).length;
+    sprawdz(n >= 3, `${klucz} musi istniec w trzech jezykach, znaleziono ${n}`,
+      `${klucz} istnieje w trzech jezykach`);
+  }
+}
+
 console.log(bledy ? `\n${bledy} bledow\n` : "\nSzew koszyk-zamowienie: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);

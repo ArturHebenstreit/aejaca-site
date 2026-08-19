@@ -16,7 +16,7 @@ const LABELS = {
     modeAdvancedDesc: "Pełna kontrola parametrów",
     modeHint: "Szybka wycena daje orientacyjną cenę w 30 sekund. Tryb zaawansowany pozwala kontrolować każdy parametr (metal, próba, kamienie, praca jubilerska).",
     note: 'Kalkulacje są szacunkowe. Rzeczywista cena zależy od projektu, kamieni i specyfikacji. Opcje "niestandardowe" wymagają indywidualnej wyceny.',
-    vat: "Podane ceny są orientacyjne i nie zawierają stosownych podatków VAT czy ich odpowiedników, które należy doliczyć przy finalizacji zamówienia.",
+    vat: "Kwoty w kalkulatorze są orientacyjne. Wiążąca jest dopiero kwota dodana do koszyka: obowiązuje 7 dni i to ona jest podstawą zamówienia.",
     shipping: "Ceny nie uwzględniają kosztów transportu.",
   },
   en: {
@@ -28,7 +28,7 @@ const LABELS = {
     modeAdvancedDesc: "Full control over parameters",
     modeHint: "Quick quote gives a rough estimate in 30 seconds. Advanced mode lets you control every parameter (metal, karat, stones, labor).",
     note: "Estimates are approximate. Actual price depends on design, gemstones, and specifications. Custom options require an individual quote.",
-    vat: "Prices shown are indicative and do not include applicable VAT or equivalent taxes, which will be added upon order finalization.",
+    vat: "Amounts in the calculator are indicative. Only the amount added to the cart is binding: it holds for 7 days and the order is based on it.",
     shipping: "Prices do not include shipping costs.",
   },
   de: {
@@ -40,7 +40,7 @@ const LABELS = {
     modeAdvancedDesc: "Volle Kontrolle über Parameter",
     modeHint: "Schnellkalkulation liefert eine grobe Schätzung in 30 Sekunden. Der erweiterte Modus bietet volle Kontrolle über jeden Parameter (Metall, Karat, Steine, Arbeit).",
     note: 'Kalkulationen sind Schätzungen. Der tatsächliche Preis hängt von Design, Edelsteinen und Spezifikationen ab. "Individuelle" Optionen erfordern ein separates Angebot.',
-    vat: "Die angegebenen Preise sind Richtwerte und enthalten keine Mehrwertsteuer oder gleichwertige Abgaben, die bei der Auftragsabwicklung hinzukommen.",
+    vat: "Die Beträge im Kalkulator sind Richtwerte. Verbindlich ist erst der Betrag im Warenkorb: er gilt 7 Tage und ist die Grundlage der Bestellung.",
     shipping: "Preise verstehen sich ohne Versandkosten.",
   },
 };
@@ -116,7 +116,8 @@ export default function JewelryEstimator() {
           </div>
         )}
 
-        {/* VAT + shipping disclaimer */}
+        {/* Kwota orientacyjna kontra wiazaca, plus transport. O VAT tu nie
+            mowimy: kwoty w kalkulatorze sa tymi, ktore klient placi. */}
         <div className={`mt-4 p-3 rounded-xl border text-[11px] leading-relaxed text-center ${
           isSimple
             ? "border-rose-400/10 bg-rose-400/[0.02] text-rose-400/60"
