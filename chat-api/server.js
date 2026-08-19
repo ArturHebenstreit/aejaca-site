@@ -692,8 +692,14 @@ async function storeQuoteAttachment(file, lang, ip) {
 }
 const SUBJECT_MAP = { jewelry: "Jewelry Inquiry", studio: "Studio Inquiry", both: "Jewelry & Studio Inquiry", other: "General Inquiry" };
 
+/** Ile zalacznikow przyjmujemy do jednego zapytania */
+const MAX_QUOTE_FILES = 6;
+
 app.post("/api/contact", (req, res, next) => {
-  upload.single("file")(req, res, (err) => {
+  // DWA POLA, BO DWIE GENERACJE FORMULARZY. Kalkulator wysyla teraz liste
+  // pod "files", a formularz B2B i starsze karty nadal jedno pole "file".
+  // `fields` obsluguje oba naraz, wiec nie musimy przelaczac ich jednoczesnie.
+  upload.fields([{ name: "file", maxCount: 1 }, { name: "files", maxCount: MAX_QUOTE_FILES }])(req, res, (err) => {
     if (err) {
       return res.status(400).json({ error: err.code === "LIMIT_FILE_SIZE" ? "File too large (max 8 MB)" : (err.message || "File upload error") });
     }
@@ -717,8 +723,15 @@ app.post("/api/contact", (req, res, next) => {
     lang: ["pl", "en", "de"].includes(lang) ? lang : "pl",
     source: (source || "contact").slice(0, 50),
   };
-  if (req.file) {
-    payload.file = { name: req.file.originalname, type: req.file.mimetype, data: req.file.buffer.toString("base64") };
+  // Jedna lista niezaleznie od tego, ktorym polem przyszly.
+  const zalaczniki = [...(req.files?.file || []), ...(req.files?.files || [])].slice(0, MAX_QUOTE_FILES);
+  if (zalaczniki.length) {
+    // `file` zostaje pojedynczy dla zgodnosci z przeplywem n8n, ktory czyta
+    // wlasnie to pole. `files` niesie komplet. Gdyby n8n czytal tylko `file`,
+    // reszta i tak dojedzie do nas Dyskiem przez storeQuoteAttachment,
+    // wiec zaden plik nie ginie po cichu.
+    payload.file = { name: zalaczniki[0].originalname, type: zalaczniki[0].mimetype, data: zalaczniki[0].buffer.toString("base64") };
+    payload.files = zalaczniki.map((f) => ({ name: f.originalname, type: f.mimetype, data: f.buffer.toString("base64") }));
   }
 
   // Check if this email was already contacted - pass flag to n8n so it skips follow-up
@@ -746,18 +759,23 @@ app.post("/api/contact", (req, res, next) => {
   // pozniejszej realizacji i jedynym zapisem tego, co obiecalismy.
   if (pool) {
     const quoteRef = generateQuoteRef();
-    storeQuoteAttachment(
-      req.file ? { name: req.file.originalname, mimeType: req.file.mimetype, buffer: req.file.buffer } : null,
-      payload.lang,
-      ip
-    ).then((uploadId) =>
+    // Kazdy plik zapisujemy osobno, zeby po pol roku dalo sie ustalic, co
+    // dokladnie klient przyslal. Do zapytania podpinamy pierwszy, bo kolumna
+    // jest jedna, a nazwy wszystkich ida do params_json.
+    Promise.all(
+      zalaczniki.map((f) => storeQuoteAttachment({ name: f.originalname, mimeType: f.mimetype, buffer: f.buffer }, payload.lang, ip))
+    ).then((ids) => ids.filter((x) => x != null)[0] ?? null).then((uploadId) =>
       pool.query(
         `INSERT INTO leads (email, lang, calculator, source, params, description, params_json, upload_id, quote_ref, status)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
         [payload.email, payload.lang, payload.source, "contact",
          `${payload.subject}\n${payload.message.slice(0, 400)}`,
          payload.message,
-         JSON.stringify({ name: payload.name || null, subject: payload.subject || null }),
+         JSON.stringify({
+           name: payload.name || null,
+           subject: payload.subject || null,
+           ...(zalaczniki.length > 1 ? { attachments: zalaczniki.map((f) => String(f.originalname).slice(0, 255)) } : {}),
+         }),
          uploadId, quoteRef, "new"]
       )
     ).catch(err => console.error("Lead save error:", err.message));

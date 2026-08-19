@@ -205,7 +205,7 @@ const money = (g) => `${(g / 100).toFixed(2).replace(".", ",")} PLN`;
  * @param {number[][][]} [props.triangles] siatka wgranego modelu, jesli kalkulator
  *        juz ja odczytal. Sluzy wylacznie do zrobienia miniatury dla koszyka.
  */
-export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp = null, file = null, triangles = null, scale = 1, lang, accent = "blue", blocked = false, blockedReason = "vector", onBinding = null, hold = false, embedded = false }) {
+export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp = null, file = null, triangles = null, scale = 1, lang, accent = "blue", blocked = false, blockedReason = "vector", onBinding = null, onUnavailable = null, hold = false, embedded = false }) {
   const u = UI[lang] || UI.en;
   const cart = useCart();
   const card = getServiceCard(serviceId);
@@ -218,6 +218,11 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   const [price, setPrice] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  // KOMUNIKAT SERWERA, a nie tylko kod. Serwer pisze pelnym zdaniem, po co
+  // ta konfiguracja idzie do czlowieka, a my wyswietlalismy zawsze to samo
+  // ogolne zdanie. Klient widzial odmowe bez powodu i nie mial jak zgadnac,
+  // co zmienic: kazda proba wygladala tak samo.
+  const [errorMsg, setErrorMsg] = useState(null);
   const [added, setAdded] = useState(false);
 
   const [description, setDescription] = useState("");
@@ -343,6 +348,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
     const mine = ++reqId.current;
     setBusy(true);
     setError(null);
+    setErrorMsg(null);
     try {
       const body = new FormData();
       body.append("calculator", calculator);
@@ -357,9 +363,11 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
       if (!resp.ok) {
         setPrice(null);
         setError(data.code || "no_price");
+        setErrorMsg(typeof data.error === "string" && data.error.trim() ? data.error.trim() : null);
         return;
       }
       setPrice(data.item);
+      setErrorMsg(null);
     } catch {
       if (mine === reqId.current) setError("network");
     } finally {
@@ -380,6 +388,13 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
     if (!onBinding) return;
     onBinding(blocked ? null : (price?.unitGrosze ?? null));
   }, [onBinding, blocked, price]);
+
+  // Panel akcji musi wiedziec, ze zakup jest niemozliwy, inaczej kafelek
+  // "Dodaj do koszyka" swieci sie na niebiesko i nic pod nim nie dziala.
+  useEffect(() => {
+    if (!onUnavailable) return;
+    onUnavailable(error && !busy ? (errorMsg || u.unavailable) : null);
+  }, [onUnavailable, error, busy, errorMsg, u.unavailable]);
 
   if (!card) return null;
 
@@ -511,7 +526,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
         <div className="flex items-start gap-2.5">
           <Info className="w-4 h-4 text-neutral-500 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-neutral-400 text-xs leading-relaxed mb-2">{u.unavailable}</p>
+            <p className="text-neutral-400 text-xs leading-relaxed mb-2">{errorMsg || u.unavailable}</p>
             <Link to="/contact/" className="inline-flex items-center gap-1.5 text-neutral-300 hover:text-white text-xs">
               {u.contact} <ArrowRight className="w-3.5 h-3.5" />
             </Link>

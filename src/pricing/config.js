@@ -14,6 +14,14 @@ export const CONFIG = {
   ENERGY_COST_PLN: 1.05,
   BASE_MARGIN: 0.40,
   PL_MARKET_DISCOUNT: 0.15,
+  /**
+   * Wartosc zlecenia, od ktorej rabat na rynek polski w ogole sie wlacza.
+   *
+   * Ponizej tego progu rabatujemy grosze: wydruk drobnego elementu kosztuje
+   * kilkanascie zlotych, a 15% z tego jest kwota bez znaczenia dla klienta
+   * i realnym ubytkiem przy naszej robociznie, ktora nie maleje razem z cena.
+   */
+  PL_DISCOUNT_MIN_PLN: 150,
 };
 
 // `qty` to nakald reprezentatywny, na ktorym opiera sie rabat progu.
@@ -158,19 +166,49 @@ export function fmtCost(plnAmount, lang) {
  * Liczymy w groszach, bo złotówki zmiennoprzecinkowe gubią grosze przy
  * mnożeniu przez nakład, a Autopay porównuje kwotę co do grosza.
  */
-export function unitPriceGrosze(baseCost, margin, discountRate, localDiscount = 0) {
-  const basePrice = baseCost * (1 + margin) * (1 - localDiscount);
-  const discounted = basePrice * (1 - discountRate);
+/**
+ * Efektywny czynnik rabatu na rynek polski DLA TEJ konkretnej wyceny.
+ *
+ * Prog jest na wartosci calego zlecenia, a nie na cenie sztuki: piecdziesiat
+ * breloczkow po dziewiec zlotych to nie jest drobne zlecenie, choc sztuka
+ * kosztuje tyle co nic.
+ *
+ * PROG NIE MOZE BYC PROGIEM SKOKOWYM i to jest jedyna nieoczywista rzecz
+ * w tej funkcji. Zwykle "ponizej 150 nie ma rabatu" daje uskok: zlecenie za
+ * 149 zl kosztuje 149 zl, a za 150 zl juz 127,50 zl, czyli WIEKSZE ZLECENIE
+ * JEST TANSZE. Klient, ktory to zauwazy, ma racje, ze cennik jest zepsuty.
+ * Dlatego cena po rabacie nie schodzi ponizej progu: miedzy 150 a 176,50 zl
+ * placi sie rowne 150 zl, a pelne 15% dziala dopiero powyzej. Funkcja jest
+ * monotoniczna i nigdy nie podnosi ceny wyzej niz bez rabatu.
+ *
+ * @param {number} wartoscBezRabatu wartosc calego zlecenia bez rabatu, w PLN
+ * @param {number} localDiscount    rabat rynkowy, 0 poza rynkiem polskim
+ * @returns {number} czynnik od (1 - localDiscount) do 1
+ */
+export function plFactorFor(wartoscBezRabatu, localDiscount = 0) {
+  if (!localDiscount || !(wartoscBezRabatu > 0)) return 1;
+  const zRabatem = wartoscBezRabatu * (1 - localDiscount);
+  const doZaplaty = Math.min(wartoscBezRabatu, Math.max(zRabatem, CONFIG.PL_DISCOUNT_MIN_PLN));
+  return doZaplaty / wartoscBezRabatu;
+}
+
+export function unitPriceGrosze(baseCost, margin, discountRate, localDiscount = 0, qty = 1) {
+  const bezRabatu = baseCost * (1 + margin) * (1 - discountRate);
+  const discounted = bezRabatu * plFactorFor(bezRabatu * qty, localDiscount);
   return Math.max(1, Math.round(discounted * 100));
 }
 
 /** Apply margin, discount, tolerance -> price range PLN + EUR */
 export function applyPricing(baseCost, margin, discountRate, qty, localDiscount = 0) {
-  const basePrice = baseCost * (1 + margin) * (1 - localDiscount);
-  const discounted = basePrice * (1 - discountRate);
+  const bezRabatu = baseCost * (1 + margin) * (1 - discountRate);
+  const plFactor = plFactorFor(bezRabatu * qty, localDiscount);
+  const discounted = bezRabatu * plFactor;
   const perMin = Math.round(discounted * (1 - CONFIG.TOLERANCE_LOW));
   const perMax = Math.round(discounted * (1 + CONFIG.TOLERANCE_HIGH));
   return {
+    // Czynnik REALNIE uzyty w tej wycenie. Rozpiska musi mnozyc przez ten sam,
+    // inaczej pokaze kwoty inne niz te do zaplaty, a nic sie nie wywali.
+    plFactor,
     // Kwota wiazaca, ta ktora realnie obciazamy klienta. Widelki ponizej
     // opisuja niepewnosc szacunku i sluza wylacznie prezentacji.
     unitGrosze: Math.max(1, Math.round(discounted * 100)),
@@ -206,8 +244,7 @@ export function plDiscountFactor(lang) {
  * fmtCost() w breakdown. Dzieki temu nie da sie przypadkiem pokazac kwoty
  * sprzed rabatu obok kwoty po rabacie.
  */
-export function netCostFmt(lang) {
-  const factor = plDiscountFactor(lang);
+export function netCostFmt(lang, factor = plDiscountFactor(lang)) {
   return (plnAmount) => fmtCost(plnAmount * factor, lang);
 }
 

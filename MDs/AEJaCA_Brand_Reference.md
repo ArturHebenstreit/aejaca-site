@@ -189,22 +189,32 @@ Zakres cenowy (schema): EUR 5-2000
 
 Każde zlecenie grawerowania, cięcia lub znakowania laserem musi deklarować podłoże, na którym ma być wykonane. Wynika to z tego, że moc, prędkość lasera i liczba przejść ustalamy próbnie, na rzeczywistym materiale docelowym.
 
+Pytanie o podłoże stoi **w tej samej sekcji co materiał**, jako doprecyzowanie pierwszego wyboru. Wcześniej były to dwa osobne pytania o materiał (kafelki w kroku trzecim i lista w panelu wyceny), co czytało się jak usterka formularza. Kolejność sekcji szybkiej wyceny: co wykonać, jak duże, cięcie/grawer lub FDM/MSLA, materiał (z podłożem), jakość, ilość, technologia, wycena.
+
+Panel **"jak dostarczyć przedmiot"** (paczkomat, adres) pokazuje się wyłącznie przy podłożach, przy których klient coś do nas wysyła. Przy materiale z naszego magazynu nie ma czego wysyłać, więc instrukcja wysyłki tylko zajmowała głowę przy decyzji zakupowej.
+
+**Rabat na rynek polski (15%) obowiązuje od wartości zlecenia 150 zł.** Poniżej progu nie rabatujemy: piętnaście procent z kilkunastu złotych nic klientowi nie daje, a robocizna nie maleje razem z ceną. Między 150 a ~176 zł płaci się równe 150 zł, żeby większe zlecenie nigdy nie wyszło taniej od mniejszego (naiwny próg dawał dokładnie taki uskok). Rabat nigdzie nie jest nazwany, schodzi równo ze wszystkich kwot w rozpisce. Stała: `CONFIG.PL_DISCOUNT_MIN_PLN`, reguła: `plFactorFor()` w `src/pricing/config.js`, pilnuje jej `scripts/test-price-breakdown.mjs`.
+
+Skutek uboczny wdrożenia progu: ceny "od" na kartach usług wzrosły, bo liczą się z najtańszej realnej konfiguracji, a ta jest poniżej progu. Druk FDM 16 → 19 zł, MSLA 40 → 47 zł, grawer i cięcie CO2 8 → 10 zł, fiber 8 → 9 zł, odlew żywiczny 18 → 21 zł. Liczby wyprowadza `npm run prices:derive`.
+
 **Trzy rozłączne możliwości:**
 
 1. **Przedmiot klienta** (talerzyki, drewniana deska, zegarek, biżuteria, brelok itp.)
    - Nasz materiał nie jest oferowany, bo nie ma czego dostarczać
+   - Klient opisuje przedmiot, który przyśle (deska, zegarek, brelok), a listy materiałów z magazynu tu nie ma, bo nie ma czego wybierać
    - Klient podaje sposób dostarczenia rzeczy: w Polsce paczkomat InPost lub odbiór osobisty, z zagranicy wyłącznie kurier
    - Przy każdym takowym zleceniu klient wysyła JEDNĄ SZTUKĘ PONAD zamówienie na próby parametrów (przykład: grawer na pięciu talerzykach to sześć talerzyków w paczce, szósty na próby)
 
 2. **Materiał klienta** (arkusz, płyta, pasek, kawałek skóry itp.)
    - Klient dostarcza materiał, my wykonujemy usługę na wgranych partach
+   - Klient opisuje, jaki materiał przyśle (pole nieobowiązkowe, bo opis zlecenia i tak jest wymagany)
    - Ten sam tryb dostarczenia co powyżej: paczkomat, odbiór osobisty lub kurier
    - Zasada jednej sztuki ponad zamówienie dotyczy także tu: jeśli przysyła pięć arkuszy do grawerowania, szósty arkusz to próby
 
 3. **Nasz materiał** (z naszego magazynu)
    - Klient WYBIERA materiał z listy, a wybór realnie zmienia kwotę. Lista pochodzi wprost z cennika (`src/data/ourStock.js` czyta `laserCo2.js` i `laserFiber.js`), więc nie da się jej rozjechać z wyceną
    - Grawer CO2: drewno, sklejka, akryl, szkło, skóra, papier, tkanina, guma, kamień
-   - Cięcie CO2 z grubością, bo grubość wchodzi w cenę: sklejka 3/5/8 mm, akryl 3/5/8 mm, skóra 1-2 i 3-4 mm, papier/karton, tkanina/filc, guma 2-3 mm
+   - Cięcie CO2 z grubością, bo grubość wchodzi w cenę: sklejka 2/3/5/8 mm, akryl 3/5/8 mm, skóra 1-2 i 3-4 mm, papier/karton, tkanina/filc, guma 2-3 mm
    - Fiber: stal nierdzewna, aluminium, aluminium anodowane, mosiądz, miedź, tytan. Srebra i złota nie wydajemy z magazynu, mimo że je znakujemy: metal szlachetny ma własne rozliczenie wagowe
    - "Inny materiał" zostaje na końcu listy i odsłania pole tekstowe, bo lista nie wyczerpuje świata
    - Dostępność i koszt samego materiału potwierdzamy przy realizacji. Kwota z kalkulatora obejmuje wyłącznie robociznę

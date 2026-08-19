@@ -132,8 +132,8 @@ export function calculate({ resinId, volumeId, moldId, inclusionId, finishId, qu
   const batchTimeH = (workTimeH + handleH) * qTier.qty + resin.cureH;
 
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
-  const fc = netCostFmt(lang);
   const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, qTier.discount, qTier.qty, plDiscount);
+  const fc = netCostFmt(lang, pricing.plFactor);
   const cureDisplay = resin.cureH < 1 ? `${Math.round(resin.cureH * 60)} min (UV)` : `${resin.cureH} h`;
 
   return {
