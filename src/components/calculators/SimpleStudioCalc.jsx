@@ -37,7 +37,8 @@ import SizeSlider, { categoryForCm } from "./SizeSlider.jsx";
 import { resolveTechAndParams, runCalc } from "../../pricing/simpleQuote.js";
 import { scaleMesh, scaleVector, meshMaxCm, vectorMaxCm } from "../../pricing/scaleGeometry.js";
 import { looksTooSmall, suspectUnits } from "../../pricing/meshUnits.js";
-import { BUILD_VOL_CM, maxScaleForBuildVolume } from "../../pricing/print3d.js";
+import { BUILD_VOL_CM, MSLA_BUILD_VOL_CM, maxScaleForBuildVolume } from "../../pricing/print3d.js";
+import { bedFit } from "../../pricing/laserLimits.js";
 import { trackCalc } from "../../utils/analytics.js";
 
 const STLViewer = lazy(() => import("./STLViewer.jsx"));
@@ -55,7 +56,11 @@ const ACCEPT_VECTOR = ".svg,.dxf,.ai,.pdf";
 
 /** Rozszerzenia, z ktorych potrafimy policzyc cene bez udzialu czlowieka. */
 const MESH_EXT = new Set(["stl", "obj", "3mf", "step", "stp"]);
-const VECTOR_PRICED_EXT = new Set(["svg"]);
+// Formaty wektorowe, z ktorych liczymy cene z geometrii. DXF doszedl
+// 2026-08-19: jest formatem tekstowym stworzonym wprost do maszyn i niesie
+// wspolrzedne oraz jednostke, wiec wycena z niego jest tak samo pewna jak
+// z SVG (pilnuje tego scripts/test-dxf.mjs, ktory porownuje obie drogi).
+const VECTOR_PRICED_EXT = new Set(["svg", "dxf"]);
 
 // ============================================================
 // QUESTIONS & OPTIONS
@@ -177,17 +182,22 @@ const LBL = {
     q0: "Masz gotowy plik?", q0hint: "Wrzuć plik STL lub SVG - wycenimy automatycznie",
     q0drop: "Przeciągnij plik tutaj", q0tap: "Kliknij, aby wybrać plik", q0or: "lub kliknij, aby wybrać", q0accept: ".stl, .obj, .3mf, .step, .svg, .dxf, .ai, .pdf",
     q0skip: "Nie mam pliku - opiszę co potrzebuję",
-    q0detected: "Wykryto", q0stl: "Model 3D (STL)", q0model: "Model 3D", q0svg: "Grafika wektorowa (SVG)",
+    q0detected: "Wykryto", q0stl: "Model 3D (STL)", q0model: "Model 3D", q0svg: "Grafika wektorowa (SVG)", q0vector: "Grafika wektorowa",
     q0dims: "Wymiary", q0vol: "Objętość", q0area: "Powierzchnia", q0paths: "Ścieżki",
     q0remove: "Usuń plik", q0selected: "Wybrano", q0selSize: "Rozmiar", q0selMat: "Materiał",
     unitTitle: "Ten model ma po odczycie", unitTitleSuffix: "cm",
     unitText: "Pliki STL i OBJ nie zapisują jednostki, więc czytamy je jako milimetry - a ten plik prawdopodobnie zapisano inaczej.",
-    unitRead: "Czytaj w", unitClose: "Jeśli żadna z tych wartości nie pasuje, wielkość można ustawić suwakiem poniżej.",
+    unitRead: "Czytaj w",
+    dxfNoPreview: "Rysunek DXF czytamy z geometrii, ale podglądu z niego nie rysujemy.",
+    dxfBlocks: "Uwaga: rysunek zawiera bloki, których nie rozwijamy. Policzona ścieżka może być krótsza niż rzeczywista, więc wycenę potwierdzimy przed realizacją.", unitClose: "Jeśli żadna z tych wartości nie pasuje, wielkość można ustawić suwakiem poniżej.",
     haveMesh: "Mam gotowy plik 3D", haveMeshSub: "STL, OBJ, 3MF, STEP",
     haveVector: "Mam gotowy plik wektorowy", haveVectorSub: "SVG, DXF, AI, PDF",
     dimOriginal: "Wymiar oryginalny", dimTarget: "Wymiar do realizacji",
     manualOnly: "Ten format przyjmujemy, ale ceny z niego nie policzymy automatycznie. Dołączymy plik do zapytania i odpowiemy z wyceną.",
     overPlateTitle: "Ta wielkość nie zmieści się w całości na naszym stole",
+    overPlateTitleMsla: "Ta wielkość nie zmieści się na drukarce żywicznej",
+    overPlateTextMsla: "Drukarka żywiczna (Elegoo Saturn 4 Ultra) ma pole 21,8 x 12,3 x 25 cm, czyli wyraźnie mniejsze niż filamentowa. Są trzy wyjścia.",
+    overPlateSwitchFdm: "Wydrukuj z filamentu, tam ta wielkość się mieści",
     overPlateText: "Największa maszyna ma pole robocze 30 x 32 x 32,5 cm. Są dwa wyjścia i oba u nas działają.",
     overPlateFit: "Zmniejsz do największej, która się mieści",
     overPlateSplit: "Zostaw tę wielkość i poproś o wycenę: przy dużych obiektach tniemy model na części i sklejamy po wydruku. Szew planujemy na krawędzi, żeby go nie było widać.",
@@ -202,22 +212,36 @@ const LBL = {
     switchHint: 'Chcesz podać dokładniejsze parametry? Przełącz na tryb "Dla zaawansowanych" u góry.',
     note: 'Tryb Szybkiej Wyceny dobiera technologię i parametry automatycznie - dla dokładnej kontroli użyj trybu zaawansowanego.',
     mslaHint: "Ten model zmieści się na drukarce żywicznej MSLA 16K, to opcja z wyższą precyzją i gładszą powierzchnią niż odlew z żywicy.",
+    co2ModeQ: "Cięcie czy grawerowanie?",
+    co2CutName: "Cięcie na wylot", co2CutDesc: "Wycinamy kształt na wylot, zostaje gotowy element.",
+    co2EngraveName: "Grawerowanie powierzchni", co2EngraveDesc: "Wypalamy rysunek na powierzchni, materiał zostaje w całości.",
+    laserOverPlateTitle: "Ten rysunek nie zmieści się w polu roboczym lasera",
+    laserOverPlateTextCo2: "Laser CO2 (xTool P2) ma pole robocze 60 x 30,8 cm.",
+    laserOverPlateTextFiber: "Laser światłowodowy ma pole robocze 15 x 15 cm.",
+    laserOverPlateFit: "Zmniejsz do największej, która się mieści",
+    laserOverPlateCustom: "Przy tej wielkości wyceniamy indywidualnie: napisz do nas, a odpowiemy z ofertą.",
+    laserExtendedNote: "Ta praca wymaga przelotki z podajnikiem (dłuższa oś), co wydłuża przygotowanie.",
   },
   en: {
     q0: "Got a file ready?", q0hint: "Drop an STL or SVG file - we'll quote it automatically",
     q0drop: "Drag your file here", q0tap: "Tap to choose a file", q0or: "or click to browse", q0accept: ".stl, .obj, .3mf, .step, .svg, .dxf, .ai, .pdf",
     q0skip: "No file - I'll describe what I need",
-    q0detected: "Detected", q0stl: "3D model (STL)", q0model: "3D model", q0svg: "Vector graphic (SVG)",
+    q0detected: "Detected", q0stl: "3D model (STL)", q0model: "3D model", q0svg: "Vector graphic (SVG)", q0vector: "Vector graphic",
     q0dims: "Dimensions", q0vol: "Volume", q0area: "Area", q0paths: "Paths",
     q0remove: "Remove file", q0selected: "Selected", q0selSize: "Size", q0selMat: "Material",
     unitTitle: "This model reads as", unitTitleSuffix: "cm",
     unitText: "STL and OBJ files do not store a unit, so we read them as millimeters - this file was probably saved differently.",
-    unitRead: "Read in", unitClose: "If none of these values fits, you can set the size with the slider below.",
+    unitRead: "Read in",
+    dxfNoPreview: "We read the DXF geometry, but we do not draw a preview from it.",
+    dxfBlocks: "Note: the drawing contains blocks we do not expand. The measured path may be shorter than the real one, so we will confirm the quote before production.", unitClose: "If none of these values fits, you can set the size with the slider below.",
     haveMesh: "I have a 3D file", haveMeshSub: "STL, OBJ, 3MF, STEP",
     haveVector: "I have a vector file", haveVectorSub: "SVG, DXF, AI, PDF",
     dimOriginal: "Original size", dimTarget: "Size we will make",
     manualOnly: "We accept this format, but we cannot price it automatically. We will attach the file to your enquiry and come back with a quote.",
     overPlateTitle: "This size will not fit our build plate in one piece",
+    overPlateTitleMsla: "This size will not fit the resin printer",
+    overPlateTextMsla: "The resin printer (Elegoo Saturn 4 Ultra) has a 21.8 x 12.3 x 25 cm plate, clearly smaller than the filament one. There are three ways out.",
+    overPlateSwitchFdm: "Print it in filament, where this size fits",
     overPlateText: "The largest machine has a 30 x 32 x 32.5 cm build volume. There are two ways out and we do both.",
     overPlateFit: "Scale down to the largest that fits",
     overPlateSplit: "Keep this size and ask for a quote: on large objects we split the model and bond the parts after printing. We place the seam on an edge so it does not show.",
@@ -232,22 +256,36 @@ const LBL = {
     switchHint: 'Want more precise parameters? Switch to "Advanced" mode at the top.',
     note: 'Quick Quote mode picks technology and parameters automatically - for full control, use the advanced mode.',
     mslaHint: "This model fits the MSLA 16K resin printer, an option with higher precision and a smoother surface than a resin cast.",
+    co2ModeQ: "Cut or engrave?",
+    co2CutName: "Cut through", co2CutDesc: "We cut the shape all the way through, leaving a finished piece.",
+    co2EngraveName: "Surface engraving", co2EngraveDesc: "We burn the drawing into the surface, the material stays whole.",
+    laserOverPlateTitle: "This drawing does not fit the laser's work area",
+    laserOverPlateTextCo2: "The CO2 laser (xTool P2) has a 60 x 30.8 cm work area.",
+    laserOverPlateTextFiber: "The fiber laser has a 15 x 15 cm work area.",
+    laserOverPlateFit: "Scale down to the largest that fits",
+    laserOverPlateCustom: "At this size we quote it individually: write to us and we will come back with an offer.",
+    laserExtendedNote: "This job needs the passthrough riser (longer axis), which adds to the setup time.",
   },
   de: {
     q0: "Haben Sie eine Datei?", q0hint: "Laden Sie eine STL- oder SVG-Datei hoch - wir kalkulieren automatisch",
     q0drop: "Datei hierher ziehen", q0tap: "Tippen um Datei auszuwählen", q0or: "oder klicken zum Auswählen", q0accept: ".stl, .obj, .3mf, .step, .svg, .dxf, .ai, .pdf",
     q0skip: "Keine Datei - ich beschreibe was ich brauche",
-    q0detected: "Erkannt", q0stl: "3D-Modell (STL)", q0model: "3D-Modell", q0svg: "Vektorgrafik (SVG)",
+    q0detected: "Erkannt", q0stl: "3D-Modell (STL)", q0model: "3D-Modell", q0svg: "Vektorgrafik (SVG)", q0vector: "Vektorgrafik",
     q0dims: "Maße", q0vol: "Volumen", q0area: "Fläche", q0paths: "Pfade",
     q0remove: "Datei entfernen", q0selected: "Ausgewählt", q0selSize: "Größe", q0selMat: "Material",
     unitTitle: "Dieses Modell wird gelesen als", unitTitleSuffix: "cm",
     unitText: "STL- und OBJ-Dateien speichern keine Einheit, wir lesen sie daher als Millimeter - diese Datei wurde wahrscheinlich anders gespeichert.",
-    unitRead: "Lesen in", unitClose: "Wenn keiner dieser Werte passt, können Sie die Größe mit dem Regler unten einstellen.",
+    unitRead: "Lesen in",
+    dxfNoPreview: "Die DXF-Geometrie lesen wir, eine Vorschau zeichnen wir daraus nicht.",
+    dxfBlocks: "Hinweis: Die Zeichnung enthält Blöcke, die wir nicht auflösen. Der gemessene Pfad kann kürzer sein als der tatsächliche, daher bestätigen wir das Angebot vor der Fertigung.", unitClose: "Wenn keiner dieser Werte passt, können Sie die Größe mit dem Regler unten einstellen.",
     haveMesh: "Ich habe eine 3D-Datei", haveMeshSub: "STL, OBJ, 3MF, STEP",
     haveVector: "Ich habe eine Vektordatei", haveVectorSub: "SVG, DXF, AI, PDF",
     dimOriginal: "Originalmaß", dimTarget: "Maß für die Ausführung",
     manualOnly: "Dieses Format nehmen wir an, automatisch kalkulieren können wir es aber nicht. Wir hängen die Datei an Ihre Anfrage und melden uns mit einem Angebot.",
     overPlateTitle: "Diese Größe passt nicht am Stück auf unsere Bauplatte",
+    overPlateTitleMsla: "Diese Größe passt nicht auf den Harzdrucker",
+    overPlateTextMsla: "Der Harzdrucker (Elegoo Saturn 4 Ultra) hat 21,8 x 12,3 x 25 cm, deutlich weniger als der Filamentdrucker. Es gibt drei Wege.",
+    overPlateSwitchFdm: "Aus Filament drucken, dort passt diese Größe",
     overPlateText: "Die größte Maschine hat einen Bauraum von 30 x 32 x 32,5 cm. Es gibt zwei Wege und beide gehen wir.",
     overPlateFit: "Auf die größte passende Größe verkleinern",
     overPlateSplit: "Diese Größe behalten und ein Angebot anfragen: bei großen Objekten teilen wir das Modell und fügen die Teile nach dem Druck. Die Naht legen wir auf eine Kante, damit sie nicht auffällt.",
@@ -262,6 +300,15 @@ const LBL = {
     switchHint: 'Genauere Parameter? Wechseln Sie oben in den "Fortgeschrittenen"-Modus.',
     note: 'Der Schnellkalkulationsmodus wählt Technologie und Parameter automatisch - für volle Kontrolle verwenden Sie den erweiterten Modus.',
     mslaHint: "Dieses Modell passt auf den MSLA-16K-Harzdrucker, eine Option mit höherer Präzision und glatterer Oberfläche als ein Harzguss.",
+    co2ModeQ: "Schneiden oder Gravieren?",
+    co2CutName: "Durchschneiden", co2CutDesc: "Wir schneiden die Form ganz durch, es bleibt ein fertiges Teil.",
+    co2EngraveName: "Oberflächengravur", co2EngraveDesc: "Wir brennen die Zeichnung in die Oberfläche, das Material bleibt vollständig erhalten.",
+    laserOverPlateTitle: "Diese Zeichnung passt nicht in den Arbeitsbereich des Lasers",
+    laserOverPlateTextCo2: "Der CO2-Laser (xTool P2) hat einen Arbeitsbereich von 60 x 30,8 cm.",
+    laserOverPlateTextFiber: "Der Faserlaser hat einen Arbeitsbereich von 15 x 15 cm.",
+    laserOverPlateFit: "Auf die größte passende Größe verkleinern",
+    laserOverPlateCustom: "Bei dieser Größe kalkulieren wir individuell: schreiben Sie uns, wir melden uns mit einem Angebot.",
+    laserExtendedNote: "Diese Arbeit braucht den Passthrough-Riser (längere Achse), was die Vorbereitung verlängert.",
   },
 };
 
@@ -428,14 +475,17 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
         setSizeCm(meshMaxCm(parsed) || 8);
         trackCalc("studio_simple", "file_upload", ext);
       } else if (VECTOR_PRICED_EXT.has(ext)) {
-        const { parseSVG } = await import("../../utils/svgParser.js");
-        const parsed = parseSVG(await file.text());
+        // Oba parsery oddaja ten sam ksztalt wyniku (bboxMm, pathLengthCm,
+        // engravAreaCm2), bo obie drogi karmia ten sam silnik wyceny.
+        const parsed = ext === "dxf"
+          ? (await import("../../utils/dxfParser.js")).parseDXF(await file.text())
+          : (await import("../../utils/svgParser.js")).parseSVG(await file.text());
         setFileType("svg");
         setSvgData(parsed);
         setStlData(null);
         setMaterial("wood");
         setSizeCm(vectorMaxCm(parsed) || 8);
-        trackCalc("studio_simple", "file_upload", "svg");
+        trackCalc("studio_simple", "file_upload", ext);
       } else {
         // Format przyjmujemy, ale wyceny z niego nie policzymy. Mowimy to wprost.
         setFileType(null);
@@ -490,7 +540,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   // Rozszerzenie wgranego pliku, do etykiety "Wykryto". STL, OBJ, 3MF i STEP/STP
   // ida tym samym parserem, wiec bez tego etykieta zawsze mowila "STL", nawet
   // gdy klient wgral OBJ.
-  const EXT_LABEL = { STL: "STL", OBJ: "OBJ", "3MF": "3MF", STEP: "STEP", STP: "STEP" };
+  const EXT_LABEL = { STL: "STL", OBJ: "OBJ", "3MF": "3MF", STEP: "STEP", STP: "STEP", SVG: "SVG", DXF: "DXF" };
   const detectedExtLabel = fileName ? EXT_LABEL[fileName.split(".").pop().toUpperCase()] || null : null;
 
   // Model po odczycie jest fizycznie nieprawdopodobny (patrz meshUnits.js):
@@ -507,13 +557,25 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
 
   // Granica pola roboczego liczona z calej bryly, a nie z jednego wymiaru:
   // czesc za dluga w jednej osi czesto miesci sie po obroceniu.
-  const fitCm = useMemo(() => {
+  //
+  // KAZDA MASZYNA MA WLASNE POLE i to nie jest szczegol. Bambu H2D ma
+  // 30 x 32 x 32.5 cm, a Saturn 4 Ultra 21.8 x 12.3 x 25 cm, czyli w osi Y
+  // niemal trzy razy mniej. Do tej pory szybka wycena sprawdzala ZAWSZE pole
+  // drukarki filamentowej, takze po przelaczeniu na zywice, wiec model
+  // 20 x 20 cm przechodzil, mimo ze na Saturnie nie ma prawa sie zmiescic.
+  // Nic sie nie wywalalo: cena byla, dodanie do koszyka odbijalo sie dopiero
+  // o serwer zamowien i to komunikatem, ktory niczego nie tlumaczyl.
+  const fitCmFor = (vol) => {
     if (fileType !== "stl" || !stlData?.bbox || !originalCm) return null;
-    const max = maxScaleForBuildVolume(stlData.bbox, BUILD_VOL_CM);
+    const max = maxScaleForBuildVolume(stlData.bbox, vol);
     return max ? originalCm * max : null;
-  }, [fileType, stlData, originalCm]);
-
-  const overPlate = fitCm != null && sizeCm > fitCm + 1e-4;
+  };
+  const fitCmFdm = useMemo(() => fitCmFor(BUILD_VOL_CM),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [fileType, stlData, originalCm]);
+  const fitCmMsla = useMemo(() => fitCmFor(MSLA_BUILD_VOL_CM),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [fileType, stlData, originalCm]);
 
   const size = categoryForCm(sizeCm);
 
@@ -532,12 +594,72 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
     [item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, printTech]
   );
 
+  // Pole robocze laserow, ten sam wzorzec co pole robocze drukarki (fitCm)
+  // wyzej. Dotyczy tylko rysunkow wektorowych, bo bryly licza sie osobno.
+  // Wymiary bierzemy z ORYGINALU pliku (svgData.bboxMm w milimetrach), bo
+  // `scale` juz niesie stosunek wielkosci wykonania do oryginalu.
+  const laserBedFit = useMemo(() => {
+    if (fileType !== "svg" || !svgData?.bboxMm) return null;
+    const tech = resolved?.tech;
+    if (tech !== "co2" && tech !== "fiber") return null;
+    return bedFit(svgData.bboxMm, tech, scale);
+  }, [fileType, svgData, resolved?.tech, scale]);
+
+  const laserOverPlate = laserBedFit?.fits === false;
+  const laserNeedsExtended = laserBedFit?.fits === true && laserBedFit?.needsExtended === true;
+  const laserFitCm = laserBedFit?.maxScale != null && originalCm ? originalCm * laserBedFit.maxScale : null;
+
+  // Ciecie kontra grawerowanie CO2. null znaczy "jak wynika z odpowiedzi"
+  // (CO2_MODE_FROM_ITEM w simpleQuote.js), tak samo jak printTech dla
+  // FDM/MSLA wyzej: wartosc pojawia sie dopiero, gdy klient sam przelaczy.
+  const [co2Mode, setCo2Mode] = useState(null);
+  const isVectorCo2 = fileType === "svg" && resolved?.tech === "co2";
+
+  // Obie kwoty licza sie tym samym silnikiem, przez `co2Mode`. Kopia
+  // mapowania parametrow po stronie widoku rozjechalaby sie z simpleQuote.js
+  // przy pierwszej zmianie oferty i nikt by tego nie zauwazyl, bo obie strony
+  // nadal generowalyby poprawnie wygladajace liczby.
+  const co2CutResult = useMemo(
+    () => (isVectorCo2 && !laserOverPlate
+      ? runCalc(resolveTechAndParams({ ...odpowiedzi, co2Mode: "cut" }), lang)
+      : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isVectorCo2, laserOverPlate, lang, item, size, material, finish, quantity, fileType, scaledSvg]
+  );
+  const co2EngraveResult = useMemo(
+    () => (isVectorCo2 && !laserOverPlate
+      ? runCalc(resolveTechAndParams({ ...odpowiedzi, co2Mode: "engrave" }), lang)
+      : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isVectorCo2, laserOverPlate, lang, item, size, material, finish, quantity, fileType, scaledSvg]
+  );
+
+  // Wybor klienta (kliknieta karta ciecie/grawerowanie) nadpisuje tryb, ktory
+  // idzie do wyceny wiazacej i do koszyka. Bez tego karty pokazywalyby dwie
+  // kwoty, ale kupic dalej dawaloby sie tylko ta wybrana automatycznie.
+  const activeResolved = useMemo(
+    () => (isVectorCo2 && co2Mode
+      ? resolveTechAndParams({ ...odpowiedzi, co2Mode })
+      : resolved),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isVectorCo2, co2Mode, resolved, item, size, material, finish, quantity, fileType, scaledSvg]
+  );
+
+  // Pole roboczej maszyny, ktora realnie wykona ten wydruk.
+  const naZywicy = resolved?.tech === "msla";
+  const fitCm = naZywicy ? fitCmMsla : fitCmFdm;
+  const overPlate = fitCm != null && sizeCm > fitCm + 1e-4;
+  // Model, ktory nie miesci sie na zywicy, ale zmiescilby sie na filamencie.
+  // To jest najtansza naprawa, jaka mozemy zaproponowac: jedno klikniecie
+  // zamiast zmniejszania wyrobu.
+  const zmiescSieNaFdm = naZywicy && overPlate && fitCmFdm != null && sizeCm <= fitCmFdm + 1e-4;
+
   // Ponad polem roboczym NIE podajemy kwoty. Cena za rzecz, ktorej nie da sie
   // wykonac w calosci, jest obietnica bez pokrycia, a klient dowiedzialby sie
   // o tym dopiero przy realizacji. Zamiast liczby pokazujemy droge.
   const result = useMemo(
-    () => (overPlate ? { type: "custom" } : runCalc(resolved, lang)),
-    [resolved, lang, overPlate]
+    () => (overPlate || laserOverPlate ? { type: "custom" } : runCalc(activeResolved, lang)),
+    [activeResolved, lang, overPlate, laserOverPlate]
   );
 
   // Druga technologia druku, policzona z TYCH SAMYCH odpowiedzi. Klient
@@ -554,7 +676,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
 
   // Szybka wycena otwiera sie domyslnie, wiec bez tego wiekszosc odwiedzajacych
   // w ogole nie widziala drogi do zakupu.
-  const cartTarget = useMemo(() => cartTargetFor(resolved), [resolved]);
+  const cartTarget = useMemo(() => cartTargetFor(activeResolved), [activeResolved]);
 
   const svgBlobUrl = useMemo(() => {
     if (!svgData?.svgText) return null;
@@ -609,7 +731,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
           ktorego nie da sie wypelnic. Teraz zaczynamy od pytania, a plik jest
           jedna z odpowiedzi na nie.
           ------------------------------------------------------------------ */}
-      <SimpleCard stepNum="①" label={hasFile ? l.q1file : l.q1} id="simple-upload">
+      <SimpleCard stepNum="①" label={l.q1} id="simple-upload">
         {/* Dwie drogi na skroty dla tych, ktorzy maja gotowy projekt */}
         <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3">
           {[
@@ -713,7 +835,9 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
                 <div className="min-w-0">
                   <div className="text-sm font-semibold text-white truncate">{fileName}</div>
                   <div className="text-[11px] text-emerald-400/80">
-                    {l.q0detected}: {fileType === "stl" ? (detectedExtLabel ? `${l.q0model} (${detectedExtLabel})` : l.q0stl) : l.q0svg}
+                    {l.q0detected}: {fileType === "stl"
+                      ? (detectedExtLabel ? `${l.q0model} (${detectedExtLabel})` : l.q0stl)
+                      : (detectedExtLabel ? `${l.q0vector} (${detectedExtLabel})` : l.q0svg)}
                   </div>
                 </div>
               </div>
@@ -728,6 +852,19 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
                   <STLViewer triangles={stlData.triangles} bbox={stlData.bbox} />
                 </Suspense>
               </div>
+            )}
+
+            {/* DXF nie niesie obrazka, tylko wspolrzedne. Zamiast pustej
+                czarnej ramki, ktora wyglada jak awaria, mowimy wprost, ze
+                podgladu nie bedzie, a geometrie odczytalismy. */}
+            {fileType === "svg" && !svgBlobUrl && svgData && (
+              <p className="mb-3 text-[11px] text-neutral-500 leading-relaxed">{l.dxfNoPreview}</p>
+            )}
+
+            {/* Blok, ktorego nie rozwijamy, to kawalek rysunku, ktorego nie
+                policzylismy. Milczenie o tym zaniżyloby cene bez sladu. */}
+            {svgData?.blocksSkipped > 0 && (
+              <p className="mb-3 text-[11px] text-amber-200/80 leading-relaxed">{l.dxfBlocks}</p>
             )}
 
             {fileType === "svg" && svgBlobUrl && (
@@ -796,18 +933,16 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
           </div>
         )}
 
-        {/* Kafelki zostaja takze po wgraniu pliku, bo od tego, CO to jest,
-            zalezy material i technologia: czesc techniczna dostaje filament
-            inzynieryjny, breloczek nie.
-            Zmienia sie natomiast PYTANIE. Przy pustym ekranie brzmi "co chcesz
-            wykonac", czyli jest wyborem przedmiotu. Po wgraniu pliku ten sam
-            wybor obok podgladu modelu czytal sie jak druga, konkurencyjna
-            odpowiedz na to samo pytanie, wiec klient nie wiedzial, co wlasciwie
-            zamawia. Teraz brzmi "do czego to sluzy" i jest doprecyzowaniem. */}
-        {hasFile && (
-          <p className="text-[11px] text-neutral-500 mb-2">{l.q1fileHint}</p>
+        {/* Po wgraniu pliku kafelki znikaja calkowicie: klient ma juz plik,
+            wiec wybor przedmiotu obok podgladu modelu czytal sie jak druga,
+            konkurencyjna odpowiedz na to samo pytanie i mylil. `item` zostaje
+            w stanie na swojej domyslnej wartosci ("keychain"), bo nadal
+            steruje materialem i technologia (patrz DEFAULT_TECH_FROM_ITEM /
+            CO2_MODE_FROM_ITEM w simpleQuote.js) - bez tego wycena po wgraniu
+            pliku spadlaby do { custom: true }. */}
+        {!hasFile && (
+          <TileGrid options={ITEMS} value={item} onChange={handleSet(setItem, "item")} lang={lang} cols={4} />
         )}
-        <TileGrid options={ITEMS} value={item} onChange={handleSet(setItem, "item")} lang={lang} cols={4} />
       </SimpleCard>
 
       {/* Wielkosc zaraz pod plikiem, zeby bylo widac zaleznosc: to suwak
@@ -817,7 +952,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
           valueCm={sizeCm}
           onChange={(cm) => { setSizeCm(cm); trackCalc("studio_simple", "size_cm", String(Math.round(cm))); }}
           originalCm={originalCm}
-          fitCm={fitCm}
+          fitCm={fitCm ?? laserFitCm}
           lang={lang}
         />
 
@@ -825,9 +960,24 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
           <div className="mt-4 rounded-xl border border-amber-400/25 bg-amber-400/[0.06] p-4">
             <div className="flex items-center gap-2 mb-1.5">
               <AlertTriangle className="w-4 h-4 text-amber-300 shrink-0" />
-              <h4 className="text-sm font-semibold text-amber-200">{l.overPlateTitle}</h4>
+              <h4 className="text-sm font-semibold text-amber-200">
+                {naZywicy ? l.overPlateTitleMsla : l.overPlateTitle}
+              </h4>
             </div>
-            <p className="text-[11px] text-neutral-300 leading-relaxed mb-3">{l.overPlateText}</p>
+            <p className="text-[11px] text-neutral-300 leading-relaxed mb-3">
+              {naZywicy ? l.overPlateTextMsla : l.overPlateText}
+            </p>
+            {/* Przejscie na filament jest najtansza naprawa, jaka mozemy
+                zaproponowac: jedno klikniecie zamiast zmniejszania wyrobu.
+                Dlatego stoi PRZED przyciskiem zmniejszania, a nie za nim. */}
+            {zmiescSieNaFdm && (
+              <button
+                onClick={() => { setPrintTech("fdm"); trackCalc("studio_simple", "switch_to_fdm", String(Math.round(sizeCm))); }}
+                className="w-full sm:w-auto mb-2 sm:mb-0 sm:mr-2 px-4 py-2 rounded-lg bg-emerald-400/15 border border-emerald-400/40 text-emerald-200 text-xs font-semibold hover:bg-emerald-400/25 transition-colors"
+              >
+                {l.overPlateSwitchFdm}
+              </button>
+            )}
             <button
               onClick={() => { setSizeCm(fitCm); trackCalc("studio_simple", "fit_to_plate", String(Math.round(fitCm))); }}
               className="w-full sm:w-auto px-4 py-2 rounded-lg bg-amber-400/15 border border-amber-400/40 text-amber-200 text-xs font-semibold hover:bg-amber-400/25 transition-colors"
@@ -836,6 +986,38 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
             </button>
             <p className="text-[11px] text-neutral-400 leading-relaxed mt-3">{l.overPlateSplit}</p>
           </div>
+        )}
+
+        {/* Pole robocze lasera, ten sam wzorzec co pole robocze drukarki
+            wyzej: bez ceny wiazacej dla rysunku, ktory nie miesci sie w
+            calosci, tylko droga (pomniejsz) i informacja o wycenie
+            indywidualnej. */}
+        {laserOverPlate && (
+          <div className="mt-4 rounded-xl border border-amber-400/25 bg-amber-400/[0.06] p-4">
+            <div className="flex items-center gap-2 mb-1.5">
+              <AlertTriangle className="w-4 h-4 text-amber-300 shrink-0" />
+              <h4 className="text-sm font-semibold text-amber-200">{l.laserOverPlateTitle}</h4>
+            </div>
+            <p className="text-[11px] text-neutral-300 leading-relaxed mb-3">
+              {resolved?.tech === "fiber" ? l.laserOverPlateTextFiber : l.laserOverPlateTextCo2}
+            </p>
+            {laserFitCm != null && (
+              <button
+                onClick={() => { setSizeCm(laserFitCm); trackCalc("studio_simple", "fit_to_laser_bed", String(Math.round(laserFitCm))); }}
+                className="w-full sm:w-auto px-4 py-2 rounded-lg bg-amber-400/15 border border-amber-400/40 text-amber-200 text-xs font-semibold hover:bg-amber-400/25 transition-colors"
+              >
+                {l.laserOverPlateFit} ({laserFitCm.toFixed(1)} cm)
+              </button>
+            )}
+            <p className="text-[11px] text-neutral-400 leading-relaxed mt-3">{l.laserOverPlateCustom}</p>
+          </div>
+        )}
+
+        {/* Miesci sie, ale tylko przez przelotke z podajnikiem: cena zostaje
+            (silnik CO2 juz to liczy przez flage `extended`), tu tylko
+            uprzedzamy, ze przygotowanie trwa dluzej. */}
+        {!laserOverPlate && laserNeedsExtended && (
+          <p className="mt-4 text-[11px] text-amber-200/80 leading-relaxed">{l.laserExtendedNote}</p>
         )}
       </SimpleCard>
 
@@ -877,6 +1059,47 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
                     <div className={`text-xs mt-2 font-medium ${aktywna ? "text-emerald-300" : "text-neutral-400"}`}>{kwota}</div>
                   )}
                   {aktywna && printTech === null && (
+                    <div className="text-[10px] text-neutral-600 mt-1">{l.techAuto}</div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </SimpleCard>
+      )}
+
+      {/* Ciecie kontra grawerowanie CO2, ten sam wzorzec co wyzej: klient
+          czesto nie wie, ze to dwie rozne uslugi (jedna zostawia gotowy
+          element, druga tylko rysunek na powierzchni), wiec kazda karta
+          niesie wlasny opis i wlasna kwote policzona z tych samych
+          odpowiedzi. */}
+      {isVectorCo2 && (
+        <SimpleCard stepNum="◆" label={l.co2ModeQ}>
+          <div className="grid sm:grid-cols-2 gap-2">
+            {[
+              { id: "cut", nazwa: l.co2CutName, opis: l.co2CutDesc, wynik: co2CutResult },
+              { id: "engrave", nazwa: l.co2EngraveName, opis: l.co2EngraveDesc, wynik: co2EngraveResult },
+            ].map((o) => {
+              const aktywna = (co2Mode || resolved?.mode) === o.id;
+              const kwota = o.wynik?.type === "calculated"
+                ? (lang === "pl" ? `${o.wynik.perPcPLN.min} - ${o.wynik.perPcPLN.max} PLN` : `${o.wynik.perPcEUR.min} - ${o.wynik.perPcEUR.max} EUR`)
+                : null;
+              return (
+                <button
+                  key={o.id}
+                  type="button"
+                  onClick={() => setCo2Mode(o.id)}
+                  aria-pressed={aktywna}
+                  className={`text-left rounded-xl border p-3 transition-colors ${
+                    aktywna ? "border-emerald-400/50 bg-emerald-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/25"
+                  }`}
+                >
+                  <div className={`text-sm font-medium ${aktywna ? "text-emerald-300" : "text-neutral-200"}`}>{o.nazwa}</div>
+                  <div className="text-[11px] text-neutral-500 leading-tight mt-1">{o.opis}</div>
+                  {kwota && (
+                    <div className={`text-xs mt-2 font-medium ${aktywna ? "text-emerald-300" : "text-neutral-400"}`}>{kwota}</div>
+                  )}
+                  {aktywna && co2Mode === null && (
                     <div className="text-[10px] text-neutral-600 mt-1">{l.techAuto}</div>
                   )}
                 </button>
@@ -974,17 +1197,23 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
           fileScale={scale}
           preAttachedFile={uploadedFile}
           requireLicenseConsent={isMslaPath}
-          cartAvailable={!overPlate && !fileForHuman}
+          cartAvailable={!overPlate && !laserOverPlate && !fileForHuman}
           cart={
             cartTarget ? (
               <CalcToCart
                 embedded
                 onBinding={setBindingGrosze}
+                // Plik glowny jedzie do koszyka. Bez tego koszyk prosil o ten
+                // sam rysunek drugi raz i blokowal zakup, dopoki klient nie
+                // wgral go ponownie.
+                file={uploadedFile}
+                triangles={fileType === "stl" ? stlData?.triangles || null : null}
+                scale={scale}
                 calculator={cartTarget.calculator}
                 serviceId={cartTarget.serviceId}
                 params={{
-                  ...resolved.params,
-                  ...((resolved?.tech === "co2" || resolved?.tech === "fiber") ? { podloze, spare, materialNote } : {}),
+                  ...activeResolved.params,
+                  ...((activeResolved?.tech === "co2" || activeResolved?.tech === "fiber") ? { podloze, spare, materialNote } : {}),
                   ...(printability ? { printability } : {}),
                 }}
                 lang={lang}

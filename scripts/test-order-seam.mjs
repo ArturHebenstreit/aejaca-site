@@ -439,5 +439,48 @@ if (!progSerwera || !progKlienta || progSerwera !== progKlienta) {
   podzbior("zestaw ZALACZNIK DO ZAPYTANIA (kalkulator)", acceptInquiry, allowedWzor, "ALLOWED_EXT na serwerze (/api/contact)");
 }
 
+// ============================================================
+// 10. PLIK GLOWNY NIE MOZE BYC PROSZONY DRUGI RAZ
+// ============================================================
+// Klient wgrywal rysunek na gorze kalkulatora, widzial jego wymiary, widzial
+// cene policzona z jego dlugosci sciezki, a nizej koszyk pisal "Wgraj projekt,
+// zeby dodac do koszyka" i blokowal zakup. Pytalismy o cos, co lezalo na
+// ekranie wyzej. Wygladalo to jak usterka, bo nia bylo.
+//
+// Dwie strony tego szwu: kalkulator MUSI podac plik do koszyka, a koszyk MUSI
+// uznac go za projekt do wykonania. Zerwanie ktorejkolwiek z nich niczego nie
+// wywala, tylko zatrzymuje sprzedaz w ostatnim kroku.
+console.log("\n10. Plik glowny w koszyku");
+
+{
+  const sprawdz = (warunek, komunikat, dobry) => (warunek ? ok(dobry) : zle(komunikat));
+  const cart = readFileSync(new URL("../src/components/calculators/CalcToCart.jsx", import.meta.url), "utf8");
+  const simple = readFileSync(new URL("../src/components/calculators/SimpleStudioCalc.jsx", import.meta.url), "utf8");
+
+  sprawdz(/const mainFileIsArtwork = Boolean\(file\)/.test(cart),
+    "koszyk nie rozpoznaje pliku glownego jako projektu do wykonania",
+    "koszyk rozpoznaje plik glowny jako projekt do wykonania");
+
+  sprawdz(/artworkOk\s*=\s*!requiresArtwork[\s\S]{0,160}mainFileIsArtwork/.test(cart),
+    "plik glowny nie zaspokaja wymogu projektu, wiec koszyk poprosi o niego drugi raz",
+    "plik glowny zaspokaja wymog projektu do wykonania");
+
+  sprawdz(/<CalcToCart[\s\S]{0,400}file=\{uploadedFile\}/.test(simple),
+    "szybka wycena nie przekazuje wgranego pliku do koszyka",
+    "szybka wycena przekazuje wgrany plik do koszyka");
+
+  // Pole na plik nie znika, tylko zmienia znaczenie: dodatkowe pliki nadal
+  // przyjmujemy, bo klient czesto ma wersje zamienna albo rysunek pomocniczy.
+  sprawdz(/mainFileIsArtwork \? u\.extraLabel : u\.artworkLabel/.test(cart),
+    "pole na pliki dodatkowe zniknelo razem z pytaniem o projekt",
+    "pole na pliki dodatkowe zostalo, tylko zmienilo znaczenie");
+
+  for (const klucz of ["extraLabel", "extraHint"]) {
+    const n = (cart.match(new RegExp(`${klucz}:`, "g")) || []).length;
+    sprawdz(n >= 3, `${klucz} musi istniec w trzech jezykach, znaleziono ${n}`,
+      `${klucz} istnieje w trzech jezykach`);
+  }
+}
+
 console.log(bledy ? `\n${bledy} bledow\n` : "\nSzew koszyk-zamowienie: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);

@@ -143,6 +143,24 @@ function parseOBJ(bytes) {
 // Archiwum ZIP z modelem w XML. W przeciwienstwie do STL i OBJ format
 // deklaruje jednostke, wiec skalujemy do milimetrow zamiast zgadywac.
 
+/**
+ * Atrybut XML, w apostrofach ALBO w cudzyslowach.
+ *
+ * XML dopuszcza oba, a czesc eksporterow uzywa apostrofow. Wczesniej kazdy
+ * odczyt szukal wylacznie cudzyslowow, wiec taki plik przechodzil przez
+ * parser bez jednego trojkata i konczyl komunikatem "nie zawiera geometrii".
+ * Plik byl poprawny, my go nie umielismy przeczytac.
+ */
+function attr(name, src) {
+  const m = new RegExp(`\\b${name}\\s*=\\s*("([^"]*)"|'([^']*)')`, "i").exec(src || "");
+  return m ? (m[2] !== undefined ? m[2] : m[3]) : null;
+}
+
+/** Sciezka wewnatrz archiwum, bez wiodacego ukosnika i w jednej wielkosci liter. */
+function normPath(pth) {
+  return String(pth || "").replace(/^\/+/, "").toLowerCase();
+}
+
 function parse3MF(bytes) {
   let files;
   try {
@@ -151,30 +169,52 @@ function parse3MF(bytes) {
     throw new MeshError("file_unreadable", "Nie udało się otworzyć archiwum 3MF");
   }
 
-  const modelName = Object.keys(files).find((n) => n.toLowerCase().endsWith(".model"));
-  if (!modelName) throw new MeshError("file_unreadable", "Brak modelu w archiwum 3MF");
+  // Archiwum potrafi zawierac WIELE plikow .model. Bambu Studio i PrusaSlicer
+  // zapisuja projekt tak, ze `3D/3dmodel.model` niesie sam sklad sceny, a
+  // geometria lezy w `3D/Objects/*.model` i jest wolana przez atrybut p:path.
+  // Czytanie tylko pierwszego znalezionego pliku dawalo wiec pusty wynik dla
+  // kazdego projektu ze slicera, czyli dla plikow, ktore klienci maja najczesciej.
+  const modele = new Map();
+  for (const nazwa of Object.keys(files)) {
+    if (nazwa.toLowerCase().endsWith(".model")) modele.set(normPath(nazwa), strFromU8(files[nazwa]));
+  }
+  if (!modele.size) throw new MeshError("file_unreadable", "Brak modelu w archiwum 3MF");
 
-  const xml = strFromU8(files[modelName]);
+  const KORZEN = normPath("3D/3dmodel.model");
+  const glownaSciezka = modele.has(KORZEN) ? KORZEN : [...modele.keys()][0];
+  const glowny = modele.get(glownaSciezka);
 
-  const unitMatch = /<model\b[^>]*\bunit\s*=\s*"([^"]+)"/i.exec(xml);
-  const scale = MM_PER_UNIT[(unitMatch?.[1] || "millimeter").toLowerCase()] ?? 1;
+  const scale = MM_PER_UNIT[(attr("unit", /<model\b[^>]*>/i.exec(glowny)?.[0] || "") || "millimeter").toLowerCase()] ?? 1;
 
-  const objects = collectObjects(xml);
+  // Klucz obiektu to sciezka pliku ORAZ id, bo numeracja zaczyna sie od nowa
+  // w kazdym pliku i "1" z dwoch roznych plikow to dwa rozne obiekty.
+  const objects = new Map();
+  for (const [sciezka, xml] of modele) {
+    for (const [id, obj] of collectObjects(xml)) objects.set(`${sciezka}|${id}`, { ...obj, sciezka });
+  }
   if (!objects.size) throw new MeshError("file_unreadable", "Plik 3MF nie zawiera geometrii");
 
   const triangles = [];
-  const items = [...xml.matchAll(/<item\b([^>]*)\/?>/gi)];
+  const items = [...glowny.matchAll(/<item\b([^>]*)\/?>/gi)];
 
   if (items.length) {
     for (const [, attrs] of items) {
-      const id = /\bobjectid\s*=\s*"([^"]+)"/i.exec(attrs)?.[1];
+      const id = attr("objectid", attrs);
       if (!id) continue;
-      emitObject(objects, id, matrixFrom(attrs), scale, triangles, 0);
+      const sciezka = normPath(attr("p:path", attrs) || attr("path", attrs) || glownaSciezka);
+      emitObject(objects, id, sciezka, matrixFrom(attrs), scale, triangles, 0);
     }
-  } else {
-    // Bez sekcji build bierzemy wszystko, co ma wlasna siatke.
-    for (const [id, obj] of objects) {
-      if (obj.mesh) emitObject(objects, id, null, scale, triangles, 0);
+  }
+
+  // Bez sekcji build, albo gdy sklad sceny nie doprowadzil do zadnego trojkata,
+  // bierzemy wszystko, co ma wlasna siatke. Lepiej wycenic z calego archiwum
+  // niz odmowic wyceny pliku, ktory geometrie ma.
+  if (!triangles.length) {
+    for (const [klucz, obj] of objects) {
+      if (obj.mesh) {
+        const [sciezka, id] = klucz.split("|");
+        emitObject(objects, id, sciezka, null, scale, triangles, 0);
+      }
     }
   }
 
@@ -190,12 +230,14 @@ function collectObjects(xml) {
   while ((m = re.exec(xml)) !== null) {
     const attrs = m[1] ?? m[3] ?? "";
     const body = m[2] ?? "";
-    const id = /\bid\s*=\s*"([^"]+)"/i.exec(attrs)?.[1];
+    const id = attr("id", attrs);
     if (!id) continue;
 
     const meshBody = /<mesh\b[^>]*>([\s\S]*?)<\/mesh>/i.exec(body)?.[1] || null;
     const components = [...body.matchAll(/<component\b([^>]*)\/?>/gi)].map(([, a]) => ({
-      objectid: /\bobjectid\s*=\s*"([^"]+)"/i.exec(a)?.[1],
+      objectid: attr("objectid", a),
+      // Komponent moze wskazywac obiekt w INNYM pliku archiwum.
+      path: attr("p:path", a) || attr("path", a) || null,
       matrix: matrixFrom(a),
     }));
 
@@ -208,9 +250,13 @@ function collectObjects(xml) {
  * Dopisuje trojkaty obiektu do wyniku, schodzac po komponentach.
  * Glebokosc jest ograniczona, zeby zapetlone odwolania nie zawiesily serwera.
  */
-function emitObject(objects, id, matrix, scale, out, depth) {
+function emitObject(objects, id, sciezka, matrix, scale, out, depth) {
   if (depth > 8) return;
-  const obj = objects.get(String(id));
+  const obj = objects.get(`${sciezka}|${id}`)
+    // Zapas, gdy plik odwoluje sie do id bez podania sciezki, a obiekt lezy
+    // w innym pliku archiwum. Lepiej znalezc go po samym id niz oddac pusta
+    // wycene za plik, ktory geometrie ma.
+    || [...objects.entries()].find(([k]) => k.endsWith(`|${id}`))?.[1];
   if (!obj) return;
 
   if (obj.mesh) {
@@ -219,7 +265,8 @@ function emitObject(objects, id, matrix, scale, out, depth) {
     }
   }
   for (const c of obj.components) {
-    if (c.objectid) emitObject(objects, c.objectid, composeMatrix(matrix, c.matrix), scale, out, depth + 1);
+    if (!c.objectid) continue;
+    emitObject(objects, c.objectid, normPath(c.path || obj.sciezka), composeMatrix(matrix, c.matrix), scale, out, depth + 1);
   }
 }
 
@@ -230,9 +277,9 @@ function meshTriangles(meshBody) {
   while ((m = vre.exec(meshBody)) !== null) {
     const a = m[1];
     verts.push([
-      parseFloat(/\bx\s*=\s*"([^"]*)"/i.exec(a)?.[1] || "0"),
-      parseFloat(/\by\s*=\s*"([^"]*)"/i.exec(a)?.[1] || "0"),
-      parseFloat(/\bz\s*=\s*"([^"]*)"/i.exec(a)?.[1] || "0"),
+      parseFloat(attr("x", a) || "0"),
+      parseFloat(attr("y", a) || "0"),
+      parseFloat(attr("z", a) || "0"),
     ]);
   }
 
@@ -240,9 +287,9 @@ function meshTriangles(meshBody) {
   const tre = /<triangle\b([^>]*)\/?>/gi;
   while ((m = tre.exec(meshBody)) !== null) {
     const a = m[1];
-    const i1 = parseInt(/\bv1\s*=\s*"([^"]*)"/i.exec(a)?.[1] ?? "", 10);
-    const i2 = parseInt(/\bv2\s*=\s*"([^"]*)"/i.exec(a)?.[1] ?? "", 10);
-    const i3 = parseInt(/\bv3\s*=\s*"([^"]*)"/i.exec(a)?.[1] ?? "", 10);
+    const i1 = parseInt(attr("v1", a) ?? "", 10);
+    const i2 = parseInt(attr("v2", a) ?? "", 10);
+    const i3 = parseInt(attr("v3", a) ?? "", 10);
     const v1 = verts[i1], v2 = verts[i2], v3 = verts[i3];
     if (v1 && v2 && v3) tris.push([v1, v2, v3]);
   }
@@ -251,7 +298,7 @@ function meshTriangles(meshBody) {
 
 /** Transformacja 3MF to 12 liczb: trzy kolumny obrotu i przesuniecie */
 function matrixFrom(attrs) {
-  const raw = /\btransform\s*=\s*"([^"]+)"/i.exec(attrs)?.[1];
+  const raw = attr("transform", attrs);
   if (!raw) return null;
   const n = raw.trim().split(/\s+/).map(Number);
   return n.length === 12 && n.every(Number.isFinite) ? n : null;

@@ -130,6 +130,14 @@ As of 2026-08-18 the Quick Quote tab on /studio/ no longer reads an uploaded fil
 - Full model analysis (Sprawdzarka modeli 3D) can now also receive a model carried over directly from the shop configurator, not only from the calculators.
 
 ### 3D Print Calculator
+**Build volume follows the chosen printer (since 2026-08-19):** Quick Quote checks the model against the plate of the machine that will actually print it, not against one fixed number. Bambu Lab H2D is 30 x 32 x 32.5 cm, Elegoo Saturn 4 Ultra is 21.8 x 12.3 x 25 cm, so a model 20 x 20 x 20 cm prints in filament and does not fit the resin printer at all. Switching to resin therefore removes the price and shows the way out, and where the model would fit in filament the first offered remedy is one click back to filament rather than shrinking the object.
+
+**DXF is priced automatically (since 2026-08-19):** Quick Quote reads DXF geometry the same way it reads SVG, so a DXF drawing gets a price from its real path length rather than going to a manual quote. It reads LINE, LWPOLYLINE, POLYLINE, CIRCLE, ARC, SPLINE and ELLIPSE, and honours the $INSUNITS header, so a drawing in inches is not read as millimetres. Blocks (INSERT) are not expanded; when a drawing contains them we say so on screen and confirm the quote before production. There is no on-screen preview for DXF, because the format carries coordinates rather than a picture. AI and PDF are still accepted as an attachment to a human-priced enquiry; a PDF exported from Illustrator or CAD does carry real paths and could be priced later, but a scanned PDF carries none.
+
+**3MF project files (fixed 2026-08-19):** a 3MF saved as a project by Bambu Studio or PrusaSlicer keeps the scene in 3D/3dmodel.model and the geometry in a separate 3D/Objects/*.model reached through p:path. We now read every model in the archive and follow those references, so such files price correctly; before this they produced no price at all.
+
+**Laser work area and cut vs engrave in Quick Quote (since 2026-08-19):** an uploaded vector drawing is now checked against the real bed. CO2 (xTool P2) is 600 x 308 mm; the pass-through feeder extends the LONG axis (up to about 3000 mm) but does not widen the bed, and it adds setup time. The fibre laser field is 150 x 150 mm. A drawing that does not fit gets no automatic price at all: the customer sees a button that scales it down to the largest size that fits, or an individual quote. When the answers lead to CO2, Quick Quote shows two cards, "Ciecie na wylot" (cut through, the shape is cut out) and "Grawerowanie powierzchni" (surface engraving, the material stays whole), each with its own price for the same drawing. Once any file is uploaded the item tiles are hidden entirely, because the file already says what is being made. The uploaded file now travels to the cart, so the cart no longer asks for the same artwork a second time; its file field becomes an optional "additional files" field instead.
+
 **Printing technology in Quick Quote (since 2026-08-19):** when the answers lead to 3D printing, Quick Quote shows two cards, "Z filamentu (FDM)" and "Z zywicy (MSLA)", each with a plain-language description and its own price for the same answers. FDM is tough, cheaper and shows layer lines, good for parts, housings and everyday objects. MSLA resin gives a smooth surface and fine detail but is more brittle, good for figurines, miniatures and models. The customer can switch between them and see the price change. Resin can now be priced from an uploaded model too; before this change resin was reachable only through the "Figurka z zywicy" tile and only without a file.
 
 **Two technologies, selectable at step ①:** FDM (Bambu Lab H2D) | MSLA Resin 16K (Elegoo Saturn 4 Ultra)
@@ -179,7 +187,7 @@ When asked "can you engrave on my own thing": yes, and explain the test piece up
 
 ### Fiber Laser Calculator
 **Materials:** Stainless steel · Aluminium · Brass · Copper · Titanium · Silver (jewelry) · Gold (jewelry) · Anodized aluminium · Other
-**Lens/field:** 70 mm (~50×50 mm, ultra-fine) | 150 mm (~110×110 mm, standard)
+**Lens/field:** 70 mm (~50×50 mm, ultra-fine) | 150 mm (~150×150 mm, standard)
 **Marking type:** Surface marking · Medium depth 0.1–0.2 mm · Deep engraving 0.5–1 mm · Color marking (titanium/steel rainbow) · Custom
 **Area:** XS ≤5 cm² · S 5–25 cm² · M 25–60 cm² · L >60 cm² · XL (multiple fields)
 **Note:** precious metals (silver, gold) carry +25% premium
