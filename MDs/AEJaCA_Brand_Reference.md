@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-18 | Wersja: 4.0*
+*Wygenerowano: 2026-08-19 | Wersja: 4.1*
 
 ---
 
@@ -320,6 +320,15 @@ dla klientów bez pliku.
 pytaniami, jako osobna sekcja, więc pierwszym ekranem dla klienta bez pliku (większości
 odwiedzających) było pole, którego nie dało się wypełnić.
 
+**Pytanie kafelków zmienia treść po wgraniu pliku (od 2026-08-19).** Dopóki pliku nie ma, sekcja
+pyta "Co chcesz wykonać?". Po wgraniu pliku pytanie zmienia się na "Do czego to służy?", żeby nie
+konkurowało z już wgranym plikiem na ekranie. Kafelki nadal wybierają materiał i technologię.
+
+**Wykrywanie jednostki pliku (od 2026-08-19).** STL i OBJ nie zapisują jednostki, więc czytamy je
+jako milimetry. Gdy odczytany wymiar jest nieprawdopodobnie mały, szybka wycena i kalkulator druku
+3D pokazują panel z możliwymi odczytami (metry, centymetry, cale) i jednym kliknięciem przeliczają
+model na wybraną jednostkę.
+
 **Wielkość to suwak, nie pięć kafelków** (`SizeSlider.jsx`). Skala logarytmiczna 1-100 cm,
 pokazuje konkretny wymiar i nazwę przedziału ("Jak moneta" do 3 cm, "Jak dłoń" 3-10, "Jak
 książka" 10-25, "Pudełko po butach" 25-40, "Większe" powyżej 40). Wgranie pliku ustawia suwak
@@ -569,6 +578,14 @@ i pilnuje go `test-model-handoff.mjs`.
 do modelu" i odblokowuje się dopiero po zaznaczeniu potwierdzenia. Ostrzeżenia pokazujemy bez
 kwitowania: 30% nawisów to normalna część, a ostrzeżenie, które pojawia się zawsze, przestaje być
 ostrzeżeniem i uczy klikać bez czytania.
+
+#### Bramka dwuetapowa: najpierw naprawa, potem potwierdzenie (od 2026-08-19)
+
+Bramka pokazuje teraz najpierw, jak poprawić plik: wymaganą grubość w mm, o ile powiększyć model,
+konkretne narzędzia (Blender, Meshmixer) i alternatywę w postaci druku z żywicy. Dopiero po
+świadomym wyborze „chcę zamówić ten plik bez zmian" pokazuje się ryzyko i prośba o potwierdzenie.
+Potwierdzenie razem z całą drogą (że instrukcje naprawy pokazano i że klient mimo to poszedł dalej)
+trafia do zamówienia i do maila potwierdzającego.
 
 Analiza idzie na geometrii **po przeskalowaniu**, bo to ona zostanie wydrukowana. Model zmniejszony
 o połowę ma o połowę cieńszy mur.
@@ -1582,12 +1599,20 @@ Jedno źródło prawdy: **`src/data/sellerInfo.js`**. Po rejestracji spółki zm
 
 ### Regulamin
 
-Strona **`/terms/`** (`src/pages/Terms.jsx`, treść w `src/data/termsContent.js`), trójjęzyczna, 17 sekcji, obowiązuje od 2026-07-29. Wersja polska wiążąca.
+Strona **`/terms/`** (`src/pages/Terms.jsx`, treść w `src/data/termsContent.js`), trójjęzyczna, 17 sekcji, obowiązuje od 2026-08-26. Wersja polska wiążąca.
 
 Sekcje wykraczające poza typowy wzór, bo dopasowane do naszej technologii:
 - **§ 10**, wyłączenie prawa odstąpienia dla rzeczy nieprefabrykowanej wykonanej według specyfikacji konsumenta, z wyliczeniem pięciu naszych przypadków (wydruk z pliku klienta, grawer, biżuteria na projekt, kamienie na życzenie, usługa projektowa)
 - **§ 12**, prawa do plików klienta, odmowa realizacji broni i zabezpieczeń, przekazanie pliku STL/STEP przy usłudze projektowej wraz z prawem do użycia u innego wykonawcy
 - **§ 13**, właściwości technologiczne, które nie są wadą: odchyłki do 0,5 mm dla FDM i 0,2 mm dla żywicy, widoczna struktura warstw, ślady podpór, różnice odcienia między partiami, inkluzje kamieni naturalnych
+
+**Trzy nowe ustępy (od 2026-08-26):**
+- W sekcji „Zawarcie umowy": podsumowanie wysyłane mailem stanowi zapis uzgodnionej specyfikacji.
+- W sekcji „Właściwości technologiczne, które nie są wadą": Serwis wskazuje sposób usunięcia
+  właściwości modelu (naprawa pliku) zanim poprosi o potwierdzenie zamówienia bez zmian.
+- W tej samej sekcji: wymiarem wiążącym jest wymiar do realizacji zaakceptowany przez Klienta,
+  wraz z zasadą odczytu jednostki plików STL i OBJ (brak jednostki w formacie, odczyt jako
+  milimetry).
 
 Dokumenty powiązane bez zmian: `/returns/`, `/warranty/`, `/shipping/`, `/privacy/`.
 
