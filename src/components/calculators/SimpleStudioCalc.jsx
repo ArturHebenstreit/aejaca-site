@@ -1271,6 +1271,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
         )}
         <NextStepPanel
           lang={lang}
+          tech={activeResolved?.tech || null}
           techLabel={techLabel ? `Szybka wycena - ${techLabel}` : "Szybka wycena"}
           paramsSummary={paramsSummary}
           result={result}
