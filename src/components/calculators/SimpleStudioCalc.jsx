@@ -56,7 +56,11 @@ const ACCEPT_VECTOR = ".svg,.dxf,.ai,.pdf";
 
 /** Rozszerzenia, z ktorych potrafimy policzyc cene bez udzialu czlowieka. */
 const MESH_EXT = new Set(["stl", "obj", "3mf", "step", "stp"]);
-const VECTOR_PRICED_EXT = new Set(["svg"]);
+// Formaty wektorowe, z ktorych liczymy cene z geometrii. DXF doszedl
+// 2026-08-19: jest formatem tekstowym stworzonym wprost do maszyn i niesie
+// wspolrzedne oraz jednostke, wiec wycena z niego jest tak samo pewna jak
+// z SVG (pilnuje tego scripts/test-dxf.mjs, ktory porownuje obie drogi).
+const VECTOR_PRICED_EXT = new Set(["svg", "dxf"]);
 
 // ============================================================
 // QUESTIONS & OPTIONS
@@ -178,12 +182,14 @@ const LBL = {
     q0: "Masz gotowy plik?", q0hint: "Wrzuć plik STL lub SVG - wycenimy automatycznie",
     q0drop: "Przeciągnij plik tutaj", q0tap: "Kliknij, aby wybrać plik", q0or: "lub kliknij, aby wybrać", q0accept: ".stl, .obj, .3mf, .step, .svg, .dxf, .ai, .pdf",
     q0skip: "Nie mam pliku - opiszę co potrzebuję",
-    q0detected: "Wykryto", q0stl: "Model 3D (STL)", q0model: "Model 3D", q0svg: "Grafika wektorowa (SVG)",
+    q0detected: "Wykryto", q0stl: "Model 3D (STL)", q0model: "Model 3D", q0svg: "Grafika wektorowa (SVG)", q0vector: "Grafika wektorowa",
     q0dims: "Wymiary", q0vol: "Objętość", q0area: "Powierzchnia", q0paths: "Ścieżki",
     q0remove: "Usuń plik", q0selected: "Wybrano", q0selSize: "Rozmiar", q0selMat: "Materiał",
     unitTitle: "Ten model ma po odczycie", unitTitleSuffix: "cm",
     unitText: "Pliki STL i OBJ nie zapisują jednostki, więc czytamy je jako milimetry - a ten plik prawdopodobnie zapisano inaczej.",
-    unitRead: "Czytaj w", unitClose: "Jeśli żadna z tych wartości nie pasuje, wielkość można ustawić suwakiem poniżej.",
+    unitRead: "Czytaj w",
+    dxfNoPreview: "Rysunek DXF czytamy z geometrii, ale podglądu z niego nie rysujemy.",
+    dxfBlocks: "Uwaga: rysunek zawiera bloki, których nie rozwijamy. Policzona ścieżka może być krótsza niż rzeczywista, więc wycenę potwierdzimy przed realizacją.", unitClose: "Jeśli żadna z tych wartości nie pasuje, wielkość można ustawić suwakiem poniżej.",
     haveMesh: "Mam gotowy plik 3D", haveMeshSub: "STL, OBJ, 3MF, STEP",
     haveVector: "Mam gotowy plik wektorowy", haveVectorSub: "SVG, DXF, AI, PDF",
     dimOriginal: "Wymiar oryginalny", dimTarget: "Wymiar do realizacji",
@@ -220,12 +226,14 @@ const LBL = {
     q0: "Got a file ready?", q0hint: "Drop an STL or SVG file - we'll quote it automatically",
     q0drop: "Drag your file here", q0tap: "Tap to choose a file", q0or: "or click to browse", q0accept: ".stl, .obj, .3mf, .step, .svg, .dxf, .ai, .pdf",
     q0skip: "No file - I'll describe what I need",
-    q0detected: "Detected", q0stl: "3D model (STL)", q0model: "3D model", q0svg: "Vector graphic (SVG)",
+    q0detected: "Detected", q0stl: "3D model (STL)", q0model: "3D model", q0svg: "Vector graphic (SVG)", q0vector: "Vector graphic",
     q0dims: "Dimensions", q0vol: "Volume", q0area: "Area", q0paths: "Paths",
     q0remove: "Remove file", q0selected: "Selected", q0selSize: "Size", q0selMat: "Material",
     unitTitle: "This model reads as", unitTitleSuffix: "cm",
     unitText: "STL and OBJ files do not store a unit, so we read them as millimeters - this file was probably saved differently.",
-    unitRead: "Read in", unitClose: "If none of these values fits, you can set the size with the slider below.",
+    unitRead: "Read in",
+    dxfNoPreview: "We read the DXF geometry, but we do not draw a preview from it.",
+    dxfBlocks: "Note: the drawing contains blocks we do not expand. The measured path may be shorter than the real one, so we will confirm the quote before production.", unitClose: "If none of these values fits, you can set the size with the slider below.",
     haveMesh: "I have a 3D file", haveMeshSub: "STL, OBJ, 3MF, STEP",
     haveVector: "I have a vector file", haveVectorSub: "SVG, DXF, AI, PDF",
     dimOriginal: "Original size", dimTarget: "Size we will make",
@@ -262,12 +270,14 @@ const LBL = {
     q0: "Haben Sie eine Datei?", q0hint: "Laden Sie eine STL- oder SVG-Datei hoch - wir kalkulieren automatisch",
     q0drop: "Datei hierher ziehen", q0tap: "Tippen um Datei auszuwählen", q0or: "oder klicken zum Auswählen", q0accept: ".stl, .obj, .3mf, .step, .svg, .dxf, .ai, .pdf",
     q0skip: "Keine Datei - ich beschreibe was ich brauche",
-    q0detected: "Erkannt", q0stl: "3D-Modell (STL)", q0model: "3D-Modell", q0svg: "Vektorgrafik (SVG)",
+    q0detected: "Erkannt", q0stl: "3D-Modell (STL)", q0model: "3D-Modell", q0svg: "Vektorgrafik (SVG)", q0vector: "Vektorgrafik",
     q0dims: "Maße", q0vol: "Volumen", q0area: "Fläche", q0paths: "Pfade",
     q0remove: "Datei entfernen", q0selected: "Ausgewählt", q0selSize: "Größe", q0selMat: "Material",
     unitTitle: "Dieses Modell wird gelesen als", unitTitleSuffix: "cm",
     unitText: "STL- und OBJ-Dateien speichern keine Einheit, wir lesen sie daher als Millimeter - diese Datei wurde wahrscheinlich anders gespeichert.",
-    unitRead: "Lesen in", unitClose: "Wenn keiner dieser Werte passt, können Sie die Größe mit dem Regler unten einstellen.",
+    unitRead: "Lesen in",
+    dxfNoPreview: "Die DXF-Geometrie lesen wir, eine Vorschau zeichnen wir daraus nicht.",
+    dxfBlocks: "Hinweis: Die Zeichnung enthält Blöcke, die wir nicht auflösen. Der gemessene Pfad kann kürzer sein als der tatsächliche, daher bestätigen wir das Angebot vor der Fertigung.", unitClose: "Wenn keiner dieser Werte passt, können Sie die Größe mit dem Regler unten einstellen.",
     haveMesh: "Ich habe eine 3D-Datei", haveMeshSub: "STL, OBJ, 3MF, STEP",
     haveVector: "Ich habe eine Vektordatei", haveVectorSub: "SVG, DXF, AI, PDF",
     dimOriginal: "Originalmaß", dimTarget: "Maß für die Ausführung",
@@ -465,14 +475,17 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
         setSizeCm(meshMaxCm(parsed) || 8);
         trackCalc("studio_simple", "file_upload", ext);
       } else if (VECTOR_PRICED_EXT.has(ext)) {
-        const { parseSVG } = await import("../../utils/svgParser.js");
-        const parsed = parseSVG(await file.text());
+        // Oba parsery oddaja ten sam ksztalt wyniku (bboxMm, pathLengthCm,
+        // engravAreaCm2), bo obie drogi karmia ten sam silnik wyceny.
+        const parsed = ext === "dxf"
+          ? (await import("../../utils/dxfParser.js")).parseDXF(await file.text())
+          : (await import("../../utils/svgParser.js")).parseSVG(await file.text());
         setFileType("svg");
         setSvgData(parsed);
         setStlData(null);
         setMaterial("wood");
         setSizeCm(vectorMaxCm(parsed) || 8);
-        trackCalc("studio_simple", "file_upload", "svg");
+        trackCalc("studio_simple", "file_upload", ext);
       } else {
         // Format przyjmujemy, ale wyceny z niego nie policzymy. Mowimy to wprost.
         setFileType(null);
@@ -527,7 +540,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   // Rozszerzenie wgranego pliku, do etykiety "Wykryto". STL, OBJ, 3MF i STEP/STP
   // ida tym samym parserem, wiec bez tego etykieta zawsze mowila "STL", nawet
   // gdy klient wgral OBJ.
-  const EXT_LABEL = { STL: "STL", OBJ: "OBJ", "3MF": "3MF", STEP: "STEP", STP: "STEP" };
+  const EXT_LABEL = { STL: "STL", OBJ: "OBJ", "3MF": "3MF", STEP: "STEP", STP: "STEP", SVG: "SVG", DXF: "DXF" };
   const detectedExtLabel = fileName ? EXT_LABEL[fileName.split(".").pop().toUpperCase()] || null : null;
 
   // Model po odczycie jest fizycznie nieprawdopodobny (patrz meshUnits.js):
@@ -822,7 +835,9 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
                 <div className="min-w-0">
                   <div className="text-sm font-semibold text-white truncate">{fileName}</div>
                   <div className="text-[11px] text-emerald-400/80">
-                    {l.q0detected}: {fileType === "stl" ? (detectedExtLabel ? `${l.q0model} (${detectedExtLabel})` : l.q0stl) : l.q0svg}
+                    {l.q0detected}: {fileType === "stl"
+                      ? (detectedExtLabel ? `${l.q0model} (${detectedExtLabel})` : l.q0stl)
+                      : (detectedExtLabel ? `${l.q0vector} (${detectedExtLabel})` : l.q0svg)}
                   </div>
                 </div>
               </div>
@@ -837,6 +852,19 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
                   <STLViewer triangles={stlData.triangles} bbox={stlData.bbox} />
                 </Suspense>
               </div>
+            )}
+
+            {/* DXF nie niesie obrazka, tylko wspolrzedne. Zamiast pustej
+                czarnej ramki, ktora wyglada jak awaria, mowimy wprost, ze
+                podgladu nie bedzie, a geometrie odczytalismy. */}
+            {fileType === "svg" && !svgBlobUrl && svgData && (
+              <p className="mb-3 text-[11px] text-neutral-500 leading-relaxed">{l.dxfNoPreview}</p>
+            )}
+
+            {/* Blok, ktorego nie rozwijamy, to kawalek rysunku, ktorego nie
+                policzylismy. Milczenie o tym zaniżyloby cene bez sladu. */}
+            {svgData?.blocksSkipped > 0 && (
+              <p className="mb-3 text-[11px] text-amber-200/80 leading-relaxed">{l.dxfBlocks}</p>
             )}
 
             {fileType === "svg" && svgBlobUrl && (

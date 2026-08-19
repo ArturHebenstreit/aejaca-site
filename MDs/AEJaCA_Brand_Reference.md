@@ -327,6 +327,17 @@ Wcześniej sprawdzaliśmy zawsze pole drukarki filamentowej, także po przełąc
 a zamówienie odbijało się dopiero o serwer. Gdy model zmieściłby się z filamentu, pierwszą proponowaną naprawą
 jest powrót do filamentu jednym kliknięciem, a nie zmniejszanie wyrobu.
 
+**DXF wyceniamy automatycznie (od 2026-08-19).** Rysunek DXF czytamy tak samo jak SVG, czyli z rzeczywistej
+długości ścieżki, a nie z przedziału. Obsługiwane encje: LINE, LWPOLYLINE, POLYLINE, CIRCLE, ARC, SPLINE,
+ELLIPSE. Jednostkę bierzemy z nagłówka $INSUNITS, więc rysunek w calach nie jest czytany jak milimetry.
+Bloków (INSERT) nie rozwijamy: gdy rysunek je zawiera, mówimy to na ekranie i potwierdzamy wycenę przed
+realizacją. Podglądu z DXF nie rysujemy, bo format niesie współrzędne, a nie obrazek. AI i PDF nadal idą
+jako załącznik do wyceny ręcznej. Test porównuje cenę z DXF i z SVG dla tego samego kształtu.
+
+**Poprawka czytania 3MF (2026-08-19).** Pliki zapisane jako projekt z Bambu Studio albo PrusaSlicera trzymają
+scenę w `3D/3dmodel.model`, a geometrię w osobnym `3D/Objects/*.model` wskazywanym przez p:path. Czytaliśmy
+tylko pierwszy plik z archiwum, więc taki 3MF nie dostawał żadnej ceny. Teraz czytamy całe archiwum.
+
 **Pole robocze laserów na linii wielkości (od 2026-08-19).** Rysunek wektorowy jest sprawdzany względem
 realnego pola maszyny: CO2 (xTool P2) 600 x 308 mm, przy czym przelotka z podajnikiem wydłuża dłuższą oś
 (do około 3000 mm), a nie poszerza pola, i wydłuża przygotowanie. Laser światłowodowy: pole 150 x 150 mm.
