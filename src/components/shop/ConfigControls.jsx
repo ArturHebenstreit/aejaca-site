@@ -302,6 +302,126 @@ export function FileDrop({ label, hint, file, geometry, onPick, onClear, busy, b
   );
 }
 
+// ------------------------------------------------------------
+// JEDNO MIEJSCE NA PLIKI, DOWOLNIE WIELE
+// ------------------------------------------------------------
+// Do koszyka prowadzily dwa osobne pola: "Dołącz zdjęcie lub szkic" przy
+// opisie i "Projekt do wykonania" nizej. Klient widzial dwa przyciski,
+// kazdy przyjmowal jeden plik, i musial zgadnac, ktory z nich jest wlasciwy
+// dla jego rysunku. Zgadywal zle, bo obie nazwy pasowaly, a serwer sprawdzal
+// KAZDE POLE INNA LISTA formatow: zdjecie wrzucone do projektu odbijalo sie
+// bledem, a rysunek wrzucony do zdjecia tak samo.
+//
+// Tutaj jest jedno pole i dowolna liczba plikow. Rodzaj rozpoznajemy po
+// rozszerzeniu, wiec ta sama decyzja, ktora klient podejmowal na oslep,
+// zapada sama i zawsze tak samo jak na serwerze.
+
+/** Rysunek DO WYKONANIA. Ta sama lista, ktorej pilnuje ATTACHMENT_EXT na serwerze. */
+export const ARTWORK_EXT = /\.(svg|dxf|ai|pdf)$/i;
+
+/** Zdjecie albo szkic jako kontekst. Lustro REFERENCE_EXT z serwera. */
+export const PHOTO_EXT = /\.(jpg|jpeg|png|webp|heic|heif|pdf)$/i;
+
+/**
+ * Ktora lista formatow obowiazuje ten plik.
+ *
+ * PDF jest na obu listach i to nie jest pomylka: bywa eksportem z Illustratora
+ * i bywa skanem szkicu. Traktujemy go jak projekt, bo ta droga niesie wiecej
+ * (plik ladzie tam, gdzie szukaja go do produkcji), a lista zdjec przyjmuje
+ * go tak samo.
+ */
+export const uploadKindFor = (name) => (ARTWORK_EXT.test(String(name || "")) ? "attachment" : "reference");
+
+/** Wszystko, co to pole przyjmuje, w jednym atrybucie `accept`. */
+export const ATTACH_ACCEPT = ".svg,.dxf,.ai,.pdf,.jpg,.jpeg,.png,.webp,.heic,.heif";
+
+/**
+ * Lista zalacznikow z wlasnym stanem kazdego pliku.
+ *
+ * @param {{id:string, name:string, busy?:boolean, error?:string|null, artwork?:boolean}[]} items
+ * @param {(files: File[]) => void} onAdd
+ * @param {(id: string) => void} onRemove
+ */
+export function AttachmentList({ label, hint, addLabel, items = [], onAdd, onRemove, accent = "blue", lang, max = 8, accept = ATTACH_ACCEPT }) {
+  const ref = useRef(null);
+  const ring = accent === "amber" ? "border-amber-400/30 hover:border-amber-400/50" : "border-blue-400/30 hover:border-blue-400/50";
+  const tint = accent === "amber" ? "text-amber-400" : "text-blue-400";
+  const pelno = items.length >= max;
+
+  const wybierz = (e) => {
+    const wybrane = Array.from(e.target.files || []);
+    // Pole trzeba wyczyscic, inaczej wybranie tego samego pliku drugi raz
+    // (po skasowaniu go z listy) nie wywola juz zdarzenia zmiany.
+    e.target.value = "";
+    if (wybrane.length) onAdd(wybrane.slice(0, Math.max(0, max - items.length)));
+  };
+
+  return (
+    <div className="mb-6">
+      <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">{label}</div>
+
+      {items.length === 0 ? (
+        <button
+          type="button"
+          onClick={() => ref.current?.click()}
+          className={`w-full flex flex-col items-center gap-2.5 px-5 py-7 rounded-2xl border-2 border-dashed
+                      bg-white/[0.02] hover:bg-white/[0.04] transition-all ${ring}`}
+        >
+          <Upload className={`w-6 h-6 ${tint}`} />
+          <span className="text-white text-sm font-medium text-center">{hint}</span>
+        </button>
+      ) : (
+        <div className="space-y-2">
+          {items.map((i) => (
+            <div key={i.id} className="rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5">
+              <div className="flex items-center gap-3">
+                <span className="text-white text-sm truncate flex-1">{i.name}</span>
+                <span className="text-[10px] uppercase tracking-wide text-neutral-500 flex-shrink-0">
+                  {i.artwork
+                    ? t({ pl: "Projekt", en: "Artwork", de: "Vorlage" }, lang)
+                    : t({ pl: "Zdjęcie", en: "Photo", de: "Foto" }, lang)}
+                </span>
+                {i.busy ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-neutral-500 flex-shrink-0" />
+                ) : i.error ? (
+                  <CircleAlert className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                ) : (
+                  <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                )}
+                <button
+                  type="button"
+                  onClick={() => onRemove(i.id)}
+                  className="text-neutral-500 hover:text-red-400 transition-colors flex-shrink-0"
+                  aria-label={t({ pl: "Usuń plik", en: "Remove file", de: "Datei entfernen" }, lang)}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              {/* PLIK ODRZUCONY ZOSTAJE NA LISCIE razem z powodem. Kasowanie go
+                  za klienta wygladalo jak awaria pola: plik migal i znikal. */}
+              {i.error && !i.busy && <p className="text-amber-300 text-[11px] mt-1.5 leading-relaxed">{i.error}</p>}
+            </div>
+          ))}
+
+          {!pelno && (
+            <button
+              type="button"
+              onClick={() => ref.current?.click()}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-white/10 bg-white/[0.02]
+                         text-neutral-300 hover:border-white/25 hover:text-white text-xs transition-colors"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              {addLabel || t({ pl: "Dodaj kolejny plik", en: "Add another file", de: "Weitere Datei hinzufügen" }, lang)}
+            </button>
+          )}
+        </div>
+      )}
+
+      <input ref={ref} type="file" accept={accept} multiple className="hidden" onChange={wybierz} />
+    </div>
+  );
+}
+
 /** Pole personalizacji z licznikiem znakow */
 export function PersonalizationField({ label, value, onChange, maxLength = 60, placeholder, hint, accent = "blue", overLimitNote }) {
   // Tekstu nie ucinamy w polu. Klient ma zobaczyc, ze przekroczyl limit,
