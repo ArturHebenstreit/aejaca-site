@@ -3,7 +3,7 @@
 // ============================================================
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { Upload, X, AlertTriangle } from "lucide-react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture, LicenseNotice } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, MaterialCards, HeroCards, LicenseNotice, NextStepPanel } from "./calcShared.jsx";
 import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
 import { QuantityStepper } from "../shop/ConfigControls.jsx";
 import CalcToCart from "./CalcToCart.jsx";
@@ -467,7 +467,6 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
         <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
           <ResultHeader lang={lang} binding={bindingGrosze != null} />
           <ResultDisplay result={mslaResult} lang={lang} hideRange={bindingGrosze != null} />
-          <QuoteEmailCapture result={mslaResult} lang={lang} techLabel={t(TECH_LABEL_MSLA, lang)} preAttachedFile={mslaStlFile} paramsSummary={mslaParamsSummary} />
           <PrintabilityGate
             triangles={mslaStlData?.triangles || null}
             tech="msla"
@@ -476,22 +475,30 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
             scale={mslaStlScale}
             onResult={setMslaPrint}
           />
-          <CalcToCart
-            onBinding={setBindingGrosze}
-            calculator="print3d_msla"
-            serviceId="print_msla"
-            params={{ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId, printability: mslaPrint }}
-            qty={mslaQty}
-            file={mslaStlFile}
-            triangles={mslaStlData?.triangles || null}
-            scale={mslaStlScale}
+          <NextStepPanel
             lang={lang}
-            hold={Boolean(mslaPrint?.blocked && !mslaPrint?.accepted)}
+            techLabel={t(TECH_LABEL_MSLA, lang)}
+            paramsSummary={mslaParamsSummary}
+            result={mslaResult}
+            preAttachedFile={mslaStlFile}
+            requireLicenseConsent={isFigurine}
+            cart={
+              <CalcToCart
+                embedded
+                onBinding={setBindingGrosze}
+                calculator="print3d_msla"
+                serviceId="print_msla"
+                params={{ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId, printability: mslaPrint }}
+                qty={mslaQty}
+                file={mslaStlFile}
+                triangles={mslaStlData?.triangles || null}
+                scale={mslaStlScale}
+                lang={lang}
+                hold={Boolean(mslaPrint?.blocked && !mslaPrint?.accepted)}
+              />
+            }
           />
         </div>
-
-        <InquiryForm lang={lang} techLabel={t(TECH_LABEL_MSLA, lang)} preAttachedFile={mslaStlFile} paramsSummary={mslaParamsSummary}
-          requireLicenseConsent={isFigurine} />
       </div>
     );
   }
@@ -529,14 +536,6 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
-        <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)} preAttachedFile={stlFile} paramsSummary={[
-          `${FILAMENTS[segment].label}: ${materialKey}`,
-          stlSummary || t(SIZES.find(s => s.id === sizeId)?.label, lang),
-          t(INFILL_OPTIONS.find(i => i.id === infillId)?.label, lang),
-          t(COLORS.find(c => c.id === colorId)?.label, lang),
-          t(PRECISION.find(p => p.id === precisionId)?.label, lang),
-          t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
-        ].join(" | ")} />
         {/* Siatke podajemy w oryginale, a skale osobno: bramka skaluje ja sama
             przed analiza. `scaledStlData` przelicza tylko objetosc i gabaryt,
             wiec podane stad trojkaty mialy wymiary sprzed zmniejszenia. */}
@@ -549,28 +548,36 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
           scale={stlScale}
           onResult={setFdmPrint}
         />
-        <CalcToCart
-          onBinding={setBindingGrosze}
-          calculator="print3d_fdm"
-          serviceId="print_fdm"
-          params={{ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, printability: fdmPrint }}
-          qty={fdmQty}
-          file={stlFile}
-          triangles={stlData?.triangles || null}
-          scale={stlScale}
+        <NextStepPanel
           lang={lang}
-          hold={Boolean(fdmPrint?.blocked && !fdmPrint?.accepted)}
+          techLabel={t(TECH_LABEL, lang)}
+          paramsSummary={[
+            `${FILAMENTS[segment].label}: ${materialKey}`,
+            stlSummary || t(SIZES.find(s => s.id === sizeId)?.label, lang),
+            t(INFILL_OPTIONS.find(i => i.id === infillId)?.label, lang),
+            t(COLORS.find(c => c.id === colorId)?.label, lang),
+            t(PRECISION.find(p => p.id === precisionId)?.label, lang),
+            t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
+          ].join(" | ")}
+          result={result}
+          preAttachedFile={stlFile}
+          cart={
+            <CalcToCart
+              embedded
+              onBinding={setBindingGrosze}
+              calculator="print3d_fdm"
+              serviceId="print_fdm"
+              params={{ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, printability: fdmPrint }}
+              qty={fdmQty}
+              file={stlFile}
+              triangles={stlData?.triangles || null}
+              scale={stlScale}
+              lang={lang}
+              hold={Boolean(fdmPrint?.blocked && !fdmPrint?.accepted)}
+            />
+          }
         />
       </div>
-
-      <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} preAttachedFile={stlFile} paramsSummary={[
-        `${FILAMENTS[segment].label}: ${materialKey}`,
-        stlSummary || t(SIZES.find(s => s.id === sizeId)?.label, lang),
-        t(INFILL_OPTIONS.find(i => i.id === infillId)?.label, lang),
-        t(COLORS.find(c => c.id === colorId)?.label, lang),
-        t(PRECISION.find(p => p.id === precisionId)?.label, lang),
-        t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
-      ].join(" | ")} />
     </div>
   );
 }

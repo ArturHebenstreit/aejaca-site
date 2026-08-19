@@ -12,7 +12,7 @@ import {
   Hash, Users, Factory,
   Lightbulb,
 } from "lucide-react";
-import { ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture, t } from "./calcShared.jsx";
+import { ResultHeader, ResultDisplay, NextStepPanel, t } from "./calcShared.jsx";
 import CalcToCart from "./CalcToCart.jsx";
 import { calcNew, calcRenovation, calcRepair } from "./JewelryCalc.jsx";
 import { trackCalc } from "../../utils/analytics.js";
@@ -607,27 +607,29 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
       <div className="rounded-2xl border-2 border-rose-400/30 bg-gradient-to-br from-rose-400/[0.04] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
-        {cartTarget && (
-          <CalcToCart
-          onBinding={setBindingGrosze}
-            calculator={cartTarget.calculator}
-            serviceId={cartTarget.serviceId}
-            params={resolved.params}
-            lang={lang}
-            accent="amber"
-          />
-        )}
         <div className="mt-4 pt-3 border-t border-rose-400/10 text-[11px] text-rose-400/60 italic text-center">
           {l.switchHint}
         </div>
-        <QuoteEmailCapture result={result} lang={lang} techLabel={`Szybka wycena biżuterii - ${serviceLabel}`} paramsSummary={paramsSummary} />
+        <NextStepPanel
+          lang={lang}
+          techLabel={`Szybka wycena biżuterii - ${serviceLabel}`}
+          paramsSummary={paramsSummary}
+          result={result}
+          cartAvailable={Boolean(cartTarget)}
+          accent="amber"
+          cart={
+            <CalcToCart
+              embedded
+              onBinding={setBindingGrosze}
+              calculator={cartTarget?.calculator}
+              serviceId={cartTarget?.serviceId}
+              params={resolved.params}
+              lang={lang}
+              accent="amber"
+            />
+          }
+        />
       </div>
-
-      <InquiryForm
-        lang={lang}
-        techLabel={`Szybka wycena biżuterii - ${serviceLabel}`}
-        paramsSummary={paramsSummary}
-      />
 
       <div className="mt-4 p-3 rounded-xl border border-rose-400/10 bg-rose-400/[0.02] text-[11px] text-rose-400/50 leading-relaxed text-center">
         {l.note}

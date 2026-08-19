@@ -3,7 +3,7 @@
 // Work area: 600 × 288 mm (standard), extended with riser
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, MaterialCards, HeroCards, NextStepPanel } from "./calcShared.jsx";
 import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
 import { QuantityStepper } from "../shop/ConfigControls.jsx";
 import CalcToCart from "./CalcToCart.jsx";
@@ -221,21 +221,28 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
         {/* Materiał NIE jest w tej kwocie i klient musi to wiedzieć przed
             zakupem, a nie z regulaminu po fakcie. */}
         <MaterialNotice lang={lang} className="mt-4" />
-        <QuoteEmailCapture result={result} lang={lang} techLabel={`${t(TECH_LABEL, lang)} - ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={paramsSummary} preAttachedFile={svgFile} />
-        <CalcToCart
-          onBinding={setBindingGrosze}
-          calculator={mode === "engrave" ? "laser_co2_engrave" : "laser_co2_cut"}
-          serviceId={mode === "engrave" ? "laser_engrave" : "laser_cut"}
-          params={mode === "engrave"
-            ? { matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, extended, podloze, spare, materialNote }
-            : { matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended, podloze, spare, materialNote }}
-          qty={mode === "engrave" ? engraveQty : cutQty}
-          blocked={Boolean(svgData)}
+        <NextStepPanel
           lang={lang}
+          techLabel={`${t(TECH_LABEL, lang)} - ${mode === "engrave" ? l.engrave : l.cut}`}
+          paramsSummary={paramsSummary}
+          result={result}
+          preAttachedFile={svgFile}
+          cart={
+            <CalcToCart
+              embedded
+              onBinding={setBindingGrosze}
+              calculator={mode === "engrave" ? "laser_co2_engrave" : "laser_co2_cut"}
+              serviceId={mode === "engrave" ? "laser_engrave" : "laser_cut"}
+              params={mode === "engrave"
+                ? { matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, extended, podloze, spare, materialNote }
+                : { matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended, podloze, spare, materialNote }}
+              qty={mode === "engrave" ? engraveQty : cutQty}
+              blocked={Boolean(svgData)}
+              lang={lang}
+            />
+          }
         />
       </div>
-
-      <InquiryForm lang={lang} techLabel={`${t(TECH_LABEL, lang)} - ${mode === "engrave" ? l.engrave : l.cut}`} paramsSummary={paramsSummary} preAttachedFile={svgFile} />
     </div>
   );
 }

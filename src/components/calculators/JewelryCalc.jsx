@@ -3,7 +3,7 @@
 // ============================================================
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture } from "./calcShared.jsx";
+import { t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, NextStepPanel } from "./calcShared.jsx";
 import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
 import { QuantityStepper } from "../shop/ConfigControls.jsx";
 import { trackCalc } from "../../utils/analytics.js";
@@ -287,6 +287,57 @@ export default function JewelryCalc({ lang = "pl" }) {
 
   let stepNum = 1;
   const step = () => String.fromCodePoint(0x2460 + stepNum++ - 1);
+
+  // Podsumowanie wyborow stalo dotad dwa razy, przepisane slowo w slowo: raz
+  // dla wyceny na maila, raz dla zapytania. Dwie kopie tego samego wyrazenia
+  // rozjezdzaja sie przy pierwszej zmianie oferty i nikt tego nie zauwaza, bo
+  // obie nadal generuja poprawnie wygladajacy tekst.
+  const paramsSummary = useMemo(() => {
+    if (serviceId === "renovation") {
+      return `${t(SERVICE_TYPES[1].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === renoJewType)?.label, lang)} | ${renoServices.map(id => t(RENOVATION_SERVICES.find(s => s.id === id)?.label, lang)).join(", ")}`;
+    }
+    if (serviceId === "repair") {
+      return `${t(SERVICE_TYPES[2].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === repairJewType)?.label, lang)} | ${t(REPAIR_SERVICES.find(r => r.id === repairId)?.label, lang)}`;
+    }
+    const wspolne = [
+      t(PRODUCT_LINES.find(p => p.id === lineId)?.label, lang) || lineId,
+      t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
+      t(METALS.find(m => m.id === metalId)?.label, lang),
+    ];
+    if (isChainType(typeId)) {
+      return [
+        ...wspolne,
+        t(CHAIN_WEAVES.find(w => w.id === weaveId)?.label, lang),
+        t(CHAIN_CLASPS.find(c => c.id === claspId)?.label, lang),
+        `${chainLengthMm / 10}cm`,
+        calcMode === "standard" ? `${chainWidthMm}mm szer.` : `${stockMassG}g`,
+        engravingId !== "none" ? t(ENGRAVING_OPTIONS.find(e => e.id === engravingId)?.label, lang) : null,
+      ].filter(Boolean).join(" | ");
+    }
+    return [
+      ...wspolne,
+      t(METHODS.find(m => m.id === methodId)?.label, lang),
+      engravingId !== "none" ? t(ENGRAVING_OPTIONS.find(e => e.id === engravingId)?.label, lang) : null,
+      ...stoneRows.filter(r => r.gemId !== "none").map(r => {
+        const gem = resolvedGemstones.find(g => g.id === r.gemId);
+        const sz = STONE_SIZES.find(s => s.id === r.stoneSizeId);
+        return `${r.count}× ${t(gem?.label, lang) ?? r.gemId} (${t(sz?.label, lang) ?? r.stoneSizeId})${r.suppliedBy === "client" ? " [klient]" : ""}`;
+      }),
+    ].filter(Boolean).join(" | ");
+  }, [serviceId, lang, lineId, typeId, metalId, methodId, engravingId, stoneRows, resolvedGemstones,
+      weaveId, claspId, chainLengthMm, chainWidthMm, calcMode, stockMassG,
+      renoJewType, renoServices, repairJewType, repairId]);
+
+  // Wiazaca cena ma pokrycie tylko przy odlewie prostej bryly. Kamienie,
+  // lancuszki i metal powierzony przez klienta wymagaja oceny czlowieka.
+  const cartBlocked = serviceId === "new" && (
+    methodId !== "cast" ||
+    // Lista kamieni ma zawsze co najmniej jeden wiersz, domyslnie ustawiony
+    // na "bez kamienia", wiec liczy sie tresc, nie dlugosc.
+    stoneRows.some((r) => r.gemId && r.gemId !== "none") ||
+    isChainType(typeId) ||
+    clientSuppliesMetal
+  );
 
   return (
     <div>
@@ -1156,98 +1207,47 @@ export default function JewelryCalc({ lang = "pl" }) {
       <div className="rounded-2xl border-2 border-amber-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
-        {/* Do koszyka trafia tylko to, co sklep potrafi wycenic wiazaco.
-            Kamienie, lancuszki i metal powierzony przez klienta wymagaja
-            oceny czlowieka, wiec tam zostaje sciezka wyceny. */}
-        <CalcToCart
-          onBinding={setBindingGrosze}
-          calculator={serviceId === "renovation" ? "jewelry_renovation" : serviceId === "repair" ? "jewelry_repair" : "jewelry_new"}
-          serviceId={serviceId === "renovation" ? "jewelry_renovation" : serviceId === "repair" ? "jewelry_repair" : "jewelry_plain"}
-          params={
-            serviceId === "renovation"
-              ? { jewTypeId: renoJewType, metalTypeId: renoMetal, services: renoServices, qtyId }
-              : serviceId === "repair"
-                ? { jewTypeId: repairJewType, metalTypeId: repairMetal, repairId, qtyId }
-                : { lineId, typeId, metalId, weightId, methodId, platingId, engravingId, qtyId }
-          }
-          qty={qty}
-          blocked={serviceId === "new" && (
-            // Wiazaca cena ma pokrycie tylko przy odlewie prostej bryly.
-            methodId !== "cast" ||
-            // Lista kamieni ma zawsze co najmniej jeden wiersz, domyslnie
-            // ustawiony na "bez kamienia", wiec liczy sie tresc, nie dlugosc.
-            stoneRows.some((r) => r.gemId && r.gemId !== "none")
-            || isChainType(typeId)
-            || clientSuppliesMetal
-          )}
-          blockedReason="manual"
-          lang={lang}
-          accent="amber"
-        />
         <div className="mt-3 text-[10px] text-neutral-400 text-center italic">{l.priceSource}</div>
         <p className="text-xs text-neutral-500 mt-1 text-center">{RATE_NOTE[lang] || RATE_NOTE.pl}</p>
-        <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)}
-          rateSnapshot={{
-            au: rates.au_pln_per_g,
-            ag: rates.ag_pln_per_g,
-            pt: rates.pt_pln_per_g,
-            pln_per_eur: rates.pln_per_eur,
-            sources: rates.sources,
-          }}
-          paramsSummary={
-          serviceId === "new"
-            ? isChainType(typeId)
-              ? [t(PRODUCT_LINES.find(p => p.id === lineId)?.label, lang) || lineId,
-                 t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
-                 t(METALS.find(m => m.id === metalId)?.label, lang),
-                 t(CHAIN_WEAVES.find(w => w.id === weaveId)?.label, lang),
-                 t(CHAIN_CLASPS.find(c => c.id === claspId)?.label, lang),
-                 `${chainLengthMm / 10}cm`,
-                 calcMode === "standard" ? `${chainWidthMm}mm szer.` : `${stockMassG}g`,
-                 engravingId !== "none" ? t(ENGRAVING_OPTIONS.find(e => e.id === engravingId)?.label, lang) : null,
-                ].filter(Boolean).join(" | ")
-              : [t(PRODUCT_LINES.find(p => p.id === lineId)?.label, lang) || lineId,
-                 t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
-                 t(METALS.find(m => m.id === metalId)?.label, lang),
-                 t(METHODS.find(m => m.id === methodId)?.label, lang),
-                 engravingId !== "none" ? t(ENGRAVING_OPTIONS.find(e => e.id === engravingId)?.label, lang) : null,
-                 ...stoneRows.filter(r => r.gemId !== "none").map(r => {
-                   const gem = resolvedGemstones.find(g => g.id === r.gemId);
-                   const sz = STONE_SIZES.find(s => s.id === r.stoneSizeId);
-                   return `${r.count}× ${t(gem?.label, lang) ?? r.gemId} (${t(sz?.label, lang) ?? r.stoneSizeId})${r.suppliedBy === "client" ? " [klient]" : ""}`;
-                 })].filter(Boolean).join(" | ")
-            : serviceId === "renovation"
-              ? `${t(SERVICE_TYPES[1].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === renoJewType)?.label, lang)} | ${renoServices.map(id => t(RENOVATION_SERVICES.find(s => s.id === id)?.label, lang)).join(", ")}`
-              : `${t(SERVICE_TYPES[2].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === repairJewType)?.label, lang)} | ${t(REPAIR_SERVICES.find(r => r.id === repairId)?.label, lang)}`
-        } />
       </div>
 
-      <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={
-        serviceId === "new"
-          ? isChainType(typeId)
-            ? [t(PRODUCT_LINES.find(p => p.id === lineId)?.label, lang) || lineId,
-               t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
-               t(METALS.find(m => m.id === metalId)?.label, lang),
-               t(CHAIN_WEAVES.find(w => w.id === weaveId)?.label, lang),
-               t(CHAIN_CLASPS.find(c => c.id === claspId)?.label, lang),
-               `${chainLengthMm / 10}cm`,
-               calcMode === "standard" ? `${chainWidthMm}mm szer.` : `${stockMassG}g`,
-               engravingId !== "none" ? t(ENGRAVING_OPTIONS.find(e => e.id === engravingId)?.label, lang) : null,
-              ].filter(Boolean).join(" | ")
-            : [t(PRODUCT_LINES.find(p => p.id === lineId)?.label, lang) || lineId,
-               t(JEWELRY_TYPES[lineId]?.find(j => j.id === typeId)?.label, lang) || typeId,
-               t(METALS.find(m => m.id === metalId)?.label, lang),
-               t(METHODS.find(m => m.id === methodId)?.label, lang),
-               engravingId !== "none" ? t(ENGRAVING_OPTIONS.find(e => e.id === engravingId)?.label, lang) : null,
-               ...stoneRows.filter(r => r.gemId !== "none").map(r => {
-                 const gem = resolvedGemstones.find(g => g.id === r.gemId);
-                 const sz = STONE_SIZES.find(s => s.id === r.stoneSizeId);
-                 return `${r.count}× ${t(gem?.label, lang) ?? r.gemId} (${t(sz?.label, lang) ?? r.stoneSizeId})${r.suppliedBy === "client" ? " [klient]" : ""}`;
-               })].filter(Boolean).join(" | ")
-          : serviceId === "renovation"
-            ? `${t(SERVICE_TYPES[1].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === renoJewType)?.label, lang)} | ${renoServices.map(id => t(RENOVATION_SERVICES.find(s => s.id === id)?.label, lang)).join(", ")}`
-            : `${t(SERVICE_TYPES[2].label, lang)} | ${t(GENERIC_TYPES.find(j => j.id === repairJewType)?.label, lang)} | ${t(REPAIR_SERVICES.find(r => r.id === repairId)?.label, lang)}`
-      } />
+      {/* Do koszyka trafia tylko to, co sklep potrafi wycenic wiazaco.
+          Reszta idzie ta sama droga co dotad, tyle ze z tego samego okna. */}
+      <NextStepPanel
+        lang={lang}
+        accent="amber"
+        techLabel={t(TECH_LABEL, lang)}
+        paramsSummary={paramsSummary}
+        result={result}
+        cartAvailable={!cartBlocked}
+        rateSnapshot={{
+          au: rates.au_pln_per_g,
+          ag: rates.ag_pln_per_g,
+          pt: rates.pt_pln_per_g,
+          pln_per_eur: rates.pln_per_eur,
+          sources: rates.sources,
+        }}
+        cart={
+          <CalcToCart
+            embedded
+            onBinding={setBindingGrosze}
+            calculator={serviceId === "renovation" ? "jewelry_renovation" : serviceId === "repair" ? "jewelry_repair" : "jewelry_new"}
+            serviceId={serviceId === "renovation" ? "jewelry_renovation" : serviceId === "repair" ? "jewelry_repair" : "jewelry_plain"}
+            params={
+              serviceId === "renovation"
+                ? { jewTypeId: renoJewType, metalTypeId: renoMetal, services: renoServices, qtyId }
+                : serviceId === "repair"
+                  ? { jewTypeId: repairJewType, metalTypeId: repairMetal, repairId, qtyId }
+                  : { lineId, typeId, metalId, weightId, methodId, platingId, engravingId, qtyId }
+            }
+            qty={qty}
+            blocked={cartBlocked}
+            blockedReason="manual"
+            lang={lang}
+            accent="amber"
+          />
+        }
+      />
     </div>
   );
 }

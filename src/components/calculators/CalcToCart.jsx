@@ -190,7 +190,7 @@ const money = (g) => `${(g / 100).toFixed(2).replace(".", ",")} PLN`;
  * @param {number[][][]} [props.triangles] siatka wgranego modelu, jesli kalkulator
  *        juz ja odczytal. Sluzy wylacznie do zrobienia miniatury dla koszyka.
  */
-export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp = null, file = null, triangles = null, scale = 1, lang, accent = "blue", blocked = false, blockedReason = "vector", onBinding = null, hold = false }) {
+export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp = null, file = null, triangles = null, scale = 1, lang, accent = "blue", blocked = false, blockedReason = "vector", onBinding = null, hold = false, embedded = false }) {
   const u = UI[lang] || UI.en;
   const cart = useCart();
   const card = getServiceCard(serviceId);
@@ -334,7 +334,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   // pokazywac kwote, ktora i tak bysmy poprawili, mowimy to wprost.
   if (blocked) {
     return (
-      <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+      <div className={embedded ? "" : "mt-4 rounded-2xl border border-white/10 bg-white/[0.02] p-5"}>
         <div className="flex items-start gap-2.5">
           <Info className="w-4 h-4 text-neutral-500 flex-shrink-0 mt-0.5" />
           <div>
@@ -429,7 +429,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
     : "bg-blue-500 hover:bg-blue-400 text-white";
 
   return (
-    <div className={`mt-4 rounded-2xl border p-5 ${ring}`}>
+    <div className={embedded ? "" : `mt-4 rounded-2xl border p-5 ${ring}`}>
       {(busy || uploading) && !price && (
         <div className="flex items-center gap-2 text-neutral-400 text-sm py-1">
           <Loader2 className="w-4 h-4 animate-spin" />

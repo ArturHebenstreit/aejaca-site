@@ -13,7 +13,7 @@ import {
   Lightbulb, Upload, X, FileBox, Ruler, Layers, Loader2, AlertTriangle,
 } from "lucide-react";
 import {
-  QUANTITY_TIERS, t, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture, LicenseNotice,
+  QUANTITY_TIERS, t, Chips, CalcCard, ResultHeader, ResultDisplay, LicenseNotice, NextStepPanel,
 } from "./calcShared.jsx";
 import CalcToCart from "./CalcToCart.jsx";
 import MaterialNotice from "../MaterialNotice.jsx";
@@ -828,33 +828,36 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
             onResult={setPrintability}
           />
         )}
-        {cartTarget && (
-          <CalcToCart
-            onBinding={setBindingGrosze}
-            calculator={cartTarget.calculator}
-            serviceId={cartTarget.serviceId}
-            params={{
-              ...resolved.params,
-              ...((resolved?.tech === "co2" || resolved?.tech === "fiber") ? { podloze, spare, materialNote } : {}),
-              ...(printability ? { printability } : {}),
-            }}
-            lang={lang}
-            hold={Boolean(printability?.blocked && !printability?.accepted)}
-          />
-        )}
+        <NextStepPanel
+          lang={lang}
+          techLabel={techLabel ? `Szybka wycena - ${techLabel}` : "Szybka wycena"}
+          paramsSummary={paramsSummary}
+          result={result}
+          preAttachedFile={uploadedFile}
+          requireLicenseConsent={isMslaPath}
+          cartAvailable={!overPlate && !fileForHuman}
+          cart={
+            cartTarget ? (
+              <CalcToCart
+                embedded
+                onBinding={setBindingGrosze}
+                calculator={cartTarget.calculator}
+                serviceId={cartTarget.serviceId}
+                params={{
+                  ...resolved.params,
+                  ...((resolved?.tech === "co2" || resolved?.tech === "fiber") ? { podloze, spare, materialNote } : {}),
+                  ...(printability ? { printability } : {}),
+                }}
+                lang={lang}
+                hold={Boolean(printability?.blocked && !printability?.accepted)}
+              />
+            ) : null
+          }
+        />
         <div className="mt-4 pt-3 border-t border-emerald-400/10 text-[11px] text-emerald-400/60 italic text-center">
           {l.switchHint}
         </div>
-        <QuoteEmailCapture result={result} lang={lang} techLabel={techLabel ? `Szybka wycena - ${techLabel}` : "Szybka wycena"} paramsSummary={paramsSummary} preAttachedFile={uploadedFile} />
       </div>
-
-      <InquiryForm
-        lang={lang}
-        techLabel={techLabel ? `Szybka wycena - ${techLabel}` : "Szybka wycena"}
-        paramsSummary={paramsSummary}
-        preAttachedFile={uploadedFile}
-        requireLicenseConsent={isMslaPath}
-      />
 
       <div className="mt-4 p-3 rounded-xl border border-emerald-400/10 bg-emerald-400/[0.02] text-[11px] text-emerald-400/50 leading-relaxed text-center">
         {l.note}

@@ -99,6 +99,8 @@ Chains (necklaces, men's chains, bracelets) have their own dedicated calculator 
 
 **Output:** per-piece price range in PLN/EUR + order total + detailed cost breakdown (metal, labor, gemstones, plating, workshop, margin)
 
+After the price result, customers encounter a unified "Co dalej?" (What next?) panel offering three actions: Add to cart, Send for precise quote, or Receive quote by email. When a configuration falls outside automatic-pricing parameters (out-of-range options, consigned metal, gemstones requiring special handling), the add-to-cart option becomes unavailable and the inquiry path is the only route forward.
+
 ---
 
 ## STUDIO CALCULATORS - what each covers
@@ -188,6 +190,8 @@ When asked "can you engrave on my own thing": yes, and explain the test piece up
 
 **Shared quantity tiers (all studio):** 1 (Proto) · 2–10 (Micro, −5%) · 11–20 (Small, −10%) · 21–50 (Medium, −15%) · 51–100 (Large, custom) · 100+ (custom quote)
 **Output:** per-piece price PLN/EUR + order total + production time + full cost breakdown
+
+After each calculator result, customers see a unified "Co dalej?" (What next?) panel with three action choices: Add to cart, Send for precise quote, or Receive quote by email. For orders beyond automatic-pricing scope (files too large for the build plate, models requiring manual review, or specialized requirements), the add-to-cart option is disabled and only the inquiry path is available.
 
 ---
 

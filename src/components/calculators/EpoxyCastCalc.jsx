@@ -6,7 +6,7 @@
 // Depreciation (UV lamp + tools): ~1.50 PLN/h
 // ============================================================
 import { useState, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, MaterialCards, HeroCards, NextStepPanel } from "./calcShared.jsx";
 import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
 import { QuantityStepper } from "../shop/ConfigControls.jsx";
 import CalcToCart from "./CalcToCart.jsx";
@@ -81,18 +81,24 @@ export default function EpoxyCastCalc({ lang = "pl" }) {
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
-        <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={paramsSummary} />
-        <CalcToCart
-          onBinding={setBindingGrosze}
-          calculator="epoxy"
-          serviceId="epoxy"
-          params={{ resinId, volumeId, moldId, inclusionId, finishId, quantityId }}
-          qty={qty}
+        <NextStepPanel
           lang={lang}
+          techLabel={t(TECH_LABEL, lang)}
+          paramsSummary={paramsSummary}
+          result={result}
+          cart={
+            <CalcToCart
+              embedded
+              onBinding={setBindingGrosze}
+              calculator="epoxy"
+              serviceId="epoxy"
+              params={{ resinId, volumeId, moldId, inclusionId, finishId, quantityId }}
+              qty={qty}
+              lang={lang}
+            />
+          }
         />
       </div>
-
-      <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={paramsSummary} />
     </div>
   );
 }
