@@ -6,7 +6,7 @@ import { useState, useRef, useEffect } from "react";
 const CONTACT_API_URL = import.meta.env.VITE_CHAT_API_URL;
 const CONTACT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 import { Link } from "react-router-dom";
-import { Send, Paperclip, X, MessageCircle, Mail, ShoppingCart, Microscope } from "lucide-react";
+import { Send, Paperclip, X, MessageCircle, Mail, ShoppingCart, Microscope, ArrowRight } from "lucide-react";
 import { trackInquiry, trackFunnel } from "../../utils/analytics.js";
 
 // Rdzen cenowy zyje w src/pricing/config.js, bo ten sam kod liczy cene
@@ -14,6 +14,18 @@ import { trackInquiry, trackFunnel } from "../../utils/analytics.js";
 // importowaly jak dotad.
 import { CONFIG, QUANTITY_TIERS, t, fmtNum, fmtCost, applyPricing } from "../../pricing/config.js";
 import { buildQuoteSummary } from "../../pricing/quoteSummary.js";
+import { TOOL_LINKS } from "../../data/toolLinks.js";
+
+/**
+ * Narzedzia warte sprawdzenia PRZED zamowieniem, wedlug technologii.
+ *
+ * Lasery zostaja puste swiadomie: jedyne narzedzie laserowe jest warsztatowe,
+ * a doklejanie czegokolwiek na sile psuje bardziej, niz pomaga.
+ */
+const CHECK_TOOLS = {
+  "3dprint": ["printability", "print-settings"],
+  msla: ["printability", "resin-settings"],
+};
 export { CONFIG, QUANTITY_TIERS, t, fmtNum, fmtCost, applyPricing };
 
 // ============================================================
@@ -847,6 +859,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
 const NEXT_STEP_LABELS = {
   pl: {
     title: "Co dalej?",
+    checkFirst: "Sprawdź, zanim zamówisz",
     cart: "Dodaj do koszyka",
     cartSub: "Zamawiasz od razu",
     inquiry: "Wyślij do precyzyjnej wyceny",
@@ -858,6 +871,7 @@ const NEXT_STEP_LABELS = {
   },
   en: {
     title: "What next?",
+    checkFirst: "Check before you order",
     cart: "Add to cart",
     cartSub: "Order right away",
     inquiry: "Send for a precise quote",
@@ -869,6 +883,7 @@ const NEXT_STEP_LABELS = {
   },
   de: {
     title: "Wie weiter?",
+    checkFirst: "Vor der Bestellung prüfen",
     cart: "In den Warenkorb",
     cartSub: "Direkt bestellen",
     inquiry: "Zur genauen Kalkulation senden",
@@ -929,10 +944,17 @@ export function NextStepPanel({
   accent = "blue",
   printability = null,
   fileScale = 1,
+  tech = null,
 }) {
   const l = NEXT_STEP_LABELS[lang] || NEXT_STEP_LABELS.en;
   const canBuy = Boolean(cart) && cartAvailable && result?.type !== "custom";
   const canEmail = Boolean(result) && result.type !== "custom";
+  // Narzedzia dobieramy do TECHNOLOGII, ktora wlasnie wyceniono. Przy laserze
+  // nic tu nie wstawiamy: jedyne narzedzie laserowe jest warsztatowe (audience
+  // "maker"), a wypelniacz szkodzi bardziej niz brak.
+  const checkTools = (CHECK_TOOLS[tech] || [])
+    .map((id) => TOOL_LINKS.find((x) => x.id === id))
+    .filter(Boolean);
   // Wybor klienta trzymamy osobno od wyboru pokazywanego, bo to nie to samo.
   // Zapamietane jest tylko to, co klient sam kliknal; jesli ta zakladka
   // przestaje byc dostepna, render sam schodzi na dostepna, bez poprawiania
@@ -1006,6 +1028,32 @@ export function NextStepPanel({
           przez onBinding, wiec odmontowanie go kasowaloby cene, ktora naglowek
           wyniku juz zdazyl ogloszyc. Nic by sie nie wywalilo, po prostu kwota
           zniknelaby bez slowa. */}
+      {/* SEKCJA "SPRAWDZ PRZED ZAMOWIENIEM" LEZY POD CALYM KALKULATOREM.
+          Klient, ktory wlasnie dodaje do koszyka, nigdy tam nie dojedzie:
+          konczy w koszyku, a nie kilka ekranow nizej. Narzedzie, ktore ma
+          uchronic przed zamowieniem niedrukowalnego modelu, musi stac przy
+          decyzji, a nie za nia. Otwieramy w nowej karcie, bo wracamy tu
+          do skonfigurowanej wyceny, a nie zaczynamy od nowa. */}
+      {action === "cart" && canBuy && checkTools.length > 0 && (
+        <div className="mb-4 rounded-xl border border-white/10 bg-white/[0.02] p-3">
+          <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">{l.checkFirst}</div>
+          <div className="flex flex-wrap gap-2">
+            {checkTools.map((n) => (
+              <a
+                key={n.id}
+                href={n.to}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10
+                           bg-white/[0.03] text-neutral-300 hover:border-white/25 hover:text-white text-xs transition-colors"
+              >
+                {t(n.label, lang)} <ArrowRight className="w-3 h-3" />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
       {cart && (
         <div className={action === "cart" && canBuy ? "" : "hidden"} aria-hidden={action !== "cart"}>
           {cart}

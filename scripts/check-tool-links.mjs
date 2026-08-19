@@ -80,6 +80,52 @@ for (const t of TOOL_LINKS) {
   }
 }
 
+// ------------------------------------------------------------
+// 4. Odnosnik "sprawdz, zanim zamowisz" przy przycisku koszyka
+// ------------------------------------------------------------
+// Sekcja z narzedziami lezy POD calym kalkulatorem, czyli za decyzja o zakupie.
+// Klient, ktory wlasnie dodaje do koszyka, konczy w koszyku i nigdy tam nie
+// dojezdza, wiec sprawdzarka modeli, ktora ma go uchronic przed zamowieniem
+// niedrukowalnego pliku, nie ma jak zadzialac. Panel akcji dostal wiec wlasny
+// odnosnik, a ten test pilnuje, zeby wskazywal istniejace narzedzia i zeby
+// kalkulatory druku faktycznie podawaly swoja technologie.
+{
+  const shared = readFileSync(new URL("../src/components/calculators/calcShared.jsx", import.meta.url), "utf8");
+  const blok = /const CHECK_TOOLS = \{([\s\S]*?)\};/.exec(shared)?.[1] || "";
+  // Tylko wartosci z nawiasow kwadratowych: klucz "3dprint" to technologia,
+  // a nie narzedzie, i bez tego zawezenia test bralby go za identyfikator.
+  const uzyte = [...blok.matchAll(/\[([^\]]*)\]/g)]
+    .flatMap((m) => [...m[1].matchAll(/"([a-z0-9-]+)"/g)].map((x) => x[1]));
+
+  if (!uzyte.length) {
+    problems.push("calcShared: CHECK_TOOLS jest puste, przycisk koszyka nie prowadzi do zadnego narzedzia");
+  }
+  for (const id of uzyte) {
+    if (!TOOL_LINKS.some((t) => t.id === id)) {
+      problems.push(`calcShared CHECK_TOOLS wskazuje na narzedzie "${id}", ktorego nie ma w TOOL_LINKS`);
+    }
+  }
+  // Narzedzia warsztatowe nie moga trafic do kupujacego przy koszyku.
+  for (const id of uzyte) {
+    const narzedzie = TOOL_LINKS.find((t) => t.id === id);
+    if (narzedzie && narzedzie.audience === "maker") {
+      problems.push(`calcShared CHECK_TOOLS podsuwa kupujacemu narzedzie warsztatowe "${id}"`);
+    }
+  }
+  if (!/l\.checkFirst/.test(shared)) {
+    problems.push("calcShared: odnosnik do narzedzi nie ma naglowka, wiec nie wiadomo, po co tam jest");
+  }
+
+  const print3d = readFileSync(new URL("../src/components/calculators/Print3DCalc.jsx", import.meta.url), "utf8");
+  if (!/tech="msla"/.test(print3d) || !/tech="3dprint"/.test(print3d)) {
+    problems.push("Print3DCalc nie podaje technologii do panelu akcji, wiec odnosnik do narzedzi sie nie pokaze");
+  }
+  const simple = readFileSync(new URL("../src/components/calculators/SimpleStudioCalc.jsx", import.meta.url), "utf8");
+  if (!/tech=\{activeResolved\?\.tech/.test(simple)) {
+    problems.push("SimpleStudioCalc nie podaje technologii do panelu akcji");
+  }
+}
+
 if (problems.length) {
   console.error("check-tool-links: rejestr narzedzi rozjechal sie z trescia\n");
   for (const p of problems) console.error(`  ${p}`);

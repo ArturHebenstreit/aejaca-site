@@ -20,6 +20,37 @@ import MaterialNotice from "../MaterialNotice.jsx";
 import {
   SUBSTRATE_LABEL, SUBSTRATES, SPARE_LABEL, spareOptionsFor, MIN_MATERIAL_NOTE,
 } from "../../data/laserSubstrate.js";
+import { stockOptions, stockAllowed, STOCK_OTHER } from "../../data/ourStock.js";
+
+const IDK_TITLE = {
+  pl: "Doradzamy: te materiały wchodzą w grę",
+  en: "Our advice: these materials are in play",
+  de: "Unser Rat: diese Materialien kommen infrage",
+};
+const IDK_TITLE_FILE = {
+  pl: "Doradzamy: dla tego pliku wchodzą w grę",
+  en: "Our advice: for this file these are in play",
+  de: "Unser Rat: für diese Datei kommen infrage",
+};
+const IDK_HINT = {
+  pl: "Możesz wybrać teraz albo zostawić \u201enie wiem\u201d: wtedy dobieramy sami i piszemy, co i dlaczego proponujemy.",
+  en: "Pick one now, or leave \u201enot sure\u201d: we choose for you and write back with what we propose and why.",
+  de: "Wählen Sie jetzt, oder lassen Sie \u201eweiß nicht\u201d stehen: dann wählen wir und schreiben, was wir vorschlagen und warum.",
+};
+
+const STOCK_LBL = {
+  pl: "Na jakim materiale z naszego magazynu",
+  en: "Which material from our stock",
+  de: "Welches Material aus unserem Lager",
+};
+const STOCK_OTHER_LBL = { pl: "Inny materiał", en: "Other material", de: "Anderes Material" };
+// Wybor z listy MUSI zostac obietnica robocizny, a nie dostepnosci. Materialu
+// nie ma w kwocie z kalkulatora i nie deklarujemy, ze lezy na polce.
+const STOCK_HINT = {
+  pl: "Dostępność i koszt samego materiału potwierdzamy przy realizacji. Kwota powyżej obejmuje wykonanie.",
+  en: "We confirm availability and the cost of the material itself when we start. The amount above covers the work.",
+  de: "Verfügbarkeit und Materialkosten bestätigen wir bei Auftragsbeginn. Der Betrag oben deckt die Arbeit.",
+};
 
 const MATERIAL_NOTE_LBL = {
   pl: "Napisz, na jakim konkretnie materiale ma być wykonana usługa",
@@ -182,7 +213,7 @@ const LBL = {
     q0: "Masz gotowy plik?", q0hint: "Wrzuć plik STL lub SVG - wycenimy automatycznie",
     q0drop: "Przeciągnij plik tutaj", q0tap: "Kliknij, aby wybrać plik", q0or: "lub kliknij, aby wybrać", q0accept: ".stl, .obj, .3mf, .step, .svg, .dxf, .ai, .pdf",
     q0skip: "Nie mam pliku - opiszę co potrzebuję",
-    q0detected: "Wykryto", q0stl: "Model 3D (STL)", q0model: "Model 3D", q0svg: "Grafika wektorowa (SVG)", q0vector: "Grafika wektorowa",
+    q0locked: "Rodzaj pliku wynika z tego, co wgrałeś. Żeby wgrać inny, usuń obecny plik krzyżykiem.", q0detected: "Wykryto", q0stl: "Model 3D (STL)", q0model: "Model 3D", q0svg: "Grafika wektorowa (SVG)", q0vector: "Grafika wektorowa",
     q0dims: "Wymiary", q0vol: "Objętość", q0area: "Powierzchnia", q0paths: "Ścieżki",
     q0remove: "Usuń plik", q0selected: "Wybrano", q0selSize: "Rozmiar", q0selMat: "Materiał",
     unitTitle: "Ten model ma po odczycie", unitTitleSuffix: "cm",
@@ -210,7 +241,7 @@ const LBL = {
     suggestion: "Sugerowana technologia",
     why: "Dlaczego?",
     switchHint: 'Chcesz podać dokładniejsze parametry? Przełącz na tryb "Dla zaawansowanych" u góry.',
-    note: 'Tryb Szybkiej Wyceny dobiera technologię i parametry automatycznie - dla dokładnej kontroli użyj trybu zaawansowanego.',
+    note: 'Szybka wycena liczy z Twoich wyborów, a po wgraniu pliku z jego geometrii. Technologię druku, cięcie albo grawer i materiał wybierasz sam. Tryb zaawansowany dokłada resztę parametrów: wypełnienie, precyzję i wykończenie.',
     mslaHint: "Ten model zmieści się na drukarce żywicznej MSLA 16K, to opcja z wyższą precyzją i gładszą powierzchnią niż odlew z żywicy.",
     co2ModeQ: "Cięcie czy grawerowanie?",
     co2CutName: "Cięcie na wylot", co2CutDesc: "Wycinamy kształt na wylot, zostaje gotowy element.",
@@ -226,7 +257,7 @@ const LBL = {
     q0: "Got a file ready?", q0hint: "Drop an STL or SVG file - we'll quote it automatically",
     q0drop: "Drag your file here", q0tap: "Tap to choose a file", q0or: "or click to browse", q0accept: ".stl, .obj, .3mf, .step, .svg, .dxf, .ai, .pdf",
     q0skip: "No file - I'll describe what I need",
-    q0detected: "Detected", q0stl: "3D model (STL)", q0model: "3D model", q0svg: "Vector graphic (SVG)", q0vector: "Vector graphic",
+    q0locked: "The file type follows from what you uploaded. To upload a different one, remove the current file with the cross.", q0detected: "Detected", q0stl: "3D model (STL)", q0model: "3D model", q0svg: "Vector graphic (SVG)", q0vector: "Vector graphic",
     q0dims: "Dimensions", q0vol: "Volume", q0area: "Area", q0paths: "Paths",
     q0remove: "Remove file", q0selected: "Selected", q0selSize: "Size", q0selMat: "Material",
     unitTitle: "This model reads as", unitTitleSuffix: "cm",
@@ -254,7 +285,7 @@ const LBL = {
     suggestion: "Suggested technology",
     why: "Why?",
     switchHint: 'Want more precise parameters? Switch to "Advanced" mode at the top.',
-    note: 'Quick Quote mode picks technology and parameters automatically - for full control, use the advanced mode.',
+    note: 'The quick quote follows your choices, and once you upload a file, its geometry. You pick the print technology, cutting or engraving, and the material yourself. Advanced mode adds the rest: infill, precision and finish.',
     mslaHint: "This model fits the MSLA 16K resin printer, an option with higher precision and a smoother surface than a resin cast.",
     co2ModeQ: "Cut or engrave?",
     co2CutName: "Cut through", co2CutDesc: "We cut the shape all the way through, leaving a finished piece.",
@@ -270,7 +301,7 @@ const LBL = {
     q0: "Haben Sie eine Datei?", q0hint: "Laden Sie eine STL- oder SVG-Datei hoch - wir kalkulieren automatisch",
     q0drop: "Datei hierher ziehen", q0tap: "Tippen um Datei auszuwählen", q0or: "oder klicken zum Auswählen", q0accept: ".stl, .obj, .3mf, .step, .svg, .dxf, .ai, .pdf",
     q0skip: "Keine Datei - ich beschreibe was ich brauche",
-    q0detected: "Erkannt", q0stl: "3D-Modell (STL)", q0model: "3D-Modell", q0svg: "Vektorgrafik (SVG)", q0vector: "Vektorgrafik",
+    q0locked: "Der Dateityp ergibt sich aus dem Upload. Für eine andere Datei entfernen Sie die aktuelle mit dem Kreuz.", q0detected: "Erkannt", q0stl: "3D-Modell (STL)", q0model: "3D-Modell", q0svg: "Vektorgrafik (SVG)", q0vector: "Vektorgrafik",
     q0dims: "Maße", q0vol: "Volumen", q0area: "Fläche", q0paths: "Pfade",
     q0remove: "Datei entfernen", q0selected: "Ausgewählt", q0selSize: "Größe", q0selMat: "Material",
     unitTitle: "Dieses Modell wird gelesen als", unitTitleSuffix: "cm",
@@ -298,7 +329,7 @@ const LBL = {
     suggestion: "Empfohlene Technologie",
     why: "Warum?",
     switchHint: 'Genauere Parameter? Wechseln Sie oben in den "Fortgeschrittenen"-Modus.',
-    note: 'Der Schnellkalkulationsmodus wählt Technologie und Parameter automatisch - für volle Kontrolle verwenden Sie den erweiterten Modus.',
+    note: 'Die Schnellkalkulation folgt Ihren Angaben und nach dem Upload der Geometrie der Datei. Drucktechnik, Schneiden oder Gravieren und das Material wählen Sie selbst. Der erweiterte Modus ergänzt Füllung, Präzision und Finish.',
     mslaHint: "Dieses Modell passt auf den MSLA-16K-Harzdrucker, eine Option mit höherer Präzision und glatterer Oberfläche als ein Harzguss.",
     co2ModeQ: "Schneiden oder Gravieren?",
     co2CutName: "Durchschneiden", co2CutDesc: "Wir schneiden die Form ganz durch, es bleibt ein fertiges Teil.",
@@ -412,6 +443,9 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   const [podloze, setPodloze] = useState("our_stock");
   const [spare, setSpare] = useState("");
   const [materialNote, setMaterialNote] = useState("");
+  // Material wybrany z naszego magazynu. null znaczy "klient jeszcze nie
+  // wybral albo wpisuje wlasny", i wtedy wycena zostaje przy domysle.
+  const [stockId, setStockId] = useState(null);
 
   // Zmiana podloza kasuje wybory zwiazane z poprzednim, inaczej po
   // przelaczeniu zostaje wybor niedozwolony przy nowym podlozu.
@@ -586,12 +620,12 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   const scaledStl = useMemo(() => scaleMesh(stlData, scale), [stlData, scale]);
   const scaledSvg = useMemo(() => scaleVector(svgData, scale), [svgData, scale]);
 
-  const odpowiedzi = { item, size, material, finish, quantity, fileType, stlData: scaledStl, svgData: scaledSvg };
+  const odpowiedzi = { item, size, material, finish, quantity, fileType, stlData: scaledStl, svgData: scaledSvg, stockId };
 
   const resolved = useMemo(
     () => resolveTechAndParams({ ...odpowiedzi, printTech }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, printTech]
+    [item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, printTech, stockId]
   );
 
   // Pole robocze laserow, ten sam wzorzec co pole robocze drukarki (fitCm)
@@ -624,14 +658,14 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
       ? runCalc(resolveTechAndParams({ ...odpowiedzi, co2Mode: "cut" }), lang)
       : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isVectorCo2, laserOverPlate, lang, item, size, material, finish, quantity, fileType, scaledSvg]
+    [isVectorCo2, laserOverPlate, lang, item, size, material, finish, quantity, fileType, scaledSvg, stockId]
   );
   const co2EngraveResult = useMemo(
     () => (isVectorCo2 && !laserOverPlate
       ? runCalc(resolveTechAndParams({ ...odpowiedzi, co2Mode: "engrave" }), lang)
       : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isVectorCo2, laserOverPlate, lang, item, size, material, finish, quantity, fileType, scaledSvg]
+    [isVectorCo2, laserOverPlate, lang, item, size, material, finish, quantity, fileType, scaledSvg, stockId]
   );
 
   // Wybor klienta (kliknieta karta ciecie/grawerowanie) nadpisuje tryb, ktory
@@ -642,7 +676,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
       ? resolveTechAndParams({ ...odpowiedzi, co2Mode })
       : resolved),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isVectorCo2, co2Mode, resolved, item, size, material, finish, quantity, fileType, scaledSvg]
+    [isVectorCo2, co2Mode, resolved, item, size, material, finish, quantity, fileType, scaledSvg, stockId]
   );
 
   // Pole roboczej maszyny, ktora realnie wykona ten wydruk.
@@ -671,7 +705,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   const drugiWynik = useMemo(
     () => (!drukowe || overPlate ? null : runCalc(resolveTechAndParams({ ...odpowiedzi, printTech: drugaTech }), lang)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [drukowe, drugaTech, overPlate, lang, item, size, material, finish, quantity, fileType, scaledStl, scaledSvg]
+    [drukowe, drugaTech, overPlate, lang, item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, stockId]
   );
 
   // Szybka wycena otwiera sie domyslnie, wiec bez tego wiekszosc odwiedzajacych
@@ -695,7 +729,18 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   const matDisabledIds = useMemo(() => {
     if (!hasFile) return undefined;
     const allowed = fileType === "stl" ? STL_ALLOWED_MATS : SVG_ALLOWED_MATS;
-    return new Set(MATERIALS.filter(m => !allowed.has(m.id)).map(m => m.id));
+    // "NIE WIEM, DORADZCIE" ZOSTAJE AKTYWNE ZAWSZE. Bylo wygaszane wraz
+    // z materialami, ktore do pliku nie pasuja, czyli dokladnie w momencie,
+    // w ktorym umiemy doradzic najlepiej: plik lezy u nas i widzimy geometrie.
+    // Klient, ktory sie nie zna, tracil wtedy jedyna odpowiedz, jaka mial.
+    return new Set(MATERIALS.filter(m => m.id !== "idk" && !allowed.has(m.id)).map(m => m.id));
+  }, [hasFile, fileType, STL_ALLOWED_MATS, SVG_ALLOWED_MATS]);
+
+  // Materialy, ktore realnie wchodza w gre dla tego, co klient wgral.
+  // Wygaszony kafelek mowi "nie ta droga", ale nie mowi, ktora droga tak.
+  const matSugerowane = useMemo(() => {
+    const allowed = hasFile ? (fileType === "stl" ? STL_ALLOWED_MATS : SVG_ALLOWED_MATS) : null;
+    return MATERIALS.filter((m) => m.id !== "idk" && (!allowed || allowed.has(m.id)));
   }, [hasFile, fileType, STL_ALLOWED_MATS, SVG_ALLOWED_MATS]);
 
   const techLabel = !resolved?.custom && resolved?.tech
@@ -739,21 +784,31 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
             { id: "vector", label: l.haveVector, sub: l.haveVectorSub, icon: Layers },
           ].map((o) => {
             const active = fileMode === o.id;
+            // PRZY WGRANYM PLIKU KAFELKI SA WYLACZONE, a nie tylko bezczynne.
+            // Wczesniej drugi kafelek dawal sie klikac i podswietlal sie, ale
+            // pole wgrywania pokazuje sie wylacznie przy braku pliku, wiec nic
+            // sie nie dzialo. Klient widzial reakcje bez skutku, czyli dokladnie
+            // to, co czyta sie jako usterke. Rodzaj pliku zmienia sie przez
+            // usuniecie pliku krzyzykiem i to jest napisane pod kafelkami.
+            const zablokowany = Boolean(hasFile || fileForHuman);
             return (
               <button
                 key={o.id}
+                type="button"
+                disabled={zablokowany}
+                aria-disabled={zablokowany || undefined}
                 onClick={() => {
-                  // Przy wgranym pliku kafelka nie odklikujemy: znikneloby pole
-                  // wgrywania, a plik zostalby na ekranie i klient nie wiedzialby,
-                  // co wlasnie zrobil. Od usuwania jest krzyzyk na karcie pliku.
-                  if (hasFile || fileForHuman) { setFileMode(o.id); return; }
                   setFileMode(active ? null : o.id);
                   if (!active) trackCalc("studio_simple", "file_mode", o.id);
                 }}
                 className={`flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all duration-200 ${
                   active
                     ? "border-emerald-400 bg-emerald-400/10"
-                    : "border-white/10 bg-white/[0.02] hover:border-emerald-400/40"
+                    : "border-white/10 bg-white/[0.02]"
+                } ${
+                  zablokowany
+                    ? "opacity-40 cursor-not-allowed"
+                    : active ? "" : "hover:border-emerald-400/40"
                 }`}
               >
                 <o.icon className={`w-5 h-5 shrink-0 ${active ? "text-emerald-300" : "text-emerald-400/70"}`} />
@@ -765,6 +820,10 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
             );
           })}
         </div>
+
+        {(hasFile || fileForHuman) && (
+          <p className="-mt-1 mb-3 text-[11px] text-neutral-500 leading-relaxed">{l.q0locked}</p>
+        )}
 
         {/* Pole wgrywania, tylko po zadeklarowaniu rodzaju pliku */}
         {fileMode && !hasFile && !fileForHuman && (
@@ -1023,6 +1082,30 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
 
       <SimpleCard stepNum="③" label={l.q3}>
         <TileGrid options={MATERIALS} value={material} onChange={handleSet(setMaterial, "material")} lang={lang} cols={3} disabledIds={matDisabledIds} />
+
+        {/* "Nie wiem" nie moze byc slepym zaulkiem. Mowimy, co wchodzi w gre,
+            i pozwalamy wybrac od razu, zamiast odsylac klienta do maila. */}
+        {material === "idk" && (
+          <div className="mt-4 rounded-xl border border-emerald-400/25 bg-emerald-400/[0.05] p-4">
+            <p className="text-emerald-200 text-xs font-medium mb-1">
+              {t(hasFile ? IDK_TITLE_FILE : IDK_TITLE, lang)}
+            </p>
+            <p className="text-neutral-400 text-[11px] leading-relaxed mb-3">{t(IDK_HINT, lang)}</p>
+            <div className="flex flex-wrap gap-2">
+              {matSugerowane.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => handleSet(setMaterial, "material")(m.id)}
+                  className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.03] text-neutral-300
+                             hover:border-white/25 hover:text-white text-xs transition-colors"
+                >
+                  {t(m.label, lang)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </SimpleCard>
 
       {/* Technologia druku. Do tej pory wybieralismy ja po cichu, a klient
@@ -1158,17 +1241,15 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
                   <Chips options={spareOptionsFor(podloze)} value={spare} onChange={setSpare} lang={lang} />
                 </div>
               ) : (
-                <div className="mt-3">
-                  <div className="text-[11px] uppercase tracking-wide text-emerald-400/60 mb-2">{t(MATERIAL_NOTE_LBL, lang)}</div>
-                  <textarea
-                    value={materialNote}
-                    onChange={(e) => setMaterialNote(e.target.value)}
-                    placeholder={t(MATERIAL_NOTE_PLACEHOLDER, lang)}
-                    rows={2}
-                    minLength={MIN_MATERIAL_NOTE}
-                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-emerald-400/50 focus:outline-none focus:ring-1 focus:ring-emerald-400/30 resize-none transition-colors"
-                  />
-                </div>
+                <StockPicker
+                  options={stockOptions({ tech: activeResolved?.tech, mode: activeResolved?.mode })}
+                  value={stockAllowed(stockId, { tech: activeResolved?.tech, mode: activeResolved?.mode }) ? stockId : null}
+                  note={materialNote}
+                  onPick={(id, etykieta) => { setStockId(id); setMaterialNote(etykieta); }}
+                  onOther={() => { setStockId(null); setMaterialNote(""); }}
+                  onNote={setMaterialNote}
+                  lang={lang}
+                />
               )}
             </div>
           </>
@@ -1190,6 +1271,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
         )}
         <NextStepPanel
           lang={lang}
+          tech={activeResolved?.tech || null}
           techLabel={techLabel ? `Szybka wycena - ${techLabel}` : "Szybka wycena"}
           paramsSummary={paramsSummary}
           result={result}
@@ -1230,6 +1312,75 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
       <div className="mt-4 p-3 rounded-xl border border-emerald-400/10 bg-emerald-400/[0.02] text-[11px] text-emerald-400/50 leading-relaxed text-center">
         {l.note}
       </div>
+    </div>
+  );
+}
+
+/**
+ * WYBOR MATERIALU Z NASZEGO MAGAZYNU zamiast pustego pola tekstowego.
+ *
+ * Puste pole trafialo w osobe, ktora wlasnie dlatego wybrala szybka wycene,
+ * ze na materialach sie nie zna, i dostawalo odpowiedzi w rodzaju "cos
+ * z drewna". Lista pochodzi z cennika, wiec kazda pozycja ma stawke i wybor
+ * realnie zmienia kwote, zamiast tylko ladniej wygladac.
+ *
+ * "Inny material" zostaje na koncu, bo nasza lista nie wyczerpuje swiata,
+ * a odebranie klientowi mozliwosci opisania czegos wlasnego byloby zamiana
+ * jednej blokady na druga.
+ */
+function StockPicker({ options, value, note, onPick, onOther, onNote, lang }) {
+  const wlasny = !value;
+  if (!options.length) {
+    // Technologia bez listy w cenniku. Lepiej zapytac otwarcie, niz pokazac
+    // puste kafelki i udawac, ze wybor istnieje.
+    return (
+      <div className="mt-3">
+        <div className="text-[11px] uppercase tracking-wide text-emerald-400/60 mb-2">{t(MATERIAL_NOTE_LBL, lang)}</div>
+        <textarea
+          value={note}
+          onChange={(e) => onNote(e.target.value)}
+          placeholder={t(MATERIAL_NOTE_PLACEHOLDER, lang)}
+          rows={2}
+          minLength={MIN_MATERIAL_NOTE}
+          className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-emerald-400/50 focus:outline-none focus:ring-1 focus:ring-emerald-400/30 resize-none transition-colors"
+        />
+      </div>
+    );
+  }
+
+  const kafelek = (aktywny) =>
+    `px-3 py-2 rounded-xl border text-xs transition-colors text-left ${
+      aktywny
+        ? "border-emerald-400 bg-emerald-400/10 text-emerald-200"
+        : "border-white/10 bg-white/[0.03] text-neutral-300 hover:border-white/25 hover:text-white"
+    }`;
+
+  return (
+    <div className="mt-3">
+      <div className="text-[11px] uppercase tracking-wide text-emerald-400/60 mb-2">{t(STOCK_LBL, lang)}</div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {options.map((o) => (
+          <button key={o.id} type="button" className={kafelek(value === o.id)} onClick={() => onPick(o.id, t(o.label, lang))}>
+            {t(o.label, lang)}
+          </button>
+        ))}
+        <button key={STOCK_OTHER} type="button" className={kafelek(wlasny)} onClick={onOther}>
+          {t(STOCK_OTHER_LBL, lang)}
+        </button>
+      </div>
+
+      {wlasny && (
+        <textarea
+          value={note}
+          onChange={(e) => onNote(e.target.value)}
+          placeholder={t(MATERIAL_NOTE_PLACEHOLDER, lang)}
+          rows={2}
+          minLength={MIN_MATERIAL_NOTE}
+          className="mt-2 w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-emerald-400/50 focus:outline-none focus:ring-1 focus:ring-emerald-400/30 resize-none transition-colors"
+        />
+      )}
+
+      <p className="text-neutral-500 text-[11px] mt-2 leading-relaxed">{t(STOCK_HINT, lang)}</p>
     </div>
   );
 }

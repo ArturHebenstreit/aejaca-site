@@ -513,6 +513,7 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
           />
           <NextStepPanel
             lang={lang}
+            tech="msla"
             techLabel={t(TECH_LABEL_MSLA, lang)}
             paramsSummary={mslaParamsSummary}
             result={mslaResult}
@@ -588,6 +589,7 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
         />
         <NextStepPanel
           lang={lang}
+          tech="3dprint"
           printability={fdmPrint}
           fileScale={stlScale}
           techLabel={t(TECH_LABEL, lang)}
