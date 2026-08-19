@@ -20,6 +20,21 @@ import MaterialNotice from "../MaterialNotice.jsx";
 import {
   SUBSTRATE_LABEL, SUBSTRATES, SPARE_LABEL, spareOptionsFor, MIN_MATERIAL_NOTE,
 } from "../../data/laserSubstrate.js";
+import { stockOptions, stockAllowed, STOCK_OTHER } from "../../data/ourStock.js";
+
+const STOCK_LBL = {
+  pl: "Na jakim materiale z naszego magazynu",
+  en: "Which material from our stock",
+  de: "Welches Material aus unserem Lager",
+};
+const STOCK_OTHER_LBL = { pl: "Inny materiał", en: "Other material", de: "Anderes Material" };
+// Wybor z listy MUSI zostac obietnica robocizny, a nie dostepnosci. Materialu
+// nie ma w kwocie z kalkulatora i nie deklarujemy, ze lezy na polce.
+const STOCK_HINT = {
+  pl: "Dostępność i koszt samego materiału potwierdzamy przy realizacji. Kwota powyżej obejmuje wykonanie.",
+  en: "We confirm availability and the cost of the material itself when we start. The amount above covers the work.",
+  de: "Verfügbarkeit und Materialkosten bestätigen wir bei Auftragsbeginn. Der Betrag oben deckt die Arbeit.",
+};
 
 const MATERIAL_NOTE_LBL = {
   pl: "Napisz, na jakim konkretnie materiale ma być wykonana usługa",
@@ -412,6 +427,9 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   const [podloze, setPodloze] = useState("our_stock");
   const [spare, setSpare] = useState("");
   const [materialNote, setMaterialNote] = useState("");
+  // Material wybrany z naszego magazynu. null znaczy "klient jeszcze nie
+  // wybral albo wpisuje wlasny", i wtedy wycena zostaje przy domysle.
+  const [stockId, setStockId] = useState(null);
 
   // Zmiana podloza kasuje wybory zwiazane z poprzednim, inaczej po
   // przelaczeniu zostaje wybor niedozwolony przy nowym podlozu.
@@ -586,12 +604,12 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   const scaledStl = useMemo(() => scaleMesh(stlData, scale), [stlData, scale]);
   const scaledSvg = useMemo(() => scaleVector(svgData, scale), [svgData, scale]);
 
-  const odpowiedzi = { item, size, material, finish, quantity, fileType, stlData: scaledStl, svgData: scaledSvg };
+  const odpowiedzi = { item, size, material, finish, quantity, fileType, stlData: scaledStl, svgData: scaledSvg, stockId };
 
   const resolved = useMemo(
     () => resolveTechAndParams({ ...odpowiedzi, printTech }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, printTech]
+    [item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, printTech, stockId]
   );
 
   // Pole robocze laserow, ten sam wzorzec co pole robocze drukarki (fitCm)
@@ -624,14 +642,14 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
       ? runCalc(resolveTechAndParams({ ...odpowiedzi, co2Mode: "cut" }), lang)
       : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isVectorCo2, laserOverPlate, lang, item, size, material, finish, quantity, fileType, scaledSvg]
+    [isVectorCo2, laserOverPlate, lang, item, size, material, finish, quantity, fileType, scaledSvg, stockId]
   );
   const co2EngraveResult = useMemo(
     () => (isVectorCo2 && !laserOverPlate
       ? runCalc(resolveTechAndParams({ ...odpowiedzi, co2Mode: "engrave" }), lang)
       : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isVectorCo2, laserOverPlate, lang, item, size, material, finish, quantity, fileType, scaledSvg]
+    [isVectorCo2, laserOverPlate, lang, item, size, material, finish, quantity, fileType, scaledSvg, stockId]
   );
 
   // Wybor klienta (kliknieta karta ciecie/grawerowanie) nadpisuje tryb, ktory
@@ -642,7 +660,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
       ? resolveTechAndParams({ ...odpowiedzi, co2Mode })
       : resolved),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isVectorCo2, co2Mode, resolved, item, size, material, finish, quantity, fileType, scaledSvg]
+    [isVectorCo2, co2Mode, resolved, item, size, material, finish, quantity, fileType, scaledSvg, stockId]
   );
 
   // Pole roboczej maszyny, ktora realnie wykona ten wydruk.
@@ -671,7 +689,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   const drugiWynik = useMemo(
     () => (!drukowe || overPlate ? null : runCalc(resolveTechAndParams({ ...odpowiedzi, printTech: drugaTech }), lang)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [drukowe, drugaTech, overPlate, lang, item, size, material, finish, quantity, fileType, scaledStl, scaledSvg]
+    [drukowe, drugaTech, overPlate, lang, item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, stockId]
   );
 
   // Szybka wycena otwiera sie domyslnie, wiec bez tego wiekszosc odwiedzajacych
@@ -1158,17 +1176,15 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
                   <Chips options={spareOptionsFor(podloze)} value={spare} onChange={setSpare} lang={lang} />
                 </div>
               ) : (
-                <div className="mt-3">
-                  <div className="text-[11px] uppercase tracking-wide text-emerald-400/60 mb-2">{t(MATERIAL_NOTE_LBL, lang)}</div>
-                  <textarea
-                    value={materialNote}
-                    onChange={(e) => setMaterialNote(e.target.value)}
-                    placeholder={t(MATERIAL_NOTE_PLACEHOLDER, lang)}
-                    rows={2}
-                    minLength={MIN_MATERIAL_NOTE}
-                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-emerald-400/50 focus:outline-none focus:ring-1 focus:ring-emerald-400/30 resize-none transition-colors"
-                  />
-                </div>
+                <StockPicker
+                  options={stockOptions({ tech: activeResolved?.tech, mode: activeResolved?.mode })}
+                  value={stockAllowed(stockId, { tech: activeResolved?.tech, mode: activeResolved?.mode }) ? stockId : null}
+                  note={materialNote}
+                  onPick={(id, etykieta) => { setStockId(id); setMaterialNote(etykieta); }}
+                  onOther={() => { setStockId(null); setMaterialNote(""); }}
+                  onNote={setMaterialNote}
+                  lang={lang}
+                />
               )}
             </div>
           </>
@@ -1230,6 +1246,75 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
       <div className="mt-4 p-3 rounded-xl border border-emerald-400/10 bg-emerald-400/[0.02] text-[11px] text-emerald-400/50 leading-relaxed text-center">
         {l.note}
       </div>
+    </div>
+  );
+}
+
+/**
+ * WYBOR MATERIALU Z NASZEGO MAGAZYNU zamiast pustego pola tekstowego.
+ *
+ * Puste pole trafialo w osobe, ktora wlasnie dlatego wybrala szybka wycene,
+ * ze na materialach sie nie zna, i dostawalo odpowiedzi w rodzaju "cos
+ * z drewna". Lista pochodzi z cennika, wiec kazda pozycja ma stawke i wybor
+ * realnie zmienia kwote, zamiast tylko ladniej wygladac.
+ *
+ * "Inny material" zostaje na koncu, bo nasza lista nie wyczerpuje swiata,
+ * a odebranie klientowi mozliwosci opisania czegos wlasnego byloby zamiana
+ * jednej blokady na druga.
+ */
+function StockPicker({ options, value, note, onPick, onOther, onNote, lang }) {
+  const wlasny = !value;
+  if (!options.length) {
+    // Technologia bez listy w cenniku. Lepiej zapytac otwarcie, niz pokazac
+    // puste kafelki i udawac, ze wybor istnieje.
+    return (
+      <div className="mt-3">
+        <div className="text-[11px] uppercase tracking-wide text-emerald-400/60 mb-2">{t(MATERIAL_NOTE_LBL, lang)}</div>
+        <textarea
+          value={note}
+          onChange={(e) => onNote(e.target.value)}
+          placeholder={t(MATERIAL_NOTE_PLACEHOLDER, lang)}
+          rows={2}
+          minLength={MIN_MATERIAL_NOTE}
+          className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-emerald-400/50 focus:outline-none focus:ring-1 focus:ring-emerald-400/30 resize-none transition-colors"
+        />
+      </div>
+    );
+  }
+
+  const kafelek = (aktywny) =>
+    `px-3 py-2 rounded-xl border text-xs transition-colors text-left ${
+      aktywny
+        ? "border-emerald-400 bg-emerald-400/10 text-emerald-200"
+        : "border-white/10 bg-white/[0.03] text-neutral-300 hover:border-white/25 hover:text-white"
+    }`;
+
+  return (
+    <div className="mt-3">
+      <div className="text-[11px] uppercase tracking-wide text-emerald-400/60 mb-2">{t(STOCK_LBL, lang)}</div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {options.map((o) => (
+          <button key={o.id} type="button" className={kafelek(value === o.id)} onClick={() => onPick(o.id, t(o.label, lang))}>
+            {t(o.label, lang)}
+          </button>
+        ))}
+        <button key={STOCK_OTHER} type="button" className={kafelek(wlasny)} onClick={onOther}>
+          {t(STOCK_OTHER_LBL, lang)}
+        </button>
+      </div>
+
+      {wlasny && (
+        <textarea
+          value={note}
+          onChange={(e) => onNote(e.target.value)}
+          placeholder={t(MATERIAL_NOTE_PLACEHOLDER, lang)}
+          rows={2}
+          minLength={MIN_MATERIAL_NOTE}
+          className="mt-2 w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-emerald-400/50 focus:outline-none focus:ring-1 focus:ring-emerald-400/30 resize-none transition-colors"
+        />
+      )}
+
+      <p className="text-neutral-500 text-[11px] mt-2 leading-relaxed">{t(STOCK_HINT, lang)}</p>
     </div>
   );
 }

@@ -23,9 +23,18 @@
 // Przedzialy wielkosci zostaja, ale tylko dla tych, ktorzy pliku nie maja.
 
 import { calculate as calcPrint3D, calculateMSLA } from "./print3d.js";
-import { calcEngrave as calcCO2Engrave, calcCut as calcCO2Cut } from "./laserCo2.js";
-import { calculate as calcFiber } from "./laserFiber.js";
+import { calcEngrave as calcCO2Engrave, calcCut as calcCO2Cut, ENGRAVE_MATERIALS, CUT_MATERIALS } from "./laserCo2.js";
+import { calculate as calcFiber, MATERIALS as FIBER_MATERIALS } from "./laserFiber.js";
 import { calculate as calcEpoxy } from "./epoxy.js";
+
+/**
+ * Material wybrany przez klienta, ale TYLKO jesli nalezy do listy tej
+ * technologii. Wybor zrobiony przy grawerowaniu nie moze wyciec do ciecia,
+ * bo silnik nie zna takiego identyfikatora i po cichu policzylby cos innego
+ * albo nic. Sprawdzamy to tutaj, a nie w widoku, zeby zaden przyszly
+ * wywolujacy nie mogl tego obejsc.
+ */
+const zListy = (id, lista) => (id && lista.some((m) => m.id === id && !m.custom) ? id : null);
 
 export const TECH_FROM_MATERIAL = {
   plastic: "3dprint",
@@ -88,7 +97,15 @@ export const CO2_MODE_FROM_ITEM = {
  *        zamiast grawerowanego, a roznica bywa kilkukrotna.
  * @returns {{tech: string, mode?: string, params: object} | {custom: true}}
  */
-export function resolveTechAndParams({ item, size, material, finish, quantity, fileType, stlData, svgData, printTech, co2Mode }) {
+/**
+ * `stockId` to material WYBRANY PRZEZ KLIENTA z naszego magazynu.
+ *
+ * Bez niego szybka wycena zgadywala material za niego: sklejka 3 mm przy
+ * cieciu, drewno przy grawerze, stal przy fiberze. Klient, ktory chcial akryl
+ * 5 mm, nie mial jak tego powiedziec, a mimo to dostawal kwote wiazaca.
+ * Zgadniete pozostaje domyslna, gdy nikt nic nie wybral.
+ */
+export function resolveTechAndParams({ item, size, material, finish, quantity, fileType, stlData, svgData, printTech, co2Mode, stockId }) {
   // Model 3D: druk (plastik) albo odlew z zywicy
   if (fileType === "stl" && stlData) {
     if (!size || !material || !finish || !quantity) return { custom: true };
@@ -147,12 +164,12 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
         const matId = tech === "3dprint"
           ? "wood"
           : material === "glass" ? "glass" : material === "wood" ? "wood" : item === "stamp" ? "rubber" : "wood";
-        return { tech: "co2", mode, params: { matId, areaId: sizeId, detailId: finish === "prototype" ? "simple" : finish === "premium" ? "photo" : "standard", quantityId, extended: false, svgData } };
+        return { tech: "co2", mode, params: { matId: zListy(stockId, ENGRAVE_MATERIALS) || matId, areaId: sizeId, detailId: finish === "prototype" ? "simple" : finish === "premium" ? "photo" : "standard", quantityId, extended: false, svgData } };
       }
       const matId = tech === "3dprint"
         ? "ply3"
         : material === "glass" ? "acr3" : finish === "premium" ? "ply5" : "ply3";
-      return { tech: "co2", mode, params: { matId, pathId: sizeId, complexId: finish === "prototype" ? "simple" : finish === "premium" ? "complex" : "moderate", quantityId, extended: false, svgData } };
+      return { tech: "co2", mode, params: { matId: zListy(stockId, CUT_MATERIALS) || matId, pathId: sizeId, complexId: finish === "prototype" ? "simple" : finish === "premium" ? "complex" : "moderate", quantityId, extended: false, svgData } };
     }
 
     if (tech === "fiber") {
@@ -161,7 +178,7 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
       }
       const matId = item === "jewelry" ? "silver" : "stainless";
       const lensId = (size === "coin") ? "70mm" : "150mm";
-      return { tech, params: { matId, lensId, markId: finish === "prototype" ? "surface" : finish === "premium" ? "medium" : "surface", areaId: sizeId, quantityId, svgData } };
+      return { tech, params: { matId: zListy(stockId, FIBER_MATERIALS) || matId, lensId, markId: finish === "prototype" ? "surface" : finish === "premium" ? "medium" : "surface", areaId: sizeId, quantityId, svgData } };
     }
 
     return { custom: true };
