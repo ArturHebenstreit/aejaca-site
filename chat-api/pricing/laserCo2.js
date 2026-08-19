@@ -8,7 +8,7 @@
 // Formuly przeniesione 1:1 z CO2LaserCalc.jsx. Bez Reacta, zeby backend
 // zamowien liczyl cene tym samym kodem co kalkulator.
 
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, plDiscountRow } from "./config.js";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, netCostFmt } from "./config.js";
 
 
 export const CO2_CONFIG = {
@@ -151,6 +151,7 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svg
   const batchTimeH = (timeH + handleH) * qTier.qty + (extended ? 0.5 : 0.25);
 
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
+  const fc = netCostFmt(lang);
   const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, qTier.discount, qTier.qty, plDiscount);
   return {
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
@@ -158,14 +159,13 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svg
     breakdown: [
       { label: l.engraveTime, value: `${timeMin.toFixed(1)} min` },
       { label: l.timeSetup, value: `${(totalTimeH * 60).toFixed(1)} min` },
-      { label: l.workshop, value: fmtCost(laborCost, lang) },
-      { label: l.prepMat, value: fmtCost(prepCost, lang) },
-      { label: l.energy, value: fmtCost(energyCost, lang) },
-      { label: l.depreciation, value: fmtCost(deprCost, lang) },
-      ...(extended ? [{ label: l.extSurcharge, value: `+${fmtCost(extCostAdd, lang)}` }] : []),
+      { label: l.workshop, value: fc(laborCost) },
+      { label: l.prepMat, value: fc(prepCost) },
+      { label: l.energy, value: fc(energyCost) },
+      { label: l.depreciation, value: fc(deprCost) },
+      ...(extended ? [{ label: l.extSurcharge, value: `+${fc(extCostAdd)}` }] : []),
       { divider: true },
-      { label: l.estCost, value: fmtCost(baseCost * (1 + CONFIG.BASE_MARGIN), lang), bold: true },
-      ...(plDiscountRow(baseCost * (1 + CONFIG.BASE_MARGIN), plDiscount, lang) ? [plDiscountRow(baseCost * (1 + CONFIG.BASE_MARGIN), plDiscount, lang)] : []),
+      { label: l.estCost, value: fc(baseCost * (1 + CONFIG.BASE_MARGIN)), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
       ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${batchTimeH.toFixed(1)} h`, bold: true }] : []),
     ],
@@ -202,20 +202,20 @@ export function calcCut({ matId, pathId, complexId, quantityId, extended, svgDat
   const batchTimeH = (cutTimeH + handleH) * qTier.qty + (extended ? 0.5 : 0.2);
 
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
+  const fc = netCostFmt(lang);
   const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, qTier.discount, qTier.qty, plDiscount);
   return {
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     totalTimeH: qTier.qty > 1 ? batchTimeH : null,
     breakdown: [
       { label: l.cutTime, value: `${cutTimeMin.toFixed(1)} min` },
-      { label: l.workshop, value: fmtCost(laborCost, lang) },
-      { label: l.materialCost, value: fmtCost(materialCost, lang) },
-      { label: l.energy, value: fmtCost(energyCost, lang) },
-      { label: l.depreciation, value: fmtCost(deprCost, lang) },
-      ...(extended ? [{ label: l.extSurcharge, value: `+${fmtCost(extCostAdd, lang)}` }] : []),
+      { label: l.workshop, value: fc(laborCost) },
+      { label: l.materialCost, value: fc(materialCost) },
+      { label: l.energy, value: fc(energyCost) },
+      { label: l.depreciation, value: fc(deprCost) },
+      ...(extended ? [{ label: l.extSurcharge, value: `+${fc(extCostAdd)}` }] : []),
       { divider: true },
-      { label: l.estCost, value: fmtCost(baseCost * (1 + CONFIG.BASE_MARGIN), lang), bold: true },
-      ...(plDiscountRow(baseCost * (1 + CONFIG.BASE_MARGIN), plDiscount, lang) ? [plDiscountRow(baseCost * (1 + CONFIG.BASE_MARGIN), plDiscount, lang)] : []),
+      { label: l.estCost, value: fc(baseCost * (1 + CONFIG.BASE_MARGIN)), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
       ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${batchTimeH.toFixed(1)} h`, bold: true }] : []),
     ],
