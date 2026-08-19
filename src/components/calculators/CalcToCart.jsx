@@ -15,7 +15,7 @@ import { Link } from "react-router-dom";
 import { ShoppingCart, Check, Loader2, ArrowRight, Info } from "lucide-react";
 import { useCart } from "../../cart/CartContext.jsx";
 import { getServiceCard } from "../../data/serviceCatalog.js";
-import { JobDescription, FileDrop, BlockedReasons } from "../shop/ConfigControls.jsx";
+import { JobDescription, AttachmentList, BlockedReasons, ARTWORK_EXT, uploadKindFor } from "../shop/ConfigControls.jsx";
 import { getService } from "../../data/orderCatalog.js";
 import { ENGRAVING_LIMITS } from "../../pricing/packaging.js";
 import { brakPodloza } from "../../data/laserSubstrate.js";
@@ -51,11 +51,14 @@ const UI = {
     describeHint: "np. pierścionek zaręczynowy, szyna 2,5 mm, matowa powierzchnia, grawer wewnątrz \"A+M 2026\", rozmiar 15",
     describeHintStudio: "np. znak z logo 15x10 cm w sklejce 3 mm, projekt gotowy, termin za 2 tygodnie",
     describeWhy: "Cena jest policzona, ale z samych parametrów nie wynika, jak przedmiot ma wyglądać. Bez opisu nie przyjmiemy zlecenia do realizacji.",
-    addImage: "Dołącz zdjęcie lub szkic (opcjonalnie)",
-    artworkLabel: "Projekt do wykonania",
-    extraLabel: "Pliki dodatkowe (opcjonalnie)",
-    extraHint: "Projekt już mamy. Tu możesz dołączyć wersję zamienną, dodatkowe elementy albo rysunek pomocniczy.",
-    artworkHint: "Wgraj plik SVG, DXF, AI lub PDF",
+    attachFailed: "Nie udało się wysłać tego pliku. Spróbuj ponownie albo usuń go i opisz zlecenie.",
+    needModel: "Wgrany plik",
+    needModelHint: "Tego pliku nie przyjęliśmy. Usuń go w kalkulatorze i wgraj inny albo wyślij zlecenie do wyceny.",
+    missingSomething: "Uzupełnij brakujące dane",
+    filesLabel: "Pliki do zlecenia",
+    filesLabelOptional: "Pliki do zlecenia (opcjonalnie)",
+    artworkHint: "Wgraj projekt (SVG, DXF, AI, PDF), zdjęcie albo szkic. Możesz dodać kilka plików.",
+    extraHint: "Projekt już mamy. Możesz dołączyć wersję zamienną, zdjęcie przedmiotu albo rysunek pomocniczy.",
     artworkWhy: "Bez projektu nie wiemy, co wygrawerować ani wyciąć. Rozmiar pola wybrałeś wyżej, on decyduje o cenie.",
     missingDescription: "Uzupełnij opis, żeby dodać do koszyka",
     missingArtwork: "Wgraj projekt, żeby dodać do koszyka",
@@ -99,11 +102,14 @@ const UI = {
     describeHint: "e.g. engagement ring, 2.5 mm band, matte finish, inside engraving \"A+M 2026\", size 15",
     describeHintStudio: "e.g. logo sign 15x10 cm in 3 mm plywood, artwork ready, needed in 2 weeks",
     describeWhy: "The price is calculated, but the parameters alone do not say how the piece should look. Without a description we cannot accept the job.",
-    addImage: "Attach a photo or sketch (optional)",
-    artworkLabel: "Your artwork",
-    extraLabel: "Additional files (optional)",
-    extraHint: "We already have your artwork. Add an alternative version, extra elements or a reference drawing here.",
-    artworkHint: "Upload an SVG, DXF, AI or PDF file",
+    attachFailed: "We could not upload this file. Try again, or remove it and describe the job instead.",
+    needModel: "Uploaded file",
+    needModelHint: "We did not accept this file. Remove it in the calculator and upload another, or send the job for a quote.",
+    missingSomething: "Fill in what is missing",
+    filesLabel: "Files for this job",
+    filesLabelOptional: "Files for this job (optional)",
+    artworkHint: "Upload the artwork (SVG, DXF, AI, PDF), a photo or a sketch. You can add several files.",
+    extraHint: "We already have your artwork. Add an alternative version, a photo of the item or a reference drawing.",
     artworkWhy: "Without the artwork we do not know what to engrave or cut. You picked the area above, and that is what sets the price.",
     missingDescription: "Add a description to put this in the cart",
     missingArtwork: "Upload the artwork to put this in the cart",
@@ -147,11 +153,14 @@ const UI = {
     describeHint: "z. B. Verlobungsring, Schiene 2,5 mm, matt, Innengravur \"A+M 2026\", Größe 15",
     describeHintStudio: "z. B. Logo-Schild 15x10 cm aus 3 mm Sperrholz, Vorlage fertig, benötigt in 2 Wochen",
     describeWhy: "Der Preis steht, aber aus den Parametern allein geht nicht hervor, wie das Stück aussehen soll. Ohne Beschreibung nehmen wir den Auftrag nicht an.",
-    addImage: "Foto oder Skizze anhängen (optional)",
-    artworkLabel: "Ihre Vorlage",
-    extraLabel: "Zusätzliche Dateien (optional)",
-    extraHint: "Die Vorlage haben wir bereits. Hier können Sie eine Alternativversion, weitere Elemente oder eine Hilfszeichnung anhängen.",
-    artworkHint: "SVG-, DXF-, AI- oder PDF-Datei hochladen",
+    attachFailed: "Diese Datei konnte nicht hochgeladen werden. Versuchen Sie es erneut, oder entfernen Sie sie und beschreiben Sie den Auftrag.",
+    needModel: "Hochgeladene Datei",
+    needModelHint: "Diese Datei haben wir nicht angenommen. Entfernen Sie sie im Kalkulator und laden eine andere hoch, oder fordern Sie ein Angebot an.",
+    missingSomething: "Fehlende Angaben ergänzen",
+    filesLabel: "Dateien zum Auftrag",
+    filesLabelOptional: "Dateien zum Auftrag (optional)",
+    artworkHint: "Vorlage (SVG, DXF, AI, PDF), Foto oder Skizze hochladen. Mehrere Dateien sind möglich.",
+    extraHint: "Die Vorlage haben wir bereits. Sie können eine Alternativversion, ein Foto des Objekts oder eine Hilfszeichnung anhängen.",
     artworkWhy: "Ohne Vorlage wissen wir nicht, was graviert oder geschnitten werden soll. Die Fläche haben Sie oben gewählt, sie bestimmt den Preis.",
     missingDescription: "Beschreibung ergänzen, um in den Warenkorb zu legen",
     missingArtwork: "Vorlage hochladen, um in den Warenkorb zu legen",
@@ -213,26 +222,36 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
 
   const [description, setDescription] = useState("");
   const [engraving, setEngraving] = useState("");
-  const [refImage, setRefImage] = useState(null);
-  const [artworkFile, setArtworkFile] = useState(null);
-  const [artworkToken, setArtworkToken] = useState(null);
-  // Zdjecie referencyjne z opisu ma wlasny token. Kiedys laser wymagal tylko
-  // opisu, a biezuteria tylko projektu, wiec dzielily jeden token bez szkody.
-  // Teraz laser wymaga obu naraz, wiec wspolny token kasowal plik projektu.
-  const [refToken, setRefToken] = useState(null);
-  const [attachBusy, setAttachBusy] = useState(false);
-  const [attachError, setAttachError] = useState(null);
+  // JEDNA LISTA ZALACZNIKOW zamiast dwoch osobnych pol na jeden plik kazde.
+  // Kazda pozycja niesie wlasny stan, bo wysylki ida rownolegle i jedna moze
+  // sie nie udac, kiedy druga juz przeszla.
+  const [attachments, setAttachments] = useState([]);
+  // Plik glowny, ten z ktorego liczy sie cena, tez musi do nas dojechac.
+  // Rysunek wektorowy nie ma geometrii, wiec sciezka modelu go odrzucala
+  // i zlecenie szlo do pracowni BEZ PLIKU, na ktorym je wyceniono.
+  const [mainAttachToken, setMainAttachToken] = useState(null);
   const [modelError, setModelError] = useState(null);
   const [thumbData, setThumbData] = useState(null);
   const [uploadToken, setUploadToken] = useState(null);
   const [uploading, setUploading] = useState(false);
   const reqId = useRef(0);
 
+  // Rysunek wektorowy JEST plikiem glownym, ale nie jest modelem.
+  //
+  // Sciezka modelu liczy objetosc siatki, wiec SVG i DXF odbijaly sie od niej
+  // bledem "Format .svg nie jest jeszcze obslugiwany w wycenie automatycznej".
+  // Komunikat byl mylacy podwojnie: wycena z tego pliku dziala i widnieje wyzej
+  // (liczymy ja z odczytanej dlugosci sciezki), a jedyne, co nie zadzialalo, to
+  // ZAPISANIE pliku. Skutek byl powazniejszy niz czerwony napis: zamowienie
+  // szlo do pracowni bez rysunku, na ktorym je wyceniono.
+  const mainIsArtwork = Boolean(file) && ARTWORK_EXT.test(file.name || "");
+
   // Plik idzie na serwer raz, jak w sklepie. Bez tego kwota wiazaca liczylaby
   // sie z wybranego rozmiaru, a nie z modelu, i rozjechalaby sie z widelkami.
   useEffect(() => {
     if (!file || !API) {
       setUploadToken(null);
+      setMainAttachToken(null);
       return;
     }
     let cancelled = false;
@@ -241,53 +260,81 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
     const fd = new FormData();
     fd.append("file", file);
     fd.append("lang", lang);
+    if (mainIsArtwork) fd.append("kind", "attachment");
     fetch(`${API}/api/uploads`, { method: "POST", body: fd })
       .then(async (r) => ({ ok: r.ok, data: await r.json().catch(() => ({})) }))
       .then(({ ok, data }) => {
         if (cancelled) return;
+        if (ok && data?.uploadToken) {
+          // Rysunek nie wchodzi do wyceny na serwerze, wiec nie idzie jako
+          // `uploadToken`: tam trafia wylacznie model, z ktorego liczy sie
+          // objetosc. Rysunek wiazemy z zamowieniem jako zalacznik.
+          if (mainIsArtwork) { setMainAttachToken(data.uploadToken); setUploadToken(null); }
+          else { setUploadToken(data.uploadToken); setMainAttachToken(null); }
+          return;
+        }
         // ODRZUCONY MODEL MUSI BYC WIDOCZNY. Bez tokenu cena liczy sie
         // z wybranego rozmiaru, a nie z modelu, wiec po cichu przestawala
         // dotyczyc tego, co klient wgral, a on nie mial jak tego zauwazyc.
-        if (ok && data?.uploadToken) { setUploadToken(data.uploadToken); return; }
         setUploadToken(null);
+        setMainAttachToken(null);
         setModelError(data?.error || u.modelRejected);
       })
       .catch(() => { if (!cancelled) setModelError(u.modelRejected); })
       .finally(() => { if (!cancelled) setUploading(false); });
     return () => { cancelled = true; };
-  }, [file, lang, u.modelRejected]);
+  }, [file, mainIsArtwork, lang, u.modelRejected]);
 
   /**
    * Zalaczniki nie wplywaja na cene, ida na Dysk jako material do wykonania.
    *
    * `kind` rozdziela dwie rzeczy, ktore wygladaja podobnie i sa zupelnie inne:
-   * "attachment" to PROJEKT do wykonania (SVG, DXF, PDF), a "reference" to
+   * "attachment" to PROJEKT do wykonania (SVG, DXF, AI, PDF), a "reference" to
    * ZDJECIE albo szkic (JPG, PNG, WEBP, HEIC, PDF). Serwer sprawdza kazde
-   * wlasna lista formatow. Dopoki obie sciezki wysylaly "attachment", zdjecie
-   * z telefonu bylo odrzucane i znikalo klientowi z pola.
+   * wlasna lista formatow, wiec rodzaj wybieramy po rozszerzeniu, zamiast
+   * kazac klientowi trafic plikiem we wlasciwe z dwoch pol.
    */
-  async function uploadAttachment(f, setToken, kind = "attachment", clear = null) {
-    if (!f || !API) return;
-    setAttachBusy(true);
-    setAttachError(null);
-    try {
+  const addAttachments = useCallback((pliki) => {
+    if (!API) return;
+    const nowe = pliki.map((f, i) => ({
+      // Nazwa i rozmiar wystarcza za tozsamosc, a licznik rozroznia dwa pliki
+      // o tej samej nazwie wybrane w jednym ruchu.
+      id: `${f.name}|${f.size}|${Date.now()}|${i}`,
+      file: f,
+      name: f.name,
+      artwork: ARTWORK_EXT.test(f.name),
+      busy: true,
+      error: null,
+      token: null,
+    }));
+    setAttachments((biezace) => [...biezace, ...nowe]);
+
+    for (const poz of nowe) {
       const fd = new FormData();
-      fd.append("file", f);
+      fd.append("file", poz.file);
       fd.append("lang", lang);
-      fd.append("kind", kind);
-      const resp = await fetch(`${API}/api/uploads`, { method: "POST", body: fd });
-      const data = await resp.json();
-      if (resp.ok) { setToken(data.uploadToken); return; }
-      // MILCZACE ODRZUCENIE JEST GORSZE OD BLEDU. Klient widzi nazwe pliku
-      // w polu i jest pewien, ze plik poszedl, a do pracowni nie dociera nic.
-      setAttachError(data.error || null);
-      clear?.();
-    } catch {
-      setAttachError(null);
-    } finally {
-      setAttachBusy(false);
+      fd.append("kind", uploadKindFor(poz.name));
+      fetch(`${API}/api/uploads`, { method: "POST", body: fd })
+        .then(async (r) => ({ ok: r.ok, data: await r.json().catch(() => ({})) }))
+        .then(({ ok, data }) => {
+          // MILCZACE ODRZUCENIE JEST GORSZE OD BLEDU. Klient widzi nazwe pliku
+          // na liscie i jest pewien, ze plik poszedl, a do nas nie dociera nic.
+          setAttachments((biezace) => biezace.map((x) => x.id !== poz.id ? x : {
+            ...x,
+            busy: false,
+            token: ok ? (data?.uploadToken || null) : null,
+            error: ok ? null : (data?.error || u.attachFailed),
+          }));
+        })
+        .catch(() => {
+          setAttachments((biezace) => biezace.map((x) => x.id !== poz.id ? x : { ...x, busy: false, error: u.attachFailed }));
+        });
     }
-  }
+  }, [lang, u.attachFailed]);
+
+  const removeAttachment = useCallback((id) => {
+    setAttachments((biezace) => biezace.filter((x) => x.id !== id));
+  }, []);
 
   const paramsKey = JSON.stringify(params);
 
@@ -374,7 +421,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   const mainFileIsArtwork = Boolean(file);
   const artworkOk = !requiresArtwork
     || mainFileIsArtwork
-    || Boolean(artworkFile)
+    || attachments.some((a) => a.artwork && a.token)
     || description.trim().length >= MIN_DESCRIPTION;
 
   // Grawer wybrany w kalkulatorze musi miec tresc, a zbyt dlugi tekst to juz
@@ -404,6 +451,15 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   const qty = qtyProp != null ? Math.max(1, Math.floor(qtyProp)) : (price?.qty || 1);
   const lineGrosze = (price?.unitGrosze || 0) * qty;
 
+  // Plik glowny idzie do zamowienia razem z reszta, a nie osobna sciezka.
+  // Kolejnosc jest zamierzona: rysunek, na ktorym liczylismy cene, ma byc
+  // pierwszy na liscie, bo to on jest podstawa ustalen.
+  const attachTokens = [mainAttachToken, ...attachments.map((a) => a.token)].filter(Boolean);
+  const attachNames = [
+    ...(mainAttachToken && file ? [file.name] : []),
+    ...attachments.filter((a) => a.token).map((a) => a.name),
+  ];
+
   function addToCart() {
     if (!price || !ready) return;
     cart.add({
@@ -417,13 +473,15 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
       fileName: file?.name || null,
       uploadToken,
       thumbData,
-      fileRetained: Boolean(uploadToken),
+      // Rysunek wektorowy nie ma tokenu modelu, a mimo to jest u nas zapisany.
+      // Bez tego drugiego skladnika koszyk twierdzil, ze pliku nie mamy.
+      fileRetained: Boolean(uploadToken || mainAttachToken),
       unitGrosze: price.unitGrosze,
       description: description.trim() || null,
       personalization: engraving.trim() || null,
-      attachmentToken: artworkToken || refToken,
-      attachmentTokens: [artworkToken, refToken].filter(Boolean),
-      attachmentName: artworkFile?.name || refImage?.name || null,
+      attachmentToken: attachTokens[0] || null,
+      attachmentTokens: attachTokens,
+      attachmentName: attachNames.join(", ") || null,
       packagingId: "paper",
       packagingGrosze: 0,
       withdrawal: "made_to_order",
@@ -504,21 +562,8 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
               onChange={setDescription}
               minLength={MIN_DESCRIPTION}
               accent={accent}
-              image={refImage}
-              imageLabel={u.addImage}
-              onPickImage={(e) => {
-                const f = e.target.files?.[0];
-                if (!f) return;
-                setRefImage(f);
-                uploadAttachment(f, setRefToken, "reference", () => setRefImage(null));
-              }}
-              onClearImage={() => { setRefImage(null); setRefToken(null); }}
               lang={lang}
             />
-          )}
-
-          {attachError && (
-            <p className="text-red-400 text-[11px] -mt-2">{attachError}</p>
           )}
 
           {modelError && (
@@ -538,24 +583,17 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
             />
           )}
 
-          {requiresArtwork && (
-            <FileDrop
-              label={mainFileIsArtwork ? u.extraLabel : u.artworkLabel}
-              hint={mainFileIsArtwork ? u.extraHint : u.artworkHint}
-              file={artworkFile}
-              busy={attachBusy}
-              accept=".svg,.dxf,.ai,.pdf"
-              accent={accent}
-              lang={lang}
-              onPick={(e) => {
-                const f = e.target.files?.[0];
-                if (!f) return;
-                setArtworkFile(f);
-                uploadAttachment(f, setArtworkToken, "attachment", () => setArtworkFile(null));
-              }}
-              onClear={() => { setArtworkFile(null); setArtworkToken(null); }}
-            />
-          )}
+          {/* JEDNO POLE NA PLIKI. Wczesniej byly dwa, kazde na jeden plik,
+              i klient musial zgadnac, ktore przyjmie jego rysunek. */}
+          <AttachmentList
+            label={requiresArtwork && !mainFileIsArtwork ? u.filesLabel : u.filesLabelOptional}
+            hint={mainFileIsArtwork ? u.extraHint : u.artworkHint}
+            items={attachments}
+            onAdd={addAttachments}
+            onRemove={removeAttachment}
+            accent={accent}
+            lang={lang}
+          />
 
           {!ready && !engravingOver && (
             <BlockedReasons
@@ -568,6 +606,10 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
                 ...(substrateGap === "substrate_required" ? [{ ok: false, label: u.needSubstrate, hint: u.needSubstrateHint }] : []),
                 ...(substrateGap === "spare_required" ? [{ ok: false, label: u.needSpare, hint: u.needSpareHint }] : []),
                 ...(substrateGap === "material_note_required" ? [{ ok: false, label: u.needMaterialNote, hint: u.needMaterialNoteHint }] : []),
+                // Odrzucony plik BLOKOWAL zakup, ale nie mial tu swojego
+                // wiersza, wiec lista przyczyn twierdzila, ze wszystko gra,
+                // a przycisk pozostawal wygaszony bez podania powodu.
+                ...(modelError ? [{ ok: false, label: u.needModel, hint: u.needModelHint }] : []),
               ]}
             />
           )}
@@ -591,7 +633,19 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
             }`}
           >
             {added ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
-            {added ? u.added : !ready ? (hold ? u.holdLabel : requiresArtwork && !artworkOk ? u.missingArtwork : !descriptionOk ? u.missingDescription : u.missingEngraving) : u.addToCart}
+            {/* NAPIS NA PRZYCISKU MUSI NAZYWAC PRAWDZIWA PRZESZKODE.
+                Grawer byl tu koncem lancucha `?:`, wiec kazda przyczyna spoza
+                listy konczyla sie napisem "Wpisz tresc graweru". Klient wgral
+                rysunek do wyciecia, graweru nie zamawial, nie mial nawet gdzie
+                go wpisac, i patrzyl na polecenie, ktorego nie da sie wykonac. */}
+            {added ? u.added
+              : ready ? u.addToCart
+              : hold ? u.holdLabel
+              : requiresArtwork && !artworkOk ? u.missingArtwork
+              : !descriptionOk ? u.missingDescription
+              : wantsEngraving && !engravingOk ? u.missingEngraving
+              : !substrateOk ? u.missingSubstrate
+              : u.missingSomething}
           </button>
 
           {added && (

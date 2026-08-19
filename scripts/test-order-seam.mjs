@@ -405,21 +405,46 @@ if (!progSerwera || !progKlienta || progSerwera !== progKlienta) {
   // --- WEKTOR: zalacznik do wyceny w koszyku, nigdy nie parsowany na
   //     geometrie (kind: "attachment"), wiec ograniczony do tego, co
   //     przyjmuje ATTACHMENT_EXT na serwerze. ---
-  const calc2cart = czytaj("src/components/calculators/CalcToCart.jsx");
-  const artworkBlok = calc2cart.slice(
-    calc2cart.indexOf("requiresArtwork && ("),
-    calc2cart.indexOf('onClear={() => { setArtworkFile(null)')
-  );
-  const acceptArtwork = /accept="([^"]*)"/.exec(artworkBlok)?.[1];
-
   const attachmentWzor = /const ATTACHMENT_EXT = \/\\\.\(([^)]*)\)\$\/i/.exec(server)?.[1]?.split("|");
+  const referenceWzor = /const REFERENCE_EXT = \/\\\.\(([^)]*)\)\$\/i/.exec(server)?.[1]?.split("|");
 
   rownaj("WEKTOR (zalacznik do wyceny)", [
     ["ServiceConfigurator ACCEPT_VECTOR", acceptVector],
-    ["CalcToCart artwork FileDrop", acceptArtwork],
     ["SimpleStudioCalc ACCEPT_VECTOR", simpleVector],
   ]);
   podzbior("zestaw WEKTOR", acceptVector, attachmentWzor, "ATTACHMENT_EXT na serwerze");
+
+  // --- JEDNO POLE NA PLIKI W KOSZYKU. Nie ma juz osobnego pola na rysunek
+  //     i osobnego na zdjecie, wiec o rodzaj zgloszenia nie decyduje to,
+  //     w ktore pole klient trafil, tylko `uploadKindFor` po rozszerzeniu.
+  //     Ten podzial MUSI byc tym samym podzialem, ktorego pilnuje serwer:
+  //     rozjazd o jedno rozszerzenie znaczy plik odrzucony po wyslaniu. ---
+  const controls = czytaj("src/components/shop/ConfigControls.jsx");
+  const artworkExt = /export const ARTWORK_EXT = \/\\\.\(([^)]*)\)\$\/i/.exec(controls)?.[1]?.split("|");
+  const photoExt = /export const PHOTO_EXT = \/\\\.\(([^)]*)\)\$\/i/.exec(controls)?.[1]?.split("|");
+  const attachAccept = /export const ATTACH_ACCEPT = "([^"]*)"/.exec(controls)?.[1];
+
+  rownaj("PROJEKT (rozpoznawany po rozszerzeniu)", [
+    ["ConfigControls ARTWORK_EXT", artworkExt?.join(",")],
+    ["serwer ATTACHMENT_EXT", attachmentWzor?.join(",")],
+  ]);
+  rownaj("ZDJECIE (rozpoznawane po rozszerzeniu)", [
+    ["ConfigControls PHOTO_EXT", photoExt?.join(",")],
+    ["serwer REFERENCE_EXT", referenceWzor?.join(",")],
+  ]);
+  podzbior("zestaw POLA ZALACZNIKOW", attachAccept, [...(artworkExt || []), ...(photoExt || [])],
+    "sumie formatow, ktore serwer przyjmuje jako projekt albo zdjecie");
+
+  // Odwrotna strona tej samej regly: kazde rozszerzenie, ktore serwer
+  // przyjmuje, ma dac sie wybrac w oknie systemowym. Bez tego pole milczaco
+  // odcina formaty, ktore obslugujemy.
+  {
+    const oferowane = norm(attachAccept);
+    const brak = [...new Set([...(artworkExt || []), ...(photoExt || [])])].filter((e) => !oferowane.includes(e));
+    if (!attachAccept) zle("nie znalazlem ATTACH_ACCEPT w ConfigControls");
+    else if (brak.length) zle(`pole zalacznikow nie oferuje formatow, ktore serwer przyjmuje: ${brak.join(", ")}`);
+    else ok("pole zalacznikow oferuje wszystkie formaty, ktore serwer przyjmuje");
+  }
 
   // --- ZALACZNIK DO ZAPYTANIA: jedzie do czlowieka przez /api/contact,
   //     wiec to suma wszystkich rodzajow, ograniczona do ALLOWED_EXT. ---
@@ -471,15 +496,60 @@ console.log("\n10. Plik glowny w koszyku");
 
   // Pole na plik nie znika, tylko zmienia znaczenie: dodatkowe pliki nadal
   // przyjmujemy, bo klient czesto ma wersje zamienna albo rysunek pomocniczy.
-  sprawdz(/mainFileIsArtwork \? u\.extraLabel : u\.artworkLabel/.test(cart),
+  sprawdz(/mainFileIsArtwork \? u\.extraHint : u\.artworkHint/.test(cart),
     "pole na pliki dodatkowe zniknelo razem z pytaniem o projekt",
     "pole na pliki dodatkowe zostalo, tylko zmienilo znaczenie");
 
-  for (const klucz of ["extraLabel", "extraHint"]) {
+  for (const klucz of ["extraHint", "artworkHint", "attachFailed", "needModel"]) {
     const n = (cart.match(new RegExp(`${klucz}:`, "g")) || []).length;
     sprawdz(n >= 3, `${klucz} musi istniec w trzech jezykach, znaleziono ${n}`,
       `${klucz} istnieje w trzech jezykach`);
   }
+
+  // JEDNO POLE, NIE DWA. Dwa osobne pola na jeden plik kazde kazaly klientowi
+  // zgadnac, ktore przyjmie jego rysunek, a serwer sprawdzal kazde inna lista.
+  sprawdz(!/FileDrop/.test(cart) && (cart.match(/<AttachmentList/g) || []).length === 1,
+    "koszyk znowu ma wiecej niz jedno miejsce na pliki",
+    "koszyk ma dokladnie jedno miejsce na pliki");
+
+  sprawdz(!/imageLabel=|onPickImage=/.test(cart),
+    "opis zlecenia znowu ma wlasny, drugi przycisk dodawania pliku",
+    "opis zlecenia nie ma juz osobnego przycisku na plik");
+
+  sprawdz(/multiple/.test(readFileSync(new URL("../src/components/shop/ConfigControls.jsx", import.meta.url), "utf8")),
+    "pole zalacznikow przyjmuje tylko jeden plik naraz",
+    "pole zalacznikow przyjmuje wiele plikow naraz");
+
+  // RYSUNEK WEKTOROWY JEST PLIKIEM GLOWNYM, ALE NIE JEST MODELEM.
+  // Wyslany sciezka modelu wraca bledem "format nie jest obslugiwany", bo tam
+  // liczy sie objetosc siatki. Skutek byl gorszy od komunikatu: zamowienie
+  // szlo do pracowni bez rysunku, na ktorym je wyceniono.
+  sprawdz(/mainIsArtwork\s*=\s*Boolean\(file\)\s*&&\s*ARTWORK_EXT\.test/.test(cart),
+    "koszyk nie rozpoznaje, ze plik glowny jest rysunkiem, a nie modelem",
+    "koszyk rozpoznaje rysunek wektorowy jako plik glowny");
+
+  sprawdz(/if \(mainIsArtwork\) fd\.append\("kind", "attachment"\)/.test(cart),
+    "rysunek glowny leci sciezka modelu i zostanie odrzucony, a zamowienie pojdzie bez pliku",
+    "rysunek glowny leci sciezka zalacznika, wiec zostaje u nas zapisany");
+
+  sprawdz(/attachTokens = \[mainAttachToken/.test(cart),
+    "plik glowny nie trafia do zalacznikow zamowienia",
+    "plik glowny trafia do zalacznikow zamowienia jako pierwszy");
+
+  // NAPIS NA PRZYCISKU MA NAZYWAC PRAWDZIWA PRZESZKODE. Grawer byl koncem
+  // lancucha warunkow, wiec kazda inna przyczyna konczyla sie poleceniem
+  // "Wpisz tresc graweru", ktorego nie dalo sie wykonac: pola nie bylo.
+  sprawdz(/wantsEngraving && !engravingOk \? u\.missingEngraving/.test(cart),
+    "przycisk prosi o tresc graweru takze wtedy, gdy graweru nikt nie zamawial",
+    "przycisk prosi o tresc graweru wylacznie przy zamowionym grawerze");
+
+  sprawdz(/: u\.missingSomething/.test(cart),
+    "przycisk nie ma neutralnego napisu dla przyczyn spoza listy",
+    "przyczyna spoza listy konczy sie neutralnym napisem, a nie zmyslona");
+
+  sprawdz(/modelError \? \[\{ ok: false, label: u\.needModel/.test(cart),
+    "odrzucony plik blokuje zakup, ale nie ma swojego wiersza na liscie przyczyn",
+    "odrzucony plik ma swoj wiersz na liscie przyczyn");
 }
 
 console.log(bledy ? `\n${bledy} bledow\n` : "\nSzew koszyk-zamowienie: wszystko sie zgadza\n");
