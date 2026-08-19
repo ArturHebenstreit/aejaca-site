@@ -130,6 +130,8 @@ As of 2026-08-18 the Quick Quote tab on /studio/ no longer reads an uploaded fil
 - Full model analysis (Sprawdzarka modeli 3D) can now also receive a model carried over directly from the shop configurator, not only from the calculators.
 
 ### 3D Print Calculator
+**Printing technology in Quick Quote (since 2026-08-19):** when the answers lead to 3D printing, Quick Quote shows two cards, "Z filamentu (FDM)" and "Z zywicy (MSLA)", each with a plain-language description and its own price for the same answers. FDM is tough, cheaper and shows layer lines, good for parts, housings and everyday objects. MSLA resin gives a smooth surface and fine detail but is more brittle, good for figurines, miniatures and models. The customer can switch between them and see the price change. Resin can now be priced from an uploaded model too; before this change resin was reachable only through the "Figurka z zywicy" tile and only without a file.
+
 **Two technologies, selectable at step ①:** FDM (Bambu Lab H2D) | MSLA Resin 16K (Elegoo Saturn 4 Ultra)
 
 **FDM tab:**

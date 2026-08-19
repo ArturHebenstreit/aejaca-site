@@ -320,6 +320,12 @@ dla klientów bez pliku.
 pytaniami, jako osobna sekcja, więc pierwszym ekranem dla klienta bez pliku (większości
 odwiedzających) było pole, którego nie dało się wypełnić.
 
+**Wybór technologii druku w szybkiej wycenie (od 2026-08-19).** Gdy odpowiedzi prowadzą do druku 3D, kalkulator
+pokazuje dwie karty: "Z filamentu (FDM)" i "Z żywicy (MSLA)", każdą z opisem zastosowania i z własną kwotą
+policzoną z tych samych odpowiedzi. Klient widzi różnicę w cenie i we właściwościach przed zamówieniem, a nie po
+odbiorze. Wycena żywiczna liczy się teraz także z wgranego pliku; wcześniej żywica była osiągalna wyłącznie przez
+kafelek "Figurka z żywicy" i wyłącznie bez pliku.
+
 **Pytanie kafelków zmienia treść po wgraniu pliku (od 2026-08-19).** Dopóki pliku nie ma, sekcja
 pyta "Co chcesz wykonać?". Po wgraniu pliku pytanie zmienia się na "Do czego to służy?", żeby nie
 konkurowało z już wgranym plikiem na ekranie. Kafelki nadal wybierają materiał i technologię.

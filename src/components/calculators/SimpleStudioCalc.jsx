@@ -191,6 +191,10 @@ const LBL = {
     overPlateText: "Największa maszyna ma pole robocze 30 x 32 x 32,5 cm. Są dwa wyjścia i oba u nas działają.",
     overPlateFit: "Zmniejsz do największej, która się mieści",
     overPlateSplit: "Zostaw tę wielkość i poproś o wycenę: przy dużych obiektach tniemy model na części i sklejamy po wydruku. Szew planujemy na krawędzi, żeby go nie było widać.",
+    techQ: "Jaką techniką wydrukować?",
+    techFdmName: "Z filamentu (FDM)", techFdmDesc: "Wytrzymały, tańszy, widoczne warstwy. Do części, obudów i rzeczy używanych na co dzień.",
+    techMslaName: "Z żywicy (MSLA)", techMslaDesc: "Gładka powierzchnia i drobne detale, za to bardziej krucha. Do figurek, miniatur i modeli.",
+    techAuto: "wybrane automatycznie",
     q1file: "Do czego to służy?", q1fileHint: "Od tego zależy materiał i technologia, nie wielkość.",
     q1: "Co chcesz wykonać?", q2: "Jak duże?", q3: "Z jakiego materiału?", q4: "Jakość wykonania?", q5: "Ile sztuk?",
     suggestion: "Sugerowana technologia",
@@ -217,6 +221,10 @@ const LBL = {
     overPlateText: "The largest machine has a 30 x 32 x 32.5 cm build volume. There are two ways out and we do both.",
     overPlateFit: "Scale down to the largest that fits",
     overPlateSplit: "Keep this size and ask for a quote: on large objects we split the model and bond the parts after printing. We place the seam on an edge so it does not show.",
+    techQ: "Which printing technology?",
+    techFdmName: "Filament (FDM)", techFdmDesc: "Tough, cheaper, visible layers. For parts, housings and everyday objects.",
+    techMslaName: "Resin (MSLA)", techMslaDesc: "Smooth surface and fine detail, but more brittle. For figurines, miniatures and models.",
+    techAuto: "chosen automatically",
     q1file: "What is it for?", q1fileHint: "This drives the material and the technology, not the size.",
     q1: "What do you want to make?", q2: "How big?", q3: "What material?", q4: "Quality?", q5: "How many?",
     suggestion: "Suggested technology",
@@ -243,6 +251,10 @@ const LBL = {
     overPlateText: "Die größte Maschine hat einen Bauraum von 30 x 32 x 32,5 cm. Es gibt zwei Wege und beide gehen wir.",
     overPlateFit: "Auf die größte passende Größe verkleinern",
     overPlateSplit: "Diese Größe behalten und ein Angebot anfragen: bei großen Objekten teilen wir das Modell und fügen die Teile nach dem Druck. Die Naht legen wir auf eine Kante, damit sie nicht auffällt.",
+    techQ: "Mit welcher Drucktechnik?",
+    techFdmName: "Aus Filament (FDM)", techFdmDesc: "Robust, günstiger, sichtbare Schichten. Für Teile, Gehäuse und Alltagsgegenstände.",
+    techMslaName: "Aus Harz (MSLA)", techMslaDesc: "Glatte Oberfläche und feine Details, dafür spröder. Für Figuren, Miniaturen und Modelle.",
+    techAuto: "automatisch gewählt",
     q1file: "Wofür ist es?", q1fileHint: "Davon hängen Material und Technologie ab, nicht die Größe.",
     q1: "Was möchten Sie herstellen?", q2: "Wie groß?", q3: "Welches Material?", q4: "Qualität?", q5: "Wie viele?",
     suggestion: "Empfohlene Technologie",
@@ -505,12 +517,19 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
 
   const size = categoryForCm(sizeCm);
 
+  // Wybor technologii druku. null znaczy "jak wynika z odpowiedzi", czyli tak,
+  // jak dzialalo dotad. Wartosc pojawia sie dopiero, gdy klient sam przelaczy.
+  const [printTech, setPrintTech] = useState(null);
+
   const scaledStl = useMemo(() => scaleMesh(stlData, scale), [stlData, scale]);
   const scaledSvg = useMemo(() => scaleVector(svgData, scale), [svgData, scale]);
 
+  const odpowiedzi = { item, size, material, finish, quantity, fileType, stlData: scaledStl, svgData: scaledSvg };
+
   const resolved = useMemo(
-    () => resolveTechAndParams({ item, size, material, finish, quantity, fileType, stlData: scaledStl, svgData: scaledSvg }),
-    [item, size, material, finish, quantity, fileType, scaledStl, scaledSvg]
+    () => resolveTechAndParams({ ...odpowiedzi, printTech }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, printTech]
   );
 
   // Ponad polem roboczym NIE podajemy kwoty. Cena za rzecz, ktorej nie da sie
@@ -519,6 +538,18 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   const result = useMemo(
     () => (overPlate ? { type: "custom" } : runCalc(resolved, lang)),
     [resolved, lang, overPlate]
+  );
+
+  // Druga technologia druku, policzona z TYCH SAMYCH odpowiedzi. Klient
+  // szybkiej wyceny czesto nie wie, czym rozni sie filament od zywicy, a
+  // roznica dotyczy i wygladu, i ceny. Sama nazwa technologii niczego mu nie
+  // mowi; dwie kwoty obok siebie mowia wszystko.
+  const drukowe = resolved?.tech === "3dprint" || resolved?.tech === "msla";
+  const drugaTech = resolved?.tech === "msla" ? "fdm" : "msla";
+  const drugiWynik = useMemo(
+    () => (!drukowe || overPlate ? null : runCalc(resolveTechAndParams({ ...odpowiedzi, printTech: drugaTech }), lang)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [drukowe, drugaTech, overPlate, lang, item, size, material, finish, quantity, fileType, scaledStl, scaledSvg]
   );
 
   // Szybka wycena otwiera sie domyslnie, wiec bez tego wiekszosc odwiedzajacych
@@ -811,6 +842,49 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
       <SimpleCard stepNum="③" label={l.q3}>
         <TileGrid options={MATERIALS} value={material} onChange={handleSet(setMaterial, "material")} lang={lang} cols={3} disabledIds={matDisabledIds} />
       </SimpleCard>
+
+      {/* Technologia druku. Do tej pory wybieralismy ja po cichu, a klient
+          szybkiej wyceny czesto nie wie, ze filament i zywica to dwie rozne
+          rzeczy: inny wyglad, inna wytrzymalosc, inna cena. Dostawal wiec
+          wyrob, ktorego sie nie spodziewal, i nie mial jak tego przewidziec.
+          Nazwa technologii sama w sobie nic mu nie mowi, wiec kazda karta
+          niesie zdanie o tym, do czego sie nadaje, i wlasna kwote. */}
+      {drukowe && (
+        <SimpleCard stepNum="◆" label={l.techQ}>
+          <div className="grid sm:grid-cols-2 gap-2">
+            {[
+              { id: "fdm", tech: "3dprint", nazwa: l.techFdmName, opis: l.techFdmDesc },
+              { id: "msla", tech: "msla", nazwa: l.techMslaName, opis: l.techMslaDesc },
+            ].map((o) => {
+              const aktywna = resolved?.tech === o.tech;
+              const wynik = aktywna ? result : drugiWynik;
+              const kwota = wynik?.type === "calculated"
+                ? `${wynik.perPcPLN ? (lang === "pl" ? `${wynik.perPcPLN.min} - ${wynik.perPcPLN.max} PLN` : `${wynik.perPcEUR.min} - ${wynik.perPcEUR.max} EUR`) : ""}`
+                : null;
+              return (
+                <button
+                  key={o.id}
+                  type="button"
+                  onClick={() => setPrintTech(o.id)}
+                  aria-pressed={aktywna}
+                  className={`text-left rounded-xl border p-3 transition-colors ${
+                    aktywna ? "border-emerald-400/50 bg-emerald-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/25"
+                  }`}
+                >
+                  <div className={`text-sm font-medium ${aktywna ? "text-emerald-300" : "text-neutral-200"}`}>{o.nazwa}</div>
+                  <div className="text-[11px] text-neutral-500 leading-tight mt-1">{o.opis}</div>
+                  {kwota && (
+                    <div className={`text-xs mt-2 font-medium ${aktywna ? "text-emerald-300" : "text-neutral-400"}`}>{kwota}</div>
+                  )}
+                  {aktywna && printTech === null && (
+                    <div className="text-[10px] text-neutral-600 mt-1">{l.techAuto}</div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </SimpleCard>
+      )}
 
       <SimpleCard stepNum="④" label={l.q4}>
         <TileGrid options={FINISH} value={finish} onChange={handleSet(setFinish, "finish")} lang={lang} cols={3} />

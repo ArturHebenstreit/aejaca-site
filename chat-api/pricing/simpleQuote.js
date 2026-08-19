@@ -75,9 +75,16 @@ export const CO2_MODE_FROM_ITEM = {
  * `scaleGeometry.js`). Ida do kalkulatorow bez zmian, bo to one, a nie
  * przedzial wielkosci, wyznaczaja cene, gdy plik istnieje.
  *
+ * `printTech` pozwala policzyc TE SAME odpowiedzi druga technologia druku.
+ * Bez niego wybor plastiku zawsze konczyl sie filamentem, a zywica byla
+ * osiagalna wylacznie przez kafelek "Figurka z zywicy" i wylacznie bez pliku.
+ * Klient, ktory wgral miniaturke, nie mial jak zobaczyc ceny za wydruk
+ * zywiczny, mimo ze to wlasnie ta technologia mu odpowiadala.
+ *
+ * @param {"fdm"|"msla"} [printTech] wymuszona technologia druku
  * @returns {{tech: string, mode?: string, params: object} | {custom: true}}
  */
-export function resolveTechAndParams({ item, size, material, finish, quantity, fileType, stlData, svgData }) {
+export function resolveTechAndParams({ item, size, material, finish, quantity, fileType, stlData, svgData, printTech }) {
   // Model 3D: druk (plastik) albo odlew z zywicy
   if (fileType === "stl" && stlData) {
     if (!size || !material || !finish || !quantity) return { custom: true };
@@ -96,6 +103,11 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
           quantityId,
         },
       };
+    }
+
+    if (printTech === "msla") {
+      const p = mslaParams({ item, size, finish, quantity, stlData });
+      return p ? { tech: "msla", params: p } : { custom: true };
     }
 
     const sizeId = SIZE_MAP[size]["3dprint"];
@@ -157,7 +169,7 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
   }
 
   // Figurka z zywicy MSLA: technologia jest ustalona niezaleznie od materialu
-  if (item === "figurine_msla") {
+  if (item === "figurine_msla" && printTech !== "fdm") {
     const mslaSizeId = SIZE_MAP[size]?.msla;
     if (!mslaSizeId) return { custom: true };
     return {
@@ -178,6 +190,10 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
   const quantityId = QTY_MAP[quantity];
 
   if (tech === "3dprint") {
+    if (printTech === "msla") {
+      const p = mslaParams({ item, size, finish, quantity });
+      return p ? { tech: "msla", params: p } : { custom: true };
+    }
     const isEngineering = item === "part" && (finish === "premium" || finish === "standard");
     const segment = isEngineering ? "engineering" : "standard";
     const materialKey = segment === "engineering"
@@ -250,6 +266,24 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
   }
 
   return { custom: true };
+}
+
+/**
+ * Parametry MSLA dla tych samych odpowiedzi, ktore normalnie ida na filament.
+ * Zastosowanie wyprowadzamy z przedmiotu, bo od niego zalezy zapas zywicy i
+ * kontrola jakosci: figurka to inna sprawa niz wzorzec odlewniczy.
+ */
+function mslaParams({ item, size, finish, quantity, stlData }) {
+  const applicationId = item === "jewelry" ? "casting" : item === "figurine" || item === "figurine_msla" ? "figurine" : "prototype";
+  const sizeId = stlData ? null : SIZE_MAP[size]?.msla;
+  if (!stlData && !sizeId) return null;
+  return {
+    applicationId,
+    resinKey: finish === "premium" ? "high_precision" : "standard",
+    layerId: finish === "premium" ? "quality" : "standard",
+    ...(stlData ? { stlData } : { sizeId }),
+    quantityId: QTY_MAP[quantity],
+  };
 }
 
 /** Uruchamia silnik wyceny wskazany przez `resolveTechAndParams`. */

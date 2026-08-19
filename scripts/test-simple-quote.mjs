@@ -132,5 +132,57 @@ else zle(`najwiekszy wymiar siatki: ${meshMaxCm(PLYTA)}, ma byc 30`);
 if (vectorMaxCm(RYSUNEK) === 20) ok("najwiekszy wymiar rysunku przelicza milimetry na centymetry");
 else zle(`najwiekszy wymiar rysunku: ${vectorMaxCm(RYSUNEK)}, ma byc 20`);
 
+
+// ------------------------------------------------------------
+// 6. Filament kontra zywica: obie technologie z tych samych odpowiedzi
+// ------------------------------------------------------------
+// Szybka wycena wybierala technologie po cichu, a klient, ktory z niej
+// korzysta, zwykle nie wie, ze filament i zywica to dwie rozne rzeczy: inny
+// wyglad, inna wytrzymalosc, inna cena. Do tego zywica byla osiagalna
+// wylacznie przez kafelek "Figurka z zywicy" i wylacznie BEZ pliku, wiec kto
+// wgral miniaturke, nie mial jak zobaczyc jej ceny.
+//
+// Nic sie przy tym nie wywalalo. Klient dostawal wyrob wykonany inaczej, niz
+// sadzil, i dowiadywal sie o tym po odbiorze.
+console.log("\n6. Wybor technologii druku");
+
+const FIGURKA = { item: "figurine", size: "palm", material: "plastic", finish: "standard", quantity: "one" };
+const MODEL = { volumeCm3: 60, bbox: { x: 8, y: 5, z: 6 }, triangleCount: 100, triangles: [] };
+
+for (const [opis, wej] of [
+  ["bez pliku", FIGURKA],
+  ["z plikiem", { ...FIGURKA, fileType: "stl", stlData: MODEL }],
+]) {
+  const zFilamentu = resolveTechAndParams({ ...wej, printTech: "fdm" });
+  const zZywicy = resolveTechAndParams({ ...wej, printTech: "msla" });
+
+  if (zFilamentu.tech === "3dprint") ok(`${opis}: wymuszenie filamentu daje druk FDM`);
+  else zle(`${opis}: wymuszenie filamentu dalo ${zFilamentu.tech ?? "custom"}`);
+
+  if (zZywicy.tech === "msla") ok(`${opis}: wymuszenie zywicy daje MSLA`);
+  else zle(`${opis}: wymuszenie zywicy dalo ${zZywicy.tech ?? "custom"}`);
+
+  const a = kwota(runCalc(zFilamentu, "pl"));
+  const b = kwota(runCalc(zZywicy, "pl"));
+  if (a != null && b != null && a !== b) ok(`${opis}: obie kwoty policzone i rozne (${a} gr vs ${b} gr)`);
+  else zle(`${opis}: filament ${a}, zywica ${b}`);
+}
+
+// Zywica z pliku musi liczyc z GEOMETRII, a nie z przedzialu wielkosci.
+// Inaczej wrocilaby awaria, ktora zamyka punkt 1 tego pliku, tyle ze druga
+// technologia i po cichu.
+const zywicaZPliku = resolveTechAndParams({ ...FIGURKA, fileType: "stl", stlData: MODEL, printTech: "msla" });
+if (zywicaZPliku.params?.stlData) ok("wycena zywiczna z pliku niesie geometrie, a nie przedzial");
+else zle("wycena zywiczna zgubila geometrie i policzy z przedzialu");
+
+const zywicaMniejsza = kwota(runCalc(
+  resolveTechAndParams({ ...FIGURKA, fileType: "stl", stlData: scaleMesh(MODEL, 0.5), printTech: "msla" }), "pl"));
+const zywicaPelna = kwota(runCalc(zywicaZPliku, "pl"));
+if (zywicaMniejsza != null && zywicaPelna != null && zywicaMniejsza < zywicaPelna) {
+  ok(`zmniejszenie obniza takze cene zywicy (${zywicaPelna} do ${zywicaMniejsza})`);
+} else {
+  zle(`cena zywicy nie reaguje na wielkosc: ${zywicaPelna} do ${zywicaMniejsza}`);
+}
+
 console.log(bledy ? `\n${bledy} bledow\n` : "\nSzybka wycena: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);
