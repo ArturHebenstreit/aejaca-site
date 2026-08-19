@@ -181,27 +181,34 @@ export function applyPricing(baseCost, margin, discountRate, qty, localDiscount 
   };
 }
 
-const PL_DISCOUNT_LABEL = {
-  pl: "Rabat rynek polski",
-  en: "Polish market discount",
-  de: "Rabatt polnischer Markt",
-};
+/**
+ * Rabat na rynek polski jako czynnik, nie jako osobny wiersz rozpiski.
+ *
+ * Wczesniej rozpiska konczyla sie kosztem szacunkowym, a pod nim staly wiersz
+ * "Rabat rynek polski (-15%)". To bylo uczciwe, ale zle sprzedawalo: klient
+ * czyta rabat jako cene wyjsciowa podbita po to, zeby bylo co odejmowac, i
+ * zaczyna szukac, gdzie jest haczyk. Dlatego rabat schodzi rowno ze wszystkich
+ * kwot w rozpisce i nigdzie nie jest nazwany.
+ *
+ * Wazne: wchodzi wylacznie do PREZENTACJI. Sama cena schodzi o te same 15%
+ * przez localDiscount w applyPricing() i unitPriceGrosze(), wiec obie drogi
+ * musza uzywac tej samej stalej. Gdyby sie rozjechaly, rozpiska pokazywalaby
+ * co innego niz kwota do zaplaty, a nikomu nic by sie nie wywalilo.
+ */
+export function plDiscountFactor(lang) {
+  return lang === "pl" ? 1 - CONFIG.PL_MARKET_DISCOUNT : 1;
+}
 
 /**
- * Wiersz rozpiski z rabatem na rynek polski.
+ * Formater kwot do rozpiski, z rabatem rynku polskiego juz wliczonym.
  *
- * Bez niego rozpiska konczyla sie kosztem szacunkowym wyzszym od ceny
- * koncowej, co wygladalo, jakbysmy sprzedawali ponizej kosztu bez powodu.
- * Rabat jest realny, wiec ma byc widoczny, a nie ukryty w formule.
+ * Kazdy silnik wyceny bierze `const fc = netCostFmt(lang)` i uzywa fc() zamiast
+ * fmtCost() w breakdown. Dzieki temu nie da sie przypadkiem pokazac kwoty
+ * sprzed rabatu obok kwoty po rabacie.
  */
-export function plDiscountRow(preDiscountPln, plDiscount, lang) {
-  if (!plDiscount) return null;
-  const label = PL_DISCOUNT_LABEL[lang] || PL_DISCOUNT_LABEL.en;
-  return {
-    label: `${label} (-${Math.round(plDiscount * 100)}%)`,
-    value: `-${fmtCost(preDiscountPln * plDiscount, lang)}`,
-    accent: true,
-  };
+export function netCostFmt(lang) {
+  const factor = plDiscountFactor(lang);
+  return (plnAmount) => fmtCost(plnAmount * factor, lang);
 }
 
 /** Format grosze as a PLN string with two decimals, the format Autopay expects */

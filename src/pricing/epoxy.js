@@ -4,7 +4,7 @@
 // Formuly przeniesione 1:1 z EpoxyCastCalc.jsx. Bez Reacta, zeby backend
 // zamowien liczyl cene tym samym kodem co kalkulator.
 
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, plDiscountRow } from "./config.js";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, netCostFmt } from "./config.js";
 
 export const EPOXY_CONFIG = {
   POWER_KW: 0.15,
@@ -128,6 +128,7 @@ export function calculate({ resinId, volumeId, moldId, inclusionId, finishId, qu
   const batchTimeH = (workTimeH + handleH) * qTier.qty + resin.cureH;
 
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
+  const fc = netCostFmt(lang);
   const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, qTier.discount, qTier.qty, plDiscount);
   const cureDisplay = resin.cureH < 1 ? `${Math.round(resin.cureH * 60)} min (UV)` : `${resin.cureH} h`;
 
@@ -135,20 +136,19 @@ export function calculate({ resinId, volumeId, moldId, inclusionId, finishId, qu
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     totalTimeH: qTier.qty > 1 ? batchTimeH : null,
     breakdown: [
-      { label: l.resinCost, value: `${fmtCost(resinCost, lang)} (${vol.vol} ml)` },
-      { label: l.moldAmort, value: fmtCost(moldPerPc, lang) },
-      { label: l.inclusionCost, value: fmtCost(inclCost, lang) },
-      { label: l.finishCost, value: fmtCost(finishCost, lang) },
-      { label: l.laborCost, value: fmtCost(laborCost, lang) },
-      { label: l.handling, value: fmtCost(EPOXY_CONFIG.HANDLING_FEE, lang) },
+      { label: l.resinCost, value: `${fc(resinCost)} (${vol.vol} ml)` },
+      { label: l.moldAmort, value: fc(moldPerPc) },
+      { label: l.inclusionCost, value: fc(inclCost) },
+      { label: l.finishCost, value: fc(finishCost) },
+      { label: l.laborCost, value: fc(laborCost) },
+      { label: l.handling, value: fc(EPOXY_CONFIG.HANDLING_FEE) },
       { label: l.workTime, value: `${(workTimeH * 60).toFixed(0)} min` },
       { label: l.cureTime, value: cureDisplay },
-      { label: l.energy, value: fmtCost(energyCost, lang) },
-      { label: l.depreciation, value: fmtCost(deprCost, lang) },
-      { label: l.workshop, value: fmtCost(baseCost * CONFIG.BASE_MARGIN, lang) },
+      { label: l.energy, value: fc(energyCost) },
+      { label: l.depreciation, value: fc(deprCost) },
+      { label: l.workshop, value: fc(baseCost * CONFIG.BASE_MARGIN) },
       { divider: true },
-      { label: l.estCost, value: fmtCost(baseCost * (1 + CONFIG.BASE_MARGIN), lang), bold: true },
-      ...(plDiscountRow(baseCost * (1 + CONFIG.BASE_MARGIN), plDiscount, lang) ? [plDiscountRow(baseCost * (1 + CONFIG.BASE_MARGIN), plDiscount, lang)] : []),
+      { label: l.estCost, value: fc(baseCost * (1 + CONFIG.BASE_MARGIN)), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
       ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${batchTimeH.toFixed(1)} h`, bold: true }] : []),
     ],

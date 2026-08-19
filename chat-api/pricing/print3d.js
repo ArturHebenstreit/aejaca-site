@@ -9,7 +9,7 @@
 // w przegladarce, jak i na backendzie zamowien, dlatego nie moze importowac
 // Reacta ani niczego spoza src/pricing i src/data.
 
-import { CONFIG, QUANTITY_TIERS, applyPricing, fmtCost, plDiscountRow, unitPriceGrosze } from "./config.js";
+import { CONFIG, QUANTITY_TIERS, applyPricing, netCostFmt, unitPriceGrosze } from "./config.js";
 import { getResinsBySegment, getResin } from "./resins.js";
 
 
@@ -126,6 +126,7 @@ export function calculateMSLA(params, lang) {
   const totalTimeH = (printTimeH * platesNeeded) + 0.5;
 
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
+  const fc = netCostFmt(lang);
   const pricing = applyPricing(baseCost, margin, qTier.discount, qTier.qty, plDiscount);
 
   // Minimum order value floor (49 PLN)
@@ -152,14 +153,13 @@ export function calculateMSLA(params, lang) {
     totalTimeH: qTier.qty > 1 ? totalTimeH : null,
     breakdown: [
       { label: l.volume, value: `${volumeCm3.toFixed(1)} ml` },
-      { label: l.resinCost, value: fmtCost(resinCost, lang) },
+      { label: l.resinCost, value: fc(resinCost) },
       { label: l.printTime, value: `${printTimeH.toFixed(2)} h` },
-      { label: l.machine, value: fmtCost(machineCostPerPc, lang) },
-      { label: l.postProc, value: fmtCost(postProcessing, lang) },
-      { label: l.handling, value: fmtCost(MSLA_CONFIG.HANDLING_FEE, lang) },
+      { label: l.machine, value: fc(machineCostPerPc) },
+      { label: l.postProc, value: fc(postProcessing) },
+      { label: l.handling, value: fc(MSLA_CONFIG.HANDLING_FEE) },
       { divider: true },
-      { label: l.estCost, value: fmtCost(baseCost * (1 + margin), lang), bold: true },
-      ...(plDiscountRow(baseCost * (1 + margin), plDiscount, lang) ? [plDiscountRow(baseCost * (1 + margin), plDiscount, lang)] : []),
+      { label: l.estCost, value: fc(baseCost * (1 + margin)), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
       ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${totalTimeH.toFixed(1)} h`, bold: true }] : []),
       ...(minOrderApplied ? [{ label: l.minOrder, value: "" }] : []),
@@ -340,22 +340,22 @@ export function calculate(params, lang) {
   const totalTimeH = (printTime * platesNeeded) + (0.5) + (handlePerPc * qTier.qty);
 
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
+  const fc = netCostFmt(lang);
   const pricing = applyPricing(baseCost, margin, qTier.discount, qTier.qty, plDiscount);
   return {
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     totalTimeH: qTier.qty > 1 ? totalTimeH : null,
     breakdown: [
       { label: l.mass, value: `${massG.toFixed(1)} g` },
-      { label: l.material, value: fmtCost(materialCost, lang) },
+      { label: l.material, value: fc(materialCost) },
       { label: l.printTime, value: `${printTime.toFixed(1)} h` },
       { label: l.timeSetup, value: `${timePerPc.toFixed(1)} h` },
-      { label: l.energy, value: fmtCost(energyCost, lang) },
-      { label: l.depreciation, value: fmtCost(deprCost, lang) },
-      { label: l.handling, value: fmtCost(PRINT_CONFIG.HANDLING_FEE, lang) },
-      { label: l.workshop, value: fmtCost(baseCost * margin, lang) },
+      { label: l.energy, value: fc(energyCost) },
+      { label: l.depreciation, value: fc(deprCost) },
+      { label: l.handling, value: fc(PRINT_CONFIG.HANDLING_FEE) },
+      { label: l.workshop, value: fc(baseCost * margin) },
       { divider: true },
-      { label: l.estCost, value: fmtCost(baseCost * (1 + margin), lang), bold: true },
-      ...(plDiscountRow(baseCost * (1 + margin), plDiscount, lang) ? [plDiscountRow(baseCost * (1 + margin), plDiscount, lang)] : []),
+      { label: l.estCost, value: fc(baseCost * (1 + margin)), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
       ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${totalTimeH.toFixed(1)} h`, bold: true }] : []),
     ],

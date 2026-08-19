@@ -8,7 +8,7 @@
 // Formuly przeniesione 1:1 z FiberLaserCalc.jsx. Bez Reacta, zeby backend
 // zamowien liczyl cene tym samym kodem co kalkulator.
 
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, plDiscountRow } from "./config.js";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, netCostFmt } from "./config.js";
 
 export const FIBER_CONFIG = {
   POWER_KW: 0.50,
@@ -119,6 +119,7 @@ export function calculate({ matId, lensId, markId, areaId, quantityId, svgData }
   const batchTimeH = (timeH + handleH) * qTier.qty + 0.2;
 
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
+  const fc = netCostFmt(lang);
   const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, qTier.discount, qTier.qty, plDiscount);
   return {
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
@@ -126,15 +127,14 @@ export function calculate({ matId, lensId, markId, areaId, quantityId, svgData }
     breakdown: [
       { label: l.engraveTime, value: `${timeMin.toFixed(1)} min` },
       { label: l.timeSetup, value: `${(totalTimeH * 60).toFixed(1)} min` },
-      { label: l.laborCost, value: fmtCost(laborCost, lang) },
-      { label: l.handling, value: fmtCost(handlingFee, lang) },
-      { label: l.energy, value: fmtCost(energyCost, lang) },
-      { label: l.depreciation, value: fmtCost(deprCost, lang) },
+      { label: l.laborCost, value: fc(laborCost) },
+      { label: l.handling, value: fc(handlingFee) },
+      { label: l.energy, value: fc(energyCost) },
+      { label: l.depreciation, value: fc(deprCost) },
       ...(mat.precious ? [{ label: l.preciousSurcharge, value: `+${FIBER_CONFIG.PRECIOUS_PREMIUM * 100}%` }] : []),
-      { label: l.workshop, value: fmtCost(baseCost * CONFIG.BASE_MARGIN, lang) },
+      { label: l.workshop, value: fc(baseCost * CONFIG.BASE_MARGIN) },
       { divider: true },
-      { label: l.estCost, value: fmtCost(baseCost * (1 + CONFIG.BASE_MARGIN), lang), bold: true },
-      ...(plDiscountRow(baseCost * (1 + CONFIG.BASE_MARGIN), plDiscount, lang) ? [plDiscountRow(baseCost * (1 + CONFIG.BASE_MARGIN), plDiscount, lang)] : []),
+      { label: l.estCost, value: fc(baseCost * (1 + CONFIG.BASE_MARGIN)), bold: true },
       ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
       ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${batchTimeH.toFixed(1)} h`, bold: true }] : []),
     ],
