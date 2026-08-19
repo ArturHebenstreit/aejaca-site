@@ -29,15 +29,32 @@
 // i bez osobnej sciezki, ktora mogloby zabraknac przy nastepnej zmianie.
 
 import { useState, useEffect, useRef } from "react";
-import { AlertTriangle, XCircle, Info, Loader2 } from "lucide-react";
+import { AlertTriangle, XCircle, Info, Loader2, Wrench } from "lucide-react";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
 import { saveModelHandoff, flattenTriangles, HANDOFF_URL } from "../../analysis/modelHandoff.js";
 
 export { nozzleFromPrecision };
 
+// KOLEJNOSC MA ZNACZENIE I ZOSTALA ODWROCONA.
+//
+// Wczesniej bramka zaczynala od alarmu i zadania pokwitowania. Klient, ktory
+// chcial tylko czegos zamowic, dostawal na wejsciu liste swoich win i pole do
+// podpisania. Czesc odchodzila, a czesc klikala bez czytania, wiec pokwitowanie
+// bylo formalnie wazne i praktycznie bezwartosciowe, bo nikt go nie przeczytal.
+//
+// Teraz najpierw pokazujemy, JAK TO NAPRAWIC, spokojnie i konkretnie. Dopiero
+// gdy klient swiadomie wybierze "zamawiam mimo to", pojawia sie opis ryzyka i
+// pokwitowanie. Wtedy jest ono realna decyzja, a nie odruchem, i dopiero wtedy
+// jest cos warte jako dowod ustalen.
+
 const L10N = {
   pl: {
     checking: "Sprawdzam model...",
+    remedyTitle: "Ten plik da się poprawić przed drukiem",
+    remedyLead: "Zanim zamówisz, warto to zrobić. Każda z poniższych rzeczy wpływa na to, jak wyjdzie wydruk.",
+    proceed: "Rozumiem, chcę zamówić ten plik bez zmian",
+    back: "Wrócę i poprawię plik",
+    riskTitle: "Co się wtedy może stać",
     blockTitle: "Ten model ma problem, który wpłynie na wydruk",
     warnTitle: "Uwagi do modelu",
     accept: "Rozumiem powyższe i mimo to polecam wykonanie wydruku z tego pliku, z tymi parametrami.",
@@ -47,6 +64,11 @@ const L10N = {
   },
   en: {
     checking: "Checking the model...",
+    remedyTitle: "This file can be improved before printing",
+    remedyLead: "Worth doing before you order. Each item below changes how the print comes out.",
+    proceed: "I understand, print this file as it is",
+    back: "I will go back and fix the file",
+    riskTitle: "What can happen then",
     blockTitle: "This model has a problem that will affect the print",
     warnTitle: "Notes on the model",
     accept: "I understand the above and still instruct you to print from this file with these settings.",
@@ -56,6 +78,11 @@ const L10N = {
   },
   de: {
     checking: "Modell wird geprüft...",
+    remedyTitle: "Diese Datei lässt sich vor dem Druck verbessern",
+    remedyLead: "Vor der Bestellung lohnt es sich. Jeder Punkt unten verändert das Druckergebnis.",
+    proceed: "Verstanden, diese Datei unverändert drucken",
+    back: "Ich gehe zurück und korrigiere die Datei",
+    riskTitle: "Was dann passieren kann",
     blockTitle: "Dieses Modell hat ein Problem, das den Druck beeinflusst",
     warnTitle: "Hinweise zum Modell",
     accept: "Ich habe das Obige verstanden und beauftrage den Druck aus dieser Datei mit diesen Einstellungen dennoch.",
@@ -117,6 +144,69 @@ const SHORT = {
   },
 };
 
+// ============================================================
+// JAK TO NAPRAWIC
+// ============================================================
+// To jest tresc, ktora klient widzi PIERWSZA. Ma byc instrukcja, nie zarzutem.
+// Kazda pozycja mowi, co konkretnie zrobic, a nie co jest zle: nazwa narzedzia
+// albo liczba, ktora trzeba osiagnac. Klient bez doswiadczenia ma po tym
+// wiedziec, gdzie kliknac, a nie tylko, ze ma problem.
+//
+// Drugi argument to formater liczb, trzeci to kontekst wydruku, bo czesc rad
+// zalezy od technologii (granica przy zywicy jest kilkakrotnie nizsza niz przy
+// FDM, wiec zmiana technologii bywa najtansza naprawa).
+
+const REMEDY = {
+  pl: {
+    holes: () => "Zamknij dziury w siatce: Blender ma dodatek 3D Print Toolbox (Make Manifold), darmowy Meshmixer ma Analysis > Inspector i naprawia to jednym kliknięciem. My też to zrobimy przed drukiem, ale wtedy objętość, z której policzyliśmy cenę, jest przybliżona.",
+    open_surface: () => "Nadaj powierzchni grubość, żeby stała się bryłą: w Blenderze modyfikator Solidify, w Fusion polecenie Thicken. Bez tego nie ma czego wypełnić.",
+    nonmanifold: () => "Usuń krawędzie łączące więcej niż dwie ścianki: Blender, tryb edycji, Select > All by Trait > Non Manifold, potem Mesh > Clean Up.",
+    reversed: () => "Przelicz normalne: Blender, zaznacz wszystko w trybie edycji i naciśnij Shift+N.",
+    inverted: () => "Odwróć normalne na zewnątrz: Blender, tryb edycji, Mesh > Normals > Flip.",
+    degenerate: () => "Usuń trójkąty o zerowym polu: Blender, Mesh > Clean Up > Merge by Distance, potem Degenerate Dissolve.",
+    scale_small: () => "Sprawdź jednostkę eksportu. Przy zapisie STL albo OBJ ustaw milimetry, albo popraw wielkość suwakiem poniżej.",
+    scale_large: () => "Sprawdź jednostkę eksportu: prawdopodobnie zapisano w milimetrach coś, co miało być w metrach, albo odwrotnie.",
+    too_big: () => "Zmniejsz model suwakiem wielkości, albo potnij go na części i sklej po wydruku. Przy cięciu zaplanujemy szew na krawędzi, gdzie będzie najmniej widoczny.",
+    fits_rotated: () => "Nic nie musisz robić, ustawimy model na stole sami. Jeżeli zależy Ci na wytrzymałości w konkretnym kierunku, napisz o tym w uwagach.",
+    too_thin: (f, n, c) => `Pogrub cienkie miejsca do co najmniej ${n(f.limit, 2)} mm${c.growFactor ? `, albo powiększ cały model około ${n(c.growFactor, 1)} raza` : ""}${c.tech === "fdm" ? ", albo wybierz druk z żywicy, gdzie granica jest kilkakrotnie niższa" : ""}.`,
+    thin: (f, n, c) => `Pogrub te ścianki do około ${n(f.limit * 2, 2)} mm, czyli dwóch ścieżek. Wtedy przestają pękać przy nacisku.${c.tech === "fdm" ? " Alternatywa: druk z żywicy." : ""}`,
+    overhangs_many: () => "Nic nie musisz robić, dobierzemy ustawienie na stole i podpory. Jeżeli któraś powierzchnia ma być gładka, napisz która, obrócimy model tak, żeby podpory jej nie dotykały.",
+    small_base: () => "Nic nie musisz robić, dodamy brim albo raft. Jeżeli model ma stać na wąskiej podstawie, rozważ dodanie płaskiej stopki w modelu.",
+  },
+  en: {
+    holes: () => "Close the holes in the mesh: Blender ships the 3D Print Toolbox add-on (Make Manifold), and the free Meshmixer fixes it from Analysis > Inspector in one click. We can also do it before printing, but then the volume we priced from is approximate.",
+    open_surface: () => "Give the surface a thickness so it becomes a solid: the Solidify modifier in Blender, Thicken in Fusion. Without it there is no inside to fill.",
+    nonmanifold: () => "Remove edges shared by more than two faces: Blender, edit mode, Select > All by Trait > Non Manifold, then Mesh > Clean Up.",
+    reversed: () => "Recalculate the normals: in Blender select everything in edit mode and press Shift+N.",
+    inverted: () => "Flip the normals outward: Blender, edit mode, Mesh > Normals > Flip.",
+    degenerate: () => "Remove zero-area triangles: Blender, Mesh > Clean Up > Merge by Distance, then Degenerate Dissolve.",
+    scale_small: () => "Check the export unit. Set millimetres when saving STL or OBJ, or correct the size with the slider below.",
+    scale_large: () => "Check the export unit: something meant to be metres was probably saved as millimetres, or the other way round.",
+    too_big: () => "Scale the model down with the size slider, or split it into parts and bond them after printing. If we split it, we plan the seam along an edge where it shows least.",
+    fits_rotated: () => "Nothing to do, we will place it on the plate ourselves. If strength in a particular direction matters, say so in the notes.",
+    too_thin: (f, n, c) => `Thicken the thin areas to at least ${n(f.limit, 2)} mm${c.growFactor ? `, or scale the whole model up about ${n(c.growFactor, 1)} times` : ""}${c.tech === "fdm" ? ", or switch to resin printing, where the limit is several times lower" : ""}.`,
+    thin: (f, n, c) => `Thicken those walls to about ${n(f.limit * 2, 2)} mm, which is two paths. They then stop cracking under pressure.${c.tech === "fdm" ? " Alternative: resin printing." : ""}`,
+    overhangs_many: () => "Nothing to do, we will choose the orientation and supports. If a particular surface must stay smooth, tell us which and we will turn the model so the supports miss it.",
+    small_base: () => "Nothing to do, we will add a brim or raft. If the model stands on a narrow base, consider adding a flat foot to the model.",
+  },
+  de: {
+    holes: () => "Schließen Sie die Löcher im Netz: Blender bringt das Add-on 3D Print Toolbox (Make Manifold) mit, das kostenlose Meshmixer erledigt es unter Analysis > Inspector mit einem Klick. Wir können es auch vor dem Druck tun, dann ist das Volumen für den Preis aber angenähert.",
+    open_surface: () => "Geben Sie der Fläche eine Dicke, damit ein Körper entsteht: Modifikator Solidify in Blender, Thicken in Fusion. Sonst gibt es nichts zu füllen.",
+    nonmanifold: () => "Entfernen Sie Kanten mit mehr als zwei Flächen: Blender, Bearbeitungsmodus, Select > All by Trait > Non Manifold, dann Mesh > Clean Up.",
+    reversed: () => "Normalen neu berechnen: in Blender im Bearbeitungsmodus alles auswählen und Shift+N drücken.",
+    inverted: () => "Normalen nach außen drehen: Blender, Bearbeitungsmodus, Mesh > Normals > Flip.",
+    degenerate: () => "Dreiecke ohne Fläche entfernen: Blender, Mesh > Clean Up > Merge by Distance, dann Degenerate Dissolve.",
+    scale_small: () => "Prüfen Sie die Exporteinheit. Beim Speichern als STL oder OBJ Millimeter einstellen, oder die Größe unten mit dem Regler korrigieren.",
+    scale_large: () => "Prüfen Sie die Exporteinheit: vermutlich wurde in Millimetern gespeichert, was Meter sein sollte, oder umgekehrt.",
+    too_big: () => "Verkleinern Sie das Modell mit dem Größenregler, oder teilen Sie es und fügen Sie es nach dem Druck zusammen. Beim Teilen legen wir die Naht an eine möglichst unauffällige Kante.",
+    fits_rotated: () => "Nichts zu tun, wir richten das Modell selbst aus. Wenn die Festigkeit in einer bestimmten Richtung zählt, schreiben Sie es in die Hinweise.",
+    too_thin: (f, n, c) => `Verdicken Sie die dünnen Stellen auf mindestens ${n(f.limit, 2)} mm${c.growFactor ? `, oder skalieren Sie das ganze Modell etwa um das ${n(c.growFactor, 1)}-fache` : ""}${c.tech === "fdm" ? ", oder wechseln Sie zum Harzdruck, wo die Grenze um ein Vielfaches niedriger liegt" : ""}.`,
+    thin: (f, n, c) => `Verdicken Sie diese Wände auf etwa ${n(f.limit * 2, 2)} mm, also zwei Bahnen. Dann brechen sie nicht mehr unter Druck.${c.tech === "fdm" ? " Alternative: Harzdruck." : ""}`,
+    overhangs_many: () => "Nichts zu tun, wir wählen Ausrichtung und Stützen. Soll eine bestimmte Fläche glatt bleiben, sagen Sie welche, dann drehen wir das Modell entsprechend.",
+    small_base: () => "Nichts zu tun, wir ergänzen Brim oder Raft. Steht das Modell auf schmaler Basis, erwägen Sie einen flachen Fuß im Modell.",
+  },
+};
+
 /**
  * @param {number[][][]} triangles geometria z parsera, juz po przeskalowaniu
  * @param {"fdm"|"msla"} tech
@@ -132,6 +222,9 @@ export default function PrintabilityGate({ triangles, tech, nozzleId = "0.4", la
   const [report, setReport] = useState(null);
   const [busy, setBusy] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  // "remedy" to ekran instrukcji naprawy, "risk" to opis ryzyka z pokwitowaniem.
+  // Zaczynamy zawsze od instrukcji, takze po zmianie pliku albo parametrow.
+  const [stage, setStage] = useState("remedy");
   const workerRef = useRef(null);
   const onResultRef = useRef(onResult);
   onResultRef.current = onResult;
@@ -139,10 +232,11 @@ export default function PrintabilityGate({ triangles, tech, nozzleId = "0.4", la
   useEffect(() => () => workerRef.current?.terminate(), []);
 
   useEffect(() => {
-    if (!triangles?.length) { setReport(null); setAccepted(false); onResultRef.current?.(null); return; }
+    if (!triangles?.length) { setReport(null); setAccepted(false); setStage("remedy"); onResultRef.current?.(null); return; }
     let cancelled = false;
     setBusy(true);
     setAccepted(false);
+    setStage("remedy");
 
     // Analiza idzie na geometrii W SKALI ZAMOWIENIA, bo to ona zostanie
     // wydrukowana. Model zmniejszony o polowe ma o polowe cienszy mur.
@@ -194,9 +288,14 @@ export default function PrintabilityGate({ triangles, tech, nozzleId = "0.4", la
       findings: [...blockers, ...warnings].map(strip),
       blocked: needsAccept,
       accepted: needsAccept ? accepted : null,
+      // Slad calej drogi, a nie tylko jej konca. Przy sporze liczy sie to, ze
+      // klient dostal instrukcje naprawy i mimo to polecil wykonanie, a nie
+      // samo zaznaczenie pola.
+      remediesShown: true,
+      proceededAnyway: stage === "risk",
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [report, accepted, tech, nozzleId, scale]);
+  }, [report, accepted, stage, tech, nozzleId, scale]);
 
   if (busy) {
     return (
@@ -209,7 +308,62 @@ export default function PrintabilityGate({ triangles, tech, nozzleId = "0.4", la
 
   if (!report || (!blockers.length && !warnings.length)) return null;
 
-  const list = needsAccept ? blockers : warnings;
+  const wszystkie = [...blockers, ...warnings];
+  const R = REMEDY[lang] || REMEDY.pl;
+
+  // Kontekst dla porad, ktore zaleza od wydruku. growFactor mowi, ile razy
+  // trzeba powiekszyc model, zeby najciensze miejsce doszlo do granicy: to
+  // jedyna rada, ktora klient moze wykonac jednym ruchem suwaka.
+  const thinnest = report.thickness?.p1 ?? null;
+  const limit = wszystkie.find((f) => f.id === "too_thin" || f.id === "thin")?.limit ?? null;
+  const ctx = {
+    tech,
+    nozzleId,
+    thinnestMm: thinnest,
+    growFactor: thinnest && limit && thinnest > 0 && limit / thinnest > 1.05 ? limit / thinnest : null,
+  };
+
+  // ------------------------------------------------------------
+  // KROK 1: jak to naprawic
+  // ------------------------------------------------------------
+  if (stage === "remedy") {
+    return (
+      <div className="mt-4 rounded-2xl border border-blue-400/25 bg-blue-500/5 p-4">
+        <div className="flex items-center gap-2 mb-1">
+          <Wrench className="w-4 h-4 text-blue-300 shrink-0" />
+          <h4 className="text-sm font-semibold text-blue-200">{L.remedyTitle}</h4>
+        </div>
+        <p className="text-neutral-400 text-[11px] leading-relaxed mb-3">{L.remedyLead}</p>
+
+        <ul className="space-y-2.5 mb-3">
+          {wszystkie.map((f) => (
+            <li key={f.id} className="text-xs leading-relaxed">
+              <span className="block text-neutral-400">{S[f.id]?.(f, num)}</span>
+              {R[f.id] && (
+                <span className="block text-neutral-200 mt-0.5">{R[f.id](f, num, ctx)}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+
+        <ModelLink />
+
+        <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-white/10">
+          <button
+            type="button"
+            onClick={() => setStage("risk")}
+            className="flex-1 px-3 py-2 rounded-lg border border-white/15 bg-white/[0.02] text-neutral-300 text-xs hover:border-white/30 transition-colors"
+          >
+            {L.proceed}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ------------------------------------------------------------
+  // KROK 2: co z tego wynika, i pokwitowanie
+  // ------------------------------------------------------------
   const Icon = needsAccept ? XCircle : AlertTriangle;
   const tone = needsAccept
     ? { text: "text-rose-300", box: "border-rose-400/30 bg-rose-500/5" }
@@ -219,51 +373,30 @@ export default function PrintabilityGate({ triangles, tech, nozzleId = "0.4", la
     <div className={`mt-4 rounded-2xl border p-4 ${tone.box}`}>
       <div className="flex items-center gap-2 mb-2">
         <Icon className={`w-4 h-4 ${tone.text} shrink-0`} />
-        <h4 className={`text-sm font-semibold ${tone.text}`}>{needsAccept ? L.blockTitle : L.warnTitle}</h4>
+        <h4 className={`text-sm font-semibold ${tone.text}`}>{needsAccept ? L.blockTitle : L.riskTitle}</h4>
       </div>
 
+      {/* Na tym ekranie pokazujemy KOMPLET ustalen, takze zwykle ostrzezenia.
+          Pokwitowanie ma obejmowac to, co klient realnie widzial, a nie wybor
+          z listy zrobiony przez nas. */}
       <ul className="space-y-1.5 mb-3">
-        {list.map((f) => (
-          <li key={f.id} className="text-neutral-300 text-xs leading-relaxed">{S[f.id]?.(f, num)}</li>
+        {wszystkie.map((f) => (
+          <li key={f.id} className="text-neutral-300 text-xs leading-relaxed flex gap-2">
+            {f.level === "warning" && <Info className="w-3 h-3 shrink-0 mt-0.5 text-neutral-500" />}
+            <span>{S[f.id]?.(f, num)}</span>
+          </li>
         ))}
       </ul>
 
-      {/* Przy blokadzie pokazujemy takze ostrzezenia, zeby pokwitowanie
-          obejmowalo komplet tego, co widzial klient. */}
-      {needsAccept && warnings.length > 0 && (
-        <ul className="space-y-1.5 mb-3 pt-2 border-t border-white/10">
-          {warnings.map((f) => (
-            <li key={f.id} className="text-neutral-400 text-xs leading-relaxed flex gap-2">
-              <Info className="w-3 h-3 shrink-0 mt-0.5" />{S[f.id]?.(f, num)}
-            </li>
-          ))}
-        </ul>
-      )}
+      <ModelLink />
 
-      {/* Model jedzie razem z odnosnikiem. Zapis rusza w obsludze klikniecia i
-          NIE wstrzymuje przejscia: gdyby czekac na jego koniec, przegladarka
-          uznalaby otwarcie karty za wyskakujace okienko i by je zablokowala.
-          Strona docelowa czeka na rekord, wiec wolniejszy zapis niczego nie
-          psuje, a nieudany zostawia ja z pustym formularzem, czyli w stanie
-          sprzed tej zmiany. */}
-      <a
-        href={HANDOFF_URL}
-        target="_blank"
-        rel="noopener"
-        onClick={() => {
-          if (!triangles?.length) return;
-          saveModelHandoff({
-            positions: flattenTriangles(triangles, scale),
-            tech,
-            nozzleId: tech === "fdm" ? nozzleId : null,
-            name: fileName,
-            scale,
-          });
-        }}
-        className="inline-block text-blue-400 hover:text-blue-300 text-xs mb-3"
+      <button
+        type="button"
+        onClick={() => { setStage("remedy"); setAccepted(false); }}
+        className="block text-neutral-400 hover:text-neutral-200 text-xs mb-3 underline underline-offset-2"
       >
-        {L.checkLink}
-      </a>
+        {L.back}
+      </button>
 
       {needsAccept && (
         <>
@@ -282,4 +415,33 @@ export default function PrintabilityGate({ triangles, tech, nozzleId = "0.4", la
       )}
     </div>
   );
+
+  /* Odnosnik do pelnej analizy. Model jedzie razem z nim. Zapis rusza w obsludze
+     klikniecia i NIE wstrzymuje przejscia: gdyby czekac na jego koniec,
+     przegladarka uznalaby otwarcie karty za wyskakujace okienko i by je
+     zablokowala. Strona docelowa czeka na rekord, wiec wolniejszy zapis niczego
+     nie psuje, a nieudany zostawia ja z pustym formularzem, czyli w stanie
+     sprzed tej zmiany. */
+  function ModelLink() {
+    return (
+      <a
+        href={HANDOFF_URL}
+        target="_blank"
+        rel="noopener"
+        onClick={() => {
+          if (!triangles?.length) return;
+          saveModelHandoff({
+            positions: flattenTriangles(triangles, scale),
+            tech,
+            nozzleId: tech === "fdm" ? nozzleId : null,
+            name: fileName,
+            scale,
+          });
+        }}
+        className="inline-block text-blue-400 hover:text-blue-300 text-xs mb-3"
+      >
+        {L.checkLink}
+      </a>
+    );
+  }
 }

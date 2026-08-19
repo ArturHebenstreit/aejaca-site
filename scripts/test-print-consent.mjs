@@ -107,3 +107,51 @@ assert.ok(/does not limit your consumer rights/.test(SRC), "brak zastrzezenia po
 assert.ok(/schränkt Ihre Verbraucherrechte nicht ein/.test(SRC), "brak zastrzezenia po niemiecku");
 
 console.log("Pokwitowanie modelu: filtr ustalen, obecnosc w obu wersjach maila i charakter zapisu zgodne");
+
+// ============================================================
+// KOLEJNOSC: NAJPIERW NAPRAWA, POTEM POKWITOWANIE
+// ============================================================
+// Bramka zaczynala od alarmu i zadania podpisu. Klient dostawal na wejsciu
+// liste swoich win, wiec czesc odchodzila, a czesc klikala bez czytania.
+// Pokwitowanie bylo wtedy formalnie wazne i praktycznie bezwartosciowe.
+//
+// Teraz pierwszy ekran mowi, JAK TO NAPRAWIC, a ryzyko i pokwitowanie
+// pojawiaja sie dopiero po swiadomym "zamawiam mimo to". Odwrocenie tej
+// kolejnosci z powrotem nie wywolaloby zadnego bledu, wiec pilnuje jej test.
+
+const GATE = readFileSync(new URL("../src/components/calculators/PrintabilityGate.jsx", import.meta.url), "utf8");
+
+assert.ok(/const \[stage, setStage\] = useState\("remedy"\)/.test(GATE),
+  "bramka ma startowac od ekranu naprawy, a nie od ostrzezenia");
+
+assert.ok(/if \(stage === "remedy"\)/.test(GATE),
+  "brak osobnego ekranu z instrukcja naprawy");
+
+assert.ok(GATE.indexOf('if (stage === "remedy")') < GATE.indexOf("checked={accepted}"),
+  "pole pokwitowania stoi przed ekranem naprawy, czyli kolejnosc wrocila do starej");
+
+// Slad calej drogi, a nie samego konca. Przy sporze liczy sie to, ze klient
+// dostal instrukcje i mimo to polecil wykonanie.
+assert.ok(/remediesShown: true/.test(GATE), "zapis nie odnotowuje, ze pokazano instrukcje naprawy");
+assert.ok(/proceededAnyway: stage === "risk"/.test(GATE), "zapis nie odnotowuje swiadomego przejscia dalej");
+
+// Kazde ustalenie, ktore umiemy opisac, musi miec te instrukcje. Ustalenie bez
+// rady zostawia w panelu pusta linie i klienta bez wyjscia.
+const sekcja = (nazwa) => {
+  const i = GATE.indexOf(`const ${nazwa} = {`);
+  const j = GATE.indexOf("\n};", i);
+  return GATE.slice(i, j);
+};
+const idkiZ = (nazwa) => {
+  const pl = sekcja(nazwa).split("  pl: {")[1]?.split("  },")[0] || "";
+  return [...pl.matchAll(/^\s{4}(\w+):/gm)].map((m) => m[1]);
+};
+
+const opisane = idkiZ("SHORT");
+const zRada = new Set(idkiZ("REMEDY"));
+assert.ok(opisane.length >= 10, `spodziewano sie kilkunastu ustalen, znaleziono ${opisane.length}`);
+for (const id of opisane) {
+  assert.ok(zRada.has(id), `ustalenie "${id}" nie ma instrukcji naprawy w REMEDY`);
+}
+
+console.log(`  ✓ kolejnosc naprawa-przed-pokwitowaniem, ${opisane.length} ustalen ma instrukcje`);

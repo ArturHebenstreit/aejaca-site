@@ -6,13 +6,14 @@ import { useState, useRef, useEffect } from "react";
 const CONTACT_API_URL = import.meta.env.VITE_CHAT_API_URL;
 const CONTACT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 import { Link } from "react-router-dom";
-import { Send, Paperclip, X, MessageCircle, Mail } from "lucide-react";
+import { Send, Paperclip, X, MessageCircle, Mail, ShoppingCart, Microscope } from "lucide-react";
 import { trackInquiry, trackFunnel } from "../../utils/analytics.js";
 
 // Rdzen cenowy zyje w src/pricing/config.js, bo ten sam kod liczy cene
 // na backendzie zamowien. Tutaj tylko re-eksport, zeby kalkulatory
 // importowaly jak dotad.
 import { CONFIG, QUANTITY_TIERS, t, fmtNum, fmtCost, applyPricing } from "../../pricing/config.js";
+import { buildQuoteSummary } from "../../pricing/quoteSummary.js";
 export { CONFIG, QUANTITY_TIERS, t, fmtNum, fmtCost, applyPricing };
 
 // ============================================================
@@ -315,7 +316,7 @@ const QUOTE_LABELS = {
   },
 };
 
-export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummary, preAttachedFile = null, rateSnapshot = null }) {
+export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummary, preAttachedFile = null, rateSnapshot = null, embedded = false, summaryCtx = null }) {
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
   const [status, setStatus] = useState("idle");
@@ -368,7 +369,12 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
           email,
           lang,
           calculator: techLabel,
-          params: paramsSummary,
+          // Pelne podsumowanie, a nie sama lista wyborow: rozpiska ceny,
+          // uwagi do modelu i zgody musza zostac w dokumencie, ktory klient
+          // dostaje jako potwierdzenie.
+          params: summaryCtx
+            ? buildQuoteSummary({ ...summaryCtx, consents: { contact: consent } })
+            : paramsSummary,
           price: {
             perPcPLN: result.perPcPLN,
             perPcEUR: result.perPcEUR,
@@ -395,9 +401,13 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
     }
   }
 
+  // W panelu "Co dalej?" akcje maja wspolna ramke i wspolny naglowek, wiec
+  // wlasna kreska i wlasny tytul tylko powielalyby to, co juz stoi wyzej.
+  const shell = embedded ? "" : "mt-4 pt-4 border-t border-white/5";
+
   if (status === "sent") {
     return (
-      <div className="mt-4 pt-4 border-t border-white/5 text-center animate-in fade-in">
+      <div className={`${shell} text-center animate-in fade-in`}>
         <div className="inline-flex items-center gap-2 text-green-400 text-sm font-medium">
           <Mail className="w-4 h-4" />
           {lbl.sent}
@@ -408,12 +418,14 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
   }
 
   return (
-    <div className="mt-4 pt-4 border-t border-white/5">
+    <div className={shell}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
-        <div className="flex items-center gap-2 text-xs text-neutral-400 font-medium">
-          <Mail className="w-3.5 h-3.5 text-blue-400" />
-          {lbl.title}
-        </div>
+        {!embedded && (
+          <div className="flex items-center gap-2 text-xs text-neutral-400 font-medium">
+            <Mail className="w-3.5 h-3.5 text-blue-400" />
+            {lbl.title}
+          </div>
+        )}
 
         {/* Honeypot */}
         <div className="sr-only" aria-hidden="true">
@@ -568,7 +580,7 @@ function sanitizeText(text) {
     .slice(0, MAX_DESC_LENGTH);
 }
 
-export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttachedFile = null, requireLicenseConsent = false }) {
+export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttachedFile = null, requireLicenseConsent = false, embedded = false, summaryCtx = null }) {
   const il = INQUIRY_LABELS[lang] || INQUIRY_LABELS.en;
   const [email, setEmail] = useState("");
   const [description, setDescription] = useState("");
@@ -651,7 +663,16 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
     }
 
     const cleanDesc = sanitizeText(description);
-    const message = [paramsSummary, cleanDesc.trim()].filter(Boolean).join("\n\n");
+    const podsumowanie = summaryCtx
+      ? buildQuoteSummary({
+          ...summaryCtx,
+          consents: {
+            ...(requireLicenseConsent ? { license: licenseConsent } : {}),
+            ...(summaryCtx.printability?.blocked ? { printNotes: Boolean(summaryCtx.printability.accepted) } : {}),
+          },
+        })
+      : paramsSummary;
+    const message = [podsumowanie, cleanDesc.trim()].filter(Boolean).join("\n\n");
 
     if (!CONTACT_API_URL) {
       // Fallback to mailto
@@ -702,10 +723,12 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
   const descNearLimit = descLength > MAX_DESC_LENGTH * 0.85;
 
   return (
-    <div className="mt-6 rounded-2xl border border-blue-400/20 bg-gradient-to-br from-blue-400/[0.03] to-transparent p-5">
-      <div className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-4">
-        {il.title}, {techLabel}
-      </div>
+    <div className={embedded ? "" : "mt-6 rounded-2xl border border-blue-400/20 bg-gradient-to-br from-blue-400/[0.03] to-transparent p-5"}>
+      {!embedded && (
+        <div className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-4">
+          {il.title}, {techLabel}
+        </div>
+      )}
 
       {/* Honeypot, invisible to humans, bots auto-fill it */}
       <div className="sr-only" aria-hidden="true">
@@ -803,6 +826,216 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
         <Send className="w-4 h-4" />
         {sending ? il.sending : sent ? il.sent : (cooldown ? il.cooldown : il.send)}
       </button>
+    </div>
+  );
+}
+
+// ============================================================
+// PANEL "CO DALEJ", jedno miejsce na wszystkie akcje po wycenie
+// ============================================================
+// Do tej pory pod wynikiem staly cztery osobne wezwania, kazde we wlasnej
+// ramce: dodanie do koszyka, zapis wyceny, pole "wyslij wycene na email" i
+// pelny formularz zapytania. Kazde wygladalo na to glowne, wiec klient albo
+// wybieral pierwsze z brzegu, albo nie zauwazal tego, ktore pasowalo do jego
+// sytuacji. Nikt nie zglaszal bledu, bo bledu nie bylo. Byl tylko wybor
+// podjety przez zmeczenie.
+//
+// Teraz akcje stoja obok siebie w jednym oknie, a tresc wybranej rozwija sie
+// pod spodem. Zakup i analiza maja te sama wage wizualna, bo to sa dwie rowne
+// drogi dla dwoch roznych sytuacji, a nie sciezka glowna i awaryjna.
+
+const NEXT_STEP_LABELS = {
+  pl: {
+    title: "Co dalej?",
+    cart: "Dodaj do koszyka",
+    cartSub: "Zamawiasz od razu",
+    inquiry: "Wyślij do precyzyjnej wyceny",
+    inquirySub: "Sprawdzimy i odpiszemy",
+    email: "Wyślij mi tę wycenę na maila",
+    emailSub: "Wrócisz do niej później",
+    cartOff: "Tej konfiguracji nie policzymy automatycznie",
+    cartOffHint: "Wyceniamy ją indywidualnie, wystarczy zapytanie obok.",
+  },
+  en: {
+    title: "What next?",
+    cart: "Add to cart",
+    cartSub: "Order right away",
+    inquiry: "Send for a precise quote",
+    inquirySub: "We check it and reply",
+    email: "Email me this quote",
+    emailSub: "Come back to it later",
+    cartOff: "We cannot price this configuration automatically",
+    cartOffHint: "We quote it individually, an inquiry is enough.",
+  },
+  de: {
+    title: "Wie weiter?",
+    cart: "In den Warenkorb",
+    cartSub: "Direkt bestellen",
+    inquiry: "Zur genauen Kalkulation senden",
+    inquirySub: "Wir prüfen und antworten",
+    email: "Angebot per E-Mail",
+    emailSub: "Später darauf zurückkommen",
+    cartOff: "Diese Konfiguration können wir nicht automatisch berechnen",
+    cartOffHint: "Wir kalkulieren sie individuell, eine Anfrage genügt.",
+  },
+};
+
+function ActionTab({ active, disabled, onClick, icon: Icon, label, sub, accent }) {
+  const ring = accent === "amber" ? "border-amber-400/40 bg-amber-400/10" : "border-blue-400/40 bg-blue-400/10";
+  const text = accent === "amber" ? "text-amber-300" : "text-blue-300";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-pressed={active}
+      className={`flex-1 min-w-0 flex items-start gap-2.5 rounded-xl border px-3.5 py-3 text-left transition-colors ${
+        disabled
+          ? "border-white/5 bg-white/[0.02] text-neutral-600 cursor-not-allowed"
+          : active
+            ? `${ring} ${text}`
+            : "border-white/10 bg-white/[0.02] text-neutral-300 hover:border-white/20"
+      }`}
+    >
+      <Icon className="w-4 h-4 mt-0.5 shrink-0" />
+      <span className="min-w-0">
+        <span className="block text-sm font-medium leading-tight">{label}</span>
+        <span className="block text-[11px] text-neutral-500 leading-tight mt-0.5">{sub}</span>
+      </span>
+    </button>
+  );
+}
+
+/**
+ * Jedno okno z akcjami po wycenie.
+ *
+ * @param {React.ReactNode} [props.cart] gotowy <CalcToCart embedded />. Kazdy
+ *        kalkulator ma inne parametry zamowienia, wiec panel go nie sklada,
+ *        tylko dostaje gotowy i osadza.
+ * @param {boolean} [props.cartAvailable] czy zakup w ogole wchodzi w gre.
+ *        Fałsz przy wyniku "custom", przy pliku, ktorego nie wyceniamy z
+ *        geometrii, i wszedzie tam, gdzie parametry wychodza poza ramy.
+ */
+export function NextStepPanel({
+  lang = "pl",
+  techLabel,
+  paramsSummary,
+  result = null,
+  cart = null,
+  cartAvailable = true,
+  preAttachedFile = null,
+  requireLicenseConsent = false,
+  rateSnapshot = null,
+  accent = "blue",
+  printability = null,
+  fileScale = 1,
+}) {
+  const l = NEXT_STEP_LABELS[lang] || NEXT_STEP_LABELS.en;
+  const canBuy = Boolean(cart) && cartAvailable && result?.type !== "custom";
+  const canEmail = Boolean(result) && result.type !== "custom";
+  // Wybor klienta trzymamy osobno od wyboru pokazywanego, bo to nie to samo.
+  // Zapamietane jest tylko to, co klient sam kliknal; jesli ta zakladka
+  // przestaje byc dostepna, render sam schodzi na dostepna, bez poprawiania
+  // stanu po fakcie. Poprzednia wersja robila to efektem i update stanu w
+  // trakcie hydratacji przewracal granice Suspense w koszyku na renderowanie
+  // po stronie klienta.
+  const [chosen, setChosen] = useState(null);
+
+  // Gdy zakup przestaje byc mozliwy w trakcie (klient zmienil parametry albo
+  // wgral plik, ktorego nie wyceniamy), panel nie moze zostac na zakladce,
+  // ktorej juz nie ma. Inaczej klient patrzy na puste okno.
+  // Komplet danych do podsumowania w mailu. Zgody dokladaja sobie same
+  // formularze, bo tylko one wiedza, co klient odhaczyl w chwili wyslania.
+  const summaryCtx = {
+    techLabel,
+    params: paramsSummary,
+    result,
+    printability,
+    file: preAttachedFile ? { name: preAttachedFile.name, scale: fileScale } : null,
+    lang,
+  };
+
+  const dostepna = (a) => (a === "cart" ? canBuy : a === "email" ? canEmail : true);
+  const action = chosen && dostepna(chosen) ? chosen : canBuy ? "cart" : "inquiry";
+  const setAction = setChosen;
+
+  return (
+    <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+      <div className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">{l.title}</div>
+
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
+        <ActionTab
+          active={action === "cart"}
+          disabled={!canBuy}
+          onClick={() => setAction("cart")}
+          icon={ShoppingCart}
+          label={l.cart}
+          sub={canBuy ? l.cartSub : l.cartOff}
+          accent={accent}
+        />
+        <ActionTab
+          active={action === "inquiry"}
+          onClick={() => setAction("inquiry")}
+          icon={Microscope}
+          label={l.inquiry}
+          sub={l.inquirySub}
+          accent={accent}
+        />
+      </div>
+
+      {canEmail && (
+        <button
+          type="button"
+          onClick={() => setAction(action === "email" ? (canBuy ? "cart" : "inquiry") : "email")}
+          className={`w-full flex items-center gap-2 mb-4 text-xs transition-colors ${
+            action === "email" ? "text-blue-300" : "text-neutral-500 hover:text-neutral-300"
+          }`}
+        >
+          <Mail className="w-3.5 h-3.5 shrink-0" />
+          <span>{l.email}</span>
+          <span className="text-neutral-600">{action === "email" ? "▲" : "▼"}</span>
+        </button>
+      )}
+
+      {!canBuy && action === "inquiry" && cart && (
+        <div className="mb-3 text-[11px] text-neutral-500 leading-relaxed">{l.cartOffHint}</div>
+      )}
+
+      {/* Koszyk zostaje zamontowany zawsze, tylko schowany, gdy klient patrzy
+          na inna zakladke. To on pyta serwer o kwote wiazaca i oddaje ja wyzej
+          przez onBinding, wiec odmontowanie go kasowaloby cene, ktora naglowek
+          wyniku juz zdazyl ogloszyc. Nic by sie nie wywalilo, po prostu kwota
+          zniknelaby bez slowa. */}
+      {cart && (
+        <div className={action === "cart" && canBuy ? "" : "hidden"} aria-hidden={action !== "cart"}>
+          {cart}
+        </div>
+      )}
+
+      {action === "inquiry" && (
+        <InquiryForm
+          embedded
+          summaryCtx={summaryCtx}
+          lang={lang}
+          techLabel={techLabel}
+          paramsSummary={paramsSummary}
+          preAttachedFile={preAttachedFile}
+          requireLicenseConsent={requireLicenseConsent}
+        />
+      )}
+
+      {action === "email" && canEmail && (
+        <QuoteEmailCapture
+          embedded
+          summaryCtx={summaryCtx}
+          result={result}
+          lang={lang}
+          techLabel={techLabel}
+          paramsSummary={paramsSummary}
+          preAttachedFile={preAttachedFile}
+          rateSnapshot={rateSnapshot}
+        />
+      )}
     </div>
   );
 }

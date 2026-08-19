@@ -786,7 +786,19 @@ app.post("/api/quote", express.json({ limit: "50mb" }), async (req, res) => {
     email: email.trim().toLowerCase(),
     lang: ["pl", "en", "de"].includes(lang) ? lang : "pl",
     calculator: String(calculator).slice(0, 200),
-    params: String(params).slice(0, 1000),
+    // Limit podniesiony z 1000 na 8000 znakow. Pole niesie teraz pelne
+    // podsumowanie (wybory, rozpiska ceny, uwagi do modelu, zgody), a nie
+    // sama liste wyborow. Przy tysiacu znakow ucinalo sie w polowie rozpiski
+    // i nikt by tego nie zauwazyl, bo mail nadal wygladalby poprawnie.
+    //
+    // Apostrofy zamieniamy na typograficzne, bo n8n wkleja to pole WPROST do
+    // zapytania SQL zapisujacego leada (`VALUES ('{{ params }}', ...)`).
+    // Dopoki szlo tam kilka naszych wlasnych etykiet, ryzyko bylo teoretyczne.
+    // Teraz w podsumowaniu jest nazwa pliku, ktora podaje klient, wiec jeden
+    // apostrof wywracalby zapis leada, a spreparowana nazwa robilaby wiecej.
+    // Wlasciwym miejscem naprawy jest zapytanie parametryzowane w n8n, ale
+    // tego nie wdrozymy z repozytorium, wiec zamykamy to tutaj.
+    params: String(params).slice(0, 8000).replace(/'/g, "’"),
     quoteRef,
     price,
     ts: ts || new Date().toISOString(),

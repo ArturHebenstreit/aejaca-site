@@ -3,12 +3,13 @@
 // ============================================================
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { Upload, X, AlertTriangle } from "lucide-react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture, LicenseNotice } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, MaterialCards, HeroCards, LicenseNotice, NextStepPanel } from "./calcShared.jsx";
 import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
 import { QuantityStepper } from "../shop/ConfigControls.jsx";
 import CalcToCart from "./CalcToCart.jsx";
 import PrintabilityGate from "./PrintabilityGate.jsx";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
+import { looksTooSmall, suspectUnits } from "../../pricing/meshUnits.js";
 
 /** Te same formaty, ktore przyjmuje konfigurator w sklepie */
 const ACCEPT_MODEL = ".stl,.obj,.3mf,.step,.stp";
@@ -131,17 +132,23 @@ const STL_LBL = {
     dropHint: "Kliknij lub przeciągnij model: STL, OBJ, 3MF lub STEP", dropSub: "Automatyczna wycena na podstawie objętości i wymiarów",
     volume: "Objętość", dims: "Wymiary",
     triangles: "Trójkąty", remove: "Usuń", exceeds: "Model przekracza przestrzeń druku", stlSize: "Rozmiar z pliku",
-    scale: "Skala wydruku", fitToPlate: "Dopasuj do płyty", original: "Oryg." },
+    scale: "Skala wydruku", fitToPlate: "Dopasuj do płyty", original: "Oryg.",
+    unitTitle: "Ten model ma po odczycie", unitText: "Pliki STL i OBJ nie zapisują jednostki, więc czytamy je jako milimetry - a ten plik prawdopodobnie zapisano inaczej.",
+    unitRead: "Czytaj w", unitClose: "Jeśli żadna z tych wartości nie pasuje, wielkość ustaw skalą wydruku powyżej." },
   en: { upload: "Upload a 3D model", orManual: "or select size manually below",
     dropHint: "Click or drag a model: STL, OBJ, 3MF or STEP", dropSub: "Auto-quote based on volume and dimensions",
     volume: "Volume", dims: "Dimensions",
     triangles: "Triangles", remove: "Remove", exceeds: "Model exceeds build volume", stlSize: "Size from file",
-    scale: "Print scale", fitToPlate: "Fit to plate", original: "Orig." },
+    scale: "Print scale", fitToPlate: "Fit to plate", original: "Orig.",
+    unitTitle: "This model reads as", unitText: "STL and OBJ files do not store a unit, so we read them as millimeters - this file was probably saved differently.",
+    unitRead: "Read in", unitClose: "If none of these values fits, set the size with the print scale above." },
   de: { upload: "3D-Modell hochladen", orManual: "oder Größe unten manuell wählen",
     dropHint: "Modell klicken oder ziehen: STL, OBJ, 3MF oder STEP", dropSub: "Automatische Kalkulation anhand von Volumen und Maßen",
     volume: "Volumen", dims: "Abmessungen",
     triangles: "Dreiecke", remove: "Entfernen", exceeds: "Modell überschreitet Bauraum", stlSize: "Größe aus Datei",
-    scale: "Druckmaßstab", fitToPlate: "An Platte anpassen", original: "Orig." },
+    scale: "Druckmaßstab", fitToPlate: "An Platte anpassen", original: "Orig.",
+    unitTitle: "Dieses Modell wird gelesen als", unitText: "STL- und OBJ-Dateien speichern keine Einheit, wir lesen sie daher als Millimeter - diese Datei wurde wahrscheinlich anders gespeichert.",
+    unitRead: "Lesen in", unitClose: "Wenn keiner dieser Werte passt, stellen Sie die Größe oben über den Druckmaßstab ein." },
 };
 
 
@@ -180,6 +187,11 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
   const exceeds = scaledB.x > buildVolCm.x + TOL || scaledB.y > buildVolCm.y + TOL || scaledB.z > buildVolCm.z + TOL;
   const scaledVol = stlData.volumeCm3 * scale * scale * scale;
 
+  // Zgadujemy jednostke tylko z odczytu SUROWEGO (bez skali uzytkownika),
+  // bo o niej wlasnie chodzi: czy plik przyszedl w metrach albo centymetrach
+  // zamiast w milimetrach. Patrz src/pricing/meshUnits.js.
+  const unitOptions = looksTooSmall(rawMaxCm) ? suspectUnits(rawMaxCm) : [];
+
   return (
     <div className="rounded-xl border border-blue-400/20 bg-blue-400/[0.03] p-4 space-y-3">
       <div className="flex items-center justify-between">
@@ -196,6 +208,30 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
         <div><div className="text-neutral-400">{sl.dims}</div><div className="font-bold">{(scaledB.x*10).toFixed(1)}×{(scaledB.y*10).toFixed(1)}×{(scaledB.z*10).toFixed(1)} mm</div></div>
         <div><div className="text-neutral-400">{sl.triangles}</div><div className="font-bold">{stlData.triangleCount.toLocaleString()}</div></div>
       </div>
+
+      {/* Model odczytany jako nieprawdopodobnie maly: najczesciej plik zapisano
+          w metrach albo centymetrach, a odczytujemy go jako milimetry. */}
+      {unitOptions.length > 0 && (
+        <div className="rounded-xl border border-amber-400/25 bg-amber-400/[0.06] p-3">
+          <div className="flex items-center gap-2 mb-1.5">
+            <AlertTriangle className="w-4 h-4 text-amber-300 shrink-0" />
+            <h4 className="text-xs font-semibold text-amber-200">{sl.unitTitle} {rawMaxCm.toFixed(1)} cm</h4>
+          </div>
+          <p className="text-[11px] text-neutral-300 leading-relaxed mb-2">{sl.unitText}</p>
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {unitOptions.map((u) => (
+              <button
+                key={u.id}
+                onClick={() => onScaleChange(u.factor)}
+                className="px-2 py-1.5 rounded-lg bg-amber-400/15 border border-amber-400/40 text-amber-200 text-[11px] font-semibold hover:bg-amber-400/25 transition-colors"
+              >
+                {sl.unitRead} {t(u.label, lang)} ({u.correctedCm.toFixed(1)} cm)
+              </button>
+            ))}
+          </div>
+          <p className="text-[11px] text-neutral-400 leading-relaxed">{sl.unitClose}</p>
+        </div>
+      )}
 
       {/* Scale controls */}
       <div className="border-t border-white/5 pt-2 space-y-1.5">
@@ -467,7 +503,6 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
         <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
           <ResultHeader lang={lang} binding={bindingGrosze != null} />
           <ResultDisplay result={mslaResult} lang={lang} hideRange={bindingGrosze != null} />
-          <QuoteEmailCapture result={mslaResult} lang={lang} techLabel={t(TECH_LABEL_MSLA, lang)} preAttachedFile={mslaStlFile} paramsSummary={mslaParamsSummary} />
           <PrintabilityGate
             triangles={mslaStlData?.triangles || null}
             tech="msla"
@@ -476,22 +511,32 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
             scale={mslaStlScale}
             onResult={setMslaPrint}
           />
-          <CalcToCart
-            onBinding={setBindingGrosze}
-            calculator="print3d_msla"
-            serviceId="print_msla"
-            params={{ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId, printability: mslaPrint }}
-            qty={mslaQty}
-            file={mslaStlFile}
-            triangles={mslaStlData?.triangles || null}
-            scale={mslaStlScale}
+          <NextStepPanel
             lang={lang}
-            hold={Boolean(mslaPrint?.blocked && !mslaPrint?.accepted)}
+            techLabel={t(TECH_LABEL_MSLA, lang)}
+            paramsSummary={mslaParamsSummary}
+            result={mslaResult}
+            printability={mslaPrint}
+            fileScale={mslaStlScale}
+            preAttachedFile={mslaStlFile}
+            requireLicenseConsent={isFigurine}
+            cart={
+              <CalcToCart
+                embedded
+                onBinding={setBindingGrosze}
+                calculator="print3d_msla"
+                serviceId="print_msla"
+                params={{ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId, printability: mslaPrint }}
+                qty={mslaQty}
+                file={mslaStlFile}
+                triangles={mslaStlData?.triangles || null}
+                scale={mslaStlScale}
+                lang={lang}
+                hold={Boolean(mslaPrint?.blocked && !mslaPrint?.accepted)}
+              />
+            }
           />
         </div>
-
-        <InquiryForm lang={lang} techLabel={t(TECH_LABEL_MSLA, lang)} preAttachedFile={mslaStlFile} paramsSummary={mslaParamsSummary}
-          requireLicenseConsent={isFigurine} />
       </div>
     );
   }
@@ -529,14 +574,6 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
-        <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)} preAttachedFile={stlFile} paramsSummary={[
-          `${FILAMENTS[segment].label}: ${materialKey}`,
-          stlSummary || t(SIZES.find(s => s.id === sizeId)?.label, lang),
-          t(INFILL_OPTIONS.find(i => i.id === infillId)?.label, lang),
-          t(COLORS.find(c => c.id === colorId)?.label, lang),
-          t(PRECISION.find(p => p.id === precisionId)?.label, lang),
-          t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
-        ].join(" | ")} />
         {/* Siatke podajemy w oryginale, a skale osobno: bramka skaluje ja sama
             przed analiza. `scaledStlData` przelicza tylko objetosc i gabaryt,
             wiec podane stad trojkaty mialy wymiary sprzed zmniejszenia. */}
@@ -549,28 +586,38 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
           scale={stlScale}
           onResult={setFdmPrint}
         />
-        <CalcToCart
-          onBinding={setBindingGrosze}
-          calculator="print3d_fdm"
-          serviceId="print_fdm"
-          params={{ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, printability: fdmPrint }}
-          qty={fdmQty}
-          file={stlFile}
-          triangles={stlData?.triangles || null}
-          scale={stlScale}
+        <NextStepPanel
           lang={lang}
-          hold={Boolean(fdmPrint?.blocked && !fdmPrint?.accepted)}
+          printability={fdmPrint}
+          fileScale={stlScale}
+          techLabel={t(TECH_LABEL, lang)}
+          paramsSummary={[
+            `${FILAMENTS[segment].label}: ${materialKey}`,
+            stlSummary || t(SIZES.find(s => s.id === sizeId)?.label, lang),
+            t(INFILL_OPTIONS.find(i => i.id === infillId)?.label, lang),
+            t(COLORS.find(c => c.id === colorId)?.label, lang),
+            t(PRECISION.find(p => p.id === precisionId)?.label, lang),
+            t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
+          ].join(" | ")}
+          result={result}
+          preAttachedFile={stlFile}
+          cart={
+            <CalcToCart
+              embedded
+              onBinding={setBindingGrosze}
+              calculator="print3d_fdm"
+              serviceId="print_fdm"
+              params={{ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, printability: fdmPrint }}
+              qty={fdmQty}
+              file={stlFile}
+              triangles={stlData?.triangles || null}
+              scale={stlScale}
+              lang={lang}
+              hold={Boolean(fdmPrint?.blocked && !fdmPrint?.accepted)}
+            />
+          }
         />
       </div>
-
-      <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} preAttachedFile={stlFile} paramsSummary={[
-        `${FILAMENTS[segment].label}: ${materialKey}`,
-        stlSummary || t(SIZES.find(s => s.id === sizeId)?.label, lang),
-        t(INFILL_OPTIONS.find(i => i.id === infillId)?.label, lang),
-        t(COLORS.find(c => c.id === colorId)?.label, lang),
-        t(PRECISION.find(p => p.id === precisionId)?.label, lang),
-        t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
-      ].join(" | ")} />
     </div>
   );
 }

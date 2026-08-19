@@ -13,7 +13,7 @@ import {
   Lightbulb, Upload, X, FileBox, Ruler, Layers, Loader2, AlertTriangle,
 } from "lucide-react";
 import {
-  QUANTITY_TIERS, t, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, QuoteEmailCapture, LicenseNotice,
+  QUANTITY_TIERS, t, Chips, CalcCard, ResultHeader, ResultDisplay, LicenseNotice, NextStepPanel,
 } from "./calcShared.jsx";
 import CalcToCart from "./CalcToCart.jsx";
 import MaterialNotice from "../MaterialNotice.jsx";
@@ -36,6 +36,7 @@ import { nozzleFromPrecision } from "../../analysis/printability.js";
 import SizeSlider, { categoryForCm } from "./SizeSlider.jsx";
 import { resolveTechAndParams, runCalc } from "../../pricing/simpleQuote.js";
 import { scaleMesh, scaleVector, meshMaxCm, vectorMaxCm } from "../../pricing/scaleGeometry.js";
+import { looksTooSmall, suspectUnits } from "../../pricing/meshUnits.js";
 import { BUILD_VOL_CM, maxScaleForBuildVolume } from "../../pricing/print3d.js";
 import { trackCalc } from "../../utils/analytics.js";
 
@@ -176,9 +177,12 @@ const LBL = {
     q0: "Masz gotowy plik?", q0hint: "Wrzuć plik STL lub SVG - wycenimy automatycznie",
     q0drop: "Przeciągnij plik tutaj", q0tap: "Kliknij, aby wybrać plik", q0or: "lub kliknij, aby wybrać", q0accept: ".stl, .obj, .3mf, .step, .svg, .dxf, .ai, .pdf",
     q0skip: "Nie mam pliku - opiszę co potrzebuję",
-    q0detected: "Wykryto", q0stl: "Model 3D (STL)", q0svg: "Grafika wektorowa (SVG)",
+    q0detected: "Wykryto", q0stl: "Model 3D (STL)", q0model: "Model 3D", q0svg: "Grafika wektorowa (SVG)",
     q0dims: "Wymiary", q0vol: "Objętość", q0area: "Powierzchnia", q0paths: "Ścieżki",
     q0remove: "Usuń plik", q0selected: "Wybrano", q0selSize: "Rozmiar", q0selMat: "Materiał",
+    unitTitle: "Ten model ma po odczycie", unitTitleSuffix: "cm",
+    unitText: "Pliki STL i OBJ nie zapisują jednostki, więc czytamy je jako milimetry - a ten plik prawdopodobnie zapisano inaczej.",
+    unitRead: "Czytaj w", unitClose: "Jeśli żadna z tych wartości nie pasuje, wielkość można ustawić suwakiem poniżej.",
     haveMesh: "Mam gotowy plik 3D", haveMeshSub: "STL, OBJ, 3MF, STEP",
     haveVector: "Mam gotowy plik wektorowy", haveVectorSub: "SVG, DXF, AI, PDF",
     dimOriginal: "Wymiar oryginalny", dimTarget: "Wymiar do realizacji",
@@ -187,6 +191,11 @@ const LBL = {
     overPlateText: "Największa maszyna ma pole robocze 30 x 32 x 32,5 cm. Są dwa wyjścia i oba u nas działają.",
     overPlateFit: "Zmniejsz do największej, która się mieści",
     overPlateSplit: "Zostaw tę wielkość i poproś o wycenę: przy dużych obiektach tniemy model na części i sklejamy po wydruku. Szew planujemy na krawędzi, żeby go nie było widać.",
+    techQ: "Jaką techniką wydrukować?",
+    techFdmName: "Z filamentu (FDM)", techFdmDesc: "Wytrzymały, tańszy, widoczne warstwy. Do części, obudów i rzeczy używanych na co dzień.",
+    techMslaName: "Z żywicy (MSLA)", techMslaDesc: "Gładka powierzchnia i drobne detale, za to bardziej krucha. Do figurek, miniatur i modeli.",
+    techAuto: "wybrane automatycznie",
+    q1file: "Do czego to służy?", q1fileHint: "Od tego zależy materiał i technologia, nie wielkość.",
     q1: "Co chcesz wykonać?", q2: "Jak duże?", q3: "Z jakiego materiału?", q4: "Jakość wykonania?", q5: "Ile sztuk?",
     suggestion: "Sugerowana technologia",
     why: "Dlaczego?",
@@ -198,9 +207,12 @@ const LBL = {
     q0: "Got a file ready?", q0hint: "Drop an STL or SVG file - we'll quote it automatically",
     q0drop: "Drag your file here", q0tap: "Tap to choose a file", q0or: "or click to browse", q0accept: ".stl, .obj, .3mf, .step, .svg, .dxf, .ai, .pdf",
     q0skip: "No file - I'll describe what I need",
-    q0detected: "Detected", q0stl: "3D model (STL)", q0svg: "Vector graphic (SVG)",
+    q0detected: "Detected", q0stl: "3D model (STL)", q0model: "3D model", q0svg: "Vector graphic (SVG)",
     q0dims: "Dimensions", q0vol: "Volume", q0area: "Area", q0paths: "Paths",
     q0remove: "Remove file", q0selected: "Selected", q0selSize: "Size", q0selMat: "Material",
+    unitTitle: "This model reads as", unitTitleSuffix: "cm",
+    unitText: "STL and OBJ files do not store a unit, so we read them as millimeters - this file was probably saved differently.",
+    unitRead: "Read in", unitClose: "If none of these values fits, you can set the size with the slider below.",
     haveMesh: "I have a 3D file", haveMeshSub: "STL, OBJ, 3MF, STEP",
     haveVector: "I have a vector file", haveVectorSub: "SVG, DXF, AI, PDF",
     dimOriginal: "Original size", dimTarget: "Size we will make",
@@ -209,6 +221,11 @@ const LBL = {
     overPlateText: "The largest machine has a 30 x 32 x 32.5 cm build volume. There are two ways out and we do both.",
     overPlateFit: "Scale down to the largest that fits",
     overPlateSplit: "Keep this size and ask for a quote: on large objects we split the model and bond the parts after printing. We place the seam on an edge so it does not show.",
+    techQ: "Which printing technology?",
+    techFdmName: "Filament (FDM)", techFdmDesc: "Tough, cheaper, visible layers. For parts, housings and everyday objects.",
+    techMslaName: "Resin (MSLA)", techMslaDesc: "Smooth surface and fine detail, but more brittle. For figurines, miniatures and models.",
+    techAuto: "chosen automatically",
+    q1file: "What is it for?", q1fileHint: "This drives the material and the technology, not the size.",
     q1: "What do you want to make?", q2: "How big?", q3: "What material?", q4: "Quality?", q5: "How many?",
     suggestion: "Suggested technology",
     why: "Why?",
@@ -220,9 +237,12 @@ const LBL = {
     q0: "Haben Sie eine Datei?", q0hint: "Laden Sie eine STL- oder SVG-Datei hoch - wir kalkulieren automatisch",
     q0drop: "Datei hierher ziehen", q0tap: "Tippen um Datei auszuwählen", q0or: "oder klicken zum Auswählen", q0accept: ".stl, .obj, .3mf, .step, .svg, .dxf, .ai, .pdf",
     q0skip: "Keine Datei - ich beschreibe was ich brauche",
-    q0detected: "Erkannt", q0stl: "3D-Modell (STL)", q0svg: "Vektorgrafik (SVG)",
+    q0detected: "Erkannt", q0stl: "3D-Modell (STL)", q0model: "3D-Modell", q0svg: "Vektorgrafik (SVG)",
     q0dims: "Maße", q0vol: "Volumen", q0area: "Fläche", q0paths: "Pfade",
     q0remove: "Datei entfernen", q0selected: "Ausgewählt", q0selSize: "Größe", q0selMat: "Material",
+    unitTitle: "Dieses Modell wird gelesen als", unitTitleSuffix: "cm",
+    unitText: "STL- und OBJ-Dateien speichern keine Einheit, wir lesen sie daher als Millimeter - diese Datei wurde wahrscheinlich anders gespeichert.",
+    unitRead: "Lesen in", unitClose: "Wenn keiner dieser Werte passt, können Sie die Größe mit dem Regler unten einstellen.",
     haveMesh: "Ich habe eine 3D-Datei", haveMeshSub: "STL, OBJ, 3MF, STEP",
     haveVector: "Ich habe eine Vektordatei", haveVectorSub: "SVG, DXF, AI, PDF",
     dimOriginal: "Originalmaß", dimTarget: "Maß für die Ausführung",
@@ -231,6 +251,11 @@ const LBL = {
     overPlateText: "Die größte Maschine hat einen Bauraum von 30 x 32 x 32,5 cm. Es gibt zwei Wege und beide gehen wir.",
     overPlateFit: "Auf die größte passende Größe verkleinern",
     overPlateSplit: "Diese Größe behalten und ein Angebot anfragen: bei großen Objekten teilen wir das Modell und fügen die Teile nach dem Druck. Die Naht legen wir auf eine Kante, damit sie nicht auffällt.",
+    techQ: "Mit welcher Drucktechnik?",
+    techFdmName: "Aus Filament (FDM)", techFdmDesc: "Robust, günstiger, sichtbare Schichten. Für Teile, Gehäuse und Alltagsgegenstände.",
+    techMslaName: "Aus Harz (MSLA)", techMslaDesc: "Glatte Oberfläche und feine Details, dafür spröder. Für Figuren, Miniaturen und Modelle.",
+    techAuto: "automatisch gewählt",
+    q1file: "Wofür ist es?", q1fileHint: "Davon hängen Material und Technologie ab, nicht die Größe.",
     q1: "Was möchten Sie herstellen?", q2: "Wie groß?", q3: "Welches Material?", q4: "Qualität?", q5: "Wie viele?",
     suggestion: "Empfohlene Technologie",
     why: "Warum?",
@@ -462,6 +487,22 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
     [fileType, stlData, svgData]
   );
 
+  // Rozszerzenie wgranego pliku, do etykiety "Wykryto". STL, OBJ, 3MF i STEP/STP
+  // ida tym samym parserem, wiec bez tego etykieta zawsze mowila "STL", nawet
+  // gdy klient wgral OBJ.
+  const EXT_LABEL = { STL: "STL", OBJ: "OBJ", "3MF": "3MF", STEP: "STEP", STP: "STEP" };
+  const detectedExtLabel = fileName ? EXT_LABEL[fileName.split(".").pop().toUpperCase()] || null : null;
+
+  // Model po odczycie jest fizycznie nieprawdopodobny (patrz meshUnits.js):
+  // najczesciej to plik zapisany w metrach albo centymetrach, a odczytany
+  // jako milimetry. Pytamy klienta, zamiast zgadywac za niego.
+  const unitOptions = fileType === "stl" && stlData && looksTooSmall(originalCm) ? suspectUnits(originalCm) : [];
+
+  function applyUnitFix(factor, correctedCm) {
+    setStlData(scaleMesh(stlData, factor));
+    setSizeCm(correctedCm);
+  }
+
   const scale = originalCm ? sizeCm / originalCm : 1;
 
   // Granica pola roboczego liczona z calej bryly, a nie z jednego wymiaru:
@@ -476,12 +517,19 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
 
   const size = categoryForCm(sizeCm);
 
+  // Wybor technologii druku. null znaczy "jak wynika z odpowiedzi", czyli tak,
+  // jak dzialalo dotad. Wartosc pojawia sie dopiero, gdy klient sam przelaczy.
+  const [printTech, setPrintTech] = useState(null);
+
   const scaledStl = useMemo(() => scaleMesh(stlData, scale), [stlData, scale]);
   const scaledSvg = useMemo(() => scaleVector(svgData, scale), [svgData, scale]);
 
+  const odpowiedzi = { item, size, material, finish, quantity, fileType, stlData: scaledStl, svgData: scaledSvg };
+
   const resolved = useMemo(
-    () => resolveTechAndParams({ item, size, material, finish, quantity, fileType, stlData: scaledStl, svgData: scaledSvg }),
-    [item, size, material, finish, quantity, fileType, scaledStl, scaledSvg]
+    () => resolveTechAndParams({ ...odpowiedzi, printTech }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, printTech]
   );
 
   // Ponad polem roboczym NIE podajemy kwoty. Cena za rzecz, ktorej nie da sie
@@ -490,6 +538,18 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
   const result = useMemo(
     () => (overPlate ? { type: "custom" } : runCalc(resolved, lang)),
     [resolved, lang, overPlate]
+  );
+
+  // Druga technologia druku, policzona z TYCH SAMYCH odpowiedzi. Klient
+  // szybkiej wyceny czesto nie wie, czym rozni sie filament od zywicy, a
+  // roznica dotyczy i wygladu, i ceny. Sama nazwa technologii niczego mu nie
+  // mowi; dwie kwoty obok siebie mowia wszystko.
+  const drukowe = resolved?.tech === "3dprint" || resolved?.tech === "msla";
+  const drugaTech = resolved?.tech === "msla" ? "fdm" : "msla";
+  const drugiWynik = useMemo(
+    () => (!drukowe || overPlate ? null : runCalc(resolveTechAndParams({ ...odpowiedzi, printTech: drugaTech }), lang)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [drukowe, drugaTech, overPlate, lang, item, size, material, finish, quantity, fileType, scaledStl, scaledSvg]
   );
 
   // Szybka wycena otwiera sie domyslnie, wiec bez tego wiekszosc odwiedzajacych
@@ -549,7 +609,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
           ktorego nie da sie wypelnic. Teraz zaczynamy od pytania, a plik jest
           jedna z odpowiedzi na nie.
           ------------------------------------------------------------------ */}
-      <SimpleCard stepNum="①" label={l.q1} id="simple-upload">
+      <SimpleCard stepNum="①" label={hasFile ? l.q1file : l.q1} id="simple-upload">
         {/* Dwie drogi na skroty dla tych, ktorzy maja gotowy projekt */}
         <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3">
           {[
@@ -653,7 +713,7 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
                 <div className="min-w-0">
                   <div className="text-sm font-semibold text-white truncate">{fileName}</div>
                   <div className="text-[11px] text-emerald-400/80">
-                    {l.q0detected}: {fileType === "stl" ? l.q0stl : l.q0svg}
+                    {l.q0detected}: {fileType === "stl" ? (detectedExtLabel ? `${l.q0model} (${detectedExtLabel})` : l.q0stl) : l.q0svg}
                   </div>
                 </div>
               </div>
@@ -710,9 +770,43 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
           </div>
         )}
 
-        {/* Pytanie zostaje takze po wgraniu pliku: od tego, CO to jest, zalezy
-            dobor materialu i technologii. Czesc techniczna dostaje filament
-            inzynieryjny, breloczek nie. */}
+        {/* Model odczytany jako nieprawdopodobnie maly. STL/OBJ nie niosa
+            jednostki, wiec zgadujemy zamiast liczyc cene z grudki 2 mm. */}
+        {unitOptions.length > 0 && (
+          <div className="mb-3 rounded-xl border border-amber-400/25 bg-amber-400/[0.06] p-4">
+            <div className="flex items-center gap-2 mb-1.5">
+              <AlertTriangle className="w-4 h-4 text-amber-300 shrink-0" />
+              <h4 className="text-sm font-semibold text-amber-200">
+                {l.unitTitle} {originalCm.toFixed(1)} {l.unitTitleSuffix}
+              </h4>
+            </div>
+            <p className="text-[11px] text-neutral-300 leading-relaxed mb-3">{l.unitText}</p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {unitOptions.map((u) => (
+                <button
+                  key={u.id}
+                  onClick={() => applyUnitFix(u.factor, u.correctedCm)}
+                  className="px-3 py-2 rounded-lg bg-amber-400/15 border border-amber-400/40 text-amber-200 text-xs font-semibold hover:bg-amber-400/25 transition-colors"
+                >
+                  {l.unitRead} {t(u.label, lang)} ({u.correctedCm.toFixed(1)} cm)
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] text-neutral-400 leading-relaxed">{l.unitClose}</p>
+          </div>
+        )}
+
+        {/* Kafelki zostaja takze po wgraniu pliku, bo od tego, CO to jest,
+            zalezy material i technologia: czesc techniczna dostaje filament
+            inzynieryjny, breloczek nie.
+            Zmienia sie natomiast PYTANIE. Przy pustym ekranie brzmi "co chcesz
+            wykonac", czyli jest wyborem przedmiotu. Po wgraniu pliku ten sam
+            wybor obok podgladu modelu czytal sie jak druga, konkurencyjna
+            odpowiedz na to samo pytanie, wiec klient nie wiedzial, co wlasciwie
+            zamawia. Teraz brzmi "do czego to sluzy" i jest doprecyzowaniem. */}
+        {hasFile && (
+          <p className="text-[11px] text-neutral-500 mb-2">{l.q1fileHint}</p>
+        )}
         <TileGrid options={ITEMS} value={item} onChange={handleSet(setItem, "item")} lang={lang} cols={4} />
       </SimpleCard>
 
@@ -748,6 +842,49 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
       <SimpleCard stepNum="③" label={l.q3}>
         <TileGrid options={MATERIALS} value={material} onChange={handleSet(setMaterial, "material")} lang={lang} cols={3} disabledIds={matDisabledIds} />
       </SimpleCard>
+
+      {/* Technologia druku. Do tej pory wybieralismy ja po cichu, a klient
+          szybkiej wyceny czesto nie wie, ze filament i zywica to dwie rozne
+          rzeczy: inny wyglad, inna wytrzymalosc, inna cena. Dostawal wiec
+          wyrob, ktorego sie nie spodziewal, i nie mial jak tego przewidziec.
+          Nazwa technologii sama w sobie nic mu nie mowi, wiec kazda karta
+          niesie zdanie o tym, do czego sie nadaje, i wlasna kwote. */}
+      {drukowe && (
+        <SimpleCard stepNum="◆" label={l.techQ}>
+          <div className="grid sm:grid-cols-2 gap-2">
+            {[
+              { id: "fdm", tech: "3dprint", nazwa: l.techFdmName, opis: l.techFdmDesc },
+              { id: "msla", tech: "msla", nazwa: l.techMslaName, opis: l.techMslaDesc },
+            ].map((o) => {
+              const aktywna = resolved?.tech === o.tech;
+              const wynik = aktywna ? result : drugiWynik;
+              const kwota = wynik?.type === "calculated"
+                ? `${wynik.perPcPLN ? (lang === "pl" ? `${wynik.perPcPLN.min} - ${wynik.perPcPLN.max} PLN` : `${wynik.perPcEUR.min} - ${wynik.perPcEUR.max} EUR`) : ""}`
+                : null;
+              return (
+                <button
+                  key={o.id}
+                  type="button"
+                  onClick={() => setPrintTech(o.id)}
+                  aria-pressed={aktywna}
+                  className={`text-left rounded-xl border p-3 transition-colors ${
+                    aktywna ? "border-emerald-400/50 bg-emerald-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/25"
+                  }`}
+                >
+                  <div className={`text-sm font-medium ${aktywna ? "text-emerald-300" : "text-neutral-200"}`}>{o.nazwa}</div>
+                  <div className="text-[11px] text-neutral-500 leading-tight mt-1">{o.opis}</div>
+                  {kwota && (
+                    <div className={`text-xs mt-2 font-medium ${aktywna ? "text-emerald-300" : "text-neutral-400"}`}>{kwota}</div>
+                  )}
+                  {aktywna && printTech === null && (
+                    <div className="text-[10px] text-neutral-600 mt-1">{l.techAuto}</div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </SimpleCard>
+      )}
 
       <SimpleCard stepNum="④" label={l.q4}>
         <TileGrid options={FINISH} value={finish} onChange={handleSet(setFinish, "finish")} lang={lang} cols={3} />
@@ -828,33 +965,38 @@ export default function SimpleStudioCalc({ lang = "pl" }) {
             onResult={setPrintability}
           />
         )}
-        {cartTarget && (
-          <CalcToCart
-            onBinding={setBindingGrosze}
-            calculator={cartTarget.calculator}
-            serviceId={cartTarget.serviceId}
-            params={{
-              ...resolved.params,
-              ...((resolved?.tech === "co2" || resolved?.tech === "fiber") ? { podloze, spare, materialNote } : {}),
-              ...(printability ? { printability } : {}),
-            }}
-            lang={lang}
-            hold={Boolean(printability?.blocked && !printability?.accepted)}
-          />
-        )}
+        <NextStepPanel
+          lang={lang}
+          techLabel={techLabel ? `Szybka wycena - ${techLabel}` : "Szybka wycena"}
+          paramsSummary={paramsSummary}
+          result={result}
+          printability={printability}
+          fileScale={scale}
+          preAttachedFile={uploadedFile}
+          requireLicenseConsent={isMslaPath}
+          cartAvailable={!overPlate && !fileForHuman}
+          cart={
+            cartTarget ? (
+              <CalcToCart
+                embedded
+                onBinding={setBindingGrosze}
+                calculator={cartTarget.calculator}
+                serviceId={cartTarget.serviceId}
+                params={{
+                  ...resolved.params,
+                  ...((resolved?.tech === "co2" || resolved?.tech === "fiber") ? { podloze, spare, materialNote } : {}),
+                  ...(printability ? { printability } : {}),
+                }}
+                lang={lang}
+                hold={Boolean(printability?.blocked && !printability?.accepted)}
+              />
+            ) : null
+          }
+        />
         <div className="mt-4 pt-3 border-t border-emerald-400/10 text-[11px] text-emerald-400/60 italic text-center">
           {l.switchHint}
         </div>
-        <QuoteEmailCapture result={result} lang={lang} techLabel={techLabel ? `Szybka wycena - ${techLabel}` : "Szybka wycena"} paramsSummary={paramsSummary} preAttachedFile={uploadedFile} />
       </div>
-
-      <InquiryForm
-        lang={lang}
-        techLabel={techLabel ? `Szybka wycena - ${techLabel}` : "Szybka wycena"}
-        paramsSummary={paramsSummary}
-        preAttachedFile={uploadedFile}
-        requireLicenseConsent={isMslaPath}
-      />
 
       <div className="mt-4 p-3 rounded-xl border border-emerald-400/10 bg-emerald-400/[0.02] text-[11px] text-emerald-400/50 leading-relaxed text-center">
         {l.note}

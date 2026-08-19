@@ -12,7 +12,17 @@
 // informacyjnymi, ale muszą pokrywać KAŻDĄ sekcję, inaczej regulamin czyta się
 // jak niekompletny w połowie języków.
 
-export const TERMS_EFFECTIVE_DATE = "2026-08-05";
+// UWAGA PRZY KAZDEJ ZMIANIE TRESCI REGULAMINU.
+//
+// Sekcja "Zmiany Regulaminu" mowi, ze zmiana wchodzi w zycie po uplywie 7 dni
+// od ogloszenia w Serwisie, a do zamowien zlozonych wczesniej stosuje sie
+// brzmienie dotychczasowe. Data ponizej to wiec dzien ogloszenia plus siedem,
+// liczony od DEPLOYU, a nie od napisania zmiany.
+//
+// 2026-08-26 zaklada publikacje 19 sierpnia. Jesli scalenie do main nastapi
+// pozniej, te date trzeba przesunac, inaczej regulamin oglasza wejscie w zycie
+// wczesniej, niz zostal ogloszony. Nic sie przy tym nie wywala.
+export const TERMS_EFFECTIVE_DATE = "2026-08-26";
 
 export const TERMS = {
   pl: {
@@ -93,6 +103,7 @@ export const TERMS = {
             "Umowa zostaje zawarta z chwilą akceptacji Wyceny przez Klienta i dokonania płatności albo uzgodnionej zaliczki.",
           ],
           "Przed akceptacją Wyceny Klient otrzymuje wyraźną informację, czy zamówienie dotyczy Towaru na zamówienie, oraz o wynikającym z tego braku prawa odstąpienia. Akceptacja Wyceny obejmuje potwierdzenie zapoznania się z tą informacją.",
+          "Podsumowanie przesyłane po złożeniu zapytania lub zamówienia na adres Klienta oraz na adres Sprzedawcy zawiera wybrane parametry, kalkulację ceny, wyświetlone uwagi do modelu oraz złożone oświadczenia. Stanowi ono zapis uzgodnionej specyfikacji i jest podstawą oceny zgodności wykonania z umową.",
           "Sprzedawca może odmówić przyjęcia zamówienia, w szczególności gdy Plik jest niewykonalny technologicznie, gdy realizacja naruszałaby prawo lub prawa osób trzecich, albo gdy bieżące obłożenie warsztatu nie pozwala dotrzymać rozsądnego terminu. Wpłacone kwoty podlegają wówczas niezwłocznemu zwrotowi.",
         ],
       },
@@ -206,6 +217,8 @@ export const TERMS = {
             "inkluzje, wtrącenia i różnice barwy naturalnych kamieni, będące ich cechą naturalną.",
           ],
           "Serwis analizuje przesłany model przed dodaniem pozycji do koszyka. Uwagi o charakterze informacyjnym nie wstrzymują zamówienia. Wstrzymują je wyłącznie właściwości uniemożliwiające wykonanie, to jest przekroczenie przestrzeni roboczej, przesłanie powierzchni zamiast bryły zamkniętej oraz grubość poniżej minimum dla wybranych parametrów na przeważającej części powierzchni modelu. Jeżeli mimo wyświetlonej informacji Klient potwierdzi polecenie wykonania wydruku z tego pliku i z tymi parametrami, wykonanie następuje według jego specyfikacji, a skutek wskazanej właściwości nie stanowi braku zgodności z umową. Treść potwierdzenia Sprzedawca powtarza w wiadomości potwierdzającej zamówienie.",
+          "Zanim Serwis wyświetli informację o właściwościach modelu, wskazuje sposób ich usunięcia, w tym wymaganą grubość, zalecaną zmianę wielkości albo inną technologię wykonania. Potwierdzenie, o którym mowa w ustępie poprzedzającym, Klient składa dopiero po zapoznaniu się z tym wskazaniem i po wybraniu wykonania z pliku w postaci nadesłanej.",
+          "Wymiarem wiążącym jest wymiar wskazany w Wycenie jako wymiar do realizacji, zaakceptowany przez Klienta. Pliki w formatach STL i OBJ nie zawierają informacji o jednostce miary, wobec czego Serwis odczytuje je jako milimetry. Gdy odczytany wymiar jest nieprawdopodobny, Serwis sygnalizuje to i przedstawia możliwe odczyty do wyboru. Wskazanie wymiaru docelowego należy do Klienta.",
           "Postanowienie powyższe nie ogranicza uprawnień Konsumenta z tytułu braku zgodności towaru z umową w zakresie wykraczającym poza wskazaną i potwierdzoną właściwość, ani żadnych innych jego uprawnień wynikających z przepisów bezwzględnie obowiązujących.",
           "Jeżeli zamówienie wymaga tolerancji ściślejszych niż wskazane wyżej, Klient zgłasza to przed Wyceną. Sprzedawca potwierdza wykonalność albo odmawia przyjęcia zamówienia. Tolerancja uzgodniona w Wycenie jest wiążąca.",
           "Sprzedawca nie odpowiada za przydatność wyrobu do zastosowania, o którym nie został poinformowany przed zawarciem umowy, w szczególności do zastosowań konstrukcyjnych, medycznych lub mających kontakt z żywnością.",
@@ -332,6 +345,7 @@ export const TERMS = {
             "The contract is concluded when the Customer accepts the Quotation and makes payment or the agreed deposit.",
           ],
           "Before accepting a Quotation the Customer receives clear information as to whether the order concerns Made-to-order goods and the resulting absence of a right of withdrawal. Acceptance of the Quotation includes confirmation that this information has been read.",
+          "The summary sent after an enquiry or an order, both to the Customer and to the Seller, contains the selected parameters, the price calculation, the model notes displayed and the declarations made. It constitutes the record of the agreed specification and the basis for assessing conformity of performance with the contract.",
           "The Seller may refuse an order, in particular where the File is not technically feasible, where performance would breach the law or third-party rights, or where current workshop load does not allow a reasonable lead time. Any amounts paid are then refunded without delay.",
         ],
       },
@@ -445,6 +459,8 @@ export const TERMS = {
             "inclusions and colour variation in natural stones, being their natural characteristic.",
           ],
           "The Service analyses an uploaded model before the item is added to the cart. Notes of an informational nature do not hold the order. It is held only by properties that make manufacture impossible, namely dimensions exceeding the build volume, a file containing a surface rather than a closed solid, and thickness below the minimum for the chosen settings across the majority of the model's surface. If the Customer confirms an instruction to print from that file with those settings despite the information shown, the work is carried out to their specification and the consequence of the identified property does not constitute a lack of conformity. The Seller repeats the wording of that confirmation in the order confirmation message.",
+          "Before displaying information about the properties of a model, the Service indicates how to remove them, including the required thickness, a recommended change of size or a different production technology. The confirmation referred to in the preceding paragraph is given by the Customer only after reading that indication and after choosing to have the file produced as submitted.",
+          "The binding dimension is the one shown in the Quotation as the dimension for production and accepted by the Customer. STL and OBJ files carry no unit of measurement, so the Service reads them as millimetres. Where the resulting dimension is implausible the Service says so and offers the possible readings. Stating the intended dimension is the responsibility of the Customer.",
           "The provision above does not limit the Consumer's rights arising from a lack of conformity of the goods to the extent going beyond the identified and confirmed property, nor any other rights of theirs under mandatory provisions of law.",
           "Where an order requires tighter tolerances than those stated above, the Customer must raise this before the Quotation. The Seller then confirms feasibility or declines the order. A tolerance agreed in the Quotation is binding.",
           "The Seller is not liable for the suitability of an item for a use not disclosed before the contract was concluded, in particular structural, medical or food-contact applications.",
@@ -571,6 +587,7 @@ export const TERMS = {
             "Der Vertrag kommt mit Annahme des Angebots durch den Kunden und Zahlung beziehungsweise der vereinbarten Anzahlung zustande.",
           ],
           "Vor Annahme des Angebots erhält der Kunde einen deutlichen Hinweis, ob die Bestellung Ware nach Kundenspezifikation betrifft und dass daraus das Fehlen eines Widerrufsrechts folgt. Die Annahme des Angebots umfasst die Bestätigung, diesen Hinweis gelesen zu haben.",
+          "Die nach einer Anfrage oder Bestellung an den Kunden und an den Verkäufer versandte Zusammenfassung enthält die gewählten Parameter, die Preisberechnung, die angezeigten Hinweise zum Modell und die abgegebenen Erklärungen. Sie ist der Nachweis der vereinbarten Spezifikation und Grundlage für die Beurteilung der Vertragsmäßigkeit der Leistung.",
           "Der Verkäufer kann eine Bestellung ablehnen, insbesondere wenn die Datei technisch nicht ausführbar ist, wenn die Ausführung gegen Gesetze oder Rechte Dritter verstieße oder wenn die aktuelle Werkstattauslastung keine angemessene Lieferzeit zulässt. Gezahlte Beträge werden dann unverzüglich erstattet.",
         ],
       },
@@ -684,6 +701,8 @@ export const TERMS = {
             "Einschlüsse und Farbunterschiede natürlicher Steine als deren natürliche Eigenschaft.",
           ],
           "Der Service analysiert ein hochgeladenes Modell, bevor die Position in den Warenkorb gelegt wird. Hinweise informativer Art halten die Bestellung nicht auf. Aufgehalten wird sie ausschließlich durch Eigenschaften, die eine Fertigung unmöglich machen: Überschreitung des Bauraums, eine Datei mit einer Fläche statt eines geschlossenen Körpers sowie eine Stärke unterhalb des Minimums für die gewählten Einstellungen auf dem überwiegenden Teil der Modelloberfläche. Bestätigt der Kunde trotz des angezeigten Hinweises den Auftrag, aus dieser Datei mit diesen Einstellungen zu drucken, erfolgt die Ausführung nach seiner Vorgabe, und die Folge der benannten Eigenschaft stellt keine Vertragswidrigkeit dar. Den Wortlaut dieser Bestätigung wiederholt der Verkäufer in der Bestellbestätigung.",
+          "Bevor der Service Hinweise zu den Eigenschaften eines Modells anzeigt, weist er auf deren Beseitigung hin, einschließlich der erforderlichen Wandstärke, einer empfohlenen Größenänderung oder einer anderen Fertigungstechnologie. Die im vorstehenden Absatz genannte Bestätigung gibt der Kunde erst nach Kenntnisnahme dieses Hinweises und nach der Wahl, die Datei unverändert fertigen zu lassen.",
+          "Verbindlich ist die im Angebot als Fertigungsmaß angegebene und vom Kunden angenommene Abmessung. STL- und OBJ-Dateien enthalten keine Maßeinheit, weshalb der Service sie als Millimeter liest. Ist die gelesene Abmessung unplausibel, weist der Service darauf hin und stellt die möglichen Lesarten zur Wahl. Die Angabe des Zielmaßes obliegt dem Kunden.",
           "Die vorstehende Regelung schränkt die Rechte des Verbrauchers wegen Vertragswidrigkeit der Ware nicht ein, soweit sie über die benannte und bestätigte Eigenschaft hinausgehen, und ebenso wenig sonstige Rechte aus zwingenden gesetzlichen Vorschriften.",
           "Erfordert eine Bestellung engere Toleranzen als oben genannt, ist dies vor dem Angebot mitzuteilen. Der Verkäufer bestätigt dann die Machbarkeit oder lehnt die Bestellung ab. Eine im Angebot vereinbarte Toleranz ist verbindlich.",
           "Der Verkäufer haftet nicht für die Eignung eines Erzeugnisses für einen vor Vertragsschluss nicht mitgeteilten Verwendungszweck, insbesondere für konstruktive, medizinische oder lebensmittelberührende Anwendungen.",

@@ -178,7 +178,7 @@
       "parameters": {
         "sendTo": "contact@aejaca.com",
         "subject": "=🔔 Nowa wycena: {{ $json.body.calculator }} - {{ $json.body.price.perPcPLN.min }}–{{ $json.body.price.perPcPLN.max }} PLN",
-        "message": "=<h3>Nowy lead z kalkulatora</h3><p><b>Email:</b> {{ $json.body.email }}<br><b>Kalkulator:</b> {{ $json.body.calculator }}<br><b>Parametry:</b> {{ $json.body.params }}<br><b>Cena:</b> {{ $json.body.price.perPcPLN.min }}–{{ $json.body.price.perPcPLN.max }} PLN ({{ $json.body.price.perPcEUR.min }}–{{ $json.body.price.perPcEUR.max }} EUR)<br><b>Ilość:</b> {{ $json.body.price.qty }}<br><b>Czas:</b> {{ $json.body.ts }}</p>",
+        "message": "=<h3>Nowy lead z kalkulatora</h3><p><b>Email:</b> {{ $json.body.email }}<br><b>Kalkulator:</b> {{ $json.body.calculator }}<br><b>Parametry:</b><br><span style=\"white-space: pre-line\">{{ $json.body.params }}</span><br><b>Cena:</b> {{ $json.body.price.perPcPLN.min }}–{{ $json.body.price.perPcPLN.max }} PLN ({{ $json.body.price.perPcEUR.min }}–{{ $json.body.price.perPcEUR.max }} EUR)<br><b>Ilość:</b> {{ $json.body.price.qty }}<br><b>Czas:</b> {{ $json.body.ts }}</p>",
         "options": {
           "appendAttribution": false
         }

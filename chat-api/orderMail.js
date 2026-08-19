@@ -18,6 +18,7 @@
 import { DOWNLOAD_DAYS, MAX_DOWNLOADS } from "./digitalDelivery.js";
 import { SELLER as SELLER_DATA } from "./pricing/sellerInfo.js";
 import { withdrawalSummary, REGIME } from "./withdrawal.js";
+import { describeFinding } from "./pricing/quoteSummary.js";
 
 const SELLER = {
   ...SELLER_DATA,
@@ -268,45 +269,15 @@ function paidAmount(order) {
 // ------------------------------------------------------------
 // Uwagi do modelu potwierdzone przy zamowieniu
 // ------------------------------------------------------------
-// Zapis w `params.printability` trzyma identyfikatory i liczby, a nie gotowe
-// zdania. Tekst powstaje dopiero tutaj, w jezyku zamowienia, dzieki czemu
-// pozniejsza zmiana redakcji nie unieważnia zapisu sprzed roku.
+// Slownik ustalen bramki drukowalnosci stoi w src/pricing/quoteSummary.js,
+// bo ten sam tekst opisuje model w kalkulatorze, w mailu z wycena i tutaj, w
+// mailu do zamowienia. Trzy kopie tego samego zdania rozjezdzaja sie przy
+// pierwszej poprawce redakcyjnej i nikt tego nie zauwaza.
 //
-// Do maila trafiaja wylacznie ustalenia poziomu `blocker`, czyli te, ktore
-// realnie wymagaly pokwitowania. Ostrzezenia klient widzial, ale ich nie
-// potwierdzal, wiec przypominanie ich w dokumencie potwierdzajacym
+// Do maila zamowienia trafiaja wylacznie ustalenia poziomu `blocker`, czyli
+// te, ktore realnie wymagaly pokwitowania. Ostrzezenia klient widzial, ale
+// ich nie potwierdzal, wiec przypominanie ich w dokumencie potwierdzajacym
 // sugerowaloby zgode, ktorej nie bylo.
-const PRINT_FINDINGS = {
-  pl: {
-    holes: (f) => `Siatka nie jest szczelna: ${f.value} krawędzi bez pary.`,
-    nonmanifold: (f) => `Siatka nie jest rozmaitością: ${f.value} krawędzi przy więcej niż dwóch ściankach.`,
-    too_thin: (f) => `${Math.round((f.share || 0) * 100)}% powierzchni modelu jest cieńsze niż ${num(f.limit)} mm, czyli niż jedna ścieżka przy wybranych ustawieniach.`,
-    open_surface: (f) => `Plik jest powierzchnią, a nie bryłą: ${Math.round((f.ratio || 0) * 100)}% krawędzi stanowi brzeg.`,
-    too_big: (f) => `Model ${(f.value || []).map((v) => Math.round(v)).join(" x ")} mm przekracza stół roboczy.`,
-    empty: () => "Plik nie zawierał geometrii.",
-  },
-  en: {
-    holes: (f) => `The mesh is not watertight: ${f.value} unpaired edges.`,
-    nonmanifold: (f) => `The mesh is not a manifold: ${f.value} edges with more than two faces.`,
-    too_thin: (f) => `${Math.round((f.share || 0) * 100)}% of the model is thinner than ${num(f.limit)} mm, which is one path at the chosen settings.`,
-    open_surface: (f) => `The file is a surface rather than a solid: ${Math.round((f.ratio || 0) * 100)}% of edges are boundary.`,
-    too_big: (f) => `At ${(f.value || []).map((v) => Math.round(v)).join(" x ")} mm the model exceeds the build plate.`,
-    empty: () => "The file contained no geometry.",
-  },
-  de: {
-    holes: (f) => `Das Netz ist nicht geschlossen: ${f.value} Kanten ohne Gegenstück.`,
-    nonmanifold: (f) => `Das Netz ist keine Mannigfaltigkeit: ${f.value} Kanten mit mehr als zwei Flächen.`,
-    too_thin: (f) => `${Math.round((f.share || 0) * 100)}% des Modells sind dünner als ${num(f.limit)} mm, also dünner als eine Bahn bei den gewählten Einstellungen.`,
-    open_surface: (f) => `Die Datei ist eine Fläche und kein Körper: ${Math.round((f.ratio || 0) * 100)}% der Kanten sind Rand.`,
-    too_big: (f) => `Mit ${(f.value || []).map((v) => Math.round(v)).join(" x ")} mm überschreitet das Modell den Bauraum.`,
-    empty: () => "Die Datei enthielt keine Geometrie.",
-  },
-};
-
-function num(v) {
-  return Number(v).toFixed(2);
-}
-
 const TECH_NAME = { fdm: "FDM", msla: "MSLA" };
 
 /**
@@ -314,14 +285,13 @@ const TECH_NAME = { fdm: "FDM", msla: "MSLA" };
  * Zwraca puste, gdy nikt niczego nie potwierdzal.
  */
 function acceptedPrintNotes(items, lang) {
-  const dict = PRINT_FINDINGS[lang] || PRINT_FINDINGS.pl;
   const out = [];
   for (const i of items) {
     const p = i.params?.printability;
     if (!p || !p.accepted) continue;
     const lines = (p.findings || [])
       .filter((f) => f.level === "blocker")
-      .map((f) => dict[f.id]?.(f))
+      .map((f) => describeFinding(f, lang))
       .filter(Boolean);
     if (lines.length) {
       out.push({ title: i.title, tech: TECH_NAME[p.tech] || p.tech, nozzle: p.nozzle, lines });

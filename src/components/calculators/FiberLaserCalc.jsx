@@ -3,7 +3,7 @@
 // Max work area: 150 × 150 mm
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, InquiryForm, MaterialCards, HeroCards, QuoteEmailCapture } from "./calcShared.jsx";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, MaterialCards, HeroCards, NextStepPanel } from "./calcShared.jsx";
 import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
 import { QuantityStepper } from "../shop/ConfigControls.jsx";
 import CalcToCart from "./CalcToCart.jsx";
@@ -182,19 +182,26 @@ export default function FiberLaserCalc({ lang = "pl" }) {
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
         <MaterialNotice lang={lang} className="mb-4" />
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
-        <QuoteEmailCapture result={result} lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={paramsSummary} preAttachedFile={svgFile} />
-        <CalcToCart
-          onBinding={setBindingGrosze}
-          calculator="laser_fiber"
-          serviceId="laser_fiber"
-          params={{ matId, lensId, markId, areaId, quantityId, podloze, spare, materialNote }}
-          qty={qty}
-          blocked={Boolean(svgData)}
+        <NextStepPanel
           lang={lang}
+          techLabel={t(TECH_LABEL, lang)}
+          paramsSummary={paramsSummary}
+          result={result}
+          preAttachedFile={svgFile}
+          cart={
+            <CalcToCart
+              embedded
+              onBinding={setBindingGrosze}
+              calculator="laser_fiber"
+              serviceId="laser_fiber"
+              params={{ matId, lensId, markId, areaId, quantityId, podloze, spare, materialNote }}
+              qty={qty}
+              blocked={Boolean(svgData)}
+              lang={lang}
+            />
+          }
         />
       </div>
-
-      <InquiryForm lang={lang} techLabel={t(TECH_LABEL, lang)} paramsSummary={paramsSummary} preAttachedFile={svgFile} />
     </div>
   );
 }
