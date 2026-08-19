@@ -29,7 +29,11 @@
         {{ $json.body.calculator }}
       </div>
 
-      <div style="font-size: 13px; color: #a3a3a3; margin-bottom: 16px; line-height: 1.5;">
+      <!-- white-space: pre-line jest konieczne: pole params niesie teraz pelne
+           podsumowanie w wielu liniach (wybory, rozpiska, uwagi do modelu,
+           zgody). Bez tego stylu tresc dojdzie w calosci, ale zlepi sie w
+           jeden akapit. -->
+      <div style="font-size: 13px; color: #a3a3a3; margin-bottom: 16px; line-height: 1.5; white-space: pre-line;">
         {{ $json.body.params }}
       </div>
 

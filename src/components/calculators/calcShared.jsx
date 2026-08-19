@@ -13,6 +13,7 @@ import { trackInquiry, trackFunnel } from "../../utils/analytics.js";
 // na backendzie zamowien. Tutaj tylko re-eksport, zeby kalkulatory
 // importowaly jak dotad.
 import { CONFIG, QUANTITY_TIERS, t, fmtNum, fmtCost, applyPricing } from "../../pricing/config.js";
+import { buildQuoteSummary } from "../../pricing/quoteSummary.js";
 export { CONFIG, QUANTITY_TIERS, t, fmtNum, fmtCost, applyPricing };
 
 // ============================================================
@@ -315,7 +316,7 @@ const QUOTE_LABELS = {
   },
 };
 
-export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummary, preAttachedFile = null, rateSnapshot = null, embedded = false }) {
+export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummary, preAttachedFile = null, rateSnapshot = null, embedded = false, summaryCtx = null }) {
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
   const [status, setStatus] = useState("idle");
@@ -368,7 +369,12 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
           email,
           lang,
           calculator: techLabel,
-          params: paramsSummary,
+          // Pelne podsumowanie, a nie sama lista wyborow: rozpiska ceny,
+          // uwagi do modelu i zgody musza zostac w dokumencie, ktory klient
+          // dostaje jako potwierdzenie.
+          params: summaryCtx
+            ? buildQuoteSummary({ ...summaryCtx, consents: { contact: consent } })
+            : paramsSummary,
           price: {
             perPcPLN: result.perPcPLN,
             perPcEUR: result.perPcEUR,
@@ -574,7 +580,7 @@ function sanitizeText(text) {
     .slice(0, MAX_DESC_LENGTH);
 }
 
-export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttachedFile = null, requireLicenseConsent = false, embedded = false }) {
+export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttachedFile = null, requireLicenseConsent = false, embedded = false, summaryCtx = null }) {
   const il = INQUIRY_LABELS[lang] || INQUIRY_LABELS.en;
   const [email, setEmail] = useState("");
   const [description, setDescription] = useState("");
@@ -657,7 +663,16 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
     }
 
     const cleanDesc = sanitizeText(description);
-    const message = [paramsSummary, cleanDesc.trim()].filter(Boolean).join("\n\n");
+    const podsumowanie = summaryCtx
+      ? buildQuoteSummary({
+          ...summaryCtx,
+          consents: {
+            ...(requireLicenseConsent ? { license: licenseConsent } : {}),
+            ...(summaryCtx.printability?.blocked ? { printNotes: Boolean(summaryCtx.printability.accepted) } : {}),
+          },
+        })
+      : paramsSummary;
+    const message = [podsumowanie, cleanDesc.trim()].filter(Boolean).join("\n\n");
 
     if (!CONTACT_API_URL) {
       // Fallback to mailto
@@ -912,6 +927,8 @@ export function NextStepPanel({
   requireLicenseConsent = false,
   rateSnapshot = null,
   accent = "blue",
+  printability = null,
+  fileScale = 1,
 }) {
   const l = NEXT_STEP_LABELS[lang] || NEXT_STEP_LABELS.en;
   const canBuy = Boolean(cart) && cartAvailable && result?.type !== "custom";
@@ -927,6 +944,17 @@ export function NextStepPanel({
   // Gdy zakup przestaje byc mozliwy w trakcie (klient zmienil parametry albo
   // wgral plik, ktorego nie wyceniamy), panel nie moze zostac na zakladce,
   // ktorej juz nie ma. Inaczej klient patrzy na puste okno.
+  // Komplet danych do podsumowania w mailu. Zgody dokladaja sobie same
+  // formularze, bo tylko one wiedza, co klient odhaczyl w chwili wyslania.
+  const summaryCtx = {
+    techLabel,
+    params: paramsSummary,
+    result,
+    printability,
+    file: preAttachedFile ? { name: preAttachedFile.name, scale: fileScale } : null,
+    lang,
+  };
+
   const dostepna = (a) => (a === "cart" ? canBuy : a === "email" ? canEmail : true);
   const action = chosen && dostepna(chosen) ? chosen : canBuy ? "cart" : "inquiry";
   const setAction = setChosen;
@@ -987,6 +1015,7 @@ export function NextStepPanel({
       {action === "inquiry" && (
         <InquiryForm
           embedded
+          summaryCtx={summaryCtx}
           lang={lang}
           techLabel={techLabel}
           paramsSummary={paramsSummary}
@@ -998,6 +1027,7 @@ export function NextStepPanel({
       {action === "email" && canEmail && (
         <QuoteEmailCapture
           embedded
+          summaryCtx={summaryCtx}
           result={result}
           lang={lang}
           techLabel={techLabel}

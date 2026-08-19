@@ -480,6 +480,8 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
             techLabel={t(TECH_LABEL_MSLA, lang)}
             paramsSummary={mslaParamsSummary}
             result={mslaResult}
+            printability={mslaPrint}
+            fileScale={mslaStlScale}
             preAttachedFile={mslaStlFile}
             requireLicenseConsent={isFigurine}
             cart={
@@ -550,6 +552,8 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
         />
         <NextStepPanel
           lang={lang}
+          printability={fdmPrint}
+          fileScale={stlScale}
           techLabel={t(TECH_LABEL, lang)}
           paramsSummary={[
             `${FILAMENTS[segment].label}: ${materialKey}`,
