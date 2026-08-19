@@ -78,9 +78,13 @@ export const CO2_MODE_FROM_ITEM = {
  * zywiczny, mimo ze to wlasnie ta technologia mu odpowiadala.
  *
  * @param {"fdm"|"msla"} [printTech] wymuszona technologia druku
+ * @param {"cut"|"engrave"} [co2Mode] wymuszony tryb lasera CO2. Bez niego tryb
+ *        wynika z przedmiotu (CO2_MODE_FROM_ITEM), wiec klient, ktory wgral
+ *        rysunek, nie mial jak zobaczyc, ile kosztowalby ten sam plik ciety
+ *        zamiast grawerowanego, a roznica bywa kilkukrotna.
  * @returns {{tech: string, mode?: string, params: object} | {custom: true}}
  */
-export function resolveTechAndParams({ item, size, material, finish, quantity, fileType, stlData, svgData, printTech }) {
+export function resolveTechAndParams({ item, size, material, finish, quantity, fileType, stlData, svgData, printTech, co2Mode }) {
   // Model 3D: druk (plastik) albo odlew z zywicy
   if (fileType === "stl" && stlData) {
     if (!size || !material || !finish || !quantity) return { custom: true };
@@ -134,7 +138,7 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
     const sizeId = SIZE_MAP[size][tech] || SIZE_MAP[size].co2;
 
     if (tech === "3dprint" || tech === "co2") {
-      const mode = CO2_MODE_FROM_ITEM[item] || "engrave";
+      const mode = co2Mode || CO2_MODE_FROM_ITEM[item] || "engrave";
       if (mode === "engrave") {
         const matId = tech === "3dprint"
           ? "wood"
@@ -208,7 +212,7 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
   }
 
   if (tech === "co2") {
-    const mode = CO2_MODE_FROM_ITEM[item] || "engrave";
+    const mode = co2Mode || CO2_MODE_FROM_ITEM[item] || "engrave";
     if (mode === "engrave") {
       const matId = material === "glass" ? "glass" : material === "wood" ? "wood" :
                     item === "stamp" ? "rubber" : "wood";

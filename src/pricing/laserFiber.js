@@ -58,8 +58,12 @@ export const LENSES = [
     desc: { pl: "Pole ~50×50mm (25 cm²), ultra fine", en: "Field ~50×50mm (25 cm²), ultra fine", de: "Feld ~50×50mm (25 cm²), ultra fein" },
     fieldMm: 50, maxAreaCm2: 25, speedMul: 1.0, img: "/img/calc/fiber_lens/lens_70.webp" },
   { id: "150mm", label: { pl: "150mm - większe pole", en: "150mm - larger field", de: "150mm - größeres Feld" },
-    desc: { pl: "Pole ~110×110mm (~121 cm²), standard", en: "Field ~110×110mm (~121 cm²), standard", de: "Feld ~110×110mm (~121 cm²), Standard" },
-    fieldMm: 110, maxAreaCm2: 121, speedMul: 0.85, img: "/img/calc/fiber_lens/lens_150.webp" },
+    desc: { pl: "Pole ~150×150mm (~225 cm²), standard", en: "Field ~150×150mm (~225 cm²), standard", de: "Feld ~150×150mm (~225 cm²), Standard" },
+    // Pole tej soczewki to 150 x 150 mm, potwierdzone przez wlasciciela
+    // 2026-08-19. Wczesniej stalo tu 110 x 110 mm i klient czytal te liczbe
+    // przed zakupem, a kalkulator odrzucal na jej podstawie prace, ktore
+    // realnie umiemy wykonac.
+    fieldMm: 150, maxAreaCm2: 225, speedMul: 0.85, img: "/img/calc/fiber_lens/lens_150.webp" },
 ];
 
 export const MARK_TYPES = [

@@ -53,6 +53,8 @@ const UI = {
     describeWhy: "Cena jest policzona, ale z samych parametrów nie wynika, jak przedmiot ma wyglądać. Bez opisu nie przyjmiemy zlecenia do realizacji.",
     addImage: "Dołącz zdjęcie lub szkic (opcjonalnie)",
     artworkLabel: "Projekt do wykonania",
+    extraLabel: "Pliki dodatkowe (opcjonalnie)",
+    extraHint: "Projekt już mamy. Tu możesz dołączyć wersję zamienną, dodatkowe elementy albo rysunek pomocniczy.",
     artworkHint: "Wgraj plik SVG, DXF, AI lub PDF",
     artworkWhy: "Bez projektu nie wiemy, co wygrawerować ani wyciąć. Rozmiar pola wybrałeś wyżej, on decyduje o cenie.",
     missingDescription: "Uzupełnij opis, żeby dodać do koszyka",
@@ -99,6 +101,8 @@ const UI = {
     describeWhy: "The price is calculated, but the parameters alone do not say how the piece should look. Without a description we cannot accept the job.",
     addImage: "Attach a photo or sketch (optional)",
     artworkLabel: "Your artwork",
+    extraLabel: "Additional files (optional)",
+    extraHint: "We already have your artwork. Add an alternative version, extra elements or a reference drawing here.",
     artworkHint: "Upload an SVG, DXF, AI or PDF file",
     artworkWhy: "Without the artwork we do not know what to engrave or cut. You picked the area above, and that is what sets the price.",
     missingDescription: "Add a description to put this in the cart",
@@ -145,6 +149,8 @@ const UI = {
     describeWhy: "Der Preis steht, aber aus den Parametern allein geht nicht hervor, wie das Stück aussehen soll. Ohne Beschreibung nehmen wir den Auftrag nicht an.",
     addImage: "Foto oder Skizze anhängen (optional)",
     artworkLabel: "Ihre Vorlage",
+    extraLabel: "Zusätzliche Dateien (optional)",
+    extraHint: "Die Vorlage haben wir bereits. Hier können Sie eine Alternativversion, weitere Elemente oder eine Hilfszeichnung anhängen.",
     artworkHint: "SVG-, DXF-, AI- oder PDF-Datei hochladen",
     artworkWhy: "Ohne Vorlage wissen wir nicht, was graviert oder geschnitten werden soll. Die Fläche haben Sie oben gewählt, sie bestimmt den Preis.",
     missingDescription: "Beschreibung ergänzen, um in den Warenkorb zu legen",
@@ -361,7 +367,13 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   // Opis liczy sie tylko wtedy, gdy naprawde cos mowi, czyli po przekroczeniu
   // tego samego progu, ktorego pilnuje serwer. Krotkie "grawer" nie zastapi
   // ani pliku, ani opisu.
+  // Plik GLOWNY, ten z ktorego policzylismy cene, jest juz tym projektem.
+  // Wczesniej koszyk prosil o niego drugi raz i blokowal zakup, dopoki klient
+  // nie wgral tego samego rysunku ponownie. Wygladalo to jak usterka, bo nia
+  // bylo: pytalismy o cos, co lezalo na ekranie wyzej.
+  const mainFileIsArtwork = Boolean(file);
   const artworkOk = !requiresArtwork
+    || mainFileIsArtwork
     || Boolean(artworkFile)
     || description.trim().length >= MIN_DESCRIPTION;
 
@@ -528,8 +540,8 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
 
           {requiresArtwork && (
             <FileDrop
-              label={u.artworkLabel}
-              hint={u.artworkHint}
+              label={mainFileIsArtwork ? u.extraLabel : u.artworkLabel}
+              hint={mainFileIsArtwork ? u.extraHint : u.artworkHint}
               file={artworkFile}
               busy={attachBusy}
               accept=".svg,.dxf,.ai,.pdf"

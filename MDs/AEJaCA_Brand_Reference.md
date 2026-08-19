@@ -320,6 +320,27 @@ dla klientów bez pliku.
 pytaniami, jako osobna sekcja, więc pierwszym ekranem dla klienta bez pliku (większości
 odwiedzających) było pole, którego nie dało się wypełnić.
 
+**Pole robocze laserów na linii wielkości (od 2026-08-19).** Rysunek wektorowy jest sprawdzany względem
+realnego pola maszyny: CO2 (xTool P2) 600 x 308 mm, przy czym przelotka z podajnikiem wydłuża dłuższą oś
+(do około 3000 mm), a nie poszerza pola, i wydłuża przygotowanie. Laser światłowodowy: pole 150 x 150 mm.
+Rysunek, który się nie mieści, nie dostaje żadnej ceny automatycznej: pokazujemy przycisk zmniejszenia do
+największej mieszczącej się wielkości albo drogę do wyceny indywidualnej. Wcześniej rysunek 573,9 x 901,0 mm
+dostawał kwotę wiążącą 497,83 zł, mimo że nie da się go wykonać na żadnej naszej maszynie.
+
+**Poprawka danych soczewki fiber (2026-08-19).** Kalkulator podawał pole soczewki 150 mm jako 110 x 110 mm
+(121 cm2) i na tej podstawie odrzucał prace, które realnie wykonujemy. Poprawione na 150 x 150 mm (225 cm2).
+
+**Cięcie kontra grawerowanie w szybkiej wycenie (od 2026-08-19).** Przy wgranym rysunku i technologii CO2
+pokazujemy dwie karty, "Cięcie na wylot" i "Grawerowanie powierzchni", każdą z własną kwotą policzoną z tego
+samego rysunku. Wybór idzie do wyceny wiążącej i do koszyka.
+
+**Kafelki znikają po wgraniu pliku (od 2026-08-19).** Po wgraniu jakiegokolwiek pliku kafelki rodzaju pracy
+są ukrywane w całości, bo plik już mówi, co wykonujemy. Wcześniej stały obok podglądu i czytały się jak druga,
+konkurencyjna odpowiedź na to samo pytanie.
+
+**Plik główny nie jest proszony dwa razy (od 2026-08-19).** Wgrany plik jedzie do koszyka i zaspokaja wymóg
+"Projekt do wykonania". Pole na plik w koszyku zmienia znaczenie na "Pliki dodatkowe (opcjonalnie)".
+
 **Wybór technologii druku w szybkiej wycenie (od 2026-08-19).** Gdy odpowiedzi prowadzą do druku 3D, kalkulator
 pokazuje dwie karty: "Z filamentu (FDM)" i "Z żywicy (MSLA)", każdą z opisem zastosowania i z własną kwotą
 policzoną z tych samych odpowiedzi. Klient widzi różnicę w cenie i we właściwościach przed zamówieniem, a nie po

@@ -130,6 +130,8 @@ As of 2026-08-18 the Quick Quote tab on /studio/ no longer reads an uploaded fil
 - Full model analysis (Sprawdzarka modeli 3D) can now also receive a model carried over directly from the shop configurator, not only from the calculators.
 
 ### 3D Print Calculator
+**Laser work area and cut vs engrave in Quick Quote (since 2026-08-19):** an uploaded vector drawing is now checked against the real bed. CO2 (xTool P2) is 600 x 308 mm; the pass-through feeder extends the LONG axis (up to about 3000 mm) but does not widen the bed, and it adds setup time. The fibre laser field is 150 x 150 mm. A drawing that does not fit gets no automatic price at all: the customer sees a button that scales it down to the largest size that fits, or an individual quote. When the answers lead to CO2, Quick Quote shows two cards, "Ciecie na wylot" (cut through, the shape is cut out) and "Grawerowanie powierzchni" (surface engraving, the material stays whole), each with its own price for the same drawing. Once any file is uploaded the item tiles are hidden entirely, because the file already says what is being made. The uploaded file now travels to the cart, so the cart no longer asks for the same artwork a second time; its file field becomes an optional "additional files" field instead.
+
 **Printing technology in Quick Quote (since 2026-08-19):** when the answers lead to 3D printing, Quick Quote shows two cards, "Z filamentu (FDM)" and "Z zywicy (MSLA)", each with a plain-language description and its own price for the same answers. FDM is tough, cheaper and shows layer lines, good for parts, housings and everyday objects. MSLA resin gives a smooth surface and fine detail but is more brittle, good for figurines, miniatures and models. The customer can switch between them and see the price change. Resin can now be priced from an uploaded model too; before this change resin was reachable only through the "Figurka z zywicy" tile and only without a file.
 
 **Two technologies, selectable at step ①:** FDM (Bambu Lab H2D) | MSLA Resin 16K (Elegoo Saturn 4 Ultra)
@@ -179,7 +181,7 @@ When asked "can you engrave on my own thing": yes, and explain the test piece up
 
 ### Fiber Laser Calculator
 **Materials:** Stainless steel · Aluminium · Brass · Copper · Titanium · Silver (jewelry) · Gold (jewelry) · Anodized aluminium · Other
-**Lens/field:** 70 mm (~50×50 mm, ultra-fine) | 150 mm (~110×110 mm, standard)
+**Lens/field:** 70 mm (~50×50 mm, ultra-fine) | 150 mm (~150×150 mm, standard)
 **Marking type:** Surface marking · Medium depth 0.1–0.2 mm · Deep engraving 0.5–1 mm · Color marking (titanium/steel rainbow) · Custom
 **Area:** XS ≤5 cm² · S 5–25 cm² · M 25–60 cm² · L >60 cm² · XL (multiple fields)
 **Note:** precious metals (silver, gold) carry +25% premium
