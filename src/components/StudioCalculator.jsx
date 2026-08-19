@@ -4,6 +4,7 @@ import { Zap, SlidersHorizontal, Info } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { trackCalc } from "../utils/analytics.js";
 import SimpleStudioCalc from "./calculators/SimpleStudioCalc.jsx";
+import { ADVANCED_TAB } from "../data/advancedOptions.js";
 import Print3DCalc from "./calculators/Print3DCalc.jsx";
 import CO2LaserCalc from "./calculators/CO2LaserCalc.jsx";
 import FiberLaserCalc from "./calculators/FiberLaserCalc.jsx";
@@ -87,6 +88,20 @@ export default function StudioCalculator() {
     return () => window.removeEventListener("studio-quick-upload", handler);
   }, []);
 
+  // Przejscie z szybkiej wyceny do trybu zaawansowanego MUSI trafic w te
+  // sama usluge. Bez mapowania klient liczacy grawer ladowal na druku 3D
+  // i szukal swojej zakladki od nowa, czyli kara za skorzystanie z rady.
+  const openAdvanced = (tech) => {
+    const tab = ADVANCED_TAB[tech];
+    if (tab) setActiveTech(tab);
+    setMode("advanced");
+    trackCalc("studio", "mode", "advanced_from_simple");
+    setTimeout(() => {
+      const el = document.getElementById("calculator");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
+  };
+
   const isSimple = mode === "simple";
   const accentClass = isSimple ? "text-emerald-400" : "text-blue-400";
 
@@ -137,7 +152,7 @@ export default function StudioCalculator() {
         {/* SIMPLE MODE */}
         {isSimple && (
           <div className="rounded-2xl p-5 sm:p-6 border border-emerald-400/10 bg-emerald-400/[0.02]">
-            <SimpleStudioCalc lang={lang} />
+            <SimpleStudioCalc lang={lang} onAdvanced={openAdvanced} />
           </div>
         )}
 
