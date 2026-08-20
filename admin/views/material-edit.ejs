@@ -48,23 +48,25 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Cena za m² (PLN)</label>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Cena zakupu za m² (PLN)</label>
           <input type="number" step="0.01" min="0" name="pln_per_m2"
             value="<%= material ? parseFloat(material.pln_per_m2) : 100 %>" required
             class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 transition-colors" />
           <p class="text-[11px] text-neutral-600 mt-2 leading-relaxed">
-            Wycena liczy: pole wyrobu &times; 1,15 (zapas na odpad) &times; ta stawka. Doliczana tylko wtedy,
+            Wpisz, ile PŁACIMY za metr. Wycena liczy: pole wyrobu &times; 1,15 (zapas na odpad)
+            &times; ta stawka &times; <%= markup.toFixed(2) %> (narzut na ryzyko i marżę). Doliczana tylko wtedy,
             gdy materiał pochodzi z naszego magazynu.
           </p>
         </div>
         <div>
-          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Cena za sztukę (PLN, opcjonalnie)</label>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Cena zakupu za sztukę (PLN, opcjonalnie)</label>
           <input type="number" step="0.01" min="0" name="pln_per_piece"
             value="<%= material && material.pln_per_piece != null ? parseFloat(material.pln_per_piece) : '' %>"
             class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 transition-colors" />
           <p class="text-[11px] text-neutral-600 mt-2 leading-relaxed">
             Dla materiałów kupowanych sztukami (szklanka, płytka łupkowa). Gdy jest wypełniona,
-            ma pierwszeństwo przed stawką za m² i nie dolicza zapasu na odpad. Zero w obu polach
+            ma pierwszeństwo przed stawką za m² i nie dolicza zapasu na odpad, ale narzut
+            <%= Math.round((markup - 1) * 100) %>% doliczamy tak samo. Zero w obu polach
             znaczy "wycena indywidualna" i wtedy materiał nie wchodzi do kwoty automatycznej.
           </p>
         </div>

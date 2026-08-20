@@ -16,7 +16,8 @@
 
 import { readFileSync } from "node:fs";
 import {
-  DEFAULT_PLN_PER_M2, MATERIAL_WASTE, materialCostPLN, ratePerPiece, pricedSeparately,
+  DEFAULT_PLN_PER_M2, MATERIAL_WASTE, MATERIAL_MARKUP,
+  materialCostPLN, ratePerPiece, pricedSeparately, salePerM2,
 } from "../src/pricing/materialStock.js";
 import { CUT_MATERIALS, ENGRAVE_MATERIALS } from "../src/pricing/laserCo2.js";
 import { MATERIALS as FIBER_MATERIALS } from "../src/pricing/laserFiber.js";
@@ -99,10 +100,41 @@ if (braki.length) {
 sekcja("6. Zapas na odpad");
 const arkusz = materialCostPLN({ areaCm2: 10000, matId: "acr5", podloze: "our_stock", stock });
 const bezZapasu = (10000 / 10000) * (WIERSZE.find((w) => w.id === "acr5")?.m2 || 0);
-if (Math.abs(arkusz - bezZapasu * MATERIAL_WASTE) > 0.01) {
-  zle(`zapas ${MATERIAL_WASTE} nie wchodzi do ceny z metrow: ${arkusz.toFixed(2)} zamiast ${(bezZapasu * MATERIAL_WASTE).toFixed(2)}`);
+if (Math.abs(arkusz - bezZapasu * MATERIAL_WASTE * MATERIAL_MARKUP) > 0.01) {
+  zle(`zapas ${MATERIAL_WASTE} nie wchodzi do ceny z metrow: ${arkusz.toFixed(2)} zamiast ${(bezZapasu * MATERIAL_WASTE * MATERIAL_MARKUP).toFixed(2)}`);
 }
-ok(`metr kwadratowy akrylu 5 mm kosztuje ${arkusz.toFixed(2)} zl razem z zapasem ${Math.round((MATERIAL_WASTE - 1) * 100)}%`);
+ok(`metr kwadratowy akrylu 5 mm kosztuje klienta ${arkusz.toFixed(2)} zl (zakup ${bezZapasu.toFixed(0)}, zapas ${Math.round((MATERIAL_WASTE - 1) * 100)}%, narzut ${Math.round((MATERIAL_MARKUP - 1) * 100)}%)`);
+
+// --- 6b. Narzut wchodzi do obu drog liczenia -----------------------------
+sekcja("6b. Narzut na material");
+// W tabeli trzymamy KOSZT ZAKUPU, wiec narzut musi dojsc w silniku, i to
+// tak samo przy metrach i przy sztukach. Doliczony tylko w jednej drodze
+// bylby bledem niewidocznym: obie kwoty wygladaja poprawnie osobno.
+const kosztAkrylu = WIERSZE.find((w) => w.id === "acr5")?.m2 || 0;
+const zMetrow = materialCostPLN({ areaCm2: 10000, matId: "acr5", podloze: "our_stock", stock });
+const oczekiwaneZMetrow = kosztAkrylu * MATERIAL_WASTE * MATERIAL_MARKUP;
+if (Math.abs(zMetrow - oczekiwaneZMetrow) > 0.01) {
+  zle(`narzut nie wchodzi do ceny z metrow: ${zMetrow.toFixed(2)} zamiast ${oczekiwaneZMetrow.toFixed(2)}`);
+}
+const kosztSzkla = WIERSZE.find((w) => w.id === "glass")?.szt || 0;
+const zeSztuk = materialCostPLN({ areaCm2: 100, matId: "glass", podloze: "our_stock", stock });
+if (Math.abs(zeSztuk - kosztSzkla * MATERIAL_MARKUP) > 0.01) {
+  zle(`narzut nie wchodzi do ceny za sztuke: ${zeSztuk.toFixed(2)} zamiast ${(kosztSzkla * MATERIAL_MARKUP).toFixed(2)}`);
+}
+if (Math.abs(salePerM2(kosztAkrylu) - kosztAkrylu * MATERIAL_MARKUP) > 0.01) {
+  zle("cena sprzedazy pokazywana w panelu liczy sie inaczej niz w silniku");
+}
+ok(`narzut ${Math.round((MATERIAL_MARKUP - 1) * 100)}% w obu drogach: akryl ${zMetrow.toFixed(2)} zl/m2, szklo ${zeSztuk.toFixed(2)} zl/szt.`);
+
+// Panel administracyjny ma wlasna kopie tej liczby, bo wdraza sie go osobno.
+// Rozjazd oznaczalby, ze wlasciciel widzi inna cene sprzedazy niz klient.
+const adminSrc = readFileSync(new URL("../admin/server.js", import.meta.url), "utf8");
+const wAdminie = Number(/const MATERIAL_MARKUP = ([\d.]+);/.exec(adminSrc)?.[1]);
+if (wAdminie !== MATERIAL_MARKUP) {
+  zle(`panel liczy narzut ${wAdminie}, a silnik ${MATERIAL_MARKUP}: wlasciciel widzi inna cene niz klient`);
+} else {
+  ok(`panel i silnik licza ten sam narzut (${MATERIAL_MARKUP})`);
+}
 
 // --- 7. Rozpiska pokazuje material ---------------------------------------
 sekcja("7. Material widoczny w rozpisce");

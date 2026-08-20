@@ -44,6 +44,22 @@ export const DEFAULT_PLN_PER_M2 = 140;
 /** Zapas na odpad miedzy elementami i przy krawedziach arkusza. */
 export const MATERIAL_WASTE = 1.15;
 
+/**
+ * NARZUT NA MATERIAL: ryzyko i marza (decyzja wlasciciela, 2026-08-20).
+ *
+ * Narzut stoi TUTAJ, a nie w tabeli, i to jest rozstrzygniecie celowe.
+ * W tabeli trzymamy to, ILE PLACIMY, bo taka liczbe da sie sprawdzic
+ * z fakturą i z cennikiem hurtowni. Gdyby narzut byl juz w niej wliczony,
+ * po roku nikt by nie wiedzial, ktora czesc kwoty jest rynkiem, a ktora
+ * nasza decyzja, i kazda aktualizacja cen wymagalaby liczenia wstecz.
+ *
+ * Za co placi ten narzut: zakup i dojazd, magazynowanie, kapital zamrozony
+ * w arkuszach, arkusz uszkodzony przy cieciu i resztki, ktorych nie da sie
+ * juz uzyc. Przy jednej sztuce z arkusza 1525x1525 odpad realny jest duzo
+ * wiekszy niz zapas 15%, wiec narzut pokrywa takze te roznice.
+ */
+export const MATERIAL_MARKUP = 1.5;
+
 /** Ile centymetrow kwadratowych arkusza zuzyjemy na wyrob o danym polu. */
 export function sheetUsedCm2(areaCm2) {
   const a = Number(areaCm2);
@@ -117,9 +133,26 @@ export function materialCostPLN({ areaCm2, matId, podloze = null, stock = null }
   // szklanki, wiec zapas na odpad tez tu nie wchodzi: przy przedmiocie nie ma
   // odpadu miedzy elementami, jest albo caly przedmiot, albo nic.
   const zaSztuke = ratePerPiece(matId, stock);
-  if (zaSztuke != null) return zaSztuke;
+  if (zaSztuke != null) return zaSztuke * MATERIAL_MARKUP;
 
   const cm2 = sheetUsedCm2(areaCm2);
   if (!cm2) return 0;
-  return (cm2 / 10000) * ratePerM2(matId, stock);
+  return (cm2 / 10000) * ratePerM2(matId, stock) * MATERIAL_MARKUP;
+}
+
+/**
+ * Stawka SPRZEDAZY za metr kwadratowy, czyli koszt razy narzut.
+ *
+ * Panel administracyjny pokazuje ja obok ceny zakupu, zeby nie trzeba bylo
+ * liczyc w glowie ani zgadywac, czy narzut juz jest wliczony.
+ */
+export function salePerM2(kosztPerM2) {
+  const k = Number(kosztPerM2);
+  return k > 0 ? k * MATERIAL_MARKUP : 0;
+}
+
+/** To samo dla ceny za sztuke. */
+export function salePerPiece(kosztPerPiece) {
+  const k = Number(kosztPerPiece);
+  return k > 0 ? k * MATERIAL_MARKUP : 0;
 }

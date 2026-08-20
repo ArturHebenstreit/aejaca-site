@@ -4,6 +4,7 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import pg from "pg";
 import { randomBytes } from "node:crypto";
+
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
@@ -669,6 +670,13 @@ app.post("/gemstone-prices/:id/update", requireAuth, express.urlencoded({ extend
 // a nie wdrozeniem. Kazda zmiana czysci pamiec podreczna po stronie API,
 // inaczej nowa stawka doszlaby do przegladarki od razu, a do kwoty wiazacej
 // dopiero po godzinie, i przez ta godzine obie strony liczylyby inaczej.
+// NARZUT NA MATERIAL, przepisany celowo, a nie zaimportowany z `src/pricing`.
+// Panel jest osobna aplikacja i wdraza sie go z wlasnego katalogu, wiec
+// import przez `../src/` wywrocilby uruchomienie, gdyby root wdrozenia byl
+// ustawiony na `admin/`. Zamiast tego liczbe pilnuje test:
+// `scripts/test-material-stock.mjs` wywala build, gdy te dwie sie rozjada.
+const MATERIAL_MARKUP = 1.5;
+
 async function invalidateMaterialCache() {
   if (!process.env.CHAT_API_URL || !process.env.MATRIX_INVALIDATE_TOKEN) return;
   fetch(`${process.env.CHAT_API_URL}/api/material-stock/invalidate`, {
@@ -680,18 +688,18 @@ async function invalidateMaterialCache() {
 app.get("/materials", requireAuth, async (req, res) => {
   try {
     const { rows } = await pool.query("SELECT * FROM material_stock ORDER BY name_pl");
-    res.render("materials", { user: req.user, materials: rows, flash: req.query.flash || null });
+    res.render("materials", { user: req.user, materials: rows, markup: MATERIAL_MARKUP, flash: req.query.flash || null });
   } catch (err) { res.status(500).render("error", { message: err.message }); }
 });
 
 app.get("/materials/new", requireAuth, (req, res) => {
-  res.render("material-edit", { user: req.user, material: null });
+  res.render("material-edit", { user: req.user, material: null, markup: MATERIAL_MARKUP });
 });
 
 app.get("/materials/:id/edit", requireAuth, async (req, res) => {
   const { rows } = await pool.query("SELECT * FROM material_stock WHERE id = $1", [req.params.id]);
   if (!rows[0]) return res.status(404).render("error", { message: "Not found" });
-  res.render("material-edit", { user: req.user, material: rows[0] });
+  res.render("material-edit", { user: req.user, material: rows[0], markup: MATERIAL_MARKUP });
 });
 
 app.post("/materials/create", requireAuth, express.urlencoded({ extended: true }), async (req, res) => {

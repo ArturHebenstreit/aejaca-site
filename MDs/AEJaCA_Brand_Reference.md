@@ -381,6 +381,21 @@ nic. **Zero w obu kolumnach** znaczy "wycena indywidualna": tak stoją srebro i 
 szlachetny rozlicza się wagowo, a nie powierzchniowo. Rozpiska pokazuje wtedy pozycję "Materiał /
 szt.: wycena indywidualna", bo znikająca linia czytałaby się jak materiał gratis.
 
+**Narzut 50% na materiał (decyzja właściciela, 2026-08-20).** W tabeli trzymamy **koszt zakupu**, bo
+taką liczbę da się sprawdzić z fakturą i cennikiem hurtowni. Narzut stoi w kodzie
+(`MATERIAL_MARKUP = 1.5` w `src/pricing/materialStock.js`) i dochodzi w silniku, tak samo przy cenie
+za m² jak przy cenie za sztukę. Gdyby był wliczony w tabelę, po roku nikt by nie wiedział, która część
+kwoty jest rynkiem, a która naszą decyzją, i każda aktualizacja cen wymagałaby liczenia wstecz.
+
+Narzut pokrywa: zakup i dojazd, magazynowanie, kapitał zamrożony w arkuszach, arkusz uszkodzony przy
+cięciu oraz resztki nie do wykorzystania. Przy jednej sztuce z arkusza 1525 x 1525 mm odpad realny
+jest znacznie większy niż zapas 15%, więc narzut pokrywa także tę różnicę.
+
+Panel pokazuje trzy kolumny: **zakup/m²**, **zakup/szt.** i wyliczoną **sprzedaż**, żeby nie trzeba
+było liczyć w głowie ani zgadywać, czy narzut jest już wliczony. Panel ma własną kopię stałej, bo
+wdraża się go osobno i import przez `../src/` wywróciłby jego uruchomienie; test porównuje obie
+i wywala build przy rozjeździe.
+
 Stawka domyślna dla materiału spoza tabeli to **mediana 140 zł/m²**, a nie średnia: średnią ciągną
 tytan i miedź, których prawie nie tniemy. `scripts/test-material-stock.mjs` przelicza medianę z tabeli
 i wywala build, gdy stała od niej odjedzie o więcej niż ćwierć.
