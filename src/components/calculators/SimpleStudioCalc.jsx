@@ -90,6 +90,7 @@ const MATERIAL_NOTE_PLACEHOLDER = {
 import PrintabilityGate from "./PrintabilityGate.jsx";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
 import SizeSlider, { categoryForCm } from "./SizeSlider.jsx";
+import VectorPreview from "./VectorPreview.jsx";
 import { resolveTechAndParams, runCalc } from "../../pricing/simpleQuote.js";
 import { getResin } from "../../data/resins.js";
 import { scaleMesh, scaleVector, meshMaxCm, vectorMaxCm, meshForPricing } from "../../pricing/scaleGeometry.js";
@@ -1118,9 +1119,14 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
             )}
 
             {fileType === "svg" && svgBlobUrl && (
-              <div className="mb-3 w-full rounded-lg overflow-hidden bg-[#0c1222] border border-emerald-400/10 flex items-center justify-center" style={{ height: "160px" }}>
-                <img src={svgBlobUrl} alt="SVG" className="max-w-full max-h-full p-3 opacity-90" style={{ filter: "invert(1) hue-rotate(180deg)" }} />
-              </div>
+              <VectorPreview
+                src={svgBlobUrl}
+                contentBox={svgData?.contentBox || null}
+                canvasBox={svgData?.canvasBox || null}
+                lang={lang}
+                height={180}
+                className="mb-3"
+              />
             )}
 
             {/* DWA WYMIARY, JEDEN POD DRUGIM. Klient musi widziec, co przyszlo

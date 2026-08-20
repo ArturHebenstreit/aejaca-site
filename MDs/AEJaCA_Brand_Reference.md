@@ -354,6 +354,20 @@ który chciał PETG, nie pisze z pytaniem, tylko wychodzi bez śladu. Liczby i p
 z cennika (`src/data/advancedOptions.js`), więc nowy filament pojawi się w notce sam; pilnuje tego
 `scripts/test-advanced-options.mjs`.
 
+**Podgląd rysunku pokazuje rysunek, a nie arkusz (od 2026-08-20).** Program eksportujący SVG zapisuje
+zwykle całą stronę, więc znak 20 x 20 mm na arkuszu A4 zajmował w podglądzie jedną setną powierzchni:
+klient widział pustą ramkę i kreskę, czyli nie miał jak sprawdzić, czy wgrał właściwy plik. Parser
+zwraca teraz położenie treści (`contentBox`) obok prostokąta płótna (`canvasBox`), a podgląd przycina
+do treści (dla znaku na A4 wychodzi około 13x). Do tego kółko myszy przybliża, przeciąganie przesuwa,
+a przycisk "Dopasuj" wraca do widoku całości. Ten sam komponent (`VectorPreview.jsx`) obsługuje
+szybką wycenę i tryb zaawansowany.
+
+Dwie rzeczy warte zapamiętania. Plik klienta **zostaje w `<img>`**: SVG to dokument, który może nieść
+`<script>`, więc wstawienie go wprost do drzewa strony wykonałoby cudzy kod na naszej domenie;
+przybliżanie robimy transformacją CSS. Kółko jest podpięte **bezpośrednio i nie-pasywnie**, bo React
+rejestruje `onWheel` na korzeniu strony pasywnie i wtedy strona przewija się pod kursorem zamiast
+przybliżać (sprawdzone w przeglądarce, guard tego pilnuje).
+
 **Plik jedzie razem z klientem (od 2026-08-20).** Rada "przejdź do trybu dla zaawansowanych" kosztowała
 dotąd ponowne wgranie pliku i ponowne ustawienie wielkości, czyli była karą za posłuchanie. Teraz
 model albo rysunek przechodzi razem ze skalą z suwaka, w skali **oryginału** (skala jedzie osobno,

@@ -1,4 +1,5 @@
 import { useRef, useMemo, useEffect } from "react";
+import VectorPreview from "./VectorPreview.jsx";
 import { Upload, X, AlertTriangle } from "lucide-react";
 
 export const SVG_LBL = {
@@ -79,9 +80,13 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
           <X className="w-3.5 h-3.5" />{sl.remove}
         </button>
       </div>
-      <div className="w-full rounded-lg overflow-hidden bg-[#0c1222] border border-white/5 flex items-center justify-center" style={{ height: "160px" }}>
-        <img src={blobUrl} alt="SVG" className="max-w-full max-h-full p-3 opacity-90" style={{ filter: "invert(1) hue-rotate(180deg)" }} />
-      </div>
+      <VectorPreview
+        src={blobUrl}
+        contentBox={svgData?.contentBox || null}
+        canvasBox={svgData?.canvasBox || null}
+        lang={lang}
+        height={180}
+      />
       <div className={`grid ${cols} gap-3 text-center text-[11px]`}>
         <div><div className="text-neutral-400">{sl.dims}</div><div className="font-bold">{scaledBbox.x.toFixed(1)}×{scaledBbox.y.toFixed(1)} mm</div></div>
         <div><div className="text-neutral-400">{sl.area}</div><div className="font-bold">{scaledAreaCm2.toFixed(1)} cm²</div></div>
