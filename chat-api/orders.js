@@ -262,8 +262,12 @@ export function priceItem({ calculator, params, lang = "pl", geometry = null, sc
     // ktorym jubilerka czyta kursy. Pominiecie go nie rzuca wyjatku, tylko
     // cicho zjezdza do stawki domyslnej, a klient widzi jedna cene i placi
     // inna. Dlatego `scripts/test-live-pricing.mjs` sprawdza to osobno.
-    const callStock = materialStock && calculator.startsWith("laser_co2") ? materialStock : undefined;
-    result = calculator.startsWith("laser_co2")
+    // Material z naszego magazynu liczy sie tak samo przy CO2 i przy Fiber,
+  // wiec tabela idzie do obu. Rozdzielenie ich bylo powodem, dla ktorego
+  // Fiber nie doliczal materialu nigdy.
+  const laserowa = calculator.startsWith("laser_");
+  const callStock = materialStock && laserowa ? materialStock : undefined;
+    result = laserowa
       ? entry.fn(callParams, safeLang, callStock)
       : entry.fn(callParams, safeLang, callRates, callGems);
   } catch (e) {

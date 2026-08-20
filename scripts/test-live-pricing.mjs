@@ -163,6 +163,24 @@ console.log("Zywe dane w kwocie wiazacej\n");
   const server = readFileSync(join(ROOT, "chat-api", "server.js"), "utf8");
   ok("serwer czyta tabele materialow", server.includes("async function currentMaterialStock"));
   ok("kwota wiazaca dostaje stawki materialow", /materialStock: itemStock/.test(server));
+
+  // FIBER LICZY MATERIAL TAK SAMO JAK CO2. Przez dlugi czas nie liczyl go
+  // wcale, choc kalkulator pytal o podloze, a w koszyku stala odpowiedz
+  // "z naszego magazynu": za nasza blaszke klient placil tyle, co za wlasna
+  // obraczke. Rozjazd nie rzucal wyjatku, bo obie kwoty byly poprawne.
+  const fiberNasz = priceItem({
+    calculator: "laser_fiber", lang: "pl",
+    params: { matId: "stainless", lensId: "150mm", markId: "surface", areaId: "M", quantityId: "proto", podloze: "our_stock" },
+    materialStock: [{ material_id: "stainless", pln_per_m2: 900 }],
+  }).unitGrosze;
+  const fiberKlienta = priceItem({
+    calculator: "laser_fiber", lang: "pl",
+    params: { matId: "stainless", lensId: "150mm", markId: "surface", areaId: "M", quantityId: "proto", podloze: "own_item" },
+    materialStock: [{ material_id: "stainless", pln_per_m2: 900 }],
+  }).unitGrosze;
+  ok("Fiber na naszej blaszce doplaca za material", fiberNasz > fiberKlienta,
+     `${(fiberNasz / 100).toFixed(2)} vs ${(fiberKlienta / 100).toFixed(2)} PLN`);
+  ok("serwer pobiera tabele dla KAZDEJ uslugi laserowej", /startsWith\("laser_"\)/.test(server));
   ok("zmiana w panelu czysci obie pamieci", /_materialPriceCache = \{ ts: 0, rows: null \}/.test(server));
 }
 

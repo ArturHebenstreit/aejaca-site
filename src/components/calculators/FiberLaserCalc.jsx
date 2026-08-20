@@ -12,6 +12,7 @@ import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
 import {
   SUBSTRATE_LABEL, SUBSTRATES, SPARE_LABEL, spareOptionsFor, MIN_MATERIAL_NOTE,
 } from "../../data/laserSubstrate.js";
+import { useMaterialStock } from "../../hooks/useMaterialStock.js";
 
 const MATERIAL_NOTE_LBL = {
   pl: "Napisz, na jakim konkretnie materiale ma być wykonana usługa",
@@ -50,7 +51,9 @@ export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffU
   const [qty, setQty] = useState(1);
   const quantityId = tierForQty(qty, QUANTITY_TIERS).id;
   // Podloze uslugi: przedmiot klienta, material klienta albo material nasz.
-  // Nie wplywa na wycene ponizej, ta liczy wylacznie robocizne, patrz MaterialNotice.
+  // WPLYWA na wycene: material z naszego magazynu jest pozycja kwoty, liczona
+  // z tabeli stanow magazynowych, tak samo jak przy laserze CO2.
+  const materialStock = useMaterialStock();
   const [podloze, setPodloze] = useState("our_stock");
   const [spare, setSpare] = useState("");
   const [materialNote, setMaterialNote] = useState("");
@@ -128,8 +131,8 @@ export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffU
     })),
   [lensId]);
 
-  const result = useMemo(() => calculate({ matId, lensId, markId, areaId, quantityId, svgData: scaledSvgData }, lang),
-    [matId, lensId, markId, areaId, quantityId, scaledSvgData, lang]);
+  const result = useMemo(() => calculate({ matId, lensId, markId, areaId, quantityId, svgData: scaledSvgData, podloze }, lang, materialStock),
+    [matId, lensId, markId, areaId, quantityId, scaledSvgData, lang, podloze, materialStock]);
 
   const paramsSummary = [
     t(MATERIALS.find(m => m.id === matId)?.label, lang),

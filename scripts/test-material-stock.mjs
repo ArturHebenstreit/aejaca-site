@@ -20,6 +20,7 @@ import {
   materialCostPLN, ratePerPiece, pricedSeparately, salePerM2,
 } from "../src/pricing/materialStock.js";
 import { CUT_MATERIALS, ENGRAVE_MATERIALS } from "../src/pricing/laserCo2.js";
+import { MATERIAL_SEED, seedAsStock } from "../src/pricing/materialStockSeed.js";
 import { MATERIALS as FIBER_MATERIALS } from "../src/pricing/laserFiber.js";
 
 let bledy = 0;
@@ -27,12 +28,14 @@ const zle = (m) => { console.error(`  BLAD: ${m}`); bledy++; };
 const ok = (m) => console.log(`  OK ${m}`);
 const sekcja = (n) => console.log(`\n${n}`);
 
-// Tabela zyje w bazie, ale jej wartosci startowe stoja w kodzie serwera i to
-// one opisuja, co uwazamy za cene rynkowa. Czytamy je stamtad.
-const server = readFileSync(new URL("../chat-api/server.js", import.meta.url), "utf8");
-const blok = server.slice(server.indexOf("INSERT INTO material_stock"), server.indexOf("ON CONFLICT (material_id)"));
-const WIERSZE = [...blok.matchAll(/\('([a-z0-9_]+)','([^']*)','[^']*','[^']*',(\d+(?:\.\d+)?),(NULL|\d+(?:\.\d+)?),/g)]
-  .map((m) => ({ id: m[1], nazwa: m[2], m2: Number(m[3]), szt: m[4] === "NULL" ? null : Number(m[4]) }));
+// Tabela zyje w bazie, ale jej wartosci startowe opisuja, co uwazamy za cene
+// rynkowa, i sa jednym plikiem: czyta go serwer przy zakladaniu tabeli, skrypt
+// etykiet "od X zl" i ten test. Wczesniej byly tekstem SQL wyluskiwanym stad
+// wyrazeniem regularnym, ktore przestawalo pasowac przy pierwszej zmianie
+// zapisu, a test milkl zamiast zaczerwienic sie.
+const WIERSZE = MATERIAL_SEED.map((m) => ({
+  id: m.material_id, nazwa: m.name_pl, m2: m.pln_per_m2, szt: m.pln_per_piece,
+}));
 
 const mediana = (a) => {
   const s = [...a].sort((x, y) => x - y);
@@ -41,8 +44,8 @@ const mediana = (a) => {
 
 // --- 1. Tabela w ogole sie czyta -----------------------------------------
 sekcja("1. Wartosci startowe tabeli");
-if (WIERSZE.length < 20) zle(`odczytalem tylko ${WIERSZE.length} pozycji: wzorzec przestal pasowac do zapisu w serwerze`);
-else ok(`${WIERSZE.length} pozycji odczytanych z serwera`);
+if (WIERSZE.length < 20) zle(`zestaw startowy ma tylko ${WIERSZE.length} pozycji, a cennik lasera potrzebuje ich wiecej`);
+else ok(`${WIERSZE.length} pozycji w zestawie startowym`);
 
 // --- 2. Stala domyslna trzyma sie mediany --------------------------------
 sekcja("2. Stawka domyslna kontra tabela");
@@ -59,7 +62,7 @@ if (Math.abs(DEFAULT_PLN_PER_M2 - med) > med * 0.25) {
 
 // --- 3. Sztuki nie udaja metrow ------------------------------------------
 sekcja("3. Materialy kupowane na sztuki");
-const stock = WIERSZE.map((w) => ({ material_id: w.id, pln_per_m2: w.m2, pln_per_piece: w.szt }));
+const stock = seedAsStock();
 const NA_SZTUKI = ["glass", "stone"];
 for (const id of NA_SZTUKI) {
   const w = WIERSZE.find((x) => x.id === id);
@@ -144,6 +147,21 @@ if ((silnik.match(/label: l\.materialCost/g) || []).length < 4) {
 }
 if (!/materialSeparate/.test(silnik)) zle("brak pozycji 'wycena indywidualna', wiec znikajaca linia czyta sie jak material gratis");
 ok("ciecie i grawer wypisuja material, takze gdy rozliczamy go osobno");
+
+// --- 8. Etykieta "od" liczy sie z tej samej tabeli --------------------------
+sekcja("8. Cena 'od' na kartach uslug");
+// Skrypt etykiet nie ma dostepu do bazy, wiec bierze zestaw startowy. Gdy
+// przestanie go podawac, silnik zjedzie na stawke domyslna i karta uslugi
+// zacznie obiecywac inna cene niz kalkulator. Roznica bywa mniejsza niz
+// zaokraglenie do zlotowki, wiec sam `--check` tego nie zlapie.
+const deriveSrc = readFileSync(new URL("./derive-service-prices.mjs", import.meta.url), "utf8");
+if (!/seedAsStock\(\)/.test(deriveSrc)) {
+  zle("skrypt cen 'od' nie bierze tabeli materialow, wiec karta uslugi liczy inna stawke niz koszyk");
+} else if (!/fn\([^\n]*,\s*"pl",\s*stock\)/.test(deriveSrc)) {
+  zle("tabela jest wczytana, ale nie trafia do wywolania kalkulatora");
+} else {
+  ok("karta uslugi i koszyk licza material z tego samego zestawu");
+}
 
 if (bledy) {
   console.error(`\n${bledy} bledow.`);
