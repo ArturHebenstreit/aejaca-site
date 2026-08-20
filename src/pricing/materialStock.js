@@ -22,8 +22,20 @@
 // samego ksztaltu: zostaje odpad miedzy elementami i przy krawedziach, wiec
 // zuzywamy wiecej materialu, niz wynosi pole wyrobu.
 
-/** Stawka, gdy tabela milczy. Wartosc startowa ustalona przez wlasciciela. */
-export const DEFAULT_PLN_PER_M2 = 100;
+/**
+ * Stawka, gdy tabela milczy.
+ *
+ * To jest MEDIANA cen rynkowych materialow z tabeli (2026-08, 24 pozycje
+ * liczone na metry). Nie srednia, bo srednia wynosi 241 zl i jest ciagnieta
+ * przez tytan i miedz, ktorych prawie nie tniemy; mediana 141 zl opisuje
+ * material typowy. Dla nieznanej pozycji ta liczba myli sie najmniej: przy
+ * sklejce zawyzy, przy akrylu 8 mm zanizy, ale zaden z tych bledow nie
+ * bedzie rzedu wielkosci, a taki wlasnie popelnialismy wczesniej.
+ *
+ * `scripts/test-material-stock.mjs` przelicza mediane z tabeli i wywala
+ * build, gdy ta stala od niej odjedzie.
+ */
+export const DEFAULT_PLN_PER_M2 = 140;
 
 /** Zapas na odpad miedzy elementami i przy krawedziach arkusza. */
 export const MATERIAL_WASTE = 1.15;
@@ -45,13 +57,42 @@ export function materialIsOurs(podloze) {
   return podloze !== "own_item" && podloze !== "own_stock";
 }
 
+/** Rekord materialu z tabeli, albo null. */
+export function stockRecord(matId, stock) {
+  return Array.isArray(stock)
+    ? stock.find((m) => m.material_id === matId || m.id === matId) || null
+    : null;
+}
+
 /** Stawka za metr kwadratowy dla materialu, z tabeli albo domyslna. */
 export function ratePerM2(matId, stock) {
-  const rekord = Array.isArray(stock)
-    ? stock.find((m) => m.material_id === matId || m.id === matId)
-    : null;
-  const stawka = Number(rekord?.pln_per_m2);
+  const stawka = Number(stockRecord(matId, stock)?.pln_per_m2);
   return stawka > 0 ? stawka : DEFAULT_PLN_PER_M2;
+}
+
+/**
+ * Cena za SZTUKE, gdy material kupuje sie jako przedmiot, a nie na metry.
+ *
+ * Szklanka, kubek i plytka lupkowa maja cene sztuki i nie maja sensownej ceny
+ * za metr kwadratowy. Przeliczanie ich na metry byloby liczba wygladajaca
+ * poprawnie i nieprawdziwa, a to najgorszy rodzaj danych.
+ */
+export function ratePerPiece(matId, stock) {
+  const cena = Number(stockRecord(matId, stock)?.pln_per_piece);
+  return cena > 0 ? cena : null;
+}
+
+/**
+ * Czy material ma byc wyceniony osobno, poza kalkulatorem.
+ *
+ * Srebro i zloto rozlicza sie WAGOWO, a nie powierzchniowo: gram zlota
+ * kosztuje inaczej w kazdym tygodniu i zalezy od proby. Zero w obu
+ * kolumnach znaczy wprost "tutaj nie wyceniamy", a nie "za darmo".
+ */
+export function pricedSeparately(matId, stock) {
+  const rekord = stockRecord(matId, stock);
+  if (!rekord) return false;
+  return Number(rekord.pln_per_m2) === 0 && Number(rekord.pln_per_piece || 0) === 0;
 }
 
 /**
@@ -66,6 +107,14 @@ export function ratePerM2(matId, stock) {
  */
 export function materialCostPLN({ areaCm2, matId, podloze = null, stock = null }) {
   if (!materialIsOurs(podloze)) return 0;
+  if (pricedSeparately(matId, stock)) return 0;
+
+  // CENA ZA SZTUKE MA PIERWSZENSTWO. Kupujemy szklanke, a nie metr kwadratowy
+  // szklanki, wiec zapas na odpad tez tu nie wchodzi: przy przedmiocie nie ma
+  // odpadu miedzy elementami, jest albo caly przedmiot, albo nic.
+  const zaSztuke = ratePerPiece(matId, stock);
+  if (zaSztuke != null) return zaSztuke;
+
   const cm2 = sheetUsedCm2(areaCm2);
   if (!cm2) return 0;
   return (cm2 / 10000) * ratePerM2(matId, stock);

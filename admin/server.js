@@ -695,14 +695,15 @@ app.get("/materials/:id/edit", requireAuth, async (req, res) => {
 });
 
 app.post("/materials/create", requireAuth, express.urlencoded({ extended: true }), async (req, res) => {
-  const { material_id, name_pl, name_en, name_de, pln_per_m2, thickness_mm, in_stock, notes } = req.body;
+  const { material_id, name_pl, name_en, name_de, pln_per_m2, pln_per_piece, thickness_mm, in_stock, notes } = req.body;
   if (!material_id || !name_pl) return res.status(400).render("error", { message: "Identyfikator i nazwa sa wymagane" });
   try {
     await pool.query(
-      `INSERT INTO material_stock (material_id,name_pl,name_en,name_de,pln_per_m2,thickness_mm,in_stock,notes,updated_by)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+      `INSERT INTO material_stock (material_id,name_pl,name_en,name_de,pln_per_m2,pln_per_piece,thickness_mm,in_stock,notes,updated_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
       [material_id.trim(), name_pl, name_en || name_pl, name_de || name_pl,
-       Number(pln_per_m2) || 0, thickness_mm ? Number(thickness_mm) : null,
+       Number(pln_per_m2) || 0, pln_per_piece ? Number(pln_per_piece) : null,
+       thickness_mm ? Number(thickness_mm) : null,
        in_stock === "on", notes || null, req.user.email]
     );
   } catch (err) { return res.status(400).render("error", { message: err.message }); }
@@ -711,11 +712,12 @@ app.post("/materials/create", requireAuth, express.urlencoded({ extended: true }
 });
 
 app.post("/materials/:id/update", requireAuth, express.urlencoded({ extended: true }), async (req, res) => {
-  const { name_pl, name_en, name_de, pln_per_m2, thickness_mm, in_stock, notes } = req.body;
+  const { name_pl, name_en, name_de, pln_per_m2, pln_per_piece, thickness_mm, in_stock, notes } = req.body;
   await pool.query(
-    `UPDATE material_stock SET name_pl=$1, name_en=$2, name_de=$3, pln_per_m2=$4, thickness_mm=$5,
-     in_stock=$6, notes=$7, updated_at=NOW(), updated_by=$8 WHERE id=$9`,
+    `UPDATE material_stock SET name_pl=$1, name_en=$2, name_de=$3, pln_per_m2=$4, pln_per_piece=$5,
+     thickness_mm=$6, in_stock=$7, notes=$8, updated_at=NOW(), updated_by=$9 WHERE id=$10`,
     [name_pl, name_en || name_pl, name_de || name_pl, Number(pln_per_m2) || 0,
+     pln_per_piece ? Number(pln_per_piece) : null,
      thickness_mm ? Number(thickness_mm) : null, in_stock === "on", notes || null,
      req.user.email, req.params.id]
   );

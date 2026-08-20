@@ -6,7 +6,7 @@
       <div>
         <h2 class="text-xl font-semibold text-white">Materiał z magazynu</h2>
         <p class="text-xs text-neutral-500 mt-1">
-          Cena za m². Wycena liczy: pole wyrobu + 15% zapasu na odpad, tylko gdy materiał jest nasz.
+          Cena za m² albo za sztukę, gdy materiału nie kupuje się na metry. Wycena liczy: pole wyrobu + 15% zapasu na odpad razy stawka za m², a przy cenie za sztukę bierze ją wprost. Doliczana tylko wtedy, gdy materiał jest nasz.
         </p>
       </div>
       <a href="/materials/new" class="px-3 py-2 rounded-lg bg-blue-500 hover:bg-blue-400 text-white text-sm transition-colors">
@@ -29,6 +29,7 @@
               <th class="px-4 py-3 text-left">Nazwa PL</th>
               <th class="px-4 py-3 text-left">EN / DE</th>
               <th class="px-4 py-3 text-right">PLN / m²</th>
+              <th class="px-4 py-3 text-right">PLN / szt.</th>
               <th class="px-4 py-3 text-right">Grubość</th>
               <th class="px-4 py-3 text-center">Na stanie</th>
               <th class="px-4 py-3 text-left">Notatka</th>
@@ -47,8 +48,22 @@
                   <div class="text-neutral-600"><%= m.name_de %></div>
                 </td>
                 <td class="px-4 py-3 text-right">
-                  <span class="text-amber-400 font-semibold"><%= parseFloat(m.pln_per_m2).toFixed(2) %></span>
-                  <span class="text-neutral-600 text-xs ml-0.5">zł</span>
+                  <% if (parseFloat(m.pln_per_m2) > 0) { %>
+                    <span class="text-amber-400 font-semibold"><%= parseFloat(m.pln_per_m2).toFixed(2) %></span>
+                    <span class="text-neutral-600 text-xs ml-0.5">zł</span>
+                  <% } else { %>
+                    <span class="text-neutral-600 text-xs">-</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <% if (m.pln_per_piece != null && parseFloat(m.pln_per_piece) > 0) { %>
+                    <span class="text-emerald-400 font-semibold"><%= parseFloat(m.pln_per_piece).toFixed(2) %></span>
+                    <span class="text-neutral-600 text-xs ml-0.5">zł</span>
+                  <% } else if (parseFloat(m.pln_per_m2) === 0) { %>
+                    <span class="text-neutral-500 text-xs">wycena indyw.</span>
+                  <% } else { %>
+                    <span class="text-neutral-600 text-xs">-</span>
+                  <% } %>
                 </td>
                 <td class="px-4 py-3 text-right text-neutral-400 text-xs">
                   <%= m.thickness_mm != null ? parseFloat(m.thickness_mm) + ' mm' : '-' %>
@@ -75,8 +90,8 @@
               </tr>
               <% }) %>
             <% } else { %>
-              <tr><td colspan="9" class="px-4 py-8 text-center text-neutral-500 text-sm">
-                Brak materiałów. Wycena liczy wtedy stawkę domyślną 100 zł/m².
+              <tr><td colspan="10" class="px-4 py-8 text-center text-neutral-500 text-sm">
+                Brak materiałów. Wycena liczy wtedy stawkę domyślną 140 zł/m².
               </td></tr>
             <% } %>
           </tbody>

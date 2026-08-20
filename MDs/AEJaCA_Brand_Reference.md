@@ -363,10 +363,27 @@ nie docierał do silnika wyceny.
 Teraz stawka za metr kwadratowy żyje w tabeli `material_stock` w bazie, a wzór brzmi:
 **pole wyrobu × 1,15 (zapas na odpad) × stawka z tabeli**, doliczane **tylko wtedy, gdy materiał jest
 nasz**. Osobna pozycja "Materiał / szt." pojawia się w rozpisce dokładnie wtedy, gdy coś liczymy.
-Stawka startowa to **100 zł/m² dla wszystkich pozycji** (decyzja właściciela); realne ceny wpisuje się
+Realne ceny rynkowe siedzą w tabeli i poprawia się je
 w panelu administracyjnym pod **`/materials`**, gdzie można dodawać, edytować i usuwać rekordy.
 Zapisanie zmiany czyści pamięć podręczną po obu stronach naraz, inaczej nowa stawka doszłaby do
 przeglądarki od razu, a do kwoty wiążącej dopiero po godzinie.
+
+**Ceny rynkowe wpisane, plus cena za sztukę (2026-08-20).** Tabela została wypełniona cenami
+rynkowymi zebranymi z hurtowni (bez Allegro): sklejka 3 mm 24 zł/m², HDF/MDF 42, lite drewno dębowe
+115, akryl 3/5/8 mm 167/265/425, skóra 115-200, filc 32, guma do pieczątek 320, papier 10, stal
+nierdzewna 300, aluminium 200, anodowane 250, mosiądz 750, miedź 850, tytan 1200.
+**Średnia wynosi 241 zł/m², mediana 141 zł/m²** z 24 pozycji liczonych na metry.
+
+Doszła kolumna **cena za sztukę** (`pln_per_piece`) dla materiałów, których nie kupuje się na metry:
+szkło 12 zł, łupek 15 zł. Gdy jest wypełniona, ma **pierwszeństwo** przed stawką za m² i **nie dolicza
+zapasu na odpad**, bo przy przedmiocie nie ma odpadu między elementami, jest albo cała szklanka, albo
+nic. **Zero w obu kolumnach** znaczy "wycena indywidualna": tak stoją srebro i złoto, bo metal
+szlachetny rozlicza się wagowo, a nie powierzchniowo. Rozpiska pokazuje wtedy pozycję "Materiał /
+szt.: wycena indywidualna", bo znikająca linia czytałaby się jak materiał gratis.
+
+Stawka domyślna dla materiału spoza tabeli to **mediana 140 zł/m²**, a nie średnia: średnią ciągną
+tytan i miedź, których prawie nie tniemy. `scripts/test-material-stock.mjs` przelicza medianę z tabeli
+i wywala build, gdy stała od niej odjedzie o więcej niż ćwierć.
 
 **Skutek cenowy, do świadomego przyjęcia.** Poprzednia stawka materiału w cenniku (`matCost`) była
 znacznie wyższa niż 100 zł/m²: dla akrylu 5 mm wynosiła 0,18 zł/cm², czyli **1800 zł/m²**. Cięcie
