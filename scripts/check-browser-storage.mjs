@@ -32,6 +32,7 @@ const ALLOWED = {
   "src/components/ChatWidget.jsx": "zamkniecie dymka i tresc rozmowy na czas jednej wizyty",
   "src/i18n/ThemeContext.jsx": "wybrany tryb jasny albo ciemny",
   "src/hooks/useGemPrices.js": "pamiec podreczna publicznych cen kamieni, zeby kalkulator nie pytal serwera przy kazdym kliknieciu; zadne dane osoby",
+  "src/hooks/useMaterialStock.js": "pamiec podreczna publicznych stawek materialow z magazynu, zeby suwak wielkosci nie pytal serwera przy kazdym ruchu; zadne dane osoby",
   "src/i18n/LanguageContext.jsx": "wybrany jezyk",
   "src/analysis/modelHandoff.js": "model przenoszony miedzy kartami po kliknieciu odnosnika do pelnej analizy, czyli czynnosc, o ktora klient sam poprosil; rekord kasujemy przy odczycie i odrzucamy po kwadransie",
 };

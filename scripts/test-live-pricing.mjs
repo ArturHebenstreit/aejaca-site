@@ -113,5 +113,58 @@ console.log("Zywe dane w kwocie wiazacej\n");
   }
 }
 
+// ------------------------------------------------------------
+// 4. Stawki materialow doceraja do kwoty wiazacej
+// ------------------------------------------------------------
+// Cena plyty zyje w tabeli `material_stock` i zmienia sie z panelu. Do
+// silnika jedzie TRZECIM ARGUMENTEM, dokladnie tak jak kursy do jubilerki,
+// wiec pominiecie jej nie rzuca wyjatku: wycena zjezdza do stawki domyslnej
+// i zwraca kwote, ktora wyglada poprawnie. Klient widzi jedna cene, placi
+// inna, i nikt sie o tym nie dowiaduje.
+{
+  const bazowe = {
+    calculator: "laser_co2_cut",
+    params: { matId: "acr5", pathId: "S", complexId: "moderate", quantityId: "proto", extended: false, podloze: "our_stock" },
+    lang: "pl",
+  };
+  const domyslna = priceItem(bazowe).unitGrosze;
+  const drozsza = priceItem({ ...bazowe, materialStock: [{ material_id: "acr5", pln_per_m2: 900 }] }).unitGrosze;
+
+  ok("stawka z tabeli zmienia kwote wiazaca", domyslna !== drozsza,
+     `${(domyslna / 100).toFixed(2)} vs ${(drozsza / 100).toFixed(2)} PLN`);
+  ok("drozszy material daje wyzsza kwote", drozsza > domyslna);
+
+  // Material klienta nie moze byc doliczany: placilby nam za plyte, ktora
+  // sam przyslal.
+  const swojMaterial = priceItem({
+    ...bazowe,
+    params: { ...bazowe.params, podloze: "own_stock" },
+    materialStock: [{ material_id: "acr5", pln_per_m2: 900 }],
+  }).unitGrosze;
+  ok("material klienta nie jest doliczany", swojMaterial < drozsza,
+     `${(swojMaterial / 100).toFixed(2)} PLN bez materialu`);
+
+  // Grawer na NASZEJ desce tez zuzywa material.
+  const grawerNasz = priceItem({
+    calculator: "laser_co2_engrave", lang: "pl",
+    params: { matId: "wood", areaId: "S", detailId: "standard", quantityId: "proto", extended: false, podloze: "our_stock" },
+    materialStock: [{ material_id: "wood", pln_per_m2: 900 }],
+  }).unitGrosze;
+  const grawerKlienta = priceItem({
+    calculator: "laser_co2_engrave", lang: "pl",
+    params: { matId: "wood", areaId: "S", detailId: "standard", quantityId: "proto", extended: false, podloze: "own_item" },
+    materialStock: [{ material_id: "wood", pln_per_m2: 900 }],
+  }).unitGrosze;
+  ok("grawer na naszej desce doplaca za material", grawerNasz > grawerKlienta,
+     `${(grawerNasz / 100).toFixed(2)} vs ${(grawerKlienta / 100).toFixed(2)} PLN`);
+
+  // Serwer musi te stawki w ogole pobrac i podac dalej. Sam fakt, ze silnik
+  // umie je przyjac, niczego nie gwarantuje.
+  const server = readFileSync(join(ROOT, "chat-api", "server.js"), "utf8");
+  ok("serwer czyta tabele materialow", server.includes("async function currentMaterialStock"));
+  ok("kwota wiazaca dostaje stawki materialow", /materialStock: itemStock/.test(server));
+  ok("zmiana w panelu czysci obie pamieci", /_materialPriceCache = \{ ts: 0, rows: null \}/.test(server));
+}
+
 console.log(failed ? `\n${failed} bledow` : "\nWszystko sie zgadza");
 process.exit(failed ? 1 : 0);

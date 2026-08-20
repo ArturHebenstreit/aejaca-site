@@ -9,6 +9,7 @@ import { QuantityStepper } from "../shop/ConfigControls.jsx";
 import CalcToCart from "./CalcToCart.jsx";
 import MaterialNotice from "../MaterialNotice.jsx";
 import SVGUploadCard, { SVG_LBL } from "./SVGUploadCard.jsx";
+import { useMaterialStock } from "../../hooks/useMaterialStock.js";
 import {
   SUBSTRATE_LABEL, SUBSTRATES, SPARE_LABEL, spareOptionsFor, MIN_MATERIAL_NOTE,
 } from "../../data/laserSubstrate.js";
@@ -60,8 +61,11 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
   const cQtyId = tierForQty(cutQty, QUANTITY_TIERS).id;
   const [extended, setExtended] = useState(false);
   // Podloze uslugi: przedmiot klienta, material klienta albo material nasz.
-  // Nie wplywa na wycene ponizej, ta liczy wylacznie robocizne, patrz MaterialNotice.
+  // Od 2026-08-20 WPLYWA na wycene: przy materiale z naszego magazynu
+  // doliczamy plyte ze stawki w tabeli, przy materiale klienta nie.
   const [podloze, setPodloze] = useState("our_stock");
+  // Stawki materialow z magazynu: te same, z ktorych liczy serwer.
+  const materialStock = useMaterialStock();
   const [spare, setSpare] = useState("");
   const [materialNote, setMaterialNote] = useState("");
 
@@ -130,9 +134,9 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
   }
 
   const result = useMemo(() => {
-    if (mode === "engrave") return calcEngrave({ matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, extended, svgData: scaledSvgData }, lang);
-    return calcCut({ matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended, svgData: scaledSvgData }, lang);
-  }, [mode, eMatId, eAreaId, eDetailId, eQtyId, cMatId, cPathId, cComplexId, cQtyId, extended, scaledSvgData, lang]);
+    if (mode === "engrave") return calcEngrave({ matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, extended, svgData: scaledSvgData, podloze }, lang, materialStock);
+    return calcCut({ matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended, svgData: scaledSvgData, podloze }, lang, materialStock);
+  }, [mode, eMatId, eAreaId, eDetailId, eQtyId, cMatId, cPathId, cComplexId, cQtyId, extended, scaledSvgData, lang, podloze, materialStock]);
 
   const presetNeedsExtended = mode === "engrave" ? AREA_NEEDS_EXTENDED[eAreaId] : PATH_NEEDS_EXTENDED[cPathId];
   const needsExtended = scaledSvgData ? svgNeedsExtended : presetNeedsExtended;

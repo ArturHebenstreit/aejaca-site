@@ -92,6 +92,7 @@ import { nozzleFromPrecision } from "../../analysis/printability.js";
 import SizeSlider, { categoryForCm } from "./SizeSlider.jsx";
 import VectorPreview from "./VectorPreview.jsx";
 import { resolveTechAndParams, runCalc } from "../../pricing/simpleQuote.js";
+import { useMaterialStock } from "../../hooks/useMaterialStock.js";
 import { getResin } from "../../data/resins.js";
 import { scaleMesh, scaleVector, meshMaxCm, vectorMaxCm, meshForPricing } from "../../pricing/scaleGeometry.js";
 import { looksTooSmall, suspectUnits } from "../../pricing/meshUnits.js";
@@ -788,12 +789,16 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
   const scaledStl = useMemo(() => scaleMesh(stlData, scale), [stlData, scale]);
   const scaledSvg = useMemo(() => scaleVector(svgData, scale), [svgData, scale]);
 
-  const odpowiedzi = { item, size, material, finish, quantity, fileType, stlData: scaledStl, svgData: scaledSvg, stockId };
+  // Stawki materialow z magazynu. Ta sama lista trafia do silnika w
+  // przegladarce i na serwerze, wiec kwota na ekranie i kwota wiazaca licza
+  // sie z tych samych liczb.
+  const materialStock = useMaterialStock();
+  const odpowiedzi = { item, size, material, finish, quantity, fileType, stlData: scaledStl, svgData: scaledSvg, stockId, podloze };
 
   const resolved = useMemo(
     () => resolveTechAndParams({ ...odpowiedzi, printTech }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, printTech, stockId]
+    [item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, printTech, stockId, podloze]
   );
 
   // Pole robocze laserow, ten sam wzorzec co pole robocze drukarki (fitCm)
@@ -837,17 +842,17 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
   // nadal generowalyby poprawnie wygladajace liczby.
   const co2CutResult = useMemo(
     () => (isVectorCo2 && !laserOverPlate
-      ? runCalc(resolveTechAndParams({ ...odpowiedzi, co2Mode: "cut" }), lang)
+      ? runCalc(resolveTechAndParams({ ...odpowiedzi, co2Mode: "cut" }), lang, materialStock)
       : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isVectorCo2, laserOverPlate, lang, item, size, material, finish, quantity, fileType, scaledSvg, stockId]
+    [isVectorCo2, laserOverPlate, lang, item, size, material, finish, quantity, fileType, scaledSvg, stockId, podloze, materialStock]
   );
   const co2EngraveResult = useMemo(
     () => (isVectorCo2 && !laserOverPlate
-      ? runCalc(resolveTechAndParams({ ...odpowiedzi, co2Mode: "engrave" }), lang)
+      ? runCalc(resolveTechAndParams({ ...odpowiedzi, co2Mode: "engrave" }), lang, materialStock)
       : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isVectorCo2, laserOverPlate, lang, item, size, material, finish, quantity, fileType, scaledSvg, stockId]
+    [isVectorCo2, laserOverPlate, lang, item, size, material, finish, quantity, fileType, scaledSvg, stockId, podloze, materialStock]
   );
 
   // Wybor klienta (kliknieta karta ciecie/grawerowanie) nadpisuje tryb, ktory
@@ -858,7 +863,7 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
       ? resolveTechAndParams({ ...odpowiedzi, co2Mode })
       : resolved),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isVectorCo2, co2Mode, resolved, item, size, material, finish, quantity, fileType, scaledSvg, stockId]
+    [isVectorCo2, co2Mode, resolved, item, size, material, finish, quantity, fileType, scaledSvg, stockId, podloze]
   );
 
   // JAKIEGO TWORZYWA UZYJEMY. Karta mowila "z filamentu" i "z zywicy", czyli
@@ -892,8 +897,8 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
   // wykonac w calosci, jest obietnica bez pokrycia, a klient dowiedzialby sie
   // o tym dopiero przy realizacji. Zamiast liczby pokazujemy droge.
   const result = useMemo(
-    () => (overPlate || laserOverPlate ? { type: "custom" } : runCalc(activeResolved, lang)),
-    [activeResolved, lang, overPlate, laserOverPlate]
+    () => (overPlate || laserOverPlate ? { type: "custom" } : runCalc(activeResolved, lang, materialStock)),
+    [activeResolved, lang, overPlate, laserOverPlate, materialStock]
   );
 
   // Druga technologia druku, policzona z TYCH SAMYCH odpowiedzi. Klient
@@ -903,9 +908,9 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
   const drukowe = resolved?.tech === "3dprint" || resolved?.tech === "msla";
   const drugaTech = resolved?.tech === "msla" ? "fdm" : "msla";
   const drugiWynik = useMemo(
-    () => (!drukowe || overPlate ? null : runCalc(resolveTechAndParams({ ...odpowiedzi, printTech: drugaTech }), lang)),
+    () => (!drukowe || overPlate ? null : runCalc(resolveTechAndParams({ ...odpowiedzi, printTech: drugaTech }), lang, materialStock)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [drukowe, drugaTech, overPlate, lang, item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, stockId]
+    [drukowe, drugaTech, overPlate, lang, item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, stockId, materialStock]
   );
 
   // Przejscie do trybu zaawansowanego zabiera ze soba plik i ustawiona

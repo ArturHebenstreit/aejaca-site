@@ -17,6 +17,7 @@ import { useCart } from "../cart/CartContext.jsx";
  *  przepuszcza opis, ktory serwer odrzuci przy platnosci. */
 const MIN_OPIS = 20;
 import { getPackaging } from "../pricing/packaging.js";
+import { describeParams } from "../data/describeParams.js";
 import { t } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
 import { useAvailability } from "../shop/availability.js";
@@ -254,6 +255,14 @@ export default function Cart() {
                         </div>
 
                         <div className="text-neutral-500 text-[11px] mt-1.5 space-y-0.5">
+                          {/* WSZYSTKIE USTALENIA, nie tylko plik i opis. Ta lista
+                              jest trescia umowy: klient placi za to, co tu stoi,
+                              i tylko na to sie zgodzil. Powstaje z tych samych
+                              pol, ktore opisuja usluge, wiec nowa opcja pojawi
+                              sie tu sama. */}
+                          {describeParams(i, lang).map((w) => (
+                            <div key={w.label}>{w.label}: <span className="text-neutral-400">{w.value}</span></div>
+                          ))}
                           {pack && <div>{u.packaging}: {t(pack.label, lang)}{pack.grosze ? ` (+${money(pack.grosze)})` : ""}</div>}
                           {i.personalization && <div>{u.engraving}: &bdquo;{i.personalization}&rdquo;</div>}
                           {i.packagingText && <div>{u.engravingLid}: &bdquo;{i.packagingText}&rdquo;</div>}

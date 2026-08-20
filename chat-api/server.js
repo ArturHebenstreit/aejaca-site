@@ -381,6 +381,67 @@ if (pool) {
       ON CONFLICT (gem_id) DO NOTHING`);
   }).catch(() => {});
 
+  // ── MATERIAL Z NASZEGO MAGAZYNU ───────────────────────────────────────────
+  // Cena plyty zmienia sie razem z rynkiem, wiec nie moze mieszkac w kodzie:
+  // poprawka stawki nie moze wymagac wdrozenia. Wycena czyta `pln_per_m2`
+  // i mnozy przez pole wyrobu powiekszone o zapas na odpad.
+  //
+  // Stawka startowa 100 zl/m2 dla kazdej pozycji, zgodnie z decyzja
+  // wlasciciela: realne ceny wpisuje sie w panelu administracyjnym.
+  pool.query(`CREATE TABLE IF NOT EXISTS material_stock (
+    id SERIAL PRIMARY KEY,
+    material_id VARCHAR(50) NOT NULL UNIQUE,
+    name_pl VARCHAR(120) NOT NULL,
+    name_en VARCHAR(120) NOT NULL,
+    name_de VARCHAR(120) NOT NULL,
+    pln_per_m2 NUMERIC(10,2) NOT NULL DEFAULT 0,
+    -- Nie wszystko kupuje sie na metry. Szklanka, plytka lupkowa czy kamien
+    -- to SZTUKI, i przeliczanie ich na metr kwadratowy bylo by fikcja. Gdy
+    -- ta kolumna jest wypelniona, ma pierwszenstwo przed stawka za m2.
+    pln_per_piece NUMERIC(10,2),
+    thickness_mm NUMERIC(6,2),
+    in_stock BOOLEAN NOT NULL DEFAULT true,
+    notes TEXT,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_by VARCHAR(100)
+  )`).then(() => {
+    return pool.query(`INSERT INTO material_stock (material_id,name_pl,name_en,name_de,pln_per_m2,pln_per_piece,thickness_mm,notes) VALUES
+      ('ply2','Sklejka 2mm','Plywood 2mm','Sperrholz 2mm',18,NULL,2,'rynek 2026-08'),
+      ('ply3','Sklejka 3mm','Plywood 3mm','Sperrholz 3mm',24,NULL,3,'rynek 2026-08'),
+      ('ply56','Sklejka 5-6mm','Plywood 5-6mm','Sperrholz 5-6mm',40,NULL,6,'rynek 2026-08'),
+      ('mdf8','Plyta HDF/MDF do 8mm','HDF/MDF board up to 8mm','HDF/MDF-Platte bis 8mm',42,NULL,8,'rynek 2026-08'),
+      ('wood10','Lite drewno do 10mm','Solid wood up to 10mm','Massivholz bis 10mm',115,NULL,10,'dab, rynek 2026-08'),
+      ('acr3','Akryl 3mm','Acrylic 3mm','Acryl 3mm',167,NULL,3,'rynek 2026-08'),
+      ('acr5','Akryl 5mm','Acrylic 5mm','Acryl 5mm',265,NULL,5,'rynek 2026-08'),
+      ('acr8','Akryl 8mm','Acrylic 8mm','Acryl 8mm',425,NULL,8,'rynek 2026-08'),
+      ('leather2','Skora 1-2mm','Leather 1-2mm','Leder 1-2mm',115,NULL,2,'rynek 2026-08'),
+      ('leather4','Skora 3-4mm','Leather 3-4mm','Leder 3-4mm',200,NULL,4,'rynek 2026-08'),
+      ('paper','Papier / karton','Paper / cardboard','Papier / Karton',10,NULL,NULL,'rynek 2026-08'),
+      ('fabric','Tkanina / filc','Fabric / felt','Stoff / Filz',32,NULL,NULL,'filc 3mm, rynek 2026-08'),
+      ('rubber','Guma 2-3mm','Rubber 2-3mm','Gummi 2-3mm',320,NULL,3,'guma do pieczatek, rynek 2026-08'),
+      ('wood','Lite drewno','Solid wood','Massivholz',115,NULL,NULL,'dab, rynek 2026-08'),
+      ('plywood','Sklejka','Plywood','Sperrholz',24,NULL,NULL,'rynek 2026-08'),
+      ('wood_other','Inne materialy drewnopochodne','Other wood-based materials','Andere Holzwerkstoffe',30,NULL,NULL,'HDF/MDF, rynek 2026-08'),
+      ('acrylic','Akryl','Acrylic','Acryl',167,NULL,NULL,'3mm, rynek 2026-08'),
+      ('glass','Szklo','Glass','Glas',0,12,NULL,'kupujemy sztukami, nie na metry'),
+      ('stone','Kamien / lupek','Stone / slate','Stein / Schiefer',0,15,NULL,'plytka lupkowa, kupujemy sztukami'),
+      ('leather','Skora','Leather','Leder',115,NULL,NULL,'rynek 2026-08'),
+      ('stainless','Stal nierdzewna 1mm','Stainless steel 1mm','Edelstahl 1mm',300,NULL,1,'rynek 2026-08'),
+      ('aluminum','Aluminium 1mm','Aluminium 1mm','Aluminium 1mm',200,NULL,1,'rynek 2026-08'),
+      ('anodized','Aluminium anodowane 1mm','Anodised aluminium 1mm','Eloxiertes Aluminium 1mm',250,NULL,1,'rynek 2026-08'),
+      ('brass','Mosiadz 1mm','Brass 1mm','Messing 1mm',750,NULL,1,'rynek 2026-08'),
+      ('copper','Miedz 1mm','Copper 1mm','Kupfer 1mm',850,NULL,1,'rynek 2026-08'),
+      ('titanium','Tytan 1mm','Titanium 1mm','Titan 1mm',1200,NULL,1,'rynek 2026-08'),
+      ('silver','Srebro','Silver','Silber',0,0,NULL,'metal rozliczany wagowo, wycena indywidualna'),
+      ('gold','Zloto','Gold','Gold',0,0,NULL,'metal rozliczany wagowo, wycena indywidualna')
+      ON CONFLICT (material_id) DO NOTHING`);
+  }).then(() => {
+    // Kolumna doszla po pierwszym wdrozeniu tabeli, wiec baza zalozona
+    // wczesniej jej nie ma. Bez tego zapytanie o cene za sztuke wywalaloby
+    // caly odczyt stawek, a wycena po cichu zjechalaby na wartosc domyslna.
+    return pool.query("ALTER TABLE material_stock ADD COLUMN IF NOT EXISTS pln_per_piece NUMERIC(10,2)");
+  }).catch(() => {});
+
   pool.query(`CREATE TABLE IF NOT EXISTS filament_types (
     id BIGSERIAL PRIMARY KEY,
     type_id VARCHAR(50) UNIQUE NOT NULL,
@@ -933,6 +994,27 @@ async function currentMetalRates() {
 //
 // Ceny bazowe zmieniaja sie rzadko, kurs euro co godzine, wiec w pamieci
 // trzymamy same euro, a kurs nakladamy przy kazdym wywolaniu.
+// Stawki materialow z magazynu dla WYCENY SERWEROWEJ, czyli dla kwoty
+// wiazacej. Ta sama tabela zasila `/api/material-stock`, z ktorego czyta
+// przegladarka; bez wspolnego zrodla klient widzialby jedna cene, a placil
+// inna, i nic by tego nie zglosilo.
+let _materialPriceCache = { ts: 0, rows: null };
+
+async function currentMaterialStock() {
+  if (!pool) return null;
+  const now = Date.now();
+  if (_materialPriceCache.rows && now - _materialPriceCache.ts < 60 * 60 * 1000) {
+    return _materialPriceCache.rows;
+  }
+  try {
+    const { rows } = await pool.query("SELECT material_id, pln_per_m2, pln_per_piece FROM material_stock");
+    _materialPriceCache = { ts: now, rows };
+    return rows;
+  } catch {
+    return null;
+  }
+}
+
 let _gemBaseCache = { ts: 0, eur: null };
 
 async function currentGemstones(plnPerEur) {
@@ -1019,7 +1101,8 @@ app.post("/api/price", (req, res, next) => {
 
     const rates = calculator.startsWith("jewelry_") ? await currentMetalRates() : null;
     const gemstones = rates ? await currentGemstones(rates.pln_per_eur) : null;
-    const item = priceItem({ calculator, params, lang, geometry, scale, rates, gemstones });
+    const materialStock = calculator.startsWith("laser_co2") ? await currentMaterialStock() : null;
+    const item = priceItem({ calculator, params, lang, geometry, scale, rates, gemstones, materialStock });
 
     // Informacyjnie: ile jeszcze zmiesci sie w limicie kwartalnym.
     const limit = pool ? await checkQuarterlyLimit(pool, item.lineGrosze) : null;
@@ -1286,7 +1369,8 @@ app.post("/api/quotes/save", express.json({ limit: "1mb" }), async (req, res) =>
       }
 
       const scale = Number(raw?.scale) > 0 ? Number(raw.scale) : 1;
-      const item = priceItem({ calculator, params, lang, geometry, scale, rates, gemstones });
+      const materialStock = calculator.startsWith("laser_co2") ? await currentMaterialStock() : null;
+      const item = priceItem({ calculator, params, lang, geometry, scale, rates, gemstones, materialStock });
       priced.push({
         calculator, params, scale, uploadId, fileName,
         title: item.title, qty: item.qty, unitGrosze: item.unitGrosze,
@@ -1999,6 +2083,12 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
         if (rows[0]?.geometry) itemGeometry = rows[0].geometry;
       }
 
+      // TO JEST MIEJSCE, W KTORYM POWSTAJE KWOTA WIAZACA. Kazde pominiete
+      // tu zrodlo danych oznacza, ze klient placi inna cene niz ta, ktora
+      // zobaczyl, i nic tego nie zglosi.
+      const itemStock = String(raw.calculator || "").startsWith("laser_co2")
+        ? await currentMaterialStock()
+        : null;
       const item = priceItem({
         calculator: raw.calculator,
         params: raw.params,
@@ -2007,6 +2097,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
         scale: raw.scale || 1,
         rates,
         gemstones,
+        materialStock: itemStock,
       });
       // Opakowanie i personalizacja licza sie tutaj, nie w przegladarce.
       // Bez tego klient widzialby cene z doplata, a placil bez niej.
@@ -3558,6 +3649,42 @@ app.get("/api/gemstone-prices", async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: "Failed to fetch gemstone prices" });
   }
+});
+
+// --- Material z naszego magazynu ---
+// Przegladarka liczy z tych samych stawek co serwer, wiec kwota na ekranie
+// i kwota wiazaca biora sie z jednego zrodla. Bez tego klient widzialby
+// jedna cene, a placil inna, i nic by tego nie zglosilo.
+let _materialCache = { ts: 0, data: null };
+
+app.get("/api/material-stock", async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "DB unavailable" });
+  const now = Date.now();
+  if (_materialCache.data && now - _materialCache.ts < 60 * 60 * 1000) {
+    res.setHeader("Cache-Control", "public, max-age=900");
+    return res.json(_materialCache.data);
+  }
+  try {
+    const { rows } = await pool.query(
+      "SELECT material_id, name_pl, name_en, name_de, pln_per_m2, pln_per_piece, thickness_mm, in_stock FROM material_stock ORDER BY material_id"
+    );
+    const data = { materials: rows, updatedAt: new Date().toISOString() };
+    _materialCache = { ts: now, data };
+    res.setHeader("Cache-Control", "public, max-age=900");
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ error: "Failed to fetch material stock" });
+  }
+});
+
+app.post("/api/material-stock/invalidate", express.json(), (req, res) => {
+  if (!requireInvalidateToken(req, res)) return;
+  _materialCache = { ts: 0, data: null };
+  // Wycena serwerowa ma wlasna pamiec podreczna. Bez wyczyszczenia obu naraz
+  // nowa stawka doszlaby do przegladarki od razu, a do kwoty wiazacej dopiero
+  // po godzinie, i przez ta godzine obie strony liczylyby inaczej.
+  _materialPriceCache = { ts: 0, rows: null };
+  res.json({ ok: true });
 });
 
 app.post("/api/gemstone-prices/invalidate", express.json(), (req, res) => {

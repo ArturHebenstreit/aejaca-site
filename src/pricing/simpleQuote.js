@@ -101,7 +101,7 @@ export const CO2_MODE_FROM_ITEM = {
  * 5 mm, nie mial jak tego powiedziec, a mimo to dostawal kwote wiazaca.
  * Zgadniete pozostaje domyslna, gdy nikt nic nie wybral.
  */
-export function resolveTechAndParams({ item, size, material, finish, quantity, fileType, stlData, svgData, printTech, co2Mode, stockId }) {
+export function resolveTechAndParams({ item, size, material, finish, quantity, fileType, stlData, svgData, printTech, co2Mode, stockId, podloze = null }) {
   // Model 3D: druk (plastik) albo odlew z zywicy
   if (fileType === "stl" && stlData) {
     if (!size || !material || !finish || !quantity) return { custom: true };
@@ -160,12 +160,12 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
         const matId = tech === "3dprint"
           ? "wood"
           : material === "glass" ? "glass" : material === "wood" ? "wood" : item === "stamp" ? "rubber" : "wood";
-        return { tech: "co2", mode, params: { matId: zListy(stockId, ENGRAVE_MATERIALS) || matId, areaId: sizeId, detailId: finish === "prototype" ? "simple" : finish === "premium" ? "photo" : "standard", quantityId, extended: false, svgData } };
+        return { tech: "co2", mode, params: { podloze, matId: zListy(stockId, ENGRAVE_MATERIALS) || matId, areaId: sizeId, detailId: finish === "prototype" ? "simple" : finish === "premium" ? "photo" : "standard", quantityId, extended: false, svgData } };
       }
       const matId = tech === "3dprint"
         ? "ply3"
         : material === "glass" ? "acr3" : finish === "premium" ? "ply56" : "ply3";
-      return { tech: "co2", mode, params: { matId: zListy(stockId, CUT_MATERIALS) || matId, pathId: sizeId, complexId: finish === "prototype" ? "simple" : finish === "premium" ? "complex" : "moderate", quantityId, extended: false, svgData } };
+      return { tech: "co2", mode, params: { podloze, matId: zListy(stockId, CUT_MATERIALS) || matId, pathId: sizeId, complexId: finish === "prototype" ? "simple" : finish === "premium" ? "complex" : "moderate", quantityId, extended: false, svgData } };
     }
 
     if (tech === "fiber") {
@@ -304,11 +304,17 @@ function mslaParams({ item, size, finish, quantity, stlData }) {
 }
 
 /** Uruchamia silnik wyceny wskazany przez `resolveTechAndParams`. */
-export function runCalc(resolved, lang) {
+/**
+ * @param {object} resolved wynik `resolveTechAndParams`
+ * @param {string} lang
+ * @param {Array|null} stock stawki materialow z magazynu; brak znaczy stawka
+ *   domyslna, a nie brak ceny, bo awaria bazy ma wstrzymac cennik, nie sprzedaz
+ */
+export function runCalc(resolved, lang, stock = null) {
   if (!resolved || resolved.custom) return { type: "custom" };
   const { tech, mode, params } = resolved;
   if (tech === "3dprint") return calcPrint3D(params, lang);
-  if (tech === "co2")     return mode === "cut" ? calcCO2Cut(params, lang) : calcCO2Engrave(params, lang);
+  if (tech === "co2")     return mode === "cut" ? calcCO2Cut(params, lang, stock) : calcCO2Engrave(params, lang, stock);
   if (tech === "fiber")   return calcFiber(params, lang);
   if (tech === "epoxy")   return calcEpoxy(params, lang);
   if (tech === "msla")    return calculateMSLA(params, lang);
