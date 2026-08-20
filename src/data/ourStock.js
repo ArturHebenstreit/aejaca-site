@@ -29,29 +29,57 @@ import { MATERIALS as FIBER_MATERIALS } from "../pricing/laserFiber.js";
 export const STOCK_OTHER = "other";
 
 /**
- * Metali szlachetnych nie wydajemy z magazynu do znakowania.
- *
- * Srebro i zloto sa w cenniku fibera, bo znakujemy je stale, ale zawsze na
- * przedmiocie klienta albo w ramach zlecenia jubilerskiego, gdzie metal ma
- * wlasne rozliczenie wagowe. Pokazanie ich tutaj obiecywaloby blaszke ze
- * zlota z naszej polki, ktorej nie sprzedajemy.
+ * KAFELEK MATERIALU ZAWEZA LISTE. Klient, ktory kliknal "Drewno", dostawal
+ * ponizej pelen cennik razem z guma, papierem i tkanina. To nie jest tylko
+ * balagan: dluga lista uczy, ze wybor jest przypadkowy, wiec przestaje sie
+ * czytac i klika pierwsza pozycje. Grupa idzie z cennika (pole `grupa`),
+ * a nie z osobnej tablicy nazw, bo dwie listy zawsze sie rozjezdzaja.
  */
-const bezSzlachetnych = (m) => !m.precious;
+const GRUPA_Z_KAFLA = {
+  wood: "wood",
+  metal: "metal",
+  // Kafelek "Szklo / Kamien / Inne" zbiera wszystko, co nie jest drewnem
+  // ani metalem: akryl, szklo, kamien, skore, papier, tkanine i gume.
+  glass: "other",
+};
 
 /**
- * Materialy do wyboru dla podanej technologii i trybu pracy.
+ * Metale szlachetne na POCZATKU listy, a nie na koncu.
  *
- * @param {{tech?: string, mode?: string}} arg
+ * Srebro i zloto sa najczestszym powodem, dla ktorego ktos przychodzi do
+ * znakowania swiatlowodem, wiec szukanie ich na szarym koncu listy stali
+ * i mosiadzu jest praca, ktorej nie musi wykonywac. Dostepnosc samej
+ * blaszki potwierdzamy przy realizacji, tak jak przy kazdym innym
+ * materiale z tej listy.
+ */
+const szlachetneNaPoczatku = (a, b) => Number(Boolean(b.precious)) - Number(Boolean(a.precious));
+
+/**
+ * Materialy do wyboru dla podanej technologii, trybu pracy i kafla materialu.
+ *
+ * @param {{tech?: string, mode?: string, material?: string}} arg
  * @returns {{id: string, label: {pl: string, en: string, de: string}}[]}
  */
-export function stockOptions({ tech, mode } = {}) {
+export function stockOptions({ tech, mode, material } = {}) {
   let zrodlo = null;
-  if (tech === "fiber") zrodlo = FIBER_MATERIALS.filter(bezSzlachetnych);
+  if (tech === "fiber") zrodlo = [...FIBER_MATERIALS].sort(szlachetneNaPoczatku);
   else if (tech === "co2") zrodlo = mode === "cut" ? CUT_MATERIALS : ENGRAVE_MATERIALS;
   if (!zrodlo) return [];
+
   // `custom` w cenniku znaczy "wycena reczna", a nie material. Zastepuje je
   // nasza wlasna pozycja koncowa, ktora odslania pole tekstowe.
-  return zrodlo.filter((m) => !m.custom).map((m) => ({ id: m.id, label: m.label }));
+  let lista = zrodlo.filter((m) => !m.custom);
+
+  // Zawezamy tylko wtedy, gdy kafelek cos znaczy dla tej technologii. Przy
+  // "Nie wiem" i przy kaflu bez odpowiednika pokazujemy calosc: pusta lista
+  // bylaby gorsza niz dluga, bo wygladalaby na usterke.
+  const grupa = GRUPA_Z_KAFLA[material];
+  if (grupa) {
+    const zawezona = lista.filter((m) => m.grupa === grupa);
+    if (zawezona.length) lista = zawezona;
+  }
+
+  return lista.map((m) => ({ id: m.id, label: m.label }));
 }
 
 /**

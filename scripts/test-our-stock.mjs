@@ -42,7 +42,7 @@ for (const [opis, arg, cennik] of [
 ]) {
   const lista = stockOptions(arg);
   const obce = lista.filter((o) => !cennik.some((m) => m.id === o.id));
-  const oczekiwane = cennik.filter((m) => !m.custom && !m.precious).length;
+  const oczekiwane = cennik.filter((m) => !m.custom).length;
 
   if (!lista.length) zle(`${opis}: lista jest pusta, klient nie ma z czego wybrac`);
   else if (obce.length) zle(`${opis}: pozycje spoza cennika: ${obce.map((o) => o.id).join(", ")}`);
@@ -57,20 +57,71 @@ if (STOCK_OTHER !== "custom") ok('"inny material" ma wlasny identyfikator, nie m
 else zle('"inny material" uzywa identyfikatora "custom", ktory w cenniku znaczy wycene reczna');
 
 // ------------------------------------------------------------
-// 2. Metali szlachetnych nie wydajemy z polki
+// 2. Metale szlachetne na poczatku listy
 // ------------------------------------------------------------
-// Srebro i zloto sa w cenniku fibera, bo znakujemy je stale, ale na
-// przedmiocie klienta. Na liscie "nasz material" byloby to obietnica
-// blaszki ze zlota z naszego magazynu.
+// Decyzja wlasciciela z 2026-08-20: srebro i zloto MAJA byc na liscie i maja
+// stac na jej poczatku, bo to najczestszy powod, dla ktorego ktos przychodzi
+// do znakowania swiatlowodem. Wczesniej byly stad wylaczone; dostepnosc samej
+// blaszki potwierdzamy przy realizacji, tak jak przy kazdym innym materiale.
 console.log("\n2. Metale szlachetne");
 
 const fiber = stockOptions({ tech: "fiber" });
-const szlachetne = fiber.filter((o) => FIBER_MATERIALS.find((m) => m.id === o.id)?.precious);
-if (!szlachetne.length) ok("srebra ani zlota nie oferujemy z wlasnego magazynu");
-else zle(`z magazynu oferujemy metale szlachetne: ${szlachetne.map((o) => o.id).join(", ")}`);
+const czyPrecious = (o) => Boolean(FIBER_MATERIALS.find((m) => m.id === o.id)?.precious);
+const szlachetne = fiber.filter(czyPrecious);
+if (szlachetne.length >= 2) ok(`srebro i zloto sa na liscie (${szlachetne.map((o) => o.id).join(", ")})`);
+else zle(`na liscie brakuje metali szlachetnych, jest tylko: ${szlachetne.map((o) => o.id).join(", ") || "zaden"}`);
+
+// Sam fakt obecnosci nie wystarcza: zloto na szarym koncu listy stali
+// i mosiadzu to ta sama praca do wykonania przez klienta co jego brak.
+const pierwszyZwykly = fiber.findIndex((o) => !czyPrecious(o));
+const ostatniSzlachetny = fiber.map(czyPrecious).lastIndexOf(true);
+if (pierwszyZwykly !== -1 && ostatniSzlachetny > pierwszyZwykly) {
+  zle("metal szlachetny stoi za zwyklym: lista nie zaczyna sie od srebra i zlota");
+} else ok("metale szlachetne otwieraja liste");
 
 if (FIBER_MATERIALS.some((m) => m.precious)) ok("cennik fibera nadal zna metale szlachetne, wiec znakowanie ich dziala");
 else zle("metale szlachetne zniknely z cennika fibera, znakowanie bizuterii przestalo istniec");
+
+// ------------------------------------------------------------
+// 2b. Kafelek materialu zawezа liste
+// ------------------------------------------------------------
+// Klient, ktory kliknal "Drewno", nie ma czytac o gumie i papierze. Zawezenie
+// psuje sie po cichu na dwa sposoby: material dopisany do cennika bez pola
+// `grupa` znika z wyboru (cena istnieje, wybrac sie nie da), a zle przypisana
+// grupa podklada akryl pod drewno.
+console.log("\n2b. Zawezanie lista kafelkiem materialu");
+
+for (const [opis, cennik] of [["grawer CO2", ENGRAVE_MATERIALS], ["ciecie CO2", CUT_MATERIALS], ["fiber", FIBER_MATERIALS]]) {
+  const bezGrupy = cennik.filter((m) => !m.custom && !m.grupa);
+  if (bezGrupy.length) zle(`${opis}: pozycje bez grupy, znikna z wyboru: ${bezGrupy.map((m) => m.id).join(", ")}`);
+}
+
+const drewnoGrawer = stockOptions({ tech: "co2", mode: "engrave", material: "wood" });
+const inneGrawer = stockOptions({ tech: "co2", mode: "engrave", material: "glass" });
+const wszystkoGrawer = stockOptions({ tech: "co2", mode: "engrave" });
+if (drewnoGrawer.some((o) => o.id === "rubber" || o.id === "glass")) zle("pod kaflem drewna widac gume albo szklo");
+if (inneGrawer.some((o) => o.id === "wood" || o.id === "plywood")) zle("pod kaflem szkla i innych widac drewno");
+if (!inneGrawer.some((o) => o.id === "acrylic")) zle('akryl nie ma gdzie sie podziac: nie ma go pod "Szklo / Kamien / Inne"');
+if (drewnoGrawer.length + inneGrawer.length !== wszystkoGrawer.length) {
+  zle(`podzial gubi albo dubluje materialy: ${drewnoGrawer.length} + ${inneGrawer.length} != ${wszystkoGrawer.length}`);
+} else ok(`grawer dzieli sie bez reszty: ${drewnoGrawer.length} drewnianych + ${inneGrawer.length} pozostalych`);
+
+// Kafelek bez odpowiednika nie moze zostawic pustej listy: pusto wyglada
+// na usterke, a klient nie ma wtedy zadnej drogi dalej.
+for (const kafel of ["idk", "plastic", "resin", undefined]) {
+  if (!stockOptions({ tech: "co2", mode: "engrave", material: kafel }).length) {
+    zle(`kafel "${kafel}" zostawia pusta liste materialow`);
+  }
+}
+ok("kafle bez wlasnej grupy pokazuja pelna liste zamiast pustki");
+
+// Lite drewno, dolozone na polecenie wlasciciela: 10 mm tniemy, grubsze
+// tylko grawerujemy, wiec pozycji "powyzej 10 mm" NIE MOZE byc w cieciu.
+const drewnoCiecie = stockOptions({ tech: "co2", mode: "cut", material: "wood" });
+if (!drewnoCiecie.some((o) => o.id === "wood10")) zle("brak litego drewna 10 mm w cieciu");
+if (drewnoCiecie.some((o) => o.id === "wood_thick")) zle("lite drewno powyzej 10 mm da sie wybrac do CIECIA, a tego nie robimy");
+if (!drewnoGrawer.some((o) => o.id === "wood_thick")) zle("brak litego drewna powyzej 10 mm w grawerze");
+ok("lite drewno: 10 mm w cieciu, powyzej 10 mm tylko w grawerze");
 
 // ------------------------------------------------------------
 // 3. Wybor realnie zmienia kwote

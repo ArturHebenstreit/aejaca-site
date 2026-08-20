@@ -188,9 +188,9 @@ export const SERVICES = [
     group: "laser",
     title: L("Cięcie laserem CO2", "CO2 laser cutting", "CO2-Laserschnitt"),
     desc: L(
-      "Sklejka, akryl, skóra, filc. Kształty z pliku wektorowego.",
-      "Plywood, acrylic, leather, felt. Shapes from a vector file.",
-      "Sperrholz, Acryl, Leder, Filz. Formen aus einer Vektordatei."
+      "Sklejka, lite drewno do 10 mm, akryl, skóra, filc. Kształty z pliku wektorowego.",
+      "Plywood, solid wood up to 10 mm, acrylic, leather, felt. Shapes from a vector file.",
+      "Sperrholz, Massivholz bis 10 mm, Acryl, Leder, Filz. Formen aus einer Vektordatei."
     ),
     fields: [
       { key: "matId", label: L("Materiał", "Material", "Material"), options: CUT_MATERIALS },

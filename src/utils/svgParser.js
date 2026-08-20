@@ -25,12 +25,22 @@ export function parseSVG(svgText) {
   container.appendChild(clone);
 
   let bboxMm;
+  // POLOZENIE TRESCI, A NIE TYLKO JEJ ROZMIAR. Rysunek bywa malym znakiem
+  // na arkuszu A4: pole rysunku ma wtedy 210x297, a sam znak 20x20 gdzies
+  // w rogu. Podglad rysowany z pola arkusza pokazuje wiec glownie pustke
+  // i ledwo widoczny wzor. Zeby dalo sie go przyciac do tresci, potrzebne
+  // sa OBA prostokaty: tresci i calego plotna.
+  let contentBox = null;
   try {
     const bb = clone.getBBox();
     bboxMm = { x: bb.width * scaleToMm, y: bb.height * scaleToMm };
+    if (bb.width > 0 && bb.height > 0) {
+      contentBox = { x: bb.x, y: bb.y, w: bb.width, h: bb.height };
+    }
   } catch {
     bboxMm = { x: 100, y: 100 };
   }
+  const canvasBox = resolveCanvas(svgEl, contentBox);
 
   const shapes = clone.querySelectorAll("path,line,rect,circle,ellipse,polygon,polyline");
   let totalLength = 0;
@@ -46,8 +56,31 @@ export function parseSVG(svgText) {
     pathLengthCm: (totalLength * scaleToMm) / 10,
     engravAreaCm2: (bboxMm.x * bboxMm.y) / 100,
     pathCount,
+    contentBox,
+    canvasBox,
     svgText,
   };
+}
+
+/**
+ * Prostokat calego plotna w tych samych jednostkach co `contentBox`.
+ *
+ * `viewBox` jest zrodlem pewnym. Gdy go nie ma, przegladarka rysuje plik od
+ * punktu (0,0) do rozmiaru z atrybutow, a gdy i tych nie ma, dopasowuje sie
+ * do tresci; wtedy plotno JEST trescia i przycinac nie ma czego.
+ */
+function resolveCanvas(svgEl, contentBox) {
+  const vb = svgEl.getAttribute("viewBox");
+  if (vb) {
+    const [x, y, w, h] = vb.split(/[\s,]+/).map(Number);
+    if (Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0) {
+      return { x: Number.isFinite(x) ? x : 0, y: Number.isFinite(y) ? y : 0, w, h };
+    }
+  }
+  const w = parseFloat(svgEl.getAttribute("width"));
+  const h = parseFloat(svgEl.getAttribute("height"));
+  if (Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0) return { x: 0, y: 0, w, h };
+  return contentBox ? { ...contentBox } : null;
 }
 
 function resolveScale(svgEl) {

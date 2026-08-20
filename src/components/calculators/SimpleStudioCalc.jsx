@@ -90,6 +90,7 @@ const MATERIAL_NOTE_PLACEHOLDER = {
 import PrintabilityGate from "./PrintabilityGate.jsx";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
 import SizeSlider, { categoryForCm } from "./SizeSlider.jsx";
+import VectorPreview from "./VectorPreview.jsx";
 import { resolveTechAndParams, runCalc } from "../../pricing/simpleQuote.js";
 import { getResin } from "../../data/resins.js";
 import { scaleMesh, scaleVector, meshMaxCm, vectorMaxCm, meshForPricing } from "../../pricing/scaleGeometry.js";
@@ -147,7 +148,10 @@ const MATERIALS = [
   { id: "plastic", icon: Boxes,      img: "/img/calc/studio_materials/plastic.webp", label: { pl: "Plastik",       en: "Plastic",        de: "Kunststoff" } },
   { id: "wood",    icon: TreePine,   img: "/img/calc/studio_materials/wood.webp",    label: { pl: "Drewno",        en: "Wood",           de: "Holz" } },
   { id: "metal",   icon: Wrench,     img: "/img/calc/studio_materials/metal.webp",   label: { pl: "Metal",         en: "Metal",          de: "Metall" } },
-  { id: "glass",   icon: GlassWater, img: "/img/calc/studio_materials/glass.webp",   label: { pl: "Szkło / kamień", en: "Glass / stone", de: "Glas / Stein" } },
+  // "Inne" nie jest ozdobnikiem: pod tym kaflem siedza akryl, skora, guma,
+  // papier i tkanina, czyli polowa tego, co realnie tniemy i grawerujemy.
+  // Bez tego slowa klient z akrylem nie mial gdzie kliknac.
+  { id: "glass",   icon: GlassWater, img: "/img/calc/studio_materials/glass.webp",   label: { pl: "Szkło / kamień / inne", en: "Glass / stone / other", de: "Glas / Stein / Sonstiges" } },
   { id: "resin",   icon: Droplet,    img: "/img/calc/studio_materials/resin.webp",   label: { pl: "Żywica",        en: "Resin",          de: "Harz" } },
   { id: "idk",     icon: HelpCircle, label: { pl: "Nie wiem - doradźcie", en: "I'm not sure - advise me", de: "Weiß nicht - beraten Sie mich" } },
 ];
@@ -605,6 +609,17 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
     setMaterialNote("");
   }
 
+  // Zmiana kafla materialu ZAWEZA liste ponizej, wiec poprzedni wybor moze
+  // przestac do niej nalezec. Sam widok by tego nie pokazal (pozycja znika
+  // z listy), ale identyfikator dalej szedlby do wyceny i po cichu zmienial
+  // cene: klient widzialby "Drewno" i stawke akrylu. Kasujemy go razem
+  // z opisem, bo opis byl etykieta tego wyboru.
+  function handleMaterialChange(id) {
+    handleSet(setMaterial, "material")(id);
+    setStockId(null);
+    setMaterialNote("");
+  }
+
   // Smart Upload state
   const [fileType, setFileType] = useState(null); // "stl" | "svg" | null
   const [fileName, setFileName] = useState("");
@@ -797,6 +812,11 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
   // (CO2_MODE_FROM_ITEM w simpleQuote.js), tak samo jak printTech dla
   // FDM/MSLA wyzej: wartosc pojawia sie dopiero, gdy klient sam przelaczy.
   const [co2Mode, setCo2Mode] = useState(null);
+  // Pytanie "ciecie czy grawerowanie" dotyczy WYLACZNIE lasera CO2. Metal
+  // idzie na swiatlowod, ktory tnie tylko cienkie blachy i u nas sluzy do
+  // znakowania, wiec przy metalu ta karta nie ma sie z czego wziac i znika.
+  // Pilnuje tego `scripts/test-laser-capabilities.mjs`, bo pokazanie tu
+  // ciecia obiecywaloby robote, ktorej maszyna nie wykona.
   const isVectorCo2 = fileType === "svg" && resolved?.tech === "co2";
 
   // Obie kwoty licza sie tym samym silnikiem, przez `co2Mode`. Kopia
@@ -1118,9 +1138,14 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
             )}
 
             {fileType === "svg" && svgBlobUrl && (
-              <div className="mb-3 w-full rounded-lg overflow-hidden bg-[#0c1222] border border-emerald-400/10 flex items-center justify-center" style={{ height: "160px" }}>
-                <img src={svgBlobUrl} alt="SVG" className="max-w-full max-h-full p-3 opacity-90" style={{ filter: "invert(1) hue-rotate(180deg)" }} />
-              </div>
+              <VectorPreview
+                src={svgBlobUrl}
+                contentBox={svgData?.contentBox || null}
+                canvasBox={svgData?.canvasBox || null}
+                lang={lang}
+                height={180}
+                className="mb-3"
+              />
             )}
 
             {/* DWA WYMIARY, JEDEN POD DRUGIM. Klient musi widziec, co przyszlo
@@ -1371,7 +1396,7 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
       )}
 
       <SimpleCard stepNum="③" label={l.q3}>
-        <TileGrid options={MATERIALS} value={material} onChange={handleSet(setMaterial, "material")} lang={lang} cols={3} disabledIds={matDisabledIds} />
+        <TileGrid options={MATERIALS} value={material} onChange={handleMaterialChange} lang={lang} cols={3} disabledIds={matDisabledIds} />
 
         {/* "Nie wiem" nie moze byc slepym zaulkiem. Mowimy, co wchodzi w gre,
             i pozwalamy wybrac od razu, zamiast odsylac klienta do maila. */}
@@ -1386,7 +1411,7 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
                 <button
                   key={m.id}
                   type="button"
-                  onClick={() => handleSet(setMaterial, "material")(m.id)}
+                  onClick={() => handleMaterialChange(m.id)}
                   className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.03] text-neutral-300
                              hover:border-white/25 hover:text-white text-xs transition-colors"
                 >
@@ -1415,8 +1440,8 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
 
               {podloze === "our_stock" ? (
                 <StockPicker
-                  options={stockOptions({ tech: activeResolved?.tech, mode: activeResolved?.mode })}
-                  value={stockAllowed(stockId, { tech: activeResolved?.tech, mode: activeResolved?.mode }) ? stockId : null}
+                  options={stockOptions({ tech: activeResolved?.tech, mode: activeResolved?.mode, material })}
+                  value={stockAllowed(stockId, { tech: activeResolved?.tech, mode: activeResolved?.mode, material }) ? stockId : null}
                   note={materialNote}
                   onPick={(id, etykieta) => { setStockId(id); setMaterialNote(etykieta); }}
                   onOther={() => { setStockId(null); setMaterialNote(""); }}
