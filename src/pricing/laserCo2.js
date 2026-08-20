@@ -126,11 +126,25 @@ export const CUT_MATERIALS = [
   { id: "ply2",     label: { pl: "Sklejka 2mm", en: "Plywood 2mm", de: "Sperrholz 2mm" }, cutRate: 0.10, matCost: 0.03, grupa: "wood" },
   { id: "ply3",     label: { pl: "Sklejka 3mm", en: "Plywood 3mm", de: "Sperrholz 3mm" }, cutRate: 0.15, matCost: 0.04, grupa: "wood" },
   { id: "ply56",    label: { pl: "Sklejka 5-6mm", en: "Plywood 5-6mm", de: "Sperrholz 5-6mm" }, cutRate: 0.25, matCost: 0.06, grupa: "wood" },
-  // HDF i MDF zastapily sklejke 8 mm na polecenie wlasciciela (2026-08-20):
-  // prasowane wlokno tnie sie rowniej niz osiem milimetrow sklejki, gdzie
-  // kleje miedzy warstwami potrafia zatrzymac wiazke. Czas maszyny ten sam,
-  // material tanszy, stad 0.07 zamiast 0.09.
-  { id: "mdf8",     label: { pl: "Płyta HDF/MDF do 8mm", en: "HDF/MDF board up to 8mm", de: "HDF/MDF-Platte bis 8mm" }, cutRate: 0.50, matCost: 0.07, grupa: "wood" },
+  // Plyta pilsniowa zastapila sklejke 8 mm na polecenie wlasciciela
+  // (2026-08-20): prasowane wlokno tnie sie rowniej niz osiem milimetrow
+  // sklejki, gdzie kleje miedzy warstwami potrafia zatrzymac wiazke.
+  //
+  // MDF WYSZEDL Z OPISU (polecenie wlasciciela, 2026-08-20). Zostaje samo HDF,
+  // i to pociaga za soba grubosc: HDF produkuje sie w 3, 4 i 6 mm, a osmiu
+  // milimetrow w tej plycie po prostu nie ma. Etykieta "do 8mm" bez MDF bylaby
+  // obietnica materialu, ktorego nie kupimy, wiec schodzi do 6 mm.
+  //
+  // IDENTYFIKATOR ZOSTAJE `mdf8`, mimo ze nazwa sie zmienila. Identyfikator
+  // jest zapisany w zlozonych juz zamowieniach i w wierszu tabeli materialow;
+  // zmiana rozsypalaby przeliczenie starego zlecenia, a nazwa widoczna dla
+  // klienta i tak idzie z etykiety, nie z klucza.
+  //
+  // Stawka 0.30 zamiast 0.50, bo to szesc milimetrow, a nie osiem. Punktem
+  // odniesienia jest sklejka 5-6 mm (0.25), a HDF idzie o krok wolniej: jest
+  // gestsze i mocniej sie przypala na krawedzi. Stawka siedzi w tej samej
+  // skali, co reszta tabeli, ktora czeka na urealnienie predkosci.
+  { id: "mdf8",     label: { pl: "Płyta HDF do 6mm", en: "HDF board up to 6mm", de: "HDF-Platte bis 6mm" }, cutRate: 0.30, matCost: 0.07, grupa: "wood" },
   // Lite drewno do 10 mm dochodzi na polecenie wlasciciela (2026-08-20).
   //
   // Wyprowadzenie z sasiadow dawalo 0.67 za centymetr sciezki (sklejka idzie
@@ -198,8 +212,15 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svg
   // Grawer nie zuzywal dotad materialu w wycenie, co bylo prawda przy
   // przedmiocie klienta i nieprawda przy desce z naszego magazynu: oddawalismy
   // ja gratis do kwoty, ktora sami nazwalismy wiazaca.
+  // MATERIAL BEZ USTALONEJ CENY WYKLUCZA KWOTE WIAZACA.
+  //
+  // Kwota trafiajaca do koszyka jest umowa, wiec nie moze zawierac pozycji
+  // "do ustalenia". Wczesniej wypisywalismy w rozpisce "wycena indywidualna"
+  // i mimo to pozwalalismy dodac rzecz do koszyka: klient placil kwote, ktora
+  // sami opisalismy jako niepelna. `type: "custom"` chowa przycisk koszyka
+  // i serwer odmawia takiej pozycji wyceny (`needs_quote`).
+  if (materialIsOurs(podloze) && pricedSeparately(mat.id, stock)) return { type: "custom" };
   const materialCost = materialCostPLN({ areaCm2: area.area, matId: mat.id, podloze, stock });
-  const materialOsobno = materialIsOurs(podloze) && pricedSeparately(mat.id, stock);
   const baseCost = laborCost + energyCost + deprCost + prepCost + materialCost + CO2_CONFIG.HANDLING_FEE + extCostAdd;
   const batchTimeH = (timeH + handleH) * qTier.qty + (extended ? 0.5 : 0.25);
 
@@ -214,14 +235,10 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svg
       { label: l.timeSetup, value: `${(totalTimeH * 60).toFixed(1)} min` },
       { label: l.workshop, value: fc(laborCost) },
       { label: l.prepMat, value: fc(prepCost) },
-      // Material MUSI byc widoczny w rozpisce. Gdy go liczymy, stoi kwota;
-      // gdy rozliczamy go osobno (srebro, zloto), stoi to wprost, bo znikajaca
-      // pozycja czyta sie jak "material gratis".
-      ...(materialCost > 0
-        ? [{ label: l.materialCost, value: fc(materialCost) }]
-        : materialOsobno
-          ? [{ label: l.materialCost, value: l.materialSeparate }]
-          : []),
+      // Material MUSI byc widoczny w rozpisce zawsze, gdy go liczymy. Gdy nie
+      // umiemy go policzyc, nie ma tu pustej linii ani dopisku "do ustalenia":
+      // taka konfiguracja w ogole nie dochodzi do kwoty, patrz wyzej.
+      ...(materialCost > 0 ? [{ label: l.materialCost, value: fc(materialCost) }] : []),
       { label: l.energy, value: fc(energyCost) },
       { label: l.depreciation, value: fc(deprCost) },
       ...(extended ? [{ label: l.extSurcharge, value: `+${fc(extCostAdd)}` }] : []),
@@ -261,8 +278,15 @@ export function calcCut({ matId, pathId, complexId, quantityId, extended, svgDat
   // Material liczymy z tabeli stanow magazynowych i TYLKO wtedy, gdy jest
   // nasz. Wczesniej stala z cennika szla do kwoty zawsze, takze przy plycie
   // przyslanej przez klienta.
+  // MATERIAL BEZ USTALONEJ CENY WYKLUCZA KWOTE WIAZACA.
+  //
+  // Kwota trafiajaca do koszyka jest umowa, wiec nie moze zawierac pozycji
+  // "do ustalenia". Wczesniej wypisywalismy w rozpisce "wycena indywidualna"
+  // i mimo to pozwalalismy dodac rzecz do koszyka: klient placil kwote, ktora
+  // sami opisalismy jako niepelna. `type: "custom"` chowa przycisk koszyka
+  // i serwer odmawia takiej pozycji wyceny (`needs_quote`).
+  if (materialIsOurs(podloze) && pricedSeparately(mat.id, stock)) return { type: "custom" };
   const materialCost = materialCostPLN({ areaCm2: path.sheetCm2, matId: mat.id, podloze, stock });
-  const materialOsobno = materialIsOurs(podloze) && pricedSeparately(mat.id, stock);
   const baseCost = laborCost + materialCost + energyCost + deprCost + CO2_CONFIG.HANDLING_FEE + extCostAdd;
   const batchTimeH = (cutTimeH + handleH) * qTier.qty + (extended ? 0.5 : 0.2);
 
@@ -275,14 +299,10 @@ export function calcCut({ matId, pathId, complexId, quantityId, extended, svgDat
     breakdown: [
       { label: l.cutTime, value: `${cutTimeMin.toFixed(1)} min` },
       { label: l.workshop, value: fc(laborCost) },
-      // Material MUSI byc widoczny w rozpisce. Gdy go liczymy, stoi kwota;
-      // gdy rozliczamy go osobno (srebro, zloto), stoi to wprost, bo znikajaca
-      // pozycja czyta sie jak "material gratis".
-      ...(materialCost > 0
-        ? [{ label: l.materialCost, value: fc(materialCost) }]
-        : materialOsobno
-          ? [{ label: l.materialCost, value: l.materialSeparate }]
-          : []),
+      // Material MUSI byc widoczny w rozpisce zawsze, gdy go liczymy. Gdy nie
+      // umiemy go policzyc, nie ma tu pustej linii ani dopisku "do ustalenia":
+      // taka konfiguracja w ogole nie dochodzi do kwoty, patrz wyzej.
+      ...(materialCost > 0 ? [{ label: l.materialCost, value: fc(materialCost) }] : []),
       { label: l.energy, value: fc(energyCost) },
       { label: l.depreciation, value: fc(deprCost) },
       ...(extended ? [{ label: l.extSurcharge, value: `+${fc(extCostAdd)}` }] : []),

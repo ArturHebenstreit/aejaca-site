@@ -369,7 +369,7 @@ Zapisanie zmiany czyści pamięć podręczną po obu stronach naraz, inaczej now
 przeglądarki od razu, a do kwoty wiążącej dopiero po godzinie.
 
 **Ceny rynkowe wpisane, plus cena za sztukę (2026-08-20).** Tabela została wypełniona cenami
-rynkowymi zebranymi z hurtowni (bez Allegro): sklejka 3 mm 24 zł/m², HDF/MDF 42, lite drewno dębowe
+rynkowymi zebranymi z hurtowni (bez Allegro): sklejka 3 mm 24 zł/m², HDF do 6 mm 22, lite drewno dębowe
 115, akryl 3/5/8 mm 167/265/425, skóra 115-200, filc 32, guma do pieczątek 320, papier 10, stal
 nierdzewna 300, aluminium 200, anodowane 250, mosiądz 750, miedź 850, tytan 1200.
 **Średnia wynosi 241 zł/m², mediana 141 zł/m²** z 24 pozycji liczonych na metry.
@@ -436,8 +436,8 @@ dostępność samej blaszki potwierdzamy przy realizacji, tak jak przy każdym i
 
 Grawer i cięcie pytają o **co innego**, bo ograniczenie jest inne: wiązka przy grawerze sięga tylko
 powierzchni, więc pytamy o rodzaj materiału (Lite drewno, Sklejka, Inne materiały drewnopochodne),
-a przy cięciu musi przejść na wylot, więc pytamy o grubość (Sklejka 2/3/5-6 mm, Płyta HDF/MDF do 8 mm,
-Lite drewno do 10 mm). Sklejka 8 mm wyszła z oferty cięcia na rzecz HDF/MDF (polecenie właściciela,
+a przy cięciu musi przejść na wylot, więc pytamy o grubość (Sklejka 2/3/5-6 mm, Płyta HDF do 6 mm,
+Lite drewno do 10 mm). Sklejka 8 mm wyszła z oferty cięcia na rzecz płyty pilśniowej (polecenie właściciela,
 2026-08-20): prasowane włókno tnie się równiej niż osiem milimetrów sklejki, gdzie kleje między
 warstwami potrafią zatrzymać wiązkę.
 

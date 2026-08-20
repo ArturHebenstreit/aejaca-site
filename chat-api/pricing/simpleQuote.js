@@ -174,7 +174,9 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
 
     if (tech === "fiber") {
       if (material === "glass") {
-        return resolveTechAndParams({ item, size, material: "wood", finish, quantity, fileType, svgData });
+        // Komplet odpowiedzi, nie wybrane pola: bez podloza kalkulator liczy
+        // material jako nasz takze przy rzeczy przyslanej przez klienta.
+        return resolveTechAndParams({ item, size, material: "wood", finish, quantity, fileType, stlData, svgData, printTech, co2Mode, stockId, podloze });
       }
       const matId = item === "jewelry" ? "silver" : "stainless";
       const lensId = (size === "coin") ? "70mm" : "150mm";
@@ -239,7 +241,7 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
                     item === "stamp" ? "rubber" : "wood";
       return {
         tech, mode, params: {
-          matId, areaId: sizeId,
+          podloze, matId: zListy(stockId, ENGRAVE_MATERIALS) || matId, areaId: sizeId,
           detailId: finish === "prototype" ? "simple" : finish === "premium" ? "photo" : "standard",
           quantityId, extended: false,
         },
@@ -249,7 +251,7 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
                   finish === "premium" ? "ply56" : "ply3";
     return {
       tech, mode, params: {
-        matId, pathId: sizeId,
+        podloze, matId: zListy(stockId, CUT_MATERIALS) || matId, pathId: sizeId,
         complexId: finish === "prototype" ? "simple" : finish === "premium" ? "complex" : "moderate",
         quantityId, extended: false,
       },
@@ -258,14 +260,17 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
 
   if (tech === "fiber") {
     if (material === "glass") {
-      return resolveTechAndParams({ item, size, material: "wood", finish, quantity });
+      // Przepisujemy KOMPLET odpowiedzi, nie tylko czesc. Gubiac tu podloze
+      // i wybor z magazynu, kalkulator liczyl material jako nasz takze wtedy,
+      // gdy klient przyslal wlasna rzecz.
+      return resolveTechAndParams({ item, size, material: "wood", finish, quantity, fileType, stlData, svgData, printTech, co2Mode, stockId, podloze });
     }
     const matId = item === "jewelry" ? "silver" : "stainless";
     const fiberSize = SIZE_MAP[size].fiber;
     const lensId = (size === "coin") ? "70mm" : "150mm";
     return {
       tech, params: {
-        matId, lensId,
+        podloze, matId: zListy(stockId, FIBER_MATERIALS) || matId, lensId,
         markId: finish === "prototype" ? "surface" : finish === "premium" ? "medium" : "surface",
         areaId: fiberSize,
         quantityId,

@@ -21,6 +21,9 @@ import {
 } from "../src/pricing/materialStock.js";
 import { CUT_MATERIALS, ENGRAVE_MATERIALS } from "../src/pricing/laserCo2.js";
 import { MATERIAL_SEED, seedAsStock } from "../src/pricing/materialStockSeed.js";
+import { calculate as calcFiber } from "../src/pricing/laserFiber.js";
+import { priceItem } from "../chat-api/orders.js";
+import { resolveTechAndParams } from "../src/pricing/simpleQuote.js";
 import { MATERIALS as FIBER_MATERIALS } from "../src/pricing/laserFiber.js";
 
 let bledy = 0;
@@ -142,11 +145,65 @@ if (wAdminie !== MATERIAL_MARKUP) {
 // --- 7. Rozpiska pokazuje material ---------------------------------------
 sekcja("7. Material widoczny w rozpisce");
 const silnik = readFileSync(new URL("../src/pricing/laserCo2.js", import.meta.url), "utf8");
-if ((silnik.match(/label: l\.materialCost/g) || []).length < 4) {
-  zle("material nie jest wypisany w rozpisce obu silnikow razem z przypadkiem wyceny indywidualnej");
+if ((silnik.match(/label: l\.materialCost/g) || []).length < 2) {
+  zle("material nie jest wypisany w rozpisce obu silnikow CO2");
 }
-if (!/materialSeparate/.test(silnik)) zle("brak pozycji 'wycena indywidualna', wiec znikajaca linia czyta sie jak material gratis");
-ok("ciecie i grawer wypisuja material, takze gdy rozliczamy go osobno");
+ok("ciecie i grawer wypisuja material w rozpisce");
+
+// --- 9. Nic nierozstrzygnietego nie wchodzi do koszyka ---------------------
+sekcja("9. Material bez ceny nie daje kwoty wiazacej");
+// Kwota w koszyku jest UMOWA, wiec nie moze zawierac pozycji "do ustalenia".
+// Przy srebrze i zlocie z naszego magazynu takiej ceny nie ma, dopoki nie
+// zwazymy blaszki. Silnik musi wtedy zwrocic `custom`, bo dopiero to chowa
+// przycisk koszyka i kaze serwerowi odmowic wyceny.
+for (const [mat, podloze, oczekiwane] of [
+  ["silver", "our_stock", "custom"],
+  ["gold", "our_stock", "custom"],
+  ["silver", "own_item", "calculated"],
+  ["stainless", "our_stock", "calculated"],
+]) {
+  const r = calcFiber({ matId: mat, lensId: "150mm", markId: "surface", areaId: "M", quantityId: "proto", podloze }, "pl", stock);
+  if (r?.type !== oczekiwane) {
+    zle(`Fiber ${mat} / ${podloze}: dostalem "${r?.type}", a ma byc "${oczekiwane}"`);
+  }
+}
+// Awaria bazy nie moze zamienic kruszcu w material po stawce domyslnej.
+const bezTabeli = calcFiber({ matId: "silver", lensId: "150mm", markId: "surface", areaId: "M", quantityId: "proto", podloze: "our_stock" }, "pl", null);
+if (bezTabeli?.type !== "custom") {
+  zle("bez tabeli srebro dostaje kwote wiazaca ze stawki domyslnej, czyli liczbe wziete z powietrza");
+}
+// Serwer musi odmowic tej samej konfiguracji, inaczej obejscie przegladarki
+// wystarczy, zeby kupic rzecz bez ustalonej ceny.
+let odmowil = false;
+try { priceItem({ calculator: "laser_fiber", lang: "pl", params: { matId: "silver", lensId: "150mm", markId: "surface", areaId: "M", quantityId: "proto", podloze: "our_stock" }, materialStock: stock }); }
+catch (e) { odmowil = e?.code === "needs_quote" || /needs_quote/.test(String(e?.message)); }
+if (!odmowil) zle("serwer wycenia srebro z naszego magazynu, choc ceny materialu nie znamy");
+ok("kruszec z naszego magazynu idzie do wyceny indywidualnej, takze po stronie serwera");
+
+// --- 10. Szybka wycena przekazuje odpowiedz o podlozu -----------------------
+sekcja("10. Podloze dociera z szybkiej wyceny do silnika");
+// Odpowiedz "na czym pracujemy" decyduje o tym, czy material wchodzi do kwoty.
+// Sciezka BEZ wgranego pliku dlugo jej nie przekazywala, wiec klient placil za
+// plyte, ktora sam przyslal. Nic tego nie zglaszalo: kwota wygladala poprawnie.
+{
+  const wspolne = { size: "palm", finish: "standard", quantity: "few", podloze: "own_item" };
+  const rysunek = { pathLengthCm: 120, engravAreaCm2: 200 };
+  const przypadki = [
+    ["grawer CO2, bez pliku", { ...wspolne, item: "sign", material: "wood" }],
+    ["ciecie CO2, bez pliku", { ...wspolne, item: "sign", material: "wood", co2Mode: "cut" }],
+    ["Fiber, bez pliku", { ...wspolne, item: "jewelry", material: "metal" }],
+    ["grawer CO2, z rysunkiem", { ...wspolne, item: "sign", material: "wood", fileType: "svg", svgData: rysunek }],
+    ["Fiber, z rysunkiem", { ...wspolne, item: "jewelry", material: "metal", fileType: "svg", svgData: rysunek }],
+    ["szklo, przekierowane na drewno", { ...wspolne, item: "sign", material: "glass" }],
+  ];
+  for (const [nazwa, odpowiedzi] of przypadki) {
+    const r = resolveTechAndParams(odpowiedzi);
+    if (r?.params?.podloze !== "own_item") {
+      zle(`${nazwa}: podloze nie dotarlo do silnika (${JSON.stringify(r?.params?.podloze)}), material policzy sie jako nasz`);
+    }
+  }
+  ok("podloze przechodzi kazda sciezka szybkiej wyceny, z plikiem i bez");
+}
 
 // --- 8. Etykieta "od" liczy sie z tej samej tabeli --------------------------
 sekcja("8. Cena 'od' na kartach uslug");
