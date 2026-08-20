@@ -5,6 +5,7 @@
 // zamowien liczyl cene tym samym kodem co kalkulator.
 
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, netCostFmt } from "./config.js";
+import { materialCostPLN, materialIsOurs, pricedSeparately } from "./materialStock.js";
 
 export const FIBER_CONFIG = {
   POWER_KW: 0.50,
@@ -22,6 +23,7 @@ export const LBL = {
     energy: "Energia / szt.", depreciation: "Amortyzacja / szt.", workshop: "Usługi warsztatowe",
     estCost: "Koszt szacunkowy / szt.", discount: "Rabat seryjny", totalProd: "Czas produkcji łącznie",
     preciousSurcharge: "Narzut metal szlachetny",
+    materialCost: "Materiał / szt.", materialSeparate: "wycena indywidualna",
     lens70desc: "Pole ~50×50mm (25 cm²), ultra fine", lens150desc: "Pole ~110×110mm (~121 cm²), standard" },
   en: { material: "Material", lens: "Lens / work field", markType: "Marking type",
     area: "Engraving area", qty: "Quantity",
@@ -30,6 +32,7 @@ export const LBL = {
     energy: "Energy / pc", depreciation: "Depreciation / pc", workshop: "Workshop services",
     estCost: "Estimated cost / pc", discount: "Series discount", totalProd: "Total production time",
     preciousSurcharge: "Precious metal surcharge",
+    materialCost: "Material / pc", materialSeparate: "quoted separately",
     lens70desc: "Field ~50×50mm (25 cm²), ultra fine", lens150desc: "Field ~110×110mm (~121 cm²), standard" },
   de: { material: "Material", lens: "Linse / Arbeitsfeld", markType: "Markierungstyp",
     area: "Gravurfläche", qty: "Auflage",
@@ -38,6 +41,7 @@ export const LBL = {
     energy: "Energie / Stk.", depreciation: "Abschreibung / Stk.", workshop: "Werkstattleistungen",
     estCost: "Geschätzte Kosten / Stk.", discount: "Serienrabatt", totalProd: "Gesamte Produktionszeit",
     preciousSurcharge: "Aufpreis Edelmetall",
+    materialCost: "Material / Stk.", materialSeparate: "separate Kalkulation",
     lens70desc: "Feld ~50×50mm (25 cm²), ultra fein", lens150desc: "Feld ~110×110mm (~121 cm²), Standard" },
 };
 
@@ -90,7 +94,14 @@ export const AREAS = [
   { id: "XL", label: { pl: "XL - wielokrotne pola", en: "XL - multiple fields", de: "XL - mehrere Felder" }, area: null, custom: true },
 ];
 
-export function calculate({ matId, lensId, markId, areaId, quantityId, svgData }, lang) {
+/**
+ * @param {object} p parametry z kalkulatora
+ * @param {string|null} p.podloze kto dostarcza material; brak znaczy "nasz"
+ * @param {string} lang
+ * @param {Array|null} stock tabela stanow magazynowych; brak znaczy stawka
+ *   domyslna
+ */
+export function calculate({ matId, lensId, markId, areaId, quantityId, svgData, podloze = null }, lang, stock = null) {
   const mat = MATERIALS.find(m => m.id === matId);
   const lens = LENSES.find(l => l.id === lensId);
   const mark = MARK_TYPES.find(m => m.id === markId);
@@ -116,6 +127,18 @@ export function calculate({ matId, lensId, markId, areaId, quantityId, svgData }
 
   if (mat.precious) baseCost *= (1 + FIBER_CONFIG.PRECIOUS_PREMIUM);
 
+  // MATERIAL LICZY SIE TAK SAMO JAK PRZY CO2, z tej samej tabeli i tylko
+  // wtedy, gdy plyta jest nasza. Wczesniej Fiber nie doliczal go nigdy, choc
+  // kalkulator pyta o podloze, a w koszyku stala odpowiedz "z naszego
+  // magazynu": klient placil tyle samo za nasza blaszke i za swoja obraczke.
+  //
+  // Doliczamy PO narzucie za metal szlachetny, bo ten narzut placi za ryzyko
+  // pracy na cudzym kruszcu, a nie za material. Zreszta srebro i zloto maja
+  // w tabeli zero w obu kolumnach i ida do wyceny indywidualnej.
+  const materialCost = materialCostPLN({ areaCm2: area.area, matId: mat.id, podloze, stock });
+  const materialOsobno = materialIsOurs(podloze) && pricedSeparately(mat.id, stock);
+  baseCost += materialCost;
+
   const batchTimeH = (timeH + handleH) * qTier.qty + 0.2;
 
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
@@ -132,6 +155,13 @@ export function calculate({ matId, lensId, markId, areaId, quantityId, svgData }
       { label: l.energy, value: fc(energyCost) },
       { label: l.depreciation, value: fc(deprCost) },
       ...(mat.precious ? [{ label: l.preciousSurcharge, value: `+${FIBER_CONFIG.PRECIOUS_PREMIUM * 100}%` }] : []),
+      // Pozycja materialu MUSI byc widoczna. Znikajaca linia czyta sie jak
+      // "material gratis", a przy kruszcu to jest obietnica nie do spelnienia.
+      ...(materialCost > 0
+        ? [{ label: l.materialCost, value: fc(materialCost) }]
+        : materialOsobno
+          ? [{ label: l.materialCost, value: l.materialSeparate }]
+          : []),
       { label: l.workshop, value: fc(baseCost * CONFIG.BASE_MARGIN) },
       { divider: true },
       { label: l.estCost, value: fc(baseCost * (1 + CONFIG.BASE_MARGIN)), bold: true },

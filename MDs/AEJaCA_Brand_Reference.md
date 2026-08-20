@@ -217,7 +217,7 @@ Skutek uboczny wdrożenia progu: ceny "od" na kartach usług wzrosły, bo liczą
    - Cięcie CO2 z grubością, bo grubość wchodzi w cenę: sklejka 2/3/5/8 mm, akryl 3/5/8 mm, skóra 1-2 i 3-4 mm, papier/karton, tkanina/filc, guma 2-3 mm
    - Fiber: stal nierdzewna, aluminium, aluminium anodowane, mosiądz, miedź, tytan. Srebra i złota nie wydajemy z magazynu, mimo że je znakujemy: metal szlachetny ma własne rozliczenie wagowe
    - "Inny materiał" zostaje na końcu listy i odsłania pole tekstowe, bo lista nie wyczerpuje świata
-   - Dostępność i koszt samego materiału potwierdzamy przy realizacji. Kwota z kalkulatora obejmuje wyłącznie robociznę
+   - Materiał wchodzi do kwoty: pozycja "Materiał / szt." liczy się z tabeli `material_stock` i dochodzi tylko wtedy, gdy materiał jest nasz. Dostępność potwierdzamy przy realizacji
    - Nic się nie wysyła, wykonujemy na materiale, który już posiadamy
    - Brak zasady dodatkowej sztuki, bo materiał jest pod naszą kontrolą
 
@@ -380,6 +380,22 @@ zapasu na odpad**, bo przy przedmiocie nie ma odpadu między elementami, jest al
 nic. **Zero w obu kolumnach** znaczy "wycena indywidualna": tak stoją srebro i złoto, bo metal
 szlachetny rozlicza się wagowo, a nie powierzchniowo. Rozpiska pokazuje wtedy pozycję "Materiał /
 szt.: wycena indywidualna", bo znikająca linia czytałaby się jak materiał gratis.
+
+**Fiber liczy materiał tak samo jak CO2 (2026-08-20).** Laser fiber **w ogóle nie doliczał
+materiału**, choć kalkulator pytał o podłoże, a w koszyku stała odpowiedź "z naszego magazynu": za
+naszą blaszkę klient płacił tyle samo, co za własną obrączkę. Teraz `laserFiber.calculate` przyjmuje
+`podloze` i tabelę stanów, tak samo jak silniki CO2, i dokłada pozycję "Materiał / szt." po narzucie
+za metal szlachetny (ten narzut płaci za ryzyko pracy na cudzym kruszcu, nie za materiał). Srebro i
+złoto mają w tabeli zero w obu kolumnach, więc dalej idą do wyceny indywidualnej. Serwer pobiera
+tabelę dla **każdej** usługi zaczynającej się od `laser_`, a nie tylko `laser_co2`.
+
+**Zestaw startowy tabeli w jednym pliku (2026-08-20).** Ceny startowe były tekstem SQL w
+`chat-api/server.js`, a skrypt buildu wyłuskiwał je stamtąd wyrażeniem regularnym. Teraz stoją w
+`src/pricing/materialStockSeed.js` i czytają je trzy miejsca, które się nie widzą: baza przy
+zakładaniu tabeli, `scripts/derive-service-prices.mjs` przy liczeniu etykiety "od X zł" na kartach
+usług, oraz test. Wcześniej etykieta liczyła się **stawką domyślną**, a koszyk stawką z tabeli, więc
+karta usługi obiecywała inną cenę niż kalkulator. Granica: baza rządzi wyceną (zmiana w panelu działa
+od razu), plik rządzi założeniem tabeli i etykietą, która z natury jest z chwili buildu.
 
 **Narzut 50% na materiał (decyzja właściciela, 2026-08-20).** W tabeli trzymamy **koszt zakupu**, bo
 taką liczbę da się sprawdzić z fakturą i cennikiem hurtowni. Narzut stoi w kodzie

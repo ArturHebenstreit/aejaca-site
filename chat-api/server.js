@@ -1088,7 +1088,7 @@ app.post("/api/price", (req, res, next) => {
 
     const rates = calculator.startsWith("jewelry_") ? await currentMetalRates() : null;
     const gemstones = rates ? await currentGemstones(rates.pln_per_eur) : null;
-    const materialStock = calculator.startsWith("laser_co2") ? await currentMaterialStock() : null;
+    const materialStock = calculator.startsWith("laser_") ? await currentMaterialStock() : null;
     const item = priceItem({ calculator, params, lang, geometry, scale, rates, gemstones, materialStock });
 
     // Informacyjnie: ile jeszcze zmiesci sie w limicie kwartalnym.
@@ -1356,7 +1356,7 @@ app.post("/api/quotes/save", express.json({ limit: "1mb" }), async (req, res) =>
       }
 
       const scale = Number(raw?.scale) > 0 ? Number(raw.scale) : 1;
-      const materialStock = calculator.startsWith("laser_co2") ? await currentMaterialStock() : null;
+      const materialStock = calculator.startsWith("laser_") ? await currentMaterialStock() : null;
       const item = priceItem({ calculator, params, lang, geometry, scale, rates, gemstones, materialStock });
       priced.push({
         calculator, params, scale, uploadId, fileName,
@@ -2073,7 +2073,7 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
       // TO JEST MIEJSCE, W KTORYM POWSTAJE KWOTA WIAZACA. Kazde pominiete
       // tu zrodlo danych oznacza, ze klient placi inna cene niz ta, ktora
       // zobaczyl, i nic tego nie zglosi.
-      const itemStock = String(raw.calculator || "").startsWith("laser_co2")
+      const itemStock = String(raw.calculator || "").startsWith("laser_")
         ? await currentMaterialStock()
         : null;
       const item = priceItem({

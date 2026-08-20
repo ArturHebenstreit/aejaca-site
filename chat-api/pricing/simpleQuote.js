@@ -178,7 +178,7 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
       }
       const matId = item === "jewelry" ? "silver" : "stainless";
       const lensId = (size === "coin") ? "70mm" : "150mm";
-      return { tech, params: { matId: zListy(stockId, FIBER_MATERIALS) || matId, lensId, markId: finish === "prototype" ? "surface" : finish === "premium" ? "medium" : "surface", areaId: sizeId, quantityId, svgData } };
+      return { tech, params: { podloze, matId: zListy(stockId, FIBER_MATERIALS) || matId, lensId, markId: finish === "prototype" ? "surface" : finish === "premium" ? "medium" : "surface", areaId: sizeId, quantityId, svgData } };
     }
 
     return { custom: true };
@@ -319,7 +319,7 @@ export function runCalc(resolved, lang, stock = null) {
   const { tech, mode, params } = resolved;
   if (tech === "3dprint") return calcPrint3D(params, lang);
   if (tech === "co2")     return mode === "cut" ? calcCO2Cut(params, lang, stock) : calcCO2Engrave(params, lang, stock);
-  if (tech === "fiber")   return calcFiber(params, lang);
+  if (tech === "fiber")   return calcFiber(params, lang, stock);
   if (tech === "epoxy")   return calcEpoxy(params, lang);
   if (tech === "msla")    return calculateMSLA(params, lang);
   return null;

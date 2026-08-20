@@ -101,7 +101,7 @@ function cheapest(svc) {
   // stoi w tabeli, nie w kodzie. Bez tego argumentu silnik zjezdza na stawke
   // domyslna i etykieta obiecuje cene, ktorej w kalkulatorze nie ma. Blad
   // cichy w obie strony: raz obietnica bez pokrycia, raz prog odstraszajacy.
-  const stock = svc.calculator.startsWith("laser_co2") ? seedAsStock() : null;
+  const stock = svc.calculator.startsWith("laser_") ? seedAsStock() : null;
 
   const price = (acc) => {
     try {
