@@ -379,7 +379,15 @@ i 0,16 zł materiału**, zatwierdzona przez właściciela 2026-08-20. Interpolac
 ale właściciel podniósł do 1,00 z powodu warsztatowego: lita deska ma słoje, żywice i niejednorodną
 gęstość, więc przejście na wylot wymaga kilku powtórzeń i pilnowania, a nie jednego przejazdu jak przy
 sklejce. Rachunek ze sklejki tego nie widzi, bo sklejka jest materiałem jednorodnym. Skutek na ekranie:
-cięcie ścieżki S kosztuje 44-88 PLN zamiast 15-30 PLN dla sklejki 3 mm. Zdolności maszyny są teraz zapisane i pilnowane: xTool P2 (CO2 55 W) grawerujemy na szkle,
+cięcie ścieżki S kosztuje 44-88 PLN zamiast 15-30 PLN dla sklejki 3 mm.
+
+**Podwyżka dotyczy wyłącznie cięcia.** Grawer na sklejce, litej desce i płycie drewnopochodnej wygląda
+tak samo i tyle samo trwa, więc kosztuje tyle samo (potwierdzone przez właściciela 2026-08-20).
+Sklejka miała tu wcześniej 0,4 przygotowania zamiast 0,5, co przy małych powierzchniach było
+niewidoczne, a przy dużych dawało złotówkę różnicy bez powodu, który dałby się obronić przed klientem.
+Wyrównane. `scripts/test-laser-capabilities.mjs` przemiata 36 kombinacji powierzchni, nakładu
+i szczegółowości i wywala build, gdyby cena graweru znów zaczęła zależeć od rodzaju drewna, a osobno
+sprawdza, że przy cięciu ta zależność zostaje. Zdolności maszyny są teraz zapisane i pilnowane: xTool P2 (CO2 55 W) grawerujemy na szkle,
 kamieniu i grubym litym drewnie, ale ich **nie przetniemy**, a metalu nie rusza w ogóle. Dlatego po wybraniu
 metalu pytanie "cięcie czy grawerowanie" znika, bo wycena idzie światłowodem. Szybka wycena, tryb
 zaawansowany i sklep czytają **jedną parę tablic** (`ENGRAVE_MATERIALS`, `CUT_MATERIALS`), więc

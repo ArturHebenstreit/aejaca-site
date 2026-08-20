@@ -19,7 +19,7 @@
 // nadal prawda.
 
 import { readFileSync } from "node:fs";
-import { ENGRAVE_MATERIALS, CUT_MATERIALS } from "../src/pricing/laserCo2.js";
+import { ENGRAVE_MATERIALS, CUT_MATERIALS, calcEngrave, calcCut } from "../src/pricing/laserCo2.js";
 import { MATERIALS as FIBER_MATERIALS } from "../src/pricing/laserFiber.js";
 import { TECH_FROM_MATERIAL } from "../src/pricing/simpleQuote.js";
 import { stockOptions } from "../src/data/ourStock.js";
@@ -113,6 +113,35 @@ const grubszeWCieciu = CUT_MATERIALS.filter((m) => {
 if (grubszeWCieciu.length) zle(`ciecie oferuje drewno grubsze niz 10 mm: ${grubszeWCieciu.map((m) => m.id).join(", ")}`);
 ok(`grawer: ${grawerDrewno.join(", ")}`);
 ok(`ciecie: ${cieteDrewno.join(", ")}`);
+
+// Grawer na sklejce i na litej desce wyglada tak samo i tyle samo trwa, wiec
+// KOSZTUJE TYLE SAMO (decyzja wlasciciela, 2026-08-20). Roznica ceny byla tu
+// niewidoczna przy malych powierzchniach i wychodzila dopiero przy duzych,
+// czyli dokladnie tam, gdzie klient zaczyna ja sprawdzac.
+const kwotaGraweru = (id, areaId, detailId, quantityId) => {
+  const r = calcEngrave({ matId: id, areaId, detailId, quantityId, extended: false }, "pl");
+  return r?.perPcPLN ? `${r.perPcPLN.min}-${r.perPcPLN.max}` : null;
+};
+let rozjazdy = 0;
+for (const areaId of ["XS", "S", "M", "L"]) {
+  for (const quantityId of ["proto", "small", "medium"]) {
+    for (const detailId of ["simple", "standard", "photo"]) {
+      const kwoty = new Set(["wood", "plywood", "wood_other"].map((id) => kwotaGraweru(id, areaId, detailId, quantityId)).filter(Boolean));
+      if (kwoty.size > 1) {
+        rozjazdy++;
+        if (rozjazdy === 1) zle(`grawer rozni cene wedlug rodzaju drewna (${areaId}/${quantityId}/${detailId}: ${[...kwoty].join(" vs ")}), a wyglada tak samo`);
+      }
+    }
+  }
+}
+if (!rozjazdy) ok("grawer kosztuje tyle samo na sklejce, litej desce i plycie drewnopochodnej");
+
+// Przy cieciu odwrotnie: grubosc MUSI zmieniac cene, bo zmienia czas przejscia.
+const kwotaCiecia = (id) => calcCut({ matId: id, pathId: "S", complexId: "moderate", quantityId: "proto", extended: false }, "pl")?.perPcPLN?.min;
+const cienka = kwotaCiecia("ply3");
+const gruba = kwotaCiecia("wood10");
+if (!(gruba > cienka)) zle(`ciecie litego drewna (${gruba}) nie jest drozsze od sklejki 3 mm (${cienka}), choc trwa dluzej`);
+else ok(`ciecie rozroznia material: sklejka 3 mm ${cienka} PLN, lite drewno ${gruba} PLN`);
 
 // --- 5. Sklep i tryb zaawansowany czytaja te same tablice ----------------
 sekcja("5. Sklep i tryb zaawansowany bez wlasnych kopii list");

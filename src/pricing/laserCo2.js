@@ -66,8 +66,17 @@ export const ENGRAVE_MATERIALS = [
   // GRAWER NIE PYTA O GRUBOSC. Wiazka siega powierzchni, wiec deska 6 mm
   // i bal 40 mm kosztuja tyle samo; podzial na grubosci ma sens dopiero
   // przy cieciu. Stad trzy pozycje po rodzaju materialu, a nie po wymiarze.
+  // TE SAME STAWKI DLA CALEGO DREWNA, i to jest decyzja, a nie niedopatrzenie
+  // (potwierdzone przez wlasciciela 2026-08-20). Grawer na sklejce i na litej
+  // desce wyglada tak samo i tyle samo trwa, wiec roznicowanie ceny byloby
+  // roznica, ktorej klient nie moze zobaczyc ani sprawdzic. Sklejka miala tu
+  // wczesniej 0.4 przygotowania zamiast 0.5, co przy wiekszych powierzchniach
+  // dawalo zlotowke roznicy bez powodu, ktory dalby sie obronic.
+  //
+  // Przy CIECIU jest odwrotnie i tam roznica zostaje: tam wiazka musi przejsc
+  // na wylot, wiec sloje i zywica litej deski kosztuja realny czas.
   { id: "wood",    label: { pl: "Lite drewno", en: "Solid wood", de: "Massivholz" }, rateMin: 0.07, prepCost: 0.5, grupa: "wood", img: "/img/calc/co2_materials/wood.webp" },
-  { id: "plywood", label: { pl: "Sklejka", en: "Plywood", de: "Sperrholz" },      rateMin: 0.07, prepCost: 0.4, grupa: "wood", img: "/img/calc/co2_materials/plywood.webp" },
+  { id: "plywood", label: { pl: "Sklejka", en: "Plywood", de: "Sperrholz" },      rateMin: 0.07, prepCost: 0.5, grupa: "wood", img: "/img/calc/co2_materials/plywood.webp" },
   // HDF, MDF, fornir, korek, plyta meblowa. Grawer wychodzi na nich inaczej
   // niz na litym drewnie (klej i prasowane wlokno daja rowniejszy, ciemniejszy
   // slad), ale czas maszyny jest ten sam.
