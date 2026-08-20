@@ -284,6 +284,7 @@ const LBL = {
     mslaHint: "Ten model zmieści się na drukarce żywicznej MSLA 16K, to opcja z wyższą precyzją i gładszą powierzchnią niż odlew z żywicy.",
     co2ModeQ: "Cięcie czy grawerowanie?",
     co2CutName: "Cięcie na wylot", co2CutDesc: "Wycinamy kształt na wylot, zostaje gotowy element.",
+    co2CutOffMetal: "Metalu nie tniemy: laser światłowodowy znakuje powierzchnię.",
     co2EngraveName: "Grawerowanie powierzchni", co2EngraveDesc: "Wypalamy rysunek na powierzchni, materiał zostaje w całości.",
     laserOverPlateTitle: "Ten rysunek nie zmieści się w polu roboczym lasera",
     laserOverPlateTextCo2: "Laser CO2 (xTool P2) ma pole robocze 60 x 30,8 cm.",
@@ -337,6 +338,7 @@ const LBL = {
     mslaHint: "This model fits the MSLA 16K resin printer, an option with higher precision and a smoother surface than a resin cast.",
     co2ModeQ: "Cut or engrave?",
     co2CutName: "Cut through", co2CutDesc: "We cut the shape all the way through, leaving a finished piece.",
+    co2CutOffMetal: "We do not cut metal: the fibre laser marks the surface.",
     co2EngraveName: "Surface engraving", co2EngraveDesc: "We burn the drawing into the surface, the material stays whole.",
     laserOverPlateTitle: "This drawing does not fit the laser's work area",
     laserOverPlateTextCo2: "The CO2 laser (xTool P2) has a 60 x 30.8 cm work area.",
@@ -390,6 +392,7 @@ const LBL = {
     mslaHint: "Dieses Modell passt auf den MSLA-16K-Harzdrucker, eine Option mit höherer Präzision und glatterer Oberfläche als ein Harzguss.",
     co2ModeQ: "Schneiden oder Gravieren?",
     co2CutName: "Durchschneiden", co2CutDesc: "Wir schneiden die Form ganz durch, es bleibt ein fertiges Teil.",
+    co2CutOffMetal: "Metall schneiden wir nicht: der Faserlaser markiert die Oberfläche.",
     co2EngraveName: "Oberflächengravur", co2EngraveDesc: "Wir brennen die Zeichnung in die Oberfläche, das Material bleibt vollständig erhalten.",
     laserOverPlateTitle: "Diese Zeichnung passt nicht in den Arbeitsbereich des Lasers",
     laserOverPlateTextCo2: "Der CO2-Laser (xTool P2) hat einen Arbeitsbereich von 60 x 30,8 cm.",
@@ -818,6 +821,15 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
   // Pilnuje tego `scripts/test-laser-capabilities.mjs`, bo pokazanie tu
   // ciecia obiecywaloby robote, ktorej maszyna nie wykona.
   const isVectorCo2 = fileType === "svg" && resolved?.tech === "co2";
+
+  // KARTA TRYBU ZOSTAJE TAKZE PRZY METALU, tylko ciecie jest w niej wygaszone.
+  // Znikajaca sekcja jest gorsza niz wygaszona pozycja: klient nie wie, czy
+  // pytanie zniklo, bo odpowiedz jest oczywista, czy dlatego, ze cos zepsul,
+  // i nie dowiaduje sie tego, czego naprawde potrzebuje, czyli ze metalu tym
+  // laserem NIE PRZETNIEMY. Wygaszony kafelek z powodem uczy oferty; brak
+  // kafelka uczy tylko tego, ze interfejs jest nieprzewidywalny.
+  const naSwiatlowodzie = fileType === "svg" && resolved?.tech === "fiber";
+  const pokazTrybLasera = isVectorCo2 || naSwiatlowodzie;
 
   // Obie kwoty licza sie tym samym silnikiem, przez `co2Mode`. Kopia
   // mapowania parametrow po stronie widoku rozjechalaby sie z simpleQuote.js
@@ -1359,25 +1371,35 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
           element, druga tylko rysunek na powierzchni), wiec kazda karta
           niesie wlasny opis i wlasna kwote policzona z tych samych
           odpowiedzi. */}
-      {isVectorCo2 && (
+      {pokazTrybLasera && (
         <SimpleCard stepNum="◆" label={l.co2ModeQ}>
           <div className="grid sm:grid-cols-2 gap-2">
             {[
               { id: "cut", nazwa: l.co2CutName, opis: l.co2CutDesc, wynik: co2CutResult },
-              { id: "engrave", nazwa: l.co2EngraveName, opis: l.co2EngraveDesc, wynik: co2EngraveResult },
+              { id: "engrave", nazwa: l.co2EngraveName, opis: l.co2EngraveDesc, wynik: naSwiatlowodzie ? result : co2EngraveResult },
             ].map((o) => {
-              const aktywna = (co2Mode || resolved?.mode) === o.id;
-              const kwota = o.wynik?.type === "calculated"
+              // Swiatlowod znakuje powierzchnie i u nas nie tnie, wiec przy
+              // metalu grawer jest wybrany, a ciecie wylaczone razem z fokusem:
+              // kafelek, ktory sie podswietla i nic nie robi, wyglada na
+              // usterke, a nie na informacje.
+              const wylaczona = naSwiatlowodzie && o.id === "cut";
+              const aktywna = naSwiatlowodzie
+                ? o.id === "engrave"
+                : (co2Mode || resolved?.mode) === o.id;
+              const kwota = !wylaczona && o.wynik?.type === "calculated"
                 ? (lang === "pl" ? `${o.wynik.perPcPLN.min} - ${o.wynik.perPcPLN.max} PLN` : `${o.wynik.perPcEUR.min} - ${o.wynik.perPcEUR.max} EUR`)
                 : null;
               return (
                 <button
                   key={o.id}
                   type="button"
-                  onClick={() => setCo2Mode(o.id)}
+                  disabled={wylaczona}
+                  onClick={() => { if (!wylaczona) setCo2Mode(o.id); }}
                   aria-pressed={aktywna}
                   className={`text-left rounded-xl border p-3 transition-colors ${
-                    aktywna ? "border-emerald-400/50 bg-emerald-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/25"
+                    wylaczona
+                      ? "border-white/10 bg-white/[0.02] opacity-40 cursor-not-allowed"
+                      : aktywna ? "border-emerald-400/50 bg-emerald-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/25"
                   }`}
                 >
                   <div className={`text-sm font-medium ${aktywna ? "text-emerald-300" : "text-neutral-200"}`}>{o.nazwa}</div>
@@ -1385,7 +1407,10 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
                   {kwota && (
                     <div className={`text-xs mt-2 font-medium ${aktywna ? "text-emerald-300" : "text-neutral-400"}`}>{kwota}</div>
                   )}
-                  {aktywna && co2Mode === null && (
+                  {wylaczona && (
+                    <div className="text-[10px] text-neutral-500 mt-2 leading-tight">{l.co2CutOffMetal}</div>
+                  )}
+                  {aktywna && !naSwiatlowodzie && co2Mode === null && (
                     <div className="text-[10px] text-neutral-600 mt-1">{l.techAuto}</div>
                   )}
                 </button>

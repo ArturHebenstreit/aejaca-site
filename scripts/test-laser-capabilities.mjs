@@ -19,7 +19,7 @@
 // nadal prawda.
 
 import { readFileSync } from "node:fs";
-import { ENGRAVE_MATERIALS, CUT_MATERIALS } from "../src/pricing/laserCo2.js";
+import { ENGRAVE_MATERIALS, CUT_MATERIALS, calcEngrave, calcCut } from "../src/pricing/laserCo2.js";
 import { MATERIALS as FIBER_MATERIALS } from "../src/pricing/laserFiber.js";
 import { TECH_FROM_MATERIAL } from "../src/pricing/simpleQuote.js";
 import { stockOptions } from "../src/data/ourStock.js";
@@ -35,10 +35,10 @@ const idFibera = new Set(FIBER_MATERIALS.filter((m) => !m.custom).map((m) => m.i
 
 // --- 1. Czego xTool P2 nie przetnie -------------------------------------
 sekcja("1. Grawerowac tak, przeciac nie (xTool P2, CO2 55 W)");
-// Szklo peka od naprezen termicznych zamiast sie przecinac, kamien jest
-// niepalny i wiazka go tylko matowi, a lite drewno powyzej 10 mm zweglaja
-// sie szybciej, niz laser zdazy przejsc na wylot.
-const TYLKO_GRAWER = ["glass", "stone", "wood_thick"];
+// Szklo peka od naprezen termicznych zamiast sie przecinac, a kamien jest
+// niepalny i wiazka go tylko matowi. Grubosc drewna jest osobnym ograniczeniem
+// (sekcja 4): grawerujemy kazda, tniemy do 10 mm.
+const TYLKO_GRAWER = ["glass", "stone"];
 for (const id of TYLKO_GRAWER) {
   if (!idGraweru.has(id)) zle(`${id}: zniknal z listy grawerowania, choc grawerujemy go normalnie`);
   if (idCiecia.has(id)) zle(`${id}: da sie wybrac do CIECIA, a laser CO2 tego nie przetnie`);
@@ -56,19 +56,32 @@ for (const id of [...idCiecia, ...idGraweru]) {
 if (TECH_FROM_MATERIAL.metal !== "fiber") {
   zle(`kafelek "Metal" prowadzi do ${TECH_FROM_MATERIAL.metal}, a metal znakujemy swiatlowodem`);
 }
-// Pytanie "ciecie czy grawerowanie" dotyczy WYLACZNIE CO2. Gdy klient wybral
-// metal, wycena idzie swiatlowodem, wiec karta trybu nie ma sie z czego wziac.
+// Przy metalu karta "ciecie czy grawerowanie" ZOSTAJE, ale ciecie jest w niej
+// wygaszone i niedostepne. Znikajaca sekcja nie tlumaczy niczego; wygaszony
+// kafelek z powodem mowi klientowi, ze metalu tym laserem nie przetniemy.
 const simple = readFileSync(new URL("../src/components/calculators/SimpleStudioCalc.jsx", import.meta.url), "utf8");
-if (!/const isVectorCo2 = fileType === "svg" && resolved\?\.tech === "co2"/.test(simple)) {
-  zle("karta ciecie/grawerowanie nie jest juz zwiazana z technologia CO2: przy metalu moze zostac widoczna");
+if (!/const naSwiatlowodzie = fileType === "svg" && resolved\?\.tech === "fiber"/.test(simple)) {
+  zle("kalkulator nie rozpoznaje sciezki swiatlowodu, wiec karta trybu przy metalu znika zamiast wygasic ciecie");
 }
-ok("metal prowadzi do swiatlowodu, karta ciecie/grawer zwiazana z CO2");
+if (!/const wylaczona = naSwiatlowodzie && o\.id === "cut"/.test(simple)) {
+  zle("ciecie nie jest wygaszane przy metalu");
+}
+if (!/disabled=\{wylaczona\}/.test(simple)) {
+  zle("wygaszony kafelek ciecia da sie kliknac i przejac fokusem, czyli wyglada na usterke");
+}
+if (!/co2CutOffMetal/.test(simple)) zle("brak powodu przy wygaszonym cieciu: klient nie dowie sie, dlaczego");
+// Liczymy wystapienia, a nie szukamy wzorca "jezyk ... klucz": wzorzec
+// przechodzacy przez granice blokow zaliczylby polski napis jako niemiecki
+// i brak tlumaczenia przeszedlby niezauwazony (sprawdzone kontrola ujemna).
+const ileTlumaczen = (simple.match(/co2CutOffMetal:/g) || []).length;
+if (ileTlumaczen !== 3) zle(`co2CutOffMetal ma ${ileTlumaczen} tlumaczen zamiast trzech (pl, en, de)`);
+ok("metal prowadzi do swiatlowodu, karta trybu zostaje, ciecie wygaszone z powodem");
 
 // --- 3. Kazdy material do ciecia da sie tez grawerowac -------------------
 sekcja("3. Ciecie zaklada grawerowanie");
 // Nie na odwrot: to, co przecinamy, mozemy tez oznaczyc na powierzchni.
 // Lista ciecia niesie grubosci ("Sklejka 3mm"), wiec porownujemy rodziny.
-const RODZINA = { ply2: "plywood", ply3: "plywood", ply5: "plywood", ply8: "plywood", wood10: "wood",
+const RODZINA = { ply2: "plywood", ply3: "plywood", ply56: "plywood", mdf8: "wood_other", wood10: "wood",
   acr3: "acrylic", acr5: "acrylic", acr8: "acrylic", leather2: "leather", leather4: "leather",
   paper: "paper", fabric: "fabric", rubber: "rubber" };
 for (const id of idCiecia) {
@@ -78,13 +91,57 @@ for (const id of idCiecia) {
 }
 ok(`${idCiecia.size} materialow do ciecia, kazdy ma odpowiednik w grawerowaniu`);
 
-// --- 4. Lite drewno: 10 mm tniemy, grubsze tylko znakujemy ---------------
-sekcja("4. Lite drewno");
-if (!idCiecia.has("wood10")) zle("brak litego drewna 10 mm w cieciu");
-if (!idGraweru.has("wood_thick")) zle("brak litego drewna powyzej 10 mm w grawerowaniu");
+// --- 4. Drewno: grubosc ogranicza CIECIE, nie grawer ---------------------
+sekcja("4. Drewno");
+// Grawer siega powierzchni, wiec pyta o RODZAJ materialu, a nie o grubosc.
+// Ciecie musi przejsc na wylot, wiec pyta odwrotnie.
+const grawerDrewno = stockOptions({ tech: "co2", mode: "engrave", material: "wood" }).map((o) => o.id);
 const cieteDrewno = stockOptions({ tech: "co2", mode: "cut", material: "wood" }).map((o) => o.id);
-if (cieteDrewno.includes("wood_thick")) zle("grube lite drewno widac w wyborze do ciecia");
-ok(`ciecie drewna: ${cieteDrewno.join(", ")}`);
+for (const id of ["wood", "plywood", "wood_other"]) {
+  if (!grawerDrewno.includes(id)) zle(`grawer: brak pozycji "${id}" w wyborze drewna`);
+}
+if (grawerDrewno.some((id) => /\d/.test(id))) {
+  zle(`grawer pyta o grubosc drewna (${grawerDrewno.filter((id) => /\d/.test(id)).join(", ")}), a grubosc nie zmienia czasu pracy`);
+}
+if (!cieteDrewno.includes("wood10")) zle("brak litego drewna do 10 mm w cieciu");
+// Powyzej 10 mm lite drewno zweglа sie szybciej, niz wiazka przejdzie na
+// wylot, wiec grubszej pozycji w cieciu byc NIE MOZE.
+const grubszeWCieciu = CUT_MATERIALS.filter((m) => {
+  const mm = /(\d+)\s*mm/i.exec(m.label?.pl || "");
+  return m.grupa === "wood" && mm && Number(mm[1]) > 10;
+});
+if (grubszeWCieciu.length) zle(`ciecie oferuje drewno grubsze niz 10 mm: ${grubszeWCieciu.map((m) => m.id).join(", ")}`);
+ok(`grawer: ${grawerDrewno.join(", ")}`);
+ok(`ciecie: ${cieteDrewno.join(", ")}`);
+
+// Grawer na sklejce i na litej desce wyglada tak samo i tyle samo trwa, wiec
+// KOSZTUJE TYLE SAMO (decyzja wlasciciela, 2026-08-20). Roznica ceny byla tu
+// niewidoczna przy malych powierzchniach i wychodzila dopiero przy duzych,
+// czyli dokladnie tam, gdzie klient zaczyna ja sprawdzac.
+const kwotaGraweru = (id, areaId, detailId, quantityId) => {
+  const r = calcEngrave({ matId: id, areaId, detailId, quantityId, extended: false }, "pl");
+  return r?.perPcPLN ? `${r.perPcPLN.min}-${r.perPcPLN.max}` : null;
+};
+let rozjazdy = 0;
+for (const areaId of ["XS", "S", "M", "L"]) {
+  for (const quantityId of ["proto", "small", "medium"]) {
+    for (const detailId of ["simple", "standard", "photo"]) {
+      const kwoty = new Set(["wood", "plywood", "wood_other"].map((id) => kwotaGraweru(id, areaId, detailId, quantityId)).filter(Boolean));
+      if (kwoty.size > 1) {
+        rozjazdy++;
+        if (rozjazdy === 1) zle(`grawer rozni cene wedlug rodzaju drewna (${areaId}/${quantityId}/${detailId}: ${[...kwoty].join(" vs ")}), a wyglada tak samo`);
+      }
+    }
+  }
+}
+if (!rozjazdy) ok("grawer kosztuje tyle samo na sklejce, litej desce i plycie drewnopochodnej");
+
+// Przy cieciu odwrotnie: grubosc MUSI zmieniac cene, bo zmienia czas przejscia.
+const kwotaCiecia = (id) => calcCut({ matId: id, pathId: "S", complexId: "moderate", quantityId: "proto", extended: false }, "pl")?.perPcPLN?.min;
+const cienka = kwotaCiecia("ply3");
+const gruba = kwotaCiecia("wood10");
+if (!(gruba > cienka)) zle(`ciecie litego drewna (${gruba}) nie jest drozsze od sklejki 3 mm (${cienka}), choc trwa dluzej`);
+else ok(`ciecie rozroznia material: sklejka 3 mm ${cienka} PLN, lite drewno ${gruba} PLN`);
 
 // --- 5. Sklep i tryb zaawansowany czytaja te same tablice ----------------
 sekcja("5. Sklep i tryb zaawansowany bez wlasnych kopii list");
