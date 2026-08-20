@@ -114,14 +114,19 @@ export const CUT_MATERIALS = [
   // kleje miedzy warstwami potrafia zatrzymac wiazke. Czas maszyny ten sam,
   // material tanszy, stad 0.07 zamiast 0.09.
   { id: "mdf8",     label: { pl: "Płyta HDF/MDF do 8mm", en: "HDF/MDF board up to 8mm", de: "HDF/MDF-Platte bis 8mm" }, cutRate: 0.50, matCost: 0.07, grupa: "wood" },
-  // Lite drewno 10 mm dochodzi na polecenie wlasciciela (2026-08-20).
-  // Stawka wyprowadzona z sasiadow, nie zgadnieta: sklejka idzie 0.25 przy
-  // 5 mm i 0.50 przy 8 mm, czyli okolo 0.083 na milimetr, wiec 10 mm wypada
-  // na 0.67. Lite drewno tnie sie wolniej niz sklejka (slojе, zywica,
-  // niejednorodna gestosc), stad zaokraglenie w gore do 0.70. Material
-  // analogicznie: 0.11 z kroku sklejki, podniesione do 0.16, bo deska lita
-  // kosztuje wiecej niz sklejka tej samej grubosci.
-  { id: "wood10",   label: { pl: "Lite drewno do 10mm", en: "Solid wood up to 10mm", de: "Massivholz bis 10mm" }, cutRate: 0.70, matCost: 0.16, grupa: "wood" },
+  // Lite drewno do 10 mm dochodzi na polecenie wlasciciela (2026-08-20).
+  //
+  // Wyprowadzenie z sasiadow dawalo 0.67 za centymetr sciezki (sklejka idzie
+  // 0.25 przy 5 mm i 0.50 przy 8 mm, czyli okolo 0.083 na milimetr), ale
+  // WLASCICIEL PODNIOSL STAWKE DO 1.00 i to jest liczba obowiazujaca. Powod
+  // jest warsztatowy, nie arytmetyczny: lita deska ma sloje, zywice i
+  // niejednorodna gestosc, wiec przejscie na wylot wymaga kilku powtorzen
+  // i pilnowania, a nie jednego przejazdu jak przy sklejce. Interpolacja ze
+  // sklejki tego nie widzi, bo sklejka jest materialem jednorodnym.
+  //
+  // Material 0.16 (potwierdzone): 0.11 z kroku sklejki, podniesione, bo deska
+  // lita kosztuje wiecej niz sklejka tej samej grubosci.
+  { id: "wood10",   label: { pl: "Lite drewno do 10mm", en: "Solid wood up to 10mm", de: "Massivholz bis 10mm" }, cutRate: 1.00, matCost: 0.16, grupa: "wood" },
   { id: "acr3",     label: { pl: "Akryl 3mm", en: "Acrylic 3mm", de: "Acryl 3mm" }, cutRate: 0.20, matCost: 0.12, grupa: "other" },
   { id: "acr5",     label: { pl: "Akryl 5mm", en: "Acrylic 5mm", de: "Acryl 5mm" }, cutRate: 0.35, matCost: 0.18, grupa: "other" },
   { id: "acr8",     label: { pl: "Akryl 8mm", en: "Acrylic 8mm", de: "Acryl 8mm" }, cutRate: 0.60, matCost: 0.28, grupa: "other" },

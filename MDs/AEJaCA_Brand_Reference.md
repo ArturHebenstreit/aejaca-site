@@ -374,9 +374,12 @@ Przy metalu karta "Cięcie czy grawerowanie" **zostaje na ekranie**, z wygaszony
 nie tłumaczy niczego: klient nie wie, czy pytanie zniknęło, bo odpowiedź jest oczywista, czy dlatego,
 że coś zepsuł. Wygaszony kafelek nie przyjmuje też fokusu, więc nie udaje klikalnego.
 
-Doszło lite drewno: **10 mm tniemy** (`wood10`, stawka wyprowadzona z kroku sklejki: 0,70 zł/cm ścieżki
-i 0,16 zł materiału, do potwierdzenia przez właściciela), **powyżej 10 mm tylko grawerujemy**
-(`wood_thick`). Zdolności maszyny są teraz zapisane i pilnowane: xTool P2 (CO2 55 W) grawerujemy na szkle,
+Doszło lite drewno: **10 mm tniemy** (`wood10`), grubszego nie. Stawka **1,00 zł za centymetr ścieżki
+i 0,16 zł materiału**, zatwierdzona przez właściciela 2026-08-20. Interpolacja ze sklejki dawała 0,67,
+ale właściciel podniósł do 1,00 z powodu warsztatowego: lita deska ma słoje, żywice i niejednorodną
+gęstość, więc przejście na wylot wymaga kilku powtórzeń i pilnowania, a nie jednego przejazdu jak przy
+sklejce. Rachunek ze sklejki tego nie widzi, bo sklejka jest materiałem jednorodnym. Skutek na ekranie:
+cięcie ścieżki S kosztuje 44-88 PLN zamiast 15-30 PLN dla sklejki 3 mm. Zdolności maszyny są teraz zapisane i pilnowane: xTool P2 (CO2 55 W) grawerujemy na szkle,
 kamieniu i grubym litym drewnie, ale ich **nie przetniemy**, a metalu nie rusza w ogóle. Dlatego po wybraniu
 metalu pytanie "cięcie czy grawerowanie" znika, bo wycena idzie światłowodem. Szybka wycena, tryb
 zaawansowany i sklep czytają **jedną parę tablic** (`ENGRAVE_MATERIALS`, `CUT_MATERIALS`), więc
