@@ -63,12 +63,15 @@ export const LBL = {
 // bo material dopisany do cennika bez grupy zniknalby z wyboru po cichu:
 // cena by istniala, a klient nie mialby jak jej wybrac. Guard tego pilnuje.
 export const ENGRAVE_MATERIALS = [
-  { id: "wood",    label: { pl: "Drewno", en: "Wood", de: "Holz" },               rateMin: 0.07, prepCost: 0.5, grupa: "wood", img: "/img/calc/co2_materials/wood.webp" },
+  // GRAWER NIE PYTA O GRUBOSC. Wiazka siega powierzchni, wiec deska 6 mm
+  // i bal 40 mm kosztuja tyle samo; podzial na grubosci ma sens dopiero
+  // przy cieciu. Stad trzy pozycje po rodzaju materialu, a nie po wymiarze.
+  { id: "wood",    label: { pl: "Lite drewno", en: "Solid wood", de: "Massivholz" }, rateMin: 0.07, prepCost: 0.5, grupa: "wood", img: "/img/calc/co2_materials/wood.webp" },
   { id: "plywood", label: { pl: "Sklejka", en: "Plywood", de: "Sperrholz" },      rateMin: 0.07, prepCost: 0.4, grupa: "wood", img: "/img/calc/co2_materials/plywood.webp" },
-  // Grawer siega powierzchni, wiec grubosc deski nie zmienia czasu pracy.
-  // Zmienia obsluge: bryly powyzej 10 mm nie da sie polozyc na standardowym
-  // stole bez podniesienia glowicy, stad wyzszy koszt przygotowania.
-  { id: "wood_thick", label: { pl: "Lite drewno powyżej 10 mm (tylko grawer)", en: "Solid wood over 10 mm (engraving only)", de: "Massivholz über 10 mm (nur Gravur)" }, rateMin: 0.07, prepCost: 0.9, grupa: "wood", img: "/img/calc/co2_materials/wood.webp" },
+  // HDF, MDF, fornir, korek, plyta meblowa. Grawer wychodzi na nich inaczej
+  // niz na litym drewnie (klej i prasowane wlokno daja rowniejszy, ciemniejszy
+  // slad), ale czas maszyny jest ten sam.
+  { id: "wood_other", label: { pl: "Inne materiały drewnopochodne", en: "Other wood-based materials", de: "Andere Holzwerkstoffe" }, rateMin: 0.07, prepCost: 0.5, grupa: "wood", img: "/img/calc/co2_materials/plywood.webp" },
   { id: "acrylic", label: { pl: "Akryl", en: "Acrylic", de: "Acryl" },            rateMin: 0.08, prepCost: 0.8, grupa: "other", img: "/img/calc/co2_materials/acrylic.webp" },
   { id: "glass",   label: { pl: "Szkło", en: "Glass", de: "Glas" },               rateMin: 0.20, prepCost: 1.0, grupa: "other", img: "/img/calc/co2_materials/glass.webp" },
   { id: "leather", label: { pl: "Skóra", en: "Leather", de: "Leder" },            rateMin: 0.06, prepCost: 1.2, grupa: "other", img: "/img/calc/co2_materials/leather.webp" },
@@ -105,8 +108,12 @@ export const CUT_MATERIALS = [
   // szybciej i kosztuje mniej, wiec obie liczby ida o jeden krok w dol.
   { id: "ply2",     label: { pl: "Sklejka 2mm", en: "Plywood 2mm", de: "Sperrholz 2mm" }, cutRate: 0.10, matCost: 0.03, grupa: "wood" },
   { id: "ply3",     label: { pl: "Sklejka 3mm", en: "Plywood 3mm", de: "Sperrholz 3mm" }, cutRate: 0.15, matCost: 0.04, grupa: "wood" },
-  { id: "ply5",     label: { pl: "Sklejka 5mm", en: "Plywood 5mm", de: "Sperrholz 5mm" }, cutRate: 0.25, matCost: 0.06, grupa: "wood" },
-  { id: "ply8",     label: { pl: "Sklejka 8mm", en: "Plywood 8mm", de: "Sperrholz 8mm" }, cutRate: 0.50, matCost: 0.09, grupa: "wood" },
+  { id: "ply56",    label: { pl: "Sklejka 5-6mm", en: "Plywood 5-6mm", de: "Sperrholz 5-6mm" }, cutRate: 0.25, matCost: 0.06, grupa: "wood" },
+  // HDF i MDF zastapily sklejke 8 mm na polecenie wlasciciela (2026-08-20):
+  // prasowane wlokno tnie sie rowniej niz osiem milimetrow sklejki, gdzie
+  // kleje miedzy warstwami potrafia zatrzymac wiazke. Czas maszyny ten sam,
+  // material tanszy, stad 0.07 zamiast 0.09.
+  { id: "mdf8",     label: { pl: "Płyta HDF/MDF do 8mm", en: "HDF/MDF board up to 8mm", de: "HDF/MDF-Platte bis 8mm" }, cutRate: 0.50, matCost: 0.07, grupa: "wood" },
   // Lite drewno 10 mm dochodzi na polecenie wlasciciela (2026-08-20).
   // Stawka wyprowadzona z sasiadow, nie zgadnieta: sklejka idzie 0.25 przy
   // 5 mm i 0.50 przy 8 mm, czyli okolo 0.083 na milimetr, wiec 10 mm wypada
@@ -114,7 +121,7 @@ export const CUT_MATERIALS = [
   // niejednorodna gestosc), stad zaokraglenie w gore do 0.70. Material
   // analogicznie: 0.11 z kroku sklejki, podniesione do 0.16, bo deska lita
   // kosztuje wiecej niz sklejka tej samej grubosci.
-  { id: "wood10",   label: { pl: "Lite drewno 10mm", en: "Solid wood 10mm", de: "Massivholz 10mm" }, cutRate: 0.70, matCost: 0.16, grupa: "wood" },
+  { id: "wood10",   label: { pl: "Lite drewno do 10mm", en: "Solid wood up to 10mm", de: "Massivholz bis 10mm" }, cutRate: 0.70, matCost: 0.16, grupa: "wood" },
   { id: "acr3",     label: { pl: "Akryl 3mm", en: "Acrylic 3mm", de: "Acryl 3mm" }, cutRate: 0.20, matCost: 0.12, grupa: "other" },
   { id: "acr5",     label: { pl: "Akryl 5mm", en: "Acrylic 5mm", de: "Acryl 5mm" }, cutRate: 0.35, matCost: 0.18, grupa: "other" },
   { id: "acr8",     label: { pl: "Akryl 8mm", en: "Acrylic 8mm", de: "Acryl 8mm" }, cutRate: 0.60, matCost: 0.28, grupa: "other" },

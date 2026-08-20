@@ -362,6 +362,18 @@ zbiera akryl, skórę, papier, tkaninę, gumę, szkło i kamień. Grupa stoi **p
 zachowanej cenie. Lista światłowodu **otwiera się srebrem i złotem** (decyzja właściciela z 2026-08-20;
 dostępność samej blaszki potwierdzamy przy realizacji, tak jak przy każdym innym materiale).
 
+Grawer i cięcie pytają o **co innego**, bo ograniczenie jest inne: wiązka przy grawerze sięga tylko
+powierzchni, więc pytamy o rodzaj materiału (Lite drewno, Sklejka, Inne materiały drewnopochodne),
+a przy cięciu musi przejść na wylot, więc pytamy o grubość (Sklejka 2/3/5-6 mm, Płyta HDF/MDF do 8 mm,
+Lite drewno do 10 mm). Sklejka 8 mm wyszła z oferty cięcia na rzecz HDF/MDF (polecenie właściciela,
+2026-08-20): prasowane włókno tnie się równiej niż osiem milimetrów sklejki, gdzie kleje między
+warstwami potrafią zatrzymać wiązkę.
+
+Przy metalu karta "Cięcie czy grawerowanie" **zostaje na ekranie**, z wygaszonym cięciem, powodem
+("Metalu nie tniemy: laser światłowodowy znakuje powierzchnię") i grawerem wybranym. Znikająca sekcja
+nie tłumaczy niczego: klient nie wie, czy pytanie zniknęło, bo odpowiedź jest oczywista, czy dlatego,
+że coś zepsuł. Wygaszony kafelek nie przyjmuje też fokusu, więc nie udaje klikalnego.
+
 Doszło lite drewno: **10 mm tniemy** (`wood10`, stawka wyprowadzona z kroku sklejki: 0,70 zł/cm ścieżki
 i 0,16 zł materiału, do potwierdzenia przez właściciela), **powyżej 10 mm tylko grawerujemy**
 (`wood_thick`). Zdolności maszyny są teraz zapisane i pilnowane: xTool P2 (CO2 55 W) grawerujemy na szkle,

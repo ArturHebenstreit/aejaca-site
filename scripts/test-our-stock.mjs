@@ -118,10 +118,13 @@ ok("kafle bez wlasnej grupy pokazuja pelna liste zamiast pustki");
 // Lite drewno, dolozone na polecenie wlasciciela: 10 mm tniemy, grubsze
 // tylko grawerujemy, wiec pozycji "powyzej 10 mm" NIE MOZE byc w cieciu.
 const drewnoCiecie = stockOptions({ tech: "co2", mode: "cut", material: "wood" });
-if (!drewnoCiecie.some((o) => o.id === "wood10")) zle("brak litego drewna 10 mm w cieciu");
-if (drewnoCiecie.some((o) => o.id === "wood_thick")) zle("lite drewno powyzej 10 mm da sie wybrac do CIECIA, a tego nie robimy");
-if (!drewnoGrawer.some((o) => o.id === "wood_thick")) zle("brak litego drewna powyzej 10 mm w grawerze");
-ok("lite drewno: 10 mm w cieciu, powyzej 10 mm tylko w grawerze");
+if (!drewnoCiecie.some((o) => o.id === "wood10")) zle("brak litego drewna do 10 mm w cieciu");
+// Grawer pyta o RODZAJ drewna, ciecie o grubosc. Szczegolowe warunki tego
+// podzialu sprawdza scripts/test-laser-capabilities.mjs.
+for (const id of ["wood", "plywood", "wood_other"]) {
+  if (!drewnoGrawer.some((o) => o.id === id)) zle(`grawer: brak pozycji "${id}" wsrod drewna`);
+}
+ok("grawer po rodzaju drewna, ciecie po grubosci do 10 mm");
 
 // ------------------------------------------------------------
 // 3. Wybor realnie zmienia kwote
@@ -142,15 +145,15 @@ const kwota = (dodatki) => {
 };
 
 const domyslna = kwota({ co2Mode: "cut" });
-const sklejka8 = kwota({ co2Mode: "cut", stockId: "ply8" });
+const plyta8 = kwota({ co2Mode: "cut", stockId: "mdf8" });
 const akryl3 = kwota({ co2Mode: "cut", stockId: "acr3" });
 
 if (domyslna == null) zle("domyslna wycena ciecia nie wyszla, reszta testu nic nie znaczy");
-else if (sklejka8 === domyslna) zle(`wybor sklejki 8 mm nie zmienil kwoty (${domyslna} gr), lista jest ozdoba`);
-else ok(`sklejka 8 mm zmienia kwote: ${domyslna} gr -> ${sklejka8} gr`);
+else if (plyta8 === domyslna) zle(`wybor sklejki 8 mm nie zmienil kwoty (${domyslna} gr), lista jest ozdoba`);
+else ok(`plyta HDF/MDF 8 mm zmienia kwote: ${domyslna} gr -> ${plyta8} gr`);
 
-if (akryl3 != null && akryl3 !== sklejka8) ok(`akryl 3 mm daje jeszcze inna kwote: ${akryl3} gr`);
-else zle("akryl 3 mm kosztuje tyle samo co sklejka 8 mm, wiec wybor nie dziala");
+if (akryl3 != null && akryl3 !== plyta8) ok(`akryl 3 mm daje jeszcze inna kwote: ${akryl3} gr`);
+else zle("akryl 3 mm kosztuje tyle samo co plyta HDF/MDF 8 mm, wiec wybor nie dziala");
 
 const grawerDomyslny = kwota({ co2Mode: "engrave" });
 const grawerSzklo = kwota({ co2Mode: "engrave", stockId: "glass" });
@@ -165,9 +168,9 @@ else zle("wybor materialu przy grawerowaniu nie zmienia kwoty");
 // cos innego albo nic, bez sladu na ekranie.
 console.log("\n4. Wybor z obcej technologii");
 
-const grawerZeSklejka8 = kwota({ co2Mode: "engrave", stockId: "ply8" });
-if (grawerZeSklejka8 === grawerDomyslny) ok("material z listy ciecia nie wplywa na grawerowanie, wraca domysl");
-else zle(`identyfikator z ciecia przeciekl do grawerowania: ${grawerDomyslny} gr -> ${grawerZeSklejka8} gr`);
+const grawerZPlyta8 = kwota({ co2Mode: "engrave", stockId: "mdf8" });
+if (grawerZPlyta8 === grawerDomyslny) ok("material z listy ciecia nie wplywa na grawerowanie, wraca domysl");
+else zle(`identyfikator z ciecia przeciekl do grawerowania: ${grawerDomyslny} gr -> ${grawerZPlyta8} gr`);
 
 const cieciePoMetalu = kwota({ co2Mode: "cut", stockId: "stainless" });
 if (cieciePoMetalu === domyslna) ok("material z listy fibera nie wplywa na ciecie CO2");
@@ -177,9 +180,9 @@ const zmyslony = kwota({ co2Mode: "cut", stockId: "nie-ma-takiego" });
 if (zmyslony === domyslna) ok("zmyslony identyfikator nie wywraca wyceny, wraca domysl");
 else zle("zmyslony identyfikator zmienil kwote albo ja skasowal");
 
-if (!stockAllowed("ply8", { tech: "co2", mode: "engrave" })) ok("stockAllowed odrzuca material z obcej listy");
+if (!stockAllowed("mdf8", { tech: "co2", mode: "engrave" })) ok("stockAllowed odrzuca material z obcej listy");
 else zle("stockAllowed przepuszcza material z obcej listy");
-if (stockAllowed("ply8", { tech: "co2", mode: "cut" })) ok("stockAllowed przepuszcza material z wlasciwej listy");
+if (stockAllowed("mdf8", { tech: "co2", mode: "cut" })) ok("stockAllowed przepuszcza material z wlasciwej listy");
 else zle("stockAllowed odrzuca material z wlasciwej listy");
 
 // ------------------------------------------------------------

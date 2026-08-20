@@ -164,7 +164,7 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
       }
       const matId = tech === "3dprint"
         ? "ply3"
-        : material === "glass" ? "acr3" : finish === "premium" ? "ply5" : "ply3";
+        : material === "glass" ? "acr3" : finish === "premium" ? "ply56" : "ply3";
       return { tech: "co2", mode, params: { matId: zListy(stockId, CUT_MATERIALS) || matId, pathId: sizeId, complexId: finish === "prototype" ? "simple" : finish === "premium" ? "complex" : "moderate", quantityId, extended: false, svgData } };
     }
 
@@ -242,7 +242,7 @@ export function resolveTechAndParams({ item, size, material, finish, quantity, f
       };
     }
     const matId = material === "glass" ? "acr3" :
-                  finish === "premium" ? "ply5" : "ply3";
+                  finish === "premium" ? "ply56" : "ply3";
     return {
       tech, mode, params: {
         matId, pathId: sizeId,
