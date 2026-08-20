@@ -37,7 +37,7 @@ export { ENGRAVE_MATERIALS, ENGRAVE_AREAS, ENGRAVE_DETAIL, CUT_MATERIALS, CUT_PA
 const TECH_LABEL = { pl: "Laser CO2", en: "CO2 Laser", de: "CO2-Laser" };
 const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stueckzahl" };
 
-export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
+export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", handoff = null, onHandoffUsed = null }) {
   const l = LBL[lang] || LBL.en;
   const sl = SVG_LBL[lang] || SVG_LBL.en;
   // Kwota wiazaca zglaszana przez CalcToCart. Gdy jest, widelki znikaja,
@@ -95,6 +95,19 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave" }) {
     const needsExtended = mode === "engrave" ? AREA_NEEDS_EXTENDED[eAreaId] : PATH_NEEDS_EXTENDED[cPathId];
     if (needsExtended !== undefined) setExtended(needsExtended);
   }, [cPathId, eAreaId, scaledSvgData, svgNeedsExtended, mode]);
+
+  // PRZEJECIE RYSUNKU Z SZYBKIEJ WYCENY. Rysunek jest juz sparsowany razem
+  // ze skala z suwaka wielkosci, wiec nie kazemy klientowi wgrywac go drugi
+  // raz tylko dlatego, ze zmienil tryb kalkulatora.
+  useEffect(() => {
+    if (!handoff?.data) return;
+    setSvgData(handoff.data);
+    setSvgFile(handoff.file || null);
+    setSvgFileName(handoff.name || "");
+    setSvgScale(handoff.scale || 1);
+    onHandoffUsed?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handoff]);
 
   async function handleSVGUpload(e) {
     const file = e.target.files?.[0];

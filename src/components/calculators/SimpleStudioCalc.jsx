@@ -24,6 +24,7 @@ import {
 } from "../../data/laserSubstrate.js";
 import { stockOptions, stockAllowed, STOCK_OTHER } from "../../data/ourStock.js";
 import { advancedParams, advancedMaterials, advancedExamples } from "../../data/advancedOptions.js";
+import { makeHandoff, stashHandoff } from "../../data/calcHandoff.js";
 
 const IDK_TITLE = {
   pl: "Doradzamy: te materiały wchodzą w grę",
@@ -266,13 +267,15 @@ const LBL = {
     suggestion: "Sugerowana technologia",
     why: "Dlaczego?",
     switchHint: 'Chcesz podać dokładniejsze parametry? Przełącz na tryb "Dla zaawansowanych" u góry.',
-    moreTitle: "Chcesz wybrać sam?",
-    moreLead3d: "Filament dobieramy sami pod ten wydruk. W trybie dla zaawansowanych wybierzesz z {n} tworzyw, między innymi {ex}.",
-    moreLeadMsla: "Żywicę dobieramy sami pod ten wydruk. W trybie dla zaawansowanych wybierzesz z {n} żywic, między innymi {ex}.",
-    moreLeadLaser: "Materiał wybierasz powyżej, resztę ustawiamy sami.",
-    moreParams: "Tryb dla zaawansowanych oddaje Ci też: {p}.",
+    moreTitle: "Chcesz wybrać sam parametry druku?",
+    moreTitleLaser: "Chcesz wybrać sam parametry pracy?",
+    moreLead3d: "W trybie szybkiej wyceny filament oraz parametry wydruku dobieramy automatycznie. W trybie dla zaawansowanych masz możliwość wyboru ich samodzielnie. Znajdziesz tam {n} filamentów, między innymi {ex} oraz inne, bardziej techniczne.",
+    moreLeadMsla: "W trybie szybkiej wyceny żywicę oraz parametry wydruku dobieramy automatycznie. W trybie dla zaawansowanych masz możliwość wyboru ich samodzielnie. Znajdziesz tam {n} żywic, między innymi {ex} oraz inne, bardziej specjalistyczne.",
+    moreLeadLaser: "W trybie szybkiej wyceny parametry pracy lasera dobieramy automatycznie. Materiał wybierasz powyżej, a w trybie dla zaawansowanych masz możliwość ustawienia reszty samodzielnie.",
+    moreParams: "Tryb ten daje Ci również możliwość ustawienia takich parametrów jak {p}.",
     moreCta: "Przejdź do trybu dla zaawansowanych",
     moreShop: "Gotowe wyroby w sklepie",
+    moreKeepsFile: "Wgrany plik i ustawiona wielkość przejdą tam razem z Tobą.",
     note: 'Szybka wycena liczy z Twoich wyborów, a po wgraniu pliku z jego geometrii. Technologię druku, cięcie albo grawer i materiał wybierasz sam. Tryb zaawansowany dokłada resztę parametrów: wypełnienie, precyzję i wykończenie.',
     mslaHint: "Ten model zmieści się na drukarce żywicznej MSLA 16K, to opcja z wyższą precyzją i gładszą powierzchnią niż odlew z żywicy.",
     co2ModeQ: "Cięcie czy grawerowanie?",
@@ -317,13 +320,15 @@ const LBL = {
     suggestion: "Suggested technology",
     why: "Why?",
     switchHint: 'Want more precise parameters? Switch to "Advanced" mode at the top.',
-    moreTitle: "Want to choose yourself?",
-    moreLead3d: "We pick the filament for this print ourselves. Advanced mode lets you choose from {n} materials, among them {ex}.",
-    moreLeadMsla: "We pick the resin for this print ourselves. Advanced mode lets you choose from {n} resins, among them {ex}.",
-    moreLeadLaser: "You pick the material above, we set the rest ourselves.",
-    moreParams: "Advanced mode also hands you: {p}.",
+    moreTitle: "Want to set the print parameters yourself?",
+    moreTitleLaser: "Want to set the working parameters yourself?",
+    moreLead3d: "In quick quote mode we pick the filament and the print parameters automatically. Advanced mode lets you choose them yourself. You will find {n} filaments there, among them {ex}, plus more technical ones.",
+    moreLeadMsla: "In quick quote mode we pick the resin and the print parameters automatically. Advanced mode lets you choose them yourself. You will find {n} resins there, among them {ex}, plus more specialised ones.",
+    moreLeadLaser: "In quick quote mode we set the laser parameters automatically. You pick the material above, and advanced mode lets you set the rest yourself.",
+    moreParams: "It also lets you set parameters such as {p}.",
     moreCta: "Switch to advanced mode",
     moreShop: "Ready-made items in the shop",
+    moreKeepsFile: "Your uploaded file and the size you set come along with you.",
     note: 'The quick quote follows your choices, and once you upload a file, its geometry. You pick the print technology, cutting or engraving, and the material yourself. Advanced mode adds the rest: infill, precision and finish.',
     mslaHint: "This model fits the MSLA 16K resin printer, an option with higher precision and a smoother surface than a resin cast.",
     co2ModeQ: "Cut or engrave?",
@@ -368,13 +373,15 @@ const LBL = {
     suggestion: "Empfohlene Technologie",
     why: "Warum?",
     switchHint: 'Genauere Parameter? Wechseln Sie oben in den "Fortgeschrittenen"-Modus.',
-    moreTitle: "Selbst auswählen?",
-    moreLead3d: "Das Filament wählen wir für diesen Druck selbst. Im erweiterten Modus wählen Sie aus {n} Materialien, darunter {ex}.",
-    moreLeadMsla: "Das Harz wählen wir für diesen Druck selbst. Im erweiterten Modus wählen Sie aus {n} Harzen, darunter {ex}.",
-    moreLeadLaser: "Das Material wählen Sie oben, den Rest stellen wir selbst ein.",
-    moreParams: "Der erweiterte Modus übergibt Ihnen zudem: {p}.",
+    moreTitle: "Druckparameter selbst wählen?",
+    moreTitleLaser: "Arbeitsparameter selbst wählen?",
+    moreLead3d: "In der Schnellkalkulation wählen wir Filament und Druckparameter automatisch. Im erweiterten Modus wählen Sie sie selbst. Dort finden Sie {n} Filamente, darunter {ex}, sowie weitere, technischere.",
+    moreLeadMsla: "In der Schnellkalkulation wählen wir Harz und Druckparameter automatisch. Im erweiterten Modus wählen Sie sie selbst. Dort finden Sie {n} Harze, darunter {ex}, sowie weitere, speziellere.",
+    moreLeadLaser: "In der Schnellkalkulation stellen wir die Laserparameter automatisch ein. Das Material wählen Sie oben, den Rest stellen Sie im erweiterten Modus selbst ein.",
+    moreParams: "Dort stellen Sie zudem Parameter wie {p} ein.",
     moreCta: "In den erweiterten Modus wechseln",
     moreShop: "Fertige Produkte im Shop",
+    moreKeepsFile: "Ihre hochgeladene Datei und die eingestellte Größe kommen mit.",
     note: 'Die Schnellkalkulation folgt Ihren Angaben und nach dem Upload der Geometrie der Datei. Drucktechnik, Schneiden oder Gravieren und das Material wählen Sie selbst. Der erweiterte Modus ergänzt Füllung, Präzision und Finish.',
     mslaHint: "Dieses Modell passt auf den MSLA-16K-Harzdrucker, eine Option mit höherer Präzision und glatterer Oberfläche als ein Harzguss.",
     co2ModeQ: "Schneiden oder Gravieren?",
@@ -469,6 +476,17 @@ function SimpleCard({ stepNum, label, children, id }) {
 }
 
 /**
+ * Wyliczenie z ludzkim spojnikiem przed ostatnia pozycja. "PETG, TPU 95A,
+ * ABS, ASA" czyta sie jak zrzut z bazy, a nie jak zdanie napisane do
+ * czlowieka.
+ */
+function wyliczenie(pozycje, lang) {
+  if (pozycje.length < 2) return pozycje.join("");
+  const spojnik = lang === "de" ? " oder " : lang === "en" ? " or " : " czy ";
+  return pozycje.slice(0, -1).join(", ") + spojnik + pozycje[pozycje.length - 1];
+}
+
+/**
  * "TU WYBRALISMY ZA CIEBIE, A WYBOR MASZ OBOK".
  *
  * Karta mowi "Filament: PLA" i dla kogos, kto zna PETG albo TPU, brzmi to
@@ -482,14 +500,17 @@ function SimpleCard({ stepNum, label, children, id }) {
  * Liczba i nazwy ida z cennika (`src/data/advancedOptions.js`), wiec nowy
  * filament sam sie tu pojawi, a usuniety sam zniknie.
  */
-function AdvancedHint({ lang, tech, l, onAdvanced, shop = false }) {
-  const params = advancedParams(tech, lang);
+function AdvancedHint({ lang, tech, l, onAdvanced, onShop = null, shop = false, keepsFile = false }) {
+  const drukowy = tech === "3dprint" || tech === "msla";
+  // Przy druku tworzywo nazywamy z imienia w pierwszym zdaniu, wiec z listy
+  // parametrow je wyrzucamy: powtorzone brzmialoby jak zajakniecie.
+  const params = advancedParams(tech, lang, { bezMaterialu: drukowy });
   const materialy = advancedMaterials(tech, lang);
   const przyklady = advancedExamples(tech, lang);
 
   const lead = tech === "3dprint" ? l.moreLead3d : tech === "msla" ? l.moreLeadMsla : l.moreLeadLaser;
   const zdanie = materialy.length && przyklady.length
-    ? lead.replace("{n}", String(materialy.length)).replace("{ex}", przyklady.join(", "))
+    ? lead.replace("{n}", String(materialy.length)).replace("{ex}", wyliczenie(przyklady, lang))
     : l.moreLeadLaser;
 
   if (!params.length && !materialy.length) return null;
@@ -498,13 +519,20 @@ function AdvancedHint({ lang, tech, l, onAdvanced, shop = false }) {
     <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.02] p-3">
       <div className="flex items-center gap-2 mb-1.5">
         <SlidersHorizontal size={13} className="text-neutral-400 shrink-0" />
-        <span className="text-[11px] uppercase tracking-wide text-neutral-400">{l.moreTitle}</span>
+        <span className="text-[11px] uppercase tracking-wide text-neutral-400">
+          {drukowy ? l.moreTitle : l.moreTitleLaser}
+        </span>
       </div>
       <p className="text-[11.5px] leading-relaxed text-neutral-400">{zdanie}</p>
       {params.length > 0 && (
         <p className="mt-1 text-[11.5px] leading-relaxed text-neutral-400">
-          {l.moreParams.replace("{p}", params.join(", "))}
+          {l.moreParams.replace("{p}", wyliczenie(params, lang))}
         </p>
+      )}
+      {/* Obawa, ze przelaczenie trybu zmarnuje wgrany plik, potrafi zatrzymac
+          klienta skuteczniej niz sama liczba opcji. Mowimy wprost, ze nie. */}
+      {keepsFile && (
+        <p className="mt-1 text-[11.5px] leading-relaxed text-neutral-500">{l.moreKeepsFile}</p>
       )}
       <div className="mt-2.5 flex flex-wrap gap-2">
         {/* Przycisk, a nie zdanie "przelacz u gory". Odeslanie klienta do
@@ -522,6 +550,7 @@ function AdvancedHint({ lang, tech, l, onAdvanced, shop = false }) {
         {shop && (
           <Link
             to="/shop/studio/"
+            onClick={onShop}
             className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.03] text-neutral-300
                        hover:border-white/25 hover:text-white text-[11.5px] transition-colors
                        inline-flex items-center gap-1.5"
@@ -846,6 +875,29 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [drukowe, drugaTech, overPlate, lang, item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, stockId]
   );
+
+  // Przejscie do trybu zaawansowanego zabiera ze soba plik i ustawiona
+  // wielkosc. Geometria idzie w skali ORYGINALU, a skala osobno, bo tryb
+  // zaawansowany ma wlasny suwak i sam ja nalozy; wyslanie geometrii juz
+  // przeskalowanej daloby skalowanie dwa razy i cene z sufitu.
+  const zbudujPaczke = useCallback(() => (
+    fileType === "stl"
+      ? makeHandoff({ kind: "mesh", file: uploadedFile, name: fileName, data: stlData, scale })
+      : fileType === "svg"
+        ? makeHandoff({ kind: "vector", file: uploadedFile, name: fileName, data: svgData, scale })
+        : null
+  ), [fileType, uploadedFile, fileName, stlData, svgData, scale]);
+
+  const przekazDoZaawansowanych = useCallback((tech) => {
+    if (!onAdvanced) return;
+    onAdvanced(tech, zbudujPaczke());
+  }, [onAdvanced, zbudujPaczke]);
+
+  // Do sklepu idziemy zmieniajac trase, wiec paczka nie ma jak pojechac
+  // propsem. Odkladamy ja do poczekalni, a karta uslugi odbiera ja raz.
+  const przekazDoSklepu = useCallback(() => {
+    stashHandoff(zbudujPaczke());
+  }, [zbudujPaczke]);
 
   // Szybka wycena otwiera sie domyslnie, wiec bez tego wiekszosc odwiedzajacych
   // w ogole nie widziala drogi do zakupu.
@@ -1269,8 +1321,10 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
             lang={lang}
             tech={resolved?.tech === "msla" ? "msla" : "3dprint"}
             l={l}
-            onAdvanced={onAdvanced}
+            onAdvanced={onAdvanced ? przekazDoZaawansowanych : null}
             shop
+            onShop={przekazDoSklepu}
+            keepsFile={Boolean(hasFile)}
           />
         </SimpleCard>
       )}
@@ -1397,7 +1451,7 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
                 </>
               )}
 
-              <AdvancedHint lang={lang} tech={resolved?.tech} l={l} onAdvanced={onAdvanced} />
+              <AdvancedHint lang={lang} tech={resolved?.tech} l={l} onAdvanced={onAdvanced ? przekazDoZaawansowanych : null} keepsFile={Boolean(hasFile)} />
             </div>
           )}
       </SimpleCard>
@@ -1500,7 +1554,7 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
           {onAdvanced ? (
             <button
               type="button"
-              onClick={() => onAdvanced(activeResolved?.tech)}
+              onClick={() => przekazDoZaawansowanych(activeResolved?.tech)}
               className="text-[11px] text-emerald-400/70 hover:text-emerald-300 underline underline-offset-2 transition-colors"
             >
               {l.moreCta}

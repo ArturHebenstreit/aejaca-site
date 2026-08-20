@@ -282,7 +282,7 @@ const TECH_LABEL = { pl: "Druk 3D", en: "3D Print", de: "3D-Druck" };
 const TECH_LABEL_MSLA = { pl: "Druk żywiczny MSLA", en: "MSLA Resin Print", de: "MSLA-Harzdruck" };
 const QTY_STEPPER_LBL = { pl: "Liczba sztuk", en: "Quantity", de: "Stueckzahl" };
 
-export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
+export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff = null, onHandoffUsed = null }) {
   const l = LBL[lang] || LBL.en;
   const sl = STL_LBL[lang] || STL_LBL.en;
   const ml = MSLA_LBL[lang] || MSLA_LBL.en;
@@ -383,6 +383,27 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm" }) {
     setMslaStlFileName("");
     setMslaStlScale(1);
   }
+
+  // PRZEJECIE PLIKU Z SZYBKIEJ WYCENY. Klient wgral go raz i ustawil
+  // wielkosc; kazanie mu powtorzyc obie te czynnosci po skorzystaniu z naszej
+  // wlasnej rady bylo kara za posluchanie. Siatka jest juz sparsowana, wiec
+  // nie czytamy pliku drugi raz.
+  useEffect(() => {
+    if (!handoff?.data) return;
+    if (initialTech === "msla") {
+      setMslaStlData(handoff.data);
+      setMslaStlFile(handoff.file || null);
+      setMslaStlFileName(handoff.name || "");
+      setMslaStlScale(handoff.scale || 1);
+    } else {
+      setStlData(handoff.data);
+      setStlFile(handoff.file || null);
+      setStlFileName(handoff.name || "");
+      setStlScale(handoff.scale || 1);
+    }
+    onHandoffUsed?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handoff]);
 
   // Wynik bramki drukowalnosci. Jedzie do koszyka w `params`, wiec trafia
   // do zamowienia i do maili bez osobnej sciezki.

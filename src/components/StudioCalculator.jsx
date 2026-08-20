@@ -5,6 +5,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { trackCalc } from "../utils/analytics.js";
 import SimpleStudioCalc from "./calculators/SimpleStudioCalc.jsx";
 import { ADVANCED_TAB } from "../data/advancedOptions.js";
+import { handoffFor } from "../data/calcHandoff.js";
 import Print3DCalc from "./calculators/Print3DCalc.jsx";
 import CO2LaserCalc from "./calculators/CO2LaserCalc.jsx";
 import FiberLaserCalc from "./calculators/FiberLaserCalc.jsx";
@@ -91,9 +92,15 @@ export default function StudioCalculator() {
   // Przejscie z szybkiej wyceny do trybu zaawansowanego MUSI trafic w te
   // sama usluge. Bez mapowania klient liczacy grawer ladowal na druku 3D
   // i szukal swojej zakladki od nowa, czyli kara za skorzystanie z rady.
-  const openAdvanced = (tech) => {
+  // Paczka z plikiem czeka na kalkulator, ktory sie za chwile zamontuje.
+  // Kasuje ja ten, kto ja przejmie, wiec plik nie wraca przy kazdym powrocie
+  // do zakladki i da sie go normalnie usunac.
+  const [handoff, setHandoff] = useState(null);
+
+  const openAdvanced = (tech, paczka = null) => {
     const tab = ADVANCED_TAB[tech];
     if (tab) setActiveTech(tab);
+    setHandoff(paczka);
     setMode("advanced");
     trackCalc("studio", "mode", "advanced_from_simple");
     setTimeout(() => {
@@ -187,10 +194,10 @@ export default function StudioCalculator() {
             </div>
 
             <div className="glass-blue rounded-2xl p-5 sm:p-6">
-              {activeTech === "3dprint" && <Print3DCalc lang={lang} />}
-              {activeTech === "resin_msla" && <Print3DCalc lang={lang} initialTech="msla" />}
-              {activeTech === "co2_laser" && <CO2LaserCalc lang={lang} initialMode={urlCo2Mode === "cut" ? "cut" : "engrave"} />}
-              {activeTech === "fiber_laser" && <FiberLaserCalc lang={lang} />}
+              {activeTech === "3dprint" && <Print3DCalc lang={lang} handoff={handoffFor(handoff, "mesh")} onHandoffUsed={() => setHandoff(null)} />}
+              {activeTech === "resin_msla" && <Print3DCalc lang={lang} initialTech="msla" handoff={handoffFor(handoff, "mesh")} onHandoffUsed={() => setHandoff(null)} />}
+              {activeTech === "co2_laser" && <CO2LaserCalc lang={lang} initialMode={urlCo2Mode === "cut" ? "cut" : "engrave"} handoff={handoffFor(handoff, "vector")} onHandoffUsed={() => setHandoff(null)} />}
+              {activeTech === "fiber_laser" && <FiberLaserCalc lang={lang} handoff={handoffFor(handoff, "vector")} onHandoffUsed={() => setHandoff(null)} />}
               {activeTech === "epoxy" && <EpoxyCastCalc lang={lang} />}
             </div>
           </>
