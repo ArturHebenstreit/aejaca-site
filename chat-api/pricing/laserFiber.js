@@ -46,14 +46,14 @@ export const LBL = {
 };
 
 export const MATERIALS = [
-  { id: "stainless",  label: { pl: "Stal nierdzewna", en: "Stainless steel", de: "Edelstahl" },   rateMin: 0.10, precious: false, img: "/img/calc/fiber_materials/stainless.webp" },
-  { id: "aluminum",   label: { pl: "Aluminium", en: "Aluminum", de: "Aluminium" },                rateMin: 0.08, precious: false, img: "/img/calc/fiber_materials/aluminum.webp" },
-  { id: "brass",      label: { pl: "Mosiądz", en: "Brass", de: "Messing" },                      rateMin: 0.12, precious: false, img: "/img/calc/fiber_materials/brass.webp" },
-  { id: "copper",     label: { pl: "Miedź", en: "Copper", de: "Kupfer" },                         rateMin: 0.15, precious: false, img: "/img/calc/fiber_materials/copper.webp" },
-  { id: "titanium",   label: { pl: "Tytan", en: "Titanium", de: "Titan" },                        rateMin: 0.18, precious: false, img: "/img/calc/fiber_materials/titanium.webp" },
-  { id: "silver",     label: { pl: "Srebro", en: "Silver", de: "Silber" },                        rateMin: 0.14, precious: true,  img: "/img/calc/fiber_materials/silver.webp" },
-  { id: "gold",       label: { pl: "Złoto", en: "Gold", de: "Gold" },                             rateMin: 0.16, precious: true,  img: "/img/calc/fiber_materials/gold.webp" },
-  { id: "anodized",   label: { pl: "Aluminium anodowane", en: "Anodized aluminum", de: "Eloxiertes Aluminium" }, rateMin: 0.06, precious: false, img: "/img/calc/fiber_materials/anodized.webp" },
+  { id: "stainless",  label: { pl: "Stal nierdzewna", en: "Stainless steel", de: "Edelstahl" },   rateMin: 0.10, precious: false, grupa: "metal", img: "/img/calc/fiber_materials/stainless.webp" },
+  { id: "aluminum",   label: { pl: "Aluminium", en: "Aluminum", de: "Aluminium" },                rateMin: 0.08, precious: false, grupa: "metal", img: "/img/calc/fiber_materials/aluminum.webp" },
+  { id: "brass",      label: { pl: "Mosiądz", en: "Brass", de: "Messing" },                      rateMin: 0.12, precious: false, grupa: "metal", img: "/img/calc/fiber_materials/brass.webp" },
+  { id: "copper",     label: { pl: "Miedź", en: "Copper", de: "Kupfer" },                         rateMin: 0.15, precious: false, grupa: "metal", img: "/img/calc/fiber_materials/copper.webp" },
+  { id: "titanium",   label: { pl: "Tytan", en: "Titanium", de: "Titan" },                        rateMin: 0.18, precious: false, grupa: "metal", img: "/img/calc/fiber_materials/titanium.webp" },
+  { id: "silver",     label: { pl: "Srebro", en: "Silver", de: "Silber" },                        rateMin: 0.14, precious: true,  grupa: "metal", img: "/img/calc/fiber_materials/silver.webp" },
+  { id: "gold",       label: { pl: "Złoto", en: "Gold", de: "Gold" },                             rateMin: 0.16, precious: true,  grupa: "metal", img: "/img/calc/fiber_materials/gold.webp" },
+  { id: "anodized",   label: { pl: "Aluminium anodowane", en: "Anodized aluminum", de: "Eloxiertes Aluminium" }, rateMin: 0.06, precious: false, grupa: "metal", img: "/img/calc/fiber_materials/anodized.webp" },
   { id: "custom",     label: { pl: "Inny materiał", en: "Other material", de: "Anderes Material" }, rateMin: null, precious: false, custom: true },
 ];
 

@@ -148,7 +148,10 @@ const MATERIALS = [
   { id: "plastic", icon: Boxes,      img: "/img/calc/studio_materials/plastic.webp", label: { pl: "Plastik",       en: "Plastic",        de: "Kunststoff" } },
   { id: "wood",    icon: TreePine,   img: "/img/calc/studio_materials/wood.webp",    label: { pl: "Drewno",        en: "Wood",           de: "Holz" } },
   { id: "metal",   icon: Wrench,     img: "/img/calc/studio_materials/metal.webp",   label: { pl: "Metal",         en: "Metal",          de: "Metall" } },
-  { id: "glass",   icon: GlassWater, img: "/img/calc/studio_materials/glass.webp",   label: { pl: "Szkło / kamień", en: "Glass / stone", de: "Glas / Stein" } },
+  // "Inne" nie jest ozdobnikiem: pod tym kaflem siedza akryl, skora, guma,
+  // papier i tkanina, czyli polowa tego, co realnie tniemy i grawerujemy.
+  // Bez tego slowa klient z akrylem nie mial gdzie kliknac.
+  { id: "glass",   icon: GlassWater, img: "/img/calc/studio_materials/glass.webp",   label: { pl: "Szkło / kamień / inne", en: "Glass / stone / other", de: "Glas / Stein / Sonstiges" } },
   { id: "resin",   icon: Droplet,    img: "/img/calc/studio_materials/resin.webp",   label: { pl: "Żywica",        en: "Resin",          de: "Harz" } },
   { id: "idk",     icon: HelpCircle, label: { pl: "Nie wiem - doradźcie", en: "I'm not sure - advise me", de: "Weiß nicht - beraten Sie mich" } },
 ];
@@ -603,6 +606,17 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
   function handlePodlozeChange(id) {
     setPodloze(id);
     setSpare("");
+    setMaterialNote("");
+  }
+
+  // Zmiana kafla materialu ZAWEZA liste ponizej, wiec poprzedni wybor moze
+  // przestac do niej nalezec. Sam widok by tego nie pokazal (pozycja znika
+  // z listy), ale identyfikator dalej szedlby do wyceny i po cichu zmienial
+  // cene: klient widzialby "Drewno" i stawke akrylu. Kasujemy go razem
+  // z opisem, bo opis byl etykieta tego wyboru.
+  function handleMaterialChange(id) {
+    handleSet(setMaterial, "material")(id);
+    setStockId(null);
     setMaterialNote("");
   }
 
@@ -1377,7 +1391,7 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
       )}
 
       <SimpleCard stepNum="③" label={l.q3}>
-        <TileGrid options={MATERIALS} value={material} onChange={handleSet(setMaterial, "material")} lang={lang} cols={3} disabledIds={matDisabledIds} />
+        <TileGrid options={MATERIALS} value={material} onChange={handleMaterialChange} lang={lang} cols={3} disabledIds={matDisabledIds} />
 
         {/* "Nie wiem" nie moze byc slepym zaulkiem. Mowimy, co wchodzi w gre,
             i pozwalamy wybrac od razu, zamiast odsylac klienta do maila. */}
@@ -1392,7 +1406,7 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
                 <button
                   key={m.id}
                   type="button"
-                  onClick={() => handleSet(setMaterial, "material")(m.id)}
+                  onClick={() => handleMaterialChange(m.id)}
                   className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.03] text-neutral-300
                              hover:border-white/25 hover:text-white text-xs transition-colors"
                 >
@@ -1421,8 +1435,8 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
 
               {podloze === "our_stock" ? (
                 <StockPicker
-                  options={stockOptions({ tech: activeResolved?.tech, mode: activeResolved?.mode })}
-                  value={stockAllowed(stockId, { tech: activeResolved?.tech, mode: activeResolved?.mode }) ? stockId : null}
+                  options={stockOptions({ tech: activeResolved?.tech, mode: activeResolved?.mode, material })}
+                  value={stockAllowed(stockId, { tech: activeResolved?.tech, mode: activeResolved?.mode, material }) ? stockId : null}
                   note={materialNote}
                   onPick={(id, etykieta) => { setStockId(id); setMaterialNote(etykieta); }}
                   onOther={() => { setStockId(null); setMaterialNote(""); }}
