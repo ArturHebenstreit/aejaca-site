@@ -7,6 +7,7 @@
 // Zbiorcza zgoda "akceptuje wszystko" bylaby przy tym nieskuteczna.
 
 import { useState, useEffect } from "react";
+import { describeParams } from "../data/describeParams.js";
 import { Link, useNavigate } from "react-router-dom";
 import { ShieldCheck, Loader2, ArrowLeft, AlertTriangle, Check } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
@@ -557,9 +558,18 @@ export default function Checkout() {
           <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5 mb-8">
             <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3">{u.summary}</h2>
             {items.map((i) => (
-              <div key={i.id} className="flex justify-between text-sm mb-2">
-                <span className="text-neutral-300">{i.title} &times; {i.qty || 1}</span>
-                <span className="text-white">{money(((i.unitGrosze || 0) + (i.packagingGrosze || 0)) * (i.qty || 1))}</span>
+              <div key={i.id} className="mb-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-neutral-300">{i.title} &times; {i.qty || 1}</span>
+                  <span className="text-white">{money(((i.unitGrosze || 0) + (i.packagingGrosze || 0)) * (i.qty || 1))}</span>
+                </div>
+                {/* Ostatni ekran przed platnoscia musi pokazywac to samo, co
+                    koszyk. Klient placi tutaj, wiec tutaj musi widziec, za co. */}
+                <div className="text-neutral-500 text-[11px] mt-1 space-y-0.5">
+                  {describeParams(i, lang).map((w) => (
+                    <div key={w.label}>{w.label}: <span className="text-neutral-400">{w.value}</span></div>
+                  ))}
+                </div>
               </div>
             ))}
             {discountGrosze > 0 && (
