@@ -342,6 +342,22 @@ Wcześniej sprawdzaliśmy zawsze pole drukarki filamentowej, także po przełąc
 a zamówienie odbijało się dopiero o serwer. Gdy model zmieściłby się z filamentu, pierwszą proponowaną naprawą
 jest powrót do filamentu jednym kliknięciem, a nie zmniejszanie wyrobu.
 
+**Szybka wycena nazywa tworzywo i mówi, gdzie je zmienić (od 2026-08-19).** Karta druku pokazuje
+teraz konkret: "Filament: PLA" albo nazwę żywicy, zamiast rodzajowego słowa "filament". Pod kartami
+stoi notka, że wybraliśmy je sami, a w trybie dla zaawansowanych klient wybiera z **21 filamentów**
+(PETG, TPU 95A, ABS) albo **13 żywic**, plus wypełnienie, liczba kolorów i precyzja; przy laserze ta
+sama notka wymienia materiał i grubość, poziom detali, złożoność i obszar roboczy. Notka niesie
+przycisk, który przełącza na tryb zaawansowany **we właściwej zakładce** (grawer otwiera kalkulator
+CO2, a nie druk 3D), a przy druku dodatkowo odsyła do sklepu. Powód jest handlowy, nie kosmetyczny:
+zdanie "Filament: PLA" bez alternatywy czyta się jak deklaracja, że innych nie robimy, a klient,
+który chciał PETG, nie pisze z pytaniem, tylko wychodzi bez śladu. Liczby i przykłady idą wprost
+z cennika (`src/data/advancedOptions.js`), więc nowy filament pojawi się w notce sam; pilnuje tego
+`scripts/test-advanced-options.mjs`.
+
+Przy okazji naprawiona cicha usterka: nazwa żywicy czytana była z pola `name`, którego cennik żywic
+nie ma, więc karta MSLA nie pokazywała żadnej żywicy, choć kod wyglądał poprawnie i nic nie zgłaszało
+błędu. Teraz czyta `label`, a guard sprawdza oba warunki.
+
 **DXF wyceniamy automatycznie (od 2026-08-19).** Rysunek DXF czytamy tak samo jak SVG, czyli z rzeczywistej
 długości ścieżki, a nie z przedziału. Obsługiwane encje: LINE, LWPOLYLINE, POLYLINE, CIRCLE, ARC, SPLINE,
 ELLIPSE. Jednostkę bierzemy z nagłówka $INSUNITS, więc rysunek w calach nie jest czytany jak milimetry.
