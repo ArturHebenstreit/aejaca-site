@@ -47,6 +47,12 @@ const GRUPY = {
   fiber: { lbl: FIBER_LBL, klucze: ["material", "lens", "markType", "area"] },
 };
 
+/**
+ * Klucz, ktory nazywa MATERIAL, a nie parametr pracy. Zdanie o filamencie
+ * wymienia go osobno, wiec w wyliczance parametrow byloby powtorzeniem.
+ */
+const KLUCZ_MATERIALU = { "3dprint": "filament", msla: "resin" };
+
 /** Technologie, dla ktorych umiemy powiedziec, co dokłada tryb zaawansowany. */
 export const ADVANCED_TECHS = Object.keys(GRUPY);
 
@@ -62,11 +68,14 @@ export const ADVANCED_KEYS = Object.fromEntries(
  * @param {string} lang
  * @returns {string[]}
  */
-export function advancedParams(tech, lang = "pl") {
+export function advancedParams(tech, lang = "pl", { bezMaterialu = false } = {}) {
   const g = GRUPY[tech];
   if (!g) return [];
   const slownik = g.lbl[lang] || g.lbl.pl;
-  return g.klucze.map((k) => slownik?.[k]).filter(Boolean);
+  // Przy druku zdanie nazywa juz tworzywo z imienia, wiec powtarzanie go
+  // w wyliczance parametrow brzmi jak zajakniecie.
+  const klucze = bezMaterialu ? g.klucze.filter((k) => k !== KLUCZ_MATERIALU[tech]) : g.klucze;
+  return klucze.map((k) => slownik?.[k]).filter(Boolean);
 }
 
 /**
@@ -98,8 +107,8 @@ export function advancedMaterials(tech, lang = "pl") {
  * identyfikator musi istniec w cenniku, inaczej guard wywala build.
  */
 const POKAZOWE = {
-  "3dprint": ["PETG", "TPU 95A", "ABS"],
-  msla: ["tough", "flexible", "castable_xone"],
+  "3dprint": ["PETG", "TPU 95A", "ABS", "ASA"],
+  msla: ["tough", "flexible", "heat_resistant", "castable_xone"],
 };
 
 export function advancedExamples(tech, lang = "pl") {

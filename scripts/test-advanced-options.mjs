@@ -20,6 +20,7 @@ import {
   ADVANCED_TAB, ADVANCED_TECHS, SHOWCASE_IDS, ADVANCED_KEYS,
   advancedParams, advancedMaterials, advancedExamples,
 } from "../src/data/advancedOptions.js";
+import { makeHandoff, handoffFor } from "../src/data/calcHandoff.js";
 import { FILAMENTS } from "../src/pricing/print3d.js";
 import { RESIN_TYPES } from "../src/data/resins.js";
 
@@ -120,6 +121,42 @@ if (RESIN_TYPES.some((r) => r.name !== undefined)) {
   zle("RESIN_TYPES ma teraz pole `name`: sprawdz, ktore pole ma czytac karta MSLA");
 }
 console.log(`  <AdvancedHint> w ${ile} miejscach, przelacznik podpiety, nazwa zywicy z pola label`);
+
+// --- 6. Plik przechodzi razem z klientem ---------------------------------
+sekcja("6. Przejscie do trybu zaawansowanego zabiera plik");
+
+// Paczka bez geometrii albo o nieznanym rodzaju nie moze udawac dobrej:
+// kalkulator czytalby pola, ktorych nie ma, i pokazal cene z niczego.
+if (makeHandoff({ kind: "mesh", data: null }) !== null) zle("paczka bez geometrii nie zostala odrzucona");
+if (makeHandoff({ kind: "cos", data: { volumeCm3: 1 } }) !== null) zle("paczka o nieznanym rodzaju nie zostala odrzucona");
+
+const siatka = makeHandoff({ kind: "mesh", name: "a.stl", data: { volumeCm3: 12 }, scale: 2 });
+if (!siatka || siatka.scale !== 2) zle("poprawna paczka siatki nie powstala");
+if (handoffFor(siatka, "vector")) zle("siatka trafilaby do kalkulatora lasera");
+if (!handoffFor(siatka, "mesh")) zle("siatka nie trafia do kalkulatora druku");
+// Skala musi jechac OSOBNO. Gdyby geometria byla juz przeskalowana, tryb
+// zaawansowany nalozylby swoja skale drugi raz i cena poszlaby w sufit.
+if (/data:\s*scaledStl|data:\s*scaledSvg/.test(simple)) {
+  zle("szybka wycena wysyla geometrie juz przeskalowana: tryb zaawansowany przeskaluje ja po raz drugi");
+}
+if (!/makeHandoff\(\{ kind: "mesh"[^}]*data: stlData/.test(simple)) zle("siatka nie jest pakowana w skali oryginalu");
+if (!/makeHandoff\(\{ kind: "vector"[^}]*data: svgData/.test(simple)) zle("rysunek nie jest pakowany w skali oryginalu");
+
+// Kazdy kalkulator, ktory moze paczke dostac, musi ja tez SKASOWAC. Bez tego
+// plik wracalby przy kazdym powrocie do zakladki i nie dalby sie usunac.
+for (const plik of ["Print3DCalc.jsx", "CO2LaserCalc.jsx", "FiberLaserCalc.jsx"]) {
+  const tresc = readFileSync(new URL(`../src/components/calculators/${plik}`, import.meta.url), "utf8");
+  if (!/handoff\s*=\s*null/.test(tresc)) zle(`${plik} nie przyjmuje paczki z pliku`);
+  if (!/onHandoffUsed\?\.\(\)/.test(tresc)) zle(`${plik} nie kasuje paczki, plik wracalby po usunieciu`);
+}
+// Rodzaj musi sie zgadzac z zakladka: siatka do druku, rysunek do lasera.
+for (const [zakladka, rodzaj] of [["3dprint", "mesh"], ["resin_msla", "mesh"], ["co2_laser", "vector"], ["fiber_laser", "vector"]]) {
+  const wiersz = kalkulator.split("\n").find((w) => w.includes(`activeTech === "${zakladka}"`));
+  if (!wiersz || !wiersz.includes(`handoffFor(handoff, "${rodzaj}")`)) {
+    zle(`zakladka ${zakladka} nie dostaje paczki rodzaju ${rodzaj}`);
+  }
+}
+console.log("  paczka jednorazowa, geometria w skali oryginalu, 4 zakladki dostaja wlasciwy rodzaj");
 
 // --- podsumowanie --------------------------------------------------------
 if (bledy) {
