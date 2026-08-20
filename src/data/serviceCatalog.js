@@ -151,7 +151,7 @@ export const SERVICES_FULL = [
     image: "/img/shop/service/laser_cut.webp",
     imagePrompt:
       "CO2 laser cutting through 3 mm plywood, bright cutting spark at the kerf, precise intricate shape emerging, thin smoke, dark workshop background, dramatic side light, premium product photography",
-    priceFromGrosze: 1000,
+    priceFromGrosze: 900,
     leadTimeDays: 3,
     title: L("Cięcie laserem CO2", "CO2 laser cutting", "CO2-Laserschnitt"),
     lead: L(

@@ -1,0 +1,94 @@
+<%- include('partials/header', { user: user, title: 'Materials', active: 'materials' }) %>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-xl font-semibold text-white">Materiał z magazynu</h2>
+        <p class="text-xs text-neutral-500 mt-1">
+          Cena za m². Wycena liczy: pole wyrobu + 15% zapasu na odpad, tylko gdy materiał jest nasz.
+        </p>
+      </div>
+      <a href="/materials/new" class="px-3 py-2 rounded-lg bg-blue-500 hover:bg-blue-400 text-white text-sm transition-colors">
+        Dodaj materiał
+      </a>
+    </div>
+
+    <% if (flash) { %>
+      <div class="mb-4 rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-emerald-200 text-sm">
+        <%= flash === 'created' ? 'Materiał dodany.' : flash === 'deleted' ? 'Materiał usunięty.' : 'Zapisano.' %>
+      </div>
+    <% } %>
+
+    <div class="bg-neutral-900 border border-white/10 rounded-xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-white/10 text-neutral-500 text-xs uppercase tracking-wider">
+              <th class="px-4 py-3 text-left">ID</th>
+              <th class="px-4 py-3 text-left">Nazwa PL</th>
+              <th class="px-4 py-3 text-left">EN / DE</th>
+              <th class="px-4 py-3 text-right">PLN / m²</th>
+              <th class="px-4 py-3 text-right">Grubość</th>
+              <th class="px-4 py-3 text-center">Na stanie</th>
+              <th class="px-4 py-3 text-left">Notatka</th>
+              <th class="px-4 py-3 text-left">Zmieniono</th>
+              <th class="px-4 py-3 text-right"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (materials && materials.length > 0) { %>
+              <% materials.forEach(function(m, i) { %>
+              <tr class="border-b border-white/5 hover:bg-white/[0.03] transition-colors <%= i % 2 === 1 ? 'bg-white/[0.015]' : '' %>">
+                <td class="px-4 py-3 font-mono text-xs text-neutral-500"><%= m.material_id %></td>
+                <td class="px-4 py-3 text-neutral-200 font-medium"><%= m.name_pl %></td>
+                <td class="px-4 py-3 text-neutral-400 text-xs">
+                  <div><%= m.name_en %></div>
+                  <div class="text-neutral-600"><%= m.name_de %></div>
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <span class="text-amber-400 font-semibold"><%= parseFloat(m.pln_per_m2).toFixed(2) %></span>
+                  <span class="text-neutral-600 text-xs ml-0.5">zł</span>
+                </td>
+                <td class="px-4 py-3 text-right text-neutral-400 text-xs">
+                  <%= m.thickness_mm != null ? parseFloat(m.thickness_mm) + ' mm' : '-' %>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <% if (m.in_stock) { %>
+                    <span class="text-emerald-400 text-xs">tak</span>
+                  <% } else { %>
+                    <span class="text-neutral-600 text-xs">nie</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3 text-neutral-500 text-xs max-w-xs truncate"><%= m.notes || '' %></td>
+                <td class="px-4 py-3 text-neutral-600 text-xs">
+                  <%= m.updated_at ? new Date(m.updated_at).toISOString().slice(0, 10) : '' %>
+                  <div class="text-neutral-700"><%= m.updated_by || '' %></div>
+                </td>
+                <td class="px-4 py-3 text-right whitespace-nowrap">
+                  <a href="/materials/<%= m.id %>/edit" class="text-blue-400 hover:text-blue-300 text-xs">Edytuj</a>
+                  <form method="POST" action="/materials/<%= m.id %>/delete" class="inline ml-2"
+                        onsubmit="return confirm('Usunąć <%= m.name_pl %>? Wycena zejdzie dla niego na stawkę domyślną.')">
+                    <button type="submit" class="text-red-400 hover:text-red-300 text-xs">Usuń</button>
+                  </form>
+                </td>
+              </tr>
+              <% }) %>
+            <% } else { %>
+              <tr><td colspan="9" class="px-4 py-8 text-center text-neutral-500 text-sm">
+                Brak materiałów. Wycena liczy wtedy stawkę domyślną 100 zł/m².
+              </td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="mt-4 text-xs text-neutral-600 leading-relaxed max-w-3xl">
+      Usunięcie pozycji nie usuwa materiału z oferty: kalkulator zna go dalej, a wycena zjedzie na stawkę
+      domyślną. Ta tabela steruje ceną, a nie tym, co umiemy przeciąć.
+    </p>
+
+  </main>
+</body>
+</html>

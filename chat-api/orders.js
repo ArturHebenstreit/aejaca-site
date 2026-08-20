@@ -210,7 +210,7 @@ function scaleGeometry(geometry, scale) {
  * @param {object} [input.rates]    kursy kruszcow dla bizuterii
  * @param {Array}  [input.gemstones] kamienie z cenami z bazy, przeliczone na PLN
  */
-export function priceItem({ calculator, params, lang = "pl", geometry = null, scale = 1, rates = null, gemstones = null }) {
+export function priceItem({ calculator, params, lang = "pl", geometry = null, scale = 1, rates = null, gemstones = null, materialStock = null }) {
   const entry = CALCULATORS[calculator];
   if (!entry) throw new PricingError("unknown_calculator", `Nieznany kalkulator: ${calculator}`);
   if (!params || typeof params !== "object") throw new PricingError("bad_params", "Brak parametrów");
@@ -258,7 +258,14 @@ export function priceItem({ calculator, params, lang = "pl", geometry = null, sc
 
   let result;
   try {
-    result = entry.fn(callParams, safeLang, callRates, callGems);
+    // Laser czyta stawki materialow z magazynu tym samym trzecim argumentem,
+    // ktorym jubilerka czyta kursy. Pominiecie go nie rzuca wyjatku, tylko
+    // cicho zjezdza do stawki domyslnej, a klient widzi jedna cene i placi
+    // inna. Dlatego `scripts/test-live-pricing.mjs` sprawdza to osobno.
+    const callStock = materialStock && calculator.startsWith("laser_co2") ? materialStock : undefined;
+    result = calculator.startsWith("laser_co2")
+      ? entry.fn(callParams, safeLang, callStock)
+      : entry.fn(callParams, safeLang, callRates, callGems);
   } catch (e) {
     throw new PricingError("calc_failed", `Wycena nie powiodła się: ${e.message}`);
   }

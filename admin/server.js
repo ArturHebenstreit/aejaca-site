@@ -664,6 +664,74 @@ app.post("/gemstone-prices/:id/update", requireAuth, express.urlencoded({ extend
   res.redirect("/gemstone-prices");
 });
 
+// --- Material z magazynu: dodawanie, edycja, usuwanie ---
+// Cena plyty zmienia sie razem z rynkiem, wiec musi dac sie poprawic tutaj,
+// a nie wdrozeniem. Kazda zmiana czysci pamiec podreczna po stronie API,
+// inaczej nowa stawka doszlaby do przegladarki od razu, a do kwoty wiazacej
+// dopiero po godzinie, i przez ta godzine obie strony liczylyby inaczej.
+async function invalidateMaterialCache() {
+  if (!process.env.CHAT_API_URL || !process.env.MATRIX_INVALIDATE_TOKEN) return;
+  fetch(`${process.env.CHAT_API_URL}/api/material-stock/invalidate`, {
+    method: "POST",
+    headers: { "x-invalidate-token": process.env.MATRIX_INVALIDATE_TOKEN },
+  }).catch(() => {});
+}
+
+app.get("/materials", requireAuth, async (req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT * FROM material_stock ORDER BY name_pl");
+    res.render("materials", { user: req.user, materials: rows, flash: req.query.flash || null });
+  } catch (err) { res.status(500).render("error", { message: err.message }); }
+});
+
+app.get("/materials/new", requireAuth, (req, res) => {
+  res.render("material-edit", { user: req.user, material: null });
+});
+
+app.get("/materials/:id/edit", requireAuth, async (req, res) => {
+  const { rows } = await pool.query("SELECT * FROM material_stock WHERE id = $1", [req.params.id]);
+  if (!rows[0]) return res.status(404).render("error", { message: "Not found" });
+  res.render("material-edit", { user: req.user, material: rows[0] });
+});
+
+app.post("/materials/create", requireAuth, express.urlencoded({ extended: true }), async (req, res) => {
+  const { material_id, name_pl, name_en, name_de, pln_per_m2, thickness_mm, in_stock, notes } = req.body;
+  if (!material_id || !name_pl) return res.status(400).render("error", { message: "Identyfikator i nazwa sa wymagane" });
+  try {
+    await pool.query(
+      `INSERT INTO material_stock (material_id,name_pl,name_en,name_de,pln_per_m2,thickness_mm,in_stock,notes,updated_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+      [material_id.trim(), name_pl, name_en || name_pl, name_de || name_pl,
+       Number(pln_per_m2) || 0, thickness_mm ? Number(thickness_mm) : null,
+       in_stock === "on", notes || null, req.user.email]
+    );
+  } catch (err) { return res.status(400).render("error", { message: err.message }); }
+  await invalidateMaterialCache();
+  res.redirect("/materials?flash=created");
+});
+
+app.post("/materials/:id/update", requireAuth, express.urlencoded({ extended: true }), async (req, res) => {
+  const { name_pl, name_en, name_de, pln_per_m2, thickness_mm, in_stock, notes } = req.body;
+  await pool.query(
+    `UPDATE material_stock SET name_pl=$1, name_en=$2, name_de=$3, pln_per_m2=$4, thickness_mm=$5,
+     in_stock=$6, notes=$7, updated_at=NOW(), updated_by=$8 WHERE id=$9`,
+    [name_pl, name_en || name_pl, name_de || name_pl, Number(pln_per_m2) || 0,
+     thickness_mm ? Number(thickness_mm) : null, in_stock === "on", notes || null,
+     req.user.email, req.params.id]
+  );
+  await invalidateMaterialCache();
+  res.redirect("/materials?flash=saved");
+});
+
+app.post("/materials/:id/delete", requireAuth, async (req, res) => {
+  // Usuniecie pozycji NIE usuwa materialu z oferty: cennik zna go dalej,
+  // wycena zjedzie na stawke domyslna. Panel steruje cena, a nie tym, co
+  // umiemy przeciac.
+  await pool.query("DELETE FROM material_stock WHERE id = $1", [req.params.id]);
+  await invalidateMaterialCache();
+  res.redirect("/materials?flash=deleted");
+});
+
 // --- Filament CRUD ---
 
 async function invalidateFilamentCache() {

@@ -5,6 +5,7 @@
 // zamowien liczyl cene tym samym kodem co kalkulator.
 
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, netCostFmt } from "./config.js";
+import { materialCostPLN, materialIsOurs } from "./materialStock.js";
 
 
 export const CO2_CONFIG = {
@@ -109,6 +110,13 @@ export const ENGRAVE_DETAIL = [
   { id: "custom",   label: { pl: "Niestandardowy", en: "Custom", de: "Individuell" }, mul: null, custom: true },
 ];
 
+// UWAGA CO DO `matCost`. To jest HISTORYCZNA stawka za centymetr kwadratowy,
+// ktora do 2026-08-20 szla wprost do kwoty. Dzis materialu nie liczy juz
+// cennik, tylko tabela stanow magazynowych (`material_stock`), bo cena plyty
+// zmienia sie razem z rynkiem i musi dac sie poprawic z panelu, a nie
+// wdrozeniem. Pole zostaje jako zapis tego, ile liczylismy wczesniej: przy
+// ustalaniu realnych stawek w panelu jest to jedyny punkt odniesienia, jaki
+// mamy (matCost * 10000 = zlotowki za metr kwadratowy).
 export const CUT_MATERIALS = [
   // Sklejka 2 mm dochodzi do listy na polecenie wlasciciela (2026-08-19).
   // Stawki wyprowadzone z sasiadow, a nie zgadniete: ciecie 3 mm to 0.15,
@@ -162,7 +170,7 @@ export const CUT_COMPLEXITY = [
   { id: "custom",   label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" }, mul: null, custom: true },
 ];
 
-export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svgData }, lang) {
+export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svgData, podloze = null }, lang, stock = null) {
   const mat = ENGRAVE_MATERIALS.find(m => m.id === matId);
   const area = svgData
     ? { area: svgData.engravAreaCm2 }
@@ -187,7 +195,11 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svg
   const energyCost = totalTimeH * CO2_CONFIG.POWER_KW * CONFIG.ENERGY_COST_PLN;
   const deprCost = totalTimeH * CO2_CONFIG.DEPRECIATION_PLN_H;
   const prepCost = area.area * mat.prepCost * 0.01;
-  const baseCost = laborCost + energyCost + deprCost + prepCost + CO2_CONFIG.HANDLING_FEE + extCostAdd;
+  // Grawer nie zuzywal dotad materialu w wycenie, co bylo prawda przy
+  // przedmiocie klienta i nieprawda przy desce z naszego magazynu: oddawalismy
+  // ja gratis do kwoty, ktora sami nazwalismy wiazaca.
+  const materialCost = materialCostPLN({ areaCm2: area.area, matId: mat.id, podloze, stock });
+  const baseCost = laborCost + energyCost + deprCost + prepCost + materialCost + CO2_CONFIG.HANDLING_FEE + extCostAdd;
   const batchTimeH = (timeH + handleH) * qTier.qty + (extended ? 0.5 : 0.25);
 
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
@@ -201,6 +213,7 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svg
       { label: l.timeSetup, value: `${(totalTimeH * 60).toFixed(1)} min` },
       { label: l.workshop, value: fc(laborCost) },
       { label: l.prepMat, value: fc(prepCost) },
+      ...(materialCost > 0 ? [{ label: l.materialCost, value: fc(materialCost) }] : []),
       { label: l.energy, value: fc(energyCost) },
       { label: l.depreciation, value: fc(deprCost) },
       ...(extended ? [{ label: l.extSurcharge, value: `+${fc(extCostAdd)}` }] : []),
@@ -212,7 +225,7 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svg
   };
 }
 
-export function calcCut({ matId, pathId, complexId, quantityId, extended, svgData }, lang) {
+export function calcCut({ matId, pathId, complexId, quantityId, extended, svgData, podloze = null }, lang, stock = null) {
   const mat = CUT_MATERIALS.find(m => m.id === matId);
   const path = svgData
     ? { pathCm: svgData.pathLengthCm, sheetCm2: svgData.engravAreaCm2 }
@@ -237,7 +250,10 @@ export function calcCut({ matId, pathId, complexId, quantityId, extended, svgDat
   const laborCost = cutTimeMin * CO2_CONFIG.LABOR_PLN_MIN;
   const energyCost = totalTimeH * CO2_CONFIG.POWER_KW * CONFIG.ENERGY_COST_PLN;
   const deprCost = totalTimeH * CO2_CONFIG.DEPRECIATION_PLN_H;
-  const materialCost = path.sheetCm2 * mat.matCost * 1.15;
+  // Material liczymy z tabeli stanow magazynowych i TYLKO wtedy, gdy jest
+  // nasz. Wczesniej stala z cennika szla do kwoty zawsze, takze przy plycie
+  // przyslanej przez klienta.
+  const materialCost = materialCostPLN({ areaCm2: path.sheetCm2, matId: mat.id, podloze, stock });
   const baseCost = laborCost + materialCost + energyCost + deprCost + CO2_CONFIG.HANDLING_FEE + extCostAdd;
   const batchTimeH = (cutTimeH + handleH) * qTier.qty + (extended ? 0.5 : 0.2);
 
@@ -250,7 +266,7 @@ export function calcCut({ matId, pathId, complexId, quantityId, extended, svgDat
     breakdown: [
       { label: l.cutTime, value: `${cutTimeMin.toFixed(1)} min` },
       { label: l.workshop, value: fc(laborCost) },
-      { label: l.materialCost, value: fc(materialCost) },
+      ...(materialCost > 0 ? [{ label: l.materialCost, value: fc(materialCost) }] : []),
       { label: l.energy, value: fc(energyCost) },
       { label: l.depreciation, value: fc(deprCost) },
       ...(extended ? [{ label: l.extSurcharge, value: `+${fc(extCostAdd)}` }] : []),

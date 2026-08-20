@@ -354,6 +354,30 @@ który chciał PETG, nie pisze z pytaniem, tylko wychodzi bez śladu. Liczby i p
 z cennika (`src/data/advancedOptions.js`), więc nowy filament pojawi się w notce sam; pilnuje tego
 `scripts/test-advanced-options.mjs`.
 
+**Materiał z magazynu jako pozycja wyceny, sterowana z panelu (od 2026-08-20).** Materiał liczył się
+dotąd **źle w obie strony**, i obie pomyłki były ciche, bo kwota zawsze wyglądała poprawnie: przy
+**cięciu** doliczaliśmy go zawsze, także gdy klient przysyłał własną płytę, a przy **grawerze** nie
+doliczaliśmy nigdy, także gdy deska była nasza. Powód był jeden: wybór "Na czym pracujemy" w ogóle
+nie docierał do silnika wyceny.
+
+Teraz stawka za metr kwadratowy żyje w tabeli `material_stock` w bazie, a wzór brzmi:
+**pole wyrobu × 1,15 (zapas na odpad) × stawka z tabeli**, doliczane **tylko wtedy, gdy materiał jest
+nasz**. Osobna pozycja "Materiał / szt." pojawia się w rozpisce dokładnie wtedy, gdy coś liczymy.
+Stawka startowa to **100 zł/m² dla wszystkich pozycji** (decyzja właściciela); realne ceny wpisuje się
+w panelu administracyjnym pod **`/materials`**, gdzie można dodawać, edytować i usuwać rekordy.
+Zapisanie zmiany czyści pamięć podręczną po obu stronach naraz, inaczej nowa stawka doszłaby do
+przeglądarki od razu, a do kwoty wiążącej dopiero po godzinie.
+
+**Skutek cenowy, do świadomego przyjęcia.** Poprzednia stawka materiału w cenniku (`matCost`) była
+znacznie wyższa niż 100 zł/m²: dla akrylu 5 mm wynosiła 0,18 zł/cm², czyli **1800 zł/m²**. Cięcie
+ścieżki S z akrylu miało więc 41,40 zł samego materiału, a po zmianie ma 2,30 zł. Pole `matCost`
+zostaje w cenniku jako zapis tego, ile liczyliśmy wcześniej, bo przy ustalaniu realnych stawek
+w panelu jest to jedyny punkt odniesienia (`matCost × 10000` = złotówki za metr kwadratowy).
+Do czasu wpisania realnych cen cięcie jest **niedoszacowane**.
+
+Przy grawerze zmiana idzie w drugą stronę: deska z naszego magazynu zaczyna kosztować, więc grawer
+"na materiale AEJaCA" podrożał, a grawer na przedmiocie klienta został bez zmian.
+
 **Kafelek materiału zawęża listę, a maszyna rozstrzyga cięcie kontra grawer (od 2026-08-20).** Kliknięcie
 "Drewno" dawało poniżej pełen cennik razem z gumą, papierem i tkaniną. Teraz kafelek filtruje listę
 "z naszego magazynu": drewno pokazuje drewniane, metal metalowe, a kafelek "Szkło / kamień / inne"
