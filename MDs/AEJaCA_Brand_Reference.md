@@ -381,6 +381,29 @@ nic. **Zero w obu kolumnach** znaczy "wycena indywidualna": tak stoją srebro i 
 szlachetny rozlicza się wagowo, a nie powierzchniowo. Rozpiska pokazuje wtedy pozycję "Materiał /
 szt.: wycena indywidualna", bo znikająca linia czytałaby się jak materiał gratis.
 
+**Urealnienie prędkości cięcia CO2 (2026-08-20).** Cennik cięcia zakładał prędkości, których P2
+nie osiąga: sklejka 2 mm po 100 mm/s, sklejka 3 mm po 67 mm/s, lite drewno 10 mm po 10 mm/s.
+Błąd był **cichy i systematyczny**, bo stawki wyprowadzano jedna z drugiej, więc trzymały się
+siebie nawzajem i wszystkie razem mijały się z maszyną. Kwota zawsze wyglądała poprawnie i była
+około cztery razy za mała. Wyszło to przy porównaniu z grawerem: ten sam plik kosztował 18 zł
+przy cięciu i 157 zł przy grawerze.
+
+Nowe stawki są zakotwiczone na ustawieniach zalecanych dla P2: sklejka wiśniowa 3 mm 25 mm/s,
+sklejka lipowa 6 mm 10 mm/s, akryl biały 3 mm 20 mm/s (wszystkie 100% mocy, jedno przejście).
+Reszta jest interpolowana. **Prędkość ustawiona to nie prędkość rzeczywista**: na drobnym detalu
+maszyna nie rozpędza się do nastawy, więc stawka bazowa odpowiada około 0,7 nastawy, a mnożnik
+złożoności (0,8 / 1,0 / 1,5) odchyla ją na proste kształty i na gęsty detal. Kolor akrylu zmienia
+prędkość trzykrotnie (40 mm/s przy bezbarwnym lanym, 13 przy czerwonym), więc stawka stoi bliżej
+wolniejszego końca: zawyżenie jest tańszym błędem niż zlecenie przyjęte poniżej kosztu maszyny.
+
+Skutek na przykładzie rysunku o ścieżce 10,2 m, materiał nasz: sklejka 2 mm 13-26 → **19-37 zł**,
+sklejka 5-6 mm 23-45 → **44-87 zł**, HDF do 6 mm 28-55 → **41-82 zł**, lite drewno 10 mm 59-118 →
+**105-210 zł**. `scripts/test-laser-capabilities.mjs` pilnuje, żeby stawki mieściły się w 1-120 mm/s
+i żeby grubszy materiał nigdy nie tnął się szybciej od cieńszego z tej samej rodziny.
+
+Do wymiany, gdy dojdą presety z XCS: skóra, papier, tkanina i guma nie mają potwierdzonych
+ustawień, są tylko przeskalowane tym samym współczynnikiem co reszta tabeli.
+
 **Fiber liczy materiał tak samo jak CO2 (2026-08-20).** Laser fiber **w ogóle nie doliczał
 materiału**, choć kalkulator pytał o podłoże, a w koszyku stała odpowiedź "z naszego magazynu": za
 naszą blaszkę klient płacił tyle samo, co za własną obrączkę. Teraz `laserFiber.calculate` przyjmuje
