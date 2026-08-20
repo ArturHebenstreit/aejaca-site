@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback, useRef, lazy, Suspense, Fragment } from "react";
 import { Link } from "react-router-dom";
+import { claimHandoff } from "../../data/calcHandoff.js";
 import { ShoppingCart, Check, Loader2, AlertTriangle, ArrowRight } from "lucide-react";
 import { useCart } from "../../cart/CartContext.jsx";
 import { getService } from "../../data/orderCatalog.js";
@@ -442,6 +443,23 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
     ));
   };
 
+  // ODBIOR MODELU PRZYNIESIONEGO Z KALKULATORA. Klient, ktory z kalkulatora
+  // przeszedl do sklepu, wgral juz plik i ustawil wielkosc; kazanie mu
+  // powtorzyc to na karcie uslugi jest ta sama kara, co przy zmianie trybu.
+  // Odbior jest jednorazowy i tylko dla pasujacego rodzaju geometrii, wiec
+  // plik nie doklei sie do przypadkowej uslugi ogladanej kwadrans pozniej.
+  useEffect(() => {
+    if (service?.acceptsFile) {
+      const paczka = claimHandoff("mesh");
+      if (paczka?.file) { przyjmijPlik(paczka.file, paczka.scale); return; }
+    }
+    if (service?.acceptsVector) {
+      const paczka = claimHandoff("vector");
+      if (paczka?.file) przyjmijWektor(paczka.file);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function resetFile() {
     setFile(null);
     setGeometry(null);
@@ -469,6 +487,12 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
 
   async function onPickVector(e) {
     const f = e.target.files?.[0];
+    if (!f) return;
+    await przyjmijWektor(f);
+  }
+
+  /** Ta sama droga dla rysunku wybranego tutaj i przeniesionego z kalkulatora. */
+  async function przyjmijWektor(f) {
     if (!f || !API) return;
     setVectorFile(f);
     setVectorToken(null);
@@ -530,6 +554,16 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   async function onPickFile(e) {
     const f = e.target.files?.[0];
     if (!f) return;
+    await przyjmijPlik(f);
+  }
+
+  /**
+   * Przyjecie modelu, niezaleznie od tego, czy klient wybral go tutaj, czy
+   * przyniosl ze soba z kalkulatora. Jedna droga, wiec plik przeniesiony
+   * przechodzi dokladnie te sama kontrole co wybrany na miejscu: ten sam
+   * odczyt geometrii, ten sam token z serwera, te same komunikaty bledow.
+   */
+  async function przyjmijPlik(f, skala = null) {
     resetFile();
     setFile(f);
     setParsing(true);
@@ -568,6 +602,9 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
       setFileError(null);
       setUploadToken(data.uploadToken);
       setGeometry(data.geometry);
+      // Skala idzie PO geometrii, bo `resetFile` sprowadza ja do jedynki,
+      // a suwak wielkosci i tak pojawia sie dopiero z wymiarami z serwera.
+      if (skala && skala > 0) setScale(skala);
     } catch {
       setFileError(u.uploadFailed);
       setUploadToken(null);

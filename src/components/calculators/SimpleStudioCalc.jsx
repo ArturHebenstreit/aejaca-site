@@ -24,7 +24,7 @@ import {
 } from "../../data/laserSubstrate.js";
 import { stockOptions, stockAllowed, STOCK_OTHER } from "../../data/ourStock.js";
 import { advancedParams, advancedMaterials, advancedExamples } from "../../data/advancedOptions.js";
-import { makeHandoff } from "../../data/calcHandoff.js";
+import { makeHandoff, stashHandoff } from "../../data/calcHandoff.js";
 
 const IDK_TITLE = {
   pl: "Doradzamy: te materiały wchodzą w grę",
@@ -500,7 +500,7 @@ function wyliczenie(pozycje, lang) {
  * Liczba i nazwy ida z cennika (`src/data/advancedOptions.js`), wiec nowy
  * filament sam sie tu pojawi, a usuniety sam zniknie.
  */
-function AdvancedHint({ lang, tech, l, onAdvanced, shop = false, keepsFile = false }) {
+function AdvancedHint({ lang, tech, l, onAdvanced, onShop = null, shop = false, keepsFile = false }) {
   const drukowy = tech === "3dprint" || tech === "msla";
   // Przy druku tworzywo nazywamy z imienia w pierwszym zdaniu, wiec z listy
   // parametrow je wyrzucamy: powtorzone brzmialoby jak zajakniecie.
@@ -550,6 +550,7 @@ function AdvancedHint({ lang, tech, l, onAdvanced, shop = false, keepsFile = fal
         {shop && (
           <Link
             to="/shop/studio/"
+            onClick={onShop}
             className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/[0.03] text-neutral-300
                        hover:border-white/25 hover:text-white text-[11.5px] transition-colors
                        inline-flex items-center gap-1.5"
@@ -879,15 +880,24 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
   // wielkosc. Geometria idzie w skali ORYGINALU, a skala osobno, bo tryb
   // zaawansowany ma wlasny suwak i sam ja nalozy; wyslanie geometrii juz
   // przeskalowanej daloby skalowanie dwa razy i cene z sufitu.
-  const przekazDoZaawansowanych = useCallback((tech) => {
-    if (!onAdvanced) return;
-    const paczka = fileType === "stl"
+  const zbudujPaczke = useCallback(() => (
+    fileType === "stl"
       ? makeHandoff({ kind: "mesh", file: uploadedFile, name: fileName, data: stlData, scale })
       : fileType === "svg"
         ? makeHandoff({ kind: "vector", file: uploadedFile, name: fileName, data: svgData, scale })
-        : null;
-    onAdvanced(tech, paczka);
-  }, [onAdvanced, fileType, uploadedFile, fileName, stlData, svgData, scale]);
+        : null
+  ), [fileType, uploadedFile, fileName, stlData, svgData, scale]);
+
+  const przekazDoZaawansowanych = useCallback((tech) => {
+    if (!onAdvanced) return;
+    onAdvanced(tech, zbudujPaczke());
+  }, [onAdvanced, zbudujPaczke]);
+
+  // Do sklepu idziemy zmieniajac trase, wiec paczka nie ma jak pojechac
+  // propsem. Odkladamy ja do poczekalni, a karta uslugi odbiera ja raz.
+  const przekazDoSklepu = useCallback(() => {
+    stashHandoff(zbudujPaczke());
+  }, [zbudujPaczke]);
 
   // Szybka wycena otwiera sie domyslnie, wiec bez tego wiekszosc odwiedzajacych
   // w ogole nie widziala drogi do zakupu.
@@ -1313,6 +1323,7 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
             l={l}
             onAdvanced={onAdvanced ? przekazDoZaawansowanych : null}
             shop
+            onShop={przekazDoSklepu}
             keepsFile={Boolean(hasFile)}
           />
         </SimpleCard>

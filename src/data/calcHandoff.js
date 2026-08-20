@@ -42,3 +42,52 @@ export function makeHandoff({ kind, file = null, name = "", data = null, scale =
 export function handoffFor(handoff, kind) {
   return handoff && handoff.kind === kind ? handoff : null;
 }
+
+// ============================================================
+// POCZEKALNIA: paczka, ktora przezywa zmiane strony
+// ============================================================
+// Przejscie miedzy trybami kalkulatora zalatwia zwykly props, bo oba tryby
+// zyja w jednym komponencie. Przejscie do SKLEPU to zmiana trasy: kalkulator
+// znika razem ze swoim stanem, a konfigurator uslugi montuje sie od zera.
+// Props nie ma tu jak dojechac, wiec paczka czeka poza drzewem Reacta.
+//
+// TRZY OGRANICZENIA, KTORE TO CZYNIA BEZPIECZNYM:
+//   1. Odebrac mozna RAZ. Inaczej plik doklejalby sie do kazdej kolejnej
+//      karty uslugi, ktora klient otworzy, i wygladalo to jak usterka.
+//   2. Odebrac moze tylko ten, kto obsluguje ten rodzaj geometrii.
+//   3. Paczka przeterminowuje sie po kwadransie, bo zamiar sprzed godziny
+//      nie jest juz zamiarem.
+//
+// Plik `File` nie da sie zapisac do `sessionStorage`, wiec TWARDE ODSWIEZENIE
+// strony paczke traci. To jest swiadomy kompromis: alternatywa byloby
+// trzymanie kilkunastu megabajtow w pamieci przegladarki miedzy sesjami.
+
+const WAZNOSC_MS = 15 * 60 * 1000;
+
+let poczekalnia = null;
+
+/** Odklada paczke przed przejsciem do sklepu. */
+export function stashHandoff(handoff) {
+  poczekalnia = handoff ? { ...handoff, stamp: Date.now() } : null;
+}
+
+/**
+ * Odbiera paczke, jesli pasuje rodzajem i nie jest przeterminowana.
+ * Odbior jest jednorazowy.
+ */
+export function claimHandoff(kind) {
+  if (!poczekalnia) return null;
+  if (Date.now() - poczekalnia.stamp > WAZNOSC_MS) {
+    poczekalnia = null;
+    return null;
+  }
+  if (poczekalnia.kind !== kind) return null;
+  const paczka = poczekalnia;
+  poczekalnia = null;
+  return paczka;
+}
+
+/** Czysci poczekalnie, na przyklad przy wyjsciu z kalkulatora. */
+export function clearHandoff() {
+  poczekalnia = null;
+}

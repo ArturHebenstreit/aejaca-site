@@ -20,7 +20,7 @@ import {
   ADVANCED_TAB, ADVANCED_TECHS, SHOWCASE_IDS, ADVANCED_KEYS,
   advancedParams, advancedMaterials, advancedExamples,
 } from "../src/data/advancedOptions.js";
-import { makeHandoff, handoffFor } from "../src/data/calcHandoff.js";
+import { makeHandoff, handoffFor, stashHandoff, claimHandoff, clearHandoff } from "../src/data/calcHandoff.js";
 import { FILAMENTS } from "../src/pricing/print3d.js";
 import { RESIN_TYPES } from "../src/data/resins.js";
 
@@ -157,6 +157,38 @@ for (const [zakladka, rodzaj] of [["3dprint", "mesh"], ["resin_msla", "mesh"], [
   }
 }
 console.log("  paczka jednorazowa, geometria w skali oryginalu, 4 zakladki dostaja wlasciwy rodzaj");
+
+// --- 7. Model jedzie takze do sklepu -------------------------------------
+sekcja("7. Poczekalnia dla przejscia do sklepu");
+clearHandoff();
+
+const doSklepu = makeHandoff({ kind: "mesh", name: "b.stl", data: { volumeCm3: 5 }, scale: 1.5 });
+stashHandoff(doSklepu);
+// Rodzaj musi sie zgadzac, inaczej rysunek trafilby na karte druku.
+if (claimHandoff("vector")) zle("paczka siatki dala sie odebrac jako rysunek");
+const odebrana = claimHandoff("mesh");
+if (!odebrana || odebrana.scale !== 1.5) zle("paczka nie dotarla do sklepu ze skala");
+// Odbior JEDNORAZOWY: inaczej plik doklejalby sie do kazdej kolejnej uslugi.
+if (claimHandoff("mesh")) zle("paczke dalo sie odebrac drugi raz, plik doklejalby sie do kolejnych uslug");
+
+// Zamiar sprzed godziny nie jest juz zamiarem.
+stashHandoff(doSklepu);
+const prawdziwyNow = Date.now;
+Date.now = () => prawdziwyNow() + 16 * 60 * 1000;
+if (claimHandoff("mesh")) zle("przeterminowana paczka nadal sie odbiera");
+Date.now = prawdziwyNow;
+clearHandoff();
+
+const konfigurator = readFileSync(new URL("../src/components/shop/ServiceConfigurator.jsx", import.meta.url), "utf8");
+if (!/claimHandoff\("mesh"\)/.test(konfigurator)) zle("karta uslugi nie odbiera modelu z kalkulatora");
+if (!/claimHandoff\("vector"\)/.test(konfigurator)) zle("karta uslugi nie odbiera rysunku z kalkulatora");
+// Plik przeniesiony musi isc TA SAMA droga co wybrany na miejscu, inaczej
+// omijalby kontrole serwera i trafil do koszyka bez tokenu.
+if (!/async function przyjmijPlik/.test(konfigurator)) zle("brak wspolnej drogi przyjecia modelu");
+if (!/await przyjmijPlik\(f\)/.test(konfigurator)) zle("wybor pliku na miejscu nie idzie wspolna droga");
+if (!/await przyjmijWektor\(f\)/.test(konfigurator)) zle("wybor rysunku na miejscu nie idzie wspolna droga");
+if (!/onClick=\{onShop\}/.test(simple)) zle("przycisk sklepu nie odklada paczki, model zostawalby w kalkulatorze");
+console.log("  odbior jednorazowy, rodzaj sprawdzany, waznosc kwadrans, wspolna droga przyjecia pliku");
 
 // --- podsumowanie --------------------------------------------------------
 if (bledy) {

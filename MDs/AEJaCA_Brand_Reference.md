@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-19 | Wersja: 4.1*
+*Wygenerowano: 2026-08-20 | Wersja: 4.2*
 
 ---
 
@@ -353,6 +353,16 @@ zdanie "Filament: PLA" bez alternatywy czyta się jak deklaracja, że innych nie
 który chciał PETG, nie pisze z pytaniem, tylko wychodzi bez śladu. Liczby i przykłady idą wprost
 z cennika (`src/data/advancedOptions.js`), więc nowy filament pojawi się w notce sam; pilnuje tego
 `scripts/test-advanced-options.mjs`.
+
+**Plik jedzie razem z klientem (od 2026-08-20).** Rada "przejdź do trybu dla zaawansowanych" kosztowała
+dotąd ponowne wgranie pliku i ponowne ustawienie wielkości, czyli była karą za posłuchanie. Teraz
+model albo rysunek przechodzi razem ze skalą z suwaka, w skali **oryginału** (skala jedzie osobno,
+bo tryb zaawansowany ma własny suwak i nałożyłby ją drugi raz). Przycisk sklepu odkłada tę samą
+paczkę do poczekalni, a karta usługi odbiera ją **raz**, tylko jeśli obsługuje ten rodzaj geometrii
+i nie minął kwadrans. Plik przeniesiony idzie tą samą drogą co wybrany na miejscu, więc przechodzi
+tę samą kontrolę serwera. Twarde odświeżenie strony paczkę traci: obiektu `File` nie da się zapisać
+w `sessionStorage`, a trzymanie kilkunastu megabajtów między sesjami byłoby gorsze niż jedno
+powtórzone wgranie. Umowę pilnuje `scripts/test-advanced-options.mjs` (sekcje 6 i 7).
 
 Przy okazji naprawiona cicha usterka: nazwa żywicy czytana była z pola `name`, którego cennik żywic
 nie ma, więc karta MSLA nie pokazywała żadnej żywicy, choć kod wyglądał poprawnie i nic nie zgłaszało
