@@ -354,6 +354,24 @@ który chciał PETG, nie pisze z pytaniem, tylko wychodzi bez śladu. Liczby i p
 z cennika (`src/data/advancedOptions.js`), więc nowy filament pojawi się w notce sam; pilnuje tego
 `scripts/test-advanced-options.mjs`.
 
+**Kafelek materiału zawęża listę, a maszyna rozstrzyga cięcie kontra grawer (od 2026-08-20).** Kliknięcie
+"Drewno" dawało poniżej pełen cennik razem z gumą, papierem i tkaniną. Teraz kafelek filtruje listę
+"z naszego magazynu": drewno pokazuje drewniane, metal metalowe, a kafelek "Szkło / kamień / inne"
+zbiera akryl, skórę, papier, tkaninę, gumę, szkło i kamień. Grupa stoi **przy stawce w cenniku**
+(pole `grupa`), więc materiał dopisany bez grupy wywala build zamiast po cichu zniknąć z wyboru przy
+zachowanej cenie. Lista światłowodu **otwiera się srebrem i złotem** (decyzja właściciela z 2026-08-20;
+dostępność samej blaszki potwierdzamy przy realizacji, tak jak przy każdym innym materiale).
+
+Doszło lite drewno: **10 mm tniemy** (`wood10`, stawka wyprowadzona z kroku sklejki: 0,70 zł/cm ścieżki
+i 0,16 zł materiału, do potwierdzenia przez właściciela), **powyżej 10 mm tylko grawerujemy**
+(`wood_thick`). Zdolności maszyny są teraz zapisane i pilnowane: xTool P2 (CO2 55 W) grawerujemy na szkle,
+kamieniu i grubym litym drewnie, ale ich **nie przetniemy**, a metalu nie rusza w ogóle. Dlatego po wybraniu
+metalu pytanie "cięcie czy grawerowanie" znika, bo wycena idzie światłowodem. Szybka wycena, tryb
+zaawansowany i sklep czytają **jedną parę tablic** (`ENGRAVE_MATERIALS`, `CUT_MATERIALS`), więc
+spójność między nimi jest własnością konstrukcji, a nie rzeczą do pilnowania;
+`scripts/test-laser-capabilities.mjs` sprawdza, czy to nadal prawda, i wywala build, gdy ktoś dopisze
+szkło do cięcia albo obieca je w opisie usługi w sklepie.
+
 **Podgląd rysunku pokazuje rysunek, a nie arkusz (od 2026-08-20).** Program eksportujący SVG zapisuje
 zwykle całą stronę, więc znak 20 x 20 mm na arkuszu A4 zajmował w podglądzie jedną setną powierzchni:
 klient widział pustą ramkę i kreskę, czyli nie miał jak sprawdzić, czy wgrał właściwy plik. Parser

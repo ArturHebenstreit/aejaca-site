@@ -812,6 +812,11 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
   // (CO2_MODE_FROM_ITEM w simpleQuote.js), tak samo jak printTech dla
   // FDM/MSLA wyzej: wartosc pojawia sie dopiero, gdy klient sam przelaczy.
   const [co2Mode, setCo2Mode] = useState(null);
+  // Pytanie "ciecie czy grawerowanie" dotyczy WYLACZNIE lasera CO2. Metal
+  // idzie na swiatlowod, ktory tnie tylko cienkie blachy i u nas sluzy do
+  // znakowania, wiec przy metalu ta karta nie ma sie z czego wziac i znika.
+  // Pilnuje tego `scripts/test-laser-capabilities.mjs`, bo pokazanie tu
+  // ciecia obiecywaloby robote, ktorej maszyna nie wykona.
   const isVectorCo2 = fileType === "svg" && resolved?.tech === "co2";
 
   // Obie kwoty licza sie tym samym silnikiem, przez `co2Mode`. Kopia
