@@ -25,6 +25,7 @@ import * as laserCo2 from "../src/pricing/laserCo2.js";
 import * as laserFiber from "../src/pricing/laserFiber.js";
 import * as epoxy from "../src/pricing/epoxy.js";
 import * as cadDesign from "../src/pricing/cadDesign.js";
+import { seedAsStock } from "../src/pricing/materialStockSeed.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CATALOG = join(ROOT, "src", "data", "serviceCatalog.js");
@@ -95,9 +96,16 @@ function cheapest(svc) {
   let min = Infinity;
   let best = null;
 
+  // ETYKIETA MUSI LICZYC SIE Z TEJ SAMEJ TABELI, CO KWOTA W KOSZYKU.
+  // Uslugi laserowe CO2 doliczaja material z naszego magazynu, a jego stawka
+  // stoi w tabeli, nie w kodzie. Bez tego argumentu silnik zjezdza na stawke
+  // domyslna i etykieta obiecuje cene, ktorej w kalkulatorze nie ma. Blad
+  // cichy w obie strony: raz obietnica bez pokrycia, raz prog odstraszajacy.
+  const stock = svc.calculator.startsWith("laser_co2") ? seedAsStock() : null;
+
   const price = (acc) => {
     try {
-      const r = fn({ ...acc, ...(svc.fixed || {}) }, "pl");
+      const r = fn({ ...acc, ...(svc.fixed || {}) }, "pl", stock);
       if (r && r.type !== "custom" && r.unitGrosze > 0 && r.unitGrosze < min) {
         min = r.unitGrosze;
         best = { ...acc };
