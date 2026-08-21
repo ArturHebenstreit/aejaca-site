@@ -606,7 +606,7 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
       {/* Result */}
       <div className="rounded-2xl border-2 border-rose-400/30 bg-gradient-to-br from-rose-400/[0.04] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
-        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
+        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} binding={bindingGrosze} />
         <div className="mt-4 pt-3 border-t border-rose-400/10 text-[11px] text-rose-400/60 italic text-center">
           {l.switchHint}
         </div>

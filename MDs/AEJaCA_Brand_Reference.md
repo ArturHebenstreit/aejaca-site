@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-21 | Wersja: 4.7*
+*Wygenerowano: 2026-08-21 | Wersja: 4.8*
 
 ---
 
@@ -686,6 +686,51 @@ maszyny. Zamówić się tego nie da.
 Pilnuje tego `scripts/test-model-handoff.mjs`: sprawdza, że nie wrócił drugi komplet
 stanu pliku, że obie karty wgrywania czytają ten sam stan i że karta MSLA dostaje własne
 pole robocze. Dwie kontrole negatywne.
+
+### 6.0e Jedna kwota na ekranie, na górze karty wyceny (od 2026-08-21)
+
+Karta wyceny pokazywała **dwie różne sumy dla dwóch różnych ilości naraz**. Klient
+ustawiający 2 sztuki widział u góry „ZAMÓWIENIE: ~6 SZT. 132-258 PLN", a niżej „KWOTA
+WIĄŻĄCA (2 SZT.) 61,84 PLN". Obie liczby były policzone poprawnie, każda z innej reguły,
+więc nic nie zgłaszało sprzeczności.
+
+Skąd ~6: próg „2-10 szt." liczy się po **nakładzie reprezentatywnym**, czyli sześciu
+sztukach, bo od niego zależy rabat i podział kosztu platformy. Kwota wiążąca bierze z tego
+stawkę za sztukę i mnoży ją przez liczbę, którą klient faktycznie ustawił. Za sztukę obie
+liczby się zgadzały (30,92 zł mieści się w 22-43 zł), rozjeżdżała się tylko ilość.
+
+Trzy zmiany. `hideRange` obejmuje teraz **także blok sumy za zamówienie**, nie tylko cenę
+za sztukę: wcześniej chowała się jedna połowa szacunku, a druga zostawała. Kwota wiążąca
+przeniosła się **na górę karty wyceny**, w miejsce widełek, i jest tam wyłącznie ona.
+Panel koszyka jej nie powtarza. Dotyczy wszystkich siedmiu kalkulatorów.
+
+Napisy i formatowanie kwot przychodzą gotowe z `CalcToCart` przez `onBinding`, żeby nie
+powstała druga kopia tłumaczeń. Kolejność w pliku ma znaczenie: efekt zgłaszający kwotę
+czyta `qty` i `lineGrosze`, więc postawiony nad nimi wywala stronę na starcie. Zdarzyło
+się to przy tej właśnie zmianie i wyłapała to dopiero przeglądarka.
+
+**Do rozstrzygnięcia:** kwota wiążąca jest zawsze formatowana w PLN, niezależnie od
+języka (`money()` w `CalcToCart.jsx`). Przy angielskim i niemieckim interfejsie łamie to
+zasadę walutową marki. Wymaga kursu z `/api/market-rates`, więc nie zmieniałem tego przy
+okazji.
+
+Pilnuje tego `scripts/test-price-breakdown.mjs`: każdy kalkulator z koszykiem zgłasza
+kwotę i pokazuje ją na górze, panel koszyka jej nie powtarza, a zgłoszenie stoi po
+deklaracjach, które czyta. Listę kalkulatorów wyprowadza z katalogu. Trzy kontrole
+negatywne.
+
+### 6.0f Zużycie materiału podajemy w tym, w czym się je zużywa (od 2026-08-21)
+
+Rozpiska MSLA miała pozycję „Żywica / szt." wyrażoną w **złotówkach**, tuż pod objętością
+w mililitrach. Żywicę zużywa się w gramach i tak o niej myśli każdy, kto pracuje przy
+odlewach, więc czytało się to jak ilość. Kalkulator filamentu robił to od początku dobrze:
+„Masa / szt. 51,8 g", osobno „Materiał / szt.".
+
+MSLA jest wyrównana do tego wzorca: „Objętość modelu" (ml), „Masa żywicy / szt." (g),
+„Materiał / szt." (PLN). Masa dotyczy samego wyrobu, bez zapasu na odpad i podpory, tak
+samo jak przy filamencie; zapas siedzi w koszcie, bo tam jest jego miejsce. Przy wzorcach
+jubilerskich, ważących ułamek grama, format schodzi do dwóch miejsc po przecinku, inaczej
+każda wielkość pokazywałaby „0,1".
 
 ### 6.1 Kalkulator MSLA (Print3DCalc - ścieżka MSLA)
 

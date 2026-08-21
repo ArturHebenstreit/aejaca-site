@@ -1206,7 +1206,7 @@ export default function JewelryCalc({ lang = "pl" }) {
       {/* Result */}
       <div className="rounded-2xl border-2 border-amber-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
-        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
+        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} binding={bindingGrosze} />
         <div className="mt-3 text-[10px] text-neutral-400 text-center italic">{l.priceSource}</div>
         <p className="text-xs text-neutral-500 mt-1 text-center">{RATE_NOTE[lang] || RATE_NOTE.pl}</p>
       </div>

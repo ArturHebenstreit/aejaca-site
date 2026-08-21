@@ -270,7 +270,7 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
-        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
+        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} binding={bindingGrosze} />
         {/* Materiał NIE jest w tej kwocie i klient musi to wiedzieć przed
             zakupem, a nie z regulaminu po fakcie. */}
         <MaterialNotice lang={lang} className="mt-4" delivery={Boolean(SUBSTRATES.find((x) => x.id === podloze)?.przysyla)} />

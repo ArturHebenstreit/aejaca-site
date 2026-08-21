@@ -191,7 +191,7 @@ export function ResultHeader({ lang, binding = false }) {
  *        wiazaca. Przedzial opisuje niepewnosc szacunku, wiec postawiony obok
  *        konkretnej kwoty tylko ja podwaza. Zostaje wtedy sama kalkulacja.
  */
-export function ResultDisplay({ result, lang = "pl", hideRange = false }) {
+export function ResultDisplay({ result, lang = "pl", hideRange = false, binding = null }) {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const labels = RESULT_LABELS[lang] || RESULT_LABELS.en;
   const showPLN = lang === "pl";
@@ -217,8 +217,33 @@ export function ResultDisplay({ result, lang = "pl", hideRange = false }) {
   const mainTotal = showPLN ? r.totalPLN : r.totalEUR;
   const mainCurr = showPLN ? "PLN" : "EUR";
 
+  // KWOTA WIAZACA STOI NA GORZE KARTY, w miejscu widelek, i wtedy widelek nie
+  // ma wcale. Wczesniej kwota lezala nizej, w panelu koszyka, a na gorze
+  // zostawal szacunek policzony dla NAKLADU REPREZENTATYWNEGO PROGU. Klient
+  // zamawiajacy dwie sztuki widzial u gory "~6 szt., 132-258 PLN", a nizej
+  // "61,84 PLN za 2 szt." i nie mial jak wiedziec, ktora liczba obowiazuje.
+  //
+  // Napisy i formatowanie kwot przychodza gotowe z `CalcToCart`, zeby nie
+  // powstala tu druga kopia tlumaczen.
+  const kwotaWiazaca = binding && binding.suma ? binding : null;
+
   return (
     <div aria-live="polite" aria-atomic="true">
+      {kwotaWiazaca && (
+        <div className="mb-4">
+          <div className="flex items-end justify-between gap-4 mb-1">
+            <div>
+              <div className="text-[11px] uppercase tracking-wide text-neutral-500">{kwotaWiazaca.etykieta}</div>
+              <div className="text-3xl font-extrabold text-white leading-tight">{kwotaWiazaca.suma}</div>
+            </div>
+            {kwotaWiazaca.zaSztuke && (
+              <div className="text-right text-neutral-400 text-xs">{kwotaWiazaca.zaSztuke}</div>
+            )}
+          </div>
+          <p className="text-neutral-500 text-[11px] leading-relaxed">{kwotaWiazaca.uwaga}</p>
+        </div>
+      )}
+
       {/* Per piece */}
       {!hideRange && (
         <>
@@ -236,7 +261,18 @@ export function ResultDisplay({ result, lang = "pl", hideRange = false }) {
       )}
 
       {/* Order total (qty > 1) */}
-      {r.qty > 1 && (
+      {/* `hideRange` MUSI OBEJMOWAC TAKZE TEN BLOK, nie tylko cene za sztuke.
+          Wczesniej chowala sie sama cena jednostkowa, a suma za zamowienie
+          zostawala, i to policzona dla NAKLADU REPREZENTATYWNEGO PROGU, a nie
+          dla liczby, ktora ustawil klient. Prog "2-10 szt." liczy sie po
+          szesciu sztukach, wiec przy dwoch klient widzial "ZAMOWIENIE: ~6 SZT.
+          132-258 PLN", a zaraz pod spodem "KWOTA WIAZACA (2 SZT.) 61,84 PLN".
+          Obie liczby byly poprawne, kazda z innej reguly, i nic tego nie
+          zglaszalo. Wlasciciel slusznie zapytal, ktora obowiazuje.
+
+          Gdy kwota wiazaca jest znana, obowiazuje ona i tylko ona: dotyczy
+          rzeczywistego nakladu i to ja klient zaplaci. */}
+      {!hideRange && r.qty > 1 && (
         <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 mb-4">
           <div className="text-[11px] uppercase tracking-wide text-neutral-400 mb-2">
             {labels.order}: ~{r.qty} {labels.pcs}

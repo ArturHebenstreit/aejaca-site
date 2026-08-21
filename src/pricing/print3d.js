@@ -78,20 +78,28 @@ export function estimatePcsPerPlateMSLA(bbox) {
 export const MSLA_LBL = {
   pl: { application: "Zastosowanie", resinSegment: "Segment żywicy", resin: "Żywica", color: "Preferowany kolor (opcjonalnie)",
     colorDefault: "Do ustalenia", layer: "Wysokość warstwy", size: "Rozmiar modelu", qty: "Nakład",
-    volume: "Objętość żywicy", resinCost: "Żywica / szt.", printTime: "Czas druku / szt.", machine: "Maszyna / szt.",
+    volume: "Objętość modelu", resinMass: "Masa żywicy / szt.", resinCost: "Materiał / szt.", printTime: "Czas druku / szt.", machine: "Maszyna / szt.",
     postProc: "Post-processing / szt.", handling: "Obsługa / szt.", estCost: "Koszt szacunkowy / szt.",
     discount: "Rabat seryjny", totalProd: "Czas produkcji łącznie", minOrder: "Zastosowano minimalną wartość zlecenia (49 PLN)" },
   en: { application: "Application", resinSegment: "Resin segment", resin: "Resin", color: "Preferred color (optional)",
     colorDefault: "To be decided", layer: "Layer height", size: "Model size", qty: "Quantity",
-    volume: "Resin volume", resinCost: "Resin / pc", printTime: "Print time / pc", machine: "Machine / pc",
+    volume: "Model volume", resinMass: "Resin mass / pc", resinCost: "Material / pc", printTime: "Print time / pc", machine: "Machine / pc",
     postProc: "Post-processing / pc", handling: "Handling / pc", estCost: "Estimated cost / pc",
     discount: "Series discount", totalProd: "Total production time", minOrder: "Minimum order value applied (49 PLN)" },
   de: { application: "Anwendung", resinSegment: "Harz-Segment", resin: "Harz", color: "Wunschfarbe (optional)",
     colorDefault: "Nach Absprache", layer: "Schichthöhe", size: "Modellgröße", qty: "Auflage",
-    volume: "Harzvolumen", resinCost: "Harz / Stk.", printTime: "Druckzeit / Stk.", machine: "Maschine / Stk.",
+    volume: "Modellvolumen", resinMass: "Harzmasse / Stk.", resinCost: "Material / Stk.", printTime: "Druckzeit / Stk.", machine: "Maschine / Stk.",
     postProc: "Nachbearbeitung / Stk.", handling: "Handhabung / Stk.", estCost: "Geschätzte Kosten / Stk.",
     discount: "Serienrabatt", totalProd: "Gesamte Produktionszeit", minOrder: "Mindestbestellwert angewendet (49 PLN)" },
 };
+
+// Wzorzec jubilerski wazy ulamek grama, wiec jedno miejsce po przecinku
+// pokazywaloby "0.1" przy kazdej wielkosci i rozpiska przestawalaby sie
+// zgadzac z kwota. Ponizej jednego dajemy dwa miejsca.
+function gramy(x) {
+  const n = Number(x) || 0;
+  return n < 1 ? n.toFixed(2) : n.toFixed(1);
+}
 
 export function calculateMSLA(params, lang) {
   const { applicationId, resinKey, layerId, sizeId, quantityId, stlData } = params;
@@ -171,7 +179,18 @@ export function calculateMSLA(params, lang) {
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     totalTimeH: qTier.qty > 1 ? totalTimeH : null,
     breakdown: [
-      { label: l.volume, value: `${volumeCm3.toFixed(1)} ml` },
+      // ZYWICE ZUZYWA SIE W GRAMACH i tak o niej mysli kazdy, kto pracuje
+      // przy odlewach. Rozpiska podawala objetosc w mililitrach, a zaraz pod
+      // nia pozycje "Zywica / szt." wyrazona w ZLOTOWKACH. Czytalo sie to jak
+      // ilosc, wiec wlasciciel slusznie zapytal, co ta liczba znaczy.
+      // Kalkulator filamentu robil to od poczatku dobrze: masa w gramach,
+      // osobno koszt materialu. Tutaj wyrownujemy MSLA do tego wzorca.
+      //
+      // Masa dotyczy SAMEGO WYROBU, bez zapasu na odpad i podpory, tak samo
+      // jak przy filamencie. Zapas siedzi w koszcie, bo tam jest jego miejsce:
+      // klient dostaje jeden wzorzec, a nie jeden wzorzec plus podpory.
+      { label: l.volume, value: `${gramy(volumeCm3)} ml` },
+      { label: l.resinMass, value: `${gramy(volumeCm3 * resin.density)} g` },
       { label: l.resinCost, value: fc(resinCost) },
       { label: l.printTime, value: `${printTimeH.toFixed(2)} h` },
       { label: l.machine, value: fc(machineCostPerPc) },

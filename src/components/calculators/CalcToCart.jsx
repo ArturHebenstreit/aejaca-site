@@ -41,7 +41,7 @@ const UI = {
     added: "Dodano do koszyka",
     goToCart: "Przejdź do koszyka",
     calculating: "Liczę kwotę wiążącą",
-    note: "Kwota wiążąca, obowiązuje 7 dni. Kalkulacja powyżej pokazuje, z czego się składa.",
+    note: "Kwota wiążąca, obowiązuje 7 dni. Szczegóły kalkulacji poniżej.",
     unavailable: "Tej konfiguracji nie wycenimy automatycznie. Napisz do nas, odpowiemy w 24 godziny.",
     contact: "Wyślij do wyceny",
     uploading: "Przygotowuję plik",
@@ -92,7 +92,7 @@ const UI = {
     added: "Added to cart",
     goToCart: "Go to cart",
     calculating: "Calculating the binding price",
-    note: "Binding price, valid for 7 days. The breakdown above shows what it consists of.",
+    note: "Binding price, valid for 7 days. The breakdown below shows what it consists of.",
     unavailable: "We cannot price this configuration automatically. Write to us and we reply within 24 hours.",
     contact: "Request a quote",
     uploading: "Preparing the file",
@@ -143,7 +143,7 @@ const UI = {
     added: "In den Warenkorb gelegt",
     goToCart: "Zum Warenkorb",
     calculating: "Verbindlicher Preis wird berechnet",
-    note: "Verbindlicher Preis, 7 Tage gültig. Die Aufstellung oben zeigt, woraus er besteht.",
+    note: "Verbindlicher Preis, 7 Tage gültig. Die Aufstellung unten zeigt, woraus er besteht.",
     unavailable: "Diese Konfiguration können wir nicht automatisch bepreisen. Schreiben Sie uns, wir antworten binnen 24 Stunden.",
     contact: "Angebot anfordern",
     uploading: "Datei wird vorbereitet",
@@ -388,12 +388,6 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
 
   useEffect(() => setAdded(false), [paramsKey, uploadToken]);
 
-  // Kalkulator musi wiedziec, czy udalo sie podac kwote wiazaca. Jesli tak,
-  // widelki znikaja: dwie rozne liczby obok siebie podwazaja te wiazaca.
-  useEffect(() => {
-    if (!onBinding) return;
-    onBinding(blocked ? null : (price?.unitGrosze ?? null));
-  }, [onBinding, blocked, price]);
 
   // Panel akcji musi wiedziec, ze zakup jest niemozliwy, inaczej kafelek
   // "Dodaj do koszyka" swieci sie na niebiesko i nic pod nim nie dziala.
@@ -471,6 +465,26 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   // klient proszacy o trzy sztuki dostawal do koszyka szesc.
   const qty = qtyProp != null ? Math.max(1, Math.floor(qtyProp)) : (price?.qty || 1);
   const lineGrosze = (price?.unitGrosze || 0) * qty;
+
+  // Kalkulator musi wiedziec, czy udalo sie podac kwote wiazaca. Jesli tak,
+  // widelki znikaja: dwie rozne liczby obok siebie podwazaja te wiazaca.
+  useEffect(() => {
+    if (!onBinding) return;
+    if (blocked || !price?.unitGrosze) { onBinding(null); return; }
+    // GOTOWE NAPISY, NIE SAME LICZBY. Kwote wiazaca pokazuje teraz karta
+    // wyceny na gorze, ale etykiety i formatowanie kwot maja zostac w jednym
+    // miejscu. Przekazanie samych groszy znaczyloby druga kopie tlumaczen
+    // i drugi formater, a te rozjezdzaja sie po cichu.
+    onBinding({
+      unitGrosze: price.unitGrosze,
+      qty,
+      lineGrosze,
+      etykieta: qty > 1 ? `${u.binding} (${qty} ${u.pcs})` : u.binding,
+      suma: money(lineGrosze),
+      zaSztuke: qty > 1 ? `${money(price.unitGrosze)} ${u.perPc}` : null,
+      uwaga: u.note,
+    });
+  }, [onBinding, blocked, price, qty, lineGrosze, u]);
 
   // Plik glowny idzie do zamowienia razem z reszta, a nie osobna sciezka.
   // Kolejnosc jest zamierzona: rysunek, na ktorym liczylismy cene, ma byc
@@ -558,6 +572,11 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
 
       {price && !error && (
         <>
+          {/* Gdy kalkulator odbiera kwote przez `onBinding`, pokazuje ja u
+              siebie na gorze karty wyceny. Powtarzanie jej tutaj dawaloby te
+              sama liczbe dwa razy na jednym ekranie. */}
+          {!onBinding && (
+          <>
           <div className="flex items-end justify-between gap-4 mb-1">
             <div>
               <div className="text-[11px] uppercase tracking-wide text-neutral-500">
@@ -572,6 +591,8 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
             )}
           </div>
           <p className="text-neutral-500 text-[11px] mb-4 leading-relaxed">{u.note}</p>
+          </>
+          )}
 
           {/* Bez tych informacji cena jest znana, a zlecenie nie. Zbieramy je
               tutaj, zeby w koszyku lezaly pozycje gotowe do kupienia. */}
