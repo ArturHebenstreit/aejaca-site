@@ -1150,7 +1150,32 @@ formularzy dostawały różne id na serwerze i u klienta.
 
 Efekt sprawdzony na zbudowanym serwisie: **strona główna jest czysta**, wcześniej nie była.
 
-**Nie naprawione:** pozostałe 15 z 16 sprawdzonych stron nadal zgłasza niezgodność.
+**Druga przyczyna, znaleziona i naprawiona 2026-08-21: hydratacja wyprzedzała fragment leniwej trasy.**
+Wszystkie strony poza główną wchodzą przez `lazy()`. Gdy `hydrateRoot` ruszał, zanim fragment
+trasy się ściągnął, granica `Suspense` zawieszała się w trakcie hydratacji, React porzucał
+gotowy HTML i rysował stronę od nowa. Stąd `#421` (aktualizacja przed dokończeniem hydratacji)
+i zaraz po nim `#418`. Strona główna nigdy nie padała, bo jest importowana zwyczajnie.
+
+To był **wyścig**: przy szybkim łączu padało mniej więcej co trzecie wejście, przy fragmencie
+opóźnionym o 300 ms każde. Poprawka w `src/main.jsx` wczytuje fragment bieżącej trasy przed
+hydratacją. Dopasowanie robi router po tej samej deklaracji tras, którą renderujemy
+(`matchRoutes(createRoutesFromElements(trasy), …)`), więc nie ma drugiej listy ścieżek do
+rozjechania. Wynik: 0 na 90 wejściach, przy obu ustawieniach opóźnienia i we wszystkich
+trzech językach.
+
+**Uwaga o narzędziu:** `scripts/check-hydration.mjs` pokazywał „każda strona hydratuje się
+czysto" **także na buildzie sprzed poprawki**, z dwóch powodów naraz: filtrował wyłącznie
+zdania rozwojowego Reacta (a produkcja mówi samym numerem) i wchodził na stronę raz, więc
+wyścig mu uciekał. Filtr poprawiony, ale narzędzie nadal nie nadaje się do tej usterki.
+Mierzy ją `scripts/check-hydration-race.cjs`: powtarza wejścia i opóźnia fragmenty tras,
+zamieniając wyścig w przypadek powtarzalny. Fałszywie zielone narzędzie diagnostyczne jest
+gorsze niż jego brak, bo zamyka temat.
+
+**Strażnik w buildzie:** `scripts/check-lazy-hydration.mjs` pilnuje, że każda trasa idzie
+przez opakowanie z `preload`, że `hydrateRoot` czeka na wczytanie i że dopasowanie idzie po
+tej samej deklaracji tras. Cztery kontrole negatywne, każda czerwona na właściwym warunku.
+
+**Nie naprawione (stan sprzed 2026-08-21):** pozostałe 15 z 16 sprawdzonych stron zgłaszało niezgodność.
 Diagnoza doprowadziła do konkretnego miejsca: `Navbar`, wskaźnik aktywnej pozycji menu
 (`<span>` wewnątrz `<Link>`). Porównanie drzewa DOM po hydratacji pokazuje **identyczną
 strukturę** po obu stronach (869 węzłów do 869 na `/contact/`), a wyjście SSR jest takie
