@@ -182,6 +182,11 @@
                         <%= c.active ? 'aktywny' : 'wyłączony' %>
                       </button>
                     </form>
+                    <a href="/discounts/<%= encodeURIComponent(c.code) %>/edit" title="Popraw kod"
+                       class="px-2 py-1.5 rounded-lg border border-white/10 text-neutral-500 text-[11px]
+                              hover:border-amber-400/50 hover:text-amber-300 transition-colors">
+                      Popraw
+                    </a>
                     <%# Kasowanie tylko dla kodow bez historii. Uzyty kod stoi za
                         kwota na czyims zamowieniu, wiec zostaje w bazie. -%>
                     <% if (!c.used_count && !c.pending) { %>

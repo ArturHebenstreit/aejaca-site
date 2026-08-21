@@ -95,13 +95,36 @@ if (!blokTechs) {
   zle("nie znalazlem listy TECHS w StudioCalculator.jsx");
 } else {
   const znane = new Set([...blokTechs[1].matchAll(/id:\s*"([^"]+)"/g)].map((m) => m[1]));
+  // Nie kazda nazwa zakladki ma dzis wlasny kafelek: druk zywiczny zostal
+  // wciagniety pod druk 3D, a stara nazwa zyje dalej jako alias, bo stoi
+  // w odnosnikach sklepu i w linkach u klientow.
+  const aliasy = Object.fromEntries(
+    [...(kalkulator.match(/const ALIASY_TECH = \{([\s\S]*?)\};/)?.[1] || "")
+      .matchAll(/(\w+):\s*\{\s*tech:\s*"([^"]+)"/g)].map((m) => [m[1], m[2]])
+  );
+  // WARUNEK JEST MOCNIEJSZY NIZ "TAKI KAFELEK ISTNIEJE". Sprawdzamy, czy
+  // zakladka naprawde COS RENDERUJE, bo dokladnie tego zabraklo, gdy kafelek
+  // znikal: identyfikator dalej wygladal sensownie, mapowanie prowadzilo
+  // donikad, a klient dostawal pusty panel bez zadnego bledu.
+  const galezie = new Set([...kalkulator.matchAll(/activeTech === "([^"]+)"\s*&&/g)].map((m) => m[1]));
   for (const [tech, tab] of Object.entries(ADVANCED_TAB)) {
-    if (!znane.has(tab)) zle(`${tech} -> "${tab}": takiej zakladki nie ma w trybie zaawansowanym`);
+    const cel = aliasy[tab] || tab;
+    if (!znane.has(cel)) zle(`${tech} -> "${tab}": takiej zakladki nie ma w trybie zaawansowanym`);
+    if (!galezie.has(cel)) zle(`${tech} -> "${tab}" (${cel}): zakladka nic nie renderuje, klient dostanie pusty panel`);
   }
   for (const tech of ADVANCED_TECHS) {
     if (!ADVANCED_TAB[tech]) zle(`${tech}: technologia bez przypisanej zakladki, przycisk zostawilby klienta gdzie indziej`);
   }
-  console.log(`  ${Object.keys(ADVANCED_TAB).length} mapowan, wszystkie wskazuja na istniejace zakladki`);
+  // Alias musi byc przepuszczony w OBU drogach: przy odnosniku `?tab=` i przy
+  // przycisku z szybkiej wyceny. Rozjechanie sie ich dawalo by dzialajacy link
+  // i martwy przycisk, albo odwrotnie.
+  if (Object.keys(aliasy).length && !/ALIASY_TECH\[tab\]/.test(kalkulator)) {
+    zle("przycisk z szybkiej wyceny nie przepuszcza zakladki przez aliasy, wiec trafi w nieistniejaca galaz");
+  }
+  if (Object.keys(aliasy).length && !/ALIASY_TECH\[urlTab\]/.test(kalkulator)) {
+    zle("odnosnik ?tab= nie przepuszcza zakladki przez aliasy, wiec stary link otworzy szybka wycene");
+  }
+  console.log(`  ${Object.keys(ADVANCED_TAB).length} mapowan i ${Object.keys(aliasy).length} aliasow, wszystkie trafiaja w galaz, ktora cos renderuje`);
 }
 
 // --- 5. Podpowiedz jest podpieta i dostaje przelacznik --------------------
@@ -150,13 +173,22 @@ for (const plik of ["Print3DCalc.jsx", "CO2LaserCalc.jsx", "FiberLaserCalc.jsx"]
   if (!/onHandoffUsed\?\.\(\)/.test(tresc)) zle(`${plik} nie kasuje paczki, plik wracalby po usunieciu`);
 }
 // Rodzaj musi sie zgadzac z zakladka: siatka do druku, rysunek do lasera.
-for (const [zakladka, rodzaj] of [["3dprint", "mesh"], ["resin_msla", "mesh"], ["co2_laser", "vector"], ["fiber_laser", "vector"]]) {
-  const wiersz = kalkulator.split("\n").find((w) => w.includes(`activeTech === "${zakladka}"`));
-  if (!wiersz || !wiersz.includes(`handoffFor(handoff, "${rodzaj}")`)) {
+// LISTE WYPROWADZAMY Z KODU, a nie wpisujemy z pamieci. Wpisana recznie
+// zostawala przy zakladce, ktora zniknela, i test wywalal build z powodu,
+// ktorego juz nie bylo, zamiast pilnowac tych zakladek, ktore sa.
+const OCZEKIWANY_RODZAJ = { Print3DCalc: "mesh", CO2LaserCalc: "vector", FiberLaserCalc: "vector" };
+const wiersze = kalkulator.split("\n").filter((w) => /activeTech === "[^"]+"\s*&&/.test(w));
+if (!wiersze.length) zle("nie znalazlem zadnej galezi trybu zaawansowanego");
+for (const wiersz of wiersze) {
+  const zakladka = wiersz.match(/activeTech === "([^"]+)"/)[1];
+  const komponent = Object.keys(OCZEKIWANY_RODZAJ).find((k) => wiersz.includes(`<${k}`));
+  if (!komponent) continue; // np. odlewy zywiczne: nie przyjmuja pliku
+  const rodzaj = OCZEKIWANY_RODZAJ[komponent];
+  if (!wiersz.includes(`handoffFor(handoff, "${rodzaj}")`)) {
     zle(`zakladka ${zakladka} nie dostaje paczki rodzaju ${rodzaj}`);
   }
 }
-console.log("  paczka jednorazowa, geometria w skali oryginalu, 4 zakladki dostaja wlasciwy rodzaj");
+console.log(`  paczka jednorazowa, geometria w skali oryginalu, ${wiersze.length} zakladek sprawdzonych`);
 
 // --- 7. Model jedzie takze do sklepu -------------------------------------
 sekcja("7. Poczekalnia dla przejscia do sklepu");

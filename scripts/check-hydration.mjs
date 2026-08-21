@@ -90,8 +90,13 @@ for (const route of PAGES) {
   const errs = [];
   // Ostrzezenie z rozwojowego Reacta niesie stos komponentow i to ono mowi,
   // gdzie szukac. Wersja produkcyjna daje tylko numer bledu.
+  // WERSJA PRODUKCYJNA MOWI SAMYM NUMEREM. Przez dlugi czas bylo tu tylko
+  // dopasowanie do zdan rozwojowego Reacta, wiec narzedzie pokazywalo
+  // "kazda strona hydratuje sie czysto" na buildzie, ktory w rzeczywistosci
+  // zglaszal #418 i #421 na kazdym wejsciu. Falszywie zielone narzedzie
+  // diagnostyczne jest gorsze niz jego brak, bo zamyka temat.
   page.on("console", (m) => {
-    if (m.type() === "error" && /Expected server HTML|did not match|Text content/.test(m.text())) {
+    if (m.type() === "error" && /Expected server HTML|did not match|Text content|Minified React error #\d+|Hydration failed/.test(m.text())) {
       errs.push(m.text().split("\n").slice(0, 6).join("\n      "));
     }
   });

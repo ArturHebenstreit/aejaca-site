@@ -7,6 +7,28 @@
       <p class="text-xs text-neutral-500">Prices in EUR - frontend converts to PLN using live NBP rate</p>
     </div>
 
+    <% if (flash === 'saved') { %>
+    <div class="mb-5 px-4 py-3 bg-emerald-950/50 border border-emerald-500/30 text-emerald-300 rounded-lg text-sm">
+      &#10003; Cena zapisana
+    </div>
+    <% } else if (flash === 'deleted') { %>
+    <div class="mb-5 px-4 py-3 bg-neutral-800 border border-white/10 text-neutral-400 rounded-lg text-sm">
+      &#128465; Nadpisanie usunięte. Kalkulator liczy ten kamień z ceny wpisanej w cenniku.
+    </div>
+    <% } %>
+
+    <%# TA TABELA NADPISUJE SAMA CENE, i to jest jedyna rzecz, ktora trzeba
+        o niej wiedziec. Lista kamieni, ich nazwy i to, czy sa szlachetne,
+        mieszkaja w cenniku (src/pricing/jewelryConfig.js) i kalkulator czyta
+        je stamtad. Stad brak przycisku "dodaj": wiersz o identyfikatorze,
+        ktorego cennik nie zna, bylby martwy i nikt by tego nie zauwazyl. -%>
+    <div class="mb-5 px-4 py-3 rounded-lg border border-white/10 bg-neutral-900 text-xs text-neutral-400 leading-relaxed">
+      Ta tabela nadpisuje <strong class="text-neutral-300">wyłącznie cenę</strong>, po identyfikatorze kamienia.
+      Lista kamieni i ich nazwy stoją w cenniku, więc usunięcie wiersza nie usuwa kamienia z oferty:
+      kalkulator wraca wtedy do ceny wpisanej w kodzie. Z tego samego powodu nie ma tu przycisku
+      &bdquo;dodaj&rdquo;: wiersz o identyfikatorze, którego cennik nie zna, nigdzie by się nie pokazał.
+    </div>
+
     <div class="bg-neutral-900 border border-white/10 rounded-xl overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
@@ -65,10 +87,22 @@
                   <% } %>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap">
-                  <a href="/gemstone-prices/<%= gem.id %>/edit"
-                    class="opacity-0 group-hover:opacity-100 px-3 py-1 bg-amber-950 border border-amber-800/50 text-amber-400 hover:text-amber-300 text-xs rounded transition-all">
-                    Edit
-                  </a>
+                  <%# Akcje sa widoczne od razu na dotyku, a chowaja sie tylko
+                      tam, gdzie jest kursor. Sam `opacity-0` znaczyl na telefonie
+                      przycisk, ktorego nie da sie zobaczyc ani trafic. -%>
+                  <div class="flex items-center gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    <a href="/gemstone-prices/<%= gem.id %>/edit"
+                      class="px-3 py-1 bg-amber-950 border border-amber-800/50 text-amber-400 hover:text-amber-300 text-xs rounded transition-colors">
+                      Edit
+                    </a>
+                    <form method="POST" action="/gemstone-prices/<%= gem.id %>/delete"
+                          onsubmit="return confirm('Usunąć nadpisanie ceny dla <%= gem.gem_id %>? Kamień zostaje w ofercie, ale kalkulator wróci do ceny wpisanej w cenniku.')">
+                      <button type="submit" title="Usuń nadpisanie ceny"
+                        class="px-2 py-1 border border-white/10 text-neutral-600 hover:border-red-400/50 hover:text-red-300 text-xs rounded transition-colors">
+                        &#128465;
+                      </button>
+                    </form>
+                  </div>
                 </td>
               </tr>
               <% }); %>

@@ -39,6 +39,37 @@ obsługiwał klientów, a nie zmianę porzuconą w edytorze. Zdecyduj przy okazj
 czy szkic wypublikować, czy porzucić. Szkic wiszący bez końca to stan, w którym
 kopia i n8n rozjeżdżają się cicho.
 
+## Kontakt: komplet załączników zamiast pierwszego (sierpień 2026)
+
+21 sierpnia 2026 w `AEJaCA — Contact Form` wypublikowano zmianę naprawiającą cichą
+stratę plików. Formularz kalkulatora przyjmuje do sześciu załączników i backend
+wysyła je wszystkie w polu `files`, ale przepływ czytał wyłącznie `file`, czyli
+pojedynczy plik dokładany dla zgodności ze starszymi formularzami. Skutek:
+na Dysk trafiał pierwszy plik, a właściciel dostawał mail z jedną nazwą i
+odnośnikiem do folderu, w którym rzeczywiście leżał jeden plik. Nic nie
+zgłaszało błędu, a widok był spójny, więc nie było czego zauważyć.
+
+Zmiana dotyczy czterech węzłów: `Prepare Attachment` buduje listę (`files`, a gdy
+puste, `file`), `Prepare File for Upload` oddaje po jednej pozycji na plik,
+`Upload to Drive` bierze nazwę z pozycji zamiast z `body.file.name`, a
+`Strip Binary` zwija wynik z powrotem do jednej pozycji. To ostatnie jest
+warunkiem koniecznym: węzeł Dysku oddaje pozycję na każdy wgrany plik, więc
+bez zwinięcia właściciel dostałby sześć osobnych powiadomień o jednym
+zapytaniu. Mail podaje teraz liczbę plików obok nazw, bo to liczba pozwala
+zauważyć brak.
+
+Logikę sprawdzono symulacją sześciu przypadków (sześć plików, jeden plik pod
+`files`, stare pole `file` z prefiksem `data:`, brak plików, `files` puste przy
+obecnym `file`, pozycja bez `data`). Nie sprawdzono jej przeciwko prawdziwemu
+Dyskowi ani Gmailowi, bo próbne uruchomienie wysyła prawdziwe maile.
+
+Plik kopii został **poprawiony ręcznie**, bo w tej sesji nie było klucza API do
+n8n. Podmieniono w nim dokładnie te pięć wartości, które poszły na produkcję,
+i nic poza nimi; `git diff` pokazał sześć zmienionych linii. To nadal nie jest
+to samo co zrzut ze skryptu, więc przy pierwszej okazji z kluczem uruchom
+`npm run backup:n8n`. Pusty `git diff` zamyka sprawę, a niepusty znaczy, że
+właściwa jest wersja ze skryptu.
+
 ## Identyfikatory folderów Google Drive
 
 Trzy przepływy mają wpisane identyfikatory folderów na Dysku: `Zamowienia`

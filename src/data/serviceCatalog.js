@@ -68,7 +68,7 @@ export const SERVICES_FULL = [
     image: "/img/shop/service/print_msla.webp",
     imagePrompt:
       "Resin 3D printer build plate lifting out of a vat, a highly detailed miniature figure hanging upside down covered in glossy grey resin, dramatic side lighting, black background, premium product photography, macro detail",
-    priceFromGrosze: 4700,
+    priceFromGrosze: 4900,
     leadTimeDays: 4,
     title: L("Druk żywiczny MSLA", "MSLA resin printing", "MSLA-Harzdruck"),
     lead: L(

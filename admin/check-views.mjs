@@ -1,0 +1,117 @@
+// ============================================================
+// KONTROLA SZABLONOW PANELU
+// ============================================================
+// Szablon panelu nie przechodzi przez zaden build: EJS kompiluje sie dopiero
+// przy zadaniu. Literowka w `<% %>`, brakujaca zmienna albo `res.render` do
+// nieistniejacego pliku to wiec BLAD 500 U WLASCICIELA, o ktorym dowiadujemy
+// sie z jego zrzutu ekranu, a nie z buildu.
+//
+// Trzy rzeczy sprawdzane tutaj, w kolejnosci od najczestszej:
+//
+//   1. Kazdy `res.render("nazwa")` ma swoj plik. Literowka w nazwie trasy
+//      wyglada w kodzie zupelnie normalnie.
+//   2. Kazdy szablon sie kompiluje. Lapie niedomkniete `<% %>` i zly JavaScript
+//      w srodku.
+//   3. Szablony, dla ktorych mamy przykladowe dane, RENDERUJA sie do konca.
+//      To jedyny sposob, zeby wylapac zmienna dopisana do widoku i zapomniana
+//      w trasie: kompilacja tego nie widzi, bo brak zmiennej wychodzi dopiero
+//      przy wykonaniu.
+//
+//   node admin/check-views.mjs
+
+import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
+
+const ROOT = dirname(fileURLToPath(import.meta.url));
+const VIEWS = join(ROOT, "views");
+const wymagaj = createRequire(import.meta.url);
+
+let ejs;
+try {
+  ejs = wymagaj("ejs");
+} catch {
+  // Panel wdraza sie z wlasnego katalogu i ma wlasne zaleznosci. Gdy nie sa
+  // zainstalowane (czysty klon), nie udajemy, ze sprawdzilismy szablony.
+  console.log("Szablony panelu: pominiete, brak admin/node_modules (npm install w admin/)");
+  process.exit(0);
+}
+
+let bledy = 0;
+const zle = (m) => { console.error(`  BLAD: ${m}`); bledy++; };
+
+const server = readFileSync(join(ROOT, "server.js"), "utf8");
+const pliki = readdirSync(VIEWS).filter((f) => f.endsWith(".ejs"));
+
+// --- 1. Kazda trasa renderuje istniejacy szablon ---------------------------
+const renderowane = new Set([...server.matchAll(/res\.(?:status\(\d+\)\.)?render\(\s*["'`]([\w./-]+)["'`]/g)].map((m) => m[1]));
+for (const nazwa of renderowane) {
+  if (!existsSync(join(VIEWS, `${nazwa}.ejs`))) zle(`server.js renderuje "${nazwa}", a views/${nazwa}.ejs nie istnieje`);
+}
+
+// --- 2. Kazdy szablon sie kompiluje ----------------------------------------
+for (const f of pliki) {
+  try {
+    ejs.compile(readFileSync(join(VIEWS, f), "utf8"), { filename: join(VIEWS, f) });
+  } catch (e) {
+    zle(`views/${f} nie kompiluje sie: ${e.message.split("\n")[0]}`);
+  }
+}
+
+// --- 3. Renderowanie na przykladowych danych -------------------------------
+// Zestawy sa CELOWO ubogie: maja odpowiadac temu, co trasa naprawde podaje.
+// Dopisanie zmiennej do widoku bez dopisania jej tutaj i w trasie ma zapalic
+// sie na czerwono, bo dokladnie tak wyglada blad, ktory chcemy lapac.
+const uzytkownik = { email: "test@aejaca.com", displayName: "Test" };
+const kamien = {
+  id: 1, gem_id: "diamond", name_pl: "Diament", name_en: "Diamond", name_de: "Diamant",
+  base_eur: "3000.00", precious: true, has_grades: true, lab: false, notes: null,
+  updated_at: new Date("2026-08-01"), updated_by: "test@aejaca.com",
+};
+const kod = {
+  code: "AEJ-TEST", kind: "percent", value: 10, applies_to: "all", min_order_grosze: 0,
+  max_uses: null, max_uses_per_email: 1, used_count: 0, pending: 0, granted_grosze: 0,
+  valid_from: null, valid_to: null, active: true, campaign: null, issued_to: null, note: null,
+  created_at: new Date("2026-08-01"),
+};
+
+const ZESTAWY = {
+  "gemstone-prices": { user: uzytkownik, gems: [kamien], flash: null },
+  "gemstone-prices-edit": { user: uzytkownik, gem: kamien },
+  discounts: { user: uzytkownik, codes: [kod], created: [], msg: null, err: null },
+  "discount-edit": { user: uzytkownik, kod, err: null },
+  materials: { user: uzytkownik, materials: [], markup: 1.5, flash: null },
+};
+
+// `fmtDate` i spolka wstrzykuje serwer przez `app.locals`, wiec przy samym
+// renderowaniu trzeba je podac, inaczej wywalilibysmy sie na czyms, co na
+// produkcji dziala.
+const globalne = {
+  fmtDate: (d) => (d ? new Date(d).toISOString().slice(0, 16).replace("T", " ") : "-"),
+  fmtDateShort: (d) => (d ? new Date(d).toISOString().slice(0, 10) : "-"),
+};
+
+for (const [nazwa, dane] of Object.entries(ZESTAWY)) {
+  const sciezka = join(VIEWS, `${nazwa}.ejs`);
+  if (!existsSync(sciezka)) { zle(`brak views/${nazwa}.ejs, a jest dla niego zestaw danych`); continue; }
+  try {
+    ejs.render(readFileSync(sciezka, "utf8"), { ...globalne, ...dane }, { filename: sciezka });
+  } catch (e) {
+    zle(`views/${nazwa}.ejs nie renderuje sie: ${e.message.split("\n")[0]}`);
+  }
+}
+
+// Kazda pozycja edytowalna musi miec droge powrotna: widok edycji bez trasy
+// zapisu to formularz, ktory po kliknieciu "zapisz" daje 404.
+for (const [widok, zapis] of [["discount-edit", "/discounts/:code/update"], ["gemstone-prices-edit", "/gemstone-prices/:id/update"], ["material-edit", "/materials/:id/update"]]) {
+  if (existsSync(join(VIEWS, `${widok}.ejs`)) && !server.includes(`"${zapis}"`)) {
+    zle(`views/${widok}.ejs nie ma trasy zapisu ${zapis}`);
+  }
+}
+
+if (bledy) {
+  console.error(`\nSzablony panelu: ${bledy} bledow.`);
+  process.exit(1);
+}
+console.log(`Szablony panelu: ${pliki.length} widokow kompiluje sie, ${Object.keys(ZESTAWY).length} renderuje sie na danych`);

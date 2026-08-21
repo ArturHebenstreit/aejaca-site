@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-21 | Wersja: 4.3*
+*Wygenerowano: 2026-08-21 | Wersja: 4.5*
 
 ---
 
@@ -195,7 +195,19 @@ Panel **"jak dostarczyć przedmiot"** (paczkomat, adres) pokazuje się wyłączn
 
 **Rabat na rynek polski (15%) obowiązuje od wartości zlecenia 150 zł.** Poniżej progu nie rabatujemy: piętnaście procent z kilkunastu złotych nic klientowi nie daje, a robocizna nie maleje razem z ceną. Między 150 a ~176 zł płaci się równe 150 zł, żeby większe zlecenie nigdy nie wyszło taniej od mniejszego (naiwny próg dawał dokładnie taki uskok). Rabat nigdzie nie jest nazwany, schodzi równo ze wszystkich kwot w rozpisce. Stała: `CONFIG.PL_DISCOUNT_MIN_PLN`, reguła: `plFactorFor()` w `src/pricing/config.js`, pilnuje jej `scripts/test-price-breakdown.mjs`.
 
-Skutek uboczny wdrożenia progu: ceny "od" na kartach usług wzrosły, bo liczą się z najtańszej realnej konfiguracji, a ta jest poniżej progu. Druk FDM 16 → 19 zł, MSLA 40 → 47 zł, grawer i cięcie CO2 8 → 10 zł, fiber 8 → 9 zł, odlew żywiczny 18 → 21 zł. Liczby wyprowadza `npm run prices:derive`.
+Skutek uboczny wdrożenia progu: ceny "od" na kartach usług wzrosły, bo liczą się z najtańszej realnej konfiguracji, a ta jest poniżej progu. Druk FDM 16 → 19 zł, MSLA 40 → 49 zł, grawer i cięcie CO2 8 → 10 zł, fiber 8 → 9 zł, odlew żywiczny 18 → 21 zł. Liczby wyprowadza `npm run prices:derive`.
+
+### Minimalna wartość zlecenia MSLA (49 zł) sięga kwoty wiążącej
+
+Próg podnosił wyłącznie **widełki**, a nie `unitGrosze`, czyli jedyną liczbę, którą realnie obciążamy klienta przy zamówieniu (bierze ją `chat-api/orders.js`). Najtańszy wydruk pokazywał więc "49-65 zł" razem z wierszem "zastosowano minimalną wartość zlecenia", a zamówienie szło na 46,18 zł. Karta usługi w sklepie zapowiadała przy tym "od 47 zł", choć `llms.txt`, `context.js` i ta dokumentacja zgodnie mówiły 49 zł.
+
+Żadna z tych liczb nie była policzona źle. Każda wychodziła z innej reguły, więc nic się nie wywalało i nic nie zgłaszało rozjazdu.
+
+Warunek też był nie ten: porównywał **dolną granicę widełek** z progiem, a ta z definicji leży poniżej kwoty wiążącej, więc wiersz "zastosowano minimum" zapalał się także przy zleceniach, za które klient i tak płacił więcej niż 49 zł.
+
+Po poprawce próg działa na kwocie wiążącej, a widełki nigdy nie zaczynają się poniżej minimum, nawet gdy kwota wiążąca już je przekracza. Wiersz rozpiski pojawia się wtedy i tylko wtedy, gdy próg naprawdę zmienił cenę do zapłaty. Karta usługi po `npm run prices:derive` mówi 49 zł. Pilnuje tego sekcja 6 w `scripts/test-live-pricing.mjs`: przechodzi 192 warianty MSLA i czyta próg oraz listę rozmiarów z kodu, żeby nie zostać przy starej liczbie.
+
+Próg ma dziś **wyłącznie MSLA**. FDM, lasery i odlewy nie mają minimalnej wartości zlecenia. To do rozstrzygnięcia biznesowego, nie usterka.
 
 **Trzy rozłączne możliwości:**
 
@@ -499,6 +511,19 @@ gęstość, więc przejście na wylot wymaga kilku powtórzeń i pilnowania, a n
 sklejce. Rachunek ze sklejki tego nie widzi, bo sklejka jest materiałem jednorodnym. Skutek na ekranie:
 cięcie ścieżki S kosztuje 44-88 PLN zamiast 15-30 PLN dla sklejki 3 mm.
 
+**Cena HDF poprawia się sama przy wdrożeniu (2026-08-21).** Tabela `material_stock` zakłada się raz,
+a zestaw startowy wchodzi z `ON CONFLICT DO NOTHING`, żeby wdrożenie nie kasowało poprawek robionych
+w panelu. Kosztem tego poprawiona liczba w repozytorium **nie dochodzi do bazy założonej wcześniej**:
+HDF zszedł z 42 na 22 zł/m² w kodzie, build był zielony, a klient dalej płacił po staremu. Awaria
+najgorszego rodzaju, bo wszystko wygląda na zrobione.
+
+Lista korekt (`src/pricing/materialCorrections.js`) to naprawia. Każda pozycja wykonuje się raz, jest
+zapisana w tabeli `material_corrections`, i **rusza wiersz tylko wtedy, gdy stoi w nim dokładnie ta
+stara wartość**. Jeżeli właściciel zdąży poprawić cenę w panelu, wdrożenie mu jej nie cofnie. Korekta,
+która trafi w wiersz, czyści obie pamięci podręczne stawek naraz, bo wyczyszczenie jednej dawałoby
+godzinę, w której podgląd i kwota wiążąca mówią co innego. Pozycji z listy się nie usuwa: to zapis
+tego, co zmienialiśmy w cudzych danych, a instancja założona wcześniej może wstać dopiero za rok.
+
 **Grawer liczy się z drogi głowicy, a nie z kartki (2026-08-21).** To była odpowiedź na pytanie
 właściciela, jak ten sam plik może kosztować 18 zł przy cięciu i 157 zł przy grawerze. Cięcie liczyło
 **długość ścieżki**, czyli to, co maszyna faktycznie przejeżdża, a grawer **prostokąt opisany na
@@ -585,6 +610,19 @@ dostawał kwotę wiążącą 497,83 zł, mimo że nie da się go wykonać na ża
 **Cięcie kontra grawerowanie w szybkiej wycenie (od 2026-08-19).** Przy wgranym rysunku i technologii CO2
 pokazujemy dwie karty, "Cięcie na wylot" i "Grawerowanie powierzchni", każdą z własną kwotą policzoną z tego
 samego rysunku. Wybór idzie do wyceny wiążącej i do koszyka.
+
+**Cztery kafelki technologii, nie pięć (2026-08-21).** Osobny kafelek „Druk żywiczny" zszedł z listy,
+bo pytał o to samo, co pierwszy krok kalkulatora druku: wybór FDM albo MSLA stoi tam i tak. Klient musiał
+wiedzieć, że „Druk żywiczny" i „MSLA" to jedno, zanim cokolwiek zobaczył. Zostają cztery kafelki po jednej
+maszynie: Druk 3D, Laser CO2, Laser Fiber, Odlewy żywiczne.
+
+Odnośnik `?tab=resin_msla` **dalej działa** i otwiera kalkulator druku od razu na MSLA. Stoi w karcie usługi
+w sklepie, w mapie opcji zaawansowanych i w linkach, które ktoś może mieć u siebie; gdyby przestał być
+rozpoznawany, panel otwierałby się w szybkiej wycenie na FDM i nikt by tego nie zgłosił jako błędu, bo
+strona działa, tylko trafia gdzie indziej. Ta sama mapa obsługuje przycisk „tryb zaawansowany" z szybkiej
+wyceny, który bez niej celowałby w zakładkę bez gałęzi i dawał **pusty panel**.
+`scripts/test-advanced-options.mjs` sprawdza teraz nie to, czy zakładka istnieje, tylko czy naprawdę coś
+renderuje.
 
 **Kafelki znikają po wgraniu pliku (od 2026-08-19).** Po wgraniu jakiegokolwiek pliku kafelki rodzaju pracy
 są ukrywane w całości, bo plik już mówi, co wykonujemy. Wcześniej stały obok podglądu i czytały się jak druga,
@@ -1112,7 +1150,32 @@ formularzy dostawały różne id na serwerze i u klienta.
 
 Efekt sprawdzony na zbudowanym serwisie: **strona główna jest czysta**, wcześniej nie była.
 
-**Nie naprawione:** pozostałe 15 z 16 sprawdzonych stron nadal zgłasza niezgodność.
+**Druga przyczyna, znaleziona i naprawiona 2026-08-21: hydratacja wyprzedzała fragment leniwej trasy.**
+Wszystkie strony poza główną wchodzą przez `lazy()`. Gdy `hydrateRoot` ruszał, zanim fragment
+trasy się ściągnął, granica `Suspense` zawieszała się w trakcie hydratacji, React porzucał
+gotowy HTML i rysował stronę od nowa. Stąd `#421` (aktualizacja przed dokończeniem hydratacji)
+i zaraz po nim `#418`. Strona główna nigdy nie padała, bo jest importowana zwyczajnie.
+
+To był **wyścig**: przy szybkim łączu padało mniej więcej co trzecie wejście, przy fragmencie
+opóźnionym o 300 ms każde. Poprawka w `src/main.jsx` wczytuje fragment bieżącej trasy przed
+hydratacją. Dopasowanie robi router po tej samej deklaracji tras, którą renderujemy
+(`matchRoutes(createRoutesFromElements(trasy), …)`), więc nie ma drugiej listy ścieżek do
+rozjechania. Wynik: 0 na 90 wejściach, przy obu ustawieniach opóźnienia i we wszystkich
+trzech językach.
+
+**Uwaga o narzędziu:** `scripts/check-hydration.mjs` pokazywał „każda strona hydratuje się
+czysto" **także na buildzie sprzed poprawki**, z dwóch powodów naraz: filtrował wyłącznie
+zdania rozwojowego Reacta (a produkcja mówi samym numerem) i wchodził na stronę raz, więc
+wyścig mu uciekał. Filtr poprawiony, ale narzędzie nadal nie nadaje się do tej usterki.
+Mierzy ją `scripts/check-hydration-race.cjs`: powtarza wejścia i opóźnia fragmenty tras,
+zamieniając wyścig w przypadek powtarzalny. Fałszywie zielone narzędzie diagnostyczne jest
+gorsze niż jego brak, bo zamyka temat.
+
+**Strażnik w buildzie:** `scripts/check-lazy-hydration.mjs` pilnuje, że każda trasa idzie
+przez opakowanie z `preload`, że `hydrateRoot` czeka na wczytanie i że dopasowanie idzie po
+tej samej deklaracji tras. Cztery kontrole negatywne, każda czerwona na właściwym warunku.
+
+**Nie naprawione (stan sprzed 2026-08-21):** pozostałe 15 z 16 sprawdzonych stron zgłaszało niezgodność.
 Diagnoza doprowadziła do konkretnego miejsca: `Navbar`, wskaźnik aktywnej pozycji menu
 (`<span>` wewnątrz `<Link>`). Porównanie drzewa DOM po hydratacji pokazuje **identyczną
 strukturę** po obu stronach (869 węzłów do 869 na `/contact/`), a wyjście SSR jest takie
@@ -1394,6 +1457,31 @@ Schemat: `scripts/products-schema.sql`, migracje wykonują się też przy starci
 Wszystko, co obsługuje się ręcznie, mieszka w jednej aplikacji `admin/` (Express + EJS, osobna usługa na Railway, logowanie przez Google, dostęp po liście adresów). Zakładki: Dashboard, **Produkty**, **Kody**, **Przelewy**, Analytics, Leads, Subscribers, Chat, Email, Laser Matrix, Gems, Filamenty.
 
 Menu siedzi w jednym pliku `admin/views/partials/header.ejs`. Wcześniej każdy widok miał własną, przepisaną ręcznie kopię i kopie się rozjechały: na jednej podstronie brakowało Emaila, na innej Filamentów, co wyglądało, jakby pozycje znikały przy klikaniu. Nowa zakładka dopisuje się teraz raz.
+
+**Edycja i usuwanie pojedynczych rekordów (2026-08-21).** Wzorcem są Filamenty: przy każdym wierszu
+stoi ołówek i kosz. Doszły tam, gdzie ich brakowało, ale nie wszędzie, i te granice są celowe.
+
+Kamienie dostały **usuwanie**, nie dostały przycisku „dodaj". Ta tabela nadpisuje **wyłącznie cenę**,
+po identyfikatorze; lista kamieni, ich nazwy i to, czy są szlachetne, stoją w cenniku
+(`src/pricing/jewelryConfig.js`) i kalkulator czyta je stamtąd. Usunięcie wiersza znaczy więc powrót do
+ceny wpisanej w kodzie, a nie zniknięcie kamienia z oferty. Wiersz o identyfikatorze, którego cennik nie
+zna, byłby martwy i niewidoczny, więc przycisk „dodaj" byłby pułapką, a nie udogodnieniem.
+
+Kody rabatowe dostały **edycję**. Wcześniej dało się je założyć, wyłączyć i skasować, ale nie poprawić,
+więc przedłużona akcja oznaczała zabicie kodu, który klienci mają już w skrzynkach. Nazwa kodu i licznik
+użyć zostają nieedytowalne: pierwsza stoi przy złożonych zamówieniach, drugi jest zapisem tego, co się
+wydarzyło, a licznik poprawiany ręcznie przestaje być dowodem. Zejście z limitem poniżej liczby już
+wykorzystanych użyć jest odrzucane z podpowiedzią, żeby zamiast tego wyłączyć kod: inaczej kod robiłby
+się martwy, wyglądając na aktywny.
+
+Nie dobudowujemy edycji do **rozmów, zdarzeń analityki, wątków mailowych, leadów, zapisów na newsletter
+i przelewów**. To są zapisy tego, co się stało, a nie dane, które utrzymujemy. Kasowanie mają, bo czasem
+trzeba coś usunąć na żądanie; edycja odebrałaby im wartość dowodową.
+
+**Szablony panelu kompilują się i renderują w buildzie** (`admin/check-views.mjs`). Panel nie przechodzi
+przez żaden build, więc literówka w `<% %>` albo zmienna dopisana do widoku i zapomniana w trasie była
+błędem 500 u właściciela i niczym u nas. Skrypt sprawdza też, czy każdy `res.render` ma swój plik i czy
+każdy formularz edycji ma trasę zapisu.
 
 Trzy zakładki sklepowe nie piszą do bazy same, tylko wołają backend sklepu nagłówkiem `X-Admin-Token` (`CHAT_API_URL` i `ADMIN_API_TOKEN` w usłudze panelu). Powód: zapis ma skutki uboczne, których w samym SQL nie ma. Zmiana stanu wchodzi w rezerwacje towaru, potwierdzenie przelewu wysyła maile i przenosi pliki klienta do folderu Zamówienia.
 

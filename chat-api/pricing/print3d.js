@@ -130,15 +130,37 @@ export function calculateMSLA(params, lang) {
   const pricing = applyPricing(baseCost, margin, qTier.discount, qTier.qty, plDiscount);
   const fc = netCostFmt(lang, pricing.plFactor);
 
-  // Minimum order value floor (49 PLN)
+  // ============================================================
+  // MINIMALNA WARTOSC ZLECENIA (49 PLN)
+  // ============================================================
+  // PROG MUSI SIEGNAC KWOTY WIAZACEJ, nie samych widelek. `unitGrosze` to
+  // jedyna liczba, ktora realnie obciaza klienta: bierze ja `chat-api/orders.js`
+  // przy skladaniu zamowienia. Widelki `perPcPLN` opisuja niepewnosc szacunku
+  // i sluza prezentacji.
+  //
+  // Wczesniej prog podnosil wylacznie widelki. Najtanszy wydruk pokazywal
+  // "49-65 zl" i wiersz "zastosowano minimalna wartosc zlecenia", a zamowienie
+  // szlo na 46,18 zl. Dwie liczby na jednym ekranie mowily co innego i nic
+  // tego nie zglaszalo, bo obie byly wyliczone poprawnie, tylko z innej reguly.
+  //
+  // Warunek tez byl nie ten: porownywal DOLNA GRANICE widelek z progiem,
+  // a nie kwote wiazaca. Dolna granica lezy z definicji ponizej kwoty
+  // wiazacej, wiec prog zapalal sie takze wtedy, gdy klient i tak placil
+  // wiecej niz minimum.
+  const groszePerPc = Math.ceil((MSLA_CONFIG.MIN_ORDER_PLN * 100) / qTier.qty);
   let minOrderApplied = false;
-  if (pricing.totalPLN.min < MSLA_CONFIG.MIN_ORDER_PLN) {
+  if (pricing.unitGrosze < groszePerPc) {
     minOrderApplied = true;
-    const floorPerPc = Math.max(pricing.perPcPLN.min, Math.ceil(MSLA_CONFIG.MIN_ORDER_PLN / qTier.qty));
-    pricing.perPcPLN.min = floorPerPc;
-    pricing.perPcPLN.max = Math.max(pricing.perPcPLN.max, floorPerPc);
-    pricing.totalPLN.min = pricing.perPcPLN.min * qTier.qty;
-    pricing.totalPLN.max = pricing.perPcPLN.max * qTier.qty;
+    pricing.unitGrosze = groszePerPc;
+  }
+  // Widelki nie moga obiecywac ceny nizszej niz minimum zlecenia, nawet gdy
+  // kwota wiazaca juz je przekracza. Inaczej klient czyta "od 47 zl" przy
+  // progu 49 zl i ma racje, czujac sie wprowadzony w blad.
+  const widelkiPerPc = Math.ceil(groszePerPc / 100);
+  if (pricing.perPcPLN.min < widelkiPerPc) {
+    pricing.perPcPLN.min = widelkiPerPc;
+    pricing.perPcPLN.max = Math.max(pricing.perPcPLN.max, widelkiPerPc);
+    pricing.totalPLN = { min: pricing.perPcPLN.min * qTier.qty, max: pricing.perPcPLN.max * qTier.qty };
     pricing.perPcEUR = {
       min: Math.max(1, Math.round(pricing.perPcPLN.min / CONFIG.EUR_PLN_RATE)),
       max: Math.max(1, Math.round(pricing.perPcPLN.max / CONFIG.EUR_PLN_RATE)),

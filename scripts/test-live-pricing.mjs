@@ -184,5 +184,78 @@ console.log("Zywe dane w kwocie wiazacej\n");
   ok("zmiana w panelu czysci obie pamieci", /_materialPriceCache = \{ ts: 0, rows: null \}/.test(server));
 }
 
+// ------------------------------------------------------------
+// 6. MINIMALNA WARTOSC ZLECENIA SIEGA KWOTY WIAZACEJ
+// ------------------------------------------------------------
+// Prog 49 zl w MSLA podnosil wylacznie WIDELKI, a `unitGrosze` zostawal
+// ponizej niego. Najtanszy wydruk pokazywal "49-65 zl" razem z wierszem
+// "zastosowano minimalna wartosc zlecenia", a zamowienie szlo na 46,18 zl.
+// Obie liczby byly policzone poprawnie, kazda z innej reguly, wiec nic tego
+// nie zglaszalo.
+//
+// Prog i liste wariantow czytamy z kodu, zeby ten test nie zostal przy
+// starej liczbie ani przy starej liscie rozmiarow.
+{
+  const { calculateMSLA, MSLA_CONFIG, MSLA_SIZES, APPLICATIONS, LAYER_HEIGHTS } =
+    await import("../src/pricing/print3d.js");
+  const { QUANTITY_TIERS } = await import("../src/pricing/config.js");
+
+  const progGrosze = MSLA_CONFIG.MIN_ORDER_PLN * 100;
+  const ponizejProgu = [];
+  const widelkiPonizej = [];
+  const niespojne = [];
+  let sprawdzonych = 0;
+
+  for (const size of MSLA_SIZES.filter((s) => !s.custom)) {
+    for (const tier of QUANTITY_TIERS.filter((t) => t.qty)) {
+      for (const lang of ["pl", "en", "de"]) {
+        for (const app of APPLICATIONS) {
+          for (const layer of LAYER_HEIGHTS) {
+            const resin = app.id === "casting" ? "castable" : "standard";
+            const r = calculateMSLA(
+              { applicationId: app.id, resinKey: resin, layerId: layer.id, sizeId: size.id, quantityId: tier.id },
+              lang
+            );
+            if (!r || r.type !== "calculated") continue;
+            sprawdzonych++;
+            const opis = `${size.id}/${tier.id}/${lang}/${app.id}/${layer.id}`;
+            // Kwota WIAZACA razy ilosc nie moze zejsc ponizej minimum.
+            if (r.unitGrosze * tier.qty < progGrosze - 1) {
+              ponizejProgu.push(`${opis}: ${((r.unitGrosze * tier.qty) / 100).toFixed(2)} zl`);
+            }
+            // Widelki tez nie, bo to one stoja na ekranie klienta.
+            if (r.perPcPLN.min * tier.qty * 100 < progGrosze) {
+              widelkiPonizej.push(`${opis}: od ${r.perPcPLN.min * tier.qty} zl`);
+            }
+            if (r.perPcPLN.min > r.perPcPLN.max ||
+                r.totalPLN.min !== r.perPcPLN.min * tier.qty ||
+                r.totalPLN.max !== r.perPcPLN.max * tier.qty) {
+              niespojne.push(opis);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  ok("jest co sprawdzac", sprawdzonych > 50, `${sprawdzonych} wariantow MSLA`);
+  ok("kwota wiazaca nigdy nie schodzi ponizej minimum zlecenia", ponizejProgu.length === 0,
+     ponizejProgu.slice(0, 3).join("; "));
+  ok("widelki nie obiecuja mniej niz minimum zlecenia", widelkiPonizej.length === 0,
+     widelkiPonizej.slice(0, 3).join("; "));
+  ok("suma zgadza sie z cena jednostkowa razy ilosc", niespojne.length === 0,
+     niespojne.slice(0, 3).join("; "));
+
+  // Wiersz rozpiski ma sie zapalac wtedy i tylko wtedy, gdy prog NAPRAWDE
+  // zmienil kwote do zaplaty. Wczesniej zapalal sie takze wtedy, gdy klient
+  // i tak placil wiecej niz minimum, bo warunek patrzyl na dolna granice
+  // widelek, ktora z definicji lezy ponizej kwoty wiazacej.
+  const etykieta = (r) => r.breakdown.some((b) => /minimaln|Minimum|Mindest/.test(b.label || ""));
+  const drogi = calculateMSLA(
+    { applicationId: "prototype", resinKey: "standard", layerId: "standard", sizeId: "M", quantityId: "proto" }, "pl");
+  ok("drogi wydruk nie chwali sie progiem", drogi && !etykieta(drogi),
+     drogi ? `${(drogi.unitGrosze / 100).toFixed(2)} zl` : "brak wyceny");
+}
+
 console.log(failed ? `\n${failed} bledow` : "\nWszystko sie zgadza");
 process.exit(failed ? 1 : 0);
