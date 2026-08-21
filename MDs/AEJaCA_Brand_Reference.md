@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-21 | Wersja: 4.3*
+*Wygenerowano: 2026-08-21 | Wersja: 4.4*
 
 ---
 
@@ -598,6 +598,19 @@ dostawał kwotę wiążącą 497,83 zł, mimo że nie da się go wykonać na ża
 **Cięcie kontra grawerowanie w szybkiej wycenie (od 2026-08-19).** Przy wgranym rysunku i technologii CO2
 pokazujemy dwie karty, "Cięcie na wylot" i "Grawerowanie powierzchni", każdą z własną kwotą policzoną z tego
 samego rysunku. Wybór idzie do wyceny wiążącej i do koszyka.
+
+**Cztery kafelki technologii, nie pięć (2026-08-21).** Osobny kafelek „Druk żywiczny" zszedł z listy,
+bo pytał o to samo, co pierwszy krok kalkulatora druku: wybór FDM albo MSLA stoi tam i tak. Klient musiał
+wiedzieć, że „Druk żywiczny" i „MSLA" to jedno, zanim cokolwiek zobaczył. Zostają cztery kafelki po jednej
+maszynie: Druk 3D, Laser CO2, Laser Fiber, Odlewy żywiczne.
+
+Odnośnik `?tab=resin_msla` **dalej działa** i otwiera kalkulator druku od razu na MSLA. Stoi w karcie usługi
+w sklepie, w mapie opcji zaawansowanych i w linkach, które ktoś może mieć u siebie; gdyby przestał być
+rozpoznawany, panel otwierałby się w szybkiej wycenie na FDM i nikt by tego nie zgłosił jako błędu, bo
+strona działa, tylko trafia gdzie indziej. Ta sama mapa obsługuje przycisk „tryb zaawansowany" z szybkiej
+wyceny, który bez niej celowałby w zakładkę bez gałęzi i dawał **pusty panel**.
+`scripts/test-advanced-options.mjs` sprawdza teraz nie to, czy zakładka istnieje, tylko czy naprawdę coś
+renderuje.
 
 **Kafelki znikają po wgraniu pliku (od 2026-08-19).** Po wgraniu jakiegokolwiek pliku kafelki rodzaju pracy
 są ukrywane w całości, bo plik już mówi, co wykonujemy. Wcześniej stały obok podglądu i czytały się jak druga,
@@ -1407,6 +1420,31 @@ Schemat: `scripts/products-schema.sql`, migracje wykonują się też przy starci
 Wszystko, co obsługuje się ręcznie, mieszka w jednej aplikacji `admin/` (Express + EJS, osobna usługa na Railway, logowanie przez Google, dostęp po liście adresów). Zakładki: Dashboard, **Produkty**, **Kody**, **Przelewy**, Analytics, Leads, Subscribers, Chat, Email, Laser Matrix, Gems, Filamenty.
 
 Menu siedzi w jednym pliku `admin/views/partials/header.ejs`. Wcześniej każdy widok miał własną, przepisaną ręcznie kopię i kopie się rozjechały: na jednej podstronie brakowało Emaila, na innej Filamentów, co wyglądało, jakby pozycje znikały przy klikaniu. Nowa zakładka dopisuje się teraz raz.
+
+**Edycja i usuwanie pojedynczych rekordów (2026-08-21).** Wzorcem są Filamenty: przy każdym wierszu
+stoi ołówek i kosz. Doszły tam, gdzie ich brakowało, ale nie wszędzie, i te granice są celowe.
+
+Kamienie dostały **usuwanie**, nie dostały przycisku „dodaj". Ta tabela nadpisuje **wyłącznie cenę**,
+po identyfikatorze; lista kamieni, ich nazwy i to, czy są szlachetne, stoją w cenniku
+(`src/pricing/jewelryConfig.js`) i kalkulator czyta je stamtąd. Usunięcie wiersza znaczy więc powrót do
+ceny wpisanej w kodzie, a nie zniknięcie kamienia z oferty. Wiersz o identyfikatorze, którego cennik nie
+zna, byłby martwy i niewidoczny, więc przycisk „dodaj" byłby pułapką, a nie udogodnieniem.
+
+Kody rabatowe dostały **edycję**. Wcześniej dało się je założyć, wyłączyć i skasować, ale nie poprawić,
+więc przedłużona akcja oznaczała zabicie kodu, który klienci mają już w skrzynkach. Nazwa kodu i licznik
+użyć zostają nieedytowalne: pierwsza stoi przy złożonych zamówieniach, drugi jest zapisem tego, co się
+wydarzyło, a licznik poprawiany ręcznie przestaje być dowodem. Zejście z limitem poniżej liczby już
+wykorzystanych użyć jest odrzucane z podpowiedzią, żeby zamiast tego wyłączyć kod: inaczej kod robiłby
+się martwy, wyglądając na aktywny.
+
+Nie dobudowujemy edycji do **rozmów, zdarzeń analityki, wątków mailowych, leadów, zapisów na newsletter
+i przelewów**. To są zapisy tego, co się stało, a nie dane, które utrzymujemy. Kasowanie mają, bo czasem
+trzeba coś usunąć na żądanie; edycja odebrałaby im wartość dowodową.
+
+**Szablony panelu kompilują się i renderują w buildzie** (`admin/check-views.mjs`). Panel nie przechodzi
+przez żaden build, więc literówka w `<% %>` albo zmienna dopisana do widoku i zapomniana w trasie była
+błędem 500 u właściciela i niczym u nas. Skrypt sprawdza też, czy każdy `res.render` ma swój plik i czy
+każdy formularz edycji ma trasę zapisu.
 
 Trzy zakładki sklepowe nie piszą do bazy same, tylko wołają backend sklepu nagłówkiem `X-Admin-Token` (`CHAT_API_URL` i `ADMIN_API_TOKEN` w usłudze panelu). Powód: zapis ma skutki uboczne, których w samym SQL nie ma. Zmiana stanu wchodzi w rezerwacje towaru, potwierdzenie przelewu wysyła maile i przenosi pliki klienta do folderu Zamówienia.
 

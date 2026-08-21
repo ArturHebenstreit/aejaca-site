@@ -11,11 +11,15 @@ import CO2LaserCalc from "./calculators/CO2LaserCalc.jsx";
 import FiberLaserCalc from "./calculators/FiberLaserCalc.jsx";
 import EpoxyCastCalc from "./calculators/EpoxyCastCalc.jsx";
 
+// DRUK ZYWICZNY NIE MA WLASNEGO KAFELKA (polecenie wlasciciela, 2026-08-21).
+// Wybor FDM albo MSLA stoi juz w pierwszym kroku kalkulatora druku, wiec osobny
+// kafelek pytal o to samo drugi raz, tylko wczesniej i mniej czytelnie: klient
+// musial wiedziec, ze "Druk zywiczny" i "MSLA" to jedno, zanim cokolwiek zobaczyl.
+// Zostaja cztery kafelki, po jednej maszynie kazdy.
 const TECHS = [
   { id: "3dprint",     labelKey: "tab3d",    descKey: "desc3d",    img: "/img/calc/studio/3dprint.png" },
   { id: "co2_laser",   labelKey: "tabCO2",   descKey: "descCO2",   img: "/img/calc/studio/co2_laser.png" },
   { id: "fiber_laser", labelKey: "tabFiber", descKey: "descFiber", img: "/img/calc/studio/fiber_laser.png" },
-  { id: "resin_msla",  labelKey: "tabMSLA",  descKey: "descMSLA",  img: "/img/calc/3d_segments/msla_resin.webp" },
   { id: "epoxy",       labelKey: "tabEpoxy", descKey: "descEpoxy", img: "/img/calc/studio/epoxy.png" },
 ];
 
@@ -55,7 +59,14 @@ const LABELS = {
     shipping: "Preise verstehen sich ohne Versandkosten." },
 };
 
-const VALID_TABS = new Set(TECHS.map(t => t.id));
+// ODNOSNIKI DO ZNIESIONEGO KAFELKA ZOSTAJA ZYWE. `?tab=resin_msla` stoi
+// w karcie uslugi w sklepie, w mapie opcji zaawansowanych i w linkach, ktore
+// ktos moze miec u siebie. Gdyby przestal byc rozpoznawany, panel otwieralby
+// sie w szybkiej wycenie na druku FDM i nikt by nie zglosil bledu: strona
+// dziala, tylko trafia gdzie indziej.
+const ALIASY_TECH = { resin_msla: { tech: "3dprint", printTech: "msla" } };
+
+const VALID_TABS = new Set([...TECHS.map(t => t.id), ...Object.keys(ALIASY_TECH)]);
 
 export default function StudioCalculator() {
   const [searchParams] = useSearchParams();
@@ -63,8 +74,13 @@ export default function StudioCalculator() {
   const urlCo2Mode = searchParams.get("co2mode");
 
   const deepLinked = urlTab && VALID_TABS.has(urlTab);
+  const alias = deepLinked ? ALIASY_TECH[urlTab] : null;
   const [mode, setMode] = useState(deepLinked ? "advanced" : "simple");
-  const [activeTech, setActiveTech] = useState(deepLinked ? urlTab : "3dprint");
+  const [activeTech, setActiveTech] = useState(deepLinked ? (alias?.tech || urlTab) : "3dprint");
+  // Odnosnik na druk zywiczny ma otworzyc kalkulator druku OD RAZU na MSLA.
+  // Bez tego klient ladowalby na FDM i musial przestawiac sam, czyli dokladnie
+  // w miejscu, z ktorego wlasnie przyszedl.
+  const [printTech, setPrintTech] = useState(alias?.printTech || "fdm");
   const { lang } = useLanguage();
   const l = LABELS[lang] || LABELS.en;
 
@@ -99,7 +115,17 @@ export default function StudioCalculator() {
 
   const openAdvanced = (tech, paczka = null) => {
     const tab = ADVANCED_TAB[tech];
-    if (tab) setActiveTech(tab);
+    // TA SAMA MAPA CO PRZY ODNOSNIKU. `ADVANCED_TAB` dalej wskazuje na
+    // `resin_msla`, bo szybka wycena zna te usluge pod ta nazwa. Bez
+    // przepuszczenia jej przez aliasy klient klikajacy "tryb zaawansowany"
+    // przy wydruku z zywicy dostawalby PUSTY panel: zakladka o tym
+    // identyfikatorze nie ma juz swojej galezi, wiec nie renderuje sie nic,
+    // a strona wyglada na sprawna.
+    if (tab) {
+      const cel = ALIASY_TECH[tab] || { tech: tab };
+      setActiveTech(cel.tech);
+      setPrintTech(cel.printTech || "fdm");
+    }
     setHandoff(paczka);
     setMode("advanced");
     trackCalc("studio", "mode", "advanced_from_simple");
@@ -167,7 +193,7 @@ export default function StudioCalculator() {
         {!isSimple && (
           <>
             {/* Technology tiles */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
               {TECHS.map(({ id, labelKey, descKey, img }) => {
                 const active = activeTech === id;
                 return (
@@ -194,8 +220,12 @@ export default function StudioCalculator() {
             </div>
 
             <div className="glass-blue rounded-2xl p-5 sm:p-6">
-              {activeTech === "3dprint" && <Print3DCalc lang={lang} handoff={handoffFor(handoff, "mesh")} onHandoffUsed={() => setHandoff(null)} />}
-              {activeTech === "resin_msla" && <Print3DCalc lang={lang} initialTech="msla" handoff={handoffFor(handoff, "mesh")} onHandoffUsed={() => setHandoff(null)} />}
+              {/* `key` wymusza przemontowanie przy zmianie technologii druku. `initialTech`
+                  jest tylko wartoscia poczatkowa stanu, wiec sama zmiana propa nie
+                  przestawilaby juz zamontowanego kalkulatora: klient przychodzacy po
+                  wydruk z zywicy trafialby na FDM, a plik z szybkiej wyceny wladowalby
+                  sie w niewlasciwa polowe kalkulatora. */}
+              {activeTech === "3dprint" && <Print3DCalc key={printTech} lang={lang} initialTech={printTech} handoff={handoffFor(handoff, "mesh")} onHandoffUsed={() => setHandoff(null)} />}
               {activeTech === "co2_laser" && <CO2LaserCalc lang={lang} initialMode={urlCo2Mode === "cut" ? "cut" : "engrave"} handoff={handoffFor(handoff, "vector")} onHandoffUsed={() => setHandoff(null)} />}
               {activeTech === "fiber_laser" && <FiberLaserCalc lang={lang} handoff={handoffFor(handoff, "vector")} onHandoffUsed={() => setHandoff(null)} />}
               {activeTech === "epoxy" && <EpoxyCastCalc lang={lang} />}
