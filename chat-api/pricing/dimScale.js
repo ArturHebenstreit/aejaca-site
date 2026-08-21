@@ -1,3 +1,7 @@
+// PLIK GENEROWANY, NIE EDYTOWAC RECZNIE.
+// Zrodlo: src/utils/dimScale.js
+// Regeneracja: npm run sync:pricing
+
 // ============================================================
 // SKALA W OSOBNYCH OSIACH
 // ============================================================

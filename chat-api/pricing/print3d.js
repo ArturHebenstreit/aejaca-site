@@ -9,6 +9,7 @@
 // w przegladarce, jak i na backendzie zamowien, dlatego nie moze importowac
 // Reacta ani niczego spoza src/pricing i src/data.
 
+import { fitsBox, parseScale } from "./dimScale.js";
 import { CONFIG, QUANTITY_TIERS, applyPricing, netCostFmt, unitPriceGrosze } from "./config.js";
 import { getResinsBySegment, getResin } from "./resins.js";
 
@@ -216,11 +217,13 @@ export function maxScaleForBBox(bbox, calculator) {
 
 /** Czy bryla w tej skali miesci sie na stole. Nieznana maszyna nie blokuje wyceny. */
 export function fitsBuildVolume(bbox, calculator, scale = 1) {
-  const max = maxScaleForBBox(bbox, calculator);
-  if (max == null) return true;
-  // Zapas na bledy zaokraglenia, zeby model dokladnie na wymiar stolu nie
-  // odbijal sie od wlasnej granicy.
-  return Number(scale) <= max + 1e-4;
+  const pole = PRINTER_BUILD_VOL_CM[calculator];
+  if (!pole) return true;
+  // SKALA MOZE BYC ROZJECHANA PO OSIACH. Porownanie z jedna maksymalna liczba
+  // dzialaloby tylko dla skali rownomiernej i po cichu przepuszczaloby model
+  // rozciagniety w jednej osi poza stol. `fitsBox` sprawdza kazda os osobno
+  // i dopuszcza obrot, tak samo jak suwak wymiarow w przegladarce.
+  return fitsBox(bbox, parseScale(scale), pole);
 }
 
 export function estimateTimeFromVolume(volumeCm3) {

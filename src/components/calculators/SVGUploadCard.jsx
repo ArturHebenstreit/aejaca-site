@@ -1,5 +1,7 @@
 import { useRef, useMemo, useEffect } from "react";
 import VectorPreview from "./VectorPreview.jsx";
+import DimensionBox from "./DimensionBox.jsx";
+import { uniformScale, isUniform, dimsFor, fitsBox, AXES_2D } from "../../utils/dimScale.js";
 import { Upload, X, AlertTriangle } from "lucide-react";
 
 export const SVG_LBL = {
@@ -23,7 +25,8 @@ export const SVG_LBL = {
 const SCALE_STEPS_DOWN = [0.25, 0.5, 0.75, 1];
 const SCALE_STEPS_UP = [1.25, 1.5, 2, 3];
 
-export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChange, onUpload, onRemove, workAreaMm, extendedAreaMm, showPathLength, lang }) {
+export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChange, onUpload, onRemove, workAreaMm, extendedAreaMm, showPathLength, lang,
+  sync = true, onSyncChange = () => {}, zapamietana = null, onZapamietanaChange = null, scaledData = null }) {
   const sl = SVG_LBL[lang] || SVG_LBL.en;
   const fileRef = useRef(null);
 
@@ -38,9 +41,12 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
   const fitExtendedFloor = Math.floor(fitExtendedRaw * 10000) / 10000;
   const maxAllowedScale = extendedAreaMm ? fitExtendedFloor : fitFloor;
 
-  const scaledBbox = svgData ? { x: svgData.bboxMm.x * scale, y: svgData.bboxMm.y * scale } : null;
+  // Rysunek ma DWIE osie i skale osobna dla kazdej. Przyciski procentowe dalej
+  // pracuja na jednej liczbie, wiec pytamy, czy osie stoja razem.
+  const uni = isUniform(scale) ? Number(scale.x) : null;
+  const scaledBbox = svgData ? dimsFor(svgData.bboxMm, scale) : null;
   const maxAreaForExceeds = extendedAreaMm || workAreaMm;
-  const exceeds = svgData && maxAreaForExceeds && (scaledBbox.x > maxAreaForExceeds.x + 0.5 || scaledBbox.y > maxAreaForExceeds.y + 0.5);
+  const exceeds = svgData && maxAreaForExceeds && !fitsBox(svgData.bboxMm, scale, maxAreaForExceeds);
 
   const blobUrl = useMemo(() => {
     if (!svgData?.svgText) return null;
@@ -68,8 +74,12 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
     );
   }
 
-  const scaledAreaCm2 = svgData.engravAreaCm2 * scale * scale;
-  const scaledPathCm = svgData.pathLengthCm * scale;
+  // Pole rosnie iloczynem osi. Dlugosc sciezki NIE mnozy sie przez jedna
+  // liczbe, gdy osie sie rozjada (kolo staje sie elipsa), wiec bierzemy ja
+  // z ponownego pomiaru, ktory robi kalkulator. Brak pomiaru pokazujemy
+  // kreska zamiast liczby wzietej z powietrza.
+  const scaledAreaCm2 = svgData.engravAreaCm2 * Number(scale.x) * Number(scale.y);
+  const scaledPathCm = scaledData ? scaledData.pathLengthCm : (uni != null ? svgData.pathLengthCm * uni : null);
   const cols = showPathLength ? "grid-cols-4" : "grid-cols-3";
 
   return (
@@ -86,11 +96,12 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
         canvasBox={svgData?.canvasBox || null}
         lang={lang}
         height={180}
+        stretch={{ x: Number(scale.x), y: Number(scale.y) }}
       />
       <div className={`grid ${cols} gap-3 text-center text-[11px]`}>
         <div><div className="text-neutral-400">{sl.dims}</div><div className="font-bold">{scaledBbox.x.toFixed(1)}×{scaledBbox.y.toFixed(1)} mm</div></div>
         <div><div className="text-neutral-400">{sl.area}</div><div className="font-bold">{scaledAreaCm2.toFixed(1)} cm²</div></div>
-        {showPathLength && <div><div className="text-neutral-400">{sl.pathLen}</div><div className="font-bold">{scaledPathCm.toFixed(0)} cm</div></div>}
+        {showPathLength && <div><div className="text-neutral-400">{sl.pathLen}</div><div className="font-bold">{scaledPathCm == null ? "-" : `${scaledPathCm.toFixed(0)} cm`}</div></div>}
         <div><div className="text-neutral-400">{sl.paths}</div><div className="font-bold">{svgData.pathCount}</div></div>
       </div>
 
@@ -98,13 +109,13 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
       <div className="border-t border-white/5 pt-2 space-y-1.5">
         <div className="flex items-center justify-between text-[11px]">
           <span className="text-neutral-400">{sl.scale}</span>
-          <span className="font-bold text-blue-300">{Math.round(scale * 100)}%</span>
+          <span className="font-bold text-blue-300">{uni == null ? "-" : `${Math.round(uni * 100)}%`}</span>
         </div>
         <div className="flex flex-wrap gap-1.5">
           {SCALE_STEPS_DOWN.map(p => (
-            <button key={p} onClick={() => onScaleChange(p)}
+            <button key={p} onClick={() => onScaleChange(uniformScale(p, AXES_2D))}
               className={`px-2 py-1 rounded text-[10px] border transition-colors ${
-                Math.abs(scale - p) < 0.005
+                uni != null && Math.abs(uni - p) < 0.005
                   ? "border-blue-400 bg-blue-400/10 text-blue-300"
                   : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-200"
               }`}>
@@ -114,9 +125,9 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
           {extendedAreaMm && SCALE_STEPS_UP.map(p => {
             const disabled = p > maxAllowedScale + 0.001;
             return (
-              <button key={p} onClick={() => !disabled && onScaleChange(p)} disabled={disabled}
+              <button key={p} onClick={() => !disabled && onScaleChange(uniformScale(p, AXES_2D))} disabled={disabled}
                 className={`px-2 py-1 rounded text-[10px] border transition-colors ${
-                  Math.abs(scale - p) < 0.005 ? "border-blue-400 bg-blue-400/10 text-blue-300" :
+                  uni != null && Math.abs(uni - p) < 0.005 ? "border-blue-400 bg-blue-400/10 text-blue-300" :
                   disabled ? "border-white/5 text-neutral-700 cursor-not-allowed" :
                   "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-200"
                 }`}>
@@ -125,25 +136,36 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
             );
           })}
           {fitFloor < 0.999 && (
-            <button onClick={() => onScaleChange(fitFloor)}
+            <button onClick={() => onScaleChange(uniformScale(fitFloor, AXES_2D))}
               className={`px-2 py-1 rounded text-[10px] border border-amber-400/30 text-amber-400 hover:bg-amber-400/10 transition-colors ${
-                Math.abs(scale - fitFloor) < 0.005 ? "bg-amber-400/10" : ""
+                uni != null && Math.abs(uni - fitFloor) < 0.005 ? "bg-amber-400/10" : ""
               }`}>{sl.fitToArea}</button>
           )}
           {extendedAreaMm && fitExtendedFloor > 1.001 && (
-            <button onClick={() => onScaleChange(fitExtendedFloor)}
+            <button onClick={() => onScaleChange(uniformScale(fitExtendedFloor, AXES_2D))}
               className={`px-2 py-1 rounded text-[10px] border border-purple-400/30 text-purple-300 hover:bg-purple-400/10 transition-colors ${
-                Math.abs(scale - fitExtendedFloor) < 0.005 ? "bg-purple-400/10" : ""
+                uni != null && Math.abs(uni - fitExtendedFloor) < 0.005 ? "bg-purple-400/10" : ""
               }`}>{sl.fitToExt}</button>
           )}
         </div>
+
+        {/* Wymiary rysunku osobno w X i Y. Rysunek jest plaski, wiec osi Z tu
+            nie ma i nie udajemy, ze jest. */}
+        <DimensionBox
+          bboxMm={svgData.bboxMm}
+          scale={scale}
+          onChange={onScaleChange}
+          sync={sync}
+          onSyncChange={onSyncChange}
+          zapamietana={zapamietana}
+          onZapamietanaChange={onZapamietanaChange}
+          limitsMm={extendedAreaMm || workAreaMm || null}
+          lang={lang}
+        />
       </div>
 
-      {exceeds && (
-        <div className="flex items-center gap-1.5 text-amber-400 text-[11px]">
-          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />{sl.exceeds} ({maxAreaForExceeds.x}×{maxAreaForExceeds.y} mm)
-        </div>
-      )}
+      {/* Ostrzezenie o polu roboczym stoi w `DimensionBox` razem z przyciskiem
+          "Dopasuj do pola", wiec druga kopia tutaj tylko dublowala komunikat. */}
     </div>
   );
 }

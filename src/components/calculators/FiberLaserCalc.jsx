@@ -4,6 +4,8 @@
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, MaterialCards, HeroCards, NextStepPanel } from "./calcShared.jsx";
+import { uniformScale, isUniform, dimsFor, parseScale, serializeScale, describeScale as opisSkaliRysunku, describeDims, AXES_2D } from "../../utils/dimScale.js";
+import { measureScaled } from "../../utils/svgParser.js";
 import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
 import { QuantityStepper } from "../shop/ConfigControls.jsx";
 import CalcToCart from "./CalcToCart.jsx";
@@ -68,7 +70,11 @@ export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffU
   const [svgData, setSvgData] = useState(null);
   const [svgFileName, setSvgFileName] = useState("");
   const [svgFile, setSvgFile] = useState(null);
-  const [svgScale, setSvgScale] = useState(1);
+  // Skala rysunku jest OSOBNA DLA OSI X I Y. Rysunek jest plaski, wiec osi Z
+  // tu nie ma. `sync` trzyma proporcje, `zapamietana` jest punktem powrotu.
+  const [svgScale, setSvgScale] = useState(() => uniformScale(1, AXES_2D));
+  const [svgSync, setSvgSync] = useState(true);
+  const [svgZapamietana, setSvgZapamietana] = useState(null);
 
   const selectedLens = LENSES.find(ln => ln.id === lensId);
   const lensFieldMm = { x: selectedLens.fieldMm, y: selectedLens.fieldMm };
@@ -90,7 +96,7 @@ export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffU
     setSvgData(handoff.data);
     setSvgFile(handoff.file || null);
     setSvgFileName(handoff.name || "");
-    setSvgScale(handoff.scale || 1);
+    setSvgScale(parseScale(handoff.scale || 1, AXES_2D));
     onHandoffUsed?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handoff]);
@@ -112,13 +118,18 @@ export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffU
     setSvgData(null);
     setSvgFileName("");
     setSvgFile(null);
-    setSvgScale(1);
+    setSvgScale(uniformScale(1, AXES_2D));
   }
 
   const scaledSvgData = useMemo(() => {
-    if (!svgData || svgScale === 1) return svgData;
-    const s = svgScale;
-    return { ...svgData, bboxMm: { x: svgData.bboxMm.x * s, y: svgData.bboxMm.y * s }, pathLengthCm: svgData.pathLengthCm * s, engravAreaCm2: svgData.engravAreaCm2 * s * s };
+    if (!svgData) return null;
+    if (isUniform(svgScale) && Number(svgScale.x) === 1) return svgData;
+    // PRZY ROZJECHANYCH OSIACH DLUGOSC SCIEZKI TRZEBA ZMIERZYC PONOWNIE.
+    // Kolo rozciagniete w poziomie staje sie elipsa, a jej obwod nie jest ani
+    // proporcjonalny do osi, ani sredni z nich. Cena ciecia idzie wprost
+    // z dlugosci sciezki, wiec mnozenie dawaloby liczbe wygladajaca poprawnie
+    // i nieprawdziwa. `measureScaled` probkuje rysunek i skraca blad w ilorazie.
+    return measureScaled(svgData, Number(svgScale.x), Number(svgScale.y));
   }, [svgData, svgScale]);
 
   const areaOptions = useMemo(() =>
@@ -131,15 +142,19 @@ export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffU
     })),
   [lensId]);
 
-  const result = useMemo(() => calculate({ matId, lensId, markId, areaId, quantityId, svgData: scaledSvgData, podloze }, lang, materialStock),
-    [matId, lensId, markId, areaId, quantityId, scaledSvgData, lang, podloze, materialStock]);
+  const result = useMemo(() => {
+    // Brak pomiaru rozciagnietego rysunku nie moze cicho zejsc na przedzialy
+    // z listy: to podmiana podstawy wyceny bez slowa dla klienta.
+    if (svgData && !scaledSvgData) return { type: "custom" };
+    return calculate({ matId, lensId, markId, areaId, quantityId, svgData: scaledSvgData, podloze }, lang, materialStock);
+  }, [svgData, matId, lensId, markId, areaId, quantityId, scaledSvgData, lang, podloze, materialStock]);
 
   const paramsSummary = [
     t(MATERIALS.find(m => m.id === matId)?.label, lang),
     t(LENSES.find(ln => ln.id === lensId)?.label, lang),
     t(MARK_TYPES.find(m => m.id === markId)?.label, lang),
     svgData
-      ? `SVG: ${svgFileName} (${(svgData.engravAreaCm2 * svgScale * svgScale).toFixed(1)} cm²${svgScale !== 1 ? ` ${Math.round(svgScale*100)}%` : ""})`
+      ? `SVG: ${svgFileName} (${(svgData.engravAreaCm2 * Number(svgScale.x) * Number(svgScale.y)).toFixed(1)} cm²${opisSkaliRysunku(svgScale)})`
       : t(AREAS.find(a => a.id === areaId)?.label, lang),
     t(QUANTITY_TIERS.find(q => q.id === quantityId)?.label, lang),
     t(SUBSTRATES.find(s => s.id === podloze)?.label, lang),
@@ -162,7 +177,7 @@ export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffU
       </CalcCard>
 
       <CalcCard stepNum="④" label={svgData ? sl.fromSvg : l.area} id="file-upload">
-        <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={lensFieldMm} showPathLength={false} lang={lang} />
+        <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} sync={svgSync} onSyncChange={setSvgSync} zapamietana={svgZapamietana} onZapamietanaChange={setSvgZapamietana} scaledData={scaledSvgData} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={lensFieldMm} showPathLength={false} lang={lang} />
         {!svgData && <Chips options={areaOptions} value={areaId} onChange={setAreaId} lang={lang} />}
       </CalcCard>
 
@@ -210,7 +225,8 @@ export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffU
               onBinding={setBindingGrosze}
               calculator="laser_fiber"
               serviceId="laser_fiber"
-              params={{ matId, lensId, markId, areaId, quantityId, podloze, spare, materialNote }}
+              params={{ matId, lensId, markId, areaId, quantityId, podloze, spare, materialNote,
+                ...(svgData ? { wymiary: describeDims(svgData.bboxMm, svgScale), znieksztalcony: !isUniform(svgScale) } : {}) }}
               qty={qty}
               blocked={Boolean(svgData)}
               lang={lang}

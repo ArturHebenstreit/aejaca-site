@@ -63,6 +63,108 @@ export function parseSVG(svgText) {
 }
 
 /**
+ * Dlugosc lamanej po rozciagnieciu osi.
+ *
+ * PRZY NIEROWNOMIERNYM ROZCIAGNIECIU DLUGOSC NIE MNOZY SIE PRZEZ JEDNA
+ * LICZBE. Kolo rozciagniete dwukrotnie w poziomie staje sie elipsa, a jej
+ * obwod nie jest ani dwa razy wiekszy, ani sredni z osi: to calka, ktora nie
+ * ma zamknietego wzoru. Cena ciecia idzie wprost z dlugosci sciezki, wiec
+ * przyblizenie dawaloby liczbe wygladajaca poprawnie i nieprawdziwa.
+ *
+ * Liczymy wiec po probkach: kazdy odcinek lamanej osobno, z osiami przemnozonymi
+ * niezaleznie.
+ *
+ * @param {Array<{x:number,y:number}>} punkty probki wzdluz sciezki
+ * @param {number} sx
+ * @param {number} sy
+ */
+export function polylineLength(punkty, sx = 1, sy = 1) {
+  let suma = 0;
+  for (let i = 1; i < punkty.length; i++) {
+    const dx = (punkty[i].x - punkty[i - 1].x) * sx;
+    const dy = (punkty[i].y - punkty[i - 1].y) * sy;
+    suma += Math.hypot(dx, dy);
+  }
+  return suma;
+}
+
+/** Gestosc probkowania w jednostkach uzytkownika. Gesciej niz oko widzi. */
+const KROK_PROBKI = 0.75;
+const MAX_PROBEK = 4000;
+
+/**
+ * Mierzy rysunek ponownie po rozciagnieciu osi.
+ *
+ * ILORAZ, A NIE SUMA. Dlugosc bierzemy jako `pathLengthCm` z pierwszego
+ * pomiaru pomnozone przez STOSUNEK dlugosci lamanej rozciagnietej do
+ * nierozciagnietej. Probkowanie zaniza dlugosc krzywej zawsze o podobny
+ * ulamek, wiec w ilorazie ten blad sie skraca, a licznik zostaje dokladny
+ * (`getTotalLength` liczy krzywa, nie lamana).
+ *
+ * @param {object} parsed wynik `parseSVG`
+ * @param {number} sx
+ * @param {number} sy
+ * @returns {object|null} nowy `svgData` albo null, gdy nie da sie zmierzyc
+ */
+export function measureScaled(parsed, sx = 1, sy = 1) {
+  if (!parsed) return null;
+  const rx = Number(sx) > 0 ? Number(sx) : 1;
+  const ry = Number(sy) > 0 ? Number(sy) : 1;
+
+  const wynik = {
+    ...parsed,
+    bboxMm: { x: parsed.bboxMm.x * rx, y: parsed.bboxMm.y * ry },
+    engravAreaCm2: parsed.engravAreaCm2 * rx * ry,
+  };
+
+  // Rozciagniecie rownomierne ma zamkniety wzor, wiec nie ma po co probkowac.
+  if (Math.abs(rx - ry) < 1e-9) {
+    wynik.pathLengthCm = parsed.pathLengthCm * rx;
+    return wynik;
+  }
+  if (typeof document === "undefined" || !parsed.svgText) {
+    // Bez DOM nie zmierzymy krzywej. Nie zgadujemy: brak pomiaru ma zatrzymac
+    // automatyczna wycene, a nie podstawic liczbe z powietrza.
+    return null;
+  }
+
+  const container = document.createElement("div");
+  container.style.cssText = "position:absolute;left:-9999px;top:-9999px;visibility:hidden;width:0;height:0;overflow:hidden";
+  document.body.appendChild(container);
+  try {
+    const doc = new DOMParser().parseFromString(parsed.svgText, "image/svg+xml");
+    const svgEl = doc.documentElement;
+    const clone = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    clone.innerHTML = svgEl.innerHTML;
+    for (const a of svgEl.attributes) clone.setAttribute(a.name, a.value);
+    container.appendChild(clone);
+
+    let prosta = 0;
+    let rozciagnieta = 0;
+    for (const el of clone.querySelectorAll("path,line,rect,circle,ellipse,polygon,polyline")) {
+      let dlugosc;
+      try { dlugosc = el.getTotalLength(); } catch { continue; }
+      if (!(dlugosc > 0)) continue;
+      const n = Math.min(MAX_PROBEK, Math.max(8, Math.ceil(dlugosc / KROK_PROBKI)));
+      const punkty = [];
+      for (let i = 0; i <= n; i++) {
+        try { punkty.push(el.getPointAtLength((dlugosc * i) / n)); } catch { break; }
+      }
+      if (punkty.length < 2) continue;
+      prosta += polylineLength(punkty, 1, 1);
+      rozciagnieta += polylineLength(punkty, rx, ry);
+    }
+    if (!(prosta > 0)) return null;
+    wynik.pathLengthCm = parsed.pathLengthCm * (rozciagnieta / prosta);
+    return wynik;
+  } catch {
+    return null;
+  } finally {
+    container.remove();
+  }
+}
+
+/**
  * Prostokat calego plotna w tych samych jednostkach co `contentBox`.
  *
  * `viewBox` jest zrodlem pewnym. Gdy go nie ma, przegladarka rysuje plik od

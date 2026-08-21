@@ -40,7 +40,7 @@ const L = {
  * @param {{x,y,w,h}|null} contentBox prostokat tresci w jednostkach pliku
  * @param {{x,y,w,h}|null} canvasBox prostokat calego plotna, te same jednostki
  */
-export default function VectorPreview({ src, contentBox = null, canvasBox = null, lang = "pl", height = 160, className = "" }) {
+export default function VectorPreview({ src, contentBox = null, canvasBox = null, lang = "pl", height = 160, className = "", stretch = null }) {
   const t = L[lang] || L.pl;
   const ramka = useRef(null);
   const [rozmiar, setRozmiar] = useState({ w: 0, h: 0 });
@@ -99,6 +99,16 @@ export default function VectorPreview({ src, contentBox = null, canvasBox = null
 
   const przyblizony = zoom !== 1 || przesun.x !== 0 || przesun.y !== 0;
   const skala = dopasowanie.k * zoom;
+  // ZNIEKSZTALCENIE Z POL WYMIAROW. Rozciagniecie osi ma byc widac tutaj, bo
+  // to jedyne miejsce, gdzie klient sprawdzi, czy o to mu chodzilo. Mnozymy
+  // przez wspolczynnik wzgledny (os / wieksza z osi), zeby rysunek nie
+  // wyskakiwal poza kadr przy powiekszeniu obu osi naraz: samo dopasowanie
+  // odpowiada za wielkosc, to tylko za proporcje.
+  const sx = Number(stretch?.x) > 0 ? Number(stretch.x) : 1;
+  const sy = Number(stretch?.y) > 0 ? Number(stretch.y) : 1;
+  const wiodaca = Math.max(sx, sy);
+  const rx = sx / wiodaca;
+  const ry = sy / wiodaca;
 
   return (
     <div className={`relative w-full rounded-lg overflow-hidden bg-[#0c1222] border border-emerald-400/10 ${className}`} style={{ height }}>
@@ -119,7 +129,7 @@ export default function VectorPreview({ src, contentBox = null, canvasBox = null
           style={{
             objectFit: "contain",
             filter: "invert(1) hue-rotate(180deg)",
-            transform: `translate(${przesun.x}px, ${przesun.y}px) scale(${skala}) translate(${dopasowanie.dx}px, ${dopasowanie.dy}px)`,
+            transform: `translate(${przesun.x}px, ${przesun.y}px) scale(${skala * rx}, ${skala * ry}) translate(${dopasowanie.dx}px, ${dopasowanie.dy}px)`,
             transformOrigin: "center",
           }}
         />

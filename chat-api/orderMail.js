@@ -18,7 +18,7 @@
 import { DOWNLOAD_DAYS, MAX_DOWNLOADS } from "./digitalDelivery.js";
 import { SELLER as SELLER_DATA } from "./pricing/sellerInfo.js";
 import { withdrawalSummary, REGIME } from "./withdrawal.js";
-import { describeFinding } from "./pricing/quoteSummary.js";
+import { describeFinding, distortionLine } from "./pricing/quoteSummary.js";
 
 const SELLER = {
   ...SELLER_DATA,
@@ -40,6 +40,8 @@ const T = {
     thanks: "dziękujemy za zamówienie i za dokonaną płatność. Poniżej podsumowanie.",
     orderNo: "Numer zamówienia",
     items: "Zamówione pozycje",
+    dimsTitle: "Ustalone wymiary",
+    dimsIntro: "Poniższe pozycje wykonamy w wymiarach zmienionych względem przysłanego pliku. Zapisujemy to jako ustalenie.",
     delivery: "Dostawa",
     total: "Zapłacono",
     next: "Co dalej",
@@ -100,6 +102,8 @@ const T = {
     thanks: "thank you for your order and for the payment. Here is the summary.",
     orderNo: "Order number",
     items: "Items ordered",
+    dimsTitle: "Agreed dimensions",
+    dimsIntro: "The items below will be made in dimensions changed from the file you sent. We record this as agreed.",
     delivery: "Delivery",
     total: "Paid",
     next: "What happens next",
@@ -160,6 +164,8 @@ const T = {
     thanks: "vielen Dank für Ihre Bestellung und für die Zahlung. Nachfolgend die Zusammenfassung.",
     orderNo: "Bestellnummer",
     items: "Bestellte Positionen",
+    dimsTitle: "Vereinbarte Maße",
+    dimsIntro: "Die folgenden Positionen fertigen wir in gegenüber der eingesandten Datei geänderten Maßen. Wir halten das als Vereinbarung fest.",
     delivery: "Lieferung",
     total: "Bezahlt",
     next: "Wie es weitergeht",
@@ -284,6 +290,21 @@ const TECH_NAME = { fdm: "FDM", msla: "MSLA" };
  * Pozycje z potwierdzonymi uwagami do modelu, w jezyku zamowienia.
  * Zwraca puste, gdy nikt niczego nie potwierdzal.
  */
+/**
+ * Pozycje, w ktorych klient zmienil ksztalt wyrobu wzgledem pliku.
+ *
+ * To jest DOWOD USTALENIA, a nie ozdoba maila: wykonamy rzecz o innych
+ * proporcjach niz oryginal, wiec potwierdzenie musi to mowic wprost i podac
+ * wymiary, na ktore klient przystal. Zdanie bierzemy z `quoteSummary`, bo
+ * to samo stoi w kalkulatorze i w koszyku.
+ */
+function distortedItems(items, lang) {
+  return items
+    .filter((i) => i.params?.znieksztalcony)
+    .map((i) => ({ title: i.title, line: distortionLine(i.params, lang), wymiary: i.params?.wymiary || null }))
+    .filter((x) => x.line);
+}
+
 function acceptedPrintNotes(items, lang) {
   const out = [];
   for (const i of items) {
@@ -342,6 +363,7 @@ function customerHtml(order, items, lang) {
   const deliveryName = l.deliveryNames[order.delivery_method] || order.delivery_method || "";
   const wd = withdrawalParts(order, items, l);
   const printNotes = acceptedPrintNotes(items, lang);
+  const zmienioneWymiary = distortedItems(items, lang);
   const pliki = downloadLinks(items);
 
   return `<!doctype html><html><body style="margin:0;padding:24px;background:#f6f6f6;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111">
@@ -378,6 +400,16 @@ function customerHtml(order, items, lang) {
 
     <h3 style="font-size:14px;margin:24px 0 6px">${l.next}</h3>
     <p style="margin:0;line-height:1.6;font-size:14px;color:#444">${l.nextBody}</p>
+
+    ${zmienioneWymiary.length ? `
+      <h3 style="font-size:14px;margin:24px 0 6px">${l.dimsTitle}</h3>
+      <p style="margin:0 0 10px;line-height:1.6;font-size:13px;color:#444">${esc(l.dimsIntro)}</p>
+      ${zmienioneWymiary.map((n) => `
+        <div style="border:1px solid #e8dcc0;background:#fdfaf2;border-radius:8px;padding:12px;margin:0 0 10px">
+          <p style="margin:0 0 4px;font-size:13px;font-weight:700">${esc(n.title)}</p>
+          <p style="margin:0;font-size:13px;color:#444;line-height:1.6">${esc(n.line)}</p>
+        </div>`).join("")}
+    ` : ""}
 
     ${printNotes.length ? `
       <h3 style="font-size:14px;margin:24px 0 6px">${l.printTitle}</h3>
@@ -418,6 +450,7 @@ function customerText(order, items, lang) {
   const lines = items.map((i) => `- ${i.title} x ${i.qty}: ${money(i.line_grosze)}`);
   const wd = withdrawalParts(order, items, l);
   const printNotes = acceptedPrintNotes(items, lang);
+  const zmienioneWymiary = distortedItems(items, lang);
   const pliki = downloadLinks(items);
   return [
     l.hi,
@@ -442,8 +475,15 @@ function customerText(order, items, lang) {
     "",
     `${l.next}: ${l.nextBody}`,
     // Wersja tekstowa jest tym, co przeczyta klient z czytnikiem ekranu i to,
-    // co zostaje, gdy klient wylaczy HTML. Zapis o potwierdzonych uwagach musi
-    // byc w obu, inaczej dokumentacja zalezy od ustawien poczty.
+    // co zostaje, gdy klient wylaczy HTML. Zapis o zmienionych wymiarach
+    // i o potwierdzonych uwagach musi byc w obu, inaczej dokumentacja
+    // ustalenia zalezy od ustawien poczty.
+    ...(zmienioneWymiary.length ? [
+      "",
+      `${l.dimsTitle}:`,
+      l.dimsIntro,
+      ...zmienioneWymiary.map((n) => `${n.title}. ${n.line}`),
+    ] : []),
     ...(printNotes.length ? [
       "",
       `${l.printTitle}:`,
@@ -486,7 +526,7 @@ function internalText(order, items, attachments = []) {
   const lines = items.map(
     (i) => `- ${i.title} x ${i.qty} = ${money(i.line_grosze)}
   kalkulator: ${i.calculator}
-  parametry: ${JSON.stringify(i.params)}${i.params?.description ? `\n  OPIS OD KLIENTA: ${i.params.description}` : ""}${i.params?.podloze ? `\n  PODLOZE: ${PODLOZE_PL[i.params.podloze] || i.params.podloze}${i.params.spare ? `, ${SPARE_PL[i.params.spare] || i.params.spare}` : ""}${i.params.materialNote ? `, material: ${i.params.materialNote}` : ""}` : ""}${i.params?.personalization ? `\n  GRAWER NA WYROBIE: ${i.params.personalization}` : ""}${i.params?.packagingText ? `\n  GRAWER NA WIEKU: ${i.params.packagingText}` : ""}${i.params?.packagingTextBack ? `\n  GRAWER WEWNATRZ WIEKA: ${i.params.packagingTextBack}` : ""}${i.file_name ? `\n  plik: ${i.file_name} (sha256 ${String(i.file_sha256 || "").slice(0, 16)})${i.file_url ? `\n  Dysk: ${i.file_url}` : "\n  Dysk: link jeszcze nie dotarl z n8n"}${i.upload_token && API_BASE ? `\n  Podglad: ${API_BASE}/api/uploads/${i.upload_token}/thumb` : ""}` : ""}${
+  parametry: ${JSON.stringify(i.params)}${i.params?.wymiary ? `\n  WYMIARY: ${i.params.wymiary}` : ""}${i.params?.znieksztalcony ? `\n  !! WYROB ZNIEKSZTALCONY: osie zmieniane osobno, ksztalt inny niz w pliku` : ""}${i.params?.description ? `\n  OPIS OD KLIENTA: ${i.params.description}` : ""}${i.params?.podloze ? `\n  PODLOZE: ${PODLOZE_PL[i.params.podloze] || i.params.podloze}${i.params.spare ? `, ${SPARE_PL[i.params.spare] || i.params.spare}` : ""}${i.params.materialNote ? `, material: ${i.params.materialNote}` : ""}` : ""}${i.params?.personalization ? `\n  GRAWER NA WYROBIE: ${i.params.personalization}` : ""}${i.params?.packagingText ? `\n  GRAWER NA WIEKU: ${i.params.packagingText}` : ""}${i.params?.packagingTextBack ? `\n  GRAWER WEWNATRZ WIEKA: ${i.params.packagingTextBack}` : ""}${i.file_name ? `\n  plik: ${i.file_name} (sha256 ${String(i.file_sha256 || "").slice(0, 16)})${i.file_url ? `\n  Dysk: ${i.file_url}` : "\n  Dysk: link jeszcze nie dotarl z n8n"}${i.upload_token && API_BASE ? `\n  Podglad: ${API_BASE}/api/uploads/${i.upload_token}/thumb` : ""}` : ""}${
       i.geometry ? `\n  geometria: ${Number(i.geometry.volumeCm3).toFixed(2)} cm3, bbox ${i.geometry.bbox?.x}x${i.geometry.bbox?.y}x${i.geometry.bbox?.z} cm` : ""
     }${
       // Wyroznione, bo w warsztacie to jest instrukcja: drukowac mimo wykrytej

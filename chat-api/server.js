@@ -987,6 +987,26 @@ async function currentMetalRates() {
 // inna, i nic by tego nie zglosilo.
 let _materialPriceCache = { ts: 0, rows: null };
 
+/**
+ * Skala pozycji: liczba (zapis sprzed wymiarow w trzech osiach) albo `{x,y,z}`.
+ *
+ * Nieczytelna wartosc daje 1, a nie wyjatek: brak skali ma zatrzymac
+ * zniekształcenie, a nie sprzedaz. Zla skala i tak odbije sie o kontrole pola
+ * roboczego przy wycenie.
+ */
+function odczytajSkale(wartosc) {
+  if (wartosc == null || wartosc === "") return 1;
+  if (typeof wartosc === "object") return wartosc;
+  const liczba = Number(wartosc);
+  if (Number.isFinite(liczba) && liczba > 0) return liczba;
+  try {
+    const z = JSON.parse(String(wartosc));
+    if (typeof z === "number" && z > 0) return z;
+    if (z && typeof z === "object") return z;
+  } catch {}
+  return 1;
+}
+
 async function currentMaterialStock() {
   if (!pool) return null;
   const now = Date.now();
@@ -1061,7 +1081,11 @@ app.post("/api/price", (req, res, next) => {
   try {
     const calculator = String(req.body?.calculator || "");
     const lang = String(req.body?.lang || "pl");
-    const scale = req.body?.scale ? Number(req.body.scale) : 1;
+    // Skala przychodzi JSON-em, bo od wprowadzenia wymiarow w trzech osiach
+    // bywa obiektem `{x,y,z}`. `Number(...)` na obiekcie da NaN, a NaN po
+    // cichu zjezdza do skali 1: klient placilby za model w innej wielkosci
+    // niz zamowil. Stary zapis (goła liczba) parsuje sie tak samo.
+    const scale = odczytajSkale(req.body?.scale);
     let params = req.body?.params;
     if (typeof params === "string") {
       try { params = JSON.parse(params); }
@@ -1355,7 +1379,7 @@ app.post("/api/quotes/save", express.json({ limit: "1mb" }), async (req, res) =>
         fileName = fileName || rows[0].file_name || null;
       }
 
-      const scale = Number(raw?.scale) > 0 ? Number(raw.scale) : 1;
+      const scale = odczytajSkale(raw?.scale);
       const materialStock = calculator.startsWith("laser_") ? await currentMaterialStock() : null;
       const item = priceItem({ calculator, params, lang, geometry, scale, rates, gemstones, materialStock });
       priced.push({

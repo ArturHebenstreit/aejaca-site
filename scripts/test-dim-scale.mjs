@@ -19,6 +19,8 @@ import {
   AXES_2D,
 } from "../src/utils/dimScale.js";
 import { maxScaleForBuildVolume, BUILD_VOL_CM } from "../src/pricing/print3d.js";
+import { priceItem } from "../chat-api/orders.js";
+import { readFileSync } from "node:fs";
 
 let bledy = 0;
 const zle = (m) => { console.error(`  BLAD: ${m}`); bledy++; };
@@ -150,6 +152,66 @@ sekcja("7. Rysunek wektorowy");
   }
   if (!blisko(scaleForDim({ x: 10, y: 5 }, "y", 20), 4)) zle("przeliczenie wymiaru docelowego na skale nie zgadza sie");
   ok("rysunek pracuje na dwoch osiach, pole rosnie iloczynem");
+}
+
+// --- 8. Kwota wiazaca liczy z tej samej skali ------------------------------
+sekcja("8. Serwer");
+{
+  // Bryla splaszczona w Z musi kosztowac mniej niz szescienna, i to po
+  // stronie serwera, bo to on wystawia kwote wiazaca.
+  const geometria = { volumeCm3: 20, surfaceAreaCm2: 60, bbox: { x: 4, y: 4, z: 4 }, triangleCount: 100 };
+  const wspolne = { calculator: "print3d_fdm", lang: "pl", geometry: geometria,
+    params: { segment: "standard", materialKey: "PLA", infillId: "medium", colorId: 1, precisionId: "standard_04", quantityId: "proto" } };
+  const rowna = priceItem({ ...wspolne, scale: 2 }).unitGrosze;
+  const splaszczona = priceItem({ ...wspolne, scale: { x: 2, y: 2, z: 0.5 } }).unitGrosze;
+  if (!(splaszczona < rowna)) {
+    zle(`splaszczony model kosztuje ${(splaszczona / 100).toFixed(2)}, a szescienny ${(rowna / 100).toFixed(2)}: serwer nie widzi osi`);
+  } else {
+    ok(`serwer liczy osie osobno (splaszczony ${(splaszczona / 100).toFixed(2)} wobec ${(rowna / 100).toFixed(2)} PLN)`);
+  }
+
+  // Model rozciagniety poza stol musi zostac odrzucony, takze gdy rozciagniecie
+  // dotyczy jednej osi. Porownanie z jedna maksymalna liczba by go przepuscilo.
+  let odmowil = false;
+  try { priceItem({ ...wspolne, scale: { x: 1, y: 1, z: 12 } }); }
+  catch (e) { odmowil = e?.code === "too_large_for_printer"; }
+  if (!odmowil) zle("model wyciagniety poza stol zostal wyceniony");
+  else ok("model wyciagniety w jednej osi poza stol nie dostaje kwoty");
+
+  // Transport: skala jedzie JSON-em, bo `String({...})` daje "[object Object]",
+  // z ktorego serwer odczytalby NaN i po cichu wycenil skale 1.
+  const cart = readFileSync(new URL("../src/components/calculators/CalcToCart.jsx", import.meta.url), "utf8");
+  if (!/body\.append\("scale", JSON\.stringify\(scale\)\)/.test(cart)) {
+    zle("koszyk wysyla skale bez JSON, wiec obiekt osi zamieni sie w tekst bez tresci");
+  }
+  const serwer = readFileSync(new URL("../chat-api/server.js", import.meta.url), "utf8");
+  if (!/function odczytajSkale/.test(serwer)) zle("serwer nie ma odczytu skali obiektowej");
+  if (/Number\(req\.body\?\.scale\)/.test(serwer) || /Number\(raw\?\.scale\)/.test(serwer)) {
+    zle("serwer dalej rzutuje skale na liczbe, wiec obiekt osi zamieni sie w NaN");
+  }
+  ok("skala jedzie do serwera JSON-em i wraca jako osie");
+}
+
+// --- 9. Kalkulatory nie ustawiaja skali gola liczba ------------------------
+sekcja("9. Stan skali w kalkulatorach");
+// `Object.keys(1)` to pusta lista, wiec skala ustawiona liczba daje pola
+// wymiarow bez ani jednej osi i gabaryt "NaN x NaN x NaN". Nic tego nie
+// zglasza: komponent renderuje sie normalnie, tylko bez zawartosci.
+// Zdarzylo sie to juz raz, w obsludze wgrania i usuniecia pliku.
+{
+  const PLIKI = [
+    "src/components/calculators/Print3DCalc.jsx",
+    "src/components/calculators/CO2LaserCalc.jsx",
+    "src/components/calculators/FiberLaserCalc.jsx",
+  ];
+  for (const wzgledna of PLIKI) {
+    const tresc = readFileSync(new URL(`../${wzgledna}`, import.meta.url), "utf8");
+    tresc.split("\n").forEach((linia, i) => {
+      const m = /set(?:Stl|MslaStl|Svg)Scale\(\s*([0-9.]+)\s*\)/.exec(linia);
+      if (m) zle(`${wzgledna}:${i + 1}: skala ustawiona liczba ${m[1]} zamiast obiektem osi`);
+    });
+  }
+  ok("skala zawsze ustawiana obiektem osi, nigdy gola liczba");
 }
 
 if (bledy) {
