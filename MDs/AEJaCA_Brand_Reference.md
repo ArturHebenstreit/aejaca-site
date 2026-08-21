@@ -499,6 +499,19 @@ gęstość, więc przejście na wylot wymaga kilku powtórzeń i pilnowania, a n
 sklejce. Rachunek ze sklejki tego nie widzi, bo sklejka jest materiałem jednorodnym. Skutek na ekranie:
 cięcie ścieżki S kosztuje 44-88 PLN zamiast 15-30 PLN dla sklejki 3 mm.
 
+**Cena HDF poprawia się sama przy wdrożeniu (2026-08-21).** Tabela `material_stock` zakłada się raz,
+a zestaw startowy wchodzi z `ON CONFLICT DO NOTHING`, żeby wdrożenie nie kasowało poprawek robionych
+w panelu. Kosztem tego poprawiona liczba w repozytorium **nie dochodzi do bazy założonej wcześniej**:
+HDF zszedł z 42 na 22 zł/m² w kodzie, build był zielony, a klient dalej płacił po staremu. Awaria
+najgorszego rodzaju, bo wszystko wygląda na zrobione.
+
+Lista korekt (`src/pricing/materialCorrections.js`) to naprawia. Każda pozycja wykonuje się raz, jest
+zapisana w tabeli `material_corrections`, i **rusza wiersz tylko wtedy, gdy stoi w nim dokładnie ta
+stara wartość**. Jeżeli właściciel zdąży poprawić cenę w panelu, wdrożenie mu jej nie cofnie. Korekta,
+która trafi w wiersz, czyści obie pamięci podręczne stawek naraz, bo wyczyszczenie jednej dawałoby
+godzinę, w której podgląd i kwota wiążąca mówią co innego. Pozycji z listy się nie usuwa: to zapis
+tego, co zmienialiśmy w cudzych danych, a instancja założona wcześniej może wstać dopiero za rok.
+
 **Grawer liczy się z drogi głowicy, a nie z kartki (2026-08-21).** To była odpowiedź na pytanie
 właściciela, jak ten sam plik może kosztować 18 zł przy cięciu i 157 zł przy grawerze. Cięcie liczyło
 **długość ścieżki**, czyli to, co maszyna faktycznie przejeżdża, a grawer **prostokąt opisany na

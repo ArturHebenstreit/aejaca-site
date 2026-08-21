@@ -21,6 +21,7 @@ import { packagingGrosze, sanitizePersonalization } from "./pricing/packaging.js
 import { inboundAllowed, wymagaPrzesylki } from "./pricing/inboundDelivery.js";
 import { brakPodloza } from "./pricing/laserSubstrate.js";
 import { MATERIAL_SEED } from "./pricing/materialStockSeed.js";
+import { MATERIAL_CORRECTIONS } from "./pricing/materialCorrections.js";
 import { validateCustomer, normalizePhone } from "./pricing/customerFields.js";
 import { eurCentsFromGrosze } from "./pricing/currency.js";
 import { shippingGrosze as shippingCost, needsCustoms, zoneForCountry } from "./pricing/shipping.js";
@@ -427,7 +428,7 @@ if (pool) {
     // wczesniej jej nie ma. Bez tego zapytanie o cene za sztuke wywalaloby
     // caly odczyt stawek, a wycena po cichu zjechalaby na wartosc domyslna.
     return pool.query("ALTER TABLE material_stock ADD COLUMN IF NOT EXISTS pln_per_piece NUMERIC(10,2)");
-  }).catch(() => {});
+  }).then(() => zastosujKorektyStawek()).catch(() => {});
 
   pool.query(`CREATE TABLE IF NOT EXISTS filament_types (
     id BIGSERIAL PRIMARY KEY,
@@ -3667,6 +3668,57 @@ app.get("/api/gemstone-prices", async (req, res) => {
 // i kwota wiazaca biora sie z jednego zrodla. Bez tego klient widzialby
 // jedna cene, a placil inna, i nic by tego nie zglosilo.
 let _materialCache = { ts: 0, data: null };
+
+// ── KOREKTY STAWEK JUZ ZAPISANYCH W BAZIE ────────────────────────────────────
+// Zestaw startowy wchodzi z `ON CONFLICT DO NOTHING`, wiec poprawiona liczba
+// z repozytorium nie dochodzi do tabeli zalozonej wczesniej. Poprawka wygladala
+// wtedy na zrobiona: build zielony, kod poprawny, klient widzi stara cene.
+//
+// Lista korekt stoi w `pricing/materialCorrections.js` i tam jest opisana.
+// Tutaj zostaje samo wykonanie, z dwoma zabezpieczeniami:
+//
+//   - `AND pln_per_m2 = $stara` sprawia, ze korekta rusza wylacznie wartosc,
+//     ktora znamy jako bledna. Gdy wlasciciel zdazyl poprawic cene w panelu,
+//     wdrozenie mu jej NIE COFNIE.
+//   - Wykonana korekta jest zapisana po `id`, wiec nie powtorzy sie przy
+//     kazdym restarcie. Zapisujemy ja takze wtedy, gdy nie trafila w zaden
+//     wiersz: znaczy to, ze temat jest zamkniety, a nie ze mamy probowac dalej.
+async function zastosujKorektyStawek() {
+  if (!pool || !MATERIAL_CORRECTIONS.length) return;
+  await pool.query(`CREATE TABLE IF NOT EXISTS material_corrections (
+    id VARCHAR(80) PRIMARY KEY,
+    material_id VARCHAR(50) NOT NULL,
+    rows_changed INTEGER NOT NULL DEFAULT 0,
+    applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`);
+  for (const k of MATERIAL_CORRECTIONS) {
+    try {
+      const { rows: juz } = await pool.query("SELECT id FROM material_corrections WHERE id=$1", [k.id]);
+      if (juz.length) continue;
+      const wynik = await pool.query(
+        `UPDATE material_stock SET pln_per_m2=$1, updated_at=NOW(), updated_by=$2
+         WHERE material_id=$3 AND pln_per_m2=$4`,
+        [k.to_pln_per_m2, `korekta:${k.id}`, k.material_id, k.from_pln_per_m2]
+      );
+      await pool.query(
+        "INSERT INTO material_corrections (id, material_id, rows_changed) VALUES ($1,$2,$3) ON CONFLICT (id) DO NOTHING",
+        [k.id, k.material_id, wynik.rowCount || 0]
+      );
+      // Stawka wisi w dwoch pamieciach podrecznych naraz. Bez wyczyszczenia obu
+      // przegladarka dostalaby nowa cene, a kwota wiazaca liczylaby sie ze
+      // starej, i przez godzine obie strony mowilyby co innego.
+      if (wynik.rowCount) {
+        _materialCache = { ts: 0, data: null };
+        _materialPriceCache = { ts: 0, rows: null };
+        console.log(`[material] korekta ${k.id}: ${k.material_id} ${k.from_pln_per_m2} -> ${k.to_pln_per_m2} zl/m2`);
+      } else {
+        console.log(`[material] korekta ${k.id}: pominieta, stawka juz inna niz ${k.from_pln_per_m2}`);
+      }
+    } catch (e) {
+      console.error(`[material] korekta ${k.id} nieudana:`, e.message);
+    }
+  }
+}
 
 app.get("/api/material-stock", async (req, res) => {
   if (!pool) return res.status(503).json({ error: "DB unavailable" });

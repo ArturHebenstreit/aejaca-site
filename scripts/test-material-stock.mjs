@@ -20,6 +20,7 @@ import {
   materialCostPLN, ratePerPiece, pricedSeparately, salePerM2,
 } from "../src/pricing/materialStock.js";
 import { CUT_MATERIALS, ENGRAVE_MATERIALS } from "../src/pricing/laserCo2.js";
+import { MATERIAL_CORRECTIONS } from "../src/pricing/materialCorrections.js";
 import { MATERIAL_SEED, seedAsStock } from "../src/pricing/materialStockSeed.js";
 import { calculate as calcFiber } from "../src/pricing/laserFiber.js";
 import { priceItem } from "../chat-api/orders.js";
@@ -218,6 +219,62 @@ if (!/seedAsStock\(\)/.test(deriveSrc)) {
   zle("tabela jest wczytana, ale nie trafia do wywolania kalkulatora");
 } else {
   ok("karta uslugi i koszyk licza material z tego samego zestawu");
+}
+
+// --- 11. Korekty stawek juz zapisanych w bazie ------------------------------
+sekcja("11. Korekty stawek w istniejacej bazie");
+// Zestaw startowy wchodzi z `ON CONFLICT DO NOTHING`, wiec poprawiona liczba
+// w repozytorium NIE DOCHODZI do tabeli zalozonej wczesniej. To najgorszy
+// rodzaj awarii: build zielony, kod poprawny, klient placi po staremu.
+// Korekta z `materialCorrections.js` to naprawia, ale sama moze sie zepsuc
+// cicho na trzy sposoby, i kazdy jest tu sprawdzany.
+{
+  const seedWg = new Map(MATERIAL_SEED.map((m) => [m.material_id, m]));
+  const widziane = new Set();
+  for (const k of MATERIAL_CORRECTIONS) {
+    if (!k.id || widziane.has(k.id)) zle(`korekta bez identyfikatora albo powtorzona: ${k.id}`);
+    widziane.add(k.id);
+    const m = seedWg.get(k.material_id);
+    if (!m) { zle(`korekta ${k.id} dotyczy materialu ${k.material_id}, ktorego nie ma w zestawie startowym`); continue; }
+    if (!(Number(k.from_pln_per_m2) > 0) || !(Number(k.to_pln_per_m2) > 0)) {
+      zle(`korekta ${k.id} ma stawke, ktora nie jest dodatnia`);
+    }
+    if (Number(k.from_pln_per_m2) === Number(k.to_pln_per_m2)) zle(`korekta ${k.id} nic nie zmienia`);
+    // NAJWAZNIEJSZE: nowa baza dostaje zestaw startowy, a stara korekte.
+    // Gdy te dwie liczby sie rozjada, cena zalezy od tego, kiedy ktos zalozyl
+    // instancje, i zadna strona tego nie zglosi.
+    if (Number(m.pln_per_m2) !== Number(k.to_pln_per_m2)) {
+      zle(`korekta ${k.id} celuje w ${k.to_pln_per_m2} zl, a zestaw startowy ma ${m.pln_per_m2} zl: nowa i stara baza policzą inaczej`);
+    }
+  }
+
+  const srv = readFileSync(new URL("../chat-api/server.js", import.meta.url), "utf8");
+  // Bez warunku na stara wartosc wdrozenie cofaloby wlascicielowi kazda
+  // poprawke zrobiona w panelu, i to bez sladu.
+  if (!/WHERE material_id=\$3 AND pln_per_m2=\$4/.test(srv)) {
+    zle("korekta nie sprawdza starej stawki, wiec nadpisze poprawke wlasciciela z panelu");
+  }
+  // Bez zapisu wykonania korekta chodzilaby przy kazdym restarcie.
+  if (!/INSERT INTO material_corrections \(/.test(srv)) zle("wykonana korekta nie jest nigdzie zapisywana");
+  if (!/SELECT id FROM material_corrections WHERE id=\$1/.test(srv)) zle("korekta nie sprawdza, czy juz byla wykonana");
+  // Korekta jest wolana W LANCUCHU STARTOWYM, ktory konczy sie `.catch(() => {})`.
+  // Ten catch polyka wszystko, wiec zamiana deklaracji funkcji na `const fn = ...`
+  // wywalilaby korekte na TDZ i NIKT by sie o tym nie dowiedzial: serwer wstaje
+  // normalnie, a cena zostaje stara. Deklaracja musi byc hoistowana.
+  if (!/^async function zastosujKorektyStawek\(\)/m.test(srv)) {
+    zle("korekta nie jest hoistowana deklaracja funkcji, wiec wywali sie przy starcie, a catch to polknie");
+  }
+  if (!/\.then\(\(\) => zastosujKorektyStawek\(\)\)/.test(srv)) zle("korekta nie jest wolana przy starcie");
+  // Stawka wisi w dwoch pamieciach naraz; wyczyszczenie jednej daje godzine,
+  // w ktorej podglad i kwota wiazaca mowia co innego.
+  const ciało = srv.match(/async function zastosujKorektyStawek\(\)[\s\S]*?\n\}/);
+  if (!ciało) zle("nie znalazlem funkcji korekt w chat-api/server.js");
+  else {
+    if (!/_materialCache = \{ ts: 0/.test(ciało[0]) || !/_materialPriceCache = \{ ts: 0/.test(ciało[0])) {
+      zle("korekta nie czysci obu pamieci podrecznych, wiec podglad i kwota wiazaca rozjada sie na godzine");
+    }
+  }
+  ok(`${MATERIAL_CORRECTIONS.length} korekt: kazda celuje w wartosc z zestawu startowego i nie rusza poprawek z panelu`);
 }
 
 if (bledy) {
