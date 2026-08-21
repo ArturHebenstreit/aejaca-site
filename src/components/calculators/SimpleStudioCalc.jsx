@@ -425,15 +425,15 @@ function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false, 
               optDisabled
                 ? "opacity-30 pointer-events-none border-white/5"
                 : active
-                  ? "border-emerald-400 shadow-lg shadow-emerald-400/20"
+                  ? "border-emerald-400 ring-2 ring-emerald-400/60 shadow-[0_0_0_6px_rgba(52,211,153,0.16)]"
                   : "border-white/10 bg-white/[0.02] hover:border-white/25"
             }`}>
             {hasImg ? (
               <>
                 <div className="absolute inset-0 overflow-hidden bg-black">
                   <img src={opt.img} alt={label} loading="lazy"
-                    className={`w-full h-full object-cover transition-transform duration-500 ${
-                      active ? "scale-105" : "group-hover:scale-105"
+                    className={`w-full h-full object-cover transition-all duration-500 ${
+                      active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
                     }`} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
                   {active && <div className="absolute inset-0 bg-emerald-400/10 mix-blend-overlay" />}
@@ -1135,7 +1135,7 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
 
             {fileType === "stl" && stlData?.triangles && (
               <div className="mb-3">
-                <Suspense fallback={<div className="w-full rounded-lg bg-[#0c1222] border border-emerald-400/10 animate-pulse" style={{ height: "200px" }} />}>
+                <Suspense fallback={<div className="w-full rounded-lg bg-[#eef0f3] border border-black/10 animate-pulse" style={{ height: "200px" }} />}>
                   <STLViewer triangles={stlData.triangles} bbox={stlData.bbox} />
                 </Suspense>
               </div>

@@ -10,6 +10,7 @@
 
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, netCostFmt } from "./config.js";
 import { materialCostPLN, materialIsOurs, pricedSeparately } from "./materialStock.js";
+import { sweptAreaCm2, coverageOf, coverageMeasured } from "./engraveCoverage.js";
 
 
 export const CO2_CONFIG = {
@@ -38,7 +39,8 @@ export const LBL = {
     engraveTime: "Czas grawerowania", timeSetup: "Czas + setup / szt.", prepMat: "Przygotowanie mat.",
     energy: "Energia / szt.", depreciation: "Amortyzacja / szt.", workshop: "Usługi warsztatowe",
     estCost: "Koszt szacunkowy / szt.", discount: "Rabat seryjny", totalProd: "Czas produkcji łącznie",
-    cutTime: "Czas cięcia", materialCost: "Materiał / szt.", materialSeparate: "wycena indywidualna", extSurcharge: "Narzut rozszerzony obszar" },
+    cutTime: "Czas cięcia", materialCost: "Materiał / szt.", materialSeparate: "wycena indywidualna", extSurcharge: "Narzut rozszerzony obszar",
+    coverage: "Pokrycie rysunku", coverageHint: "część pola, po której jedzie głowica" },
   en: { mode: "Work mode", engrave: "Engraving", cut: "Cutting",
     engraveDesc: "Raster - surface marking", cutDesc: "Vector - shape cutting",
     material: "Material", matThick: "Material & thickness", area: "Engraving area",
@@ -49,7 +51,8 @@ export const LBL = {
     engraveTime: "Engraving time", timeSetup: "Time + setup / pc", prepMat: "Material prep",
     energy: "Energy / pc", depreciation: "Depreciation / pc", workshop: "Workshop services",
     estCost: "Estimated cost / pc", discount: "Series discount", totalProd: "Total production time",
-    cutTime: "Cut time", materialCost: "Material / pc", materialSeparate: "quoted separately", extSurcharge: "Extended area surcharge" },
+    cutTime: "Cut time", materialCost: "Material / pc", materialSeparate: "quoted separately", extSurcharge: "Extended area surcharge",
+    coverage: "Artwork coverage", coverageHint: "share of the field the head travels" },
   de: { mode: "Arbeitsmodus", engrave: "Gravur", cut: "Schnitt",
     engraveDesc: "Raster - Oberflächenmarkierung", cutDesc: "Vektor - Formenschnitt",
     material: "Material", matThick: "Material & Stärke", area: "Gravurfläche",
@@ -60,7 +63,8 @@ export const LBL = {
     engraveTime: "Gravurzeit", timeSetup: "Zeit + Setup / Stk.", prepMat: "Materialvorbereitung",
     energy: "Energie / Stk.", depreciation: "Abschreibung / Stk.", workshop: "Werkstattleistungen",
     estCost: "Geschätzte Kosten / Stk.", discount: "Serienrabatt", totalProd: "Gesamte Produktionszeit",
-    cutTime: "Schnittzeit", materialCost: "Material / Stk.", materialSeparate: "separate Kalkulation", extSurcharge: "Aufpreis erweiterter Bereich" },
+    cutTime: "Schnittzeit", materialCost: "Material / Stk.", materialSeparate: "separate Kalkulation", extSurcharge: "Aufpreis erweiterter Bereich",
+    coverage: "Zeichnungsabdeckung", coverageHint: "Anteil der Fläche, den der Kopf abfährt" },
 };
 // `grupa` odpowiada kaflowi materialu w szybkiej wycenie i zawezа liste
 // wyboru: drewno pokazuje drewniane, metal metalowe, reszta idzie pod
@@ -233,7 +237,14 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svg
   if (!mat.rateMin || !area.area || !detail.mul || !qTier.qty) return { type: "custom" };
   const l = LBL[lang] || LBL.en;
 
-  let timeMin = area.area * mat.rateMin * detail.mul;
+  // CZAS IDZIE Z POLA, PO KTORYM GLOWICA JEZDZI, a nie z prostokata opisanego
+  // na rysunku. Do 2026-08-21 bylo odwrotnie i stad brala sie roznica, ktora
+  // zglosil wlasciciel: ten sam plik wyciety kosztowal 18 zl, a wygrawerowany
+  // 157, bo ciecie liczylo droge glowicy, a grawer cala kartke razem z pustka.
+  // Bez wgranego rysunku pokrycie zostaje pelne: przedzialy z listy klient
+  // podaje jako pole GRAWERU, wiec pustki w nich nie ma.
+  const swept = sweptAreaCm2(area.area, svgData);
+  let timeMin = swept * mat.rateMin * detail.mul;
   let extCostAdd = 0;
   if (extended) {
     timeMin *= CO2_CONFIG.EXTENDED_AREA_TIME_MUL;
@@ -269,6 +280,10 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svg
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     totalTimeH: qTier.qty > 1 ? batchTimeH : null,
     breakdown: [
+      // Pokrycie pokazujemy TYLKO wtedy, gdy je zmierzylismy i gdy cos zmienia.
+      // Linia "100%" przy kazdej wycenie z listy byla by szumem, a linia bez
+      // pomiaru sugerowalaby pomiar, ktorego nie ma.
+      ...(coverageMeasured(svgData) ? [{ label: l.coverage, value: `${Math.round(coverageOf(svgData) * 100)}%` }] : []),
       { label: l.engraveTime, value: `${timeMin.toFixed(1)} min` },
       { label: l.timeSetup, value: `${(totalTimeH * 60).toFixed(1)} min` },
       { label: l.workshop, value: fc(laborCost) },

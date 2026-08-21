@@ -349,14 +349,14 @@ export default function JewelryCalc({ lang = "pl" }) {
             return (
               <button key={s.id} onClick={() => { setServiceId(s.id); trackCalc("jewelry", "service", s.id); }}
                 className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[160px] ${
-                  active ? "border-amber-400 shadow-lg shadow-amber-400/20" : "border-white/10 hover:border-white/30"
+                  active ? "border-amber-400 ring-2 ring-amber-400/60 shadow-[0_0_0_6px_rgba(251,191,36,0.16)]" : "border-white/10 hover:border-white/30"
                 }`}>
                 {/* Background image (full visibility) */}
                 {s.img && (
                   <div className="absolute inset-0 overflow-hidden">
                     <img src={s.img} alt={t(s.label, lang)} loading="lazy"
-                      className={`w-full h-full object-cover transition-transform duration-500 ${
-                        active ? "scale-105" : "group-hover:scale-105"
+                      className={`w-full h-full object-cover transition-all duration-500 ${
+                        active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
                       }`} />
                     {/* Gradient only at bottom, preserves image visibility */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
@@ -387,14 +387,14 @@ export default function JewelryCalc({ lang = "pl" }) {
                 return (
                   <button key={pl.id} onClick={() => { setLineId(pl.id); setTypeId(JEWELRY_TYPES[pl.id]?.[0]?.id || ""); trackCalc("jewelry", "line", pl.id); }}
                     className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[180px] ${
-                      active ? "border-amber-400 shadow-lg shadow-amber-400/20" : "border-white/10 hover:border-white/30"
+                      active ? "border-amber-400 ring-2 ring-amber-400/60 shadow-[0_0_0_6px_rgba(251,191,36,0.16)]" : "border-white/10 hover:border-white/30"
                     }`}>
                     {/* Background image (full visibility) */}
                     {pl.img && (
                       <div className="absolute inset-0 overflow-hidden">
                         <img src={pl.img} alt={pl.label} loading="lazy"
-                          className={`w-full h-full object-cover transition-transform duration-500 ${
-                            active ? "scale-105" : "group-hover:scale-105"
+                          className={`w-full h-full object-cover transition-all duration-500 ${
+                            active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
                           }`} />
                         {/* Gradient only at bottom */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
@@ -425,7 +425,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                   <button key={jt.id}
                     onClick={() => { setTypeId(jt.id); trackCalc("jewelry", "type", jt.id); }}
                     className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                      active ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10"
+                      active ? "border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/60 shadow-[0_0_0_5px_rgba(251,191,36,0.14)]"
                         : "border-white/10 bg-white/[0.02] hover:border-white/20"
                     }`}>
                     <div className={`w-full aspect-square rounded-lg overflow-hidden ${
@@ -433,7 +433,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     }`}>
                       {hasImg ? (
                         <img src={jt.img} alt={label} loading="lazy"
-                          className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+                          className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
                       ) : (
                         <span className="text-2xl opacity-60">◆</span>
                       )}
@@ -486,12 +486,12 @@ export default function JewelryCalc({ lang = "pl" }) {
                 return (
                   <button key={w.id} onClick={() => setWeightId(w.id)}
                     className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[130px] ${
-                      active ? "border-amber-400 shadow-lg shadow-amber-400/20" : "border-white/10 hover:border-white/30"
+                      active ? "border-amber-400 ring-2 ring-amber-400/60 shadow-[0_0_0_6px_rgba(251,191,36,0.16)]" : "border-white/10 hover:border-white/30"
                     }`}>
                     {w.img && (
                       <div className="absolute inset-0 overflow-hidden">
                         <img src={w.img} alt={t(w.label, lang)} loading="lazy"
-                          className={`w-full h-full object-cover transition-transform duration-500 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+                          className={`w-full h-full object-cover transition-all duration-500 ${active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"}`} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
                         {active && <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />}
                       </div>
@@ -731,14 +731,14 @@ export default function JewelryCalc({ lang = "pl" }) {
                   return (
                     <button key={w.id} onClick={() => setWeaveId(w.id)}
                       className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                        active ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10"
+                        active ? "border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/60 shadow-[0_0_0_5px_rgba(251,191,36,0.14)]"
                           : "border-white/10 bg-white/[0.02] hover:border-white/20"
                       }`}>
                       <div className="w-full aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
                         onDoubleClick={e => { e.stopPropagation(); if (w.img) setWeaveModal(w.id); }}>
                         {w.img ? (
                           <img src={w.img} alt={t(w.label, lang)} loading="lazy"
-                            className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+                            className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
                         ) : (
                           <span className="text-2xl opacity-40">⛓</span>
                         )}
@@ -808,13 +808,13 @@ export default function JewelryCalc({ lang = "pl" }) {
                   return (
                     <button key={c.id} onClick={() => setClaspId(c.id)}
                       className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                        active ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10"
+                        active ? "border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/60 shadow-[0_0_0_5px_rgba(251,191,36,0.14)]"
                           : "border-white/10 bg-white/[0.02] hover:border-white/20"
                       }`}>
                       <div className="w-full aspect-square rounded-lg overflow-hidden bg-black">
                         {c.img ? (
                           <img src={c.img} alt={t(c.label, lang)} loading="lazy"
-                            className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+                            className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
                         ) : (
                           <span className="text-2xl opacity-40 flex items-center justify-center h-full">🔗</span>
                         )}
@@ -838,7 +838,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                 return (
                   <button key={m.id} onClick={() => { setMetalId(m.id); trackCalc("jewelry", "metal", m.id); }}
                     className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                      active ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10"
+                      active ? "border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/60 shadow-[0_0_0_5px_rgba(251,191,36,0.14)]"
                         : "border-white/10 bg-white/[0.02] hover:border-white/20"
                     }`}>
                     <div className={`w-full aspect-square rounded-lg overflow-hidden ${
@@ -846,7 +846,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     }`}>
                       {m.img ? (
                         <img src={m.img} alt={label} loading="lazy"
-                          className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+                          className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
                       ) : (
                         <span className="text-2xl opacity-60">⬡</span>
                       )}
@@ -915,12 +915,12 @@ export default function JewelryCalc({ lang = "pl" }) {
                 return (
                   <button key={m.id} onClick={() => setMethodId(m.id)}
                     className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[140px] ${
-                      active ? "border-amber-400 shadow-lg shadow-amber-400/20" : "border-white/10 hover:border-white/30"
+                      active ? "border-amber-400 ring-2 ring-amber-400/60 shadow-[0_0_0_6px_rgba(251,191,36,0.16)]" : "border-white/10 hover:border-white/30"
                     }`}>
                     {m.img && (
                       <div className="absolute inset-0 overflow-hidden">
                         <img src={m.img} alt={t(m.label, lang)} loading="lazy"
-                          className={`w-full h-full object-cover transition-transform duration-500 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+                          className={`w-full h-full object-cover transition-all duration-500 ${active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"}`} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
                         {active && <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />}
                       </div>
@@ -966,12 +966,12 @@ export default function JewelryCalc({ lang = "pl" }) {
                 return (
                   <button key={pl.id} onClick={() => setPlatingId(pl.id)}
                     className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-                      active ? "border-amber-400 bg-amber-400/10 shadow-lg shadow-amber-400/10"
+                      active ? "border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/60 shadow-[0_0_0_5px_rgba(251,191,36,0.14)]"
                         : "border-white/10 bg-white/[0.02] hover:border-white/20"
                     }`}>
                     <div className="w-full aspect-square rounded-lg overflow-hidden bg-black">
                       <img src={pl.img} alt={label} loading="lazy"
-                        className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+                        className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
                     </div>
                     <span className={`text-[10px] sm:text-[11px] text-center leading-tight break-all line-clamp-2 ${
                       active ? "text-amber-300 font-medium" : "text-neutral-400"
@@ -1046,7 +1046,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                       {jt.img ? (
                         <>
                           <img src={jt.img} alt={label} loading="lazy"
-                            className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`}
+                            className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`}
                             style={{ filter: "grayscale(30%) sepia(20%)" }} />
                           <div className="absolute inset-0 bg-sky-900/30 mix-blend-multiply" />
                         </>
@@ -1086,7 +1086,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     }`}>
                     <div className="w-full aspect-square rounded-lg overflow-hidden relative bg-black">
                       <img src={m.img} alt={label} loading="lazy"
-                        className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`}
+                        className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`}
                         style={{ filter: "grayscale(30%) sepia(20%)" }} />
                       <div className="absolute inset-0 bg-sky-900/30 mix-blend-multiply" />
                     </div>
@@ -1137,7 +1137,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                       {jt.img ? (
                         <>
                           <img src={jt.img} alt={label} loading="lazy"
-                            className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`}
+                            className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`}
                             style={{ filter: "grayscale(45%) contrast(110%) sepia(10%)" }} />
                           <div className="absolute inset-0 bg-orange-900/25 mix-blend-multiply" />
                         </>
@@ -1178,7 +1178,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     }`}>
                     <div className="w-full aspect-square rounded-lg overflow-hidden relative bg-black">
                       <img src={m.img} alt={label} loading="lazy"
-                        className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`}
+                        className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`}
                         style={{ filter: "grayscale(45%) contrast(110%) sepia(10%)" }} />
                       <div className="absolute inset-0 bg-orange-900/25 mix-blend-multiply" />
                     </div>

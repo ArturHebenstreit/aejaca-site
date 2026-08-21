@@ -121,6 +121,22 @@ export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffU
     setSvgScale(uniformScale(1, AXES_2D));
   }
 
+  // POMIAR POKRYCIA DOCHODZI PO PARSOWANIU, bo wymaga narysowania pliku na
+  // rastrze, a to jest asynchroniczne. Ta sama regula co przy CO2, bo fiber
+  // znakuje tak samo wierszami.
+  useEffect(() => {
+    const tekst = svgData?.svgText;
+    if (!tekst || svgData.coverage !== undefined) return;
+    let zywy = true;
+    (async () => {
+      const { measureCoverage } = await import("../../utils/svgCoverage.js");
+      const cov = await measureCoverage(tekst, svgData.bboxMm, svgData.contentBox);
+      if (!zywy) return;
+      setSvgData((d) => (d && d.svgText === tekst ? { ...d, coverage: null, ...(cov || {}) } : d));
+    })();
+    return () => { zywy = false; };
+  }, [svgData?.svgText, svgData?.coverage]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const scaledSvgData = useMemo(() => {
     if (!svgData) return null;
     if (isUniform(svgScale) && Number(svgScale.x) === 1) return svgData;

@@ -436,7 +436,7 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
           <button key={opt.id} onClick={() => onChange(opt.id)}
             className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[120px] sm:min-h-[140px] ${
               active
-                ? "border-rose-400 shadow-lg shadow-rose-400/20"
+                ? "border-rose-400 ring-2 ring-rose-400/60 shadow-[0_0_0_6px_rgba(251,113,133,0.16)]"
                 : "border-white/10 bg-white/[0.02] hover:border-white/25"
             }`}>
             {hasImg ? (
@@ -444,8 +444,8 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
                 {/* Background image */}
                 <div className="absolute inset-0 overflow-hidden bg-black">
                   <img src={opt.img} alt={label} loading="lazy"
-                    className={`w-full h-full object-cover transition-transform duration-500 ${
-                      active ? "scale-105" : "group-hover:scale-105"
+                    className={`w-full h-full object-cover transition-all duration-500 ${
+                      active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
                     }`} />
                   {/* Bottom gradient for text legibility */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />

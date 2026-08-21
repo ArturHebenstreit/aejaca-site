@@ -68,6 +68,46 @@ const SRC = join(ROOT, "src");
     });
   }
 
+  // ── Wyszarzenie kafelkow niewybranych ──────────────────────────────────
+  // Ta sama pulapka co wyzej, tylko na `filter` zamiast na `text-shadow`.
+  // Regula rozjasniajaca zdjecia w motywie jasnym ustawia `filter` z `!important`
+  // i wyzsza waga, wiec zjada narzedziowa klase `grayscale` z Tailwinda: kafelki
+  // szarzeja w motywie ciemnym, a w jasnym nie. Zadna strona tego nie zglasza.
+  if (!/img\.tile-dim\s*\{/.test(css)) {
+    zle.push("brak klasy img.tile-dim w src/index.css, wiec niewybrane kafelki nie szarzeja");
+  }
+  // KAZDA regula rozjasniajaca potrzebuje WLASNEJ pary, a nie jednej wspolnej.
+  // Sprawdzenie "czy gdziekolwiek jest tile-dim w motywie jasnym" przepuszczalo
+  // usuniecie jednej z nich, bo zaliczala je druga. Dlatego pary wyprowadzamy
+  // z samych regul rozjasniajacych, zamiast wypisywac selektory z pamieci.
+  const ROZJASNIENIA = [...css.matchAll(/\[data-theme="light"\]\s+(\w+:has\([^)]*\))\s+img(:not\(\.tile-dim\))?\s*\{\s*filter:\s*brightness/g)];
+  if (!ROZJASNIENIA.length) zle.push("nie znalazlem regul rozjasniajacych zdjecia w motywie jasnym; sprawdzenie stracilo sens");
+  for (const m of ROZJASNIENIA) {
+    const selektor = m[1];
+    // Bez `:not(.tile-dim)` rozjasnienie dalej wygrywa o `filter`, bo ma
+    // `!important` i wyzsza wage niz sama klasa. Wtedy kafelki szarzeja
+    // wylacznie w motywie ciemnym, czego nikt nie zglosi jako bledu.
+    if (!m[2]) zle.push(`rozjasnienie "${selektor}" nie wyklucza .tile-dim, wiec skasuje szarosc kafelka`);
+    const para = css.indexOf(`[data-theme="light"] ${selektor} img.tile-dim`);
+    if (para === -1) {
+      zle.push(`rozjasnienie "${selektor}" nie ma pary dla img.tile-dim, wiec skasuje szarosc kafelka`);
+    } else if (para < m.index) {
+      zle.push(`regula img.tile-dim dla "${selektor}" stoi PRZED rozjasnieniem; musi byc po nim`);
+    }
+  }
+  // Wyszarzenie bez `grayscale` nie robi nic, a klasa dalej wyglada na obecna.
+  const deklaracja = css.match(/img\.tile-dim\s*\{[^}]*\}/);
+  if (deklaracja && !/grayscale\(/.test(deklaracja[0])) {
+    zle.push("img.tile-dim nie odbarwia zdjecia");
+  }
+  // Kafelek wybrany musi rozniс sie od reszty czyms wiecej niz obwodka.
+  for (const wzgledna of PLIKI_KAFELKOW) {
+    const tresc = readFileSync(join(SRC, wzgledna), "utf8");
+    if (/from-black\\?\/95/.test(tresc) && !/tile-dim/.test(tresc)) {
+      zle.push(`src/${wzgledna}: kafelki ze zdjeciem bez wyszarzenia niewybranych`);
+    }
+  }
+
   if (zle.length) {
     console.error("\nObwodka napisow na kafelkach:\n");
     for (const b of zle) console.error(`  ${b}`);

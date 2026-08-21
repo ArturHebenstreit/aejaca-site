@@ -174,12 +174,12 @@ export default function StudioCalculator() {
                   <button key={id}
                     onClick={() => { setActiveTech(id); trackCalc("studio", "tech_tab", id); }}
                     className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden min-h-[140px] ${
-                      active ? "border-blue-400 shadow-lg shadow-blue-400/20" : "border-white/10 hover:border-white/30"
+                      active ? "border-blue-400 ring-2 ring-blue-400/60 shadow-[0_0_0_6px_rgba(96,165,250,0.16)]" : "border-white/10 hover:border-white/30"
                     }`}>
                     {img && (
                       <div className="absolute inset-0 overflow-hidden">
                         <img src={img} alt={l[labelKey]} loading="lazy"
-                          className={`w-full h-full object-cover transition-transform duration-500 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+                          className={`w-full h-full object-cover transition-all duration-500 ${active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"}`} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
                         {active && <div className="absolute inset-0 bg-blue-400/10 mix-blend-overlay" />}
                       </div>

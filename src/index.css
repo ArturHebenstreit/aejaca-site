@@ -508,13 +508,40 @@ body {
 }
 
 /* Boost brightness of images inside calc/service cards */
-[data-theme="light"] button:has(.from-black\/95) img { filter: brightness(1.32) !important; }
+[data-theme="light"] button:has(.from-black\/95) img:not(.tile-dim) { filter: brightness(1.32) !important; }
 /* STL/SVG tile images (Link elements) */
-[data-theme="light"] a:has(.from-black\/90.via-black\/60) img { filter: brightness(1.28) !important; }
+[data-theme="light"] a:has(.from-black\/90.via-black\/60) img:not(.tile-dim) { filter: brightness(1.28) !important; }
 /* Tool subpage rounded card - brighten image */
-[data-theme="light"] div:has(> .bg-gradient-to-t.from-neutral-950.via-black\/40) img {
+[data-theme="light"] div:has(> .bg-gradient-to-t.from-neutral-950.via-black\/40) img:not(.tile-dim) {
   filter: brightness(1.20) !important;
 }
+
+/* ── Kafelek niewybrany: szary, wybrany w kolorze ──────────────────────
+   Klient przewijal liste kafelkow i nie wiedzial, ktory ma zaznaczony: sama
+   obwodka w kolorze akcentu ginela na kontrastowej fotografii produktowej.
+   Roznica idzie wiec dwoma kanalami: niewybrane zdjecia sa szare i przygaszone,
+   wybrane zostaje w kolorze i dostaje szerszy pierscien.
+
+   KLASA, A NIE `grayscale` Z TAILWINDA, I TO NIE JEST OZDOBNIK. Regula
+   rozjasniajaca zdjecia w motywie jasnym (wyzej) ustawia `filter` z `!important`
+   i selektorem o wyzszej wadze, wiec zjadala narzedziowa klase `grayscale`
+   w calosci: w ciemnym motywie kafelki szarzaly, w jasnym nie i nikt by tego
+   nie zauwazyl poza uzytkownikiem. Wlasna klasa stoi PO tamtej regule i jest od
+   niej bardziej szczegolowa, a jasnosc przechodzi zmienna, zeby szarosc nie
+   skasowala rozjasnienia.
+
+   ROZJASNIENIA WYKLUCZAJA `.tile-dim` PRZEZ `:not()`, i to jest sedno poprawki.
+   Sama wlasna klasa nie wystarczyla: tamte reguly maja `!important` i wyzsza
+   wage, wiec dalej wygrywaly, a kafelki szarzaly TYLKO w motywie ciemnym.
+   Zamiast licytowac sie specyficznoscia, wyjmujemy te obrazki spod tamtej
+   reguly, wiec konkurencji o `filter` w ogole nie ma.
+   Pilnuje tego `scripts/check-light-theme.mjs`. */
+img.tile-dim { --tile-jasnosc: 1; filter: grayscale(1) brightness(var(--tile-jasnosc)) !important; }
+[data-theme="light"] button:has(.from-black\/95) img.tile-dim { --tile-jasnosc: 1.32; }
+[data-theme="light"] a:has(.from-black\/90.via-black\/60) img.tile-dim { --tile-jasnosc: 1.28; }
+[data-theme="light"] div:has(> .bg-gradient-to-t.from-neutral-950.via-black\/40) img.tile-dim { --tile-jasnosc: 1.20; }
+/* Najazd myszka zdejmuje szarosc, zeby dalo sie obejrzec oferte bez klikania. */
+button:hover img.tile-dim, a:hover img.tile-dim { filter: brightness(var(--tile-jasnosc)) !important; }
 
 /* ── Napis na zdjeciu: ciemna obwodka, a nie sam cien ──────────────────
    Kafelki kalkulatorow maja pod tekstem fotografie, a fotografia bywa jasna

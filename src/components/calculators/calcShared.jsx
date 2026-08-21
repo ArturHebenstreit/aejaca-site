@@ -64,6 +64,13 @@ export function Chips({ options, value, onChange, lang = "pl" }) {
   );
 }
 
+// WYBRANY KAFELEK MA BYC WIDOCZNY Z DRUGIEGO KONCA POKOJU. Sama obwodka
+// w kolorze akcentu ginela na zdjeciu produktowym, ktore samo w sobie jest
+// kontrastowe: klient przewijal liste i nie wiedzial, co ma zaznaczone.
+// Dlatego roznica idzie DWOMA kanalami naraz. Niewybrane zdjecia schodza
+// do szarosci i sciemniaja sie, a wybrane zostaje w kolorze i dostaje szersza
+// poswiate. Najazd myszka przywraca kolor, wiec przegladanie oferty nie
+// odbywa sie po szarych miniaturach.
 export function MaterialCards({ options, value, onChange, lang = "pl", cols = "grid-cols-3 sm:grid-cols-4 md:grid-cols-5" }) {
   return (
     <div className={`grid ${cols} gap-2 sm:gap-3`}>
@@ -73,7 +80,7 @@ export function MaterialCards({ options, value, onChange, lang = "pl", cols = "g
         return (
           <button key={String(o.id)} onClick={() => onChange(o.id)}
             className={`relative group flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all duration-200 overflow-hidden ${
-              active ? "border-blue-400 bg-blue-400/10 shadow-lg shadow-blue-400/10"
+              active ? "border-blue-400 bg-blue-400/10 ring-2 ring-blue-400/60 shadow-[0_0_0_5px_rgba(96,165,250,0.14)]"
                 : "border-white/10 bg-white/[0.02] hover:border-white/20"
             }`}>
             <div className={`w-full aspect-square rounded-lg overflow-hidden ${
@@ -81,7 +88,9 @@ export function MaterialCards({ options, value, onChange, lang = "pl", cols = "g
             }`}>
               {o.img ? (
                 <img src={o.img} alt={label} loading="lazy"
-                  className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+                  className={`w-full h-full object-cover transition-all duration-300 ${
+                    active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"
+                  }`} />
               ) : (
                 <span className="text-2xl opacity-60">⬡</span>
               )}
@@ -132,12 +141,14 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
             style={{ minHeight: `${minH}px` }}
             className={`group relative rounded-xl border text-left transition-all duration-200 overflow-hidden ${
               o.disabled ? "border-white/5 opacity-40 cursor-not-allowed" :
-              active ? "border-blue-400 shadow-lg shadow-blue-400/20" : "border-white/10 hover:border-white/30"
+              active ? "border-blue-400 ring-2 ring-blue-400/60 shadow-[0_0_0_6px_rgba(96,165,250,0.16)]" : "border-white/10 hover:border-white/30"
             }`}>
             {o.img && (
               <div className="absolute inset-0 overflow-hidden">
                 <img src={o.img} alt={lbl(o.label)} loading="lazy"
-                  className={`w-full h-full object-cover transition-transform duration-500 ${active ? "scale-105" : "group-hover:scale-105"}`} />
+                  className={`w-full h-full object-cover transition-all duration-500 ${
+                    active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
+                  }`} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
                 {active && <div className="absolute inset-0 bg-blue-400/10 mix-blend-overlay" />}
               </div>

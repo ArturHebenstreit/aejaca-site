@@ -62,7 +62,7 @@ function ResinCards({ options, value, onChange, lang }) {
         return (
           <button key={o.id} onClick={() => onChange(o.id)}
             className={`text-left p-3 rounded-xl border transition-all duration-200 ${
-              active ? "border-blue-400 bg-blue-400/10 shadow-lg shadow-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
+              active ? "border-blue-400 bg-blue-400/10 ring-2 ring-blue-400/60 shadow-[0_0_0_5px_rgba(96,165,250,0.14)]" : "border-white/10 bg-white/[0.02] hover:border-white/20"
             }`}>
             <div className={`text-xs sm:text-sm font-semibold mb-0.5 ${active ? "text-blue-300" : "text-white"}`}>{t(o.label, lang)}</div>
             <div className="text-[11px] text-neutral-400 mb-1.5 leading-snug">{t(o.desc, lang)}</div>
@@ -219,7 +219,7 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
           <X className="w-3.5 h-3.5" />{sl.remove}
         </button>
       </div>
-      <Suspense fallback={<div className="w-full rounded-lg bg-[#0c1222] border border-white/5 animate-pulse" style={{ height: "220px" }} />}>
+      <Suspense fallback={<div className="w-full rounded-lg bg-[#eef0f3] border border-black/10 animate-pulse" style={{ height: "220px" }} />}>
         <STLViewer triangles={stlData.triangles} bbox={stlData.bbox} scale={scale} />
       </Suspense>
       <div className="grid grid-cols-3 gap-3 text-center text-[11px]">

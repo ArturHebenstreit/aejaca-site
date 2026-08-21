@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-20 | Wersja: 4.2*
+*Wygenerowano: 2026-08-21 | Wersja: 4.3*
 
 ---
 
@@ -498,6 +498,26 @@ ale właściciel podniósł do 1,00 z powodu warsztatowego: lita deska ma słoje
 gęstość, więc przejście na wylot wymaga kilku powtórzeń i pilnowania, a nie jednego przejazdu jak przy
 sklejce. Rachunek ze sklejki tego nie widzi, bo sklejka jest materiałem jednorodnym. Skutek na ekranie:
 cięcie ścieżki S kosztuje 44-88 PLN zamiast 15-30 PLN dla sklejki 3 mm.
+
+**Grawer liczy się z drogi głowicy, a nie z kartki (2026-08-21).** To była odpowiedź na pytanie
+właściciela, jak ten sam plik może kosztować 18 zł przy cięciu i 157 zł przy grawerze. Cięcie liczyło
+**długość ścieżki**, czyli to, co maszyna faktycznie przejeżdża, a grawer **prostokąt opisany na
+rysunku**, czyli razem z pustką między liniami. Rysunek wektorowy jest teraz mierzony: rasteryzujemy
+go i sumujemy **rozpiętość śladu w wierszach**, bo tak pracuje głowica rastrowa. Wiersz pusty pomija
+w całości, a w wierszu ze śladem przejeżdża od pierwszego znaku do ostatniego, plus rozbieg.
+
+Liczenie procentu zaczernienia byłoby błędem i jest osobno pilnowane: **prostokątna ramka ma tuszu
+kilka procent pola, a głowica przejeżdża po niej całą szerokość**, bo w każdym wierszu między jej
+bokami stoją dwie pionowe linie na skrajach. Taki błąd obciąłby cenę kilkudziesięciokrotnie.
+
+Pokrycie skaluje **wyłącznie czas maszyny**. Płyta i jej przygotowanie zostają przy całym prostokącie,
+bo arkusz kupujemy w całości niezależnie od tego, jak gęsty jest wzór. Przy wycenie z przedziałów
+(bez pliku) nic się nie zmienia: klient podaje wtedy pole graweru, więc pustki w nim nie ma. Rysunek
+DXF i plik sięgający po zewnętrzne zasoby zostają przy starym wzorze, czyli przy kwocie zawyżonej,
+bo pomiar bez rastra jest niemożliwy, a zgadywanie w drugą stronę oznaczałoby grawer poniżej kosztu.
+Regułę czytają obie maszyny grawerujące z jednego pliku (`src/pricing/engraveCoverage.js`), a pilnuje
+jej `scripts/test-engrave-coverage.mjs`. Zmierzone pokrycie widać w rozpisce i w podsumowaniu pozycji,
+więc spadek ceny nie wygląda na przypadek.
 
 **Podwyżka dotyczy wyłącznie cięcia.** Grawer na sklejce, litej desce i płycie drewnopochodnej wygląda
 tak samo i tyle samo trwa, więc kosztuje tyle samo (potwierdzone przez właściciela 2026-08-20).
