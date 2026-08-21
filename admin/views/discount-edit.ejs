@@ -1,0 +1,153 @@
+<%- include('partials/header', { user: user, title: `Kod: ${ kod.code }`, active: 'discounts' }) %>
+
+  <main class="max-w-2xl mx-auto px-6 py-8">
+
+    <div class="flex items-center gap-3 mb-6">
+      <a href="/discounts" class="text-neutral-500 hover:text-white transition-colors text-sm">&larr; Wróć do kodów</a>
+    </div>
+
+    <h2 class="text-xl font-semibold text-white mb-2">Popraw kod</h2>
+    <p class="text-xs text-neutral-500 mb-6 font-mono">
+      kod: <span class="text-amber-400"><%= kod.code %></span>
+      &nbsp;|&nbsp; użyto: <span class="text-neutral-300"><%= kod.used_count %></span>
+      <% if (kod.pending) { %>&nbsp;|&nbsp; w toku: <span class="text-neutral-300"><%= kod.pending %></span><% } %>
+    </p>
+
+    <%# NAZWY I LICZNIKA NIE DA SIE TU ZMIENIC, i to jest decyzja, a nie
+        niedoróbka. Nazwa jest już w rękach klientów i stoi przy zamówieniach,
+        a licznik użyć jest zapisem tego, co się stało. Poprawiany ręcznie
+        przestałby być dowodem, a zacząłby być opinią. -%>
+    <div class="mb-6 px-4 py-3 rounded-lg border border-white/10 bg-neutral-900 text-xs text-neutral-400 leading-relaxed">
+      Nazwy kodu i licznika użyć nie da się zmienić. Nazwa jest już u klientów i stoi przy złożonych
+      zamówieniach, a licznik jest zapisem tego, co się wydarzyło.
+      <% if (kod.used_count > 0) { %>
+        <span class="text-amber-400/90">Ten kod ktoś już wykorzystał: zmiana wartości zadziała dopiero
+        od następnego użycia i nie ruszy zamówień, które już poszły.</span>
+      <% } %>
+    </div>
+
+    <% if (err) { %>
+    <div class="mb-5 px-4 py-3 bg-red-950/50 border border-red-500/30 text-red-300 rounded-lg text-sm">
+      <%= err %>
+    </div>
+    <% } %>
+
+    <form method="POST" action="/discounts/<%= encodeURIComponent(kod.code) %>/update" class="space-y-5">
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Rodzaj</label>
+          <select name="kind" id="kind"
+            class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 transition-colors">
+            <option value="percent" <%= kod.kind === 'percent' ? 'selected' : '' %>>Procent</option>
+            <option value="amount" <%= kod.kind === 'amount' ? 'selected' : '' %>>Kwota</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">
+            Wartość <span class="text-neutral-600 normal-case" id="jednostka"><%= kod.kind === 'percent' ? '(%)' : '(zł)' %></span>
+          </label>
+          <%# Kwoty trzymamy w groszach, a wpisuje się je w złotych: ta sama
+              zamiana co przy zakładaniu kodu. Rozjechanie się tych dwóch dałoby
+              kod stukrotnie hojniejszy, niż ktokolwiek zamierzał. -%>
+          <input type="number" name="value" step="<%= kod.kind === 'percent' ? '1' : '0.01' %>" min="0.01" required
+            value="<%= kod.kind === 'percent' ? kod.value : (kod.value / 100).toFixed(2) %>"
+            class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-amber-400 font-semibold focus:outline-none focus:border-amber-400/50 transition-colors" />
+        </div>
+        <div>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Obejmuje</label>
+          <select name="appliesTo"
+            class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 transition-colors">
+            <% ['all','products','services','jewelry','studio'].forEach(function (z) { %>
+            <option value="<%= z %>" <%= kod.applies_to === z ? 'selected' : '' %>>
+              <%= { all: 'Wszystko', products: 'Produkty', services: 'Usługi', jewelry: 'Biżuteria', studio: 'sTuDiO' }[z] %>
+            </option>
+            <% }); %>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Próg zamówienia (zł)</label>
+          <input type="number" name="minOrder" step="0.01" min="0"
+            value="<%= kod.min_order_grosze ? (kod.min_order_grosze / 100).toFixed(2) : '' %>" placeholder="0"
+            class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 transition-colors" />
+        </div>
+        <div>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Limit użyć</label>
+          <input type="number" name="maxUses" min="<%= Math.max(1, kod.used_count) %>" step="1"
+            value="<%= kod.max_uses || '' %>" placeholder="bez limitu"
+            class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 transition-colors" />
+          <p class="mt-1 text-[10px] text-neutral-600">Puste znaczy bez limitu. Żeby zatrzymać kod, wyłącz go na liście.</p>
+        </div>
+        <div>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Limit na adres</label>
+          <input type="number" name="maxUsesPerEmail" min="1" step="1" value="<%= kod.max_uses_per_email || 1 %>"
+            class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 transition-colors" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Ważny od</label>
+          <input type="date" name="validFrom" value="<%= kod.valid_from ? new Date(kod.valid_from).toISOString().slice(0, 10) : '' %>"
+            class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 transition-colors" />
+        </div>
+        <div>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Ważny do</label>
+          <input type="date" name="validTo" value="<%= kod.valid_to ? new Date(kod.valid_to).toISOString().slice(0, 10) : '' %>"
+            class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 transition-colors" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Akcja</label>
+          <input type="text" name="campaign" value="<%= kod.campaign || '' %>" placeholder="np. blackfriday"
+            class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 transition-colors" />
+        </div>
+        <div>
+          <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Wydany komu</label>
+          <input type="text" name="issuedTo" value="<%= kod.issued_to || '' %>" placeholder="adres albo nazwisko"
+            class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50 transition-colors" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs text-neutral-400 uppercase tracking-wider mb-1.5">Notatka</label>
+        <textarea name="note" rows="2" placeholder="Do czego ten kod powstał"
+          class="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-neutral-300 focus:outline-none focus:border-amber-400/50 transition-colors resize-none"><%= kod.note || '' %></textarea>
+      </div>
+
+      <div class="flex items-center gap-4 pt-2">
+        <button type="submit"
+          class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-neutral-950 text-sm font-semibold rounded-lg transition-colors">
+          Zapisz zmiany
+        </button>
+        <a href="/discounts" class="text-sm text-neutral-500 hover:text-white transition-colors">Anuluj</a>
+      </div>
+
+    </form>
+
+    <script>
+      // Jednostka przy polu wartosci ma isc za wyborem rodzaju, inaczej przy
+      // przelaczeniu na kwote zostaje napis "(%)", a klikajacy wpisuje procent
+      // w pole, ktore zapisze zlotowki.
+      (function () {
+        var rodzaj = document.getElementById('kind');
+        var jednostka = document.getElementById('jednostka');
+        var wartosc = document.querySelector('input[name="value"]');
+        if (!rodzaj || !jednostka || !wartosc) return;
+        rodzaj.addEventListener('change', function () {
+          var procent = rodzaj.value === 'percent';
+          jednostka.textContent = procent ? '(%)' : '(zł)';
+          wartosc.step = procent ? '1' : '0.01';
+        });
+      })();
+    </script>
+
+  </main>
+
+</body>
+</html>

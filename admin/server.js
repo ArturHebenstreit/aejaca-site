@@ -645,7 +645,7 @@ async function invalidateGemCache() {
 app.get("/gemstone-prices", requireAuth, async (req, res) => {
   try {
     const { rows } = await pool.query("SELECT * FROM gemstone_prices ORDER BY precious DESC, lab, name_pl");
-    res.render("gemstone-prices", { user: req.user, gems: rows });
+    res.render("gemstone-prices", { user: req.user, gems: rows, flash: req.query.flash || null });
   } catch (err) { res.status(500).render("error", { message: err.message }); }
 });
 
@@ -662,7 +662,18 @@ app.post("/gemstone-prices/:id/update", requireAuth, express.urlencoded({ extend
     [base_eur || null, notes || null, name_pl, name_en, name_de, req.user.email, req.params.id]
   );
   await invalidateGemCache();
-  res.redirect("/gemstone-prices");
+  res.redirect("/gemstone-prices?flash=saved");
+});
+
+// USUNIECIE POZYCJI NIE USUWA KAMIENIA Z OFERTY, i to jest cala rzecz, ktora
+// trzeba o tej tabeli wiedziec. Lista kamieni, ich nazwy i to, czy sa
+// szlachetne, mieszkaja w cenniku (`src/pricing/jewelryConfig.js`); tabela
+// dokłada do nich WYLACZNIE cene, po `gem_id`. Skasowany wiersz znaczy wiec
+// tyle, ze kalkulator wraca do ceny wpisanej w kodzie, a nie ze kamien znika.
+app.post("/gemstone-prices/:id/delete", requireAuth, async (req, res) => {
+  await pool.query("DELETE FROM gemstone_prices WHERE id = $1", [req.params.id]);
+  await invalidateGemCache();
+  res.redirect("/gemstone-prices?flash=deleted");
 });
 
 // --- Material z magazynu: dodawanie, edycja, usuwanie ---
@@ -1248,6 +1259,48 @@ app.post("/discounts/:code/delete", requireAuth, async (req, res) => {
     await shopApi(`/api/admin/discounts/${encodeURIComponent(req.params.code)}`, { method: "DELETE" });
     back(res, "/discounts", { msg: `${req.params.code}: skasowany` });
   } catch (err) { back(res, "/discounts", { err: err.message }); }
+});
+
+// Poprawianie kodu, ktory juz gdzies poszedl. Nazwy i licznika uzyc nie
+// ruszamy: pierwsza stoi przy zamowieniach, drugi jest zapisem tego, co sie
+// stalo. Resztę wolno zmienic, bo akcja potrafi sie przeciagnac albo zmienic
+// zasady, a alternatywa jest kasowanie kodu, ktory ktos ma juz w skrzynce.
+app.get("/discounts/:code/edit", requireAuth, async (req, res) => {
+  try {
+    const { codes } = await shopApi("/api/admin/discounts");
+    const kod = (codes || []).find((c) => c.code === req.params.code);
+    if (!kod) return res.status(404).render("error", { message: "Nie znamy takiego kodu" });
+    res.render("discount-edit", { user: req.user, kod, err: req.query.err || null });
+  } catch (err) { res.status(500).render("error", { message: err.message }); }
+});
+
+app.post("/discounts/:code/update", requireAuth, express.urlencoded({ extended: true }), async (req, res) => {
+  const b = req.body;
+  const num = (v) => (v === "" || v === undefined ? null : parseInt(v, 10));
+  try {
+    await shopApi(`/api/admin/discounts/${encodeURIComponent(req.params.code)}`, {
+      method: "PATCH",
+      body: {
+        kind: b.kind === "amount" ? "amount" : "percent",
+        // Kwote podajesz w zlotych, backend liczy w groszach. Ta sama zamiana
+        // co przy tworzeniu kodu i musi zostac taka sama, inaczej poprawiony
+        // kod dawalby sto razy wiecej niz zalozony.
+        value: b.kind === "amount" ? Math.round(Number(b.value) * 100) : num(b.value),
+        appliesTo: b.appliesTo,
+        minOrderGrosze: b.minOrder ? Math.round(Number(b.minOrder) * 100) : 0,
+        maxUses: num(b.maxUses),
+        maxUsesPerEmail: num(b.maxUsesPerEmail) || 1,
+        validFrom: b.validFrom || null,
+        validTo: b.validTo || null,
+        campaign: b.campaign || null,
+        issuedTo: b.issuedTo || null,
+        note: b.note || null,
+      },
+    });
+    back(res, "/discounts", { msg: `${req.params.code}: zapisany` });
+  } catch (err) {
+    res.redirect(`/discounts/${encodeURIComponent(req.params.code)}/edit?err=${encodeURIComponent(err.message)}`);
+  }
 });
 
 app.post("/discounts/:code/toggle", requireAuth, async (req, res) => {

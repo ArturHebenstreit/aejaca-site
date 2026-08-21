@@ -2866,17 +2866,101 @@ app.delete("/api/admin/discounts/:code", async (req, res) => {
 });
 
 /** Wylaczenie albo wlaczenie kodu. Kod zostaje w bazie razem z historia uzyc. */
+/**
+ * Poprawienie kodu. Przyjmuje POJEDYNCZE pola, wiec przelacznik "aktywny"
+ * z listy dalej wysyla samo `{active}` i dziala tak jak dotad.
+ *
+ * TRZECH RZECZY NIE WOLNO RUSZYC, i to nie jest ostroznosc na wyrost:
+ *
+ *   - `code` jest juz w rekach klientow i stoi przy zamowieniach. Zmiana
+ *     nazwy zostawilaby rabat, ktorego nie da sie powiazac z niczym.
+ *   - `used_count` jest ZAPISEM TEGO, CO SIE STALO. Licznik poprawiany reka
+ *     przestaje byc dowodem, a zaczyna byc opinia.
+ *   - `created_at` z tego samego powodu.
+ *
+ * Zejscie z limitem PONIZEJ liczby juz wykorzystanych uzyc jest odrzucane.
+ * Kod robilby sie wtedy martwy, wygladajac na aktywny, a od zatrzymania kodu
+ * jest przelacznik "aktywny", ktory mowi to wprost.
+ */
 app.patch("/api/admin/discounts/:code", express.json({ limit: "4kb" }), async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
-  const active = req.body?.active;
-  if (typeof active !== "boolean") return res.status(400).json({ error: "Pole active musi byc true albo false" });
-  const { rows } = await pool.query(
-    `UPDATE discount_codes SET active = $2, updated_at = NOW() WHERE code = $1 RETURNING code, active`,
-    [normalizeCode(req.params.code), active]
+  const b = req.body || {};
+  const code = normalizeCode(req.params.code);
+
+  const { rows: obecne } = await pool.query(
+    "SELECT id, kind, value, used_count FROM discount_codes WHERE code = $1", [code]
   );
-  if (!rows[0]) return res.status(404).json({ error: "Nie znamy takiego kodu" });
-  res.json({ ok: true, ...rows[0] });
+  if (!obecne[0]) return res.status(404).json({ error: "Nie znamy takiego kodu" });
+
+  const pola = [];
+  const wartosci = [code];
+  const dopisz = (kolumna, wartosc) => {
+    wartosci.push(wartosc);
+    pola.push(`${kolumna} = $${wartosci.length}`);
+  };
+
+  if (b.active !== undefined) {
+    if (typeof b.active !== "boolean") return res.status(400).json({ error: "Pole active musi byc true albo false" });
+    dopisz("active", b.active);
+  }
+
+  // Rodzaj i wartosc chodza para: procent ma inny zakres niz kwota, wiec
+  // sprawdzamy je razem, a nie kazde z osobna.
+  const kind = b.kind === undefined ? obecne[0].kind : (b.kind === "amount" ? "amount" : "percent");
+  if (b.kind !== undefined) dopisz("kind", kind);
+  if (b.value !== undefined) {
+    const value = Number(b.value);
+    if (!Number.isInteger(value) || value <= 0) return res.status(400).json({ error: "Wartosc musi byc liczba calkowita wieksza od zera" });
+    if (kind === "percent" && value > MAX_PERCENT) return res.status(400).json({ error: `Procent nie moze przekroczyc ${MAX_PERCENT}` });
+    dopisz("value", value);
+  }
+  if (b.appliesTo !== undefined) {
+    if (!APPLIES_TO.includes(b.appliesTo)) return res.status(400).json({ error: "Nieznany zakres kodu" });
+    dopisz("applies_to", b.appliesTo);
+  }
+  if (b.minOrderGrosze !== undefined) {
+    const v = Number(b.minOrderGrosze);
+    if (!Number.isInteger(v) || v < 0) return res.status(400).json({ error: "Prog zamowienia nie moze byc ujemny" });
+    dopisz("min_order_grosze", v);
+  }
+  if (b.maxUses !== undefined) {
+    if (b.maxUses === null) dopisz("max_uses", null);
+    else {
+      const v = Number(b.maxUses);
+      if (!Number.isInteger(v) || v <= 0) return res.status(400).json({ error: "Limit uzyc musi byc liczba wieksza od zera" });
+      if (v < obecne[0].used_count) {
+        return res.status(400).json({ error: `Kod wykorzystano juz ${obecne[0].used_count} razy. Zeby go zatrzymac, wylacz go zamiast schodzic z limitem.` });
+      }
+      dopisz("max_uses", v);
+    }
+  }
+  if (b.maxUsesPerEmail !== undefined) {
+    const v = Number(b.maxUsesPerEmail);
+    if (!Number.isInteger(v) || v <= 0) return res.status(400).json({ error: "Limit na adres musi byc liczba wieksza od zera" });
+    dopisz("max_uses_per_email", v);
+  }
+  if (b.validFrom !== undefined) dopisz("valid_from", b.validFrom || null);
+  if (b.validTo !== undefined) dopisz("valid_to", b.validTo || null);
+  if (b.campaign !== undefined) dopisz("campaign", b.campaign || null);
+  if (b.issuedTo !== undefined) dopisz("issued_to", b.issuedTo || null);
+  if (b.note !== undefined) dopisz("note", b.note || null);
+
+  if (!pola.length) return res.status(400).json({ error: "Nie podano zadnego pola do zmiany" });
+
+  try {
+    const { rows } = await pool.query(
+      `UPDATE discount_codes SET ${pola.join(", ")}, updated_at = NOW()
+        WHERE code = $1 RETURNING code, active, kind, value`,
+      wartosci
+    );
+    res.json({ ok: true, ...rows[0] });
+  } catch (e) {
+    // Ograniczenia CHECK w tabeli sa druga linia obrony i maja pierwszenstwo
+    // przed naszym sprawdzeniem, bo pilnuja takze zapisow spoza panelu.
+    console.error("[rabaty] poprawka kodu:", e.message);
+    res.status(400).json({ error: "Nie udalo sie zapisac zmiany" });
+  }
 });
 
 // ------------------------------------------------------------
