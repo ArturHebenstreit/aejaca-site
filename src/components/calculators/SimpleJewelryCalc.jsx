@@ -448,17 +448,17 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
                       active ? "scale-105" : "group-hover:scale-105"
                     }`} />
                   {/* Bottom gradient for text legibility */}
-                  <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/95 via-black/65 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
                   {/* Active state tint */}
                   {active && <div className="absolute inset-0 bg-rose-400/10 mix-blend-overlay" />}
                 </div>
                 {/* Text at bottom */}
                 <div className="relative p-2.5 sm:p-3 h-full min-h-[120px] sm:min-h-[140px] flex flex-col justify-end">
-                  <div className={`text-[11px] sm:text-sm font-bold leading-tight drop-shadow-lg ${active ? "text-rose-300" : "text-white"}`}>
+                  <div className={`text-[11px] sm:text-sm font-bold leading-tight drop-shadow-lg tile-ink ${active ? "text-rose-300" : "text-white"}`}>
                     {label}
                   </div>
                   {sub && active && (
-                    <div className="text-[10px] mt-0.5 drop-shadow-md text-rose-200/90">
+                    <div className="text-[10px] mt-0.5 drop-shadow-md tile-ink text-rose-200/90">
                       {sub}
                     </div>
                   )}
