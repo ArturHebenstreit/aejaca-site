@@ -22,6 +22,9 @@ import {
   flattenTriangles, trianglesFromPositions, wantsHandoff, HANDOFF_URL,
 } from "../src/analysis/modelHandoff.js";
 import { analyzePrintability } from "../src/analysis/printability.js";
+import { readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 let bledy = 0;
 const zle = (m) => { console.error(`  ✗ ${m}`); bledy++; };
@@ -101,6 +104,43 @@ else zle(`bramka prowadzi pod ${HANDOFF_URL}, a strona analizy tego nie rozpozna
 
 if (!wantsHandoff("") && !wantsHandoff("?model=cos-innego")) ok("zwykle wejscie na narzedzie nie siega po rekord");
 else zle("strona analizy szuka modelu takze bez znacznika");
+
+// ------------------------------------------------------------
+// TRZECIA: plik przezywa zmiane technologii druku
+// ------------------------------------------------------------
+// Kalkulator druku trzymal WGRANY PLIK OSOBNO dla FDM i osobno dla MSLA.
+// Klient wgrywal model przy filamencie, przelaczal na zywice, zeby porownac
+// cene, i trafial na puste pole wgrywania. Nic sie nie psulo, wiec wygladalo
+// to na normalna kolej rzeczy, a bylo kara za sprawdzenie drugiej opcji.
+//
+// To ta sama czesc, wiec ma byc jeden plik i jedna skala. Rozne pozostaje
+// tylko pole robocze maszyny, ktore podaje sie przy wywolaniu karty.
+{
+  const kalkulator = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "../src/components/calculators/Print3DCalc.jsx"), "utf8");
+
+  // Liste wyprowadzamy z pliku: spisana zostalaby przy dzisiejszych nazwach.
+  const stanyPliku = [...kalkulator.matchAll(/const \[(\w*[Ss]tl(?:Data|File|FileName|Scale))\s*,/g)].map((m) => m[1]);
+  const powtorzone = stanyPliku.filter((n, i) => stanyPliku.findIndex((x) => x.toLowerCase() === n.toLowerCase()) !== i);
+  if (powtorzone.length) zle(`kalkulator druku znowu trzyma plik osobno dla kazdej technologii: ${powtorzone.join(", ")}`);
+  else ok(`wgrany plik jest jeden na obie technologie (${stanyPliku.length} stanow pliku, zero powtorzen)`);
+
+  const drugiKomplet = /mslaStlData|mslaStlFile|mslaStlScale|handleMslaSTLUpload/.test(kalkulator);
+  if (drugiKomplet) zle("wrocil drugi komplet stanu pliku dla MSLA");
+  else ok("nie ma osobnego kompletu stanu pliku dla MSLA");
+
+  // Obie karty wgrywania musza czytac ten sam stan, inaczej jedna z nich
+  // pokazuje pustke mimo wgranego pliku.
+  const karty = [...kalkulator.matchAll(/<STLUploadCard\s+stlData=\{(\w+)\}/g)].map((m) => m[1]);
+  if (karty.length !== 2) zle(`spodziewane dwie karty wgrywania (FDM i MSLA), znaleziono ${karty.length}`);
+  else if (karty[0] !== karty[1]) zle(`karty wgrywania czytaja rozne stany: ${karty.join(" i ")}`);
+  else ok(`obie karty wgrywania czytaja ten sam plik (${karty[0]})`);
+
+  // Pole robocze ROZNE, bo maszyny sa rozne. Model mieszczacy sie na Bambu
+  // bywa za duzy dla Elegoo i klient ma to zobaczyc od razu po przelaczeniu.
+  if (/buildVolCm=\{MSLA_BUILD_VOL_CM\}/.test(kalkulator)) ok("karta MSLA sprawdza plik wzgledem pola Elegoo, nie Bambu");
+  else zle("karta MSLA nie dostaje wlasnego pola roboczego, wiec za duzy model nie zostanie zgloszony");
+}
 
 console.log(bledy ? `\n${bledy} bledow\n` : "\nPrzekazanie modelu: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);
