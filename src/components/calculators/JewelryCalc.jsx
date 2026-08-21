@@ -359,7 +359,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                         active ? "scale-105" : "group-hover:scale-105"
                       }`} />
                     {/* Gradient only at bottom, preserves image visibility */}
-                    <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/95 via-black/70 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
                     {/* Active state: amber tint */}
                     {active && (
                       <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />
@@ -368,8 +368,8 @@ export default function JewelryCalc({ lang = "pl" }) {
                 )}
                 {/* Text content at bottom */}
                 <div className="relative p-3 h-full min-h-[160px] flex flex-col justify-end">
-                  <div className={`text-xs sm:text-sm font-bold mb-1 drop-shadow-lg ${active ? "text-amber-300" : "text-white"}`}>{t(s.label, lang)}</div>
-                  <div className="text-[10px] text-neutral-200 break-words drop-shadow-md">{t(s.desc, lang)}</div>
+                  <div className={`text-xs sm:text-sm font-bold mb-1 drop-shadow-lg tile-ink ${active ? "text-amber-300" : "text-white"}`}>{t(s.label, lang)}</div>
+                  <div className="text-[10px] text-neutral-200 break-words drop-shadow-md tile-ink">{t(s.desc, lang)}</div>
                 </div>
               </button>
             );
@@ -397,7 +397,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                             active ? "scale-105" : "group-hover:scale-105"
                           }`} />
                         {/* Gradient only at bottom */}
-                        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/95 via-black/65 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
                         {/* Active state: amber tint */}
                         {active && (
                           <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />
@@ -406,8 +406,8 @@ export default function JewelryCalc({ lang = "pl" }) {
                     )}
                     {/* Text content at bottom */}
                     <div className="relative p-3 h-full min-h-[180px] flex flex-col justify-end">
-                      <div className={`text-sm sm:text-base font-bold mb-1 drop-shadow-lg ${active ? "text-amber-300" : "text-white"}`}>{pl.label}</div>
-                      <div className="text-[10px] text-neutral-200 break-words drop-shadow-md">{t(pl.desc, lang)}</div>
+                      <div className={`text-sm sm:text-base font-bold mb-1 drop-shadow-lg tile-ink ${active ? "text-amber-300" : "text-white"}`}>{pl.label}</div>
+                      <div className="text-[10px] text-neutral-200 break-words drop-shadow-md tile-ink">{t(pl.desc, lang)}</div>
                     </div>
                   </button>
                 );
@@ -492,13 +492,13 @@ export default function JewelryCalc({ lang = "pl" }) {
                       <div className="absolute inset-0 overflow-hidden">
                         <img src={w.img} alt={t(w.label, lang)} loading="lazy"
                           className={`w-full h-full object-cover transition-transform duration-500 ${active ? "scale-105" : "group-hover:scale-105"}`} />
-                        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/95 via-black/70 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
                         {active && <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />}
                       </div>
                     )}
                     <div className="relative p-2.5 h-full min-h-[130px] flex flex-col justify-end">
-                      <div className={`text-[11px] sm:text-xs font-bold mb-0.5 drop-shadow-lg ${active ? "text-amber-300" : "text-white"}`}>{t(w.label, lang)}</div>
-                      <div className="text-[9px] sm:text-[10px] text-neutral-300 break-words drop-shadow-md leading-tight">{t(w.desc, lang)}</div>
+                      <div className={`text-[11px] sm:text-xs font-bold mb-0.5 drop-shadow-lg tile-ink ${active ? "text-amber-300" : "text-white"}`}>{t(w.label, lang)}</div>
+                      <div className="text-[9px] sm:text-[10px] text-neutral-300 break-words drop-shadow-md tile-ink leading-tight">{t(w.desc, lang)}</div>
                     </div>
                   </button>
                 );
@@ -921,13 +921,13 @@ export default function JewelryCalc({ lang = "pl" }) {
                       <div className="absolute inset-0 overflow-hidden">
                         <img src={m.img} alt={t(m.label, lang)} loading="lazy"
                           className={`w-full h-full object-cover transition-transform duration-500 ${active ? "scale-105" : "group-hover:scale-105"}`} />
-                        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/95 via-black/70 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
                         {active && <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />}
                       </div>
                     )}
                     <div className="relative p-3 h-full min-h-[140px] flex flex-col justify-end">
-                      <div className={`text-xs sm:text-sm font-bold mb-1 drop-shadow-lg ${active ? "text-amber-300" : "text-white"}`}>{t(m.label, lang)}</div>
-                      <div className="text-[10px] text-neutral-300 break-words drop-shadow-md">{t(m.desc, lang)}</div>
+                      <div className={`text-xs sm:text-sm font-bold mb-1 drop-shadow-lg tile-ink ${active ? "text-amber-300" : "text-white"}`}>{t(m.label, lang)}</div>
+                      <div className="text-[10px] text-neutral-300 break-words drop-shadow-md tile-ink">{t(m.desc, lang)}</div>
                     </div>
                   </button>
                 );

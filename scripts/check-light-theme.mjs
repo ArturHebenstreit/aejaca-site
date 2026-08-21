@@ -24,6 +24,58 @@ const CSS = join(ROOT, "src", "index.css");
 const ALLOW = join(ROOT, "scripts", "light-theme-allow.json");
 const SRC = join(ROOT, "src");
 
+// ── Napisy na kafelkach ze zdjeciem ────────────────────────────────────────
+// Kafelki kalkulatorow maja bialy napis polozony na fotografii. Fotografia
+// bywa jasna w dowolnym miejscu, wiec sam rozmyty cien go nie ratuje: napis
+// znika. Ratuje ciemna obwodka z klasy `.tile-ink`.
+//
+// Sa tu dwie pulapki, obie ciche:
+//
+//   1. Nowy kafelek dopisany bez `.tile-ink` wyglada poprawnie na ciemnym
+//      zdjeciu i znika na jasnym, czyli awaria zalezy od zdjecia.
+//   2. Reguly motywu jasnego ustawiaja WLASNY `text-shadow` na tym samym
+//      tekscie. Maja te sama wage co nasza, wiec rozstrzyga KOLEJNOSC
+//      W PLIKU. Przesuniecie bloku wyzej cofa obwodke bez zadnego bledu.
+{
+  const css = readFileSync(CSS, "utf8");
+  const zle = [];
+
+  if (!/--tile-ink-shadow\s*:/.test(css)) zle.push("brak zmiennej --tile-ink-shadow w src/index.css");
+  if (!/\.tile-ink\s*\{/.test(css)) zle.push("brak klasy .tile-ink w src/index.css");
+
+  const nadpisanieMotywu = css.search(/\[data-theme="light"\][^\n]*:has\(\.from-black[^\n]*\.text-white/);
+  const obwodkaWMotywie = css.search(/\[data-theme="light"\][^\n]*:has\(\.from-black[^\n]*\.tile-ink/);
+  if (obwodkaWMotywie === -1) {
+    zle.push("motyw jasny nie ma reguly dla .tile-ink, wiec obwodka przegra z jego wlasnym text-shadow");
+  } else if (nadpisanieMotywu !== -1 && obwodkaWMotywie < nadpisanieMotywu) {
+    zle.push("regula .tile-ink stoi PRZED nadpisaniami motywu jasnego, wiec nie zadziala; musi byc po nich");
+  }
+
+  // Kazdy napis na kafelku ze zdjeciem musi miec obwodke.
+  const PLIKI_KAFELKOW = [
+    "components/StudioCalculator.jsx",
+    "components/calculators/calcShared.jsx",
+    "components/calculators/JewelryCalc.jsx",
+    "components/calculators/SimpleStudioCalc.jsx",
+    "components/calculators/SimpleJewelryCalc.jsx",
+  ];
+  for (const wzgledna of PLIKI_KAFELKOW) {
+    const tresc = readFileSync(join(SRC, wzgledna), "utf8");
+    tresc.split("\n").forEach((linia, i) => {
+      if (/drop-shadow-(lg|md)/.test(linia) && !/tile-ink/.test(linia)) {
+        zle.push(`src/${wzgledna}:${i + 1}: napis na kafelku bez .tile-ink, na jasnym zdjeciu zniknie`);
+      }
+    });
+  }
+
+  if (zle.length) {
+    console.error("\nObwodka napisow na kafelkach:\n");
+    for (const b of zle) console.error(`  ${b}`);
+    process.exit(1);
+  }
+  console.log(`OK obwodka napisow na kafelkach: ${PLIKI_KAFELKOW.length} plikow, regula po nadpisaniach motywu`);
+}
+
 /** Odcienie uznawane za jasne, czyli takie, ktore na kremowym tle znikaja. */
 const LIGHT_SHADES = new Set(["50", "100", "200", "300"]);
 /** Odcienie tla uznawane za ciemne. */

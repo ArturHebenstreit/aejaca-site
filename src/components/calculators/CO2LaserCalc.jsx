@@ -4,6 +4,8 @@
 // ============================================================
 import { useState, useEffect, useMemo } from "react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, MaterialCards, HeroCards, NextStepPanel } from "./calcShared.jsx";
+import { uniformScale, isUniform, dimsFor, parseScale, serializeScale, describeScale as opisSkaliRysunku, describeDims, AXES_2D } from "../../utils/dimScale.js";
+import { measureScaled } from "../../utils/svgParser.js";
 import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
 import { QuantityStepper } from "../shop/ConfigControls.jsx";
 import CalcToCart from "./CalcToCart.jsx";
@@ -79,12 +81,21 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
   const [svgData, setSvgData] = useState(null);
   const [svgFileName, setSvgFileName] = useState("");
   const [svgFile, setSvgFile] = useState(null);
-  const [svgScale, setSvgScale] = useState(1);
+  // Skala rysunku jest OSOBNA DLA OSI X I Y. Rysunek jest plaski, wiec osi Z
+  // tu nie ma. `sync` trzyma proporcje, `zapamietana` jest punktem powrotu.
+  const [svgScale, setSvgScale] = useState(() => uniformScale(1, AXES_2D));
+  const [svgSync, setSvgSync] = useState(true);
+  const [svgZapamietana, setSvgZapamietana] = useState(null);
 
   const scaledSvgData = useMemo(() => {
-    if (!svgData || svgScale === 1) return svgData;
-    const s = svgScale;
-    return { ...svgData, bboxMm: { x: svgData.bboxMm.x * s, y: svgData.bboxMm.y * s }, pathLengthCm: svgData.pathLengthCm * s, engravAreaCm2: svgData.engravAreaCm2 * s * s };
+    if (!svgData) return null;
+    if (isUniform(svgScale) && Number(svgScale.x) === 1) return svgData;
+    // PRZY ROZJECHANYCH OSIACH DLUGOSC SCIEZKI TRZEBA ZMIERZYC PONOWNIE.
+    // Kolo rozciagniete w poziomie staje sie elipsa, a jej obwod nie jest ani
+    // proporcjonalny do osi, ani sredni z nich. Cena ciecia idzie wprost
+    // z dlugosci sciezki, wiec mnozenie dawaloby liczbe wygladajaca poprawnie
+    // i nieprawdziwa. `measureScaled` probkuje rysunek i skraca blad w ilorazie.
+    return measureScaled(svgData, Number(svgScale.x), Number(svgScale.y));
   }, [svgData, svgScale]);
 
   const svgNeedsExtended = scaledSvgData
@@ -108,7 +119,7 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
     setSvgData(handoff.data);
     setSvgFile(handoff.file || null);
     setSvgFileName(handoff.name || "");
-    setSvgScale(handoff.scale || 1);
+    setSvgScale(parseScale(handoff.scale || 1, AXES_2D));
     onHandoffUsed?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handoff]);
@@ -130,13 +141,17 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
     setSvgData(null);
     setSvgFileName("");
     setSvgFile(null);
-    setSvgScale(1);
+    setSvgScale(uniformScale(1, AXES_2D));
   }
 
   const result = useMemo(() => {
+    // BRAK POMIARU NIE MOZE DAC KWOTY. `measureScaled` zwraca null, gdy nie da
+    // sie zmierzyc rozciagnietego rysunku. Milczace zejscie na przedzialy
+    // z listy podmienialoby podstawe wyceny bez slowa.
+    if (svgData && !scaledSvgData) return { type: "custom" };
     if (mode === "engrave") return calcEngrave({ matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, extended, svgData: scaledSvgData, podloze }, lang, materialStock);
     return calcCut({ matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended, svgData: scaledSvgData, podloze }, lang, materialStock);
-  }, [mode, eMatId, eAreaId, eDetailId, eQtyId, cMatId, cPathId, cComplexId, cQtyId, extended, scaledSvgData, lang, podloze, materialStock]);
+  }, [svgData, mode, eMatId, eAreaId, eDetailId, eQtyId, cMatId, cPathId, cComplexId, cQtyId, extended, scaledSvgData, lang, podloze, materialStock]);
 
   const presetNeedsExtended = mode === "engrave" ? AREA_NEEDS_EXTENDED[eAreaId] : PATH_NEEDS_EXTENDED[cPathId];
   const needsExtended = scaledSvgData ? svgNeedsExtended : presetNeedsExtended;
@@ -145,8 +160,8 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
 
   const svgSummary = svgData
     ? (mode === "engrave"
-      ? `SVG: ${svgFileName} (${(svgData.engravAreaCm2 * svgScale * svgScale).toFixed(1)} cm²${svgScale !== 1 ? ` ${Math.round(svgScale*100)}%` : ""})`
-      : `SVG: ${svgFileName} (${(svgData.pathLengthCm * svgScale).toFixed(0)} cm${svgScale !== 1 ? ` ${Math.round(svgScale*100)}%` : ""})`)
+      ? `SVG: ${svgFileName} (${(svgData.engravAreaCm2 * Number(svgScale.x) * Number(svgScale.y)).toFixed(1)} cm²${opisSkaliRysunku(svgScale)})`
+      : `SVG: ${svgFileName} (${((scaledSvgData || svgData).pathLengthCm).toFixed(0)} cm${opisSkaliRysunku(svgScale)})`)
     : null;
 
   const substrateSummary = t(SUBSTRATES.find(s => s.id === podloze)?.label, lang);
@@ -169,7 +184,7 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
         <>
           <CalcCard stepNum="②" label={l.material}><MaterialCards options={ENGRAVE_MATERIALS} value={eMatId} onChange={setEMatId} lang={lang} /></CalcCard>
           <CalcCard stepNum="③" label={svgData ? sl.fromSvg : l.area} id="file-upload">
-            <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} extendedAreaMm={EXTENDED_AREA_MM} showPathLength={false} lang={lang} />
+            <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} sync={svgSync} onSyncChange={setSvgSync} zapamietana={svgZapamietana} onZapamietanaChange={setSvgZapamietana} scaledData={scaledSvgData} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} extendedAreaMm={EXTENDED_AREA_MM} showPathLength={false} lang={lang} />
             {!svgData && <Chips options={ENGRAVE_AREAS} value={eAreaId} onChange={setEAreaId} lang={lang} />}
           </CalcCard>
           <CalcCard stepNum="④" label={l.detail}>
@@ -180,7 +195,7 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
         <>
           <CalcCard stepNum="②" label={l.matThick}><Chips options={CUT_MATERIALS} value={cMatId} onChange={setCMatId} lang={lang} /></CalcCard>
           <CalcCard stepNum="③" label={svgData ? sl.fromSvg : l.pathLen} id="file-upload">
-            <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} extendedAreaMm={EXTENDED_AREA_MM} showPathLength={true} lang={lang} />
+            <SVGUploadCard svgData={svgData} svgFileName={svgFileName} scale={svgScale} onScaleChange={setSvgScale} sync={svgSync} onSyncChange={setSvgSync} zapamietana={svgZapamietana} onZapamietanaChange={setSvgZapamietana} scaledData={scaledSvgData} onUpload={handleSVGUpload} onRemove={handleSVGRemove} workAreaMm={WORK_AREA_MM} extendedAreaMm={EXTENDED_AREA_MM} showPathLength={true} lang={lang} />
             {!svgData && <Chips options={CUT_PATHS} value={cPathId} onChange={setCPathId} lang={lang} />}
           </CalcCard>
           <CalcCard stepNum="④" label={l.complexity}><Chips options={CUT_COMPLEXITY} value={cComplexId} onChange={setCComplexId} lang={lang} /></CalcCard>
@@ -251,8 +266,10 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
               calculator={mode === "engrave" ? "laser_co2_engrave" : "laser_co2_cut"}
               serviceId={mode === "engrave" ? "laser_engrave" : "laser_cut"}
               params={mode === "engrave"
-                ? { matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, extended, podloze, spare, materialNote }
-                : { matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended, podloze, spare, materialNote }}
+                ? { matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, extended, podloze, spare, materialNote,
+                    ...(svgData ? { wymiary: describeDims(svgData.bboxMm, svgScale), znieksztalcony: !isUniform(svgScale) } : {}) }
+                : { matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended, podloze, spare, materialNote,
+                    ...(svgData ? { wymiary: describeDims(svgData.bboxMm, svgScale), znieksztalcony: !isUniform(svgScale) } : {}) }}
               qty={mode === "engrave" ? engraveQty : cutQty}
               blocked={Boolean(svgData)}
               lang={lang}

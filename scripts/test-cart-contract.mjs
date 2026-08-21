@@ -122,6 +122,52 @@ for (const plik of ["../src/pages/Cart.jsx", "../src/pages/Checkout.jsx"]) {
 }
 ok("koszyk i ostatni ekran przed platnoscia wypisuja te same ustalenia");
 
+// --- 6. Zniekształcenie wyrobu jest zapisane w trzech miejscach ------------
+sekcja("6. Wyrob zniekształcony");
+// Klient moze rozjechac osie i zmienic ksztalt wyrobu wzgledem pliku. To jest
+// USTALENIE: wykonamy rzecz o innych proporcjach niz oryginal. Musi wiec stac
+// przy przycisku "dodaj do koszyka", w pozycji koszyka i w potwierdzeniu
+// mailowym, i wszedzie tym samym zdaniem. Zdanie w trzech kopiach rozjechaloby
+// sie przy pierwszej poprawce redakcyjnej.
+{
+  const pozycja = {
+    calculator: "laser_co2_cut",
+    params: { matId: "ply3", pathId: "S", complexId: "moderate", quantityId: "proto",
+      wymiary: "200.0 × 40.0 mm (proporcje zmienione)", znieksztalcony: true },
+  };
+  const wiersze = describeParams(pozycja, "pl");
+  const uwaga = wiersze.find((w) => w.value && w.value.includes("zniekształcony"));
+  if (!uwaga) zle("koszyk nie pokazuje ostrzezenia o zniekształceniu wyrobu");
+  const wymiar = wiersze.find((w) => String(w.value).includes("200.0"));
+  if (!wymiar) zle("koszyk nie pokazuje wymiarow, na ktore klient przystaje");
+
+  // Zdanie stoi w jednym miejscu i czytaja je wszyscy.
+  for (const [plik, czego] of [
+    ["../src/components/calculators/CalcToCart.jsx", "przycisk dodania do koszyka"],
+    ["../src/data/describeParams.js", "pozycja koszyka"],
+    ["../chat-api/orderMail.js", "potwierdzenie mailowe"],
+  ]) {
+    const tresc = readFileSync(new URL(plik, import.meta.url), "utf8");
+    if (!/DISTORTION_NOTE|distortionLine/.test(tresc)) {
+      zle(`${czego} nie siega po wspolne zdanie o zniekształceniu`);
+    }
+  }
+  // Wlasna kopia zdania to blad: rozjedzie sie przy pierwszej poprawce.
+  const mail = readFileSync(new URL("../chat-api/orderMail.js", import.meta.url), "utf8");
+  if (/zniekształcony: (?!\$)/.test(mail) && !/distortionLine/.test(mail)) {
+    zle("mail ma wlasna kopie zdania o zniekształceniu");
+  }
+  // Sekcja musi istniec i miec naglowek we WSZYSTKICH trzech jezykach.
+  // Sam `${l.dimsTitle}` w szablonie niczego nie dowodzi: przy braku klucza
+  // wstawi sie "undefined", a mail wyjdzie do klienta.
+  if ((mail.match(/dimsTitle:/g) || []).length !== 3) {
+    zle("naglowek sekcji o wymiarach nie stoi w trzech jezykach, wiec mail wysle 'undefined'");
+  }
+  if ((mail.match(/dimsIntro:/g) || []).length !== 3) zle("wstep sekcji o wymiarach nie stoi w trzech jezykach");
+  if (!/zmienioneWymiary/.test(mail)) zle("mail nie zbiera pozycji o zmienionych wymiarach");
+  ok("zniekształcenie widoczne przy koszyku, w pozycji i w mailu, jednym zdaniem");
+}
+
 if (bledy) {
   console.error(`\n${bledy} bledow.`);
   process.exit(1);

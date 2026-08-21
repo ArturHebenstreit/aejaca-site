@@ -12,7 +12,8 @@
 
 import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingCart, Check, Loader2, ArrowRight, Info } from "lucide-react";
+import { AlertTriangle, ShoppingCart, Check, Loader2, ArrowRight, Info } from "lucide-react";
+import { DISTORTION_NOTE } from "../../pricing/quoteSummary.js";
 import { useCart } from "../../cart/CartContext.jsx";
 import { getServiceCard } from "../../data/serviceCatalog.js";
 import { JobDescription, AttachmentList, BlockedReasons, ARTWORK_EXT, uploadKindFor } from "../shop/ConfigControls.jsx";
@@ -355,7 +356,12 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
       body.append("lang", lang);
       body.append("params", paramsKey);
       if (uploadToken) body.append("uploadToken", uploadToken);
-      if (scale && scale !== 1) body.append("scale", String(scale));
+      // JSON, a nie `String(...)`. Skala bywa teraz obiektem `{x,y,z}`, a
+      // `String({...})` daje "[object Object]", czyli pole wypelnione tekstem
+      // bez tresci: serwer odczytalby z niego NaN i po cichu wycenil model
+      // w skali 1. Liczba zapisana JSON-em ("1.5") czyta sie tak samo jak
+      // wczesniej, wiec stary zapis nie przestaje dzialac.
+      if (scale && scale !== 1) body.append("scale", JSON.stringify(scale));
 
       const resp = await fetch(`${API}/api/price`, { method: "POST", body });
       const data = await resp.json();
@@ -373,7 +379,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
     } finally {
       if (mine === reqId.current) setBusy(false);
     }
-  }, [calculator, paramsKey, uploadToken, scale, lang]);
+  }, [calculator, paramsKey, uploadToken, JSON.stringify(scale), lang]);
 
   useEffect(() => {
     const timer = setTimeout(fetchPrice, 400);
@@ -637,6 +643,20 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
             >
               {u.contact} <ArrowRight className="w-4 h-4" />
             </Link>
+          )}
+
+          {/* ZNIEKSZTALCENIE POKAZUJEMY PRZY PRZYCISKU, a nie tylko w polach
+              wymiarow. Klient przewija strone i klika; jesli zmienil ksztalt
+              wyrobu, ostatnia rzecza przed zaplata ma byc informacja o tym,
+              a nie sama kwota. To samo zdanie stoi potem w koszyku i w mailu. */}
+          {params?.znieksztalcony && (
+            <div className="mb-3 flex items-start gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-[11px] text-amber-200 leading-relaxed">
+              <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+              <span>
+                {DISTORTION_NOTE[lang] || DISTORTION_NOTE.pl}
+                {params.wymiary ? ` ${params.wymiary}` : ""}
+              </span>
+            </div>
           )}
 
           <button

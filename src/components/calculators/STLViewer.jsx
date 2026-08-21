@@ -43,7 +43,7 @@ function snapshot(gl) {
  * @param {boolean} [props.grid] podloga pomocnicza. Domyslnie wylaczona, bo
  *        przy wgranym modelu klienta rozprasza zamiast pomagac
  */
-export default function STLViewer({ triangles, bbox, height = 220, onSnapshot, grid = false }) {
+export default function STLViewer({ triangles, bbox, height = 220, onSnapshot, grid = false, scale = null }) {
   const containerRef = useRef(null);
   const stateRef = useRef(null);
   const snapRef = useRef(onSnapshot);
@@ -96,12 +96,21 @@ export default function STLViewer({ triangles, bbox, height = 220, onSnapshot, g
     const mesh = new THREE.Mesh(geom, mat);
     scene.add(mesh);
 
-    // Center model at origin
+    // Srodkujemy GEOMETRIE, a nie polozenie siatki.
+    //
+    // To nie jest kosmetyka. Skala nierownomierna z suwaka wymiarow ustawia
+    // `mesh.scale`, a skalowanie idzie wzgledem lokalnego srodka ukladu. Gdyby
+    // model byl srodkowany przesunieciem siatki (`mesh.position`), kazde
+    // rozciagniecie odsuwaloby go od srodka kadru tym mocniej, im dalej od zera
+    // lezala geometria w pliku. Po przesunieciu SAMEJ geometrii srodek bryly
+    // lezy w zerze i skala dziala wokol niego.
+    geom.computeBoundingBox();
+    const surowyBox = geom.boundingBox;
+    const center = new THREE.Vector3();
+    surowyBox.getCenter(center);
+    geom.translate(-center.x, -center.y, -center.z);
     geom.computeBoundingBox();
     const box = geom.boundingBox;
-    const center = new THREE.Vector3();
-    box.getCenter(center);
-    mesh.position.sub(center);
 
     // Fit camera
     const size = new THREE.Vector3();
@@ -128,7 +137,7 @@ export default function STLViewer({ triangles, bbox, height = 220, onSnapshot, g
     let gridHelper = null;
     if (grid) {
       gridHelper = new THREE.GridHelper(maxDim * 2, 20, 0x334155, 0x1e293b);
-      gridHelper.position.y = box.min.y - center.y;
+      gridHelper.position.y = box.min.y;
       scene.add(gridHelper);
     }
 
@@ -166,7 +175,7 @@ export default function STLViewer({ triangles, bbox, height = 220, onSnapshot, g
     const ro = new ResizeObserver(onResize);
     ro.observe(el);
 
-    stateRef.current = { renderer, animId, ro };
+    stateRef.current = { renderer, animId, ro, mesh, camera, controls, maxDim };
 
     return () => {
       cancelAnimationFrame(animId);
@@ -180,6 +189,29 @@ export default function STLViewer({ triangles, bbox, height = 220, onSnapshot, g
       if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
     };
   }, [triangles, bbox, height, grid]);
+
+  // ZNIEKSZTALCENIE W PODGLADZIE. Skala idzie osobnym efektem, a nie zaleznoscia
+  // glownego: przebudowa sceny przy kazdym wpisanym znaku gasilaby obrot
+  // i mrugala plotnem. Tutaj tylko ustawiamy skale siatki i odsuwamy kamere,
+  // zeby powiekszony model nie wyszedl poza kadr.
+  useEffect(() => {
+    const st = stateRef.current;
+    if (!st?.mesh) return;
+    const sx = Number(scale?.x) > 0 ? Number(scale.x) : 1;
+    const sy = Number(scale?.y) > 0 ? Number(scale.y) : 1;
+    const sz = Number(scale?.z) > 0 ? Number(scale.z) : 1;
+    // Osie mapujemy jeden do jednego, bo gabaryt w polach wymiarow liczymy
+    // z TYCH SAMYCH trojkatow, ktore tu rysujemy. Zamiana osi byla by bledem
+    // widocznym dopiero na wydruku.
+    st.mesh.scale.set(sx, sy, sz);
+    const najwiekszy = Math.max(sx, sy, sz);
+    const dist = (st.maxDim * najwiekszy) / (2 * Math.tan((st.camera.fov * Math.PI) / 360));
+    const kier = st.camera.position.clone().normalize();
+    st.camera.position.copy(kier.multiplyScalar(dist * 1.35));
+    st.camera.far = st.maxDim * najwiekszy * 100;
+    st.camera.updateProjectionMatrix();
+    st.controls.update();
+  }, [scale?.x, scale?.y, scale?.z]);
 
   return (
     <div

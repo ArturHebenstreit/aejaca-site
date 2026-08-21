@@ -45,11 +45,17 @@ const EXTRA = [
   // pierwszej zmianie, a objawem bylby blad dopiero przy platnosci.
   { from: join(ROOT, "src", "data", "inboundDelivery.js"), name: "inboundDelivery.js", source: "src/data/inboundDelivery.js" },
   { from: join(ROOT, "src", "data", "laserSubstrate.js"), name: "laserSubstrate.js", source: "src/data/laserSubstrate.js" },
+  // Skala w osobnych osiach: liczy z niej i przegladarka, i kwota wiazaca.
+  // Objetosc rosnie iloczynem osi, wiec dwie kopie tego wzoru rozjechalyby sie
+  // przy pierwszej poprawce, a objawem bylaby cena wygladajaca poprawnie.
+  { from: join(ROOT, "src", "utils", "dimScale.js"), name: "dimScale.js", source: "src/utils/dimScale.js" },
 ];
 
 /** W kopii wszystko lezy obok siebie, wiec ../data/x.js staje sie ./x.js */
 function rewriteImports(code) {
-  return code.replace(/from\s+"\.\.\/data\//g, 'from "./');
+  return code
+    .replace(/from\s+"\.\.\/data\//g, 'from "./')
+    .replace(/from\s+"\.\.\/utils\//g, 'from "./');
 }
 
 // Generator pierscionkow ma wlasny katalog, bo `build.js` w folderze z cenami

@@ -381,6 +381,29 @@ nic. **Zero w obu kolumnach** znaczy "wycena indywidualna": tak stoją srebro i 
 szlachetny rozlicza się wagowo, a nie powierzchniowo. Rozpiska pokazuje wtedy pozycję "Materiał /
 szt.: wycena indywidualna", bo znikająca linia czytałaby się jak materiał gratis.
 
+**Wymiary wyrobu w osobnych osiach (2026-08-20).** Tryb zaawansowany dostał pola wymiarów: trzy osie
+przy modelu 3D, dwie przy rysunku wektorowym, z przełącznikiem "Zachowaj proporcje". Klient wpisuje
+**milimetry**, a nie mnożnik, bo "ile ma mieć" to pytanie, na które zna odpowiedź. Odznaczenie
+synchronizacji pozwala zniekształcić wyrób, ponowne zaznaczenie wraca do skali **sprzed rozjechania
+osi**, a nie do średniej z nich (średnia po cichu zmieniałaby wielkość).
+
+Cztery rzeczy, które przy tej zmianie psują się bez żadnego wyjątku: objętość rośnie jak `sx·sy·sz`,
+a nie `s³`; pole robocze trzeba sprawdzać z dopuszczeniem obrotu, inaczej odrzucamy wydruk, który
+realnie robimy; "dopasuj do pola" mnoży wszystkie osie przez ten sam współczynnik, żeby nie cofać
+klientowi jego własnego zniekształcenia; a **długość ścieżki przy nierównomiernym rozciągnięciu nie
+mnoży się przez jedną liczbę** (koło staje się elipsą), więc rysunek jest mierzony ponownie przez
+próbkowanie. Pomiar zgadza się z obwodem elipsy Ramanujana co do trzeciego miejsca po przecinku.
+
+Skala **równomierna jedzie do serwera jako liczba**, rozjechana jako obiekt: kwotę wiążącą liczy
+serwer, a w bazie leżą pozycje sprzed tej zmiany. Transport idzie JSON-em, bo `String({...})` dawało
+"[object Object]", z którego serwer odczytałby NaN i po cichu wycenił skalę 1.
+
+**Zniekształcenie jest ustaleniem, nie ustawieniem.** Gdy osie się rozjadą, pozycja dostaje flagę
+`znieksztalcony` i opis wymiarów, a zdanie o zmianie kształtu pojawia się w trzech miejscach:
+przy przycisku "Dodaj do koszyka", w pozycji koszyka i w potwierdzeniu mailowym (HTML i tekst),
+zawsze z wymiarami. Zdanie stoi w **jednym** pliku (`src/pricing/quoteSummary.js`), bo trzy kopie
+rozjechałyby się przy pierwszej poprawce redakcyjnej.
+
 **Urealnienie prędkości cięcia CO2 (2026-08-20).** Cennik cięcia zakładał prędkości, których P2
 nie osiąga: sklejka 2 mm po 100 mm/s, sklejka 3 mm po 67 mm/s, lite drewno 10 mm po 10 mm/s.
 Błąd był **cichy i systematyczny**, bo stawki wyprowadzano jedna z drugiej, więc trzymały się

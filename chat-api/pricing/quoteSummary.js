@@ -59,6 +59,35 @@ export const PRINT_FINDINGS = {
 };
 
 /** Jedno ustalenie bramki jako zdanie. Null, gdy identyfikatora nie znamy. */
+// ------------------------------------------------------------
+// ZNIEKSZTALCENIE WYROBU
+// ------------------------------------------------------------
+// Klient moze rozjechac osie i zmienic ksztalt wyrobu wzgledem pliku, ktory
+// przyslal. To jest USTALENIE, a nie ustawienie kalkulatora: wykonamy rzecz
+// o innych proporcjach niz oryginal, wiec musi to stac czarno na bialym
+// w koszyku i w potwierdzeniu, razem z wymiarami.
+//
+// Zdanie stoi TUTAJ, bo czytaja je trzy miejsca, ktore sie nie widza: koszyk,
+// podsumowanie zamowienia i mail. Trzy kopie rozjechalyby sie przy pierwszej
+// poprawce redakcyjnej i nikt by tego nie zauwazyl.
+export const DISTORTION_NOTE = {
+  pl: "Model zniekształcony: wymiary zmieniane osobno w poszczególnych osiach, więc kształt różni się od oryginału z pliku.",
+  en: "Item distorted: the axes were sized independently, so the shape differs from the original file.",
+  de: "Werkstück verzerrt: die Achsen wurden einzeln geändert, daher weicht die Form vom Original ab.",
+};
+
+/**
+ * Zdanie o zniekształceniu razem z wymiarami, albo null.
+ *
+ * @param {object} params parametry pozycji
+ * @param {string} lang
+ */
+export function distortionLine(params, lang = "pl") {
+  if (!params?.znieksztalcony) return null;
+  const zdanie = DISTORTION_NOTE[lang] || DISTORTION_NOTE.pl;
+  return params.wymiary ? `${zdanie} ${params.wymiary}` : zdanie;
+}
+
 export function describeFinding(finding, lang = "pl") {
   const dict = PRINT_FINDINGS[lang] || PRINT_FINDINGS.pl;
   const fn = dict[finding?.id];

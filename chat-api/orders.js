@@ -8,6 +8,7 @@
 
 import crypto from "node:crypto";
 
+import { parseScale, volumeFactor } from "./pricing/dimScale.js";
 import { parseMeshAsync, MeshError, SUPPORTED_EXTENSIONS, extensionOf } from "./pricing/mesh.js";
 import * as print3d from "./pricing/print3d.js";
 import * as jewelry from "./pricing/jewelry.js";
@@ -187,14 +188,29 @@ function assertPlausibleScale(bbox, ext) {
 
 /** Skalowanie geometrii, gdy klient zmienil skale wydruku w kreatorze */
 function scaleGeometry(geometry, scale) {
-  const s = Number(scale);
-  if (!Number.isFinite(s) || s <= 0 || s > 20) throw new PricingError("bad_scale", "Nieprawidłowa skala");
-  if (s === 1) return geometry;
+  // SKALA MOZE BYC LICZBA ALBO OSIA PO OSI. Liczba to zapis sprzed wprowadzenia
+  // wymiarow w trzech osiach i tak zapisane sa juz zlozone zamowienia, wiec
+  // musi dzialac dalej. Obiekt przychodzi wtedy, gdy klient rozjechal osie.
+  const sc = parseScale(scale);
+  const osie = ["x", "y", "z"];
+  for (const a of osie) {
+    const v = Number(sc[a]);
+    if (!Number.isFinite(v) || v <= 0 || v > 20) throw new PricingError("bad_scale", "Nieprawidłowa skala");
+  }
+  if (osie.every((a) => Number(sc[a]) === 1)) return geometry;
+
+  // Objetosc rosnie ILOCZYNEM osi (przy skali rownomiernej wychodzi z tego
+  // stare `s^3`). Pole powierzchni przy rozjechanych osiach nie ma zamknietego
+  // wzoru, wiec bierzemy srednia geometryczna par osi: to jest przyblizenie
+  // i jest tu nazwane, a nie udawane. Pole wchodzi tylko do zapasu na podpory,
+  // wiec blad kilku procent nie rusza kwoty tak jak objetosc.
+  const f = volumeFactor(sc);
+  const powierzchnia = (Number(sc.x) * Number(sc.y) + Number(sc.y) * Number(sc.z) + Number(sc.x) * Number(sc.z)) / 3;
   return {
     ...geometry,
-    volumeCm3: geometry.volumeCm3 * s * s * s,
-    bbox: { x: geometry.bbox.x * s, y: geometry.bbox.y * s, z: geometry.bbox.z * s },
-    surfaceAreaCm2: geometry.surfaceAreaCm2 * s * s,
+    volumeCm3: geometry.volumeCm3 * f,
+    bbox: { x: geometry.bbox.x * sc.x, y: geometry.bbox.y * sc.y, z: geometry.bbox.z * sc.z },
+    surfaceAreaCm2: geometry.surfaceAreaCm2 * powierzchnia,
   };
 }
 

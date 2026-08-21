@@ -20,6 +20,7 @@
 // dalej pokazywalby poprawnie wygladajace zdania.
 
 import { getService } from "./orderCatalog.js";
+import { DISTORTION_NOTE } from "../pricing/quoteSummary.js";
 import { t } from "../pricing/config.js";
 import { SUBSTRATES, SPARE_LABEL, SUBSTRATE_LABEL } from "./laserSubstrate.js";
 
@@ -29,9 +30,9 @@ const TECHNICZNE = new Set([
 ]);
 
 const DODATKOWE = {
-  pl: { materialNote: "Materiał (opis)", spare: "Zapas materiału", extended: "Obszar roboczy", extendedYes: "rozszerzony (przelotka)" },
-  en: { materialNote: "Material (description)", spare: "Spare material", extended: "Work area", extendedYes: "extended (pass-through)" },
-  de: { materialNote: "Material (Beschreibung)", spare: "Materialreserve", extended: "Arbeitsbereich", extendedYes: "erweitert (Passthrough)" },
+  pl: { materialNote: "Materiał (opis)", spare: "Zapas materiału", extended: "Obszar roboczy", extendedYes: "rozszerzony (przelotka)", wymiary: "Wymiary wyrobu", znieksztalcony: "Uwaga" },
+  en: { materialNote: "Material (description)", spare: "Spare material", extended: "Work area", extendedYes: "extended (pass-through)", wymiary: "Finished size", znieksztalcony: "Note" },
+  de: { materialNote: "Material (Beschreibung)", spare: "Materialreserve", extended: "Arbeitsbereich", extendedYes: "erweitert (Passthrough)", wymiary: "Fertigmaß", znieksztalcony: "Hinweis" },
 };
 
 /**
@@ -92,6 +93,18 @@ export function describeParams(pozycja, lang = "pl") {
   }
   if (params.spare) {
     wynik.push({ label: t(SPARE_LABEL, lang), value: String(params.spare) });
+  }
+  // WYMIARY WYROBU SA USTALENIEM, nie ustawieniem kalkulatora. Bez tej linii
+  // klient dostawal potwierdzenie, z ktorego nie wynikalo, jak duza rzecz
+  // zamowil, a przy rozjechanych osiach takze to, ze ksztalt zostal zmieniony.
+  if (params.wymiary) {
+    wynik.push({ label: extra.wymiary, value: String(params.wymiary) });
+  }
+  // ZNIEKSZTALCENIE JEST OSOBNYM WIERSZEM, a nie dopiskiem przy wymiarach.
+  // Klient ma na to przystac swiadomie: wykonamy rzecz o innych proporcjach
+  // niz plik, ktory przyslal.
+  if (params.znieksztalcony) {
+    wynik.push({ label: extra.znieksztalcony, value: DISTORTION_NOTE[lang] || DISTORTION_NOTE.pl, uwaga: true });
   }
   if (params.extended) {
     wynik.push({ label: extra.extended, value: extra.extendedYes });
