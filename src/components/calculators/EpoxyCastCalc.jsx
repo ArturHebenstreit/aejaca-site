@@ -36,8 +36,8 @@ export default function EpoxyCastCalc({ lang = "pl" }) {
   const [qty, setQty] = useState(1);
   const quantityId = tierForQty(qty, QUANTITY_TIERS).id;
 
-  const result = useMemo(() => calculate({ resinId, volumeId, moldId, inclusionId, finishId, quantityId }, lang),
-    [resinId, volumeId, moldId, inclusionId, finishId, quantityId, lang]);
+  const result = useMemo(() => calculate({ resinId, volumeId, moldId, inclusionId, finishId, quantityId, qty }, lang),
+    [resinId, volumeId, moldId, inclusionId, finishId, quantityId, qty, lang]);
 
   const paramsSummary = [
     t(RESINS.find(r => r.id === resinId)?.label, lang),

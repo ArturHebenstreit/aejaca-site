@@ -168,8 +168,8 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
     // sie zmierzyc rozciagnietego rysunku. Milczace zejscie na przedzialy
     // z listy podmienialoby podstawe wyceny bez slowa.
     if (svgData && !scaledSvgData) return { type: "custom" };
-    if (mode === "engrave") return calcEngrave({ matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, extended, svgData: scaledSvgData, podloze }, lang, materialStock);
-    return calcCut({ matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, extended, svgData: scaledSvgData, podloze }, lang, materialStock);
+    if (mode === "engrave") return calcEngrave({ matId: eMatId, areaId: eAreaId, detailId: eDetailId, quantityId: eQtyId, qty: engraveQty, extended, svgData: scaledSvgData, podloze }, lang, materialStock);
+    return calcCut({ matId: cMatId, pathId: cPathId, complexId: cComplexId, quantityId: cQtyId, qty: cutQty, extended, svgData: scaledSvgData, podloze }, lang, materialStock);
   }, [svgData, mode, eMatId, eAreaId, eDetailId, eQtyId, cMatId, cPathId, cComplexId, cQtyId, extended, scaledSvgData, lang, podloze, materialStock]);
 
   const presetNeedsExtended = mode === "engrave" ? AREA_NEEDS_EXTENDED[eAreaId] : PATH_NEEDS_EXTENDED[cPathId];

@@ -8,7 +8,7 @@
 // Formuly przeniesione 1:1 z EpoxyCastCalc.jsx. Bez Reacta, zeby backend
 // zamowien liczyl cene tym samym kodem co kalkulator.
 
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, netCostFmt } from "./config.js";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, netCostFmt, orderQty, tierDiscount } from "./config.js";
 
 export const EPOXY_CONFIG = {
   POWER_KW: 0.15,
@@ -105,7 +105,7 @@ export const FINISH_OPTIONS = [
   { id: "custom",   label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" },                              timeH: null, cost: null, custom: true },
 ];
 
-export function calculate({ resinId, volumeId, moldId, inclusionId, finishId, quantityId }, lang) {
+export function calculate({ resinId, volumeId, moldId, inclusionId, finishId, quantityId, qty: sztuk }, lang) {
   const resin = RESINS.find(r => r.id === resinId);
   const vol = VOLUMES.find(v => v.id === volumeId);
   const mold = MOLD_TYPES.find(m => m.id === moldId);
@@ -114,6 +114,12 @@ export function calculate({ resinId, volumeId, moldId, inclusionId, finishId, qu
   const qTier = QUANTITY_TIERS.find(q => q.id === quantityId);
   if (!resin || !vol || !mold || !incl || !fin || !qTier) return null;
   if (!resin.pricePerMl || !vol.vol || mold.moldCost == null || incl.cost == null || fin.cost == null || !qTier.qty) return { type: "custom" };
+  // LICZYMY PO LICZBIE SZTUK, KTORA KLIENT NAPRAWDE ZAMAWIA, a nie po nakladzie
+  // reprezentatywnym progu. Przy dwoch sztukach przygotowanie dzieli sie przez
+  // dwie, a nie przez szesc. Rabat zostaje przy progu i jest przycinany tak,
+  // zeby wieksze zlecenie nigdy nie bylo tansze (`tierDiscount`).
+  const qty = orderQty(quantityId, { qty: sztuk });
+  const rabat = tierDiscount(quantityId, qty);
   const l = LBL[lang] || LBL.en;
 
   const resinCost = vol.vol * resin.pricePerMl * 1.10;
@@ -129,16 +135,16 @@ export function calculate({ resinId, volumeId, moldId, inclusionId, finishId, qu
   const finishCost = fin.cost || 0;
 
   const baseCost = resinCost + moldPerPc + inclCost + finishCost + laborCost + energyCost + deprCost + EPOXY_CONFIG.HANDLING_FEE;
-  const batchTimeH = (workTimeH + handleH) * qTier.qty + resin.cureH;
+  const batchTimeH = (workTimeH + handleH) * qty + resin.cureH;
 
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
-  const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, qTier.discount, qTier.qty, plDiscount);
+  const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, rabat, qty, plDiscount);
   const fc = netCostFmt(lang, pricing.plFactor);
   const cureDisplay = resin.cureH < 1 ? `${Math.round(resin.cureH * 60)} min (UV)` : `${resin.cureH} h`;
 
   return {
-    type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
-    totalTimeH: qTier.qty > 1 ? batchTimeH : null,
+    type: "calculated", ...pricing, qty, discount: rabat,
+    totalTimeH: qty > 1 ? batchTimeH : null,
     breakdown: [
       { label: l.resinCost, value: `${fc(resinCost)} (${vol.vol} ml)` },
       { label: l.moldAmort, value: fc(moldPerPc) },
@@ -153,8 +159,8 @@ export function calculate({ resinId, volumeId, moldId, inclusionId, finishId, qu
       { label: l.workshop, value: fc(baseCost * CONFIG.BASE_MARGIN) },
       { divider: true },
       { label: l.estCost, value: fc(baseCost * (1 + CONFIG.BASE_MARGIN)), bold: true },
-      ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
-      ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${batchTimeH.toFixed(1)} h`, bold: true }] : []),
+      ...(rabat > 0 ? [{ label: l.discount, value: `-${Math.round(rabat * 1000) / 10}%`, accent: true }] : []),
+      ...(qty > 1 ? [{ label: l.totalProd, value: `~${batchTimeH.toFixed(1)} h`, bold: true }] : []),
     ],
   };
 }

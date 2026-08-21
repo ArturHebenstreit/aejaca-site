@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-21 | Wersja: 4.8*
+*Wygenerowano: 2026-08-21 | Wersja: 4.9*
 
 ---
 
@@ -686,6 +686,60 @@ maszyny. Zamówić się tego nie da.
 Pilnuje tego `scripts/test-model-handoff.mjs`: sprawdza, że nie wrócił drugi komplet
 stanu pliku, że obie karty wgrywania czytają ten sam stan i że karta MSLA dostaje własne
 pole robocze. Dwie kontrole negatywne.
+
+### 6.0g Liczymy po realnej liczbie sztuk, nie po nakładzie progu (od 2026-08-21)
+
+**Zlecenie kosztowało nas więcej, niż za nie braliśmy.** Każdy silnik amortyzował
+przygotowanie (stół drukarki, setup lasera) po **nakładzie reprezentatywnym progu**: próg
+„2-10 szt." liczył się po sześciu. Klient zamawiający dwie sztuki płacił więc tak, jakby
+na stole stało sześć, a stały dwie. Marża po cichu schodziła do zera i nic tego nie
+zgłaszało, bo cena wyglądała normalnie.
+
+Teraz liczba sztuk jedzie do silnika razem z parametrami (`orderQty` w
+`src/pricing/config.js`) i to ona dzieli koszt przygotowania. **Rabat zostaje przy progu**,
+bo to próg jest obietnicą handlową. Liczbę przycinamy do granic progu, więc nie da się
+wziąć rabatu za dwadzieścia jeden sztuk, zamawiając jedną: parametry przychodzą od
+przeglądarki i nie wolno im ufać.
+
+Skutek cenowy, mierzony (dawna cena → nowa, całe zlecenie):
+
+| Sztuk | MSLA wzorzec | FDM PLA S | CO2 grawer M | Fiber M |
+|---|---|---|---|---|
+| 2 | 64,28 → 131,30 | 54,72 → 65,64 | 70,66 → 84,04 | 27,92 → 28,52 |
+| 3 | 96,42 → 150,00 | 82,08 → 97,53 | 105,99 → 125,37 | 41,88 → 42,33 |
+| 11 | 260,92 → 278,85 | 283,47 → 283,80 | 367,07 → 367,29 | 122,87 → 144,87 |
+| 21 | 426,09 → 452,55 | 509,88 → 515,34 | 660,87 → 667,59 | 221,13 → 223,44 |
+
+Żadna cena nie spadła. Najmocniej rosną **małe nakłady wzorców odlewniczych**, bo tam
+przygotowanie jest najdroższe (potrójna stawka kontroli wzorca) i wcześniej dzieliło się
+przez sześć zamiast przez dwa. Ceny „od" na kartach usług liczą się z jednej sztuki, więc
+się nie zmieniły.
+
+**Odlewy żywiczne zostały bez zmian**, i to jest poprawne: forma rozlicza się przez liczbę
+zalań, a nie przez zamówienie, więc koszt jednostkowy z założenia nie zależy od nakładu.
+
+**Przy okazji zamknięte odwrócenie na granicy progów.** Rabat idzie skokami (0, 5, 10, 15%),
+a skok bywa większy niż przyrost ilości: **21 sztuk kosztowało 407,61 zł, a 20 sztuk
+454,60 zł**. Klient, który to zauważy, ma rację, że cennik jest zepsuty. `tierDiscount`
+przycina rabat tuż za granicą progu do wartości, przy której zlecenie kosztuje tyle co
+poprzednie, a pełny rabat wchodzi kilka sztuk dalej. To ta sama metoda, którą projekt
+stosuje od dawna przy rabacie rynkowym (`plFactorFor`). Przycięcie dostaje realny stosunek
+kosztów przy n i n-1 sztukach, plus włos zapasu na zaokrąglenie do groszy.
+
+Pilnuje tego `scripts/test-quantity.mjs`: dla sześciu silników, po trzydzieści nakładów
+każdy, sprawdza że silnik liczy po zamówionej liczbie, że cena za sztukę nigdy nie rośnie
+i że **większe zlecenie nigdy nie kosztuje mniej**. Trzy kontrole negatywne.
+
+### 6.0h Kwota wiążąca idzie za językiem (od 2026-08-21)
+
+`money()` w `CalcToCart.jsx` doklejał „ PLN" niezależnie od języka, więc Niemiec oglądał
+kwotę wiążącą w walucie, której nie używa, tuż pod rozpiską podaną już w euro. Teraz
+obowiązuje zasada walutowa marki: polski płaci w złotówkach, angielski i niemiecki widzą
+euro, a druga waluta stoi mniejszym drukiem pod główną kwotą.
+
+Kwota jest i zostaje **w groszach**: to ona idzie do koszyka i do zamówienia. Euro jest
+wyłącznie przeliczeniem do pokazania, po kursie NBP z `/api/market-rates`, tym samym,
+którego używa reszta serwisu (`useMarketRates`, wartość zapasowa 4,25).
 
 ### 6.0e Jedna kwota na ekranie, na górze karty wyceny (od 2026-08-21)
 

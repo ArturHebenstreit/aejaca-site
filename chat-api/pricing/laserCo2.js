@@ -8,7 +8,7 @@
 // Formuly przeniesione 1:1 z CO2LaserCalc.jsx. Bez Reacta, zeby backend
 // zamowien liczyl cene tym samym kodem co kalkulator.
 
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, netCostFmt } from "./config.js";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, netCostFmt, orderQty, tierDiscount } from "./config.js";
 import { materialCostPLN, materialIsOurs, pricedSeparately } from "./materialStock.js";
 import { sweptAreaCm2, coverageOf, coverageMeasured } from "./engraveCoverage.js";
 
@@ -226,7 +226,7 @@ export const CUT_COMPLEXITY = [
   { id: "custom",   label: { pl: "Niestandardowe", en: "Custom", de: "Individuell" }, mul: null, custom: true },
 ];
 
-export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svgData, podloze = null }, lang, stock = null) {
+export function calcEngrave({ matId, areaId, detailId, quantityId, qty: sztuk, extended, svgData, podloze = null }, lang, stock = null) {
   const mat = ENGRAVE_MATERIALS.find(m => m.id === matId);
   const area = svgData
     ? { area: svgData.engravAreaCm2 }
@@ -235,6 +235,12 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svg
   const qTier = QUANTITY_TIERS.find(q => q.id === quantityId);
   if (!mat || !area || !detail || !qTier) return null;
   if (!mat.rateMin || !area.area || !detail.mul || !qTier.qty) return { type: "custom" };
+  // LICZYMY PO LICZBIE SZTUK, KTORA KLIENT NAPRAWDE ZAMAWIA, a nie po nakladzie
+  // reprezentatywnym progu. Przy dwoch sztukach przygotowanie dzieli sie przez
+  // dwie, a nie przez szesc. Rabat zostaje przy progu i jest przycinany tak,
+  // zeby wieksze zlecenie nigdy nie bylo tansze (`tierDiscount`).
+  const qty = orderQty(quantityId, { qty: sztuk });
+  const rabat = tierDiscount(quantityId, qty);
   const l = LBL[lang] || LBL.en;
 
   // CZAS IDZIE Z POLA, PO KTORYM GLOWICA JEZDZI, a nie z prostokata opisanego
@@ -251,7 +257,7 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svg
     extCostAdd = CO2_CONFIG.EXTENDED_AREA_COST_ADD;
   }
   const timeH = timeMin / 60;
-  const setupH = (extended ? 0.5 : 0.25) / qTier.qty;
+  const setupH = (extended ? 0.5 : 0.25) / qty;
   const handleH = 0.03;
   const totalTimeH = timeH + setupH + handleH;
   const laborCost = timeMin * CO2_CONFIG.LABOR_PLN_MIN;
@@ -271,14 +277,14 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svg
   if (materialIsOurs(podloze) && pricedSeparately(mat.id, stock)) return { type: "custom" };
   const materialCost = materialCostPLN({ areaCm2: area.area, matId: mat.id, podloze, stock });
   const baseCost = laborCost + energyCost + deprCost + prepCost + materialCost + CO2_CONFIG.HANDLING_FEE + extCostAdd;
-  const batchTimeH = (timeH + handleH) * qTier.qty + (extended ? 0.5 : 0.25);
+  const batchTimeH = (timeH + handleH) * qty + (extended ? 0.5 : 0.25);
 
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
-  const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, qTier.discount, qTier.qty, plDiscount);
+  const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, rabat, qty, plDiscount);
   const fc = netCostFmt(lang, pricing.plFactor);
   return {
-    type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
-    totalTimeH: qTier.qty > 1 ? batchTimeH : null,
+    type: "calculated", ...pricing, qty, discount: rabat,
+    totalTimeH: qty > 1 ? batchTimeH : null,
     breakdown: [
       // Pokrycie pokazujemy TYLKO wtedy, gdy je zmierzylismy i gdy cos zmienia.
       // Linia "100%" przy kazdej wycenie z listy byla by szumem, a linia bez
@@ -297,13 +303,13 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svg
       ...(extended ? [{ label: l.extSurcharge, value: `+${fc(extCostAdd)}` }] : []),
       { divider: true },
       { label: l.estCost, value: fc(baseCost * (1 + CONFIG.BASE_MARGIN)), bold: true },
-      ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
-      ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${batchTimeH.toFixed(1)} h`, bold: true }] : []),
+      ...(rabat > 0 ? [{ label: l.discount, value: `-${Math.round(rabat * 1000) / 10}%`, accent: true }] : []),
+      ...(qty > 1 ? [{ label: l.totalProd, value: `~${batchTimeH.toFixed(1)} h`, bold: true }] : []),
     ],
   };
 }
 
-export function calcCut({ matId, pathId, complexId, quantityId, extended, svgData, podloze = null }, lang, stock = null) {
+export function calcCut({ matId, pathId, complexId, quantityId, qty: sztuk, extended, svgData, podloze = null }, lang, stock = null) {
   const mat = CUT_MATERIALS.find(m => m.id === matId);
   const path = svgData
     ? { pathCm: svgData.pathLengthCm, sheetCm2: svgData.engravAreaCm2 }
@@ -312,6 +318,12 @@ export function calcCut({ matId, pathId, complexId, quantityId, extended, svgDat
   const qTier = QUANTITY_TIERS.find(q => q.id === quantityId);
   if (!mat || !path || !cmplx || !qTier) return null;
   if (!mat.cutRate || !path.pathCm || !cmplx.mul || !qTier.qty) return { type: "custom" };
+  // LICZYMY PO LICZBIE SZTUK, KTORA KLIENT NAPRAWDE ZAMAWIA, a nie po nakladzie
+  // reprezentatywnym progu. Przy dwoch sztukach przygotowanie dzieli sie przez
+  // dwie, a nie przez szesc. Rabat zostaje przy progu i jest przycinany tak,
+  // zeby wieksze zlecenie nigdy nie bylo tansze (`tierDiscount`).
+  const qty = orderQty(quantityId, { qty: sztuk });
+  const rabat = tierDiscount(quantityId, qty);
   const l = LBL[lang] || LBL.en;
 
   let cutTimeSec = path.pathCm * mat.cutRate * cmplx.mul;
@@ -322,7 +334,7 @@ export function calcCut({ matId, pathId, complexId, quantityId, extended, svgDat
   }
   const cutTimeMin = cutTimeSec / 60;
   const cutTimeH = cutTimeMin / 60;
-  const setupH = (extended ? 0.5 : 0.2) / qTier.qty;
+  const setupH = (extended ? 0.5 : 0.2) / qty;
   const handleH = 0.03;
   const totalTimeH = cutTimeH + setupH + handleH;
   const laborCost = cutTimeMin * CO2_CONFIG.LABOR_PLN_MIN;
@@ -341,14 +353,14 @@ export function calcCut({ matId, pathId, complexId, quantityId, extended, svgDat
   if (materialIsOurs(podloze) && pricedSeparately(mat.id, stock)) return { type: "custom" };
   const materialCost = materialCostPLN({ areaCm2: path.sheetCm2, matId: mat.id, podloze, stock });
   const baseCost = laborCost + materialCost + energyCost + deprCost + CO2_CONFIG.HANDLING_FEE + extCostAdd;
-  const batchTimeH = (cutTimeH + handleH) * qTier.qty + (extended ? 0.5 : 0.2);
+  const batchTimeH = (cutTimeH + handleH) * qty + (extended ? 0.5 : 0.2);
 
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
-  const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, qTier.discount, qTier.qty, plDiscount);
+  const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, rabat, qty, plDiscount);
   const fc = netCostFmt(lang, pricing.plFactor);
   return {
-    type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
-    totalTimeH: qTier.qty > 1 ? batchTimeH : null,
+    type: "calculated", ...pricing, qty, discount: rabat,
+    totalTimeH: qty > 1 ? batchTimeH : null,
     breakdown: [
       { label: l.cutTime, value: `${cutTimeMin.toFixed(1)} min` },
       { label: l.workshop, value: fc(laborCost) },
@@ -361,8 +373,8 @@ export function calcCut({ matId, pathId, complexId, quantityId, extended, svgDat
       ...(extended ? [{ label: l.extSurcharge, value: `+${fc(extCostAdd)}` }] : []),
       { divider: true },
       { label: l.estCost, value: fc(baseCost * (1 + CONFIG.BASE_MARGIN)), bold: true },
-      ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
-      ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${batchTimeH.toFixed(1)} h`, bold: true }] : []),
+      ...(rabat > 0 ? [{ label: l.discount, value: `-${Math.round(rabat * 1000) / 10}%`, accent: true }] : []),
+      ...(qty > 1 ? [{ label: l.totalProd, value: `~${batchTimeH.toFixed(1)} h`, bold: true }] : []),
     ],
   };
 }

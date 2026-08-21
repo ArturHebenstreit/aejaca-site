@@ -196,6 +196,79 @@ export function plFactorFor(wartoscBezRabatu, localDiscount = 0) {
   return doZaplaty / wartoscBezRabatu;
 }
 
+/**
+ * Liczba sztuk, po ktorej NAPRAWDE liczymy zlecenie.
+ *
+ * Prog nakladu ma swoj naklad reprezentatywny ("2-10 szt." liczy sie po
+ * szesciu) i przez dlugi czas to on wchodzil do kosztu. Skutek byl taki, ze
+ * przy dwoch sztukach dzielilismy przygotowanie stolu przez szesc, choc na
+ * stole stana dwie. ZLECENIE KOSZTOWALO NAS WIECEJ, NIZ ZA NIE BRALISMY,
+ * i nikt tego nie widzial, bo cena wygladala normalnie.
+ *
+ * Rabat zostaje przy progu, bo to prog jest obietnica handlowa. Zmienia sie
+ * wylacznie strona kosztowa: amortyzacja przygotowania, czas partii i wartosc
+ * zlecenia, od ktorej liczy sie prog rabatu rynkowego.
+ *
+ * LICZBE PRZYCINAMY DO GRANIC PROGU. Parametry przychodza od przegladarki,
+ * wiec bez tego dalo by sie poprosic o prog "21-50 szt." z rabatem 15% i
+ * jedna sztuke.
+ *
+ * @param {string} quantityId identyfikator progu
+ * @param {object} params     parametry wyceny; czytamy z nich `qty`
+ * @param {Array}  [tiers]    lista progow, domyslnie studyjna
+ * @returns {number|null} liczba sztuk albo null, gdy prog idzie do wyceny recznej
+ */
+export function orderQty(quantityId, params, tiers = QUANTITY_TIERS) {
+  const tier = tiers.find((q) => q.id === quantityId);
+  if (!tier || !tier.qty) return null;
+  const n = Math.floor(Number(params?.qty));
+  if (!Number.isFinite(n) || n < 1) return tier.qty;
+  const b = quantityBounds(quantityId);
+  return Math.min(Math.max(n, b.min ?? 1), b.max ?? 999);
+}
+
+/**
+ * Rabat nakladu, przyciety tak, zeby WIEKSZE ZLECENIE NIGDY NIE BYLO TANSZE.
+ *
+ * Rabat idzie progami (0%, 5%, 10%, 15%), a prog jest skokiem. Na granicy
+ * dwudziestu jeden sztuk rabat rosnie z 10% na 15%, czyli o wiecej, niz rosnie
+ * ilosc, i dwadziescia jeden sztuk wychodzilo taniej niz dwadziescia. Klient,
+ * ktory to zauwazy, ma racje, ze cennik jest zepsuty.
+ *
+ * To ta sama pulapka, ktora `plFactorFor` rozwiazuje przy rabacie rynkowym,
+ * i to samo lekarstwo: tuz za granica progu rabat jest przyciety do wartosci,
+ * przy ktorej zlecenie kosztuje tyle co poprzednie, a pelny rabat wchodzi
+ * kilka sztuk dalej. Funkcja nigdy nie podnosi ceny wyzej niz bez rabatu.
+ *
+ * Przyciecie jest lekko ZACHOWAWCZE, bo porownuje przy tym samym koszcie
+ * jednostkowym, a ten przy wiekszym nakladzie spada. Blad idzie wiec na nasza
+ * korzysc, nigdy na odwrot.
+ */
+export function tierDiscount(quantityId, qty, tiers = QUANTITY_TIERS, stosunekKosztu = 1) {
+  const idx = tiers.findIndex((q) => q.id === quantityId);
+  const tier = tiers[idx];
+  if (!tier) return 0;
+  const rabat = tier.discount || 0;
+  const poprzedni = tiers[idx - 1];
+  const n = Number(qty);
+  if (!poprzedni || !(n > 0)) return rabat;
+  const dol = quantityBounds(quantityId).min ?? 1;
+  if (!(dol > 1) || n < dol) return rabat;
+  // `stosunekKosztu` to koszt jednostkowy przy n-1 sztukach podzielony przez
+  // koszt przy n. Przy wiekszym nakladzie przygotowanie rozklada sie na wiecej
+  // sztuk, wiec ten stosunek jest wiekszy od jedynki i bez niego przyciecie
+  // bylo o wlos za slabe: zlecenie o jedna sztuke wieksze potrafilo wyjsc
+  // tansze o kilka zlotych. Silnik, ktory go nie poda, dostaje jedynke i
+  // zachowuje sie jak dotad.
+  const r = Number(stosunekKosztu) > 0 ? Number(stosunekKosztu) : 1;
+  // Wlos zapasu, bo cena jednostkowa zaokragla sie do pelnych groszy i suma
+  // zamowienia dziedziczy ten blad razy liczba sztuk. Bez zapasu zlecenie
+  // wychodzilo tansze o kilka groszy tuz za granica progu. Zapas jest rzedu
+  // jednej dziesiatej punktu procentowego i idzie na nasza korzysc.
+  const granica = 1 - ((1 - (poprzedni.discount || 0)) * (dol - 1) * r) / n - 0.001;
+  return Math.max(0, Math.min(rabat, granica));
+}
+
 export function unitPriceGrosze(baseCost, margin, discountRate, localDiscount = 0, qty = 1) {
   const bezRabatu = baseCost * (1 + margin) * (1 - discountRate);
   const discounted = bezRabatu * plFactorFor(bezRabatu * qty, localDiscount);

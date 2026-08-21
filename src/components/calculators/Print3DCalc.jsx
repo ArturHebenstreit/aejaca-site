@@ -429,11 +429,11 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
     };
   }, [stlData, stlScale]);
 
-  const result = useMemo(() => calculate({ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, stlData: scaledStlData }, lang),
-    [segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, scaledStlData, lang]);
+  const result = useMemo(() => calculate({ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, qty: fdmQty, stlData: scaledStlData }, lang),
+    [segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, fdmQty, scaledStlData, lang]);
 
-  const mslaResult = useMemo(() => calculateMSLA({ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId, stlData: scaledStlData }, lang),
-    [applicationId, resinKey, layerId, mslaSizeId, mslaQuantityId, scaledStlData, lang]);
+  const mslaResult = useMemo(() => calculateMSLA({ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId, qty: mslaQty, stlData: scaledStlData }, lang),
+    [applicationId, resinKey, layerId, mslaSizeId, mslaQuantityId, mslaQty, scaledStlData, lang]);
 
   const matOptions = Object.entries(FILAMENTS[segment].materials).map(([k, v]) => ({
     id: k, label: k, sub: `${v.price_kg}zł`, img: FILAMENT_IMG[k],

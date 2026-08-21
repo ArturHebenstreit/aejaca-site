@@ -162,8 +162,8 @@ export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffU
     // Brak pomiaru rozciagnietego rysunku nie moze cicho zejsc na przedzialy
     // z listy: to podmiana podstawy wyceny bez slowa dla klienta.
     if (svgData && !scaledSvgData) return { type: "custom" };
-    return calculate({ matId, lensId, markId, areaId, quantityId, svgData: scaledSvgData, podloze }, lang, materialStock);
-  }, [svgData, matId, lensId, markId, areaId, quantityId, scaledSvgData, lang, podloze, materialStock]);
+    return calculate({ matId, lensId, markId, areaId, quantityId, qty, svgData: scaledSvgData, podloze }, lang, materialStock);
+  }, [svgData, matId, lensId, markId, areaId, quantityId, qty, scaledSvgData, lang, podloze, materialStock]);
 
   const paramsSummary = [
     t(MATERIALS.find(m => m.id === matId)?.label, lang),

@@ -491,6 +491,8 @@ Use this table to answer ANY question about 3D print settings. Columns: Dysza (n
 **Casting rule:** aplikacja "wzorzec do odlewu" ogranicza dobór wyłącznie do dwóch żywic castable BlueCast powyżej.
 **Client pricing (unchanged):** wydruki MSLA od 49 PLN (minimum order), wzorce castable do odlewu biżuterii typowo 90-180 PLN.
 
+**Quantity changes the unit price, and small runs are not cheap (since 2026-08-21):** every calculator now prices the exact number of pieces the customer asks for, not the tier's representative run. Setup (printer platform, laser setup) is divided by the real count, so two pieces carry half the setup each, not a sixth. Two castable patterns cost about 65 PLN each, six about 31 PLN each, and the quantity discount is trimmed at tier boundaries so a larger order is never cheaper in total than a smaller one. Never quote a per-piece price without knowing the quantity.
+
 **Use-case routing:**
 - "Jaka żywica do figurek/miniatur?" → High-precision 14K (280 PLN/kg, mikro-detal) lub Standard (120 PLN/kg, hobby) → link [Parametry druku 3D MSLA](https://www.aejaca.com/toolstudio/resin-settings/)
 - "Jaka żywica do odlewu biżuterii?" → wyłącznie Castable BlueCast X-One V2 lub X-Wax Filigree (1399 PLN/kg) → link [Parametry druku 3D MSLA](https://www.aejaca.com/toolstudio/resin-settings/)

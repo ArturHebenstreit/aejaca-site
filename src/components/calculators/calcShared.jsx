@@ -235,6 +235,9 @@ export function ResultDisplay({ result, lang = "pl", hideRange = false, binding 
             <div>
               <div className="text-[11px] uppercase tracking-wide text-neutral-500">{kwotaWiazaca.etykieta}</div>
               <div className="text-3xl font-extrabold text-white leading-tight">{kwotaWiazaca.suma}</div>
+              {kwotaWiazaca.sumaDruga && (
+                <div className="text-xs text-neutral-500 mt-0.5">{kwotaWiazaca.sumaDruga}</div>
+              )}
             </div>
             {kwotaWiazaca.zaSztuke && (
               <div className="text-right text-neutral-400 text-xs">{kwotaWiazaca.zaSztuke}</div>
