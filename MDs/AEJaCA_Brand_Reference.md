@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-21 | Wersja: 4.6*
+*Wygenerowano: 2026-08-21 | Wersja: 4.7*
 
 ---
 
@@ -1481,6 +1481,28 @@ Schemat: `scripts/products-schema.sql`, migracje wykonują się też przy starci
 Wszystko, co obsługuje się ręcznie, mieszka w jednej aplikacji `admin/` (Express + EJS, osobna usługa na Railway, logowanie przez Google, dostęp po liście adresów). Zakładki: Dashboard, **Produkty**, **Kody**, **Przelewy**, Analytics, Leads, Subscribers, Chat, Email, Laser Matrix, Gems, Filamenty.
 
 Menu siedzi w jednym pliku `admin/views/partials/header.ejs`. Wcześniej każdy widok miał własną, przepisaną ręcznie kopię i kopie się rozjechały: na jednej podstronie brakowało Emaila, na innej Filamentów, co wyglądało, jakby pozycje znikały przy klikaniu. Nowa zakładka dopisuje się teraz raz.
+
+**Kolumna akcji była niewidzialna (naprawione 2026-08-21).** Materiały miały „Edytuj" i „Usuń"
+przy każdym wierszu od 2026-08-20, ale właściciel ich nie widział i uznał, że panel nie pozwala
+edytować materiałów. Przyczyna: tabele mają po kilkanaście kolumn i siedzą w kontenerze
+`overflow-x-auto`, więc **ostatnia kolumna wypada poza widok**, a jej nagłówek był pusty, więc nic
+nie zdradzało, że cokolwiek tam jest.
+
+Zmierzone przy oknie 1543 px: tabela 1283 px w kontenerze 1230 px, „Edytuj" kończy się na 1225 px
+(pięć pikseli zapasu), „Usuń" leży w całości poza widokiem. Pierwszy pomiar wypadł fałszywie
+uspokajająco, bo zrobiłem go na zbyt wąskiej atrapie danych; dopiero dane przepisane ze zrzutu
+właściciela pokazały prawdę.
+
+Poprawka jest jedna dla **wszystkich dziewięciu tabel z akcjami**, nie tylko dla materiałów: klasa
+`tabela-akcje` (`admin/src/input.css`) przypina ostatnią kolumnę do prawej krawędzi, reszta przewija
+się pod nią. Tło musi być nieprzezroczyste, inaczej przewijana treść prześwituje. Puste nagłówki
+dostały etykietę „Akcje". Sprawdzone w przeglądarce przy 1543 i 1000 px, w tym z tabelą przewiniętą
+do końca w prawo.
+
+Pilnuje tego `admin/check-views.mjs`: klasa na każdej tabeli z akcjami, reguła obecna w zbudowanym
+arkuszu i to, że **za akcjami nie stoi już żadna kolumna** (przypięcie łapie ostatnią komórkę, więc
+dopisanie kolumny za nimi cofnęłoby całą poprawkę po cichu). Trzy kontrole negatywne. Strażnik przy
+pierwszym uruchomieniu wyłapał trzy widoki, które przy ręcznym przeglądzie przeoczyłem.
 
 **Edycja i usuwanie pojedynczych rekordów (2026-08-21).** Wzorcem są Filamenty: przy każdym wierszu
 stoi ołówek i kosz. Doszły tam, gdzie ich brakowało, ale nie wszędzie, i te granice są celowe.

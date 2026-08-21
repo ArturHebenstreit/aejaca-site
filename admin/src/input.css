@@ -1,3 +1,45 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ============================================================
+   KOLUMNA AKCJI PRZYPIETA DO PRAWEJ KRAWEDZI
+   ============================================================
+   Tabele panelu maja po kilkanascie kolumn i siedza w kontenerze
+   `overflow-x-auto`, wiec przy typowym oknie ostatnia kolumna wypada POZA
+   WIDOK. Akurat w niej stoja "Edytuj" i "Usun".
+
+   Zmierzone na tabeli materialow przy oknie 1543 px: tabela 1283 px w
+   kontenerze 1230 px, "Edytuj" konczy sie na 1225 px (piec pikseli zapasu),
+   a "Usun" lezy w calosci poza widokiem. Naglowek tej kolumny byl pusty, wiec
+   nic nie zdradzalo, ze cokolwiek tam jest. Wlasciciel przez to uwazal, ze
+   panel w ogole nie pozwala edytowac materialow, choc trasy edycji i usuwania
+   dzialaly od poczatku. Awaria cicha w czystej postaci: nic sie nie psulo,
+   funkcja po prostu byla niewidzialna.
+
+   Przypiecie rozwiazuje to raz dla WSZYSTKICH tabel z akcjami, a nie tylko
+   dla materialow. Warunek: akcje musza byc ostatnia komorka wiersza, co
+   sprawdza `check-styles.mjs`.
+
+   TLO MUSI BYC NIEPRZEZROCZYSTE, inaczej przewijana tresc przeswituje przez
+   przypieta komorke. Stad konkretne wartosci zamiast pol-przezroczystych klas
+   Tailwinda, ktore w tym miejscu daja bardzo brzydki wynik.
+
+   Cien po lewej mowi, ze cos jest schowane pod spodem. Bez niego kolumna
+   wyglada jak zwyczajnie ostatnia i nie widac, ze tabela ma dalszy ciag. */
+.tabela-akcje thead th:last-child,
+.tabela-akcje tbody td:last-child:not([colspan]) {
+  position: sticky;
+  right: 0;
+  background-color: #171717;         /* neutral-900, tlo tabeli */
+  box-shadow: -8px 0 8px -8px rgba(0, 0, 0, 0.7);
+}
+
+/* Wiersze parzyste i najechanie zmieniaja tlo wiersza, wiec przypieta komorka
+   musi isc za nimi. Inaczej po prawej stronie ciagnie sie pionowy pas w innym
+   kolorze niz reszta wiersza. */
+.tabela-akcje tbody tr:nth-child(even) td:last-child:not([colspan]) { background-color: #1a1a1a; }
+.tabela-akcje tbody tr:hover td:last-child:not([colspan]) { background-color: #1f1f1f; }
+
+/* Wiersz "brak danych" rozciaga sie przez cala szerokosc i nie ma czego
+   przypinac, stad wylaczenie po `colspan` wyzej. */
