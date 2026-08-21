@@ -19,9 +19,17 @@ function fakePool() {
 const pool = fakePool();
 const removed = await runRetention(pool);
 
+// LISTE TRZYMAMY WPROST, a nie wyprowadzamy z kodu, i to jest celowe.
+// Dopisanie kategorii kasujacej dane ma ZATRZYMAC ten test, zeby ktos musial
+// swiadomie potwierdzic, ze wolno ja kasowac. Lista wyprowadzona z `removed`
+// przyklepywalaby kazde nowe kasowanie sama z siebie.
 assert.deepEqual(Object.keys(removed).sort(),
-  ["conversations", "events", "leads", "orderPersonalData", "paymentPayloads", "uploads"]);
-assert.equal(pool.queries.length, 6, "szesc kategorii, szesc zapytan");
+  ["conversations", "events", "leads", "orderPersonalData", "paymentPayloads",
+   "quotes", "savedQuotes", "uploads"]);
+// Liczbe zapytan wiazemy z liczba kategorii, zeby nie zostawala przy dawnej
+// stalej. Kategoria bez zapytania albo zapytanie bez kategorii to blad.
+assert.equal(pool.queries.length, Object.keys(removed).length,
+  "kazda kategoria to dokladnie jedno zapytanie");
 
 const q = (fragment) => pool.queries.find((x) => x.sql.includes(fragment));
 
@@ -48,7 +56,34 @@ assert.deepEqual(conversations.params, ["365"], "12 miesiecy, tak jak mowi polit
 const events = q("FROM events");
 assert.deepEqual(events.params, ["730"]);
 
+// --- Wyceny: dwa terminy, jedna tabela ---
+// `quotes` sprzata sie DWOMA zapytaniami, bo wycena zapisana z kalkulatora
+// zyje 90 dni, a zapytanie o wycene reczna 24 miesiace. Gdyby ktores z nich
+// zgubilo warunek na `source`, krotszy termin zjadlby dluzszy albo odwrotnie,
+// i to bez sladu: kasowanie nie zglasza, ze skasowalo za duzo.
+const wyceny = pool.queries.filter((x) => x.sql.includes("FROM quotes"));
+assert.equal(wyceny.length, 2, "osobne zapytanie dla wyceny zapisanej i dla zapytania o wycene");
+
+const zapisana = wyceny.find((x) => /source = 'saved'/.test(x.sql));
+const reczna = wyceny.find((x) => /source, ''\) <> 'saved'/.test(x.sql));
+assert.ok(zapisana, "brak zapytania obejmujacego wyceny zapisane z kalkulatora");
+assert.ok(reczna, "brak zapytania obejmujacego zapytania o wycene reczna");
+assert.deepEqual(zapisana.params, ["90"]);
+assert.deepEqual(reczna.params, ["730"]);
+
+// NAJWAZNIEJSZY WARUNEK W CALEJ RETENCJI WYCEN. Wycena przekuta w zamowienie
+// przestaje byc zapytaniem, a staje sie czescia dokumentacji transakcji i ma
+// zyc razem z nia. Bez tego warunku kasowalibysmy podstawe zlozonego
+// zamowienia po 90 dniach, a wiersz zamowienia zostawalby bez tego, co
+// klient faktycznie zamowil.
+for (const w of wyceny) {
+  assert.match(w.sql, /converted_order_id IS NULL/,
+    "wycena, z ktorej powstalo zamowienie, nie moze byc kasowana");
+}
+
 // --- Terminy zgodne z tym, co obiecuje polityka prywatnosci ---
+assert.equal(RETENTION_DAYS.quotes, 730);
+assert.equal(RETENTION_DAYS.savedQuotes, 90);
 assert.equal(RETENTION_DAYS.conversations, 365);
 assert.equal(RETENTION_DAYS.leads, 730);
 assert.equal(RETENTION_DAYS.events, 730);
