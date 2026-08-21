@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-21 | Wersja: 4.4*
+*Wygenerowano: 2026-08-21 | Wersja: 4.5*
 
 ---
 
@@ -195,7 +195,19 @@ Panel **"jak dostarczyć przedmiot"** (paczkomat, adres) pokazuje się wyłączn
 
 **Rabat na rynek polski (15%) obowiązuje od wartości zlecenia 150 zł.** Poniżej progu nie rabatujemy: piętnaście procent z kilkunastu złotych nic klientowi nie daje, a robocizna nie maleje razem z ceną. Między 150 a ~176 zł płaci się równe 150 zł, żeby większe zlecenie nigdy nie wyszło taniej od mniejszego (naiwny próg dawał dokładnie taki uskok). Rabat nigdzie nie jest nazwany, schodzi równo ze wszystkich kwot w rozpisce. Stała: `CONFIG.PL_DISCOUNT_MIN_PLN`, reguła: `plFactorFor()` w `src/pricing/config.js`, pilnuje jej `scripts/test-price-breakdown.mjs`.
 
-Skutek uboczny wdrożenia progu: ceny "od" na kartach usług wzrosły, bo liczą się z najtańszej realnej konfiguracji, a ta jest poniżej progu. Druk FDM 16 → 19 zł, MSLA 40 → 47 zł, grawer i cięcie CO2 8 → 10 zł, fiber 8 → 9 zł, odlew żywiczny 18 → 21 zł. Liczby wyprowadza `npm run prices:derive`.
+Skutek uboczny wdrożenia progu: ceny "od" na kartach usług wzrosły, bo liczą się z najtańszej realnej konfiguracji, a ta jest poniżej progu. Druk FDM 16 → 19 zł, MSLA 40 → 49 zł, grawer i cięcie CO2 8 → 10 zł, fiber 8 → 9 zł, odlew żywiczny 18 → 21 zł. Liczby wyprowadza `npm run prices:derive`.
+
+### Minimalna wartość zlecenia MSLA (49 zł) sięga kwoty wiążącej
+
+Próg podnosił wyłącznie **widełki**, a nie `unitGrosze`, czyli jedyną liczbę, którą realnie obciążamy klienta przy zamówieniu (bierze ją `chat-api/orders.js`). Najtańszy wydruk pokazywał więc "49-65 zł" razem z wierszem "zastosowano minimalną wartość zlecenia", a zamówienie szło na 46,18 zł. Karta usługi w sklepie zapowiadała przy tym "od 47 zł", choć `llms.txt`, `context.js` i ta dokumentacja zgodnie mówiły 49 zł.
+
+Żadna z tych liczb nie była policzona źle. Każda wychodziła z innej reguły, więc nic się nie wywalało i nic nie zgłaszało rozjazdu.
+
+Warunek też był nie ten: porównywał **dolną granicę widełek** z progiem, a ta z definicji leży poniżej kwoty wiążącej, więc wiersz "zastosowano minimum" zapalał się także przy zleceniach, za które klient i tak płacił więcej niż 49 zł.
+
+Po poprawce próg działa na kwocie wiążącej, a widełki nigdy nie zaczynają się poniżej minimum, nawet gdy kwota wiążąca już je przekracza. Wiersz rozpiski pojawia się wtedy i tylko wtedy, gdy próg naprawdę zmienił cenę do zapłaty. Karta usługi po `npm run prices:derive` mówi 49 zł. Pilnuje tego sekcja 6 w `scripts/test-live-pricing.mjs`: przechodzi 192 warianty MSLA i czyta próg oraz listę rozmiarów z kodu, żeby nie zostać przy starej liczbie.
+
+Próg ma dziś **wyłącznie MSLA**. FDM, lasery i odlewy nie mają minimalnej wartości zlecenia. To do rozstrzygnięcia biznesowego, nie usterka.
 
 **Trzy rozłączne możliwości:**
 
