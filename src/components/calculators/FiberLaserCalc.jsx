@@ -162,8 +162,8 @@ export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffU
     // Brak pomiaru rozciagnietego rysunku nie moze cicho zejsc na przedzialy
     // z listy: to podmiana podstawy wyceny bez slowa dla klienta.
     if (svgData && !scaledSvgData) return { type: "custom" };
-    return calculate({ matId, lensId, markId, areaId, quantityId, svgData: scaledSvgData, podloze }, lang, materialStock);
-  }, [svgData, matId, lensId, markId, areaId, quantityId, scaledSvgData, lang, podloze, materialStock]);
+    return calculate({ matId, lensId, markId, areaId, quantityId, qty, svgData: scaledSvgData, podloze }, lang, materialStock);
+  }, [svgData, matId, lensId, markId, areaId, quantityId, qty, scaledSvgData, lang, podloze, materialStock]);
 
   const paramsSummary = [
     t(MATERIALS.find(m => m.id === matId)?.label, lang),
@@ -228,7 +228,7 @@ export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffU
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
         <MaterialNotice lang={lang} className="mb-4" delivery={Boolean(SUBSTRATES.find((x) => x.id === podloze)?.przysyla)} />
-        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
+        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} binding={bindingGrosze} />
         <NextStepPanel
           lang={lang}
           techLabel={t(TECH_LABEL, lang)}

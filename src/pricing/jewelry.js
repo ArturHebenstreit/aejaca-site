@@ -6,7 +6,7 @@
 // w przegladarce i na backendzie zamowien. Bez Reacta i bez importow
 // spoza src/pricing.
 
-import { t, fmtCost } from "./config.js";
+import { t, fmtCost, orderQty, tierDiscount } from "./config.js";
 import {
   METAL_PRICES, EUR_PLN, MARGIN, MATERIAL_MARKUP, REPAIR_MARGIN, TOL_LOW, TOL_HIGH,
   SERVICE_TYPES, PRODUCT_LINES, JEWELRY_TYPES, METALS, WEIGHTS, METHODS, PLATING,
@@ -98,7 +98,7 @@ export const resolveMetalPricePerG = metalPricePerG;
 
 // ---- NEW CREATION CALCULATOR ----
 export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
-  stoneRows, qtyId, engravingId,
+  stoneRows, qtyId, qty: sztuk, engravingId,
   clientSuppliesMetal, overrideWeightG }, lang, rates, gemstones) {
   const l = LBL[lang] || LBL.en;
   const line = PRODUCT_LINES.find(p => p.id === lineId);
@@ -179,12 +179,13 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
   const workCost = laborCost + settingCost + platingCost + engravingCost;
   const estCost = materialCost * (1 + MATERIAL_MARKUP) + workCost * (1 + MARGIN);
   const workshopCost = estCost - (materialCost + workCost); // combined markup+margin (shown as workshop line)
-  const qty = qTier.qty;
+  const qty = orderQty(qtyId, { qty: sztuk }, QTY_TIERS) ?? qTier.qty;
+  const rabat = tierDiscount(qtyId, qty, QTY_TIERS);
   const liveEurPln = rates?.pln_per_eur ?? EUR_PLN;
-  const pricing = applyJewelryPricing(estCost, qTier.discount, qty, liveEurPln);
+  const pricing = applyJewelryPricing(estCost, rabat, qty, liveEurPln);
 
   return {
-    type: "calculated", ...pricing, qty, discount: qTier.discount,
+    type: "calculated", ...pricing, qty, discount: rabat,
     tolLow: TOL_LOW, tolHigh: TOL_HIGH, eurPln: liveEurPln,
     breakdown: [
       { label: `${l.metalCost} (${weightG.toFixed(1)}g ${t(metal.label, lang)})`, value: fmtCost(metalCost, lang) },
@@ -196,7 +197,7 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
       { label: l.workshop, value: fmtCost(workshopCost, lang) },
       { divider: true },
       { label: l.estCost, value: fmtCost(estCost, lang), bold: true },
-      ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
+      ...(rabat > 0 ? [{ label: l.discount, value: `-${Math.round(rabat * 1000) / 10}%`, accent: true }] : []),
     ],
   };
 }
@@ -214,7 +215,7 @@ const WIRE_D_MAX_MM = 3.0;
 // From-stock mode: user inputs stockMassG + picks length → wire diameter derived from physics.
 export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engravingId,
   chainLengthMm, chainWidthMm,
-  clientSuppliesMetal, qtyId, calcMode, stockMassG }, lang, rates) {
+  clientSuppliesMetal, qtyId, qty: sztuk, calcMode, stockMassG }, lang, rates) {
   const l = LBL[lang] || LBL.en;
   const ln = (pl, en, de) => ({ pl, en, de }[lang] ?? pl);
   const metal = METALS.find(m => m.id === metalId);
@@ -281,12 +282,13 @@ export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engrav
   const workChainCost = laborCost + claspCost + platingCost + engravingCost;
   const estCost       = metalCost * (1 + MATERIAL_MARKUP) + workChainCost * (1 + MARGIN);
   const workshopCost  = estCost - (metalCost + workChainCost);
-  const qty           = qTier.qty;
+  const qty           = orderQty(qtyId, { qty: sztuk }, QTY_TIERS) ?? qTier.qty;
+  const rabat         = tierDiscount(qtyId, qty, QTY_TIERS);
   const liveEurPln    = rates?.pln_per_eur ?? EUR_PLN;
-  const pricing       = applyJewelryPricing(estCost, qTier.discount, qty, liveEurPln);
+  const pricing       = applyJewelryPricing(estCost, rabat, qty, liveEurPln);
 
   return {
-    type: "calculated", ...pricing, qty, discount: qTier.discount,
+    type: "calculated", ...pricing, qty, discount: rabat,
     fromStock, wireDMm, widthMm, thicknessMm, wasteG, grossMassG, netMassG,
     breakdown: [
       // Dimensions summary
@@ -323,14 +325,14 @@ export function calcChain({ typeId, metalId, weaveId, claspId, platingId, engrav
       { label: l.workshop, value: fmtCost(workshopCost, lang) },
       { divider: true },
       { label: l.estCost, value: fmtCost(estCost, lang), bold: true },
-      ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
+      ...(rabat > 0 ? [{ label: l.discount, value: `-${Math.round(rabat * 1000) / 10}%`, accent: true }] : []),
     ],
     tolLow: TOL_LOW, tolHigh: TOL_HIGH, eurPln: liveEurPln,
   };
 }
 
 // ---- RENOVATION CALCULATOR ----
-export function calcRenovation({ jewTypeId, metalTypeId, services, qtyId }, lang) {
+export function calcRenovation({ jewTypeId, metalTypeId, services, qtyId, qty: sztuk }, lang) {
   const l = LBL[lang] || LBL.en;
   const gMetal = GENERIC_METALS.find(m => m.id === metalTypeId);
   const qTier = QTY_TIERS.find(q => q.id === qtyId);
@@ -349,21 +351,23 @@ export function calcRenovation({ jewTypeId, metalTypeId, services, qtyId }, lang
   }
   const estCost = totalService * (1 + REPAIR_MARGIN);
   const workshopCost = estCost - totalService;
-  const pricing = applyJewelryPricing(estCost, qTier.discount, qTier.qty);
+  const qty = orderQty(qtyId, { qty: sztuk }, QTY_TIERS) ?? qTier.qty;
+  const rabat = tierDiscount(qtyId, qty, QTY_TIERS);
+  const pricing = applyJewelryPricing(estCost, rabat, qty);
   return {
-    type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
+    type: "calculated", ...pricing, qty, discount: rabat,
     breakdown: [
       ...rows,
       { label: l.workshop, value: fmtCost(workshopCost, lang) },
       { divider: true },
       { label: l.estCost, value: fmtCost(estCost, lang), bold: true },
-      ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
+      ...(rabat > 0 ? [{ label: l.discount, value: `-${Math.round(rabat * 1000) / 10}%`, accent: true }] : []),
     ],
   };
 }
 
 // ---- REPAIR CALCULATOR ----
-export function calcRepair({ jewTypeId, metalTypeId, repairId, qtyId }, lang) {
+export function calcRepair({ jewTypeId, metalTypeId, repairId, qtyId, qty: sztuk }, lang) {
   const l = LBL[lang] || LBL.en;
   const gMetal = GENERIC_METALS.find(m => m.id === metalTypeId);
   const repair = REPAIR_SERVICES.find(r => r.id === repairId);
@@ -374,15 +378,17 @@ export function calcRepair({ jewTypeId, metalTypeId, repairId, qtyId }, lang) {
   const cost = repair.basePLN * metalMul;
   const estCost = cost * (1 + REPAIR_MARGIN);
   const workshopCost = estCost - cost;
-  const pricing = applyJewelryPricing(estCost, qTier.discount, qTier.qty);
+  const qty = orderQty(qtyId, { qty: sztuk }, QTY_TIERS) ?? qTier.qty;
+  const rabat = tierDiscount(qtyId, qty, QTY_TIERS);
+  const pricing = applyJewelryPricing(estCost, rabat, qty);
   return {
-    type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
+    type: "calculated", ...pricing, qty, discount: rabat,
     breakdown: [
       { label: t(repair.label, lang), value: fmtCost(cost, lang) },
       { label: l.workshop, value: fmtCost(workshopCost, lang) },
       { divider: true },
       { label: l.estCost, value: fmtCost(estCost, lang), bold: true },
-      ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
+      ...(rabat > 0 ? [{ label: l.discount, value: `-${Math.round(rabat * 1000) / 10}%`, accent: true }] : []),
     ],
   };
 }

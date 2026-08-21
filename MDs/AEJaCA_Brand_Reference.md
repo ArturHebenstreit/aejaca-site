@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-21 | Wersja: 4.6*
+*Wygenerowano: 2026-08-21 | Wersja: 4.9*
 
 ---
 
@@ -686,6 +686,105 @@ maszyny. Zamówić się tego nie da.
 Pilnuje tego `scripts/test-model-handoff.mjs`: sprawdza, że nie wrócił drugi komplet
 stanu pliku, że obie karty wgrywania czytają ten sam stan i że karta MSLA dostaje własne
 pole robocze. Dwie kontrole negatywne.
+
+### 6.0g Liczymy po realnej liczbie sztuk, nie po nakładzie progu (od 2026-08-21)
+
+**Zlecenie kosztowało nas więcej, niż za nie braliśmy.** Każdy silnik amortyzował
+przygotowanie (stół drukarki, setup lasera) po **nakładzie reprezentatywnym progu**: próg
+„2-10 szt." liczył się po sześciu. Klient zamawiający dwie sztuki płacił więc tak, jakby
+na stole stało sześć, a stały dwie. Marża po cichu schodziła do zera i nic tego nie
+zgłaszało, bo cena wyglądała normalnie.
+
+Teraz liczba sztuk jedzie do silnika razem z parametrami (`orderQty` w
+`src/pricing/config.js`) i to ona dzieli koszt przygotowania. **Rabat zostaje przy progu**,
+bo to próg jest obietnicą handlową. Liczbę przycinamy do granic progu, więc nie da się
+wziąć rabatu za dwadzieścia jeden sztuk, zamawiając jedną: parametry przychodzą od
+przeglądarki i nie wolno im ufać.
+
+Skutek cenowy, mierzony (dawna cena → nowa, całe zlecenie):
+
+| Sztuk | MSLA wzorzec | FDM PLA S | CO2 grawer M | Fiber M |
+|---|---|---|---|---|
+| 2 | 64,28 → 131,30 | 54,72 → 65,64 | 70,66 → 84,04 | 27,92 → 28,52 |
+| 3 | 96,42 → 150,00 | 82,08 → 97,53 | 105,99 → 125,37 | 41,88 → 42,33 |
+| 11 | 260,92 → 278,85 | 283,47 → 283,80 | 367,07 → 367,29 | 122,87 → 144,87 |
+| 21 | 426,09 → 452,55 | 509,88 → 515,34 | 660,87 → 667,59 | 221,13 → 223,44 |
+
+Żadna cena nie spadła. Najmocniej rosną **małe nakłady wzorców odlewniczych**, bo tam
+przygotowanie jest najdroższe (potrójna stawka kontroli wzorca) i wcześniej dzieliło się
+przez sześć zamiast przez dwa. Ceny „od" na kartach usług liczą się z jednej sztuki, więc
+się nie zmieniły.
+
+**Odlewy żywiczne zostały bez zmian**, i to jest poprawne: forma rozlicza się przez liczbę
+zalań, a nie przez zamówienie, więc koszt jednostkowy z założenia nie zależy od nakładu.
+
+**Przy okazji zamknięte odwrócenie na granicy progów.** Rabat idzie skokami (0, 5, 10, 15%),
+a skok bywa większy niż przyrost ilości: **21 sztuk kosztowało 407,61 zł, a 20 sztuk
+454,60 zł**. Klient, który to zauważy, ma rację, że cennik jest zepsuty. `tierDiscount`
+przycina rabat tuż za granicą progu do wartości, przy której zlecenie kosztuje tyle co
+poprzednie, a pełny rabat wchodzi kilka sztuk dalej. To ta sama metoda, którą projekt
+stosuje od dawna przy rabacie rynkowym (`plFactorFor`). Przycięcie dostaje realny stosunek
+kosztów przy n i n-1 sztukach, plus włos zapasu na zaokrąglenie do groszy.
+
+Pilnuje tego `scripts/test-quantity.mjs`: dla sześciu silników, po trzydzieści nakładów
+każdy, sprawdza że silnik liczy po zamówionej liczbie, że cena za sztukę nigdy nie rośnie
+i że **większe zlecenie nigdy nie kosztuje mniej**. Trzy kontrole negatywne.
+
+### 6.0h Kwota wiążąca idzie za językiem (od 2026-08-21)
+
+`money()` w `CalcToCart.jsx` doklejał „ PLN" niezależnie od języka, więc Niemiec oglądał
+kwotę wiążącą w walucie, której nie używa, tuż pod rozpiską podaną już w euro. Teraz
+obowiązuje zasada walutowa marki: polski płaci w złotówkach, angielski i niemiecki widzą
+euro, a druga waluta stoi mniejszym drukiem pod główną kwotą.
+
+Kwota jest i zostaje **w groszach**: to ona idzie do koszyka i do zamówienia. Euro jest
+wyłącznie przeliczeniem do pokazania, po kursie NBP z `/api/market-rates`, tym samym,
+którego używa reszta serwisu (`useMarketRates`, wartość zapasowa 4,25).
+
+### 6.0e Jedna kwota na ekranie, na górze karty wyceny (od 2026-08-21)
+
+Karta wyceny pokazywała **dwie różne sumy dla dwóch różnych ilości naraz**. Klient
+ustawiający 2 sztuki widział u góry „ZAMÓWIENIE: ~6 SZT. 132-258 PLN", a niżej „KWOTA
+WIĄŻĄCA (2 SZT.) 61,84 PLN". Obie liczby były policzone poprawnie, każda z innej reguły,
+więc nic nie zgłaszało sprzeczności.
+
+Skąd ~6: próg „2-10 szt." liczy się po **nakładzie reprezentatywnym**, czyli sześciu
+sztukach, bo od niego zależy rabat i podział kosztu platformy. Kwota wiążąca bierze z tego
+stawkę za sztukę i mnoży ją przez liczbę, którą klient faktycznie ustawił. Za sztukę obie
+liczby się zgadzały (30,92 zł mieści się w 22-43 zł), rozjeżdżała się tylko ilość.
+
+Trzy zmiany. `hideRange` obejmuje teraz **także blok sumy za zamówienie**, nie tylko cenę
+za sztukę: wcześniej chowała się jedna połowa szacunku, a druga zostawała. Kwota wiążąca
+przeniosła się **na górę karty wyceny**, w miejsce widełek, i jest tam wyłącznie ona.
+Panel koszyka jej nie powtarza. Dotyczy wszystkich siedmiu kalkulatorów.
+
+Napisy i formatowanie kwot przychodzą gotowe z `CalcToCart` przez `onBinding`, żeby nie
+powstała druga kopia tłumaczeń. Kolejność w pliku ma znaczenie: efekt zgłaszający kwotę
+czyta `qty` i `lineGrosze`, więc postawiony nad nimi wywala stronę na starcie. Zdarzyło
+się to przy tej właśnie zmianie i wyłapała to dopiero przeglądarka.
+
+**Do rozstrzygnięcia:** kwota wiążąca jest zawsze formatowana w PLN, niezależnie od
+języka (`money()` w `CalcToCart.jsx`). Przy angielskim i niemieckim interfejsie łamie to
+zasadę walutową marki. Wymaga kursu z `/api/market-rates`, więc nie zmieniałem tego przy
+okazji.
+
+Pilnuje tego `scripts/test-price-breakdown.mjs`: każdy kalkulator z koszykiem zgłasza
+kwotę i pokazuje ją na górze, panel koszyka jej nie powtarza, a zgłoszenie stoi po
+deklaracjach, które czyta. Listę kalkulatorów wyprowadza z katalogu. Trzy kontrole
+negatywne.
+
+### 6.0f Zużycie materiału podajemy w tym, w czym się je zużywa (od 2026-08-21)
+
+Rozpiska MSLA miała pozycję „Żywica / szt." wyrażoną w **złotówkach**, tuż pod objętością
+w mililitrach. Żywicę zużywa się w gramach i tak o niej myśli każdy, kto pracuje przy
+odlewach, więc czytało się to jak ilość. Kalkulator filamentu robił to od początku dobrze:
+„Masa / szt. 51,8 g", osobno „Materiał / szt.".
+
+MSLA jest wyrównana do tego wzorca: „Objętość modelu" (ml), „Masa żywicy / szt." (g),
+„Materiał / szt." (PLN). Masa dotyczy samego wyrobu, bez zapasu na odpad i podpory, tak
+samo jak przy filamencie; zapas siedzi w koszcie, bo tam jest jego miejsce. Przy wzorcach
+jubilerskich, ważących ułamek grama, format schodzi do dwóch miejsc po przecinku, inaczej
+każda wielkość pokazywałaby „0,1".
 
 ### 6.1 Kalkulator MSLA (Print3DCalc - ścieżka MSLA)
 
@@ -1481,6 +1580,28 @@ Schemat: `scripts/products-schema.sql`, migracje wykonują się też przy starci
 Wszystko, co obsługuje się ręcznie, mieszka w jednej aplikacji `admin/` (Express + EJS, osobna usługa na Railway, logowanie przez Google, dostęp po liście adresów). Zakładki: Dashboard, **Produkty**, **Kody**, **Przelewy**, Analytics, Leads, Subscribers, Chat, Email, Laser Matrix, Gems, Filamenty.
 
 Menu siedzi w jednym pliku `admin/views/partials/header.ejs`. Wcześniej każdy widok miał własną, przepisaną ręcznie kopię i kopie się rozjechały: na jednej podstronie brakowało Emaila, na innej Filamentów, co wyglądało, jakby pozycje znikały przy klikaniu. Nowa zakładka dopisuje się teraz raz.
+
+**Kolumna akcji była niewidzialna (naprawione 2026-08-21).** Materiały miały „Edytuj" i „Usuń"
+przy każdym wierszu od 2026-08-20, ale właściciel ich nie widział i uznał, że panel nie pozwala
+edytować materiałów. Przyczyna: tabele mają po kilkanaście kolumn i siedzą w kontenerze
+`overflow-x-auto`, więc **ostatnia kolumna wypada poza widok**, a jej nagłówek był pusty, więc nic
+nie zdradzało, że cokolwiek tam jest.
+
+Zmierzone przy oknie 1543 px: tabela 1283 px w kontenerze 1230 px, „Edytuj" kończy się na 1225 px
+(pięć pikseli zapasu), „Usuń" leży w całości poza widokiem. Pierwszy pomiar wypadł fałszywie
+uspokajająco, bo zrobiłem go na zbyt wąskiej atrapie danych; dopiero dane przepisane ze zrzutu
+właściciela pokazały prawdę.
+
+Poprawka jest jedna dla **wszystkich dziewięciu tabel z akcjami**, nie tylko dla materiałów: klasa
+`tabela-akcje` (`admin/src/input.css`) przypina ostatnią kolumnę do prawej krawędzi, reszta przewija
+się pod nią. Tło musi być nieprzezroczyste, inaczej przewijana treść prześwituje. Puste nagłówki
+dostały etykietę „Akcje". Sprawdzone w przeglądarce przy 1543 i 1000 px, w tym z tabelą przewiniętą
+do końca w prawo.
+
+Pilnuje tego `admin/check-views.mjs`: klasa na każdej tabeli z akcjami, reguła obecna w zbudowanym
+arkuszu i to, że **za akcjami nie stoi już żadna kolumna** (przypięcie łapie ostatnią komórkę, więc
+dopisanie kolumny za nimi cofnęłoby całą poprawkę po cichu). Trzy kontrole negatywne. Strażnik przy
+pierwszym uruchomieniu wyłapał trzy widoki, które przy ręcznym przeglądzie przeoczyłem.
 
 **Edycja i usuwanie pojedynczych rekordów (2026-08-21).** Wzorcem są Filamenty: przy każdym wierszu
 stoi ołówek i kosz. Doszły tam, gdzie ich brakowało, ale nie wszędzie, i te granice są celowe.

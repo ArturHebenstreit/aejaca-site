@@ -36,8 +36,8 @@ export default function EpoxyCastCalc({ lang = "pl" }) {
   const [qty, setQty] = useState(1);
   const quantityId = tierForQty(qty, QUANTITY_TIERS).id;
 
-  const result = useMemo(() => calculate({ resinId, volumeId, moldId, inclusionId, finishId, quantityId }, lang),
-    [resinId, volumeId, moldId, inclusionId, finishId, quantityId, lang]);
+  const result = useMemo(() => calculate({ resinId, volumeId, moldId, inclusionId, finishId, quantityId, qty }, lang),
+    [resinId, volumeId, moldId, inclusionId, finishId, quantityId, qty, lang]);
 
   const paramsSummary = [
     t(RESINS.find(r => r.id === resinId)?.label, lang),
@@ -80,7 +80,7 @@ export default function EpoxyCastCalc({ lang = "pl" }) {
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
-        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
+        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} binding={bindingGrosze} />
         <NextStepPanel
           lang={lang}
           techLabel={t(TECH_LABEL, lang)}

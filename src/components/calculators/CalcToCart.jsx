@@ -23,6 +23,7 @@ import { brakPodloza } from "../../data/laserSubstrate.js";
 import { PersonalizationField } from "../shop/ConfigControls.jsx";
 import SaveQuote from "./SaveQuote.jsx";
 import { t } from "../../pricing/config.js";
+import { useMarketRates } from "../../hooks/useMarketRates.js";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
 
@@ -41,7 +42,7 @@ const UI = {
     added: "Dodano do koszyka",
     goToCart: "Przejdź do koszyka",
     calculating: "Liczę kwotę wiążącą",
-    note: "Kwota wiążąca, obowiązuje 7 dni. Kalkulacja powyżej pokazuje, z czego się składa.",
+    note: "Kwota wiążąca, obowiązuje 7 dni. Szczegóły kalkulacji poniżej.",
     unavailable: "Tej konfiguracji nie wycenimy automatycznie. Napisz do nas, odpowiemy w 24 godziny.",
     contact: "Wyślij do wyceny",
     uploading: "Przygotowuję plik",
@@ -92,7 +93,7 @@ const UI = {
     added: "Added to cart",
     goToCart: "Go to cart",
     calculating: "Calculating the binding price",
-    note: "Binding price, valid for 7 days. The breakdown above shows what it consists of.",
+    note: "Binding price, valid for 7 days. The breakdown below shows what it consists of.",
     unavailable: "We cannot price this configuration automatically. Write to us and we reply within 24 hours.",
     contact: "Request a quote",
     uploading: "Preparing the file",
@@ -143,7 +144,7 @@ const UI = {
     added: "In den Warenkorb gelegt",
     goToCart: "Zum Warenkorb",
     calculating: "Verbindlicher Preis wird berechnet",
-    note: "Verbindlicher Preis, 7 Tage gültig. Die Aufstellung oben zeigt, woraus er besteht.",
+    note: "Verbindlicher Preis, 7 Tage gültig. Die Aufstellung unten zeigt, woraus er besteht.",
     unavailable: "Diese Konfiguration können wir nicht automatisch bepreisen. Schreiben Sie uns, wir antworten binnen 24 Stunden.",
     contact: "Angebot anfordern",
     uploading: "Datei wird vorbereitet",
@@ -190,7 +191,15 @@ const UI = {
   },
 };
 
-const money = (g) => `${(g / 100).toFixed(2).replace(".", ",")} PLN`;
+// WALUTA IDZIE ZA JEZYKIEM: polski placi w zlotowkach, angielski i niemiecki
+// widza euro. Kwota wiazaca byla jedynym miejscem, ktore tego nie robilo:
+// `money()` doklejal " PLN" niezaleznie od jezyka, wiec Niemiec ogladal cene
+// w walucie, ktorej nie uzywa, tuz pod rozpiska podana juz w euro.
+//
+// Kwota jest i zostaje w GROSZACH: to ona idzie do koszyka i do zamowienia.
+// Euro jest wylacznie przeliczeniem do pokazania, po kursie NBP z
+// `/api/market-rates`, tym samym, ktorego uzywa reszta serwisu.
+const fmtKwota = (n) => n.toFixed(2).replace(".", ",");
 
 /**
  * @param {object} props
@@ -209,6 +218,13 @@ const money = (g) => `${(g / 100).toFixed(2).replace(".", ",")} PLN`;
 export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp = null, file = null, triangles = null, scale = 1, lang, accent = "blue", blocked = false, blockedReason = "vector", onBinding = null, onUnavailable = null, hold = false, embedded = false }) {
   const u = UI[lang] || UI.en;
   const cart = useCart();
+  const { rates } = useMarketRates();
+  const plnPerEur = Number(rates?.pln_per_eur) || 4.25;
+  const showEur = lang === "en" || lang === "de";
+  /** Kwota w walucie jezyka. */
+  const money = (g) => (showEur ? `${fmtKwota(g / 100 / plnPerEur)} EUR` : `${fmtKwota(g / 100)} PLN`);
+  /** Ta sama kwota w drugiej walucie, mniejszym drukiem pod glowna. */
+  const moneyDruga = (g) => (showEur ? `${fmtKwota(g / 100)} PLN` : `${fmtKwota(g / 100 / plnPerEur)} EUR`);
   const card = getServiceCard(serviceId);
   // Jedno zrodlo prawdy: te same wymagania obowiazuja w sklepie i w kalkulatorze.
   const svc = getService(card?.service || serviceId);
@@ -342,7 +358,14 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
     setAttachments((biezace) => biezace.filter((x) => x.id !== id));
   }, []);
 
-  const paramsKey = JSON.stringify(params);
+  // LICZBA SZTUK JEDZIE DO SILNIKA RAZEM Z PARAMETRAMI. Bez niej serwer liczyl
+  // po nakladzie reprezentatywnym progu ("2-10 szt." po szesciu), wiec przy
+  // dwoch sztukach dzielil przygotowanie przez szesc i zlecenie kosztowalo nas
+  // wiecej, niz za nie bralismy. Silnik przycina te liczbe do granic progu,
+  // wiec nie da sie tedy wziac rabatu za dwadziescia jeden sztuk, zamawiajac
+  // jedna. Liczba wchodzi tez do klucza, wiec zmiana licznika przelicza cene.
+  const zamowionych = qtyProp != null ? Math.max(1, Math.floor(qtyProp)) : null;
+  const paramsKey = JSON.stringify(zamowionych != null ? { ...params, qty: zamowionych } : params);
 
   const fetchPrice = useCallback(async () => {
     if (!API || !calculator) return;
@@ -388,12 +411,6 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
 
   useEffect(() => setAdded(false), [paramsKey, uploadToken]);
 
-  // Kalkulator musi wiedziec, czy udalo sie podac kwote wiazaca. Jesli tak,
-  // widelki znikaja: dwie rozne liczby obok siebie podwazaja te wiazaca.
-  useEffect(() => {
-    if (!onBinding) return;
-    onBinding(blocked ? null : (price?.unitGrosze ?? null));
-  }, [onBinding, blocked, price]);
 
   // Panel akcji musi wiedziec, ze zakup jest niemozliwy, inaczej kafelek
   // "Dodaj do koszyka" swieci sie na niebiesko i nic pod nim nie dziala.
@@ -471,6 +488,27 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   // klient proszacy o trzy sztuki dostawal do koszyka szesc.
   const qty = qtyProp != null ? Math.max(1, Math.floor(qtyProp)) : (price?.qty || 1);
   const lineGrosze = (price?.unitGrosze || 0) * qty;
+
+  // Kalkulator musi wiedziec, czy udalo sie podac kwote wiazaca. Jesli tak,
+  // widelki znikaja: dwie rozne liczby obok siebie podwazaja te wiazaca.
+  useEffect(() => {
+    if (!onBinding) return;
+    if (blocked || !price?.unitGrosze) { onBinding(null); return; }
+    // GOTOWE NAPISY, NIE SAME LICZBY. Kwote wiazaca pokazuje teraz karta
+    // wyceny na gorze, ale etykiety i formatowanie kwot maja zostac w jednym
+    // miejscu. Przekazanie samych groszy znaczyloby druga kopie tlumaczen
+    // i drugi formater, a te rozjezdzaja sie po cichu.
+    onBinding({
+      unitGrosze: price.unitGrosze,
+      qty,
+      lineGrosze,
+      etykieta: qty > 1 ? `${u.binding} (${qty} ${u.pcs})` : u.binding,
+      suma: money(lineGrosze),
+      sumaDruga: moneyDruga(lineGrosze),
+      zaSztuke: qty > 1 ? `${money(price.unitGrosze)} ${u.perPc}` : null,
+      uwaga: u.note,
+    });
+  }, [onBinding, blocked, price, qty, lineGrosze, u, showEur, plnPerEur]);
 
   // Plik glowny idzie do zamowienia razem z reszta, a nie osobna sciezka.
   // Kolejnosc jest zamierzona: rysunek, na ktorym liczylismy cene, ma byc
@@ -558,12 +596,18 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
 
       {price && !error && (
         <>
+          {/* Gdy kalkulator odbiera kwote przez `onBinding`, pokazuje ja u
+              siebie na gorze karty wyceny. Powtarzanie jej tutaj dawaloby te
+              sama liczbe dwa razy na jednym ekranie. */}
+          {!onBinding && (
+          <>
           <div className="flex items-end justify-between gap-4 mb-1">
             <div>
               <div className="text-[11px] uppercase tracking-wide text-neutral-500">
                 {qty > 1 ? `${u.binding} (${qty} ${u.pcs})` : u.binding}
               </div>
               <div className="text-3xl font-extrabold text-white leading-tight">{money(lineGrosze)}</div>
+              <div className="text-xs text-neutral-500">{moneyDruga(lineGrosze)}</div>
             </div>
             {qty > 1 && (
               <div className="text-right text-neutral-400 text-xs">
@@ -572,6 +616,8 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
             )}
           </div>
           <p className="text-neutral-500 text-[11px] mb-4 leading-relaxed">{u.note}</p>
+          </>
+          )}
 
           {/* Bez tych informacji cena jest znana, a zlecenie nie. Zbieramy je
               tutaj, zeby w koszyku lezaly pozycje gotowe do kupienia. */}

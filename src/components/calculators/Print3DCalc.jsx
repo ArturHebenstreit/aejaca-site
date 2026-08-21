@@ -429,11 +429,11 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
     };
   }, [stlData, stlScale]);
 
-  const result = useMemo(() => calculate({ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, stlData: scaledStlData }, lang),
-    [segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, scaledStlData, lang]);
+  const result = useMemo(() => calculate({ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, qty: fdmQty, stlData: scaledStlData }, lang),
+    [segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, fdmQty, scaledStlData, lang]);
 
-  const mslaResult = useMemo(() => calculateMSLA({ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId, stlData: scaledStlData }, lang),
-    [applicationId, resinKey, layerId, mslaSizeId, mslaQuantityId, scaledStlData, lang]);
+  const mslaResult = useMemo(() => calculateMSLA({ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId, qty: mslaQty, stlData: scaledStlData }, lang),
+    [applicationId, resinKey, layerId, mslaSizeId, mslaQuantityId, mslaQty, scaledStlData, lang]);
 
   const matOptions = Object.entries(FILAMENTS[segment].materials).map(([k, v]) => ({
     id: k, label: k, sub: `${v.price_kg}zł`, img: FILAMENT_IMG[k],
@@ -519,7 +519,7 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
 
         <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
           <ResultHeader lang={lang} binding={bindingGrosze != null} />
-          <ResultDisplay result={mslaResult} lang={lang} hideRange={bindingGrosze != null} />
+          <ResultDisplay result={mslaResult} lang={lang} hideRange={bindingGrosze != null} binding={bindingGrosze} />
           <PrintabilityGate
             triangles={stlData?.triangles || null}
             tech="msla"
@@ -593,7 +593,7 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
 
       <div className="rounded-2xl border-2 border-blue-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
-        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
+        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} binding={bindingGrosze} />
         {/* Siatke podajemy w oryginale, a skale osobno: bramka skaluje ja sama
             przed analiza. `scaledStlData` przelicza tylko objetosc i gabaryt,
             wiec podane stad trojkaty mialy wymiary sprzed zmniejszenia. */}

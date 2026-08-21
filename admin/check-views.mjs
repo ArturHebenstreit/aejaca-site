@@ -102,6 +102,43 @@ for (const [nazwa, dane] of Object.entries(ZESTAWY)) {
   }
 }
 
+// --- 4. Kolumna akcji musi byc przypieta do prawej krawedzi -------------
+// Tabele panelu maja po kilkanascie kolumn i siedza w `overflow-x-auto`, wiec
+// ostatnia kolumna wypada poza widok. Akurat w niej stoja "Edytuj" i "Usun".
+// Wlasciciel przez to uwazal, ze panel nie pozwala edytowac materialow, choc
+// trasy dzialaly od poczatku: funkcja byla po prostu niewidzialna.
+//
+// Klase `tabela-akcje` definiuje `src/input.css`, a przypina ona OSTATNIA
+// komorke wiersza, wiec sprawdzamy oba warunki: klase na tabeli i to, ze
+// akcje faktycznie sa ostatnia komorka.
+const arkusz = existsSync(join(ROOT, "public", "tailwind.css"))
+  ? readFileSync(join(ROOT, "public", "tailwind.css"), "utf8") : "";
+if (arkusz && !arkusz.includes(".tabela-akcje")) {
+  zle("arkusz nie zna .tabela-akcje: kolumna z akcjami znowu wypadnie poza widok (npm run build:css)");
+}
+
+for (const f of pliki) {
+  const tresc = readFileSync(join(VIEWS, f), "utf8");
+  // Widok z akcjami to taki, ktory prowadzi do edycji albo usuwania wiersza.
+  const maAkcje = /(?:href|action)="\/[\w-]+\/<%=[^>]*%>\/(?:edit|delete)"/.test(tresc);
+  // Przypiecie dotyczy WYLACZNIE tabel. Strony edycji tez maja przycisk
+  // usuwania, ale stoi on na karcie, nie w przewijanym wierszu.
+  if (!maAkcje || !/<table/.test(tresc)) continue;
+  if (!/<table[^>]*class="[^"]*tabela-akcje/.test(tresc)) {
+    zle(`views/${f} ma akcje w wierszach, a tabela nie ma klasy tabela-akcje (kolumna wypadnie poza widok)`);
+    continue;
+  }
+  // Przypiecie dziala na `td:last-child`, wiec akcje musza byc ostatnia
+  // komorka. Dopisanie kolumny za nimi cofneloby cala poprawke po cichu.
+  const ostatniaAkcja = tresc.lastIndexOf("/delete\"") >= 0 ? tresc.lastIndexOf("/delete\"") : tresc.lastIndexOf("/edit\"");
+  const koniecWiersza = tresc.indexOf("</tr>", ostatniaAkcja);
+  const ogon = koniecWiersza > 0 ? tresc.slice(ostatniaAkcja, koniecWiersza) : "";
+  const komorekPo = (ogon.match(/<td/g) || []).length;
+  if (komorekPo > 0) {
+    zle(`views/${f}: za akcjami stoi jeszcze ${komorekPo} kolumn, wiec przypiecie zlapie nie te komorke`);
+  }
+}
+
 // Kazda pozycja edytowalna musi miec droge powrotna: widok edycji bez trasy
 // zapisu to formularz, ktory po kliknieciu "zapisz" daje 404.
 for (const [widok, zapis] of [["discount-edit", "/discounts/:code/update"], ["gemstone-prices-edit", "/gemstone-prices/:id/update"], ["material-edit", "/materials/:id/update"]]) {

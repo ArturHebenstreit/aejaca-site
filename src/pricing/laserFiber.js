@@ -4,7 +4,7 @@
 // Formuly przeniesione 1:1 z FiberLaserCalc.jsx. Bez Reacta, zeby backend
 // zamowien liczyl cene tym samym kodem co kalkulator.
 
-import { CONFIG, QUANTITY_TIERS, applyPricing, t, netCostFmt } from "./config.js";
+import { CONFIG, QUANTITY_TIERS, applyPricing, t, netCostFmt, orderQty, tierDiscount } from "./config.js";
 import { materialCostPLN, materialIsOurs, pricedSeparately } from "./materialStock.js";
 import { sweptAreaCm2, coverageOf, coverageMeasured } from "./engraveCoverage.js";
 
@@ -105,7 +105,7 @@ export const AREAS = [
  * @param {Array|null} stock tabela stanow magazynowych; brak znaczy stawka
  *   domyslna
  */
-export function calculate({ matId, lensId, markId, areaId, quantityId, svgData, podloze = null }, lang, stock = null) {
+export function calculate({ matId, lensId, markId, areaId, quantityId, qty: sztuk, svgData, podloze = null }, lang, stock = null) {
   const mat = MATERIALS.find(m => m.id === matId);
   const lens = LENSES.find(l => l.id === lensId);
   const mark = MARK_TYPES.find(m => m.id === markId);
@@ -115,6 +115,12 @@ export function calculate({ matId, lensId, markId, areaId, quantityId, svgData, 
   const qTier = QUANTITY_TIERS.find(q => q.id === quantityId);
   if (!mat || !lens || !mark || !area || !qTier) return null;
   if (!mat.rateMin || !mark.depthMul || !area.area || !qTier.qty) return { type: "custom" };
+  // LICZYMY PO LICZBIE SZTUK, KTORA KLIENT NAPRAWDE ZAMAWIA, a nie po nakladzie
+  // reprezentatywnym progu. Przy dwoch sztukach przygotowanie dzieli sie przez
+  // dwie, a nie przez szesc. Rabat zostaje przy progu i jest przycinany tak,
+  // zeby wieksze zlecenie nigdy nie bylo tansze (`tierDiscount`).
+  const qty = orderQty(quantityId, { qty: sztuk });
+  const rabat = tierDiscount(quantityId, qty);
   const l = LBL[lang] || LBL.en;
 
   // CZAS IDZIE Z POLA, PO KTORYM GLOWICA JEZDZI. Znakowanie fiber jest tak
@@ -124,7 +130,7 @@ export function calculate({ matId, lensId, markId, areaId, quantityId, svgData, 
   const swept = sweptAreaCm2(area.area, svgData);
   const timeMin = swept * mat.rateMin * mark.depthMul * lens.speedMul;
   const timeH = timeMin / 60;
-  const setupH = 0.2 / qTier.qty;
+  const setupH = 0.2 / qty;
   const handleH = 0.03;
   const totalTimeH = timeH + setupH + handleH;
 
@@ -160,14 +166,14 @@ export function calculate({ matId, lensId, markId, areaId, quantityId, svgData, 
   const materialCost = materialCostPLN({ areaCm2: area.area, matId: mat.id, podloze, stock });
   baseCost += materialCost;
 
-  const batchTimeH = (timeH + handleH) * qTier.qty + 0.2;
+  const batchTimeH = (timeH + handleH) * qty + 0.2;
 
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
-  const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, qTier.discount, qTier.qty, plDiscount);
+  const pricing = applyPricing(baseCost, CONFIG.BASE_MARGIN, rabat, qty, plDiscount);
   const fc = netCostFmt(lang, pricing.plFactor);
   return {
-    type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
-    totalTimeH: qTier.qty > 1 ? batchTimeH : null,
+    type: "calculated", ...pricing, qty, discount: rabat,
+    totalTimeH: qty > 1 ? batchTimeH : null,
     breakdown: [
       ...(coverageMeasured(svgData) ? [{ label: l.coverage, value: `${Math.round(coverageOf(svgData) * 100)}%` }] : []),
       { label: l.engraveTime, value: `${timeMin.toFixed(1)} min` },
@@ -183,8 +189,8 @@ export function calculate({ matId, lensId, markId, areaId, quantityId, svgData, 
       { label: l.workshop, value: fc(baseCost * CONFIG.BASE_MARGIN) },
       { divider: true },
       { label: l.estCost, value: fc(baseCost * (1 + CONFIG.BASE_MARGIN)), bold: true },
-      ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
-      ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${batchTimeH.toFixed(1)} h`, bold: true }] : []),
+      ...(rabat > 0 ? [{ label: l.discount, value: `-${Math.round(rabat * 1000) / 10}%`, accent: true }] : []),
+      ...(qty > 1 ? [{ label: l.totalProd, value: `~${batchTimeH.toFixed(1)} h`, bold: true }] : []),
     ],
   };
 }

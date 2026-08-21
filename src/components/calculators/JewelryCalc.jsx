@@ -265,17 +265,17 @@ export default function JewelryCalc({ lang = "pl" }) {
       if (isChainType(typeId)) {
         return calcChain({ typeId, metalId, weaveId, claspId, platingId, engravingId,
           chainLengthMm, chainWidthMm,
-          clientSuppliesMetal, qtyId, calcMode, stockMassG }, lang, rates);
+          clientSuppliesMetal, qtyId, qty, calcMode, stockMassG }, lang, rates);
       }
       return calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
-        stoneRows, qtyId, engravingId,
+        stoneRows, qtyId, qty, engravingId,
         clientSuppliesMetal,
         overrideWeightG: weightResult?.nettoG ?? null }, lang, rates, resolvedGemstones);
     }
     if (serviceId === "renovation") {
-      return calcRenovation({ jewTypeId: renoJewType, metalTypeId: renoMetal, services: renoServices, qtyId }, lang);
+      return calcRenovation({ jewTypeId: renoJewType, metalTypeId: renoMetal, services: renoServices, qtyId, qty }, lang);
     }
-    return calcRepair({ jewTypeId: repairJewType, metalTypeId: repairMetal, repairId, qtyId }, lang);
+    return calcRepair({ jewTypeId: repairJewType, metalTypeId: repairMetal, repairId, qtyId, qty }, lang);
   }, [serviceId, lineId, typeId, metalId, weightId, methodId, platingId, engravingId,
     stoneRows, qtyId, weaveId, claspId, chainLengthMm, chainWidthMm,
     clientSuppliesMetal, weightResult, calcMode, stockMassG,
@@ -1206,7 +1206,7 @@ export default function JewelryCalc({ lang = "pl" }) {
       {/* Result */}
       <div className="rounded-2xl border-2 border-amber-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
-        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} />
+        <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} binding={bindingGrosze} />
         <div className="mt-3 text-[10px] text-neutral-400 text-center italic">{l.priceSource}</div>
         <p className="text-xs text-neutral-500 mt-1 text-center">{RATE_NOTE[lang] || RATE_NOTE.pl}</p>
       </div>

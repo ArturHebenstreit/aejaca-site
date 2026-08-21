@@ -10,7 +10,7 @@
 // Reacta ani niczego spoza src/pricing i src/data.
 
 import { fitsBox, parseScale } from "./dimScale.js";
-import { CONFIG, QUANTITY_TIERS, applyPricing, netCostFmt, unitPriceGrosze } from "./config.js";
+import { CONFIG, QUANTITY_TIERS, applyPricing, netCostFmt, unitPriceGrosze, orderQty, tierDiscount } from "./config.js";
 import { getResinsBySegment, getResin } from "./resins.js";
 
 
@@ -82,20 +82,28 @@ export function estimatePcsPerPlateMSLA(bbox) {
 export const MSLA_LBL = {
   pl: { application: "Zastosowanie", resinSegment: "Segment żywicy", resin: "Żywica", color: "Preferowany kolor (opcjonalnie)",
     colorDefault: "Do ustalenia", layer: "Wysokość warstwy", size: "Rozmiar modelu", qty: "Nakład",
-    volume: "Objętość żywicy", resinCost: "Żywica / szt.", printTime: "Czas druku / szt.", machine: "Maszyna / szt.",
+    volume: "Objętość modelu", resinMass: "Masa żywicy / szt.", resinCost: "Materiał / szt.", printTime: "Czas druku / szt.", machine: "Maszyna / szt.",
     postProc: "Post-processing / szt.", handling: "Obsługa / szt.", estCost: "Koszt szacunkowy / szt.",
     discount: "Rabat seryjny", totalProd: "Czas produkcji łącznie", minOrder: "Zastosowano minimalną wartość zlecenia (49 PLN)" },
   en: { application: "Application", resinSegment: "Resin segment", resin: "Resin", color: "Preferred color (optional)",
     colorDefault: "To be decided", layer: "Layer height", size: "Model size", qty: "Quantity",
-    volume: "Resin volume", resinCost: "Resin / pc", printTime: "Print time / pc", machine: "Machine / pc",
+    volume: "Model volume", resinMass: "Resin mass / pc", resinCost: "Material / pc", printTime: "Print time / pc", machine: "Machine / pc",
     postProc: "Post-processing / pc", handling: "Handling / pc", estCost: "Estimated cost / pc",
     discount: "Series discount", totalProd: "Total production time", minOrder: "Minimum order value applied (49 PLN)" },
   de: { application: "Anwendung", resinSegment: "Harz-Segment", resin: "Harz", color: "Wunschfarbe (optional)",
     colorDefault: "Nach Absprache", layer: "Schichthöhe", size: "Modellgröße", qty: "Auflage",
-    volume: "Harzvolumen", resinCost: "Harz / Stk.", printTime: "Druckzeit / Stk.", machine: "Maschine / Stk.",
+    volume: "Modellvolumen", resinMass: "Harzmasse / Stk.", resinCost: "Material / Stk.", printTime: "Druckzeit / Stk.", machine: "Maschine / Stk.",
     postProc: "Nachbearbeitung / Stk.", handling: "Handhabung / Stk.", estCost: "Geschätzte Kosten / Stk.",
     discount: "Serienrabatt", totalProd: "Gesamte Produktionszeit", minOrder: "Mindestbestellwert angewendet (49 PLN)" },
 };
+
+// Wzorzec jubilerski wazy ulamek grama, wiec jedno miejsce po przecinku
+// pokazywaloby "0.1" przy kazdej wielkosci i rozpiska przestawalaby sie
+// zgadzac z kwota. Ponizej jednego dajemy dwa miejsca.
+function gramy(x) {
+  const n = Number(x) || 0;
+  return n < 1 ? n.toFixed(2) : n.toFixed(1);
+}
 
 export function calculateMSLA(params, lang) {
   const { applicationId, resinKey, layerId, sizeId, quantityId, stlData } = params;
@@ -107,6 +115,11 @@ export function calculateMSLA(params, lang) {
   const size = stlData ? null : MSLA_SIZES.find(s => s.id === sizeId);
   if (!application || !layer || !qTier || !resin || (!stlData && !size)) return null;
   if (!qTier.qty || (size && size.custom)) return { type: "custom" };
+  // LICZYMY PO LICZBIE SZTUK, KTORA KLIENT NAPRAWDE ZAMAWIA, a nie po nakladzie
+  // reprezentatywnym progu. Przy dwoch sztukach na stole stana dwie, wiec
+  // przygotowanie dzieli sie przez dwie, a nie przez szesc. Rabat zostaje
+  // przy progu, bo to prog jest obietnica handlowa.
+  const qty = orderQty(quantityId, params);
 
   const volumeCm3 = stlData ? stlData.volumeCm3 : size.volumeRef;
   const heightCm = stlData ? stlData.bbox.z : size.maxCm * 0.8;
@@ -115,19 +128,31 @@ export function calculateMSLA(params, lang) {
 
   const resinCost = volumeCm3 * wasteFactor * (resin.price_kg * resin.density / 1000);
   const printTimeH = (heightCm * 10) / layer.speed;
-  const platformDivisor = Math.max(1, Math.min(qTier.qty, pcsPerPlate));
+  // Koszt jednostkowy jako FUNKCJA NAKLADU: naklad wchodzi wylacznie przez
+  // podzial przygotowania stolu. Potrzebujemy go dla dwoch nakladow naraz,
+  // zeby przyciecie rabatu wiedzialo, o ile koszt spada przy jednej sztuce
+  // wiecej. Patrz `tierDiscount`.
+  const kosztBazowy = (n) => {
+    const dzielnik = Math.max(1, Math.min(n, pcsPerPlate));
+    const maszyna = (printTimeH * (MSLA_CONFIG.DEPRECIATION_PLN_H + CONFIG.ENERGY_COST_PLN * MSLA_CONFIG.ENERGY_KW)) / dzielnik;
+    let post = (MSLA_CONFIG.POST_PLATFORM_PLN / dzielnik) + MSLA_CONFIG.POST_PC_PLN;
+    if (isCastable(resinKey)) post *= MSLA_CONFIG.CASTABLE_QC_MULTIPLIER;
+    return resinCost + maszyna + post + MSLA_CONFIG.HANDLING_FEE;
+  };
+  const platformDivisor = Math.max(1, Math.min(qty, pcsPerPlate));
   const machineCostPerPc = (printTimeH * (MSLA_CONFIG.DEPRECIATION_PLN_H + CONFIG.ENERGY_COST_PLN * MSLA_CONFIG.ENERGY_KW)) / platformDivisor;
   let postProcessing = (MSLA_CONFIG.POST_PLATFORM_PLN / platformDivisor) + MSLA_CONFIG.POST_PC_PLN;
   if (isCastable(resinKey)) postProcessing *= MSLA_CONFIG.CASTABLE_QC_MULTIPLIER;
 
-  const baseCost = resinCost + machineCostPerPc + postProcessing + MSLA_CONFIG.HANDLING_FEE;
+  const baseCost = kosztBazowy(qty);
   const margin = CONFIG.BASE_MARGIN;
 
-  const platesNeeded = Math.ceil(qTier.qty / (pcsPerPlate || 1));
+  const platesNeeded = Math.ceil(qty / (pcsPerPlate || 1));
   const totalTimeH = (printTimeH * platesNeeded) + 0.5;
 
+  const rabat = tierDiscount(quantityId, qty, QUANTITY_TIERS, qty > 1 ? kosztBazowy(qty - 1) / kosztBazowy(qty) : 1);
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
-  const pricing = applyPricing(baseCost, margin, qTier.discount, qTier.qty, plDiscount);
+  const pricing = applyPricing(baseCost, margin, rabat, qty, plDiscount);
   const fc = netCostFmt(lang, pricing.plFactor);
 
   // ============================================================
@@ -147,7 +172,7 @@ export function calculateMSLA(params, lang) {
   // a nie kwote wiazaca. Dolna granica lezy z definicji ponizej kwoty
   // wiazacej, wiec prog zapalal sie takze wtedy, gdy klient i tak placil
   // wiecej niz minimum.
-  const groszePerPc = Math.ceil((MSLA_CONFIG.MIN_ORDER_PLN * 100) / qTier.qty);
+  const groszePerPc = Math.ceil((MSLA_CONFIG.MIN_ORDER_PLN * 100) / qty);
   let minOrderApplied = false;
   if (pricing.unitGrosze < groszePerPc) {
     minOrderApplied = true;
@@ -160,7 +185,7 @@ export function calculateMSLA(params, lang) {
   if (pricing.perPcPLN.min < widelkiPerPc) {
     pricing.perPcPLN.min = widelkiPerPc;
     pricing.perPcPLN.max = Math.max(pricing.perPcPLN.max, widelkiPerPc);
-    pricing.totalPLN = { min: pricing.perPcPLN.min * qTier.qty, max: pricing.perPcPLN.max * qTier.qty };
+    pricing.totalPLN = { min: pricing.perPcPLN.min * qty, max: pricing.perPcPLN.max * qty };
     pricing.perPcEUR = {
       min: Math.max(1, Math.round(pricing.perPcPLN.min / CONFIG.EUR_PLN_RATE)),
       max: Math.max(1, Math.round(pricing.perPcPLN.max / CONFIG.EUR_PLN_RATE)),
@@ -172,10 +197,21 @@ export function calculateMSLA(params, lang) {
   }
 
   return {
-    type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
-    totalTimeH: qTier.qty > 1 ? totalTimeH : null,
+    type: "calculated", ...pricing, qty, discount: rabat,
+    totalTimeH: qty > 1 ? totalTimeH : null,
     breakdown: [
-      { label: l.volume, value: `${volumeCm3.toFixed(1)} ml` },
+      // ZYWICE ZUZYWA SIE W GRAMACH i tak o niej mysli kazdy, kto pracuje
+      // przy odlewach. Rozpiska podawala objetosc w mililitrach, a zaraz pod
+      // nia pozycje "Zywica / szt." wyrazona w ZLOTOWKACH. Czytalo sie to jak
+      // ilosc, wiec wlasciciel slusznie zapytal, co ta liczba znaczy.
+      // Kalkulator filamentu robil to od poczatku dobrze: masa w gramach,
+      // osobno koszt materialu. Tutaj wyrownujemy MSLA do tego wzorca.
+      //
+      // Masa dotyczy SAMEGO WYROBU, bez zapasu na odpad i podpory, tak samo
+      // jak przy filamencie. Zapas siedzi w koszcie, bo tam jest jego miejsce:
+      // klient dostaje jeden wzorzec, a nie jeden wzorzec plus podpory.
+      { label: l.volume, value: `${gramy(volumeCm3)} ml` },
+      { label: l.resinMass, value: `${gramy(volumeCm3 * resin.density)} g` },
       { label: l.resinCost, value: fc(resinCost) },
       { label: l.printTime, value: `${printTimeH.toFixed(2)} h` },
       { label: l.machine, value: fc(machineCostPerPc) },
@@ -183,8 +219,8 @@ export function calculateMSLA(params, lang) {
       { label: l.handling, value: fc(MSLA_CONFIG.HANDLING_FEE) },
       { divider: true },
       { label: l.estCost, value: fc(baseCost * (1 + margin)), bold: true },
-      ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
-      ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${totalTimeH.toFixed(1)} h`, bold: true }] : []),
+      ...(rabat > 0 ? [{ label: l.discount, value: `-${Math.round(rabat * 1000) / 10}%`, accent: true }] : []),
+      ...(qty > 1 ? [{ label: l.totalProd, value: `~${totalTimeH.toFixed(1)} h`, bold: true }] : []),
       ...(minOrderApplied ? [{ label: l.minOrder, value: "" }] : []),
     ],
   };
@@ -346,30 +382,44 @@ export function calculate(params, lang) {
   if (!size || !infill || !color || !prec || !qTier || !mat) return null;
   if (!size.volumeRef || !infill.avg || color.timeMul == null || !prec.speedMul || !qTier.qty) return { type: "custom" };
   const l = LBL[lang] || LBL.en;
+  // LICZYMY PO LICZBIE SZTUK, KTORA KLIENT NAPRAWDE ZAMAWIA, a nie po nakladzie
+  // reprezentatywnym progu. Przy dwoch sztukach na stole stana dwie, wiec
+  // przygotowanie dzieli sie przez dwie, a nie przez szesc. Rabat zostaje
+  // przy progu, bo to prog jest obietnica handlowa.
+  const qty = orderQty(quantityId, params);
 
   const shellFrac = 0.18;
   const effectiveFill = shellFrac + infill.avg * (1 - shellFrac);
   const massG = size.volumeRef * effectiveFill * mat.density;
   const materialCost = (massG / 1000) * mat.price_kg * color.wasteMul * 1.05;
   const printTime = size.timeBase * prec.speedMul * color.timeMul;
-  const setupPerPc = 0.5 / qTier.qty;
   const handlePerPc = 0.05;
+  // Koszt jednostkowy jako funkcja nakladu: naklad wchodzi przez podzial setupu.
+  const kosztBazowy = (n) => {
+    const czas = printTime + 0.5 / n + handlePerPc;
+    return materialCost
+      + czas * PRINT_CONFIG.PRINTER_POWER_KW * CONFIG.ENERGY_COST_PLN
+      + czas * PRINT_CONFIG.DEPRECIATION_PLN_H
+      + PRINT_CONFIG.HANDLING_FEE;
+  };
+  const setupPerPc = 0.5 / qty;
   const timePerPc = printTime + setupPerPc + handlePerPc;
   const energyCost = timePerPc * PRINT_CONFIG.PRINTER_POWER_KW * CONFIG.ENERGY_COST_PLN;
   const deprCost = timePerPc * PRINT_CONFIG.DEPRECIATION_PLN_H;
-  const baseCost = materialCost + energyCost + deprCost + PRINT_CONFIG.HANDLING_FEE;
+  const baseCost = kosztBazowy(qty);
   let margin = CONFIG.BASE_MARGIN;
   if (segment === "engineering") margin += PRINT_CONFIG.ENGINEERING_PREMIUM;
 
-  const platesNeeded = Math.ceil(qTier.qty / (size.pcsPerPlate || 1));
-  const totalTimeH = (printTime * platesNeeded) + (0.5) + (handlePerPc * qTier.qty);
+  const platesNeeded = Math.ceil(qty / (size.pcsPerPlate || 1));
+  const totalTimeH = (printTime * platesNeeded) + (0.5) + (handlePerPc * qty);
 
+  const rabat = tierDiscount(quantityId, qty, QUANTITY_TIERS, qty > 1 ? kosztBazowy(qty - 1) / kosztBazowy(qty) : 1);
   const plDiscount = lang === "pl" ? CONFIG.PL_MARKET_DISCOUNT : 0;
-  const pricing = applyPricing(baseCost, margin, qTier.discount, qTier.qty, plDiscount);
+  const pricing = applyPricing(baseCost, margin, rabat, qty, plDiscount);
   const fc = netCostFmt(lang, pricing.plFactor);
   return {
-    type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
-    totalTimeH: qTier.qty > 1 ? totalTimeH : null,
+    type: "calculated", ...pricing, qty, discount: rabat,
+    totalTimeH: qty > 1 ? totalTimeH : null,
     breakdown: [
       { label: l.mass, value: `${massG.toFixed(1)} g` },
       { label: l.material, value: fc(materialCost) },
@@ -381,8 +431,8 @@ export function calculate(params, lang) {
       { label: l.workshop, value: fc(baseCost * margin) },
       { divider: true },
       { label: l.estCost, value: fc(baseCost * (1 + margin)), bold: true },
-      ...(qTier.discount > 0 ? [{ label: l.discount, value: `-${qTier.discount * 100}%`, accent: true }] : []),
-      ...(qTier.qty > 1 ? [{ label: l.totalProd, value: `~${totalTimeH.toFixed(1)} h`, bold: true }] : []),
+      ...(rabat > 0 ? [{ label: l.discount, value: `-${Math.round(rabat * 1000) / 10}%`, accent: true }] : []),
+      ...(qty > 1 ? [{ label: l.totalProd, value: `~${totalTimeH.toFixed(1)} h`, bold: true }] : []),
     ],
   };
 }

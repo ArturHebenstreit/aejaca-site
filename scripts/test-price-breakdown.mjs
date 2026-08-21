@@ -19,6 +19,9 @@
 
 import { resolveTechAndParams, runCalc } from "../src/pricing/simpleQuote.js";
 import { plFactorFor, CONFIG } from "../src/pricing/config.js";
+import { readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 let bledy = 0;
 const zle = (m) => { console.error(`  ✗ ${m}`); bledy++; };
@@ -197,6 +200,109 @@ console.log("\nProg rabatu na rynek polski");
   } else {
     zle(`duze zlecenie: pl ${duzePl?.unitGrosze} gr, en ${duzeEn?.unitGrosze} gr, rabat nie zadzialal`);
   }
+}
+
+// ------------------------------------------------------------
+// ZUZYCIE MATERIALU PODAJEMY W TYM, W CZYM SIE JE ZUZYWA
+// ------------------------------------------------------------
+// Rozpiska MSLA miala pozycje "Zywica / szt." wyrazona w ZLOTOWKACH, tuz pod
+// objetoscia w mililitrach. Zywice zuzywa sie w gramach i tak o niej mysli
+// kazdy, kto pracuje przy odlewach, wiec czytalo sie to jak ilosc. Kalkulator
+// filamentu robil to od poczatku dobrze: masa w gramach, osobno koszt.
+{
+  const { calculateMSLA, calculate: calcFDM } = await import("../src/pricing/print3d.js");
+  const stl = { volumeCm3: 0.078, bbox: { x: 0.9, y: 0.91, z: 1.11 }, triangleCount: 1000 };
+  const r = calculateMSLA(
+    { applicationId: "casting", resinKey: "castable_xwax", layerId: "standard", sizeId: "S", quantityId: "micro", stlData: stl },
+    "pl"
+  );
+  if (!r || r.type !== "calculated") {
+    zle("nie udalo sie policzyc wzorca odlewniczego, reszta sekcji nie ma czego sprawdzac");
+  } else {
+    const wiersz = (frag) => r.breakdown.find((w) => (w.label || "").toLowerCase().includes(frag));
+    const masa = wiersz("masa");
+    if (!masa) zle("rozpiska MSLA nie podaje masy zywicy");
+    else if (!/^\d+[.,]\d+ g$/.test(masa.value)) zle(`masa zywicy nie jest w gramach: "${masa.value}"`);
+    else ok(`rozpiska MSLA podaje zuzycie w gramach (${masa.value})`);
+
+    // Pozycja kosztowa nie moze nazywac sie tak, jak nazywa sie material:
+    // "Zywica / szt." obok kwoty czyta sie jak ilosc zywicy.
+    const kwoty = r.breakdown.filter((w) => typeof w.value === "string" && /PLN|EUR/.test(w.value));
+    const myslace = kwoty.filter((w) => /^(żywica|harz|resin)\b/i.test((w.label || "").trim()));
+    if (myslace.length) zle(`pozycja kosztowa nazwana jak material: ${myslace.map((w) => w.label).join(", ")}`);
+    else ok("zadna kwota w rozpisce MSLA nie jest nazwana samym materialem");
+
+    // Masa dotyczy wyrobu, a nie wyrobu z zapasem: tak samo jak przy
+    // filamencie, zeby dwie rozpiski nie mowily o dwoch roznych rzeczach.
+    const { getResin } = await import("../src/data/resins.js");
+    const oczekiwana = stl.volumeCm3 * getResin("castable_xwax").density;
+    if (Math.abs(parseFloat(masa?.value) - oczekiwana) > 0.005) {
+      zle(`masa ${masa?.value} nie zgadza sie z objetoscia razy gestosc (${oczekiwana.toFixed(2)} g)`);
+    } else ok("masa zywicy to objetosc wyrobu razy gestosc, bez zapasu na odpad");
+  }
+
+  const f = calcFDM({ segment: "standard", materialKey: "PLA", sizeId: "S", infillId: "low", colorId: 1, precisionId: "standard_04", quantityId: "proto" }, "pl");
+  const masaF = f?.breakdown?.find((w) => /masa/i.test(w.label || ""));
+  if (masaF && /g$/.test(masaF.value)) ok(`filament nadal podaje mase (${masaF.value})`);
+  else zle("kalkulator filamentu przestal podawac mase w gramach");
+}
+
+// ------------------------------------------------------------
+// PRZY KWOCIE WIAZACEJ NIE POKAZUJEMY DRUGIEJ SUMY
+// ------------------------------------------------------------
+// `hideRange` chowalo sama cene za sztuke, a suma za zamowienie zostawala,
+// policzona dla NAKLADU REPREZENTATYWNEGO PROGU. Klient zamawiajacy dwie
+// sztuki widzial obok siebie "ZAMOWIENIE: ~6 SZT. 132-258 PLN" i "KWOTA
+// WIAZACA (2 SZT.) 61,84 PLN". Obie poprawne, kazda z innej reguly.
+{
+  const wspolne = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "../src/components/calculators/calcShared.jsx"), "utf8");
+  if (/\{!hideRange && r\.qty > 1 && \(/.test(wspolne)) {
+    ok("suma za zamowienie znika razem z widelkami, gdy jest kwota wiazaca");
+  } else {
+    zle("blok sumy za zamowienie nie jest zalezny od hideRange: obok kwoty wiazacej stanie druga suma");
+  }
+}
+
+// ------------------------------------------------------------
+// JEDNA KWOTA NA EKRANIE, NA GORZE KARTY WYCENY
+// ------------------------------------------------------------
+// Kwota wiazaca stoi w karcie wyceny, w miejscu widelek, i wtedy widelek nie
+// ma wcale. Wczesniej lezala nizej, w panelu koszyka, a na gorze zostawal
+// szacunek dla nakladu reprezentatywnego progu: dwie rozne liczby dla dwoch
+// roznych ilosci na jednym ekranie.
+{
+  const KAT = join(dirname(fileURLToPath(import.meta.url)), "../src/components/calculators");
+  const { readdirSync } = await import("node:fs");
+  // Liste kalkulatorow wyprowadzamy z katalogu, zeby nowy nie wymknal sie
+  // sprawdzeniu tylko dlatego, ze nikt go tu nie dopisal.
+  const pliki = readdirSync(KAT).filter((f) => f.endsWith(".jsx") && f !== "CalcToCart.jsx" && f !== "calcShared.jsx");
+  let zparami = 0;
+  for (const f of pliki) {
+    const tresc = readFileSync(join(KAT, f), "utf8");
+    const koszyki = (tresc.match(/<CalcToCart/g) || []).length;
+    if (!koszyki) continue;
+    zparami++;
+    const zglasza = (tresc.match(/onBinding=\{setBindingGrosze\}/g) || []).length;
+    const pokazuje = (tresc.match(/binding=\{bindingGrosze\}/g) || []).length;
+    if (zglasza !== koszyki) zle(`${f}: ${koszyki} koszykow, a kwote zglasza ${zglasza} z nich`);
+    else if (pokazuje !== koszyki) zle(`${f}: kwota jest zglaszana ${zglasza} razy, a karta wyceny pokazuje ja ${pokazuje} razy`);
+  }
+  if (zparami < 5) zle(`znaleziono tylko ${zparami} kalkulatorow z koszykiem, spodziewane co najmniej piec`);
+  else ok(`${zparami} kalkulatorow: kwota wiazaca zglaszana i pokazywana na gorze karty`);
+
+  const koszyk = readFileSync(join(KAT, "CalcToCart.jsx"), "utf8");
+  if (/\{!onBinding && \(/.test(koszyk)) ok("panel koszyka nie powtarza kwoty, gdy pokazuje ja karta wyceny");
+  else zle("panel koszyka pokazuje kwote bezwarunkowo: ta sama liczba stanie dwa razy na jednym ekranie");
+
+  // KOLEJNOSC W PLIKU MA ZNACZENIE. Efekt zglaszajacy kwote czyta `qty`
+  // i `lineGrosze`. Postawiony nad nimi wywala cala strone na
+  // "Cannot access 'qty' before initialization", i to dopiero w przegladarce:
+  // zaden test jednostkowy tego nie zobaczy, bo to modul Reacta.
+  const deklaracja = koszyk.indexOf("const lineGrosze =");
+  const efekt = koszyk.indexOf("onBinding({");
+  if (deklaracja < 0 || efekt < 0) zle("nie znaleziono deklaracji lineGrosze albo zgloszenia kwoty w CalcToCart");
+  else if (efekt < deklaracja) zle("efekt zglaszajacy kwote stoi PRZED deklaracja lineGrosze: strona wywali sie na starcie");
+  else ok("zgloszenie kwoty stoi po deklaracjach, ktore czyta");
 }
 
 console.log(bledy ? `\n${bledy} bledow\n` : "\nRozpiska ceny: wszystko sie zgadza\n");
