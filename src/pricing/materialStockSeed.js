@@ -45,7 +45,13 @@ export const MATERIAL_SEED = [
   { material_id: "ply2", name_pl: "Sklejka 2mm", name_en: "Plywood 2mm", name_de: "Sperrholz 2mm", pln_per_m2: 18, pln_per_piece: null, thickness_mm: 2, notes: "rynek 2026-08" },
   { material_id: "ply3", name_pl: "Sklejka 3mm", name_en: "Plywood 3mm", name_de: "Sperrholz 3mm", pln_per_m2: 24, pln_per_piece: null, thickness_mm: 3, notes: "rynek 2026-08" },
   { material_id: "ply56", name_pl: "Sklejka 5-6mm", name_en: "Plywood 5-6mm", name_de: "Sperrholz 5-6mm", pln_per_m2: 40, pln_per_piece: null, thickness_mm: 6, notes: "rynek 2026-08" },
-  { material_id: "mdf8", name_pl: "Plyta HDF/MDF do 8mm", name_en: "HDF/MDF board up to 8mm", name_de: "HDF/MDF-Platte bis 8mm", pln_per_m2: 42, pln_per_piece: null, thickness_mm: 8, notes: "rynek 2026-08" },
+  // HDF, bez MDF (polecenie wlasciciela, 2026-08-20). Cena z Castoramy: arkusz
+  // surowy 2800x2070x3 mm kosztuje 118 zl przy 5,796 m2, czyli 20,36 zl/m2.
+  // Szescmilimetrowa plyta pilsniowa chodzi po 21-26 zl/m2, bo w tym materiale
+  // cena prawie nie rosnie z gruboscia (inaczej niz w akrylu). Stad 22 zl/m2
+  // dla calego zakresu do 6 mm. Wczesniej stalo tu 42 zl/m2, liczone dla MDF
+  // 8 mm, czyli materialu, ktorego juz nie oferujemy.
+  { material_id: "mdf8", name_pl: "Plyta HDF do 6mm", name_en: "HDF board up to 6mm", name_de: "HDF-Platte bis 6mm", pln_per_m2: 22, pln_per_piece: null, thickness_mm: 6, notes: "HDF surowe, Castorama 2026-08" },
   { material_id: "wood10", name_pl: "Lite drewno do 10mm", name_en: "Solid wood up to 10mm", name_de: "Massivholz bis 10mm", pln_per_m2: 115, pln_per_piece: null, thickness_mm: 10, notes: "dab, rynek 2026-08" },
   { material_id: "acr3", name_pl: "Akryl 3mm", name_en: "Acrylic 3mm", name_de: "Acryl 3mm", pln_per_m2: 167, pln_per_piece: null, thickness_mm: 3, notes: "rynek 2026-08" },
   { material_id: "acr5", name_pl: "Akryl 5mm", name_en: "Acrylic 5mm", name_de: "Acryl 5mm", pln_per_m2: 265, pln_per_piece: null, thickness_mm: 5, notes: "rynek 2026-08" },

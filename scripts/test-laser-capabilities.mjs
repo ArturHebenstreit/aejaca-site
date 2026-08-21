@@ -176,6 +176,42 @@ for (const slowo of ["szkł", "szkl", "kamie", "metal", "stal"]) {
 }
 ok(`opis ciecia mowi tylko o tym, co tniemy: "${opisCiecia}"`);
 
+// --- 7. Stawki ciecia opisuja maszyne, ktora mamy ------------------------
+sekcja("7. Predkosci ciecia");
+// `cutRate` to sekundy na centymetr sciezki, wiec kazda stawka to ukryta
+// deklaracja predkosci. Do 2026-08-20 tabela twierdzila, ze tniemy sklejke
+// 2 mm po 100 mm/s, a lite drewno 10 mm po 10 mm/s. Zaden wyjatek tego nie
+// zglosil: kwota wygladala poprawnie i byla cztery razy za mala.
+//
+// Wspolczynnik 0.7 odwraca to, co juz siedzi w stawce: na drobnym detalu
+// maszyna nie rozpedza sie do nastawy, wiec stawka bazowa odpowiada okolo
+// 0.7 predkosci ustawionej w oprogramowaniu.
+const ROZPED = 0.7;
+const nastawa = (r) => 10 / r / ROZPED;
+for (const m of CUT_MATERIALS.filter((x) => !x.custom)) {
+  const v = nastawa(m.cutRate);
+  if (!(v >= 1 && v <= 120)) {
+    zle(`${m.id}: stawka ${m.cutRate} znaczy ${v.toFixed(0)} mm/s, a to poza tym, co P2 robi na tych materialach`);
+  }
+}
+ok(`kazda stawka miesci sie w 1-120 mm/s (najszybszy ${Math.max(...CUT_MATERIALS.filter(x=>!x.custom).map(m=>nastawa(m.cutRate))).toFixed(0)}, najwolniejszy ${Math.min(...CUT_MATERIALS.filter(x=>!x.custom).map(m=>nastawa(m.cutRate))).toFixed(0)} mm/s)`);
+
+// Grubszy arkusz nigdy nie tnie sie szybciej od cienszego z tej samej rodziny.
+// To najlatwiejsza literowka do popelnienia przy przepisywaniu kolumny liczb
+// i jedyna, ktora daje cene nizsza od kosztu maszyny.
+const RODZINY = [["ply2", "ply3", "ply56"], ["acr3", "acr5", "acr8"], ["leather2", "leather4"]];
+for (const rodzina of RODZINY) {
+  for (let i = 1; i < rodzina.length; i++) {
+    const cienszy = CUT_MATERIALS.find((m) => m.id === rodzina[i - 1]);
+    const grubszy = CUT_MATERIALS.find((m) => m.id === rodzina[i]);
+    if (!cienszy || !grubszy) { zle(`rodzina ${rodzina.join("/")}: brak pozycji w cenniku`); continue; }
+    if (!(grubszy.cutRate > cienszy.cutRate)) {
+      zle(`${grubszy.id} tnie sie szybciej niz ${cienszy.id} (${grubszy.cutRate} wobec ${cienszy.cutRate}), a jest grubszy`);
+    }
+  }
+}
+ok("grubszy material zawsze tnie sie wolniej od cienszego z tej samej rodziny");
+
 if (bledy) {
   console.error(`\n${bledy} bledow.`);
   process.exit(1);

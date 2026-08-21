@@ -31,7 +31,11 @@ const PRZYPADKI = [
   { nazwa: "druk 3D (FDM)", item: "part",         material: "plastic" },
   { nazwa: "druk 3D (MSLA)", item: "figurine_msla", material: "plastic" },
   { nazwa: "laser CO2",     item: "sign",         material: "wood" },
-  { nazwa: "laser swiatlowodowy", item: "jewelry", material: "metal" },
+  // Bizuteria na metalu idzie z `podloze: "own_item"`, bo grawerujemy obraczke
+  // klienta. Bez tej odpowiedzi kalkulator przyjmuje material NASZ, a srebra
+  // z magazynu nie wyceniamy automatycznie (rozliczamy je wagowo), wiec test
+  // dostawalby "custom" i nie sprawdzalby niczego.
+  { nazwa: "laser swiatlowodowy", item: "jewelry", material: "metal", podloze: "own_item" },
   { nazwa: "odlew zywiczny", item: "gift",        material: "resin" },
 ];
 
@@ -50,7 +54,7 @@ function wierszKosztu(breakdown) {
 
 for (const p of PRZYPADKI) {
   console.log(`\n${p.nazwa}`);
-  const resolved = resolveTechAndParams({ ...WSPOLNE, item: p.item, material: p.material });
+  const resolved = resolveTechAndParams({ ...WSPOLNE, item: p.item, material: p.material, podloze: p.podloze ?? null });
   const wynik = runCalc(resolved, "pl");
 
   if (wynik?.type !== "calculated") {
@@ -89,7 +93,7 @@ for (const p of PRZYPADKI) {
   // 3. Kontrola sensu: polska rozpiska musi byc TANSZA od tej samej rozpiski
   //    dla rynku zewnetrznego. Bez tego punkty 1 i 2 przeszlyby rowniez
   //    wtedy, gdyby rabat po prostu przestal istniec.
-  const wynikEn = runCalc(resolveTechAndParams({ ...WSPOLNE, item: p.item, material: p.material }), "en");
+  const wynikEn = runCalc(resolveTechAndParams({ ...WSPOLNE, item: p.item, material: p.material, podloze: p.podloze ?? null }), "en");
   const wierszEn = wierszKosztu(wynikEn?.breakdown);
   if (!wierszEn) {
     zle("brak wiersza kosztu w rozpisce dla rynku zewnetrznego");

@@ -139,8 +139,20 @@ export function calculate({ matId, lensId, markId, areaId, quantityId, svgData, 
   // Doliczamy PO narzucie za metal szlachetny, bo ten narzut placi za ryzyko
   // pracy na cudzym kruszcu, a nie za material. Zreszta srebro i zloto maja
   // w tabeli zero w obu kolumnach i ida do wyceny indywidualnej.
+  // MATERIAL BEZ USTALONEJ CENY WYKLUCZA KWOTE WIAZACA.
+  //
+  // Dotyczy to przede wszystkim srebra i zlota z naszego magazynu: kruszec
+  // rozlicza sie wagowo i wedlug proby, wiec dopoki nie zwazymy blaszki, nie
+  // istnieje liczba, ktora moglibysmy nazwac umowa. Klient idzie do wyceny
+  // indywidualnej, a nie do koszyka z pozycja "do ustalenia".
+  //
+  // Warunek pyta NAJPIERW o `mat.precious`, a dopiero potem o tabele. Gdyby
+  // pytal wylacznie o tabele, awaria bazy zamienilaby srebro w material po
+  // stawce domyslnej 140 zl/m2, czyli w kwote wiazaca wzieta z powietrza.
+  if (materialIsOurs(podloze) && (mat.precious || pricedSeparately(mat.id, stock))) {
+    return { type: "custom" };
+  }
   const materialCost = materialCostPLN({ areaCm2: area.area, matId: mat.id, podloze, stock });
-  const materialOsobno = materialIsOurs(podloze) && pricedSeparately(mat.id, stock);
   baseCost += materialCost;
 
   const batchTimeH = (timeH + handleH) * qTier.qty + 0.2;
@@ -159,13 +171,9 @@ export function calculate({ matId, lensId, markId, areaId, quantityId, svgData, 
       { label: l.energy, value: fc(energyCost) },
       { label: l.depreciation, value: fc(deprCost) },
       ...(mat.precious ? [{ label: l.preciousSurcharge, value: `+${FIBER_CONFIG.PRECIOUS_PREMIUM * 100}%` }] : []),
-      // Pozycja materialu MUSI byc widoczna. Znikajaca linia czyta sie jak
-      // "material gratis", a przy kruszcu to jest obietnica nie do spelnienia.
-      ...(materialCost > 0
-        ? [{ label: l.materialCost, value: fc(materialCost) }]
-        : materialOsobno
-          ? [{ label: l.materialCost, value: l.materialSeparate }]
-          : []),
+      // Pozycja materialu MUSI byc widoczna, gdy go liczymy. Gdy nie umiemy,
+      // ta konfiguracja nie dochodzi do kwoty w ogole, patrz wyzej.
+      ...(materialCost > 0 ? [{ label: l.materialCost, value: fc(materialCost) }] : []),
       { label: l.workshop, value: fc(baseCost * CONFIG.BASE_MARGIN) },
       { divider: true },
       { label: l.estCost, value: fc(baseCost * (1 + CONFIG.BASE_MARGIN)), bold: true },

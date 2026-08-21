@@ -117,41 +117,89 @@ export const ENGRAVE_DETAIL = [
 // wdrozeniem. Pole zostaje jako zapis tego, ile liczylismy wczesniej: przy
 // ustalaniu realnych stawek w panelu jest to jedyny punkt odniesienia, jaki
 // mamy (matCost * 10000 = zlotowki za metr kwadratowy).
+// ============================================================
+// STAWKI CIECIA: SEKUNDY NA CENTYMETR SCIEZKI
+// ============================================================
+// URELANIONE 2026-08-20 (polecenie wlasciciela). Do tego dnia cala tabela
+// zakladala predkosci, ktorych P2 nie osiaga: sklejka 2 mm szla po 100 mm/s,
+// lite drewno 10 mm po 10 mm/s. Blad byl CICHY i systematyczny, bo stawki
+// wyprowadzano jedna z drugiej ("5 mm to 0.25, wiec 8 mm to 0.50"), wiec
+// trzymaly sie siebie nawzajem bardzo rownno i wszystkie razem mijaly sie
+// z maszyna. Kwota zawsze wygladala poprawnie, tylko byla cztery razy za mala.
+//
+// SKAD TE LICZBY. Zakotwiczone na ustawieniach zalecanych dla P2:
+//
+//   sklejka wisniowa 3 mm   25 mm/s, 100%, 1 przejscie   (potwierdzone)
+//   sklejka lipowa   6 mm   10 mm/s, 100%, 1 przejscie   (potwierdzone)
+//   akryl bialy      3 mm   20 mm/s, 100%, 1 przejscie   (potwierdzone)
+//
+// Reszta jest interpolowana miedzy tymi punktami. Wymiana ich na presety
+// z XCS jest najprostsza mozliwa poprawka: to jedna kolumna liczb.
+//
+// PREDKOSC USTAWIONA TO NIE PREDKOSC RZECZYWISTA. Wzor mnozy dlugosc sciezki
+// przez stawke, a na drobnym detalu maszyna nigdy nie rozpedza sie do nastawy:
+// cala droge przyspiesza i hamuje. Dlatego stawka bazowa odpowiada okolo 0.7
+// nastawy, czyli geometrii "sredniej", a mnoznik zlozonosci (0.8 / 1.0 / 1.5)
+// odchyla ja na proste ksztalty i na gesty detal.
+//
+// KOLOR AKRYLU ZMIENIA PREDKOSC TRZYKROTNIE (40 mm/s przy bezbarwnym lanym,
+// 13 przy czerwonym). Wyceniamy przed poznaniem partii, wiec stawka stoi
+// blizej wolniejszego konca. Zawyzenie na bezbarwnym akrylu jest tanszym
+// bledem niz zlecenie przyjete ponizej kosztu maszyny.
+//
+// `scripts/test-laser-capabilities.mjs` pilnuje, zeby stawki nie wrocily do
+// predkosci nierealnych i zeby grubszy material nigdy nie byl szybszy.
 export const CUT_MATERIALS = [
   // Sklejka 2 mm dochodzi do listy na polecenie wlasciciela (2026-08-19).
-  // Stawki wyprowadzone z sasiadow, a nie zgadniete: ciecie 3 mm to 0.15,
-  // 5 mm to 0.25, wiec krok na milimetr wynosi 0.05, a material 0.04 przy
-  // 3 mm i 0.06 przy 5 mm, czyli 0.01 na milimetr. Cienszy arkusz tnie sie
-  // szybciej i kosztuje mniej, wiec obie liczby ida o jeden krok w dol.
-  { id: "ply2",     label: { pl: "Sklejka 2mm", en: "Plywood 2mm", de: "Sperrholz 2mm" }, cutRate: 0.10, matCost: 0.03, grupa: "wood" },
-  { id: "ply3",     label: { pl: "Sklejka 3mm", en: "Plywood 3mm", de: "Sperrholz 3mm" }, cutRate: 0.15, matCost: 0.04, grupa: "wood" },
-  { id: "ply56",    label: { pl: "Sklejka 5-6mm", en: "Plywood 5-6mm", de: "Sperrholz 5-6mm" }, cutRate: 0.25, matCost: 0.06, grupa: "wood" },
-  // HDF i MDF zastapily sklejke 8 mm na polecenie wlasciciela (2026-08-20):
-  // prasowane wlokno tnie sie rowniej niz osiem milimetrow sklejki, gdzie
-  // kleje miedzy warstwami potrafia zatrzymac wiazke. Czas maszyny ten sam,
-  // material tanszy, stad 0.07 zamiast 0.09.
-  { id: "mdf8",     label: { pl: "Płyta HDF/MDF do 8mm", en: "HDF/MDF board up to 8mm", de: "HDF/MDF-Platte bis 8mm" }, cutRate: 0.50, matCost: 0.07, grupa: "wood" },
+  // Stawka wyprowadzona w gore od potwierdzonych 25 mm/s przy 3 mm: cienszy
+  // arkusz idzie okolo 35 mm/s, czyli 0.41 s/cm po uwzglednieniu rozpedzania.
+  // Material 0.03 to historyczna liczba, dzis nieuzywana (patrz uwaga wyzej).
+  { id: "ply2",     label: { pl: "Sklejka 2mm", en: "Plywood 2mm", de: "Sperrholz 2mm" }, cutRate: 0.41, matCost: 0.03, grupa: "wood" },
+  { id: "ply3",     label: { pl: "Sklejka 3mm", en: "Plywood 3mm", de: "Sperrholz 3mm" }, cutRate: 0.57, matCost: 0.04, grupa: "wood" },
+  { id: "ply56",    label: { pl: "Sklejka 5-6mm", en: "Plywood 5-6mm", de: "Sperrholz 5-6mm" }, cutRate: 1.43, matCost: 0.06, grupa: "wood" },
+  // Plyta pilsniowa zastapila sklejke 8 mm na polecenie wlasciciela
+  // (2026-08-20): prasowane wlokno tnie sie rowniej niz osiem milimetrow
+  // sklejki, gdzie kleje miedzy warstwami potrafia zatrzymac wiazke.
+  //
+  // MDF WYSZEDL Z OPISU (polecenie wlasciciela, 2026-08-20). Zostaje samo HDF,
+  // i to pociaga za soba grubosc: HDF produkuje sie w 3, 4 i 6 mm, a osmiu
+  // milimetrow w tej plycie po prostu nie ma. Etykieta "do 8mm" bez MDF bylaby
+  // obietnica materialu, ktorego nie kupimy, wiec schodzi do 6 mm.
+  //
+  // IDENTYFIKATOR ZOSTAJE `mdf8`, mimo ze nazwa sie zmienila. Identyfikator
+  // jest zapisany w zlozonych juz zamowieniach i w wierszu tabeli materialow;
+  // zmiana rozsypalaby przeliczenie starego zlecenia, a nazwa widoczna dla
+  // klienta i tak idzie z etykiety, nie z klucza.
+  //
+  // Stawka 1.59: punktem odniesienia jest sklejka 6 mm, dla ktorej producent
+  // podaje 10 mm/s. HDF idzie o krok wolniej (okolo 9 mm/s), bo jest gestsze
+  // i mocniej sie przypala na krawedzi.
+  { id: "mdf8",     label: { pl: "Płyta HDF do 6mm", en: "HDF board up to 6mm", de: "HDF-Platte bis 6mm" }, cutRate: 1.59, matCost: 0.07, grupa: "wood" },
   // Lite drewno do 10 mm dochodzi na polecenie wlasciciela (2026-08-20).
   //
-  // Wyprowadzenie z sasiadow dawalo 0.67 za centymetr sciezki (sklejka idzie
-  // 0.25 przy 5 mm i 0.50 przy 8 mm, czyli okolo 0.083 na milimetr), ale
-  // WLASCICIEL PODNIOSL STAWKE DO 1.00 i to jest liczba obowiazujaca. Powod
-  // jest warsztatowy, nie arytmetyczny: lita deska ma sloje, zywice i
-  // niejednorodna gestosc, wiec przejscie na wylot wymaga kilku powtorzen
-  // i pilnowania, a nie jednego przejazdu jak przy sklejce. Interpolacja ze
-  // sklejki tego nie widzi, bo sklejka jest materialem jednorodnym.
+  // Stawka 3.57, czyli okolo 4 mm/s. Wlasciciel podnosil ja juz raz recznie
+  // (2026-08-20, z wyliczonych 0.67 na 1.00) z powodu warsztatowego, a nie
+  // arytmetycznego: lita deska ma sloje, zywice i niejednorodna gestosc, wiec
+  // przejscie na wylot wymaga kilku powtorzen i pilnowania, a nie jednego
+  // przejazdu jak przy sklejce. Ta reka jest w obecnej liczbie zachowana:
+  // interpolacja od sklejki 6 mm dawalaby okolo 2.9, wiec lite drewno dalej
+  // stoi wyzej niz wynikaloby z samej grubosci.
   //
   // Material 0.16 (potwierdzone): 0.11 z kroku sklejki, podniesione, bo deska
   // lita kosztuje wiecej niz sklejka tej samej grubosci.
-  { id: "wood10",   label: { pl: "Lite drewno do 10mm", en: "Solid wood up to 10mm", de: "Massivholz bis 10mm" }, cutRate: 1.00, matCost: 0.16, grupa: "wood" },
-  { id: "acr3",     label: { pl: "Akryl 3mm", en: "Acrylic 3mm", de: "Acryl 3mm" }, cutRate: 0.20, matCost: 0.12, grupa: "other" },
-  { id: "acr5",     label: { pl: "Akryl 5mm", en: "Acrylic 5mm", de: "Acryl 5mm" }, cutRate: 0.35, matCost: 0.18, grupa: "other" },
-  { id: "acr8",     label: { pl: "Akryl 8mm", en: "Acrylic 8mm", de: "Acryl 8mm" }, cutRate: 0.60, matCost: 0.28, grupa: "other" },
-  { id: "leather2", label: { pl: "Skóra 1–2mm", en: "Leather 1–2mm", de: "Leder 1–2mm" }, cutRate: 0.10, matCost: 0.20, grupa: "other" },
-  { id: "leather4", label: { pl: "Skóra 3–4mm", en: "Leather 3–4mm", de: "Leder 3–4mm" }, cutRate: 0.20, matCost: 0.35, grupa: "other" },
-  { id: "paper",    label: { pl: "Papier / karton", en: "Paper / cardboard", de: "Papier / Karton" }, cutRate: 0.05, matCost: 0.01, grupa: "other" },
-  { id: "fabric",   label: { pl: "Tkanina / filc", en: "Fabric / felt", de: "Stoff / Filz" }, cutRate: 0.08, matCost: 0.06, grupa: "other" },
-  { id: "rubber",   label: { pl: "Guma 2–3mm", en: "Rubber 2–3mm", de: "Gummi 2–3mm" }, cutRate: 0.18, matCost: 0.10, grupa: "other" },
+  { id: "wood10",   label: { pl: "Lite drewno do 10mm", en: "Solid wood up to 10mm", de: "Massivholz bis 10mm" }, cutRate: 3.57, matCost: 0.16, grupa: "wood" },
+  { id: "acr3",     label: { pl: "Akryl 3mm", en: "Acrylic 3mm", de: "Acryl 3mm" }, cutRate: 0.71, matCost: 0.12, grupa: "other" },
+  { id: "acr5",     label: { pl: "Akryl 5mm", en: "Acrylic 5mm", de: "Acryl 5mm" }, cutRate: 1.19, matCost: 0.18, grupa: "other" },
+  { id: "acr8",     label: { pl: "Akryl 8mm", en: "Acrylic 8mm", de: "Acryl 8mm" }, cutRate: 2.38, matCost: 0.28, grupa: "other" },
+  // Skora, papier, tkanina i guma nie maja potwierdzonych ustawien w zrodlach,
+  // do ktorych dotarlem. Stawki sa przeskalowane tym samym wspolczynnikiem, co
+  // reszta tabeli, wiec zachowuja poprzednie proporcje miedzy soba. To pierwsze
+  // pozycje do wymiany, gdy dojda presety z XCS.
+  { id: "leather2", label: { pl: "Skóra 1–2mm", en: "Leather 1–2mm", de: "Leder 1–2mm" }, cutRate: 0.36, matCost: 0.20, grupa: "other" },
+  { id: "leather4", label: { pl: "Skóra 3–4mm", en: "Leather 3–4mm", de: "Leder 3–4mm" }, cutRate: 0.71, matCost: 0.35, grupa: "other" },
+  { id: "paper",    label: { pl: "Papier / karton", en: "Paper / cardboard", de: "Papier / Karton" }, cutRate: 0.14, matCost: 0.01, grupa: "other" },
+  { id: "fabric",   label: { pl: "Tkanina / filc", en: "Fabric / felt", de: "Stoff / Filz" }, cutRate: 0.24, matCost: 0.06, grupa: "other" },
+  { id: "rubber",   label: { pl: "Guma 2–3mm", en: "Rubber 2–3mm", de: "Gummi 2–3mm" }, cutRate: 0.57, matCost: 0.10, grupa: "other" },
   { id: "custom",   label: { pl: "Inny materiał", en: "Other material", de: "Anderes Material" }, cutRate: null, matCost: null, custom: true },
 ];
 
@@ -198,8 +246,15 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svg
   // Grawer nie zuzywal dotad materialu w wycenie, co bylo prawda przy
   // przedmiocie klienta i nieprawda przy desce z naszego magazynu: oddawalismy
   // ja gratis do kwoty, ktora sami nazwalismy wiazaca.
+  // MATERIAL BEZ USTALONEJ CENY WYKLUCZA KWOTE WIAZACA.
+  //
+  // Kwota trafiajaca do koszyka jest umowa, wiec nie moze zawierac pozycji
+  // "do ustalenia". Wczesniej wypisywalismy w rozpisce "wycena indywidualna"
+  // i mimo to pozwalalismy dodac rzecz do koszyka: klient placil kwote, ktora
+  // sami opisalismy jako niepelna. `type: "custom"` chowa przycisk koszyka
+  // i serwer odmawia takiej pozycji wyceny (`needs_quote`).
+  if (materialIsOurs(podloze) && pricedSeparately(mat.id, stock)) return { type: "custom" };
   const materialCost = materialCostPLN({ areaCm2: area.area, matId: mat.id, podloze, stock });
-  const materialOsobno = materialIsOurs(podloze) && pricedSeparately(mat.id, stock);
   const baseCost = laborCost + energyCost + deprCost + prepCost + materialCost + CO2_CONFIG.HANDLING_FEE + extCostAdd;
   const batchTimeH = (timeH + handleH) * qTier.qty + (extended ? 0.5 : 0.25);
 
@@ -214,14 +269,10 @@ export function calcEngrave({ matId, areaId, detailId, quantityId, extended, svg
       { label: l.timeSetup, value: `${(totalTimeH * 60).toFixed(1)} min` },
       { label: l.workshop, value: fc(laborCost) },
       { label: l.prepMat, value: fc(prepCost) },
-      // Material MUSI byc widoczny w rozpisce. Gdy go liczymy, stoi kwota;
-      // gdy rozliczamy go osobno (srebro, zloto), stoi to wprost, bo znikajaca
-      // pozycja czyta sie jak "material gratis".
-      ...(materialCost > 0
-        ? [{ label: l.materialCost, value: fc(materialCost) }]
-        : materialOsobno
-          ? [{ label: l.materialCost, value: l.materialSeparate }]
-          : []),
+      // Material MUSI byc widoczny w rozpisce zawsze, gdy go liczymy. Gdy nie
+      // umiemy go policzyc, nie ma tu pustej linii ani dopisku "do ustalenia":
+      // taka konfiguracja w ogole nie dochodzi do kwoty, patrz wyzej.
+      ...(materialCost > 0 ? [{ label: l.materialCost, value: fc(materialCost) }] : []),
       { label: l.energy, value: fc(energyCost) },
       { label: l.depreciation, value: fc(deprCost) },
       ...(extended ? [{ label: l.extSurcharge, value: `+${fc(extCostAdd)}` }] : []),
@@ -261,8 +312,15 @@ export function calcCut({ matId, pathId, complexId, quantityId, extended, svgDat
   // Material liczymy z tabeli stanow magazynowych i TYLKO wtedy, gdy jest
   // nasz. Wczesniej stala z cennika szla do kwoty zawsze, takze przy plycie
   // przyslanej przez klienta.
+  // MATERIAL BEZ USTALONEJ CENY WYKLUCZA KWOTE WIAZACA.
+  //
+  // Kwota trafiajaca do koszyka jest umowa, wiec nie moze zawierac pozycji
+  // "do ustalenia". Wczesniej wypisywalismy w rozpisce "wycena indywidualna"
+  // i mimo to pozwalalismy dodac rzecz do koszyka: klient placil kwote, ktora
+  // sami opisalismy jako niepelna. `type: "custom"` chowa przycisk koszyka
+  // i serwer odmawia takiej pozycji wyceny (`needs_quote`).
+  if (materialIsOurs(podloze) && pricedSeparately(mat.id, stock)) return { type: "custom" };
   const materialCost = materialCostPLN({ areaCm2: path.sheetCm2, matId: mat.id, podloze, stock });
-  const materialOsobno = materialIsOurs(podloze) && pricedSeparately(mat.id, stock);
   const baseCost = laborCost + materialCost + energyCost + deprCost + CO2_CONFIG.HANDLING_FEE + extCostAdd;
   const batchTimeH = (cutTimeH + handleH) * qTier.qty + (extended ? 0.5 : 0.2);
 
@@ -275,14 +333,10 @@ export function calcCut({ matId, pathId, complexId, quantityId, extended, svgDat
     breakdown: [
       { label: l.cutTime, value: `${cutTimeMin.toFixed(1)} min` },
       { label: l.workshop, value: fc(laborCost) },
-      // Material MUSI byc widoczny w rozpisce. Gdy go liczymy, stoi kwota;
-      // gdy rozliczamy go osobno (srebro, zloto), stoi to wprost, bo znikajaca
-      // pozycja czyta sie jak "material gratis".
-      ...(materialCost > 0
-        ? [{ label: l.materialCost, value: fc(materialCost) }]
-        : materialOsobno
-          ? [{ label: l.materialCost, value: l.materialSeparate }]
-          : []),
+      // Material MUSI byc widoczny w rozpisce zawsze, gdy go liczymy. Gdy nie
+      // umiemy go policzyc, nie ma tu pustej linii ani dopisku "do ustalenia":
+      // taka konfiguracja w ogole nie dochodzi do kwoty, patrz wyzej.
+      ...(materialCost > 0 ? [{ label: l.materialCost, value: fc(materialCost) }] : []),
       { label: l.energy, value: fc(energyCost) },
       { label: l.depreciation, value: fc(deprCost) },
       ...(extended ? [{ label: l.extSurcharge, value: `+${fc(extCostAdd)}` }] : []),
