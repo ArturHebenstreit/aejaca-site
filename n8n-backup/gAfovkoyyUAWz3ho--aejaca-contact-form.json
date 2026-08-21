@@ -103,7 +103,7 @@
     }
   },
   "createdAt": "2026-05-04T11:58:24.280Z",
-  "description": "Contact form with Drive upload; Strip Binary node ensures no file attachment in owner email — link only.",
+  "description": "Contact form with Drive upload. All attachments (payload.files, fallback payload.file) land in one folder per inquiry; Strip Binary collapses the per-file items to one owner email with a link, no attachment.",
   "id": "gAfovkoyyUAWz3ho",
   "isArchived": false,
   "meta": {
@@ -159,7 +159,7 @@
       "id": "54049ef8-07d6-4d2b-ab29-516c62739075",
       "name": "Prepare Attachment",
       "parameters": {
-        "jsCode": "const body = $('Webhook — Contact Form').item.json.body;\n\nconst output = {\n  json: {\n    name: body.name || '',\n    email: body.email || '',\n    subject: body.subject || '',\n    message: body.message || '',\n    lang: body.lang || 'pl',\n    source: body.source || 'contact',\n    hasFile: !!(body.file && body.file.data),\n    fileName: body.file ? body.file.name : '',\n    ts: new Date().toISOString(),\n  },\n  binary: {}\n};\n\nif (body.file && body.file.data) {\n  const base64 = body.file.data.replace(/^data:[^;]+;base64,/, '');\n  output.binary.attachment = await this.helpers.prepareBinaryData(\n    Buffer.from(base64, 'base64'),\n    body.file.name || 'attachment',\n    body.file.type || 'application/octet-stream'\n  );\n}\n\nreturn [output];",
+        "jsCode": "const body = $('Webhook — Contact Form').item.json.body;\n\n// Formularz kalkulatora wysyla liste pod `files`, starsze karty jedno pole\n// `file`. Czytanie samego `file` znaczylo, ze zalacznik drugi i dalsze nie\n// trafialy do folderu na Dysku. Wlasciciel widzial folder z jednym plikiem\n// i nie mial jak sie domyslic, ze klient przyslal wiecej.\nconst pliki = (Array.isArray(body.files) && body.files.length\n  ? body.files\n  : (body.file ? [body.file] : [])).filter((f) => f && f.data);\n\n// Binarki tu nie budujemy: nikt jej dalej nie czyta, a przy szesciu plikach\n// trzymalibysmy caly komplet drugi raz w pamieci.\nreturn [{\n  json: {\n    name: body.name || '',\n    email: body.email || '',\n    subject: body.subject || '',\n    message: body.message || '',\n    lang: body.lang || 'pl',\n    source: body.source || 'contact',\n    hasFile: pliki.length > 0,\n    fileCount: pliki.length,\n    fileName: pliki.map((f) => f.name || 'attachment').join(', '),\n    ts: new Date().toISOString(),\n  },\n}];",
         "mode": "runOnceForAllItems"
       },
       "position": [
@@ -230,7 +230,7 @@
       "id": "7cbc1e70-7b9d-4208-9134-9f44eb0cea8e",
       "name": "Prepare File for Upload",
       "parameters": {
-        "jsCode": "const body = $('Webhook — Contact Form').item.json.body;\nconst folderId = $json.id;\nconst folderName = $json.name;\nconst base64 = body.file.data.replace(/^data:[^;]+;base64,/, '');\nconst binary = await this.helpers.prepareBinaryData(\n  Buffer.from(base64, 'base64'),\n  body.file.name || 'attachment',\n  body.file.type || 'application/octet-stream'\n);\nreturn [{ json: { folderId, folderName, name: body.name || '', email: body.email || '', subject: body.subject || '', message: body.message || '', lang: body.lang || 'pl', source: body.source || 'contact', fileName: body.file.name }, binary: { data: binary } }];"
+        "jsCode": "const body = $('Webhook — Contact Form').item.json.body;\nconst wspolne = $('Prepare Attachment').first().json;\nconst folderId = $json.id;\nconst folderName = $json.name;\n\nconst pliki = (Array.isArray(body.files) && body.files.length\n  ? body.files\n  : (body.file ? [body.file] : [])).filter((f) => f && f.data);\n\n// JEDNA POZYCJA NA PLIK. Wezel Dysku wysyla tyle plikow, ile dostanie\n// pozycji, wiec to jest cale miejsce, w ktorym rozstrzyga sie, czy komplet\n// wyladuje w folderze.\nconst wynik = [];\nfor (const f of pliki) {\n  const base64 = String(f.data).replace(/^data:[^;]+;base64,/, '');\n  const binarka = await this.helpers.prepareBinaryData(\n    Buffer.from(base64, 'base64'),\n    f.name || 'attachment',\n    f.type || 'application/octet-stream'\n  );\n  wynik.push({\n    json: {\n      folderId,\n      folderName,\n      name: wspolne.name,\n      email: wspolne.email,\n      subject: wspolne.subject,\n      message: wspolne.message,\n      lang: wspolne.lang,\n      source: wspolne.source,\n      fileName: wspolne.fileName,\n      fileCount: wspolne.fileCount,\n      uploadName: f.name || 'attachment',\n    },\n    binary: { data: binarka },\n  });\n}\nreturn wynik;"
       },
       "position": [
         1120,
@@ -249,7 +249,7 @@
           "value": "={{ $json.folderId }}"
         },
         "inputDataFieldName": "data",
-        "name": "={{ $('Webhook — Contact Form').item.json.body.file.name }}",
+        "name": "={{ $json.uploadName }}",
         "operation": "upload",
         "options": {
           "simplifyOutput": false
@@ -267,7 +267,7 @@
       "id": "f73c9d74-41f8-4d53-a299-605a17b6c1dd",
       "name": "Strip Binary",
       "parameters": {
-        "jsCode": "const prev = $('Prepare File for Upload').item.json;\nreturn [{ json: prev }];"
+        "jsCode": "// Wezel Dysku oddaje jedna pozycje na wgrany plik. Bez zwiniecia do jednej\n// wlasciciel dostalby tyle osobnych powiadomien, ile zalacznikow.\n// `uploadName` zostaje tutaj, bo dotyczy pojedynczego pliku, a mail mowi\n// o calym zapytaniu.\nconst { uploadName, ...reszta } = $('Prepare File for Upload').first().json;\nreturn [{ json: reszta }];"
       },
       "position": [
         1568,
@@ -281,7 +281,7 @@
       "name": "Notify Owner — with Drive link",
       "parameters": {
         "emailType": "html",
-        "message": "=<h2 style=\"font-family:Arial,sans-serif\">[AEJaCA] Contact Form</h2><table style=\"font-family:Arial,sans-serif;font-size:14px\"><tr><td><b>Name:</b></td><td>{{ $json.name }}</td></tr><tr><td><b>Email:</b></td><td><a href=\"mailto:{{ $json.email }}\">{{ $json.email }}</a></td></tr><tr><td><b>Subject:</b></td><td>{{ $json.subject }}</td></tr><tr><td><b>Language:</b></td><td>{{ $json.lang }}</td></tr><tr><td><b>Source:</b></td><td>{{ $json.source }}</td></tr><tr><td><b>File:</b></td><td>{{ $json.fileName }}</td></tr></table><hr style=\"margin:16px 0\"><p style=\"font-family:Arial,sans-serif;white-space:pre-wrap\">{{ $json.message }}</p><p style=\"margin-top:16px;\"><a href=\"https://drive.google.com/drive/folders/{{ $json.folderId }}\" style=\"display:inline-block;padding:10px 20px;background:#1a73e8;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;\">📁 Otwórz folder na Drive</a></p>",
+        "message": "=<h2 style=\"font-family:Arial,sans-serif\">[AEJaCA] Contact Form</h2><table style=\"font-family:Arial,sans-serif;font-size:14px\"><tr><td><b>Name:</b></td><td>{{ $json.name }}</td></tr><tr><td><b>Email:</b></td><td><a href=\"mailto:{{ $json.email }}\">{{ $json.email }}</a></td></tr><tr><td><b>Subject:</b></td><td>{{ $json.subject }}</td></tr><tr><td><b>Language:</b></td><td>{{ $json.lang }}</td></tr><tr><td><b>Source:</b></td><td>{{ $json.source }}</td></tr><tr><td><b>Pliki ({{ $json.fileCount }}):</b></td><td>{{ $json.fileName }}</td></tr></table><hr style=\"margin:16px 0\"><p style=\"font-family:Arial,sans-serif;white-space:pre-wrap\">{{ $json.message }}</p><p style=\"margin-top:16px;\"><a href=\"https://drive.google.com/drive/folders/{{ $json.folderId }}\" style=\"display:inline-block;padding:10px 20px;background:#1a73e8;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;\">📁 Otwórz folder na Drive</a></p>",
         "operation": "send",
         "options": {
           "appendAttribution": false,
