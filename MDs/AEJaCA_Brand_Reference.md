@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-21 | Wersja: 4.5*
+*Wygenerowano: 2026-08-21 | Wersja: 4.6*
 
 ---
 
@@ -662,6 +662,30 @@ w całości, byłaby obietnicą bez pokrycia.
 pole zdjęcia referencyjnego w sklepie `.heic,.heif`, a `.ai` przyjmują wszystkie pola wektorowe
 i serwer. Szybka wycena przyjmuje pełny zestaw modeli i wektorów; DXF, AI i PDF (bez parsera
 geometrii) idą jako załącznik do wyceny przez człowieka, co ekran mówi klientowi wprost.
+
+### 6.0d Wgrany plik przeżywa zmianę technologii druku (od 2026-08-21)
+
+Kalkulator druku trzymał wgrany plik **osobno dla FDM i osobno dla MSLA**: dwa komplety
+tego samego stanu, w sumie sześć zmiennych. Klient wgrywał model przy filamencie,
+przełączał na żywicę, żeby porównać cenę, i trafiał na puste pole wgrywania. Nic się nie
+psuło, więc wyglądało to na normalną kolej rzeczy, a było karą za sprawdzenie drugiej
+opcji. Szybka wycena od początku pokazywała obie ceny dla jednego pliku, więc tryb
+zaawansowany był tu **niespójny z własnym uproszczeniem**.
+
+Teraz plik i skala są jedne na obie technologie: to ta sama część, tylko robiona inaczej.
+Różne pozostaje **pole robocze maszyny**, podawane przy wywołaniu karty wgrywania. Model
+mieszczący się na Bambu Lab H2D (300 × 320 × 325 mm), a nie na Elegoo Saturn 4 Ultra
+(218 × 123 × 250 mm), dostaje ostrzeżenie natychmiast po przełączeniu na żywicę.
+Sprawdzone w przeglądarce na kostce 200 mm: ostrzeżenie zapala się przy MSLA i gaśnie
+po powrocie na FDM, a plik zostaje w obie strony.
+
+Kalkulator pokazuje przy takim modelu cenę orientacyjną razem z ostrzeżeniem, ale
+**kwoty wiążącej serwer odmówi** kodem `too_large_for_printer`, osobno dla każdej
+maszyny. Zamówić się tego nie da.
+
+Pilnuje tego `scripts/test-model-handoff.mjs`: sprawdza, że nie wrócił drugi komplet
+stanu pliku, że obie karty wgrywania czytają ten sam stan i że karta MSLA dostaje własne
+pole robocze. Dwie kontrole negatywne.
 
 ### 6.1 Kalkulator MSLA (Print3DCalc - ścieżka MSLA)
 

@@ -355,12 +355,6 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
   const [mslaSizeId, setMslaSizeId] = useState("S");
   const [mslaQty, setMslaQty] = useState(1);
   const mslaQuantityId = tierForQty(mslaQty, QUANTITY_TIERS).id;
-  const [mslaStlData, setMslaStlData] = useState(null);
-  const [mslaStlFile, setMslaStlFile] = useState(null);
-  const [mslaStlFileName, setMslaStlFileName] = useState("");
-  const [mslaStlScale, setMslaStlScale] = useState(() => uniformScale(1));
-  const [mslaSync, setMslaSync] = useState(true);
-  const [mslaZapamietana, setMslaZapamietana] = useState(null);
 
   useEffect(() => {
     const mats = Object.keys(FILAMENTS[segment].materials);
@@ -405,42 +399,16 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
     setStlScale(uniformScale(1));
   }
 
-  async function handleMslaSTLUpload(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const buffer = await file.arrayBuffer();
-    const { parseMeshAsync } = await import("../../pricing/mesh.js");
-    const data = await parseMeshAsync(buffer, file.name);
-    setMslaStlData(data);
-    setMslaStlFile(file);
-    setMslaStlFileName(file.name);
-    setMslaStlScale(uniformScale(1));
-  }
-
-  function handleMslaSTLRemove() {
-    setMslaStlData(null);
-    setMslaStlFile(null);
-    setMslaStlFileName("");
-    setMslaStlScale(uniformScale(1));
-  }
-
   // PRZEJECIE PLIKU Z SZYBKIEJ WYCENY. Klient wgral go raz i ustawil
   // wielkosc; kazanie mu powtorzyc obie te czynnosci po skorzystaniu z naszej
   // wlasnej rady bylo kara za posluchanie. Siatka jest juz sparsowana, wiec
   // nie czytamy pliku drugi raz.
   useEffect(() => {
     if (!handoff?.data) return;
-    if (initialTech === "msla") {
-      setMslaStlData(handoff.data);
-      setMslaStlFile(handoff.file || null);
-      setMslaStlFileName(handoff.name || "");
-      setMslaStlScale(parseScale(handoff.scale || 1));
-    } else {
-      setStlData(handoff.data);
-      setStlFile(handoff.file || null);
-      setStlFileName(handoff.name || "");
-      setStlScale(parseScale(handoff.scale || 1));
-    }
+    setStlData(handoff.data);
+    setStlFile(handoff.file || null);
+    setStlFileName(handoff.name || "");
+    setStlScale(parseScale(handoff.scale || 1));
     onHandoffUsed?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handoff]);
@@ -461,22 +429,11 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
     };
   }, [stlData, stlScale]);
 
-  const scaledMslaStlData = useMemo(() => {
-    if (!mslaStlData || isUniform(mslaStlScale) && Number(mslaStlScale.x) === 1) return mslaStlData;
-    // Objetosc rosnie ILOCZYNEM osi. Przy skali rownomiernej wychodzi z tego
-    // stare `s^3`, wiec nie ma dwoch wzorow do rozjechania.
-    return {
-      ...mslaStlData,
-      volumeCm3: mslaStlData.volumeCm3 * volumeFactor(mslaStlScale),
-      bbox: dimsFor(mslaStlData.bbox, mslaStlScale),
-    };
-  }, [mslaStlData, mslaStlScale]);
-
   const result = useMemo(() => calculate({ segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, stlData: scaledStlData }, lang),
     [segment, materialKey, sizeId, infillId, colorId, precisionId, quantityId, scaledStlData, lang]);
 
-  const mslaResult = useMemo(() => calculateMSLA({ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId, stlData: scaledMslaStlData }, lang),
-    [applicationId, resinKey, layerId, mslaSizeId, mslaQuantityId, scaledMslaStlData, lang]);
+  const mslaResult = useMemo(() => calculateMSLA({ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId, stlData: scaledStlData }, lang),
+    [applicationId, resinKey, layerId, mslaSizeId, mslaQuantityId, scaledStlData, lang]);
 
   const matOptions = Object.entries(FILAMENTS[segment].materials).map(([k, v]) => ({
     id: k, label: k, sub: `${v.price_kg}zł`, img: FILAMENT_IMG[k],
@@ -498,10 +455,6 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
     ? `STL: ${stlFileName} (${(stlData.volumeCm3 * volumeFactor(stlScale)).toFixed(1)} cm³, ${opisWymiarow(stlData.bbox, stlScale)})`
     : null;
 
-  const mslaStlSummary = mslaStlData
-    ? `STL: ${mslaStlFileName} (${(mslaStlData.volumeCm3 * volumeFactor(mslaStlScale)).toFixed(1)} cm³, ${opisWymiarow(mslaStlData.bbox, mslaStlScale)})`
-    : null;
-
   const isFigurine = applicationId === "figurine";
 
   if (tech === "msla") {
@@ -510,7 +463,7 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
       t(selectedResin?.label, lang),
       ...(selectedResin?.colorable && resinColor ? [`${ml.color}: ${resinColor}`] : []),
       t(LAYER_HEIGHTS.find(ly => ly.id === layerId)?.label, lang),
-      mslaStlSummary || t(MSLA_SIZES.find(s => s.id === mslaSizeId)?.label, lang),
+      stlSummary || t(MSLA_SIZES.find(s => s.id === mslaSizeId)?.label, lang),
       t(QUANTITY_TIERS.find(q => q.id === mslaQuantityId)?.label, lang),
     ].join(" | ");
 
@@ -550,12 +503,12 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
           <Chips options={LAYER_HEIGHTS} value={layerId} onChange={setLayerId} lang={lang} />
         </CalcCard>
 
-        <CalcCard stepNum="⑥" label={mslaStlData ? sl.stlSize : ml.size} id="file-upload">
-          <STLUploadCard stlData={mslaStlData} stlFileName={mslaStlFileName} scale={mslaStlScale} onScaleChange={setMslaStlScale}
-            sync={mslaSync} onSyncChange={setMslaSync} zapamietana={mslaZapamietana} onZapamietanaChange={setMslaZapamietana}
-            onUpload={handleMslaSTLUpload} onRemove={handleMslaSTLRemove} lang={lang}
+        <CalcCard stepNum="⑥" label={stlData ? sl.stlSize : ml.size} id="file-upload">
+          <STLUploadCard stlData={stlData} stlFileName={stlFileName} scale={stlScale} onScaleChange={setStlScale}
+            sync={stlSync} onSyncChange={setStlSync} zapamietana={stlZapamietana} onZapamietanaChange={setStlZapamietana}
+            onUpload={handleSTLUpload} onRemove={handleSTLRemove} lang={lang}
             buildVolCm={MSLA_BUILD_VOL_CM} sizePresets={MSLA_SIZE_PRESETS} />
-          {!mslaStlData && <Chips options={MSLA_SIZES} value={mslaSizeId} onChange={setMslaSizeId} lang={lang} />}
+          {!stlData && <Chips options={MSLA_SIZES} value={mslaSizeId} onChange={setMslaSizeId} lang={lang} />}
         </CalcCard>
 
         <CalcCard stepNum="⑦" label={ml.qty}>
@@ -568,11 +521,11 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
           <ResultHeader lang={lang} binding={bindingGrosze != null} />
           <ResultDisplay result={mslaResult} lang={lang} hideRange={bindingGrosze != null} />
           <PrintabilityGate
-            triangles={mslaStlData?.triangles || null}
+            triangles={stlData?.triangles || null}
             tech="msla"
             lang={lang}
-            fileName={mslaStlFileName || null}
-            scale={serializeScale(mslaStlScale)}
+            fileName={stlFileName || null}
+            scale={serializeScale(stlScale)}
             onResult={setMslaPrint}
           />
           <NextStepPanel
@@ -582,8 +535,8 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
             paramsSummary={mslaParamsSummary}
             result={mslaResult}
             printability={mslaPrint}
-            fileScale={serializeScale(mslaStlScale)}
-            preAttachedFile={mslaStlFile}
+            fileScale={serializeScale(stlScale)}
+            preAttachedFile={stlFile}
             requireLicenseConsent={isFigurine}
             cart={
               <CalcToCart
@@ -592,11 +545,11 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
                 calculator="print3d_msla"
                 serviceId="print_msla"
                 params={{ applicationId, resinKey, layerId, sizeId: mslaSizeId, quantityId: mslaQuantityId, printability: mslaPrint,
-                  ...(mslaStlData ? { wymiary: describeDims(skalujDoMm(mslaStlData.bbox), mslaStlScale), znieksztalcony: !isUniform(mslaStlScale) } : {}) }}
+                  ...(stlData ? { wymiary: describeDims(skalujDoMm(stlData.bbox), stlScale), znieksztalcony: !isUniform(stlScale) } : {}) }}
                 qty={mslaQty}
-                file={mslaStlFile}
-                triangles={mslaStlData?.triangles || null}
-                scale={serializeScale(mslaStlScale)}
+                file={stlFile}
+                triangles={stlData?.triangles || null}
+                scale={serializeScale(stlScale)}
                 lang={lang}
                 hold={Boolean(mslaPrint?.blocked && !mslaPrint?.accepted)}
               />
