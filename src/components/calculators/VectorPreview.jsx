@@ -111,7 +111,15 @@ export default function VectorPreview({ src, contentBox = null, canvasBox = null
   const ry = sy / wiodaca;
 
   return (
-    <div className={`relative w-full rounded-lg overflow-hidden bg-[#0c1222] border border-emerald-400/10 ${className}`} style={{ height }}>
+    // CIEMNA TRESC NA BARDZO JASNYM TLE. Wczesniej bylo odwrotnie: ciemne tlo
+    // i rysunek odwracany filtrem `invert`. Odwrocenie robilo z czarnej kreski
+    // biala, a z bieli czern, wiec cienki wzor na duzym plotnie gubil sie
+    // w tle i po wgraniu modelu nie bylo widac, co wlasnie doszlo. Rysunki do
+    // lasera sa prawie zawsze czarne na przezroczystym, wiec pokazujemy je tak,
+    // jak wygladaja w pliku, na jasnej plycie. Wzor narysowany biela bedzie tu
+    // slabo widoczny i to jest swiadomy wybor mniejszego zla: bialych rysunkow
+    // do ciecia praktycznie nie ma, czarnych sa wszystkie.
+    <div className={`relative w-full rounded-lg overflow-hidden bg-[#eef0f3] border border-black/10 ${className}`} style={{ height }}>
       <div
         ref={ramka}
         className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none"
@@ -125,17 +133,17 @@ export default function VectorPreview({ src, contentBox = null, canvasBox = null
           src={src}
           alt="SVG"
           draggable={false}
-          className="absolute inset-0 w-full h-full opacity-90 select-none"
+          className="absolute inset-0 w-full h-full select-none"
           style={{
             objectFit: "contain",
-            filter: "invert(1) hue-rotate(180deg)",
+            filter: "contrast(1.1)",
             transform: `translate(${przesun.x}px, ${przesun.y}px) scale(${skala * rx}, ${skala * ry}) translate(${dopasowanie.dx}px, ${dopasowanie.dy}px)`,
             transformOrigin: "center",
           }}
         />
       </div>
 
-      <div className="pointer-events-none absolute left-2 bottom-2 flex items-center gap-1.5 text-[10px] text-neutral-500">
+      <div className="pointer-events-none absolute left-2 bottom-2 flex items-center gap-1.5 text-[10px] text-neutral-600">
         <ZoomIn size={11} className="shrink-0" />
         <span>{t.hint}</span>
       </div>
@@ -144,8 +152,8 @@ export default function VectorPreview({ src, contentBox = null, canvasBox = null
         <button
           type="button"
           onClick={dopasuj}
-          className="absolute right-2 bottom-2 inline-flex items-center gap-1 rounded-md border border-white/15
-                     bg-black/50 px-2 py-1 text-[10px] text-neutral-200 hover:border-white/35 transition-colors"
+          className="absolute right-2 bottom-2 inline-flex items-center gap-1 rounded-md border border-black/15
+                     bg-white/80 px-2 py-1 text-[10px] text-neutral-700 hover:border-black/35 transition-colors"
         >
           <RotateCcw size={10} />
           {t.reset}

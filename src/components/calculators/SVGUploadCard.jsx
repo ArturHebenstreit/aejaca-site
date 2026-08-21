@@ -2,6 +2,7 @@ import { useRef, useMemo, useEffect } from "react";
 import VectorPreview from "./VectorPreview.jsx";
 import DimensionBox from "./DimensionBox.jsx";
 import { uniformScale, isUniform, dimsFor, fitsBox, AXES_2D } from "../../utils/dimScale.js";
+import { coverageOf, coverageMeasured } from "../../pricing/engraveCoverage.js";
 import { Upload, X, AlertTriangle } from "lucide-react";
 
 export const SVG_LBL = {
@@ -9,17 +10,20 @@ export const SVG_LBL = {
     dropHint: "Kliknij lub przeciągnij plik SVG", dropSub: "Automatyczna wycena na podstawie wymiarów i ścieżek",
     dims: "Wymiary", area: "Powierzchnia", pathLen: "Długość ścieżek", paths: "Ścieżki",
     remove: "Usuń", exceeds: "Projekt przekracza pole robocze", fromSvg: "Parametry z pliku SVG",
-    scale: "Skala", fitToArea: "Dopasuj do pola", fitToExt: "Dopasuj do XL" },
+    scale: "Skala", fitToArea: "Dopasuj do pola", fitToExt: "Dopasuj do XL",
+    coverage: "pokrycie", coverageTip: "Część pola, po której faktycznie jedzie głowica. Grawer liczymy z niej, a nie z całego prostokąta." },
   en: { upload: "Upload SVG file", orManual: "or select parameters manually below",
     dropHint: "Click or drag & drop an SVG file", dropSub: "Auto-quote based on dimensions and paths",
     dims: "Dimensions", area: "Area", pathLen: "Path length", paths: "Paths",
     remove: "Remove", exceeds: "Design exceeds work area", fromSvg: "Parameters from SVG file",
-    scale: "Scale", fitToArea: "Fit to area", fitToExt: "Fit to XL" },
+    scale: "Scale", fitToArea: "Fit to area", fitToExt: "Fit to XL",
+    coverage: "coverage", coverageTip: "The share of the field the head actually travels. Engraving is priced from it, not from the whole rectangle." },
   de: { upload: "SVG-Datei hochladen", orManual: "oder Parameter unten manuell wählen",
     dropHint: "Klicken oder SVG-Datei hierher ziehen", dropSub: "Automatische Kalkulation anhand von Maßen und Pfaden",
     dims: "Abmessungen", area: "Fläche", pathLen: "Pfadlänge", paths: "Pfade",
     remove: "Entfernen", exceeds: "Design überschreitet Arbeitsbereich", fromSvg: "Parameter aus SVG-Datei",
-    scale: "Maßstab", fitToArea: "An Bereich anpassen", fitToExt: "An XL anpassen" },
+    scale: "Maßstab", fitToArea: "An Bereich anpassen", fitToExt: "An XL anpassen",
+    coverage: "Abdeckung", coverageTip: "Der Anteil der Fläche, den der Kopf tatsächlich abfährt. Die Gravur wird daraus berechnet, nicht aus dem ganzen Rechteck." },
 };
 
 const SCALE_STEPS_DOWN = [0.25, 0.5, 0.75, 1];
@@ -100,7 +104,20 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
       />
       <div className={`grid ${cols} gap-3 text-center text-[11px]`}>
         <div><div className="text-neutral-400">{sl.dims}</div><div className="font-bold">{scaledBbox.x.toFixed(1)}×{scaledBbox.y.toFixed(1)} mm</div></div>
-        <div><div className="text-neutral-400">{sl.area}</div><div className="font-bold">{scaledAreaCm2.toFixed(1)} cm²</div></div>
+        <div>
+          <div className="text-neutral-400">{sl.area}</div>
+          <div className="font-bold">
+            {scaledAreaCm2.toFixed(1)} cm²
+            {/* Przy grawerze to POKRYCIE decyduje o kwocie, wiec stoi obok pola,
+                z ktorego wcześniej liczyliśmy całość. Bez tej liczby spadek ceny
+                wyglądałby jak przypadek. */}
+            {!showPathLength && coverageMeasured(svgData) && (
+              <span className="text-neutral-400 font-normal" title={sl.coverageTip}>
+                {" "}· {sl.coverage} {Math.round(coverageOf(svgData) * 100)}%
+              </span>
+            )}
+          </div>
+        </div>
         {showPathLength && <div><div className="text-neutral-400">{sl.pathLen}</div><div className="font-bold">{scaledPathCm == null ? "-" : `${scaledPathCm.toFixed(0)} cm`}</div></div>}
         <div><div className="text-neutral-400">{sl.paths}</div><div className="font-bold">{svgData.pathCount}</div></div>
       </div>
@@ -160,6 +177,12 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
           zapamietana={zapamietana}
           onZapamietanaChange={onZapamietanaChange}
           limitsMm={extendedAreaMm || workAreaMm || null}
+          // Kazde pole maszyny dostaje wlasny przycisk dopasowania, tak samo jak
+          // w szybkiej wycenie. Fiber ma jedno pole, wiec przycisk jest jeden.
+          fitOptions={[
+            workAreaMm && { key: "std", label: sl.fitToArea, limits: workAreaMm },
+            extendedAreaMm && { key: "ext", label: sl.fitToExt, limits: extendedAreaMm },
+          ].filter(Boolean)}
           lang={lang}
         />
       </div>

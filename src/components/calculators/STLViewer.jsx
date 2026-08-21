@@ -20,7 +20,10 @@ function snapshot(gl) {
   c.width = THUMB_PX;
   c.height = THUMB_PX;
   const ctx = c.getContext("2d");
-  ctx.fillStyle = "#0c1222";
+  // TEN SAM KOLOR CO PLYTA PODGLADU. Renderer rysuje z przezroczystoscia, wiec
+  // tlo miniatury wstawiamy tutaj recznie i musi sie zgadzac, inaczej model
+  // ciemnieje na jasnej plycie w podgladzie, a w koszyku ginie na ciemnej.
+  ctx.fillStyle = "#eef0f3";
   ctx.fillRect(0, 0, THUMB_PX, THUMB_PX);
 
   // Kadr kwadratowy ze srodka, zeby model nie zostal sciety z boku.
@@ -87,8 +90,12 @@ export default function STLViewer({ triangles, bbox, height = 220, onSnapshot, g
     geom.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     geom.computeVertexNormals();
 
+    // CIEMNIEJSZY MODEL NA JASNYM TLE. Jasny blekit na ciemnej plycie czytal
+    // sie dobrze; na jasnoszarym tle roznica jasnosci miedzy modelem a tlem
+    // spadala prawie do zera i ksztaltu nie bylo widac. Kolor idzie wiec w dol
+    // razem z tlem, zeby kontrast zostal ten sam.
     const mat = new THREE.MeshStandardMaterial({
-      color: 0x60a5fa,
+      color: 0x2f6fdc,
       metalness: 0.15,
       roughness: 0.45,
       flatShading: false,
@@ -124,12 +131,14 @@ export default function STLViewer({ triangles, bbox, height = 220, onSnapshot, g
     controls.target.set(0, 0, 0);
 
     // Lighting
-    const ambient = new THREE.AmbientLight(0xffffff, 0.5);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.45);
     scene.add(ambient);
     const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
     dirLight.position.copy(camera.position);
     scene.add(dirLight);
-    const fillLight = new THREE.DirectionalLight(0x93c5fd, 0.4);
+    // Swiatlo wypelniajace bylo blekitne pod ciemne tlo. Na jasnej plycie
+    // rozjasnia model dokladnie tam, gdzie ma byc cien, wiec schodzi w szarosc.
+    const fillLight = new THREE.DirectionalLight(0xc8d2e0, 0.35);
     fillLight.position.set(-dist, -dist * 0.5, -dist * 0.3);
     scene.add(fillLight);
 
@@ -216,7 +225,7 @@ export default function STLViewer({ triangles, bbox, height = 220, onSnapshot, g
   return (
     <div
       ref={containerRef}
-      className="w-full rounded-lg overflow-hidden bg-[#0c1222] border border-white/5"
+      className="w-full rounded-lg overflow-hidden bg-[#eef0f3] border border-black/10"
       style={{ height: `${height}px` }}
     />
   );

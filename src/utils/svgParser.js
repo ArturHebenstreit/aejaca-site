@@ -111,6 +111,10 @@ export function measureScaled(parsed, sx = 1, sy = 1) {
   const rx = Number(sx) > 0 ? Number(sx) : 1;
   const ry = Number(sy) > 0 ? Number(sy) : 1;
 
+  // `coverage` przechodzi dalej niezmienione razem z reszta pol i tak ma byc.
+  // Pokrycie jest UŁAMKIEM prostokata, a rozciagniecie osi mnozy tak samo
+  // rozpietosc sladu w wierszu, jak i szerokosc pola, wiec iloraz zostaje ten
+  // sam. Skalowanie go tutaj byloby liczeniem tej samej zmiany dwa razy.
   const wynik = {
     ...parsed,
     bboxMm: { x: parsed.bboxMm.x * rx, y: parsed.bboxMm.y * ry },

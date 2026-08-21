@@ -6,6 +6,7 @@
 
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, netCostFmt } from "./config.js";
 import { materialCostPLN, materialIsOurs, pricedSeparately } from "./materialStock.js";
+import { sweptAreaCm2, coverageOf, coverageMeasured } from "./engraveCoverage.js";
 
 export const FIBER_CONFIG = {
   POWER_KW: 0.50,
@@ -24,6 +25,7 @@ export const LBL = {
     estCost: "Koszt szacunkowy / szt.", discount: "Rabat seryjny", totalProd: "Czas produkcji łącznie",
     preciousSurcharge: "Narzut metal szlachetny",
     materialCost: "Materiał / szt.", materialSeparate: "wycena indywidualna",
+    coverage: "Pokrycie rysunku",
     lens70desc: "Pole ~50×50mm (25 cm²), ultra fine", lens150desc: "Pole ~110×110mm (~121 cm²), standard" },
   en: { material: "Material", lens: "Lens / work field", markType: "Marking type",
     area: "Engraving area", qty: "Quantity",
@@ -33,6 +35,7 @@ export const LBL = {
     estCost: "Estimated cost / pc", discount: "Series discount", totalProd: "Total production time",
     preciousSurcharge: "Precious metal surcharge",
     materialCost: "Material / pc", materialSeparate: "quoted separately",
+    coverage: "Artwork coverage",
     lens70desc: "Field ~50×50mm (25 cm²), ultra fine", lens150desc: "Field ~110×110mm (~121 cm²), standard" },
   de: { material: "Material", lens: "Linse / Arbeitsfeld", markType: "Markierungstyp",
     area: "Gravurfläche", qty: "Auflage",
@@ -42,6 +45,7 @@ export const LBL = {
     estCost: "Geschätzte Kosten / Stk.", discount: "Serienrabatt", totalProd: "Gesamte Produktionszeit",
     preciousSurcharge: "Aufpreis Edelmetall",
     materialCost: "Material / Stk.", materialSeparate: "separate Kalkulation",
+    coverage: "Zeichnungsabdeckung",
     lens70desc: "Feld ~50×50mm (25 cm²), ultra fein", lens150desc: "Feld ~110×110mm (~121 cm²), Standard" },
 };
 
@@ -113,7 +117,12 @@ export function calculate({ matId, lensId, markId, areaId, quantityId, svgData, 
   if (!mat.rateMin || !mark.depthMul || !area.area || !qTier.qty) return { type: "custom" };
   const l = LBL[lang] || LBL.en;
 
-  const timeMin = area.area * mat.rateMin * mark.depthMul * lens.speedMul;
+  // CZAS IDZIE Z POLA, PO KTORYM GLOWICA JEZDZI. Znakowanie fiber jest tak
+  // samo rastrowe jak grawer CO2, wiec obowiazuje ta sama regula i czytamy ja
+  // z tego samego pliku. Material zostaje przy calym prostokacie: blaszke
+  // kupujemy w calosci niezaleznie od tego, jak gesty jest wzor.
+  const swept = sweptAreaCm2(area.area, svgData);
+  const timeMin = swept * mat.rateMin * mark.depthMul * lens.speedMul;
   const timeH = timeMin / 60;
   const setupH = 0.2 / qTier.qty;
   const handleH = 0.03;
@@ -160,6 +169,7 @@ export function calculate({ matId, lensId, markId, areaId, quantityId, svgData, 
     type: "calculated", ...pricing, qty: qTier.qty, discount: qTier.discount,
     totalTimeH: qTier.qty > 1 ? batchTimeH : null,
     breakdown: [
+      ...(coverageMeasured(svgData) ? [{ label: l.coverage, value: `${Math.round(coverageOf(svgData) * 100)}%` }] : []),
       { label: l.engraveTime, value: `${timeMin.toFixed(1)} min` },
       { label: l.timeSetup, value: `${(totalTimeH * 60).toFixed(1)} min` },
       { label: l.laborCost, value: fc(laborCost) },

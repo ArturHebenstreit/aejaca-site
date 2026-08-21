@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo } from "react";
 import { CONFIG, QUANTITY_TIERS, applyPricing, t, fmtCost, Chips, CalcCard, ResultHeader, ResultDisplay, MaterialCards, HeroCards, NextStepPanel } from "./calcShared.jsx";
 import { uniformScale, isUniform, dimsFor, parseScale, serializeScale, describeScale as opisSkaliRysunku, describeDims, AXES_2D } from "../../utils/dimScale.js";
 import { measureScaled } from "../../utils/svgParser.js";
+import { coverageOf, coverageMeasured } from "../../pricing/engraveCoverage.js";
 import { tierForQty, qtyForTier, qtyLimit, qtyOpenValue } from "../../pricing/config.js";
 import { QuantityStepper } from "../shop/ConfigControls.jsx";
 import CalcToCart from "./CalcToCart.jsx";
@@ -98,6 +99,24 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
     return measureScaled(svgData, Number(svgScale.x), Number(svgScale.y));
   }, [svgData, svgScale]);
 
+  // POMIAR POKRYCIA DOCHODZI PO PARSOWANIU, bo wymaga narysowania pliku na
+  // rastrze, a to jest asynchroniczne. Stoi w osobnym efekcie, a nie w obsludze
+  // wgrywania, zeby objal tak samo rysunek przejety z szybkiej wyceny.
+  // `coverage: null` po nieudanym pomiarze jest tu potrzebne: bez niego warunek
+  // `!== undefined` nigdy by nie zgasl i mierzylibysmy w kolko.
+  useEffect(() => {
+    const tekst = svgData?.svgText;
+    if (!tekst || svgData.coverage !== undefined) return;
+    let zywy = true;
+    (async () => {
+      const { measureCoverage } = await import("../../utils/svgCoverage.js");
+      const cov = await measureCoverage(tekst, svgData.bboxMm, svgData.contentBox);
+      if (!zywy) return;
+      setSvgData((d) => (d && d.svgText === tekst ? { ...d, coverage: null, ...(cov || {}) } : d));
+    })();
+    return () => { zywy = false; };
+  }, [svgData?.svgText, svgData?.coverage]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const svgNeedsExtended = scaledSvgData
     ? (scaledSvgData.bboxMm.x > WORK_AREA_MM.x + 0.5 || scaledSvgData.bboxMm.y > WORK_AREA_MM.y + 0.5)
     : false;
@@ -160,7 +179,9 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
 
   const svgSummary = svgData
     ? (mode === "engrave"
-      ? `SVG: ${svgFileName} (${(svgData.engravAreaCm2 * Number(svgScale.x) * Number(svgScale.y)).toFixed(1)} cm²${opisSkaliRysunku(svgScale)})`
+      // Pokrycie jest CZESCIA USTALENIA, a nie ciekawostka z rozpiski: to ono
+      // decyduje o kwocie, wiec musi pojechac razem z nia do maila i do zapytania.
+      ? `SVG: ${svgFileName} (${(svgData.engravAreaCm2 * Number(svgScale.x) * Number(svgScale.y)).toFixed(1)} cm²${coverageMeasured(svgData) ? `, ${sl.coverage} ${Math.round(coverageOf(svgData) * 100)}%` : ""}${opisSkaliRysunku(svgScale)})`
       : `SVG: ${svgFileName} (${((scaledSvgData || svgData).pathLengthCm).toFixed(0)} cm${opisSkaliRysunku(svgScale)})`)
     : null;
 

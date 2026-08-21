@@ -131,6 +131,20 @@ export function maxUniformFor(bbox, limits) {
  */
 export function shrinkToBox(bbox, scale, limits) {
   if (fitsBox(bbox, scale, limits)) return scale;
+  return fitToBox(bbox, scale, limits);
+}
+
+/**
+ * Dopasowuje wyrob do pola W OBIE STRONY: powieksza, gdy jest mniejszy, i
+ * zmniejsza, gdy nie wchodzi.
+ *
+ * Tak dziala przycisk "dopasuj" w szybkiej wycenie i tak ma dzialac tutaj,
+ * inaczej ten sam napis znaczylby w dwoch miejscach dwie rozne rzeczy.
+ * Proporcje miedzy osiami zostaja nietkniete: mnozymy wszystkie tym samym
+ * wspolczynnikiem, wiec swiadome zniekształcenie klienta przezywa dopasowanie.
+ */
+export function fitToBox(bbox, scale, limits) {
+  if (!limits || !bbox) return scale;
   const ax = osie(scale);
   // Szukamy najwiekszego `k`, przy ktorym `scale * k` jeszcze wchodzi.
   // Wymiary i pole sortujemy tak samo jak w `fitsBox`, bo obrot jest dozwolony.

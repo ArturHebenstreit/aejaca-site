@@ -13,9 +13,9 @@
 // KLIENT WPISUJE MILIMETRY, NIE MNOZNIK. "Ile ma miec" jest pytaniem, na ktore
 // klient zna odpowiedz; "razy ile" wymaga liczenia w glowie z wymiaru pliku.
 
-import { useId } from "react";
+import { useId, useState } from "react";
 import { AlertTriangle, Link2, Link2Off } from "lucide-react";
-import { setAxis, dimsFor, scaleForDim, fitsBox, shrinkToBox, resyncScale, isUniform } from "../../utils/dimScale.js";
+import { setAxis, dimsFor, scaleForDim, fitsBox, fitToBox, resyncScale, isUniform } from "../../utils/dimScale.js";
 
 const LBL = {
   pl: { size: "Wymiary wyrobu", sync: "Zachowaj proporcje", exceeds: "Wyrób przekracza pole robocze",
@@ -41,28 +41,53 @@ const OS_LBL = { x: "X", y: "Y", z: "Z" };
  */
 export default function DimensionBox({
   bboxMm, scale, onChange, sync, onSyncChange, limitsMm = null, lang = "pl", accent = "blue",
-  zapamietana = null, onZapamietanaChange = null,
+  zapamietana = null, onZapamietanaChange = null, fitOptions = [],
 }) {
   const l = LBL[lang] || LBL.en;
   const id = useId();
+  // TO, CO KLIENT WLASNIE PISZE, a nie to, co juz policzylismy. Bez tego pole
+  // bylo przeliczane po kazdym klawiszu i wracalo do sformatowanej liczby, wiec
+  // nie dalo sie skasowac cyfry ani zaczac wpisywania od nowa: kasujesz "2", a
+  // pole natychmiast wstawia "22.0" z powrotem. Wpis zyje tu, dopoki trwa.
+  const [wpisywane, setWpisywane] = useState({});
   if (!bboxMm) return null;
 
   const osie = Object.keys(scale);
   const wymiary = dimsFor(bboxMm, scale);
   const miesci = fitsBox(bboxMm, scale, limitsMm);
   const rozjechana = !isUniform(scale);
+  // Bez podanej listy zostaje jeden cel: pole, ktorego pilnuje ostrzezenie.
+  const cele = fitOptions.length
+    ? fitOptions.filter((c) => c && c.limits)
+    : (limitsMm ? [{ key: "limit", label: l.fit, limits: limitsMm }] : []);
 
-  function ustawWymiar(os, mm) {
+  function wpisz(os, tekst) {
+    // Pole przyjmuje WSZYSTKO, lacznie z pustym i z samym przecinkiem w trakcie
+    // pisania. Do wyceny idzie dopiero liczba, ktora da sie odczytac.
+    setWpisywane((w) => ({ ...w, [os]: tekst }));
+    const mm = Number(String(tekst).replace(",", "."));
+    if (!Number.isFinite(mm) || mm <= 0) return;
     const nowa = scaleForDim(bboxMm, os, mm);
     if (nowa == null) return;
     onChange(setAxis(scale, os, nowa, sync));
+  }
+
+  /** Koniec pisania: pole wraca do liczby, ktora faktycznie poszla do wyceny. */
+  function zakoncz(os) {
+    setWpisywane((w) => { const { [os]: _, ...reszta } = w; return reszta; });
+  }
+
+  /** Zmiana skali spoza pol (dopasowanie, synchronizacja) unieważnia wpisy. */
+  function ustawSkale(nowa) {
+    setWpisywane({});
+    onChange(nowa);
   }
 
   function przelaczSync(wlaczona) {
     if (wlaczona) {
       // POWROT DO PROPORCJI wraca do skali sprzed rozjechania osi, a nie do
       // sredniej z nich: srednia po cichu zmienialaby wielkosc wyrobu.
-      onChange(resyncScale(zapamietana, scale));
+      ustawSkale(resyncScale(zapamietana, scale));
     } else {
       // Zapamietujemy PUNKT WYJSCIA, zeby bylo do czego wrocic.
       onZapamietanaChange?.({ ...scale });
@@ -91,8 +116,13 @@ export default function DimensionBox({
           <label key={os} className="block">
             <span className="block text-[10px] text-neutral-500 mb-1">{OS_LBL[os]}</span>
             <div className="relative">
-              <input type="number" min="0.1" step="0.1" value={Number(wymiary[os]).toFixed(1)}
-                onChange={(e) => ustawWymiar(os, Number(e.target.value))}
+              {/* `text`, a nie `number`: pole liczbowe nie przyjmuje ani pustej
+                  wartosci w trakcie pisania, ani przecinka, ktorego uzywa polska
+                  klawiatura numeryczna. */}
+              <input type="text" inputMode="decimal" value={wpisywane[os] ?? Number(wymiary[os]).toFixed(1)}
+                onChange={(e) => wpisz(os, e.target.value)}
+                onBlur={() => zakoncz(os)}
+                onKeyDown={(e) => { if (e.key === "Enter") { zakoncz(os); e.currentTarget.blur(); } }}
                 className={`w-full bg-neutral-800/60 border border-white/10 rounded-lg pl-2 pr-8 py-1.5 text-sm text-white font-mono focus:outline-none ${ramkaAkcentu} transition-colors`} />
               <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-neutral-500 pointer-events-none">mm</span>
             </div>
@@ -105,12 +135,18 @@ export default function DimensionBox({
           {l.original}: {osie.map((os) => Number(bboxMm[os]).toFixed(1)).join(" × ")} mm
           {rozjechana && <span className="text-amber-400/80"> · {l.distorted}</span>}
         </div>
-        {!miesci && (
-          <button onClick={() => onChange(shrinkToBox(bboxMm, scale, limitsMm))}
-            className={`text-[11px] px-2 py-1 rounded-lg border border-white/15 hover:border-white/35 ${kolorAkcentu} transition-colors`}>
-            {l.fit}
-          </button>
-        )}
+        {/* DOPASOWANIE JEST DOSTEPNE ZAWSZE, tak samo jak w szybkiej wycenie.
+            Wczesniej przycisk pokazywal sie dopiero po przekroczeniu pola, wiec
+            klient, ktory chcial wypelnic plyte w calosci, musial dojsc do tego
+            liczba. Kazde pole maszyny dostaje wlasny przycisk. */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {(cele.length ? cele : []).map((c) => (
+            <button key={c.key} type="button" onClick={() => ustawSkale(fitToBox(bboxMm, scale, c.limits))}
+              className={`text-[11px] px-2 py-1 rounded-lg border border-white/15 hover:border-white/35 ${kolorAkcentu} transition-colors`}>
+              {c.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {!miesci && (
