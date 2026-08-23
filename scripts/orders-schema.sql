@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS orders (
   id                BIGSERIAL PRIMARY KEY,
   order_ref         VARCHAR(32)  UNIQUE NOT NULL,   -- OrderID dla Autopay, A-Za-z0-9-_
   status            VARCHAR(20)  NOT NULL DEFAULT 'draft'
-                    CHECK (status IN ('draft','awaiting_payment','awaiting_transfer','paid','in_production','shipped','completed','cancelled','expired','refunded')),
+                    CHECK (status IN ('draft','awaiting_payment','awaiting_transfer','payment_review','paid','in_production','shipped','completed','cancelled','expired','refunded')),
   -- 'instant' to zamowienie wycenione automatycznie, 'quoted' to wycena wystawiona recznie
   kind              VARCHAR(20)  NOT NULL DEFAULT 'instant' CHECK (kind IN ('instant','quoted')),
   lang              VARCHAR(5)   NOT NULL DEFAULT 'pl',
@@ -59,6 +59,11 @@ CREATE TABLE IF NOT EXISTS orders (
   -- Autopay potrafi przyslac SUCCESS wiele razy i kazdy trzeba potwierdzic,
   -- ale zrealizowac zamowienie wolno tylko raz.
   fulfilled_at         TIMESTAMPTZ,
+  -- SUCCESS, ktorego nie wolno automatycznie zrealizowac, na przyklad po
+  -- anulowaniu albo z inna kwota. Pieniadze sa zapisane, skutki realizacji nie.
+  payment_review_at              TIMESTAMPTZ,
+  payment_review_reason          VARCHAR(80),
+  payment_review_previous_status VARCHAR(20),
 
   -- Platnosc przelewem (klient spoza Polski)
   -- Autopay daje wylacznie BLIK i linki do polskich bankow, wiec zagraniczny
@@ -91,6 +96,8 @@ CREATE INDEX IF NOT EXISTS idx_orders_email ON orders (customer_email);
 CREATE INDEX IF NOT EXISTS idx_orders_paid ON orders (paid_at DESC) WHERE paid_at IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_orders_awaiting_transfer
   ON orders (created_at DESC) WHERE status = 'awaiting_transfer';
+CREATE INDEX IF NOT EXISTS idx_orders_payment_review
+  ON orders (payment_review_at DESC) WHERE status = 'payment_review';
 
 -- ------------------------------------------------------------
 -- Pozycje zamowienia

@@ -7,9 +7,16 @@
 
 import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { CheckCircle2, Clock, XCircle, Loader2, ArrowRight } from "lucide-react";
+import { CheckCircle2, Clock, XCircle, Loader2, ArrowRight, RefreshCw } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
+import {
+  forgetOrderAccessToken,
+  orderStatusLocationWithoutToken,
+  resolveOrderAccessToken,
+  sessionStorageFor,
+} from "../shop/orderStatusAccess.js";
+import { postJSON, submitPaymentForm } from "../utils/api.js";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
 
@@ -36,8 +43,12 @@ const UI = {
     pendingDesc: "Bank jeszcze nie potwierdził przelewu. To zwykle kwestia kilku minut, przy przelewie tradycyjnym do jednego dnia roboczego. Nie musisz nic robić, potwierdzenie przyjdzie mailem.",
     failedTitle: "Płatność nie doszła do skutku",
     failedDesc: "Nic nie zostało pobrane. Możesz spróbować ponownie albo napisać do nas, pomożemy dokończyć zamówienie.",
+    reviewTitle: "Płatność wymaga naszej weryfikacji",
+    reviewDesc: "Operator potwierdził wpłatę, ale zamówienie było już zamknięte albo kwota wymaga sprawdzenia. Nie płać ponownie. Skontaktujemy się z Tobą po ręcznej weryfikacji.",
     invalidTitle: "Nie udało się potwierdzić tego zamówienia",
     invalidDesc: "Podpis linku powrotnego jest nieprawidłowy. Jeśli płatność została pobrana, napisz do nas z numerem zamówienia, sprawdzimy to ręcznie.",
+    accessTitle: "Ten link nie daje dostępu do zamówienia",
+    accessDesc: "Ze względów bezpieczeństwa pełny status wymaga prywatnego linku otrzymanego po złożeniu zamówienia. Napisz do nas z numerem zamówienia, prześlemy nowy link.",
     notFound: "Nie znaleziono takiego zamówienia",
     orderNo: "Numer zamówienia",
     amount: "Kwota",
@@ -65,8 +76,12 @@ const UI = {
     pendingDesc: "Your bank has not confirmed the transfer yet. This usually takes a few minutes, or up to one business day for a traditional transfer. You do not need to do anything, the confirmation will arrive by email.",
     failedTitle: "The payment did not go through",
     failedDesc: "Nothing has been charged. You can try again or write to us and we will help you complete the order.",
+    reviewTitle: "Your payment needs our review",
+    reviewDesc: "The provider confirmed the payment, but the order was already closed or the amount needs checking. Do not pay again. We will contact you after a manual review.",
     invalidTitle: "We could not confirm this order",
     invalidDesc: "The signature of the return link is invalid. If you were charged, write to us with the order number and we will check it manually.",
+    accessTitle: "This link cannot access the order",
+    accessDesc: "For security, the full status requires the private link received after placing the order. Write to us with the order number and we will send a new link.",
     notFound: "Order not found",
     orderNo: "Order number",
     amount: "Amount",
@@ -94,8 +109,12 @@ const UI = {
     pendingDesc: "Ihre Bank hat die Überweisung noch nicht bestätigt. Das dauert meist wenige Minuten, bei einer klassischen Überweisung bis zu einem Werktag. Sie müssen nichts tun, die Bestätigung kommt per E-Mail.",
     failedTitle: "Die Zahlung kam nicht zustande",
     failedDesc: "Es wurde nichts abgebucht. Sie können es erneut versuchen oder uns schreiben, wir helfen beim Abschluss der Bestellung.",
+    reviewTitle: "Ihre Zahlung muss geprüft werden",
+    reviewDesc: "Der Zahlungsanbieter hat den Eingang bestätigt, aber die Bestellung war bereits geschlossen oder der Betrag muss geprüft werden. Zahlen Sie nicht erneut. Wir melden uns nach der manuellen Prüfung.",
     invalidTitle: "Diese Bestellung konnte nicht bestätigt werden",
     invalidDesc: "Die Signatur des Rücksprunglinks ist ungültig. Falls abgebucht wurde, schreiben Sie uns mit der Bestellnummer, wir prüfen das manuell.",
+    accessTitle: "Dieser Link gibt keinen Zugriff auf die Bestellung",
+    accessDesc: "Aus Sicherheitsgründen erfordert der vollständige Status den privaten Link, den Sie nach der Bestellung erhalten haben. Schreiben Sie uns mit der Bestellnummer, dann senden wir einen neuen Link.",
     notFound: "Bestellung nicht gefunden",
     orderNo: "Bestellnummer",
     amount: "Betrag",
@@ -117,18 +136,59 @@ const UI = {
 };
 
 export default function OrderStatus() {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const u = UI[lang] || UI.en;
   const [search] = useSearchParams();
   const ref = search.get("ref");
+  const tokenFromUrl = search.get("token");
   const signatureError = search.get("error") === "invalid_signature";
+  const [token, setToken] = useState(null);
+  const [accessResolved, setAccessResolved] = useState(false);
+  const missingAccess = Boolean(accessResolved && ref && !token && !signatureError);
 
   const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(Boolean(ref) && !signatureError);
+  // Pierwszy render jest taki sam w prerenderze i przegladarce. Dopiero efekt
+  // rozstrzyga dostep z URL albo sessionStorage, bez migania ekranu odmowy.
+  const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [retrying, setRetrying] = useState(false);
+  const [retryError, setRetryError] = useState("");
 
   useEffect(() => {
-    if (!ref || signatureError || !API) return;
+    setAccessResolved(false);
+    setOrder(null);
+    setNotFound(false);
+    setRetryError("");
+
+    if (!ref || signatureError || typeof window === "undefined") {
+      setToken(null);
+      setAccessResolved(true);
+      setLoading(false);
+      return;
+    }
+
+    // Token z nowego linku ma pierwszenstwo i jest zapisywany przed usunieciem
+    // go z adresu. sessionStorage przezywa F5, ale pozostaje zwiazany z sesja karty.
+    const resolved = resolveOrderAccessToken({
+      orderRef: ref,
+      urlToken: tokenFromUrl,
+      storage: sessionStorageFor(window),
+    });
+    setToken(resolved);
+    setAccessResolved(true);
+    setLoading(Boolean(resolved));
+
+    if (tokenFromUrl) {
+      window.history.replaceState(
+        window.history.state,
+        "",
+        orderStatusLocationWithoutToken(window.location.href)
+      );
+    }
+  }, [ref, tokenFromUrl, signatureError]);
+
+  useEffect(() => {
+    if (!accessResolved || !ref || !token || signatureError || !API) return;
     let cancelled = false;
     let attempts = 0;
 
@@ -136,9 +196,18 @@ export default function OrderStatus() {
     // odpytujemy status, zamiast od razu straszyc go komunikatem o braku wplaty.
     async function check() {
       try {
-        const resp = await fetch(`${API}/api/orders/${encodeURIComponent(ref)}`);
+        const resp = await fetch(`${API}/api/orders/${encodeURIComponent(ref)}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        });
         if (resp.status === 404) {
-          if (!cancelled) { setNotFound(true); setLoading(false); }
+          if (!cancelled) {
+            if (typeof window !== "undefined") {
+              forgetOrderAccessToken({ orderRef: ref, storage: sessionStorageFor(window) });
+            }
+            setNotFound(true);
+            setLoading(false);
+          }
           return;
         }
         const data = await resp.json();
@@ -147,7 +216,7 @@ export default function OrderStatus() {
         setLoading(false);
         // Przy przelewie nie ma czego odpytywac: potwierdzenie przychodzi
         // z naszej strony, nie z bramki.
-        if (data.status !== "paid" && data.status !== "awaiting_transfer" && attempts < 5) {
+        if (!["paid", "awaiting_transfer", "payment_review"].includes(data.status) && attempts < 5) {
           attempts++;
           setTimeout(check, 3000);
         }
@@ -157,14 +226,40 @@ export default function OrderStatus() {
     }
     check();
     return () => { cancelled = true; };
-  }, [ref, signatureError]);
+  }, [accessResolved, ref, token, signatureError]);
 
   const paid = order?.status === "paid";
-  const failed = order?.payment_status === "FAILURE";
+  const failed = order?.paymentStatus === "FAILURE";
+  const paymentReview = order?.status === "payment_review";
+  const canRetry = Boolean(order?.canRetryPayment && token);
   // Przelew czeka na nasze reczne potwierdzenie, wiec ta strona nie jest
   // "czekamy na bank", tylko instrukcja, co klient ma teraz zrobic.
   const awaitingTransfer = order?.status === "awaiting_transfer";
   const tr = order?.transfer || null;
+
+  async function retryPayment() {
+    if (!API || !ref || !token || retrying) return;
+    setRetrying(true);
+    setRetryError("");
+    try {
+      const payment = await postJSON(`${API}/api/orders/${encodeURIComponent(ref)}/pay`, {
+        token,
+        gatewayId: 0,
+      });
+      if (!payment.ok) {
+        setRetrying(false);
+        setRetryError(payment.data?.error || t.orderStatus.retryFailed);
+        return;
+      }
+      submitPaymentForm(payment.data, () => {
+        setRetrying(false);
+        setRetryError(t.orderStatus.retryFailed);
+      });
+    } catch {
+      setRetrying(false);
+      setRetryError(t.orderStatus.retryFailed);
+    }
+  }
 
   let icon = <Clock className="w-12 h-12 text-amber-400" />;
   let title = u.pendingTitle;
@@ -187,6 +282,10 @@ export default function OrderStatus() {
     icon = <XCircle className="w-12 h-12 text-red-400" />;
     title = u.failedTitle;
     desc = u.failedDesc;
+  } else if (paymentReview) {
+    icon = <Clock className="w-12 h-12 text-amber-400" />;
+    title = u.reviewTitle;
+    desc = u.reviewDesc;
   }
 
   return (
@@ -199,6 +298,12 @@ export default function OrderStatus() {
               <Loader2 className="w-8 h-8 animate-spin" />
               <span className="text-sm">{u.checking}</span>
             </div>
+          ) : missingAccess ? (
+            <>
+              <XCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+              <h1 className="font-serif text-2xl font-bold text-white mb-3">{u.accessTitle}</h1>
+              <p className="text-neutral-400 text-sm leading-relaxed mb-6">{u.accessDesc}</p>
+            </>
           ) : notFound ? (
             <>
               <XCircle className="w-12 h-12 text-neutral-600 mx-auto mb-4" />
@@ -209,6 +314,32 @@ export default function OrderStatus() {
               <div className="flex justify-center mb-5">{icon}</div>
               <h1 className="font-serif text-2xl sm:text-3xl font-bold text-white mb-3">{title}</h1>
               <p className="text-neutral-400 text-sm leading-relaxed mb-6">{desc}</p>
+
+              {canRetry && (
+                <button
+                  type="button"
+                  onClick={retryPayment}
+                  disabled={retrying}
+                  className="mb-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-500 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-400 disabled:cursor-wait disabled:opacity-60"
+                >
+                  <RefreshCw className={`h-4 w-4 ${retrying ? "animate-spin" : ""}`} />
+                  {retrying
+                    ? t.orderStatus.retryingPayment
+                    : failed ? t.orderStatus.retryPayment : t.orderStatus.payNow}
+                </button>
+              )}
+
+              {failed && !canRetry && (
+                <p className="mb-4 rounded-lg border border-amber-400/25 bg-amber-400/10 p-3 text-xs leading-relaxed text-amber-200">
+                  {t.orderStatus.retryUnavailable}
+                </p>
+              )}
+
+              {retryError && (
+                <p className="mb-4 rounded-lg border border-red-400/25 bg-red-400/10 p-3 text-xs leading-relaxed text-red-200">
+                  {retryError}
+                </p>
+              )}
 
               {awaitingTransfer && (
                 tr?.iban ? (

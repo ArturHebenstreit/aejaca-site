@@ -18,6 +18,44 @@
       <div class="rounded-lg border border-emerald-400/30 bg-emerald-400/10 p-3 mb-5 text-emerald-300 text-xs"><%= msg %></div>
     <% } %>
 
+    <% if (reviews && reviews.length) { %>
+      <section class="mb-8 rounded-xl border border-red-400/30 bg-red-400/10 p-5">
+        <h2 class="text-lg font-semibold text-red-300 mb-2">Pilne płatności do ręcznej decyzji</h2>
+        <p class="text-red-300/90 text-xs leading-relaxed mb-4">
+          Autopay potwierdził pobranie pieniędzy, ale zamówienia nie uruchomiono automatycznie.
+          Nie wydano plików, nie zużyto rezerwacji ani kodu rabatowego. Sprawdź płatność,
+          dostępność towaru i historię anulowania, a następnie zdecyduj o realizacji albo zwrocie.
+        </p>
+        <div class="space-y-3">
+          <% reviews.forEach(function (o) { %>
+            <div class="rounded-lg border border-red-400/30 bg-neutral-950 p-4">
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div class="font-mono text-sm text-white"><%= o.orderRef %></div>
+                  <div class="text-neutral-400 text-xs mt-1">
+                    <% if (o.name) { %><%= o.name %>, <% } %><%= o.email %>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="font-bold text-red-300"><%= o.totalPLN %> PLN</div>
+                  <div class="text-neutral-500 text-[10px]"><%= o.paymentStatus || 'SUCCESS' %></div>
+                </div>
+              </div>
+              <dl class="grid sm:grid-cols-2 gap-2 mt-3 text-xs">
+                <div><dt class="inline text-neutral-600">Poprzedni stan:</dt> <dd class="inline text-neutral-300"><%= o.paymentReviewPreviousStatus || '-' %></dd></div>
+                <div><dt class="inline text-neutral-600">Powód:</dt> <dd class="inline text-neutral-300"><%= o.paymentReviewReason || '-' %></dd></div>
+                <div><dt class="inline text-neutral-600">remoteID:</dt> <dd class="inline font-mono text-neutral-300"><%= o.paymentRemoteId || '-' %></dd></div>
+                <div><dt class="inline text-neutral-600">Wykryto:</dt> <dd class="inline text-neutral-300"><%= fmtDate(o.paymentReviewAt) %></dd></div>
+              </dl>
+              <p class="mt-3 text-[11px] text-amber-300/80">
+                Rozstrzygnięcie jest świadomie ręczne. Nie zmieniaj statusu bez sprawdzenia stanu magazynowego i faktycznej możliwości realizacji.
+              </p>
+            </div>
+          <% }); %>
+        </div>
+      </section>
+    <% } %>
+
     <% if (!orders.length) { %>
       <div class="rounded-xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-10 text-center">
         <p class="text-neutral-500 text-sm">Żadne zamówienie nie czeka na przelew</p>

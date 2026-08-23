@@ -633,6 +633,14 @@ export default {
   // Privacy page
 
   // Footer
+  orderStatus: {
+    payNow: "Pay for this order",
+    retryPayment: "Try the payment again",
+    retryingPayment: "Opening payment",
+    retryFailed: "We could not start another payment. Try again or write to us.",
+    retryUnavailable: "The payment cannot be securely restarted from this link. Write to us and we will check the order and send you a new link.",
+  },
+
   footer: {
     shop: "Shop",
     tagline: "Artisan Elegance Jewelry and Crafted Art. Where craftsmanship meets technology.",

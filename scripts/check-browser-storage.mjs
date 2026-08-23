@@ -35,6 +35,7 @@ const ALLOWED = {
   "src/hooks/useMaterialStock.js": "pamiec podreczna publicznych stawek materialow z magazynu, zeby suwak wielkosci nie pytal serwera przy kazdym ruchu; zadne dane osoby",
   "src/i18n/LanguageContext.jsx": "wybrany jezyk",
   "src/analysis/modelHandoff.js": "model przenoszony miedzy kartami po kliknieciu odnosnika do pelnej analizy, czyli czynnosc, o ktora klient sam poprosil; rekord kasujemy przy odczycie i odrzucamy po kwadransie",
+  "src/shop/orderStatusAccess.js": "prywatny token zamowienia na czas sesji karty, niezbedny do statusu i ponowienia platnosci po F5",
 };
 
 function walk(dir, out = []) {

@@ -3,7 +3,7 @@
 // to, co w nim stoi o prawie odstapienia.
 
 import assert from "node:assert/strict";
-import { buildOrderMessages } from "./orderMail.js";
+import { buildOrderMessages, buildPaymentReviewMessage } from "./orderMail.js";
 
 const order = {
   order_ref: "AE20260803-AABBCCDD",
@@ -63,6 +63,22 @@ assert.match(de, /Muster-Widerrufsformular/);
 // --- Zamowienie bez danych o rodzaju pozycji nie moze obiecac prawa na wyrost ---
 const bezDanych = mailDo([{ title: "Coś", qty: 1, unit_grosze: 100, line_grosze: 100 }]);
 assert.doesNotMatch(bezDanych, /14 dni na odstąpienie/);
+
+// --- Wyjatek platnosci idzie tylko do wlasciciela, bez obietnicy realizacji ---
+const review = buildPaymentReviewMessage({
+  ...order,
+  customer_name: "Jan Klient",
+  payment_status: "SUCCESS",
+  payment_status_details: "late_confirmation",
+  payment_remote_id: "REMOTE-123",
+  payment_review_previous_status: "cancelled",
+  payment_review_reason: "unexpected_status:cancelled",
+});
+assert.match(review.subject, /PILNE PLATNOSC/);
+assert.match(review.text, /Poprzedni stan: cancelled/);
+assert.match(review.text, /realizacja NIE zostala uruchomiona/);
+assert.match(review.text, /zwrot/);
+assert.notEqual(review.to, order.customer_email, "alert nie moze udawac potwierdzenia dla klienta");
 
 // --- Link do pliku ---
 //

@@ -119,12 +119,32 @@ Statusy: `PENDING`, `SUCCESS`, `FAILURE`.
 
 - Każdy ITN potwierdzamy strukturą `CONFIRMED` z poprawnym hashem, zawsze.
 - Logikę biznesową (mail do klienta, wydanie pliku cyfrowego, zlecenie produkcji)
-  wykonujemy **wyłącznie przy pierwszym** `SUCCESS` dla danego zamówienia.
+  wykonujemy **wyłącznie przy pierwszym** `SUCCESS` z poprawna kwota, gdy
+  zamowienie nadal ma stan `awaiting_payment`.
 - Kolejny `SUCCESS` potwierdzamy, ale nie robimy nic więcej. Inaczej klient dostaje
   trzy maile i trzy linki do pobrania.
 - `FAILURE` po `SUCCESS` (inne `remoteID`, klient zmienił kanał płatności)
   potwierdzamy, ale **nie** cofamy statusu zamówienia.
+- `SUCCESS` po anulowaniu, wygasnieciu, w innym nieoczekiwanym stanie albo z
+  inna kwota ustawia `payment_review`. Zapisujemy otrzymanie pieniedzy i
+  wysylamy pilny alert, ale nie uruchamiamy realizacji ani nie zuzywamy rezerwacji.
 - Transakcje z tym samym `OrderID` rozróżniamy po `remoteID`, który zapisujemy przy zamówieniu.
+
+### Ponowienie nieudanej płatności
+
+- `FAILURE` nie tworzy nowego zamówienia i nie zwalnia jego rezerwacji przed terminem ważności.
+- Klient może rozpocząć kolejną transakcję z tym samym `OrderID`; Autopay rozróżnia próby przez `remoteID`.
+- Ponowienie wymaga tokenu dostępu do zamówienia. Sam publiczny numer `OrderID` nie wystarcza.
+- Ponowienie jest dozwolone tylko dla ważnego, nieopłaconego zamówienia w stanie `awaiting_payment`, którego metodą jest Autopay.
+- Ten sam przycisk pozwala rozpocząć płatność, gdy status próby jest pusty albo `PENDING`, na przykład po zamknięciu bramki bez zapłaty. Czerwony komunikat błędu pozostaje zarezerwowany dla `FAILURE`.
+- Start kolejnej próby ustawia widoczny status `PENDING`, żeby poprzedni `FAILURE` nie był pokazywany jako stan nowej transakcji.
+- Po podpisanym powrocie token jest zapisywany pod kluczem zamowienia w
+  `sessionStorage`, a potem natychmiast usuwany z paska adresu. F5 w tej samej
+  sesji karty odzyskuje token; niezaleznie otwarty oczyszczony adres go nie ma.
+- Podpisany powrot przekazuje token rowniez wtedy, gdy wczesniejszy ITN zdazyl
+  ustawic `paid` albo `payment_review`, zeby klient zobaczyl wlasciwy komunikat.
+- Pelny `GET /api/orders/:ref` wymaga tego tokenu w naglowku `Authorization: Bearer` i zwraca `Cache-Control: no-store, private`. Sam numer zamowienia nie ujawnia statusu, kwoty ani sposobu dostawy.
+- Każdy poprawnie podpisany ITN pozostaje w dzienniku. `SUCCESS` realizuje zamówienie tylko raz, a późniejszy `FAILURE` nie zmienia opłaconego zamówienia.
 
 ## 7. Lista kanałów płatności
 

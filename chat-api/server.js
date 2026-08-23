@@ -34,8 +34,14 @@ import {
   previewDiscount, reserveDiscount, consumeDiscount, releaseExpiredRedemptions,
   releaseOrderRedemptions, normalizeCode, randomCode, DiscountError, APPLIES_TO, MAX_PERCENT,
 } from "./discounts.js";
-import { sendOrderPaidEmails, sendTransferInstructions, sendQuoteLink } from "./orderMail.js";
+import {
+  sendOrderPaidEmails, sendPaymentReviewAlert, sendTransferInstructions, sendQuoteLink,
+} from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
+import {
+  itnAction, paymentStartProblem, publicPaymentState,
+} from "./paymentState.js";
+import { orderAccessAllowed } from "./orderAccess.js";
 import { findLockers, LockerError } from "./lockers.js";
 import { runRetention } from "./retention.js";
 import { requireAdmin, requireInvalidateToken, requireSecret, secretMatches } from "./auth.js";
@@ -72,7 +78,7 @@ app.use(cors({
     cb(null, false);
   },
   methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 // Body parsers are applied per-route to avoid global limit conflicts.
 
@@ -135,18 +141,23 @@ if (pool) {
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_confirmed_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_confirmed_by VARCHAR(120)`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_note TEXT`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_review_at TIMESTAMPTZ`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_review_reason VARCHAR(80)`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_review_previous_status VARCHAR(20)`).catch(() => {});
   // Status posredni: zamowienie zlozone, czekamy na wplyw na konto.
   pool.query(`
     DO $$ BEGIN
       ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_status_check;
       ALTER TABLE orders ADD CONSTRAINT orders_status_check CHECK (status IN
-        ('draft','awaiting_payment','awaiting_transfer','paid','in_production','shipped','completed','cancelled','expired','refunded'));
+        ('draft','awaiting_payment','awaiting_transfer','payment_review','paid','in_production','shipped','completed','cancelled','expired','refunded'));
       ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_payment_method_check;
       ALTER TABLE orders ADD CONSTRAINT orders_payment_method_check CHECK (payment_method IN ('autopay','bank_transfer'));
     END $$;
   `).catch((e) => console.error("[migracja] status/payment_method:", e.message));
   pool.query(`CREATE INDEX IF NOT EXISTS idx_orders_awaiting_transfer
               ON orders (created_at DESC) WHERE status = 'awaiting_transfer'`).catch(() => {});
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_orders_payment_review
+              ON orders (payment_review_at DESC) WHERE status = 'payment_review'`).catch(() => {});
 
   // Kody rabatowe. Jedna tabela obsluguje kody osobiste (jednorazowe) i akcje
   // (MATKA15, BLACKFRIDAY), rozroznione wylacznie ustawieniami.
@@ -2986,25 +2997,39 @@ app.get("/api/orders/awaiting-transfer", async (req, res) => {
     eurRate: o.eur_rate,
     createdAt: o.created_at,
     expiresAt: o.expires_at,
+    paidAt: o.paid_at,
     cancelledAt: o.cancelled_at,
     cancelledBy: o.cancelled_by,
     cancelReason: o.cancel_reason,
+    paymentStatus: o.payment_status,
+    paymentRemoteId: o.payment_remote_id,
+    paymentReviewAt: o.payment_review_at,
+    paymentReviewReason: o.payment_review_reason,
+    paymentReviewPreviousStatus: o.payment_review_previous_status,
   });
 
   const COLS = `order_ref, customer_email, customer_name, lang, status, total_grosze,
                 amount_eur_cents, eur_rate, created_at, expires_at,
-                cancelled_at, cancelled_by, cancel_reason`;
+                paid_at, cancelled_at, cancelled_by, cancel_reason,
+                payment_status, payment_remote_id, payment_review_at,
+                payment_review_reason, payment_review_previous_status`;
 
   // Druga lista, zamowienia zamkniete bez zaplaty, jest tu celowo. Rezygnacja
   // ma zdejmowac wiersz z listy roboczej, a nie z oczu: to przy niej sprawdza
   // sie, czy towar faktycznie wrocil do sprzedazy, i stad kasuje sie pomylki.
-  const [pending, closed] = await Promise.all([
+  const [pending, reviews, closed] = await Promise.all([
     pool.query(`SELECT ${COLS} FROM orders WHERE status = 'awaiting_transfer' ORDER BY created_at DESC LIMIT 100`),
+    pool.query(`SELECT ${COLS} FROM orders WHERE status = 'payment_review'
+                 ORDER BY payment_review_at ASC LIMIT 100`),
     pool.query(`SELECT ${COLS} FROM orders WHERE status IN ('cancelled','expired')
                  ORDER BY COALESCE(cancelled_at, created_at) DESC LIMIT 50`),
   ]);
 
-  res.json({ orders: pending.rows.map(shape), closed: closed.rows.map(shape) });
+  res.json({
+    orders: pending.rows.map(shape),
+    reviews: reviews.rows.map(shape),
+    closed: closed.rows.map(shape),
+  });
 });
 
 app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), async (req, res) => {
@@ -3098,13 +3123,21 @@ app.post("/api/orders/:ref/cancel", express.json({ limit: "4kb" }), async (req, 
     });
   }
 
-  await pool.query(
+  const cancelled = await pool.query(
     `UPDATE orders SET status = 'cancelled', cancelled_at = NOW(),
        cancelled_by = $2, cancel_reason = $3
-     WHERE id = $1`,
+     WHERE id = $1 AND fulfilled_at IS NULL AND status = ANY($4::text[])
+     RETURNING id`,
     [order.id, String(req.body?.by || "panel").slice(0, 120),
-     req.body?.reason ? String(req.body.reason).slice(0, 2000) : null]
+     req.body?.reason ? String(req.body.reason).slice(0, 2000) : null,
+     CANCELLABLE_STATUSES]
   );
+  if (!cancelled.rowCount) {
+    return res.status(409).json({
+      error: "Stan zamowienia zmienil sie przed rezygnacja",
+      code: "state_changed",
+    });
+  }
 
   const stock = await releaseOrderReservations(pool, order.id);
   const codes = await releaseOrderRedemptions(pool, order.id);
@@ -3178,21 +3211,33 @@ app.post("/api/orders/:ref/pay", express.json({ limit: "8kb" }), async (req, res
   const gatewayId = req.body?.gatewayId ?? 0;
 
   const { rows } = await pool.query(
-    "SELECT id, order_ref, access_token, status, total_grosze, customer_email, expires_at FROM orders WHERE order_ref = $1",
+    `SELECT id, order_ref, access_token, status, total_grosze, customer_email,
+            expires_at, fulfilled_at, payment_method
+       FROM orders WHERE order_ref = $1`,
     [ref]
   );
   const order = rows[0];
   if (!order) return res.status(404).json({ error: "Zamowienie nie istnieje" });
   if (!secretMatches(token, order.access_token)) return res.status(403).json({ error: "Brak dostepu" });
-  if (order.status === "paid") return res.status(409).json({ error: "Zamowienie jest juz oplacone", code: "already_paid" });
-  if (order.expires_at && new Date(order.expires_at) < new Date()) {
-    return res.status(410).json({ error: "Wycena wygasla", code: "expired" });
+  const startProblem = paymentStartProblem(order);
+  if (startProblem) {
+    const errors = {
+      already_paid: [409, "Zamowienie jest juz oplacone"],
+      expired: [410, "Wycena wygasla"],
+      wrong_method: [409, "To zamowienie nie korzysta z Autopay"],
+      unavailable: [409, "Dla tego zamowienia nie mozna rozpoczac platnosci"],
+    };
+    const [status, error] = errors[startProblem] || [409, "Nie mozna rozpoczac platnosci"];
+    return res.status(status).json({ error, code: startProblem });
   }
 
   const limit = await checkQuarterlyLimit(pool, order.total_grosze);
   if (!limit.ok) return res.status(409).json({ error: "Nie mozemy teraz przyjac tej platnosci", code: "quarterly_limit" });
 
-  const validity = new Date(Math.min(new Date(order.expires_at).getTime(), Date.now() + 30 * 86400_000));
+  const validity = new Date(Math.min(
+    order.expires_at ? new Date(order.expires_at).getTime() : Number.POSITIVE_INFINITY,
+    Date.now() + 30 * 86400_000
+  ));
   const start = buildStartTransaction({
     orderId: order.order_ref,
     amountGrosze: order.total_grosze,
@@ -3202,7 +3247,20 @@ app.post("/api/orders/:ref/pay", express.json({ limit: "8kb" }), async (req, res
     validityTime: formatValidityTime(validity),
   });
 
-  await pool.query("UPDATE orders SET payment_gateway_id = $2 WHERE id = $1", [order.id, Number(gatewayId) || null]);
+  const started = await pool.query(
+    `UPDATE orders SET payment_gateway_id = $2, payment_status = 'PENDING',
+       payment_status_details = NULL
+     WHERE id = $1 AND status = 'awaiting_payment' AND fulfilled_at IS NULL
+       AND COALESCE(payment_method, 'autopay') = 'autopay'
+     RETURNING id`,
+    [order.id, Number(gatewayId) || null]
+  );
+  if (!started.rowCount) {
+    return res.status(409).json({
+      error: "Stan zamowienia zmienil sie przed rozpoczeciem platnosci",
+      code: "state_changed",
+    });
+  }
 
   // Zwracamy gotowe parametry, formularz wysyla przegladarka.
   // Klucz wspoldzielony nigdy nie opuszcza serwera.
@@ -3225,8 +3283,40 @@ app.get("/api/autopay/return", async (req, res) => {
   }
 
   target.searchParams.set("ref", String(OrderID));
+  // Podpis Autopay wiaze OrderID z tym powrotem niezaleznie od tego, czy ITN
+  // zdazyl juz ustawic paid albo payment_review. Token daje tej sesji prywatny
+  // dostep do statusu, lecz sam powrot nadal nie zmienia zamowienia.
+  if (pool) {
+    const { rows } = await pool.query(
+      "SELECT access_token FROM orders WHERE order_ref = $1",
+      [String(OrderID)]
+    ).catch(() => ({ rows: [] }));
+    if (rows[0]?.access_token) target.searchParams.set("token", rows[0].access_token);
+  }
   res.redirect(302, target.toString());
 });
+
+async function placePaymentInReview(order, parsed, amountOk) {
+  const reviewed = await pool.query(
+    `UPDATE orders SET status = 'payment_review', paid_at = COALESCE(paid_at, NOW()),
+       payment_status = 'SUCCESS', payment_status_details = $2, payment_remote_id = $3,
+       payment_review_at = NOW(),
+       payment_review_reason = CASE WHEN $4 THEN 'unexpected_status:' || status ELSE 'amount_mismatch' END,
+       payment_review_previous_status = status
+     WHERE id = $1 AND fulfilled_at IS NULL
+       AND status NOT IN ('paid', 'payment_review')
+     RETURNING id, payment_review_previous_status, payment_review_reason`,
+    [order.id, parsed.paymentStatusDetails, parsed.remoteID, amountOk]
+  );
+  if (!reviewed.rowCount) return false;
+
+  const { payment_review_previous_status: previous, payment_review_reason: reason } = reviewed.rows[0];
+  console.error(`[payment-review] ${parsed.orderID}, poprzedni stan ${previous}, powod ${reason}`);
+  sendPaymentReviewAlert(pool, order.id).catch((e) =>
+    console.error("[payment-review] wysylka alertu nie powiodla sie:", e.message)
+  );
+  return true;
+}
 
 /**
  * Powiadomienie natychmiastowe o statusie platnosci (ITN).
@@ -3276,51 +3366,67 @@ app.post("/api/autopay/itn", express.urlencoded({ extended: false, limit: "256kb
           });
         }
 
-        if (parsed.paymentStatus === "SUCCESS" && amountOk && !order.fulfilled_at) {
-          await pool.query(
+        const action = itnAction({
+          orderStatus: order.status,
+          fulfilledAt: order.fulfilled_at,
+          paymentStatus: parsed.paymentStatus,
+          amountOk,
+        });
+
+        if (action === "fulfill") {
+          const fulfilled = await pool.query(
             `UPDATE orders SET status = 'paid', paid_at = NOW(), fulfilled_at = NOW(),
                payment_status = $2, payment_status_details = $3, payment_remote_id = $4
-             WHERE id = $1`,
+             WHERE id = $1 AND status = 'awaiting_payment' AND fulfilled_at IS NULL
+             RETURNING id`,
             [order.id, parsed.paymentStatus, parsed.paymentStatusDetails, parsed.remoteID]
           );
-          console.log(`[autopay] zamowienie ${parsed.orderID} oplacone, ${(amountGrosze / 100).toFixed(2)} PLN`);
+          // Stan mogl zmienic sie po SELECT, na przyklad przez anulowanie w
+          // panelu. Brak atomowej bramki wskrzeszalby wtedy zamkniete zamowienie.
+          if (!fulfilled.rowCount) {
+            await placePaymentInReview(order, parsed, amountOk);
+          } else {
+            console.log(`[autopay] zamowienie ${parsed.orderID} oplacone, ${(amountGrosze / 100).toFixed(2)} PLN`);
 
-          // LINKI PRZED MAILEM, i to jest jedyna kolejnosc, ktora ma sens:
-          // to wlasnie mail niesie link do klienta. Odwrotna kolejnosc dawalaby
-          // potwierdzenie zaplaty bez tego, za co klient zaplacil.
-          //
-          // Czekamy tu na wynik, w odroznieniu od reszty: gdyby zalozenie
-          // linkow sie nie udalo, mail i tak ma pojsc, ale bez sekcji plikow,
-          // a nie z linkiem prowadzacym donikad.
-          await issueDownloads(pool, order.id).catch((e) => {
-            console.error("[pobranie] zalozenie linkow nie powiodlo sie:", e.message);
-          });
-          // Maile wysylamy po ustawieniu fulfilled_at, wiec kolejny SUCCESS
-          // tego zamowienia juz tu nie wejdzie. Nie czekamy na wynik: ITN
-          // trzeba potwierdzic niezaleznie od tego, czy poczta zadziala.
-          sendOrderPaidEmails(pool, order.id).catch((e) =>
-            console.error("[autopay] wysylka maili nie powiodla sie:", e.message)
-          );
-          // Stan magazynowy schodzi dopiero teraz. Do tej pory towar byl
-          // wylacznie zarezerwowany, wiec porzucone zamowienie niczego nie kasowalo.
-          consumeReservations(pool, order.id).catch((e) =>
-            console.error("[produkty] zdjecie ze stanu nie powiodlo sie:", e.message)
-          );
-          // Kod rabatowy liczy sie jako uzyty dopiero teraz, z tego samego
-          // powodu: porzucony koszyk nie ma prawa spalic kodu jednorazowego.
-          consumeDiscount(pool, order.id).catch((e) =>
-            console.error("[rabaty] zapisanie uzycia kodu nie powiodlo sie:", e.message)
-          );
-          // Pliki lezaly dotad w folderze roboczym, bo w chwili wgrania nikt
-          // jeszcze niczego nie zamowil. Dopiero zaplata robi z nich zlecenie.
-          moveOrderFilesToOrders(pool, order.id, parsed.orderID).catch((e) =>
-            console.error("[dysk] przeniesienie plikow nie powiodlo sie:", e.message)
-          );
-        } else {
+            // LINKI PRZED MAILEM, i to jest jedyna kolejnosc, ktora ma sens:
+            // to wlasnie mail niesie link do klienta. Odwrotna kolejnosc dawalaby
+            // potwierdzenie zaplaty bez tego, za co klient zaplacil.
+            //
+            // Czekamy tu na wynik, w odroznieniu od reszty: gdyby zalozenie
+            // linkow sie nie udalo, mail i tak ma pojsc, ale bez sekcji plikow,
+            // a nie z linkiem prowadzacym donikad.
+            await issueDownloads(pool, order.id).catch((e) => {
+              console.error("[pobranie] zalozenie linkow nie powiodlo sie:", e.message);
+            });
+            // Maile wysylamy po ustawieniu fulfilled_at, wiec kolejny SUCCESS
+            // tego zamowienia juz tu nie wejdzie. Nie czekamy na wynik: ITN
+            // trzeba potwierdzic niezaleznie od tego, czy poczta zadziala.
+            sendOrderPaidEmails(pool, order.id).catch((e) =>
+              console.error("[autopay] wysylka maili nie powiodla sie:", e.message)
+            );
+            // Stan magazynowy schodzi dopiero teraz. Do tej pory towar byl
+            // wylacznie zarezerwowany, wiec porzucone zamowienie niczego nie kasowalo.
+            consumeReservations(pool, order.id).catch((e) =>
+              console.error("[produkty] zdjecie ze stanu nie powiodlo sie:", e.message)
+            );
+            // Kod rabatowy liczy sie jako uzyty dopiero teraz, z tego samego
+            // powodu: porzucony koszyk nie ma prawa spalic kodu jednorazowego.
+            consumeDiscount(pool, order.id).catch((e) =>
+              console.error("[rabaty] zapisanie uzycia kodu nie powiodlo sie:", e.message)
+            );
+            // Pliki lezaly dotad w folderze roboczym, bo w chwili wgrania nikt
+            // jeszcze niczego nie zamowil. Dopiero zaplata robi z nich zlecenie.
+            moveOrderFilesToOrders(pool, order.id, parsed.orderID).catch((e) =>
+              console.error("[dysk] przeniesienie plikow nie powiodlo sie:", e.message)
+            );
+          }
+        } else if (action === "review") {
+          await placePaymentInReview(order, parsed, amountOk);
+        } else if (action === "record") {
           await pool.query(
             `UPDATE orders SET payment_status = COALESCE($2, payment_status),
                payment_status_details = COALESCE($3, payment_status_details)
-             WHERE id = $1 AND status <> 'paid'`,
+             WHERE id = $1 AND status <> 'paid' AND fulfilled_at IS NULL`,
             [order.id, parsed.paymentStatus, parsed.paymentStatusDetails]
           );
         }
@@ -3410,15 +3516,19 @@ app.get("/api/download/:token", async (req, res) => {
 /** Status zamowienia dla strony powrotu */
 app.get("/api/orders/:ref", async (req, res) => {
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  res.set("Cache-Control", "no-store, private");
   const { rows } = await pool.query(
-    `SELECT order_ref, status, total_grosze, lang, paid_at, expires_at, delivery_method,
+    `SELECT order_ref, access_token, status, total_grosze, lang, paid_at, expires_at, delivery_method,
             revisions_included, revisions_used,
-            payment_method, amount_eur_cents, transfer_confirmed_at
+            payment_method, payment_status, fulfilled_at,
+            amount_eur_cents, transfer_confirmed_at
        FROM orders WHERE order_ref = $1`,
     [String(req.params.ref || "")]
   );
   const o = rows[0];
-  if (!o) return res.status(404).json({ error: "Zamowienie nie istnieje" });
+  if (!o || !orderAccessAllowed(req.headers.authorization, o.access_token)) {
+    return res.status(404).json({ error: "Zamowienie nie istnieje lub brak dostepu" });
+  }
   res.json({
     orderRef: o.order_ref,
     status: o.status,
@@ -3426,6 +3536,7 @@ app.get("/api/orders/:ref", async (req, res) => {
     paidAt: o.paid_at,
     expiresAt: o.expires_at,
     deliveryMethod: o.delivery_method,
+    ...publicPaymentState(o),
     // Licznik poprawek pokazujemy od poczatku. Klient, ktory dowiaduje sie
     // o wyczerpaniu limitu dopiero przy rachunku, czuje sie naciagniety.
     revisions: o.revisions_included

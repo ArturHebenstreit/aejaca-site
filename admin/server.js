@@ -1318,10 +1318,10 @@ app.post("/discounts/:code/toggle", requireAuth, async (req, res) => {
 // maile do klienta i przeniesienie plikow do Zamowien. Wykonuje sie raz.
 app.get("/transfers", requireAuth, async (req, res) => {
   try {
-    const { orders, closed = [] } = await shopApi("/api/orders/awaiting-transfer");
-    res.render("transfers", { user: req.user, orders, closed, msg: req.query.msg, err: req.query.err });
+    const { orders, reviews = [], closed = [] } = await shopApi("/api/orders/awaiting-transfer");
+    res.render("transfers", { user: req.user, orders, reviews, closed, msg: req.query.msg, err: req.query.err });
   } catch (err) {
-    res.render("transfers", { user: req.user, orders: [], closed: [], msg: null, err: err.message });
+    res.render("transfers", { user: req.user, orders: [], reviews: [], closed: [], msg: null, err: err.message });
   }
 });
 
