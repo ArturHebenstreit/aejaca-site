@@ -1,46 +1,48 @@
-# AEJaCA - wspolne reguly projektu
+# AEJaCA - wspólne reguły projektu
 
-Ten dokument jest wspolnym zrodlem regul dla Claude Code, Codex i innych agentow.
-Instrukcje narzedziowe pozostaja w `CLAUDE.md` i `AGENTS.md`, ale nie moga zmieniac
-ponizszych zasad biznesowych bez zaakceptowanej decyzji ADR.
+Ten dokument jest wspólnym źródłem reguł dla Claude Code, Codex i innych agentów.
+Instrukcje narzędziowe pozostają w `CLAUDE.md` i `AGENTS.md`, ale nie mogą zmieniać
+poniższych zasad biznesowych bez zaakceptowanej decyzji ADR.
 
-## 1. Hierarchia zrodel prawdy
+## 1. Hierarchia źródeł prawdy
 
-W razie sprzecznosci obowiazuje kolejnosc:
+W razie sprzeczności obowiązuje kolejność:
 
-1. Jawna, najnowsza decyzja wlasciciela projektu.
+1. Jawna, najnowsza decyzja właściciela projektu.
 2. Zaakceptowany ADR w `MDs/decisions/`.
-3. Regula domenowa oznaczona jako aktualna w `MDs/README.md`.
-4. `MDs/AEJaCA_Brand_Reference.md` dla faktow o marce, ofercie i cenach.
+3. Reguła domenowa oznaczona jako aktualna w `MDs/README.md`.
+4. `MDs/AEJaCA_Brand_Reference.md` dla faktów o marce, ofercie i cenach.
 5. Aktualny kod i jego testy dla rzeczywistego zachowania systemu.
-6. Plany i audyty historyczne, wylacznie jako kontekst.
+6. Plany i audyty historyczne, wyłącznie jako kontekst.
 
-Sprzecznosci trzeba nazwac i rozstrzygnac. Nie wolno wybierac wygodniejszej wersji
+Sprzeczności trzeba nazwać i rozstrzygnąć. Nie wolno wybierać wygodniejszej wersji
 bez zapisania powodu.
 
-## 2. Zasady pracy rownoleglej
+## 2. Zasady pracy równoległej
 
-- Kazdy model pracuje w osobnym worktree i na osobnej galezi.
-- Jeden aktywny wlasciciel na plik. Wlasnosc zapisuje `MDs/WORKBOARD.md`.
-- Wspolny problem dzielimy wedlug odpowiedzialnosci, na przyklad API, interfejs,
+- Każdy model pracuje w osobnym worktree i na osobnej gałęzi.
+- Jeden aktywny właściciel na plik. Własność zapisuje `MDs/WORKBOARD.md`.
+- Wspólny problem dzielimy według odpowiedzialności, na przykład API, interfejs,
   testy, dokumentacja. Nie dzielimy go przypadkowo po kilku liniach tego samego pliku.
-- Agent spoza zadania moze czytac i recenzowac zastrzezony plik, ale go nie edytuje.
-- Integrator scala dopiero po niezaleznym review i po przejsciu wymaganych kontroli.
-- Ustalenia z rozmowy staja sie obowiazujace dopiero po zapisaniu w ADR, handoffie
+- Agent spoza zadania może czytać i recenzować zastrzeżony plik, ale go nie edytuje.
+- Artur jest integratorem. Modele nie scalają zmian do `main` ani nie otwierają pull requestów z własnej inicjatywy. Model kończy zadanie informacją, że jego branch jest gotowy do integracji.
+- Jedynym wyjątkiem od zakazu zapisu modeli do `main` jest rezerwacja zadania w `MDs/WORKBOARD.md`, wykonana zgodnie z regułami tego pliku.
+- Artur scala dopiero po niezależnym review i po przejściu wymaganych kontroli.
+- Ustalenia z rozmowy stają się obowiązujące dopiero po zapisaniu w ADR, handoffie
   albo aktualnym dokumencie domenowym.
 
 ## 3. Jak podejmujemy decyzje
 
-Przed implementacja zmiany wysokiego ryzyka trzeba zapisac:
+Przed implementacją zmiany wysokiego ryzyka trzeba zapisać:
 
 - problem i mierzalny stan obecny;
-- wybrana decyzje oraz odrzucone alternatywy;
-- konsekwencje dla klienta, biznesu, bezpieczenstwa, SEO i utrzymania;
+- wybraną decyzję oraz odrzucone alternatywy;
+- konsekwencje dla klienta, biznesu, bezpieczeństwa, SEO i utrzymania;
 - wymagane testy, w tym kontrole negatywne;
-- dokumenty i kopie kodu wymagajace synchronizacji.
+- dokumenty i kopie kodu wymagające synchronizacji.
 
-Zmiana wysokiego ryzyka obejmuje platnosci, ceny, zamowienia, dane osobowe,
-geometrie wyrobu, prawo konsumenckie, routing i publiczne fakty o ofercie.
+Zmiana wysokiego ryzyka obejmuje płatności, ceny, zamówienia, dane osobowe,
+geometrię wyrobu, prawo konsumenckie, routing i publiczne fakty o ofercie.
 
 ## 4. Twarde niezmienniki
 
@@ -48,12 +50,12 @@ geometrie wyrobu, prawo konsumenckie, routing i publiczne fakty o ofercie.
 
 Pilnuje tego `scripts/check-emdash.mjs` i **wywala build**, więc złamanie zasady zatrzymuje deploy. Wyłączone są dwa katalogi, oba z tego samego powodu: `n8n-backup` (zrzut z żywej instancji) i pliki obcych skilli w `.claude/skills/` (kopie 1:1 cudzych repozytoriów). Zasada dotyczy tego, co **piszemy**, a nie tego, co wciągamy w niezmienionej postaci. `ORIGIN.md` przy każdym skillu piszemy sami, więc podlega zasadzie normalnie.
 
-- Cena wiążaca jest liczona na serwerze. Dane cenowe z przegladarki nie sa zaufane.
-- Status platnosci zmienia tylko poprawnie podpisany komunikat ITN.
-- `FAILURE` po `SUCCESS` nie cofa oplaconego zamowienia.
+- Cena wiążąca jest liczona na serwerze. Dane cenowe z przeglądarki nie są zaufane.
+- Status płatności zmienia tylko poprawnie podpisany komunikat ITN.
+- `FAILURE` po `SUCCESS` nie cofa opłaconego zamówienia.
 - Test topologiczny nie zastępuje testu warsztatowego wyrobu.
-- Nie ujawniamy sekretow w repozytorium, frontendzie ani logach.
-- Brak wymaganego sekretu ma zamykac dostep, a nie wlaczac wartosc domyslna.
+- Nie ujawniamy sekretów w repozytorium, frontendzie ani logach.
+- Brak wymaganego sekretu ma zamykać dostęp, a nie włączać wartość domyślną.
 
 ## 5. Waluta
 
@@ -88,18 +90,18 @@ Mapowanie leży w **jednym pliku**: `src/data/toolLinks.js` (`TOOLS_BY_POST`, `T
 - **Geometria kreatora pierścionków** (`src/geometry/ring/`): **przeczytaj `MDs/AEJaCA_Geometria_Kreatora_Zasady.md` PRZED każdą zmianą bryły.** Plik zbiera reguły warsztatowe, pułapki jądra manifold-3d, klasę awarii cichych (objętość i topologia poprawne, wyrób nie do użycia) i dziennik wniosków. Buduj z wiedzy, nie z eksperymentu.
 - **Routing / prerender**: there is no SPA catch-all in `public/_redirects`. Every route must be prerendered to its own `index.html`, otherwise Cloudflare Pages serves a real 404. When adding a page, add the route to `src/main.jsx`, `src/entry-server.jsx` AND `STATIC_ROUTES` in `scripts/prerender.mjs`. The prerender script cross-checks those lists and fails the build on drift; blog slugs and glossary IDs are derived automatically from `POSTS_META` / `GLOSSARY`, so they need no manual entry. `dist/404.html` is generated from the `NotFound` component. **Nową stronę deklaruj przez `strona(() => import(...))`, nie przez `lazy(...)`.** Zwykłe `lazy` znaczy, że hydratacja rusza przed fragmentem trasy, React porzuca prerender i rysuje stronę od nowa. Pilnuje tego `scripts/check-lazy-hydration.mjs`, mierzy `scripts/check-hydration-race.cjs`.
 
-## 8. Obowiazkowe dokumenty domenowe
+## 8. Obowiązkowe dokumenty domenowe
 
-| Obszar | Dokument do przeczytania przed zmiana |
+| Obszar | Dokument do przeczytania przed zmianą |
 |---|---|
-| Marka, oferta, ceny, sprzet | `MDs/AEJaCA_Brand_Reference.md` |
-| Platnosci Autopay | `MDs/AEJaCA_Autopay_Integration.md` |
-| Geometria pierscionkow | `MDs/AEJaCA_Geometria_Kreatora_Zasady.md` |
+| Marka, oferta, ceny, sprzęt | `MDs/AEJaCA_Brand_Reference.md` |
+| Płatności Autopay | `MDs/AEJaCA_Autopay_Integration.md` |
+| Geometria pierścionków | `MDs/AEJaCA_Geometria_Kreatora_Zasady.md` |
 | Prawo i dane osobowe | `MDs/AEJaCA_Legal_Audit.md` |
-| Bezpieczenstwo API i panelu | `MDs/AEJaCA_Security_Audit.md` |
-| Sklep i modele produktow | `MDs/AEJaCA_Shop_Plan.md` |
+| Bezpieczeństwo API i panelu | `MDs/AEJaCA_Security_Audit.md` |
+| Sklep i modele produktów | `MDs/AEJaCA_Shop_Plan.md` |
 | B2B | `MDs/B2B_Architektura.md` |
-| Sprzet i procesy | `MDs/AEJaCA_Inwentarz_Sprzet_Procesy.md` |
+| Sprzęt i procesy | `MDs/AEJaCA_Inwentarz_Sprzet_Procesy.md` |
 
 ## 9. Config file synchronization rule - MANDATORY before every deploy
 
@@ -147,16 +149,16 @@ Before every `git push`, confirm:
 
 After a deploy that changes page content, adds/removes pages, or updates `sitemap.xml`, run `npm run indexnow` from a machine with normal network access (this pings Bing/Yandex to recrawl faster - sandboxed Claude Code sessions can't reach `api.indexnow.org`, their egress is allowlisted). Verification key file: `public/1cc7ba768716151f4028f5c9d6127177.txt`.
 
-## 10. Bramka jakosci przed review
+## 10. Bramka jakości przed review
 
 Minimalnie:
 
-1. Test, ktory odtwarza naprawiany blad albo mierzy nowy wymog.
+1. Test, który odtwarza naprawiany błąd albo mierzy nowy wymóg.
 2. Kontrola negatywna dla zmian wysokiego ryzyka.
 3. Testy obszaru zmiany.
-4. `npm run build` po zmianach strukturalnych lub przed integracja.
-5. Przeglad diffu przez model, ktory nie byl autorem implementacji.
-6. Handoff z wynikami testow, ryzykami i tym, czego nie sprawdzono.
+4. `npm run build` po zmianach strukturalnych lub przed integracją.
+5. Przegląd diffu przez model, który nie był autorem implementacji.
+6. Handoff z wynikami testów, ryzykami i tym, czego nie sprawdzono.
 
-Przejscie builda nie dowodzi poprawnosci biznesowej. Dokument domenowy i test
-musza opisywac ten sam stan docelowy.
+Przejście builda nie dowodzi poprawności biznesowej. Dokument domenowy i test
+muszą opisywać ten sam stan docelowy.

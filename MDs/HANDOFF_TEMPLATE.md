@@ -13,6 +13,8 @@ last_commit: pelny-SHA-albo-uncommitted
 updated: YYYY-MM-DD
 ```
 
+Pole `last_commit` uzupełnij jako ostatnią czynność przed przekazaniem zadania do stanu `review`.
+
 ## Cel
 
 Jedno zdanie opisujace rezultat dla klienta albo systemu.

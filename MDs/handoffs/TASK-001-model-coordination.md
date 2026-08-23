@@ -4,7 +4,7 @@ status: review
 author: Codex
 branch: codex/model-coordination-layer
 base_commit: 8cca1576734a11dcce0e257e636961ff40ced286
-last_commit: uncommitted
+last_commit: 09a18479647277e648cc074350c48513970dbf91
 updated: 2026-08-23
 ---
 
@@ -27,6 +27,8 @@ rejestru wlasnosci plikow ani formatu przekazania pracy.
 - `PROJECT_RULES.md` jest wspolnym zrodlem zasad biznesowych i jakosciowych.
 - Instrukcje narzedziowe pozostaja osobno w `CLAUDE.md` i `AGENTS.md`.
 - Rownolegla praca uzywa osobnych worktree i galezi.
+- Artur jest jedynym integratorem; modele nie scalaja do `main` ani nie otwieraja pull requestow z wlasnej inicjatywy.
+- Rezerwacja zadania w workboardzie jest jedynym dozwolonym zapisem modelu bezposrednio do `main`.
 - Trwale decyzje maja format ADR.
 - Decyzja procesu zostala zapisana w `ADR-0001-wspolpraca-modeli.md`.
 
@@ -56,6 +58,8 @@ rejestru wlasnosci plikow ani formatu przekazania pracy.
 |---|---|---|
 | Zakaz dlugich myslnikow | `node scripts/check-emdash.mjs` | pass |
 | Biale znaki i konflikty patcha | `git diff --check` | pass |
+| Brak podwojnych regul | reczny przeglad `CLAUDE.md` i `PROJECT_RULES.md` | pass |
+| Kod produktu | `git diff --stat main -- src chat-api admin scripts` | brak zmian |
 | Testy produktu | nie dotyczy, tylko dokumentacja procesu | nie uruchomiono ponownie |
 
 ## Ryzyka i otwarte pytania

@@ -37,6 +37,9 @@ modelu tworza konflikty oraz rozjazd wiedzy.
 ## Konsekwencje
 
 - Rownolegla praca wymaga krotkiego wpisu do workboardu.
+- Rezerwacja zadania jest jedyną zmianą, którą model zapisuje bezpośrednio do `main`; wymaga osobnego commita zmieniającego wyłącznie `MDs/WORKBOARD.md` i staje się wiążąca dopiero po wypchnięciu.
+- Tabela aktywnych zadań jest append-only, a konflikt scalania zachowuje wpisy obu stron.
+- Workboard jest kontraktem koordynacyjnym, nie techniczną blokadą.
 - Zmiany architektoniczne maja widoczny koszt dokumentacyjny.
 - Konflikty sa wykrywane przed edycja, a nie podczas scalania.
 - Drugi model dostaje testowalny stan pracy bez odtwarzania historii rozmowy.

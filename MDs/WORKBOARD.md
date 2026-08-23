@@ -4,11 +4,15 @@ Ten plik koordynuje rownolegla prace. Nie jest backlogiem produktu.
 
 ## Reguly
 
-1. Przed edycja wpisz zadanie i zastrzezone pliki.
-2. Jeden plik moze miec jednego aktywnego wlasciciela.
-3. Drugi model moze recenzowac, ale nie edytuje zastrzezonego pliku.
-4. Stan `review` zwalnia pliki dopiero po przekazaniu handoffu.
-5. Zakonczone wiersze przenosimy do archiwum po scaleniu.
+1. Przed rozpoczęciem zadania zarezerwuj je bezpośrednio w `main`, w commicie zmieniającym wyłącznie `MDs/WORKBOARD.md`. Jest to jedyny wyjątek od zasady, że modele nie zapisują do `main`.
+2. Przed pierwszą edycją w zadaniu wykonaj `git fetch origin main` i przeczytaj workboard z `origin/main`, a nie kopię ze swojego brancha. Rezerwacja, która nie została wypchnięta do zdalnego `main`, nikogo nie wiąże.
+3. Tabela aktywnych zadań jest append-only: nowe wiersze dopisuj na końcu. Przy konflikcie scalania zachowaj wiersze z obu stron.
+4. Jeden plik może mieć jednego aktywnego właściciela.
+5. Drugi model może recenzować, ale nie edytuje zastrzeżonego pliku.
+6. Stan `review` zwalnia pliki dopiero po przekazaniu handoffu.
+7. Zakończone wiersze przenosimy do archiwum po scaleniu.
+
+Workboard jest koordynacją umowną między uczestnikami, a nie techniczną blokadą plików ani gałęzi.
 
 ## Aktywne zadania
 
