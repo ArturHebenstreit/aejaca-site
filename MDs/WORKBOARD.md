@@ -19,7 +19,7 @@ Workboard jest koordynacją umowną między uczestnikami, a nie techniczną blok
 | ID | Cel | Wlasciciel | Branch i worktree | Zastrzezone pliki | Stan | Handoff |
 |---|---|---|---|---|---|---|
 | TASK-001 | Wspolna warstwa komunikacji modeli | Codex | `codex/model-coordination-layer` | pliki protokolu i indeks `MDs` | review | `MDs/handoffs/TASK-001-model-coordination.md` |
-| TASK-002 | Obsluga nieudanych platnosci i bezpieczne ponowienie | Codex | `codex/payment-failure-retry` | `chat-api/server.js`, `chat-api/paymentState.js`, `chat-api/orderAccess.js`, `chat-api/orderMail.js`, testy i konfiguracja `chat-api`, `chat-api/context.js`, `scripts/orders-schema.sql`, `admin/server.js`, `admin/views/transfers.ejs`, `src/pages/OrderStatus.jsx`, `src/i18n/{pl,en,de}.js`, `public/llms.txt`, `public/sitemap.xml`, dokumentacja Autopay i marki, ADR oraz handoff | active | `MDs/handoffs/TASK-002-payment-failure-retry.md` |
+| TASK-002 | Obsluga nieudanych platnosci i bezpieczne ponowienie | Codex | `codex/payment-failure-retry` | `chat-api/server.js`, `chat-api/paymentState.js`, `chat-api/orderAccess.js`, `chat-api/orderMail.js`, testy i konfiguracja `chat-api`, `chat-api/context.js`, `scripts/orders-schema.sql`, `admin/server.js`, `admin/views/transfers.ejs`, `src/pages/OrderStatus.jsx`, `src/shop/orderStatusAccess.js`, `src/i18n/{pl,en,de}.js`, `public/llms.txt`, `public/sitemap.xml`, dokumentacja Autopay i marki, ADR oraz handoff | active | `MDs/handoffs/TASK-002-payment-failure-retry.md` |
 
 Dozwolone stany: `planned`, `active`, `blocked`, `review`, `done`.
 
