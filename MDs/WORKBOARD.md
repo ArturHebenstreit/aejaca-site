@@ -19,6 +19,7 @@ Workboard jest koordynacją umowną między uczestnikami, a nie techniczną blok
 | ID | Cel | Wlasciciel | Branch i worktree | Zastrzezone pliki | Stan | Handoff |
 |---|---|---|---|---|---|---|
 | TASK-001 | Wspolna warstwa komunikacji modeli | Codex | `codex/model-coordination-layer` | pliki protokolu i indeks `MDs` | review | `MDs/handoffs/TASK-001-model-coordination.md` |
+| TASK-002 | Obsluga nieudanych platnosci i bezpieczne ponowienie | Codex | `codex/payment-failure-retry` | `chat-api/server.js`, `chat-api/paymentState.js`, testy i konfiguracja `chat-api`, `src/pages/OrderStatus.jsx`, `src/i18n/{pl,en,de}.js`, dokumentacja Autopay, ADR i handoff | active | `MDs/handoffs/TASK-002-payment-failure-retry.md` |
 
 Dozwolone stany: `planned`, `active`, `blocked`, `review`, `done`.
 
