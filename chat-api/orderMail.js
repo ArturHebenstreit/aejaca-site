@@ -763,6 +763,51 @@ async function sendViaWebhook(order, items) {
   return resp.ok;
 }
 
+export function buildPaymentReviewMessage(order) {
+  const reason = order.payment_review_reason || "unknown";
+  const previous = order.payment_review_previous_status || "unknown";
+  const text = [
+    `PILNE: PLATNOSC DO RECZNEJ WERYFIKACJI ${order.order_ref}`,
+    "",
+    `Kwota: ${money(order.total_grosze)}`,
+    `Klient: ${order.customer_name || "(brak nazwiska)"} <${order.customer_email}>`,
+    `Poprzedni stan: ${previous}`,
+    `Powod: ${reason}`,
+    `Status Autopay: ${order.payment_status || "-"} / ${order.payment_status_details || "-"}`,
+    `remoteID: ${order.payment_remote_id || "-"}`,
+    "",
+    "Pieniadze zostaly odnotowane, ale realizacja NIE zostala uruchomiona.",
+    "Nie wydano plikow, nie zuzyto rezerwacji ani kodu rabatowego i nie wyslano klientowi potwierdzenia realizacji.",
+    "Sprawdz dostepnosc towaru i zdecyduj recznie: realizacja po odtworzeniu rezerwacji albo zwrot.",
+  ].join("\n");
+
+  return {
+    to: INTERNAL_TO,
+    from: FROM,
+    replyTo: order.customer_email,
+    subject: `[PILNE PLATNOSC] ${order.order_ref}, wymaga decyzji`,
+    text,
+    html: `<pre style="font-family:ui-monospace,monospace;font-size:13px;white-space:pre-wrap">${esc(text)}</pre>`,
+  };
+}
+
+export async function sendPaymentReviewAlert(pool, orderId) {
+  try {
+    const { rows } = await pool.query("SELECT * FROM orders WHERE id = $1", [orderId]);
+    const order = rows[0];
+    if (!order || order.status !== "payment_review") return false;
+    if (await sendViaGmail([buildPaymentReviewMessage(order)])) {
+      console.log(`[payment-review] wyslano alert dla ${order.order_ref}`);
+      return true;
+    }
+    console.error(`[payment-review] PILNE, brak kanalu alertu dla ${order.order_ref}`);
+    return false;
+  } catch (e) {
+    console.error("[payment-review] alert nie zostal wyslany:", e.message);
+    return false;
+  }
+}
+
 /**
  * Wysyla oba maile. Zwraca true, gdy udalo sie ktorymkolwiek kanalem.
  * Nigdy nie rzuca wyjatkiem: obsluga ITN musi sie zakonczyc potwierdzeniem

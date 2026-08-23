@@ -855,6 +855,8 @@ KASA KROK PO KROKU (stan na 2026-08-03), do odpowiadania na pytania "jak kupic":
 6. **Metoda platnosci**: na wierzchu BLIK oraz opcja "Wybiore na stronie platnosci Autopay", a ponad dwadziescia bankow chowa sie pod jednym wierszem "Place z banku" z wyszukiwarka. Klient nie przewija dlugiej listy, zeby dojsc do BLIKA.
 7. Po zaplacie bramka potwierdza transakcje, dopiero wtedy towar schodzi ze stanu, kod rabatowy liczy sie jako uzyty, a klient i warsztat dostaja maile. Porzucony koszyk niczego nie zabiera: rezerwacja towaru i kodu wygasa sama.
 8. Zamowienie ma wlasny numer (AE20260803-XXXXXXXX) i strone statusu, na ktora klient wraca z bramki.
+9. Jezeli Autopay zwroci FAILURE, strona statusu pokazuje nieudana platnosc i pozwala bezpiecznie sprobowac ponownie na tym samym zamowieniu. Dla nieoplaconego zamowienia bez pierwszej proby albo po zamknieciu bramki pokazuje neutralna akcje zaplaty. Ponowienie nie tworzy drugiego zamowienia, wymaga tokenu z podpisanego powrotu bramki i znika po oplaceniu, anulowaniu albo wygasnieciu zamowienia.
+10. Pelny status zamowienia jest prywatny i wymaga tokenu. Jezeli poprawnie podpisany SUCCESS przyjdzie po anulowaniu, wygasnieciu, w innym nieoczekiwanym stanie albo z inna kwota, NIE obiecuj automatycznej realizacji. Platnosc trafia do recznej weryfikacji, klient nie powinien placic drugi raz, a AEJaCA kontaktuje sie po sprawdzeniu zamowienia.
 
 Czego NIE mowic: nie ma platnosci karta, Google Pay ani Apple Pay. Nie ma tez platnosci za pobraniem.
 

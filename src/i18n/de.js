@@ -618,6 +618,14 @@ export default {
   },
 
 
+  orderStatus: {
+    payNow: "Bestellung bezahlen",
+    retryPayment: "Zahlung erneut versuchen",
+    retryingPayment: "Zahlung wird geöffnet",
+    retryFailed: "Eine weitere Zahlung konnte nicht gestartet werden. Versuchen Sie es erneut oder schreiben Sie uns.",
+    retryUnavailable: "Die Zahlung kann über diesen Link nicht sicher neu gestartet werden. Schreiben Sie uns, dann prüfen wir die Bestellung und senden Ihnen einen neuen Link.",
+  },
+
   footer: {
     shop: "Shop",
     tagline: "Artisan Elegance Jewelry and Crafted Art. Wo Handwerkskunst auf Technologie trifft.",

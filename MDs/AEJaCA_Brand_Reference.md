@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-21 | Wersja: 4.9*
+*Wygenerowano: 2026-08-23 | Wersja: 5.0*
 
 ---
 
@@ -1532,9 +1532,13 @@ Szczegóły protokołu w `MDs/AEJaCA_Autopay_Integration.md`. Trzy reguły, któ
 
 1. Puste pole wypada z sumy kontrolnej **razem ze swoim separatorem**.
 2. Status zamówienia zmienia **wyłącznie** komunikat ITN. Strona powrotu tylko weryfikuje podpis i niczego nie zapisuje.
-3. Realizacja zamówienia (maile, wydanie plików) dzieje się **raz**, przy pierwszym `SUCCESS`, mimo że potwierdzamy każdy komunikat.
+3. Realizacja zamówienia (maile, wydanie plików) dzieje się **raz**, przy pierwszym `SUCCESS` z poprawną kwotą i wyłącznie wtedy, gdy zamówienie nadal oczekuje na Autopay. Późna albo niezgodna wpłata trafia do ręcznej weryfikacji.
 
 Kwota z ITN jest porównywana z kwotą zamówienia, więc sam poprawny podpis nie wystarczy do opłacenia zamówienia niższą kwotą.
+
+Nieudana płatność pozostaje przy tym samym zamówieniu. Strona statusu pokazuje `FAILURE` i, jeżeli zamówienie nadal jest ważne, udostępnia ponowienie przez Autopay. Dla ważnego zamówienia bez rozpoczętej płatności albo z porzuconą próbą `PENDING` pokazuje neutralną akcję zapłaty, bez przedstawiania tego stanu jako błędu. Ponowienie wymaga tokenu dostępu otrzymanego po poprawnie podpisanym powrocie z bramki, nie tworzy drugiego zamówienia i ustawia nową próbę jako `PENDING`. Token jest zapisywany osobno dla numeru zamowienia w `sessionStorage`, usuwany z paska adresu i przekazywany do API w nagłówku. F5 w tej samej sesji karty zachowuje dostep, ale sam oczyszczony adres otwarty niezaleznie go nie daje. Podpisany powrot przekazuje token takze po wczesniejszym ITN, gdy zamowienie ma juz stan `paid` albo `payment_review`. Pelny status nie jest dostepny na podstawie samego numeru zamowienia. Zamówienia opłaconego, anulowanego, wygasłego ani rozliczanego ręcznym przelewem nie można uruchomić ponownie tą drogą.
+
+Jeżeli `SUCCESS` przyjdzie po anulowaniu lub wygaśnięciu, w nieoczekiwanym stanie albo z inną kwotą, zamówienie otrzymuje stan `payment_review`. Pieniądze są odnotowane, ale system nie wydaje plików, nie zużywa rezerwacji i nie rozpoczyna produkcji. Artur otrzymuje pilny alert i rozstrzyga ręcznie realizację albo zwrot.
 
 ### Sprzedaż w euro i przelew z ręcznym potwierdzeniem
 
