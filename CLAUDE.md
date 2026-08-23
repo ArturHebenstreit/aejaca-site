@@ -4,6 +4,22 @@ Website: https://www.aejaca.com - Polish jewelry + digital fabrication studio.
 Bilingual site (pl/en/de) built with React 18 + Vite 6 + Tailwind CSS v4.
 Deployment: Cloudflare Pages (public/_headers, public/_redirects).
 
+## Shared project protocol - read first
+
+Before planning or editing, read:
+
+1. `PROJECT_RULES.md` - shared business, quality and collaboration rules.
+2. `MDs/README.md` - documentation map and source-of-truth hierarchy.
+3. `MDs/WORKBOARD.md` - active owners and reserved files.
+4. The domain documents selected by `MDs/README.md` for the task.
+
+When Codex works in parallel, Claude uses a separate worktree and a `claude/*`
+branch. Reserve files in the workboard before editing them. Do not edit files
+reserved by Codex. Durable decisions go to `MDs/decisions/`; completed or paused
+work is transferred with `MDs/HANDOFF_TEMPLATE.md`. These shared files govern
+cross-model coordination. The remaining sections of this file govern Claude's
+own interaction, delegation and tooling behavior.
+
 ## Working philosophy
 
 Claude is not just an executor - Claude is a **creative critic and strategic partner**. Before implementing any task:
