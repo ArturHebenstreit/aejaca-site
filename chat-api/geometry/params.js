@@ -297,6 +297,42 @@ export const CASTING_DEFAULTS = { sprues: false, innerSprues: false, button: fal
 // mieszaja te dwie rzeczy, a klient wybiera glownie sylwetke.
 export const SHANK_TAPERS = ["auto", "none", "tapered", "cathedral", "signet"];
 
+/**
+ * Mnoznik lokalnej szerokosci szyny w odleglosci `u` od glowicy.
+ *
+ * Ta funkcja powtarza kontrakt sylwetek uzywany przez generator bryly:
+ * `u = 0` przy glowicy, `u = 1` po przeciwnej stronie. Walidacja musi znac
+ * rzeczywista szerokosc w miejscu gniazda, bo szerokosc nominalna opisuje
+ * dol szyny i przy zwezeniu zawyza dostepny metal nawet o 30 procent.
+ */
+export function shankWidthFactorAt(p, u) {
+  const x = Math.min(1, Math.max(0, Number.isFinite(Number(u)) ? Number(u) : 0));
+  const taper = p?.taper === "auto" ? (p?.kind === "signet" ? "signet" : "none") : p?.taper;
+  if (taper === "tapered") return 0.70 + 0.30 * x;
+  if (taper === "signet") {
+    const s = Math.max(0, 1 - x / 0.78);
+    const k = s * s * (3 - 2 * s);
+    return 1 + 1.15 * k;
+  }
+  return 1;
+}
+
+function shankThicknessFactorAt(p, u) {
+  const x = Math.min(1, Math.max(0, Number.isFinite(Number(u)) ? Number(u) : 0));
+  const taper = p?.taper === "auto" ? (p?.kind === "signet" ? "signet" : "none") : p?.taper;
+  if (taper === "tapered") return 0.84 + 0.16 * x;
+  if (taper === "cathedral") {
+    const s = Math.max(0, 1 - x / 0.45);
+    return 1 + 0.95 * s * s;
+  }
+  if (taper === "signet") {
+    const s = Math.max(0, 1 - x / 0.78);
+    const k = s * s * (3 - 2 * s);
+    return 1 + 1.05 * k;
+  }
+  return 1;
+}
+
 // ------------------------------------------------------------
 // Tarcze sygnetow
 // ------------------------------------------------------------
@@ -437,7 +473,7 @@ export const SEAT = {
    *
    * Praktycznie znaczy to tyle: w szynie 2,1 mm nie osadzi sie kamienia
    * 1,5 mm. Zamiast pozwolic na taka konfiguracje i oddac plik z bryla
-   * rozsypana na dwadziescia kawalkow, przycinamy kamien do wykonalnego.
+   * rozsypana na dwadziescia kawalkow, blokujemy generowanie czytelnym bledem.
    */
   minRail: 0.45,
   /**
@@ -533,13 +569,102 @@ export const DEFAULTS = {
 const clamp = (v, [lo, hi]) => Math.min(hi, Math.max(lo, v));
 const num = (v, d) => (Number.isFinite(Number(v)) ? Number(v) : d);
 
+const floorToStep = (value, min, step) => {
+  const n = Math.floor(((value - min) / step) + 1e-8);
+  return Math.max(min, Number((min + n * step).toFixed(6)));
+};
+
+function sideStoneLocalWidth(p, size) {
+  const count = Math.round(clamp(num(p.side?.count, 0), LIMITS.sideCount));
+  if (!count) return p.width;
+
+  const ri = p.innerDia / 2;
+  const t0 = p.thickness * shankThicknessFactorAt(p, 0);
+  const rMid = ri + t0 * 0.62;
+  const cutId = CUTS[p.stone?.cut] ? p.stone.cut : DEFAULTS.stone.cut;
+  const polKorony = p.setting === "drilled"
+    ? 0
+    : Math.max(...outlineFor(cutId, p.stone?.size || DEFAULTS.stone.size)
+      .map(([x]) => Math.abs(x)))
+      + (p.setting === "bezel" ? 0.4 : 0.3)
+      + (p.halo?.on ? num(p.halo.size, DEFAULTS.halo.size) + 0.4 : 0);
+  const gap = clamp(num(p.side?.gap, DEFAULTS.side.gap), LIMITS.sideGap);
+  const spread = clamp(num(p.side?.spread, DEFAULTS.side.spread), LIMITS.sideSpread);
+  const step = Math.asin(Math.min(0.45, (size * 0.62) / rMid)) * 2 + spread / rMid;
+  const start = (polKorony + gap + size / 2) / rMid;
+
+  let localWidth = Infinity;
+  for (let i = 0; i < count; i++) {
+    const u = Math.min(1, (start + step * i) / Math.PI);
+    localWidth = Math.min(localWidth, p.width * shankWidthFactorAt(p, u));
+  }
+  return Number.isFinite(localWidth) ? localWidth : p.width;
+}
+
+function fittedMax(min, hardMax, predicate) {
+  if (!predicate(min)) return { feasible: false, max: min };
+  if (predicate(hardMax)) return { feasible: true, max: hardMax };
+  let lo = min, hi = hardMax;
+  for (let i = 0; i < 36; i++) {
+    const mid = (lo + hi) / 2;
+    if (predicate(mid)) lo = mid;
+    else hi = mid;
+  }
+  return { feasible: true, max: floorToStep(lo, min, 0.1) };
+}
+
+/**
+ * Granice kamieni wynikajace z metalu dostepnego w miejscu ich osadzenia.
+ * Zwracany obiekt jest czysty i moze byc uzyty przez formularz przed
+ * uruchomieniem workera oraz przez testy bez ladowania jadra WASM.
+ */
+export function localStoneFitLimits(input = {}) {
+  const p = { ...DEFAULTS, ...input };
+  p.stone = { ...DEFAULTS.stone, ...(input.stone || {}) };
+  p.halo = { ...DEFAULTS.halo, ...(input.halo || {}) };
+  p.side = { ...DEFAULTS.side, ...(input.side || {}) };
+  p.band = { ...DEFAULTS.band, ...(input.band || {}) };
+  p.innerDia = clamp(num(p.innerDia, DEFAULTS.innerDia), LIMITS.innerDia);
+  p.width = clamp(num(p.width, DEFAULTS.width), LIMITS.width);
+  p.thickness = clamp(num(p.thickness, DEFAULTS.thickness), LIMITS.thickness);
+
+  const sideMin = LIMITS.sideSize[0];
+  const sideHardMax = LIMITS.sideSize[1];
+  const sideRaised = p.side.setting === "prong";
+  const side = sideRaised
+    ? { feasible: true, min: sideMin, max: sideHardMax, localWidth: p.width }
+    : (() => {
+        const result = fittedMax(sideMin, sideHardMax, (size) =>
+          size <= sideStoneLocalWidth(p, size) - 2 * SEAT.minRail + 1e-9);
+        const probe = result.feasible ? result.max : sideMin;
+        return {
+          ...result,
+          min: sideMin,
+          localWidth: sideStoneLocalWidth(p, probe),
+        };
+      })();
+
+  const bandMin = LIMITS.bandSize[0];
+  const bandLocalWidth = p.width * shankWidthFactorAt(p, 0);
+  const bandRawMax = Math.min(LIMITS.bandSize[1], bandLocalWidth - 2 * SEAT.minRail);
+  const bandFeasible = bandRawMax + 1e-9 >= bandMin;
+  const band = {
+    feasible: bandFeasible,
+    min: bandMin,
+    max: bandFeasible ? floorToStep(bandRawMax, bandMin, 0.1) : bandMin,
+    localWidth: bandLocalWidth,
+  };
+
+  return { side, band };
+}
+
 /**
  * Sprowadza dowolne wejscie do poprawnego zestawu parametrow albo rzuca.
  *
- * Rzucamy TYLKO przy niemozliwym zakuciu, bo to jedyny blad, ktorego nie da
- * sie po cichu naprawic: markiza w zwyklych lapkach odpryska, a kaboszon
- * z nich wypadnie. Reszte przycinamy do zakresu, bo suwak i tak nie wyjdzie
- * poza swoje granice, a model jezykowy potrafi podac liczbe z sufitu.
+ * Zakresy techniczne przycinamy, bo formularz i tak nie wychodzi poza suwaki,
+ * a model jezykowy moze podac liczbe z sufitu. Nie przycinamy jednak cech,
+ * ktore zmieniaja projekt: niedozwolone zakucie oraz kamien niemieszczacy sie
+ * w lokalnym przekroju szyny koncza sie czytelnym bledem.
  */
 export function validate(input = {}) {
   const p = { ...DEFAULTS, ...input };
@@ -585,11 +710,24 @@ export function validate(input = {}) {
     // Obraczka nie ma glowicy, wiec nie ma tez kamienia centralnego ani
     // niczego na ramionach: kamienie ida po obwodzie i opisuje je `band`.
     if (!BAND_COVERAGE.includes(p.band.coverage)) p.band.coverage = "none";
-    // To samo ograniczenie na obwodzie: kamien szerszy od szyny minus dwie
-    // szynki dalby obraczke przecieta na kawalki.
-    const maxObw = Math.max(LIMITS.bandSize[0], p.width - 2 * SEAT.minRail);
-    p.band.size = clamp(num(p.band.size, 1.8), [LIMITS.bandSize[0], Math.min(LIMITS.bandSize[1], maxObw)]);
     if (!SIDE_SETTINGS[p.band.setting]) p.band.setting = "pave";
+    p.band.size = clamp(num(p.band.size, 1.8), LIMITS.bandSize);
+    if (p.band.coverage !== "none") {
+      const fit = localStoneFitLimits(p).band;
+      if (!fit.feasible) {
+        throw new Error(
+          `Szyna ma lokalnie ${fit.localWidth.toFixed(2)} mm szerokosci. ` +
+          `Najmniejszy kamien obwodu ${fit.min.toFixed(1)} mm wymaga co najmniej ` +
+          `${(fit.min + 2 * SEAT.minRail).toFixed(1)} mm metalu.`,
+        );
+      }
+      if (p.band.size > fit.max + 1e-9) {
+        throw new Error(
+          `Kamien obwodu ${p.band.size.toFixed(2)} mm jest za duzy dla lokalnej szerokosci ` +
+          `szyny ${fit.localWidth.toFixed(2)} mm. Maksimum to ${fit.max.toFixed(1)} mm.`,
+        );
+      }
+    }
     p.side = { ...p.side, count: 0 };
     p.halo = { ...p.halo, on: false };
     return p;
@@ -615,6 +753,14 @@ export function validate(input = {}) {
     );
   }
 
+  // Halo musi zostac znormalizowane przed liczeniem pozycji kamieni bocznych.
+  // Wplywa ono na odsuniecie pierwszego kamienia, ale przy kanale i briolecie
+  // jest niedozwolone. Liczenie fitu z halo, ktore chwile pozniej wylaczamy,
+  // moglo zaakceptowac kamien na wezszym odcinku szyny.
+  p.halo.size = clamp(num(p.halo.size, 1.4), LIMITS.haloSize);
+  if (p.setting === "drilled" || p.setting === "channel") p.halo = { ...p.halo, on: false };
+  p.halo.on = Boolean(p.halo.on);
+
   // Brioleta wisi na kabłąku, wiec nie ma szyny z kamieniami bocznymi.
   if (p.setting === "drilled") p.side = { ...p.side, count: 0 };
 
@@ -626,21 +772,26 @@ export function validate(input = {}) {
   // trylogia, w ktorej boczne kamienie sa niewiele mniejsze od glownego,
   // a szyna zostaje waska. Objecie ich ta sama granica przycinalo trylogie
   // do 1,3 mm po cichu, czyli zamienialo ja w soliter z dwoma okruszkami.
-  const wpuszczany = p.side.setting !== "prong";
-  const maxBok = wpuszczany
-    ? Math.max(LIMITS.sideSize[0], p.width - 2 * SEAT.minRail)
-    : LIMITS.sideSize[1];
-  p.side.size = clamp(num(p.side.size, 1.6), [LIMITS.sideSize[0], Math.min(LIMITS.sideSize[1], maxBok)]);
   if (!SIDE_SETTINGS[p.side.setting]) p.side.setting = "pave";
   p.side.gap = clamp(num(p.side.gap, DEFAULTS.side.gap), LIMITS.sideGap);
   p.side.spread = clamp(num(p.side.spread, DEFAULTS.side.spread), LIMITS.sideSpread);
-
-  // Halo to wieniec drobnych kamieni WOKOL korony, wiec musi byc na czym go
-  // oprzec. Przy briolecie nie ma korony, tylko kabłąk, a przy oprawie
-  // kanalowej wieniec kolidowalby z szynkami.
-  p.halo.size = clamp(num(p.halo.size, 1.4), LIMITS.haloSize);
-  if (p.setting === "drilled" || p.setting === "channel") p.halo = { ...p.halo, on: false };
-  p.halo.on = Boolean(p.halo.on);
+  p.side.size = clamp(num(p.side.size, 1.6), LIMITS.sideSize);
+  if (p.side.count > 0 && p.side.setting !== "prong") {
+    const fit = localStoneFitLimits(p).side;
+    if (!fit.feasible) {
+      throw new Error(
+        `Szyna ma przy kamieniach bocznych lokalnie ${fit.localWidth.toFixed(2)} mm szerokosci. ` +
+        `Najmniejszy kamien ${fit.min.toFixed(1)} mm wymaga co najmniej ` +
+        `${(fit.min + 2 * SEAT.minRail).toFixed(1)} mm metalu.`,
+      );
+    }
+    if (p.side.size > fit.max + 1e-9) {
+      throw new Error(
+        `Kamien boczny ${p.side.size.toFixed(2)} mm jest za duzy dla lokalnej szerokosci ` +
+        `szyny ${fit.localWidth.toFixed(2)} mm. Maksimum to ${fit.max.toFixed(1)} mm.`,
+      );
+    }
+  }
 
   return p;
 }

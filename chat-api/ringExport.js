@@ -60,31 +60,52 @@ export function toSTL(manifold, naglowek = "AEJaCA ring") {
  * w ktorym slicer moze sie potknac.
  */
 export function to3MF(manifold, nazwa = "AEJaCA ring") {
-  const mesh = manifold.getMesh();
-  const v = mesh.vertProperties, t = mesh.triVerts;
+  const xml = (tekst) => String(tekst)
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
 
-  const wierzcholki = [];
-  for (let i = 0; i < mesh.numVert; i++) {
-    wierzcholki.push(`<vertex x="${v[i * 3].toFixed(4)}" y="${v[i * 3 + 1].toFixed(4)}" z="${v[i * 3 + 2].toFixed(4)}"/>`);
-  }
-  const trojkaty = [];
-  for (let i = 0; i < mesh.numTri; i++) {
-    trojkaty.push(`<triangle v1="${t[i * 3]}" v2="${t[i * 3 + 1]}" v3="${t[i * 3 + 2]}"/>`);
-  }
+  // Tablica pozwala zachowac metal i kamienie jako osobne obiekty. Dawne
+  // wywolanie z pojedynczym manifoldem pozostaje obslugiwane, bo produkcyjny
+  // 3MF nadal ma byc jedna, gotowa do druku bryla.
+  const obiekty = Array.isArray(manifold)
+    ? manifold
+    : [{ manifold, name: nazwa }];
+  if (!obiekty.length) throw new Error("3MF wymaga co najmniej jednego obiektu");
 
-  const model = `<?xml version="1.0" encoding="UTF-8"?>
-<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
-  <metadata name="Title">${nazwa}</metadata>
-  <metadata name="Designer">AEJaCA</metadata>
-  <resources>
-    <object id="1" type="model">
+  const zasoby = obiekty.map((obiekt, indeks) => {
+    const bryla = obiekt?.manifold || obiekt;
+    if (!bryla?.getMesh) throw new Error(`Niepoprawny obiekt 3MF nr ${indeks + 1}`);
+    const mesh = bryla.getMesh();
+    const v = mesh.vertProperties, t = mesh.triVerts;
+
+    const wierzcholki = [];
+    for (let i = 0; i < mesh.numVert; i++) {
+      wierzcholki.push(`<vertex x="${v[i * 3].toFixed(4)}" y="${v[i * 3 + 1].toFixed(4)}" z="${v[i * 3 + 2].toFixed(4)}"/>`);
+    }
+    const trojkaty = [];
+    for (let i = 0; i < mesh.numTri; i++) {
+      trojkaty.push(`<triangle v1="${t[i * 3]}" v2="${t[i * 3 + 1]}" v3="${t[i * 3 + 2]}"/>`);
+    }
+
+    const nazwaObiektu = xml(obiekt?.name || `${nazwa} ${indeks + 1}`);
+    return `<object id="${indeks + 1}" type="model" name="${nazwaObiektu}">
       <mesh>
         <vertices>${wierzcholki.join("")}</vertices>
         <triangles>${trojkaty.join("")}</triangles>
       </mesh>
-    </object>
-  </resources>
-  <build><item objectid="1"/></build>
+    </object>`;
+  });
+
+  const elementy = obiekty.map((_, indeks) => `<item objectid="${indeks + 1}"/>`).join("");
+
+  const model = `<?xml version="1.0" encoding="UTF-8"?>
+<model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
+  <metadata name="Title">${xml(nazwa)}</metadata>
+  <metadata name="Designer">AEJaCA</metadata>
+  <resources>${zasoby.join("")}</resources>
+  <build>${elementy}</build>
 </model>`;
 
   const rels = `<?xml version="1.0" encoding="UTF-8"?>
@@ -118,31 +139,70 @@ export function to3MF(manifold, nazwa = "AEJaCA ring") {
  */
 export async function ringFiles(params) {
   const { buildRing } = await import("./geometry/build.js");
-  const r = await buildRing(params, { segments: SEGMENTS });
+  let r = null, referencja = null, bryla = null;
+  try {
+    r = await buildRing(params, { segments: SEGMENTS, mode: "casting" });
 
-  // Bryla pliku to metal, a do tego, JESLI klient je wybral, kamienie
-  // i dodatki odlewnicze. Masa i cena ida nadal z samego metalu: kanal
-  // odcina sie po odlaniu, a kamieni sie nie odlewa.
-  let bryla = r.metal;
-  if (r.casting) bryla = bryla.add(r.casting);
-  for (const kamien of r.stones) bryla = bryla.add(kamien);
+  // STL i podstawowy 3MF sa plikami produkcyjnymi. Nie zaleza od przelacznika
+  // podgladu: maja otwarte lapki, nie zawieraja kamieni i moga zawierac
+  // zamowione dodatki odlewnicze.
+    bryla = r.metal;
+    if (r.casting) bryla = bryla.add(r.casting);
 
-  const rozmiar = r.params.innerDia.toFixed(1).replace(".", ",");
-  const dodatki = [
-    r.casting ? "wlew" : null,
-    r.stones.length ? null : "bez-kamieni",
-  ].filter(Boolean);
+  // Referencja pokazuje stan gotowego wyrobu, ale nie skleja kamieni z
+  // metalem. W programie obslugujacym 3MF mozna je ukryc lub usunac osobno.
+    referencja = await buildRing({
+      ...params,
+      casting: { ...(params.casting || {}), sprues: false, button: false, innerSprues: false },
+    }, {
+      segments: SEGMENTS,
+      mode: "referenceAssembly",
+    });
+    const obiektyReferencji = [
+      { manifold: referencja.metal, name: "metal-finished-reference" },
+      ...referencja.stones.map((kamien, indeks) => ({
+        manifold: kamien,
+        name: `stone-${String(indeks + 1).padStart(2, "0")}`,
+      })),
+    ];
+
+    const rozmiar = r.params.innerDia.toFixed(1).replace(".", ",");
+    const bazaWyrobu = `aejaca-${r.params.kind}-${rozmiar}mm`;
+    const dodatki = [
+      r.casting ? "wlew" : null,
+      "odlewniczy",
+    ].filter(Boolean);
   // Nazwa pliku mowi, co jest w srodku. Klient, ktory pobierze dwie wersje
   // tego samego pierscionka, inaczej nie odrozni ich bez otwierania.
-  const baza = [`aejaca-${r.params.kind}-${rozmiar}mm`, ...dodatki].join("-");
+    const baza = [bazaWyrobu, ...dodatki].join("-");
+    const bazaReferencji = `${bazaWyrobu}-referencja`;
 
-  return {
-    massG: r.massG,
-    volumeMm3: r.volumeMm3,
-    triangles: bryla.getMesh().numTri,
-    files: [
-      { name: `${baza}.stl`, buffer: toSTL(bryla, baza) },
-      { name: `${baza}.3mf`, buffer: to3MF(bryla, baza) },
-    ],
-  };
+    return {
+      massG: r.massG,
+      volumeMm3: r.volumeMm3,
+      triangles: bryla.getMesh().numTri,
+      files: [
+        { name: `${baza}.stl`, buffer: toSTL(bryla, baza) },
+        { name: `${baza}.3mf`, buffer: to3MF(bryla, baza) },
+        {
+          name: `${bazaReferencji}.3mf`,
+          buffer: to3MF(obiektyReferencji, `${bazaWyrobu} reference assembly`),
+        },
+      ],
+    };
+  } finally {
+    const seen = new Set();
+    const release = (manifold) => {
+      if (!manifold || seen.has(manifold)) return;
+      seen.add(manifold);
+      manifold.delete?.();
+    };
+    release(bryla);
+    release(r?.metal);
+    release(r?.casting);
+    for (const stone of r?.stones || []) release(stone);
+    release(referencja?.metal);
+    release(referencja?.casting);
+    for (const stone of referencja?.stones || []) release(stone);
+  }
 }

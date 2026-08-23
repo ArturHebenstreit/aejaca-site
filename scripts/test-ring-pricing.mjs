@@ -191,7 +191,10 @@ console.log("\n8. Cena rosnie z tym, co ja podnosi");
     else bad(`${opis} nie podnioslo ceny: ${zl(pa)} wobec ${zl(pb)}`);
   };
   await wieksza({}, { stone: { ...BASE.stone, size: 9 } }, "wiekszy kamien");
-  await wieksza({}, { side: { count: 5, size: 1.6, setting: "pave", material: "cz" } }, "kamienie na szynie");
+  await wieksza({}, {
+    width: 2.5,
+    side: { count: 5, size: 1.6, setting: "pave", material: "cz" },
+  }, "kamienie na szynie");
   await wieksza({}, { alloy: "au750" }, "zloto zamiast srebra");
   await wieksza({}, { thickness: 3.2, width: 5 }, "masywniejsza szyna");
   await wieksza({ stone: { ...BASE.stone, material: "cz" } },
@@ -339,7 +342,8 @@ console.log("\nRozpiska sumuje sie do ceny, ktora widzi klient");
     ["plik", { output: "mesh" }],
     ["odlew", { output: "cast" }],
     ["gotowy wyrób", { output: "finished" }],
-    ["gotowy wyrób z pavé", { output: "finished", side: { count: 4, size: 1.4, setting: "pave", material: "cz" } }],
+    ["gotowy wyrób z pavé", { output: "finished", width: 2.5,
+      side: { count: 4, size: 1.4, setting: "pave", material: "cz" } }],
   ]) {
     const geometry = await geoFor(params);
     const p = price(params, { geometry });

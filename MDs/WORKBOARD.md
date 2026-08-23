@@ -1,35 +1,1 @@
-# AEJaCA - workboard Claude Code i Codex
-
-Ten plik koordynuje rownolegla prace. Nie jest backlogiem produktu.
-
-## Reguly
-
-1. Przed rozpoczÄ™ciem zadania zarezerwuj je bezpoÅ›rednio w `main`, w commicie zmieniajÄ…cym wyÅ‚Ä…cznie `MDs/WORKBOARD.md`. Jest to jedyny wyjÄ…tek od zasady, Å¼e modele nie zapisujÄ… do `main`.
-2. Przed pierwszÄ… edycjÄ… w zadaniu wykonaj `git fetch origin main` i przeczytaj workboard z `origin/main`, a nie kopiÄ™ ze swojego brancha. Rezerwacja, ktÃ³ra nie zostaÅ‚a wypchniÄ™ta do zdalnego `main`, nikogo nie wiÄ…Å¼e.
-3. Tabela aktywnych zadaÅ„ jest append-only: nowe wiersze dopisuj na koÅ„cu. Przy konflikcie scalania zachowaj wiersze z obu stron.
-4. Jeden plik moÅ¼e mieÄ‡ jednego aktywnego wÅ‚aÅ›ciciela.
-5. Drugi model moÅ¼e recenzowaÄ‡, ale nie edytuje zastrzeÅ¼onego pliku.
-6. Stan `review` zwalnia pliki dopiero po przekazaniu handoffu.
-7. ZakoÅ„czone wiersze przenosimy do archiwum po scaleniu.
-
-Workboard jest koordynacjÄ… umownÄ… miÄ™dzy uczestnikami, a nie technicznÄ… blokadÄ… plikÃ³w ani gaÅ‚Ä™zi.
-
-## Aktywne zadania
-
-| ID | Cel | Wlasciciel | Branch i worktree | Zastrzezone pliki | Stan | Handoff |
-|---|---|---|---|---|---|---|
-| TASK-001 | Wspolna warstwa komunikacji modeli | Codex | `codex/model-coordination-layer` | pliki protokolu i indeks `MDs` | review | `MDs/handoffs/TASK-001-model-coordination.md` |
-| TASK-002 | Obsluga nieudanych platnosci i bezpieczne ponowienie | Codex | `codex/payment-failure-retry` | `chat-api/server.js`, `chat-api/paymentState.js`, `chat-api/orderAccess.js`, `chat-api/orderMail.js`, testy i konfiguracja `chat-api`, `chat-api/context.js`, `scripts/orders-schema.sql`, `scripts/check-browser-storage.mjs`, `admin/server.js`, `admin/views/transfers.ejs`, `src/pages/OrderStatus.jsx`, `src/shop/orderStatusAccess.js`, `src/i18n/{pl,en,de}.js`, `public/llms.txt`, `public/sitemap.xml`, dokumentacja Autopay i marki, ADR oraz handoff | review | `MDs/handoffs/TASK-002-payment-failure-retry.md` |
-
-Dozwolone stany: `planned`, `active`, `blocked`, `review`, `done`.
-
-## Kolejka integracji
-
-| ID | Branch | Recenzent | Wymagane kontrole | Wynik |
-|---|---|---|---|---|
-| TASK-001 | `codex/model-coordination-layer` | Claude Code | zgodnosc z `MDs`, brak sprzecznosci instrukcji, `check-emdash`, `git diff --check` | oczekuje |
-| TASK-002 | `codex/payment-failure-retry` | Claude Code | bezpieczenstwo tokenu, kolejnosc ITN, testy `chat-api`, pelny build, synchronizacja dokumentacji | oczekuje |
-
-## Archiwum
-
-Po scaleniu zachowaj jeden krotki wiersz: ID, data, branch, commit scalajacy i ADR.
+m«ëˆ§½©buªàºg§´Àìıc‘(€D9RÆ y¶¬{®vçºh¢ø¥zŠ.µø¥y¶ëy©­æ¤zw(uçhºÚn¶êbÚ%Šw¬¡ù^aéƒu×œ¡×yÊz)éºØazZ]ŠÊek+aŠÉ²Æ z(§¦ëb›­~)^uçÚº[_¢»-v)è¢ëiºÚ.¶›­~)^uçÚº[_¢»-v‹­
