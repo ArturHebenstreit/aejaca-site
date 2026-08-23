@@ -1,4 +1,17 @@
-# AEJaCA - Claude Code project guide
+---
+status: historical
+owner: Claude Code
+last_verified: 2026-08-23
+superseded_by: ../CLAUDE.md
+---
+
+# AEJaCA - historyczna kopia instrukcji Claude Code
+
+Ten plik pozostaje jako zapis starszej wersji instrukcji. Nie jest aktywnym
+zrodlem regul. Claude Code czyta `../CLAUDE.md`, a oba modele czytaja wspolne
+`../PROJECT_RULES.md` oraz `README.md` w tym katalogu.
+
+## Tresc historyczna
 
 Website: https://www.aejaca.com - Polish jewelry + digital fabrication studio.
 Bilingual site (pl/en/de) built with React 18 + Vite 6 + Tailwind CSS v4.
