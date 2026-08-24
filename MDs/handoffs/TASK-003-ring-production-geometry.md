@@ -4,7 +4,7 @@ status: review
 author: Codex
 branch: codex/ring-production-geometry
 base_commit: ca5dbd99bef36bf38e4d1dd0fd762fc1d4842f70
-last_commit: eece84f2d98f89e91bc7c41ad8118c1c6bce2060
+last_commit: 702d0d3d65d0d5dd57ebd1eb8f4b32a46488cbb8
 updated: 2026-08-24
 ---
 
@@ -56,6 +56,17 @@ informacji dla klienta.
 - Frez centralny i frezy halo sa slepe oraz ograniczaja cala geometrie
   narzedzia, lacznie ze stozkiem. Korona jest na tyle wysoka, aby pomiescic
   pawilon bez wiercenia w podwyzszeniu i szynie.
+- Konstrukcja centralnego kosza ma dwa jawne warianty: domyslny lekki azurowy
+  i wzmocniony. Wzmocniony dodaje grubsza dolna obrecz, drugi rant oraz
+  mocniejsze zebra, ale nie wraca do litej plyty pod kamieniem.
+- Frezy gniazd nie przecinaja juz gornej czesci krap od ich nog. Dotyczy to
+  rowniez bocznych koszy trylogii; droga obciazenia od czubka krapy do szyny
+  pozostaje ciagla.
+- Serce i gruszka maja lapke V przy szpicu oraz dwie podpory po przeciwnej
+  stronie. Markiza zachowuje dwie lapki V, bez dodatkowego palaka pod oprawa.
+- Brioleta jest jedna osiowa kropla zawieszona na jednym kablaku, zamiast dwoch
+  nalozonych bryl. Kaseta kaboszonu ma szeroki, slepy otwor nad nienaruszona
+  szyna.
 
 Decyzje sa zapisane w
 `MDs/decisions/ADR-0005-tryby-modelu-i-walidacja-geometrii.md`.
@@ -73,12 +84,12 @@ Decyzje sa zapisane w
 
 | Kontrola | Wynik |
 |---|---|
-| `node scripts/test-ring-generator.mjs` | pass, 40 sekcji, w tym azurowe kosze, krotkie frezy, suwaki orientacji, tryby, eksport i negatywne ograniczenia lokalne |
+| `node scripts/test-ring-generator.mjs` | pass, 41 sekcji, w tym oba azurowe kosze, ciagle krapy, podpory serca i gruszki, pojedyncza brioleta, otwarty kaboszon, krotkie frezy, tryby i eksport |
 | `node scripts/test-ring-pricing.mjs` | pass |
 | `npm run sync:pricing` | pass, mirrory geometrii zsynchronizowane |
 | `npm run build:client` | pass; pozostaja wczesniejsze ostrzezenia o duplikatach kluczy w `ToolsStudio.jsx` |
 | Integracja `ringFiles` | pass, referencyjny 3MF ma osobne obiekty metalu i kamieni |
-| Pelny `npm run build` | pass na czystym obrazie brancha, 97 stron, 0 bledow |
+| Pelny `npm run build` | lokalnie zatrzymany tylko przez nieledzony duplikat `src/shop/orderStatusAccess 2.js`; `build:client`, testy pierscionkow i lint przechodza |
 | `node scripts/check-emdash.mjs` | pass |
 | `git diff --check` | pass |
 | Podglad 3D bez kamieni | pass dla Halo, Diana, Pave i Trylogii; brak litej plyty, kosze i gniazda widoczne |
@@ -110,6 +121,14 @@ Decyzje sa zapisane w
    kazde male gniazdo ma miec osobna tulejke.
 10. Obejrzyj pierwsze gniazdo pave przy koronie oraz koniec podwyzszenia:
     nogi nie moga wisiec, a przejscie w szyne nie moze miec uskoku.
+11. Przelacz `Konstrukcja gniazda` miedzy `Lekka azurowa` i `Wzmocniona`.
+    Oba warianty musza miec pusty srodek; drugi ma miec dwa ranty i grubsze
+    zebra.
+12. Obejrzyj trylogie bez kamieni: zadna gorna czesc krapy nie moze byc
+    odcieta od nogi prowadzacej do szyny.
+13. Sprawdz serce, gruszke, markize, briolete i kaboszon: dwa przeciwlegle
+    podparcia dla serca i gruszki, brak palaka pod markiza, jedna kropla
+    briolety oraz pusty srodek kasety kaboszonu.
 
 ## Warunek uznania zadania za gotowe
 
