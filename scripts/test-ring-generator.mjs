@@ -18,6 +18,7 @@
 
 import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, stoneSolid, taperFor, buildShank, buildGallery, tubeAlong, buildHalo, buildCrown } from "../src/geometry/ring/build.js";
 import { CUTS, SIDE_CUTS, SETTINGS, SEAT, SIGNET_TABLES, DEFAULTS, prongAngles, outlineFor, validate } from "../src/geometry/ring/params.js";
+import { readFileSync } from "node:fs";
 
 /**
  * Zwolnienie bryly po pomiarze.
@@ -2493,6 +2494,64 @@ console.log("\n39. Orientacja kamieni obraca kamien, oprawe i gniazdo razem");
     bad(`podgladu otwartych gniazd nie dalo sie zbudowac: ${e.message}`);
   } finally {
     zwolnij(ukryty); zwolnij(odlew);
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n40. Otwarte gniazda, krotkie frezy i suwaki orientacji");
+// ------------------------------------------------------------
+// To sa trzy elementy jednego kontraktu widoku odlewniczego: po ukryciu
+// kamienia klient ma zobaczyc puste gniazdo, frez nie moze przy tym przebic
+// ramienia, a ustawienie wydluzonego szlifu ma byc jawne w stopniach.
+{
+  const w = await kernel();
+
+  const p = validate({ innerDia: 17.2, stone: { cut: "round", size: 6.5 },
+    setting: "prong4", casting: { stones: false } });
+  const stone = stoneSolid(w, p.stone.cut, p.stone.size);
+  const crown = buildCrown(w, p, stone);
+  const probe = w.Manifold.cylinder(
+    Math.max(0.2, crown.basketH - 0.4), 0.55, 0.55, 24, false,
+  ).translate([0, 0, -crown.basketH + 0.2]);
+  const centre = crown.solid.intersect(probe);
+  if (centre.volume() < 0.001) {
+    ok("korona ma otwarty srodek zamiast szarej plyty pod kamieniem");
+  } else {
+    bad(`srodek korony nadal zaslania ${centre.volume().toFixed(3)} mm3 metalu`);
+  }
+  centre.delete?.(); probe.delete?.(); crown.solid.delete?.(); stone.solid.delete?.();
+
+  let halo = null;
+  try {
+    halo = await buildRing({
+      innerDia: 17.2, width: 2.2, thickness: 1.6, taper: "tapered",
+      stone: { cut: "round", size: 6 }, setting: "prong4",
+      halo: { on: true, size: 1.4 }, casting: { stones: false },
+    }, { withStones: false, segments: 64, mode: "casting" });
+    const hp = halo.params;
+    const surface = hp.innerDia / 2 + hp.thickness * taperFor(hp)(0).t;
+    const shankProbe = w.Manifold.sphere(0.14, 24).translate([0, surface - 0.2, 0]);
+    const metalUnderSeat = halo.metal.intersect(shankProbe);
+    const ratio = metalUnderSeat.volume() / shankProbe.volume();
+    if (ratio > 0.95) {
+      ok("srodkowy frez konczy sie nad podwyzszeniem i nie wierci w szynie");
+    } else {
+      bad(`frez zabral ${((1 - ratio) * 100).toFixed(1)} % sondy w ramieniu`);
+    }
+    shankProbe.delete?.(); metalUnderSeat.delete?.();
+  } catch (e) {
+    bad(`nie dalo sie sprawdzic krotkiego frezu: ${e.message}`);
+  } finally {
+    zwolnij(halo);
+  }
+
+  const ui = readFileSync(new URL("../src/components/calculators/RingConfigurator.jsx", import.meta.url), "utf8");
+  const centralSlider = /<Slider\s+label=\{t\.stoneOrientation\}[\s\S]*?max=\{270\}[\s\S]*?step=\{90\}/.test(ui);
+  const sideSlider = /<Slider\s+label=\{t\.sideOrientation\}[\s\S]*?max=\{270\}[\s\S]*?step=\{90\}/.test(ui);
+  if (centralSlider && sideSlider) {
+    ok("kamienie centralne i boczne maja jednakowe suwaki 0/90/180/270 stopni");
+  } else {
+    bad("brakuje jednego z dwoch suwakow orientacji w stopniach");
   }
 }
 

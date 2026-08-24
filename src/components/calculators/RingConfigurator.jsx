@@ -142,24 +142,6 @@ const L = {
 /** Etykieta w jezyku interfejsu, z odwrotem na polski, ktory jest zawsze. */
 const nameOf = (o, lang) => (lang === "en" ? o.en : lang === "de" ? o.de : o.pl) || o.pl;
 const hintOf = (o, lang) => (lang === "en" ? o.hintEn : lang === "de" ? o.hintDe : o.hint) || o.hint;
-const DIRECTIONAL_CUTS = new Set(["pear", "heart", "pentagon", "trillion", "briolette"]);
-const ORIENTABLE_CUTS = new Set([
-  "oval", "octagon", "baguette", "pentagon", "trillion", "pear", "marquise",
-  "heart", "briolette", "bufftop",
-]);
-const orientationOptions = (t, cut, side = false) => {
-  const directional = DIRECTIONAL_CUTS.has(cut);
-  const out = [
-    { id: 0, label: directional && !side ? t.orientations.acrossUp : t.orientations.across },
-    { id: 90, label: side && directional ? t.orientations.alongCrown : t.orientations.alongRight },
-  ];
-  if (directional) out.push(
-    { id: 180, label: side ? t.orientations.acrossReverse : t.orientations.acrossDown },
-    { id: 270, label: side ? t.orientations.alongOut : t.orientations.alongLeft },
-  );
-  return out;
-};
-
 const nf = (lang, n, d = 1) =>
   n.toLocaleString(lang === "pl" ? "pl-PL" : lang === "de" ? "de-DE" : "en-US",
     { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -488,10 +470,7 @@ export default function RingConfigurator({ lang = "pl" }) {
                 <div className="grid grid-cols-4 gap-1">
                   {Object.entries(CUTS).map(([id, c]) => (
                     <button
-                      key={id} type="button" onClick={() => setStone({
-                        cut: id,
-                        rotation: DIRECTIONAL_CUTS.has(id) ? p.stone.rotation : p.stone.rotation % 180,
-                      })}
+                      key={id} type="button" onClick={() => setStone({ cut: id })}
                       aria-pressed={id === p.stone.cut} title={nameOf(c, lang)}
                       className={`flex flex-col items-center gap-0.5 rounded-sm border px-1 py-1.5 transition-colors ${
                         id === p.stone.cut
@@ -506,11 +485,10 @@ export default function RingConfigurator({ lang = "pl" }) {
                 </div>
               </Group>
 
-              {ORIENTABLE_CUTS.has(p.stone.cut) && p.setting !== "drilled" ? (
-                <Group label={t.stoneOrientation}>
-                  <Seg value={p.stone.rotation} onChange={(rotation) => setStone({ rotation })}
-                    options={orientationOptions(t, p.stone.cut)} />
-                </Group>
+              {p.setting !== "drilled" ? (
+                <Slider label={t.stoneOrientation} lang={lang} unit="°" decimals={0}
+                  value={p.stone.rotation} min={0} max={270} step={90}
+                  onChange={(rotation) => setStone({ rotation })} />
               ) : null}
 
               <Group label={t.halo}>
@@ -562,10 +540,7 @@ export default function RingConfigurator({ lang = "pl" }) {
                     <div className="grid grid-cols-4 gap-1">
                       {SIDE_CUTS.map((id) => [id, CUTS[id]]).map(([id, c]) => (
                         <button
-                          key={id} type="button" onClick={() => setSide({
-                            cut: id,
-                            rotation: DIRECTIONAL_CUTS.has(id) ? p.side.rotation : p.side.rotation % 180,
-                          })}
+                          key={id} type="button" onClick={() => setSide({ cut: id })}
                           aria-pressed={id === p.side.cut} title={nameOf(c, lang)}
                           className={`flex flex-col items-center gap-0.5 rounded-sm border px-1 py-1.5 transition-colors ${
                             id === p.side.cut
@@ -580,12 +555,9 @@ export default function RingConfigurator({ lang = "pl" }) {
                     </div>
                   </Group>
 
-                  {ORIENTABLE_CUTS.has(p.side.cut) ? (
-                    <Group label={t.sideOrientation}>
-                      <Seg value={p.side.rotation} onChange={(rotation) => setSide({ rotation })}
-                        options={orientationOptions(t, p.side.cut, true)} />
-                    </Group>
-                  ) : null}
+                  <Slider label={t.sideOrientation} lang={lang} unit="°" decimals={0}
+                    value={p.side.rotation} min={0} max={270} step={90}
+                    onChange={(rotation) => setSide({ rotation })} />
 
                   <Group label={t.sideSetting} hint={SIDE_SETTINGS[p.side.setting] ? hintOf(SIDE_SETTINGS[p.side.setting], lang) : null}>
                     <Seg value={p.side.setting} onChange={(id) => setSide({ setting: id })}
