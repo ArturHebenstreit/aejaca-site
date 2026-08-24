@@ -754,3 +754,26 @@ ciaglosc szyny trzeba mierzyc jednoczesnie: samo otwarcie gniazda moze stworzyc
 slaby lub niewygodny od strony palca wyrob. W drobnicy wymiar zakucia powinien
 rosnac wolniej niz kamien, bo ozdoba ma pozostac kamien, a metal tylko go
 stabilizuje.
+
+## 2026-08-24 - przeloty gniazd, wyglad stopow i bryla sygnetu
+
+**Bylo:** centralne i podniesione boczne gniazda zostawialy ciagly pasek szyny
+od strony palca. Konstrukcja byla mocna, ale przy ukrytych kamieniach dno
+wygladalo jak szara zaslepka. Jeden kolor renderu obslugiwal wszystkie proby
+zoltego zlota, a srebro wygladalo tak samo jak rodowane biale zloto. Sygnet
+mial jedna bryle, lecz szerokosc ramion wynikala ze stalego mnoznika szyny i
+przy duzej tarczy nadal powstawala optyczna osobna korona.
+
+**Jest:** gniazdo ma pelny wlot montazowy, loze, stozek zgodny z obrysem szlifu
+i kontrolowany wylot od strony palca. Centralny wylot skaluje sie z kamieniem,
+a w podniesionych gniazdach bocznych ma 0,30 mm, aby nie rozrywac ramienia.
+Plaskie kaboszony i rozety maja otwarcie 38 procent obrysu. Ramiona sygnetu
+rosna do okolo 82 procent krotszej osi tarczy i przechodza w nia bez szyjki.
+Wyglad stopu rozroznia srebro, biale zloto oraz zolte 9K, 14K i 18K.
+
+**Czego sie dowiedzielismy.** Pelny wlot, loze i dolny wylot sa trzema roznymi
+wymiarami. Przelot nie powinien kopiowac srednicy kamienia na cala glebokosc,
+bo rozcina szynie; moze byc malym otworem pod szerokim, ksztaltnym stozkiem.
+Sygnet trzeba skalowac wzgledem tarczy, nie nominalnej szerokosci szyny.
+Rozpoznawalnosc wersji podgladu jest czescia kontroli jakosci, dlatego ekran
+pokazuje build aplikacji oraz wersje geometrii workera.
