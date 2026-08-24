@@ -40,6 +40,13 @@ const CASES = [
   ["Diana, otwarte gniazda", applyPreset(RING_PRESETS.find((x) => x.id === "diana"), DEFAULTS), false],
   ["Pavé, otwarte gniazda",  applyPreset(RING_PRESETS.find((x) => x.id === "pave"), DEFAULTS), false],
   ["Trylogia, otwarte kosze", applyPreset(RING_PRESETS.find((x) => x.id === "trilogy"), DEFAULTS), false],
+  ["Soliter, kosz wzmocniony", { stone: { cut: "round", size: 6.5 }, setting: "prong4", basketStyle: "reinforced" }, false],
+  ["Trylogia, kosze wzmocnione", { ...applyPreset(RING_PRESETS.find((x) => x.id === "trilogy"), DEFAULTS), basketStyle: "reinforced" }, false],
+  ["Serce, podparcie z tylu", { stone: { cut: "heart", size: 6.5 }, setting: "vprong" }],
+  ["Gruszka, podparcie z tylu", { stone: { cut: "pear", size: 7 }, setting: "vprong" }],
+  ["Brioleta, pojedyncza kropla", { stone: { cut: "briolette", size: 6 }, setting: "drilled" }],
+  ["Kaboszon, otwarta kaseta", applyPreset(RING_PRESETS.find((x) => x.id === "cabochon"), DEFAULTS), false],
+  ["Markiza, bez dolnego palaka", { stone: { cut: "marquise", size: 7 }, setting: "vprong" }],
 ];
 
 const built = [];

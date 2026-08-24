@@ -1223,7 +1223,7 @@ console.log("\n20. Kamienie na szynie nie wchodzą w koronę");
 }
 
 // ------------------------------------------------------------
-console.log("\n21. Łapka V to DWA pręty, a nie narośl na szpicu");
+console.log("\n21. Łapka V i przeciwległe podpory nie zlewają się w narośl");
 // ------------------------------------------------------------
 // Poprzednia wersja stawiala pret w kazdym punkcie obrysu miedzy szpicem
 // a koncem ramienia. Obrys markizy jest tam gesty, wiec przy szpicu ladowalo
@@ -1231,8 +1231,9 @@ console.log("\n21. Łapka V to DWA pręty, a nie narośl na szpicu");
 // poprawna, masa wiarygodna, a zakucie nie do wykonania.
 //
 // Liczymy slupki na przekroju ponad rondysta: kazde ramie V ma byc osobnym
-// pretem, wiec markiza z dwoma szpicami daje CZTERY, a gruszka z jednym DWA.
-// Zlanie sie ich w jedno spadnie tu natychmiast.
+// pretem, wiec markiza z dwoma szpicami daje CZTERY. Gruszka i serce dostaja
+// ponadto po dwie zwykle lapki po przeciwnej stronie, bo pojedyncze V nie
+// zabezpiecza ich przed obrotem. Zlanie sie ich w jedno spadnie tu natychmiast.
 {
   const w = await kernel();
   for (const [nazwa, cut, size, szpice] of [
@@ -1255,10 +1256,11 @@ console.log("\n21. Łapka V to DWA pręty, a nie narośl na szpicu");
       const plaster = r.metal.intersect(noz);
       const ile = ileCzesci(plaster);
       noz.delete?.(); plaster.delete?.();
-      if (ile !== szpice * 2) zle = `na wysokosci ${(frac * 100).toFixed(0)} % korony ${ile} pretow zamiast ${szpice * 2}`;
+      const oczekiwane = szpice * 2 + (CUTS[cut].supports?.length || 0);
+      if (ile !== oczekiwane) zle = `na wysokosci ${(frac * 100).toFixed(0)} % korony ${ile} pretow zamiast ${oczekiwane}`;
     }
     if (zle) bad(`${nazwa}: ${zle}`);
-    else ok(`${nazwa.padEnd(8)} ${szpice * 2} osobne pręty, po dwa na każdy szpic`);
+    else ok(`${nazwa.padEnd(8)} osobne V i ${(CUTS[cut].supports?.length || 0)} podpory przeciwlegle`);
     zwolnij(r);
   }
 }
@@ -2552,6 +2554,88 @@ console.log("\n40. Otwarte gniazda, krotkie frezy i suwaki orientacji");
     ok("kamienie centralne i boczne maja jednakowe suwaki 0/90/180/270 stopni");
   } else {
     bad("brakuje jednego z dwoch suwakow orientacji w stopniach");
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n41. Dwa kosze, podparte szlify i otwarta kaseta kaboszonu");
+// ------------------------------------------------------------
+{
+  const w = await kernel();
+  let lekki = null, mocny = null, kaboszon = null, brioleta = null;
+  try {
+    const baza = {
+      innerDia: 17.2, stone: { cut: "round", size: 6.5 }, setting: "prong4",
+      casting: { stones: false },
+    };
+    lekki = await buildRing({ ...baza, basketStyle: "open" }, { segments: 64, mode: "casting" });
+    mocny = await buildRing({ ...baza, basketStyle: "reinforced" }, { segments: 64, mode: "casting" });
+    if (lekki.params.basketStyle === "open" && mocny.params.basketStyle === "reinforced"
+        && mocny.volumeMm3 > lekki.volumeMm3 * 1.02) {
+      ok(`kosz wzmocniony doklada metal (${lekki.volumeMm3.toFixed(1)} -> ${mocny.volumeMm3.toFixed(1)} mm3)`);
+    } else {
+      bad("wariant wzmocniony nie rozni sie konstrukcyjnie od lekkiego");
+    }
+
+    for (const [nazwa, r] of [["lekki", lekki], ["wzmocniony", mocny]]) {
+      const czesci = ileCzesci(r.metal);
+      if (czesci === 1 && r.stones.length === 0) ok(`${nazwa} kosz jest jedna bryla z otwartym miejscem na kamien`);
+      else bad(`${nazwa} kosz: ${czesci} czesci, ${r.stones.length} ukrytych kamieni`);
+    }
+
+    const preset = RING_PRESETS.find((x) => x.id === "cabochon");
+    kaboszon = await buildRing({
+      ...applyPreset(preset, DEFAULTS), casting: { stones: false },
+    }, { segments: 64, mode: "casting" });
+    const kp = kaboszon.params;
+    const ro = kp.innerDia / 2 + kp.thickness;
+    const srodekOkna = w.Manifold.sphere(0.32, 24).translate([0, ro + 0.42, 0]);
+    const zaslepka = kaboszon.metal.intersect(srodekOkna);
+    const shankProbe = w.Manifold.sphere(0.12, 20).translate([0, ro - 0.18, 0]);
+    const szyna = kaboszon.metal.intersect(shankProbe);
+    const otwarcie = zaslepka.volume() / srodekOkna.volume();
+    const ciaglosc = szyna.volume() / shankProbe.volume();
+    if (otwarcie < 0.02 && ciaglosc > 0.95) {
+      ok("kaboszon ma szerokie okno pod kamieniem, a frez nie przebija szyny");
+    } else {
+      bad(`kaboszon: wypelnienie okna ${(otwarcie * 100).toFixed(1)} %, ciaglosc szyny ${(ciaglosc * 100).toFixed(1)} %`);
+    }
+    srodekOkna.delete?.(); zaslepka.delete?.(); shankProbe.delete?.(); szyna.delete?.();
+
+    brioleta = await buildRing({
+      innerDia: 17.2, stone: { cut: "briolette", size: 6 }, setting: "drilled",
+    }, { segments: 64, mode: "referenceAssembly" });
+    const czesciKamienia = brioleta.stones[0]?.decompose() || [];
+    const bb = brioleta.stones[0]?.boundingBox();
+    const pozaSzyna = bb && bb.min[1] >= 17.2 / 2 + 1.6 - 0.02;
+    if (brioleta.stones.length === 1 && czesciKamienia.length === 1 && pozaSzyna) {
+      ok("brioleta jest jedna kropla zawieszona w calosci poza szyna");
+    } else {
+      bad(`brioleta: ${brioleta.stones.length} kamieni, ${czesciKamienia.length} czesci, minY ${bb?.min[1]?.toFixed(2)}`);
+    }
+    for (const c of czesciKamienia) c.delete?.();
+  } catch (e) {
+    bad(`nie dalo sie sprawdzic nowych wariantow opraw: ${e.message}`);
+  } finally {
+    zwolnij(lekki); zwolnij(mocny); zwolnij(kaboszon); zwolnij(brioleta);
+  }
+
+  const heart = CUTS.heart.supports || [];
+  const pear = CUTS.pear.supports || [];
+  if (heart.length === 2 && pear.length === 2) {
+    ok("serce i gruszka maja po dwie podpory naprzeciw lapki V");
+  } else {
+    bad(`brakuje podpor: serce ${heart.length}, gruszka ${pear.length}`);
+  }
+
+  const invalidBasket = validate({ basketStyle: "solid-plate" });
+  const ui = readFileSync(new URL("../src/components/calculators/RingConfigurator.jsx", import.meta.url), "utf8");
+  if (invalidBasket.basketStyle === "open"
+      && /set\(\{ basketStyle \}\)/.test(ui)
+      && /basketOpen/.test(ui) && /basketReinforced/.test(ui)) {
+    ok("interfejs oferuje dwa kosze, a nieznana wartosc bezpiecznie wraca do lekkiego");
+  } else {
+    bad("wybor konstrukcji kosza nie jest kompletny w walidacji lub interfejsie");
   }
 }
 
