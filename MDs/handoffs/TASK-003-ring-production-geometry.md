@@ -4,7 +4,7 @@ status: review
 author: Codex
 branch: codex/ring-production-geometry
 base_commit: ca5dbd99bef36bf38e4d1dd0fd762fc1d4842f70
-last_commit: 702d0d3d65d0d5dd57ebd1eb8f4b32a46488cbb8
+last_commit: 4fcf3d96cbc5e3f89a92efec5eddf581fe4bd0f8
 updated: 2026-08-24
 ---
 
@@ -67,6 +67,11 @@ informacji dla klienta.
 - Brioleta jest jedna osiowa kropla zawieszona na jednym kablaku, zamiast dwoch
   nalozonych bryl. Kaseta kaboszonu ma szeroki, slepy otwor nad nienaruszona
   szyna.
+- Halo ma dwa jawne sposoby zakucia kamieni wienca. `Płatkowe kasetki` buduja
+  osobny podniesiony rant wokol kazdego kamienia i jedna wspolna kuleczke od
+  srodka. `Wspolne krapy` maja niskie lozyska oraz po dwie ruchome krapy w
+  szczelinie miedzy sasiadami. Oba warianty skaluja stope, wysokosc i liczbe
+  zakuc wraz ze srednica kamieni halo.
 
 Decyzje sa zapisane w
 `MDs/decisions/ADR-0005-tryby-modelu-i-walidacja-geometrii.md`.
@@ -84,7 +89,7 @@ Decyzje sa zapisane w
 
 | Kontrola | Wynik |
 |---|---|
-| `node scripts/test-ring-generator.mjs` | pass, 41 sekcji, w tym oba azurowe kosze, ciagle krapy, podpory serca i gruszki, pojedyncza brioleta, otwarty kaboszon, krotkie frezy, tryby i eksport |
+| `node scripts/test-ring-generator.mjs` | pass, 42 sekcje, w tym dwa zakucia halo w zakresie 1,0-2,4 mm, oba azurowe kosze, ciagle krapy, podpory serca i gruszki, pojedyncza brioleta, otwarty kaboszon, krotkie frezy, tryby i eksport |
 | `node scripts/test-ring-pricing.mjs` | pass |
 | `npm run sync:pricing` | pass, mirrory geometrii zsynchronizowane |
 | `npm run build:client` | pass; pozostaja wczesniejsze ostrzezenia o duplikatach kluczy w `ToolsStudio.jsx` |
@@ -129,6 +134,12 @@ Decyzje sa zapisane w
 13. Sprawdz serce, gruszke, markize, briolete i kaboszon: dwa przeciwlegle
     podparcia dla serca i gruszki, brak palaka pod markiza, jedna kropla
     briolety oraz pusty srodek kasety kaboszonu.
+14. Dla halo ustaw kamienie 1,0 mm, 1,8 mm i 2,2 mm oraz przelacz zakucie
+    miedzy `Płatkowe kasetki` i `Wspolne krapy`. Pierwszy wariant ma tworzyc
+    regularny kwiat z podniesionych rantow, drugi dwa rzedy wspolnych krap.
+15. Dla obu wariantow wlacz i wylacz kamienie. Pusty model ma pokazac otwarte
+    stozkowe gniazda, a podglad gotowy ma rzeczywiscie przesunac rant lub
+    krapy nad rondyste, nie tylko zmienic etykiete.
 
 ## Warunek uznania zadania za gotowe
 
