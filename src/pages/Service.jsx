@@ -6,6 +6,7 @@
 // jedna i istotna: przy usludze bez ceny automatycznej zamiast koszyka
 // pokazujemy wysylke do wyceny wraz z powodem.
 
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { ArrowRight, ArrowLeft, Clock, RotateCcw, MessageCircle, Wrench, Calculator } from "lucide-react";
@@ -45,6 +46,8 @@ const UI = {
     whyQuote: "Dlaczego bez ceny z góry",
     back: "Wróć do listy",
     madeToOrder: "Na zamówienie",
+    currentPrice: "Cena tej konfiguracji",
+    configureForPrice: "Skonfiguruj poniżej, aby poznać cenę",
   },
   en: {
     shop: "Products and services",
@@ -68,6 +71,8 @@ const UI = {
     whyQuote: "Why there is no price upfront",
     back: "Back to the list",
     madeToOrder: "Made to order",
+    currentPrice: "Price for this configuration",
+    configureForPrice: "Configure below to see the price",
   },
   de: {
     shop: "Produkte und Leistungen",
@@ -91,6 +96,8 @@ const UI = {
     whyQuote: "Warum kein Preis im Voraus",
     back: "Zurück zur Liste",
     madeToOrder: "Auf Bestellung",
+    currentPrice: "Preis dieser Konfiguration",
+    configureForPrice: "Unten konfigurieren, um den Preis zu sehen",
   },
 };
 
@@ -101,6 +108,9 @@ export default function Service() {
   const u = UI[lang] || UI.en;
   const { id } = useParams();
   const card = getServiceCard(id);
+  const [configuredPrice, setConfiguredPrice] = useState(null);
+
+  useEffect(() => setConfiguredPrice(null), [id]);
 
   if (!card) return <NotFound />;
 
@@ -181,9 +191,18 @@ export default function Service() {
               <p className="text-neutral-400 text-sm mb-5">{t(card.lead, lang)}</p>
 
               {card.priceFromGrosze ? (
-                <div className="mb-1">
-                  <span className="text-neutral-500 text-xs">{u.from} </span>
-                  <span className="text-3xl font-extrabold text-white">{money(card.priceFromGrosze)}</span>
+                <div className="mb-2">
+                  {configuredPrice ? (
+                    <>
+                      <div className="text-[11px] uppercase tracking-wide text-neutral-500">{u.currentPrice}</div>
+                      <div className="text-3xl font-extrabold text-white tabular-nums">{money(configuredPrice.lineGrosze)}</div>
+                    </>
+                  ) : (
+                    <div className="text-sm font-medium text-neutral-300">{u.configureForPrice}</div>
+                  )}
+                  <div className="mt-1 text-[11px] text-neutral-500">
+                    {u.from} <span className="font-medium text-neutral-400">{money(card.priceFromGrosze)}</span>
+                  </div>
                 </div>
               ) : (
                 <div className="text-xl font-bold text-amber-300 mb-1">{u.quotePrice}</div>
@@ -308,7 +327,12 @@ export default function Service() {
           {/* Konfigurator, tylko dla uslug z cena automatyczna */}
           {!card.quoteOnly && (
             <div id="konfigurator" className="mt-12 scroll-mt-24">
-              <ServiceConfigurator card={card} lang={lang} accent={amber ? "amber" : "blue"} />
+              <ServiceConfigurator
+                card={card}
+                lang={lang}
+                accent={amber ? "amber" : "blue"}
+                onPriceChange={setConfiguredPrice}
+              />
               {/* Konfigurator pokazuje wybor typowy. Kto potrzebuje pelnej
                   kontroli, idzie do kalkulatora, ktory liczy tym samym kodem. */}
               {card.calcHref && (

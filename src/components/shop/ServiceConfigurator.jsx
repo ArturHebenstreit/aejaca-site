@@ -20,6 +20,7 @@ import { useMoney } from "../../shop/money.js";
 import PrintabilityGate from "../calculators/PrintabilityGate.jsx";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
 import { maxScaleForBBox } from "../../pricing/print3d.js";
+import { maxCastingScaleForBBox } from "../../pricing/preciousMetalCasting.js";
 import MaterialNotice from "../MaterialNotice.jsx";
 import { SPARE_LABEL, spareOptionsFor, brakPodloza } from "../../data/laserSubstrate.js";
 
@@ -237,7 +238,7 @@ const UI = {
 /** Pola, ktore lepiej czytaja sie jako suwak niz jako kafelki */
 const SLIDER_FIELDS = new Set(["sizeId", "infillId", "precisionId", "layerId", "areaId", "pathId", "volumeId", "quantityId"]);
 
-export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
+export default function ServiceConfigurator({ card, lang, accent = "blue", onPriceChange }) {
   const { money } = useMoney();
   const u = UI[lang] || UI.en;
   const service = getService(card.service);
@@ -385,6 +386,15 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
     if (tierKey) setParams((p) => ({ ...p, [tierKey]: tierForQty(n, tiers).id }));
   };
   const lineTotal = unitTotal * effectiveQty;
+
+  // Nagłówek karty pokazuje bieżącą kwotę całej konfiguracji. Źródłem nadal
+  // jest wyłącznie odpowiedź serwera; przekazujemy ją tylko o jeden poziom
+  // wyżej razem z opakowaniem i liczbą sztuk.
+  useEffect(() => {
+    onPriceChange?.(price && !error
+      ? { lineGrosze: lineTotal, unitGrosze: unitTotal, qty: effectiveQty }
+      : null);
+  }, [onPriceChange, price, error, lineTotal, unitTotal, effectiveQty]);
 
   // Pozycja w koszyku ma byc gotowa do kupienia, a nie do dopytania mailem.
   const descriptionOk = !service.requiresDescription || description.trim().length >= 20;
@@ -663,7 +673,11 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   // Granica skali wynika z pola roboczego maszyny. Ten sam kod liczy ja na
   // serwerze przy wystawianiu kwoty wiazacej, wiec suwak nie moze obiecac
   // wielkosci, ktora wycena odrzuci.
-  const maxScale = geometry?.bbox ? maxScaleForBBox(geometry.bbox, service.calculator) : null;
+  const maxScale = geometry?.bbox
+    ? service.calculator === "jewelry_casting"
+      ? maxCastingScaleForBBox(geometry.bbox)
+      : maxScaleForBBox(geometry.bbox, service.calculator)
+    : null;
   const isJewelry = String(service.calculator || "").startsWith("jewelry");
 
   return (
@@ -719,6 +733,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
               maxScale={maxScale}
               lang={lang}
               accent={accent}
+              purpose={service.calculator === "jewelry_casting" ? "casting" : "print"}
             />
           )}
           {!file && service.calculator !== "jewelry_casting" && <p className="text-neutral-600 text-[11px] -mt-4 mb-6">{u.fileOptional}</p>}

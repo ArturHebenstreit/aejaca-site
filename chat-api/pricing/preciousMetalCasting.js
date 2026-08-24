@@ -4,7 +4,9 @@
 
 import { calcNew } from "./jewelry.js";
 
-export const PRECIOUS_METAL_CASTING_BUILD = "1.004";
+export const PRECIOUS_METAL_CASTING_BUILD = "1.005";
+
+export const CASTING_ENVELOPE_MM = [24, 24, 35];
 
 const L = (pl, en, de) => ({ pl, en, de });
 
@@ -36,10 +38,22 @@ export const CASTING_FINISHES = [
 
 export const CASTING_RESERVE_RATE = 0.12;
 
+function sortedMillimetres(bbox) {
+  if (!bbox) return null;
+  const dims = [bbox.x, bbox.y, bbox.z].map((v) => Number(v) * 10).sort((a, b) => a - b);
+  return dims.every((v) => Number.isFinite(v) && v > 0) ? dims : null;
+}
+
+/** Największa jednolita skala, która po obrocie mieści model w kolbie. */
+export function maxCastingScaleForBBox(bbox) {
+  const dims = sortedMillimetres(bbox);
+  if (!dims) return null;
+  return Math.min(...dims.map((dimension, index) => CASTING_ENVELOPE_MM[index] / dimension));
+}
+
 export function fitsCastingFlask(bbox, scale = 1) {
-  if (!bbox) return false;
-  const dims = [bbox.x, bbox.y, bbox.z].map((v) => Number(v) * 10 * scale).sort((a, b) => a - b);
-  return dims.every(Number.isFinite) && dims[0] <= 24 && dims[1] <= 24 && dims[2] <= 35;
+  const maxScale = maxCastingScaleForBBox(bbox);
+  return maxScale != null && Number.isFinite(Number(scale)) && Number(scale) > 0 && Number(scale) <= maxScale + 1e-9;
 }
 
 export function calculate(params, lang = "pl", rates) {
@@ -61,7 +75,13 @@ export function calculate(params, lang = "pl", rates) {
     lineId: "woman", typeId: "ring", metalId, weightId: "standard", methodId: "cast",
     platingId: "none", stoneRows: [], qtyId, engravingId: "none",
     clientSuppliesMetal: false, overrideWeightG: requiredMassG,
-  }, lang, rates);
+  }, lang, rates, undefined, {
+    // Wewnętrzna opcja, nie parametr zamówienia: klient nie może nią sterować.
+    // Odlew nie jest wykonaniem całego pierścionka od zera. Poprzednio silnik
+    // doliczał sześć godzin pełnej pracy jubilerskiej, a następnie jeszcze
+    // przygotowanie wzorca, przez co cena startowa była sztucznie zawyżona.
+    laborHours: 1.5,
+  });
   if (!base || base.type !== "calculated") return base;
 
   const patternPreparationGrosze = 12000;
@@ -87,4 +107,3 @@ export function calculate(params, lang = "pl", rates) {
     ],
   };
 }
-

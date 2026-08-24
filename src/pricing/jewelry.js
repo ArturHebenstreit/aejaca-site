@@ -99,7 +99,7 @@ export const resolveMetalPricePerG = metalPricePerG;
 // ---- NEW CREATION CALCULATOR ----
 export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId,
   stoneRows, qtyId, qty: sztuk, engravingId,
-  clientSuppliesMetal, overrideWeightG }, lang, rates, gemstones) {
+  clientSuppliesMetal, overrideWeightG }, lang, rates, gemstones, internalOptions) {
   const l = LBL[lang] || LBL.en;
   const line = PRODUCT_LINES.find(p => p.id === lineId);
   const jType = JEWELRY_TYPES[lineId]?.find(j => j.id === typeId);
@@ -121,7 +121,15 @@ export function calcNew({ lineId, typeId, metalId, weightId, methodId, platingId
   const metalCost = clientSuppliesMetal ? 0 : weightG * plnPerG * metal.purity;
 
   // Labor cost (weight affects labor - lighter pieces need less finishing)
-  const laborCost = jType.laborH * method.laborRate * method.laborMul * metal.laborMul * jType.complexity * (weight.laborMul || 1);
+  // Kalkulatory wyspecjalizowanych usług mogą użyć tego samego silnika cen
+  // kruszcu i marż, ale z rzeczywistym czasem danej operacji. Domyślnie nadal
+  // obowiązuje pełny czas wykonania nowej biżuterii, więc dotychczasowe wyceny
+  // nie zmieniają się ani o grosz.
+  const internalLaborHours = internalOptions?.laborHours;
+  const laborHours = Number.isFinite(Number(internalLaborHours)) && Number(internalLaborHours) >= 0
+    ? Number(internalLaborHours)
+    : jType.laborH;
+  const laborCost = laborHours * method.laborRate * method.laborMul * metal.laborMul * jType.complexity * (weight.laborMul || 1);
 
   // Stone costs - iterate all rows
   let gemCost = 0;
@@ -392,4 +400,3 @@ export function calcRepair({ jewTypeId, metalTypeId, repairId, qtyId, qty: sztuk
     ],
   };
 }
-
