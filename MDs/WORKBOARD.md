@@ -23,6 +23,7 @@ Workboard jest koordynacją umowną między uczestnikami, a nie techniczną blok
 | TASK-003 | Produkcyjna geometria kreatora pierscionkow | Codex | `codex/ring-production-geometry` | `src/geometry/ring/`, `src/workers/ringGenerator.worker.js`, `src/components/calculators/RingConfigurator.jsx`, `src/components/calculators/jewelry/RingPriceBox.jsx`, `chat-api/ringExport.js`, mirrory `chat-api/geometry/`, `scripts/test-ring-generator.mjs`, dokumentacja geometrii, ADR i handoff | review | `MDs/handoffs/TASK-003-ring-production-geometry.md` |
 | TASK-004 | Jubilerskie dopracowanie gniazd, kaset, halo i krap | Codex | `codex/ring-setting-refinement` | `src/geometry/ring/`, `src/workers/ringGenerator.worker.js`, mirrory `chat-api/geometry/`, `scripts/test-ring-generator.mjs`, dokumentacja geometrii i handoff | review | `MDs/handoffs/TASK-004-ring-setting-refinement.md` |
 | TASK-005 | Odkryte gniazda, ergonomia kreatora i bryla sygnetow | Codex | `codex/ring-ux-signet-refinement` | `src/geometry/ring/`, `src/workers/ringGenerator.worker.js`, mirrory `chat-api/geometry/`, `scripts/test-ring-generator.mjs`, `src/components/calculators/RingConfigurator.jsx`, `src/components/calculators/jewelry/RingPreview3D.jsx`, `src/data/castingAlloys.js`, mirror `chat-api/pricing/castingAlloys.js`, dokumentacja geometrii i handoff | review | `MDs/handoffs/TASK-005-ring-ux-signet-refinement.md` |
+| TASK-006 | Ksztalty halo, trylogia i rodziny ramion | Codex | `codex/ring-ux-signet-refinement` | `src/geometry/ring/`, `src/workers/ringGenerator.worker.js`, mirrory `chat-api/geometry/`, `scripts/test-ring-generator.mjs`, `src/components/calculators/RingConfigurator.jsx`, `src/data/ringPresets.js`, dokumentacja geometrii, ADR i handoff | review | `MDs/handoffs/TASK-006-ring-families-halo-cathedral.md` |
 
 Dozwolone stany: `planned`, `active`, `blocked`, `review`, `done`.
 
@@ -35,6 +36,7 @@ Dozwolone stany: `planned`, `active`, `blocked`, `review`, `done`.
 | TASK-003 | `codex/ring-production-geometry` | Claude Code | tryby eksportu, lokalne ograniczenia szyny, testy negatywne, testy geometrii i wyceny, pelny build | oczekuje |
 | TASK-004 | `codex/ring-setting-refinement` | Claude Code | zakrycie kaset, kieszenie pod kamienie, skala krap, halo, testy geometrii i pelny build | oczekuje |
 | TASK-005 | `codex/ring-ux-signet-refinement` | Claude Code | przeloty gniazd, ekspozycja kaset, wyglad stopow, ergonomia, sygnety, testy i pelny build | oczekuje |
+| TASK-006 | `codex/ring-ux-signet-refinement` | Claude Code | kolizja galerii, szesc ksztaltow halo, 1-2 kamienie boczne, nowe rodziny ramion, ciaglosc katedry, testy i build | oczekuje |
 
 ## Archiwum
 

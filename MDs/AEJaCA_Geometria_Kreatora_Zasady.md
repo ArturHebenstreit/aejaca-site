@@ -801,3 +801,26 @@ bo rozcina szynie; moze byc malym otworem pod szerokim, ksztaltnym stozkiem.
 Sygnet trzeba skalowac wzgledem tarczy, nie nominalnej szerokosci szyny.
 Rozpoznawalnosc wersji podgladu jest czescia kontroli jakosci, dlatego ekran
 pokazuje build aplikacji oraz wersje geometrii workera.
+
+## 2026-08-24 - prowadnice halo i parametryczne rodziny ramion
+
+**Bylo:** wieniec halo zawsze prowadzil kamienie po okregu, pierwszy kamien
+boczny omijal kamien centralny, ale nie pelny obrys wspornika galerii, a
+trylogia w interfejsie przeskakiwala od braku kamieni od razu do trzech na
+strone. Roslinne, zawijane i otwarte ramiona katedralne nie mialy wspolnego
+modelu parametrow, wiec kazdy taki wzor musialby powstac jako osobny wyjatek.
+
+**Jest:** `halo.shape` prowadzi osobne tulejki po okregu, prostokacie,
+kwadracie, oktagonie, szesciokacie albo sercu. Nie powstaje pelna plyta pod
+wiencem. Odsuniecie pierwszego kamienia obejmuje teraz obrys korony i galerie.
+Liczba kamieni bocznych przyjmuje rowniez 1 i 2 na strone. Rodzina roslinna
+korzysta z parametrow stylu, gestosci i reliefu, a rodzina zawijana ze stylu,
+objecia korony i rozstawu ramion. Katedra ma otwarcia lukowe, podwojne oraz
+trojlisc i ornamenty: wolute, lisc oraz plecionke. Kazde wyciecie pozostawia
+ciagly dolny most szyny.
+
+**Czego sie dowiedzielismy.** Ksztalt halo powinien byc zamknieta prowadnica
+z rownym podzialem dlugosci, a nie skala jednego promienia. Dekoracja ramion
+jest poprawna odlewniczo dopiero wtedy, gdy od poczatku wyrasta z szyny jako
+jedna bryla. Otwor katedralny musi miec osobny limit glebokosci, bo poprawny
+obrys wizualny nie moze przecinac glownej drogi obciazenia.

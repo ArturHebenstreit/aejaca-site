@@ -11,7 +11,7 @@
 // a kwote wiazaca pobiera `RingPriceBox` z `/api/price/ring`.
 
 import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
-import { CUTS, SIDE_CUTS, SETTINGS, SIDE_SETTINGS, SHANK_PROFILES, SIGNET_TABLES, SIGNET_FACES, DEFAULTS, LIMITS, localStoneFitLimits } from "../../geometry/ring/params.js";
+import { CUTS, SIDE_CUTS, SETTINGS, SIDE_SETTINGS, SHANK_PROFILES, SIGNET_TABLES, SIGNET_FACES, HALO_SHAPES, BOTANICAL_STYLES, BYPASS_STYLES, CATHEDRAL_OPENINGS, CATHEDRAL_ORNAMENTS, DEFAULTS, LIMITS, localStoneFitLimits } from "../../geometry/ring/params.js";
 import { RING_PRESETS, PRESET_GROUPS, applyPreset } from "../../data/ringPresets.js";
 import { CASTING_ALLOYS, METAL_COLORS, colorsFor, appearanceFor } from "../../data/castingAlloys.js";
 import { GEMSTONES } from "../../pricing/jewelryConfig.js";
@@ -25,7 +25,7 @@ const RingPreview3D = lazy(() => import("./jewelry/RingPreview3D.jsx"));
 // Doladowanie go osobno nie opoznia podgladu.
 const RingPriceBox = lazy(() => import("./jewelry/RingPriceBox.jsx"));
 
-export const RING_CONFIGURATOR_BUILD = "1.002";
+export const RING_CONFIGURATOR_BUILD = "1.003";
 
 const L = {
   pl: {
@@ -34,7 +34,14 @@ const L = {
     gem: "Kamień centralny", sideGem: "Kamienie boczne",
     preset: "Zacznij od wzoru", taper: "Sylwetka szyny",
     band: "Obrączka", halo: "Halo", haloSize: "Kamienie halo", haloSetting: "Zakucie kamieni halo",
-    haloScallop: "Płatkowe kasetki", haloShared: "Wspólne krapy", on: "Tak", off: "Nie",
+    haloScallop: "Płatkowe kasetki", haloShared: "Wspólne krapy", haloShape: "Kształt obramowania halo", on: "Tak", off: "Nie",
+    haloShapes: { round: "Okrąg", rectangle: "Prostokąt", square: "Kwadrat", octagon: "Oktagon", hexagon: "Sześciokąt", heart: "Serce" },
+    botanicalStyle: "Motyw roślinny", botanicalStyles: { none: "Brak", vine: "Pnącze", leaves: "Liście", rosette: "Rozeta" },
+    motifDensity: "Liczba motywów na stronę", motifRelief: "Wysokość ornamentu",
+    bypassStyle: "Konstrukcja zawijana", bypassStyles: { none: "Brak", open: "Otwarta", cross: "Krzyżowana", splitPave: "Dzielona z pavé", flower: "Kwiatowa" },
+    bypassSweep: "Objęcie korony", bypassSeparation: "Rozstaw ramion",
+    cathedralOpening: "Wycięcie katedry", cathedralOpenings: { none: "Pełna", arch: "Łuk", doubleArch: "Podwójny łuk", trefoil: "Trójliść" },
+    cathedralOrnament: "Grawer katedry", cathedralOrnaments: { none: "Gładka", scroll: "Woluta", leaf: "Liść", braid: "Plecionka" },
     coverage: "Kamienie na obwodzie", bandSize: "Średnica kamieni",
     coverages: { none: "Brak", half: "Górna połowa", full: "Dookoła" },
     eternityWarn: "Pierścionka z kamieniami dookoła nie da się później zwęzić ani rozciągnąć: nie ma gładkiego odcinka, w który jubiler mógłby wejść.",
@@ -74,7 +81,14 @@ const L = {
     gem: "Centre stone", sideGem: "Side stones",
     preset: "Start from a design", taper: "Shank silhouette",
     band: "Band", halo: "Halo", haloSize: "Halo stones", haloSetting: "Halo stone setting",
-    haloScallop: "Scalloped bezels", haloShared: "Shared prongs", on: "Yes", off: "No",
+    haloScallop: "Scalloped bezels", haloShared: "Shared prongs", haloShape: "Halo frame shape", on: "Yes", off: "No",
+    haloShapes: { round: "Round", rectangle: "Rectangle", square: "Square", octagon: "Octagon", hexagon: "Hexagon", heart: "Heart" },
+    botanicalStyle: "Botanical motif", botanicalStyles: { none: "None", vine: "Vine", leaves: "Leaves", rosette: "Rosette" },
+    motifDensity: "Motifs per side", motifRelief: "Ornament relief",
+    bypassStyle: "Bypass construction", bypassStyles: { none: "None", open: "Open", cross: "Crossed", splitPave: "Split pavé", flower: "Floral" },
+    bypassSweep: "Head embrace", bypassSeparation: "Arm separation",
+    cathedralOpening: "Cathedral opening", cathedralOpenings: { none: "Solid", arch: "Arch", doubleArch: "Double arch", trefoil: "Trefoil" },
+    cathedralOrnament: "Cathedral engraving", cathedralOrnaments: { none: "Plain", scroll: "Scroll", leaf: "Leaf", braid: "Braid" },
     coverage: "Stones around the band", bandSize: "Stone diameter",
     coverages: { none: "None", half: "Upper half", full: "All the way round" },
     eternityWarn: "A ring with stones all the way round cannot be sized later: there is no plain stretch for a jeweller to work on.",
@@ -114,7 +128,14 @@ const L = {
     gem: "Hauptstein", sideGem: "Seitensteine",
     preset: "Mit einem Entwurf beginnen", taper: "Schienensilhouette",
     band: "Ring", halo: "Halo", haloSize: "Halo-Steine", haloSetting: "Fassung der Halo-Steine",
-    haloScallop: "Blüten-Zargen", haloShared: "Geteilte Krappen", on: "Ja", off: "Nein",
+    haloScallop: "Blüten-Zargen", haloShared: "Geteilte Krappen", haloShape: "Form des Halo-Rahmens", on: "Ja", off: "Nein",
+    haloShapes: { round: "Rund", rectangle: "Rechteck", square: "Quadrat", octagon: "Achteck", hexagon: "Sechseck", heart: "Herz" },
+    botanicalStyle: "Pflanzenmotiv", botanicalStyles: { none: "Keine", vine: "Ranke", leaves: "Blätter", rosette: "Rosette" },
+    motifDensity: "Motive je Seite", motifRelief: "Ornamenthöhe",
+    bypassStyle: "Bypass-Konstruktion", bypassStyles: { none: "Keine", open: "Offen", cross: "Gekreuzt", splitPave: "Geteilt mit Pavé", flower: "Blüte" },
+    bypassSweep: "Umfassung der Fassung", bypassSeparation: "Armabstand",
+    cathedralOpening: "Kathedralöffnung", cathedralOpenings: { none: "Voll", arch: "Bogen", doubleArch: "Doppelbogen", trefoil: "Dreipass" },
+    cathedralOrnament: "Kathedralgravur", cathedralOrnaments: { none: "Glatt", scroll: "Volute", leaf: "Blatt", braid: "Flechtband" },
     coverage: "Steine am Umfang", bandSize: "Steindurchmesser",
     coverages: { none: "Keine", half: "Obere Hälfte", full: "Rundum" },
     eternityWarn: "Ein Ring mit Steinen rundum lässt sich später nicht ändern: es fehlt der glatte Abschnitt zum Ansetzen.",
@@ -269,6 +290,10 @@ export default function RingConfigurator({ lang = "pl" }) {
   const setStone = (patch) => { setFitNotice(null); setPresetId(null); setP((prev) => ({ ...prev, stone: { ...prev.stone, ...patch } })); };
   const setSide = (patch) => { setFitNotice(null); setPresetId(null); setP((prev) => ({ ...prev, side: { ...prev.side, ...patch } })); };
   const setSignet = (patch) => { setFitNotice(null); setPresetId(null); setP((prev) => ({ ...prev, signet: { ...prev.signet, ...patch } })); };
+  const setHalo = (patch) => { setFitNotice(null); setPresetId(null); setP((prev) => ({ ...prev, halo: { ...prev.halo, ...patch } })); };
+  const setMotif = (patch) => { setFitNotice(null); setPresetId(null); setP((prev) => ({ ...prev, motif: { ...prev.motif, ...patch } })); };
+  const setBypass = (patch) => { setFitNotice(null); setPresetId(null); setP((prev) => ({ ...prev, bypass: { ...prev.bypass, ...patch } })); };
+  const setCathedral = (patch) => { setFitNotice(null); setPresetId(null); setP((prev) => ({ ...prev, cathedral: { ...prev.cathedral, ...patch } })); };
   const setKind = (kind) => {
     setFitNotice(null); setPresetId(null);
     setGrupa(kind === "signet" ? "signets" : kind === "band" ? "bands" : "solitaire");
@@ -491,6 +516,52 @@ export default function RingConfigurator({ lang = "pl" }) {
             </Group>
           ) : null}
 
+          {!signet && !obraczka && p.taper === "cathedral" ? (
+            <>
+              <Group label={t.cathedralOpening}>
+                <Seg value={p.cathedral.opening} onChange={(opening) => setCathedral({ opening })}
+                  options={CATHEDRAL_OPENINGS.map((id) => ({ id, label: t.cathedralOpenings[id] }))} />
+              </Group>
+              <Group label={t.cathedralOrnament}>
+                <Seg value={p.cathedral.ornament} onChange={(ornament) => setCathedral({ ornament })}
+                  options={CATHEDRAL_ORNAMENTS.map((id) => ({ id, label: t.cathedralOrnaments[id] }))} />
+              </Group>
+            </>
+          ) : null}
+
+          {!signet && !obraczka ? (
+            <>
+              <Group label={t.botanicalStyle}>
+                <Seg value={p.motif.style} onChange={(style) => setMotif({ style })}
+                  options={BOTANICAL_STYLES.map((id) => ({ id, label: t.botanicalStyles[id] }))} />
+              </Group>
+              {p.motif.style !== "none" ? (
+                <>
+                  <Slider label={t.motifDensity} lang={lang} unit="" decimals={0}
+                    value={p.motif.density} min={LIMITS.motifDensity[0]} max={LIMITS.motifDensity[1]} step={1}
+                    onChange={(density) => setMotif({ density })} />
+                  <Slider label={t.motifRelief} lang={lang} unit="mm" value={p.motif.relief}
+                    min={LIMITS.motifRelief[0]} max={LIMITS.motifRelief[1]} step={0.05}
+                    onChange={(relief) => setMotif({ relief })} />
+                </>
+              ) : null}
+              <Group label={t.bypassStyle}>
+                <Seg value={p.bypass.style} onChange={(style) => setBypass({ style })}
+                  options={BYPASS_STYLES.map((id) => ({ id, label: t.bypassStyles[id] }))} />
+              </Group>
+              {p.bypass.style !== "none" ? (
+                <>
+                  <Slider label={t.bypassSweep} lang={lang} unit="mm" value={p.bypass.sweep}
+                    min={LIMITS.bypassSweep[0]} max={LIMITS.bypassSweep[1]} step={0.05}
+                    onChange={(sweep) => setBypass({ sweep })} />
+                  <Slider label={t.bypassSeparation} lang={lang} unit="mm" value={p.bypass.separation}
+                    min={LIMITS.bypassSeparation[0]} max={LIMITS.bypassSeparation[1]} step={0.05}
+                    onChange={(separation) => setBypass({ separation })} />
+                </>
+              ) : null}
+            </>
+          ) : null}
+
           <Slider label={t.width} lang={lang} unit="mm" value={p.width}
             min={LIMITS.width[0]} max={LIMITS.width[1]} step={0.1} onChange={(v) => set({ width: v })} />
           <Slider label={t.thickness} lang={lang} unit="mm" value={p.thickness}
@@ -533,6 +604,10 @@ export default function RingConfigurator({ lang = "pl" }) {
 
               {p.halo.on ? (
                 <>
+                  <Group label={t.haloShape}>
+                    <Seg value={p.halo.shape} onChange={(shape) => setHalo({ shape })}
+                      options={HALO_SHAPES.map((id) => ({ id, label: t.haloShapes[id] }))} />
+                  </Group>
                   <Slider label={t.haloSize} lang={lang} unit="mm" value={p.halo.size}
                     min={LIMITS.haloSize[0]} max={LIMITS.haloSize[1]} step={0.1} decimals={1}
                     onChange={(v) => setP((prev) => { setPresetId(null);
@@ -581,7 +656,7 @@ export default function RingConfigurator({ lang = "pl" }) {
               {p.setting !== "drilled" && (
                 <Group label={t.side}>
                   <Seg value={String(p.side.count)} onChange={(id) => setSide({ count: Number(id) })}
-                    options={[{ id: "0", label: t.none }, { id: "3", label: "3" },
+                    options={[{ id: "0", label: t.none }, { id: "1", label: "1" }, { id: "2", label: "2" }, { id: "3", label: "3" },
                       { id: "4", label: "4" }, { id: "5", label: "5" }]} />
                 </Group>
               )}

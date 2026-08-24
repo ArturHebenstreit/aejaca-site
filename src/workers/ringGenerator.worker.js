@@ -45,7 +45,7 @@ import { buildRing } from "../geometry/ring/build.js";
 // gniazdami, a nie osobno liczonej odmiany podgladowej.
 // 32: kasety maja kontrolowane zakrycie, gniazda wchodza w gorna czesc szyny,
 // krapy drobnicy sa lzejsze, a halo ma zewnetrzne kieszenie platkowe.
-const WORKER_VERSION = 34; // build 1.002: slepe kieszenie pod korona i ciagle krapy
+const WORKER_VERSION = 35; // build 1.003: ksztalty halo, nowe ramiona i bezpieczne wyciecia katedry
 
 /** Podglad nie potrzebuje gestosci docelowej: mniej segmentow, szybsza reakcja. */
 const PREVIEW_SEGMENTS = 64;
