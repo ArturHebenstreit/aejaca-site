@@ -1025,7 +1025,10 @@ export function buildCrown(w, p, stone) {
   const cut = CUTS[p.stone.cut];
   const size = p.stone.size;
   const pts = outlineFor(p.stone.cut, size);
-  const rP = p.prongDia / 2;
+  // Halo optycznie powieksza kamien centralny i zwieksza dzwignie dzialajaca
+  // na jego krapy. W tym ukladzie nie pozwalamy, aby domyslne 0,8 mm dalo
+  // delikatniejsza krape niz w zwyklym soliterze.
+  const rP = p.halo?.on ? Math.max(p.prongDia / 2, 0.44) : p.prongDia / 2;
   let crown = null;
   const add = (m) => { crown = crown ? zlacz(crown, m) : m; };
 
@@ -1156,8 +1159,9 @@ export function buildCrown(w, p, stone) {
     // wiec kamien po zakuciu siedzial na dnie studni i widac bylo tylko tafle.
     // Zgloszone wprost: "zbyt mocno zakute, zbyt malo swiatla, musi byc widac
     // kamien".
+    const chwyt = Math.max(0.26, Math.min(0.32, size * 0.045));
     const h = zakute(p)
-      ? stone.girdleH + 0.34
+      ? stone.girdleH + chwyt
       : stone.girdleH + stone.crownH * 0.35 + 0.35;
     const outer = CrossSection.ofPolygons([ccw(outlineFor(p.stone.cut, size + 2 * wall))]);
     const trzon = h * 0.6 + SEAT.aboveGalleryMm;
@@ -1165,7 +1169,12 @@ export function buildCrown(w, p, stone) {
     // Rant dociskany na kamien: ta sama scianka, ale zbiegajaca do wewnatrz.
     // Po zakuciu rant zbiega mocniej, bo lezy NA koronie, a nie obok niej:
     // gorna krawedz konczy sie tuz nad obrysem kamienia i to ona go trzyma.
-    const zbieg = (size / 2 + wall * (zakute(p) ? -0.05 : 0.6)) / (size / 2 + wall);
+    // Po zakuciu gorna krawedz zachodzi na kamien tylko o 0,05-0,08 mm.
+    // To wystarcza do pewnego chwytu rondysty, a nie tworzy szerokiego
+    // kolnierza zaslaniajacego korone.
+    const zachodzenie = Math.max(0.05, Math.min(0.08, size * 0.009));
+    const rGory = zakute(p) ? size / 2 - zachodzenie : size / 2 + wall * 0.6;
+    const zbieg = rGory / (size / 2 + wall);
     add(Manifold.extrude(outer, h * 0.4, 0, 0, [zbieg, zbieg])
       .translate([0, 0, trzon - SEAT.aboveGalleryMm]));
     addSupports([45, 135, 225, 315], -SEAT.aboveGalleryMm + 0.04);
@@ -1241,19 +1250,9 @@ export function buildCrown(w, p, stone) {
     // potrzebna tak samo, wiec zaczyna sie na dnie kosza.
     const ccwPts = ccw(pts);
     const angles = prongAngles(cut, p.setting);
-    // Przy lapce V podpora rozszerza sie poziomo juz przy samym dnie: dwie
-    // stopy V stoja daleko od wezszego dolnego rantu. Osobna, monotoniczna
-    // sciezka jest wazna; zwykle zebro biegnace ku gorze zawracaloby tu do
-    // dna i tworzylo samoprzeciecie.
-    for (const deg of angles) {
-      const rObrys = radiusAt(pts, deg);
-      const rr = Math.max(0.22, rP * 0.82);
-      add(tubeAlong(w, [
-        [rObrys * 0.55 + scianka, 0, -basketH + 0.06],
-        [rObrys * 0.76 + scianka * 0.8, 0, -basketH + 0.08],
-        [rObrys + scianka * 0.55, 0, -basketH + 0.10],
-      ], [rr * 0.92, rr * 0.90, rr], { czubek: false }).rotate([0, 0, deg]));
-    }
+    // `vprongSolid` prowadzi obie stopy V osobno do dolnego rantu. Dawne
+    // dodatkowe zebro promieniowe dublowalo to polaczenie i przy markizie
+    // bylo widoczne spod kamienia jako poprzeczny pret bez funkcji.
     for (const deg of angles) {
       add(vprongSolid(w, ccwPts, deg, rP,
         -basketH + 0.05, stone.girdleH + stone.crownH * (zakute(p) ? 0.6 : 1.05),
@@ -1455,7 +1454,13 @@ function buildSideStones(w, p, basketH = 0) {
       // w szyne: przelot na wylot przecinalby ja pod kamieniem (patrz opis
       // przy `seatCutter`). Kamien wpuszczony w szyne przelot ma nadal, bo
       // tam jest on jedyna droga swiatla i jedyna droga wypchniecia kamienia.
-      addS(naMiejsce(seatCutter(w, szlifBoku, size, zakute(p), wylotWSzynie, podniesienie > 0)));
+      const zaglebienieSzyny = Math.max(0.18, Math.min(
+        0.45, p.thickness - SEAT.minInnerStrip,
+      ));
+      addS(naMiejsce(seatCutter(
+        w, szlifBoku, size, zakute(p), wylotWSzynie, podniesienie > 0,
+        podniesienie > 0 ? podniesienie + podGaleria + zaglebienieSzyny : null,
+      )));
 
       if (podniesienie > 0) {
         // Oprawka: otwarta dolna obrecz oraz cztery lapki zawiniete od spodu.
@@ -1491,7 +1496,10 @@ function buildSideStones(w, p, basketH = 0) {
         // Robimy to samo, co przy koronie centralnej: obrys kamienia,
         // przeskalowany do dna i rozszerzony na rant.
         const ptsBoku = outlineFor(szlifBoku, size);
-        const rL = Math.min(0.42, Math.max(0.24, size * 0.11));
+        // Krapa boczna rosla do 0,84 mm srednicy przy kamieniu 4 mm. Taka
+        // proporcja zaslania korone. Zakres 0,48-0,68 mm zachowuje bezpieczna
+        // odlewniczo podstawe, ale skaluje sie wolniej od kamienia.
+        const rL = Math.min(0.34, Math.max(0.24, size * 0.085));
         const mocna = p.basketStyle === "reinforced";
         let oprawka = outlineRail(
           w, ptsBoku, mocna ? 0.64 : 0.54, -gleboko + 0.04,
@@ -1559,7 +1567,10 @@ function buildSideStones(w, p, basketH = 0) {
       // bez kontaktu z nim. Trzymaly wiec powietrze. Sprawdzian jest prosty:
       // odleglosc od osi kamienia musi wynosic tyle co promien rondysty,
       // a nie tyle co polowa boku kwadratu opisanego na kamieniu.
-      const kula = Math.min(0.34, Math.max(0.2, size * 0.2));
+      // `kula` jest PROMIENIEM. Dawne `size * 0.2` dawalo krapie 0,6 mm
+      // srednicy przy kamieniu 1,5 mm. Typowa kuleczka pave ma 0,3-0,4 mm
+      // srednicy, dlatego promien jest ograniczony do 0,15-0,20 mm.
+      const kula = Math.min(0.20, Math.max(0.15, size * 0.105));
 
       if (setting === "pave") {
         // Kuleczka pave musi STERCZEC W GORE, czyli wzdluz promienia
@@ -1568,30 +1579,39 @@ function buildSideStones(w, p, basketH = 0) {
         // plynac. Sama kula, bez wysokosci, tez sie do tego nie nadaje, bo nie
         // ma czego przesunac nad kamien. Wysokosc liczymy od powierzchni szyny,
         // w ktorej zakucie siedzi zanurzone o `SINK`.
-        const wysokosc = size * 0.55;
+        const zam = zakute(p);
+        const wysokosc = zam
+          ? Math.max(0.24, size * 0.18)
+          : Math.max(0.38, size * 0.28);
         const ptsZakucia = outlineFor(szlifBoku, size);
         for (const deg of [45, 135, 225, 315]) {
           // Punkt zakucia idzie za rzeczywistym obrysem, a potem obraca sie
           // razem z kamieniem. Gruszka nie dostaje juz okraglego ukladu kulek.
-          const rr = radiusAt(ptsZakucia, deg) + kula * 0.32;
+          const rr = radiusAt(ptsZakucia, deg) + kula * (zam ? 0.12 : 0.34);
           const local = [Math.cos(deg * DEG) * rr, Math.sin(deg * DEG) * rr];
           const phi = orientacja * DEG;
           const tang = local[0] * Math.cos(phi) - local[1] * Math.sin(phi);
           const axial = local[0] * Math.sin(phi) + local[1] * Math.cos(phi);
           const stopa = at(tang, axial);
-          const rGora = kula * 0.7;
+          const rGora = kula * 0.68;
           const os = [Math.cos(a), Math.sin(a), 0];
+          const przesun = zam ? Math.min(kula * 0.40, size * 0.04) : 0;
+          const rrGora = rr - przesun;
+          const localGora = [Math.cos(deg * DEG) * rrGora, Math.sin(deg * DEG) * rrGora];
+          const tangGora = localGora[0] * Math.cos(phi) - localGora[1] * Math.sin(phi);
+          const axialGora = localGora[0] * Math.sin(phi) + localGora[1] * Math.cos(phi);
+          const nadKamieniem = at(tangGora, axialGora);
           const szczyt = [
-            stopa[0] + os[0] * (wysokosc + SINK),
-            stopa[1] + os[1] * (wysokosc + SINK),
-            stopa[2],
+            nadKamieniem[0] + os[0] * (wysokosc + SINK),
+            nadKamieniem[1] + os[1] * (wysokosc + SINK),
+            nadKamieniem[2],
           ];
-          addM(zlacz(
-            Manifold.cylinder(wysokosc + SINK, kula, rGora, 20, false)
-              .rotate([0, 90, a / DEG])
-              .translate(stopa),
-            Manifold.sphere(rGora, 16).translate(szczyt),
-          ));
+          const srodek = [
+            (stopa[0] + szczyt[0]) / 2,
+            (stopa[1] + szczyt[1]) / 2,
+            (stopa[2] + szczyt[2]) / 2,
+          ];
+          addM(tubeAlong(w, [stopa, srodek, szczyt], [kula, kula * 0.82, rGora]));
         }
       }
       void tilt;
@@ -2182,40 +2202,59 @@ export function buildHalo(w, p, stone, girdleR) {
   //
   // Tulejka jest na tyle wysoka, ze mozna zanurzyc kamien porzadnie.
   // Zanurzenie idzie za rozmiarem kamienia, bo za nim idzie i wlot.
+  const wzorKam = stoneSolid(w, "round", d);
   const zK = stone.girdleH * 0.5 - Math.max(0.12, d * 0.11);
   const seatH = Math.max(0.62, d * (haloSetting === "scallop" ? 0.68 : 0.60));
   // Niewielkie zachodzenie do srodka spina wieniec z korona, ale jest o rzad
   // wielkosci mniejsze od dawnej plyty i wystepuje tylko pod tulejkami.
+  // Niskie tulejki musza zachodzic na sasiednie tulejki rowniez PO wycieciu
+  // gniazd. Ten zapas lezy pod rondysta, wiec spina wieniec bez zaslaniania
+  // korony kamienia.
   const seatR = d / 2 + (haloSetting === "scallop"
     ? Math.max(0.26, d * 0.16)
     : Math.max(0.13, d * 0.07));
-  const seatTop = stone.girdleH * 0.5 + Math.max(0.04, d * 0.025);
+  const haloGirdleTop = zK + wzorKam.girdleH;
+  const baseTop = haloGirdleTop - Math.max(0.02, d * 0.015);
+  const petalTop = haloGirdleTop + (zakute(p)
+    ? Math.max(0.04, d * 0.035)
+    : Math.max(0.16, d * 0.11));
 
   // Kamyk i gniazdo sa dla calego wienca TAKIE SAME, wiec budujemy je RAZ
   // i powielamy przesunieciem. Wieniec potrafi miec dwadziescia kamieni,
   // a kamien fasetowany to kilkadziesiat operacji jadra: budowany od nowa dla
   // kazdego kamyka kosztowal tyle, co caly pierscionek.
-  const wzorKam = stoneSolid(w, "round", d);
   // Gniazdo konczy sie pod koleta. Przelot przez cala wysokosc korony byl
   // odpowiedzialny za otwor widoczny w podwyzszeniu i w szynie.
   const wzorGniazdo = seatCutter(
     w, "round", d, haloSetting === "scallop" ? zakute(p) : false,
-    SEAT.throughWidth, true, seatH - 0.08,
+    SEAT.throughWidth, true, seatH + 0.02,
   );
   for (let i = 0; i < n; i++) {
     const a = (i / n) * Math.PI * 2;
     const x = Math.cos(a) * rW, y = Math.sin(a) * rW;
 
-    // Płatkowa kasetka dochodzi do rondysty i czyta się z góry jako osobny
-    // łuk wokół każdego kamienia. Wspólne krapy dostają niższe łożysko:
-    // metal podtrzymuje pawilon, ale nie udaje pełnej kasety i nie zasłania
-    // powiększonego kamienia halo.
-    const cupTop = haloSetting === "scallop"
-      ? seatTop
-      : seatTop - Math.max(0.10, d * 0.07);
+    // Niskie loze podtrzymuje pawilon, ale konczy sie pod rondysta. Wariant
+    // platkowy dostaje osobno tylko ZEWNĘTRZNA polkasete: kamien wsuwa sie
+    // w nia na zewnatrz, a od srodka zamyka go wspolna kuleczka.
+    const cupTop = baseTop;
     const tulejka = Manifold.cylinder(seatH, seatR, seatR, 32, false)
       .translate([x, y, cupTop - seatH]);
     metal = metal ? zlacz(metal, tulejka) : tulejka;
+
+    if (haloSetting === "scallop") {
+      const wallR = d / 2 + Math.max(0.20, d * 0.12);
+      const wallH = petalTop - baseTop + Math.max(0.08, d * 0.05);
+      const sciana = Manifold.cylinder(wallH, wallR, wallR, 32, false)
+        .translate([x, y, petalTop - wallH]);
+      // Polprzestrzen lokalnego +X po obrocie wskazuje na zewnatrz wienca.
+      const polowa = Manifold.cube([wallR * 2.2, wallR * 4, wallH * 2], true)
+        .translate([wallR, 0, petalTop - wallH / 2])
+        .rotate([0, 0, a / DEG])
+        .translate([x, y, 0]);
+      const platek = sciana.intersect(polowa);
+      sciana.delete?.(); polowa.delete?.();
+      metal = zlacz(metal, platek);
+    }
 
     stones.push(wzorKam.solid.translate([x, y, zK]));
 
@@ -2245,7 +2284,7 @@ export function buildHalo(w, p, stone, girdleR) {
   // usterka, ktora poprawilismy juz przy pave na szynie, tylko w wiencu
   // zostala. Zakucie jest slupkiem: stoi ponad plyta, zweza sie ku gorze
   // i przy zakuwaniu KLANIA SIE nad kamien, bo ma czym.
-  const kulaH = Math.max(0.22, Math.min(0.30, d * 0.17));
+  const kulaH = Math.max(0.20, Math.min(0.25, d * 0.115));
   const zam = zakute(p);
   const zSzczytu = zK + wzorKam.girdleH
     + wzorKam.crownH * (zam ? 0.58 : 1.08)
@@ -2281,11 +2320,9 @@ export function buildHalo(w, p, stone, girdleR) {
       const rStopy = rW + s * odsun;
       // Zakuty slupek pochyla sie nad kamien, ale nie tak daleko, zeby zejsc
       // sie z drugim slupkiem pary: dwa czubki w jednym walku to nie zakucie.
-      const odsunCzubka = zam ? Math.max(odsun - d * 0.30, kulaH * 1.1) : odsun;
+      const odsunCzubka = zam ? Math.max(odsun - d * 0.14, kulaH * 1.15) : odsun;
       const rSzczytu = rW + s * odsunCzubka;
-      const cupTop = haloSetting === "scallop"
-        ? seatTop
-        : seatTop - Math.max(0.10, d * 0.07);
+      const cupTop = haloSetting === "scallop" ? petalTop : baseTop;
       const zStopy = haloSetting === "scallop"
         ? cupTop - Math.max(0.24, d * 0.15)
         : cupTop - seatH + 0.08;
@@ -2613,9 +2650,10 @@ export async function buildRing(input, opts = {}) {
     if (crown) {
       metal = zlacz(metal, place(podnies(
         obrocKamien(crown, p.stone.rotation), standoff)));
-      // Galeria ma sens tylko wtedy, gdy jest co podeprzec: przy briolecie
-      // kosza nie ma, a przy kasecie rant siega szyny wlasnym trzonem.
-      if (basketH > 0 && p.setting !== "bezel") {
+      // Galeria ma sens zawsze, gdy korona stoi nad szyna. Kaseta dawniej
+      // opierala sie na litym srodku trzonu. Po wykonaniu kieszeni w szynie
+      // potrzebuje bocznych ramion tak samo jak korona lapkowa.
+      if (basketH > 0) {
         // Wysokosc kosza, a NIE kosz plus podniesienie: kosz jest juz
         // przesuniety o `standoff`, wiec zsumowanie obu podnosilo luk
         // dwukrotnie i zamiast wtopic sie w szyne siadal na niej guzkami.
@@ -2656,10 +2694,15 @@ export async function buildRing(input, opts = {}) {
           seatCutter(
             w, p.stone.cut, p.stone.size, zakute(p), wylotSrodka,
             maWlasnyKosz,
-            // Wiertlo konczy sie NAD powierzchnia podwyzszenia. `standoff`
-            // jest odlegloscia rondysty od szyny, wiec odejmujemy jeszcze
-            // margines i nie pozwalamy przelotowi wejsc w ramie.
-            maWlasnyKosz ? Math.max(0.55, standoff - 0.06) : null,
+            // Frez wchodzi w GORNA czesc szyny i tworzy widoczna kieszen pod
+            // kamieniem. Nie idzie jednak do powierzchni palca: zostawiamy
+            // co najmniej `minInnerStrip` grubosci metalu. Wczesniejsze
+            // zatrzymanie 0,06 mm nad szyna zostawialo pod kaseta szara tarcze.
+            maWlasnyKosz
+              ? standoff + Math.max(0.18, Math.min(
+                0.45, p.thickness - SEAT.minInnerStrip,
+              ))
+              : null,
           ),
           p.stone.rotation,
         ), standoff)));

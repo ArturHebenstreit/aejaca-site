@@ -1145,7 +1145,11 @@ console.log("\n19. Kamień wchodzi do gniazda, siada i nie wypada");
     let trzymane = 0;
     for (const k of proba) trzymane += kolizja(zPodgladem.metal, k, 0.6);
     const trzyma = (trzymane / objetosc) * 100;
-    if (!(trzyma > 0.3)) {
+    // Ciagly rant kasety trzyma na calym obwodzie. Dla niego bezpieczne
+    // 0,05 mm zachodzenia promieniowego daje mniejsza kolizje objetosciowa
+    // niz kilka punktowych lapek, mimo ze chwyt jest bardziej rownomierny.
+    const minimalnyChwyt = cfg.setting === "bezel" ? 0.10 : 0.30;
+    if (!(trzyma > minimalnyChwyt)) {
       problemy.push(`po zakuciu kamien nadal wychodzi gora (kolizja ${trzyma.toFixed(2)} %)`);
     }
     zwolnij(zPodgladem);
@@ -1587,7 +1591,14 @@ console.log("\n28. Łuk z szyny do korony jest gładki, a nie karbowany");
     ["halo", { stone: { cut: "round", size: 6 }, setting: "prong4", halo: { on: true, size: 1.4, material: "cz" } }],
     ["katedralna", { taper: "cathedral", stone: { cut: "round", size: 6.5 }, setting: "prong4" }],
   ]) {
-    const r = await buildRing({ innerDia: 17.2, ...cfg }, { segments: 96, withStones: false });
+    const p = validate({ ...DEFAULTS, innerDia: 17.2, ...cfg });
+    const kamien = stoneSolid(w, p.stone.cut, p.stone.size);
+    const { solid: korona, basketH } = buildCrown(w, p, kamien);
+    // Mierzymy sam uklad szyna plus galeria. Wieniec halo jest osobna
+    // konstrukcja i jego zewnetrzne platki nie moga udawac karbow ramienia.
+    const szyna = buildShank(w, p);
+    const galeria = buildGallery(w, p, basketH);
+    const metal = szyna.add(galeria);
     const ri = 17.2 / 2;
     // PROMIEN POWIERZCHNI POD DANYM KATEM.
     //
@@ -1602,7 +1613,7 @@ console.log("\n28. Łuk z szyny do korony jest gładki, a nie karbowany");
       const klin = w.Manifold.cube([26, 0.25, 0.6], true)
         .translate([13, 0, 0])
         .rotate([0, 0, st]);
-      const kawalek = r.metal.intersect(klin);
+      const kawalek = metal.intersect(klin);
       let rmax = 0;
       if (!kawalek.isEmpty()) {
         const me = kawalek.getMesh(), v = me.vertProperties;
@@ -1625,7 +1636,7 @@ console.log("\n28. Łuk z szyny do korony jest gładki, a nie karbowany");
     }
     if (zwroty > 3) bad(`${nazwa}: promien luku zmienia kierunek ${zwroty} razy, czyli luk faluje`);
     else ok(`${nazwa.padEnd(11)} łuk schodzi gładko, ${zwroty} zmiany kierunku`);
-    zwolnij(r);
+    zwolnij(metal); zwolnij(galeria); zwolnij(szyna); zwolnij(korona); zwolnij(kamien);
   }
 }
 
@@ -1726,7 +1737,9 @@ console.log("\n30. Wieniec halo: gniazdo ma stozek, a kulki stoja przy nim");
     const gR = Math.max(...outlineFor(p.stone.cut, p.stone.size).map(([x, y]) => Math.hypot(x, y)));
     const h = buildHalo(w, p, stone, gR);
     const wieniec = h.metal.subtract(h.seats);
-    const gora = stone.girdleH * 0.5;                 // gorna plaszczyzna plyty
+    const haloGirdleH = 0.03 * d;
+    const zKamienia = stone.girdleH * 0.5 - Math.max(0.12, d * 0.11);
+    const gora = zKamienia + haloGirdleH;             // rondysta kamienia halo
     const rW = gR + 0.18 + d / 2;
 
     // WLOT u gory: kamien musi miec czym wjechac do gniazda.
@@ -1737,7 +1750,10 @@ console.log("\n30. Wieniec halo: gniazdo ma stozek, a kulki stoja przy nim");
     // lozowy, wezszy od kamienia. Kamien siada wtedy na krawedzi zamiast
     // zjechac do gniazda i z gory wyglada to na gniazdo zaslepione.
     {
-      const zLica = gora - 0.03;
+      const baseTop = gora - Math.max(0.02, d * 0.015);
+      // Pomiar tuz nad licem, w swobodnym wlocie montazowym. Ponizej lica
+      // zaczyna sie lozysko wezsze od kamienia, ktore ma go zatrzymac.
+      const zLica = baseTop + 0.015;
       const pl = Manifold.cube([6, 0.04, 0.04], true).translate([rW, 0, zLica]);
       const tr = wieniec.intersect(pl);
       const kaw = tr.decompose().map((c) => c.boundingBox()).sort((a, b) => a.min[0] - b.min[0]);
@@ -1750,8 +1766,8 @@ console.log("\n30. Wieniec halo: gniazdo ma stozek, a kulki stoja przy nim");
     }
 
     // Szerokosc otworu tuz nad wybraniem, czyli u dolu gniazda.
-    const plytaH = Math.max(0.55, d * 0.62);
-    const zDna = gora - plytaH + 0.08;
+    const plytaH = Math.max(0.62, d * 0.68);
+    const zDna = gora - Math.max(0.02, d * 0.015) - plytaH + 0.08;
     const plaster = Manifold.cube([6, 0.04, 0.04], true).translate([rW, 0, zDna]);
     const trafienie = wieniec.intersect(plaster);
     const kawalki = trafienie.decompose().map((c) => c.boundingBox()).sort((a, b) => a.min[0] - b.min[0]);
@@ -1765,7 +1781,9 @@ console.log("\n30. Wieniec halo: gniazdo ma stozek, a kulki stoja przy nim");
     // warstwe zerowej grubosci, ktora zlepia wszystkie kulki w jedna bryle
     // i pomiar przestaje cokolwiek znaczyc. Wpadlem w to przy pisaniu tego testu.
     const nad = Manifold.cube([60, 60, 12], true).translate([0, 0, gora + 0.06 + 6]);
-    const zakucia = wieniec.intersect(nad);
+    const wewnetrznaStrefa = Manifold.cylinder(20, rW, rW, 96, true);
+    const ponad = wieniec.intersect(nad);
+    const zakucia = ponad.intersect(wewnetrznaStrefa);
     const realne = zakucia.decompose().filter((c) => c.volume() > 0.002);
     const oczekiwane = p.halo.setting === "shared" ? 2 * h.count : h.count;
     if (realne.length !== oczekiwane) {
@@ -1779,7 +1797,8 @@ console.log("\n30. Wieniec halo: gniazdo ma stozek, a kulki stoja przy nim");
 
     for (const c of zakucia.decompose()) c.delete?.();
     for (const c of trafienie.decompose()) c.delete?.();
-    zwolnij(zakucia); zwolnij(trafienie); zwolnij(nad); zwolnij(plaster);
+    zwolnij(zakucia); zwolnij(ponad); zwolnij(wewnetrznaStrefa);
+    zwolnij(trafienie); zwolnij(nad); zwolnij(plaster);
     zwolnij(wieniec); zwolnij(h.metal); zwolnij(h.seats); zwolnij(stone.solid);
     for (const k of h.stones) k.delete?.();
   }
@@ -2116,7 +2135,7 @@ console.log("\n34. Kaseta ma rant, a nie ostrze o grubosci setnej milimetra");
     zwolnij(r);
 
     const problemy = [];
-    if (szczyt < 0.3) problemy.push(`rant sięga tylko ${szczyt.toFixed(2)} mm ponad rondystę`);
+    if (szczyt < 0.18) problemy.push(`rant sięga tylko ${szczyt.toFixed(2)} mm ponad rondystę`);
     if (grubosc < 0.25) problemy.push(`rant ma u góry ${grubosc.toFixed(3)} mm, czyli nie ma czego dociskać`);
     if (problemy.length) bad(`${id}: ${problemy.join("; ")}`);
     else ok(`${id.padEnd(9)} rant ${grubosc.toFixed(2)} mm gruby, ${szczyt.toFixed(2)} mm ponad rondystą`);
@@ -2505,8 +2524,9 @@ console.log("\n39. Orientacja kamieni obraca kamien, oprawe i gniazdo razem");
 console.log("\n40. Otwarte gniazda, krotkie frezy i suwaki orientacji");
 // ------------------------------------------------------------
 // To sa trzy elementy jednego kontraktu widoku odlewniczego: po ukryciu
-// kamienia klient ma zobaczyc puste gniazdo, frez nie moze przy tym przebic
-// ramienia, a ustawienie wydluzonego szlifu ma byc jawne w stopniach.
+// kamienia klient ma zobaczyc puste gniazdo, frez ma wejsc w gorna czesc
+// ramienia bez naruszenia strony palca, a ustawienie wydluzonego szlifu ma
+// byc jawne w stopniach.
 {
   const w = await kernel();
 
@@ -2537,10 +2557,10 @@ console.log("\n40. Otwarte gniazda, krotkie frezy i suwaki orientacji");
     const shankProbe = w.Manifold.sphere(0.14, 24).translate([0, surface - 0.2, 0]);
     const metalUnderSeat = halo.metal.intersect(shankProbe);
     const ratio = metalUnderSeat.volume() / shankProbe.volume();
-    if (ratio > 0.95) {
-      ok("srodkowy frez konczy sie nad podwyzszeniem i nie wierci w szynie");
+    if (ratio < 0.10) {
+      ok("srodkowy frez tworzy kieszen w gornej czesci szyny");
     } else {
-      bad(`frez zabral ${((1 - ratio) * 100).toFixed(1)} % sondy w ramieniu`);
+      bad(`frez nie utworzyl kieszeni: sonda nadal ma ${(ratio * 100).toFixed(1)} % metalu`);
     }
     shankProbe.delete?.(); metalUnderSeat.delete?.();
   } catch (e) {
@@ -2591,14 +2611,15 @@ console.log("\n41. Dwa kosze, podparte szlify i otwarta kaseta kaboszonu");
     }, { segments: 64, mode: "casting" });
     const kp = kaboszon.params;
     const ro = kp.innerDia / 2 + kp.thickness;
+    const ri = kp.innerDia / 2;
     const srodekOkna = w.Manifold.sphere(0.32, 24).translate([0, ro + 0.42, 0]);
     const zaslepka = kaboszon.metal.intersect(srodekOkna);
-    const shankProbe = w.Manifold.sphere(0.12, 20).translate([0, ro - 0.18, 0]);
+    const shankProbe = w.Manifold.sphere(0.12, 20).translate([0, ri + 0.20, 0]);
     const szyna = kaboszon.metal.intersect(shankProbe);
     const otwarcie = zaslepka.volume() / srodekOkna.volume();
     const ciaglosc = szyna.volume() / shankProbe.volume();
     if (otwarcie < 0.02 && ciaglosc > 0.95) {
-      ok("kaboszon ma szerokie okno pod kamieniem, a frez nie przebija szyny");
+      ok("kaboszon ma szerokie okno i zachowany pasek szyny od strony palca");
     } else {
       bad(`kaboszon: wypelnienie okna ${(otwarcie * 100).toFixed(1)} %, ciaglosc szyny ${(ciaglosc * 100).toFixed(1)} %`);
     }
@@ -2699,6 +2720,129 @@ console.log("\n42. Dwa poprawne sposoby zakucia kamieni halo");
   } else {
     bad("brakuje pelnej obslugi wyboru zakucia halo");
   }
+}
+
+// ------------------------------------------------------------
+console.log("\n43. Zakucie drobnicy trzyma, ale nie przykrywa kamieni");
+// ------------------------------------------------------------
+// Sam kontakt nie wystarcza. Poprzednie krapy pave i halo przecinaly nawet
+// ponad jeden procent objetosci malego kamienia. Z gory oznacza to metal
+// zajmujacy znaczna czesc korony. Mierzymy kazdy rodzaj osobno i wymagamy
+// zarowno minimalnego chwytu, jak i maksymalnego przykrycia.
+{
+  const przypadki = [
+    ["pave", {
+      innerDia: 17.2, width: 2.4, thickness: 1.6,
+      stone: { cut: "round", size: 6 }, setting: "prong4",
+      side: { count: 4, size: 1.5, setting: "pave" },
+    }, 0.46],
+    ["halo platkowe", {
+      innerDia: 17.2, stone: { cut: "round", size: 6 }, setting: "prong4",
+      halo: { on: true, size: 1.5, setting: "scallop" },
+    }, 1.10],
+    ["halo wspolne krapy", {
+      innerDia: 17.2, stone: { cut: "round", size: 6 }, setting: "prong4",
+      halo: { on: true, size: 1.5, setting: "shared" },
+    }, 1.10],
+  ];
+  for (const [opis, cfg, maksimum] of przypadki) {
+    const r = await buildRing({ ...cfg, casting: { stones: true } }, {
+      segments: 64, mode: "referenceAssembly",
+    });
+    const ileHalo = r.stoneVolumesMm3.haloCount || 0;
+    const drobne = ileHalo ? r.stones.slice(1, 1 + ileHalo) : r.stones.slice(1);
+    const kolizje = drobne.map((k) => {
+      const wspolne = r.metal.intersect(k);
+      const proc = (wspolne.volume() / k.volume()) * 100;
+      wspolne.delete?.();
+      return proc;
+    });
+    const naj = Math.min(...kolizje), najw = Math.max(...kolizje);
+    if (!(naj > 0.01)) bad(`${opis}: co najmniej jedno zakucie nie trzyma kamienia (${naj.toFixed(3)} %)`);
+    else if (najw > maksimum) bad(`${opis}: metal przykrywa za duzo kamienia (${najw.toFixed(3)} %, prog ${maksimum} %)`);
+    else ok(`${opis.padEnd(22)} chwyt ${naj.toFixed(3)}-${najw.toFixed(3)} % objetosci kamienia`);
+    zwolnij(r);
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n44. Gniazdo centralne zaglebia sie w szyne, ale jej nie przebija");
+// ------------------------------------------------------------
+// Kontrola negatywna to gola szyna: sonda 0,2 mm pod jej wierzchem ma byc
+// wypelniona metalem. Po dodaniu kasety w tym samym miejscu ma byc kieszen,
+// a druga sonda przy palcu ma nadal trafic w ciagly metal.
+{
+  const w = await kernel();
+  for (const id of ["bezel", "cabochon"]) {
+    const preset = RING_PRESETS.find((x) => x.id === id);
+    const p = validate({ ...applyPreset(preset, DEFAULTS), casting: { stones: false } });
+    const r = await buildRing(p, { segments: 64, mode: "casting" });
+    const gola = buildShank(w, p, 64);
+    const ro = p.innerDia / 2 + p.thickness;
+    const ri = p.innerDia / 2;
+    const kieszenProbe = w.Manifold.sphere(0.08, 20).translate([0, ro - 0.20, 0]);
+    const pasekProbe = w.Manifold.sphere(0.08, 20).translate([0, ri + 0.20, 0]);
+    const kontrola = gola.intersect(kieszenProbe);
+    const kieszen = r.metal.intersect(kieszenProbe);
+    const pasek = r.metal.intersect(pasekProbe);
+    const v = kieszenProbe.volume();
+    const controlFill = kontrola.volume() / v;
+    const pocketFill = kieszen.volume() / v;
+    const stripFill = pasek.volume() / pasekProbe.volume();
+    if (controlFill < 0.90) bad(`${id}: kontrola negatywna nie trafila w gola szyne (${controlFill.toFixed(2)})`);
+    else if (pocketFill > 0.15) bad(`${id}: pod gniazdem nie ma zaglebienia w szynie (${pocketFill.toFixed(2)} metalu)`);
+    else if (stripFill < 0.90) bad(`${id}: frez naruszyl pasek metalu przy palcu (${stripFill.toFixed(2)})`);
+    else ok(`${id.padEnd(9)} kieszen ${(100 * (1 - pocketFill)).toFixed(0)} %, pasek przy palcu ${(100 * stripFill).toFixed(0)} %`);
+    gola.delete?.(); kieszenProbe.delete?.(); pasekProbe.delete?.();
+    kontrola.delete?.(); kieszen.delete?.(); pasek.delete?.();
+    zwolnij(r);
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n45. Platkowe halo ma zewnetrzna kieszen, a markiza nie ma poprzeczki");
+// ------------------------------------------------------------
+{
+  const w = await kernel();
+  const centralny = stoneSolid(w, "round", 6);
+  const p = validate({
+    stone: { cut: "round", size: 6 }, setting: "prong4",
+    halo: { on: true, size: 1.5, setting: "scallop" },
+    casting: { stones: false },
+  });
+  const gR = Math.max(...outlineFor("round", 6).map(([x, y]) => Math.hypot(x, y)));
+  const h = buildHalo(w, p, centralny, gR);
+  const pustyWieniec = h.metal.subtract(h.seats);
+  const bb = h.stones[0].boundingBox();
+  const cx = (bb.min[0] + bb.max[0]) / 2;
+  const d = p.halo.size;
+  const z = 0;
+  const zewnProbe = w.Manifold.sphere(0.06, 20).translate([cx + d / 2 + 0.10, 0, z]);
+  const wewnProbe = w.Manifold.sphere(0.06, 20).translate([cx - d / 2 - 0.10, 0, z]);
+  const zewn = pustyWieniec.intersect(zewnProbe);
+  const wewn = pustyWieniec.intersect(wewnProbe);
+  const zewnFill = zewn.volume() / zewnProbe.volume();
+  const wewnFill = wewn.volume() / wewnProbe.volume();
+  if (zewnFill < 0.25) bad(`platkowe halo nie ma zewnetrznej kieszeni (${zewnFill.toFixed(2)})`);
+  else if (wewnFill > 0.10) bad(`platkowe halo jest zamkniete od srodka (${wewnFill.toFixed(2)})`);
+  else ok(`platkowe halo: zewnetrzna kieszen ${(100 * zewnFill).toFixed(0)} %, wejscie od srodka otwarte`);
+  zewnProbe.delete?.(); wewnProbe.delete?.(); zewn.delete?.(); wewn.delete?.();
+  pustyWieniec.delete?.(); h.metal.delete?.(); h.seats.delete?.();
+  for (const k of h.stones) k.delete?.();
+  centralny.solid.delete?.();
+
+  const pm = validate({
+    stone: { cut: "marquise", size: 8 }, setting: "vprong",
+    casting: { stones: false },
+  });
+  const sm = stoneSolid(w, "marquise", 8);
+  const cm = buildCrown(w, pm, sm);
+  const sonda = w.Manifold.cube([0.08, 3.2, 0.12], true)
+    .translate([0, 1.8, -cm.basketH + 0.10]);
+  const pret = cm.solid.intersect(sonda);
+  if (pret.volume() > 0.006) bad(`markiza ma poprzeczny pret pod kamieniem (${pret.volume().toFixed(4)} mm3)`);
+  else ok(`markiza bez zbednej poprzeczki (${pret.volume().toFixed(4)} mm3 w sondzie)`);
+  sonda.delete?.(); pret.delete?.(); cm.solid.delete?.(); sm.solid.delete?.();
 }
 
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");

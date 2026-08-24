@@ -727,3 +727,30 @@ innej liczby ruchomych elementow oraz innego sposobu domkniecia. Kontrola musi
 obejmowac najmniejszy i najwiekszy kamien, stan otwarty i zakuty oraz polaczenie
 calego wienca z galeria. Sama liczba kamieni ani jedna udana srednica nie
 potwierdzaja wykonalnosci rodziny parametrycznej.
+
+## 2026-08-24 - minimalne zakucie, kieszenie w szynie i lekka drobnica
+
+**Bylo:** rant kasety zachodzil szeroko na kamien, a stan bez kamienia mogl
+wygladac jak szara zaslepka. Frezy centralnych i podniesionych bocznych gniazd
+konczyly sie nad szyna, wiec pod kolety nie bylo fizycznej kieszeni. Krapy
+trylogii i kuleczki pave mialy prawie staly wymiar niezaleznie od kamienia.
+W halo wysokie lozyska i glebokie zakucie zaslanialy drobnice. Platkowa
+kasetka nie miala jednoznacznego wejscia od zewnatrz.
+
+**Jest:** zamkniety rant kasety ma 0,05-0,08 mm zachodzenia promieniowego,
+czyli trzyma kamien na calym obwodzie, ale pozostawia widoczna tafle i korone.
+W stanie odlewniczym wlot pozostaje otwarty. Frez centralny i frezy bocznych
+koszy wchodza tylko w gorna czesc szyny, maksymalnie do glebokosci wyznaczonej
+przez pozostawienie 0,55 mm ciaglego paska od strony palca. Promien bocznej
+krapy skaluje sie z kamieniem w zakresie 0,24-0,34 mm, a kuleczki pave maja
+0,15-0,20 mm. Halo ma niskie lozysko, mniejsze zakucia oraz zewnetrzna polowe
+platka, ktora tworzy kieszen montazowa bez zaslaniania kamienia od srodka.
+Krapy kamienia centralnego w halo zachowuja minimalny promien 0,44 mm.
+
+**Czego sie dowiedzielismy.** Bezpieczenstwa kasety nie mierzy sie tym samym
+progiem objetosciowej kolizji co kilku punktowych krap. Ciagly rant potrzebuje
+malego zachodzenia, ale rozklada chwyt na calym obwodzie. Otwor pod kolete i
+ciaglosc szyny trzeba mierzyc jednoczesnie: samo otwarcie gniazda moze stworzyc
+slaby lub niewygodny od strony palca wyrob. W drobnicy wymiar zakucia powinien
+rosnac wolniej niz kamien, bo ozdoba ma pozostac kamien, a metal tylko go
+stabilizuje.
