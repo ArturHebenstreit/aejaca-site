@@ -13,7 +13,7 @@
 import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import { CUTS, SIDE_CUTS, SETTINGS, SIDE_SETTINGS, SHANK_PROFILES, SIGNET_TABLES, SIGNET_FACES, DEFAULTS, LIMITS, localStoneFitLimits } from "../../geometry/ring/params.js";
 import { RING_PRESETS, PRESET_GROUPS, applyPreset } from "../../data/ringPresets.js";
-import { CASTING_ALLOYS, METAL_COLORS, colorsFor } from "../../data/castingAlloys.js";
+import { CASTING_ALLOYS, METAL_COLORS, colorsFor, appearanceFor } from "../../data/castingAlloys.js";
 import { GEMSTONES } from "../../pricing/jewelryConfig.js";
 import { gemOptics } from "../../data/gemOptics.js";
 import { RING_SIZES } from "../../data/ringSizes.js";
@@ -24,6 +24,8 @@ const RingPreview3D = lazy(() => import("./jewelry/RingPreview3D.jsx"));
 // Kwota wiazaca schodzi z serwera, wiec komponent i tak czeka na siec.
 // Doladowanie go osobno nie opoznia podgladu.
 const RingPriceBox = lazy(() => import("./jewelry/RingPriceBox.jsx"));
+
+export const RING_CONFIGURATOR_BUILD = "1.001";
 
 const L = {
   pl: {
@@ -62,6 +64,7 @@ const L = {
     sideReduced: "Rozmiar kamieni bocznych zmniejszono do wykonalnego maksimum",
     bandReduced: "Rozmiar kamieni obrączki zmniejszono do wykonalnego maksimum",
     fitBlocked: "Ta szerokość szyny nie mieści nawet najmniejszego dostępnego kamienia. Przywrócono ostatni poprawny projekt.",
+    configNav: "Skróty do sekcji kreatora", designSection: "Wzór", metalSection: "Metal", stoneSection: "Kamienie", productionSection: "Plik",
     profiles: { round: "Półokrągły", flat: "Płaski", knife: "Nożowy", comfort: "Comfort" },
     engravings: { none: "Gładka", mono: "Monogram", crest: "Herb" },
   },
@@ -101,6 +104,7 @@ const L = {
     sideReduced: "Side stone size was reduced to the manufacturable maximum",
     bandReduced: "Band stone size was reduced to the manufacturable maximum",
     fitBlocked: "This shank width cannot hold even the smallest available stone. The last valid design was restored.",
+    configNav: "Configurator section shortcuts", designSection: "Design", metalSection: "Metal", stoneSection: "Stones", productionSection: "File",
     profiles: { round: "Half-round", flat: "Flat", knife: "Knife-edge", comfort: "Comfort" },
     engravings: { none: "Plain", mono: "Monogram", crest: "Crest" },
   },
@@ -140,6 +144,7 @@ const L = {
     sideReduced: "Die Seitensteine wurden auf das herstellbare Maximum verkleinert",
     bandReduced: "Die Ringsteine wurden auf das herstellbare Maximum verkleinert",
     fitBlocked: "Diese Ringschienenbreite fasst nicht einmal den kleinsten verfügbaren Stein. Der letzte gültige Entwurf wurde wiederhergestellt.",
+    configNav: "Schnellzugriff auf Konfiguratorbereiche", designSection: "Entwurf", metalSection: "Metall", stoneSection: "Steine", productionSection: "Datei",
     profiles: { round: "Halbrund", flat: "Flach", knife: "Messerkante", comfort: "Comfort" },
     engravings: { none: "Glatt", mono: "Monogramm", crest: "Wappen" },
   },
@@ -172,7 +177,7 @@ function Seg({ options, value, onChange }) {
         <button
           key={o.id} type="button" onClick={() => onChange(o.id)}
           aria-pressed={o.id === value}
-          className={`rounded-sm border px-2.5 py-1.5 text-[13px] transition-colors ${
+          className={`min-h-[44px] min-w-[44px] rounded-sm border px-3 py-2 text-[13px] transition-colors ${
             o.id === value
               ? "border-amber-400/50 bg-amber-400/10 text-amber-200"
               : "border-white/10 bg-white/[0.03] text-neutral-400 hover:border-white/20 hover:text-neutral-200"
@@ -204,7 +209,7 @@ function GemSelect({ value, onChange, lang, groupLabels }) {
         style={{ background: o?.color || "#888" }} />
       <select
         value={value} onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-sm border border-white/10 bg-white/[0.03] px-2 py-1.5 text-[13px] text-neutral-200"
+        className="min-h-[44px] w-full rounded-sm border border-white/10 bg-white/[0.03] px-3 py-2 text-[13px] text-neutral-200"
       >
         {GEM_GROUPS.map((g) => (
           <optgroup key={g.key} label={groupLabels[g.key]}>
@@ -251,6 +256,7 @@ export default function RingConfigurator({ lang = "pl" }) {
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState(null);
   const [fitNotice, setFitNotice] = useState(null);
+  const [workerVersion, setWorkerVersion] = useState(null);
 
   const workerRef = useRef(null);
   const seqRef = useRef(0);
@@ -263,6 +269,11 @@ export default function RingConfigurator({ lang = "pl" }) {
   const setStone = (patch) => { setFitNotice(null); setPresetId(null); setP((prev) => ({ ...prev, stone: { ...prev.stone, ...patch } })); };
   const setSide = (patch) => { setFitNotice(null); setPresetId(null); setP((prev) => ({ ...prev, side: { ...prev.side, ...patch } })); };
   const setSignet = (patch) => { setFitNotice(null); setPresetId(null); setP((prev) => ({ ...prev, signet: { ...prev.signet, ...patch } })); };
+  const setKind = (kind) => {
+    setFitNotice(null); setPresetId(null);
+    setGrupa(kind === "signet" ? "signets" : kind === "band" ? "bands" : "solitaire");
+    setP((prev) => ({ ...prev, kind }));
+  };
 
   // Zakucie musi pasowac do szlifu, wiec przy zmianie szlifu poprawiamy je
   // sami, zamiast pokazywac klientowi blad z generatora.
@@ -283,6 +294,7 @@ export default function RingConfigurator({ lang = "pl" }) {
       setBusy(false);
       if (!e.data.ok) { setError(e.data.error); return; }
       setError(null);
+      setWorkerVersion(e.data.workerVersion);
       setMesh({ metal: e.data.metal, stones: e.data.stones,
         haloStones: e.data.haloStones, sideStones: e.data.sideStones });
       // Generator jest ostatnim slowem w sprawie parametrow. Jezeli wejscie
@@ -377,7 +389,7 @@ export default function RingConfigurator({ lang = "pl" }) {
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
-      <div className="grid lg:grid-cols-[300px_1fr]">
+      <div className="grid lg:grid-cols-[360px_1fr]">
 
         {/* ---------- parametry ---------- */}
         <div className="border-b lg:border-b-0 lg:border-r border-white/10 p-5">
@@ -388,6 +400,19 @@ export default function RingConfigurator({ lang = "pl" }) {
                 : `${fitNotice.type === "side" ? t.sideReduced : t.bandReduced}: ${nf(lang, fitNotice.from, 1)} -> ${nf(lang, fitNotice.to, 1)} mm.`}
             </div>
           ) : null}
+          <nav aria-label={t.configNav} className="sticky top-16 z-10 -mx-2 mb-5 flex gap-1 overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/95 p-1.5 shadow-lg backdrop-blur">
+            {[
+              ["config-design", t.designSection],
+              ["config-metal", t.metalSection],
+              ["config-stones", t.stoneSection],
+              ["config-production", t.productionSection],
+            ].map(([id, label]) => (
+              <a key={id} href={`#${id}`} className="grid min-h-[44px] min-w-[72px] place-items-center rounded-md px-2 text-[12px] text-neutral-300 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                {label}
+              </a>
+            ))}
+          </nav>
+          <span id="config-design" className="block scroll-mt-32" />
           {/* Wybor wzoru jest DWUPOZIOMOWY. Szesnascie kafelkow obok siebie
               tworzy sciane, w ktorej nie widac zadnej roznicy, a klient
               i tak najpierw wie, czy chce pierscionek z kamieniem, obraczke,
@@ -418,7 +443,7 @@ export default function RingConfigurator({ lang = "pl" }) {
           </Group>
 
           <Group label={t.kind}>
-            <Seg value={p.kind} onChange={(id) => set({ kind: id })}
+            <Seg value={p.kind} onChange={setKind}
               options={[{ id: "ring", label: t.ring }, { id: "signet", label: t.signet },
                         { id: "band", label: t.band }]} />
           </Group>
@@ -427,6 +452,7 @@ export default function RingConfigurator({ lang = "pl" }) {
             value={p.innerDia} min={LIMITS.innerDia[0]} max={LIMITS.innerDia[1]} step={0.1}
             onChange={(v) => set({ innerDia: v })} />
 
+          <span id="config-metal" className="block scroll-mt-32" />
           <Group label={t.alloy}>
             <Seg value={p.alloy} onChange={(id) => set({ alloy: id })}
               options={Object.entries(CASTING_ALLOYS).map(([id, a]) => ({ id, label: a.label[lang] || a.label.pl }))} />
@@ -442,7 +468,7 @@ export default function RingConfigurator({ lang = "pl" }) {
                   label: (
                     <span className="inline-flex items-center gap-1.5">
                       <span aria-hidden="true" className="w-3 h-3 rounded-full border border-black/30"
-                        style={{ background: METAL_COLORS[id].tone }} />
+                        style={{ background: appearanceFor(p.alloy, id).tone }} />
                       {METAL_COLORS[id].label[lang] || METAL_COLORS[id].label.pl}
                     </span>
                   ),
@@ -470,6 +496,7 @@ export default function RingConfigurator({ lang = "pl" }) {
           <Slider label={t.thickness} lang={lang} unit="mm" value={p.thickness}
             min={LIMITS.thickness[0]} max={LIMITS.thickness[1]} step={0.1} onChange={(v) => set({ thickness: v })} />
 
+          <span id="config-stones" className="block scroll-mt-32" />
           {!signet && !obraczka && (
             <>
               <Group label={t.cut} hint={CUTS[p.stone.cut] ? hintOf(CUTS[p.stone.cut], lang) : null}>
@@ -638,6 +665,26 @@ export default function RingConfigurator({ lang = "pl" }) {
             </>
           )}
 
+          {signet && (
+            <>
+              <Group label={t.table}>
+                <Seg value={p.signet.table} onChange={(id) => setSignet({ table: id })}
+                  options={Object.entries(SIGNET_TABLES).map(([id, def]) => ({ id, label: def[lang] || def.pl }))} />
+              </Group>
+              <Slider label={t.tableLen} lang={lang} unit="mm" value={p.signet.length}
+                min={LIMITS.signetLength[0]} max={LIMITS.signetLength[1]} step={0.5}
+                onChange={(v) => setSignet({ length: v })} />
+              <Group label={t.face}>
+                <Seg value={p.signet.face} onChange={(id) => setSignet({ face: id })}
+                  options={Object.entries(SIGNET_FACES).map(([id, def]) => ({ id, label: def[lang] || def.pl }))} />
+              </Group>
+              <Group label={t.engraving}>
+                <Seg value={p.signet.engraving} onChange={(id) => setSignet({ engraving: id })}
+                  options={["none", "mono", "crest"].map((id) => ({ id, label: t.engravings[id] }))} />
+              </Group>
+            </>
+          )}
+
           <Group label={t.previewTitle}>
             <label className={`flex items-center gap-2.5 rounded-sm border px-2.5 py-2 text-[13px] transition-colors ${
               p.casting.stones
@@ -657,6 +704,7 @@ export default function RingConfigurator({ lang = "pl" }) {
           {/* DODATKI DO PLIKU. Osobna sekcja, bo nie sa czescia wyrobu:
               nie zmieniaja ani jego wygladu na palcu, ani ceny. Potrzebuje
               ich wylacznie ten, kto sam odlewa. */}
+          <span id="config-production" className="block scroll-mt-32" />
           <Group label={t.castingTitle} hint={t.castingHint}>
             <div className="space-y-1.5">
               {[
@@ -693,29 +741,10 @@ export default function RingConfigurator({ lang = "pl" }) {
             </div>
           </Group>
 
-          {signet && (
-            <>
-              <Group label={t.table}>
-                <Seg value={p.signet.table} onChange={(id) => setSignet({ table: id })}
-                  options={Object.entries(SIGNET_TABLES).map(([id, def]) => ({ id, label: def[lang] || def.pl }))} />
-              </Group>
-              <Slider label={t.tableLen} lang={lang} unit="mm" value={p.signet.length}
-                min={LIMITS.signetLength[0]} max={LIMITS.signetLength[1]} step={0.5}
-                onChange={(v) => setSignet({ length: v })} />
-              <Group label={t.face}>
-                <Seg value={p.signet.face} onChange={(id) => setSignet({ face: id })}
-                  options={Object.entries(SIGNET_FACES).map(([id, def]) => ({ id, label: def[lang] || def.pl }))} />
-              </Group>
-              <Group label={t.engraving}>
-                <Seg value={p.signet.engraving} onChange={(id) => setSignet({ engraving: id })}
-                  options={["none", "mono", "crest"].map((id) => ({ id, label: t.engravings[id] }))} />
-              </Group>
-            </>
-          )}
         </div>
 
         {/* ---------- podglad ---------- */}
-        <div className="p-5">
+        <div className="p-5 lg:sticky lg:top-24 self-start">
           <div className="relative aspect-square lg:aspect-[4/3] rounded-xl border border-white/10 bg-black overflow-hidden">
             <Suspense fallback={null}>
               {mesh ? (
@@ -770,6 +799,9 @@ export default function RingConfigurator({ lang = "pl" }) {
               <RingPriceBox params={p} lang={lang} />
             </Suspense>
           ) : null}
+          <footer className="mt-4 text-right text-[11px] tabular-nums text-neutral-500">
+            Build {RING_CONFIGURATOR_BUILD}{workerVersion ? ` · geometria ${workerVersion}` : ""}
+          </footer>
         </div>
       </div>
     </div>
