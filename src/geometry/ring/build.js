@@ -846,9 +846,7 @@ function tubeSklejana(w, punkty, promienie, opcje = {}) {
  * falowala. Na renderze wygladalo to jak sznur paciorkow, a na wydruku byloby
  * karbem, ktory jubiler musialby zeszlifowac przed zakuciem.
  */
-export function prongSolid(w, { radius, prongR, base, girdleTop, crownH, zamkniete }) {
-  const { Manifold } = w;
-
+function prongTopPath({ radius, prongR, base, girdleTop, crownH, zamkniete }) {
   if (zamkniete) {
     // Lapka ZAKUTA, czyli taka, jaka jest po osadzeniu kamienia: pret idzie
     // prosto do rondysty, a nad nia lagodnie klania sie do srodka i konczy
@@ -865,7 +863,7 @@ export function prongSolid(w, { radius, prongR, base, girdleTop, crownH, zamknie
       punkty.push([radius - zagiecie * (u * u * (3 - 2 * u)), 0, base + (top - base) * t]);
       promienie.push(prongR * (1 - 0.3 * t));
     }
-    return tubeAlong(w, punkty, promienie);
+    return { punkty, promienie };
   }
 
   // Koniec siega WYZEJ niz korona, bo to jest material do zagiecia. Lapka
@@ -875,10 +873,38 @@ export function prongSolid(w, { radius, prongR, base, girdleTop, crownH, zamknie
   // Cienszy koniec latwiej sie dociska i mniej zaslania kamien.
   const rTop = prongR * 0.72;
 
-  const trzon = Manifold.cylinder(top - base, prongR, rTop, 32, false)
-    .translate([radius, 0, base]);
-  const czubek = Manifold.sphere(rTop, 24).translate([radius, 0, top]);
-  return zlacz(trzon, czubek);
+  return {
+    punkty: [[radius, 0, base], [radius, 0, top]],
+    promienie: [prongR, rTop],
+  };
+}
+
+export function prongSolid(w, spec) {
+  const { punkty, promienie } = prongTopPath(spec);
+  return tubeAlong(w, punkty, promienie);
+}
+
+/**
+ * Jedna krapa od dolnej galerii az po czubek.
+ *
+ * Dawna konstrukcja laczyla osobno noge i pionowy pret. Obie bryly zachodzily
+ * na siebie o kilka setnych milimetra, ale frez gniazda potrafil wyciac ten
+ * maly wspolny fragment. Wtedy na renderze zostawal pierscien pekniecia, a w
+ * odlewie krapa lamala sie dokladnie w punkcie przegiecia. Tu cala droga jest
+ * jedna powloka `tubeAlong`, bez szwu, ktory boolean moze rozciac.
+ */
+export function continuousProngSolid(w, {
+  legPoints, legRadii, radius, prongR, girdleTop, crownH, zamkniete,
+}) {
+  const base = legPoints[legPoints.length - 1][2];
+  const gora = prongTopPath({ radius, prongR, base, girdleTop, crownH, zamkniete });
+  const punkty = [...legPoints];
+  const promienie = [...legRadii];
+  for (let i = 1; i < gora.punkty.length; i++) {
+    punkty.push(gora.punkty[i]);
+    promienie.push(gora.promienie[i]);
+  }
+  return tubeAlong(w, punkty, promienie);
 }
 
 /**
@@ -1242,18 +1268,31 @@ export function buildCrown(w, p, stone) {
   // a sciana: noga wisiala obok kosza i dotykala go dopiero pod rondysta.
   // Noga musi IsC PO SCIANIE kosza, czyli zwezac sie razem z nim, bo tylko
   // wtedy lapka wyrasta z dolu oprawy, a nie jest do niej doklejona u gory.
-  const noga = (rObrys, radius, promien) => {
+  const sciezkaNogi = (rObrys, radius, promien) => {
     const rDno = rObrys * 0.55 + scianka;        // sciana kosza na jego dnie
     const rKolnierz = rObrys + scianka;          // sciana kosza pod rondysta
-    return tubeAlong(w,
-      [
+    return {
+      punkty: [
         [rDno + promien * 0.10, 0, -basketH + 0.05],
         [(rDno + rKolnierz) / 2, 0, -(basketH + kolnierz) / 2],
         [rKolnierz + promien * 0.10, 0, -kolnierz],
         [radius, 0, 0.02],
       ],
-      [promien * 0.92, promien * 0.88, promien * 0.90, promien * 0.96],
-      { czubek: false });
+      promienie: [promien * 0.92, promien * 0.88, promien * 0.90, promien * 0.96],
+    };
+  };
+
+  const calaLapka = (rObrys, radius, promien) => {
+    const noga = sciezkaNogi(rObrys, radius, promien);
+    return continuousProngSolid(w, {
+      legPoints: noga.punkty,
+      legRadii: noga.promienie,
+      radius,
+      prongR: promien,
+      girdleTop: stone.girdleH,
+      crownH: stone.crownH,
+      zamkniete: zakute(p),
+    });
   };
 
   if (p.setting === "vprong") {
@@ -1276,13 +1315,7 @@ export function buildCrown(w, p, stone) {
     for (const deg of cut.supports || []) {
       const rObrys = radiusAt(pts, deg);
       const rr = rObrys + rP * (zakute(p) ? 0.5 : 1.08);
-      add(zlacz(prongSolid(w, {
-        radius: rr, prongR: rP,
-        base: -SEAT.aboveGalleryMm,
-        girdleTop: stone.girdleH,
-        crownH: stone.crownH,
-        zamkniete: zakute(p),
-      }), noga(rObrys, rr, rP)).rotate([0, 0, deg]));
+      add(calaLapka(rObrys, rr, rP).rotate([0, 0, deg]));
     }
     return { solid: crown, basketH };
   }
@@ -1303,13 +1336,7 @@ export function buildCrown(w, p, stone) {
     const rr = radiusAt(pts, deg) + rP * (zakute(p) ? 0.5 : 1.08);
     const klucz = rr.toFixed(4);
     if (!wzorce.has(klucz)) {
-      wzorce.set(klucz, zlacz(prongSolid(w, {
-        radius: rr, prongR: rP,
-        base: -SEAT.aboveGalleryMm,
-        girdleTop: stone.girdleH,
-        crownH: stone.crownH,
-        zamkniete: zakute(p),
-      }), noga(radiusAt(pts, deg), rr, rP)));
+      wzorce.set(klucz, calaLapka(radiusAt(pts, deg), rr, rP));
     }
     add(wzorce.get(klucz).rotate([0, 0, deg]));
   }
@@ -1462,17 +1489,21 @@ function buildSideStones(w, p, basketH = 0) {
       const szlifBoku = CUTS[p.side.cut] ? p.side.cut : "round";
       const kam = stoneSolid(w, szlifBoku, size);
       stones.push(naMiejsce(kam.solid));
-      // Frez zachowuje obrys i zwezenie szlifu, ale konczy sie otwartym
-      // wylotem od strony palca. Dzieki temu puste gniazdo nie ma szarego dna,
-      // a kamien mozna osadzic i wypchnac od spodu.
-      // Sam wylot ma kontrolowany wymiar warsztatowy 0,30 mm. Pelna srednica
-      // malego kamienia wycieta przez cienka szyne rozrywala ramie, natomiast
-      // ksztaltne loze i stozek powyzej pozostaja w pelnym obrysie szlifu.
+      // Frez zachowuje obrys i zwezenie szlifu. W koszu podniesionym otwiera
+      // cale loze az do dna kosza, lecz zatrzymuje sie w gornej czesci szyny.
+      // Nie ma juz tunelu idacego do palca: to on przecinal szynie w trylogii.
+      // Wylot jest wiekszy niz dawne 0,30 mm, bo swiatlo wpada bokami kosza,
+      // a szerokie okno ma wygladac jak miejsce na kamien, nie jak szara plyta
+      // z dziurka. Bezpieczenstwo zapewnia limit glebokosci, nie mikrootwor.
       const wylotKosza = podniesienie > 0
-        ? Math.min(wylotWSzynie, Math.max(0.06, 0.30 / size))
+        ? Math.max(0.38, Math.min(0.48, 0.55 - size * 0.04))
         : wylotWSzynie;
+      const maxDepthKosza = podniesienie > 0
+        ? podniesienie + podGaleria + Math.min(0.20, p.thickness * 0.14)
+        : null;
       addS(naMiejsce(seatCutter(
-        w, szlifBoku, size, zakute(p), wylotKosza, false, null,
+        w, szlifBoku, size, zakute(p), wylotKosza,
+        podniesienie > 0, maxDepthKosza,
       )));
 
       if (podniesienie > 0) {
@@ -1531,23 +1562,25 @@ function buildSideStones(w, p, basketH = 0) {
           // Noga biegnie od dna koszyka do lapki po krzywej. Po ustawieniu
           // koszyka na pierscieniu jej dol jest zaglebiony w szynie, wiec
           // lapka nie wisi: obciazenie od zakuwania przechodzi az do ramienia.
-          const noga = tubeAlong(w, [
+          const legPoints = [
             [rObrys * 0.54 + rL * 0.10, 0, -gleboko + 0.06],
             [rObrys * 0.70 + rL * 0.10, 0, -gleboko * 0.62],
             [rObrys * 0.88 + rL * 0.16, 0, -gleboko * 0.30],
             [rLapki, 0, -0.10],
-          ], [
+          ];
+          const legRadii = [
             rL * (mocna ? 1.08 : 0.90),
             rL * (mocna ? 1.02 : 0.86),
             rL * (mocna ? 1.04 : 0.90),
             rL * (mocna ? 1.06 : 0.96),
-          ], { czubek: false });
-          const lapka = prongSolid(w, {
+          ];
+          const lapka = continuousProngSolid(w, {
+            legPoints, legRadii,
             radius: rLapki, prongR: rL,
-            base: -0.14, girdleTop: kam.girdleH, crownH: kam.crownH,
+            girdleTop: kam.girdleH, crownH: kam.crownH,
             zamkniete: zakute(p),
           });
-          oprawka = zlacz(oprawka, zlacz(noga, lapka).rotate([0, 0, deg]));
+          oprawka = zlacz(oprawka, lapka.rotate([0, 0, deg]));
         }
         addM(naMiejsce(oprawka));
       }
@@ -2677,7 +2710,7 @@ export async function buildRing(input, opts = {}) {
     // Gniazda WYCINAMY dopiero po zlaczeniu wszystkiego, zeby siegaly takze
     // szyny. Odwrotna kolejnosc daje bryle cieszsza o kilkanascie procent.
     if (p.setting !== "drilled") {
-      // OTWOR PRZELOTOWY NIE MOZE PRZECIAC SZYNY.
+      // OTWOR GNIAZDA NIE MOZE PRZECIAC SZYNY.
       //
       // Gniazdo kamienia szesciomilimetrowego ma wylot szerokosci trzech
       // milimetrow, a szyna bywa szeroka na dwa i pol. Otwor byl wiec SZERSZY
@@ -2686,9 +2719,11 @@ export async function buildRing(input, opts = {}) {
       // wiec zaden dotychczasowy sprawdzian tego nie widzial, a pierscionek
       // mial na palcu otwarta szczeline na calej szerokosci.
       //
-      // Wylot zweza sie wiec do tego, co szyna udzwignie, zostawiajac po obu
-      // stronach pasek metalu. Pasek jest cienki i nie siega calej grubosci
-      // szyny: wnetrze zostaje gladkie, a gniazdo dalej jest przewiercone.
+      // Sama redukcja srednicy wylotu nie wystarcza. Nawet maly otwor usuwal
+      // centralna droge obciazenia i na zdjeciu od strony palca szyna byla
+      // jawnie przerwana. Gniazdo centralne jest teraz kieszenia: wlot, loze
+      // i stozek pozostaja otwarte, lecz koniec frezu zatrzymuje sie w gornej
+      // czesci szyny. Pod nim biegnie ciagly most metalu na calej szerokosci.
       const profilKamienia = PROPORTIONS[CUTS[p.stone.cut].profile];
       const plaskiSpod = profilKamienia.pav < 0.05;
       // Kaboszon i rozeta o plaskim spodzie potrzebuja czytelnego okna pod
@@ -2700,11 +2735,17 @@ export async function buildRing(input, opts = {}) {
           SEAT.throughWidth,
           (p.width - 2 * SEAT.minInnerStrip) / p.stone.size,
         ));
+      // Początek frezu lezy na rondyscie, podniesionej o `standoff` nad
+      // szyna. Schodzimy przez kosz i najwyzej 0,32 mm w powierzchnie szyny.
+      // To daje czytelna kieszen pod kamieniem, ale przy najcienszej
+      // dopuszczalnej szynie nadal zostawia co najmniej 0,78 mm ciaglego
+      // metalu od strony palca.
+      const maxDepthSrodka = standoff + Math.min(0.32, p.thickness * 0.22);
       metal = odejmij(metal, place(podnies(
         obrocKamien(
           seatCutter(
             w, p.stone.cut, p.stone.size, zakute(p), wylotSrodka,
-            false, null,
+            true, maxDepthSrodka,
           ),
           p.stone.rotation,
         ), standoff)));

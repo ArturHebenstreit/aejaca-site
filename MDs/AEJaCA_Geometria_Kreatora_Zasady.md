@@ -103,9 +103,12 @@ które trzeba znać, budując cokolwiek, co ma gniazdo:
 5. **Płyta musi być grubsza niż gniazdo.** Wlot plus `ledge` plus stożek plus
    prosty wylot: jeżeli metalu jest mniej, stożek kończy się w powietrzu i punkt 3
    przestaje obowiązywać, choć w kodzie dalej wygląda na spełniony.
-6. **Otwór przelotowy nie może przeciąć nośnika.** W szynie zostaje
-   `minInnerStrip = 0.55` mm metalu po stronie palca; między sąsiednimi kamieniami
-   liczy się odstęp **po promieniu wewnętrznym**, bo tam kamienie są najgęściej.
+6. **Otwór nie może przeciąć nośnika pod koroną.** Centralne i podniesione
+   boczne gniazda sa slepymi kieszeniami otwartymi od gory, a szyna pozostaje
+   ciagla od strony palca. Kontrolowany przelot stosuje sie tylko do kamieni
+   faktycznie wpuszczonych w szynę. Wtedy zostaje `minInnerStrip = 0.55` mm
+   metalu po stronie palca; między sąsiednimi kamieniami liczy się odstęp
+   **po promieniu wewnętrznym**, bo tam kamienie są najgęściej.
 
 ## Łapki i kuleczki
 
@@ -279,6 +282,27 @@ dodając nową bryłę:
 
 Dopisujemy **na górze**, jeden wpis na zmianę geometrii. Format: co było, co jest,
 i **czego się z tego dowiedzieliśmy na przyszłość**.
+
+## 2026-08-24 - ciagla szyna pod korona i krapa z jednej powloki
+
+**Bylo:** centralne i podniesione boczne gniazda mialy przelot wychodzacy od
+strony palca. Usuwal on szara zaslepke, ale jednoczesnie przecinal szynę pod
+korona. Krapa skladala sie z osobno generowanej nogi i gornej czesci. Boolean
+potrafil je polaczyc, lecz po odjeciu frezu w przegieciu zostawal punktowy styk
+albo przerwa widoczna jako zlamana krapa.
+
+**Jest:** frez centralny tworzy otwarta kieszen i wchodzi najwyzej 0,32 mm w
+gorna powierzchnie szyny. Frez boczny w koszu konczy sie nad ciagla szyna.
+Kazda krapa centralna i boczna jest jedna rura prowadzona po pelnej sciezce od
+dolnej obreczy do czubka, bez laczenia osobnych walcow na przegieciu. Sprawdzian
+44 mierzy jednoczesnie otwarcie kieszeni i most od strony palca. Sprawdzian 48
+odroznia jedna powloke od dwoch segmentow z przerwa i mierzy przekroj przegiecia.
+
+**Czego sie dowiedzielismy.** Otwarte gniazdo nie jest synonimem otworu na
+wylot. W koszu swiatlo i dostep narzedzia zapewniaja okna boczne, a szyna ma
+pozostac nosnikiem. Tak samo dodatni wynik `union` nie dowodzi, ze krapa ma
+ciagla droge obciazenia. Trzeba budowac ja jednym przebiegiem i mierzyc lokalny
+przekroj w miejscu najbardziej narazonym na pekniecie.
 
 ## 2026-08-16 (noc) - kaseta zakuta odsłania kamień, i jedna hipoteza obalona pomiarem
 

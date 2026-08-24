@@ -25,7 +25,7 @@ const RingPreview3D = lazy(() => import("./jewelry/RingPreview3D.jsx"));
 // Doladowanie go osobno nie opoznia podgladu.
 const RingPriceBox = lazy(() => import("./jewelry/RingPriceBox.jsx"));
 
-export const RING_CONFIGURATOR_BUILD = "1.001";
+export const RING_CONFIGURATOR_BUILD = "1.002";
 
 const L = {
   pl: {
