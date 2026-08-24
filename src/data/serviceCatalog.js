@@ -364,7 +364,7 @@ export const SERVICES_FULL = [
     imagePrompt:
       "Premium square product photograph for a fine-jewelry casting service: blue castable resin pattern, ivory jewelry wax pattern, finished silver ring and finished gold ring arranged on a matte black jeweler bench, a small investment flask and precision tools in the background, cool blue AEJaCA sTuDiO rim light and warm metal highlights, black background, no gemstones, no text, no logo, no watermark",
     geometryPriced: true,
-    priceFromGrosze: 42000,
+    priceFromGrosze: 22000,
     leadTimeDays: 10,
     title: L("Odlew z metali szlachetnych", "Precious metal casting", "Edelmetallguss"),
     lead: L(
@@ -388,7 +388,7 @@ export const SERVICES_FULL = [
       { label: L("Kruszce", "Metals", "Metalle"), value: L("Ag 800/925, Au 9k/14k/18k/24k", "Ag 800/925, Au 9k/14k/18k/24k", "Ag 800/925, Au 9k/14k/18k/24k") },
       { label: L("Automatyczny limit modelu", "Automatic model limit", "Automatische Modellgrenze"), value: "24 x 24 x 35 mm" },
       { label: L("Druk wzorca", "Pattern printing", "Modelldruck"), value: L("Elegoo Saturn 4 Ultra 16K, żywica odlewnicza", "Elegoo Saturn 4 Ultra 16K, castable resin", "Elegoo Saturn 4 Ultra 16K, Gießharz") },
-      { label: L("Wersja", "Build", "Build"), value: "1.004" },
+      { label: L("Wersja", "Build", "Build"), value: "1.005" },
     ],
     bullets: [
       L("Trzy ścieżki od gotowego wzorca do samego pomysłu", "Three routes from a ready pattern to an idea", "Drei Wege vom fertigen Modell bis zur Idee"),

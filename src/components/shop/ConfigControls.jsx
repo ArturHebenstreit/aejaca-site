@@ -157,10 +157,11 @@ export function QuantityStepper({ label, value, onChange, min = 1, max = 100, op
  * inaczej. Gorna granice wyznacza pole robocze maszyny, wiec suwak nie pozwala
  * zamowic czegos, czego nie da sie wydrukowac.
  */
-export function ScaleControl({ label, bbox, volumeCm3, scale, onChange, maxScale, lang, accent = "blue" }) {
+export function ScaleControl({ label, bbox, volumeCm3, scale, onChange, maxScale, lang, accent = "blue", purpose = "print" }) {
   const gora = Math.min(maxScale ?? 4, 4);
   const dol = 0.25;
   const zaDuzy = gora < 1;
+  const bezpieczneMinimum = gora >= dol;
   const tekst = accent === "amber" ? "text-amber-300" : "text-blue-300";
   const track = accent === "amber" ? "accent-amber-400" : "accent-blue-400";
   const wym = (n) => (n * scale * 10).toFixed(0);
@@ -191,15 +192,22 @@ export function ScaleControl({ label, bbox, volumeCm3, scale, onChange, maxScale
         onChange={(e) => onChange(Number(e.target.value))}
         className={`w-full ${track}`}
         aria-label={label}
-        disabled={zaDuzy}
+        disabled={!bezpieczneMinimum}
       />
       <div className="flex flex-wrap items-center gap-1.5 mt-2">
         <button type="button" className={przycisk(Math.abs(scale - 1) < 0.005)} onClick={() => onChange(1)} disabled={zaDuzy}>
           {t({ pl: "Oryginał", en: "Original", de: "Original" }, lang)}
         </button>
         {maxScale != null && dopasowanie !== 1 && (
-          <button type="button" className={przycisk(Math.abs(scale - dopasowanie) < 0.005)} onClick={() => onChange(dopasowanie)}>
-            {t({ pl: "Do pola roboczego", en: "Fit the build plate", de: "Auf den Bauraum" }, lang)}
+          <button
+            type="button"
+            className={przycisk(Math.abs(scale - dopasowanie) < 0.005)}
+            onClick={() => onChange(dopasowanie)}
+            disabled={!bezpieczneMinimum}
+          >
+            {purpose === "casting"
+              ? t({ pl: "Dopasuj do odlewni", en: "Fit casting limits", de: "An Gussgrenze anpassen" }, lang)
+              : t({ pl: "Do pola roboczego", en: "Fit the build plate", de: "Auf den Bauraum" }, lang)}
           </button>
         )}
         {bbox && (
@@ -211,10 +219,25 @@ export function ScaleControl({ label, bbox, volumeCm3, scale, onChange, maxScale
       </div>
       {zaDuzy && (
         <p className="text-amber-300 text-[11px] mt-2">
+          {purpose === "casting"
+            ? t({
+                pl: `Model w oryginale przekracza automatyczny limit odlewni. Ustaw najwyżej ${Math.round((maxScale ?? 0) * 100)}% albo pozostaw oryginalny rozmiar i poproś o indywidualną ocenę.`,
+                en: `At original size the model exceeds the automatic casting limit. Set no more than ${Math.round((maxScale ?? 0) * 100)}%, or keep the original size and request an individual review.`,
+                de: `In Originalgröße überschreitet das Modell die automatische Gussgrenze. Stellen Sie höchstens ${Math.round((maxScale ?? 0) * 100)}% ein oder lassen Sie die Originalgröße individuell prüfen.`,
+              }, lang)
+            : t({
+                pl: `Model w oryginale nie mieści się w polu roboczym. Największa możliwa wielkość to ${Math.round((maxScale ?? 0) * 100)}%, a w całości wydrukujemy go po podzieleniu na części. Napisz do nas, jeżeli ma zostać w oryginale.`,
+                en: `At original size the model does not fit the build plate. The largest possible size is ${Math.round((maxScale ?? 0) * 100)}%; at full size we print it in parts. Write to us if it has to stay original.`,
+                de: `In Originalgroesse passt das Modell nicht in den Bauraum. Moeglich sind hoechstens ${Math.round((maxScale ?? 0) * 100)}%; in voller Groesse drucken wir es geteilt. Schreiben Sie uns, wenn es original bleiben soll.`,
+              }, lang)}
+        </p>
+      )}
+      {purpose === "casting" && (
+        <p className="text-neutral-500 text-[11px] mt-2 leading-relaxed">
           {t({
-            pl: `Model w oryginale nie mieści się w polu roboczym. Największa możliwa wielkość to ${Math.round((maxScale ?? 0) * 100)}%, a w całości wydrukujemy go po podzieleniu na części. Napisz do nas, jeżeli ma zostać w oryginale.`,
-            en: `At original size the model does not fit the build plate. The largest possible size is ${Math.round((maxScale ?? 0) * 100)}%; at full size we print it in parts. Write to us if it has to stay original.`,
-            de: `In Originalgroesse passt das Modell nicht in den Bauraum. Moeglich sind hoechstens ${Math.round((maxScale ?? 0) * 100)}%; in voller Groesse drucken wir es geteilt. Schreiben Sie uns, wenn es original bleiben soll.`,
+            pl: "Skalowanie zmienia także grubość ścianek, krap i kanałów. Dopasowanie wymiarów nie zastępuje kontroli technologicznej modelu przed odlewem.",
+            en: "Scaling also changes wall, prong and channel thickness. Fitting the dimensions does not replace the model's manufacturing review before casting.",
+            de: "Die Skalierung verändert auch Wand-, Krappen- und Kanalstärken. Passende Maße ersetzen nicht die technische Modellprüfung vor dem Guss.",
           }, lang)}
         </p>
       )}

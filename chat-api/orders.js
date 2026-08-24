@@ -253,9 +253,16 @@ export function priceItem({ calculator, params, lang = "pl", geometry = null, sc
       );
     }
     if (calculator === "jewelry_casting" && !preciousMetalCasting.fitsCastingFlask(geometry.bbox, scale)) {
+      const max = preciousMetalCasting.maxCastingScaleForBBox(geometry.bbox);
+      const percent = Number.isFinite(max) ? Math.max(1, Math.floor(max * 100)) : 0;
+      const message = safeLang === "en"
+        ? `At this scale the model exceeds the automatic casting limit of 24 × 24 × 35 mm. The largest automatic scale for this file is ${percent}%. Reduce the scale or request an individual review.`
+        : safeLang === "de"
+          ? `In dieser Skalierung überschreitet das Modell die automatische Gussgrenze von 24 × 24 × 35 mm. Für diese Datei sind automatisch höchstens ${percent}% möglich. Verkleinern Sie das Modell oder fordern Sie eine individuelle Prüfung an.`
+          : `Model w tej skali przekracza automatyczny limit odlewni 24 × 24 × 35 mm. Największa automatyczna skala dla tego pliku to ${percent}%. Zmniejsz skalę albo wyślij model do indywidualnej oceny.`;
       throw new PricingError(
         "too_large_for_casting",
-        "Model nie mieści się w automatycznej ścieżce odlewniczej 24 x 24 x 35 mm. Wyślij go do indywidualnej oceny.",
+        message,
       );
     }
     callParams.stlData = scaleGeometry(geometry, scale);
