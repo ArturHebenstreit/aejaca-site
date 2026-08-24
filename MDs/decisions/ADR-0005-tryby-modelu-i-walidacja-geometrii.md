@@ -37,6 +37,16 @@ wymiar niz uzyty w modelu i wycenie.
    cichu rozmiaru kamienia, jezeli zmienia to projekt klienta.
 5. Interfejs korzysta z tego samego raportu ograniczen co generator i serwer.
 6. Oprawa kanalowa wraca do macierzy testow ciaglosci szyny.
+7. Wylaczenie kamieni w podgladzie pokazuje bezposrednio metal z trybu
+   `casting`. Nie budujemy drugiej, podobnej bryly tylko na potrzeby ekranu.
+8. Kamien centralny i kamienie boczne maja osobne, dyskretne obroty w
+   plaszczyznie: 0, 90, 180 i 270 stopni. Kamien, gniazdo, kosz i zakucia
+   obracaja sie jako jeden uklad.
+9. Kamienie boczne sa lustrzane na obu ramionach. Ustawienie 90 stopni
+   kieruje szpic do korony po obu stronach, a 270 stopni od korony.
+10. Walidacja rozmiaru i odsuniecia korzysta z obrysu po obrocie. Owal
+    ustawiony wzdluz i w poprzek szyny nie moze zajmowac tej samej umownej
+    szerokosci.
 
 ## Odrzucone alternatywy
 
@@ -70,6 +80,8 @@ wymiar niz uzyty w modelu i wycenie.
 - `node scripts/test-ring-pricing.mjs`;
 - `npm run sync:pricing` i kontrola dryfu;
 - podbicie `WORKER_VERSION`;
+- sprawdzenie obrotu gruszki centralnej i bocznej z 0 na 90 stopni;
+- porownanie `finishedPreview` bez kamieni z metalem `casting`;
 - pelny `npm run build`.
 
 ## Synchronizacja

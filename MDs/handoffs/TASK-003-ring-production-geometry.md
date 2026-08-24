@@ -4,7 +4,7 @@ status: review
 author: Codex
 branch: codex/ring-production-geometry
 base_commit: ca5dbd99bef36bf38e4d1dd0fd762fc1d4842f70
-last_commit: df86e40f04be0800e1079c32dea989f51db07831
+last_commit: 472142d2f5e66824022e8002b80ef5c525fcfbec
 updated: 2026-08-24
 ---
 
@@ -39,6 +39,13 @@ informacji dla klienta.
   ostatnia poprawna wartosc, jezeli nie miesci sie nawet minimum.
 - Presety `pave` i `diana` maja prosta szyne, aby zachowac swoje przyjete
   srednice kamieni.
+- Wylaczenie kamieni pokazuje dokladnie produkcyjny metal `casting`, z
+  otwartymi lapkami, koszami i wylotami gniazd.
+- Kamien centralny i kamienie boczne maja osobna orientacje. Dla ksztaltow
+  kierunkowych dostepne sa cztery kierunki, a dla symetrycznych ustawienie
+  w poprzek albo wzdluz szyny.
+- Obrot obejmuje jednoczesnie kamien, gniazdo, korone lub kosz oraz zakucia.
+  Walidator liczy miejsce z obroconego obrysu, nie z nominalnej srednicy.
 
 Decyzje sa zapisane w
 `MDs/decisions/ADR-0005-tryby-modelu-i-walidacja-geometrii.md`.
@@ -56,9 +63,10 @@ Decyzje sa zapisane w
 
 | Kontrola | Wynik |
 |---|---|
-| `node scripts/test-ring-generator.mjs` | pass, 38 sekcji, w tym tryby, eksport i negatywne ograniczenia lokalne |
+| `node scripts/test-ring-generator.mjs` | pass, 39 sekcji, w tym otwarte gniazda, orientacja, tryby, eksport i negatywne ograniczenia lokalne |
 | `node scripts/test-ring-pricing.mjs` | pass |
 | `npm run sync:pricing` | pass, mirrory geometrii zsynchronizowane |
+| `npm run build:client` | pass; pozostaja wczesniejsze ostrzezenia o duplikatach kluczy w `ToolsStudio.jsx` |
 | Integracja `ringFiles` | pass, referencyjny 3MF ma osobne obiekty metalu i kamieni |
 | Pelny `npm run build` | pass na czystym obrazie brancha, 97 stron, 0 bledow |
 | `node scripts/check-emdash.mjs` | pass |
@@ -85,6 +93,9 @@ Decyzje sa zapisane w
 4. Sprawdz zachowanie suwaka po zmianie taperu i szerokosci szyny.
 5. Potwierdz zgodnosc wyceny z objetoscia produkcyjnego pliku.
 6. Uruchom oba testy pierscionkow i pelny build.
+7. W UI ustaw gruszke centralna kolejno w poprzek i wzdluz oraz gruszki
+   boczne ze szpicem do korony i od korony.
+8. Wylacz kamienie i potwierdz, ze zamiast szarych plyt widac otwarte gniazda.
 
 ## Warunek uznania zadania za gotowe
 

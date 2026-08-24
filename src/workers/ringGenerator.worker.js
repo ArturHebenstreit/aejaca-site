@@ -41,7 +41,9 @@ import { buildRing } from "../geometry/ring/build.js";
 // 8: wieniec halo osobno od kamieni bocznych, bo ma wlasny material
 // 26: jawny tryb gotowego podgladu oraz zwrot parametrow uzytych przez bryle.
 // 27: statystyki masy z produkcyjnego odlewu, niezalezne od widocznosci kamieni.
-const WORKER_VERSION = 27;
+// 28: podglad bez kamieni uzywa dokladnie produkcyjnego odlewu z otwartymi
+// gniazdami, a nie osobno liczonej odmiany podgladowej.
+const WORKER_VERSION = 28;
 
 /** Podglad nie potrzebuje gestosci docelowej: mniej segmentow, szybsza reakcja. */
 const PREVIEW_SEGMENTS = 64;
@@ -74,8 +76,13 @@ self.onmessage = async (e) => {
   const { seq, params } = e.data || {};
   let r = null, production = null, displayMetal = null;
   try {
-    r = await buildRing(params, { segments: PREVIEW_SEGMENTS, mode: "finishedPreview" });
-    production = await buildRing(r.params, { segments: PREVIEW_SEGMENTS, mode: "casting" });
+    production = await buildRing(params, { segments: PREVIEW_SEGMENTS, mode: "casting" });
+    // Po wylaczeniu kamieni ekran ma pokazac TEN SAM metal, ktory trafia do
+    // pliku produkcyjnego: otwarte lapki, otwarte kosze i prawdziwe gniazda.
+    // Alias jest bezpieczny, bo `release` usuwa kazda bryle najwyzej raz.
+    r = production.params.casting.stones
+      ? await buildRing(production.params, { segments: PREVIEW_SEGMENTS, mode: "finishedPreview" })
+      : production;
 
     // Kanal i stopka ida do podgladu razem z metalem, bo sa z tego samego
     // materialu i klient ma zobaczyc, co dostanie w pliku. Do MASY nie

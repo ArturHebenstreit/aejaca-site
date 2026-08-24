@@ -40,8 +40,11 @@ const L = {
     gemGroups: { precious: "Szlachetne", lab: "Hodowane i syntetyczne", semi: "Półszlachetne i ozdobne" },
     width: "Szerokość szyny", thickness: "Grubość szyny",
     cut: "Szlif kamienia centralnego", setting: "Zakucie", stoneSize: "Rozmiar kamienia",
+    stoneOrientation: "Ułożenie kamienia centralnego",
     side: "Kamienie na szynie, na stronę", sideSetting: "Oprawa kamieni bocznych",
     sideCut: "Szlif kamieni bocznych",
+    sideOrientation: "Ułożenie kamieni bocznych",
+    orientations: { across: "W poprzek", acrossUp: "W poprzek ↑", acrossDown: "W poprzek ↓", alongCrown: "Wzdłuż, szpic do korony", acrossReverse: "W poprzek, odwrócony", alongOut: "Wzdłuż, szpic od korony", alongRight: "Wzdłuż →", alongLeft: "Wzdłuż ←" },
     sideSize: "Średnica bocznych", none: "Brak",
     sideGap: "Odsunięcie od korony", sideSpread: "Rozsunięcie kamieni",
     table: "Tarcza sygnetu", tableLen: "Dłuższa oś tarczy", engraving: "Grawer tarczy",
@@ -74,8 +77,11 @@ const L = {
     gemGroups: { precious: "Precious", lab: "Lab-grown and synthetic", semi: "Semi-precious and decorative" },
     width: "Shank width", thickness: "Shank thickness",
     cut: "Centre stone cut", setting: "Setting", stoneSize: "Stone size",
+    stoneOrientation: "Centre stone orientation",
     side: "Side stones, per side", sideSetting: "Side stone setting",
     sideCut: "Side stone cut",
+    sideOrientation: "Side stone orientation",
+    orientations: { across: "Across the shank", acrossUp: "Across ↑", acrossDown: "Across ↓", alongCrown: "Along, point to the head", acrossReverse: "Across, reversed", alongOut: "Along, point away from the head", alongRight: "Along →", alongLeft: "Along ←" },
     sideSize: "Side stone diameter", none: "None",
     sideGap: "Gap from the head", sideSpread: "Spacing between stones",
     table: "Signet table", tableLen: "Long axis of the table", engraving: "Table engraving",
@@ -108,8 +114,11 @@ const L = {
     gemGroups: { precious: "Edelsteine", lab: "Laborgezüchtet und synthetisch", semi: "Halbedel und dekorativ" },
     width: "Schienenbreite", thickness: "Schienenstärke",
     cut: "Schliff des Hauptsteins", setting: "Fassung", stoneSize: "Steingröße",
+    stoneOrientation: "Ausrichtung des Hauptsteins",
     side: "Steine auf der Schiene, je Seite", sideSetting: "Fassung der Seitensteine",
     sideCut: "Schliff der Seitensteine",
+    sideOrientation: "Ausrichtung der Seitensteine",
+    orientations: { across: "Quer zur Schiene", acrossUp: "Quer ↑", acrossDown: "Quer ↓", alongCrown: "Längs, Spitze zum Kopf", acrossReverse: "Quer, umgekehrt", alongOut: "Längs, Spitze vom Kopf weg", alongRight: "Längs →", alongLeft: "Längs ←" },
     sideSize: "Durchmesser der Seitensteine", none: "Keine",
     sideGap: "Abstand zum Kopf", sideSpread: "Abstand zwischen den Steinen",
     table: "Siegelplatte", tableLen: "Längere Achse der Platte", engraving: "Gravur der Platte",
@@ -133,6 +142,23 @@ const L = {
 /** Etykieta w jezyku interfejsu, z odwrotem na polski, ktory jest zawsze. */
 const nameOf = (o, lang) => (lang === "en" ? o.en : lang === "de" ? o.de : o.pl) || o.pl;
 const hintOf = (o, lang) => (lang === "en" ? o.hintEn : lang === "de" ? o.hintDe : o.hint) || o.hint;
+const DIRECTIONAL_CUTS = new Set(["pear", "heart", "pentagon", "trillion", "briolette"]);
+const ORIENTABLE_CUTS = new Set([
+  "oval", "octagon", "baguette", "pentagon", "trillion", "pear", "marquise",
+  "heart", "briolette", "bufftop",
+]);
+const orientationOptions = (t, cut, side = false) => {
+  const directional = DIRECTIONAL_CUTS.has(cut);
+  const out = [
+    { id: 0, label: directional && !side ? t.orientations.acrossUp : t.orientations.across },
+    { id: 90, label: side && directional ? t.orientations.alongCrown : t.orientations.alongRight },
+  ];
+  if (directional) out.push(
+    { id: 180, label: side ? t.orientations.acrossReverse : t.orientations.acrossDown },
+    { id: 270, label: side ? t.orientations.alongOut : t.orientations.alongLeft },
+  );
+  return out;
+};
 
 const nf = (lang, n, d = 1) =>
   n.toLocaleString(lang === "pl" ? "pl-PL" : lang === "de" ? "de-DE" : "en-US",
@@ -462,7 +488,10 @@ export default function RingConfigurator({ lang = "pl" }) {
                 <div className="grid grid-cols-4 gap-1">
                   {Object.entries(CUTS).map(([id, c]) => (
                     <button
-                      key={id} type="button" onClick={() => setStone({ cut: id })}
+                      key={id} type="button" onClick={() => setStone({
+                        cut: id,
+                        rotation: DIRECTIONAL_CUTS.has(id) ? p.stone.rotation : p.stone.rotation % 180,
+                      })}
                       aria-pressed={id === p.stone.cut} title={nameOf(c, lang)}
                       className={`flex flex-col items-center gap-0.5 rounded-sm border px-1 py-1.5 transition-colors ${
                         id === p.stone.cut
@@ -476,6 +505,13 @@ export default function RingConfigurator({ lang = "pl" }) {
                   ))}
                 </div>
               </Group>
+
+              {ORIENTABLE_CUTS.has(p.stone.cut) && p.setting !== "drilled" ? (
+                <Group label={t.stoneOrientation}>
+                  <Seg value={p.stone.rotation} onChange={(rotation) => setStone({ rotation })}
+                    options={orientationOptions(t, p.stone.cut)} />
+                </Group>
+              ) : null}
 
               <Group label={t.halo}>
                 <Seg value={p.halo.on ? "on" : "off"}
@@ -526,7 +562,10 @@ export default function RingConfigurator({ lang = "pl" }) {
                     <div className="grid grid-cols-4 gap-1">
                       {SIDE_CUTS.map((id) => [id, CUTS[id]]).map(([id, c]) => (
                         <button
-                          key={id} type="button" onClick={() => setSide({ cut: id })}
+                          key={id} type="button" onClick={() => setSide({
+                            cut: id,
+                            rotation: DIRECTIONAL_CUTS.has(id) ? p.side.rotation : p.side.rotation % 180,
+                          })}
                           aria-pressed={id === p.side.cut} title={nameOf(c, lang)}
                           className={`flex flex-col items-center gap-0.5 rounded-sm border px-1 py-1.5 transition-colors ${
                             id === p.side.cut
@@ -540,6 +579,13 @@ export default function RingConfigurator({ lang = "pl" }) {
                       ))}
                     </div>
                   </Group>
+
+                  {ORIENTABLE_CUTS.has(p.side.cut) ? (
+                    <Group label={t.sideOrientation}>
+                      <Seg value={p.side.rotation} onChange={(rotation) => setSide({ rotation })}
+                        options={orientationOptions(t, p.side.cut, true)} />
+                    </Group>
+                  ) : null}
 
                   <Group label={t.sideSetting} hint={SIDE_SETTINGS[p.side.setting] ? hintOf(SIDE_SETTINGS[p.side.setting], lang) : null}>
                     <Seg value={p.side.setting} onChange={(id) => setSide({ setting: id })}

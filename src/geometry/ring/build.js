@@ -15,7 +15,7 @@
 import Module from "manifold-3d";
 import {
   CUTS, SEAT, SIDE_SETTINGS, outlineFor, scalePts, resample, prongAngles, validate,
-  signetOutline, tableSize,
+  signetOutline, tableSize, sideStoneLayout,
 } from "./params.js";
 import { CASTING_ALLOYS, massGrams } from "../../data/castingAlloys.js";
 import { gemDensity } from "../../data/gemOptics.js";
@@ -1227,33 +1227,10 @@ function buildSideStones(w, p) {
   const kBok = taperFor(p);
   const gr = (u) => p.thickness * (kBok ? kBok(u).t : 1);
   const ro = p.innerDia / 2 + gr(0);
-  const rMid = p.innerDia / 2 + gr(0) * 0.62;
-
-  // ODSUNIECIE OD KORONY liczy sie z jej rzeczywistej szerokosci, nie z kata
-  // wzietego z sufitu.
-  //
-  // Stalo tu `start = 0.34` radiana, czyli okolo trzech milimetrow po obwodzie
-  // niezaleznie od tego, co stoi na godzinie dwunastej. Kosz kamienia
-  // szesciomilimetrowego siega po obwodzie na 3,5 mm od osi, wiec pierwszy
-  // kamien na szynie WCHODZIL w mocowanie korony. Widac to na kazdym renderze
-  // solitera z pave i tak wlasnie zostalo zglszone.
-  //
-  // Korona jest obrocona tak, ze jej lokalna os X biegnie po obwodzie
-  // pierscionka, wiec to wlasnie polowa zasiegu obrysu w tej osi wyznacza,
-  // gdzie moze zaczac sie szyna. Do tego dochodzi scianka kosza i szczelina,
-  // ktora klient ustawia sam.
-  const polKorony = p.setting === "drilled"
-    ? 0
-    : Math.max(...outlineFor(p.stone.cut, p.stone.size).map(([x]) => Math.abs(x)))
-      + (p.setting === "bezel" ? 0.4 : 0.3)
-      + (p.halo.on ? p.halo.size + 0.4 : 0);
-  const luzOdKorony = Number.isFinite(p.side.gap) ? p.side.gap : 0.35;
-  const rozsuniecie = Number.isFinite(p.side.spread) ? p.side.spread : 0;
-
-  // Stycznosc kamieni plus rozsuniecie, oba mierzone po obwodzie i dopiero
-  // potem zamieniane na kat.
-  const step = Math.asin(Math.min(0.45, (size * 0.62) / rMid)) * 2 + rozsuniecie / rMid;
-  const start = (polKorony + luzOdKorony + size / 2) / rMid;
+  // Generator i walidator korzystaja z tego samego obrysu po obrocie. Dzieki
+  // temu owal ustawiony wzdluz szyny zajmuje po obwodzie inna dlugosc niz
+  // ustawiony w poprzek, a pierwszy kamien nadal nie wchodzi w korone.
+  const { rMid, step, start, sideHalfAxial } = sideStoneLayout(p, size);
 
   // WYLOT GNIAZDA MUSI ZOSTAWIC PASEK METALU NA WEWNETRZNEJ STRONIE SZYNY.
   //
@@ -1283,10 +1260,10 @@ function buildSideStones(w, p) {
       [-1, 1].forEach((off) => {
         const rail = Manifold.revolve(
           CrossSection.ofPolygons([ccw([
-            [rMid - size * 0.1, off * (size * 0.62) - 0.22],
-            [ro + 0.15, off * (size * 0.62) - 0.22],
-            [ro + 0.15, off * (size * 0.62) + 0.22],
-            [rMid - size * 0.1, off * (size * 0.62) + 0.22],
+            [rMid - size * 0.1, off * sideHalfAxial - 0.22],
+            [ro + 0.15, off * sideHalfAxial - 0.22],
+            [ro + 0.15, off * sideHalfAxial + 0.22],
+            [rMid - size * 0.1, off * sideHalfAxial + 0.22],
           ])]), 64, (span * 180) / Math.PI,
         ).rotate([0, 0, 90 - (side > 0 ? 0 : (span * 180) / Math.PI)]);
         addM(rail);
@@ -1342,10 +1319,23 @@ function buildSideStones(w, p) {
       // odwraca kamien: tafla patrzy wtedy w glab palca, a koleta na zewnatrz.
       // Na renderze wyglada to prawie tak samo, ale gniazdo wycina sie odwrotnie,
       // wiec zmienia sie objetosc metalu, a z niej cena.
-      const naMiejsce = (m) => m
-        .rotate([-90, 0, 0])                        // tafla na zewnatrz promienia
-        .rotate([0, 0, (a / DEG) - 90])
-        .translate([Math.cos(a) * rKam, Math.sin(a) * rKam, 0]);
+      // Oba ramiona sa lustrzane. Dodatni obrot 90 stopni oznacza wiec na
+      // KAZDYM z nich szpic skierowany do korony, a 270 - od korony.
+      const orientacja = -side * p.side.rotation;
+      const naMiejsce = (m) => {
+        let next = m.rotate([0, 0, orientacja]);
+        m.delete?.();
+        let current = next;
+        next = current.rotate([-90, 0, 0]);          // tafla na zewnatrz promienia
+        current.delete?.();
+        current = next;
+        next = current.rotate([0, 0, (a / DEG) - 90]);
+        current.delete?.();
+        current = next;
+        next = current.translate([Math.cos(a) * rKam, Math.sin(a) * rKam, 0]);
+        current.delete?.();
+        return next;
+      };
 
       // SZLIF KAMIENI BOCZNYCH jest wyborem klienta, tak samo jak przy
       // kamieniu centralnym. Kamien i jego gniazdo musza brac ten sam szlif,
@@ -1447,11 +1437,7 @@ function buildSideStones(w, p) {
       // bez kontaktu z nim. Trzymaly wiec powietrze. Sprawdzian jest prosty:
       // odleglosc od osi kamienia musi wynosic tyle co promien rondysty,
       // a nie tyle co polowa boku kwadratu opisanego na kamieniu.
-      const rG = size / 2;
       const kula = Math.min(0.34, Math.max(0.2, size * 0.2));
-      // Odrobine POZA rondysta, bo wlot gniazda scina wszystko, co wchodzi
-      // w obrys kamienia, i kuleczka postawiona na nim zniknelaby po polowie.
-      const rB = (rG + kula * 0.32) * Math.SQRT1_2;
 
       if (setting === "pave") {
         // Kuleczka pave musi STERCZEC W GORE, czyli wzdluz promienia
@@ -1461,8 +1447,16 @@ function buildSideStones(w, p) {
         // ma czego przesunac nad kamien. Wysokosc liczymy od powierzchni szyny,
         // w ktorej zakucie siedzi zanurzone o `SINK`.
         const wysokosc = size * 0.55;
-        for (const [dt, dz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
-          const stopa = at(dt * rB, dz * rB);
+        const ptsZakucia = outlineFor(szlifBoku, size);
+        for (const deg of [45, 135, 225, 315]) {
+          // Punkt zakucia idzie za rzeczywistym obrysem, a potem obraca sie
+          // razem z kamieniem. Gruszka nie dostaje juz okraglego ukladu kulek.
+          const rr = radiusAt(ptsZakucia, deg) + kula * 0.32;
+          const local = [Math.cos(deg * DEG) * rr, Math.sin(deg * DEG) * rr];
+          const phi = orientacja * DEG;
+          const tang = local[0] * Math.cos(phi) - local[1] * Math.sin(phi);
+          const axial = local[0] * Math.sin(phi) + local[1] * Math.cos(phi);
+          const stopa = at(tang, axial);
           const rGora = kula * 0.7;
           const os = [Math.cos(a), Math.sin(a), 0];
           const szczyt = [
@@ -2421,6 +2415,12 @@ export async function buildRing(input, opts = {}) {
     return gotowa;
   };
   const podnies = (m, dz) => { const g = m.translate([0, 0, dz]); m.delete?.(); return g; };
+  const obrocKamien = (m, rotation) => {
+    if (!rotation) return m;
+    const g = m.rotate([0, 0, rotation]);
+    m.delete?.();
+    return g;
+  };
 
   if (p.kind === "band") {
     // Obraczka: sama szyna. Kamienie, jesli sa, ida po obwodzie.
@@ -2448,7 +2448,8 @@ export async function buildRing(input, opts = {}) {
     // centralny, potem wieniec, potem boczne. Podglad rysuje po niej materialy,
     // wiec wieniec wlozony przed kamieniem centralnym daje szafirowy soliter
     // pomalowany barwa cyrkonii z halo, i nic tego nie zglasza.
-    if (zKamieniami) stones.push(place(podnies(stone.solid, standoff)));
+    if (zKamieniami) stones.push(place(podnies(
+      obrocKamien(stone.solid, p.stone.rotation), standoff)));
     else stone.solid.delete?.();
 
     // Halo obejmuje korone, wiec jedzie razem z nia: tym samym obrotem
@@ -2456,9 +2457,12 @@ export async function buildRing(input, opts = {}) {
     if (p.halo.on) {
       const girdleR = Math.max(...outlineFor(p.stone.cut, p.stone.size).map(([x, y]) => Math.hypot(x, y)));
       const halo = buildHalo(w, p, stone, girdleR);
-      metal = zlacz(metal, place(podnies(halo.metal, standoff)));
-      haloSeats = place(podnies(halo.seats, standoff));
-      if (zKamieniami) stones.push(...halo.stones.map((sn) => place(podnies(sn, standoff))));
+      metal = zlacz(metal, place(podnies(
+        obrocKamien(halo.metal, p.stone.rotation), standoff)));
+      haloSeats = place(podnies(
+        obrocKamien(halo.seats, p.stone.rotation), standoff));
+      if (zKamieniami) stones.push(...halo.stones.map((sn) => place(podnies(
+        obrocKamien(sn, p.stone.rotation), standoff))));
       else for (const k of halo.stones) k.delete?.();
       stoneVolumesMm3.halo = halo.stoneVolume;
       stoneVolumesMm3.haloCount = halo.count;
@@ -2472,7 +2476,8 @@ export async function buildRing(input, opts = {}) {
     }
     if (side.addMetal) metal = zlacz(metal, side.addMetal);
     if (crown) {
-      metal = zlacz(metal, place(podnies(crown, standoff)));
+      metal = zlacz(metal, place(podnies(
+        obrocKamien(crown, p.stone.rotation), standoff)));
       // Galeria ma sens tylko wtedy, gdy jest co podeprzec: przy briolecie
       // kosza nie ma, a przy kasecie rant siega szyny wlasnym trzonem.
       if (basketH > 0 && p.setting !== "bezel") {
@@ -2503,7 +2508,10 @@ export async function buildRing(input, opts = {}) {
         (p.width - 2 * SEAT.minInnerStrip) / p.stone.size,
       ));
       metal = odejmij(metal, place(podnies(
-        seatCutter(w, p.stone.cut, p.stone.size, zakute(p), wylotSrodka), standoff)));
+        obrocKamien(
+          seatCutter(w, p.stone.cut, p.stone.size, zakute(p), wylotSrodka),
+          p.stone.rotation,
+        ), standoff)));
     }
     if (side.cutSeats) metal = odejmij(metal, side.cutSeats);
     // Gniazda wienca tez po zlaczeniu, z tego samego powodu co srodkowe.

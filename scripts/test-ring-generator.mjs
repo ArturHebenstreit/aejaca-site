@@ -2412,5 +2412,89 @@ console.log("\n38. Tryby modelu i niewykonalne wymiary sa jednoznaczne");
   }
 }
 
+// ------------------------------------------------------------
+console.log("\n39. Orientacja kamieni obraca kamien, oprawe i gniazdo razem");
+// ------------------------------------------------------------
+{
+  const znormalizowane = validate({
+    stone: { cut: "pear", size: 7, rotation: 90 }, setting: "vprong",
+    side: { count: 0, rotation: 270 },
+  });
+  if (znormalizowane.stone.rotation === 90 && znormalizowane.side.rotation === 270) {
+    ok("walidator zachowuje cztery jawne kierunki ustawienia");
+  } else {
+    bad(`walidator zmienil kierunki na ${znormalizowane.stone.rotation}/${znormalizowane.side.rotation}`);
+  }
+  if (validate({ stone: { rotation: 37 } }).stone.rotation === 0) {
+    ok("dowolny kat spoza interfejsu wraca do bezpiecznych 0 stopni");
+  } else {
+    bad("walidator przepuscil dowolny kat kamienia");
+  }
+
+  let centralAcross = null, centralAlong = null, sideAcross = null, sideAlong = null;
+  try {
+    centralAcross = await buildRing({
+      innerDia: 17.2, width: 2.6, stone: { cut: "pear", size: 7, rotation: 0 },
+      setting: "vprong",
+    }, { segments: 64, mode: "referenceAssembly" });
+    centralAlong = await buildRing({
+      innerDia: 17.2, width: 2.6, stone: { cut: "pear", size: 7, rotation: 90 },
+      setting: "vprong",
+    }, { segments: 64, mode: "referenceAssembly" });
+    const b0 = centralAcross.stones[0].boundingBox();
+    const b90 = centralAlong.stones[0].boundingBox();
+    const z0 = b0.max[2] - b0.min[2], x0 = b0.max[0] - b0.min[0];
+    const z90 = b90.max[2] - b90.min[2], x90 = b90.max[0] - b90.min[0];
+    if (z0 > x0 * 1.2 && x90 > z90 * 1.2) {
+      ok("gruszka centralna przechodzi z ulozenia w poprzek do wzdluz szyny");
+    } else {
+      bad(`centralna gruszka nie zmienila osi: 0° ${x0.toFixed(2)}x${z0.toFixed(2)}, 90° ${x90.toFixed(2)}x${z90.toFixed(2)}`);
+    }
+
+    const sideBase = {
+      innerDia: 17.2, width: 2.6, stone: { cut: "round", size: 5.5 }, setting: "prong4",
+      side: { count: 1, size: 3, cut: "pear", setting: "prong" },
+    };
+    sideAcross = await buildRing({
+      ...sideBase, side: { ...sideBase.side, rotation: 0 },
+    }, { segments: 64, mode: "referenceAssembly" });
+    sideAlong = await buildRing({
+      ...sideBase, side: { ...sideBase.side, rotation: 90 },
+    }, { segments: 64, mode: "referenceAssembly" });
+    const sb0 = sideAcross.stones[1].boundingBox();
+    const sb90 = sideAlong.stones[1].boundingBox();
+    const sideZ0 = sb0.max[2] - sb0.min[2], sideZ90 = sb90.max[2] - sb90.min[2];
+    if (sideZ0 > sideZ90 * 1.2) {
+      ok("gruszki boczne przechodza z ulozenia w poprzek do wzdluz szyny");
+    } else {
+      bad(`boczna gruszka nie zmienila osi Z: ${sideZ0.toFixed(2)} wobec ${sideZ90.toFixed(2)} mm`);
+    }
+  } catch (e) {
+    bad(`orientacji nie dalo sie zbudowac: ${e.message}`);
+  } finally {
+    zwolnij(centralAcross); zwolnij(centralAlong); zwolnij(sideAcross); zwolnij(sideAlong);
+  }
+
+  let ukryty = null, odlew = null;
+  try {
+    const bezKamieni = {
+      innerDia: 17.2, width: 2.6, stone: { cut: "pear", size: 7, rotation: 180 },
+      setting: "vprong", casting: { stones: false },
+    };
+    ukryty = await buildRing(bezKamieni, { segments: 64, mode: "finishedPreview" });
+    odlew = await buildRing(bezKamieni, { segments: 64, mode: "casting" });
+    const roznica = Math.abs(ukryty.volumeMm3 - odlew.volumeMm3);
+    if (ukryty.stones.length === 0 && roznica <= 1e-8) {
+      ok("wylaczenie kamieni pokazuje dokladnie odlew z otwartymi gniazdami");
+    } else {
+      bad(`podglad bez kamieni rozni sie od odlewu o ${roznica.toFixed(6)} mm3`);
+    }
+  } catch (e) {
+    bad(`podgladu otwartych gniazd nie dalo sie zbudowac: ${e.message}`);
+  } finally {
+    zwolnij(ukryty); zwolnij(odlew);
+  }
+}
+
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");
 process.exit(failed ? 1 : 0);
