@@ -308,9 +308,15 @@ export function shankWidthFactorAt(p, u) {
   const taper = p?.taper === "auto" ? (p?.kind === "signet" ? "signet" : "none") : p?.taper;
   if (taper === "tapered") return 0.70 + 0.30 * x;
   if (taper === "signet") {
-    const s = Math.max(0, 1 - x / 0.78);
+    const { W } = tableSize(p?.signet);
+    const szerokosc = Math.max(
+      Number(p?.width || 2.6) * 2.7,
+      Math.min(Number(p?.width || 2.6) * 4.2, 2 * W * 0.82),
+    );
+    const wGlowy = szerokosc / Number(p?.width || 2.6);
+    const s = Math.max(0, 1 - x / 0.86);
     const k = s * s * (3 - 2 * s);
-    return 1 + 1.15 * k;
+    return 1 + (wGlowy - 1) * k;
   }
   return 1;
 }
@@ -324,9 +330,9 @@ function shankThicknessFactorAt(p, u) {
     return 1 + 0.95 * s * s;
   }
   if (taper === "signet") {
-    const s = Math.max(0, 1 - x / 0.78);
+    const s = Math.max(0, 1 - x / 0.86);
     const k = s * s * (3 - 2 * s);
-    return 1 + 1.05 * k;
+    return 1 + 1.25 * k;
   }
   return 1;
 }
