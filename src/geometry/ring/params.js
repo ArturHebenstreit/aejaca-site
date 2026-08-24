@@ -264,6 +264,11 @@ export function prongAngles(cut = {}, setting) {
 export const SHANK_PROFILES = ["round", "flat", "knife", "comfort"];
 export const BASKET_STYLES = ["open", "reinforced"];
 export const HALO_SETTINGS = ["scallop", "shared"];
+export const HALO_SHAPES = ["round", "rectangle", "square", "octagon", "hexagon", "heart"];
+export const BOTANICAL_STYLES = ["none", "vine", "leaves", "rosette"];
+export const BYPASS_STYLES = ["none", "open", "cross", "splitPave", "flower"];
+export const CATHEDRAL_OPENINGS = ["none", "arch", "doubleArch", "trefoil"];
+export const CATHEDRAL_ORNAMENTS = ["none", "scroll", "leaf", "braid"];
 
 // Typ wyrobu decyduje o tym, CO w ogole powstaje nad szyna.
 //   ring    szyna z glowica i kamieniem centralnym
@@ -546,6 +551,10 @@ export const LIMITS = {
   /** Dodatkowy odstep MIEDZY kamieniami na szynie, ponad ich stycznosc. */
   sideSpread: [0.0, 2.0],
   haloSize: [0.9, 2.2],
+  motifDensity: [1, 4],
+  motifRelief: [0.35, 0.8],
+  bypassSweep: [0.4, 1.4],
+  bypassSeparation: [0.5, 1.8],
   bandSize: [1.2, 3.2],
   signetLength: [9.0, 20.0],
   prongDia: [0.7, 1.4],
@@ -578,7 +587,10 @@ export const DEFAULTS = {
   prongDia: 0.9,
   side: { count: 0, size: 1.6, setting: "pave", material: "cz", gap: 0.35, spread: 0.0, cut: "round", rotation: 0 },
   casting: { ...CASTING_DEFAULTS },
-  halo: { on: false, size: 1.4, material: "cz", setting: "scallop" },
+  halo: { on: false, size: 1.4, material: "cz", setting: "scallop", shape: "round" },
+  motif: { style: "none", density: 2, relief: 0.5 },
+  bypass: { style: "none", sweep: 0.8, separation: 1.0 },
+  cathedral: { opening: "none", ornament: "none" },
   band: { coverage: "none", size: 1.8, setting: "pave", material: "cz" },
   signet: { table: "oval", length: 14, face: "flat", engraving: "none" },
 };
@@ -625,7 +637,14 @@ export function sideStoneLayout(p, size = p.side?.size || DEFAULTS.side.size) {
   const clearance = Math.max(0.12, size * 0.12);
   const step = Math.asin(Math.min(0.45, (sideHalfTangent + clearance) / rMid)) * 2
     + spread / rMid;
-  const start = (centerHalfTangent + gap + sideHalfTangent) / rMid;
+  // Galeria jest szersza od samej rondysty przy koronie. Pierwszy kamien
+  // musi minac nie tylko kamien centralny, ale tez rzeczywisty obrys wspornika.
+  // Inaczej luk galerii wchodzi w jego pawilon, mimo ze obrysy kamieni sie nie
+  // przecinaja. Zapas jest aktywny tylko tam, gdzie galeria faktycznie istnieje.
+  const galleryEnvelope = p.setting === "drilled"
+    ? 0
+    : Math.max(0.18, Math.min(0.65, num(p.width, DEFAULTS.width) * 0.20));
+  const start = (centerHalfTangent + galleryEnvelope + gap + sideHalfTangent) / rMid;
   return { rMid, step, start, sideHalfTangent, sideHalfAxial };
 }
 
@@ -712,6 +731,9 @@ export function validate(input = {}) {
   const p = { ...DEFAULTS, ...input };
   p.stone = { ...DEFAULTS.stone, ...(input.stone || {}) };
   p.halo = { ...DEFAULTS.halo, ...(input.halo || {}) };
+  p.motif = { ...DEFAULTS.motif, ...(input.motif || {}) };
+  p.bypass = { ...DEFAULTS.bypass, ...(input.bypass || {}) };
+  p.cathedral = { ...DEFAULTS.cathedral, ...(input.cathedral || {}) };
   p.casting = { ...CASTING_DEFAULTS, ...(input.casting || {}) };
   p.casting.sprues = Boolean(p.casting.sprues);
   // Stopka bez kanalu wisialaby w powietrzu: to ona jest zbiornikiem metalu,
@@ -804,8 +826,18 @@ export function validate(input = {}) {
   // moglo zaakceptowac kamien na wezszym odcinku szyny.
   p.halo.size = clamp(num(p.halo.size, 1.4), LIMITS.haloSize);
   if (!HALO_SETTINGS.includes(p.halo.setting)) p.halo.setting = DEFAULTS.halo.setting;
+  if (!HALO_SHAPES.includes(p.halo.shape)) p.halo.shape = DEFAULTS.halo.shape;
   if (p.setting === "drilled" || p.setting === "channel") p.halo = { ...p.halo, on: false };
   p.halo.on = Boolean(p.halo.on);
+
+  if (!BOTANICAL_STYLES.includes(p.motif.style)) p.motif.style = DEFAULTS.motif.style;
+  p.motif.density = Math.round(clamp(num(p.motif.density, DEFAULTS.motif.density), LIMITS.motifDensity));
+  p.motif.relief = clamp(num(p.motif.relief, DEFAULTS.motif.relief), LIMITS.motifRelief);
+  if (!BYPASS_STYLES.includes(p.bypass.style)) p.bypass.style = DEFAULTS.bypass.style;
+  p.bypass.sweep = clamp(num(p.bypass.sweep, DEFAULTS.bypass.sweep), LIMITS.bypassSweep);
+  p.bypass.separation = clamp(num(p.bypass.separation, DEFAULTS.bypass.separation), LIMITS.bypassSeparation);
+  if (!CATHEDRAL_OPENINGS.includes(p.cathedral.opening)) p.cathedral.opening = DEFAULTS.cathedral.opening;
+  if (!CATHEDRAL_ORNAMENTS.includes(p.cathedral.ornament)) p.cathedral.ornament = DEFAULTS.cathedral.ornament;
 
   // Brioleta wisi na kabłąku, wiec nie ma szyny z kamieniami bocznymi.
   if (p.setting === "drilled") p.side = { ...p.side, count: 0 };

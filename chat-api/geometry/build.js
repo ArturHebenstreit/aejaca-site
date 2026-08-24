@@ -1999,6 +1999,7 @@ function wciety(w, cs, W, L, d) {
  * wyprostowala lapki i kanaly wewnetrzne.
  */
 const GALLERY_SPAN = 34 * DEG;
+const gallerySpanFor = (p) => p.side?.count > 0 ? 25 * DEG : GALLERY_SPAN;
 
 /**
  * Profil podwyzszenia przy koronie. Jedno zrodlo prawdy dla geometrii galerii
@@ -2009,7 +2010,7 @@ const GALLERY_SPAN = 34 * DEG;
  * naglym uskokiem, tylko chowa sie stycznie w szynie.
  */
 function galleryShoulderProfile(p, basketH, angle) {
-  const t = Math.max(0, Math.min(1, angle / GALLERY_SPAN));
+  const t = Math.max(0, Math.min(1, angle / gallerySpanFor(p)));
   const smooth = t * t * (3 - 2 * t);
   const k = 1 - smooth;
   const startR = Math.max(0.38, p.width * 0.42);
@@ -2026,7 +2027,9 @@ export function buildGallery(w, p, basketH) {
   const ri = p.innerDia / 2;
   const kG = taperFor(p);
   const N = 13;
-  const rozpietosc = GALLERY_SPAN;             // jak daleko luk schodzi po obwodzie
+  // Przy kamieniach bocznych luk konczy sie przed pierwszym gniazdem. Pelne
+  // 34 stopnie zostaja dla solitera, gdzie galeria moze zejsc nizej po szynie.
+  const rozpietosc = gallerySpanFor(p);
 
   let solid = null;
   for (const s of [-1, 1]) {
@@ -2057,6 +2060,165 @@ export function buildGallery(w, p, basketH) {
     solid = solid ? zlacz(solid, ramie) : ramie;
   }
   return solid;
+}
+
+// ------------------------------------------------------------
+// Rodziny wzornicze ramion: roslinne, zawijane i katedralne
+// ------------------------------------------------------------
+function shoulderPoint(p, angle, radialLift = 0, axial = 0) {
+  const k = taperFor(p);
+  const u = Math.abs(angle) / Math.PI;
+  const kt = k ? k(u).t : 1;
+  const r = p.innerDia / 2 + p.thickness * kt + radialLift;
+  const a = Math.PI / 2 + angle;
+  return [Math.cos(a) * r, Math.sin(a) * r, axial];
+}
+
+function buildBotanicalShoulders(w, p) {
+  if (!p.motif || p.motif.style === "none") return null;
+  const { Manifold } = w;
+  const density = p.motif.density;
+  const relief = p.motif.relief;
+  const vineR = Math.max(0.22, Math.min(0.34, relief * 0.46));
+  let solid = null;
+  const add = (m) => { solid = solid ? zlacz(solid, m) : m; };
+
+  for (const side of [-1, 1]) {
+    const pts = [];
+    for (let i = 0; i < 9; i++) {
+      const t = i / 8;
+      const angle = side * (0.14 + t * 0.62);
+      pts.push(shoulderPoint(p, angle, -vineR * 0.28,
+        side * Math.sin(t * Math.PI * density) * relief * 0.34));
+    }
+    add(tubeAlong(w, pts, Array(pts.length).fill(vineR), { czubek: false }));
+
+    if (p.motif.style === "vine") continue;
+    for (let i = 0; i < density; i++) {
+      const t = (i + 0.7) / (density + 0.6);
+      const angle = side * (0.15 + t * 0.58);
+      const center = shoulderPoint(p, angle, -vineR * 0.10,
+        side * (i % 2 ? -1 : 1) * relief * 0.34);
+      const aDeg = (Math.PI / 2 + angle) / DEG;
+      const leaf = Manifold.sphere(Math.max(0.30, relief * 0.68), 24)
+        .scale([1.45, 0.72, 0.42])
+        .rotate([0, 0, aDeg + side * 38])
+        .translate(center);
+      add(leaf);
+    }
+  }
+
+  if (p.motif.style === "rosette") {
+    const rr = Math.max(0.26, relief * 0.48);
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      add(Manifold.sphere(rr, 22).scale([1.35, 0.72, 0.38])
+        .rotate([0, 0, a / DEG]).translate([
+          Math.cos(a) * rr * 1.05,
+          p.innerDia / 2 + p.thickness - rr * 0.18,
+          Math.sin(a) * rr * 0.55,
+        ]));
+    }
+  }
+  return solid;
+}
+
+function buildBypassShoulders(w, p) {
+  if (!p.bypass || p.bypass.style === "none") return null;
+  const sweep = p.bypass.sweep;
+  const separation = p.bypass.separation;
+  const armR = Math.max(0.34, Math.min(0.58, p.width * 0.20));
+  const reach = p.stone.size / 2 + Math.max(0.25, sweep * 0.45);
+  const ro = p.innerDia / 2 + p.thickness;
+  let solid = null;
+  const add = (m) => { solid = solid ? zlacz(solid, m) : m; };
+
+  for (const side of [-1, 1]) {
+    const start = shoulderPoint(p, side * 0.72, -armR * 0.42, -side * separation * 0.28);
+    const middle = shoulderPoint(p, side * 0.34, armR * 0.10, side * separation * 0.10);
+    const end = [side * reach, ro + armR * (p.bypass.style === "open" ? 0.25 : 0.62),
+      side * separation * 0.42];
+    add(tubeAlong(w, [start, middle, end], [armR * 1.08, armR, armR * 0.82], { czubek: true }));
+
+    if (p.bypass.style === "cross" || p.bypass.style === "splitPave") {
+      const innerStart = shoulderPoint(p, side * 0.64, -armR * 0.62, side * separation * 0.30);
+      const innerEnd = [-side * reach * 0.72, ro + armR * 0.32, -side * separation * 0.34];
+      add(tubeAlong(w, [innerStart, shoulderPoint(p, side * 0.28, -armR * 0.10, 0), innerEnd],
+        [armR * 0.82, armR * 0.72, armR * 0.62], { czubek: true }));
+    }
+  }
+  return solid;
+}
+
+function cathedralCutters(w, p) {
+  if (p.taper !== "cathedral" || !p.cathedral || p.cathedral.opening === "none") return null;
+  const { Manifold } = w;
+  const depth = Math.max(4.0, p.width * 2.4);
+  const baseR = Math.max(0.42, Math.min(0.70, p.thickness * 0.33));
+  let cutters = null;
+  const add = (m) => { cutters = cutters ? zlacz(cutters, m) : m; };
+  const hole = (side, angle, radius, axial = 0) => {
+    // Srodek lezy WEWNATRZ nadbudowanej grubosci, nie na jej zewnetrznej
+    // powierzchni. Dolne 45 procent przekroju zostaje jako ciagly most szyny.
+    const signed = side * angle;
+    const k = taperFor(p);
+    const kt = k ? k(Math.abs(signed) / Math.PI).t : 1;
+    const r = p.innerDia / 2 + p.thickness * kt * 0.72;
+    const a = Math.PI / 2 + signed;
+    const c = [Math.cos(a) * r, Math.sin(a) * r, axial];
+    add(Manifold.cylinder(depth, radius, radius, 32, false)
+      .translate([c[0], c[1], -depth / 2]));
+  };
+
+  for (const side of [-1, 1]) {
+    if (p.cathedral.opening === "doubleArch") {
+      hole(side, 0.25, baseR * 0.72, -baseR * 0.62);
+      hole(side, 0.25, baseR * 0.72, baseR * 0.62);
+    } else if (p.cathedral.opening === "trefoil") {
+      hole(side, 0.23, baseR * 0.68, 0);
+      hole(side, 0.25, baseR * 0.58, -baseR * 0.66);
+      hole(side, 0.25, baseR * 0.58, baseR * 0.66);
+    } else {
+      hole(side, 0.25, baseR, 0);
+    }
+  }
+  return cutters;
+}
+
+function cathedralEngraving(w, p) {
+  if (p.taper !== "cathedral" || !p.cathedral || p.cathedral.ornament === "none") return null;
+  const grooveR = 0.12;
+  let grooves = null;
+  const add = (m) => { grooves = grooves ? zlacz(grooves, m) : m; };
+  for (const side of [-1, 1]) {
+    for (const face of [-1, 1]) {
+      const z = face * p.width * 0.50;
+      if (p.cathedral.ornament === "scroll") {
+        const pts = Array.from({ length: 10 }, (_, i) => {
+          const t = i / 9;
+          const angle = side * (0.16 + t * 0.48);
+          return shoulderPoint(p, angle, 0, z + face * Math.sin(t * Math.PI * 2) * 0.22);
+        });
+        add(tubeAlong(w, pts, Array(pts.length).fill(grooveR), { czubek: false }));
+      } else if (p.cathedral.ornament === "leaf") {
+        for (const off of [-0.15, 0.15]) {
+          add(tubeAlong(w, [
+            shoulderPoint(p, side * 0.18, 0, z + off),
+            shoulderPoint(p, side * 0.38, 0, z - off),
+            shoulderPoint(p, side * 0.58, 0, z + off),
+          ], [grooveR, grooveR, grooveR], { czubek: false }));
+        }
+      } else {
+        for (const off of [-0.22, 0, 0.22]) {
+          add(tubeAlong(w, [
+            shoulderPoint(p, side * 0.17, 0, z + off),
+            shoulderPoint(p, side * 0.56, 0, z - off),
+          ], [grooveR, grooveR], { czubek: false }));
+        }
+      }
+    }
+  }
+  return grooves;
 }
 
 /**
@@ -2227,8 +2389,78 @@ export function buildHalo(w, p, stone, girdleR) {
   const d = p.halo.size;
   const haloSetting = p.halo.setting === "shared" ? "shared" : "scallop";
   const luz = 0.18;                                // odstep wienca od rondysty
-  const rW = girdleR + luz + d / 2;                // promien, na ktorym siedza kamienie
-  const n = Math.max(8, Math.floor((Math.PI * 2 * rW) / (d * 1.06)));
+  const rW = girdleR + luz + d / 2;
+
+  // KSZTALT HALO JEST PROWADNICA, nie plyta. Z obrysu wyznaczamy rowno
+  // odlegle punkty, a pod kazdym powstaje osobna otwarta tulejka. Dzieki temu
+  // prostokat, serce i wielokaty nie wracaja do dawnej szarej tarczy.
+  const guide = (() => {
+    const shape = p.halo.shape || "round";
+    const central = outlineFor(p.stone.cut, p.stone.size);
+    const halfX = Math.max(...central.map(([x]) => Math.abs(x)));
+    const halfY = Math.max(...central.map(([, y]) => Math.abs(y)));
+    const pad = luz + d / 2;
+    const span = Math.max(halfX, halfY);
+    let pts;
+    if (shape === "square") {
+      const q = span + pad;
+      pts = [[-q, -q], [q, -q], [q, q], [-q, q]];
+    } else if (shape === "rectangle") {
+      const x = Math.max(halfX + pad, (span + pad) * 0.78);
+      const y = Math.max(halfY + pad, (span + pad) * 1.14);
+      pts = [[-x, -y], [x, -y], [x, y], [-x, y]];
+    } else if (shape === "octagon") {
+      const x = Math.max(halfX, span * 0.82) + pad;
+      const y = Math.max(halfY, span * 0.82) + pad;
+      const c = 0.34;
+      pts = [[-x * (1 - c), -y], [x * (1 - c), -y], [x, -y * (1 - c)],
+        [x, y * (1 - c)], [x * (1 - c), y], [-x * (1 - c), y],
+        [-x, y * (1 - c)], [-x, -y * (1 - c)]];
+    } else if (shape === "hexagon") {
+      const x = halfX + pad, y = halfY + pad;
+      pts = [[0, -y], [x, -y * 0.50], [x, y * 0.50], [0, y],
+        [-x, y * 0.50], [-x, -y * 0.50]];
+    } else if (shape === "heart") {
+      const s = span + pad * 1.35;
+      pts = outlineFor("heart", 2).map(([x, y]) => [x * s, y * s]);
+    } else {
+      pts = Array.from({ length: 72 }, (_, i) => {
+        const a = (i / 72) * Math.PI * 2;
+        return [Math.cos(a) * rW, Math.sin(a) * rW];
+      });
+    }
+
+    const lengths = [];
+    let perimeter = 0;
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[i], b = pts[(i + 1) % pts.length];
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      lengths.push(len); perimeter += len;
+    }
+    const n = Math.max(8, Math.floor(perimeter / (d * 1.06)));
+    const samples = [];
+    for (let k = 0; k < n; k++) {
+      let target = (k / n) * perimeter, i = 0;
+      while (target > lengths[i] && i < lengths.length - 1) {
+        target -= lengths[i]; i++;
+      }
+      const a = pts[i], b = pts[(i + 1) % pts.length];
+      const f = lengths[i] > 0 ? target / lengths[i] : 0;
+      samples.push({ x: a[0] + (b[0] - a[0]) * f, y: a[1] + (b[1] - a[1]) * f });
+    }
+    for (let i = 0; i < samples.length; i++) {
+      const prev = samples[(i - 1 + samples.length) % samples.length];
+      const next = samples[(i + 1) % samples.length];
+      const tx0 = next.x - prev.x, ty0 = next.y - prev.y;
+      const tl = Math.hypot(tx0, ty0) || 1;
+      let nx = ty0 / tl, ny = -tx0 / tl;
+      const here = samples[i];
+      if (nx * here.x + ny * here.y < 0) { nx = -nx; ny = -ny; }
+      here.nx = nx; here.ny = ny;
+    }
+    return samples;
+  })();
+  const n = guide.length;
 
   // Halo NIE jest pelna plyta. Kazdy kamien dostaje osobna, krotka tulejke
   // gniazda; sasiednie tulejki zachodza na siebie tylko bokami i tworza
@@ -2280,8 +2512,8 @@ export function buildHalo(w, p, stone, girdleR) {
     SEAT.throughWidth, true, seatH + 0.02,
   );
   for (let i = 0; i < n; i++) {
-    const a = (i / n) * Math.PI * 2;
-    const x = Math.cos(a) * rW, y = Math.sin(a) * rW;
+    const { x, y, nx, ny } = guide[i];
+    const a = Math.atan2(ny, nx);
 
     // Niskie loze podtrzymuje pawilon, ale konczy sie pod rondysta. Wariant
     // platkowy dostaje osobno tylko ZEWNĘTRZNA polkasete: kamien wsuwa sie
@@ -2345,7 +2577,11 @@ export function buildHalo(w, p, stone, girdleR) {
   // sąsiednich kamieni.
   const strony = haloSetting === "scallop" ? [-1] : [-1, 1];
   for (let i = 0; i < n; i++) {
-    const b = ((i + 0.5) / n) * Math.PI * 2;
+    const a = guide[i], next = guide[(i + 1) % n];
+    const bx = (a.x + next.x) / 2, by = (a.y + next.y) / 2;
+    let nx = a.nx + next.nx, ny = a.ny + next.ny;
+    const nl = Math.hypot(nx, ny) || 1;
+    nx /= nl; ny /= nl;
     for (const s of strony) {
       // Stopa stoi POZA obrysem kamyka, bo wlot gniazda scina wszystko, co
       // w ten obrys wchodzi. Szczyt zakutego slupka pochyla sie do srodka
@@ -2363,15 +2599,15 @@ export function buildHalo(w, p, stone, girdleR) {
       // dwie kuleczki tej samej pary nie moga sie zlac w jeden walek. Przy
       // 1,15 promienia jeszcze sie zlewaly (przy kamyku 1,8 mm z pary
       // zostawal jeden walek), wiec podloga jest 1,6.
-      const polKroku = (Math.PI / n) * rW;         // polowa odstepu po obwodzie
+      const polKroku = Math.hypot(next.x - a.x, next.y - a.y) / 2;
       const wlot = d / 2 + 0.05 + 0.04;            // wlot gniazda plus margines
       const minOdsun = Math.sqrt(Math.max(0, wlot * wlot - polKroku * polKroku));
       const odsun = Math.max(minOdsun, kulaH * 1.6);
-      const rStopy = rW + s * odsun;
+      const stopaX = bx + nx * s * odsun, stopaY = by + ny * s * odsun;
       // Zakuty slupek pochyla sie nad kamien, ale nie tak daleko, zeby zejsc
       // sie z drugim slupkiem pary: dwa czubki w jednym walku to nie zakucie.
       const odsunCzubka = zam ? Math.max(odsun - d * 0.14, kulaH * 1.15) : odsun;
-      const rSzczytu = rW + s * odsunCzubka;
+      const szczytX = bx + nx * s * odsunCzubka, szczytY = by + ny * s * odsunCzubka;
       const cupTop = haloSetting === "scallop" ? petalTop : baseTop;
       const zStopy = haloSetting === "scallop"
         ? cupTop - Math.max(0.24, d * 0.15)
@@ -2379,9 +2615,9 @@ export function buildHalo(w, p, stone, girdleR) {
       const zSrodka = zStopy + (zSzczytu - zStopy) * 0.62;
       metal = zlacz(metal, tubeAlong(w,
         [
-          [Math.cos(b) * rStopy, Math.sin(b) * rStopy, zStopy],
-          [Math.cos(b) * rStopy, Math.sin(b) * rStopy, zSrodka],
-          [Math.cos(b) * rSzczytu, Math.sin(b) * rSzczytu, zSzczytu],
+          [stopaX, stopaY, zStopy],
+          [stopaX, stopaY, zSrodka],
+          [szczytX, szczytY, zSzczytu],
         ],
         [kulaH, kulaH * 0.86, kulaH * 0.72]));
     }
@@ -2616,6 +2852,16 @@ export async function buildRing(input, opts = {}) {
   const kGlowica = taperFor(p);
   const ro = p.innerDia / 2 + p.thickness * (kGlowica ? kGlowica(0).t : 1);
   let metal = buildShank(w, p, segments);
+  // Wyciecia katedralne dotykaja tylko nadbudowanych ramion. Rdzen szyny
+  // pozostaje pod nimi ciagly, wiec otwor ozdobny nie staje sie peknieciem.
+  const cathedralOpen = cathedralCutters(w, p);
+  if (cathedralOpen) metal = odejmij(metal, cathedralOpen);
+  const cathedralGrooves = cathedralEngraving(w, p);
+  if (cathedralGrooves) metal = odejmij(metal, cathedralGrooves);
+  const botanical = buildBotanicalShoulders(w, p);
+  if (botanical) metal = zlacz(metal, botanical);
+  const bypass = buildBypassShoulders(w, p);
+  if (bypass) metal = zlacz(metal, bypass);
   const stones = [];
   // Objetosci kamieni sa potrzebne wycenie, bo karat to jednostka MASY:
   // liczy sie go z objetosci razy gestosc, a nie z szerokosci kamienia.

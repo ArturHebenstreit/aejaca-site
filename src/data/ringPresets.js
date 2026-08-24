@@ -24,6 +24,8 @@
 export const PRESET_GROUPS = [
   { id: "solitaire", label: { pl: "Z jednym kamieniem", en: "Single stone", de: "Mit einem Stein" } },
   { id: "multi",     label: { pl: "Z kilkoma kamieniami", en: "Several stones", de: "Mehrere Steine" } },
+  { id: "botanical", label: { pl: "Motywy roślinne", en: "Botanical", de: "Botanisch" } },
+  { id: "bypass",    label: { pl: "Pierścionki zawijane", en: "Bypass rings", de: "Bypass-Ringe" } },
   { id: "bands",     label: { pl: "Obrączki", en: "Bands", de: "Ringe" } },
   { id: "signets",   label: { pl: "Sygnety", en: "Signets", de: "Siegelringe" } },
 ];
@@ -158,6 +160,76 @@ export const RING_PRESETS = [
       kind: "ring", profile: "round", taper: "tapered", width: 2.2, thickness: 1.7,
       stone: { cut: "round", size: 6.0 }, setting: "prong4", prongDia: 0.9,
       side: { count: 1, size: 4.0, setting: "prong" },
+    },
+  },
+  {
+    id: "botanicalVine",
+    group: "botanical",
+    label: { pl: "Pnącze z listkami", en: "Leafy vine", de: "Blätterranke" },
+    note: { pl: "Ciągła wić wyrasta z ramion, a liście są z nią i z szyną jedną bryłą.",
+            en: "A continuous vine grows from the shoulders, with leaves joined to both vine and shank.",
+            de: "Eine durchgehende Ranke wächst aus den Schultern; Blätter, Ranke und Schiene bilden einen Körper." },
+    params: {
+      kind: "ring", profile: "round", taper: "cathedral", width: 2.3, thickness: 1.7,
+      stone: { cut: "oval", size: 6.5 }, setting: "prong4", prongDia: 0.85,
+      motif: { style: "leaves", density: 3, relief: 0.55 },
+      cathedral: { opening: "arch", ornament: "leaf" },
+      side: { count: 1, size: 1.8, setting: "prong" },
+    },
+  },
+  {
+    id: "botanicalRosette",
+    group: "botanical",
+    label: { pl: "Rozeta i pnącze", en: "Rosette and vine", de: "Rosette und Ranke" },
+    note: { pl: "Kwiatowy akcent przy koronie i delikatna wić na ramionach.",
+            en: "A floral accent at the head with a light vine over the shoulders.",
+            de: "Blütenakzent an der Fassung mit einer feinen Ranke über den Schultern." },
+    params: {
+      kind: "ring", profile: "round", taper: "tapered", width: 2.2, thickness: 1.6,
+      stone: { cut: "round", size: 5.5 }, setting: "prong6", prongDia: 0.8,
+      motif: { style: "rosette", density: 2, relief: 0.50 },
+      side: { count: 0 },
+    },
+  },
+  {
+    id: "bypassOpen",
+    group: "bypass",
+    label: { pl: "Zawijany lekki", en: "Open bypass", de: "Offener Bypass" },
+    note: { pl: "Dwa ramiona omijają kamień i kończą się po przeciwnych stronach korony.",
+            en: "Two arms sweep past the stone and finish on opposite sides of the head.",
+            de: "Zwei Arme laufen am Stein vorbei und enden an gegenüberliegenden Seiten der Fassung." },
+    params: {
+      kind: "ring", profile: "round", taper: "tapered", width: 2.0, thickness: 1.55,
+      stone: { cut: "round", size: 5.5 }, setting: "prong4", prongDia: 0.8,
+      bypass: { style: "open", sweep: 0.75, separation: 0.9 }, side: { count: 0 },
+    },
+  },
+  {
+    id: "bypassPave",
+    group: "bypass",
+    label: { pl: "Zawijany z pavé", en: "Pavé bypass", de: "Bypass mit Pavé" },
+    note: { pl: "Dwie krzyżujące się wstęgi, jedna prowadzona kamieniami do korony.",
+            en: "Two crossing ribbons, one carrying small stones towards the head.",
+            de: "Zwei gekreuzte Bänder, eines mit kleinen Steinen bis zur Fassung." },
+    params: {
+      kind: "ring", profile: "round", taper: "none", width: 2.4, thickness: 1.65,
+      stone: { cut: "oval", size: 6.5 }, setting: "prong4", prongDia: 0.82,
+      bypass: { style: "splitPave", sweep: 1.0, separation: 1.15 },
+      side: { count: 4, size: 1.4, setting: "pave", spread: 0.12 },
+    },
+  },
+  {
+    id: "bypassFlower",
+    group: "bypass",
+    label: { pl: "Zawijany kwiat", en: "Floral bypass", de: "Floraler Bypass" },
+    note: { pl: "Ramiona obejmują rozetę drobnych kamieni jak łodygi kwiatu.",
+            en: "Sweeping arms embrace a small stone rosette like flower stems.",
+            de: "Geschwungene Arme umfassen eine kleine Steinrosette wie Blütenstiele." },
+    params: {
+      kind: "ring", profile: "round", taper: "tapered", width: 2.0, thickness: 1.55,
+      stone: { cut: "round", size: 3.2 }, setting: "prong6", prongDia: 0.75,
+      halo: { on: true, size: 1.15, shape: "round", setting: "shared" },
+      bypass: { style: "flower", sweep: 0.9, separation: 1.2 }, side: { count: 0 },
     },
   },
   {
@@ -306,6 +378,9 @@ export function applyPreset(preset, current) {
   p.stone = { ...current.stone, ...(preset.params.stone || {}) };
   p.side = { ...current.side, ...(preset.params.side || {}) };
   p.signet = { ...current.signet, ...(preset.params.signet || {}) };
+  p.motif = { ...current.motif, style: "none", ...(preset.params.motif || {}) };
+  p.bypass = { ...current.bypass, style: "none", ...(preset.params.bypass || {}) };
+  p.cathedral = { ...current.cathedral, opening: "none", ornament: "none", ...(preset.params.cathedral || {}) };
   // Halo i obwod nie sa dziedziczone: preset bez halo ma byc BEZ halo,
   // a nie z resztka po poprzednim kliknieciu.
   p.halo = { ...current.halo, on: false, ...(preset.params.halo || {}) };

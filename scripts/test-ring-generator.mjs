@@ -17,7 +17,7 @@
 // Wchodzi do builda.
 
 import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, continuousProngSolid, stoneSolid, taperFor, buildShank, buildGallery, tubeAlong, buildHalo, buildCrown } from "../src/geometry/ring/build.js";
-import { CUTS, SIDE_CUTS, SETTINGS, SEAT, SIGNET_TABLES, DEFAULTS, prongAngles, outlineFor, tableSize, validate } from "../src/geometry/ring/params.js";
+import { CUTS, SIDE_CUTS, SETTINGS, SEAT, SIGNET_TABLES, HALO_SHAPES, DEFAULTS, prongAngles, outlineFor, tableSize, validate } from "../src/geometry/ring/params.js";
 import { readFileSync } from "node:fs";
 
 /**
@@ -2844,12 +2844,12 @@ console.log("\n46. Stop, numer buildu i ergonomia maja jawny kontrakt");
     bad("srebro, biale zloto oraz zolte 9K, 14K i 18K nadal nie maja osobnych wygladow");
   }
 
-  if (/RING_CONFIGURATOR_BUILD\s*=\s*["']1\.002["']/.test(ui)
+  if (/RING_CONFIGURATOR_BUILD\s*=\s*["']1\.003["']/.test(ui)
       && /Build\s*\{RING_CONFIGURATOR_BUILD\}/.test(ui)
-      && /WORKER_VERSION\s*=\s*34/.test(worker)) {
-    ok("stopka pokazuje build 1.002, a geometria ma wersje 34");
+      && /WORKER_VERSION\s*=\s*35/.test(worker)) {
+    ok("stopka pokazuje build 1.003, a geometria ma wersje 35");
   } else {
-    bad("brakuje widocznego buildu 1.002 lub zgodnej wersji geometrii 34");
+    bad("brakuje widocznego buildu 1.003 lub zgodnej wersji geometrii 35");
   }
 
   if (/min-h-\[44px\]/.test(ui) && /aria-label=\{t\.configNav\}/.test(ui)
@@ -2963,6 +2963,95 @@ console.log("\n48. Krapa jest jedna ciagla bryla od kosza do czubka");
     else ok(`${zamkniete ? "zakuta" : "otwarta"}: jedna bryla, przekroj w przegieciu ${przekroj.toFixed(3)} mm2`);
     plaster.delete?.(); szyjka.delete?.(); krapa.delete?.();
   }
+}
+
+// ------------------------------------------------------------
+console.log("\n49. Build 1.003: halo, trylogia i nowe rodziny ramion");
+// ------------------------------------------------------------
+{
+  const ui = readFileSync(new URL("../src/components/calculators/RingConfigurator.jsx", import.meta.url), "utf8");
+  if (/id: "1", label: "1"/.test(ui) && /id: "2", label: "2"/.test(ui)) {
+    ok("trylogia pozwala wybrac jeden albo dwa kamienie na strone");
+  } else bad("interfejs nadal pomija 1 lub 2 kamienie na strone");
+
+  for (const count of [1, 2]) {
+    const r = await buildRing({
+      stone: { cut: "round", size: 6 }, setting: "prong4",
+      side: { count, size: 3.0, setting: "prong" }, casting: { stones: true },
+    }, { segments: 64, mode: "referenceAssembly" });
+    if (r.stones.length === 1 + count * 2 && ileCzesci(r.metal) === 1) {
+      ok(`${count} na strone: ${r.stones.length} kamieni i jedna bryla metalu`);
+    } else bad(`${count} na strone nie daje poprawnej, spojnej konfiguracji`);
+    zwolnij(r);
+  }
+
+  {
+    const p = validate({ width: 3.0, thickness: 1.6,
+      stone: { cut: "round", size: 6 }, setting: "prong4",
+      side: { count: 3, size: 1.6, setting: "pave", gap: 0.35 },
+      casting: { stones: true } });
+    const r = await buildRing(p, { segments: 64, mode: "referenceAssembly" });
+    const w = await kernel();
+    const s = stoneSolid(w, p.stone.cut, p.stone.size);
+    const crown = buildCrown(w, p, s);
+    const gallery = buildGallery(w, p, crown.basketH);
+    const overlap = gallery.intersect(r.stones[1]);
+    const share = overlap.volume() / r.stones[1].volume();
+    if (share < 0.0005) ok(`pierwszy kamien omija wspornik galerii (${(share * 100).toFixed(3)} % kolizji)`);
+    else bad(`wspornik galerii wchodzi w pierwszy kamien na ${(share * 100).toFixed(2)} % objetosci`);
+    overlap.delete?.(); gallery.delete?.(); crown.solid.delete?.(); s.solid.delete?.(); zwolnij(r);
+  }
+
+  const w = await kernel();
+  const centralny = stoneSolid(w, "round", 6);
+  const signatures = new Set();
+  for (const shape of HALO_SHAPES) {
+    const p = validate({ stone: { cut: "round", size: 6 }, setting: "prong4",
+      halo: { on: true, size: 1.3, shape }, casting: { stones: false } });
+    const h = buildHalo(w, p, centralny, 3);
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const s of h.stones) {
+      const bb = s.boundingBox();
+      minX = Math.min(minX, bb.min[0]); maxX = Math.max(maxX, bb.max[0]);
+      minY = Math.min(minY, bb.min[1]); maxY = Math.max(maxY, bb.max[1]);
+    }
+    signatures.add(`${(maxX - minX).toFixed(1)}:${(maxY - minY).toFixed(1)}:${h.count}`);
+    if (!h.metal || !h.seats || h.count < 8) bad(`${shape}: halo nie ma pelnego wienca i otwartych gniazd`);
+    else ok(`${shape.padEnd(9)}: ${h.count} gniazd na prowadnicy obramowania`);
+    h.metal?.delete?.(); h.seats?.delete?.();
+    for (const s of h.stones) s.delete?.();
+  }
+  centralny.solid.delete?.();
+  if (signatures.size >= 4) ok("ksztalty halo daja rozne, mierzalne obramowania");
+  else bad("wybory halo nadal prowadza do praktycznie jednego obrysu");
+
+  const noweGrupy = ["botanical", "bypass"];
+  if (noweGrupy.every((id) => PRESET_GROUPS.some((g) => g.id === id))
+      && RING_PRESETS.filter((x) => noweGrupy.includes(x.group)).length >= 5) {
+    ok("katalog zawiera rodziny roslinna i zawijana z piecioma modelami startowymi");
+  } else bad("brakuje nowych kategorii lub modeli startowych");
+
+  for (const id of ["botanicalVine", "botanicalRosette", "bypassOpen", "bypassPave", "bypassFlower"]) {
+    const preset = RING_PRESETS.find((x) => x.id === id);
+    const r = await buildRing(applyPreset(preset, DEFAULTS), { segments: 56, mode: "casting" });
+    if (ileCzesci(r.metal) === 1) ok(`${id}: model odlewniczy jest jedna bryla`);
+    else bad(`${id}: model rozpada sie na oddzielne elementy`);
+    zwolnij(r);
+  }
+
+  const base = await buildRing({ taper: "cathedral", cathedral: { opening: "none", ornament: "none" },
+    stone: { cut: "round", size: 6 }, setting: "prong4", casting: { stones: false } },
+  { segments: 64, mode: "casting" });
+  for (const opening of ["arch", "doubleArch", "trefoil"]) {
+    const r = await buildRing({ taper: "cathedral", cathedral: { opening, ornament: "leaf" },
+      stone: { cut: "round", size: 6 }, setting: "prong4", casting: { stones: false } },
+    { segments: 64, mode: "casting" });
+    if (ileCzesci(r.metal) !== 1) bad(`${opening}: wyciecie przerwalo szyna lub ramiona`);
+    else if (r.volumeMm3 >= base.volumeMm3 - 0.02) bad(`${opening}: wyciecie nie usuwa metalu z katedry`);
+    else ok(`${opening}: otwarte ramiona i ciagly rdzen szyny`);
+    zwolnij(r);
+  }
+  zwolnij(base);
 }
 
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");
