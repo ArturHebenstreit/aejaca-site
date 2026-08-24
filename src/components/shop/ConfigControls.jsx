@@ -159,6 +159,10 @@ export function QuantityStepper({ label, value, onChange, min = 1, max = 100, op
  */
 export function ScaleControl({ label, bbox, volumeCm3, scale, onChange, maxScale, lang, accent = "blue", purpose = "print" }) {
   const gora = Math.min(maxScale ?? 4, 4);
+  // Przy odlewie skala oryginalna pozostaje świadomą opcją także wtedy, gdy
+  // przekracza automat. Suwak musi umieć pokazać 100%, a serwer skieruje taki
+  // stan do oceny indywidualnej. Dla zwykłego druku zachowujemy twardy limit.
+  const goraSuwaka = purpose === "casting" ? Math.max(gora, 1) : gora;
   const dol = 0.25;
   const zaDuzy = gora < 1;
   const bezpieczneMinimum = gora >= dol;
@@ -186,16 +190,21 @@ export function ScaleControl({ label, bbox, volumeCm3, scale, onChange, maxScale
       <input
         type="range"
         min={dol}
-        max={Math.max(gora, dol + 0.01)}
+        max={Math.max(goraSuwaka, dol + 0.01)}
         step={0.01}
-        value={Math.min(scale, gora)}
+        value={Math.min(scale, goraSuwaka)}
         onChange={(e) => onChange(Number(e.target.value))}
         className={`w-full ${track}`}
         aria-label={label}
         disabled={!bezpieczneMinimum}
       />
       <div className="flex flex-wrap items-center gap-1.5 mt-2">
-        <button type="button" className={przycisk(Math.abs(scale - 1) < 0.005)} onClick={() => onChange(1)} disabled={zaDuzy}>
+        <button
+          type="button"
+          className={przycisk(Math.abs(scale - 1) < 0.005)}
+          onClick={() => onChange(1)}
+          disabled={zaDuzy && purpose !== "casting"}
+        >
           {t({ pl: "Oryginał", en: "Original", de: "Original" }, lang)}
         </button>
         {maxScale != null && dopasowanie !== 1 && (
@@ -206,7 +215,7 @@ export function ScaleControl({ label, bbox, volumeCm3, scale, onChange, maxScale
             disabled={!bezpieczneMinimum}
           >
             {purpose === "casting"
-              ? t({ pl: "Dopasuj do odlewni", en: "Fit casting limits", de: "An Gussgrenze anpassen" }, lang)
+              ? t({ pl: "Dostosuj możliwości techniczne", en: "Fit to technical limits", de: "An technische Grenzen anpassen" }, lang)
               : t({ pl: "Do pola roboczego", en: "Fit the build plate", de: "Auf den Bauraum" }, lang)}
           </button>
         )}
@@ -258,6 +267,11 @@ export function FileDrop({ label, hint, file, geometry, onPick, onClear, busy, b
         <button
           type="button"
           onClick={() => ref.current?.click()}
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => {
+            event.preventDefault();
+            if (event.dataTransfer.files?.length) onPick({ target: { files: event.dataTransfer.files } });
+          }}
           className={`w-full flex flex-col items-center gap-2.5 px-5 py-7 rounded-2xl border-2 border-dashed
                       bg-white/[0.02] hover:bg-white/[0.04] transition-all ${ring}`}
         >
