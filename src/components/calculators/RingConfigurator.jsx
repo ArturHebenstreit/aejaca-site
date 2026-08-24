@@ -31,7 +31,8 @@ const L = {
     size: "Rozmiar", alloy: "Metal", color: "Kolor metalu", profile: "Profil szyny",
     gem: "Kamień centralny", sideGem: "Kamienie boczne",
     preset: "Zacznij od wzoru", taper: "Sylwetka szyny",
-    band: "Obrączka", halo: "Halo", haloSize: "Kamienie halo", on: "Tak", off: "Nie",
+    band: "Obrączka", halo: "Halo", haloSize: "Kamienie halo", haloSetting: "Zakucie kamieni halo",
+    haloScallop: "Płatkowe kasetki", haloShared: "Wspólne krapy", on: "Tak", off: "Nie",
     coverage: "Kamienie na obwodzie", bandSize: "Średnica kamieni",
     coverages: { none: "Brak", half: "Górna połowa", full: "Dookoła" },
     eternityWarn: "Pierścionka z kamieniami dookoła nie da się później zwęzić ani rozciągnąć: nie ma gładkiego odcinka, w który jubiler mógłby wejść.",
@@ -69,7 +70,8 @@ const L = {
     size: "Size", alloy: "Metal", color: "Metal colour", profile: "Shank profile",
     gem: "Centre stone", sideGem: "Side stones",
     preset: "Start from a design", taper: "Shank silhouette",
-    band: "Band", halo: "Halo", haloSize: "Halo stones", on: "Yes", off: "No",
+    band: "Band", halo: "Halo", haloSize: "Halo stones", haloSetting: "Halo stone setting",
+    haloScallop: "Scalloped bezels", haloShared: "Shared prongs", on: "Yes", off: "No",
     coverage: "Stones around the band", bandSize: "Stone diameter",
     coverages: { none: "None", half: "Upper half", full: "All the way round" },
     eternityWarn: "A ring with stones all the way round cannot be sized later: there is no plain stretch for a jeweller to work on.",
@@ -107,7 +109,8 @@ const L = {
     size: "Größe", alloy: "Metall", color: "Metallfarbe", profile: "Schienenprofil",
     gem: "Hauptstein", sideGem: "Seitensteine",
     preset: "Mit einem Entwurf beginnen", taper: "Schienensilhouette",
-    band: "Ring", halo: "Halo", haloSize: "Halo-Steine", on: "Ja", off: "Nein",
+    band: "Ring", halo: "Halo", haloSize: "Halo-Steine", haloSetting: "Fassung der Halo-Steine",
+    haloScallop: "Blüten-Zargen", haloShared: "Geteilte Krappen", on: "Ja", off: "Nein",
     coverage: "Steine am Umfang", bandSize: "Steindurchmesser",
     coverages: { none: "Keine", half: "Obere Hälfte", full: "Rundum" },
     eternityWarn: "Ein Ring mit Steinen rundum lässt sich später nicht ändern: es fehlt der glatte Abschnitt zum Ansetzen.",
@@ -507,6 +510,15 @@ export default function RingConfigurator({ lang = "pl" }) {
                     min={LIMITS.haloSize[0]} max={LIMITS.haloSize[1]} step={0.1} decimals={1}
                     onChange={(v) => setP((prev) => { setPresetId(null);
                       return { ...prev, halo: { ...prev.halo, size: v } }; })} />
+                  <Group label={t.haloSetting}>
+                    <Seg value={p.halo.setting}
+                      onChange={(setting) => setP((prev) => { setPresetId(null);
+                        return { ...prev, halo: { ...prev.halo, setting } }; })}
+                      options={[
+                        { id: "scallop", label: t.haloScallop },
+                        { id: "shared", label: t.haloShared },
+                      ]} />
+                  </Group>
                   <Group label={t.gem}>
                     <GemSelect value={p.halo.material} lang={lang} groupLabels={t.gemGroups}
                       onChange={(id) => setP((prev) => { setPresetId(null);

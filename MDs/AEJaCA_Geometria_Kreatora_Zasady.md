@@ -702,3 +702,28 @@ bryly nie wystarcza, jezeli frez pozostawia krape polaczona tylko przypadkowym
 fragmentem metalu. Dla szlifow kierunkowych trzeba osobno chronic szpic i
 stabilizowac szeroka strone, a kamien wiercony powinien miec osobny model
 geometryczny zamiast korzystac z profilu kamienia osadzanego.
+
+## 2026-08-24 - dwa kanony zakucia kamieni w halo
+
+**Bylo:** wszystkie kamienie halo korzystaly z jednego ukladu dwoch slupkow
+miedzy sasiadami i wysokich cylindrycznych lozysk. Po zwiekszeniu srednicy
+lozyska i slupki konkurowaly ze soba o to samo miejsce, a podglad nie
+odpowiadal klasycznym pierscionkom halo: brakowalo regularnych platkow albo
+czytelnych wspolnych krap. Zmniejszenie calej konstrukcji rozlaczalo z kolei
+wieniec od galerii w owalnym wzorze Diana.
+
+**Jest:** parametr `halo.setting` rozroznia dwa kompletne uklady. `scallop`
+ma osobne podniesione kasetki tworzace kwiatowy obrys i jedna wspolna kuleczke
+od strony kamienia centralnego. `shared` ma nizsze lozyska oraz dwie wspolne
+krapy w kazdej szczelinie, wewnetrzna i zewnetrzna. Gniazdo w obu wariantach
+pozostaje stozkowe i otwarte. W trybie odlewniczym krapy wystaja ponad korone,
+a w podgladzie gotowym pochylaja sie nad rondyste; kasetka zmniejsza wlot przez
+docisniety rant. Stopa, wysokosc i odsuniecie skaluja sie z kamieniem, a dolny
+obrys nadal zachodzi na galerie i korone.
+
+**Czego sie dowiedzielismy.** Zakucie halo nie jest dekoracyjna nakladka na
+jedno lozysko. Kasetka i wspolne krapy wymagaja innych wysokosci scian,
+innej liczby ruchomych elementow oraz innego sposobu domkniecia. Kontrola musi
+obejmowac najmniejszy i najwiekszy kamien, stan otwarty i zakuty oraz polaczenie
+calego wienca z galeria. Sama liczba kamieni ani jedna udana srednica nie
+potwierdzaja wykonalnosci rodziny parametrycznej.

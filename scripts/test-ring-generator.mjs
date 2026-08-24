@@ -1712,8 +1712,9 @@ console.log("\n30. Wieniec halo: gniazdo ma stozek, a kulki stoja przy nim");
 // stozku. Mierzymy szerokosc otworu przy DNIE plyty: ma byc wyraznie wezsza
 // od kamienia, inaczej kamien przez nia przechodzi.
 //
-// KULKI. Maja byc dwie na kamien i maja przezyc wlot gniazda. Przysuniete za
-// blisko sa scinane do zera, odsuniete za daleko nie maja czym zakuwac.
+// ZAKUCIA. Wspolne krapy maja po dwa slupki na szczeline, a platkowa kasetka
+// jeden wewnetrzny slupek, bo z zewnatrz kamien trzyma jej podniesiony rant.
+// Kazdy element ma przezyc wlot gniazda i pozostac dostepny dla narzedzia.
 {
   const w = await kernel();
   const { Manifold } = w;
@@ -1766,13 +1767,14 @@ console.log("\n30. Wieniec halo: gniazdo ma stozek, a kulki stoja przy nim");
     const nad = Manifold.cube([60, 60, 12], true).translate([0, 0, gora + 0.06 + 6]);
     const zakucia = wieniec.intersect(nad);
     const realne = zakucia.decompose().filter((c) => c.volume() > 0.002);
-    if (realne.length !== 2 * h.count) {
-      bad(`halo d=${d}: ${realne.length} kulek zamiast ${2 * h.count}`);
+    const oczekiwane = p.halo.setting === "shared" ? 2 * h.count : h.count;
+    if (realne.length !== oczekiwane) {
+      bad(`halo d=${d}: ${realne.length} zakuc zamiast ${oczekiwane}`);
     } else {
       const objs = realne.map((c) => c.volume());
       const naj = Math.min(...objs);
       if (naj < 0.01) bad(`halo d=${d}: najmniejsza kulka ma ${naj.toFixed(4)} mm3, czyli zostala scieta do niczego`);
-      else ok(`d=${d} mm  ${realne.length} kulek na ${h.count} kamieni, najmniejsza ${naj.toFixed(3)} mm3`);
+      else ok(`d=${d} mm  ${realne.length} zakuc na ${h.count} kamieni, najmniejsze ${naj.toFixed(3)} mm3`);
     }
 
     for (const c of zakucia.decompose()) c.delete?.();
@@ -2636,6 +2638,66 @@ console.log("\n41. Dwa kosze, podparte szlify i otwarta kaseta kaboszonu");
     ok("interfejs oferuje dwa kosze, a nieznana wartosc bezpiecznie wraca do lekkiego");
   } else {
     bad("wybor konstrukcji kosza nie jest kompletny w walidacji lub interfejsie");
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n42. Dwa poprawne sposoby zakucia kamieni halo");
+// ------------------------------------------------------------
+{
+  const w = await kernel();
+  const wyniki = [];
+  const centralny = stoneSolid(w, "round", 6.5);
+  const gR = Math.max(...outlineFor("round", 6.5).map(([x, y]) => Math.hypot(x, y)));
+  try {
+    for (const setting of ["scallop", "shared"]) {
+      const wejscie = {
+        stone: { cut: "round", size: 6.5 }, setting: "prong4",
+        halo: { on: true, size: 2.2, setting },
+      };
+      const pOtwarty = validate({ ...wejscie, casting: { stones: false } });
+      const pZakuty = validate({ ...wejscie, casting: { stones: true } });
+      const h = buildHalo(w, pOtwarty, centralny, gR);
+      const hz = buildHalo(w, pZakuty, centralny, gR);
+      const otwarty = h.metal.subtract(h.seats);
+      const zakuty = hz.metal.subtract(hz.seats);
+      const czesci = ileCzesci(otwarty);
+      const czesciZakute = ileCzesci(zakuty);
+      const objetosc = otwarty.volume();
+      const ruchA = zakuty.subtract(otwarty);
+      const ruchB = otwarty.subtract(zakuty);
+      const ruchZakucia = ruchA.volume() + ruchB.volume();
+      if (czesci === 1 && czesciZakute === 1 && h.count >= 8
+          && objetosc > 5 && ruchZakucia > 0.05) {
+        ok(`${setting}: duze kamienie maja otwarty i zakuty spojny wieniec (${h.count} szt., ruch ${ruchZakucia.toFixed(2)} mm3)`);
+      } else {
+        bad(`${setting}: otwarty ${czesci} cz., zakuty ${czesciZakute} cz., ruch ${ruchZakucia.toFixed(3)} mm3`);
+      }
+      wyniki.push({ setting, objetosc });
+      zwolnij(ruchA); zwolnij(ruchB); zwolnij(otwarty); zwolnij(zakuty);
+      zwolnij(h.metal); zwolnij(h.seats); zwolnij(hz.metal); zwolnij(hz.seats);
+      for (const k of h.stones) k.delete?.();
+      for (const k of hz.stones) k.delete?.();
+    }
+    if (Math.abs(wyniki[0].objetosc - wyniki[1].objetosc) > 1) {
+      ok("platkowe kasetki i wspolne krapy sa dwiema roznymi konstrukcjami");
+    } else {
+      bad("oba wybory halo daja praktycznie te sama geometrie");
+    }
+  } catch (e) {
+    bad(`nie dalo sie sprawdzic wariantow halo: ${e.message}`);
+  } finally {
+    centralny.solid.delete?.();
+  }
+
+  const fallback = validate({ halo: { on: true, setting: "unknown" } });
+  const ui = readFileSync(new URL("../src/components/calculators/RingConfigurator.jsx", import.meta.url), "utf8");
+  if (fallback.halo.setting === "scallop"
+      && /haloScallop/.test(ui) && /haloShared/.test(ui)
+      && /halo: \{ \.\.\.prev\.halo, setting \}/.test(ui)) {
+    ok("interfejs i walidator obsluguja oba sposoby zakucia halo");
+  } else {
+    bad("brakuje pelnej obslugi wyboru zakucia halo");
   }
 }
 
