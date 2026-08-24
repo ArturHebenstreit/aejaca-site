@@ -357,6 +357,46 @@ export const SERVICES_FULL = [
     ],
   },
   {
+    id: "precious_metal_casting",
+    service: "precious_metal_casting",
+    category: "studio",
+    image: "/img/shop/service/precious_metal_casting.webp",
+    imagePrompt:
+      "Premium square product photograph for a fine-jewelry casting service: blue castable resin pattern, ivory jewelry wax pattern, finished silver ring and finished gold ring arranged on a matte black jeweler bench, a small investment flask and precision tools in the background, cool blue AEJaCA sTuDiO rim light and warm metal highlights, black background, no gemstones, no text, no logo, no watermark",
+    geometryPriced: true,
+    priceFromGrosze: 42000,
+    leadTimeDays: 10,
+    title: L("Odlew z metali szlachetnych", "Precious metal casting", "Edelmetallguss"),
+    lead: L(
+      "Wzorzec, model 3D albo pomysł. Srebro i złoto, kruszec własny lub powierzony.",
+      "Pattern, 3D model or idea. Silver and gold, our metal or yours.",
+      "Modell, 3D-Datei oder Idee. Silber und Gold, eigenes oder beigestelltes Metall."
+    ),
+    description: L(
+      "Jedna usługa obejmuje trzy punkty startowe. Możesz dostarczyć gotowy wzorzec z wosku lub żywicy odlewniczej, przesłać model 3D do wydruku albo opisać sam pomysł, a AEJaCA sTuDiO przygotuje model, wzorzec i odlew. Każda ścieżka kończy się odlewem ze srebra albo złota w wybranej próbie.\n\nWiążącą cenę podajemy automatycznie wtedy, gdy przesłany model 3D pozwala policzyć objętość, mieści się w ograniczeniach kolby i wybierasz kruszec AEJaCA. Gotowy wzorzec trzeba najpierw obejrzeć, a przedmiot wykonywany od pomysłu najpierw zaprojektować. Te dwa warianty przechodzą do wyceny indywidualnej.\n\nMożemy pracować na kruszcu AEJaCA albo na materiale powierzonym. Materiał powierzony badamy przed przyjęciem. Dla czystego, jednorodnego stopu trzeba zwykle zapewnić 5 do 8 procent zapasu na ubytek technologiczny, a dla stopu mieszanego lub nieznanego 10 do 15 procent. Materiał platerowany lub wypełniany może nie nadawać się do przetopu.",
+      "One service supports three starting points. Supply a ready wax or castable-resin pattern, upload a 3D model for us to print, or describe the idea and AEJaCA sTuDiO will design, print and cast it. Each route ends with a silver or gold casting in the selected purity.\n\nWe provide a binding automatic price when an uploaded 3D model gives a measurable volume, fits our flask limits and uses AEJaCA metal. A physical pattern must be inspected first, while an idea must be designed before its mass is known. Those two routes receive an individual quote.\n\nWe can use AEJaCA metal or customer-supplied metal. Supplied metal is assessed before acceptance. A clean single alloy typically needs 5 to 8 percent extra for technological loss; mixed or unknown material needs 10 to 15 percent. Plated or filled material may be unsuitable for remelting.",
+      "Eine Leistung unterstützt drei Ausgangspunkte. Sie liefern ein fertiges Wachs- oder Gießharzmodell, laden ein 3D-Modell zum Druck hoch oder beschreiben Ihre Idee, und AEJaCA sTuDiO übernimmt Entwurf, Druck und Guss. Jede Variante endet als Silber- oder Goldguss im gewählten Feingehalt.\n\nEin verbindlicher automatischer Preis ist möglich, wenn das 3D-Modell messbar ist, in die Gussgrenzen passt und AEJaCA-Metall verwendet wird. Ein physisches Modell muss zuerst geprüft, eine Idee zuerst konstruiert werden. Diese Varianten erhalten ein individuelles Angebot.\n\nWir arbeiten mit AEJaCA-Metall oder beigestelltem Metall. Beigestelltes Metall wird vor Annahme geprüft. Bei einer sauberen, einheitlichen Legierung sind gewöhnlich 5 bis 8 Prozent Reserve für technologischen Verlust nötig, bei gemischtem oder unbekanntem Material 10 bis 15 Prozent. Plattiertes oder gefülltes Material kann ungeeignet sein."
+    ),
+    process: [
+      { title: L("Wybierasz punkt startowy", "Choose the starting point", "Ausgangspunkt wählen"), body: L("Wzorzec fizyczny, plik 3D albo sam pomysł.", "Physical pattern, 3D file or idea only.", "Physisches Modell, 3D-Datei oder Idee.") },
+      { title: L("Sprawdzamy wykonalność", "We verify feasibility", "Wir prüfen die Machbarkeit"), body: L("Kontrolujemy model, grubości, wymiary i kruszec. Próba warsztatowa pozostaje obowiązkowa.", "We check the model, walls, dimensions and metal. A workshop trial remains mandatory.", "Wir prüfen Modell, Wandstärken, Maße und Metall. Eine Werkstattprobe bleibt erforderlich.") },
+      { title: L("Druk i odlew", "Print and cast", "Druck und Guss"), body: L("Wzorzec drukujemy w żywicy odlewniczej 16K, wypalamy i odlewamy próżniowo.", "We print the pattern in 16K castable resin, burn it out and vacuum cast it.", "Das Modell wird in 16K-Gießharz gedruckt, ausgebrannt und vakuumgegossen.") },
+      { title: L("Oczyszczenie i odbiór", "Finish and delivery", "Finish und Lieferung"), body: L("Odlew odcinamy, oczyszczamy i wykańczamy zgodnie z wybraną opcją.", "We cut, clean and finish the casting to the selected level.", "Wir trennen, reinigen und bearbeiten den Guss nach gewähltem Umfang.") },
+    ],
+    specs: [
+      { label: L("Warianty", "Variants", "Varianten"), value: L("Wzorzec, model 3D, pomysł klienta", "Pattern, 3D model, customer idea", "Modell, 3D-Datei, Kundenidee") },
+      { label: L("Kruszce", "Metals", "Metalle"), value: L("Ag 800/925, Au 9k/14k/18k/24k", "Ag 800/925, Au 9k/14k/18k/24k", "Ag 800/925, Au 9k/14k/18k/24k") },
+      { label: L("Automatyczny limit modelu", "Automatic model limit", "Automatische Modellgrenze"), value: "24 x 24 x 35 mm" },
+      { label: L("Druk wzorca", "Pattern printing", "Modelldruck"), value: L("Elegoo Saturn 4 Ultra 16K, żywica odlewnicza", "Elegoo Saturn 4 Ultra 16K, castable resin", "Elegoo Saturn 4 Ultra 16K, Gießharz") },
+      { label: L("Wersja", "Build", "Build"), value: "1.004" },
+    ],
+    bullets: [
+      L("Trzy ścieżki od gotowego wzorca do samego pomysłu", "Three routes from a ready pattern to an idea", "Drei Wege vom fertigen Modell bis zur Idee"),
+      L("Cena modelu 3D liczona z rzeczywistej objętości", "3D model priced from its measured volume", "Preis des 3D-Modells aus gemessenem Volumen"),
+      L("Srebro i złoto własne albo powierzone", "Our or customer-supplied silver and gold", "Eigenes oder beigestelltes Silber und Gold"),
+    ],
+  },
+  {
     id: "jewelry_plain",
     calcHref: "/jewelry/?service=new#calculator",
     service: "jewelry_plain",

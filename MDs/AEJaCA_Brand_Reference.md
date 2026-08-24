@@ -266,6 +266,16 @@ Wysyłka: 24-48h
 | Prototyp w srebrze | 180-300 + materiał | 42-70 + material |
 | Odlew z wykończeniem | wycena wg wagi, próby i złożoności w 24h | - |
 
+#### Produkt sklepu: odlew z metali szlachetnych, Build 1.004
+
+- wariant 1: odlew z dostarczonego wzorca z wosku lub żywicy odlewniczej;
+- wariant 2: wydruk i odlew z przesłanego STL, OBJ, 3MF albo STEP;
+- wariant 3: projekt CAD, wydruk wzorca i odlew od pomysłu klienta;
+- kruszce: Ag 800/925 i Au 9k/14k/18k/24k, własne AEJaCA albo powierzone;
+- wiążąca cena automatyczna tylko w wariancie 2, dla kruszcu AEJaCA i modelu mieszczącego się w 24 x 24 x 35 mm;
+- wzorzec fizyczny, pomysł klienta i metal powierzony zawsze wymagają potwierdzenia pracowni;
+- materiał powierzony: typowy ubytek 5-8% dla czystego, jednorodnego stopu oraz 10-15% dla materiału mieszanego lub niepewnego. Materiał platerowany lub wypełniany może zostać odrzucony.
+
 ### Filar 4: Usługi dodatkowe
 | Usługa | PLN netto |
 |--------|-----------|

@@ -79,6 +79,8 @@ const UI = {
     hideDetails: "Ukryj szczegóły",
     gateComplex: "Kształt z ornamentem, ażurem albo formą rzeźbiarską wyceniamy indywidualnie. Nakład pracy przy takiej bryle nie wynika z masy ani z metody, więc kwota z automatu byłaby zgadywaniem.",
     gateHandmade: "Wykonanie ręczne wyceniamy indywidualnie. Wiążącą cenę podajemy przy odlewie, bo tam czas pracy jest powtarzalny.",
+    gateCasting: "Wzorzec fizyczny, realizację od pomysłu oraz materiał powierzony wyceniamy po sprawdzeniu. Automatyczna cena jest dostępna dla przesłanego modelu 3D i kruszcu AEJaCA.",
+    needCastingFile: "Wgraj model 3D, aby zmierzyć objętość, sprawdzić limit odlewni i policzyć cenę.",
     fileOptional: "Bez pliku wybierzesz rozmiar z listy poniżej",
     packaging: "Opakowanie",
     qty: "Liczba sztuk",
@@ -141,6 +143,8 @@ const UI = {
     hideDetails: "Hide the breakdown",
     gateComplex: "An ornamented, openwork or sculptural shape is quoted individually. The work involved does not follow from mass or method, so an automatic price would be guesswork.",
     gateHandmade: "Hand fabrication is quoted individually. We commit to a price for casting, where the working time is repeatable.",
+    gateCasting: "A physical pattern, an idea-only job and customer-supplied metal are quoted after inspection. Automatic pricing is available for an uploaded 3D model and AEJaCA metal.",
+    needCastingFile: "Upload the 3D model so we can measure volume, check the casting limit and calculate the price.",
     fileOptional: "Without a file, pick a size from the list below",
     packaging: "Packaging",
     qty: "Quantity",
@@ -203,6 +207,8 @@ const UI = {
     hideDetails: "Kalkulation ausblenden",
     gateComplex: "Eine ornamentierte, durchbrochene oder skulpturale Form kalkulieren wir individuell. Der Aufwand ergibt sich weder aus Masse noch aus Methode, ein automatischer Preis wäre geraten.",
     gateHandmade: "Handanfertigung kalkulieren wir individuell. Verbindlich wird der Preis beim Guss, wo die Arbeitszeit reproduzierbar ist.",
+    gateCasting: "Ein physisches Modell, eine Umsetzung nur nach Idee und beigestelltes Metall kalkulieren wir nach Prüfung. Automatische Preise gelten für ein hochgeladenes 3D-Modell mit AEJaCA-Metall.",
+    needCastingFile: "3D-Modell hochladen, damit Volumen, Gussgrenze und Preis geprüft werden können.",
     fileOptional: "Ohne Datei wählen Sie unten eine Größe",
     packaging: "Verpackung",
     qty: "Stückzahl",
@@ -412,7 +418,11 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   const gateComplex = service.calculator === "jewelry_new"
     && params.complexityId != null && params.complexityId !== "simple";
   const gateHandmade = service.calculator === "jewelry_new" && params.methodId != null && params.methodId !== "cast";
-  const needsHumanQuote = gateComplex || gateHandmade;
+  const gateCasting = service.calculator === "jewelry_casting"
+    && (params.variantId !== "model_3d" || params.materialSourceId !== "aejaca");
+  const castingFileMissing = service.calculator === "jewelry_casting"
+    && params.variantId === "model_3d" && !uploadToken;
+  const needsHumanQuote = gateComplex || gateHandmade || gateCasting;
 
   const overLimit = jewelryOver || packOver;
   // Pokwitowanie ujawnionej wady pliku wstrzymuje dodanie do koszyka tak samo,
@@ -429,7 +439,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
   // ale zamowic go nie mozna: wycena poszlaby wtedy z samego rozmiaru, a klient
   // bylby przekonany, ze kupuje wydruk swojego modelu.
   const ready = descriptionOk && artworkOk && jewelryEngravingOk && packEngravingOk
-    && !substrateGap && !needsHumanQuote && !printHold && !fileError;
+    && !substrateGap && !needsHumanQuote && !castingFileMissing && !printHold && !fileError;
 
   // Zmiana podloza czysci pola, ktore od niego zaleza. Bez tego po przelaczeniu
   // z przedmiotu klienta na nasz material zostawalby wybor sposobu proby,
@@ -711,7 +721,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
               accent={accent}
             />
           )}
-          {!file && <p className="text-neutral-600 text-[11px] -mt-4 mb-6">{u.fileOptional}</p>}
+          {!file && service.calculator !== "jewelry_casting" && <p className="text-neutral-600 text-[11px] -mt-4 mb-6">{u.fileOptional}</p>}
         </>
       )}
 
@@ -934,7 +944,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
                 <p className="text-amber-300 text-xs font-medium mb-2">
                   {error.code === "needs_quote" ? u.needsQuote : error.message}
                 </p>
-                <Link to="/contact/" className="inline-flex items-center gap-1.5 text-amber-400 hover:text-amber-300 text-xs">
+                <Link to={gateCasting ? "/quote/?service=precious_metal_casting" : "/contact/"} className="inline-flex items-center gap-1.5 text-amber-400 hover:text-amber-300 text-xs">
                   {u.needsQuoteCta} <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -998,6 +1008,8 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
                     ? [{ ok: descriptionOk, label: u.needDescription, hint: u.needDescriptionHint }] : []),
                   ...(service.requiresVector
                     ? [{ ok: artworkOk, label: u.needArtwork, hint: u.needArtworkHint }] : []),
+                  ...(castingFileMissing
+                    ? [{ ok: false, label: u.file, hint: u.needCastingFile }] : []),
                 ...(substrateGap === "substrate_required" ? [{ ok: false, label: u.needSubstrate, hint: u.needSubstrateHint }] : []),
                 ...(substrateGap === "spare_required" ? [{ ok: false, label: u.needSpare, hint: u.needSpareHint }] : []),
                 ...(substrateGap === "material_note_required" ? [{ ok: false, label: u.needMaterialNote, hint: u.materialNoteHint }] : []),
@@ -1010,7 +1022,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue" }) {
             {needsHumanQuote && (
               <div className="rounded-xl border border-amber-400/30 bg-amber-400/[0.05] p-4 mb-3">
                 <p className="text-amber-300/90 text-[11px] leading-relaxed mb-2">
-                  {gateComplex ? u.gateComplex : u.gateHandmade}
+                  {gateCasting ? u.gateCasting : gateComplex ? u.gateComplex : u.gateHandmade}
                 </p>
                 <Link to="/contact/" className="inline-flex items-center gap-1.5 text-amber-400 hover:text-amber-300 text-xs">
                   {u.toQuote} <ArrowRight className="w-3.5 h-3.5" />

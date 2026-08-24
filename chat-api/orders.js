@@ -17,6 +17,7 @@ import * as laserFiber from "./pricing/laserFiber.js";
 import * as epoxy from "./pricing/epoxy.js";
 import * as cadDesign from "./pricing/cadDesign.js";
 import * as ringConfigurator from "./pricing/ringConfigurator.js";
+import * as preciousMetalCasting from "./pricing/preciousMetalCasting.js";
 
 /** Limit obrotu dzialalnosci nierejestrowanej, od 2026-01-01 rozliczany kwartalnie */
 export const QUARTERLY_LIMIT_GROSZE = 1_081_350; // 10 813,50 PLN
@@ -40,6 +41,7 @@ export const CALCULATORS = {
   laser_fiber:        { fn: laserFiber.calculate,   needsFile: false, label: { pl: "Znakowanie laserem fiber", en: "Fiber laser marking", de: "Faserlaser-Markierung" } },
   epoxy:              { fn: epoxy.calculate,        needsFile: false, label: { pl: "Odlew żywiczny", en: "Resin casting", de: "Harzguss" } },
   cad_design:         { fn: cadDesign.calculate,    needsFile: false, label: { pl: "Projekt 3D (CAD)", en: "3D design (CAD)", de: "3D-Entwurf (CAD)" } },
+  jewelry_casting:    { fn: preciousMetalCasting.calculate, needsFile: false, label: { pl: "Odlew z metalu szlachetnego", en: "Precious metal casting", de: "Edelmetallguss" } },
   // Nazwa MUSI zaczynac sie od `jewelry_`, bo od tego przedrostka zalezy,
   // czy kursy kruszcow i ceny kamieni w ogole trafia do kalkulatora.
   //
@@ -51,7 +53,7 @@ export const CALCULATORS = {
 };
 
 /** Kalkulatory, w ktorych plik klienta zastepuje wybor rozmiaru */
-const FILE_AWARE = new Set(["print3d_fdm", "print3d_msla"]);
+const FILE_AWARE = new Set(["print3d_fdm", "print3d_msla", "jewelry_casting"]);
 
 /** Kalkulatory, ktore dostaja bryle policzona na serwerze, a nie z pliku */
 const RING_AWARE = new Set(["jewelry_ring_config"]);
@@ -243,11 +245,17 @@ export function priceItem({ calculator, params, lang = "pl", geometry = null, sc
     // zna granice maszyny, ale kwote wiazaca wystawia serwer i to on musi
     // odmowic, gdy powiekszony model nie miesci sie juz na stole. Inaczej
     // dowiedzielibysmy sie o tym przy realizacji, po zaplacie.
-    if (!print3d.fitsBuildVolume(geometry.bbox, calculator, scale)) {
+    if (calculator !== "jewelry_casting" && !print3d.fitsBuildVolume(geometry.bbox, calculator, scale)) {
       const max = print3d.maxScaleForBBox(geometry.bbox, calculator);
       throw new PricingError(
         "too_large_for_printer",
         `Model w tej skali nie mieści się w polu roboczym maszyny. Największa możliwa skala dla tego pliku to ${Math.floor(max * 100)}%.`,
+      );
+    }
+    if (calculator === "jewelry_casting" && !preciousMetalCasting.fitsCastingFlask(geometry.bbox, scale)) {
+      throw new PricingError(
+        "too_large_for_casting",
+        "Model nie mieści się w automatycznej ścieżce odlewniczej 24 x 24 x 35 mm. Wyślij go do indywidualnej oceny.",
       );
     }
     callParams.stlData = scaleGeometry(geometry, scale);
