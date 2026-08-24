@@ -189,14 +189,14 @@ Dlatego `tubeAlong` trzyma sumę stożków jako zapas i sprawdza wynik, zamiast 
 
 - Liczba kamieni **nie jest parametrem**. Wynika z obwodu przez średnicę, tak jak
   liczy jubiler. Oddanie tego klientowi kończy się dziurą albo zachodzeniem.
-- Otwór na kamień centralny **mniejszy od rondysty**, inaczej kamień nie ma na
-  czym usiąść, a wieniec wisi na łapkach.
-- Wybranie od spodu jest **rzeczowe, nie kosmetyczne**: pełny metal odcina
-  kamieniom światło od dołu, a stamtąd bierze się blask halo.
-- Okien **nie wierci się między gniazdami**: zostaje tam ćwierć milimetra i wieniec
-  rozpada się na kawałki. Wybieramy pierścień od spodu.
-- Grubość płyty idzie **za rozmiarem kamienia**, bo gniazdo też za nim idzie.
-  Stała 0,55 mm to była wada, nie uproszczenie.
+- Halo **nie jest płytą**. Każdy kamień ma osobną krótką tulejkę gniazda;
+  sąsiednie tulejki zachodzą bokami i tworzą samonośny, ażurowy wieniec.
+- Tulejki zachodzą nieznacznie na koronę, aby całość była jedną bryłą, ale nie
+  mogą wejść w centralny otwór na tyle, by powstała szara tarcza.
+- Frez ma być **ślepy i krótszy od tulejki**. Światło wchodzi bokami ażurowego
+  wieńca; przelot przez podwyższenie i szynę jest wadą, nie doświetleniem.
+- Wysokość tulejki oraz frezu idzie **za rozmiarem kamienia**. Stała 0,55 mm
+  była wadą, nie uproszczeniem.
 
 ## Szyna i obrączka
 
@@ -651,3 +651,29 @@ parametr konstrukcyjny, bo zmienia polozenie gniazda, lapek i zapotrzebowanie
 na metal w dwoch osiach. Podglad pustej oprawy powinien korzystac z bryly
 produkcyjnej bez warstwy posredniej: wtedy otwarte gniazdo jest gwarancja
 wynikajaca z danych, a nie podobienstwem dwoch osobno policzonych modeli.
+
+## 2026-08-24 - azurowe kosze, podparte lapki i frez nad szyna
+
+**Bylo:** centralny kosz byl prawie litym loftem z czterema oknami, a halo
+pelna plyta z wybraniem od spodu. Po ukryciu kamieni oba elementy wygladaly
+jak szare zaslepki. Boczne lapki wyrastaly z okien litych stozkow i przy
+pierwszym kamieniu nie uwzglednialy podwyzszenia galerii. Galeria konczyla sie
+walcem o widocznym uskoku. Skrocenie samego prostego wylotu centralnego gniazda
+nie wystarczalo: przy waskim wylocie sam stozek frezu byl dluzszy od kosza i
+przewiercal podwyzszenie oraz szyne.
+
+**Jest:** centralny kosz ma dolna obrecz i zebra, boczne oprawki dolna obrecz
+oraz zakrzywione nogi, a halo osobne tulejki gniazd. Pierwszy kamien boczny
+korzysta z tego samego profilu wysokosci co galeria, a jego stopa schodzi przez
+cala galerie do szyny. Profil galerii wygasza promien i wysokosc funkcja
+smoothstep. Kosz centralny miesci pawilon nad szyna, a limit frezu obejmuje
+zarowno przelot, jak i stozek. Sprawdzian 40 mierzy pusty srodek korony, pelny
+metal szyny pod gniazdem i oba suwaki 0/90/180/270 stopni.
+
+**Czego sie dowiedzielismy.** Otwarta oprawa nie oznacza wyciecia wiekszego
+otworu w litej bryle; oznacza zbudowanie nosnej geometrii z obreczy i zeber.
+Limit dlugosci narzedzia musi ograniczac jego cala obwiednie. Jezeli kamien nie
+miesci pawilonu nad nośnikiem, nie wolno rozwiazac tego przewierceniem nosnika:
+trzeba podniesc kosz. Wspornik widoczny jako polaczony w jednym przekroju moze
+nadal byc osobna bryla obok osi, dlatego lapki V dostaja osobne zebra od kazdej
+stopy do dolnej obreczy.
