@@ -4,7 +4,7 @@ status: review
 author: Codex
 branch: codex/ring-production-geometry
 base_commit: ca5dbd99bef36bf38e4d1dd0fd762fc1d4842f70
-last_commit: 472142d2f5e66824022e8002b80ef5c525fcfbec
+last_commit: eece84f2d98f89e91bc7c41ad8118c1c6bce2060
 updated: 2026-08-24
 ---
 
@@ -41,11 +41,21 @@ informacji dla klienta.
   srednice kamieni.
 - Wylaczenie kamieni pokazuje dokladnie produkcyjny metal `casting`, z
   otwartymi lapkami, koszami i wylotami gniazd.
-- Kamien centralny i kamienie boczne maja osobna orientacje. Dla ksztaltow
-  kierunkowych dostepne sa cztery kierunki, a dla symetrycznych ustawienie
-  w poprzek albo wzdluz szyny.
+- Kamien centralny i kamienie boczne maja osobne, jednakowe suwaki orientacji
+  0, 90, 180 i 270 stopni, niezaleznie od wybranego szlifu.
 - Obrot obejmuje jednoczesnie kamien, gniazdo, korone lub kosz oraz zakucia.
   Walidator liczy miejsce z obroconego obrysu, nie z nominalnej srednicy.
+- Korona centralna i oprawki boczne sa azurowe: dolne obrecze oraz zebra
+  zastepuja lite kosze, wiec po ukryciu kamieni widac cale gniazda.
+- Halo powstaje z osobnych tulejek gniazd zamiast szarej plyty. Tulejki lacza
+  sie bokami i z korona, ale nie zaslaniaja centralnego otworu.
+- Koszyki kamieni bocznych maja nogi zawiniete od dolu i doprowadzone przez
+  podwyzszenie do szyny. Pierwsze gniazdo korzysta z wysokosci galerii.
+- Galeria wygasza wysokosc i promien funkcja smoothstep, dlatego chowa sie
+  stycznie w szynie bez uskoku.
+- Frez centralny i frezy halo sa slepe oraz ograniczaja cala geometrie
+  narzedzia, lacznie ze stozkiem. Korona jest na tyle wysoka, aby pomiescic
+  pawilon bez wiercenia w podwyzszeniu i szynie.
 
 Decyzje sa zapisane w
 `MDs/decisions/ADR-0005-tryby-modelu-i-walidacja-geometrii.md`.
@@ -63,7 +73,7 @@ Decyzje sa zapisane w
 
 | Kontrola | Wynik |
 |---|---|
-| `node scripts/test-ring-generator.mjs` | pass, 39 sekcji, w tym otwarte gniazda, orientacja, tryby, eksport i negatywne ograniczenia lokalne |
+| `node scripts/test-ring-generator.mjs` | pass, 40 sekcji, w tym azurowe kosze, krotkie frezy, suwaki orientacji, tryby, eksport i negatywne ograniczenia lokalne |
 | `node scripts/test-ring-pricing.mjs` | pass |
 | `npm run sync:pricing` | pass, mirrory geometrii zsynchronizowane |
 | `npm run build:client` | pass; pozostaja wczesniejsze ostrzezenia o duplikatach kluczy w `ToolsStudio.jsx` |
@@ -71,7 +81,7 @@ Decyzje sa zapisane w
 | Pelny `npm run build` | pass na czystym obrazie brancha, 97 stron, 0 bledow |
 | `node scripts/check-emdash.mjs` | pass |
 | `git diff --check` | pass |
-| Niezalezna recenzja agentowa | pass po poprawie wyscigu workera, kolejnosci halo, masy, nazw i zwalniania pamieci |
+| Podglad 3D bez kamieni | pass dla Halo, Diana, Pave i Trylogii; brak litej plyty, kosze i gniazda widoczne |
 
 ## Swiadomie poza zakresem
 
@@ -96,6 +106,10 @@ Decyzje sa zapisane w
 7. W UI ustaw gruszke centralna kolejno w poprzek i wzdluz oraz gruszki
    boczne ze szpicem do korony i od korony.
 8. Wylacz kamienie i potwierdz, ze zamiast szarych plyt widac otwarte gniazda.
+9. Obejrzyj od spodu Halo i Owal w halo: srodkowy otwor ma byc pusty, a
+   kazde male gniazdo ma miec osobna tulejke.
+10. Obejrzyj pierwsze gniazdo pave przy koronie oraz koniec podwyzszenia:
+    nogi nie moga wisiec, a przejscie w szyne nie moze miec uskoku.
 
 ## Warunek uznania zadania za gotowe
 

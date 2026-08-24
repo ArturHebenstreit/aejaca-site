@@ -12,6 +12,8 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { buildRing } from "../src/geometry/ring/build.js";
+import { RING_PRESETS, applyPreset } from "../src/data/ringPresets.js";
+import { DEFAULTS } from "../src/geometry/ring/params.js";
 
 const three = readFileSync("node_modules/three/build/three.cjs", "utf8");
 
@@ -23,22 +25,29 @@ const pack = (m) => {
 
 const CASES = [
   ["Solitaire, 4 łapki",     { stone: { cut: "round", size: 6.5 }, setting: "prong4" }],
-  ["Pavé, 5 na stronę",      { stone: { cut: "round", size: 5 }, setting: "prong4", side: { count: 5, setting: "pave", size: 1.6 } }],
+  ["Pavé, 5 na stronę",      { stone: { cut: "round", size: 5 }, setting: "prong4", side: { count: 5, setting: "pave", size: 1.3 } }],
   ["Markiza, łapki V",       { stone: { cut: "marquise", size: 7 }, setting: "vprong" }],
   ["Gruszka, łapka V",       { stone: { cut: "pear", size: 7 }, setting: "vprong" }],
   ["Serce, łapka V",         { stone: { cut: "heart", size: 6.5 }, setting: "vprong" }],
   ["Ośmiokąt, kaseta",       { stone: { cut: "octagon", size: 7.5 }, setting: "bezel" }],
   ["Kwadrat, narożne",       { stone: { cut: "square", size: 6 }, setting: "corner" }],
-  ["Kanałowa, 4 na stronę",  { stone: { cut: "round", size: 5 }, setting: "prong4", side: { count: 4, setting: "channel", size: 2.0 } }],
+  ["Kanałowa, 4 na stronę",  { width: 3.4, stone: { cut: "round", size: 5 }, setting: "prong4", side: { count: 4, setting: "channel", size: 2.0 } }],
   ["Bufftop, kaseta",        { stone: { cut: "bufftop", size: 7 }, setting: "bezel" }],
   ["Sygnet owalny",          { kind: "signet", signet: { table: "oval", length: 14 } }],
   ["Sygnet poduszkowy",      { kind: "signet", signet: { table: "cushion", length: 16 } }],
   ["Obrączka comfort",       { profile: "comfort", width: 5, thickness: 2, stone: { cut: "round", size: 2 }, setting: "prong4" }],
+  ["Halo, otwarte gniazda",  applyPreset(RING_PRESETS.find((x) => x.id === "halo"), DEFAULTS), false],
+  ["Diana, otwarte gniazda", applyPreset(RING_PRESETS.find((x) => x.id === "diana"), DEFAULTS), false],
+  ["Pavé, otwarte gniazda",  applyPreset(RING_PRESETS.find((x) => x.id === "pave"), DEFAULTS), false],
+  ["Trylogia, otwarte kosze", applyPreset(RING_PRESETS.find((x) => x.id === "trilogy"), DEFAULTS), false],
 ];
 
 const built = [];
-for (const [name, p] of CASES) {
-  const r = await buildRing({ innerDia: 17.2, ...p }, { segments: 72 });
+for (const [name, p, showStones = true] of CASES) {
+  const r = await buildRing(
+    { innerDia: 17.2, ...p, casting: { ...(p.casting || {}), stones: showStones } },
+    { segments: 72, withStones: showStones, mode: showStones ? "finishedPreview" : "casting" },
+  );
   let gem = null;
   if (r.stones.length) {
     let s = r.stones[0];
