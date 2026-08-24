@@ -45,7 +45,7 @@ import { buildRing } from "../geometry/ring/build.js";
 // gniazdami, a nie osobno liczonej odmiany podgladowej.
 // 32: kasety maja kontrolowane zakrycie, gniazda wchodza w gorna czesc szyny,
 // krapy drobnicy sa lzejsze, a halo ma zewnetrzne kieszenie platkowe.
-const WORKER_VERSION = 32;
+const WORKER_VERSION = 33; // build 1.001: przelotowe gniazda i zintegrowane sygnety
 
 /** Podglad nie potrzebuje gestosci docelowej: mniej segmentow, szybsza reakcja. */
 const PREVIEW_SEGMENTS = 64;
