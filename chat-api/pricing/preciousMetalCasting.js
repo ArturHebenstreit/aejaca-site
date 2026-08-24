@@ -4,7 +4,7 @@
 
 import { calcNew } from "./jewelry.js";
 
-export const PRECIOUS_METAL_CASTING_BUILD = "1.005";
+export const PRECIOUS_METAL_CASTING_BUILD = "1.006";
 
 export const CASTING_ENVELOPE_MM = [24, 24, 35];
 

@@ -388,7 +388,7 @@ export const SERVICES_FULL = [
       { label: L("Kruszce", "Metals", "Metalle"), value: L("Ag 800/925, Au 9k/14k/18k/24k", "Ag 800/925, Au 9k/14k/18k/24k", "Ag 800/925, Au 9k/14k/18k/24k") },
       { label: L("Automatyczny limit modelu", "Automatic model limit", "Automatische Modellgrenze"), value: "24 x 24 x 35 mm" },
       { label: L("Druk wzorca", "Pattern printing", "Modelldruck"), value: L("Elegoo Saturn 4 Ultra 16K, żywica odlewnicza", "Elegoo Saturn 4 Ultra 16K, castable resin", "Elegoo Saturn 4 Ultra 16K, Gießharz") },
-      { label: L("Wersja", "Build", "Build"), value: "1.005" },
+      { label: L("Wersja", "Build", "Build"), value: "1.006" },
     ],
     bullets: [
       L("Trzy ścieżki od gotowego wzorca do samego pomysłu", "Three routes from a ready pattern to an idea", "Drei Wege vom fertigen Modell bis zur Idee"),

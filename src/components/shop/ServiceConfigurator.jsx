@@ -43,7 +43,7 @@ const UI = {
   pl: {
     configure: "Skonfiguruj i dodaj do koszyka",
     file: "Twój plik",
-    fileHint: "Kliknij lub przeciągnij plik STL, OBJ, 3MF lub STEP",
+    fileHint: "Kliknij lub przeciągnij model: STL, OBJ, 3MF, STEP lub STP",
     unitsNote: "Pliki STL i OBJ nie zapisują jednostki. Przyjmujemy milimetry, sprawdź wymiary powyżej.",
     vector: "Projekt do wykonania",
     vectorHint: "Kliknij lub przeciągnij plik SVG, DXF, AI lub PDF",
@@ -107,7 +107,7 @@ const UI = {
   en: {
     configure: "Configure and add to cart",
     file: "Your file",
-    fileHint: "Click or drag an STL, OBJ, 3MF or STEP file",
+    fileHint: "Click or drag a model: STL, OBJ, 3MF, STEP or STP",
     unitsNote: "STL and OBJ carry no unit. We read them as millimetres, please check the dimensions above.",
     vector: "Your artwork",
     vectorHint: "Click or drag an SVG, DXF, AI or PDF file",
@@ -171,7 +171,7 @@ const UI = {
   de: {
     configure: "Konfigurieren und in den Warenkorb",
     file: "Ihre Datei",
-    fileHint: "STL-, OBJ-, 3MF- oder STEP-Datei klicken oder hierher ziehen",
+    fileHint: "Modell klicken oder hierher ziehen: STL, OBJ, 3MF, STEP oder STP",
     unitsNote: "STL und OBJ speichern keine Einheit. Wir lesen Millimeter, bitte prüfen Sie die Maße oben.",
     vector: "Ihre Vorlage",
     vectorHint: "SVG-, DXF-, AI- oder PDF-Datei klicken oder hierher ziehen",

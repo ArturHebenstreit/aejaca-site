@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   calculate,
   fitsCastingFlask,
@@ -6,8 +7,9 @@ import {
   PRECIOUS_METAL_CASTING_BUILD,
 } from "../src/pricing/preciousMetalCasting.js";
 import { priceItem } from "../chat-api/orders.js";
+import { SUPPORTED_EXTENSIONS } from "../src/pricing/mesh.js";
 
-assert.equal(PRECIOUS_METAL_CASTING_BUILD, "1.005");
+assert.equal(PRECIOUS_METAL_CASTING_BUILD, "1.006");
 assert.equal(fitsCastingFlask({ x: 2.0, y: 2.2, z: 3.0 }), true);
 assert.equal(fitsCastingFlask({ x: 2.5, y: 2.2, z: 3.0 }), false);
 assert.equal(fitsCastingFlask({ x: 2.5, y: 2.2, z: 3.0 }, 0.9), true);
@@ -46,4 +48,21 @@ assert.throws(
     && error.message.startsWith("At this scale the model exceeds"),
 );
 
-console.log("OK: odlew z metali szlachetnych, skala, cena startowa, masa, rezerwa i limity kolby");
+assert.throws(
+  () => priceItem({
+    calculator: "jewelry_casting",
+    params: { variantId: "model_3d", materialSourceId: "aejaca", metalId: "silver" },
+    lang: "en",
+  }),
+  (error) => error.code === "incomplete_params"
+    && error.message === "Some required parameters are missing",
+);
+
+assert.deepEqual([...SUPPORTED_EXTENSIONS].sort(), ["3mf", "obj", "step", "stl", "stp"]);
+const controls = readFileSync(new URL("../src/components/shop/ConfigControls.jsx", import.meta.url), "utf8");
+assert.match(controls, /disabled=\{zaDuzy && purpose !== "casting"\}/);
+assert.match(controls, /Dostosuj możliwości techniczne/);
+assert.match(controls, /purpose === "casting" \? Math\.max\(gora, 1\) : gora/);
+assert.match(controls, /onDrop=\{/);
+
+console.log("OK: odlew z metali szlachetnych, skala, formaty, lokalizacja, cena, masa i limity kolby");

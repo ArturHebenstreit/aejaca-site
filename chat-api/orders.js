@@ -307,9 +307,24 @@ export function priceItem({ calculator, params, lang = "pl", geometry = null, sc
     throw new PricingError("calc_failed", `Wycena nie powiodła się: ${e.message}`);
   }
 
-  if (!result) throw new PricingError("incomplete_params", "Parametry są niekompletne");
-  if (result.type === "custom") throw new PricingError("needs_quote", "Ta konfiguracja wymaga indywidualnej wyceny");
-  if (!result.unitGrosze) throw new PricingError("no_price", "Kalkulator nie zwrócił kwoty wiążącej");
+  if (!result) throw new PricingError(
+    "incomplete_params",
+    safeLang === "en" ? "Some required parameters are missing"
+      : safeLang === "de" ? "Erforderliche Parameter fehlen"
+        : "Parametry są niekompletne",
+  );
+  if (result.type === "custom") throw new PricingError(
+    "needs_quote",
+    safeLang === "en" ? "This configuration requires an individual quote"
+      : safeLang === "de" ? "Diese Konfiguration erfordert ein individuelles Angebot"
+        : "Ta konfiguracja wymaga indywidualnej wyceny",
+  );
+  if (!result.unitGrosze) throw new PricingError(
+    "no_price",
+    safeLang === "en" ? "The calculator did not return a binding price"
+      : safeLang === "de" ? "Der Kalkulator hat keinen verbindlichen Preis geliefert"
+        : "Kalkulator nie zwrócił kwoty wiążącej",
+  );
 
   const qty = Number(result.qty) || 1;
   const unitGrosze = result.unitGrosze;
