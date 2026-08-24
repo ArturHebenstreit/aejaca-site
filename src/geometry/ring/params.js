@@ -543,6 +543,18 @@ export const LIMITS = {
   prongDia: [0.7, 1.4],
 };
 
+/**
+ * Dozwolone obroty kamienia w jego plaszczyznie. Dyskretny wybor zapobiega
+ * przypadkowemu ustawieniu oprawy pod dowolnym katem, ktorego nie opisuje UI.
+ * 0/180 to os dluga w poprzek szyny, 90/270 - wzdluz szyny.
+ */
+export const STONE_ROTATIONS = [0, 90, 180, 270];
+
+export function normalizeStoneRotation(value) {
+  const rotation = ((num(value, 0) % 360) + 360) % 360;
+  return STONE_ROTATIONS.includes(rotation) ? rotation : 0;
+}
+
 export const DEFAULTS = {
   kind: "ring",
   innerDia: 17.2,
@@ -552,10 +564,10 @@ export const DEFAULTS = {
   taper: "auto",
   width: 2.2,
   thickness: 1.6,
-  stone: { cut: "round", size: 6.5, material: "cz", origin: "stock" },
+  stone: { cut: "round", size: 6.5, material: "cz", origin: "stock", rotation: 0 },
   setting: "prong4",
   prongDia: 0.9,
-  side: { count: 0, size: 1.6, setting: "pave", material: "cz", gap: 0.35, spread: 0.0, cut: "round" },
+  side: { count: 0, size: 1.6, setting: "pave", material: "cz", gap: 0.35, spread: 0.0, cut: "round", rotation: 0 },
   casting: { ...CASTING_DEFAULTS },
   halo: { on: false, size: 1.4, material: "cz" },
   band: { coverage: "none", size: 1.8, setting: "pave", material: "cz" },
@@ -570,24 +582,48 @@ const floorToStep = (value, min, step) => {
   return Math.max(min, Number((min + n * step).toFixed(6)));
 };
 
-function sideStoneLocalWidth(p, size) {
-  const count = Math.round(clamp(num(p.side?.count, 0), LIMITS.sideCount));
-  if (!count) return p.width;
+/** Obrys po obrocie kamienia w jego plaszczyznie. */
+export function orientedOutlineFor(cutId, sizeMm, rotation = 0) {
+  const pts = outlineFor(cutId, sizeMm);
+  const angle = normalizeStoneRotation(rotation) * Math.PI / 180;
+  if (!angle) return pts;
+  const c = Math.cos(angle), s = Math.sin(angle);
+  return pts.map(([x, y]) => [x * c - y * s, x * s + y * c]);
+}
 
+/**
+ * Wspolny uklad rozmieszczenia kamieni bocznych dla walidatora i generatora.
+ * Os X kamienia biegnie po obwodzie szyny, os Y w poprzek jej szerokosci.
+ */
+export function sideStoneLayout(p, size = p.side?.size || DEFAULTS.side.size) {
   const ri = p.innerDia / 2;
   const t0 = p.thickness * shankThicknessFactorAt(p, 0);
   const rMid = ri + t0 * 0.62;
-  const cutId = CUTS[p.stone?.cut] ? p.stone.cut : DEFAULTS.stone.cut;
-  const polKorony = p.setting === "drilled"
+  const centerCut = CUTS[p.stone?.cut] ? p.stone.cut : DEFAULTS.stone.cut;
+  const sideCut = CUTS[p.side?.cut] ? p.side.cut : DEFAULTS.side.cut;
+  const centerPts = orientedOutlineFor(centerCut,
+    p.stone?.size || DEFAULTS.stone.size, p.stone?.rotation);
+  const sidePts = orientedOutlineFor(sideCut, size, p.side?.rotation);
+  const centerHalfTangent = p.setting === "drilled"
     ? 0
-    : Math.max(...outlineFor(cutId, p.stone?.size || DEFAULTS.stone.size)
-      .map(([x]) => Math.abs(x)))
+    : Math.max(...centerPts.map(([x]) => Math.abs(x)))
       + (p.setting === "bezel" ? 0.4 : 0.3)
       + (p.halo?.on ? num(p.halo.size, DEFAULTS.halo.size) + 0.4 : 0);
+  const sideHalfTangent = Math.max(...sidePts.map(([x]) => Math.abs(x)));
+  const sideHalfAxial = Math.max(...sidePts.map(([, y]) => Math.abs(y)));
   const gap = clamp(num(p.side?.gap, DEFAULTS.side.gap), LIMITS.sideGap);
   const spread = clamp(num(p.side?.spread, DEFAULTS.side.spread), LIMITS.sideSpread);
-  const step = Math.asin(Math.min(0.45, (size * 0.62) / rMid)) * 2 + spread / rMid;
-  const start = (polKorony + gap + size / 2) / rMid;
+  const clearance = Math.max(0.12, size * 0.12);
+  const step = Math.asin(Math.min(0.45, (sideHalfTangent + clearance) / rMid)) * 2
+    + spread / rMid;
+  const start = (centerHalfTangent + gap + sideHalfTangent) / rMid;
+  return { rMid, step, start, sideHalfTangent, sideHalfAxial };
+}
+
+function sideStoneLocalWidth(p, size) {
+  const count = Math.round(clamp(num(p.side?.count, 0), LIMITS.sideCount));
+  if (!count) return p.width;
+  const { step, start } = sideStoneLayout(p, size);
 
   let localWidth = Infinity;
   for (let i = 0; i < count; i++) {
@@ -631,7 +667,8 @@ export function localStoneFitLimits(input = {}) {
     ? { feasible: true, min: sideMin, max: sideHardMax, localWidth: p.width }
     : (() => {
         const result = fittedMax(sideMin, sideHardMax, (size) =>
-          size <= sideStoneLocalWidth(p, size) - 2 * SEAT.minRail + 1e-9);
+          2 * sideStoneLayout(p, size).sideHalfAxial
+            <= sideStoneLocalWidth(p, size) - 2 * SEAT.minRail + 1e-9);
         const probe = result.feasible ? result.max : sideMin;
         return {
           ...result,
@@ -678,6 +715,8 @@ export function validate(input = {}) {
   p.band = { ...DEFAULTS.band, ...(input.band || {}) };
   p.side = { ...DEFAULTS.side, ...(input.side || {}) };
   p.signet = { ...DEFAULTS.signet, ...(input.signet || {}) };
+  p.stone.rotation = normalizeStoneRotation(p.stone.rotation);
+  p.side.rotation = normalizeStoneRotation(p.side.rotation);
 
   // Szlif kamieni bocznych: ta sama walidacja co przy kamieniu centralnym,
   // bo nieznany szlif bocznych nie ma czym sie skonczyc w generatorze bryly.

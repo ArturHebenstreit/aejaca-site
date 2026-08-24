@@ -628,3 +628,26 @@ geometrii produkcyjnej. Ograniczenie elementu osadzonego na zmiennym przekroju
 trzeba liczyć lokalnie, a nie z wymiaru nominalnego. Znanej wadliwej kombinacji
 nie wolno usuwać z testu: powinna pozostać kontrolą negatywną. Masa wiążąca i
 eksport muszą pochodzić z dokładnie tego samego trybu odlewniczego.
+
+## 2026-08-24 - orientacja kamieni i otwarty podglad gniazd
+
+**Bylo:** wylaczenie widocznosci kamieni uruchamialo osobna budowe podgladu.
+Mimo ze miala ona otwarte lapki, ekran nie mial twardej gwarancji, ze pokazuje
+dokladnie ten sam metal co plik odlewniczy. Kamienie nie mialy parametru
+orientacji. Gruszka, markiza lub owal zawsze korzystaly z jednej osi, a kosz,
+gniazdo i rozstaw nie mogly podazac za decyzja projektowa klienta.
+
+**Jest:** worker najpierw buduje produkcyjny `casting`. Gdy klient wylacza
+kamienie, ta sama bryla trafia bezposrednio do podgladu, wiec widoczne sa
+otwarte lapki, okna koszy i przelotowe gniazda. `stone.rotation` i
+`side.rotation` przyjmuja tylko 0, 90, 180 lub 270 stopni. Obrot obejmuje caly
+uklad osadzenia. Na ramionach jest lustrzany, dlatego szpic gruszki moze byc
+skierowany do korony albo od niej po obu stronach jednoczesnie. Obrys po
+obrocie steruje rowniez odsunieciem, rozstawem, szynkami kanalowymi i lokalna
+kontrola ilosci metalu.
+
+**Czego sie dowiedzielismy.** Orientacja kamienia nie jest cecha renderu. To
+parametr konstrukcyjny, bo zmienia polozenie gniazda, lapek i zapotrzebowanie
+na metal w dwoch osiach. Podglad pustej oprawy powinien korzystac z bryly
+produkcyjnej bez warstwy posredniej: wtedy otwarte gniazdo jest gwarancja
+wynikajaca z danych, a nie podobienstwem dwoch osobno policzonych modeli.
