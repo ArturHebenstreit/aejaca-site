@@ -58,6 +58,41 @@ export const METAL_COLORS = {
   rose:   { tone: "#e5a488", label: { pl: "różowe", en: "rosé", de: "rosé" } },
 };
 
+// Wyglad konkretnego stopu w podgladzie. Proba zmienia nie tylko cene i
+// gestosc: 9K jest bledsze, 18K bardziej nasycone, srebro bardziej neutralne,
+// a rodowane biale zloto chlodniejsze i gladniejsze.
+const ALLOY_APPEARANCE = {
+  ag925: {
+    white: { tone: "#d5d7dc", roughness: 0.12 },
+  },
+  au9k: {
+    yellow: { tone: "#d8bd7d", roughness: 0.105 },
+    white:  { tone: "#e2e5ea", roughness: 0.095 },
+    rose:   { tone: "#d9a28e", roughness: 0.105 },
+  },
+  au585: {
+    yellow: { tone: "#e2ba61", roughness: 0.085 },
+    white:  { tone: "#e9edf3", roughness: 0.078 },
+    rose:   { tone: "#e2a083", roughness: 0.088 },
+  },
+  au750: {
+    yellow: { tone: "#e8ae3f", roughness: 0.072 },
+    white:  { tone: "#f0f3f8", roughness: 0.068 },
+    rose:   { tone: "#e7a083", roughness: 0.075 },
+  },
+};
+
+/** Barwa i mikroszorstkosc konkretnego stopu, z bezpiecznym odwrotem. */
+export function appearanceFor(alloyId, color = "yellow") {
+  const id = ALLOY_ALIASES[alloyId] || alloyId;
+  const a = CASTING_ALLOYS[id];
+  const kolor = a?.metal === "silver" ? "white" : color;
+  return ALLOY_APPEARANCE[id]?.[kolor] || {
+    tone: (METAL_COLORS[kolor] || METAL_COLORS.yellow).tone,
+    roughness: 0.085,
+  };
+}
+
 /** Kolory dostepne dla danego stopu. Srebro ma jeden, i to nie jest wybor. */
 export function colorsFor(alloyId) {
   const a = alloy(alloyId);
