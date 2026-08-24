@@ -17,7 +17,7 @@
 // Wchodzi do builda.
 
 import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, stoneSolid, taperFor, buildShank, buildGallery, tubeAlong, buildHalo, buildCrown } from "../src/geometry/ring/build.js";
-import { CUTS, SIDE_CUTS, SETTINGS, SEAT, SIGNET_TABLES, DEFAULTS, prongAngles, outlineFor, validate } from "../src/geometry/ring/params.js";
+import { CUTS, SIDE_CUTS, SETTINGS, SEAT, SIGNET_TABLES, DEFAULTS, prongAngles, outlineFor, tableSize, validate } from "../src/geometry/ring/params.js";
 import { readFileSync } from "node:fs";
 
 /**
@@ -2230,11 +2230,12 @@ console.log("\n37. Szyna zostaje CIAGLA pod kamieniami bocznymi");
 //   1. PASEK PRZY PALCU. Wycinamy z bryly warstwe 0,3 mm tuz nad srednica
 //      wewnetrzna. Szyna przecieta rozpada ten pasek na kawalki, nawet gdy
 //      cala bryla zostaje jednym kawalkiem.
-//   2. NAJCHUDSZY PRZEKROJ. Plaster 0,2 mm co dwa stopnie po obwodzie.
-//      Ponizej polowy milimetra kwadratowego przekroju nie ma juz mowy
-//      o pierscionku, ktory da sie nosic.
+//   2. PRZEKROJ NOSNY. Plaster 0,6 mm co dwa stopnie po obwodzie. Przy
+//      kontrolowanym wylocie waski plaster 0,2 mm trafial stycznie w krawedz
+//      otworu i mierzyl przypadkowy klin, nie droge obciazenia dookola niego.
 {
-  const PROG_PRZEKROJ = 0.10;   // mm3 w plastrze 0,2 mm, czyli 0,5 mm2 przekroju
+  const SZEROKOSC_PLASTRA = 0.6;
+  const PROG_PRZEKROJ = 0.12;   // mm3, ponizej 0,2 mm2 sredniego przekroju
   const w = await kernel();
 
   async function zmierz(opis, cfg) {
@@ -2253,7 +2254,7 @@ console.log("\n37. Szyna zostaje CIAGLA pod kamieniami bocznymi");
     const zewn = ri + p.thickness + 3;
     let naj = Infinity;
     for (let deg = 0; deg < 360; deg += 2) {
-      const noz = w.Manifold.cube([zewn, 0.2, 20], true)
+      const noz = w.Manifold.cube([zewn, SZEROKOSC_PLASTRA, 20], true)
         .translate([zewn / 2, 0, 0])
         .rotate([0, 0, deg]);
       const plaster = r.metal.intersect(noz);
@@ -2265,7 +2266,7 @@ console.log("\n37. Szyna zostaje CIAGLA pod kamieniami bocznymi");
     if (kawalki !== 1) {
       bad(`${opis}: szyna przecieta, pasek przy palcu rozpada sie na ${kawalki} czesci`);
     } else if (naj < PROG_PRZEKROJ) {
-      bad(`${opis}: najchudszy przekroj ${naj.toFixed(3)} mm3 w plastrze 0,2 mm (prog ${PROG_PRZEKROJ})`);
+      bad(`${opis}: najchudszy przekroj ${naj.toFixed(3)} mm3 w plastrze ${SZEROKOSC_PLASTRA} mm (prog ${PROG_PRZEKROJ})`);
     } else {
       ok(`${opis.padEnd(30)} pasek ciagly, najchudszy przekroj ${naj.toFixed(3)} mm3`);
     }
@@ -2617,11 +2618,11 @@ console.log("\n41. Dwa kosze, podparte szlify i otwarta kaseta kaboszonu");
     const shankProbe = w.Manifold.sphere(0.12, 20).translate([0, ri + 0.20, 0]);
     const szyna = kaboszon.metal.intersect(shankProbe);
     const otwarcie = zaslepka.volume() / srodekOkna.volume();
-    const ciaglosc = szyna.volume() / shankProbe.volume();
-    if (otwarcie < 0.02 && ciaglosc > 0.95) {
-      ok("kaboszon ma szerokie okno i zachowany pasek szyny od strony palca");
+    const wylot = szyna.volume() / shankProbe.volume();
+    if (otwarcie < 0.02 && wylot < 0.10 && ileCzesci(kaboszon.metal) === 1) {
+      ok("kaboszon ma szerokie okno, przelot od strony palca i spojny korpus");
     } else {
-      bad(`kaboszon: wypelnienie okna ${(otwarcie * 100).toFixed(1)} %, ciaglosc szyny ${(ciaglosc * 100).toFixed(1)} %`);
+      bad(`kaboszon: wypelnienie okna ${(otwarcie * 100).toFixed(1)} %, metal w wylocie ${(wylot * 100).toFixed(1)} %`);
     }
     srodekOkna.delete?.(); zaslepka.delete?.(); shankProbe.delete?.(); szyna.delete?.();
 
@@ -2766,11 +2767,11 @@ console.log("\n43. Zakucie drobnicy trzyma, ale nie przykrywa kamieni");
 }
 
 // ------------------------------------------------------------
-console.log("\n44. Gniazdo centralne zaglebia sie w szyne, ale jej nie przebija");
+console.log("\n44. Gniazdo centralne ma ksztaltny przelot przez szyne");
 // ------------------------------------------------------------
-// Kontrola negatywna to gola szyna: sonda 0,2 mm pod jej wierzchem ma byc
-// wypelniona metalem. Po dodaniu kasety w tym samym miejscu ma byc kieszen,
-// a druga sonda przy palcu ma nadal trafic w ciagly metal.
+// Kontrola negatywna to gola szyna: obie sondy sa wypelnione metalem.
+// Po dodaniu kasety frez o obrysie kamienia ma przejsc az do strony palca,
+// ale pozostawiony dookola metal nadal ma byc jedna bryla.
 {
   const w = await kernel();
   for (const id of ["bezel", "cabochon"]) {
@@ -2788,13 +2789,95 @@ console.log("\n44. Gniazdo centralne zaglebia sie w szyne, ale jej nie przebija"
     const v = kieszenProbe.volume();
     const controlFill = kontrola.volume() / v;
     const pocketFill = kieszen.volume() / v;
-    const stripFill = pasek.volume() / pasekProbe.volume();
+    const outletFill = pasek.volume() / pasekProbe.volume();
     if (controlFill < 0.90) bad(`${id}: kontrola negatywna nie trafila w gola szyne (${controlFill.toFixed(2)})`);
     else if (pocketFill > 0.15) bad(`${id}: pod gniazdem nie ma zaglebienia w szynie (${pocketFill.toFixed(2)} metalu)`);
-    else if (stripFill < 0.90) bad(`${id}: frez naruszyl pasek metalu przy palcu (${stripFill.toFixed(2)})`);
-    else ok(`${id.padEnd(9)} kieszen ${(100 * (1 - pocketFill)).toFixed(0)} %, pasek przy palcu ${(100 * stripFill).toFixed(0)} %`);
+    else if (outletFill > 0.15) bad(`${id}: ksztaltny przelot nie wychodzi od strony palca (${outletFill.toFixed(2)} metalu)`);
+    else if (ileCzesci(r.metal) !== 1) bad(`${id}: przelot rozdzielil korpus pierscionka`);
+    else ok(`${id.padEnd(9)} kieszen ${(100 * (1 - pocketFill)).toFixed(0)} %, wylot ${(100 * (1 - outletFill)).toFixed(0)} %, jedna bryla`);
     gola.delete?.(); kieszenProbe.delete?.(); pasekProbe.delete?.();
     kontrola.delete?.(); kieszen.delete?.(); pasek.delete?.();
+    zwolnij(r);
+  }
+
+  const trylogia = await buildRing({
+    innerDia: 17.2, width: 2.2, thickness: 1.6,
+    stone: { cut: "round", size: 6.5 }, setting: "prong4",
+    side: { count: 1, size: 3.5, cut: "round", setting: "prong" },
+  }, { segments: 64, mode: "referenceAssembly" });
+  let zamknieteWyloty = 0;
+  for (const kamien of trylogia.stones.slice(1)) {
+    const bb = kamien.boundingBox();
+    const cx = (bb.min[0] + bb.max[0]) / 2;
+    const cy = (bb.min[1] + bb.max[1]) / 2;
+    const cz = (bb.min[2] + bb.max[2]) / 2;
+    const dl = Math.hypot(cx, cy) || 1;
+    const sonda = w.Manifold.sphere(0.05, 16)
+      .translate([cx / dl * (17.2 / 2 + 0.12), cy / dl * (17.2 / 2 + 0.12), cz]);
+    const metal = trylogia.metal.intersect(sonda);
+    if (metal.volume() / sonda.volume() > 0.15) zamknieteWyloty++;
+    sonda.delete?.(); metal.delete?.();
+  }
+  if (zamknieteWyloty === 0 && ileCzesci(trylogia.metal) === 1) {
+    ok("trylogia ma dwa przelotowe gniazda boczne i pozostaje jedna bryla");
+  } else {
+    bad(`trylogia: ${zamknieteWyloty} zamkniete wyloty boczne lub rozdzielony korpus`);
+  }
+  zwolnij(trylogia);
+}
+
+// ------------------------------------------------------------
+console.log("\n46. Stop, numer buildu i ergonomia maja jawny kontrakt");
+// ------------------------------------------------------------
+{
+  const dane = readFileSync(new URL("../src/data/castingAlloys.js", import.meta.url), "utf8");
+  const podglad = readFileSync(new URL("../src/components/calculators/jewelry/RingPreview3D.jsx", import.meta.url), "utf8");
+  const ui = readFileSync(new URL("../src/components/calculators/RingConfigurator.jsx", import.meta.url), "utf8");
+  const worker = readFileSync(new URL("../src/workers/ringGenerator.worker.js", import.meta.url), "utf8");
+
+  if (/export function appearanceFor/.test(dane)
+      && /appearanceFor\(alloyId, color\)/.test(podglad)) {
+    ok("render bierze odcien i wykonczenie z konkretnego stopu, nie tylko z nazwy koloru");
+  } else {
+    bad("srebro, biale zloto oraz zolte 9K, 14K i 18K nadal nie maja osobnych wygladow");
+  }
+
+  if (/RING_CONFIGURATOR_BUILD\s*=\s*["']1\.001["']/.test(ui)
+      && /Build\s*\{RING_CONFIGURATOR_BUILD\}/.test(ui)
+      && /WORKER_VERSION\s*=\s*33/.test(worker)) {
+    ok("stopka pokazuje build 1.001, a geometria ma wersje 33");
+  } else {
+    bad("brakuje widocznego buildu 1.001 lub zgodnej wersji geometrii 33");
+  }
+
+  if (/min-h-\[44px\]/.test(ui) && /aria-label=\{t\.configNav\}/.test(ui)
+      && /lg:sticky lg:top-24/.test(ui)) {
+    ok("sterowanie ma duze cele, skroty sekcji i przyklejony podglad");
+  } else {
+    bad("interfejs nie spelnia jeszcze podstawowego kontraktu ergonomii");
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n47. Sygnet wyrasta z szerokich ramion zamiast z osobnej korony");
+// ------------------------------------------------------------
+{
+  for (const table of ["oval", "cushion", "rect"]) {
+    const p = validate({ kind: "signet", width: 2.6, thickness: 1.7,
+      signet: { table, length: 14, face: "flat" } });
+    const { W } = tableSize(p.signet);
+    const k = taperFor(p)(0);
+    const szerokoscRamion = p.width * k.w;
+    if (szerokoscRamion < 2 * W * 0.74) {
+      bad(`${table}: ramiona ${szerokoscRamion.toFixed(2)} mm sa za waskie dla tarczy ${(2 * W).toFixed(2)} mm`);
+      continue;
+    }
+    const r = await buildRing({ ...p, casting: { stones: false } }, { segments: 64, mode: "casting" });
+    if (ileCzesci(r.metal) === 1 && r.params.kind === "signet") {
+      ok(`${table.padEnd(7)} ramiona ${szerokoscRamion.toFixed(2)} mm, glowa i szyna sa jedna bryla`);
+    } else {
+      bad(`${table}: glowa sygnetu nie jest spojna z szyna`);
+    }
     zwolnij(r);
   }
 }

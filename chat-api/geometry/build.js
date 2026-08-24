@@ -147,15 +147,25 @@ const TAPERS = {
    * glowica, przejscie musi nadrobic cala roznice na dwoch milimetrach wysokosci
    * i powstaje szyjka, czyli sylwetka pierscionka z korona.
    */
-  signet: (u) => {
-    const s = Math.max(0, 1 - u / 0.78);
-    const k = s * s * (3 - 2 * s);
-    return { w: 1 + 1.15 * k, t: 1 + 1.05 * k };
-  },
 };
 
 export function taperFor(p) {
   const nazwa = p.taper === "auto" ? (p.kind === "signet" ? "signet" : "none") : p.taper;
+  if (nazwa === "signet") {
+    // Ramiona sygnetu dochodza do okolo 80 procent krotszej osi tarczy.
+    // Staly mnoznik robil z duzej tarczy osobna korone na cienkiej szynie.
+    const { W } = tableSize(p.signet);
+    const docelowaSzerokosc = Math.max(
+      p.width * 2.7,
+      Math.min(p.width * 4.2, 2 * W * 0.82),
+    );
+    const wGlowy = docelowaSzerokosc / p.width;
+    return (u) => {
+      const s = Math.max(0, 1 - u / 0.86);
+      const k = s * s * (3 - 2 * s);
+      return { w: 1 + (wGlowy - 1) * k, t: 1 + 1.25 * k };
+    };
+  }
   return TAPERS[nazwa] || null;
 }
 
@@ -1153,7 +1163,7 @@ export function buildCrown(w, p, stone) {
     // potrzebuje grubszej sciany niz pod 4 mm, i zbiega tylko do 0,6 swojej
     // grubosci. Po odjeciu wlotu zostaje ponad 0,3 mm litego metalu u gory:
     // tyle, ile jubiler dociska na kamien.
-    const wall = Math.max(0.45, size * 0.1);
+    const wall = Math.max(0.55, Math.min(0.75, size * 0.075));
     // WYSOKOSC RANTU ZALEZY OD STANU ZAKUCIA i to jest zamierzone.
     //
     // Rant przed zakuciem stoi wysoko, bo jubiler potrzebuje metalu, ktory
@@ -1163,7 +1173,7 @@ export function buildCrown(w, p, stone) {
     // wiec kamien po zakuciu siedzial na dnie studni i widac bylo tylko tafle.
     // Zgloszone wprost: "zbyt mocno zakute, zbyt malo swiatla, musi byc widac
     // kamien".
-    const chwyt = Math.max(0.26, Math.min(0.32, size * 0.045));
+    const chwyt = Math.max(0.29, Math.min(0.31, size * 0.045));
     const h = zakute(p)
       ? stone.girdleH + chwyt
       : stone.girdleH + stone.crownH * 0.35 + 0.35;
@@ -1176,7 +1186,9 @@ export function buildCrown(w, p, stone) {
     // Po zakuciu gorna krawedz zachodzi na kamien tylko o 0,05-0,08 mm.
     // To wystarcza do pewnego chwytu rondysty, a nie tworzy szerokiego
     // kolnierza zaslaniajacego korone.
-    const zachodzenie = Math.max(0.05, Math.min(0.08, size * 0.009));
+    // Frez zamknietego gniazda ma 0,05 mm luzu montazowego. Rant musi wejsc
+    // minimalnie dalej, inaczej odejmowanie kamienia usuwa caly chwyt.
+    const zachodzenie = Math.max(0.07, Math.min(0.085, size * 0.0105));
     const rGory = zakute(p) ? size / 2 - zachodzenie : size / 2 + wall * 0.6;
     const zbieg = rGory / (size / 2 + wall);
     add(Manifold.extrude(outer, h * 0.4, 0, 0, [zbieg, zbieg])
@@ -1454,16 +1466,17 @@ function buildSideStones(w, p, basketH = 0) {
       const szlifBoku = CUTS[p.side.cut] ? p.side.cut : "round";
       const kam = stoneSolid(w, szlifBoku, size);
       stones.push(naMiejsce(kam.solid));
-      // Gniazdo kamienia PODNIESIONEGO konczy sie w koszu i nie idzie dalej
-      // w szyne: przelot na wylot przecinalby ja pod kamieniem (patrz opis
-      // przy `seatCutter`). Kamien wpuszczony w szyne przelot ma nadal, bo
-      // tam jest on jedyna droga swiatla i jedyna droga wypchniecia kamienia.
-      const zaglebienieSzyny = Math.max(0.18, Math.min(
-        0.45, p.thickness - SEAT.minInnerStrip,
-      ));
+      // Frez zachowuje obrys i zwezenie szlifu, ale konczy sie otwartym
+      // wylotem od strony palca. Dzieki temu puste gniazdo nie ma szarego dna,
+      // a kamien mozna osadzic i wypchnac od spodu.
+      // Sam wylot ma kontrolowany wymiar warsztatowy 0,30 mm. Pelna srednica
+      // malego kamienia wycieta przez cienka szyne rozrywala ramie, natomiast
+      // ksztaltne loze i stozek powyzej pozostaja w pelnym obrysie szlifu.
+      const wylotKosza = podniesienie > 0
+        ? Math.min(wylotWSzynie, Math.max(0.06, 0.30 / size))
+        : wylotWSzynie;
       addS(naMiejsce(seatCutter(
-        w, szlifBoku, size, zakute(p), wylotWSzynie, podniesienie > 0,
-        podniesienie > 0 ? podniesienie + podGaleria + zaglebienieSzyny : null,
+        w, szlifBoku, size, zakute(p), wylotKosza, false, null,
       )));
 
       if (podniesienie > 0) {
@@ -2682,31 +2695,20 @@ export async function buildRing(input, opts = {}) {
       // szyny: wnetrze zostaje gladkie, a gniazdo dalej jest przewiercone.
       const profilKamienia = PROPORTIONS[CUTS[p.stone.cut].profile];
       const plaskiSpod = profilKamienia.pav < 0.05;
-      // Kaboszon i rozeta o plaskim spodzie potrzebuja szerokiego okna pod
-      // kamieniem. Dawne ograniczenie szerokoscia szyny zostawialo w kasecie
-      // niemal pelna szara tarcze. Kosz jest podniesiony, wiec otwor moze byc
-      // szeroki i jednoczesnie zakonczyc sie nad szyna.
+      // Kaboszon i rozeta o plaskim spodzie potrzebuja czytelnego okna pod
+      // kamieniem. Wylot 38 procent obrysu usuwa szara tarcze, ale jest na tyle
+      // waski, aby nie zamienic powierzchni od strony palca w szeroka szczeline.
       const wylotSrodka = plaskiSpod
-        ? 0.78
+        ? 0.38
         : Math.max(0.16, Math.min(
           SEAT.throughWidth,
           (p.width - 2 * SEAT.minInnerStrip) / p.stone.size,
         ));
-      const maWlasnyKosz = basketH > 0;
       metal = odejmij(metal, place(podnies(
         obrocKamien(
           seatCutter(
             w, p.stone.cut, p.stone.size, zakute(p), wylotSrodka,
-            maWlasnyKosz,
-            // Frez wchodzi w GORNA czesc szyny i tworzy widoczna kieszen pod
-            // kamieniem. Nie idzie jednak do powierzchni palca: zostawiamy
-            // co najmniej `minInnerStrip` grubosci metalu. Wczesniejsze
-            // zatrzymanie 0,06 mm nad szyna zostawialo pod kaseta szara tarcze.
-            maWlasnyKosz
-              ? standoff + Math.max(0.18, Math.min(
-                0.45, p.thickness - SEAT.minInnerStrip,
-              ))
-              : null,
+            false, null,
           ),
           p.stone.rotation,
         ), standoff)));

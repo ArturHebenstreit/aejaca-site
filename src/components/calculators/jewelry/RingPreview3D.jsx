@@ -21,7 +21,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { toCreasedNormals } from "three/addons/utils/BufferGeometryUtils.js";
-import { METAL_COLORS, CASTING_ALLOYS } from "../../../data/castingAlloys.js";
+import { appearanceFor } from "../../../data/castingAlloys.js";
 import { gemOptics } from "../../../data/gemOptics.js";
 
 /**
@@ -109,14 +109,13 @@ function studioEnvironment(renderer) {
 }
 
 function metalMaterial(alloyId, color) {
-  const isSilver = (CASTING_ALLOYS[alloyId]?.metal) === "silver";
-  const tone = isSilver ? METAL_COLORS.white.tone : (METAL_COLORS[color] || METAL_COLORS.yellow).tone;
+  const wyglad = appearanceFor(alloyId, color);
   return new THREE.MeshPhysicalMaterial({
-    color: new THREE.Color(tone),
+    color: new THREE.Color(wyglad.tone),
     metalness: 1,
     // Zero dawaloby idealne lustro, w ktorym widac tylko pasy swiatla i nic
     // poza tym. Polerowana bizuteria ma slad drobnych rys po polerce.
-    roughness: 0.085,
+    roughness: wyglad.roughness,
     envMapIntensity: 1.7,
   });
 }
