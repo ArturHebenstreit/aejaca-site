@@ -25,6 +25,7 @@ import * as laserCo2 from "../src/pricing/laserCo2.js";
 import * as laserFiber from "../src/pricing/laserFiber.js";
 import * as epoxy from "../src/pricing/epoxy.js";
 import * as cadDesign from "../src/pricing/cadDesign.js";
+import * as preciousMetalCasting from "../src/pricing/preciousMetalCasting.js";
 import { seedAsStock } from "../src/pricing/materialStockSeed.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -43,6 +44,7 @@ const FN = {
   laser_fiber: laserFiber.calculate,
   epoxy: epoxy.calculate,
   cad_design: cadDesign.calculate,
+  jewelry_casting: preciousMetalCasting.calculate,
 };
 
 /** Powyzej tego progu przechodzimy na losowanie, zeby build nie stanal */
@@ -139,7 +141,9 @@ const drift = [];
 const rows = [];
 
 for (const card of SERVICES_FULL) {
-  if (card.quoteOnly) continue;
+  // Cena tej uslugi wymaga geometrii pliku, ktorej katalog nie ma. Wartosc
+  // "od" jest osobnym, przetestowanym przypadkiem referencyjnym.
+  if (card.quoteOnly || card.geometryPriced) continue;
   const svc = SERVICES.find((s) => s.id === card.service || s.id === card.id);
   if (!svc) {
     console.warn(`- ${card.id}: brak definicji w orderCatalog, pomijam`);

@@ -297,9 +297,9 @@ export const SEO = {
     de: { title: "Schmuck: Produkte und Leistungen, AEJaCA", description: "Fertige Stücke aus Gold und Silber sowie Schmuckleistungen: Aufarbeitung, Reparatur, Anfertigung nach Maß und Stücke mit Steinen.", keywords: "handgefertigter schmuck, schmuckaufarbeitung, schmuckreparatur, ring nach maß", ogAlt: "AEJaCA Schmuck" },
   },
   shop_studio: {
-    pl: { title: "sTuDiO: produkty i usługi, AEJaCA", description: "Druk 3D FDM i żywiczny, grawer laserowy CO2 i fiber, odlewy żywiczne, produkty gotowe oraz modele STL do pobrania.", keywords: "druk 3d na zamówienie, grawer laserowy, modele stl, odlew żywiczny", ogAlt: "AEJaCA sTuDiO" },
-    en: { title: "sTuDiO: products and services, AEJaCA", description: "FDM and resin 3D printing, CO2 and fiber laser engraving, resin casting, ready-made products and downloadable STL models.", keywords: "custom 3d printing, laser engraving, stl models, resin casting", ogAlt: "AEJaCA sTuDiO" },
-    de: { title: "sTuDiO: Produkte und Leistungen, AEJaCA", description: "FDM- und Harz-3D-Druck, CO2- und Faserlasergravur, Harzguss, fertige Produkte und STL-Modelle zum Download.", keywords: "3d druck nach maß, lasergravur, stl modelle, harzguss", ogAlt: "AEJaCA sTuDiO" },
+    pl: { title: "sTuDiO: produkty i usługi, AEJaCA", description: "Druk 3D, laser oraz odlewy ze srebra i złota z wzorca, modelu 3D lub pomysłu klienta.", keywords: "druk 3d na zamówienie, odlew srebra, odlew złota, odlew z modelu 3d", ogAlt: "AEJaCA sTuDiO" },
+    en: { title: "sTuDiO: products and services, AEJaCA", description: "3D printing, laser work and silver or gold casting from a pattern, 3D model or customer idea.", keywords: "custom 3d printing, silver casting, gold casting, casting from 3d model", ogAlt: "AEJaCA sTuDiO" },
+    de: { title: "sTuDiO: Produkte und Leistungen, AEJaCA", description: "3D-Druck, Laser und Silber- oder Goldguss nach Modell, 3D-Datei oder Kundenidee.", keywords: "3d druck nach maß, silberguss, goldguss, guss nach 3d modell", ogAlt: "AEJaCA sTuDiO" },
   },
   cart: {
     pl: { title: "Koszyk, AEJaCA", description: "Twój koszyk w sklepie AEJaCA.", keywords: "koszyk", ogAlt: "Koszyk AEJaCA" },

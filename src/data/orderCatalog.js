@@ -22,6 +22,9 @@ import {
 import { MATERIALS as FIBER_MATERIALS, LENSES, MARK_TYPES, AREAS as FIBER_AREAS } from "../pricing/laserFiber.js";
 import { RESINS, VOLUMES, MOLD_TYPES, INCLUSIONS, FINISH_OPTIONS } from "../pricing/epoxy.js";
 import { CAD_COMPLEXITY, CAD_DELIVERABLES, CAD_REVISIONS } from "../pricing/cadDesign.js";
+import {
+  CASTING_VARIANTS, CASTING_MATERIAL_SOURCES, CASTING_METALS, CASTING_FINISHES,
+} from "../pricing/preciousMetalCasting.js";
 
 const L = (pl, en, de) => ({ pl, en, de });
 
@@ -133,6 +136,27 @@ export const SERVICES = [
       { key: "qtyId", label: L("Liczba sztuk", "Quantity", "Stückzahl"), options: QTY_TIERS },
     ],
     defaults: { jewTypeId: "ring_g", metalTypeId: "silver_g", repairId: "resize", qtyId: "1" },
+  },
+  {
+    id: "precious_metal_casting",
+    requiresDescription: true,
+    acceptsFile: true,
+    calculator: "jewelry_casting",
+    group: "cast",
+    title: L("Odlew z metalu szlachetnego", "Precious metal casting", "Edelmetallguss"),
+    desc: L(
+      "Wzorzec, model 3D albo pomysł. Odlewamy w srebrze i złocie.",
+      "Pattern, 3D model or idea. Cast in silver and gold.",
+      "Modell, 3D-Datei oder Idee. Guss in Silber und Gold."
+    ),
+    fields: [
+      { key: "variantId", label: L("Co nam przekazujesz", "What you provide", "Was Sie liefern"), options: CASTING_VARIANTS },
+      { key: "materialSourceId", label: L("Źródło kruszcu", "Metal source", "Metallquelle"), options: CASTING_MATERIAL_SOURCES },
+      { key: "metalId", label: L("Kruszec i próba", "Metal and purity", "Metall und Feingehalt"), options: CASTING_METALS },
+      { key: "finishId", label: L("Zakres wykończenia", "Finishing", "Finish"), options: CASTING_FINISHES },
+      { key: "qtyId", label: L("Liczba sztuk", "Quantity", "Stückzahl"), options: QTY_TIERS },
+    ],
+    defaults: { variantId: "model_3d", materialSourceId: "aejaca", metalId: "silver", finishId: "clean", qtyId: "1" },
   },
   {
     id: "jewelry_plain",
