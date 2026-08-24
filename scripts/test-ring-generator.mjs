@@ -16,7 +16,7 @@
 //
 // Wchodzi do builda.
 
-import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, stoneSolid, taperFor, buildShank, buildGallery, tubeAlong, buildHalo, buildCrown } from "../src/geometry/ring/build.js";
+import { buildRing, shankVolumeFormula, shankVolumeClosedForm, shankProfile, kernel, prongSolid, continuousProngSolid, stoneSolid, taperFor, buildShank, buildGallery, tubeAlong, buildHalo, buildCrown } from "../src/geometry/ring/build.js";
 import { CUTS, SIDE_CUTS, SETTINGS, SEAT, SIGNET_TABLES, DEFAULTS, prongAngles, outlineFor, tableSize, validate } from "../src/geometry/ring/params.js";
 import { readFileSync } from "node:fs";
 
@@ -2555,7 +2555,7 @@ console.log("\n40. Otwarte gniazda, krotkie frezy i suwaki orientacji");
     }, { withStones: false, segments: 64, mode: "casting" });
     const hp = halo.params;
     const surface = hp.innerDia / 2 + hp.thickness * taperFor(hp)(0).t;
-    const shankProbe = w.Manifold.sphere(0.14, 24).translate([0, surface - 0.2, 0]);
+    const shankProbe = w.Manifold.sphere(0.10, 24).translate([0, surface + 0.08, 0]);
     const metalUnderSeat = halo.metal.intersect(shankProbe);
     const ratio = metalUnderSeat.volume() / shankProbe.volume();
     if (ratio < 0.10) {
@@ -2618,11 +2618,11 @@ console.log("\n41. Dwa kosze, podparte szlify i otwarta kaseta kaboszonu");
     const shankProbe = w.Manifold.sphere(0.12, 20).translate([0, ri + 0.20, 0]);
     const szyna = kaboszon.metal.intersect(shankProbe);
     const otwarcie = zaslepka.volume() / srodekOkna.volume();
-    const wylot = szyna.volume() / shankProbe.volume();
-    if (otwarcie < 0.02 && wylot < 0.10 && ileCzesci(kaboszon.metal) === 1) {
-      ok("kaboszon ma szerokie okno, przelot od strony palca i spojny korpus");
+    const most = szyna.volume() / shankProbe.volume();
+    if (otwarcie < 0.02 && most > 0.75 && ileCzesci(kaboszon.metal) === 1) {
+      ok("kaboszon ma szerokie okno nad ciagla szyna i spojny korpus");
     } else {
-      bad(`kaboszon: wypelnienie okna ${(otwarcie * 100).toFixed(1)} %, metal w wylocie ${(wylot * 100).toFixed(1)} %`);
+      bad(`kaboszon: wypelnienie okna ${(otwarcie * 100).toFixed(1)} %, most szyny ${(most * 100).toFixed(1)} %`);
     }
     srodekOkna.delete?.(); zaslepka.delete?.(); shankProbe.delete?.(); szyna.delete?.();
 
@@ -2767,11 +2767,13 @@ console.log("\n43. Zakucie drobnicy trzyma, ale nie przykrywa kamieni");
 }
 
 // ------------------------------------------------------------
-console.log("\n44. Gniazdo centralne ma ksztaltny przelot przez szyne");
+console.log("\n44. Gniazdo jest otwarte, ale nie przecina szyny pod korona");
 // ------------------------------------------------------------
 // Kontrola negatywna to gola szyna: obie sondy sa wypelnione metalem.
-// Po dodaniu kasety frez o obrysie kamienia ma przejsc az do strony palca,
-// ale pozostawiony dookola metal nadal ma byc jedna bryla.
+// Po dodaniu oprawy frez ma utworzyc kieszen w gornej czesci szyny, lecz nie
+// moze wyjsc na powierzchnie palca. Poprzedni kontrakt wymagal odwrotnosci
+// i bronil wprost wady pokazanej przez wlasciciela: szyna byla przecieta pod
+// korona, mimo ze caly pierscionek nadal liczyl sie jako jedna bryla.
 {
   const w = await kernel();
   for (const id of ["bezel", "cabochon"]) {
@@ -2789,12 +2791,12 @@ console.log("\n44. Gniazdo centralne ma ksztaltny przelot przez szyne");
     const v = kieszenProbe.volume();
     const controlFill = kontrola.volume() / v;
     const pocketFill = kieszen.volume() / v;
-    const outletFill = pasek.volume() / pasekProbe.volume();
+    const bridgeFill = pasek.volume() / pasekProbe.volume();
     if (controlFill < 0.90) bad(`${id}: kontrola negatywna nie trafila w gola szyne (${controlFill.toFixed(2)})`);
     else if (pocketFill > 0.15) bad(`${id}: pod gniazdem nie ma zaglebienia w szynie (${pocketFill.toFixed(2)} metalu)`);
-    else if (outletFill > 0.15) bad(`${id}: ksztaltny przelot nie wychodzi od strony palca (${outletFill.toFixed(2)} metalu)`);
-    else if (ileCzesci(r.metal) !== 1) bad(`${id}: przelot rozdzielil korpus pierscionka`);
-    else ok(`${id.padEnd(9)} kieszen ${(100 * (1 - pocketFill)).toFixed(0)} %, wylot ${(100 * (1 - outletFill)).toFixed(0)} %, jedna bryla`);
+    else if (bridgeFill < 0.75) bad(`${id}: otwor przecina szyne pod korona, zostalo ${(bridgeFill * 100).toFixed(0)} % metalu`);
+    else if (ileCzesci(r.metal) !== 1) bad(`${id}: frez rozdzielil korpus pierscionka`);
+    else ok(`${id.padEnd(9)} kieszen ${(100 * (1 - pocketFill)).toFixed(0)} %, most szyny ${(100 * bridgeFill).toFixed(0)} %, jedna bryla`);
     gola.delete?.(); kieszenProbe.delete?.(); pasekProbe.delete?.();
     kontrola.delete?.(); kieszen.delete?.(); pasek.delete?.();
     zwolnij(r);
@@ -2805,7 +2807,7 @@ console.log("\n44. Gniazdo centralne ma ksztaltny przelot przez szyne");
     stone: { cut: "round", size: 6.5 }, setting: "prong4",
     side: { count: 1, size: 3.5, cut: "round", setting: "prong" },
   }, { segments: 64, mode: "referenceAssembly" });
-  let zamknieteWyloty = 0;
+  let przecieteSzyny = 0;
   for (const kamien of trylogia.stones.slice(1)) {
     const bb = kamien.boundingBox();
     const cx = (bb.min[0] + bb.max[0]) / 2;
@@ -2815,13 +2817,13 @@ console.log("\n44. Gniazdo centralne ma ksztaltny przelot przez szyne");
     const sonda = w.Manifold.sphere(0.05, 16)
       .translate([cx / dl * (17.2 / 2 + 0.12), cy / dl * (17.2 / 2 + 0.12), cz]);
     const metal = trylogia.metal.intersect(sonda);
-    if (metal.volume() / sonda.volume() > 0.15) zamknieteWyloty++;
+    if (metal.volume() / sonda.volume() < 0.75) przecieteSzyny++;
     sonda.delete?.(); metal.delete?.();
   }
-  if (zamknieteWyloty === 0 && ileCzesci(trylogia.metal) === 1) {
-    ok("trylogia ma dwa przelotowe gniazda boczne i pozostaje jedna bryla");
+  if (przecieteSzyny === 0 && ileCzesci(trylogia.metal) === 1) {
+    ok("trylogia ma dwa otwarte kosze nad ciagla szyna i pozostaje jedna bryla");
   } else {
-    bad(`trylogia: ${zamknieteWyloty} zamkniete wyloty boczne lub rozdzielony korpus`);
+    bad(`trylogia: ${przecieteSzyny} gniazda przecinaja szyne lub korpus jest rozdzielony`);
   }
   zwolnij(trylogia);
 }
@@ -2842,12 +2844,12 @@ console.log("\n46. Stop, numer buildu i ergonomia maja jawny kontrakt");
     bad("srebro, biale zloto oraz zolte 9K, 14K i 18K nadal nie maja osobnych wygladow");
   }
 
-  if (/RING_CONFIGURATOR_BUILD\s*=\s*["']1\.001["']/.test(ui)
+  if (/RING_CONFIGURATOR_BUILD\s*=\s*["']1\.002["']/.test(ui)
       && /Build\s*\{RING_CONFIGURATOR_BUILD\}/.test(ui)
-      && /WORKER_VERSION\s*=\s*33/.test(worker)) {
-    ok("stopka pokazuje build 1.001, a geometria ma wersje 33");
+      && /WORKER_VERSION\s*=\s*34/.test(worker)) {
+    ok("stopka pokazuje build 1.002, a geometria ma wersje 34");
   } else {
-    bad("brakuje widocznego buildu 1.001 lub zgodnej wersji geometrii 33");
+    bad("brakuje widocznego buildu 1.002 lub zgodnej wersji geometrii 34");
   }
 
   if (/min-h-\[44px\]/.test(ui) && /aria-label=\{t\.configNav\}/.test(ui)
@@ -2926,6 +2928,41 @@ console.log("\n45. Platkowe halo ma zewnetrzna kieszen, a markiza nie ma poprzec
   if (pret.volume() > 0.006) bad(`markiza ma poprzeczny pret pod kamieniem (${pret.volume().toFixed(4)} mm3)`);
   else ok(`markiza bez zbednej poprzeczki (${pret.volume().toFixed(4)} mm3 w sondzie)`);
   sonda.delete?.(); pret.delete?.(); cm.solid.delete?.(); sm.solid.delete?.();
+}
+
+// ------------------------------------------------------------
+console.log("\n48. Krapa jest jedna ciagla bryla od kosza do czubka");
+// ------------------------------------------------------------
+// Kontrola negatywna sklada dwa walce z przerwa. Sam fakt, ze oba znajduja
+// sie w jednym wyniku `add`, nie czyni ich jedna krapa: `decompose` ma wykryc
+// dwie czesci. Wlasciwa krapa korzysta z jednej powloki prowadzonej przez
+// przegiecie, wiec nie ma styku, ktory frez moze rozdzielic.
+{
+  const w = await kernel();
+  const { Manifold } = w;
+  const a = Manifold.cylinder(1.0, 0.32, 0.32, 24, false);
+  const b = Manifold.cylinder(1.0, 0.32, 0.26, 24, false).translate([0, 0, 1.08]);
+  const zla = a.add(b);
+  if (ileCzesci(zla) !== 2) bad("kontrola negatywna nie wykrywa przerwy miedzy segmentami krapy");
+  else ok("kontrola negatywna wykrywa dwa rozdzielone segmenty krapy");
+  a.delete?.(); b.delete?.(); zla.delete?.();
+
+  for (const zamkniete of [false, true]) {
+    const krapa = continuousProngSolid(w, {
+      legPoints: [[2.1, 0, -2.2], [2.35, 0, -1.25], [2.65, 0, -0.45], [2.82, 0, -0.10]],
+      legRadii: [0.34, 0.32, 0.31, 0.30],
+      radius: 2.82, prongR: 0.31,
+      girdleTop: 0.18, crownH: 1.25, zamkniete,
+    });
+    const czesci = ileCzesci(krapa);
+    const plaster = Manifold.cube([1.2, 1.2, 0.08], true).translate([2.82, 0, -0.10]);
+    const szyjka = krapa.intersect(plaster);
+    const przekroj = szyjka.volume() / 0.08;
+    if (czesci !== 1) bad(`${zamkniete ? "zakuta" : "otwarta"}: krapa rozpada sie na ${czesci} czesci`);
+    else if (przekroj < 0.16) bad(`${zamkniete ? "zakuta" : "otwarta"}: przekroj w przegieciu ma tylko ${przekroj.toFixed(3)} mm2`);
+    else ok(`${zamkniete ? "zakuta" : "otwarta"}: jedna bryla, przekroj w przegieciu ${przekroj.toFixed(3)} mm2`);
+    plaster.delete?.(); szyjka.delete?.(); krapa.delete?.();
+  }
 }
 
 console.log(failed ? `\n${failed} bledow\n` : "\nGenerator pierscionkow: wszystko sie zgadza\n");
