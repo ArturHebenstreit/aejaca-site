@@ -4,28 +4,32 @@ status: review
 author: Codex
 branch: codex/ring-ux-signet-refinement
 base_commit: c167a3b2c432396f1cdeae47f3bb8d24bbf63861
-last_commit: 8180519918346e2f8c57560faa28eaf1233c5806
+last_commit: a406e7a13d6092a2f4fd9774dabfc3cba0bddcbb
 updated: 2026-08-24
 ---
 
-# Handoff: otwarte gniazda, ergonomia i sygnety
+# Handoff: Build 1.002 - ciagla szyna, jednolite krapy i otwarte gniazda
 
 ## Cel
 
-Usunac metalowe zaslepki z pustych gniazd, lepiej odslonic kamienie, pokazac
-jednoznaczna wersje podgladu i nadac sygnetom zintegrowana, masywna sylwetke.
+Usunac metalowe zaslepki z pustych gniazd bez przecinania szyny pod korona,
+zbudowac krapy jako jedna bryle od kosza do czubka, lepiej odslonic kamienie,
+pokazac jednoznaczna wersje podgladu i nadac sygnetom zintegrowana sylwetke.
 
 ## Stan przed zmiana
 
-Kasety i kaboszony byly optycznie zbyt ciezkie, a slepe frezy pozostawialy
-szare dno. Wszystkie proby zlota korzystaly z jednego tonu. Kreator nie
-pokazywal numeru buildu, mial male cele sterujace i dluga liste bez skrotow.
-Ramiona sygnetow byly zbyt waskie wzgledem tarczy.
+Build 1.001 usunal szare dno przez przelot centralnych i podniesionych bocznych
+gniazd. Przelot przecinal jednak szynę pod korona. Krapy centralne i boczne
+powstawaly z osobnej nogi i gornej czesci, dlatego po odjeciu frezu mogly
+pozostac rozdzielone w punkcie przegiecia.
 
 ## Zalozenia i decyzje
 
-- ADR-0007 zastepuje punkt 2 ADR-0006 zgodnie z jawna decyzja Artura;
-- dolny wylot nie kopiuje calego wlotu: ma zachowac nosnosc szyny;
+- ADR-0008 zastepuje punkty 1-3 ADR-0007 zgodnie z jawna decyzja Artura;
+- centralne i podniesione boczne gniazda sa otwartymi od gory, slepymi
+  kieszeniami, a szyna pozostaje ciagla od strony palca;
+- przelot pozostaje tylko dla kamieni faktycznie wpuszczonych w szynę;
+- krapa jest jedna powloka `tubeAlong` od dolnej obreczy do czubka;
 - geometria, mirror wyceny i worker maja jedna wersje parametrow;
 - ergonomia korzysta z celow 44 px, skrotow sekcji i przyklejonego podgladu.
 
@@ -33,12 +37,12 @@ Ramiona sygnetow byly zbyt waskie wzgledem tarczy.
 
 ### Zmienione pliki
 
-- `src/geometry/ring/build.js`, `params.js`: kasety, przeloty i sygnety;
+- `src/geometry/ring/build.js`: slepe kieszenie i jednolite krapy;
 - `src/data/castingAlloys.js`: wyglad konkretnych stopow;
 - `RingConfigurator.jsx`, `RingPreview3D.jsx`: UX, build i render metalu;
 - `scripts/test-ring-generator.mjs`: kontrakty regresyjne;
 - mirrory `chat-api/`: identyczna geometria i dane stopow;
-- ADR, dziennik geometrii i niniejszy handoff.
+- ADR-0008, dziennik geometrii i niniejszy handoff.
 
 ### Swiadomie poza zakresem
 
@@ -51,28 +55,29 @@ Ramiona sygnetow byly zbyt waskie wzgledem tarczy.
 | Kontrola | Polecenie lub metoda | Wynik |
 |---|---|---|
 | Test bledu przed poprawka | sekcje 44, 46 i 47 | fail zgodnie z oczekiwaniem |
-| Test po poprawce | `node scripts/test-ring-generator.mjs` | pass, lacznie z przelotami centralnymi i bocznymi, zakuciem oraz trzema ksztaltami sygnetu |
+| Test po poprawce | `node scripts/test-ring-generator.mjs` | pass, 48 sekcji, w tym otwarte kieszenie, ciagla szyna i jednolite krapy |
 | Wycena | `node scripts/test-ring-pricing.mjs` | pass |
 | Mirror | `npm run sync:pricing` | pass |
 | Jakosc tekstu i diff | `node scripts/check-emdash.mjs`, `git diff --check` | pass |
-| Kontrola interfejsu | przelaczenie Ring -> Signet, kolejnosc sekcji, cele 44 px, build | pass; lokalny podglad WebAssembly ma blad serwera deweloperskiego opisany ponizej |
+| Test przekroju krapy | sekcja 48 z kontrola negatywna | pass, jedna bryla, 0,296-0,297 mm2 w przegieciu |
+| Test szyny pod korona | sekcja 44 | pass, 100 procent mostu w sondzie kasety i kaboszonu, trylogia jedna bryla |
 | Build | `npm run build` | pass, 97 stron, 0 bledow |
 
 ## Ryzyka i otwarte pytania
 
-- przeloty trzeba ocenic na wydruku i odlewie, szczegolnie przy cienkiej szynie;
+- kieszenie i przekroj krap trzeba ocenic na wydruku oraz odlewie;
 - tony metalu sa wizualnym przyblizeniem i zaleza od ekranu oraz oswietlenia.
-- lokalny serwer Vite zwraca dla WebAssembly dokument HTML zamiast modulu; pelny
-  build przechodzi, ale wizualny przeglad geometrii nalezy wykonac na wdrozonym
-  branchu albo po poprawieniu obslugi WASM w srodowisku deweloperskim.
+- pelny build przechodzi, ale poprawna topologia nie zastepuje proby zakuwania
+  na fizycznym prototypie.
 
 ## Instrukcja dla recenzenta
 
-1. Podwaz minimalny przekroj szyny przy najwiekszym kamieniu bocznym.
-2. Obejrzyj kasete i kaboszon z kamieniem i bez niego, takze od strony palca.
-3. Sprawdz trzy proby zoltego zlota, srebro i biale zloto w tym samym ujeciu.
-4. Porownaj sygnet owalny, prostokatny i poduszkowy z referencjami Artura.
-5. Potwierdz build `1.001`, geometrie 33 i dzialanie skrotow na telefonie.
+1. Obejrzyj kasete i kaboszon bez kamienia od gory oraz od strony palca.
+2. Potwierdz, ze szyna nie ma szczeliny pod centralnym ani bocznym koszem.
+3. Obejrzyj przegiecia krap w trylogii i oprawie centralnej przy maksymalnym
+   powiekszeniu.
+4. Sprawdz trzy proby zoltego zlota, srebro i biale zloto w tym samym ujeciu.
+5. Potwierdz Build `1.002`, geometrie 34 i dzialanie skrotow na telefonie.
 6. Uruchom test geometrii, test wyceny oraz pelny build.
 
 ## Warunek uznania zadania za gotowe
