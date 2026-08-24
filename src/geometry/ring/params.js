@@ -263,6 +263,7 @@ export function prongAngles(cut = {}, setting) {
 
 export const SHANK_PROFILES = ["round", "flat", "knife", "comfort"];
 export const BASKET_STYLES = ["open", "reinforced"];
+export const HALO_SETTINGS = ["scallop", "shared"];
 
 // Typ wyrobu decyduje o tym, CO w ogole powstaje nad szyna.
 //   ring    szyna z glowica i kamieniem centralnym
@@ -571,7 +572,7 @@ export const DEFAULTS = {
   prongDia: 0.9,
   side: { count: 0, size: 1.6, setting: "pave", material: "cz", gap: 0.35, spread: 0.0, cut: "round", rotation: 0 },
   casting: { ...CASTING_DEFAULTS },
-  halo: { on: false, size: 1.4, material: "cz" },
+  halo: { on: false, size: 1.4, material: "cz", setting: "scallop" },
   band: { coverage: "none", size: 1.8, setting: "pave", material: "cz" },
   signet: { table: "oval", length: 14, face: "flat", engraving: "none" },
 };
@@ -796,6 +797,7 @@ export function validate(input = {}) {
   // jest niedozwolone. Liczenie fitu z halo, ktore chwile pozniej wylaczamy,
   // moglo zaakceptowac kamien na wezszym odcinku szyny.
   p.halo.size = clamp(num(p.halo.size, 1.4), LIMITS.haloSize);
+  if (!HALO_SETTINGS.includes(p.halo.setting)) p.halo.setting = DEFAULTS.halo.setting;
   if (p.setting === "drilled" || p.setting === "channel") p.halo = { ...p.halo, on: false };
   p.halo.on = Boolean(p.halo.on);
 

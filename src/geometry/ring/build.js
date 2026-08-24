@@ -2155,6 +2155,7 @@ function buildBandStones(w, p) {
 export function buildHalo(w, p, stone, girdleR) {
   const { Manifold } = w;
   const d = p.halo.size;
+  const haloSetting = p.halo.setting === "shared" ? "shared" : "scallop";
   const luz = 0.18;                                // odstep wienca od rondysty
   const rW = girdleR + luz + d / 2;                // promien, na ktorym siedza kamienie
   const n = Math.max(8, Math.floor((Math.PI * 2 * rW) / (d * 1.06)));
@@ -2182,10 +2183,12 @@ export function buildHalo(w, p, stone, girdleR) {
   // Tulejka jest na tyle wysoka, ze mozna zanurzyc kamien porzadnie.
   // Zanurzenie idzie za rozmiarem kamienia, bo za nim idzie i wlot.
   const zK = stone.girdleH * 0.5 - Math.max(0.12, d * 0.11);
-  const seatH = Math.max(0.62, d * 0.68);
+  const seatH = Math.max(0.62, d * (haloSetting === "scallop" ? 0.68 : 0.60));
   // Niewielkie zachodzenie do srodka spina wieniec z korona, ale jest o rzad
   // wielkosci mniejsze od dawnej plyty i wystepuje tylko pod tulejkami.
-  const seatR = d / 2 + Math.max(0.26, d * 0.16);
+  const seatR = d / 2 + (haloSetting === "scallop"
+    ? Math.max(0.26, d * 0.16)
+    : Math.max(0.13, d * 0.07));
   const seatTop = stone.girdleH * 0.5 + Math.max(0.04, d * 0.025);
 
   // Kamyk i gniazdo sa dla calego wienca TAKIE SAME, wiec budujemy je RAZ
@@ -2196,14 +2199,22 @@ export function buildHalo(w, p, stone, girdleR) {
   // Gniazdo konczy sie pod koleta. Przelot przez cala wysokosc korony byl
   // odpowiedzialny za otwor widoczny w podwyzszeniu i w szynie.
   const wzorGniazdo = seatCutter(
-    w, "round", d, zakute(p), SEAT.throughWidth, true, seatH - 0.08,
+    w, "round", d, haloSetting === "scallop" ? zakute(p) : false,
+    SEAT.throughWidth, true, seatH - 0.08,
   );
   for (let i = 0; i < n; i++) {
     const a = (i / n) * Math.PI * 2;
     const x = Math.cos(a) * rW, y = Math.sin(a) * rW;
 
+    // Płatkowa kasetka dochodzi do rondysty i czyta się z góry jako osobny
+    // łuk wokół każdego kamienia. Wspólne krapy dostają niższe łożysko:
+    // metal podtrzymuje pawilon, ale nie udaje pełnej kasety i nie zasłania
+    // powiększonego kamienia halo.
+    const cupTop = haloSetting === "scallop"
+      ? seatTop
+      : seatTop - Math.max(0.10, d * 0.07);
     const tulejka = Manifold.cylinder(seatH, seatR, seatR, 32, false)
-      .translate([x, y, seatTop - seatH]);
+      .translate([x, y, cupTop - seatH]);
     metal = metal ? zlacz(metal, tulejka) : tulejka;
 
     stones.push(wzorKam.solid.translate([x, y, zK]));
@@ -2234,12 +2245,19 @@ export function buildHalo(w, p, stone, girdleR) {
   // usterka, ktora poprawilismy juz przy pave na szynie, tylko w wiencu
   // zostala. Zakucie jest slupkiem: stoi ponad plyta, zweza sie ku gorze
   // i przy zakuwaniu KLANIA SIE nad kamien, bo ma czym.
-  const kulaH = Math.min(0.28, d * 0.24);
+  const kulaH = Math.max(0.22, Math.min(0.30, d * 0.17));
   const zam = zakute(p);
-  const wysokoscZ = Math.max(0.35, d * 0.5);
+  const zSzczytu = zK + wzorKam.girdleH
+    + wzorKam.crownH * (zam ? 0.58 : 1.08)
+    + (zam ? 0 : Math.max(0.12, d * 0.08));
+  // W kasetce płatkowej zewnętrzny rant sam zakuwa kamień. Potrzebna jest
+  // tylko jedna wspólna kuleczka od środka. W wariancie krapowym zostają
+  // dwie krapy na szczelinę: wewnętrzna i zewnętrzna, każda obsługuje parę
+  // sąsiednich kamieni.
+  const strony = haloSetting === "scallop" ? [-1] : [-1, 1];
   for (let i = 0; i < n; i++) {
     const b = ((i + 0.5) / n) * Math.PI * 2;
-    for (const s of [-1, 1]) {
+    for (const s of strony) {
       // Stopa stoi POZA obrysem kamyka, bo wlot gniazda scina wszystko, co
       // w ten obrys wchodzi. Szczyt zakutego slupka pochyla sie do srodka
       // odstepu, czyli nad oba sasiednie kamienie naraz.
@@ -2265,12 +2283,18 @@ export function buildHalo(w, p, stone, girdleR) {
       // sie z drugim slupkiem pary: dwa czubki w jednym walku to nie zakucie.
       const odsunCzubka = zam ? Math.max(odsun - d * 0.30, kulaH * 1.1) : odsun;
       const rSzczytu = rW + s * odsunCzubka;
-      const zStopy = zK - 0.12;
+      const cupTop = haloSetting === "scallop"
+        ? seatTop
+        : seatTop - Math.max(0.10, d * 0.07);
+      const zStopy = haloSetting === "scallop"
+        ? cupTop - Math.max(0.24, d * 0.15)
+        : cupTop - seatH + 0.08;
+      const zSrodka = zStopy + (zSzczytu - zStopy) * 0.62;
       metal = zlacz(metal, tubeAlong(w,
         [
           [Math.cos(b) * rStopy, Math.sin(b) * rStopy, zStopy],
-          [Math.cos(b) * rStopy, Math.sin(b) * rStopy, zStopy + wysokoscZ * 0.55],
-          [Math.cos(b) * rSzczytu, Math.sin(b) * rSzczytu, zStopy + wysokoscZ],
+          [Math.cos(b) * rStopy, Math.sin(b) * rStopy, zSrodka],
+          [Math.cos(b) * rSzczytu, Math.sin(b) * rSzczytu, zSzczytu],
         ],
         [kulaH, kulaH * 0.86, kulaH * 0.72]));
     }

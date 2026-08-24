@@ -47,6 +47,10 @@ const CASES = [
   ["Brioleta, pojedyncza kropla", { stone: { cut: "briolette", size: 6 }, setting: "drilled" }],
   ["Kaboszon, otwarta kaseta", applyPreset(RING_PRESETS.find((x) => x.id === "cabochon"), DEFAULTS), false],
   ["Markiza, bez dolnego palaka", { stone: { cut: "marquise", size: 7 }, setting: "vprong" }],
+  ["Halo 2,2 mm, platkowe kasetki", { stone: { cut: "round", size: 6.5 }, setting: "bezel", halo: { on: true, size: 2.2, setting: "scallop" } }],
+  ["Halo 2,2 mm, wspolne krapy", { stone: { cut: "round", size: 6.5 }, setting: "bezel", halo: { on: true, size: 2.2, setting: "shared" } }],
+  ["Halo platkowe, bez kamieni", { stone: { cut: "round", size: 6.5 }, setting: "bezel", halo: { on: true, size: 2.2, setting: "scallop" } }, false],
+  ["Halo krapowe, bez kamieni", { stone: { cut: "round", size: 6.5 }, setting: "bezel", halo: { on: true, size: 2.2, setting: "shared" } }, false],
 ];
 
 const built = [];
