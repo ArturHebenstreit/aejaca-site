@@ -933,8 +933,14 @@ function vprongSolid(w, pts, deg, prongR, base, top, zamkniete = false) {
 /**
  * Czy zakucia maja byc ZAMKNIETE nad kamieniem.
  *
- * Rozstrzyga o tym przelacznik "Kamienie w modelu" i tak ma byc:
+ * Rozstrzyga o tym jawny tryb modelu, a dopiero w trybie podgladu przelacznik
+ * "Kamienie w modelu":
  *
+ * - `casting`          -> zawsze otwarte lapki i metal gotowy do odlewu,
+ * - `finishedPreview`  -> stan przelacznika klienta,
+ * - `referenceAssembly`-> zamkniete lapki i osobne bryly kamieni.
+ *
+ * W trybie podgladu:
  * - kamien W MODELU  -> wyrob GOTOWY, lapki docisniete na koronie,
  * - kamien WYLACZONY -> MODEL ODLEWNICZY, lapki otwarte, gniazda gotowe
  *   do zakucia.
@@ -950,7 +956,14 @@ function vprongSolid(w, pts, deg, prongR, base, top, zamkniete = false) {
  * z ustawieniem domyslnym, to jest powod, zeby SPRAWDZIC, a nie zeby
  * poprawiac ustawienie.
  */
-const zakute = (p) => p.casting?.stones !== false;
+const MODEL_MODE = Symbol("ringModelMode");
+const MODEL_MODES = new Set(["casting", "finishedPreview", "referenceAssembly"]);
+
+const zakute = (p) => {
+  if (p[MODEL_MODE] === "casting") return false;
+  if (p[MODEL_MODE] === "referenceAssembly") return true;
+  return p.casting?.stones !== false;
+};
 
 export function buildCrown(w, p, stone) {
   const { Manifold, CrossSection } = w;
@@ -2354,11 +2367,18 @@ function bezSmieci(m) {
 
 /**
  * @param {object} input parametry wedlug `params.js`
- * @param {object} [opts] `{ segments, withStones }`
+ * @param {object} [opts] `{ segments, withStones, mode }`
+ * `mode`: `casting`, `finishedPreview` albo `referenceAssembly`.
  * @returns {Promise<{metal, stones, params, volumeMm3, massG, patternVolumeMm3}>}
  */
 export async function buildRing(input, opts = {}) {
   const p = validate(input);
+  const mode = opts.mode || "finishedPreview";
+  if (!MODEL_MODES.has(mode)) {
+    throw new Error(`Nieznany tryb modelu pierscionka: ${mode}`);
+  }
+  Object.defineProperty(p, MODEL_MODE, { value: mode });
+
   // Kamienie moga zniknac z modelu na dwa sposoby: przez parametr klienta
   // i przez wywolanie wewnetrzne, ktore ich nie potrzebuje. Oba znacza to
   // samo, wiec skladamy je w jedno.
@@ -2367,8 +2387,12 @@ export async function buildRing(input, opts = {}) {
   // pomiarom: sprawdzian potrzebuje bryl kamieni po to, zeby przylozyc je do
   // metalu ODLEWNICZEGO, czyli takiego, w ktorym klient kamieni nie chce.
   // Bez tego sonda dostawala pusta liste i przechodzila, nie mierzac niczego.
-  const zKamieniami = opts.withStones === true
-    || (opts.withStones !== false && p.casting.stones !== false);
+  const zKamieniami = mode === "casting"
+    ? false
+    : mode === "referenceAssembly"
+      ? true
+      : opts.withStones === true
+        || (opts.withStones !== false && p.casting.stones !== false);
   const w = await kernel();
   const segments = opts.segments || SEG;
 

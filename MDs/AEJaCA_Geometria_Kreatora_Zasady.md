@@ -603,3 +603,28 @@ po 0,046 mm3. W presetach `pave` i `diana` szynki obok gniazda schodzą do okoł
 0,09 mm. Poprawka albo zmniejsza kamienie w istniejących wzorach, albo zmienia
 sylwetkę zwężanej szyny; jedno i drugie widać na wyrobie, więc nie robimy tego
 bez decyzji.
+
+## 2026-08-24 - osobne bryly produkcyjne i lokalna granica kamienia
+
+**Było:** jeden parametr `casting.stones` sterował jednocześnie podglądem,
+domknięciem łapek i zawartością pliku produkcyjnego. Przełącznik widoczności
+kamieni mógł więc zmienić metal, masę i eksport. Granica kamienia wpuszczanego
+wynikała z nominalnej szerokości szyny, chociaż przy `tapered` kamień leży na
+węższym odcinku. Niewykonalne wartości były po cichu zmniejszane, a znany
+przypadek kanału 2,3 mm w zwężanej szynie 3,2 mm nie należał do macierzy testów.
+
+**Jest:** generator ma trzy jawne tryby. `casting` zwraca wyłącznie metal z
+otwartymi łapkami, `finishedPreview` pokazuje gotowy wyrób, a
+`referenceAssembly` zachowuje metal i kamienie jako osobne obiekty. Wycena i
+pliki STL/3MF używają `casting`; dodatkowy 3MF referencyjny służy do kontroli
+złożenia. Dopuszczalna średnica kamienia jest liczona z rzeczywistej szerokości
+szyny w każdej jego pozycji. Konfiguracja niewykonalna kończy się jawnym błędem,
+interfejs ogranicza suwak tą samą regułą i przywraca ostatnią poprawną wartość.
+Presety `pave` i `diana` mają prostą szynę, dzięki czemu zachowują przyjęte
+wymiary kamieni bez ukrytej korekty.
+
+**Czego się dowiedzieliśmy.** Stan warstwy prezentacji nie może być wejściem do
+geometrii produkcyjnej. Ograniczenie elementu osadzonego na zmiennym przekroju
+trzeba liczyć lokalnie, a nie z wymiaru nominalnego. Znanej wadliwej kombinacji
+nie wolno usuwać z testu: powinna pozostać kontrolą negatywną. Masa wiążąca i
+eksport muszą pochodzić z dokładnie tego samego trybu odlewniczego.

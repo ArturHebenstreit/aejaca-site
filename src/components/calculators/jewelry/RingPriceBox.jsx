@@ -34,7 +34,7 @@ const WYJSCIA = ["mesh", "step", "cast", "finished"]
 const L = {
   pl: {
     title: "Co chcesz zamówić",
-    mesh: "Plik STL i 3MF", meshNote: "Do druku i odlewu we własnym zakresie. Wysyłamy od razu po opłaceniu.",
+    mesh: "Pliki STL i 3MF", meshNote: "Model odlewniczy bez kamieni i z otwartymi łapkami oraz osobny 3MF referencyjny. Wysyłamy od razu po opłaceniu.",
     step: "Plik STEP", stepNote: "Model powierzchniowy do edycji w Rhino czy Matrixie.",
     cast: "Odlew bez kamieni", castNote: "Odlany i obrobiony, gniazda gotowe pod zakucie.",
     finished: "Gotowy wyrób", finishedNote: "Odlew, zakute kamienie, polerowanie. Wysyłamy skończony pierścionek.",
@@ -42,7 +42,7 @@ const L = {
     busy: "Liczę kwotę wiążącą", err: "Wyceny chwilowo nie ma. Spróbuj za chwilę.",
     quote: "Wycena indywidualna", quoteCta: "Napisz do nas",
     quoteWhy: "Tego kamienia nie mamy w cenniku, więc kwotę podajemy ręcznie. Odpowiadamy w 24 godziny.",
-    note: "Kwota wiążąca, obowiązuje 7 dni. Masa metalu policzona z tej samej bryły, którą widzisz obok.",
+    note: "Kwota wiążąca, obowiązuje 7 dni. Masa metalu policzona z produkcyjnej bryły odlewniczej odpowiadającej zamówieniu.",
     mass: "Masa metalu", stones: "Kamieni",
     nominal: "Model jest nominalny, w wymiarach gotowego pierścionka, bez kompensacji skurczu odlewu. Jeśli odlewasz u siebie, powiększ go najpierw:",
     nominalLink: "kalkulator skurczu",
@@ -50,7 +50,7 @@ const L = {
   },
   en: {
     title: "What would you like to order",
-    mesh: "STL and 3MF files", meshNote: "For printing and casting on your own. Sent as soon as payment clears.",
+    mesh: "STL and 3MF files", meshNote: "A casting model without stones and with open prongs, plus a separate reference 3MF. Sent as soon as payment clears.",
     step: "STEP file", stepNote: "A surface model for editing in Rhino or Matrix.",
     cast: "Casting without stones", castNote: "Cast and finished, seats ready for setting.",
     finished: "Finished piece", finishedNote: "Cast, stones set, polished. We send a finished ring.",
@@ -58,7 +58,7 @@ const L = {
     busy: "Calculating the binding price", err: "Pricing is briefly unavailable. Try again shortly.",
     quote: "Individual quote", quoteCta: "Write to us",
     quoteWhy: "This stone is not in our price list, so we quote it by hand. We reply within 24 hours.",
-    note: "Binding price, valid for 7 days. Metal mass taken from the same solid you see alongside.",
+    note: "Binding price, valid for 7 days. Metal mass is calculated from the production casting solid for the order.",
     mass: "Metal mass", stones: "Stones",
     nominal: "The model is nominal, at finished ring dimensions, without casting shrinkage compensation. If you cast it yourself, scale it up first:",
     nominalLink: "shrinkage calculator",
@@ -66,7 +66,7 @@ const L = {
   },
   de: {
     title: "Was möchten Sie bestellen",
-    mesh: "STL- und 3MF-Datei", meshNote: "Zum eigenen Drucken und Gießen. Versand direkt nach Zahlungseingang.",
+    mesh: "STL- und 3MF-Dateien", meshNote: "Ein Gussmodell ohne Steine und mit offenen Krappen sowie eine separate 3MF-Referenz. Versand direkt nach Zahlungseingang.",
     step: "STEP-Datei", stepNote: "Flächenmodell zur Bearbeitung in Rhino oder Matrix.",
     cast: "Guss ohne Steine", castNote: "Gegossen und bearbeitet, Sitze fertig zum Fassen.",
     finished: "Fertiges Stück", finishedNote: "Guss, gefasste Steine, Politur. Wir senden einen fertigen Ring.",
@@ -74,7 +74,7 @@ const L = {
     busy: "Verbindlicher Preis wird berechnet", err: "Preisberechnung kurz nicht verfügbar. Bitte gleich erneut versuchen.",
     quote: "Individuelles Angebot", quoteCta: "Schreiben Sie uns",
     quoteWhy: "Diesen Stein führen wir nicht in der Preisliste, daher rechnen wir von Hand. Antwort binnen 24 Stunden.",
-    note: "Verbindlicher Preis, 7 Tage gültig. Metallmasse aus demselben Körper, den Sie daneben sehen.",
+    note: "Verbindlicher Preis, 7 Tage gültig. Die Metallmasse wird aus dem Produktionsgusskörper der Bestellung berechnet.",
     mass: "Metallmasse", stones: "Steine",
     nominal: "Das Modell ist nominal, in den Maßen des fertigen Rings, ohne Schwindungskompensation. Wenn Sie selbst gießen, skalieren Sie es zuerst:",
     nominalLink: "Schwindungsrechner",

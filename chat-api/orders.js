@@ -85,7 +85,9 @@ export async function ringGeometryFromParams(params) {
   let r;
   try {
     const { buildRing } = await import("./geometry/build.js");
-    r = await buildRing(params || {});
+    // Wycena jest zwiazana z odlewem, nie ze stanem wizualnego przelacznika.
+    // Otwarta lapka i brak bryl kamieni musza odpowiadac plikowi produkcyjnemu.
+    r = await buildRing(params || {}, { mode: "casting" });
   } catch (e) {
     throw new PricingError("bad_ring_params", e.message);
   }

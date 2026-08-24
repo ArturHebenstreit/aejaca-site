@@ -118,8 +118,8 @@ const ZESTAWY = [
   { stone: { cut: "roseP", size: 6.0 }, setting: "prong4" },
   { stone: { cut: "bufftop", size: 7.0 }, setting: "bezel" },
   { stone: { cut: "roseFlat", size: 6.0 }, setting: "bezel" },
-  { stone: { cut: "round", size: 5.0 }, setting: "prong4", side: { count: 5, setting: "pave", size: 1.6 } },
-  { stone: { cut: "round", size: 5.0 }, setting: "prong4", side: { count: 3, setting: "channel", size: 2.0 } },
+  { width: 2.5, stone: { cut: "round", size: 5.0 }, setting: "prong4", side: { count: 5, setting: "pave", size: 1.6 } },
+  { width: 2.9, stone: { cut: "round", size: 5.0 }, setting: "prong4", side: { count: 3, setting: "channel", size: 2.0 } },
   { stone: { cut: "oval", size: 6.0 }, setting: "prong4", side: { count: 4, setting: "prong", size: 1.4 } },
   { kind: "signet", signet: { table: "oval", length: 14 } },
   { kind: "signet", signet: { table: "cushion", length: 16 } },
@@ -221,7 +221,7 @@ console.log("\n6. Kamienie osadzone taflą na zewnątrz");
 {
   const cases = [
     ["środkowy", { stone: { cut: "round", size: 6.5 }, setting: "prong4" }, 0],
-    ["boczne pavé", { stone: { cut: "round", size: 5 }, setting: "prong4",
+    ["boczne pavé", { width: 2.7, stone: { cut: "round", size: 5 }, setting: "prong4",
       side: { count: 3, setting: "pave", size: 1.8 } }, 1],
   ];
   for (const [label, cfg, idx] of cases) {
@@ -548,7 +548,7 @@ console.log("\n12. Kamienie boczne trzymają się zwężonej szyny");
   for (const taper of ["none", "tapered", "cathedral"]) {
     for (const setting of ["pave", "prong"]) {
       const r = await buildRing(
-        { innerDia: 17.2, taper, side: { count: 4, size: 1.5, setting } },
+        { innerDia: 17.2, width: 3.6, taper, side: { count: 4, size: 1.5, setting } },
         { segments: 64 },
       );
       const g = r.metal.genus();
@@ -614,9 +614,9 @@ console.log("\n14. Plik do pobrania zgadza się z wyceną");
   const { ringFiles } = await import("../chat-api/ringExport.js");
   const { unzipSync, strFromU8 } = await import("fflate");
 
-  // Plik BEZ kamieni, zeby porownac go wprost z objetoscia metalu, z ktorej
-  // wyszla cena. Z kamieniami plik jest wiekszy i tak ma byc: kamieni sie
-  // nie odlewa, ale w modelu do obejrzenia maja prawo byc.
+  // Produkcyjny plik jest zawsze bez kamieni i ma otwarte lapki. Widocznosc
+  // kamieni dotyczy podgladu, a referencyjny 3MF dostaje je jako osobne
+  // obiekty. Zadna z tych rzeczy nie moze zmieniac bryly do odlewu.
   const params = { innerDia: 17.2, alloy: "au585", taper: "tapered", width: 2.0, thickness: 1.5,
                    casting: { stones: false } };
   const r = await ringFiles(params);
@@ -640,13 +640,14 @@ console.log("\n14. Plik do pobrania zgadza się z wyceną");
   }
   const zPliku = Math.abs(v6) / 6;
 
-  const wzorzec = await buildRing(params, { segments: 96 });
+  const wzorzec = await buildRing(params, { segments: 96, mode: "casting" });
   const blad = Math.abs(zPliku - wzorzec.volumeMm3) / wzorzec.volumeMm3 * 100;
   if (blad < 0.05) ok(`objętość z pliku ${zPliku.toFixed(1)} mm3 zgodna z wyceną ${wzorzec.volumeMm3.toFixed(1)} mm3`);
   else bad(`plik ma inna objetosc niz wycena: ${zPliku.toFixed(1)} wobec ${wzorzec.volumeMm3.toFixed(1)} mm3, roznica ${blad.toFixed(2)} procent`);
+  zwolnij(wzorzec);
 
   // 3MF niesie jednostke, STL nie. Brak jednostki to modele wczytane w calach.
-  const tmf = r.files.find((f) => f.name.endsWith(".3mf")).buffer;
+  const tmf = r.files.find((f) => f.name.endsWith(".3mf") && !f.name.includes("referencja")).buffer;
   const wpisy = unzipSync(new Uint8Array(tmf));
   const model = strFromU8(wpisy["3D/3dmodel.model"] || new Uint8Array());
   if (wpisy["[Content_Types].xml"] && wpisy["_rels/.rels"] && model) ok("3MF ma komplet wpisów");
@@ -654,18 +655,34 @@ console.log("\n14. Plik do pobrania zgadza się z wyceną");
   if (/unit="millimeter"/.test(model)) ok("3MF deklaruje milimetry");
   else bad("3MF nie deklaruje jednostki, slicer zgadnie skale");
 
-  // Z kamieniami plik MUSI byc wiekszy, inaczej przelacznik niczego nie robi.
+  // Przelacznik podgladu nie moze zmienic pliku produkcyjnego ani jego masy.
   const zKamieniami = await ringFiles({ ...params, casting: { stones: true } });
-  if (zKamieniami.triangles > r.triangles) ok(`z kamieniami plik większy: ${zKamieniami.triangles} wobec ${r.triangles} trójkątów`);
-  else bad(`przelacznik kamieni nic nie zmienia w pliku: ${zKamieniami.triangles} wobec ${r.triangles}`);
-  // Masy nie sa juz identyczne i tak ma byc: plik z kamieniem ma lapki
-  // ZAKUTE, a plik bez kamienia otwarte, bo pod zamknieta lapke nie da sie
-  // kamienia wlozyc. Rozni je koncowka lapki, czyli ulamek grama, i wlasnie
-  // ten rzad wielkosci tu pilnujemy. Kilka procent znaczyloby, ze zmienil sie
-  // ksztalt czegos wiekszego niz zakucie.
-  const roznicaMas = Math.abs(zKamieniami.massG / r.massG - 1) * 100;
-  if (roznicaMas < 3) ok(`masa różni się o ${roznicaMas.toFixed(2)} % (same końcówki łapek)`);
-  else bad(`masa rozni sie miedzy plikami o ${roznicaMas.toFixed(2)} procent: ${zKamieniami.massG.toFixed(3)} vs ${r.massG.toFixed(3)} g`);
+  if (zKamieniami.triangles === r.triangles) {
+    ok(`widocznosc kamieni nie zmienia produkcyjnych ${r.triangles} trojkatow`);
+  } else {
+    bad(`widocznosc kamieni zmienila plik: ${zKamieniami.triangles} wobec ${r.triangles} trojkatow`);
+  }
+  if (Math.abs(zKamieniami.massG - r.massG) < 1e-9) ok("widocznosc kamieni nie zmienia masy odlewu");
+  else bad(`widocznosc kamieni zmienila mase: ${zKamieniami.massG.toFixed(3)} vs ${r.massG.toFixed(3)} g`);
+
+  const ref = r.files.find((f) => f.name.includes("referencja") && f.name.endsWith(".3mf"));
+  const refZip = unzipSync(new Uint8Array(ref?.buffer || []));
+  const refModel = strFromU8(refZip["3D/3dmodel.model"] || new Uint8Array());
+  const obiekty = (refModel.match(/<object /g) || []).length;
+  const elementy = (refModel.match(/<item /g) || []).length;
+  if (obiekty > 1 && elementy === obiekty) {
+    ok(`referencyjny 3MF zachowuje ${obiekty} osobnych obiektow`);
+  } else {
+    bad(`referencyjny 3MF ma ${obiekty} obiektow i ${elementy} elementow`);
+  }
+
+  const zWlewem = await ringFiles({ ...params, casting: { stones: true, sprues: true } });
+  const refZWlewem = zWlewem.files.find((f) => f.name.includes("referencja"));
+  if (refZWlewem && !refZWlewem.name.includes("wlew")) {
+    ok("nazwa referencji nie obiecuje nieobecnego wlewu");
+  } else {
+    bad(`referencja ma mylaca nazwe: ${refZWlewem?.name || "brak pliku"}`);
+  }
 }
 
 // ------------------------------------------------------------
@@ -922,9 +939,9 @@ console.log("\n17. Gniazda nie rozcinają wyrobu");
     ["kaseta", { setting: "bezel" }],
     ["markiza w V", { stone: { cut: "marquise", size: 8 }, setting: "vprong" }],
     ["halo", { halo: { on: true } }],
-    ["pavé", { width: 2.4, side: { count: 4, size: 1.5, setting: "pave" } }],
+    ["pavé", { width: 3.3, side: { count: 4, size: 1.5, setting: "pave" } }],
     ["łapki boczne", { width: 3.2, side: { count: 2, size: 1.8, setting: "prong" } }],
-    ["eternity", { kind: "band", width: 2.4, band: { coverage: "full" } }],
+    ["eternity", { kind: "band", width: 4.0, band: { coverage: "full" } }],
   ];
   for (const [opis, cfg] of uklady) {
     for (const taper of ["none", "tapered"]) {
@@ -936,12 +953,14 @@ console.log("\n17. Gniazda nie rozcinają wyrobu");
     }
   }
 
-  // Kamien szerszy niz szyna minus dwie szynki jest NIEWYKONALNY i musi
-  // zostac przyciety, a nie oddany jako bryla w kawalkach.
-  const waska = validate({ width: 2.1, side: { count: 4, size: 1.5, setting: "pave" } });
-  const zostaje = 2.1 - 2 * SEAT.minRail;
-  if (waska.side.size <= zostaje + 1e-9) ok(`w szynie 2,1 mm kamień przycięty do ${waska.side.size.toFixed(2)} mm`);
-  else bad(`kamien 1,5 mm przeszedl w szynie 2,1 mm, zostalyby szynki po ${((2.1 - waska.side.size) / 2).toFixed(2)} mm`);
+  // Kamien szerszy niz szyna minus dwie szynki jest NIEWYKONALNY. Nie wolno
+  // oddac bryly w kawalkach ani po cichu zmienic wymiaru kamienia.
+  try {
+    validate({ width: 2.1, side: { count: 4, size: 1.5, setting: "pave" } });
+    bad("kamien 1,5 mm w szynie 2,1 mm przeszedl zamiast jawnego odrzucenia");
+  } catch {
+    ok("kamien 1,5 mm w szynie 2,1 mm odrzucony bez cichej zmiany wymiaru");
+  }
 
   // Lapka musi stac poza obrysem rondysty, inaczej gniazdo ja przecina.
   // Sprawdza to juz wpis "szesc lapek" powyzej, a kazda kolejna bryla to
@@ -1164,7 +1183,7 @@ console.log("\n20. Kamienie na szynie nie wchodzą w koronę");
   ];
 
   for (const [nazwa, params] of UKLADY) {
-    const r = await buildRing({ innerDia: 17.2, ...params }, { segments: 64 });
+    const r = await buildRing({ innerDia: 17.2, width: 2.6, ...params }, { segments: 64 });
     // Kolejnosc listy jest umowa: centralny, potem wieniec, potem boczne.
     const centralny = r.stones[0];
     let najgorsza = 0;
@@ -1186,9 +1205,9 @@ console.log("\n20. Kamienie na szynie nie wchodzą w koronę");
   }
 
   // Suwak odsuniecia musi cos ROBIC, i to w dobra strone.
-  const blisko = await buildRing({ innerDia: 17.2, stone: { cut: "round", size: 6.5 }, setting: "prong4",
+  const blisko = await buildRing({ innerDia: 17.2, width: 2.5, stone: { cut: "round", size: 6.5 }, setting: "prong4",
     side: { count: 4, size: 1.6, setting: "pave", material: "cz", gap: 0 } }, { segments: 64 });
-  const daleko = await buildRing({ innerDia: 17.2, stone: { cut: "round", size: 6.5 }, setting: "prong4",
+  const daleko = await buildRing({ innerDia: 17.2, width: 2.5, stone: { cut: "round", size: 6.5 }, setting: "prong4",
     side: { count: 4, size: 1.6, setting: "pave", material: "cz", gap: 1.5 } }, { segments: 64 });
   const promien = (r) => {
     const k = r.stones[1].boundingBox();
@@ -1430,7 +1449,7 @@ console.log("\n25. Wylot gniazda jest OTWOREM, a nie dziurką po szpilce");
     ["halo", { stone: { cut: "round", size: 6 }, setting: "prong4", halo: { on: true, size: 1.4, material: "cz" } }],
     ["pavé na szynie", { width: 2.6, stone: { cut: "round", size: 5 }, setting: "prong4",
                          side: { count: 4, size: 1.6, setting: "pave", material: "cz" } }],
-    ["eternity", { kind: "band", width: 2.6, band: { coverage: "full", size: 1.8, setting: "pave", material: "cz" } }],
+    ["eternity", { kind: "band", width: 2.7, band: { coverage: "full", size: 1.8, setting: "pave", material: "cz" } }],
   ];
   for (const [nazwa, cfg] of UKLADY) {
     const r = await buildRing({ innerDia: 17.2, ...cfg }, { segments: 64 });
@@ -1838,7 +1857,7 @@ console.log("\n32. Eternity: cztery krapy na kazdy kamien, i da sie nimi zakuc")
     ["half 2,4", { coverage: "half", size: 2.4 }],
   ]) {
     const p = validate({
-      innerDia: 17.2, kind: "band", width: 2.6, thickness: 1.9,
+      innerDia: 17.2, kind: "band", width: cfg.size + 0.9, thickness: 1.9,
       band: { ...cfg, setting: "pave", material: "diamond" },
     });
     const zK = await buildRing(p, { segments: 96, withStones: true });
@@ -1895,7 +1914,7 @@ console.log("\n32. Eternity: cztery krapy na kazdy kamien, i da sie nimi zakuc")
     // musi wejsc w metal. Bez tej pary zasada "kamien wlaczony = zakute"
     // istnialaby tylko w formularzu, a bryla by o niej nie wiedziala.
     const pZ = validate({
-      innerDia: 17.2, kind: "band", width: 2.6, thickness: 1.9,
+      innerDia: 17.2, kind: "band", width: cfg.size + 0.9, thickness: 1.9,
       band: { ...cfg, setting: "pave", material: "diamond" },
     });
     const zZak = await buildRing(pZ, { segments: 96 });
@@ -2239,23 +2258,157 @@ console.log("\n37. Szyna zostaje CIAGLA pod kamieniami bocznymi");
   // waskiej, typowej i szerokiej. To tutaj wychodzi kazdy uklad, w ktorym
   // gniazdo jest szersze od metalu, ktory ma je uniesc.
   //
-  // Oprawa KANALOWA jest poza ta macierza swiadomie, a nie przez przeoczenie.
-  // Przy szynie zwezanej granica rozmiaru kamienia liczy sie z NOMINALNEJ
-  // szerokosci szyny, a nie z tej, ktora szyna ma przy glowicy, gdzie kamienie
-  // faktycznie siedza. Uklad 3,2 mm ze zwezeniem i kamieniem 2,3 mm zostawia
-  // tam dwa luzne okruchy po 0,046 mm3. Poprawka wymaga decyzji wlasciciela,
-  // bo albo zmniejsza kamienie w istniejacych wzorach, albo zmienia sylwetke
-  // zwezanej szyny, i jedno i drugie widac na wyrobie.
-  for (const setting of ["prong", "pave"]) {
+  // Oprawa kanalowa nalezy do tej samej macierzy. Wczesniej byla wylaczona,
+  // bo walidator liczyl granice z szerokosci nominalnej. Teraz kazda pozycja
+  // ma jeden z dwoch poprawnych wynikow: wykonalna geometria przechodzi pomiar,
+  // niewykonalny wymiar jest jawnie odrzucony przed uruchomieniem jadra.
+  for (const setting of ["prong", "pave", "channel"]) {
     for (const width of [1.6, 2.2, 3.2]) {
       for (const size of [1.5, 3.0, 4.5]) {
-        await zmierz(`${setting} szyna ${width} kamień ${size}`, {
-          innerDia: 17.2, width, thickness: 1.6, taper: "tapered",
-          stone: { cut: "round", size: 6 }, setting: "prong4",
-          side: { count: 2, size, setting },
-        });
+        const opis = `${setting} szyna ${width} kamień ${size}`;
+        try {
+          await zmierz(opis, {
+            innerDia: 17.2, width, thickness: 1.6, taper: "tapered",
+            stone: { cut: "round", size: 6 }, setting: "prong4",
+            side: { count: 2, size, setting },
+          });
+        } catch (e) {
+          if (setting === "prong") bad(`${opis}: niespodziewane odrzucenie: ${e.message}`);
+          else ok(`${opis.padEnd(30)} niewykonalny wymiar odrzucony`);
+        }
       }
     }
+  }
+}
+
+// ------------------------------------------------------------
+console.log("\n38. Tryby modelu i niewykonalne wymiary sa jednoznaczne");
+// ------------------------------------------------------------
+// Walidator nie moze po cichu zbudowac innego pierscionka niz zamowiony.
+// Taka korekta jest szczegolnie grozna dla kamieni: formularz moze nadal
+// pokazywac 4,5 mm, a model, masa i cena dotycza juz kamienia 1,0 mm.
+// Niewykonalny wymiar odrzucamy, a wykonalny zachowujemy bez zmiany.
+{
+  const niewykonalne = [
+    ["pave 4,5 mm w szynie 1,4 mm", {
+      innerDia: 17.2, width: 1.4, thickness: 1.6, taper: "none",
+      side: { count: 2, size: 4.5, setting: "pave" },
+    }],
+    ["eternity 3,2 mm w szynie 1,4 mm", {
+      innerDia: 17.2, kind: "band", width: 1.4, thickness: 1.6,
+      band: { coverage: "full", size: 3.2, setting: "pave" },
+    }],
+    // Kontrola negatywna dla awarii z dziennika geometrii. Nominalne 3,2 mm
+    // nie opisuje szerokosci w miejscu kamienia, bo taper ma tam tylko okolo
+    // 70-75 procent szerokosci. Dawny walidator przepuszczal ten uklad, a po
+    // wycieciu kanalu zostawaly dwa luzne fragmenty po 0,046 mm3.
+    ["kanal 2,3 mm w zwezanej szynie 3,2 mm", {
+      innerDia: 17.2, width: 3.2, thickness: 1.6, taper: "tapered",
+      side: { count: 2, size: 2.3, setting: "channel" },
+    }],
+    ["kanal liczony po wylaczeniu halo", {
+      innerDia: 17.2, width: 2.64, thickness: 1.6, taper: "tapered",
+      setting: "channel", stone: { cut: "baguette", size: 10 },
+      halo: { on: true, size: 2 },
+      side: { count: 2, size: 1.1, setting: "channel" },
+    }],
+  ];
+
+  for (const [opis, wejscie] of niewykonalne) {
+    try {
+      const p = validate(wejscie);
+      const zadane = wejscie.side?.size ?? wejscie.band?.size;
+      const zbudowane = wejscie.side ? p.side.size : p.band.size;
+      bad(`${opis}: walidator przepuscil ${zadane} mm jako ${zbudowane} mm`);
+    } catch {
+      ok(`${opis.padEnd(42)} odrzucone jawnie`);
+    }
+  }
+
+  // Kontrola dodatnia jest konieczna, zeby testu nie dalo sie naprawic przez
+  // odrzucanie wszystkich kamieni wpuszczanych w szyne.
+  try {
+    const wykonalny = validate({
+      innerDia: 17.2, width: 3.2, thickness: 1.6, taper: "none",
+      side: { count: 2, size: 2.0, setting: "channel" },
+    });
+    if (Math.abs(wykonalny.side.size - 2.0) <= 1e-9) {
+      ok("wykonalny kanal 2,0 mm zachowuje zadany wymiar");
+    } else {
+      bad(`wykonalny kanal 2,0 mm zostal zmieniony na ${wykonalny.side.size} mm`);
+    }
+  } catch (e) {
+    bad(`wykonalny kanal 2,0 mm zostal odrzucony: ${e.message}`);
+  }
+
+  // Pave i Diana maja zachowac deklarowane kamienie przez prosta szyne.
+  // Powrot do taperu odtworzylby lokalne zwezenie i ponownie uczynil oba
+  // presety niewykonalnymi albo zmusil walidator do cichej zmiany kamieni.
+  for (const id of ["pave", "diana"]) {
+    const preset = RING_PRESETS.find((x) => x.id === id);
+    try {
+      const p = validate(applyPreset(preset, DEFAULTS));
+      const rozmiarZadany = preset.params.side.size;
+      if (p.taper !== "none") {
+        bad(`wzor ${id}: taper ${p.taper}, wymagany none dla zachowania kamieni`);
+      } else if (Math.abs(p.side.size - rozmiarZadany) > 1e-9) {
+        bad(`wzor ${id}: kamien ${rozmiarZadany} mm zmieniony na ${p.side.size} mm`);
+      } else {
+        ok(`wzor ${id.padEnd(5)} ma prosta szyne i zachowuje kamien ${p.side.size} mm`);
+      }
+    } catch (e) {
+      bad(`wzor ${id} zostal odrzucony: ${e.message}`);
+    }
+  }
+
+  // Tryb jest czescia publicznej umowy generatora. Model odlewniczy zawiera
+  // tylko metal i otwarte lapki. Podglad gotowego wyrobu moze miec kamien
+  // i lapki zacisniete nad rondysta. Assembly trzyma kamien jako osobna bryle,
+  // zeby dalo sie sprawdzic spasowanie bez scalania go z metalem.
+  const baza = {
+    innerDia: 17.2, width: 2.2, thickness: 1.6,
+    stone: { cut: "round", size: 6.5 }, setting: "prong4",
+  };
+  let odlew = null, podglad = null, assembly = null;
+  try {
+    odlew = await buildRing(baza, { segments: 64, mode: "casting" });
+    podglad = await buildRing(baza, { segments: 64, mode: "finishedPreview" });
+    assembly = await buildRing(baza, { segments: 64, mode: "referenceAssembly" });
+
+    if (odlew.stones.length === 0) ok("casting nie zawiera bryl kamieni");
+    else bad(`casting zawiera ${odlew.stones.length} bryl kamieni`);
+
+    if (podglad.stones.length > 0) ok("finishedPreview zawiera kamienie podgladowe");
+    else bad("finishedPreview nie zawiera kamieni podgladowych");
+
+    if (assembly.stones.length > 0) ok("referenceAssembly zachowuje kamienie jako osobne bryly");
+    else bad("referenceAssembly nie zawiera kamieni referencyjnych");
+
+    if (podglad.stones.length > 0) {
+      // Kamien centralny lezy na godzinie dwunastej, wiec wyjecie z oprawy
+      // mierzymy przesunieciem w +Y. W otwartym odlewie ma wyjsc bez kontaktu,
+      // w gotowym podgladzie zakute lapki maja wejsc w jego obrys.
+      const kamien = podglad.stones[0];
+      const wyzej = kamien.translate([0, 0.6, 0]);
+      const kontaktOdlew = odlew.metal.intersect(wyzej);
+      const kontaktPodglad = podglad.metal.intersect(wyzej);
+      const procOdlew = (kontaktOdlew.volume() / kamien.volume()) * 100;
+      const procPodglad = (kontaktPodglad.volume() / kamien.volume()) * 100;
+      wyzej.delete?.(); kontaktOdlew.delete?.(); kontaktPodglad.delete?.();
+
+      if (procOdlew <= 0.05) ok(`casting ma otwarte lapki, kontakt ${procOdlew.toFixed(3)} %`);
+      else bad(`casting blokuje wlozenie kamienia, kontakt ${procOdlew.toFixed(3)} %`);
+
+      if (procPodglad > 0.3 && procPodglad > procOdlew * 3) {
+        ok(`finishedPreview ma zakute lapki, kontakt ${procPodglad.toFixed(3)} %`);
+      } else {
+        bad(`finishedPreview nie trzyma kamienia: ${procPodglad.toFixed(3)} % wobec ${procOdlew.toFixed(3)} % w casting`);
+      }
+    }
+  } catch (e) {
+    bad(`tryby modelu nie spelniaja kontraktu: ${e.message}`);
+  } finally {
+    zwolnij(odlew); zwolnij(podglad); zwolnij(assembly);
   }
 }
 

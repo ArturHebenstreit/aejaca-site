@@ -39,7 +39,9 @@ import { buildRing } from "../geometry/ring/build.js";
 // 6: masa kamieni i karaty, zeby podac mase PIERSCIONKA, a nie samego odlewu
 // 7: kanal wlewowy i stopka w podgladzie
 // 8: wieniec halo osobno od kamieni bocznych, bo ma wlasny material
-const WORKER_VERSION = 25;
+// 26: jawny tryb gotowego podgladu oraz zwrot parametrow uzytych przez bryle.
+// 27: statystyki masy z produkcyjnego odlewu, niezalezne od widocznosci kamieni.
+const WORKER_VERSION = 27;
 
 /** Podglad nie potrzebuje gestosci docelowej: mniej segmentow, szybsza reakcja. */
 const PREVIEW_SEGMENTS = 64;
@@ -53,15 +55,33 @@ function pack(manifold) {
   };
 }
 
+function stoneCountFor(r) {
+  if (r.params.kind === "signet") return 0;
+  if (r.params.kind === "band") return r.stoneVolumesMm3.sideCount || 0;
+  return 1 + r.params.side.count * 2 + (r.stoneVolumesMm3.haloCount || 0);
+}
+
+function release(...manifolds) {
+  const seen = new Set();
+  for (const manifold of manifolds.flat()) {
+    if (!manifold || seen.has(manifold)) continue;
+    seen.add(manifold);
+    manifold.delete?.();
+  }
+}
+
 self.onmessage = async (e) => {
   const { seq, params } = e.data || {};
+  let r = null, production = null, displayMetal = null;
   try {
-    const r = await buildRing(params, { segments: PREVIEW_SEGMENTS });
+    r = await buildRing(params, { segments: PREVIEW_SEGMENTS, mode: "finishedPreview" });
+    production = await buildRing(r.params, { segments: PREVIEW_SEGMENTS, mode: "casting" });
 
     // Kanal i stopka ida do podgladu razem z metalem, bo sa z tego samego
     // materialu i klient ma zobaczyc, co dostanie w pliku. Do MASY nie
     // wchodza: ta idzie z `r.massG`, liczonej z samego wyrobu.
-    const metal = pack(r.casting ? r.metal.add(r.casting) : r.metal);
+    displayMetal = r.casting ? r.metal.add(r.casting) : r.metal;
+    const metal = pack(displayMetal);
 
     // Kamien centralny idzie OSOBNO od bocznych, bo moga byc z innego
     // materialu. Zlaczone w jedna siatke daloby sie narysowac tylko jedna
@@ -72,9 +92,20 @@ self.onmessage = async (e) => {
     // kamienia, wiec zlaczenie ich w jedna siatke odbieraloby dwom z nich
     // barwe: szafirowe halo wokol brylantu rysowaloby sie jak brylanty.
     const scal = (lista) => {
-      let s = lista[0];
-      for (let i = 1; i < lista.length; i++) s = s.add(lista[i]);
-      return pack(s);
+      let s = lista[0], tymczasowa = false;
+      try {
+        for (let i = 1; i < lista.length; i++) {
+          const nastepna = s.add(lista[i]);
+          if (tymczasowa) s.delete?.();
+          s = nastepna;
+          tymczasowa = true;
+        }
+        return pack(s);
+      } finally {
+        // Pierwszy element nalezy do r.stones i zwalnia go zewnetrzny finally.
+        // Oddajemy tylko agregat, ktory powstal przez add.
+        if (tymczasowa) s.delete?.();
+      }
     };
     const ileHalo = r.stoneVolumesMm3.haloCount || 0;
     let stones = null, haloStones = null, sideStones = null;
@@ -93,17 +124,23 @@ self.onmessage = async (e) => {
 
     self.postMessage({
       seq, ok: true, workerVersion: WORKER_VERSION, metal, stones, haloStones, sideStones,
-      stoneCount: r.stones.length,
-      stoneMassG: r.stoneMassG,
-      caratTotal: r.caratTotal,
-      volumeMm3: r.volumeMm3,
-      massG: r.massG,
-      genus: r.genus,
-      params: r.params,
+      stoneCount: stoneCountFor(production),
+      stoneMassG: production.stoneMassG,
+      caratTotal: production.caratTotal,
+      volumeMm3: production.volumeMm3,
+      massG: production.massG,
+      genus: production.genus,
+      params: production.params,
     }, transfer);
   } catch (err) {
     // Niedozwolone zakucie rzuca stad z czytelnym komunikatem po polsku,
     // wiec nie tlumaczymy go ponownie na watku glownym.
     self.postMessage({ seq, ok: false, workerVersion: WORKER_VERSION, error: String(err?.message || err) });
+  } finally {
+    release(
+      displayMetal,
+      r?.metal, r?.casting, r?.stones || [],
+      production?.metal, production?.casting, production?.stones || [],
+    );
   }
 };
