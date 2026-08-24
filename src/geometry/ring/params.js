@@ -155,14 +155,14 @@ export const CUTS = {
                settings: ["vprong", "bezel"], points: [90, 210, 330],
                hint: "Trzy ostre naroża, każde pod łapką V.", hintEn: "Three sharp corners, each under a V-claw.", hintDe: "Drei scharfe Ecken, jede unter einer V-Krappe." },
   pear:      { pl: "gruszka", en: "pear", de: "Tropfen", outline: "pear", profile: "brilliant", table: 0.55,
-               settings: ["vprong", "bezel"], points: [90],
+               settings: ["vprong", "bezel"], points: [90], supports: [225, 315],
                hint: "Szpic musi mieć łapkę V, inaczej odpryskuje.", hintEn: "The point needs a V-claw or it chips.", hintDe: "Die Spitze braucht eine V-Krappe, sonst bricht sie aus." },
   marquise:  { pl: "markiza", en: "marquise", de: "Navette", outline: "marquise", profile: "brilliant", table: 0.5,
                settings: ["vprong", "bezel"], points: [90, 270],
                hint: "Dwa szpice, dwie łapki V. Zwykła łapka ich nie chroni.", hintEn: "Two points, two V-claws. An ordinary claw will not protect them.", hintDe: "Zwei Spitzen, zwei V-Krappen. Eine gewöhnliche Krappe schützt sie nicht." },
   heart:     { pl: "serce", en: "heart", de: "Herz", outline: "heart", profile: "brilliant", table: 0.54,
-               settings: ["vprong", "bezel"], points: [90],
-               hint: "Wcięcie u góry wymaga łapki V, bo tam kamień jest najcieńszy.", hintEn: "The cleft is the thinnest part of the stone and needs a V-claw.", hintDe: "Die Einbuchtung ist die dünnste Stelle und braucht eine V-Krappe." },
+               settings: ["vprong", "bezel"], points: [90], supports: [225, 315],
+               hint: "Szpic chroni łapka V, a dwa przeciwległe podparcia stabilizują płatki.", hintEn: "A V-claw protects the point and two opposite supports stabilise the lobes.", hintDe: "Eine V-Krappe schützt die Spitze, zwei Gegenstützen stabilisieren die Bögen." },
   briolette: { pl: "briolet", en: "briolette", de: "Briolett", outline: "briolette", profile: "drop", table: 0,
                settings: ["drilled"],
                hint: "Brioleta się nie osadza. Jest wiercona i wisi na kabłąku.", hintEn: "A briolette is not set. It is drilled and hangs from a bail.", hintDe: "Ein Briolett wird nicht gefasst. Es wird gebohrt und hängt an einer Öse." },
@@ -262,6 +262,7 @@ export function prongAngles(cut = {}, setting) {
 }
 
 export const SHANK_PROFILES = ["round", "flat", "knife", "comfort"];
+export const BASKET_STYLES = ["open", "reinforced"];
 
 // Typ wyrobu decyduje o tym, CO w ogole powstaje nad szyna.
 //   ring    szyna z glowica i kamieniem centralnym
@@ -566,6 +567,7 @@ export const DEFAULTS = {
   thickness: 1.6,
   stone: { cut: "round", size: 6.5, material: "cz", origin: "stock", rotation: 0 },
   setting: "prong4",
+  basketStyle: "open",
   prongDia: 0.9,
   side: { count: 0, size: 1.6, setting: "pave", material: "cz", gap: 0.35, spread: 0.0, cut: "round", rotation: 0 },
   casting: { ...CASTING_DEFAULTS },
@@ -729,6 +731,7 @@ export function validate(input = {}) {
   p.width = clamp(num(p.width, DEFAULTS.width), LIMITS.width);
   p.thickness = clamp(num(p.thickness, DEFAULTS.thickness), LIMITS.thickness);
   p.prongDia = clamp(num(p.prongDia, DEFAULTS.prongDia), LIMITS.prongDia);
+  if (!BASKET_STYLES.includes(p.basketStyle)) p.basketStyle = DEFAULTS.basketStyle;
   if (!SHANK_PROFILES.includes(p.profile)) p.profile = DEFAULTS.profile;
   if (!SHANK_TAPERS.includes(p.taper)) p.taper = DEFAULTS.taper;
 

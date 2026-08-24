@@ -43,7 +43,7 @@ import { buildRing } from "../geometry/ring/build.js";
 // 27: statystyki masy z produkcyjnego odlewu, niezalezne od widocznosci kamieni.
 // 28: podglad bez kamieni uzywa dokladnie produkcyjnego odlewu z otwartymi
 // gniazdami, a nie osobno liczonej odmiany podgladowej.
-const WORKER_VERSION = 29;
+const WORKER_VERSION = 30;
 
 /** Podglad nie potrzebuje gestosci docelowej: mniej segmentow, szybsza reakcja. */
 const PREVIEW_SEGMENTS = 64;

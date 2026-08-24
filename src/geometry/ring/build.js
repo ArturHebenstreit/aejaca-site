@@ -319,6 +319,25 @@ export function stoneSolid(w, cutId, sizeMm) {
   const pts = fasetowy ? fasetowany(cutId, sizeMm) : outlineFor(cutId, sizeMm);
   const cs = CrossSection.ofPolygons([ccw(pts)]);
 
+  // Brioleta nie jest kamieniem z tafla, rondysta i pawilonem po dwoch
+  // stronach. Taki podzial robil z niej dwa stozki sklejone pasem i z boku
+  // wygladala jak dwa zdublowane kamienie. Budujemy jedna, osiowa krople:
+  // pelny brzusiec nisko, stopniowe zwezenie i jeden wiercony szpic u gory.
+  if (cutId === "briolette") {
+    cs.delete?.();
+    const obrysy = [0.035, 0.20, 0.36, 0.49, 0.50, 0.43, 0.28, 0.08]
+      .map((r) => outlineFor("round", sizeMm * r * 2));
+    const zetki = [0, sizeMm * 0.14, sizeMm * 0.34, sizeMm * 0.62,
+      sizeMm * 0.82, sizeMm * 1.00, sizeMm * 1.16, sizeMm * 1.27];
+    return {
+      solid: hullPoziomow(w, obrysy, zetki),
+      pavH: 0,
+      girdleH: sizeMm * 0.82,
+      crownH: sizeMm * 0.45,
+      bailZ: sizeMm * 0.10,
+    };
+  }
+
   const pavH = pr.pav * sizeMm, girdleH = pr.girdle * sizeMm, crownH = pr.crown * sizeMm;
   let solid = Manifold.extrude(cs, girdleH);          // rondysta, z = 0..girdleH
 
@@ -938,14 +957,9 @@ function vprongSolid(w, pts, deg, prongR, base, top, zamkniete = false) {
     ], [prongR * 0.92, prongR * 0.90, prongR * 0.94], { czubek: false }));
   }
 
-  // Spinka: metal biegnacy od jednej stopy do drugiej DOOKOLA szpica, nisko,
-  // tuz nad koszem. To ona robi z dwoch pretow litere V i to ona oslania
-  // naroze, w ktorym kamien jest najciensszy.
-  const szpic = naZewnatrz(iTip, prongR * 0.6);
-  const zSpinki = base + (top - base) * 0.30;
-  dodaj(tubeAlong(w,
-    [stopy[0], [szpic.x, szpic.y, zSpinki], stopy[1]],
-    [prongR * 0.85, prongR * 0.85, prongR * 0.85]));
+  // Nie laczymy stop dodatkowym palakiem pod szpicem. Obie schodza osobno do
+  // dolnego rantu, ktory juz spina caly kosz. Trzeci luk dublowal te funkcje
+  // i wystawal spod markizy jako obcy element oprawy.
 
   return solid;
 }
@@ -1028,7 +1042,9 @@ export function buildCrown(w, p, stone) {
   // ujawnial ten blad konstrukcji. Wysokosc 78 procent plus stala galeria
   // zostawia koletę nad podwyzszeniem i nadal nie robi przesadnie wysokiej
   // korony przy malych kamieniach.
-  const basketH = SEAT.aboveGalleryMm + stone.pavH * 0.78;
+  const plaskiWKasecie = p.setting === "bezel" && stone.pavH < 0.05;
+  const basketH = SEAT.aboveGalleryMm
+    + Math.max(stone.pavH * 0.78, plaskiWKasecie ? size * 0.13 : 0);
 
   // KOSZ IDZIE ZA OBRYSEM SZLIFU, a nie za jego najwiekszym promieniem.
   //
@@ -1064,16 +1080,29 @@ export function buildCrown(w, p, stone) {
   // Pelny loft byl materialowa plyta pod kamieniem: nawet po wycieciu okien
   // zaslanial pol gniazda i na podgladzie bez kamienia wygladal jak szara
   // gwiazda. Obrecz spina nogi krap, a srodek i boki zostaja otwarte.
+  const reinforced = p.basketStyle === "reinforced";
+  const dolnaSkala = reinforced ? 0.64 : 0.55;
   add(outlineRail(
-    w, pts, 0.55, -basketH + 0.04,
-    Math.max(0.17, rP * 0.40), Math.max(0.28, rP * 0.56),
+    w, pts, dolnaSkala, -basketH + 0.04,
+    Math.max(reinforced ? 0.24 : 0.17, rP * (reinforced ? 0.56 : 0.40)),
+    Math.max(reinforced ? 0.38 : 0.28, rP * (reinforced ? 0.78 : 0.56)),
   ));
+
+  // Wariant wzmocniony zachowuje swiatlo pod kamieniem, ale dostaje drugi
+  // rant pod rondysta. To odpowiednik dawnego masywnego kosza bez powrotu do
+  // litej plyty, ktora zaslaniala gniazdo.
+  if (reinforced && p.setting !== "bezel") {
+    add(outlineRail(
+      w, pts, 1.0, -Math.max(0.42, stone.pavH * 0.16),
+      Math.max(0.30, rP * 0.70), Math.max(0.40, rP * 0.86),
+    ));
+  }
 
   // Otwarte zebro konstrukcyjne laczy dolna obrecz z elementem przy
   // rondyscie. W przeciwienstwie do dawnego pelnego loftu zostawia pomiedzy
   // zebrami swiatlo i widok na cale gniazdo.
   const addSupports = (angles, topZ = -0.28) => {
-    const rr = Math.max(0.22, rP * 0.82);
+    const rr = Math.max(reinforced ? 0.28 : 0.22, rP * (reinforced ? 0.98 : 0.82));
     for (const deg of angles) {
       const rObrys = radiusAt(pts, deg);
       add(tubeAlong(w, [
@@ -1158,12 +1187,16 @@ export function buildCrown(w, p, stone) {
 
   if (p.setting === "drilled") {
     crown = null;
-    // Brioleta wisi, wiec zamiast korony robimy kabłąk nad szyna.
+    // Brioleta wisi, wiec zamiast korony robimy jeden kablak przy jej
+    // zwezonym, wierconym koncu.
     const r = size * 0.28;
     const ring = Manifold.revolve(
       CrossSection.ofPolygons([ccw([[r, -0.35], [r + 0.7, -0.35], [r + 0.7, 0.35], [r, 0.35]])]), 32,
     );
-    return { solid: ring.rotate([90, 0, 0]).translate([0, 0, r * 0.6]), basketH: 0 };
+    return {
+      solid: ring.rotate([90, 0, 0]).translate([0, 0, stone.bailZ ?? r * 0.6]),
+      basketH: 0,
+    };
   }
 
   // NOGA LAPKI: stozek od dna kosza do rondysty, dokladnie pod lapka.
@@ -1226,6 +1259,20 @@ export function buildCrown(w, p, stone) {
         -basketH + 0.05, stone.girdleH + stone.crownH * (zakute(p) ? 0.6 : 1.05),
         zakute(p)));
     }
+    // Gruszka i serce maja tylko jeden kruchy szpic chroniony lapka V.
+    // Po przeciwnej stronie potrzebuja dwoch zwyklych lapek, inaczej kamien
+    // moze sie uniesc i obrocic w pojedynczym punkcie podparcia.
+    for (const deg of cut.supports || []) {
+      const rObrys = radiusAt(pts, deg);
+      const rr = rObrys + rP * (zakute(p) ? 0.5 : 1.08);
+      add(zlacz(prongSolid(w, {
+        radius: rr, prongR: rP,
+        base: -SEAT.aboveGalleryMm,
+        girdleTop: stone.girdleH,
+        crownH: stone.crownH,
+        zamkniete: zakute(p),
+      }), noga(rObrys, rr, rP)).rotate([0, 0, deg]));
+    }
     return { solid: crown, basketH };
   }
 
@@ -1239,7 +1286,10 @@ export function buildCrown(w, p, stone) {
     // rondysty pomniejszonej o podciecie, wiec lapka wpuszczona w ten obrys
     // zostaje przez to gniazdo PRZECIETA. Bryla rozpadala sie wtedy na
     // czternascie czesci: kazda lapka osobno i kosz w kawalkach.
-    const rr = radiusAt(pts, deg) + rP * 0.5;
+    // Otwarta lapka stoi niemal cala poza wlotem. Przy polowie promienia
+    // frez odcinal jej gorna czesc od nogi, co bylo widoczne zwlaszcza w
+    // trylogii. Niewielkie wejscie w obrys zostaje jako miejsce podciecia.
+    const rr = radiusAt(pts, deg) + rP * (zakute(p) ? 0.5 : 1.08);
     const klucz = rr.toFixed(4);
     if (!wzorce.has(klucz)) {
       wzorce.set(klucz, zlacz(prongSolid(w, {
@@ -1442,13 +1492,21 @@ function buildSideStones(w, p, basketH = 0) {
         // przeskalowany do dna i rozszerzony na rant.
         const ptsBoku = outlineFor(szlifBoku, size);
         const rL = Math.min(0.42, Math.max(0.24, size * 0.11));
+        const mocna = p.basketStyle === "reinforced";
         let oprawka = outlineRail(
-          w, ptsBoku, 0.54, -gleboko + 0.04,
-          Math.max(0.16, rL * 0.58), Math.max(0.26, rL * 0.82),
+          w, ptsBoku, mocna ? 0.64 : 0.54, -gleboko + 0.04,
+          Math.max(mocna ? 0.22 : 0.16, rL * (mocna ? 0.74 : 0.58)),
+          Math.max(mocna ? 0.34 : 0.26, rL * (mocna ? 1.0 : 0.82)),
         );
+        if (mocna) {
+          oprawka = zlacz(oprawka, outlineRail(
+            w, ptsBoku, 1.0, -Math.max(0.34, gleboko * 0.24),
+            Math.max(0.26, rL * 0.84), Math.max(0.36, rL * 1.04),
+          ));
+        }
         for (const deg of [45, 135, 225, 315]) {
           const rObrys = radiusAt(ptsBoku, deg);
-          const rLapki = rObrys + rL * 0.5;
+          const rLapki = rObrys + rL * (zakute(p) ? 0.5 : 1.08);
           // Noga biegnie od dna koszyka do lapki po krzywej. Po ustawieniu
           // koszyka na pierscieniu jej dol jest zaglebiony w szynie, wiec
           // lapka nie wisi: obciazenie od zakuwania przechodzi az do ramienia.
@@ -1457,7 +1515,12 @@ function buildSideStones(w, p, basketH = 0) {
             [rObrys * 0.70 + rL * 0.10, 0, -gleboko * 0.62],
             [rObrys * 0.88 + rL * 0.16, 0, -gleboko * 0.30],
             [rLapki, 0, -0.10],
-          ], [rL * 0.90, rL * 0.86, rL * 0.90, rL * 0.96], { czubek: false });
+          ], [
+            rL * (mocna ? 1.08 : 0.90),
+            rL * (mocna ? 1.02 : 0.86),
+            rL * (mocna ? 1.04 : 0.90),
+            rL * (mocna ? 1.06 : 0.96),
+          ], { czubek: false });
           const lapka = prongSolid(w, {
             radius: rLapki, prongR: rL,
             base: -0.14, girdleTop: kam.girdleH, crownH: kam.crownH,
@@ -2388,7 +2451,10 @@ function buildCasting(w, p) {
 function bezSmieci(m) {
   if (!m) return m;
   const czesci = m.decompose();
-  const zdrowe = czesci.filter((c) => Math.abs(c.volume()) > 0.002);
+  // Ponizej 0,03 mm3 sa wyłącznie numeryczne odpryski na ostrych wcieciach
+  // (serce po odjeciu frezu zostawialo 0,022 mm3). To mniej niz kulka o
+  // srednicy 0,36 mm i nie jest czescia, ktora mozna odlac ani obrobic.
+  const zdrowe = czesci.filter((c) => Math.abs(c.volume()) > 0.03);
   if (!zdrowe.length || zdrowe.length === czesci.length) {
     for (const c of czesci) c.delete?.();
     return m;
@@ -2483,7 +2549,11 @@ export async function buildRing(input, opts = {}) {
     // tego wpycha kosz w otwor na palec: pierscionek nadal wyglada poprawnie,
     // a srednica wewnetrzna zmniejsza sie o ponad milimetr i po prostu nie
     // wchodzi na palec. Zabiera 0,35 mm, zeby kosz wtopil sie w szyne.
-    const standoff = basketH > 0 ? basketH - 0.35 : 0;
+    // Brioleta nie moze przecinac szyny srodkiem swojej kropli. Jej najnizszy
+    // punkt zaczyna sie tuz nad szyna, a cala bryla wisi na zewnatrz kablaka.
+    const standoff = p.setting === "drilled"
+      ? 0.18
+      : basketH > 0 ? basketH - 0.35 : 0;
 
     // KOLEJNOSC KAMIENI NA LISCIE JEST CZESCIA UMOWY z reszta programu:
     // centralny, potem wieniec, potem boczne. Podglad rysuje po niej materialy,
@@ -2544,19 +2614,28 @@ export async function buildRing(input, opts = {}) {
       // Wylot zweza sie wiec do tego, co szyna udzwignie, zostawiajac po obu
       // stronach pasek metalu. Pasek jest cienki i nie siega calej grubosci
       // szyny: wnetrze zostaje gladkie, a gniazdo dalej jest przewiercone.
-      const wylotSrodka = Math.max(0.16, Math.min(
-        SEAT.throughWidth,
-        (p.width - 2 * SEAT.minInnerStrip) / p.stone.size,
-      ));
+      const profilKamienia = PROPORTIONS[CUTS[p.stone.cut].profile];
+      const plaskiSpod = profilKamienia.pav < 0.05;
+      // Kaboszon i rozeta o plaskim spodzie potrzebuja szerokiego okna pod
+      // kamieniem. Dawne ograniczenie szerokoscia szyny zostawialo w kasecie
+      // niemal pelna szara tarcze. Kosz jest podniesiony, wiec otwor moze byc
+      // szeroki i jednoczesnie zakonczyc sie nad szyna.
+      const wylotSrodka = plaskiSpod
+        ? 0.78
+        : Math.max(0.16, Math.min(
+          SEAT.throughWidth,
+          (p.width - 2 * SEAT.minInnerStrip) / p.stone.size,
+        ));
+      const maWlasnyKosz = basketH > 0;
       metal = odejmij(metal, place(podnies(
         obrocKamien(
           seatCutter(
             w, p.stone.cut, p.stone.size, zakute(p), wylotSrodka,
-            basketH > 0 && p.setting !== "bezel",
+            maWlasnyKosz,
             // Wiertlo konczy sie NAD powierzchnia podwyzszenia. `standoff`
             // jest odlegloscia rondysty od szyny, wiec odejmujemy jeszcze
             // margines i nie pozwalamy przelotowi wejsc w ramie.
-            basketH > 0 && p.setting !== "bezel" ? Math.max(0.55, standoff - 0.06) : null,
+            maWlasnyKosz ? Math.max(0.55, standoff - 0.06) : null,
           ),
           p.stone.rotation,
         ), standoff)));

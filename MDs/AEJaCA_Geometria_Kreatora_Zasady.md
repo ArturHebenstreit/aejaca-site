@@ -677,3 +677,28 @@ miesci pawilonu nad nośnikiem, nie wolno rozwiazac tego przewierceniem nosnika:
 trzeba podniesc kosz. Wspornik widoczny jako polaczony w jednym przekroju moze
 nadal byc osobna bryla obok osi, dlatego lapki V dostaja osobne zebra od kazdej
 stopy do dolnej obreczy.
+
+## 2026-08-24 - dwa otwarte kosze i ciagla droga obciazenia krap
+
+**Bylo:** jedna lekka konstrukcja kosza zastapila poprzednie masywne oprawy,
+ale klient nie mogl wybrac pewniejszej wersji. Frez gniazda przecinal gorna
+czesc niektorych krap od nogi, szczegolnie w trylogii. Serce i gruszka opieraly
+sie glownie na lapce V, markiza miala dodatkowy palak pod oprawa, brioleta
+skladala sie wizualnie z dwoch nalozonych kamieni, a plaski kaboszon pozostawial
+szara zaslepke w kasecie.
+
+**Jest:** domyslny kosz pozostaje lekki i azurowy, a wariant `reinforced`
+dodaje grubsza dolna obrecz, drugi rant pod rondysta i mocniejsze zebra. Oba
+warianty maja otwarty srodek i sa gotowe do wlozenia kamienia. Os krapy zostala
+odsunieta od frezu, tak aby czubek, noga, kosz i szyna tworzyly jedna droge
+obciazenia. Serce i gruszka dostaly po dwie podpory naprzeciw lapki V. Markiza
+ma tylko dwie niezalezne lapki V, bez trzeciego palaka. Brioleta jest jedna
+osiowa kropla wiercona przy waskim koncu. Kaseta kaboszonu ma podniesiona
+wysokosc i szerokie slepe okno, ktore konczy sie nad ciagla szyna.
+
+**Czego sie dowiedzielismy.** Masywniejsza oprawa nie musi oznaczac plyty pod
+kamieniem: pewnosc daje drugi zamkniety rant i grubsze zebra. Kontrola jednej
+bryly nie wystarcza, jezeli frez pozostawia krape polaczona tylko przypadkowym
+fragmentem metalu. Dla szlifow kierunkowych trzeba osobno chronic szpic i
+stabilizowac szeroka strone, a kamien wiercony powinien miec osobny model
+geometryczny zamiast korzystac z profilu kamienia osadzanego.

@@ -40,6 +40,7 @@ const L = {
     gemGroups: { precious: "Szlachetne", lab: "Hodowane i syntetyczne", semi: "Półszlachetne i ozdobne" },
     width: "Szerokość szyny", thickness: "Grubość szyny",
     cut: "Szlif kamienia centralnego", setting: "Zakucie", stoneSize: "Rozmiar kamienia",
+    basketStyle: "Konstrukcja gniazda", basketOpen: "Lekka ażurowa", basketReinforced: "Wzmocniona",
     stoneOrientation: "Ułożenie kamienia centralnego",
     side: "Kamienie na szynie, na stronę", sideSetting: "Oprawa kamieni bocznych",
     sideCut: "Szlif kamieni bocznych",
@@ -77,6 +78,7 @@ const L = {
     gemGroups: { precious: "Precious", lab: "Lab-grown and synthetic", semi: "Semi-precious and decorative" },
     width: "Shank width", thickness: "Shank thickness",
     cut: "Centre stone cut", setting: "Setting", stoneSize: "Stone size",
+    basketStyle: "Seat construction", basketOpen: "Light openwork", basketReinforced: "Reinforced",
     stoneOrientation: "Centre stone orientation",
     side: "Side stones, per side", sideSetting: "Side stone setting",
     sideCut: "Side stone cut",
@@ -114,6 +116,7 @@ const L = {
     gemGroups: { precious: "Edelsteine", lab: "Laborgezüchtet und synthetisch", semi: "Halbedel und dekorativ" },
     width: "Schienenbreite", thickness: "Schienenstärke",
     cut: "Schliff des Hauptsteins", setting: "Fassung", stoneSize: "Steingröße",
+    basketStyle: "Fassungskonstruktion", basketOpen: "Leicht durchbrochen", basketReinforced: "Verstärkt",
     stoneOrientation: "Ausrichtung des Hauptsteins",
     side: "Steine auf der Schiene, je Seite", sideSetting: "Fassung der Seitensteine",
     sideCut: "Schliff der Seitensteine",
@@ -516,6 +519,16 @@ export default function RingConfigurator({ lang = "pl" }) {
                 <Seg value={p.setting} onChange={(id) => set({ setting: id })}
                   options={allowed.map((id) => ({ id, label: nameOf(SETTINGS[id], lang) }))} />
               </Group>
+
+              {p.setting !== "drilled" && p.setting !== "channel" ? (
+                <Group label={t.basketStyle}>
+                  <Seg value={p.basketStyle} onChange={(basketStyle) => set({ basketStyle })}
+                    options={[
+                      { id: "open", label: t.basketOpen },
+                      { id: "reinforced", label: t.basketReinforced },
+                    ]} />
+                </Group>
+              ) : null}
 
               <Group label={t.gem}>
                 <GemSelect value={p.stone.material} lang={lang} groupLabels={t.gemGroups}
