@@ -752,8 +752,10 @@ Kiedy proponować: gdy klient waha się, mówi "muszę się zastanowić", "zapyt
 **To jest strona, na którą odsyłasz każdego, kto pyta "jak u was się płaci", "jak działa
 płatność", "czy mogę zapłacić kartą", "gdzie wpisać numer oferty", "gdzie wpisać kod
 rabatowy" albo "zapłaciłem i co dalej".** Opisuje obie drogi obok siebie: zakup w sklepie
-albo w kalkulatorze, oraz zapłatę za ofertę z numerem. Zawiera składowe kwoty, metody,
-walutę i narzut kursowy, terminy, co dzieje się po zapłacie, zasady bezpieczeństwa
+albo w kalkulatorze, oraz zapłatę za ofertę z numerem. Zawiera składowe kwoty, rozdzielone
+bloki dla płatności z Polski (złote, BLIK i szybki przelew, rezerwacja 20 minut) i z zagranicy
+(euro, przelew SEPA, potwierdzany ręcznie, rezerwacja 3 dni robocze, termin realizacji od
+zaksięgowania), walutę i narzut kursowy, terminy, co dzieje się po zapłacie, zasady bezpieczeństwa
 i co robić, gdy płatność nie doszła do skutku albo wymaga weryfikacji.
 
 Odsyłaj tam ZAMIAST tłumaczyć proces własnymi słowami: strona jest zsynchronizowana
