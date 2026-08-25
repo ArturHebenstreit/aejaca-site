@@ -1,9 +1,18 @@
+---
+status: draft
+owner: Artur
+date: 2026-08-24
+deciders: Artur
+supersedes: null
+related:
+  - MDs/handoffs/TASK-007-precious-metal-casting.md
+  - src/pricing/preciousMetalCasting.js
+  - MDs/AEJaCA_Brand_Reference.md
+---
+
 # ADR-0010: odlewy z metali szlachetnych jako trzy ścieżki zamówienia
 
-- Status: draft
-- Data: 2026-08-24
-- Właściciel decyzji: Artur
-- Implementacja: TASK-007
+Implementacja: TASK-007.
 
 ## Kontekst
 

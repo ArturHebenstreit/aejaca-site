@@ -1,4 +1,5 @@
 import { calcNew } from "./jewelry.js";
+import { fmtCost } from "./config.js";
 
 export const PRECIOUS_METAL_CASTING_BUILD = "1.006";
 
@@ -53,7 +54,14 @@ export function fitsCastingFlask(bbox, scale = 1) {
 }
 
 export function calculate(params, lang = "pl", rates) {
-  const { variantId, materialSourceId, metalId, finishId, qtyId = "1", stlData } = params || {};
+  // `qtyId` MUSI pochodzic z `QTY_TIERS` w `jewelryConfig.js`, bo tam trafia
+  // przez `calcNew`. Progi sTuDiO ("proto", "micro") sa inna lista i `calcNew`
+  // oddaje na nie `null`, czyli cena po cichu znika z ekranu.
+  //
+  // `qty` to RZECZYWISTA liczba sztuk. Bez niej silnik liczy po nakladzie
+  // reprezentatywnym progu, wiec klient zamawiajacy dwie sztuki dostawalby
+  // cene policzona dla trzech. Patrz `Brand_Reference`, sekcja 6.0g.
+  const { variantId, materialSourceId, metalId, finishId, qtyId = "1", qty: sztuk, stlData } = params || {};
   if (!CASTING_VARIANTS.some((v) => v.id === variantId)
     || !CASTING_MATERIAL_SOURCES.some((v) => v.id === materialSourceId)
     || !CASTING_METALS.some((v) => v.id === metalId)
@@ -69,7 +77,7 @@ export function calculate(params, lang = "pl", rates) {
   const requiredMassG = finalMassG * (1 + CASTING_RESERVE_RATE);
   const base = calcNew({
     lineId: "woman", typeId: "ring", metalId, weightId: "standard", methodId: "cast",
-    platingId: "none", stoneRows: [], qtyId, engravingId: "none",
+    platingId: "none", stoneRows: [], qtyId, qty: sztuk, engravingId: "none",
     clientSuppliesMetal: false, overrideWeightG: requiredMassG,
   }, lang, rates, undefined, {
     // Wewnętrzna opcja, nie parametr zamówienia: klient nie może nią sterować.
@@ -83,6 +91,20 @@ export function calculate(params, lang = "pl", rates) {
   const patternPreparationGrosze = 12000;
   const extraGrosze = patternPreparationGrosze + finish.extraGrosze;
   const unitGrosze = base.unitGrosze + extraGrosze;
+  // Widelki musza opisywac TE SAMA rzecz co kwota wiazaca. `calcNew` liczy
+  // zakres z ceny sprzed doplat, a przygotowanie wzorca i wykonczenie doklejamy
+  // dopiero tutaj, wiec bez tego przesuniecia kalkulator pokazywalby zakres
+  // nizszy od kwoty, ktora klient zaplaci, i to o stala roznice od 120 do 280
+  // zlotych. W sklepie nie bylo tego widac, bo karta uslugi pokazuje wylacznie
+  // `unitGrosze`. Doplaty sa stale, wiec wchodza poza pasmo tolerancji.
+  const extraPLN = extraGrosze / 100;
+  const qty = base.qty || 1;
+  const eurPln = base.eurPln || 1;
+  const perPcPLN = {
+    min: Math.round(base.perPcPLN.min + extraPLN),
+    max: Math.round(base.perPcPLN.max + extraPLN),
+  };
+  const totalPLN = { min: perPcPLN.min * qty, max: perPcPLN.max * qty };
   const ln = lang === "de"
     ? [`Metallmasse des Teils: ${finalMassG.toFixed(2)} g`, `Prozessreserve 12%: ${(requiredMassG - finalMassG).toFixed(2)} g`, "Prüfung und Gussmodell-Druck", "Finish"]
     : lang === "en"
@@ -91,15 +113,24 @@ export function calculate(params, lang = "pl", rates) {
   return {
     ...base,
     unitGrosze,
-    lineGrosze: unitGrosze * (base.qty || 1),
+    lineGrosze: unitGrosze * qty,
+    perPcPLN,
+    totalPLN,
+    perPcEUR: { min: Math.round(perPcPLN.min / eurPln), max: Math.round(perPcPLN.max / eurPln) },
+    totalEUR: { min: Math.round(totalPLN.min / eurPln), max: Math.round(totalPLN.max / eurPln) },
     finalMassG,
     requiredMassG,
     breakdown: [
       ...(base.breakdown || []).filter((row) => !row.divider && !row.bold),
       { label: ln[0], value: "" },
       { label: ln[1], value: "" },
-      { label: ln[2], value: `${(patternPreparationGrosze / 100).toFixed(0)} PLN` },
-      { label: ln[3], value: `${(finish.extraGrosze / 100).toFixed(0)} PLN` },
+      // Kwota idzie przez `fmtCost`, tak jak kazdy wiersz odziedziczony po
+      // `calcNew`. Wpisana na sztywno koncowka "PLN" nie wywalala niczego:
+      // klient czytajacy po angielsku albo po niemiecku widzial rozpiske,
+      // w ktorej kruszec i robocizna sa w euro, a dwa wiersze nizej stoi
+      // kwota w zlotowkach. Reguly walutowe pilnuje `PROJECT_RULES.md`.
+      { label: ln[2], value: fmtCost(patternPreparationGrosze / 100, lang) },
+      { label: ln[3], value: fmtCost(finish.extraGrosze / 100, lang) },
     ],
   };
 }

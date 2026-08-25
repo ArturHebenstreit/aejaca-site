@@ -219,6 +219,16 @@ When asked "can you engrave on my own thing": yes, and explain the test piece up
 **Inclusions:** None · Pigment/glitter · Embedded object (flower, photo) · LED/electronics · Custom
 **Finish:** Raw from mold · Sanded+polished · Coated/lacquered · Custom
 
+### Precious Metal Casting Calculator (Odlew w metalu)
+Fifth tab of the sTuDiO advanced calculator, same engine as the shop card at https://www.aejaca.com/shop/service/precious_metal_casting/ , so the calculator and the shop cannot show two different amounts. Deep link: https://www.aejaca.com/studio/?tab=metal_cast
+**What the customer provides:** Ready wax or castable-resin pattern · 3D model (STL, OBJ, 3MF, STEP, STP) · Customer idea only
+**Metal source:** AEJaCA metal · Customer-supplied metal
+**Metals:** Ag 800 · Ag 925 · Au 9k · Au 14k · Au 18k · Au 24k
+**Finishing:** Raw casting · Cut and cleaned (+70 PLN) · Jewellery finish (+160 PLN)
+**Automatic binding price ONLY for:** 3D model route + AEJaCA metal + model fitting 24 × 24 × 35 mm after the chosen uniform scale. Volume is measured server-side, mass follows from the alloy density, and a 12% process reserve covers metal left in the sprues and lost to oxidation. Pattern preparation adds 120 PLN.
+**Everything else is an individual quote:** physical pattern (needs inspection), idea-only work (needs designing first), customer-supplied metal (needs weighing and alloy verification), and any model over the flask limit.
+**Scaling caveat to repeat to customers:** scaling changes wall, prong and channel thickness, so fitting the dimensions never replaces the workshop's manufacturing review before casting.
+
 **Shared quantity tiers (all studio):** 1 (Proto) · 2–10 (Micro, −5%) · 11–20 (Small, −10%) · 21–50 (Medium, −15%) · 51–100 (Large, custom) · 100+ (custom quote)
 **Output:** per-piece price PLN/EUR + order total + production time + full cost breakdown
 

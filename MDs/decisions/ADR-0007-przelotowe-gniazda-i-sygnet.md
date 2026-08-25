@@ -1,8 +1,16 @@
+---
+status: accepted
+owner: Artur
+date: 2026-08-24
+deciders: Artur
+supersedes: null
+related:
+  - MDs/AEJaCA_Geometria_Kreatora_Zasady.md
+  - src/geometry/ring/
+  - scripts/test-ring-generator.mjs
+---
+
 # ADR-0007: Przelotowe gniazda i zintegrowana bryla sygnetu
-
-Status: zaakceptowany przez wlasciciela
-
-Data: 2026-08-24
 
 ## Kontekst
 

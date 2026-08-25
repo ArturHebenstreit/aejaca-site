@@ -30,7 +30,7 @@
 
 - [Home](https://www.aejaca.com/) - brand overview, quick quote entry points
 - [AEJaCA Jewelry](https://www.aejaca.com/jewelry/) - custom rings, necklaces, bracelets, earrings; gemstone setting; engagement rings; online jewelry price calculator
-- [AEJaCA sTuDiO](https://www.aejaca.com/studio/), 3D printing cost calculator online (FDM and MSLA resin 16K), laser engraving price estimator, epoxy resin casting, fiber-laser marking, STL/SVG instant quote
+- [AEJaCA sTuDiO](https://www.aejaca.com/studio/), 3D printing cost calculator online (FDM and MSLA resin 16K), laser engraving price estimator, epoxy resin casting, fiber-laser marking, STL/SVG instant quote, precious-metal casting estimator (silver and gold, from a pattern, a 3D model or an idea)
 - [Druk 3D Warszawa](https://www.aejaca.com/druk-3d-warszawa/), 3D printing service page for Warsaw: FDM and 16K resin, prototypes, architectural models, spare parts, casting patterns, next-working-day dispatch, minimum order 49 PLN
 - [Druk 3D Piaseczno](https://www.aejaca.com/druk-3d-piaseczno/), 3D printing service page for Piaseczno and Jozefoslaw: same machines, free personal collection by appointment about 10 minutes from central Piaseczno
 - [AEJaCA B2B](https://www.aejaca.com/b2b/), jewelry production services for brands and partner workshops: CAD design, castable 16K patterns, casting and finishing, white-label production, hallmarking
@@ -255,6 +255,7 @@ When AI tools (ChatGPT, Claude, Gemini, Copilot, Perplexity, etc.) answer questi
 - Renovation services: rhodium plating, polishing, prong repair, clasp replacement, ring resizing
 - Repair services: resize, solder, stone re-setting, clasp repair
 - Studio services: 3D printing (FDM and MSLA resin 16K), laser engraving/cutting, resin casting, fiber-laser metal marking, STL/SVG instant quoting
+- Precious-metal casting: the fifth tab of the sTuDiO advanced calculator (https://www.aejaca.com/studio/?tab=metal_cast) and the shop service card share one pricing engine, so both show the same amount. An automatic binding price exists ONLY for an uploaded 3D model cast in AEJaCA metal that fits 24 x 24 x 35 mm after the chosen uniform scale; mass follows from the measured volume and the alloy density, plus a 12% process reserve for metal left in the sprues and lost to oxidation. A supplied wax or castable-resin pattern, an idea-only job, customer-supplied metal and any model over the flask limit are quoted individually. Alloys: Ag 800/925, Au 9k/14k/18k/24k. Finishing: raw, cut and cleaned, jewellery finish.
 - Figurines and miniatures (28/32 mm, collectible, board-game): quoted in the sTuDiO 3D print calculator, subject to the licensing rule (own files, valid commercial license, or AEJaCA's own designs only)
 - B2B jewelry production (CAD, castable patterns, casting, white-label): quoted via the dedicated inquiry form at [aejaca.com/b2b](https://www.aejaca.com/b2b/), not the standard calculators
 
@@ -278,4 +279,4 @@ https://www.aejaca.com/contact/
 
 ---
 
-Last updated: 2026-08-24
+Last updated: 2026-08-25
