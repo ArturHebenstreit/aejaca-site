@@ -1724,6 +1724,25 @@ function kodOdbioru(accessToken) {
 
 const quoteLookupLimit = createLimiter({ limit: 20, windowMs: 60 * 60_000, name: "szukanie oferty" });
 
+// Dwa liczniki, bo naduzycie wyglada inaczej niz zwykle uzycie. Klient
+// wpisuje kod raz, moze dwa razy przy literowce. Skrypt zgadujacy kody strzela
+// bez konca, i to samymi nietrafieniami. Dlatego zwykly limit jest luzny, zeby
+// nikomu nie przeszkadzal, a nietrafienia maja wlasny, ciasny licznik.
+const discountCheckLimit = createLimiter({ limit: 30, windowMs: 60 * 60_000, name: "sprawdzenie kodu" });
+// Pietnascie nietrafien na godzine to bardzo duzo jak na przepisywanie kodu
+// z maila i zadna liczba jak na zgadywanie: alfabet ma 27 znakow, kod szesc,
+// czyli 387 milionow mozliwosci. Wolimy byc hojni dla omylkowych.
+const discountMissLimit = createLimiter({ limit: 15, windowMs: 60 * 60_000, name: "nietrafiony kod" });
+
+// Zamowienie sklada sie bez logowania, i tak ma zostac. Ale brak jakiegokolwiek
+// limitu dawal trzy rzeczy naraz: mozna bylo trzymac ostatnia sztuke w wiecznej
+// rezerwacji, zasypywac cudza skrzynke danymi do przelewu (wysylamy je od razu,
+// na adres, ktorego nikt nie potwierdzil) i zapychac baze porzuconymi
+// zamowieniami. Liczymy po adresie i po skrzynce, bo pierwsze dwa naduzycia
+// chodza z jednego adresu, a trzecie potrafi chodzic z wielu.
+const orderLimit = createLimiter({ limit: 10, windowMs: 60 * 60_000, name: "zamowienie" });
+const orderEmailLimit = createLimiter({ limit: 5, windowMs: 60 * 60_000, name: "zamowienie na adres" });
+
 app.post("/api/quotes/lookup", express.json({ limit: "8kb" }),
   limitBy(quoteLookupLimit, extractIP, { error: "Za duzo prob, sprobuj za chwile" }),
   async (req, res) => {
@@ -2361,14 +2380,8 @@ app.get("/api/payment-methods", async (_req, res) => {
  * Cena liczona jest tutaj od nowa, z parametrow i geometrii pliku.
  * Kwota przyslana przez przegladarke jest ignorowana.
  */
-// Zamowienie sklada sie bez logowania, i tak ma zostac. Ale brak jakiegokolwiek
-// limitu dawal trzy rzeczy naraz: mozna bylo trzymac ostatnia sztuke w wiecznej
-// rezerwacji, zasypywac cudza skrzynke danymi do przelewu (wysylamy je od razu,
-// na adres, ktorego nikt nie potwierdzil) i zapychac baze porzuconymi
-// zamowieniami. Liczymy po adresie i po skrzynce, bo pierwsze dwa naduzycia
-// chodza z jednego adresu, a trzecie potrafi chodzic z wielu.
-const orderLimit = createLimiter({ limit: 10, windowMs: 60 * 60_000, name: "zamowienie" });
-const orderEmailLimit = createLimiter({ limit: 5, windowMs: 60 * 60_000, name: "zamowienie na adres" });
+// Liczniki skladania zamowienia stoja WYZEJ, przy trasach oferty, bo zaplata
+// za oferte sklada zamowienie wczesniej w tym pliku i siega po ten sam licznik.
 
 /** Ile rezerwacji towaru wisi jednoczesnie z jednego adresu. */
 const MAX_HELD_RESERVATIONS = 2;
@@ -3082,15 +3095,11 @@ app.get("/api/admin/products", async (req, res) => {
  * powod odmowy co przy zamowieniu, zamiast dowiadywac sie o wygasnieciu kodu
  * dopiero przy platnosci. Kwota nigdy nie pochodzi z przegladarki.
  */
-// Dwa liczniki, bo naduzycie wyglada inaczej niz zwykle uzycie. Klient
-// wpisuje kod raz, moze dwa razy przy literowce. Skrypt zgadujacy kody strzela
-// bez konca, i to samymi nietrafieniami. Dlatego zwykly limit jest luzny, zeby
-// nikomu nie przeszkadzal, a nietrafienia maja wlasny, ciasny licznik.
-const discountCheckLimit = createLimiter({ limit: 30, windowMs: 60 * 60_000, name: "sprawdzenie kodu" });
-// Pietnascie nietrafien na godzine to bardzo duzo jak na przepisywanie kodu
-// z maila i zadna liczba jak na zgadywanie: alfabet ma 27 znakow, kod szesc,
-// czyli 387 milionow mozliwosci. Wolimy byc hojni dla omylkowych.
-const discountMissLimit = createLimiter({ limit: 15, windowMs: 60 * 60_000, name: "nietrafiony kod" });
+// Liczniki kodow rabatowych stoja WYZEJ, przy szukaniu oferty, bo strona
+// oferty uzywa ich wczesniej w tym pliku. Deklaracja w tym miejscu byla
+// martwa strefa czasowa `const`: rejestracja trasy oferty siegala po nazwe,
+// ktora powstawala dopiero tysiac linii nizej, wiec caly modul wywalal sie
+// przy starcie.
 
 app.post("/api/discounts/check", express.json({ limit: "16kb" }),
   limitBy(discountCheckLimit, extractIP, { error: "Za duzo prob z kodem, sprobuj za chwile" }),
