@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ArrowRight, Package, Download, Wrench, MessageCircle, Sparkles, Search, X, LayoutGrid } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
+import OfferNumberEntry from "../components/shop/OfferNumberEntry.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import RelatedContent from "../components/RelatedContent.jsx";
 import { buildBreadcrumbSchema } from "../seo/schemas.js";
@@ -895,6 +896,14 @@ export default function Shop() {
             </section>
           )}
           </div>
+        </div>
+
+        {/* Klient z wycena ustalona mailem albo telefonicznie szuka wlasnie
+            tutaj, bo sklep jest jedynym miejscem, ktore kojarzy z placeniem.
+            Strona oferty ma `noindex` i nie ma jej w menu, wiec bez tego
+            paska nie ma do niej drogi inaczej niz przez link z maila. */}
+        <div className="max-w-7xl mx-auto px-6 mt-12">
+          <OfferNumberEntry />
         </div>
 
         {/* Na stronie kategorii pokazujemy wiedze z tej samej dziedziny.
