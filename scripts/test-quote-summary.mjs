@@ -169,5 +169,65 @@ const custom = buildQuoteSummary({ ...WEJSCIE, result: { type: "custom" } });
 if (/nie wyceniamy automatycznie/.test(custom)) ok("wycena indywidualna mowi o tym wprost");
 else zle("wycena indywidualna nie jest opisana");
 
+// ------------------------------------------------------------
+// NAZWA WYCENY W MAILU IDZIE ZA JEZYKIEM STRONY
+// ------------------------------------------------------------
+// `techLabel` trafia do tematu i do tresci maila, ktorego dostaje klient.
+// Dwa kalkulatory mialy ja wpisana na sztywno po polsku, wiec Anglik dostawal
+// list z angielskim naglowkiem, angielska lista wyborow i polskim "Szybka
+// wycena" w srodku. Mail przychodzil i byl czytelny, wiec nikt tego nie zglosil.
+{
+  const { readdirSync, readFileSync: czytaj } = await import("node:fs");
+  const { join: polacz, dirname: katalog } = await import("node:path");
+  const { fileURLToPath: naSciezke } = await import("node:url");
+  const KAT = polacz(katalog(naSciezke(import.meta.url)), "../src/components/calculators");
+  let sprawdzonych = 0;
+  for (const plik of readdirSync(KAT).filter((f) => f.endsWith(".jsx"))) {
+    const tresc = czytaj(polacz(KAT, plik), "utf8");
+    // Wyrazenie WYCINAMY LICZAC NAWIASY, a nie wzorcem na jedna linie.
+    // Wzorzec liniowy przestawal widziec atrybut, gdy tylko ktos rozbil go na
+    // kilka linii, wiec sprawdzenie robilo sie zielone przez to, ze przestawalo
+    // patrzec. Dokladnie te dwa pliki, dla ktorych powstalo, wypadly z niego
+    // przy pierwszym formatowaniu.
+    let od = tresc.indexOf("techLabel={");
+    while (od !== -1) {
+      let glebokosc = 0;
+      let koniec = od + "techLabel=".length;
+      for (; koniec < tresc.length; koniec++) {
+        if (tresc[koniec] === "{") glebokosc++;
+        else if (tresc[koniec] === "}" && --glebokosc === 0) break;
+      }
+      const wyrazenie = tresc.slice(od + "techLabel={".length, koniec);
+      sprawdzonych++;
+      // Dozwolone sa tylko trzy drogi: slownik przez `t(...)`, slownik jezyka
+      // biezacego (`l.`) albo przekazanie dalej tej samej zmiennej.
+      const zJezyka = /\bt\(/.test(wyrazenie) || /\bl\./.test(wyrazenie) || /^techLabel$/.test(wyrazenie.trim());
+      // Sam fakt, ze gdzies w wyrazeniu stoi `t(`, nie wystarcza: doklejony
+      // polski przedrostek przeszedlby obok. Litera z ogonkiem w tekscie
+      // wpisanym wprost jest dowodem, ze jeden jezyk zostal wybrany na sztywno.
+      const bezWstawek = wyrazenie.replace(/\$\{[^}]*\}/g, "").replace(/^\s*\/\/.*$/gm, "");
+      const naSztywnoPoPolsku = /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/.test(bezWstawek);
+      if (!zJezyka || naSztywnoPoPolsku) {
+        zle(`${plik}: techLabel={${wyrazenie.trim().slice(0, 80)}} nie idzie za jezykiem strony`);
+      }
+      od = tresc.indexOf("techLabel={", koniec);
+    }
+  }
+  if (sprawdzonych === 0) zle("nie znalazlem ani jednego techLabel, sprawdzenie nic nie pilnuje");
+  else if (!bledy) ok(`nazwa wyceny w mailu idzie za jezykiem strony (${sprawdzonych} kalkulatorow)`);
+
+  // Slownik musi miec wpis w KAZDYM jezyku. Brak jednego nie wywala niczego:
+  // do tematu maila trafiloby "undefined - Fiber Laser".
+  const studyjny = czytaj(polacz(KAT, "SimpleStudioCalc.jsx"), "utf8");
+  const ileStudyjnych = (studyjny.match(/quickQuote: "/g) || []).length;
+  if (ileStudyjnych === 3) ok("szybka wycena sTuDiO ma nazwe we wszystkich trzech jezykach");
+  else zle(`szybka wycena sTuDiO ma nazwe w ${ileStudyjnych} jezykach zamiast w trzech`);
+  const jubilerski = czytaj(polacz(KAT, "SimpleJewelryCalc.jsx"), "utf8");
+  const slownik = jubilerski.match(/const QUICK_QUOTE_LBL = \{([\s\S]*?)\};/);
+  const ileJubilerskich = slownik ? (slownik[1].match(/^\s*(pl|en|de):/gm) || []).length : 0;
+  if (ileJubilerskich === 3) ok("szybka wycena jubilerska ma nazwe we wszystkich trzech jezykach");
+  else zle(`szybka wycena jubilerska ma nazwe w ${ileJubilerskich} jezykach zamiast w trzech`);
+}
+
 console.log(bledy ? `\n${bledy} bledow\n` : "\nPodsumowanie wyceny: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);

@@ -328,6 +328,7 @@ const LBL = {
     castOverFlaskText: "Automatyczna wycena odlewu obejmuje modele mieszczące się po obrocie w 24 x 24 x 35 mm. Twój jest większy, więc albo go zmniejsz, albo zostaw wielkość i poproś o ocenę indywidualną.",
     castOverFlaskFit: "Zmniejsz do największej, która się mieści",
     castOverFlaskNote: "Zmniejszenie zmienia też grubość ścianek, krap i kanałów. Dopasowanie wymiarów nie zastępuje kontroli technologicznej przed odlewem.",
+    quickQuote: "Szybka wycena",
   },
   en: {
     q0: "Got a file ready?", q0hint: "Drop an STL or SVG file - we'll quote it automatically",
@@ -386,6 +387,7 @@ const LBL = {
     castOverFlaskText: "Automatic casting prices cover models that fit 24 x 24 x 35 mm after rotation. Yours is larger, so either scale it down or keep the size and ask for an individual review.",
     castOverFlaskFit: "Scale down to the largest that fits",
     castOverFlaskNote: "Scaling down also changes wall, prong and channel thickness. Fitting the dimensions does not replace the manufacturing review before casting.",
+    quickQuote: "Quick quote",
   },
   de: {
     q0: "Haben Sie eine Datei?", q0hint: "Laden Sie eine STL- oder SVG-Datei hoch - wir kalkulieren automatisch",
@@ -444,6 +446,7 @@ const LBL = {
     castOverFlaskText: "Die automatische Gusskalkulation gilt fuer Modelle, die nach Drehung in 24 x 24 x 35 mm passen. Ihres ist groesser, verkleinern Sie es also oder behalten Sie die Groesse und lassen Sie sie individuell pruefen.",
     castOverFlaskFit: "Auf die groesste passende Groesse verkleinern",
     castOverFlaskNote: "Das Verkleinern aendert auch Wand-, Krappen- und Kanalstaerken. Passende Masse ersetzen nicht die technische Pruefung vor dem Guss.",
+    quickQuote: "Schnellkalkulation",
   },
 };
 
@@ -1665,7 +1668,13 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
         <NextStepPanel
           lang={lang}
           tech={activeResolved?.tech || null}
-          techLabel={techLabel ? `Szybka wycena - ${techLabel}` : "Szybka wycena"}
+          techLabel={
+            // NAZWA IDZIE DO MAILA KLIENTA, wiec musi byc w jezyku strony.
+            // Wpisana na sztywno po polsku dawala list, w ktorym naglowek i
+            // lista wyborow byly po angielsku, a nazwa wyceny po polsku.
+            // Nic sie nie wywalalo: mail przychodzil i byl czytelny.
+            techLabel ? `${l.quickQuote} - ${techLabel}` : l.quickQuote
+          }
           paramsSummary={paramsSummary}
           result={result}
           printability={printability}
