@@ -30,6 +30,7 @@ import Cart from "./pages/Cart.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import OrderStatus from "./pages/OrderStatus.jsx";
 import QuotePage from "./pages/QuotePage.jsx";
+import Offer from "./pages/Offer.jsx";
 import Shipping from "./pages/Shipping.jsx";
 import ToolsJewelry from "./pages/ToolsJewelry.jsx";
 import ToolsStudio from "./pages/ToolsStudio.jsx";
@@ -96,6 +97,7 @@ export function render(url) {
               <Route path="/order/" element={<Order />} />
               <Route path="/order/status/" element={<OrderStatus />} />
               <Route path="/quote/" element={<QuotePage />} />
+              <Route path="/oferta/" element={<Offer />} />
               <Route path="/shipping/" element={<Shipping />} />
               <Route path="/toolsjewelry/" element={<ToolsJewelry />} />
               <Route path="/toolsjewelry/alloy-composition/" element={<AlloyCompositionPage />} />

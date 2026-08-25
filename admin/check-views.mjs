@@ -82,7 +82,8 @@ const wycena = {
   quoteRef: "WY20260825-A1B2C3D4", status: "new", lang: "pl", source: "phone",
   email: null, name: "Test", phone: "+48 600 000 000", message: "Zapytanie z rozmowy",
   totalGrosze: null, priceNote: null, validUntil: null, sentAt: null,
-  createdAt: new Date("2026-08-25"), accessToken: "token-testowy", convertedOrderId: null,
+  createdAt: new Date("2026-08-25"), accessToken: "token-testowy", pickupCode: "ABCD1234",
+  convertedOrderId: null,
 };
 
 const ZESTAWY = {

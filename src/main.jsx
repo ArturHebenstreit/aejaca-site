@@ -34,6 +34,7 @@ const Cart = strona(() => import("./pages/Cart.jsx"));
 const Checkout = strona(() => import("./pages/Checkout.jsx"));
 const OrderStatus = strona(() => import("./pages/OrderStatus.jsx"));
 const QuotePage = strona(() => import("./pages/QuotePage.jsx"));
+const Offer = strona(() => import("./pages/Offer.jsx"));
 const Shipping = strona(() => import("./pages/Shipping.jsx"));
 const ToolsJewelry = strona(() => import("./pages/ToolsJewelry.jsx"));
 const ToolsStudio = strona(() => import("./pages/ToolsStudio.jsx"));
@@ -112,6 +113,7 @@ const trasy = (
     <Route path="/order/" element={<Order />} />
     <Route path="/order/status/" element={<OrderStatus />} />
     <Route path="/quote/" element={<QuotePage />} />
+    <Route path="/oferta/" element={<Offer />} />
     <Route path="/shipping/" element={<Shipping />} />
     <Route path="/toolsjewelry/" element={<ToolsJewelry />} />
     <Route path="/toolsjewelry/alloy-composition/" element={<AlloyCompositionPage />} />

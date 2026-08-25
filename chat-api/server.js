@@ -11,7 +11,7 @@ import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages 
 import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken, ringGeometryFromParams, RING_CALCULATORS } from "./orders.js";
 import { bindingBasis } from "./pricing/bindingBasis.js";
 import { OUTPUT_AVAILABLE } from "./pricing/ringConfigurator.js";
-import { createQuote, priceQuote, getQuoteByRef, convertQuoteToOrder, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
+import { createQuote, priceQuote, getQuoteByRef, convertQuoteToOrder, quoteItemsForDiscount, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
 import { extraRevisionGrosze, CAD_CONFIG } from "./pricing/cadDesign.js";
 import { GEMSTONES } from "./pricing/jewelryConfig.js";
 import {
@@ -1517,6 +1517,16 @@ app.get("/api/quotes/:ref", async (req, res) => {
     priceNote: quote.price_note,
     validUntil: quote.valid_until,
     expired: Boolean(expired),
+    // Dane kontaktowe wraca WYLACZNIE ta trasa, chroniona tokenem, i wracaja
+    // po to, zeby formularz dostawy nie kazal klientowi wpisywac drugi raz
+    // tego, co juz nam podal w rozmowie.
+    customer: {
+      name: quote.customer_name || null,
+      email: quote.customer_email || null,
+      phone: quote.customer_phone || null,
+    },
+    // Zamowienie zlozone: strona ma pokazac numer, a nie drugi raz przycisk.
+    orderRef: quote.converted_order_id ? await orderRefById(quote.converted_order_id) : null,
     items,
   });
 });
@@ -1576,6 +1586,11 @@ app.get("/api/quotes/:ref/admin", async (req, res) => {
       message: quote.message, totalGrosze: quote.total_grosze, priceNote: quote.price_note,
       validUntil: quote.valid_until, sentAt: quote.sent_at, createdAt: quote.created_at,
       accessToken: quote.access_token,
+      // Kod odbioru ma sens WYLACZNIE przy kliencie bez adresu e-mail: tylko
+      // on nie ma czym potwierdzic tozsamosci, gdy wejdzie na strone oferty
+      // z samego numeru. Przy kliencie z adresem panel go nie pokazuje, zeby
+      // nie sugerowac dwoch drog tam, gdzie dziala jedna.
+      pickupCode: quote.customer_email ? null : kodOdbioru(quote.access_token),
       convertedOrderId: quote.converted_order_id,
     },
     items: quote.items.map((i) => ({
@@ -1645,6 +1660,11 @@ app.post("/api/quotes/:ref/send", express.json({ limit: "8kb" }), async (req, re
   console.log(`[wycena] ${quote.quote_ref} oznaczona jako wyslana, mail: ${wyslano ? "tak" : "nie"}`);
   res.json({ ok: true, url, mailed: wyslano });
 });
+/** Numer zamowienia po jego identyfikatorze. Wycena zna tylko id. */
+async function orderRefById(id) {
+  const { rows } = await pool.query("SELECT order_ref FROM orders WHERE id = $1", [id]);
+  return rows[0]?.order_ref ?? null;
+}
 
 /** Wpisanie kwot: dopiero to czyni z zapytania oferte */
 app.post("/api/quotes/:ref/price", express.json({ limit: "64kb" }), async (req, res) => {
@@ -1658,6 +1678,208 @@ app.post("/api/quotes/:ref/price", express.json({ limit: "64kb" }), async (req, 
     if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
     console.error("[wycena] wycenianie nie powiodlo sie:", e.message);
     res.status(500).json({ error: "Nie udalo sie zapisac kwot" });
+  }
+});
+
+// ------------------------------------------------------------
+// STRONA OFERTY: klient sam odnajduje wycene, wpisuje kod i placi
+// ------------------------------------------------------------
+// Do tej pory zaplacic dalo sie WYLACZNIE z linku. Kto link zgubil albo
+// dostal kwote w rozmowie telefonicznej, nie mial dokad pojsc. Trasy ponizej
+// otwieraja drugie wejscie: numer wyceny plus dowod, ze to nasz rozmowca.
+//
+// Numer sam w sobie dowodem nie jest. Wycena niesie nazwisko, telefon i adres,
+// wiec wejscie na sam numer znaczyloby, ze kto go zobaczy przez ramie, zobaczy
+// tez czyjes dane. Dowodem jest wiec adres e-mail, na ktory poszla oferta,
+// a przy rozmowie telefonicznej, gdzie adresu nie ma, krotki kod odbioru.
+
+/**
+ * Kod odbioru dla klienta bez adresu e-mail.
+ *
+ * Wyprowadzony z tokenu dostepu, wiec nie potrzebuje wlasnej kolumny i nie da
+ * sie go rozjechac z tokenem. Osiem znakow z alfabetu szesnastkowego, czyli
+ * tyle, ile da sie podyktowac przez telefon i przepisac bez pomylki.
+ */
+function kodOdbioru(accessToken) {
+  return String(accessToken || "").replace(/[^a-f0-9]/gi, "").slice(0, 8).toUpperCase();
+}
+
+const quoteLookupLimit = createLimiter({ limit: 20, windowMs: 60 * 60_000, name: "szukanie oferty" });
+
+app.post("/api/quotes/lookup", express.json({ limit: "8kb" }),
+  limitBy(quoteLookupLimit, extractIP, { error: "Za duzo prob, sprobuj za chwile" }),
+  async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const ref = String(req.body?.ref || "").trim().toUpperCase();
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  const code = String(req.body?.code || "").trim().toUpperCase();
+
+  // Jedna odpowiedz na wszystkie trzy porazki: zly numer, zly adres i zly kod.
+  // Rozne komunikaty powiedzialyby zgadujacemu, ktora polowe ma juz dobra.
+  const odmowa = () => res.status(404).json({
+    error: "Nie znalezlismy oferty o tym numerze albo dane sie nie zgadzaja",
+    code: "not_found",
+  });
+
+  const quote = ref ? await getQuoteByRef(pool, ref) : null;
+  if (!quote) return odmowa();
+
+  if (quote.customer_email) {
+    if (!email || email !== String(quote.customer_email).trim().toLowerCase()) return odmowa();
+  } else if (!code || !secretMatches(code, kodOdbioru(quote.access_token))) {
+    return odmowa();
+  }
+
+  console.log(`[wycena] ${quote.quote_ref} otwarta z numeru`);
+  res.json({ ok: true, ref: quote.quote_ref, token: quote.access_token });
+});
+
+/**
+ * Sprawdzenie kodu rabatowego dla oferty, jeszcze przed zaplata.
+ *
+ * Kwota do zaplaty ma byc juz po rabacie, a nie korygowana potem zwrotem, bo
+ * zwrot to druga operacja pieniezna i drugie miejsce, w ktorym cos moze pojsc
+ * nie tak. Tutaj liczymy podglad, a wiazaca jest dopiero rezerwacja przy
+ * skladaniu zamowienia, w tej samej transakcji.
+ */
+app.post("/api/quotes/:ref/discount", express.json({ limit: "8kb" }),
+  limitBy(discountCheckLimit, extractIP, { error: "Za duzo prob z kodem, sprobuj za chwile" }),
+  async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const quote = await getQuoteByRef(pool, req.params.ref);
+  if (!quote || !secretMatches(String(req.body?.token || ""), quote.access_token)) {
+    return res.status(404).json({ error: "Nie ma takiej oferty" });
+  }
+  if (!quote.total_grosze) return res.status(400).json({ error: "Ta oferta nie ma jeszcze kwoty", code: "not_priced" });
+
+  const ip = extractIP(req);
+  if (discountMissLimit.remaining(ip) <= 0) {
+    return res.status(400).json({ error: "Nie znamy takiego kodu", code: "not_found" });
+  }
+
+  try {
+    const preview = await previewDiscount(pool, {
+      code: req.body?.code,
+      email: quote.customer_email,
+      items: quoteItemsForDiscount(quote),
+    });
+    res.json({
+      ok: true,
+      ...preview,
+      totalGrosze: Math.max(0, quote.total_grosze - preview.discountGrosze),
+    });
+  } catch (e) {
+    if (e instanceof DiscountError) {
+      if (e.code === "not_found") discountMissLimit.penalize(ip);
+      return res.status(400).json({ error: e.message, code: e.code, ...(e.details || {}) });
+    }
+    console.error("[wycena] sprawdzenie kodu nie powiodlo sie:", e.message);
+    res.status(500).json({ error: "Nie udalo sie sprawdzic kodu" });
+  }
+});
+
+/**
+ * Zlozenie zamowienia z oferty przez samego klienta.
+ *
+ * Rozni sie od trasy panelu jednym: tozsamosc potwierdza token z linku, a nie
+ * haslo administratora. Kwota pozycji pochodzi z oferty i klient nie ma jak
+ * jej ruszyc; z jego strony przychodzi wylacznie to, czego wczesniej nie
+ * wiedzielismy, czyli sposob dostawy, adres i ewentualny kod rabatowy.
+ */
+app.post("/api/quotes/:ref/checkout", express.json({ limit: "32kb" }),
+  limitBy(orderLimit, extractIP, { error: "Za duzo prob, sprobuj za chwile" }),
+  async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const quote = await getQuoteByRef(pool, req.params.ref);
+  if (!quote || !secretMatches(String(req.body?.token || ""), quote.access_token)) {
+    return res.status(404).json({ error: "Nie ma takiej oferty" });
+  }
+  if (!quote.total_grosze) return res.status(400).json({ error: "Ta oferta nie ma jeszcze kwoty", code: "not_priced" });
+  if (quote.converted_order_id) {
+    return res.status(409).json({ error: "Ta oferta ma juz zamowienie", code: "already_converted" });
+  }
+  // Po terminie waznosci kwota przestaje obowiazywac, wiec przyjecie zaplaty
+  // znaczyloby zobowiazanie sie do liczby, ktorej juz nie potwierdzamy.
+  if (quote.valid_until && String(quote.valid_until).slice(0, 10) < new Date().toISOString().slice(0, 10)) {
+    return res.status(410).json({ error: "Ta oferta straciła waznosc, odezwij sie do nas po nowa", code: "expired" });
+  }
+
+  const dostawa = req.body?.delivery || {};
+  const kraj = String(dostawa.country || "PL").toUpperCase();
+  const metoda = String(dostawa.method || "");
+  if (!metoda) return res.status(400).json({ error: "Wybierz sposob dostawy", code: "no_delivery" });
+
+  // Koszt dostawy liczy serwer z wlasnego cennika. Gdyby przychodzil z
+  // przegladarki, kazdy moglby zamowic kuriera za zero.
+  const shipping = shippingCost(metoda, kraj, quote.total_grosze);
+  if (shipping == null) return res.status(400).json({ error: "Nie wozimy tak do tego kraju", code: "bad_delivery" });
+
+  // Oferta idzie WYLACZNIE przez bramke. Autopay obsluguje i BLIK-a, i przelew
+  // online, wiec klient ma obie drogi, a my nie wystawiamy tu przelewu
+  // tradycyjnego w euro: ten wymaga kursu i kwoty zapisanych przy zamowieniu,
+  // a wycena reczna ich nie niesie. Przelew zwykly zostaje w sklepie.
+  const kod = normalizeCode(req.body?.discountCode);
+  const email = quote.customer_email || String(req.body?.customer?.email || "").trim().toLowerCase();
+  if (!email || !CONTACT_EMAIL_RE.test(email)) {
+    return res.status(400).json({ error: "Podaj adres e-mail do potwierdzenia", code: "no_email" });
+  }
+  if (!req.body?.consents?.terms) {
+    return res.status(400).json({ error: "Akceptacja regulaminu jest wymagana", code: "no_terms" });
+  }
+
+  try {
+    const limit = await checkQuarterlyLimit(pool, quote.total_grosze + shipping);
+    if (!limit.ok) {
+      return res.status(409).json({
+        error: "Ta kwota nie zmiesci sie w limicie kwartalnym",
+        code: "quarterly_limit",
+        remainingPLN: Math.round(limit.remainingGrosze / 100),
+      });
+    }
+
+    const order = await convertQuoteToOrder(pool, quote.quote_ref, {
+      orderRef: generateOrderRef(),
+      paymentMethod: "autopay",
+      customer: { ...(req.body?.customer || {}), email },
+      consents: req.body?.consents || null,
+      delivery: {
+        method: metoda,
+        country: kraj,
+        shippingGrosze: shipping,
+        point: dostawa.point || null,
+        addressLine1: dostawa.addressLine1 || null,
+        addressLine2: dostawa.addressLine2 || null,
+        postalCode: dostawa.postalCode || null,
+        city: dostawa.city || null,
+      },
+      discount: kod ? { code: kod, reserve: reserveDiscount } : null,
+    });
+
+    console.log(
+      `[wycena] ${quote.quote_ref} oplacana przez klienta jako ${order.orderRef}` +
+      (order.discountCode ? `, kod ${order.discountCode} na ${(order.discountGrosze / 100).toFixed(2)} PLN` : "")
+    );
+
+    res.json({
+      ok: true,
+      orderRef: order.orderRef,
+      token: order.accessToken,
+      quoteRef: quote.quote_ref,
+      totalGrosze: order.totalGrosze,
+      shippingGrosze: shipping,
+      discountCode: order.discountCode,
+      discountGrosze: order.discountGrosze,
+      creditGrosze: order.creditGrosze || 0,
+      paymentMethod: "autopay",
+    });
+  } catch (e) {
+    if (e instanceof DiscountError) return res.status(400).json({ error: e.message, code: e.code });
+    if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
+    console.error("[wycena] zaplata z oferty nie powiodla sie:", e.message);
+    res.status(500).json({ error: "Nie udalo sie zlozyc zamowienia" });
   }
 });
 
@@ -3380,9 +3602,10 @@ app.post("/api/orders/:ref/pay", express.json({ limit: "8kb" }), async (req, res
   const gatewayId = req.body?.gatewayId ?? 0;
 
   const { rows } = await pool.query(
-    `SELECT id, order_ref, access_token, status, total_grosze, customer_email,
-            expires_at, fulfilled_at, payment_method
-       FROM orders WHERE order_ref = $1`,
+    `SELECT o.id, o.order_ref, o.access_token, o.status, o.total_grosze, o.customer_email,
+            o.expires_at, o.fulfilled_at, o.payment_method,
+            (SELECT q.quote_ref FROM quotes q WHERE q.converted_order_id = o.id) AS quote_ref
+       FROM orders o WHERE o.order_ref = $1`,
     [ref]
   );
   const order = rows[0];
@@ -3410,7 +3633,10 @@ app.post("/api/orders/:ref/pay", express.json({ limit: "8kb" }), async (req, res
   const start = buildStartTransaction({
     orderId: order.order_ref,
     amountGrosze: order.total_grosze,
-    description: `AEJaCA ${order.order_ref}`,
+    // Zamowienie z oferty niesie w tytule TAKZE numer oferty. Klient ma przed
+    // oczami numer z korespondencji, a nie numer nadany przy zaplacie, wiec bez
+    // niego wyciag bankowy i watek mailowy nie maja wspolnego punktu.
+    description: order.quote_ref ? `AEJaCA ${order.order_ref} / ${order.quote_ref}` : `AEJaCA ${order.order_ref}`,
     gatewayId,
     customerEmail: order.customer_email,
     validityTime: formatValidityTime(validity),

@@ -353,6 +353,14 @@ export const SEO = {
     en: { title: "Your quote, AEJaCA", description: "A quote saved in the AEJaCA calculator.", keywords: "quote", ogAlt: "Saved AEJaCA quote" },
     de: { title: "Ihr Angebot, AEJaCA", description: "Ein im AEJaCA-Rechner gespeichertes Angebot.", keywords: "angebot", ogAlt: "Gespeichertes AEJaCA-Angebot" },
   },
+  // Strona oferty: wchodzi sie na nia z linku albo z numeru wyceny. Nie ma
+  // do niej odnosnika z menu i nie ma czego indeksowac, bo bez numeru pokazuje
+  // sam formularz.
+  offer: {
+    pl: { title: "Twoja oferta, AEJaCA", description: "Oferta AEJaCA: podsumowanie, kod rabatowy, dane wysyłki i płatność.", keywords: "oferta", ogAlt: "Oferta AEJaCA" },
+    en: { title: "Your offer, AEJaCA", description: "Your AEJaCA offer: summary, discount code, delivery details and payment.", keywords: "offer", ogAlt: "AEJaCA offer" },
+    de: { title: "Ihr Angebot, AEJaCA", description: "Ihr AEJaCA-Angebot: Zusammenfassung, Rabattcode, Versanddaten und Zahlung.", keywords: "angebot", ogAlt: "AEJaCA-Angebot" },
+  },
   terms: {
     pl: {
       title: "Regulamin serwisu i sprzedaży, AEJaCA",

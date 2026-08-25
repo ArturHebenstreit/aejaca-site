@@ -116,6 +116,21 @@
                class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-neutral-300 font-mono" />
       </label>
 
+      <% if (quote.pickupCode) { %>
+        <div class="rounded-lg border border-amber-400/30 bg-amber-400/10 p-3 mb-4">
+          <div class="text-amber-300 text-xs font-medium mb-1">Kod odbioru: <span class="font-mono text-sm"><%= quote.pickupCode %></span></div>
+          <p class="text-amber-300/80 text-[11px] leading-relaxed">
+            Ten klient nie ma adresu e-mail, więc oferty nie potwierdzi adresem. Podyktuj mu numer wyceny i ten kod:
+            wpisze je na stronie <span class="font-mono">aejaca.com/oferta</span> i przejdzie do zapłaty bez linku.
+          </p>
+        </div>
+      <% } else { %>
+        <p class="text-neutral-500 text-xs leading-relaxed mb-4">
+          Klient może też wejść na <span class="font-mono text-neutral-400">aejaca.com/oferta</span> i podać numer wyceny
+          razem z adresem e-mail, na który poszła oferta. Link nie jest do tego potrzebny.
+        </p>
+      <% } %>
+
       <div class="flex flex-wrap items-center gap-3">
         <form method="post" action="/quotes/<%= encodeURIComponent(quote.quoteRef) %>/send">
           <button class="px-4 py-2 rounded-lg border border-white/15 text-neutral-200 text-sm hover:border-white/35 transition-colors"
