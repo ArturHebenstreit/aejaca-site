@@ -11,6 +11,16 @@
 // skryptem scripts/sync-pricing.mjs, dlatego nie wolno tu importować
 // niczego z Reacta ani z katalogów spoza src/pricing i src/data.
 
+/**
+ * Ile dni wazna jest oferta ustalona z czlowiekiem.
+ *
+ * Stoi w rdzeniu cenowym, a nie przy obsludze wycen, bo ta sama liczba jest
+ * jednoczesnie obietnica handlowa na stronie "Proces platnosci". Wpisana
+ * w dwoch miejscach rozjechalaby sie przy pierwszej zmianie, a klient
+ * czytalby wtedy termin, ktorego system nie respektuje.
+ */
+export const QUOTE_VALIDITY_DAYS = 14;
+
 export const CONFIG = {
   EUR_PLN_RATE: 4.28,
   TOLERANCE_LOW: 0.30,

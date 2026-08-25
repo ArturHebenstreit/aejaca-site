@@ -48,6 +48,9 @@ export default {
       { label: "Über uns", to: "/about/" },
       // Sklep przed dokumentami, bo to jedyna pozycja prowadzaca do zakupu.
       { label: "Shop", to: "/shop/" },
+      // Proces platnosci tuz pod sklepem: klient, ktory wlasnie zobaczyl, gdzie
+      // kupic, najczesciej pyta wtedy, jak sie za to placi.
+      { label: "Zahlungsablauf", to: "/payments/" },
       { label: "AGB", to: "/terms/" },
       { label: "Garantie", to: "/warranty/" },
       { label: "Rückgaberecht", to: "/returns/" },

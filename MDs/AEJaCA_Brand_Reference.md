@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-26 | Wersja: 5.5*
+*Wygenerowano: 2026-08-26 | Wersja: 5.6*
 
 ---
 
@@ -2181,6 +2181,30 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
 - Koszt dostawy liczy serwer z własnego cennika. Gdyby przychodził z przeglądarki, każdy
   mógłby zamówić kuriera za zero.
 
+
+### Strona „Proces płatności" (`/payments/`, od 2026-08-26)
+
+Jedna strona publiczna tłumacząca całość, do odsyłania klientów. Powstała, bo odpowiedź na
+pytanie „jak u was się płaci" była rozsypana po regulaminie, stronie oferty i mailach, więc
+za każdym razem składał ją człowiek od nowa.
+
+- **W menu**: „Marka AEJaCA" → pozycja bezpośrednio pod „Sklep". Także w bloku dokumentów
+  powiązanych obok regulaminu, zwrotów, gwarancji, wysyłki i prywatności.
+- **Układ jest schematyczny**, nie opisowy: rozwidlenie na dwie drogi na samej górze
+  (zakup w sklepie albo zapłata za ofertę z numerem), potem numerowane kroki każdej z nich,
+  potem składowe kwoty, metody, waluta, terminy, co po zapłacie, bezpieczeństwo, awarie,
+  zwroty i FAQ.
+- **Liczby pochodzą z kodu, nie z pamięci.** Narzut kursowy bierze `EUR_FX_MARGIN`
+  z `src/pricing/currency.js`, ważność oferty `QUOTE_VALIDITY_DAYS` z `src/pricing/config.js`.
+  Ta druga stała została przy okazji przeniesiona z `chat-api/quotes.js` do rdzenia cenowego
+  i jest kopiowana do backendu przez `npm run sync:pricing`, żeby obietnica na stronie i termin
+  w systemie nie mogły się rozjechać.
+- Ma `FAQPage` w danych strukturalnych, siedem pytań, te same, które widzi czytelnik.
+
+**Poprawka przy okazji:** strona oferty obiecywała płatność kartą w trzech językach, a karty
+nie ma. Źródłem prawdy jest `MDs/AEJaCA_Autopay_Integration.md` (kanały: BLIK, szybki przelew
+online, przelew tradycyjny) oraz `chat-api/context.js`, który wprost zakazuje mówienia
+klientowi o karcie. Obietnica usunięta z `Offer.jsx` w pl, en i de oraz z kontekstu asystenta.
 
 ### Kolejka pracowni (od 2026-08-25)
 

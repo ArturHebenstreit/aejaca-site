@@ -12,9 +12,10 @@
 
 import { generateToken, priceItem } from "./orders.js";
 import { CAD_CONFIG } from "./pricing/cadDesign.js";
+import { QUOTE_VALIDITY_DAYS } from "./pricing/config.js";
 
 /** Ile dni obowiazuje wyslana wycena, jesli nie podano inaczej */
-export const QUOTE_VALIDITY_DAYS = 14;
+export { QUOTE_VALIDITY_DAYS } from "./pricing/config.js";
 
 /**
  * Wycena zapisana przez klienta z kalkulatora, a nie zapytanie o wycene reczna.
