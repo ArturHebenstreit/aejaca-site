@@ -2194,6 +2194,16 @@ za każdym razem składał ją człowiek od nowa.
   (zakup w sklepie albo zapłata za ofertę z numerem), potem numerowane kroki każdej z nich,
   potem składowe kwoty, metody, waluta, terminy, co po zapłacie, bezpieczeństwo, awarie,
   zwroty i FAQ.
+- **Płatność z Polski i z zagranicy są rozdzielone na dwa osobne bloki**, a nie zlepione
+  w jedną tabelę metod z kolumną waluty. Powód: te dwa przypadki różnią się walutą, metodami,
+  czasem rezerwacji (20 minut wobec 3 dni roboczych) i momentem, od którego liczy się termin
+  realizacji (zapłata wobec zaksięgowania przelewu). W jednej tabeli każdy czytał połowę,
+  która go nie dotyczy. Blok zagraniczny zawiera też wyjaśnienie, skąd bierze się kwota w euro
+  i że kurs zamraża się przy składaniu zamówienia.
+- **O walucie decyduje wersja językowa, nie kraj.** Jest to zapisane wprost w FAQ, bo to
+  najczęstsze nieporozumienie przy takim podziale. Na wersji angielskiej i niemieckiej
+  domyślny jest przelew SEPA w euro, ale klient z polskim kontem może tam przełączyć się
+  na BLIK albo polski bank (`showEur` steruje widocznością wyboru w kasie).
 - **Liczby pochodzą z kodu, nie z pamięci.** Narzut kursowy bierze `EUR_FX_MARGIN`
   z `src/pricing/currency.js`, ważność oferty `QUOTE_VALIDITY_DAYS` z `src/pricing/config.js`.
   Ta druga stała została przy okazji przeniesiona z `chat-api/quotes.js` do rdzenia cenowego

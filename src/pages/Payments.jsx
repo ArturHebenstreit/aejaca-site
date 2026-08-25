@@ -13,7 +13,7 @@
 // ktore rozjezdzaja sie po cichu i klient widzi inna kwote niz zaplaci.
 
 import { Link } from "react-router-dom";
-import { ShoppingBag, FileText, Wallet, Coins, Clock, ShieldCheck, AlertTriangle, RotateCcw } from "lucide-react";
+import { ShoppingBag, FileText, Wallet, Globe, Coins, Clock, ShieldCheck, AlertTriangle, RotateCcw } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -73,24 +73,31 @@ const L = {
       "Rabat nie zejdzie poniżej zera. Kod wyższy od wartości zamówienia obniża je do zera, nie tworzy nadpłaty.",
       "Jeden kod na zamówienie.",
     ],
-    methodsTitle: "Metody płatności",
-    methodsRows: [
-      ["BLIK", "Kod z aplikacji banku. Najszybsza droga.", "PLN"],
-      ["Szybki przelew online", "Ponad dwadzieścia polskich banków, przez operatora Autopay.", "PLN"],
-      ["Przelew SEPA", "Dla klientów czytających stronę po angielsku i niemiecku. Numer rachunku pokazujemy po złożeniu zamówienia i wysyłamy mailem.", "EUR"],
-      ["Odbiór osobisty", "Sam odbiór jest bezpłatny. Zapłata i tak przechodzi tą samą drogą co wyżej.", ""],
+    plTitle: "Płatność z Polski, w złotych",
+    plLead: "Tak wygląda zapłata na polskiej wersji strony. Ceny są w złotych i w złotych je pobieramy. Nie ma tu żadnego wyboru waluty ani przelewu zagranicznego, bo byłyby tylko szumem.",
+    plRows: [
+      ["BLIK", "Kod z aplikacji banku. Najszybsza droga."],
+      ["Szybki przelew online", "Ponad dwadzieścia polskich banków. Na wierzchu jest BLIK, banki chowają się pod jednym wierszem z wyszukiwarką, żeby nie trzeba było przewijać długiej listy."],
     ],
-    noMethods: "Czego nie ma: płatności kartą, Google Pay, Apple Pay ani płatności za pobraniem.",
-    currencyTitle: "Waluta",
-    currencyBody: [
-      "Strona po polsku pokazuje ceny w złotych i w złotych je pobiera.",
-      "Strona po angielsku i niemiecku pokazuje ceny w euro. Kwota powstaje z ceny złotowej po kursie Narodowego Banku Polskiego, powiększonym o {fx} procent.",
-      "Ten narzut nie jest ukrytą marżą. Między zamrożeniem kwoty a zaksięgowaniem przelewu mija kilka dni, a kurs w tym czasie się rusza. Narzut pokrywa tę różnicę i koszt przewalutowania.",
+    plNote: "Płatność potwierdza się od razu i od razu ruszamy z pracą. Towar rezerwujemy na 20 minut, czyli na czas potrzebny do dokończenia płatności. Porzucony koszyk nic nie zabiera: rezerwacja wygasa sama.",
+    euTitle: "Płatność z zagranicy, w euro",
+    euLead: "Tak wygląda zapłata na angielskiej i niemieckiej wersji strony. Ceny są w euro, a należność rozliczamy przelewem SEPA na nasze konto w euro.",
+    euRows: [
+      ["Przelew SEPA", "Numer rachunku pokazujemy po złożeniu zamówienia i wysyłamy mailem. Tytułem przelewu jest numer zamówienia."],
+      ["BLIK albo polski bank, jeżeli wolisz", "Płatność natychmiastową da się wybrać także na tych wersjach strony. Ma to sens, gdy masz polskie konto: rozliczenie idzie wtedy w złotych, tak jak wyżej."],
     ],
+    euNote: "Wpływ przelewu potwierdzamy ręcznie, bo przelew zagraniczny nie wraca do nas automatycznie. Kwota i rezerwacja towaru obowiązują 3 dni robocze. Jeżeli czwartego dnia roboczego wpłata nie jest zaksięgowana, rezerwacja spada, a towar wraca do sprzedaży. Termin realizacji liczymy od zaksięgowania, nie od złożenia zamówienia.",
+    euFxTitle: "Skąd bierze się kwota w euro",
+    euFx: [
+      "Kwota powstaje z ceny złotowej po kursie Narodowego Banku Polskiego, powiększonym o {fx} procent.",
+      "Ten narzut nie jest ukrytą marżą. Między zamrożeniem kwoty a zaksięgowaniem przelewu mijają dni, a kurs w tym czasie się rusza. Narzut pokrywa tę różnicę i koszt przewalutowania po naszej stronie.",
+      "Kwotę w euro i kurs zamrażamy w chwili składania zamówienia. Późniejszy ruch kursu nie zmienia tego, ile masz przelać.",
+    ],
+    noMethods: "Niezależnie od wersji strony: nie ma płatności kartą, Google Pay, Apple Pay ani za pobraniem. Odbiór osobisty jest bezpłatny, ale sama zapłata i tak idzie jedną z dróg powyżej.",
     timeTitle: "Terminy",
     timeRows: [
-      ["Rezerwacja przy płatności natychmiastowej", "20 minut"],
-      ["Rezerwacja przy przelewie w euro", "3 dni robocze, czwartego towar wraca do sprzedaży"],
+      ["Rezerwacja towaru, płatność z Polski", "20 minut"],
+      ["Rezerwacja towaru, przelew w euro z zagranicy", "3 dni robocze, czwartego towar wraca do sprzedaży"],
       ["Ważność oferty ustalonej z człowiekiem", `${QUOTE_VALIDITY_DAYS} dni`],
       ["Ważność kwoty wiążącej z kalkulatora", "7 dni"],
     ],
@@ -127,6 +134,7 @@ const L = {
       { q: "Gdzie wpisuję kod rabatowy?", a: "Przy zakupie w sklepie w polu pod podsumowaniem zamówienia. Przy zapłacie za ofertę na stronie oferty, przed przejściem do płatności. Zniżkę widzisz przed zapłatą, nigdy nie zwracamy jej po fakcie." },
       { q: "Czy rabat obejmuje dostawę?", a: "Nie. Kod schodzi wyłącznie z pozycji zlecenia i nigdy nie obniża kosztu dostawy." },
       { q: "Dlaczego cena w euro nie jest ceną w złotych podzieloną przez kurs?", a: `Bo do kursu Narodowego Banku Polskiego doliczamy ${FX_PCT} procent. Między zamrożeniem kwoty a zaksięgowaniem przelewu mija kilka dni, a kurs w tym czasie się rusza.` },
+      { q: "Jestem w Polsce, ale czytam stronę po angielsku. W jakiej walucie zapłacę?", a: "O walucie decyduje wersja językowa, którą czytasz, a nie kraj, z którego piszesz. Na wersji angielskiej i niemieckiej domyślnie jest euro i przelew SEPA, ale jeżeli masz polskie konto, możesz tam przełączyć się na BLIK albo polski bank i zapłacić w złotych. Przełącz stronę na polski, jeżeli chcesz od razu widzieć ceny w złotych." },
       { q: "Jak długo ważna jest oferta?", a: `${QUOTE_VALIDITY_DAYS} dni od wystawienia. Po tym terminie nie przyjmuje zapłaty i wystawiamy nową.` },
       { q: "Zapłaciłem, i co dalej?", a: "Dostajesz maila z potwierdzeniem i prywatny odnośnik do strony statusu. Widać na niej etap pracy, a przy wysyłce także numer przesyłki. Zamówienia realizujemy w kolejności wpłat." },
     ],
@@ -177,24 +185,31 @@ const L = {
       "A discount never goes below zero. A code larger than the order brings it to zero, it does not create a credit.",
       "One code per order.",
     ],
-    methodsTitle: "Payment methods",
-    methodsRows: [
-      ["BLIK", "A code from your banking app. The fastest route.", "PLN"],
-      ["Instant bank transfer", "Over twenty Polish banks, through the Autopay provider.", "PLN"],
-      ["SEPA transfer", "For customers reading the site in English and German. We show the account number once the order is placed and send it by e-mail.", "EUR"],
-      ["Personal pickup", "The pickup itself is free. Payment still goes through the routes above.", ""],
+    plTitle: "Paying from Poland, in złoty",
+    plLead: "This is how payment works on the Polish version of the site. Prices are in złoty and we charge in złoty. There is no currency choice and no foreign transfer here, because both would only be noise.",
+    plRows: [
+      ["BLIK", "A code from your banking app. The fastest route."],
+      ["Instant bank transfer", "Over twenty Polish banks. BLIK sits on top and the banks hide behind one row with a search box, so nobody has to scroll a long list."],
     ],
-    noMethods: "What is not available: card payments, Google Pay, Apple Pay and cash on delivery.",
-    currencyTitle: "Currency",
-    currencyBody: [
-      "The Polish site shows prices in złoty and charges in złoty.",
-      "The English and German site shows prices in euro. The amount comes from the złoty price at the National Bank of Poland rate, increased by {fx} percent.",
-      "That markup is not a hidden margin. Several days pass between freezing the amount and the transfer clearing, and the rate moves in the meantime. The markup covers that difference and the cost of the currency conversion on our side.",
+    plNote: "The payment confirms immediately and we start work immediately. Goods are reserved for 20 minutes, the time needed to finish paying. An abandoned cart takes nothing: the reservation expires on its own.",
+    euTitle: "Paying from abroad, in euro",
+    euLead: "This is how payment works on the English and German versions of the site. Prices are in euro and we settle by SEPA transfer to our euro account.",
+    euRows: [
+      ["SEPA transfer", "We show the account number once the order is placed and send it by e-mail. The payment reference is the order number."],
+      ["BLIK or a Polish bank, if you prefer", "Instant payment can be chosen on these versions too. It makes sense if you hold a Polish account: settlement then runs in złoty, as above."],
     ],
+    euNote: "We confirm an incoming transfer by hand, because a foreign transfer does not report back to us automatically. The amount and the reservation hold for 3 business days. If the payment has not cleared by the fourth business day, the reservation is released and the goods go back on sale. The lead time runs from the money clearing, not from the order being placed.",
+    euFxTitle: "Where the euro amount comes from",
+    euFx: [
+      "The amount comes from the złoty price at the National Bank of Poland rate, increased by {fx} percent.",
+      "That markup is not a hidden margin. Days pass between freezing the amount and the transfer clearing, and the rate moves in the meantime. The markup covers that difference and the cost of the conversion on our side.",
+      "We freeze the euro amount and the rate at the moment the order is placed. A later move in the rate does not change what you have to send.",
+    ],
+    noMethods: "Whichever version of the site you use: there are no card payments, no Google Pay, no Apple Pay and no cash on delivery. Personal pickup is free, but the payment itself still goes one of the routes above.",
     timeTitle: "Deadlines",
     timeRows: [
-      ["Reservation with instant payment", "20 minutes"],
-      ["Reservation with a euro transfer", "3 business days; on the fourth the goods go back on sale"],
+      ["Goods reserved, paying from Poland", "20 minutes"],
+      ["Goods reserved, euro transfer from abroad", "3 business days; on the fourth the goods go back on sale"],
       ["Validity of an offer agreed with a person", `${QUOTE_VALIDITY_DAYS} days`],
       ["Validity of a binding calculator amount", "7 days"],
     ],
@@ -231,6 +246,7 @@ const L = {
       { q: "Where do I enter a discount code?", a: "When buying in the shop, in the field under the order summary. When paying for an offer, on the offer page before moving to payment. You see the discount before paying; we never refund it afterwards." },
       { q: "Does a discount cover delivery?", a: "No. A code comes off the order items only and never lowers the delivery cost." },
       { q: "Why is the euro price not the złoty price divided by the rate?", a: `Because we add ${FX_PCT} percent to the National Bank of Poland rate. Several days pass between freezing the amount and the transfer clearing, and the rate moves in the meantime.` },
+      { q: "I am in Poland but reading the site in English. Which currency will I pay in?", a: "The currency follows the language version you are reading, not the country you write from. English and German default to euro and a SEPA transfer, but if you hold a Polish account you can switch there to BLIK or a Polish bank and pay in złoty. Switch the site to Polish if you would rather see złoty prices from the start." },
       { q: "How long is an offer valid?", a: `${QUOTE_VALIDITY_DAYS} days from issue. After that it takes no payment and we issue a new one.` },
       { q: "I have paid, what now?", a: "You get a confirmation e-mail and a private link to the status page. It shows the stage of the work and, once shipped, the tracking number. We work in the order payments arrived." },
     ],
@@ -281,24 +297,31 @@ const L = {
       "Ein Rabatt geht nie unter null. Ein Code über dem Bestellwert senkt ihn auf null und erzeugt kein Guthaben.",
       "Ein Code pro Bestellung.",
     ],
-    methodsTitle: "Zahlungsmethoden",
-    methodsRows: [
-      ["BLIK", "Ein Code aus Ihrer Banking-App. Der schnellste Weg.", "PLN"],
-      ["Sofortüberweisung", "Über zwanzig polnische Banken, über den Anbieter Autopay.", "PLN"],
-      ["SEPA-Überweisung", "Für Kundinnen und Kunden, die die Seite auf Englisch oder Deutsch lesen. Die Kontonummer zeigen wir nach der Bestellung und senden sie per E-Mail.", "EUR"],
-      ["Persönliche Abholung", "Die Abholung selbst ist kostenlos. Die Zahlung läuft trotzdem über die Wege oben.", ""],
+    plTitle: "Zahlung aus Polen, in Złoty",
+    plLead: "So läuft die Zahlung auf der polnischen Version der Seite. Preise sind in Złoty und wir buchen in Złoty ab. Es gibt hier keine Währungswahl und keine Auslandsüberweisung, beides wäre nur Rauschen.",
+    plRows: [
+      ["BLIK", "Ein Code aus Ihrer Banking-App. Der schnellste Weg."],
+      ["Sofortüberweisung", "Über zwanzig polnische Banken. BLIK steht oben, die Banken verbergen sich hinter einer Zeile mit Suchfeld, damit niemand eine lange Liste scrollen muss."],
     ],
-    noMethods: "Was es nicht gibt: Kartenzahlung, Google Pay, Apple Pay und Nachnahme.",
-    currencyTitle: "Währung",
-    currencyBody: [
-      "Die polnische Seite zeigt Preise in Złoty und bucht in Złoty ab.",
-      "Die englische und deutsche Seite zeigt Preise in Euro. Der Betrag entsteht aus dem Złoty-Preis zum Kurs der Polnischen Nationalbank, erhöht um {fx} Prozent.",
-      "Dieser Aufschlag ist keine versteckte Marge. Zwischen dem Einfrieren des Betrags und dem Eingang der Überweisung vergehen einige Tage, und der Kurs bewegt sich in dieser Zeit. Der Aufschlag deckt diese Differenz und die Kosten der Umrechnung auf unserer Seite.",
+    plNote: "Die Zahlung wird sofort bestätigt und wir beginnen sofort mit der Arbeit. Die Ware reservieren wir 20 Minuten, also für die Dauer des Bezahlvorgangs. Ein abgebrochener Warenkorb nimmt nichts weg: die Reservierung verfällt von selbst.",
+    euTitle: "Zahlung aus dem Ausland, in Euro",
+    euLead: "So läuft die Zahlung auf der englischen und deutschen Version der Seite. Preise sind in Euro, abgerechnet wird per SEPA-Überweisung auf unser Eurokonto.",
+    euRows: [
+      ["SEPA-Überweisung", "Die Kontonummer zeigen wir nach der Bestellung und senden sie per E-Mail. Verwendungszweck ist die Bestellnummer."],
+      ["BLIK oder eine polnische Bank, falls gewünscht", "Die Sofortzahlung lässt sich auch auf diesen Versionen wählen. Sinnvoll ist das mit einem polnischen Konto: die Abrechnung läuft dann in Złoty wie oben."],
     ],
+    euNote: "Den Zahlungseingang bestätigen wir von Hand, weil eine Auslandsüberweisung nicht automatisch an uns zurückmeldet. Betrag und Reservierung gelten 3 Werktage. Ist die Zahlung am vierten Werktag nicht eingegangen, verfällt die Reservierung und die Ware geht zurück in den Verkauf. Die Lieferzeit rechnen wir ab Zahlungseingang, nicht ab Bestellung.",
+    euFxTitle: "Woher der Eurobetrag kommt",
+    euFx: [
+      "Der Betrag entsteht aus dem Złoty-Preis zum Kurs der Polnischen Nationalbank, erhöht um {fx} Prozent.",
+      "Dieser Aufschlag ist keine versteckte Marge. Zwischen dem Einfrieren des Betrags und dem Zahlungseingang vergehen Tage, und der Kurs bewegt sich in dieser Zeit. Der Aufschlag deckt diese Differenz und die Kosten der Umrechnung auf unserer Seite.",
+      "Eurobetrag und Kurs frieren wir im Moment der Bestellung ein. Eine spätere Kursbewegung ändert nichts an dem, was Sie überweisen müssen.",
+    ],
+    noMethods: "Unabhängig von der Sprachversion: keine Kartenzahlung, kein Google Pay, kein Apple Pay, keine Nachnahme. Die persönliche Abholung ist kostenlos, die Zahlung selbst läuft aber weiterhin über einen der Wege oben.",
     timeTitle: "Fristen",
     timeRows: [
-      ["Reservierung bei Sofortzahlung", "20 Minuten"],
-      ["Reservierung bei Überweisung in Euro", "3 Werktage; am vierten geht die Ware zurück in den Verkauf"],
+      ["Warenreservierung, Zahlung aus Polen", "20 Minuten"],
+      ["Warenreservierung, Euro-Überweisung aus dem Ausland", "3 Werktage; am vierten geht die Ware zurück in den Verkauf"],
       ["Gültigkeit eines persönlich vereinbarten Angebots", `${QUOTE_VALIDITY_DAYS} Tage`],
       ["Gültigkeit eines verbindlichen Kalkulatorbetrags", "7 Tage"],
     ],
@@ -335,6 +358,7 @@ const L = {
       { q: "Wo gebe ich einen Rabattcode ein?", a: "Beim Kauf im Shop im Feld unter der Bestellübersicht. Bei Zahlung für ein Angebot auf der Angebotsseite, vor dem Wechsel zur Zahlung. Den Rabatt sehen Sie vor der Zahlung, im Nachhinein erstatten wir ihn nie." },
       { q: "Gilt ein Rabatt auch für den Versand?", a: "Nein. Ein Code geht ausschließlich von den Auftragspositionen ab und senkt nie die Versandkosten." },
       { q: "Warum ist der Europreis nicht der Złoty-Preis geteilt durch den Kurs?", a: `Weil wir auf den Kurs der Polnischen Nationalbank ${FX_PCT} Prozent aufschlagen. Zwischen dem Einfrieren des Betrags und dem Eingang der Überweisung vergehen einige Tage, und der Kurs bewegt sich in dieser Zeit.` },
+      { q: "Ich bin in Polen, lese die Seite aber auf Deutsch. In welcher Währung zahle ich?", a: "Über die Währung entscheidet die Sprachversion, die Sie lesen, nicht das Land, aus dem Sie schreiben. Auf Englisch und Deutsch sind Euro und SEPA-Überweisung voreingestellt; mit einem polnischen Konto können Sie dort auf BLIK oder eine polnische Bank umschalten und in Złoty zahlen. Wechseln Sie die Seite auf Polnisch, wenn Sie Złoty-Preise von Anfang an sehen möchten." },
       { q: "Wie lange ist ein Angebot gültig?", a: `${QUOTE_VALIDITY_DAYS} Tage ab Ausstellung. Danach nimmt es keine Zahlung mehr an und wir stellen ein neues aus.` },
       { q: "Ich habe bezahlt, wie geht es weiter?", a: "Sie erhalten eine Bestätigungsmail und einen privaten Link zur Statusseite. Sie zeigt den Arbeitsstand und nach dem Versand die Sendungsnummer. Wir arbeiten in der Reihenfolge der Zahlungseingänge." },
     ],
@@ -469,28 +493,53 @@ export default function Payments() {
               </ul>
             </Karta>
 
-            <Karta icon={Wallet} title={l.methodsTitle} innerRef={methodsRef}>
+            {/* Dwa osobne bloki, a nie jedna lista metod z kolumna waluty.
+                Klient z Polski i klient z zagranicy maja inna walute, inne
+                metody, inny czas rezerwacji i inny moment, od ktorego liczy sie
+                termin realizacji. Zlepione w jedna tabele zmuszaly kazdego
+                z nich do czytania polowy, ktora go nie dotyczy. */}
+            <Karta icon={Wallet} title={l.plTitle} innerRef={methodsRef}>
+              <p className="text-neutral-400 text-sm leading-relaxed mb-4">{l.plLead}</p>
               <div className="divide-y divide-neutral-800">
-                {l.methodsRows.map(([name, desc, cur], i) => (
+                {l.plRows.map(([name, desc], i) => (
                   <div key={i} className="py-3 first:pt-0 last:pb-0">
                     <div className="flex items-baseline justify-between gap-3">
                       <span className="text-sm text-neutral-200">{name}</span>
-                      {cur ? <span className="text-amber-400 text-xs font-medium shrink-0">{cur}</span> : null}
+                      <span className="text-amber-400 text-xs font-medium shrink-0">PLN</span>
                     </div>
                     <p className="text-neutral-500 text-xs leading-relaxed mt-0.5">{desc}</p>
                   </div>
                 ))}
               </div>
-              <p className="text-neutral-500 text-xs leading-relaxed mt-4 pt-4 border-t border-neutral-800">{l.noMethods}</p>
+              <p className="text-neutral-500 text-xs leading-relaxed mt-4 pt-4 border-t border-neutral-800">{l.plNote}</p>
             </Karta>
 
-            <Karta icon={Coins} title={l.currencyTitle} innerRef={currencyRef}>
-              {l.currencyBody.map((p, i) => (
-                <p key={i} className="text-neutral-400 text-sm leading-relaxed mb-2 last:mb-0">
-                  {p.replace("{fx}", String(FX_PCT))}
-                </p>
-              ))}
+            <Karta icon={Globe} title={l.euTitle} innerRef={currencyRef}>
+              <p className="text-neutral-400 text-sm leading-relaxed mb-4">{l.euLead}</p>
+              <div className="divide-y divide-neutral-800">
+                {l.euRows.map(([name, desc], i) => (
+                  <div key={i} className="py-3 first:pt-0 last:pb-0">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="text-sm text-neutral-200">{name}</span>
+                      <span className="text-blue-400 text-xs font-medium shrink-0">{i === 0 ? "EUR" : "PLN"}</span>
+                    </div>
+                    <p className="text-neutral-500 text-xs leading-relaxed mt-0.5">{desc}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-neutral-500 text-xs leading-relaxed mt-4 pt-4 border-t border-neutral-800">{l.euNote}</p>
+
+              <div className="mt-4 rounded-lg border border-blue-400/25 bg-blue-400/[0.05] p-4">
+                <div className="text-blue-300 text-xs font-medium mb-2">{l.euFxTitle}</div>
+                {l.euFx.map((p, i) => (
+                  <p key={i} className="text-neutral-400 text-sm leading-relaxed mb-2 last:mb-0">
+                    {p.replace("{fx}", String(FX_PCT))}
+                  </p>
+                ))}
+              </div>
             </Karta>
+
+            <p className="text-neutral-500 text-xs leading-relaxed mb-5 px-1">{l.noMethods}</p>
 
             <Karta icon={Clock} title={l.timeTitle} innerRef={timeRef}>
               <div className="divide-y divide-neutral-800">
