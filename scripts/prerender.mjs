@@ -39,6 +39,7 @@ const STATIC_ROUTES = [
   "/shop/jewelry",
   "/shop/studio",
   "/shipping",
+  "/payments",
   "/privacy",
   "/reviews",
   "/b2b",

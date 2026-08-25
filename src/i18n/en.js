@@ -49,6 +49,9 @@ export default {
       { label: "About", to: "/about/" },
       // Sklep przed dokumentami, bo to jedyna pozycja prowadzaca do zakupu.
       { label: "Shop", to: "/shop/" },
+      // Proces platnosci tuz pod sklepem: klient, ktory wlasnie zobaczyl, gdzie
+      // kupic, najczesciej pyta wtedy, jak sie za to placi.
+      { label: "How payment works", to: "/payments/" },
       { label: "Terms of Service", to: "/terms/" },
       { label: "Warranty", to: "/warranty/" },
       { label: "Returns Policy", to: "/returns/" },

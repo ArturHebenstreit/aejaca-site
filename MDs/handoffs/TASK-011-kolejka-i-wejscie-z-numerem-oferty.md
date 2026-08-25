@@ -54,7 +54,8 @@ Trzy mierzalne braki.
   sekcja "Popraw wiersz", formularz usuwania, filtr stanu, adres powrotu
   w kazdym formularzu.
 - `src/components/shop/OfferNumberEntry.jsx` (nowy), `src/pages/Shop.jsx`,
-  `src/pages/Cart.jsx`: pole "Masz numer oferty?".
+  `src/pages/Cart.jsx`: pole "Masz numer oferty?". W koszyku widoczne w obu
+  stanach: przy pustym zamiast zawartosci, przy pelnym pod podsumowaniem.
 - `scripts/test-production-queue.mjs`: sekcje 5 i 6.
 - `MDs/decisions/ADR-0014-poprawianie-i-usuwanie-w-kolejce.md`,
   `MDs/AEJaCA_Brand_Reference.md` (wersja 5.5), `public/llms.txt`,
@@ -117,8 +118,8 @@ Trzy mierzalne braki.
 
 ## Warunek uznania zadania za gotowe
 
-1. Pole numeru oferty na `/shop/` i w pustym koszyku przenosi na `/oferta/`
-   z numerem w adresie, w kazdym z trzech jezykow.
+1. Pole numeru oferty na `/shop/` i w koszyku, pustym i pelnym, przenosi na
+   `/oferta/` z numerem w adresie, w kazdym z trzech jezykow.
 2. Sam numer nadal nie wystarcza do zobaczenia oferty.
 3. Zadna korekta nie wprowadza zamowienia nieoplaconego do etapow pracy.
 4. Cofniecie etapu kasuje stemple etapow po docelowym i nie kasuje docelowego.

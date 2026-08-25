@@ -49,6 +49,9 @@ export default {
       { label: "o Marce", to: "/about/" },
       // Sklep przed dokumentami, bo to jedyna pozycja prowadzaca do zakupu.
       { label: "Sklep", to: "/shop/" },
+      // Proces platnosci tuz pod sklepem: klient, ktory wlasnie zobaczyl, gdzie
+      // kupic, najczesciej pyta wtedy, jak sie za to placi.
+      { label: "Proces płatności", to: "/payments/" },
       // Regulamin przed dokumentami szczegółowymi, bo jest wobec nich nadrzędny.
       { label: "Regulamin", to: "/terms/" },
       { label: "Gwarancja", to: "/warranty/" },

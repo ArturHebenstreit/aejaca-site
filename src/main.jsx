@@ -36,6 +36,7 @@ const OrderStatus = strona(() => import("./pages/OrderStatus.jsx"));
 const QuotePage = strona(() => import("./pages/QuotePage.jsx"));
 const Offer = strona(() => import("./pages/Offer.jsx"));
 const Shipping = strona(() => import("./pages/Shipping.jsx"));
+const Payments = strona(() => import("./pages/Payments.jsx"));
 const ToolsJewelry = strona(() => import("./pages/ToolsJewelry.jsx"));
 const ToolsStudio = strona(() => import("./pages/ToolsStudio.jsx"));
 const AlloyCompositionPage = strona(() => import("./pages/AlloyCompositionPage.jsx"));
@@ -115,6 +116,7 @@ const trasy = (
     <Route path="/quote/" element={<QuotePage />} />
     <Route path="/oferta/" element={<Offer />} />
     <Route path="/shipping/" element={<Shipping />} />
+    <Route path="/payments/" element={<Payments />} />
     <Route path="/toolsjewelry/" element={<ToolsJewelry />} />
     <Route path="/toolsjewelry/alloy-composition/" element={<AlloyCompositionPage />} />
     <Route path="/toolsjewelry/metal-pricing/" element={<MetalPricingPage />} />

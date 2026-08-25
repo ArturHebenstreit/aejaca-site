@@ -403,6 +403,26 @@ export const SEO = {
     },
   },
 
+  payments: {
+    pl: {
+      title: "Proces płatności, AEJaCA",
+      description: "Jak płacisz w AEJaCA krok po kroku: zakup w sklepie, zapłata za ofertę z numerem, metody, waluta, terminy i co dzieje się po zapłacie.",
+      keywords: "proces płatności AEJaCA, BLIK, przelew online, numer oferty, kod rabatowy, płatność za wycenę",
+      ogAlt: "Proces płatności w AEJaCA",
+    },
+    en: {
+      title: "How payment works, AEJaCA",
+      description: "Paying AEJaCA step by step: buying in the shop, paying for an offer by its number, methods, currency, deadlines and what happens after payment.",
+      keywords: "AEJaCA payment process, BLIK, instant transfer, offer number, discount code, paying a quote",
+      ogAlt: "How payment works at AEJaCA",
+    },
+    de: {
+      title: "Zahlungsablauf, AEJaCA",
+      description: "Bezahlen bei AEJaCA Schritt für Schritt: Kauf im Shop, Zahlung für ein Angebot mit Nummer, Methoden, Währung, Fristen und was nach der Zahlung passiert.",
+      keywords: "AEJaCA Zahlungsablauf, BLIK, Sofortüberweisung, Angebotsnummer, Rabattcode, Angebot bezahlen",
+      ogAlt: "Zahlungsablauf bei AEJaCA",
+    },
+  },
   shipping: {
     pl: {
       title: "Wysyłka i dostawa, AEJaCA",

@@ -14,6 +14,7 @@ const LABELS = {
   pl: {
     heading: "Dokumenty powiązane",
     terms: "Regulamin",
+    payments: "Proces płatności",
     returns: "Zwroty i wymiany",
     warranty: "Gwarancja",
     shipping: "Wysyłka i dostawa",
@@ -22,6 +23,7 @@ const LABELS = {
   en: {
     heading: "Related documents",
     terms: "Terms of Service",
+    payments: "How payment works",
     returns: "Returns & exchanges",
     warranty: "Warranty",
     shipping: "Shipping & delivery",
@@ -30,6 +32,7 @@ const LABELS = {
   de: {
     heading: "Zugehörige Dokumente",
     terms: "AGB",
+    payments: "Zahlungsablauf",
     returns: "Rückgabe und Umtausch",
     warranty: "Garantie",
     shipping: "Versand und Lieferung",
@@ -39,6 +42,7 @@ const LABELS = {
 
 const DOCS = [
   { key: "terms", path: "/terms/" },
+  { key: "payments", path: "/payments/" },
   { key: "returns", path: "/returns/" },
   { key: "warranty", path: "/warranty/" },
   { key: "shipping", path: "/shipping/" },
