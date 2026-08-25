@@ -45,6 +45,11 @@ Kazdy filar: ikona/grafika (3.5), naglowek, 2-3 zdania, widelki cen, "co otrzymu
   Ag 925 / Au 585; obrobka (tumbler, poler), opcjonalnie rodowanie/zlocenie, setting kamieni pod mikroskopem
 - Cennik: prototyp w srebrze 180-300 zl + materialu; odlew z wykonczeniem: wycena wg wagi,
   proby i zlozonosci w 24h [UWAGA IMPLEMENTACYJNA: bez stawek za gram, do ustalenia pozniej]
+  [DOPRECYZOWANIE 2026-08-25: ta pozycja dotyczy WYLACZNIE stawek partnerskich B2B.
+  Detaliczny odlew ma juz wycene automatyczna: karta uslugi w sklepie oraz kalkulator
+  sTuDiO (szybka wycena i zakladka "Odlew w metalu") podaja kwote wiazaca dla modelu 3D
+  w kruszcu AEJaCA, ktory miesci sie w kolbie 24 x 24 x 35 mm. Nie czytaj tej linii jako
+  "nie mamy wyceny odlewu".]
 - Cechowanie (WAZNE, doslownie wg decyzji 0.4): "Kazdy wyrob ze zlota lub srebra domyslnie
   oznaczamy znakiem wytworcy AEJaCA i zglaszamy do Urzedu Probierczego pod szyldem AEJaCA -
   otrzymujesz produkt z pelnymi cechami, gotowy do sprzedazy. Po indywidualnych ustaleniach

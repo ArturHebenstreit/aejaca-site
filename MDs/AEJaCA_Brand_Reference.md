@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-25 | Wersja: 5.1*
+*Wygenerowano: 2026-08-25 | Wersja: 5.2*
 
 ---
 
@@ -630,6 +630,12 @@ bo pytał o to samo, co pierwszy krok kalkulatora druku: wybór FDM albo MSLA st
 wiedzieć, że „Druk żywiczny" i „MSLA" to jedno, zanim cokolwiek zobaczył. Zostają cztery kafelki po jednej
 maszynie: Druk 3D, Laser CO2, Laser Fiber, Odlewy żywiczne.
 
+**Piąty kafelek wrócił, z innego powodu (2026-08-25).** „Odlew w metalu" to nie jest to samo
+pytanie zadane drugi raz, tylko osobna usługa: inny materiał, inny silnik wyceny i inna granica
+maszyny (kolba 24 x 24 x 35 mm zamiast pola roboczego drukarki). Powód zdjęcia kafelka „Druk
+żywiczny" go nie dotyczy, bo nic nie dubluje. Aktualna lista: Druk 3D, Laser CO2, Laser Fiber,
+Odlewy żywiczne, Odlew w metalu. Siatka kafelków idzie od dużego ekranu na pięć kolumn.
+
 Odnośnik `?tab=resin_msla` **dalej działa** i otwiera kalkulator druku od razu na MSLA. Stoi w karcie usługi
 w sklepie, w mapie opcji zaawansowanych i w linkach, które ktoś może mieć u siebie; gdyby przestał być
 rozpoznawany, panel otwierałby się w szybkiej wycenie na FDM i nikt by tego nie zgłosił jako błędu, bo
@@ -952,6 +958,12 @@ wielkości opisuje gabaryt, a nie objętość kruszcu, a pierścionek „jak mon
 w większości powietrze. Powyżej dziesięciu sztuk odlew jest serią produkcyjną i też
 idzie do rozmowy. Wykończenie mapuje się z jakości: prototyp na surowy odlew, standard
 na odcięcie i oczyszczenie, premium na wykończenie jubilerskie.
+
+**Model ponad kolbą mówi, dlaczego nie ma ceny (od 2026-08-25).** Oba tryby pokazują
+ostrzeżenie z granicą i przycisk zmniejszenia do największej mieszczącej się wielkości, tym samym
+wzorcem co pole robocze drukarki i lasera. Wcześniej tryb zaawansowany ostrzegał, a szybka wycena
+po prostu przestawała podawać kwotę i nie mówiła dlaczego, więc ten sam plik kończył w dwóch
+trybach inaczej i wyglądało to na usterkę jednego z nich.
 
 **Widełki obejmują dopłaty.** `calcNew` liczy zakres z ceny sprzed doliczenia
 wzorca i wykończenia, więc rdzeń przesuwa widełki o te dopłaty. Bez tego

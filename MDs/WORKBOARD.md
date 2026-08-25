@@ -18,8 +18,7 @@ Workboard jest koordynacją umowną między uczestnikami, a nie techniczną blok
 
 | ID | Cel | Wlasciciel | Branch i worktree | Zastrzezone pliki | Stan | Handoff |
 |---|---|---|---|---|---|---|
-| TASK-008 | Porzadek po scaleniu siedmiu zadan: waluta w rozpisce odlewu, format ADR, archiwum workboardu | Claude Code | `claude/fix-api-error-oge1r` | `src/pricing/preciousMetalCasting.js` i mirror, `scripts/test-precious-metal-casting.mjs`, `scripts/check-adr.mjs`, `package.json`, naglowki `MDs/decisions/ADR-000{5,6,7,10}.md`, `MDs/WORKBOARD.md` | review | `MDs/handoffs/TASK-008-porzadek-po-scaleniu.md` |
-| TASK-009 | Odlew z metali szlachetnych jako piata zakladka kalkulatora sTuDiO | Claude Code | `claude/fix-api-error-oge1r` | `src/components/calculators/MetalCastCalc.jsx`, `src/components/StudioCalculator.jsx`, `src/pricing/preciousMetalCasting.js` i mirror, `scripts/test-precious-metal-casting.mjs`, `public/llms.txt`, `public/sitemap.xml`, `chat-api/context.js`, `MDs/AEJaCA_Brand_Reference.md`, ADR-0011 i handoff | review | `MDs/handoffs/TASK-009-odlew-w-kalkulatorze.md` |
+| TASK-009 | Odlew z metali szlachetnych w kalkulatorze sTuDiO i w szybkiej wycenie | Claude Code | `claude/fix-api-error-oge1r` | `src/components/calculators/MetalCastCalc.jsx`, `src/components/StudioCalculator.jsx`, `src/pricing/preciousMetalCasting.js` i mirror, `scripts/test-precious-metal-casting.mjs`, `public/llms.txt`, `public/sitemap.xml`, `chat-api/context.js`, `MDs/AEJaCA_Brand_Reference.md`, ADR-0011 i handoff | review | `MDs/handoffs/TASK-009-odlew-w-kalkulatorze.md` |
 
 Dozwolone stany: `planned`, `active`, `blocked`, `review`, `done`.
 
@@ -27,7 +26,6 @@ Dozwolone stany: `planned`, `active`, `blocked`, `review`, `done`.
 
 | ID | Branch | Recenzent | Wymagane kontrole | Wynik |
 |---|---|---|---|---|
-| TASK-008 | `claude/fix-api-error-oge1r` | Codex | rozpiska odlewu w jednej walucie, kontrola negatywna testu waluty, `check-adr`, pelny build | oczekuje |
 | TASK-009 | `claude/fix-api-error-oge1r` | Codex | zgodnosc kwoty kalkulatora i sklepu, widelki obejmujace kwote wiazaca, slownik progow ilosci, synchronizacja dokumentacji, pelny build | oczekuje |
 
 ## Archiwum
@@ -43,6 +41,7 @@ Po scaleniu zachowaj jeden krotki wiersz: ID, data, branch, commit scalajacy i A
 | TASK-005 | 2026-08-24 | `codex/ring-ux-signet-refinement` | `d2d07ce` (PR #281) | ADR-0007, ADR-0008 |
 | TASK-006 | 2026-08-24 | `codex/ring-ux-signet-refinement` | `d2d07ce` (PR #281) | ADR-0009 |
 | TASK-007 | 2026-08-24 | `codex/precious-metal-casting-service` | `001c95f` (PR #284) | ADR-0010 |
+| TASK-008 | 2026-08-25 | `claude/fix-api-error-oge1r` | `ea34c61` (PR #285) | brak, porzadki i guard formatu |
 
 Recenzja po scaleniu, 2026-08-25, `001c95f`, Claude Code: pelny build przechodzi
 (98 stron, zero bledow), czternascie zestawow testow `chat-api` zielonych, mirrory
@@ -51,6 +50,13 @@ synchronizacja `llms.txt`, `sitemap.xml`, `chat-api/context.js`, `seoData.js`,
 regulaminu i Brand Reference dla odlewu kompletna. Kreator `/toolsjewelry/kreator/`
 slusznie nie jest w sitemapie ani w `llms.txt`, bo jest szkicem z `noindex`.
 Znaleziska poszly do TASK-008 oraz do listy dla Codexa nizej.
+
+## Stan TASK-009
+
+Scalony w czesci. `ea34c61` (PR #285) i `226a98c` (PR #286) wniosly kalkulator,
+szybka wycene i synchronizacje dokumentacji. Poza `main` zostaje jeszcze
+ostrzezenie o kolbie w szybkiej wycenie, zdjecia kafelkow wariantu i poprawka
+obwodki napisu w `HeroCards`, razem z uzupelnieniem SEO strony `/studio/`.
 
 ## Otwarte punkty dla Codexa
 
