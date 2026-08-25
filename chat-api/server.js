@@ -46,7 +46,7 @@ import { orderAccessAllowed } from "./orderAccess.js";
 import { findLockers, LockerError } from "./lockers.js";
 import { runRetention } from "./retention.js";
 import { requireAdmin, requireInvalidateToken, requireSecret, secretMatches } from "./auth.js";
-import { ETAPY_PRACY, przejscie, znanyEtap } from "./productionQueue.js";
+import { ETAPY_PRACY, przejscie, znanyEtap, korekta } from "./productionQueue.js";
 import { extractIP, isPrivateIP, TRUSTED_PROXY_HOPS, TRUST_CLOUDFLARE_HEADERS } from "./clientIp.js";
 import { createLimiter, limitBy } from "./rateLimit.js";
 import { issueDownloads, takeDownload, downloadName } from "./digitalDelivery.js";
@@ -3417,6 +3417,16 @@ app.get("/api/orders/queue", async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
 
+  // Domyslnie kolejka pokazuje to, co jeszcze czeka na prace. `?status=`
+  // pozwala siegnac po zakonczone i anulowane, bo inaczej omylkowe kliknieciecie
+  // "zrobione" znika z ekranu i nie ma czego poprawic.
+  const DOZWOLONE_STANY = ["paid", "in_production", "shipped", "completed", "cancelled"];
+  const zadane = String(req.query.status || "").split(",").map((x) => x.trim()).filter(Boolean);
+  const stany = zadane.length
+    ? zadane.filter((x) => DOZWOLONE_STANY.includes(x))
+    : ["paid", "in_production", "shipped"];
+  if (!stany.length) return res.status(400).json({ error: "Nie znamy takiego stanu" });
+
   const { rows } = await pool.query(
     `SELECT o.id, o.order_ref, o.status, o.kind, o.lang, o.total_grosze,
             o.customer_email, o.customer_name, o.customer_phone,
@@ -3426,9 +3436,10 @@ app.get("/api/orders/queue", async (req, res) => {
             o.tracking_number, o.production_note,
             (SELECT q.quote_ref FROM quotes q WHERE q.converted_order_id = o.id) AS quote_ref
        FROM orders o
-      WHERE o.status IN ('paid','in_production','shipped')
+      WHERE o.status = ANY($1::text[])
       ORDER BY o.paid_at ASC NULLS LAST
-      LIMIT 200`
+      LIMIT 200`,
+    [stany]
   );
   if (!rows.length) return res.json({ ok: true, orders: [], counts: {} });
 
@@ -3527,6 +3538,90 @@ app.post("/api/orders/:ref/production", express.json({ limit: "8kb" }), async (r
 
   console.log(`[kolejka] ${ref}: ${order.status} -> ${etap}${numer ? `, list przewozowy ${numer}` : ""}`);
   res.json({ ok: true, orderRef: ref, status: zmiana.rows[0].status, at: zmiana.rows[0].stempel });
+});
+
+/**
+ * Poprawienie wiersza kolejki: numer przesylki, notatka i korekta etapu.
+ *
+ * Osobno od `/production`, bo tamto PCHA zamowienie naprzod wedlug wypisanych
+ * przejsc, a to poprawia pomylke. Korekta nie jest furtka: `korekta()` wpuszcza
+ * wylacznie zamowienie, ktore juz jest oplacone, i przy cofnieciu czysci
+ * stemple etapow, ktore przestaly byc prawda. Zamowienie cofniete z "wyslane"
+ * nie moze dalej niesc daty wysylki, bo nic nie wyjechalo.
+ */
+app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const ref = String(req.params.ref || "");
+  const { rows } = await pool.query("SELECT id, status FROM orders WHERE order_ref = $1", [ref]);
+  const order = rows[0];
+  if (!order) return res.status(404).json({ error: "Zamowienie nie istnieje" });
+
+  const etap = req.body?.stage ? String(req.body.stage) : null;
+  // Puste pole znaczy "wyczysc", brak pola znaczy "nie ruszaj". Bez tego
+  // rozroznienia nie da sie skasowac blednego numeru przesylki.
+  const numer = req.body?.trackingNumber === undefined
+    ? undefined
+    : String(req.body.trackingNumber || "").trim().slice(0, 64) || null;
+  const notatka = req.body?.note === undefined
+    ? undefined
+    : String(req.body.note || "").slice(0, 2000) || null;
+
+  const zmiany = [];
+  const wartosci = [order.id];
+  let czyszczone = [];
+
+  if (etap) {
+    const regula = korekta(order.status, etap);
+    if (!regula.ok) {
+      return res.status(409).json({
+        error: regula.powod === "no_change"
+          ? `Zamowienie juz ma etap ${etap}`
+          : `Nie da sie poprawic zamowienia ze stanu ${order.status} na ${etap}`,
+        code: regula.powod,
+      });
+    }
+    wartosci.push(etap);
+    zmiany.push(`status = $${wartosci.length}`);
+    const pole = ETAPY_PRACY[etap]?.pole;
+    if (pole) zmiany.push(`${pole} = COALESCE(${pole}, NOW())`);
+    czyszczone = regula.doWyczyszczenia;
+    for (const kolumna of czyszczone) zmiany.push(`${kolumna} = NULL`);
+    // Cofniecie sprzed wysylki zabiera tez list przewozowy, bo nie ma czego
+    // sledzic. Jawny numer w tym samym zadaniu i tak wygra, bo idzie nizej.
+    if (czyszczone.includes("shipped_at")) zmiany.push("tracking_number = NULL");
+  }
+
+  if (numer !== undefined) {
+    wartosci.push(numer);
+    zmiany.push(`tracking_number = $${wartosci.length}`);
+  }
+  if (notatka !== undefined) {
+    wartosci.push(notatka);
+    zmiany.push(`production_note = $${wartosci.length}`);
+  }
+  if (!zmiany.length) return res.status(400).json({ error: "Nie ma czego zmienic", code: "no_change" });
+
+  const zapis = await pool.query(
+    `UPDATE orders SET ${zmiany.join(", ")}, updated_at = NOW()
+      WHERE id = $1 AND status = $${wartosci.length + 1}
+      RETURNING status, tracking_number, production_note`,
+    [...wartosci, order.status]
+  );
+  if (!zapis.rowCount) {
+    return res.status(409).json({ error: "Stan zamowienia zmienil sie w miedzyczasie", code: "state_changed" });
+  }
+
+  console.log(`[kolejka] ${ref}: poprawka${etap ? ` ${order.status} -> ${etap}` : ""}${czyszczone.length ? `, wyczyszczone ${czyszczone.join(", ")}` : ""}`);
+  res.json({
+    ok: true,
+    orderRef: ref,
+    status: zapis.rows[0].status,
+    trackingNumber: zapis.rows[0].tracking_number,
+    productionNote: zapis.rows[0].production_note,
+    cleared: czyszczone,
+  });
 });
 
 app.get("/api/orders/awaiting-transfer", async (req, res) => {
@@ -3693,17 +3788,37 @@ app.post("/api/orders/:ref/cancel", express.json({ limit: "4kb" }), async (req, 
 });
 
 /**
- * Skasowanie zamowienia, ktore nigdy nie zylo.
+ * Skasowanie zamowienia.
  *
- * Do pomylek i testow, nie do sprzatania historii. Wiersz zamowienia ciagnie za
- * soba kaskadowo pozycje, rezerwacje i uzycia kodu, wiec skasowanie czegos, co
+ * Domyslnie wolno skasowac wylacznie zamowienie, ktore nigdy nie zylo: do
+ * pomylek i testow, nie do sprzatania historii. Wiersz ciagnie za soba
+ * kaskadowo pozycje, rezerwacje i uzycia kodu, wiec skasowanie czegos, co
  * zdazylo sie wydarzyc, wymazuje po cichu dowody. Warunki w orderCleanup.js.
+ *
+ * `force: true` LAMIE te warunki. Jest to decyzja wlasciciela z 2026-08-26,
+ * zapisana w ADR-0014, podjeta po tym, jak zglosilem sprzecznosc z polityka
+ * retencji (`chat-api/retention.js` zamowienie ANONIMIZUJE, a nie kasuje,
+ * i trzyma je szesc lat). Wymaga przepisania numeru zamowienia i zostawia
+ * w logu liste przelamanych warunkow, zeby dalo sie pozniej odtworzyc, co
+ * dokladnie zniknelo i mimo czego.
+ *
+ * Co przezywa kasowanie z `force`: `payment_notifications`, bo wiaza sie
+ * z zamowieniem po numerze, a nie kluczem obcym. Slad wplaty zostaje, tyle ze
+ * bez wiersza zamowienia obok. Towar NIE wraca na stan, bo zszedl przy
+ * zaplacie, a kasowanie nie jest zwrotem i nie udajemy, ze jest.
  */
-app.delete("/api/orders/:ref", async (req, res) => {
+app.delete("/api/orders/:ref", express.json({ limit: "8kb" }), async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
 
   const ref = String(req.params.ref || "");
+  const force = req.body?.force === true;
+  // Potwierdzenie dotyczy WYLACZNIE lamania warunkow. Zwykle kasowanie zostaje
+  // takie, jakie bylo, bo panel przelewow wola te trasa od dawna i nie ma
+  // powodu psuc mu dzialania.
+  if (force && String(req.body?.confirmRef || "").trim() !== ref) {
+    return res.status(400).json({ error: "Przepisz numer zamowienia, zeby potwierdzic", code: "confirm_mismatch" });
+  }
   const { rows } = await pool.query(
     `SELECT o.id, o.status, o.paid_at, o.fulfilled_at, o.transfer_confirmed_at,
             (SELECT COUNT(*)::INTEGER FROM payment_notifications n WHERE n.order_ref = o.order_ref) AS payment_notifications,
@@ -3729,7 +3844,7 @@ app.delete("/api/orders/:ref", async (req, res) => {
     childOrders: o.child_orders,
     linkedQuotes: o.linked_quotes,
   });
-  if (blockers.length) {
+  if (blockers.length && !force) {
     return res.status(409).json({
       error: `Tego zamowienia nie da sie skasowac, bo ${blockers.join(", ")}. Zamiast tego zrezygnuj z niego.`,
       code: "linked",
@@ -3741,10 +3856,38 @@ app.delete("/api/orders/:ref", async (req, res) => {
   // dostepnosc policzona w tej samej sekundzie nie zalezala od kolejnosci kaskady.
   await releaseOrderReservations(pool, o.id);
   await releaseOrderRedemptions(pool, o.id);
-  await pool.query(`DELETE FROM orders WHERE id = $1`, [o.id]);
-  console.log(`[zamowienia] ${ref} skasowane recznie (status ${o.status})`);
 
-  res.json({ ok: true, orderRef: ref, deleted: true });
+  // `releaseOrderRedemptions` zwalnia wylacznie rezerwacje NIEZUZYTE, bo tylko
+  // takie widzi zwykla sciezka kasowania: zuzyty kod jest jej blokada. Przy
+  // `force` zuzyte wlasnie kasujemy, a licznik `used_count` stoi na kodzie
+  // i nie liczy sie z wierszy, wiec kaskada zostawilaby kod spalony na zawsze.
+  let oddaneKody = [];
+  if (force) {
+    const { rows: oddane } = await pool.query(
+      `UPDATE discount_codes c
+          SET used_count = GREATEST(0, c.used_count - z.ile), updated_at = NOW()
+         FROM (SELECT code_id, COUNT(*)::INTEGER AS ile
+                 FROM discount_redemptions
+                WHERE order_id = $1 AND consumed_at IS NOT NULL
+                GROUP BY code_id) z
+        WHERE c.id = z.code_id
+      RETURNING c.code`,
+      [o.id]
+    );
+    oddaneKody = oddane.map((r) => r.code);
+  }
+
+  await pool.query(`DELETE FROM orders WHERE id = $1`, [o.id]);
+  if (force && blockers.length) {
+    console.log(
+      `[zamowienia] ${ref} SKASOWANE MIMO WARUNKOW (status ${o.status}): przelamane ${blockers.join(", ")}` +
+      (oddaneKody.length ? `, oddane kody: ${oddaneKody.join(", ")}` : "")
+    );
+  } else {
+    console.log(`[zamowienia] ${ref} skasowane recznie (status ${o.status})`);
+  }
+
+  res.json({ ok: true, orderRef: ref, deleted: true, overridden: force ? blockers : [], releasedCodes: oddaneKody });
 });
 
 /** Parametry startu transakcji, podpisane po stronie serwera */

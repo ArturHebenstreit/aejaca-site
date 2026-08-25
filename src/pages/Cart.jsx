@@ -9,6 +9,7 @@
 import { Link } from "react-router-dom";
 import { Trash2, ShoppingCart, ArrowRight, AlertTriangle, Package, Download, Wrench } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
+import OfferNumberEntry from "../components/shop/OfferNumberEntry.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import { useCart } from "../cart/CartContext.jsx";
@@ -194,6 +195,11 @@ export default function Cart() {
               </Link>
             </div>
           )}
+
+          {/* Pusty koszyk to najczestsze miejsce, w ktorym staje klient
+              z wycena ustalona z nami: nie ma czego kupic z polki, bo swoja
+              rzecz juz z nami uzgodnil. */}
+          {ready && items.length === 0 && <OfferNumberEntry className="mb-8 text-left" />}
 
           {items.length > 0 && (
             <>

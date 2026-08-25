@@ -1423,12 +1423,55 @@ app.post("/quotes/:ref/send", requireAuth, async (req, res) => {
 // z punktu widzenia warsztatu niczym sie nie roznia.
 
 app.get("/queue", requireAuth, async (req, res) => {
+  // Domyslnie widac to, co czeka na prace. Filtr wpuszcza zakonczone
+  // i anulowane, bo omylkowe "zrobione" inaczej znika z ekranu razem
+  // z jedynym miejscem, w ktorym dalo by sie je poprawic.
+  const stan = String(req.query.status || "");
   try {
-    const { orders, counts } = await shopApi("/api/orders/queue");
-    res.render("queue", { user: req.user, orders, counts, msg: req.query.msg, err: req.query.err });
+    const { orders, counts } = await shopApi(`/api/orders/queue${stan ? `?status=${encodeURIComponent(stan)}` : ""}`);
+    res.render("queue", { user: req.user, orders, counts, stan, msg: req.query.msg, err: req.query.err });
   } catch (err) {
-    res.render("queue", { user: req.user, orders: [], counts: {}, msg: null, err: err.message });
+    res.render("queue", { user: req.user, orders: [], counts: {}, stan, msg: null, err: err.message });
   }
+});
+
+/** Poprawienie wiersza: numer przesylki, notatka, korekta etapu. */
+app.post("/queue/:ref/edit", requireAuth, async (req, res) => {
+  const powrot = req.body.back || "/queue";
+  try {
+    // Puste pole znaczy "wyczysc", wiec idzie do API jako pusty napis,
+    // a nie jako brak pola. Inaczej nie da sie skasowac blednego numeru.
+    const r = await shopApi(`/api/orders/${encodeURIComponent(req.params.ref)}/queue`, {
+      method: "POST",
+      body: {
+        stage: req.body.stage || undefined,
+        trackingNumber: req.body.trackingNumber ?? undefined,
+        note: req.body.note ?? undefined,
+      },
+    });
+    const wyczyszczone = r.cleared?.length ? `, wyczyszczone: ${r.cleared.join(", ")}` : "";
+    back(res, powrot, { msg: `${req.params.ref}: ${r.status}${wyczyszczone}` });
+  } catch (err) { back(res, powrot, { err: err.message }); }
+});
+
+/**
+ * Trwale usuniecie zamowienia. Decyzja wlasciciela, ADR-0014.
+ *
+ * Panel wymaga przepisania numeru, a nie samego klikniecia, bo wiersze
+ * w kolejce wygladaja identycznie i jest to jedyna akcja bez cofniecia.
+ * Potwierdzenie sprawdza takze backend, wiec ominiecie formularza nic nie daje.
+ */
+app.post("/queue/:ref/delete", requireAuth, async (req, res) => {
+  const powrot = req.body.back || "/queue";
+  try {
+    const r = await shopApi(`/api/orders/${encodeURIComponent(req.params.ref)}`, {
+      method: "DELETE",
+      body: { confirmRef: (req.body.confirmRef || "").trim(), force: true },
+    });
+    const kody = r.releasedCodes?.length ? `, oddane kody: ${r.releasedCodes.join(", ")}` : "";
+    const mimo = r.overridden?.length ? ` mimo tego, ze ${r.overridden.join(", ")}` : "";
+    back(res, powrot, { msg: `Usunieto ${req.params.ref}${mimo}${kody}` });
+  } catch (err) { back(res, powrot, { err: err.message }); }
 });
 
 app.post("/queue/:ref/stage", requireAuth, async (req, res) => {
@@ -1441,8 +1484,8 @@ app.post("/queue/:ref/stage", requireAuth, async (req, res) => {
         note: (req.body.note || "").trim() || undefined,
       },
     });
-    back(res, "/queue", { msg: `${req.params.ref}: ${r.status}` });
-  } catch (err) { back(res, "/queue", { err: err.message }); }
+    back(res, req.body.back || "/queue", { msg: `${req.params.ref}: ${r.status}` });
+  } catch (err) { back(res, req.body.back || "/queue", { err: err.message }); }
 });
 
 app.get("/transfers", requireAuth, async (req, res) => {

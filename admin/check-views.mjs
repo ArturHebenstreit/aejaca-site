@@ -115,7 +115,7 @@ const ZESTAWY = {
       delivery: { method: "inpost_locker", point: "WAW01A", addressLine1: null, addressLine2: null, postalCode: null, city: null, country: "PL" },
       items: [{ title: "Odlew sygnetu", qty: 1, calculator: null, fileName: null, fileUrl: null, description: "srebro 925" }],
     }],
-    counts: { paid: 1 }, msg: null, err: null,
+    counts: { paid: 1 }, stan: "", msg: null, err: null,
   },
   "gemstone-prices": { user: uzytkownik, gems: [kamien], flash: null },
   "gemstone-prices-edit": { user: uzytkownik, gem: kamien },

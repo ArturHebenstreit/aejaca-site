@@ -20,6 +20,7 @@ Workboard jest koordynacją umowną między uczestnikami, a nie techniczną blok
 |---|---|---|---|---|---|---|
 | TASK-009 | Odlew z metali szlachetnych w kalkulatorze sTuDiO i w szybkiej wycenie | Claude Code | `claude/fix-api-error-oge1r` | `src/components/calculators/MetalCastCalc.jsx`, `src/components/StudioCalculator.jsx`, `src/pricing/preciousMetalCasting.js` i mirror, `scripts/test-precious-metal-casting.mjs`, `public/llms.txt`, `public/sitemap.xml`, `chat-api/context.js`, `MDs/AEJaCA_Brand_Reference.md`, ADR-0011 i handoff | review | `MDs/handoffs/TASK-009-odlew-w-kalkulatorze.md` |
 | TASK-010 | Kolejka pracowni: etap pracy po zaplacie, w panelu i u klienta | Claude Code | `claude/fix-api-error-oge1r` | `chat-api/productionQueue.js`, `chat-api/server.js` (kolejka i etap), `admin/server.js`, `admin/views/queue.ejs`, `src/pages/OrderStatus.jsx`, `scripts/orders-schema.sql`, `scripts/test-production-queue.mjs`, `chat-api/context.js`, `MDs/AEJaCA_Brand_Reference.md`, ADR-0013 i handoff | review | `MDs/handoffs/TASK-010-kolejka-pracowni.md` |
+| TASK-011 | Wejscie z numerem oferty w sklepie oraz poprawianie i usuwanie wierszy kolejki | Claude Code | `claude/fix-api-error-oge1r` | `chat-api/productionQueue.js`, `chat-api/server.js` (kolejka, poprawka, kasowanie), `admin/server.js`, `admin/views/queue.ejs`, `src/components/shop/OfferNumberEntry.jsx`, `src/pages/Shop.jsx`, `src/pages/Cart.jsx`, `scripts/test-production-queue.mjs`, `public/llms.txt`, `chat-api/context.js`, `MDs/AEJaCA_Brand_Reference.md`, ADR-0014 i handoff | review | `MDs/handoffs/TASK-011-kolejka-i-wejscie-z-numerem-oferty.md` |
 
 Dozwolone stany: `planned`, `active`, `blocked`, `review`, `done`.
 
@@ -29,6 +30,7 @@ Dozwolone stany: `planned`, `active`, `blocked`, `review`, `done`.
 |---|---|---|---|---|
 | TASK-009 | `claude/fix-api-error-oge1r` | Codex | zgodnosc kwoty kalkulatora i sklepu, widelki obejmujace kwote wiazaca, slownik progow ilosci, synchronizacja dokumentacji, pelny build | oczekuje |
 | TASK-010 | `claude/fix-api-error-oge1r` | Codex | brak przejscia ze stanu nieoplaconego do etapu pracy, kolejnosc galezi na stronie statusu (etap przed FAILURE), kolumny w obu miejscach, kontrole negatywne testu kolejki, pelny build | oczekuje |
+| TASK-011 | `claude/fix-api-error-oge1r` | Codex | korekta nie wpuszcza stanu nieoplaconego, kasowanie bez `force` dalej odmawia, dokladnie jedna trasa DELETE /api/orders/:ref, sam numer oferty nie wystarcza do jej zobaczenia, pelny build | oczekuje |
 
 ## Uwaga do rezerwacji TASK-010
 
