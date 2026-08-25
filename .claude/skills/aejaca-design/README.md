@@ -1,5 +1,13 @@
 # AEJaCA Design System - v2 (Light premium)
 
+> **Read `SKILL.md` first.** This document describes the **v2 light premium**
+> system, which was accepted as a direction but implemented in the site through a
+> different mechanism. Voice, imagery, layout and palette intent here are current.
+> The class names and token names (`.brand-jewelry`, `--bg-page`, `--fg-1`,
+> `--accent`) are **not** what `src/` uses. Production tokens are listed in
+> `SKILL.md`.
+
+
 A design system for **AEJaCA** - a premium Polish studio that combines
 handcrafted jewelry (custom rings, pendants, earrings in silver and gold)
 with digital fabrication (FDM/SLA 3D printing, fiber and CO2 laser

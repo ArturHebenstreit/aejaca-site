@@ -1,4 +1,16 @@
 /* ============================================================
+   STATUS: v2 PROPOSAL, NOT THE SHIPPED SITE ARCHITECTURE.
+   ------------------------------------------------------------
+   The classes and tokens below (.brand-jewelry, .brand-studio,
+   --bg-page, --fg-1, --accent) exist ONLY here. They are absent
+   from src/ of aejaca-site, which uses --ds-* semantic tokens
+   with a [data-theme="light"] override list in src/index.css.
+
+   Load this file in standalone mocks and artifacts.
+   Do not port these names into production code.
+   ============================================================ */
+
+/* ============================================================
    AEJaCA Design System - Colors & Type (v2 · light defaults)
    ------------------------------------------------------------
    Two brand themes, one toggleable dark "night mode" alternate.

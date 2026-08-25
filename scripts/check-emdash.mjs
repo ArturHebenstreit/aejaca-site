@@ -12,9 +12,10 @@
 // Wyjatki: n8n-backup to zrzut z zywej instancji n8n, ma odpowiadac temu,
 // co stoi na serwerze, i nie wolno go recznie modyfikowac.
 //
-// Ta sama kategoria co n8n-backup: SKILLE SCIAGNIETE Z ZEWNATRZ. Pliki
-// w `.claude/skills/` sa kopiami 1:1 cudzych repozytoriow i maja takie
-// pozostac. Poprawianie w nich pisowni rozjezdzalo by je z gora przy kazdej
+// Ta sama kategoria co n8n-backup: SKILLE SCIAGNIETE Z ZEWNATRZ. Ich pliki
+// sa kopiami 1:1 cudzych repozytoriow i maja takie pozostac. Lista jest jawna,
+// bo w `.claude/skills/` leza takze skille napisane przez nas i one podlegaja
+// zasadzie normalnie. Poprawianie w nich pisowni rozjezdzalo by je z gora przy kazdej
 // aktualizacji, a przy licencji CC BY oznaczaloby ciche modyfikowanie cudzego
 // utworu bez adnotacji. Zasada pisowni dotyczy tego, co PISZEMY, a nie tego,
 // co wciagamy w niezmienionej postaci.
@@ -29,7 +30,15 @@ const DASH = "\u2014";
 const ENTITY = "&" + "mdash;";
 
 const SKIP = /^(n8n-backup)\//;
-const OBCY_SKILL = /^\.claude\/skills\/[^/]+\/(?!ORIGIN\.md$)/;
+const SKILLE_ZEWNETRZNE = [
+  "browser-automation",
+  "find-skills",
+  "playwright-skill",
+  "task-observer",
+];
+const OBCY_SKILL = new RegExp(
+  `^\\.claude/skills/(${SKILLE_ZEWNETRZNE.join("|")})/(?!ORIGIN\\.md$)`
+);
 const BINARY = /\.(png|jpe?g|webp|avif|gif|ico|svg|woff2?|ttf|otf|pdf|stl|3mf|step|zip|wasm|xlsx)$/i;
 
 const files = execSync("git ls-files", { encoding: "utf8" })
