@@ -19,6 +19,7 @@ Workboard jest koordynacją umowną między uczestnikami, a nie techniczną blok
 | ID | Cel | Wlasciciel | Branch i worktree | Zastrzezone pliki | Stan | Handoff |
 |---|---|---|---|---|---|---|
 | TASK-008 | Porzadek po scaleniu siedmiu zadan: waluta w rozpisce odlewu, format ADR, archiwum workboardu | Claude Code | `claude/fix-api-error-oge1r` | `src/pricing/preciousMetalCasting.js` i mirror, `scripts/test-precious-metal-casting.mjs`, `scripts/check-adr.mjs`, `package.json`, naglowki `MDs/decisions/ADR-000{5,6,7,10}.md`, `MDs/WORKBOARD.md` | review | `MDs/handoffs/TASK-008-porzadek-po-scaleniu.md` |
+| TASK-009 | Odlew z metali szlachetnych jako piata zakladka kalkulatora sTuDiO | Claude Code | `claude/fix-api-error-oge1r` | `src/components/calculators/MetalCastCalc.jsx`, `src/components/StudioCalculator.jsx`, `src/pricing/preciousMetalCasting.js` i mirror, `scripts/test-precious-metal-casting.mjs`, `public/llms.txt`, `public/sitemap.xml`, `chat-api/context.js`, `MDs/AEJaCA_Brand_Reference.md`, ADR-0011 i handoff | review | `MDs/handoffs/TASK-009-odlew-w-kalkulatorze.md` |
 
 Dozwolone stany: `planned`, `active`, `blocked`, `review`, `done`.
 
@@ -27,6 +28,7 @@ Dozwolone stany: `planned`, `active`, `blocked`, `review`, `done`.
 | ID | Branch | Recenzent | Wymagane kontrole | Wynik |
 |---|---|---|---|---|
 | TASK-008 | `claude/fix-api-error-oge1r` | Codex | rozpiska odlewu w jednej walucie, kontrola negatywna testu waluty, `check-adr`, pelny build | oczekuje |
+| TASK-009 | `claude/fix-api-error-oge1r` | Codex | zgodnosc kwoty kalkulatora i sklepu, widelki obejmujace kwote wiazaca, slownik progow ilosci, synchronizacja dokumentacji, pelny build | oczekuje |
 
 ## Archiwum
 

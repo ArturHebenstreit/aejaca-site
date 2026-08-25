@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-23 | Wersja: 5.0*
+*Wygenerowano: 2026-08-25 | Wersja: 5.1*
 
 ---
 
@@ -923,6 +923,31 @@ Standard 10, Water-washable 10, Plant-based 10, Clear 8, ABS-like 15, Tough 15, 
 - Nowa forma duża: 350 PLN, 25 odlewów
 - Forma klienta: 0 PLN, 1 odlew
 - Forma niestandardowa: cena custom
+
+### 6.4b Kalkulator Odlewu w Metalu (MetalCastCalc, od 2026-08-25)
+
+Piąta zakładka kalkulatora zaawansowanego sTuDiO, odnośnik bezpośredni
+`https://www.aejaca.com/studio/?tab=metal_cast`. Liczy **ten sam rdzeń**
+`src/pricing/preciousMetalCasting.js`, którego używa karta usługi w sklepie,
+więc kalkulator i sklep nie mogą pokazać dwóch różnych kwot. Pole pliku i suwak
+skali są wzięte ze sklepu (`ConfigControls`), razem z ostrzeżeniami o limicie
+kolby i o tym, że skalowanie zmienia grubość ścianek.
+
+**Warianty:** gotowy wzorzec (wosk lub żywica odlewnicza), model 3D, pomysł klienta.
+**Kruszec:** AEJaCA albo powierzony. Ag 800/925, Au 9k/14k/18k/24k.
+**Wykończenie:** surowy odlew 0 PLN, odcięcie i oczyszczenie 70 PLN, wykończenie jubilerskie 160 PLN.
+**Przygotowanie wzorca:** 120 PLN, doliczane zawsze w wariancie z modelem 3D.
+**Rezerwa procesowa:** 12% masy, na kruszec zostający w kanałach i na zgarze.
+
+**Wiążąca cena automatyczna wyłącznie dla:** wariantu z modelem 3D + kruszcu
+AEJaCA + modelu mieszczącego się po wybranej skali jednolitej w 24 x 24 x 35 mm.
+Każda inna kombinacja kończy się wyceną indywidualną i tak jest nazwana na
+ekranie, zamiast pokazywać liczbę nie do dotrzymania.
+
+**Widełki obejmują dopłaty.** `calcNew` liczy zakres z ceny sprzed doliczenia
+wzorca i wykończenia, więc rdzeń przesuwa widełki o te dopłaty. Bez tego
+kalkulator pokazywałby zakres niższy od kwoty do zapłaty o stałe 120 do 280 zł,
+a w sklepie nie było tego widać, bo karta pokazuje wyłącznie `unitGrosze`.
 
 ### 6.5 Kalkulator Kompensacji Skurczu (ShrinkageCalc)
 

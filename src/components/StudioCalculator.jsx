@@ -10,6 +10,7 @@ import Print3DCalc from "./calculators/Print3DCalc.jsx";
 import CO2LaserCalc from "./calculators/CO2LaserCalc.jsx";
 import FiberLaserCalc from "./calculators/FiberLaserCalc.jsx";
 import EpoxyCastCalc from "./calculators/EpoxyCastCalc.jsx";
+import MetalCastCalc from "./calculators/MetalCastCalc.jsx";
 
 // DRUK ZYWICZNY NIE MA WLASNEGO KAFELKA (polecenie wlasciciela, 2026-08-21).
 // Wybor FDM albo MSLA stoi juz w pierwszym kroku kalkulatora druku, wiec osobny
@@ -21,6 +22,10 @@ const TECHS = [
   { id: "co2_laser",   labelKey: "tabCO2",   descKey: "descCO2",   img: "/img/calc/studio/co2_laser.png" },
   { id: "fiber_laser", labelKey: "tabFiber", descKey: "descFiber", img: "/img/calc/studio/fiber_laser.png" },
   { id: "epoxy",       labelKey: "tabEpoxy", descKey: "descEpoxy", img: "/img/calc/studio/epoxy.png" },
+  // Odlew z metalu szlachetnego stoi tu, a nie w kalkulatorze jubilerskim,
+  // bo w sklepie ta usluga nalezy do sTuDiO: droga wiedzie przez model 3D
+  // i wydruk wzorca, a nie przez prace przy warsztacie jubilerskim.
+  { id: "metal_cast",  labelKey: "tabCast",  descKey: "descCast",  img: "/img/shop/service/precious_metal_casting.webp" },
 ];
 
 const LABELS = {
@@ -30,8 +35,8 @@ const LABELS = {
     modeAdvanced: "Dla zaawansowanych",
     modeAdvancedDesc: "Pełna kontrola parametrów",
     modeHint: "Szybka wycena to wstępny koszt w 30 sekund. Tryb zaawansowany pozwala wrzucić plik STL/SVG, wybrać materiał, wymiar i wykończenie: pełna kontrola.",
-    tab3d: "Druk 3D", tabCO2: "Laser CO2", tabFiber: "Laser Fiber", tabMSLA: "Druk żywiczny", tabEpoxy: "Odlewy żywiczne",
-    desc3d: "Bambu Lab H2D: FDM i multi-materiał", descCO2: "xTool P2 55W: grawerowanie i cięcie", descFiber: "Raycus 30W: metal, biżuteria, kamień, ceramika", descMSLA: "Saturn 4 Ultra 16K: figurki, wzorce jubilerskie", descEpoxy: "Żywica UV/dwukomponentowa: odlewy artystyczne",
+    tab3d: "Druk 3D", tabCO2: "Laser CO2", tabFiber: "Laser Fiber", tabMSLA: "Druk żywiczny", tabEpoxy: "Odlewy żywiczne", tabCast: "Odlew w metalu",
+    desc3d: "Bambu Lab H2D: FDM i multi-materiał", descCO2: "xTool P2 55W: grawerowanie i cięcie", descFiber: "Raycus 30W: metal, biżuteria, kamień, ceramika", descMSLA: "Saturn 4 Ultra 16K: figurki, wzorce jubilerskie", descEpoxy: "Żywica UV/dwukomponentowa: odlewy artystyczne", descCast: "Srebro i złoto: odlew z wzorca, modelu 3D albo pomysłu",
     note: 'Widełki są szacunkiem i zależą od geometrii, złożoności i specyfikacji. Kwota wiążąca, jeśli się pojawi, jest policzona z wgranego pliku i obowiązuje 7 dni. Opcje "niestandardowe" wyceniamy indywidualnie.',
     vat: "Kwoty w kalkulatorze są orientacyjne. Wiążąca jest dopiero kwota dodana do koszyka: obowiązuje 7 dni i to ona jest podstawą zamówienia.",
     shipping: "Ceny nie uwzględniają kosztów transportu." },
@@ -41,8 +46,8 @@ const LABELS = {
     modeAdvanced: "For advanced users",
     modeAdvancedDesc: "Full control over parameters",
     modeHint: "Quick quote gives an upfront estimate in 30 seconds. Advanced mode lets you upload an STL/SVG file, pick material, size, and finish: full control.",
-    tab3d: "3D Print", tabCO2: "CO2 Laser", tabFiber: "Fiber Laser", tabMSLA: "Resin Print", tabEpoxy: "Resin Casting",
-    desc3d: "Bambu Lab H2D: FDM & multi-material", descCO2: "xTool P2 55W: engraving & cutting", descFiber: "Raycus 30W: metal, jewelry, stone & ceramics", descMSLA: "Saturn 4 Ultra 16K: figurines, jewelry patterns", descEpoxy: "UV/2K resin: artistic casting",
+    tab3d: "3D Print", tabCO2: "CO2 Laser", tabFiber: "Fiber Laser", tabMSLA: "Resin Print", tabEpoxy: "Resin Casting", tabCast: "Metal Casting",
+    desc3d: "Bambu Lab H2D: FDM & multi-material", descCO2: "xTool P2 55W: engraving & cutting", descFiber: "Raycus 30W: metal, jewelry, stone & ceramics", descMSLA: "Saturn 4 Ultra 16K: figurines, jewelry patterns", descEpoxy: "UV/2K resin: artistic casting", descCast: "Silver and gold: cast from a pattern, 3D model or idea",
     note: "The range is an estimate and depends on geometry, complexity and specification. A binding amount, when shown, is calculated from your uploaded file and holds for 7 days. Custom options are quoted individually.",
     vat: "Amounts in the calculator are indicative. Only the amount added to the cart is binding: it holds for 7 days and the order is based on it.",
     shipping: "Prices do not include shipping costs." },
@@ -52,8 +57,8 @@ const LABELS = {
     modeAdvanced: "Für Fortgeschrittene",
     modeAdvancedDesc: "Volle Kontrolle über Parameter",
     modeHint: "Schnellkalkulation liefert einen Vorab-Preis in 30 Sekunden. Der erweiterte Modus erlaubt den Upload von STL/SVG-Dateien, Materialwahl, Maße und Finish: volle Kontrolle.",
-    tab3d: "3D-Druck", tabCO2: "CO2-Laser", tabFiber: "Faserlaser", tabMSLA: "Harzdruck", tabEpoxy: "Harzguss",
-    desc3d: "Bambu Lab H2D: FDM & Multi-Material", descCO2: "xTool P2 55W: Gravur & Schnitt", descFiber: "Raycus 30W: Metall, Schmuck, Stein & Keramik", descMSLA: "Saturn 4 Ultra 16K: Figuren, Gussmodelle", descEpoxy: "UV/2K-Harz: Kunstguss",
+    tab3d: "3D-Druck", tabCO2: "CO2-Laser", tabFiber: "Faserlaser", tabMSLA: "Harzdruck", tabEpoxy: "Harzguss", tabCast: "Metallguss",
+    desc3d: "Bambu Lab H2D: FDM & Multi-Material", descCO2: "xTool P2 55W: Gravur & Schnitt", descFiber: "Raycus 30W: Metall, Schmuck, Stein & Keramik", descMSLA: "Saturn 4 Ultra 16K: Figuren, Gussmodelle", descEpoxy: "UV/2K-Harz: Kunstguss", descCast: "Silber und Gold: Guss aus Modell, 3D-Datei oder Idee",
     note: 'Die Spanne ist eine Schätzung und hängt von Geometrie, Komplexität und Spezifikation ab. Ein verbindlicher Betrag, sofern angezeigt, wird aus Ihrer Datei berechnet und gilt 7 Tage. "Individuelle" Optionen kalkulieren wir separat.',
     vat: "Die Beträge im Kalkulator sind Richtwerte. Verbindlich ist erst der Betrag im Warenkorb: er gilt 7 Tage und ist die Grundlage der Bestellung.",
     shipping: "Preise verstehen sich ohne Versandkosten." },
@@ -193,7 +198,9 @@ export default function StudioCalculator() {
         {!isSimple && (
           <>
             {/* Technology tiles */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+            {/* Piaty kafelek nie moze zostac sam w drugim wierszu, wiec siatka
+                idzie na piec kolumn od duzego ekranu i trzy na tablecie. */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
               {TECHS.map(({ id, labelKey, descKey, img }) => {
                 const active = activeTech === id;
                 return (
@@ -229,6 +236,7 @@ export default function StudioCalculator() {
               {activeTech === "co2_laser" && <CO2LaserCalc lang={lang} initialMode={urlCo2Mode === "cut" ? "cut" : "engrave"} handoff={handoffFor(handoff, "vector")} onHandoffUsed={() => setHandoff(null)} />}
               {activeTech === "fiber_laser" && <FiberLaserCalc lang={lang} handoff={handoffFor(handoff, "vector")} onHandoffUsed={() => setHandoff(null)} />}
               {activeTech === "epoxy" && <EpoxyCastCalc lang={lang} />}
+              {activeTech === "metal_cast" && <MetalCastCalc lang={lang} />}
             </div>
           </>
         )}
