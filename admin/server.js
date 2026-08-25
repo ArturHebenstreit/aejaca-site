@@ -75,12 +75,19 @@ app.use(express.urlencoded({ extended: false }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Make fmtDate available in all EJS templates
+// Pomocniki dostepne w kazdym szablonie EJS. Nazwa uzyta w widoku, a nieobecna
+// tutaj, to blad 500 przy pierwszym wierszu z danymi, a nie przy pustej liscie:
+// `fmtDateShort` stal w trzech widokach i nie istnial nigdzie indziej, wiec
+// panel wywalal sie dopiero po zalozeniu pierwszej wyceny.
 app.use((req, res, next) => {
   res.locals.fmtDate = (d) => {
     if (!d) return ' - ';
     const dt = new Date(d);
     return dt.toLocaleDateString('pl-PL') + ' ' + dt.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+  };
+  res.locals.fmtDateShort = (d) => {
+    if (!d) return ' - ';
+    return new Date(d).toLocaleDateString('pl-PL');
   };
   next();
 });

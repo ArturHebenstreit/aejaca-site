@@ -124,13 +124,17 @@ const ZESTAWY = {
   materials: { user: uzytkownik, materials: [], markup: 1.5, flash: null },
 };
 
-// `fmtDate` i spolka wstrzykuje serwer przez `app.locals`, wiec przy samym
-// renderowaniu trzeba je podac, inaczej wywalilibysmy sie na czyms, co na
-// produkcji dziala.
-const globalne = {
-  fmtDate: (d) => (d ? new Date(d).toISOString().slice(0, 16).replace("T", " ") : "-"),
-  fmtDateShort: (d) => (d ? new Date(d).toISOString().slice(0, 10) : "-"),
-};
+// Pomocniki wspolne dla wszystkich szablonow bierzemy Z SERWERA, a nie z listy
+// pisanej tutaj z pamieci. Recznie wpisana lista raz juz sklamala: byl w niej
+// `fmtDateShort`, ktorego serwer nigdy nie ustawial. Kontrola swiecila na
+// zielono, a panel wywalal sie bledem 500 przy pierwszej wycenie z data.
+//
+// Podstawiamy atrapy, bo sprawdzamy DOSTEPNOSC nazwy, nie jej wynik. Nazwa
+// uzyta w widoku i nieobecna w serwerze wywali render na `ReferenceError`,
+// czyli dokladnie tak, jak wywali sie u wlasciciela.
+const nazwyLokalnych = [...server.matchAll(/(?:res|app)\.locals\.(\w+)\s*=/g)].map((m) => m[1]);
+if (!nazwyLokalnych.length) zle("nie znalazlem w server.js zadnego `res.locals.x =`, kontrola szablonow bylaby pozorna");
+const globalne = Object.fromEntries(nazwyLokalnych.map((n) => [n, () => "-"]));
 
 for (const [nazwa, dane] of Object.entries(ZESTAWY)) {
   const sciezka = join(VIEWS, `${nazwa}.ejs`);
@@ -138,7 +142,10 @@ for (const [nazwa, dane] of Object.entries(ZESTAWY)) {
   try {
     ejs.render(readFileSync(sciezka, "utf8"), { ...globalne, ...dane }, { filename: sciezka });
   } catch (e) {
-    zle(`views/${nazwa}.ejs nie renderuje sie: ${e.message.split("\n")[0]}`);
+    // Pierwsza linia komunikatu EJS to sciezka i numer wiersza, a POWOD stoi
+    // na koncu, za ramka z kodem. Bez niego zgloszenie mowi tylko "gdzies tam".
+    const linie = String(e.message).split("\n").map((l) => l.trim()).filter(Boolean);
+    zle(`views/${nazwa}.ejs nie renderuje sie: ${linie[0]} -> ${linie[linie.length - 1]}`);
   }
 }
 
