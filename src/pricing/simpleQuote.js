@@ -22,6 +22,7 @@ import { calculate as calcPrint3D, calculateMSLA } from "./print3d.js";
 import { calcEngrave as calcCO2Engrave, calcCut as calcCO2Cut, ENGRAVE_MATERIALS, CUT_MATERIALS } from "./laserCo2.js";
 import { calculate as calcFiber, MATERIALS as FIBER_MATERIALS } from "./laserFiber.js";
 import { calculate as calcEpoxy } from "./epoxy.js";
+import { calculate as calcCasting, fitsCastingFlask } from "./preciousMetalCasting.js";
 
 /**
  * Material wybrany przez klienta, ale TYLKO jesli nalezy do listy tej
@@ -38,6 +39,9 @@ export const TECH_FROM_MATERIAL = {
   metal:   "fiber",
   glass:   "co2",
   resin:   "epoxy",
+  // Kruszec szlachetny NIE jest tym samym co "metal": tam laser znakuje
+  // gotowy przedmiot, tutaj odlewamy nowy z modelu.
+  precious: "cast",
 };
 
 export const DEFAULT_TECH_FROM_ITEM = {
@@ -62,6 +66,18 @@ export const SIZE_MAP = {
 };
 
 export const QTY_MAP = { one: "proto", few: "micro", many: "medium", lots: "large" };
+
+// ODLEW MA WLASNE PROGI, bo liczy go silnik jubilerski, a ten zna wylacznie
+// `QTY_TIERS` z `jewelryConfig.js`. Progi studyjne ("proto", "micro") wygladaja
+// tak samo, ale silnik oddaje na nie `null`, czyli cena po cichu znika.
+// Powyzej dziesieciu sztuk odlew jest seria produkcyjna i tak go wyceniamy.
+export const CAST_QTY_MAP = { one: "1", few: "2-5", many: "10+", lots: "10+" };
+
+// Trzy poziomy wykonczenia z szybkiej wyceny na trzy zakresy obrobki odlewu.
+export const CAST_FINISH_MAP = { prototype: "raw", standard: "clean", premium: "polished" };
+
+/** Kruszec domyslny, gdy klient nie wskazal zadnego. Najtanszy, wiec kwota nie obiecuje za duzo. */
+export const CAST_DEFAULT_ALLOY = "silver";
 
 export const CO2_MODE_FROM_ITEM = {
   keychain: "cut",
@@ -101,11 +117,33 @@ export const CO2_MODE_FROM_ITEM = {
  * 5 mm, nie mial jak tego powiedziec, a mimo to dostawal kwote wiazaca.
  * Zgadniete pozostaje domyslna, gdy nikt nic nie wybral.
  */
-export function resolveTechAndParams({ item, size, material, finish, quantity, fileType, stlData, svgData, printTech, co2Mode, stockId, podloze = null }) {
-  // Model 3D: druk (plastik) albo odlew z zywicy
+export function resolveTechAndParams({ item, size, material, finish, quantity, fileType, stlData, svgData, printTech, co2Mode, stockId, alloyId, podloze = null }) {
+  // ODLEW BEZ MODELU NIE MA MASY, a bez masy nie ma ceny kruszcu. Przedzial
+  // wielkosci opisuje gabaryt, nie objetosc metalu: pierscionek "jak moneta"
+  // to w wiekszosci powietrze. Zgadnieta liczba bylaby zmyslona, wiec ta
+  // sciezka idzie do wyceny indywidualnej, zamiast pokazac cokolwiek.
+  if (material === "precious" && !(fileType === "stl" && stlData)) return { custom: true };
+
+  // Model 3D: druk (plastik), odlew z zywicy albo odlew w kruszcu
   if (fileType === "stl" && stlData) {
     if (!size || !material || !finish || !quantity) return { custom: true };
     const quantityId = QTY_MAP[quantity];
+
+    if (material === "precious") {
+      // Poza kolba nie ma automatu. Ten sam warunek stawia serwer przy
+      // kwocie wiazacej, wiec szybka wycena nie moze obiecac wiecej.
+      if (!fitsCastingFlask(stlData.bbox)) return { custom: true };
+      return {
+        tech: "cast", params: {
+          variantId: "model_3d",
+          materialSourceId: "aejaca",
+          metalId: alloyId || CAST_DEFAULT_ALLOY,
+          finishId: CAST_FINISH_MAP[finish],
+          qtyId: CAST_QTY_MAP[quantity],
+          stlData,
+        },
+      };
+    }
 
     if (material === "resin") {
       // Odlew liczy sie z objetosci formy, a nie z siatki, wiec geometrii tu
@@ -314,8 +352,9 @@ function mslaParams({ item, size, finish, quantity, stlData }) {
  * @param {string} lang
  * @param {Array|null} stock stawki materialow z magazynu; brak znaczy stawka
  *   domyslna, a nie brak ceny, bo awaria bazy ma wstrzymac cennik, nie sprzedaz
+ * @param {object|null} rates kursy kruszcow, potrzebne wylacznie odlewowi
  */
-export function runCalc(resolved, lang, stock = null) {
+export function runCalc(resolved, lang, stock = null, rates = null) {
   if (!resolved || resolved.custom) return { type: "custom" };
   const { tech, mode, params } = resolved;
   if (tech === "3dprint") return calcPrint3D(params, lang);
@@ -323,5 +362,9 @@ export function runCalc(resolved, lang, stock = null) {
   if (tech === "fiber")   return calcFiber(params, lang, stock);
   if (tech === "epoxy")   return calcEpoxy(params, lang);
   if (tech === "msla")    return calculateMSLA(params, lang);
+  // Odlew liczy sie z kursu kruszcu, wiec `rates` NIE jest tu ozdobnikiem:
+  // bez nich silnik siega po wartosc zapasowa z konfiguracji i kalkulator
+  // pokazuje inna kwote niz serwer, ktory czyta kurs NBP.
+  if (tech === "cast")    return calcCasting(params, lang, rates || undefined);
   return null;
 }

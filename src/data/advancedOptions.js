@@ -33,6 +33,7 @@ export const ADVANCED_TAB = {
   co2: "co2_laser",
   fiber: "fiber_laser",
   epoxy: "epoxy",
+  cast: "metal_cast",
 };
 
 /**

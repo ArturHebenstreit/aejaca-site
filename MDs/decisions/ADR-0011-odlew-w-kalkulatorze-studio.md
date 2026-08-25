@@ -35,6 +35,12 @@ Wiazaca cena automatyczna dziala wylacznie dla wariantu z modelem 3D i kruszcu
 AEJaCA. Kazda inna kombinacja konczy sie wycena indywidualna i tak jest nazwana
 na ekranie.
 
+Odlew wchodzi takze do szybkiej wyceny, jako szosty kafelek materialu. Szybka
+wycena dokłada tam JEDNO pytanie, o kruszec, bo srebro i zloto 18k dzieli
+kilkadziesiat razy i tego jednego nie wolno zgadnac za klienta. Bez pliku 3D ta
+sciezka nie podaje kwoty wcale: przedzial wielkosci opisuje gabaryt, a nie
+objetosc kruszcu, wiec liczba wzieta z niego bylaby zmyslona.
+
 Przy okazji rdzen dostaje dwie poprawki, bez ktorych ta powierzchnia klamalaby:
 
 1. Widelki przesuwaja sie o doplaty za przygotowanie wzorca i wykonczenie.
