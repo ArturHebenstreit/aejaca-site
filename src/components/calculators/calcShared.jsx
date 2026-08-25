@@ -153,9 +153,17 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
                 {active && <div className="absolute inset-0 bg-blue-400/10 mix-blend-overlay" />}
               </div>
             )}
+            {/* OBWODKA NAPISU JEST DLA ZDJECIA, a nie dla kazdego kafelka.
+                `tile-ink` maluje czarny obrys, zeby biale litery przetrwaly na
+                jasnym fragmencie fotografii. Kafelek BEZ zdjecia nie dostaje
+                ciemnego gradientu, wiec w motywie jasnym napis schodzi do
+                ciemnego koloru i zostaje z czarna obwodka na bialym tle:
+                wyglada jak usterka czcionki. Reguly motywu jasnego w
+                `index.css` celuja w `.from-black/95`, ktore powstaje tylko
+                razem ze zdjeciem, wiec warunek musi stac po tej samej stronie. */}
             <div className="relative p-3 h-full flex flex-col justify-end" style={{ minHeight: `${minH}px` }}>
-              <div className={`text-sm font-bold mb-1 drop-shadow-lg tile-ink ${active ? "text-blue-300" : "text-white"}`}>{lbl(o.label)}</div>
-              {o.desc && <div className="text-[11px] text-neutral-200 drop-shadow-md tile-ink">{lbl(o.desc)}</div>}
+              <div className={`text-sm font-bold mb-1 ${o.img ? "drop-shadow-lg tile-ink" : ""} ${active ? "text-blue-300" : "text-white"}`}>{lbl(o.label)}</div>
+              {o.desc && <div className={`text-[11px] text-neutral-200 ${o.img ? "drop-shadow-md tile-ink" : ""}`}>{lbl(o.desc)}</div>}
             </div>
           </button>
         );

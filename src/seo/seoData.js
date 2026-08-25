@@ -97,20 +97,20 @@ export const SEO = {
   studio: {
     pl: {
       title: "AEJaCA sTuDiO, Druk 3D, Laser, Modelowanie 3D, Odlewy",
-      description: "Kalkulator wyceny druku 3D online (STL) + laser CO2/Fiber + odlewy żywiczne. Modelowanie 3D (Rhino, Fusion 360). Materiały inżynierskie, małe serie.",
-      keywords: "kalkulator wyceny druku 3D online, wycena STL online, druk 3D na zamówienie, materiały inżynierskie, PETG, ASA, PA6, PC, PEEK, TPU, druk 3D funkcjonalny, grawerowanie laserowe, laser CO2, Fiber laser, odlewy żywiczne, modelowanie 3D, Rhino 3D, Fusion 360, projekt 3D na zamówienie, prototypowanie, Bambu Lab H2D",
+      description: "Kalkulator wyceny druku 3D online (STL) + laser CO2/Fiber + odlewy żywiczne i odlew w srebrze lub złocie z modelu 3D. Modelowanie 3D (Rhino, Fusion 360). Materiały inżynierskie, małe serie.",
+      keywords: "kalkulator wyceny druku 3D online, wycena STL online, druk 3D na zamówienie, materiały inżynierskie, PETG, ASA, PA6, PC, PEEK, TPU, druk 3D funkcjonalny, grawerowanie laserowe, laser CO2, Fiber laser, odlewy żywiczne, odlew srebra, odlew złota, odlew z modelu 3D, modelowanie 3D, Rhino 3D, Fusion 360, projekt 3D na zamówienie, prototypowanie, Bambu Lab H2D",
       ogAlt: "AEJaCA sTuDiO, druk 3D, laser, modelowanie 3D i odlewy żywiczne",
     },
     en: {
       title: "AEJaCA sTuDiO, 3D Printing, Laser Engraving & 3D Modeling",
-      description: "3D printing quote online (STL) + CO2/Fiber laser engraving + resin casting. 3D modeling (Rhino, Fusion 360). Engineering materials, small runs.",
-      keywords: "3D printing cost calculator online, STL upload instant quote, laser engraving price, engineering materials, PETG, ASA, PA6, PC, PEEK, TPU, functional 3D printing, fiber laser, CO2 laser, resin casting, 3D modeling, Rhino 3D, Fusion 360, custom 3D design, prototyping, Bambu Lab H2D",
+      description: "3D printing quote online (STL) + CO2/Fiber laser engraving + resin casting and silver or gold casting from a 3D model. 3D modeling (Rhino, Fusion 360). Engineering materials, small runs.",
+      keywords: "3D printing cost calculator online, STL upload instant quote, laser engraving price, engineering materials, PETG, ASA, PA6, PC, PEEK, TPU, functional 3D printing, fiber laser, CO2 laser, resin casting, silver casting, gold casting, casting from 3d model, 3D modeling, Rhino 3D, Fusion 360, custom 3D design, prototyping, Bambu Lab H2D",
       ogAlt: "AEJaCA sTuDiO, 3D printing, laser engraving and 3D modeling",
     },
     de: {
       title: "AEJaCA sTuDiO, 3D-Druck, Lasergravur, 3D-Modellierung",
-      description: "3D-Druck Preisrechner online (STL) + CO2-/Fiber-Lasergravur + Harzguss. 3D-Modellierung (Rhino, Fusion 360). Ingenieurswerkstoffe, Kleinserien.",
-      keywords: "3D-Druck Preisrechner online, STL Sofort-Angebot, Lasergravur Preis, Ingenieurswerkstoffe, PETG, ASA, PA6, PC, PEEK, TPU, technischer 3D-Druck, Faserlaser, CO2-Laser, Harzguss, 3D-Modellierung, Rhino 3D, Fusion 360, 3D-Design auf Bestellung, Prototyping, Bambu Lab H2D",
+      description: "3D-Druck Preisrechner online (STL) + CO2-/Fiber-Lasergravur + Harzguss sowie Silber- und Goldguss nach 3D-Modell. 3D-Modellierung (Rhino, Fusion 360). Ingenieurswerkstoffe, Kleinserien.",
+      keywords: "3D-Druck Preisrechner online, STL Sofort-Angebot, Lasergravur Preis, Ingenieurswerkstoffe, PETG, ASA, PA6, PC, PEEK, TPU, technischer 3D-Druck, Faserlaser, CO2-Laser, Harzguss, Silberguss, Goldguss, Guss nach 3D-Modell, 3D-Modellierung, Rhino 3D, Fusion 360, 3D-Design auf Bestellung, Prototyping, Bambu Lab H2D",
       ogAlt: "AEJaCA sTuDiO, 3D-Druck, Lasergravur und 3D-Modellierung",
     },
   },
