@@ -46,6 +46,7 @@ import { orderAccessAllowed } from "./orderAccess.js";
 import { findLockers, LockerError } from "./lockers.js";
 import { runRetention } from "./retention.js";
 import { requireAdmin, requireInvalidateToken, requireSecret, secretMatches } from "./auth.js";
+import { ETAPY_PRACY, przejscie } from "./productionQueue.js";
 import { extractIP, isPrivateIP, TRUSTED_PROXY_HOPS, TRUST_CLOUDFLARE_HEADERS } from "./clientIp.js";
 import { createLimiter, limitBy } from "./rateLimit.js";
 import { issueDownloads, takeDownload, downloadName } from "./digitalDelivery.js";
@@ -222,6 +223,23 @@ if (pool) {
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancel_reason TEXT`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_code VARCHAR(32)`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_grosze INTEGER NOT NULL DEFAULT 0`).catch(() => {});
+
+  // KOLEJKA PRACOWNI. Statusy `in_production`, `shipped` i `completed` stoja
+  // w ograniczeniu tabeli od poczatku, ale nic ich nigdy nie ustawialo:
+  // oplacone zamowienie zostawalo w stanie `paid` na zawsze i nie bylo miejsca,
+  // w ktorym widac, co jest do zrobienia dzisiaj i co czeka najdluzej.
+  //
+  // `fulfilled_at` NIE nadaje sie na te role. Znaczy "platnosc rozliczona",
+  // ustawia je potwierdzenie przelewu i to na nim opiera sie zakaz anulowania.
+  // Uzycie go do "praca skonczona" zlepiloby dwie rozne rzeczy w jedno pole.
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS production_started_at TIMESTAMPTZ`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipped_at TIMESTAMPTZ`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(64)`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS production_note TEXT`).catch(() => {});
+  // Kolejke czyta sie po dacie zaplaty, bo pierwszy placi pierwszy dostaje.
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_orders_kolejka
+              ON orders (paid_at) WHERE status IN ('paid','in_production','shipped')`).catch(() => {});
 
   // Wycena zapisana z kalkulatora. Kursy kruszcow z chwili zapisu pozwalaja
   // odroznic ruch ceny zlota od zmiany naszego cennika, skala trzyma to,
@@ -3374,6 +3392,134 @@ app.patch("/api/admin/discounts/:code", express.json({ limit: "4kb" }), async (r
 // wykonac raz, bo pilnuje tego fulfilled_at.
 const TRANSFER_TOLERANCE = 0.98;
 
+// ------------------------------------------------------------
+// KOLEJKA PRACOWNI
+// ------------------------------------------------------------
+// Zamowienie oplacone nie mialo dalszego ciagu. Status `paid` zostawal na nim
+// na zawsze, wiec pytanie "co jest dzisiaj do zrobienia i co czeka najdluzej"
+// odpowiadala skrzynka mailowa i pamiec. Zamowienia z oferty tylko to zaostrzyly,
+// bo przychodza spoza sklepu i nie maja nawet watku w koszyku.
+//
+// Kolejnosc jest jedna i nie podlega negocjacji: KTO PIERWSZY ZAPLACIL.
+// Sortujemy po dacie zaplaty, a nie po dacie zlozenia, bo zlozenie bez zaplaty
+// nie rezerwuje czasu pracowni.
+
+app.get("/api/orders/queue", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const { rows } = await pool.query(
+    `SELECT o.id, o.order_ref, o.status, o.kind, o.lang, o.total_grosze,
+            o.customer_email, o.customer_name, o.customer_phone,
+            o.delivery_method, o.delivery_point, o.address_line1, o.address_line2,
+            o.postal_code, o.city, o.country,
+            o.paid_at, o.production_started_at, o.shipped_at,
+            o.tracking_number, o.production_note,
+            (SELECT q.quote_ref FROM quotes q WHERE q.converted_order_id = o.id) AS quote_ref
+       FROM orders o
+      WHERE o.status IN ('paid','in_production','shipped')
+      ORDER BY o.paid_at ASC NULLS LAST
+      LIMIT 200`
+  );
+  if (!rows.length) return res.json({ ok: true, orders: [], counts: {} });
+
+  const { rows: pozycje } = await pool.query(
+    `SELECT order_id, title, qty, calculator, file_name, file_url, params
+       FROM order_items WHERE order_id = ANY($1::bigint[]) ORDER BY id`,
+    [rows.map((o) => o.id)]
+  );
+  const wgOrder = new Map();
+  for (const p of pozycje) {
+    const klucz = String(p.order_id);
+    if (!wgOrder.has(klucz)) wgOrder.set(klucz, []);
+    wgOrder.get(klucz).push({
+      title: p.title, qty: p.qty, calculator: p.calculator,
+      fileName: p.file_name, fileUrl: p.file_url,
+      // Opis od klienta bywa jedynym zdaniem mowiacym, co ma powstac, gdy
+      // pozycja nie ma pliku. Siedzi w parametrach, wiec go stamtad wyjmujemy.
+      description: p.params?.description ?? null,
+    });
+  }
+
+  const dni = (od) => (od ? Math.floor((Date.now() - new Date(od).getTime()) / 86400_000) : null);
+  const orders = rows.map((o) => ({
+    orderRef: o.order_ref,
+    quoteRef: o.quote_ref,
+    status: o.status,
+    kind: o.kind,
+    lang: o.lang,
+    name: o.customer_name,
+    email: o.customer_email,
+    phone: o.customer_phone,
+    totalPLN: (o.total_grosze / 100).toFixed(2),
+    paidAt: o.paid_at,
+    waitingDays: dni(o.paid_at),
+    productionStartedAt: o.production_started_at,
+    shippedAt: o.shipped_at,
+    trackingNumber: o.tracking_number,
+    productionNote: o.production_note,
+    delivery: {
+      method: o.delivery_method, point: o.delivery_point,
+      addressLine1: o.address_line1, addressLine2: o.address_line2,
+      postalCode: o.postal_code, city: o.city, country: o.country,
+    },
+    items: wgOrder.get(String(o.id)) || [],
+  }));
+
+  const counts = orders.reduce((acc, o) => ({ ...acc, [o.status]: (acc[o.status] || 0) + 1 }), {});
+  res.json({ ok: true, orders, counts });
+});
+
+/**
+ * Pchniecie zamowienia o jeden etap pracy.
+ *
+ * Przejscia sa wypisane, a nie dowolne. Bez tego jedno klikniecie w zlym
+ * wierszu robilo z zamowienia nieoplaconego zamowienie wyslane, i nikt by tego
+ * nie zauwazyl, bo zadna kwota by sie nie zmienila.
+ */
+app.post("/api/orders/:ref/production", express.json({ limit: "8kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const etap = String(req.body?.stage || "");
+  if (!ETAPY_PRACY[etap]) return res.status(400).json({ error: "Nie znamy takiego etapu", code: "bad_stage" });
+
+  const ref = String(req.params.ref || "");
+  const { rows } = await pool.query("SELECT id, status FROM orders WHERE order_ref = $1", [ref]);
+  const order = rows[0];
+  if (!order) return res.status(404).json({ error: "Zamowienie nie istnieje" });
+
+  const regula = przejscie(order.status, etap);
+  if (!regula.ok) {
+    return res.status(409).json({
+      error: `Zamowienie ma status ${order.status}, a do "${etap}" wchodzi sie z: ${ETAPY_PRACY[etap].z.join(", ")}`,
+      code: regula.powod,
+    });
+  }
+
+  const numer = req.body?.trackingNumber ? String(req.body.trackingNumber).trim().slice(0, 64) : null;
+  const notatka = req.body?.note ? String(req.body.note).slice(0, 2000) : null;
+
+  // Warunek na statusie powtorzony w samym UPDATE, bo miedzy odczytem a zapisem
+  // ktos moze anulowac zamowienie w drugiej zakladce.
+  const zmiana = await pool.query(
+    `UPDATE orders
+        SET status = $2,
+            ${regula.pole} = COALESCE(${regula.pole}, NOW()),
+            tracking_number = COALESCE($3, tracking_number),
+            production_note = COALESCE($4, production_note)
+      WHERE id = $1 AND status = ANY($5::text[])
+      RETURNING status, ${regula.pole} AS stempel`,
+    [order.id, etap, numer, notatka, regula.z]
+  );
+  if (!zmiana.rowCount) {
+    return res.status(409).json({ error: "Stan zamowienia zmienil sie w miedzyczasie", code: "state_changed" });
+  }
+
+  console.log(`[kolejka] ${ref}: ${order.status} -> ${etap}${numer ? `, list przewozowy ${numer}` : ""}`);
+  res.json({ ok: true, orderRef: ref, status: zmiana.rows[0].status, at: zmiana.rows[0].stempel });
+});
+
 app.get("/api/orders/awaiting-transfer", async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
@@ -3916,7 +4062,8 @@ app.get("/api/orders/:ref", async (req, res) => {
     `SELECT order_ref, access_token, status, total_grosze, lang, paid_at, expires_at, delivery_method,
             revisions_included, revisions_used,
             payment_method, payment_status, fulfilled_at,
-            amount_eur_cents, transfer_confirmed_at
+            amount_eur_cents, transfer_confirmed_at,
+            shipped_at, tracking_number
        FROM orders WHERE order_ref = $1`,
     [String(req.params.ref || "")]
   );
@@ -3931,6 +4078,11 @@ app.get("/api/orders/:ref", async (req, res) => {
     paidAt: o.paid_at,
     expiresAt: o.expires_at,
     deliveryMethod: o.delivery_method,
+    // Etap pracy widzi takze klient. Bez tego strona zamowienia po przestawieniu
+    // go w kolejce wracala do galezi domyslnej i mowila oplaconemu klientowi,
+    // ze czekamy na jego platnosc.
+    shippedAt: o.shipped_at,
+    trackingNumber: o.tracking_number,
     ...publicPaymentState(o),
     // Licznik poprawek pokazujemy od poczatku. Klient, ktory dowiaduje sie
     // o wyczerpaniu limitu dopiero przy rachunku, czuje sie naciagniety.
