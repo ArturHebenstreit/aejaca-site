@@ -1,0 +1,165 @@
+<%- include('partials/header', { user: user, title: 'Wyceny', active: 'quotes' }) %>
+
+<%
+  // Kolejnosc od tego, co czeka na MOJ ruch, do tego, co juz zamkniete.
+  // "new" i "priced" to zaleglosc, "sent" czeka na klienta, reszta to historia.
+  const STANY = [
+    { id: "",          label: "Wszystkie" },
+    { id: "new",       label: "Nowe" },
+    { id: "priced",    label: "Wycenione" },
+    { id: "sent",      label: "Wysłane" },
+    { id: "accepted",  label: "Przyjęte" },
+    { id: "converted", label: "Zamówione" },
+    { id: "expired",   label: "Wygasłe" },
+    { id: "cancelled", label: "Anulowane" },
+  ];
+  const BARWA = {
+    new: "text-amber-300 border-amber-400/30 bg-amber-400/10",
+    priced: "text-sky-300 border-sky-400/30 bg-sky-400/10",
+    sent: "text-indigo-300 border-indigo-400/30 bg-indigo-400/10",
+    accepted: "text-emerald-300 border-emerald-400/30 bg-emerald-400/10",
+    converted: "text-emerald-300 border-emerald-400/30 bg-emerald-400/10",
+    expired: "text-neutral-400 border-white/10 bg-white/5",
+    cancelled: "text-neutral-500 border-white/10 bg-white/5",
+  };
+  const ZRODLO = { email: "e-mail", phone: "telefon", chat: "czat", quote: "formularz", contact: "kontakt" };
+  const zl = (g) => (g == null ? "-" : (g / 100).toFixed(2) + " zł");
+%>
+
+  <main class="max-w-6xl mx-auto px-6 py-8">
+
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-white mb-2">Wyceny</h1>
+      <p class="text-neutral-500 text-xs leading-relaxed max-w-3xl">
+        Jedno miejsce dla wszystkich zapytań, niezależnie od tego, którędy przyszły: z formularza, z kalkulatora,
+        mailem albo telefonem. Numer nadajemy od razu, jeszcze przed wpisaniem kwot, bo to nim nazywamy wątek
+        w korespondencji i to on trafia w tytuł przelewu. Kwota staje się ofertą dopiero po wpisaniu pozycji,
+        a obowiązuje dopiero po wysłaniu.
+      </p>
+    </div>
+
+    <% if (err) { %>
+      <div class="rounded-lg border border-red-400/30 bg-red-400/10 p-3 mb-5 text-red-300 text-xs leading-relaxed"><%= err %></div>
+    <% } %>
+    <% if (msg) { %>
+      <div class="rounded-lg border border-emerald-400/30 bg-emerald-400/10 p-3 mb-5 text-emerald-300 text-xs"><%= msg %></div>
+    <% } %>
+
+    <nav class="flex flex-wrap gap-2 mb-6">
+      <% STANY.forEach(function (s) { %>
+        <a href="/quotes<%= s.id ? '?status=' + s.id : '' %>"
+           class="px-3 py-1.5 rounded-lg border text-xs transition-colors <%= stan === s.id
+             ? 'border-amber-400/60 text-white bg-amber-400/10'
+             : 'border-white/10 text-neutral-400 hover:text-white hover:border-white/25' %>">
+          <%= s.label %><% if (s.id && counts[s.id]) { %> <span class="text-neutral-500">(<%= counts[s.id] %>)</span><% } %>
+        </a>
+      <% }); %>
+    </nav>
+
+    <details class="mb-8 rounded-xl border border-white/10 bg-white/[0.02]">
+      <summary class="cursor-pointer px-5 py-3 text-sm text-white">Nowa wycena z rozmowy mailowej albo telefonicznej</summary>
+      <div class="px-5 pb-5 pt-1">
+        <p class="text-neutral-500 text-xs leading-relaxed mb-4 max-w-2xl">
+          Zakładasz numer dla kogoś, kto napisał na skrzynkę albo zadzwonił. Wystarczy adres ALBO telefon.
+          Przy samym telefonie mail nie wyjdzie, a link do oferty przekazujesz sam, SMS-em albo w rozmowie.
+        </p>
+        <form method="post" action="/quotes/new" class="space-y-3">
+          <div class="grid sm:grid-cols-3 gap-3">
+            <label class="block">
+              <span class="text-neutral-400 text-xs">Imię i nazwisko</span>
+              <input name="name" class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white" />
+            </label>
+            <label class="block">
+              <span class="text-neutral-400 text-xs">E-mail</span>
+              <input name="email" type="email" class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white" />
+            </label>
+            <label class="block">
+              <span class="text-neutral-400 text-xs">Telefon</span>
+              <input name="phone" class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white" />
+            </label>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-3">
+            <label class="block">
+              <span class="text-neutral-400 text-xs">Skąd przyszło</span>
+              <select name="source" class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white">
+                <option value="email">E-mail</option>
+                <option value="phone">Telefon</option>
+              </select>
+            </label>
+            <label class="block">
+              <span class="text-neutral-400 text-xs">Język klienta</span>
+              <select name="lang" class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white">
+                <option value="pl">polski</option>
+                <option value="en">angielski</option>
+                <option value="de">niemiecki</option>
+              </select>
+            </label>
+          </div>
+          <label class="block">
+            <span class="text-neutral-400 text-xs">Treść zapytania, tak jak ją zrozumiałeś</span>
+            <textarea name="message" rows="3" class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white"></textarea>
+          </label>
+          <div class="space-y-2">
+            <span class="text-neutral-400 text-xs">Pozycje. Kwoty wpisujesz w następnym kroku.</span>
+            <% [0, 1, 2].forEach(function (i) { %>
+              <div class="flex gap-2">
+                <input name="title" placeholder="<%= i === 0 ? 'np. Odlew sygnetu, srebro 925' : 'kolejna pozycja' %>"
+                       class="flex-1 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white" />
+                <input name="qty" type="number" min="1" value="1"
+                       class="w-20 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white" />
+              </div>
+            <% }); %>
+          </div>
+          <button class="px-4 py-2 rounded-lg bg-amber-400 text-neutral-950 text-sm font-medium hover:bg-amber-300 transition-colors">
+            Załóż numer
+          </button>
+        </form>
+      </div>
+    </details>
+
+    <% if (!quotes.length) { %>
+      <div class="rounded-xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-10 text-center text-neutral-500 text-sm">
+        Nic tu nie ma<% if (stan) { %> w tym stanie<% } %>.
+      </div>
+    <% } else { %>
+      <div class="overflow-x-auto rounded-xl border border-white/10">
+        <table class="w-full text-sm">
+          <thead class="bg-neutral-900 text-neutral-500 text-xs">
+            <tr>
+              <th class="text-left px-4 py-2 font-medium">Numer</th>
+              <th class="text-left px-4 py-2 font-medium">Stan</th>
+              <th class="text-left px-4 py-2 font-medium">Klient</th>
+              <th class="text-left px-4 py-2 font-medium">Skąd</th>
+              <th class="text-right px-4 py-2 font-medium">Kwota</th>
+              <th class="text-left px-4 py-2 font-medium">Ważna do</th>
+              <th class="text-left px-4 py-2 font-medium">Wpłynęło</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5">
+            <% quotes.forEach(function (q) { %>
+              <tr class="hover:bg-white/[0.03] transition-colors">
+                <td class="px-4 py-2.5">
+                  <a href="/quotes/<%= encodeURIComponent(q.quote_ref) %>" class="font-mono text-amber-300 hover:text-amber-200"><%= q.quote_ref %></a>
+                  <div class="text-neutral-600 text-[10px]"><%= q.item_count %> poz.<% if (q.converted_order_ref) { %> &middot; <%= q.converted_order_ref %><% } %></div>
+                </td>
+                <td class="px-4 py-2.5">
+                  <span class="px-2 py-0.5 rounded border text-[10px] <%= BARWA[q.status] || 'text-neutral-400 border-white/10' %>"><%= q.status %></span>
+                </td>
+                <td class="px-4 py-2.5 text-neutral-300">
+                  <%= q.customer_name || '-' %>
+                  <div class="text-neutral-600 text-[10px]"><%= q.customer_email || q.customer_phone || 'brak kontaktu' %></div>
+                </td>
+                <td class="px-4 py-2.5 text-neutral-500 text-xs"><%= ZRODLO[q.source] || q.source %> &middot; <%= q.lang %></td>
+                <td class="px-4 py-2.5 text-right text-neutral-200"><%= zl(q.total_grosze) %></td>
+                <td class="px-4 py-2.5 text-neutral-500 text-xs"><%= fmtDateShort(q.valid_until) %></td>
+                <td class="px-4 py-2.5 text-neutral-500 text-xs"><%= fmtDate(q.created_at) %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+
+  </main>
+</body>
+</html>

@@ -1521,6 +1521,131 @@ app.get("/api/quotes/:ref", async (req, res) => {
   });
 });
 
+// ------------------------------------------------------------
+// PANEL WYCEN: lista, podglad, wysylka i wycena zalozona recznie
+// ------------------------------------------------------------
+// Zapytania przychodza czterema drogami: z formularza, z kalkulatora, mailem
+// i telefonem. Dwie pierwsze same zapisywaly sie w bazie, dwie ostatnie
+// zylly w skrzynce i w pamieci. Rozmowa telefoniczna konczyla sie kwota
+// podana ustnie, bez numeru, bez zapisu i bez miejsca, w ktorym klient moze
+// zaplacic. Te trasy wciagaja obie do tego samego toru.
+
+/** Lista wycen dla panelu. Numer, stan, kwota i to, skad przyszlo. */
+app.get("/api/quotes", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  const stan = String(req.query.status || "").trim();
+  const dozwolone = ["new", "priced", "sent", "accepted", "converted", "expired", "cancelled"];
+  const warunek = dozwolone.includes(stan) ? "WHERE q.status = $1" : "";
+  const parametry = dozwolone.includes(stan) ? [stan] : [];
+  const { rows } = await pool.query(
+    `SELECT q.id, q.quote_ref, q.status, q.lang, q.source, q.customer_email, q.customer_name,
+            q.customer_phone, q.message, q.total_grosze, q.valid_until, q.sent_at, q.created_at,
+            q.converted_order_id, o.order_ref AS converted_order_ref,
+            (SELECT COUNT(*) FROM quote_items qi WHERE qi.quote_id = q.id) AS item_count
+       FROM quotes q
+       LEFT JOIN orders o ON o.id = q.converted_order_id
+       ${warunek}
+      ORDER BY q.created_at DESC
+      LIMIT 200`,
+    parametry
+  );
+  const { rows: liczniki } = await pool.query(
+    "SELECT status, COUNT(*)::int AS ile FROM quotes GROUP BY status"
+  );
+  res.json({ ok: true, quotes: rows, counts: Object.fromEntries(liczniki.map((r) => [r.status, r.ile])) });
+});
+
+/**
+ * Podglad wyceny dla panelu.
+ *
+ * Osobna trasa od tej dla klienta, bo panel widzi WIECEJ: tresc zapytania,
+ * dane kontaktowe, stan i token dostepu. Doklejenie tego do trasy klienckiej
+ * znaczyloby, ze jedna pomylka w warunku pokazuje kupujacemu cudze dane.
+ */
+app.get("/api/quotes/:ref/admin", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  const quote = await getQuoteByRef(pool, req.params.ref);
+  if (!quote) return res.status(404).json({ error: "Nie ma takiej wyceny" });
+  res.json({
+    ok: true,
+    quote: {
+      quoteRef: quote.quote_ref, status: quote.status, lang: quote.lang, source: quote.source,
+      email: quote.customer_email, name: quote.customer_name, phone: quote.customer_phone,
+      message: quote.message, totalGrosze: quote.total_grosze, priceNote: quote.price_note,
+      validUntil: quote.valid_until, sentAt: quote.sent_at, createdAt: quote.created_at,
+      accessToken: quote.access_token,
+      convertedOrderId: quote.converted_order_id,
+    },
+    items: quote.items.map((i) => ({
+      id: Number(i.id), calculator: i.calculator, title: i.title, qty: i.qty,
+      unitGrosze: i.unit_grosze, lineGrosze: i.line_grosze,
+      description: i.description, fileName: i.file_name, params: i.params,
+    })),
+  });
+});
+
+/**
+ * Wycena zalozona recznie: rozmowa mailowa albo telefoniczna.
+ *
+ * Numer nadajemy OD RAZU, jeszcze przed wpisaniem kwot, zeby bylo czym
+ * nazwac watek w korespondencji. Adres nie jest wymagany, bo przy rozmowie
+ * telefonicznej bywa, ze mamy tylko numer; wtedy link przekazuje sie ustnie
+ * albo SMS-em, a mail po prostu nie wychodzi.
+ */
+app.post("/api/quotes/manual", express.json({ limit: "256kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const { email, name, phone, lang, source, message, items } = req.body || {};
+  if (email && !CONTACT_EMAIL_RE.test(String(email))) return res.status(400).json({ error: "Nieprawidlowy adres e-mail" });
+  if (!email && !phone) return res.status(400).json({ error: "Podaj adres e-mail albo telefon" });
+  if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: "Wycena bez pozycji" });
+
+  const zrodlo = ["email", "phone", "chat", "quote", "contact"].includes(String(source)) ? String(source) : "email";
+  try {
+    const created = await createQuote(pool, {
+      email: email || null, name, phone, lang, source: zrodlo,
+      message: String(message || "").slice(0, 8000),
+      items: items.slice(0, 20),
+      allowAnonymous: true,
+    });
+    console.log(`[wycena] zalozono recznie ${created.quoteRef} (${zrodlo})`);
+    res.json({ ok: true, quoteRef: created.quoteRef, accessToken: created.accessToken });
+  } catch (e) {
+    if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
+    console.error("[wycena] reczne zalozenie nie powiodlo sie:", e.message);
+    res.status(500).json({ error: "Nie udalo sie zalozyc wyceny" });
+  }
+});
+
+/**
+ * Wyslanie oferty do klienta.
+ *
+ * Stan `sent` znaczy: kwota wyszla na zewnatrz i od tej chwili obowiazuje.
+ * Zapisujemy go NAWET wtedy, gdy mail nie wyszedl (klient bez adresu), bo
+ * o tym, czy oferta zostala zlozona, decyduje przekazanie jej klientowi,
+ * a nie kanal. Odpowiedz mowi wprost, czy list poszedl.
+ */
+app.post("/api/quotes/:ref/send", express.json({ limit: "8kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const quote = await getQuoteByRef(pool, req.params.ref);
+  if (!quote) return res.status(404).json({ error: "Nie ma takiej wyceny" });
+  if (!quote.total_grosze) return res.status(400).json({ error: "Najpierw wpisz kwoty", code: "not_priced" });
+
+  const url = `${SITE_URL}/oferta/?ref=${encodeURIComponent(quote.quote_ref)}&token=${encodeURIComponent(quote.access_token)}`;
+  const wyslano = quote.customer_email ? await sendQuoteLink(pool, quote.quote_ref, url) : false;
+  await pool.query(
+    "UPDATE quotes SET status = 'sent', sent_at = COALESCE(sent_at, NOW()), updated_at = NOW() WHERE id = $1",
+    [quote.id]
+  );
+  console.log(`[wycena] ${quote.quote_ref} oznaczona jako wyslana, mail: ${wyslano ? "tak" : "nie"}`);
+  res.json({ ok: true, url, mailed: wyslano });
+});
+
 /** Wpisanie kwot: dopiero to czyni z zapytania oferte */
 app.post("/api/quotes/:ref/price", express.json({ limit: "64kb" }), async (req, res) => {
   if (!requireAdmin(req, res)) return;

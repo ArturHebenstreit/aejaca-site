@@ -1160,6 +1160,10 @@ app.get("/email-threads/:id", requireAuth, async (req, res) => {
 
 const CHAT_API = (process.env.CHAT_API_URL || "").replace(/\/$/, "");
 
+// Adres serwisu, na ktorym stoi strona oferty. Ta sama wartosc co w chat-api,
+// wiec link z panelu i link z maila prowadza w to samo miejsce.
+const SITE_URL = (process.env.SITE_URL || "https://www.aejaca.com").replace(/\/$/, "");
+
 async function shopApi(path, { method = "GET", body } = {}) {
   if (!CHAT_API) throw new Error("Brak zmiennej CHAT_API_URL w tej usludze");
   if (!process.env.ADMIN_API_TOKEN) throw new Error("Brak zmiennej ADMIN_API_TOKEN w tej usludze");
@@ -1316,6 +1320,94 @@ app.post("/discounts/:code/toggle", requireAuth, async (req, res) => {
 // Przelew nie ma powiadomienia z bramki, wiec jedynym dowodem wplywu jest
 // wyciag bankowy. Potwierdzenie robi dokladnie to samo, co SUCCESS z Autopay:
 // maile do klienta i przeniesienie plikow do Zamowien. Wykonuje sie raz.
+// ------------------------------------------------------------
+// WYCENY
+// ------------------------------------------------------------
+// Jedno miejsce na wszystkie zapytania, niezaleznie od tego, czy przyszly
+// z formularza, z kalkulatora, mailem czy telefonem. Numer `WY...` nadaje
+// sie od razu, jeszcze przed kwota, bo to on nazywa watek w korespondencji
+// i pozniej stoi w tytule platnosci.
+
+app.get("/quotes", requireAuth, async (req, res) => {
+  const stan = String(req.query.status || "");
+  try {
+    const { quotes, counts } = await shopApi(`/api/quotes${stan ? `?status=${encodeURIComponent(stan)}` : ""}`);
+    res.render("quotes", { user: req.user, quotes, counts, stan, msg: req.query.msg, err: req.query.err });
+  } catch (err) {
+    res.render("quotes", { user: req.user, quotes: [], counts: {}, stan, msg: null, err: err.message });
+  }
+});
+
+app.get("/quotes/:ref", requireAuth, async (req, res) => {
+  try {
+    const { quote, items } = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/admin`);
+    // Link buduje sie tu, a nie w widoku, bo klient przy rozmowie telefonicznej
+    // nie dostanie maila i jedynym sposobem przekazania oferty jest skopiowanie
+    // tego adresu z ekranu.
+    const offerUrl = `${SITE_URL}/oferta/?ref=${encodeURIComponent(quote.quoteRef)}&token=${encodeURIComponent(quote.accessToken)}`;
+    res.render("quote-edit", { user: req.user, quote, items, offerUrl, msg: req.query.msg, err: req.query.err });
+  } catch (err) {
+    back(res, "/quotes", { err: err.message });
+  }
+});
+
+/** Zalozenie wyceny z rozmowy mailowej albo telefonicznej. */
+app.post("/quotes/new", requireAuth, async (req, res) => {
+  try {
+    const tytuly = [].concat(req.body.title || []).filter((s) => String(s).trim());
+    const ilosci = [].concat(req.body.qty || []);
+    const items = tytuly.map((tytul, i) => ({
+      title: String(tytul).slice(0, 255),
+      qty: Math.max(1, Math.floor(Number(ilosci[i]) || 1)),
+    }));
+    if (!items.length) items.push({ title: String(req.body.message || "Zapytanie").slice(0, 255), qty: 1 });
+    const r = await shopApi("/api/quotes/manual", {
+      method: "POST",
+      body: {
+        email: (req.body.email || "").trim() || null,
+        name: (req.body.name || "").trim() || null,
+        phone: (req.body.phone || "").trim() || null,
+        lang: ["pl", "en", "de"].includes(req.body.lang) ? req.body.lang : "pl",
+        source: req.body.source === "phone" ? "phone" : "email",
+        message: req.body.message || null,
+        items,
+      },
+    });
+    back(res, `/quotes/${r.quoteRef}`, { msg: `Zalozono ${r.quoteRef}` });
+  } catch (err) { back(res, "/quotes", { err: err.message }); }
+});
+
+/** Wpisanie kwot: dopiero to czyni z zapytania oferte. */
+app.post("/quotes/:ref/price", requireAuth, async (req, res) => {
+  try {
+    const idki = [].concat(req.body.itemId || []);
+    const kwoty = [].concat(req.body.unitPln || []);
+    const lines = idki
+      .map((id, i) => ({ id: Number(id), unitGrosze: Math.round(Number(String(kwoty[i]).replace(",", ".")) * 100) }))
+      .filter((l) => Number.isFinite(l.unitGrosze) && l.unitGrosze > 0);
+    if (!lines.length) throw new Error("Wpisz kwotę przynajmniej jednej pozycji");
+    const r = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/price`, {
+      method: "POST",
+      body: {
+        lines,
+        note: req.body.note || null,
+        validDays: Number(req.body.validDays) > 0 ? Number(req.body.validDays) : undefined,
+      },
+    });
+    back(res, `/quotes/${req.params.ref}`, { msg: `Wyceniono na ${(r.totalGrosze / 100).toFixed(2)} zł, ważne do ${r.validUntil}` });
+  } catch (err) { back(res, `/quotes/${req.params.ref}`, { err: err.message }); }
+});
+
+/** Wyslanie oferty klientowi. */
+app.post("/quotes/:ref/send", requireAuth, async (req, res) => {
+  try {
+    const r = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/send`, { method: "POST" });
+    back(res, `/quotes/${req.params.ref}`, {
+      msg: r.mailed ? "Oferta wysłana mailem" : `Oznaczono jako wysłaną. Bez maila, przekaż link: ${r.url}`,
+    });
+  } catch (err) { back(res, `/quotes/${req.params.ref}`, { err: err.message }); }
+});
+
 app.get("/transfers", requireAuth, async (req, res) => {
   try {
     const { orders, reviews = [], closed = [] } = await shopApi("/api/orders/awaiting-transfer");

@@ -76,7 +76,32 @@ const kod = {
   created_at: new Date("2026-08-01"),
 };
 
+// Wycena bez kwot: taka wlasnie przychodzi z rozmowy telefonicznej i taka
+// najlatwiej wywala widok, bo polowa pol jest pusta.
+const wycena = {
+  quoteRef: "WY20260825-A1B2C3D4", status: "new", lang: "pl", source: "phone",
+  email: null, name: "Test", phone: "+48 600 000 000", message: "Zapytanie z rozmowy",
+  totalGrosze: null, priceNote: null, validUntil: null, sentAt: null,
+  createdAt: new Date("2026-08-25"), accessToken: "token-testowy", convertedOrderId: null,
+};
+
 const ZESTAWY = {
+  quotes: {
+    user: uzytkownik,
+    quotes: [{
+      id: 1, quote_ref: wycena.quoteRef, status: "new", lang: "pl", source: "phone",
+      customer_email: null, customer_name: "Test", customer_phone: "+48 600 000 000",
+      message: null, total_grosze: null, valid_until: null, sent_at: null,
+      created_at: wycena.createdAt, converted_order_id: null, converted_order_ref: null, item_count: 1,
+    }],
+    counts: { new: 1 }, stan: "", msg: null, err: null,
+  },
+  "quote-edit": {
+    user: uzytkownik, quote: wycena,
+    items: [{ id: 1, calculator: null, title: "Odlew sygnetu", qty: 1, unitGrosze: null, lineGrosze: null, description: null, fileName: null, params: null }],
+    offerUrl: "https://www.aejaca.com/oferta/?ref=WY20260825-A1B2C3D4&token=token-testowy",
+    msg: null, err: null,
+  },
   "gemstone-prices": { user: uzytkownik, gems: [kamien], flash: null },
   "gemstone-prices-edit": { user: uzytkownik, gem: kamien },
   discounts: { user: uzytkownik, codes: [kod], created: [], msg: null, err: null },
@@ -141,7 +166,7 @@ for (const f of pliki) {
 
 // Kazda pozycja edytowalna musi miec droge powrotna: widok edycji bez trasy
 // zapisu to formularz, ktory po kliknieciu "zapisz" daje 404.
-for (const [widok, zapis] of [["discount-edit", "/discounts/:code/update"], ["gemstone-prices-edit", "/gemstone-prices/:id/update"], ["material-edit", "/materials/:id/update"]]) {
+for (const [widok, zapis] of [["quote-edit", "/quotes/:ref/price"], ["discount-edit", "/discounts/:code/update"], ["gemstone-prices-edit", "/gemstone-prices/:id/update"], ["material-edit", "/materials/:id/update"]]) {
   if (existsSync(join(VIEWS, `${widok}.ejs`)) && !server.includes(`"${zapis}"`)) {
     zle(`views/${widok}.ejs nie ma trasy zapisu ${zapis}`);
   }
