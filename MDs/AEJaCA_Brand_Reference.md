@@ -944,6 +944,15 @@ AEJaCA + modelu mieszczącego się po wybranej skali jednolitej w 24 x 24 x 35 m
 Każda inna kombinacja kończy się wyceną indywidualną i tak jest nazwana na
 ekranie, zamiast pokazywać liczbę nie do dotrzymania.
 
+**Szybka wycena też liczy odlew (od 2026-08-25).** Kafelek materiału „Srebro / złoto
+(odlew)" pojawia się po wgraniu pliku 3D i dokłada jedno pytanie: z jakiego kruszcu
+odlewamy. Tego jednego nie da się zgadnąć, bo srebro i złoto 18k dzieli kilkadziesiąt
+razy. Bez pliku 3D szybka wycena kieruje odlew do wyceny indywidualnej: przedział
+wielkości opisuje gabaryt, a nie objętość kruszcu, a pierścionek „jak moneta" to
+w większości powietrze. Powyżej dziesięciu sztuk odlew jest serią produkcyjną i też
+idzie do rozmowy. Wykończenie mapuje się z jakości: prototyp na surowy odlew, standard
+na odcięcie i oczyszczenie, premium na wykończenie jubilerskie.
+
 **Widełki obejmują dopłaty.** `calcNew` liczy zakres z ceny sprzed doliczenia
 wzorca i wykończenia, więc rdzeń przesuwa widełki o te dopłaty. Bez tego
 kalkulator pokazywałby zakres niższy od kwoty do zapłaty o stałe 120 do 280 zł,

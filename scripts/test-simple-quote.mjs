@@ -25,6 +25,7 @@ import { readFileSync } from "node:fs";
 import { resolveTechAndParams, runCalc } from "../src/pricing/simpleQuote.js";
 import { calculate as calcPrint3D, BUILD_VOL_CM, MSLA_BUILD_VOL_CM, maxScaleForBuildVolume } from "../src/pricing/print3d.js";
 import { scaleMesh, scaleVector, meshMaxCm, vectorMaxCm } from "../src/pricing/scaleGeometry.js";
+import { calculate as calcCasting } from "../src/pricing/preciousMetalCasting.js";
 
 let bledy = 0;
 const zle = (m) => { console.error(`  ✗ ${m}`); bledy++; };
@@ -221,6 +222,59 @@ if (/const fitCm = naZywicy \? fitCmMsla : fitCmFdm/.test(WIDOK)) {
 }
 if (/MSLA_BUILD_VOL_CM/.test(WIDOK)) ok("pole drukarki zywicznej jest w ogole znane widokowi");
 else zle("widok nie zna pola drukarki zywicznej");
+
+// ------------------------------------------------------------
+// ODLEW W KRUSZCU: SZYBKA WYCENA NIE MOZE ZGADYWAC MASY
+// ------------------------------------------------------------
+// Odlew wszedl do szybkiej wyceny jako szosty material. Trzy rzeczy musza sie
+// zgadzac, bo kazda z nich zawodzi po cichu:
+//   1. bez modelu nie ma masy, wiec nie ma kwoty, tylko wycena indywidualna,
+//   2. kwota jest ta sama, co w trybie zaawansowanym i w sklepie,
+//   3. progi ilosci ida ze slownika jubilerskiego, nie studyjnego.
+{
+  const kostka = { volumeCm3: 1.728, bbox: { x: 1.2, y: 1.2, z: 1.2 }, triangleCount: 12 };
+  const odp = { item: "jewelry", size: "coin", material: "precious", finish: "standard", quantity: "one" };
+
+  const bezPliku = resolveTechAndParams({ ...odp });
+  if (bezPliku?.custom) ok("odlew bez modelu idzie do wyceny indywidualnej, zamiast zgadywac mase");
+  else zle(`odlew bez modelu dostal kwote: ${JSON.stringify(bezPliku)}`);
+
+  const zPlikiem = resolveTechAndParams({ ...odp, fileType: "stl", stlData: kostka });
+  if (zPlikiem?.tech === "cast") ok("model 3D w kruszcu trafia do silnika odlewu");
+  else zle(`model 3D w kruszcu poszedl gdzie indziej: ${JSON.stringify(zPlikiem)}`);
+
+  const szybka = runCalc(zPlikiem, "pl");
+  const zaawansowana = calcCasting({
+    variantId: "model_3d", materialSourceId: "aejaca", metalId: "silver", finishId: "clean", qtyId: "1", stlData: kostka,
+  }, "pl");
+  if (szybka?.unitGrosze === zaawansowana?.unitGrosze) {
+    ok(`szybka wycena odlewu zgadza sie z trybem zaawansowanym (${szybka.unitGrosze} gr)`);
+  } else {
+    zle(`odlew rozjechal sie miedzy trybami: ${szybka?.unitGrosze} wobec ${zaawansowana?.unitGrosze}`);
+  }
+
+  // Wybor kruszcu MUSI zmieniac kwote. Gdyby przepadl po drodze, klient
+  // zamawiajacy zloto widzialby cene srebra i nikt by tego nie zauwazyl.
+  const zlote = runCalc(resolveTechAndParams({ ...odp, fileType: "stl", stlData: kostka, alloyId: "gold_18k" }), "pl");
+  if (zlote?.unitGrosze > szybka.unitGrosze * 3) ok("wybor zlota zmienia kwote, wiec kruszec dociera do silnika");
+  else zle(`zloto policzone jak srebro: ${zlote?.unitGrosze} wobec ${szybka.unitGrosze}`);
+
+  // Model ponad kolba nie moze dostac kwoty automatycznej.
+  const zaDuzy = resolveTechAndParams({
+    ...odp, fileType: "stl", stlData: { volumeCm3: 40, bbox: { x: 4, y: 4, z: 4 }, triangleCount: 12 },
+  });
+  if (zaDuzy?.custom) ok("model ponad limit kolby idzie do oceny indywidualnej");
+  else zle(`model 40 x 40 x 40 mm dostal kwote automatyczna: ${JSON.stringify(zaDuzy)}`);
+
+  // Progi ilosci: silnik jubilerski zna "1" i "2-5", a nie "proto" i "micro".
+  const kilka = runCalc(resolveTechAndParams({ ...odp, quantity: "few", fileType: "stl", stlData: kostka }), "pl");
+  if (kilka?.type === "calculated" && kilka.qty === 3) ok("prog kilku sztuk liczy sie po jubilersku (3 szt.)");
+  else zle(`prog kilku sztuk nie policzyl sie: ${JSON.stringify(kilka?.type)} qty=${kilka?.qty}`);
+
+  const wiele = runCalc(resolveTechAndParams({ ...odp, quantity: "many", fileType: "stl", stlData: kostka }), "pl");
+  if (wiele?.type === "custom") ok("seria ponad dziesiec sztuk odlewu idzie do wyceny indywidualnej");
+  else zle(`seria dostala kwote automatyczna: ${JSON.stringify(wiele?.type)}`);
+}
 
 console.log(bledy ? `\n${bledy} bledow\n` : "\nSzybka wycena: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);

@@ -91,7 +91,9 @@ import PrintabilityGate from "./PrintabilityGate.jsx";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
 import SizeSlider, { categoryForCm } from "./SizeSlider.jsx";
 import VectorPreview from "./VectorPreview.jsx";
-import { resolveTechAndParams, runCalc } from "../../pricing/simpleQuote.js";
+import { resolveTechAndParams, runCalc, CAST_DEFAULT_ALLOY } from "../../pricing/simpleQuote.js";
+import { CASTING_METALS, CASTING_ENVELOPE_MM } from "../../pricing/preciousMetalCasting.js";
+import { useMarketRates } from "../../hooks/useMarketRates.js";
 import { useMaterialStock } from "../../hooks/useMaterialStock.js";
 import { getResin } from "../../data/resins.js";
 import { scaleMesh, scaleVector, meshMaxCm, vectorMaxCm, meshForPricing } from "../../pricing/scaleGeometry.js";
@@ -154,6 +156,9 @@ const MATERIALS = [
   // Bez tego slowa klient z akrylem nie mial gdzie kliknac.
   { id: "glass",   icon: GlassWater, img: "/img/calc/studio_materials/glass.webp",   label: { pl: "Szkło / kamień / inne", en: "Glass / stone / other", de: "Glas / Stein / Sonstiges" } },
   { id: "resin",   icon: Droplet,    img: "/img/calc/studio_materials/resin.webp",   label: { pl: "Żywica",        en: "Resin",          de: "Harz" } },
+  // Kruszec to NIE jest ten sam kafelek co "Metal". Tam laser znakuje gotowy
+  // przedmiot, tutaj odlewamy nowy z modelu, wiec i technologia, i cena sa inne.
+  { id: "precious", icon: Gem,       img: "/img/shop/service/precious_metal_casting.webp", label: { pl: "Srebro / złoto (odlew)", en: "Silver / gold (casting)", de: "Silber / Gold (Guss)" } },
   { id: "idk",     icon: HelpCircle, label: { pl: "Nie wiem - doradźcie", en: "I'm not sure - advise me", de: "Weiß nicht - beraten Sie mich" } },
 ];
 
@@ -190,6 +195,7 @@ function cartTargetFor(resolved) {
   if (tech === "3dprint") return { calculator: "print3d_fdm", serviceId: "print_fdm" };
   if (tech === "msla")    return { calculator: "print3d_msla", serviceId: "print_msla" };
   if (tech === "epoxy")   return { calculator: "epoxy", serviceId: "epoxy" };
+  if (tech === "cast")    return { calculator: "jewelry_casting", serviceId: "precious_metal_casting" };
   if (tech === "fiber")   return { calculator: "laser_fiber", serviceId: "laser_fiber" };
   if (tech === "co2") {
     return mode === "cut"
@@ -203,12 +209,32 @@ function cartTargetFor(resolved) {
 // UI - emerald-themed tile grid
 // ============================================================
 
+const ALLOY_LBL = {
+  pl: "Z jakiego kruszcu odlewamy",
+  en: "Which metal we cast in",
+  de: "Aus welchem Metall wir giessen",
+};
+// ODLEW BEZ MODELU NIE MA MASY. Przedzial wielkosci opisuje gabaryt, a nie
+// objetosc kruszcu: pierscionek "jak moneta" to w wiekszosci powietrze.
+// Mowimy to wprost, zamiast pokazac liczbe wzieta znikad.
+const CAST_HINT_NO_FILE = {
+  pl: `Odlew wyceniamy z objętości modelu, więc potrzebujemy pliku 3D. Bez niego przygotujemy wycenę indywidualną. Automat obejmuje modele mieszczące się w ${CASTING_ENVELOPE_MM.join(" × ")} mm.`,
+  en: `A casting is priced from the model's volume, so we need a 3D file. Without one we prepare an individual quote. Automatic pricing covers models fitting ${CASTING_ENVELOPE_MM.join(" × ")} mm.`,
+  de: `Ein Guss wird aus dem Modellvolumen berechnet, wir brauchen also eine 3D-Datei. Ohne sie erstellen wir ein individuelles Angebot. Die Automatik gilt bis ${CASTING_ENVELOPE_MM.join(" × ")} mm.`,
+};
+const CAST_HINT_FILE = {
+  pl: `Cena wynika z objętości Twojego modelu i bieżącego kursu kruszcu. Automat obejmuje modele mieszczące się w ${CASTING_ENVELOPE_MM.join(" × ")} mm; większe kierujemy do oceny indywidualnej.`,
+  en: `The price follows your model's volume and the current metal rate. Automatic pricing covers models fitting ${CASTING_ENVELOPE_MM.join(" × ")} mm; larger ones go to individual review.`,
+  de: `Der Preis folgt dem Volumen Ihres Modells und dem aktuellen Metallkurs. Die Automatik gilt bis ${CASTING_ENVELOPE_MM.join(" × ")} mm; groessere pruefen wir individuell.`,
+};
+
 const TECH_BADGE = {
   "3dprint": { pl: "Druk 3D",    en: "3D Print",     de: "3D-Druck" },
   "co2":     { pl: "Laser CO2",  en: "CO2 Laser",    de: "CO2-Laser" },
   "fiber":   { pl: "Laser Fiber", en: "Fiber Laser",  de: "Faserlaser" },
   "epoxy":   { pl: "Żywica",      en: "Resin casting", de: "Harzguss" },
   "msla":    { pl: "Żywica MSLA", en: "MSLA Resin",   de: "MSLA-Harz" },
+  "cast":    { pl: "Odlew w metalu", en: "Metal casting", de: "Metallguss" },
 };
 
 const TECH_RATIONALE = {
@@ -231,6 +257,11 @@ const TECH_RATIONALE = {
     pl: "Odlewy z żywicy dają najlepsze efekty dla transparentnych i dekoracyjnych form.",
     en: "Resin casting gives best results for transparent and decorative forms.",
     de: "Harzguss liefert die besten Ergebnisse für transparente und dekorative Formen.",
+  },
+  "cast": {
+    pl: "Odlew na wosk tracony: wzorzec drukujemy w żywicy odlewniczej, wypalamy i zalewamy srebrem albo złotem.",
+    en: "Lost-wax casting: we print the pattern in castable resin, burn it out and pour silver or gold.",
+    de: "Wachsausschmelzguss: Das Modell wird in Gießharz gedruckt, ausgebrannt und mit Silber oder Gold gefüllt.",
   },
   "msla": {
     pl: "Druk żywiczny MSLA 16K oddaje mikrodetal i gładkie powierzchnie, idealny do figurek i miniatur.",
@@ -596,6 +627,10 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
   // Material wybrany z naszego magazynu. null znaczy "klient jeszcze nie
   // wybral albo wpisuje wlasny", i wtedy wycena zostaje przy domysle.
   const [stockId, setStockId] = useState(null);
+  // Kruszec do odlewu. Srebro i zloto 18k roznia sie w cenie kilkudziesiat
+  // razy, wiec tego jednego nie da sie zgadnac za klienta. Domysl jest
+  // najtanszy, zeby kwota nigdy nie obiecywala mniej, niz wyjdzie.
+  const [alloyId, setAlloyId] = useState(CAST_DEFAULT_ALLOY);
   // Powod, dla ktorego kwoty wiazacej nie ma. Bez niego kafelek "Dodaj do
   // koszyka" swiecil sie na niebiesko, a pod nim nie dzialo sie nic.
   const [cartOffReason, setCartOffReason] = useState(null);
@@ -793,12 +828,15 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
   // przegladarce i na serwerze, wiec kwota na ekranie i kwota wiazaca licza
   // sie z tych samych liczb.
   const materialStock = useMaterialStock();
-  const odpowiedzi = { item, size, material, finish, quantity, fileType, stlData: scaledStl, svgData: scaledSvg, stockId, podloze };
+  // Kursy kruszcow. Potrzebuje ich wylacznie odlew, ale hook musi stac
+  // bezwarunkowo, bo React nie pozwala wywolac go pod warunkiem.
+  const { rates } = useMarketRates();
+  const odpowiedzi = { item, size, material, finish, quantity, fileType, stlData: scaledStl, svgData: scaledSvg, stockId, alloyId, podloze };
 
   const resolved = useMemo(
     () => resolveTechAndParams({ ...odpowiedzi, printTech }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, printTech, stockId, podloze]
+    [item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, printTech, stockId, alloyId, podloze]
   );
 
   // Pole robocze laserow, ten sam wzorzec co pole robocze drukarki (fitCm)
@@ -842,17 +880,17 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
   // nadal generowalyby poprawnie wygladajace liczby.
   const co2CutResult = useMemo(
     () => (isVectorCo2 && !laserOverPlate
-      ? runCalc(resolveTechAndParams({ ...odpowiedzi, co2Mode: "cut" }), lang, materialStock)
+      ? runCalc(resolveTechAndParams({ ...odpowiedzi, co2Mode: "cut" }), lang, materialStock, rates)
       : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isVectorCo2, laserOverPlate, lang, item, size, material, finish, quantity, fileType, scaledSvg, stockId, podloze, materialStock]
+    [isVectorCo2, laserOverPlate, lang, item, size, material, finish, quantity, fileType, scaledSvg, stockId, podloze, materialStock, rates]
   );
   const co2EngraveResult = useMemo(
     () => (isVectorCo2 && !laserOverPlate
-      ? runCalc(resolveTechAndParams({ ...odpowiedzi, co2Mode: "engrave" }), lang, materialStock)
+      ? runCalc(resolveTechAndParams({ ...odpowiedzi, co2Mode: "engrave" }), lang, materialStock, rates)
       : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isVectorCo2, laserOverPlate, lang, item, size, material, finish, quantity, fileType, scaledSvg, stockId, podloze, materialStock]
+    [isVectorCo2, laserOverPlate, lang, item, size, material, finish, quantity, fileType, scaledSvg, stockId, podloze, materialStock, rates]
   );
 
   // Wybor klienta (kliknieta karta ciecie/grawerowanie) nadpisuje tryb, ktory
@@ -897,8 +935,8 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
   // wykonac w calosci, jest obietnica bez pokrycia, a klient dowiedzialby sie
   // o tym dopiero przy realizacji. Zamiast liczby pokazujemy droge.
   const result = useMemo(
-    () => (overPlate || laserOverPlate ? { type: "custom" } : runCalc(activeResolved, lang, materialStock)),
-    [activeResolved, lang, overPlate, laserOverPlate, materialStock]
+    () => (overPlate || laserOverPlate ? { type: "custom" } : runCalc(activeResolved, lang, materialStock, rates)),
+    [activeResolved, lang, overPlate, laserOverPlate, materialStock, rates]
   );
 
   // Druga technologia druku, policzona z TYCH SAMYCH odpowiedzi. Klient
@@ -908,9 +946,9 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
   const drukowe = resolved?.tech === "3dprint" || resolved?.tech === "msla";
   const drugaTech = resolved?.tech === "msla" ? "fdm" : "msla";
   const drugiWynik = useMemo(
-    () => (!drukowe || overPlate ? null : runCalc(resolveTechAndParams({ ...odpowiedzi, printTech: drugaTech }), lang, materialStock)),
+    () => (!drukowe || overPlate ? null : runCalc(resolveTechAndParams({ ...odpowiedzi, printTech: drugaTech }), lang, materialStock, rates)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [drukowe, drugaTech, overPlate, lang, item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, stockId, materialStock]
+    [drukowe, drugaTech, overPlate, lang, item, size, material, finish, quantity, fileType, scaledStl, scaledSvg, stockId, materialStock, rates]
   );
 
   // Przejscie do trybu zaawansowanego zabiera ze soba plik i ustawiona
@@ -952,7 +990,7 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
     trackCalc("studio_simple", qid, v);
   };
 
-  const STL_ALLOWED_MATS = useMemo(() => new Set(["plastic", "resin"]), []);
+  const STL_ALLOWED_MATS = useMemo(() => new Set(["plastic", "resin", "precious"]), []);
   const SVG_ALLOWED_MATS = useMemo(() => new Set(["wood", "metal", "glass"]), []);
   const matDisabledIds = useMemo(() => {
     if (!hasFile) return undefined;
@@ -1451,6 +1489,20 @@ export default function SimpleStudioCalc({ lang = "pl", onAdvanced = null }) {
             </div>
           </div>
         )}
+
+          {/* Kruszec to jedyna rzecz, ktorej przy odlewie nie wolno zgadnac:
+              srebro i zloto 18k roznia sie w cenie kilkudziesiat razy. Pytamy
+              wiec o niego tuz pod kaflem, a nie w szostym pytaniu dla
+              wszystkich, bo pozostalych technologii to nie dotyczy. */}
+          {material === "precious" && (
+            <div className="mt-5 pt-5 border-t border-white/10">
+              <div className="text-[11px] uppercase tracking-wide text-emerald-400/60 mb-2">{t(ALLOY_LBL, lang)}</div>
+              <Chips options={CASTING_METALS} value={alloyId} onChange={handleSet(setAlloyId, "alloy")} lang={lang} />
+              <p className="text-neutral-400 text-[11px] leading-relaxed mt-3">
+                {t(hasFile ? CAST_HINT_FILE : CAST_HINT_NO_FILE, lang)}
+              </p>
+            </div>
+          )}
 
           {/* JEDEN BLOK MATERIALU, A NIE DWA.
               Wczesniej klient wybieral material tutaj, a nizej, w panelu

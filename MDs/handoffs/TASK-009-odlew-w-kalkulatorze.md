@@ -50,12 +50,15 @@ wycene na druku FDM, bo `metal_cast` nie byl rozpoznawana zakladka.
   (nowa sekcja 6.4b), `public/sitemap.xml`: synchronizacja.
 - `MDs/decisions/ADR-0011-odlew-w-kalkulatorze-studio.md`.
 
+- `src/components/calculators/SimpleStudioCalc.jsx`, `src/pricing/simpleQuote.js`,
+  `src/data/advancedOptions.js`: odlew w szybkiej wycenie.
+- `scripts/test-simple-quote.mjs`: siedem sprawdzen sciezki odlewu.
+
 ### Swiadomie poza zakresem
 
-- Szybka wycena (`SimpleStudioCalc`) nie dostaje odlewu. Pyta o piec rzeczy
-  wspolnych dla druku i lasera, a odlew potrzebuje kruszcu i wariantu, wiec
-  doklejenie go tam znaczyloby albo szoste pytanie dla wszystkich, albo
-  wycene bez kruszcu.
+- Odlew nie ma wpisu w `GRUPY` w `advancedOptions.js`, wiec zdanie "co dodaje
+  tryb zaawansowany" przy nim nie powstaje. Tak samo dziala odlew zywiczny.
+  Wpis wymagalby przeniesienia etykiet kalkulatora do modulu cenowego.
 - `fitsCastingFlask` przyjmuje skale jako liczbe. Gdyby ktos kiedys przeslal
   skale osobno dla kazdej osi, `Number(obiekt)` da `NaN` i model zostanie
   odrzucony jako za duzy. Zaden dzisiejszy wywolujacy tego nie robi (sklep i
@@ -74,19 +77,28 @@ wycene na druku FDM, bo `metal_cast` nie byl rozpoznawana zakladka.
 | Przegladarka, sciezki reczne | pomysl klienta, kruszec powierzony | pass: "Individual terms required", koszyk zablokowany |
 | Przegladarka, kruszec i naklad | zloto 18k, prog 2-5, licznik 4 szt. | pass: 26.92 g, rabat 5%, suma za 4 sztuki, nie za naklad progu |
 | Bledy konsoli | ten sam przebieg | brak, poza nieosiagalnym API kursow w sandboxie |
+| Zywy endpoint `/api/price` | `chat-api` uruchomiony lokalnie, dwa zapytania tym samym plikiem | pass: kalkulator i karta sklepu oddaja `unitGrosze=47704`, identycznie; przy zlocie 18k w skali 1.5 obie po `5415881` |
+| Granice na zywym endpoincie | ten sam serwer | pass: model ponad kolba daje 400 `too_large_for_casting`, kruszec powierzony 409 `needs_quote` |
+| Szybka wycena, zgodnosc z trybem zaawansowanym | `scripts/test-simple-quote.mjs` | pass, obie drogi po 47704 gr, czyli tyle samo co serwer |
+| Szybka wycena bez pliku | ten sam test i przegladarka | pass: wycena indywidualna, koszyk zablokowany |
+| Szybka wycena, kruszec i seria | ten sam test | pass: zloto zmienia kwote, seria ponad 10 sztuk idzie do rozmowy |
 | Build | `npm run build` | pass |
 
 ## Ryzyka i otwarte pytania
 
-- Kwoty wiazacej nie sprawdzilem od konca do konca, bo `/api/price` nie jest
-  osiagalne z tego srodowiska. Sprawdzona jest sciezka szacunku i to, ze
-  `CalcToCart` dostaje `calculator: "jewelry_casting"` oraz plik i skale.
-  Do potwierdzenia na zywym API: czy dodanie do koszyka z kalkulatora daje te
-  sama kwote co karta uslugi w sklepie.
+- POTWIERDZONE: uruchomilem `chat-api` lokalnie i zapytalem `/api/price` tym
+  samym plikiem raz tak, jak pyta kalkulator, raz tak, jak pyta karta sklepu.
+  Obie drogi oddaly identyczne `unitGrosze`, takze przy zlocie i przy skali 1.5.
+  Ta sama liczba wychodzi z rdzenia w przegladarce, wiec trzy powierzchnie
+  licza to samo.
+- NIESPRAWDZONE: przejscie `plik -> /api/uploads -> token -> /api/price`, bo
+  odczyt geometrii z tokenu wymaga bazy, ktorej w tym srodowisku nie ma. To jest
+  droga wspolna dla wszystkich kalkulatorow przyjmujacych pliki i nie ma w niej
+  niczego swoistego dla odlewu.
 - Kurs euro w widelkach idzie ze stalej `CONFIG.EUR_PLN_RATE`, a nie z kursu
   zywego. Tak dziala kazdy kalkulator jubilerski, wiec nie zmienialem tego przy
   okazji, ale przy zlocie roznica jest juz widoczna w kwocie.
-- Decyzja Artura: czy odlew ma sie takze pojawic w szybkiej wycenie.
+- Rozstrzygniete przez Artura 2026-08-25: odlew ma byc takze w szybkiej wycenie. Zrobione.
 
 ## Instrukcja dla recenzenta
 
@@ -103,6 +115,8 @@ wycene na druku FDM, bo `metal_cast` nie byl rozpoznawana zakladka.
 ## Warunek uznania zadania za gotowe
 
 - `/studio/?tab=metal_cast` otwiera kalkulator odlewu w trzech jezykach.
+- Szybka wycena z wgranym modelem 3D i kafelkiem kruszcu podaje te sama kwote
+  co tryb zaawansowany, a bez modelu kieruje do wyceny indywidualnej.
 - Model mieszczacy sie w kolbie daje cene, kazda inna sciezka daje wycene
   indywidualna i zablokowany koszyk.
 - Widelki obejmuja kwote wiazaca.
