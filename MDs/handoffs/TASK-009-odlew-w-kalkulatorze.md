@@ -40,7 +40,10 @@ wycene na druku FDM, bo `metal_cast` nie byl rozpoznawana zakladka.
 
 ### Zmienione pliki
 
-- `src/components/calculators/MetalCastCalc.jsx`: nowy kalkulator.
+- `src/components/calculators/MetalCastCalc.jsx`: nowy kalkulator oraz zdjecia
+  trzech kafelkow wariantu, wziete z zasobow, ktore juz sa w repozytorium.
+- `src/components/calculators/calcShared.jsx`: `HeroCards` naklada obwodke
+  napisu tylko wtedy, gdy kafelek ma zdjecie.
 - `src/components/StudioCalculator.jsx`: piaty kafelek, podpisy w trzech
   jezykach, siatka na piec kolumn.
 - `src/pricing/preciousMetalCasting.js` i mirror `chat-api/pricing/`:
@@ -51,7 +54,8 @@ wycene na druku FDM, bo `metal_cast` nie byl rozpoznawana zakladka.
 - `MDs/decisions/ADR-0011-odlew-w-kalkulatorze-studio.md`.
 
 - `src/components/calculators/SimpleStudioCalc.jsx`, `src/pricing/simpleQuote.js`,
-  `src/data/advancedOptions.js`: odlew w szybkiej wycenie.
+  `src/data/advancedOptions.js`: odlew w szybkiej wycenie, razem z ostrzezeniem
+  o kolbie i przyciskiem zmniejszenia do granicy.
 - `scripts/test-simple-quote.mjs`: siedem sprawdzen sciezki odlewu.
 
 ### Swiadomie poza zakresem
@@ -82,6 +86,8 @@ wycene na druku FDM, bo `metal_cast` nie byl rozpoznawana zakladka.
 | Szybka wycena, zgodnosc z trybem zaawansowanym | `scripts/test-simple-quote.mjs` | pass, obie drogi po 47704 gr, czyli tyle samo co serwer |
 | Szybka wycena bez pliku | ten sam test i przegladarka | pass: wycena indywidualna, koszyk zablokowany |
 | Szybka wycena, kruszec i seria | ten sam test | pass: zloto zmienia kwote, seria ponad 10 sztuk idzie do rozmowy |
+| Model ponad kolba w szybkiej wycenie | Playwright, model 44 x 10 x 19 mm | pass: ostrzezenie z granica 3.5 cm, wynik "wycena indywidualna", po klknieciu przycisku cena wraca (164-202 EUR) i ostrzezenie znika |
+| Kafelki wariantu w obu motywach | Playwright, `data-theme` jasny i ciemny | pass: trzy zdjecia wczytane, zero odpowiedzi 4xx, napis bialy na gradiencie |
 | Build | `npm run build` | pass |
 
 ## Ryzyka i otwarte pytania

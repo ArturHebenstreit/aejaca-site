@@ -25,7 +25,7 @@ import { readFileSync } from "node:fs";
 import { resolveTechAndParams, runCalc } from "../src/pricing/simpleQuote.js";
 import { calculate as calcPrint3D, BUILD_VOL_CM, MSLA_BUILD_VOL_CM, maxScaleForBuildVolume } from "../src/pricing/print3d.js";
 import { scaleMesh, scaleVector, meshMaxCm, vectorMaxCm } from "../src/pricing/scaleGeometry.js";
-import { calculate as calcCasting } from "../src/pricing/preciousMetalCasting.js";
+import { calculate as calcCasting, maxCastingScaleForBBox } from "../src/pricing/preciousMetalCasting.js";
 
 let bledy = 0;
 const zle = (m) => { console.error(`  ✗ ${m}`); bledy++; };
@@ -274,6 +274,44 @@ else zle("widok nie zna pola drukarki zywicznej");
   const wiele = runCalc(resolveTechAndParams({ ...odp, quantity: "many", fileType: "stl", stlData: kostka }), "pl");
   if (wiele?.type === "custom") ok("seria ponad dziesiec sztuk odlewu idzie do wyceny indywidualnej");
   else zle(`seria dostala kwote automatyczna: ${JSON.stringify(wiele?.type)}`);
+}
+
+// ------------------------------------------------------------
+// OBA TRYBY MUSZA REAGOWAC TAK SAMO NA MODEL PONAD KOLBA
+// ------------------------------------------------------------
+// Tryb zaawansowany pokazywal ostrzezenie i przycisk zmniejszenia, a szybka
+// wycena po prostu przestawala podawac kwote i nie mowila dlaczego. Ten sam
+// plik konczyl w dwoch trybach inaczej, wiec wygladalo to jak usterka jednego
+// z nich. Granica jest jedna funkcja, wiec liczba musi sie zgadzac, a widok
+// musi ja pokazac.
+{
+  const dlugi = { volumeCm3: 0.29, bbox: { x: 4.4, y: 1.0, z: 1.9 }, triangleCount: 12 };
+  const odp = { item: "jewelry", size: "palm", material: "precious", finish: "standard", quantity: "one", fileType: "stl" };
+
+  const wOryginale = resolveTechAndParams({ ...odp, stlData: dlugi });
+  if (wOryginale?.custom) ok("model ponad kolba nie dostaje kwoty automatycznej w szybkiej wycenie");
+  else zle("model 44 x 10 x 19 mm przeszedl przez automat odlewu");
+
+  const max = maxCastingScaleForBBox(dlugi.bbox);
+  const doGranicy = Math.floor(max * 1000) / 1000;
+  const zmniejszony = {
+    volumeCm3: dlugi.volumeCm3 * doGranicy ** 3,
+    bbox: { x: dlugi.bbox.x * doGranicy, y: dlugi.bbox.y * doGranicy, z: dlugi.bbox.z * doGranicy },
+    triangleCount: 12,
+  };
+  const poZmniejszeniu = runCalc(resolveTechAndParams({ ...odp, stlData: zmniejszony }), "pl");
+  if (poZmniejszeniu?.type === "calculated") {
+    ok(`po zmniejszeniu do ${(doGranicy * 100).toFixed(0)}% kwota wraca (${(poZmniejszeniu.unitGrosze / 100).toFixed(2)} zl)`);
+  } else {
+    zle("przycisk zmniejszenia prowadzilby donikad: przy granicy nadal nie ma kwoty");
+  }
+
+  if (/const castOverFlask = material === "precious"/.test(WIDOK)) ok("szybka wycena wie, ze model nie miesci sie w kolbie");
+  else zle("szybka wycena nie rozpoznaje modelu ponad kolba");
+  if (/setSizeCm\(castFitCm\)/.test(WIDOK)) ok("szybka wycena oferuje zmniejszenie do granicy kolby");
+  else zle("szybka wycena nie oferuje zmniejszenia, wiec ostrzezenie jest slepym zaulkiem");
+  if (/castOverFlaskTitle/.test(WIDOK)) ok("ostrzezenie o kolbie ma wlasny komunikat");
+  else zle("brak komunikatu o kolbie: klient nie dowie sie, dlaczego nie ma ceny");
 }
 
 console.log(bledy ? `\n${bledy} bledow\n` : "\nSzybka wycena: wszystko sie zgadza\n");

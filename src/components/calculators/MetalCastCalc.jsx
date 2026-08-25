@@ -92,8 +92,20 @@ const L = {
   },
 };
 
+/**
+ * Zdjecia wariantow. Kazde pokazuje DOKLADNIE to, co wariant obiecuje, a nie
+ * ogolna ilustracje odlewnictwa: wzorzec, ktory klient przynosi; model, ktory
+ * przysyla; i prace projektowa, ktora wykonujemy za niego. Zdjecia sa juz
+ * w repozytorium, wiec kafelki nie czekaja na nowa sesje z generatorem.
+ */
+const VARIANT_IMG = {
+  ready_pattern: "/img/calc/3d_apps/casting.webp",
+  model_3d: "/img/b2b/pillar_cad.webp",
+  client_idea: "/img/shop/service/cad_project.webp",
+};
+
 /** Kafelki wariantow: `sub` z rdzenia cenowego jest tu opisem pod tytulem. */
-const VARIANT_CARDS = CASTING_VARIANTS.map((v) => ({ id: v.id, label: v.label, desc: v.sub }));
+const VARIANT_CARDS = CASTING_VARIANTS.map((v) => ({ id: v.id, label: v.label, desc: v.sub, img: VARIANT_IMG[v.id] }));
 
 export default function MetalCastCalc({ lang = "pl" }) {
   const l = L[lang] || L.en;
