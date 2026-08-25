@@ -3,6 +3,7 @@
 // Regeneracja: npm run sync:pricing
 
 import { calcNew } from "./jewelry.js";
+import { fmtCost } from "./config.js";
 
 export const PRECIOUS_METAL_CASTING_BUILD = "1.006";
 
@@ -102,8 +103,13 @@ export function calculate(params, lang = "pl", rates) {
       ...(base.breakdown || []).filter((row) => !row.divider && !row.bold),
       { label: ln[0], value: "" },
       { label: ln[1], value: "" },
-      { label: ln[2], value: `${(patternPreparationGrosze / 100).toFixed(0)} PLN` },
-      { label: ln[3], value: `${(finish.extraGrosze / 100).toFixed(0)} PLN` },
+      // Kwota idzie przez `fmtCost`, tak jak kazdy wiersz odziedziczony po
+      // `calcNew`. Wpisana na sztywno koncowka "PLN" nie wywalala niczego:
+      // klient czytajacy po angielsku albo po niemiecku widzial rozpiske,
+      // w ktorej kruszec i robocizna sa w euro, a dwa wiersze nizej stoi
+      // kwota w zlotowkach. Reguly walutowe pilnuje `PROJECT_RULES.md`.
+      { label: ln[2], value: fmtCost(patternPreparationGrosze / 100, lang) },
+      { label: ln[3], value: fmtCost(finish.extraGrosze / 100, lang) },
     ],
   };
 }

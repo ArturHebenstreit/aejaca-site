@@ -141,9 +141,17 @@ if (pool) {
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_confirmed_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_confirmed_by VARCHAR(120)`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS transfer_note TEXT`).catch(() => {});
-  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_review_at TIMESTAMPTZ`).catch(() => {});
-  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_review_reason VARCHAR(80)`).catch(() => {});
-  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_review_previous_status VARCHAR(20)`).catch(() => {});
+  // Kolumny recznej weryfikacji i indeks nad nimi ida LANCUCHEM, a nie obok
+  // siebie. Migracje w tym bloku leca rownolegle, wiec indeks czesciowy po
+  // `payment_review_at` mogl wystartowac przed powstaniem kolumny, przegrac
+  // wyscig i wyladowac w pustym `.catch`. Kolejka platnosci do rozstrzygniecia
+  // dzialalaby wtedy bez indeksu i nikt by sie o tym nie dowiedzial.
+  const kolumnyWeryfikacji = Promise.all([
+    pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_review_at TIMESTAMPTZ`),
+    pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_review_reason VARCHAR(80)`),
+    pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_review_previous_status VARCHAR(20)`),
+  ]);
+  kolumnyWeryfikacji.catch((e) => console.error("[migracja] kolumny payment_review:", e.message));
   // Status posredni: zamowienie zlozone, czekamy na wplyw na konto.
   pool.query(`
     DO $$ BEGIN
@@ -156,8 +164,10 @@ if (pool) {
   `).catch((e) => console.error("[migracja] status/payment_method:", e.message));
   pool.query(`CREATE INDEX IF NOT EXISTS idx_orders_awaiting_transfer
               ON orders (created_at DESC) WHERE status = 'awaiting_transfer'`).catch(() => {});
-  pool.query(`CREATE INDEX IF NOT EXISTS idx_orders_payment_review
-              ON orders (payment_review_at DESC) WHERE status = 'payment_review'`).catch(() => {});
+  kolumnyWeryfikacji
+    .then(() => pool.query(`CREATE INDEX IF NOT EXISTS idx_orders_payment_review
+                            ON orders (payment_review_at DESC) WHERE status = 'payment_review'`))
+    .catch((e) => console.error("[migracja] indeks payment_review:", e.message));
 
   // Kody rabatowe. Jedna tabela obsluguje kody osobiste (jednorazowe) i akcje
   // (MATKA15, BLACKFRIDAY), rozroznione wylacznie ustawieniami.

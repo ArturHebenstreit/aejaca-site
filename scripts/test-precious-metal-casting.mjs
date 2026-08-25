@@ -30,6 +30,31 @@ assert.ok(priced.unitGrosze > 0);
 assert.ok(Math.abs(priced.finalMassG - 4.144) < 0.001);
 assert.ok(priced.requiredMassG > priced.finalMassG);
 
+// Rozpiska musi trzymac jedna walute w calosci. Przygotowanie wzorca i
+// wykonczenie mialy koncowke "PLN" wpisana na sztywno, wiec klient czytajacy
+// po angielsku widzial euro w kruszcu i zlotowki dwa wiersze nizej. Nic sie
+// przy tym nie wywalalo, dlatego mierzymy to testem, a nie okiem.
+for (const lang of ["en", "de"]) {
+  const obcy = calculate({
+    ...base,
+    variantId: "model_3d",
+    materialSourceId: "aejaca",
+    stlData: { volumeCm3: 0.4, bbox: { x: 2.0, y: 2.0, z: 0.8 } },
+  }, lang);
+  const waluty = new Set(obcy.breakdown.map((row) => String(row.value).replace(/[\d\s.,-]/g, "")).filter(Boolean));
+  assert.deepEqual([...waluty], ["EUR"], `rozpiska odlewu w ${lang} miesza waluty: ${[...waluty].join(", ")}`);
+}
+const rodzima = calculate({
+  ...base,
+  variantId: "model_3d",
+  materialSourceId: "aejaca",
+  stlData: { volumeCm3: 0.4, bbox: { x: 2.0, y: 2.0, z: 0.8 } },
+}, "pl");
+assert.deepEqual(
+  [...new Set(rodzima.breakdown.map((row) => String(row.value).replace(/[\d\s.,-]/g, "")).filter(Boolean))],
+  ["PLN"],
+);
+
 const startingPrice = calculate({
   metalId: "silver", finishId: "raw", qtyId: "1",
   variantId: "model_3d", materialSourceId: "aejaca",
