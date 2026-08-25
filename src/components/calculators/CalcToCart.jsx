@@ -10,13 +10,13 @@
 // Parametry sa te same, ktorych uzywa kalkulator, bo obie strony wolaja
 // ten sam rdzen z src/pricing/.
 
-import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { AlertTriangle, ShoppingCart, Check, Loader2, ArrowRight, Info } from "lucide-react";
 import { DISTORTION_NOTE } from "../../pricing/quoteSummary.js";
 import { useCart } from "../../cart/CartContext.jsx";
 import { getServiceCard } from "../../data/serviceCatalog.js";
-import { JobDescription, AttachmentList, BlockedReasons, ARTWORK_EXT, uploadKindFor } from "../shop/ConfigControls.jsx";
+import { JobDescription, AttachmentList, BlockedReasons, DeclaredSpec, ARTWORK_EXT, uploadKindFor } from "../shop/ConfigControls.jsx";
 import { getService } from "../../data/orderCatalog.js";
 import { ENGRAVING_LIMITS } from "../../pricing/packaging.js";
 import { brakPodloza } from "../../data/laserSubstrate.js";
@@ -80,6 +80,10 @@ const UI = {
     holdLabel: "Potwierdź uwagi do modelu",
     needDescription: "Opis zlecenia",
     needDescriptionHint: "Wpisz co najmniej 20 znaków w polu opisu powyżej.",
+    needBasis: "Podstawa kwoty wiążącej",
+    needBasisHint: "Wgraj plik albo podaj wymiary w polu powyżej. Bez pomiaru możemy podać wyłącznie szacunek.",
+    missingBasis: "Podaj wymiary, żeby dodać do koszyka",
+    estimateNote: "To jest wycena szacunkowa, nie oferta. Podlega weryfikacji przez AEJaCA i dedykowanej ofercie. Podaj wymiary albo wgraj plik, a podamy kwotę wiążącą.",
     needArtwork: "Projekt do wykonania",
     needArtworkHint: "Wgraj plik SVG, DXF lub PDF albo opisz zlecenie w polu powyżej.",
     needEngraving: "Treść graweru",
@@ -131,6 +135,10 @@ const UI = {
     holdLabel: "Confirm the notes on the model",
     needDescription: "Job description",
     needDescriptionHint: "Type at least 20 characters in the description above.",
+    needBasis: "Basis for a binding amount",
+    needBasisHint: "Upload a file or give the dimensions above. Without a measurement we can only give an estimate.",
+    missingBasis: "Give the dimensions to add to the cart",
+    estimateNote: "This is an estimate, not an offer. It is subject to verification by AEJaCA and a dedicated quotation. Give the dimensions or upload a file and we will state a binding amount.",
     needArtwork: "Your artwork",
     needArtworkHint: "Upload an SVG, DXF or PDF file, or describe the job in the field above.",
     needEngraving: "Engraving text",
@@ -182,6 +190,10 @@ const UI = {
     holdLabel: "Hinweise zum Modell bestätigen",
     needDescription: "Auftragsbeschreibung",
     needDescriptionHint: "Mindestens 20 Zeichen im Beschreibungsfeld oben.",
+    needBasis: "Grundlage fuer einen verbindlichen Betrag",
+    needBasisHint: "Laden Sie eine Datei hoch oder geben Sie oben die Masse an. Ohne Messung koennen wir nur schaetzen.",
+    missingBasis: "Masse angeben, um in den Warenkorb zu legen",
+    estimateNote: "Dies ist eine Schaetzung, kein Angebot. Sie unterliegt der Pruefung durch AEJaCA und einem dedizierten Angebot. Geben Sie die Masse an oder laden Sie eine Datei hoch, dann nennen wir einen verbindlichen Betrag.",
     needArtwork: "Ihre Vorlage",
     needArtworkHint: "Laden Sie eine SVG-, DXF- oder PDF-Datei hoch oder beschreiben Sie den Auftrag oben.",
     needEngraving: "Gravurtext",
@@ -233,6 +245,13 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   const isJewelry = String(calculator || "").startsWith("jewelry");
 
   const [price, setPrice] = useState(null);
+  // PODSTAWA KWOTY WIAZACEJ. `binding` przychodzi z serwera, z tej samej
+  // reguly, ktora odmawia przyjecia zamowienia. Dopoki jest falszem, kwota
+  // jest szacunkiem i koszyk zostaje wygaszony razem z powodem.
+  const [binding, setBinding] = useState(true);
+  const [missing, setMissing] = useState([]);
+  // To, co klient wpisal recznie zamiast pliku: gabaryty, pole albo objetosc.
+  const [declared, setDeclared] = useState({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   // KOMUNIKAT SERWERA, a nie tylko kod. Serwer pisze pelnym zdaniem, po co
@@ -365,7 +384,21 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   // wiec nie da sie tedy wziac rabatu za dwadziescia jeden sztuk, zamawiajac
   // jedna. Liczba wchodzi tez do klucza, wiec zmiana licznika przelicza cene.
   const zamowionych = qtyProp != null ? Math.max(1, Math.floor(qtyProp)) : null;
-  const paramsKey = JSON.stringify(zamowionych != null ? { ...params, qty: zamowionych } : params);
+
+  // Do wyceny ida WYLACZNIE komplety. Dwa wymiary z trzech to nadal brak
+  // podstawy, a wyslane w polowie kazalyby serwerowi liczyc z niepelnej bryly.
+  const podstawaZReki = useMemo(() => {
+    const out = {};
+    const d = declared.declaredMm;
+    if (d && d.x > 0 && d.y > 0 && d.z > 0) out.declaredMm = { x: d.x, y: d.y, z: d.z };
+    const f = declared.declaredFieldMm;
+    if (f && f.w > 0 && f.h > 0) out.declaredFieldMm = { w: f.w, h: f.h };
+    if (declared.volumeMl > 0) out.volumeMl = declared.volumeMl;
+    return out;
+  }, [declared]);
+
+  const paramsZPodstawa = useMemo(() => ({ ...params, ...podstawaZReki }), [params, podstawaZReki]);
+  const paramsKey = JSON.stringify(zamowionych != null ? { ...paramsZPodstawa, qty: zamowionych } : paramsZPodstawa);
 
   const fetchPrice = useCallback(async () => {
     if (!API || !calculator) return;
@@ -391,11 +424,15 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
       if (mine !== reqId.current) return;
       if (!resp.ok) {
         setPrice(null);
+        setBinding(false);
+        setMissing(Array.isArray(data.missing) ? data.missing : []);
         setError(data.code || "no_price");
         setErrorMsg(typeof data.error === "string" && data.error.trim() ? data.error.trim() : null);
         return;
       }
       setPrice(data.item);
+      setBinding(data.binding !== false);
+      setMissing(Array.isArray(data.missing) ? data.missing : []);
       setErrorMsg(null);
     } catch {
       if (mine === reqId.current) setError("network");
@@ -481,7 +518,10 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
   // `hold` wstrzymuje dodanie do koszyka, dopoki klient nie pokwituje
   // ujawnionej wady swojego pliku. Rozni sie od `blocked`: tam ceny nie ma
   // wcale, tu cena jest policzona i widoczna, brakuje tylko potwierdzenia.
-  const ready = descriptionOk && artworkOk && engravingOk && substrateOk && !gatedShape && !hold && !modelError;
+  // Bez podstawy nie ma kwoty wiazacej, wiec nie ma czego wlozyc do koszyka.
+  // Ta sama regula odmawia po stronie serwera, wiec przycisk nie moze obiecac
+  // czegos, czego kasa nie przyjmie.
+  const ready = descriptionOk && artworkOk && engravingOk && substrateOk && binding && !gatedShape && !hold && !modelError;
 
   // Licznik z kalkulatora ma pierwszenstwo przed nakladem reprezentatywnym
   // progu. `price.qty` to srodek przedzialu, na ktorym opiera sie rabat, wiec
@@ -527,7 +567,10 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
       serviceId,
       title: t(card.title, lang),
       image: card.image,
-      params,
+      // PODSTAWA JEDZIE RAZEM Z POZYCJA. Bez niej kasa odrzucilaby wlasna
+      // kwote, bo sprawdza to samo, co sprawdzil ekran: czy kwota wynika
+      // z pomiaru albo z wpisanych wymiarow, czy z przedzialu.
+      params: paramsZPodstawa,
       scale,
       fileName: file?.name || null,
       uploadToken,
@@ -662,11 +705,28 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
             lang={lang}
           />
 
+          {/* NAJPIERW DROGA, POTEM POWOD. Lista przeszkod mowi, czego brakuje,
+              ale sama nie daje tego uzupelnic. Formularz podstawy stoi wiec
+              nad nia, zeby klient nie musial szukac, gdzie wpisac wymiary. */}
+          {!binding && missing.length > 0 && (
+            <>
+              <DeclaredSpec
+                missing={missing}
+                value={declared}
+                onChange={setDeclared}
+                lang={lang}
+                accent={accent}
+              />
+              <p className="text-[11px] text-neutral-400 leading-relaxed mb-4">{u.estimateNote}</p>
+            </>
+          )}
+
           {!ready && !engravingOver && (
             <BlockedReasons
               title={u.blockedTitle}
               accent={accent}
               items={[
+                ...(!binding ? [{ ok: false, label: u.needBasis, hint: u.needBasisHint }] : []),
                 ...(requiresDescription ? [{ ok: descriptionOk, label: u.needDescription, hint: u.needDescriptionHint }] : []),
                 ...(requiresArtwork ? [{ ok: artworkOk, label: u.needArtwork, hint: u.needArtworkHint }] : []),
                 ...(wantsEngraving ? [{ ok: engravingOk, label: u.needEngraving, hint: u.needEngravingHint }] : []),
@@ -722,6 +782,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
             {added ? u.added
               : ready ? u.addToCart
               : hold ? u.holdLabel
+              : !binding ? u.missingBasis
               : requiresArtwork && !artworkOk ? u.missingArtwork
               : !descriptionOk ? u.missingDescription
               : wantsEngraving && !engravingOk ? u.missingEngraving

@@ -7,7 +7,7 @@
 // Cena pochodzi wylacznie z /api/price. Ten komponent jej nie liczy,
 // tylko pokazuje to, co odpowiedzial backend.
 
-import { useState, useEffect, useCallback, useRef, lazy, Suspense, Fragment } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense, Fragment, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { claimHandoff } from "../../data/calcHandoff.js";
 import { ShoppingCart, Check, Loader2, AlertTriangle, ArrowRight } from "lucide-react";
@@ -15,7 +15,7 @@ import { useCart } from "../../cart/CartContext.jsx";
 import { getService } from "../../data/orderCatalog.js";
 import { PACKAGING, DEFAULT_PACKAGING, getPackaging, ENGRAVING_LIMITS } from "../../pricing/packaging.js";
 import { t, tierForQty, qtyForTier, qtyLimit, qtyOpenValue, QUANTITY_TIERS } from "../../pricing/config.js";
-import { TileGroup, StepSlider, QuantityStepper, ScaleControl, FileDrop, PersonalizationField, JobDescription, BlockedReasons } from "./ConfigControls.jsx";
+import { TileGroup, StepSlider, QuantityStepper, ScaleControl, FileDrop, PersonalizationField, JobDescription, BlockedReasons, DeclaredSpec } from "./ConfigControls.jsx";
 import { useMoney } from "../../shop/money.js";
 import PrintabilityGate from "../calculators/PrintabilityGate.jsx";
 import { nozzleFromPrecision } from "../../analysis/printability.js";
@@ -54,6 +54,10 @@ const UI = {
     describeWhy: "Cena jest policzona, ale z samych parametrów nie wynika, jak przedmiot ma wyglądać. Bez opisu nie przyjmiemy zlecenia.",
     addImage: "Dołącz zdjęcie lub szkic (opcjonalnie)",
     missingDescription: "Uzupełnij opis, żeby dodać do koszyka",
+    needBasis: "Podstawa kwoty wiążącej",
+    needBasisHint: "Wgraj plik albo podaj wymiary powyżej. Bez pomiaru możemy podać wyłącznie szacunek.",
+    missingBasis: "Podaj wymiary, żeby dodać do koszyka",
+    estimateNote: "To jest wycena szacunkowa, nie oferta. Podlega weryfikacji przez AEJaCA i dedykowanej ofercie. Podaj wymiary albo wgraj plik, a podamy kwotę wiążącą.",
     missingArtwork: "Wgraj projekt, żeby dodać do koszyka",
     engravingLabel: "Treść graweru",
     engravingPlaceholder: "np. A + M, 12.06.2026",
@@ -118,6 +122,10 @@ const UI = {
     describeWhy: "The price is calculated, but the parameters alone do not say how the piece should look. Without a description we cannot accept the job.",
     addImage: "Attach a photo or sketch (optional)",
     missingDescription: "Add a description to put this in the cart",
+    needBasis: "Basis for a binding amount",
+    needBasisHint: "Upload a file or give the dimensions above. Without a measurement we can only give an estimate.",
+    missingBasis: "Give the dimensions to add to the cart",
+    estimateNote: "This is an estimate, not an offer. It is subject to verification by AEJaCA and a dedicated quotation. Give the dimensions or upload a file and we will state a binding amount.",
     missingArtwork: "Upload the artwork to put this in the cart",
     engravingLabel: "Engraving text",
     engravingPlaceholder: "e.g. A + M, 12.06.2026",
@@ -182,6 +190,10 @@ const UI = {
     describeWhy: "Der Preis steht, aber aus den Parametern allein geht nicht hervor, wie das Stück aussehen soll. Ohne Beschreibung nehmen wir den Auftrag nicht an.",
     addImage: "Foto oder Skizze anhängen (optional)",
     missingDescription: "Beschreibung ergänzen, um in den Warenkorb zu legen",
+    needBasis: "Grundlage fuer einen verbindlichen Betrag",
+    needBasisHint: "Laden Sie eine Datei hoch oder geben Sie oben die Masse an. Ohne Messung koennen wir nur schaetzen.",
+    missingBasis: "Masse angeben, um in den Warenkorb zu legen",
+    estimateNote: "Dies ist eine Schaetzung, kein Angebot. Sie unterliegt der Pruefung durch AEJaCA und einem dedizierten Angebot. Geben Sie die Masse an oder laden Sie eine Datei hoch, dann nennen wir einen verbindlichen Betrag.",
     missingArtwork: "Vorlage hochladen, um in den Warenkorb zu legen",
     engravingLabel: "Gravurtext",
     engravingPlaceholder: "z. B. A + M, 12.06.2026",
@@ -256,6 +268,10 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
   // jest domyslna odpowiedz: model niesie swoje wymiary, wiec nie ma powodu
   // pytac klienta o rozmiar, ktory juz podal, wgrywajac plik.
   const [scale, setScale] = useState(1);
+  // PODSTAWA KWOTY WIAZACEJ, ta sama regula co w kalkulatorach i w kasie.
+  const [binding, setBinding] = useState(true);
+  const [missing, setMissing] = useState([]);
+  const [declared, setDeclared] = useState({});
   const [triangles, setTriangles] = useState(null);
   const [printability, setPrintability] = useState(null);
   const [hasThumb, setHasThumb] = useState(false);
@@ -289,6 +305,18 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
   // serwer odda identyfikator uploadu. Trzymamy go tu i wysylamy, gdy bedzie dokad.
   const pendingThumb = useRef(null);
 
+  // Do wyceny ida WYLACZNIE komplety. Dwa wymiary z trzech to nadal brak
+  // podstawy, a wyslane w polowie kazalyby serwerowi liczyc z niepelnej bryly.
+  const podstawaZReki = useMemo(() => {
+    const out = {};
+    const d = declared.declaredMm;
+    if (d && d.x > 0 && d.y > 0 && d.z > 0) out.declaredMm = { x: d.x, y: d.y, z: d.z };
+    const f = declared.declaredFieldMm;
+    if (f && f.w > 0 && f.h > 0) out.declaredFieldMm = { w: f.w, h: f.h };
+    if (declared.volumeMl > 0) out.volumeMl = declared.volumeMl;
+    return out;
+  }, [declared]);
+
   const fetchPrice = useCallback(async () => {
     if (!service || !API) return;
     const mine = ++reqId.current;
@@ -298,7 +326,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
       const body = new FormData();
       body.append("calculator", service.calculator);
       body.append("lang", lang);
-      body.append("params", JSON.stringify({ ...params, ...(service.fixed || {}) }));
+      body.append("params", JSON.stringify({ ...params, ...(service.fixed || {}), ...podstawaZReki }));
       // Plik poszedl juz raz do /api/uploads, tutaj wystarczy identyfikator.
       if (uploadToken) body.append("uploadToken", uploadToken);
       if (scale !== 1) body.append("scale", String(scale));
@@ -308,17 +336,21 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
       if (mine !== reqId.current) return; // odpowiedz na starsze zapytanie, ignorujemy
       if (!resp.ok) {
         setPrice(null);
+        setBinding(false);
+        setMissing(Array.isArray(data.missing) ? data.missing : []);
         setError({ message: data.error, code: data.code });
         return;
       }
       setPrice(data.item);
+      setBinding(data.binding !== false);
+      setMissing(Array.isArray(data.missing) ? data.missing : []);
       if (data.geometry) setGeometry(data.geometry);
     } catch {
       if (mine === reqId.current) setError({ message: u.needsQuote });
     } finally {
       if (mine === reqId.current) setBusy(false);
     }
-  }, [service, params, uploadToken, scale, lang, u.needsQuote]);
+  }, [service, params, uploadToken, scale, lang, u.needsQuote, podstawaZReki]);
 
   // Cena odswieza sie po kazdej zmianie, z krotkim opoznieniem, zeby
   // przesuwanie suwaka nie wysylalo kilkunastu zapytan.
@@ -448,7 +480,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
   // Plik odrzucony przez serwer zostaje w polu, zeby bylo widac, o ktory chodzi,
   // ale zamowic go nie mozna: wycena poszlaby wtedy z samego rozmiaru, a klient
   // bylby przekonany, ze kupuje wydruk swojego modelu.
-  const ready = descriptionOk && artworkOk && jewelryEngravingOk && packEngravingOk
+  const ready = descriptionOk && artworkOk && jewelryEngravingOk && packEngravingOk && binding
     && !substrateGap && !needsHumanQuote && !castingFileMissing && !printHold && !fileError;
 
   // Zmiana podloza czysci pola, ktore od niego zaleza. Bez tego po przelaczeniu
@@ -641,7 +673,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
       serviceId: card.id,
       title: t(card.title, lang),
       image: card.image,
-      params: { ...params, ...(service.fixed || {}), ...(printability ? { printability } : {}) },
+      params: { ...params, ...(service.fixed || {}), ...podstawaZReki, ...(printability ? { printability } : {}) },
       geometry,
       scale,
       fileName: file?.name || null,
@@ -1014,11 +1046,27 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
               </div>
             )}
 
+            {/* Najpierw droga, potem powod: formularz podstawy stoi nad lista
+                przeszkod, zeby klient nie musial szukac, gdzie wpisac wymiary. */}
+            {!binding && !needsHumanQuote && missing.length > 0 && (
+              <>
+                <DeclaredSpec
+                  missing={missing}
+                  value={declared}
+                  onChange={setDeclared}
+                  lang={lang}
+                  accent={accent}
+                />
+                <p className="text-[11px] text-neutral-400 leading-relaxed mb-4">{u.estimateNote}</p>
+              </>
+            )}
+
             {!ready && !overLimit && !needsHumanQuote && (
               <BlockedReasons
                 title={u.blockedTitle}
                 accent={accent}
                 items={[
+                  ...(!binding ? [{ ok: false, label: u.needBasis, hint: u.needBasisHint }] : []),
                   ...(service.requiresDescription
                     ? [{ ok: descriptionOk, label: u.needDescription, hint: u.needDescriptionHint }] : []),
                   ...(service.requiresVector
@@ -1071,7 +1119,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
               }`}
             >
               {added ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
-              {added ? u.added : !ready ? (printHold ? u.printHold : !descriptionOk ? u.missingDescription : !artworkOk ? u.missingArtwork : u.missingEngraving) : u.addToCart}
+              {added ? u.added : !ready ? (printHold ? u.printHold : !binding ? u.missingBasis : !descriptionOk ? u.missingDescription : !artworkOk ? u.missingArtwork : u.missingEngraving) : u.addToCart}
             </button>
             )}
 
