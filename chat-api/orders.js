@@ -18,6 +18,7 @@ import * as epoxy from "./pricing/epoxy.js";
 import * as cadDesign from "./pricing/cadDesign.js";
 import * as ringConfigurator from "./pricing/ringConfigurator.js";
 import * as preciousMetalCasting from "./pricing/preciousMetalCasting.js";
+import { geometryFromDeclared } from "./pricing/bindingBasis.js";
 
 /** Limit obrotu dzialalnosci nierejestrowanej, od 2026-01-01 rozliczany kwartalnie */
 export const QUARTERLY_LIMIT_GROSZE = 1_081_350; // 10 813,50 PLN
@@ -240,6 +241,13 @@ export function priceItem({ calculator, params, lang = "pl", geometry = null, sc
   const callParams = { ...params };
   // Cokolwiek klient przyslal jako geometrie, nadpisujemy wlasnym odczytem pliku.
   delete callParams.stlData;
+  // WYMIARY WPISANE Z REKI licza sie tak samo jak zmierzony plik, tylko jako
+  // gorna granica: bryle o tych gabarytach wyceniamy jak pelna. Dzieki temu
+  // klient bez modelu ma podstawe do kwoty wiazacej, a nie przedzial, i nie
+  // moze na tym stracic, bo mniejszy model nie podniesie kwoty.
+  if (!geometry && FILE_AWARE.has(calculator)) {
+    geometry = geometryFromDeclared(params) || null;
+  }
   if (geometry && FILE_AWARE.has(calculator)) {
     // POLE ROBOCZE SPRAWDZAMY TUTAJ, a nie tylko w przegladarce. Suwak skali
     // zna granice maszyny, ale kwote wiazaca wystawia serwer i to on musi

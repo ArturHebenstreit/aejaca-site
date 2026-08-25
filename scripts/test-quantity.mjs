@@ -135,7 +135,10 @@ else ok("CalcToCart przyjmuje liczbe sztuk z kalkulatora");
 // wystarczy: bez `qty` w tresci zadania serwer liczy po nakladzie progu, wiec
 // kwota wiazaca wraca do wady, ktora tu naprawiamy, a widelki w kalkulatorze
 // nie. Dwie liczby policzone z dwoch roznych regul, znowu.
-if (!/JSON\.stringify\([^)]*\{ \.\.\.params, qty:/.test(koszyk)) {
+// Nazwa obiektu parametrow bywa rozszerzona (doszla podstawa kwoty
+// wiazacej), wiec dopuszczamy przyrostek. Znaczenie zostaje to samo:
+// obiekt wysylany do wyceny MUSI niesc `qty`.
+if (!/JSON\.stringify\([^)]*\{ \.\.\.params[A-Za-z]*, qty:/.test(koszyk)) {
   zle("CalcToCart nie dolacza liczby sztuk do parametrow wyceny: serwer policzy po nakladzie progu");
 } else ok("liczba sztuk jedzie do wyceny razem z parametrami");
 

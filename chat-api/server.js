@@ -9,6 +9,7 @@ import { createHash } from "crypto";
 import { getSystemPrompt, detectHotLead } from "./context.js";
 import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages } from "./gmail.js";
 import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken, ringGeometryFromParams, RING_CALCULATORS } from "./orders.js";
+import { bindingBasis } from "./pricing/bindingBasis.js";
 import { OUTPUT_AVAILABLE } from "./pricing/ringConfigurator.js";
 import { createQuote, priceQuote, getQuoteByRef, convertQuoteToOrder, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
 import { extraRevisionGrosze, CAD_CONFIG } from "./pricing/cadDesign.js";
@@ -1140,9 +1141,16 @@ app.post("/api/price", (req, res, next) => {
     // Informacyjnie: ile jeszcze zmiesci sie w limicie kwartalnym.
     const limit = pool ? await checkQuarterlyLimit(pool, item.lineGrosze) : null;
 
+    // CZY TA KWOTA WOLNO NAZWAC WIAZACA. Przegladarka pokazuje z tego albo
+    // kwote, albo szacunek z widelkami i powodem, ktorego brakuje. Ta sama
+    // regula odmawia przyjecia zamowienia nizej, wiec ekran nie moze obiecac
+    // czegos, czego kasa nie przyjmie.
+    const podstawa = bindingBasis({ calculator, params, geometry });
     res.json({
       ok: true,
       item,
+      binding: podstawa.binding,
+      missing: podstawa.missing,
       geometry: geometry && {
         volumeCm3: Number(geometry.volumeCm3.toFixed(3)),
         bbox: geometry.bbox,
@@ -2164,6 +2172,32 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
           error: "Zlecenie na usluge wymaga opisu tego, co mamy wykonac (min. "
             + MIN_JOB_DESCRIPTION + " znakow).",
           code: "description_required",
+        });
+      }
+
+      // KWOTA WIAZACA WYMAGA PODSTAWY, KTORA DA SIE ZMIERZYC.
+      //
+      // Sprawdzamy to TUTAJ, bo tu powstaje zobowiazanie: pozycja przyjeta do
+      // zamowienia zostanie pobrana przez Autopay i wpisana do potwierdzenia
+      // jako kwota, ktorej dotrzymujemy. Przedzial wielkosci podstawa nie jest.
+      // Przed ta zmiana `/api/price` oddawal 39,68 zl za samo "S", a pod spodem
+      // silnik zakladal 150 cm3, ktorych nikt nie widzial ani nie zapisywal.
+      //
+      // Regula stoi w lustrze `src/pricing/bindingBasis.js`, wiec przegladarka
+      // wygasza przycisk z tego samego powodu, dla ktorego serwer odmawia.
+      const podstawa = bindingBasis({
+        calculator: raw.calculator,
+        params: raw.params,
+        geometry: raw.geometry || null,
+        fromQuote: Boolean(raw.quoteRef),
+      });
+      if (!podstawa.binding) {
+        return res.status(400).json({
+          error: "Tej pozycji nie mozemy przyjac po cenie wiazacej, bo nie wynika ona z pomiaru."
+            + " Wgraj model albo podaj wymiary, albo wyslij zapytanie o wycene.",
+          code: "no_binding_basis",
+          missing: podstawa.missing,
+          calculator: raw.calculator,
         });
       }
 

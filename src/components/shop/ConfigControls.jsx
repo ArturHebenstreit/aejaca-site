@@ -569,6 +569,131 @@ export function JobDescription({ label, hint, value, onChange, minLength = 20, m
  *
  * @param {{ok: boolean, label: string, hint?: string}[]} items
  */
+// ------------------------------------------------------------
+// PODSTAWA KWOTY WIAZACEJ, WPISANA Z REKI
+// ------------------------------------------------------------
+// Klient bez pliku dostawal kwote z przedzialu wielkosci, a przedzial jest
+// domyslem: "S" znaczylo dla silnika 150 cm3, "M" osiemset. Tutaj pytamy
+// o to, co naprawde rozstrzyga cene, i mowimy wprost, jak to liczymy.
+//
+// WYMIARY LICZYMY JAK BRYLE PELNA, czyli po gornej granicy. Model o tych
+// gabarytach nie miesci wiecej materialu, wiec pozniejszy pomiar pliku moze
+// kwote tylko obnizyc. Domysl chybia w obie strony, gorna granica w jedna.
+
+const SPEC_LBL = {
+  pl: {
+    model: "Wymiary wyrobu",
+    modelHint: "Podaj gabaryty w milimetrach. Wyceniamy je jak bryłę pełną, więc po wgraniu modelu kwota może już tylko spaść.",
+    area: "Pole grawerowania",
+    areaHint: "Podaj szerokość i wysokość pola w milimetrach. Cena graweru wynika z pola, nie z wielkości przedmiotu.",
+    volume: "Objętość odlewu",
+    volumeHint: "Podaj objętość w mililitrach. To ona decyduje o zużyciu żywicy.",
+    vector: "Rysunek do wykonania",
+    vectorHint: "Cięcia nie da się wycenić z gabarytu: ten sam prostokąt z ażurem to wielokrotnie dłuższa droga noża. Wgraj rysunek SVG albo DXF, albo wyślij zapytanie o wycenę.",
+    ml: "ml",
+  },
+  en: {
+    model: "Item dimensions",
+    modelHint: "Give the overall size in millimetres. We price it as a solid block, so uploading the model later can only lower the amount.",
+    area: "Engraving field",
+    areaHint: "Give the width and height of the field in millimetres. Engraving is priced by field, not by the size of the object.",
+    volume: "Casting volume",
+    volumeHint: "Give the volume in millilitres. That is what decides resin use.",
+    vector: "Drawing to cut",
+    vectorHint: "Cutting cannot be priced from the outline: the same rectangle with a fretwork is many times more travel for the blade. Upload an SVG or DXF, or send an enquiry.",
+    ml: "ml",
+  },
+  de: {
+    model: "Abmessungen des Werkstuecks",
+    modelHint: "Geben Sie die Aussenmasse in Millimetern an. Wir rechnen sie als Vollkoerper, ein spaeter hochgeladenes Modell kann den Betrag also nur senken.",
+    area: "Gravurfeld",
+    areaHint: "Geben Sie Breite und Hoehe des Feldes in Millimetern an. Die Gravur wird nach Feld berechnet, nicht nach Objektgroesse.",
+    volume: "Gussvolumen",
+    volumeHint: "Geben Sie das Volumen in Millilitern an. Es bestimmt den Harzverbrauch.",
+    vector: "Zeichnung zum Schneiden",
+    vectorHint: "Schneiden laesst sich nicht aus den Aussenmassen berechnen: dasselbe Rechteck mit Durchbruch bedeutet ein Vielfaches an Schnittweg. Laden Sie SVG oder DXF hoch, oder senden Sie eine Anfrage.",
+    ml: "ml",
+  },
+};
+
+function PoleLiczbowe({ label, value, onChange, accent }) {
+  const ring = accent === "amber" ? "focus:border-amber-400/60" : "focus:border-blue-400/60";
+  return (
+    <label className="flex-1 min-w-0">
+      <span className="block text-[10px] uppercase tracking-wide text-neutral-500 mb-1">{label}</span>
+      <input
+        type="number" min="1" step="1" inputMode="numeric"
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value === "" ? null : Math.max(0, Number(e.target.value)))}
+        className={`w-full px-3 py-2 rounded-lg border border-white/10 bg-white/[0.03] text-white text-sm outline-none transition-colors ${ring}`}
+      />
+    </label>
+  );
+}
+
+/**
+ * Pyta o to, czego brakuje do kwoty wiazacej.
+ *
+ * @param {string[]} missing klucze z `bindingBasis`: model, area, volume, vector
+ * @param {object} value  { declaredMm, declaredFieldMm, volumeMl }
+ * @param {Function} onChange nowa wartosc
+ */
+export function DeclaredSpec({ missing = [], value = {}, onChange, lang = "pl", accent = "blue" }) {
+  const l = SPEC_LBL[lang] || SPEC_LBL.en;
+  if (!missing.length) return null;
+  const mm = value.declaredMm || {};
+  const pole = value.declaredFieldMm || {};
+  const ustaw = (klucz, dane) => onChange({ ...value, [klucz]: dane });
+
+  return (
+    <div className="mb-5 rounded-xl border border-amber-400/25 bg-amber-400/[0.05] p-4">
+      {missing.includes("model") && (
+        <div className="mb-3">
+          <div className="text-[11px] uppercase tracking-wide text-amber-200 mb-2">{l.model}</div>
+          <div className="flex gap-2">
+            {["x", "y", "z"].map((os) => (
+              <PoleLiczbowe key={os} label={`${os.toUpperCase()} (mm)`} value={mm[os]} accent={accent}
+                onChange={(v) => ustaw("declaredMm", { ...mm, [os]: v })} />
+            ))}
+          </div>
+          <p className="text-[11px] text-neutral-400 leading-relaxed mt-2">{l.modelHint}</p>
+        </div>
+      )}
+
+      {missing.includes("area") && (
+        <div className="mb-3">
+          <div className="text-[11px] uppercase tracking-wide text-amber-200 mb-2">{l.area}</div>
+          <div className="flex gap-2">
+            {[["w", "W"], ["h", "H"]].map(([klucz, znak]) => (
+              <PoleLiczbowe key={klucz} label={`${znak} (mm)`} value={pole[klucz]} accent={accent}
+                onChange={(v) => ustaw("declaredFieldMm", { ...pole, [klucz]: v })} />
+            ))}
+          </div>
+          <p className="text-[11px] text-neutral-400 leading-relaxed mt-2">{l.areaHint}</p>
+        </div>
+      )}
+
+      {missing.includes("volume") && (
+        <div className="mb-3">
+          <div className="text-[11px] uppercase tracking-wide text-amber-200 mb-2">{l.volume}</div>
+          <div className="flex gap-2 max-w-[12rem]">
+            <PoleLiczbowe label={l.ml} value={value.volumeMl} accent={accent}
+              onChange={(v) => onChange({ ...value, volumeMl: v })} />
+          </div>
+          <p className="text-[11px] text-neutral-400 leading-relaxed mt-2">{l.volumeHint}</p>
+        </div>
+      )}
+
+      {missing.includes("vector") && (
+        <div>
+          <div className="text-[11px] uppercase tracking-wide text-amber-200 mb-1">{l.vector}</div>
+          <p className="text-[11px] text-neutral-400 leading-relaxed">{l.vectorHint}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function BlockedReasons({ title, items, accent = "blue" }) {
   const pending = items.filter((i) => !i.ok);
   if (!pending.length) return null;
