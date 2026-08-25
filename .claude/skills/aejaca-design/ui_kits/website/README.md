@@ -1,3 +1,15 @@
+> **Status: v2 proposal, not the shipped architecture.**
+>
+> This kit is built on `.brand-jewelry` / `.brand-studio` wrapper classes and
+> `--bg-page`, `--fg-1`, `--accent` tokens. **None of them exist in `src/` of
+> `aejaca-site`.** The site ships a different mechanism: `--ds-*` semantic tokens
+> declared in `:root` with a `[data-theme="light"]` override list in `src/index.css`.
+>
+> Use this kit for standalone mocks, artifacts and prototypes, where `tokens.css`
+> is loaded next to it. Do not copy its components or class names into production
+> code: `var(--bg-page)` resolves to nothing there, so the component renders with
+> no background and no color. See `SKILL.md` for the production token set.
+
 # AEJaCA Website - UI Kit
 
 A clickable recreation of the AEJaCA marketing site (`aejaca.com`) using
