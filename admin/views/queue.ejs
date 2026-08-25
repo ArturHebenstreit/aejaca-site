@@ -1,0 +1,158 @@
+<%- include('partials/header', { user: user, title: 'Kolejka', active: 'queue' }) %>
+
+<%
+  const STAN = {
+    paid: { label: "Do zrobienia", klasa: "text-amber-300 border-amber-400/30 bg-amber-400/10" },
+    in_production: { label: "W robocie", klasa: "text-sky-300 border-sky-400/30 bg-sky-400/10" },
+    shipped: { label: "Wysłane", klasa: "text-indigo-300 border-indigo-400/30 bg-indigo-400/10" },
+  };
+  const DOSTAWA = {
+    pickup: "Odbiór osobisty",
+    inpost_locker: "Paczkomat InPost",
+    courier: "Kurier",
+    digital: "Plik do pobrania",
+  };
+  // Kolejnosc grup od pracy do zamkniecia. Wewnatrz kazdej kolejnosc daje
+  // serwer, po dacie zaplaty, i widok jej nie rusza.
+  const GRUPY = ["paid", "in_production", "shipped"];
+%>
+
+  <main class="max-w-5xl mx-auto px-6 py-8">
+
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-white mb-2">Kolejka pracowni</h1>
+      <p class="text-neutral-500 text-xs leading-relaxed max-w-3xl">
+        Wszystko, co opłacone i jeszcze nieskończone, w kolejności wpłat: kto pierwszy zapłacił, ten pierwszy
+        dostaje. Zamówienia ze sklepu i z ofert ustalonych mailem albo telefonicznie stoją tu razem, bo dla
+        warsztatu niczym się nie różnią. Etap zmienia się tylko do przodu i tylko z dozwolonego stanu.
+      </p>
+    </div>
+
+    <% if (err) { %>
+      <div class="rounded-lg border border-red-400/30 bg-red-400/10 p-3 mb-5 text-red-300 text-xs leading-relaxed"><%= err %></div>
+    <% } %>
+    <% if (msg) { %>
+      <div class="rounded-lg border border-emerald-400/30 bg-emerald-400/10 p-3 mb-5 text-emerald-300 text-xs"><%= msg %></div>
+    <% } %>
+
+    <% if (!orders.length) { %>
+      <div class="rounded-xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-10 text-center text-neutral-500 text-sm">
+        Nic nie czeka. Wszystko opłacone jest zrobione i zamknięte.
+      </div>
+    <% } %>
+
+    <% GRUPY.forEach(function (grupa) { %>
+      <% const wGrupie = orders.filter(function (o) { return o.status === grupa; }); %>
+      <% if (wGrupie.length) { %>
+        <section class="mb-8">
+          <h2 class="text-sm font-semibold text-white mb-3">
+            <%= STAN[grupa].label %> <span class="text-neutral-600 font-normal">(<%= wGrupie.length %>)</span>
+          </h2>
+
+          <div class="space-y-3">
+            <% wGrupie.forEach(function (o) { %>
+              <div class="rounded-xl border border-white/10 bg-white/[0.02] p-5">
+
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="font-mono text-sm text-white"><%= o.orderRef %></span>
+                      <% if (o.quoteRef) { %>
+                        <a href="/quotes/<%= encodeURIComponent(o.quoteRef) %>" class="font-mono text-[11px] text-amber-300 hover:text-amber-200"><%= o.quoteRef %></a>
+                      <% } %>
+                      <span class="px-2 py-0.5 rounded border text-[10px] <%= STAN[o.status].klasa %>"><%= STAN[o.status].label %></span>
+                    </div>
+                    <div class="text-neutral-500 text-xs mt-1">
+                      <%= o.name || "(brak nazwiska)" %> &middot; <%= o.email || "brak adresu" %><% if (o.phone) { %> &middot; <%= o.phone %><% } %>
+                    </div>
+                  </div>
+                  <div class="text-right shrink-0">
+                    <div class="text-white font-semibold text-sm"><%= o.totalPLN %> PLN</div>
+                    <div class="text-neutral-600 text-[10px]">
+                      opłacone <%= fmtDateShort(o.paidAt) %><% if (o.waitingDays != null) { %>, czeka <%= o.waitingDays %> dni<% } %>
+                    </div>
+                  </div>
+                </div>
+
+                <ul class="mt-4 space-y-2">
+                  <% o.items.forEach(function (it) { %>
+                    <li class="rounded-lg border border-white/10 bg-neutral-950 px-4 py-3">
+                      <div class="text-sm text-neutral-200"><%= it.qty %> &times; <%= it.title %></div>
+                      <div class="text-neutral-600 text-[10px] mt-0.5">
+                        <%= it.calculator || "pozycja bez kalkulatora" %>
+                        <% if (it.fileName) { %>
+                          &middot;
+                          <% if (it.fileUrl) { %>
+                            <a href="<%= it.fileUrl %>" target="_blank" rel="noopener" class="text-amber-300 hover:text-amber-200"><%= it.fileName %></a>
+                          <% } else { %><%= it.fileName %><% } %>
+                        <% } %>
+                      </div>
+                      <% if (it.description) { %>
+                        <p class="text-neutral-400 text-xs mt-2 whitespace-pre-wrap"><%= it.description %></p>
+                      <% } %>
+                    </li>
+                  <% }); %>
+                </ul>
+
+                <div class="mt-4 text-xs text-neutral-400">
+                  <span class="text-neutral-600">Dostawa:</span>
+                  <%= DOSTAWA[o.delivery.method] || o.delivery.method || "nie wybrano" %>
+                  <% if (o.delivery.point) { %> &middot; <span class="font-mono"><%= o.delivery.point %></span><% } %>
+                  <% if (o.delivery.addressLine1) { %>
+                    &middot; <%= o.delivery.addressLine1 %><% if (o.delivery.addressLine2) { %>, <%= o.delivery.addressLine2 %><% } %>,
+                    <%= o.delivery.postalCode %> <%= o.delivery.city %>, <%= o.delivery.country %>
+                  <% } %>
+                  <% if (o.trackingNumber) { %>
+                    <span class="block mt-1"><span class="text-neutral-600">List przewozowy:</span> <span class="font-mono text-neutral-300"><%= o.trackingNumber %></span></span>
+                  <% } %>
+                  <% if (o.productionNote) { %>
+                    <span class="block mt-1 text-neutral-500">Notatka: <%= o.productionNote %></span>
+                  <% } %>
+                </div>
+
+                <div class="mt-4 flex flex-wrap items-end gap-3">
+                  <% if (o.status === "paid") { %>
+                    <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage" class="flex items-end gap-2">
+                      <input type="hidden" name="stage" value="in_production" />
+                      <input name="note" placeholder="notatka do pracowni (opcjonalnie)"
+                             class="w-64 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
+                      <button class="px-4 py-2 rounded-lg bg-amber-400 text-neutral-950 text-sm font-medium hover:bg-amber-300 transition-colors">
+                        Biorę do roboty
+                      </button>
+                    </form>
+                  <% } %>
+
+                  <% if (o.status === "paid" || o.status === "in_production") { %>
+                    <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage" class="flex items-end gap-2">
+                      <input type="hidden" name="stage" value="shipped" />
+                      <label class="block">
+                        <span class="text-neutral-500 text-[10px] block mb-1">List przewozowy</span>
+                        <input name="trackingNumber" placeholder="numer przesyłki"
+                               class="w-48 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white font-mono" />
+                      </label>
+                      <button class="px-4 py-2 rounded-lg border border-white/15 text-neutral-200 text-sm hover:border-white/35 transition-colors">
+                        Wysłane
+                      </button>
+                    </form>
+                  <% } %>
+
+                  <% if (o.status === "in_production" || o.status === "shipped") { %>
+                    <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage">
+                      <input type="hidden" name="stage" value="completed" />
+                      <button class="px-4 py-2 rounded-lg border border-emerald-400/30 text-emerald-300 text-sm hover:border-emerald-400/60 transition-colors">
+                        Zamknij
+                      </button>
+                    </form>
+                  <% } %>
+                </div>
+
+              </div>
+            <% }); %>
+          </div>
+        </section>
+      <% } %>
+    <% }); %>
+
+  </main>
+</body>
+</html>

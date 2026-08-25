@@ -1408,6 +1408,36 @@ app.post("/quotes/:ref/send", requireAuth, async (req, res) => {
   } catch (err) { back(res, `/quotes/${req.params.ref}`, { err: err.message }); }
 });
 
+// ------------------------------------------------------------
+// KOLEJKA PRACOWNI
+// ------------------------------------------------------------
+// Jedna lista wszystkiego, co oplacone i jeszcze nieskonczone, od tego, kto
+// czeka najdluzej. Zamowienia ze sklepu i z oferty stoja w niej razem, bo
+// z punktu widzenia warsztatu niczym sie nie roznia.
+
+app.get("/queue", requireAuth, async (req, res) => {
+  try {
+    const { orders, counts } = await shopApi("/api/orders/queue");
+    res.render("queue", { user: req.user, orders, counts, msg: req.query.msg, err: req.query.err });
+  } catch (err) {
+    res.render("queue", { user: req.user, orders: [], counts: {}, msg: null, err: err.message });
+  }
+});
+
+app.post("/queue/:ref/stage", requireAuth, async (req, res) => {
+  try {
+    const r = await shopApi(`/api/orders/${encodeURIComponent(req.params.ref)}/production`, {
+      method: "POST",
+      body: {
+        stage: req.body.stage,
+        trackingNumber: (req.body.trackingNumber || "").trim() || undefined,
+        note: (req.body.note || "").trim() || undefined,
+      },
+    });
+    back(res, "/queue", { msg: `${req.params.ref}: ${r.status}` });
+  } catch (err) { back(res, "/queue", { err: err.message }); }
+});
+
 app.get("/transfers", requireAuth, async (req, res) => {
   try {
     const { orders, reviews = [], closed = [] } = await shopApi("/api/orders/awaiting-transfer");
