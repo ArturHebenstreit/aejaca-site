@@ -402,3 +402,200 @@ export async function convertQuoteToOrder(
     client.release();
   }
 }
+
+/**
+ * Poprawienie zapisanej oferty: dane klienta, tresc zapytania i pozycje.
+ *
+ * Wycena powstaje z zapytania, ktore czlowiek przepisuje ze skrzynki albo
+ * z rozmowy, wiec literowka w adresie i zle policzona ilosc sa tu norma,
+ * a nie wyjatkiem. Do tej pory jedyna droga bylo zalozenie wyceny od nowa,
+ * co znaczylo NOWY NUMER, czyli inny numer w watku i inny tytul platnosci
+ * niz ten, ktory klient juz od nas dostal.
+ *
+ * Czego ta funkcja NIE robi: nie rusza kwot jednostkowych. Te wpisuje
+ * `priceQuote`, bo to ona pilnuje, ze kwota jest dodatnia i ze wycena bez
+ * kwoty nie staje sie oferta. Tutaj zmienia sie ilosc, wiec przeliczamy
+ * `line_grosze` i sume naglowka, inaczej oferta pokazywalaby sume, ktora
+ * nie zgadza sie z wlasnymi pozycjami.
+ *
+ * Wycena `converted` jest zamknieta, tak samo jak przy wycenianiu: stoi za
+ * nia zamowienie z wlasnymi pozycjami i wlasna kwota, a edycja tutaj
+ * rozjechalaby jedno z drugim bez sladu.
+ *
+ * @param {object} patch pola pominiete (undefined) zostaja nietkniete
+ * @returns {Promise<{quoteRef:string, totalGrosze:number|null, status:string, removed:number, added:number}>}
+ */
+export async function updateQuote(pool, quoteRef, patch = {}) {
+  const quote = await getQuoteByRef(pool, quoteRef);
+  if (!quote) throw new QuoteError("not_found", "Nie ma takiej wyceny");
+  if (quote.status === "converted") {
+    throw new QuoteError("already_converted", "Ta wycena stala sie juz zamowieniem, wiec jej nie edytujemy");
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // --- Naglowek ---------------------------------------------------------
+    const pola = [];
+    const wartosci = [quote.id];
+    const dopisz = (kolumna, wartosc) => {
+      wartosci.push(wartosc);
+      pola.push(`${kolumna} = $${wartosci.length}`);
+    };
+    const tekst = (v, limit) => {
+      const s = String(v ?? "").trim();
+      return s ? s.slice(0, limit) : null;
+    };
+    if (patch.email !== undefined) dopisz("customer_email", tekst(patch.email, 255));
+    if (patch.name !== undefined) dopisz("customer_name", tekst(patch.name, 120));
+    if (patch.phone !== undefined) dopisz("customer_phone", tekst(patch.phone, 40));
+    if (patch.message !== undefined) dopisz("message", tekst(patch.message, 5000));
+    if (patch.lang !== undefined) {
+      const lang = ["pl", "en", "de"].includes(patch.lang) ? patch.lang : null;
+      if (!lang) throw new QuoteError("bad_lang", "Jezyk oferty to pl, en albo de");
+      dopisz("lang", lang);
+    }
+    // Adres ani telefon nie moga zniknac oba naraz: bez zadnego z nich nie ma
+    // jak przekazac oferty, a wycena zostalaby w panelu jako slepy wiersz.
+    const email = patch.email !== undefined ? tekst(patch.email, 255) : quote.customer_email;
+    const phone = patch.phone !== undefined ? tekst(patch.phone, 40) : quote.customer_phone;
+    if (!email && !phone) throw new QuoteError("no_contact", "Zostaw adres e-mail albo telefon");
+
+    if (pola.length) {
+      await client.query(
+        `UPDATE quotes SET ${pola.join(", ")}, updated_at = NOW() WHERE id = $1`,
+        wartosci
+      );
+    }
+
+    // --- Pozycje ----------------------------------------------------------
+    const wgId = new Map(quote.items.map((i) => [Number(i.id), i]));
+    let usuniete = 0;
+    let dodane = 0;
+
+    for (const poz of patch.items || []) {
+      const id = poz.id === undefined || poz.id === null ? null : Number(poz.id);
+
+      if (id !== null) {
+        const item = wgId.get(id);
+        if (!item) throw new QuoteError("unknown_item", `Pozycja ${poz.id} nie nalezy do wyceny ${quoteRef}`);
+
+        if (poz.remove) {
+          await client.query("DELETE FROM quote_items WHERE id = $1", [item.id]);
+          wgId.delete(id);
+          usuniete++;
+          continue;
+        }
+
+        const zmiany = [];
+        const wart = [item.id];
+        if (poz.title !== undefined) {
+          const t = tekst(poz.title, 255);
+          if (!t) throw new QuoteError("bad_title", "Pozycja musi miec nazwe");
+          wart.push(t);
+          zmiany.push(`title = $${wart.length}`);
+        }
+        if (poz.description !== undefined) {
+          wart.push(tekst(poz.description, 5000));
+          zmiany.push(`description = $${wart.length}`);
+        }
+        if (poz.qty !== undefined) {
+          const qty = Math.floor(Number(poz.qty));
+          if (!Number.isFinite(qty) || qty < 1) throw new QuoteError("bad_qty", "Ilosc musi byc dodatnia");
+          wart.push(qty);
+          zmiany.push(`qty = $${wart.length}`);
+          // Wartosc pozycji idzie za iloscia. Bez tego oferta na trzy sztuki
+          // pokazywalaby kwote za jedna, i to bez zadnego bledu.
+          if (item.unit_grosze) {
+            wart.push(item.unit_grosze * qty);
+            zmiany.push(`line_grosze = $${wart.length}`);
+          }
+        }
+        if (zmiany.length) {
+          await client.query(`UPDATE quote_items SET ${zmiany.join(", ")} WHERE id = $1`, wart);
+        }
+        continue;
+      }
+
+      // Nowa pozycja. Bez kwoty: te wpisuje sie wycenianiem, tak jak przy
+      // kazdej innej, zeby istniala jedna droga do ceny.
+      const t = tekst(poz.title, 255);
+      if (!t) continue;
+      const qty = Math.max(1, Math.floor(Number(poz.qty) || 1));
+      await client.query(
+        `INSERT INTO quote_items (quote_id, title, qty, description) VALUES ($1, $2, $3, $4)`,
+        [quote.id, t, qty, tekst(poz.description, 5000)]
+      );
+      dodane++;
+    }
+
+    // --- Suma naglowka ----------------------------------------------------
+    // Liczymy ja z pozycji, a nie korygujemy o roznice, bo po usunieciu
+    // i dodaniu pozycji w jednym zadaniu roznica przestaje byc policzalna.
+    const { rows: sumy } = await client.query(
+      `SELECT COALESCE(SUM(line_grosze), 0)::INTEGER AS suma,
+              COUNT(*) FILTER (WHERE unit_grosze IS NOT NULL)::INTEGER AS wycenione,
+              COUNT(*)::INTEGER AS wszystkie
+         FROM quote_items WHERE quote_id = $1`,
+      [quote.id]
+    );
+    const { suma, wycenione, wszystkie } = sumy[0];
+
+    if (!wszystkie) throw new QuoteError("no_items", "Wycena bez pozycji nie ma sensu");
+
+    let status = quote.status;
+    if (!wycenione) {
+      // Zostaly same pozycje bez kwot: to znowu jest zapytanie, nie oferta.
+      status = "new";
+      await client.query(
+        `UPDATE quotes SET total_grosze = NULL, valid_until = NULL, status = 'new', updated_at = NOW() WHERE id = $1`,
+        [quote.id]
+      );
+    } else if (suma !== quote.total_grosze) {
+      await client.query(
+        `UPDATE quotes SET total_grosze = $2, updated_at = NOW() WHERE id = $1`,
+        [quote.id, suma]
+      );
+    }
+
+    await client.query("COMMIT");
+    return {
+      quoteRef,
+      totalGrosze: wycenione ? suma : null,
+      status,
+      removed: usuniete,
+      added: dodane,
+    };
+  } catch (e) {
+    await client.query("ROLLBACK").catch(() => {});
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * Trwale usuniecie wyceny.
+ *
+ * Decyzja wlasciciela z 2026-08-26, ta sama co przy zamowieniach (ADR-0014).
+ * Pozycje znikaja kaskadowo, a wgrane pliki zostaja: `uploads.order_id`
+ * i `quote_items.upload_id` sa na `ON DELETE SET NULL`, wiec plik klienta
+ * nie przepada razem z wierszem.
+ *
+ * Wycena `converted` stoi za prawdziwym zamowieniem. Usuniecie jej NIE kasuje
+ * tego zamowienia, ale zabiera jedyny slad, skad sie ono wzielo, wiec wymaga
+ * osobnego potwierdzenia przez `force`.
+ */
+export async function deleteQuote(pool, quoteRef, { force = false } = {}) {
+  const quote = await getQuoteByRef(pool, quoteRef);
+  if (!quote) throw new QuoteError("not_found", "Nie ma takiej wyceny");
+  if (quote.status === "converted" && !force) {
+    throw new QuoteError(
+      "converted",
+      "Ta wycena stala sie zamowieniem. Usuniecie zabierze slad, skad ono pochodzi. Potwierdz, jesli mimo to chcesz ja skasowac."
+    );
+  }
+  await pool.query("DELETE FROM quotes WHERE id = $1", [quote.id]);
+  return { quoteRef, wasConverted: quote.status === "converted", orderId: quote.converted_order_id ?? null };
+}

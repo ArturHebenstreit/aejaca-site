@@ -1384,6 +1384,85 @@ app.post("/quotes/new", requireAuth, async (req, res) => {
   } catch (err) { back(res, "/quotes", { err: err.message }); }
 });
 
+/**
+ * Poprawienie oferty: dane klienta, tresc zapytania i pozycje.
+ *
+ * Usuwanie pozycji idzie przez pole wyboru "zostaw / usun", a nie przez
+ * pole zaznaczane. Pole zaznaczane wysyla sie WYLACZNIE gdy jest zaznaczone,
+ * wiec przy dwoch usuwanych z pieciu tablice rozjechalyby sie o dwa miejsca
+ * i skasowalibysmy nie te wiersze. Lista wysyla sie zawsze.
+ */
+app.post("/quotes/:ref/edit", requireAuth, async (req, res) => {
+  const wroc = `/quotes/${encodeURIComponent(req.params.ref)}`;
+  try {
+    const idki = [].concat(req.body.itemId || []);
+    const tytuly = [].concat(req.body.itemTitle || []);
+    const ilosci = [].concat(req.body.itemQty || []);
+    const opisy = [].concat(req.body.itemDescription || []);
+    const akcje = [].concat(req.body.itemAction || []);
+
+    const items = idki.map((id, i) => (
+      akcje[i] === "remove"
+        ? { id: Number(id), remove: true }
+        : {
+            id: Number(id),
+            title: tytuly[i] ?? "",
+            qty: ilosci[i] ?? 1,
+            description: opisy[i] ?? "",
+          }
+    ));
+
+    // Jedna nowa pozycja na zapis. Wiecej i tak wpisuje sie po kolei, a pusty
+    // wiersz w formularzu na zapas tylko rozprasza.
+    if (String(req.body.newTitle || "").trim()) {
+      items.push({
+        title: req.body.newTitle,
+        qty: req.body.newQty || 1,
+        description: req.body.newDescription || "",
+      });
+    }
+
+    const r = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/update`, {
+      method: "POST",
+      body: {
+        email: req.body.email ?? undefined,
+        name: req.body.name ?? undefined,
+        phone: req.body.phone ?? undefined,
+        lang: req.body.lang || undefined,
+        message: req.body.message ?? undefined,
+        items,
+      },
+    });
+    const zmiany = [
+      r.removed ? `usunieto pozycji: ${r.removed}` : null,
+      r.added ? `dodano pozycji: ${r.added}` : null,
+      r.totalGrosze != null ? `suma ${(r.totalGrosze / 100).toFixed(2)} zł` : "bez kwoty",
+    ].filter(Boolean).join(", ");
+    back(res, wroc, { msg: `Zapisano ${req.params.ref}: ${zmiany}` });
+  } catch (err) { back(res, wroc, { err: err.message }); }
+});
+
+/**
+ * Trwale usuniecie wyceny. Decyzja wlasciciela, ADR-0014.
+ *
+ * Backend i tak sprawdza przepisany numer, wiec ominiecie formularza nic
+ * nie daje. `force` przechodzi dalej wylacznie wtedy, gdy zaznaczono je
+ * swiadomie: bez niego wycena, ktora stala sie zamowieniem, nie znika.
+ */
+app.post("/quotes/:ref/delete", requireAuth, async (req, res) => {
+  try {
+    const r = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}`, {
+      method: "DELETE",
+      body: {
+        confirmRef: (req.body.confirmRef || "").trim(),
+        force: req.body.force === "on",
+      },
+    });
+    const uwaga = r.wasConverted ? " (była zamówieniem, samo zamówienie zostaje)" : "";
+    back(res, "/quotes", { msg: `Usunieto ${req.params.ref}${uwaga}` });
+  } catch (err) { back(res, `/quotes/${encodeURIComponent(req.params.ref)}`, { err: err.message }); }
+});
+
 /** Wpisanie kwot: dopiero to czyni z zapytania oferte. */
 app.post("/quotes/:ref/price", requireAuth, async (req, res) => {
   try {

@@ -123,7 +123,7 @@
       </div>
     <% } else { %>
       <div class="overflow-x-auto rounded-xl border border-white/10">
-        <table class="w-full text-sm">
+        <table class="w-full text-sm tabela-akcje">
           <thead class="bg-neutral-900 text-neutral-500 text-xs">
             <tr>
               <th class="text-left px-4 py-2 font-medium">Numer</th>
@@ -133,6 +133,7 @@
               <th class="text-right px-4 py-2 font-medium">Kwota</th>
               <th class="text-left px-4 py-2 font-medium">Ważna do</th>
               <th class="text-left px-4 py-2 font-medium">Wpłynęło</th>
+              <th class="text-right px-4 py-2 font-medium">Akcje</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-white/5">
@@ -153,6 +154,17 @@
                 <td class="px-4 py-2.5 text-right text-neutral-200"><%= zl(q.total_grosze) %></td>
                 <td class="px-4 py-2.5 text-neutral-500 text-xs"><%= fmtDateShort(q.valid_until) %></td>
                 <td class="px-4 py-2.5 text-neutral-500 text-xs"><%= fmtDate(q.created_at) %></td>
+                <td class="px-4 py-2.5 text-right whitespace-nowrap">
+                  <%# Edycja i usuwanie mieszkaja na stronie wyceny, a nie w wierszu:
+                      obie potrzebuja pozycji i potwierdzenia, a tabela ich nie pokaze. %>
+                  <a href="/quotes/<%= encodeURIComponent(q.quote_ref) %>"
+                     class="text-neutral-400 hover:text-white text-xs">Edytuj</a>
+                  <% if (q.status !== "converted") { %>
+                    <span class="text-neutral-700 mx-1">&middot;</span>
+                    <a href="/quotes/<%= encodeURIComponent(q.quote_ref) %>#usun"
+                       class="text-red-400/70 hover:text-red-300 text-xs">Usuń</a>
+                  <% } %>
+                </td>
               </tr>
             <% }); %>
           </tbody>

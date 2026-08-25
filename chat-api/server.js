@@ -11,7 +11,7 @@ import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages 
 import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken, ringGeometryFromParams, RING_CALCULATORS } from "./orders.js";
 import { bindingBasis } from "./pricing/bindingBasis.js";
 import { OUTPUT_AVAILABLE } from "./pricing/ringConfigurator.js";
-import { createQuote, priceQuote, getQuoteByRef, convertQuoteToOrder, quoteItemsForDiscount, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
+import { createQuote, priceQuote, updateQuote, deleteQuote, getQuoteByRef, convertQuoteToOrder, quoteItemsForDiscount, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
 import { extraRevisionGrosze, CAD_CONFIG } from "./pricing/cadDesign.js";
 import { GEMSTONES } from "./pricing/jewelryConfig.js";
 import {
@@ -1696,6 +1696,63 @@ app.post("/api/quotes/:ref/price", express.json({ limit: "64kb" }), async (req, 
     if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
     console.error("[wycena] wycenianie nie powiodlo sie:", e.message);
     res.status(500).json({ error: "Nie udalo sie zapisac kwot" });
+  }
+});
+
+/**
+ * Poprawienie zapisanej oferty: dane klienta, tresc zapytania i pozycje.
+ *
+ * Osobno od `/price`, bo tamto ustala KWOTY i jest jedyna droga do ceny.
+ * Tutaj poprawia sie literowke w adresie, zla ilosc albo opis pozycji, czyli
+ * to, co przy przepisywaniu zapytania ze skrzynki myli sie najczesciej.
+ * Bez tej trasy jedynym wyjsciem bylo zalozenie wyceny od nowa, a wiec nowy
+ * numer w watku i inny tytul platnosci niz ten, ktory klient juz dostal.
+ */
+app.post("/api/quotes/:ref/update", express.json({ limit: "256kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+  try {
+    const result = await updateQuote(pool, req.params.ref, req.body || {});
+    console.log(
+      `[wycena] ${result.quoteRef} poprawiona: stan ${result.status}` +
+      `${result.removed ? `, usunietych pozycji ${result.removed}` : ""}` +
+      `${result.added ? `, dodanych pozycji ${result.added}` : ""}` +
+      `${result.totalGrosze != null ? `, suma ${(result.totalGrosze / 100).toFixed(2)} PLN` : ", bez kwoty"}`
+    );
+    res.json({ ok: true, ...result });
+  } catch (e) {
+    if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
+    console.error("[wycena] poprawianie nie powiodlo sie:", e.message);
+    res.status(500).json({ error: "Nie udalo sie zapisac zmian" });
+  }
+});
+
+/**
+ * Trwale usuniecie wyceny. Decyzja wlasciciela, ADR-0014.
+ *
+ * Wymaga przepisania numeru, bo w panelu wiersze wygladaja identycznie,
+ * a cofnac sie po tym nie da. Wycena, ktora stala sie zamowieniem, wymaga
+ * dodatkowo `force`: samo zamowienie zostaje, ale ginie slad, skad przyszlo.
+ */
+app.delete("/api/quotes/:ref", express.json({ limit: "8kb" }), async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const ref = String(req.params.ref || "");
+  if (String(req.body?.confirmRef || "").trim() !== ref) {
+    return res.status(400).json({ error: "Przepisz numer wyceny, zeby potwierdzic", code: "confirm_mismatch" });
+  }
+  try {
+    const result = await deleteQuote(pool, ref, { force: req.body?.force === true });
+    console.log(
+      `[wycena] USUNIETO ${ref}` +
+      (result.wasConverted ? `, byla juz zamowieniem (id ${result.orderId}), zamowienie zostaje` : "")
+    );
+    res.json({ ok: true, ...result });
+  } catch (e) {
+    if (e instanceof QuoteError) return res.status(409).json({ error: e.message, code: e.code });
+    console.error("[wycena] usuwanie nie powiodlo sie:", e.message);
+    res.status(500).json({ error: "Nie udalo sie usunac wyceny" });
   }
 });
 
