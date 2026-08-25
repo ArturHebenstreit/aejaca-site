@@ -2194,6 +2194,20 @@ za każdym razem składał ją człowiek od nowa.
   (zakup w sklepie albo zapłata za ofertę z numerem), potem numerowane kroki każdej z nich,
   potem składowe kwoty, metody, waluta, terminy, co po zapłacie, bezpieczeństwo, awarie,
   zwroty i FAQ.
+- **Kruszec ma na tej stronie własną sekcję**, bo „ważne przez X dni" znaczy co innego na
+  każdej z trzech dróg, a to jest pytanie, które i tak przychodzi mailem:
+  - kwota wiążąca w kalkulatorze: 7 dni, płatność zwykle od razu, kruszec nie zdąży się ruszyć;
+  - **zapisana wycena z kalkulatora: robocizna wiążąca przez cały okres ważności, kruszec liczony
+    z dnia otwarcia linku.** Doliczamy wyłącznie różnicę z ruchu kursu metalu, nigdy zmiany
+    naszego cennika (`repriceSavedItem` w `chat-api/quotes.js` wycenia tę samą pozycję dwa razy,
+    kursami z chwili zapisu i z dziś, i dokłada samą różnicę). Dotyczy wyłącznie pozycji
+    `jewelry_*`. Po terminie ważności nie przeliczamy nic;
+  - oferta ustalona z człowiekiem: kwota wpisana ręcznie, stała przez cały okres ważności,
+    ryzyko ruchu kruszcu bierzemy na siebie.
+- **Termin ważności oferty jest ustawiany per oferta** (pole `validDays` w panelu, domyślnie
+  `QUOTE_VALIDITY_DAYS`). Strona mówi wprost, że obowiązuje data z oferty, a nie liczba
+  z tej strony, żeby dało się skracać termin przy wyrobach, w których kruszec jest główną
+  składową ceny, bez rozjazdu z dokumentem publicznym.
 - **Płatność z Polski i z zagranicy są rozdzielone na dwa osobne bloki**, a nie zlepione
   w jedną tabelę metod z kolumną waluty. Powód: te dwa przypadki różnią się walutą, metodami,
   czasem rezerwacji (20 minut wobec 3 dni roboczych) i momentem, od którego liczy się termin

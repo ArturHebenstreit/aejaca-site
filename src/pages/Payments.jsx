@@ -13,7 +13,7 @@
 // ktore rozjezdzaja sie po cichu i klient widzi inna kwote niz zaplaci.
 
 import { Link } from "react-router-dom";
-import { ShoppingBag, FileText, Wallet, Globe, Coins, Clock, ShieldCheck, AlertTriangle, RotateCcw } from "lucide-react";
+import { ShoppingBag, FileText, Wallet, Globe, Coins, TrendingUp, Clock, ShieldCheck, AlertTriangle, RotateCcw } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -94,12 +94,20 @@ const L = {
       "Kwotę w euro i kurs zamrażamy w chwili składania zamówienia. Późniejszy ruch kursu nie zmienia tego, ile masz przelać.",
     ],
     noMethods: "Niezależnie od wersji strony: nie ma płatności kartą, Google Pay, Apple Pay ani za pobraniem. Odbiór osobisty jest bezpłatny, ale sama zapłata i tak idzie jedną z dróg powyżej.",
+    metalTitle: "Kruszec a termin ważności",
+    metalLead: "Złoto i platyna potrafią ruszyć się o kilka procent w dwa tygodnie. Dlatego „ważne przez X dni” znaczy co innego przy każdej z trzech dróg i warto wiedzieć, która dotyczy Ciebie.",
+    metalRows: [
+      ["Kwota wiążąca w kalkulatorze", "Ważna 7 dni. Zwykle płacisz od razu, więc kruszec nie zdąży się ruszyć."],
+      ["Zapisana wycena z kalkulatora", "Robocizna jest wiążąca przez cały okres ważności. Kruszec liczymy z dnia, w którym otwierasz link. Doliczamy wyłącznie różnicę wynikającą z ruchu kursu metalu, nigdy zmiany naszego cennika, więc obiecana praca zostaje w obiecanej cenie. Dotyczy to wyrobów z kruszcu; przy druku i laserze nie ma czego przeliczać. Po terminie ważności nie przeliczamy już nic, bo wycena wygasła."],
+      ["Oferta ustalona z człowiekiem", "Kwotę wpisaliśmy ręcznie, więc jest stała przez cały okres ważności, niezależnie od tego, co zrobi kurs. Ryzyko ruchu kruszcu bierzemy w tym czasie na siebie."],
+    ],
+    metalNote: "Termin ważności ustawiamy indywidualnie dla każdej oferty. Przy wyrobie, w którym kruszec jest główną składową ceny, bywa krótszy niż domyślne {days} dni. Zawsze obowiązuje data wpisana w Twojej ofercie, a nie liczba z tej strony. Po terminie nie przedłużamy starej oferty, tylko wystawiamy nową, i to jest dokładnie ten powód: przez ten czas metal mógł się ruszyć.",
     timeTitle: "Terminy",
     timeRows: [
       ["Rezerwacja towaru, płatność z Polski", "20 minut"],
       ["Rezerwacja towaru, przelew w euro z zagranicy", "3 dni robocze, czwartego towar wraca do sprzedaży"],
-      ["Ważność oferty ustalonej z człowiekiem", `${QUOTE_VALIDITY_DAYS} dni`],
-      ["Ważność kwoty wiążącej z kalkulatora", "7 dni"],
+      ["Ważność oferty ustalonej z człowiekiem", `${QUOTE_VALIDITY_DAYS} dni, chyba że w ofercie stoi inna data`],
+      ["Ważność kwoty wiążącej z kalkulatora", "7 dni, kruszec z dnia zamówienia"],
     ],
     timeNote: "Po terminie ważności oferta nie przyjmuje zapłaty. Wystawiamy nową, nie przedłużamy starej, bo w międzyczasie mogły zmienić się ceny materiałów.",
     afterTitle: "Co dzieje się po zapłacie",
@@ -136,6 +144,7 @@ const L = {
       { q: "Dlaczego cena w euro nie jest ceną w złotych podzieloną przez kurs?", a: `Bo do kursu Narodowego Banku Polskiego doliczamy ${FX_PCT} procent. Między zamrożeniem kwoty a zaksięgowaniem przelewu mija kilka dni, a kurs w tym czasie się rusza.` },
       { q: "Jestem w Polsce, ale czytam stronę po angielsku. W jakiej walucie zapłacę?", a: "O walucie decyduje wersja językowa, którą czytasz, a nie kraj, z którego piszesz. Na wersji angielskiej i niemieckiej domyślnie jest euro i przelew SEPA, ale jeżeli masz polskie konto, możesz tam przełączyć się na BLIK albo polski bank i zapłacić w złotych. Przełącz stronę na polski, jeżeli chcesz od razu widzieć ceny w złotych." },
       { q: "Jak długo ważna jest oferta?", a: `${QUOTE_VALIDITY_DAYS} dni od wystawienia. Po tym terminie nie przyjmuje zapłaty i wystawiamy nową.` },
+      { q: "Kwota po otwarciu zapisanej wyceny różni się od tej, którą pamiętam. Dlaczego?", a: "Bo przy wyrobach z kruszcu robocizna jest wiążąca przez cały okres ważności, ale sam metal liczymy z dnia, w którym otwierasz link. Doliczamy wyłącznie różnicę wynikającą z ruchu kursu złota czy platyny, nigdy zmiany naszego cennika. Przy ofercie ustalonej z człowiekiem tak się nie dzieje: tam kwota jest stała aż do daty ważności." },
       { q: "Zapłaciłem, i co dalej?", a: "Dostajesz maila z potwierdzeniem i prywatny odnośnik do strony statusu. Widać na niej etap pracy, a przy wysyłce także numer przesyłki. Zamówienia realizujemy w kolejności wpłat." },
     ],
   },
@@ -206,12 +215,20 @@ const L = {
       "We freeze the euro amount and the rate at the moment the order is placed. A later move in the rate does not change what you have to send.",
     ],
     noMethods: "Whichever version of the site you use: there are no card payments, no Google Pay, no Apple Pay and no cash on delivery. Personal pickup is free, but the payment itself still goes one of the routes above.",
+    metalTitle: "Precious metal and the expiry date",
+    metalLead: "Gold and platinum can move several percent in a fortnight. That is why \"valid for X days\" means something different on each of the three routes, and it is worth knowing which one applies to you.",
+    metalRows: [
+      ["A binding calculator amount", "Valid 7 days. You normally pay straight away, so the metal has no time to move."],
+      ["A saved calculator quote", "The labour is binding for the whole validity period. The metal is priced on the day you open the link. We add only the difference that comes from the metal rate moving, never from a change in our own price list, so promised work stays at the promised price. This applies to metal pieces; there is nothing to reprice on printing or laser work. Past the expiry date we reprice nothing, because the quote has lapsed."],
+      ["An offer agreed with a person", "We typed the amount by hand, so it is fixed for the whole validity period whatever the rate does. We carry the metal risk during that time."],
+    ],
+    metalNote: "We set the expiry date per offer. On a piece where the metal is the main part of the price it may be shorter than the default {days} days. The date written on your offer is the one that counts, not the number on this page. Past that date we issue a new offer rather than extending the old one, and this is exactly the reason: the metal may have moved.",
     timeTitle: "Deadlines",
     timeRows: [
       ["Goods reserved, paying from Poland", "20 minutes"],
       ["Goods reserved, euro transfer from abroad", "3 business days; on the fourth the goods go back on sale"],
-      ["Validity of an offer agreed with a person", `${QUOTE_VALIDITY_DAYS} days`],
-      ["Validity of a binding calculator amount", "7 days"],
+      ["Validity of an offer agreed with a person", `${QUOTE_VALIDITY_DAYS} days, unless the offer states another date`],
+      ["Validity of a binding calculator amount", "7 days; metal priced on the day of ordering"],
     ],
     timeNote: "Past its expiry date an offer takes no payment. We issue a new one rather than extending the old, because material prices may have moved in the meantime.",
     afterTitle: "What happens once you have paid",
@@ -248,6 +265,7 @@ const L = {
       { q: "Why is the euro price not the złoty price divided by the rate?", a: `Because we add ${FX_PCT} percent to the National Bank of Poland rate. Several days pass between freezing the amount and the transfer clearing, and the rate moves in the meantime.` },
       { q: "I am in Poland but reading the site in English. Which currency will I pay in?", a: "The currency follows the language version you are reading, not the country you write from. English and German default to euro and a SEPA transfer, but if you hold a Polish account you can switch there to BLIK or a Polish bank and pay in złoty. Switch the site to Polish if you would rather see złoty prices from the start." },
       { q: "How long is an offer valid?", a: `${QUOTE_VALIDITY_DAYS} days from issue. After that it takes no payment and we issue a new one.` },
+      { q: "The amount on my saved quote differs from the one I remember. Why?", a: "Because on metal pieces the labour is binding for the whole validity period, while the metal itself is priced on the day you open the link. We add only the difference caused by the gold or platinum rate moving, never by a change in our own price list. This does not happen on an offer agreed with a person: there the amount is fixed until its expiry date." },
       { q: "I have paid, what now?", a: "You get a confirmation e-mail and a private link to the status page. It shows the stage of the work and, once shipped, the tracking number. We work in the order payments arrived." },
     ],
   },
@@ -318,12 +336,20 @@ const L = {
       "Eurobetrag und Kurs frieren wir im Moment der Bestellung ein. Eine spätere Kursbewegung ändert nichts an dem, was Sie überweisen müssen.",
     ],
     noMethods: "Unabhängig von der Sprachversion: keine Kartenzahlung, kein Google Pay, kein Apple Pay, keine Nachnahme. Die persönliche Abholung ist kostenlos, die Zahlung selbst läuft aber weiterhin über einen der Wege oben.",
+    metalTitle: "Edelmetall und die Gültigkeitsdauer",
+    metalLead: "Gold und Platin können sich in zwei Wochen um mehrere Prozent bewegen. Deshalb bedeutet \"gültig X Tage\" auf jedem der drei Wege etwas anderes, und es lohnt sich zu wissen, welcher für Sie gilt.",
+    metalRows: [
+      ["Verbindlicher Kalkulatorbetrag", "Gültig 7 Tage. In der Regel zahlen Sie sofort, das Metall hat also keine Zeit, sich zu bewegen."],
+      ["Gespeicherte Kalkulation", "Die Arbeitsleistung ist für die gesamte Gültigkeitsdauer verbindlich. Das Metall rechnen wir zum Tag, an dem Sie den Link öffnen. Wir addieren ausschließlich die Differenz aus der Kursbewegung des Metalls, nie aus einer Änderung unserer eigenen Preisliste; zugesagte Arbeit bleibt also zum zugesagten Preis. Das betrifft Metallstücke; bei Druck und Laser gibt es nichts umzurechnen. Nach Ablauf rechnen wir nichts mehr um, die Kalkulation ist verfallen."],
+      ["Persönlich vereinbartes Angebot", "Den Betrag haben wir von Hand eingetragen, er steht also für die gesamte Gültigkeitsdauer fest, unabhängig vom Kurs. Das Metallrisiko tragen wir in dieser Zeit."],
+    ],
+    metalNote: "Die Gültigkeitsdauer legen wir je Angebot fest. Bei einem Stück, dessen Preis überwiegend vom Metall bestimmt wird, kann sie kürzer sein als die voreingestellten {days} Tage. Maßgeblich ist das Datum auf Ihrem Angebot, nicht die Zahl auf dieser Seite. Nach Ablauf stellen wir ein neues Angebot aus statt das alte zu verlängern, und genau das ist der Grund: das Metall kann sich bewegt haben.",
     timeTitle: "Fristen",
     timeRows: [
       ["Warenreservierung, Zahlung aus Polen", "20 Minuten"],
       ["Warenreservierung, Euro-Überweisung aus dem Ausland", "3 Werktage; am vierten geht die Ware zurück in den Verkauf"],
-      ["Gültigkeit eines persönlich vereinbarten Angebots", `${QUOTE_VALIDITY_DAYS} Tage`],
-      ["Gültigkeit eines verbindlichen Kalkulatorbetrags", "7 Tage"],
+      ["Gültigkeit eines persönlich vereinbarten Angebots", `${QUOTE_VALIDITY_DAYS} Tage, sofern das Angebot kein anderes Datum nennt`],
+      ["Gültigkeit eines verbindlichen Kalkulatorbetrags", "7 Tage; Metall zum Tag der Bestellung"],
     ],
     timeNote: "Nach Ablauf nimmt ein Angebot keine Zahlung mehr an. Wir stellen ein neues aus statt das alte zu verlängern, weil sich Materialpreise zwischenzeitlich bewegt haben können.",
     afterTitle: "Was nach der Zahlung passiert",
@@ -360,6 +386,7 @@ const L = {
       { q: "Warum ist der Europreis nicht der Złoty-Preis geteilt durch den Kurs?", a: `Weil wir auf den Kurs der Polnischen Nationalbank ${FX_PCT} Prozent aufschlagen. Zwischen dem Einfrieren des Betrags und dem Eingang der Überweisung vergehen einige Tage, und der Kurs bewegt sich in dieser Zeit.` },
       { q: "Ich bin in Polen, lese die Seite aber auf Deutsch. In welcher Währung zahle ich?", a: "Über die Währung entscheidet die Sprachversion, die Sie lesen, nicht das Land, aus dem Sie schreiben. Auf Englisch und Deutsch sind Euro und SEPA-Überweisung voreingestellt; mit einem polnischen Konto können Sie dort auf BLIK oder eine polnische Bank umschalten und in Złoty zahlen. Wechseln Sie die Seite auf Polnisch, wenn Sie Złoty-Preise von Anfang an sehen möchten." },
       { q: "Wie lange ist ein Angebot gültig?", a: `${QUOTE_VALIDITY_DAYS} Tage ab Ausstellung. Danach nimmt es keine Zahlung mehr an und wir stellen ein neues aus.` },
+      { q: "Der Betrag in meiner gespeicherten Kalkulation weicht von dem ab, den ich in Erinnerung habe. Warum?", a: "Weil bei Metallstücken die Arbeitsleistung für die gesamte Gültigkeitsdauer verbindlich ist, das Metall selbst aber zum Tag der Linköffnung gerechnet wird. Wir addieren ausschließlich die Differenz aus der Kursbewegung von Gold oder Platin, nie aus einer Änderung unserer Preisliste. Bei einem persönlich vereinbarten Angebot passiert das nicht: dort steht der Betrag bis zum Ablaufdatum fest." },
       { q: "Ich habe bezahlt, wie geht es weiter?", a: "Sie erhalten eine Bestätigungsmail und einen privaten Link zur Statusseite. Sie zeigt den Arbeitsstand und nach dem Versand die Sendungsnummer. Wir arbeiten in der Reihenfolge der Zahlungseingänge." },
     ],
   },
@@ -403,6 +430,7 @@ export default function Payments() {
   const sumRef = useScrollReveal();
   const methodsRef = useScrollReveal();
   const currencyRef = useScrollReveal();
+  const metalRef = useScrollReveal();
   const timeRef = useScrollReveal();
   const afterRef = useScrollReveal();
   const safeRef = useScrollReveal();
@@ -540,6 +568,27 @@ export default function Payments() {
             </Karta>
 
             <p className="text-neutral-500 text-xs leading-relaxed mb-5 px-1">{l.noMethods}</p>
+
+            {/* Kruszec ma wlasna karte, a nie przypis pod terminami. Regula
+                "robocizna wiazaca, kruszec z dnia zamowienia" jest nieoczywista
+                i to o nia klient pyta, gdy kwota po otwarciu linku rozni sie
+                od tej, ktora pamieta. */}
+            <Karta icon={TrendingUp} title={l.metalTitle} innerRef={metalRef}>
+              <p className="text-neutral-400 text-sm leading-relaxed mb-4">{l.metalLead}</p>
+              <div className="divide-y divide-neutral-800">
+                {l.metalRows.map(([name, desc], i) => (
+                  <div key={i} className="py-3 first:pt-0 last:pb-0">
+                    <div className="text-sm text-neutral-200">{name}</div>
+                    <p className="text-neutral-400 text-sm leading-relaxed mt-1">{desc}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 rounded-lg border border-amber-400/25 bg-amber-400/[0.05] p-4">
+                <p className="text-neutral-400 text-sm leading-relaxed">
+                  {l.metalNote.replace("{days}", String(QUOTE_VALIDITY_DAYS))}
+                </p>
+              </div>
+            </Karta>
 
             <Karta icon={Clock} title={l.timeTitle} innerRef={timeRef}>
               <div className="divide-y divide-neutral-800">
