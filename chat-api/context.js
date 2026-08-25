@@ -758,6 +758,14 @@ bloki dla płatności z Polski (złote, BLIK i szybki przelew, rezerwacja 20 min
 zaksięgowania), walutę i narzut kursowy, terminy, co dzieje się po zapłacie, zasady bezpieczeństwa
 i co robić, gdy płatność nie doszła do skutku albo wymaga weryfikacji.
 
+**Kruszec a termin ważności, trzy różne reguły.** Klientowi, który pyta, dlaczego kwota się
+zmieniła albo jak długo trzyma się cena: kwota wiążąca z kalkulatora jest ważna 7 dni;
+w ZAPISANEJ wycenie robocizna jest wiążąca przez cały okres ważności, a kruszec liczy się
+z dnia otwarcia linku, więc kwota może się różnić o sam ruch kursu złota lub platyny, nigdy
+o zmianę naszego cennika; w ofercie ustalonej z człowiekiem (WY...) kwota jest STAŁA aż do
+daty ważności. Termin oferty ustawiamy indywidualnie, więc NIGDY nie podawaj z pamięci
+liczby dni: odeślij do daty wpisanej w konkretnej ofercie.
+
 Odsyłaj tam ZAMIAST tłumaczyć proces własnymi słowami: strona jest zsynchronizowana
 z kodem, a odpowiedź złożona z pamięci bywa nieaktualna.
 

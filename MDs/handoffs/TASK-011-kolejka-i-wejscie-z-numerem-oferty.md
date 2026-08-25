@@ -6,7 +6,7 @@ status: review
 author: Claude Code
 branch: claude/fix-api-error-oge1r
 base_commit: a52941d108527f1874155746be048ba381e2b1e7
-last_commit: bbf0b3510e785d32e0409e41d760bac8b5dc059d
+last_commit: b26f15a6d74b1582c0059d4a18c2a16bc23e42be
 updated: 2026-08-26
 ```
 
@@ -56,7 +56,16 @@ Trzy mierzalne braki.
 - `src/components/shop/OfferNumberEntry.jsx` (nowy), `src/pages/Shop.jsx`,
   `src/pages/Cart.jsx`: pole "Masz numer oferty?". W koszyku widoczne w obu
   stanach: przy pustym zamiast zawartosci, przy pelnym pod podsumowaniem.
+- `chat-api/quotes.js`: `updateQuote()`, `deleteQuote()`.
+- `chat-api/server.js`: `POST /api/quotes/:ref/update`, `DELETE /api/quotes/:ref`.
+- `admin/server.js`, `admin/views/quote-edit.ejs`, `admin/views/quotes.ejs`: edycja danych
+  i pozycji oferty, usuwanie z potwierdzeniem, kolumna akcji w tabeli wycen.
+- `src/pages/Payments.jsx` (nowa strona `/payments/`), `src/main.jsx`, `src/entry-server.jsx`,
+  `scripts/prerender.mjs`, `src/seo/seoData.js`, `src/components/PolicyLinks.jsx`,
+  `src/i18n/{pl,en,de}.js`: strona "Proces platnosci" i wpis w menu pod "Sklep".
+- `src/pricing/config.js`: `QUOTE_VALIDITY_DAYS` przeniesione z `chat-api/quotes.js`.
 - `scripts/test-production-queue.mjs`: sekcje 5 i 6.
+- `scripts/test-quote-edit.mjs`: nowy test edycji i usuwania oferty.
 - `MDs/decisions/ADR-0014-poprawianie-i-usuwanie-w-kolejce.md`,
   `MDs/AEJaCA_Brand_Reference.md` (wersja 5.5), `public/llms.txt`,
   `chat-api/context.js`.
@@ -125,3 +134,8 @@ Trzy mierzalne braki.
 4. Cofniecie etapu kasuje stemple etapow po docelowym i nie kasuje docelowego.
 5. Kasowanie bez `force` nadal odmawia na warunkach z `orderCleanup.js`.
 6. `DELETE /api/orders/:ref` istnieje w `server.js` dokladnie raz.
+7. Edycja oferty nie rusza kwot jednostkowych, a zmiana ilosci przelicza wartosc
+   pozycji i sume naglowka.
+8. Wycena `converted` nie daje sie edytowac ani wycenic, a jej usuniecie wymaga
+   drugiego potwierdzenia.
+9. Usuwanie pozycji w formularzu idzie lista, nie polem zaznaczanym.
