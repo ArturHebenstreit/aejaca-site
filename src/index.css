@@ -828,6 +828,7 @@ button:hover img.tile-dim, a:hover img.tile-dim { filter: brightness(var(--tile-
 [data-theme="light"] .text-rose-200\/90      { color: rgba(159,18,57,0.90) !important; }
 [data-theme="light"] .text-amber-200\/80     { color: rgba(146,64,14,0.85) !important; }
 [data-theme="light"] .text-amber-300\/90     { color: rgba(180,83,9,0.90) !important; }
+[data-theme="light"] .text-amber-300\/80     { color: rgba(180,83,9,0.85) !important; }
 [data-theme="light"] .text-blue-300\/80      { color: rgba(30,64,175,0.85) !important; }
 [data-theme="light"] .text-emerald-200\/90   { color: rgba(6,95,70,0.90) !important; }
 

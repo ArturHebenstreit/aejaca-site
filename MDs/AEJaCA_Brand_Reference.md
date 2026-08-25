@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-25 | Wersja: 5.2*
+*Wygenerowano: 2026-08-25 | Wersja: 5.3*
 
 ---
 
@@ -2142,6 +2142,35 @@ Widok `open_quotes` pokazuje zapytania czekajace na odpowiedz, od najstarszego.
 ### Schemat bazy
 
 `scripts/orders-schema.sql`: `orders`, `order_items`, `products`, `downloads`, `payment_notifications`, widok `quarterly_revenue`. Parametry wejściowe wyceny zapisujemy razem z wynikiem, żeby dało się odtworzyć cenę po latach. Surowe komunikaty ITN trafiają do bazy, bo bez nich reklamacja płatności to słowo przeciwko słowu.
+
+
+### Wyceny ustalone z człowiekiem i zapłata za nie (od 2026-08-25)
+
+Zapytania przychodzą czterema drogami: z formularza, z kalkulatora, mailem i telefonem. Dwie
+pierwsze same zapisywały się w bazie, dwie ostatnie żyły w skrzynce i w pamięci. Rozmowa
+telefoniczna kończyła się kwotą podaną ustnie, bez numeru, bez zapisu i bez miejsca, w którym
+klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do jednego toru.
+
+- **Numer nadajemy od razu**, jeszcze przed wpisaniem kwot: `WY20260825-XXXXXXXX`. Tym numerem
+  nazywamy wątek w korespondencji i to on jest tytułem płatności, więc wpłatę da się dopasować
+  do pracy. Zamówienie z oferty niesie oba numery w tytule w bramce.
+- **Panel:** lista według stanu (`new`, `priced`, `sent`, `accepted`, `converted`, `expired`,
+  `cancelled`), wpisanie kwot pozycji, notatka "co wchodzi, czego nie ma", termin ważności,
+  wysyłka oferty mailem albo gotowy link do przekazania.
+- **Strona klienta `/oferta/`** (noindex, brak odnośnika z menu). Dwa wejścia: link z oferty
+  albo sam numer podany razem z adresem e-mail, na który poszła oferta. Klient bez adresu
+  (telefon) dostaje krótki kod odbioru, wyprowadzony z tokenu dostępu, widoczny w panelu.
+  Sam numer nigdy nie wystarcza, bo oferta niesie nazwisko, telefon i adres.
+- **Kod rabatowy podaje się na tej stronie, przed zapłatą.** Kwota schodzi od razu, a nie
+  zwrotem po fakcie. Rabat obejmuje wyłącznie pozycje zlecenia, nigdy dostawy, i nie schodzi
+  poniżej zera. Rezerwacja kodu dzieje się w tej samej transakcji, co zapis zamówienia, więc
+  dwie osoby z tym samym kodem jednorazowym nie zabiorą go obie.
+- **Płatność wyłącznie przez bramkę** (BLIK, karta, przelew online). Przelew tradycyjny w euro
+  zostaje w sklepie, bo wymaga kursu i kwoty zapisanych przy zamówieniu, a wycena ręczna ich
+  nie niesie.
+- **Po terminie ważności oferta nie przyjmuje zapłaty.** Wystawiamy nową, nie przedłużamy starej.
+- Koszt dostawy liczy serwer z własnego cennika. Gdyby przychodził z przeglądarki, każdy
+  mógłby zamówić kuriera za zero.
 
 ---
 

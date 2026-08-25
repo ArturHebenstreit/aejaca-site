@@ -246,15 +246,44 @@ export async function getQuoteByRef(pool, quoteRef) {
 }
 
 /**
+ * Pozycje wyceny w postaci, ktorej oczekuje rachunek znizki.
+ *
+ * Kod rabatowy potrafi obejmowac wylacznie dzial albo wylacznie uslugi, wiec
+ * musi wiedziec, czym jest kazda linia. Wycena zna kalkulator, a z niego
+ * wynika dzial, tak samo jak w kasie sklepu.
+ */
+export function quoteItemsForDiscount(quote) {
+  return quote.items.map((i) => ({
+    lineGrosze: i.line_grosze ?? (i.unit_grosze ?? 0) * i.qty,
+    source: "service",
+    category: String(i.calculator || "").startsWith("jewelry") ? "jewelry" : "studio",
+  }));
+}
+
+/**
  * Przekuwa wycene w zamowienie do zaplaty.
  *
  * Kwota pochodzi z wyceny, nie z kalkulatora: to jest caly sens tej sciezki.
  * Zamowienie powstaje w stanie `awaiting_payment`, wiec dalej idzie dokladnie
  * ta sama droga co zakup ze sklepu, razem z ITN i mailami.
  *
+ * CALOSC IDZIE W JEDNEJ TRANSAKCJI. Rezerwacja kodu rabatowego blokuje wiersz
+ * kodu przez `FOR UPDATE`, a blokada poza transakcja zwalnia sie natychmiast
+ * po zapytaniu, wiec dwie osoby z tym samym kodem jednorazowym zabralyby go
+ * obie. Zapis zamowienia i rezerwacja kodu musza wiec zyc albo zginac razem.
+ *
+ * @param {object} opcje
+ * @param {string} opcje.orderRef
+ * @param {object} [opcje.delivery]
+ * @param {object} [opcje.customer]  dane wysylki podane przez klienta na stronie oferty
+ * @param {object} [opcje.discount]  { code, reserve } gdzie `reserve` rezerwuje kod w tej transakcji
+ * @param {string} [opcje.paymentMethod] 'autopay' albo 'bank_transfer'
  * @returns {Promise<{orderRef:string, accessToken:string, totalGrosze:number}>}
  */
-export async function convertQuoteToOrder(pool, quoteRef, { orderRef, delivery = {}, validityDays = 7 }) {
+export async function convertQuoteToOrder(
+  pool, quoteRef,
+  { orderRef, delivery = {}, customer = {}, discount = null, consents = null, paymentMethod = "autopay", validityDays = 7 }
+) {
   const quote = await getQuoteByRef(pool, quoteRef);
   if (!quote) throw new QuoteError("not_found", "Nie ma takiej wyceny");
   if (quote.converted_order_id) throw new QuoteError("already_converted", "Ta wycena ma juz zamowienie");
@@ -265,50 +294,110 @@ export async function convertQuoteToOrder(pool, quoteRef, { orderRef, delivery =
   // Odliczenie nigdy nie schodzi ponizej zera i nie obejmuje dostawy.
   const credit = await availableDesignCredit(pool, quote.customer_email);
   const creditGrosze = credit ? Math.min(credit.grosze, quote.total_grosze) : 0;
-  const total = quote.total_grosze - creditGrosze + shipping;
   const accessToken = generateToken();
   const expiresAt = new Date(Date.now() + validityDays * 86400_000);
 
-  const { rows } = await pool.query(
-    `INSERT INTO orders (order_ref, status, kind, lang, items_total_grosze, shipping_grosze, total_grosze,
-       customer_email, customer_name, customer_phone,
-       delivery_method, delivery_point, address_line1, address_line2, postal_code, city, country,
-       access_token, ip_hash, expires_at, credit_applied_grosze)
-     -- 'quoted' jest jedyna dopuszczona przez CHECK w orders.kind obok 'instant'
-     VALUES ($1,'awaiting_payment','quoted',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
-     RETURNING id`,
-    [orderRef, quote.lang, quote.total_grosze, shipping, total,
-     quote.customer_email, quote.customer_name, quote.customer_phone,
-     delivery.method || null, delivery.point || null, delivery.addressLine1 || null,
-     delivery.addressLine2 || null, delivery.postalCode || null, delivery.city || null,
-     delivery.country || "PL",
-     accessToken, quote.ip_hash, expiresAt, creditGrosze || null]
-  );
-  const orderId = rows[0].id;
+  // Dane kontaktowe: to, co klient wpisal na stronie oferty, ma pierwszenstwo
+  // przed tym, co zanotowalismy przy rozmowie. Adres e-mail zostaje jednak
+  // ten z wyceny, jesli byl, bo to na niego poszla oferta i to on wiaze
+  // zamowienie z korespondencja.
+  const email = quote.customer_email || (customer.email || "").trim().toLowerCase() || null;
+  const name = (customer.name || "").trim() || quote.customer_name || null;
+  const phone = (customer.phone || "").trim() || quote.customer_phone || null;
 
-  for (const item of quote.items) {
-    await pool.query(
-      `INSERT INTO order_items (order_id, item_type, calculator, title, qty, unit_grosze, line_grosze,
-         params, file_name, upload_id)
-       VALUES ($1,'service',$2,$3,$4,$5,$6,$7,$8,$9)`,
-      [orderId, item.calculator, item.title, item.qty,
-       item.unit_grosze, item.line_grosze,
-       JSON.stringify({ ...(item.params ?? {}), description: item.description, fromQuote: quote.quote_ref }),
-       item.file_name, item.upload_id]
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // Zamowienie powstaje najpierw bez znizki, bo rezerwacja kodu potrzebuje
+    // numeru zamowienia, ktory nadaje dopiero ten INSERT. Suma schodzi o kwote
+    // znizki chwile pozniej, w tej samej transakcji, wiec na zewnatrz nie ma
+    // momentu, w ktorym zamowienie ma kod bez odliczenia albo odwrotnie.
+    const total = quote.total_grosze - creditGrosze + shipping;
+
+    const { rows } = await client.query(
+      `INSERT INTO orders (order_ref, status, kind, lang, items_total_grosze, shipping_grosze, total_grosze,
+         customer_email, customer_name, customer_phone,
+         delivery_method, delivery_point, address_line1, address_line2, postal_code, city, country,
+         access_token, ip_hash, expires_at, credit_applied_grosze, payment_method,
+         accepted_terms_at, waived_withdrawal_at)
+       -- 'quoted' jest jedyna dopuszczona przez CHECK w orders.kind obok 'instant'
+       VALUES ($1,'awaiting_payment','quoted',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
+       RETURNING id`,
+      [orderRef, quote.lang, quote.total_grosze, shipping, total,
+       email, name, phone,
+       delivery.method || null, delivery.point || null, delivery.addressLine1 || null,
+       delivery.addressLine2 || null, delivery.postalCode || null, delivery.city || null,
+       delivery.country || "PL",
+       accessToken, quote.ip_hash, expiresAt, creditGrosze || null,
+       paymentMethod === "bank_transfer" ? "bank_transfer" : "autopay",
+       // Zgody zapisujemy z chwila zlozenia zamowienia. Wycena przekuta z
+       // panelu ich nie niesie, bo tam zamawia czlowiek z naszej strony, i
+       // wtedy oba pola zostaja puste zamiast udawac zgode, ktorej nikt nie dal.
+       consents?.terms ? new Date() : null,
+       consents?.waiveWithdrawal ? new Date() : null]
     );
-    if (item.upload_id) {
-      await pool.query(`UPDATE uploads SET status = 'ordered', order_id = $2 WHERE id = $1`, [item.upload_id, orderId]);
+    const orderId = rows[0].id;
+
+    let discountGrosze = 0;
+    let discountCode = null;
+    let doZaplaty = total;
+    if (discount?.code && typeof discount.reserve === "function") {
+      const uzyty = await discount.reserve(client, {
+        code: discount.code,
+        email,
+        items: quoteItemsForDiscount(quote),
+        orderId,
+        paymentMethod,
+      });
+      discountGrosze = uzyty.discountGrosze;
+      discountCode = uzyty.code;
+      // Znizka nie schodzi ponizej zera i nie dotyka dostawy: kurier kosztuje
+      // nas tyle samo niezaleznie od tego, jaki kod wpisal klient.
+      doZaplaty = Math.max(0, quote.total_grosze - creditGrosze - discountGrosze) + shipping;
+      await client.query(
+        `UPDATE orders SET discount_code = $2, discount_grosze = $3, total_grosze = $4 WHERE id = $1`,
+        [orderId, discountCode, discountGrosze, doZaplaty]
+      );
     }
+
+    for (const item of quote.items) {
+      await client.query(
+        `INSERT INTO order_items (order_id, item_type, calculator, title, qty, unit_grosze, line_grosze,
+           params, file_name, upload_id)
+         VALUES ($1,'service',$2,$3,$4,$5,$6,$7,$8,$9)`,
+        [orderId, item.calculator, item.title, item.qty,
+         item.unit_grosze, item.line_grosze,
+         JSON.stringify({ ...(item.params ?? {}), description: item.description, fromQuote: quote.quote_ref }),
+         item.file_name, item.upload_id]
+      );
+      if (item.upload_id) {
+        await client.query(`UPDATE uploads SET status = 'ordered', order_id = $2 WHERE id = $1`, [item.upload_id, orderId]);
+      }
+    }
+
+    if (creditGrosze) {
+      // Zuzyty zostaje STARY projekt: to on wskazuje, ktore zamowienie zjadlo
+      // jego kredyt. Zamiana miejscami tych dwoch liczb oznaczalaby, ze ten
+      // sam projekt da sie odliczyc drugi raz.
+      await client.query(`UPDATE orders SET credit_consumed_by = $2 WHERE id = $1`, [credit.orderId, orderId]);
+    }
+
+    await client.query(
+      `UPDATE quotes SET status = 'converted', converted_order_id = $2, converted_at = NOW() WHERE id = $1`,
+      [quote.id, orderId]
+    );
+
+    await client.query("COMMIT");
+    return {
+      orderRef, accessToken, totalGrosze: doZaplaty, orderId,
+      creditGrosze, creditFrom: credit?.orderRef ?? null,
+      discountCode, discountGrosze,
+    };
+  } catch (e) {
+    await client.query("ROLLBACK").catch(() => {});
+    throw e;
+  } finally {
+    client.release();
   }
-
-  if (creditGrosze) {
-    await pool.query(`UPDATE orders SET credit_consumed_by = $2 WHERE id = $1`, [credit.orderId, orderId]);
-  }
-
-  await pool.query(
-    `UPDATE quotes SET status = 'converted', converted_order_id = $2, converted_at = NOW() WHERE id = $1`,
-    [quote.id, orderId]
-  );
-
-  return { orderRef, accessToken, totalGrosze: total, orderId, creditGrosze, creditFrom: credit?.orderRef ?? null };
 }
