@@ -378,6 +378,15 @@ export default function Cart() {
               </div>
             </>
           )}
+
+          {/* Wycena ustalona z nami idzie osobnym torem niz koszyk: ma wlasny
+              numer, wlasna kwote i wlasna platnosc. Dlatego pasek stoi POD
+              podsumowaniem, a nie obok przycisku kasy, zeby nikt nie wzial go
+              za pole kodu rabatowego do tego koszyka. Widoczny takze wtedy, gdy
+              w koszyku cos lezy: jedno nie wyklucza drugiego. */}
+          {ready && items.length > 0 && (
+            <OfferNumberEntry className="mt-8 max-w-xl mx-auto" />
+          )}
         </div>
       </div>
     </>

@@ -2162,7 +2162,11 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
   (telefon) dostaje krótki kod odbioru, wyprowadzony z tokenu dostępu, widoczny w panelu.
   Sam numer nigdy nie wystarcza, bo oferta niesie nazwisko, telefon i adres.
 - **Numer oferty wpisuje się też w sklepie** (od 2026-08-26). Pole „Masz numer oferty?" stoi
-  na `/shop/` i w pustym koszyku, i przenosi na stronę oferty. Powód: strona oferty ma `noindex`,
+  na `/shop/` oraz w koszyku, i to niezależnie od tego, czy coś w nim leży: pusty koszyk pokazuje
+  je zamiast zawartości, a koszyk z pozycjami pod podsumowaniem. Wycena ustalona z nami idzie
+  osobnym torem niż koszyk, więc jedno nie wyklucza drugiego, a pasek stoi pod podsumowaniem,
+  a nie przy przycisku kasy, żeby nikt nie wziął go za pole kodu rabatowego do tego koszyka.
+  Przenosi na stronę oferty. Powód: strona oferty ma `noindex`,
   nie ma jej w menu ani w mapie strony, więc klient, który zgubił maila z linkiem, nie miał
   do niej drogi. Pole porządkuje numer (spacje, małe litery) i sprawdza jego kształt, ale
   **nie zastępuje drugiego składnika**: adres e-mail albo kod odbioru pyta strona oferty.
