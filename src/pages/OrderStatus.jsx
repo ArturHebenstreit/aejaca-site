@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { CheckCircle2, Clock, XCircle, Loader2, ArrowRight, RefreshCw } from "lucide-react";
+import { CheckCircle2, Clock, XCircle, Loader2, ArrowRight, RefreshCw, Hammer, Truck } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import {
@@ -19,6 +19,18 @@ import {
 import { postJSON, submitPaymentForm } from "../utils/api.js";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
+
+// Stany, w ktorych nie ma juz na co czekac: pieniadze doszly, czekaja na nasza
+// reczna decyzje albo praca poszla dalej. Zamowienie w robocie odpytywane piec
+// razy z rzedu nie zmieni sie od patrzenia, a kazdy strzal to zapytanie do bazy.
+const STANY_USTALONE = [
+  "paid",
+  "awaiting_transfer",
+  "payment_review",
+  "in_production",
+  "shipped",
+  "completed",
+];
 
 /** Wiersz danych do przelewu. Numer rachunku i tytul musza byc latwe do
  *  przepisania, wiec ida czcionka o stalej szerokosci i lamia sie w calosci. */
@@ -39,6 +51,14 @@ const UI = {
     checking: "Sprawdzam status płatności",
     paidTitle: "Dziękujemy, płatność przyjęta",
     paidDesc: "Potwierdzenie wysłaliśmy na Twój adres email. Zabieramy się do pracy i odezwiemy się, gdy zamówienie będzie gotowe.",
+    productionTitle: "Zamówienie jest w robocie",
+    productionDesc: "Płatność mamy, praca ruszyła. Odezwiemy się, gdy zamówienie będzie gotowe do wysyłki. Nie musisz nic robić.",
+    shippedTitle: "Zamówienie wysłane",
+    shippedDesc: "Paczka jest w drodze. Jeżeli przesyłka ma numer do śledzenia, znajdziesz go poniżej.",
+    completedTitle: "Zamówienie zakończone",
+    completedDesc: "Dziękujemy. Jeżeli coś jest nie tak z wyrobem, napisz do nas, odpowiadamy na każdą wiadomość.",
+    shippedAtLabel: "Data wysyłki",
+    trackingLabel: "Numer przesyłki",
     pendingTitle: "Czekamy na potwierdzenie płatności",
     pendingDesc: "Bank jeszcze nie potwierdził przelewu. To zwykle kwestia kilku minut, przy przelewie tradycyjnym do jednego dnia roboczego. Nie musisz nic robić, potwierdzenie przyjdzie mailem.",
     failedTitle: "Płatność nie doszła do skutku",
@@ -72,6 +92,14 @@ const UI = {
     checking: "Checking payment status",
     paidTitle: "Thank you, payment received",
     paidDesc: "We have sent a confirmation to your email address. We are starting work and will get in touch once your order is ready.",
+    productionTitle: "Your order is in the workshop",
+    productionDesc: "We have your payment and the work has started. We will get in touch once the order is ready to ship. You do not need to do anything.",
+    shippedTitle: "Your order has been shipped",
+    shippedDesc: "The parcel is on its way. If the shipment has a tracking number, you will find it below.",
+    completedTitle: "Order completed",
+    completedDesc: "Thank you. If anything is wrong with the piece, write to us, we answer every message.",
+    shippedAtLabel: "Shipping date",
+    trackingLabel: "Tracking number",
     pendingTitle: "Waiting for payment confirmation",
     pendingDesc: "Your bank has not confirmed the transfer yet. This usually takes a few minutes, or up to one business day for a traditional transfer. You do not need to do anything, the confirmation will arrive by email.",
     failedTitle: "The payment did not go through",
@@ -105,6 +133,14 @@ const UI = {
     checking: "Zahlungsstatus wird geprüft",
     paidTitle: "Vielen Dank, Zahlung erhalten",
     paidDesc: "Die Bestätigung haben wir an Ihre E-Mail-Adresse gesendet. Wir beginnen mit der Arbeit und melden uns, sobald Ihre Bestellung fertig ist.",
+    productionTitle: "Ihre Bestellung ist in Arbeit",
+    productionDesc: "Die Zahlung ist bei uns, die Arbeit hat begonnen. Wir melden uns, sobald die Bestellung versandfertig ist. Sie müssen nichts tun.",
+    shippedTitle: "Ihre Bestellung wurde versandt",
+    shippedDesc: "Das Paket ist unterwegs. Sofern die Sendung eine Sendungsnummer hat, finden Sie sie unten.",
+    completedTitle: "Bestellung abgeschlossen",
+    completedDesc: "Vielen Dank. Falls mit dem Stück etwas nicht stimmt, schreiben Sie uns, wir beantworten jede Nachricht.",
+    shippedAtLabel: "Versanddatum",
+    trackingLabel: "Sendungsnummer",
     pendingTitle: "Wir warten auf die Zahlungsbestätigung",
     pendingDesc: "Ihre Bank hat die Überweisung noch nicht bestätigt. Das dauert meist wenige Minuten, bei einer klassischen Überweisung bis zu einem Werktag. Sie müssen nichts tun, die Bestätigung kommt per E-Mail.",
     failedTitle: "Die Zahlung kam nicht zustande",
@@ -216,7 +252,7 @@ export default function OrderStatus() {
         setLoading(false);
         // Przy przelewie nie ma czego odpytywac: potwierdzenie przychodzi
         // z naszej strony, nie z bramki.
-        if (!["paid", "awaiting_transfer", "payment_review"].includes(data.status) && attempts < 5) {
+        if (!STANY_USTALONE.includes(data.status) && attempts < 5) {
           attempts++;
           setTimeout(check, 3000);
         }
@@ -229,6 +265,13 @@ export default function OrderStatus() {
   }, [accessResolved, ref, token, signatureError]);
 
   const paid = order?.status === "paid";
+  // Etapy pracy z kolejki pracowni. Bez nich zamowienie pchniete do produkcji
+  // spadalo na galaz domyslna i mowilo oplaconemu klientowi, ze czekamy na
+  // jego platnosc. Stoja w lancuchu PRZED `failed`, bo pozniejsza nieudana
+  // proba platnosci nie cofa zamowienia, ktore juz jest w robocie.
+  const inProduction = order?.status === "in_production";
+  const shipped = order?.status === "shipped";
+  const completed = order?.status === "completed";
   const failed = order?.paymentStatus === "FAILURE";
   const paymentReview = order?.status === "payment_review";
   const canRetry = Boolean(order?.canRetryPayment && token);
@@ -274,6 +317,18 @@ export default function OrderStatus() {
     icon = <XCircle className="w-12 h-12 text-red-400" />;
     title = u.invalidTitle;
     desc = u.invalidDesc;
+  } else if (inProduction) {
+    icon = <Hammer className="w-12 h-12 text-amber-400" />;
+    title = u.productionTitle;
+    desc = u.productionDesc;
+  } else if (shipped) {
+    icon = <Truck className="w-12 h-12 text-blue-400" />;
+    title = u.shippedTitle;
+    desc = u.shippedDesc;
+  } else if (completed) {
+    icon = <CheckCircle2 className="w-12 h-12 text-emerald-400" />;
+    title = u.completedTitle;
+    desc = u.completedDesc;
   } else if (paid) {
     icon = <CheckCircle2 className="w-12 h-12 text-emerald-400" />;
     title = u.paidTitle;
@@ -377,6 +432,22 @@ export default function OrderStatus() {
                     <span className="text-neutral-500">{u.amount}</span>
                     <span className="text-white font-semibold">{String(order.totalPLN).replace(".", ",")} PLN</span>
                   </div>
+                  {/* Numer przesylki pokazujemy klientowi, bo pytanie "gdzie jest
+                      paczka" inaczej wraca do nas mailem i odpowiada na nie czlowiek. */}
+                  {order.shippedAt && (
+                    <div className="flex justify-between mt-1">
+                      <span className="text-neutral-500">{u.shippedAtLabel}</span>
+                      <span className="text-white">
+                        {new Date(order.shippedAt).toLocaleDateString(lang === "pl" ? "pl-PL" : lang === "de" ? "de-DE" : "en-IE")}
+                      </span>
+                    </div>
+                  )}
+                  {order.trackingNumber && (
+                    <div className="flex justify-between mt-1 gap-3">
+                      <span className="text-neutral-500 shrink-0">{u.trackingLabel}</span>
+                      <span className="text-white font-mono text-xs break-all text-right">{order.trackingNumber}</span>
+                    </div>
+                  )}
                   {/* Licznik poprawek widoczny od poczatku, zeby trzecia runda
                       byla swiadomym wyborem, a nie niespodzianka przy rachunku. */}
                   {order.revisions && (

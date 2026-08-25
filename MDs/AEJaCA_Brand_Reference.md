@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-25 | Wersja: 5.3*
+*Wygenerowano: 2026-08-25 | Wersja: 5.4*
 
 ---
 
@@ -2171,6 +2171,35 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
 - **Po terminie ważności oferta nie przyjmuje zapłaty.** Wystawiamy nową, nie przedłużamy starej.
 - Koszt dostawy liczy serwer z własnego cennika. Gdyby przychodził z przeglądarki, każdy
   mógłby zamówić kuriera za zero.
+
+
+### Kolejka pracowni (od 2026-08-25)
+
+Zamówienie opłacone nie miało dalszego ciągu. Statusy `in_production`, `shipped` i `completed`
+stały w bazie od początku, ale nic ich nie ustawiało, więc zamówienie zostawało w stanie `paid`
+na zawsze. Na pytanie "co jest dzisiaj do zrobienia i co czeka najdłużej" odpowiadała skrzynka
+mailowa. Zamówienia z oferty to zaostrzyły, bo przychodzą spoza sklepu.
+
+- **Zakładka `/queue` w panelu** pokazuje wszystko, co opłacone i jeszcze niezamknięte, razem
+  z pozycjami, plikami, danymi wysyłki i liczbą dni oczekiwania. Kolejność jest jedna: **kto
+  pierwszy zapłacił**. Sortujemy po dacie zapłaty, nie po dacie złożenia, bo złożenie bez
+  zapłaty nie rezerwuje czasu pracowni.
+- **Kolejka jest widokiem nad tabelą `orders`**, bez osobnej tabeli. Etap pracy to status plus
+  stempel czasu. Drugie źródło prawdy o tym samym zamówieniu trzeba by trzymać w zgodzie
+  z pierwszym.
+- **Przejścia są wypisane, nie dowolne** (`chat-api/productionQueue.js`). Do pracy wchodzi się
+  wyłącznie z `paid`, do wysyłki z `paid` albo z pracy, do zamknięcia z pracy albo z wysyłki.
+  Zamówienie nieopłacone nie prowadzi nigdzie. Bez tej reguły jedno kliknięcie w złym wierszu
+  robiło z zamówienia nieopłaconego zamówienie wysłane, i nikt by tego nie zauważył, bo żadna
+  kwota by się nie zmieniła.
+- **`paid` prosto do `shipped` jest dozwolone świadomie.** Rzecz z półki pakuje się i wysyła
+  tego samego dnia, a wymuszanie po drodze etapu "w robocie" uczyłoby klikania na siłę.
+- **Etap widzi też klient**, na stronie statusu zamówienia, w trzech językach, razem z datą
+  wysyłki i numerem przesyłki. Wcześniej strona po pchnięciu zamówienia do produkcji wracała do
+  gałęzi domyślnej i mówiła opłaconemu klientowi, że czekamy na jego płatność.
+- Dokładając nowy etap, trzeba ruszyć trzy miejsca naraz: regułę przejść, kolumnę w schemacie
+  i w bloku startowym serwera, oraz gałąź na stronie klienta. Pominięcie trzeciego widzi tylko
+  klient. Pilnuje tego `scripts/test-production-queue.mjs`, wpięty w build.
 
 ---
 

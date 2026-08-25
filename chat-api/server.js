@@ -46,7 +46,7 @@ import { orderAccessAllowed } from "./orderAccess.js";
 import { findLockers, LockerError } from "./lockers.js";
 import { runRetention } from "./retention.js";
 import { requireAdmin, requireInvalidateToken, requireSecret, secretMatches } from "./auth.js";
-import { ETAPY_PRACY, przejscie } from "./productionQueue.js";
+import { ETAPY_PRACY, przejscie, znanyEtap } from "./productionQueue.js";
 import { extractIP, isPrivateIP, TRUSTED_PROXY_HOPS, TRUST_CLOUDFLARE_HEADERS } from "./clientIp.js";
 import { createLimiter, limitBy } from "./rateLimit.js";
 import { issueDownloads, takeDownload, downloadName } from "./digitalDelivery.js";
@@ -3482,7 +3482,7 @@ app.post("/api/orders/:ref/production", express.json({ limit: "8kb" }), async (r
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
 
   const etap = String(req.body?.stage || "");
-  if (!ETAPY_PRACY[etap]) return res.status(400).json({ error: "Nie znamy takiego etapu", code: "bad_stage" });
+  if (!znanyEtap(etap)) return res.status(400).json({ error: "Nie znamy takiego etapu", code: "bad_stage" });
 
   const ref = String(req.params.ref || "");
   const { rows } = await pool.query("SELECT id, status FROM orders WHERE order_ref = $1", [ref]);

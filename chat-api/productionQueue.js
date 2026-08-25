@@ -29,6 +29,23 @@ export const ETAPY_PRACY = {
 };
 
 /**
+ * Czy taki etap w ogole istnieje.
+ *
+ * Zwykle `ETAPY_PRACY[etap]` nie wystarcza, bo obiekt dziedziczy po
+ * `Object.prototype`: dla `"__proto__"` albo `"toString"` odczyt oddaje cos
+ * prawdziwego, walidacja przepuszcza taki etap dalej, a `regula.z` jest juz
+ * `undefined` i przewraca obsluge zadania. Zadanie przychodzi od zalogowanego
+ * pracownika, wiec to nie jest dziura na zewnatrz, ale jest to 500 zamiast
+ * czytelnego "nie znamy takiego etapu".
+ *
+ * @param {string} etap nazwa etapu z zadania
+ * @returns {boolean}
+ */
+export function znanyEtap(etap) {
+  return Object.hasOwn(ETAPY_PRACY, String(etap));
+}
+
+/**
  * Czy wolno przestawic zamowienie na ten etap.
  *
  * @param {string} obecny status zamowienia w bazie
@@ -36,8 +53,8 @@ export const ETAPY_PRACY = {
  * @returns {{ok: boolean, pole?: string, z?: string[], powod?: string}}
  */
 export function przejscie(obecny, etap) {
+  if (!znanyEtap(etap)) return { ok: false, powod: "bad_stage" };
   const regula = ETAPY_PRACY[etap];
-  if (!regula) return { ok: false, powod: "bad_stage" };
   if (!regula.z.includes(obecny)) return { ok: false, powod: "bad_transition", z: regula.z };
   return { ok: true, pole: regula.pole, z: regula.z };
 }
