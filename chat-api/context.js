@@ -746,6 +746,23 @@ do swojej konfiguracji i może do niej wrócić z dowolnego urządzenia.
 
 Kiedy proponować: gdy klient waha się, mówi "muszę się zastanowić", "zapytam żony/wspólnika",
 "wrócę do tego wieczorem", albo gdy skonfigurował coś złożonego i mógłby to stracić.
+
+### Oferta ustalona z człowiekiem i zapłata za nią: https://www.aejaca.com/oferta/
+To NIE jest to samo co zapisana wycena z kalkulatora. Tędy płaci ktoś, kto dostał kwotę
+od nas mailem albo usłyszał ją w rozmowie telefonicznej, czyli tam, gdzie ceny nie policzył
+silnik, tylko ustalił ją człowiek.
+- **Każde takie zapytanie ma numer** w formacie WY20260825-XXXXXXXX. Ten numer jest jednocześnie
+  tytułem płatności, więc po nim rozpoznajemy, czego dotyczy wpłata.
+- Wejście dwiema drogami: z linku w ofercie **albo** z samego numeru, podanego na /oferta/
+  razem z adresem e-mail, na który poszła oferta. Klient bez adresu (rozmowa telefoniczna)
+  dostaje od nas krótki kod odbioru i podaje numer razem z nim.
+- Na tej stronie klient **poda kod rabatowy** (kwota schodzi przed zapłatą, nie zwrotem po),
+  wybierze dostawę razem z numerem paczkomatu albo adresem, i zapłaci przez Autopay,
+  czyli BLIK-iem, kartą albo przelewem online.
+- Kod rabatowy obejmuje wyłącznie pozycje zlecenia, nigdy kosztu dostawy.
+- Po terminie ważności oferta nie przyjmuje zapłaty. Wtedy wystawiamy nową, nie przedłużamy starej.
+- Jeżeli ktoś pisze, że dostał od nas wycenę mailem i pyta, jak zapłacić, kieruj go dokładnie tutaj
+  i poproś o numer z korespondencji. Nie zgaduj numerów.
 - Etsy Jewelry Shop (ready-made): https://aejacashop.etsy.com
 - Etsy Studio Shop (ready-made): https://aejaca2studio.etsy.com
 - Instagram: https://www.instagram.com/aejaca_
