@@ -372,6 +372,13 @@ function runCalc(resolved, lang) {
 // UI - rose theme
 // ============================================================
 
+/** Nazwa wyceny w tytule i tresci maila. Musi isc za jezykiem strony. */
+const QUICK_QUOTE_LBL = {
+  pl: "Szybka wycena biżuterii",
+  en: "Jewelry quick quote",
+  de: "Schmuck-Schnellkalkulation",
+};
+
 const LBL = {
   pl: {
     q1: "Czego potrzebujesz?",
@@ -612,7 +619,10 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
         </div>
         <NextStepPanel
           lang={lang}
-          techLabel={`Szybka wycena biżuterii - ${serviceLabel}`}
+          techLabel={
+            // Ta nazwa trafia do maila, wiec idzie za jezykiem strony.
+            `${t(QUICK_QUOTE_LBL, lang)} - ${serviceLabel}`
+          }
           paramsSummary={paramsSummary}
           result={result}
           cartAvailable={Boolean(cartTarget)}
