@@ -2,6 +2,13 @@
 -- AEJaCA Orders & Shop Schema
 -- Run: psql $DATABASE_URL -f scripts/orders-schema.sql
 -- ============================================================
+-- CZEGO TEN PLIK NIE ROBI: nie migruje istniejacej bazy. Kazda tabela stoi
+-- pod `CREATE TABLE IF NOT EXISTS`, wiec na bazie, ktora juz istnieje, nowa
+-- kolumna dopisana ponizej NIE powstanie. Robi to blok `ALTER TABLE ... ADD
+-- COLUMN IF NOT EXISTS` na starcie `chat-api/server.js`. Dodajac kolumne,
+-- dopisz ja w OBU miejscach: tutaj, zeby swieza baza ja miala i zeby bylo
+-- wiadomo, po co jest, i tam, zeby dostala ja baza produkcyjna.
+--
 -- Zasady, ktore ten schemat wymusza:
 --  1. Kwoty trzymamy w groszach (INTEGER). Zlotowki zmiennoprzecinkowe
 --     gubia grosze przy mnozeniu przez naklad, a Autopay porownuje kwote
@@ -80,6 +87,17 @@ CREATE TABLE IF NOT EXISTS orders (
   transfer_confirmed_by  VARCHAR(120),
   transfer_note          TEXT,
 
+  -- Kolejka pracowni: etap pracy po zaplacie
+  -- Statusy `in_production`, `shipped` i `completed` stoja w ograniczeniu wyzej
+  -- od poczatku, ale dlugo nic ich nie ustawialo. Te kolumny zapisuja chwile
+  -- wejscia w etap, a `chat-api/productionQueue.js` decyduje, z jakiego stanu
+  -- w ktory etap wolno wejsc.
+  production_started_at TIMESTAMPTZ,
+  shipped_at            TIMESTAMPTZ,
+  completed_at          TIMESTAMPTZ,
+  tracking_number       VARCHAR(64),
+  production_note       TEXT,
+
   -- Token do ogladania statusu zamowienia bez logowania
   access_token      VARCHAR(64)  NOT NULL,
 
@@ -98,6 +116,9 @@ CREATE INDEX IF NOT EXISTS idx_orders_awaiting_transfer
   ON orders (created_at DESC) WHERE status = 'awaiting_transfer';
 CREATE INDEX IF NOT EXISTS idx_orders_payment_review
   ON orders (payment_review_at DESC) WHERE status = 'payment_review';
+-- Kolejka pracowni pyta zawsze o to samo: co jest w robocie i co czeka najdluzej.
+CREATE INDEX IF NOT EXISTS idx_orders_queue
+  ON orders (paid_at ASC) WHERE status IN ('paid','in_production','shipped');
 
 -- ------------------------------------------------------------
 -- Pozycje zamowienia
