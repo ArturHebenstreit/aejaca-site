@@ -5,7 +5,18 @@
     paid: { label: "Do zrobienia", klasa: "text-amber-300 border-amber-400/30 bg-amber-400/10" },
     in_production: { label: "W robocie", klasa: "text-sky-300 border-sky-400/30 bg-sky-400/10" },
     shipped: { label: "Wysłane", klasa: "text-indigo-300 border-indigo-400/30 bg-indigo-400/10" },
+    completed: { label: "Zakończone", klasa: "text-emerald-300 border-emerald-400/30 bg-emerald-400/10" },
+    cancelled: { label: "Anulowane", klasa: "text-neutral-400 border-white/15 bg-white/5" },
   };
+  // Adres powrotu niosa wszystkie formularze, zeby po zapisie nie wypasc
+  // z filtra na domyslna liste i nie szukac wiersza od nowa.
+  const POWROT = stan ? "/queue?status=" + encodeURIComponent(stan) : "/queue";
+  const FILTRY = [
+    { stan: "", label: "W toku" },
+    { stan: "completed", label: "Zakończone" },
+    { stan: "cancelled", label: "Anulowane" },
+    { stan: "paid,in_production,shipped,completed,cancelled", label: "Wszystko" },
+  ];
   const DOSTAWA = {
     pickup: "Odbiór osobisty",
     inpost_locker: "Paczkomat InPost",
@@ -14,7 +25,7 @@
   };
   // Kolejnosc grup od pracy do zamkniecia. Wewnatrz kazdej kolejnosc daje
   // serwer, po dacie zaplaty, i widok jej nie rusza.
-  const GRUPY = ["paid", "in_production", "shipped"];
+  const GRUPY = ["paid", "in_production", "shipped", "completed", "cancelled"];
 %>
 
   <main class="max-w-5xl mx-auto px-6 py-8">
@@ -25,7 +36,17 @@
         Wszystko, co opłacone i jeszcze nieskończone, w kolejności wpłat: kto pierwszy zapłacił, ten pierwszy
         dostaje. Zamówienia ze sklepu i z ofert ustalonych mailem albo telefonicznie stoją tu razem, bo dla
         warsztatu niczym się nie różnią. Etap zmienia się tylko do przodu i tylko z dozwolonego stanu.
+        Pomyłkę poprawia się osobno, w sekcji „Popraw wiersz", która potrafi też cofnąć etap.
       </p>
+    </div>
+
+    <div class="flex flex-wrap gap-2 mb-5">
+      <% FILTRY.forEach(function (f) { %>
+        <a href="<%= f.stan ? '/queue?status=' + encodeURIComponent(f.stan) : '/queue' %>"
+           class="px-3 py-1.5 rounded-lg border text-xs transition-colors <%= stan === f.stan ? 'border-white/35 text-white bg-white/5' : 'border-white/10 text-neutral-400 hover:border-white/25' %>">
+          <%= f.label %>
+        </a>
+      <% }); %>
     </div>
 
     <% if (err) { %>
@@ -113,6 +134,7 @@
                 <div class="mt-4 flex flex-wrap items-end gap-3">
                   <% if (o.status === "paid") { %>
                     <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage" class="flex items-end gap-2">
+                      <input type="hidden" name="back" value="<%= POWROT %>" />
                       <input type="hidden" name="stage" value="in_production" />
                       <input name="note" placeholder="notatka do pracowni (opcjonalnie)"
                              class="w-64 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
@@ -124,6 +146,7 @@
 
                   <% if (o.status === "paid" || o.status === "in_production") { %>
                     <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage" class="flex items-end gap-2">
+                      <input type="hidden" name="back" value="<%= POWROT %>" />
                       <input type="hidden" name="stage" value="shipped" />
                       <label class="block">
                         <span class="text-neutral-500 text-[10px] block mb-1">List przewozowy</span>
@@ -138,6 +161,7 @@
 
                   <% if (o.status === "in_production" || o.status === "shipped") { %>
                     <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage">
+                      <input type="hidden" name="back" value="<%= POWROT %>" />
                       <input type="hidden" name="stage" value="completed" />
                       <button class="px-4 py-2 rounded-lg border border-emerald-400/30 text-emerald-300 text-sm hover:border-emerald-400/60 transition-colors">
                         Zamknij
@@ -145,6 +169,60 @@
                     </form>
                   <% } %>
                 </div>
+
+                <details class="mt-4 border-t border-white/10 pt-3">
+                  <summary class="text-neutral-500 text-xs cursor-pointer hover:text-neutral-300">Popraw wiersz</summary>
+
+                  <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/edit"
+                        class="mt-3 flex flex-wrap items-end gap-3">
+                    <input type="hidden" name="back" value="<%= POWROT %>" />
+                    <label class="block">
+                      <span class="text-neutral-500 text-[10px] block mb-1">Etap</span>
+                      <select name="stage" class="rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white">
+                        <option value="">bez zmiany</option>
+                        <% ["paid", "in_production", "shipped", "completed"].forEach(function (e) { %>
+                          <% if (e !== o.status) { %><option value="<%= e %>"><%= STAN[e].label %></option><% } %>
+                        <% }); %>
+                      </select>
+                    </label>
+                    <label class="block">
+                      <span class="text-neutral-500 text-[10px] block mb-1">List przewozowy</span>
+                      <input name="trackingNumber" value="<%= o.trackingNumber || '' %>" placeholder="puste pole kasuje"
+                             class="w-48 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white font-mono" />
+                    </label>
+                    <label class="block flex-1 min-w-[16rem]">
+                      <span class="text-neutral-500 text-[10px] block mb-1">Notatka do pracowni</span>
+                      <input name="note" value="<%= o.productionNote || '' %>" placeholder="puste pole kasuje"
+                             class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
+                    </label>
+                    <button class="px-4 py-2 rounded-lg border border-white/15 text-neutral-200 text-sm hover:border-white/35 transition-colors">
+                      Zapisz
+                    </button>
+                  </form>
+
+                  <p class="text-neutral-600 text-[10px] leading-relaxed mt-2">
+                    Cofnięcie etapu kasuje stemple tego, co się nie wydarzyło: zamówienie wycofane z „Wysłane"
+                    traci datę wysyłki i list przewozowy, bo nic nie wyjechało. Data rozpoczęcia pracy zostaje.
+                  </p>
+
+                  <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/delete"
+                        class="mt-4 flex flex-wrap items-end gap-3 border-t border-red-400/15 pt-3">
+                    <input type="hidden" name="back" value="<%= POWROT %>" />
+                    <label class="block">
+                      <span class="text-red-300/80 text-[10px] block mb-1">Usuń trwale: przepisz numer</span>
+                      <input name="confirmRef" placeholder="<%= o.orderRef %>" autocomplete="off"
+                             class="w-56 rounded-lg bg-neutral-900 border border-red-400/25 px-3 py-2 text-xs text-white font-mono" />
+                    </label>
+                    <button class="px-4 py-2 rounded-lg border border-red-400/30 text-red-300 text-sm hover:border-red-400/60 transition-colors">
+                      Usuń zamówienie
+                    </button>
+                    <p class="text-neutral-600 text-[10px] leading-relaxed w-full">
+                      Bez cofnięcia. Znikają pozycje, pliki do pobrania i rezerwacje, wycena wraca do stanu sprzed
+                      konwersji, a jednorazowy kod rabatowy wraca do puli. Podpisane komunikaty płatnicze zostają,
+                      bo wiążą się z numerem, nie z wierszem. Towar nie wraca na stan.
+                    </p>
+                  </form>
+                </details>
 
               </div>
             <% }); %>
