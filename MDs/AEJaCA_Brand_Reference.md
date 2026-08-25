@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-26 | Wersja: 5.6*
+*Wygenerowano: 2026-08-26 | Wersja: 5.7*
 
 ---
 
@@ -2157,6 +2157,25 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
 - **Panel:** lista według stanu (`new`, `priced`, `sent`, `accepted`, `converted`, `expired`,
   `cancelled`), wpisanie kwot pozycji, notatka "co wchodzi, czego nie ma", termin ważności,
   wysyłka oferty mailem albo gotowy link do przekazania.
+- **Ofertę da się poprawić bez zakładania jej od nowa** (od 2026-08-26). Panel edytuje dane
+  klienta, język, treść zapytania oraz pozycje: nazwę, ilość i opis, z możliwością dodania
+  i usunięcia pozycji. Numer zostaje ten sam, więc wątek w korespondencji i tytuł płatności
+  się nie zmieniają. Kwoty jednostkowe wpisuje wyłącznie wycenianie, żeby istniała jedna droga
+  do ceny i jedno miejsce sprawdzające, że kwota jest dodatnia. **Zmiana ilości przelicza
+  wartość pozycji i sumę oferty**, bo oferta pokazująca sumę niezgodną z własnymi pozycjami
+  myli się najciszej ze wszystkich. Gdy po edycji żadna pozycja nie ma kwoty, oferta wraca
+  do stanu `new` i traci termin ważności.
+- **Wycena w stanie `converted` jest zamknięta na edycję.** Stoi za nią zamówienie z własnymi
+  pozycjami i własną kwotą; zmiana w wycenie rozjechałaby jedno z drugim bez śladu. Ta sama
+  reguła obowiązuje przy wycenianiu.
+- **Trwałe usunięcie wyceny** wymaga przepisania numeru. Wycena, która stała się zamówieniem,
+  wymaga dodatkowego potwierdzenia: samo zamówienie zostaje, ale znika ślad, skąd pochodzi.
+  Wgrane pliki klienta przeżywają usunięcie (`ON DELETE SET NULL`), a link, który klient ma
+  w mailu, przestaje działać.
+- **Usuwanie pozycji w formularzu idzie listą „zostaw / usuń", nie polem zaznaczanym.** Pole
+  zaznaczane wysyła się wyłącznie zaznaczone, więc przy dwóch usuwanych z pięciu tablice
+  formularza rozjeżdżają się o dwa miejsca i znikają nie te wiersze. Pilnuje tego
+  `scripts/test-quote-edit.mjs`, wpięty w build.
 - **Strona klienta `/oferta/`** (noindex, brak odnośnika z menu). Dwa wejścia: link z oferty
   albo sam numer podany razem z adresem e-mail, na który poszła oferta. Klient bez adresu
   (telefon) dostaje krótki kod odbioru, wyprowadzony z tokenu dostępu, widoczny w panelu.
