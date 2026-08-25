@@ -3624,88 +3624,6 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
   });
 });
 
-/**
- * TRWALE USUNIECIE ZAMOWIENIA.
- *
- * Decyzja wlasciciela z 2026-08-26, zapisana w ADR-0014. Zglosilem przy niej
- * sprzecznosc z polityka retencji (`chat-api/retention.js` zamowienia
- * ANONIMIZUJE, a nie kasuje, i trzyma je szesc lat), wlasciciel podtrzymal.
- *
- * Co po tym zostaje, a co znika:
- *   - znikaja `order_items`, `downloads`, `product_reservations`
- *     i `discount_redemptions`, wszystkie przez ON DELETE CASCADE;
- *   - `quotes.converted_order_id` i `uploads.order_id` ida na NULL, wiec
- *     wycena zostaje i wraca do stanu sprzed konwersji;
- *   - ZOSTAJA `payment_notifications`. Wiaza sie z zamowieniem po numerze,
- *     a nie kluczem obcym, wiec podpisane komunikaty ITN przezywaja usuniecie.
- *     Slad wplaty istnieje dalej, tyle ze bez wiersza zamowienia obok.
- *   - NIE wraca towar na stan. Ze stanu zszedl przy zaplacie, a usuniecie
- *     wiersza nie jest tym samym co zwrot i nie udajemy, ze jest.
- *
- * Wymagane jest przepisanie numeru zamowienia w polu potwierdzenia. Nie jest
- * to zabezpieczenie kryptograficzne, tylko przerwa na zastanowienie: w kolejce
- * wiersze wygladaja tak samo, a to jedyna akcja w panelu bez cofniecia.
- */
-app.delete("/api/orders/:ref", express.json({ limit: "8kb" }), async (req, res) => {
-  if (!requireAdmin(req, res)) return;
-  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
-
-  const ref = String(req.params.ref || "");
-  if (String(req.body?.confirmRef || "").trim() !== ref) {
-    return res.status(400).json({ error: "Przepisz numer zamowienia, zeby potwierdzic", code: "confirm_mismatch" });
-  }
-
-  const klient = await pool.connect();
-  try {
-    await klient.query("BEGIN");
-    const { rows } = await klient.query(
-      "SELECT id, order_ref, status, total_grosze, paid_at FROM orders WHERE order_ref = $1 FOR UPDATE",
-      [ref]
-    );
-    const order = rows[0];
-    if (!order) {
-      await klient.query("ROLLBACK");
-      return res.status(404).json({ error: "Zamowienie nie istnieje" });
-    }
-
-    // Zuzycie kodu rabatowego liczy sie w oddzielnym liczniku na kodzie, a nie
-    // z wierszy rezerwacji. Kaskada zabralaby wiersz i zostawila kod spalony
-    // na zawsze, wiec licznik trzeba oddac recznie, w tej samej transakcji.
-    const { rows: zwolnione } = await klient.query(
-      `UPDATE discount_codes c
-          SET used_count = GREATEST(0, c.used_count - z.ile), updated_at = NOW()
-         FROM (SELECT code_id, COUNT(*)::int AS ile
-                 FROM discount_redemptions
-                WHERE order_id = $1 AND consumed_at IS NOT NULL AND released_at IS NULL
-                GROUP BY code_id) z
-        WHERE c.id = z.code_id
-      RETURNING c.code, z.ile`,
-      [order.id]
-    );
-
-    await klient.query("DELETE FROM orders WHERE id = $1", [order.id]);
-    await klient.query("COMMIT");
-
-    console.log(
-      `[kolejka] USUNIETO ${ref}: status ${order.status}, kwota ${(order.total_grosze / 100).toFixed(2)} zl, ` +
-      `oplacone ${order.paid_at ? "tak" : "nie"}` +
-      (zwolnione.length ? `, zwolnione kody: ${zwolnione.map((z) => `${z.code} x${z.ile}`).join(", ")}` : "")
-    );
-    res.json({
-      ok: true,
-      orderRef: ref,
-      wasPaid: Boolean(order.paid_at),
-      releasedCodes: zwolnione.map((z) => z.code),
-    });
-  } catch (e) {
-    await klient.query("ROLLBACK").catch(() => {});
-    console.error(`[kolejka] usuniecie ${ref} nie powiodlo sie:`, e.message);
-    res.status(500).json({ error: "Nie udalo sie usunac zamowienia" });
-  } finally {
-    klient.release();
-  }
-});
-
 app.get("/api/orders/awaiting-transfer", async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
@@ -3870,17 +3788,37 @@ app.post("/api/orders/:ref/cancel", express.json({ limit: "4kb" }), async (req, 
 });
 
 /**
- * Skasowanie zamowienia, ktore nigdy nie zylo.
+ * Skasowanie zamowienia.
  *
- * Do pomylek i testow, nie do sprzatania historii. Wiersz zamowienia ciagnie za
- * soba kaskadowo pozycje, rezerwacje i uzycia kodu, wiec skasowanie czegos, co
+ * Domyslnie wolno skasowac wylacznie zamowienie, ktore nigdy nie zylo: do
+ * pomylek i testow, nie do sprzatania historii. Wiersz ciagnie za soba
+ * kaskadowo pozycje, rezerwacje i uzycia kodu, wiec skasowanie czegos, co
  * zdazylo sie wydarzyc, wymazuje po cichu dowody. Warunki w orderCleanup.js.
+ *
+ * `force: true` LAMIE te warunki. Jest to decyzja wlasciciela z 2026-08-26,
+ * zapisana w ADR-0014, podjeta po tym, jak zglosilem sprzecznosc z polityka
+ * retencji (`chat-api/retention.js` zamowienie ANONIMIZUJE, a nie kasuje,
+ * i trzyma je szesc lat). Wymaga przepisania numeru zamowienia i zostawia
+ * w logu liste przelamanych warunkow, zeby dalo sie pozniej odtworzyc, co
+ * dokladnie zniknelo i mimo czego.
+ *
+ * Co przezywa kasowanie z `force`: `payment_notifications`, bo wiaza sie
+ * z zamowieniem po numerze, a nie kluczem obcym. Slad wplaty zostaje, tyle ze
+ * bez wiersza zamowienia obok. Towar NIE wraca na stan, bo zszedl przy
+ * zaplacie, a kasowanie nie jest zwrotem i nie udajemy, ze jest.
  */
-app.delete("/api/orders/:ref", async (req, res) => {
+app.delete("/api/orders/:ref", express.json({ limit: "8kb" }), async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
 
   const ref = String(req.params.ref || "");
+  const force = req.body?.force === true;
+  // Potwierdzenie dotyczy WYLACZNIE lamania warunkow. Zwykle kasowanie zostaje
+  // takie, jakie bylo, bo panel przelewow wola te trasa od dawna i nie ma
+  // powodu psuc mu dzialania.
+  if (force && String(req.body?.confirmRef || "").trim() !== ref) {
+    return res.status(400).json({ error: "Przepisz numer zamowienia, zeby potwierdzic", code: "confirm_mismatch" });
+  }
   const { rows } = await pool.query(
     `SELECT o.id, o.status, o.paid_at, o.fulfilled_at, o.transfer_confirmed_at,
             (SELECT COUNT(*)::INTEGER FROM payment_notifications n WHERE n.order_ref = o.order_ref) AS payment_notifications,
@@ -3906,7 +3844,7 @@ app.delete("/api/orders/:ref", async (req, res) => {
     childOrders: o.child_orders,
     linkedQuotes: o.linked_quotes,
   });
-  if (blockers.length) {
+  if (blockers.length && !force) {
     return res.status(409).json({
       error: `Tego zamowienia nie da sie skasowac, bo ${blockers.join(", ")}. Zamiast tego zrezygnuj z niego.`,
       code: "linked",
@@ -3918,10 +3856,38 @@ app.delete("/api/orders/:ref", async (req, res) => {
   // dostepnosc policzona w tej samej sekundzie nie zalezala od kolejnosci kaskady.
   await releaseOrderReservations(pool, o.id);
   await releaseOrderRedemptions(pool, o.id);
-  await pool.query(`DELETE FROM orders WHERE id = $1`, [o.id]);
-  console.log(`[zamowienia] ${ref} skasowane recznie (status ${o.status})`);
 
-  res.json({ ok: true, orderRef: ref, deleted: true });
+  // `releaseOrderRedemptions` zwalnia wylacznie rezerwacje NIEZUZYTE, bo tylko
+  // takie widzi zwykla sciezka kasowania: zuzyty kod jest jej blokada. Przy
+  // `force` zuzyte wlasnie kasujemy, a licznik `used_count` stoi na kodzie
+  // i nie liczy sie z wierszy, wiec kaskada zostawilaby kod spalony na zawsze.
+  let oddaneKody = [];
+  if (force) {
+    const { rows: oddane } = await pool.query(
+      `UPDATE discount_codes c
+          SET used_count = GREATEST(0, c.used_count - z.ile), updated_at = NOW()
+         FROM (SELECT code_id, COUNT(*)::INTEGER AS ile
+                 FROM discount_redemptions
+                WHERE order_id = $1 AND consumed_at IS NOT NULL
+                GROUP BY code_id) z
+        WHERE c.id = z.code_id
+      RETURNING c.code`,
+      [o.id]
+    );
+    oddaneKody = oddane.map((r) => r.code);
+  }
+
+  await pool.query(`DELETE FROM orders WHERE id = $1`, [o.id]);
+  if (force && blockers.length) {
+    console.log(
+      `[zamowienia] ${ref} SKASOWANE MIMO WARUNKOW (status ${o.status}): przelamane ${blockers.join(", ")}` +
+      (oddaneKody.length ? `, oddane kody: ${oddaneKody.join(", ")}` : "")
+    );
+  } else {
+    console.log(`[zamowienia] ${ref} skasowane recznie (status ${o.status})`);
+  }
+
+  res.json({ ok: true, orderRef: ref, deleted: true, overridden: force ? blockers : [], releasedCodes: oddaneKody });
 });
 
 /** Parametry startu transakcji, podpisane po stronie serwera */

@@ -755,6 +755,7 @@ silnik, tylko ustalił ją człowiek.
   tytułem płatności, więc po nim rozpoznajemy, czego dotyczy wpłata.
 - Wejście dwiema drogami: z linku w ofercie **albo** z samego numeru, podanego na /oferta/
   razem z adresem e-mail, na który poszła oferta. Klient bez adresu (rozmowa telefoniczna)
+- **Numer oferty da się też wpisać w sklepie**: pole "Masz numer oferty?" stoi na https://www.aejaca.com/shop/ i w pustym koszyku, i przenosi na stronę oferty. Klientowi, który zgubił maila z linkiem, podaj tę drogę zamiast prosić o kontakt. Sam numer nadal nie wystarcza: strona oferty dopyta o adres e-mail albo o kod odbioru.
   dostaje od nas krótki kod odbioru i podaje numer razem z nim.
 - Na tej stronie klient **poda kod rabatowy** (kwota schodzi przed zapłatą, nie zwrotem po),
   wybierze dostawę razem z numerem paczkomatu albo adresem, i zapłaci przez Autopay,

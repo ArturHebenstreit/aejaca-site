@@ -1466,10 +1466,11 @@ app.post("/queue/:ref/delete", requireAuth, async (req, res) => {
   try {
     const r = await shopApi(`/api/orders/${encodeURIComponent(req.params.ref)}`, {
       method: "DELETE",
-      body: { confirmRef: (req.body.confirmRef || "").trim() },
+      body: { confirmRef: (req.body.confirmRef || "").trim(), force: true },
     });
-    const kody = r.releasedCodes?.length ? `, zwolnione kody: ${r.releasedCodes.join(", ")}` : "";
-    back(res, powrot, { msg: `Usunieto ${req.params.ref}${r.wasPaid ? " (bylo oplacone)" : ""}${kody}` });
+    const kody = r.releasedCodes?.length ? `, oddane kody: ${r.releasedCodes.join(", ")}` : "";
+    const mimo = r.overridden?.length ? ` mimo tego, ze ${r.overridden.join(", ")}` : "";
+    back(res, powrot, { msg: `Usunieto ${req.params.ref}${mimo}${kody}` });
   } catch (err) { back(res, powrot, { err: err.message }); }
 });
 

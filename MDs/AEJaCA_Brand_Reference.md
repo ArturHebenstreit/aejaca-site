@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-25 | Wersja: 5.4*
+*Wygenerowano: 2026-08-26 | Wersja: 5.5*
 
 ---
 
@@ -2161,6 +2161,11 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
   albo sam numer podany razem z adresem e-mail, na który poszła oferta. Klient bez adresu
   (telefon) dostaje krótki kod odbioru, wyprowadzony z tokenu dostępu, widoczny w panelu.
   Sam numer nigdy nie wystarcza, bo oferta niesie nazwisko, telefon i adres.
+- **Numer oferty wpisuje się też w sklepie** (od 2026-08-26). Pole „Masz numer oferty?" stoi
+  na `/shop/` i w pustym koszyku, i przenosi na stronę oferty. Powód: strona oferty ma `noindex`,
+  nie ma jej w menu ani w mapie strony, więc klient, który zgubił maila z linkiem, nie miał
+  do niej drogi. Pole porządkuje numer (spacje, małe litery) i sprawdza jego kształt, ale
+  **nie zastępuje drugiego składnika**: adres e-mail albo kod odbioru pyta strona oferty.
 - **Kod rabatowy podaje się na tej stronie, przed zapłatą.** Kwota schodzi od razu, a nie
   zwrotem po fakcie. Rabat obejmuje wyłącznie pozycje zlecenia, nigdy dostawy, i nie schodzi
   poniżej zera. Rezerwacja kodu dzieje się w tej samej transakcji, co zapis zamówienia, więc
@@ -2200,6 +2205,22 @@ mailowa. Zamówienia z oferty to zaostrzyły, bo przychodzą spoza sklepu.
 - Dokładając nowy etap, trzeba ruszyć trzy miejsca naraz: regułę przejść, kolumnę w schemacie
   i w bloku startowym serwera, oraz gałąź na stronie klienta. Pominięcie trzeciego widzi tylko
   klient. Pilnuje tego `scripts/test-production-queue.mjs`, wpięty w build.
+- **Poprawianie wiersza** (od 2026-08-26, ADR-0014). Sekcja „Popraw wiersz" pod każdym
+  zamówieniem zmienia numer przesyłki, notatkę i etap, także wstecz. Korekta to osobna reguła
+  niż pchnięcie naprzód i wpuszcza wyłącznie zamówienie już opłacone, więc nie da się nią obejść
+  zakazu wprowadzania nieopłaconych do pracy. Cofnięcie kasuje stemple tego, co się nie
+  wydarzyło: zamówienie wycofane z „wysłane" traci datę wysyłki i list przewozowy. Data
+  rozpoczęcia pracy zostaje, bo praca ruszyła wtedy, kiedy ruszyła.
+- **Filtr stanu.** Domyślnie widać to, co czeka na pracę. Zakładki prowadzą do zakończonych
+  i anulowanych, bo bez tego omyłkowe „zrobione" znika z ekranu razem z miejscem, w którym
+  dałoby się je poprawić.
+- **Trwałe usunięcie zamówienia** (decyzja właściciela z 2026-08-26, ADR-0014). Wymaga
+  przepisania numeru zamówienia. Łamie warunki z `orderCleanup.js`, które normalnie odmawiają
+  skasowania czegokolwiek, co już żyło, i zapisuje w logu, które warunki przełamano. Zostają
+  podpisane komunikaty płatnicze (wiążą się z numerem, nie z wierszem), wycena wraca do stanu
+  sprzed konwersji, jednorazowy kod rabatowy wraca do puli. **Towar nie wraca na stan**, bo
+  zszedł przy zapłacie, a kasowanie nie jest zwrotem. Sprzeczność z polityką retencji, która
+  zamówienia anonimizuje i trzyma sześć lat, jest nazwana i rozstrzygnięta w ADR-0014.
 
 ---
 

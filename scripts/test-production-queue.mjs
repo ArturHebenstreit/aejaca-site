@@ -18,14 +18,17 @@
 //   3. nazwa kolumny ze stemplem jest bezpiecznym identyfikatorem, bo trafia
 //      do UPDATE przez interpolacje, a nie przez parametr,
 //   4. kazda taka kolumna naprawde powstaje przy starcie serwera, i kazdy
-//      status z reguly istnieje w ograniczeniu tabeli `orders`.
+//      status z reguly istnieje w ograniczeniu tabeli `orders`,
+//   5. korekta etapu nie jest furtka do obejscia punktu 2, a cofniecie kasuje
+//      stemple, ktore przestaly byc prawda,
+//   6. usuwanie zamowienia wymaga potwierdzenia i chodzi w transakcji.
 //
 //   node scripts/test-production-queue.mjs
 
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ETAPY_PRACY, przejscie } from "../chat-api/productionQueue.js";
+import { ETAPY_PRACY, ETAPY_KOLEJNO, przejscie, korekta } from "../chat-api/productionQueue.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SERWER = readFileSync(join(ROOT, "chat-api", "server.js"), "utf8");
@@ -125,6 +128,86 @@ console.log("\n4. Kolumny i statusy naprawde istnieja\n");
       else zle(`status "${status}" z reguly przejsc nie istnieje w ograniczeniu tabeli orders`);
     }
   }
+}
+
+console.log("\n5. Korekta etapu nie omija reguly przejsc\n");
+{
+  // Korekta ma poprawiac pomylke miedzy etapami pracy. Zamowienie, ktore nie
+  // jest oplacone, nie ma czego poprawiac i nie moze tedy wejsc do pracowni.
+  for (const zrodlo of ["awaiting_payment", "awaiting_transfer", "payment_review", "draft", "cancelled", "expired", "refunded"]) {
+    const w = korekta(zrodlo, "in_production");
+    if (w.ok) zle(`korekta ${zrodlo} -> in_production przeszla, a to obejscie reguly przejsc`);
+    else if (w.powod !== "not_in_queue") zle(`korekta ${zrodlo}: powod "${w.powod}", a ma byc "not_in_queue"`);
+    else ok(`korekta ze stanu ${zrodlo} odrzucona`);
+  }
+
+  for (const etap of ["", "done", "__proto__", "cancelled"]) {
+    const w = korekta("paid", etap);
+    if (w.ok) zle(`korekta na "${etap}" przeszla, a to nie jest etap pracy`);
+    else ok(`korekta na "${etap}" odrzucona`);
+  }
+
+  if (!korekta("in_production", "in_production").ok && korekta("in_production", "in_production").powod === "no_change") {
+    ok("korekta na ten sam etap odrzucona jako brak zmiany");
+  } else zle("korekta na ten sam etap nie zglasza braku zmiany");
+
+  // Sedno cofniecia: stempel etapu docelowego ZOSTAJE, bo praca ruszyla wtedy,
+  // kiedy ruszyla. Znikaja stemple etapow, ktore sie nie wydarzyly.
+  const wstecz = korekta("shipped", "in_production");
+  if (!wstecz.ok) zle("cofniecie shipped -> in_production odrzucone, a jest sensem tej funkcji");
+  else if (wstecz.doWyczyszczenia.includes("production_started_at")) {
+    zle("cofniecie do in_production kasuje date rozpoczecia pracy, czyli przepisuje historie");
+  } else if (!wstecz.doWyczyszczenia.includes("shipped_at")) {
+    zle("cofniecie z shipped nie kasuje daty wysylki, wiec zamowienie dalej twierdzi, ze wyjechalo");
+  } else ok(`cofniecie shipped -> in_production kasuje ${wstecz.doWyczyszczenia.join(", ")}`);
+
+  const wPrzod = korekta("paid", "shipped");
+  if (wPrzod.ok && !wPrzod.doWyczyszczenia.includes("shipped_at")) ok("poprawka w przod nie kasuje stempla etapu docelowego");
+  else zle("poprawka paid -> shipped kasuje wlasny stempel albo jest odrzucana");
+
+  // Kolejnosc etapow decyduje o tym, co sie czysci, wiec musi pokrywac sie
+  // z reguly przejsc. Dopisany etap bez wpisu tutaj cichnie w korekcie.
+  for (const etap of Object.keys(ETAPY_PRACY)) {
+    if (ETAPY_KOLEJNO.includes(etap)) ok(`etap "${etap}" ma swoje miejsce w kolejnosci`);
+    else zle(`etap "${etap}" nie wystepuje w ETAPY_KOLEJNO, korekta go nie zna`);
+  }
+}
+
+console.log("\n6. Kasowanie zamowienia ma jedna trase i lamie warunki tylko na zadanie\n");
+{
+  // Trasa kasowania istnieje w tym pliku od dawna, razem z warunkami
+  // z orderCleanup.js. Dopisanie DRUGIEJ trasy o tej samej sciezce nie jest
+  // bledem skladni ani lintu: Express bierze te zarejestrowana wczesniej,
+  // a starsza cichnie razem z calym zabezpieczeniem. Wlasnie tak wygladala
+  // pierwsza wersja tej zmiany, wiec liczba tras jest tu sprawdzana wprost.
+  const ile = (SERWER.match(/app\.delete\("\/api\/orders\/:ref"/g) || []).length;
+  if (ile === 1) ok("kasowanie ma dokladnie jedna trase");
+  else zle(`tras kasowania jest ${ile}, wiec ta zarejestrowana pozniej nie odpowiada na nic`);
+
+  const start = SERWER.indexOf('app.delete("/api/orders/:ref"');
+  const trasa = start < 0 ? "" : SERWER.slice(start, start + 4000);
+  const wymagane = [
+    [/requireAdmin\(req, res\)/, "wymaga zalogowanego pracownika"],
+    [/const force = req\.body\?\.force === true/, "lamie warunki wylacznie na wyrazne zadanie"],
+    [/if \(force && String\(req\.body\?\.confirmRef \|\| ""\)\.trim\(\) !== ref\)/, "przy lamaniu warunkow zada przepisania numeru"],
+    [/if \(blockers\.length && !force\)/, "bez zadania nadal odmawia, gdy cokolwiek sie wydarzylo"],
+    [/used_count = GREATEST\(0, c\.used_count - z\.ile\)/, "oddaje zuzycie kodu rabatowego"],
+    [/SKASOWANE MIMO WARUNKOW/, "zapisuje w logu, co przelamano"],
+  ];
+  for (const [wzor, opis] of wymagane) {
+    if (wzor.test(trasa)) ok(`kasowanie ${opis}`);
+    else zle(`kasowanie NIE ${opis}`);
+  }
+
+  // Potwierdzenie ma stac PRZED odczytem zamowienia z bazy.
+  const iPotwierdzenie = trasa.indexOf("confirm_mismatch");
+  const iBaza = trasa.indexOf("pool.query");
+  if (iPotwierdzenie > 0 && iPotwierdzenie < iBaza) ok("potwierdzenie stoi przed zapytaniem do bazy");
+  else zle("potwierdzenie stoi po zapytaniu do bazy albo go nie ma");
+
+  // Warunki nadal maja pochodzic z jednego miejsca, a nie byc przepisane.
+  if (/deletionBlockers\(\{/.test(trasa)) ok("warunki bierze z orderCleanup.js, a nie z wlasnej listy");
+  else zle("trasa nie uzywa juz deletionBlockers, warunki rozjada sie z orderCleanup.js");
 }
 
 console.log(bledy ? `\n${bledy} bledow\n` : "\nKolejka pracowni: wszystko sie zgadza\n");
