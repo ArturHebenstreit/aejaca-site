@@ -58,3 +58,49 @@ export function przejscie(obecny, etap) {
   if (!regula.z.includes(obecny)) return { ok: false, powod: "bad_transition", z: regula.z };
   return { ok: true, pole: regula.pole, z: regula.z };
 }
+
+/**
+ * Etapy, miedzy ktorymi wolno POPRAWIAC recznie, gdy ktos kliknal nie ten
+ * wiersz albo nie ten przycisk.
+ *
+ * Kolejnosc ma znaczenie: pozycja w tej tablicy mowi, ktore stemple przestaja
+ * byc prawda po cofnieciu. Zamowienie cofniete z "wyslane" do "w robocie" nie
+ * moze dalej niesc daty wysylki, bo nic nie wyjechalo.
+ */
+export const ETAPY_KOLEJNO = ["paid", "in_production", "shipped", "completed"];
+
+/** Kolumna ze stemplem dla etapu, albo null dla `paid` (stempluje go platnosc). */
+const STEMPEL = {
+  paid: null,
+  in_production: "production_started_at",
+  shipped: "shipped_at",
+  completed: "completed_at",
+};
+
+/**
+ * Czy wolno poprawic zamowienie na ten etap, i ktore stemple trzeba przy tym
+ * wyczyscic.
+ *
+ * Korekta NIE jest furtka do obejscia reguly przejsc. Wchodzi w gre wylacznie
+ * miedzy etapami pracy, czyli dla zamowienia, ktore JUZ jest oplacone. Ze stanu
+ * nieoplaconego, anulowanego czy zwroconego nie da sie tedy zrobic zamowienia
+ * w robocie, tak samo jak przez `przejscie`.
+ *
+ * @param {string} obecny status zamowienia w bazie
+ * @param {string} etap docelowy etap pracy
+ * @returns {{ok: boolean, doWyczyszczenia?: string[], powod?: string}}
+ */
+export function korekta(obecny, etap) {
+  if (!ETAPY_KOLEJNO.includes(etap)) return { ok: false, powod: "bad_stage" };
+  if (!ETAPY_KOLEJNO.includes(obecny)) return { ok: false, powod: "not_in_queue" };
+  if (obecny === etap) return { ok: false, powod: "no_change" };
+
+  // Stemple etapow PO docelowym przestaja byc prawda: cofniecie z "wyslane"
+  // do "w robocie" kasuje date wysylki. Stempel samego etapu docelowego
+  // ZOSTAJE, bo praca naprawde ruszyla wtedy, kiedy ruszyla, a nie dzisiaj.
+  const odIndeksu = ETAPY_KOLEJNO.indexOf(etap);
+  const doWyczyszczenia = ETAPY_KOLEJNO.slice(odIndeksu + 1)
+    .map((e) => STEMPEL[e])
+    .filter(Boolean);
+  return { ok: true, doWyczyszczenia };
+}
