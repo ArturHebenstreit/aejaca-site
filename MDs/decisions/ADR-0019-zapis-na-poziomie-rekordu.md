@@ -107,3 +107,40 @@ wiec zapis jednego przelacznika nie kasuje opisu, ktorego to zadanie nie nioslo.
    prowadzic, ale to osobna praca.
 3. **Zapis pola po polu przy edycji naglowka.** Naglowek jest jednym rekordem;
    rozbicie go na osobne pola dalo by wiecej zadan bez zysku dla czytelnosci.
+
+## Poprawki po pierwszym uzyciu (2026-08-26, ten sam dzien)
+
+Wlasciciel zapisal dwie pozycje ze zmienionym rodzajem i zglosil, ze "miesza
+sie mozliwosc zaznaczenia domyslnosci, dopiero odswiezenie strony pomaga".
+Mial racje i byl to blad tej zmiany.
+
+### Wiersz musi przerysowac sie z ODPOWIEDZI, nie z wlasnych pol
+
+Po zapisie przepisywalem podglad z pol formularza. To wystarcza dla nazwy
+i kwoty, ale NIE dla rzeczy, ktore rozstrzyga serwer:
+
+- zmiana rodzaju pozycji zmienia KONTROLKE: wariant ma przelacznik, dodatek
+  pole zaznaczane, skladnik nie ma nic. Kontrolki nie da sie przerobic
+  w miejscu, wiec trzeba ja wymienic;
+- wybor wariantu GASI pozostale w tej samej grupie, wiec zapis jednej pozycji
+  zmienia wyglad innych;
+- swiezy dodatek wchodzi zaznaczony, co tez ustala serwer.
+
+Odpowiedz trasy zapisu niesie juz wszystkie pozycje oferty, wiec po kazdym
+zapisie przerysowujemy z niej cala liste: kontrolke, opis rodzaju, grupe,
+kwoty i wartosc pozycji. Wiersz OTWARTY do edycji zostaje nietkniety, bo
+inaczej zapis sasiada nadpisywalby to, co ktos wlasnie wpisuje.
+
+### Nazwa przelacznika liczy sie z nazwy grupy, po obu stronach tak samo
+
+Szablon numerowal grupy (`pickGroup_0`), a skrypt musialby te numeracje
+odtworzyc. Po pierwszym zapisie czesc wierszy miala by nazwe stara, czesc
+nowa, i przelaczniki przestalyby sie wykluczac. Obie strony licza teraz nazwe
+z NAZWY GRUPY, jedna regula.
+
+### Grupy z innych pozycji stoja do klikniecia
+
+Lista `datalist` pokazuje sie dopiero po kliknieciu w strzalke, a przy pustej
+ofercie nie ma w niej jeszcze nic. Grupowanie wymaga nazwy DOKLADNIE tej samej,
+wiec nazwy uzyte przy innych pozycjach stoja pod polem jako przyciski i wpisuja
+sie jednym kliknieciem. Lista odswieza sie po kazdym zapisie.
