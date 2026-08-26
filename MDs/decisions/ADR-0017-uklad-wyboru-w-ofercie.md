@@ -183,6 +183,8 @@ Panel i backend sklepu wdrazaja sie osobno. Nowy formularz rozmawiajacy ze
 starym backendem gubi po cichu pola, ktorych tamten nie zna, i na ekranie
 wyglada to identycznie jak blad w kodzie. Panel czyta wiec `GET /api/version`
 (w tle, najwyzej raz na minute, brak odpowiedzi go nie wywala) i pokazuje
-`v1.1.0 - api v1.1.0`. Backend dopowiada, czy baza ma juz kolumny `kind`,
+`v1.1.02 - api v1.1.01`; numer rosnie na TRZECIEJ pozycji, zawsze dwucyfrowej,
+a rozne numery obu uslug nie sa bledem, bo kazda zmienia sie wtedy, gdy naprawde
+sie zmienia. Backend dopowiada, czy baza ma juz kolumny `kind`,
 `group_key` i `selected`; jesli nie, w naglowku stoi bursztynowe ostrzezenie,
 bo wtedy wybor nie ma sie gdzie zapisac. Numery podnosi sie recznie.

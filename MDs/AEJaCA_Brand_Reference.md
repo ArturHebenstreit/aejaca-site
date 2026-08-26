@@ -2266,7 +2266,11 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
   wdrażają się osobno, więc przez chwilę nowy formularz rozmawia ze starym backendem i po cichu
   gubi pola, których tamten nie zna. Na ekranie wygląda to identycznie jak błąd w kodzie: widok
   nowy, zapis nie działa. Panel czyta więc `GET /api/version` (w tle, najwyżej raz na minutę,
-  brak odpowiedzi go nie wywala) i pokazuje `v1.1.0 · api v1.1.0`. Backend dopowiada, czy baza
+  brak odpowiedzi go nie wywala) i pokazuje `v1.1.02 · api v1.1.01`. **Numer podnosi się na trzeciej
+  pozycji, zawsze dwucyfrowej** (`1.1.02` → `1.1.03`), więc numery ustawiają się w kolumnie i widać,
+  która wersja jest nowsza; pierwsze dwie liczby zostają na zmiany sposobu pracy, nie na poprawkę
+  ekranu. **Różne numery obu usług nie są błędem**: każda zmienia się wtedy, gdy naprawdę się zmienia.
+  Backend dopowiada, czy baza
   ma już kolumny wyboru; jeśli nie, w nagłówku stoi bursztynowe ostrzeżenie, bo wtedy warianty
   i dodatki nie mają się gdzie zapisać. Numery podnosi się ręcznie, przy zmianie widocznej
   w panelu.

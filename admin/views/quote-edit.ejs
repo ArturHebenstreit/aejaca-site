@@ -15,7 +15,11 @@
     const klucz = (it.groupKey || "").trim() || (it.kind === "fixed" ? "" : "wybor");
     if (klucz && KARTY.indexOf(klucz) < 0) KARTY.push(klucz);
   });
-  const nrKarty = (it) => Math.max(0, KARTY.indexOf((it.groupKey || "").trim() || "wybor"));
+  // Nazwa przelacznika bierze sie z NAZWY GRUPY, tak samo tutaj i w skrypcie
+  // ponizej. Gdyby serwer numerowal grupy, a skrypt je slugowal, po pierwszym
+  // zapisie polowa wierszy miala by stara nazwe, a polowa nowa i przelaczniki
+  // przestalyby sie wykluczac.
+  const nazwaGrupy = (it) => "pickGroup_" + ((it.groupKey || "").trim() || "wybor").replace(/[^A-Za-z0-9_-]/g, "_");
 
   const RODZAJE = [
     ["fixed", "składnik rachunku"],
@@ -254,9 +258,13 @@
                  class="rounded-lg border <%= it.selected ? 'border-white/10' : 'border-white/5' %> bg-neutral-950 p-4">
 
               <div class="flex items-start gap-3">
-                <div class="pt-1 w-4 shrink-0">
+                <!-- Kontrolka wyboru zmienia sie razem z rodzajem pozycji: wariant
+                     ma przelacznik, dodatek pole zaznaczane, skladnik nic. Dlatego
+                     stoi w osobnym miejscu, ktore skrypt wymienia po zapisie.
+                     Wczesniej zostawal przelacznik po starym rodzaju az do F5. -->
+                <div data-wybor-miejsce class="pt-1 w-4 shrink-0">
                   <% if (it.kind === "variant") { %>
-                    <input type="radio" data-wybor name="pickGroup_<%= nrKarty(it) %>"
+                    <input type="radio" data-wybor name="<%= nazwaGrupy(it) %>"
                            class="accent-amber-400" <%= it.selected ? "checked" : "" %> />
                   <% } else if (it.kind === "option") { %>
                     <input type="checkbox" data-wybor class="accent-amber-400" <%= it.selected ? "checked" : "" %> />
@@ -269,8 +277,9 @@
                   <div class="text-sm text-white" data-podglad="title"><%= it.title %></div>
                   <div class="text-neutral-600 text-[10px] mt-0.5">
                     <span data-podglad="qty"><%= it.qty %></span> szt.
-                    &middot; <span data-podglad="kind"><%= ETYKIETA_RODZAJU[it.kind] || "składnik" %></span><% if (it.kind !== "fixed") { %>
-                      &middot; grupa <span data-podglad="groupKey" class="font-mono"><%= it.groupKey || "wybor" %></span><% } %><% if (it.calculator) { %>
+                    &middot; <span data-podglad="kind"><%= ETYKIETA_RODZAJU[it.kind] || "składnik" %></span><span
+                      data-meta="grupa" <%= it.kind === "fixed" ? 'style="display:none"' : "" %>>
+                      &middot; grupa <span data-podglad="groupKey" class="font-mono"><%= it.groupKey || "wybor" %></span></span><% if (it.calculator) { %>
                       &middot; <%= it.calculator %><% } %><% if (it.fileName) { %>
                       &middot; <%= it.fileName %><% } %>
                   </div>
@@ -345,6 +354,10 @@
                   <span class="text-neutral-500 text-[10px] block mb-1">Grupa wyboru</span>
                   <input data-pole="groupKey" list="karty" value="<%= it.groupKey || '' %>" placeholder="np. klucz"
                          class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
+                  <!-- Lista rozwijalna pokazuje sie dopiero po kliknieciu w strzalke,
+                       wiec grupy z innych pozycji stoja tez tutaj, do klikniecia.
+                       O to chodzi w grupowaniu: nazwa musi byc DOKLADNIE ta sama. -->
+                  <span data-podpowiedzi-grup class="flex flex-wrap gap-1 mt-1"></span>
                 </label>
                 <label class="sm:col-span-6 block">
                   <span class="text-neutral-500 text-[10px] block mb-1">Opis: to, czego nie widać w nazwie</span>
@@ -538,6 +551,127 @@
       });
     }
 
+    /** Nazwa przelacznika bierze sie z nazwy grupy: przegladarka laczy przelaczniki
+     *  w jeden wybor WYLACZNIE po nazwie pola. */
+    function nazwaGrupy(klucz) {
+      return "pickGroup_" + String(klucz || "wybor").replace(/[^A-Za-z0-9_-]/g, "_");
+    }
+
+    /**
+     * Kontrolka wyboru zgodna z rodzajem pozycji. Wymieniamy caly element, bo
+     * przelacznika nie da sie zamienic w pole zaznaczane inaczej; po zmianie
+     * rodzaju trzeba tez podpiac nasluch od nowa.
+     */
+    function ustawKontrolke(rekord, poz) {
+      var miejsce = rekord.querySelector("[data-wybor-miejsce]");
+      if (!miejsce) return;
+      var rodzaj = poz.kind || "fixed";
+      var teraz = miejsce.querySelector("[data-wybor]");
+      var typ = rodzaj === "variant" ? "radio" : rodzaj === "option" ? "checkbox" : null;
+
+      if (!typ) {
+        miejsce.innerHTML = '<span class="block w-3 h-3 rounded-full border border-white/20"></span>';
+        return;
+      }
+      if (teraz && teraz.type === typ) {
+        teraz.checked = Boolean(poz.selected);
+        if (typ === "radio") teraz.name = nazwaGrupy(poz.groupKey);
+        return;
+      }
+      var nowa = document.createElement("input");
+      nowa.type = typ;
+      nowa.setAttribute("data-wybor", "");
+      nowa.className = "accent-amber-400";
+      nowa.checked = Boolean(poz.selected);
+      if (typ === "radio") nowa.name = nazwaGrupy(poz.groupKey);
+      miejsce.innerHTML = "";
+      miejsce.appendChild(nowa);
+      nowa.addEventListener("change", function () { zapiszWybor(nowa); });
+    }
+
+    /** Lista podpowiedzi grup: to, co juz stoi przy innych pozycjach. */
+    function odswiezGrupy(pozycje) {
+      var lista = document.getElementById("karty");
+      if (!lista) return;
+      var nazwy = [];
+      (pozycje || []).forEach(function (p) {
+        var k = (p.groupKey || "").trim();
+        if (k && nazwy.indexOf(k) < 0) nazwy.push(k);
+      });
+      lista.innerHTML = nazwy.map(function (k) {
+        return '<option value="' + k.replace(/"/g, "&quot;") + '"></option>';
+      }).join("");
+
+      // Te same nazwy jako przyciski przy kazdym polu grupy. Klikniecie wpisuje
+      // nazwe jeden do jednego, wiec grupa nie rozpada sie na dwie przez
+      // literowke albo wielka litere.
+      document.querySelectorAll("[data-podpowiedzi-grup]").forEach(function (miejsce) {
+        var wlasne = miejsce.parentElement.querySelector('[data-pole="groupKey"]');
+        miejsce.innerHTML = "";
+        nazwy.forEach(function (k) {
+          var b = document.createElement("button");
+          b.type = "button";
+          b.textContent = k;
+          b.className = "px-1.5 py-0.5 rounded border border-white/10 text-neutral-400 text-[10px] hover:text-white hover:border-white/30 transition-colors";
+          b.addEventListener("click", function () {
+            if (wlasne && !wlasne.disabled) wlasne.value = k;
+          });
+          miejsce.appendChild(b);
+        });
+      });
+    }
+
+    /**
+     * Przerysowanie wierszy z odpowiedzi serwera.
+     *
+     * Zapis jednej pozycji potrafi przestawic inne: wybor wariantu gasi
+     * pozostale w grupie, zmiana rodzaju odbiera pozycji prawo do zaznaczenia,
+     * a swiezy dodatek wchodzi zaznaczony. Bez tego kroku ekran pokazywal stan
+     * sprzed zapisu az do odswiezenia strony.
+     */
+    function odswiezWiersze(pozycje) {
+      (pozycje || []).forEach(function (poz) {
+        var rekord = lista.querySelector('[data-rekord="pozycja"][data-id="' + poz.id + '"]');
+        if (!rekord) return;
+
+        ustawKontrolke(rekord, poz);
+        var grupaMeta = rekord.querySelector('[data-meta="grupa"]');
+        if (grupaMeta) grupaMeta.style.display = (poz.kind || "fixed") === "fixed" ? "none" : "";
+        rekord.className = rekord.className.replace(/border-white\/(10|5)/, poz.selected ? "border-white/10" : "border-white/5");
+
+        var podglady = {
+          title: poz.title,
+          qty: String(poz.qty),
+          kind: ETYKIETA[poz.kind] || "składnik",
+          groupKey: poz.groupKey || "wybor",
+          description: poz.description || "",
+          unitPln: poz.unitGrosze != null ? (poz.unitGrosze / 100).toFixed(2) : "-",
+          line: poz.lineGrosze != null && poz.qty > 1 ? "razem " + (poz.lineGrosze / 100).toFixed(2) + " zł" : "",
+        };
+        Object.keys(podglady).forEach(function (klucz) {
+          var cel = rekord.querySelector('[data-podglad="' + klucz + '"]');
+          if (!cel) return;
+          cel.textContent = podglady[klucz];
+          if (klucz === "description") cel.hidden = !poz.description;
+        });
+
+        // Pola edycji tez, ale WYLACZNIE gdy rekord jest zamkniety: inaczej
+        // zapis sasiedniego wiersza nadpisalby to, co ktos wlasnie wpisuje.
+        if (!rekord.dataset.edycja) {
+          var wartosci = {
+            title: poz.title, qty: String(poz.qty), description: poz.description || "",
+            unitPln: poz.unitGrosze != null ? (poz.unitGrosze / 100).toFixed(2) : "",
+            kind: poz.kind || "fixed", groupKey: poz.groupKey || "",
+          };
+          pola(rekord).forEach(function (p) {
+            if (wartosci[p.dataset.pole] !== undefined) p.value = wartosci[p.dataset.pole];
+          });
+          zapamietaj(rekord);
+        }
+      });
+      odswiezGrupy(pozycje);
+    }
+
     function odswiezNaglowek(dane) {
       if (!dane || !dane.quote) return;
       var suma = document.querySelector("[data-suma]");
@@ -588,18 +722,12 @@
             rekord.dataset.id = dane.items[dane.items.length - 1].id;
           }
           odswiezPodglad(rekord);
-          // Wartosc pozycji liczy serwer z kwoty razy ilosc, wiec bierzemy ja
-          // z odpowiedzi. Przepisana z pol pokazywalaby stara liczbe do czasu
-          // odswiezenia strony.
-          var zapisana = (dane.items || []).find(function (i) { return String(i.id) === String(rekord.dataset.id); });
-          var razem = rekord.querySelector('[data-podglad="line"]');
-          if (razem && zapisana) {
-            razem.textContent = zapisana.lineGrosze != null && zapisana.qty > 1
-              ? "razem " + (zapisana.lineGrosze / 100).toFixed(2) + " zł" : "";
-          }
         }
         zapamietaj(rekord);
         tryb(rekord, false);
+        // Dopiero teraz, gdy rekord jest zamkniety: rodzaj pozycji, zaznaczenie
+        // i kwoty przychodza z serwera i moga dotyczyc TAKZE innych wierszy.
+        if (!naglowek) odswiezWiersze(dane.items);
         stan(rekord, "zapisano " + czas(), "text-emerald-400/70");
       } catch (e) {
         stan(rekord, "", "text-neutral-600");
@@ -618,6 +746,9 @@
         var dane = await wyslij("/item", { id: rekord.dataset.id, remove: true });
         odswiezNaglowek(dane);
         rekord.remove();
+        // Po usunieciu wariantu regula "jeden w grupie" wskazuje inny, wiec
+        // reszta wierszy tez moze wygladac inaczej niz przed chwila.
+        odswiezWiersze(dane.items);
       } catch (e) {
         stan(rekord, "", "text-neutral-600");
         blad(rekord, e.message);
@@ -632,14 +763,9 @@
       try {
         var dane = await wyslij("/item", { id: rekord.dataset.id, selected: input.checked });
         odswiezNaglowek(dane);
-        // Wybor wariantu gasi pozostale w grupie po stronie serwera, wiec
-        // przepisujemy stan wszystkich wierszy z odpowiedzi, a nie z klikniecia.
-        if (dane.items) {
-          dane.items.forEach(function (it) {
-            var w = lista.querySelector('[data-id="' + it.id + '"] [data-wybor]');
-            if (w) w.checked = Boolean(it.selected);
-          });
-        }
+        // Wybor wariantu gasi pozostale w grupie po stronie serwera, wiec stan
+        // wszystkich wierszy bierzemy z odpowiedzi, a nie z klikniecia.
+        odswiezWiersze(dane.items);
         stan(rekord, "zapisano " + czas(), "text-emerald-400/70");
       } catch (e) {
         stan(rekord, "", "text-neutral-600");
@@ -677,6 +803,13 @@
     }
 
     document.querySelectorAll("[data-rekord]").forEach(podepnij);
+
+    // Podpowiedzi grup buduje ta sama funkcja co po zapisie, zeby istnialo
+    // jedno miejsce, ktore wie, jak wygladaja.
+    odswiezGrupy(Array.prototype.map.call(lista.querySelectorAll('[data-rekord="pozycja"]'), function (r) {
+      var pole = r.querySelector('[data-pole="groupKey"]');
+      return { groupKey: pole ? pole.value : "" };
+    }));
 
     // --- Nowa pozycja ---------------------------------------------------
     // Wiersz powstaje w przegladarce i trafia do bazy dopiero po zatwierdzeniu.

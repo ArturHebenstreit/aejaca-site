@@ -134,7 +134,20 @@ console.log("\n4. Zapis na poziomie rekordu, bez przycisku zapisz\n");
   // gasi pozostale warianty w grupie.
   ma(WIDOK, /data-wybor/, "wybor domyslny ma wlasna kontrolke w wierszu");
   ma(WIDOK, /zapiszWybor/, "klikniecie w wybor zapisuje sie od razu");
-  ma(WIDOK, /dane\.items\.forEach/, "stan zaznaczen przepisuje sie z odpowiedzi serwera");
+
+  // Zapis jednej pozycji potrafi przestawic inne: wybor wariantu gasi pozostale
+  // w grupie, a zmiana rodzaju odbiera pozycji prawo do zaznaczenia. Bez
+  // przerysowania z odpowiedzi ekran pokazywal stan sprzed zapisu az do F5.
+  ma(WIDOK, /function odswiezWiersze\(pozycje\)/, "wiersze przerysowuja sie z odpowiedzi serwera");
+  ma(WIDOK, /function ustawKontrolke\(rekord, poz\)/, "kontrolka wyboru zmienia sie razem z rodzajem pozycji");
+  ma(WIDOK, /data-wybor-miejsce/, "kontrolka wyboru ma miejsce, ktore da sie wymienic");
+  ma(WIDOK, /if \(!rekord\.dataset\.edycja\)/, "przerysowanie nie nadpisuje wiersza otwartego do edycji");
+  // Nazwa przelacznika po obu stronach musi powstawac z tej samej reguly,
+  // inaczej po pierwszym zapisie polowa grupy przestaje sie wykluczac.
+  ma(WIDOK, /const nazwaGrupy = \(it\) => "pickGroup_"/, "szablon liczy nazwe grupy z jej nazwy");
+  ma(WIDOK, /function nazwaGrupy\(klucz\)/, "skrypt liczy nazwe grupy z tej samej reguly");
+  ma(WIDOK, /data-podpowiedzi-grup/, "grupy z innych pozycji stoja przy polu do klikniecia");
+  ma(WIDOK, /function odswiezGrupy\(pozycje\)/, "lista grup odswieza sie po zapisie");
 
   // Nowa pozycja trafia do bazy dopiero po zatwierdzeniu, inaczej kazde
   // omylkowe klikniecie zostawialoby wiersz bez nazwy i bez kwoty.
@@ -265,8 +278,11 @@ console.log("\n7. Wersje panelu i backendu widac z ekranu\n");
   const WERSJA = readFileSync(join(ROOT, "admin", "wersja.js"), "utf8");
   // Panel i backend sklepu wdrazaja sie osobno. Nowy formularz rozmawiajacy ze
   // starym backendem gubi pola po cichu i wyglada to jak blad w kodzie.
-  ma(WERSJA, /export const PANEL_WERSJA = "\d+\.\d+\.\d+"/, "panel zna swoja wersje");
-  ma(SERWER, /const WERSJA_API = "\d+\.\d+\.\d+"/, "backend sklepu zna swoja wersje");
+  // Trzecia pozycja jest ZAWSZE dwucyfrowa i to ona rosnie przy kazdej zmianie.
+  // Bez tego numery przestaja sie ustawiac w kolumnie i "1.1.9" wyglada
+  // na nowsze od "1.1.10".
+  ma(WERSJA, /export const PANEL_WERSJA = "\d+\.\d+\.\d{2}"/, "panel zna swoja wersje, z dwucyfrowa trzecia pozycja");
+  ma(SERWER, /const WERSJA_API = "\d+\.\d+\.\d{2}"/, "backend sklepu zna swoja wersje, z dwucyfrowa trzecia pozycja");
   const ile = (SERWER.match(/app\.get\("\/api\/version"/g) || []).length;
   if (ile === 1) ok("trasa wersji istnieje dokladnie raz");
   else zle(`tras wersji jest ${ile}`);
