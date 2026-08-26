@@ -195,7 +195,7 @@ for (const f of pliki) {
 
 // Kazda pozycja edytowalna musi miec droge powrotna: widok edycji bez trasy
 // zapisu to formularz, ktory po kliknieciu "zapisz" daje 404.
-for (const [widok, zapis] of [["quote-edit", "/quotes/:ref/edit"], ["discount-edit", "/discounts/:code/update"], ["gemstone-prices-edit", "/gemstone-prices/:id/update"], ["material-edit", "/materials/:id/update"]]) {
+for (const [widok, zapis] of [["quote-edit", "/quotes/:ref/item"], ["discount-edit", "/discounts/:code/update"], ["gemstone-prices-edit", "/gemstone-prices/:id/update"], ["material-edit", "/materials/:id/update"]]) {
   if (existsSync(join(VIEWS, `${widok}.ejs`)) && !server.includes(`"${zapis}"`)) {
     zle(`views/${widok}.ejs nie ma trasy zapisu ${zapis}`);
   }

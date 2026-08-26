@@ -137,6 +137,53 @@ ok("zaznaczenie w pierwszej grupie zostalo nietkniete", selectedQuoteItems(stan)
    selectedQuoteItems(stan).map((i) => i.title).join(" + "));
 ok("kwota naglowka zgadza sie z ukladem", stan.total_grosze === quoteAmountGrosze(stan), `${stan.total_grosze} vs ${quoteAmountGrosze(stan)}`);
 
+// --- 5. Zapis pojedynczego rekordu, tak jak robi to panel -------------------
+// Edytor wycen nie ma juz przycisku "zapisz": kazda pozycja idzie do bazy
+// osobnym zadaniem, a naglowek oferty wlasnym. Zadanie niesie WYLACZNIE pola,
+// ktore sie zmienily, wiec musimy sprawdzic, ze reszta zostaje nietknieta.
+{
+  const P = await poz();
+
+  // 5a. Sam przelacznik wyboru, bez zadnego innego pola.
+  await updateQuote(pool, quoteRef, { items: [{ id: P[0].id, selected: true }] });
+  const poWyborze = await getQuoteByRef(pool, quoteRef);
+  const klucz = poWyborze.items.filter((i) => i.group_key === "klucz" && i.kind === "variant");
+  ok("klikniecie w wariant przestawia wybor w grupie",
+     klucz.find((i) => Number(i.id) === Number(P[0].id))?.selected === true
+     && klucz.filter((i) => i.selected).length === 1,
+     klucz.map((i) => `${i.title}:${i.selected}`).join(" "));
+
+  // 5b. Sama nazwa: kwota, rodzaj i grupa maja zostac takie, jakie byly.
+  const przed = (await poz())[0];
+  await updateQuote(pool, quoteRef, { items: [{ id: przed.id, title: "Wydruk klucz 56 mm, poprawiony" }] });
+  const po = (await poz())[0];
+  ok("zapis samej nazwy nie rusza kwoty ani rodzaju",
+     po.title === "Wydruk klucz 56 mm, poprawiony" && po.unit_grosze === przed.unit_grosze
+     && po.kind === przed.kind && po.group_key === przed.group_key,
+     `${po.title} / ${po.unit_grosze} / ${po.kind} / ${po.group_key}`);
+
+  // 5c. Nowa pozycja jednym zadaniem, tak jak po zatwierdzeniu ptaszkiem.
+  const ileBylo = (await poz()).length;
+  await updateQuote(pool, quoteRef, { items: [{ title: "Grawer wewnatrz", qty: 1, unitGrosze: 5000, kind: "fixed" }] });
+  const poDodaniu = await poz();
+  ok("nowa pozycja dopisuje sie jednym zadaniem", poDodaniu.length === ileBylo + 1
+     && poDodaniu[poDodaniu.length - 1].title === "Grawer wewnatrz");
+
+  // 5d. Sam naglowek: notatka bez dotykania pozycji.
+  const przedNotatka = await poz();
+  await updateQuote(pool, quoteRef, { note: "Cena obejmuje kruszec i robocizne." });
+  const poNotatce = await getQuoteByRef(pool, quoteRef);
+  ok("zapis naglowka nie rusza pozycji",
+     poNotatce.price_note === "Cena obejmuje kruszec i robocizne."
+     && poNotatce.items.length === przedNotatka.length);
+
+  // 5e. Usuniecie pojedynczej pozycji.
+  const doUsuniecia = poDodaniu[poDodaniu.length - 1];
+  await updateQuote(pool, quoteRef, { items: [{ id: doUsuniecia.id, remove: true }] });
+  ok("usuniecie jednej pozycji zabiera dokladnie ja",
+     (await poz()).every((i) => Number(i.id) !== Number(doUsuniecia.id)));
+}
+
 await pool.end();
 console.log(zle ? `\n${zle} bledow\n` : "\nWszystko sie zgadza\n");
 process.exit(zle ? 1 : 0);

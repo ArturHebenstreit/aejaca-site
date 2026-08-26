@@ -132,7 +132,9 @@ console.log("\n5. Strona pokazuje te walute, ktora klient zaplaci\n");
   ma(OFERTA, /zmienWalute/, "klient przestawia walute na stronie oferty");
   ma(KASA, /currency === "EUR" \? "bank_transfer" : "autopay"/, "kasa wyprowadza sposob zaplaty z waluty");
   ma(KASA, /currency,/, "kasa wysyla walute do backendu");
-  ma(PANEL, /currency: req\.body\.currency \|\| undefined/, "panel przekazuje walute oferty");
+  // Waluta jest polem naglowka oferty, wiec idzie ta sama trasa co dane klienta
+  // i termin. Zapis pozycji jej nie dotyka.
+  ma(PANEL, /if \(b\.currency !== undefined\) patch\.currency = b\.currency/, "panel przekazuje walute oferty");
 }
 
 console.log(bledy ? `\n${bledy} bledow\n` : "\nWaluta oferty i zaplaty: wszystko sie zgadza\n");

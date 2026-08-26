@@ -6,7 +6,7 @@ import pg from "pg";
 import { randomBytes } from "node:crypto";
 
 import { fileURLToPath } from "url";
-import { PANEL_WERSJA, opisWersji } from "./wersja.js";
+import { opisWersji } from "./wersja.js";
 import { dirname, join } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -94,9 +94,12 @@ function odswiezWersjeApi() {
   shopApi("/api/version")
     .then((d) => {
       wersjaApi.tekst = d.commit ? `${d.version} (${d.commit})` : String(d.version || "?");
+      // Rozne numery obu uslug NIE sa bledem: panel zmienia sie sam z siebie,
+      // gdy poprawiamy ekran. Alarmem jest wylacznie stan, w ktorym backend nie
+      // umie przyjac tego, co panel wysyla, a to widac po schemacie bazy.
       wersjaApi.ostrzezenie = d.schema && d.schema.quoteItemKinds === false
         ? "baza sklepu nie ma jeszcze kolumn wyboru, warianty i dodatki nie zapiszą się"
-        : (d.version && d.version !== PANEL_WERSJA ? "panel i backend sklepu mają różne wersje" : null);
+        : null;
     })
     .catch((e) => {
       wersjaApi.tekst = null;
@@ -1419,110 +1422,6 @@ app.post("/quotes/new", requireAuth, async (req, res) => {
     });
     back(res, `/quotes/${r.quoteRef}`, { msg: `Zalozono ${r.quoteRef}` });
   } catch (err) { back(res, "/quotes", { err: err.message }); }
-});
-
-/**
- * Zapis calej oferty: dane klienta, pozycje, kwoty, uklad wyboru i termin.
- *
- * JEDEN FORMULARZ, jeden przycisk. Wczesniej kwoty mieszkaly w osobnej sekcji
- * nizej na stronie, wiec cena stala daleko od pozycji, ktorej dotyczy, a zapis
- * jednej polowy gubil to, co wpisano w drugiej.
- *
- * Usuwanie pozycji idzie przez przycisk z numerem pozycji w wartosci, a nie
- * przez pole zaznaczane w wierszu. Pole zaznaczane wysyla sie WYLACZNIE gdy
- * jest zaznaczone, wiec przy dwoch usuwanych z pieciu tablice rozjechalyby sie
- * o dwa miejsca i skasowalibysmy nie te wiersze.
- *
- * Z tego samego powodu zaznaczenie wariantu i dodatku jedzie NUMEREM WIERSZA
- * w wartosci pola, a nie sama obecnoscia pola: tablice zostaja wtedy rowne.
- */
-app.post("/quotes/:ref/edit", requireAuth, async (req, res) => {
-  const wroc = `/quotes/${encodeURIComponent(req.params.ref)}`;
-  try {
-    const idki = [].concat(req.body.itemId || []);
-    const tytuly = [].concat(req.body.itemTitle || []);
-    const ilosci = [].concat(req.body.itemQty || []);
-    const opisy = [].concat(req.body.itemDescription || []);
-    const kwoty = [].concat(req.body.itemUnitPln || []);
-    const rodzaje = [].concat(req.body.itemKind || []);
-    const karty = [].concat(req.body.itemGroup || []);
-    const doUsuniecia = String(req.body.removeId || "");
-
-    // Przelaczniki wariantow maja nazwy `pickGroup_0`, `pickGroup_1`, bo
-    // przegladarka laczy je w jeden wybor wylacznie po nazwie pola. Dodatki
-    // ida jedna lista `optionOn`. W obu wartoscia jest NUMER WIERSZA.
-    const zaznaczone = new Set(
-      Object.keys(req.body)
-        .filter((k) => k === "optionOn" || k.startsWith("pickGroup_"))
-        .flatMap((k) => [].concat(req.body[k]))
-        .map((v) => Number(v))
-        .filter((n) => Number.isInteger(n))
-    );
-
-    const grosze = (wartosc) => {
-      const s = String(wartosc ?? "").trim().replace(",", ".");
-      if (!s) return null;
-      const g = Math.round(Number(s) * 100);
-      if (!Number.isFinite(g) || g <= 0) throw new Error("Kwota pozycji musi byc dodatnia albo pusta");
-      return g;
-    };
-    const rodzaj = (w) => (["fixed", "variant", "option"].includes(w) ? w : "fixed");
-
-    const items = idki.map((id, i) => (
-      String(id) === doUsuniecia
-        ? { id: Number(id), remove: true }
-        : {
-            id: Number(id),
-            title: tytuly[i] ?? "",
-            qty: ilosci[i] ?? 1,
-            description: opisy[i] ?? "",
-            unitGrosze: grosze(kwoty[i]),
-            kind: rodzaj(rodzaje[i]),
-            groupKey: String(karty[i] ?? "").trim() || null,
-            selected: zaznaczone.has(i),
-          }
-    ));
-
-    // Jedna nowa pozycja na zapis. Wiecej i tak wpisuje sie po kolei, a pusty
-    // wiersz w formularzu na zapas tylko rozprasza.
-    if (String(req.body.newTitle || "").trim()) {
-      items.push({
-        title: req.body.newTitle,
-        qty: req.body.newQty || 1,
-        description: req.body.newDescription || "",
-        unitGrosze: grosze(req.body.newUnitPln),
-        kind: rodzaj(req.body.newKind),
-        groupKey: String(req.body.newGroup ?? "").trim() || null,
-      });
-    }
-
-    const r = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/update`, {
-      method: "POST",
-      body: {
-        email: req.body.email ?? undefined,
-        name: req.body.name ?? undefined,
-        phone: req.body.phone ?? undefined,
-        lang: req.body.lang || undefined,
-        currency: req.body.currency || undefined,
-        message: req.body.message ?? undefined,
-        note: req.body.note ?? undefined,
-        // Puste pole znaczy "zdejmij termin", brak pola znaczy "nie ruszaj".
-        // Formularz wysyla je zawsze, wiec pusta wartosc jest tu decyzja.
-        validUntil: req.body.validUntil ?? undefined,
-        // Liczba dni ma pierwszenstwo przed data: wpisuje sie ja swiadomie,
-        // a data w polu obok stoi tam z poprzedniego zapisu.
-        validDays: String(req.body.validDays || "").trim() || undefined,
-        items,
-      },
-    });
-    const zmiany = [
-      r.removed ? `usunieto pozycji: ${r.removed}` : null,
-      r.added ? `dodano pozycji: ${r.added}` : null,
-      r.validUntil ? `ważna do ${String(r.validUntil).slice(0, 10)}` : null,
-      r.totalGrosze != null ? `do zapłaty ${(r.totalGrosze / 100).toFixed(2)} zł` : "bez kwoty",
-    ].filter(Boolean).join(", ");
-    back(res, wroc, { msg: `Zapisano ${req.params.ref}: ${zmiany}` });
-  } catch (err) { back(res, wroc, { err: err.message }); }
 });
 
 /**

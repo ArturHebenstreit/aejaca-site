@@ -3,8 +3,8 @@
 <%
   const ZRODLO = { email: "e-mail", phone: "telefon", chat: "czat", quote: "formularz", contact: "kontakt" };
   const zl = (g) => (g == null ? "-" : (g / 100).toFixed(2) + " zł");
-  const wyslana = ["sent", "accepted", "converted"].includes(quote.status);
   const pln = (g) => (g == null ? "" : (g / 100).toFixed(2));
+  const wyslana = ["sent", "accepted", "converted"].includes(quote.status);
 
   // Grupa wyboru to jedna ramka u klienta: warianty, ktore sie wzajemnie
   // wykluczaja, i dodatki, ktore da sie do nich dolozyc. Numer grupy wchodzi
@@ -24,16 +24,15 @@
   ];
   const ETYKIETA_RODZAJU = { fixed: "składnik", variant: "wariant", option: "dodatek" };
 
-  // Ile dni zostalo do konca waznosci. Pole "w dniach" jest puste z zalozenia,
-  // wiec bez tej liczby ekran nie mowil, jak dlugo oferta jeszcze obowiazuje;
-  // podpowiedz "14" w pustym polu wygladala jak zapisany termin i wracala po
-  // kazdym zapisie, cokolwiek by sie wpisalo.
+  // Ile dni zostalo do konca waznosci. Pole "w dniach" pokazuje te liczbe,
+  // a nie podpowiedz: wczesniej stalo w nim na sztywno "14" i wygladalo to
+  // jak zapisany termin, ktory wraca po kazdym zapisie.
   const DNI_DO_KONCA = quote.validUntil
     ? Math.round((new Date(String(quote.validUntil).slice(0, 10)) - new Date(new Date().toISOString().slice(0, 10))) / 86400000)
     : null;
 %>
 
-  <main class="max-w-4xl mx-auto px-6 py-8">
+  <main class="max-w-4xl mx-auto px-6 py-8" data-wycena="<%= quote.quoteRef %>">
 
     <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
       <div>
@@ -44,7 +43,13 @@
           <% if (quote.sentAt) { %> &middot; wysłane <%= fmtDate(quote.sentAt) %><% } %>
         </p>
       </div>
-      <span class="px-3 py-1 rounded-lg border border-white/15 text-xs text-neutral-300"><%= quote.status %></span>
+      <div class="text-right">
+        <span data-stan class="px-3 py-1 rounded-lg border border-white/15 text-xs text-neutral-300"><%= quote.status %></span>
+        <div class="text-neutral-500 text-[10px] mt-2">
+          Do zapłaty: <span data-suma class="text-white font-semibold"><%= zl(quote.totalGrosze) %></span>
+          <span data-waluta><%= quote.currency || "PLN" %></span>
+        </div>
+      </div>
     </div>
 
     <% if (err) { %>
@@ -53,6 +58,13 @@
     <% if (msg) { %>
       <div class="rounded-lg border border-emerald-400/30 bg-emerald-400/10 p-3 mb-5 text-emerald-300 text-xs leading-relaxed"><%= msg %></div>
     <% } %>
+
+    <noscript>
+      <div class="rounded-lg border border-amber-400/30 bg-amber-400/10 p-3 mb-5 text-amber-200 text-xs leading-relaxed">
+        Edytor wycen zapisuje zmiany bez przycisku, więc potrzebuje JavaScriptu. Bez niego zobaczysz treść oferty,
+        ale jej nie poprawisz.
+      </div>
+    </noscript>
 
     <% if (quote.status === "converted") { %>
       <section class="rounded-xl border border-white/10 bg-white/[0.02] p-5 mb-6">
@@ -86,38 +98,65 @@
         </p>
       </section>
     <% } else { %>
-      <form method="post" action="/quotes/<%= encodeURIComponent(quote.quoteRef) %>/edit"
-            class="rounded-xl border border-white/10 bg-white/[0.02] p-5 mb-6">
 
-        <h2 class="text-sm font-semibold text-white mb-2">Klient i zapytanie</h2>
-        <p class="text-neutral-500 text-xs leading-relaxed mb-4 max-w-2xl">
-          Poprawianie literówki w adresie, złej ilości albo opisu pozycji. Numer oferty zostaje ten sam,
-          więc wątek w korespondencji i tytuł płatności się nie zmieniają.
-          <% if (wyslana) { %>
-            <span class="text-amber-300">Ta oferta została już wysłana: klient widzi na swojej stronie
-            to, co tu zapiszesz.</span>
-          <% } %>
-        </p>
+      <!-- ===================== REKORD: NAGLOWEK OFERTY ===================== -->
+      <!-- Dane klienta, jezyk, waluta, termin i notatka to JEDEN rekord: zmieniaja
+           sie razem i razem ida do bazy. Olowek otwiera, zielony ptaszek zapisuje. -->
+      <section data-rekord="naglowek" class="rounded-xl border border-white/10 bg-white/[0.02] p-5 mb-6">
+        <div class="flex items-start justify-between gap-3 mb-4">
+          <div>
+            <h2 class="text-sm font-semibold text-white">Oferta: klient, waluta i termin</h2>
+            <p class="text-neutral-500 text-xs leading-relaxed mt-1 max-w-2xl">
+              Numer oferty zostaje ten sam, więc wątek w korespondencji i tytuł płatności się nie zmieniają.
+              <% if (wyslana) { %>
+                <span class="text-amber-300">Ta oferta została już wysłana: klient widzi na swojej stronie
+                to, co tu zapiszesz.</span>
+              <% } %>
+            </p>
+          </div>
+          <div class="shrink-0 flex items-start gap-1">
+            <span data-stan-zapisu class="text-neutral-600 text-[10px] pt-2 pr-1"></span>
+            <button type="button" data-edytuj title="Edytuj dane oferty"
+                    class="p-2 rounded-lg border border-white/10 text-neutral-400 hover:text-white hover:border-white/30 transition-colors">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+              </svg>
+            </button>
+            <button type="button" data-zapisz disabled title="Zapisz zmiany"
+                    class="p-2 rounded-lg border border-emerald-400/25 text-emerald-300 hover:border-emerald-400/60 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            </button>
+            <button type="button" data-anuluj hidden title="Odrzuć zmiany"
+                    class="p-2 rounded-lg border border-white/10 text-neutral-400 hover:text-white hover:border-white/30 transition-colors">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" />
+              </svg>
+            </button>
+          </div>
+        </div>
 
         <div class="grid sm:grid-cols-4 gap-3">
           <label class="block">
             <span class="text-neutral-400 text-xs">Imię i nazwisko</span>
-            <input name="name" value="<%= quote.name || '' %>"
-                   class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white" />
+            <input data-pole="name" value="<%= quote.name || '' %>" disabled
+                   class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white disabled:opacity-70" />
           </label>
           <label class="block">
             <span class="text-neutral-400 text-xs">E-mail</span>
-            <input name="email" type="email" value="<%= quote.email || '' %>"
-                   class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white" />
+            <input data-pole="email" type="email" value="<%= quote.email || '' %>" disabled
+                   class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white disabled:opacity-70" />
           </label>
           <label class="block">
             <span class="text-neutral-400 text-xs">Telefon</span>
-            <input name="phone" value="<%= quote.phone || '' %>"
-                   class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white" />
+            <input data-pole="phone" value="<%= quote.phone || '' %>" disabled
+                   class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white disabled:opacity-70" />
           </label>
           <label class="block">
             <span class="text-neutral-400 text-xs">Język oferty</span>
-            <select name="lang" class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white">
+            <select data-pole="lang" disabled
+                    class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white disabled:opacity-70">
               <% ["pl", "en", "de"].forEach(function (j) { %>
                 <option value="<%= j %>" <%= quote.lang === j ? "selected" : "" %>><%= j %></option>
               <% }); %>
@@ -128,59 +167,80 @@
         <div class="grid sm:grid-cols-4 gap-3 mt-3">
           <label class="block">
             <span class="text-neutral-400 text-xs">Waluta oferty</span>
-            <select name="currency" class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white">
+            <select data-pole="currency" disabled
+                    class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white disabled:opacity-70">
               <% [["PLN", "PLN, złotówki"], ["EUR", "EUR, euro"]].forEach(function (w) { %>
                 <option value="<%= w[0] %>" <%= (quote.currency || "PLN") === w[0] ? "selected" : "" %>><%= w[1] %></option>
               <% }); %>
             </select>
           </label>
-          <p class="sm:col-span-3 text-neutral-600 text-[10px] leading-relaxed self-end pb-2">
-            Waluta dotyczy całej oferty i rozstrzyga o drodze zapłaty:
-            <span class="text-neutral-400">złotówki</span> idą bramką, czyli BLIK-iem albo przelewem online,
-            <span class="text-neutral-400">euro</span> przelewem na nasz rachunek walutowy, z ręcznym księgowaniem
-            i pięcioma dniami roboczymi na wpłatę. Kwota pozycji zostaje w złotówkach; euro liczy się z niej
-            po kursie NBP z dnia, w którym klient składa zamówienie, razem z narzutem walutowym.
-            Klient może to zmienić u siebie, bo waluta wynika z tego, gdzie ma konto.
+          <label class="block">
+            <span class="text-neutral-400 text-xs">Ważna do dnia</span>
+            <input data-pole="validUntil" type="date" disabled
+                   value="<%= quote.validUntil ? String(quote.validUntil).slice(0, 10) : '' %>"
+                   class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white disabled:opacity-70" />
+          </label>
+          <label class="block">
+            <span class="text-neutral-400 text-xs">Ważna przez, dni</span>
+            <input data-pole="validDays" type="number" min="1" max="365" placeholder="np. 30" disabled
+                   value="<%= DNI_DO_KONCA != null && DNI_DO_KONCA >= 1 ? DNI_DO_KONCA : '' %>"
+                   class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white disabled:opacity-70" />
+          </label>
+          <p class="text-neutral-600 text-[10px] leading-relaxed self-end pb-2">
+            <% if (DNI_DO_KONCA != null && DNI_DO_KONCA >= 1) { %>
+              Oferta obowiązuje jeszcze <%= DNI_DO_KONCA %> dni, do <%= fmtDateShort(quote.validUntil) %>.
+              Zapisana bez zmiany nie przesuwa terminu.
+            <% } else if (quote.validUntil) { %>
+              Termin minął <%= fmtDateShort(quote.validUntil) %>. Wpisz nową liczbę dni albo popraw datę.
+            <% } else { %>
+              Termin nieustawiony. Liczba dni liczy się od dzisiaj i wygrywa z datą obok.
+            <% } %>
           </p>
         </div>
 
-        <p class="text-neutral-600 text-[10px] mt-2">
-          Zostaw adres e-mail albo telefon. Bez żadnego z nich nie ma jak przekazać oferty.
-          Język decyduje o treści maila, a przy zakładaniu wyceny podpowiada walutę:
-          polski to złotówki, angielski i niemiecki to euro.
-        </p>
-
-        <label class="block mt-4">
+        <label class="block mt-3">
           <span class="text-neutral-400 text-xs">Treść zapytania</span>
-          <textarea name="message" rows="3"
-                    class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white"><%= quote.message || '' %></textarea>
+          <textarea data-pole="message" rows="2" disabled
+                    class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white disabled:opacity-70"><%= quote.message || '' %></textarea>
         </label>
 
-        <h2 class="text-sm font-semibold text-white mt-8 mb-2">Pozycje, kwoty i wybór</h2>
-        <p class="text-neutral-500 text-xs leading-relaxed mb-4 max-w-2xl">
-          Kwota jednostkowa brutto, w złotych, wpisuje się przy pozycji. Wpisanie pierwszej kwoty zmienia
-          zapytanie w ofertę i ustawia termin ważności. Ołówek otwiera resztę pól, czerwony krzyżyk
-          usuwa pozycję.
+        <label class="block mt-3">
+          <span class="text-neutral-400 text-xs">Notatka do oferty: co wchodzi, czego nie ma</span>
+          <textarea data-pole="note" rows="2" disabled
+                    class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white disabled:opacity-70"><%= quote.priceNote || '' %></textarea>
+        </label>
+
+        <p class="text-neutral-600 text-[10px] leading-relaxed mt-3">
+          Notatka idzie do klienta razem z kwotą. Waluta dotyczy całej oferty i rozstrzyga o drodze zapłaty:
+          złotówki idą bramką, euro przelewem na rachunek walutowy. Zostaw adres e-mail albo telefon, bez
+          żadnego z nich nie ma jak przekazać oferty.
         </p>
+        <p data-blad class="text-red-300 text-xs mt-2" hidden></p>
+      </section>
+
+      <!-- ===================== REKORDY: POZYCJE ===================== -->
+      <section class="rounded-xl border border-white/10 bg-white/[0.02] p-5 mb-6">
+        <h2 class="text-sm font-semibold text-white mb-2">Pozycje, kwoty i wybór</h2>
+        <p class="text-neutral-500 text-xs leading-relaxed mb-4 max-w-2xl">
+          Nie ma przycisku „zapisz ofertę”. Każda pozycja jest osobnym rekordem: ołówek otwiera ją do
+          edycji, zielony ptaszek zapisuje ją w bazie, strzałka odrzuca zmiany. Kółko i kwadracik po lewej
+          zapisują się od razu po kliknięciu, bo kliknięcie jest całą decyzją.
+        </p>
+
         <div class="rounded-lg border border-white/10 bg-neutral-950 p-4 mb-4 max-w-3xl">
           <div class="text-neutral-300 text-xs font-medium mb-2">Rodzaj pozycji i grupa wyboru</div>
           <ul class="text-neutral-500 text-[11px] leading-relaxed space-y-1">
             <li><span class="text-neutral-300">Składnik rachunku</span> jest w kwocie zawsze. Grupa go nie dotyczy.</li>
             <li><span class="text-neutral-300">Wariant do wyboru</span> stoi w grupie i klient bierze z niej
-              <span class="text-neutral-300">dokładnie jeden</span>. Wariantów jednej grupy nie da się kupić razem.</li>
+              <span class="text-neutral-300">dokładnie jeden</span>.</li>
             <li><span class="text-neutral-300">Dodatek opcjonalny</span> stoi obok wariantów i klient dokłada go albo nie.</li>
           </ul>
           <p class="text-neutral-500 text-[11px] leading-relaxed mt-3">
             <span class="text-neutral-300">Grupa wyboru</span> to nazwa, którą sam wpisujesz, na przykład
             <span class="font-mono text-neutral-400">klucz</span>. Pozycje z tą samą nazwą stoją u klienta
             w jednej ramce i wykluczają się wzajemnie. Wpisz <span class="font-mono text-neutral-400">odlew</span>
-            przy trzech innych pozycjach, a powstanie druga, niezależna ramka: klient wybierze jedną rzecz
-            z pierwszej i jedną z drugiej. Grup może być tyle, ile potrzebujesz.
-          </p>
-          <p class="text-neutral-500 text-[11px] leading-relaxed mt-2">
-            Kółko po lewej stronie pozycji ustawia to, co klient zobaczy jako zaznaczone, kiedy otworzy
-            ofertę. W grupie wariantów zaznaczony jest zawsze jeden, dodatek zaznaczasz i odznaczasz dowolnie.
-            Klient zmieni ten układ u siebie.
+            przy trzech innych, a powstanie druga, niezależna ramka: klient wybierze jedną rzecz z pierwszej
+            i jedną z drugiej.
           </p>
         </div>
 
@@ -188,81 +248,65 @@
           <% KARTY.forEach(function (k) { %><option value="<%= k %>"></option><% }); %>
         </datalist>
 
-        <div class="space-y-3">
+        <div data-lista class="space-y-3">
           <% items.forEach(function (it, i) { %>
-            <div data-pozycja class="rounded-lg border <%= it.selected ? 'border-white/10' : 'border-white/5' %> bg-neutral-950 p-4">
-              <input type="hidden" name="itemId" value="<%= it.id %>" />
+            <div data-rekord="pozycja" data-id="<%= it.id %>"
+                 class="rounded-lg border <%= it.selected ? 'border-white/10' : 'border-white/5' %> bg-neutral-950 p-4">
 
               <div class="flex items-start gap-3">
                 <div class="pt-1 w-4 shrink-0">
                   <% if (it.kind === "variant") { %>
-                    <input type="radio" name="pickGroup_<%= nrKarty(it) %>" value="<%= i %>"
+                    <input type="radio" data-wybor name="pickGroup_<%= nrKarty(it) %>"
                            class="accent-amber-400" <%= it.selected ? "checked" : "" %> />
                   <% } else if (it.kind === "option") { %>
-                    <input type="checkbox" name="optionOn" value="<%= i %>"
-                           class="accent-amber-400" <%= it.selected ? "checked" : "" %> />
+                    <input type="checkbox" data-wybor class="accent-amber-400" <%= it.selected ? "checked" : "" %> />
                   <% } else { %>
                     <span class="block w-3 h-3 rounded-full border border-white/20"></span>
                   <% } %>
                 </div>
 
                 <div class="min-w-0 flex-1">
-                  <div class="text-sm text-white"><%= it.title %></div>
+                  <div class="text-sm text-white" data-podglad="title"><%= it.title %></div>
                   <div class="text-neutral-600 text-[10px] mt-0.5">
-                    <%= it.qty %> szt.<% if (it.calculator) { %>
+                    <span data-podglad="qty"><%= it.qty %></span> szt.
+                    &middot; <span data-podglad="kind"><%= ETYKIETA_RODZAJU[it.kind] || "składnik" %></span><% if (it.kind !== "fixed") { %>
+                      &middot; grupa <span data-podglad="groupKey" class="font-mono"><%= it.groupKey || "wybor" %></span><% } %><% if (it.calculator) { %>
                       &middot; <%= it.calculator %><% } %><% if (it.fileName) { %>
                       &middot; <%= it.fileName %><% } %>
                   </div>
-                  <% if (it.description) { %>
-                    <p class="text-neutral-400 text-xs mt-2 whitespace-pre-wrap"><%= it.description %></p>
-                  <% } %>
-
-                  <div class="flex flex-wrap items-end gap-2 mt-2">
-                    <label class="block">
-                      <span class="text-neutral-500 text-[10px] block mb-1">Rodzaj</span>
-                      <select name="itemKind" class="rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white">
-                        <% RODZAJE.forEach(function (r) { %>
-                          <option value="<%= r[0] %>" <%= (it.kind || "fixed") === r[0] ? "selected" : "" %>><%= r[1] %></option>
-                        <% }); %>
-                      </select>
-                    </label>
-                    <label class="block">
-                      <span class="text-neutral-500 text-[10px] block mb-1">Grupa wyboru</span>
-                      <input name="itemGroup" list="karty" value="<%= it.groupKey || '' %>" placeholder="np. klucz"
-                             class="w-36 rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white" />
-                    </label>
-                    <span class="text-neutral-600 text-[10px] pb-2">
-                      <% if (it.kind === "variant") { %>
-                        jeden z grupy <span class="text-neutral-400 font-mono"><%= it.groupKey || "wybor" %></span><%= it.selected ? ", teraz zaznaczony" : "" %>
-                      <% } else if (it.kind === "option") { %>
-                        dodatek do grupy <span class="text-neutral-400 font-mono"><%= it.groupKey || "wybor" %></span><%= it.selected ? ", teraz zaznaczony" : ", teraz odznaczony" %>
-                      <% } else { %>
-                        zawsze w kwocie, grupa bez znaczenia
-                      <% } %>
-                    </span>
-                  </div>
+                  <p class="text-neutral-400 text-xs mt-2 whitespace-pre-wrap" data-podglad="description" <%= it.description ? "" : "hidden" %>><%= it.description || '' %></p>
                 </div>
 
-                <label class="shrink-0">
-                  <span class="text-neutral-500 text-[10px] block mb-1">za sztukę, zł</span>
-                  <input name="itemUnitPln" inputmode="decimal" value="<%= pln(it.unitGrosze) %>"
-                         class="w-28 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white text-right" />
+                <div class="shrink-0 text-right">
+                  <div class="text-neutral-500 text-[10px]">za sztukę, zł</div>
+                  <div class="text-sm text-white" data-podglad="unitPln"><%= it.unitGrosze != null ? pln(it.unitGrosze) : "-" %></div>
                   <% if (it.qty > 1 && it.lineGrosze != null) { %>
-                    <span class="text-neutral-600 text-[10px] block mt-1 text-right">razem <%= zl(it.lineGrosze) %></span>
+                    <div class="text-neutral-600 text-[10px]" data-podglad="line">razem <%= zl(it.lineGrosze) %></div>
                   <% } %>
-                </label>
+                </div>
 
-                <div class="shrink-0 flex items-start gap-1 pt-5">
+                <div class="shrink-0 flex items-start gap-1">
+                  <span data-stan-zapisu class="text-neutral-600 text-[10px] pt-2 pr-1"></span>
                   <button type="button" data-edytuj title="Edytuj pozycję"
                           class="p-2 rounded-lg border border-white/10 text-neutral-400 hover:text-white hover:border-white/30 transition-colors">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                       <path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
                     </svg>
                   </button>
-                  <button type="submit" name="removeId" value="<%= it.id %>" formnovalidate
-                          data-usun="Usunąć pozycję &bdquo;<%= it.title.replace(/"/g, "&quot;") %>&rdquo;? Tego nie da się cofnąć."
-                          title="Usuń pozycję"
-                          class="p-2 rounded-lg border border-red-400/25 text-red-300 hover:border-red-400/60 transition-colors">
+                  <button type="button" data-zapisz disabled title="Zapisz pozycję"
+                          class="p-2 rounded-lg border border-emerald-400/25 text-emerald-300 hover:border-emerald-400/60 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                  </button>
+                  <button type="button" data-anuluj hidden title="Odrzuć zmiany"
+                          class="p-2 rounded-lg border border-white/10 text-neutral-400 hover:text-white hover:border-white/30 transition-colors">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" />
+                    </svg>
+                  </button>
+                  <button type="button" data-usun title="Usuń pozycję"
+                          class="p-2 rounded-lg border border-red-400/25 text-red-300 hover:border-red-400/60 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                       <path d="M18 6 6 18" /><path d="m6 6 12 12" />
                     </svg>
@@ -270,20 +314,41 @@
                 </div>
               </div>
 
-              <div data-edycja hidden class="mt-4 pt-4 border-t border-white/10 grid sm:grid-cols-6 gap-3">
+              <!-- Chowamy stylem, a nie atrybutem `hidden`: klasa `grid` ustawia
+                   `display:grid` z ta sama moc co `[hidden]{display:none}`,
+                   a stoi w arkuszu nizej, wiec wygrywa i blok zostawal widoczny. -->
+              <div data-edycja style="display:none" class="mt-4 pt-4 border-t border-white/10 grid sm:grid-cols-6 gap-3">
                 <label class="sm:col-span-3 block">
                   <span class="text-neutral-500 text-[10px] block mb-1">Nazwa</span>
-                  <input name="itemTitle" value="<%= it.title %>"
+                  <input data-pole="title" value="<%= it.title %>"
                          class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
                 </label>
                 <label class="block">
                   <span class="text-neutral-500 text-[10px] block mb-1">Ilość</span>
-                  <input name="itemQty" type="number" min="1" value="<%= it.qty %>"
+                  <input data-pole="qty" type="number" min="1" value="<%= it.qty %>"
+                         class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
+                </label>
+                <label class="block">
+                  <span class="text-neutral-500 text-[10px] block mb-1">za sztukę, zł</span>
+                  <input data-pole="unitPln" inputmode="decimal" value="<%= pln(it.unitGrosze) %>"
+                         class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white text-right" />
+                </label>
+                <label class="block">
+                  <span class="text-neutral-500 text-[10px] block mb-1">Rodzaj</span>
+                  <select data-pole="kind" class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white">
+                    <% RODZAJE.forEach(function (r) { %>
+                      <option value="<%= r[0] %>" <%= (it.kind || "fixed") === r[0] ? "selected" : "" %>><%= r[1] %></option>
+                    <% }); %>
+                  </select>
+                </label>
+                <label class="block">
+                  <span class="text-neutral-500 text-[10px] block mb-1">Grupa wyboru</span>
+                  <input data-pole="groupKey" list="karty" value="<%= it.groupKey || '' %>" placeholder="np. klucz"
                          class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
                 </label>
                 <label class="sm:col-span-6 block">
                   <span class="text-neutral-500 text-[10px] block mb-1">Opis: to, czego nie widać w nazwie</span>
-                  <textarea name="itemDescription" rows="2"
+                  <textarea data-pole="description" rows="2"
                             class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white"><%= it.description || '' %></textarea>
                 </label>
                 <% if (it.params && Object.keys(it.params).length) { %>
@@ -293,110 +358,22 @@
                   </details>
                 <% } %>
               </div>
+              <p data-blad class="text-red-300 text-xs mt-2" hidden></p>
             </div>
           <% }); %>
         </div>
 
-        <div class="rounded-lg border border-dashed border-white/15 p-4 mt-3">
-          <div class="text-neutral-500 text-[10px] mb-2">Dodaj pozycję</div>
-          <div class="grid sm:grid-cols-6 gap-3">
-            <label class="sm:col-span-3 block">
-              <span class="text-neutral-500 text-[10px] block mb-1">Nazwa</span>
-              <input name="newTitle" placeholder="np. Grawer wewnątrz obrączki"
-                     class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
-            </label>
-            <label class="block">
-              <span class="text-neutral-500 text-[10px] block mb-1">Ilość</span>
-              <input name="newQty" type="number" min="1" value="1"
-                     class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
-            </label>
-            <label class="block">
-              <span class="text-neutral-500 text-[10px] block mb-1">za sztukę, zł</span>
-              <input name="newUnitPln" inputmode="decimal" placeholder="np. 40.00"
-                     class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white text-right" />
-            </label>
-            <label class="block">
-              <span class="text-neutral-500 text-[10px] block mb-1">Rodzaj</span>
-              <select name="newKind" class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white">
-                <% RODZAJE.forEach(function (r) { %>
-                  <option value="<%= r[0] %>"><%= r[1] %></option>
-                <% }); %>
-              </select>
-            </label>
-            <label class="sm:col-span-2 block">
-              <span class="text-neutral-500 text-[10px] block mb-1">Grupa wyboru</span>
-              <input name="newGroup" list="karty" placeholder="np. klucz"
-                     class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
-            </label>
-            <label class="sm:col-span-4 block">
-              <span class="text-neutral-500 text-[10px] block mb-1">Opis, opcjonalnie</span>
-              <textarea name="newDescription" rows="2"
-                        class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white"></textarea>
-            </label>
-          </div>
-          <p class="text-neutral-600 text-[10px] mt-2">
-            Nowy wariant staje się wybrany, gdy jest pierwszy na swojej karcie; nowy dodatek jest
-            zaznaczony. Jedno i drugie przestawisz po zapisie.
+        <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <button type="button" data-dodaj
+                  class="px-4 py-2 rounded-lg border border-white/15 text-neutral-200 text-sm hover:border-white/35 transition-colors">
+            + Dodaj pozycję
+          </button>
+          <p class="text-neutral-600 text-[10px] max-w-md leading-relaxed">
+            Nowa pozycja otwiera się od razu do wpisania. Zapisz ją ptaszkiem, a pojawi się miejsce na kolejną.
+            Jeżeli żadna zaznaczona pozycja nie ma kwoty, oferta wraca do stanu „nowa” i traci termin ważności.
           </p>
         </div>
-
-        <div class="grid sm:grid-cols-4 gap-3 mt-6">
-          <label class="sm:col-span-2 block">
-            <span class="text-neutral-400 text-xs">Notatka do oferty: co wchodzi, czego nie ma</span>
-            <textarea name="note" rows="3"
-                      class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white"><%= quote.priceNote || '' %></textarea>
-          </label>
-          <label class="block">
-            <span class="text-neutral-400 text-xs">Ważna do dnia</span>
-            <input name="validUntil" type="date" value="<%= quote.validUntil ? String(quote.validUntil).slice(0, 10) : '' %>"
-                   class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white" />
-            <span class="text-neutral-600 text-[10px] block mt-1">
-              <% if (quote.validUntil) { %>
-                Teraz do <%= fmtDateShort(quote.validUntil) %><%= DNI_DO_KONCA != null ? `, czyli jeszcze ${DNI_DO_KONCA} dni` : "" %>.
-              <% } else { %>
-                Termin nieustawiony.
-              <% } %>
-              Puste pole zdejmuje termin.
-            </span>
-          </label>
-          <label class="block">
-            <span class="text-neutral-400 text-xs">Ważna przez, dni</span>
-            <input name="validDays" type="number" min="1" max="365" placeholder="np. 30"
-                   value="<%= DNI_DO_KONCA != null && DNI_DO_KONCA >= 1 ? DNI_DO_KONCA : '' %>"
-                   class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white" />
-            <span class="text-neutral-600 text-[10px] block mt-1">
-              <% if (DNI_DO_KONCA != null && DNI_DO_KONCA >= 1) { %>
-                Tyle dni oferta obowiązuje jeszcze od dzisiaj. Zapisana bez zmiany nie przesuwa terminu,
-                bo liczy się do tej samej daty.
-              <% } else if (quote.validUntil) { %>
-                Termin już minął, wpisz nową liczbę dni albo popraw datę obok.
-              <% } else { %>
-                Liczy się od dzisiaj. Wpisana liczba wygrywa z datą obok.
-              <% } %>
-            </span>
-          </label>
-        </div>
-        <p class="text-neutral-600 text-[10px] leading-relaxed mt-2 max-w-2xl">
-          Notatka idzie do klienta razem z kwotą, więc to w niej piszesz, co wchodzi w cenę, a czego w niej
-          nie ma. Przy wyrobie, w którym kruszec jest główną składową ceny, warto dać termin krótszy niż
-          zwykle: przez dwa tygodnie złoto potrafi ruszyć się o kilka procent, a kwotę trzymamy stałą
-          do tej daty.
-        </p>
-
-        <div class="flex flex-wrap items-center justify-between gap-3 mt-5 pt-4 border-t border-white/10">
-          <div class="text-sm text-neutral-300">
-            Do zapłaty za zaznaczony układ:
-            <span class="text-white font-semibold"><%= zl(quote.totalGrosze) %></span>
-            <span class="text-neutral-600 text-[10px] block mt-1 max-w-md leading-relaxed">
-              Jeżeli po zapisie żadna zaznaczona pozycja nie ma kwoty, oferta wraca do stanu „nowa"
-              i traci termin ważności.
-            </span>
-          </div>
-          <button class="px-4 py-2 rounded-lg bg-amber-400 text-neutral-950 text-sm font-medium hover:bg-amber-300 transition-colors">
-            Zapisz ofertę
-          </button>
-        </div>
-      </form>
+      </section>
     <% } %>
 
     <section class="rounded-xl border border-white/10 bg-white/[0.02] p-5">
@@ -473,26 +450,270 @@
   </main>
 
   <script>
-    // Olowek otwiera reszte pol pozycji. Pola zostaja w formularzu takze
-    // zamkniete, wiec zapis niesie je zawsze i nic nie gubi sie po drodze.
-    document.querySelectorAll("[data-edytuj]").forEach(function (b) {
-      b.addEventListener("click", function () {
-        var karta = b.closest("[data-pozycja]");
-        var pola = karta && karta.querySelector("[data-edycja]");
-        if (!pola) return;
-        pola.hidden = !pola.hidden;
-        var pierwsze = pola.querySelector("input, textarea, select");
-        if (!pola.hidden && pierwsze) pierwsze.focus();
+  // ============================================================
+  // EDYTOR WYCEN: ZAPIS NA POZIOMIE REKORDU
+  // ============================================================
+  // Przycisku "zapisz" nie ma, ale zapis nie idzie po kazdym znaku. Rekord to
+  // jedna pozycja albo naglowek oferty; olowek go otwiera, zielony ptaszek
+  // wysyla go do bazy jednym zadaniem.
+  //
+  // Dlaczego nie po kazdym znaku:
+  //   - w bazie ladowalyby stany niedokonczone ("Wydruk klu", cena 4 grosze),
+  //     a przy ofercie juz wyslanej widzi je klient na swojej stronie;
+  //   - kazdy zapis to transakcja, ktora przelicza sume, pilnuje reguly "jeden
+  //     wariant w grupie" i potrafi zmienic stan oferty. Kilkaset takich
+  //     transakcji na sesje edycji to koszt bez pokrycia.
+  //
+  // Klikniecie w kolko albo kwadracik zapisuje sie OD RAZU: nie ma tam stanu
+  // posredniego, wiec nie ma czego zatwierdzac.
+  (function () {
+    var ref = document.querySelector("[data-wycena]").dataset.wycena;
+    var lista = document.querySelector("[data-lista]");
+    if (!lista) return;   // wycena przekuta w zamowienie: tylko do ogladania
+
+    function pola(rekord) {
+      return Array.prototype.slice.call(rekord.querySelectorAll("[data-pole]"));
+    }
+
+    function stan(rekord, tekst, kolor) {
+      var s = rekord.querySelector("[data-stan-zapisu]");
+      if (!s) return;
+      s.textContent = tekst || "";
+      s.className = "text-[10px] pt-2 pr-1 " + (kolor || "text-neutral-600");
+    }
+
+    function blad(rekord, tekst) {
+      var p = rekord.querySelector("[data-blad]");
+      if (!p) return;
+      p.textContent = tekst || "";
+      p.hidden = !tekst;
+    }
+
+    function tryb(rekord, edycja) {
+      pola(rekord).forEach(function (p) { p.disabled = !edycja; });
+      var edycjaBlok = rekord.querySelector("[data-edycja]");
+      if (edycjaBlok) edycjaBlok.style.display = edycja ? "" : "none";
+      var przyciski = {
+        edytuj: rekord.querySelector("[data-edytuj]"),
+        zapisz: rekord.querySelector("[data-zapisz]"),
+        anuluj: rekord.querySelector("[data-anuluj]"),
+        usun: rekord.querySelector("[data-usun]"),
+      };
+      // W trakcie edycji dziala WYLACZNIE ptaszek i odrzucenie zmian. Olowek
+      // i krzyzyk gasna, zeby nie dalo sie skasowac wiersza w polowie wpisywania.
+      if (przyciski.edytuj) przyciski.edytuj.disabled = edycja;
+      if (przyciski.zapisz) przyciski.zapisz.disabled = !edycja;
+      if (przyciski.anuluj) przyciski.anuluj.hidden = !edycja;
+      if (przyciski.usun) przyciski.usun.disabled = edycja;
+      rekord.dataset.edycja = edycja ? "1" : "";
+      if (edycja) {
+        var pierwsze = pola(rekord)[0];
+        if (pierwsze) pierwsze.focus();
+      }
+    }
+
+    function zapamietaj(rekord) {
+      rekord.dataset.zapisane = JSON.stringify(pola(rekord).map(function (p) { return p.value; }));
+    }
+
+    function przywroc(rekord) {
+      var stare = rekord.dataset.zapisane ? JSON.parse(rekord.dataset.zapisane) : null;
+      if (!stare) return;
+      pola(rekord).forEach(function (p, i) { p.value = stare[i]; });
+    }
+
+    var ETYKIETA = { fixed: "składnik", variant: "wariant", option: "dodatek" };
+
+    /** Podglad wiersza przepisujemy z pol, zeby nie trzymac dwoch prawd naraz. */
+    function odswiezPodglad(rekord) {
+      pola(rekord).forEach(function (p) {
+        var cel = rekord.querySelector('[data-podglad="' + p.dataset.pole + '"]');
+        if (!cel) return;
+        var wartosc = p.value;
+        if (p.dataset.pole === "kind") wartosc = ETYKIETA[p.value] || p.value;
+        if (p.dataset.pole === "groupKey") wartosc = p.value || "wybor";
+        if (p.dataset.pole === "unitPln") wartosc = p.value || "-";
+        cel.textContent = wartosc;
+        if (p.dataset.pole === "description") cel.hidden = !p.value;
       });
+    }
+
+    function odswiezNaglowek(dane) {
+      if (!dane || !dane.quote) return;
+      var suma = document.querySelector("[data-suma]");
+      var stanOferty = document.querySelector("[data-stan]");
+      var waluta = document.querySelector("[data-waluta]");
+      if (suma) suma.textContent = dane.quote.totalGrosze != null
+        ? (dane.quote.totalGrosze / 100).toFixed(2) + " zł" : "-";
+      if (stanOferty) stanOferty.textContent = dane.quote.status;
+      if (waluta) waluta.textContent = dane.quote.currency || "PLN";
+    }
+
+    async function wyslij(sciezka, tresc) {
+      var odp = await fetch("/quotes/" + encodeURIComponent(ref) + sciezka, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(tresc),
+      });
+      var dane = await odp.json().catch(function () { return {}; });
+      if (!odp.ok || !dane.ok) throw new Error(dane.error || ("Serwer odpowiedzial " + odp.status));
+      return dane;
+    }
+
+    function czas() {
+      var d = new Date();
+      return ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+    }
+
+    async function zapiszRekord(rekord) {
+      // Dwuklik w ptaszka przy NOWEJ pozycji zalozylby dwie pozycje, bo drugie
+      // zadanie wyszloby, zanim pierwsze odda identyfikator. Blokada na czas
+      // zapisu kosztuje nic i zamyka to na wszystkich rekordach naraz.
+      if (rekord.dataset.zapisywanie) return;
+      rekord.dataset.zapisywanie = "1";
+      var naglowek = rekord.dataset.rekord === "naglowek";
+      var tresc = {};
+      pola(rekord).forEach(function (p) { tresc[p.dataset.pole] = p.value; });
+      if (!naglowek && rekord.dataset.id) tresc.id = rekord.dataset.id;
+
+      stan(rekord, "zapisuję...", "text-neutral-400");
+      blad(rekord, "");
+      try {
+        var dane = await wyslij(naglowek ? "/header" : "/item", tresc);
+        odswiezNaglowek(dane);
+        if (!naglowek) {
+          // Nowa pozycja dostaje identyfikator dopiero teraz. Bez przepisania
+          // go kolejny zapis zalozylby druga pozycje zamiast poprawic te.
+          if (!rekord.dataset.id && dane.items && dane.items.length) {
+            rekord.dataset.id = dane.items[dane.items.length - 1].id;
+          }
+          odswiezPodglad(rekord);
+          // Wartosc pozycji liczy serwer z kwoty razy ilosc, wiec bierzemy ja
+          // z odpowiedzi. Przepisana z pol pokazywalaby stara liczbe do czasu
+          // odswiezenia strony.
+          var zapisana = (dane.items || []).find(function (i) { return String(i.id) === String(rekord.dataset.id); });
+          var razem = rekord.querySelector('[data-podglad="line"]');
+          if (razem && zapisana) {
+            razem.textContent = zapisana.lineGrosze != null && zapisana.qty > 1
+              ? "razem " + (zapisana.lineGrosze / 100).toFixed(2) + " zł" : "";
+          }
+        }
+        zapamietaj(rekord);
+        tryb(rekord, false);
+        stan(rekord, "zapisano " + czas(), "text-emerald-400/70");
+      } catch (e) {
+        stan(rekord, "", "text-neutral-600");
+        blad(rekord, e.message);
+      } finally {
+        rekord.dataset.zapisywanie = "";
+      }
+    }
+
+    async function usunRekord(rekord) {
+      var nazwa = rekord.querySelector('[data-podglad="title"]');
+      if (!window.confirm("Usunąć pozycję „" + (nazwa ? nazwa.textContent : "") + "”? Tego nie da się cofnąć.")) return;
+      if (!rekord.dataset.id) { rekord.remove(); return; }
+      stan(rekord, "usuwam...", "text-neutral-400");
+      try {
+        var dane = await wyslij("/item", { id: rekord.dataset.id, remove: true });
+        odswiezNaglowek(dane);
+        rekord.remove();
+      } catch (e) {
+        stan(rekord, "", "text-neutral-600");
+        blad(rekord, e.message);
+      }
+    }
+
+    /** Kolko i kwadracik: klikniecie JEST decyzja, wiec idzie do bazy od razu. */
+    async function zapiszWybor(input) {
+      var rekord = input.closest("[data-rekord]");
+      stan(rekord, "zapisuję...", "text-neutral-400");
+      blad(rekord, "");
+      try {
+        var dane = await wyslij("/item", { id: rekord.dataset.id, selected: input.checked });
+        odswiezNaglowek(dane);
+        // Wybor wariantu gasi pozostale w grupie po stronie serwera, wiec
+        // przepisujemy stan wszystkich wierszy z odpowiedzi, a nie z klikniecia.
+        if (dane.items) {
+          dane.items.forEach(function (it) {
+            var w = lista.querySelector('[data-id="' + it.id + '"] [data-wybor]');
+            if (w) w.checked = Boolean(it.selected);
+          });
+        }
+        stan(rekord, "zapisano " + czas(), "text-emerald-400/70");
+      } catch (e) {
+        stan(rekord, "", "text-neutral-600");
+        blad(rekord, e.message);
+        input.checked = !input.checked;
+      }
+    }
+
+    function podepnij(rekord) {
+      var edytuj = rekord.querySelector("[data-edytuj]");
+      var zapisz = rekord.querySelector("[data-zapisz]");
+      var anuluj = rekord.querySelector("[data-anuluj]");
+      var usun = rekord.querySelector("[data-usun]");
+      var wybor = rekord.querySelector("[data-wybor]");
+
+      zapamietaj(rekord);
+      if (!rekord.dataset.edycja) tryb(rekord, false);
+      if (edytuj) edytuj.addEventListener("click", function () { tryb(rekord, true); });
+      if (zapisz) zapisz.addEventListener("click", function () { zapiszRekord(rekord); });
+      if (anuluj) anuluj.addEventListener("click", function () {
+        przywroc(rekord);
+        blad(rekord, "");
+        tryb(rekord, false);
+        stan(rekord, "");
+      });
+      if (usun) usun.addEventListener("click", function () { usunRekord(rekord); });
+      if (wybor) wybor.addEventListener("change", function () { zapiszWybor(wybor); });
+
+      // Enter w polu tekstowym zatwierdza rekord, Escape odrzuca zmiany.
+      rekord.addEventListener("keydown", function (e) {
+        if (!rekord.dataset.edycja) return;
+        if (e.key === "Enter" && e.target.tagName !== "TEXTAREA") { e.preventDefault(); zapiszRekord(rekord); }
+        if (e.key === "Escape") { przywroc(rekord); tryb(rekord, false); }
+      });
+    }
+
+    document.querySelectorAll("[data-rekord]").forEach(podepnij);
+
+    // --- Nowa pozycja ---------------------------------------------------
+    // Wiersz powstaje w przegladarce i trafia do bazy dopiero po zatwierdzeniu.
+    // Zapis pustej pozycji od razu przy kliknieciu zostawialby po kazdej
+    // pomylce wiersz bez nazwy i bez kwoty.
+    var dodaj = document.querySelector("[data-dodaj]");
+    if (dodaj) dodaj.addEventListener("click", function () {
+      var wzor = lista.querySelector('[data-rekord="pozycja"]');
+      if (!wzor) { window.location.reload(); return; }
+      var nowy = wzor.cloneNode(true);
+      nowy.removeAttribute("data-id");
+      nowy.dataset.zapisane = "";
+      nowy.querySelectorAll("[data-pole]").forEach(function (p) {
+        if (p.dataset.pole === "qty") p.value = "1";
+        else if (p.tagName === "SELECT") p.selectedIndex = 0;
+        else p.value = "";
+      });
+      var w = nowy.querySelector("[data-wybor]");
+      if (w) { w.checked = false; w.parentElement.innerHTML = '<span class="block w-3 h-3 rounded-full border border-white/20"></span>'; }
+      nowy.querySelectorAll("[data-podglad]").forEach(function (el) { el.textContent = ""; });
+      var podgladTytulu = nowy.querySelector('[data-podglad="title"]');
+      if (podgladTytulu) podgladTytulu.textContent = "Nowa pozycja";
+      var szczegoly = nowy.querySelector("details");
+      if (szczegoly) szczegoly.remove();
+      blad(nowy, "");
+      stan(nowy, "niezapisana", "text-amber-300/80");
+      lista.appendChild(nowy);
+      podepnij(nowy);
+      tryb(nowy, true);
     });
 
-    // Krzyzyk pyta, zanim usunie. Bez tego jedno omylkowe klikniecie kasuje
-    // pozycje oferty, ktora klient juz widzial.
-    document.querySelectorAll("[data-usun]").forEach(function (b) {
-      b.addEventListener("click", function (e) {
-        if (!window.confirm(b.dataset.usun)) e.preventDefault();
-      });
+    // Wyjscie ze strony w trakcie edycji gubi to, co wpisane. Ostrzegamy,
+    // bo bez przycisku "zapisz" latwo uznac, ze wszystko juz poszlo do bazy.
+    window.addEventListener("beforeunload", function (e) {
+      if (document.querySelector('[data-rekord][data-edycja="1"]')) { e.preventDefault(); e.returnValue = ""; }
     });
+  })();
   </script>
 </body>
 </html>

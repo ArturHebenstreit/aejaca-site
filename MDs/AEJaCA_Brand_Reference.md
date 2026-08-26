@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-26 | Wersja: 6.2*
+*Wygenerowano: 2026-08-26 | Wersja: 6.3*
 
 ---
 
@@ -2246,6 +2246,22 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
   - **Procedura jest pokazana, nie opowiedziana.** `/payments/` ma diagram dwóch dróg na osi czasu:
     co dzieje się teraz, co w kilka sekund, a co następnego dnia roboczego. Skrót tego samego stoi
     przy wyborze waluty na stronie oferty. Liczba dni roboczych bierze się ze stałej, nie z pamięci.
+- **Edytor wycen nie ma przycisku „zapisz"** (od 2026-08-26, ADR-0019). Zapis idzie na poziomie
+  **rekordu**, a rekordem jest jedna pozycja albo nagłówek oferty (klient, język, waluta, termin,
+  treść zapytania, notatka). Ołówek otwiera rekord, zielony ptaszek wysyła go do bazy jednym
+  żądaniem, strzałka odrzuca zmiany; na czas edycji ołówek i krzyżyk gasną, żeby nie dało się
+  skasować wiersza w połowie wpisywania.
+  - **Przełącznik i pole zaznaczane zapisują się od razu po kliknięciu.** Kliknięcie jest całą
+    decyzją, nie ma stanu pośredniego i nie ma czego zatwierdzać.
+  - **Zapis po każdym znaku został odrzucony świadomie.** Nie chodzi o liczbę zapytań, choć różnica
+    jest dziesięciokrotna: chodzi o to, że każdy taki zapis wkłada do bazy stan niedokończony,
+    a przy ofercie już wysłanej pokazuje go klientowi. Kwota `4` widziana przez kogoś, kto akurat
+    odświeżył stronę oferty, to obietnica czterech groszy.
+  - **Nowa pozycja powstaje w przeglądarce** i trafia do bazy dopiero po zatwierdzeniu, bo zapis
+    pustego wiersza przy każdym kliknięciu zostawiałby pozycje bez nazwy i bez kwoty.
+  - **Każde żądanie niesie wyłącznie pola, które się zmieniły**, więc zapis jednego przełącznika
+    nie kasuje opisu. Trasy: `POST /quotes/:ref/item` i `POST /quotes/:ref/header`, obie JSON.
+    Stara trasa zbiorczego zapisu zniknęła: do kwot prowadzi jedna droga.
 - **Nagłówek panelu pokazuje wersję panelu i backendu sklepu** (od 2026-08-26). Obie usługi
   wdrażają się osobno, więc przez chwilę nowy formularz rozmawia ze starym backendem i po cichu
   gubi pola, których tamten nie zna. Na ekranie wygląda to identycznie jak błąd w kodzie: widok

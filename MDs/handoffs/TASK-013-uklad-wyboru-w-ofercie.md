@@ -60,11 +60,13 @@ na zywym kliencie (WY20260825, dwa warianty wydruku klucza).
   przyjmuje `selected`.
 - `chat-api/orderMail.js`: mail oznacza warianty i dodatki, dopisuje zdanie
   o tym, ze kwota dotyczy zaznaczonego ukladu.
-- `admin/server.js`: `POST /quotes/:ref/edit` zapisuje cala oferte,
-  `POST /quotes/:ref/price` usuniete.
-- `admin/views/quote-edit.ejs`: jeden formularz, kwota przy pozycji, olowek
-  i krzyzyk, rodzaj i grupa wyboru w widocznym wierszu, objasnienie nad lista,
-  waznosc dwiema drogami z prawdziwa data i liczba pozostalych dni.
+- `admin/server.js`: `POST /quotes/:ref/item` i `POST /quotes/:ref/header`
+  zapisuja po jednym rekordzie i oddaja JSON; `POST /quotes/:ref/price`
+  i `POST /quotes/:ref/edit` usuniete (ADR-0019).
+- `admin/views/quote-edit.ejs`: edytor bez przycisku zapisu. Kazda pozycja
+  i naglowek oferty to osobny rekord: olowek otwiera, zielony ptaszek zapisuje,
+  strzalka odrzuca. Przelacznik wyboru zapisuje sie od razu po kliknieciu.
+  Kwota przy pozycji, waznosc z prawdziwa data i liczba pozostalych dni.
 - `admin/wersja.js`, `admin/views/partials/header.ejs`: wersja panelu i wersja
   backendu sklepu w naglowku, z ostrzezeniem przy rozjezdzie.
 - `scripts/it-offer-groups.mjs`: test na prawdziwej bazie (poza buildem).
