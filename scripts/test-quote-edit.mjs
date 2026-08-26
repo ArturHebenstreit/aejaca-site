@@ -39,6 +39,7 @@ let bledy = 0;
 const zle = (m) => { console.error(`  ✗ ${m}`); bledy++; };
 const ok = (m) => console.log(`  ✓ ${m}`);
 const ma = (tekst, wzor, opis) => (wzor.test(tekst) ? ok(opis) : zle(`NIE ${opis}`));
+const nieMa = (tekst, wzor, opis) => (wzor.test(tekst) ? zle(`NIE ${opis}`) : ok(opis));
 
 console.log("\n1. Trasy istnieja pojedynczo\n");
 {
@@ -101,11 +102,11 @@ console.log("\n3. Kwoty ida za iloscia i maja jedna regule\n");
   ma(glowa, /validDays/, "termin waznosci da sie podac w dniach, bez wpisywania kwot od nowa");
   ma(glowa, /swiezoZaznaczone/, "zaznaczenie z biezacego zapisu wygrywa z zastanym");
 
-  // Termin waznosci wchodzi juz przy zakladaniu numeru, a przy pierwszej kwocie
-  // domyslny jest ten sam. Wycena zapisana z kalkulatora zostaje przy swoim,
-  // dluzszym terminie, bo obiecuje go regulamin i llms.txt.
-  ma(QUOTES, /input\.source === SAVED_QUOTE_SOURCE\s*\n\s*\? null/, "zalozenie numeru nadaje termin, a wycena z kalkulatora zostaje przy swoim");
-  ma(QUOTES, /OFFER_VALIDITY_DAYS \* 86400_000/, "termin oferty recznej liczy sie z wlasnej stalej");
+  // Termin waznosci wchodzi juz przy zakladaniu numeru i jest ten sam dla
+  // kazdej drogi: wyceny z kalkulatora, oferty z rozmowy i tej ze skrzynki.
+  // Jedna stala, bo tej samej liczby uzywa regulamin i llms.txt.
+  ma(QUOTES, /const validUntil = new Date\(Date\.now\(\) \+ QUOTE_VALIDITY_DAYS/, "termin wchodzi przy zakladaniu numeru, na kazdej drodze");
+  nieMa(QUOTES, /OFFER_VALIDITY_DAYS/, "termin liczy sie z jednej stalej, nie z dwoch");
   ma(WIDOK, /data-podglad="termin"/, "podpowiedz o terminie ma sie z czego odswiezyc");
   ma(WIDOK, /if \(poleDni\) poleDni\.value/, "po zapisie liczba dni przychodzi z bazy, a nie z pola");
 }

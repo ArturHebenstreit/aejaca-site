@@ -13,10 +13,10 @@
 import { generateToken, priceItem } from "./orders.js";
 import { CAD_CONFIG } from "./pricing/cadDesign.js";
 import { defaultCurrency, normalizeCurrency, eurCentsFromGrosze } from "./pricing/currency.js";
-import { QUOTE_VALIDITY_DAYS, OFFER_VALIDITY_DAYS } from "./pricing/config.js";
+import { QUOTE_VALIDITY_DAYS } from "./pricing/config.js";
 
 /** Ile dni obowiazuje wyslana wycena, jesli nie podano inaczej */
-export { QUOTE_VALIDITY_DAYS, OFFER_VALIDITY_DAYS } from "./pricing/config.js";
+export { QUOTE_VALIDITY_DAYS } from "./pricing/config.js";
 
 /**
  * Wycena zapisana przez klienta z kalkulatora, a nie zapytanie o wycene reczna.
@@ -78,12 +78,12 @@ export async function createQuote(pool, input) {
   // przy pierwszej kwocie. Wlasciciel widzi go wtedy od razu w panelu i wie,
   // co obiecuje, zamiast ogladac puste pole i "termin nieustawiony".
   //
-  // Wycena zapisana z kalkulatora terminu tutaj nie dostaje: ta rodzi sie od
-  // razu wyceniona i termin ustawia jej wycenianie, na wlasnych, dluzszych
-  // zasadach opisanych w llms.txt i w regulaminie.
-  const validUntil = input.source === SAVED_QUOTE_SOURCE
-    ? null
-    : new Date(Date.now() + OFFER_VALIDITY_DAYS * 86400_000).toISOString().slice(0, 10);
+  // Termin dostaje KAZDA wycena, niezaleznie od drogi, i to juz przy zakladaniu
+  // numeru. Wycena zapisana z kalkulatora nadpisze go za chwile wlasnym z
+  // `priceQuote`, ale gdyby to wycenianie padlo w polowie, zostalby w bazie
+  // wiersz bez terminu, czyli oferta wiazaca nas bez konca.
+  const validUntil = new Date(Date.now() + QUOTE_VALIDITY_DAYS * 86400_000)
+    .toISOString().slice(0, 10);
 
   const { rows } = await pool.query(
     `INSERT INTO quotes (quote_ref, lang, currency, source, customer_email, customer_name, customer_phone,
@@ -873,7 +873,7 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
       // i nikt nie podal wlasnego w tym samym zapisie.
       const bezTerminu = !quote.valid_until && terminZDni === undefined && patch.validUntil === undefined;
       const domyslny = bezTerminu
-        ? new Date(Date.now() + OFFER_VALIDITY_DAYS * 86400_000).toISOString().slice(0, 10)
+        ? new Date(Date.now() + QUOTE_VALIDITY_DAYS * 86400_000).toISOString().slice(0, 10)
         : null;
       await client.query(
         `UPDATE quotes SET total_grosze = $2, chosen_item_id = $3, status = $4,

@@ -149,14 +149,16 @@ ok("kwota naglowka zgadza sie z ukladem", stan.total_grosze === quoteAmountGrosz
   ok("zalozony numer ma od razu termin siedmiu dni", dzien(q.valid_until) === za(7),
      `${dzien(q.valid_until)} zamiast ${za(7)}`);
 
-  // Wycena zapisana z kalkulatora ma wlasny, dluzszy termin i nadaje go
-  // wycenianie, nie zakladanie.
+  // Wycena zapisana z kalkulatora idzie tym samym terminem. Wycenianie nadpisze
+  // go zaraz swoim, ale rownym, wiec nawet przerwane wycenianie nie zostawia
+  // w bazie oferty bez daty konca.
   const zKalkulatora = await createQuote(pool, {
     email: "kalkulator@aejaca.com", lang: "pl", source: "saved",
     items: [{ title: "Wydruk" }],
   });
   const k = await getQuoteByRef(pool, zKalkulatora.quoteRef);
-  ok("wycena z kalkulatora nie dostaje terminu przy zakladaniu", k.valid_until == null, String(k.valid_until));
+  ok("wycena z kalkulatora ma ten sam termin co oferta reczna", dzien(k.valid_until) === za(7),
+     `${dzien(k.valid_until)} zamiast ${za(7)}`);
 }
 
 // --- 5. Zapis pojedynczego rekordu, tak jak robi to panel -------------------

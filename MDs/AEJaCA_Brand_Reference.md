@@ -1249,8 +1249,8 @@ w `robots.txt` ma `Disallow: /quote/` we wszystkich grupach.
 możliwość wrócenia do własnej kalkulacji zamieniłoby narzędzie w bramkę na dane, a część ludzi
 po prostu zamknęłaby kartę, czyli zrobiła dokładnie to, czemu mamy zapobiec.
 
-**Zasada cenowa: robocizna wiążąca 14 dni, kruszec z dnia otwarcia.** Blokada ceny złota na dwa
-tygodnie byłaby otwartą pozycją na rynku towarowym. Różnicy nie liczymy przez przeliczenie
+**Zasada cenowa: robocizna wiążąca przez cały termin, kruszec z dnia otwarcia.** Blokada ceny
+złota na cały ten okres byłaby otwartą pozycją na rynku towarowym. Różnicy nie liczymy przez przeliczenie
 pozycji od nowa, bo wtedy zmiana **naszego** cennika po cichu podniosłaby też obiecaną
 robociznę. Wyceniamy pozycję dwa razy, kursami z chwili zapisu i z dzisiaj, i do kwoty zapisanej
 dokładamy samą różnicę. Po terminie ważności nie przeliczamy nic.
@@ -2246,13 +2246,15 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
   - **Procedura jest pokazana, nie opowiedziana.** `/payments/` ma diagram dwóch dróg na osi czasu:
     co dzieje się teraz, co w kilka sekund, a co następnego dnia roboczego. Skrót tego samego stoi
     przy wyborze waluty na stronie oferty. Liczba dni roboczych bierze się ze stałej, nie z pamięci.
-- **Oferta wystawiona ręcznie jest ważna 7 dni** (`OFFER_VALIDITY_DAYS`), a termin wchodzi **już przy
-  zakładaniu numeru**, nie dopiero przy pierwszej kwocie. Właściciel widzi go od razu w panelu i wie,
-  co obiecuje, zamiast oglądać puste pole. Wpisanie kwot **nie nadpisuje** tego terminu, więc ręcznie
-  skrócony termin zostaje. **Wycena zapisana z kalkulatora zachowuje swoje 14 dni**
-  (`QUOTE_VALIDITY_DAYS`): tamten okres obiecują regulamin i `llms.txt`, a liczy się z cennika, który
-  sami trzymamy. Oferta ręczna układana jest pod konkretną robotę, często z kruszcem w głównej roli,
-  i tydzień to tyle, ile chcemy trzymać cenę złota bez zabezpieczenia.
+- **Każda wycena i każda oferta jest domyślnie ważna 7 dni** (`QUOTE_VALIDITY_DAYS`, ujednolicone
+  2026-08-26), a termin wchodzi **już przy zakładaniu numeru**, nie dopiero przy pierwszej kwocie.
+  Właściciel widzi go od razu w panelu i wie, co obiecuje, zamiast oglądać puste pole. Wpisanie kwot
+  **nie nadpisuje** tego terminu, więc ręcznie skrócony termin zostaje. Jedna liczba dla wszystkich
+  dróg, bo dwie stałe o tym samym znaczeniu rozjechałyby się przy pierwszej zmianie, a klient
+  czytałby wtedy termin, którego system nie respektuje. Tydzień to tyle, ile realnie trwa decyzja,
+  i tyle, ile chcemy trzymać cenę złota bez zabezpieczenia. **Termin jest domyślny, nie sztywny:**
+  administrator ustawia własny na konkretnej ofercie, a obowiązuje zawsze data zapisana przy niej.
+  Regulamin (§ „nie krócej niż 7 dni") i `llms.txt` mówią to samo.
 - **Dwa teksty oferty mają dwie role i dwie widownie** (nazwane wprost 2026-08-26).
   **Opis oferty dla klienta** (`price_note`) to zakres: co wchodzi w kwotę, a czego w niej nie ma.
   Idzie do klienta razem z kwotą i stoi na jego stronie pod pozycjami. **Treść zapytania**
