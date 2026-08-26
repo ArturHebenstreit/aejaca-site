@@ -25,3 +25,37 @@ export function eurCentsFromGrosze(grosze, plnPerEur) {
   const rate = Number(plnPerEur) || FALLBACK_PLN_PER_EUR;
   return Math.ceil(((grosze || 0) / rate) * EUR_FX_MARGIN);
 }
+
+/** Waluty, ktore obslugujemy. Zrodlem ceny zostaje PLN, EUR jest przeliczeniem. */
+export const CURRENCIES = ["PLN", "EUR"];
+
+/**
+ * Waluta, ktora obowiazuje przy danym jezyku.
+ *
+ * To jest DOMYSLNA waluta, a nie przypisana na stale: Polak czytajacy po
+ * angielsku moze chciec zaplacic w zlotowkach, a Niemiec czytajacy po polsku
+ * w euro. Wybor klienta ma pierwszenstwo przed ta tabelka, bo waluta zaplaty
+ * wynika z tego, gdzie klient ma konto, a nie z tego, w jakim jezyku czyta.
+ */
+export const CURRENCY_BY_LANG = { pl: "PLN", en: "EUR", de: "EUR" };
+
+export function defaultCurrency(lang) {
+  return CURRENCY_BY_LANG[lang] || "EUR";
+}
+
+export function normalizeCurrency(waluta, lang = "pl") {
+  const w = String(waluta || "").toUpperCase();
+  return CURRENCIES.includes(w) ? w : defaultCurrency(lang);
+}
+
+/**
+ * Jak placi sie w danej walucie.
+ *
+ * Bramka rozlicza WYLACZNIE zlotowki: BLIK i pay-by-link sa polskie, a nasza
+ * umowa z operatorem nie obejmuje euro. Zaplata w euro idzie wiec przelewem
+ * na rachunek walutowy, z recznym ksiegowaniem po naszej stronie. To nie jest
+ * wybor wygody, tylko jedyna droga, ktora naprawde mamy.
+ */
+export function paymentMethodForCurrency(waluta) {
+  return String(waluta).toUpperCase() === "EUR" ? "bank_transfer" : "autopay";
+}

@@ -12,7 +12,7 @@
 //
 // Numer podnosimy RECZNIE i tylko przy zmianie, ktora widac w panelu.
 
-export const PANEL_WERSJA = "1.1.0";
+export const PANEL_WERSJA = "1.2.0";
 
 /** Skrot commita z wdrozenia, jesli platforma go poda. */
 export function wersjaZWdrozenia() {

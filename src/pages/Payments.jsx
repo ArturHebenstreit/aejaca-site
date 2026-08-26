@@ -22,6 +22,7 @@ import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
 import PolicyLinks from "../components/PolicyLinks.jsx";
 import { EUR_FX_MARGIN } from "../pricing/currency.js";
+import { TRANSFER_HOLD_BUSINESS_DAYS } from "../pricing/businessDays.js";
 
 /** Narzut kursowy jako procent, liczony z tej samej stalej co kasa. */
 const FX_PCT = Math.round((EUR_FX_MARGIN - 1) * 100);
@@ -32,6 +33,24 @@ const L = {
     title: "Proces płatności",
     description: "Jak płacisz za zamówienie w AEJaCA: krok po kroku, z czego składa się kwota, jakie są metody i co dzieje się po zapłacie.",
     pathsTitle: "Dwie drogi do zapłaty",
+    flowTitle: "Co dzieje się po kliknięciu „zapłać”",
+    flowLead: "Waluta wybiera drogę. Kwota jest ta sama, różni się to, kiedy pieniądze do nas docierają i kiedy zaczynamy pracę.",
+    flowPlnTitle: "Płacisz w złotych",
+    flowPln: [
+      ["Składasz zamówienie", "teraz"],
+      ["Bramka: BLIK albo przelew online", "teraz"],
+      ["Potwierdzenie wraca do nas", "kilka sekund"],
+      ["Zamówienie trafia do pracowni", "od razu"],
+    ],
+    flowEurTitle: "Płacisz w euro",
+    flowEur: [
+      ["Składasz zamówienie, kwota i kurs zamrożone", "teraz"],
+      ["Dostajesz numer rachunku i tytuł przelewu", "teraz, także mailem"],
+      ["Robisz przelew SEPA w swoim banku", "Twój bank"],
+      ["Księgujemy wpłatę ręcznie", "zwykle następny dzień roboczy"],
+      ["Zamówienie trafia do pracowni", "po zaksięgowaniu"],
+    ],
+    flowHold: "Kwota w euro i kurs obowiązują {days} dni robocze od złożenia zamówienia. Termin realizacji liczymy od zaksięgowania wpłaty, nie od kliknięcia.",
     pathsLead: "Wszystko, co u nas kupujesz, idzie jedną z dwóch dróg. Reszta strony opisuje obie.",
     pathA: "Kupujesz sam, w sklepie albo w kalkulatorze",
     pathADesc: "Cenę liczy nasz kalkulator albo bierze ją z karty produktu. Płacisz od razu.",
@@ -75,14 +94,14 @@ const L = {
       "Jeden kod na zamówienie.",
     ],
     plTitle: "Płatność z Polski, w złotych",
-    plLead: "Tak wygląda zapłata na polskiej wersji strony. Ceny są w złotych i w złotych je pobieramy. Nie ma tu żadnego wyboru waluty ani przelewu zagranicznego, bo byłyby tylko szumem.",
+    plLead: "Tak wygląda zapłata, kiedy rozliczasz się w złotych. To domyślna waluta polskiej wersji strony, ale wybierasz ją sam: walutę przestawisz w menu języka, w kasie i na stronie oferty, niezależnie od tego, w jakim języku czytasz.",
     plRows: [
       ["BLIK", "Kod z aplikacji banku. Najszybsza droga."],
       ["Szybki przelew online", "Ponad dwadzieścia polskich banków. Na wierzchu jest BLIK, banki chowają się pod jednym wierszem z wyszukiwarką, żeby nie trzeba było przewijać długiej listy."],
     ],
     plNote: "Płatność potwierdza się od razu i od razu ruszamy z pracą. Towar rezerwujemy na 20 minut, czyli na czas potrzebny do dokończenia płatności. Porzucony koszyk nic nie zabiera: rezerwacja wygasa sama.",
     euTitle: "Płatność z zagranicy, w euro",
-    euLead: "Tak wygląda zapłata na angielskiej i niemieckiej wersji strony. Ceny są w euro, a należność rozliczamy przelewem SEPA na nasze konto w euro.",
+    euLead: "Tak wygląda zapłata, kiedy rozliczasz się w euro. To domyślna waluta wersji angielskiej i niemieckiej, ale wybrać ją może każdy. Należność rozliczamy przelewem SEPA na nasze konto w euro.",
     euRows: [
       ["Przelew SEPA", "Numer rachunku pokazujemy po złożeniu zamówienia i wysyłamy mailem. Tytułem przelewu jest numer zamówienia."],
       ["BLIK albo polski bank, jeżeli wolisz", "Płatność natychmiastową da się wybrać także na tych wersjach strony. Ma to sens, gdy masz polskie konto: rozliczenie idzie wtedy w złotych, tak jak wyżej."],
@@ -143,7 +162,7 @@ const L = {
       { q: "Gdzie wpisuję kod rabatowy?", a: "Przy zakupie w sklepie w polu pod podsumowaniem zamówienia. Przy zapłacie za ofertę na stronie oferty, przed przejściem do płatności. Zniżkę widzisz przed zapłatą, nigdy nie zwracamy jej po fakcie." },
       { q: "Czy rabat obejmuje dostawę?", a: "Nie. Kod schodzi wyłącznie z pozycji zlecenia i nigdy nie obniża kosztu dostawy." },
       { q: "Dlaczego cena w euro nie jest ceną w złotych podzieloną przez kurs?", a: `Bo do kursu Narodowego Banku Polskiego doliczamy ${FX_PCT} procent. Między zamrożeniem kwoty a zaksięgowaniem przelewu mija kilka dni, a kurs w tym czasie się rusza.` },
-      { q: "Jestem w Polsce, ale czytam stronę po angielsku. W jakiej walucie zapłacę?", a: "O walucie decyduje wersja językowa, którą czytasz, a nie kraj, z którego piszesz. Na wersji angielskiej i niemieckiej domyślnie jest euro i przelew SEPA, ale jeżeli masz polskie konto, możesz tam przełączyć się na BLIK albo polski bank i zapłacić w złotych. Przełącz stronę na polski, jeżeli chcesz od razu widzieć ceny w złotych." },
+      { q: "Jestem w Polsce, ale czytam stronę po angielsku. W jakiej walucie zapłacę?", a: "W takiej, jaką wybierzesz. Język podpowiada walutę i tylko tyle: angielski i niemiecki zaczynają od euro, polski od złotych. Walutę przestawisz w menu języka, w kasie i na stronie oferty, a wybór zostaje na następną wizytę. Waluta wynika z tego, gdzie masz konto, a nie z tego, w jakim języku czytasz." },
       { q: "Jak długo ważna jest oferta?", a: "Tyle, ile mówi data wpisana w Twojej ofercie. Termin ustalamy osobno dla każdej z nich, bo przy wyrobach z kruszcu krótszy bywa uczciwszy niż długi. Po tej dacie oferta nie przyjmuje zapłaty i wystawiamy nową." },
       { q: "Kwota po otwarciu zapisanej wyceny różni się od tej, którą pamiętam. Dlaczego?", a: "Bo przy wyrobach z kruszcu robocizna jest wiążąca przez cały okres ważności, ale sam metal liczymy z dnia, w którym otwierasz link. Doliczamy wyłącznie różnicę wynikającą z ruchu kursu złota czy platyny, nigdy zmiany naszego cennika. Przy ofercie ustalonej z człowiekiem tak się nie dzieje: tam kwota jest stała aż do daty ważności." },
       { q: "Zapłaciłem, i co dalej?", a: "Dostajesz maila z potwierdzeniem i prywatny odnośnik do strony statusu. Widać na niej etap pracy, a przy wysyłce także numer przesyłki. Zamówienia realizujemy w kolejności wpłat." },
@@ -155,6 +174,24 @@ const L = {
     title: "How payment works",
     description: "Paying for an AEJaCA order step by step: what the amount is made of, which methods exist and what happens once you have paid.",
     pathsTitle: "Two ways to pay",
+    flowTitle: "What happens after you press pay",
+    flowLead: "The currency picks the route. The amount is the same; what differs is when the money reaches us and when we start work.",
+    flowPlnTitle: "Paying in złoty",
+    flowPln: [
+      ["You place the order", "now"],
+      ["Gateway: BLIK or an online transfer", "now"],
+      ["The confirmation reaches us", "seconds"],
+      ["The order goes to the workshop", "straight away"],
+    ],
+    flowEurTitle: "Paying in euro",
+    flowEur: [
+      ["You place the order, amount and rate locked", "now"],
+      ["You get the account number and the payment title", "now, also by email"],
+      ["You make the SEPA transfer in your bank", "your bank"],
+      ["We book the payment by hand", "usually the next working day"],
+      ["The order goes to the workshop", "once booked"],
+    ],
+    flowHold: "The euro amount and the rate hold for {days} business days from placing the order. The lead time runs from the money clearing, not from the click.",
     pathsLead: "Everything you buy from us goes down one of two routes. The rest of this page describes both.",
     pathA: "You buy on your own, in the shop or the calculator",
     pathADesc: "The price comes from our calculator or from the product page. You pay straight away.",
@@ -198,14 +235,14 @@ const L = {
       "One code per order.",
     ],
     plTitle: "Paying from Poland, in złoty",
-    plLead: "This is how payment works on the Polish version of the site. Prices are in złoty and we charge in złoty. There is no currency choice and no foreign transfer here, because both would only be noise.",
+    plLead: "This is how payment works when you settle in złoty. It is the default on the Polish version, but the choice is yours: switch the currency in the language menu, at checkout or on the offer page, whatever language you read in.",
     plRows: [
       ["BLIK", "A code from your banking app. The fastest route."],
       ["Instant bank transfer", "Over twenty Polish banks. BLIK sits on top and the banks hide behind one row with a search box, so nobody has to scroll a long list."],
     ],
     plNote: "The payment confirms immediately and we start work immediately. Goods are reserved for 20 minutes, the time needed to finish paying. An abandoned cart takes nothing: the reservation expires on its own.",
     euTitle: "Paying from abroad, in euro",
-    euLead: "This is how payment works on the English and German versions of the site. Prices are in euro and we settle by SEPA transfer to our euro account.",
+    euLead: "This is how payment works when you settle in euro. It is the default on the English and German versions, but anyone can choose it. We settle by SEPA transfer to our euro account.",
     euRows: [
       ["SEPA transfer", "We show the account number once the order is placed and send it by e-mail. The payment reference is the order number."],
       ["BLIK or a Polish bank, if you prefer", "Instant payment can be chosen on these versions too. It makes sense if you hold a Polish account: settlement then runs in złoty, as above."],
@@ -266,7 +303,7 @@ const L = {
       { q: "Where do I enter a discount code?", a: "When buying in the shop, in the field under the order summary. When paying for an offer, on the offer page before moving to payment. You see the discount before paying; we never refund it afterwards." },
       { q: "Does a discount cover delivery?", a: "No. A code comes off the order items only and never lowers the delivery cost." },
       { q: "Why is the euro price not the złoty price divided by the rate?", a: `Because we add ${FX_PCT} percent to the National Bank of Poland rate. Several days pass between freezing the amount and the transfer clearing, and the rate moves in the meantime.` },
-      { q: "I am in Poland but reading the site in English. Which currency will I pay in?", a: "The currency follows the language version you are reading, not the country you write from. English and German default to euro and a SEPA transfer, but if you hold a Polish account you can switch there to BLIK or a Polish bank and pay in złoty. Switch the site to Polish if you would rather see złoty prices from the start." },
+      { q: "I am in Poland but reading the site in English. Which currency will I pay in?", a: "Whichever you choose. The language only suggests a currency: English and German start in euro, Polish in złoty. You can switch it in the language menu, at checkout and on the offer page, and the choice sticks for your next visit. Currency follows where you keep your money, not what language you read in." },
       { q: "How long is an offer valid?", a: "As long as the date written on your offer says. We set it separately for each one, because on metal pieces a shorter term is often the honest one. Past that date the offer takes no payment and we issue a new one." },
       { q: "The amount on my saved quote differs from the one I remember. Why?", a: "Because on metal pieces the labour is binding for the whole validity period, while the metal itself is priced on the day you open the link. We add only the difference caused by the gold or platinum rate moving, never by a change in our own price list. This does not happen on an offer agreed with a person: there the amount is fixed until its expiry date." },
       { q: "I have paid, what now?", a: "You get a confirmation e-mail and a private link to the status page. It shows the stage of the work and, once shipped, the tracking number. We work in the order payments arrived." },
@@ -278,6 +315,24 @@ const L = {
     title: "Zahlungsablauf",
     description: "Bezahlen einer AEJaCA Bestellung Schritt für Schritt: woraus der Betrag besteht, welche Methoden es gibt und was nach der Zahlung passiert.",
     pathsTitle: "Zwei Wege zur Zahlung",
+    flowTitle: "Was nach dem Klick auf „bezahlen” passiert",
+    flowLead: "Die Währung wählt den Weg. Der Betrag bleibt gleich; anders ist, wann das Geld bei uns ankommt und wann wir anfangen.",
+    flowPlnTitle: "Zahlung in Złoty",
+    flowPln: [
+      ["Sie bestellen", "jetzt"],
+      ["Gateway: BLIK oder Online-Überweisung", "jetzt"],
+      ["Die Bestätigung erreicht uns", "Sekunden"],
+      ["Die Bestellung geht in die Werkstatt", "sofort"],
+    ],
+    flowEurTitle: "Zahlung in Euro",
+    flowEur: [
+      ["Sie bestellen, Betrag und Kurs eingefroren", "jetzt"],
+      ["Sie erhalten Kontonummer und Verwendungszweck", "jetzt, auch per E-Mail"],
+      ["Sie überweisen per SEPA in Ihrer Bank", "Ihre Bank"],
+      ["Wir buchen die Zahlung von Hand", "meist am nächsten Werktag"],
+      ["Die Bestellung geht in die Werkstatt", "nach der Buchung"],
+    ],
+    flowHold: "Eurobetrag und Kurs gelten {days} Werktage ab Bestellung. Die Lieferzeit rechnen wir ab Zahlungseingang, nicht ab dem Klick.",
     pathsLead: "Alles, was Sie bei uns kaufen, läuft über einen von zwei Wegen. Der Rest dieser Seite beschreibt beide.",
     pathA: "Sie kaufen selbst, im Shop oder im Kalkulator",
     pathADesc: "Den Preis liefert unser Kalkulator oder die Produktseite. Sie zahlen sofort.",
@@ -321,14 +376,14 @@ const L = {
       "Ein Code pro Bestellung.",
     ],
     plTitle: "Zahlung aus Polen, in Złoty",
-    plLead: "So läuft die Zahlung auf der polnischen Version der Seite. Preise sind in Złoty und wir buchen in Złoty ab. Es gibt hier keine Währungswahl und keine Auslandsüberweisung, beides wäre nur Rauschen.",
+    plLead: "So läuft die Zahlung, wenn Sie in Złoty abrechnen. Das ist die Voreinstellung der polnischen Version, die Wahl liegt aber bei Ihnen: die Währung stellen Sie im Sprachmenü, an der Kasse und auf der Angebotsseite um, unabhängig von der Sprache.",
     plRows: [
       ["BLIK", "Ein Code aus Ihrer Banking-App. Der schnellste Weg."],
       ["Sofortüberweisung", "Über zwanzig polnische Banken. BLIK steht oben, die Banken verbergen sich hinter einer Zeile mit Suchfeld, damit niemand eine lange Liste scrollen muss."],
     ],
     plNote: "Die Zahlung wird sofort bestätigt und wir beginnen sofort mit der Arbeit. Die Ware reservieren wir 20 Minuten, also für die Dauer des Bezahlvorgangs. Ein abgebrochener Warenkorb nimmt nichts weg: die Reservierung verfällt von selbst.",
     euTitle: "Zahlung aus dem Ausland, in Euro",
-    euLead: "So läuft die Zahlung auf der englischen und deutschen Version der Seite. Preise sind in Euro, abgerechnet wird per SEPA-Überweisung auf unser Eurokonto.",
+    euLead: "So läuft die Zahlung, wenn Sie in Euro abrechnen. Das ist die Voreinstellung der englischen und deutschen Version, wählen kann sie aber jeder. Abgerechnet wird per SEPA-Überweisung auf unser Eurokonto.",
     euRows: [
       ["SEPA-Überweisung", "Die Kontonummer zeigen wir nach der Bestellung und senden sie per E-Mail. Verwendungszweck ist die Bestellnummer."],
       ["BLIK oder eine polnische Bank, falls gewünscht", "Die Sofortzahlung lässt sich auch auf diesen Versionen wählen. Sinnvoll ist das mit einem polnischen Konto: die Abrechnung läuft dann in Złoty wie oben."],
@@ -389,7 +444,7 @@ const L = {
       { q: "Wo gebe ich einen Rabattcode ein?", a: "Beim Kauf im Shop im Feld unter der Bestellübersicht. Bei Zahlung für ein Angebot auf der Angebotsseite, vor dem Wechsel zur Zahlung. Den Rabatt sehen Sie vor der Zahlung, im Nachhinein erstatten wir ihn nie." },
       { q: "Gilt ein Rabatt auch für den Versand?", a: "Nein. Ein Code geht ausschließlich von den Auftragspositionen ab und senkt nie die Versandkosten." },
       { q: "Warum ist der Europreis nicht der Złoty-Preis geteilt durch den Kurs?", a: `Weil wir auf den Kurs der Polnischen Nationalbank ${FX_PCT} Prozent aufschlagen. Zwischen dem Einfrieren des Betrags und dem Eingang der Überweisung vergehen einige Tage, und der Kurs bewegt sich in dieser Zeit.` },
-      { q: "Ich bin in Polen, lese die Seite aber auf Deutsch. In welcher Währung zahle ich?", a: "Über die Währung entscheidet die Sprachversion, die Sie lesen, nicht das Land, aus dem Sie schreiben. Auf Englisch und Deutsch sind Euro und SEPA-Überweisung voreingestellt; mit einem polnischen Konto können Sie dort auf BLIK oder eine polnische Bank umschalten und in Złoty zahlen. Wechseln Sie die Seite auf Polnisch, wenn Sie Złoty-Preise von Anfang an sehen möchten." },
+      { q: "Ich bin in Polen, lese die Seite aber auf Deutsch. In welcher Währung zahle ich?", a: "In der, die Sie wählen. Die Sprache schlägt die Währung nur vor: Englisch und Deutsch starten in Euro, Polnisch in Złoty. Umstellen können Sie sie im Sprachmenü, an der Kasse und auf der Angebotsseite, und die Wahl bleibt bis zum nächsten Besuch. Die Währung richtet sich danach, wo Sie Ihr Geld haben, nicht danach, welche Sprache Sie lesen." },
       { q: "Wie lange ist ein Angebot gültig?", a: "So lange, wie das auf Ihrem Angebot genannte Datum sagt. Wir legen es für jedes Angebot einzeln fest, denn bei Metallstücken ist eine kürzere Frist oft die ehrlichere. Nach diesem Datum nimmt das Angebot keine Zahlung mehr an und wir stellen ein neues aus." },
       { q: "Der Betrag in meiner gespeicherten Kalkulation weicht von dem ab, den ich in Erinnerung habe. Warum?", a: "Weil bei Metallstücken die Arbeitsleistung für die gesamte Gültigkeitsdauer verbindlich ist, das Metall selbst aber zum Tag der Linköffnung gerechnet wird. Wir addieren ausschließlich die Differenz aus der Kursbewegung von Gold oder Platin, nie aus einer Änderung unserer Preisliste. Bei einem persönlich vereinbarten Angebot passiert das nicht: dort steht der Betrag bis zum Ablaufdatum fest." },
       { q: "Ich habe bezahlt, wie geht es weiter?", a: "Sie erhalten eine Bestätigungsmail und einen privaten Link zur Statusseite. Sie zeigt den Arbeitsstand und nach dem Versand die Sendungsnummer. Wir arbeiten in der Reihenfolge der Zahlungseingänge." },
@@ -430,6 +485,7 @@ export default function Payments() {
 
   const headerRef = useScrollReveal();
   const pathsRef = useScrollReveal();
+  const flowRef = useScrollReveal();
   const shopRef = useScrollReveal();
   const offerRef = useScrollReveal();
   const sumRef = useScrollReveal();
@@ -491,6 +547,41 @@ export default function Payments() {
                   <p className="text-neutral-400 text-sm leading-relaxed mt-1">{l.pathBDesc}</p>
                 </div>
               </div>
+            </div>
+
+            {/* Diagram dwoch drog zaplaty. Rysunek zamiast akapitu, bo pytanie
+                brzmi "kiedy co sie stanie", a na to odpowiada os czasu, a nie
+                proza. Kroki i terminy sa te same, ktore wykonuje kod. */}
+            <div ref={flowRef} className="reveal mb-5">
+              <h2 className="text-white font-semibold mb-2">{l.flowTitle}</h2>
+              <p className="text-neutral-400 text-sm mb-4">{l.flowLead}</p>
+              <div className="grid md:grid-cols-2 gap-4">
+                {[
+                  { tytul: l.flowPlnTitle, kroki: l.flowPln, ikona: Wallet, kolor: "text-amber-400", kropka: "bg-amber-400" },
+                  { tytul: l.flowEurTitle, kroki: l.flowEur, ikona: Globe, kolor: "text-blue-400", kropka: "bg-blue-400" },
+                ].map((droga) => (
+                  <div key={droga.tytul} className="bg-neutral-900/60 border border-neutral-800 rounded-xl p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                      <droga.ikona className={`w-4 h-4 shrink-0 ${droga.kolor}`} />
+                      <span className="text-white text-sm font-medium">{droga.tytul}</span>
+                    </div>
+                    <ol className="relative">
+                      {/* Pionowa linia laczaca kroki: to ona robi z listy os czasu. */}
+                      <span className="absolute left-[5px] top-2 bottom-2 w-px bg-neutral-800" aria-hidden="true" />
+                      {droga.kroki.map(([krok, kiedy], i) => (
+                        <li key={i} className="relative pl-6 pb-4 last:pb-0">
+                          <span className={`absolute left-0 top-1.5 w-2.5 h-2.5 rounded-full ${droga.kropka}`} aria-hidden="true" />
+                          <span className="block text-neutral-200 text-sm leading-snug">{krok}</span>
+                          <span className="block text-neutral-500 text-xs mt-0.5">{kiedy}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                ))}
+              </div>
+              <p className="text-neutral-500 text-xs leading-relaxed mt-3">
+                {l.flowHold.replace("{days}", String(TRANSFER_HOLD_BUSINESS_DAYS))}
+              </p>
             </div>
 
             <Karta icon={ShoppingBag} title={l.shopTitle} innerRef={shopRef}>

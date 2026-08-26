@@ -34,6 +34,7 @@ const ALLOWED = {
   "src/hooks/useGemPrices.js": "pamiec podreczna publicznych cen kamieni, zeby kalkulator nie pytal serwera przy kazdym kliknieciu; zadne dane osoby",
   "src/hooks/useMaterialStock.js": "pamiec podreczna publicznych stawek materialow z magazynu, zeby suwak wielkosci nie pytal serwera przy kazdym ruchu; zadne dane osoby",
   "src/i18n/LanguageContext.jsx": "wybrany jezyk",
+  "src/shop/CurrencyContext.jsx": "wybrana waluta zaplaty, czyli ustawienie, o ktore klient sam poprosil klikajac w przelacznik; ta sama polka co jezyk i zaden slad po osobie",
   "src/analysis/modelHandoff.js": "model przenoszony miedzy kartami po kliknieciu odnosnika do pelnej analizy, czyli czynnosc, o ktora klient sam poprosil; rekord kasujemy przy odczycie i odrzucamy po kwadransie",
   "src/shop/orderStatusAccess.js": "prywatny token zamowienia na czas sesji karty, niezbedny do statusu i ponowienia platnosci po F5",
 };

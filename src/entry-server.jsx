@@ -5,6 +5,7 @@ import ScrollToHash from "./components/ScrollToHash.jsx";
 import { Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { LanguageProvider } from "./i18n/LanguageContext.jsx";
+import { CurrencyProvider } from "./shop/CurrencyContext.jsx";
 import { ThemeProvider } from "./i18n/ThemeContext.jsx";
 import { CartProvider } from "./cart/CartContext.jsx";
 import Layout from "./components/Layout.jsx";
@@ -61,6 +62,7 @@ export function render(url) {
     <HelmetProvider context={helmetContext}>
       <ThemeProvider>
         <LanguageProvider>
+          <CurrencyProvider>
           <CartProvider>
           <StaticRouter location={url}>
           {/* Nic nie rysuje, ale zajmuje miejsce w drzewie, a `useId` liczy
@@ -125,6 +127,7 @@ export function render(url) {
           </Suspense>
           </StaticRouter>
           </CartProvider>
+          </CurrencyProvider>
         </LanguageProvider>
       </ThemeProvider>
     </HelmetProvider>

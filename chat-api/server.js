@@ -24,7 +24,7 @@ import { brakPodloza } from "./pricing/laserSubstrate.js";
 import { MATERIAL_SEED } from "./pricing/materialStockSeed.js";
 import { MATERIAL_CORRECTIONS } from "./pricing/materialCorrections.js";
 import { validateCustomer, normalizePhone } from "./pricing/customerFields.js";
-import { eurCentsFromGrosze } from "./pricing/currency.js";
+import { eurCentsFromGrosze, normalizeCurrency, paymentMethodForCurrency } from "./pricing/currency.js";
 import { shippingGrosze as shippingCost, needsCustoms, zoneForCountry } from "./pricing/shipping.js";
 import { addBusinessDays, TRANSFER_HOLD_BUSINESS_DAYS } from "./pricing/businessDays.js";
 import {
@@ -234,6 +234,15 @@ if (pool) {
   // Uzycie go do "praca skonczona" zlepiloby dwie rozne rzeczy w jedno pole.
   // Oferta wielowariantowa. Pozycje staja sie alternatywami, a `total_grosze`
   // niesie kwote wybranego wariantu zamiast sumy pozycji.
+  // Waluta oferty. Dotyczy CALEJ oferty, bo przelew wychodzi z jednego konta,
+  // a rachunek w dwoch walutach nie ma jak sie zsumowac. Oferty zalozone przed
+  // ta kolumna dostaja walute swojego jezyka: dokladnie to widzial dotad ich
+  // klient, bo strona przeliczala kwoty wylacznie po jezyku.
+  (async () => {
+    await pool.query(`ALTER TABLE quotes ADD COLUMN IF NOT EXISTS currency VARCHAR(3) NOT NULL DEFAULT 'PLN'`);
+    await pool.query(`UPDATE quotes SET currency = 'EUR' WHERE lang IN ('en','de') AND currency = 'PLN'`);
+  })().catch((e) => console.error("[migracja] waluta oferty:", e.message));
+
   pool.query(`ALTER TABLE quotes ADD COLUMN IF NOT EXISTS pick_one BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
   pool.query(`ALTER TABLE quotes ADD COLUMN IF NOT EXISTS chosen_item_id BIGINT`).catch(() => {});
 
@@ -1617,12 +1626,24 @@ app.get("/api/quotes/:ref", async (req, res) => {
     .filter((i) => i.selected)
     .reduce((s, i) => s + (i.lineGrosze || 0), 0) || quote.total_grosze;
 
+  // Waluta oferty i kwota w niej. Strona oferty NIE liczy euro sama: ten sam
+  // kurs i ten sam narzut musza stac po obu stronach, inaczej klient zobaczy
+  // inna kwote niz ta, ktora zamrozimy przy skladaniu zamowienia.
+  const waluta = normalizeCurrency(quote.currency, quote.lang);
+  const kursEur = waluta === "EUR" ? await currentEurRate() : null;
+
   res.json({
     ok: true,
     quoteRef: quote.quote_ref,
     status: quote.status,
     source: quote.source,
     lang: quote.lang,
+    currency: waluta,
+    eurRate: kursEur,
+    // Kwota w walucie oferty, policzona z tej samej kwoty PLN co przelew.
+    amountEurCents: waluta === "EUR" ? eurCentsFromGrosze(doZaplaty, kursEur) : null,
+    paymentMethod: paymentMethodForCurrency(waluta),
+    transferAvailable: transferConfigured(),
     // Oferta z wyborem: sa w niej warianty albo dodatki, a nie sam rachunek.
     pickOne: uklad.groups.length > 0,
     chosenItemId: [...wybraneId].find((id) => rodzaje.get(id) === "variant") ?? null,
@@ -1710,6 +1731,7 @@ app.get("/api/quotes/:ref/admin", async (req, res) => {
       quoteRef: quote.quote_ref, status: quote.status, lang: quote.lang, source: quote.source,
       email: quote.customer_email, name: quote.customer_name, phone: quote.customer_phone,
       message: quote.message, totalGrosze: quote.total_grosze, priceNote: quote.price_note,
+      currency: normalizeCurrency(quote.currency, quote.lang),
       pickOne: Boolean(quote.pick_one),
       chosenItemId: quote.chosen_item_id != null ? Number(quote.chosen_item_id) : null,
       validUntil: quote.valid_until, sentAt: quote.sent_at, createdAt: quote.created_at,
@@ -1745,7 +1767,7 @@ app.post("/api/quotes/manual", express.json({ limit: "256kb" }), async (req, res
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
 
-  const { email, name, phone, lang, source, message, items } = req.body || {};
+  const { email, name, phone, lang, currency, source, message, items } = req.body || {};
   if (email && !CONTACT_EMAIL_RE.test(String(email))) return res.status(400).json({ error: "Nieprawidlowy adres e-mail" });
   if (!email && !phone) return res.status(400).json({ error: "Podaj adres e-mail albo telefon" });
   if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: "Wycena bez pozycji" });
@@ -1753,7 +1775,7 @@ app.post("/api/quotes/manual", express.json({ limit: "256kb" }), async (req, res
   const zrodlo = ["email", "phone", "chat", "quote", "contact"].includes(String(source)) ? String(source) : "email";
   try {
     const created = await createQuote(pool, {
-      email: email || null, name, phone, lang, source: zrodlo,
+      email: email || null, name, phone, lang, currency, source: zrodlo,
       message: String(message || "").slice(0, 8000),
       items: items.slice(0, 20),
       allowAnonymous: true,
@@ -1977,6 +1999,52 @@ app.post("/api/quotes/:ref/choose", express.json({ limit: "8kb" }), async (req, 
 });
 
 /**
+ * Wybor waluty zaplaty przez klienta.
+ *
+ * Waluta dotyczy CALEJ oferty, nigdy pojedynczej pozycji: przelew wychodzi
+ * z jednego konta, a rachunek zlozony z dwoch walut nie ma jak sie zsumowac.
+ * Kwota zrodlowa zostaje w zlotowkach, wiec zmiana waluty niczego nie przecenia:
+ * przelicza to samo po biezacym kursie i zmienia DROGE zaplaty, bo euro idzie
+ * przelewem, a zlotowki bramka.
+ *
+ * Wybor nie jest wiazacy az do zlozenia zamowienia: wtedy kwota w euro zamraza
+ * sie razem z kursem.
+ */
+app.post("/api/quotes/:ref/currency", express.json({ limit: "8kb" }), async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const quote = await getQuoteByRef(pool, req.params.ref);
+  if (!quote || !secretMatches(String(req.body?.token || ""), quote.access_token)) {
+    return res.status(404).json({ error: "Nie ma takiej oferty" });
+  }
+  if (quote.converted_order_id) {
+    return res.status(400).json({ error: "Ta oferta stala sie juz zamowieniem", code: "already_converted" });
+  }
+
+  const waluta = String(req.body?.currency || "").toUpperCase();
+  if (!["PLN", "EUR"].includes(waluta)) {
+    return res.status(400).json({ error: "Waluta to PLN albo EUR", code: "bad_currency" });
+  }
+  // Euro bez skonfigurowanego rachunku walutowego byloby obietnica bez pokrycia:
+  // klient wybralby walute, w ktorej nie mamy mu gdzie zaplacic.
+  if (waluta === "EUR" && !transferConfigured()) {
+    return res.status(503).json({ error: "Zaplata w euro nie jest teraz dostepna", code: "no_transfer" });
+  }
+
+  await pool.query(`UPDATE quotes SET currency = $2, updated_at = NOW() WHERE id = $1`, [quote.id, waluta]);
+  const kurs = waluta === "EUR" ? await currentEurRate() : null;
+  console.log(`[wycena] ${quote.quote_ref}: klient wybral zaplate w ${waluta}`);
+  res.json({
+    ok: true,
+    quoteRef: quote.quote_ref,
+    currency: waluta,
+    eurRate: kurs,
+    amountEurCents: waluta === "EUR" ? eurCentsFromGrosze(quote.total_grosze || 0, kurs) : null,
+    paymentMethod: paymentMethodForCurrency(waluta),
+  });
+});
+
+/**
  * Sprawdzenie kodu rabatowego dla oferty, jeszcze przed zaplata.
  *
  * Kwota do zaplaty ma byc juz po rabacie, a nie korygowana potem zwrotem, bo
@@ -2081,9 +2149,26 @@ app.post("/api/quotes/:ref/checkout", express.json({ limit: "32kb" }),
       });
     }
 
+    // Droga zaplaty wynika z WALUTY oferty, nie z wyboru w przegladarce: bramka
+    // rozlicza wylacznie zlotowki, wiec euro moze pojsc tylko przelewem. Klient
+    // zmienia droge zmieniajac walute, i to jest cala decyzja, ktora ma do podjecia.
+    const walutaOferty = normalizeCurrency(quote.currency, quote.lang);
+    const przelew = paymentMethodForCurrency(walutaOferty) === "bank_transfer";
+    if (przelew && !transferConfigured()) {
+      return res.status(503).json({ error: "Zaplata w euro nie jest teraz dostepna", code: "no_transfer" });
+    }
+    const kursEur = przelew ? await currentEurRate() : null;
+    if (przelew && !kursEur) {
+      return res.status(503).json({ error: "Brak kursu euro, sprobuj za chwile", code: "no_rate" });
+    }
+
     const order = await convertQuoteToOrder(pool, quote.quote_ref, {
       orderRef: generateOrderRef(),
-      paymentMethod: "autopay",
+      paymentMethod: przelew ? "bank_transfer" : "autopay",
+      eurRate: kursEur,
+      // Przy przelewie ta sama data konczy waznosc kwoty i czas na zaplate,
+      // tak samo jak w sklepie. Dwie rozne daty to dwie obietnice.
+      expiresAt: przelew ? addBusinessDays(new Date(), TRANSFER_HOLD_BUSINESS_DAYS) : null,
       customer: { ...(req.body?.customer || {}), email },
       consents: req.body?.consents || null,
       delivery: {
@@ -2100,7 +2185,7 @@ app.post("/api/quotes/:ref/checkout", express.json({ limit: "32kb" }),
     });
 
     console.log(
-      `[wycena] ${quote.quote_ref} oplacana przez klienta jako ${order.orderRef}` +
+      `[wycena] ${quote.quote_ref} oplacana przez klienta jako ${order.orderRef} w ${walutaOferty}` +
       (order.discountCode ? `, kod ${order.discountCode} na ${(order.discountGrosze / 100).toFixed(2)} PLN` : "")
     );
 
@@ -2114,7 +2199,10 @@ app.post("/api/quotes/:ref/checkout", express.json({ limit: "32kb" }),
       discountCode: order.discountCode,
       discountGrosze: order.discountGrosze,
       creditGrosze: order.creditGrosze || 0,
-      paymentMethod: "autopay",
+      currency: walutaOferty,
+      paymentMethod: order.paymentMethod,
+      amountEurCents: order.amountEurCents,
+      eurRate: order.eurRate,
     });
   } catch (e) {
     if (e instanceof DiscountError) return res.status(400).json({ error: e.message, code: e.code });
@@ -2923,15 +3011,20 @@ app.post("/api/orders", express.json({ limit: "1mb" }),
     // Przelew w euro: kwote zamrazamy tu i teraz razem z kursem. Gdybysmy
     // przeliczali ja dopiero przy ksiegowaniu, klient przelalby jedna kwote,
     // a my oczekiwalibysmy innej.
-    const wantsTransfer = paymentMethod === "bank_transfer";
+    // O drodze zaplaty decyduje WALUTA, a nie jezyk. Polak czytajacy po polsku
+    // moze miec konto w euro, a Niemiec czytajacy po niemiecku konto w zlotowkach;
+    // waluta wynika z tego, gdzie klient trzyma pieniadze, nie z tego, co czyta.
+    // Bramka rozlicza wylacznie zlotowki, wiec euro moze pojsc tylko przelewem.
+    //
+    // Starsza strona przysyla sama metode platnosci i nie zna pola `currency`.
+    // Wtedy zostajemy przy jej decyzji, zeby wdrozenie w polowie nie odrzucalo
+    // zamowien.
+    const walutaZadana = req.body?.currency ? normalizeCurrency(req.body.currency, safeLang) : null;
+    const wantsTransfer = walutaZadana
+      ? paymentMethodForCurrency(walutaZadana) === "bank_transfer"
+      : paymentMethod === "bank_transfer";
     if (wantsTransfer && !transferConfigured()) {
       return res.status(503).json({ error: "Platnosc przelewem nie jest skonfigurowana" });
-    }
-    // Przelew z recznym potwierdzeniem obsluguje wylacznie sprzedaz w euro.
-    // Klient placacy w zlotowkach ma BLIK i pay-by-link, wiec reczne
-    // ksiegowanie byloby dla niego wylacznie opoznieniem.
-    if (wantsTransfer && !["en", "de"].includes(safeLang)) {
-      return res.status(400).json({ error: "Przelew jest dostepny wylacznie przy cenach w euro" });
     }
     const eurRate = wantsTransfer ? await currentEurRate() : null;
     const amountEurCents = wantsTransfer ? eurCentsFromGrosze(total, eurRate) : null;

@@ -95,6 +95,20 @@
               </select>
             </label>
           </div>
+          <div class="grid sm:grid-cols-2 gap-3">
+            <label class="block">
+              <span class="text-neutral-400 text-xs">Waluta</span>
+              <select name="currency" class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white">
+                <option value="">wg języka: pl to PLN, en i de to EUR</option>
+                <option value="PLN">PLN, złotówki</option>
+                <option value="EUR">EUR, euro</option>
+              </select>
+            </label>
+            <p class="text-neutral-600 text-[10px] leading-relaxed self-end pb-2">
+              Złotówki płaci się bramką, euro przelewem na rachunek walutowy. Klient może zmienić walutę
+              na stronie oferty, bo to on wie, gdzie ma konto.
+            </p>
+          </div>
           <label class="block">
             <span class="text-neutral-400 text-xs">Treść zapytania, tak jak ją zrozumiałeś</span>
             <textarea name="message" rows="3" class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white"></textarea>

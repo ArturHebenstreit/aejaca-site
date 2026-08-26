@@ -12,6 +12,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 const samePath = (a, b) => String(a).replace(/\/+$/, "") === String(b).replace(/\/+$/, "");
 import { Menu, X, Globe, ChevronDown, Sun, Moon, ShoppingCart, ExternalLink } from "lucide-react";
 import { useLanguage, LANGUAGES } from "../i18n/LanguageContext.jsx";
+import { useCurrency } from "../shop/CurrencyContext.jsx";
 import { useTheme } from "../i18n/ThemeContext.jsx";
 import { useCart } from "../cart/CartContext.jsx";
 
@@ -27,6 +28,10 @@ export default function Navbar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { lang, setLang, t } = useLanguage();
+  // Waluta zaplaty stoi w tym samym menu co jezyk, bo domyslnie idzie za nim.
+  // Osobny przelacznik w pasku dolozylby element do i tak ciasnej nawigacji,
+  // a rozdzielilby dwie decyzje, ktore klient podejmuje razem.
+  const { currency, setCurrency } = useCurrency();
   const { isDark, toggleTheme } = useTheme();
   const { count: cartCount } = useCart();
 
@@ -132,6 +137,25 @@ export default function Navbar() {
             <span>{l.flag}</span><span>{l.label}</span>
           </button>
         ))}
+
+        <div className="border-t border-white/10 px-4 pt-2.5 pb-3">
+          <div className="text-neutral-500 text-[10px] mb-1.5">{t("nav.currency")}</div>
+          <div className="flex gap-1.5">
+            {["PLN", "EUR"].map((w) => (
+              <button
+                key={w}
+                onClick={() => { setCurrency(w); setLangOpen(false); }}
+                aria-pressed={currency === w}
+                className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
+                  currency === w ? "bg-amber-400 text-neutral-950 font-medium" : "text-neutral-400 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                {w}
+              </button>
+            ))}
+          </div>
+          <p className="text-neutral-600 text-[10px] leading-snug mt-2">{t("nav.currencyHint")}</p>
+        </div>
       </div>
     );
   }

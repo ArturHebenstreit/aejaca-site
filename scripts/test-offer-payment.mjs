@@ -68,6 +68,42 @@ function fakePool({ kredyt = null } = {}) {
 }
 
 const znajdz = (log, wzor) => log.find((z) => wzor.test(z.sql));
+
+/**
+ * Wartosc zapisana do wskazanej KOLUMNY, a nie do wskazanego miejsca w tablicy.
+ *
+ * Wczesniej test siegal po `params.at(-2)` i trzymal sie tego, ze zgody stoja
+ * na koncu listy. Dopisanie dwoch kolumn (kwota w euro, kurs) przesunelo je
+ * o dwa miejsca i test zaczal sprawdzac kurs zamiast zgody, choc zapis byl
+ * poprawny. Ustalamy wiec pozycje z samego zapytania: numer kolumny w liscie
+ * `INSERT INTO ... (...)` wskazuje pozycje w klauzuli VALUES, a ta niesie
+ * `$n` albo wartosc wpisana wprost.
+ */
+function wartoscKolumny(zapis, kolumna) {
+  const kolumny = zapis.sql.slice(zapis.sql.indexOf("(") + 1, zapis.sql.indexOf(")"))
+    .split(",").map((k) => k.trim());
+  const i = kolumny.indexOf(kolumna);
+  if (i < 0) return { brak: true };
+
+  const odVALUES = zapis.sql.slice(zapis.sql.indexOf("VALUES"));
+  const tuple = odVALUES.slice(odVALUES.indexOf("(") + 1, odVALUES.lastIndexOf(")"));
+  // Podzial po przecinkach spoza nawiasow: CASE WHEN ... END niesie wlasne.
+  const pola = [];
+  let glebokosc = 0;
+  let biezace = "";
+  for (const znak of tuple) {
+    if (znak === "(") glebokosc++;
+    if (znak === ")") glebokosc--;
+    if (znak === "," && glebokosc === 0) { pola.push(biezace.trim()); biezace = ""; continue; }
+    biezace += znak;
+  }
+  pola.push(biezace.trim());
+
+  const pole = pola[i];
+  if (pole === undefined) return { brak: true };
+  const m = pole.match(/^\$(\d+)/);
+  return m ? { wartosc: zapis.params[Number(m[1]) - 1] } : { literal: pole };
+}
 const indeks = (log, wzor) => log.findIndex((z) => wzor.test(z.sql));
 
 console.log("\n1. Kazdy parametr ma swoje miejsce w zapytaniu\n");
@@ -91,8 +127,10 @@ console.log("\n1. Kazdy parametr ma swoje miejsce w zapytaniu\n");
   if (zamowienie.params[4] === 50000 + 1949) ok("suma to kwota oferty powiekszona o dostawe");
   else zle(`suma wyszla ${zamowienie.params[4]} zamiast ${50000 + 1949}`);
 
-  if (zamowienie.params.at(-2) instanceof Date) ok("zgoda na regulamin zapisana z data");
+  if (wartoscKolumny(zamowienie, "accepted_terms_at").wartosc instanceof Date) ok("zgoda na regulamin zapisana z data");
   else zle("zgoda na regulamin nie zostala zapisana");
+  if (wartoscKolumny(zamowienie, "waived_withdrawal_at").wartosc instanceof Date) ok("zrzeczenie sie odstapienia zapisane z data");
+  else zle("zrzeczenie sie odstapienia nie zostalo zapisane");
 }
 
 console.log("\n2. Bez zgody nie ma daty zgody\n");
@@ -104,7 +142,8 @@ console.log("\n2. Bez zgody nie ma daty zgody\n");
     consents: null,
   });
   const zamowienie = znajdz(pool.log, /INSERT INTO orders/);
-  if (zamowienie.params.at(-2) === null && zamowienie.params.at(-1) === null) ok("brak zgody zostaje pusty, nic sie nie domyslamy");
+  if (wartoscKolumny(zamowienie, "accepted_terms_at").wartosc === null
+      && wartoscKolumny(zamowienie, "waived_withdrawal_at").wartosc === null) ok("brak zgody zostaje pusty, nic sie nie domyslamy");
   else zle("puste zgody zapisaly sie jako udzielone");
 }
 

@@ -21,7 +21,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Loader2, Tag, Check, AlertTriangle, ShieldCheck, ArrowRight } from "lucide-react";
+import { Loader2, Tag, Check, AlertTriangle, ShieldCheck, ArrowRight, Coins } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import LockerPicker from "../components/shop/LockerPicker.jsx";
@@ -29,7 +29,8 @@ import CustomerFields, { ValidatedField as Field } from "../components/shop/Cust
 import { validateCustomer } from "../shop/customerFields.js";
 import { DELIVERY_METHODS } from "../data/orderCatalog.js";
 import { shippingOptions, SHIPPING_COUNTRIES, leadDaysLabel } from "../pricing/shipping.js";
-import { useMoney } from "../shop/money.js";
+import { useMoney, formatPln, formatEur } from "../shop/money.js";
+import { TRANSFER_HOLD_BUSINESS_DAYS } from "../pricing/businessDays.js";
 
 const API = import.meta.env.VITE_CHAT_API_URL;
 
@@ -69,6 +70,22 @@ const UI = {
     variants: "Warianty do wyboru",
     variantsLead: "Przygotowaliśmy kilka wariantów. Zaznacz ten, który wybierasz, a kwota do zapłaty dopasuje się do niego. Wybór możesz zmienić aż do zapłaty.",
     pickOneHere: "Wybierz jedną pozycję",
+    currencyTitle: "Waluta zapłaty",
+    currencyLead: "Kwota jest ta sama, zmienia się tylko waluta i droga zapłaty. Wybór dotyczy całej oferty.",
+    currencyPln: "Złotówki, BLIK albo przelew online",
+    currencyEur: "Euro, przelew na nasz rachunek walutowy",
+    currencyRate: "Przeliczone po kursie {rate} zł za euro z dnia dzisiejszego. Kwotę zamrażamy w chwili złożenia zamówienia.",
+    howTransfer: "Jak przebiega zapłata przelewem",
+    tr1: "Składasz zamówienie tutaj. Kwota w euro i kurs zostają zamrożone w tej chwili.",
+    tr2: "Dostajesz stronę zamówienia z numerem rachunku, kwotą i tytułem przelewu. To samo idzie mailem.",
+    tr3: "Robisz przelew w swoim banku. Tytułem jest numer zamówienia, po nim rozpoznajemy wpłatę.",
+    tr4: "Księgujemy wpłatę ręcznie, zwykle następnego dnia roboczego. Dostajesz potwierdzenie.",
+    tr5: "Zaczynamy pracę. Od tej chwili zamówienie idzie tą samą drogą co każde inne.",
+    trHold: "Kwota i kurs obowiązują {days} dni robocze. Po tym czasie zamówienie wygasa, a ofertę wystawiamy na nowo.",
+    howInstant: "Jak przebiega zapłata w złotówkach",
+    in1: "Składasz zamówienie tutaj i przechodzisz do bramki płatniczej.",
+    in2: "Płacisz BLIK-iem albo przelewem online, w swoim banku.",
+    in3: "Potwierdzenie wraca do nas w kilka sekund i zamówienie od razu trafia do pracowni.",
     optionsHere: "Dodatki, jeśli chcesz",
     perPc: "za sztukę",
     pcs: "szt.",
@@ -127,6 +144,22 @@ const UI = {
     variants: "Choose a variant",
     variantsLead: "We prepared several variants. Tick the one you want and the amount to pay follows it. You can change the choice up until payment.",
     pickOneHere: "Pick one item",
+    currencyTitle: "Payment currency",
+    currencyLead: "The amount stays the same, only the currency and the way you pay change. The choice covers the whole offer.",
+    currencyPln: "Zloty, BLIK or an online transfer",
+    currencyEur: "Euro, transfer to our currency account",
+    currencyRate: "Converted at {rate} zloty per euro, today's rate. The amount is locked when you place the order.",
+    howTransfer: "How paying by transfer works",
+    tr1: "You place the order here. The euro amount and the rate are locked at that moment.",
+    tr2: "You get an order page with the account number, the amount and the payment title. The same goes out by email.",
+    tr3: "You make the transfer in your bank. The title is the order number, that is how we recognise the payment.",
+    tr4: "We book the payment by hand, usually on the next working day. You get a confirmation.",
+    tr5: "We start the work. From here the order follows the same path as any other.",
+    trHold: "The amount and the rate hold for {days} business days. After that the order expires and we issue the offer again.",
+    howInstant: "How paying in zloty works",
+    in1: "You place the order here and go to the payment gateway.",
+    in2: "You pay with BLIK or an online transfer, in your own bank.",
+    in3: "The confirmation reaches us within seconds and the order goes straight to the workshop.",
     optionsHere: "Add-ons, if you want them",
     perPc: "per piece",
     pcs: "pcs",
@@ -185,6 +218,22 @@ const UI = {
     variants: "Varianten zur Auswahl",
     variantsLead: "Wir haben mehrere Varianten vorbereitet. Wählen Sie die gewünschte aus, der zu zahlende Betrag folgt ihr. Die Auswahl können Sie bis zur Zahlung ändern.",
     pickOneHere: "Wählen Sie eine Position",
+    currencyTitle: "Zahlungswährung",
+    currencyLead: "Der Betrag bleibt gleich, nur die Währung und der Zahlweg ändern sich. Die Wahl gilt für das ganze Angebot.",
+    currencyPln: "Zloty, BLIK oder Online-Überweisung",
+    currencyEur: "Euro, Überweisung auf unser Währungskonto",
+    currencyRate: "Umgerechnet zum heutigen Kurs von {rate} Zloty je Euro. Den Betrag frieren wir bei der Bestellung ein.",
+    howTransfer: "So läuft die Zahlung per Überweisung",
+    tr1: "Sie bestellen hier. Eurobetrag und Kurs werden in diesem Moment eingefroren.",
+    tr2: "Sie erhalten eine Bestellseite mit Kontonummer, Betrag und Verwendungszweck. Dasselbe geht per E-Mail raus.",
+    tr3: "Sie überweisen in Ihrer Bank. Der Verwendungszweck ist die Bestellnummer, daran erkennen wir die Zahlung.",
+    tr4: "Wir buchen die Zahlung von Hand, meist am nächsten Werktag. Sie bekommen eine Bestätigung.",
+    tr5: "Wir beginnen die Arbeit. Ab hier läuft die Bestellung wie jede andere.",
+    trHold: "Betrag und Kurs gelten {days} Werktage. Danach verfällt die Bestellung und wir stellen das Angebot neu aus.",
+    howInstant: "So läuft die Zahlung in Zloty",
+    in1: "Sie bestellen hier und gehen zum Zahlungs-Gateway.",
+    in2: "Sie zahlen mit BLIK oder per Online-Überweisung in Ihrer Bank.",
+    in3: "Die Bestätigung erreicht uns in Sekunden und die Bestellung geht direkt in die Werkstatt.",
     optionsHere: "Zusätze, wenn Sie mögen",
     perPc: "pro Stück",
     pcs: "Stk.",
@@ -264,7 +313,8 @@ function Wiersz({ it, money, u, bezIlosci = false }) {
 export default function Offer() {
   const { lang } = useLanguage();
   const u = UI[lang] || UI.pl;
-  const { money } = useMoney();
+  const { money: moneyPrzegladarki, rate, setCurrency: ustawWaluteSklepu } = useMoney();
+
   const [params, setParams] = useSearchParams();
 
   const ref = params.get("ref") || "";
@@ -324,6 +374,15 @@ export default function Offer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ref, token, odswiez]);
 
+  // Kwoty tej strony ida za waluta OFERTY, a nie za ustawieniem sklepu: oferta
+  // jest dokumentem handlowym i ma jedna walute, te sama w mailu, na ekranie
+  // i w przelewie.
+  const walutaOferty = offer?.currency || null;
+  const kursOferty = offer?.eurRate || rate;
+  const money = walutaOferty
+    ? (grosze) => (walutaOferty === "EUR" ? formatEur(grosze, kursOferty, lang) : formatPln(grosze, lang))
+    : moneyPrzegladarki;
+
   // Pozycje w kartach. Rachunek osobno, a kazda karta to jedna grupa: warianty,
   // z ktorych klient bierze jeden, i dodatki, ktore da sie do nich dolozyc.
   const uklad = useMemo(() => {
@@ -370,6 +429,23 @@ export default function Offer() {
     // ktorej serwer nie potwierdzi przy skladaniu zamowienia.
     setDiscount(null);
     setCodeError(null);
+    setOdswiez((n) => n + 1);
+  }
+
+  async function zmienWalute(waluta) {
+    if (choosing || waluta === walutaOferty) return;
+    setChoosing(true);
+    setChooseError(null);
+    const r = await postJSON(`${API}/api/quotes/${encodeURIComponent(ref)}/currency`, { token, currency: waluta });
+    setChoosing(false);
+    if (!r.ok) { setChooseError(r.data?.error || u.errorGeneric); return; }
+    // Znizka byla policzona w poprzedniej walucie i w poprzedniej drodze
+    // zaplaty, wiec przestaje obowiazywac razem z nimi.
+    setDiscount(null);
+    setCodeError(null);
+    // Sklep idzie za oferta: klient, ktory wybral tu euro, ma potem widziec
+    // euro takze w koszyku, zamiast wracac do cen liczonych inaczej.
+    ustawWaluteSklepu(waluta);
     setOdswiez((n) => n + 1);
   }
 
@@ -433,6 +509,13 @@ export default function Offer() {
     if (!created.ok) {
       setError(created.data?.error || `${u.errorGeneric} (${created.status})`);
       setPaying(false);
+      return;
+    }
+
+    // Przelew nie ma bramki. Zamowienie jest zlozone, wiec prowadzimy klienta
+    // na strone zamowienia: tam stoi numer rachunku, kwota w euro i tytul.
+    if (created.data.paymentMethod === "bank_transfer") {
+      window.location.assign(`/order/status/?ref=${created.data.orderRef}&token=${created.data.token}`);
       return;
     }
 
@@ -629,6 +712,75 @@ export default function Offer() {
 
               {!zaplacone && !offer.expired && (
                 <>
+                  {/* --- waluta i droga zaplaty ----------------------------- */}
+                  {/* Waluta dotyczy CALEJ oferty i zmienia droge zaplaty, wiec
+                      stoi przed kodem rabatowym i przed dostawa: to pierwsza
+                      decyzja, a nie ozdoba na koncu formularza. */}
+                  <section className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
+                    <h2 className="text-white font-semibold mb-1 flex items-center gap-2">
+                      <Coins className="w-4 h-4 text-amber-400" /> {u.currencyTitle}
+                    </h2>
+                    <p className="text-neutral-400 text-sm leading-relaxed mb-4">{u.currencyLead}</p>
+
+                    <div className="grid sm:grid-cols-2 gap-2">
+                      {[
+                        { kod: "PLN", opis: u.currencyPln },
+                        { kod: "EUR", opis: u.currencyEur },
+                      ].map((w) => (
+                        <button
+                          key={w.kod}
+                          type="button"
+                          onClick={() => zmienWalute(w.kod)}
+                          disabled={choosing}
+                          className={`p-3 rounded-lg border text-left transition-colors disabled:opacity-50 ${
+                            walutaOferty === w.kod
+                              ? "border-amber-400/50 bg-amber-400/[0.06]"
+                              : "border-white/10 hover:border-white/25"
+                          }`}
+                        >
+                          <span className="flex items-center justify-between gap-3">
+                            <span className={`text-sm font-medium ${walutaOferty === w.kod ? "text-amber-300" : "text-neutral-300"}`}>
+                              {w.kod}
+                            </span>
+                            <span className="text-white text-sm font-semibold">
+                              {w.kod === "EUR" ? formatEur(doZaplaty, kursOferty, lang) : formatPln(doZaplaty, lang)}
+                            </span>
+                          </span>
+                          <span className="block text-neutral-500 text-[11px] mt-1">{w.opis}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    {walutaOferty === "EUR" && kursOferty && (
+                      <p className="text-neutral-600 text-[11px] mt-3">
+                        {u.currencyRate.replace("{rate}", kursOferty.toFixed(4))}
+                      </p>
+                    )}
+
+                    <div className="mt-4 pt-4 border-t border-white/10">
+                      <h3 className="text-neutral-300 text-xs font-medium mb-2">
+                        {walutaOferty === "EUR" ? u.howTransfer : u.howInstant}
+                      </h3>
+                      <ol className="space-y-2">
+                        {(walutaOferty === "EUR"
+                          ? [u.tr1, u.tr2, u.tr3, u.tr4, u.tr5]
+                          : [u.in1, u.in2, u.in3]
+                        ).map((krok, n) => (
+                          <li key={n} className="flex gap-2.5 text-neutral-400 text-xs leading-relaxed">
+                            <span className="flex-shrink-0 w-5 h-5 rounded-full border border-white/15 text-[10px] text-neutral-300
+                                             flex items-center justify-center tabular-nums">{n + 1}</span>
+                            {krok}
+                          </li>
+                        ))}
+                      </ol>
+                      {walutaOferty === "EUR" && (
+                        <p className="text-neutral-600 text-[11px] mt-3">
+                          {u.trHold.replace("{days}", String(TRANSFER_HOLD_BUSINESS_DAYS))}
+                        </p>
+                      )}
+                    </div>
+                  </section>
+
                   {/* --- kod rabatowy --------------------------------------- */}
                   <section className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
                     <h2 className="text-white font-semibold mb-3 flex items-center gap-2">

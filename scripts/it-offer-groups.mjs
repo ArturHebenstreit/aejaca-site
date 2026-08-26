@@ -75,6 +75,42 @@ r = await updateQuote(pool, quoteRef, { items: [{ id: P[0].id, unitGrosze: 4100 
 r = await updateQuote(pool, quoteRef, { items: [{ id: P[0].id, unitGrosze: 4200 }] });
 ok("zapis bez pol terminu nie rusza terminu", dzien(r.validUntil) === "2026-12-31", String(r.validUntil));
 
+// --- 2b. Waluta oferty -----------------------------------------------------
+{
+  const niemiecka = await createQuote(pool, {
+    email: "de@aejaca.com", lang: "de", source: "email",
+    items: [{ title: "Odlew sygnetu" }],
+  });
+  const q = await getQuoteByRef(pool, niemiecka.quoteRef);
+  ok("niemiecka wycena zaczyna od euro", q.currency === "EUR", String(q.currency));
+
+  const polska = await getQuoteByRef(pool, quoteRef);
+  ok("polska wycena zaczyna od zlotowek", polska.currency === "PLN", String(polska.currency));
+
+  await updateQuote(pool, quoteRef, { currency: "EUR" });
+  ok("panel zmienia walute oferty", (await getQuoteByRef(pool, quoteRef)).currency === "EUR");
+
+  let blad = null;
+  try { await updateQuote(pool, quoteRef, { currency: "USD" }); } catch (e) { blad = e; }
+  ok("waluta spoza listy jest odrzucana", blad?.code === "bad_currency", blad?.message || "brak bledu");
+  await updateQuote(pool, quoteRef, { currency: "PLN" });
+}
+
+// --- 2c. Liczba dni pokazana w panelu nie przesuwa terminu ------------------
+// Pole "Wazna przez, dni" pokazuje teraz liczbe dni, ktora zostala. Zapis tej
+// samej liczby MUSI dawac te sama date, inaczej kazda poprawka literowki
+// przedluzalaby oferte.
+{
+  await updateQuote(pool, quoteRef, { validDays: "21" });
+  const przed = await getQuoteByRef(pool, quoteRef);
+  const dzisiaj = new Date(new Date().toISOString().slice(0, 10));
+  const zostalo = Math.round((new Date(dzien(przed.valid_until)) - dzisiaj) / 86400000);
+  await updateQuote(pool, quoteRef, { validDays: String(zostalo) });
+  const po = await getQuoteByRef(pool, quoteRef);
+  ok("zapis pokazanej liczby dni nie przesuwa terminu", dzien(po.valid_until) === dzien(przed.valid_until),
+     `${dzien(przed.valid_until)} -> ${dzien(po.valid_until)}, pokazane ${zostalo} dni`);
+}
+
 // --- 3. Zmiana domyslnego zaznaczenia w grupie -----------------------------
 const Q = await poz();
 r = await updateQuote(pool, quoteRef, {
@@ -100,6 +136,53 @@ const stan = await getQuoteByRef(pool, quoteRef);
 ok("zaznaczenie w pierwszej grupie zostalo nietkniete", selectedQuoteItems(stan).map((i) => Number(i.id)).join(",") === [Q[1].id, Q[2].id, Q[3].id].map(Number).join(","),
    selectedQuoteItems(stan).map((i) => i.title).join(" + "));
 ok("kwota naglowka zgadza sie z ukladem", stan.total_grosze === quoteAmountGrosze(stan), `${stan.total_grosze} vs ${quoteAmountGrosze(stan)}`);
+
+// --- 5. Zapis pojedynczego rekordu, tak jak robi to panel -------------------
+// Edytor wycen nie ma juz przycisku "zapisz": kazda pozycja idzie do bazy
+// osobnym zadaniem, a naglowek oferty wlasnym. Zadanie niesie WYLACZNIE pola,
+// ktore sie zmienily, wiec musimy sprawdzic, ze reszta zostaje nietknieta.
+{
+  const P = await poz();
+
+  // 5a. Sam przelacznik wyboru, bez zadnego innego pola.
+  await updateQuote(pool, quoteRef, { items: [{ id: P[0].id, selected: true }] });
+  const poWyborze = await getQuoteByRef(pool, quoteRef);
+  const klucz = poWyborze.items.filter((i) => i.group_key === "klucz" && i.kind === "variant");
+  ok("klikniecie w wariant przestawia wybor w grupie",
+     klucz.find((i) => Number(i.id) === Number(P[0].id))?.selected === true
+     && klucz.filter((i) => i.selected).length === 1,
+     klucz.map((i) => `${i.title}:${i.selected}`).join(" "));
+
+  // 5b. Sama nazwa: kwota, rodzaj i grupa maja zostac takie, jakie byly.
+  const przed = (await poz())[0];
+  await updateQuote(pool, quoteRef, { items: [{ id: przed.id, title: "Wydruk klucz 56 mm, poprawiony" }] });
+  const po = (await poz())[0];
+  ok("zapis samej nazwy nie rusza kwoty ani rodzaju",
+     po.title === "Wydruk klucz 56 mm, poprawiony" && po.unit_grosze === przed.unit_grosze
+     && po.kind === przed.kind && po.group_key === przed.group_key,
+     `${po.title} / ${po.unit_grosze} / ${po.kind} / ${po.group_key}`);
+
+  // 5c. Nowa pozycja jednym zadaniem, tak jak po zatwierdzeniu ptaszkiem.
+  const ileBylo = (await poz()).length;
+  await updateQuote(pool, quoteRef, { items: [{ title: "Grawer wewnatrz", qty: 1, unitGrosze: 5000, kind: "fixed" }] });
+  const poDodaniu = await poz();
+  ok("nowa pozycja dopisuje sie jednym zadaniem", poDodaniu.length === ileBylo + 1
+     && poDodaniu[poDodaniu.length - 1].title === "Grawer wewnatrz");
+
+  // 5d. Sam naglowek: notatka bez dotykania pozycji.
+  const przedNotatka = await poz();
+  await updateQuote(pool, quoteRef, { note: "Cena obejmuje kruszec i robocizne." });
+  const poNotatce = await getQuoteByRef(pool, quoteRef);
+  ok("zapis naglowka nie rusza pozycji",
+     poNotatce.price_note === "Cena obejmuje kruszec i robocizne."
+     && poNotatce.items.length === przedNotatka.length);
+
+  // 5e. Usuniecie pojedynczej pozycji.
+  const doUsuniecia = poDodaniu[poDodaniu.length - 1];
+  await updateQuote(pool, quoteRef, { items: [{ id: doUsuniecia.id, remove: true }] });
+  ok("usuniecie jednej pozycji zabiera dokladnie ja",
+     (await poz()).every((i) => Number(i.id) !== Number(doUsuniecia.id)));
+}
 
 await pool.end();
 console.log(zle ? `\n${zle} bledow\n` : "\nWszystko sie zgadza\n");

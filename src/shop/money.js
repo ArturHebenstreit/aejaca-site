@@ -1,14 +1,18 @@
 // ============================================================
 // KWOTY W SKLEPIE
 // ============================================================
-// Cena zrodlowa zawsze jest w groszach PLN, bo w tej walucie rozliczamy
-// platnosc i taka kwota trafia do bazy. Euro jest wylacznie warstwa
-// wyswietlania dla en/de, przeliczana po kursie NBP z /api/market-rates.
-// Dzieki temu zmiana kursu miedzy dodaniem do koszyka a zaplata nie ma
-// wplywu na to, ile klient realnie placi.
+// Cena zrodlowa zawsze jest w groszach PLN, bo w tej walucie liczy nasz silnik
+// i taka kwota trafia do bazy. Euro jest warstwa wyswietlania, przeliczana po
+// kursie NBP z /api/market-rates. Dzieki temu zmiana kursu miedzy dodaniem do
+// koszyka a zaplata nie ma wplywu na to, ile klient realnie placi.
+//
+// O tym, ktora walute widzi klient, decyduje JEGO WYBOR, a domyslem jest waluta
+// jezyka (CurrencyContext). Wczesniej decydowal sam jezyk, wiec Polak z kontem
+// w euro i Niemiec z polska karta nie mieli jak zaplacic po swojemu.
 
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useMarketRates } from "../hooks/useMarketRates.js";
+import { useCurrency } from "./CurrencyContext.jsx";
 import { eurCentsFromGrosze, FALLBACK_PLN_PER_EUR } from "../pricing/currency.js";
 
 const LOCALES = { pl: "pl-PL", en: "en-IE", de: "de-DE" };
@@ -48,11 +52,14 @@ export function eurCents(grosze, plnPerEur) {
 export function useMoney() {
   const { lang } = useLanguage();
   const { rates } = useMarketRates();
-  const showEur = lang === "en" || lang === "de";
+  const { currency, setCurrency } = useCurrency();
+  const showEur = currency === "EUR";
   const rate = rates.pln_per_eur || FALLBACK_PLN_PER_EUR;
 
   return {
     showEur,
+    currency,
+    setCurrency,
     rate,
     lang,
     money: (grosze) => (showEur ? formatEur(grosze, rate, lang) : formatPln(grosze, lang)),

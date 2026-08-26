@@ -51,11 +51,11 @@ console.log("\n1. Trasy istnieja pojedynczo\n");
   }
   ma(SERWER, /app\.post\("\/api\/quotes\/:ref\/update"[\s\S]{0,200}?requireAdmin\(req, res\)/, "edycja wymaga zalogowanego pracownika");
   ma(SERWER, /app\.delete\("\/api\/quotes\/:ref"[\s\S]{0,300}?requireAdmin\(req, res\)/, "usuwanie wymaga zalogowanego pracownika");
-  // Formularz panelu jest jeden, wiec i trasa zapisu jest jedna. Druga sciezka
-  // do kwot znaczylaby druga regule ich sprawdzania.
-  const ile = (PANEL.match(/app\.post\("\/quotes\/:ref\/edit"/g) || []).length;
-  if (ile === 1) ok("panel zapisuje cala oferte jedna trasa");
-  else zle(`tras zapisu oferty w panelu jest ${ile}`);
+  // Zapis idzie na poziomie rekordu: pozycja i naglowek maja po jednej trasie.
+  // Trzecia droga do kwot znaczylaby trzecia regule ich sprawdzania.
+  const trasyZapisu = (PANEL.match(/app\.post\("\/quotes\/:ref\/(item|header)"/g) || []).length;
+  if (trasyZapisu === 2) ok("panel zapisuje wycene dwiema trasami: pozycja i naglowek");
+  else zle(`tras zapisu wyceny w panelu jest ${trasyZapisu}`);
 }
 
 console.log("\n2. Wycena, ktora stala sie zamowieniem, jest zamknieta\n");
@@ -98,46 +98,66 @@ console.log("\n3. Kwoty ida za iloscia i maja jedna regule\n");
   ma(glowa, /poz\.unitGrosze === undefined/, "przy nowej kwocie wartosc pozycji nie liczy sie drugi raz ze starej");
   ma(glowa, /stan = quote\.status === "new" \? "priced" : quote\.status/, "pierwsza kwota czyni z zapytania oferte");
   ma(glowa, /validDays/, "termin waznosci da sie podac w dniach, bez wpisywania kwot od nowa");
+  ma(glowa, /swiezoZaznaczone/, "zaznaczenie z biezacego zapisu wygrywa z zastanym");
 }
 
-console.log("\n4. Formularz panelu nie rozjezdza tablic\n");
+console.log("\n4. Zapis na poziomie rekordu, bez przycisku zapisz\n");
 {
-  // Pole zaznaczane wysyla sie WYLACZNIE zaznaczone, wiec o usunieciu ani
-  // o wyborze nie moze decydowac sama obecnosc pola w zadaniu.
-  ma(WIDOK, /name="removeId" value="<%= it\.id %>"/, "krzyzyk niesie numer pozycji do usuniecia w wartosci");
-  ma(WIDOK, /data-usun=/, "krzyzyk pyta o potwierdzenie przed usunieciem");
-  ma(WIDOK, /window\.confirm\(b\.dataset\.usun\)/, "potwierdzenie usuniecia jest wpiete w skrypt widoku");
-  ma(WIDOK, /data-edytuj/, "olowek otwiera pola pozycji");
-  if (/name="itemAction"/.test(WIDOK)) zle("w wierszu pozycji zostala lista 'co zrobic', a mialy ja zastapic ikony");
-  else ok("lista 'co zrobic' zniknela z wiersza pozycji");
+  // Rekord to jedna pozycja albo naglowek oferty. Olowek otwiera, zielony
+  // ptaszek wysyla do bazy. Zapis po kazdym znaku wkladalby do bazy stany
+  // niedokonczone ("Wydruk klu", cena 4 grosze), a przy ofercie juz wyslanej
+  // widzialby je klient na swojej stronie.
+  ma(WIDOK, /data-rekord="naglowek"/, "naglowek oferty jest osobnym rekordem");
+  ma(WIDOK, /data-rekord="pozycja" data-id="<%= it\.id %>"/, "kazda pozycja jest rekordem z wlasnym identyfikatorem");
+  ma(WIDOK, /data-edytuj/, "olowek otwiera rekord do edycji");
+  ma(WIDOK, /data-zapisz disabled/, "ptaszek jest nieczynny, dopoki rekord nie jest otwarty");
+  ma(WIDOK, /data-anuluj hidden/, "odrzucenie zmian pokazuje sie dopiero przy edycji");
+  ma(WIDOK, /data-dodaj/, "pozycje dodaje sie przyciskiem, a nie pustym wierszem na zapas");
 
-  ma(WIDOK, /type="radio" name="pickGroup_<%= nrKarty\(it\) %>" value="<%= i %>"/, "przelacznik wariantu niesie numer wiersza w wartosci");
-  ma(WIDOK, /type="checkbox" name="optionOn" value="<%= i %>"/, "pole dodatku niesie numer wiersza w wartosci");
-  ma(WIDOK, /name="itemUnitPln"/, "kwota stoi przy pozycji, w tym samym formularzu");
-  ma(WIDOK, /name="validDays"/, "waznosc oferty ustawia sie w tym samym formularzu");
+  // Stary formularz wysylal wszystkie pozycje naraz w tablicach i to z niego
+  // brala sie awaria "znika nie ten wiersz". Tablic juz nie ma.
+  if (/name="itemId"/.test(WIDOK)) zle("w widoku zostaly tablice formularza, wrocila awaria rozjezdzajacych sie indeksow");
+  else ok("w widoku nie ma juz tablic formularza");
+  if (/Zapisz ofertę|Zapisz kwoty/.test(WIDOK)) zle("w widoku zostal przycisk zbiorczego zapisu");
+  else ok("nie ma przycisku zbiorczego zapisu");
 
-  // Rodzaj i grupa decyduja o calym ukladzie oferty, wiec nie moga siedziec
-  // pod ikona: wlasciciel patrzyl na ekran i nie widzial, gdzie je ustawic.
-  const wiersz = WIDOK.slice(WIDOK.indexOf('<div data-pozycja'), WIDOK.indexOf('<div data-edycja'));
-  ma(wiersz, /name="itemKind"/, "rodzaj pozycji stoi w widocznym wierszu, nie pod olowkiem");
-  ma(wiersz, /name="itemGroup"/, "grupa wyboru stoi w widocznym wierszu, nie pod olowkiem");
-  // Podpowiedz "14" w pustym polu wygladala jak zapisany termin i wracala po
-  // kazdym zapisie, cokolwiek by sie wpisalo.
-  if (/name="validDays"[^>]*placeholder="14"/.test(WIDOK)) zle("pole waznosci znowu podpowiada 14 dni, to wyglada jak zapisany termin");
-  else ok("pole waznosci nie udaje zapisanego terminu");
-  ma(WIDOK, /DNI_DO_KONCA/, "ekran mowi, ile dni zostalo do konca waznosci");
-  ma(WIDOK, /Grupa wyboru/, "grupa nazywa sie tak samo w formularzu i w objasnieniu");
+  // W trakcie edycji dziala wylacznie ptaszek: krzyzyk gasnie, zeby nie dalo
+  // sie skasowac wiersza w polowie wpisywania.
+  ma(WIDOK, /przyciski\.usun\.disabled = edycja/, "krzyzyk gasnie na czas edycji");
+  ma(WIDOK, /przyciski\.edytuj\.disabled = edycja/, "olowek gasnie na czas edycji");
+  ma(WIDOK, /przyciski\.zapisz\.disabled = !edycja/, "ptaszek zapala sie na czas edycji");
+  ma(WIDOK, /window\.confirm\(/, "krzyzyk pyta o potwierdzenie przed usunieciem");
+  ma(WIDOK, /beforeunload/, "wyjscie ze strony w trakcie edycji ostrzega");
 
-  ma(PANEL, /String\(id\) === doUsuniecia/, "panel czyta usuwana pozycje z wartosci przycisku");
-  ma(PANEL, /k === "optionOn" \|\| k\.startsWith\("pickGroup_"\)/, "panel zbiera zaznaczenia z obu rodzajow pol");
-  ma(PANEL, /\[\]\.concat\(req\.body\.itemId \|\| \[\]\)/, "panel zbiera identyfikatory pozycji w tablice");
-  // Kazde pole wiersza musi wysylac sie ZAWSZE, inaczej tablice po stronie
-  // panelu przestaja do siebie pasowac.
-  for (const pole of ["itemId", "itemTitle", "itemQty", "itemDescription", "itemUnitPln", "itemKind", "itemGroup"]) {
-    const ile = (WIDOK.match(new RegExp(`name="${pole}"`, "g")) || []).length;
-    if (ile === 1) ok(`pole ${pole} stoi w wierszu dokladnie raz`);
-    else zle(`pole ${pole} stoi w wierszu ${ile} razy, tablice sie rozjada`);
+  // Klikniecie w kolko albo kwadracik JEST cala decyzja, wiec idzie do bazy
+  // od razu. Odpowiedz serwera przepisuje stan wszystkich wierszy, bo to on
+  // gasi pozostale warianty w grupie.
+  ma(WIDOK, /data-wybor/, "wybor domyslny ma wlasna kontrolke w wierszu");
+  ma(WIDOK, /zapiszWybor/, "klikniecie w wybor zapisuje sie od razu");
+  ma(WIDOK, /dane\.items\.forEach/, "stan zaznaczen przepisuje sie z odpowiedzi serwera");
+
+  // Nowa pozycja trafia do bazy dopiero po zatwierdzeniu, inaczej kazde
+  // omylkowe klikniecie zostawialoby wiersz bez nazwy i bez kwoty.
+  ma(WIDOK, /nowy\.removeAttribute\("data-id"\)/, "nowa pozycja nie ma identyfikatora, dopoki nie zostanie zapisana");
+  ma(WIDOK, /rekord\.dataset\.id = dane\.items\[dane\.items\.length - 1\]\.id/, "zapisana pozycja dostaje identyfikator, wiec drugi zapis ja poprawia");
+
+  // Trasy panelu: JSON, bo wola je strona, a nie formularz.
+  for (const [wzor, nazwa] of [
+    [/app\.post\("\/quotes\/:ref\/item"/g, "POST /quotes/:ref/item"],
+    [/app\.post\("\/quotes\/:ref\/header"/g, "POST /quotes/:ref/header"],
+  ]) {
+    const ile = (PANEL.match(wzor) || []).length;
+    if (ile === 1) ok(`${nazwa}: dokladnie jedna trasa`);
+    else zle(`${nazwa}: tras jest ${ile}`);
   }
+  ma(PANEL, /app\.post\("\/quotes\/:ref\/item", requireAuth/, "zapis pozycji wymaga zalogowanego pracownika");
+  ma(PANEL, /app\.post\("\/quotes\/:ref\/header", requireAuth/, "zapis naglowka wymaga zalogowanego pracownika");
+  // Pole pominiete w zadaniu ma zostac nietkniete: zapis jednego przelacznika
+  // nie moze skasowac opisu, ktorego to zadanie nie nioslo.
+  ma(PANEL, /if \(poz\.title !== undefined\) item\.title = poz\.title/, "zapis pozycji rusza wylacznie pola, ktore przyszly");
+  ma(PANEL, /if \(b\.validUntil !== undefined\) patch\.validUntil = b\.validUntil/, "zapis naglowka rusza wylacznie pola, ktore przyszly");
+  if (/app\.post\("\/quotes\/:ref\/edit"/.test(PANEL)) zle("zostala stara trasa zbiorczego zapisu, sa wiec dwie drogi do kwot");
+  else ok("do zapisu wyceny prowadzi jedna droga");
 }
 
 console.log("\n5. Uklad oferty: wariant z grupy, dodatek obok\n");
@@ -258,7 +278,7 @@ console.log("\n7. Wersje panelu i backendu widac z ekranu\n");
   ma(NAGLOWEK, /api v/, "naglowek pokazuje wersje backendu sklepu");
   // Zapytanie o wersje nie moze wstrzymywac strony panelu ani jej wywalac,
   // gdy backend sklepu nie odpowiada.
-  ma(PANEL, /shopApi\("\/api\/version"\)[\s\S]{0,400}?\.catch\(/, "brak odpowiedzi backendu nie wywala panelu");
+  ma(PANEL, /shopApi\("\/api\/version"\)[\s\S]{0,900}?\.catch\(/, "brak odpowiedzi backendu nie wywala panelu");
   if (/await shopApi\("\/api\/version"\)/.test(PANEL)) zle("panel czeka na wersje backendu przy kazdym zadaniu");
   else ok("wersja backendu odswieza sie w tle");
 }

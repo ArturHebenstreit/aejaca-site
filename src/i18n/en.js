@@ -2,6 +2,8 @@ export default {
   // Navbar
   nav: {
     home: "Home",
+    currency: "Payment currency",
+    currencyHint: "Zloty goes through BLIK or an online transfer, euro by transfer to our currency account.",
     blog: "Blog",
     jewelry: "AEJaCA Jewelry",
     studio: "AEJaCA sTuDiO",

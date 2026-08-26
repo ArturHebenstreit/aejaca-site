@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-26 | Wersja: 6.1*
+*Wygenerowano: 2026-08-26 | Wersja: 6.3*
 
 ---
 
@@ -2223,6 +2223,45 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
   - **Stary przełącznik `pick_one` został śladem, nie mechanizmem.** Oferty wysłane przed tą
     zmianą działają dalej: migracja przepisuje ich pozycje na jedną grupę wariantów i przenosi
     wskazanie klienta. Pierwszy zapis z nowego edytora gasi flagę na trwałe.
+- **Walutę zapłaty wybiera klient** (od 2026-08-26, ADR-0018). Do tej pory rozstrzygał ją język
+  strony, a backend odmawiał przelewu każdemu, kto czytał po polsku. Waluta wynika z tego, **gdzie
+  klient trzyma pieniądze**, a nie z tego, w jakim języku czyta: Polak mieszkający w Niemczech
+  i Niemiec z polską kartą to prawdziwi ludzie, a wcześniej żaden z nich nie miał jak zapłacić
+  po swojemu.
+  - **Język podpowiada, nigdy nie narzuca.** `CURRENCY_BY_LANG` w `src/pricing/currency.js`: pl to
+    PLN, en i de to EUR. Klient przestawia walutę w menu języka, w kasie i na stronie oferty;
+    wybór pamięta przeglądarka i zmiana języka już go nie kasuje.
+  - **Waluta wybiera drogę zapłaty.** PLN idzie bramką (BLIK, pay-by-link), EUR przelewem SEPA
+    na rachunek walutowy z ręcznym księgowaniem. To nie jest wygoda, tylko jedyna droga, którą
+    mamy: umowa z operatorem bramki nie obejmuje euro, więc `Currency = "PLN"` w `autopay.js`
+    zostaje na sztywno. Osobny przełącznik „sposób płatności" przez to zniknął: jedna decyzja
+    zamiast dwóch, które i tak musiały się zgadzać.
+  - **Oferta ma jedną walutę dla całej siebie** (`quotes.currency`). Rachunek złożony z dwóch walut
+    nie ma jak się zsumować, a przelew wychodzi z jednego konta. Panel ustawia ją przy zakładaniu
+    wyceny, klient zmienia u siebie.
+  - **Źródłem ceny zostają grosze PLN.** Euro liczy się z nich po kursie NBP i narzucie
+    `EUR_FX_MARGIN`, a kwota w euro **zamraża się razem z kursem dopiero przy składaniu
+    zamówienia**, na `TRANSFER_HOLD_BUSINESS_DAYS` dni roboczych. Rabat schodzi z obu kwot naraz,
+    inaczej klient przelałby cenę sprzed rabatu.
+  - **Procedura jest pokazana, nie opowiedziana.** `/payments/` ma diagram dwóch dróg na osi czasu:
+    co dzieje się teraz, co w kilka sekund, a co następnego dnia roboczego. Skrót tego samego stoi
+    przy wyborze waluty na stronie oferty. Liczba dni roboczych bierze się ze stałej, nie z pamięci.
+- **Edytor wycen nie ma przycisku „zapisz"** (od 2026-08-26, ADR-0019). Zapis idzie na poziomie
+  **rekordu**, a rekordem jest jedna pozycja albo nagłówek oferty (klient, język, waluta, termin,
+  treść zapytania, notatka). Ołówek otwiera rekord, zielony ptaszek wysyła go do bazy jednym
+  żądaniem, strzałka odrzuca zmiany; na czas edycji ołówek i krzyżyk gasną, żeby nie dało się
+  skasować wiersza w połowie wpisywania.
+  - **Przełącznik i pole zaznaczane zapisują się od razu po kliknięciu.** Kliknięcie jest całą
+    decyzją, nie ma stanu pośredniego i nie ma czego zatwierdzać.
+  - **Zapis po każdym znaku został odrzucony świadomie.** Nie chodzi o liczbę zapytań, choć różnica
+    jest dziesięciokrotna: chodzi o to, że każdy taki zapis wkłada do bazy stan niedokończony,
+    a przy ofercie już wysłanej pokazuje go klientowi. Kwota `4` widziana przez kogoś, kto akurat
+    odświeżył stronę oferty, to obietnica czterech groszy.
+  - **Nowa pozycja powstaje w przeglądarce** i trafia do bazy dopiero po zatwierdzeniu, bo zapis
+    pustego wiersza przy każdym kliknięciu zostawiałby pozycje bez nazwy i bez kwoty.
+  - **Każde żądanie niesie wyłącznie pola, które się zmieniły**, więc zapis jednego przełącznika
+    nie kasuje opisu. Trasy: `POST /quotes/:ref/item` i `POST /quotes/:ref/header`, obie JSON.
+    Stara trasa zbiorczego zapisu zniknęła: do kwot prowadzi jedna droga.
 - **Nagłówek panelu pokazuje wersję panelu i backendu sklepu** (od 2026-08-26). Obie usługi
   wdrażają się osobno, więc przez chwilę nowy formularz rozmawia ze starym backendem i po cichu
   gubi pola, których tamten nie zna. Na ekranie wygląda to identycznie jak błąd w kodzie: widok
