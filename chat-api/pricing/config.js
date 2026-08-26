@@ -12,14 +12,25 @@
 // niczego z Reacta ani z katalogów spoza src/pricing i src/data.
 
 /**
- * Ile dni wazna jest oferta ustalona z czlowiekiem.
+ * Ile dni wiaze KAZDA wycena i kazda oferta, jesli nikt nie powie inaczej.
+ *
+ * Jedna liczba dla wszystkich drog: wyceny zapisanej z kalkulatora, oferty
+ * ulozonej recznie z rozmowy i tej ze skrzynki. Tydzien to tyle, ile realnie
+ * trwa decyzja klienta, i tyle, ile chcemy trzymac cene kruszcu bez
+ * zabezpieczenia; przy zlocie dluzszy termin bylibysmy zmuszeni doliczyc do
+ * ceny, a wolimy nie kazac wszystkim placic za czas, ktorego nie potrzebuja.
+ *
+ * Termin jest DOMYSLNY, nie sztywny. Administrator ustawia wlasny na
+ * konkretnej ofercie w panelu, a obowiazuje zawsze data zapisana przy tej
+ * ofercie, nie ta stala.
  *
  * Stoi w rdzeniu cenowym, a nie przy obsludze wycen, bo ta sama liczba jest
- * jednoczesnie obietnica handlowa na stronie "Proces platnosci". Wpisana
- * w dwoch miejscach rozjechalaby sie przy pierwszej zmianie, a klient
- * czytalby wtedy termin, ktorego system nie respektuje.
+ * jednoczesnie obietnica handlowa na stronie "Proces platnosci" i w
+ * regulaminie ("nie krocej niz 7 dni"). Wpisana w dwoch miejscach
+ * rozjechalaby sie przy pierwszej zmianie, a klient czytalby wtedy termin,
+ * ktorego system nie respektuje.
  */
-export const QUOTE_VALIDITY_DAYS = 14;
+export const QUOTE_VALIDITY_DAYS = 7;
 
 export const CONFIG = {
   EUR_PLN_RATE: 4.28,

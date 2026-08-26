@@ -24,7 +24,7 @@ import { priceItem } from "../chat-api/orders.js";
 import { runRetention } from "../chat-api/retention.js";
 import { SERVICES } from "../src/data/orderCatalog.js";
 
-const pool = new pg.Pool({ host: "/pgtest", port: 5433, user: "postgres", database: "aejaca_test" });
+const pool = new pg.Pool({ host: process.env.PGTEST_SOCKET || "/pgtest", port: Number(process.env.PGTEST_PORT) || 5433, user: "postgres", database: "aejaca_test" });
 
 let failed = 0;
 const ok = (name, cond, detail = "") => {
@@ -101,12 +101,15 @@ let ref, tokenA;
   ok("zapis bez adresu e-mail przechodzi", Boolean(ref), ref);
   ok("numer wyceny ma wlasciwy ksztalt", /^WY\d{8}-[A-Z0-9]{8}$/.test(ref), ref);
 
-  await priceQuote(pool, ref, [], null, 14).catch(() => {});
+  // Bez podanej liczby dni, zeby test sprawdzal DOMYSLNY termin z rdzenia
+  // cenowego, a nie liczbe wpisana w tescie. Wpisana wlasnie tak i ustawiona
+  // na 14 przezyla zmiane stalej na 7, nie mowiac o tym ani slowa.
+  await priceQuote(pool, ref, []).catch(() => {});
   const stored = await getQuoteByRef(pool, ref);
   await priceQuote(pool, ref, [
     { id: stored.items[0].id, unitGrosze: unitJewelry },
     { id: stored.items[1].id, unitGrosze: 5000 },
-  ], null, 14);
+  ]);
 }
 
 // ------------------------------------------------------------
@@ -125,7 +128,7 @@ let ref, tokenA;
 
   const validUntil = new Date(q.valid_until);
   const days = Math.round((validUntil - new Date()) / 86400_000);
-  ok("waznosc to 14 dni", days >= 13 && days <= 14, `${days} dni`);
+  ok("waznosc to 7 dni", days >= 6 && days <= 7, `${days} dni`);
 }
 
 // ------------------------------------------------------------

@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-26 | Wersja: 6.3*
+*Wygenerowano: 2026-08-26 | Wersja: 6.4*
 
 ---
 
@@ -1249,8 +1249,8 @@ w `robots.txt` ma `Disallow: /quote/` we wszystkich grupach.
 możliwość wrócenia do własnej kalkulacji zamieniłoby narzędzie w bramkę na dane, a część ludzi
 po prostu zamknęłaby kartę, czyli zrobiła dokładnie to, czemu mamy zapobiec.
 
-**Zasada cenowa: robocizna wiążąca 14 dni, kruszec z dnia otwarcia.** Blokada ceny złota na dwa
-tygodnie byłaby otwartą pozycją na rynku towarowym. Różnicy nie liczymy przez przeliczenie
+**Zasada cenowa: robocizna wiążąca przez cały termin, kruszec z dnia otwarcia.** Blokada ceny
+złota na cały ten okres byłaby otwartą pozycją na rynku towarowym. Różnicy nie liczymy przez przeliczenie
 pozycji od nowa, bo wtedy zmiana **naszego** cennika po cichu podniosłaby też obiecaną
 robociznę. Wyceniamy pozycję dwa razy, kursami z chwili zapisu i z dzisiaj, i do kwoty zapisanej
 dokładamy samą różnicę. Po terminie ważności nie przeliczamy nic.
@@ -2116,7 +2116,7 @@ Do koszyka nie trafia to, czego nie umiemy wycenic bez czlowieka, i mowimy o tym
 | Krok | Kto | Co sie dzieje |
 |---|---|---|
 | 1. zapytanie | klient | `POST /api/quotes`, pozycje z parametrami, opisem i plikiem, status `new` |
-| 2. wycena | AEJaCA | `POST /api/quotes/:ref/price` z kwotami per pozycja, status `priced`, wazna 14 dni |
+| 2. wycena | AEJaCA | `POST /api/quotes/:ref/price` z kwotami per pozycja, status `priced`, ważna 7 dni (`OFFER_VALIDITY_DAYS`) |
 | 3. zamowienie | AEJaCA | `POST /api/quotes/:ref/convert`, powstaje zamowienie `kind = quoted` w stanie `awaiting_payment` |
 | 4. zaplata | klient | dokladnie ta sama droga co zakup ze sklepu: Autopay, ITN, maile |
 
@@ -2246,6 +2246,21 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
   - **Procedura jest pokazana, nie opowiedziana.** `/payments/` ma diagram dwóch dróg na osi czasu:
     co dzieje się teraz, co w kilka sekund, a co następnego dnia roboczego. Skrót tego samego stoi
     przy wyborze waluty na stronie oferty. Liczba dni roboczych bierze się ze stałej, nie z pamięci.
+- **Każda wycena i każda oferta jest domyślnie ważna 7 dni** (`QUOTE_VALIDITY_DAYS`, ujednolicone
+  2026-08-26), a termin wchodzi **już przy zakładaniu numeru**, nie dopiero przy pierwszej kwocie.
+  Właściciel widzi go od razu w panelu i wie, co obiecuje, zamiast oglądać puste pole. Wpisanie kwot
+  **nie nadpisuje** tego terminu, więc ręcznie skrócony termin zostaje. Jedna liczba dla wszystkich
+  dróg, bo dwie stałe o tym samym znaczeniu rozjechałyby się przy pierwszej zmianie, a klient
+  czytałby wtedy termin, którego system nie respektuje. Tydzień to tyle, ile realnie trwa decyzja,
+  i tyle, ile chcemy trzymać cenę złota bez zabezpieczenia. **Termin jest domyślny, nie sztywny:**
+  administrator ustawia własny na konkretnej ofercie, a obowiązuje zawsze data zapisana przy niej.
+  Regulamin (§ „nie krócej niż 7 dni") i `llms.txt` mówią to samo.
+- **Dwa teksty oferty mają dwie role i dwie widownie** (nazwane wprost 2026-08-26).
+  **Opis oferty dla klienta** (`price_note`) to zakres: co wchodzi w kwotę, a czego w niej nie ma.
+  Idzie do klienta razem z kwotą i stoi na jego stronie pod pozycjami. **Treść zapytania**
+  (`message`) zostaje w panelu i klient jej nie widzi, bo bywa notatką z rozmowy pisaną skrótami
+  dla siebie, a nie dokumentem. Pola w panelu nazywają się teraz tak, jak działają, bo poprzednie
+  nazwy („notatka do oferty", „treść zapytania") nie mówiły, które z nich zobaczy klient.
 - **Edytor wycen nie ma przycisku „zapisz"** (od 2026-08-26, ADR-0019). Zapis idzie na poziomie
   **rekordu**, a rekordem jest jedna pozycja albo nagłówek oferty (klient, język, waluta, termin,
   treść zapytania, notatka). Ołówek otwiera rekord, zielony ptaszek wysyła go do bazy jednym

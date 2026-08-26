@@ -653,7 +653,7 @@ app.get("/health", (_req, res) => res.json({ ok: true }));
 // TRZECIEJ pozycji, zawsze dwucyfrowej: `1.1.01` -> `1.1.02`. Ta sama regula
 // co w `admin/wersja.js`. Numery obu uslug nie musza byc rowne: kazda zmienia
 // sie wtedy, gdy naprawde sie zmienia.
-const WERSJA_API = "1.1.01";
+const WERSJA_API = "1.1.02";
 
 app.get("/api/version", async (req, res) => {
   if (!requireAdmin(req, res)) return;
@@ -1655,6 +1655,9 @@ app.get("/api/quotes/:ref", async (req, res) => {
     savedTotalGrosze: quote.total_grosze,
     totalGrosze: doZaplaty,
     metalDeltaGrosze: metalDelta,
+    // `price_note` to OPIS OFERTY DLA KLIENTA: zakres, co wchodzi i czego nie ma.
+    // Tresc zapytania zostaje po stronie panelu, bo bywa notatka z rozmowy
+    // pisana skrotami dla siebie, a nie dokumentem dla klienta.
     priceNote: quote.price_note,
     validUntil: quote.valid_until,
     expired: Boolean(expired),

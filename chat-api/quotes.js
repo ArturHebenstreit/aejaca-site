@@ -74,16 +74,28 @@ export async function createQuote(pool, input) {
   // i przez samego klienta na stronie oferty.
   const currency = normalizeCurrency(input.currency, lang);
 
+  // Termin waznosci wchodzi JUZ TERAZ, przy zakladaniu numeru, a nie dopiero
+  // przy pierwszej kwocie. Wlasciciel widzi go wtedy od razu w panelu i wie,
+  // co obiecuje, zamiast ogladac puste pole i "termin nieustawiony".
+  //
+  // Termin dostaje KAZDA wycena, niezaleznie od drogi, i to juz przy zakladaniu
+  // numeru. Wycena zapisana z kalkulatora nadpisze go za chwile wlasnym z
+  // `priceQuote`, ale gdyby to wycenianie padlo w polowie, zostalby w bazie
+  // wiersz bez terminu, czyli oferta wiazaca nas bez konca.
+  const validUntil = new Date(Date.now() + QUOTE_VALIDITY_DAYS * 86400_000)
+    .toISOString().slice(0, 10);
+
   const { rows } = await pool.query(
     `INSERT INTO quotes (quote_ref, lang, currency, source, customer_email, customer_name, customer_phone,
-       message, access_token, ip_hash, rates_snapshot)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+       message, access_token, ip_hash, rates_snapshot, valid_until)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
      RETURNING id`,
     [quoteRef, lang, currency, input.source || "quote",
      input.email ? String(input.email).trim().toLowerCase() : null,
      input.name || null, input.phone || null,
      input.message || null, accessToken, input.ipHash || null,
-     input.ratesSnapshot ? JSON.stringify(input.ratesSnapshot) : null]
+     input.ratesSnapshot ? JSON.stringify(input.ratesSnapshot) : null,
+     validUntil]
   );
   const quoteId = rows[0].id;
 
