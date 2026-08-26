@@ -11,7 +11,7 @@ import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages 
 import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken, ringGeometryFromParams, RING_CALCULATORS } from "./orders.js";
 import { bindingBasis } from "./pricing/bindingBasis.js";
 import { OUTPUT_AVAILABLE } from "./pricing/ringConfigurator.js";
-import { createQuote, priceQuote, updateQuote, deleteQuote, chooseVariant, wybranyWariant, getQuoteByRef, convertQuoteToOrder, quoteItemsForDiscount, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
+import { createQuote, priceQuote, updateQuote, deleteQuote, chooseQuoteOption, selectedQuoteItems, quoteGroups, getQuoteByRef, convertQuoteToOrder, quoteItemsForDiscount, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
 import { extraRevisionGrosze, CAD_CONFIG } from "./pricing/cadDesign.js";
 import { GEMSTONES } from "./pricing/jewelryConfig.js";
 import {
@@ -236,6 +236,42 @@ if (pool) {
   // niesie kwote wybranego wariantu zamiast sumy pozycji.
   pool.query(`ALTER TABLE quotes ADD COLUMN IF NOT EXISTS pick_one BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
   pool.query(`ALTER TABLE quotes ADD COLUMN IF NOT EXISTS chosen_item_id BIGINT`).catch(() => {});
+
+  // Wybor ZESZEDL NA POZIOM POZYCJI. Flaga `pick_one` opisywala cala oferte,
+  // wiec albo wszystko bylo rachunkiem, albo wszystko alternatywa; "klucz
+  // 56 albo 68 mm, do tego opcjonalne polerowanie" nie mialo jak powstac.
+  // Teraz pozycja jest skladnikiem rachunku, wariantem w grupie albo dodatkiem.
+  //
+  // Te kroki ida PO SOBIE, a nie rownolegle jak reszta migracji: przepisanie
+  // starych ofert czyta kolumny zakladane wiersz wyzej.
+  (async () => {
+    await pool.query(`ALTER TABLE quote_items ADD COLUMN IF NOT EXISTS kind VARCHAR(10) NOT NULL DEFAULT 'fixed'`);
+    await pool.query(`ALTER TABLE quote_items ADD COLUMN IF NOT EXISTS group_key VARCHAR(40)`);
+    await pool.query(`ALTER TABLE quote_items ADD COLUMN IF NOT EXISTS selected BOOLEAN NOT NULL DEFAULT TRUE`);
+    // Stara oferta wielowariantowa to jedna grupa wariantow. Bez przepisania
+    // jej pozycje wygladalyby jak rachunek, a klient zobaczylby kwote za
+    // wszystkie propozycje naraz.
+    await pool.query(`
+      UPDATE quote_items i
+         SET kind = 'variant',
+             group_key = COALESCE(i.group_key, 'wybor'),
+             selected = COALESCE(q.chosen_item_id = i.id, FALSE)
+        FROM quotes q
+       WHERE q.id = i.quote_id AND q.pick_one AND i.kind = 'fixed'`);
+    // Grupa bez zaznaczenia dostaje pierwszy wyceniony wariant. Pusta karta
+    // znaczylaby oferte bez kwoty, a taka nie ma czego pokazac klientowi.
+    await pool.query(`
+      UPDATE quote_items SET selected = TRUE
+       WHERE id IN (
+         SELECT DISTINCT ON (i.quote_id, COALESCE(i.group_key, 'wybor')) i.id
+           FROM quote_items i
+          WHERE i.kind = 'variant'
+            AND NOT EXISTS (
+              SELECT 1 FROM quote_items s
+               WHERE s.quote_id = i.quote_id AND s.kind = 'variant' AND s.selected
+                 AND COALESCE(s.group_key, 'wybor') = COALESCE(i.group_key, 'wybor'))
+          ORDER BY i.quote_id, COALESCE(i.group_key, 'wybor'), (i.unit_grosze IS NULL), i.id)`);
+  })().catch((e) => console.error("[migracja] warianty oferty:", e.message));
 
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS production_started_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipped_at TIMESTAMPTZ`).catch(() => {});
@@ -1503,7 +1539,17 @@ app.get("/api/quotes/:ref", async (req, res) => {
   const expired = quote.valid_until && String(quote.valid_until).slice(0, 10) < new Date().toISOString().slice(0, 10);
   const ratesNow = !expired && quote.rates_snapshot ? await currentMetalRates() : null;
 
-  let total = 0;
+  // Rodzaj pozycji i to, co jest wybrane, licza sie z tej samej reguly, ktora
+  // ustala kwote przy zaplacie. Druga regula w przegladarce znaczylaby strone
+  // oferty pokazujaca co innego niz przelew.
+  const uklad = quoteGroups(quote);
+  const rodzaje = new Map(uklad.fixed.map((i) => [Number(i.id), "fixed"]));
+  for (const g of uklad.groups) {
+    for (const i of g.variants) rodzaje.set(Number(i.id), "variant");
+    for (const i of g.options) rodzaje.set(Number(i.id), "option");
+  }
+  const wybraneId = new Set(selectedQuoteItems(quote).map((i) => Number(i.id)));
+
   let metalDelta = 0;
   const items = quote.items.map((i) => {
     const re = ratesNow
@@ -1511,7 +1557,6 @@ app.get("/api/quotes/:ref", async (req, res) => {
       : { unitGrosze: i.unit_grosze, metalDeltaGrosze: 0, repriced: false };
     const unit = re.unitGrosze ?? i.unit_grosze;
     const line = unit != null ? unit * i.qty : null;
-    if (line) total += line;
     metalDelta += re.metalDeltaGrosze * i.qty;
     return {
       id: i.id, title: i.title, qty: i.qty,
@@ -1523,18 +1568,21 @@ app.get("/api/quotes/:ref", async (req, res) => {
       calculator: i.calculator,
       params: i.params ?? null,
       scale: i.scale != null ? Number(i.scale) : null,
+      // Czym pozycja jest w ofercie: skladnikiem rachunku, wariantem do wyboru
+      // albo dodatkiem. Strona oferty rysuje z tego karty wyboru.
+      kind: rodzaje.get(Number(i.id)) || "fixed",
+      groupKey: i.group_key || null,
+      selected: wybraneId.has(Number(i.id)),
     };
   });
 
-  // Przy ofercie wielowariantowej suma pozycji nie jest kwota do zaplaty:
-  // pozycje sa alternatywami, wiec liczy sie WYBRANY wariant. Bierzemy go
-  // z listy juz przeliczonej, zeby kwota zgadzala sie z ta, ktora klient
-  // widzi przy zaznaczonym wariancie.
-  const wariant = quote.pick_one ? wybranyWariant(quote) : null;
-  const wariantPoPrzeliczeniu = wariant ? items.find((i) => Number(i.id) === Number(wariant.id)) : null;
-  const doZaplaty = quote.pick_one
-    ? (wariantPoPrzeliczeniu?.lineGrosze ?? quote.total_grosze)
-    : (total || quote.total_grosze);
+  // Suma pozycji nie jest kwota do zaplaty: wariant z jednej grupy wyklucza
+  // pozostale, a niezaznaczony dodatek nie wchodzi do rachunku. Bierzemy wiec
+  // wybrane pozycje z listy JUZ PRZELICZONEJ, zeby kwota zgadzala sie z ta,
+  // ktora klient widzi przy zaznaczonych kartach.
+  const doZaplaty = items
+    .filter((i) => i.selected)
+    .reduce((s, i) => s + (i.lineGrosze || 0), 0) || quote.total_grosze;
 
   res.json({
     ok: true,
@@ -1542,9 +1590,9 @@ app.get("/api/quotes/:ref", async (req, res) => {
     status: quote.status,
     source: quote.source,
     lang: quote.lang,
-    // Oferta wielowariantowa: pozycje sa propozycjami do wyboru, nie rachunkiem.
-    pickOne: Boolean(quote.pick_one),
-    chosenItemId: wariant ? Number(wariant.id) : null,
+    // Oferta z wyborem: sa w niej warianty albo dodatki, a nie sam rachunek.
+    pickOne: uklad.groups.length > 0,
+    chosenItemId: [...wybraneId].find((id) => rodzaje.get(id) === "variant") ?? null,
     // Kwota zapisana zostaje widoczna obok biezacej, zeby roznica byla
     // widoczna, a nie do wykrycia z pamieci.
     savedTotalGrosze: quote.total_grosze,
@@ -1614,6 +1662,15 @@ app.get("/api/quotes/:ref/admin", async (req, res) => {
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
   const quote = await getQuoteByRef(pool, req.params.ref);
   if (!quote) return res.status(404).json({ error: "Nie ma takiej wyceny" });
+
+  const rozklad = quoteGroups(quote);
+  const rodzajePozycji = new Map(rozklad.fixed.map((i) => [Number(i.id), "fixed"]));
+  for (const g of rozklad.groups) {
+    for (const i of g.variants) rodzajePozycji.set(Number(i.id), "variant");
+    for (const i of g.options) rodzajePozycji.set(Number(i.id), "option");
+  }
+  const wybrane = new Set(selectedQuoteItems(quote).map((i) => Number(i.id)));
+
   res.json({
     ok: true,
     quote: {
@@ -1635,6 +1692,10 @@ app.get("/api/quotes/:ref/admin", async (req, res) => {
       id: Number(i.id), calculator: i.calculator, title: i.title, qty: i.qty,
       unitGrosze: i.unit_grosze, lineGrosze: i.line_grosze,
       description: i.description, fileName: i.file_name, params: i.params,
+      // Panel rysuje karty z tych trzech pol, a nie zgaduje ich z kolejnosci.
+      kind: rodzajePozycji.get(Number(i.id)) || "fixed",
+      groupKey: i.group_key || null,
+      selected: wybrane.has(Number(i.id)),
     })),
   });
 });
@@ -1850,16 +1911,16 @@ app.post("/api/quotes/lookup", express.json({ limit: "8kb" }),
 });
 
 /**
- * Wybor wariantu oferty przez klienta.
+ * Konfiguracja oferty przez klienta: wybor wariantu i zaznaczenie dodatku.
  *
  * Wybor nie jest wiazacy: az do zaplaty da sie wrocic i przestawic sie na inny
- * wariant. Wiazaca jest dopiero konwersja, ktora bierze wariant wskazany w tej
- * chwili i wpisuje do zamowienia WYLACZNIE jego.
+ * wariant albo dolozyc dodatek. Wiazaca jest dopiero konwersja, ktora bierze
+ * uklad z tej chwili i wpisuje do zamowienia WYLACZNIE wybrane pozycje.
  *
  * Ta trasa jest dla klienta, wiec chroni ja token z linku, tak samo jak
  * podglad oferty i sprawdzenie kodu rabatowego. Przynaleznosc pozycji do tej
- * wyceny sprawdza `chooseVariant`, po stronie serwera: bez tego wybor bylby
- * ustawieniem dowolnej kwoty jako naleznosci.
+ * wyceny sprawdza `chooseQuoteOption`, po stronie serwera: bez tego wybor
+ * bylby ustawieniem dowolnej kwoty jako naleznosci.
  */
 app.post("/api/quotes/:ref/choose", express.json({ limit: "8kb" }), async (req, res) => {
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
@@ -1869,8 +1930,11 @@ app.post("/api/quotes/:ref/choose", express.json({ limit: "8kb" }), async (req, 
     return res.status(404).json({ error: "Nie ma takiej oferty" });
   }
   try {
-    const wynik = await chooseVariant(pool, req.params.ref, req.body?.itemId);
-    console.log(`[wycena] ${wynik.quoteRef}: klient wybral wariant ${wynik.chosenItemId} za ${(wynik.totalGrosze / 100).toFixed(2)} PLN`);
+    // Brak pola `selected` znaczy "zaznacz": tak wygladalo zadanie przed
+    // dodaniem dodatkow i tak samo wyglada klikniecie w wariant.
+    const zaznacz = req.body?.selected === undefined ? true : Boolean(req.body.selected);
+    const wynik = await chooseQuoteOption(pool, req.params.ref, req.body?.itemId, zaznacz);
+    console.log(`[wycena] ${wynik.quoteRef}: klient ustawil pozycje ${wynik.itemId} na ${wynik.selected ? "wybrana" : "pominieta"}, razem ${(wynik.totalGrosze / 100).toFixed(2)} PLN`);
     res.json({ ok: true, ...wynik });
   } catch (e) {
     if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });

@@ -48,7 +48,8 @@ Kazdy filar: ikona/grafika (3.5), naglowek, 2-3 zdania, widelki cen, "co otrzymu
   [DOPRECYZOWANIE 2026-08-25: ta pozycja dotyczy WYLACZNIE stawek partnerskich B2B.
   Detaliczny odlew ma juz wycene automatyczna: karta uslugi w sklepie oraz kalkulator
   sTuDiO (szybka wycena i zakladka "Odlew w metalu") podaja kwote wiazaca dla modelu 3D
-  w kruszcu AEJaCA, ktory miesci sie w kolbie 24 x 24 x 35 mm. Nie czytaj tej linii jako
+  w kruszcu AEJaCA, ktory miesci sie w limicie 42 x 42 x 55 mm (kolba 80 x 80 mm).
+  Nie czytaj tej linii jako
   "nie mamy wyceny odlewu".]
 - Cechowanie (WAZNE, doslownie wg decyzji 0.4): "Kazdy wyrob ze zlota lub srebra domyslnie
   oznaczamy znakiem wytworcy AEJaCA i zglaszamy do Urzedu Probierczego pod szyldem AEJaCA -

@@ -900,6 +900,10 @@ const QUOTE_T = {
     metalNote:
       "Robocizna w tej kwocie jest wiążąca przez cały okres ważności. Wartość kruszcu przeliczamy w dniu zamówienia według bieżącego kursu, więc przy złocie i srebrze kwota końcowa może się nieznacznie różnić.",
     noObligation: "Zapisanie wyceny nie jest zamówieniem i do niczego nie zobowiązuje.",
+    pick: "do wyboru",
+    addon: "dodatek",
+    chosen: "zaznaczone",
+    configNote: "Kwota dotyczy układu zaznaczonego poniżej. Wariant i dodatki zmienisz na stronie oferty, a kwota policzy się od nowa.",
     questions: "Pytania",
     bye: "Pozdrawiamy",
   },
@@ -914,6 +918,10 @@ const QUOTE_T = {
     metalNote:
       "The labour in this amount is binding for the whole validity period. Precious metal is recalculated on the day of the order at the current rate, so for gold and silver the final amount may differ slightly.",
     noObligation: "Saving a quote is not an order and commits you to nothing.",
+    pick: "choice",
+    addon: "add-on",
+    chosen: "selected",
+    configNote: "The amount covers the configuration marked below. You can change the variant and the add-ons on the offer page and the amount follows.",
     questions: "Questions",
     bye: "Best regards",
   },
@@ -928,6 +936,10 @@ const QUOTE_T = {
     metalNote:
       "Die Arbeitsleistung in diesem Betrag ist für den gesamten Gültigkeitszeitraum verbindlich. Edelmetall wird am Tag der Bestellung zum aktuellen Kurs neu berechnet, bei Gold und Silber kann der Endbetrag daher leicht abweichen.",
     noObligation: "Das Speichern eines Angebots ist keine Bestellung und verpflichtet zu nichts.",
+    pick: "zur Auswahl",
+    addon: "Zusatz",
+    chosen: "ausgewählt",
+    configNote: "Der Betrag gilt für die unten markierte Zusammenstellung. Variante und Zusätze ändern Sie auf der Angebotsseite, der Betrag folgt.",
     questions: "Fragen",
     bye: "Mit freundlichen Grüßen",
   },
@@ -935,10 +947,18 @@ const QUOTE_T = {
 
 function quoteMessage(quote, items, url) {
   const l = QUOTE_T[quote.lang] || QUOTE_T.pl;
-  const rows = items.map((i) => ({
-    label: `${i.title}${i.qty > 1 ? ` x ${i.qty}` : ""}`,
-    value: money(i.line_grosze ?? i.unit_grosze ?? 0),
-  }));
+  // Wiersz musi mowic, czym pozycja JEST. Bez tego oferta z wariantami
+  // pokazuje trzy kwoty i sume nizsza od ich sumy, co wyglada jak blad
+  // rachunkowy, a jest po prostu wyborem jednej rzeczy z trzech.
+  const wybor = items.some((i) => i.kind === "variant" || i.kind === "option");
+  const rows = items.map((i) => {
+    const rodzaj = i.kind === "variant" ? l.pick : i.kind === "option" ? l.addon : null;
+    const stan = rodzaj && i.selected ? `, ${l.chosen}` : "";
+    return {
+      label: `${rodzaj ? `[${rodzaj}${stan}] ` : ""}${i.title}${i.qty > 1 ? ` x ${i.qty}` : ""}`,
+      value: money(i.line_grosze ?? i.unit_grosze ?? 0),
+    };
+  });
 
   const html = [
     `<p>${esc(l.hi)}</p>`,
@@ -948,6 +968,7 @@ function quoteMessage(quote, items, url) {
     ...rows.map((r) => `<tr><td>${esc(r.label)}</td><td align="right"><strong>${esc(r.value)}</strong></td></tr>`),
     `<tr><td style="border-top:1px solid #ddd">${esc(l.total)}</td><td align="right" style="border-top:1px solid #ddd"><strong>${esc(money(quote.total_grosze))}</strong></td></tr>`,
     "</table>",
+    wybor ? `<p style="color:#555">${esc(l.configNote)}</p>` : "",
     `<p><a href="${esc(url)}">${esc(l.open)}</a></p>`,
     quote.valid_until ? `<p>${esc(l.validUntil(String(quote.valid_until).slice(0, 10)))}</p>` : "",
     `<p style="color:#555">${esc(l.metalNote)}</p>`,
@@ -960,6 +981,7 @@ function quoteMessage(quote, items, url) {
     l.items + ":",
     ...rows.map((r) => `- ${r.label}: ${r.value}`),
     `${l.total}: ${money(quote.total_grosze)}`,
+    wybor ? `\n${l.configNote}` : null,
     "", `${l.open}: ${url}`,
     quote.valid_until ? `\n${l.validUntil(String(quote.valid_until).slice(0, 10))}` : "",
     "", l.metalNote,
@@ -983,7 +1005,7 @@ export async function sendQuoteLink(pool, quoteRef, url) {
     if (!quote?.customer_email) return false;
 
     const { rows: items } = await pool.query(
-      "SELECT title, qty, unit_grosze, line_grosze FROM quote_items WHERE quote_id = $1 ORDER BY id",
+      "SELECT title, qty, unit_grosze, line_grosze, kind, selected FROM quote_items WHERE quote_id = $1 ORDER BY id",
       [quote.id]
     );
 

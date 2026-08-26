@@ -4,6 +4,24 @@
   const ZRODLO = { email: "e-mail", phone: "telefon", chat: "czat", quote: "formularz", contact: "kontakt" };
   const zl = (g) => (g == null ? "-" : (g / 100).toFixed(2) + " zł");
   const wyslana = ["sent", "accepted", "converted"].includes(quote.status);
+  const pln = (g) => (g == null ? "" : (g / 100).toFixed(2));
+
+  // Karta to grupa: warianty, ktore sie wzajemnie wykluczaja, i dodatki, ktore
+  // da sie do nich dolozyc. Numer karty wchodzi do nazwy przelacznika, bo
+  // przegladarka laczy przelaczniki w jeden wybor WYLACZNIE po nazwie pola.
+  const KARTY = [];
+  items.forEach(function (it) {
+    const klucz = (it.groupKey || "").trim() || (it.kind === "fixed" ? "" : "wybor");
+    if (klucz && KARTY.indexOf(klucz) < 0) KARTY.push(klucz);
+  });
+  const nrKarty = (it) => Math.max(0, KARTY.indexOf((it.groupKey || "").trim() || "wybor"));
+
+  const RODZAJE = [
+    ["fixed", "składnik rachunku"],
+    ["variant", "wariant do wyboru"],
+    ["option", "dodatek opcjonalny"],
+  ];
+  const ETYKIETA_RODZAJU = { fixed: "składnik", variant: "wariant", option: "dodatek" };
 %>
 
   <main class="max-w-4xl mx-auto px-6 py-8">
@@ -41,6 +59,17 @@
             <p class="text-neutral-300 text-xs leading-relaxed whitespace-pre-wrap bg-neutral-950 rounded-lg border border-white/10 p-3"><%= quote.message %></p>
           </div>
         <% } %>
+        <div class="mt-4">
+          <div class="text-neutral-600 text-xs mb-2">Pozycje</div>
+          <ul class="space-y-1">
+            <% items.forEach(function (it) { %>
+              <li class="text-xs text-neutral-300 flex justify-between gap-4">
+                <span><%= it.title %> <span class="text-neutral-600"><%= it.qty %> szt.</span></span>
+                <span class="text-neutral-400"><%= zl(it.lineGrosze) %></span>
+              </li>
+            <% }); %>
+          </ul>
+        </div>
         <p class="text-neutral-500 text-[10px] leading-relaxed mt-4 pt-3 border-t border-white/10">
           Ta wycena stała się zamówieniem, więc jest zamknięta na edycję. Za nią stoi zamówienie z własnymi
           pozycjami i własną kwotą; zmiana tutaj rozjechałaby jedno z drugim bez śladu. Popraw zamówienie
@@ -50,7 +79,8 @@
     <% } else { %>
       <form method="post" action="/quotes/<%= encodeURIComponent(quote.quoteRef) %>/edit"
             class="rounded-xl border border-white/10 bg-white/[0.02] p-5 mb-6">
-        <h2 class="text-sm font-semibold text-white mb-2">Klient, zapytanie i pozycje</h2>
+
+        <h2 class="text-sm font-semibold text-white mb-2">Klient i zapytanie</h2>
         <p class="text-neutral-500 text-xs leading-relaxed mb-4 max-w-2xl">
           Poprawianie literówki w adresie, złej ilości albo opisu pozycji. Numer oferty zostaje ten sam,
           więc wątek w korespondencji i tytuł płatności się nie zmieniają.
@@ -58,7 +88,6 @@
             <span class="text-amber-300">Ta oferta została już wysłana: klient widzi na swojej stronie
             to, co tu zapiszesz.</span>
           <% } %>
-          Kwoty jednostkowe wpisuje się niżej, osobnym przyciskiem.
         </p>
 
         <div class="grid sm:grid-cols-4 gap-3">
@@ -91,161 +120,218 @@
           Język decyduje o walucie na stronie oferty i o języku maila.
         </p>
 
-        <label class="flex items-start gap-3 mt-4 rounded-lg border border-white/10 bg-neutral-950 p-4">
-          <input type="checkbox" name="pickOne" class="mt-0.5 accent-amber-400" <%= quote.pickOne ? "checked" : "" %> />
-          <span>
-            <span class="text-neutral-200 text-xs font-medium block">Oferta wielowariantowa: klient wybiera jedną pozycję</span>
-            <span class="text-neutral-500 text-[10px] leading-relaxed block mt-1">
-              Włącz, gdy przesyłasz kilka scenariuszy do wyboru, na przykład srebro albo złoto.
-              Wtedy pozycje przestają być składnikami jednego rachunku i stają się propozycjami:
-              klient zaznacza jedną, płaci za nią i tylko ona trafia do zamówienia.
-              Opis wariantów pisz w notatce do oferty, niżej.
-            </span>
-          </span>
-        </label>
-
         <label class="block mt-4">
           <span class="text-neutral-400 text-xs">Treść zapytania</span>
           <textarea name="message" rows="3"
                     class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white"><%= quote.message || '' %></textarea>
         </label>
 
-        <h3 class="text-xs font-semibold text-white mt-6 mb-2">
-          <%= quote.pickOne ? "Warianty do wyboru" : "Pozycje" %>
-        </h3>
+        <h2 class="text-sm font-semibold text-white mt-8 mb-2">Pozycje, kwoty i wybór</h2>
+        <p class="text-neutral-500 text-xs leading-relaxed mb-4 max-w-2xl">
+          Kwota jednostkowa brutto, w złotych, wpisuje się przy pozycji. Wpisanie pierwszej kwoty zmienia
+          zapytanie w ofertę i ustawia termin ważności. Ołówek otwiera resztę pól, czerwony krzyżyk
+          usuwa pozycję.
+        </p>
+        <p class="text-neutral-500 text-xs leading-relaxed mb-4 max-w-2xl">
+          <span class="text-neutral-300">Wariant</span> to jedna z kilku propozycji na tej samej karcie:
+          klient bierze z niej dokładnie jedną, na przykład klucz 56 mm albo 68 mm.
+          <span class="text-neutral-300">Dodatek</span> stoi obok wariantów i klient dokłada go albo nie,
+          na przykład polerowanie. <span class="text-neutral-300">Składnik</span> jest w kwocie zawsze.
+          Zaznaczenie tutaj to układ, który klient zobaczy na stronie oferty jako gotowy; zmieni go
+          u siebie, jeśli zechce.
+        </p>
+
+        <datalist id="karty">
+          <% KARTY.forEach(function (k) { %><option value="<%= k %>"></option><% }); %>
+        </datalist>
+
         <div class="space-y-3">
-          <% items.forEach(function (it) { %>
-            <div class="rounded-lg border border-white/10 bg-neutral-950 p-4">
+          <% items.forEach(function (it, i) { %>
+            <div data-pozycja class="rounded-lg border <%= it.selected ? 'border-white/10' : 'border-white/5' %> bg-neutral-950 p-4">
               <input type="hidden" name="itemId" value="<%= it.id %>" />
-              <div class="grid sm:grid-cols-6 gap-3">
+
+              <div class="flex items-start gap-3">
+                <div class="pt-1 w-4 shrink-0">
+                  <% if (it.kind === "variant") { %>
+                    <input type="radio" name="pickGroup_<%= nrKarty(it) %>" value="<%= i %>"
+                           class="accent-amber-400" <%= it.selected ? "checked" : "" %> />
+                  <% } else if (it.kind === "option") { %>
+                    <input type="checkbox" name="optionOn" value="<%= i %>"
+                           class="accent-amber-400" <%= it.selected ? "checked" : "" %> />
+                  <% } else { %>
+                    <span class="block w-3 h-3 rounded-full border border-white/20"></span>
+                  <% } %>
+                </div>
+
+                <div class="min-w-0 flex-1">
+                  <div class="text-sm text-white"><%= it.title %></div>
+                  <div class="text-neutral-600 text-[10px] mt-0.5">
+                    <%= it.qty %> szt.
+                    &middot; <%= ETYKIETA_RODZAJU[it.kind] || "składnik" %><% if (it.kind !== "fixed") { %>
+                      &middot; karta <%= (it.groupKey || "wybor") %><% } %><% if (it.calculator) { %>
+                      &middot; <%= it.calculator %><% } %><% if (it.fileName) { %>
+                      &middot; <%= it.fileName %><% } %>
+                  </div>
+                  <% if (it.description) { %>
+                    <p class="text-neutral-400 text-xs mt-2 whitespace-pre-wrap"><%= it.description %></p>
+                  <% } %>
+                </div>
+
+                <label class="shrink-0">
+                  <span class="text-neutral-500 text-[10px] block mb-1">za sztukę, zł</span>
+                  <input name="itemUnitPln" inputmode="decimal" value="<%= pln(it.unitGrosze) %>"
+                         class="w-28 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white text-right" />
+                  <% if (it.qty > 1 && it.lineGrosze != null) { %>
+                    <span class="text-neutral-600 text-[10px] block mt-1 text-right">razem <%= zl(it.lineGrosze) %></span>
+                  <% } %>
+                </label>
+
+                <div class="shrink-0 flex items-start gap-1 pt-5">
+                  <button type="button" data-edytuj title="Edytuj pozycję"
+                          class="p-2 rounded-lg border border-white/10 text-neutral-400 hover:text-white hover:border-white/30 transition-colors">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                    </svg>
+                  </button>
+                  <button type="submit" name="removeId" value="<%= it.id %>" formnovalidate
+                          data-usun="Usunąć pozycję &bdquo;<%= it.title.replace(/"/g, "&quot;") %>&rdquo;? Tego nie da się cofnąć."
+                          title="Usuń pozycję"
+                          class="p-2 rounded-lg border border-red-400/25 text-red-300 hover:border-red-400/60 transition-colors">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div data-edycja hidden class="mt-4 pt-4 border-t border-white/10 grid sm:grid-cols-6 gap-3">
                 <label class="sm:col-span-3 block">
                   <span class="text-neutral-500 text-[10px] block mb-1">Nazwa</span>
                   <input name="itemTitle" value="<%= it.title %>"
                          class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
                 </label>
-                <label class="block <%= quote.pickOne ? "hidden" : "" %>">
+                <label class="block">
                   <span class="text-neutral-500 text-[10px] block mb-1">Ilość</span>
-                  <input name="itemQty" type="number" min="1" value="<%= quote.pickOne ? 1 : it.qty %>"
+                  <input name="itemQty" type="number" min="1" value="<%= it.qty %>"
                          class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
                 </label>
-                <label class="sm:col-span-2 block">
-                  <span class="text-neutral-500 text-[10px] block mb-1">Co zrobić</span>
-                  <select name="itemAction" class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white">
-                    <option value="">zostaw</option>
-                    <option value="remove">usuń tę pozycję</option>
+                <label class="block">
+                  <span class="text-neutral-500 text-[10px] block mb-1">Rodzaj</span>
+                  <select name="itemKind" class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white">
+                    <% RODZAJE.forEach(function (r) { %>
+                      <option value="<%= r[0] %>" <%= (it.kind || "fixed") === r[0] ? "selected" : "" %>><%= r[1] %></option>
+                    <% }); %>
                   </select>
                 </label>
-              </div>
-              <label class="block mt-3">
-                <span class="text-neutral-500 text-[10px] block mb-1">Opis: to, czego nie widać w nazwie</span>
-                <textarea name="itemDescription" rows="2"
-                          class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white"><%= it.description || '' %></textarea>
-              </label>
-              <% if (it.unitGrosze != null) { %>
-                <p class="text-neutral-600 text-[10px] mt-2">
-                  <% if (quote.pickOne) { %>
-                    Wariant za <%= zl(it.unitGrosze) %>.
-                    <% if (Number(quote.chosenItemId) === Number(it.id)) { %>
-                      <span class="text-amber-300">Ten jest teraz wybrany.</span>
-                    <% } %>
-                  <% } else { %>
-                    Wyceniona na <%= zl(it.unitGrosze) %> za sztukę. Zmiana ilości przeliczy wartość pozycji i sumę oferty.
-                  <% } %>
+                <label class="block">
+                  <span class="text-neutral-500 text-[10px] block mb-1">Karta</span>
+                  <input name="itemGroup" list="karty" value="<%= it.groupKey || '' %>" placeholder="np. klucz"
+                         class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
+                </label>
+                <label class="sm:col-span-6 block">
+                  <span class="text-neutral-500 text-[10px] block mb-1">Opis: to, czego nie widać w nazwie</span>
+                  <textarea name="itemDescription" rows="2"
+                            class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white"><%= it.description || '' %></textarea>
+                </label>
+                <p class="sm:col-span-6 text-neutral-600 text-[10px] leading-relaxed">
+                  Warianty i dodatki z tą samą nazwą karty stoją u klienta razem, w jednej ramce.
+                  Puste pole karty znaczy „wybor", czyli kartę domyślną.
                 </p>
-              <% } %>
+                <% if (it.params && Object.keys(it.params).length) { %>
+                  <details class="sm:col-span-6">
+                    <summary class="cursor-pointer text-neutral-600 text-[10px]">Parametry z kalkulatora</summary>
+                    <pre class="mt-2 text-[10px] text-neutral-500 overflow-x-auto"><%= JSON.stringify(it.params, null, 2) %></pre>
+                  </details>
+                <% } %>
+              </div>
             </div>
           <% }); %>
         </div>
 
         <div class="rounded-lg border border-dashed border-white/15 p-4 mt-3">
-          <div class="text-neutral-500 text-[10px] mb-2">Dodaj pozycję (kwotę wpiszesz niżej)</div>
+          <div class="text-neutral-500 text-[10px] mb-2">Dodaj pozycję</div>
           <div class="grid sm:grid-cols-6 gap-3">
-            <label class="sm:col-span-4 block">
+            <label class="sm:col-span-3 block">
+              <span class="text-neutral-500 text-[10px] block mb-1">Nazwa</span>
               <input name="newTitle" placeholder="np. Grawer wewnątrz obrączki"
                      class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
             </label>
             <label class="block">
+              <span class="text-neutral-500 text-[10px] block mb-1">Ilość</span>
               <input name="newQty" type="number" min="1" value="1"
                      class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
             </label>
+            <label class="block">
+              <span class="text-neutral-500 text-[10px] block mb-1">za sztukę, zł</span>
+              <input name="newUnitPln" inputmode="decimal" placeholder="np. 40.00"
+                     class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white text-right" />
+            </label>
+            <label class="block">
+              <span class="text-neutral-500 text-[10px] block mb-1">Rodzaj</span>
+              <select name="newKind" class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white">
+                <% RODZAJE.forEach(function (r) { %>
+                  <option value="<%= r[0] %>"><%= r[1] %></option>
+                <% }); %>
+              </select>
+            </label>
+            <label class="sm:col-span-2 block">
+              <span class="text-neutral-500 text-[10px] block mb-1">Karta</span>
+              <input name="newGroup" list="karty" placeholder="np. klucz"
+                     class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
+            </label>
+            <label class="sm:col-span-4 block">
+              <span class="text-neutral-500 text-[10px] block mb-1">Opis, opcjonalnie</span>
+              <textarea name="newDescription" rows="2"
+                        class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white"></textarea>
+            </label>
           </div>
-          <textarea name="newDescription" rows="2" placeholder="opis, opcjonalnie"
-                    class="mt-3 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white"></textarea>
+          <p class="text-neutral-600 text-[10px] mt-2">
+            Nowy wariant staje się wybrany, gdy jest pierwszy na swojej karcie; nowy dodatek jest
+            zaznaczony. Jedno i drugie przestawisz po zapisie.
+          </p>
         </div>
 
-        <div class="flex flex-wrap items-center justify-between gap-3 mt-4">
-          <p class="text-neutral-600 text-[10px] max-w-xl leading-relaxed">
-            Jeżeli po zapisie żadna pozycja nie ma kwoty, oferta wraca do stanu „nowa" i traci termin ważności.
-          </p>
-          <button class="px-4 py-2 rounded-lg border border-white/15 text-neutral-200 text-sm hover:border-white/35 transition-colors">
-            Zapisz dane i pozycje
+        <div class="grid sm:grid-cols-4 gap-3 mt-6">
+          <label class="sm:col-span-2 block">
+            <span class="text-neutral-400 text-xs">Notatka do oferty: co wchodzi, czego nie ma</span>
+            <textarea name="note" rows="3"
+                      class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white"><%= quote.priceNote || '' %></textarea>
+          </label>
+          <label class="block">
+            <span class="text-neutral-400 text-xs">Ważna przez, dni</span>
+            <input name="validDays" type="number" min="1" max="365" placeholder="14"
+                   class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white" />
+            <span class="text-neutral-600 text-[10px] block mt-1">Liczy się od dzisiaj i nadpisuje datę obok.</span>
+          </label>
+          <label class="block">
+            <span class="text-neutral-400 text-xs">albo ważna do dnia</span>
+            <input name="validUntil" type="date" value="<%= quote.validUntil ? String(quote.validUntil).slice(0, 10) : '' %>"
+                   class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white" />
+            <span class="text-neutral-600 text-[10px] block mt-1">Teraz do <%= fmtDateShort(quote.validUntil) %>. Puste pole zdejmuje termin.</span>
+          </label>
+        </div>
+        <p class="text-neutral-600 text-[10px] leading-relaxed mt-2 max-w-2xl">
+          Notatka idzie do klienta razem z kwotą, więc to w niej piszesz, co wchodzi w cenę, a czego w niej
+          nie ma. Przy wyrobie, w którym kruszec jest główną składową ceny, warto dać termin krótszy niż
+          zwykle: przez dwa tygodnie złoto potrafi ruszyć się o kilka procent, a kwotę trzymamy stałą
+          do tej daty.
+        </p>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 mt-5 pt-4 border-t border-white/10">
+          <div class="text-sm text-neutral-300">
+            Do zapłaty za zaznaczony układ:
+            <span class="text-white font-semibold"><%= zl(quote.totalGrosze) %></span>
+            <span class="text-neutral-600 text-[10px] block mt-1 max-w-md leading-relaxed">
+              Jeżeli po zapisie żadna zaznaczona pozycja nie ma kwoty, oferta wraca do stanu „nowa"
+              i traci termin ważności.
+            </span>
+          </div>
+          <button class="px-4 py-2 rounded-lg bg-amber-400 text-neutral-950 text-sm font-medium hover:bg-amber-300 transition-colors">
+            Zapisz ofertę
           </button>
         </div>
       </form>
     <% } %>
-
-    <form method="post" action="/quotes/<%= encodeURIComponent(quote.quoteRef) %>/price"
-          class="rounded-xl border border-white/10 bg-white/[0.02] p-5 mb-6">
-      <h2 class="text-sm font-semibold text-white mb-2">Pozycje i kwoty</h2>
-      <p class="text-neutral-500 text-xs leading-relaxed mb-4 max-w-2xl">
-        Kwota jednostkowa brutto, w złotych. Wpisanie kwot zmienia zapytanie w ofertę i ustawia termin ważności.
-        Notatka idzie do klienta razem z kwotą, więc to w niej piszesz, co wchodzi w cenę, a czego w niej nie ma.
-      </p>
-
-      <div class="space-y-3">
-        <% items.forEach(function (it) { %>
-          <div class="rounded-lg border border-white/10 bg-neutral-950 p-4">
-            <div class="flex flex-wrap items-start justify-between gap-3">
-              <div class="min-w-0">
-                <div class="text-sm text-white"><%= it.title %></div>
-                <div class="text-neutral-600 text-[10px] mt-0.5">
-                  <%= it.qty %> szt.<% if (it.calculator) { %> &middot; <%= it.calculator %><% } %><% if (it.fileName) { %> &middot; <%= it.fileName %><% } %>
-                </div>
-                <% if (it.description) { %>
-                  <p class="text-neutral-400 text-xs mt-2 whitespace-pre-wrap"><%= it.description %></p>
-                <% } %>
-              </div>
-              <label class="shrink-0">
-                <span class="text-neutral-500 text-[10px] block mb-1">za sztukę, zł</span>
-                <input type="hidden" name="itemId" value="<%= it.id %>" />
-                <input name="unitPln" inputmode="decimal"
-                       value="<%= it.unitGrosze != null ? (it.unitGrosze / 100).toFixed(2) : '' %>"
-                       class="w-28 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white text-right" />
-              </label>
-            </div>
-            <% if (it.params && Object.keys(it.params).length) { %>
-              <details class="mt-3">
-                <summary class="cursor-pointer text-neutral-600 text-[10px]">Parametry z kalkulatora</summary>
-                <pre class="mt-2 text-[10px] text-neutral-500 overflow-x-auto"><%= JSON.stringify(it.params, null, 2) %></pre>
-              </details>
-            <% } %>
-          </div>
-        <% }); %>
-      </div>
-
-      <div class="grid sm:grid-cols-4 gap-3 mt-4">
-        <label class="sm:col-span-3 block">
-          <span class="text-neutral-400 text-xs">Notatka do oferty: co wchodzi, czego nie ma</span>
-          <textarea name="note" rows="3" class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white"><%= quote.priceNote || '' %></textarea>
-        </label>
-        <label class="block">
-          <span class="text-neutral-400 text-xs">Ważna przez, dni</span>
-          <input name="validDays" type="number" min="1" placeholder="14"
-                 class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white" />
-          <span class="text-neutral-600 text-[10px] block mt-1">Teraz do <%= fmtDateShort(quote.validUntil) %></span>
-        </label>
-      </div>
-
-      <div class="flex flex-wrap items-center justify-between gap-3 mt-4">
-        <div class="text-sm text-neutral-300">
-          <%= quote.pickOne ? "Do zapłaty za wybrany wariant" : "Razem zapisane" %>:
-          <span class="text-white font-semibold"><%= zl(quote.totalGrosze) %></span>
-        </div>
-        <button class="px-4 py-2 rounded-lg bg-amber-400 text-neutral-950 text-sm font-medium hover:bg-amber-300 transition-colors">
-          Zapisz kwoty
-        </button>
-      </div>
-    </form>
 
     <section class="rounded-xl border border-white/10 bg-white/[0.02] p-5">
       <h2 class="text-sm font-semibold text-white mb-2">Przekazanie oferty</h2>
@@ -290,7 +376,7 @@
     </section>
 
     <form id="usun" method="post" action="/quotes/<%= encodeURIComponent(quote.quoteRef) %>/delete"
-          class="rounded-xl border border-red-400/20 bg-red-400/[0.03] p-5 mb-6 scroll-mt-8">
+          class="rounded-xl border border-red-400/20 bg-red-400/[0.03] p-5 mt-6 scroll-mt-8">
       <h2 class="text-sm font-semibold text-red-300 mb-2">Usuń wycenę trwale</h2>
       <p class="text-neutral-500 text-xs leading-relaxed mb-4 max-w-2xl">
         Bez cofnięcia. Znikają pozycje wyceny, zostają wgrane pliki klienta i numer przestaje istnieć,
@@ -319,5 +405,28 @@
     </form>
 
   </main>
+
+  <script>
+    // Olowek otwiera reszte pol pozycji. Pola zostaja w formularzu takze
+    // zamkniete, wiec zapis niesie je zawsze i nic nie gubi sie po drodze.
+    document.querySelectorAll("[data-edytuj]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var karta = b.closest("[data-pozycja]");
+        var pola = karta && karta.querySelector("[data-edycja]");
+        if (!pola) return;
+        pola.hidden = !pola.hidden;
+        var pierwsze = pola.querySelector("input, textarea, select");
+        if (!pola.hidden && pierwsze) pierwsze.focus();
+      });
+    });
+
+    // Krzyzyk pyta, zanim usunie. Bez tego jedno omylkowe klikniecie kasuje
+    // pozycje oferty, ktora klient juz widzial.
+    document.querySelectorAll("[data-usun]").forEach(function (b) {
+      b.addEventListener("click", function (e) {
+        if (!window.confirm(b.dataset.usun)) e.preventDefault();
+      });
+    });
+  </script>
 </body>
 </html>

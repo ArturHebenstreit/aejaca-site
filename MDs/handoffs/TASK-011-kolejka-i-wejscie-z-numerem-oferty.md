@@ -6,7 +6,7 @@ status: review
 author: Claude Code
 branch: claude/fix-api-error-oge1r
 base_commit: a52941d108527f1874155746be048ba381e2b1e7
-last_commit: 790dfa8f99976fd190fd09c640a83d2f0e58314d
+last_commit: 1672a0b581737da7635d8d7d87ea97db84eb2002
 updated: 2026-08-26
 ```
 
@@ -58,7 +58,9 @@ Trzy mierzalne braki.
   stanach: przy pustym zamiast zawartosci, przy pelnym pod podsumowaniem.
 - `chat-api/quotes.js`: `updateQuote()`, `deleteQuote()`, `wybranyWariant()`, `chooseVariant()`.
 - `scripts/quotes-schema.sql` i blok startowy serwera: `quotes.pick_one`, `quotes.chosen_item_id`.
-- `src/pages/Offer.jsx`: warianty jako pole wyboru, kwota za wybranym wariantem.
+- `src/pages/Offer.jsx`: warianty jako pole wyboru, kwota za wybranym wariantem,
+  zdjety `noindex` (to jest adres, ktory podajemy klientom).
+- `src/seo/seoData.js`, `public/sitemap.xml`: `/oferta/` jako strona "Zaplac za oferte".
 - `chat-api/server.js`: `POST /api/quotes/:ref/update`, `DELETE /api/quotes/:ref`, `POST /api/quotes/:ref/choose`.
 - `admin/server.js`, `admin/views/quote-edit.ejs`, `admin/views/quotes.ejs`: edycja danych
   i pozycji oferty, usuwanie z potwierdzeniem, kolumna akcji w tabeli wycen.
@@ -79,8 +81,11 @@ Trzy mierzalne braki.
 - **Anulowanie zamowienia z ekranu kolejki.** Trasa rezygnacji istnieje
   (`/api/orders/:ref/cancel`) i obsluguje ja panel przelewow, ale kolejka jej
   nie wola. Kolejka umie poprawic etap albo usunac wiersz.
-- **`sitemap.xml` i `seoData.js`** nietkniete: `/oferta/` ma `noindex`,
-  a `/shop/` i `/cart/` nie zmienily tresci na tyle, zeby ruszac `lastmod`.
+- **Zdjecie `noindex` z `/oferta/` zmienia decyzje opisana w ADR-0012**, gdzie
+  strona byla ukryta. Powod zmiany: to jest adres, ktory podajemy klientom
+  w mailu, w instrukcji platnosci i przez telefon, wiec ma byc do znalezienia
+  takze wtedy, gdy klient zgubil link. Sama tresc oferty zostaje za tokenem.
+  Do potwierdzenia przez Artura razem ze statusem ADR.
 - **PROJECT_RULES.md** nietkniety. Sekcja 1 pozwala zmienic regule biznesowa
   dopiero po ZAAKCEPTOWANYM ADR, a ADR-0014 ma status `draft`. Po akceptacji
   warto dopisac tam jedno zdanie o recznym wyjatku od retencji.
@@ -155,3 +160,7 @@ Trzy mierzalne braki.
     propozycji.
 12. Wyboru wariantu nie da sie ustawic na pozycje spoza tej oferty ani na
     wariant bez kwoty, i nie da sie go zmienic po konwersji.
+13. Termin waznosci da sie zmienic w panelu bez ponownego wyceniania, a strona
+    "Proces platnosci" nie podaje zadnej liczby dni waznosci oferty.
+14. `/payments/` prowadzi przyciskiem do `/oferta/`, a `/oferta/` jest w mapie
+    strony i nie ma `noindex`.

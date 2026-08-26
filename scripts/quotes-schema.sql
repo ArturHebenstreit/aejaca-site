@@ -14,11 +14,11 @@ CREATE TABLE IF NOT EXISTS quotes (
   id                BIGSERIAL PRIMARY KEY,
   quote_ref         VARCHAR(32) UNIQUE NOT NULL,
 
-  -- Oferta wielowariantowa: pozycje sa WZAJEMNIE WYKLUCZAJACYMI SIE
-  -- propozycjami, a nie skladnikami jednego rachunku. Klient wybiera jedna,
-  -- a `total_grosze` niesie kwote wybranego wariantu, nie sume pozycji.
-  -- Wskaznik nigdy nie jest pusty przy wycenionej ofercie: wycenianie ustawia
-  -- pierwszy wariant, klient go tylko przestawia.
+  -- SLAD PO STARYM UKLADZIE. `pick_one` znaczylo "cala oferta jest do wyboru",
+  -- a `chosen_item_id` niosl wskazanie klienta. Oba pola zostaja dla ofert
+  -- wyslanych przed podzialem na rodzaje pozycji; rozstrzyga dzis
+  -- `quote_items.kind`, `group_key` i `selected`, bo tylko one pozwalaja miec
+  -- na jednej ofercie wybor wariantu i dodatek obok niego.
   pick_one          BOOLEAN NOT NULL DEFAULT FALSE,
   chosen_item_id    BIGINT,
 
@@ -74,6 +74,19 @@ CREATE TABLE IF NOT EXISTS quote_items (
   -- Wypelniane dopiero przy wycenie, tak samo jak w naglowku.
   unit_grosze   INTEGER CHECK (unit_grosze IS NULL OR unit_grosze > 0),
   line_grosze   INTEGER CHECK (line_grosze IS NULL OR line_grosze > 0),
+
+  -- Czym pozycja jest w ofercie:
+  --   fixed   - skladnik rachunku, zawsze w kwocie
+  --   variant - propozycja: z jednej grupy klient bierze DOKLADNIE JEDNA
+  --   option  - dodatek: klient bierze go albo nie, niezaleznie od reszty
+  -- `group_key` nazywa karte, na ktorej pozycja stoi: warianty jednej grupy
+  -- wykluczaja sie wzajemnie, a dodatki z tej samej grupy da sie do nich
+  -- dolozyc. `selected` niesie uklad wybrany przez klienta, a przed wyslaniem
+  -- oferty ten zaproponowany przez nas.
+  kind          VARCHAR(10) NOT NULL DEFAULT 'fixed'
+                CHECK (kind IN ('fixed','variant','option')),
+  group_key     VARCHAR(40),
+  selected      BOOLEAN NOT NULL DEFAULT TRUE,
 
   -- Parametry wyboru klienta, w tej samej postaci co w order_items.
   params        JSONB,

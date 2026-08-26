@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-26 | Wersja: 5.8*
+*Wygenerowano: 2026-08-26 | Wersja: 6.1*
 
 ---
 
@@ -266,13 +266,16 @@ Wysyłka: 24-48h
 | Prototyp w srebrze | 180-300 + materiał | 42-70 + material |
 | Odlew z wykończeniem | wycena wg wagi, próby i złożoności w 24h | - |
 
-#### Produkt sklepu: odlew z metali szlachetnych, Build 1.006
+#### Produkt sklepu: odlew z metali szlachetnych, Build 1.007
 
 - wariant 1: odlew z dostarczonego wzorca z wosku lub żywicy odlewniczej;
 - wariant 2: wydruk i odlew z przesłanego STL, OBJ, 3MF albo STEP;
 - wariant 3: projekt CAD, wydruk wzorca i odlew od pomysłu klienta;
 - kruszce: Ag 800/925 i Au 9k/14k/18k/24k, własne AEJaCA albo powierzone;
-- wiążąca cena automatyczna tylko w wariancie 2, dla kruszcu AEJaCA i modelu mieszczącego się po wybranej skali w 24 x 24 x 35 mm;
+- kolba odlewnicza: 80 mm średnicy i 80 mm głębokości. To jedyna liczba wpisana z ręki; limit modelu liczy się z niej w `src/pricing/preciousMetalCasting.js`;
+- wiążąca cena automatyczna tylko w wariancie 2, dla kruszcu AEJaCA i modelu mieszczącego się po wybranej skali w 42 x 42 x 55 mm. Limit to kolba pomniejszona o 10 mm masy formierskiej przy ścianie, 15 mm na stożek i kanał główny oraz 10 mm masy nad najwyższym punktem modelu;
+- zakres wykończenia ma pięć poziomów, każdy droższy od poprzedniego: surowy odlew z kanałami wlewowymi (0 PLN), surowy odlew z odciętymi kanałami (30 PLN), odcięte kanały wlewowe, czyli ślad zlicowany z powierzchnią (70 PLN), wyszlifowany (110 PLN), wykończenie jubilerskie, czyli szlifowanie i polerowanie (160 PLN);
+- karta usługi wisi w dwóch działach sklepu. W AEJaCA sTuDiO nazywa się „Odlew z metali szlachetnych", w AEJaCA Biżuteria „Odlew biżuterii". Adres jest jeden, więc nie powstaje druga strona z tym samym opisem ani drugi zestaw danych strukturalnych;
 - model można jednolicie przeskalować do limitu; kontrola wymiarów nie zastępuje sprawdzenia minimalnych grubości ścianek, krap i kanałów;
 - po automatycznym dostosowaniu można wrócić do oryginalnej skali; model ponad limitem pozostaje wtedy skierowany do oceny indywidualnej;
 - pole modelu przyjmuje kliknięcie i przeciągnięcie każdego formatu mierzonego automatycznie: STL, OBJ, 3MF, STEP i STP;
@@ -632,7 +635,7 @@ maszynie: Druk 3D, Laser CO2, Laser Fiber, Odlewy żywiczne.
 
 **Piąty kafelek wrócił, z innego powodu (2026-08-25).** „Odlew w metalu" to nie jest to samo
 pytanie zadane drugi raz, tylko osobna usługa: inny materiał, inny silnik wyceny i inna granica
-maszyny (kolba 24 x 24 x 35 mm zamiast pola roboczego drukarki). Powód zdjęcia kafelka „Druk
+maszyny (kolba 80 x 80 mm, limit modelu 42 x 42 x 55 mm, zamiast pola roboczego drukarki). Powód zdjęcia kafelka „Druk
 żywiczny" go nie dotyczy, bo nic nie dubluje. Aktualna lista: Druk 3D, Laser CO2, Laser Fiber,
 Odlewy żywiczne, Odlew w metalu. Siatka kafelków idzie od dużego ekranu na pięć kolumn.
 
@@ -941,12 +944,16 @@ kolby i o tym, że skalowanie zmienia grubość ścianek.
 
 **Warianty:** gotowy wzorzec (wosk lub żywica odlewnicza), model 3D, pomysł klienta.
 **Kruszec:** AEJaCA albo powierzony. Ag 800/925, Au 9k/14k/18k/24k.
-**Wykończenie:** surowy odlew 0 PLN, odcięcie i oczyszczenie 70 PLN, wykończenie jubilerskie 160 PLN.
+**Wykończenie (od 2026-08-26 pięć poziomów):** surowy odlew z kanałami wlewowymi 0 PLN,
+surowy odlew z odciętymi kanałami 30 PLN, odcięte kanały wlewowe (ślad zlicowany) 70 PLN,
+wyszlifowany 110 PLN, wykończenie jubilerskie, czyli szlifowanie i polerowanie, 160 PLN.
+Identyfikatory `raw`, `clean` i `polished` zostały te same, bo leżą w zapisanych
+zamówieniach i w mapie z szybkiej wyceny.
 **Przygotowanie wzorca:** 120 PLN, doliczane zawsze w wariancie z modelem 3D.
 **Rezerwa procesowa:** 12% masy, na kruszec zostający w kanałach i na zgarze.
 
 **Wiążąca cena automatyczna wyłącznie dla:** wariantu z modelem 3D + kruszcu
-AEJaCA + modelu mieszczącego się po wybranej skali jednolitej w 24 x 24 x 35 mm.
+AEJaCA + modelu mieszczącego się po wybranej skali jednolitej w 42 x 42 x 55 mm.
 Każda inna kombinacja kończy się wyceną indywidualną i tak jest nazwana na
 ekranie, zamiast pokazywać liczbę nie do dotrzymania.
 
@@ -2157,29 +2164,57 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
 - **Panel:** lista według stanu (`new`, `priced`, `sent`, `accepted`, `converted`, `expired`,
   `cancelled`), wpisanie kwot pozycji, notatka "co wchodzi, czego nie ma", termin ważności,
   wysyłka oferty mailem albo gotowy link do przekazania.
+- **Termin ważności oferty zmienia się osobno** (od 2026-08-26). Pole „Oferta ważna do"
+  w formularzu edycji ustawia datę bez ponownego wpisywania kwot. Wcześniej termin dało się
+  ustawić wyłącznie przy wycenianiu, więc jego skrócenie wymagało wyceny od nowa. Puste pole
+  zdejmuje termin. **Strona „Proces płatności" nie podaje już żadnej liczby dni**: mówi, że
+  termin jest podany w każdej przesyłanej ofercie, bo tak jest naprawdę.
 - **Ofertę da się poprawić bez zakładania jej od nowa** (od 2026-08-26). Panel edytuje dane
-  klienta, język, treść zapytania oraz pozycje: nazwę, ilość i opis, z możliwością dodania
-  i usunięcia pozycji. Numer zostaje ten sam, więc wątek w korespondencji i tytuł płatności
-  się nie zmieniają. Kwoty jednostkowe wpisuje wyłącznie wycenianie, żeby istniała jedna droga
-  do ceny i jedno miejsce sprawdzające, że kwota jest dodatnia. **Zmiana ilości przelicza
-  wartość pozycji i sumę oferty**, bo oferta pokazująca sumę niezgodną z własnymi pozycjami
-  myli się najciszej ze wszystkich. Gdy po edycji żadna pozycja nie ma kwoty, oferta wraca
-  do stanu `new` i traci termin ważności.
-- **Oferta wielowariantowa** (od 2026-08-26, ADR-0015). Przełącznik na wycenie zmienia znaczenie
-  jej pozycji: przestają być składnikami jednego rachunku, a stają się **wzajemnie wykluczającymi
-  się propozycjami**. Jeden wariant to jedna kwota, opisana w treści oferty; wariant nie rozkłada
-  się na podpozycje ani ilości, i tak zostaje świadomie, żeby edycja była prosta. Klient dostaje
-  **jeden numer i jeden link**, na stronie oferty zaznacza wariant polem wyboru, a kwota do zapłaty
-  dopasowuje się do zaznaczenia.
-  - **Wybór nigdy nie jest pusty**: wycenianie wskazuje pierwszy wariant, klient go tylko przestawia.
-    Dzięki temu `total_grosze` zawsze znaczy to samo co przy wycenie zwykłej, czyli kwotę do zapłaty,
-    i żadna istniejąca bramka (wysyłka, rabat, konwersja, panel) nie musi znać stanu „jeszcze nie wybrano".
+  klienta, język, treść zapytania oraz pozycje: nazwę, ilość, opis i **kwotę jednostkową, wpisywaną
+  przy pozycji**, z możliwością dodania i usunięcia pozycji. Numer zostaje ten sam, więc wątek
+  w korespondencji i tytuł płatności się nie zmieniają. **Jeden formularz i jeden przycisk**
+  (od 2026-08-26, ADR-0017): notatka do oferty i termin ważności stoją pod pozycjami, a nie
+  w drugiej sekcji z własnym zapisem. Reguła kwoty ma jedno miejsce, wspólne z wycenianiem przez
+  API: dodatnia albo żadna. **Zmiana ilości przelicza wartość pozycji i sumę oferty**, bo oferta
+  pokazująca sumę niezgodną z własnymi pozycjami myli się najciszej ze wszystkich. Gdy po edycji
+  żadna zaznaczona pozycja nie ma kwoty, oferta wraca do stanu `new` i traci termin ważności.
+  - **Ołówek i czerwony krzyżyk zamiast listy „co zrobić".** Ołówek otwiera pozostałe pola pozycji,
+    krzyżyk usuwa ją po pytaniu o potwierdzenie. Awaria, przed którą broniła lista wyboru, jest
+    zamknięta inaczej: **numer wiersza jedzie w wartości pola, nie w jego obecności**. Pole
+    zaznaczane wysyła się wyłącznie zaznaczone, więc przy dwóch usuwanych z pięciu tablice
+    formularza rozjeżdżały się o dwa miejsca i znikały nie te wiersze.
+  - **Ważność dwiema drogami.** „Ważna przez, dni" liczy od dzisiaj, „ważna do dnia" ustawia datę
+    wprost; liczba dni ma pierwszeństwo, bo wpisuje się ją świadomie. Termin zmienia się bez
+    wpisywania kwot od nowa.
+- **Oferta z wyborem** (od 2026-08-26, ADR-0015, rozszerzone przez ADR-0017). Wybór nie jest
+  przełącznikiem całej oferty, tylko **cechą pozycji**. Pozycja jest jednym z trzech:
+  - **składnik rachunku** (`fixed`): wchodzi do kwoty zawsze,
+  - **wariant** (`variant`): stoi na karcie i z jednej karty klient bierze **dokładnie jeden**,
+  - **dodatek** (`option`): stoi obok wariantów i klient dokłada go albo nie.
+
+  Kart może być kilka obok siebie. Dzięki temu jedna oferta opisuje „klucz 56 mm albo 68 mm,
+  do tego opcjonalnie polerowanie" i osobno „pierścionek albo sygnet albo obrączka" plus
+  „figurka albo szkatułka", czego przełącznik na całą ofertę nie potrafił.
+  - **Kwotę do zapłaty liczy jedna funkcja** (`selectedQuoteItems`), z której czytają cztery
+    bramki: strona oferty, rabat, konwersja na zamówienie i panel. Druga reguła gdziekolwiek
+    indziej znaczyłaby zamówienie na inną rzecz niż ta, za którą klient zapłacił.
+  - **Wybór na karcie nigdy nie jest pusty**: bez zaznaczenia wchodzi pierwszy wyceniony wariant.
+    Dzięki temu `total_grosze` zawsze znaczy kwotę do zapłaty i żadna bramka nie musi znać stanu
+    „jeszcze nie wybrano".
+  - **Zaznaczenie domyślne ustawia edytor**, a nie przypadek. Nowy wariant jest zaznaczony, gdy
+    jest pierwszy na swojej karcie; nowy dodatek jest zaznaczony. Regułę „w grupie zaznaczony jest
+    dokładnie jeden" egzekwuje serwer, bo formularz nie wie o pozycjach dodanych w tym samym zapisie.
   - **Wybór nie jest wiążący aż do zapłaty.** Wiążąca jest dopiero konwersja, która wpisuje do
-    zamówienia **wyłącznie wybrany wariant**.
-  - **Rabat liczy się od wybranego wariantu**, nie od sumy propozycji.
-  - **Zmiana wariantu kasuje podgląd zniżki**, bo kod sprawdzony dla srebra nie jest obietnicą dla złota.
-  - **Termin ważności jest wspólny dla całej oferty.** Przy ofercie mieszającej kruszce całość dostaje
-    ten krótszy termin. Rozdzielenie terminów na warianty to osobna decyzja.
+    zamówienia **wyłącznie pozycje zaznaczone**.
+  - **Rabat liczy się od zaznaczonego układu**, nie od sumy propozycji, a każda zmiana układu
+    kasuje podgląd zniżki: kod sprawdzony dla srebra nie jest obietnicą dla złota.
+  - **Mail z ofertą oznacza warianty i dodatki** w nawiasie kwadratowym i mówi, że kwota dotyczy
+    zaznaczonego układu. Bez tego wiersze sumowały się do liczby innej niż „Razem".
+  - **Termin ważności jest wspólny dla całej oferty.** Przy ofercie mieszającej kruszce całość
+    dostaje ten krótszy termin. Rozdzielenie terminów na warianty to osobna decyzja.
+  - **Stary przełącznik `pick_one` został śladem, nie mechanizmem.** Oferty wysłane przed tą
+    zmianą działają dalej: migracja przepisuje ich pozycje na jedną kartę wariantów i przenosi
+    wskazanie klienta. Pierwszy zapis z nowego edytora gasi flagę na trwałe.
 - **Wycena w stanie `converted` jest zamknięta na edycję.** Stoi za nią zamówienie z własnymi
   pozycjami i własną kwotą; zmiana w wycenie rozjechałaby jedno z drugim bez śladu. Ta sama
   reguła obowiązuje przy wycenianiu.
@@ -2191,7 +2226,10 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
   zaznaczane wysyła się wyłącznie zaznaczone, więc przy dwóch usuwanych z pięciu tablice
   formularza rozjeżdżają się o dwa miejsca i znikają nie te wiersze. Pilnuje tego
   `scripts/test-quote-edit.mjs`, wpięty w build.
-- **Strona klienta `/oferta/`** (noindex, brak odnośnika z menu). Dwa wejścia: link z oferty
+- **Strona klienta `/oferta/` jest adresem, który podajemy** (od 2026-08-26 bez `noindex`,
+  w mapie strony, z tytułem „Zapłać za ofertę"). Odsyła do niej przycisk na `/payments/`
+  i asystent, który ma podawać ten adres zamiast opisywać drogę własnymi słowami. Indeksowany
+  jest wyłącznie formularz z numerem; treść oferty pozostaje za tokenem. Dwa wejścia: link z oferty
   albo sam numer podany razem z adresem e-mail, na który poszła oferta. Klient bez adresu
   (telefon) dostaje krótki kod odbioru, wyprowadzony z tokenu dostępu, widoczny w panelu.
   Sam numer nigdy nie wystarcza, bo oferta niesie nazwisko, telefon i adres.

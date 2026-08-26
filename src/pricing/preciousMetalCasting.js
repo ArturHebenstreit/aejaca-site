@@ -1,9 +1,34 @@
 import { calcNew } from "./jewelry.js";
 import { fmtCost } from "./config.js";
 
-export const PRECIOUS_METAL_CASTING_BUILD = "1.006";
+export const PRECIOUS_METAL_CASTING_BUILD = "1.007";
 
-export const CASTING_ENVELOPE_MM = [24, 24, 35];
+// KOLBA ODLEWNICZA, jedyne zrodlo prawdy o rozmiarze w calym serwisie.
+// Wszystko ponizej i kazdy komunikat o limicie liczy sie z tych dwoch liczb,
+// zeby zmiana kolby nie wymagala szukania wpisanych z reki milimetrow.
+export const CASTING_FLASK_MM = { diameter: 80, depth: 80 };
+
+// Model nie zajmuje calej kolby. Trzy zapasy, kazdy z innego powodu:
+// masa formierska musi utrzymac sciane miedzy modelem a blacha kolby, przy
+// dnie stoi stozek i kanal glowny, a nad najwyzszym punktem modelu musi zostac
+// warstwa masy, inaczej forma peka przy wypalaniu.
+const FLASK_WALL_MM = 10;
+const SPRUE_BASE_MM = 15;
+const TOP_COVER_MM = 10;
+
+const USABLE_DIAMETER_MM = CASTING_FLASK_MM.diameter - 2 * FLASK_WALL_MM;
+
+// Prostokat wpisany w kolo ma przekatna rowna srednicy, wiec bok kwadratu to
+// srednica podzielona przez pierwiastek z dwoch. Zaokraglamy w dol, bo limit
+// ma byc obietnica, ktorej dotrzymamy, a nie wartoscia graniczna.
+export const CASTING_ENVELOPE_MM = [
+  Math.floor(USABLE_DIAMETER_MM / Math.SQRT2),
+  Math.floor(USABLE_DIAMETER_MM / Math.SQRT2),
+  CASTING_FLASK_MM.depth - SPRUE_BASE_MM - TOP_COVER_MM,
+];
+
+/** Limit w postaci, w ktorej pokazujemy go klientowi. */
+export const CASTING_ENVELOPE_LABEL = CASTING_ENVELOPE_MM.join(" x ") + " mm";
 
 const L = (pl, en, de) => ({ pl, en, de });
 
@@ -27,11 +52,23 @@ export const CASTING_METALS = [
   { id: "gold_24k", label: L("Złoto 24k (999)", "Gold 24k (999)", "Gold 24k (999)"), density: 19.32 },
 ];
 
+// PIEC POZIOMOW OBROBKI ODLEWU, kolejno coraz wiecej pracy rekodzielniczej.
+// Identyfikatory `raw`, `clean` i `polished` sa te same co przed rozszerzeniem
+// listy, bo siedza w zapisanych zamowieniach i w mapie z szybkiej wyceny:
+// przemianowanie ich unieważniłoby wycene kazdego starego koszyka.
 export const CASTING_FINISHES = [
-  { id: "raw", label: L("Surowy odlew", "Raw casting", "Rohguss"), extraGrosze: 0 },
-  { id: "clean", label: L("Odcięcie i oczyszczenie", "Cut and cleaned", "Abgetrennt und gereinigt"), extraGrosze: 7000 },
-  { id: "polished", label: L("Wykończenie jubilerskie", "Jewellery finish", "Juwelierfinish"), extraGrosze: 16000 },
+  { id: "raw", label: L("Surowy odlew z kanałami wlewowymi", "As-cast with sprues", "Rohguss mit Gusskanälen"),
+    sub: L("Drzewko prosto z kolby, kanały zostają", "The tree straight from the flask, sprues left on", "Der Gussbaum direkt aus der Küvette, Kanäle bleiben"), extraGrosze: 0 },
+  { id: "sprue_cut", label: L("Surowy odlew z odciętymi kanałami", "As-cast, sprues removed", "Rohguss, Kanäle abgetrennt"),
+    sub: L("Odcinamy od drzewka, ślad po kanale zostaje", "Cut off the tree, the sprue stub stays", "Vom Baum getrennt, Kanalansatz bleibt"), extraGrosze: 3000 },
+  { id: "clean", label: L("Odcięte kanały wlewowe", "Sprues cut and dressed", "Kanäle abgetrennt und verputzt"),
+    sub: L("Ślad po kanale zlicowany z powierzchnią", "The stub dressed flush with the surface", "Ansatz flächenbündig verputzt"), extraGrosze: 7000 },
+  { id: "ground", label: L("Wyszlifowany", "Ground", "Geschliffen"),
+    sub: L("Cała powierzchnia przeszlifowana, bez połysku", "The whole surface ground, no shine", "Gesamte Oberfläche geschliffen, ohne Glanz"), extraGrosze: 11000 },
+  { id: "polished", label: L("Wykończenie jubilerskie", "Jewellery finish", "Juwelierfinish"),
+    sub: L("Szlifowanie i polerowanie", "Grinding and polishing", "Schleifen und Polieren"), extraGrosze: 16000 },
 ];
+
 
 export const CASTING_RESERVE_RATE = 0.12;
 
@@ -51,6 +88,47 @@ export function maxCastingScaleForBBox(bbox) {
 export function fitsCastingFlask(bbox, scale = 1) {
   const maxScale = maxCastingScaleForBBox(bbox);
   return maxScale != null && Number.isFinite(Number(scale)) && Number(scale) > 0 && Number(scale) <= maxScale + 1e-9;
+}
+
+// CZEGO BRAKUJE DO WYCENY. `calculate` oddaje samo `null`, wiec bez tej listy
+// klient dostawal jedno zdanie "Parametry sa niekompletne" i nie mial jak
+// zgadnac, ktore pole zostawil puste. Kolejnosc jest kolejnoscia pytan
+// na karcie uslugi, zeby komunikat czytalo sie z gory na dol razem z formularzem.
+const CASTING_REQUIRED = [
+  { id: "variantId", ma: (p) => CASTING_VARIANTS.some((v) => v.id === p.variantId),
+    label: L("punktu startowego (wzorzec, model 3D albo pomysł)", "the starting point (pattern, 3D model or idea)", "den Ausgangspunkt (Modell, 3D-Datei oder Idee)") },
+  { id: "materialSourceId", ma: (p) => CASTING_MATERIAL_SOURCES.some((v) => v.id === p.materialSourceId),
+    label: L("pochodzenia kruszcu (nasz albo powierzony)", "the source of the metal (ours or supplied)", "die Herkunft des Metalls (unseres oder beigestellt)") },
+  { id: "metalId", ma: (p) => CASTING_METALS.some((v) => v.id === p.metalId),
+    label: L("kruszcu i próby (Ag 800/925 albo Au 9k/14k/18k/24k)", "the alloy and purity (Ag 800/925 or Au 9k/14k/18k/24k)", "Legierung und Feingehalt (Ag 800/925 oder Au 9k/14k/18k/24k)") },
+  { id: "finishId", ma: (p) => CASTING_FINISHES.some((v) => v.id === p.finishId),
+    label: L("zakresu wykończenia odlewu", "the finishing level", "den Umfang der Nachbearbeitung") },
+  // Plik jest wymagany TYLKO na sciezce, ktora w ogole dostaje kwote z automatu.
+  // Na pozostalych dwoch wycena i tak idzie do czlowieka, wiec zadanie pliku
+  // byloby zadaniem rzeczy, ktorej klient jeszcze nie ma.
+  { id: "stlData", ma: (p) => Boolean(p.stlData?.volumeCm3 && p.stlData?.bbox),
+    dotyczy: (p) => p.variantId === "model_3d" && p.materialSourceId === "aejaca",
+    label: L("pliku modelu 3D (STL, OBJ, 3MF, STEP), z którego mierzymy objętość", "the 3D model file (STL, OBJ, 3MF, STEP) we measure the volume from", "die 3D-Datei (STL, OBJ, 3MF, STEP), aus der wir das Volumen messen") },
+];
+
+/** Identyfikatory pol, ktorych brakuje do policzenia kwoty wiazacej. */
+export function missingCastingParams(params) {
+  const p = params || {};
+  return CASTING_REQUIRED.filter((pole) => (pole.dotyczy ? pole.dotyczy(p) : true) && !pole.ma(p)).map((pole) => pole.id);
+}
+
+/** Zdanie dla klienta: co dokladnie ma uzupelnic. `null`, gdy nie brakuje niczego. */
+export function describeMissingCastingParams(params, lang = "pl") {
+  const p = params || {};
+  const braki = CASTING_REQUIRED.filter((pole) => (pole.dotyczy ? pole.dotyczy(p) : true) && !pole.ma(p));
+  if (!braki.length) return null;
+  const jezyk = ["pl", "en", "de"].includes(lang) ? lang : "pl";
+  const lista = braki.map((pole) => pole.label[jezyk]);
+  const spis = lista.length === 1 ? lista[0]
+    : lista.slice(0, -1).join(", ") + ({ pl: " oraz ", en: " and ", de: " sowie " })[jezyk] + lista[lista.length - 1];
+  if (jezyk === "en") return `To price the casting we still need ${spis}. Fill in what is missing and the amount appears by itself.`;
+  if (jezyk === "de") return `Zur Gusskalkulation brauchen wir noch ${spis}. Ergänzen Sie das, und der Betrag erscheint von selbst.`;
+  return `Do wyceny odlewu brakuje jeszcze: ${spis}. Uzupełnij to, a kwota policzy się sama.`;
 }
 
 export function calculate(params, lang = "pl", rates) {

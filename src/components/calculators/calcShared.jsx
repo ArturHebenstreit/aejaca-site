@@ -40,7 +40,10 @@ export function Chips({ options, value, onChange, lang = "pl" }) {
         const isCustom = opt.custom;
         const disabled = opt.disabled;
         const label = typeof opt.label === "object" ? (opt.label[lang] || opt.label.en) : opt.label;
-        const sub = opt.sub;
+        // Podpis idzie przez `t` tak samo jak nazwa. Wstawiony wprost obiekt
+        // {pl,en,de} wywala React ("Objects are not valid as a React child"),
+        // wiec kazda lista z podpisem musiala do tej pory omijac ten element.
+        const sub = t(opt.sub, lang);
         return (
           <button
             key={String(opt.id)}

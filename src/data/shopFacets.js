@@ -70,6 +70,9 @@ const SERVICE_FACET_BY_ID = {
   laser_fiber: "laser",
   epoxy: "resin",
   cad_project: "design",
+  // Odlew ze srebra i zlota to robota jubilerska, nie projektowanie. Bez tego
+  // wpisu wpadal do filtra "Projektowanie" przez sam brak przedrostka.
+  precious_metal_casting: "jewelry",
 };
 
 /** Uslugi jubilerskie maja wspolny przedrostek, wiec nie wypisujemy ich po jednej. */

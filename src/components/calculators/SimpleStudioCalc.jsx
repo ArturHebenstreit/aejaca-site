@@ -92,7 +92,7 @@ import { nozzleFromPrecision } from "../../analysis/printability.js";
 import SizeSlider, { categoryForCm } from "./SizeSlider.jsx";
 import VectorPreview from "./VectorPreview.jsx";
 import { resolveTechAndParams, runCalc, CAST_DEFAULT_ALLOY } from "../../pricing/simpleQuote.js";
-import { CASTING_METALS, CASTING_ENVELOPE_MM, maxCastingScaleForBBox } from "../../pricing/preciousMetalCasting.js";
+import { CASTING_METALS, CASTING_ENVELOPE_MM, CASTING_ENVELOPE_LABEL, maxCastingScaleForBBox } from "../../pricing/preciousMetalCasting.js";
 import { useMarketRates } from "../../hooks/useMarketRates.js";
 import { useMaterialStock } from "../../hooks/useMaterialStock.js";
 import { getResin } from "../../data/resins.js";
@@ -325,7 +325,7 @@ const LBL = {
     laserOverPlateCustom: "Przy tej wielkości wyceniamy indywidualnie: napisz do nas, a odpowiemy z ofertą.",
     laserExtendedNote: "Ta praca wymaga przelotki z podajnikiem (dłuższa oś), co wydłuża przygotowanie.",
     castOverFlaskTitle: "Ten model nie zmieści się w kolbie odlewniczej",
-    castOverFlaskText: "Automatyczna wycena odlewu obejmuje modele mieszczące się po obrocie w 24 x 24 x 35 mm. Twój jest większy, więc albo go zmniejsz, albo zostaw wielkość i poproś o ocenę indywidualną.",
+    castOverFlaskText: `Automatyczna wycena odlewu obejmuje modele mieszczące się po obrocie w ${CASTING_ENVELOPE_LABEL}. Twój jest większy, więc albo go zmniejsz, albo zostaw wielkość i poproś o ocenę indywidualną.`,
     castOverFlaskFit: "Zmniejsz do największej, która się mieści",
     castOverFlaskNote: "Zmniejszenie zmienia też grubość ścianek, krap i kanałów. Dopasowanie wymiarów nie zastępuje kontroli technologicznej przed odlewem.",
     quickQuote: "Szybka wycena",
@@ -384,7 +384,7 @@ const LBL = {
     laserOverPlateCustom: "At this size we quote it individually: write to us and we will come back with an offer.",
     laserExtendedNote: "This job needs the passthrough riser (longer axis), which adds to the setup time.",
     castOverFlaskTitle: "This model does not fit our casting flask",
-    castOverFlaskText: "Automatic casting prices cover models that fit 24 x 24 x 35 mm after rotation. Yours is larger, so either scale it down or keep the size and ask for an individual review.",
+    castOverFlaskText: `Automatic casting prices cover models that fit ${CASTING_ENVELOPE_LABEL} after rotation. Yours is larger, so either scale it down or keep the size and ask for an individual review.`,
     castOverFlaskFit: "Scale down to the largest that fits",
     castOverFlaskNote: "Scaling down also changes wall, prong and channel thickness. Fitting the dimensions does not replace the manufacturing review before casting.",
     quickQuote: "Quick quote",
@@ -443,7 +443,7 @@ const LBL = {
     laserOverPlateCustom: "Bei dieser Größe kalkulieren wir individuell: schreiben Sie uns, wir melden uns mit einem Angebot.",
     laserExtendedNote: "Diese Arbeit braucht den Passthrough-Riser (längere Achse), was die Vorbereitung verlängert.",
     castOverFlaskTitle: "Dieses Modell passt nicht in unsere Gusskuevette",
-    castOverFlaskText: "Die automatische Gusskalkulation gilt fuer Modelle, die nach Drehung in 24 x 24 x 35 mm passen. Ihres ist groesser, verkleinern Sie es also oder behalten Sie die Groesse und lassen Sie sie individuell pruefen.",
+    castOverFlaskText: `Die automatische Gusskalkulation gilt fuer Modelle, die nach Drehung in ${CASTING_ENVELOPE_LABEL} passen. Ihres ist groesser, verkleinern Sie es also oder behalten Sie die Groesse und lassen Sie sie individuell pruefen.`,
     castOverFlaskFit: "Auf die groesste passende Groesse verkleinern",
     castOverFlaskNote: "Das Verkleinern aendert auch Wand-, Krappen- und Kanalstaerken. Passende Masse ersetzen nicht die technische Pruefung vor dem Guss.",
     quickQuote: "Schnellkalkulation",

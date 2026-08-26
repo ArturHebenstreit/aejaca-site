@@ -4,6 +4,12 @@ import {
   calculate,
   fitsCastingFlask,
   maxCastingScaleForBBox,
+  missingCastingParams,
+  describeMissingCastingParams,
+  CASTING_FINISHES,
+  CASTING_FLASK_MM,
+  CASTING_ENVELOPE_MM,
+  CASTING_ENVELOPE_LABEL,
   PRECIOUS_METAL_CASTING_BUILD,
 } from "../src/pricing/preciousMetalCasting.js";
 import { priceItem } from "../chat-api/orders.js";
@@ -11,11 +17,65 @@ import { SUPPORTED_EXTENSIONS } from "../src/pricing/mesh.js";
 import { QTY_TIERS } from "../src/pricing/jewelryConfig.js";
 import { QUANTITY_TIERS } from "../src/pricing/config.js";
 
-assert.equal(PRECIOUS_METAL_CASTING_BUILD, "1.006");
+assert.equal(PRECIOUS_METAL_CASTING_BUILD, "1.007");
+
+// KOLBA JEST JEDYNYM ZRODLEM ROZMIARU. Limit modelu ma sie z niej liczyc, a nie
+// stac obok niej wpisany z reki: przy poprzedniej wersji te dwie liczby zyly
+// osobno i rozjechaly sie po pierwszej zmianie sprzetu.
+assert.deepEqual(CASTING_FLASK_MM, { diameter: 80, depth: 80 });
+const swiatlo = CASTING_FLASK_MM.diameter - 20;
+assert.deepEqual(CASTING_ENVELOPE_MM, [
+  Math.floor(swiatlo / Math.SQRT2),
+  Math.floor(swiatlo / Math.SQRT2),
+  CASTING_FLASK_MM.depth - 25,
+]);
+// Kwadrat o tym boku musi zmiescic sie w swietle kolby, inaczej limit obiecuje
+// wiecej, niz kolba przyjmie.
+assert.ok(Math.hypot(CASTING_ENVELOPE_MM[0], CASTING_ENVELOPE_MM[1]) <= swiatlo);
+assert.ok(CASTING_ENVELOPE_MM.every((v, i, a) => i === 0 || a[i - 1] <= v), "limit musi byc posortowany rosnaco");
+assert.equal(CASTING_ENVELOPE_LABEL, `${CASTING_ENVELOPE_MM.join(" x ")} mm`);
+
 assert.equal(fitsCastingFlask({ x: 2.0, y: 2.2, z: 3.0 }), true);
-assert.equal(fitsCastingFlask({ x: 2.5, y: 2.2, z: 3.0 }), false);
-assert.equal(fitsCastingFlask({ x: 2.5, y: 2.2, z: 3.0 }, 0.9), true);
-assert.ok(Math.abs(maxCastingScaleForBBox({ x: 3.0, y: 2.0, z: 1.0 }) - (35 / 30)) < 1e-9);
+assert.equal(fitsCastingFlask({ x: 4.5, y: 4.4, z: 3.0 }), false);
+assert.equal(fitsCastingFlask({ x: 4.5, y: 4.4, z: 3.0 }, 0.9), true);
+assert.ok(Math.abs(maxCastingScaleForBBox({ x: 3.0, y: 2.0, z: 1.0 }) - (CASTING_ENVELOPE_MM[2] / 30)) < 1e-9);
+
+// PIEC POZIOMOW OBROBKI, drozej za kazdy kolejny. Identyfikatory `raw`,
+// `clean` i `polished` zostaja, bo leza w zapisanych zamowieniach i w mapie
+// z szybkiej wyceny: ich przemianowanie zabiloby wycene starego koszyka.
+assert.equal(CASTING_FINISHES.length, 5);
+for (const id of ["raw", "clean", "polished"]) {
+  assert.ok(CASTING_FINISHES.some((v) => v.id === id), `zniknal identyfikator wykonczenia "${id}"`);
+}
+assert.equal(CASTING_FINISHES[0].extraGrosze, 0, "pierwszy poziom to odlew bez obrobki, czyli bez doplaty");
+for (let i = 1; i < CASTING_FINISHES.length; i += 1) {
+  assert.ok(
+    CASTING_FINISHES[i].extraGrosze > CASTING_FINISHES[i - 1].extraGrosze,
+    `poziom "${CASTING_FINISHES[i].id}" ma byc drozszy od poprzedniego`,
+  );
+}
+for (const opcja of CASTING_FINISHES) {
+  for (const jezyk of ["pl", "en", "de"]) {
+    assert.ok(opcja.label?.[jezyk], `wykonczenie "${opcja.id}" bez nazwy w ${jezyk}`);
+    assert.ok(opcja.sub?.[jezyk], `wykonczenie "${opcja.id}" bez wyjasnienia w ${jezyk}`);
+  }
+}
+
+// KOMUNIKAT O BRAKACH MA NAZYWAC BRAKI. Kontrola negatywna nizej pilnuje, ze
+// nie zadamy pliku tam, gdzie wycena i tak idzie do czlowieka.
+assert.deepEqual(
+  missingCastingParams({ variantId: "model_3d", materialSourceId: "aejaca", metalId: "silver" }),
+  ["finishId", "stlData"],
+);
+assert.deepEqual(missingCastingParams({ variantId: "ready_pattern", materialSourceId: "aejaca", metalId: "silver", finishId: "raw" }), []);
+for (const jezyk of ["pl", "en", "de"]) {
+  const zdanie = describeMissingCastingParams({ variantId: "model_3d", materialSourceId: "aejaca", metalId: "silver", finishId: "raw" }, jezyk);
+  assert.match(zdanie, /STL/, `komunikat o brakach w ${jezyk} nie mowi, jaki plik wgrac`);
+}
+assert.equal(
+  describeMissingCastingParams({ variantId: "model_3d", materialSourceId: "aejaca", metalId: "silver", finishId: "raw", stlData: { volumeCm3: 1, bbox: { x: 1, y: 1, z: 1 } } }, "pl"),
+  null,
+);
 
 const base = { metalId: "silver", finishId: "clean", qtyId: "1" };
 assert.equal(calculate({ ...base, variantId: "ready_pattern", materialSourceId: "aejaca" }, "pl").type, "custom");
@@ -87,7 +147,7 @@ assert.throws(
     calculator: "jewelry_casting",
     params: { ...base, variantId: "model_3d", materialSourceId: "aejaca" },
     lang: "en",
-    geometry: { volumeCm3: 0.2, bbox: { x: 3.0, y: 3.0, z: 4.0 } },
+    geometry: { volumeCm3: 0.2, bbox: { x: 5.0, y: 5.0, z: 6.0 } },
   }),
   (error) => error.code === "too_large_for_casting"
     && error.message.startsWith("At this scale the model exceeds"),
@@ -100,7 +160,7 @@ assert.throws(
     lang: "en",
   }),
   (error) => error.code === "incomplete_params"
-    && error.message === "Some required parameters are missing",
+    && /3D model file/.test(error.message),
 );
 
 // PROGI ILOSCI SA DWIE LISTY I NIE WOLNO ICH POMYLIC. Odlew liczy `calcNew`,

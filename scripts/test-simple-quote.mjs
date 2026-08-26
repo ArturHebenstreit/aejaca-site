@@ -261,10 +261,10 @@ else zle("widok nie zna pola drukarki zywicznej");
 
   // Model ponad kolba nie moze dostac kwoty automatycznej.
   const zaDuzy = resolveTechAndParams({
-    ...odp, fileType: "stl", stlData: { volumeCm3: 40, bbox: { x: 4, y: 4, z: 4 }, triangleCount: 12 },
+    ...odp, fileType: "stl", stlData: { volumeCm3: 40, bbox: { x: 6, y: 6, z: 6 }, triangleCount: 12 },
   });
   if (zaDuzy?.custom) ok("model ponad limit kolby idzie do oceny indywidualnej");
-  else zle(`model 40 x 40 x 40 mm dostal kwote automatyczna: ${JSON.stringify(zaDuzy)}`);
+  else zle(`model 60 x 60 x 60 mm dostal kwote automatyczna: ${JSON.stringify(zaDuzy)}`);
 
   // Progi ilosci: silnik jubilerski zna "1" i "2-5", a nie "proto" i "micro".
   const kilka = runCalc(resolveTechAndParams({ ...odp, quantity: "few", fileType: "stl", stlData: kostka }), "pl");
@@ -285,12 +285,14 @@ else zle("widok nie zna pola drukarki zywicznej");
 // z nich. Granica jest jedna funkcja, wiec liczba musi sie zgadzac, a widok
 // musi ja pokazac.
 {
-  const dlugi = { volumeCm3: 0.29, bbox: { x: 4.4, y: 1.0, z: 1.9 }, triangleCount: 12 };
+  // Dlugi walek: miesci sie przekrojem, nie miesci dlugoscia. Sprawdza, ze
+  // limit dziala na kazdej osi z osobna, a nie na samej najwiekszej.
+  const dlugi = { volumeCm3: 0.29, bbox: { x: 7.0, y: 1.0, z: 1.9 }, triangleCount: 12 };
   const odp = { item: "jewelry", size: "palm", material: "precious", finish: "standard", quantity: "one", fileType: "stl" };
 
   const wOryginale = resolveTechAndParams({ ...odp, stlData: dlugi });
   if (wOryginale?.custom) ok("model ponad kolba nie dostaje kwoty automatycznej w szybkiej wycenie");
-  else zle("model 44 x 10 x 19 mm przeszedl przez automat odlewu");
+  else zle("model 70 x 10 x 19 mm przeszedl przez automat odlewu");
 
   const max = maxCastingScaleForBBox(dlugi.bbox);
   const doGranicy = Math.floor(max * 1000) / 1000;
