@@ -44,6 +44,14 @@ konkretnej ofercie w panelu, w polu daty albo w polu liczby dni. Obowiazuje
 zawsze data zapisana przy tej ofercie, nie stala. Wpisanie kwot nie nadpisuje
 recznie ustawionego terminu.
 
+**Oferty juz wyslane zostaja nietkniete** (decyzja wlasciciela, 2026-08-26).
+Zadnej migracji terminow wstecz nie robimy. Data wiazaca klienta siedzi w
+wierszu `quotes.valid_until`, nie w kodzie, wiec zmiana stalej sama z siebie
+niczego nie skraca. Skrocenie terminu, ktory klient juz od nas dostal, byloby
+wycofaniem sie z obietnicy handlowej, a oszczedza to najwyzej kilka dni
+ekspozycji na kurs kruszcu. Gdyby ktos kiedys chcial "posprzatac" stare
+wiersze zapytaniem na bazie: to jest wlasnie ta rzecz, ktorej nie robimy.
+
 **Termin wchodzi przy zakladaniu numeru, na kazdej drodze.** Wczesniej wycena
 z kalkulatora dostawala go dopiero przy wycenianiu, a przy zakladaniu miala
 `valid_until = NULL`. Przerwane wycenianie zostawialo wtedy w bazie oferte bez
