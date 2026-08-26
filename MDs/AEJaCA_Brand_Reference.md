@@ -2189,20 +2189,20 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
 - **Oferta z wyborem** (od 2026-08-26, ADR-0015, rozszerzone przez ADR-0017). Wybór nie jest
   przełącznikiem całej oferty, tylko **cechą pozycji**. Pozycja jest jednym z trzech:
   - **składnik rachunku** (`fixed`): wchodzi do kwoty zawsze,
-  - **wariant** (`variant`): stoi na karcie i z jednej karty klient bierze **dokładnie jeden**,
+  - **wariant** (`variant`): stoi w grupie wyboru i z jednej grupy klient bierze **dokładnie jeden**,
   - **dodatek** (`option`): stoi obok wariantów i klient dokłada go albo nie.
 
-  Kart może być kilka obok siebie. Dzięki temu jedna oferta opisuje „klucz 56 mm albo 68 mm,
+  Grup może być kilka obok siebie. Dzięki temu jedna oferta opisuje „klucz 56 mm albo 68 mm,
   do tego opcjonalnie polerowanie" i osobno „pierścionek albo sygnet albo obrączka" plus
   „figurka albo szkatułka", czego przełącznik na całą ofertę nie potrafił.
   - **Kwotę do zapłaty liczy jedna funkcja** (`selectedQuoteItems`), z której czytają cztery
     bramki: strona oferty, rabat, konwersja na zamówienie i panel. Druga reguła gdziekolwiek
     indziej znaczyłaby zamówienie na inną rzecz niż ta, za którą klient zapłacił.
-  - **Wybór na karcie nigdy nie jest pusty**: bez zaznaczenia wchodzi pierwszy wyceniony wariant.
+  - **Wybór w grupie nigdy nie jest pusty**: bez zaznaczenia wchodzi pierwszy wyceniony wariant.
     Dzięki temu `total_grosze` zawsze znaczy kwotę do zapłaty i żadna bramka nie musi znać stanu
     „jeszcze nie wybrano".
   - **Zaznaczenie domyślne ustawia edytor**, a nie przypadek. Nowy wariant jest zaznaczony, gdy
-    jest pierwszy na swojej karcie; nowy dodatek jest zaznaczony. Regułę „w grupie zaznaczony jest
+    jest pierwszy w swojej grupie; nowy dodatek jest zaznaczony. Regułę „w grupie zaznaczony jest
     dokładnie jeden" egzekwuje serwer, bo formularz nie wie o pozycjach dodanych w tym samym zapisie.
   - **Wybór nie jest wiążący aż do zapłaty.** Wiążąca jest dopiero konwersja, która wpisuje do
     zamówienia **wyłącznie pozycje zaznaczone**.
@@ -2212,9 +2212,25 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
     zaznaczonego układu. Bez tego wiersze sumowały się do liczby innej niż „Razem".
   - **Termin ważności jest wspólny dla całej oferty.** Przy ofercie mieszającej kruszce całość
     dostaje ten krótszy termin. Rozdzielenie terminów na warianty to osobna decyzja.
+  - **Grupa wyboru to nazwa, którą wpisuje człowiek** w polu przy pozycji, na przykład `klucz`.
+    Pozycje z tą samą nazwą stoją u klienta w jednej ramce. Druga nazwa to druga, niezależna
+    ramka, więc „jeden z trzech odlewów **oraz** jeden z dwóch wydruków" to po prostu dwie grupy.
+    Słowo „karta" było tu pierwszą nazwą i zostało wycofane: w tym projekcie karta znaczy kartę
+    usługi w sklepie, więc ta sama nazwa opisywała dwie różne rzeczy.
+  - **Rodzaj pozycji i grupa stoją w widocznym wierszu**, nie pod ikoną edycji. Pierwsza wersja
+    chowała je za ołówkiem i właściciel patrzył na ekran, na którym nowej możliwości po prostu
+    nie było widać.
   - **Stary przełącznik `pick_one` został śladem, nie mechanizmem.** Oferty wysłane przed tą
-    zmianą działają dalej: migracja przepisuje ich pozycje na jedną kartę wariantów i przenosi
+    zmianą działają dalej: migracja przepisuje ich pozycje na jedną grupę wariantów i przenosi
     wskazanie klienta. Pierwszy zapis z nowego edytora gasi flagę na trwałe.
+- **Nagłówek panelu pokazuje wersję panelu i backendu sklepu** (od 2026-08-26). Obie usługi
+  wdrażają się osobno, więc przez chwilę nowy formularz rozmawia ze starym backendem i po cichu
+  gubi pola, których tamten nie zna. Na ekranie wygląda to identycznie jak błąd w kodzie: widok
+  nowy, zapis nie działa. Panel czyta więc `GET /api/version` (w tle, najwyżej raz na minutę,
+  brak odpowiedzi go nie wywala) i pokazuje `v1.1.0 · api v1.1.0`. Backend dopowiada, czy baza
+  ma już kolumny wyboru; jeśli nie, w nagłówku stoi bursztynowe ostrzeżenie, bo wtedy warianty
+  i dodatki nie mają się gdzie zapisać. Numery podnosi się ręcznie, przy zmianie widocznej
+  w panelu.
 - **Wycena w stanie `converted` jest zamknięta na edycję.** Stoi za nią zamówienie z własnymi
   pozycjami i własną kwotą; zmiana w wycenie rozjechałaby jedno z drugim bez śladu. Ta sama
   reguła obowiązuje przy wycenianiu.

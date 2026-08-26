@@ -631,6 +631,39 @@ async function lookupCountry(ip) {
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
+// ------------------------------------------------------------
+// WERSJA BACKENDU SKLEPU
+// ------------------------------------------------------------
+// Panel i ta usluga wdrazaja sie OSOBNO. Nowy formularz rozmawiajacy ze starym
+// backendem po cichu gubi pola, ktorych tamten nie zna, i wyglada to dokladnie
+// tak samo jak blad w kodzie: ekran nowy, zapis nie dziala. Ta trasa pozwala
+// panelowi pokazac obie wersje obok siebie, a przy okazji stan schematu: bez
+// kolumn `quote_items.kind` wybor wariantow nie ma sie gdzie zapisac.
+//
+// Numer podnosimy RECZNIE, przy zmianie widocznej dla panelu.
+const WERSJA_API = "1.1.0";
+
+app.get("/api/version", async (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  let quoteItemKinds = null;
+  if (pool) {
+    try {
+      const { rows } = await pool.query(
+        `SELECT COUNT(*)::int AS ile FROM information_schema.columns
+          WHERE table_name = 'quote_items' AND column_name IN ('kind','group_key','selected')`
+      );
+      quoteItemKinds = rows[0].ile === 3;
+    } catch { quoteItemKinds = null; }
+  }
+  const sha = process.env.RAILWAY_GIT_COMMIT_SHA || process.env.COMMIT_SHA || "";
+  res.json({
+    ok: true,
+    version: WERSJA_API,
+    commit: sha ? sha.slice(0, 7) : null,
+    schema: { quoteItemKinds },
+  });
+});
+
 // Sluzy do jednej rzeczy: sprawdzenia, czy liczba warstw posrednich jest dobrana,
 // czyli czy widzimy prawdziwy adres klienta, a nie adres wewnetrzny.
 //

@@ -116,6 +116,18 @@ console.log("\n4. Formularz panelu nie rozjezdza tablic\n");
   ma(WIDOK, /name="itemUnitPln"/, "kwota stoi przy pozycji, w tym samym formularzu");
   ma(WIDOK, /name="validDays"/, "waznosc oferty ustawia sie w tym samym formularzu");
 
+  // Rodzaj i grupa decyduja o calym ukladzie oferty, wiec nie moga siedziec
+  // pod ikona: wlasciciel patrzyl na ekran i nie widzial, gdzie je ustawic.
+  const wiersz = WIDOK.slice(WIDOK.indexOf('<div data-pozycja'), WIDOK.indexOf('<div data-edycja'));
+  ma(wiersz, /name="itemKind"/, "rodzaj pozycji stoi w widocznym wierszu, nie pod olowkiem");
+  ma(wiersz, /name="itemGroup"/, "grupa wyboru stoi w widocznym wierszu, nie pod olowkiem");
+  // Podpowiedz "14" w pustym polu wygladala jak zapisany termin i wracala po
+  // kazdym zapisie, cokolwiek by sie wpisalo.
+  if (/name="validDays"[^>]*placeholder="14"/.test(WIDOK)) zle("pole waznosci znowu podpowiada 14 dni, to wyglada jak zapisany termin");
+  else ok("pole waznosci nie udaje zapisanego terminu");
+  ma(WIDOK, /DNI_DO_KONCA/, "ekran mowi, ile dni zostalo do konca waznosci");
+  ma(WIDOK, /Grupa wyboru/, "grupa nazywa sie tak samo w formularzu i w objasnieniu");
+
   ma(PANEL, /String\(id\) === doUsuniecia/, "panel czyta usuwana pozycje z wartosci przycisku");
   ma(PANEL, /k === "optionOn" \|\| k\.startsWith\("pickGroup_"\)/, "panel zbiera zaznaczenia z obu rodzajow pol");
   ma(PANEL, /\[\]\.concat\(req\.body\.itemId \|\| \[\]\)/, "panel zbiera identyfikatory pozycji w tablice");
@@ -225,6 +237,30 @@ console.log("\n6. Wybor po stronie klienta\n");
   else zle(`tras wyboru jest ${ile}`);
   ma(SERWER, /app\.post\("\/api\/quotes\/:ref\/choose"[\s\S]{0,500}?secretMatches/, "wybor chroni token z linku");
   ma(SERWER, /req\.body\?\.selected === undefined \? true/, "brak pola 'selected' znaczy zaznaczenie");
+}
+
+console.log("\n7. Wersje panelu i backendu widac z ekranu\n");
+{
+  const NAGLOWEK = readFileSync(join(ROOT, "admin", "views", "partials", "header.ejs"), "utf8");
+  const WERSJA = readFileSync(join(ROOT, "admin", "wersja.js"), "utf8");
+  // Panel i backend sklepu wdrazaja sie osobno. Nowy formularz rozmawiajacy ze
+  // starym backendem gubi pola po cichu i wyglada to jak blad w kodzie.
+  ma(WERSJA, /export const PANEL_WERSJA = "\d+\.\d+\.\d+"/, "panel zna swoja wersje");
+  ma(SERWER, /const WERSJA_API = "\d+\.\d+\.\d+"/, "backend sklepu zna swoja wersje");
+  const ile = (SERWER.match(/app\.get\("\/api\/version"/g) || []).length;
+  if (ile === 1) ok("trasa wersji istnieje dokladnie raz");
+  else zle(`tras wersji jest ${ile}`);
+  ma(SERWER, /app\.get\("\/api\/version"[\s\S]{0,200}?requireAdmin\(req, res\)/, "wersja backendu nie wychodzi na zewnatrz bez tokenu");
+  ma(SERWER, /quoteItemKinds/, "backend mowi, czy baza ma juz kolumny wyboru");
+  ma(PANEL, /res\.locals\.wersjaPanelu/, "panel podaje wersje kazdemu widokowi");
+  ma(PANEL, /res\.locals\.ostrzezenieWersji/, "panel podaje ostrzezenie o rozjezdzie wersji");
+  ma(NAGLOWEK, /wersjaPanelu/, "naglowek pokazuje wersje panelu");
+  ma(NAGLOWEK, /api v/, "naglowek pokazuje wersje backendu sklepu");
+  // Zapytanie o wersje nie moze wstrzymywac strony panelu ani jej wywalac,
+  // gdy backend sklepu nie odpowiada.
+  ma(PANEL, /shopApi\("\/api\/version"\)[\s\S]{0,400}?\.catch\(/, "brak odpowiedzi backendu nie wywala panelu");
+  if (/await shopApi\("\/api\/version"\)/.test(PANEL)) zle("panel czeka na wersje backendu przy kazdym zadaniu");
+  else ok("wersja backendu odswieza sie w tle");
 }
 
 console.log(bledy ? `\n${bledy} bledow\n` : "\nEdycja, uklad wyboru i usuwanie oferty: wszystko sie zgadza\n");

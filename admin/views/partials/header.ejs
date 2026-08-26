@@ -44,6 +44,19 @@
   <header class="bg-neutral-900 border-b border-white/10 px-6 py-3 flex items-center justify-between gap-4 flex-wrap">
     <div class="flex items-center gap-6 flex-wrap">
       <span class="text-lg font-bold text-white">AEJaCA <span class="text-amber-400">Admin</span></span>
+      <%
+        // Wersja panelu i backendu sklepu. Obie uslugi wdrazaja sie osobno,
+        // wiec bez tych dwoch liczb "nie zapisuje sie" i "jeszcze nie wdrozone"
+        // wygladaja na ekranie identycznie.
+        const wPanel = typeof wersjaPanelu === "string" ? wersjaPanelu : null;
+        const wApi = typeof wersjaApi === "string" ? wersjaApi : null;
+        const wOstrzezenie = typeof ostrzezenieWersji === "string" ? ostrzezenieWersji : null;
+      %>
+      <span class="text-[10px] font-mono <%= wOstrzezenie ? 'text-amber-300' : 'text-neutral-600' %>"
+            title="<%= wOstrzezenie || 'Panel i backend sklepu wdrażają się osobno' %>">
+        <% if (wPanel) { %>v<%= wPanel %><% } %><% if (wApi) { %> &middot; api v<%= wApi %><% } else if (wPanel) { %> &middot; api ?<% } %>
+        <% if (wOstrzezenie) { %><span class="block">uwaga: <%= wOstrzezenie %></span><% } %>
+      </span>
       <nav class="flex gap-4 text-sm flex-wrap">
         <% NAV.forEach(function (item) { %>
           <a href="<%= item.href %>"

@@ -63,7 +63,11 @@ na zywym kliencie (WY20260825, dwa warianty wydruku klucza).
 - `admin/server.js`: `POST /quotes/:ref/edit` zapisuje cala oferte,
   `POST /quotes/:ref/price` usuniete.
 - `admin/views/quote-edit.ejs`: jeden formularz, kwota przy pozycji, olowek
-  i krzyzyk, przelaczniki kart, waznosc dwiema drogami.
+  i krzyzyk, rodzaj i grupa wyboru w widocznym wierszu, objasnienie nad lista,
+  waznosc dwiema drogami z prawdziwa data i liczba pozostalych dni.
+- `admin/wersja.js`, `admin/views/partials/header.ejs`: wersja panelu i wersja
+  backendu sklepu w naglowku, z ostrzezeniem przy rozjezdzie.
+- `scripts/it-offer-groups.mjs`: test na prawdziwej bazie (poza buildem).
 - `admin/public/tailwind.css`: przebudowany po zmianie klas w szablonie.
 - `admin/check-views.mjs`: dane przykladowe z trzema rodzajami pozycji.
 - `src/pages/Offer.jsx`: karty wyboru u klienta, wspolny `Wiersz`,
@@ -95,6 +99,12 @@ na zywym kliencie (WY20260825, dwa warianty wydruku klucza).
 | Szablony panelu renderuja sie na danych z trzema rodzajami pozycji | `node admin/check-views.mjs` | pass |
 | Klasy szablonu sa w arkuszu | `cd admin && npm run build:css` | pass |
 | Wycenianie starym API dalej dziala | `node scripts/test-saved-quote.mjs` | pass |
+| Termin waznosci naprawde siedzi w bazie | `node scripts/it-offer-groups.mjs` | pass |
+| Dwie niezalezne grupy jednokrotnego wyboru w jednej ofercie | ten sam test | pass |
+| Przestawienie domyslnego zaznaczenia przezywa zapis | ten sam test | pass |
+| Odznaczony dodatek zostaje odznaczony | ten sam test | pass |
+| Rodzaj i grupa stoja w widocznym wierszu | `node scripts/test-quote-edit.mjs`, sekcja 4 | pass |
+| Wersje panelu i backendu widac z ekranu | ten sam test, sekcja 7 | pass |
 | Build | `npm run build` | pass, kod wyjscia 0 |
 
 ## Ryzyka i otwarte pytania
@@ -110,8 +120,17 @@ na zywym kliencie (WY20260825, dwa warianty wydruku klucza).
 - **Kod rabatowy pada po kazdej zmianie ukladu.** Tak bylo juz przy wyborze
   wariantu, teraz dotyczy tez zaznaczenia dodatku. Klient musi wpisac kod
   ponownie i dowiaduje sie o tym dopiero po zniknieciu znizki.
-- **Karta jest tekstem.** Literowka w nazwie karty rozdziela ja na dwie karty.
-  Widac to od razu w podgladzie, ale nic tego nie blokuje.
+- **Nazwa grupy jest tekstem.** Literowka rozdziela grupe na dwie. Widac to od
+  razu w podgladzie, ale nic tego nie blokuje.
+- **Numery wersji podnosi sie recznie.** `PANEL_WERSJA` w `admin/wersja.js`
+  i `WERSJA_API` w `chat-api/server.js`. Zapomniany numer znaczy naglowek, ktory
+  mowi, ze wszystko sie zgadza, kiedy sie nie zgadza. Rozjazd schematu bazy jest
+  odporny na to zapomnienie, bo backend czyta go z `information_schema`.
+- **Wlasciciel zglosil trzy braki, ktorych w silniku nie bylo.** Wszystkie trzy
+  byly widoczne wylacznie z ekranu: schowane kontrolki, podpowiedz "14"
+  wygladajaca jak zapisany termin i slowo "karta" znaczace w tym projekcie
+  co innego. Warto o tym pamietac przy nastepnej zmianie w panelu: test
+  tekstowy przechodzil, a funkcji nie dalo sie uzyc.
 - **Mail z oferta nie pokazuje sumy pozycji zaznaczonych**, tylko kwote
   z naglowka i liste wszystkiego z oznaczeniami. Przy szesciu pozycjach
   na dwoch kartach moze to byc za duzo tresci w mailu.

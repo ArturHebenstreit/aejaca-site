@@ -54,7 +54,7 @@ Cztery dotycza edytora, piata dotyczy tego, co widzi klient.
 | kolumna | znaczenie |
 |---|---|
 | `kind` | `fixed` skladnik rachunku, `variant` propozycja do wyboru, `option` dodatek |
-| `group_key` | nazwa karty: warianty jednej karty wykluczaja sie wzajemnie |
+| `group_key` | nazwa grupy wyboru: warianty jednej grupy wykluczaja sie wzajemnie |
 | `selected` | co jest zaznaczone teraz; przed wyslaniem to nasza propozycja, potem wybor klienta |
 
 Reguly sa trzy i mieszkaja w jednej funkcji `selectedQuoteItems()`:
@@ -100,7 +100,7 @@ pol jest zaznaczonych.
 
 ### 5. Zaznaczenie domyslne ustawia sie w edytorze
 
-Nowy wariant jest zaznaczony, gdy jest pierwszy na swojej karcie; nowy
+Nowy wariant jest zaznaczony, gdy jest pierwszy w swojej grupie; nowy
 dodatek jest zaznaczony. Jedno i drugie przestawia sie w edytorze i to ten
 uklad klient zobaczy jako gotowy. Regule "w grupie zaznaczony jest dokladnie
 jeden" pilnuje SERWER, a nie przegladarka: formularz nie wie o pozycjach
@@ -139,6 +139,50 @@ data go zdejmuje.
    dodatkow wymagalby czwartej kolumny (`depends_on`) i tego tu nie ma.
 2. **Ilosc przy wariancie zostaje.** Klient wybiera wariant, ale nie zmienia
    jego ilosci na stronie oferty; ilosc ustawia sie w edytorze.
-3. **Nazwa karty jest tekstem.** Dwie karty o tej samej nazwie zlewaja sie
+3. **Nazwa grupy jest tekstem.** Dwie grupy o tej samej nazwie zlewaja sie
    w jedna, i to jest zamierzone, bo tak sie je laczy. Literowka w nazwie
-   rozdziela karte na dwie i widac to od razu w podgladzie.
+   rozdziela grupe na dwie i widac to od razu w podgladzie.
+
+## Poprawki po pierwszym uzyciu (2026-08-26, ten sam dzien)
+
+Wlasciciel obejrzal panel i zglosil trzy rzeczy: termin waznosci "nie zapisuje
+sie i wraca 14 dni", "nie da sie zrobic dwoch grup jednokrotnego wyboru" oraz
+"nie da sie ustawic domyslnie zaznaczonego pola". Test na prawdziwej bazie
+(`scripts/it-offer-groups.mjs`) pokazal, ze silnik robi WSZYSTKIE trzy rzeczy
+poprawnie. Bledy byly w tym, co widac.
+
+### 7. Slowo "karta" wycofane, jest "grupa wyboru"
+
+W tym projekcie karta znaczy karte uslugi w sklepie i tak stoi w kilkunastu
+miejscach dokumentu marki. Nazwanie tym samym slowem grupy wariantow kazalo
+czytelnikowi zgadywac, o ktora karte chodzi. Pole w panelu nazywa sie teraz
+**Grupa wyboru**, a nad lista pozycji stoi objasnienie trzech rodzajow pozycji
+i zdanie o tym, ze druga nazwa grupy to druga, niezalezna ramka u klienta.
+
+### 8. Rodzaj i grupa wracaja do widocznego wiersza
+
+Pierwsza wersja chowala je pod ikona olowka. Swiezo zalozona oferta ma wszystkie
+pozycje w rodzaju `fixed`, wiec na ekranie nie bylo ani jednego przelacznika
+i ani jednego pola zaznaczanego: mozliwosci, ktora wlasnie dodalismy, po prostu
+nie bylo widac. **Kontrolka, ktora tworzy nowa mozliwosc, nie moze byc schowana
+za ikona bez podpisu.** Pod olowkiem zostaja rzeczy, ktore poprawia sie rzadko:
+nazwa, ilosc, opis i parametry z kalkulatora.
+
+### 9. Pole waznosci przestaje udawac zapisany termin
+
+Pole "Wazna przez, dni" bylo puste z zalozenia, a jego podpowiedz brzmiala `14`.
+Wygladalo to jak zapisany termin i wracalo po kazdym zapisie, cokolwiek by sie
+wpisalo. Teraz podpowiedz brzmi `np. 30`, a obok stoi prawdziwa data konca
+waznosci razem z liczba pozostalych dni. Pole nadal jest puste z zalozenia
+i puste znaczy "nie ruszaj terminu": wypelnienie go biezaca liczba dni
+przesuwaloby termin przy kazdym zapisie literowki.
+
+### 10. Naglowek panelu pokazuje wersje obu uslug
+
+Panel i backend sklepu wdrazaja sie osobno. Nowy formularz rozmawiajacy ze
+starym backendem gubi po cichu pola, ktorych tamten nie zna, i na ekranie
+wyglada to identycznie jak blad w kodzie. Panel czyta wiec `GET /api/version`
+(w tle, najwyzej raz na minute, brak odpowiedzi go nie wywala) i pokazuje
+`v1.1.0 - api v1.1.0`. Backend dopowiada, czy baza ma juz kolumny `kind`,
+`group_key` i `selected`; jesli nie, w naglowku stoi bursztynowe ostrzezenie,
+bo wtedy wybor nie ma sie gdzie zapisac. Numery podnosi sie recznie.
