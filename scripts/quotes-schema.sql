@@ -26,6 +26,14 @@ CREATE TABLE IF NOT EXISTS quotes (
                     CHECK (status IN ('new','priced','sent','accepted','converted','expired','cancelled')),
 
   lang              VARCHAR(5) NOT NULL DEFAULT 'pl',
+
+  -- Waluta CALEJ oferty. Zrodlem ceny zostaja grosze PLN; euro liczy sie z nich
+  -- po kursie i narzucie z `src/pricing/currency.js`. Waluta rozstrzyga o drodze
+  -- platnosci: PLN idzie bramka (BLIK, pay-by-link), EUR przelewem na rachunek
+  -- walutowy, bo nasza umowa z operatorem bramki nie obejmuje euro.
+  currency          VARCHAR(3) NOT NULL DEFAULT 'PLN'
+                    CHECK (currency IN ('PLN','EUR')),
+
   source            VARCHAR(30),               -- contact, quote, configurator, chat, saved
 
   -- Adres jest obowiazkowy przy zapytaniu o wycene reczna, bo bez niego nie ma

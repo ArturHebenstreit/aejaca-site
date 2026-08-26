@@ -1,6 +1,8 @@
 export default {
   nav: {
     home: "Strona główna",
+    currency: "Waluta zapłaty",
+    currencyHint: "Złotówki płaci się BLIK-iem albo przelewem online, euro przelewem na nasz rachunek walutowy.",
     blog: "Blog",
     jewelry: "AEJaCA Biżuteria",
     studio: "AEJaCA sTuDiO",

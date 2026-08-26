@@ -75,6 +75,42 @@ r = await updateQuote(pool, quoteRef, { items: [{ id: P[0].id, unitGrosze: 4100 
 r = await updateQuote(pool, quoteRef, { items: [{ id: P[0].id, unitGrosze: 4200 }] });
 ok("zapis bez pol terminu nie rusza terminu", dzien(r.validUntil) === "2026-12-31", String(r.validUntil));
 
+// --- 2b. Waluta oferty -----------------------------------------------------
+{
+  const niemiecka = await createQuote(pool, {
+    email: "de@aejaca.com", lang: "de", source: "email",
+    items: [{ title: "Odlew sygnetu" }],
+  });
+  const q = await getQuoteByRef(pool, niemiecka.quoteRef);
+  ok("niemiecka wycena zaczyna od euro", q.currency === "EUR", String(q.currency));
+
+  const polska = await getQuoteByRef(pool, quoteRef);
+  ok("polska wycena zaczyna od zlotowek", polska.currency === "PLN", String(polska.currency));
+
+  await updateQuote(pool, quoteRef, { currency: "EUR" });
+  ok("panel zmienia walute oferty", (await getQuoteByRef(pool, quoteRef)).currency === "EUR");
+
+  let blad = null;
+  try { await updateQuote(pool, quoteRef, { currency: "USD" }); } catch (e) { blad = e; }
+  ok("waluta spoza listy jest odrzucana", blad?.code === "bad_currency", blad?.message || "brak bledu");
+  await updateQuote(pool, quoteRef, { currency: "PLN" });
+}
+
+// --- 2c. Liczba dni pokazana w panelu nie przesuwa terminu ------------------
+// Pole "Wazna przez, dni" pokazuje teraz liczbe dni, ktora zostala. Zapis tej
+// samej liczby MUSI dawac te sama date, inaczej kazda poprawka literowki
+// przedluzalaby oferte.
+{
+  await updateQuote(pool, quoteRef, { validDays: "21" });
+  const przed = await getQuoteByRef(pool, quoteRef);
+  const dzisiaj = new Date(new Date().toISOString().slice(0, 10));
+  const zostalo = Math.round((new Date(dzien(przed.valid_until)) - dzisiaj) / 86400000);
+  await updateQuote(pool, quoteRef, { validDays: String(zostalo) });
+  const po = await getQuoteByRef(pool, quoteRef);
+  ok("zapis pokazanej liczby dni nie przesuwa terminu", dzien(po.valid_until) === dzien(przed.valid_until),
+     `${dzien(przed.valid_until)} -> ${dzien(po.valid_until)}, pokazane ${zostalo} dni`);
+}
+
 // --- 3. Zmiana domyslnego zaznaczenia w grupie -----------------------------
 const Q = await poz();
 r = await updateQuote(pool, quoteRef, {

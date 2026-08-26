@@ -124,9 +124,30 @@
             </select>
           </label>
         </div>
+
+        <div class="grid sm:grid-cols-4 gap-3 mt-3">
+          <label class="block">
+            <span class="text-neutral-400 text-xs">Waluta oferty</span>
+            <select name="currency" class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white">
+              <% [["PLN", "PLN, złotówki"], ["EUR", "EUR, euro"]].forEach(function (w) { %>
+                <option value="<%= w[0] %>" <%= (quote.currency || "PLN") === w[0] ? "selected" : "" %>><%= w[1] %></option>
+              <% }); %>
+            </select>
+          </label>
+          <p class="sm:col-span-3 text-neutral-600 text-[10px] leading-relaxed self-end pb-2">
+            Waluta dotyczy całej oferty i rozstrzyga o drodze zapłaty:
+            <span class="text-neutral-400">złotówki</span> idą bramką, czyli BLIK-iem albo przelewem online,
+            <span class="text-neutral-400">euro</span> przelewem na nasz rachunek walutowy, z ręcznym księgowaniem
+            i pięcioma dniami roboczymi na wpłatę. Kwota pozycji zostaje w złotówkach; euro liczy się z niej
+            po kursie NBP z dnia, w którym klient składa zamówienie, razem z narzutem walutowym.
+            Klient może to zmienić u siebie, bo waluta wynika z tego, gdzie ma konto.
+          </p>
+        </div>
+
         <p class="text-neutral-600 text-[10px] mt-2">
           Zostaw adres e-mail albo telefon. Bez żadnego z nich nie ma jak przekazać oferty.
-          Język decyduje o walucie na stronie oferty i o języku maila.
+          Język decyduje o treści maila, a przy zakładaniu wyceny podpowiada walutę:
+          polski to złotówki, angielski i niemiecki to euro.
         </p>
 
         <label class="block mt-4">
@@ -339,11 +360,19 @@
             </span>
           </label>
           <label class="block">
-            <span class="text-neutral-400 text-xs">albo policz od dziś, w dniach</span>
+            <span class="text-neutral-400 text-xs">Ważna przez, dni</span>
             <input name="validDays" type="number" min="1" max="365" placeholder="np. 30"
+                   value="<%= DNI_DO_KONCA != null && DNI_DO_KONCA >= 1 ? DNI_DO_KONCA : '' %>"
                    class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white" />
             <span class="text-neutral-600 text-[10px] block mt-1">
-              Wpisana liczba wygrywa z datą obok. Puste pole zostawia termin bez zmian.
+              <% if (DNI_DO_KONCA != null && DNI_DO_KONCA >= 1) { %>
+                Tyle dni oferta obowiązuje jeszcze od dzisiaj. Zapisana bez zmiany nie przesuwa terminu,
+                bo liczy się do tej samej daty.
+              <% } else if (quote.validUntil) { %>
+                Termin już minął, wpisz nową liczbę dni albo popraw datę obok.
+              <% } else { %>
+                Liczy się od dzisiaj. Wpisana liczba wygrywa z datą obok.
+              <% } %>
             </span>
           </label>
         </div>

@@ -17,7 +17,7 @@ import { useCart } from "../cart/CartContext.jsx";
 import { DELIVERY_METHODS } from "../data/orderCatalog.js";
 import { t } from "../pricing/config.js";
 import { API_URL, postJSON, submitPaymentForm } from "../utils/api.js";
-import { useMoney, formatPln } from "../shop/money.js";
+import { useMoney, formatPln, formatEur } from "../shop/money.js";
 import { SHIPPING_COUNTRIES, shippingOptions, shippingGrosze, needsCustoms, FREE_SHIPPING_FROM_GROSZE, leadDaysLabel } from "../pricing/shipping.js";
 import { inboundOptionsFor, wymagaPrzesylki } from "../data/inboundDelivery.js";
 import { validateCustomer } from "../shop/customerFields.js";
@@ -257,7 +257,7 @@ function Consent({ checked, onChange, children }) {
 
 export default function Checkout() {
   const { lang } = useLanguage();
-  const { money, showEur } = useMoney();
+  const { money, showEur, currency, setCurrency, rate } = useMoney();
   const u = UI[lang] || UI.en;
   const navigate = useNavigate();
   const { items, subtotalGrosze, ready, clear } = useCart();
@@ -276,7 +276,10 @@ export default function Checkout() {
   const [gatewayId, setGatewayId] = useState(0);
   // Klient czytajacy strone po angielsku lub niemiecku widzi ceny w euro,
   // a zadnym kanalem Autopay z zagranicy nie zaplaci, wiec zaczynamy od przelewu.
-  const [payMode, setPayMode] = useState(showEur ? "bank_transfer" : "autopay");
+  // Sposob zaplaty WYNIKA Z WALUTY, nie jest osobnym wyborem: bramka rozlicza
+  // wylacznie zlotowki, wiec euro moze pojsc tylko przelewem. Klient zmienia
+  // droge zmieniajac walute i to jest jedyna decyzja, ktora ma do podjecia.
+  const payMode = currency === "EUR" ? "bank_transfer" : "autopay";
   const [methods, setMethods] = useState([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -488,6 +491,7 @@ export default function Checkout() {
         },
         consents,
         paymentMethod: payMode,
+        currency,
         discountCode: applied?.code || null,
       });
 
@@ -795,13 +799,14 @@ export default function Checkout() {
 
           <h2 className="text-white font-semibold mb-3 mt-8">{u.payMethod}</h2>
 
-          {/* Wybor metody pokazujemy tylko przy cenach w euro. Dla klienta
-              placacego w zlotowkach przelew zagraniczny bylby tylko szumem. */}
-          {showEur && (
-            <div className="space-y-2 mb-5">
+          {/* Wybor stoi przed KAZDYM klientem, nie tylko przed tym, ktory czyta
+              po angielsku. Polak z kontem w euro i Niemiec z polska karta to sa
+              prawdziwi ludzie, a wczesniej ani jeden, ani drugi nie mial jak
+              zaplacic po swojemu. */}
+          <div className="space-y-2 mb-5">
               <button
                 type="button"
-                onClick={() => setPayMode("bank_transfer")}
+                onClick={() => setCurrency("EUR")}
                 className={`w-full p-3 rounded-lg border text-left transition-all ${
                   payMode === "bank_transfer" ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
                 }`}
@@ -810,14 +815,14 @@ export default function Checkout() {
                   <span className={`text-sm font-medium ${payMode === "bank_transfer" ? "text-blue-300" : "text-neutral-300"}`}>
                     {u.payTransfer}
                   </span>
-                  <span className="text-white text-sm font-semibold">{money(totalGrosze)}</span>
+                  <span className="text-white text-sm font-semibold">{formatEur(totalGrosze, rate, lang)}</span>
                 </div>
                 <p className="text-neutral-500 text-[11px] mt-1">{u.payTransferNote}</p>
               </button>
 
               <button
                 type="button"
-                onClick={() => setPayMode("autopay")}
+                onClick={() => setCurrency("PLN")}
                 className={`w-full p-3 rounded-lg border text-left transition-all ${
                   payMode === "autopay" ? "border-blue-400 bg-blue-400/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"
                 }`}
@@ -834,7 +839,6 @@ export default function Checkout() {
                 <p className="text-neutral-500 text-[11px] mt-1">{u.payInstantNote}</p>
               </button>
             </div>
-          )}
 
           {payMode === "bank_transfer" ? (
             <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 mb-6">

@@ -1409,6 +1409,9 @@ app.post("/quotes/new", requireAuth, async (req, res) => {
         name: (req.body.name || "").trim() || null,
         phone: (req.body.phone || "").trim() || null,
         lang: ["pl", "en", "de"].includes(req.body.lang) ? req.body.lang : "pl",
+        // Puste pole znaczy "wez walute z jezyka". Backend zna te tabelke
+        // i jest jednym miejscem, ktore ja stosuje.
+        currency: ["PLN", "EUR"].includes(req.body.currency) ? req.body.currency : undefined,
         source: req.body.source === "phone" ? "phone" : "email",
         message: req.body.message || null,
         items,
@@ -1500,6 +1503,7 @@ app.post("/quotes/:ref/edit", requireAuth, async (req, res) => {
         name: req.body.name ?? undefined,
         phone: req.body.phone ?? undefined,
         lang: req.body.lang || undefined,
+        currency: req.body.currency || undefined,
         message: req.body.message ?? undefined,
         note: req.body.note ?? undefined,
         // Puste pole znaczy "zdejmij termin", brak pola znaczy "nie ruszaj".
@@ -1519,6 +1523,86 @@ app.post("/quotes/:ref/edit", requireAuth, async (req, res) => {
     ].filter(Boolean).join(", ");
     back(res, wroc, { msg: `Zapisano ${req.params.ref}: ${zmiany}` });
   } catch (err) { back(res, wroc, { err: err.message }); }
+});
+
+/**
+ * Zapis JEDNEJ POZYCJI oferty. Odpowiada JSON-em, bo wola to strona, nie formularz.
+ *
+ * Edytor wycen nie ma juz przycisku "zapisz". Zapisujemy na poziomie REKORDU,
+ * a nie po kazdym znaku, i to jest swiadomy wybor:
+ *
+ *   - zapis po kazdym znaku wklada do bazy stany niedokonczone ("Wydruk klu",
+ *     cena 4 grosze), a przy ofercie juz wyslanej widzi je klient;
+ *   - kazdy zapis to transakcja, ktora przelicza sume, pilnuje reguly "jeden
+ *     wariant w grupie" i potrafi zmienic stan oferty. Kilkaset takich
+ *     transakcji na jedna sesje edycji to koszt bez pokrycia.
+ *
+ * Klikniecie w przelacznik, pole zaznaczane albo liste zapisuje sie od razu,
+ * bo klikniecie JEST cala decyzja i nie ma stanu posredniego.
+ */
+app.post("/quotes/:ref/item", requireAuth, express.json({ limit: "64kb" }), async (req, res) => {
+  try {
+    const poz = req.body || {};
+    const grosze = (wartosc) => {
+      const t = String(wartosc ?? "").trim().replace(",", ".");
+      if (!t) return null;
+      const g = Math.round(Number(t) * 100);
+      if (!Number.isFinite(g) || g <= 0) throw new Error("Kwota pozycji musi byc dodatnia albo pusta");
+      return g;
+    };
+
+    // Pola pominiete zostaja nietkniete: zapis jednego przelacznika nie moze
+    // skasowac opisu, ktorego to zadanie w ogole nie nioslo.
+    const item = {};
+    if (poz.id) item.id = Number(poz.id);
+    if (poz.remove) item.remove = true;
+    if (!poz.remove) {
+      if (poz.title !== undefined) item.title = poz.title;
+      if (poz.qty !== undefined) item.qty = poz.qty;
+      if (poz.description !== undefined) item.description = poz.description;
+      if (poz.unitPln !== undefined) item.unitGrosze = grosze(poz.unitPln);
+      if (poz.kind !== undefined) item.kind = ["fixed", "variant", "option"].includes(poz.kind) ? poz.kind : "fixed";
+      if (poz.groupKey !== undefined) item.groupKey = String(poz.groupKey ?? "").trim() || null;
+      if (poz.selected !== undefined) item.selected = Boolean(poz.selected);
+    }
+    if (!item.id && !item.title) return res.status(400).json({ ok: false, error: "Nowa pozycja musi miec nazwe" });
+
+    const r = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/update`, {
+      method: "POST",
+      body: { items: [item] },
+    });
+    // Stan oferty czytamy od nowa, bo zapis jednej pozycji potrafi przestawic
+    // cala oferte: sume, zaznaczenie w grupie i stan "nowa albo oferta".
+    const swieza = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/admin`);
+    res.json({ ok: true, ...r, quote: swieza.quote, items: swieza.items });
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
+/**
+ * Zapis NAGLOWKA oferty: dane klienta, jezyk, waluta, tresc zapytania,
+ * notatka i termin waznosci. Osobny rekord, wiec osobny zapis i osobny olowek.
+ */
+app.post("/quotes/:ref/header", requireAuth, express.json({ limit: "64kb" }), async (req, res) => {
+  try {
+    const b = req.body || {};
+    const patch = {};
+    for (const pole of ["email", "name", "phone", "message", "note"]) {
+      if (b[pole] !== undefined) patch[pole] = b[pole];
+    }
+    if (b.lang !== undefined) patch.lang = b.lang;
+    if (b.currency !== undefined) patch.currency = b.currency;
+    // Puste pole daty znaczy "zdejmij termin", brak pola znaczy "nie ruszaj".
+    if (b.validUntil !== undefined) patch.validUntil = b.validUntil;
+    if (b.validDays !== undefined && String(b.validDays).trim() !== "") patch.validDays = String(b.validDays).trim();
+
+    const r = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/update`, { method: "POST", body: patch });
+    const swieza = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/admin`);
+    res.json({ ok: true, ...r, quote: swieza.quote, items: swieza.items });
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
+  }
 });
 
 /**

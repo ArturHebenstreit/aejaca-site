@@ -12,6 +12,7 @@
 
 import { generateToken, priceItem } from "./orders.js";
 import { CAD_CONFIG } from "./pricing/cadDesign.js";
+import { defaultCurrency, normalizeCurrency, eurCentsFromGrosze } from "./pricing/currency.js";
 import { QUOTE_VALIDITY_DAYS } from "./pricing/config.js";
 
 /** Ile dni obowiazuje wyslana wycena, jesli nie podano inaczej */
@@ -68,12 +69,17 @@ export async function createQuote(pool, input) {
   const accessToken = generateToken();
   const lang = ["pl", "en", "de"].includes(input.lang) ? input.lang : "pl";
 
+  // Waluta idzie za jezykiem zapytania: kto pisze po niemiecku, ten prawie
+  // zawsze placi z konta w euro. To jest wartosc DOMYSLNA, do zmiany w panelu
+  // i przez samego klienta na stronie oferty.
+  const currency = normalizeCurrency(input.currency, lang);
+
   const { rows } = await pool.query(
-    `INSERT INTO quotes (quote_ref, lang, source, customer_email, customer_name, customer_phone,
+    `INSERT INTO quotes (quote_ref, lang, currency, source, customer_email, customer_name, customer_phone,
        message, access_token, ip_hash, rates_snapshot)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
      RETURNING id`,
-    [quoteRef, lang, input.source || "quote",
+    [quoteRef, lang, currency, input.source || "quote",
      input.email ? String(input.email).trim().toLowerCase() : null,
      input.name || null, input.phone || null,
      input.message || null, accessToken, input.ipHash || null,
@@ -418,11 +424,14 @@ export function quoteItemsForDiscount(quote) {
  * @param {object} [opcje.customer]  dane wysylki podane przez klienta na stronie oferty
  * @param {object} [opcje.discount]  { code, reserve } gdzie `reserve` rezerwuje kod w tej transakcji
  * @param {string} [opcje.paymentMethod] 'autopay' albo 'bank_transfer'
+ * @param {number} [opcje.eurRate] kurs, po ktorym zamrazamy kwote przelewu w euro
+ * @param {Date}   [opcje.expiresAt] wlasny termin waznosci zamowienia
  * @returns {Promise<{orderRef:string, accessToken:string, totalGrosze:number}>}
  */
 export async function convertQuoteToOrder(
   pool, quoteRef,
-  { orderRef, delivery = {}, customer = {}, discount = null, consents = null, paymentMethod = "autopay", validityDays = 7 }
+  { orderRef, delivery = {}, customer = {}, discount = null, consents = null, paymentMethod = "autopay",
+    validityDays = 7, eurRate = null, expiresAt: terminZlecony = null }
 ) {
   const quote = await getQuoteByRef(pool, quoteRef);
   if (!quote) throw new QuoteError("not_found", "Nie ma takiej wyceny");
@@ -435,7 +444,11 @@ export async function convertQuoteToOrder(
   const credit = await availableDesignCredit(pool, quote.customer_email);
   const creditGrosze = credit ? Math.min(credit.grosze, quote.total_grosze) : 0;
   const accessToken = generateToken();
-  const expiresAt = new Date(Date.now() + validityDays * 86400_000);
+  const expiresAt = terminZlecony || new Date(Date.now() + validityDays * 86400_000);
+  // Zaplata w euro idzie przelewem, a kwote w euro ZAMRAZAMY przy skladaniu
+  // zamowienia, razem z kursem. Gdybysmy przeliczali ja dopiero przy ksiegowaniu,
+  // klient przelalby jedna kwote, a my oczekiwalibysmy innej.
+  const przelew = paymentMethod === "bank_transfer";
 
   // Dane kontaktowe: to, co klient wpisal na stronie oferty, ma pierwszenstwo
   // przed tym, co zanotowalismy przy rozmowie. Adres e-mail zostaje jednak
@@ -460,9 +473,12 @@ export async function convertQuoteToOrder(
          customer_email, customer_name, customer_phone,
          delivery_method, delivery_point, address_line1, address_line2, postal_code, city, country,
          access_token, ip_hash, expires_at, credit_applied_grosze, payment_method,
+         amount_eur_cents, eur_rate, eur_rate_locked_at,
          accepted_terms_at, waived_withdrawal_at)
        -- 'quoted' jest jedyna dopuszczona przez CHECK w orders.kind obok 'instant'
-       VALUES ($1,'awaiting_payment','quoted',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
+       VALUES ($1,$25,'quoted',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
+         $23,$24, CASE WHEN $23::INTEGER IS NULL THEN NULL ELSE NOW() END,
+         $21,$22)
        RETURNING id`,
       [orderRef, quote.lang, quote.total_grosze, shipping, total,
        email, name, phone,
@@ -470,12 +486,19 @@ export async function convertQuoteToOrder(
        delivery.addressLine2 || null, delivery.postalCode || null, delivery.city || null,
        delivery.country || "PL",
        accessToken, quote.ip_hash, expiresAt, creditGrosze || null,
-       paymentMethod === "bank_transfer" ? "bank_transfer" : "autopay",
+       przelew ? "bank_transfer" : "autopay",
        // Zgody zapisujemy z chwila zlozenia zamowienia. Wycena przekuta z
        // panelu ich nie niesie, bo tam zamawia czlowiek z naszej strony, i
        // wtedy oba pola zostaja puste zamiast udawac zgode, ktorej nikt nie dal.
        consents?.terms ? new Date() : null,
-       consents?.waiveWithdrawal ? new Date() : null]
+       consents?.waiveWithdrawal ? new Date() : null,
+       // Kwota w euro liczy sie z sumy PLN po tym samym narzucie, co w sklepie,
+       // i zamraza sie razem z kursem. Przy zaplacie bramka pole zostaje puste.
+       przelew ? eurCentsFromGrosze(total, eurRate) : null,
+       przelew ? eurRate : null,
+       // Przelew nie ma bramki, wiec zamowienie czeka na ksiegowanie, a nie
+       // na przekierowanie. To ten sam stan, ktorego uzywa sklep.
+       przelew ? "awaiting_transfer" : "awaiting_payment"]
     );
     const orderId = rows[0].id;
 
@@ -495,9 +518,14 @@ export async function convertQuoteToOrder(
       // Znizka nie schodzi ponizej zera i nie dotyka dostawy: kurier kosztuje
       // nas tyle samo niezaleznie od tego, jaki kod wpisal klient.
       doZaplaty = Math.max(0, quote.total_grosze - creditGrosze - discountGrosze) + shipping;
+      // Kwota w euro idzie za kwota w zlotowkach. Bez tego wiersza rabat
+      // schodzilby z sumy PLN, a przelew opiewalby na cene sprzed rabatu:
+      // klient przelalby za duzo i mielibysmy nadplate do zwrotu.
       await client.query(
-        `UPDATE orders SET discount_code = $2, discount_grosze = $3, total_grosze = $4 WHERE id = $1`,
-        [orderId, discountCode, discountGrosze, doZaplaty]
+        `UPDATE orders SET discount_code = $2, discount_grosze = $3, total_grosze = $4,
+                amount_eur_cents = CASE WHEN amount_eur_cents IS NULL THEN NULL ELSE $5 END
+          WHERE id = $1`,
+        [orderId, discountCode, discountGrosze, doZaplaty, przelew ? eurCentsFromGrosze(doZaplaty, eurRate) : null]
       );
     }
 
@@ -540,6 +568,9 @@ export async function convertQuoteToOrder(
       orderRef, accessToken, totalGrosze: doZaplaty, orderId,
       creditGrosze, creditFrom: credit?.orderRef ?? null,
       discountCode, discountGrosze,
+      paymentMethod: przelew ? "bank_transfer" : "autopay",
+      amountEurCents: przelew ? eurCentsFromGrosze(doZaplaty, eurRate) : null,
+      eurRate: przelew ? eurRate : null,
     };
   } catch (e) {
     await client.query("ROLLBACK").catch(() => {});
@@ -605,6 +636,14 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
       if (!lang) throw new QuoteError("bad_lang", "Jezyk oferty to pl, en albo de");
       dopisz("lang", lang);
     }
+    // Waluta oferty dotyczy CALEJ oferty, nigdy pojedynczej pozycji: rachunek
+    // w dwoch walutach nie ma jak sie zsumowac, a przelew wychodzi z jednego
+    // konta. Zmienia sie razem ze sposobem zaplaty, wiec nie jest kosmetyka.
+    if (patch.currency !== undefined) {
+      const waluta = String(patch.currency || "").toUpperCase();
+      if (!["PLN", "EUR"].includes(waluta)) throw new QuoteError("bad_currency", "Waluta oferty to PLN albo EUR");
+      dopisz("currency", waluta);
+    }
     // Termin waznosci jest obietnica handlowa i zmienia sie niezaleznie od kwot:
     // przy wyrobie, w ktorym kruszec jest glowna skladowa, bywa krotszy niz
     // domyslny. Do tej pory dalo sie go ustawic WYLACZNIE przy wycenianiu, wiec
@@ -651,6 +690,11 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
 
     // --- Pozycje ----------------------------------------------------------
     const wgId = new Map(quote.items.map((i) => [Number(i.id), i]));
+    // Pozycje, ktore TO zadanie kaze zaznaczyc. Potrzebne nizej, przy pilnowaniu
+    // reguly "w grupie zaznaczony jest dokladnie jeden".
+    const swiezoZaznaczone = new Set(
+      (patch.items || []).filter((p) => p.selected === true && p.id != null).map((p) => Number(p.id))
+    );
     let usuniete = 0;
     let dodane = 0;
 
@@ -781,9 +825,14 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
     }
     for (const warianty of grupy.values()) {
       const zaznaczone = warianty.filter((i) => i.selected);
+      // Zaznaczenie z TEGO zapisu wygrywa z zastanym. Bez tej zasady przestawienie
+      // wariantu pojedynczym zadaniem nie dzialaloby wcale: w grupie byliby wtedy
+      // dwaj zaznaczeni, a regula "zostaje pierwszy" trzymalaby sie starego wyboru
+      // i cicho cofala klikniecie.
+      const swiezy = warianty.find((i) => swiezoZaznaczone.has(Number(i.id)));
       // Bez zaznaczenia bierzemy pierwszy wyceniony, zeby oferta nigdy nie
       // trafila do klienta z pusta karta.
-      const zostaje = zaznaczone[0] || warianty.find((i) => i.unit_grosze != null) || warianty[0];
+      const zostaje = swiezy || zaznaczone[0] || warianty.find((i) => i.unit_grosze != null) || warianty[0];
       for (const i of warianty) {
         const ma = i === zostaje;
         if (Boolean(i.selected) !== ma) {

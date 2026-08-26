@@ -5,6 +5,7 @@ import { HelmetProvider } from "react-helmet-async";
 import "./index.css";
 import "./utils/analytics.js";  // init analytics (side-effect)
 import { LanguageProvider } from "./i18n/LanguageContext.jsx";
+import { CurrencyProvider } from "./shop/CurrencyContext.jsx";
 import { ThemeProvider } from "./i18n/ThemeContext.jsx";
 import { CartProvider } from "./cart/CartContext.jsx";
 import Layout from "./components/Layout.jsx";
@@ -144,6 +145,7 @@ const app = (
     <HelmetProvider>
       <ThemeProvider>
         <LanguageProvider>
+          <CurrencyProvider>
           <CartProvider>
           <BrowserRouter>
           <ScrollToHash />
@@ -152,6 +154,7 @@ const app = (
           </Suspense>
           </BrowserRouter>
           </CartProvider>
+          </CurrencyProvider>
         </LanguageProvider>
       </ThemeProvider>
     </HelmetProvider>

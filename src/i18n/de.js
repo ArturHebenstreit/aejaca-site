@@ -1,6 +1,8 @@
 export default {
   nav: {
     home: "Startseite",
+    currency: "Zahlungswährung",
+    currencyHint: "Zloty läuft über BLIK oder eine Online-Überweisung, Euro per Überweisung auf unser Währungskonto.",
     blog: "Blog",
     jewelry: "AEJaCA Schmuck",
     studio: "AEJaCA sTuDiO",
