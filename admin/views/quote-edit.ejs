@@ -6,9 +6,10 @@
   const wyslana = ["sent", "accepted", "converted"].includes(quote.status);
   const pln = (g) => (g == null ? "" : (g / 100).toFixed(2));
 
-  // Karta to grupa: warianty, ktore sie wzajemnie wykluczaja, i dodatki, ktore
-  // da sie do nich dolozyc. Numer karty wchodzi do nazwy przelacznika, bo
-  // przegladarka laczy przelaczniki w jeden wybor WYLACZNIE po nazwie pola.
+  // Grupa wyboru to jedna ramka u klienta: warianty, ktore sie wzajemnie
+  // wykluczaja, i dodatki, ktore da sie do nich dolozyc. Numer grupy wchodzi
+  // do nazwy przelacznika, bo przegladarka laczy przelaczniki w jeden wybor
+  // WYLACZNIE po nazwie pola.
   const KARTY = [];
   items.forEach(function (it) {
     const klucz = (it.groupKey || "").trim() || (it.kind === "fixed" ? "" : "wybor");
@@ -22,6 +23,14 @@
     ["option", "dodatek opcjonalny"],
   ];
   const ETYKIETA_RODZAJU = { fixed: "składnik", variant: "wariant", option: "dodatek" };
+
+  // Ile dni zostalo do konca waznosci. Pole "w dniach" jest puste z zalozenia,
+  // wiec bez tej liczby ekran nie mowil, jak dlugo oferta jeszcze obowiazuje;
+  // podpowiedz "14" w pustym polu wygladala jak zapisany termin i wracala po
+  // kazdym zapisie, cokolwiek by sie wpisalo.
+  const DNI_DO_KONCA = quote.validUntil
+    ? Math.round((new Date(String(quote.validUntil).slice(0, 10)) - new Date(new Date().toISOString().slice(0, 10))) / 86400000)
+    : null;
 %>
 
   <main class="max-w-4xl mx-auto px-6 py-8">
@@ -132,14 +141,27 @@
           zapytanie w ofertę i ustawia termin ważności. Ołówek otwiera resztę pól, czerwony krzyżyk
           usuwa pozycję.
         </p>
-        <p class="text-neutral-500 text-xs leading-relaxed mb-4 max-w-2xl">
-          <span class="text-neutral-300">Wariant</span> to jedna z kilku propozycji na tej samej karcie:
-          klient bierze z niej dokładnie jedną, na przykład klucz 56 mm albo 68 mm.
-          <span class="text-neutral-300">Dodatek</span> stoi obok wariantów i klient dokłada go albo nie,
-          na przykład polerowanie. <span class="text-neutral-300">Składnik</span> jest w kwocie zawsze.
-          Zaznaczenie tutaj to układ, który klient zobaczy na stronie oferty jako gotowy; zmieni go
-          u siebie, jeśli zechce.
-        </p>
+        <div class="rounded-lg border border-white/10 bg-neutral-950 p-4 mb-4 max-w-3xl">
+          <div class="text-neutral-300 text-xs font-medium mb-2">Rodzaj pozycji i grupa wyboru</div>
+          <ul class="text-neutral-500 text-[11px] leading-relaxed space-y-1">
+            <li><span class="text-neutral-300">Składnik rachunku</span> jest w kwocie zawsze. Grupa go nie dotyczy.</li>
+            <li><span class="text-neutral-300">Wariant do wyboru</span> stoi w grupie i klient bierze z niej
+              <span class="text-neutral-300">dokładnie jeden</span>. Wariantów jednej grupy nie da się kupić razem.</li>
+            <li><span class="text-neutral-300">Dodatek opcjonalny</span> stoi obok wariantów i klient dokłada go albo nie.</li>
+          </ul>
+          <p class="text-neutral-500 text-[11px] leading-relaxed mt-3">
+            <span class="text-neutral-300">Grupa wyboru</span> to nazwa, którą sam wpisujesz, na przykład
+            <span class="font-mono text-neutral-400">klucz</span>. Pozycje z tą samą nazwą stoją u klienta
+            w jednej ramce i wykluczają się wzajemnie. Wpisz <span class="font-mono text-neutral-400">odlew</span>
+            przy trzech innych pozycjach, a powstanie druga, niezależna ramka: klient wybierze jedną rzecz
+            z pierwszej i jedną z drugiej. Grup może być tyle, ile potrzebujesz.
+          </p>
+          <p class="text-neutral-500 text-[11px] leading-relaxed mt-2">
+            Kółko po lewej stronie pozycji ustawia to, co klient zobaczy jako zaznaczone, kiedy otworzy
+            ofertę. W grupie wariantów zaznaczony jest zawsze jeden, dodatek zaznaczasz i odznaczasz dowolnie.
+            Klient zmieni ten układ u siebie.
+          </p>
+        </div>
 
         <datalist id="karty">
           <% KARTY.forEach(function (k) { %><option value="<%= k %>"></option><% }); %>
@@ -166,15 +188,38 @@
                 <div class="min-w-0 flex-1">
                   <div class="text-sm text-white"><%= it.title %></div>
                   <div class="text-neutral-600 text-[10px] mt-0.5">
-                    <%= it.qty %> szt.
-                    &middot; <%= ETYKIETA_RODZAJU[it.kind] || "składnik" %><% if (it.kind !== "fixed") { %>
-                      &middot; karta <%= (it.groupKey || "wybor") %><% } %><% if (it.calculator) { %>
+                    <%= it.qty %> szt.<% if (it.calculator) { %>
                       &middot; <%= it.calculator %><% } %><% if (it.fileName) { %>
                       &middot; <%= it.fileName %><% } %>
                   </div>
                   <% if (it.description) { %>
                     <p class="text-neutral-400 text-xs mt-2 whitespace-pre-wrap"><%= it.description %></p>
                   <% } %>
+
+                  <div class="flex flex-wrap items-end gap-2 mt-2">
+                    <label class="block">
+                      <span class="text-neutral-500 text-[10px] block mb-1">Rodzaj</span>
+                      <select name="itemKind" class="rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white">
+                        <% RODZAJE.forEach(function (r) { %>
+                          <option value="<%= r[0] %>" <%= (it.kind || "fixed") === r[0] ? "selected" : "" %>><%= r[1] %></option>
+                        <% }); %>
+                      </select>
+                    </label>
+                    <label class="block">
+                      <span class="text-neutral-500 text-[10px] block mb-1">Grupa wyboru</span>
+                      <input name="itemGroup" list="karty" value="<%= it.groupKey || '' %>" placeholder="np. klucz"
+                             class="w-36 rounded-lg bg-neutral-900 border border-white/10 px-2 py-1.5 text-[11px] text-white" />
+                    </label>
+                    <span class="text-neutral-600 text-[10px] pb-2">
+                      <% if (it.kind === "variant") { %>
+                        jeden z grupy <span class="text-neutral-400 font-mono"><%= it.groupKey || "wybor" %></span><%= it.selected ? ", teraz zaznaczony" : "" %>
+                      <% } else if (it.kind === "option") { %>
+                        dodatek do grupy <span class="text-neutral-400 font-mono"><%= it.groupKey || "wybor" %></span><%= it.selected ? ", teraz zaznaczony" : ", teraz odznaczony" %>
+                      <% } else { %>
+                        zawsze w kwocie, grupa bez znaczenia
+                      <% } %>
+                    </span>
+                  </div>
                 </div>
 
                 <label class="shrink-0">
@@ -215,28 +260,11 @@
                   <input name="itemQty" type="number" min="1" value="<%= it.qty %>"
                          class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
                 </label>
-                <label class="block">
-                  <span class="text-neutral-500 text-[10px] block mb-1">Rodzaj</span>
-                  <select name="itemKind" class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white">
-                    <% RODZAJE.forEach(function (r) { %>
-                      <option value="<%= r[0] %>" <%= (it.kind || "fixed") === r[0] ? "selected" : "" %>><%= r[1] %></option>
-                    <% }); %>
-                  </select>
-                </label>
-                <label class="block">
-                  <span class="text-neutral-500 text-[10px] block mb-1">Karta</span>
-                  <input name="itemGroup" list="karty" value="<%= it.groupKey || '' %>" placeholder="np. klucz"
-                         class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
-                </label>
                 <label class="sm:col-span-6 block">
                   <span class="text-neutral-500 text-[10px] block mb-1">Opis: to, czego nie widać w nazwie</span>
                   <textarea name="itemDescription" rows="2"
                             class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white"><%= it.description || '' %></textarea>
                 </label>
-                <p class="sm:col-span-6 text-neutral-600 text-[10px] leading-relaxed">
-                  Warianty i dodatki z tą samą nazwą karty stoją u klienta razem, w jednej ramce.
-                  Puste pole karty znaczy „wybor", czyli kartę domyślną.
-                </p>
                 <% if (it.params && Object.keys(it.params).length) { %>
                   <details class="sm:col-span-6">
                     <summary class="cursor-pointer text-neutral-600 text-[10px]">Parametry z kalkulatora</summary>
@@ -275,7 +303,7 @@
               </select>
             </label>
             <label class="sm:col-span-2 block">
-              <span class="text-neutral-500 text-[10px] block mb-1">Karta</span>
+              <span class="text-neutral-500 text-[10px] block mb-1">Grupa wyboru</span>
               <input name="newGroup" list="karty" placeholder="np. klucz"
                      class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
             </label>
@@ -298,16 +326,25 @@
                       class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white"><%= quote.priceNote || '' %></textarea>
           </label>
           <label class="block">
-            <span class="text-neutral-400 text-xs">Ważna przez, dni</span>
-            <input name="validDays" type="number" min="1" max="365" placeholder="14"
-                   class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white" />
-            <span class="text-neutral-600 text-[10px] block mt-1">Liczy się od dzisiaj i nadpisuje datę obok.</span>
-          </label>
-          <label class="block">
-            <span class="text-neutral-400 text-xs">albo ważna do dnia</span>
+            <span class="text-neutral-400 text-xs">Ważna do dnia</span>
             <input name="validUntil" type="date" value="<%= quote.validUntil ? String(quote.validUntil).slice(0, 10) : '' %>"
                    class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white" />
-            <span class="text-neutral-600 text-[10px] block mt-1">Teraz do <%= fmtDateShort(quote.validUntil) %>. Puste pole zdejmuje termin.</span>
+            <span class="text-neutral-600 text-[10px] block mt-1">
+              <% if (quote.validUntil) { %>
+                Teraz do <%= fmtDateShort(quote.validUntil) %><%= DNI_DO_KONCA != null ? `, czyli jeszcze ${DNI_DO_KONCA} dni` : "" %>.
+              <% } else { %>
+                Termin nieustawiony.
+              <% } %>
+              Puste pole zdejmuje termin.
+            </span>
+          </label>
+          <label class="block">
+            <span class="text-neutral-400 text-xs">albo policz od dziś, w dniach</span>
+            <input name="validDays" type="number" min="1" max="365" placeholder="np. 30"
+                   class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white" />
+            <span class="text-neutral-600 text-[10px] block mt-1">
+              Wpisana liczba wygrywa z datą obok. Puste pole zostawia termin bez zmian.
+            </span>
           </label>
         </div>
         <p class="text-neutral-600 text-[10px] leading-relaxed mt-2 max-w-2xl">

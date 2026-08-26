@@ -6,6 +6,7 @@ import pg from "pg";
 import { randomBytes } from "node:crypto";
 
 import { fileURLToPath } from "url";
+import { PANEL_WERSJA, opisWersji } from "./wersja.js";
 import { dirname, join } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -79,7 +80,40 @@ app.use(passport.session());
 // tutaj, to blad 500 przy pierwszym wierszu z danymi, a nie przy pustej liscie:
 // `fmtDateShort` stal w trzech widokach i nie istnial nigdzie indziej, wiec
 // panel wywalal sie dopiero po zalozeniu pierwszej wyceny.
+// Wersje panelu i backendu sklepu. Obie uslugi wdrazaja sie osobno, wiec nowy
+// formularz potrafi przez chwile rozmawiac ze starym API i po cichu gubic pola,
+// ktorych tamto nie zna. Naglowek pokazuje wiec obie liczby i stan schematu.
+//
+// Zapytanie do backendu idzie W TLE i najwyzej raz na minute: strona panelu
+// nie moze czekac na cudza usluge ani wywalac sie, gdy ta nie odpowiada.
+let wersjaApi = { tekst: null, ostrzezenie: null, kiedy: 0 };
+
+function odswiezWersjeApi() {
+  if (wersjaApi.kiedy && Date.now() - wersjaApi.kiedy < 60_000) return;
+  wersjaApi.kiedy = Date.now();
+  shopApi("/api/version")
+    .then((d) => {
+      wersjaApi.tekst = d.commit ? `${d.version} (${d.commit})` : String(d.version || "?");
+      wersjaApi.ostrzezenie = d.schema && d.schema.quoteItemKinds === false
+        ? "baza sklepu nie ma jeszcze kolumn wyboru, warianty i dodatki nie zapiszą się"
+        : (d.version && d.version !== PANEL_WERSJA ? "panel i backend sklepu mają różne wersje" : null);
+    })
+    .catch((e) => {
+      wersjaApi.tekst = null;
+      // Trasa wersji weszla razem z tym panelem, wiec jej brak nie jest awaria:
+      // to znaczy, ze backend sklepu jest po prostu starszy i nie zna pol,
+      // ktore ten panel wysyla. Dokladnie tak wyglada wdrozenie w polowie.
+      wersjaApi.ostrzezenie = /404/.test(e.message)
+        ? "backend sklepu jest starszy niż panel (nie zna trasy /api/version), więc nowe pola zapisu mogą być ignorowane"
+        : `backend sklepu nie odpowiada: ${e.message}`;
+    });
+}
+
 app.use((req, res, next) => {
+  odswiezWersjeApi();
+  res.locals.wersjaPanelu = opisWersji();
+  res.locals.wersjaApi = wersjaApi.tekst;
+  res.locals.ostrzezenieWersji = wersjaApi.ostrzezenie;
   res.locals.fmtDate = (d) => {
     if (!d) return ' - ';
     const dt = new Date(d);
