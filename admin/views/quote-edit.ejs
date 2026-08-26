@@ -190,7 +190,7 @@
                    value="<%= DNI_DO_KONCA != null && DNI_DO_KONCA >= 1 ? DNI_DO_KONCA : '' %>"
                    class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white disabled:opacity-70" />
           </label>
-          <p class="text-neutral-600 text-[10px] leading-relaxed self-end pb-2">
+          <p data-podglad="termin" class="text-neutral-600 text-[10px] leading-relaxed self-end pb-2">
             <% if (DNI_DO_KONCA != null && DNI_DO_KONCA >= 1) { %>
               Oferta obowiązuje jeszcze <%= DNI_DO_KONCA %> dni, do <%= fmtDateShort(quote.validUntil) %>.
               Zapisana bez zmiany nie przesuwa terminu.
@@ -203,21 +203,24 @@
         </div>
 
         <label class="block mt-3">
-          <span class="text-neutral-400 text-xs">Treść zapytania</span>
+          <span class="text-neutral-400 text-xs">Treść zapytania (tylko dla nas, klient tego nie widzi)</span>
           <textarea data-pole="message" rows="2" disabled
                     class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white disabled:opacity-70"><%= quote.message || '' %></textarea>
         </label>
 
         <label class="block mt-3">
-          <span class="text-neutral-400 text-xs">Notatka do oferty: co wchodzi, czego nie ma</span>
+          <span class="text-neutral-400 text-xs">Opis oferty dla klienta: zakres, co wchodzi w kwotę</span>
           <textarea data-pole="note" rows="2" disabled
                     class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white disabled:opacity-70"><%= quote.priceNote || '' %></textarea>
         </label>
 
         <p class="text-neutral-600 text-[10px] leading-relaxed mt-3">
-          Notatka idzie do klienta razem z kwotą. Waluta dotyczy całej oferty i rozstrzyga o drodze zapłaty:
-          złotówki idą bramką, euro przelewem na rachunek walutowy. Zostaw adres e-mail albo telefon, bez
-          żadnego z nich nie ma jak przekazać oferty.
+          <span class="text-neutral-400">Opis oferty widzi klient</span> na swojej stronie, pod pozycjami:
+          to w nim piszesz zakres, czyli co wchodzi w kwotę, a czego w niej nie ma.
+          <span class="text-neutral-400">Treść zapytania zostaje tutaj</span>, w panelu, i klientowi się nie
+          pokazuje, bo bywa notatką z rozmowy pisaną dla siebie. Waluta dotyczy całej oferty i rozstrzyga
+          o drodze zapłaty: złotówki idą bramką, euro przelewem na rachunek walutowy. Zostaw adres e-mail
+          albo telefon, bez żadnego z nich nie ma jak przekazać oferty.
         </p>
         <p data-blad class="text-red-300 text-xs mt-2" hidden></p>
       </section>
@@ -681,6 +684,30 @@
         ? (dane.quote.totalGrosze / 100).toFixed(2) + " zł" : "-";
       if (stanOferty) stanOferty.textContent = dane.quote.status;
       if (waluta) waluta.textContent = dane.quote.currency || "PLN";
+
+      // Termin liczy SERWER: wpisana liczba dni zamienia sie w date, a data
+      // w liczbe dni. Bez przepisania obu pol z odpowiedzi ekran pokazywal
+      // to, co czlowiek wpisal, a nie to, co naprawde stoi w bazie.
+      var rekord = document.querySelector('[data-rekord="naglowek"]');
+      if (!rekord) return;
+      var poleData = rekord.querySelector('[data-pole="validUntil"]');
+      var poleDni = rekord.querySelector('[data-pole="validDays"]');
+      var podpowiedz = rekord.querySelector('[data-podglad="termin"]');
+      var dzien = dane.quote.validUntil ? String(dane.quote.validUntil).slice(0, 10) : "";
+      if (poleData) poleData.value = dzien;
+
+      var zostalo = dzien
+        ? Math.round((new Date(dzien) - new Date(new Date().toISOString().slice(0, 10))) / 86400000)
+        : null;
+      if (poleDni) poleDni.value = zostalo != null && zostalo >= 1 ? String(zostalo) : "";
+      if (podpowiedz) {
+        podpowiedz.textContent = zostalo != null && zostalo >= 1
+          ? "Oferta obowiązuje jeszcze " + zostalo + " dni, do " + new Date(dzien).toLocaleDateString("pl-PL")
+            + ". Zapisana bez zmiany nie przesuwa terminu."
+          : (dzien
+            ? "Termin minął " + new Date(dzien).toLocaleDateString("pl-PL") + ". Wpisz nową liczbę dni albo popraw datę."
+            : "Termin nieustawiony. Liczba dni liczy się od dzisiaj i wygrywa z datą obok.");
+      }
     }
 
     async function wyslij(sciezka, tresc) {

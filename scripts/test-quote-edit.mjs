@@ -33,6 +33,7 @@ const QUOTES = readFileSync(join(ROOT, "chat-api", "quotes.js"), "utf8");
 const SERWER = readFileSync(join(ROOT, "chat-api", "server.js"), "utf8");
 const PANEL = readFileSync(join(ROOT, "admin", "server.js"), "utf8");
 const WIDOK = readFileSync(join(ROOT, "admin", "views", "quote-edit.ejs"), "utf8");
+const OFERTA = readFileSync(join(ROOT, "src", "pages", "Offer.jsx"), "utf8");
 
 let bledy = 0;
 const zle = (m) => { console.error(`  ✗ ${m}`); bledy++; };
@@ -99,6 +100,14 @@ console.log("\n3. Kwoty ida za iloscia i maja jedna regule\n");
   ma(glowa, /stan = quote\.status === "new" \? "priced" : quote\.status/, "pierwsza kwota czyni z zapytania oferte");
   ma(glowa, /validDays/, "termin waznosci da sie podac w dniach, bez wpisywania kwot od nowa");
   ma(glowa, /swiezoZaznaczone/, "zaznaczenie z biezacego zapisu wygrywa z zastanym");
+
+  // Termin waznosci wchodzi juz przy zakladaniu numeru, a przy pierwszej kwocie
+  // domyslny jest ten sam. Wycena zapisana z kalkulatora zostaje przy swoim,
+  // dluzszym terminie, bo obiecuje go regulamin i llms.txt.
+  ma(QUOTES, /input\.source === SAVED_QUOTE_SOURCE\s*\n\s*\? null/, "zalozenie numeru nadaje termin, a wycena z kalkulatora zostaje przy swoim");
+  ma(QUOTES, /OFFER_VALIDITY_DAYS \* 86400_000/, "termin oferty recznej liczy sie z wlasnej stalej");
+  ma(WIDOK, /data-podglad="termin"/, "podpowiedz o terminie ma sie z czego odswiezyc");
+  ma(WIDOK, /if \(poleDni\) poleDni\.value/, "po zapisie liczba dni przychodzi z bazy, a nie z pola");
 }
 
 console.log("\n4. Zapis na poziomie rekordu, bez przycisku zapisz\n");
@@ -250,6 +259,16 @@ console.log("\n5. Uklad oferty: wariant z grupy, dodatek obok\n");
   ma(QUOTES, /no_variant/, "konwersja odmawia, gdy nie ma czego zamowic");
   ma(QUOTES, /const pozycje = selectedQuoteItems\(quote\)/, "rabat liczy sie od wybranego ukladu, nie od sumy propozycji");
   ma(SERWER, /doZaplaty = items[\s\S]{0,200}?filter\(\(i\) => i\.selected\)/, "strona oferty liczy kwote z pozycji wybranych");
+
+  // Dwa teksty, dwie role. `price_note` to OPIS OFERTY DLA KLIENTA: zakres,
+  // co wchodzi w kwote. Tresc zapytania zostaje w panelu, bo bywa notatka
+  // z rozmowy pisana skrotami dla siebie, a nie dokumentem dla klienta.
+  ma(SERWER, /app\.get\("\/api\/quotes\/:ref"[\s\S]*?priceNote: quote\.price_note,\n    validUntil/, "strona oferty dostaje opis oferty");
+  const podglad = SERWER.slice(SERWER.indexOf('app.get("/api/quotes/:ref"'), SERWER.indexOf('// PANEL WYCEN'));
+  if (/^\s*message: quote\.message,/m.test(podglad)) zle("tresc zapytania wychodzi na strone oferty, a miala zostac w panelu");
+  else ok("tresc zapytania zostaje w panelu");
+  ma(WIDOK, /Treść zapytania \(tylko dla nas/, "panel mowi wprost, ze zapytania klient nie widzi");
+  ma(WIDOK, /Opis oferty dla klienta/, "pole opisu nazywa sie tak, jak dziala");
 }
 
 console.log("\n6. Wybor po stronie klienta\n");

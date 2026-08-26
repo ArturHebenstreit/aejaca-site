@@ -1655,6 +1655,9 @@ app.get("/api/quotes/:ref", async (req, res) => {
     savedTotalGrosze: quote.total_grosze,
     totalGrosze: doZaplaty,
     metalDeltaGrosze: metalDelta,
+    // `price_note` to OPIS OFERTY DLA KLIENTA: zakres, co wchodzi i czego nie ma.
+    // Tresc zapytania zostaje po stronie panelu, bo bywa notatka z rozmowy
+    // pisana skrotami dla siebie, a nie dokumentem dla klienta.
     priceNote: quote.price_note,
     validUntil: quote.valid_until,
     expired: Boolean(expired),

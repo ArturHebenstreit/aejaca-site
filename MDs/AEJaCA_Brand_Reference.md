@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-26 | Wersja: 6.3*
+*Wygenerowano: 2026-08-26 | Wersja: 6.4*
 
 ---
 
@@ -2116,7 +2116,7 @@ Do koszyka nie trafia to, czego nie umiemy wycenic bez czlowieka, i mowimy o tym
 | Krok | Kto | Co sie dzieje |
 |---|---|---|
 | 1. zapytanie | klient | `POST /api/quotes`, pozycje z parametrami, opisem i plikiem, status `new` |
-| 2. wycena | AEJaCA | `POST /api/quotes/:ref/price` z kwotami per pozycja, status `priced`, wazna 14 dni |
+| 2. wycena | AEJaCA | `POST /api/quotes/:ref/price` z kwotami per pozycja, status `priced`, ważna 7 dni (`OFFER_VALIDITY_DAYS`) |
 | 3. zamowienie | AEJaCA | `POST /api/quotes/:ref/convert`, powstaje zamowienie `kind = quoted` w stanie `awaiting_payment` |
 | 4. zaplata | klient | dokladnie ta sama droga co zakup ze sklepu: Autopay, ITN, maile |
 
@@ -2246,6 +2246,19 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
   - **Procedura jest pokazana, nie opowiedziana.** `/payments/` ma diagram dwóch dróg na osi czasu:
     co dzieje się teraz, co w kilka sekund, a co następnego dnia roboczego. Skrót tego samego stoi
     przy wyborze waluty na stronie oferty. Liczba dni roboczych bierze się ze stałej, nie z pamięci.
+- **Oferta wystawiona ręcznie jest ważna 7 dni** (`OFFER_VALIDITY_DAYS`), a termin wchodzi **już przy
+  zakładaniu numeru**, nie dopiero przy pierwszej kwocie. Właściciel widzi go od razu w panelu i wie,
+  co obiecuje, zamiast oglądać puste pole. Wpisanie kwot **nie nadpisuje** tego terminu, więc ręcznie
+  skrócony termin zostaje. **Wycena zapisana z kalkulatora zachowuje swoje 14 dni**
+  (`QUOTE_VALIDITY_DAYS`): tamten okres obiecują regulamin i `llms.txt`, a liczy się z cennika, który
+  sami trzymamy. Oferta ręczna układana jest pod konkretną robotę, często z kruszcem w głównej roli,
+  i tydzień to tyle, ile chcemy trzymać cenę złota bez zabezpieczenia.
+- **Dwa teksty oferty mają dwie role i dwie widownie** (nazwane wprost 2026-08-26).
+  **Opis oferty dla klienta** (`price_note`) to zakres: co wchodzi w kwotę, a czego w niej nie ma.
+  Idzie do klienta razem z kwotą i stoi na jego stronie pod pozycjami. **Treść zapytania**
+  (`message`) zostaje w panelu i klient jej nie widzi, bo bywa notatką z rozmowy pisaną skrótami
+  dla siebie, a nie dokumentem. Pola w panelu nazywają się teraz tak, jak działają, bo poprzednie
+  nazwy („notatka do oferty", „treść zapytania") nie mówiły, które z nich zobaczy klient.
 - **Edytor wycen nie ma przycisku „zapisz"** (od 2026-08-26, ADR-0019). Zapis idzie na poziomie
   **rekordu**, a rekordem jest jedna pozycja albo nagłówek oferty (klient, język, waluta, termin,
   treść zapytania, notatka). Ołówek otwiera rekord, zielony ptaszek wysyła go do bazy jednym

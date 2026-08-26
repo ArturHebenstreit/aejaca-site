@@ -55,7 +55,9 @@ let r = await updateQuote(pool, quoteRef, {
 });
 ok("dwie niezalezne grupy jednokrotnego wyboru", r.totalGrosze === 4000 + 3000 + 80000, `${r.totalGrosze} gr`);
 ok("wpisanie kwot czyni z zapytania oferte", r.status === "priced", r.status);
-ok("bez podania terminu wchodzi domyslny", dzien(r.validUntil) === za(14), String(r.validUntil));
+// Termin nadany przy zakladaniu numeru ZOSTAJE po wpisaniu kwot. Nadpisanie go
+// przy pierwszej kwocie cofaloby recznie skrocony termin do domyslnego.
+ok("termin z zalozenia numeru zostaje po wpisaniu kwot", dzien(r.validUntil) === za(7), String(r.validUntil));
 
 // --- 2. Termin waznosci ----------------------------------------------------
 r = await updateQuote(pool, quoteRef, { validDays: "30" });
@@ -136,6 +138,26 @@ const stan = await getQuoteByRef(pool, quoteRef);
 ok("zaznaczenie w pierwszej grupie zostalo nietkniete", selectedQuoteItems(stan).map((i) => Number(i.id)).join(",") === [Q[1].id, Q[2].id, Q[3].id].map(Number).join(","),
    selectedQuoteItems(stan).map((i) => i.title).join(" + "));
 ok("kwota naglowka zgadza sie z ukladem", stan.total_grosze === quoteAmountGrosze(stan), `${stan.total_grosze} vs ${quoteAmountGrosze(stan)}`);
+
+// --- 4b. Termin waznosci wchodzi przy zakladaniu numeru --------------------
+{
+  const swieza = await createQuote(pool, {
+    email: "termin@aejaca.com", lang: "pl", source: "phone",
+    items: [{ title: "Odlew sygnetu" }],
+  });
+  const q = await getQuoteByRef(pool, swieza.quoteRef);
+  ok("zalozony numer ma od razu termin siedmiu dni", dzien(q.valid_until) === za(7),
+     `${dzien(q.valid_until)} zamiast ${za(7)}`);
+
+  // Wycena zapisana z kalkulatora ma wlasny, dluzszy termin i nadaje go
+  // wycenianie, nie zakladanie.
+  const zKalkulatora = await createQuote(pool, {
+    email: "kalkulator@aejaca.com", lang: "pl", source: "saved",
+    items: [{ title: "Wydruk" }],
+  });
+  const k = await getQuoteByRef(pool, zKalkulatora.quoteRef);
+  ok("wycena z kalkulatora nie dostaje terminu przy zakladaniu", k.valid_until == null, String(k.valid_until));
+}
 
 // --- 5. Zapis pojedynczego rekordu, tak jak robi to panel -------------------
 // Edytor wycen nie ma juz przycisku "zapisz": kazda pozycja idzie do bazy

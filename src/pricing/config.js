@@ -17,6 +17,21 @@
  */
 export const QUOTE_VALIDITY_DAYS = 14;
 
+/**
+ * Ile dni obowiazuje OFERTA WYSTAWIONA RECZNIE, czyli ta z rozmowy albo
+ * ze skrzynki.
+ *
+ * Krocej niz wycena zapisana z kalkulatora (14 dni) i to jest swiadome:
+ * kalkulator liczy z cennika, ktory sami trzymamy, a oferte reczna ukladamy
+ * pod konkretna robote, czesto z kruszcem w glownej roli. Tydzien to tyle,
+ * ile realnie trwa decyzja klienta, i tyle, ile chcemy trzymac cene zlota
+ * bez zabezpieczenia.
+ *
+ * Termin wchodzi juz przy zakladaniu numeru, wiec widac go w panelu od razu,
+ * a nie dopiero po wpisaniu pierwszej kwoty.
+ */
+export const OFFER_VALIDITY_DAYS = 7;
+
 export const CONFIG = {
   EUR_PLN_RATE: 4.28,
   TOLERANCE_LOW: 0.30,
