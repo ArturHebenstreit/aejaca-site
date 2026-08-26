@@ -12,6 +12,8 @@
 // `imagePrompt` to gotowy opis do wygenerowania zdjecia procesu przez
 // Gemini. Do czasu wygenerowania uzywamy zdjec z portfolio.
 
+import { CASTING_ENVELOPE_LABEL, CASTING_FLASK_MM, PRECIOUS_METAL_CASTING_BUILD } from "../pricing/preciousMetalCasting.js";
+
 const L = (pl, en, de) => ({ pl, en, de });
 
 export const SERVICES_FULL = [
@@ -364,6 +366,20 @@ export const SERVICES_FULL = [
     imagePrompt:
       "Premium square product photograph for a fine-jewelry casting service: blue castable resin pattern, ivory jewelry wax pattern, finished silver ring and finished gold ring arranged on a matte black jeweler bench, a small investment flask and precision tools in the background, cool blue AEJaCA sTuDiO rim light and warm metal highlights, black background, no gemstones, no text, no logo, no watermark",
     geometryPriced: true,
+    // KARTA GOSCI TAKZE W DZIALE BIZUTERII. Odlew ze srebra i zlota jest
+    // usluga jubilerska tak samo jak warsztatowa, a klient szukajacy odlewu
+    // wyrobu nie zaglada do dzialu sTuDiO. Adres zostaje jeden, wiec nie
+    // powstaje druga strona z tym samym opisem.
+    alsoIn: {
+      jewelry: {
+        title: L("Odlew biżuterii", "Jewelry casting", "Schmuckguss"),
+        lead: L(
+          "Pierścionek, wisiorek albo sygnet odlany ze srebra lub złota. Z wzorca, modelu 3D albo pomysłu.",
+          "A ring, pendant or signet cast in silver or gold. From a pattern, a 3D model or an idea.",
+          "Ring, Anhänger oder Siegelring in Silber oder Gold gegossen. Aus Modell, 3D-Datei oder Idee."
+        ),
+      },
+    },
     priceFromGrosze: 22000,
     leadTimeDays: 10,
     title: L("Odlew z metali szlachetnych", "Precious metal casting", "Edelmetallguss"),
@@ -386,9 +402,11 @@ export const SERVICES_FULL = [
     specs: [
       { label: L("Warianty", "Variants", "Varianten"), value: L("Wzorzec, model 3D, pomysł klienta", "Pattern, 3D model, customer idea", "Modell, 3D-Datei, Kundenidee") },
       { label: L("Kruszce", "Metals", "Metalle"), value: L("Ag 800/925, Au 9k/14k/18k/24k", "Ag 800/925, Au 9k/14k/18k/24k", "Ag 800/925, Au 9k/14k/18k/24k") },
-      { label: L("Automatyczny limit modelu", "Automatic model limit", "Automatische Modellgrenze"), value: "24 x 24 x 35 mm" },
+      { label: L("Kolba odlewnicza", "Casting flask", "Gussküvette"), value: `\u00d8${CASTING_FLASK_MM.diameter} x ${CASTING_FLASK_MM.depth} mm` },
+      { label: L("Automatyczny limit modelu", "Automatic model limit", "Automatische Modellgrenze"), value: CASTING_ENVELOPE_LABEL },
+      { label: L("Zakres wykończenia", "Finishing levels", "Finish-Stufen"), value: L("Pięć poziomów, od surowego odlewu po wykończenie jubilerskie", "Five levels, from as-cast to jewellery finish", "Fünf Stufen, vom Rohguss bis zum Juwelierfinish") },
       { label: L("Druk wzorca", "Pattern printing", "Modelldruck"), value: L("Elegoo Saturn 4 Ultra 16K, żywica odlewnicza", "Elegoo Saturn 4 Ultra 16K, castable resin", "Elegoo Saturn 4 Ultra 16K, Gießharz") },
-      { label: L("Wersja", "Build", "Build"), value: "1.006" },
+      { label: L("Wersja", "Build", "Build"), value: PRECIOUS_METAL_CASTING_BUILD },
     ],
     bullets: [
       L("Trzy ścieżki od gotowego wzorca do samego pomysłu", "Three routes from a ready pattern to an idea", "Drei Wege vom fertigen Modell bis zur Idee"),
@@ -586,5 +604,12 @@ export function getServiceCard(id) {
 }
 
 export function serviceCardsByCategory(category) {
-  return SERVICES_FULL.filter((s) => s.category === category);
+  // Usluga moze wisiec w dwoch dzialach naraz. Karta gosc dostaje nazwe i
+  // zajawke pisana pod ten dzial, ale prowadzi pod ten sam adres, wiec
+  // opis, dane strukturalne i wycena zostaja jedne.
+  return SERVICES_FULL.flatMap((s) => {
+    if (s.category === category) return [s];
+    const gosc = s.alsoIn?.[category];
+    return gosc ? [{ ...s, ...gosc }] : [];
+  });
 }

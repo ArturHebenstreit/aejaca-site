@@ -87,6 +87,7 @@ const UI = {
     gateCasting: "Wzorzec fizyczny, realizację od pomysłu oraz materiał powierzony wyceniamy po sprawdzeniu. Automatyczna cena jest dostępna dla przesłanego modelu 3D i kruszcu AEJaCA.",
     needCastingFile: "Wgraj model 3D, aby zmierzyć objętość, sprawdzić limit odlewni i policzyć cenę.",
     fileOptional: "Bez pliku wybierzesz rozmiar z listy poniżej",
+    castingFileRequired: "Odlew wyceniamy z objętości modelu, więc plik 3D jest tu konieczny. Wgraj STL, OBJ, 3MF albo STEP, a kwota policzy się sama. Bez pliku wyślemy zapytanie do wyceny indywidualnej.",
     packaging: "Opakowanie",
     qty: "Liczba sztuk",
     price: "Cena",
@@ -155,6 +156,7 @@ const UI = {
     gateCasting: "A physical pattern, an idea-only job and customer-supplied metal are quoted after inspection. Automatic pricing is available for an uploaded 3D model and AEJaCA metal.",
     needCastingFile: "Upload the 3D model so we can measure volume, check the casting limit and calculate the price.",
     fileOptional: "Without a file, pick a size from the list below",
+    castingFileRequired: "A casting is priced from the model\u2019s volume, so a 3D file is required here. Upload STL, OBJ, 3MF or STEP and the amount appears by itself. Without a file we send the enquiry to an individual quote.",
     packaging: "Packaging",
     qty: "Quantity",
     price: "Price",
@@ -223,6 +225,7 @@ const UI = {
     gateCasting: "Ein physisches Modell, eine Umsetzung nur nach Idee und beigestelltes Metall kalkulieren wir nach Prüfung. Automatische Preise gelten für ein hochgeladenes 3D-Modell mit AEJaCA-Metall.",
     needCastingFile: "3D-Modell hochladen, damit Volumen, Gussgrenze und Preis geprüft werden können.",
     fileOptional: "Ohne Datei wählen Sie unten eine Größe",
+    castingFileRequired: "Ein Guss wird aus dem Modellvolumen berechnet, eine 3D-Datei ist hier also erforderlich. Laden Sie STL, OBJ, 3MF oder STEP hoch, dann erscheint der Betrag von selbst. Ohne Datei geht die Anfrage in ein individuelles Angebot.",
     packaging: "Verpackung",
     qty: "Stückzahl",
     price: "Preis",
@@ -769,6 +772,12 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
             />
           )}
           {!file && service.calculator !== "jewelry_casting" && <p className="text-neutral-600 text-[11px] -mt-4 mb-6">{u.fileOptional}</p>}
+          {/* Przy odlewie plik nie jest dodatkiem, tylko podstawa kwoty: masa
+              kruszcu bierze sie z objetosci bryly. Mowimy to ZANIM klient
+              zobaczy komunikat o brakujacych parametrach. */}
+          {!file && service.calculator === "jewelry_casting" && (
+            <p className="text-neutral-500 text-[11px] -mt-4 mb-6">{u.castingFileRequired}</p>
+          )}
         </>
       )}
 

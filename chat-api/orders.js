@@ -263,11 +263,15 @@ export function priceItem({ calculator, params, lang = "pl", geometry = null, sc
     if (calculator === "jewelry_casting" && !preciousMetalCasting.fitsCastingFlask(geometry.bbox, scale)) {
       const max = preciousMetalCasting.maxCastingScaleForBBox(geometry.bbox);
       const percent = Number.isFinite(max) ? Math.max(1, Math.floor(max * 100)) : 0;
+      // Limit czytamy z modulu wyceny, a nie wpisujemy z reki. Przy poprzedniej
+      // wersji te trzy zdania zostawaly przy starym rozmiarze kolby jeszcze
+      // dlugo po jego zmianie, bo nic ich z nim nie wiazalo.
+      const limit = preciousMetalCasting.CASTING_ENVELOPE_LABEL;
       const message = safeLang === "en"
-        ? `At this scale the model exceeds the automatic casting limit of 24 × 24 × 35 mm. The largest automatic scale for this file is ${percent}%. Reduce the scale or request an individual review.`
+        ? `At this scale the model exceeds the automatic casting limit of ${limit}. The largest automatic scale for this file is ${percent}%. Reduce the scale or request an individual review.`
         : safeLang === "de"
-          ? `In dieser Skalierung überschreitet das Modell die automatische Gussgrenze von 24 × 24 × 35 mm. Für diese Datei sind automatisch höchstens ${percent}% möglich. Verkleinern Sie das Modell oder fordern Sie eine individuelle Prüfung an.`
-          : `Model w tej skali przekracza automatyczny limit odlewni 24 × 24 × 35 mm. Największa automatyczna skala dla tego pliku to ${percent}%. Zmniejsz skalę albo wyślij model do indywidualnej oceny.`;
+          ? `In dieser Skalierung überschreitet das Modell die automatische Gussgrenze von ${limit}. Für diese Datei sind automatisch höchstens ${percent}% möglich. Verkleinern Sie das Modell oder fordern Sie eine individuelle Prüfung an.`
+          : `Model w tej skali przekracza automatyczny limit odlewni ${limit}. Największa automatyczna skala dla tego pliku to ${percent}%. Zmniejsz skalę albo wyślij model do indywidualnej oceny.`;
       throw new PricingError(
         "too_large_for_casting",
         message,
@@ -315,12 +319,21 @@ export function priceItem({ calculator, params, lang = "pl", geometry = null, sc
     throw new PricingError("calc_failed", `Wycena nie powiodła się: ${e.message}`);
   }
 
-  if (!result) throw new PricingError(
-    "incomplete_params",
-    safeLang === "en" ? "Some required parameters are missing"
-      : safeLang === "de" ? "Erforderliche Parameter fehlen"
-        : "Parametry są niekompletne",
-  );
+  if (!result) {
+    // ODLEW MOWI, CZEGO BRAKUJE. Zdanie "Parametry sa niekompletne" jest
+    // prawdziwe i bezuzyteczne: klient bez pliku widzial je i nie mial jak
+    // zgadnac, ze chodzi wlasnie o plik. Pozostale kalkulatory zostaja przy
+    // ogolnym komunikacie, bo maja komplet pol widoczny na jednym ekranie.
+    const braki = calculator === "jewelry_casting"
+      ? preciousMetalCasting.describeMissingCastingParams(callParams, safeLang)
+      : null;
+    throw new PricingError(
+      "incomplete_params",
+      braki || (safeLang === "en" ? "Some required parameters are missing"
+        : safeLang === "de" ? "Erforderliche Parameter fehlen"
+          : "Parametry są niekompletne"),
+    );
+  }
   if (result.type === "custom") throw new PricingError(
     "needs_quote",
     safeLang === "en" ? "This configuration requires an individual quote"
