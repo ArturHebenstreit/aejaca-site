@@ -1433,11 +1433,15 @@ app.post("/quotes/:ref/edit", requireAuth, async (req, res) => {
         // Pole zaznaczane wysyla sie tylko zaznaczone, ale stoi w formularzu
         // zawsze i jest jedno, wiec brak znaczy tu po prostu "wylaczone".
         pickOne: req.body.pickOne === "on",
+        // Puste pole znaczy "zdejmij termin", brak pola znaczy "nie ruszaj".
+        // Formularz wysyla je zawsze, wiec pusta wartosc jest tu decyzja.
+        validUntil: req.body.validUntil ?? undefined,
         items,
       },
     });
     const zmiany = [
       r.pickOne ? "oferta wielowariantowa" : null,
+      r.validUntil ? `ważna do ${r.validUntil}` : null,
       r.removed ? `usunieto pozycji: ${r.removed}` : null,
       r.added ? `dodano pozycji: ${r.added}` : null,
       r.totalGrosze != null ? `suma ${(r.totalGrosze / 100).toFixed(2)} zł` : "bez kwoty",

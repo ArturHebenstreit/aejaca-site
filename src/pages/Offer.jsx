@@ -411,7 +411,11 @@ export default function Offer() {
 
   return (
     <>
-      <SEOHead pageKey="offer" path="/oferta" noindex schemas={[]} />
+      {/* Bez `noindex`: to jest adres, ktory podajemy w mailu, w instrukcji
+          platnosci i przez telefon, wiec ma byc do znalezienia takze wtedy,
+          gdy klient zgubil i link, i maila. Sama tresc oferty jest za tokenem,
+          wiec indeksowany jest wylacznie formularz z numerem. */}
+      <SEOHead pageKey="offer" path="/oferta" schemas={[]} />
       <div className="min-h-[80vh] bg-neutral-950 pt-28 pb-20 px-6">
         <div className="max-w-2xl mx-auto">
 

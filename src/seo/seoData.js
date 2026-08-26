@@ -357,9 +357,24 @@ export const SEO = {
   // do niej odnosnika z menu i nie ma czego indeksowac, bo bez numeru pokazuje
   // sam formularz.
   offer: {
-    pl: { title: "Twoja oferta, AEJaCA", description: "Oferta AEJaCA: podsumowanie, kod rabatowy, dane wysyłki i płatność.", keywords: "oferta", ogAlt: "Oferta AEJaCA" },
-    en: { title: "Your offer, AEJaCA", description: "Your AEJaCA offer: summary, discount code, delivery details and payment.", keywords: "offer", ogAlt: "AEJaCA offer" },
-    de: { title: "Ihr Angebot, AEJaCA", description: "Ihr AEJaCA-Angebot: Zusammenfassung, Rabattcode, Versanddaten und Zahlung.", keywords: "angebot", ogAlt: "AEJaCA-Angebot" },
+    pl: {
+      title: "Zapłać za ofertę, AEJaCA",
+      description: "Masz od nas ofertę? Podaj jej numer, sprawdź kwotę, wpisz kod rabatowy i zapłać. Numer oferty dostajesz od nas mailem albo w rozmowie.",
+      keywords: "zapłać za ofertę AEJaCA, numer oferty, płatność za wycenę, WY numer oferty",
+      ogAlt: "Zapłata za ofertę AEJaCA",
+    },
+    en: {
+      title: "Pay for your offer, AEJaCA",
+      description: "Have an offer from us? Enter its number, check the amount, add a discount code and pay. We give you the offer number by e-mail or on the phone.",
+      keywords: "pay AEJaCA offer, offer number, paying a quote, WY offer number",
+      ogAlt: "Paying an AEJaCA offer",
+    },
+    de: {
+      title: "Angebot bezahlen, AEJaCA",
+      description: "Sie haben ein Angebot von uns? Geben Sie die Nummer ein, prüfen Sie den Betrag, tragen Sie einen Rabattcode ein und zahlen Sie. Die Angebotsnummer erhalten Sie per E-Mail oder im Gespräch.",
+      keywords: "AEJaCA Angebot bezahlen, Angebotsnummer, Kostenvoranschlag bezahlen",
+      ogAlt: "AEJaCA Angebot bezahlen",
+    },
   },
   terms: {
     pl: {

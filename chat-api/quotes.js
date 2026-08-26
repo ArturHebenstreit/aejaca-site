@@ -505,6 +505,20 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
       if (!lang) throw new QuoteError("bad_lang", "Jezyk oferty to pl, en albo de");
       dopisz("lang", lang);
     }
+    // Termin waznosci jest obietnica handlowa i zmienia sie niezaleznie od kwot:
+    // przy wyrobie, w ktorym kruszec jest glowna skladowa, bywa krotszy niz
+    // domyslny. Do tej pory dalo sie go ustawic WYLACZNIE przy wycenianiu, wiec
+    // skrocenie terminu wymagalo wpisania kwot od nowa.
+    if (patch.validUntil !== undefined) {
+      const dzien = String(patch.validUntil || "").trim();
+      if (!dzien) {
+        dopisz("valid_until", null);
+      } else {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(dzien)) throw new QuoteError("bad_date", "Termin podaj jako date");
+        if (Number.isNaN(Date.parse(dzien))) throw new QuoteError("bad_date", "To nie jest prawdziwa data");
+        dopisz("valid_until", dzien);
+      }
+    }
     // Przelacznik "klient wybiera jeden wariant". Zmienia znaczenie pozycji
     // z rachunku na liste propozycji, wiec kwota naglowka liczy sie potem
     // inaczej. Przeliczenie stoi nizej, po zmianach w pozycjach.
@@ -636,6 +650,7 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
       removed: usuniete,
       added: dodane,
       pickOne: Boolean(poZmianie[0].pick_one),
+      validUntil: patch.validUntil !== undefined ? (patch.validUntil || null) : undefined,
     };
   } catch (e) {
     await client.query("ROLLBACK").catch(() => {});

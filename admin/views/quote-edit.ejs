@@ -91,6 +91,19 @@
           Język decyduje o walucie na stronie oferty i o języku maila.
         </p>
 
+        <div class="grid sm:grid-cols-4 gap-3 mt-3">
+          <label class="block">
+            <span class="text-neutral-400 text-xs">Oferta ważna do</span>
+            <input name="validUntil" type="date" value="<%= quote.validUntil ? String(quote.validUntil).slice(0, 10) : '' %>"
+                   class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white" />
+          </label>
+          <p class="sm:col-span-3 text-neutral-600 text-[10px] leading-relaxed self-end pb-2">
+            Termin zmienisz tu bez wpisywania kwot od nowa. Przy wyrobie, w którym kruszec jest główną
+            składową ceny, warto dać krótszy niż zwykle, bo przez dwa tygodnie złoto potrafi ruszyć się
+            o kilka procent, a kwotę oferty trzymamy stałą do tej daty. Puste pole zdejmuje termin.
+          </p>
+        </div>
+
         <label class="flex items-start gap-3 mt-4 rounded-lg border border-white/10 bg-neutral-950 p-4">
           <input type="checkbox" name="pickOne" class="mt-0.5 accent-amber-400" <%= quote.pickOne ? "checked" : "" %> />
           <span>
