@@ -101,12 +101,6 @@ export async function createQuote(pool, input) {
 }
 
 /**
- * Wpisuje kwoty do wyceny. Pozycje podaje sie po id, zeby pomylka w kolejnosci
- * nie przypisala ceny nie tej rzeczy.
- *
- * @param {Array<{id:number, unitGrosze:number}>} lines
- */
-/**
  * Wariant, ktory klient wybral, albo pierwszy wyceniony.
  *
  * Oferta wielowariantowa to zwykla wycena z flaga `pick_one`: jej pozycje sa
@@ -129,6 +123,12 @@ export function wybranyWariant(quote) {
   return wskazany || wycenione[0];
 }
 
+/**
+ * Wpisuje kwoty do wyceny. Pozycje podaje sie po id, zeby pomylka w kolejnosci
+ * nie przypisala ceny nie tej rzeczy.
+ *
+ * @param {Array<{id:number, unitGrosze:number}>} lines
+ */
 export async function priceQuote(pool, quoteRef, lines, note = null, validDays = QUOTE_VALIDITY_DAYS) {
   const quote = await getQuoteByRef(pool, quoteRef);
   if (!quote) throw new QuoteError("not_found", "Nie ma takiej wyceny");

@@ -91,13 +91,28 @@
           Język decyduje o walucie na stronie oferty i o języku maila.
         </p>
 
+        <label class="flex items-start gap-3 mt-4 rounded-lg border border-white/10 bg-neutral-950 p-4">
+          <input type="checkbox" name="pickOne" class="mt-0.5 accent-amber-400" <%= quote.pickOne ? "checked" : "" %> />
+          <span>
+            <span class="text-neutral-200 text-xs font-medium block">Oferta wielowariantowa: klient wybiera jedną pozycję</span>
+            <span class="text-neutral-500 text-[10px] leading-relaxed block mt-1">
+              Włącz, gdy przesyłasz kilka scenariuszy do wyboru, na przykład srebro albo złoto.
+              Wtedy pozycje przestają być składnikami jednego rachunku i stają się propozycjami:
+              klient zaznacza jedną, płaci za nią i tylko ona trafia do zamówienia.
+              Opis wariantów pisz w notatce do oferty, niżej.
+            </span>
+          </span>
+        </label>
+
         <label class="block mt-4">
           <span class="text-neutral-400 text-xs">Treść zapytania</span>
           <textarea name="message" rows="3"
                     class="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white"><%= quote.message || '' %></textarea>
         </label>
 
-        <h3 class="text-xs font-semibold text-white mt-6 mb-2">Pozycje</h3>
+        <h3 class="text-xs font-semibold text-white mt-6 mb-2">
+          <%= quote.pickOne ? "Warianty do wyboru" : "Pozycje" %>
+        </h3>
         <div class="space-y-3">
           <% items.forEach(function (it) { %>
             <div class="rounded-lg border border-white/10 bg-neutral-950 p-4">
@@ -108,9 +123,9 @@
                   <input name="itemTitle" value="<%= it.title %>"
                          class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
                 </label>
-                <label class="block">
+                <label class="block <%= quote.pickOne ? "hidden" : "" %>">
                   <span class="text-neutral-500 text-[10px] block mb-1">Ilość</span>
-                  <input name="itemQty" type="number" min="1" value="<%= it.qty %>"
+                  <input name="itemQty" type="number" min="1" value="<%= quote.pickOne ? 1 : it.qty %>"
                          class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
                 </label>
                 <label class="sm:col-span-2 block">
@@ -128,7 +143,14 @@
               </label>
               <% if (it.unitGrosze != null) { %>
                 <p class="text-neutral-600 text-[10px] mt-2">
-                  Wyceniona na <%= zl(it.unitGrosze) %> za sztukę. Zmiana ilości przeliczy wartość pozycji i sumę oferty.
+                  <% if (quote.pickOne) { %>
+                    Wariant za <%= zl(it.unitGrosze) %>.
+                    <% if (Number(quote.chosenItemId) === Number(it.id)) { %>
+                      <span class="text-amber-300">Ten jest teraz wybrany.</span>
+                    <% } %>
+                  <% } else { %>
+                    Wyceniona na <%= zl(it.unitGrosze) %> za sztukę. Zmiana ilości przeliczy wartość pozycji i sumę oferty.
+                  <% } %>
                 </p>
               <% } %>
             </div>
@@ -215,7 +237,10 @@
       </div>
 
       <div class="flex flex-wrap items-center justify-between gap-3 mt-4">
-        <div class="text-sm text-neutral-300">Razem zapisane: <span class="text-white font-semibold"><%= zl(quote.totalGrosze) %></span></div>
+        <div class="text-sm text-neutral-300">
+          <%= quote.pickOne ? "Do zapłaty za wybrany wariant" : "Razem zapisane" %>:
+          <span class="text-white font-semibold"><%= zl(quote.totalGrosze) %></span>
+        </div>
         <button class="px-4 py-2 rounded-lg bg-amber-400 text-neutral-950 text-sm font-medium hover:bg-amber-300 transition-colors">
           Zapisz kwoty
         </button>

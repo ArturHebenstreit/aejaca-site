@@ -21,6 +21,7 @@
 //   node scripts/test-quote-edit.mjs
 
 import { readFileSync } from "node:fs";
+import { wybranyWariant } from "../chat-api/quotes.js";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -100,5 +101,51 @@ console.log("\n4. Usuwanie pozycji nie rozjezdza formularza\n");
   ma(PANEL, /\[\]\.concat\(req\.body\.itemId \|\| \[\]\)/, "panel zbiera identyfikatory pozycji w tablice");
 }
 
-console.log(bledy ? `\n${bledy} bledow\n` : "\nEdycja i usuwanie oferty: wszystko sie zgadza\n");
+console.log("\n5. Oferta wielowariantowa: kupuje sie JEDEN wariant\n");
+{
+  const poz = (id, unit) => ({ id, unit_grosze: unit, line_grosze: unit, qty: 1 });
+
+  // Wycena zwykla nie ma wariantow, wiec regula ma milczec.
+  if (wybranyWariant({ pick_one: false, items: [poz(1, 100)] }) === null) ok("wycena zwykla nie ma wybranego wariantu");
+  else zle("wycena zwykla zwraca wariant, a jej pozycje to rachunek, nie propozycje");
+
+  // Wybor nigdy nie jest pusty: bez wskazania bierzemy pierwszy wyceniony.
+  const bezWskazania = wybranyWariant({ pick_one: true, chosen_item_id: null, items: [poz(7, 850_00), poz(9, 3200_00)] });
+  if (bezWskazania?.id === 7) ok("bez wskazania wybrany jest pierwszy wyceniony wariant");
+  else zle("bez wskazania nie ma wariantu, wiec oferta trafilaby do klienta bez kwoty");
+
+  const wskazany = wybranyWariant({ pick_one: true, chosen_item_id: 9, items: [poz(7, 850_00), poz(9, 3200_00)] });
+  if (wskazany?.id === 9) ok("wskazanie klienta jest respektowane");
+  else zle("wskazanie klienta jest ignorowane");
+
+  // Wskaznik moze pokazywac na pozycje wlasnie usunieta albo pozbawiona kwoty.
+  const poUsunieciu = wybranyWariant({ pick_one: true, chosen_item_id: 99, items: [poz(7, 850_00)] });
+  if (poUsunieciu?.id === 7) ok("wskazanie na nieistniejaca pozycje spada na pierwszy wariant");
+  else zle("wskazanie na nieistniejaca pozycje zostawia oferte bez kwoty");
+
+  const bezKwot = wybranyWariant({ pick_one: true, chosen_item_id: 1, items: [{ id: 1, unit_grosze: null, qty: 1 }] });
+  if (bezKwot === null) ok("wariant bez kwoty nie jest wybierany");
+  else zle("wariant bez kwoty zostaje wybrany, wiec oferta ma pusta naleznosc");
+
+  // Sedno: do zamowienia i do rabatu idzie JEDEN wariant, nie suma propozycji.
+  ma(QUOTES, /const doZamowienia = quote\.pick_one \? \[wybranyWariant\(quote\)\]/, "do zamowienia trafia wylacznie wybrany wariant");
+  ma(QUOTES, /no_variant/, "konwersja odmawia, gdy nie ma wybranego wariantu");
+  ma(QUOTES, /const pozycje = quote\.pick_one \? \[wybranyWariant\(quote\)\]/, "rabat liczy sie od wybranego wariantu, nie od sumy propozycji");
+
+  const fn = QUOTES.slice(QUOTES.indexOf("export async function chooseVariant"));
+  const glowa = fn.slice(0, fn.indexOf("export async function deleteQuote"));
+  for (const [wzor, opis] of [
+    [/not_multi/, "odmawia wyboru w ofercie jednowariantowej"],
+    [/unknown_item/, "sprawdza, czy wariant nalezy do TEJ oferty"],
+    [/not_priced/, "odmawia wyboru wariantu bez kwoty"],
+    [/already_converted/, "odmawia zmiany wariantu po zlozeniu zamowienia"],
+  ]) ma(glowa, wzor, `wybor wariantu ${opis}`);
+
+  const ile = (SERWER.match(/app\.post\("\/api\/quotes\/:ref\/choose"/g) || []).length;
+  if (ile === 1) ok("trasa wyboru wariantu istnieje dokladnie raz");
+  else zle(`tras wyboru wariantu jest ${ile}`);
+  ma(SERWER, /app\.post\("\/api\/quotes\/:ref\/choose"[\s\S]{0,400}?secretMatches/, "wybor wariantu chroni token z linku");
+}
+
+console.log(bledy ? `\n${bledy} bledow\n` : "\nEdycja, warianty i usuwanie oferty: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);

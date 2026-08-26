@@ -1430,10 +1430,14 @@ app.post("/quotes/:ref/edit", requireAuth, async (req, res) => {
         phone: req.body.phone ?? undefined,
         lang: req.body.lang || undefined,
         message: req.body.message ?? undefined,
+        // Pole zaznaczane wysyla sie tylko zaznaczone, ale stoi w formularzu
+        // zawsze i jest jedno, wiec brak znaczy tu po prostu "wylaczone".
+        pickOne: req.body.pickOne === "on",
         items,
       },
     });
     const zmiany = [
+      r.pickOne ? "oferta wielowariantowa" : null,
       r.removed ? `usunieto pozycji: ${r.removed}` : null,
       r.added ? `dodano pozycji: ${r.added}` : null,
       r.totalGrosze != null ? `suma ${(r.totalGrosze / 100).toFixed(2)} zł` : "bez kwoty",
