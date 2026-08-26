@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-26 | Wersja: 5.8*
+*Wygenerowano: 2026-08-26 | Wersja: 5.9*
 
 ---
 
@@ -2157,6 +2157,11 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
 - **Panel:** lista według stanu (`new`, `priced`, `sent`, `accepted`, `converted`, `expired`,
   `cancelled`), wpisanie kwot pozycji, notatka "co wchodzi, czego nie ma", termin ważności,
   wysyłka oferty mailem albo gotowy link do przekazania.
+- **Termin ważności oferty zmienia się osobno** (od 2026-08-26). Pole „Oferta ważna do"
+  w formularzu edycji ustawia datę bez ponownego wpisywania kwot. Wcześniej termin dało się
+  ustawić wyłącznie przy wycenianiu, więc jego skrócenie wymagało wyceny od nowa. Puste pole
+  zdejmuje termin. **Strona „Proces płatności" nie podaje już żadnej liczby dni**: mówi, że
+  termin jest podany w każdej przesyłanej ofercie, bo tak jest naprawdę.
 - **Ofertę da się poprawić bez zakładania jej od nowa** (od 2026-08-26). Panel edytuje dane
   klienta, język, treść zapytania oraz pozycje: nazwę, ilość i opis, z możliwością dodania
   i usunięcia pozycji. Numer zostaje ten sam, więc wątek w korespondencji i tytuł płatności
@@ -2191,7 +2196,10 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
   zaznaczane wysyła się wyłącznie zaznaczone, więc przy dwóch usuwanych z pięciu tablice
   formularza rozjeżdżają się o dwa miejsca i znikają nie te wiersze. Pilnuje tego
   `scripts/test-quote-edit.mjs`, wpięty w build.
-- **Strona klienta `/oferta/`** (noindex, brak odnośnika z menu). Dwa wejścia: link z oferty
+- **Strona klienta `/oferta/` jest adresem, który podajemy** (od 2026-08-26 bez `noindex`,
+  w mapie strony, z tytułem „Zapłać za ofertę"). Odsyła do niej przycisk na `/payments/`
+  i asystent, który ma podawać ten adres zamiast opisywać drogę własnymi słowami. Indeksowany
+  jest wyłącznie formularz z numerem; treść oferty pozostaje za tokenem. Dwa wejścia: link z oferty
   albo sam numer podany razem z adresem e-mail, na który poszła oferta. Klient bez adresu
   (telefon) dostaje krótki kod odbioru, wyprowadzony z tokenu dostępu, widoczny w panelu.
   Sam numer nigdy nie wystarcza, bo oferta niesie nazwisko, telefon i adres.
