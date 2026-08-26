@@ -56,8 +56,10 @@ Trzy mierzalne braki.
 - `src/components/shop/OfferNumberEntry.jsx` (nowy), `src/pages/Shop.jsx`,
   `src/pages/Cart.jsx`: pole "Masz numer oferty?". W koszyku widoczne w obu
   stanach: przy pustym zamiast zawartosci, przy pelnym pod podsumowaniem.
-- `chat-api/quotes.js`: `updateQuote()`, `deleteQuote()`.
-- `chat-api/server.js`: `POST /api/quotes/:ref/update`, `DELETE /api/quotes/:ref`.
+- `chat-api/quotes.js`: `updateQuote()`, `deleteQuote()`, `wybranyWariant()`, `chooseVariant()`.
+- `scripts/quotes-schema.sql` i blok startowy serwera: `quotes.pick_one`, `quotes.chosen_item_id`.
+- `src/pages/Offer.jsx`: warianty jako pole wyboru, kwota za wybranym wariantem.
+- `chat-api/server.js`: `POST /api/quotes/:ref/update`, `DELETE /api/quotes/:ref`, `POST /api/quotes/:ref/choose`.
 - `admin/server.js`, `admin/views/quote-edit.ejs`, `admin/views/quotes.ejs`: edycja danych
   i pozycji oferty, usuwanie z potwierdzeniem, kolumna akcji w tabeli wycen.
 - `src/pages/Payments.jsx` (nowa strona `/payments/`), `src/main.jsx`, `src/entry-server.jsx`,
@@ -65,7 +67,7 @@ Trzy mierzalne braki.
   `src/i18n/{pl,en,de}.js`: strona "Proces platnosci" i wpis w menu pod "Sklep".
 - `src/pricing/config.js`: `QUOTE_VALIDITY_DAYS` przeniesione z `chat-api/quotes.js`.
 - `scripts/test-production-queue.mjs`: sekcje 5 i 6.
-- `scripts/test-quote-edit.mjs`: nowy test edycji i usuwania oferty.
+- `scripts/test-quote-edit.mjs`: nowy test edycji, wariantow i usuwania oferty.
 - `MDs/decisions/ADR-0014-poprawianie-i-usuwanie-w-kolejce.md`,
   `MDs/AEJaCA_Brand_Reference.md` (wersja 5.5), `public/llms.txt`,
   `chat-api/context.js`.
@@ -112,7 +114,14 @@ Trzy mierzalne braki.
   potrzebne przy rozliczeniu podatkowym albo reklamacji platnosci. Dowod wplaty
   zostaje w `payment_notifications`, ale to, za co ta wplata byla, juz nie.
   Ryzyko przyjete swiadomie przez wlasciciela, opisane w ADR-0014.
-- **Decyzja Artura:** status ADR-0014, dzis `draft`.
+- **Decyzja Artura:** status ADR-0014 i ADR-0015, dzis oba `draft`.
+- **Oferta wielowariantowa ma JEDEN termin waznosci dla calej oferty.** Przy
+  ofercie mieszajacej kruszce (srebro obok zlota) calosc dostaje ten krotszy
+  termin, bo `valid_until` stoi na naglowku. Rozdzielenie terminow na warianty
+  to osobna kolumna i osobna decyzja.
+- **Wariant nie rozklada sie na podpozycje.** Decyzja wlasciciela z 2026-08-26:
+  jedna kwota, opis w tresci oferty. Rozbicie wariantu na pozycje skladowe jest
+  swiadomie poza zakresem.
 
 ## Instrukcja dla recenzenta
 
@@ -139,3 +148,10 @@ Trzy mierzalne braki.
 8. Wycena `converted` nie daje sie edytowac ani wycenic, a jej usuniecie wymaga
    drugiego potwierdzenia.
 9. Usuwanie pozycji w formularzu idzie lista, nie polem zaznaczanym.
+10. Oferta wielowariantowa nigdy nie zostaje bez kwoty: bez wskazania wybrany
+    jest pierwszy wyceniony wariant, a wskazanie na pozycje usunieta spada na
+    pierwszy pozostaly.
+11. Do zamowienia i do rabatu idzie WYLACZNIE wybrany wariant, nie suma
+    propozycji.
+12. Wyboru wariantu nie da sie ustawic na pozycje spoza tej oferty ani na
+    wariant bez kwoty, i nie da sie go zmienic po konwersji.

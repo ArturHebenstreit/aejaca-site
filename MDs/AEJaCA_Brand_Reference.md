@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-26 | Wersja: 5.7*
+*Wygenerowano: 2026-08-26 | Wersja: 5.8*
 
 ---
 
@@ -2165,6 +2165,21 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
   wartość pozycji i sumę oferty**, bo oferta pokazująca sumę niezgodną z własnymi pozycjami
   myli się najciszej ze wszystkich. Gdy po edycji żadna pozycja nie ma kwoty, oferta wraca
   do stanu `new` i traci termin ważności.
+- **Oferta wielowariantowa** (od 2026-08-26, ADR-0015). Przełącznik na wycenie zmienia znaczenie
+  jej pozycji: przestają być składnikami jednego rachunku, a stają się **wzajemnie wykluczającymi
+  się propozycjami**. Jeden wariant to jedna kwota, opisana w treści oferty; wariant nie rozkłada
+  się na podpozycje ani ilości, i tak zostaje świadomie, żeby edycja była prosta. Klient dostaje
+  **jeden numer i jeden link**, na stronie oferty zaznacza wariant polem wyboru, a kwota do zapłaty
+  dopasowuje się do zaznaczenia.
+  - **Wybór nigdy nie jest pusty**: wycenianie wskazuje pierwszy wariant, klient go tylko przestawia.
+    Dzięki temu `total_grosze` zawsze znaczy to samo co przy wycenie zwykłej, czyli kwotę do zapłaty,
+    i żadna istniejąca bramka (wysyłka, rabat, konwersja, panel) nie musi znać stanu „jeszcze nie wybrano".
+  - **Wybór nie jest wiążący aż do zapłaty.** Wiążąca jest dopiero konwersja, która wpisuje do
+    zamówienia **wyłącznie wybrany wariant**.
+  - **Rabat liczy się od wybranego wariantu**, nie od sumy propozycji.
+  - **Zmiana wariantu kasuje podgląd zniżki**, bo kod sprawdzony dla srebra nie jest obietnicą dla złota.
+  - **Termin ważności jest wspólny dla całej oferty.** Przy ofercie mieszającej kruszce całość dostaje
+    ten krótszy termin. Rozdzielenie terminów na warianty to osobna decyzja.
 - **Wycena w stanie `converted` jest zamknięta na edycję.** Stoi za nią zamówienie z własnymi
   pozycjami i własną kwotą; zmiana w wycenie rozjechałaby jedno z drugim bez śladu. Ta sama
   reguła obowiązuje przy wycenianiu.
