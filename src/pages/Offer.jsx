@@ -66,6 +66,8 @@ const UI = {
     notFound: "Nie znaleźliśmy oferty o tym numerze albo dane się nie zgadzają",
     number: "Numer oferty",
     items: "Co wykonujemy",
+    variants: "Warianty do wyboru",
+    variantsLead: "Przygotowaliśmy kilka wariantów. Zaznacz ten, który wybierasz, a kwota do zapłaty dopasuje się do niego. Wybór możesz zmienić aż do zapłaty.",
     perPc: "za sztukę",
     pcs: "szt.",
     note: "Ustalenia do tej oferty",
@@ -120,6 +122,8 @@ const UI = {
     notFound: "We found no offer with that number, or the details do not match",
     number: "Offer number",
     items: "What we will make",
+    variants: "Choose a variant",
+    variantsLead: "We prepared several variants. Tick the one you want and the amount to pay follows it. You can change the choice up until payment.",
     perPc: "per piece",
     pcs: "pcs",
     note: "Terms of this offer",
@@ -174,6 +178,8 @@ const UI = {
     notFound: "Wir haben kein Angebot mit dieser Nummer gefunden, oder die Daten stimmen nicht überein",
     number: "Angebotsnummer",
     items: "Was wir anfertigen",
+    variants: "Varianten zur Auswahl",
+    variantsLead: "Wir haben mehrere Varianten vorbereitet. Wählen Sie die gewünschte aus, der zu zahlende Betrag folgt ihr. Die Auswahl können Sie bis zur Zahlung ändern.",
     perPc: "pro Stück",
     pcs: "Stk.",
     note: "Vereinbarungen zu diesem Angebot",
@@ -237,6 +243,14 @@ export default function Offer() {
   const [formCode, setFormCode] = useState("");
   const [looking, setLooking] = useState(false);
 
+  // --- wybor wariantu ------------------------------------------------------
+  // `odswiez` podbija licznik, ktory przeladowuje oferte po zmianie wariantu.
+  // Kwote do zaplaty ustala serwer, wiec po wyborze czytamy ja od nowa,
+  // zamiast liczyc ja w przegladarce i modlic sie, ze wyszlo to samo.
+  const [choosing, setChoosing] = useState(false);
+  const [chooseError, setChooseError] = useState(null);
+  const [odswiez, setOdswiez] = useState(0);
+
   // --- kod rabatowy --------------------------------------------------------
   const [code, setCode] = useState("");
   const [discount, setDiscount] = useState(null);
@@ -271,7 +285,7 @@ export default function Offer() {
     // Jezyk zmienia wylacznie tresc komunikatu, wiec nie ma po co pobierac
     // oferty drugi raz po jego przelaczeniu.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ref, token]);
+  }, [ref, token, odswiez]);
 
   async function lookup(e) {
     e.preventDefault();
@@ -285,6 +299,21 @@ export default function Offer() {
     setLooking(false);
     if (!r.ok) { setError(r.data?.error ? u.notFound : u.errorGeneric); return; }
     setParams({ ref: r.data.ref, token: r.data.token }, { replace: true });
+  }
+
+  async function chooseVariant(itemId) {
+    if (choosing) return;
+    setChoosing(true);
+    setChooseError(null);
+    const r = await postJSON(`${API}/api/quotes/${encodeURIComponent(ref)}/choose`, { token, itemId });
+    setChoosing(false);
+    if (!r.ok) { setChooseError(r.data?.error || u.errorGeneric); return; }
+    // Znizka byla policzona dla poprzedniego wariantu, wiec przestaje
+    // obowiazywac. Lepiej kazac wpisac kod jeszcze raz niz pokazac kwote,
+    // ktorej serwer nie potwierdzi przy skladaniu zamowienia.
+    setDiscount(null);
+    setCodeError(null);
+    setOdswiez((n) => n + 1);
   }
 
   async function checkCode() {
@@ -445,25 +474,59 @@ export default function Offer() {
               )}
 
               <section className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
-                <h2 className="text-white font-semibold mb-3">{u.items}</h2>
+                <h2 className="text-white font-semibold mb-3">{offer.pickOne ? u.variants : u.items}</h2>
+                {offer.pickOne && (
+                  <p className="text-neutral-400 text-sm leading-relaxed mb-4">{u.variantsLead}</p>
+                )}
                 <div className="space-y-3">
-                  {offer.items.map((it) => (
-                    <div key={it.id} className="flex items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        <div className="text-neutral-200 text-sm">{it.title}</div>
-                        <div className="text-neutral-600 text-xs mt-0.5">
-                          {it.qty} {u.pcs}
-                          {it.unitGrosze != null && it.qty > 1 ? ` · ${money(it.unitGrosze)} ${u.perPc}` : ""}
-                          {it.fileName ? ` · ${it.fileName}` : ""}
+                  {offer.items.map((it) => {
+                    const wybrany = offer.pickOne && Number(offer.chosenItemId) === Number(it.id);
+                    const wiersz = (
+                      <>
+                        <div className="min-w-0">
+                          <div className="text-neutral-200 text-sm">{it.title}</div>
+                          <div className="text-neutral-600 text-xs mt-0.5">
+                            {offer.pickOne ? null : `${it.qty} ${u.pcs}`}
+                            {!offer.pickOne && it.unitGrosze != null && it.qty > 1 ? ` · ${money(it.unitGrosze)} ${u.perPc}` : ""}
+                            {it.fileName ? `${offer.pickOne ? "" : " · "}${it.fileName}` : ""}
+                          </div>
+                          {it.description && (
+                            <p className="text-neutral-500 text-xs mt-1 whitespace-pre-wrap">{it.description}</p>
+                          )}
                         </div>
-                        {it.description && (
-                          <p className="text-neutral-500 text-xs mt-1 whitespace-pre-wrap">{it.description}</p>
-                        )}
-                      </div>
-                      <div className="text-neutral-200 text-sm shrink-0">{it.lineGrosze != null ? money(it.lineGrosze) : "-"}</div>
-                    </div>
-                  ))}
+                        <div className="text-neutral-200 text-sm shrink-0">{it.lineGrosze != null ? money(it.lineGrosze) : "-"}</div>
+                      </>
+                    );
+
+                    // Wariantow nie da sie kupic razem, wiec sa polem wyboru,
+                    // a nie lista. Wybor idzie na serwer od razu, bo to on
+                    // ustala kwote do zaplaty, nie przegladarka.
+                    if (!offer.pickOne) {
+                      return <div key={it.id} className="flex items-start justify-between gap-4">{wiersz}</div>;
+                    }
+                    return (
+                      <label
+                        key={it.id}
+                        className={`flex items-start gap-3 rounded-lg border p-4 cursor-pointer transition-colors ${
+                          wybrany ? "border-amber-400/50 bg-amber-400/[0.06]" : "border-white/10 hover:border-white/25"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="wariant"
+                          className="mt-1 accent-amber-400"
+                          checked={wybrany}
+                          disabled={choosing || offer.expired || Boolean(offer.orderRef)}
+                          onChange={() => chooseVariant(it.id)}
+                        />
+                        <span className="flex items-start justify-between gap-4 flex-1 min-w-0">{wiersz}</span>
+                      </label>
+                    );
+                  })}
                 </div>
+                {chooseError && (
+                  <p className="text-amber-300 text-xs mt-3">{chooseError}</p>
+                )}
 
                 {offer.priceNote && (
                   <div className="mt-4 pt-4 border-t border-white/10">

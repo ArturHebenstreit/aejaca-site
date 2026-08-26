@@ -11,7 +11,7 @@ import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages 
 import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken, ringGeometryFromParams, RING_CALCULATORS } from "./orders.js";
 import { bindingBasis } from "./pricing/bindingBasis.js";
 import { OUTPUT_AVAILABLE } from "./pricing/ringConfigurator.js";
-import { createQuote, priceQuote, updateQuote, deleteQuote, getQuoteByRef, convertQuoteToOrder, quoteItemsForDiscount, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
+import { createQuote, priceQuote, updateQuote, deleteQuote, chooseVariant, wybranyWariant, getQuoteByRef, convertQuoteToOrder, quoteItemsForDiscount, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
 import { extraRevisionGrosze, CAD_CONFIG } from "./pricing/cadDesign.js";
 import { GEMSTONES } from "./pricing/jewelryConfig.js";
 import {
@@ -232,6 +232,11 @@ if (pool) {
   // `fulfilled_at` NIE nadaje sie na te role. Znaczy "platnosc rozliczona",
   // ustawia je potwierdzenie przelewu i to na nim opiera sie zakaz anulowania.
   // Uzycie go do "praca skonczona" zlepiloby dwie rozne rzeczy w jedno pole.
+  // Oferta wielowariantowa. Pozycje staja sie alternatywami, a `total_grosze`
+  // niesie kwote wybranego wariantu zamiast sumy pozycji.
+  pool.query(`ALTER TABLE quotes ADD COLUMN IF NOT EXISTS pick_one BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
+  pool.query(`ALTER TABLE quotes ADD COLUMN IF NOT EXISTS chosen_item_id BIGINT`).catch(() => {});
+
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS production_started_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipped_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS completed_at TIMESTAMPTZ`).catch(() => {});
@@ -1521,16 +1526,29 @@ app.get("/api/quotes/:ref", async (req, res) => {
     };
   });
 
+  // Przy ofercie wielowariantowej suma pozycji nie jest kwota do zaplaty:
+  // pozycje sa alternatywami, wiec liczy sie WYBRANY wariant. Bierzemy go
+  // z listy juz przeliczonej, zeby kwota zgadzala sie z ta, ktora klient
+  // widzi przy zaznaczonym wariancie.
+  const wariant = quote.pick_one ? wybranyWariant(quote) : null;
+  const wariantPoPrzeliczeniu = wariant ? items.find((i) => Number(i.id) === Number(wariant.id)) : null;
+  const doZaplaty = quote.pick_one
+    ? (wariantPoPrzeliczeniu?.lineGrosze ?? quote.total_grosze)
+    : (total || quote.total_grosze);
+
   res.json({
     ok: true,
     quoteRef: quote.quote_ref,
     status: quote.status,
     source: quote.source,
     lang: quote.lang,
+    // Oferta wielowariantowa: pozycje sa propozycjami do wyboru, nie rachunkiem.
+    pickOne: Boolean(quote.pick_one),
+    chosenItemId: wariant ? Number(wariant.id) : null,
     // Kwota zapisana zostaje widoczna obok biezacej, zeby roznica byla
     // widoczna, a nie do wykrycia z pamieci.
     savedTotalGrosze: quote.total_grosze,
-    totalGrosze: total || quote.total_grosze,
+    totalGrosze: doZaplaty,
     metalDeltaGrosze: metalDelta,
     priceNote: quote.price_note,
     validUntil: quote.valid_until,
@@ -1602,6 +1620,8 @@ app.get("/api/quotes/:ref/admin", async (req, res) => {
       quoteRef: quote.quote_ref, status: quote.status, lang: quote.lang, source: quote.source,
       email: quote.customer_email, name: quote.customer_name, phone: quote.customer_phone,
       message: quote.message, totalGrosze: quote.total_grosze, priceNote: quote.price_note,
+      pickOne: Boolean(quote.pick_one),
+      chosenItemId: quote.chosen_item_id != null ? Number(quote.chosen_item_id) : null,
       validUntil: quote.valid_until, sentAt: quote.sent_at, createdAt: quote.created_at,
       accessToken: quote.access_token,
       // Kod odbioru ma sens WYLACZNIE przy kliencie bez adresu e-mail: tylko
@@ -1827,6 +1847,36 @@ app.post("/api/quotes/lookup", express.json({ limit: "8kb" }),
 
   console.log(`[wycena] ${quote.quote_ref} otwarta z numeru`);
   res.json({ ok: true, ref: quote.quote_ref, token: quote.access_token });
+});
+
+/**
+ * Wybor wariantu oferty przez klienta.
+ *
+ * Wybor nie jest wiazacy: az do zaplaty da sie wrocic i przestawic sie na inny
+ * wariant. Wiazaca jest dopiero konwersja, ktora bierze wariant wskazany w tej
+ * chwili i wpisuje do zamowienia WYLACZNIE jego.
+ *
+ * Ta trasa jest dla klienta, wiec chroni ja token z linku, tak samo jak
+ * podglad oferty i sprawdzenie kodu rabatowego. Przynaleznosc pozycji do tej
+ * wyceny sprawdza `chooseVariant`, po stronie serwera: bez tego wybor bylby
+ * ustawieniem dowolnej kwoty jako naleznosci.
+ */
+app.post("/api/quotes/:ref/choose", express.json({ limit: "8kb" }), async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const quote = await getQuoteByRef(pool, req.params.ref);
+  if (!quote || !secretMatches(String(req.body?.token || ""), quote.access_token)) {
+    return res.status(404).json({ error: "Nie ma takiej oferty" });
+  }
+  try {
+    const wynik = await chooseVariant(pool, req.params.ref, req.body?.itemId);
+    console.log(`[wycena] ${wynik.quoteRef}: klient wybral wariant ${wynik.chosenItemId} za ${(wynik.totalGrosze / 100).toFixed(2)} PLN`);
+    res.json({ ok: true, ...wynik });
+  } catch (e) {
+    if (e instanceof QuoteError) return res.status(400).json({ error: e.message, code: e.code });
+    console.error("[wycena] wybor wariantu nie powiodl sie:", e.message);
+    res.status(500).json({ error: "Nie udalo sie zapisac wyboru" });
+  }
 });
 
 /**

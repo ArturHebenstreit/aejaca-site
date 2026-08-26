@@ -777,6 +777,7 @@ silnik, tylko ustalił ją człowiek.
   tytułem płatności, więc po nim rozpoznajemy, czego dotyczy wpłata.
 - Wejście dwiema drogami: z linku w ofercie **albo** z samego numeru, podanego na /oferta/
   razem z adresem e-mail, na który poszła oferta. Klient bez adresu (rozmowa telefoniczna)
+- **Oferta bywa wielowariantowa.** Wtedy na stronie oferty stoi kilka wariantów do wyboru, każdy z własną kwotą, i klient zaznacza JEDEN. Kwota do zapłaty dopasowuje się do zaznaczenia, wybór da się zmieniać aż do zapłaty, a do zamówienia trafia wyłącznie wybrany wariant. Rabat liczy się od wybranego wariantu, nie od sumy propozycji, a zmiana wariantu kasuje podgląd zniżki, więc kod trzeba wpisać jeszcze raz. Termin ważności jest wspólny dla całej oferty. NIE zgaduj, ile wariantów ma konkretna oferta ani ile kosztują: klient widzi to na swojej stronie.
 - **Numer oferty da się też wpisać w sklepie**: pole "Masz numer oferty?" stoi na https://www.aejaca.com/shop/ i w koszyku, niezaleznie od tego, czy cos w nim lezy, i przenosi na stronę oferty. Klientowi, który zgubił maila z linkiem, podaj tę drogę zamiast prosić o kontakt. Sam numer nadal nie wystarcza: strona oferty dopyta o adres e-mail albo o kod odbioru.
   dostaje od nas krótki kod odbioru i podaje numer razem z nim.
 - Na tej stronie klient **poda kod rabatowy** (kwota schodzi przed zapłatą, nie zwrotem po),
