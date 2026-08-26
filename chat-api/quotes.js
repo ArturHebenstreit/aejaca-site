@@ -106,6 +106,29 @@ export async function createQuote(pool, input) {
  *
  * @param {Array<{id:number, unitGrosze:number}>} lines
  */
+/**
+ * Wariant, ktory klient wybral, albo pierwszy wyceniony.
+ *
+ * Oferta wielowariantowa to zwykla wycena z flaga `pick_one`: jej pozycje sa
+ * WZAJEMNIE WYKLUCZAJACYMI SIE propozycjami, a nie skladnikami jednego
+ * rachunku. Kazdy wariant to jedna kwota, opisana w tresci oferty.
+ *
+ * Wybor NIGDY nie jest pusty: przy wycenianiu wskazujemy pierwszy wariant,
+ * a klient go tylko przestawia. Dzieki temu `total_grosze` zawsze znaczy
+ * to samo, co przy wycenie zwyklej, czyli KWOTE DO ZAPLATY, i zadna
+ * z istniejacych bramek (wysylka oferty, kod rabatowy, konwersja) nie musi
+ * uczyc sie stanu "jeszcze nie wybrano".
+ *
+ * @returns {object|null} pozycja wyceny albo null, gdy nie ma czego wybrac
+ */
+export function wybranyWariant(quote) {
+  if (!quote?.pick_one) return null;
+  const wycenione = (quote.items || []).filter((i) => i.unit_grosze != null);
+  if (!wycenione.length) return null;
+  const wskazany = wycenione.find((i) => Number(i.id) === Number(quote.chosen_item_id));
+  return wskazany || wycenione[0];
+}
+
 export async function priceQuote(pool, quoteRef, lines, note = null, validDays = QUOTE_VALIDITY_DAYS) {
   const quote = await getQuoteByRef(pool, quoteRef);
   if (!quote) throw new QuoteError("not_found", "Nie ma takiej wyceny");
@@ -134,14 +157,29 @@ export async function priceQuote(pool, quoteRef, lines, note = null, validDays =
 
   if (!total) throw new QuoteError("no_amount", "Wycena bez kwoty nie jest oferta");
 
+  // Przy ofercie wielowariantowej suma pozycji nie jest kwota do zaplaty, bo
+  // pozycje sa alternatywami. Kwota to wybrany wariant, a wybor wskazujemy
+  // tutaj, zeby oferta nigdy nie trafila do klienta bez kwoty.
+  const swiezy = await getQuoteByRef(pool, quoteRef);
+  const wariant = wybranyWariant(swiezy);
+  const doZaplaty = swiezy.pick_one ? (wariant ? wariant.line_grosze : null) : total;
+  if (swiezy.pick_one && !doZaplaty) throw new QuoteError("no_amount", "Zaden wariant nie ma kwoty");
+
   const validUntil = new Date(Date.now() + validDays * 86400_000);
   await pool.query(
-    `UPDATE quotes SET status = 'priced', total_grosze = $2, price_note = $3, valid_until = $4
+    `UPDATE quotes SET status = 'priced', total_grosze = $2, price_note = $3, valid_until = $4,
+            chosen_item_id = COALESCE($5, chosen_item_id)
       WHERE id = $1`,
-    [quote.id, total, note, validUntil.toISOString().slice(0, 10)]
+    [quote.id, doZaplaty, note, validUntil.toISOString().slice(0, 10), wariant ? wariant.id : null]
   );
 
-  return { quoteRef, totalGrosze: total, validUntil: validUntil.toISOString().slice(0, 10) };
+  return {
+    quoteRef,
+    totalGrosze: doZaplaty,
+    validUntil: validUntil.toISOString().slice(0, 10),
+    pickOne: Boolean(swiezy.pick_one),
+    chosenItemId: wariant ? Number(wariant.id) : null,
+  };
 }
 
 /**
@@ -254,7 +292,11 @@ export async function getQuoteByRef(pool, quoteRef) {
  * wynika dzial, tak samo jak w kasie sklepu.
  */
 export function quoteItemsForDiscount(quote) {
-  return quote.items.map((i) => ({
+  // Przy ofercie wielowariantowej rabat dotyczy TEGO, co klient kupuje, czyli
+  // wybranego wariantu. Podanie wszystkich dalo by znizke liczona od sumy
+  // propozycji, z ktorych realizujemy jedna.
+  const pozycje = quote.pick_one ? [wybranyWariant(quote)].filter(Boolean) : quote.items;
+  return pozycje.map((i) => ({
     lineGrosze: i.line_grosze ?? (i.unit_grosze ?? 0) * i.qty,
     source: "service",
     category: String(i.calculator || "").startsWith("jewelry") ? "jewelry" : "studio",
@@ -362,7 +404,14 @@ export async function convertQuoteToOrder(
       );
     }
 
-    for (const item of quote.items) {
+    // Przy ofercie wielowariantowej do zamowienia idzie WYLACZNIE wybrany
+    // wariant. Pozostale byly propozycjami, a nie czescia tego samego zlecenia,
+    // wiec wpisanie ich wszystkich zrobiloby zamowienie na trzy rzeczy naraz,
+    // za kwote jednej.
+    const doZamowienia = quote.pick_one ? [wybranyWariant(quote)].filter(Boolean) : quote.items;
+    if (!doZamowienia.length) throw new QuoteError("no_variant", "Nie wybrano wariantu oferty");
+
+    for (const item of doZamowienia) {
       await client.query(
         `INSERT INTO order_items (order_id, item_type, calculator, title, qty, unit_grosze, line_grosze,
            params, file_name, upload_id)
@@ -456,6 +505,10 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
       if (!lang) throw new QuoteError("bad_lang", "Jezyk oferty to pl, en albo de");
       dopisz("lang", lang);
     }
+    // Przelacznik "klient wybiera jeden wariant". Zmienia znaczenie pozycji
+    // z rachunku na liste propozycji, wiec kwota naglowka liczy sie potem
+    // inaczej. Przeliczenie stoi nizej, po zmianach w pozycjach.
+    if (patch.pickOne !== undefined) dopisz("pick_one", Boolean(patch.pickOne));
     // Adres ani telefon nie moga zniknac oba naraz: bez zadnego z nich nie ma
     // jak przekazac oferty, a wycena zostalaby w panelu jako slepy wiersz.
     const email = patch.email !== undefined ? tekst(patch.email, 255) : quote.customer_email;
@@ -544,28 +597,45 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
 
     if (!wszystkie) throw new QuoteError("no_items", "Wycena bez pozycji nie ma sensu");
 
+    // Przy ofercie wielowariantowej kwota do zaplaty to WYBRANY WARIANT,
+    // a nie suma pozycji, bo pozycje sa alternatywami. Wskaznik wyboru mogl
+    // przy okazji wskazywac na pozycje wlasnie usunieta, wiec czytamy wycene
+    // od nowa i pozwalamy regule wybrac pierwszy pozostaly.
+    const { rows: poZmianie } = await client.query(
+      `SELECT q.id, q.pick_one, q.chosen_item_id, q.total_grosze,
+              COALESCE(json_agg(json_build_object(
+                'id', i.id, 'unit_grosze', i.unit_grosze, 'line_grosze', i.line_grosze, 'qty', i.qty
+              ) ORDER BY i.id) FILTER (WHERE i.id IS NOT NULL), '[]') AS items
+         FROM quotes q LEFT JOIN quote_items i ON i.quote_id = q.id
+        WHERE q.id = $1 GROUP BY q.id`,
+      [quote.id]
+    );
+    const wariant = wybranyWariant(poZmianie[0]);
+    const doZaplaty = poZmianie[0].pick_one ? (wariant ? wariant.line_grosze : null) : (wycenione ? suma : null);
+
     let status = quote.status;
-    if (!wycenione) {
-      // Zostaly same pozycje bez kwot: to znowu jest zapytanie, nie oferta.
+    if (doZaplaty == null) {
+      // Nie ma czym zaplacic: to znowu jest zapytanie, nie oferta.
       status = "new";
       await client.query(
         `UPDATE quotes SET total_grosze = NULL, valid_until = NULL, status = 'new', updated_at = NOW() WHERE id = $1`,
         [quote.id]
       );
-    } else if (suma !== quote.total_grosze) {
+    } else {
       await client.query(
-        `UPDATE quotes SET total_grosze = $2, updated_at = NOW() WHERE id = $1`,
-        [quote.id, suma]
+        `UPDATE quotes SET total_grosze = $2, chosen_item_id = $3, updated_at = NOW() WHERE id = $1`,
+        [quote.id, doZaplaty, wariant ? wariant.id : null]
       );
     }
 
     await client.query("COMMIT");
     return {
       quoteRef,
-      totalGrosze: wycenione ? suma : null,
+      totalGrosze: doZaplaty,
       status,
       removed: usuniete,
       added: dodane,
+      pickOne: Boolean(poZmianie[0].pick_one),
     };
   } catch (e) {
     await client.query("ROLLBACK").catch(() => {});
@@ -573,6 +643,35 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
   } finally {
     client.release();
   }
+}
+
+/**
+ * Wybor wariantu przez klienta.
+ *
+ * Wybor NIE jest wiazacy: az do zaplaty klient moze wrocic i przestawic sie
+ * na inny. Wiazaca staje sie dopiero konwersja, ktora bierze wariant wskazany
+ * w tej chwili, w tej samej transakcji co zapis zamowienia.
+ *
+ * Sprawdzenie stoi po stronie serwera, a nie w interfejsie: pozycja musi
+ * nalezec do TEJ wyceny i miec kwote, inaczej wybor byloby ustawieniem
+ * dowolnej liczby jako naleznosci.
+ */
+export async function chooseVariant(pool, quoteRef, itemId) {
+  const quote = await getQuoteByRef(pool, quoteRef);
+  if (!quote) throw new QuoteError("not_found", "Nie ma takiej wyceny");
+  if (!quote.pick_one) throw new QuoteError("not_multi", "Ta oferta nie ma wariantow do wyboru");
+  if (quote.converted_order_id) throw new QuoteError("already_converted", "Ta oferta stala sie juz zamowieniem");
+
+  const wybrany = (quote.items || []).find((i) => Number(i.id) === Number(itemId));
+  if (!wybrany) throw new QuoteError("unknown_item", "Ten wariant nie nalezy do tej oferty");
+  if (wybrany.unit_grosze == null) throw new QuoteError("not_priced", "Ten wariant nie ma jeszcze kwoty");
+
+  const kwota = wybrany.line_grosze ?? wybrany.unit_grosze * wybrany.qty;
+  await pool.query(
+    `UPDATE quotes SET chosen_item_id = $2, total_grosze = $3, updated_at = NOW() WHERE id = $1`,
+    [quote.id, wybrany.id, kwota]
+  );
+  return { quoteRef, chosenItemId: Number(wybrany.id), totalGrosze: kwota };
 }
 
 /**

@@ -14,6 +14,14 @@ CREATE TABLE IF NOT EXISTS quotes (
   id                BIGSERIAL PRIMARY KEY,
   quote_ref         VARCHAR(32) UNIQUE NOT NULL,
 
+  -- Oferta wielowariantowa: pozycje sa WZAJEMNIE WYKLUCZAJACYMI SIE
+  -- propozycjami, a nie skladnikami jednego rachunku. Klient wybiera jedna,
+  -- a `total_grosze` niesie kwote wybranego wariantu, nie sume pozycji.
+  -- Wskaznik nigdy nie jest pusty przy wycenionej ofercie: wycenianie ustawia
+  -- pierwszy wariant, klient go tylko przestawia.
+  pick_one          BOOLEAN NOT NULL DEFAULT FALSE,
+  chosen_item_id    BIGINT,
+
   status            VARCHAR(20) NOT NULL DEFAULT 'new'
                     CHECK (status IN ('new','priced','sent','accepted','converted','expired','cancelled')),
 
