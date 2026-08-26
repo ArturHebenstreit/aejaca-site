@@ -99,7 +99,14 @@ const ZESTAWY = {
   },
   "quote-edit": {
     user: uzytkownik, quote: wycena,
-    items: [{ id: 1, calculator: null, title: "Odlew sygnetu", qty: 1, unitGrosze: null, lineGrosze: null, description: null, fileName: null, params: null }],
+    // Trzy rodzaje pozycji naraz, bo widok rysuje kazdy inaczej: skladnik
+    // rachunku, wariant z przelacznikiem i dodatek z polem zaznaczanym.
+    items: [
+      { id: 1, calculator: null, title: "Odlew sygnetu", qty: 1, unitGrosze: null, lineGrosze: null, description: null, fileName: null, params: null, kind: "fixed", groupKey: null, selected: true },
+      { id: 2, calculator: null, title: "Wydruk klucz 56 mm", qty: 1, unitGrosze: 4000, lineGrosze: 4000, description: null, fileName: null, params: null, kind: "variant", groupKey: "klucz", selected: true },
+      { id: 3, calculator: null, title: "Wydruk klucz 68 mm", qty: 2, unitGrosze: 4500, lineGrosze: 9000, description: "wzor", fileName: null, params: null, kind: "variant", groupKey: "klucz", selected: false },
+      { id: 4, calculator: null, title: "Polerowanie", qty: 1, unitGrosze: 3000, lineGrosze: 3000, description: null, fileName: null, params: { szlif: "lustro" }, kind: "option", groupKey: "klucz", selected: true },
+    ],
     offerUrl: "https://www.aejaca.com/oferta/?ref=WY20260825-A1B2C3D4&token=token-testowy",
     msg: null, err: null,
   },
@@ -188,7 +195,7 @@ for (const f of pliki) {
 
 // Kazda pozycja edytowalna musi miec droge powrotna: widok edycji bez trasy
 // zapisu to formularz, ktory po kliknieciu "zapisz" daje 404.
-for (const [widok, zapis] of [["quote-edit", "/quotes/:ref/price"], ["discount-edit", "/discounts/:code/update"], ["gemstone-prices-edit", "/gemstone-prices/:id/update"], ["material-edit", "/materials/:id/update"]]) {
+for (const [widok, zapis] of [["quote-edit", "/quotes/:ref/edit"], ["discount-edit", "/discounts/:code/update"], ["gemstone-prices-edit", "/gemstone-prices/:id/update"], ["material-edit", "/materials/:id/update"]]) {
   if (existsSync(join(VIEWS, `${widok}.ejs`)) && !server.includes(`"${zapis}"`)) {
     zle(`views/${widok}.ejs nie ma trasy zapisu ${zapis}`);
   }

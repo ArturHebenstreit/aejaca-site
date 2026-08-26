@@ -1385,12 +1385,19 @@ app.post("/quotes/new", requireAuth, async (req, res) => {
 });
 
 /**
- * Poprawienie oferty: dane klienta, tresc zapytania i pozycje.
+ * Zapis calej oferty: dane klienta, pozycje, kwoty, uklad wyboru i termin.
  *
- * Usuwanie pozycji idzie przez pole wyboru "zostaw / usun", a nie przez
- * pole zaznaczane. Pole zaznaczane wysyla sie WYLACZNIE gdy jest zaznaczone,
- * wiec przy dwoch usuwanych z pieciu tablice rozjechalyby sie o dwa miejsca
- * i skasowalibysmy nie te wiersze. Lista wysyla sie zawsze.
+ * JEDEN FORMULARZ, jeden przycisk. Wczesniej kwoty mieszkaly w osobnej sekcji
+ * nizej na stronie, wiec cena stala daleko od pozycji, ktorej dotyczy, a zapis
+ * jednej polowy gubil to, co wpisano w drugiej.
+ *
+ * Usuwanie pozycji idzie przez przycisk z numerem pozycji w wartosci, a nie
+ * przez pole zaznaczane w wierszu. Pole zaznaczane wysyla sie WYLACZNIE gdy
+ * jest zaznaczone, wiec przy dwoch usuwanych z pieciu tablice rozjechalyby sie
+ * o dwa miejsca i skasowalibysmy nie te wiersze.
+ *
+ * Z tego samego powodu zaznaczenie wariantu i dodatku jedzie NUMEREM WIERSZA
+ * w wartosci pola, a nie sama obecnoscia pola: tablice zostaja wtedy rowne.
  */
 app.post("/quotes/:ref/edit", requireAuth, async (req, res) => {
   const wroc = `/quotes/${encodeURIComponent(req.params.ref)}`;
@@ -1399,16 +1406,43 @@ app.post("/quotes/:ref/edit", requireAuth, async (req, res) => {
     const tytuly = [].concat(req.body.itemTitle || []);
     const ilosci = [].concat(req.body.itemQty || []);
     const opisy = [].concat(req.body.itemDescription || []);
-    const akcje = [].concat(req.body.itemAction || []);
+    const kwoty = [].concat(req.body.itemUnitPln || []);
+    const rodzaje = [].concat(req.body.itemKind || []);
+    const karty = [].concat(req.body.itemGroup || []);
+    const doUsuniecia = String(req.body.removeId || "");
+
+    // Przelaczniki wariantow maja nazwy `pickGroup_0`, `pickGroup_1`, bo
+    // przegladarka laczy je w jeden wybor wylacznie po nazwie pola. Dodatki
+    // ida jedna lista `optionOn`. W obu wartoscia jest NUMER WIERSZA.
+    const zaznaczone = new Set(
+      Object.keys(req.body)
+        .filter((k) => k === "optionOn" || k.startsWith("pickGroup_"))
+        .flatMap((k) => [].concat(req.body[k]))
+        .map((v) => Number(v))
+        .filter((n) => Number.isInteger(n))
+    );
+
+    const grosze = (wartosc) => {
+      const s = String(wartosc ?? "").trim().replace(",", ".");
+      if (!s) return null;
+      const g = Math.round(Number(s) * 100);
+      if (!Number.isFinite(g) || g <= 0) throw new Error("Kwota pozycji musi byc dodatnia albo pusta");
+      return g;
+    };
+    const rodzaj = (w) => (["fixed", "variant", "option"].includes(w) ? w : "fixed");
 
     const items = idki.map((id, i) => (
-      akcje[i] === "remove"
+      String(id) === doUsuniecia
         ? { id: Number(id), remove: true }
         : {
             id: Number(id),
             title: tytuly[i] ?? "",
             qty: ilosci[i] ?? 1,
             description: opisy[i] ?? "",
+            unitGrosze: grosze(kwoty[i]),
+            kind: rodzaj(rodzaje[i]),
+            groupKey: String(karty[i] ?? "").trim() || null,
+            selected: zaznaczone.has(i),
           }
     ));
 
@@ -1419,6 +1453,9 @@ app.post("/quotes/:ref/edit", requireAuth, async (req, res) => {
         title: req.body.newTitle,
         qty: req.body.newQty || 1,
         description: req.body.newDescription || "",
+        unitGrosze: grosze(req.body.newUnitPln),
+        kind: rodzaj(req.body.newKind),
+        groupKey: String(req.body.newGroup ?? "").trim() || null,
       });
     }
 
@@ -1430,21 +1467,21 @@ app.post("/quotes/:ref/edit", requireAuth, async (req, res) => {
         phone: req.body.phone ?? undefined,
         lang: req.body.lang || undefined,
         message: req.body.message ?? undefined,
-        // Pole zaznaczane wysyla sie tylko zaznaczone, ale stoi w formularzu
-        // zawsze i jest jedno, wiec brak znaczy tu po prostu "wylaczone".
-        pickOne: req.body.pickOne === "on",
+        note: req.body.note ?? undefined,
         // Puste pole znaczy "zdejmij termin", brak pola znaczy "nie ruszaj".
         // Formularz wysyla je zawsze, wiec pusta wartosc jest tu decyzja.
         validUntil: req.body.validUntil ?? undefined,
+        // Liczba dni ma pierwszenstwo przed data: wpisuje sie ja swiadomie,
+        // a data w polu obok stoi tam z poprzedniego zapisu.
+        validDays: String(req.body.validDays || "").trim() || undefined,
         items,
       },
     });
     const zmiany = [
-      r.pickOne ? "oferta wielowariantowa" : null,
-      r.validUntil ? `ważna do ${r.validUntil}` : null,
       r.removed ? `usunieto pozycji: ${r.removed}` : null,
       r.added ? `dodano pozycji: ${r.added}` : null,
-      r.totalGrosze != null ? `suma ${(r.totalGrosze / 100).toFixed(2)} zł` : "bez kwoty",
+      r.validUntil ? `ważna do ${String(r.validUntil).slice(0, 10)}` : null,
+      r.totalGrosze != null ? `do zapłaty ${(r.totalGrosze / 100).toFixed(2)} zł` : "bez kwoty",
     ].filter(Boolean).join(", ");
     back(res, wroc, { msg: `Zapisano ${req.params.ref}: ${zmiany}` });
   } catch (err) { back(res, wroc, { err: err.message }); }
@@ -1469,27 +1506,6 @@ app.post("/quotes/:ref/delete", requireAuth, async (req, res) => {
     const uwaga = r.wasConverted ? " (była zamówieniem, samo zamówienie zostaje)" : "";
     back(res, "/quotes", { msg: `Usunieto ${req.params.ref}${uwaga}` });
   } catch (err) { back(res, `/quotes/${encodeURIComponent(req.params.ref)}`, { err: err.message }); }
-});
-
-/** Wpisanie kwot: dopiero to czyni z zapytania oferte. */
-app.post("/quotes/:ref/price", requireAuth, async (req, res) => {
-  try {
-    const idki = [].concat(req.body.itemId || []);
-    const kwoty = [].concat(req.body.unitPln || []);
-    const lines = idki
-      .map((id, i) => ({ id: Number(id), unitGrosze: Math.round(Number(String(kwoty[i]).replace(",", ".")) * 100) }))
-      .filter((l) => Number.isFinite(l.unitGrosze) && l.unitGrosze > 0);
-    if (!lines.length) throw new Error("Wpisz kwotę przynajmniej jednej pozycji");
-    const r = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/price`, {
-      method: "POST",
-      body: {
-        lines,
-        note: req.body.note || null,
-        validDays: Number(req.body.validDays) > 0 ? Number(req.body.validDays) : undefined,
-      },
-    });
-    back(res, `/quotes/${req.params.ref}`, { msg: `Wyceniono na ${(r.totalGrosze / 100).toFixed(2)} zł, ważne do ${r.validUntil}` });
-  } catch (err) { back(res, `/quotes/${req.params.ref}`, { err: err.message }); }
 });
 
 /** Wyslanie oferty klientowi. */

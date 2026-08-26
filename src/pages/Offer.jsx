@@ -68,6 +68,8 @@ const UI = {
     items: "Co wykonujemy",
     variants: "Warianty do wyboru",
     variantsLead: "Przygotowaliśmy kilka wariantów. Zaznacz ten, który wybierasz, a kwota do zapłaty dopasuje się do niego. Wybór możesz zmienić aż do zapłaty.",
+    pickOneHere: "Wybierz jedną pozycję",
+    optionsHere: "Dodatki, jeśli chcesz",
     perPc: "za sztukę",
     pcs: "szt.",
     note: "Ustalenia do tej oferty",
@@ -124,6 +126,8 @@ const UI = {
     items: "What we will make",
     variants: "Choose a variant",
     variantsLead: "We prepared several variants. Tick the one you want and the amount to pay follows it. You can change the choice up until payment.",
+    pickOneHere: "Pick one item",
+    optionsHere: "Add-ons, if you want them",
     perPc: "per piece",
     pcs: "pcs",
     note: "Terms of this offer",
@@ -180,6 +184,8 @@ const UI = {
     items: "Was wir anfertigen",
     variants: "Varianten zur Auswahl",
     variantsLead: "Wir haben mehrere Varianten vorbereitet. Wählen Sie die gewünschte aus, der zu zahlende Betrag folgt ihr. Die Auswahl können Sie bis zur Zahlung ändern.",
+    pickOneHere: "Wählen Sie eine Position",
+    optionsHere: "Zusätze, wenn Sie mögen",
     perPc: "pro Stück",
     pcs: "Stk.",
     note: "Vereinbarungen zu diesem Angebot",
@@ -223,6 +229,37 @@ const UI = {
     back: "Zurück zur Startseite",
   },
 };
+
+/**
+ * Jeden wiersz pozycji: nazwa, drobiazgi pod nia i kwota po prawej.
+ *
+ * Ten sam ksztalt sluzy rachunkowi, wariantowi i dodatkowi, bo klient ma
+ * porownywac kwoty, a nie uczyc sie trzech ukladow na jednej stronie.
+ * Przy wariancie i dodatku ilosc schodzi z oczu (`bezIlosci`): licza sie
+ * kwota i to, czym pozycja jest.
+ */
+function Wiersz({ it, money, u, bezIlosci = false }) {
+  const drobiazgi = [
+    bezIlosci ? null : `${it.qty} ${u.pcs}`,
+    !bezIlosci && it.unitGrosze != null && it.qty > 1 ? `${money(it.unitGrosze)} ${u.perPc}` : null,
+    it.fileName || null,
+  ].filter(Boolean);
+
+  return (
+    <>
+      <div className="min-w-0">
+        <div className="text-neutral-200 text-sm">{it.title}</div>
+        {drobiazgi.length > 0 && (
+          <div className="text-neutral-600 text-xs mt-0.5">{drobiazgi.join(" · ")}</div>
+        )}
+        {it.description && (
+          <p className="text-neutral-500 text-xs mt-1 whitespace-pre-wrap">{it.description}</p>
+        )}
+      </div>
+      <div className="text-neutral-200 text-sm shrink-0">{it.lineGrosze != null ? money(it.lineGrosze) : "-"}</div>
+    </>
+  );
+}
 
 export default function Offer() {
   const { lang } = useLanguage();
@@ -287,6 +324,26 @@ export default function Offer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ref, token, odswiez]);
 
+  // Pozycje w kartach. Rachunek osobno, a kazda karta to jedna grupa: warianty,
+  // z ktorych klient bierze jeden, i dodatki, ktore da sie do nich dolozyc.
+  const uklad = useMemo(() => {
+    const fixed = [];
+    const karty = [];
+    for (const it of offer?.items || []) {
+      const rodzaj = it.kind || "fixed";
+      if (rodzaj === "fixed") { fixed.push(it); continue; }
+      const klucz = it.groupKey || "wybor";
+      let karta = karty.find((k) => k.key === klucz);
+      if (!karta) { karta = { key: klucz, variants: [], options: [] }; karty.push(karta); }
+      karta[rodzaj === "variant" ? "variants" : "options"].push(it);
+    }
+    return { fixed, karty };
+  }, [offer]);
+
+  // Po zlozeniu zamowienia i po terminie uklad jest juz tylko do ogladania:
+  // kwota z zamowienia zostala wyslana do bramki i nie ma jej jak zmienic.
+  const zablokowane = choosing || Boolean(offer?.expired) || Boolean(offer?.orderRef);
+
   async function lookup(e) {
     e.preventDefault();
     setLooking(true);
@@ -301,14 +358,14 @@ export default function Offer() {
     setParams({ ref: r.data.ref, token: r.data.token }, { replace: true });
   }
 
-  async function chooseVariant(itemId) {
+  async function ustawWybor(itemId, selected) {
     if (choosing) return;
     setChoosing(true);
     setChooseError(null);
-    const r = await postJSON(`${API}/api/quotes/${encodeURIComponent(ref)}/choose`, { token, itemId });
+    const r = await postJSON(`${API}/api/quotes/${encodeURIComponent(ref)}/choose`, { token, itemId, selected });
     setChoosing(false);
     if (!r.ok) { setChooseError(r.data?.error || u.errorGeneric); return; }
-    // Znizka byla policzona dla poprzedniego wariantu, wiec przestaje
+    // Znizka byla policzona dla poprzedniego ukladu, wiec przestaje
     // obowiazywac. Lepiej kazac wpisac kod jeszcze raz niz pokazac kwote,
     // ktorej serwer nie potwierdzi przy skladaniu zamowienia.
     setDiscount(null);
@@ -478,56 +535,80 @@ export default function Offer() {
               )}
 
               <section className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
-                <h2 className="text-white font-semibold mb-3">{offer.pickOne ? u.variants : u.items}</h2>
-                {offer.pickOne && (
+                <h2 className="text-white font-semibold mb-3">{uklad.karty.length ? u.variants : u.items}</h2>
+                {uklad.karty.length > 0 && (
                   <p className="text-neutral-400 text-sm leading-relaxed mb-4">{u.variantsLead}</p>
                 )}
-                <div className="space-y-3">
-                  {offer.items.map((it) => {
-                    const wybrany = offer.pickOne && Number(offer.chosenItemId) === Number(it.id);
-                    const wiersz = (
-                      <>
-                        <div className="min-w-0">
-                          <div className="text-neutral-200 text-sm">{it.title}</div>
-                          <div className="text-neutral-600 text-xs mt-0.5">
-                            {offer.pickOne ? null : `${it.qty} ${u.pcs}`}
-                            {!offer.pickOne && it.unitGrosze != null && it.qty > 1 ? ` · ${money(it.unitGrosze)} ${u.perPc}` : ""}
-                            {it.fileName ? `${offer.pickOne ? "" : " · "}${it.fileName}` : ""}
-                          </div>
-                          {it.description && (
-                            <p className="text-neutral-500 text-xs mt-1 whitespace-pre-wrap">{it.description}</p>
-                          )}
-                        </div>
-                        <div className="text-neutral-200 text-sm shrink-0">{it.lineGrosze != null ? money(it.lineGrosze) : "-"}</div>
-                      </>
-                    );
 
-                    // Wariantow nie da sie kupic razem, wiec sa polem wyboru,
-                    // a nie lista. Wybor idzie na serwer od razu, bo to on
-                    // ustala kwote do zaplaty, nie przegladarka.
-                    if (!offer.pickOne) {
-                      return <div key={it.id} className="flex items-start justify-between gap-4">{wiersz}</div>;
-                    }
-                    return (
+                {/* Skladniki rachunku: te sa w kwocie zawsze i nie ma przy nich
+                    czego wybierac. */}
+                {uklad.fixed.length > 0 && (
+                  <div className="space-y-3">
+                    {uklad.fixed.map((it) => (
+                      <div key={it.id} className="flex items-start justify-between gap-4">
+                        <Wiersz it={it} money={money} u={u} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Karta wyboru: warianty wykluczaja sie wzajemnie, dodatki
+                    dokladaja sie do wybranego. Kazde klikniecie idzie na serwer
+                    od razu, bo to on ustala kwote do zaplaty, nie przegladarka. */}
+                {uklad.karty.map((karta, nr) => (
+                  <div
+                    key={karta.key}
+                    className={`rounded-xl border border-white/10 p-4 space-y-2 ${uklad.fixed.length || nr > 0 ? "mt-4" : ""}`}
+                  >
+                    {karta.variants.length > 0 && (
+                      <div className="text-neutral-500 text-xs">{u.pickOneHere}</div>
+                    )}
+                    {karta.variants.map((it) => (
                       <label
                         key={it.id}
                         className={`flex items-start gap-3 rounded-lg border p-4 cursor-pointer transition-colors ${
-                          wybrany ? "border-amber-400/50 bg-amber-400/[0.06]" : "border-white/10 hover:border-white/25"
+                          it.selected ? "border-amber-400/50 bg-amber-400/[0.06]" : "border-white/10 hover:border-white/25"
                         }`}
                       >
                         <input
                           type="radio"
-                          name="wariant"
+                          name={`wariant-${karta.key}`}
                           className="mt-1 accent-amber-400"
-                          checked={wybrany}
-                          disabled={choosing || offer.expired || Boolean(offer.orderRef)}
-                          onChange={() => chooseVariant(it.id)}
+                          checked={Boolean(it.selected)}
+                          disabled={zablokowane}
+                          onChange={() => ustawWybor(it.id, true)}
                         />
-                        <span className="flex items-start justify-between gap-4 flex-1 min-w-0">{wiersz}</span>
+                        <span className="flex items-start justify-between gap-4 flex-1 min-w-0">
+                          <Wiersz it={it} money={money} u={u} bezIlosci />
+                        </span>
                       </label>
-                    );
-                  })}
-                </div>
+                    ))}
+
+                    {karta.options.length > 0 && (
+                      <div className="text-neutral-500 text-xs pt-2">{u.optionsHere}</div>
+                    )}
+                    {karta.options.map((it) => (
+                      <label
+                        key={it.id}
+                        className={`flex items-start gap-3 rounded-lg border p-4 cursor-pointer transition-colors ${
+                          it.selected ? "border-amber-400/50 bg-amber-400/[0.06]" : "border-white/10 hover:border-white/25"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="mt-1 accent-amber-400"
+                          checked={Boolean(it.selected)}
+                          disabled={zablokowane}
+                          onChange={() => ustawWybor(it.id, !it.selected)}
+                        />
+                        <span className="flex items-start justify-between gap-4 flex-1 min-w-0">
+                          <Wiersz it={it} money={money} u={u} bezIlosci />
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                ))}
+
                 {chooseError && (
                   <p className="text-amber-300 text-xs mt-3">{chooseError}</p>
                 )}

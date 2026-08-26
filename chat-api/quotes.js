@@ -101,26 +101,120 @@ export async function createQuote(pool, input) {
 }
 
 /**
- * Wariant, ktory klient wybral, albo pierwszy wyceniony.
+ * Rodzaje pozycji oferty.
  *
- * Oferta wielowariantowa to zwykla wycena z flaga `pick_one`: jej pozycje sa
- * WZAJEMNIE WYKLUCZAJACYMI SIE propozycjami, a nie skladnikami jednego
- * rachunku. Kazdy wariant to jedna kwota, opisana w tresci oferty.
+ *   fixed   - skladnik rachunku, zawsze w kwocie
+ *   variant - propozycja do wyboru: z jednej grupy klient bierze DOKLADNIE JEDNA
+ *   option  - dodatek: klient bierze go albo nie, niezaleznie od reszty
  *
- * Wybor NIGDY nie jest pusty: przy wycenianiu wskazujemy pierwszy wariant,
- * a klient go tylko przestawia. Dzieki temu `total_grosze` zawsze znaczy
- * to samo, co przy wycenie zwyklej, czyli KWOTE DO ZAPLATY, i zadna
- * z istniejacych bramek (wysylka oferty, kod rabatowy, konwersja) nie musi
- * uczyc sie stanu "jeszcze nie wybrano".
- *
- * @returns {object|null} pozycja wyceny albo null, gdy nie ma czego wybrac
+ * Wczesniej istnial tylko podzial na poziomie CALEJ oferty (`pick_one`), wiec
+ * "wydruk klucza 56 albo 68 mm, do tego opcjonalne polerowanie" nie dalo sie
+ * ulozyc: albo wszystko bylo rachunkiem, albo wszystko alternatywa.
  */
-export function wybranyWariant(quote) {
-  if (!quote?.pick_one) return null;
-  const wycenione = (quote.items || []).filter((i) => i.unit_grosze != null);
-  if (!wycenione.length) return null;
-  const wskazany = wycenione.find((i) => Number(i.id) === Number(quote.chosen_item_id));
-  return wskazany || wycenione[0];
+export const ITEM_KINDS = ["fixed", "variant", "option"];
+
+/** Grupa dla wariantu, ktory jej nie dostal. Jedna karta, jeden wybor. */
+export const DEFAULT_GROUP = "wybor";
+
+/** Czy pozycje niosa juz nowy podzial, czy to jeszcze stara oferta z `pick_one`. */
+function maRodzaje(items) {
+  return (items || []).some((i) => i.kind === "variant" || i.kind === "option");
+}
+
+function rodzajPozycji(quote, item) {
+  if (maRodzaje(quote?.items)) return ITEM_KINDS.includes(item.kind) ? item.kind : "fixed";
+  // Zgodnosc wsteczna: w starej ofercie `pick_one` wszystkie pozycje byly
+  // wzajemnie wykluczajacymi sie propozycjami, czyli jedna grupa wariantow.
+  return quote?.pick_one ? "variant" : "fixed";
+}
+
+/**
+ * Pozycje, za ktore klient naprawde zaplaci.
+ *
+ * To jest jedyne miejsce, ktore rozstrzyga, co wchodzi do kwoty: rachunek,
+ * wybrany wariant kazdej grupy i zaznaczone dodatki. Konwersja na zamowienie,
+ * rabat, strona oferty i panel czytaja to samo, bo rozjazd miedzy nimi znaczy
+ * zamowienie na inna rzecz niz ta, za ktora klient zaplacil.
+ *
+ * Wybor w grupie NIGDY nie jest pusty: bez wskazania bierzemy pierwszy
+ * wyceniony wariant. Dzieki temu `total_grosze` zawsze znaczy KWOTE DO ZAPLATY
+ * i zadna bramka nie musi uczyc sie stanu "jeszcze nie wybrano".
+ *
+ * @returns {Array<object>} pozycje w kolejnosci z wyceny
+ */
+export function selectedQuoteItems(quote) {
+  const items = quote?.items || [];
+  if (!items.length) return [];
+
+  const wybrane = new Set();
+  const grupy = new Map();
+
+  for (const i of items) {
+    const rodzaj = rodzajPozycji(quote, i);
+    if (rodzaj === "fixed") { wybrane.add(Number(i.id)); continue; }
+    if (rodzaj === "option") {
+      // Dodatek bez kwoty nie ma czego dolozyc do rachunku.
+      if (i.selected !== false && i.unit_grosze != null) wybrane.add(Number(i.id));
+      continue;
+    }
+    const klucz = String(i.group_key || DEFAULT_GROUP);
+    if (!grupy.has(klucz)) grupy.set(klucz, []);
+    grupy.get(klucz).push(i);
+  }
+
+  for (const warianty of grupy.values()) {
+    const wycenione = warianty.filter((i) => i.unit_grosze != null);
+    if (!wycenione.length) continue;
+    const zaznaczony = wycenione.find((i) => i.selected === true);
+    // `chosen_item_id` to slad po starej ofercie wielowariantowej. Czytamy go
+    // wylacznie wtedy, gdy nic nie jest zaznaczone, zeby oferta wyslana przed
+    // ta zmiana pokazywala klientowi dokladnie to, co wybral wczesniej.
+    const stary = wycenione.find((i) => Number(i.id) === Number(quote.chosen_item_id));
+    wybrane.add(Number((zaznaczony || stary || wycenione[0]).id));
+  }
+
+  return items.filter((i) => wybrane.has(Number(i.id)));
+}
+
+/**
+ * Kwota do zaplaty: suma wybranych pozycji.
+ *
+ * @returns {number|null} null, gdy nie ma jeszcze czym zaplacic
+ */
+export function quoteAmountGrosze(quote) {
+  const suma = selectedQuoteItems(quote)
+    .reduce((s, i) => s + (i.line_grosze ?? (i.unit_grosze != null ? i.unit_grosze * i.qty : 0)), 0);
+  return suma > 0 ? suma : null;
+}
+
+/**
+ * Grupy pozycji w postaci, ktorej potrzebuje strona oferty i panel.
+ *
+ * Jedna karta to jedna grupa: warianty do wyboru i dodatki, ktore da sie do
+ * nich dolozyc. Pozycje rachunku (fixed) nie tworza karty i ida osobno.
+ */
+export function quoteGroups(quote) {
+  const items = quote?.items || [];
+  const karty = new Map();
+  const rachunek = [];
+
+  for (const i of items) {
+    const rodzaj = rodzajPozycji(quote, i);
+    if (rodzaj === "fixed") { rachunek.push(i); continue; }
+    const klucz = String(i.group_key || DEFAULT_GROUP);
+    if (!karty.has(klucz)) karty.set(klucz, { key: klucz, variants: [], options: [] });
+    karty.get(klucz)[rodzaj === "variant" ? "variants" : "options"].push(i);
+  }
+
+  return { fixed: rachunek, groups: [...karty.values()] };
+}
+
+/** Kwota jednostkowa w postaci, ktora wolno zapisac. Jedna regula dla obu drog. */
+function kwotaJednostkowa(wartosc) {
+  if (wartosc === null || wartosc === "" || wartosc === undefined) return null;
+  const unit = Math.round(Number(wartosc));
+  if (!Number.isFinite(unit) || unit <= 0) throw new QuoteError("bad_amount", "Kwota pozycji musi byc dodatnia");
+  return unit;
 }
 
 /**
@@ -144,8 +238,8 @@ export async function priceQuote(pool, quoteRef, lines, note = null, validDays =
   for (const line of lines || []) {
     const item = byId.get(Number(line.id));
     if (!item) throw new QuoteError("unknown_item", `Pozycja ${line.id} nie nalezy do wyceny ${quoteRef}`);
-    const unit = Math.round(Number(line.unitGrosze));
-    if (!Number.isFinite(unit) || unit <= 0) throw new QuoteError("bad_amount", "Kwota pozycji musi byc dodatnia");
+    const unit = kwotaJednostkowa(line.unitGrosze);
+    if (unit == null) throw new QuoteError("bad_amount", "Kwota pozycji musi byc dodatnia");
 
     const lineTotal = unit * item.qty;
     total += lineTotal;
@@ -153,19 +247,22 @@ export async function priceQuote(pool, quoteRef, lines, note = null, validDays =
       `UPDATE quote_items SET unit_grosze = $2, line_grosze = $3 WHERE id = $1`,
       [item.id, unit, lineTotal]
     );
+    // Ta sama zmiana w wczytanej kopii. Kwote do zaplaty liczymy nizej z ukladu
+    // pozycji, a uklad musi juz znac swiezo wpisane kwoty.
+    item.unit_grosze = unit;
+    item.line_grosze = lineTotal;
   }
 
   if (!total) throw new QuoteError("no_amount", "Wycena bez kwoty nie jest oferta");
 
-  // Przy ofercie wielowariantowej suma pozycji nie jest kwota do zaplaty, bo
-  // pozycje sa alternatywami. Kwota to wybrany wariant, a wybor wskazujemy
-  // tutaj, zeby oferta nigdy nie trafila do klienta bez kwoty.
-  const swiezy = await getQuoteByRef(pool, quoteRef);
-  const wariant = wybranyWariant(swiezy);
-  const doZaplaty = swiezy.pick_one ? (wariant ? wariant.line_grosze : null) : total;
-  if (swiezy.pick_one && !doZaplaty) throw new QuoteError("no_amount", "Zaden wariant nie ma kwoty");
+  // Suma pozycji nie musi byc kwota do zaplaty: wariant z tej samej grupy
+  // wyklucza pozostale, a niezaznaczony dodatek nie wchodzi do rachunku.
+  // Liczymy wiec z tej samej reguly, ktora widzi klient na stronie oferty.
+  const doZaplaty = quoteAmountGrosze(quote);
+  if (!doZaplaty) throw new QuoteError("no_amount", "Zadna wybrana pozycja nie ma kwoty");
 
   const validUntil = new Date(Date.now() + validDays * 86400_000);
+  const wariant = selectedQuoteItems(quote).find((i) => rodzajPozycji(quote, i) === "variant") || null;
   await pool.query(
     `UPDATE quotes SET status = 'priced', total_grosze = $2, price_note = $3, valid_until = $4,
             chosen_item_id = COALESCE($5, chosen_item_id)
@@ -177,7 +274,7 @@ export async function priceQuote(pool, quoteRef, lines, note = null, validDays =
     quoteRef,
     totalGrosze: doZaplaty,
     validUntil: validUntil.toISOString().slice(0, 10),
-    pickOne: Boolean(swiezy.pick_one),
+    pickOne: Boolean(quote.pick_one),
     chosenItemId: wariant ? Number(wariant.id) : null,
   };
 }
@@ -292,10 +389,10 @@ export async function getQuoteByRef(pool, quoteRef) {
  * wynika dzial, tak samo jak w kasie sklepu.
  */
 export function quoteItemsForDiscount(quote) {
-  // Przy ofercie wielowariantowej rabat dotyczy TEGO, co klient kupuje, czyli
-  // wybranego wariantu. Podanie wszystkich dalo by znizke liczona od sumy
+  // Rabat dotyczy TEGO, co klient kupuje: wybranego wariantu i zaznaczonych
+  // dodatkow. Podanie wszystkich pozycji dalo by znizke liczona od sumy
   // propozycji, z ktorych realizujemy jedna.
-  const pozycje = quote.pick_one ? [wybranyWariant(quote)].filter(Boolean) : quote.items;
+  const pozycje = selectedQuoteItems(quote);
   return pozycje.map((i) => ({
     lineGrosze: i.line_grosze ?? (i.unit_grosze ?? 0) * i.qty,
     source: "service",
@@ -404,11 +501,11 @@ export async function convertQuoteToOrder(
       );
     }
 
-    // Przy ofercie wielowariantowej do zamowienia idzie WYLACZNIE wybrany
-    // wariant. Pozostale byly propozycjami, a nie czescia tego samego zlecenia,
-    // wiec wpisanie ich wszystkich zrobiloby zamowienie na trzy rzeczy naraz,
-    // za kwote jednej.
-    const doZamowienia = quote.pick_one ? [wybranyWariant(quote)].filter(Boolean) : quote.items;
+    // Do zamowienia idzie WYLACZNIE to, co klient wybral: rachunek, po jednym
+    // wariancie z kazdej grupy i zaznaczone dodatki. Pozostale pozycje byly
+    // propozycjami, a nie czescia tego samego zlecenia, wiec wpisanie ich
+    // wszystkich zrobiloby zamowienie na trzy rzeczy naraz, za kwote jednej.
+    const doZamowienia = selectedQuoteItems(quote);
     if (!doZamowienia.length) throw new QuoteError("no_variant", "Nie wybrano wariantu oferty");
 
     for (const item of doZamowienia) {
@@ -497,6 +594,9 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
       return s ? s.slice(0, limit) : null;
     };
     if (patch.email !== undefined) dopisz("customer_email", tekst(patch.email, 255));
+    // Notatka idzie do klienta razem z kwota, wiec zmienia sie tam, gdzie kwoty:
+    // w jednym formularzu, a nie w drugim, ktory trzeba znalezc nizej.
+    if (patch.note !== undefined) dopisz("price_note", tekst(patch.note, 5000));
     if (patch.name !== undefined) dopisz("customer_name", tekst(patch.name, 120));
     if (patch.phone !== undefined) dopisz("customer_phone", tekst(patch.phone, 40));
     if (patch.message !== undefined) dopisz("message", tekst(patch.message, 5000));
@@ -509,7 +609,17 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
     // przy wyrobie, w ktorym kruszec jest glowna skladowa, bywa krotszy niz
     // domyslny. Do tej pory dalo sie go ustawic WYLACZNIE przy wycenianiu, wiec
     // skrocenie terminu wymagalo wpisania kwot od nowa.
-    if (patch.validUntil !== undefined) {
+    //
+    // Dwie drogi do tego samego pola, bo tak sie o nim mysli: "wazna jeszcze
+    // dziesiec dni" albo "wazna do konca miesiaca". Liczba dni ma pierwszenstwo,
+    // bo stoi w formularzu obok kwot i wpisuje sie ja swiadomie.
+    let terminZDni;
+    if (patch.validDays !== undefined && String(patch.validDays).trim() !== "") {
+      const dni = Math.floor(Number(patch.validDays));
+      if (!Number.isFinite(dni) || dni < 1 || dni > 365) throw new QuoteError("bad_date", "Waznosc podaj w dniach, od 1 do 365");
+      terminZDni = new Date(Date.now() + dni * 86400_000).toISOString().slice(0, 10);
+      dopisz("valid_until", terminZDni);
+    } else if (patch.validUntil !== undefined) {
       const dzien = String(patch.validUntil || "").trim();
       if (!dzien) {
         dopisz("valid_until", null);
@@ -519,10 +629,13 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
         dopisz("valid_until", dzien);
       }
     }
-    // Przelacznik "klient wybiera jeden wariant". Zmienia znaczenie pozycji
-    // z rachunku na liste propozycji, wiec kwota naglowka liczy sie potem
-    // inaczej. Przeliczenie stoi nizej, po zmianach w pozycjach.
-    if (patch.pickOne !== undefined) dopisz("pick_one", Boolean(patch.pickOne));
+    // Stary przelacznik "cala oferta jest do wyboru". Zastapil go podzial na
+    // poziomie pozycji, wiec gdy edytor przysyla rodzaje, flaga MUSI zgasnac:
+    // dwie reguly na raz znaczylyby, ze pozycja oznaczona jako skladnik
+    // rachunku dalej zachowuje sie jak alternatywa.
+    const zRodzajami = (patch.items || []).some((p) => p.kind !== undefined);
+    if (zRodzajami) dopisz("pick_one", false);
+    else if (patch.pickOne !== undefined) dopisz("pick_one", Boolean(patch.pickOne));
     // Adres ani telefon nie moga zniknac oba naraz: bez zadnego z nich nie ma
     // jak przekazac oferty, a wycena zostalaby w panelu jako slepy wiersz.
     const email = patch.email !== undefined ? tekst(patch.email, 255) : quote.customer_email;
@@ -557,6 +670,36 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
 
         const zmiany = [];
         const wart = [item.id];
+        // Rodzaj, karta i zaznaczenie: to one rozstrzygaja, co wchodzi do kwoty.
+        if (poz.kind !== undefined) {
+          const rodzaj = ITEM_KINDS.includes(poz.kind) ? poz.kind : null;
+          if (!rodzaj) throw new QuoteError("bad_kind", "Rodzaj pozycji to skladnik, wariant albo dodatek");
+          wart.push(rodzaj);
+          zmiany.push(`kind = $${wart.length}`);
+        }
+        if (poz.groupKey !== undefined) {
+          wart.push(tekst(poz.groupKey, 40));
+          zmiany.push(`group_key = $${wart.length}`);
+        }
+        if (poz.selected !== undefined) {
+          // Pozycja, ktora WLASNIE stala sie dodatkiem, nie miala w formularzu
+          // pola zaznaczania, wiec przyszlaby jako odznaczona. Nowy dodatek
+          // ma byc zaznaczony, wiec pierwsze zaznaczenie ustawiamy sami.
+          const swiezyDodatek = poz.kind === "option" && item.kind !== "option";
+          wart.push(swiezyDodatek ? true : Boolean(poz.selected));
+          zmiany.push(`selected = $${wart.length}`);
+        }
+        // Kwota jednostkowa. Do tej pory wpisywalo sie ja osobnym formularzem,
+        // nizej na stronie, wiec cena stala daleko od pozycji, ktorej dotyczy.
+        // Regula zostaje ta sama co przy wycenianiu: dodatnia albo zadna.
+        if (poz.unitGrosze !== undefined) {
+          const unit = kwotaJednostkowa(poz.unitGrosze);
+          const qty = poz.qty !== undefined ? Math.max(1, Math.floor(Number(poz.qty) || 1)) : item.qty;
+          wart.push(unit);
+          zmiany.push(`unit_grosze = $${wart.length}`);
+          wart.push(unit == null ? null : unit * qty);
+          zmiany.push(`line_grosze = $${wart.length}`);
+        }
         if (poz.title !== undefined) {
           const t = tekst(poz.title, 255);
           if (!t) throw new QuoteError("bad_title", "Pozycja musi miec nazwe");
@@ -574,7 +717,9 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
           zmiany.push(`qty = $${wart.length}`);
           // Wartosc pozycji idzie za iloscia. Bez tego oferta na trzy sztuki
           // pokazywalaby kwote za jedna, i to bez zadnego bledu.
-          if (item.unit_grosze) {
+          // Gdy w tym samym zapisie przyszla nowa kwota, wartosc policzyla sie
+          // juz wyzej, z NOWEJ ceny. Drugie przypisanie liczyloby ja ze starej.
+          if (item.unit_grosze && poz.unitGrosze === undefined) {
             wart.push(item.unit_grosze * qty);
             zmiany.push(`line_grosze = $${wart.length}`);
           }
@@ -585,14 +730,19 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
         continue;
       }
 
-      // Nowa pozycja. Bez kwoty: te wpisuje sie wycenianiem, tak jak przy
-      // kazdej innej, zeby istniala jedna droga do ceny.
+      // Nowa pozycja. Kwota moze przyjsc od razu, bo teraz wpisuje sie ja przy
+      // pozycji, a nie w drugim formularzu; pusta znaczy "jeszcze nie wiem".
       const t = tekst(poz.title, 255);
       if (!t) continue;
       const qty = Math.max(1, Math.floor(Number(poz.qty) || 1));
+      const unit = kwotaJednostkowa(poz.unitGrosze);
+      const rodzaj = poz.kind === undefined ? "fixed" : (ITEM_KINDS.includes(poz.kind) ? poz.kind : null);
+      if (!rodzaj) throw new QuoteError("bad_kind", "Rodzaj pozycji to skladnik, wariant albo dodatek");
       await client.query(
-        `INSERT INTO quote_items (quote_id, title, qty, description) VALUES ($1, $2, $3, $4)`,
-        [quote.id, t, qty, tekst(poz.description, 5000)]
+        `INSERT INTO quote_items (quote_id, title, qty, description, unit_grosze, line_grosze, kind, group_key, selected)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [quote.id, t, qty, tekst(poz.description, 5000), unit, unit == null ? null : unit * qty,
+         rodzaj, tekst(poz.groupKey, 40), poz.selected === undefined ? true : Boolean(poz.selected)]
       );
       dodane++;
     }
@@ -600,57 +750,93 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
     // --- Suma naglowka ----------------------------------------------------
     // Liczymy ja z pozycji, a nie korygujemy o roznice, bo po usunieciu
     // i dodaniu pozycji w jednym zadaniu roznica przestaje byc policzalna.
-    const { rows: sumy } = await client.query(
-      `SELECT COALESCE(SUM(line_grosze), 0)::INTEGER AS suma,
-              COUNT(*) FILTER (WHERE unit_grosze IS NOT NULL)::INTEGER AS wycenione,
-              COUNT(*)::INTEGER AS wszystkie
-         FROM quote_items WHERE quote_id = $1`,
-      [quote.id]
-    );
-    const { suma, wycenione, wszystkie } = sumy[0];
-
-    if (!wszystkie) throw new QuoteError("no_items", "Wycena bez pozycji nie ma sensu");
-
-    // Przy ofercie wielowariantowej kwota do zaplaty to WYBRANY WARIANT,
-    // a nie suma pozycji, bo pozycje sa alternatywami. Wskaznik wyboru mogl
-    // przy okazji wskazywac na pozycje wlasnie usunieta, wiec czytamy wycene
-    // od nowa i pozwalamy regule wybrac pierwszy pozostaly.
+    //
+    // Kwota do zaplaty to nie suma wszystkiego: wariant z jednej grupy wyklucza
+    // pozostale, a niezaznaczony dodatek nie wchodzi do rachunku. Zaznaczenie
+    // moglo przy okazji wskazywac pozycje wlasnie usunieta, wiec czytamy wycene
+    // od nowa i pozwalamy regule wybrac pierwszy pozostaly wariant.
     const { rows: poZmianie } = await client.query(
       `SELECT q.id, q.pick_one, q.chosen_item_id, q.total_grosze,
               COALESCE(json_agg(json_build_object(
-                'id', i.id, 'unit_grosze', i.unit_grosze, 'line_grosze', i.line_grosze, 'qty', i.qty
+                'id', i.id, 'unit_grosze', i.unit_grosze, 'line_grosze', i.line_grosze, 'qty', i.qty,
+                'kind', i.kind, 'group_key', i.group_key, 'selected', i.selected
               ) ORDER BY i.id) FILTER (WHERE i.id IS NOT NULL), '[]') AS items
          FROM quotes q LEFT JOIN quote_items i ON i.quote_id = q.id
         WHERE q.id = $1 GROUP BY q.id`,
       [quote.id]
     );
-    const wariant = wybranyWariant(poZmianie[0]);
-    const doZaplaty = poZmianie[0].pick_one ? (wariant ? wariant.line_grosze : null) : (wycenione ? suma : null);
+    const wszystkie = poZmianie[0].items.length;
+    if (!wszystkie) throw new QuoteError("no_items", "Wycena bez pozycji nie ma sensu");
 
-    let status = quote.status;
+    // W grupie wariantow zaznaczony jest DOKLADNIE JEDEN. Reguly pilnuje serwer,
+    // a nie formularz: przelacznik w przegladarce nie wie o pozycjach dodanych
+    // w tym samym zapisie, a dwa zaznaczenia w jednej grupie znaczylyby kwote
+    // za dwie rzeczy, z ktorych realizujemy jedna.
+    const grupy = new Map();
+    for (const i of poZmianie[0].items) {
+      if (i.kind !== "variant") continue;
+      const klucz = String(i.group_key || DEFAULT_GROUP);
+      if (!grupy.has(klucz)) grupy.set(klucz, []);
+      grupy.get(klucz).push(i);
+    }
+    for (const warianty of grupy.values()) {
+      const zaznaczone = warianty.filter((i) => i.selected);
+      // Bez zaznaczenia bierzemy pierwszy wyceniony, zeby oferta nigdy nie
+      // trafila do klienta z pusta karta.
+      const zostaje = zaznaczone[0] || warianty.find((i) => i.unit_grosze != null) || warianty[0];
+      for (const i of warianty) {
+        const ma = i === zostaje;
+        if (Boolean(i.selected) !== ma) {
+          await client.query(`UPDATE quote_items SET selected = $2 WHERE id = $1`, [i.id, ma]);
+          i.selected = ma;
+        }
+      }
+    }
+
+    const doZaplaty = quoteAmountGrosze(poZmianie[0]);
+    const wariant = selectedQuoteItems(poZmianie[0]).find((i) => i.kind === "variant") || null;
+
     if (doZaplaty == null) {
       // Nie ma czym zaplacic: to znowu jest zapytanie, nie oferta.
-      status = "new";
       await client.query(
         `UPDATE quotes SET total_grosze = NULL, valid_until = NULL, status = 'new', updated_at = NOW() WHERE id = $1`,
         [quote.id]
       );
     } else {
+      // Wpisanie kwoty czyni z zapytania oferte, dokladnie tak samo jak dawniej
+      // osobne wycenianie. Bez tego kwota wpisana przy pozycji zostawilaby
+      // wycene w stanie "nowa", a wiec bez przycisku wysylki.
+      const stan = quote.status === "new" ? "priced" : quote.status;
+      // Oferta bez terminu obowiazywalaby bez konca. Domyslny wpisujemy tylko
+      // wtedy, gdy kwota pojawia sie przy wycenie, ktora terminu nie ma,
+      // i nikt nie podal wlasnego w tym samym zapisie.
+      const bezTerminu = !quote.valid_until && terminZDni === undefined && patch.validUntil === undefined;
+      const domyslny = bezTerminu
+        ? new Date(Date.now() + QUOTE_VALIDITY_DAYS * 86400_000).toISOString().slice(0, 10)
+        : null;
       await client.query(
-        `UPDATE quotes SET total_grosze = $2, chosen_item_id = $3, updated_at = NOW() WHERE id = $1`,
-        [quote.id, doZaplaty, wariant ? wariant.id : null]
+        `UPDATE quotes SET total_grosze = $2, chosen_item_id = $3, status = $4,
+                valid_until = COALESCE($5, valid_until), updated_at = NOW()
+          WHERE id = $1`,
+        [quote.id, doZaplaty, wariant ? wariant.id : null, stan, domyslny]
       );
     }
+
+    // Stan i termin czytamy z bazy, a nie skladamy z zalozen: to ta wartosc
+    // zobaczy panel w komunikacie i ona ma sie zgadzac z tym, co zapisane.
+    const { rows: koniec } = await client.query(
+      `SELECT status, valid_until, total_grosze FROM quotes WHERE id = $1`, [quote.id]
+    );
 
     await client.query("COMMIT");
     return {
       quoteRef,
-      totalGrosze: doZaplaty,
-      status,
+      totalGrosze: koniec[0].total_grosze,
+      status: koniec[0].status,
       removed: usuniete,
       added: dodane,
       pickOne: Boolean(poZmianie[0].pick_one),
-      validUntil: patch.validUntil !== undefined ? (patch.validUntil || null) : undefined,
+      validUntil: koniec[0].valid_until ? String(koniec[0].valid_until.toISOString?.().slice(0, 10) ?? koniec[0].valid_until).slice(0, 10) : null,
     };
   } catch (e) {
     await client.query("ROLLBACK").catch(() => {});
@@ -671,22 +857,52 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
  * nalezec do TEJ wyceny i miec kwote, inaczej wybor byloby ustawieniem
  * dowolnej liczby jako naleznosci.
  */
-export async function chooseVariant(pool, quoteRef, itemId) {
+export async function chooseQuoteOption(pool, quoteRef, itemId, selected = true) {
   const quote = await getQuoteByRef(pool, quoteRef);
   if (!quote) throw new QuoteError("not_found", "Nie ma takiej wyceny");
-  if (!quote.pick_one) throw new QuoteError("not_multi", "Ta oferta nie ma wariantow do wyboru");
   if (quote.converted_order_id) throw new QuoteError("already_converted", "Ta oferta stala sie juz zamowieniem");
 
   const wybrany = (quote.items || []).find((i) => Number(i.id) === Number(itemId));
-  if (!wybrany) throw new QuoteError("unknown_item", "Ten wariant nie nalezy do tej oferty");
-  if (wybrany.unit_grosze == null) throw new QuoteError("not_priced", "Ten wariant nie ma jeszcze kwoty");
+  if (!wybrany) throw new QuoteError("unknown_item", "Ta pozycja nie nalezy do tej oferty");
 
-  const kwota = wybrany.line_grosze ?? wybrany.unit_grosze * wybrany.qty;
+  const rodzaj = rodzajPozycji(quote, wybrany);
+  if (rodzaj === "fixed") throw new QuoteError("not_multi", "Ta pozycja jest skladnikiem oferty, nie ma czego wybierac");
+  if (wybrany.unit_grosze == null) throw new QuoteError("not_priced", "Ta pozycja nie ma jeszcze kwoty");
+
+  if (rodzaj === "variant") {
+    // Wariantu nie da sie odznaczyc: z grupy zawsze wychodzi jedna rzecz.
+    // Zdjecie zaznaczenia zostawiloby karte pusta, a oferte bez kwoty.
+    const klucz = String(wybrany.group_key || DEFAULT_GROUP);
+    const wGrupie = (quote.items || [])
+      .filter((i) => rodzajPozycji(quote, i) === "variant" && String(i.group_key || DEFAULT_GROUP) === klucz)
+      .map((i) => i.id);
+    await pool.query(
+      `UPDATE quote_items SET selected = (id = $2) WHERE id = ANY($1::bigint[])`,
+      [wGrupie, wybrany.id]
+    );
+    for (const i of quote.items) {
+      if (wGrupie.includes(i.id)) i.selected = Number(i.id) === Number(wybrany.id);
+    }
+  } else {
+    await pool.query(`UPDATE quote_items SET selected = $2 WHERE id = $1`, [wybrany.id, Boolean(selected)]);
+    wybrany.selected = Boolean(selected);
+  }
+
+  // Kwote liczy serwer z zapisanego stanu, nigdy przegladarka: to ona stoi
+  // potem w zamowieniu i w tytule przelewu.
+  const kwota = quoteAmountGrosze(quote);
+  if (!kwota) throw new QuoteError("no_amount", "Po tej zmianie oferta nie ma kwoty");
   await pool.query(
     `UPDATE quotes SET chosen_item_id = $2, total_grosze = $3, updated_at = NOW() WHERE id = $1`,
-    [quote.id, wybrany.id, kwota]
+    [quote.id, rodzaj === "variant" ? wybrany.id : quote.chosen_item_id, kwota]
   );
-  return { quoteRef, chosenItemId: Number(wybrany.id), totalGrosze: kwota };
+  return {
+    quoteRef,
+    itemId: Number(wybrany.id),
+    selected: rodzaj === "variant" ? true : Boolean(selected),
+    chosenItemId: rodzaj === "variant" ? Number(wybrany.id) : (quote.chosen_item_id != null ? Number(quote.chosen_item_id) : null),
+    totalGrosze: kwota,
+  };
 }
 
 /**
