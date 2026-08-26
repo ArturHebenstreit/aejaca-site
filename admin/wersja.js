@@ -10,9 +10,13 @@
 // i stan schematu bazy. Rozjazd widac wtedy z jednego spojrzenia, zamiast
 // zgadywac go z zachowania formularza.
 //
-// Numer podnosimy RECZNIE i tylko przy zmianie, ktora widac w panelu.
+// Numer podnosimy RECZNIE i tylko przy zmianie, ktora widac w panelu, i robimy
+// to na TRZECIEJ pozycji: `1.1.02` -> `1.1.03`. Trzecia pozycja jest zawsze
+// dwucyfrowa, wiec numery ustawiaja sie w kolumnie i widac na pierwszy rzut oka,
+// ktora wersja jest nowsza. Pierwsze dwie liczby zostaja na zmiany, ktore
+// przestawiaja sposob pracy panelu, a nie na kazda poprawke ekranu.
 
-export const PANEL_WERSJA = "1.2.0";
+export const PANEL_WERSJA = "1.1.02";
 
 /** Skrot commita z wdrozenia, jesli platforma go poda. */
 export function wersjaZWdrozenia() {

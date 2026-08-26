@@ -278,8 +278,11 @@ console.log("\n7. Wersje panelu i backendu widac z ekranu\n");
   const WERSJA = readFileSync(join(ROOT, "admin", "wersja.js"), "utf8");
   // Panel i backend sklepu wdrazaja sie osobno. Nowy formularz rozmawiajacy ze
   // starym backendem gubi pola po cichu i wyglada to jak blad w kodzie.
-  ma(WERSJA, /export const PANEL_WERSJA = "\d+\.\d+\.\d+"/, "panel zna swoja wersje");
-  ma(SERWER, /const WERSJA_API = "\d+\.\d+\.\d+"/, "backend sklepu zna swoja wersje");
+  // Trzecia pozycja jest ZAWSZE dwucyfrowa i to ona rosnie przy kazdej zmianie.
+  // Bez tego numery przestaja sie ustawiac w kolumnie i "1.1.9" wyglada
+  // na nowsze od "1.1.10".
+  ma(WERSJA, /export const PANEL_WERSJA = "\d+\.\d+\.\d{2}"/, "panel zna swoja wersje, z dwucyfrowa trzecia pozycja");
+  ma(SERWER, /const WERSJA_API = "\d+\.\d+\.\d{2}"/, "backend sklepu zna swoja wersje, z dwucyfrowa trzecia pozycja");
   const ile = (SERWER.match(/app\.get\("\/api\/version"/g) || []).length;
   if (ile === 1) ok("trasa wersji istnieje dokladnie raz");
   else zle(`tras wersji jest ${ile}`);
