@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "../../i18n/nav.jsx";
 import { ArrowRight, Clock, Tag } from "lucide-react";
 import { useLanguage } from "../../i18n/LanguageContext.jsx";
 
@@ -31,7 +31,7 @@ export default function BlogCard({ post }) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 to-transparent" />
         <div className="absolute bottom-3 left-3">
-          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] font-semibold uppercase tracking-wider ${cat.color}`}>
+          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-semibold uppercase tracking-wider ${cat.color}`}>
             <Tag className="w-3 h-3" />
             {cat[lang] || cat.en}
           </span>

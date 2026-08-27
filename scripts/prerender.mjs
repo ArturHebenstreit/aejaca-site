@@ -33,51 +33,13 @@ const { POSTS_META } = await import("../src/blog/postsMeta.js");
 const { GLOSSARY } = await import("../src/data/glossary.js");
 const { PRODUCTS } = await import("../src/data/shopCatalog.js");
 const { SERVICES_FULL } = await import("../src/data/serviceCatalog.js");
+const { TRASY_STALE, JEZYKI, sciezkaJezyka, rozbierzSciezke } = await import("../src/routes.js");
 
-const STATIC_ROUTES = [
-  "/",
-  "/jewelry",
-  "/studio",
-  "/blog",
-  "/contact",
-  "/glossary",
-  "/about",
-  "/warranty",
-  "/returns",
-  "/terms",
-  "/order",
-  "/order/status",
-  "/quote",
-  "/oferta",
-  "/cart",
-  "/checkout",
-  "/shop",
-  "/shop/jewelry",
-  "/shop/studio",
-  "/shipping",
-  "/payments",
-  "/privacy",
-  "/reviews",
-  "/b2b",
-  "/toolsjewelry",
-  "/toolsjewelry/alloy-composition",
-  "/toolstudio/printability",
-  "/toolsjewelry/metal-pricing",
-  "/toolsjewelry/ring-size",
-  "/toolsjewelry/ring-sizer",
-  "/toolstudio",
-  "/toolstudio/print-settings",
-  "/toolstudio/resin-settings",
-  "/toolstudio/laser-parameters",
-  "/toolstudio/shrinkage",
-  "/toolsjewelry/ring-blank",
-  // Wersja robocza kreatora. Strona jest prerenderowana, bo bez tego
-  // Cloudflare oddalby twarde 404, ale niesie `noindex`, nie ma jej
-  // w sitemapie i nic do niej nie linkuje.
-  "/toolsjewelry/kreator",
-  "/druk-3d-piaseczno",
-  "/druk-3d-warszawa",
-];
+// Lista tras przychodzi z `src/routes.js`, tej samej, ktora rysuje serwis w
+// przegladarce i na serwerze. Wczesniej stala tu trzecia kopia, pisana recznie,
+// pilnowana skryptem porownujacym ja z `main.jsx`. Kopii nie ma, wiec nie ma
+// czego pilnowac: brak strony w prerenderze bylby teraz brakiem trasy w ogole.
+const STATIC_ROUTES = TRASY_STALE.map((p) => (p === "/" ? "/" : p.replace(/\/$/, "")));
 
 const GLOSSARY_IDS = GLOSSARY.map((term) => term.id);
 const BLOG_SLUGS = POSTS_META.map((post) => post.slug);
@@ -85,48 +47,23 @@ const BLOG_SLUGS = POSTS_META.map((post) => post.slug);
 const PRODUCT_SLUGS = PRODUCTS.map((p) => p.slug);
 const SERVICE_IDS = SERVICES_FULL.map((s) => s.id);
 
-// STATIC_ROUTES is the one list still written by hand, so cross-check it
-// against the routes main.jsx actually declares. Without the SPA catch-all a
-// forgotten entry here means a live page returning 404, so fail the build
-// loudly rather than shipping a hole in the site.
-function assertStaticRoutesMatchRouter() {
-  const mainSrc = fs.readFileSync(
-    path.resolve(__dirname, "../src/main.jsx"),
-    "utf-8",
-  );
-  const declared = [...mainSrc.matchAll(/<Route\s+path="([^"]+)"/g)]
-    .map((m) => m[1])
-    .filter((p) => !p.includes(":") && !p.includes("*"))
-    .map((p) => (p === "/" ? "/" : p.replace(/\/$/, "")));
-
-  const listed = new Set(STATIC_ROUTES);
-  const missing = declared.filter((p) => !listed.has(p));
-  const stale = STATIC_ROUTES.filter((p) => !declared.includes(p));
-
-  if (missing.length || stale.length) {
-    if (missing.length) {
-      console.error(
-        `  ✗ STATIC_ROUTES is missing routes declared in main.jsx: ${missing.join(", ")}`,
-      );
-    }
-    if (stale.length) {
-      console.error(
-        `  ✗ STATIC_ROUTES lists routes main.jsx does not declare: ${stale.join(", ")}`,
-      );
-    }
-    process.exit(1);
-  }
-}
-
-assertStaticRoutesMatchRouter();
-
-const routes = [
+const TRASY_POLSKIE = [
   ...STATIC_ROUTES,
   ...BLOG_SLUGS.map((s) => `/blog/${s}`),
   ...GLOSSARY_IDS.map((id) => `/glossary/${id}`),
   ...PRODUCT_SLUGS.map((slug) => `/shop/${slug}`),
   ...SERVICE_IDS.map((id) => `/shop/service/${id}`),
 ];
+
+// KAZDA STRONA TRZY RAZY: po polsku pod golym adresem, po angielsku pod `/en/`,
+// po niemiecku pod `/de/`. To jest cala tresc znaleziska numer jeden z audytu:
+// serwis mowil trzema jezykami, ale wszystkie trzy dzielily jeden adres, wiec
+// wyszukiwarka widziala wylacznie polski. Regulamin po niemiecku, polityka po
+// niemiecku i sto stron tresci nie mialy jak trafic do niemieckiego klienta.
+const routes = JEZYKI.flatMap((lang) =>
+  TRASY_POLSKIE.map((trasa) => sciezkaJezyka(trasa === "/" ? "/" : trasa + "/", lang))
+    .map((p) => (p === "/" ? "/" : p.replace(/\/$/, ""))),
+);
 
 // ------------------------------------------------------------
 // PRELOAD OBRAZU BOHATERSKIEGO CZYTANY Z GOTOWEJ STRONY
@@ -218,6 +155,15 @@ const TRASY_WZORCE = TRASA_KOMPONENT
   .filter((t) => t.wzorzec !== "*")
   .map((t) => ({ ...t, wyrazenie: naWyrazenie(t.wzorzec) }));
 
+/** Fragment ze slownikiem jezyka tej strony. Slownik jest wciagany dynamicznie,
+ *  wiec nie ma go wsrod statycznych zaleznosci trasy: przegladarka odkrylaby go
+ *  dopiero po przetworzeniu pliku wejsciowego, a hydracja czeka wlasnie na
+ *  niego. Adres strony mowi, ktory to jezyk, wiec nie ma czego zgadywac. */
+function plikSlownika(lang) {
+  const wpis = manifest && manifest[`src/i18n/${lang}.js`];
+  return wpis?.file ? "/" + wpis.file : null;
+}
+
 /** Wszystkie pliki, ktore trasa potrzebuje od razu: swoj plus zaleznosci. */
 function plikiTrasy(route) {
   if (!manifest) return { skrypty: [], style: [] };
@@ -267,14 +213,25 @@ function buildPage(route) {
 
   {
     const { skrypty, style } = plikiTrasy(route);
+    const slownik = plikSlownika(rozbierzSciezke(route.endsWith("/") ? route : route + "/").lang);
     const nowe = [
       ...preloadyBohaterskie(html),
+      ...(slownik && !page.includes(slownik) ? [`<link rel="modulepreload" crossorigin href="${slownik}">`] : []),
       ...skrypty.filter((f) => !page.includes(f)).map((f) => `<link rel="modulepreload" crossorigin href="${f}">`),
       ...style.filter((f) => !page.includes(f)).map((f) => `<link rel="stylesheet" crossorigin href="${f}">`),
     ];
     if (nowe.length) {
       page = page.replace("</head>", () => `    ${nowe.join("\n    ")}\n  </head>`);
     }
+  }
+
+  // JEZYK DOKUMENTU. Szablon `index.html` ma na sztywno `lang="pl"`, bo powstaje
+  // z jednego pliku. Helmet ustawia atrybut po stronie klienta, ale w gotowym
+  // HTML-u zostawalby polski takze pod `/de/`, a to jest pierwsza rzecz, ktora
+  // czyta i wyszukiwarka, i czytnik ekranu.
+  if (helmet?.htmlAttributes) {
+    const atrybuty = helmet.htmlAttributes.toString();
+    if (atrybuty) page = page.replace(/<html[^>]*>/, () => `<html ${atrybuty}>`);
   }
 
   if (helmet) {
@@ -406,6 +363,60 @@ if (/<Suspense/.test(clientShell)) {
     failed++;
   } else {
     console.log(`  ✓ preloady obrazów: każdy na stronie, która go pokazuje`);
+  }
+}
+
+// ------------------------------------------------------------
+// Zaden odnosnik nie wyprowadza z jezyka strony
+// ------------------------------------------------------------
+// Kazda strona stoi pod trzema adresami, a odnosniki pisze sie bez prefiksu
+// ("/studio/") i dokladaja go `Link` oraz `NavLink` z `src/i18n/nav.jsx`.
+// Wszedzie tam, gdzie ktos napisal zwykle `<a href="/...">` albo zbudowal
+// adres z reki, prefiks wypada, a Niemiec jednym kliknieciem laduje na polskiej
+// wersji. Nic sie przy tym nie psuje w widoczny sposob: strona istnieje, tylko
+// jest w innym jezyku, wiec bez tego sprawdzianu wychodzi to dopiero od klienta.
+//
+// Przelacznik jezyka jest jedynym miejscem, ktoremu wolno wskazac inny prefiks,
+// i rozpoznajemy go po atrybucie `hreflang`.
+{
+  const winne = [];
+  for (const lang of JEZYKI.filter((j) => j !== "pl")) {
+    const katalog = path.resolve(distPath, lang);
+    if (!fs.existsSync(katalog)) continue;
+    const pliki = [];
+    const zbierz = (dir) => {
+      for (const wpis of fs.readdirSync(dir, { withFileTypes: true })) {
+        const p = path.join(dir, wpis.name);
+        if (wpis.isDirectory()) zbierz(p);
+        else if (wpis.name.endsWith(".html")) pliki.push(p);
+      }
+    };
+    zbierz(katalog);
+
+    for (const plik of pliki) {
+      const tresc = fs.readFileSync(plik, "utf8");
+      for (const m of tresc.matchAll(/<a\s([^>]*)>/g)) {
+        const atrybuty = m[1];
+        if (/hreflang=/i.test(atrybuty)) continue;
+        const href = /href="([^"]*)"/.exec(atrybuty)?.[1];
+        if (!href || !href.startsWith("/") || href.startsWith("//")) continue;
+        if (new RegExp(`^/${lang}(/|$)`).test(href)) continue;
+        // Pliki i zasoby nie maja wersji jezykowych.
+        if (/\.[a-z0-9]{2,5}$/i.test(href)) continue;
+        winne.push(`${path.relative(distPath, plik)}: ${href}`);
+      }
+    }
+  }
+
+  if (winne.length) {
+    const rozne = [...new Set(winne)];
+    console.error(`\n  ✗ Odnosniki wyprowadzajace z jezyka strony: ${rozne.length}`);
+    for (const w of rozne.slice(0, 10)) console.error(`    ${w}`);
+    if (rozne.length > 10) console.error(`    ...i ${rozne.length - 10} wiecej`);
+    console.error("    Uzyj `Link` z `src/i18n/nav.jsx` albo `sciezkaJezyka(adres, lang)`.");
+    failed++;
+  } else {
+    console.log("  ✓ odnosniki: kazdy zostaje w jezyku swojej strony");
   }
 }
 

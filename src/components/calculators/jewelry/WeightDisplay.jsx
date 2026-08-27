@@ -86,14 +86,14 @@ export default function WeightDisplay({ nettoG, bruttoG, metalName, lang, client
           <div className="text-xs text-neutral-500 mt-0.5">
             {CLIENT_METAL_NOTE[l]}
           </div>
-          <div className="text-[11px] leading-relaxed text-neutral-400 mt-2 pt-2 border-t border-amber-500/15">
+          <div className="text-xs leading-relaxed text-neutral-400 mt-2 pt-2 border-t border-amber-500/15">
             {CONSIGNED_NOTE[l]}
           </div>
         </div>
       )}
 
       {/* Disclaimer */}
-      <div className="mt-2 text-[11px] text-neutral-600 leading-relaxed">
+      <div className="mt-2 text-xs text-neutral-600 leading-relaxed">
         {DISCLAIMER[l]}
       </div>
     </div>

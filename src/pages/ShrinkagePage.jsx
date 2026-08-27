@@ -8,6 +8,7 @@ import { buildWebPageSchema, buildBreadcrumbSchema, buildFAQSchema } from "../se
 import { SITE } from "../seo/seoData.js";
 import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
 import HeroObraz from "../components/HeroObraz.jsx";
+import { Link } from "../i18n/nav.jsx";
 
 const LABELS = {
   pl: {
@@ -243,12 +244,12 @@ export default function ShrinkagePage() {
             <ContentCTA service="jewelry_plain" category="jewelry" className="mb-8 text-left" />
             <h2 className="font-sans text-xl font-semibold text-white mb-2">{L.footerCtaTitle}</h2>
             <p className="text-neutral-400 text-sm mb-6">{L.footerCtaText}</p>
-            <a
-              href="/contact/"
+            <Link
+              to="/contact/"
               className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 text-white font-semibold rounded-full hover:bg-blue-400 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300"
             >
               {L.footerCtaBtn}
-            </a>
+            </Link>
           </div>
         </section>
 

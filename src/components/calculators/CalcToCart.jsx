@@ -11,7 +11,7 @@
 // ten sam rdzen z src/pricing/.
 
 import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../../i18n/nav.jsx";
 import { AlertTriangle, ShoppingCart, Check, Loader2, ArrowRight, Info } from "lucide-react";
 import { DISTORTION_NOTE } from "../../pricing/quoteSummary.js";
 import { useCart } from "../../cart/CartContext.jsx";
@@ -646,7 +646,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
           <>
           <div className="flex items-end justify-between gap-4 mb-1">
             <div>
-              <div className="text-[11px] uppercase tracking-wide text-neutral-500">
+              <div className="text-xs uppercase tracking-wide text-neutral-500">
                 {qty > 1 ? `${u.binding} (${qty} ${u.pcs})` : u.binding}
               </div>
               <div className="text-3xl font-extrabold text-white leading-tight">{money(lineGrosze)}</div>
@@ -658,7 +658,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
               </div>
             )}
           </div>
-          <p className="text-neutral-500 text-[11px] mb-4 leading-relaxed">{u.note}</p>
+          <p className="text-neutral-500 text-xs mb-4 leading-relaxed">{u.note}</p>
           </>
           )}
 
@@ -677,7 +677,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
           )}
 
           {modelError && (
-            <p className="text-amber-300 text-[11px] -mt-2">{modelError}</p>
+            <p className="text-amber-300 text-xs -mt-2">{modelError}</p>
           )}
 
           {wantsEngraving && (
@@ -717,7 +717,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
                 lang={lang}
                 accent={accent}
               />
-              <p className="text-[11px] text-neutral-400 leading-relaxed mb-4">{u.estimateNote}</p>
+              <p className="text-xs text-neutral-400 leading-relaxed mb-4">{u.estimateNote}</p>
             </>
           )}
 
@@ -756,7 +756,7 @@ export default function CalcToCart({ calculator, serviceId, params, qty: qtyProp
               wyrobu, ostatnia rzecza przed zaplata ma byc informacja o tym,
               a nie sama kwota. To samo zdanie stoi potem w koszyku i w mailu. */}
           {params?.znieksztalcony && (
-            <div className="mb-3 flex items-start gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-[11px] text-amber-200 leading-relaxed">
+            <div className="mb-3 flex items-start gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-200 leading-relaxed">
               <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
               <span>
                 {DISTORTION_NOTE[lang] || DISTORTION_NOTE.pl}

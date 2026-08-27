@@ -23,6 +23,27 @@ export const SZEROKOSCI_HERO = {
 
 export const FORMATY_HERO = ["avif", "webp"];
 
+// Szerokosc, ktora trafia do zapasowego `src` w `<img>`. Siega po nia
+// wylacznie przegladarka, ktora nie rozumie `<source>` ani `srcset`, czyli
+// dzis praktycznie zadna. Wczesniej stal tam oryginal: 2752 px i 663 kB
+// wpisane w dokument jako wartosc domyslna. Wariant sredni wyglada tak samo,
+// a w najgorszym razie kosztuje kilkadziesiat kilobajtow zamiast setek.
+export const ZAPASOWA_SZEROKOSC = {
+  "hero-studio": 1152,
+  "hero-jewelry": 1152,
+  "hero-home-jewelry": 768,
+  "hero-home-studio": 768,
+  "hero-print-settings": 768,
+  "hero-toolstudio": 960,
+  "hero-toolsjewelry": 960,
+};
+
+/** Adres zapasowego pliku dla `<img src>`. */
+export function zapasowyHero(nazwa) {
+  const w = ZAPASOWA_SZEROKOSC[nazwa];
+  return w ? `/img/hero/${nazwa}-${w}.webp` : `/${nazwa}.webp`;
+}
+
 /** `srcset` dla jednego formatu, np. "/img/hero/hero-studio-768.avif 768w, ..." */
 export function zestawHero(nazwa, format) {
   const szerokosci = SZEROKOSCI_HERO[nazwa];

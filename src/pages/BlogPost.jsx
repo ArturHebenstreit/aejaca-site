@@ -1,4 +1,5 @@
-import { useParams, Link, Navigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { Link, Navigate } from "../i18n/nav.jsx";
 import { Clock, Calendar, Tag, User } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { getPost, getSortedPosts } from "../blog/posts.js";
@@ -133,7 +134,7 @@ export default function BlogPost() {
               </span>
               <span className="inline-flex items-center gap-1">
                 <User className="w-3 h-3" />
-                <a href="/about/" className="hover:text-amber-400 transition-colors">Artur Hebenstreit</a>
+                <Link to="/about/" className="hover:text-amber-400 transition-colors">Artur Hebenstreit</Link>
               </span>
               <span className="inline-flex items-center gap-1">
                 <Calendar className="w-3 h-3" />

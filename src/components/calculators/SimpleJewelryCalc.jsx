@@ -461,11 +461,11 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
                 </div>
                 {/* Text at bottom */}
                 <div className="relative p-2.5 sm:p-3 h-full min-h-[120px] sm:min-h-[140px] flex flex-col justify-end">
-                  <div className={`text-[11px] sm:text-sm font-bold leading-tight drop-shadow-lg tile-ink ${active ? "text-rose-300" : "text-white"}`}>
+                  <div className={`text-xs sm:text-sm font-bold leading-tight drop-shadow-lg tile-ink ${active ? "text-rose-300" : "text-white"}`}>
                     {label}
                   </div>
                   {sub && active && (
-                    <div className="text-[10px] mt-0.5 drop-shadow-md tile-ink text-rose-200/90">
+                    <div className="text-xs mt-0.5 drop-shadow-md tile-ink text-rose-200/90">
                       {sub}
                     </div>
                   )}
@@ -481,7 +481,7 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
                   {label}
                 </div>
                 {sub && (
-                  <div className={`text-[10px] sm:text-[11px] mt-0.5 ${active ? "text-rose-400/80" : "text-neutral-400"}`}>
+                  <div className={`text-xs sm:text-xs mt-0.5 ${active ? "text-rose-400/80" : "text-neutral-400"}`}>
                     {sub}
                   </div>
                 )}
@@ -497,7 +497,7 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
 function SimpleCard({ stepNum, label, children }) {
   return (
     <div className="rounded-xl border border-rose-400/10 bg-rose-400/[0.02] p-4 sm:p-5 mb-4">
-      <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-3">
+      <div className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">
         {stepNum && <span className="text-rose-400 mr-1.5">{stepNum}</span>}{label}
       </div>
       {children}
@@ -614,7 +614,7 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
       <div className="rounded-2xl border-2 border-rose-400/30 bg-gradient-to-br from-rose-400/[0.04] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} binding={bindingGrosze} />
-        <div className="mt-4 pt-3 border-t border-rose-400/10 text-[11px] text-rose-400/60 italic text-center">
+        <div className="mt-4 pt-3 border-t border-rose-400/10 text-xs text-rose-400/60 italic text-center">
           {l.switchHint}
         </div>
         <NextStepPanel
@@ -641,7 +641,7 @@ export default function SimpleJewelryCalc({ lang = "pl" }) {
         />
       </div>
 
-      <div className="mt-4 p-3 rounded-xl border border-rose-400/10 bg-rose-400/[0.02] text-[11px] text-rose-400/50 leading-relaxed text-center">
+      <div className="mt-4 p-3 rounded-xl border border-rose-400/10 bg-rose-400/[0.02] text-xs text-rose-400/50 leading-relaxed text-center">
         {l.note}
       </div>
     </div>

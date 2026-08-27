@@ -132,7 +132,7 @@ export default function SizeSlider({
   return (
     <div className="mb-6">
       <div className="flex items-baseline justify-between mb-2">
-        <span className="text-[11px] uppercase tracking-wide text-neutral-500">
+        <span className="text-xs uppercase tracking-wide text-neutral-500">
           {t({ pl: "Wielkość", en: "Size", de: "Größe" }, lang)}
         </span>
         {/* Odczyt zmienia barwe razem ze sciezka, gdy wielkosc wychodzi poza
@@ -149,7 +149,7 @@ export default function SizeSlider({
           <button
             type="button"
             onClick={resetToOriginal}
-            className="absolute top-0 flex flex-col items-center text-[9px] text-neutral-400 hover:text-white transition-colors"
+            className="absolute top-0 flex flex-col items-center text-xs text-neutral-400 hover:text-white transition-colors"
             style={{ left: `${originalPct}%`, transform: "translateX(-50%)" }}
           >
             <span>{t({ pl: "oryginał", en: "original", de: "Original" }, lang)}</span>
@@ -196,7 +196,7 @@ export default function SizeSlider({
             return (
               <span
                 key={s.id}
-                className={`absolute top-0 -translate-x-1/2 text-[9px] whitespace-nowrap ${
+                className={`absolute top-0 -translate-x-1/2 text-xs whitespace-nowrap ${
                   active ? "text-emerald-300 font-semibold" : "text-neutral-600"
                 }`}
                 style={{ left: `${centerPct}%` }}

@@ -79,7 +79,7 @@ export default function JewelryEstimator() {
               <Zap className={`w-4 h-4 ${isSimple ? "text-rose-300" : "text-neutral-400"}`} />
               <div className={`text-sm font-bold ${isSimple ? "text-rose-300" : "text-white"}`}>{l.modeSimple}</div>
             </div>
-            <div className={`text-[11px] ${isSimple ? "text-rose-400/80" : "text-neutral-400"}`}>{l.modeSimpleDesc}</div>
+            <div className={`text-xs ${isSimple ? "text-rose-400/80" : "text-neutral-400"}`}>{l.modeSimpleDesc}</div>
           </button>
           <button
             onClick={() => { setMode("advanced"); trackCalc("jewelry", "mode", "advanced"); }}
@@ -92,12 +92,12 @@ export default function JewelryEstimator() {
               <SlidersHorizontal className={`w-4 h-4 ${!isSimple ? "text-amber-300" : "text-neutral-400"}`} />
               <div className={`text-sm font-bold ${!isSimple ? "text-amber-300" : "text-white"}`}>{l.modeAdvanced}</div>
             </div>
-            <div className={`text-[11px] ${!isSimple ? "text-amber-400/80" : "text-neutral-400"}`}>{l.modeAdvancedDesc}</div>
+            <div className={`text-xs ${!isSimple ? "text-amber-400/80" : "text-neutral-400"}`}>{l.modeAdvancedDesc}</div>
           </button>
         </div>
 
         {/* Mode hint - clarifies when to use each (audit: UX friction) */}
-        <div className="mb-6 flex items-start gap-2 px-3 text-[11px] text-neutral-400 leading-relaxed">
+        <div className="mb-6 flex items-start gap-2 px-3 text-xs text-neutral-400 leading-relaxed">
           <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-neutral-400" />
           <span>{l.modeHint}</span>
         </div>
@@ -118,7 +118,7 @@ export default function JewelryEstimator() {
 
         {/* Kwota orientacyjna kontra wiazaca, plus transport. O VAT tu nie
             mowimy: kwoty w kalkulatorze sa tymi, ktore klient placi. */}
-        <div className={`mt-4 p-3 rounded-xl border text-[11px] leading-relaxed text-center ${
+        <div className={`mt-4 p-3 rounded-xl border text-xs leading-relaxed text-center ${
           isSimple
             ? "border-rose-400/10 bg-rose-400/[0.02] text-rose-400/60"
             : "border-amber-400/10 bg-amber-400/[0.02] text-amber-400/60"
@@ -127,7 +127,7 @@ export default function JewelryEstimator() {
         </div>
 
         {/* Footer note */}
-        <div className="mt-2 p-4 rounded-xl border border-white/5 bg-white/[0.01] text-[11px] text-neutral-400 leading-relaxed">
+        <div className="mt-2 p-4 rounded-xl border border-white/5 bg-white/[0.01] text-xs text-neutral-400 leading-relaxed">
           <strong className="text-neutral-400">AEJaCA Jewelry:</strong> {l.note}
         </div>
       </div>

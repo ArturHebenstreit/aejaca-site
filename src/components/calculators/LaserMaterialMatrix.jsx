@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { Link } from "../../i18n/nav.jsx";
 
 function t(obj, lang) {
   if (!obj) return "";
@@ -450,7 +451,7 @@ export default function LaserMaterialMatrix({ lang = "pl" }) {
 
       {/* Step 1 */}
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-3">{ui.step1}</div>
+        <div className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-3">{ui.step1}</div>
         <div className="flex flex-wrap gap-2">
           {ACTIONS.map(a => (
             <button key={a.id} onClick={() => handleAction(a.id)}
@@ -467,7 +468,7 @@ export default function LaserMaterialMatrix({ lang = "pl" }) {
 
       {/* Step 2 */}
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-3">{ui.step2}</div>
+        <div className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-3">{ui.step2}</div>
         <div className="flex flex-wrap gap-2 mb-4">
           {LASER_CATEGORIES.map(lc => {
             const compat = validLasers.includes(lc.id);
@@ -491,7 +492,7 @@ export default function LaserMaterialMatrix({ lang = "pl" }) {
 
         {laserType && (
           <div>
-            <div className="text-[11px] text-neutral-500 mb-2">{ui.selectWatt}</div>
+            <div className="text-xs text-neutral-500 mb-2">{ui.selectWatt}</div>
             <div className="flex flex-wrap gap-2 mb-2">
               {wattageOptions.map(w => (
                 <button key={w} onClick={() => setWatts(w)}
@@ -504,7 +505,7 @@ export default function LaserMaterialMatrix({ lang = "pl" }) {
                 </button>
               ))}
             </div>
-            <p className="text-[11px] text-neutral-500 italic">{ui.wattNote}</p>
+            <p className="text-xs text-neutral-500 italic">{ui.wattNote}</p>
           </div>
         )}
       </div>
@@ -514,21 +515,21 @@ export default function LaserMaterialMatrix({ lang = "pl" }) {
         <div>
           {isEngrave3d ? (
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-3">{ui.lensLabel}</div>
+              <div className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-3">{ui.lensLabel}</div>
               <div className="flex flex-wrap gap-2">
                 {LENSES.map(l => (
                   <button key={l.id} onClick={() => setLens(l.id)}
                     className={`px-3 py-1.5 rounded-full border text-sm font-medium transition-all ${
                       lens === l.id ? "bg-neutral-200 text-neutral-900 border-neutral-200" : "border-white/15 text-neutral-400 hover:border-white/30"
                     }`}>
-                    {l.label} <span className="text-[10px] opacity-50 ml-1">{l.area}</span>
+                    {l.label} <span className="text-xs opacity-50 ml-1">{l.area}</span>
                   </button>
                 ))}
               </div>
             </div>
           ) : (
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-blue-400 mb-3">{ui.step3}</div>
+              <div className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-3">{ui.step3}</div>
               <div className="flex flex-wrap gap-2">
                 {[
                   { id: "std",   label: { pl: "Standardowa (XY)", en: "Standard (XY)", de: "Standard (XY)" } },
@@ -547,7 +548,7 @@ export default function LaserMaterialMatrix({ lang = "pl" }) {
 
               {delivery === "galvo" && (
                 <div className="mt-3">
-                  <div className="text-[11px] text-neutral-500 mb-2">{ui.lensLabel}</div>
+                  <div className="text-xs text-neutral-500 mb-2">{ui.lensLabel}</div>
                   <div className="flex flex-wrap gap-2 mb-1">
                     {LENSES.map(l => (
                       <button key={l.id} onClick={() => setLens(l.id)}
@@ -558,7 +559,7 @@ export default function LaserMaterialMatrix({ lang = "pl" }) {
                       </button>
                     ))}
                   </div>
-                  <p className="text-[11px] text-neutral-500 italic">{ui.lensNote}</p>
+                  <p className="text-xs text-neutral-500 italic">{ui.lensNote}</p>
                 </div>
               )}
             </div>
@@ -626,16 +627,16 @@ export default function LaserMaterialMatrix({ lang = "pl" }) {
               </div>
             </div>
           )}
-          <p className="mt-3 text-[11px] text-neutral-600 italic px-1">{ui.disclaimer}</p>
+          <p className="mt-3 text-xs text-neutral-600 italic px-1">{ui.disclaimer}</p>
         </div>
       )}
 
       {/* CTA */}
       <div className="p-4 rounded-xl bg-blue-400/10 border border-blue-400/20 text-sm text-center">
         <span className="text-neutral-300">{ui.ctaText} </span>
-        <a href="/studio/#calculator" className="text-blue-400 font-semibold hover:text-blue-300 transition-colors">
+        <Link to="/studio/#calculator" className="text-blue-400 font-semibold hover:text-blue-300 transition-colors">
           → {ui.ctaLink}
-        </a>
+        </Link>
       </div>
     </div>
   );

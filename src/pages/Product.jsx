@@ -9,7 +9,8 @@
 // tworzy drugiej: dwie linie z tym samym pierscionkiem czytaja sie jak pomylka.
 
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { ShoppingCart, Package, Download, RotateCcw, Truck, ArrowLeft, Check } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -341,7 +342,7 @@ export default function Product() {
                 </div>
               )}
 
-              <p className="text-neutral-600 text-[11px] text-center mb-7">
+              <p className="text-neutral-600 text-xs text-center mb-7">
                 {withdrawn
                   ? u.withdrawnBody
                   : status === "sold_out"

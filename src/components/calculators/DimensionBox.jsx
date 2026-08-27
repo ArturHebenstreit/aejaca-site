@@ -101,8 +101,8 @@ export default function DimensionBox({
   return (
     <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.02] p-3">
       <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
-        <span className="text-[11px] uppercase tracking-wider text-neutral-400">{l.size}</span>
-        <label htmlFor={`${id}-sync`} className="flex items-center gap-1.5 text-[11px] text-neutral-300 cursor-pointer select-none">
+        <span className="text-xs uppercase tracking-wider text-neutral-400">{l.size}</span>
+        <label htmlFor={`${id}-sync`} className="flex items-center gap-1.5 text-xs text-neutral-300 cursor-pointer select-none">
           <input id={`${id}-sync`} type="checkbox" checked={sync}
             onChange={(e) => przelaczSync(e.target.checked)}
             className="rounded border-white/20 bg-neutral-800" />
@@ -114,7 +114,7 @@ export default function DimensionBox({
       <div className={`grid gap-2 ${osie.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
         {osie.map((os) => (
           <label key={os} className="block">
-            <span className="block text-[10px] text-neutral-500 mb-1">{OS_LBL[os]}</span>
+            <span className="block text-xs text-neutral-500 mb-1">{OS_LBL[os]}</span>
             <div className="relative">
               {/* `text`, a nie `number`: pole liczbowe nie przyjmuje ani pustej
                   wartosci w trakcie pisania, ani przecinka, ktorego uzywa polska
@@ -124,14 +124,14 @@ export default function DimensionBox({
                 onBlur={() => zakoncz(os)}
                 onKeyDown={(e) => { if (e.key === "Enter") { zakoncz(os); e.currentTarget.blur(); } }}
                 className={`w-full bg-neutral-800/60 border border-white/10 rounded-lg pl-2 pr-8 py-1.5 text-sm text-white font-mono focus:outline-none ${ramkaAkcentu} transition-colors`} />
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-neutral-500 pointer-events-none">mm</span>
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-neutral-500 pointer-events-none">mm</span>
             </div>
           </label>
         ))}
       </div>
 
       <div className="flex items-center justify-between gap-2 mt-2 flex-wrap">
-        <div className="text-[10px] text-neutral-500">
+        <div className="text-xs text-neutral-500">
           {l.original}: {osie.map((os) => Number(bboxMm[os]).toFixed(1)).join(" × ")} mm
           {rozjechana && <span className="text-amber-400/80"> · {l.distorted}</span>}
         </div>
@@ -142,7 +142,7 @@ export default function DimensionBox({
         <div className="flex items-center gap-1.5 flex-wrap">
           {(cele.length ? cele : []).map((c) => (
             <button key={c.key} type="button" onClick={() => ustawSkale(fitToBox(bboxMm, scale, c.limits))}
-              className={`text-[11px] px-2 py-1 rounded-lg border border-white/15 hover:border-white/35 ${kolorAkcentu} transition-colors`}>
+              className={`text-xs px-2 py-1 rounded-lg border border-white/15 hover:border-white/35 ${kolorAkcentu} transition-colors`}>
               {c.label}
             </button>
           ))}
@@ -152,7 +152,7 @@ export default function DimensionBox({
       {!miesci && (
         // STRAZNIK POLA ROBOCZEGO. Bez niego kalkulator wycenia wyrob, ktorego
         // maszyna nie zrobi, a dowiadujemy sie o tym po zaplaceniu.
-        <div className="mt-2 flex items-start gap-2 text-[11px] text-amber-300 bg-amber-400/10 border border-amber-400/20 rounded-lg px-2 py-1.5">
+        <div className="mt-2 flex items-start gap-2 text-xs text-amber-300 bg-amber-400/10 border border-amber-400/20 rounded-lg px-2 py-1.5">
           <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
           <span>
             {l.exceeds} ({osie.map((os) => Number(limitsMm[os]).toFixed(0)).join(" × ")} mm)

@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { Store, Instagram, Music2, Facebook, Youtube, Mail, MessageCircleMore } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import NewsletterForm from "./NewsletterForm.jsx";
@@ -101,7 +101,7 @@ function MarketRatesBar() {
   }, []);
 
   if (!rates) return (
-    <div ref={kotwica} className="mt-5 pt-4 border-t border-white/5 text-[11px] text-neutral-500">{L.noData}</div>
+    <div ref={kotwica} className="mt-5 pt-4 border-t border-white/5 text-xs text-neutral-500">{L.noData}</div>
   );
 
   const pln_per_eur = rates.pln_per_eur || 4.25;
@@ -114,7 +114,7 @@ function MarketRatesBar() {
 
   return (
     <div ref={kotwica} className="mt-5 pt-4 border-t border-white/5">
-      <div className="text-[11px] uppercase tracking-widest text-neutral-400 mb-2">{L.title}</div>
+      <div className="text-xs uppercase tracking-widest text-neutral-400 mb-2">{L.title}</div>
       {/* Metals */}
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs mb-1.5">
         <span className="text-neutral-300"><span className="text-amber-400 font-medium">Au</span> {fmt(conv(rates.au_pln_per_g))} <span className="text-neutral-500">{currency}/g</span></span>
@@ -129,7 +129,7 @@ function MarketRatesBar() {
         <span className="text-neutral-300"><span className="text-neutral-400 font-medium">EUR/USD</span> {fmt(rates.eur_per_usd, 4)}</span>
       </div>
       {/* Sources */}
-      <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-neutral-500">
+      <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-neutral-500">
         {auSrc && <span>Au: <span className="text-neutral-500">{SOURCE_LABEL[auSrc.source]}</span> {fmtTime(auSrc.fetched_at)}</span>}
         {agSrc && <span>Ag: <span className="text-neutral-500">{SOURCE_LABEL[agSrc.source]}</span> {fmtTime(agSrc.fetched_at)}</span>}
         {ptSrc && <span>Pt/Pd: <span className="text-neutral-500">{SOURCE_LABEL[ptSrc.source]}</span> {fmtTime(ptSrc.fetched_at)}</span>}

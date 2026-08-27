@@ -12,7 +12,7 @@
 // z `src/pricing/currency.js`, a nie z pamieci, bo to jedna z tych wartosci,
 // ktore rozjezdzaja sie po cichu i klient widzi inna kwote niz zaplaci.
 
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { ShoppingBag, FileText, Wallet, Globe, Coins, TrendingUp, Clock, ShieldCheck, AlertTriangle, RotateCcw, ArrowRight } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";

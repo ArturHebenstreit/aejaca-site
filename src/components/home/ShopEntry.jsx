@@ -13,7 +13,7 @@
 // na kilka wyglada jak awaria, a nie jak oferta, i opróznia sie sama po
 // pierwszej sprzedazy. Pas wroci bez zmian w kodzie, gdy katalog urosnie.
 
-import { Link } from "react-router-dom";
+import { Link } from "../../i18n/nav.jsx";
 import { ArrowRight, Package, Wrench, Truck } from "lucide-react";
 import { useLanguage } from "../../i18n/LanguageContext.jsx";
 import { t } from "../../pricing/config.js";
@@ -51,7 +51,7 @@ function Tile({ to, image, alt, badge, title, lead, price, note, u }) {
         <div className="flex items-end justify-between">
           <div>
             <div className="text-white font-bold">{price}</div>
-            {note && <div className="text-neutral-500 text-[10px] mt-0.5">{note}</div>}
+            {note && <div className="text-neutral-500 text-xs mt-0.5">{note}</div>}
           </div>
           <span className="text-neutral-500 group-hover:text-white text-xs flex items-center gap-1 transition-colors">
             {u.details} <ArrowRight className="w-3.5 h-3.5" />
@@ -115,7 +115,7 @@ export default function ShopEntry() {
                   u={u}
                   badge={
                     <div className="mb-2">
-                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-1 rounded-full bg-emerald-400/10 text-emerald-300 border border-emerald-400/20">
+                      <span className="inline-flex items-center gap-1 text-xs uppercase tracking-wider px-2 py-1 rounded-full bg-emerald-400/10 text-emerald-300 border border-emerald-400/20">
                         <Truck className="w-3 h-3" />{u.inStock}
                       </span>
                     </div>
@@ -154,7 +154,7 @@ export default function ShopEntry() {
                 note={card.priceFromGrosze ? `${u.ready} ${card.leadTimeDays} ${u.days}` : u.quoteReply}
                 badge={
                   <div className="mb-2">
-                    <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider px-2 py-1 rounded-full bg-white/5 text-neutral-300 border border-white/10">
+                    <span className="inline-flex items-center gap-1 text-xs uppercase tracking-wider px-2 py-1 rounded-full bg-white/5 text-neutral-300 border border-white/10">
                       <Wrench className="w-3 h-3" />{u.madeToOrder}
                     </span>
                   </div>

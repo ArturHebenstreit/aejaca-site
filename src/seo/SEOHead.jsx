@@ -16,6 +16,7 @@
 import { Helmet } from "react-helmet-async";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { getSEO, SITE } from "./seoData.js";
+import { JEZYKI, JEZYK_DOMYSLNY, sciezkaJezyka } from "../routes.js";
 
 export default function SEOHead({
   pageKey = "home",
@@ -39,9 +40,14 @@ export default function SEOHead({
     keywords: keywords || base.keywords,
     ogAlt: ogAlt || base.ogAlt,
   };
-  const canonical = path === "/"
-    ? SITE.url
-    : `${SITE.url}${path.endsWith("/") ? path : path + "/"}`;
+  // `path` przychodzi BEZ prefiksu jezyka, bo strona nie musi wiedziec, w
+  // ktorym jezyku ja wlasnie rysujemy. Prefiks doklada sie tutaj, raz.
+  const sciezka = path === "/" ? "/" : (path.endsWith("/") ? path : path + "/");
+  const adres = (jezyk) => {
+    const pelna = sciezkaJezyka(sciezka, jezyk);
+    return pelna === "/" ? SITE.url : `${SITE.url}${pelna}`;
+  };
+  const canonical = adres(lang);
   const ogImage = image || SITE.defaultImage;
   const locale = SITE.locales[lang] || SITE.locales.en;
 
@@ -62,12 +68,18 @@ export default function SEOHead({
           : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"}
       />
 
-      {/* Canonical - dedupes language variants behind one URL.
-          No hreflang: pl/en/de all live at this same URL (client-side
-          language switch), and hreflang requires distinct per-language
-          URLs - pointing multiple languages at one URL is invalid and
-          flagged by crawlers as ambiguous language targeting. */}
+      {/* Kanoniczny adres TEJ wersji jezykowej. Od 27 sierpnia 2026 kazdy
+          jezyk ma wlasny adres (`/studio/`, `/en/studio/`, `/de/studio/`),
+          wiec `hreflang` ma wreszcie na co wskazywac. Wczesniej wszystkie trzy
+          jezyki dzielily jeden adres i `hreflang` byloby wtedy nie tylko
+          bezuzyteczne, ale wprost bledne. */}
       <link rel="canonical" href={canonical} />
+      {JEZYKI.map((jezyk) => (
+        <link key={jezyk} rel="alternate" hreflang={SITE.hreflang?.[jezyk] || jezyk} href={adres(jezyk)} />
+      ))}
+      {/* `x-default` to wersja dla kogos, kogo zaden z trzech jezykow nie
+          opisuje. Wskazuje polska, bo to ona stoi pod golym adresem. */}
+      <link rel="alternate" hreflang="x-default" href={adres(JEZYK_DOMYSLNY)} />
 
       {/* Open Graph - Facebook, LinkedIn, WhatsApp, Discord previews */}
       <meta property="og:type" content={ogType} />

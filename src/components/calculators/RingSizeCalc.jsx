@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../../i18n/nav.jsx";
 import { ArrowRight } from "lucide-react";
 import { useLanguage } from "../../i18n/LanguageContext.jsx";
 import { RING_SIZES as SIZES, MIN_EU, MAX_EU, MIN_DIA, MAX_DIA } from "../../data/ringSizes.js";
@@ -159,7 +159,7 @@ function ResultCard({ row, exact, L }) {
       <div className="flex items-center gap-5 mb-5">
         <RingVisual dia={row.dia} />
         <div>
-          <div className="text-[10px] uppercase tracking-widest text-amber-400 mb-0.5">{L.resultTitle}</div>
+          <div className="text-xs uppercase tracking-widest text-amber-400 mb-0.5">{L.resultTitle}</div>
           <div className="text-6xl font-bold text-white leading-none font-mono">{row.eu}</div>
           <div className="text-neutral-400 text-xs mt-1 flex items-center gap-1.5">
             <span className={`inline-block w-1.5 h-1.5 rounded-full ${exact ? "bg-emerald-400" : "bg-amber-400"}`} />
@@ -177,7 +177,7 @@ function ResultCard({ row, exact, L }) {
           { label: L.systems.jp,   value: String(row.jp) },
         ].map(({ label, value }) => (
           <div key={label} className="bg-neutral-800/70 rounded-xl p-2.5 flex flex-col gap-1 items-center text-center">
-            <span className="text-[9px] uppercase tracking-wider text-amber-400/80 leading-tight">{label}</span>
+            <span className="text-xs uppercase tracking-wider text-amber-400/80 leading-tight">{label}</span>
             <span className="text-white font-semibold text-sm leading-tight font-mono">{value}</span>
           </div>
         ))}
@@ -251,7 +251,7 @@ function MeasureSlider({ mode, value, onChange, L }) {
           }}
         />
         {/* min/max labels */}
-        <div className="flex justify-between text-[10px] text-neutral-600 mt-1 font-mono">
+        <div className="flex justify-between text-xs text-neutral-600 mt-1 font-mono">
           <span>{min}{unit}</span>
           <span>{max}{unit}</span>
         </div>

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { ArrowRight, Calculator, FlaskConical, TrendingUp, Circle, Ruler, Printer } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";

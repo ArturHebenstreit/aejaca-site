@@ -184,9 +184,9 @@ const nf = (lang, n, d = 1) =>
 function Group({ label, hint, children }) {
   return (
     <div className="mb-5">
-      <div className="text-[10.5px] uppercase tracking-[0.13em] text-neutral-500 mb-2">{label}</div>
+      <div className="text-xs uppercase tracking-[0.13em] text-neutral-500 mb-2">{label}</div>
       {children}
-      {hint ? <p className="mt-2 text-[11px] leading-relaxed text-neutral-500">{hint}</p> : null}
+      {hint ? <p className="mt-2 text-xs leading-relaxed text-neutral-500">{hint}</p> : null}
     </div>
   );
 }
@@ -250,7 +250,7 @@ function Slider({ label, value, min, max, step, unit, lang, decimals = 1, onChan
   return (
     <div className="mb-5">
       <div className="flex items-baseline justify-between mb-1">
-        <label htmlFor={label} className="text-[10.5px] uppercase tracking-[0.13em] text-neutral-500">{label}</label>
+        <label htmlFor={label} className="text-xs uppercase tracking-[0.13em] text-neutral-500">{label}</label>
         <b className="font-normal tabular-nums text-[13px] text-amber-300">{nf(lang, value, decimals)} {unit}</b>
       </div>
       <input
@@ -461,7 +461,7 @@ export default function RingConfigurator({ lang = "pl" }) {
                   }`}
                 >
                   <PresetIcon preset={wzor} size={40} />
-                  <span className="text-[10px] leading-tight text-center">{nameOf(wzor.label, lang)}</span>
+                  <span className="text-xs leading-tight text-center">{nameOf(wzor.label, lang)}</span>
                 </button>
               ))}
             </div>
@@ -583,7 +583,7 @@ export default function RingConfigurator({ lang = "pl" }) {
                       }`}
                     >
                       <CutIcon cut={id} className="w-full h-auto" />
-                      <span className="text-[8.5px] leading-tight text-center">{nameOf(c, lang)}</span>
+                      <span className="text-xs leading-tight text-center">{nameOf(c, lang)}</span>
                     </button>
                   ))}
                 </div>
@@ -676,7 +676,7 @@ export default function RingConfigurator({ lang = "pl" }) {
                           }`}
                         >
                           <CutIcon cut={id} className="w-full h-auto" />
-                          <span className="text-[8.5px] leading-tight text-center">{nameOf(c, lang)}</span>
+                          <span className="text-xs leading-tight text-center">{nameOf(c, lang)}</span>
                         </button>
                       ))}
                     </div>
@@ -836,7 +836,7 @@ export default function RingConfigurator({ lang = "pl" }) {
                 />
               ) : null}
             </Suspense>
-            <div className="pointer-events-none absolute left-3 top-3 text-[10px] uppercase tracking-[0.12em] text-neutral-500">
+            <div className="pointer-events-none absolute left-3 top-3 text-xs uppercase tracking-[0.12em] text-neutral-500">
               {busy ? t.building : t.dragHint}
             </div>
             {error ? (
@@ -860,7 +860,7 @@ export default function RingConfigurator({ lang = "pl" }) {
               [t.circ, `${nf(lang, Math.PI * p.innerDia, 1)} mm`],
             ].map(([k, v]) => (
               <div key={k} className="bg-neutral-950 px-3 py-2.5">
-                <dt className="text-[10px] uppercase tracking-[0.1em] text-neutral-500 mb-1">{k}</dt>
+                <dt className="text-xs uppercase tracking-[0.1em] text-neutral-500 mb-1">{k}</dt>
                 <dd className="tabular-nums text-[15px] text-neutral-200">{v}</dd>
               </div>
             ))}
@@ -874,7 +874,7 @@ export default function RingConfigurator({ lang = "pl" }) {
               <RingPriceBox params={p} lang={lang} />
             </Suspense>
           ) : null}
-          <footer className="mt-4 text-right text-[11px] tabular-nums text-neutral-500">
+          <footer className="mt-4 text-right text-xs tabular-nums text-neutral-500">
             Build {RING_CONFIGURATOR_BUILD}{workerVersion ? ` · geometria ${workerVersion}` : ""}
           </footer>
         </div>

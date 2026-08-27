@@ -455,7 +455,7 @@ function EnclosureBadge({ value, L }) {
   if (!value || value === "no") return null;
   const isReq = value === "required";
   return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${isReq ? "bg-red-500/20 text-red-300" : "bg-amber-500/20 text-amber-300"}`}>
+    <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${isReq ? "bg-red-500/20 text-red-300" : "bg-amber-500/20 text-amber-300"}`}>
       {isReq ? L.encReq : L.encRec}
     </span>
   );
@@ -478,7 +478,7 @@ function PropChip({ prop, lang }) {
   };
   const cls = colors[prop] || "bg-white/10 text-neutral-300";
   const label = PROP_TRANSLATIONS[prop]?.[lang] || PROP_TRANSLATIONS[prop]?.en || prop;
-  return <span className={`text-[10px] px-2 py-0.5 rounded-full ${cls}`}>{label}</span>;
+  return <span className={`text-xs px-2 py-0.5 rounded-full ${cls}`}>{label}</span>;
 }
 
 function LegendPopup({ L }) {
@@ -504,7 +504,7 @@ function LegendPopup({ L }) {
       </button>
       {open && (
         <div className="absolute right-0 top-full mt-2 z-30 w-72 bg-neutral-900 border border-white/15 rounded-xl shadow-2xl p-4 text-xs">
-          <p className="font-semibold text-neutral-200 mb-3 uppercase tracking-wider text-[10px]">{L.legendTitle}</p>
+          <p className="font-semibold text-neutral-200 mb-3 uppercase tracking-wider text-xs">{L.legendTitle}</p>
           <div className="mb-3">
             <p className="text-neutral-400 mb-1.5">{L.legendDiff}</p>
             <div className="flex flex-col gap-1">
@@ -518,15 +518,15 @@ function LegendPopup({ L }) {
           </div>
           <div className="mb-3 flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-red-500/20 text-red-300">{L.encReq}</span>
+              <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-red-500/20 text-red-300">{L.encReq}</span>
               <span className="text-neutral-400">{L.legendEncReq}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-amber-500/20 text-amber-300">{L.encRec}</span>
+              <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-amber-500/20 text-amber-300">{L.encRec}</span>
               <span className="text-neutral-400">{L.legendEncRec}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="w-12 text-[10px] text-neutral-600 italic"> - </span>
+              <span className="w-12 text-xs text-neutral-600 italic"> - </span>
               <span className="text-neutral-400">{L.legendEncNo}</span>
             </div>
           </div>
@@ -562,7 +562,7 @@ function RangeBar({ min, max, scaleMin, scaleMax, unit, label }) {
           style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
         />
       </div>
-      <div className="flex justify-between text-[9px] text-neutral-600 mt-0.5">
+      <div className="flex justify-between text-xs text-neutral-600 mt-0.5">
         <span>{scaleMin}</span>
         <span>{scaleMax}</span>
       </div>
@@ -620,7 +620,7 @@ function WizardProgress({ step, canNext, onPrev, onNext, onJump, L }) {
                   }`} />
                   <div
                     onClick={clickable ? () => onJump(num) : undefined}
-                    className={`text-[10px] sm:text-[11px] font-medium uppercase tracking-wider text-center transition-colors ${
+                    className={`text-xs sm:text-xs font-medium uppercase tracking-wider text-center transition-colors ${
                       isActive ? "text-amber-300" :
                       isDone ? "text-green-400 cursor-pointer hover:text-amber-300" :
                       "text-neutral-600"
@@ -764,13 +764,13 @@ function MaterialMiniCard({ type, onSelect, L }) {
       <div className="flex items-center gap-2 mb-1.5 flex-wrap">
         <DifficultyDots level={type.difficulty} />
         {type.temp_resistance != null && (
-          <span className="text-[10px] text-neutral-400">{type.temp_resistance}°C</span>
+          <span className="text-xs text-neutral-400">{type.temp_resistance}°C</span>
         )}
       </div>
       <div className="flex flex-wrap gap-1">
         <EnclosureBadge value={type.enclosure} L={L} />
         {type.brands && type.brands.length > 0 && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-medium">
+          <span className="text-xs px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-medium">
             {type.brands.length} {type.brands.length === 1 ? "brand" : "brands"}
           </span>
         )}
@@ -887,14 +887,14 @@ function BrandCard({ active, onClick, title, subtitle, badge, badgeColor, rangeP
       <div className="flex items-start justify-between gap-2 mb-1">
         <div className="font-semibold text-white text-sm">{title}</div>
         {badge && (
-          <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${badgeColor}`}>
+          <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${badgeColor}`}>
             {badge}
           </span>
         )}
       </div>
       {subtitle && <div className="text-xs text-neutral-400 mb-2">{subtitle}</div>}
       {rangePreview && (
-        <div className="text-[11px] text-neutral-500 leading-relaxed">{rangePreview}</div>
+        <div className="text-xs text-neutral-500 leading-relaxed">{rangePreview}</div>
       )}
     </button>
   );
@@ -1029,7 +1029,7 @@ function FilamentCalculator({ density, pricePerKg, lang, showEur, L }) {
             style={{ width: `${rollPct}%` }}
           />
         </div>
-        <div className="text-[10px] text-neutral-500 italic mt-2">{L.calcNote}</div>
+        <div className="text-xs text-neutral-500 italic mt-2">{L.calcNote}</div>
       </div>
     </div>
   );
@@ -1125,7 +1125,7 @@ function ContributionForm({ typeId, defaultBrand, L }) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             <div>
-              <label className="block text-[11px] text-neutral-400 mb-1">{L.contribBrand} *</label>
+              <label className="block text-xs text-neutral-400 mb-1">{L.contribBrand} *</label>
               <input
                 value={brand}
                 onChange={e => setBrand(e.target.value)}
@@ -1134,7 +1134,7 @@ function ContributionForm({ typeId, defaultBrand, L }) {
               />
             </div>
             <div>
-              <label className="block text-[11px] text-neutral-400 mb-1">{L.contribProduct}</label>
+              <label className="block text-xs text-neutral-400 mb-1">{L.contribProduct}</label>
               <input
                 value={product}
                 onChange={e => setProduct(e.target.value)}
@@ -1149,7 +1149,7 @@ function ContributionForm({ typeId, defaultBrand, L }) {
             { label: L.contribSpeed,  min: speedMin,  max: speedMax,  setMin: setSpeedMin,  setMax: setSpeedMax },
           ].map(({ label, min, max, setMin, setMax }) => (
             <div key={label} className="mb-3">
-              <label className="block text-[11px] text-neutral-400 mb-1">{label}</label>
+              <label className="block text-xs text-neutral-400 mb-1">{label}</label>
               <div className="grid grid-cols-2 gap-2">
                 <input
                   type="number"
@@ -1170,7 +1170,7 @@ function ContributionForm({ typeId, defaultBrand, L }) {
           ))}
 
           <div className="mb-3">
-            <label className="block text-[11px] text-neutral-400 mb-1">{L.contribNotes}</label>
+            <label className="block text-xs text-neutral-400 mb-1">{L.contribNotes}</label>
             <textarea
               value={notes}
               onChange={e => setNotes(e.target.value)}
@@ -1181,7 +1181,7 @@ function ContributionForm({ typeId, defaultBrand, L }) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             <div>
-              <label className="block text-[11px] text-neutral-400 mb-1">{L.contribName}</label>
+              <label className="block text-xs text-neutral-400 mb-1">{L.contribName}</label>
               <input
                 value={name}
                 onChange={e => setName(e.target.value)}
@@ -1189,7 +1189,7 @@ function ContributionForm({ typeId, defaultBrand, L }) {
               />
             </div>
             <div>
-              <label className="block text-[11px] text-neutral-400 mb-1">{L.contribEmail}</label>
+              <label className="block text-xs text-neutral-400 mb-1">{L.contribEmail}</label>
               <input
                 type="email"
                 value={email}
@@ -1207,11 +1207,11 @@ function ContributionForm({ typeId, defaultBrand, L }) {
               onChange={e => setGdpr(e.target.checked)}
               className="mt-0.5 accent-amber-400 shrink-0"
             />
-            <span className="text-[11px] text-neutral-400 leading-tight">{L.contribGdpr}</span>
+            <span className="text-xs text-neutral-400 leading-tight">{L.contribGdpr}</span>
           </label>
 
           {errorMsg && (
-            <div className="text-[11px] text-red-400 mb-3 text-center">{errorMsg}</div>
+            <div className="text-xs text-red-400 mb-3 text-center">{errorMsg}</div>
           )}
 
           <button
@@ -1298,33 +1298,33 @@ function CommunityContributions({ typeId, L }) {
                   <div className="text-sm font-semibold text-white">{c.brand_name}</div>
                   {c.product_name && <div className="text-xs text-neutral-400">{c.product_name}</div>}
                 </div>
-                <div className="text-[10px] text-neutral-500">
+                <div className="text-xs text-neutral-500">
                   <span className="text-green-400">{c.vote_confirm || 0}</span> {L.confirms}
                 </div>
               </div>
-              <div className="text-[11px] text-neutral-400 mb-2 space-x-2">
+              <div className="text-xs text-neutral-400 mb-2 space-x-2">
                 {nozzle && <span>{L.nozzle}: <span className="text-neutral-200">{nozzle}</span></span>}
                 {bed && <span>{L.bed}: <span className="text-neutral-200">{bed}</span></span>}
                 {speed && <span>{L.speed}: <span className="text-neutral-200">{speed}</span></span>}
               </div>
-              {c.notes && <div className="text-[11px] text-neutral-500 italic mb-2">{c.notes}</div>}
+              {c.notes && <div className="text-xs text-neutral-500 italic mb-2">{c.notes}</div>}
               <div className="flex gap-2 items-center">
                 <button
                   onClick={() => vote(c.id, "confirm")}
                   disabled={status === "duplicate"}
-                  className="text-[11px] px-2.5 py-1 rounded-md border border-green-400/30 bg-green-400/10 text-green-300 hover:bg-green-400/20 transition-colors disabled:opacity-40"
+                  className="text-xs px-2.5 py-1 rounded-md border border-green-400/30 bg-green-400/10 text-green-300 hover:bg-green-400/20 transition-colors disabled:opacity-40"
                 >
                   {L.voteConfirm}
                 </button>
                 <button
                   onClick={() => vote(c.id, "dispute")}
                   disabled={status === "duplicate"}
-                  className="text-[11px] px-2.5 py-1 rounded-md border border-red-400/30 bg-red-400/10 text-red-300 hover:bg-red-400/20 transition-colors disabled:opacity-40"
+                  className="text-xs px-2.5 py-1 rounded-md border border-red-400/30 bg-red-400/10 text-red-300 hover:bg-red-400/20 transition-colors disabled:opacity-40"
                 >
                   {L.voteDispute}
                 </button>
-                {status === "success" && <span className="text-[10px] text-green-400">{L.voteSuccess}</span>}
-                {status === "duplicate" && <span className="text-[10px] text-amber-400">{L.voteDuplicate}</span>}
+                {status === "success" && <span className="text-xs text-green-400">{L.voteSuccess}</span>}
+                {status === "duplicate" && <span className="text-xs text-amber-400">{L.voteDuplicate}</span>}
               </div>
             </div>
           );
@@ -1352,7 +1352,7 @@ function Step4Parameters({ type, brand, params, lang, showEur, L }) {
           {brand && (
             <div className="text-xs text-amber-300 mt-0.5">
               {brand.brand}{brand.product_name ? ` · ${brand.product_name}` : ""}
-              {brand.is_verified && <span className="ml-2 text-[10px] text-green-400">{L.verified}</span>}
+              {brand.is_verified && <span className="ml-2 text-xs text-green-400">{L.verified}</span>}
             </div>
           )}
         </div>
@@ -1362,7 +1362,7 @@ function Step4Parameters({ type, brand, params, lang, showEur, L }) {
       <div className="rounded-xl border border-amber-400/30 bg-amber-400/[0.03] p-5">
         {/* Temperatures */}
         <div className="mb-5">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-3">{L.sectionTemps}</div>
+          <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">{L.sectionTemps}</div>
           <div className="space-y-3">
             <RangeBar min={params.nozzle_min} max={params.nozzle_max} scaleMin={150} scaleMax={450} unit="°C" label={L.nozzle} />
             <RangeBar min={params.bed_min} max={params.bed_max} scaleMin={0} scaleMax={200} unit="°C" label={L.bed} />
@@ -1375,7 +1375,7 @@ function Step4Parameters({ type, brand, params, lang, showEur, L }) {
 
         {/* Speed & layers */}
         <div className="mb-5">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-3">{L.sectionSpeed}</div>
+          <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">{L.sectionSpeed}</div>
           <div className="space-y-3">
             <RangeBar min={params.speed_min} max={params.speed_max} scaleMin={5} scaleMax={200} unit="mm/s" label={L.speed} />
             <RangeBar min={params.layer_min} max={params.layer_max} scaleMin={0.05} scaleMax={0.50} unit="mm" label={L.layerHeight} />
@@ -1385,7 +1385,7 @@ function Step4Parameters({ type, brand, params, lang, showEur, L }) {
 
         {/* Cooling & enclosure */}
         <div className="mb-5">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-3">{L.sectionEnclosure}</div>
+          <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">{L.sectionEnclosure}</div>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="flex justify-between items-center border-b border-white/5 py-1.5">
               <span className="text-neutral-400 text-xs">{L.cooling}</span>
@@ -1413,7 +1413,7 @@ function Step4Parameters({ type, brand, params, lang, showEur, L }) {
         {/* Properties */}
         {params.props && params.props.length > 0 && (
           <div className="mb-5">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-2">{L.sectionProps}</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">{L.sectionProps}</div>
             <div className="flex flex-wrap gap-1.5">
               {params.props.map(p => <PropChip key={p} prop={p} lang={lang} />)}
             </div>

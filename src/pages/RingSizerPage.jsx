@@ -11,7 +11,7 @@
 // krok po kroku. FAQ odpowiada na pytania, ktore i tak przychodza mailem
 // (kiedy mierzyc, co z szeroka obraczka, co z duza kostka).
 
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import RingSizerPrint from "../components/calculators/RingSizerPrint.jsx";
@@ -260,12 +260,12 @@ export default function RingSizerPage() {
             <ContentCTA service="jewelry_stones" category="jewelry" className="mb-8 text-left" />
             <h2 className="font-sans text-xl font-semibold text-white mb-2">{L.footerCtaTitle}</h2>
             <p className="text-neutral-400 text-sm mb-6">{L.footerCtaText}</p>
-            <a
-              href="/contact/"
+            <Link
+              to="/contact/"
               className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 text-neutral-950 font-semibold rounded-full hover:bg-amber-400 hover:shadow-lg hover:shadow-amber-500/20 transition-all duration-300"
             >
               {L.footerCtaBtn}
-            </a>
+            </Link>
           </div>
         </section>
 

@@ -19,6 +19,8 @@ Allow: /
 # jakikolwiek robot ja odwiedzal.
 Disallow: /admin/
 Disallow: /quote/
+Disallow: /en/quote/
+Disallow: /de/quote/
 
 # Allow known AI / LLM crawlers explicitly (AEO / LLMEO - AI Search Optimization).
 # Grouped User-agent lines share the rule block below them (valid robots.txt syntax).
@@ -30,6 +32,8 @@ User-agent: ChatGPT-User
 Allow: /
 Disallow: /admin/
 Disallow: /quote/
+Disallow: /en/quote/
+Disallow: /de/quote/
 
 # Anthropic / Claude
 User-agent: ClaudeBot
@@ -38,6 +42,8 @@ User-agent: Claude-User
 Allow: /
 Disallow: /admin/
 Disallow: /quote/
+Disallow: /en/quote/
+Disallow: /de/quote/
 
 # Google / Gemini & AI Overviews
 User-agent: Google-Extended
@@ -45,12 +51,16 @@ User-agent: Googlebot
 Allow: /
 Disallow: /admin/
 Disallow: /quote/
+Disallow: /en/quote/
+Disallow: /de/quote/
 
 # Microsoft / Copilot & Bing
 User-agent: bingbot
 Allow: /
 Disallow: /admin/
 Disallow: /quote/
+Disallow: /en/quote/
+Disallow: /de/quote/
 
 # Perplexity
 User-agent: PerplexityBot
@@ -58,6 +68,8 @@ User-agent: Perplexity-User
 Allow: /
 Disallow: /admin/
 Disallow: /quote/
+Disallow: /en/quote/
+Disallow: /de/quote/
 
 # Apple Intelligence
 User-agent: Applebot
@@ -65,12 +77,16 @@ User-agent: Applebot-Extended
 Allow: /
 Disallow: /admin/
 Disallow: /quote/
+Disallow: /en/quote/
+Disallow: /de/quote/
 
 # Amazon
 User-agent: Amazonbot
 Allow: /
 Disallow: /admin/
 Disallow: /quote/
+Disallow: /en/quote/
+Disallow: /de/quote/
 
 # Meta AI
 User-agent: meta-externalagent
@@ -78,29 +94,39 @@ User-agent: meta-externalfetcher
 Allow: /
 Disallow: /admin/
 Disallow: /quote/
+Disallow: /en/quote/
+Disallow: /de/quote/
 
 # Cohere
 User-agent: cohere-ai
 Allow: /
 Disallow: /admin/
 Disallow: /quote/
+Disallow: /en/quote/
+Disallow: /de/quote/
 
 # DuckDuckGo AI
 User-agent: DuckAssistBot
 Allow: /
 Disallow: /admin/
 Disallow: /quote/
+Disallow: /en/quote/
+Disallow: /de/quote/
 
 # You.com
 User-agent: YouBot
 Allow: /
 Disallow: /admin/
 Disallow: /quote/
+Disallow: /en/quote/
+Disallow: /de/quote/
 
 # Common Crawl (training corpus feeding many LLMs)
 User-agent: CCBot
 Allow: /
 Disallow: /admin/
 Disallow: /quote/
+Disallow: /en/quote/
+Disallow: /de/quote/
 
 Sitemap: https://www.aejaca.com/sitemap.xml

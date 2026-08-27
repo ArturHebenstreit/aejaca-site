@@ -65,8 +65,8 @@ function ResinCards({ options, value, onChange, lang }) {
               active ? "border-blue-400 bg-blue-400/10 ring-2 ring-blue-400/60 shadow-[0_0_0_5px_rgba(96,165,250,0.14)]" : "border-white/10 bg-white/[0.02] hover:border-white/20"
             }`}>
             <div className={`text-xs sm:text-sm font-semibold mb-0.5 ${active ? "text-blue-300" : "text-white"}`}>{t(o.label, lang)}</div>
-            <div className="text-[11px] text-neutral-400 mb-1.5 leading-snug">{t(o.desc, lang)}</div>
-            <div className={`text-[10px] font-medium ${active ? "text-blue-300" : "text-neutral-500"}`}>{o.priceHint}</div>
+            <div className="text-xs text-neutral-400 mb-1.5 leading-snug">{t(o.desc, lang)}</div>
+            <div className={`text-xs font-medium ${active ? "text-blue-300" : "text-neutral-500"}`}>{o.priceHint}</div>
           </button>
         );
       })}
@@ -180,11 +180,11 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
           </div>
           <div className="text-center">
             <div className="font-semibold text-sm text-white mb-1">{sl.dropHint}</div>
-            <div className="text-[11px] text-neutral-400">{sl.dropSub}</div>
+            <div className="text-xs text-neutral-400">{sl.dropSub}</div>
           </div>
         </button>
         <input ref={fileRef} type="file" accept={ACCEPT_MODEL} className="hidden" onChange={onUpload} />
-        <div className="text-[10px] text-neutral-400">{sl.orManual}</div>
+        <div className="text-xs text-neutral-400">{sl.orManual}</div>
       </div>
     );
   }
@@ -222,7 +222,7 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
       <Suspense fallback={<div className="w-full rounded-lg bg-[#eef0f3] border border-black/10 animate-pulse" style={{ height: "220px" }} />}>
         <STLViewer triangles={stlData.triangles} bbox={stlData.bbox} scale={scale} />
       </Suspense>
-      <div className="grid grid-cols-3 gap-3 text-center text-[11px]">
+      <div className="grid grid-cols-3 gap-3 text-center text-xs">
         <div><div className="text-neutral-400">{sl.volume}</div><div className="font-bold">{scaledVol.toFixed(1)} cm³</div></div>
         <div><div className="text-neutral-400">{sl.dims}</div><div className="font-bold">{(scaledB.x*10).toFixed(1)}×{(scaledB.y*10).toFixed(1)}×{(scaledB.z*10).toFixed(1)} mm</div></div>
         <div><div className="text-neutral-400">{sl.triangles}</div><div className="font-bold">{stlData.triangleCount.toLocaleString()}</div></div>
@@ -236,25 +236,25 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
             <AlertTriangle className="w-4 h-4 text-amber-300 shrink-0" />
             <h4 className="text-xs font-semibold text-amber-200">{sl.unitTitle} {rawMaxCm.toFixed(1)} cm</h4>
           </div>
-          <p className="text-[11px] text-neutral-300 leading-relaxed mb-2">{sl.unitText}</p>
+          <p className="text-xs text-neutral-300 leading-relaxed mb-2">{sl.unitText}</p>
           <div className="flex flex-wrap gap-1.5 mb-2">
             {unitOptions.map((u) => (
               <button
                 key={u.id}
                 onClick={() => onScaleChange(uniformScale(u.factor))}
-                className="px-2 py-1.5 rounded-lg bg-amber-400/15 border border-amber-400/40 text-amber-200 text-[11px] font-semibold hover:bg-amber-400/25 transition-colors"
+                className="px-2 py-1.5 rounded-lg bg-amber-400/15 border border-amber-400/40 text-amber-200 text-xs font-semibold hover:bg-amber-400/25 transition-colors"
               >
                 {sl.unitRead} {t(u.label, lang)} ({u.correctedCm.toFixed(1)} cm)
               </button>
             ))}
           </div>
-          <p className="text-[11px] text-neutral-400 leading-relaxed">{sl.unitClose}</p>
+          <p className="text-xs text-neutral-400 leading-relaxed">{sl.unitClose}</p>
         </div>
       )}
 
       {/* Scale controls */}
       <div className="border-t border-white/5 pt-2 space-y-1.5">
-        <div className="flex items-center justify-between text-[11px]">
+        <div className="flex items-center justify-between text-xs">
           <span className="text-neutral-400">{sl.scale}</span>
           <span className="font-bold text-blue-300">{uni == null ? "×–" : uni === 1 ? "1:1" : `×${uni.toFixed(2)}`}</span>
         </div>
@@ -265,7 +265,7 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
             const disabled = p.maxCm / rawMaxCm > fitScale * 1.001;
             return (
               <button key={p.id} onClick={() => onScaleChange(uniformScale(s))} disabled={disabled}
-                className={`px-2 py-1 rounded text-[10px] border transition-colors ${
+                className={`px-2 py-1 rounded text-xs border transition-colors ${
                   isActive ? "border-blue-400 bg-blue-400/10 text-blue-300" :
                   disabled ? "border-white/5 text-neutral-700 cursor-not-allowed" :
                   "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-200"
@@ -275,12 +275,12 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
             );
           })}
           <button onClick={() => onScaleChange(uniformScale(1))}
-            className={`px-2 py-1 rounded text-[10px] border transition-colors ${
+            className={`px-2 py-1 rounded text-xs border transition-colors ${
               uni != null && Math.abs(uni - 1) < 0.005 ? "border-blue-400 bg-blue-400/10 text-blue-300" : "border-white/10 text-neutral-400 hover:border-white/20"
             }`}>{sl.original}</button>
           {fitFloor < 0.999 && (
             <button onClick={() => onScaleChange(uniformScale(fitFloor))}
-              className={`px-2 py-1 rounded text-[10px] border border-amber-400/30 text-amber-400 hover:bg-amber-400/10 transition-colors ${
+              className={`px-2 py-1 rounded text-xs border border-amber-400/30 text-amber-400 hover:bg-amber-400/10 transition-colors ${
                 uni != null && Math.abs(uni - fitFloor) < 0.005 ? "bg-amber-400/10" : ""
               }`}>{sl.fitToPlate}</button>
           )}
@@ -302,7 +302,7 @@ function STLUploadCard({ stlData, stlFileName, scale, onScaleChange, onUpload, o
       </div>
 
       {exceeds && (
-        <div className="flex items-center gap-1.5 text-amber-400 text-[11px]">
+        <div className="flex items-center gap-1.5 text-amber-400 text-xs">
           <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
           {sl.exceeds} ({(buildVolCm.x*10).toFixed(0)}×{(buildVolCm.y*10).toFixed(0)}×{(buildVolCm.z*10).toFixed(0)} mm)
         </div>
@@ -469,7 +469,7 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
 
     return (
       <div>
-        <div className="text-center text-[11px] text-neutral-400 mb-6">Elegoo Saturn 4 Ultra 16K · 218×123×250 mm · 14µm piksel</div>
+        <div className="text-center text-xs text-neutral-400 mb-6">Elegoo Saturn 4 Ultra 16K · 218×123×250 mm · 14µm piksel</div>
 
         <CalcCard stepNum="①" label={t(TECH_SWITCH_LBL, lang)}>
           <HeroCards options={TECHS} value={tech} onChange={setTech} lang={lang} cols="grid-cols-2" minH={170} />
@@ -562,7 +562,7 @@ export default function Print3DCalc({ lang = "pl", initialTech = "fdm", handoff 
 
   return (
     <div>
-      <div className="text-center text-[11px] text-neutral-400 mb-6">Bambu Lab H2D · 300×320×325 mm · Dual Extruder · AMS 2 Pro</div>
+      <div className="text-center text-xs text-neutral-400 mb-6">Bambu Lab H2D · 300×320×325 mm · Dual Extruder · AMS 2 Pro</div>
 
       <CalcCard stepNum="①" label={t(TECH_SWITCH_LBL, lang)}>
         <HeroCards options={TECHS} value={tech} onChange={setTech} lang={lang} cols="grid-cols-2" minH={170} />

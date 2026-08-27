@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { ArrowRight, Award, Shield, Cpu, Gem, Printer, Flame, Droplet, Disc, Waves, PenTool, Zap, Microscope, Thermometer, Gauge, Layers } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";

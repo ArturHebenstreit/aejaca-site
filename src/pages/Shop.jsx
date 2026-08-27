@@ -6,7 +6,7 @@
 // to ta sama decyzja zakupowa, tylko z innym czasem realizacji.
 
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { ArrowRight, Package, Download, Wrench, MessageCircle, Sparkles, Search, X, LayoutGrid } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import OfferNumberEntry from "../components/shop/OfferNumberEntry.jsx";
@@ -38,8 +38,6 @@ export const UI = {
     noProductsCta: "Zobacz usługi",
     personalized: "Produkty personalizowane",
     personalizedLead: "Półprodukt czeka u nas na półce, a my dopasowujemy go do Ciebie: grawer, wymiar, wykończenie. Krótki termin, własna treść.",
-    noPersonalized: "Chwilowo brak pozycji personalizowanych",
-    noPersonalizedBody: "Przygotowujemy podstawki kamienne, szkatułki i deski do personalizacji. Do tego czasu to samo zamówisz jako usługę grawerowania.",
     services: "Usługi / Produkty na zamówienie",
     servicesLead: "Konfigurujesz na karcie usługi, cena wiążąca pojawia się od razu, a przedmiot powstaje pod Twoje zamówienie.",
     inStock: "Dostępny",
@@ -85,8 +83,6 @@ export const UI = {
     noProductsCta: "See the services",
     personalized: "Personalised products",
     personalizedLead: "The blank waits on our shelf and we fit it to you: engraving, size, finish. Short lead time, your own wording.",
-    noPersonalized: "No personalised items at the moment",
-    noPersonalizedBody: "Stone coasters, boxes and boards for personalisation are on the way. Until then, order the same thing as an engraving service.",
     services: "Services / Made to order",
     servicesLead: "You configure it on the service card, the binding price appears at once, and the piece is made for your order.",
     inStock: "In stock",
@@ -132,8 +128,6 @@ export const UI = {
     noProductsCta: "Leistungen ansehen",
     personalized: "Personalisierte Produkte",
     personalizedLead: "Der Rohling liegt bei uns im Regal, wir passen ihn an Sie an: Gravur, Maß, Finish. Kurze Frist, Ihr eigener Text.",
-    noPersonalized: "Derzeit keine personalisierten Positionen",
-    noPersonalizedBody: "Steinuntersetzer, Schatullen und Bretter zur Personalisierung sind in Vorbereitung. Bis dahin bestellen Sie dasselbe als Gravurleistung.",
     services: "Leistungen / Auf Bestellung",
     servicesLead: "Sie konfigurieren auf der Leistungskarte, der verbindliche Preis erscheint sofort, und das Stück entsteht für Ihre Bestellung.",
     inStock: "Verfügbar",
@@ -179,7 +173,7 @@ function Badge({ children, tone = "neutral" }) {
     info: "border-blue-400/30 bg-blue-400/10 text-blue-300",
   };
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[10px] font-medium ${tones[tone]}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-xs font-medium ${tones[tone]}`}>
       {children}
     </span>
   );
@@ -250,7 +244,7 @@ function SearchBar({ value, onChange, u, total }) {
         )}
       </div>
       {value && (
-        <p className="text-neutral-500 text-[11px] mt-2">
+        <p className="text-neutral-500 text-xs mt-2">
           {total} {u.matches}
         </p>
       )}
@@ -287,7 +281,7 @@ function FacetBar({ facets, value, onChange, lang, u }) {
         >
           <f.Icon className="w-3.5 h-3.5" />
           {t(f.label, lang)}
-          <span className="text-[10px] tabular-nums opacity-60">{f.count}</span>
+          <span className="text-xs tabular-nums opacity-60">{f.count}</span>
         </button>
       ))}
     </div>
@@ -339,7 +333,7 @@ function GroupHead({ facet, lang, count }) {
     <div className="flex items-center gap-2 mt-8 first:mt-0 mb-3">
       <facet.Icon className="w-4 h-4 text-neutral-500" />
       <h3 className="text-neutral-300 text-xs font-medium uppercase tracking-wider">{t(facet.label, lang)}</h3>
-      <span className="text-neutral-600 text-[10px] tabular-nums">{count}</span>
+      <span className="text-neutral-600 text-xs tabular-nums">{count}</span>
     </div>
   );
 }
@@ -401,7 +395,7 @@ function SectionNav({ items, u, innerRef }) {
   if (items.length < 2) return null;
   return (
     <nav ref={innerRef} aria-label={u.navTitle} className="mb-12">
-      <h2 className="text-neutral-500 text-[11px] uppercase tracking-wider font-medium mb-3">{u.navTitle}</h2>
+      <h2 className="text-neutral-500 text-xs uppercase tracking-wider font-medium mb-3">{u.navTitle}</h2>
       <div className="grid gap-3 sm:grid-cols-3">
         {items.map((it) => {
           const tone = NAV_TONES[it.tone];
@@ -414,7 +408,7 @@ function SectionNav({ items, u, innerRef }) {
               <span className="flex items-center gap-2 mb-1">
                 <it.icon className={`w-4 h-4 shrink-0 ${tone.icon}`} />
                 <span className="text-white text-sm font-medium">{it.label}</span>
-                <span className="ml-auto text-[10px] text-neutral-500 tabular-nums shrink-0">
+                <span className="ml-auto text-xs text-neutral-500 tabular-nums shrink-0">
                   {it.count > 0 ? `${it.count} ${u.items}` : u.empty}
                 </span>
               </span>
@@ -513,7 +507,7 @@ function StickySectionTabs({ items, u, navRef }) {
             >
               <it.icon className="w-3.5 h-3.5" />
               {it.tab}
-              <span className="text-[10px] text-neutral-500 tabular-nums">{it.count > 0 ? it.count : " - "}</span>
+              <span className="text-xs text-neutral-500 tabular-nums">{it.count > 0 ? it.count : " - "}</span>
             </a>
           );
         })}
@@ -565,7 +559,7 @@ function ProductCard({ product, lang, u, money, availability }) {
           <div>
             <div className="text-white font-bold">{money(product.priceGrosze)}</div>
             <PriceReduction product={product} money={money} lang={lang} />
-            <div className="text-neutral-500 text-[10px] mt-0.5">
+            <div className="text-neutral-500 text-xs mt-0.5">
               {isDigital ? u.immediate : `${u.ready} ${product.leadTimeDays} ${u.days}`}
             </div>
           </div>
@@ -613,14 +607,14 @@ function ServiceCard({ card, lang, u, money }) {
                   <span className="text-neutral-500 text-xs font-normal">{u.from} </span>
                   {money(card.priceFromGrosze)}
                 </div>
-                <div className="text-neutral-500 text-[10px] mt-0.5">
+                <div className="text-neutral-500 text-xs mt-0.5">
                   {u.ready} {card.leadTimeDays} {u.days}
                 </div>
               </>
             ) : (
               <>
                 <div className="text-amber-300 font-semibold text-sm">{u.quoteBadge}</div>
-                <div className="text-neutral-500 text-[10px] mt-0.5">{u.quoteReply}</div>
+                <div className="text-neutral-500 text-xs mt-0.5">{u.quoteReply}</div>
               </>
             )}
           </div>
@@ -636,7 +630,7 @@ function ServiceCard({ card, lang, u, money }) {
 export default function Shop() {
   const { lang } = useLanguage();
   const u = UI[lang] || UI.en;
-  const { pathname } = useLocation();
+  const { sciezkaBezJezyka: pathname } = useLanguage();
   const navRef = useRef(null);
   const { money } = useMoney();
   const availability = useAvailability();
@@ -700,7 +694,14 @@ export default function Shop() {
   // nie mieszcza sie w pasku na telefonie i zostawialyby widoczna polowe.
   const navItems = [
     { id: "produkty", icon: Package, label: u.products, tab: u.shortProducts, hint: u.hintProducts, count: products.length, tone: "emerald" },
-    { id: "personalizowane", icon: Sparkles, label: u.personalized, tab: u.shortPersonalized, hint: u.hintPersonalized, count: personalized.length, tone: "amber" },
+    // Dzial pokazujemy tylko wtedy, gdy cokolwiek w nim stoi. Wczesniej pusta
+    // kategoria zajmowala trzy miejsca naraz: kafelek u gory, chip w filtrach
+    // i sekcje, ktora mowila, ze nic w niej nie ma. Ta sama zasada rzadzi
+    // uslugami ponizej, wiec dzial wroci sam, gdy tylko wejdzie pierwsza
+    // pozycja. Nic nie trzeba bedzie odkomentowywac.
+    ...(personalized.length > 0
+      ? [{ id: "personalizowane", icon: Sparkles, label: u.personalized, tab: u.shortPersonalized, hint: u.hintPersonalized, count: personalized.length, tone: "amber" }]
+      : []),
     ...(services.length > 0
       ? [{
           id: "uslugi",
@@ -846,7 +847,7 @@ export default function Shop() {
           {/* Uslugi */}
           {/* Kolejnosc sekcji odpowiada rosnacej ilosci naszej pracy:
               gotowe, gotowe z personalizacja, wykonywane od nowa. */}
-          {(!query || personalized.length > 0) && (
+          {personalized.length > 0 && (
           <section id="personalizowane" style={{ order: orderPersonalized }} className="mb-16 scroll-mt-36">
             <SectionHead
               icon={Sparkles}
@@ -855,26 +856,16 @@ export default function Shop() {
               count={personalized.length}
               tone="amber"
             />
-            {personalized.length > 0 ? (
-              <>
-                <FacetBar facets={personalizedFacets} value={persFacetOn} onChange={setPersFacet} lang={lang} u={u} />
-                <ProductList
-                  items={personalized}
-                  facetId={persFacetOn}
-                  facets={personalizedFacets}
-                  lang={lang}
-                  u={u}
-                  money={money}
-                  availability={availability}
-                />
-              </>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-10 text-center">
-                <Sparkles className="w-7 h-7 text-neutral-700 mx-auto mb-3" />
-                <h3 className="text-white font-medium text-sm mb-1.5">{u.noPersonalized}</h3>
-                <p className="text-neutral-500 text-xs leading-relaxed max-w-md mx-auto">{u.noPersonalizedBody}</p>
-              </div>
-            )}
+            <FacetBar facets={personalizedFacets} value={persFacetOn} onChange={setPersFacet} lang={lang} u={u} />
+            <ProductList
+              items={personalized}
+              facetId={persFacetOn}
+              facets={personalizedFacets}
+              lang={lang}
+              u={u}
+              money={money}
+              availability={availability}
+            />
           </section>
           )}
 

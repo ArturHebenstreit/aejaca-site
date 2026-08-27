@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { Package, Truck, Globe, Clock, AlertTriangle } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
@@ -352,7 +352,7 @@ export default function Shipping() {
                   <div key={z.id} className="flex items-baseline justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
                     <div>
                       <div className="text-sm text-neutral-300">{l.zoneNames[z.id]}</div>
-                      <div className="text-neutral-500 text-[11px]">{z.carrier}, {l.typically} {z.eta} {l.days}</div>
+                      <div className="text-neutral-500 text-xs">{z.carrier}, {l.typically} {z.eta} {l.days}</div>
                     </div>
                     <span className="text-sm text-amber-400 font-medium whitespace-nowrap">{fmtFrom(z.pln)}</span>
                   </div>

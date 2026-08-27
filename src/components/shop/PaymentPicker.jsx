@@ -84,7 +84,7 @@ export default function PaymentPicker({ methods = [], value, onChange, anyLabel,
               <span className={`block text-sm ${chosenBank ? "text-blue-300" : "text-neutral-400"}`}>
                 {chosenBank ? chosenBank.name : t.banks}
               </span>
-              <span className="block text-neutral-600 text-[11px]">
+              <span className="block text-neutral-600 text-xs">
                 {chosenBank ? t.chosen : t.banksHint(banks.length)}
               </span>
             </span>
@@ -126,7 +126,7 @@ export default function PaymentPicker({ methods = [], value, onChange, anyLabel,
                       {m.icon
                         ? <img src={m.icon} alt="" className="h-5 w-auto" loading="lazy" />
                         : <span className="h-5" />}
-                      <span className="text-[11px] leading-tight break-words">{m.name}</span>
+                      <span className="text-xs leading-tight break-words">{m.name}</span>
                     </button>
                   ))}
                 </div>

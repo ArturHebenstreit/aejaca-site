@@ -16,7 +16,7 @@
 // wstawilby miedzy nie wlasne pudelko liniowe. Z `contents` znika z ukladu
 // i zostaje dokladnie to, co bylo przed zmiana.
 
-import { zestawHero } from "../data/heroObrazy.js";
+import { zestawHero, zapasowyHero } from "../data/heroObrazy.js";
 
 export default function HeroObraz({
   nazwa,
@@ -32,7 +32,7 @@ export default function HeroObraz({
       <source type="image/avif" srcSet={zestawHero(nazwa, "avif")} sizes={sizes} />
       <source type="image/webp" srcSet={zestawHero(nazwa, "webp")} sizes={sizes} />
       <img
-        src={`/${nazwa}.webp`}
+        src={zapasowyHero(nazwa)}
         alt={alt}
         className={className}
         width={width}

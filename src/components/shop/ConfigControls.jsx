@@ -17,7 +17,7 @@ export function TileGroup({ label, options, value, onChange, lang, accent = "blu
 
   return (
     <div className="mb-6">
-      <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-neutral-500 mb-2">{label}</div>
       <div className={`grid ${cols} gap-2`}>
         {options.map((o) => {
           const on = value === o.id;
@@ -36,7 +36,7 @@ export function TileGroup({ label, options, value, onChange, lang, accent = "blu
                 </span>
               )}
               <span className="block text-xs font-medium leading-snug pr-4">{t(o.label, lang)}</span>
-              {o.sub && <span className="block text-[10px] text-neutral-500 mt-0.5">{t(o.sub, lang)}</span>}
+              {o.sub && <span className="block text-xs text-neutral-500 mt-0.5">{t(o.sub, lang)}</span>}
             </button>
           );
         })}
@@ -54,7 +54,7 @@ export function StepSlider({ label, options, value, onChange, lang, accent = "bl
   return (
     <div className="mb-6">
       <div className="flex items-baseline justify-between mb-2">
-        <span className="text-[11px] uppercase tracking-wide text-neutral-500">{label}</span>
+        <span className="text-xs uppercase tracking-wide text-neutral-500">{label}</span>
         <span className={`text-xs font-medium ${accent === "amber" ? "text-amber-300" : "text-blue-300"}`}>
           {t(current?.label, lang)}
         </span>
@@ -80,7 +80,7 @@ export function StepSlider({ label, options, value, onChange, lang, accent = "bl
         {options.map((o, i) => (
           <span
             key={String(o.id)}
-            className={`text-[11px] leading-tight break-words ${
+            className={`text-xs leading-tight break-words ${
               i === 0 ? "text-left" : i === options.length - 1 ? "text-right" : "text-center"
             } ${i === index ? "text-neutral-300" : "text-neutral-500"}`}
           >
@@ -120,7 +120,7 @@ export function QuantityStepper({ label, value, onChange, min = 1, max = 100, op
 
   return (
     <div className="mb-6">
-      <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-neutral-500 mb-2">{label}</div>
       <div className="flex items-center gap-3">
         <button type="button" className={btn(value <= min)} onClick={wDol} disabled={value <= min} aria-label="-">
           &minus;
@@ -148,7 +148,7 @@ export function QuantityStepper({ label, value, onChange, min = 1, max = 100, op
         </button>
       </div>
       {otwarty && (
-        <p className="text-neutral-500 text-[11px] mt-2">
+        <p className="text-neutral-500 text-xs mt-2">
           {hint || t({
             pl: `Powyżej ${max} sztuk wyceniamy indywidualnie. Napisz, ile dokładnie potrzebujesz.`,
             en: `Above ${max} pieces we quote individually. Tell us exactly how many you need.`,
@@ -184,7 +184,7 @@ export function ScaleControl({ label, bbox, volumeCm3, scale, onChange, maxScale
   const dopasowanie = Math.floor((maxScale ?? 1) * 100) / 100;
 
   const przycisk = (aktywny) =>
-    `px-2.5 py-1 rounded-lg text-[10px] border transition-colors ${
+    `px-2.5 py-1 rounded-lg text-xs border transition-colors ${
       aktywny ? `${accent === "amber" ? "border-amber-400 bg-amber-400/10" : "border-blue-400 bg-blue-400/10"} ${tekst}`
               : "border-white/10 text-neutral-400 hover:border-white/25 hover:text-neutral-200"
     }`;
@@ -192,7 +192,7 @@ export function ScaleControl({ label, bbox, volumeCm3, scale, onChange, maxScale
   return (
     <div className="mb-6">
       <div className="flex items-baseline justify-between mb-2">
-        <span className="text-[11px] uppercase tracking-wide text-neutral-500">{label}</span>
+        <span className="text-xs uppercase tracking-wide text-neutral-500">{label}</span>
         <span className={`text-xs font-medium ${tekst}`}>
           {Math.abs(scale - 1) < 0.005
             ? t({ pl: "oryginał", en: "original", de: "Original" }, lang)
@@ -232,14 +232,14 @@ export function ScaleControl({ label, bbox, volumeCm3, scale, onChange, maxScale
           </button>
         )}
         {bbox && (
-          <span className="text-neutral-500 text-[11px] ml-auto">
+          <span className="text-neutral-500 text-xs ml-auto">
             {wym(bbox.x)} × {wym(bbox.y)} × {wym(bbox.z)} mm
             {volumeCm3 ? `, ${(volumeCm3 * scale ** 3).toFixed(1)} cm³` : ""}
           </span>
         )}
       </div>
       {zaDuzy && (
-        <p className="text-amber-300 text-[11px] mt-2">
+        <p className="text-amber-300 text-xs mt-2">
           {purpose === "casting"
             ? t({
                 pl: `Model w oryginale przekracza automatyczny limit odlewni. Ustaw najwyżej ${Math.round((maxScale ?? 0) * 100)}% albo pozostaw oryginalny rozmiar i poproś o indywidualną ocenę.`,
@@ -254,7 +254,7 @@ export function ScaleControl({ label, bbox, volumeCm3, scale, onChange, maxScale
         </p>
       )}
       {purpose === "casting" && (
-        <p className="text-neutral-500 text-[11px] mt-2 leading-relaxed">
+        <p className="text-neutral-500 text-xs mt-2 leading-relaxed">
           {t({
             pl: "Skalowanie zmienia także grubość ścianek, krap i kanałów. Dopasowanie wymiarów nie zastępuje kontroli technologicznej modelu przed odlewem.",
             en: "Scaling also changes wall, prong and channel thickness. Fitting the dimensions does not replace the model's manufacturing review before casting.",
@@ -275,7 +275,7 @@ export function FileDrop({ label, hint, file, geometry, onPick, onClear, busy, b
   if (!file) {
     return (
       <div className="mb-6">
-        <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">{label}</div>
+        <div className="text-xs uppercase tracking-wide text-neutral-500 mb-2">{label}</div>
         <button
           type="button"
           onClick={() => ref.current?.click()}
@@ -297,7 +297,7 @@ export function FileDrop({ label, hint, file, geometry, onPick, onClear, busy, b
 
   return (
     <div className="mb-6">
-      <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-neutral-500 mb-2">{label}</div>
       <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
         <div className="flex items-center justify-between gap-3">
           <span className="text-white text-sm truncate">{file.name}</span>
@@ -317,7 +317,7 @@ export function FileDrop({ label, hint, file, geometry, onPick, onClear, busy, b
         {/* Odrzucony plik ZOSTAJE w polu razem z podgladem. Skasowanie go bylo
             mylace: znikal model, a powod znikniecia stal osobno, nizej. */}
         {error && !busy && (
-          <div className="flex gap-2 mt-2 text-[11px] text-amber-300">
+          <div className="flex gap-2 mt-2 text-xs text-amber-300">
             <CircleAlert className="w-3.5 h-3.5 flex-shrink-0 mt-px" />
             <span>
               {error}
@@ -332,7 +332,7 @@ export function FileDrop({ label, hint, file, geometry, onPick, onClear, busy, b
           </div>
         )}
         {geometry && !busy && (
-          <div className="grid grid-cols-2 gap-3 mt-3 text-[11px]">
+          <div className="grid grid-cols-2 gap-3 mt-3 text-xs">
             <div>
               <div className="text-neutral-500">{t({ pl: "Objętość", en: "Volume", de: "Volumen" }, lang)}</div>
               <div className="text-white font-medium">{geometry.volumeCm3} cm³</div>
@@ -407,7 +407,7 @@ export function AttachmentList({ label, hint, addLabel, items = [], onAdd, onRem
 
   return (
     <div className="mb-6">
-      <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-neutral-500 mb-2">{label}</div>
 
       {items.length === 0 ? (
         <button
@@ -425,7 +425,7 @@ export function AttachmentList({ label, hint, addLabel, items = [], onAdd, onRem
             <div key={i.id} className="rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5">
               <div className="flex items-center gap-3">
                 <span className="text-white text-sm truncate flex-1">{i.name}</span>
-                <span className="text-[10px] uppercase tracking-wide text-neutral-500 flex-shrink-0">
+                <span className="text-xs uppercase tracking-wide text-neutral-500 flex-shrink-0">
                   {i.artwork
                     ? t({ pl: "Projekt", en: "Artwork", de: "Vorlage" }, lang)
                     : t({ pl: "Zdjęcie", en: "Photo", de: "Foto" }, lang)}
@@ -448,7 +448,7 @@ export function AttachmentList({ label, hint, addLabel, items = [], onAdd, onRem
               </div>
               {/* PLIK ODRZUCONY ZOSTAJE NA LISCIE razem z powodem. Kasowanie go
                   za klienta wygladalo jak awaria pola: plik migal i znikal. */}
-              {i.error && !i.busy && <p className="text-amber-300 text-[11px] mt-1.5 leading-relaxed">{i.error}</p>}
+              {i.error && !i.busy && <p className="text-amber-300 text-xs mt-1.5 leading-relaxed">{i.error}</p>}
             </div>
           ))}
 
@@ -481,8 +481,8 @@ export function PersonalizationField({ label, value, onChange, maxLength = 60, p
   return (
     <div className="mb-4">
       <div className="flex items-baseline justify-between mb-1.5">
-        <span className="text-[11px] uppercase tracking-wide text-neutral-500">{label}</span>
-        <span className={`text-[10px] ${over ? "text-amber-400 font-medium" : value.length > maxLength * 0.9 ? "text-amber-400/70" : "text-neutral-600"}`}>
+        <span className="text-xs uppercase tracking-wide text-neutral-500">{label}</span>
+        <span className={`text-xs ${over ? "text-amber-400 font-medium" : value.length > maxLength * 0.9 ? "text-amber-400/70" : "text-neutral-600"}`}>
           {value.length} / {maxLength}
         </span>
       </div>
@@ -500,8 +500,8 @@ export function PersonalizationField({ label, value, onChange, maxLength = 60, p
                           : "border-white/10 focus:border-blue-400/50"
                     }`}
       />
-      {over && overLimitNote && <p className="text-amber-400/80 text-[11px] mt-1 leading-relaxed">{overLimitNote}</p>}
-      {!over && hint && <p className="text-neutral-600 text-[11px] mt-1">{hint}</p>}
+      {over && overLimitNote && <p className="text-amber-400/80 text-xs mt-1 leading-relaxed">{overLimitNote}</p>}
+      {!over && hint && <p className="text-neutral-600 text-xs mt-1">{hint}</p>}
     </div>
   );
 }
@@ -519,7 +519,7 @@ export function JobDescription({ label, hint, value, onChange, minLength = 20, m
 
   return (
     <div className="mb-6">
-      <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-neutral-500 mb-2">{label}</div>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -533,14 +533,14 @@ export function JobDescription({ label, hint, value, onChange, minLength = 20, m
           Odliczanie do progu zmienialo znaczenie liczby w trakcie pisania,
           a prog jest wymaganiem, nie limitem, wiec mowimy o nim slowami. */}
       <div className="flex items-baseline justify-between gap-3 mt-1.5">
-        <span className={`text-[11px] ${short ? "text-amber-400/80" : "text-transparent select-none"}`}>
+        <span className={`text-xs ${short ? "text-amber-400/80" : "text-transparent select-none"}`}>
           {t({
             pl: `Opisz krótko, minimum ${minLength} znaków`,
             en: `A short brief, at least ${minLength} characters`,
             de: `Kurze Beschreibung, mindestens ${minLength} Zeichen`,
           }, lang)}
         </span>
-        <span className={`text-[11px] tabular-nums flex-shrink-0 ${short ? "text-amber-400/80" : "text-neutral-600"}`}>
+        <span className={`text-xs tabular-nums flex-shrink-0 ${short ? "text-amber-400/80" : "text-neutral-600"}`}>
           {len} / {maxLength}
         </span>
       </div>
@@ -632,7 +632,7 @@ function PoleLiczbowe({ label, value, onChange, accent }) {
   const ring = accent === "amber" ? "focus:border-amber-400/60" : "focus:border-blue-400/60";
   return (
     <label className="flex-1 min-w-0">
-      <span className="block text-[10px] uppercase tracking-wide text-neutral-500 mb-1">{label}</span>
+      <span className="block text-xs uppercase tracking-wide text-neutral-500 mb-1">{label}</span>
       <input
         type="number" min="1" step="1" inputMode="numeric"
         value={value ?? ""}
@@ -661,45 +661,45 @@ export function DeclaredSpec({ missing = [], value = {}, onChange, lang = "pl", 
     <div className="mb-5 rounded-xl border border-amber-400/25 bg-amber-400/[0.05] p-4">
       {missing.includes("model") && (
         <div className="mb-3">
-          <div className="text-[11px] uppercase tracking-wide text-amber-200 mb-2">{l.model}</div>
+          <div className="text-xs uppercase tracking-wide text-amber-200 mb-2">{l.model}</div>
           <div className="flex gap-2">
             {["x", "y", "z"].map((os) => (
               <PoleLiczbowe key={os} label={`${os.toUpperCase()} (mm)`} value={mm[os]} accent={accent}
                 onChange={(v) => ustaw("declaredMm", { ...mm, [os]: v })} />
             ))}
           </div>
-          <p className="text-[11px] text-neutral-400 leading-relaxed mt-2">{l.modelHint}</p>
+          <p className="text-xs text-neutral-400 leading-relaxed mt-2">{l.modelHint}</p>
         </div>
       )}
 
       {missing.includes("area") && (
         <div className="mb-3">
-          <div className="text-[11px] uppercase tracking-wide text-amber-200 mb-2">{l.area}</div>
+          <div className="text-xs uppercase tracking-wide text-amber-200 mb-2">{l.area}</div>
           <div className="flex gap-2">
             {[["w", "W"], ["h", "H"]].map(([klucz, znak]) => (
               <PoleLiczbowe key={klucz} label={`${znak} (mm)`} value={pole[klucz]} accent={accent}
                 onChange={(v) => ustaw("declaredFieldMm", { ...pole, [klucz]: v })} />
             ))}
           </div>
-          <p className="text-[11px] text-neutral-400 leading-relaxed mt-2">{l.areaHint}</p>
+          <p className="text-xs text-neutral-400 leading-relaxed mt-2">{l.areaHint}</p>
         </div>
       )}
 
       {missing.includes("volume") && (
         <div className="mb-3">
-          <div className="text-[11px] uppercase tracking-wide text-amber-200 mb-2">{l.volume}</div>
+          <div className="text-xs uppercase tracking-wide text-amber-200 mb-2">{l.volume}</div>
           <div className="flex gap-2 max-w-[12rem]">
             <PoleLiczbowe label={l.ml} value={value.volumeMl} accent={accent}
               onChange={(v) => onChange({ ...value, volumeMl: v })} />
           </div>
-          <p className="text-[11px] text-neutral-400 leading-relaxed mt-2">{l.volumeHint}</p>
+          <p className="text-xs text-neutral-400 leading-relaxed mt-2">{l.volumeHint}</p>
         </div>
       )}
 
       {missing.includes("vector") && (
         <div>
-          <div className="text-[11px] uppercase tracking-wide text-amber-200 mb-1">{l.vector}</div>
-          <p className="text-[11px] text-neutral-400 leading-relaxed">{l.vectorHint}</p>
+          <div className="text-xs uppercase tracking-wide text-amber-200 mb-1">{l.vector}</div>
+          <p className="text-xs text-neutral-400 leading-relaxed">{l.vectorHint}</p>
         </div>
       )}
     </div>
@@ -728,7 +728,7 @@ export function BlockedReasons({ title, items, accent = "blue" }) {
             </span>
             <span className="min-w-0">
               <span className={`block text-xs ${i.ok ? "text-neutral-500 line-through" : "text-white"}`}>{i.label}</span>
-              {!i.ok && i.hint && <span className="block text-[11px] text-neutral-400 leading-relaxed mt-0.5">{i.hint}</span>}
+              {!i.ok && i.hint && <span className="block text-xs text-neutral-400 leading-relaxed mt-0.5">{i.hint}</span>}
             </span>
           </li>
         ))}

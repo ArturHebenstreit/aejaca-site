@@ -45,6 +45,11 @@ const PAGES = [
   // Strony, ktore audyt z 27 sierpnia 2026 zlapal na rozjezdzie. Zostaja na
   // liscie na stale, zeby powrot problemu byl widoczny od razu.
   "/checkout/", "/blog/pierscionek-zareczynowy-na-zamowienie/",
+  // Wersje jezykowe. Od 27 sierpnia 2026 kazda strona stoi pod trzema
+  // adresami, a jezyk wynika ze sciezki, wiec rozjazd moze sie pojawic
+  // w jednym jezyku i nie pojawic w pozostalych.
+  "/en/", "/de/", "/en/studio/", "/de/studio/", "/en/checkout/", "/de/checkout/",
+  "/de/shop/", "/en/terms/", "/de/terms/",
 ];
 
 // ------------------------------------------------------------

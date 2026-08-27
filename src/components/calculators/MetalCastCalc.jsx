@@ -187,7 +187,7 @@ export default function MetalCastCalc({ lang = "pl" }) {
 
   return (
     <div>
-      <div className="text-center text-[11px] text-neutral-400 mb-6">Ag 800/925 · Au 9k/14k/18k/24k · {CASTING_ENVELOPE_MM.join(" × ")} mm</div>
+      <div className="text-center text-xs text-neutral-400 mb-6">Ag 800/925 · Au 9k/14k/18k/24k · {CASTING_ENVELOPE_MM.join(" × ")} mm</div>
 
       <CalcCard stepNum="①" label={l.variant}>
         <HeroCards options={VARIANT_CARDS} value={variantId} onChange={setVariantId} lang={lang} cols="grid-cols-1 sm:grid-cols-3" minH={150} />
@@ -238,14 +238,14 @@ export default function MetalCastCalc({ lang = "pl" }) {
               </>
             )}
           </FileDrop>
-          {!file && <p className="text-neutral-400 text-[11px] leading-relaxed">{l.needModel}</p>}
-          <p className="text-neutral-500 text-[11px] leading-relaxed mt-2">{l.envelope}</p>
+          {!file && <p className="text-neutral-400 text-xs leading-relaxed">{l.needModel}</p>}
+          <p className="text-neutral-500 text-xs leading-relaxed mt-2">{l.envelope}</p>
         </CalcCard>
       )}
 
       {!measurable && (
         <CalcCard stepNum="④" label={l.model}>
-          <p className="text-neutral-400 text-[11px] leading-relaxed">{l.manualNote}</p>
+          <p className="text-neutral-400 text-xs leading-relaxed">{l.manualNote}</p>
         </CalcCard>
       )}
 
@@ -263,7 +263,7 @@ export default function MetalCastCalc({ lang = "pl" }) {
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} binding={bindingGrosze} />
         {result?.finalMassG != null && (
-          <p className="text-neutral-500 text-[11px] leading-relaxed mt-3">
+          <p className="text-neutral-500 text-xs leading-relaxed mt-3">
             {l.massNote(result.finalMassG.toFixed(2), result.requiredMassG.toFixed(2))}
           </p>
         )}

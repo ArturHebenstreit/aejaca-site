@@ -178,7 +178,7 @@ export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffU
 
   return (
     <div>
-      <div className="text-center text-[11px] text-neutral-400 mb-6">Raycus 30W Galvo · 70mm / 150mm · max 150×150 mm</div>
+      <div className="text-center text-xs text-neutral-400 mb-6">Raycus 30W Galvo · 70mm / 150mm · max 150×150 mm</div>
 
       <CalcCard stepNum="①" label={l.material}>
         <MaterialCards options={MATERIALS} value={matId} onChange={setMatId} lang={lang} />
@@ -207,12 +207,12 @@ export default function FiberLaserCalc({ lang = "pl", handoff = null, onHandoffU
         <Chips options={SUBSTRATES} value={podloze} onChange={handlePodlozeChange} lang={lang} />
         {podloze !== "our_stock" ? (
           <div className="mt-3">
-            <div className="text-[11px] uppercase tracking-wide text-neutral-400 mb-2">{t(SPARE_LABEL, lang)}</div>
+            <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(SPARE_LABEL, lang)}</div>
             <Chips options={spareOptionsFor(podloze)} value={spare} onChange={setSpare} lang={lang} />
           </div>
         ) : (
           <div className="mt-3">
-            <div className="text-[11px] uppercase tracking-wide text-neutral-400 mb-2">{t(MATERIAL_NOTE_LBL, lang)}</div>
+            <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(MATERIAL_NOTE_LBL, lang)}</div>
             <textarea
               value={materialNote}
               onChange={(e) => setMaterialNote(e.target.value)}

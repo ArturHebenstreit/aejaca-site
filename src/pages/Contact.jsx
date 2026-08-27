@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 const CONTACT_API_URL = import.meta.env.VITE_CHAT_API_URL;
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { Store, Instagram, Music2, Facebook, Youtube, MapPin, Mail, MessageCircleMore, Phone, Send, ArrowRight, Package, Building2 } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
@@ -210,7 +210,7 @@ export default function Contact() {
                     <Building2 className="w-5 h-5 text-amber-400" />
                   </div>
                   <div>
-                    <div className="text-[11px] uppercase tracking-[0.1em] text-neutral-500 mb-1">{c.postalLabel}</div>
+                    <div className="text-xs uppercase tracking-[0.1em] text-neutral-500 mb-1">{c.postalLabel}</div>
                     <address className="not-italic text-neutral-300 text-sm leading-relaxed">
                       {SELLER.shippingName}<br />
                       {SELLER.addressLines.map((line) => <span key={line}>{line}<br /></span>)}
@@ -225,7 +225,7 @@ export default function Contact() {
                     <Package className="w-5 h-5 text-amber-400" />
                   </div>
                   <div>
-                    <div className="text-[11px] uppercase tracking-[0.1em] text-neutral-500 mb-1">{c.lockerLabel}</div>
+                    <div className="text-xs uppercase tracking-[0.1em] text-neutral-500 mb-1">{c.lockerLabel}</div>
                     <p className="text-neutral-300 text-sm">
                       {SELLER.inpostLocker.label[lang] || SELLER.inpostLocker.label.pl}{" "}
                       <b className="font-mono text-amber-300">{SELLER.inpostLocker.code}</b>

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 
@@ -313,7 +313,7 @@ export default function ChatWidget() {
               </div>
               <div className="min-w-0">
                 <h3 className="text-sm font-semibold text-white truncate">{l.title}</h3>
-                <p className="text-[11px] text-neutral-500 truncate">{l.subtitle}</p>
+                <p className="text-xs text-neutral-500 truncate">{l.subtitle}</p>
               </div>
             </div>
             <button
@@ -368,7 +368,7 @@ export default function ChatWidget() {
             {/* Rozmowa wychodzi poza Europejski Obszar Gospodarczy i jest
                 zapisywana, wiec rozmowca ma to wiedziec ZANIM cos napisze,
                 a nie z polityki prywatnosci, do ktorej nie zajrzy. */}
-            <p className="text-neutral-500 text-[10px] leading-snug mb-2">
+            <p className="text-neutral-500 text-xs leading-snug mb-2">
               {l.privacy}{" "}
               <Link to="/privacy/" className="underline hover:text-neutral-300 transition-colors">
                 {l.privacyLink}

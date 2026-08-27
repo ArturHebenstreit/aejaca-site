@@ -17,7 +17,7 @@
 // i dwudziestu dziewieciu hasel od razu, zamiast czekac, az ktos przypisze
 // czterdziesci siedem tematow recznie.
 
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { ArrowRight } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { t } from "../pricing/config.js";
@@ -91,7 +91,7 @@ export default function ContentCTA({ service, category = "general", className = 
           className="w-20 h-20 md:w-24 md:h-24 rounded-xl object-cover shrink-0"
         />
         <div className="min-w-0">
-          <div className={`text-[10px] uppercase tracking-[0.2em] ${tint} mb-1`}>{u.tag}</div>
+          <div className={`text-xs uppercase tracking-[0.2em] ${tint} mb-1`}>{u.tag}</div>
           <h3 className="text-white font-medium text-sm md:text-base leading-snug mb-1">{t(card.title, lang)}</h3>
           <p className="text-neutral-400 text-xs leading-relaxed mb-2">{t(card.lead, lang)}</p>
           <span className="text-white text-sm font-semibold">
@@ -113,7 +113,7 @@ export default function ContentCTA({ service, category = "general", className = 
       to={fb.to}
       className={`group not-prose block rounded-2xl border ${ring} bg-white/[0.02] hover:bg-white/[0.04] p-5 transition-all duration-300 ${className}`}
     >
-      <div className={`text-[10px] uppercase tracking-[0.2em] ${tint} mb-1.5`}>{u.tag}</div>
+      <div className={`text-xs uppercase tracking-[0.2em] ${tint} mb-1.5`}>{u.tag}</div>
       <h3 className="text-white font-medium text-base mb-1">{u[fb.label]}</h3>
       <p className="text-neutral-400 text-xs leading-relaxed">{u[fb.lead]}</p>
       <span className="inline-flex items-center gap-1.5 text-white text-sm font-semibold mt-3">

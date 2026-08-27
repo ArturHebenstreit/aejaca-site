@@ -140,7 +140,7 @@ function ReviewCard({ review, lang, labels }) {
           <div className="flex items-center gap-2 mt-1">
             <Stars rating={review.rating} size="w-3.5 h-3.5" />
             <time
-              className="text-[11px] text-neutral-400"
+              className="text-xs text-neutral-400"
               dateTime={review.date}
             >
               {reviewDate(review.date, lang)}
@@ -166,7 +166,7 @@ function ReviewCard({ review, lang, labels }) {
       {/* Translation (tylko gdy jest treść i aktualny język ≠ oryginał) */}
       {translation && (
         <div className="pt-3 border-t border-white/5">
-          <div className="text-[10px] uppercase tracking-wider text-neutral-400 mb-1">
+          <div className="text-xs uppercase tracking-wider text-neutral-400 mb-1">
             {labels.translationOf} ({lang.toUpperCase()})
           </div>
           <p lang={lang} className="text-neutral-400 text-xs leading-relaxed italic">

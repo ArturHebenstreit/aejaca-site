@@ -16,7 +16,7 @@
 // inny kontrast, a na nieznanym tworzywie moze uwolnic chlor. Probka nie
 // jest formalnoscia, tylko warunkiem wykonania roboty bez ryzyka.
 
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { Package, Info } from "lucide-react";
 import { SELLER } from "../data/sellerInfo.js";
 
@@ -81,7 +81,7 @@ export default function MaterialNotice({ lang = "pl", className = "", delivery =
       <div className="mt-3 rounded-lg border border-white/10 bg-white/[0.03] p-3">
         <div className="flex items-center gap-2 mb-1.5">
           <Package size={14} className="text-amber-300 shrink-0" />
-          <span className="text-[11px] uppercase tracking-[0.1em] text-neutral-400">{t.how}</span>
+          <span className="text-xs uppercase tracking-[0.1em] text-neutral-400">{t.how}</span>
         </div>
         <p className="text-[12.5px] text-neutral-300">
           {t.locker}{" "}

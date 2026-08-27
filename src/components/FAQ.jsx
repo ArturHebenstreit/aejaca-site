@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { ChevronDown } from "lucide-react";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 

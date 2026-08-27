@@ -7,7 +7,7 @@
 // klient, i taka jest intencja.
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { Upload, X, Check, ArrowLeft, ArrowRight, Loader2, AlertTriangle, ShieldCheck } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -259,7 +259,7 @@ function StepBar({ step, labels }) {
         const active = i === step;
         return (
           <div key={label} className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-            <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] sm:text-xs border transition-colors ${
+            <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs sm:text-xs border transition-colors ${
               active ? "border-blue-400 bg-blue-400/10 text-blue-300 font-medium"
                 : done ? "border-emerald-400/30 bg-emerald-400/5 text-emerald-400"
                 : "border-white/10 text-neutral-500"
@@ -282,7 +282,7 @@ function OptionRow({ field, value, onChange, lang }) {
 
   return (
     <div className="mb-5">
-      <div className="text-[11px] uppercase tracking-wide text-neutral-400 mb-2">{t(field.label, lang)}</div>
+      <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(field.label, lang)}</div>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => {
           const active = isMulti ? (current || []).includes(o.id) : current === o.id;
@@ -627,7 +627,7 @@ export default function Order() {
                 if (!items.length) return null;
                 return (
                   <div key={g.id} className="mb-6">
-                    <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">{t(g.label, lang)}</div>
+                    <div className="text-xs uppercase tracking-wide text-neutral-500 mb-2">{t(g.label, lang)}</div>
                     <div className="grid sm:grid-cols-2 gap-3">
                       {items.map((s) => (
                         <button
@@ -675,11 +675,11 @@ export default function Order() {
                         <Upload className="w-7 h-7 text-blue-400" />
                         <div className="text-center">
                           <div className="text-white font-medium text-sm">{u.dropFile}</div>
-                          <div className="text-neutral-400 text-[11px] mt-1">{u.dropSub}</div>
+                          <div className="text-neutral-400 text-xs mt-1">{u.dropSub}</div>
                         </div>
                       </button>
                       <input ref={fileRef} type="file" accept=".stl,.obj,.3mf,.step,.stp" className="hidden" onChange={onFile} />
-                      <p className="text-neutral-600 text-[11px] mt-2 text-center">{u.fileOptional}</p>
+                      <p className="text-neutral-600 text-xs mt-2 text-center">{u.fileOptional}</p>
                     </>
                   ) : (
                     <div className="rounded-xl border border-blue-400/20 bg-blue-400/[0.03] p-4">
@@ -694,7 +694,7 @@ export default function Order() {
                         </button>
                       </div>
                       {geometry && (
-                        <div className="grid grid-cols-2 gap-3 mt-3 text-[11px]">
+                        <div className="grid grid-cols-2 gap-3 mt-3 text-xs">
                           <div>
                             <div className="text-neutral-500">{u.volume}</div>
                             <div className="text-white font-medium">{geometry.volumeCm3} cm³</div>
@@ -762,7 +762,7 @@ export default function Order() {
 
               {params.podloze === "our_stock" && (
                 <div className="mb-5">
-                  <div className="text-[11px] uppercase tracking-wide text-neutral-400 mb-2">{u.materialNoteLabel}</div>
+                  <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{u.materialNoteLabel}</div>
                   <input
                     type="text"
                     value={params.materialNote || ""}
@@ -778,7 +778,7 @@ export default function Order() {
                   zrobic. Bez tego pola do pracowni trafialo zamowienie oplacone
                   i niewykonalne, i tak sie to raz skonczylo naprawde. */}
               <div className="mt-2">
-                <div className="text-[11px] uppercase tracking-wide text-neutral-400 mb-2">{u.descTitle}</div>
+                <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{u.descTitle}</div>
                 <textarea
                   id="job-description"
                   value={description}
@@ -791,14 +791,14 @@ export default function Order() {
                     triedToSubmit && !opisOk ? "border-red-400/60" : "border-white/10"
                   }`}
                 />
-                <p className="text-neutral-500 text-[11px] mt-1.5">{u.descHint}</p>
+                <p className="text-neutral-500 text-xs mt-1.5">{u.descHint}</p>
                 {triedToSubmit && !opisOk && (
-                  <p className="text-red-400 text-[11px] mt-1">{u.descTooShort}</p>
+                  <p className="text-red-400 text-xs mt-1">{u.descTooShort}</p>
                 )}
               </div>
 
               {triedToSubmit && brakPodl && (
-                <p className="text-red-400 text-[11px] mt-3">
+                <p className="text-red-400 text-xs mt-3">
                   {{ substrate_required: u.needSubstrate, spare_required: u.needSpare, material_note_required: u.needMaterialNote }[brakPodl]}
                 </p>
               )}
@@ -834,7 +834,7 @@ export default function Order() {
               {!pricing && price && (
                 <div>
                   <div className="text-center p-8 rounded-2xl border border-blue-400/20 bg-gradient-to-b from-blue-400/[0.06] to-transparent">
-                    <div className="text-[11px] uppercase tracking-wider text-blue-400 mb-3">{u.binding}</div>
+                    <div className="text-xs uppercase tracking-wider text-blue-400 mb-3">{u.binding}</div>
                     <div className="flex items-baseline justify-center gap-2">
                       <span className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
                         {money(price.unitGrosze)}
@@ -848,7 +848,7 @@ export default function Order() {
                         podsumowanie niezgodne z rachunkiem. */}
                     {qty > 1 && (
                       <div className="mt-4 pt-4 border-t border-white/5">
-                        <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-1">
+                        <div className="text-xs uppercase tracking-wide text-neutral-500 mb-1">
                           {u.total}: {qty} {u.pcs}
                         </div>
                         <div className="text-2xl font-bold text-blue-400">{money(price.unitGrosze * qty)}</div>
@@ -862,7 +862,7 @@ export default function Order() {
                     )}
                   </div>
 
-                  <p className="text-neutral-500 text-[11px] mt-3 text-center">{u.priceNote}</p>
+                  <p className="text-neutral-500 text-xs mt-3 text-center">{u.priceNote}</p>
 
                   {price.breakdown && (
                     <div className="mt-5 p-4 rounded-xl bg-white/[0.02] border border-white/5 text-xs space-y-1">
@@ -928,7 +928,7 @@ export default function Order() {
                         <div className={`text-sm ${deliveryId === o.id ? "text-blue-300 font-medium" : "text-neutral-300"}`}>
                           {meta ? t(meta.label, lang) : o.id}
                         </div>
-                        <div className="text-neutral-500 text-[11px]">
+                        <div className="text-neutral-500 text-xs">
                           {o.id === "pickup" ? t(meta.note, lang) : `${u.carrier}: ${o.carrier}, ${leadDaysLabel(o)} ${u.businessDays}`}
                         </div>
                       </div>
@@ -938,7 +938,7 @@ export default function Order() {
                 })}
               </div>
 
-              {abroad && <p className="text-neutral-600 text-[11px] mb-4">{u.handlingNote}</p>}
+              {abroad && <p className="text-neutral-600 text-xs mb-4">{u.handlingNote}</p>}
 
               {customs && (
                 <div className="rounded-lg border border-amber-400/40 bg-amber-400/10 p-3 mb-4">
@@ -946,7 +946,7 @@ export default function Order() {
                   {/* amber-200/80, nie amber-100/80: tryb jasny przemalowuje
                       tylko klasy wypisane w index.css, a ta druga nie byla tam
                       obecna i akapit znikal na kremowym tle. */}
-                  <p className="text-amber-200/80 text-[11px] leading-relaxed">{u.customsBody}</p>
+                  <p className="text-amber-200/80 text-xs leading-relaxed">{u.customsBody}</p>
                 </div>
               )}
 
@@ -987,7 +987,7 @@ export default function Order() {
                         <span className={`block text-sm font-medium ${inbound === m.id ? "text-blue-200" : "text-neutral-200"}`}>
                           {t(m.label, lang)}
                         </span>
-                        <span className="block text-neutral-400 text-[11px] mt-0.5">{t(m.note, lang)}</span>
+                        <span className="block text-neutral-400 text-xs mt-0.5">{t(m.note, lang)}</span>
                       </button>
                     ))}
                   </div>

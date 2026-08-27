@@ -25,6 +25,7 @@ import { getToolById } from "../data/toolLinks.js";
 import { buildWebPageSchema, buildBreadcrumbSchema, buildFAQSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
+import { Link } from "../i18n/nav.jsx";
 
 const URL = `${SITE.url}/toolstudio/printability/`;
 
@@ -348,12 +349,12 @@ export default function PrintabilityPage() {
           <div ref={ctaRef} className="reveal max-w-xl mx-auto">
             <h2 className="font-sans text-xl font-semibold text-white mb-2">{L.ctaTitle}</h2>
             <p className="text-neutral-400 text-sm mb-6">{L.ctaText}</p>
-            <a
-              href="/studio/#calculator"
+            <Link
+              to="/studio/#calculator"
               className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 text-neutral-950 font-semibold rounded-full hover:bg-blue-400 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300"
             >
               {L.ctaBtn}
-            </a>
+            </Link>
           </div>
         </section>
 

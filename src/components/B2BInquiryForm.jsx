@@ -310,7 +310,7 @@ export default function B2BInquiryForm({ lang = "pl", id }) {
   }
 
   const inputClass = "w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:border-blue-400/50 focus:outline-none focus:ring-1 focus:ring-blue-400/30 transition-colors";
-  const labelClass = "block text-[11px] text-neutral-400 mb-1.5";
+  const labelClass = "block text-xs text-neutral-400 mb-1.5";
 
   return (
     <div id={id} className="rounded-2xl border border-blue-400/20 bg-gradient-to-br from-blue-400/[0.03] to-transparent p-6 sm:p-8 max-w-2xl mx-auto">
@@ -409,17 +409,17 @@ export default function B2BInquiryForm({ lang = "pl", id }) {
           <input ref={fileRef} type="file" className="hidden"
             accept=".stl,.3mf,.step,.stp,.obj,.svg,.ai,.dxf,.jpg,.jpeg,.png,.pdf" onChange={handleFileChange} />
         </div>
-        <div className="text-[10px] text-neutral-400 mt-1">{L.fileHint}</div>
-        {fileName && <div className="text-[10px] text-blue-400/70 mt-1">{L.attachNote}</div>}
+        <div className="text-xs text-neutral-400 mt-1">{L.fileHint}</div>
+        {fileName && <div className="text-xs text-blue-400/70 mt-1">{L.attachNote}</div>}
       </div>
 
       {/* Consent */}
       <label className="flex items-start gap-2 cursor-pointer select-none mb-4">
         <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 accent-blue-400 shrink-0" />
-        <span className="text-[11px] text-neutral-400 leading-tight">{L.consent}</span>
+        <span className="text-xs text-neutral-400 leading-tight">{L.consent}</span>
       </label>
 
-      {error && <div className="mb-3 text-[11px] text-red-400 text-center">{error}</div>}
+      {error && <div className="mb-3 text-xs text-red-400 text-center">{error}</div>}
 
       <button
         onClick={handleSend}

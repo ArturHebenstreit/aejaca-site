@@ -8,7 +8,7 @@
 // tylko pokazuje to, co odpowiedzial backend.
 
 import { useState, useEffect, useCallback, useRef, lazy, Suspense, Fragment, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../../i18n/nav.jsx";
 import { claimHandoff } from "../../data/calcHandoff.js";
 import { ShoppingCart, Check, Loader2, AlertTriangle, ArrowRight } from "lucide-react";
 import { useCart } from "../../cart/CartContext.jsx";
@@ -740,7 +740,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
                 <STLViewer triangles={triangles} onSnapshot={onSnapshot} />
               </Suspense>
             )}
-            {geometry && <p className="text-neutral-600 text-[10px] mt-2 leading-relaxed">{u.unitsNote}</p>}
+            {geometry && <p className="text-neutral-600 text-xs mt-2 leading-relaxed">{u.unitsNote}</p>}
           </FileDrop>
           {/* Analiza tylko dla druku 3D. Przy grawerze albo odlewie te progi
               nic nie znacza, a ostrzezenie bez znaczenia uczy je ignorowac. */}
@@ -771,12 +771,12 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
               purpose={service.calculator === "jewelry_casting" ? "casting" : "print"}
             />
           )}
-          {!file && service.calculator !== "jewelry_casting" && <p className="text-neutral-600 text-[11px] -mt-4 mb-6">{u.fileOptional}</p>}
+          {!file && service.calculator !== "jewelry_casting" && <p className="text-neutral-600 text-xs -mt-4 mb-6">{u.fileOptional}</p>}
           {/* Przy odlewie plik nie jest dodatkiem, tylko podstawa kwoty: masa
               kruszcu bierze sie z objetosci bryly. Mowimy to ZANIM klient
               zobaczy komunikat o brakujacych parametrach. */}
           {!file && service.calculator === "jewelry_casting" && (
-            <p className="text-neutral-500 text-[11px] -mt-4 mb-6">{u.castingFileRequired}</p>
+            <p className="text-neutral-500 text-xs -mt-4 mb-6">{u.castingFileRequired}</p>
           )}
         </>
       )}
@@ -794,7 +794,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
             lang={lang}
             accept={ACCEPT_VECTOR}
           />
-          <p className="text-neutral-600 text-[11px] -mt-4 mb-6 leading-relaxed">{u.vectorNote}</p>
+          <p className="text-neutral-600 text-xs -mt-4 mb-6 leading-relaxed">{u.vectorNote}</p>
         </>
       )}
 
@@ -823,7 +823,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
         if (f.multi) {
           return (
             <div key={f.key} className="mb-6">
-              <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">{t(f.label, lang)}</div>
+              <div className="text-xs uppercase tracking-wide text-neutral-500 mb-2">{t(f.label, lang)}</div>
               <div className="grid grid-cols-2 gap-2">
                 {options.map((o) => {
                   const list = params[f.key] || [];
@@ -898,7 +898,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
 
       {params.podloze === "our_stock" && (
         <div className="mb-6">
-          <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">{u.materialNoteLabel}</div>
+          <div className="text-xs uppercase tracking-wide text-neutral-500 mb-2">{u.materialNoteLabel}</div>
           <input
             type="text"
             value={params.materialNote || ""}
@@ -907,7 +907,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
             className="w-full bg-neutral-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-white
                        placeholder:text-neutral-600 focus:outline-none focus:border-blue-400/60"
           />
-          <p className="text-neutral-500 text-[11px] mt-1.5">{u.materialNoteHint}</p>
+          <p className="text-neutral-500 text-xs mt-1.5">{u.materialNoteHint}</p>
         </div>
       )}
 
@@ -1014,21 +1014,21 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
                 ktora klient realnie zaplaci, a cena jednostkowa schodzi pod nia. */}
             <div className="flex items-end justify-between mb-1">
               <div>
-                <div className="text-[11px] uppercase tracking-wide text-neutral-500">
+                <div className="text-xs uppercase tracking-wide text-neutral-500">
                   {effectiveQty > 1 ? `${u.total} (${effectiveQty} ${u.pcs})` : u.price}
                 </div>
                 <div className="text-2xl font-extrabold text-white">{money(lineTotal)}</div>
               </div>
               {effectiveQty > 1 && (
                 <div className="text-right">
-                  <div className="text-[11px] uppercase tracking-wide text-neutral-500">{u.price}</div>
+                  <div className="text-xs uppercase tracking-wide text-neutral-500">{u.price}</div>
                   <div className={`text-lg font-bold ${accent === "amber" ? "text-amber-300" : "text-blue-300"}`}>
-                    {money(unitTotal)} <span className="text-[11px] font-normal text-neutral-500">{u.perPc}</span>
+                    {money(unitTotal)} <span className="text-xs font-normal text-neutral-500">{u.perPc}</span>
                   </div>
                 </div>
               )}
             </div>
-            <p className="text-neutral-600 text-[11px] mb-3">{u.priceNote}</p>
+            <p className="text-neutral-600 text-xs mb-3">{u.priceNote}</p>
 
             {/* Ta sama kalkulacja co w kalkulatorze. Klient ma widziec, z czego
                 sklada sie kwota, w obu miejscach tak samo. */}
@@ -1038,12 +1038,12 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
                   type="button"
                   onClick={() => setShowBreakdown((v) => !v)}
                   className="w-full text-center py-2 rounded-lg border border-white/10 bg-white/[0.02]
-                             text-neutral-400 hover:text-white hover:border-white/20 text-[11px] transition-colors"
+                             text-neutral-400 hover:text-white hover:border-white/20 text-xs transition-colors"
                 >
                   {showBreakdown ? `\u25B2 ${u.hideDetails}` : `\u25BC ${u.showDetails}`}
                 </button>
                 {showBreakdown && (
-                  <div className="mt-2 rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-1.5 text-[11px]">
+                  <div className="mt-2 rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-1.5 text-xs">
                     {price.breakdown.map((row, i) => (
                       <div key={i} className={`flex justify-between gap-4 ${row.bold ? "font-semibold text-white" : "text-neutral-400"}`}>
                         <span>{row.label}</span>
@@ -1066,7 +1066,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
                   lang={lang}
                   accent={accent}
                 />
-                <p className="text-[11px] text-neutral-400 leading-relaxed mb-4">{u.estimateNote}</p>
+                <p className="text-xs text-neutral-400 leading-relaxed mb-4">{u.estimateNote}</p>
               </>
             )}
 
@@ -1093,7 +1093,7 @@ export default function ServiceConfigurator({ card, lang, accent = "blue", onPri
 
             {needsHumanQuote && (
               <div className="rounded-xl border border-amber-400/30 bg-amber-400/[0.05] p-4 mb-3">
-                <p className="text-amber-300/90 text-[11px] leading-relaxed mb-2">
+                <p className="text-amber-300/90 text-xs leading-relaxed mb-2">
                   {gateCasting ? u.gateCasting : gateComplex ? u.gateComplex : u.gateHandmade}
                 </p>
                 <Link to="/contact/" className="inline-flex items-center gap-1.5 text-amber-400 hover:text-amber-300 text-xs">

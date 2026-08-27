@@ -13,7 +13,7 @@ export function Body({ lang }) {
         className="w-full rounded-xl shadow-lg border border-white/10"
         loading="lazy"
       />
-      <p className="text-[10px] text-neutral-500 text-center mt-1">{name}</p>
+      <p className="text-xs text-neutral-500 text-center mt-1">{name}</p>
     </div>
   );
 

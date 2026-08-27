@@ -202,7 +202,7 @@ export default function Portfolio({ data, accent = "amber", id }) {
                     </div>
                   )}
                   <div className="p-4">
-                    <div className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-medium border mb-2 ${catColor}`}>
+                    <div className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium border mb-2 ${catColor}`}>
                       {data.filters.find((f) => f.id === item.category)?.label || item.category}
                     </div>
                     <h3 className={`text-white font-medium text-sm mb-1 ${isAmber ? "group-hover/card:text-amber-300" : "group-hover/card:text-blue-300"} transition-colors`}>

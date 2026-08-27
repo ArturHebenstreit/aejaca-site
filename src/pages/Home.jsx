@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { ArrowRight, Zap, Sparkles, FileUp, Printer, Flame, Cpu, Scissors, Star } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { trackCTA } from "../utils/analytics.js";
@@ -131,7 +131,7 @@ export default function Home() {
               </div>
               <div className="photo-card-text absolute bottom-0 left-0 right-0 h-48 md:h-52 flex flex-col justify-between items-center px-6 md:px-8 pb-6 md:pb-7 pt-4 text-center">
                 <div>
-                  <div className="text-amber-400 text-[10px] uppercase tracking-[0.25em] mb-3">{h.jewelrySubtitle}</div>
+                  <div className="text-amber-400 text-xs uppercase tracking-[0.25em] mb-3">{h.jewelrySubtitle}</div>
                   <p className="text-neutral-200 text-sm leading-relaxed max-w-xs mx-auto">{h.jewelryDesc}</p>
                 </div>
                 <span className="inline-flex items-center gap-2 px-7 py-3 border border-amber-400/40 bg-amber-400/10 backdrop-blur-md text-amber-200 font-medium rounded-full text-sm tracking-wide group-hover:bg-amber-400 group-hover:text-black group-hover:border-amber-400 group-hover:shadow-lg group-hover:shadow-amber-500/30 transition-all duration-300">
@@ -156,7 +156,7 @@ export default function Home() {
               </div>
               <div className="photo-card-text absolute bottom-0 left-0 right-0 h-48 md:h-52 flex flex-col justify-between items-center px-6 md:px-8 pb-6 md:pb-7 pt-4 text-center">
                 <div>
-                  <div className="text-blue-400 text-[10px] uppercase tracking-[0.25em] mb-3">{h.studioSubtitle}</div>
+                  <div className="text-blue-400 text-xs uppercase tracking-[0.25em] mb-3">{h.studioSubtitle}</div>
                   <p className="text-neutral-200 text-sm leading-relaxed max-w-xs mx-auto">{h.studioDesc}</p>
                 </div>
                 <span className="inline-flex items-center gap-2 px-7 py-3 border border-blue-400/40 bg-blue-400/10 backdrop-blur-md text-blue-200 font-medium rounded-full text-sm tracking-wide group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-500 group-hover:shadow-lg group-hover:shadow-blue-500/30 transition-all duration-300">
@@ -240,8 +240,8 @@ export default function Home() {
                   <div className="relative p-3 h-full min-h-[180px] flex flex-col justify-end">
                     <Icon className="w-5 h-5 text-emerald-400 mb-1.5 drop-shadow-lg" />
                     <h4 className="font-sans text-sm font-bold text-white mb-0.5 drop-shadow-lg">{title}</h4>
-                    <p className="text-neutral-300 text-[10px] leading-snug mb-2 drop-shadow-md">{desc}</p>
-                    <span className="inline-flex items-center gap-1 text-emerald-400 text-[11px] font-medium group-hover:text-emerald-300 transition-colors">
+                    <p className="text-neutral-300 text-xs leading-snug mb-2 drop-shadow-md">{desc}</p>
+                    <span className="inline-flex items-center gap-1 text-emerald-400 text-xs font-medium group-hover:text-emerald-300 transition-colors">
                       {cta} <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
                     </span>
                   </div>

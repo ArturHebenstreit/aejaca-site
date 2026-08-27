@@ -123,7 +123,7 @@ export default function RingBlankCalc({ lang = "pl" }) {
               onChange={(e) => setDInner(Number(e.target.value))}
               className="w-full accent-amber-400 cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-neutral-500 mt-0.5">
+            <div className="flex justify-between text-xs text-neutral-500 mt-0.5">
               <span>14 {l.mm}</span>
               <span>25 {l.mm}</span>
             </div>
@@ -144,7 +144,7 @@ export default function RingBlankCalc({ lang = "pl" }) {
               onChange={(e) => setThickness(Number(e.target.value))}
               className="w-full accent-amber-400 cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-neutral-500 mt-0.5">
+            <div className="flex justify-between text-xs text-neutral-500 mt-0.5">
               <span>0.5 {l.mm}</span>
               <span>3.0 {l.mm}</span>
             </div>
@@ -165,7 +165,7 @@ export default function RingBlankCalc({ lang = "pl" }) {
               onChange={(e) => setWidth(Number(e.target.value))}
               className="w-full accent-amber-400 cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-neutral-500 mt-0.5">
+            <div className="flex justify-between text-xs text-neutral-500 mt-0.5">
               <span>3 {l.mm}</span>
               <span>15 {l.mm}</span>
             </div>

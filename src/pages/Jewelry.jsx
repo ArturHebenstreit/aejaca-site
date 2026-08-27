@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { ArrowRight, Gem, Sparkles, Palette, Heart, Wand2, Crown, Calculator, Tag } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
@@ -113,7 +113,7 @@ export default function Jewelry() {
       name: j.processTitle,
       description: j.processTag,
       steps: j.processSteps,
-      image: `${SITE.url}/hero-jewelry.webp`,
+      image: `${SITE.url}/og-jewelry.jpg`,
     }),
     // FAQ schema = direct ranking signal for Google's "People Also Ask" + LLM answers
     j.faq?.items && buildFAQSchema(j.faq.items),
@@ -121,18 +121,18 @@ export default function Jewelry() {
       name: "AEJaCA Handcrafted Jewelry Collection",
       url: pageUrl,
       items: [
-        { name: "Custom Silver Ring with Gemstone", url: `${pageUrl}#rings`, image: `${SITE.url}/hero-jewelry.webp`, description: "Handcrafted sterling silver ring with natural gemstone setting" },
-        { name: "Gold Engagement Ring", url: `${pageUrl}#engagement`, image: `${SITE.url}/hero-jewelry.webp`, description: "Bespoke 14K/18K gold engagement ring with premium gemstone" },
-        { name: "Silver Earrings with Gemstones", url: `${pageUrl}#earrings`, image: `${SITE.url}/hero-jewelry.webp`, description: "Artisan sterling silver earrings with natural gemstones" },
-        { name: "Gemstone Bracelet", url: `${pageUrl}#bracelets`, image: `${SITE.url}/hero-jewelry.webp`, description: "Natural stone bead bracelet with silver elements" },
-        { name: "Wedding Bands", url: `${pageUrl}#wedding`, image: `${SITE.url}/hero-jewelry.webp`, description: "Personalized wedding ring pairs with custom engraving" },
-        { name: "Personalized Pendant", url: `${pageUrl}#pendants`, image: `${SITE.url}/hero-jewelry.webp`, description: "Custom pendant with gemstone or engraved design" },
+        { name: "Custom Silver Ring with Gemstone", url: `${pageUrl}#rings`, image: `${SITE.url}/og-jewelry.jpg`, description: "Handcrafted sterling silver ring with natural gemstone setting" },
+        { name: "Gold Engagement Ring", url: `${pageUrl}#engagement`, image: `${SITE.url}/og-jewelry.jpg`, description: "Bespoke 14K/18K gold engagement ring with premium gemstone" },
+        { name: "Silver Earrings with Gemstones", url: `${pageUrl}#earrings`, image: `${SITE.url}/og-jewelry.jpg`, description: "Artisan sterling silver earrings with natural gemstones" },
+        { name: "Gemstone Bracelet", url: `${pageUrl}#bracelets`, image: `${SITE.url}/og-jewelry.jpg`, description: "Natural stone bead bracelet with silver elements" },
+        { name: "Wedding Bands", url: `${pageUrl}#wedding`, image: `${SITE.url}/og-jewelry.jpg`, description: "Personalized wedding ring pairs with custom engraving" },
+        { name: "Personalized Pendant", url: `${pageUrl}#pendants`, image: `${SITE.url}/og-jewelry.jpg`, description: "Custom pendant with gemstone or engraved design" },
       ],
     }),
     buildProductSchema({
       name: "Custom Silver Ring with Gemstone, AEJaCA",
       description: "Handcrafted sterling silver ring with natural gemstone, custom designed to order. Available with amethyst, emerald, sapphire, or ruby.",
-      image: `${SITE.url}/hero-jewelry.webp`,
+      image: `${SITE.url}/og-jewelry.jpg`,
       sku: "AEJACA-RING-925",
       price: "150",
       currency: "EUR",
@@ -143,7 +143,7 @@ export default function Jewelry() {
     buildProductSchema({
       name: "Handmade Gold Engagement Ring, AEJaCA",
       description: "Bespoke 14K or 18K gold engagement ring with premium gemstone setting. Prong, bezel, or channel setting available.",
-      image: `${SITE.url}/hero-jewelry.webp`,
+      image: `${SITE.url}/og-jewelry.jpg`,
       sku: "AEJACA-ENGAGE-14K",
       price: "450",
       currency: "EUR",
@@ -154,7 +154,7 @@ export default function Jewelry() {
     buildProductSchema({
       name: "Silver Earrings with Natural Gemstones, AEJaCA",
       description: "Artisan-crafted sterling silver earrings featuring hand-selected natural gemstones. Each pair is unique.",
-      image: `${SITE.url}/hero-jewelry.webp`,
+      image: `${SITE.url}/og-jewelry.jpg`,
       sku: "AEJACA-EARR-925",
       price: "95",
       currency: "EUR",

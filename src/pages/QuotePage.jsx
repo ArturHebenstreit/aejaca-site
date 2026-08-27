@@ -10,7 +10,8 @@
 // liczby zaleznie od tego, czyj komputer ja otworzyl.
 
 import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { Loader2, XCircle, Clock, ShoppingCart, ArrowRight, TrendingUp, TrendingDown } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useCart } from "../cart/CartContext.jsx";
@@ -225,7 +226,7 @@ export default function QuotePage() {
               )}
 
               <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 mb-4">
-                <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-3">{u.items}</div>
+                <div className="text-xs uppercase tracking-wide text-neutral-500 mb-3">{u.items}</div>
 
                 {quote.items.map((i) => (
                   <div key={i.id} className="py-3 border-b border-white/5 last:border-0">
@@ -235,21 +236,21 @@ export default function QuotePage() {
                           {i.title}{i.qty > 1 ? ` (${i.qty} ${u.pcs})` : ""}
                         </div>
                         {i.fileName && (
-                          <div className="text-neutral-500 text-[11px] mt-0.5">{u.file}: {i.fileName}</div>
+                          <div className="text-neutral-500 text-xs mt-0.5">{u.file}: {i.fileName}</div>
                         )}
                         {i.description && (
-                          <div className="text-neutral-400 text-[11px] mt-1 leading-relaxed">{i.description}</div>
+                          <div className="text-neutral-400 text-xs mt-1 leading-relaxed">{i.description}</div>
                         )}
                       </div>
                       <div className="text-right whitespace-nowrap">
                         <div className="text-white font-semibold text-sm tabular-nums">{pln(i.lineGrosze)}</div>
                         {i.qty > 1 && (
-                          <div className="text-neutral-500 text-[11px]">{pln(i.unitGrosze)} {u.perPc}</div>
+                          <div className="text-neutral-500 text-xs">{pln(i.unitGrosze)} {u.perPc}</div>
                         )}
                         {/* Kwota zapisana zostaje widoczna, a nie do odtworzenia
                             z pamieci. Roznica ma byc sprawdzalna, nie ukryta. */}
                         {i.repriced && (
-                          <div className="text-neutral-500 text-[11px]">
+                          <div className="text-neutral-500 text-xs">
                             {pln(i.savedUnitGrosze * i.qty)} {u.savedWas}
                           </div>
                         )}
@@ -283,7 +284,7 @@ export default function QuotePage() {
                   {u.validUntil} <span className="text-white">{dateFmt(quote.validUntil)}</span>
                 </p>
               )}
-              <p className="text-neutral-500 text-[11px] leading-relaxed mb-6">{u.metalNote}</p>
+              <p className="text-neutral-500 text-xs leading-relaxed mb-6">{u.metalNote}</p>
 
               {!quote.expired && (
                 <>
@@ -308,7 +309,7 @@ export default function QuotePage() {
                 </>
               )}
 
-              <p className="text-neutral-500 text-[11px] leading-relaxed mt-4">{u.noObligation}</p>
+              <p className="text-neutral-500 text-xs leading-relaxed mt-4">{u.noObligation}</p>
               <p className="text-neutral-500 text-xs mt-4">
                 {u.questions}?{" "}
                 <Link to="/contact/" className="text-neutral-300 hover:text-white underline underline-offset-2">

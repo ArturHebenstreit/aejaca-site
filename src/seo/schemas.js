@@ -56,7 +56,10 @@ export function buildLocalBusinessSchema() {
     alternateName: "Artisan Elegance Jewelry and Crafted Art",
     url: SITE.url,
     logo: `${SITE.url}/logo.png`,
-    image: `${SITE.url}/hero-jewelry.jpg`,
+    // Obraz spolecznosciowy, 1200 x 630 i 61 kB. Wczesniej stala tu panorama
+    // `hero-jewelry.jpg` wazaca 706 kB: nikt jej nie ogladal na stronie, a
+    // pobieral ja kazdy robot czytajacy dane strukturalne.
+    image: `${SITE.url}/og-jewelry.jpg`,
     email: "contact@aejaca.com",
     telephone: "+48780737786",
     founder: { "@type": "Person", name: "Artur Hebenstreit" },

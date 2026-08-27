@@ -8,7 +8,7 @@
 
 import { useState, useEffect } from "react";
 import { describeParams } from "../data/describeParams.js";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "../i18n/nav.jsx";
 import { ShieldCheck, Loader2, ArrowLeft, AlertTriangle, Check } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -553,7 +553,7 @@ export default function Checkout() {
                 </div>
                 {/* Ostatni ekran przed platnoscia musi pokazywac to samo, co
                     koszyk. Klient placi tutaj, wiec tutaj musi widziec, za co. */}
-                <div className="text-neutral-500 text-[11px] mt-1 space-y-0.5">
+                <div className="text-neutral-500 text-xs mt-1 space-y-0.5">
                   {describeParams(i, lang).map((w) => (
                     <div key={w.label}>{w.label}: <span className="text-neutral-400">{w.value}</span></div>
                   ))}
@@ -625,7 +625,7 @@ export default function Checkout() {
                   </div>
                 </div>
               )}
-              {codeError && <p className="text-amber-300 text-[11px] mt-2">{codeError}</p>}
+              {codeError && <p className="text-amber-300 text-xs mt-2">{codeError}</p>}
             </div>
           </div>
 
@@ -670,7 +670,7 @@ export default function Checkout() {
                         <div className={`text-sm ${deliveryId === o.id ? "text-blue-300 font-medium" : "text-neutral-300"}`}>
                           {meta ? t(meta.label, lang) : o.id}
                         </div>
-                        <div className="text-neutral-500 text-[11px]">
+                        <div className="text-neutral-500 text-xs">
                           {o.id === "pickup"
                             ? t(meta.note, lang)
                             : `${u.carrier}: ${o.carrier}, ${leadDaysLabel(o)} ${u.businessDays}`}
@@ -683,7 +683,7 @@ export default function Checkout() {
                         {o.grosze === 0 && o.id !== "pickup" ? (
                           <>
                             <span className="text-emerald-300">{u.freeShipping}</span>
-                            <span className="block text-neutral-500 text-[10px] font-normal line-through">
+                            <span className="block text-neutral-500 text-xs font-normal line-through">
                               {money(o.listGrosze ?? 0)}
                             </span>
                           </>
@@ -697,12 +697,12 @@ export default function Checkout() {
               </div>
 
               {options.some((o) => o.grosze === 0 && o.id !== "pickup") && (
-                <p className="text-emerald-300/80 text-[11px] mb-4">
+                <p className="text-emerald-300/80 text-xs mb-4">
                   {u.freeShippingWhy(money(FREE_SHIPPING_FROM_GROSZE))}
                 </p>
               )}
 
-              {abroad && <p className="text-neutral-600 text-[11px] mb-4">{u.handlingNote}</p>}
+              {abroad && <p className="text-neutral-600 text-xs mb-4">{u.handlingNote}</p>}
 
               {/* Clo pobiera kurier przy doreczeniu. Klient musi to wiedziec
                   przed zaplata, a nie od kuriera pod drzwiami. */}
@@ -712,7 +712,7 @@ export default function Checkout() {
                   {/* amber-200/80, nie amber-100/80: tryb jasny przemalowuje
                       tylko klasy wypisane w index.css, a ta druga nie byla tam
                       obecna i akapit znikal na kremowym tle. */}
-                  <p className="text-amber-200/80 text-[11px] leading-relaxed">{u.customsBody}</p>
+                  <p className="text-amber-200/80 text-xs leading-relaxed">{u.customsBody}</p>
                 </div>
               )}
 
@@ -755,7 +755,7 @@ export default function Checkout() {
                     <span className={`block text-sm font-medium ${inbound === m.id ? "text-blue-200" : "text-neutral-200"}`}>
                       {t(m.label, lang)}
                     </span>
-                    <span className="block text-neutral-400 text-[11px] mt-0.5">{t(m.note, lang)}</span>
+                    <span className="block text-neutral-400 text-xs mt-0.5">{t(m.note, lang)}</span>
                   </button>
                 ))}
               </div>
@@ -801,7 +801,7 @@ export default function Checkout() {
                   </span>
                   <span className="text-white text-sm font-semibold">{formatEur(totalGrosze, rate, lang)}</span>
                 </div>
-                <p className="text-neutral-500 text-[11px] mt-1">{u.payTransferNote}</p>
+                <p className="text-neutral-500 text-xs mt-1">{u.payTransferNote}</p>
               </button>
 
               <button
@@ -820,7 +820,7 @@ export default function Checkout() {
                       niz to, ktore klient widzial. */}
                   <span className="text-white text-sm font-semibold">{formatPln(totalGrosze, lang)}</span>
                 </div>
-                <p className="text-neutral-500 text-[11px] mt-1">{u.payInstantNote}</p>
+                <p className="text-neutral-500 text-xs mt-1">{u.payInstantNote}</p>
               </button>
             </div>
 
@@ -830,13 +830,13 @@ export default function Checkout() {
               <ol className="space-y-2">
                 {[u.step1, u.step2, u.step3, u.step4, u.step5].map((step, n) => (
                   <li key={n} className="flex gap-2.5 text-neutral-400 text-xs leading-relaxed">
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full border border-white/15 text-[10px] text-neutral-300
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full border border-white/15 text-xs text-neutral-300
                                      flex items-center justify-center tabular-nums">{n + 1}</span>
                     {step}
                   </li>
                 ))}
               </ol>
-              <p className="text-neutral-600 text-[11px] mt-3">{u.lockNote}</p>
+              <p className="text-neutral-600 text-xs mt-3">{u.lockNote}</p>
             </div>
           ) : (
           <PaymentPicker

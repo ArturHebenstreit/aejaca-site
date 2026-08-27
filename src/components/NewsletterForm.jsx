@@ -1,5 +1,5 @@
 import { useState, useId } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { Gift, CheckCircle2, Loader2 } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 
@@ -151,7 +151,7 @@ export default function NewsletterForm({ compact = false }) {
     >
       <div className="flex items-center gap-2 mb-2">
         <Gift className="w-4 h-4 text-amber-300" aria-hidden="true" />
-        <span className="text-[11px] uppercase tracking-[0.2em] text-amber-300 font-semibold">{l.hook}</span>
+        <span className="text-xs uppercase tracking-[0.2em] text-amber-300 font-semibold">{l.hook}</span>
       </div>
       {!compact && (
         <h3 className="font-serif text-lg md:text-xl font-semibold text-white mb-2">{l.title}</h3>
@@ -181,7 +181,7 @@ export default function NewsletterForm({ compact = false }) {
         </button>
       </div>
 
-      <label className="mt-3 flex items-start gap-2 text-[11px] text-neutral-400 cursor-pointer select-none">
+      <label className="mt-3 flex items-start gap-2 text-xs text-neutral-400 cursor-pointer select-none">
         <input
           type="checkbox"
           checked={consent}
@@ -195,7 +195,7 @@ export default function NewsletterForm({ compact = false }) {
         </span>
       </label>
 
-      {error && <p className="mt-2 text-[11px] text-rose-300" role="alert">{error}</p>}
+      {error && <p className="mt-2 text-xs text-rose-300" role="alert">{error}</p>}
     </form>
   );
 }

@@ -69,11 +69,11 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
           </div>
           <div className="text-center">
             <div className="font-semibold text-sm text-white mb-1">{sl.dropHint}</div>
-            <div className="text-[11px] text-neutral-400">{sl.dropSub}</div>
+            <div className="text-xs text-neutral-400">{sl.dropSub}</div>
           </div>
         </button>
         <input ref={fileRef} type="file" accept=".svg" className="hidden" onChange={onUpload} />
-        <div className="text-[10px] text-neutral-400">{sl.orManual}</div>
+        <div className="text-xs text-neutral-400">{sl.orManual}</div>
       </div>
     );
   }
@@ -102,7 +102,7 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
         height={180}
         stretch={{ x: Number(scale.x), y: Number(scale.y) }}
       />
-      <div className={`grid ${cols} gap-3 text-center text-[11px]`}>
+      <div className={`grid ${cols} gap-3 text-center text-xs`}>
         <div><div className="text-neutral-400">{sl.dims}</div><div className="font-bold">{scaledBbox.x.toFixed(1)}×{scaledBbox.y.toFixed(1)} mm</div></div>
         <div>
           <div className="text-neutral-400">{sl.area}</div>
@@ -124,14 +124,14 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
 
       {/* Scale controls */}
       <div className="border-t border-white/5 pt-2 space-y-1.5">
-        <div className="flex items-center justify-between text-[11px]">
+        <div className="flex items-center justify-between text-xs">
           <span className="text-neutral-400">{sl.scale}</span>
           <span className="font-bold text-blue-300">{uni == null ? "-" : `${Math.round(uni * 100)}%`}</span>
         </div>
         <div className="flex flex-wrap gap-1.5">
           {SCALE_STEPS_DOWN.map(p => (
             <button key={p} onClick={() => onScaleChange(uniformScale(p, AXES_2D))}
-              className={`px-2 py-1 rounded text-[10px] border transition-colors ${
+              className={`px-2 py-1 rounded text-xs border transition-colors ${
                 uni != null && Math.abs(uni - p) < 0.005
                   ? "border-blue-400 bg-blue-400/10 text-blue-300"
                   : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-200"
@@ -143,7 +143,7 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
             const disabled = p > maxAllowedScale + 0.001;
             return (
               <button key={p} onClick={() => !disabled && onScaleChange(uniformScale(p, AXES_2D))} disabled={disabled}
-                className={`px-2 py-1 rounded text-[10px] border transition-colors ${
+                className={`px-2 py-1 rounded text-xs border transition-colors ${
                   uni != null && Math.abs(uni - p) < 0.005 ? "border-blue-400 bg-blue-400/10 text-blue-300" :
                   disabled ? "border-white/5 text-neutral-700 cursor-not-allowed" :
                   "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-200"
@@ -154,13 +154,13 @@ export default function SVGUploadCard({ svgData, svgFileName, scale, onScaleChan
           })}
           {fitFloor < 0.999 && (
             <button onClick={() => onScaleChange(uniformScale(fitFloor, AXES_2D))}
-              className={`px-2 py-1 rounded text-[10px] border border-amber-400/30 text-amber-400 hover:bg-amber-400/10 transition-colors ${
+              className={`px-2 py-1 rounded text-xs border border-amber-400/30 text-amber-400 hover:bg-amber-400/10 transition-colors ${
                 uni != null && Math.abs(uni - fitFloor) < 0.005 ? "bg-amber-400/10" : ""
               }`}>{sl.fitToArea}</button>
           )}
           {extendedAreaMm && fitExtendedFloor > 1.001 && (
             <button onClick={() => onScaleChange(uniformScale(fitExtendedFloor, AXES_2D))}
-              className={`px-2 py-1 rounded text-[10px] border border-purple-400/30 text-purple-300 hover:bg-purple-400/10 transition-colors ${
+              className={`px-2 py-1 rounded text-xs border border-purple-400/30 text-purple-300 hover:bg-purple-400/10 transition-colors ${
                 uni != null && Math.abs(uni - fitExtendedFloor) < 0.005 ? "bg-purple-400/10" : ""
               }`}>{sl.fitToExt}</button>
           )}

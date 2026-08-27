@@ -249,13 +249,19 @@ console.log("\n6. Pozycje do znizki niosa dzial, a nie sam tytul\n");
   else zle("pozycja oferty udaje towar z polki");
 }
 
-console.log("\n7. Strona oferty jest wpieta we wszystkie trzy listy tras\n");
+console.log("\n7. Strona oferty jest na jedynej liscie tras\n");
 {
   const czytaj = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
+  // Do 27 sierpnia 2026 lista tras stala w trzech miejscach naraz i ten test
+  // pilnowal, zeby oferta byla w kazdym z nich. Od tamtej pory istnieje jedna
+  // lista, `src/routes.js`, z ktorej czytaja i przegladarka, i prerender, i
+  // mapa witryny. Sprawdzamy wiec ja, a takze to, ze pozostale dwa wejscia
+  // naprawde z niej korzystaja, zamiast trzymac wlasna kopie.
   const listy = [
-    ["src/main.jsx", /path="\/oferta\/"/],
-    ["src/entry-server.jsx", /path="\/oferta\/"/],
-    ["scripts/prerender.mjs", /"\/oferta"/],
+    ["src/routes.js", /sciezka: "oferta\/"/],
+    ["src/main.jsx", /from "\.\/routes\.js"/],
+    ["src/entry-server.jsx", /from "\.\/routes\.js"/],
+    ["scripts/prerender.mjs", /routes\.js"\)/],
   ];
   for (const [plik, wzor] of listy) {
     if (wzor.test(czytaj(`../${plik}`))) ok(`${plik} zna trase oferty`);

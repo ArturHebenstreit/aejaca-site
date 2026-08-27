@@ -17,6 +17,7 @@
 //
 //   node scripts/build-hero-images.mjs
 //
+// Zrodla leza w `assets-zrodla/hero/`, poza katalogiem publikowanym.
 // Wyniki ida do `public/img/hero/` i sa w repozytorium, bo build na
 // Cloudflare nie ma sharpa i nie ma ich jak wygenerowac.
 
@@ -26,7 +27,11 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const ZRODLO = join(ROOT, "public");
+// Oryginaly leza POZA `public`, wiec nie ida na serwer. Wazyly razem 2,2 MB
+// i nikt ich nie ogladal: strona pokazuje warianty z `public/img/hero`, a
+// zapasowy `src` wskazuje wariant sredni. Sa tu wylacznie po to, zeby dalo sie
+// warianty przeliczyc na nowo.
+const ZRODLO = join(ROOT, "assets-zrodla", "hero");
 const CEL = join(ROOT, "public", "img", "hero");
 
 // Szerokosci dobrane do tego, jak obraz jest naprawde pokazywany, a nie do

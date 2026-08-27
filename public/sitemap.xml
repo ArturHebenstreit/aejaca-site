@@ -1,23 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Plik generowany przez scripts/build-sitemap.mjs. Nie poprawiaj go recznie:
+  najblizszy build nadpisze poprawke bez slowa. Zrodlem sa src/routes.js oraz
+  katalogi bloga, slownika, produktow i uslug.
+-->
 <urlset
   xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml"
   xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
-  <!-- Home -->
   <url>
     <loc>https://www.aejaca.com/</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.00</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/" />
     <image:image>
-      <image:loc>https://www.aejaca.com/hero-jewelry.webp</image:loc>
+      <image:loc>https://www.aejaca.com/img/hero/hero-jewelry-1536.webp</image:loc>
       <image:title>AEJaCA Jewelry - handcrafted silver and gold jewelry with natural gemstones</image:title>
     </image:image>
     <image:image>
-      <image:loc>https://www.aejaca.com/hero-studio.webp</image:loc>
+      <image:loc>https://www.aejaca.com/img/hero/hero-studio-1536.webp</image:loc>
       <image:title>AEJaCA sTuDiO - 3D printing, laser engraving, resin casting</image:title>
     </image:image>
     <image:image>
@@ -26,55 +33,361 @@
     </image:image>
   </url>
 
-  <!-- Jewelry -->
   <url>
     <loc>https://www.aejaca.com/jewelry/</loc>
     <lastmod>2026-08-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/jewelry/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/jewelry/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/jewelry/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/jewelry/" />
     <image:image>
-      <image:loc>https://www.aejaca.com/hero-jewelry.webp</image:loc>
+      <image:loc>https://www.aejaca.com/img/hero/hero-jewelry-1536.webp</image:loc>
       <image:title>AEJaCA Jewelry - handmade silver rings, earrings and gemstone pieces</image:title>
       <image:caption>Handcrafted silver 925 and gold 14k/18k jewelry with natural gemstones</image:caption>
     </image:image>
   </url>
 
-  <!-- Studio -->
   <url>
     <loc>https://www.aejaca.com/studio/</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/studio/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/studio/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/studio/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/studio/" />
     <image:image>
-      <image:loc>https://www.aejaca.com/hero-studio.webp</image:loc>
+      <image:loc>https://www.aejaca.com/img/hero/hero-studio-1536.webp</image:loc>
       <image:title>AEJaCA sTuDiO - 3D printing, laser engraving and custom fabrication</image:title>
       <image:caption>Multi-material 3D printing, CO2/Fiber laser engraving, UV and 2K resin casting</image:caption>
     </image:image>
   </url>
+
   <url>
-    <loc>https://www.aejaca.com/druk-3d-piaseczno/</loc>
-    <lastmod>2026-07-29</lastmod>
-    <changefreq>monthly</changefreq>
+    <loc>https://www.aejaca.com/blog/</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.80</priority>
-  </url>
-  <url>
-    <loc>https://www.aejaca.com/druk-3d-warszawa/</loc>
-    <lastmod>2026-07-29</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/" />
   </url>
 
-  <!-- B2B -->
+  <url>
+    <loc>https://www.aejaca.com/contact/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/contact/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/contact/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/contact/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/contact/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/about/</loc>
+    <lastmod>2026-04-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/about/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/about/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/about/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/about/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/warranty/</loc>
+    <lastmod>2026-04-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/warranty/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/warranty/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/warranty/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/warranty/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/returns/</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/returns/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/returns/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/returns/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/returns/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/terms/</loc>
+    <lastmod>2026-08-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/terms/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/terms/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/terms/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/terms/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/shop/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/shop/jewelry/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/jewelry/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/jewelry/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/jewelry/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/jewelry/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/shop/studio/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/studio/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/studio/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/studio/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/studio/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/shipping/</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shipping/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shipping/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shipping/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shipping/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/payments/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/payments/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/payments/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/payments/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/payments/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/toolsjewelry/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolsjewelry/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolsjewelry/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolsjewelry/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/toolsjewelry/alloy-composition/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolsjewelry/alloy-composition/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolsjewelry/alloy-composition/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolsjewelry/alloy-composition/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/alloy-composition/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/toolsjewelry/metal-pricing/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolsjewelry/metal-pricing/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolsjewelry/metal-pricing/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolsjewelry/metal-pricing/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/metal-pricing/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/toolsjewelry/ring-size/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolsjewelry/ring-size/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolsjewelry/ring-size/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolsjewelry/ring-size/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/ring-size/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/toolsjewelry/ring-sizer/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolsjewelry/ring-sizer/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolsjewelry/ring-sizer/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolsjewelry/ring-sizer/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/ring-sizer/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/toolstudio/printability/</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolstudio/printability/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolstudio/printability/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolstudio/printability/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/printability/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/toolstudio/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolstudio/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolstudio/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolstudio/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/toolstudio/print-settings/</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolstudio/print-settings/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolstudio/print-settings/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolstudio/print-settings/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/print-settings/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/toolstudio/resin-settings/</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolstudio/resin-settings/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolstudio/resin-settings/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolstudio/resin-settings/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/resin-settings/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/toolstudio/laser-parameters/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolstudio/laser-parameters/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolstudio/laser-parameters/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolstudio/laser-parameters/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/laser-parameters/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/toolstudio/shrinkage/</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolstudio/shrinkage/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolstudio/shrinkage/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolstudio/shrinkage/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/shrinkage/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/toolsjewelry/ring-blank/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolsjewelry/ring-blank/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolsjewelry/ring-blank/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolsjewelry/ring-blank/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/ring-blank/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/privacy/</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.30</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/privacy/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/privacy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/privacy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/privacy/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/reviews/</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.40</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/reviews/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/reviews/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/reviews/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/reviews/" />
+  </url>
+
   <url>
     <loc>https://www.aejaca.com/b2b/</loc>
     <lastmod>2026-08-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/b2b/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/b2b/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/b2b/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/b2b/" />
     <image:image>
       <image:loc>https://www.aejaca.com/img/b2b/hero.webp</image:loc>
@@ -82,123 +395,39 @@
     </image:image>
   </url>
 
-  <!-- Contact -->
   <url>
-    <loc>https://www.aejaca.com/contact/</loc>
-    <lastmod>2026-04-26</lastmod>
+    <loc>https://www.aejaca.com/druk-3d-piaseczno/</loc>
+    <lastmod>2026-07-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.80</priority>
 
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/contact/" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/druk-3d-piaseczno/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/druk-3d-piaseczno/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/druk-3d-piaseczno/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/druk-3d-piaseczno/" />
   </url>
 
-  <!-- Glossary -->
   <url>
-    <loc>https://www.aejaca.com/glossary/</loc>
-    <lastmod>2026-08-04</lastmod>
+    <loc>https://www.aejaca.com/druk-3d-warszawa/</loc>
+    <lastmod>2026-07-29</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.70</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/" />
-  </url>
-
-  <!-- About -->
-  <url>
-    <loc>https://www.aejaca.com/about/</loc>
-    <lastmod>2026-04-24</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.70</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/about/" />
-  </url>
-
-  <!-- Warranty -->
-  <url>
-    <loc>https://www.aejaca.com/warranty/</loc>
-    <lastmod>2026-04-24</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/warranty/" />
-  </url>
-
-  <!-- Order wizard, instant quote and payment -->
-  <url>
-    <loc>https://www.aejaca.com/order/</loc>
-    <lastmod>2026-08-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.90</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/order/" />
-  </url>
-
-  <!-- Terms of service and sale -->
-  <url>
-    <loc>https://www.aejaca.com/terms/</loc>
-    <lastmod>2026-08-19</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/terms/" />
-  </url>
-
-  <!-- Returns -->
-  <url>
-    <loc>https://www.aejaca.com/returns/</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/returns/" />
-  </url>
-
-  <!-- Shipping -->
-  <url>
-    <loc>https://www.aejaca.com/shipping/</loc>
-    <lastmod>2026-08-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shipping/" />
-  </url>
-
-  <!-- Zaplata za oferte -->
-  <url>
-    <loc>https://www.aejaca.com/oferta/</loc>
-    <lastmod>2026-08-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.60</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/oferta/" />
-  </url>
-
-  <!-- Proces platnosci -->
-  <url>
-    <loc>https://www.aejaca.com/payments/</loc>
-    <lastmod>2026-08-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.60</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/payments/" />
-  </url>
-
-  <!-- Blog Index -->
-  <url>
-    <loc>https://www.aejaca.com/blog/</loc>
-    <lastmod>2026-08-04</lastmod>
-    <changefreq>weekly</changefreq>
     <priority>0.80</priority>
 
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/druk-3d-warszawa/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/druk-3d-warszawa/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/druk-3d-warszawa/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/druk-3d-warszawa/" />
   </url>
 
-  <!-- Blog: Pierścionek zaręczynowy na zamówienie -->
   <url>
     <loc>https://www.aejaca.com/blog/pierscionek-zareczynowy-na-zamowienie/</loc>
     <lastmod>2026-08-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/pierscionek-zareczynowy-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/pierscionek-zareczynowy-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/pierscionek-zareczynowy-na-zamowienie/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/pierscionek-zareczynowy-na-zamowienie/" />
     <image:image>
       <image:loc>https://www.aejaca.com/img/blog/pierscionek-zareczynowy.webp</image:loc>
@@ -206,13 +435,15 @@
     </image:image>
   </url>
 
-  <!-- Blog: Druk 3D krok po kroku -->
   <url>
     <loc>https://www.aejaca.com/blog/druk-3d-krok-po-kroku/</loc>
     <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/druk-3d-krok-po-kroku/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/druk-3d-krok-po-kroku/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/druk-3d-krok-po-kroku/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/druk-3d-krok-po-kroku/" />
     <image:image>
       <image:loc>https://www.aejaca.com/img/blog/druk-3d-krok-po-kroku.webp</image:loc>
@@ -220,13 +451,15 @@
     </image:image>
   </url>
 
-  <!-- Blog: Grawerowanie laserowe -->
   <url>
     <loc>https://www.aejaca.com/blog/grawerowanie-laserowe-przewodnik/</loc>
     <lastmod>2026-04-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/grawerowanie-laserowe-przewodnik/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/grawerowanie-laserowe-przewodnik/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/grawerowanie-laserowe-przewodnik/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/grawerowanie-laserowe-przewodnik/" />
     <image:image>
       <image:loc>https://www.aejaca.com/img/blog/grawerowanie-laserowe.webp</image:loc>
@@ -234,13 +467,15 @@
     </image:image>
   </url>
 
-  <!-- Blog: Jak dbać o biżuterię -->
   <url>
     <loc>https://www.aejaca.com/blog/jak-dbac-o-bizuterie/</loc>
     <lastmod>2026-04-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/jak-dbac-o-bizuterie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/jak-dbac-o-bizuterie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/jak-dbac-o-bizuterie/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/jak-dbac-o-bizuterie/" />
     <image:image>
       <image:loc>https://www.aejaca.com/img/blog/jak-dbac-o-bizuterie.webp</image:loc>
@@ -248,13 +483,15 @@
     </image:image>
   </url>
 
-  <!-- Blog: Odlewy żywiczne poradnik -->
   <url>
     <loc>https://www.aejaca.com/blog/odlewy-zywiczne-poradnik/</loc>
     <lastmod>2026-04-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/odlewy-zywiczne-poradnik/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/odlewy-zywiczne-poradnik/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/odlewy-zywiczne-poradnik/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/odlewy-zywiczne-poradnik/" />
     <image:image>
       <image:loc>https://www.aejaca.com/img/blog/odlewy-zywiczne-poradnik.webp</image:loc>
@@ -262,13 +499,15 @@
     </image:image>
   </url>
 
-  <!-- Blog: Prezenty personalizowane -->
   <url>
     <loc>https://www.aejaca.com/blog/prezenty-personalizowane/</loc>
     <lastmod>2026-04-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/prezenty-personalizowane/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/prezenty-personalizowane/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/prezenty-personalizowane/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/prezenty-personalizowane/" />
     <image:image>
       <image:loc>https://www.aejaca.com/img/blog/prezenty-personalizowane.webp</image:loc>
@@ -276,13 +515,15 @@
     </image:image>
   </url>
 
-  <!-- Blog: Jak przygotować plik STL -->
   <url>
     <loc>https://www.aejaca.com/blog/jak-przygotowac-plik-stl/</loc>
     <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/jak-przygotowac-plik-stl/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/jak-przygotowac-plik-stl/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/jak-przygotowac-plik-stl/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/jak-przygotowac-plik-stl/" />
     <image:image>
       <image:loc>https://www.aejaca.com/img/blog/jak-przygotowac-plik-stl.webp</image:loc>
@@ -290,13 +531,15 @@
     </image:image>
   </url>
 
-  <!-- Blog: Srebro vs złoto -->
   <url>
     <loc>https://www.aejaca.com/blog/srebro-vs-zloto/</loc>
     <lastmod>2026-08-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/srebro-vs-zloto/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/srebro-vs-zloto/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/srebro-vs-zloto/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/srebro-vs-zloto/" />
     <image:image>
       <image:loc>https://www.aejaca.com/img/blog/srebro-vs-zloto.webp</image:loc>
@@ -304,13 +547,15 @@
     </image:image>
   </url>
 
-  <!-- Blog: Obrączki ślubne -->
   <url>
     <loc>https://www.aejaca.com/blog/obraczki-slubne/</loc>
     <lastmod>2026-08-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/obraczki-slubne/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/obraczki-slubne/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/obraczki-slubne/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/obraczki-slubne/" />
     <image:image>
       <image:loc>https://www.aejaca.com/img/blog/obraczki-slubne.webp</image:loc>
@@ -318,13 +563,15 @@
     </image:image>
   </url>
 
-  <!-- Blog: Materiały laser cutting -->
   <url>
     <loc>https://www.aejaca.com/blog/materialy-laser-cutting/</loc>
     <lastmod>2026-04-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/materialy-laser-cutting/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/materialy-laser-cutting/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/materialy-laser-cutting/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/materialy-laser-cutting/" />
     <image:image>
       <image:loc>https://www.aejaca.com/img/blog/materialy-laser-cutting.webp</image:loc>
@@ -332,13 +579,15 @@
     </image:image>
   </url>
 
-  <!-- Blog: Biżuteria jako inwestycja -->
   <url>
     <loc>https://www.aejaca.com/blog/bizuteria-inwestycja/</loc>
     <lastmod>2026-04-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/bizuteria-inwestycja/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/bizuteria-inwestycja/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/bizuteria-inwestycja/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/bizuteria-inwestycja/" />
     <image:image>
       <image:loc>https://www.aejaca.com/img/blog/bizuteria-inwestycja.webp</image:loc>
@@ -346,13 +595,15 @@
     </image:image>
   </url>
 
-  <!-- Blog: AI w projektowaniu -->
   <url>
     <loc>https://www.aejaca.com/blog/projektowanie-ai/</loc>
     <lastmod>2026-04-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/projektowanie-ai/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/projektowanie-ai/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/projektowanie-ai/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/projektowanie-ai/" />
     <image:image>
       <image:loc>https://www.aejaca.com/img/blog/projektowanie-ai.webp</image:loc>
@@ -360,13 +611,15 @@
     </image:image>
   </url>
 
-  <!-- Blog: Warsztat od kuchni -->
   <url>
     <loc>https://www.aejaca.com/blog/warsztat-od-kuchni/</loc>
     <lastmod>2026-04-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/warsztat-od-kuchni/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/warsztat-od-kuchni/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/warsztat-od-kuchni/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/warsztat-od-kuchni/" />
     <image:image>
       <image:loc>https://www.aejaca.com/img/blog/warsztat-od-kuchni.webp</image:loc>
@@ -374,27 +627,15 @@
     </image:image>
   </url>
 
-  <!-- Blog: Ile kosztuje biżuteria na zamówienie -->
-  <url>
-    <loc>https://www.aejaca.com/blog/ile-kosztuje-bizuteria-na-zamowienie/</loc>
-    <lastmod>2026-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.70</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/ile-kosztuje-bizuteria-na-zamowienie/" />
-    <image:image>
-      <image:loc>https://www.aejaca.com/img/blog/ile-kosztuje-bizuteria.webp</image:loc>
-      <image:title>Custom jewelry price guide - rings, necklaces, bracelets, earrings from AEJaCA</image:title>
-    </image:image>
-  </url>
-
-  <!-- Blog: Modelowanie 3D na zamówienie -->
   <url>
     <loc>https://www.aejaca.com/blog/modelowanie-3d-na-zamowienie/</loc>
     <lastmod>2026-07-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/modelowanie-3d-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/modelowanie-3d-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/modelowanie-3d-na-zamowienie/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/modelowanie-3d-na-zamowienie/" />
     <image:image>
       <image:loc>https://www.aejaca.com/img/blog/modelowanie-3d-na-zamowienie.webp</image:loc>
@@ -402,13 +643,31 @@
     </image:image>
   </url>
 
-  <!-- Blog: Rodzaje splotów łańcuszków -->
+  <url>
+    <loc>https://www.aejaca.com/blog/ile-kosztuje-bizuteria-na-zamowienie/</loc>
+    <lastmod>2026-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/ile-kosztuje-bizuteria-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/ile-kosztuje-bizuteria-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/ile-kosztuje-bizuteria-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/ile-kosztuje-bizuteria-na-zamowienie/" />
+    <image:image>
+      <image:loc>https://www.aejaca.com/img/blog/ile-kosztuje-bizuteria.webp</image:loc>
+      <image:title>Custom jewelry price guide - rings, necklaces, bracelets, earrings from AEJaCA</image:title>
+    </image:image>
+  </url>
+
   <url>
     <loc>https://www.aejaca.com/blog/rodzaje-splotow-lancuszkow/</loc>
     <lastmod>2026-06-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/rodzaje-splotow-lancuszkow/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/rodzaje-splotow-lancuszkow/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/rodzaje-splotow-lancuszkow/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/rodzaje-splotow-lancuszkow/" />
     <image:image>
       <image:loc>https://www.aejaca.com/img/blog/rodzaje-splotow-lancuszkow.webp</image:loc>
@@ -416,375 +675,15 @@
     </image:image>
   </url>
 
-  <!-- Glossary: srebro-925 -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/srebro-925/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/srebro-925/" />
-  </url>
-
-  <!-- Glossary: zloto-probowane -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/zloto-probowane/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/zloto-probowane/" />
-  </url>
-
-  <!-- Glossary: pierscionek-zareczynowy -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/pierscionek-zareczynowy/</loc>
-    <lastmod>2026-07-29</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/pierscionek-zareczynowy/" />
-  </url>
-
-  <!-- Glossary: obraczki-slubne -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/obraczki-slubne/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/obraczki-slubne/" />
-  </url>
-
-  <!-- Glossary: kamien-szlachetny -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/kamien-szlachetny/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/kamien-szlachetny/" />
-  </url>
-
-  <!-- Glossary: rodowanie -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/rodowanie/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/rodowanie/" />
-  </url>
-
-  <!-- Glossary: moissanit -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/moissanit/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/moissanit/" />
-  </url>
-
-  <!-- Glossary: rozmiar-pierscionka -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/rozmiar-pierscionka/</loc>
-    <lastmod>2026-08-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/rozmiar-pierscionka/" />
-  </url>
-
-  <!-- Glossary: personalizowany-grawer -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/personalizowany-grawer/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/personalizowany-grawer/" />
-  </url>
-
-  <!-- Glossary: bizuteria-inwestycyjna -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/bizuteria-inwestycyjna/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/bizuteria-inwestycyjna/" />
-  </url>
-
-  <!-- Glossary: druk-3d-fdm -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/druk-3d-fdm/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/druk-3d-fdm/" />
-  </url>
-
-  <!-- Glossary: plik-stl -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/plik-stl/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/plik-stl/" />
-  </url>
-
-  <!-- Glossary: pla -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/pla/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/pla/" />
-  </url>
-
-  <!-- Glossary: petg -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/petg/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/petg/" />
-  </url>
-
-  <!-- Glossary: zywica-uv -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/zywica-uv/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/zywica-uv/" />
-  </url>
-
-  <!-- Glossary: laser-co2 -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/laser-co2/</loc>
-    <lastmod>2026-07-29</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/laser-co2/" />
-  </url>
-
-  <!-- Glossary: laser-fiber -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/laser-fiber/</loc>
-    <lastmod>2026-07-29</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/laser-fiber/" />
-  </url>
-
-  <!-- Glossary: plik-svg -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/plik-svg/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/plik-svg/" />
-  </url>
-
-  <!-- Glossary: odlew-zywiczny -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/odlew-zywiczny/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/odlew-zywiczny/" />
-  </url>
-
-  <!-- Glossary: prototypowanie -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/prototypowanie/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/prototypowanie/" />
-  </url>
-
-  <!-- Glossary: cad -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/cad/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/cad/" />
-  </url>
-
-  <!-- Glossary: modelowanie-3d -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/modelowanie-3d/</loc>
-    <lastmod>2026-06-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/modelowanie-3d/" />
-  </url>
-
-  <!-- Glossary: personalizacja -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/personalizacja/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/personalizacja/" />
-  </url>
-
-  <!-- Glossary: projektowanie-ai -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/projektowanie-ai/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/projektowanie-ai/" />
-  </url>
-
-  <!-- Glossary: wycena-online -->
-  <url>
-    <loc>https://www.aejaca.com/glossary/wycena-online/</loc>
-    <lastmod>2026-04-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.50</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/wycena-online/" />
-  </url>
-
-  <!-- Reviews -->
-  <url>
-    <loc>https://www.aejaca.com/reviews/</loc>
-    <lastmod>2026-08-18</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.40</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/reviews/" />
-  </url>
-
-  <!-- Jewelry Tools -->
-  <url>
-    <loc>https://www.aejaca.com/toolsjewelry/</loc>
-    <lastmod>2026-08-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.60</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/" />
-  </url>
-  <url>
-    <loc>https://www.aejaca.com/toolsjewelry/ring-size/</loc>
-    <lastmod>2026-08-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.60</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/ring-size/" />
-  </url>
-  <url>
-    <loc>https://www.aejaca.com/toolsjewelry/ring-sizer/</loc>
-    <lastmod>2026-08-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.60</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/ring-sizer/" />
-  </url>
-  <url>
-    <loc>https://www.aejaca.com/toolsjewelry/alloy-composition/</loc>
-    <lastmod>2026-07-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.60</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/alloy-composition/" />
-  </url>
-  <url>
-    <loc>https://www.aejaca.com/toolsjewelry/metal-pricing/</loc>
-    <lastmod>2026-08-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.60</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/metal-pricing/" />
-  </url>
-  <url>
-    <loc>https://www.aejaca.com/toolsjewelry/ring-blank/</loc>
-    <lastmod>2026-07-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.60</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/ring-blank/" />
-  </url>
-
-  <!-- Studio Tools -->
-  <url>
-    <loc>https://www.aejaca.com/toolstudio/</loc>
-    <lastmod>2026-08-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.60</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/" />
-  </url>
-  <url>
-    <loc>https://www.aejaca.com/toolstudio/printability/</loc>
-    <lastmod>2026-08-18</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.70</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/printability/" />
-  </url>
-  <url>
-    <loc>https://www.aejaca.com/toolstudio/print-settings/</loc>
-    <lastmod>2026-07-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.60</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/print-settings/" />
-  </url>
-  <url>
-    <loc>https://www.aejaca.com/toolstudio/resin-settings/</loc>
-    <lastmod>2026-07-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.60</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/resin-settings/" />
-  </url>
-  <url>
-    <loc>https://www.aejaca.com/toolstudio/laser-parameters/</loc>
-    <lastmod>2026-07-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.60</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/laser-parameters/" />
-  </url>
-
-  <!-- Privacy -->
-  <url>
-    <loc>https://www.aejaca.com/privacy/</loc>
-    <lastmod>2026-08-03</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.30</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/privacy/" />
-  </url>
-
-  <!-- Blog: lost-resin-krok-po-kroku -->
   <url>
     <loc>https://www.aejaca.com/blog/lost-resin-krok-po-kroku/</loc>
     <lastmod>2026-07-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/lost-resin-krok-po-kroku/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/lost-resin-krok-po-kroku/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/lost-resin-krok-po-kroku/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/lost-resin-krok-po-kroku/" />
     <image:image>
       <image:loc>https://www.aejaca.com/img/blog/lost-resin-krok-po-kroku.webp</image:loc>
@@ -792,13 +691,15 @@
     </image:image>
   </url>
 
-  <!-- Blog: druk-miniatur-figurek-16k -->
   <url>
     <loc>https://www.aejaca.com/blog/druk-miniatur-figurek-16k/</loc>
     <lastmod>2026-07-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/druk-miniatur-figurek-16k/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/druk-miniatur-figurek-16k/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/druk-miniatur-figurek-16k/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/druk-miniatur-figurek-16k/" />
     <image:image>
       <image:loc>https://www.aejaca.com/img/blog/druk-miniatur-figurek-16k.webp</image:loc>
@@ -806,228 +707,2752 @@
     </image:image>
   </url>
 
-  <!-- Glossary: lost-resin -->
+  <url>
+    <loc>https://www.aejaca.com/glossary/srebro-925/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/srebro-925/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/srebro-925/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/srebro-925/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/srebro-925/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/zloto-probowane/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/zloto-probowane/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/zloto-probowane/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/zloto-probowane/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/zloto-probowane/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/pierscionek-zareczynowy/</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/pierscionek-zareczynowy/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/pierscionek-zareczynowy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/pierscionek-zareczynowy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/pierscionek-zareczynowy/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/obraczki-slubne/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/obraczki-slubne/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/obraczki-slubne/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/obraczki-slubne/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/obraczki-slubne/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/kamien-szlachetny/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/kamien-szlachetny/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/kamien-szlachetny/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/kamien-szlachetny/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/kamien-szlachetny/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/rodowanie/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/rodowanie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/rodowanie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/rodowanie/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/rodowanie/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/moissanit/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/moissanit/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/moissanit/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/moissanit/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/moissanit/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/rozmiar-pierscionka/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/rozmiar-pierscionka/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/rozmiar-pierscionka/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/rozmiar-pierscionka/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/rozmiar-pierscionka/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/personalizowany-grawer/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/personalizowany-grawer/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/personalizowany-grawer/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/personalizowany-grawer/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/personalizowany-grawer/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/bizuteria-inwestycyjna/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/bizuteria-inwestycyjna/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/bizuteria-inwestycyjna/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/bizuteria-inwestycyjna/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/bizuteria-inwestycyjna/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/druk-3d-fdm/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/druk-3d-fdm/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/druk-3d-fdm/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/druk-3d-fdm/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/druk-3d-fdm/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/plik-stl/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/plik-stl/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/plik-stl/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/plik-stl/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/plik-stl/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/pla/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/pla/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/pla/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/pla/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/pla/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/petg/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/petg/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/petg/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/petg/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/petg/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/zywica-uv/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/zywica-uv/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/zywica-uv/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/zywica-uv/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/zywica-uv/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/laser-co2/</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/laser-co2/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/laser-co2/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/laser-co2/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/laser-co2/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/laser-fiber/</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/laser-fiber/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/laser-fiber/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/laser-fiber/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/laser-fiber/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/plik-svg/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/plik-svg/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/plik-svg/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/plik-svg/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/plik-svg/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/odlew-zywiczny/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/odlew-zywiczny/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/odlew-zywiczny/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/odlew-zywiczny/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/odlew-zywiczny/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/prototypowanie/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/prototypowanie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/prototypowanie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/prototypowanie/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/prototypowanie/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/cad/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/cad/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/cad/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/cad/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/cad/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/modelowanie-3d/</loc>
+    <lastmod>2026-06-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/modelowanie-3d/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/modelowanie-3d/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/modelowanie-3d/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/modelowanie-3d/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/personalizacja/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/personalizacja/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/personalizacja/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/personalizacja/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/personalizacja/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/projektowanie-ai/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/projektowanie-ai/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/projektowanie-ai/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/projektowanie-ai/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/projektowanie-ai/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/glossary/wycena-online/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/wycena-online/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/wycena-online/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/wycena-online/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/wycena-online/" />
+  </url>
+
   <url>
     <loc>https://www.aejaca.com/glossary/lost-resin/</loc>
     <lastmod>2026-07-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.50</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/lost-resin/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/lost-resin/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/lost-resin/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/lost-resin/" />
   </url>
 
-  <!-- Glossary: zywica-castable -->
   <url>
     <loc>https://www.aejaca.com/glossary/zywica-castable/</loc>
     <lastmod>2026-07-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.50</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/zywica-castable/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/zywica-castable/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/zywica-castable/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/zywica-castable/" />
   </url>
 
-  <!-- Glossary: druk-msla -->
   <url>
     <loc>https://www.aejaca.com/glossary/druk-msla/</loc>
     <lastmod>2026-07-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.50</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/druk-msla/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/druk-msla/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/druk-msla/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/druk-msla/" />
   </url>
 
-  <!-- Glossary: kompensacja-skurczu -->
   <url>
     <loc>https://www.aejaca.com/glossary/kompensacja-skurczu/</loc>
     <lastmod>2026-07-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.50</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/kompensacja-skurczu/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/kompensacja-skurczu/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/kompensacja-skurczu/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/kompensacja-skurczu/" />
   </url>
 
-  <!-- Tool: shrinkage compensation calculator -->
-  <url>
-    <loc>https://www.aejaca.com/toolstudio/shrinkage/</loc>
-    <lastmod>2026-08-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.60</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/shrinkage/" />
-  </url>
-
-  <!-- SHOP:BEGIN, generowane przez scripts/sync-sitemap-shop.mjs -->
-
-  <!-- Shop: products and services hub -->
-  <url>
-    <loc>https://www.aejaca.com/shop/</loc>
-    <lastmod>2026-08-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.90</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/" />
-  </url>
-
-  <!-- Shop category: jewelry -->
-  <url>
-    <loc>https://www.aejaca.com/shop/jewelry/</loc>
-    <lastmod>2026-08-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/jewelry/" />
-  </url>
-
-  <!-- Shop category: studio -->
-  <url>
-    <loc>https://www.aejaca.com/shop/studio/</loc>
-    <lastmod>2026-08-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/studio/" />
-  </url>
-
-  <!-- Product: pierscionek-granat-zloto-585 -->
   <url>
     <loc>https://www.aejaca.com/shop/pierscionek-granat-zloto-585/</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/pierscionek-granat-zloto-585/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/pierscionek-granat-zloto-585/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/pierscionek-granat-zloto-585/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/pierscionek-granat-zloto-585/" />
   </url>
 
-  <!-- Service: print_fdm -->
   <url>
     <loc>https://www.aejaca.com/shop/service/print_fdm/</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/print_fdm/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/print_fdm/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/print_fdm/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/print_fdm/" />
   </url>
 
-  <!-- Service: print_msla -->
   <url>
     <loc>https://www.aejaca.com/shop/service/print_msla/</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/print_msla/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/print_msla/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/print_msla/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/print_msla/" />
   </url>
 
-  <!-- Service: laser_engrave -->
   <url>
     <loc>https://www.aejaca.com/shop/service/laser_engrave/</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/laser_engrave/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/laser_engrave/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/laser_engrave/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/laser_engrave/" />
   </url>
 
-  <!-- Service: laser_cut -->
   <url>
     <loc>https://www.aejaca.com/shop/service/laser_cut/</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/laser_cut/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/laser_cut/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/laser_cut/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/laser_cut/" />
   </url>
 
-  <!-- Service: laser_fiber -->
   <url>
     <loc>https://www.aejaca.com/shop/service/laser_fiber/</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/laser_fiber/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/laser_fiber/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/laser_fiber/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/laser_fiber/" />
   </url>
 
-  <!-- Service: epoxy -->
   <url>
     <loc>https://www.aejaca.com/shop/service/epoxy/</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/epoxy/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/epoxy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/epoxy/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/epoxy/" />
   </url>
 
-  <!-- Service: jewelry_renovation -->
   <url>
     <loc>https://www.aejaca.com/shop/service/jewelry_renovation/</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/jewelry_renovation/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/jewelry_renovation/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/jewelry_renovation/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_renovation/" />
   </url>
 
-  <!-- Service: jewelry_repair -->
   <url>
     <loc>https://www.aejaca.com/shop/service/jewelry_repair/</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/jewelry_repair/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/jewelry_repair/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/jewelry_repair/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_repair/" />
   </url>
 
-  <!-- Service: precious_metal_casting -->
   <url>
     <loc>https://www.aejaca.com/shop/service/precious_metal_casting/</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/precious_metal_casting/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/precious_metal_casting/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/precious_metal_casting/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/precious_metal_casting/" />
   </url>
 
-  <!-- Service: jewelry_plain -->
   <url>
     <loc>https://www.aejaca.com/shop/service/jewelry_plain/</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/jewelry_plain/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/jewelry_plain/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/jewelry_plain/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_plain/" />
   </url>
 
-  <!-- Service: jewelry_stones -->
   <url>
     <loc>https://www.aejaca.com/shop/service/jewelry_stones/</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.60</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/jewelry_stones/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/jewelry_stones/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/jewelry_stones/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_stones/" />
   </url>
 
-  <!-- Service: jewelry_chain_custom -->
   <url>
     <loc>https://www.aejaca.com/shop/service/jewelry_chain_custom/</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.60</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/jewelry_chain_custom/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/jewelry_chain_custom/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/jewelry_chain_custom/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_chain_custom/" />
   </url>
 
-  <!-- Service: cad_project -->
   <url>
     <loc>https://www.aejaca.com/shop/service/cad_project/</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
 
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/cad_project/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/cad_project/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/cad_project/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/cad_project/" />
   </url>
 
-  <!-- SHOP:END -->
+  <url>
+    <loc>https://www.aejaca.com/en/</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.00</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/jewelry/</loc>
+    <lastmod>2026-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/jewelry/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/jewelry/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/jewelry/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/jewelry/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/studio/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/studio/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/studio/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/studio/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/studio/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/contact/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/contact/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/contact/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/contact/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/contact/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/about/</loc>
+    <lastmod>2026-04-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/about/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/about/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/about/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/about/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/warranty/</loc>
+    <lastmod>2026-04-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/warranty/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/warranty/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/warranty/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/warranty/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/returns/</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/returns/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/returns/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/returns/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/returns/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/terms/</loc>
+    <lastmod>2026-08-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/terms/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/terms/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/terms/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/terms/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/shop/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/shop/jewelry/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/jewelry/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/jewelry/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/jewelry/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/jewelry/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/shop/studio/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/studio/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/studio/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/studio/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/studio/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/shipping/</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shipping/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shipping/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shipping/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shipping/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/payments/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/payments/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/payments/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/payments/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/payments/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/toolsjewelry/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolsjewelry/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolsjewelry/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolsjewelry/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/toolsjewelry/alloy-composition/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolsjewelry/alloy-composition/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolsjewelry/alloy-composition/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolsjewelry/alloy-composition/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/alloy-composition/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/toolsjewelry/metal-pricing/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolsjewelry/metal-pricing/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolsjewelry/metal-pricing/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolsjewelry/metal-pricing/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/metal-pricing/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/toolsjewelry/ring-size/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolsjewelry/ring-size/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolsjewelry/ring-size/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolsjewelry/ring-size/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/ring-size/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/toolsjewelry/ring-sizer/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolsjewelry/ring-sizer/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolsjewelry/ring-sizer/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolsjewelry/ring-sizer/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/ring-sizer/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/toolstudio/printability/</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolstudio/printability/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolstudio/printability/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolstudio/printability/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/printability/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/toolstudio/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolstudio/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolstudio/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolstudio/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/toolstudio/print-settings/</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolstudio/print-settings/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolstudio/print-settings/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolstudio/print-settings/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/print-settings/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/toolstudio/resin-settings/</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolstudio/resin-settings/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolstudio/resin-settings/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolstudio/resin-settings/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/resin-settings/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/toolstudio/laser-parameters/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolstudio/laser-parameters/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolstudio/laser-parameters/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolstudio/laser-parameters/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/laser-parameters/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/toolstudio/shrinkage/</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolstudio/shrinkage/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolstudio/shrinkage/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolstudio/shrinkage/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/shrinkage/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/toolsjewelry/ring-blank/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolsjewelry/ring-blank/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolsjewelry/ring-blank/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolsjewelry/ring-blank/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/ring-blank/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/privacy/</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.30</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/privacy/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/privacy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/privacy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/privacy/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/reviews/</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.40</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/reviews/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/reviews/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/reviews/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/reviews/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/b2b/</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/b2b/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/b2b/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/b2b/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/b2b/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/druk-3d-piaseczno/</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/druk-3d-piaseczno/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/druk-3d-piaseczno/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/druk-3d-piaseczno/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/druk-3d-piaseczno/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/druk-3d-warszawa/</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/druk-3d-warszawa/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/druk-3d-warszawa/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/druk-3d-warszawa/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/druk-3d-warszawa/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/pierscionek-zareczynowy-na-zamowienie/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/pierscionek-zareczynowy-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/pierscionek-zareczynowy-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/pierscionek-zareczynowy-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/pierscionek-zareczynowy-na-zamowienie/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/druk-3d-krok-po-kroku/</loc>
+    <lastmod>2026-08-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/druk-3d-krok-po-kroku/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/druk-3d-krok-po-kroku/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/druk-3d-krok-po-kroku/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/druk-3d-krok-po-kroku/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/grawerowanie-laserowe-przewodnik/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/grawerowanie-laserowe-przewodnik/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/grawerowanie-laserowe-przewodnik/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/grawerowanie-laserowe-przewodnik/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/grawerowanie-laserowe-przewodnik/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/jak-dbac-o-bizuterie/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/jak-dbac-o-bizuterie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/jak-dbac-o-bizuterie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/jak-dbac-o-bizuterie/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/jak-dbac-o-bizuterie/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/odlewy-zywiczne-poradnik/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/odlewy-zywiczne-poradnik/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/odlewy-zywiczne-poradnik/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/odlewy-zywiczne-poradnik/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/odlewy-zywiczne-poradnik/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/prezenty-personalizowane/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/prezenty-personalizowane/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/prezenty-personalizowane/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/prezenty-personalizowane/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/prezenty-personalizowane/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/jak-przygotowac-plik-stl/</loc>
+    <lastmod>2026-08-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/jak-przygotowac-plik-stl/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/jak-przygotowac-plik-stl/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/jak-przygotowac-plik-stl/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/jak-przygotowac-plik-stl/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/srebro-vs-zloto/</loc>
+    <lastmod>2026-08-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/srebro-vs-zloto/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/srebro-vs-zloto/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/srebro-vs-zloto/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/srebro-vs-zloto/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/obraczki-slubne/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/obraczki-slubne/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/obraczki-slubne/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/obraczki-slubne/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/obraczki-slubne/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/materialy-laser-cutting/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/materialy-laser-cutting/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/materialy-laser-cutting/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/materialy-laser-cutting/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/materialy-laser-cutting/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/bizuteria-inwestycja/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/bizuteria-inwestycja/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/bizuteria-inwestycja/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/bizuteria-inwestycja/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/bizuteria-inwestycja/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/projektowanie-ai/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/projektowanie-ai/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/projektowanie-ai/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/projektowanie-ai/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/projektowanie-ai/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/warsztat-od-kuchni/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/warsztat-od-kuchni/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/warsztat-od-kuchni/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/warsztat-od-kuchni/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/warsztat-od-kuchni/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/modelowanie-3d-na-zamowienie/</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/modelowanie-3d-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/modelowanie-3d-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/modelowanie-3d-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/modelowanie-3d-na-zamowienie/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/ile-kosztuje-bizuteria-na-zamowienie/</loc>
+    <lastmod>2026-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/ile-kosztuje-bizuteria-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/ile-kosztuje-bizuteria-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/ile-kosztuje-bizuteria-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/ile-kosztuje-bizuteria-na-zamowienie/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/rodzaje-splotow-lancuszkow/</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/rodzaje-splotow-lancuszkow/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/rodzaje-splotow-lancuszkow/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/rodzaje-splotow-lancuszkow/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/rodzaje-splotow-lancuszkow/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/lost-resin-krok-po-kroku/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/lost-resin-krok-po-kroku/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/lost-resin-krok-po-kroku/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/lost-resin-krok-po-kroku/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/lost-resin-krok-po-kroku/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/blog/druk-miniatur-figurek-16k/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/druk-miniatur-figurek-16k/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/druk-miniatur-figurek-16k/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/druk-miniatur-figurek-16k/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/druk-miniatur-figurek-16k/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/srebro-925/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/srebro-925/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/srebro-925/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/srebro-925/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/srebro-925/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/zloto-probowane/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/zloto-probowane/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/zloto-probowane/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/zloto-probowane/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/zloto-probowane/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/pierscionek-zareczynowy/</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/pierscionek-zareczynowy/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/pierscionek-zareczynowy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/pierscionek-zareczynowy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/pierscionek-zareczynowy/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/obraczki-slubne/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/obraczki-slubne/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/obraczki-slubne/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/obraczki-slubne/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/obraczki-slubne/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/kamien-szlachetny/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/kamien-szlachetny/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/kamien-szlachetny/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/kamien-szlachetny/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/kamien-szlachetny/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/rodowanie/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/rodowanie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/rodowanie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/rodowanie/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/rodowanie/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/moissanit/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/moissanit/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/moissanit/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/moissanit/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/moissanit/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/rozmiar-pierscionka/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/rozmiar-pierscionka/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/rozmiar-pierscionka/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/rozmiar-pierscionka/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/rozmiar-pierscionka/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/personalizowany-grawer/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/personalizowany-grawer/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/personalizowany-grawer/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/personalizowany-grawer/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/personalizowany-grawer/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/bizuteria-inwestycyjna/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/bizuteria-inwestycyjna/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/bizuteria-inwestycyjna/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/bizuteria-inwestycyjna/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/bizuteria-inwestycyjna/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/druk-3d-fdm/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/druk-3d-fdm/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/druk-3d-fdm/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/druk-3d-fdm/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/druk-3d-fdm/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/plik-stl/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/plik-stl/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/plik-stl/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/plik-stl/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/plik-stl/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/pla/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/pla/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/pla/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/pla/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/pla/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/petg/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/petg/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/petg/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/petg/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/petg/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/zywica-uv/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/zywica-uv/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/zywica-uv/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/zywica-uv/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/zywica-uv/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/laser-co2/</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/laser-co2/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/laser-co2/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/laser-co2/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/laser-co2/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/laser-fiber/</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/laser-fiber/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/laser-fiber/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/laser-fiber/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/laser-fiber/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/plik-svg/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/plik-svg/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/plik-svg/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/plik-svg/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/plik-svg/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/odlew-zywiczny/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/odlew-zywiczny/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/odlew-zywiczny/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/odlew-zywiczny/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/odlew-zywiczny/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/prototypowanie/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/prototypowanie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/prototypowanie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/prototypowanie/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/prototypowanie/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/cad/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/cad/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/cad/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/cad/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/cad/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/modelowanie-3d/</loc>
+    <lastmod>2026-06-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/modelowanie-3d/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/modelowanie-3d/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/modelowanie-3d/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/modelowanie-3d/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/personalizacja/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/personalizacja/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/personalizacja/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/personalizacja/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/personalizacja/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/projektowanie-ai/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/projektowanie-ai/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/projektowanie-ai/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/projektowanie-ai/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/projektowanie-ai/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/wycena-online/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/wycena-online/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/wycena-online/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/wycena-online/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/wycena-online/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/lost-resin/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/lost-resin/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/lost-resin/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/lost-resin/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/lost-resin/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/zywica-castable/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/zywica-castable/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/zywica-castable/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/zywica-castable/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/zywica-castable/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/druk-msla/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/druk-msla/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/druk-msla/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/druk-msla/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/druk-msla/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/glossary/kompensacja-skurczu/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/kompensacja-skurczu/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/kompensacja-skurczu/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/kompensacja-skurczu/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/kompensacja-skurczu/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/shop/pierscionek-granat-zloto-585/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/pierscionek-granat-zloto-585/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/pierscionek-granat-zloto-585/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/pierscionek-granat-zloto-585/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/pierscionek-granat-zloto-585/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/shop/service/print_fdm/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/print_fdm/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/print_fdm/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/print_fdm/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/print_fdm/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/shop/service/print_msla/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/print_msla/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/print_msla/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/print_msla/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/print_msla/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/shop/service/laser_engrave/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/laser_engrave/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/laser_engrave/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/laser_engrave/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/laser_engrave/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/shop/service/laser_cut/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/laser_cut/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/laser_cut/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/laser_cut/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/laser_cut/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/shop/service/laser_fiber/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/laser_fiber/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/laser_fiber/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/laser_fiber/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/laser_fiber/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/shop/service/epoxy/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/epoxy/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/epoxy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/epoxy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/epoxy/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/shop/service/jewelry_renovation/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/jewelry_renovation/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/jewelry_renovation/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/jewelry_renovation/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_renovation/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/shop/service/jewelry_repair/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/jewelry_repair/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/jewelry_repair/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/jewelry_repair/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_repair/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/shop/service/precious_metal_casting/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/precious_metal_casting/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/precious_metal_casting/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/precious_metal_casting/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/precious_metal_casting/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/shop/service/jewelry_plain/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/jewelry_plain/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/jewelry_plain/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/jewelry_plain/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_plain/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/shop/service/jewelry_stones/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/jewelry_stones/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/jewelry_stones/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/jewelry_stones/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_stones/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/shop/service/jewelry_chain_custom/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/jewelry_chain_custom/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/jewelry_chain_custom/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/jewelry_chain_custom/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_chain_custom/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/en/shop/service/cad_project/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/cad_project/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/cad_project/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/cad_project/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/cad_project/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.00</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/jewelry/</loc>
+    <lastmod>2026-08-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/jewelry/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/jewelry/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/jewelry/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/jewelry/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/studio/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/studio/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/studio/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/studio/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/studio/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/contact/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/contact/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/contact/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/contact/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/contact/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/about/</loc>
+    <lastmod>2026-04-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/about/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/about/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/about/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/about/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/warranty/</loc>
+    <lastmod>2026-04-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/warranty/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/warranty/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/warranty/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/warranty/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/returns/</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/returns/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/returns/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/returns/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/returns/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/terms/</loc>
+    <lastmod>2026-08-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/terms/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/terms/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/terms/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/terms/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/shop/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/shop/jewelry/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/jewelry/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/jewelry/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/jewelry/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/jewelry/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/shop/studio/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/studio/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/studio/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/studio/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/studio/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/shipping/</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shipping/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shipping/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shipping/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shipping/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/payments/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/payments/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/payments/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/payments/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/payments/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/toolsjewelry/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolsjewelry/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolsjewelry/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolsjewelry/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/toolsjewelry/alloy-composition/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolsjewelry/alloy-composition/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolsjewelry/alloy-composition/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolsjewelry/alloy-composition/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/alloy-composition/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/toolsjewelry/metal-pricing/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolsjewelry/metal-pricing/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolsjewelry/metal-pricing/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolsjewelry/metal-pricing/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/metal-pricing/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/toolsjewelry/ring-size/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolsjewelry/ring-size/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolsjewelry/ring-size/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolsjewelry/ring-size/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/ring-size/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/toolsjewelry/ring-sizer/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolsjewelry/ring-sizer/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolsjewelry/ring-sizer/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolsjewelry/ring-sizer/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/ring-sizer/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/toolstudio/printability/</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolstudio/printability/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolstudio/printability/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolstudio/printability/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/printability/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/toolstudio/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolstudio/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolstudio/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolstudio/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/toolstudio/print-settings/</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolstudio/print-settings/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolstudio/print-settings/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolstudio/print-settings/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/print-settings/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/toolstudio/resin-settings/</loc>
+    <lastmod>2026-07-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolstudio/resin-settings/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolstudio/resin-settings/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolstudio/resin-settings/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/resin-settings/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/toolstudio/laser-parameters/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolstudio/laser-parameters/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolstudio/laser-parameters/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolstudio/laser-parameters/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/laser-parameters/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/toolstudio/shrinkage/</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolstudio/shrinkage/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolstudio/shrinkage/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolstudio/shrinkage/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolstudio/shrinkage/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/toolsjewelry/ring-blank/</loc>
+    <lastmod>2026-07-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/toolsjewelry/ring-blank/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/toolsjewelry/ring-blank/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/toolsjewelry/ring-blank/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/toolsjewelry/ring-blank/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/privacy/</loc>
+    <lastmod>2026-08-03</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.30</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/privacy/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/privacy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/privacy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/privacy/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/reviews/</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.40</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/reviews/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/reviews/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/reviews/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/reviews/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/b2b/</loc>
+    <lastmod>2026-08-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/b2b/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/b2b/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/b2b/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/b2b/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/druk-3d-piaseczno/</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/druk-3d-piaseczno/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/druk-3d-piaseczno/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/druk-3d-piaseczno/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/druk-3d-piaseczno/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/druk-3d-warszawa/</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/druk-3d-warszawa/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/druk-3d-warszawa/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/druk-3d-warszawa/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/druk-3d-warszawa/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/pierscionek-zareczynowy-na-zamowienie/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/pierscionek-zareczynowy-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/pierscionek-zareczynowy-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/pierscionek-zareczynowy-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/pierscionek-zareczynowy-na-zamowienie/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/druk-3d-krok-po-kroku/</loc>
+    <lastmod>2026-08-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/druk-3d-krok-po-kroku/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/druk-3d-krok-po-kroku/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/druk-3d-krok-po-kroku/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/druk-3d-krok-po-kroku/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/grawerowanie-laserowe-przewodnik/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/grawerowanie-laserowe-przewodnik/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/grawerowanie-laserowe-przewodnik/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/grawerowanie-laserowe-przewodnik/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/grawerowanie-laserowe-przewodnik/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/jak-dbac-o-bizuterie/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/jak-dbac-o-bizuterie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/jak-dbac-o-bizuterie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/jak-dbac-o-bizuterie/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/jak-dbac-o-bizuterie/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/odlewy-zywiczne-poradnik/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/odlewy-zywiczne-poradnik/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/odlewy-zywiczne-poradnik/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/odlewy-zywiczne-poradnik/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/odlewy-zywiczne-poradnik/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/prezenty-personalizowane/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/prezenty-personalizowane/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/prezenty-personalizowane/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/prezenty-personalizowane/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/prezenty-personalizowane/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/jak-przygotowac-plik-stl/</loc>
+    <lastmod>2026-08-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/jak-przygotowac-plik-stl/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/jak-przygotowac-plik-stl/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/jak-przygotowac-plik-stl/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/jak-przygotowac-plik-stl/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/srebro-vs-zloto/</loc>
+    <lastmod>2026-08-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/srebro-vs-zloto/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/srebro-vs-zloto/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/srebro-vs-zloto/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/srebro-vs-zloto/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/obraczki-slubne/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/obraczki-slubne/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/obraczki-slubne/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/obraczki-slubne/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/obraczki-slubne/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/materialy-laser-cutting/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/materialy-laser-cutting/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/materialy-laser-cutting/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/materialy-laser-cutting/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/materialy-laser-cutting/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/bizuteria-inwestycja/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/bizuteria-inwestycja/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/bizuteria-inwestycja/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/bizuteria-inwestycja/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/bizuteria-inwestycja/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/projektowanie-ai/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/projektowanie-ai/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/projektowanie-ai/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/projektowanie-ai/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/projektowanie-ai/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/warsztat-od-kuchni/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/warsztat-od-kuchni/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/warsztat-od-kuchni/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/warsztat-od-kuchni/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/warsztat-od-kuchni/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/modelowanie-3d-na-zamowienie/</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/modelowanie-3d-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/modelowanie-3d-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/modelowanie-3d-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/modelowanie-3d-na-zamowienie/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/ile-kosztuje-bizuteria-na-zamowienie/</loc>
+    <lastmod>2026-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/ile-kosztuje-bizuteria-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/ile-kosztuje-bizuteria-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/ile-kosztuje-bizuteria-na-zamowienie/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/ile-kosztuje-bizuteria-na-zamowienie/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/rodzaje-splotow-lancuszkow/</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/rodzaje-splotow-lancuszkow/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/rodzaje-splotow-lancuszkow/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/rodzaje-splotow-lancuszkow/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/rodzaje-splotow-lancuszkow/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/lost-resin-krok-po-kroku/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/lost-resin-krok-po-kroku/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/lost-resin-krok-po-kroku/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/lost-resin-krok-po-kroku/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/lost-resin-krok-po-kroku/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/blog/druk-miniatur-figurek-16k/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/blog/druk-miniatur-figurek-16k/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/blog/druk-miniatur-figurek-16k/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/blog/druk-miniatur-figurek-16k/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/blog/druk-miniatur-figurek-16k/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/srebro-925/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/srebro-925/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/srebro-925/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/srebro-925/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/srebro-925/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/zloto-probowane/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/zloto-probowane/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/zloto-probowane/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/zloto-probowane/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/zloto-probowane/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/pierscionek-zareczynowy/</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/pierscionek-zareczynowy/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/pierscionek-zareczynowy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/pierscionek-zareczynowy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/pierscionek-zareczynowy/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/obraczki-slubne/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/obraczki-slubne/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/obraczki-slubne/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/obraczki-slubne/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/obraczki-slubne/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/kamien-szlachetny/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/kamien-szlachetny/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/kamien-szlachetny/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/kamien-szlachetny/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/kamien-szlachetny/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/rodowanie/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/rodowanie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/rodowanie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/rodowanie/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/rodowanie/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/moissanit/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/moissanit/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/moissanit/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/moissanit/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/moissanit/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/rozmiar-pierscionka/</loc>
+    <lastmod>2026-08-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/rozmiar-pierscionka/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/rozmiar-pierscionka/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/rozmiar-pierscionka/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/rozmiar-pierscionka/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/personalizowany-grawer/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/personalizowany-grawer/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/personalizowany-grawer/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/personalizowany-grawer/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/personalizowany-grawer/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/bizuteria-inwestycyjna/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/bizuteria-inwestycyjna/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/bizuteria-inwestycyjna/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/bizuteria-inwestycyjna/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/bizuteria-inwestycyjna/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/druk-3d-fdm/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/druk-3d-fdm/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/druk-3d-fdm/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/druk-3d-fdm/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/druk-3d-fdm/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/plik-stl/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/plik-stl/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/plik-stl/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/plik-stl/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/plik-stl/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/pla/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/pla/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/pla/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/pla/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/pla/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/petg/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/petg/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/petg/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/petg/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/petg/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/zywica-uv/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/zywica-uv/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/zywica-uv/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/zywica-uv/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/zywica-uv/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/laser-co2/</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/laser-co2/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/laser-co2/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/laser-co2/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/laser-co2/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/laser-fiber/</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/laser-fiber/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/laser-fiber/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/laser-fiber/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/laser-fiber/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/plik-svg/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/plik-svg/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/plik-svg/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/plik-svg/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/plik-svg/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/odlew-zywiczny/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/odlew-zywiczny/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/odlew-zywiczny/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/odlew-zywiczny/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/odlew-zywiczny/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/prototypowanie/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/prototypowanie/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/prototypowanie/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/prototypowanie/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/prototypowanie/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/cad/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/cad/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/cad/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/cad/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/cad/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/modelowanie-3d/</loc>
+    <lastmod>2026-06-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/modelowanie-3d/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/modelowanie-3d/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/modelowanie-3d/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/modelowanie-3d/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/personalizacja/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/personalizacja/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/personalizacja/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/personalizacja/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/personalizacja/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/projektowanie-ai/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/projektowanie-ai/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/projektowanie-ai/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/projektowanie-ai/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/projektowanie-ai/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/wycena-online/</loc>
+    <lastmod>2026-04-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/wycena-online/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/wycena-online/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/wycena-online/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/wycena-online/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/lost-resin/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/lost-resin/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/lost-resin/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/lost-resin/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/lost-resin/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/zywica-castable/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/zywica-castable/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/zywica-castable/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/zywica-castable/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/zywica-castable/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/druk-msla/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/druk-msla/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/druk-msla/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/druk-msla/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/druk-msla/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/glossary/kompensacja-skurczu/</loc>
+    <lastmod>2026-07-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.50</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/glossary/kompensacja-skurczu/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/glossary/kompensacja-skurczu/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/glossary/kompensacja-skurczu/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/glossary/kompensacja-skurczu/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/shop/pierscionek-granat-zloto-585/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/pierscionek-granat-zloto-585/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/pierscionek-granat-zloto-585/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/pierscionek-granat-zloto-585/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/pierscionek-granat-zloto-585/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/shop/service/print_fdm/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/print_fdm/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/print_fdm/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/print_fdm/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/print_fdm/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/shop/service/print_msla/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/print_msla/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/print_msla/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/print_msla/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/print_msla/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/shop/service/laser_engrave/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/laser_engrave/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/laser_engrave/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/laser_engrave/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/laser_engrave/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/shop/service/laser_cut/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/laser_cut/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/laser_cut/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/laser_cut/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/laser_cut/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/shop/service/laser_fiber/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/laser_fiber/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/laser_fiber/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/laser_fiber/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/laser_fiber/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/shop/service/epoxy/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/epoxy/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/epoxy/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/epoxy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/epoxy/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/shop/service/jewelry_renovation/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/jewelry_renovation/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/jewelry_renovation/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/jewelry_renovation/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_renovation/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/shop/service/jewelry_repair/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/jewelry_repair/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/jewelry_repair/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/jewelry_repair/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_repair/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/shop/service/precious_metal_casting/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/precious_metal_casting/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/precious_metal_casting/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/precious_metal_casting/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/precious_metal_casting/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/shop/service/jewelry_plain/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/jewelry_plain/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/jewelry_plain/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/jewelry_plain/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_plain/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/shop/service/jewelry_stones/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/jewelry_stones/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/jewelry_stones/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/jewelry_stones/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_stones/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/shop/service/jewelry_chain_custom/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.60</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/jewelry_chain_custom/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/jewelry_chain_custom/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/jewelry_chain_custom/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/jewelry_chain_custom/" />
+  </url>
+
+  <url>
+    <loc>https://www.aejaca.com/de/shop/service/cad_project/</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+
+    <xhtml:link rel="alternate" hreflang="pl" href="https://www.aejaca.com/shop/service/cad_project/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.aejaca.com/en/shop/service/cad_project/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://www.aejaca.com/de/shop/service/cad_project/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.aejaca.com/shop/service/cad_project/" />
+  </url>
 
 </urlset>

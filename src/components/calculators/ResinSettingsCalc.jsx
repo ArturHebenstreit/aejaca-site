@@ -8,6 +8,7 @@
 import { useState, useMemo } from "react";
 import { RESIN_SEGMENTS, RESIN_TYPES, RESIN_COLORS } from "../../data/resins.js";
 import { t, fmtNum } from "./calcShared.jsx";
+import { Link } from "../../i18n/nav.jsx";
 
 const PLN_PER_EUR = 4.28;
 
@@ -210,7 +211,7 @@ function DifficultyDots({ level }) {
 function WashBadge({ wash, L }) {
   const isWater = wash === "water";
   return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${isWater ? "bg-cyan-500/20 text-cyan-300" : "bg-purple-500/20 text-purple-300"}`}>
+    <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${isWater ? "bg-cyan-500/20 text-cyan-300" : "bg-purple-500/20 text-purple-300"}`}>
       {isWater ? L.washWater : L.washIpa}
     </span>
   );
@@ -219,7 +220,7 @@ function WashBadge({ wash, L }) {
 function ColorableBadge({ colorable, L }) {
   if (!colorable) return null;
   return (
-    <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-amber-500/20 text-amber-300">
+    <span className="text-xs px-1.5 py-0.5 rounded font-medium bg-amber-500/20 text-amber-300">
       {RESIN_COLORS.length} {L.colors}
     </span>
   );
@@ -282,7 +283,7 @@ function ResinCard({ resin, active, onSelect, lang, L }) {
       <div className="font-semibold text-white text-sm mb-1">{t(resin.label, lang)}</div>
       <div className="mb-1.5">
         <div className={`text-sm font-medium ${active ? "text-blue-300" : "text-neutral-200"}`}>{price.primary}</div>
-        <div className="text-[10px] text-neutral-500">{price.secondary}{resin.estimated ? ` · ${L.estimated}` : ""}</div>
+        <div className="text-xs text-neutral-500">{price.secondary}{resin.estimated ? ` · ${L.estimated}` : ""}</div>
       </div>
       <div className="flex items-center gap-2 mb-1.5 flex-wrap">
         <DifficultyDots level={resin.difficulty} />
@@ -301,7 +302,7 @@ function SegmentSection({ segmentKey, resins, lang, selectedId, onSelect }) {
       <div className="text-xs font-semibold uppercase tracking-wider text-blue-300 mb-1">
         {t(segment.label, lang)} <span className="text-neutral-600">({resins.length})</span>
       </div>
-      <div className="text-[11px] text-neutral-500 mb-2">{t(segment.desc, lang)}</div>
+      <div className="text-xs text-neutral-500 mb-2">{t(segment.desc, lang)}</div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
         {resins.map(r => (
           <ResinCard key={r.id} resin={r} active={selectedId === r.id} onSelect={onSelect} lang={lang} L={LABELS[lang] || LABELS.pl} />
@@ -332,7 +333,7 @@ function ParameterPanel({ resin, lang, L }) {
         <h4 className="text-base font-bold text-white">{t(resin.label, lang)}</h4>
         <div className="text-right">
           <div className="text-blue-300 font-semibold text-sm">{price.primary}{resin.estimated ? " *" : ""}</div>
-          <div className="text-[10px] text-neutral-500">{price.secondary}</div>
+          <div className="text-xs text-neutral-500">{price.secondary}</div>
         </div>
       </div>
       <p className="text-neutral-300 text-sm leading-relaxed mb-4">{t(resin.desc, lang)}</p>
@@ -364,7 +365,7 @@ function ComparisonTable({ lang, L }) {
       <div className="overflow-x-auto rounded-xl border border-white/5">
         <table className="w-full text-xs border-collapse">
           <thead>
-            <tr className="bg-white/[0.03] text-neutral-400 uppercase tracking-wide text-[10px]">
+            <tr className="bg-white/[0.03] text-neutral-400 uppercase tracking-wide text-xs">
               <th className="text-left px-3 py-2.5 font-semibold">{L.colResin}</th>
               <th className="text-left px-3 py-2.5 font-semibold">{L.colSegment}</th>
               <th className="text-right px-3 py-2.5 font-semibold">{L.colPrice}</th>
@@ -396,7 +397,7 @@ function ComparisonTable({ lang, L }) {
           </tbody>
         </table>
       </div>
-      <div className="text-[10px] text-neutral-500 italic mt-2">{L.footnote}</div>
+      <div className="text-xs text-neutral-500 italic mt-2">{L.footnote}</div>
     </div>
   );
 }
@@ -479,12 +480,12 @@ export default function ResinSettingsCalc({ lang = "pl" }) {
       </div>
 
       <div className="border-t border-white/5 p-5 text-center">
-        <a
-          href="/studio/#calculator"
+        <Link
+          to="/studio/#calculator"
           className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 text-white font-semibold rounded-full hover:bg-blue-400 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300"
         >
           {L.ctaText}
-        </a>
+        </Link>
       </div>
     </div>
   );

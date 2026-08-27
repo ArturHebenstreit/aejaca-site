@@ -7,7 +7,7 @@
 // pokazujemy wysylke do wyceny wraz z powodem.
 
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { useParams } from "react-router-dom";
 import { ArrowRight, ArrowLeft, Clock, RotateCcw, MessageCircle, Wrench, Calculator } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
@@ -175,11 +175,11 @@ export default function Service() {
             <div>
               <div className="mb-3">
                 {card.quoteOnly ? (
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-amber-400/30 bg-amber-400/10 text-amber-300 text-[10px] font-medium">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-amber-400/30 bg-amber-400/10 text-amber-300 text-xs font-medium">
                     <MessageCircle className="w-3 h-3" />{u.quotePrice}
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-white/10 bg-white/[0.03] text-neutral-400 text-[10px] font-medium">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-white/10 bg-white/[0.03] text-neutral-400 text-xs font-medium">
                     <Wrench className="w-3 h-3" />{u.madeToOrder}
                   </span>
                 )}
@@ -194,13 +194,13 @@ export default function Service() {
                 <div className="mb-2">
                   {configuredPrice ? (
                     <>
-                      <div className="text-[11px] uppercase tracking-wide text-neutral-500">{u.currentPrice}</div>
+                      <div className="text-xs uppercase tracking-wide text-neutral-500">{u.currentPrice}</div>
                       <div className="text-3xl font-extrabold text-white tabular-nums">{money(configuredPrice.lineGrosze)}</div>
                     </>
                   ) : (
                     <div className="text-sm font-medium text-neutral-300">{u.configureForPrice}</div>
                   )}
-                  <div className="mt-1 text-[11px] text-neutral-500">
+                  <div className="mt-1 text-xs text-neutral-500">
                     {u.from} <span className="font-medium text-neutral-400">{money(card.priceFromGrosze)}</span>
                   </div>
                 </div>
@@ -224,7 +224,7 @@ export default function Service() {
                     {u.askQuote}
                     <ArrowRight className="w-4 h-4" />
                   </Link>
-                  <p className="text-neutral-600 text-[11px] text-center mt-2 mb-3">{u.quoteNote}</p>
+                  <p className="text-neutral-600 text-xs text-center mt-2 mb-3">{u.quoteNote}</p>
                   {/* Klient, ktory szuka rzedu wielkosci, nie chce czekac
                       dobe na maila. Kalkulator odpowie od razu, a wycena
                       i tak zostaje jedynym zrodlem kwoty wiazacej. */}
@@ -238,7 +238,7 @@ export default function Service() {
                         <Calculator className="w-4 h-4" />
                         {u.openCalc}
                       </Link>
-                      <p className="text-neutral-600 text-[11px] text-center mt-2 mb-7">{u.calcNote}</p>
+                      <p className="text-neutral-600 text-xs text-center mt-2 mb-7">{u.calcNote}</p>
                     </>
                   )}
                 </>
@@ -256,7 +256,7 @@ export default function Service() {
                     {u.order}
                     <ArrowRight className="w-4 h-4" />
                   </a>
-                  <p className="text-neutral-600 text-[11px] text-center mt-2 mb-7">{u.orderNote}</p>
+                  <p className="text-neutral-600 text-xs text-center mt-2 mb-7">{u.orderNote}</p>
                 </>
               )}
 
