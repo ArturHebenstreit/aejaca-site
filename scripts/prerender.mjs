@@ -7,6 +7,22 @@ const distPath = path.resolve(__dirname, "../dist");
 const serverPath = path.resolve(__dirname, "../dist/server/entry-server.mjs");
 
 const template = fs.readFileSync(path.resolve(distPath, "index.html"), "utf-8");
+
+// SZABLONEM JEST WYNIK `vite build`, A NIE POPRZEDNI WYNIK TEGO SKRYPTU.
+// `dist/index.html` sluzy tu za szablon i jest zarazem pierwszym plikiem,
+// ktory ten skrypt nadpisuje. Uruchomiony drugi raz bez `vite build` czyta
+// wiec gotowa strone glowna i wkleja ja jako szablon KAZDEJ innej strony:
+// /jewelry/ dostaje naglowek strony glownej razem z jej preloadami, a
+// niezgodnosci widac dopiero w przegladarce. Zdarzylo mi sie to dwa razy
+// jednego dnia, wiec niech pilnuje tego skrypt, a nie pamiec.
+if (!template.includes("<!--ssr-outlet-->")) {
+  console.error(
+    "\n  ✗ dist/index.html nie ma juz znacznika <!--ssr-outlet-->.\n" +
+    "    To znaczy, ze jest wynikiem POPRZEDNIEGO prerenderu, a nie buildu.\n" +
+    "    Uruchom najpierw: npx vite build && npx vite build --ssr src/entry-server.jsx --outDir dist/server\n"
+  );
+  process.exit(1);
+}
 const { render } = await import(serverPath);
 
 // Blog slugs and glossary IDs are derived from the same modules the app uses,
@@ -113,41 +129,130 @@ const routes = [
 ];
 
 // ------------------------------------------------------------
-// PRELOAD OBRAZU BOHATERSKIEGO TYLKO TAM, GDZIE TEN OBRAZ JEST
+// PRELOAD OBRAZU BOHATERSKIEGO CZYTANY Z GOTOWEJ STRONY
 // ------------------------------------------------------------
-// `index.html` jest szablonem WSZYSTKICH stron, a stały w nim dwa
-// `<link rel="preload" as="image" fetchpriority="high">` na obrazy strony
-// głównej. Zamiar był słuszny (to są kandydaci na LCP na `/`), skutek nie:
-// 465 kB pobierane z wysokim priorytetem na 95 stronach, które tych obrazów
-// nie pokazują, i konkurujące tam z prawdziwym obrazem LCP.
+// Wczesniej `index.html` preladowalo na sztywno dwa obrazy strony glownej,
+// czyli 465 kB z wysokim priorytetem takze na 95 stronach, ktore tych obrazow
+// nie pokazuja, konkurujac tam z prawdziwym obrazem LCP. Trzymala to recznie
+// pisana mapa "obraz -> trasy", ktora trzeba bylo pamietac.
 //
-// Nic się przez to nie psuło i żaden sprawdzian tego nie widział, bo strona
-// działa. Znalazł to dopiero podgląd w przeglądarce: ostrzeżenie o preloadzie
-// nieużytym w ciągu kilku sekund.
+// Teraz preload bierze sie z tego, co strona NAPRAWDE narysowala. `HeroObraz`
+// oznacza obraz pierwszego ekranu atrybutem `fetchpriority="high"`, wiec
+// wystarczy znalezc jego `<picture>` w gotowym HTML-u i przepisac `srcset`
+// oraz `sizes` do preloadu. Mapa nie ma jak sie rozjechac, bo jej nie ma.
 //
-// Klucz to obraz, wartość to trasy, które go RENDERUJĄ. Ring blank pokazuje
-// tylko jeden z dwóch, więc drugiego tam nie preładujemy.
+// Preladujemy wersje AVIF. Przegladarka, ktora AVIF nie rozumie, pomija ten
+// preload dzieki atrybutowi `type` i pobiera WebP zwyczajnie, przez `<picture>`.
+const MAX_PRELOADOW = 2;
+
+function preloadyBohaterskie(html) {
+  const obrazki = [...html.matchAll(/<picture[^>]*>([\s\S]*?)<\/picture>/g)]
+    .map((m) => m[1])
+    .filter((srodek) => srodek.includes('fetchpriority="high"'));
+
+  const linki = [];
+  for (const srodek of obrazki.slice(0, MAX_PRELOADOW)) {
+    const avif = /<source[^>]*type="image\/avif"[^>]*>/.exec(srodek);
+    if (!avif) continue;
+    // Wielkosc liter bez znaczenia: React wypisuje na `<source>` atrybut jako
+    // `srcSet`, a parser HTML czyta go tak samo jak `srcset`.
+    const zestaw = /srcset="([^"]+)"/i.exec(avif[0]);
+    const rozmiary = /sizes="([^"]+)"/i.exec(avif[0]);
+    if (!zestaw) continue;
+    linki.push(
+      `<link rel="preload" as="image" type="image/avif" fetchpriority="high"` +
+      ` imagesrcset="${zestaw[1]}"` +
+      (rozmiary ? ` imagesizes="${rozmiary[1]}"` : "") +
+      ">"
+    );
+  }
+  return linki;
+}
+
+// ------------------------------------------------------------
+// KAZDA STRONA ZAPOWIADA WLASNY FRAGMENT TRASY
+// ------------------------------------------------------------
+// Do 27 sierpnia 2026 wszystkie sto stron zapowiadalo dokladnie te same trzy
+// pliki: wejsciowy, Reacta i helmet. Plik z kodem WLASNEJ trasy nie byl w tym
+// HTML-u wspomniany ani razu. Przegladarka musiala wiec pobrac i przetworzyc
+// 531 kB pliku wejsciowego, dopiero wtedy router odkrywal, ze brakuje
+// `Studio-*.js`, szedl po niego, a po jego przetworzeniu odkrywal jeszcze
+// trzydziesci wspolnych fragmentow, ktorych ten plik potrzebuje. Trzy tury
+// tam, gdzie od poczatku wiadomo, ktora to trasa.
 //
-// TRASY BEZ KOŃCOWEGO UKOŚNIKA. `routes` jest normalizowane wyżej
-// (`p.replace(/\/$/, "")`), więc wpis z ukośnikiem nigdy się nie dopasuje
-// i strona po cichu traci preload, który jej się należy. Wpadłem w to od razu.
-const PRELOAD_BOHATERSKI = {
-  "/hero-home-jewelry.webp": ["/", "/toolsjewelry/ring-blank"],
-  "/hero-home-studio.webp": ["/"],
-};
+// Manifest Vite mowi, ktory plik wyjsciowy odpowiada ktoremu zrodlu, wiec
+// niczego nie trzeba zgadywac. Wypisujemy fragment trasy razem z jego
+// zaleznosciami, pomijajac to, co w dokumencie juz stoi.
+//
+// Strony importowane zwyczajnie (glowna, kontakt) siedza w pliku wejsciowym
+// i nie maja wlasnego wpisu w manifescie. Wtedy po prostu nie ma czego
+// zapowiadac i to jest poprawny wynik, a nie brak.
+const manifestPath = path.resolve(distPath, ".vite/manifest.json");
+const manifest = fs.existsSync(manifestPath)
+  ? JSON.parse(fs.readFileSync(manifestPath, "utf-8"))
+  : null;
+
+const mainSrcRaw = fs.readFileSync(path.resolve(__dirname, "../src/main.jsx"), "utf-8");
+
+/** nazwa komponentu -> sciezka zrodla, np. Studio -> src/pages/Studio.jsx */
+const ZRODLO_KOMPONENTU = Object.fromEntries(
+  [...mainSrcRaw.matchAll(/const\s+(\w+)\s*=\s*strona\(\(\)\s*=>\s*import\("\.\/([^"]+)"\)\)/g)]
+    .map((m) => [m[1], "src/" + m[2]]),
+);
+
+/** wzorzec trasy -> nazwa komponentu, w kolejnosci deklaracji w routerze */
+const TRASA_KOMPONENT = [...mainSrcRaw.matchAll(/<Route\s+path="([^"]+)"\s+element=\{<(\w+)/g)]
+  .map((m) => ({ wzorzec: m[1], komponent: m[2] }));
+
+/** `/blog/:slug/` -> wyrazenie, ktore dopasuje `/blog/cokolwiek`. */
+function naWyrazenie(wzorzec) {
+  const bezUkosnika = wzorzec.replace(/\/$/, "") || "/";
+  const ciało = bezUkosnika
+    .split("/")
+    .map((czesc) => (czesc.startsWith(":") ? "[^/]+" : czesc.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")))
+    .join("/");
+  return new RegExp(`^${ciało}$`);
+}
+
+const TRASY_WZORCE = TRASA_KOMPONENT
+  .filter((t) => t.wzorzec !== "*")
+  .map((t) => ({ ...t, wyrazenie: naWyrazenie(t.wzorzec) }));
+
+/** Wszystkie pliki, ktore trasa potrzebuje od razu: swoj plus zaleznosci. */
+function plikiTrasy(route) {
+  if (!manifest) return { skrypty: [], style: [] };
+  const bez = route.replace(/\/$/, "") || "/";
+  const trafienie = TRASY_WZORCE.find((t) => t.wyrazenie.test(bez));
+  const zrodlo = trafienie && ZRODLO_KOMPONENTU[trafienie.komponent];
+  const wpis = zrodlo && manifest[zrodlo];
+  if (!wpis) return { skrypty: [], style: [] };
+
+  const skrypty = new Set();
+  const style = new Set();
+  const odwiedzone = new Set();
+  const zejdz = (klucz) => {
+    if (!klucz || odwiedzone.has(klucz) || klucz === "index.html") return;
+    odwiedzone.add(klucz);
+    const w = manifest[klucz];
+    if (!w) return;
+    if (w.file) skrypty.add("/" + w.file);
+    for (const css of w.css || []) style.add("/" + css);
+    for (const dalej of w.imports || []) zejdz(dalej);
+  };
+  zejdz(zrodlo);
+  return { skrypty: [...skrypty], style: [...style] };
+}
 
 function buildPage(route) {
   const { html, helmet } = render(route);
 
-  let page = template.replace("<!--ssr-outlet-->", html);
-
-  for (const [obraz, trasy] of Object.entries(PRELOAD_BOHATERSKI)) {
-    if (trasy.includes(route)) continue;
-    page = page.replace(
-      new RegExp(`\\s*<link rel="preload"[^>]*href="${obraz}"[^>]*/?>`, "g"),
-      "",
-    );
-  }
+  // ZASTEPUJEMY FUNKCJA, NIE NAPISEM. `String.replace` z napisem po prawej
+  // czyta w nim wzorce z dolarem: `$$` znaczy "jeden dolar", `$&` znaczy
+  // "cale dopasowanie". Wpis w tabeli bloga o pierscionkach mial kolumne cen
+  // pisana dolarami ("$$", "$$$$$") i prerender wypisywal ja o polowe krotsza
+  // niz przegladarka. React przy hydracji widzial inny tekst i przerysowywal
+  // cala strone od nowa. Funkcja zwracajaca napis nie interpretuje niczego.
+  let page = template.replace("<!--ssr-outlet-->", () => html);
 
   // Strip the static fallback <title>/description/OG/Twitter tags from
   // index.html - every route is now SSR-prerendered, so Helmet always
@@ -160,6 +265,18 @@ function buildPage(route) {
     .replace(/\s*<meta property="og:[a-z:]+"[^>]*\/>/g, "")
     .replace(/\s*<meta name="twitter:[a-z:]+"[^>]*\/>/g, "");
 
+  {
+    const { skrypty, style } = plikiTrasy(route);
+    const nowe = [
+      ...preloadyBohaterskie(html),
+      ...skrypty.filter((f) => !page.includes(f)).map((f) => `<link rel="modulepreload" crossorigin href="${f}">`),
+      ...style.filter((f) => !page.includes(f)).map((f) => `<link rel="stylesheet" crossorigin href="${f}">`),
+    ];
+    if (nowe.length) {
+      page = page.replace("</head>", () => `    ${nowe.join("\n    ")}\n  </head>`);
+    }
+  }
+
   if (helmet) {
     const helmetHead = [
       helmet.title?.toString(),
@@ -171,7 +288,9 @@ function buildPage(route) {
       .join("\n    ");
 
     if (helmetHead) {
-      page = page.replace("</head>", `    ${helmetHead}\n  </head>`);
+      // Ta sama pulapka z dolarem co wyzej: tytul albo opis strony moze
+      // zawierac "$", a wtedy napis po prawej zostalby zinterpretowany.
+      page = page.replace("</head>", () => `    ${helmetHead}\n  </head>`);
     }
   }
 
@@ -262,8 +381,13 @@ if (/<Suspense/.test(clientShell)) {
   const winne = [];
   for (const plik of wszystkie) {
     const tresc = fs.readFileSync(plik, "utf8");
-    const preloady = [...tresc.matchAll(/<link rel="preload"[^>]*as="image"[^>]*href="([^"]+)"/g)]
-      .map((m) => m[1]);
+    // Preload obrazu wskazuje albo jeden plik (`href`), albo zestaw
+    // (`imagesrcset`). Z zestawu bierzemy pierwszy adres: jesli ten jeden
+    // jest na stronie, to caly zestaw pochodzi z tego samego `<picture>`.
+    const preloady = [
+      ...[...tresc.matchAll(/<link rel="preload"[^>]*as="image"[^>]*href="([^"]+)"/g)].map((m) => m[1]),
+      ...[...tresc.matchAll(/<link rel="preload"[^>]*as="image"[^>]*imagesrcset="([^",\s]+)/g)].map((m) => m[1]),
+    ];
     for (const obraz of new Set(preloady)) {
       // Obraz liczy się jako użyty, gdy pojawia się poza samym znacznikiem
       // preload: w `src`, w `srcset` albo w tle inline.
@@ -278,7 +402,7 @@ if (/<Suspense/.test(clientShell)) {
     console.error(`\n  ✗ Preload obrazu bez użycia na ${winne.length} stronach:`);
     for (const w of winne.slice(0, 8)) console.error(`    ${w}`);
     if (winne.length > 8) console.error(`    ...i ${winne.length - 8} więcej`);
-    console.error("    Dopisz trasę do PRELOAD_BOHATERSKI albo usuń preload.");
+    console.error("    Preload bierze sie z `<picture>` z fetchpriority=\"high\" na tej stronie.");
     failed++;
   } else {
     console.log(`  ✓ preloady obrazów: każdy na stronie, która go pokazuje`);

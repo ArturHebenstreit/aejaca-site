@@ -69,9 +69,21 @@ export function StepSlider({ label, options, value, onChange, lang, accent = "bl
         className={`w-full ${track}`}
         aria-label={label}
       />
-      <div className="flex justify-between mt-1">
+      {/* Przystanki w SIATCE o rownych kolumnach, nie w rzedzie `justify-between`.
+          Rzad nie ma jak sie zwezic, wiec dluzsza etykieta ("CUSTOM") robila
+          dokument szerszym od telefonu i cala strona przewijala sie w bok.
+          Kolumny `minmax(0, 1fr)` zwezaja sie i tekst zawija sie w miejscu. */}
+      <div
+        className="mt-1 grid gap-1"
+        style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
+      >
         {options.map((o, i) => (
-          <span key={String(o.id)} className={`text-[10px] ${i === index ? "text-neutral-300" : "text-neutral-600"}`}>
+          <span
+            key={String(o.id)}
+            className={`text-[11px] leading-tight break-words ${
+              i === 0 ? "text-left" : i === options.length - 1 ? "text-right" : "text-center"
+            } ${i === index ? "text-neutral-300" : "text-neutral-500"}`}
+          >
             {o.tick ?? String(o.id).toUpperCase()}
           </span>
         ))}

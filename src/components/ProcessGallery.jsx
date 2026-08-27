@@ -36,6 +36,7 @@ export default function ProcessGallery() {
             <button
               key={i}
               onClick={() => setActive(i)}
+              aria-pressed={i === active}
               className={`p-3 rounded-xl border text-center transition-all duration-300 ${
                 i === active
                   ? "border-amber-400/50 bg-gradient-to-b " + STEP_COLORS[i] + " scale-105"
@@ -68,12 +69,12 @@ export default function ProcessGallery() {
 
         {/* Mobile nav */}
         <div className="flex items-center justify-center gap-4 mt-6 sm:hidden">
-          <button onClick={prev} className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-neutral-400 hover:text-white hover:border-amber-400/40 transition-colors">
-            <ChevronLeft className="w-5 h-5" />
+          <button onClick={prev} aria-label={j.processPrev} className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-neutral-400 hover:text-white hover:border-amber-400/40 transition-colors">
+            <ChevronLeft className="w-5 h-5" aria-hidden="true" />
           </button>
           <span className="text-neutral-400 text-sm font-mono">{active + 1} / {steps.length}</span>
-          <button onClick={next} className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-neutral-400 hover:text-white hover:border-amber-400/40 transition-colors">
-            <ChevronRight className="w-5 h-5" />
+          <button onClick={next} aria-label={j.processNext} className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-neutral-400 hover:text-white hover:border-amber-400/40 transition-colors">
+            <ChevronRight className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
       </div>

@@ -178,6 +178,8 @@ export default {
       { title: "Modelowanie 3D i CAD (Rhino, Fusion 360)", desc: "Własne modelowanie organicznych form biżuteryjnych od szkicu lub pomysłu. Precyzyjny model 3D przed każdym odlewem, połączony z prototypowaniem woskowym lub wydrukiem 3D w żywicy." },
       { title: "Obiekty Symboliczne", desc: "Artystyczne obiekty i symboliczne kreacje wykraczające poza biżuterię, ponadczasowe pamiątki i dzieła sztuki." },
     ],
+    processPrev: "Poprzedni etap",
+    processNext: "Następny etap",
     processTag: "Od Pomysłu do Arcydzieła",
     processTitle: "Jak Powstaje Twoja Biżuteria",
     processSteps: [

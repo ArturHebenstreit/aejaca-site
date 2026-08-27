@@ -112,16 +112,59 @@ for (const trasa of trasy) {
     await strona.waitForTimeout(500);
     dane = await strona.evaluate((prog) => {
       const im = [...document.querySelectorAll("img")];
+      const opis = (e) => {
+        const kl = (e.getAttribute("class") || "").split(/\s+/).filter(Boolean).slice(0, 4).join(".");
+        const tekst = (e.textContent || "").trim().replace(/\s+/g, " ").slice(0, 28);
+        return `${e.tagName.toLowerCase()}${kl ? "." + kl : ""}${tekst ? ` "${tekst}"` : ""}`;
+      };
+      const drobne = [...document.querySelectorAll("p,span,li,a,div,td,th,label,button")]
+        .filter((e) => !e.children.length && e.textContent.trim() && parseFloat(getComputedStyle(e).fontSize) < prog);
+      const bezNazwy = [...document.querySelectorAll("button,a")]
+        .filter((e) => !e.textContent.trim() && !e.getAttribute("aria-label") && !e.querySelector('img[alt]:not([alt=""])'));
       return {
         obrazow: im.length,
         puste: im.filter((i) => i.complete && i.naturalWidth === 0).map((i) => i.getAttribute("src")).slice(0, 3),
         bezAlt: im.filter((i) => i.getAttribute("alt") === null).length,
-        drobne: [...document.querySelectorAll("p,span,li,a,div,td,th,label,button")]
-          .filter((e) => !e.children.length && e.textContent.trim() && parseFloat(getComputedStyle(e).fontSize) < prog).length,
+        drobne: drobne.length,
+        // Nazwa klasy wystarcza, zeby znalezc miejsce w kodzie, a nie zalewa
+        // wyniku cala trescia strony.
+        drobneGdzie: [...new Set(drobne.map(opis))].slice(0, 12),
         przelew: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+        // Co konkretnie wystaje poza okno. Bez tego zostaje zgadywanie, ktora
+        // z kilkuset kratek na stronie jest za szeroka.
+        przelewGdzie: (() => {
+          const limit = document.documentElement.clientWidth + 1;
+          // Element ustawiony na sztywno (`position: fixed`) zyje we
+          // wspolrzednych okna i NIE powieksza obszaru przewijania dokumentu.
+          // Bez tego wykluczenia lista klamie: dymek czatu z animacja `ping`
+          // wychodzi poza okno na kazdej stronie, a przewijac sie nie da.
+          const naSztywno = (e) => {
+            for (let w = e; w && w !== document.body; w = w.parentElement) {
+              if (getComputedStyle(w).position === "fixed") return true;
+            }
+            return false;
+          };
+          // Element w kontenerze z wlasnym przewijaniem tez nie powieksza
+          // dokumentu, bo kontener go przycina. Tabele parametrow siedza
+          // wlasnie w takich kontenerach i przez chwile wygladaly na winne.
+          const przyciety = (e) => {
+            for (let w = e.parentElement; w && w !== document.body; w = w.parentElement) {
+              if (!/^(visible)$/.test(getComputedStyle(w).overflowX)) return true;
+            }
+            return false;
+          };
+          return [...document.querySelectorAll("body *")]
+            .filter((e) => {
+              const r = e.getBoundingClientRect();
+              return r.width > 0 && r.right > limit && !naSztywno(e) && !przyciety(e);
+            })
+            .filter((e) => ![...e.children].some((c) => c.getBoundingClientRect().right > limit))
+            .map((e) => `${opis(e)} @${Math.round(e.getBoundingClientRect().right)}px`)
+            .slice(0, 6);
+        })(),
         naglowkow1: document.querySelectorAll("h1").length,
-        bezNazwy: [...document.querySelectorAll("button,a")]
-          .filter((e) => !e.textContent.trim() && !e.getAttribute("aria-label") && !e.querySelector('img[alt]:not([alt=""])')).length,
+        bezNazwy: bezNazwy.length,
+        bezNazwyGdzie: bezNazwy.map(opis).slice(0, 6),
       };
     }, PROG_MIN_PX);
   } catch (e) { inne.add("NAWIGACJA " + String(e).slice(0, 60)); }
@@ -145,9 +188,9 @@ for (const w of wyniki) {
   else {
     if (d.puste.length) uwagi.push(`obrazy nie wczytane: ${d.puste.join(", ")}`);
     if (d.bezAlt) uwagi.push(`bez alt: ${d.bezAlt}`);
-    if (d.przelew) uwagi.push("POZIOME PRZEWIJANIE");
+    if (d.przelew) uwagi.push("POZIOME PRZEWIJANIE: " + (d.przelewGdzie || []).join(" | "));
     if (d.naglowkow1 !== 1) uwagi.push(`naglowkow h1: ${d.naglowkow1}`);
-    if (d.bezNazwy) uwagi.push(`elementy klikalne bez nazwy: ${d.bezNazwy}`);
+    if (d.bezNazwy) uwagi.push(`elementy klikalne bez nazwy: ${d.bezNazwy} (${(d.bezNazwyGdzie || []).join(" | ")})`);
   }
   if (w.http.length) uwagi.push(...w.http);
   if (w.inne.length) uwagi.push(...w.inne);

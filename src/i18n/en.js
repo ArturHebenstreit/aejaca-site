@@ -179,6 +179,8 @@ export default {
       { title: "3D Design & Prototyping", desc: "Combining traditional craftsmanship with modern 3D modeling to prototype and perfect each piece." },
       { title: "Symbolic Objects", desc: "Artistic objects and symbolic creations that go beyond jewelry, timeless keepsakes and art pieces." },
     ],
+    processPrev: "Previous step",
+    processNext: "Next step",
     processTag: "From Idea to Masterpiece",
     processTitle: "How Your Jewelry Is Made",
     processSteps: [

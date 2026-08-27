@@ -11,14 +11,24 @@
 // i przegladarki, wiec uruchamia sie recznie przy pracy nad tym tematem.
 //
 //   npm run build
-//   npx serve -s dist -l 4173 &
+//   (cd dist && python3 -m http.server 4173) &
 //   node scripts/check-hydration.mjs                 lista stron i ich bledy
 //   node scripts/check-hydration.mjs --diff /contact/  porownanie drzew
 //
-// Do CZYTELNYCH komunikatow (zamiast "Minified React error #418") potrzebna
-// jest rozwojowa wersja Reacta. Wystarczy zbudowac klienta i serwer z wlasna
-// konfiguracja nadpisujaca `process.env.NODE_ENV` na "development" i wylaczajaca
-// minifikacje, a potem uruchomic `node scripts/prerender.mjs`.
+// NIE UZYWAJ `npx serve -s dist`. Przelacznik `-s` znaczy "strona
+// jednodokumentowa" i kaze serwerowi oddawac `index.html` pod KAZDYM adresem.
+// Przegladarka dostaje wtedy strone glowna pod adresem /warranty/, React
+// hydruje strone glowna w router rysujacy inna trase i rozjazd jest pewny na
+// wszystkich stu stronach. Tak powstal falszywy wynik audytu z 27 sierpnia
+// 2026. Produkcja takiej reguly nie ma, i to jest swiadoma decyzja: martwe
+// adresy maja oddawac prawdziwe 404. Ponizej stoi bramka, ktora to sprawdza.
+//
+// Do CZYTELNYCH komunikatow (zamiast "Minified React error #418") sluzy
+// `npm run build:hydracja`. Buduje to samo, ale Reactem w wersji rozwojowej
+// i bez minifikacji, wiec w konsoli stoi pelne zdanie z nazwa komponentu i
+// sciezka do niego. Tak znalazlem, ze kasa rozjezdza sie na liscie krajow,
+// a wpis na blogu na kolumnie cen pisanej dolarami. Po diagnozie zbuduj
+// normalnie (`npm run build`), bo ta wersja jest kilka razy wieksza.
 //
 // UWAGA: `prerender.mjs` czyta szablon z `dist/index.html`, ktory sam potem
 // nadpisuje. Uruchomiony BEZ wczesniejszego `vite build` pracuje na wlasnym
@@ -32,7 +42,35 @@ const PAGES = [
   "/", "/jewelry/", "/studio/", "/blog/", "/shop/", "/contact/", "/terms/",
   "/toolstudio/printability/", "/toolsjewelry/metal-pricing/", "/quote/",
   "/cart/", "/b2b/", "/about/", "/glossary/", "/reviews/", "/toolstudio/",
+  // Strony, ktore audyt z 27 sierpnia 2026 zlapal na rozjezdzie. Zostaja na
+  // liscie na stale, zeby powrot problemu byl widoczny od razu.
+  "/checkout/", "/blog/pierscionek-zareczynowy-na-zamowienie/",
 ];
+
+// ------------------------------------------------------------
+// Bramka: czy serwer nie lapie wszystkiego
+// ------------------------------------------------------------
+// Adres, ktorego na pewno nie ma, musi dac odpowiedz inna niz 200. Jesli daje
+// 200, to serwer podstawia jedna strone pod kazda trasa i caly pomiar bylby
+// pomiarem tej jednej strony.
+{
+  const nieistniejacy = "/__hydracja-sprawdza-serwer/";
+  const proba = await fetch(BASE + nieistniejacy).catch(() => null);
+  if (!proba) {
+    console.error(`Serwer pod ${BASE} nie odpowiada. Uruchom:`);
+    console.error("  (cd dist && python3 -m http.server 4173) &");
+    process.exit(2);
+  }
+  if (proba.status === 200) {
+    console.error(
+      `Serwer pod ${BASE} oddaje HTTP 200 na adres, ktorego nie ma.\n` +
+      "Ma regule lapiaca wszystko, wiec pod kazda trasa poda te sama strone, a\n" +
+      "caly pomiar bylby pomiarem tej jednej strony. Produkcja tej reguly nie ma.\n" +
+      "Uruchom zamiast tego: (cd dist && python3 -m http.server 4173) &"
+    );
+    process.exit(2);
+  }
+}
 
 const { chromium } = await import("playwright");
 

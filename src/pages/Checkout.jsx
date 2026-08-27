@@ -18,7 +18,8 @@ import { DELIVERY_METHODS } from "../data/orderCatalog.js";
 import { t } from "../pricing/config.js";
 import { API_URL, postJSON, submitPaymentForm } from "../utils/api.js";
 import { useMoney, formatPln, formatEur } from "../shop/money.js";
-import { SHIPPING_COUNTRIES, shippingOptions, shippingGrosze, needsCustoms, FREE_SHIPPING_FROM_GROSZE, leadDaysLabel } from "../pricing/shipping.js";
+import { shippingOptions, shippingGrosze, needsCustoms, FREE_SHIPPING_FROM_GROSZE, leadDaysLabel } from "../pricing/shipping.js";
+import { countryList } from "../data/countryNames.js";
 import { inboundOptionsFor, wymagaPrzesylki } from "../data/inboundDelivery.js";
 import { validateCustomer } from "../shop/customerFields.js";
 import CustomerFields, { ValidatedField as Field } from "../components/shop/CustomerFields.jsx";
@@ -222,23 +223,6 @@ const UI = {
 
 /** Nazwy krajow bierzemy z przegladarki, zeby nie utrzymywac listy w trzech
  *  jezykach. Gdy srodowisko tego nie potrafi, zostaje kod ISO. */
-function countryName(code, lang) {
-  try {
-    return new Intl.DisplayNames([lang === "pl" ? "pl" : lang === "de" ? "de" : "en"], { type: "region" }).of(code) || code;
-  } catch {
-    return code;
-  }
-}
-
-/** Lista posortowana alfabetycznie w jezyku klienta. Kolejnosc stref jest
- *  nasza sprawa, klient szuka swojego kraju po nazwie. */
-function countryList(lang) {
-  const locale = lang === "pl" ? "pl" : lang === "de" ? "de" : "en";
-  return SHIPPING_COUNTRIES
-    .map((code) => ({ code, name: countryName(code, lang) }))
-    .sort((a, b) => a.name.localeCompare(b.name, locale));
-}
-
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function Consent({ checked, onChange, children }) {

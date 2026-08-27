@@ -20,6 +20,7 @@ import NewsletterForm from "../components/NewsletterForm.jsx";
 import ShopEntry from "../components/home/ShopEntry.jsx";
 import { GOOGLE_BUSINESS, REVIEWS, TRUSTPILOT_BUSINESS } from "../data/googleReviews.js";
 import { reviewCountLabel } from "../utils/reviewCount.js";
+import HeroObraz from "../components/HeroObraz.jsx";
 
 // Prog, od ktorego Trustpilot pomaga zamiast szkodzic. Ponizej niego odznaka
 // obok "5,0 z 25 opinii Google" kaze czytelnikowi porownac liczby i wyciagnac
@@ -117,15 +118,13 @@ export default function Home() {
             {/* Jewelry Card */}
             <Link to="/jewelry/" onClick={() => trackCTA("hero_jewelry")} className="group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg shadow-black/40 hover:shadow-2xl hover:shadow-amber-900/40 transition-all duration-500 hover:-translate-y-1">
               <div className="aspect-[3/4] md:aspect-square relative overflow-hidden">
-                <img
-                  src="/hero-home-jewelry.webp"
+                <HeroObraz
+                  nazwa="hero-home-jewelry"
                   alt="AEJaCA Jewelry"
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  loading="eager"
-                  fetchpriority="high"
-                  decoding="async"
-                  width="768"
-                  height="1024"
+                  width={768}
+                  height={1024}
+                  sizes="(min-width: 768px) 512px, 100vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,transparent_50%,rgba(0,0,0,0.72)_100%)]" />
@@ -144,15 +143,13 @@ export default function Home() {
             {/* Studio Card */}
             <Link to="/studio/" onClick={() => trackCTA("hero_studio")} className="group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg shadow-black/40 hover:shadow-2xl hover:shadow-blue-900/40 transition-all duration-500 hover:-translate-y-1">
               <div className="aspect-[3/4] md:aspect-square relative overflow-hidden">
-                <img
-                  src="/hero-home-studio.webp"
+                <HeroObraz
+                  nazwa="hero-home-studio"
                   alt="AEJaCA sTuDiO"
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  loading="eager"
-                  fetchpriority="high"
-                  decoding="async"
-                  width="768"
-                  height="1024"
+                  width={768}
+                  height={1024}
+                  sizes="(min-width: 768px) 512px, 100vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,transparent_50%,rgba(0,0,0,0.72)_100%)]" />

@@ -19,7 +19,8 @@ import LockerPicker from "../components/shop/LockerPicker.jsx";
 import CustomerFields, { ValidatedField as Field } from "../components/shop/CustomerFields.jsx";
 import { validateCustomer } from "../shop/customerFields.js";
 import { SERVICES, GROUPS, getService, DELIVERY_METHODS } from "../data/orderCatalog.js";
-import { shippingOptions, shippingGrosze, needsCustoms, SHIPPING_COUNTRIES, leadDaysLabel } from "../pricing/shipping.js";
+import { shippingOptions, shippingGrosze, needsCustoms, leadDaysLabel } from "../pricing/shipping.js";
+import { countryList } from "../data/countryNames.js";
 import { t, tierForQty, qtyForTier, qtyLimit, qtyOpenValue, QUANTITY_TIERS } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
 import { wymagaPrzesylki, inboundOptionsFor } from "../data/inboundDelivery.js";
@@ -249,22 +250,6 @@ const UI = {
   },
 };
 
-
-/** Nazwy krajow z przegladarki, posortowane alfabetycznie w jezyku klienta. */
-function countryName(code, lang) {
-  try {
-    return new Intl.DisplayNames([lang === "pl" ? "pl" : lang === "de" ? "de" : "en"], { type: "region" }).of(code) || code;
-  } catch {
-    return code;
-  }
-}
-
-function countryList(lang) {
-  const locale = lang === "pl" ? "pl" : lang === "de" ? "de" : "en";
-  return SHIPPING_COUNTRIES
-    .map((code) => ({ code, name: countryName(code, lang) }))
-    .sort((a, b) => a.name.localeCompare(b.name, locale));
-}
 
 function StepBar({ step, labels }) {
   return (

@@ -1,5 +1,66 @@
 @import "tailwindcss";
 
+/* ============================================================
+   KROJE PISMA U SIEBIE
+   ============================================================
+   Do 27 sierpnia 2026 oba kroje szly z fonts.googleapis.com. Arkusz z obcego
+   hosta blokuje pierwsze malowanie, wiec gotowy dokument lezal w przegladarce
+   i czekal, az odpowie ktos inny. Do tego adres IP kazdego odwiedzajacego
+   trafial do Google przed jakakolwiek zgoda, a sprzedajemy do Niemiec, gdzie
+   Sad Krajowy w Monachium zasadzil za to odszkodowanie (3 O 17493/20).
+
+   Teraz oba kroje leza w `public/fonts` jako pliki zmienne (jedna waga od 300
+   do 800 zamiast piatki osobnych plikow). Podzial na `latin` i `latin-ext`
+   jest ten sam, ktorego uzywa Google: przegladarka pobiera drugi plik dopiero,
+   gdy na stronie stoi znak spoza latin-1. Nasz `latin-ext` jest zawezony do
+   Latin Extended-A (U+0100-017F), bo tylko stamtad bierzemy polskie znaki.
+   Dzieki temu wazy 14 kB zamiast 85 kB.
+
+   Nazwa pliku niesie wersje z Google Fonts (v20, v40), bo `_headers` cachuje
+   woff2 na rok jako `immutable`. Aktualizacja kroju wymaga nowej nazwy.
+   Licencje: `public/fonts/OFL-*.txt`, obie SIL OFL 1.1.
+   ============================================================ */
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url("/fonts/inter-v20-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url("/fonts/inter-v20-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-017F;
+}
+
+@font-face {
+  font-family: "Playfair Display";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/fonts/playfair-v40-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Playfair Display";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/fonts/playfair-v40-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-017F;
+}
+
 @keyframes fadeSlideUp {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }

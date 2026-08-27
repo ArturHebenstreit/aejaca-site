@@ -24,6 +24,7 @@ import {
   buildItemListSchema,
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
+import HeroObraz from "../components/HeroObraz.jsx";
 
 const techIcons = [Cpu, Printer, Droplet, Zap, Layers, Box, Wrench];
 
@@ -162,15 +163,13 @@ export default function Studio() {
       <div className="bg-neutral-950">
       {/* Hero */}
       <section className="relative overflow-hidden min-h-[400px]">
-        <img
-          src="/hero-studio.webp"
+        <HeroObraz
+          nazwa="hero-studio"
           alt="AEJaCA sTuDiO"
           className="absolute inset-0 w-full h-full object-cover"
-          loading="eager"
-          fetchpriority="high"
-          decoding="async"
-          width="1920"
-          height="1080"
+          width={1920}
+          height={1080}
+          sizes="100vw"
         />
         <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
         <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-28 pb-6 text-center flex flex-col items-center">

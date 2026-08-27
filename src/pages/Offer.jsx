@@ -28,7 +28,8 @@ import LockerPicker from "../components/shop/LockerPicker.jsx";
 import CustomerFields, { ValidatedField as Field } from "../components/shop/CustomerFields.jsx";
 import { validateCustomer } from "../shop/customerFields.js";
 import { DELIVERY_METHODS } from "../data/orderCatalog.js";
-import { shippingOptions, SHIPPING_COUNTRIES, leadDaysLabel } from "../pricing/shipping.js";
+import { shippingOptions, leadDaysLabel } from "../pricing/shipping.js";
+import { countryList } from "../data/countryNames.js";
 import { useMoney, formatPln, formatEur } from "../shop/money.js";
 import { TRANSFER_HOLD_BUSINESS_DAYS } from "../pricing/businessDays.js";
 
@@ -43,15 +44,6 @@ async function postJSON(url, body) {
   let data = null;
   try { data = await res.json(); } catch { /* pusta odpowiedz to tez odpowiedz */ }
   return { ok: res.ok, status: res.status, data };
-}
-
-/** Kraj klient szuka po nazwie w swoim jezyku, nie po kodzie. */
-function countryName(code, lang) {
-  try {
-    return new Intl.DisplayNames([lang === "pl" ? "pl" : lang === "de" ? "de" : "en"], { type: "region" }).of(code) || code;
-  } catch {
-    return code;
-  }
 }
 
 const UI = {
@@ -459,12 +451,7 @@ export default function Offer() {
     setDiscount(r.data);
   }
 
-  const kraje = useMemo(
-    () => SHIPPING_COUNTRIES
-      .map((code) => ({ code, name: countryName(code, lang) }))
-      .sort((a, b) => a.name.localeCompare(b.name, lang === "pl" ? "pl" : lang === "de" ? "de" : "en")),
-    [lang]
-  );
+  const kraje = countryList(lang);
 
   const opcje = useMemo(
     () => shippingOptions(country, offer?.totalGrosze || 0).filter((o) => o.grosze != null),
