@@ -26,9 +26,18 @@
 // kilkanascie minut.
 //
 //   npm run build
-//   npx serve -s dist -l 4173 &
+//   (cd dist && python3 -m http.server 4173) &
 //   node scripts/audit-pages.mjs                 wszystkie strony z dist/
 //   node scripts/audit-pages.mjs /shop/ /studio/  tylko wskazane
+//
+// SERWER NIE MOZE MIEC REGULY LAPIACEJ WSZYSTKO. `npx serve -s dist` ma ja
+// domyslnie (`-s` znaczy "single page application") i oddaje `index.html` pod
+// KAZDYM adresem. Pomiar idzie wtedy po stronie glownej sto razy, a React
+// hydruje strone glowna w router, ktory rysuje inna trase, wiec rozjazd jest
+// gwarantowany przez serwer, nie przez serwis. Kosztowalo mnie to falszywy
+// wniosek "hydracja pada na kazdej stronie" wpisany do raportu dla wlasciciela,
+// dlatego skrypt sprawdza to teraz sam i odmawia startu. Produkcja tej reguly
+// nie ma, co `public/_redirects` mowi wprost.
 //
 // W srodowisku zdalnym obce hosty (fonty Google, opinie) nie odpowiadaja i
 // kazde zadanie wisi kilkanascie sekund, wiec skrypt je odcina. Nie zmienia
@@ -54,6 +63,27 @@ function trasyZDist(katalog = "dist", prefiks = "") {
 }
 
 const trasy = process.argv.slice(2).length ? process.argv.slice(2) : trasyZDist();
+
+/**
+ * Adres, ktory na pewno nie istnieje. Serwer bez reguly lapiacej wszystko odda
+ * na to 404. Serwer z ta regula odda 200 i strone glowna, czyli dokladnie to,
+ * co unieważnia caly pomiar.
+ */
+const NIEISTNIEJACY = "/__audyt-sprawdza-serwer-" + trasy.length + "/";
+const proba = await fetch(BASE + NIEISTNIEJACY).catch(() => null);
+if (!proba) {
+  console.error(`Nie ma serwera pod ${BASE}. Uruchom: (cd dist && python3 -m http.server 4173) &`);
+  process.exit(2);
+}
+if (proba.status === 200) {
+  console.error(
+    `Serwer pod ${BASE} oddaje HTTP 200 na adres, ktorego nie ma.\n` +
+    `Ma regule lapiaca wszystko, wiec pod kazda trasa poda strone glowna, a\n` +
+    `caly pomiar bylby pomiarem strony glownej. Produkcja tej reguly nie ma.\n` +
+    `Uruchom zamiast tego: (cd dist && python3 -m http.server 4173) &`
+  );
+  process.exit(2);
+}
 
 const { chromium } = await import("playwright");
 const przegladarka = await chromium.launch({ executablePath: EXE, args: ["--no-sandbox"] });
