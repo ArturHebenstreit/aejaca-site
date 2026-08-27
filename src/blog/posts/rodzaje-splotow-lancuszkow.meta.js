@@ -9,8 +9,8 @@ export const meta = {
   readingTime: { pl: 10, en: 9, de: 9 },
   title: {
     pl: "Rodzaje splotów łańcuszków – 12 wzorów, które warto znać",
-    en: "Chain Weave Types – 12 Patterns Every Jewelry Lover Should Know",
-    de: "Kettenmuster – 12 Flechtarten, die jeder Schmuckliebhaber kennen sollte",
+    en: "Chain Weave Types: 12 Patterns Worth Knowing",
+    de: "Kettenmuster: 12 Flechtarten, die man kennen sollte",
   },
   description: {
     pl: "Przewodnik po 12 rodzajach splotów łańcuszków: od klasycznego po bizantyjski. Dowiedz się, który splot wybrać i jak powstaje łańcuszek ręczny.",

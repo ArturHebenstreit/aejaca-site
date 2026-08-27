@@ -23,6 +23,7 @@ import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { t } from "../pricing/config.js";
 import { useMoney } from "../shop/money.js";
 import { getServiceCard } from "../data/shopCatalog.js";
+import Obraz from "./Obraz.jsx";
 
 const UI = {
   pl: {
@@ -83,12 +84,13 @@ export default function ContentCTA({ service, category = "general", className = 
         to={`/shop/service/${card.id}/`}
         className={`group not-prose flex gap-4 items-center rounded-2xl border ${ring} bg-white/[0.02] hover:bg-white/[0.04] p-4 md:p-5 transition-all duration-300 ${className}`}
       >
-        <img
+        <Obraz
           src={card.image}
           alt=""
           aria-hidden="true"
           loading="lazy"
           className="w-20 h-20 md:w-24 md:h-24 rounded-xl object-cover shrink-0"
+          sizes="96px"
         />
         <div className="min-w-0">
           <div className={`text-xs uppercase tracking-[0.2em] ${tint} mb-1`}>{u.tag}</div>

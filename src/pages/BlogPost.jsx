@@ -17,6 +17,7 @@ import {
 } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
+import Obraz from "../components/Obraz.jsx";
 
 const CATEGORY_LABELS = {
   jewelry: { pl: "Biżuteria", en: "Jewelry", de: "Schmuck" },
@@ -164,7 +165,7 @@ export default function BlogPost() {
         {/* Cover image */}
         <section className="bg-neutral-950 px-4 pb-10">
           <div className="max-w-4xl mx-auto">
-            <img
+            <Obraz
               src={post.coverImage}
               alt={title}
               className="w-full rounded-2xl object-cover max-h-[400px]"
@@ -173,6 +174,7 @@ export default function BlogPost() {
               decoding="async"
               width="1200"
               height="509"
+              sizes="(min-width: 928px) 896px, 96vw"
             />
           </div>
         </section>

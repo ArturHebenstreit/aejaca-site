@@ -16,6 +16,7 @@ import { ResultHeader, ResultDisplay, NextStepPanel, t } from "./calcShared.jsx"
 import CalcToCart from "./CalcToCart.jsx";
 import { calcNew, calcRenovation, calcRepair } from "./JewelryCalc.jsx";
 import { trackCalc } from "../../utils/analytics.js";
+import Obraz from "../Obraz.jsx";
 
 // ============================================================
 // OPTION TABLES
@@ -450,7 +451,7 @@ function TileGrid({ options, value, onChange, lang, cols = 4 }) {
               <>
                 {/* Background image */}
                 <div className="absolute inset-0 overflow-hidden bg-black">
-                  <img src={opt.img} alt={label} loading="lazy"
+                  <Obraz sizes="(min-width: 640px) 180px, 40vw" src={opt.img} alt={label} loading="lazy"
                     className={`w-full h-full object-cover transition-all duration-500 ${
                       active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
                     }`} />

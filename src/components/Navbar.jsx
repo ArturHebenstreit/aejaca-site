@@ -212,7 +212,9 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link to="/" onClick={(e) => handleNavClick(e, "/")} className="flex items-center gap-3 group">
-            <img src="/brand-sign.webp" alt="AEJaCA" width="44" height="44" className="h-11 w-11 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] transition-transform duration-300 group-hover:scale-105" />
+            {/* Znak marki w wersji 128 px. Pelny plik ma 512 px i 48 kB,
+                a rysuje sie tu na 44, na kazdej stronie serwisu. */}
+            <img src="/brand-sign-128.webp" alt="AEJaCA" width="44" height="44" className="h-11 w-11 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] transition-transform duration-300 group-hover:scale-105" />
             <span className="font-serif text-xl font-semibold tracking-wide">AEJaCA</span>
           </Link>
 

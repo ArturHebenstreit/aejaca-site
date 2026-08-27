@@ -367,6 +367,59 @@ if (/<Suspense/.test(clientShell)) {
 }
 
 // ------------------------------------------------------------
+// Tytul i opis miesza sie w wyniku wyszukiwania
+// ------------------------------------------------------------
+// Google obcina tytul mniej wiecej po 60 znakach, a opis po 160. Obciety tytul
+// nie jest bledem, ktory cos psuje: strona dziala, tylko w wyniku wyszukiwania
+// stoi urwana w polowie zdania i traci klikniecia. Audyt z 27 sierpnia 2026
+// znalazl trzynascie takich tytulow i szesc opisow.
+//
+// Liczymy na GOTOWYCH stronach, a nie w `seoData.js`, bo tytuly wpisow bloga,
+// hasel slownika i kart produktow powstaja z danych, nie z mapy SEO.
+{
+  const MAX_TYTUL = 60;
+  const MAX_OPIS = 160;
+  const zaDlugie = [];
+
+  const wszystkie = [];
+  const zbierz = (dir) => {
+    for (const wpis of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, wpis.name);
+      if (wpis.isDirectory() && wpis.name !== "assets") zbierz(p);
+      else if (wpis.name.endsWith(".html")) wszystkie.push(p);
+    }
+  };
+  zbierz(distPath);
+
+  const odkoduj = (t) => t
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"').replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)));
+
+  for (const plik of wszystkie) {
+    const tresc = fs.readFileSync(plik, "utf8");
+    const nazwa = path.relative(distPath, plik);
+    const tytul = /<title[^>]*>([\s\S]*?)<\/title>/.exec(tresc)?.[1];
+    const opis = /<meta[^>]*name="description"[^>]*content="([^"]*)"/.exec(tresc)?.[1];
+    if (tytul && odkoduj(tytul).length > MAX_TYTUL) {
+      zaDlugie.push(`${nazwa}: tytul ${odkoduj(tytul).length} znakow`);
+    }
+    if (opis && odkoduj(opis).length > MAX_OPIS) {
+      zaDlugie.push(`${nazwa}: opis ${odkoduj(opis).length} znakow`);
+    }
+  }
+
+  if (zaDlugie.length) {
+    console.error(`\n  ✗ Tytuly i opisy do obciecia w wyniku wyszukiwania: ${zaDlugie.length}`);
+    for (const z of zaDlugie.slice(0, 10)) console.error(`    ${z}`);
+    if (zaDlugie.length > 10) console.error(`    ...i ${zaDlugie.length - 10} wiecej`);
+    console.error(`    Limit: tytul ${MAX_TYTUL} znakow, opis ${MAX_OPIS}.`);
+    failed++;
+  } else {
+    console.log(`  ✓ tytuly do ${MAX_TYTUL} znakow, opisy do ${MAX_OPIS}`);
+  }
+}
+
+// ------------------------------------------------------------
 // Zaden odnosnik nie wyprowadza z jezyka strony
 // ------------------------------------------------------------
 // Kazda strona stoi pod trzema adresami, a odnosniki pisze sie bez prefiksu

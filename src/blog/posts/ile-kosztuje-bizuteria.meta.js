@@ -6,9 +6,9 @@ export const meta = {
   coverImage: "/img/blog/ile-kosztuje-bizuteria.webp",
   readingTime: { pl: 8, en: 7, de: 7 },
   title: {
-    pl: "Ile kosztuje biżuteria na zamówienie w Polsce? Kompletny cennik 2026",
-    en: "How Much Does Custom Jewelry Cost in Poland? Complete 2026 Price Guide",
-    de: "Was kostet individueller Schmuck in Polen? Kompletter Preisleitfaden 2026",
+    pl: "Ile kosztuje biżuteria na zamówienie? Cennik 2026",
+    en: "What Does Custom Jewelry Cost? Price Guide 2026",
+    de: "Was kostet Schmuck nach Maß? Preisleitfaden 2026",
   },
   description: {
     pl: "Pierścionki, naszyjniki, bransoletki, kolczyki - ile kosztuje biżuteria na zamówienie? Czynniki cenotwórcze, widełki cenowe i porady AEJaCA.",

@@ -101,6 +101,7 @@ import { looksTooSmall, suspectUnits } from "../../pricing/meshUnits.js";
 import { BUILD_VOL_CM, MSLA_BUILD_VOL_CM, maxScaleForBuildVolume } from "../../pricing/print3d.js";
 import { bedFit } from "../../pricing/laserLimits.js";
 import { trackCalc } from "../../utils/analytics.js";
+import Obraz from "../Obraz.jsx";
 
 const STLViewer = lazy(() => import("./STLViewer.jsx"));
 
@@ -477,7 +478,7 @@ function TileGrid({ options, value, onChange, lang, cols = 4, disabled = false, 
             {hasImg ? (
               <>
                 <div className="absolute inset-0 overflow-hidden bg-black">
-                  <img src={opt.img} alt={label} loading="lazy"
+                  <Obraz sizes="(min-width: 640px) 180px, 40vw" src={opt.img} alt={label} loading="lazy"
                     className={`w-full h-full object-cover transition-all duration-500 ${
                       active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
                     }`} />

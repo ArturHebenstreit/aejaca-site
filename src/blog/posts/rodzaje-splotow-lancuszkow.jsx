@@ -1,4 +1,5 @@
 import { H2, H3, P, Lead, UL, LI, Strong, A, Callout, Table, CTABox } from "../../components/blog/Prose.jsx";
+import Obraz from "../../components/Obraz.jsx";
 
 export { meta } from "./rodzaje-splotow-lancuszkow.meta.js";
 
@@ -7,11 +8,12 @@ export function Body({ lang }) {
 
   const WeaveImg = ({ id, name }) => (
     <div className="float-right ml-5 mb-3 w-24 sm:w-32 hidden sm:block">
-      <img
+      <Obraz
         src={`/img/calc/weaves/${id}.webp`}
         alt={name}
         className="w-full rounded-xl shadow-lg border border-white/10"
         loading="lazy"
+        sizes="(min-width: 640px) 128px, 96px"
       />
       <p className="text-xs text-neutral-500 text-center mt-1">{name}</p>
     </div>

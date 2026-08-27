@@ -56,15 +56,15 @@ const LABELS = {
 
 const SEO_META = {
   pl: {
-    title: "Kreator parametrów laserowania - 88 materiałów, 7 laserów | AEJaCA",
+    title: "Parametry laserowania, 88 materiałów, 7 laserów | AEJaCA",
     description: "Dobierz parametry laserowania dla CO₂, fiber, diodowych i innych. Ponad 1000 kombinacji materiał–laser. Darmowy kreator bez rejestracji.",
   },
   en: {
-    title: "Laser Parameter Wizard - 88 Materials, 7 Laser Types | AEJaCA",
+    title: "Laser Parameters: 88 Materials, 7 Laser Types | AEJaCA",
     description: "Find laser parameters for CO₂, fiber, diode and more. Over 1000 material–laser combinations. Free tool, no sign-up.",
   },
   de: {
-    title: "Laserparameter-Assistent - 88 Materialien, 7 Lasertypen | AEJaCA",
+    title: "Laserparameter: 88 Materialien, 7 Lasertypen | AEJaCA",
     description: "Laserparameter für CO₂, Faser, Diode und mehr finden. Über 1000 Material-Laser-Kombinationen. Kostenloses Tool ohne Anmeldung.",
   },
 };

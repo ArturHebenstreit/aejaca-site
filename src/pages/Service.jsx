@@ -22,6 +22,7 @@ import { getServiceCard } from "../data/serviceCatalog.js";
 import ServiceConfigurator from "../components/shop/ServiceConfigurator.jsx";
 import { SHOP_CATEGORIES } from "../data/shopCatalog.js";
 import NotFound from "./NotFound.jsx";
+import Obraz from "../components/Obraz.jsx";
 
 const UI = {
   pl: {
@@ -169,7 +170,9 @@ export default function Service() {
 
           <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
             <div className="rounded-2xl overflow-hidden bg-black border border-white/10">
-              <img src={card.image} alt={t(card.title, lang)} className="w-full h-full object-cover" />
+              <Obraz src={card.image} alt={t(card.title, lang)} className="w-full h-full object-cover"
+                sizes="(min-width: 1024px) 300px, (min-width: 640px) 45vw, 90vw"
+              />
             </div>
 
             <div>

@@ -31,6 +31,7 @@ import {
   METAL_DENSITY, resolveMetalPricePerG, calcNew, calcChain, calcRenovation, calcRepair,
   LBL,
 } from "../../pricing/jewelry.js";
+import Obraz from "../Obraz.jsx";
 
 // Re-eksport, bo SimpleJewelryCalc importuje kalkulacje stad.
 export { calcNew, calcChain, calcRenovation, calcRepair };
@@ -354,7 +355,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                 {/* Background image (full visibility) */}
                 {s.img && (
                   <div className="absolute inset-0 overflow-hidden">
-                    <img src={s.img} alt={t(s.label, lang)} loading="lazy"
+                    <Obraz sizes="(min-width: 640px) 180px, 40vw" src={s.img} alt={t(s.label, lang)} loading="lazy"
                       className={`w-full h-full object-cover transition-all duration-500 ${
                         active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
                       }`} />
@@ -392,7 +393,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     {/* Background image (full visibility) */}
                     {pl.img && (
                       <div className="absolute inset-0 overflow-hidden">
-                        <img src={pl.img} alt={pl.label} loading="lazy"
+                        <Obraz sizes="(min-width: 640px) 180px, 40vw" src={pl.img} alt={pl.label} loading="lazy"
                           className={`w-full h-full object-cover transition-all duration-500 ${
                             active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
                           }`} />
@@ -432,7 +433,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                       hasImg ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
                     }`}>
                       {hasImg ? (
-                        <img src={jt.img} alt={label} loading="lazy"
+                        <Obraz sizes="(min-width: 640px) 180px, 40vw" src={jt.img} alt={label} loading="lazy"
                           className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
                       ) : (
                         <span className="text-2xl opacity-60">◆</span>
@@ -490,7 +491,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     }`}>
                     {w.img && (
                       <div className="absolute inset-0 overflow-hidden">
-                        <img src={w.img} alt={t(w.label, lang)} loading="lazy"
+                        <Obraz sizes="(min-width: 640px) 180px, 40vw" src={w.img} alt={t(w.label, lang)} loading="lazy"
                           className={`w-full h-full object-cover transition-all duration-500 ${active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"}`} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
                         {active && <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />}
@@ -737,7 +738,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                       <div className="w-full aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
                         onDoubleClick={e => { e.stopPropagation(); if (w.img) setWeaveModal(w.id); }}>
                         {w.img ? (
-                          <img src={w.img} alt={t(w.label, lang)} loading="lazy"
+                          <Obraz sizes="(min-width: 640px) 180px, 40vw" src={w.img} alt={t(w.label, lang)} loading="lazy"
                             className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
                         ) : (
                           <span className="text-2xl opacity-40">⛓</span>
@@ -770,7 +771,7 @@ export default function JewelryCalc({ lang = "pl" }) {
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm"
                 onClick={() => setWeaveModal(null)}>
                 <div className="relative max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
-                  <img src={wm.img} alt={t(wm.label, lang)}
+                  <Obraz sizes="(min-width: 640px) 180px, 40vw" src={wm.img} alt={t(wm.label, lang)}
                     className="w-full rounded-2xl shadow-2xl shadow-black/60" />
                   <div className="mt-4 text-center">
                     <p className="text-white font-bold text-xl">{t(wm.label, lang)}</p>
@@ -813,7 +814,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                       }`}>
                       <div className="w-full aspect-square rounded-lg overflow-hidden bg-black">
                         {c.img ? (
-                          <img src={c.img} alt={t(c.label, lang)} loading="lazy"
+                          <Obraz sizes="(min-width: 640px) 180px, 40vw" src={c.img} alt={t(c.label, lang)} loading="lazy"
                             className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
                         ) : (
                           <span className="text-2xl opacity-40 flex items-center justify-center h-full">🔗</span>
@@ -845,7 +846,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                       m.img ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
                     }`}>
                       {m.img ? (
-                        <img src={m.img} alt={label} loading="lazy"
+                        <Obraz sizes="(min-width: 640px) 180px, 40vw" src={m.img} alt={label} loading="lazy"
                           className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
                       ) : (
                         <span className="text-2xl opacity-60">⬡</span>
@@ -919,7 +920,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     }`}>
                     {m.img && (
                       <div className="absolute inset-0 overflow-hidden">
-                        <img src={m.img} alt={t(m.label, lang)} loading="lazy"
+                        <Obraz sizes="(min-width: 640px) 180px, 40vw" src={m.img} alt={t(m.label, lang)} loading="lazy"
                           className={`w-full h-full object-cover transition-all duration-500 ${active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"}`} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
                         {active && <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />}
@@ -970,7 +971,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                         : "border-white/10 bg-white/[0.02] hover:border-white/20"
                     }`}>
                     <div className="w-full aspect-square rounded-lg overflow-hidden bg-black">
-                      <img src={pl.img} alt={label} loading="lazy"
+                      <Obraz sizes="(min-width: 640px) 180px, 40vw" src={pl.img} alt={label} loading="lazy"
                         className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
                     </div>
                     <span className={`text-xs sm:text-xs text-center leading-tight break-all line-clamp-2 ${
@@ -1045,7 +1046,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     }`}>
                       {jt.img ? (
                         <>
-                          <img src={jt.img} alt={label} loading="lazy"
+                          <Obraz sizes="(min-width: 640px) 180px, 40vw" src={jt.img} alt={label} loading="lazy"
                             className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`}
                             style={{ filter: "grayscale(30%) sepia(20%)" }} />
                           <div className="absolute inset-0 bg-sky-900/30 mix-blend-multiply" />
@@ -1085,7 +1086,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                         : "border-white/10 bg-white/[0.02] hover:border-white/20"
                     }`}>
                     <div className="w-full aspect-square rounded-lg overflow-hidden relative bg-black">
-                      <img src={m.img} alt={label} loading="lazy"
+                      <Obraz sizes="(min-width: 640px) 180px, 40vw" src={m.img} alt={label} loading="lazy"
                         className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`}
                         style={{ filter: "grayscale(30%) sepia(20%)" }} />
                       <div className="absolute inset-0 bg-sky-900/30 mix-blend-multiply" />
@@ -1136,7 +1137,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     }`}>
                       {jt.img ? (
                         <>
-                          <img src={jt.img} alt={label} loading="lazy"
+                          <Obraz sizes="(min-width: 640px) 180px, 40vw" src={jt.img} alt={label} loading="lazy"
                             className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`}
                             style={{ filter: "grayscale(45%) contrast(110%) sepia(10%)" }} />
                           <div className="absolute inset-0 bg-orange-900/25 mix-blend-multiply" />
@@ -1177,7 +1178,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                         : "border-white/10 bg-white/[0.02] hover:border-white/20"
                     }`}>
                     <div className="w-full aspect-square rounded-lg overflow-hidden relative bg-black">
-                      <img src={m.img} alt={label} loading="lazy"
+                      <Obraz sizes="(min-width: 640px) 180px, 40vw" src={m.img} alt={label} loading="lazy"
                         className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`}
                         style={{ filter: "grayscale(45%) contrast(110%) sepia(10%)" }} />
                       <div className="absolute inset-0 bg-orange-900/25 mix-blend-multiply" />

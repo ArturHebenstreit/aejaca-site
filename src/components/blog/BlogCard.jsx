@@ -1,6 +1,7 @@
 import { Link } from "../../i18n/nav.jsx";
 import { ArrowRight, Clock, Tag } from "lucide-react";
 import { useLanguage } from "../../i18n/LanguageContext.jsx";
+import Obraz from "../Obraz.jsx";
 
 const CATEGORY_LABELS = {
   jewelry: { pl: "Biżuteria", en: "Jewelry", de: "Schmuck", color: "text-amber-400 border-amber-400/30 bg-amber-400/10" },
@@ -20,7 +21,7 @@ export default function BlogCard({ post }) {
       className="group flex flex-col rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden hover:border-white/20 transition-all duration-300"
     >
       <div className="relative h-48 overflow-hidden">
-        <img
+        <Obraz
           src={post.coverImage}
           alt={title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -28,6 +29,7 @@ export default function BlogCard({ post }) {
           decoding="async"
           width="600"
           height="400"
+          sizes="(min-width: 1024px) 380px, (min-width: 640px) 46vw, 92vw"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 to-transparent" />
         <div className="absolute bottom-3 left-3">

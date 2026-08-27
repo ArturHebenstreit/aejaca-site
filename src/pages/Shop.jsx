@@ -24,6 +24,7 @@ import {
   PRODUCTS, PERSONALIZED, SERVICE_CARDS,
 } from "../data/shopCatalog.js";
 import PriceReduction from "../components/shop/PriceReduction.jsx";
+import Obraz from "../components/Obraz.jsx";
 
 // Eksportowane, bo strona glowna pokazuje wycinek sklepu i ma uzywac tych
 // samych etykiet. Wlasny zestaw rozjechalby sie przy pierwszym tlumaczeniu.
@@ -530,11 +531,12 @@ function ProductCard({ product, lang, u, money, availability }) {
                  hover:border-white/20 hover:bg-white/[0.04] transition-all duration-300"
     >
       <div className="aspect-square bg-black overflow-hidden">
-        <img
+        <Obraz
           src={product.images[0]}
           alt={t(product.title, lang)}
           loading="lazy"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          sizes="(min-width: 1024px) 300px, (min-width: 640px) 45vw, 90vw"
         />
       </div>
       <div className="p-4 flex flex-col flex-1">
@@ -580,11 +582,12 @@ function ServiceCard({ card, lang, u, money }) {
                  hover:border-white/20 hover:bg-white/[0.04] transition-all duration-300"
     >
       <div className="aspect-square bg-black overflow-hidden">
-        <img
+        <Obraz
           src={card.image}
           alt={t(card.title, lang)}
           loading="lazy"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          sizes="(min-width: 1024px) 300px, (min-width: 640px) 45vw, 90vw"
         />
       </div>
       <div className="p-4 flex flex-col flex-1">

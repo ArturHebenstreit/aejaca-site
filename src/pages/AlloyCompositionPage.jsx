@@ -64,7 +64,7 @@ const SEO_META = {
     description: "Alloy composition calculator for jewelers. Gold 585, 750, silver 925, platinum 950 - composition %, melting range, Vickers hardness.",
   },
   de: {
-    title: "Legierungszusammensetzung Schmuck - Gold, Silber, Platin | AEJaCA",
+    title: "Legierungen im Schmuck: Gold, Silber, Platin | AEJaCA",
     description: "Legierungsrechner für Goldschmiede. Gold 585, 750, Silber 925, Platin 950 - Zusammensetzung %, Schmelzbereich, Vickers-Härte.",
   },
 };

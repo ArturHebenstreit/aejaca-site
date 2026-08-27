@@ -16,6 +16,7 @@ import { CONFIG, QUANTITY_TIERS, t, fmtNum, fmtCost, applyPricing } from "../../
 import { buildQuoteSummary } from "../../pricing/quoteSummary.js";
 import { TOOL_LINKS } from "../../data/toolLinks.js";
 import { sciezkaJezyka } from "../../routes.js";
+import Obraz from "../Obraz.jsx";
 
 /**
  * Narzedzia warte sprawdzenia PRZED zamowieniem, wedlug technologii.
@@ -91,7 +92,7 @@ export function MaterialCards({ options, value, onChange, lang = "pl", cols = "g
               o.img ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
             }`}>
               {o.img ? (
-                <img src={o.img} alt={label} loading="lazy"
+                <Obraz sizes="(min-width: 640px) 180px, 40vw" src={o.img} alt={label} loading="lazy"
                   className={`w-full h-full object-cover transition-all duration-300 ${
                     active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"
                   }`} />
@@ -149,7 +150,7 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
             }`}>
             {o.img && (
               <div className="absolute inset-0 overflow-hidden">
-                <img src={o.img} alt={lbl(o.label)} loading="lazy"
+                <Obraz sizes="(min-width: 640px) 180px, 40vw" src={o.img} alt={lbl(o.label)} loading="lazy"
                   className={`w-full h-full object-cover transition-all duration-500 ${
                     active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
                   }`} />

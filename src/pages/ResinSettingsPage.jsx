@@ -7,6 +7,7 @@ import { buildWebPageSchema, buildBreadcrumbSchema, buildFAQSchema } from "../se
 import { SITE } from "../seo/seoData.js";
 import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
 import { Link } from "../i18n/nav.jsx";
+import Obraz from "../components/Obraz.jsx";
 
 const LABELS = {
   pl: {
@@ -147,7 +148,7 @@ export default function ResinSettingsPage() {
 
         {/* Hero */}
         <section className="relative overflow-hidden min-h-[340px]">
-          <img
+          <Obraz
             src="/img/calc/3d_segments/msla_resin.webp"
             alt="Druk 3D MSLA, żywice i parametry, AEJaCA sTuDiO"
             className="absolute inset-0 w-full h-full object-cover"
@@ -156,6 +157,7 @@ export default function ResinSettingsPage() {
             decoding="async"
             width="1024"
             height="572"
+            sizes="100vw"
           />
           <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
           <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-24 pb-6 text-center flex flex-col items-center">

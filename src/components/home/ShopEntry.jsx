@@ -21,6 +21,7 @@ import { useMoney } from "../../shop/money.js";
 import { useAvailability, stockOf } from "../../shop/availability.js";
 import { PRODUCTS, serviceCardsByCategory } from "../../data/shopCatalog.js";
 import { UI as SHOP_UI } from "../../pages/Shop.jsx";
+import Obraz from "../Obraz.jsx";
 
 /** Ponizej tylu dostepnych pozycji pas gotowych produktow sie nie renderuje. */
 const READY_MIN = 3;
@@ -36,12 +37,13 @@ function Tile({ to, image, alt, badge, title, lead, price, note, u }) {
                  hover:border-white/20 hover:bg-white/[0.04] transition-all duration-300"
     >
       <div className="aspect-square bg-black overflow-hidden">
-        <img
+        <Obraz
           src={image}
           alt={alt}
           loading="lazy"
           decoding="async"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          sizes="(min-width: 1024px) 300px, (min-width: 640px) 45vw, 90vw"
         />
       </div>
       <div className="p-4 flex flex-col flex-1">

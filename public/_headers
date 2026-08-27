@@ -96,6 +96,11 @@
   # bo cache nie jest po stronie klienta. Kosztowalo nas to jedno wdrozenie.
 
 # Images - cache 30 days + stale-while-revalidate for instant loads during refresh
+# AVIF doszedl 27 sierpnia 2026 razem z wariantami szerokosci. Bez wlasnej reguly
+# obrazy AVIF wpadalyby pod `/*` na gorze pliku, czyli "odswiezaj za kazdym
+# razem", i caly zysk z ciecia obrazow zjadalyby powtorne pobrania.
+/*.avif
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
 /*.jpg
   Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
 /*.png

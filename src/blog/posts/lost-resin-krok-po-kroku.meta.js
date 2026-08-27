@@ -11,7 +11,7 @@ export const meta = {
   title: {
     pl: "Lost-resin krok po kroku: druk żywiczny w jubilerstwie",
     en: "Lost-Resin Step by Step: Resin Printing in Jewelry Making",
-    de: "Lost-Resin Schritt für Schritt: Harzdruck in der Schmuckherstellung",
+    de: "Lost-Resin Schritt für Schritt: Harzdruck im Schmuck",
   },
   description: {
     pl: "Jak powstaje wzorzec lost-resin do odlewu biżuterii? Sprzęt, żywice castable, kompensacja skurczu i pełny workflow od CAD do gotowego pierścionka.",

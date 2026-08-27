@@ -56,7 +56,7 @@ const LABELS = {
 
 const SEO_META = {
   pl: {
-    title: "Kalkulator Rozwinięcia Obrączki - Długość Paska Metalu | AEJaCA",
+    title: "Kalkulator rozwinięcia obrączki, długość paska | AEJaCA",
     description: "Oblicz długość paska metalu do wykonania obrączki metodą walcowania. Kalkulator uwzględnia grubość materiału, rozmiar palca i szerokość obrączki.",
   },
   en: {

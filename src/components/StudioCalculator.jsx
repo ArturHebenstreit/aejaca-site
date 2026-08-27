@@ -11,6 +11,7 @@ import CO2LaserCalc from "./calculators/CO2LaserCalc.jsx";
 import FiberLaserCalc from "./calculators/FiberLaserCalc.jsx";
 import EpoxyCastCalc from "./calculators/EpoxyCastCalc.jsx";
 import MetalCastCalc from "./calculators/MetalCastCalc.jsx";
+import Obraz from "./Obraz.jsx";
 
 // DRUK ZYWICZNY NIE MA WLASNEGO KAFELKA (polecenie wlasciciela, 2026-08-21).
 // Wybor FDM albo MSLA stoi juz w pierwszym kroku kalkulatora druku, wiec osobny
@@ -18,10 +19,10 @@ import MetalCastCalc from "./calculators/MetalCastCalc.jsx";
 // musial wiedziec, ze "Druk zywiczny" i "MSLA" to jedno, zanim cokolwiek zobaczyl.
 // Zostaja cztery kafelki, po jednej maszynie kazdy.
 const TECHS = [
-  { id: "3dprint",     labelKey: "tab3d",    descKey: "desc3d",    img: "/img/calc/studio/3dprint.png" },
-  { id: "co2_laser",   labelKey: "tabCO2",   descKey: "descCO2",   img: "/img/calc/studio/co2_laser.png" },
-  { id: "fiber_laser", labelKey: "tabFiber", descKey: "descFiber", img: "/img/calc/studio/fiber_laser.png" },
-  { id: "epoxy",       labelKey: "tabEpoxy", descKey: "descEpoxy", img: "/img/calc/studio/epoxy.png" },
+  { id: "3dprint",     labelKey: "tab3d",    descKey: "desc3d",    img: "/img/calc/studio/3dprint.webp" },
+  { id: "co2_laser",   labelKey: "tabCO2",   descKey: "descCO2",   img: "/img/calc/studio/co2_laser.webp" },
+  { id: "fiber_laser", labelKey: "tabFiber", descKey: "descFiber", img: "/img/calc/studio/fiber_laser.webp" },
+  { id: "epoxy",       labelKey: "tabEpoxy", descKey: "descEpoxy", img: "/img/calc/studio/epoxy.webp" },
   // Odlew z metalu szlachetnego stoi tu, a nie w kalkulatorze jubilerskim,
   // bo w sklepie ta usluga nalezy do sTuDiO: droga wiedzie przez model 3D
   // i wydruk wzorca, a nie przez prace przy warsztacie jubilerskim.
@@ -211,7 +212,7 @@ export default function StudioCalculator() {
                     }`}>
                     {img && (
                       <div className="absolute inset-0 overflow-hidden">
-                        <img src={img} alt={l[labelKey]} loading="lazy"
+                        <Obraz sizes="(min-width: 640px) 180px, 40vw" src={img} alt={l[labelKey]} loading="lazy"
                           className={`w-full h-full object-cover transition-all duration-500 ${active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"}`} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
                         {active && <div className="absolute inset-0 bg-blue-400/10 mix-blend-overlay" />}

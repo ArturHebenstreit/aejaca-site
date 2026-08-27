@@ -13,6 +13,7 @@ import { SITE, getSEO } from "../seo/seoData.js";
 import ToolLinks from "../components/ToolLinks.jsx";
 import { getToolsForPros } from "../data/toolLinks.js";
 import B2BInquiryForm from "../components/B2BInquiryForm.jsx";
+import Obraz from "../components/Obraz.jsx";
 
 // ============================================================
 // COPY, inline dictionary (pattern from Reviews.jsx), pl/en/de.
@@ -346,7 +347,7 @@ export default function B2B() {
       <div className="bg-neutral-950">
         {/* Hero */}
         <section className="relative overflow-hidden min-h-[380px]">
-          <img
+          <Obraz
             src="/img/b2b/hero.webp"
             alt={t.heroTitle}
             className="absolute inset-0 w-full h-full object-cover"
@@ -355,6 +356,7 @@ export default function B2B() {
             decoding="async"
             width="1920"
             height="820"
+            sizes="100vw"
           />
           <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-neutral-950/50 via-neutral-950/85 to-neutral-950" />
           <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-28 pb-14 text-center flex flex-col items-center">
@@ -401,7 +403,9 @@ export default function B2B() {
                 return (
                   <div key={i} ref={getPillarRef(i)} className="reveal-scale rounded-2xl glass-blue overflow-hidden">
                     <div className="aspect-[21/9] bg-black overflow-hidden">
-                      <img src={p.img} alt={p.title} loading="lazy" className="w-full h-full object-cover" />
+                      <Obraz src={p.img} alt={p.title} loading="lazy" className="w-full h-full object-cover"
+                        sizes="(min-width: 1024px) 340px, (min-width: 640px) 45vw, 90vw"
+                      />
                     </div>
                     <div className="p-5 sm:p-6">
                       <div className="flex items-center gap-2.5 mb-3">
@@ -452,8 +456,10 @@ export default function B2B() {
           <div ref={whiteLabelRef} className="reveal max-w-4xl mx-auto text-center">
             <div className="text-blue-400 text-xs uppercase tracking-[0.2em] mb-3">{t.whiteLabelTag}</div>
             <h2 className="font-sans text-3xl md:text-4xl font-bold text-white mb-8 tracking-tight">{t.whiteLabelTitle}</h2>
-            <img src="/img/b2b/whitelabel.webp" alt={t.whiteLabelTitle} loading="lazy"
-              className="w-full max-w-2xl mx-auto rounded-2xl border border-white/10 mb-12 object-cover" />
+            <Obraz src="/img/b2b/whitelabel.webp" alt={t.whiteLabelTitle} loading="lazy"
+              className="w-full max-w-2xl mx-auto rounded-2xl border border-white/10 mb-12 object-cover"
+              sizes="(min-width: 768px) 672px, 92vw"
+            />
             <div className="grid sm:grid-cols-3 lg:grid-cols-6 gap-6 text-left">
               {t.whiteLabelSteps.map((step, i) => (
                 <div key={i}>

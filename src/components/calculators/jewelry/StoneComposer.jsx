@@ -17,6 +17,7 @@ import {
   GEM_QUALITY,
   CERTIFICATIONS,
 } from "../jewelryConfig.js";
+import Obraz from "../../Obraz.jsx";
 
 const ADD_LABEL = {
   pl: "Dodaj kolejny kamień",
@@ -116,7 +117,7 @@ function StoneRow({ row, gemstones, onChange, onRemove, lang, canRemove, isLast 
                   g.img ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
                 }`}>
                   {g.img ? (
-                    <img src={g.img} alt={label} loading="lazy"
+                    <Obraz sizes="(min-width: 640px) 180px, 40vw" src={g.img} alt={label} loading="lazy"
                       className={`w-full h-full object-cover transition-transform duration-300 ${active ? "scale-105" : "hover:scale-105"}`} />
                   ) : (
                     <span className={`text-base ${isSpecial ? "opacity-40" : "opacity-60"}`}>

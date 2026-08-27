@@ -21,6 +21,7 @@ import ShopEntry from "../components/home/ShopEntry.jsx";
 import { GOOGLE_BUSINESS, REVIEWS, TRUSTPILOT_BUSINESS } from "../data/googleReviews.js";
 import { reviewCountLabel } from "../utils/reviewCount.js";
 import HeroObraz from "../components/HeroObraz.jsx";
+import Obraz from "../components/Obraz.jsx";
 
 // Prog, od ktorego Trustpilot pomaga zamiast szkodzic. Ponizej niego odznaka
 // obok "5,0 z 25 opinii Google" kaze czytelnikowi porownac liczby i wyciagnac
@@ -234,7 +235,9 @@ export default function Home() {
               ].map(({ to, Icon, title, desc, cta, img }) => (
                 <Link key={to} to={to} onClick={() => trackCTA("quickquote_stl_tile", to)} className="group relative rounded-xl overflow-hidden border border-emerald-400/10 hover:border-emerald-400/30 hover:shadow-lg hover:shadow-emerald-900/10 transition-all duration-300 min-h-[180px]">
                   <div className="absolute inset-0">
-                    <img src={img} alt={title} loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <Obraz src={img} alt={title} loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(min-width: 1024px) 260px, (min-width: 640px) 45vw, 90vw"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30" />
                   </div>
                   <div className="relative p-3 h-full min-h-[180px] flex flex-col justify-end">

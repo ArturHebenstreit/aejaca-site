@@ -223,6 +223,9 @@ export default function Cart() {
                       {/* Wlasny model klienta wygrywa ze zdjeciem katalogowym uslugi.
                           thumbData jest zapisany razem z pozycja, wiec podglad
                           dziala takze wtedy, gdy kopia na serwerze nie doszla. */}
+                      {/* ZOSTAJE ZWYKLE `<img>`, a nie `<Obraz>`. Zrodlem bywa tu
+                          podglad wygenerowany u klienta (`thumbData`), a nie plik
+                          z serwisu, wiec nie ma dla niego wariantow do podania. */}
                       {(i.thumbData || i.thumbUrl || i.image) && (
                         <img
                           src={i.thumbData || i.thumbUrl || i.image}
