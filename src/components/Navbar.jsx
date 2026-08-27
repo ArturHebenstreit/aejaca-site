@@ -200,13 +200,20 @@ export default function Navbar() {
   };
 
   return (
+    // Pasek podpowiedzi jezyka (`JezykPodpowiedz`) stoi NAD paskiem nawigacji
+    // i ustawia `--pasek-jezyka` na swoja wysokosc. Nawigacja jest ustawiona
+    // na sztywno, wiec nie zsunie sie sama: bez tego pasek wyladowalby POD nia
+    // i bylby niewidoczny, mimo ze jest w drzewie strony.
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? "backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20"
           : "backdrop-blur-md border-b border-white/5"
       }`}
-      style={{ background: scrolled ? "var(--ds-navbar-bg-s)" : "var(--ds-navbar-bg)" }}
+      style={{
+        top: "var(--pasek-jezyka, 0px)",
+        background: scrolled ? "var(--ds-navbar-bg-s)" : "var(--ds-navbar-bg)",
+      }}
       aria-label="Main navigation"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

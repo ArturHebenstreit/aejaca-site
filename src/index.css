@@ -74,6 +74,11 @@
   --radius-DEFAULT: 0.5rem;
 }
 
+/* Wysokosc paska podpowiedzi jezyka. Pasek melduje ja sam po zamontowaniu,
+   a do tego czasu jest zero, wiec nic sie nie rusza. Nawigacja ustawiona na
+   sztywno czyta to w swoim `top`, a tresc dostaje tyle samo u gory. */
+body { padding-top: var(--pasek-jezyka, 0px); }
+
 :root {
   font-synthesis: none;
   text-rendering: optimizeLegibility;

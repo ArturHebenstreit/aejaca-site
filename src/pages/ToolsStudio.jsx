@@ -28,8 +28,6 @@ const LABELS = {
     breadTools: "Narzędzia sTuDiO",
     printabilityCardTitle: "Sprawdzarka modeli 3D",
     printabilityCardDesc: "Czy Twój model się wydrukuje: szczelność siatki, grubość ścianek pod daną dyszę, gabaryty, nawisy. Plik zostaje w przeglądarce.",
-    printabilityCardTitle: "Sprawdzarka modeli 3D",
-    printabilityCardDesc: "Czy Twój model się wydrukuje: szczelność siatki, grubość ścianek pod daną dyszę, gabaryty, nawisy. Plik zostaje w przeglądarce.",
     printCardTitle: "Parametry druku 3D FDM",
     printCardDesc: "Dobór materiału, karty parametrów i kalkulator filamentu dla 38+ filamentów.",
     printCardBtn: "Otwórz narzędzie",

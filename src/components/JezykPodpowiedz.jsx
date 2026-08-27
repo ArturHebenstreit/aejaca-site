@@ -68,7 +68,15 @@ export default function JezykPodpowiedz() {
 
   return (
     <div
-      className="bg-amber-400/10 border-b border-amber-400/20 px-4 py-2.5"
+      ref={(el) => {
+        // Pasek nawigacji jest ustawiony na sztywno u gory, wiec zwykly element
+        // w toku dokumentu wyladowalby POD nim i nie bylby widoczny. Meldujemy
+        // wiec wlasna wysokosc, a nawigacja i tresc zjezdzaja o tyle w dol.
+        const korzen = document.documentElement;
+        if (!el) { korzen.style.removeProperty("--pasek-jezyka"); return; }
+        korzen.style.setProperty("--pasek-jezyka", `${el.offsetHeight}px`);
+      }}
+      className="fixed top-0 left-0 right-0 z-[60] bg-amber-400/10 backdrop-blur-lg border-b border-amber-400/25 px-4 py-2.5"
       lang={proponowany}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-center gap-3 flex-wrap text-xs">
