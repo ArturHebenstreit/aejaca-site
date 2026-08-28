@@ -4,7 +4,7 @@
 // Dlaczego statyczne:
 // - Google Places API ma limit 5 recenzji / zapytanie (nie 22)
 // - ToS Places API: cache max 30 dni - trzeba regenerować regularnie
-// - Statyczny JSON = pełna kontrola, wszystkie 22 opinie, zero kosztów
+// - Statyczny JSON = pełna kontrola, wszystkie opinie, zero kosztów
 //
 // AKTUALIZACJA:
 // 1. Wejdź na https://maps.app.goo.gl/D9XHVQD4ufjjA5X18
@@ -21,11 +21,11 @@
 //   translations - { en, pl, de } - opcjonalne tłumaczenia (fallback: oryginał)
 //
 // SCHEMA.ORG:
-// - aggregateRating pokazuje 5.0 / 25 w SERP (gwiazdki)
+// - aggregateRating pokazuje 5.0 / 26 w SERP (gwiazdki)
 // - Review[] z publisher:Google = jawna atrybucja (SEO-safe)
 // - W JSON-LD trafiają TYLKO opinie z treścią (Google guidelines wymagają reviewBody)
 // - Na stronie cytujemy tylko opinie z komentarzem (od najnowszej); rating-only
-//   nie są wyświetlane, ale liczą się w aggregateRating (reviewCount = 25)
+//   nie są wyświetlane, ale liczą się w aggregateRating (reviewCount = 26)
 // ============================================================
 
 export const GOOGLE_BUSINESS = {
@@ -41,7 +41,7 @@ export const GOOGLE_BUSINESS = {
   writeReviewUrl: "https://search.google.com/local/writereview?placeid=ChIJE7k_bwABwGwRNtWGAYfCHH4",
   // Agregaty (aktualizuj przy zmianach)
   rating: 5.0,
-  totalReviews: 25,
+  totalReviews: 26,
 };
 
 // ============================================================
@@ -108,14 +108,26 @@ export const TRUSTPILOT_REVIEWS = [
 ];
 
 // -------------------------------------------------------------------
-// 25 rzeczywistych opinii z Google Maps (stan: lipiec 2026)
-// 11 z treścią + 14 rating-only (5★, bez tekstu, normalne na Google)
+// 26 rzeczywistych opinii z Google Maps (stan: sierpień 2026)
+// 12 z treścią + 14 rating-only (5★, bez tekstu, normalne na Google)
 // Daty szacunkowe "miesiąc temu" - wszystkie w marcu 2026,
 // oprócz Artur Hebenstreit (2 mies. temu wg odpowiedzi właściciela).
 // -------------------------------------------------------------------
 
 export const REVIEWS = [
-  // --- Z TREŚCIĄ (10) ---
+  // --- Z TREŚCIĄ (12) ---
+  {
+    id: "r26",
+    author: "N",
+    rating: 5,
+    date: "2026-08-27",
+    originalLang: "pl",
+    text: "Jestem bardzo zadowolona z komunikacji i szybkości pracy zespołu AEJaCA! Polecam wszystkim którzy się interesują produkowaniem wyrobów jubilerskich 💍",
+    translations: {
+      en: "I am very happy with the communication and how fast the AEJaCA team works! I recommend them to anyone interested in having jewelry made 💍",
+      de: "Ich bin sehr zufrieden mit der Kommunikation und der Arbeitsgeschwindigkeit des AEJaCA-Teams! Ich empfehle sie allen, die sich für die Anfertigung von Schmuck interessieren 💍",
+    },
+  },
   {
     id: "r25",
     author: "Jacob",
