@@ -64,7 +64,7 @@ export default function NewsletterForm({ compact = false }) {
   // i w stopce. Staly identyfikator dawalby dwa te same id w jednym dokumencie,
   // przez co etykieta wskazywalaby zawsze pierwsze pole.
   const emailId = `nl-email-${useId()}`;
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const l = LABELS[lang] || LABELS.en;
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
@@ -147,7 +147,7 @@ export default function NewsletterForm({ compact = false }) {
     <form
       onSubmit={handleSubmit}
       className={`rounded-2xl border border-amber-400/20 bg-gradient-to-br from-amber-400/10 via-neutral-900/40 to-blue-400/10 backdrop-blur-sm p-5 ${compact ? "" : "md:p-6"}`}
-      aria-label="Newsletter signup"
+      aria-label={t.a11y.newsletter}
     >
       <div className="flex items-center gap-2 mb-2">
         <Gift className="w-4 h-4 text-amber-300" aria-hidden="true" />

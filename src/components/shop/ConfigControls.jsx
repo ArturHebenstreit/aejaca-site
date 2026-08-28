@@ -122,7 +122,7 @@ export function QuantityStepper({ label, value, onChange, min = 1, max = 100, op
     <div className="mb-6">
       <div className="text-xs uppercase tracking-wide text-neutral-500 mb-2">{label}</div>
       <div className="flex items-center gap-3">
-        <button type="button" className={btn(value <= min)} onClick={wDol} disabled={value <= min} aria-label="-">
+        <button type="button" className={btn(value <= min)} onClick={wDol} disabled={value <= min} aria-label={{ pl: "Mniej", en: "Decrease", de: "Weniger" }[lang]}>
           &minus;
         </button>
         {otwarty ? (
@@ -143,7 +143,7 @@ export function QuantityStepper({ label, value, onChange, min = 1, max = 100, op
                         focus:outline-none ${accent === "amber" ? "focus:border-amber-400/50" : "focus:border-blue-400/50"}`}
           />
         )}
-        <button type="button" className={btn(przyGorze)} onClick={wGore} disabled={przyGorze} aria-label="+">
+        <button type="button" className={btn(przyGorze)} onClick={wGore} disabled={przyGorze} aria-label={{ pl: "Więcej", en: "Increase", de: "Mehr" }[lang]}>
           +
         </button>
       </div>

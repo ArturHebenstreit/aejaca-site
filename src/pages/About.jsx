@@ -7,6 +7,7 @@ import SEOHead from "../seo/SEOHead.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 import Obraz from "../components/Obraz.jsx";
+import { opisObrazu } from "../data/opisyObrazow.js";
 
 // All labels inline, trilingual, no i18n file needed for a single page
 const LABELS = {
@@ -183,7 +184,7 @@ const GALLERY_PHOTOS = [
     alt: {
       pl: "Mikroskop jubilerski w warsztacie AEJaCA",
       en: "Jeweler's microscope at AEJaCA workshop",
-      de: "Schmuck-Mikroskop im AEJaCA-Werkstatt",
+      de: "Schmuck-Mikroskop in der AEJaCA-Werkstatt",
     },
   },
   {
@@ -199,7 +200,7 @@ const GALLERY_PHOTOS = [
     alt: {
       pl: "Narzędzia jubilerskie, anki i punce w warsztacie AEJaCA",
       en: "Jewelry tools, dapping punches and block at AEJaCA workshop",
-      de: "Schmuckwerkzeuge, Punzen und Ankblock in der AEJaCA-Werkstatt",
+      de: "Schmuckwerkzeuge, Punzen und Ankenklotz in der AEJaCA-Werkstatt",
     },
   },
   {
@@ -310,7 +311,7 @@ export default function About() {
         <section className="relative min-h-[50vh] flex items-end overflow-hidden">
           <Obraz
             src="/img/IMG_5145.webp"
-            alt="AEJaCA workshop, jewelry and digital fabrication studio"
+            alt={opisObrazu("pracownia-stol", lang)}
             className="absolute inset-0 w-full h-full object-cover"
             loading="eager"
             fetchpriority="high"
@@ -348,7 +349,7 @@ export default function About() {
             <div className="flex flex-col gap-3 items-center md:items-start">
               <Obraz
                 src="/img/DSC05225.webp"
-                alt="Artur Hebenstreit, founder of AEJaCA"
+                alt={opisObrazu("zalozyciel-portret", lang)}
                 className="rounded-2xl aspect-[3/4] object-cover object-top w-full max-w-[220px] md:max-w-[260px] shadow-2xl shadow-black/50"
                 loading="lazy"
                 decoding="async"
@@ -359,7 +360,7 @@ export default function About() {
               <div className="flex gap-3">
                 <Obraz
                   src="/img/founder-workshop-1.webp"
-                  alt="Artur Hebenstreit at the jeweler's workbench"
+                  alt={opisObrazu("zalozyciel-warsztat", lang)}
                   className="rounded-xl aspect-[3/4] object-cover w-[105px] md:w-[124px] shadow-xl shadow-black/40"
                   loading="lazy"
                   decoding="async"
@@ -369,7 +370,7 @@ export default function About() {
                 />
                 <Obraz
                   src="/img/founder-workshop-2.webp"
-                  alt="Artur Hebenstreit crafting jewelry"
+                  alt={opisObrazu("zalozyciel-praca", lang)}
                   className="rounded-xl aspect-[3/4] object-cover w-[105px] md:w-[124px] shadow-xl shadow-black/40"
                   loading="lazy"
                   decoding="async"

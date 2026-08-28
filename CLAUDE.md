@@ -123,7 +123,7 @@ Zasady linkowania narzędzi: patrz `PROJECT_RULES.md`, sekcja `Linkowanie narzę
 
 Wspólne konwencje inżynierskie: patrz `PROJECT_RULES.md`, sekcja `Konwencje inżynierskie`.
 
-### Trzy rzeczy, których build pilnuje, a łatwo o nich zapomnieć (od 2026-08-27)
+### Rzeczy, których build pilnuje, a łatwo o nich zapomnieć (od 2026-08-27)
 
 - **Odnośnik wewnętrzny pisze się przez `Link` z `src/i18n/nav.jsx`, nigdy przez
   `<a href="/...">`.** Każdy język stoi pod własnym adresem (`/studio/`,
@@ -150,6 +150,33 @@ Wspólne konwencje inżynierskie: patrz `PROJECT_RULES.md`, sekcja `Konwencje in
 - **Najmniejsze pismo w serwisie to 12 px** (`text-xs`). Bez wyjątków, pilnuje
   `scripts/check-drobny-tekst.mjs`. Nie mieści się? Poszerz kratkę albo skróć
   napis.
+
+- **Słownik z `useLanguage()` jest obiektem, nie funkcją: `t.nav.currency`, nie
+  `t("nav.currency")`.** Zapis funkcyjny, znany z bibliotek i18n, przechodzi
+  build i lint, a wywala się w przeglądarce. Wyjątek leci w trakcie renderu,
+  więc React nie gasi jednego napisu, tylko odmontowuje całe drzewo: klient
+  widzi biały ekran. Pilnuje `scripts/check-slownik-jako-funkcja.mjs`. Uwaga na
+  drugie `t`: pomocnik `t(pl, en, de)` we wpisach blogowych i `t(etykieta, lang)`
+  w kalkulatorach **ma** być funkcją, dlatego bramka patrzy na to, co naprawdę
+  wyszło z `useLanguage()` w danym pliku.
+
+- **Każdy napis docierający do człowieka idzie ze słownika, także niewidoczny.**
+  `aria-label` wpisany wprost jest zawsze w jednym języku, czyli dla dwóch
+  trzecich odwiedzających w złym. Pilnuje `scripts/check-nazwy-dostepne.mjs`,
+  łapie też nazwę sklejoną z szablonu. `alt` bierze się z
+  `opisObrazu("klucz", lang)`, bo opis należy do obrazu, a nie do strony: ten
+  sam obraz stoi na kilku stronach. Obraz ozdobny ma `alt=""`. Wyjątek: nazwa
+  języka zostaje w swoim języku ("Deutsch", nie "niemiecki"), a `alt` logo to
+  nazwa organizacji. Decyzja: ADR-0025.
+
+- **Kod za kliknięciem jest poza zasięgiem prerenderu i przeglądu stron.**
+  Prerender rysuje 300 stron, `scripts/audit-pages.mjs` je ogląda, ale obie
+  siatki widzą tylko pierwszy ekran. Lista wyboru języka pojawia się dopiero po
+  kliknięciu i przez dwa dni stała zepsuta przy zielonym buildzie i zielonym
+  przeglądzie. Cokolwiek otwiera się dopiero po interakcji, potrzebuje własnego
+  sprawdzianu: wzór to `scripts/check-menu-jezyka.mjs` (`npm run check:jezyk`),
+  który naprawdę klika, w dwóch szerokościach ekranu. Nie stoi w `npm run build`,
+  bo build leci na Cloudflare Pages, gdzie nie ma przeglądarki.
 - **Skille projektu** (`.claude/skills/`): jadą z repozytorium, więc działają w każdej sesji, także zdalnej. Każdy ma obok `ORIGIN.md` ze źródłem, licencją, datą pobrania i wynikiem przeglądu bezpieczeństwa. **Dodając skill z zewnątrz: przeczytaj go w całości, załóż `ORIGIN.md`, dopisz nazwę katalogu do `SKILLE_ZEWNETRZNE` w `scripts/check-emdash.mjs`, dopiero potem commituj.** Bez tego kroku build pada na cudzej pisowni, bo reguła długich myślników jest bramką: obowiązuje nasz tekst, a nie tekst, który tylko u nas leży (`ORIGIN.md` zostaje objęty regułą, bo to już nasze pisanie). Skill to instrukcja, którą agent wykonuje, więc obcy skill jest obcym kodem.
   - `find-skills` - proponuje skille pasujące do repozytorium, sam niczego nie instaluje.
   - `frontend-design` - wiedza o projektowaniu interfejsów (Anthropic, Apache 2.0). Plan przed kodem: tokeny koloru, kroje do 2+ ról, układ, jeden element sygnaturowy, a potem krytyka tego planu. Ma osobny rozdział o pisaniu w interfejsie i listę wyglądów, po których poznaje się projekt zrobiony przez AI. **Na aejaca.com `aejaca-design` wygrywa**: marka jest ustalona i spójna na stu prerenderowanych stronach, więc ten skill służy rzeczom nowym, a nie przemalowywaniu tego, co stoi.

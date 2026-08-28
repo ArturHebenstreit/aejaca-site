@@ -46,7 +46,7 @@ function TpStar({ size = 16 }) {
 }
 
 export default function TrustpilotWidget() {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const L = LABELS[lang] || LABELS.pl;
   const widgetRef = useRef(null);
   const headerRef = useScrollReveal();
@@ -80,7 +80,7 @@ export default function TrustpilotWidget() {
   }, [lang, isConfigured]);
 
   return (
-    <section className="py-14 px-4 bg-neutral-950" aria-label="Trustpilot">
+    <section className="py-14 px-4 bg-neutral-950" aria-label={t.a11y.trustpilot}>
       <div className="max-w-4xl mx-auto text-center">
 
         {/* Header */}

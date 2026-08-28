@@ -35,9 +35,9 @@ function GoogleLogo({ className = "w-3.5 h-3.5" }) {
 }
 
 // 5-star rating renderer
-function Stars({ rating = 5, size = "w-4 h-4" }) {
+function Stars({ rating = 5, size = "w-4 h-4", label = "" }) {
   return (
-    <div className="inline-flex items-center gap-0.5" role="img" aria-label={`${rating} out of 5 stars`}>
+    <div className="inline-flex items-center gap-0.5" role="img" aria-label={label.replace("{n}", rating)}>
       {[1, 2, 3, 4, 5].map((i) => (
         <Star
           key={i}
@@ -52,6 +52,7 @@ function Stars({ rating = 5, size = "w-4 h-4" }) {
 const LABELS = {
   pl: {
     tag: "Opinie z Google",
+    stars: "ocena {n} na 5",
     verification: "Wszystkie opinie pochodzą z profilu AEJaCA w Google Maps i wyświetlamy je w całości, bez wybierania korzystnych. Opinię może tam wystawić każdy, kto ma konto Google, a my nie mamy możliwości ani usunięcia opinii, ani sprawdzenia, czy jej autor faktycznie u nas kupił. Nie zamawiamy opinii i nie płacimy za nie.",
     title: "Co mówią nasi klienci",
     basedOn: "opinii na Google",
@@ -64,6 +65,7 @@ const LABELS = {
   },
   en: {
     tag: "Google Reviews",
+    stars: "{n} out of 5 stars",
     verification: "Every review comes from the AEJaCA profile on Google Maps and is shown in full, without cherry-picking the flattering ones. Anyone with a Google account can post one there; we can neither remove a review nor verify that its author actually bought from us. We do not solicit or pay for reviews.",
     title: "What our clients say",
     basedOn: "reviews on Google",
@@ -76,6 +78,7 @@ const LABELS = {
   },
   de: {
     tag: "Google-Bewertungen",
+    stars: "Bewertung {n} von 5",
     verification: "Alle Bewertungen stammen aus dem AEJaCA-Profil bei Google Maps und werden vollständig angezeigt, ohne Auswahl der vorteilhaften. Dort kann jeder mit einem Google-Konto eine Bewertung abgeben; wir können weder eine Bewertung entfernen noch prüfen, ob die Person tatsächlich bei uns gekauft hat. Wir bestellen keine Bewertungen und bezahlen nicht dafür.",
     title: "Was unsere Kunden sagen",
     basedOn: "Bewertungen auf Google",
@@ -138,7 +141,7 @@ function ReviewCard({ review, lang, labels }) {
         <div>
           <div className="text-white font-medium text-sm">{review.author}</div>
           <div className="flex items-center gap-2 mt-1">
-            <Stars rating={review.rating} size="w-3.5 h-3.5" />
+            <Stars rating={review.rating} size="w-3.5 h-3.5" label={labels.stars} />
             <time
               className="text-xs text-neutral-400"
               dateTime={review.date}
@@ -219,7 +222,7 @@ export default function GoogleReviews({
             <span className="text-amber-400 text-2xl font-semibold leading-none">
               {GOOGLE_BUSINESS.rating.toFixed(1)}
             </span>
-            <Stars rating={GOOGLE_BUSINESS.rating} size="w-4 h-4" />
+            <Stars rating={GOOGLE_BUSINESS.rating} size="w-4 h-4" label={l.stars} />
             <span className="text-neutral-400 text-sm">
               · {GOOGLE_BUSINESS.totalReviews} {l.basedOn}
             </span>

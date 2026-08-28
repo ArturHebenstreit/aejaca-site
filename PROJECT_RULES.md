@@ -57,6 +57,39 @@ Pilnuje tego `scripts/check-emdash.mjs` i **wywala build**, więc złamanie zasa
 - Nie ujawniamy sekretów w repozytorium, frontendzie ani logach.
 - Brak wymaganego sekretu ma zamykać dostęp, a nie włączać wartość domyślną.
 
+### Trójjęzyczność obowiązuje też tam, gdzie nie widać (od 2026-08-28)
+
+Serwis stoi pod trzema adresami i ma trzy komplety treści. Każdy napis, który
+dociera do człowieka, musi umieć mówić trzema językami, także wtedy, gdy nie
+widać go na ekranie.
+
+- **Nazwa dla czytnika ekranu idzie ze słownika.** `aria-label` wpisany wprost
+  jest zawsze w jednym języku, czyli dla dwóch trzecich odwiedzających w złym.
+  Dotyczy to również nazwy sklejonej z szablonu. Pilnuje
+  `scripts/check-nazwy-dostepne.mjs`, bramka w buildzie.
+- **Opis obrazu należy do obrazu, nie do strony.** `alt` bierze się
+  z `opisObrazu("klucz", lang)` (`src/data/opisyObrazow.js`), bo ten sam obraz
+  bywa na kilku stronach i opis przypięty do strony po cichu się rozjedzie.
+  Obraz ozdobny ma `alt=""`, czyli "pomiń mnie". Piszemy, co widać, krótko, bez
+  "zdjęcie" na początku i bez upychania słów kluczowych: `alt` powtarzający
+  tytuł strony z dopiskiem marki nie mówi niewidomemu niczego, bo tytuł
+  przeczytał chwilę wcześniej. Ta sama bramka.
+- **Słownik z `useLanguage()` jest obiektem: `t.nav.currency`.** Zapis funkcyjny
+  `t("nav.currency")` przechodzi build i lint, a w przeglądarce rzuca wyjątkiem
+  w trakcie renderu, więc React odmontowuje całe drzewo i zostaje biały ekran.
+  Pilnuje `scripts/check-slownik-jako-funkcja.mjs`. Osobny pomocnik
+  `t(pl, en, de)` we wpisach blogowych i `t(etykieta, lang)` w kalkulatorach
+  **ma** być funkcją i bramka o tym wie.
+- **Kod, który pokazuje się dopiero po kliknięciu, potrzebuje własnego
+  sprawdzianu.** Prerender i przegląd stron widzą wyłącznie pierwszy ekran, więc
+  listy, panele i okna otwierane interakcją leżą poza ich zasięgiem. Wzór:
+  `scripts/check-menu-jezyka.mjs` (`npm run check:jezyk`), który naprawdę klika,
+  w dwóch szerokościach ekranu. Nie wchodzi do `npm run build`, bo build leci na
+  Cloudflare Pages, gdzie nie ma przeglądarki.
+- **Nazwa języka zostaje w swoim języku.** "Deutsch", nie "niemiecki", z
+  `lang` i `hreflang` przy odnośniku. To jedyny wyjątek od reguły wyżej i
+  wynika z tego samego powodu: ma być zrozumiała dla tego, kto jej szuka.
+
 ## 5. Waluta
 
 **Prices and amounts must follow the active language:**

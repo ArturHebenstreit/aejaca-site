@@ -8,6 +8,7 @@ import { SITE } from "../seo/seoData.js";
 import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
 import { Link } from "../i18n/nav.jsx";
 import Obraz from "../components/Obraz.jsx";
+import { opisObrazu } from "../data/opisyObrazow.js";
 
 const LABELS = {
   pl: {
@@ -150,7 +151,7 @@ export default function ResinSettingsPage() {
         <section className="relative overflow-hidden min-h-[340px]">
           <Obraz
             src="/img/calc/3d_segments/msla_resin.webp"
-            alt="Druk 3D MSLA, żywice i parametry, AEJaCA sTuDiO"
+            alt={opisObrazu("zywica-msla", lang)}
             className="absolute inset-0 w-full h-full object-cover"
             loading="eager"
             fetchpriority="high"

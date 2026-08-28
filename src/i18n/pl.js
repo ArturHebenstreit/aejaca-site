@@ -1,4 +1,25 @@
 export default {
+  // NAZWY DLA CZYTNIKA EKRANU. Kontrolka bez widocznego napisu (ikona, strzalka,
+  // krzyzyk) musi miec nazwe, a nazwa musi byc W JEZYKU STRONY. Wpisana na
+  // sztywno jest zawsze w zlym jezyku dla dwoch trzecich odwiedzajacych.
+  a11y: {
+    mainNav: "Nawigacja główna",
+    footerNav: "Nawigacja w stopce",
+    breadcrumb: "Ścieżka nawigacji",
+    changeLanguage: "Zmień język",
+    languageMenu: "Wybór języka i waluty",
+    openMenu: "Otwórz menu",
+    closeMenu: "Zamknij menu",
+    lightMode: "Włącz tryb jasny",
+    darkMode: "Włącz tryb ciemny",
+    prevImage: "Poprzednie zdjęcie",
+    nextImage: "Następne zdjęcie",
+    closeLightbox: "Zamknij powiększenie",
+    newsletter: "Zapis na newsletter",
+    whatsapp: "Napisz do nas na WhatsAppie",
+    trustpilot: "Opinie z Trustpilota",
+    galleryPage: "Strona {n} galerii",
+  },
   nav: {
     home: "Strona główna",
     currency: "Waluta zapłaty",

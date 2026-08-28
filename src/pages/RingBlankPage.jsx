@@ -8,6 +8,7 @@ import { SITE } from "../seo/seoData.js";
 import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
 import HeroObraz from "../components/HeroObraz.jsx";
 import { Link } from "../i18n/nav.jsx";
+import { opisObrazu } from "../data/opisyObrazow.js";
 
 const LABELS = {
   pl: {
@@ -107,7 +108,7 @@ export default function RingBlankPage() {
         <section className="relative overflow-hidden min-h-[340px]">
           <HeroObraz
             nazwa="hero-home-jewelry"
-            alt="Kalkulator Rozwinięcia Obrączki - AEJaCA"
+            alt={opisObrazu("hero-home-jewelry", lang)}
             className="absolute inset-0 w-full h-full object-cover"
             width={1024}
             height={572}

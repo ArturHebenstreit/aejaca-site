@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import Obraz from "./Obraz.jsx";
+import { useLanguage } from "../i18n/LanguageContext.jsx";
 
 const CATEGORY_COLORS_AMBER = {
   rings: "bg-amber-500/10 text-amber-400 border-amber-500/20",
@@ -23,6 +24,7 @@ const CATEGORY_COLORS_BLUE = {
 const AUTO_SCROLL_MS = 4500;
 
 export default function Portfolio({ data, accent = "amber", id }) {
+  const { t } = useLanguage();
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(0);
   const [lightbox, setLightbox] = useState(null);
@@ -152,7 +154,7 @@ export default function Portfolio({ data, accent = "amber", id }) {
           {totalPages > 1 && (
             <button
               onClick={prev}
-              aria-label="Previous"
+              aria-label={t.a11y.prevImage}
               className="absolute left-0 top-0 bottom-12 w-12 z-10 flex items-center justify-center bg-gradient-to-r from-neutral-900/90 to-transparent opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 cursor-pointer"
             >
               <ChevronLeft className="w-8 h-8 text-white drop-shadow-lg" />
@@ -163,7 +165,7 @@ export default function Portfolio({ data, accent = "amber", id }) {
           {totalPages > 1 && (
             <button
               onClick={next}
-              aria-label="Next"
+              aria-label={t.a11y.nextImage}
               className="absolute right-0 top-0 bottom-12 w-12 z-10 flex items-center justify-center bg-gradient-to-l from-neutral-900/90 to-transparent opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300 cursor-pointer"
             >
               <ChevronRight className="w-8 h-8 text-white drop-shadow-lg" />
@@ -224,7 +226,7 @@ export default function Portfolio({ data, accent = "amber", id }) {
                 <button
                   key={i}
                   onClick={() => scrollToPage(i)}
-                  aria-label={`Page ${i + 1}`}
+                  aria-label={t.a11y.galleryPage.replace("{n}", i + 1)}
                   className={`rounded-full transition-all duration-300 ${
                     i === currentPage
                       ? `w-6 h-2 ${dotActive}`
@@ -249,7 +251,7 @@ export default function Portfolio({ data, accent = "amber", id }) {
           <button
             onClick={() => setLightbox(null)}
             className="absolute top-4 right-4 text-white/70 hover:text-white z-10"
-            aria-label="Close"
+            aria-label={t.a11y.closeLightbox}
           >
             <X className="w-8 h-8" />
           </button>
@@ -259,14 +261,14 @@ export default function Portfolio({ data, accent = "amber", id }) {
               <button
                 onClick={(e) => { e.stopPropagation(); setLightbox((lightbox - 1 + filtered.length) % filtered.length); }}
                 className="absolute left-4 text-white/70 hover:text-white z-10"
-                aria-label="Previous"
+                aria-label={t.a11y.prevImage}
               >
                 <ChevronLeft className="w-10 h-10" />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); setLightbox((lightbox + 1) % filtered.length); }}
                 className="absolute right-4 text-white/70 hover:text-white z-10"
-                aria-label="Next"
+                aria-label={t.a11y.nextImage}
               >
                 <ChevronRight className="w-10 h-10" />
               </button>

@@ -47,6 +47,7 @@ const LABELS = {
     verified: "Zweryfikowane ✓",
     communityApproved: "Społeczność ✓",
     next: "Dalej →",
+    nextA11y: "Następny krok",
 
     step4Title: "Parametry druku",
     sectionTemps: "Temperatury",
@@ -117,6 +118,7 @@ const LABELS = {
     legendHardNozzle: "Materiały CF/GF wymagają dyszy hartowanej",
 
     back: "← Wstecz",
+    backA11y: "Poprzedni krok",
     change: "Zmień",
     cta: "Zamów wydruk w sTuDiO →",
 
@@ -169,6 +171,7 @@ const LABELS = {
     verified: "Verified ✓",
     communityApproved: "Community ✓",
     next: "Next →",
+    nextA11y: "Next step",
 
     step4Title: "Print parameters",
     sectionTemps: "Temperatures",
@@ -239,6 +242,7 @@ const LABELS = {
     legendHardNozzle: "CF/GF materials need a hardened nozzle",
 
     back: "← Back",
+    backA11y: "Previous step",
     change: "Change",
     cta: "Order 3D print at sTuDiO →",
 
@@ -291,6 +295,7 @@ const LABELS = {
     verified: "Verifiziert ✓",
     communityApproved: "Community ✓",
     next: "Weiter →",
+    nextA11y: "Nächster Schritt",
 
     step4Title: "Druckparameter",
     sectionTemps: "Temperaturen",
@@ -361,6 +366,7 @@ const LABELS = {
     legendHardNozzle: "CF/GF-Materialien benötigen gehärtete Düse",
 
     back: "← Zurück",
+    backA11y: "Vorheriger Schritt",
     change: "Ändern",
     cta: "3D-Druck bei sTuDiO bestellen →",
 
@@ -638,7 +644,7 @@ function WizardProgress({ step, canNext, onPrev, onNext, onJump, L }) {
           <button
             onClick={onPrev}
             disabled={step === 1}
-            aria-label="Wstecz"
+            aria-label={L.backA11y}
             className={`w-8 h-8 rounded-lg flex items-center justify-center border text-base transition-all ${
               step === 1
                 ? "border-white/5 text-neutral-700 cursor-not-allowed"
@@ -650,7 +656,7 @@ function WizardProgress({ step, canNext, onPrev, onNext, onJump, L }) {
           <button
             onClick={onNext}
             disabled={!canNext}
-            aria-label="Dalej"
+            aria-label={L.nextA11y}
             className={`w-8 h-8 rounded-lg flex items-center justify-center border text-base transition-all ${
               !canNext
                 ? "border-white/5 text-neutral-700 cursor-not-allowed"
