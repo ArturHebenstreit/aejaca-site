@@ -160,6 +160,12 @@ Wspólne konwencje inżynierskie: patrz `PROJECT_RULES.md`, sekcja `Konwencje in
   w kalkulatorach **ma** być funkcją, dlatego bramka patrzy na to, co naprawdę
   wyszło z `useLanguage()` w danym pliku.
 
+- **Każdy napis docierający do człowieka idzie ze słownika, także niewidoczny.**
+  `aria-label` wpisany wprost jest zawsze w jednym języku, czyli dla dwóch
+  trzecich odwiedzających w złym. Pilnuje `scripts/check-nazwy-dostepne.mjs`,
+  łapie też nazwę sklejoną z szablonu. Wyjątek: nazwa języka zostaje w swoim
+  języku ("Deutsch", nie "niemiecki"). Decyzja: ADR-0025.
+
 - **Kod za kliknięciem jest poza zasięgiem prerenderu i przeglądu stron.**
   Prerender rysuje 300 stron, `scripts/audit-pages.mjs` je ogląda, ale obie
   siatki widzą tylko pierwszy ekran. Lista wyboru języka pojawia się dopiero po

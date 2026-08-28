@@ -125,10 +125,10 @@ export default function Navbar() {
 
   const currentLang = LANGUAGES.find((l) => l.code === lang);
 
-  function LangDropdown() {
+  function LangDropdown({ id }) {
     if (!langOpen) return null;
     return (
-      <div className="absolute right-0 mt-2 w-40 bg-neutral-900/95 backdrop-blur-lg border border-white/10 rounded-lg shadow-2xl overflow-hidden z-50" aria-label="Select language">
+      <div className="absolute right-0 mt-2 w-40 bg-neutral-900/95 backdrop-blur-lg border border-white/10 rounded-lg shadow-2xl overflow-hidden z-50" id={id} role="group" aria-label={t.a11y.languageMenu}>
         {/* ODNOSNIKI, NIE PRZYCISKI. Kazdy jezyk stoi pod wlasnym adresem, wiec
             wybor jezyka jest przejsciem, a nie zmiana stanu. Robot wyszukiwarki
             ma czym przejsc do wersji obcojezycznej, odwiedzajacy moze otworzyc
@@ -214,7 +214,7 @@ export default function Navbar() {
         top: "var(--pasek-jezyka, 0px)",
         background: scrolled ? "var(--ds-navbar-bg-s)" : "var(--ds-navbar-bg)",
       }}
-      aria-label="Main navigation"
+      aria-label={t.a11y.mainNav}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -359,7 +359,7 @@ export default function Navbar() {
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
-              aria-label={isDark ? "Włącz tryb jasny" : "Włącz tryb ciemny"}
+              aria-label={isDark ? t.a11y.lightMode : t.a11y.darkMode}
               title={isDark ? "Light mode" : "Dark mode"}
               className="flex items-center justify-center w-8 h-8 rounded-md text-neutral-400 hover:text-white hover:bg-white/5 transition-all duration-300"
             >
@@ -369,13 +369,14 @@ export default function Navbar() {
               <button
                 onClick={() => setLangOpen(!langOpen)}
                 aria-expanded={langOpen}
-                aria-haspopup="listbox"
+                aria-controls="wybor-jezyka-szeroki"
                 className="flex items-center gap-1.5 text-sm text-neutral-400 hover:text-white transition-colors px-2 py-1 rounded-md hover:bg-white/5"
               >
                 <Globe className="w-4 h-4" />
+                <span className="sr-only">{t.a11y.changeLanguage}</span>
                 <span>{currentLang?.flag} {currentLang?.code.toUpperCase()}</span>
               </button>
-              <LangDropdown />
+              <LangDropdown id="wybor-jezyka-szeroki" />
             </div>
           </div>
 
@@ -396,7 +397,7 @@ export default function Navbar() {
             {/* Theme toggle mobile */}
             <button
               onClick={toggleTheme}
-              aria-label={isDark ? "Włącz tryb jasny" : "Włącz tryb ciemny"}
+              aria-label={isDark ? t.a11y.lightMode : t.a11y.darkMode}
               className="text-neutral-400 hover:text-white p-1 transition-colors"
             >
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -405,17 +406,18 @@ export default function Navbar() {
               <button
                 onClick={() => setLangOpen(!langOpen)}
                 aria-expanded={langOpen}
-                aria-label="Change language"
+                aria-controls="wybor-jezyka-waski"
+                aria-label={t.a11y.changeLanguage}
                 className="text-sm text-neutral-400 hover:text-white px-2 py-1"
               >
                 {currentLang?.flag}
               </button>
-              <LangDropdown />
+              <LangDropdown id="wybor-jezyka-waski" />
             </div>
             <button
               className="text-neutral-300 hover:text-white p-1"
               onClick={() => setMenuOpen(!menuOpen)}
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-label={menuOpen ? t.a11y.closeMenu : t.a11y.openMenu}
               aria-expanded={menuOpen}
             >
               {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}

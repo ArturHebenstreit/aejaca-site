@@ -74,6 +74,10 @@ const LABELS = {
       "Jak działa kalkulator cen?",
     ],
     error: "Przepraszam, wystąpił błąd. Spróbuj ponownie.",
+    close: "Zamknij",
+    closeChat: "Zamknij czat",
+    dismissTip: "Zamknij zaczepkę",
+    send: "Wyślij wiadomość",
   },
   en: {
     title: "AEJaCA Assistant",
@@ -89,6 +93,10 @@ const LABELS = {
       "How does the price calculator work?",
     ],
     error: "Sorry, something went wrong. Please try again.",
+    close: "Close",
+    closeChat: "Close chat",
+    dismissTip: "Dismiss this prompt",
+    send: "Send message",
   },
   de: {
     title: "AEJaCA Assistent",
@@ -104,6 +112,10 @@ const LABELS = {
       "Wie funktioniert der Preisrechner?",
     ],
     error: "Entschuldigung, ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+    close: "Schließen",
+    closeChat: "Chat schließen",
+    dismissTip: "Hinweis schließen",
+    send: "Nachricht senden",
   },
 };
 
@@ -279,7 +291,7 @@ export default function ChatWidget() {
                 <button
                   onClick={() => { setShowBubble(false); sessionStorage.setItem("chat_bubble_dismissed", "1"); }}
                   className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-neutral-200 hover:bg-neutral-300 text-neutral-500 flex items-center justify-center text-xs transition-colors"
-                  aria-label="Zamknij"
+                  aria-label={l.dismissTip}
                 >×</button>
               </div>
             </div>
@@ -319,7 +331,7 @@ export default function ChatWidget() {
             <button
               onClick={() => setOpen(false)}
               className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-neutral-400 hover:text-white transition-colors shrink-0"
-              aria-label="Close"
+              aria-label={l.close}
             >
               <X className="w-4 h-4" />
             </button>
@@ -390,7 +402,7 @@ export default function ChatWidget() {
                 type="submit"
                 disabled={streaming || !input.trim()}
                 className="w-10 h-10 rounded-full bg-amber-400 hover:bg-amber-300 text-neutral-900 flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-                aria-label="Send"
+                aria-label={l.send}
               >
                 {streaming ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -404,9 +416,9 @@ export default function ChatWidget() {
               type="button"
               onClick={() => setOpen(false)}
               className="sm:hidden mt-2 w-full py-1.5 text-xs text-neutral-500 hover:text-neutral-300 transition-colors flex items-center justify-center gap-1"
-              aria-label="Close chat"
+              aria-label={l.closeChat}
             >
-              <X className="w-3 h-3" /> Zamknij
+              <X className="w-3 h-3" /> {l.close}
             </button>
           </form>
         </div>

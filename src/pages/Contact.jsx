@@ -256,7 +256,7 @@ export default function Contact() {
       <div className={`floating-cta md:hidden ${showFloatingCta ? "visible" : ""}`}>
         <a href="https://wa.me/48780737786" target="_blank" rel="noopener noreferrer"
           className="flex items-center gap-2 px-5 py-3 bg-green-500 text-white font-medium rounded-full shadow-lg shadow-green-500/30 hover:bg-green-400 transition-colors"
-          aria-label="Contact via WhatsApp"
+          aria-label={t.a11y.whatsapp}
         >
           <MessageCircleMore className="w-5 h-5" />
           WhatsApp

@@ -172,7 +172,7 @@ export default function Footer() {
           {/* Szybkie linki w dwoch kolumnach: oferta po lewej, informacje
               i dokumenty po prawej. Jedna kolumna czternastu pozycji rozciagala
               stopke i psula proporcje wzgledem pozostalych kolumn. */}
-          <nav aria-label="Footer navigation" className="md:col-span-2">
+          <nav aria-label={t.a11y.footerNav} className="md:col-span-2">
             <h4 className="text-sm font-semibold uppercase tracking-wider text-neutral-400 mb-4">{t.footer.quickLinks}</h4>
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               <div className="space-y-2">

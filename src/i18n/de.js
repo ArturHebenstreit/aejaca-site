@@ -1,4 +1,25 @@
 export default {
+  // NAMEN FUER DEN SCREENREADER. Ein Bedienelement ohne sichtbaren Text (Symbol,
+  // Pfeil, Kreuz) braucht einen Namen, und dieser Name muss IN DER SPRACHE DER
+  // SEITE stehen. Fest eingetragen ist er fuer zwei Drittel der Besucher falsch.
+  a11y: {
+    mainNav: "Hauptnavigation",
+    footerNav: "Navigation in der Fußzeile",
+    breadcrumb: "Navigationspfad",
+    changeLanguage: "Sprache ändern",
+    languageMenu: "Sprache und Währung",
+    openMenu: "Menü öffnen",
+    closeMenu: "Menü schließen",
+    lightMode: "Zum hellen Modus wechseln",
+    darkMode: "Zum dunklen Modus wechseln",
+    prevImage: "Vorheriges Bild",
+    nextImage: "Nächstes Bild",
+    closeLightbox: "Vergrößerung schließen",
+    newsletter: "Newsletter-Anmeldung",
+    whatsapp: "Schreiben Sie uns auf WhatsApp",
+    trustpilot: "Trustpilot-Bewertungen",
+    galleryPage: "Galerieseite {n}",
+  },
   nav: {
     home: "Startseite",
     currency: "Zahlungswährung",

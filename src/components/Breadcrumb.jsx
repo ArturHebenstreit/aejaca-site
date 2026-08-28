@@ -1,4 +1,5 @@
 import { Link } from "../i18n/nav.jsx";
+import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { ChevronRight } from "lucide-react";
 
 // ============================================================
@@ -16,8 +17,9 @@ import { ChevronRight } from "lucide-react";
 // `aria-current="page"` dopowiada to czytnikom ekranu: ostatni wpis nie jest
 // odnosnikiem, tylko biezaca strona.
 export default function Breadcrumb({ items }) {
+  const { t } = useLanguage();
   return (
-    <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs mb-6">
+    <nav aria-label={t.a11y.breadcrumb} className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs mb-6">
       {items.map((item, i) => {
         const ostatni = i === items.length - 1;
         return (

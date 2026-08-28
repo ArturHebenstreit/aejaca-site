@@ -1,4 +1,25 @@
 export default {
+  // SCREEN READER NAMES. A control with no visible text (an icon, an arrow, a
+  // cross) needs a name, and that name must be IN THE PAGE LANGUAGE. Hardcoded,
+  // it is always the wrong language for two thirds of the visitors.
+  a11y: {
+    mainNav: "Main navigation",
+    footerNav: "Footer navigation",
+    breadcrumb: "Breadcrumb",
+    changeLanguage: "Change language",
+    languageMenu: "Language and currency",
+    openMenu: "Open menu",
+    closeMenu: "Close menu",
+    lightMode: "Switch to light mode",
+    darkMode: "Switch to dark mode",
+    prevImage: "Previous image",
+    nextImage: "Next image",
+    closeLightbox: "Close the enlarged view",
+    newsletter: "Newsletter signup",
+    whatsapp: "Message us on WhatsApp",
+    trustpilot: "Trustpilot reviews",
+    galleryPage: "Gallery page {n}",
+  },
   // Navbar
   nav: {
     home: "Home",

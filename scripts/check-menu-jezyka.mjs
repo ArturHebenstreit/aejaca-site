@@ -75,8 +75,8 @@ for (const proba of PROBY) {
   await karta.waitForTimeout(600);
 
   const przelacznik = komorka
-    ? karta.locator('button[aria-label="Change language"]').first()
-    : karta.locator('button[aria-haspopup="listbox"]').first();
+    ? karta.locator("button[aria-controls=\"wybor-jezyka-waski\"]").first()
+    : karta.locator("button[aria-controls=\"wybor-jezyka-szeroki\"]").first();
   await przelacznik.click();
   await karta.waitForTimeout(400);
 
