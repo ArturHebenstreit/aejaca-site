@@ -25,7 +25,7 @@ import Obraz from "../components/Obraz.jsx";
 import { opisObrazu } from "../data/opisyObrazow.js";
 
 // Prog, od ktorego Trustpilot pomaga zamiast szkodzic. Ponizej niego odznaka
-// obok "5,0 z 25 opinii Google" kaze czytelnikowi porownac liczby i wyciagnac
+// obok "5,0 z 26 opinii Google" kaze czytelnikowi porownac liczby i wyciagnac
 // wniosek, ktorego nie chcemy, a sekcja widgetu renderuje sie pusta. Odznaka
 // i sekcja wroca same, gdy liczba opinii przekroczy prog. Bez TODO do zapomnienia.
 const TRUSTPILOT_MIN_REVIEWS = 10;

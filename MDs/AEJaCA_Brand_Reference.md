@@ -33,7 +33,7 @@ Polski (pl), English (en), Deutsch (de)
 
 ### Oceny (dane z 2026-07-30)
 
-**Google: 5,0 / 5,0 przy 25 opiniach.** To jest ocena eksponowana w interfejsie i jedyna wpisana do `aggregateRating` w JSON-LD.
+**Google: 5,0 / 5,0 przy 26 opiniach.** To jest ocena eksponowana w interfejsie i jedyna wpisana do `aggregateRating` w JSON-LD.
 
 **Trustpilot: 2 opinie, obie na 5 gwiazdek, TrustScore 3,8.** TrustScore nie jest średnią arytmetyczną, Trustpilot waży go wolumenem i świeżością, więc przy dwóch opiniach wypada 3,8 i będzie rósł.
 
@@ -1413,7 +1413,7 @@ tego strażnika wypadła fałszywie zielono właśnie z tego powodu.
 |---------|-------|
 | Organization | Strona główna, Studio, Jewelry |
 | LocalBusiness | Strona główna (geo: Józefosław) |
-| Product + aggregateRating (5.0 / 25) | Studio (3x SKU), Jewelry (3x SKU) |
+| Product + aggregateRating (5.0 / 26) | Studio (3x SKU), Jewelry (3x SKU) |
 | Service + priceRange | Studio, Jewelry |
 | BreadcrumbList | Wszystkie podstrony |
 | FAQPage | B2B, narzędzia, blog |
