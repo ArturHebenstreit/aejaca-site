@@ -1,5 +1,5 @@
 # AEJaCA - Kompletny dokument referencyjny marki
-*Wygenerowano: 2026-08-26 | Wersja: 6.4*
+*Wygenerowano: 2026-08-27 | Wersja: 6.5*
 
 ---
 
@@ -1392,9 +1392,21 @@ tego strażnika wypadła fałszywie zielono właśnie z tego powodu.
 ## 8. STRATEGIA SEO
 
 ### Podejście ogólne
-- Statyczny prerender SSR dla 70 stron (Vite + `scripts/prerender.mjs`)
-- Pełna obsługa hreflang pl/en/de na wszystkich stronach
+- Statyczny prerender SSR dla **300 stron**: 100 tras razy trzy języki
+  (Vite + `scripts/prerender.mjs`, lista tras w `src/routes.js`)
+- **Adresy z prefiksem języka od 2026-08-27**: polski pod gołym adresem
+  (`/studio/`), angielski pod `/en/`, niemiecki pod `/de/`. Wcześniej wszystkie
+  trzy języki dzieliły jeden adres, a język przełączał się po stronie
+  przeglądarki, więc wyszukiwarka widziała wyłącznie wersję polską i cała praca
+  włożona w tłumaczenia nie miała wejścia z wyszukiwarki. Decyzja: ADR-0023.
+- Wzajemne `hreflang` pl/en/de plus `x-default` wskazujący wersję polską,
+  na każdej stronie i w mapie witryny
+- Mapa witryny generowana z tych samych źródeł co prerender
+  (`scripts/build-sitemap.mjs`, 93 strony razy 3 języki)
 - Schematy strukturalne JSON-LD na każdej stronie
+- Kroje pisma hostowane u nas (`public/fonts`), bez połączenia z Google
+- Obrazy bohaterskie w AVIF i WebP, po pięć szerokości, podawane przez `srcset`
+- Każda strona zapowiada własny fragment trasy i słownik swojego języka
 
 ### Zaimplementowane schematy JSON-LD
 | Schemat | Gdzie |

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { ArrowRight, Zap, Sparkles, FileUp, Printer, Flame, Cpu, Scissors, Star } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { trackCTA } from "../utils/analytics.js";
@@ -20,6 +20,8 @@ import NewsletterForm from "../components/NewsletterForm.jsx";
 import ShopEntry from "../components/home/ShopEntry.jsx";
 import { GOOGLE_BUSINESS, REVIEWS, TRUSTPILOT_BUSINESS } from "../data/googleReviews.js";
 import { reviewCountLabel } from "../utils/reviewCount.js";
+import HeroObraz from "../components/HeroObraz.jsx";
+import Obraz from "../components/Obraz.jsx";
 
 // Prog, od ktorego Trustpilot pomaga zamiast szkodzic. Ponizej niego odznaka
 // obok "5,0 z 25 opinii Google" kaze czytelnikowi porownac liczby i wyciagnac
@@ -117,22 +119,20 @@ export default function Home() {
             {/* Jewelry Card */}
             <Link to="/jewelry/" onClick={() => trackCTA("hero_jewelry")} className="group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg shadow-black/40 hover:shadow-2xl hover:shadow-amber-900/40 transition-all duration-500 hover:-translate-y-1">
               <div className="aspect-[3/4] md:aspect-square relative overflow-hidden">
-                <img
-                  src="/hero-home-jewelry.webp"
+                <HeroObraz
+                  nazwa="hero-home-jewelry"
                   alt="AEJaCA Jewelry"
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  loading="eager"
-                  fetchpriority="high"
-                  decoding="async"
-                  width="768"
-                  height="1024"
+                  width={768}
+                  height={1024}
+                  sizes="(min-width: 768px) 512px, 100vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,transparent_50%,rgba(0,0,0,0.72)_100%)]" />
               </div>
               <div className="photo-card-text absolute bottom-0 left-0 right-0 h-48 md:h-52 flex flex-col justify-between items-center px-6 md:px-8 pb-6 md:pb-7 pt-4 text-center">
                 <div>
-                  <div className="text-amber-400 text-[10px] uppercase tracking-[0.25em] mb-3">{h.jewelrySubtitle}</div>
+                  <div className="text-amber-400 text-xs uppercase tracking-[0.25em] mb-3">{h.jewelrySubtitle}</div>
                   <p className="text-neutral-200 text-sm leading-relaxed max-w-xs mx-auto">{h.jewelryDesc}</p>
                 </div>
                 <span className="inline-flex items-center gap-2 px-7 py-3 border border-amber-400/40 bg-amber-400/10 backdrop-blur-md text-amber-200 font-medium rounded-full text-sm tracking-wide group-hover:bg-amber-400 group-hover:text-black group-hover:border-amber-400 group-hover:shadow-lg group-hover:shadow-amber-500/30 transition-all duration-300">
@@ -144,22 +144,20 @@ export default function Home() {
             {/* Studio Card */}
             <Link to="/studio/" onClick={() => trackCTA("hero_studio")} className="group relative overflow-hidden rounded-2xl cursor-pointer shadow-lg shadow-black/40 hover:shadow-2xl hover:shadow-blue-900/40 transition-all duration-500 hover:-translate-y-1">
               <div className="aspect-[3/4] md:aspect-square relative overflow-hidden">
-                <img
-                  src="/hero-home-studio.webp"
+                <HeroObraz
+                  nazwa="hero-home-studio"
                   alt="AEJaCA sTuDiO"
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  loading="eager"
-                  fetchpriority="high"
-                  decoding="async"
-                  width="768"
-                  height="1024"
+                  width={768}
+                  height={1024}
+                  sizes="(min-width: 768px) 512px, 100vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,transparent_50%,rgba(0,0,0,0.72)_100%)]" />
               </div>
               <div className="photo-card-text absolute bottom-0 left-0 right-0 h-48 md:h-52 flex flex-col justify-between items-center px-6 md:px-8 pb-6 md:pb-7 pt-4 text-center">
                 <div>
-                  <div className="text-blue-400 text-[10px] uppercase tracking-[0.25em] mb-3">{h.studioSubtitle}</div>
+                  <div className="text-blue-400 text-xs uppercase tracking-[0.25em] mb-3">{h.studioSubtitle}</div>
                   <p className="text-neutral-200 text-sm leading-relaxed max-w-xs mx-auto">{h.studioDesc}</p>
                 </div>
                 <span className="inline-flex items-center gap-2 px-7 py-3 border border-blue-400/40 bg-blue-400/10 backdrop-blur-md text-blue-200 font-medium rounded-full text-sm tracking-wide group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-500 group-hover:shadow-lg group-hover:shadow-blue-500/30 transition-all duration-300">
@@ -237,14 +235,16 @@ export default function Home() {
               ].map(({ to, Icon, title, desc, cta, img }) => (
                 <Link key={to} to={to} onClick={() => trackCTA("quickquote_stl_tile", to)} className="group relative rounded-xl overflow-hidden border border-emerald-400/10 hover:border-emerald-400/30 hover:shadow-lg hover:shadow-emerald-900/10 transition-all duration-300 min-h-[180px]">
                   <div className="absolute inset-0">
-                    <img src={img} alt={title} loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <Obraz src={img} alt={title} loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(min-width: 1024px) 260px, (min-width: 640px) 45vw, 90vw"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30" />
                   </div>
                   <div className="relative p-3 h-full min-h-[180px] flex flex-col justify-end">
                     <Icon className="w-5 h-5 text-emerald-400 mb-1.5 drop-shadow-lg" />
                     <h4 className="font-sans text-sm font-bold text-white mb-0.5 drop-shadow-lg">{title}</h4>
-                    <p className="text-neutral-300 text-[10px] leading-snug mb-2 drop-shadow-md">{desc}</p>
-                    <span className="inline-flex items-center gap-1 text-emerald-400 text-[11px] font-medium group-hover:text-emerald-300 transition-colors">
+                    <p className="text-neutral-300 text-xs leading-snug mb-2 drop-shadow-md">{desc}</p>
+                    <span className="inline-flex items-center gap-1 text-emerald-400 text-xs font-medium group-hover:text-emerald-300 transition-colors">
                       {cta} <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
                     </span>
                   </div>

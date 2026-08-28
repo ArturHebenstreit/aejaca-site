@@ -6,6 +6,8 @@ import Breadcrumb from "../components/Breadcrumb.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
+import HeroObraz from "../components/HeroObraz.jsx";
+import { Link } from "../i18n/nav.jsx";
 
 const LABELS = {
   pl: {
@@ -54,15 +56,15 @@ const LABELS = {
 
 const SEO_META = {
   pl: {
-    title: "Kreator parametrów laserowania - 88 materiałów, 7 laserów | AEJaCA",
+    title: "Parametry laserowania, 88 materiałów, 7 laserów | AEJaCA",
     description: "Dobierz parametry laserowania dla CO₂, fiber, diodowych i innych. Ponad 1000 kombinacji materiał–laser. Darmowy kreator bez rejestracji.",
   },
   en: {
-    title: "Laser Parameter Wizard - 88 Materials, 7 Laser Types | AEJaCA",
+    title: "Laser Parameters: 88 Materials, 7 Laser Types | AEJaCA",
     description: "Find laser parameters for CO₂, fiber, diode and more. Over 1000 material–laser combinations. Free tool, no sign-up.",
   },
   de: {
-    title: "Laserparameter-Assistent - 88 Materialien, 7 Lasertypen | AEJaCA",
+    title: "Laserparameter: 88 Materialien, 7 Lasertypen | AEJaCA",
     description: "Laserparameter für CO₂, Faser, Diode und mehr finden. Über 1000 Material-Laser-Kombinationen. Kostenloses Tool ohne Anmeldung.",
   },
 };
@@ -103,15 +105,13 @@ export default function LaserParametersPage() {
 
         {/* Hero */}
         <section className="relative overflow-hidden min-h-[340px]">
-          <img
-            src="/hero-toolstudio.webp"
+          <HeroObraz
+            nazwa="hero-toolstudio"
             alt="Kreator parametrów laserowania - AEJaCA sTuDiO"
             className="absolute inset-0 w-full h-full object-cover"
-            loading="eager"
-            fetchpriority="high"
-            decoding="async"
-            width="1024"
-            height="572"
+            width={1024}
+            height={572}
+            sizes="100vw"
           />
           <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
           <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-24 pb-6 text-center flex flex-col items-center">
@@ -166,12 +166,12 @@ export default function LaserParametersPage() {
           <div ref={ctaRef} className="reveal max-w-xl mx-auto">
             <h2 className="font-sans text-xl font-semibold text-white mb-2">{L.footerCtaTitle}</h2>
             <p className="text-neutral-400 text-sm mb-6">{L.footerCtaText}</p>
-            <a
-              href="/studio/"
+            <Link
+              to="/studio/"
               className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 text-white font-semibold rounded-full hover:bg-blue-400 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300"
             >
               {L.footerCtaBtn}
-            </a>
+            </Link>
           </div>
         </section>
 

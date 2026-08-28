@@ -8,7 +8,7 @@
 // Osobne implementacje w kazdym z tych miejsc rozjechalyby sie po pierwszej
 // zmianie, a przy okazji kazda kolejna strona zaczynalaby od zera.
 
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { ArrowRight, Wrench } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 

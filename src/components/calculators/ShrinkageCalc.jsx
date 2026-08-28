@@ -186,7 +186,7 @@ export default function ShrinkageCalc({ lang = "pl" }) {
         <div className="overflow-x-auto -mx-1">
           <table className="w-full text-sm min-w-[420px]">
             <thead>
-              <tr className="text-[11px] uppercase tracking-wide text-neutral-400 text-left">
+              <tr className="text-xs uppercase tracking-wide text-neutral-400 text-left">
                 <th className="px-2 py-1.5">{l.tableEU}</th>
                 <th className="px-2 py-1.5">{l.tableID}</th>
                 <th className="px-2 py-1.5 text-blue-300">{l.tablePattern}</th>
@@ -207,7 +207,7 @@ export default function ShrinkageCalc({ lang = "pl" }) {
             </tbody>
           </table>
         </div>
-        <p className="text-[11px] text-neutral-500 mt-3 leading-relaxed">{l.tableNote}</p>
+        <p className="text-xs text-neutral-500 mt-3 leading-relaxed">{l.tableNote}</p>
       </CalcCard>
 
       {/* Inquiry form */}

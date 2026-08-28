@@ -9,7 +9,12 @@
 - **Founded:** 2023
 - **Type:** Independent design & fabrication studio (two brands: AEJaCA Jewelry, AEJaCA sTuDiO)
 - **Location:** Józefosław (near Warsaw), Mazovia, Poland - ships worldwide
-- **Languages:** Polish (pl), English (en), German (de)
+- **Languages:** Polish (pl), English (en), German (de). Every page exists at three
+  addresses: Polish at the bare path (`/studio/`), English under `/en/` and German
+  under `/de/` (`/en/studio/`, `/de/studio/`). The three versions carry mutual
+  `hreflang` links plus `x-default` pointing at the Polish one, and the sitemap
+  lists all three. Content is fully translated, including the terms of sale, the
+  privacy policy, the shop and every calculator.
 - **Industry:** Artisan jewelry · 3D modeling / CAD · digital fabrication (3D printing, laser, resin casting, CNC prototyping)
 - **Primary website:** https://www.aejaca.com/
 - **Contact:** https://www.aejaca.com/contact/ · contact@aejaca.com
@@ -281,4 +286,4 @@ https://www.aejaca.com/contact/
 
 ---
 
-Last updated: 2026-08-26
+Last updated: 2026-08-27

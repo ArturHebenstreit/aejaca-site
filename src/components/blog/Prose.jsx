@@ -7,7 +7,7 @@
 // - Zero extra deps (Tailwind 4 native utilities only)
 // ============================================================
 
-import { Link } from "react-router-dom";
+import { Link } from "../../i18n/nav.jsx";
 
 export default function Prose({ accent = "amber", children }) {
   const accentClasses = accent === "blue"
@@ -186,7 +186,7 @@ export function Sources({ lang = "pl", items = [] }) {
 
   return (
     <section className="my-10 rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-      <h2 className="text-[11px] uppercase tracking-[0.2em] text-neutral-500 mb-4">{label}</h2>
+      <h2 className="text-xs uppercase tracking-[0.2em] text-neutral-500 mb-4">{label}</h2>
       <ol className="space-y-2.5 list-decimal list-inside marker:text-neutral-600">
         {items.map((s) => (
           <li key={s.href} className="text-sm text-neutral-400 leading-relaxed">

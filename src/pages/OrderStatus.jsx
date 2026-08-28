@@ -6,7 +6,8 @@
 // komunikat ITN od Autopay, bo tylko on jest podpisany kluczem.
 
 import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { CheckCircle2, Clock, XCircle, Loader2, ArrowRight, RefreshCw, Hammer, Truck } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -37,7 +38,7 @@ const STANY_USTALONE = [
 function TransferRow({ label, value, mono, highlight }) {
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 py-1.5">
-      <span className="text-neutral-500 text-[11px]">{label}</span>
+      <span className="text-neutral-500 text-xs">{label}</span>
       <span className={`text-sm break-all ${mono ? "font-mono text-xs" : ""} ${highlight ? "text-blue-300 font-semibold" : "text-white"}`}>
         {value}
       </span>
@@ -400,7 +401,7 @@ export default function OrderStatus() {
                 tr?.iban ? (
                   <div className="rounded-xl border border-blue-400/25 bg-blue-400/[0.05] p-4 mb-6 text-left">
                     <div className="text-center pb-3 mb-3 border-b border-white/10">
-                      <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-1">{u.transferAmount}</div>
+                      <div className="text-xs uppercase tracking-wide text-neutral-500 mb-1">{u.transferAmount}</div>
                       <div className="text-3xl font-extrabold text-white tabular-nums">{tr.amountEur} EUR</div>
                     </div>
                     <TransferRow label={u.transferIban} value={tr.iban} mono />
@@ -411,7 +412,7 @@ export default function OrderStatus() {
                     {tr.dueAt && (
                       <TransferRow label={u.transferDue} value={new Date(tr.dueAt).toLocaleDateString(lang === "pl" ? "pl-PL" : lang === "de" ? "de-DE" : "en-IE")} />
                     )}
-                    <p className="text-neutral-500 text-[11px] leading-relaxed mt-3 pt-3 border-t border-white/10">
+                    <p className="text-neutral-500 text-xs leading-relaxed mt-3 pt-3 border-t border-white/10">
                       {u.transferAfter}
                     </p>
                   </div>

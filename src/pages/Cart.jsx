@@ -6,7 +6,7 @@
 // backend przelicza wszystko od nowa, i wtedy klient zobaczy ewentualna
 // roznice zanim zaplaci.
 
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { Trash2, ShoppingCart, ArrowRight, AlertTriangle, Package, Download, Wrench } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import OfferNumberEntry from "../components/shop/OfferNumberEntry.jsx";
@@ -223,6 +223,9 @@ export default function Cart() {
                       {/* Wlasny model klienta wygrywa ze zdjeciem katalogowym uslugi.
                           thumbData jest zapisany razem z pozycja, wiec podglad
                           dziala takze wtedy, gdy kopia na serwerze nie doszla. */}
+                      {/* ZOSTAJE ZWYKLE `<img>`, a nie `<Obraz>`. Zrodlem bywa tu
+                          podglad wygenerowany u klienta (`thumbData`), a nie plik
+                          z serwisu, wiec nie ma dla niego wariantow do podania. */}
                       {(i.thumbData || i.thumbUrl || i.image) && (
                         <img
                           src={i.thumbData || i.thumbUrl || i.image}
@@ -239,12 +242,12 @@ export default function Cart() {
                               <Icon className="w-3.5 h-3.5 text-neutral-500 flex-shrink-0" />
                               <span className="text-white text-sm font-medium truncate">{i.title}</span>
                             </div>
-                            <div className="text-neutral-500 text-[11px]">{regimeLabel(i.withdrawal)}</div>
+                            <div className="text-neutral-500 text-xs">{regimeLabel(i.withdrawal)}</div>
                             {(() => {
                               const s = shortage(i);
                               if (!s) return null;
                               return (
-                                <div className="text-red-300 text-[11px] mt-1">
+                                <div className="text-red-300 text-xs mt-1">
                                   {s.gone ? u.gone : `${u.onlyLeft} ${s.left}`}
                                 </div>
                               );
@@ -260,7 +263,7 @@ export default function Cart() {
                           </button>
                         </div>
 
-                        <div className="text-neutral-500 text-[11px] mt-1.5 space-y-0.5">
+                        <div className="text-neutral-500 text-xs mt-1.5 space-y-0.5">
                           {/* WSZYSTKIE USTALENIA, nie tylko plik i opis. Ta lista
                               jest trescia umowy: klient placi za to, co tu stoi,
                               i tylko na to sie zgodzil. Powstaje z tych samych
@@ -283,7 +286,7 @@ export default function Cart() {
                             <label className="block text-amber-200 text-[12px] font-medium mb-1">
                               {u.needDescription}
                             </label>
-                            <p className="text-neutral-400 text-[11px] mb-2">{u.needDescriptionWhy}</p>
+                            <p className="text-neutral-400 text-xs mb-2">{u.needDescriptionWhy}</p>
                             <textarea
                               rows={3}
                               value={i.description || ""}
@@ -292,7 +295,7 @@ export default function Cart() {
                               className="w-full rounded-md border border-white/15 bg-white/[0.03] px-2.5 py-2 text-[12px]
                                          text-white placeholder:text-neutral-600 focus:border-amber-400/60 focus:outline-none"
                             />
-                            <p className="text-neutral-500 text-[11px] mt-1">
+                            <p className="text-neutral-500 text-xs mt-1">
                               {String(i.description || "").trim().length} / {MIN_OPIS}
                             </p>
                           </div>
@@ -335,7 +338,7 @@ export default function Cart() {
                     przyczyna porzucenia koszyka. Prog darmowej dostawy istnial
                     od dawna, ale koszyk o nim milczal, czyli akurat tam, gdzie
                     zdanie "brakuje Ci X" cokolwiek zmienia. */}
-                <p className="text-neutral-500 text-[11px] mb-2">
+                <p className="text-neutral-500 text-xs mb-2">
                   {u.shippingFrom.replace("{locker}", money(LOCKER_GROSZE)).replace("{courier}", money(COURIER_GROSZE))}
                 </p>
                 {freeLeftGrosze > 0 ? (
@@ -346,12 +349,12 @@ export default function Cart() {
                         style={{ width: `${Math.min(100, Math.round((subtotalGrosze / FREE_SHIPPING_FROM_GROSZE) * 100))}%` }}
                       />
                     </div>
-                    <p className="text-emerald-400 text-[11px]">
+                    <p className="text-emerald-400 text-xs">
                       {u.freeLeft.replace("{amount}", money(freeLeftGrosze))}
                     </p>
                   </div>
                 ) : (
-                  <p className="text-emerald-400 text-[11px] font-medium mb-4">{u.freeReached}</p>
+                  <p className="text-emerald-400 text-xs font-medium mb-4">{u.freeReached}</p>
                 )}
                 {blocked ? (
                   <>
@@ -362,7 +365,7 @@ export default function Cart() {
                     >
                       {u.checkout}
                     </span>
-                    <p className="text-red-300 text-[11px] text-center mt-2">
+                    <p className="text-red-300 text-xs text-center mt-2">
                       {items.some((i) => brakOpisu(i)) ? u.blockedDescription : u.blocked}
                     </p>
                   </>

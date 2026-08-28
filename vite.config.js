@@ -8,6 +8,11 @@ export default defineConfig({
     noExternal: true,
   },
   build: {
+    // Manifest mowi, ktory plik wyjsciowy odpowiada ktoremu zrodlu. Czyta go
+    // `scripts/prerender.mjs`, zeby kazda strona zapowiadala wlasny fragment
+    // trasy. Bez tego przegladarka odkrywa go dopiero po przetworzeniu pliku
+    // wejsciowego i idzie po niego druga tura.
+    manifest: true,
     rollupOptions: {
       output: {
         manualChunks: {

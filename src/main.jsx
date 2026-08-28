@@ -9,6 +9,8 @@ import { CurrencyProvider } from "./shop/CurrencyContext.jsx";
 import { ThemeProvider } from "./i18n/ThemeContext.jsx";
 import { CartProvider } from "./cart/CartContext.jsx";
 import Layout from "./components/Layout.jsx";
+import { TRASY, JEZYKI, prefiksJezyka, rozbierzSciezke } from "./routes.js";
+import { wczytajSlownik } from "./i18n/slowniki.js";
 import ScrollToHash from "./components/ScrollToHash.jsx";
 import Home from "./pages/Home.jsx";
 import Contact from "./pages/Contact.jsx";
@@ -88,74 +90,60 @@ function LazyFallback() {
   );
 }
 
-// JEDNA LISTA TRAS, uzywana i do renderowania, i do wczytania fragmentu przed
-// hydratacja. Druga lista rozjechalaby sie przy pierwszej nowej stronie, i to
-// po cichu: brakujaca pozycja nie jest bledem, tylko powrotem do starej awarii.
-const trasy = (
-  <Route element={<Layout />}>
-    <Route path="/" element={<Home />} />
-    <Route path="/jewelry/" element={<Jewelry />} />
-    <Route path="/studio/" element={<Studio />} />
-    <Route path="/blog/" element={<BlogIndex />} />
-    <Route path="/blog/:slug/" element={<BlogPost />} />
-    <Route path="/contact/" element={<Contact />} />
-    <Route path="/glossary/" element={<Glossary />} />
-    <Route path="/glossary/:id/" element={<GlossaryTerm />} />
-    <Route path="/about/" element={<About />} />
-    <Route path="/warranty/" element={<Warranty />} />
-    <Route path="/returns/" element={<Returns />} />
-    <Route path="/terms/" element={<Terms />} />
-    <Route path="/cart/" element={<Cart />} />
-    <Route path="/checkout/" element={<Checkout />} />
-    <Route path="/shop/" element={<Shop />} />
-    <Route path="/shop/jewelry/" element={<Shop />} />
-    <Route path="/shop/studio/" element={<Shop />} />
-    <Route path="/shop/service/:id/" element={<Service />} />
-    <Route path="/shop/:slug/" element={<Product />} />
-    <Route path="/order/" element={<Order />} />
-    <Route path="/order/status/" element={<OrderStatus />} />
-    <Route path="/quote/" element={<QuotePage />} />
-    <Route path="/oferta/" element={<Offer />} />
-    <Route path="/shipping/" element={<Shipping />} />
-    <Route path="/payments/" element={<Payments />} />
-    <Route path="/toolsjewelry/" element={<ToolsJewelry />} />
-    <Route path="/toolsjewelry/alloy-composition/" element={<AlloyCompositionPage />} />
-    <Route path="/toolsjewelry/metal-pricing/" element={<MetalPricingPage />} />
-    <Route path="/toolsjewelry/ring-size/" element={<RingSizePage />} />
-    <Route path="/toolsjewelry/ring-sizer/" element={<RingSizerPage />} />
-    <Route path="/toolstudio/printability/" element={<PrintabilityPage />} />
-    <Route path="/toolstudio/" element={<ToolsStudio />} />
-    <Route path="/toolstudio/print-settings/" element={<PrintSettingsPage />} />
-    <Route path="/toolstudio/resin-settings/" element={<ResinSettingsPage />} />
-    <Route path="/toolstudio/laser-parameters/" element={<LaserParametersPage />} />
-    <Route path="/toolstudio/shrinkage/" element={<ShrinkagePage />} />
-    <Route path="/toolsjewelry/ring-blank/" element={<RingBlankPage />} />
-    <Route path="/toolsjewelry/kreator/" element={<RingConfiguratorPage />} />
-    <Route path="/privacy/" element={<Privacy />} />
-    <Route path="/reviews/" element={<Reviews />} />
-    <Route path="/b2b/" element={<B2B />} />
-    <Route path="/druk-3d-piaseczno/" element={<LocalPrint3D city="piaseczno" />} />
-    <Route path="/druk-3d-warszawa/" element={<LocalPrint3D city="warszawa" />} />
-    <Route path="*" element={<NotFound />} />
-  </Route>
-);
+// TRASY BUDOWANE Z JEDNEJ LISTY, TRZY RAZY: PO POLSKU, ANGIELSKU I NIEMIECKU.
+// Lista sciezek stoi w `src/routes.js` i sluzy takze prerenderowi oraz mapie
+// witryny. Wczesniej byla przepisana osobno tutaj i w `entry-server.jsx`, wiec
+// nowa strona musiala trafic w dwa miejsca, a brak w jednym z nich nie byl
+// bledem, tylko adresem dzialajacym w polowie przypadkow.
+const KOMPONENTY = {
+  Home, Jewelry, Studio, BlogIndex, BlogPost, Contact, Glossary, GlossaryTerm,
+  About, Warranty, Returns, Terms, Cart, Checkout, Shop, Service, Product,
+  Order, OrderStatus, QuotePage, Offer, Shipping, Payments, ToolsJewelry,
+  AlloyCompositionPage, MetalPricingPage, RingSizePage, RingSizerPage,
+  PrintabilityPage, ToolsStudio, PrintSettingsPage, ResinSettingsPage,
+  LaserParametersPage, ShrinkagePage, RingBlankPage, RingConfiguratorPage,
+  Privacy, Reviews, B2B, LocalPrint3D, NotFound,
+};
 
+function galazJezyka(lang) {
+  const Layoutowa = <Layout />;
+  return (
+    <Route key={lang} path={prefiksJezyka(lang)} element={Layoutowa}>
+      {TRASY.map((t) => {
+        const Strona = KOMPONENTY[t.komponent];
+        const element = <Strona {...(t.wlasciwosci || {})} />;
+        return t.sciezka === ""
+          ? <Route key={`${lang}-index`} index element={element} />
+          : <Route key={`${lang}-${t.sciezka}`} path={t.sciezka} element={element} />;
+      })}
+      <Route key={`${lang}-reszta`} path="*" element={<NotFound />} />
+    </Route>
+  );
+}
+
+const trasy = <>{JEZYKI.map(galazJezyka)}</>;
+
+// KOLEJNOSC MA ZNACZENIE: router stoi NAD dostawca jezyka, bo jezyk czyta sie
+// teraz ze sciezki (`/de/studio/`), a nie z pamieci przegladarki. Dostawca
+// jezyka wola `useLocation`, wiec musi byc w srodku routera. Ta sama kolejnosc
+// obowiazuje w `entry-server.jsx`: rozna dawalaby inne numery `useId` po obu
+// stronach i rozjazd przy hydracji.
 const app = (
   <StrictMode>
     <HelmetProvider>
       <ThemeProvider>
+        <BrowserRouter>
         <LanguageProvider>
           <CurrencyProvider>
           <CartProvider>
-          <BrowserRouter>
           <ScrollToHash />
           <Suspense fallback={<LazyFallback />}>
             <Routes>{trasy}</Routes>
           </Suspense>
-          </BrowserRouter>
           </CartProvider>
           </CurrencyProvider>
         </LanguageProvider>
+        </BrowserRouter>
       </ThemeProvider>
     </HelmetProvider>
   </StrictMode>
@@ -174,9 +162,15 @@ const app = (
 async function wczytajTraseBiezaca() {
   try {
     const dopasowane = matchRoutes(createRoutesFromElements(trasy), window.location.pathname) || [];
-    await Promise.all(
-      dopasowane.map((m) => m.route?.element?.type?.preload).filter(Boolean).map((p) => p())
-    );
+    await Promise.all([
+      // SLOWNIK JEZYKA Z ADRESU, i tylko ten jeden. Wczesniej wszystkie trzy
+      // jechaly w pliku wejsciowym, bo jezyk byl znany dopiero po zamontowaniu
+      // aplikacji. Teraz wynika ze sciezki, wiec da sie pobrac dokladnie ten,
+      // ktory bedzie czytany. Musi byc gotowy PRZED hydracja, inaczej granica
+      // Suspense zawiesza sie w jej trakcie i React wyrzuca gotowy HTML.
+      wczytajSlownik(rozbierzSciezke(window.location.pathname).lang),
+      ...dopasowane.map((m) => m.route?.element?.type?.preload).filter(Boolean).map((p) => p()),
+    ]);
   } catch {
     /* nie blokujemy strony na wczytywaniu na zapas */
   }
@@ -190,5 +184,7 @@ if (root.innerHTML.trim() && root.innerHTML !== "<!--ssr-outlet-->") {
   // tresci, ktora juz przyszla z serwera.
   wczytajTraseBiezaca().then(() => hydrateRoot(root, app));
 } else {
-  createRoot(root).render(app);
+  // Serwer deweloperski i awaryjne wejscie bez prerenderu. Slownik i tak musi
+  // byc pierwszy, bo bez niego nie ma czym narysowac ani jednego napisu.
+  wczytajTraseBiezaca().then(() => createRoot(root).render(app));
 }

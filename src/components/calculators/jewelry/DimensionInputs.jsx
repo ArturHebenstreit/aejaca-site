@@ -1,5 +1,6 @@
 import { getProductType, EU_RING_SIZES, US_RING_SIZES, UK_RING_SIZES, JP_RING_SIZES, getRingInnerDiameter } from "./productConfig.js";
 import { t } from "../calcShared.jsx";
+import { sciezkaJezyka } from "../../../routes.js";
 
 const SIZER_LINK = {
   pl: "Nie znasz rozmiaru?",
@@ -27,7 +28,7 @@ function NumberField({ field, value, onChange, lang }) {
         />
         <span className="text-xs text-neutral-500 ml-2 shrink-0">{field.unit}</span>
       </div>
-      <div className="text-[11px] text-neutral-600 mt-0.5">
+      <div className="text-xs text-neutral-600 mt-0.5">
         {field.min}–{field.max} {field.unit}
       </div>
       <input
@@ -147,10 +148,10 @@ function RingSizeField({ field, value, onChange, lang }) {
           {/* Pytamy o rozmiar, wiec musimy powiedziec, skad go wziac. Nowa karta,
               bo skonfigurowana wycena zginelaby przy nawigacji w tej samej. */}
           <a
-            href="/toolsjewelry/ring-sizer/"
+            href={sciezkaJezyka("/toolsjewelry/ring-sizer/", lang)}
             target="_blank"
             rel="noopener"
-            className="text-[11px] text-amber-400 hover:text-amber-300 underline underline-offset-2 whitespace-nowrap"
+            className="text-xs text-amber-400 hover:text-amber-300 underline underline-offset-2 whitespace-nowrap"
           >
             {SIZER_LINK[lang] || SIZER_LINK.en}
           </a>
@@ -263,7 +264,7 @@ function RingSizeField({ field, value, onChange, lang }) {
                 onChange={(e) => changeValue(parseFloat(e.target.value))}
                 className="w-full accent-amber-400"
               />
-              <div className="flex justify-between text-[10px] text-neutral-600 mt-1">
+              <div className="flex justify-between text-xs text-neutral-600 mt-1">
                 <span>ø 12 mm</span>
                 <span>ø 25 mm</span>
               </div>

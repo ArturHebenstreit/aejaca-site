@@ -19,7 +19,7 @@
 // i przy okazji odpowiada na watpliwosci tam, gdzie klient je ma, czyli przed
 // zamowieniem, a nie po.
 
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { ArrowRight, BookOpen } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { getPostsByCategoryMeta } from "../blog/postsMeta.js";

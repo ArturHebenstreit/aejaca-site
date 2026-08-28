@@ -12,7 +12,7 @@
 // bo oferta niesie nazwisko, telefon i adres (ADR-0012).
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "../../i18n/nav.jsx";
 import { ArrowRight, FileText } from "lucide-react";
 import { useLanguage } from "../../i18n/LanguageContext.jsx";
 
@@ -80,7 +80,7 @@ export default function OfferNumberEntry({ className = "" }) {
 
           <form onSubmit={submit} className="mt-4 flex flex-wrap items-end gap-3">
             <label className="block flex-1 min-w-[14rem]">
-              <span className="text-neutral-500 text-[10px] block mb-1">{u.label}</span>
+              <span className="text-neutral-500 text-xs block mb-1">{u.label}</span>
               <input
                 value={ref}
                 onChange={(e) => { setRef(e.target.value); setError(false); }}
@@ -101,9 +101,9 @@ export default function OfferNumberEntry({ className = "" }) {
           </form>
 
           {error ? (
-            <p className="text-amber-300 text-[11px] mt-2">{u.bad}</p>
+            <p className="text-amber-300 text-xs mt-2">{u.bad}</p>
           ) : (
-            <p className="text-neutral-600 text-[10px] leading-relaxed mt-2">{u.hint}</p>
+            <p className="text-neutral-600 text-xs leading-relaxed mt-2">{u.hint}</p>
           )}
         </div>
       </div>

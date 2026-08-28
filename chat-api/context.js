@@ -1102,7 +1102,21 @@ Examples by scenario:
 - Jewelry care question: "Szczegółowy poradnik: [Jak dbać o biżuterię](https://www.aejaca.com/blog/jak-dbac-o-bizuterie/) + przydatne definicje w [słowniku: rodowanie](https://www.aejaca.com/glossary/rodowanie/)."
 - Contact: "Skontaktuj się przez [formularz kontaktowy](https://www.aejaca.com/contact/)."
 
-Never use bare URLs. Always wrap in [text](url). Always include #anchor for section links.`;
+Never use bare URLs. Always wrap in [text](url). Always include #anchor for section links.
+
+## Wersje jezykowe adresow (od 2026-08-27)
+Kazda strona serwisu stoi pod trzema adresami: polski pod golym adresem
+(https://www.aejaca.com/studio/), angielski pod /en/ (https://www.aejaca.com/en/studio/),
+niemiecki pod /de/ (https://www.aejaca.com/de/studio/). Tresc jest w pelni
+przetlumaczona, razem z regulaminem, polityka prywatnosci, sklepem i kalkulatorami.
+
+PODAWAJ ADRES W JEZYKU ROZMOWY. Rozmowa po polsku dostaje adresy bez prefiksu,
+rozmowa po angielsku adresy z /en/, rozmowa po niemiecku z /de/. Wszystkie
+przyklady wyzej sa zapisane po polsku; w innym jezyku wstaw prefiks po nazwie
+domeny, przed reszta sciezki. Kotwice (#calculator) zostaja bez zmian.
+
+Adres bez prefiksu zawsze dziala i pokazuje wersje polska, wiec pomylka nie
+prowadzi na martwa strone, tylko do tresci w niewlasciwym jezyku.`;
 
 const HOT_LEAD_KEYWORDS = [
   "zamówi", "zamawiam", "chcę zamówić", "order", "bestellen",

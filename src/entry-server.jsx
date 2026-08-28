@@ -5,10 +5,22 @@ import ScrollToHash from "./components/ScrollToHash.jsx";
 import { Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { LanguageProvider } from "./i18n/LanguageContext.jsx";
+// Prerender rysuje po kolei kazdy z trzech jezykow, wiec potrzebuje wszystkich
+// slownikow naraz i nie ma czego odkladac. W przegladarce jest odwrotnie:
+// `main.jsx` pobiera dokladnie jeden, ten wynikajacy z adresu.
+import { zarejestrujSlownik } from "./i18n/slowniki.js";
+import slownikPL from "./i18n/pl.js";
+import slownikEN from "./i18n/en.js";
+import slownikDE from "./i18n/de.js";
+
+zarejestrujSlownik("pl", slownikPL);
+zarejestrujSlownik("en", slownikEN);
+zarejestrujSlownik("de", slownikDE);
 import { CurrencyProvider } from "./shop/CurrencyContext.jsx";
 import { ThemeProvider } from "./i18n/ThemeContext.jsx";
 import { CartProvider } from "./cart/CartContext.jsx";
 import Layout from "./components/Layout.jsx";
+import { TRASY, JEZYKI, prefiksJezyka } from "./routes.js";
 
 import Home from "./pages/Home.jsx";
 import Jewelry from "./pages/Jewelry.jsx";
@@ -52,6 +64,35 @@ import B2B from "./pages/B2B.jsx";
 import LocalPrint3D from "./pages/LocalPrint3D.jsx";
 import NotFound from "./pages/NotFound.jsx";
 
+// Ta sama lista tras co w `main.jsx`, tylko ze stronami importowanymi
+// zwyczajnie: prerender rysuje wszystko na raz i nie ma czego odkladac.
+const KOMPONENTY = {
+  Home, Jewelry, Studio, BlogIndex, BlogPost, Contact, Glossary, GlossaryTerm,
+  About, Warranty, Returns, Terms, Cart, Checkout, Shop, Service, Product,
+  Order, OrderStatus, QuotePage, Offer, Shipping, Payments, ToolsJewelry,
+  AlloyCompositionPage, MetalPricingPage, RingSizePage, RingSizerPage,
+  PrintabilityPage, ToolsStudio, PrintSettingsPage, ResinSettingsPage,
+  LaserParametersPage, ShrinkagePage, RingBlankPage, RingConfiguratorPage,
+  Privacy, Reviews, B2B, LocalPrint3D, NotFound,
+};
+
+function galazJezyka(lang) {
+  return (
+    <Route key={lang} path={prefiksJezyka(lang)} element={<Layout />}>
+      {TRASY.map((t) => {
+        const Strona = KOMPONENTY[t.komponent];
+        const element = <Strona {...(t.wlasciwosci || {})} />;
+        return t.sciezka === ""
+          ? <Route key={`${lang}-index`} index element={element} />
+          : <Route key={`${lang}-${t.sciezka}`} path={t.sciezka} element={element} />;
+      })}
+      <Route key={`${lang}-reszta`} path="*" element={<NotFound />} />
+    </Route>
+  );
+}
+
+const trasy = <>{JEZYKI.map(galazJezyka)}</>;
+
 export function render(url) {
   const helmetContext = {};
 
@@ -61,10 +102,13 @@ export function render(url) {
     <StrictMode>
     <HelmetProvider context={helmetContext}>
       <ThemeProvider>
+        {/* Kolejnosc taka sama jak w `main.jsx`: router NAD dostawca jezyka,
+            bo jezyk czyta sie ze sciezki. Rozna kolejnosc po obu stronach
+            dawalaby inne numery `useId` i rozjazd przy hydracji. */}
+        <StaticRouter location={url}>
         <LanguageProvider>
           <CurrencyProvider>
           <CartProvider>
-          <StaticRouter location={url}>
           {/* Nic nie rysuje, ale zajmuje miejsce w drzewie, a `useId` liczy
               identyfikatory z polozenia wezla. Bez niego serwer i klient
               nadawaly polom formularzy rozne id i etykiety przestawaly je wskazywac. */}
@@ -76,59 +120,12 @@ export function render(url) {
               OD NOWA, wyrzucajac gotowy HTML. Tutaj nic sie nie zawiesza, bo strony
               sa importowane statycznie: chodzi wylacznie o to, zeby drzewa byly zgodne. */}
           <Suspense>
-          <Routes>
-            <Route element={<Layout />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/jewelry/" element={<Jewelry />} />
-              <Route path="/studio/" element={<Studio />} />
-              <Route path="/blog/" element={<BlogIndex />} />
-              <Route path="/blog/:slug/" element={<BlogPost />} />
-              <Route path="/contact/" element={<Contact />} />
-              <Route path="/glossary/" element={<Glossary />} />
-              <Route path="/glossary/:id/" element={<GlossaryTerm />} />
-              <Route path="/about/" element={<About />} />
-              <Route path="/warranty/" element={<Warranty />} />
-              <Route path="/returns/" element={<Returns />} />
-              <Route path="/terms/" element={<Terms />} />
-              <Route path="/cart/" element={<Cart />} />
-              <Route path="/checkout/" element={<Checkout />} />
-              <Route path="/shop/" element={<Shop />} />
-              <Route path="/shop/jewelry/" element={<Shop />} />
-              <Route path="/shop/studio/" element={<Shop />} />
-              <Route path="/shop/service/:id/" element={<Service />} />
-              <Route path="/shop/:slug/" element={<Product />} />
-              <Route path="/order/" element={<Order />} />
-              <Route path="/order/status/" element={<OrderStatus />} />
-              <Route path="/quote/" element={<QuotePage />} />
-              <Route path="/oferta/" element={<Offer />} />
-              <Route path="/shipping/" element={<Shipping />} />
-              <Route path="/payments/" element={<Payments />} />
-              <Route path="/toolsjewelry/" element={<ToolsJewelry />} />
-              <Route path="/toolsjewelry/alloy-composition/" element={<AlloyCompositionPage />} />
-              <Route path="/toolsjewelry/metal-pricing/" element={<MetalPricingPage />} />
-              <Route path="/toolsjewelry/ring-size/" element={<RingSizePage />} />
-              <Route path="/toolsjewelry/ring-sizer/" element={<RingSizerPage />} />
-              <Route path="/toolstudio/printability/" element={<PrintabilityPage />} />
-              <Route path="/toolstudio/" element={<ToolsStudio />} />
-              <Route path="/toolstudio/print-settings/" element={<PrintSettingsPage />} />
-              <Route path="/toolstudio/resin-settings/" element={<ResinSettingsPage />} />
-              <Route path="/toolstudio/laser-parameters/" element={<LaserParametersPage />} />
-              <Route path="/toolstudio/shrinkage/" element={<ShrinkagePage />} />
-              <Route path="/toolsjewelry/ring-blank/" element={<RingBlankPage />} />
-              <Route path="/toolsjewelry/kreator/" element={<RingConfiguratorPage />} />
-              <Route path="/privacy/" element={<Privacy />} />
-              <Route path="/reviews/" element={<Reviews />} />
-              <Route path="/b2b/" element={<B2B />} />
-              <Route path="/druk-3d-piaseczno/" element={<LocalPrint3D city="piaseczno" />} />
-              <Route path="/druk-3d-warszawa/" element={<LocalPrint3D city="warszawa" />} />
-                <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
+          <Routes>{trasy}</Routes>
           </Suspense>
-          </StaticRouter>
           </CartProvider>
           </CurrencyProvider>
         </LanguageProvider>
+        </StaticRouter>
       </ThemeProvider>
     </HelmetProvider>
     </StrictMode>

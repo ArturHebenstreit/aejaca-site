@@ -24,6 +24,15 @@ export const SITE = {
     en: "en_US",
     de: "de_DE",
   },
+  // Kody dla `hreflang`. Swiadomie BEZ regionu: `en` zamiast `en-US` i `de`
+  // zamiast `de-DE`. Regionu tu nie chcemy, bo wysylamy do calej Unii i dalej,
+  // a `de-DE` powiedzialoby wyszukiwarce, ze wersja niemiecka jest dla Niemiec,
+  // nie dla Austrii i Szwajcarii.
+  hreflang: {
+    pl: "pl",
+    en: "en",
+    de: "de",
+  },
 };
 
 // Pages × languages, keep titles ≤ 60 chars, descriptions ≤ 155 chars
@@ -66,7 +75,7 @@ export const SEO = {
       ogAlt: "AEJaCA Jewelry and sTuDiO - two brands, one craft studio",
     },
     de: {
-      title: "AEJaCA - Handgefertigter Schmuck & Studio für Digitalfertigung",
+      title: "AEJaCA - Handgefertigter Schmuck & digitale Fertigung",
       description: "Zwei Marken, ein Studio. AEJaCA Schmuck: Silber, Gold, Edelsteine, Epoxidharz. AEJaCA sTuDiO: 3D-Druck, CO2- & Fiber-Lasergravur.",
       keywords: "handgefertigter Schmuck, Silber, Gold, Edelsteine, Epoxidharz, 3D-Druck, Ingenieurswerkstoffe, CO2-Lasergravur, Fiber-Laser, 3D-Modellierung, Rhino, Fusion 360, AEJaCA",
       ogAlt: "AEJaCA Schmuck und sTuDiO - zwei Marken, ein Handwerksstudio",
@@ -97,19 +106,19 @@ export const SEO = {
   studio: {
     pl: {
       title: "AEJaCA sTuDiO, Druk 3D, Laser, Modelowanie 3D, Odlewy",
-      description: "Kalkulator wyceny druku 3D online (STL) + laser CO2/Fiber + odlewy żywiczne i odlew w srebrze lub złocie z modelu 3D. Modelowanie 3D (Rhino, Fusion 360). Materiały inżynierskie, małe serie.",
+      description: "Wycena druku 3D z pliku STL, laser CO2 i Fiber, odlewy żywiczne oraz odlew w srebrze i złocie z modelu 3D. Modelowanie w Rhino i Fusion 360, małe serie.",
       keywords: "kalkulator wyceny druku 3D online, wycena STL online, druk 3D na zamówienie, materiały inżynierskie, PETG, ASA, PA6, PC, PEEK, TPU, druk 3D funkcjonalny, grawerowanie laserowe, laser CO2, Fiber laser, odlewy żywiczne, odlew srebra, odlew złota, odlew z modelu 3D, modelowanie 3D, Rhino 3D, Fusion 360, projekt 3D na zamówienie, prototypowanie, Bambu Lab H2D",
       ogAlt: "AEJaCA sTuDiO, druk 3D, laser, modelowanie 3D i odlewy żywiczne",
     },
     en: {
       title: "AEJaCA sTuDiO, 3D Printing, Laser Engraving & 3D Modeling",
-      description: "3D printing quote online (STL) + CO2/Fiber laser engraving + resin casting and silver or gold casting from a 3D model. 3D modeling (Rhino, Fusion 360). Engineering materials, small runs.",
+      description: "3D printing quote from your STL, CO2 and Fiber laser engraving, resin casting and silver or gold casting from a 3D model. Modelling in Rhino and Fusion 360.",
       keywords: "3D printing cost calculator online, STL upload instant quote, laser engraving price, engineering materials, PETG, ASA, PA6, PC, PEEK, TPU, functional 3D printing, fiber laser, CO2 laser, resin casting, silver casting, gold casting, casting from 3d model, 3D modeling, Rhino 3D, Fusion 360, custom 3D design, prototyping, Bambu Lab H2D",
       ogAlt: "AEJaCA sTuDiO, 3D printing, laser engraving and 3D modeling",
     },
     de: {
       title: "AEJaCA sTuDiO, 3D-Druck, Lasergravur, 3D-Modellierung",
-      description: "3D-Druck Preisrechner online (STL) + CO2-/Fiber-Lasergravur + Harzguss sowie Silber- und Goldguss nach 3D-Modell. 3D-Modellierung (Rhino, Fusion 360). Ingenieurswerkstoffe, Kleinserien.",
+      description: "3D-Druck Preisrechner nach STL, CO2- und Fiber-Lasergravur, Harzguss sowie Silber- und Goldguss nach 3D-Modell. Modellierung in Rhino und Fusion 360.",
       keywords: "3D-Druck Preisrechner online, STL Sofort-Angebot, Lasergravur Preis, Ingenieurswerkstoffe, PETG, ASA, PA6, PC, PEEK, TPU, technischer 3D-Druck, Faserlaser, CO2-Laser, Harzguss, Silberguss, Goldguss, Guss nach 3D-Modell, 3D-Modellierung, Rhino 3D, Fusion 360, 3D-Design auf Bestellung, Prototyping, Bambu Lab H2D",
       ogAlt: "AEJaCA sTuDiO, 3D-Druck, Lasergravur und 3D-Modellierung",
     },
@@ -204,13 +213,13 @@ export const SEO = {
   // bo nikt nie szuka "AEJaCA sTuDiO", a pierwsze słowa tytułu ważą najwięcej.
   druk3dPiaseczno: {
     pl: {
-      title: "Druk 3D Piaseczno, wydruki na zamówienie z odbiorem osobistym",
+      title: "Druk 3D Piaseczno, wydruki na zamówienie i odbiór osobisty",
       description: "Druk 3D w Piasecznie i okolicy. FDM i żywica 16K, wydruk z pliku STL lub modelowanie od zera. Odbiór osobisty w Józefosławiu, od 49 zł.",
       keywords: "druk 3d piaseczno, wydruk 3d piaseczno, drukarnia 3d piaseczno, druk 3d józefosław, modelowanie 3d piaseczno",
       ogAlt: "Druk 3D Piaseczno, pracownia AEJaCA sTuDiO",
     },
     en: {
-      title: "3D Printing in Piaseczno, custom prints with local collection",
+      title: "3D Printing in Piaseczno, custom prints, local pickup",
       description: "3D printing in Piaseczno and the surrounding area. FDM and 16K resin, printing from your STL or modelling from scratch. Collection in Józefosław, from 49 PLN.",
       keywords: "3d printing piaseczno, 3d print service piaseczno, 3d printing warsaw area, 3d modelling piaseczno",
       ogAlt: "3D printing in Piaseczno, AEJaCA sTuDiO workshop",
@@ -225,13 +234,13 @@ export const SEO = {
 
   druk3dWarszawa: {
     pl: {
-      title: "Druk 3D Warszawa, wycena z pliku STL, wysyłka następnego dnia",
+      title: "Druk 3D Warszawa, wycena z pliku STL, wysyłka w 24 h",
       description: "Druk 3D na zamówienie dla Warszawy. FDM i żywica 16K, prototypy, makiety, części zamienne i wzorce odlewnicze. Od jednej sztuki, od 49 zł.",
       keywords: "druk 3d warszawa, wydruk 3d warszawa, drukarnia 3d warszawa, prototypy 3d warszawa, druk 3d na zamówienie",
       ogAlt: "Druk 3D Warszawa, pracownia AEJaCA sTuDiO",
     },
     en: {
-      title: "3D Printing in Warsaw, quote from your STL, next-day dispatch",
+      title: "3D Printing in Warsaw, STL quote, next-day dispatch",
       description: "Custom 3D printing for Warsaw. FDM and 16K resin, prototypes, architectural models, spare parts and casting patterns. From one piece, from 49 PLN.",
       keywords: "3d printing warsaw, 3d print service warsaw, rapid prototyping warsaw, resin printing warsaw",
       ogAlt: "3D printing in Warsaw, AEJaCA sTuDiO workshop",
@@ -324,19 +333,19 @@ export const SEO = {
   order: {
     pl: {
       title: "Zamów online, druk 3D, grawer i biżuteria, AEJaCA",
-      description: "Wyceń i zamów w kilka minut. Wgraj plik STL, poznaj wiążącą cenę i zapłać BLIK-iem lub szybkim przelewem. Druk 3D, grawer laserowy, odlewy żywiczne, renowacja biżuterii.",
+      description: "Wyceń i zamów w kilka minut. Wgraj plik STL, poznaj wiążącą cenę i zapłać BLIK-iem. Druk 3D, grawer laserowy, odlewy, renowacja biżuterii.",
       keywords: "zamów druk 3d online, wycena stl online, druk 3d na zamówienie, grawer laserowy zamówienie, płatność blik",
       ogAlt: "Kreator zamówień AEJaCA",
     },
     en: {
       title: "Order online, 3D printing, engraving and jewelry, AEJaCA",
-      description: "Quote and order in minutes. Upload an STL file, get a binding price and pay by BLIK or instant transfer. 3D printing, laser engraving, resin casting, jewelry renovation.",
+      description: "Quote and order in minutes. Upload an STL, get a binding price and pay by BLIK or instant transfer. 3D printing, engraving, casting, jewelry repair.",
       keywords: "order 3d printing online, stl instant quote, custom 3d print, laser engraving order",
       ogAlt: "AEJaCA order wizard",
     },
     de: {
       title: "Online bestellen, 3D-Druck, Gravur und Schmuck, AEJaCA",
-      description: "In Minuten kalkulieren und bestellen. STL-Datei hochladen, verbindlichen Preis erhalten und per BLIK oder Sofortüberweisung zahlen. 3D-Druck, Lasergravur, Harzguss, Schmuckaufarbeitung.",
+      description: "In Minuten kalkulieren und bestellen. STL hochladen, verbindlichen Preis erhalten, per BLIK oder Sofortüberweisung zahlen. 3D-Druck, Gravur, Guss.",
       keywords: "3d druck online bestellen, stl sofortangebot, lasergravur bestellen",
       ogAlt: "AEJaCA Bestellassistent",
     },
@@ -371,7 +380,7 @@ export const SEO = {
     },
     de: {
       title: "Angebot bezahlen, AEJaCA",
-      description: "Sie haben ein Angebot von uns? Geben Sie die Nummer ein, prüfen Sie den Betrag, tragen Sie einen Rabattcode ein und zahlen Sie. Die Angebotsnummer erhalten Sie per E-Mail oder im Gespräch.",
+      description: "Sie haben ein Angebot von uns? Nummer eingeben, Betrag prüfen, Rabattcode eintragen und zahlen. Die Nummer erhalten Sie per E-Mail oder im Gespräch.",
       keywords: "AEJaCA Angebot bezahlen, Angebotsnummer, Kostenvoranschlag bezahlen",
       ogAlt: "AEJaCA Angebot bezahlen",
     },

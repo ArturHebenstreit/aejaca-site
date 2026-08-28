@@ -333,7 +333,7 @@ export default function PrintabilityGate({ triangles, tech, nozzleId = "0.4", la
           <Wrench className="w-4 h-4 text-blue-300 shrink-0" />
           <h4 className="text-sm font-semibold text-blue-200">{L.remedyTitle}</h4>
         </div>
-        <p className="text-neutral-400 text-[11px] leading-relaxed mb-3">{L.remedyLead}</p>
+        <p className="text-neutral-400 text-xs leading-relaxed mb-3">{L.remedyLead}</p>
 
         <ul className="space-y-2.5 mb-3">
           {wszystkie.map((f) => (
@@ -409,8 +409,8 @@ export default function PrintabilityGate({ triangles, tech, nozzleId = "0.4", la
             />
             <span className="text-white text-xs leading-relaxed">{L.accept}</span>
           </label>
-          <p className="text-neutral-500 text-[11px] leading-relaxed mt-2">{L.acceptNote}</p>
-          {!accepted && <p className="text-rose-300 text-[11px] mt-2">{L.mustAccept}</p>}
+          <p className="text-neutral-500 text-xs leading-relaxed mt-2">{L.acceptNote}</p>
+          {!accepted && <p className="text-rose-300 text-xs mt-2">{L.mustAccept}</p>}
         </>
       )}
     </div>

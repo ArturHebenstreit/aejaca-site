@@ -144,7 +144,7 @@ export default function SaveQuote({ calculator, params, uploadToken = null, file
         </div>
 
         <div className="rounded-lg bg-white/[0.03] px-3 py-2 mb-2">
-          <code className="text-[11px] text-neutral-300 break-all">{saved.url}</code>
+          <code className="text-xs text-neutral-300 break-all">{saved.url}</code>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-3">
@@ -166,12 +166,12 @@ export default function SaveQuote({ calculator, params, uploadToken = null, file
         </div>
 
         {saved.emailed && (
-          <p className="text-neutral-400 text-[11px] mb-1 flex items-center gap-1.5">
+          <p className="text-neutral-400 text-xs mb-1 flex items-center gap-1.5">
             <Mail className="w-3.5 h-3.5" /> {u.savedMailed}
           </p>
         )}
-        {until && <p className="text-neutral-400 text-[11px]">{u.validUntil(until)}</p>}
-        <p className="text-neutral-500 text-[11px] leading-relaxed mt-1">{u.metalNote}</p>
+        {until && <p className="text-neutral-400 text-xs">{u.validUntil(until)}</p>}
+        <p className="text-neutral-500 text-xs leading-relaxed mt-1">{u.metalNote}</p>
       </div>
     );
   }
@@ -190,9 +190,9 @@ export default function SaveQuote({ calculator, params, uploadToken = null, file
 
   return (
     <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.02] p-4">
-      <p className="text-neutral-400 text-[11px] leading-relaxed mb-3">{u.intro}</p>
+      <p className="text-neutral-400 text-xs leading-relaxed mb-3">{u.intro}</p>
 
-      <label className="block text-[11px] text-neutral-500 mb-1.5" htmlFor="save-quote-email">{u.emailLabel}</label>
+      <label className="block text-xs text-neutral-500 mb-1.5" htmlFor="save-quote-email">{u.emailLabel}</label>
       <input
         id="save-quote-email"
         type="email"
@@ -203,7 +203,7 @@ export default function SaveQuote({ calculator, params, uploadToken = null, file
                    placeholder:text-neutral-600 focus:outline-none focus:border-white/25 mb-3"
       />
 
-      {error && <p className="text-red-300 text-[11px] mb-2">{error}</p>}
+      {error && <p className="text-red-300 text-xs mb-2">{error}</p>}
 
       <div className="flex gap-2">
         <button
@@ -226,7 +226,7 @@ export default function SaveQuote({ calculator, params, uploadToken = null, file
         </button>
       </div>
 
-      <p className="text-neutral-500 text-[11px] leading-relaxed mt-3">{u.noObligation}</p>
+      <p className="text-neutral-500 text-xs leading-relaxed mt-3">{u.noObligation}</p>
     </div>
   );
 }

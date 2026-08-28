@@ -16,7 +16,7 @@
 // jadra geometrycznego na te sama bryle.
 
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../../../i18n/nav.jsx";
 import { ShoppingCart, Check, Loader2, FileDown, Boxes, Gem, Mail } from "lucide-react";
 import { useCart } from "../../../cart/CartContext.jsx";
 import { OUTPUT_AVAILABLE } from "../../../pricing/ringConfigurator.js";
@@ -166,9 +166,9 @@ export default function RingPriceBox({ params, lang = "pl" }) {
   return (
     <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.02] p-4">
       <div className="flex items-baseline justify-between mb-3">
-        <h3 className="text-[10.5px] uppercase tracking-[0.13em] text-neutral-500">{t.title}</h3>
+        <h3 className="text-xs uppercase tracking-[0.13em] text-neutral-500">{t.title}</h3>
         {dane?.geometry ? (
-          <span className="text-[11px] tabular-nums text-neutral-500">
+          <span className="text-xs tabular-nums text-neutral-500">
             {t.mass} {dane.geometry.massG.toFixed(2)} g
           </span>
         ) : null}
@@ -197,7 +197,7 @@ export default function RingPriceBox({ params, lang = "pl" }) {
                   : doWyceny ? <span className="text-[13px] text-neutral-400">{t.quote}</span>
                   : it ? zl(it.lineGrosze, lang) : "–"}
               </div>
-              <p className="text-[11px] leading-relaxed text-neutral-500">{t[`${id}Note`]}</p>
+              <p className="text-xs leading-relaxed text-neutral-500">{t[`${id}Note`]}</p>
             </button>
           );
         })}
@@ -209,7 +209,7 @@ export default function RingPriceBox({ params, lang = "pl" }) {
           Kalkulatory pokazuja to od zawsze, kreator byl wyjatkiem. */}
       {wybrany?.breakdown?.length ? (
         <dl className="mt-3 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
-          <dt className="text-[10px] uppercase tracking-[0.1em] text-neutral-500 mb-1.5">{t.breakdown}</dt>
+          <dt className="text-xs uppercase tracking-[0.1em] text-neutral-500 mb-1.5">{t.breakdown}</dt>
           {wybrany.breakdown.map((w, i) => (
             w.divider ? <hr key={i} className="my-1.5 border-white/10" /> : (
               <div key={i} className="flex justify-between gap-3 py-0.5">
@@ -224,7 +224,7 @@ export default function RingPriceBox({ params, lang = "pl" }) {
       {/* Model nominalny to decyzja, nie przeoczenie, wiec mowimy o niej
           wprost i kierujemy do narzedzia, ktore liczy kompensacje. */}
       {wybor === "mesh" ? (
-        <p className="mt-3 text-[11px] leading-relaxed text-neutral-500">
+        <p className="mt-3 text-xs leading-relaxed text-neutral-500">
           {t.nominal}{" "}
           <Link to="/toolstudio/shrinkage" className="text-amber-300/90 underline underline-offset-2">
             {t.nominalLink}
@@ -254,11 +254,11 @@ export default function RingPriceBox({ params, lang = "pl" }) {
           {dodane ? (
             <Link to="/cart" className="text-[13px] text-amber-300 underline underline-offset-4">{t.goToCart}</Link>
           ) : null}
-          {busy ? <span className="text-[11px] text-neutral-500">{t.busy}…</span> : null}
+          {busy ? <span className="text-xs text-neutral-500">{t.busy}…</span> : null}
         </div>
       ) : null}
 
-      <p className="mt-3 text-[11px] leading-relaxed text-neutral-500">{t.note}</p>
+      <p className="mt-3 text-xs leading-relaxed text-neutral-500">{t.note}</p>
     </div>
   );
 }

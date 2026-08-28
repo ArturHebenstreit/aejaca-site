@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "../i18n/nav.jsx";
 
 // Porownanie sciezek bez koncowego ukosnika.
 //
@@ -12,6 +12,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 const samePath = (a, b) => String(a).replace(/\/+$/, "") === String(b).replace(/\/+$/, "");
 import { Menu, X, Globe, ChevronDown, Sun, Moon, ShoppingCart, ExternalLink } from "lucide-react";
 import { useLanguage, LANGUAGES } from "../i18n/LanguageContext.jsx";
+import { sciezkaJezyka } from "../routes.js";
 import { useCurrency } from "../shop/CurrencyContext.jsx";
 import { useTheme } from "../i18n/ThemeContext.jsx";
 import { useCart } from "../cart/CartContext.jsx";
@@ -25,7 +26,11 @@ export default function Navbar() {
   const langRefDesktop = useRef(null);
   const langRefMobile = useRef(null);
   const dropdownTimeout = useRef(null);
-  const { pathname } = useLocation();
+  // Sciezka BEZ prefiksu jezyka, bo adresy w menu pisane sa bez niego.
+  // Surowe `pathname` na `/de/studio/` nie zrownaloby sie z `/studio/`
+  // i podswietlenie biezacej pozycji zniknelo by w obu obcych jezykach.
+  const { sciezkaBezJezyka: pathname } = useLanguage();
+  const sciezkaBezJezyka = pathname;
   const navigate = useNavigate();
   const { lang, setLang, t } = useLanguage();
   // Waluta zaplaty stoi w tym samym menu co jezyk, bo domyslnie idzie za nim.
@@ -123,23 +128,37 @@ export default function Navbar() {
   function LangDropdown() {
     if (!langOpen) return null;
     return (
-      <div className="absolute right-0 mt-2 w-40 bg-neutral-900/95 backdrop-blur-lg border border-white/10 rounded-lg shadow-2xl overflow-hidden z-50" role="listbox" aria-label="Select language">
+      <div className="absolute right-0 mt-2 w-40 bg-neutral-900/95 backdrop-blur-lg border border-white/10 rounded-lg shadow-2xl overflow-hidden z-50" aria-label="Select language">
+        {/* ODNOSNIKI, NIE PRZYCISKI. Kazdy jezyk stoi pod wlasnym adresem, wiec
+            wybor jezyka jest przejsciem, a nie zmiana stanu. Robot wyszukiwarki
+            ma czym przejsc do wersji obcojezycznej, odwiedzajacy moze otworzyc
+            ja w nowej karcie, a `hreflang` w naglowku mowi to samo maszynowo.
+            `<a>` z prawdziwym `href` obsluguje to wszystko za darmo. */}
         {LANGUAGES.map((l) => (
-          <button
+          <a
             key={l.code}
-            onClick={() => { setLang(l.code); setLangOpen(false); }}
-            role="option"
-            aria-selected={lang === l.code}
+            href={sciezkaJezyka(sciezkaBezJezyka, l.code)}
+            hreflang={l.code}
+            lang={l.code}
+            onClick={(e) => {
+              // Zwykle klikniecie zostaje w aplikacji, bez przeladowania strony.
+              // Srodkowy przycisk, Ctrl i Cmd niech dzialaja jak zawsze.
+              if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+              e.preventDefault();
+              setLang(l.code);
+              setLangOpen(false);
+            }}
+            aria-current={lang === l.code ? "true" : undefined}
             className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors ${
               lang === l.code ? "bg-white/10 text-white" : "text-neutral-400 hover:bg-white/5 hover:text-white"
             }`}
           >
-            <span>{l.flag}</span><span>{l.label}</span>
-          </button>
+            <span aria-hidden="true">{l.flag}</span><span>{l.label}</span>
+          </a>
         ))}
 
         <div className="border-t border-white/10 px-4 pt-2.5 pb-3">
-          <div className="text-neutral-500 text-[10px] mb-1.5">{t("nav.currency")}</div>
+          <div className="text-neutral-500 text-xs mb-1.5">{t("nav.currency")}</div>
           <div className="flex gap-1.5">
             {["PLN", "EUR"].map((w) => (
               <button
@@ -154,7 +173,7 @@ export default function Navbar() {
               </button>
             ))}
           </div>
-          <p className="text-neutral-600 text-[10px] leading-snug mt-2">{t("nav.currencyHint")}</p>
+          <p className="text-neutral-600 text-xs leading-snug mt-2">{t("nav.currencyHint")}</p>
         </div>
       </div>
     );
@@ -181,19 +200,28 @@ export default function Navbar() {
   };
 
   return (
+    // Pasek podpowiedzi jezyka (`JezykPodpowiedz`) stoi NAD paskiem nawigacji
+    // i ustawia `--pasek-jezyka` na swoja wysokosc. Nawigacja jest ustawiona
+    // na sztywno, wiec nie zsunie sie sama: bez tego pasek wyladowalby POD nia
+    // i bylby niewidoczny, mimo ze jest w drzewie strony.
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? "backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20"
           : "backdrop-blur-md border-b border-white/5"
       }`}
-      style={{ background: scrolled ? "var(--ds-navbar-bg-s)" : "var(--ds-navbar-bg)" }}
+      style={{
+        top: "var(--pasek-jezyka, 0px)",
+        background: scrolled ? "var(--ds-navbar-bg-s)" : "var(--ds-navbar-bg)",
+      }}
       aria-label="Main navigation"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link to="/" onClick={(e) => handleNavClick(e, "/")} className="flex items-center gap-3 group">
-            <img src="/brand-sign.webp" alt="AEJaCA" width="44" height="44" className="h-11 w-11 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] transition-transform duration-300 group-hover:scale-105" />
+            {/* Znak marki w wersji 128 px. Pelny plik ma 512 px i 48 kB,
+                a rysuje sie tu na 44, na kazdej stronie serwisu. */}
+            <img src="/brand-sign-128.webp" alt="AEJaCA" width="44" height="44" className="h-11 w-11 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)] transition-transform duration-300 group-hover:scale-105" />
             <span className="font-serif text-xl font-semibold tracking-wide">AEJaCA</span>
           </Link>
 
@@ -323,7 +351,7 @@ export default function Navbar() {
             >
               <ShoppingCart className="w-[18px] h-[18px]" />
               {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-neutral-900 text-[10px] font-bold flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-neutral-900 text-xs font-bold flex items-center justify-center">
                   {cartCount > 99 ? "99+" : cartCount}
                 </span>
               )}
@@ -360,7 +388,7 @@ export default function Navbar() {
             >
               <ShoppingCart className="w-5 h-5" />
               {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-neutral-900 text-[10px] font-bold flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-neutral-900 text-xs font-bold flex items-center justify-center">
                   {cartCount > 99 ? "99+" : cartCount}
                 </span>
               )}

@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from "react";
 
 const CONTACT_API_URL = import.meta.env.VITE_CHAT_API_URL;
 const CONTACT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-import { Link } from "react-router-dom";
+import { Link } from "../../i18n/nav.jsx";
 import { Send, Paperclip, X, MessageCircle, Mail, ShoppingCart, Microscope, ArrowRight } from "lucide-react";
 import { trackInquiry, trackFunnel } from "../../utils/analytics.js";
 
@@ -15,6 +15,8 @@ import { trackInquiry, trackFunnel } from "../../utils/analytics.js";
 import { CONFIG, QUANTITY_TIERS, t, fmtNum, fmtCost, applyPricing } from "../../pricing/config.js";
 import { buildQuoteSummary } from "../../pricing/quoteSummary.js";
 import { TOOL_LINKS } from "../../data/toolLinks.js";
+import { sciezkaJezyka } from "../../routes.js";
+import Obraz from "../Obraz.jsx";
 
 /**
  * Narzedzia warte sprawdzenia PRZED zamowieniem, wedlug technologii.
@@ -52,14 +54,14 @@ export function Chips({ options, value, onChange, lang = "pl" }) {
             disabled={disabled}
             className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg border text-xs sm:text-sm transition-all duration-200 max-w-full break-words ${
               disabled ? "border-white/5 bg-white/[0.01] text-neutral-700 cursor-not-allowed line-through" :
-              isCustom && !active ? "border-dashed border-white/10 text-neutral-400 italic text-[11px] sm:text-xs" :
+              isCustom && !active ? "border-dashed border-white/10 text-neutral-400 italic text-xs sm:text-xs" :
               isCustom && active ? "border-dashed border-blue-400 bg-blue-400/10 text-blue-300 font-medium" :
               active ? "border-blue-400 bg-blue-400/10 text-blue-300 font-medium" :
               "border-white/10 bg-white/[0.02] text-neutral-400 hover:border-white/20 hover:text-neutral-200"
             }`}
           >
             {label}
-            {sub && <span className={`text-[10px] ml-1.5 ${active ? "opacity-80" : "text-neutral-400"}`}>{sub}</span>}
+            {sub && <span className={`text-xs ml-1.5 ${active ? "opacity-80" : "text-neutral-400"}`}>{sub}</span>}
           </button>
         );
       })}
@@ -90,7 +92,7 @@ export function MaterialCards({ options, value, onChange, lang = "pl", cols = "g
               o.img ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
             }`}>
               {o.img ? (
-                <img src={o.img} alt={label} loading="lazy"
+                <Obraz sizes="(min-width: 640px) 180px, 40vw" src={o.img} alt={label} loading="lazy"
                   className={`w-full h-full object-cover transition-all duration-300 ${
                     active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"
                   }`} />
@@ -98,7 +100,7 @@ export function MaterialCards({ options, value, onChange, lang = "pl", cols = "g
                 <span className="text-2xl opacity-60">⬡</span>
               )}
             </div>
-            <span className={`text-[10px] sm:text-[11px] text-center leading-tight break-words ${
+            <span className={`text-xs sm:text-xs text-center leading-tight break-words ${
               active ? "text-blue-300 font-medium" : "text-neutral-400"
             }`}>{label}</span>
           </button>
@@ -148,7 +150,7 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
             }`}>
             {o.img && (
               <div className="absolute inset-0 overflow-hidden">
-                <img src={o.img} alt={lbl(o.label)} loading="lazy"
+                <Obraz sizes="(min-width: 640px) 180px, 40vw" src={o.img} alt={lbl(o.label)} loading="lazy"
                   className={`w-full h-full object-cover transition-all duration-500 ${
                     active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
                   }`} />
@@ -166,7 +168,7 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
                 razem ze zdjeciem, wiec warunek musi stac po tej samej stronie. */}
             <div className="relative p-3 h-full flex flex-col justify-end" style={{ minHeight: `${minH}px` }}>
               <div className={`text-sm font-bold mb-1 ${o.img ? "drop-shadow-lg tile-ink" : ""} ${active ? "text-blue-300" : "text-white"}`}>{lbl(o.label)}</div>
-              {o.desc && <div className={`text-[11px] text-neutral-200 ${o.img ? "drop-shadow-md tile-ink" : ""}`}>{lbl(o.desc)}</div>}
+              {o.desc && <div className={`text-xs text-neutral-200 ${o.img ? "drop-shadow-md tile-ink" : ""}`}>{lbl(o.desc)}</div>}
             </div>
           </button>
         );
@@ -178,7 +180,7 @@ export function HeroCards({ options, value, onChange, lang = "pl", cols = "grid-
 export function CalcCard({ stepNum, label, children, id }) {
   return (
     <div id={id} className="rounded-xl border border-white/5 bg-white/[0.02] p-5 mb-4">
-      <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 mb-3">
+      <div className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-3">
         {stepNum && <span className="text-blue-400 mr-1.5">{stepNum}</span>}{label}
       </div>
       {children}
@@ -244,7 +246,7 @@ export function ResultDisplay({ result, lang = "pl", hideRange = false, binding 
         <div className="mb-4">
           <div className="flex items-end justify-between gap-4 mb-1">
             <div>
-              <div className="text-[11px] uppercase tracking-wide text-neutral-500">{kwotaWiazaca.etykieta}</div>
+              <div className="text-xs uppercase tracking-wide text-neutral-500">{kwotaWiazaca.etykieta}</div>
               <div className="text-3xl font-extrabold text-white leading-tight">{kwotaWiazaca.suma}</div>
               {kwotaWiazaca.sumaDruga && (
                 <div className="text-xs text-neutral-500 mt-0.5">{kwotaWiazaca.sumaDruga}</div>
@@ -254,14 +256,14 @@ export function ResultDisplay({ result, lang = "pl", hideRange = false, binding 
               <div className="text-right text-neutral-400 text-xs">{kwotaWiazaca.zaSztuke}</div>
             )}
           </div>
-          <p className="text-neutral-500 text-[11px] leading-relaxed">{kwotaWiazaca.uwaga}</p>
+          <p className="text-neutral-500 text-xs leading-relaxed">{kwotaWiazaca.uwaga}</p>
         </div>
       )}
 
       {/* Per piece */}
       {!hideRange && (
         <>
-          <div className="text-center text-[11px] uppercase tracking-wide text-neutral-400 mb-1">
+          <div className="text-center text-xs uppercase tracking-wide text-neutral-400 mb-1">
             {labels.perPiece}
             {r.discount > 0 && <span className="text-green-400 ml-2 font-bold">(-{r.discount * 100}%)</span>}
           </div>
@@ -288,7 +290,7 @@ export function ResultDisplay({ result, lang = "pl", hideRange = false, binding 
           rzeczywistego nakladu i to ja klient zaplaci. */}
       {!hideRange && r.qty > 1 && (
         <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 mb-4">
-          <div className="text-[11px] uppercase tracking-wide text-neutral-400 mb-2">
+          <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">
             {labels.order}: ~{r.qty} {labels.pcs}
           </div>
           <div className="flex items-baseline justify-center gap-1.5 sm:gap-3 flex-wrap">
@@ -326,7 +328,7 @@ export function ResultDisplay({ result, lang = "pl", hideRange = false, binding 
               ))}
               {/* Tolerancja opisuje niepewnosc szacunku. Przy kwocie wiazacej
                   nie ma czego opisywac, wiec zostaje sam kurs. */}
-              <div className="mt-2 text-[11px] text-neutral-400 italic">
+              <div className="mt-2 text-xs text-neutral-400 italic">
                 {hideRange
                   ? ({ pl: `Kurs ${(result.eurPln ?? CONFIG.EUR_PLN_RATE).toFixed(2)} PLN/EUR`,
                        en: `Rate ${(result.eurPln ?? CONFIG.EUR_PLN_RATE).toFixed(2)} PLN/EUR`,
@@ -526,7 +528,7 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
         </div>
 
         {preAttachedFile && (
-          <div className="flex items-center gap-1.5 text-[11px] text-blue-300/80 bg-blue-400/[0.04] border border-blue-400/15 rounded-md px-2 py-1.5">
+          <div className="flex items-center gap-1.5 text-xs text-blue-300/80 bg-blue-400/[0.04] border border-blue-400/15 rounded-md px-2 py-1.5">
             <span aria-hidden="true">📎</span>
             <span className="truncate font-medium">{preAttachedFile.name}</span>
             <span className="text-neutral-500 truncate"> - {lbl.fileNote}</span>
@@ -536,15 +538,15 @@ export function QuoteEmailCapture({ result, lang = "pl", techLabel, paramsSummar
         <label className="flex items-start gap-2 cursor-pointer select-none">
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)}
             className="mt-0.5 accent-blue-400 shrink-0" />
-          <span className="text-[11px] text-neutral-500 leading-tight">{lbl.consent}</span>
+          <span className="text-xs text-neutral-500 leading-tight">{lbl.consent}</span>
         </label>
 
-        <div className="text-[10px] text-neutral-500 italic leading-tight">
+        <div className="text-xs text-neutral-500 italic leading-tight">
           {lbl.verifyNote}
         </div>
 
         {status === "error" && (
-          <div className="text-[11px] text-red-400 text-center">{lbl.error}</div>
+          <div className="text-xs text-red-400 text-center">{lbl.error}</div>
         )}
       </form>
     </div>
@@ -563,7 +565,7 @@ export const LICENSE_NOTICE_TEXT = {
 
 export function LicenseNotice({ lang = "pl" }) {
   return (
-    <div className="flex items-start gap-2.5 p-3 rounded-xl border border-blue-400/15 bg-blue-400/[0.04] text-[11px] leading-relaxed text-neutral-300 mb-4">
+    <div className="flex items-start gap-2.5 p-3 rounded-xl border border-blue-400/15 bg-blue-400/[0.04] text-xs leading-relaxed text-neutral-300 mb-4">
       <span className="text-blue-400 mt-0.5 shrink-0" aria-hidden="true">ⓘ</span>
       <span>{t(LICENSE_NOTICE_TEXT, lang)}</span>
     </div>
@@ -823,7 +825,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
 
       {/* Email */}
       <div className="mb-3">
-        <label htmlFor="inquiry-email" className="block text-[11px] text-neutral-400 mb-1.5">{il.emailLabel}</label>
+        <label htmlFor="inquiry-email" className="block text-xs text-neutral-400 mb-1.5">{il.emailLabel}</label>
         <input
           id="inquiry-email"
           type="email"
@@ -838,7 +840,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
 
       {/* Description */}
       <div className="mb-3">
-        <label htmlFor="inquiry-desc" className="block text-[11px] text-neutral-400 mb-1.5">{il.desc}</label>
+        <label htmlFor="inquiry-desc" className="block text-xs text-neutral-400 mb-1.5">{il.desc}</label>
         <textarea
           id="inquiry-desc"
           value={description}
@@ -849,7 +851,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
           className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-neutral-400 focus:border-blue-400/50 focus:outline-none focus:ring-1 focus:ring-blue-400/30 resize-none transition-colors"
         />
         {descNearLimit && (
-          <div className={`text-[10px] text-right mt-0.5 ${descLength >= MAX_DESC_LENGTH ? "text-red-400" : "text-neutral-400"}`}>
+          <div className={`text-xs text-right mt-0.5 ${descLength >= MAX_DESC_LENGTH ? "text-red-400" : "text-neutral-400"}`}>
             {descLength}/{MAX_DESC_LENGTH} {il.charCount}
           </div>
         )}
@@ -857,7 +859,7 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
 
       {/* File */}
       <div className="mb-4">
-        <div className="text-[11px] text-neutral-400 mb-1.5">{il.file}</div>
+        <div className="text-xs text-neutral-400 mb-1.5">{il.file}</div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => fileRef.current?.click()}
@@ -892,8 +894,8 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
           </div>
         )}
 
-        <div className="text-[10px] text-neutral-400 mt-1">{il.fileHint}</div>
-        {files.length > 0 && <div className="text-[10px] text-blue-400/70 mt-1">{il.attachNote}</div>}
+        <div className="text-xs text-neutral-400 mt-1">{il.fileHint}</div>
+        {files.length > 0 && <div className="text-xs text-blue-400/70 mt-1">{il.attachNote}</div>}
       </div>
 
       {/* License consent, MSLA figurine/miniature path only */}
@@ -901,13 +903,13 @@ export function InquiryForm({ lang = "pl", techLabel, paramsSummary, preAttached
         <label className="flex items-start gap-2 cursor-pointer select-none mb-3">
           <input type="checkbox" checked={licenseConsent} onChange={(e) => setLicenseConsent(e.target.checked)}
             className="mt-0.5 accent-blue-400 shrink-0" />
-          <span className="text-[11px] text-neutral-400 leading-tight">{licenseLabel}</span>
+          <span className="text-xs text-neutral-400 leading-tight">{licenseLabel}</span>
         </label>
       )}
 
       {/* Error message */}
       {error && (
-        <div className="mb-3 text-[11px] text-red-400 text-center">{error}</div>
+        <div className="mb-3 text-xs text-red-400 text-center">{error}</div>
       )}
 
       {/* Send */}
@@ -1002,7 +1004,7 @@ function ActionTab({ active, disabled, onClick, icon: Icon, label, sub, accent }
       <Icon className="w-4 h-4 mt-0.5 shrink-0" />
       <span className="min-w-0">
         <span className="block text-sm font-medium leading-tight">{label}</span>
-        <span className="block text-[11px] text-neutral-500 leading-tight mt-0.5">{sub}</span>
+        <span className="block text-xs text-neutral-500 leading-tight mt-0.5">{sub}</span>
       </span>
     </button>
   );
@@ -1108,7 +1110,7 @@ export function NextStepPanel({
       )}
 
       {!canBuy && action === "inquiry" && cart && (
-        <div className="mb-3 text-[11px] text-neutral-500 leading-relaxed">{l.cartOffHint}</div>
+        <div className="mb-3 text-xs text-neutral-500 leading-relaxed">{l.cartOffHint}</div>
       )}
 
       {/* Koszyk zostaje zamontowany zawsze, tylko schowany, gdy klient patrzy
@@ -1124,12 +1126,16 @@ export function NextStepPanel({
           do skonfigurowanej wyceny, a nie zaczynamy od nowa. */}
       {action === "cart" && canBuy && checkTools.length > 0 && (
         <div className="mb-4 rounded-xl border border-white/10 bg-white/[0.02] p-3">
-          <div className="text-[11px] uppercase tracking-wide text-neutral-500 mb-2">{l.checkFirst}</div>
+          <div className="text-xs uppercase tracking-wide text-neutral-500 mb-2">{l.checkFirst}</div>
           <div className="flex flex-wrap gap-2">
             {checkTools.map((n) => (
               <a
                 key={n.id}
-                href={n.to}
+                // Otwiera sie w nowej karcie, wiec musi byc zwyklym `<a>`,
+                // a nie `<Link>`. Prefiks jezyka trzeba wiec dolozyc tutaj:
+                // bez tego Niemiec ogladajacy `/de/studio/` wracal jednym
+                // kliknieciem na polska wersje narzedzia.
+                href={sciezkaJezyka(n.to, lang)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10

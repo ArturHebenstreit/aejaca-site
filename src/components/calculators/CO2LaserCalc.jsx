@@ -192,7 +192,7 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
 
   return (
     <div>
-      <div className="text-center text-[11px] text-neutral-400 mb-6">xTool P2 · 55W CO2 · 600×288 mm</div>
+      <div className="text-center text-xs text-neutral-400 mb-6">xTool P2 · 55W CO2 · 600×288 mm</div>
 
       <CalcCard stepNum="①" label={l.mode}>
         <HeroCards value={mode} onChange={setMode} lang={lang} options={[
@@ -250,12 +250,12 @@ export default function CO2LaserCalc({ lang = "pl", initialMode = "engrave", han
         <Chips options={SUBSTRATES} value={podloze} onChange={handlePodlozeChange} lang={lang} />
         {podloze !== "our_stock" ? (
           <div className="mt-3">
-            <div className="text-[11px] uppercase tracking-wide text-neutral-400 mb-2">{t(SPARE_LABEL, lang)}</div>
+            <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(SPARE_LABEL, lang)}</div>
             <Chips options={spareOptionsFor(podloze)} value={spare} onChange={setSpare} lang={lang} />
           </div>
         ) : (
           <div className="mt-3">
-            <div className="text-[11px] uppercase tracking-wide text-neutral-400 mb-2">{t(MATERIAL_NOTE_LBL, lang)}</div>
+            <div className="text-xs uppercase tracking-wide text-neutral-400 mb-2">{t(MATERIAL_NOTE_LBL, lang)}</div>
             <textarea
               value={materialNote}
               onChange={(e) => setMaterialNote(e.target.value)}

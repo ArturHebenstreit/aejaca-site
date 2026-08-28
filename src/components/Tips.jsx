@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { useState } from "react";
 import { ChevronDown, Lightbulb } from "lucide-react";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
+import Obraz from "./Obraz.jsx";
 
 /**
  * Reusable Tips / Advice section with category tabs and expandable cards.
@@ -64,11 +65,12 @@ export default function Tips({ data, accent = "amber", id }) {
         {/* Category hero image */}
         {data.categories[activeCat]?.img && (
           <div className="mb-6 rounded-xl overflow-hidden border border-white/5">
-            <img
+            <Obraz
               src={data.categories[activeCat].img}
               alt={data.categories[activeCat].name}
               loading="lazy"
               className="w-full h-auto object-cover"
+              sizes="(min-width: 1024px) 900px, 96vw"
             />
           </div>
         )}

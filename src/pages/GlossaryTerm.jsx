@@ -1,4 +1,5 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
 import { GLOSSARY, CATEGORIES } from "../data/glossary.js";
@@ -59,6 +60,17 @@ function buildDefinedTermSchema(term, lang) {
   };
 }
 
+// Google obcina tytul mniej wiecej po 60 znakach. Hasla slownika bywaja dlugie
+// ("Lost-resin (odlew z wypalanego wzorca zywicznego)"), a pelny dopisek
+// ", Slownik pojec, AEJaCA" dokladal dwadziescia cztery znaki i wypychal koniec
+// nazwy poza widok. Skracamy wiec DOPISEK, a nie nazwe: to ona niesie tresc.
+function tytulStrony(nazwa, slownik) {
+  const pelny = `${nazwa}, ${slownik}, ${SITE.name}`;
+  if (pelny.length <= 60) return pelny;
+  const krotszy = `${nazwa}, ${SITE.name}`;
+  return krotszy.length <= 60 ? krotszy : nazwa;
+}
+
 export default function GlossaryTerm() {
   const { id } = useParams();
   const { lang } = useLanguage();
@@ -107,7 +119,7 @@ export default function GlossaryTerm() {
       <SEOHead
         pageKey="glossary"
         path={`/glossary/${term.id}/`}
-        title={`${termName}, ${l.glossary}, ${SITE.name}`}
+        title={tytulStrony(termName, l.glossary)}
         description={termMetaDesc}
         schemas={schemas}
       />

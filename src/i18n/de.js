@@ -176,6 +176,8 @@ export default {
       { title: "3D-Modellierung & CAD (Rhino, Fusion 360)", desc: "Eigenes Modellieren organischer Schmuckformen von Skizze oder Idee. Präzises 3D-Modell vor jedem Guss, kombiniert mit Wachsprototyping oder 3D-Harzdruck." },
       { title: "Symbolische Objekte", desc: "Künstlerische Objekte und symbolische Kreationen, die über Schmuck hinausgehen, zeitlose Andenken und Kunstwerke." },
     ],
+    processPrev: "Vorheriger Schritt",
+    processNext: "Nächster Schritt",
     processTag: "Unser Ansatz",
     processTitle: "Der Kreativprozess",
     processSteps: [

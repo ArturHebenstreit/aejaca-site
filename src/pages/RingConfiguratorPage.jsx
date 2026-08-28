@@ -64,13 +64,13 @@ export default function RingConfiguratorPage() {
 
       <section className="mx-auto max-w-6xl px-5 pt-28 pb-10">
         <div ref={headRef} className="reveal">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-amber-400 mb-4">{t.tag}</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-amber-400 mb-4">{t.tag}</p>
           <h1 className="text-3xl sm:text-5xl font-light tracking-tight mb-4">{t.title}</h1>
           <p className="max-w-2xl text-neutral-400 leading-relaxed">{t.desc}</p>
         </div>
 
         <div ref={noteRef} className="reveal mt-7 max-w-2xl rounded-xl border border-white/10 border-l-2 border-l-amber-400/70 bg-white/[0.02] p-5">
-          <p className="text-[11px] uppercase tracking-[0.14em] text-amber-400 mb-2">{t.draftTitle}</p>
+          <p className="text-xs uppercase tracking-[0.14em] text-amber-400 mb-2">{t.draftTitle}</p>
           <p className="text-sm text-neutral-400 leading-relaxed">{t.draftText}</p>
         </div>
       </section>

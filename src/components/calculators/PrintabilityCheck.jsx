@@ -12,7 +12,7 @@
 // wyczytac z tabeli w stopce.
 
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../../i18n/nav.jsx";
 import { Upload, X, Loader2, CheckCircle2, AlertTriangle, XCircle, Info } from "lucide-react";
 import { useLanguage } from "../../i18n/LanguageContext.jsx";
 import STLViewer from "./STLViewer.jsx";
@@ -426,7 +426,7 @@ export default function PrintabilityCheck() {
                       {/* Rozroznienie, ktore chroni przed obietnica: dwie dysze
                           mamy zalozone na stale, dwie pozostale sa do analizy
                           i po uzgodnieniu, a nie do kliknięcia w zamowieniu. */}
-                      <span className="block text-[10px] font-normal text-neutral-500 mt-0.5">
+                      <span className="block text-xs font-normal text-neutral-500 mt-0.5">
                         {n.inHouse ? L.inHouse : L.onRequest}
                       </span>
                     </button>

@@ -25,6 +25,8 @@ import { getToolById } from "../data/toolLinks.js";
 import { buildWebPageSchema, buildBreadcrumbSchema, buildFAQSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
+import { Link } from "../i18n/nav.jsx";
+import Obraz from "../components/Obraz.jsx";
 
 const URL = `${SITE.url}/toolstudio/printability/`;
 
@@ -214,7 +216,7 @@ export default function PrintabilityPage() {
       <div className="bg-neutral-950">
 
         <section className="relative overflow-hidden min-h-[340px]">
-          <img
+          <Obraz
             src="/img/calc/3d_segments/msla_resin.webp"
             alt={L.heroTitle}
             className="absolute inset-0 w-full h-full object-cover"
@@ -223,6 +225,7 @@ export default function PrintabilityPage() {
             decoding="async"
             width="1024"
             height="572"
+            sizes="100vw"
           />
           <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
           <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-24 pb-6 text-center flex flex-col items-center">
@@ -348,12 +351,12 @@ export default function PrintabilityPage() {
           <div ref={ctaRef} className="reveal max-w-xl mx-auto">
             <h2 className="font-sans text-xl font-semibold text-white mb-2">{L.ctaTitle}</h2>
             <p className="text-neutral-400 text-sm mb-6">{L.ctaText}</p>
-            <a
-              href="/studio/#calculator"
+            <Link
+              to="/studio/#calculator"
               className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 text-neutral-950 font-semibold rounded-full hover:bg-blue-400 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300"
             >
               {L.ctaBtn}
-            </a>
+            </Link>
           </div>
         </section>
 

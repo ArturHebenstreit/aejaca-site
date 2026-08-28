@@ -42,5 +42,5 @@ export default function PriceReduction({ product, money, lang = "pl", className 
 
   const t = T[lang] || T.pl;
   const text = notice.shortHistory ? t.short(money(notice.lowestGrosze)) : t.full(money(notice.lowestGrosze));
-  return <p className={`text-neutral-500 text-[11px] leading-snug ${className}`}>{text}</p>;
+  return <p className={`text-neutral-500 text-xs leading-snug ${className}`}>{text}</p>;
 }

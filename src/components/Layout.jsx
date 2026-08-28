@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Navbar.jsx";
+import JezykPodpowiedz from "./JezykPodpowiedz.jsx";
 import Footer from "./Footer.jsx";
 import ChatWidget from "./ChatWidget.jsx";
 import { trackPageView, initScrollTracking } from "../utils/analytics.js";
@@ -21,6 +22,7 @@ export default function Layout() {
         Skip to content
       </a>
       <Navbar />
+      <JezykPodpowiedz />
       <main id="main-content" className="flex-1" role="main">
         <Outlet />
       </main>

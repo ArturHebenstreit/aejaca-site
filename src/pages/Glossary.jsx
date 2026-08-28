@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
 import { GLOSSARY, CATEGORIES } from "../data/glossary.js";
@@ -154,7 +155,7 @@ export default function Glossary() {
                     ref={getCardRef(i)}
                     className="reveal-scale block bg-neutral-900/60 border border-neutral-800 rounded-xl p-5 hover:border-amber-400/30 transition-colors"
                   >
-                    <div className={`text-[10px] uppercase tracking-widest mb-2 ${
+                    <div className={`text-xs uppercase tracking-widest mb-2 ${
                       term.category === "jewelry" ? "text-amber-400" : term.category === "studio" ? "text-blue-400" : "text-emerald-400"
                     }`}>
                       {CATEGORIES[term.category]?.[lang] || term.category}

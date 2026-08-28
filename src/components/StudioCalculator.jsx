@@ -11,6 +11,7 @@ import CO2LaserCalc from "./calculators/CO2LaserCalc.jsx";
 import FiberLaserCalc from "./calculators/FiberLaserCalc.jsx";
 import EpoxyCastCalc from "./calculators/EpoxyCastCalc.jsx";
 import MetalCastCalc from "./calculators/MetalCastCalc.jsx";
+import Obraz from "./Obraz.jsx";
 
 // DRUK ZYWICZNY NIE MA WLASNEGO KAFELKA (polecenie wlasciciela, 2026-08-21).
 // Wybor FDM albo MSLA stoi juz w pierwszym kroku kalkulatora druku, wiec osobny
@@ -18,10 +19,10 @@ import MetalCastCalc from "./calculators/MetalCastCalc.jsx";
 // musial wiedziec, ze "Druk zywiczny" i "MSLA" to jedno, zanim cokolwiek zobaczyl.
 // Zostaja cztery kafelki, po jednej maszynie kazdy.
 const TECHS = [
-  { id: "3dprint",     labelKey: "tab3d",    descKey: "desc3d",    img: "/img/calc/studio/3dprint.png" },
-  { id: "co2_laser",   labelKey: "tabCO2",   descKey: "descCO2",   img: "/img/calc/studio/co2_laser.png" },
-  { id: "fiber_laser", labelKey: "tabFiber", descKey: "descFiber", img: "/img/calc/studio/fiber_laser.png" },
-  { id: "epoxy",       labelKey: "tabEpoxy", descKey: "descEpoxy", img: "/img/calc/studio/epoxy.png" },
+  { id: "3dprint",     labelKey: "tab3d",    descKey: "desc3d",    img: "/img/calc/studio/3dprint.webp" },
+  { id: "co2_laser",   labelKey: "tabCO2",   descKey: "descCO2",   img: "/img/calc/studio/co2_laser.webp" },
+  { id: "fiber_laser", labelKey: "tabFiber", descKey: "descFiber", img: "/img/calc/studio/fiber_laser.webp" },
+  { id: "epoxy",       labelKey: "tabEpoxy", descKey: "descEpoxy", img: "/img/calc/studio/epoxy.webp" },
   // Odlew z metalu szlachetnego stoi tu, a nie w kalkulatorze jubilerskim,
   // bo w sklepie ta usluga nalezy do sTuDiO: droga wiedzie przez model 3D
   // i wydruk wzorca, a nie przez prace przy warsztacie jubilerskim.
@@ -164,7 +165,7 @@ export default function StudioCalculator() {
               <Zap className={`w-4 h-4 ${isSimple ? "text-emerald-300" : "text-neutral-400"}`} />
               <div className={`text-sm font-bold ${isSimple ? "text-emerald-300" : "text-white"}`}>{l.modeSimple}</div>
             </div>
-            <div className={`text-[11px] ${isSimple ? "text-emerald-400/80" : "text-neutral-400"}`}>{l.modeSimpleDesc}</div>
+            <div className={`text-xs ${isSimple ? "text-emerald-400/80" : "text-neutral-400"}`}>{l.modeSimpleDesc}</div>
           </button>
           <button
             onClick={() => { setMode("advanced"); trackCalc("studio", "mode", "advanced"); }}
@@ -177,12 +178,12 @@ export default function StudioCalculator() {
               <SlidersHorizontal className={`w-4 h-4 ${!isSimple ? "text-blue-300" : "text-neutral-400"}`} />
               <div className={`text-sm font-bold ${!isSimple ? "text-blue-300" : "text-white"}`}>{l.modeAdvanced}</div>
             </div>
-            <div className={`text-[11px] ${!isSimple ? "text-blue-400/80" : "text-neutral-400"}`}>{l.modeAdvancedDesc}</div>
+            <div className={`text-xs ${!isSimple ? "text-blue-400/80" : "text-neutral-400"}`}>{l.modeAdvancedDesc}</div>
           </button>
         </div>
 
         {/* Mode hint: clarifies when to use each (audit: UX friction) */}
-        <div className="mb-6 flex items-start gap-2 px-3 text-[11px] text-neutral-400 leading-relaxed">
+        <div className="mb-6 flex items-start gap-2 px-3 text-xs text-neutral-400 leading-relaxed">
           <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-neutral-400" />
           <span>{l.modeHint}</span>
         </div>
@@ -211,7 +212,7 @@ export default function StudioCalculator() {
                     }`}>
                     {img && (
                       <div className="absolute inset-0 overflow-hidden">
-                        <img src={img} alt={l[labelKey]} loading="lazy"
+                        <Obraz sizes="(min-width: 640px) 180px, 40vw" src={img} alt={l[labelKey]} loading="lazy"
                           className={`w-full h-full object-cover transition-all duration-500 ${active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"}`} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
                         {active && <div className="absolute inset-0 bg-blue-400/10 mix-blend-overlay" />}
@@ -219,7 +220,7 @@ export default function StudioCalculator() {
                     )}
                     <div className="relative p-3 h-full min-h-[140px] flex flex-col justify-end">
                       <div className={`text-xs sm:text-sm font-bold mb-1 drop-shadow-lg tile-ink ${active ? "text-blue-300" : "text-white"}`}>{l[labelKey]}</div>
-                      <div className="text-[11px] text-neutral-200 break-words drop-shadow-md tile-ink">{l[descKey]}</div>
+                      <div className="text-xs text-neutral-200 break-words drop-shadow-md tile-ink">{l[descKey]}</div>
                     </div>
                   </button>
                 );
@@ -243,7 +244,7 @@ export default function StudioCalculator() {
 
         {/* Kwota orientacyjna kontra wiazaca, plus transport. O VAT tu nie
             mowimy: kwoty w kalkulatorze sa tymi, ktore klient placi. */}
-        <div className={`mt-4 p-3 rounded-xl border text-[11px] leading-relaxed text-center ${
+        <div className={`mt-4 p-3 rounded-xl border text-xs leading-relaxed text-center ${
           isSimple
             ? "border-emerald-400/10 bg-emerald-400/[0.02] text-emerald-400/60"
             : "border-blue-400/10 bg-blue-400/[0.02] text-blue-400/60"
@@ -252,7 +253,7 @@ export default function StudioCalculator() {
         </div>
 
         {/* Footer note */}
-        <div className="mt-2 p-4 rounded-xl border border-white/5 bg-white/[0.01] text-[11px] text-neutral-400 leading-relaxed">
+        <div className="mt-2 p-4 rounded-xl border border-white/5 bg-white/[0.01] text-xs text-neutral-400 leading-relaxed">
           <strong className="text-neutral-400">sTuDiO:</strong> {l.note}
         </div>
       </div>

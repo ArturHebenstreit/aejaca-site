@@ -143,7 +143,7 @@ export default function VectorPreview({ src, contentBox = null, canvasBox = null
         />
       </div>
 
-      <div className="pointer-events-none absolute left-2 bottom-2 flex items-center gap-1.5 text-[10px] text-neutral-600">
+      <div className="pointer-events-none absolute left-2 bottom-2 flex items-center gap-1.5 text-xs text-neutral-600">
         <ZoomIn size={11} className="shrink-0" />
         <span>{t.hint}</span>
       </div>
@@ -153,7 +153,7 @@ export default function VectorPreview({ src, contentBox = null, canvasBox = null
           type="button"
           onClick={dopasuj}
           className="absolute right-2 bottom-2 inline-flex items-center gap-1 rounded-md border border-black/15
-                     bg-white/80 px-2 py-1 text-[10px] text-neutral-700 hover:border-black/35 transition-colors"
+                     bg-white/80 px-2 py-1 text-xs text-neutral-700 hover:border-black/35 transition-colors"
         >
           <RotateCcw size={10} />
           {t.reset}

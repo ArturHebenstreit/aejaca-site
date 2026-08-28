@@ -11,6 +11,23 @@
 /privacy    /privacy/    301
 /reviews    /reviews/    301
 
+# Wersje jezykowe. Kazda strona stoi pod trzema adresami: polskim golym,
+# angielskim pod /en/ i niemieckim pod /de/. Prerender zapisuje /en/index.html
+# i /de/index.html, wiec same prefiksy z ukosnikiem sa prawdziwymi stronami.
+# Bez ukosnika trzeba je przekierowac, inaczej trafiaja w twarde 404.
+/en     /en/     301
+/de     /de/     301
+
+# Ten sam problem co wyzej, dla wpisow menu, ktore nie maja wlasnej trasy.
+/en/gallery     /en/jewelry/    301
+/en/gallery/    /en/jewelry/    301
+/de/gallery     /de/jewelry/    301
+/de/gallery/    /de/jewelry/    301
+/en/resources   /en/blog/       301
+/en/resources/  /en/blog/       301
+/de/resources   /de/blog/       301
+/de/resources/  /de/blog/       301
+
 # Dropdown-only navbar entries. These have no route of their own, so without
 # a rule here they fall through to the SPA catch-all and return the NotFound
 # page with HTTP 200 (soft 404, flagged by Search Console as "noindex").
@@ -25,6 +42,14 @@
 /blog/grawerowanie-laserowe/         /blog/grawerowanie-laserowe-przewodnik/          301
 /blog/pierscionek-zareczynowy        /blog/pierscionek-zareczynowy-na-zamowienie/     301
 /blog/pierscionek-zareczynowy/       /blog/pierscionek-zareczynowy-na-zamowienie/     301
+/en/blog/grawerowanie-laserowe       /en/blog/grawerowanie-laserowe-przewodnik/       301
+/en/blog/grawerowanie-laserowe/      /en/blog/grawerowanie-laserowe-przewodnik/       301
+/en/blog/pierscionek-zareczynowy     /en/blog/pierscionek-zareczynowy-na-zamowienie/  301
+/en/blog/pierscionek-zareczynowy/    /en/blog/pierscionek-zareczynowy-na-zamowienie/  301
+/de/blog/grawerowanie-laserowe       /de/blog/grawerowanie-laserowe-przewodnik/       301
+/de/blog/grawerowanie-laserowe/      /de/blog/grawerowanie-laserowe-przewodnik/       301
+/de/blog/pierscionek-zareczynowy     /de/blog/pierscionek-zareczynowy-na-zamowienie/  301
+/de/blog/pierscionek-zareczynowy/    /de/blog/pierscionek-zareczynowy-na-zamowienie/  301
 
 # No SPA catch-all. Every route is prerendered to its own index.html, so
 # Cloudflare Pages resolves real pages as static assets and falls through to

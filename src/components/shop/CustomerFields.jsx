@@ -62,7 +62,7 @@ export function ValidatedField({ label, value, onChange, type = "text", required
 
   return (
     <label className="block mb-4">
-      <span className="block text-[11px] uppercase tracking-wide text-neutral-500 mb-1.5">
+      <span className="block text-xs uppercase tracking-wide text-neutral-500 mb-1.5">
         {label}{required && <span className="text-blue-400 ml-1">*</span>}
       </span>
       <div className="relative">
@@ -84,8 +84,8 @@ export function ValidatedField({ label, value, onChange, type = "text", required
         {bad && <AlertCircle className="w-4 h-4 text-red-400 absolute right-3 top-1/2 -translate-y-1/2" />}
       </div>
       {bad
-        ? <span className="block text-red-300 text-[11px] mt-1">{error}</span>
-        : hint && <span className="block text-neutral-600 text-[11px] mt-1">{hint}</span>}
+        ? <span className="block text-red-300 text-xs mt-1">{error}</span>
+        : hint && <span className="block text-neutral-600 text-xs mt-1">{hint}</span>}
     </label>
   );
 }

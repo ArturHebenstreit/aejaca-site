@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { ArrowRight, Award, Shield, Cpu, Gem, Printer, Flame, Droplet, Disc, Waves, PenTool, Zap, Microscope, Thermometer, Gauge, Layers } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
@@ -6,6 +6,7 @@ import Breadcrumb from "../components/Breadcrumb.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
+import Obraz from "../components/Obraz.jsx";
 
 // All labels inline, trilingual, no i18n file needed for a single page
 const LABELS = {
@@ -296,14 +297,18 @@ export default function About() {
       <SEOHead
         pageKey="about"
         path="/about"
-        image={`${SITE.url}/img/IMG_5145.JPEG`}
+        // Obraz spolecznosciowy w formacie, ktorego oczekuja Facebook, LinkedIn
+        // i reszta: 1200 x 630 i 110 kB. Wczesniej stalo tu zdjecie warsztatu
+        // w pelnej rozdzielczosci, 2048 x 1536 i 796 kB, ktore kazdy podglad
+        // linku musial pobrac w calosci i tak samo przyciac.
+        image={`${SITE.url}/og-about.jpg`}
         schemas={schemas}
       />
       <div className="pt-16 bg-neutral-950">
 
         {/* ── Hero ── */}
         <section className="relative min-h-[50vh] flex items-end overflow-hidden">
-          <img
+          <Obraz
             src="/img/IMG_5145.webp"
             alt="AEJaCA workshop, jewelry and digital fabrication studio"
             className="absolute inset-0 w-full h-full object-cover"
@@ -312,6 +317,7 @@ export default function About() {
             decoding="async"
             width="1200"
             height="900"
+            sizes="100vw"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-black/50 to-black/20" />
           <div ref={heroRef} className="reveal relative z-10 w-full max-w-4xl mx-auto px-4 pb-14 text-center">
@@ -340,7 +346,7 @@ export default function About() {
           <div ref={bioRef} className="reveal max-w-4xl mx-auto grid md:grid-cols-2 gap-10 items-center">
             {/* Portrait */}
             <div className="flex flex-col gap-3 items-center md:items-start">
-              <img
+              <Obraz
                 src="/img/DSC05225.webp"
                 alt="Artur Hebenstreit, founder of AEJaCA"
                 className="rounded-2xl aspect-[3/4] object-cover object-top w-full max-w-[220px] md:max-w-[260px] shadow-2xl shadow-black/50"
@@ -348,9 +354,10 @@ export default function About() {
                 decoding="async"
                 width="1200"
                 height="675"
+                sizes="(min-width: 768px) 260px, 220px"
               />
               <div className="flex gap-3">
-                <img
+                <Obraz
                   src="/img/founder-workshop-1.webp"
                   alt="Artur Hebenstreit at the jeweler's workbench"
                   className="rounded-xl aspect-[3/4] object-cover w-[105px] md:w-[124px] shadow-xl shadow-black/40"
@@ -358,8 +365,9 @@ export default function About() {
                   decoding="async"
                   width="600"
                   height="800"
+                  sizes="124px"
                 />
-                <img
+                <Obraz
                   src="/img/founder-workshop-2.webp"
                   alt="Artur Hebenstreit crafting jewelry"
                   className="rounded-xl aspect-[3/4] object-cover w-[105px] md:w-[124px] shadow-xl shadow-black/40"
@@ -367,6 +375,7 @@ export default function About() {
                   decoding="async"
                   width="600"
                   height="800"
+                  sizes="124px"
                 />
               </div>
             </div>
@@ -486,7 +495,7 @@ export default function About() {
                   ref={getGalleryRef(i)}
                   className="reveal-scale overflow-hidden rounded-xl aspect-square"
                 >
-                  <img
+                  <Obraz
                     src={photo.src}
                     alt={photo.alt[lang] || photo.alt.en}
                     className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
@@ -494,6 +503,7 @@ export default function About() {
                     decoding="async"
                     width="1200"
                     height="1200"
+                    sizes="(min-width: 1024px) 300px, (min-width: 640px) 45vw, 90vw"
                   />
                 </div>
               ))}

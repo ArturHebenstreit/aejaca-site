@@ -7,6 +7,8 @@ import Breadcrumb from "../components/Breadcrumb.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
+import HeroObraz from "../components/HeroObraz.jsx";
+import { Link } from "../i18n/nav.jsx";
 
 const LABELS = {
   pl: {
@@ -104,15 +106,13 @@ export default function RingSizePage() {
 
         {/* Hero */}
         <section className="relative overflow-hidden min-h-[340px]">
-          <img
-            src="/hero-toolsjewelry.webp"
+          <HeroObraz
+            nazwa="hero-toolsjewelry"
             alt="Rozmiary pierścionków - AEJaCA"
             className="absolute inset-0 w-full h-full object-cover"
-            loading="eager"
-            fetchpriority="high"
-            decoding="async"
-            width="1024"
-            height="572"
+            width={1024}
+            height={572}
+            sizes="100vw"
           />
           <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
           <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-24 pb-6 text-center flex flex-col items-center">
@@ -168,12 +168,12 @@ export default function RingSizePage() {
             <ContentCTA service="jewelry_stones" category="jewelry" className="mb-8 text-left" />
             <h2 className="font-sans text-xl font-semibold text-white mb-2">{L.footerCtaTitle}</h2>
             <p className="text-neutral-400 text-sm mb-6">{L.footerCtaText}</p>
-            <a
-              href="/contact/"
+            <Link
+              to="/contact/"
               className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 text-neutral-950 font-semibold rounded-full hover:bg-amber-400 hover:shadow-lg hover:shadow-amber-500/20 transition-all duration-300"
             >
               {L.footerCtaBtn}
-            </a>
+            </Link>
           </div>
         </section>
 

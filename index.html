@@ -12,9 +12,12 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
 
-    <!-- Preconnect to Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Kroje pisma leza u nas, w public/fonts. Preladowanie dotyczy tylko
+         podzbioru latin obu krojow, bo to on rysuje pierwszy ekran. Plik
+         latin-ext przegladarka dobierze sama, gdy zobaczy polski znak.
+         Definicje @font-face: src/index.css. -->
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-v20-latin.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/playfair-v40-latin.woff2" crossorigin />
 
     <!-- DNS prefetch for external links (Etsy, social) - faster navigation -->
     <link rel="dns-prefetch" href="https://aejacashop.etsy.com" />
@@ -25,14 +28,12 @@
     <link rel="dns-prefetch" href="https://widget.trustpilot.com" />
     <link rel="dns-prefetch" href="https://www.trustpilot.com" />
     <link rel="dns-prefetch" href="https://invitejs.trustpilot.com" />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap"
-    />
 
-    <!-- Preload home hero images (used on / - biggest LCP candidates) -->
-    <link rel="preload" as="image" href="/hero-home-jewelry.webp" type="image/webp" fetchpriority="high" />
-    <link rel="preload" as="image" href="/hero-home-studio.webp" type="image/webp" fetchpriority="high" />
+    <!-- Preload obrazu bohaterskiego dopisuje `scripts/prerender.mjs`, bo tylko
+         on wie, ktora trase wlasnie zapisuje i ktory obraz ta strona rysuje.
+         Wczesniej stalo tu na sztywno preladowanie dwoch obrazow strony
+         glownej, czyli 465 kB z wysokim priorytetem takze na 95 stronach,
+         ktore tych obrazow nie pokazuja. -->
 
     <!-- Static fallback meta tags - crawlers that don't execute JS see these.
          react-helmet-async overrides them per-page once JS runs. -->

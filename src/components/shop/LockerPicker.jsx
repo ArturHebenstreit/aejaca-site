@@ -111,12 +111,12 @@ export default function LockerPicker({ api, value, onChange, lang = "pl" }) {
       <div className="rounded-lg border border-blue-400 bg-blue-400/10 p-3 flex items-start gap-3">
         <MapPin className="w-4 h-4 text-blue-300 flex-shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
-          <div className="text-neutral-500 text-[10px] uppercase tracking-wide">{t.chosen}</div>
+          <div className="text-neutral-500 text-xs uppercase tracking-wide">{t.chosen}</div>
           <div className="text-blue-300 text-sm font-medium">{chosen.code}</div>
           <div className="text-neutral-400 text-xs">
             {chosen.street}{chosen.city ? `, ${chosen.city}` : ""}
           </div>
-          {chosen.description && <div className="text-neutral-500 text-[11px]">{chosen.description}</div>}
+          {chosen.description && <div className="text-neutral-500 text-xs">{chosen.description}</div>}
         </div>
         <button
           type="button"
@@ -144,7 +144,7 @@ export default function LockerPicker({ api, value, onChange, lang = "pl" }) {
                      placeholder:text-neutral-600 focus:outline-none focus:border-blue-400/50 uppercase"
         />
         {api && (
-          <button type="button" onClick={() => setManual(false)} className="text-neutral-500 text-[11px] mt-1.5 hover:text-neutral-300 transition-colors">
+          <button type="button" onClick={() => setManual(false)} className="text-neutral-500 text-xs mt-1.5 hover:text-neutral-300 transition-colors">
             {t.label}
           </button>
         )}
@@ -183,11 +183,11 @@ export default function LockerPicker({ api, value, onChange, lang = "pl" }) {
               <Check className="w-3.5 h-3.5 text-neutral-600 flex-shrink-0 mt-0.5" />
               <span className="flex-1 min-w-0">
                 <span className="block text-neutral-300 text-sm">{p.code}</span>
-                <span className="block text-neutral-500 text-[11px]">
+                <span className="block text-neutral-500 text-xs">
                   {p.street}{p.city ? `, ${p.city}` : ""}
                 </span>
                 {(p.description || p.open247) && (
-                  <span className="block text-neutral-600 text-[10px]">
+                  <span className="block text-neutral-600 text-xs">
                     {[p.description, p.open247 ? t.open247 : null].filter(Boolean).join(", ")}
                   </span>
                 )}
@@ -198,12 +198,12 @@ export default function LockerPicker({ api, value, onChange, lang = "pl" }) {
       )}
 
       {points && points.length === 0 && !busy && (
-        <p className="text-neutral-500 text-[11px] mt-2">{t.nothing}</p>
+        <p className="text-neutral-500 text-xs mt-2">{t.nothing}</p>
       )}
-      {error && <p className="text-amber-300 text-[11px] mt-2">{error}</p>}
-      {!points && !error && <p className="text-neutral-600 text-[11px] mt-1.5">{t.hint}</p>}
+      {error && <p className="text-amber-300 text-xs mt-2">{error}</p>}
+      {!points && !error && <p className="text-neutral-600 text-xs mt-1.5">{t.hint}</p>}
 
-      <button type="button" onClick={() => setManual(true)} className="text-neutral-500 text-[11px] mt-1.5 hover:text-neutral-300 transition-colors">
+      <button type="button" onClick={() => setManual(true)} className="text-neutral-500 text-xs mt-1.5 hover:text-neutral-300 transition-colors">
         {t.manual}
       </button>
     </div>

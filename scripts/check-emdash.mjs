@@ -33,6 +33,7 @@ const SKIP = /^(n8n-backup)\//;
 const SKILLE_ZEWNETRZNE = [
   "browser-automation",
   "find-skills",
+  "frontend-design",
   "playwright-skill",
   "task-observer",
 ];

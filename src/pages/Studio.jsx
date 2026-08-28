@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { ArrowRight, Printer, Zap, Box, Cpu, Layers, Wrench, Calculator, Tag, Droplet } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { useScrollReveal, useStaggerReveal } from "../hooks/useScrollReveal.js";
@@ -24,6 +24,7 @@ import {
   buildItemListSchema,
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
+import HeroObraz from "../components/HeroObraz.jsx";
 
 const techIcons = [Cpu, Printer, Droplet, Zap, Layers, Box, Wrench];
 
@@ -107,24 +108,24 @@ export default function Studio() {
       name: s.processTitle,
       description: s.processTag,
       steps: s.processSteps,
-      image: `${SITE.url}/hero-studio.webp`,
+      image: `${SITE.url}/og-studio.jpg`,
     }),
     s.faq?.items && buildFAQSchema(s.faq.items),
     buildItemListSchema({
       name: "AEJaCA sTuDiO Digital Fabrication Services",
       url: pageUrl,
       items: [
-        { name: "FDM 3D Printing", url: `${pageUrl}#3dprint`, image: `${SITE.url}/hero-studio.webp`, description: "Professional FDM 3D printing in PLA, PETG, ABS, PA6-CF, PPA-CF" },
-        { name: "CO2 Laser Engraving & Cutting", url: `${pageUrl}#co2laser`, image: `${SITE.url}/hero-studio.webp`, description: "xTool P2 55W CO2 laser on wood, acrylic, glass, leather" },
-        { name: "Fiber Laser Marking", url: `${pageUrl}#fiber`, image: `${SITE.url}/hero-studio.webp`, description: "Raycus 30W fiber laser on stainless steel, titanium, brass, stone" },
-        { name: "Epoxy Resin Casting", url: `${pageUrl}#resin`, image: `${SITE.url}/hero-studio.webp`, description: "Custom epoxy and UV resin casting for decorative objects and prototypes" },
-        { name: "Rapid Prototyping", url: `${pageUrl}#prototyping`, image: `${SITE.url}/hero-studio.webp`, description: "From CAD design to functional prototype in 24-48 hours" },
+        { name: "FDM 3D Printing", url: `${pageUrl}#3dprint`, image: `${SITE.url}/og-studio.jpg`, description: "Professional FDM 3D printing in PLA, PETG, ABS, PA6-CF, PPA-CF" },
+        { name: "CO2 Laser Engraving & Cutting", url: `${pageUrl}#co2laser`, image: `${SITE.url}/og-studio.jpg`, description: "xTool P2 55W CO2 laser on wood, acrylic, glass, leather" },
+        { name: "Fiber Laser Marking", url: `${pageUrl}#fiber`, image: `${SITE.url}/og-studio.jpg`, description: "Raycus 30W fiber laser on stainless steel, titanium, brass, stone" },
+        { name: "Epoxy Resin Casting", url: `${pageUrl}#resin`, image: `${SITE.url}/og-studio.jpg`, description: "Custom epoxy and UV resin casting for decorative objects and prototypes" },
+        { name: "Rapid Prototyping", url: `${pageUrl}#prototyping`, image: `${SITE.url}/og-studio.jpg`, description: "From CAD design to functional prototype in 24-48 hours" },
       ],
     }),
     buildProductSchema({
       name: "Custom 3D Print (FDM), AEJaCA sTuDiO",
       description: "Professional FDM 3D printing service using PLA, PETG, ABS, PA6-CF, and PPA-CF. From rapid prototypes to production parts.",
-      image: `${SITE.url}/hero-studio.webp`,
+      image: `${SITE.url}/og-studio.jpg`,
       sku: "AEJACA-3DPRINT",
       price: "25",
       currency: "EUR",
@@ -135,7 +136,7 @@ export default function Studio() {
     buildProductSchema({
       name: "CO2 Laser Engraving & Cutting, AEJaCA sTuDiO",
       description: "xTool P2 55W CO2 laser engraving on wood, acrylic, glass, leather. Precision cutting of plywood, MDF, and acrylic sheets.",
-      image: `${SITE.url}/hero-studio.webp`,
+      image: `${SITE.url}/og-studio.jpg`,
       sku: "AEJACA-CO2LASER",
       price: "15",
       currency: "EUR",
@@ -146,7 +147,7 @@ export default function Studio() {
     buildProductSchema({
       name: "Fiber Laser Marking, AEJaCA sTuDiO",
       description: "Raycus 30W fiber laser marking on stainless steel, titanium, silver, gold, brass, stone, and ceramics.",
-      image: `${SITE.url}/hero-studio.webp`,
+      image: `${SITE.url}/og-studio.jpg`,
       sku: "AEJACA-FIBER",
       price: "20",
       currency: "EUR",
@@ -162,15 +163,13 @@ export default function Studio() {
       <div className="bg-neutral-950">
       {/* Hero */}
       <section className="relative overflow-hidden min-h-[400px]">
-        <img
-          src="/hero-studio.webp"
+        <HeroObraz
+          nazwa="hero-studio"
           alt="AEJaCA sTuDiO"
           className="absolute inset-0 w-full h-full object-cover"
-          loading="eager"
-          fetchpriority="high"
-          decoding="async"
-          width="1920"
-          height="1080"
+          width={1920}
+          height={1080}
+          sizes="100vw"
         />
         <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-neutral-950/40 via-neutral-950/80 to-neutral-950" />
         <div className="hero-text relative z-10 max-w-4xl mx-auto px-6 pt-28 pb-6 text-center flex flex-col items-center">

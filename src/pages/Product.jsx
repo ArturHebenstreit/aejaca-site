@@ -9,7 +9,8 @@
 // tworzy drugiej: dwie linie z tym samym pierscionkiem czytaja sie jak pomylka.
 
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { ShoppingCart, Package, Download, RotateCcw, Truck, ArrowLeft, Check } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -23,6 +24,7 @@ import { useAvailability, stockOf, statusOf } from "../shop/availability.js";
 import { getProduct, WITHDRAWAL, SHOP_CATEGORIES } from "../data/shopCatalog.js";
 import NotFound from "./NotFound.jsx";
 import PriceReduction from "../components/shop/PriceReduction.jsx";
+import Obraz from "../components/Obraz.jsx";
 
 const UI = {
   pl: {
@@ -250,10 +252,13 @@ export default function Product() {
                 wtedy, gdy jest co przelaczac. */}
             <div>
               <div className="rounded-2xl overflow-hidden bg-black border border-white/10 aspect-square">
-                <img
+                <Obraz
                   src={product.images[shown] || product.images[0]}
                   alt={t(product.title, lang)}
                   className="w-full h-full object-cover"
+                  sizes="(min-width: 1024px) 560px, 94vw"
+                  loading="eager"
+                  fetchpriority="high"
                 />
               </div>
               {product.images.length > 1 && (
@@ -269,7 +274,9 @@ export default function Product() {
                         i === shown ? "border-white/50" : "border-white/10 hover:border-white/30"
                       }`}
                     >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <Obraz src={img} alt="" className="w-full h-full object-cover"
+                        sizes="88px"
+                      />
                     </button>
                   ))}
                 </div>
@@ -341,7 +348,7 @@ export default function Product() {
                 </div>
               )}
 
-              <p className="text-neutral-600 text-[11px] text-center mb-7">
+              <p className="text-neutral-600 text-xs text-center mb-7">
                 {withdrawn
                   ? u.withdrawnBody
                   : status === "sold_out"

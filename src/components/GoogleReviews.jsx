@@ -61,12 +61,6 @@ const LABELS = {
     writeReview: "Dodaj swoją opinię na Google",
     translationOf: "Tłumaczenie",
     ratingOnly: "Ocena bez komentarza",
-    relativeTime: (days) => {
-      if (days < 7) return `${days} dni temu`;
-      if (days < 30) return `${Math.round(days / 7)} tyg. temu`;
-      if (days < 365) return `${Math.round(days / 30)} mies. temu`;
-      return `${Math.round(days / 365)} lat temu`;
-    },
   },
   en: {
     tag: "Google Reviews",
@@ -79,12 +73,6 @@ const LABELS = {
     writeReview: "Write your review on Google",
     translationOf: "Translation",
     ratingOnly: "Rating without comment",
-    relativeTime: (days) => {
-      if (days < 7) return `${days} days ago`;
-      if (days < 30) return `${Math.round(days / 7)} weeks ago`;
-      if (days < 365) return `${Math.round(days / 30)} months ago`;
-      return `${Math.round(days / 365)} years ago`;
-    },
   },
   de: {
     tag: "Google-Bewertungen",
@@ -97,18 +85,42 @@ const LABELS = {
     writeReview: "Eigene Bewertung auf Google schreiben",
     translationOf: "Übersetzung",
     ratingOnly: "Bewertung ohne Kommentar",
-    relativeTime: (days) => {
-      if (days < 7) return `vor ${days} Tagen`;
-      if (days < 30) return `vor ${Math.round(days / 7)} Wochen`;
-      if (days < 365) return `vor ${Math.round(days / 30)} Monaten`;
-      return `vor ${Math.round(days / 365)} Jahren`;
-    },
   },
 };
 
-function daysSince(dateStr) {
-  const d = new Date(dateStr);
-  return Math.max(0, Math.floor((Date.now() - d.getTime()) / 86400000));
+// ============================================================
+// DATA OPINII
+// ============================================================
+// Wczesniej stalo tu "4 tyg. temu", liczone z `Date.now()`. Taki napis ma dwie
+// rozne wartosci: jedna w chwili prerenderu, druga w chwili ogladania strony.
+// React porownuje jedno z drugim przy hydracji, nie zgadza sie i wyrzuca caly
+// gotowy HTML do kosza, zeby narysowac strone od nowa na telefonie klienta.
+// Kosztowalo to strone glowna i obie strony marek.
+//
+// Miesiac i rok zaleza wylacznie od daty opinii, wiec sa takie same zawsze i
+// wszedzie. Przy okazji czytelnik dostaje informacje uczciwsza: "sierpien 2026"
+// mowi wprost, kiedy ktos u nas byl, a "4 tyg. temu" starzeje sie w milczeniu.
+// Pelna date niesie atrybut `dateTime`, wiec czytniki ekranu i wyszukiwarki
+// maja ja w postaci maszynowej.
+//
+// Nazwy miesiecy sa wpisane wprost, a nie brane z `Intl.DateTimeFormat`,
+// bo dane lokalizacyjne w Node i w przegladarce bywaja z roznych wersji ICU
+// i wtedy wracamy do tego samego rozjazdu, tyle ze trudniejszego do zlapania.
+const MIESIACE = {
+  pl: ["styczeń", "luty", "marzec", "kwiecień", "maj", "czerwiec",
+       "lipiec", "sierpień", "wrzesień", "październik", "listopad", "grudzień"],
+  en: ["January", "February", "March", "April", "May", "June",
+       "July", "August", "September", "October", "November", "December"],
+  de: ["Januar", "Februar", "März", "April", "Mai", "Juni",
+       "Juli", "August", "September", "Oktober", "November", "Dezember"],
+};
+
+function reviewDate(dateStr, lang) {
+  const m = /^(\d{4})-(\d{2})/.exec(dateStr || "");
+  if (!m) return "";
+  const nazwy = MIESIACE[lang] || MIESIACE.en;
+  const miesiac = nazwy[Number(m[2]) - 1];
+  return miesiac ? `${miesiac} ${m[1]}` : m[1];
 }
 
 // Single review card
@@ -128,10 +140,10 @@ function ReviewCard({ review, lang, labels }) {
           <div className="flex items-center gap-2 mt-1">
             <Stars rating={review.rating} size="w-3.5 h-3.5" />
             <time
-              className="text-[11px] text-neutral-400"
+              className="text-xs text-neutral-400"
               dateTime={review.date}
             >
-              {labels.relativeTime(daysSince(review.date))}
+              {reviewDate(review.date, lang)}
             </time>
           </div>
         </div>
@@ -154,7 +166,7 @@ function ReviewCard({ review, lang, labels }) {
       {/* Translation (tylko gdy jest treść i aktualny język ≠ oryginał) */}
       {translation && (
         <div className="pt-3 border-t border-white/5">
-          <div className="text-[10px] uppercase tracking-wider text-neutral-400 mb-1">
+          <div className="text-xs uppercase tracking-wider text-neutral-400 mb-1">
             {labels.translationOf} ({lang.toUpperCase()})
           </div>
           <p lang={lang} className="text-neutral-400 text-xs leading-relaxed italic">

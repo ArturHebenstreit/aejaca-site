@@ -20,7 +20,8 @@
 // zamowienia, w jednej transakcji z jego zapisem. Przegladarka pokazuje.
 
 import { useState, useEffect, useMemo } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { Loader2, Tag, Check, AlertTriangle, ShieldCheck, ArrowRight, Coins } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -28,7 +29,8 @@ import LockerPicker from "../components/shop/LockerPicker.jsx";
 import CustomerFields, { ValidatedField as Field } from "../components/shop/CustomerFields.jsx";
 import { validateCustomer } from "../shop/customerFields.js";
 import { DELIVERY_METHODS } from "../data/orderCatalog.js";
-import { shippingOptions, SHIPPING_COUNTRIES, leadDaysLabel } from "../pricing/shipping.js";
+import { shippingOptions, leadDaysLabel } from "../pricing/shipping.js";
+import { countryList } from "../data/countryNames.js";
 import { useMoney, formatPln, formatEur } from "../shop/money.js";
 import { TRANSFER_HOLD_BUSINESS_DAYS } from "../pricing/businessDays.js";
 
@@ -43,15 +45,6 @@ async function postJSON(url, body) {
   let data = null;
   try { data = await res.json(); } catch { /* pusta odpowiedz to tez odpowiedz */ }
   return { ok: res.ok, status: res.status, data };
-}
-
-/** Kraj klient szuka po nazwie w swoim jezyku, nie po kodzie. */
-function countryName(code, lang) {
-  try {
-    return new Intl.DisplayNames([lang === "pl" ? "pl" : lang === "de" ? "de" : "en"], { type: "region" }).of(code) || code;
-  } catch {
-    return code;
-  }
 }
 
 const UI = {
@@ -459,12 +452,7 @@ export default function Offer() {
     setDiscount(r.data);
   }
 
-  const kraje = useMemo(
-    () => SHIPPING_COUNTRIES
-      .map((code) => ({ code, name: countryName(code, lang) }))
-      .sort((a, b) => a.name.localeCompare(b.name, lang === "pl" ? "pl" : lang === "de" ? "de" : "en")),
-    [lang]
-  );
+  const kraje = countryList(lang);
 
   const opcje = useMemo(
     () => shippingOptions(country, offer?.totalGrosze || 0).filter((o) => o.grosze != null),
@@ -746,13 +734,13 @@ export default function Offer() {
                               {w.kod === "EUR" ? formatEur(doZaplaty, kursOferty, lang) : formatPln(doZaplaty, lang)}
                             </span>
                           </span>
-                          <span className="block text-neutral-500 text-[11px] mt-1">{w.opis}</span>
+                          <span className="block text-neutral-500 text-xs mt-1">{w.opis}</span>
                         </button>
                       ))}
                     </div>
 
                     {walutaOferty === "EUR" && kursOferty && (
-                      <p className="text-neutral-600 text-[11px] mt-3">
+                      <p className="text-neutral-600 text-xs mt-3">
                         {u.currencyRate.replace("{rate}", kursOferty.toFixed(4))}
                       </p>
                     )}
@@ -767,14 +755,14 @@ export default function Offer() {
                           : [u.in1, u.in2, u.in3]
                         ).map((krok, n) => (
                           <li key={n} className="flex gap-2.5 text-neutral-400 text-xs leading-relaxed">
-                            <span className="flex-shrink-0 w-5 h-5 rounded-full border border-white/15 text-[10px] text-neutral-300
+                            <span className="flex-shrink-0 w-5 h-5 rounded-full border border-white/15 text-xs text-neutral-300
                                              flex items-center justify-center tabular-nums">{n + 1}</span>
                             {krok}
                           </li>
                         ))}
                       </ol>
                       {walutaOferty === "EUR" && (
-                        <p className="text-neutral-600 text-[11px] mt-3">
+                        <p className="text-neutral-600 text-xs mt-3">
                           {u.trHold.replace("{days}", String(TRANSFER_HOLD_BUSINESS_DAYS))}
                         </p>
                       )}
@@ -880,10 +868,10 @@ export default function Offer() {
                     {offer.customer?.email ? (
                       <>
                         <div className="rounded-lg border border-white/10 bg-neutral-900 px-3 py-2">
-                          <span className="block text-neutral-500 text-[11px]">{u.email}</span>
+                          <span className="block text-neutral-500 text-xs">{u.email}</span>
                           <span className="block text-neutral-200 text-sm">{offer.customer.email}</span>
                         </div>
-                        <p className="text-neutral-600 text-[11px] leading-relaxed">{u.emailLocked}</p>
+                        <p className="text-neutral-600 text-xs leading-relaxed">{u.emailLocked}</p>
                         <Field label={u.name} value={customer.name} onChange={(v) => setCustomer((c) => ({ ...c, name: v }))} required
                                error={u.needCustomer} showError={tried && !customer.name.trim()} />
                         <Field label={u.phone} value={customer.phone} onChange={(v) => setCustomer((c) => ({ ...c, phone: v }))} type="tel" required
@@ -963,7 +951,7 @@ export default function Offer() {
                       )}
                     </button>
 
-                    <p className="text-neutral-600 text-[11px] leading-relaxed flex items-start gap-2">
+                    <p className="text-neutral-600 text-xs leading-relaxed flex items-start gap-2">
                       <ShieldCheck className="w-3.5 h-3.5 shrink-0 mt-0.5" /> {u.payNote}
                     </p>
                   </section>

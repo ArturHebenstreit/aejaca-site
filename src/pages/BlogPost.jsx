@@ -1,4 +1,5 @@
-import { useParams, Link, Navigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { Link, Navigate } from "../i18n/nav.jsx";
 import { Clock, Calendar, Tag, User } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { getPost, getSortedPosts } from "../blog/posts.js";
@@ -16,6 +17,7 @@ import {
 } from "../seo/schemas.js";
 import { SITE } from "../seo/seoData.js";
 import Breadcrumb from "../components/Breadcrumb.jsx";
+import Obraz from "../components/Obraz.jsx";
 
 const CATEGORY_LABELS = {
   jewelry: { pl: "Biżuteria", en: "Jewelry", de: "Schmuck" },
@@ -133,7 +135,7 @@ export default function BlogPost() {
               </span>
               <span className="inline-flex items-center gap-1">
                 <User className="w-3 h-3" />
-                <a href="/about/" className="hover:text-amber-400 transition-colors">Artur Hebenstreit</a>
+                <Link to="/about/" className="hover:text-amber-400 transition-colors">Artur Hebenstreit</Link>
               </span>
               <span className="inline-flex items-center gap-1">
                 <Calendar className="w-3 h-3" />
@@ -163,7 +165,7 @@ export default function BlogPost() {
         {/* Cover image */}
         <section className="bg-neutral-950 px-4 pb-10">
           <div className="max-w-4xl mx-auto">
-            <img
+            <Obraz
               src={post.coverImage}
               alt={title}
               className="w-full rounded-2xl object-cover max-h-[400px]"
@@ -172,6 +174,7 @@ export default function BlogPost() {
               decoding="async"
               width="1200"
               height="509"
+              sizes="(min-width: 928px) 896px, 96vw"
             />
           </div>
         </section>

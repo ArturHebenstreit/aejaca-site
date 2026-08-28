@@ -9,7 +9,7 @@ export const meta = {
   coverImage: "/img/blog/modelowanie-3d-na-zamowienie.webp",
   readingTime: { pl: 8, en: 6, de: 6 },
   title: {
-    pl: "Modelowanie 3D na zamówienie - Rhino, Fusion 360 (przewodnik)",
+    pl: "Modelowanie 3D na zamówienie - Rhino i Fusion 360",
     en: "3D Modeling on Demand - Rhino, Fusion 360 (Guide)",
     de: "3D-Modellierung nach Maß - Rhino, Fusion 360 (Leitfaden)",
   },

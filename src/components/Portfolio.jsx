@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useScrollReveal } from "../hooks/useScrollReveal.js";
+import Obraz from "./Obraz.jsx";
 
 const CATEGORY_COLORS_AMBER = {
   rings: "bg-amber-500/10 text-amber-400 border-amber-500/20",
@@ -192,17 +193,18 @@ export default function Portfolio({ data, accent = "amber", id }) {
                 >
                   {item.img && (
                     <div className="overflow-hidden relative">
-                      <img
+                      <Obraz
                         src={item.img}
                         alt={item.title}
                         loading="lazy"
                         className="w-full aspect-square object-cover transition-transform duration-500 group-hover/card:scale-105"
+                        sizes="(min-width: 1024px) 300px, (min-width: 640px) 45vw, 90vw"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
                     </div>
                   )}
                   <div className="p-4">
-                    <div className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-medium border mb-2 ${catColor}`}>
+                    <div className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium border mb-2 ${catColor}`}>
                       {data.filters.find((f) => f.id === item.category)?.label || item.category}
                     </div>
                     <h3 className={`text-white font-medium text-sm mb-1 ${isAmber ? "group-hover/card:text-amber-300" : "group-hover/card:text-blue-300"} transition-colors`}>
@@ -272,10 +274,12 @@ export default function Portfolio({ data, accent = "amber", id }) {
           )}
 
           <div className="max-w-3xl max-h-[85vh] flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
-            <img
+            <Obraz
               src={filtered[lightbox].img}
               alt={filtered[lightbox].title}
               className={`max-h-[70vh] w-auto rounded-xl shadow-2xl ring-1 ${accentRing}`}
+              sizes="90vw"
+              loading="eager"
             />
             <div className="mt-4 text-center">
               <h3 className="text-white text-lg font-medium">{filtered[lightbox].title}</h3>

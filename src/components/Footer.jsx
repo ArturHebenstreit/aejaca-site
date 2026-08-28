@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../i18n/nav.jsx";
 import { Store, Instagram, Music2, Facebook, Youtube, Mail, MessageCircleMore } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import NewsletterForm from "./NewsletterForm.jsx";
@@ -14,6 +14,14 @@ const RATES_LABELS = {
 
 const SOURCE_LABEL = { nbp: "NBP", "gold-api": "gold-api.com", metalpriceapi: "metalpriceapi.com" };
 
+// Rok w stopce jest wpisany, a nie liczony z `new Date().getFullYear()`.
+// Liczony daje inna wartosc w chwili prerenderu i inna po Nowym Roku, gdy
+// ktos oglada strone, ktorej od grudnia nikt nie wdrazal. React uznaje to za
+// rozjazd i przerysowuje CALA strone od nowa, na wszystkich stu adresach.
+// Pilnuje tego `scripts/check-czas-w-renderze.mjs`: build pada w styczniu,
+// dopoki ktos nie poprawi tej jednej liczby.
+const ROK_COPYRIGHT = 2026;
+
 function fmt(n, dec = 2) {
   if (n == null) return " - ";
   return n.toLocaleString("pl-PL", { minimumFractionDigits: dec, maximumFractionDigits: dec });
@@ -25,21 +33,75 @@ function fmtTime(iso) {
   return d.toLocaleString("pl-PL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 }
 
+// ============================================================
+// KURSY W STOPCE: POBIERANE DOPIERO, GDY KTOS NA NIE PATRZY
+// ============================================================
+// Stopka stoi w Layout, wiec jest na kazdej ze stu stron, a pasek kursow
+// pytal backend od razu po zamontowaniu. Na stronie regulaminu, w polityce
+// prywatnosci i pod wpisem na blogu nie ma czego przeliczac, a zadanie i tak
+// szlo, budzac przy okazji usluge na Railway (563 ms na stronie kontaktowej).
+//
+// Teraz obserwator widocznosci odpala zapytanie dopiero, gdy pasek naprawde
+// wejdzie w pole widzenia. Wieksz czesc odwiedzin konczy sie nad stopka i
+// wtedy zadania nie ma wcale.
+//
+// Wynik trzymamy w module, a nie w pamieci przegladarki: to publiczne kursy,
+// nie dane osoby, a przy przejsciach wewnatrz serwisu dokument sie nie zmienia,
+// wiec jedna kopia wystarcza na cala wizyte. Dzieki temu nie dokladamy klucza
+// do `scripts/check-browser-storage.mjs` ani obowiazku zgody.
+const RATES_TTL_MS = 15 * 60 * 1000;
+let ratesCache = null;   // { data, stamp }
+let ratesInFlight = null;
+
+function pobierzKursy() {
+  if (ratesCache && Date.now() - ratesCache.stamp < RATES_TTL_MS) {
+    return Promise.resolve(ratesCache.data);
+  }
+  if (!ratesInFlight) {
+    ratesInFlight = fetch(`${API}/api/market-rates`)
+      .then((r) => r.json())
+      .then((data) => {
+        ratesCache = { data, stamp: Date.now() };
+        return data;
+      })
+      .finally(() => { ratesInFlight = null; });
+  }
+  return ratesInFlight;
+}
+
 function MarketRatesBar() {
   const { lang } = useLanguage();
   const L = RATES_LABELS[lang] || RATES_LABELS.pl;
   const showEur = lang === "en" || lang === "de";
   const [rates, setRates] = React.useState(null);
+  const kotwica = React.useRef(null);
 
   React.useEffect(() => {
-    fetch(`${API}/api/market-rates`)
-      .then(r => r.json())
-      .then(setRates)
-      .catch(() => {});
+    let zywy = true;
+    const start = () => {
+      pobierzKursy().then((d) => { if (zywy) setRates(d); }).catch(() => {});
+    };
+
+    // Bez IntersectionObserver (stare przegladarki, srodowiska testowe)
+    // zachowujemy sie jak wczesniej i pobieramy od razu.
+    const el = kotwica.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      start();
+      return () => { zywy = false; };
+    }
+
+    const obs = new IntersectionObserver((wpisy) => {
+      if (wpisy.some((w) => w.isIntersecting)) {
+        obs.disconnect();
+        start();
+      }
+    }, { rootMargin: "200px" });
+    obs.observe(el);
+    return () => { zywy = false; obs.disconnect(); };
   }, []);
 
   if (!rates) return (
-    <div className="mt-5 pt-4 border-t border-white/5 text-[10px] text-neutral-600">{L.noData}</div>
+    <div ref={kotwica} className="mt-5 pt-4 border-t border-white/5 text-xs text-neutral-500">{L.noData}</div>
   );
 
   const pln_per_eur = rates.pln_per_eur || 4.25;
@@ -51,8 +113,8 @@ function MarketRatesBar() {
   const ptSrc = s.pt_pln_per_g;
 
   return (
-    <div className="mt-5 pt-4 border-t border-white/5">
-      <div className="text-[10px] uppercase tracking-widest text-neutral-500 mb-2">{L.title}</div>
+    <div ref={kotwica} className="mt-5 pt-4 border-t border-white/5">
+      <div className="text-xs uppercase tracking-widest text-neutral-400 mb-2">{L.title}</div>
       {/* Metals */}
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs mb-1.5">
         <span className="text-neutral-300"><span className="text-amber-400 font-medium">Au</span> {fmt(conv(rates.au_pln_per_g))} <span className="text-neutral-500">{currency}/g</span></span>
@@ -67,7 +129,7 @@ function MarketRatesBar() {
         <span className="text-neutral-300"><span className="text-neutral-400 font-medium">EUR/USD</span> {fmt(rates.eur_per_usd, 4)}</span>
       </div>
       {/* Sources */}
-      <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-neutral-600">
+      <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-neutral-500">
         {auSrc && <span>Au: <span className="text-neutral-500">{SOURCE_LABEL[auSrc.source]}</span> {fmtTime(auSrc.fetched_at)}</span>}
         {agSrc && <span>Ag: <span className="text-neutral-500">{SOURCE_LABEL[agSrc.source]}</span> {fmtTime(agSrc.fetched_at)}</span>}
         {ptSrc && <span>Pt/Pd: <span className="text-neutral-500">{SOURCE_LABEL[ptSrc.source]}</span> {fmtTime(ptSrc.fetched_at)}</span>}
@@ -101,7 +163,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-4 gap-10">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <img src="/brand-sign.webp" alt="AEJaCA" width="40" height="40" className="h-10 w-10 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
+              <img src="/brand-sign-128.webp" alt="AEJaCA" width="40" height="40" className="h-10 w-10 brightness-0 invert drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
               <span className="font-serif text-lg font-semibold">AEJaCA</span>
             </div>
             <p className="text-neutral-400 text-sm leading-relaxed">{t.footer.tagline}</p>
@@ -153,7 +215,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-10 pt-6 border-t border-white/5 text-center text-neutral-400 text-xs">
-          &copy; {new Date().getFullYear()} AEJaCA - {t.footer.rights}
+          &copy; {ROK_COPYRIGHT} AEJaCA - {t.footer.rights}
         </div>
       </div>
     </footer>

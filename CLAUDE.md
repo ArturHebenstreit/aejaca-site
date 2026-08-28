@@ -122,8 +122,37 @@ Zasady linkowania narzędzi: patrz `PROJECT_RULES.md`, sekcja `Linkowanie narzę
 ## Key conventions
 
 Wspólne konwencje inżynierskie: patrz `PROJECT_RULES.md`, sekcja `Konwencje inżynierskie`.
-- **Skille projektu** (`.claude/skills/`): jadą z repozytorium, więc działają w każdej sesji, także zdalnej. Każdy ma obok `ORIGIN.md` ze źródłem, licencją, datą pobrania i wynikiem przeglądu bezpieczeństwa. **Dodając skill z zewnątrz: przeczytaj go w całości, załóż `ORIGIN.md`, dopiero potem commituj.** Skill to instrukcja, którą agent wykonuje, więc obcy skill jest obcym kodem.
+
+### Trzy rzeczy, których build pilnuje, a łatwo o nich zapomnieć (od 2026-08-27)
+
+- **Odnośnik wewnętrzny pisze się przez `Link` z `src/i18n/nav.jsx`, nigdy przez
+  `<a href="/...">`.** Każdy język stoi pod własnym adresem (`/studio/`,
+  `/en/studio/`, `/de/studio/`), a `Link` dokłada prefiks sam. Zwykłe `<a>`
+  wyrzuca Niemca z powrotem na polską wersję i nic przy tym nie wygląda na
+  zepsute. Kiedy odnośnik musi być zwykłym `<a>` (nowa karta), użyj
+  `sciezkaJezyka(adres, lang)`. Prerender czyta wszystkie strony `/en/` i `/de/`
+  i pada, jeśli choć jeden odnośnik wychodzi z języka. Trasy: `src/routes.js`,
+  jedna lista dla przeglądarki, prerenderu i mapy witryny. Decyzja: ADR-0023.
+
+- **Obraz wstawia się przez `<Obraz>` (kafelki) albo `<HeroObraz>` (pierwszy
+  ekran), nie przez `<img>`.** Nowy plik graficzny wymaga `npm run img:cards`
+  albo `npm run img:hero`, inaczej build pada na bramce. Bramka jest, bo brak
+  wariantu jest cichy: `srcset` wskazujący nieistniejący plik po prostu wraca do
+  oryginału i nikt nie widzi, że coś przestało działać. Decyzja: ADR-0024.
+
+- **Nic zależnego od chwili oglądania nie trafia do JSX.** `Date.now()` i
+  `new Date()` w renderze dają inną wartość przy buildzie i inną u klienta,
+  React uznaje to za rozjazd i wyrzuca cały prerender. Pilnuje tego
+  `scripts/check-czas-w-renderze.mjs`. To samo dotyczy `Intl.DisplayNames` i
+  `localeCompare`: dane ICU w Node i w przeglądarce bywają z różnych wersji
+  (nazwy krajów: `src/data/countryNames.js`). Decyzja: ADR-0022.
+
+- **Najmniejsze pismo w serwisie to 12 px** (`text-xs`). Bez wyjątków, pilnuje
+  `scripts/check-drobny-tekst.mjs`. Nie mieści się? Poszerz kratkę albo skróć
+  napis.
+- **Skille projektu** (`.claude/skills/`): jadą z repozytorium, więc działają w każdej sesji, także zdalnej. Każdy ma obok `ORIGIN.md` ze źródłem, licencją, datą pobrania i wynikiem przeglądu bezpieczeństwa. **Dodając skill z zewnątrz: przeczytaj go w całości, załóż `ORIGIN.md`, dopisz nazwę katalogu do `SKILLE_ZEWNETRZNE` w `scripts/check-emdash.mjs`, dopiero potem commituj.** Bez tego kroku build pada na cudzej pisowni, bo reguła długich myślników jest bramką: obowiązuje nasz tekst, a nie tekst, który tylko u nas leży (`ORIGIN.md` zostaje objęty regułą, bo to już nasze pisanie). Skill to instrukcja, którą agent wykonuje, więc obcy skill jest obcym kodem.
   - `find-skills` - proponuje skille pasujące do repozytorium, sam niczego nie instaluje.
+  - `frontend-design` - wiedza o projektowaniu interfejsów (Anthropic, Apache 2.0). Plan przed kodem: tokeny koloru, kroje do 2+ ról, układ, jeden element sygnaturowy, a potem krytyka tego planu. Ma osobny rozdział o pisaniu w interfejsie i listę wyglądów, po których poznaje się projekt zrobiony przez AI. **Na aejaca.com `aejaca-design` wygrywa**: marka jest ustalona i spójna na stu prerenderowanych stronach, więc ten skill służy rzeczom nowym, a nie przemalowywaniu tego, co stoi.
   - `playwright-skill` - steruje przeglądarką: klika, wypełnia, robi zrzuty. **Zobaczyć podgląd u siebie jest tańsze niż czytać kod**: tak znalazłem wiszące nogi krap po czterech rundach czytania. W tym środowisku wymaga `PW_HEADLESS=true` i `PW_EXECUTABLE_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`, i **nigdy `npm run setup`**.
   - `browser-automation` - warstwa głębsza: przechwytywanie ruchu strony, konsola, profilowanie, CDP. Do weryfikowania hipotez o zachowaniu serwisów.
   - **Sieć w środowisku zdalnym sięga tylko `localhost` i wąskiej białej listy.** Przeglądanie internetu działa dopiero na maszynie lokalnej. Szczegóły w `ORIGIN.md` obu skilli.

@@ -31,6 +31,7 @@ import {
   METAL_DENSITY, resolveMetalPricePerG, calcNew, calcChain, calcRenovation, calcRepair,
   LBL,
 } from "../../pricing/jewelry.js";
+import Obraz from "../Obraz.jsx";
 
 // Re-eksport, bo SimpleJewelryCalc importuje kalkulacje stad.
 export { calcNew, calcChain, calcRenovation, calcRepair };
@@ -147,7 +148,7 @@ function ConsignedNote({ lang }) {
   return (
     <div className="mt-2 flex gap-2 rounded-lg border border-amber-400/20 bg-amber-400/5 px-3 py-2">
       <span aria-hidden="true" className="text-amber-400/80 text-xs leading-5">ⓘ</span>
-      <p className="text-[11px] leading-relaxed text-neutral-300">
+      <p className="text-xs leading-relaxed text-neutral-300">
         {CONSIGNED_NOTE[lang] || CONSIGNED_NOTE.pl}
       </p>
     </div>
@@ -354,7 +355,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                 {/* Background image (full visibility) */}
                 {s.img && (
                   <div className="absolute inset-0 overflow-hidden">
-                    <img src={s.img} alt={t(s.label, lang)} loading="lazy"
+                    <Obraz sizes="(min-width: 640px) 180px, 40vw" src={s.img} alt={t(s.label, lang)} loading="lazy"
                       className={`w-full h-full object-cover transition-all duration-500 ${
                         active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
                       }`} />
@@ -369,7 +370,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                 {/* Text content at bottom */}
                 <div className="relative p-3 h-full min-h-[160px] flex flex-col justify-end">
                   <div className={`text-xs sm:text-sm font-bold mb-1 drop-shadow-lg tile-ink ${active ? "text-amber-300" : "text-white"}`}>{t(s.label, lang)}</div>
-                  <div className="text-[10px] text-neutral-200 break-words drop-shadow-md tile-ink">{t(s.desc, lang)}</div>
+                  <div className="text-xs text-neutral-200 break-words drop-shadow-md tile-ink">{t(s.desc, lang)}</div>
                 </div>
               </button>
             );
@@ -392,7 +393,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     {/* Background image (full visibility) */}
                     {pl.img && (
                       <div className="absolute inset-0 overflow-hidden">
-                        <img src={pl.img} alt={pl.label} loading="lazy"
+                        <Obraz sizes="(min-width: 640px) 180px, 40vw" src={pl.img} alt={pl.label} loading="lazy"
                           className={`w-full h-full object-cover transition-all duration-500 ${
                             active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"
                           }`} />
@@ -407,7 +408,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     {/* Text content at bottom */}
                     <div className="relative p-3 h-full min-h-[180px] flex flex-col justify-end">
                       <div className={`text-sm sm:text-base font-bold mb-1 drop-shadow-lg tile-ink ${active ? "text-amber-300" : "text-white"}`}>{pl.label}</div>
-                      <div className="text-[10px] text-neutral-200 break-words drop-shadow-md tile-ink">{t(pl.desc, lang)}</div>
+                      <div className="text-xs text-neutral-200 break-words drop-shadow-md tile-ink">{t(pl.desc, lang)}</div>
                     </div>
                   </button>
                 );
@@ -432,13 +433,13 @@ export default function JewelryCalc({ lang = "pl" }) {
                       hasImg ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
                     }`}>
                       {hasImg ? (
-                        <img src={jt.img} alt={label} loading="lazy"
+                        <Obraz sizes="(min-width: 640px) 180px, 40vw" src={jt.img} alt={label} loading="lazy"
                           className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
                       ) : (
                         <span className="text-2xl opacity-60">◆</span>
                       )}
                     </div>
-                    <span className={`text-[11px] sm:text-xs text-center leading-tight break-all line-clamp-2 ${
+                    <span className={`text-xs sm:text-xs text-center leading-tight break-all line-clamp-2 ${
                       active ? "text-amber-300 font-medium" : "text-neutral-400"
                     }`}>
                       {label}
@@ -490,15 +491,15 @@ export default function JewelryCalc({ lang = "pl" }) {
                     }`}>
                     {w.img && (
                       <div className="absolute inset-0 overflow-hidden">
-                        <img src={w.img} alt={t(w.label, lang)} loading="lazy"
+                        <Obraz sizes="(min-width: 640px) 180px, 40vw" src={w.img} alt={t(w.label, lang)} loading="lazy"
                           className={`w-full h-full object-cover transition-all duration-500 ${active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"}`} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
                         {active && <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />}
                       </div>
                     )}
                     <div className="relative p-2.5 h-full min-h-[130px] flex flex-col justify-end">
-                      <div className={`text-[11px] sm:text-xs font-bold mb-0.5 drop-shadow-lg tile-ink ${active ? "text-amber-300" : "text-white"}`}>{t(w.label, lang)}</div>
-                      <div className="text-[9px] sm:text-[10px] text-neutral-300 break-words drop-shadow-md tile-ink leading-tight">{t(w.desc, lang)}</div>
+                      <div className={`text-xs sm:text-xs font-bold mb-0.5 drop-shadow-lg tile-ink ${active ? "text-amber-300" : "text-white"}`}>{t(w.label, lang)}</div>
+                      <div className="text-xs sm:text-xs text-neutral-300 break-words drop-shadow-md tile-ink leading-tight">{t(w.desc, lang)}</div>
                     </div>
                   </button>
                 );
@@ -526,13 +527,13 @@ export default function JewelryCalc({ lang = "pl" }) {
 
                     {/* Preset length buttons */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10px] text-neutral-500 mb-1.5">
+                      <p className="text-xs text-neutral-500 mb-1.5">
                         {{ pl: "Wybierz długość", en: "Select length", de: "Länge wählen" }[lang]}
                       </p>
                       <div className="grid grid-cols-3 sm:grid-cols-4 gap-1">
                         {necklacePresets.map(len => (
                           <button key={len} onClick={() => setChainLengthMm(len)}
-                            className={`py-1.5 rounded-lg text-[11px] font-medium border transition-all duration-150 ${
+                            className={`py-1.5 rounded-lg text-xs font-medium border transition-all duration-150 ${
                               chainLengthMm === len
                                 ? "border-amber-400 bg-amber-400/10 text-amber-300"
                                 : "border-white/10 text-neutral-400 hover:border-white/20 hover:text-neutral-200"
@@ -548,13 +549,13 @@ export default function JewelryCalc({ lang = "pl" }) {
                 {/* Bracelet: simple preset grid (no silhouette needed) */}
                 {typeId === "bracelet_m" && (
                   <div>
-                    <p className="text-[10px] text-neutral-500 mb-1.5">
+                    <p className="text-xs text-neutral-500 mb-1.5">
                       {{ pl: "Długość bransoletki", en: "Bracelet length", de: "Armbandlänge" }[lang]}
                     </p>
                     <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5">
                       {BRACELET_LENGTHS.map(len => (
                         <button key={len} onClick={() => setChainLengthMm(len)}
-                          className={`py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
+                          className={`py-1.5 rounded-lg text-xs font-medium border transition-all ${
                             chainLengthMm === len
                               ? "border-amber-400 bg-amber-400/10 text-amber-300"
                               : "border-white/10 text-neutral-400 hover:border-white/20"
@@ -572,7 +573,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     {/* Section separator */}
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-px bg-white/10" />
-                      <span className="text-[10px] text-neutral-500 uppercase tracking-widest px-1">
+                      <span className="text-xs text-neutral-500 uppercase tracking-widest px-1">
                         {{ pl: "Parametry łańcuszka", en: "Chain parameters", de: "Kettenparameter" }[lang]}
                       </span>
                       <div className="flex-1 h-px bg-white/10" />
@@ -589,7 +590,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     </label>
                     {/* Derived values - 5-cell grid */}
                     {result && result.type === "calculated" && !result.fromStock && (
-                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 text-[11px]">
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 text-xs">
                         {[
                           { label: `Ø ${{ pl: "drut", en: "wire", de: "Draht" }[lang]}`, val: `${result.wireDMm?.toFixed(2)} mm` },
                           { label: { pl: "Grubość splotu", en: "Weave thickness", de: "Flechtdicke" }[lang], val: `${result.thicknessMm?.toFixed(1)} mm` },
@@ -598,7 +599,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                           { label: { pl: "Potrzeba kruszcu", en: "Metal needed", de: "Metall benötigt" }[lang], val: result.grossMassG != null ? `${result.grossMassG.toFixed(1)} g` : " - " },
                         ].map(d => (
                           <div key={d.label} className="text-center px-2 py-1.5 rounded-lg bg-white/[0.03] border border-white/8">
-                            <div className="text-neutral-500 text-[9px]">{d.label}</div>
+                            <div className="text-neutral-500 text-xs">{d.label}</div>
                             <div className="text-amber-300 font-semibold">{d.val}</div>
                           </div>
                         ))}
@@ -613,13 +614,13 @@ export default function JewelryCalc({ lang = "pl" }) {
                     {/* Section separator */}
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-px bg-white/10" />
-                      <span className="text-[10px] text-neutral-500 uppercase tracking-widest px-1">
+                      <span className="text-xs text-neutral-500 uppercase tracking-widest px-1">
                         {{ pl: "Dobór do posiadanego kruszcu", en: "From your metal stock", de: "Aus Ihrem Metallvorrat" }[lang]}
                       </span>
                       <div className="flex-1 h-px bg-white/10" />
                     </div>
                     <div className="p-3 rounded-xl border border-white/10 bg-neutral-900 space-y-3">
-                      <p className="text-[11px] text-neutral-300">
+                      <p className="text-xs text-neutral-300">
                         {{ pl: "Podaj masę posiadanego kruszcu - grubość drutu i wymiary łańcuszka zostaną dobrane automatycznie na podstawie AR splotu.",
                            en: "Enter your available metal mass - wire diameter and chain dimensions will be auto-calculated from weave AR.",
                            de: "Geben Sie Ihre Metallmasse ein - Drahtdurchmesser und Kettenmaße werden aus dem AR automatisch berechnet." }[lang]}
@@ -650,7 +651,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                             { label: "WF", val: `×${CHAIN_WEAVES.find(w => w.id === weaveId)?.weaveFactor ?? " - "}` },
                           ].map(d => (
                             <div key={d.label} className="text-center p-1.5 rounded-lg bg-neutral-800 border border-white/8">
-                              <div className="text-[9px] text-neutral-400">{d.label}</div>
+                              <div className="text-xs text-neutral-400">{d.label}</div>
                               <div className="text-xs text-amber-400 font-bold">{d.val}</div>
                             </div>
                           ))}
@@ -658,7 +659,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                       )}
                       {/* Waste summary */}
                       {result && result.type === "calculated" && result.fromStock && result.wasteG > 0 && (
-                        <div className="text-[11px] text-neutral-200 border-t border-white/10 pt-2">
+                        <div className="text-xs text-neutral-200 border-t border-white/10 pt-2">
                           {{ pl: `Z ${stockMassG} g kruszcu powstanie ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g gotowego łańcuszka - ${result.wasteG.toFixed(1)} g to nieodwracalne straty technologiczne: ubytek na topieniu (utlenianie miedzi i zgar), odpady przy ciągnieniu drutu oraz szlam i trociny z polerowania.`,
                              en: `From ${stockMassG} g you'll receive ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g as a finished chain - ${result.wasteG.toFixed(1)} g is irreversible process loss: melt/fire loss (copper oxidation + slag), wire-drawing offcuts, and polishing swarf + filings.`,
                              de: `Von ${stockMassG} g erhalten Sie ${result.netMassG?.toFixed(1) ?? (stockMassG - result.wasteG).toFixed(1)} g als fertige Kette - ${result.wasteG.toFixed(1)} g sind unwiederbringliche Prozessverluste: Schmelzverlust (Kupferoxidation + Schlacke), Drahtzieh-Verschnitt sowie Polierschlamm + Feilspäne.` }[lang]}
@@ -711,7 +712,7 @@ export default function JewelryCalc({ lang = "pl" }) {
           {/* Weave selection - chain types only */}
           {isChainType(typeId) && (
             <CalcCard stepNum={step()} label={{ pl: "Splot łańcuszka", en: "Chain weave", de: "Kettenmuster" }[lang]}>
-              <p className="text-[10px] text-neutral-500 mb-2">
+              <p className="text-xs text-neutral-500 mb-2">
                 {{ pl: "Kliknij dwukrotnie na zdjęcie - powiększ podgląd splotu", en: "Double-click an image to preview the weave pattern", de: "Doppelklick auf ein Bild zum Vergrößern" }[lang]}
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
@@ -737,16 +738,16 @@ export default function JewelryCalc({ lang = "pl" }) {
                       <div className="w-full aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
                         onDoubleClick={e => { e.stopPropagation(); if (w.img) setWeaveModal(w.id); }}>
                         {w.img ? (
-                          <img src={w.img} alt={t(w.label, lang)} loading="lazy"
+                          <Obraz sizes="(min-width: 640px) 180px, 40vw" src={w.img} alt={t(w.label, lang)} loading="lazy"
                             className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
                         ) : (
                           <span className="text-2xl opacity-40">⛓</span>
                         )}
                       </div>
-                      <span className={`text-[10px] sm:text-[11px] text-center leading-tight ${active ? "text-amber-300 font-medium" : "text-neutral-400"}`}>
+                      <span className={`text-xs sm:text-xs text-center leading-tight ${active ? "text-amber-300 font-medium" : "text-neutral-400"}`}>
                         {t(w.label, lang)}
                       </span>
-                      <span className="text-[9px] text-neutral-500">×{w.weaveFactor}</span>
+                      <span className="text-xs text-neutral-500">×{w.weaveFactor}</span>
                     </button>
                   );
                 })}
@@ -770,7 +771,7 @@ export default function JewelryCalc({ lang = "pl" }) {
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm"
                 onClick={() => setWeaveModal(null)}>
                 <div className="relative max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
-                  <img src={wm.img} alt={t(wm.label, lang)}
+                  <Obraz sizes="(min-width: 640px) 180px, 40vw" src={wm.img} alt={t(wm.label, lang)}
                     className="w-full rounded-2xl shadow-2xl shadow-black/60" />
                   <div className="mt-4 text-center">
                     <p className="text-white font-bold text-xl">{t(wm.label, lang)}</p>
@@ -813,16 +814,16 @@ export default function JewelryCalc({ lang = "pl" }) {
                       }`}>
                       <div className="w-full aspect-square rounded-lg overflow-hidden bg-black">
                         {c.img ? (
-                          <img src={c.img} alt={t(c.label, lang)} loading="lazy"
+                          <Obraz sizes="(min-width: 640px) 180px, 40vw" src={c.img} alt={t(c.label, lang)} loading="lazy"
                             className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
                         ) : (
                           <span className="text-2xl opacity-40 flex items-center justify-center h-full">🔗</span>
                         )}
                       </div>
-                      <span className={`text-[10px] sm:text-[11px] text-center leading-tight ${active ? "text-amber-300 font-medium" : "text-neutral-400"}`}>
+                      <span className={`text-xs sm:text-xs text-center leading-tight ${active ? "text-amber-300 font-medium" : "text-neutral-400"}`}>
                         {t(c.label, lang)}
                       </span>
-                      <span className="text-[9px] text-neutral-500">+{c.cost} PLN</span>
+                      <span className="text-xs text-neutral-500">+{c.cost} PLN</span>
                     </button>
                   );
                 })}
@@ -845,13 +846,13 @@ export default function JewelryCalc({ lang = "pl" }) {
                       m.img ? "bg-black" : "bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center"
                     }`}>
                       {m.img ? (
-                        <img src={m.img} alt={label} loading="lazy"
+                        <Obraz sizes="(min-width: 640px) 180px, 40vw" src={m.img} alt={label} loading="lazy"
                           className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
                       ) : (
                         <span className="text-2xl opacity-60">⬡</span>
                       )}
                     </div>
-                    <span className={`text-[10px] sm:text-[11px] text-center leading-tight break-all line-clamp-2 ${
+                    <span className={`text-xs sm:text-xs text-center leading-tight break-all line-clamp-2 ${
                       active ? "text-amber-300 font-medium" : "text-neutral-400"
                     }`}>{label}</span>
                   </button>
@@ -919,7 +920,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     }`}>
                     {m.img && (
                       <div className="absolute inset-0 overflow-hidden">
-                        <img src={m.img} alt={t(m.label, lang)} loading="lazy"
+                        <Obraz sizes="(min-width: 640px) 180px, 40vw" src={m.img} alt={t(m.label, lang)} loading="lazy"
                           className={`w-full h-full object-cover transition-all duration-500 ${active ? "scale-105" : "tile-dim opacity-60 group-hover:opacity-100 group-hover:scale-105"}`} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/25" />
                         {active && <div className="absolute inset-0 bg-amber-400/10 mix-blend-overlay" />}
@@ -927,7 +928,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     )}
                     <div className="relative p-3 h-full min-h-[140px] flex flex-col justify-end">
                       <div className={`text-xs sm:text-sm font-bold mb-1 drop-shadow-lg tile-ink ${active ? "text-amber-300" : "text-white"}`}>{t(m.label, lang)}</div>
-                      <div className="text-[10px] text-neutral-300 break-words drop-shadow-md tile-ink">{t(m.desc, lang)}</div>
+                      <div className="text-xs text-neutral-300 break-words drop-shadow-md tile-ink">{t(m.desc, lang)}</div>
                     </div>
                   </button>
                 );
@@ -970,10 +971,10 @@ export default function JewelryCalc({ lang = "pl" }) {
                         : "border-white/10 bg-white/[0.02] hover:border-white/20"
                     }`}>
                     <div className="w-full aspect-square rounded-lg overflow-hidden bg-black">
-                      <img src={pl.img} alt={label} loading="lazy"
+                      <Obraz sizes="(min-width: 640px) 180px, 40vw" src={pl.img} alt={label} loading="lazy"
                         className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`} />
                     </div>
-                    <span className={`text-[10px] sm:text-[11px] text-center leading-tight break-all line-clamp-2 ${
+                    <span className={`text-xs sm:text-xs text-center leading-tight break-all line-clamp-2 ${
                       active ? "text-amber-300 font-medium" : "text-neutral-400"
                     }`}>{label}</span>
                   </button>
@@ -986,7 +987,7 @@ export default function JewelryCalc({ lang = "pl" }) {
             ? ({ pl: "Grawerowanie oczka sygnetu", en: "Signet bezel engraving", de: "Siegelkopf-Gravur" }[lang] ?? l.engraving)
             : l.engraving}>
             {typeId === "signet" && (
-              <p className="text-[11px] text-neutral-500 mb-3">
+              <p className="text-xs text-neutral-500 mb-3">
                 {{ pl: "Grawer nakładany jest bezpośrednio na oczko sygnetu - może współistnieć z kamieniem lub zastąpić go.",
                    en: "Engraving is applied directly to the signet bezel - it can coexist with a stone or replace it.",
                    de: "Gravur wird direkt auf den Siegelkopf aufgetragen - kann mit einem Stein kombiniert werden oder ihn ersetzen." }[lang]}
@@ -1004,7 +1005,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     }`}>
                     <span className="text-lg leading-none">{opt.cost === 0 ? "∅" : "✦"}</span>
                     <span className="leading-tight break-words">{t(opt.label, lang)}</span>
-                    {opt.cost > 0 && <span className="text-[9px] opacity-60">+{opt.cost} PLN</span>}
+                    {opt.cost > 0 && <span className="text-xs opacity-60">+{opt.cost} PLN</span>}
                   </button>
                 );
               })}
@@ -1045,7 +1046,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     }`}>
                       {jt.img ? (
                         <>
-                          <img src={jt.img} alt={label} loading="lazy"
+                          <Obraz sizes="(min-width: 640px) 180px, 40vw" src={jt.img} alt={label} loading="lazy"
                             className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`}
                             style={{ filter: "grayscale(30%) sepia(20%)" }} />
                           <div className="absolute inset-0 bg-sky-900/30 mix-blend-multiply" />
@@ -1054,7 +1055,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                         <span className="text-2xl opacity-40">?</span>
                       )}
                     </div>
-                    <span className={`text-[11px] sm:text-xs text-center leading-tight break-words ${
+                    <span className={`text-xs sm:text-xs text-center leading-tight break-words ${
                       active ? "text-sky-300 font-medium" : "text-neutral-400"
                     }`}>{label}</span>
                   </button>
@@ -1085,12 +1086,12 @@ export default function JewelryCalc({ lang = "pl" }) {
                         : "border-white/10 bg-white/[0.02] hover:border-white/20"
                     }`}>
                     <div className="w-full aspect-square rounded-lg overflow-hidden relative bg-black">
-                      <img src={m.img} alt={label} loading="lazy"
+                      <Obraz sizes="(min-width: 640px) 180px, 40vw" src={m.img} alt={label} loading="lazy"
                         className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`}
                         style={{ filter: "grayscale(30%) sepia(20%)" }} />
                       <div className="absolute inset-0 bg-sky-900/30 mix-blend-multiply" />
                     </div>
-                    <span className={`text-[10px] sm:text-[11px] text-center leading-tight break-words ${
+                    <span className={`text-xs sm:text-xs text-center leading-tight break-words ${
                       active ? "text-sky-300 font-medium" : "text-neutral-400"
                     }`}>{label}</span>
                   </button>
@@ -1136,7 +1137,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                     }`}>
                       {jt.img ? (
                         <>
-                          <img src={jt.img} alt={label} loading="lazy"
+                          <Obraz sizes="(min-width: 640px) 180px, 40vw" src={jt.img} alt={label} loading="lazy"
                             className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`}
                             style={{ filter: "grayscale(45%) contrast(110%) sepia(10%)" }} />
                           <div className="absolute inset-0 bg-orange-900/25 mix-blend-multiply" />
@@ -1145,7 +1146,7 @@ export default function JewelryCalc({ lang = "pl" }) {
                         <span className="text-2xl opacity-40">?</span>
                       )}
                     </div>
-                    <span className={`text-[11px] sm:text-xs text-center leading-tight break-words ${
+                    <span className={`text-xs sm:text-xs text-center leading-tight break-words ${
                       active ? "text-orange-300 font-medium" : "text-neutral-400"
                     }`}>{label}</span>
                   </button>
@@ -1177,12 +1178,12 @@ export default function JewelryCalc({ lang = "pl" }) {
                         : "border-white/10 bg-white/[0.02] hover:border-white/20"
                     }`}>
                     <div className="w-full aspect-square rounded-lg overflow-hidden relative bg-black">
-                      <img src={m.img} alt={label} loading="lazy"
+                      <Obraz sizes="(min-width: 640px) 180px, 40vw" src={m.img} alt={label} loading="lazy"
                         className={`w-full h-full object-cover transition-all duration-300 ${active ? "scale-105" : "tile-dim opacity-55 group-hover:opacity-100 group-hover:scale-105"}`}
                         style={{ filter: "grayscale(45%) contrast(110%) sepia(10%)" }} />
                       <div className="absolute inset-0 bg-orange-900/25 mix-blend-multiply" />
                     </div>
-                    <span className={`text-[10px] sm:text-[11px] text-center leading-tight break-words ${
+                    <span className={`text-xs sm:text-xs text-center leading-tight break-words ${
                       active ? "text-orange-300 font-medium" : "text-neutral-400"
                     }`}>{label}</span>
                   </button>
@@ -1207,7 +1208,7 @@ export default function JewelryCalc({ lang = "pl" }) {
       <div className="rounded-2xl border-2 border-amber-400/20 bg-gradient-to-br from-white/[0.03] to-transparent p-6 mt-2">
         <ResultHeader lang={lang} binding={bindingGrosze != null} />
         <ResultDisplay result={result} lang={lang} hideRange={bindingGrosze != null} binding={bindingGrosze} />
-        <div className="mt-3 text-[10px] text-neutral-400 text-center italic">{l.priceSource}</div>
+        <div className="mt-3 text-xs text-neutral-400 text-center italic">{l.priceSource}</div>
         <p className="text-xs text-neutral-500 mt-1 text-center">{RATE_NOTE[lang] || RATE_NOTE.pl}</p>
       </div>
 
