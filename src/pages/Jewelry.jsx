@@ -26,6 +26,7 @@ import {
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 import HeroObraz from "../components/HeroObraz.jsx";
+import { opisObrazu } from "../data/opisyObrazow.js";
 
 const icons = [Gem, Sparkles, Palette, Heart, Wand2, Crown];
 
@@ -172,7 +173,7 @@ export default function Jewelry() {
       <section className="relative overflow-hidden min-h-[400px]">
         <HeroObraz
           nazwa="hero-jewelry"
-          alt="AEJaCA Jewelry"
+          alt={opisObrazu("hero-jewelry", lang)}
           className="absolute inset-0 w-full h-full object-cover"
           width={1920}
           height={1080}

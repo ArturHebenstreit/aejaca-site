@@ -7,6 +7,7 @@ import Breadcrumb from "../components/Breadcrumb.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 import HeroObraz from "../components/HeroObraz.jsx";
+import { opisObrazu } from "../data/opisyObrazow.js";
 
 const LABELS = {
   pl: {
@@ -127,7 +128,7 @@ export default function ToolsStudio() {
         <section className="relative overflow-hidden min-h-[360px]">
           <HeroObraz
             nazwa="hero-toolstudio"
-            alt="Narzędzia dla makerów, AEJaCA sTuDiO"
+            alt={opisObrazu("hero-toolstudio", lang)}
             className="absolute inset-0 w-full h-full object-cover"
             width={1024}
             height={572}

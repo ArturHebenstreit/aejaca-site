@@ -9,6 +9,7 @@ related:
   - src/i18n/en.js
   - src/i18n/de.js
   - src/components/Navbar.jsx
+  - src/data/opisyObrazow.js
   - scripts/check-nazwy-dostepne.mjs
   - scripts/check-slownik-jako-funkcja.mjs
   - scripts/check-menu-jezyka.mjs
@@ -71,8 +72,25 @@ Przycisk języka w wersji szerokiej pokazuje "PL" i dostał ukryty dopisek
 zamiast `aria-label`. Nazwa dostępna musi zawierać widoczny napis (WCAG 2.5.3),
 a `aria-label` by go nadpisał.
 
-Zostaje dług, świadomie nietknięty: 21 tekstów `alt` wpisanych na sztywno.
-Część to nazwy własne, które w każdym języku brzmią tak samo, ale kilkanaście
-to zdania po polsku albo po angielsku na obrazach stron narzędziowych. Dobry
-`alt` nie jest tłumaczeniem złego, więc to osobna praca redakcyjna, nie
-mechaniczna. Do decyzji właściciela.
+`alt` objęty tą samą zasadą (decyzja właściciela, 2026-08-28). Opisy stoją
+w `src/data/opisyObrazow.js`, **raz na obraz, nie raz na stronę**, bo ten sam
+obraz bywa użyty w kilku miejscach: `hero-toolstudio` na trzech stronach,
+`hero-toolsjewelry` na trzech. Opis przypięty do strony rozjeżdża się przy
+pierwszej edycji jednej z nich, a że tego napisu nie widać, nikt tego nie
+zgłosi. Trzynaście opisów napisano od nowa po obejrzeniu każdego obrazu,
+zamiast tłumaczyć poprzednie, bo kilka z nich powtarzało tytuł strony
+z dopiskiem marki i nie mówiło nic o tym, co widać.
+
+Pusty `alt` jest poprawną odpowiedzią dla ozdoby: znak marki na stronie
+głównej stoi nad nagłówkiem, który mówi to samo słowami, więc czytnik ma go
+pominąć zamiast powtarzać markę drugi raz.
+
+Wyjątek na liście dozwolonych: `alt="AEJaCA"` przy logo. Kanon dla znaku
+firmowego mówi, że `alt` to nazwa organizacji, a ta jest jedna we wszystkich
+językach.
+
+Przy okazji tego przeglądu wyszły dwa błędy w niemieckim w galerii `/about/`
+("im AEJaCA-Werkstatt" zamiast "in der", oraz "Ankblock", słowo nieistniejące
+w niemieckim) i jeden duplikat: `hero-home-studio.webp` i
+`hero-print-settings.webp` to ten sam plik bajt w bajt, więc generujemy dla
+niego dwa komplety wariantów. Duplikat zostaje do sprzątnięcia osobno.

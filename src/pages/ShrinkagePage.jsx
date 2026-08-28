@@ -9,6 +9,7 @@ import { SITE } from "../seo/seoData.js";
 import ToolReviewCTA from "../components/ToolReviewCTA.jsx";
 import HeroObraz from "../components/HeroObraz.jsx";
 import { Link } from "../i18n/nav.jsx";
+import { opisObrazu } from "../data/opisyObrazow.js";
 
 const LABELS = {
   pl: {
@@ -150,7 +151,7 @@ export default function ShrinkagePage() {
         <section className="relative overflow-hidden min-h-[340px]">
           <HeroObraz
             nazwa="hero-toolstudio"
-            alt="Kalkulator kompensacji skurczu odlewniczego, AEJaCA sTuDiO"
+            alt={opisObrazu("hero-toolstudio", lang)}
             className="absolute inset-0 w-full h-full object-cover"
             width={1024}
             height={572}

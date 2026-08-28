@@ -30,9 +30,9 @@ const MAX_ZOOM = 24;
 const MARGINES = 0.88;
 
 const L = {
-  pl: { hint: "Kółko myszy przybliża, przeciąganie przesuwa", reset: "Dopasuj" },
-  en: { hint: "Scroll to zoom, drag to pan", reset: "Fit" },
-  de: { hint: "Mausrad zoomt, Ziehen verschiebt", reset: "Einpassen" },
+  pl: { hint: "Kółko myszy przybliża, przeciąganie przesuwa", reset: "Dopasuj", opis: "Podgląd wgranego rysunku" },
+  en: { hint: "Scroll to zoom, drag to pan", reset: "Fit", opis: "Preview of the uploaded drawing" },
+  de: { hint: "Mausrad zoomt, Ziehen verschiebt", reset: "Einpassen", opis: "Vorschau der hochgeladenen Zeichnung" },
 };
 
 /**
@@ -131,7 +131,7 @@ export default function VectorPreview({ src, contentBox = null, canvasBox = null
       >
         <img
           src={src}
-          alt="SVG"
+          alt={t.opis}
           draggable={false}
           className="absolute inset-0 w-full h-full select-none"
           style={{

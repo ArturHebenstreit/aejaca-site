@@ -25,6 +25,7 @@ import {
 } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 import HeroObraz from "../components/HeroObraz.jsx";
+import { opisObrazu } from "../data/opisyObrazow.js";
 
 const techIcons = [Cpu, Printer, Droplet, Zap, Layers, Box, Wrench];
 
@@ -165,7 +166,7 @@ export default function Studio() {
       <section className="relative overflow-hidden min-h-[400px]">
         <HeroObraz
           nazwa="hero-studio"
-          alt="AEJaCA sTuDiO"
+          alt={opisObrazu("hero-studio", lang)}
           className="absolute inset-0 w-full h-full object-cover"
           width={1920}
           height={1080}

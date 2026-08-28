@@ -22,6 +22,7 @@ import { GOOGLE_BUSINESS, REVIEWS, TRUSTPILOT_BUSINESS } from "../data/googleRev
 import { reviewCountLabel } from "../utils/reviewCount.js";
 import HeroObraz from "../components/HeroObraz.jsx";
 import Obraz from "../components/Obraz.jsx";
+import { opisObrazu } from "../data/opisyObrazow.js";
 
 // Prog, od ktorego Trustpilot pomaga zamiast szkodzic. Ponizej niego odznaka
 // obok "5,0 z 25 opinii Google" kaze czytelnikowi porownac liczby i wyciagnac
@@ -121,7 +122,7 @@ export default function Home() {
               <div className="aspect-[3/4] md:aspect-square relative overflow-hidden">
                 <HeroObraz
                   nazwa="hero-home-jewelry"
-                  alt="AEJaCA Jewelry"
+                  alt={opisObrazu("hero-home-jewelry", lang)}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   width={768}
                   height={1024}
@@ -146,7 +147,7 @@ export default function Home() {
               <div className="aspect-[3/4] md:aspect-square relative overflow-hidden">
                 <HeroObraz
                   nazwa="hero-home-studio"
-                  alt="AEJaCA sTuDiO"
+                  alt={opisObrazu("hero-print-settings", lang)}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   width={768}
                   height={1024}
@@ -275,7 +276,7 @@ export default function Home() {
       <section className="py-12 px-4 text-center bg-neutral-950">
         <div ref={brandRef} className="reveal max-w-3xl mx-auto">
           {/* Below-the-fold image: lazy loaded to save bandwidth, no LCP impact */}
-          <img src="/brand-sign.webp" alt="AEJaCA brand mark" loading="lazy" decoding="async" className="w-36 h-36 mx-auto mb-8 brightness-0 invert opacity-80 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]" />
+          <img src="/brand-sign.webp" alt="" loading="lazy" decoding="async" className="w-36 h-36 mx-auto mb-8 brightness-0 invert opacity-80 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]" />
           <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-6">{h.brandHeading}</h2>
           <p className="text-neutral-400 text-lg leading-relaxed">{h.brandText}</p>
           {/* Odznaki zaufania stoja juz w hero i wracaja przy opiniach nizej.

@@ -7,6 +7,7 @@ import Breadcrumb from "../components/Breadcrumb.jsx";
 import { buildWebPageSchema, buildBreadcrumbSchema } from "../seo/schemas.js";
 import { SITE, getSEO } from "../seo/seoData.js";
 import HeroObraz from "../components/HeroObraz.jsx";
+import { opisObrazu } from "../data/opisyObrazow.js";
 
 const LABELS = {
   pl: {
@@ -126,7 +127,7 @@ export default function ToolsJewelry() {
         <section className="relative overflow-hidden min-h-[360px]">
           <HeroObraz
             nazwa="hero-toolsjewelry"
-            alt="Narzędzia dla jubilerów, AEJaCA"
+            alt={opisObrazu("hero-toolsjewelry", lang)}
             className="absolute inset-0 w-full h-full object-cover"
             width={1024}
             height={572}

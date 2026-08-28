@@ -163,8 +163,11 @@ Wspólne konwencje inżynierskie: patrz `PROJECT_RULES.md`, sekcja `Konwencje in
 - **Każdy napis docierający do człowieka idzie ze słownika, także niewidoczny.**
   `aria-label` wpisany wprost jest zawsze w jednym języku, czyli dla dwóch
   trzecich odwiedzających w złym. Pilnuje `scripts/check-nazwy-dostepne.mjs`,
-  łapie też nazwę sklejoną z szablonu. Wyjątek: nazwa języka zostaje w swoim
-  języku ("Deutsch", nie "niemiecki"). Decyzja: ADR-0025.
+  łapie też nazwę sklejoną z szablonu. `alt` bierze się z
+  `opisObrazu("klucz", lang)`, bo opis należy do obrazu, a nie do strony: ten
+  sam obraz stoi na kilku stronach. Obraz ozdobny ma `alt=""`. Wyjątek: nazwa
+  języka zostaje w swoim języku ("Deutsch", nie "niemiecki"), a `alt` logo to
+  nazwa organizacji. Decyzja: ADR-0025.
 
 - **Kod za kliknięciem jest poza zasięgiem prerenderu i przeglądu stron.**
   Prerender rysuje 300 stron, `scripts/audit-pages.mjs` je ogląda, ale obie

@@ -67,6 +67,13 @@ widać go na ekranie.
   jest zawsze w jednym języku, czyli dla dwóch trzecich odwiedzających w złym.
   Dotyczy to również nazwy sklejonej z szablonu. Pilnuje
   `scripts/check-nazwy-dostepne.mjs`, bramka w buildzie.
+- **Opis obrazu należy do obrazu, nie do strony.** `alt` bierze się
+  z `opisObrazu("klucz", lang)` (`src/data/opisyObrazow.js`), bo ten sam obraz
+  bywa na kilku stronach i opis przypięty do strony po cichu się rozjedzie.
+  Obraz ozdobny ma `alt=""`, czyli "pomiń mnie". Piszemy, co widać, krótko, bez
+  "zdjęcie" na początku i bez upychania słów kluczowych: `alt` powtarzający
+  tytuł strony z dopiskiem marki nie mówi niewidomemu niczego, bo tytuł
+  przeczytał chwilę wcześniej. Ta sama bramka.
 - **Słownik z `useLanguage()` jest obiektem: `t.nav.currency`.** Zapis funkcyjny
   `t("nav.currency")` przechodzi build i lint, a w przeglądarce rzuca wyjątkiem
   w trakcie renderu, więc React odmontowuje całe drzewo i zostaje biały ekran.

@@ -23,6 +23,12 @@ const KORZEN = join(dirname(fileURLToPath(import.meta.url)), "..", "src");
 // Nazwa wpisana wprost, czyli w cudzyslowie zamiast w klamrach.
 const NA_SZTYWNO = /aria-label="([^"]*)"/g;
 
+// `alt` czyta czytnik ekranu i widzi kazdy, komu obraz sie nie wczyta, wiec
+// obowiazuje go to samo. Pusty `alt` jest w porzadku i znaczy "ozdoba, pomin".
+// Opisy stoja w `src/data/opisyObrazow.js`, raz na obraz, bo ten sam obraz
+// bywa na kilku stronach i opis przypiety do strony by sie rozjechal.
+const ALT_NA_SZTYWNO = /\balt="([^"]+)"/g;
+
 // Nazwa sklejona z szablonu. `aria-label={`${ocena} out of 5 stars`}` wyglada
 // jak kod, a jest angielskim napisem, ktory szedl tak samo na polska i na
 // niemiecka wersje strony. Wycinamy wstawki `${...}` i patrzymy, czy w reszcie
@@ -30,9 +36,11 @@ const NA_SZTYWNO = /aria-label="([^"]*)"/g;
 const Z_SZABLONU = /aria-label=\{`([^`]*)`\}/g;
 const WYRAZ = /\p{L}{2,}/u;
 
-// Nazwy wlasne, ktore w kazdym jezyku brzmia tak samo. Puste do czasu, az
-// naprawde takiej potrzeby nie bedzie: dopisujac tu cokolwiek, napisz dlaczego.
-const WYJATKI = new Set([]);
+// Nazwy wlasne, ktore w kazdym jezyku brzmia tak samo. Dopisujac tu cokolwiek,
+// napisz dlaczego.
+//   "AEJaCA" - `alt` znaku firmowego w pasku i w stopce. Kanon dla logo mowi,
+//   ze `alt` to nazwa organizacji, a ta jest jedna we wszystkich jezykach.
+const WYJATKI = new Set(["AEJaCA"]);
 
 function pliki(katalog) {
   const wynik = [];
@@ -51,6 +59,10 @@ for (const plik of pliki(KORZEN)) {
       if (WYJATKI.has(nazwa)) continue;
       potkniecia.push(`${plik.replace(/.*\/src\//, "src/")}:${i + 1}  aria-label="${nazwa}"`);
     }
+    for (const [, opis] of linia.matchAll(ALT_NA_SZTYWNO)) {
+      if (WYJATKI.has(opis)) continue;
+      potkniecia.push(`${plik.replace(/.*\/src\//, "src/")}:${i + 1}  alt="${opis}"`);
+    }
     for (const [, szablon] of linia.matchAll(Z_SZABLONU)) {
       const bezWstawek = szablon.replace(/\$\{[^}]*\}/g, " ");
       if (!WYRAZ.test(bezWstawek)) continue;
@@ -62,7 +74,8 @@ for (const plik of pliki(KORZEN)) {
 if (potkniecia.length) {
   console.error("Nazwa dla czytnika ekranu wpisana na sztywno, wiec w jednym jezyku:");
   potkniecia.forEach((p) => console.error("  " + p));
-  console.error("\nWez ja ze slownika: `aria-label={t.a11y.klucz}`.");
+  console.error("\nWez ja ze slownika: `aria-label={t.a11y.klucz}`,");
+  console.error("a opis obrazu z `opisObrazu(\"klucz\", lang)`. Obraz ozdobny ma `alt=\"\"`.");
   process.exit(1);
 }
 
