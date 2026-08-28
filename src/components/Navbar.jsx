@@ -158,7 +158,7 @@ export default function Navbar() {
         ))}
 
         <div className="border-t border-white/10 px-4 pt-2.5 pb-3">
-          <div className="text-neutral-500 text-xs mb-1.5">{t("nav.currency")}</div>
+          <div className="text-neutral-500 text-xs mb-1.5">{t.nav.currency}</div>
           <div className="flex gap-1.5">
             {["PLN", "EUR"].map((w) => (
               <button
@@ -173,7 +173,7 @@ export default function Navbar() {
               </button>
             ))}
           </div>
-          <p className="text-neutral-600 text-xs leading-snug mt-2">{t("nav.currencyHint")}</p>
+          <p className="text-neutral-600 text-xs leading-snug mt-2">{t.nav.currencyHint}</p>
         </div>
       </div>
     );
