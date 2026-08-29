@@ -22,7 +22,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Link } from "../i18n/nav.jsx";
-import { Loader2, Tag, Check, AlertTriangle, ShieldCheck, ArrowRight, Coins } from "lucide-react";
+import { Loader2, Tag, Check, CheckCircle2, Clock, AlertTriangle, ShieldCheck, ArrowRight, Coins } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import SEOHead from "../seo/SEOHead.jsx";
 import LockerPicker from "../components/shop/LockerPicker.jsx";
@@ -86,9 +86,17 @@ const UI = {
     validUntil: "Oferta obowiązuje do",
     expiredTitle: "Ta oferta straciła ważność",
     expiredDesc: "Kwota przestała obowiązywać, więc nie możemy jej teraz przyjąć. Napisz do nas, wystawimy nową.",
-    doneTitle: "Ta oferta ma już zamówienie",
-    doneDesc: "Zamówienie zostało złożone. Stan i płatność sprawdzisz na stronie zamówienia.",
+    doneTitle: "Oferta opłacona i zlecona",
+    doneDesc: "Nie ma tu już nic do zapłacenia. Stan realizacji sprawdzisz na stronie zamówienia.",
     goToOrder: "Przejdź do zamówienia",
+    partialTitle: "Część tej oferty jest już zlecona",
+    partialDesc: "Poniżej został wyłącznie ten zakres, którego jeszcze nie zamawiałeś. Możesz zapłacić za niego teraz albo wrócić tu później, dopóki oferta jest ważna.",
+    yourOrders: "Zamówienia z tej oferty",
+    stateSettled: "Zlecone",
+    stateReserved: "Czeka na zapłatę",
+    orderNo: "Zamówienie {ref}",
+    groupClosed: "Wybór w tej grupie jest już zlecony, więc pozostałe propozycje są nieaktualne.",
+    nothingPicked: "Nic nie jest zaznaczone. Zaznacz to, za co chcesz zapłacić.",
     discount: "Kod rabatowy",
     discountPlaceholder: "np. AEJ-XXXXXX",
     check: "Sprawdź",
@@ -160,9 +168,17 @@ const UI = {
     validUntil: "The offer is valid until",
     expiredTitle: "This offer has expired",
     expiredDesc: "The amount no longer stands, so we cannot accept it now. Write to us and we will issue a new one.",
-    doneTitle: "This offer already has an order",
-    doneDesc: "The order has been placed. You can check its status and payment on the order page.",
+    doneTitle: "Offer paid and in progress",
+    doneDesc: "There is nothing left to pay for here. You can follow the work on the order page.",
     goToOrder: "Go to the order",
+    partialTitle: "Part of this offer is already ordered",
+    partialDesc: "What you see below is only the part you have not ordered yet. Pay for it now, or come back later while the offer is still valid.",
+    yourOrders: "Orders from this offer",
+    stateSettled: "Ordered",
+    stateReserved: "Awaiting payment",
+    orderNo: "Order {ref}",
+    groupClosed: "The choice in this group has already been ordered, so the other proposals no longer apply.",
+    nothingPicked: "Nothing is ticked. Tick what you want to pay for.",
     discount: "Discount code",
     discountPlaceholder: "e.g. AEJ-XXXXXX",
     check: "Check",
@@ -234,9 +250,17 @@ const UI = {
     validUntil: "Das Angebot gilt bis",
     expiredTitle: "Dieses Angebot ist abgelaufen",
     expiredDesc: "Der Betrag gilt nicht mehr, wir können ihn jetzt nicht annehmen. Schreiben Sie uns, wir stellen ein neues aus.",
-    doneTitle: "Zu diesem Angebot gibt es bereits eine Bestellung",
-    doneDesc: "Die Bestellung wurde aufgegeben. Status und Zahlung sehen Sie auf der Bestellseite.",
+    doneTitle: "Angebot bezahlt und beauftragt",
+    doneDesc: "Hier ist nichts mehr zu bezahlen. Den Stand der Arbeit sehen Sie auf der Bestellseite.",
     goToOrder: "Zur Bestellung",
+    partialTitle: "Ein Teil dieses Angebots ist bereits beauftragt",
+    partialDesc: "Unten steht nur noch das, was Sie noch nicht bestellt haben. Sie können es jetzt bezahlen oder später wiederkommen, solange das Angebot gilt.",
+    yourOrders: "Bestellungen aus diesem Angebot",
+    stateSettled: "Beauftragt",
+    stateReserved: "Wartet auf Zahlung",
+    orderNo: "Bestellung {ref}",
+    groupClosed: "Die Wahl in dieser Gruppe ist bereits beauftragt, die übrigen Vorschläge gelten daher nicht mehr.",
+    nothingPicked: "Nichts ist angehakt. Haken Sie an, wofür Sie zahlen möchten.",
     discount: "Rabattcode",
     discountPlaceholder: "z. B. AEJ-XXXXXX",
     check: "Prüfen",
@@ -297,9 +321,74 @@ function Wiersz({ it, money, u, bezIlosci = false }) {
         {it.description && (
           <p className="text-neutral-500 text-xs mt-1 whitespace-pre-wrap">{it.description}</p>
         )}
+        {/* Pozycja juz sprzedana mowi to wprost, razem z numerem zamowienia:
+            klient sprawdza po nim stan realizacji i to jedyny powod, dla
+            ktorego numer tu stoi. */}
+        {it.state && it.state !== "available" && (
+          <div className={`mt-1.5 flex items-center gap-1.5 text-xs ${it.state === "settled" ? "text-emerald-300" : "text-amber-300"}`}>
+            {it.state === "settled" ? <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> : <Clock className="w-3.5 h-3.5 shrink-0" />}
+            <span>
+              {it.state === "settled" ? u.stateSettled : u.stateReserved}
+              {it.orderRef ? ` · ${u.orderNo.replace("{ref}", it.orderRef)}` : ""}
+            </span>
+          </div>
+        )}
       </div>
       <div className="text-neutral-200 text-sm shrink-0">{it.lineGrosze != null ? money(it.lineGrosze) : "-"}</div>
     </>
+  );
+}
+
+/**
+ * Pozycja, przy ktorej nie ma juz czego wybierac.
+ *
+ * Wyszarzone pole zaznaczania znaczy "nie wolno ci zmienic wyboru", a nie
+ * "to jest juz zrobione", wiec kontrolki tu po prostu nie ma. `ton` odroznia
+ * rzecz zlecona od propozycji, ktora odpadla razem z wyborem w swojej grupie.
+ */
+function PozycjaBezWyboru({ it, money, u, ton }) {
+  const zrobione = ton === "zrobione";
+  return (
+    <div
+      className={`flex items-start gap-3 rounded-lg border p-4 ${
+        zrobione ? "border-emerald-400/25 bg-emerald-400/[0.05]" : "border-white/5 bg-white/[0.01] opacity-50"
+      }`}
+    >
+      <span className="flex items-start justify-between gap-4 flex-1 min-w-0">
+        <Wiersz it={it} money={money} u={u} bezIlosci />
+      </span>
+    </div>
+  );
+}
+
+/** Zamowienia zlozone z tej oferty. Jedna oferta rodzi ich tyle, ile razy klient cos z niej wzial. */
+function ListaZamowien({ zamowienia, u }) {
+  if (!zamowienia.length) return null;
+  return (
+    <div className="mt-3 space-y-1.5">
+      <div className="text-neutral-400 text-xs">{u.yourOrders}</div>
+      {/* Odnosnik niesie NUMER I ZETON. Bez nich strona statusu nie wie, o ktore
+          zamowienie chodzi, i pokazuje stan domyslny, czyli "czekamy na
+          potwierdzenie platnosci": zdanie nieprawdziwe przy zamowieniu
+          rozliczonym miesiac temu i bez zadnej wskazowki, czego dotyczy. */}
+      {zamowienia.map((z) => (
+        <div key={z.orderRef} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+          <span className="font-mono text-neutral-200">{z.orderRef}</span>
+          <span className={`text-xs ${z.paid ? "text-emerald-300" : "text-amber-300"}`}>
+            {z.paid ? u.stateSettled : u.stateReserved}
+          </span>
+          <Link
+            to={{
+              pathname: "/order/status/",
+              search: `?ref=${encodeURIComponent(z.orderRef)}${z.token ? `&token=${encodeURIComponent(z.token)}` : ""}`,
+            }}
+            className="inline-flex items-center gap-1.5 text-emerald-300 text-xs hover:text-emerald-200"
+          >
+            {u.goToOrder} <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -389,12 +478,22 @@ export default function Offer() {
       if (!karta) { karta = { key: klucz, variants: [], options: [] }; karty.push(karta); }
       karta[rodzaj === "variant" ? "variants" : "options"].push(it);
     }
+    // Wariant kupiony zamyka swoja grupe: pozostale byly alternatywami, a nie
+    // rzeczami do dokupienia. Dodatki z tej samej karty zostaja otwarte, bo
+    // polerowanie doklada sie do klucza, ktory klient wlasnie kupil.
+    for (const karta of karty) {
+      karta.rozstrzygnieta = karta.variants.some((v) => v.state && v.state !== "available");
+    }
     return { fixed, karty };
   }, [offer]);
 
-  // Po zlozeniu zamowienia i po terminie uklad jest juz tylko do ogladania:
-  // kwota z zamowienia zostala wyslana do bramki i nie ma jej jak zmienic.
-  const zablokowane = choosing || Boolean(offer?.expired) || Boolean(offer?.orderRef);
+  // Nie zostalo nic do wziecia. Zablokowana jest wtedy CALA oferta; przy
+  // ofercie czesciowo zleconej reszta pozycji dalej sie klika, bo po to tam
+  // zostala.
+  const domkniete = Boolean(offer?.settled);
+  const zamowienia = offer?.orders || [];
+  const czesciowo = !domkniete && zamowienia.length > 0;
+  const zablokowane = choosing || Boolean(offer?.expired) || domkniete;
 
   async function lookup(e) {
     e.preventDefault();
@@ -473,7 +572,12 @@ export default function Offer() {
         ? addr.point.trim().length > 2
         : Boolean(addr.line1.trim() && addr.postalCode.trim() && addr.city.trim());
   const daneOk = Object.keys(validateCustomer(customer)).length === 0;
-  const gotowe = adresOk && daneOk && consents.terms;
+  // Nic nie jest zaznaczone. Przy ofercie nietknietej to stan niemozliwy,
+  // bo serwer nie pozwala jej zostac bez kwoty. Po czesciowym zleceniu jest
+  // za to zwyczajny: klient kupil jeden dodatek, pozostale zostawil odznaczone
+  // i wroci po nie pozniej. Wtedy przycisk gasnie zamiast wysylac zero.
+  const pustyKoszyk = itemsTotal <= 0;
+  const gotowe = adresOk && daneOk && consents.terms && !pustyKoszyk;
 
   async function pay() {
     if (!gotowe) { setTried(true); return; }
@@ -535,7 +639,6 @@ export default function Offer() {
     setTimeout(() => setPaying(false), 8000);
   }
 
-  const zaplacone = Boolean(offer?.orderRef);
 
   return (
     <>
@@ -586,17 +689,27 @@ export default function Offer() {
             <div className="mt-6 space-y-6">
               <div className="text-neutral-500 text-xs font-mono">{u.number}: {offer.quoteRef}</div>
 
-              {zaplacone && (
+              {domkniete && (
                 <div className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-5">
                   <h2 className="text-emerald-300 font-semibold mb-1">{u.doneTitle}</h2>
-                  <p className="text-emerald-300/80 text-sm leading-relaxed mb-3">{u.doneDesc}</p>
-                  <Link to="/order/status/" className="inline-flex items-center gap-2 text-emerald-300 text-sm hover:text-emerald-200">
-                    {u.goToOrder} <ArrowRight className="w-4 h-4" />
-                  </Link>
+                  <p className="text-emerald-300/80 text-sm leading-relaxed">{u.doneDesc}</p>
+                  <ListaZamowien zamowienia={zamowienia} u={u} />
                 </div>
               )}
 
-              {offer.expired && !zaplacone && (
+              {/* Czesc oferty jest zlecona, reszta dalej stoi. To jest stan,
+                  ktorego ta strona do tej pory nie umiala pokazac: pierwsze
+                  zamowienie gasilo cala oferte razem z rzeczami, ktorych nikt
+                  nie kupil. */}
+              {czesciowo && (
+                <div className="rounded-xl border border-sky-400/30 bg-sky-400/10 p-5">
+                  <h2 className="text-sky-300 font-semibold mb-1">{u.partialTitle}</h2>
+                  <p className="text-sky-300/80 text-sm leading-relaxed">{u.partialDesc}</p>
+                  <ListaZamowien zamowienia={zamowienia} u={u} />
+                </div>
+              )}
+
+              {offer.expired && !domkniete && (
                 <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 p-5">
                   <h2 className="text-amber-300 font-semibold mb-1 flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4" /> {u.expiredTitle}
@@ -634,48 +747,68 @@ export default function Offer() {
                     {karta.variants.length > 0 && (
                       <div className="text-neutral-500 text-xs">{u.pickOneHere}</div>
                     )}
-                    {karta.variants.map((it) => (
-                      <label
-                        key={it.id}
-                        className={`flex items-start gap-3 rounded-lg border p-4 cursor-pointer transition-colors ${
-                          it.selected ? "border-amber-400/50 bg-amber-400/[0.06]" : "border-white/10 hover:border-white/25"
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name={`wariant-${karta.key}`}
-                          className="mt-1 accent-amber-400"
-                          checked={Boolean(it.selected)}
-                          disabled={zablokowane}
-                          onChange={() => ustawWybor(it.id, true)}
-                        />
-                        <span className="flex items-start justify-between gap-4 flex-1 min-w-0">
-                          <Wiersz it={it} money={money} u={u} bezIlosci />
-                        </span>
-                      </label>
-                    ))}
+                    {karta.variants.map((it) => {
+                      // Trzy rozne wiersze, bo to trzy rozne zdania: "wybierz",
+                      // "to juz zlecone" i "ta propozycja odpadla".
+                      if (it.state && it.state !== "available") {
+                        return <PozycjaBezWyboru key={it.id} it={it} money={money} u={u} ton="zrobione" />;
+                      }
+                      if (karta.rozstrzygnieta) {
+                        return <PozycjaBezWyboru key={it.id} it={it} money={money} u={u} ton="nieaktualne" />;
+                      }
+                      return (
+                        <label
+                          key={it.id}
+                          className={`flex items-start gap-3 rounded-lg border p-4 cursor-pointer transition-colors ${
+                            it.selected ? "border-amber-400/50 bg-amber-400/[0.06]" : "border-white/10 hover:border-white/25"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name={`wariant-${karta.key}`}
+                            className="mt-1 accent-amber-400"
+                            checked={Boolean(it.selected)}
+                            disabled={zablokowane}
+                            onChange={() => ustawWybor(it.id, true)}
+                          />
+                          <span className="flex items-start justify-between gap-4 flex-1 min-w-0">
+                            <Wiersz it={it} money={money} u={u} bezIlosci />
+                          </span>
+                        </label>
+                      );
+                    })}
+                    {karta.rozstrzygnieta && karta.variants.length > 1 && (
+                      <p className="text-neutral-500 text-xs pt-1">{u.groupClosed}</p>
+                    )}
 
                     {karta.options.length > 0 && (
                       <div className="text-neutral-500 text-xs pt-2">{u.optionsHere}</div>
                     )}
+                    {/* Dodatek kupiony znika z wyboru, ale dodatek stojacy przy
+                        zamknietej grupie wariantow zostaje: doklada sie do rzeczy,
+                        ktora klient wlasnie kupil, i po to tam jest. */}
                     {karta.options.map((it) => (
-                      <label
-                        key={it.id}
-                        className={`flex items-start gap-3 rounded-lg border p-4 cursor-pointer transition-colors ${
-                          it.selected ? "border-amber-400/50 bg-amber-400/[0.06]" : "border-white/10 hover:border-white/25"
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          className="mt-1 accent-amber-400"
-                          checked={Boolean(it.selected)}
-                          disabled={zablokowane}
-                          onChange={() => ustawWybor(it.id, !it.selected)}
-                        />
-                        <span className="flex items-start justify-between gap-4 flex-1 min-w-0">
-                          <Wiersz it={it} money={money} u={u} bezIlosci />
-                        </span>
-                      </label>
+                      it.state && it.state !== "available" ? (
+                        <PozycjaBezWyboru key={it.id} it={it} money={money} u={u} ton="zrobione" />
+                      ) : (
+                        <label
+                          key={it.id}
+                          className={`flex items-start gap-3 rounded-lg border p-4 cursor-pointer transition-colors ${
+                            it.selected ? "border-amber-400/50 bg-amber-400/[0.06]" : "border-white/10 hover:border-white/25"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            className="mt-1 accent-amber-400"
+                            checked={Boolean(it.selected)}
+                            disabled={zablokowane}
+                            onChange={() => ustawWybor(it.id, !it.selected)}
+                          />
+                          <span className="flex items-start justify-between gap-4 flex-1 min-w-0">
+                            <Wiersz it={it} money={money} u={u} bezIlosci />
+                          </span>
+                        </label>
+                      )
                     ))}
                   </div>
                 ))}
@@ -698,7 +831,7 @@ export default function Offer() {
                 )}
               </section>
 
-              {!zaplacone && !offer.expired && (
+              {!domkniete && !offer.expired && (
                 <>
                   {/* --- waluta i droga zaplaty ----------------------------- */}
                   {/* Waluta dotyczy CALEJ oferty i zmienia droge zaplaty, wiec
@@ -931,7 +1064,8 @@ export default function Offer() {
                       <span className="text-neutral-400 text-xs leading-relaxed">{u.waive}</span>
                     </label>
 
-                    {tried && !gotowe && (
+                    {pustyKoszyk && <p className="text-amber-300 text-xs">{u.nothingPicked}</p>}
+                    {tried && !gotowe && !pustyKoszyk && (
                       <p className="text-amber-300 text-xs">
                         {!adresOk ? u.needDelivery : !daneOk ? u.needCustomer : u.needTerms}
                       </p>
@@ -941,7 +1075,7 @@ export default function Offer() {
                     <button
                       type="button"
                       onClick={pay}
-                      disabled={paying}
+                      disabled={paying || pustyKoszyk}
                       className="w-full py-3 rounded-xl bg-amber-400 text-neutral-950 font-medium hover:bg-amber-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       {paying ? (

@@ -2218,6 +2218,19 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
     dokładnie jeden" egzekwuje serwer, bo formularz nie wie o pozycjach dodanych w tym samym zapisie.
   - **Wybór nie jest wiążący aż do zapłaty.** Wiążąca jest dopiero konwersja, która wpisuje do
     zamówienia **wyłącznie pozycje zaznaczone**.
+  - **Zapłata zamyka pozycje, a nie całą ofertę** (od 2026-08-29, ADR-0026). Klient może kupić
+    jeden dodatek dziś, wrócić pod ten sam link i dokupić kolejny, dopóki oferta jest ważna.
+    Pozycja zlecona pokazuje się jako opłacona, razem z numerem swojego zamówienia, i nie da się
+    jej wybrać drugi raz; kwota dotyczy wyłącznie reszty. **Zapłata za wariant zamyka natomiast
+    całą jego grupę**, bo warianty były alternatywami, a nie rzeczami do dokupienia; dodatki
+    stojące przy tej grupie zostają. Z jednej oferty powstaje wtedy kilka zamówień, każde
+    z własnym numerem i tytułem płatności. Termin ważności NIE przedłuża się po częściowej
+    zapłacie: kruszec się rusza, a zapisany kurs jest z chwili wyceny.
+  - **Strona zamówienia pokazuje to samo podsumowanie co mail** (od 2026-08-29): pozycje z kwotami,
+    dostawę, rabat i stan płatności. Wcześniej niosła sam numer i sumę, a wejście bez numeru
+    oznajmiało „czekamy na potwierdzenie płatności", czyli podawało stan zamówienia, którego
+    nigdy nie zobaczyła. Odnośnik z oferty niesie numer i żeton, więc prowadzi do konkretnego
+    zamówienia, a nie na pustą stronę.
   - **Rabat liczy się od zaznaczonego układu**, nie od sumy propozycji, a każda zmiana układu
     kasuje podgląd zniżki: kod sprawdzony dla srebra nie jest obietnicą dla złota.
   - **Mail z ofertą oznacza warianty i dodatki** w nawiasie kwadratowym i mówi, że kwota dotyczy

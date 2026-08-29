@@ -24,7 +24,8 @@
 //   node scripts/test-quote-edit.mjs
 
 import { readFileSync } from "node:fs";
-import { selectedQuoteItems, quoteAmountGrosze, quoteGroups } from "../chat-api/quotes.js";
+import { selectedQuoteItems, quoteAmountGrosze, quoteGroups,
+         stanPozycji, pozycjaWolna, zamknieteGrupy, quoteOpenItems, quoteSettled } from "../chat-api/quotes.js";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -60,17 +61,127 @@ console.log("\n1. Trasy istnieja pojedynczo\n");
   else zle(`tras zapisu wyceny w panelu jest ${trasyZapisu}`);
 }
 
-console.log("\n2. Wycena, ktora stala sie zamowieniem, jest zamknieta\n");
+console.log("\n2. Zaplata zamyka pozycje, a nie cala oferte\n");
 {
-  const fn = QUOTES.slice(QUOTES.indexOf("export async function updateQuote"));
-  const glowa = fn.slice(0, fn.indexOf("export async function chooseQuoteOption"));
-  ma(glowa, /status === "converted"/, "edycja odmawia wycenie w stanie converted");
-  // Ta sama regula co w `priceQuote`. Rozjazd znaczylby, ze jedna droga
-  // wpuszcza to, czego druga broni.
-  ma(QUOTES, /priceQuote[\s\S]{0,800}?status === "converted"/, "wycenianie nadal odmawia wycenie w stanie converted");
+  // Klient dostaje oferte z trzema dodatkami, kupuje jeden i wraca pod ten sam
+  // link. Do ADR-0026 widzial wtedy wszystko wyszarzone, razem z dwoma
+  // dodatkami, ktorych nikt nie kupil: pierwsze zamowienie konczylo oferte.
+  //
+  // Awaria, ktora ta sekcja zamyka, jest cicha w obie strony. Pozycja wzieta
+  // za wolna sprzedaje sie drugi raz i do pracowni idzie zlecenie na to samo.
+  // Pozycja wolna wzieta za sprzedana znika z oferty bez sladu i nikt sie o to
+  // nie upomni, bo nikt nie pamieta, co w tej ofercie bylo.
+  const poz = (id, o = {}) => ({ id, qty: 1, unit_grosze: 10000, line_grosze: 10000, kind: "option", selected: true, ...o });
+  const oferta = (items) => ({ pick_one: false, items });
+  const rowne = (a, b, opis) => (a === b ? ok(opis) : zle(`NIE ${opis} (jest ${a}, ma byc ${b})`));
+
+  // --- Stan pozycji wynika ze stanu zamowienia, a nie z osobnej flagi ------
+  rowne(stanPozycji(poz(1)), "wolna", "pozycja bez zamowienia jest wolna");
+  rowne(stanPozycji(poz(1, { order_id: 7, order_status: "awaiting_payment" })), "zajeta", "pozycja w trakcie platnosci jest zajeta");
+  rowne(stanPozycji(poz(1, { order_id: 7, order_status: "awaiting_transfer" })), "zajeta", "pozycja czekajaca na przelew jest zajeta");
+  rowne(stanPozycji(poz(1, { order_id: 7, order_status: "paid" })), "zamknieta", "pozycja oplacona jest zamknieta");
+  rowne(stanPozycji(poz(1, { order_id: 7, order_status: "in_production" })), "zamknieta", "pozycja w produkcji jest zamknieta");
+  // To jest cala korzysc z wyprowadzania stanu, a nie zapisywania go: porzucona
+  // platnosc oddaje pozycje do oferty sama, bez naszego udzialu.
+  rowne(stanPozycji(poz(1, { order_id: 7, order_status: "expired" })), "wolna", "porzucona platnosc oddaje pozycje do oferty");
+  rowne(stanPozycji(poz(1, { order_id: 7, order_status: "cancelled" })), "wolna", "odwolane zamowienie oddaje pozycje do oferty");
+  // Domyslamy sie na korzysc ostroznosci: pomylka w te strone kaze klientowi
+  // zapytac, a w druga sprzedaje mu drugi raz to, co juz od nas dostal.
+  rowne(stanPozycji(poz(1, { order_id: 7, order_status: "cos_nowego" })), "zajeta", "stan nieznany nie jest brany za wolny");
+
+  // --- Kwota to reszta oferty, a nie cala oferta ---------------------------
+  const trzyDodatki = oferta([
+    poz(1, { order_id: 7, order_status: "paid" }),
+    poz(2),
+    poz(3),
+  ]);
+  rowne(quoteAmountGrosze(trzyDodatki), 20000, "kwota pomija dodatek, ktory klient juz kupil");
+  rowne(selectedQuoteItems(trzyDodatki).some((i) => i.id === 1), false, "sprzedany dodatek nie wchodzi do nowego zamowienia");
+  rowne(quoteSettled(trzyDodatki), false, "oferta z wolnym dodatkiem nie jest domknieta");
+  rowne(quoteOpenItems(trzyDodatki).length, 2, "do wziecia zostaly dwa dodatki");
+
+  // Kontrola negatywna: bez filtru dostepnosci ta sama oferta dalaby 300 zl,
+  // czyli kwote za rzecz, ktora klient ma juz w realizacji.
+  rowne(quoteAmountGrosze(oferta([poz(1), poz(2), poz(3)])), 30000, "ta sama oferta bez sprzedanej pozycji to trzy dodatki");
+
+  // --- Porzucona platnosc oddaje pozycje ----------------------------------
+  const poPorzuceniu = oferta([
+    poz(1, { order_id: 7, order_status: "expired" }),
+    poz(2),
+    poz(3),
+  ]);
+  rowne(quoteAmountGrosze(poPorzuceniu), 30000, "pozycja z wygaslego zamowienia wraca do kwoty");
+
+  // --- Wariant kontra dodatek ---------------------------------------------
+  // "Klucz 56 ALBO 68 mm": kiedy klient kupi jeden, drugi nie jest "nadal
+  // dostepny", tylko przestal istniec. Inaczej "albo, albo" zamienia sie po
+  // cichu w sklep, w ktorym da sie kupic oba.
+  const zWariantami = oferta([
+    poz(1, { kind: "variant", group_key: "klucz", order_id: 7, order_status: "paid" }),
+    poz(2, { kind: "variant", group_key: "klucz", selected: false }),
+    poz(3, { kind: "option", group_key: "klucz" }),
+  ]);
+  rowne(zamknieteGrupy(zWariantami).has("klucz"), true, "zaplata za wariant zamyka jego grupe");
+  rowne(selectedQuoteItems(zWariantami).some((i) => i.id === 2), false, "odrzucona alternatywa nie wraca do sprzedazy");
+  // Dodatek z tej samej grupy zostaje otwarty: polerowanie doklada sie do
+  // klucza, ktory klient wlasnie kupil, i po to tam stoi.
+  rowne(selectedQuoteItems(zWariantami).some((i) => i.id === 3), true, "dodatek z zamknietej grupy dalej da sie dokupic");
+  rowne(quoteAmountGrosze(zWariantami), 10000, "po zamknieciu grupy zostaje sam dodatek");
+  rowne(quoteSettled(zWariantami), false, "oferta z wolnym dodatkiem po zamknietej grupie jeszcze nie jest domknieta");
+
+  // --- Oferta domknieta ----------------------------------------------------
+  const wszystko = oferta([
+    poz(1, { order_id: 7, order_status: "paid" }),
+    poz(2, { order_id: 8, order_status: "awaiting_payment" }),
+  ]);
+  rowne(quoteSettled(wszystko), true, "oferta bez wolnych pozycji jest domknieta");
+  rowne(quoteAmountGrosze(wszystko), null, "domknieta oferta nie ma juz czego liczyc");
+  // Oferta swiezo wyceniona tez nie ma zamowien, a domknieta nie jest.
+  rowne(quoteSettled(oferta([poz(1), poz(2)])), false, "oferta, ktorej nikt nie tknal, nie jest domknieta");
+  rowne(quoteSettled(oferta([])), false, "oferta bez pozycji nie jest domknieta");
+  // Pozycja bez kwoty czeka na NAS, nie na klienta, wiec nie trzyma oferty otwartej.
+  rowne(quoteOpenItems(oferta([poz(1, { unit_grosze: null, line_grosze: null })])).length, 0, "pozycja bez kwoty nie jest do wziecia");
+
+  // --- Blokada przy zapisie zamowienia -------------------------------------
+  const konwersja = QUOTES.slice(QUOTES.indexOf("export async function convertQuoteToOrder"));
+  const cialo = konwersja.slice(0, konwersja.indexOf("export async function updateQuote"));
+  // Wzor siega po CALE zapytanie, a nie po sama fraze: "FOR UPDATE OF i" stoi
+  // takze w komentarzu obok, wiec asercja na samej frazie przechodzila na
+  // prozie po wyjeciu blokady z zapytania. Zlapala to kontrola negatywna,
+  // i to jest jedyny powod, dla ktorego takie kontrole sie robi.
+  const BLOKADA = /FROM quote_items i[\s\S]{0,300}?FOR UPDATE OF i/;
+  ma(cialo, BLOKADA, "konwersja blokuje wiersze pozycji");
+  // Dwie karty otwarte na tej samej ofercie to nie teoria. Blokada zalozona PO
+  // zapisie zamowienia nie chroni przed niczym: obie transakcje zdazylyby juz
+  // sprzedac te sama pozycje.
+  {
+    const iBlokada = cialo.search(BLOKADA);
+    const iZapis = cialo.indexOf("INSERT INTO orders");
+    if (iBlokada > 0 && iBlokada < iZapis) ok("blokada stoi przed zapisem zamowienia");
+    else zle("blokada stoi po zapisie zamowienia albo jej nie ma");
+  }
+  ma(cialo, /quoteAmountGrosze\(swiezaOferta\) !== kwotaPozycji[\s\S]{0,200}?item_taken/, "zmiana koszyka w miedzyczasie wstrzymuje zaplate");
+  ma(cialo, /UPDATE quote_items SET order_id = \$2/, "konwersja zapisuje, ktore pozycje wzielo zamowienie");
+  ma(cialo, /converted_order_id = COALESCE\(converted_order_id, \$2\)/, "kolejne zamowienie nie nadpisuje sladu po pierwszym");
+  ma(cialo, /status = \$3/, "stan oferty po zaplacie wynika z pozycji");
+  nieMa(cialo, /if \(quote\.converted_order_id\) throw/, "pierwsze zamowienie nie zamyka juz calej oferty");
+  // Kwota zamowienia liczy sie z pozycji, nie z naglowka: naglowek po czesciowym
+  // zleceniu mowi o RESZCIE oferty i przelew opiewalby na inna sume niz pozycje.
+  nieMa(cialo, /quote\.total_grosze/, "konwersja nie liczy kwoty z naglowka oferty");
+
+  // --- Co zostaje zamkniete, a co nie --------------------------------------
+  const edycja = QUOTES.slice(QUOTES.indexOf("export async function updateQuote"));
+  const glowaEdycji = edycja.slice(0, edycja.indexOf("export async function chooseQuoteOption"));
+  ma(glowaEdycji, /quoteSettled\(quote\)/, "edycja odmawia dopiero ofercie domknietej w calosci");
+  // To jest zysk niezalezny od samej sprzedazy na raty: do tej pory pierwsze
+  // zamowienie zamrazalo cala oferte, wiec poprawienie ceny dodatku, ktorego
+  // nikt nie kupil, wymagalo zalozenia oferty od nowa, czyli nowego numeru.
+  ma(glowaEdycji, /!pozycjaWolna\(item\)[\s\S]{0,200}?item_taken/, "edycja odmawia zmiany pozycji juz zleconej");
+  ma(QUOTES, /priceQuote[\s\S]{0,900}?quoteSettled\(quote\)/, "wycenianie odmawia dopiero ofercie domknietej w calosci");
+  ma(QUOTES, /priceQuote[\s\S]{0,2000}?!pozycjaWolna\(item\)[\s\S]{0,200}?item_taken/, "wycenianie nie rusza ceny pozycji zleconej");
 
   const del = QUOTES.slice(QUOTES.indexOf("export async function deleteQuote"));
-  ma(del, /status === "converted" && !force/, "usuwanie wyceny z zamowieniem wymaga osobnego potwierdzenia");
+  ma(del, /wziete && !force/, "usuwanie oferty z zamowieniami wymaga osobnego potwierdzenia");
   ma(SERWER, /app\.delete\("\/api\/quotes\/:ref"[\s\S]{0,600}?confirm_mismatch/, "usuwanie wyceny wymaga przepisanego numeru");
 
   const trasa = SERWER.slice(SERWER.indexOf('app.delete("/api/quotes/:ref"'));
@@ -78,6 +189,12 @@ console.log("\n2. Wycena, ktora stala sie zamowieniem, jest zamknieta\n");
   const iBaza = trasa.indexOf("deleteQuote(");
   if (iPotwierdzenie > 0 && iPotwierdzenie < iBaza) ok("potwierdzenie stoi przed siegnieciem do bazy");
   else zle("potwierdzenie stoi po siegnieciu do bazy albo go nie ma");
+
+  // --- Bramki po stronie trasy ---------------------------------------------
+  const kasa = SERWER.slice(SERWER.indexOf('app.post("/api/quotes/:ref/checkout"'));
+  ma(kasa.slice(0, 3000), /quoteSettled\(quote\)[\s\S]{0,200}?already_converted/, "zaplata odmawia dopiero ofercie domknietej");
+  ma(kasa.slice(0, 3000), /const doZaplaty = quoteAmountGrosze\(quote\)/, "trasa zaplaty liczy kwote z pozycji");
+  nieMa(kasa.slice(0, 2000), /if \(quote\.converted_order_id\) \{/, "pierwsze zamowienie nie zamyka trasy zaplaty");
 }
 
 console.log("\n3. Kwoty ida za iloscia i maja jedna regule\n");
@@ -98,7 +215,7 @@ console.log("\n3. Kwoty ida za iloscia i maja jedna regule\n");
   // Dwa przypisania `line_grosze` w jednym zapisie znaczylyby wartosc pozycji
   // policzona ze STAREJ ceny razy nowa ilosc.
   ma(glowa, /poz\.unitGrosze === undefined/, "przy nowej kwocie wartosc pozycji nie liczy sie drugi raz ze starej");
-  ma(glowa, /stan = quote\.status === "new" \? "priced" : quote\.status/, "pierwsza kwota czyni z zapytania oferte");
+  ma(glowa, /stan = stanPozycjami \|\| \(quote\.status === "new" \? "priced" : quote\.status\)/, "pierwsza kwota czyni z zapytania oferte");
   ma(glowa, /validDays/, "termin waznosci da sie podac w dniach, bez wpisywania kwot od nowa");
   ma(glowa, /swiezoZaznaczone/, "zaznaczenie z biezacego zapisu wygrywa z zastanym");
 
@@ -256,7 +373,8 @@ console.log("\n5. Uklad oferty: wariant z grupy, dodatek obok\n");
   } else zle("uklad kart nie zgadza sie z pozycjami");
 
   // Sedno: do zamowienia i do rabatu idzie WYBRANY uklad, nie suma propozycji.
-  ma(QUOTES, /const doZamowienia = selectedQuoteItems\(quote\)/, "do zamowienia trafia wylacznie wybrany uklad");
+  // `swiezaOferta` to ta sama wycena po odswiezeniu stanow pod blokada.
+  ma(QUOTES, /const doZamowienia = selectedQuoteItems\(swiezaOferta\)/, "do zamowienia trafia wylacznie wybrany uklad");
   ma(QUOTES, /no_variant/, "konwersja odmawia, gdy nie ma czego zamowic");
   ma(QUOTES, /const pozycje = selectedQuoteItems\(quote\)/, "rabat liczy sie od wybranego ukladu, nie od sumy propozycji");
   ma(SERWER, /doZaplaty = items[\s\S]{0,200}?filter\(\(i\) => i\.selected\)/, "strona oferty liczy kwote z pozycji wybranych");
@@ -280,7 +398,10 @@ console.log("\n6. Wybor po stronie klienta\n");
     [/not_multi/, "odmawia wyboru przy pozycji, ktora jest skladnikiem rachunku"],
     [/unknown_item/, "sprawdza, czy pozycja nalezy do TEJ oferty"],
     [/not_priced/, "odmawia wyboru pozycji bez kwoty"],
-    [/already_converted/, "odmawia zmiany po zlozeniu zamowienia"],
+    // Blokuje juz nie cala oferta, tylko ta jedna pozycja: reszty klient dalej
+    // moze dotykac, bo po to tam zostala.
+    [/item_taken/, "odmawia dotkniecia pozycji juz zleconej"],
+    [/group_settled/, "odmawia zmiany wariantu w grupie rozstrzygnietej zaplata"],
     [/SET selected = \(id = \$2\)/, "wybor wariantu gasi pozostale w tej samej grupie"],
     [/quoteAmountGrosze\(quote\)/, "kwote po wyborze liczy serwer, nie przegladarka"],
   ]) ma(glowa, wzor, `wybor klienta ${opis}`);

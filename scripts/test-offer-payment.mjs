@@ -269,5 +269,65 @@ console.log("\n7. Strona oferty jest na jedynej liscie tras\n");
   }
 }
 
+console.log("\n8. Strona zamowienia mowi, o ktore zamowienie chodzi\n");
+{
+  // 2026-08-29: wlasciciel kliknal "Przejdz do zamowienia" na ofercie
+  // rozliczonej miesiac wczesniej i zobaczyl "Czekamy na potwierdzenie
+  // platnosci". Trzy usterki naraz, kazda cicha:
+  //
+  //   1. Odnosnik szedl na goly `/order/status/`, bez numeru i bez zetonu.
+  //   2. Strona bez numeru schodzila do galezi domyslnej i podawala STAN
+  //      PLATNOSCI zamowienia, ktorego nigdy nie zobaczyla.
+  //   3. Nawet z wczytanym zamowieniem pokazywala sam numer i sume, choc mail
+  //      potwierdzajacy niesie pelne podsumowanie.
+  //
+  // Zadna z nich nie wywala niczego, wiec zaden istniejacy sprawdzian ich nie
+  // widzial: prerender i przeglad stron patrza na to, CZY tresc jest, a nie
+  // czy zdanie jest prawdziwe.
+  const czytaj = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
+  const ma = (tekst, wzor, opis) => (wzor.test(tekst) ? ok(opis) : zle(`NIE ${opis}`));
+  const nieMa = (tekst, wzor, opis) => (wzor.test(tekst) ? zle(`NIE ${opis}`) : ok(opis));
+  const STATUS = czytaj("src/pages/OrderStatus.jsx");
+  const OFERTA = czytaj("src/pages/Offer.jsx");
+  const SERWER = czytaj("chat-api/server.js");
+
+  ma(OFERTA, /pathname: "\/order\/status\/"/, "odnosnik do zamowienia prowadzi na strone statusu");
+  ma(OFERTA, /search: `\?ref=\$\{encodeURIComponent\(z\.orderRef\)\}/, "odnosnik niesie numer zamowienia");
+  ma(OFERTA, /z\.token \? `&token=/, "odnosnik niesie zeton dostepu");
+  nieMa(OFERTA, /<Link to="\/order\/status\/"/, "nie zostal zaden goly odnosnik bez numeru");
+  ma(SERWER, /orderRef: i\.order_ref, token: i\.order_access_token/, "trasa oferty oddaje zeton zamowienia");
+
+  ma(STATUS, /const bezNumeru = !ref && !signatureError/, "strona rozpoznaje adres bez numeru");
+  ma(STATUS, /bezNumeru \? \(/, "adres bez numeru ma wlasna galaz widoku");
+  // Sedno: galaz bez numeru musi stac PRZED domyslna, inaczej strona dalej
+  // oznajmia stan platnosci zamowienia, o ktorym nic nie wie.
+  {
+    const iBez = STATUS.indexOf("bezNumeru ? (");
+    const iDomyslna = STATUS.indexOf("title = u.pendingTitle");
+    const iGalaz = STATUS.indexOf("{icon}");
+    if (iBez > 0 && iGalaz > 0 && iBez < iGalaz) ok("galaz bez numeru wyprzedza galaz stanu platnosci");
+    else zle("galaz bez numeru stoi po galezi stanu platnosci albo jej nie ma");
+    if (iDomyslna > 0) ok("stan domyslny nadal istnieje dla zamowienia wczytanego");
+  }
+  ma(STATUS, /noRefTitle/, "strona ma wlasny komunikat dla adresu bez numeru");
+  for (const jezyk of ["pl", "en", "de"]) {
+    const slownik = STATUS.slice(STATUS.indexOf(`\n  ${jezyk}: {`));
+    ma(slownik.slice(0, 4000), /noRefTitle:/, `komunikat bez numeru jest po ${jezyk}`);
+  }
+
+  // Podsumowanie: te same wiersze, co w mailu potwierdzajacym.
+  ma(SERWER, /FROM order_items WHERE order_id = \$1/, "trasa zamowienia czyta jego pozycje");
+  ma(SERWER, /itemsTotalGrosze: o\.items_total_grosze/, "trasa zamowienia oddaje wartosc pozycji");
+  ma(SERWER, /shippingGrosze: o\.shipping_grosze/, "trasa zamowienia oddaje koszt dostawy");
+  ma(STATUS, /order\.items\.map/, "strona wypisuje pozycje zamowienia");
+  ma(STATUS, /zaplacone \? u\.paidLabel : u\.toPayLabel/, "podsumowanie mowi, czy kwota jest juz zaplacona");
+  // Stany dalsze niz `paid` tez sa oplacone. Bez nich strona mowilaby klientowi
+  // w produkcji, ze czekamy na jego wplate.
+  ma(STATUS, /\["paid", "in_production", "shipped", "completed"\]\.includes/, "produkcja i wysylka licza sie jako zaplacone");
+  // Backend i strona wdrazaja sie osobno, wiec kwota musi miec swoje miejsce
+  // takze wtedy, gdy API jeszcze nie przysyla pozycji.
+  ma(STATUS, /!order\.items \|\| !order\.items\.length/, "kwota ma zapas na starsze API bez pozycji");
+}
+
 console.log(bledy ? `\n${bledy} bledow\n` : "\nZaplata za oferte: wszystko sie zgadza\n");
 process.exit(bledy ? 1 : 0);

@@ -90,6 +90,32 @@ widać go na ekranie.
   `lang` i `hreflang` przy odnośniku. To jedyny wyjątek od reguły wyżej i
   wynika z tego samego powodu: ma być zrozumiała dla tego, kto jej szuka.
 
+### Zapłata zamyka pozycję oferty, a nie ofertę (od 2026-08-29)
+
+Oferta bywa kupowana po kawałku: klient bierze jeden dodatek dziś, wraca pod
+ten sam link i dokupuje drugi. Rozstrzyga o tym **pozycja**, nie nagłówek.
+
+- **Stan pozycji wynika ze stanu jej zamówienia, i nie ma obok żadnej flagi.**
+  `quote_items.order_id` mówi, kto ją wziął; czy jest wolna, zajęta czy
+  zamknięta, liczy `stanPozycji()` ze statusu tego zamówienia. Dzięki temu
+  porzucona płatność oddaje pozycję do oferty sama, gdy zamówienie wygasa.
+  Flaga „opłacona" wymagałaby drugiego zapisu przy każdym przejściu zamówienia
+  i rozjechałaby się przy pierwszym, o którym ktoś zapomni.
+- **Kwota do zapłaty liczy się z pozycji, nigdy z `quotes.total_grosze`.**
+  Nagłówek po częściowym zleceniu mówi o RESZCIE oferty, więc przelew opiewałby
+  na inną sumę niż pozycje, które do zamówienia weszły. Jedna reguła
+  (`selectedQuoteItems`) obsługuje wszystkie cztery bramki.
+- **Zapłata za wariant zamyka całą jego grupę, zapłata za dodatek nie.**
+  Warianty były alternatywami („klucz 56 albo 68 mm"), więc kupienie jednego
+  kasuje pozostałe. Dodatki są niezależne i zostają do dokupienia. Jeżeli
+  klient ma móc dokupić resztę później, to są dodatki, a nie warianty.
+- **Konwersja blokuje wiersze pozycji przed jakimkolwiek zapisem** i przelicza
+  koszyk od nowa z zablokowanego stanu. Dwie karty otwarte na tej samej ofercie
+  to zwykły poniedziałek, a nie teoria.
+- **Częściowa zapłata nie przedłuża terminu ważności.** Kruszec rusza się, a
+  `rates_snapshot` jest z chwili wyceny. Po terminie na resztę wystawiamy nową
+  ofertę. Decyzja: ADR-0026.
+
 ## 5. Waluta
 
 **Prices and amounts must follow the active language:**

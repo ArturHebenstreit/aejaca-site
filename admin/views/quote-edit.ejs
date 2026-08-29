@@ -4,7 +4,15 @@
   const ZRODLO = { email: "e-mail", phone: "telefon", chat: "czat", quote: "formularz", contact: "kontakt" };
   const zl = (g) => (g == null ? "-" : (g / 100).toFixed(2) + " zł");
   const pln = (g) => (g == null ? "" : (g / 100).toFixed(2));
-  const wyslana = ["sent", "accepted", "converted"].includes(quote.status);
+  const wyslana = ["sent", "accepted", "partial", "converted"].includes(quote.status);
+
+  // Pozycja sprzedana: stoi juz w zamowieniu i jest tu nietykalna. Cala reszta
+  // oferty zostaje do poprawiania, bo od ADR-0026 zaplata zamyka POZYCJE,
+  // a nie cala oferte. Wczesniej pierwsze zamowienie zamrazalo wszystko,
+  // wiec poprawienie ceny dodatku, ktorego nikt nie kupil, wymagalo
+  // zalozenia oferty od nowa, czyli nowego numeru w watku z klientem.
+  const zlecona = (it) => Boolean(it.state) && it.state !== "available";
+  const ETYKIETA_STANU = { settled: "zlecone", reserved: "czeka na zapłatę" };
 
   // Grupa wyboru to jedna ramka u klienta: warianty, ktore sie wzajemnie
   // wykluczaja, i dodatki, ktore da sie do nich dolozyc. Numer grupy wchodzi
@@ -257,8 +265,12 @@
 
         <div data-lista class="space-y-3">
           <% items.forEach(function (it, i) { %>
-            <div data-rekord="pozycja" data-id="<%= it.id %>"
-                 class="rounded-lg border <%= it.selected ? 'border-white/10' : 'border-white/5' %> bg-neutral-950 p-4">
+            <%# Atrybut nazywa sie `data-stan-pozycji`, a nie `data-stan`: to drugie
+                jest juz zajete przez stan CALEJ oferty w naglowku, a skrypt szuka
+                go przez `document.querySelector`, wiec trafilby w pierwszy wiersz
+                pozycji i po cichu przestal odswiezac stan oferty. %>
+            <div data-rekord="pozycja" data-id="<%= it.id %>" data-stan-pozycji="<%= it.state || 'available' %>"
+                 class="rounded-lg border <%= zlecona(it) ? 'border-emerald-400/25' : it.selected ? 'border-white/10' : 'border-white/5' %> bg-neutral-950 p-4">
 
               <div class="flex items-start gap-3">
                 <!-- Kontrolka wyboru zmienia sie razem z rodzajem pozycji: wariant
@@ -266,7 +278,9 @@
                      stoi w osobnym miejscu, ktore skrypt wymienia po zapisie.
                      Wczesniej zostawal przelacznik po starym rodzaju az do F5. -->
                 <div data-wybor-miejsce class="pt-1 w-4 shrink-0">
-                  <% if (it.kind === "variant") { %>
+                  <% if (zlecona(it)) { %>
+                    <span class="block w-3 h-3 rounded-full bg-emerald-500/80"></span>
+                  <% } else if (it.kind === "variant") { %>
                     <input type="radio" data-wybor name="<%= nazwaGrupy(it) %>"
                            class="accent-amber-400" <%= it.selected ? "checked" : "" %> />
                   <% } else if (it.kind === "option") { %>
@@ -286,6 +300,13 @@
                       &middot; <%= it.calculator %><% } %><% if (it.fileName) { %>
                       &middot; <%= it.fileName %><% } %>
                   </div>
+                  <% if (zlecona(it)) { %>
+                    <div class="text-emerald-300 text-[10px] mt-1">
+                      <%= ETYKIETA_STANU[it.state] || "zlecone" %><% if (it.orderRef) { %>
+                        &middot; <span class="font-mono"><%= it.orderRef %></span><% } %>
+                      &middot; kwota tej pozycji stoi w zamówieniu, więc nie zmienia się tutaj
+                    </div>
+                  <% } %>
                   <p class="text-neutral-400 text-xs mt-2 whitespace-pre-wrap" data-podglad="description" <%= it.description ? "" : "hidden" %>><%= it.description || '' %></p>
                 </div>
 
@@ -298,6 +319,9 @@
                 </div>
 
                 <div class="shrink-0 flex items-start gap-1">
+                  <% if (zlecona(it)) { %>
+                    <span class="text-neutral-600 text-[10px] pt-2">bez zmian</span>
+                  <% } else { %>
                   <span data-stan-zapisu class="text-neutral-600 text-[10px] pt-2 pr-1"></span>
                   <button type="button" data-edytuj title="Edytuj pozycję"
                           class="p-2 rounded-lg border border-white/10 text-neutral-400 hover:text-white hover:border-white/30 transition-colors">
@@ -323,6 +347,7 @@
                       <path d="M18 6 6 18" /><path d="m6 6 12 12" />
                     </svg>
                   </button>
+                  <% } %>
                 </div>
               </div>
 

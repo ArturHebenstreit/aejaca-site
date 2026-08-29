@@ -22,8 +22,11 @@ CREATE TABLE IF NOT EXISTS quotes (
   pick_one          BOOLEAN NOT NULL DEFAULT FALSE,
   chosen_item_id    BIGINT,
 
+  -- `partial` znaczy "czesc oferty zostala juz zlecona, reszta dalej stoi do
+  -- wziecia". `converted` znaczy dzis "nie zostalo nic do kupienia", a nie
+  -- "ktos zaplacil": zaplata zamyka POZYCJE, a nie cala oferte (ADR-0026).
   status            VARCHAR(20) NOT NULL DEFAULT 'new'
-                    CHECK (status IN ('new','priced','sent','accepted','converted','expired','cancelled')),
+                    CHECK (status IN ('new','priced','sent','accepted','partial','converted','expired','cancelled')),
 
   lang              VARCHAR(5) NOT NULL DEFAULT 'pl',
 
@@ -59,7 +62,10 @@ CREATE TABLE IF NOT EXISTS quotes (
   -- "kruszec podrozal" a "podniesliscie mi robocizne po fakcie".
   rates_snapshot    JSONB,
 
-  -- Zamowienie powstale z tej wyceny. Jedna wycena rodzi najwyzej jedno.
+  -- PIERWSZE zamowienie powstale z tej wyceny. Od ADR-0026 jedna oferta rodzi
+  -- ich wiele, po jednym na kazda zaplacona czesc, a kto wzial ktora pozycje
+  -- mowi `quote_items.order_id`. Te dwie kolumny zostaja jako slad poczatku
+  -- i dla ofert rozliczonych przed ta zmiana.
   converted_order_id BIGINT REFERENCES orders(id) ON DELETE SET NULL,
   converted_at      TIMESTAMPTZ,
 
@@ -101,6 +107,14 @@ CREATE TABLE IF NOT EXISTS quote_items (
   -- Opis slowny: to, czego nie widac w parametrach.
   description   TEXT,
 
+  -- Zamowienie, ktore wzielo te pozycje. To JEDYNY zapis o tym, ze pozycja
+  -- jest juz sprzedana, i celowo nie ma obok niego flagi "oplacona": stan
+  -- pozycji wyprowadzamy ze stanu tego zamowienia, wiec porzucona platnosc
+  -- oddaje pozycje do oferty sama, gdy zamowienie wygasa. Flaga wymagalaby
+  -- drugiego zapisu przy kazdym przejsciu zamowienia i rozjechalaby sie
+  -- z nim przy pierwszym, o ktorym ktos zapomni. Patrz ADR-0026.
+  order_id      BIGINT REFERENCES orders(id) ON DELETE SET NULL,
+
   upload_id     BIGINT REFERENCES uploads(id) ON DELETE SET NULL,
   file_name     VARCHAR(255),
   -- Skala wydruku. Bez niej ta sama geometria wyceniona ponownie dalaby inna
@@ -114,6 +128,8 @@ CREATE INDEX IF NOT EXISTS idx_quotes_status ON quotes (status);
 CREATE INDEX IF NOT EXISTS idx_quotes_email ON quotes (customer_email);
 CREATE INDEX IF NOT EXISTS idx_quotes_created ON quotes (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_quote_items_quote ON quote_items (quote_id);
+-- Droga w druga strone: od zamowienia do pozycji oferty, ktora je zrodzila.
+CREATE INDEX IF NOT EXISTS idx_quote_items_order ON quote_items (order_id) WHERE order_id IS NOT NULL;
 
 -- updated_at bez pamietania o nim w kodzie
 CREATE OR REPLACE FUNCTION touch_quotes_updated_at() RETURNS TRIGGER AS $$

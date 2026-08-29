@@ -8,8 +8,9 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Link } from "../i18n/nav.jsx";
-import { CheckCircle2, Clock, XCircle, Loader2, ArrowRight, RefreshCw, Hammer, Truck } from "lucide-react";
+import { CheckCircle2, Clock, XCircle, HelpCircle, Loader2, ArrowRight, RefreshCw, Hammer, Truck } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
+import { DELIVERY_METHODS } from "../data/orderCatalog.js";
 import SEOHead from "../seo/SEOHead.jsx";
 import {
   forgetOrderAccessToken,
@@ -71,6 +72,18 @@ const UI = {
     accessTitle: "Ten link nie daje dostępu do zamówienia",
     accessDesc: "Ze względów bezpieczeństwa pełny status wymaga prywatnego linku otrzymanego po złożeniu zamówienia. Napisz do nas z numerem zamówienia, prześlemy nowy link.",
     notFound: "Nie znaleziono takiego zamówienia",
+    noRefTitle: "Nie wiemy, o które zamówienie chodzi",
+    noRefDesc: "Ta strona pokazuje stan konkretnego zamówienia, a ten adres nie niesie jego numeru. Otwórz link z maila z potwierdzeniem albo napisz do nas, podając numer zamówienia, a odeślemy nowy link.",
+    itemsTitle: "Zamówione pozycje",
+    deliveryLabel: "Dostawa",
+    discountLabel: "Rabat",
+    creditLabel: "Odliczenie za projekt",
+    paidLabel: "Zapłacono",
+    toPayLabel: "Do zapłaty",
+    paidAtLabel: "Data zapłaty",
+    statusLabel: "Stan płatności",
+    statusPaid: "Zapłacone",
+    statusPending: "Czeka na zapłatę",
     orderNo: "Numer zamówienia",
     amount: "Kwota",
     revisions: "Wykorzystane poprawki",
@@ -112,6 +125,18 @@ const UI = {
     accessTitle: "This link cannot access the order",
     accessDesc: "For security, the full status requires the private link received after placing the order. Write to us with the order number and we will send a new link.",
     notFound: "Order not found",
+    noRefTitle: "We do not know which order you mean",
+    noRefDesc: "This page shows the state of one order, and this address carries no order number. Open the link from your confirmation e-mail, or write to us with the order number and we will send a new link.",
+    itemsTitle: "Items ordered",
+    deliveryLabel: "Delivery",
+    discountLabel: "Discount",
+    creditLabel: "Design credit",
+    paidLabel: "Paid",
+    toPayLabel: "To pay",
+    paidAtLabel: "Paid on",
+    statusLabel: "Payment",
+    statusPaid: "Paid",
+    statusPending: "Awaiting payment",
     orderNo: "Order number",
     amount: "Amount",
     revisions: "Revisions used",
@@ -153,6 +178,18 @@ const UI = {
     accessTitle: "Dieser Link gibt keinen Zugriff auf die Bestellung",
     accessDesc: "Aus Sicherheitsgründen erfordert der vollständige Status den privaten Link, den Sie nach der Bestellung erhalten haben. Schreiben Sie uns mit der Bestellnummer, dann senden wir einen neuen Link.",
     notFound: "Bestellung nicht gefunden",
+    noRefTitle: "Wir wissen nicht, um welche Bestellung es geht",
+    noRefDesc: "Diese Seite zeigt den Stand einer bestimmten Bestellung, und diese Adresse enthält keine Bestellnummer. Öffnen Sie den Link aus der Bestätigungsmail, oder schreiben Sie uns mit der Bestellnummer, dann schicken wir einen neuen Link.",
+    itemsTitle: "Bestellte Positionen",
+    deliveryLabel: "Versand",
+    discountLabel: "Rabatt",
+    creditLabel: "Entwurfsgutschrift",
+    paidLabel: "Bezahlt",
+    toPayLabel: "Zu zahlen",
+    paidAtLabel: "Bezahlt am",
+    statusLabel: "Zahlung",
+    statusPaid: "Bezahlt",
+    statusPending: "Wartet auf Zahlung",
     orderNo: "Bestellnummer",
     amount: "Betrag",
     revisions: "Genutzte Korrekturen",
@@ -182,6 +219,12 @@ export default function OrderStatus() {
   const [token, setToken] = useState(null);
   const [accessResolved, setAccessResolved] = useState(false);
   const missingAccess = Boolean(accessResolved && ref && !token && !signatureError);
+  // Adres bez numeru zamowienia. Do tej pory strona schodzila wtedy do galezi
+  // domyslnej i oznajmiala "czekamy na potwierdzenie platnosci", czyli podawala
+  // STAN PLATNOSCI ZAMOWIENIA, ktorego nigdy nie zobaczyla. Klientka, ktora
+  // rozliczyla sie miesiac wczesniej, dostawala informacje nieprawdziwa i bez
+  // jednego slowa o tym, czego dotyczy.
+  const bezNumeru = !ref && !signatureError;
 
   const [order, setOrder] = useState(null);
   // Pierwszy render jest taki sam w prerenderze i przegladarce. Dopiero efekt
@@ -279,6 +322,16 @@ export default function OrderStatus() {
   // Przelew czeka na nasze reczne potwierdzenie, wiec ta strona nie jest
   // "czekamy na bank", tylko instrukcja, co klient ma teraz zrobic.
   const awaitingTransfer = order?.status === "awaiting_transfer";
+  // "Zaplacone" znaczy tu: pieniadze u nas. Stany dalsze (produkcja, wysylka,
+  // zakonczone) tez sa oplacone i bez tej listy strona mowilaby oplaconemu
+  // klientowi, ze czeka na jego wplate.
+  const zaplacone = ["paid", "in_production", "shipped", "completed"].includes(order?.status);
+  // Kwoty formatuje strona, a nie serwer, bo ten sam wiersz musi umiec pokazac
+  // pozycje, dostawe i rabat, a nie tylko sume.
+  const zlote = (grosze) =>
+    grosze == null ? "-" : `${(grosze / 100).toFixed(2).replace(".", ",")} PLN`;
+  const nazwaDostawy =
+    DELIVERY_METHODS.find((m) => m.id === order?.deliveryMethod)?.label?.[lang] || "";
   const tr = order?.transfer || null;
 
   async function retryPayment() {
@@ -354,6 +407,12 @@ export default function OrderStatus() {
               <Loader2 className="w-8 h-8 animate-spin" />
               <span className="text-sm">{u.checking}</span>
             </div>
+          ) : bezNumeru ? (
+            <>
+              <HelpCircle className="w-12 h-12 text-neutral-500 mx-auto mb-4" />
+              <h1 className="font-serif text-2xl font-bold text-white mb-3">{u.noRefTitle}</h1>
+              <p className="text-neutral-400 text-sm leading-relaxed mb-6">{u.noRefDesc}</p>
+            </>
           ) : missingAccess ? (
             <>
               <XCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
@@ -423,16 +482,80 @@ export default function OrderStatus() {
                 )
               )}
 
+              {/* Podsumowanie takie samo jak w mailu z potwierdzeniem: pozycje,
+                  dostawa i kwota. Do tej pory strona pokazywala sam numer
+                  i sume, wiec klient wracajacy po tygodniu nie mial gdzie
+                  sprawdzic, CO wlasciwie zamowil, poza mailem, ktory bywa
+                  skasowany. */}
+              {order && order.items && order.items.length > 0 && (
+                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-sm mb-4 text-left">
+                  <div className="text-neutral-500 text-xs mb-2">{u.itemsTitle}</div>
+                  {order.items.map((it, i) => (
+                    <div key={`${it.title}-${i}`} className="flex justify-between gap-4 py-1.5 border-b border-white/5">
+                      <span className="text-neutral-200 min-w-0">
+                        {it.title}{it.qty > 1 ? ` \u00d7 ${it.qty}` : ""}
+                      </span>
+                      <span className="text-neutral-200 shrink-0 tabular-nums">{zlote(it.lineGrosze)}</span>
+                    </div>
+                  ))}
+                  {order.shippingGrosze != null && (
+                    <div className="flex justify-between gap-4 py-1.5 border-b border-white/5">
+                      <span className="text-neutral-400">
+                        {u.deliveryLabel}{nazwaDostawy ? `: ${nazwaDostawy}` : ""}
+                      </span>
+                      <span className="text-neutral-200 shrink-0 tabular-nums">{zlote(order.shippingGrosze)}</span>
+                    </div>
+                  )}
+                  {order.discountGrosze > 0 && (
+                    <div className="flex justify-between gap-4 py-1.5 border-b border-white/5">
+                      <span className="text-neutral-400">
+                        {u.discountLabel}{order.discountCode ? ` ${order.discountCode}` : ""}
+                      </span>
+                      <span className="text-emerald-300 shrink-0 tabular-nums">-{zlote(order.discountGrosze)}</span>
+                    </div>
+                  )}
+                  {order.creditGrosze > 0 && (
+                    <div className="flex justify-between gap-4 py-1.5 border-b border-white/5">
+                      <span className="text-neutral-400">{u.creditLabel}</span>
+                      <span className="text-emerald-300 shrink-0 tabular-nums">-{zlote(order.creditGrosze)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between gap-4 pt-3">
+                    <span className="text-white font-semibold">{zaplacone ? u.paidLabel : u.toPayLabel}</span>
+                    <span className="text-white font-bold tabular-nums">{zlote(order.totalGrosze)}</span>
+                  </div>
+                </div>
+              )}
+
               {order && (
-                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-sm mb-6">
+                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-sm mb-6 text-left">
                   <div className="flex justify-between mb-1">
                     <span className="text-neutral-500">{u.orderNo}</span>
                     <span className="text-white font-mono text-xs">{order.orderRef}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-500">{u.amount}</span>
-                    <span className="text-white font-semibold">{String(order.totalPLN).replace(".", ",")} PLN</span>
+                  <div className="flex justify-between mt-1">
+                    <span className="text-neutral-500">{u.statusLabel}</span>
+                    <span className={zaplacone ? "text-emerald-300" : "text-amber-300"}>
+                      {zaplacone ? u.statusPaid : u.statusPending}
+                    </span>
                   </div>
+                  {/* Backend i strona wdrazaja sie osobno. Starsza wersja API nie
+                      przysyla pozycji, wiec kwota musi miec tu wlasne miejsce,
+                      inaczej przez chwile nie byloby jej nigdzie. */}
+                  {(!order.items || !order.items.length) && (
+                    <div className="flex justify-between mt-1">
+                      <span className="text-neutral-500">{u.amount}</span>
+                      <span className="text-white font-semibold">{String(order.totalPLN).replace(".", ",")} PLN</span>
+                    </div>
+                  )}
+                  {order.paidAt && (
+                    <div className="flex justify-between mt-1">
+                      <span className="text-neutral-500">{u.paidAtLabel}</span>
+                      <span className="text-white">
+                        {new Date(order.paidAt).toLocaleDateString(lang === "pl" ? "pl-PL" : lang === "de" ? "de-DE" : "en-IE")}
+                      </span>
+                    </div>
+                  )}
                   {/* Numer przesylki pokazujemy klientowi, bo pytanie "gdzie jest
                       paczka" inaczej wraca do nas mailem i odpowiada na nie czlowiek. */}
                   {order.shippedAt && (
