@@ -8,7 +8,8 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Link } from "../i18n/nav.jsx";
-import { CheckCircle2, Clock, XCircle, HelpCircle, Loader2, ArrowRight, RefreshCw, Hammer, Truck } from "lucide-react";
+import { sciezkaJezyka } from "../routes.js";
+import { CheckCircle2, Clock, XCircle, HelpCircle, Loader2, ArrowRight, RefreshCw, Hammer, Truck, MessageSquare, PackageCheck, CalendarClock } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext.jsx";
 import { DELIVERY_METHODS } from "../data/orderCatalog.js";
 import SEOHead from "../seo/SEOHead.jsx";
@@ -47,6 +48,10 @@ function TransferRow({ label, value, mono, highlight }) {
   );
 }
 
+/** Numery, tak jak generuje je backend: zamowienie `AE`, oferta `WY`. */
+const WZOR_ZAMOWIENIA = /^AE\d{8}-[0-9A-F]{8}$/;
+const WZOR_OFERTY = /^WY\d{8}-[0-9A-F]{8}$/;
+
 const UI = {
   pl: {
     title: "Status zamówienia",
@@ -72,6 +77,28 @@ const UI = {
     accessTitle: "Ten link nie daje dostępu do zamówienia",
     accessDesc: "Ze względów bezpieczeństwa pełny status wymaga prywatnego linku otrzymanego po złożeniu zamówienia. Napisz do nas z numerem zamówienia, prześlemy nowy link.",
     notFound: "Nie znaleziono takiego zamówienia",
+    lookupTitle: "Sprawdź swoje zamówienie",
+    lookupDesc: "Podaj numer zamówienia albo numer oferty i adres e-mail, na który poszło potwierdzenie. Pokażemy stan płatności i realizacji.",
+    lookupRef: "Numer zamówienia lub oferty",
+    lookupEmail: "Adres e-mail z potwierdzenia",
+    lookupButton: "Sprawdź",
+    lookupBad: "Numer wygląda tak: AE20260827-1F1AC35C albo WY20260825-A1B2C3D4",
+    lookupNotFound: "Nie znaleźliśmy zamówienia o tym numerze albo dane się nie zgadzają",
+    stageTitle: "Realizacja",
+    stageDetails: "Ustalanie szczegółów zlecenia",
+    stageDetailsDesc: "Czekamy na ustalenie szczegółów z Tobą. Czas realizacji zacznie biec dopiero po nich, więc nic Ci nie ucieka.",
+    stageRunning: "Zlecenie w realizacji",
+    stageReady: "Zrealizowane",
+    stageReadyDesc: "Praca skończona. Pakujemy albo przygotowujemy do odbioru.",
+    stageHanded: "Przekazane",
+    deadlineLabel: "Planowana wysyłka",
+    daysLeftLabel: "Do wysyłki zostało",
+    daysUnit: "dni",
+    dayUnit: "dzień",
+    daysToday: "dzisiaj",
+    daysOver: "po terminie",
+    leadLabel: "Umówiony czas realizacji",
+    leadFromStart: "dni od rozpoczęcia pracy",
     noRefTitle: "Nie wiemy, o które zamówienie chodzi",
     noRefDesc: "Ta strona pokazuje stan konkretnego zamówienia, a ten adres nie niesie jego numeru. Otwórz link z maila z potwierdzeniem albo napisz do nas, podając numer zamówienia, a odeślemy nowy link.",
     itemsTitle: "Zamówione pozycje",
@@ -125,6 +152,28 @@ const UI = {
     accessTitle: "This link cannot access the order",
     accessDesc: "For security, the full status requires the private link received after placing the order. Write to us with the order number and we will send a new link.",
     notFound: "Order not found",
+    lookupTitle: "Check your order",
+    lookupDesc: "Enter the order number or the offer number, and the e-mail address the confirmation went to. We will show the payment and the work.",
+    lookupRef: "Order or offer number",
+    lookupEmail: "E-mail from the confirmation",
+    lookupButton: "Check",
+    lookupBad: "The number looks like this: AE20260827-1F1AC35C or WY20260825-A1B2C3D4",
+    lookupNotFound: "We found no order with that number, or the details do not match",
+    stageTitle: "Progress",
+    stageDetails: "Agreeing the details",
+    stageDetailsDesc: "We are waiting to agree the details with you. The lead time starts only after that, so nothing is running out.",
+    stageRunning: "In the workshop",
+    stageReady: "Finished",
+    stageReadyDesc: "The work is done. We are packing it or getting it ready for collection.",
+    stageHanded: "Handed over",
+    deadlineLabel: "Planned dispatch",
+    daysLeftLabel: "Days to dispatch",
+    daysUnit: "days",
+    dayUnit: "day",
+    daysToday: "today",
+    daysOver: "past the date",
+    leadLabel: "Agreed lead time",
+    leadFromStart: "days from the start of work",
     noRefTitle: "We do not know which order you mean",
     noRefDesc: "This page shows the state of one order, and this address carries no order number. Open the link from your confirmation e-mail, or write to us with the order number and we will send a new link.",
     itemsTitle: "Items ordered",
@@ -178,6 +227,28 @@ const UI = {
     accessTitle: "Dieser Link gibt keinen Zugriff auf die Bestellung",
     accessDesc: "Aus Sicherheitsgründen erfordert der vollständige Status den privaten Link, den Sie nach der Bestellung erhalten haben. Schreiben Sie uns mit der Bestellnummer, dann senden wir einen neuen Link.",
     notFound: "Bestellung nicht gefunden",
+    lookupTitle: "Bestellung prüfen",
+    lookupDesc: "Geben Sie die Bestell- oder Angebotsnummer an und die E-Mail-Adresse, an die die Bestätigung ging. Wir zeigen Zahlung und Fortschritt.",
+    lookupRef: "Bestell- oder Angebotsnummer",
+    lookupEmail: "E-Mail aus der Bestätigung",
+    lookupButton: "Prüfen",
+    lookupBad: "Die Nummer sieht so aus: AE20260827-1F1AC35C oder WY20260825-A1B2C3D4",
+    lookupNotFound: "Wir haben keine Bestellung mit dieser Nummer gefunden, oder die Daten stimmen nicht überein",
+    stageTitle: "Fortschritt",
+    stageDetails: "Details werden abgestimmt",
+    stageDetailsDesc: "Wir warten darauf, die Details mit Ihnen abzustimmen. Die Lieferzeit läuft erst danach, es geht Ihnen also nichts verloren.",
+    stageRunning: "In der Werkstatt",
+    stageReady: "Fertiggestellt",
+    stageReadyDesc: "Die Arbeit ist fertig. Wir verpacken sie oder bereiten sie zur Abholung vor.",
+    stageHanded: "Übergeben",
+    deadlineLabel: "Geplanter Versand",
+    daysLeftLabel: "Tage bis zum Versand",
+    daysUnit: "Tage",
+    dayUnit: "Tag",
+    daysToday: "heute",
+    daysOver: "über dem Termin",
+    leadLabel: "Vereinbarte Lieferzeit",
+    leadFromStart: "Tage ab Arbeitsbeginn",
     noRefTitle: "Wir wissen nicht, um welche Bestellung es geht",
     noRefDesc: "Diese Seite zeigt den Stand einer bestimmten Bestellung, und diese Adresse enthält keine Bestellnummer. Öffnen Sie den Link aus der Bestätigungsmail, oder schreiben Sie uns mit der Bestellnummer, dann schicken wir einen neuen Link.",
     itemsTitle: "Bestellte Positionen",
@@ -212,7 +283,7 @@ const UI = {
 export default function OrderStatus() {
   const { lang, t } = useLanguage();
   const u = UI[lang] || UI.en;
-  const [search] = useSearchParams();
+  const [search, setSearch] = useSearchParams();
   const ref = search.get("ref");
   const tokenFromUrl = search.get("token");
   const signatureError = search.get("error") === "invalid_signature";
@@ -225,6 +296,34 @@ export default function OrderStatus() {
   // rozliczyla sie miesiac wczesniej, dostawala informacje nieprawdziwa i bez
   // jednego slowa o tym, czego dotyczy.
   const bezNumeru = !ref && !signatureError;
+
+  // Wejscie z samego numeru i adresu. Do tej pory zamowienie otwieral WYLACZNIE
+  // prywatny link z maila, wiec klient, ktory tego maila skasowal, nie mial jak
+  // sprawdzic swojego zlecenia. Numer oferty tez tu wolno wpisac: prowadzi na
+  // strone oferty, ktora zna droge dalej.
+  const [formRef, setFormRef] = useState("");
+  const [formEmail, setFormEmail] = useState("");
+  const [looking, setLooking] = useState(false);
+  const [lookupError, setLookupError] = useState(null);
+
+  async function lookup(e) {
+    e.preventDefault();
+    const numer = formRef.trim().toUpperCase();
+    if (WZOR_OFERTY.test(numer)) {
+      // Oferta ma wlasna strone i wlasna droge potwierdzania tozsamosci.
+      // Przepisywanie jej tutaj dalo by druga regule dostepu do tych samych
+      // danych, a to jest dokladnie ten rodzaj powtorzenia, ktory sie rozjezdza.
+      window.location.assign(`${sciezkaJezyka("/oferta/", lang)}?ref=${encodeURIComponent(numer)}`);
+      return;
+    }
+    if (!WZOR_ZAMOWIENIA.test(numer)) { setLookupError(u.lookupBad); return; }
+    setLooking(true);
+    setLookupError(null);
+    const r = await postJSON(`${API}/api/orders/lookup`, { ref: numer, email: formEmail.trim() });
+    setLooking(false);
+    if (!r.ok) { setLookupError(u.lookupNotFound); return; }
+    setSearch({ ref: r.data.ref, token: r.data.token });
+  }
 
   const [order, setOrder] = useState(null);
   // Pierwszy render jest taki sam w prerenderze i przegladarce. Dopiero efekt
@@ -325,7 +424,16 @@ export default function OrderStatus() {
   // "Zaplacone" znaczy tu: pieniadze u nas. Stany dalsze (produkcja, wysylka,
   // zakonczone) tez sa oplacone i bez tej listy strona mowilaby oplaconemu
   // klientowi, ze czeka na jego wplate.
-  const zaplacone = ["paid", "in_production", "shipped", "completed"].includes(order?.status);
+  // Kazdy etap PO zaplacie. Pominiecie ktoregokolwiek znaczy podsumowanie
+  // mowiace "do zaplaty" komus, kto zaplacil, i to jest dokladnie ten sam
+  // blad, ktory strona popelniala przy adresie bez numeru.
+  const zaplacone = ["paid", "details", "in_production", "ready", "shipped", "completed"].includes(order?.status);
+  const etapSzczegolow = order?.status === "details";
+  const etapGotowe = order?.status === "ready";
+  // Odbior osobisty konczy sie przekazaniem, a nie wysylka. To samo pole
+  // `shipped_at`, inne zdanie: paczka, ktora nigdzie nie jechala, nie jest
+  // "w drodze" i klient nie ma na co czekac pod drzwiami.
+  const odbiorOsobisty = order?.deliveryMethod === "pickup";
   // Kwoty formatuje strona, a nie serwer, bo ten sam wiersz musi umiec pokazac
   // pozycje, dostawe i rabat, a nie tylko sume.
   const zlote = (grosze) =>
@@ -371,13 +479,24 @@ export default function OrderStatus() {
     icon = <XCircle className="w-12 h-12 text-red-400" />;
     title = u.invalidTitle;
     desc = u.invalidDesc;
+  } else if (etapSzczegolow) {
+    // Wlasna galaz, bo bez niej zamowienie w ustalaniu szczegolow spadaloby do
+    // domyslnej i mowilo klientowi, ze czekamy na jego platnosc, choc wlasnie
+    // ja dostalismy.
+    icon = <MessageSquare className="w-12 h-12 text-sky-300" />;
+    title = u.stageDetails;
+    desc = u.stageDetailsDesc;
   } else if (inProduction) {
     icon = <Hammer className="w-12 h-12 text-amber-400" />;
     title = u.productionTitle;
     desc = u.productionDesc;
+  } else if (etapGotowe) {
+    icon = <PackageCheck className="w-12 h-12 text-emerald-400" />;
+    title = u.stageReady;
+    desc = u.stageReadyDesc;
   } else if (shipped) {
     icon = <Truck className="w-12 h-12 text-blue-400" />;
-    title = u.shippedTitle;
+    title = odbiorOsobisty ? u.stageHanded : u.shippedTitle;
     desc = u.shippedDesc;
   } else if (completed) {
     icon = <CheckCircle2 className="w-12 h-12 text-emerald-400" />;
@@ -410,8 +529,38 @@ export default function OrderStatus() {
           ) : bezNumeru ? (
             <>
               <HelpCircle className="w-12 h-12 text-neutral-500 mx-auto mb-4" />
-              <h1 className="font-serif text-2xl font-bold text-white mb-3">{u.noRefTitle}</h1>
-              <p className="text-neutral-400 text-sm leading-relaxed mb-6">{u.noRefDesc}</p>
+              <h1 className="font-serif text-2xl font-bold text-white mb-3">{u.lookupTitle}</h1>
+              <p className="text-neutral-400 text-sm leading-relaxed mb-6">{u.lookupDesc}</p>
+              <form onSubmit={lookup} className="space-y-3 text-left">
+                <label className="block">
+                  <span className="text-neutral-400 text-xs">{u.lookupRef}</span>
+                  <input
+                    value={formRef}
+                    onChange={(e) => setFormRef(e.target.value.toUpperCase())}
+                    placeholder="AE20260827-1F1AC35C"
+                    className="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white font-mono"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-neutral-400 text-xs">{u.lookupEmail}</span>
+                  <input
+                    type="email"
+                    value={formEmail}
+                    onChange={(e) => setFormEmail(e.target.value)}
+                    placeholder="twoj@email.com"
+                    className="mt-1 w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-sm text-white"
+                  />
+                </label>
+                {lookupError && <p className="text-amber-300 text-xs">{lookupError}</p>}
+                <button
+                  type="submit"
+                  disabled={looking || !formRef.trim()}
+                  className="w-full py-3 rounded-xl bg-amber-400 text-neutral-950 font-medium hover:bg-amber-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  {looking ? <Loader2 className="w-4 h-4 animate-spin inline" /> : u.lookupButton}
+                </button>
+                <p className="text-neutral-600 text-xs leading-relaxed">{u.noRefDesc}</p>
+              </form>
             </>
           ) : missingAccess ? (
             <>
@@ -480,6 +629,51 @@ export default function OrderStatus() {
                     <p className="text-amber-200 text-xs leading-relaxed">{u.transferMissing}</p>
                   </div>
                 )
+              )}
+
+              {/* TERMIN REALIZACJI.
+                  `daysLeft` przychodzi POLICZONE z serwera. Data liczona tutaj
+                  wychodzi inna przy buildzie i inna u klienta, React uznaje to
+                  za rozjazd i wyrzuca cale poddrzewo (ADR-0022), a strona
+                  zamowienia to ostatnie miejsce, w ktorym wolno nam zgasnac. */}
+              {order && zaplacone && !shipped && !completed && (order.deadlineAt || order.leadDays) && (
+                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 text-sm mb-4 text-left">
+                  <div className="flex items-center gap-2 text-neutral-500 text-xs mb-2">
+                    <CalendarClock className="w-3.5 h-3.5" /> {u.stageTitle}
+                  </div>
+                  {/* Zegar nie biegnie w ustalaniu szczegolow, wiec zamiast daty
+                      pokazujemy, ile czasu bedzie OD ustalen. Data byloby tu
+                      obietnica, ktorej nikt nie zlozyl. */}
+                  {etapSzczegolow && order.leadDays ? (
+                    <div className="flex justify-between gap-4">
+                      <span className="text-neutral-400">{u.leadLabel}</span>
+                      <span className="text-neutral-200 shrink-0">
+                        {order.leadDays} {u.leadFromStart}
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      {order.deadlineAt && (
+                        <div className="flex justify-between gap-4">
+                          <span className="text-neutral-400">{u.deadlineLabel}</span>
+                          <span className="text-neutral-200 shrink-0 tabular-nums">{order.deadlineAt}</span>
+                        </div>
+                      )}
+                      {order.daysLeft != null && (
+                        <div className="flex justify-between gap-4 mt-1">
+                          <span className="text-neutral-400">{u.daysLeftLabel}</span>
+                          <span className={`shrink-0 ${order.daysLeft < 0 ? "text-amber-300" : "text-neutral-200"}`}>
+                            {order.daysLeft === 0
+                              ? u.daysToday
+                              : order.daysLeft < 0
+                                ? `${Math.abs(order.daysLeft)} ${Math.abs(order.daysLeft) === 1 ? u.dayUnit : u.daysUnit} ${u.daysOver}`
+                                : `${order.daysLeft} ${order.daysLeft === 1 ? u.dayUnit : u.daysUnit}`}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               )}
 
               {/* Podsumowanie takie samo jak w mailu z potwierdzeniem: pozycje,

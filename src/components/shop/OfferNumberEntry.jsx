@@ -18,32 +18,39 @@ import { useLanguage } from "../../i18n/LanguageContext.jsx";
 
 /** `WY` + data + osiem znakow szesnastkowych, tak jak generuje je backend. */
 const WZOR = /^WY\d{8}-[0-9A-F]{8}$/;
+/**
+ * Numer potwierdzenia zamowienia. To pole przyjmuje OBA numery, bo klient nie
+ * ma powodu pamietac, ktory z nich mu wlasnie zostal: jeden dostal z oferta,
+ * drugi z potwierdzeniem zaplaty. Rozroznia je prefiks, wiec rozeslanie ich
+ * pod wlasciwe strony jest nasza robota, a nie jego.
+ */
+const WZOR_ZAMOWIENIA = /^AE\d{8}-[0-9A-F]{8}$/;
 const PRZYKLAD = "WY20260825-A1B2C3D4";
 
 const UI = {
   pl: {
-    title: "Masz numer oferty?",
-    desc: "Jeżeli dostałeś od nas wycenę mailem albo w rozmowie, wpisz jej numer. Pokażemy kwotę, przyjmiemy kod rabatowy i przeprowadzimy przez płatność.",
-    label: "Numer oferty",
-    button: "Przejdź do oferty",
+    title: "Masz numer oferty albo zamówienia?",
+    desc: "Jeżeli dostałeś od nas wycenę mailem albo w rozmowie, wpisz jej numer: pokażemy kwotę, przyjmiemy kod rabatowy i przeprowadzimy przez płatność. Numer z potwierdzenia zamówienia też tu zadziała i pokaże stan realizacji.",
+    label: "Numer oferty lub zamówienia",
+    button: "Sprawdź",
     hint: "Na następnym ekranie potwierdzisz adres e-mail, na który poszła oferta, albo kod odbioru z rozmowy.",
-    bad: `Numer wygląda tak: ${PRZYKLAD}`,
+    bad: `Numer wygląda tak: ${PRZYKLAD} albo AE20260827-1F1AC35C`,
   },
   en: {
-    title: "Have an offer number?",
-    desc: "If we sent you a quote by e-mail or gave it to you on the phone, enter its number. We will show the amount, accept a discount code and take you through payment.",
-    label: "Offer number",
-    button: "Go to the offer",
+    title: "Have an offer or order number?",
+    desc: "If we sent you a quote by e-mail or gave it to you on the phone, enter its number: we will show the amount, accept a discount code and take you through payment. An order confirmation number works here too and shows how the work is going.",
+    label: "Offer or order number",
+    button: "Check",
     hint: "On the next screen you confirm the e-mail address the offer went to, or the pickup code from our call.",
-    bad: `The number looks like this: ${PRZYKLAD}`,
+    bad: `The number looks like this: ${PRZYKLAD} or AE20260827-1F1AC35C`,
   },
   de: {
-    title: "Haben Sie eine Angebotsnummer?",
-    desc: "Wenn Sie von uns ein Angebot per E-Mail oder im Gespräch erhalten haben, geben Sie die Nummer ein. Wir zeigen den Betrag, nehmen einen Rabattcode an und führen Sie durch die Zahlung.",
-    label: "Angebotsnummer",
-    button: "Zum Angebot",
+    title: "Haben Sie eine Angebots- oder Bestellnummer?",
+    desc: "Wenn Sie von uns ein Angebot per E-Mail oder im Gespräch erhalten haben, geben Sie die Nummer ein: wir zeigen den Betrag, nehmen einen Rabattcode an und führen Sie durch die Zahlung. Eine Bestellnummer aus der Bestätigung funktioniert hier ebenfalls und zeigt den Stand der Arbeit.",
+    label: "Angebots- oder Bestellnummer",
+    button: "Prüfen",
     hint: "Im nächsten Schritt bestätigen Sie die E-Mail-Adresse, an die das Angebot ging, oder den Abholcode aus dem Gespräch.",
-    bad: `Die Nummer sieht so aus: ${PRZYKLAD}`,
+    bad: `Die Nummer sieht so aus: ${PRZYKLAD} oder AE20260827-1F1AC35C`,
   },
 };
 
@@ -65,6 +72,11 @@ export default function OfferNumberEntry({ className = "" }) {
 
   function submit(e) {
     e.preventDefault();
+    if (WZOR_ZAMOWIENIA.test(numer)) {
+      setError(false);
+      navigate(`/order/status/?ref=${encodeURIComponent(numer)}`);
+      return;
+    }
     if (!WZOR.test(numer)) { setError(true); return; }
     setError(false);
     navigate(`/oferta/?ref=${encodeURIComponent(numer)}`);

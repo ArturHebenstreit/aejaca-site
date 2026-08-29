@@ -116,6 +116,27 @@ ten sam link i dokupuje drugi. Rozstrzyga o tym **pozycja**, nie nagłówek.
   `rates_snapshot` jest z chwili wyceny. Po terminie na resztę wystawiamy nową
   ofertę. Decyzja: ADR-0026.
 
+### Termin realizacji jest daną, a zegar biegnie tylko w jednym etapie (od 2026-08-29)
+
+- **Etap pracy jest statusem zamówienia, nie osobną kolumną obok.** ADR-0013
+  rozstrzygnął to raz. Dwie osie, które widzi klient (płatność i realizacja),
+  to sposób pokazania jednej wartości, a nie dwa zapisy do trzymania w zgodzie.
+- **Termin liczy się z tego samego zaznaczenia co kwota**, jedną funkcją
+  (`terminGrupy`), i jest **najdłuższym** z wybranych: paczka wychodzi jedna.
+  Zamraża się na zamówieniu przy zapłacie, razem z kwotą i kursem.
+- **`lead_days` trzyma umowę, `deadline_at` trzyma jej skutek.** Liczba dni
+  przeliczana przy każdym odczycie przesuwałaby termin razem z datą odczytu.
+- **Ile dni zostało, liczy serwer.** Data w JSX wychodzi inna przy buildzie
+  i inna u klienta, więc React wyrzuca całe poddrzewo (ADR-0022). Panel i
+  strona klienta czytają tę samą liczbę, bo dwa miejsca licząc to samo
+  pokazałyby dwie różne.
+- **Zegar biegnie wyłącznie w „Zlecenie w realizacji”.** W ustalaniu
+  szczegółów czekamy na klienta, a nie on na nas.
+- **Próg przypomnienia zapisuje się dopiero po udanej wysyłce maila.** Zapis
+  przed nią zamyka próg na zawsze przy pierwszej awarii poczty, po cichu.
+  Na przebieg wychodzi najwyżej jeden mail, o progu najbliższym prawdzie.
+  Decyzja: ADR-0027.
+
 ## 5. Waluta
 
 **Prices and amounts must follow the active language:**

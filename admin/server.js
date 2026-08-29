@@ -1463,6 +1463,18 @@ app.post("/quotes/:ref/item", requireAuth, express.json({ limit: "64kb" }), asyn
       if (poz.kind !== undefined) item.kind = ["fixed", "variant", "option"].includes(poz.kind) ? poz.kind : "fixed";
       if (poz.groupKey !== undefined) item.groupKey = String(poz.groupKey ?? "").trim() || null;
       if (poz.selected !== undefined) item.selected = Boolean(poz.selected);
+      // Termin realizacji i znacznik ustalen. Puste pole terminu znaczy "nie
+      // wiem jeszcze" i ma zostac puste: zero czytaloby sie jak "od reki"
+      // i po cichu skracaloby termin calej paczki.
+      if (poz.leadDays !== undefined) {
+        const t = String(poz.leadDays ?? "").trim();
+        item.leadDays = t === "" ? null : Number(t);
+      }
+      // Pole wyboru w formularzu oddaje tekst, a nie wartosc logiczna: "1"
+      // znaczy zaznaczone, pusty napis znaczy odznaczone.
+      if (poz.requiresDetails !== undefined) {
+        item.requiresDetails = poz.requiresDetails === true || String(poz.requiresDetails) === "1";
+      }
     }
     if (!item.id && !item.title) return res.status(400).json({ ok: false, error: "Nowa pozycja musi miec nazwe" });
 
@@ -1602,6 +1614,9 @@ app.post("/queue/:ref/stage", requireAuth, async (req, res) => {
         stage: req.body.stage,
         trackingNumber: (req.body.trackingNumber || "").trim() || undefined,
         note: (req.body.note || "").trim() || undefined,
+        // Puste pole znaczy "dzisiaj". Paczka bywa nadana wczoraj, a zaznaczona
+        // dzisiaj, i wtedy termin realizacji wygladalby na przekroczony o dzien.
+        shippedOn: (req.body.shippedOn || "").trim() || undefined,
       },
     });
     back(res, req.body.back || "/queue", { msg: `${req.params.ref}: ${r.status}` });

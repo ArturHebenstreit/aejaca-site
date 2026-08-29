@@ -2226,6 +2226,19 @@ klient może zapłacić. Panel `/quotes` w adminie wciąga wszystkie cztery do j
     stojące przy tej grupie zostają. Z jednej oferty powstaje wtedy kilka zamówień, każde
     z własnym numerem i tytułem płatności. Termin ważności NIE przedłuża się po częściowej
     zapłacie: kruszec się rusza, a zapisany kurs jest z chwili wyceny.
+  - **Każda pozycja niesie termin realizacji w dniach kalendarzowych** (od 2026-08-29, ADR-0027).
+    Grupa wyboru bierze najdłuższy termin ze swoich pozycji, a zamówienie najdłuższy spośród
+    zapłaconych: paczka wychodzi jedna, więc całość czeka na to, co robi się najdłużej. Termin
+    zmienia się przy każdym kliknięciu razem z kwotą i zamraża się przy zapłacie. Znacznik
+    „wymaga ustalenia szczegółów realizacji” zatrzymuje zegar: po zapłacie zlecenie staje
+    w „Ustalanie szczegółów”, a termin rusza dopiero po ustaleniach. Dni robocze odrzucone
+    świadomie, żeby nie wciągać kalendarza świąt do pierwszej wersji.
+  - **Zlecenie po zapłacie ma cztery etapy**: Ustalanie szczegółów (zegar stoi), Zlecenie
+    w realizacji (zegar biegnie), Zrealizowane, Wysłane/Przekazane. Odbiór osobisty kończy się
+    przekazaniem, więc nie pytamy wtedy o list przewozowy. Przypomnienia dla pracowni idą na
+    14, 7, 3 i 0 dni przed terminem, wyłącznie na nasz adres, najwyżej jedno dziennie; osobno
+    odzywa się zlecenie stojące w ustalaniu dłużej niż trzy dni. **Po dniu wysyłki zlecenie
+    milknie**: przypomnienia po terminie zostały świadomie odrzucone.
   - **Strona zamówienia pokazuje to samo podsumowanie co mail** (od 2026-08-29): pozycje z kwotami,
     dostawę, rabat i stan płatności. Wcześniej niosła sam numer i sumę, a wejście bez numeru
     oznajmiało „czekamy na potwierdzenie płatności", czyli podawało stan zamówienia, którego

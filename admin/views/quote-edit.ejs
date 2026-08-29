@@ -298,7 +298,9 @@
                       data-meta="grupa" <%= it.kind === "fixed" ? 'style="display:none"' : "" %>>
                       &middot; grupa <span data-podglad="groupKey" class="font-mono"><%= it.groupKey || "wybor" %></span></span><% if (it.calculator) { %>
                       &middot; <%= it.calculator %><% } %><% if (it.fileName) { %>
-                      &middot; <%= it.fileName %><% } %>
+                      &middot; <%= it.fileName %><% } %><% if (it.leadDays) { %>
+                      &middot; <span data-podglad="leadDays"><%= it.leadDays %></span> dni<% } %><% if (it.requiresDetails) { %>
+                      &middot; <span class="text-sky-300">ustalenia</span><% } %>
                   </div>
                   <% if (zlecona(it)) { %>
                     <div class="text-emerald-300 text-[10px] mt-1">
@@ -387,6 +389,28 @@
                        O to chodzi w grupowaniu: nazwa musi byc DOKLADNIE ta sama. -->
                   <span data-podpowiedzi-grup class="flex flex-wrap gap-1 mt-1"></span>
                 </label>
+                <label class="block">
+                  <span class="text-neutral-500 text-[10px] block mb-1">Termin, dni</span>
+                  <input data-pole="leadDays" type="number" min="1" max="365" placeholder="np. 14"
+                         value="<%= it.leadDays != null ? it.leadDays : '' %>"
+                         class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
+                </label>
+                <label class="block">
+                  <span class="text-neutral-500 text-[10px] block mb-1">Wymaga ustalenia szczegółów</span>
+                  <select data-pole="requiresDetails" class="w-full rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white">
+                    <option value="" <%= it.requiresDetails ? "" : "selected" %>>nie, po zapłacie rusza termin</option>
+                    <option value="1" <%= it.requiresDetails ? "selected" : "" %>>tak, najpierw ustalenia</option>
+                  </select>
+                </label>
+                <p class="sm:col-span-6 text-neutral-600 text-[10px] leading-relaxed">
+                  <span class="text-neutral-400">Termin liczymy w dniach kalendarzowych.</span>
+                  Grupa wyboru bierze najdłuższy termin ze swoich pozycji, a całe zamówienie najdłuższy
+                  spośród zapłaconych, bo paczka wychodzi jedna. Pusty termin nie podnosi terminu
+                  zamówienia. <span class="text-neutral-400">Znacznik ustaleń</span> zatrzymuje zegar:
+                  po zapłacie zlecenie staje w „Ustalanie szczegółów”, a termin rusza dopiero, gdy
+                  przestawisz je w kolejce na „Zlecenie w realizacji”.
+                </p>
+
                 <label class="sm:col-span-6 block">
                   <span class="text-neutral-500 text-[10px] block mb-1">Opis: to, czego nie widać w nazwie</span>
                   <textarea data-pole="description" rows="2"

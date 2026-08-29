@@ -335,11 +335,65 @@ export function quoteSettled(quote) {
   return quoteOpenItems(quote).length === 0;
 }
 
+/**
+ * Termin realizacji grupy wyboru: NAJDLUZSZY sposrod jej pozycji.
+ *
+ * Decyzja wlasciciela z 2026-08-29. Grupa jest jednym elementem oferty, ale
+ * jej warianty potrafia sie roznic pracochlonnoscia i braniem terminu
+ * pierwszej pozycji zanizalibysmy go dla reszty. Najdluzszy jest tez spojny
+ * z regula calego zamowienia, wiec obie liczby mowia to samo.
+ */
+export function terminGrupy(pozycje) {
+  const dni = (pozycje || [])
+    .map((i) => Number(i.lead_days))
+    .filter((d) => Number.isFinite(d) && d > 0);
+  return dni.length ? Math.max(...dni) : null;
+}
+
+/**
+ * Termin realizacji tego, co klient placi TERAZ: najdluzszy z wybranych.
+ *
+ * Paczka wychodzi jedna, wiec calosc czeka na to, co robi sie najdluzej.
+ * Liczy sie z tych samych pozycji, co kwota (`selectedQuoteItems`), wiec
+ * przestawienie wariantu zmienia termin razem z cena i klient widzi obie
+ * liczby zgodne.
+ *
+ * @returns {number|null} null, gdy zadna wybrana pozycja nie ma terminu
+ */
+export function quoteLeadDays(quote) {
+  return terminGrupy(selectedQuoteItems(quote));
+}
+
+/**
+ * Czy to, co klient placi teraz, wymaga najpierw ustalenia szczegolow.
+ *
+ * Wystarczy JEDNA taka pozycja: zamowienie jest niepodzielne, wiec dopoki
+ * cokolwiek w nim czeka na rozmowe, zegar nie ma czego liczyc.
+ */
+export function quoteRequiresDetails(quote) {
+  return selectedQuoteItems(quote).some((i) => i.requires_details === true);
+}
+
 /** Stan oferty wynikajacy z pozycji: `partial`, `converted` albo nic. */
 function stanZPozycji(quote) {
   const items = quote?.items || [];
   if (!items.some((i) => !pozycjaWolna(i))) return null;
   return quoteOpenItems(quote).length ? "partial" : "converted";
+}
+
+/**
+ * Termin realizacji w postaci, ktora wolno zapisac. Jedna regula dla obu drog.
+ *
+ * Puste znaczy "nie wiem jeszcze" i zostaje puste, a nie zerem: pozycja bez
+ * terminu ma nie podnosic terminu zamowienia, a zero czytaloby sie jak
+ * "od reki" i po cichu skracaloby termin calej paczki.
+ */
+function dniRealizacji(wartosc) {
+  if (wartosc === null || wartosc === "" || wartosc === undefined) return null;
+  const dni = Math.floor(Number(wartosc));
+  if (!Number.isFinite(dni) || dni <= 0) throw new QuoteError("bad_lead", "Termin realizacji podaj w dniach, liczba dodatnia");
+  if (dni > 365) throw new QuoteError("bad_lead", "Termin realizacji ponad rok to nie termin, tylko obietnica bez pokrycia");
+  return dni;
 }
 
 /** Kwota jednostkowa w postaci, ktora wolno zapisac. Jedna regula dla obu drog. */
@@ -490,7 +544,11 @@ export async function availableDesignCredit(pool, email) {
        FROM orders o
        JOIN order_items i ON i.order_id = o.id AND i.calculator = 'cad_design'
       WHERE o.customer_email = $1
-        AND o.status = 'paid'
+        -- Kazdy stan PO zaplacie, nie sam stan "paid". Od ADR-0027 zaplata
+        -- pcha zamowienie od razu w etap pracy, wiec warunek na sam ten jeden
+        -- stan przestalby znajdowac cokolwiek i odliczenie za projekt po cichu
+        -- znikneloby z kasy.
+        AND o.status IN ('paid','details','in_production','ready','shipped','completed')
         AND o.credit_consumed_by IS NULL
         AND o.paid_at > NOW() - ($2 || ' days')::interval
         -- Doplaty za poprawki wisza przy projekcie i nie tworza wlasnego odliczenia.
@@ -662,6 +720,17 @@ export async function convertQuoteToOrder(
       throw new QuoteError("item_taken", "Czesc tej oferty zostala w miedzyczasie zlecona. Odswiez strone.");
     }
 
+    // Termin calego zamowienia to NAJDLUZSZY sposrod pozycji, ktore do niego
+    // wchodza: paczka wychodzi jedna, wiec calosc czeka na to, co robi sie
+    // najdluzej. Znacznik szczegolow wystarczy przy jednej pozycji, bo
+    // zamowienia nie da sie zaczac w polowie.
+    //
+    // Obie wartosci liczymy z koszyka JUZ ZABLOKOWANEGO, a nie z oferty
+    // wczytanej przed transakcja: klient placi za ten uklad, wiec i termin ma
+    // byc terminem tego ukladu.
+    const leadDays = terminGrupy(doZamowienia);
+    const wymagaSzczegolow = doZamowienia.some((i) => i.requires_details === true);
+
     // Zamowienie powstaje najpierw bez znizki, bo rezerwacja kodu potrzebuje
     // numeru zamowienia, ktory nadaje dopiero ten INSERT. Suma schodzi o kwote
     // znizki chwile pozniej, w tej samej transakcji, wiec na zewnatrz nie ma
@@ -674,11 +743,13 @@ export async function convertQuoteToOrder(
          delivery_method, delivery_point, address_line1, address_line2, postal_code, city, country,
          access_token, ip_hash, expires_at, credit_applied_grosze, payment_method,
          amount_eur_cents, eur_rate, eur_rate_locked_at,
-         accepted_terms_at, waived_withdrawal_at)
+         accepted_terms_at, waived_withdrawal_at,
+         lead_days, requires_details)
        -- 'quoted' jest jedyna dopuszczona przez CHECK w orders.kind obok 'instant'
        VALUES ($1,$25,'quoted',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
          $23,$24, CASE WHEN $23::INTEGER IS NULL THEN NULL ELSE NOW() END,
-         $21,$22)
+         $21,$22,
+         $26,$27)
        RETURNING id`,
       [orderRef, quote.lang, kwotaPozycji, shipping, total,
        email, name, phone,
@@ -698,7 +769,12 @@ export async function convertQuoteToOrder(
        przelew ? eurRate : null,
        // Przelew nie ma bramki, wiec zamowienie czeka na ksiegowanie, a nie
        // na przekierowanie. To ten sam stan, ktorego uzywa sklep.
-       przelew ? "awaiting_transfer" : "awaiting_payment"]
+       przelew ? "awaiting_transfer" : "awaiting_payment",
+       // Termin i znacznik ZAMRAZAMY tutaj, razem z kwota i kursem. Pozycja
+       // oferty zyje dalej i moze jeszcze zmienic termin, a to zamowienie ma
+       // zostac takie, jakie klient kupil. Sam zegar rusza dopiero przy
+       // wejsciu w etap pracy, wiec tu wpisujemy liczbe dni, nie date.
+       leadDays, wymagaSzczegolow]
     );
     const orderId = rows[0].id;
 
@@ -990,6 +1066,17 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
           wart.push(tekst(poz.description, 5000));
           zmiany.push(`description = $${wart.length}`);
         }
+        // Termin realizacji tej pozycji, w dniach kalendarzowych. Puste pole
+        // znaczy "nie wiem jeszcze", a nie "od reki": pozycja bez terminu po
+        // prostu nie podnosi terminu calego zamowienia.
+        if (poz.leadDays !== undefined) {
+          wart.push(dniRealizacji(poz.leadDays));
+          zmiany.push(`lead_days = $${wart.length}`);
+        }
+        if (poz.requiresDetails !== undefined) {
+          wart.push(Boolean(poz.requiresDetails));
+          zmiany.push(`requires_details = $${wart.length}`);
+        }
         if (poz.qty !== undefined) {
           const qty = Math.floor(Number(poz.qty));
           if (!Number.isFinite(qty) || qty < 1) throw new QuoteError("bad_qty", "Ilosc musi byc dodatnia");
@@ -1019,10 +1106,12 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
       const rodzaj = poz.kind === undefined ? "fixed" : (ITEM_KINDS.includes(poz.kind) ? poz.kind : null);
       if (!rodzaj) throw new QuoteError("bad_kind", "Rodzaj pozycji to skladnik, wariant albo dodatek");
       await client.query(
-        `INSERT INTO quote_items (quote_id, title, qty, description, unit_grosze, line_grosze, kind, group_key, selected)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        `INSERT INTO quote_items (quote_id, title, qty, description, unit_grosze, line_grosze, kind, group_key, selected,
+           lead_days, requires_details)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
         [quote.id, t, qty, tekst(poz.description, 5000), unit, unit == null ? null : unit * qty,
-         rodzaj, tekst(poz.groupKey, 40), poz.selected === undefined ? true : Boolean(poz.selected)]
+         rodzaj, tekst(poz.groupKey, 40), poz.selected === undefined ? true : Boolean(poz.selected),
+         dniRealizacji(poz.leadDays), Boolean(poz.requiresDetails)]
       );
       dodane++;
     }

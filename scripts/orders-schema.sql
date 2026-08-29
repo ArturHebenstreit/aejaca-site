@@ -24,8 +24,17 @@
 CREATE TABLE IF NOT EXISTS orders (
   id                BIGSERIAL PRIMARY KEY,
   order_ref         VARCHAR(32)  UNIQUE NOT NULL,   -- OrderID dla Autopay, A-Za-z0-9-_
+  -- Etap pracy JEST statusem zamowienia, a nie osobna kolumna obok (ADR-0013).
+  -- Klient widzi z tego dwie osie: stan platnosci i stan realizacji, ale to
+  -- jedna wartosc, wiec nie ma czego trzymac w zgodzie.
+  --   details       Ustalanie szczegolow zlecenia; ZEGAR NIE BIEGNIE
+  --   in_production Zlecenie w realizacji; tu startuje zegar i przypomnienia
+  --   ready         Zrealizowane, czeka na wysylke albo odbior
+  --   shipped       Wyslane albo przekazane
+  -- `paid` zostaje etapem wejsciowym dla zamowien sprzed ADR-0027 i dla tych,
+  -- ktorych zaplata nie zdazyla jeszcze pchnac dalej.
   status            VARCHAR(20)  NOT NULL DEFAULT 'draft'
-                    CHECK (status IN ('draft','awaiting_payment','awaiting_transfer','payment_review','paid','in_production','shipped','completed','cancelled','expired','refunded')),
+                    CHECK (status IN ('draft','awaiting_payment','awaiting_transfer','payment_review','paid','details','in_production','ready','shipped','completed','cancelled','expired','refunded')),
   -- 'instant' to zamowienie wycenione automatycznie, 'quoted' to wycena wystawiona recznie
   kind              VARCHAR(20)  NOT NULL DEFAULT 'instant' CHECK (kind IN ('instant','quoted')),
   lang              VARCHAR(5)   NOT NULL DEFAULT 'pl',
@@ -92,10 +101,34 @@ CREATE TABLE IF NOT EXISTS orders (
   -- od poczatku, ale dlugo nic ich nie ustawialo. Te kolumny zapisuja chwile
   -- wejscia w etap, a `chat-api/productionQueue.js` decyduje, z jakiego stanu
   -- w ktory etap wolno wejsc.
+  details_at            TIMESTAMPTZ,
   production_started_at TIMESTAMPTZ,
+  ready_at              TIMESTAMPTZ,
   shipped_at            TIMESTAMPTZ,
   completed_at          TIMESTAMPTZ,
   tracking_number       VARCHAR(64),
+
+  -- TERMIN REALIZACJI (ADR-0027).
+  --
+  -- `lead_days` zamraza sie przy skladaniu zamowienia i jest NAJDLUZSZYM
+  -- terminem sposrod pozycji, ktore do niego weszly: paczka wychodzi jedna,
+  -- wiec calosc czeka na to, co robi sie najdluzej.
+  --
+  -- `deadline_at` stempluje sie dopiero przy wejsciu w `in_production`, bo do
+  -- tej pory zegar nie biegnie. Trzymamy DATE, a nie liczbe dni, zeby termin
+  -- nie przesuwal sie sam przy kazdym odczycie.
+  lead_days             INTEGER CHECK (lead_days IS NULL OR lead_days > 0),
+  deadline_at           DATE,
+  -- Czy po zaplacie zlecenie idzie najpierw do ustalania szczegolow. Zamraza
+  -- sie razem z `lead_days`: znacznik przy pozycji moze sie pozniej zmienic,
+  -- a to zamowienie ma zostac takie, jakie klient kupil.
+  requires_details      BOOLEAN NOT NULL DEFAULT FALSE,
+  -- Ktore przypomnienia juz poszly, po nazwach progow: ["d14","d7","d3","d0"].
+  -- Bez tego zapisu codzienny przebieg wysylalby ten sam mail kazdego ranka.
+  reminders_sent        JSONB NOT NULL DEFAULT '[]'::jsonb,
+  -- Kiedy ostatnio szturchnelismy zlecenie stojace w ustalaniu szczegolow.
+  -- Ten etap nie ma terminu, wiec bez wlasnego stempla bylby slepa plama.
+  details_nudged_at     TIMESTAMPTZ,
   production_note       TEXT,
 
   -- Token do ogladania statusu zamowienia bez logowania
@@ -118,7 +151,11 @@ CREATE INDEX IF NOT EXISTS idx_orders_payment_review
   ON orders (payment_review_at DESC) WHERE status = 'payment_review';
 -- Kolejka pracowni pyta zawsze o to samo: co jest w robocie i co czeka najdluzej.
 CREATE INDEX IF NOT EXISTS idx_orders_queue
-  ON orders (paid_at ASC) WHERE status IN ('paid','in_production','shipped');
+  ON orders (paid_at ASC) WHERE status IN ('paid','details','in_production','ready','shipped');
+
+-- Przypomnienia czytaja to codziennie: zlecenia z biegnacym zegarem.
+CREATE INDEX IF NOT EXISTS idx_orders_deadline
+  ON orders (deadline_at) WHERE status = 'in_production' AND deadline_at IS NOT NULL;
 
 -- ------------------------------------------------------------
 -- Pozycje zamowienia

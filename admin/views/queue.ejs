@@ -3,7 +3,12 @@
 <%
   const STAN = {
     paid: { label: "Do zrobienia", klasa: "text-amber-300 border-amber-400/30 bg-amber-400/10" },
+    // Zaplacone, ale zegar STOI: czekamy na ustalenia z klientem. Ten etap
+    // nie ma terminu, wiec bez wlasnego miejsca w kolejce nie odezwalby sie
+    // znikad i to on gubilby zlecenia najlatwiej.
+    details: { label: "Ustalanie szczegółów", klasa: "text-purple-300 border-white/15 bg-white/5" },
     in_production: { label: "W robocie", klasa: "text-sky-300 border-sky-400/30 bg-sky-400/10" },
+    ready: { label: "Zrealizowane", klasa: "text-emerald-300 border-emerald-400/30 bg-emerald-400/10" },
     shipped: { label: "Wysłane", klasa: "text-indigo-300 border-indigo-400/30 bg-indigo-400/10" },
     completed: { label: "Zakończone", klasa: "text-emerald-300 border-emerald-400/30 bg-emerald-400/10" },
     cancelled: { label: "Anulowane", klasa: "text-neutral-400 border-white/15 bg-white/5" },
@@ -15,7 +20,7 @@
     { stan: "", label: "W toku" },
     { stan: "completed", label: "Zakończone" },
     { stan: "cancelled", label: "Anulowane" },
-    { stan: "paid,in_production,shipped,completed,cancelled", label: "Wszystko" },
+    { stan: "paid,details,in_production,ready,shipped,completed,cancelled", label: "Wszystko" },
   ];
   const DOSTAWA = {
     pickup: "Odbiór osobisty",
@@ -25,7 +30,7 @@
   };
   // Kolejnosc grup od pracy do zamkniecia. Wewnatrz kazdej kolejnosc daje
   // serwer, po dacie zaplaty, i widok jej nie rusza.
-  const GRUPY = ["paid", "in_production", "shipped", "completed", "cancelled"];
+  const GRUPY = ["details", "paid", "in_production", "ready", "shipped", "completed", "cancelled"];
 %>
 
   <main class="max-w-5xl mx-auto px-6 py-8">
@@ -131,7 +136,42 @@
                   <% } %>
                 </div>
 
+                <%# TERMIN REALIZACJI. Zegar biegnie WYLACZNIE w etapie
+                    "Zlecenie w realizacji": w ustalaniu szczegolow czekamy na
+                    klienta, a nie on na nas. %>
+                <% if (o.deadlineAt || o.leadDays) { %>
+                  <div class="mt-3 text-xs">
+                    <% if (o.status === "details") { %>
+                      <span class="text-sky-300">Ustalanie szczegółów</span>
+                      <span class="text-neutral-500">
+                        &middot; zegar stoi<% if (o.leadDays) { %>, po ustaleniach ruszy <%= o.leadDays %> dni<% } %>
+                      </span>
+                    <% } else if (o.deadlineAt) { %>
+                      <span class="text-neutral-600">Termin:</span>
+                      <span class="font-mono text-neutral-300"><%= String(o.deadlineAt).slice(0, 10) %></span>
+                      <% if (o.daysLeft != null && o.status !== "shipped" && o.status !== "completed") { %>
+                        <span class="<%= o.daysLeft < 0 ? 'text-red-300' : o.daysLeft <= 3 ? 'text-amber-300' : 'text-neutral-500' %>">
+                          &middot; <%= o.daysLeft < 0 ? Math.abs(o.daysLeft) + " dni po terminie"
+                                    : o.daysLeft === 0 ? "dzisiaj" : "za " + o.daysLeft + " dni" %>
+                        </span>
+                      <% } %>
+                    <% } %>
+                  </div>
+                <% } %>
+
                 <div class="mt-4 flex flex-wrap items-end gap-3">
+                  <% if (o.status === "details") { %>
+                    <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage" class="flex items-end gap-2">
+                      <input type="hidden" name="back" value="<%= POWROT %>" />
+                      <input type="hidden" name="stage" value="in_production" />
+                      <input name="note" placeholder="co ustalone (opcjonalnie)"
+                             class="w-64 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
+                      <button class="px-4 py-2 rounded-lg bg-amber-400 text-neutral-950 text-sm font-medium hover:bg-amber-300 transition-colors">
+                        Szczegóły ustalone, startuj termin
+                      </button>
+                    </form>
+                  <% } %>
+
                   <% if (o.status === "paid") { %>
                     <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage" class="flex items-end gap-2">
                       <input type="hidden" name="back" value="<%= POWROT %>" />
@@ -144,22 +184,44 @@
                     </form>
                   <% } %>
 
-                  <% if (o.status === "paid" || o.status === "in_production") { %>
-                    <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage" class="flex items-end gap-2">
+                  <% if (o.status === "in_production") { %>
+                    <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage">
                       <input type="hidden" name="back" value="<%= POWROT %>" />
-                      <input type="hidden" name="stage" value="shipped" />
-                      <label class="block">
-                        <span class="text-neutral-500 text-[10px] block mb-1">List przewozowy</span>
-                        <input name="trackingNumber" placeholder="numer przesyłki"
-                               class="w-48 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white font-mono" />
-                      </label>
-                      <button class="px-4 py-2 rounded-lg border border-white/15 text-neutral-200 text-sm hover:border-white/35 transition-colors">
-                        Wysłane
+                      <input type="hidden" name="stage" value="ready" />
+                      <button class="px-4 py-2 rounded-lg border border-emerald-400/30 text-emerald-300 text-sm hover:border-emerald-400/60 transition-colors">
+                        Zrealizowane
                       </button>
                     </form>
                   <% } %>
 
-                  <% if (o.status === "in_production" || o.status === "shipped") { %>
+                  <% if (["paid", "details", "in_production", "ready"].includes(o.status)) { %>
+                    <%# Odbior osobisty konczy sie przekazaniem, a nie wysylka:
+                        wtedy nie ma listu przewozowego i nie ma go czego pytac. %>
+                    <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage" class="flex items-end gap-2">
+                      <input type="hidden" name="back" value="<%= POWROT %>" />
+                      <input type="hidden" name="stage" value="shipped" />
+                      <% if (o.delivery.method !== "pickup") { %>
+                        <label class="block">
+                          <span class="text-neutral-500 text-[10px] block mb-1">List przewozowy</span>
+                          <input name="trackingNumber" placeholder="numer przesyłki"
+                                 class="w-48 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white font-mono" />
+                        </label>
+                      <% } %>
+                      <label class="block">
+                        <span class="text-neutral-500 text-[10px] block mb-1">Data<%= o.delivery.method === "pickup" ? " przekazania" : " nadania" %></span>
+                        <%# Puste pole znaczy "dzisiaj". Paczka bywa nadana wczoraj,
+                            a zaznaczona dzisiaj, i wtedy termin wygladalby na
+                            przekroczony o dzien. %>
+                        <input name="shippedOn" type="date"
+                               class="w-48 rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white" />
+                      </label>
+                      <button class="px-4 py-2 rounded-lg border border-white/15 text-neutral-200 text-sm hover:border-white/35 transition-colors">
+                        <%= o.delivery.method === "pickup" ? "Przekazane" : "Wysłane" %>
+                      </button>
+                    </form>
+                  <% } %>
+
+                  <% if (o.status === "in_production" || o.status === "ready" || o.status === "shipped") { %>
                     <form method="post" action="/queue/<%= encodeURIComponent(o.orderRef) %>/stage">
                       <input type="hidden" name="back" value="<%= POWROT %>" />
                       <input type="hidden" name="stage" value="completed" />
@@ -180,7 +242,7 @@
                       <span class="text-neutral-500 text-[10px] block mb-1">Etap</span>
                       <select name="stage" class="rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs text-white">
                         <option value="">bez zmiany</option>
-                        <% ["paid", "in_production", "shipped", "completed"].forEach(function (e) { %>
+                        <% ["paid", "details", "in_production", "ready", "shipped", "completed"].forEach(function (e) { %>
                           <% if (e !== o.status) { %><option value="<%= e %>"><%= STAN[e].label %></option><% } %>
                         <% }); %>
                       </select>

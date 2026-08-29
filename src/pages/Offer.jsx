@@ -82,6 +82,15 @@ const UI = {
     optionsHere: "Dodatki, jeśli chcesz",
     perPc: "za sztukę",
     pcs: "szt.",
+    leadItem: "termin",
+    leadDaysUnit: "dni",
+    leadDayUnit: "dzień",
+    leadNeedsDetails: "wymaga ustalenia szczegółów",
+    leadGroup: "Termin tej grupy",
+    leadTotalTitle: "Termin realizacji",
+    leadTotalDesc: "Liczymy najdłuższy z zaznaczonych pozycji, bo paczka wychodzi jedna. Czas biegnie od zapłaty.",
+    leadTotalDetails: "Zaznaczyłeś pozycję, która wymaga ustalenia szczegółów. Najpierw się odezwiemy, a czas realizacji ruszy dopiero po ustaleniach, więc nic Ci nie ucieka.",
+    leadNone: "Termin ustalimy przy potwierdzeniu.",
     note: "Zakres oferty: co wchodzi w kwotę",
     validUntil: "Oferta obowiązuje do",
     expiredTitle: "Ta oferta straciła ważność",
@@ -164,6 +173,15 @@ const UI = {
     optionsHere: "Add-ons, if you want them",
     perPc: "per piece",
     pcs: "pcs",
+    leadItem: "lead time",
+    leadDaysUnit: "days",
+    leadDayUnit: "day",
+    leadNeedsDetails: "details to be agreed first",
+    leadGroup: "Lead time for this group",
+    leadTotalTitle: "Lead time",
+    leadTotalDesc: "We take the longest of the ticked items, because the parcel goes out once. The clock starts at payment.",
+    leadTotalDetails: "You ticked an item whose details we need to agree first. We will get in touch, and the lead time starts only after that, so nothing is running out.",
+    leadNone: "We will agree the lead time when we confirm the order.",
     note: "What this offer covers",
     validUntil: "The offer is valid until",
     expiredTitle: "This offer has expired",
@@ -246,6 +264,15 @@ const UI = {
     optionsHere: "Zusätze, wenn Sie mögen",
     perPc: "pro Stück",
     pcs: "Stk.",
+    leadItem: "Lieferzeit",
+    leadDaysUnit: "Tage",
+    leadDayUnit: "Tag",
+    leadNeedsDetails: "Details sind vorher abzustimmen",
+    leadGroup: "Lieferzeit dieser Gruppe",
+    leadTotalTitle: "Lieferzeit",
+    leadTotalDesc: "Wir nehmen die längste der angehakten Positionen, denn das Paket geht einmal raus. Die Zeit läuft ab der Zahlung.",
+    leadTotalDetails: "Sie haben eine Position angehakt, deren Details wir zuerst abstimmen müssen. Wir melden uns, und die Lieferzeit beginnt erst danach, es geht Ihnen also nichts verloren.",
+    leadNone: "Die Lieferzeit stimmen wir bei der Bestätigung ab.",
     note: "Umfang des Angebots",
     validUntil: "Das Angebot gilt bis",
     expiredTitle: "Dieses Angebot ist abgelaufen",
@@ -304,10 +331,19 @@ const UI = {
  * Przy wariancie i dodatku ilosc schodzi z oczu (`bezIlosci`): licza sie
  * kwota i to, czym pozycja jest.
  */
+/** "5 dni" albo "1 dzien". Jedna regula, bo liczba stoi w trzech miejscach. */
+function dni(ile, u) {
+  return `${ile} ${ile === 1 ? u.leadDayUnit : u.leadDaysUnit}`;
+}
+
 function Wiersz({ it, money, u, bezIlosci = false }) {
   const drobiazgi = [
     bezIlosci ? null : `${it.qty} ${u.pcs}`,
     !bezIlosci && it.unitGrosze != null && it.qty > 1 ? `${money(it.unitGrosze)} ${u.perPc}` : null,
+    // Termin przy KAZDEJ pozycji, a nie tylko w podsumowaniu: klient wybiera
+    // miedzy wariantami takze czasem, nie samą ceną.
+    it.leadDays ? `${u.leadItem} ${dni(it.leadDays, u)}` : null,
+    it.requiresDetails ? u.leadNeedsDetails : null,
     it.fileName || null,
   ].filter(Boolean);
 
@@ -483,6 +519,10 @@ export default function Offer() {
     // polerowanie doklada sie do klucza, ktory klient wlasnie kupil.
     for (const karta of karty) {
       karta.rozstrzygnieta = karta.variants.some((v) => v.state && v.state !== "available");
+      const terminy = [...karta.variants, ...karta.options]
+        .map((i) => Number(i.leadDays))
+        .filter((d) => Number.isFinite(d) && d > 0);
+      karta.leadDays = terminy.length ? Math.max(...terminy) : null;
     }
     return { fixed, karty };
   }, [offer]);
@@ -780,6 +820,14 @@ export default function Offer() {
                     {karta.rozstrzygnieta && karta.variants.length > 1 && (
                       <p className="text-neutral-500 text-xs pt-1">{u.groupClosed}</p>
                     )}
+                    {/* Termin grupy to NAJDLUZSZY sposrod jej pozycji, ta sama
+                        regula co dla calego zamowienia. Dwie reguly znaczylyby
+                        dwie rozne liczby przy jednej karcie. */}
+                    {karta.leadDays ? (
+                      <p className="text-neutral-500 text-xs pt-1">
+                        {u.leadGroup}: {dni(karta.leadDays, u)}
+                      </p>
+                    ) : null}
 
                     {karta.options.length > 0 && (
                       <div className="text-neutral-500 text-xs pt-2">{u.optionsHere}</div>
@@ -815,6 +863,25 @@ export default function Offer() {
 
                 {chooseError && (
                   <p className="text-amber-300 text-xs mt-3">{chooseError}</p>
+                )}
+
+                {/* TERMIN CALOSCI. Zmienia sie przy kazdym klikniecu razem
+                    z kwota, bo obie liczby wynikaja z tego samego zaznaczenia
+                    i liczy je ten sam serwer. */}
+                {!domkniete && (offer.leadDays || offer.requiresDetails) && (
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-white text-sm font-medium">{u.leadTotalTitle}</span>
+                      <span className="text-white text-sm font-semibold shrink-0">
+                        {offer.requiresDetails
+                          ? u.leadNeedsDetails
+                          : offer.leadDays ? dni(offer.leadDays, u) : u.leadNone}
+                      </span>
+                    </div>
+                    <p className="text-neutral-500 text-xs leading-relaxed mt-1">
+                      {offer.requiresDetails ? u.leadTotalDetails : u.leadTotalDesc}
+                    </p>
+                  </div>
                 )}
 
                 {offer.priceNote && (

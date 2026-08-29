@@ -28,7 +28,10 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ETAPY_PRACY, ETAPY_KOLEJNO, przejscie, korekta } from "../chat-api/productionQueue.js";
+import { ETAPY_PRACY, ETAPY_KOLEJNO, przejscie, korekta,
+         etapPoZaplacie, terminRealizacji, dniDoTerminu, ETAP_Z_ZEGAREM } from "../chat-api/productionQueue.js";
+import { PROGI, progDoWyslania, szturchnacSzczegoly, nazwaProgu } from "../chat-api/deadlineReminders.js";
+import { terminGrupy, quoteLeadDays, quoteRequiresDetails } from "../chat-api/quotes.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SERWER = readFileSync(join(ROOT, "chat-api", "server.js"), "utf8");
@@ -208,6 +211,109 @@ console.log("\n6. Kasowanie zamowienia ma jedna trase i lamie warunki tylko na z
   // Warunki nadal maja pochodzic z jednego miejsca, a nie byc przepisane.
   if (/deletionBlockers\(\{/.test(trasa)) ok("warunki bierze z orderCleanup.js, a nie z wlasnej listy");
   else zle("trasa nie uzywa juz deletionBlockers, warunki rozjada sie z orderCleanup.js");
+}
+
+console.log("\n7. Termin realizacji: najdluzszy, i tylko z tego, co wybrane\n");
+{
+  const rowne = (a, b, opis) => (a === b ? ok(opis) : zle(`NIE ${opis} (jest ${a}, ma byc ${b})`));
+  const poz = (id, o = {}) => ({ id, qty: 1, unit_grosze: 10000, kind: "option", selected: true, lead_days: null, ...o });
+  const oferta = (items) => ({ pick_one: false, items });
+
+  // Paczka wychodzi jedna, wiec calosc czeka na to, co robi sie najdluzej.
+  // Wziecie sredniej albo pierwszej pozycji obiecywaloby termin, ktorego nie
+  // da sie dotrzymac, i to bez zadnego bledu po drodze.
+  rowne(terminGrupy([poz(1, { lead_days: 3 }), poz(2, { lead_days: 21 })]), 21, "grupa bierze termin najdluzszy");
+  rowne(terminGrupy([poz(1), poz(2)]), null, "grupa bez terminow nie wymysla terminu");
+  rowne(terminGrupy([poz(1, { lead_days: 5 }), poz(2)]), 5, "pozycja bez terminu nie zaniza terminu grupy");
+
+  // Termin liczy sie z TEGO, co klient placi teraz, tak samo jak kwota.
+  rowne(quoteLeadDays(oferta([poz(1, { lead_days: 5 }), poz(2, { lead_days: 30, selected: false })])), 5,
+        "odznaczona pozycja nie podnosi terminu");
+  rowne(quoteLeadDays(oferta([
+    poz(1, { lead_days: 30, order_id: 7, order_status: "paid" }),
+    poz(2, { lead_days: 5 }),
+  ])), 5, "pozycja juz sprzedana nie podnosi terminu reszty oferty");
+  rowne(quoteRequiresDetails(oferta([poz(1), poz(2, { requires_details: true })])), true,
+        "jedna pozycja z ustaleniami wystarczy, zeby zatrzymac zegar");
+  rowne(quoteRequiresDetails(oferta([poz(1), poz(2, { requires_details: true, selected: false })])), false,
+        "znacznik przy pozycji odznaczonej nie zatrzymuje zegara");
+
+  // Zaplata pcha zlecenie dalej, ale zegar czeka na ustalenia.
+  rowne(etapPoZaplacie(false), ETAP_Z_ZEGAREM, "bez znacznika zaplata od razu startuje termin");
+  rowne(etapPoZaplacie(true), "details", "ze znacznikiem zaplata zatrzymuje sie na ustaleniach");
+  ok("etap z zegarem to " + ETAP_Z_ZEGAREM);
+
+  rowne(terminRealizacji("2026-09-01T10:00:00Z", 14), "2026-09-15", "termin to data, a nie liczba dni");
+  rowne(terminRealizacji("2026-09-01T10:00:00Z", null), null, "bez liczby dni nie ma terminu");
+  rowne(terminRealizacji(null, 14), null, "bez chwili startu nie ma terminu");
+  rowne(dniDoTerminu("2026-09-15", new Date("2026-09-10T23:00:00Z")), 5, "dni do terminu liczy sie po dniach, nie po godzinach");
+  rowne(dniDoTerminu("2026-09-15", new Date("2026-09-15T06:00:00Z")), 0, "w dniu terminu zostaje zero");
+  rowne(dniDoTerminu("2026-09-15", new Date("2026-09-18T06:00:00Z")), -3, "po terminie liczba jest ujemna");
+}
+
+console.log("\n8. Przypomnienia: jeden prog na przebieg, zaden dwa razy\n");
+{
+  const rowne = (a, b, opis) => (a === b ? ok(opis) : zle(`NIE ${opis} (jest ${a}, ma byc ${b})`));
+
+  rowne(progDoWyslania(20, []), null, "przed pierwszym progiem nic nie wychodzi");
+  rowne(progDoWyslania(14, [])?.prog, 14, "czternascie dni przed terminem odzywa sie prog 14");
+  rowne(progDoWyslania(13, [])?.prog, 14, "prog raz przekroczony odzywa sie takze dzien pozniej");
+  rowne(progDoWyslania(13, ["d14"])?.prog, undefined, "prog juz wyslany nie wraca");
+  rowne(progDoWyslania(7, ["d14"])?.prog, 7, "kolejny prog odzywa sie osobno");
+  rowne(progDoWyslania(0, ["d14", "d7", "d3"])?.prog, 0, "w dniu wysylki odzywa sie prog zerowy");
+  rowne(progDoWyslania(-5, ["d14", "d7", "d3", "d0"]), null, "po terminie i po wszystkich progach jest cisza");
+
+  // SEDNO. Zlecenie z terminem dwudniowym przekracza progi 14, 7 i 3 w tej
+  // samej chwili. Bez domykania dalszych progow dostalibysmy trzy maile
+  // jednego ranka o jednej rzeczy, a szum sie ignoruje razem z trescia.
+  const krotkie = progDoWyslania(2, []);
+  rowne(krotkie?.prog, 3, "krotki termin bierze prog najblizszy prawdzie");
+  rowne(krotkie?.domkniete.join(","), "d14,d7,d3", "dalsze progi zamykaja sie tym samym mailem");
+  rowne(progDoWyslania(2, krotkie.domkniete), null, "po domknieciu nic sie juz nie powtarza");
+  rowne(PROGI.join(","), "14,7,3,0", "progi stoja od najdalszego, bo tak sie je czyta");
+  rowne(nazwaProgu(7), "d7", "nazwa progu jest krotka, bo stoi w bazie");
+
+  // Ustalanie szczegolow nie ma terminu, wiec ma wlasny rytm.
+  const dzien = 86400_000;
+  const teraz = new Date("2026-09-10T08:00:00Z");
+  rowne(szturchnacSzczegoly(new Date(teraz - 2 * dzien), null, teraz), false, "przez trzy dni nie zawracamy sobie glowy");
+  rowne(szturchnacSzczegoly(new Date(teraz - 3 * dzien), null, teraz), true, "po trzech dniach stania przychodzi szturchniecie");
+  rowne(szturchnacSzczegoly(new Date(teraz - 9 * dzien), new Date(teraz - 1 * dzien), teraz), false,
+        "liczymy od ostatniego odezwania sie, nie od wejscia w etap");
+  rowne(szturchnacSzczegoly(new Date(teraz - 9 * dzien), new Date(teraz - 4 * dzien), teraz), true,
+        "po kolejnych trzech dniach szturchamy znowu");
+  rowne(szturchnacSzczegoly(null, null, teraz), false, "bez stempla wejscia nie ma czego liczyc");
+}
+
+console.log("\n9. Nowe etapy sa wpiete wszedzie, nie tylko w regule\n");
+{
+  const SCHEMAT = readFileSync(join(ROOT, "scripts", "orders-schema.sql"), "utf8");
+  const SERWER = readFileSync(join(ROOT, "chat-api", "server.js"), "utf8");
+  const KOLEJKA = readFileSync(join(ROOT, "admin", "views", "queue.ejs"), "utf8");
+  const ma = (tekst, wzor, opis) => (wzor.test(tekst) ? ok(opis) : zle(`NIE ${opis}`));
+
+  for (const etap of ["details", "ready"]) {
+    ma(SCHEMAT, new RegExp(`'${etap}'`), `schemat zamowien zna etap ${etap}`);
+    ma(SERWER, new RegExp(`'${etap}'`), `migracja statusow zna etap ${etap}`);
+    ma(KOLEJKA, new RegExp(`\\b${etap}\\b`), `kolejka w panelu pokazuje etap ${etap}`);
+  }
+  // Etap bez miejsca w kolejce jest etapem, do ktorego zlecenie wpada i z
+  // ktorego nikt go nie wyciaga, bo nikt go nie widzi.
+  ma(KOLEJKA, /const GRUPY = \["details"/, "ustalanie szczegolow stoi na gorze kolejki");
+  ma(SERWER, /DOZWOLONE_STANY = \["paid", "details", "in_production", "ready"/, "kolejka wpuszcza nowe etapy");
+  ma(SERWER, /: \["paid", "details", "in_production", "ready", "shipped"\]/, "domyslny widok kolejki pokazuje nowe etapy");
+  // Odliczenie za projekt czytalo sam stan "paid". Od chwili, w ktorej zaplata
+  // pcha zamowienie dalej, taki warunek nie znajduje juz niczego.
+  ma(readFileSync(join(ROOT, "chat-api", "quotes.js"), "utf8"),
+     /o\.status IN \('paid','details','in_production','ready','shipped','completed'\)/,
+     "odliczenie za projekt widzi zamowienia po zaplacie");
+  ma(SERWER, /async function ruszZlecenie/, "zaplata ma czym ruszyc zlecenie");
+  ma(SERWER, /AND status = 'paid' RETURNING id/, "start zlecenia da sie powtorzyc bez szkody");
+  ma(SERWER, /cron\.schedule\("0 7 \* \* \*", przypomnijOTerminach/, "przeglad terminow jedzie raz na dobe");
+  // Zapis "wyslane" przed wysylka zamknalby prog na zawsze przy pierwszej
+  // awarii poczty, i to po cichu.
+  ma(SERWER, /if \(!await sendDeadlineReminder[\s\S]{0,200}?continue;[\s\S]{0,200}?UPDATE orders SET reminders_sent/,
+     "prog zapisuje sie dopiero po udanej wysylce");
 }
 
 console.log(bledy ? `\n${bledy} bledow\n` : "\nKolejka pracowni: wszystko sie zgadza\n");

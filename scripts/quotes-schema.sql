@@ -102,6 +102,17 @@ CREATE TABLE IF NOT EXISTS quote_items (
   group_key     VARCHAR(40),
   selected      BOOLEAN NOT NULL DEFAULT TRUE,
 
+  -- TERMIN REALIZACJI TEJ POZYCJI, w dniach kalendarzowych (ADR-0027).
+  -- Nie w roboczych: decyzja wlasciciela z 2026-08-29, zeby nie wciagac
+  -- kalendarza swiat do pierwszej wersji. Grupa wyboru bierze termin
+  -- NAJDLUZSZY sposrod swoich pozycji, a cale zamowienie najdluzszy sposrod
+  -- zaplaconych, bo paczka wychodzi jedna.
+  lead_days     INTEGER CHECK (lead_days IS NULL OR lead_days > 0),
+  -- "Wymaga ustalenia szczegolow realizacji". Zaplata za taka pozycje NIE
+  -- uruchamia zegara: zlecenie staje w `details`, a zegar rusza dopiero, gdy
+  -- przestawimy je na `in_production`.
+  requires_details BOOLEAN NOT NULL DEFAULT FALSE,
+
   -- Parametry wyboru klienta, w tej samej postaci co w order_items.
   params        JSONB,
   -- Opis slowny: to, czego nie widac w parametrach.

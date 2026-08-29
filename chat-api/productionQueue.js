@@ -23,10 +23,31 @@
  * etapu "w robocie" uczyloby wylacznie klikania na sile.
  */
 export const ETAPY_PRACY = {
-  in_production: { z: ["paid"], pole: "production_started_at" },
-  shipped: { z: ["paid", "in_production"], pole: "shipped_at" },
-  completed: { z: ["in_production", "shipped"], pole: "completed_at" },
+  // Ustalanie szczegolow zlecenia. ZEGAR TU NIE BIEGNIE: czekamy na rozmowe
+  // z klientem, a nie na warsztat, wiec liczenie mu terminu byloby liczeniem
+  // czasu, ktory zuzywa on, a nie my.
+  details: { z: ["paid"], pole: "details_at" },
+  in_production: { z: ["paid", "details"], pole: "production_started_at" },
+  // Zrobione, czeka na wysylke albo na odbior. Osobny etap, bo miedzy
+  // skonczeniem pracy a wydaniem paczki potrafi minac kilka dni i to wlasnie
+  // tam gubily sie zlecenia.
+  ready: { z: ["in_production"], pole: "ready_at" },
+  shipped: { z: ["paid", "details", "in_production", "ready"], pole: "shipped_at" },
+  completed: { z: ["in_production", "ready", "shipped"], pole: "completed_at" },
 };
+
+/**
+ * Etap, w ktorym biegnie termin realizacji.
+ *
+ * Jedno miejsce, bo pytaja o to trzy strony naraz: przypomnienia (kogo
+ * pilnowac), panel (ile dni zostalo) i strona klienta (ile dni do wysylki).
+ * Trzy odpowiedzi na to samo pytanie znaczylyby klienta, ktory widzi inny
+ * termin niz my.
+ */
+export const ETAP_Z_ZEGAREM = "in_production";
+
+/** Etapy PO zaplacie: zamowienie jest nasze do zrobienia. */
+export const ETAPY_PO_ZAPLACIE = ["paid", "details", "in_production", "ready", "shipped", "completed"];
 
 /**
  * Czy taki etap w ogole istnieje.
@@ -67,12 +88,14 @@ export function przejscie(obecny, etap) {
  * byc prawda po cofnieciu. Zamowienie cofniete z "wyslane" do "w robocie" nie
  * moze dalej niesc daty wysylki, bo nic nie wyjechalo.
  */
-export const ETAPY_KOLEJNO = ["paid", "in_production", "shipped", "completed"];
+export const ETAPY_KOLEJNO = ["paid", "details", "in_production", "ready", "shipped", "completed"];
 
 /** Kolumna ze stemplem dla etapu, albo null dla `paid` (stempluje go platnosc). */
 const STEMPEL = {
   paid: null,
+  details: "details_at",
   in_production: "production_started_at",
+  ready: "ready_at",
   shipped: "shipped_at",
   completed: "completed_at",
 };
@@ -102,5 +125,64 @@ export function korekta(obecny, etap) {
   const doWyczyszczenia = ETAPY_KOLEJNO.slice(odIndeksu + 1)
     .map((e) => STEMPEL[e])
     .filter(Boolean);
+  // Cofniecie PRZED etap z zegarem zabiera takze termin i slad po wyslanych
+  // przypomnieniach. Zostawiony termin byloby data policzona z pracy, ktora
+  // jeszcze sie nie zaczela, a zostawione przypomnienia zamknelyby drugie
+  // podejscie: progi juz raz wyslane nie odezwalyby sie ponownie.
+  if (odIndeksu < ETAPY_KOLEJNO.indexOf(ETAP_Z_ZEGAREM)) {
+    doWyczyszczenia.push("deadline_at");
+    doWyczyszczenia.push("reminders_sent");
+  }
   return { ok: true, doWyczyszczenia };
+}
+
+/**
+ * Etap, w ktory wpada zamowienie w chwili zaplaty.
+ *
+ * Do ADR-0027 kazde zamowienie zostawalo w `paid` az ktos kliknal w panelu.
+ * Teraz zaplata od razu pcha je dalej, bo to ona jest momentem, w ktorym
+ * praca sie zaczyna. Zlecenie ze znacznikiem "wymaga ustalenia szczegolow"
+ * idzie najpierw do rozmowy i wtedy zegar czeka.
+ *
+ * @param {boolean} wymagaSzczegolow znacznik zamrozony na zamowieniu
+ * @returns {"details"|"in_production"}
+ */
+export function etapPoZaplacie(wymagaSzczegolow) {
+  return wymagaSzczegolow ? "details" : ETAP_Z_ZEGAREM;
+}
+
+/**
+ * Termin realizacji: dzien, na ktory umowilismy sie z klientem.
+ *
+ * Liczymy w dniach KALENDARZOWYCH, nie roboczych (decyzja wlasciciela
+ * z 2026-08-29). Wynik jest data, a nie liczba dni, bo liczba przeliczana
+ * przy kazdym odczycie przesuwalaby termin razem z data odczytu.
+ *
+ * @param {Date|string} start chwila wejscia w etap z zegarem
+ * @param {number|null} dni termin zamrozony na zamowieniu
+ * @returns {string|null} data w postaci RRRR-MM-DD
+ */
+export function terminRealizacji(start, dni) {
+  const d = Number(dni);
+  if (!start || !Number.isFinite(d) || d <= 0) return null;
+  const od = new Date(start);
+  if (Number.isNaN(od.getTime())) return null;
+  return new Date(od.getTime() + d * 86400_000).toISOString().slice(0, 10);
+}
+
+/**
+ * Ile dni zostalo do terminu. Liczy SERWER, i to jest istotne.
+ *
+ * Data w JSX zmienia sie miedzy buildem a ogladaniem, wiec React uznaje to za
+ * rozjazd i wyrzuca cale poddrzewo (ADR-0022). Strona dostaje wiec gotowa
+ * liczbe, a nie material do liczenia.
+ *
+ * @returns {number|null} ujemna liczba znaczy dni PO terminie
+ */
+export function dniDoTerminu(deadline, teraz = new Date()) {
+  if (!deadline) return null;
+  const cel = new Date(`${String(deadline).slice(0, 10)}T00:00:00Z`);
+  if (Number.isNaN(cel.getTime())) return null;
+  const dzis = new Date(`${teraz.toISOString().slice(0, 10)}T00:00:00Z`);
+  return Math.round((cel.getTime() - dzis.getTime()) / 86400_000);
 }

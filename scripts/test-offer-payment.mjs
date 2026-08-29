@@ -323,7 +323,11 @@ console.log("\n8. Strona zamowienia mowi, o ktore zamowienie chodzi\n");
   ma(STATUS, /zaplacone \? u\.paidLabel : u\.toPayLabel/, "podsumowanie mowi, czy kwota jest juz zaplacona");
   // Stany dalsze niz `paid` tez sa oplacone. Bez nich strona mowilaby klientowi
   // w produkcji, ze czekamy na jego wplate.
-  ma(STATUS, /\["paid", "in_production", "shipped", "completed"\]\.includes/, "produkcja i wysylka licza sie jako zaplacone");
+  // Lista musi obejmowac KAZDY etap po zaplacie, razem z ustalaniem szczegolow
+  // i "zrealizowane" (ADR-0027). Pominiecie ktoregokolwiek znaczy podsumowanie
+  // mowiace "do zaplaty" komus, kto juz zaplacil.
+  ma(STATUS, /\["paid", "details", "in_production", "ready", "shipped", "completed"\]\.includes/,
+     "kazdy etap po zaplacie liczy sie jako zaplacony");
   // Backend i strona wdrazaja sie osobno, wiec kwota musi miec swoje miejsce
   // takze wtedy, gdy API jeszcze nie przysyla pozycji.
   ma(STATUS, /!order\.items \|\| !order\.items\.length/, "kwota ma zapas na starsze API bez pozycji");
