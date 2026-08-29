@@ -786,6 +786,7 @@ button:hover img.tile-dim, a:hover img.tile-dim { filter: brightness(var(--tile-
    skryptu, czytajaca plik linia po linii, po prostu ich nie widziala. Kazda
    z nich znikala na kremowym tle albo nie reagowala na kursor. */
 [data-theme="light"] .text-sky-300           { color: #0369a1 !important; }  /* aktywna opcja w kalkulatorze */
+[data-theme="light"] .text-sky-300\/80       { color: #0369a1 !important; }  /* oferta czesciowo zlecona */
 [data-theme="light"] .text-orange-300        { color: #9a3412 !important; }
 [data-theme="light"] .text-amber-50          { color: #78350f !important; }  /* tekst dymka rozmowy */
 [data-theme="light"] .bg-blue-950            { background-color: rgba(30,64,175,0.08) !important; }

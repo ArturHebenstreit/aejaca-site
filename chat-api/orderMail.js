@@ -791,6 +791,106 @@ export function buildPaymentReviewMessage(order) {
   };
 }
 
+/**
+ * Przypomnienie o terminie realizacji. Idzie WYLACZNIE do nas.
+ *
+ * Klient dostal termin w ofercie i widzi go na stronie zamowienia; codzienne
+ * dopowiadanie mu, ile dni zostalo, zamienilo by nasza dyscypline w jego
+ * niepokoj. To jest narzedzie pracowni, nie kanal obslugi.
+ */
+function buildDeadlineReminder(order, items, dniDoTerminu) {
+  const kiedy = dniDoTerminu > 0
+    ? `za ${dniDoTerminu} ${dniDoTerminu === 1 ? "dzien" : "dni"}`
+    : dniDoTerminu === 0 ? "DZISIAJ" : `${Math.abs(dniDoTerminu)} dni TEMU`;
+
+  const text = [
+    `TERMIN REALIZACJI ${order.order_ref}: ${kiedy}`,
+    "",
+    `Termin: ${String(order.deadline_at || "").slice(0, 10)}`,
+    `Praca ruszyla: ${order.production_started_at ? new Date(order.production_started_at).toISOString().slice(0, 10) : "-"}`,
+    `Umowiony czas: ${order.lead_days || "-"} dni`,
+    `Klient: ${order.customer_name || "(brak nazwiska)"} <${order.customer_email || "brak"}>`,
+    `Dostawa: ${order.delivery_method || "-"}`,
+    "",
+    "Pozycje:",
+    ...items.map((i) => `  - ${i.title} x ${i.qty}`),
+    "",
+    dniDoTerminu < 0
+      ? "Termin minal. Odezwij sie do klienta, zanim on odezwie sie do nas."
+      : "Gdy paczka wyszla albo rzecz zostala przekazana, zaznacz to w kolejce: wtedy przypomnienia milkna.",
+  ].join("\n");
+
+  return {
+    to: INTERNAL_TO,
+    from: FROM,
+    replyTo: order.customer_email || undefined,
+    subject: `[TERMIN ${kiedy}] ${order.order_ref}`,
+    text,
+    html: `<pre style="font-family:ui-monospace,monospace;font-size:13px;white-space:pre-wrap">${esc(text)}</pre>`,
+  };
+}
+
+/** Zlecenie zaplacone, ktore stoi w ustalaniu szczegolow i nikt go nie rusza. */
+function buildDetailsNudge(order, items, dniStania) {
+  const text = [
+    `USTALANIE SZCZEGOLOW STOI OD ${dniStania} DNI: ${order.order_ref}`,
+    "",
+    "Klient zaplacil, a zlecenie czeka na ustalenie szczegolow. Zegar realizacji",
+    "NIE BIEGNIE, wiec to zlecenie nie odezwie sie samo z terminem.",
+    "",
+    `Klient: ${order.customer_name || "(brak nazwiska)"} <${order.customer_email || "brak"}>`,
+    `Telefon: ${order.customer_phone || "-"}`,
+    `Umowiony czas po ustaleniach: ${order.lead_days || "-"} dni`,
+    "",
+    "Pozycje:",
+    ...items.map((i) => `  - ${i.title} x ${i.qty}`),
+    "",
+    "Po ustaleniach przestaw zlecenie w kolejce na \"Zlecenie w realizacji\": dopiero wtedy rusza termin.",
+  ].join("\n");
+
+  return {
+    to: INTERNAL_TO,
+    from: FROM,
+    replyTo: order.customer_email || undefined,
+    subject: `[USTALENIA ${dniStania} dni] ${order.order_ref}`,
+    text,
+    html: `<pre style="font-family:ui-monospace,monospace;font-size:13px;white-space:pre-wrap">${esc(text)}</pre>`,
+  };
+}
+
+/** Pozycje zamowienia w postaci, ktorej potrzebuja oba przypomnienia. */
+async function pozycjeZamowienia(pool, orderId) {
+  const { rows } = await pool.query(
+    "SELECT title, qty FROM order_items WHERE order_id = $1 ORDER BY id",
+    [orderId]
+  );
+  return rows;
+}
+
+/**
+ * @returns {Promise<boolean>} czy mail naprawde wyszedl. Wynik ma znaczenie:
+ *   zapis "wyslane" bez wyslania zamknalby ten prog na zawsze.
+ */
+export async function sendDeadlineReminder(pool, order, dniDoTerminu) {
+  try {
+    const items = await pozycjeZamowienia(pool, order.id);
+    return await sendViaGmail([buildDeadlineReminder(order, items, dniDoTerminu)]);
+  } catch (e) {
+    console.error("[termin] przypomnienie nie zostalo wyslane:", e.message);
+    return false;
+  }
+}
+
+export async function sendDetailsNudge(pool, order, dniStania) {
+  try {
+    const items = await pozycjeZamowienia(pool, order.id);
+    return await sendViaGmail([buildDetailsNudge(order, items, dniStania)]);
+  } catch (e) {
+    console.error("[ustalenia] szturchniecie nie zostalo wyslane:", e.message);
+    return false;
+  }
+}
+
 export async function sendPaymentReviewAlert(pool, orderId) {
   try {
     const { rows } = await pool.query("SELECT * FROM orders WHERE id = $1", [orderId]);

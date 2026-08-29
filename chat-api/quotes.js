@@ -134,6 +134,69 @@ export const ITEM_KINDS = ["fixed", "variant", "option"];
 /** Grupa dla wariantu, ktory jej nie dostal. Jedna karta, jeden wybor. */
 export const DEFAULT_GROUP = "wybor";
 
+/**
+ * Zamowienie zyje, ale jeszcze nie jest zaplacone: pozycja jest ZAJETA.
+ * Ktos wlasnie za nia placi, wiec nie wolno jej sprzedac drugi raz, ale nie
+ * jest tez jeszcze nasza do wykonania.
+ */
+const ZAMOWIENIE_W_TOKU = new Set(["draft", "awaiting_payment", "awaiting_transfer", "payment_review"]);
+
+/** Zamowienie doszlo do skutku: pozycja jest ZAMKNIETA i znika z oferty. */
+const ZAMOWIENIE_DOSZLO = new Set(["paid", "in_production", "shipped", "completed", "refunded"]);
+
+/**
+ * Stan pozycji oferty: `wolna`, `zajeta` albo `zamknieta`.
+ *
+ * ZAPLATA ZAMYKA POZYCJE, A NIE CALA OFERTE (ADR-0026). Klient, ktory kupil
+ * jeden z trzech dodatkow, ma wrocic pod ten sam link i kupic drugi, nie
+ * zobaczyc wszystkiego wyszarzonego.
+ *
+ * Stan NIE jest osobnym polem, tylko wynika ze stanu zamowienia, ktore
+ * pozycje wzielo. Dzieki temu porzucona platnosc oddaje pozycje do oferty
+ * SAMA, w chwili gdy zamiatarka przestawi zamowienie na `expired`. Flaga
+ * "oplacona" wymagalaby drugiego zapisu przy kazdym przejsciu zamowienia
+ * i rozjechalaby sie z nim przy pierwszym, o ktorym ktos zapomni.
+ *
+ * Stanu nieznanego nie bierzemy za wolny: pomylka w te strone kaze klientowi
+ * zapytac, a w druga sprzedaje mu drugi raz to, co juz od nas dostal.
+ */
+export function stanPozycji(item) {
+  if (item?.order_id == null) return "wolna";
+  const stan = String(item.order_status || "");
+  // Zamowienie porzucone albo odwolane oddaje pozycje z powrotem do oferty.
+  if (stan === "expired" || stan === "cancelled") return "wolna";
+  if (ZAMOWIENIE_DOSZLO.has(stan)) return "zamknieta";
+  if (ZAMOWIENIE_W_TOKU.has(stan)) return "zajeta";
+  return "zajeta";
+}
+
+/** Skrot na najczestsze pytanie: czy pozycje da sie jeszcze kupic. */
+export function pozycjaWolna(item) {
+  return stanPozycji(item) === "wolna";
+}
+
+/**
+ * Grupy wariantow, w ktorych wybor zostal juz przypieczetowany.
+ *
+ * Wariant i dodatek zachowuja sie tu inaczej i musza. Trzy dodatki to trzy
+ * niezalezne rzeczy: klient bierze jeden, wraca za tydzien po drugi. Trzy
+ * warianty to "klucz 56 ALBO 68 mm": kiedy klient kupi jeden, druga
+ * alternatywa nie jest "nadal dostepna", tylko przestala istniec, bo
+ * powiedzielismy mu, ze wybiera JEDNO. Bez tego "albo, albo" zamienia sie
+ * po cichu w sklep, w ktorym da sie kupic oba.
+ *
+ * Dodatki z tej samej grupy zostaja otwarte: polerowanie doklada sie do
+ * klucza, ktory klient wlasnie kupil, i po to tam stoi.
+ */
+export function zamknieteGrupy(quote) {
+  const zamkniete = new Set();
+  for (const i of quote?.items || []) {
+    if (rodzajPozycji(quote, i) !== "variant") continue;
+    if (!pozycjaWolna(i)) zamkniete.add(String(i.group_key || DEFAULT_GROUP));
+  }
+  return zamkniete;
+}
+
 /** Czy pozycje niosa juz nowy podzial, czy to jeszcze stara oferta z `pick_one`. */
 function maRodzaje(items) {
   return (items || []).some((i) => i.kind === "variant" || i.kind === "option");
@@ -154,9 +217,12 @@ function rodzajPozycji(quote, item) {
  * rabat, strona oferty i panel czytaja to samo, bo rozjazd miedzy nimi znaczy
  * zamowienie na inna rzecz niz ta, za ktora klient zaplacil.
  *
- * Wybor w grupie NIGDY nie jest pusty: bez wskazania bierzemy pierwszy
- * wyceniony wariant. Dzieki temu `total_grosze` zawsze znaczy KWOTE DO ZAPLATY
- * i zadna bramka nie musi uczyc sie stanu "jeszcze nie wybrano".
+ * Wybor w OTWARTEJ grupie nigdy nie jest pusty: bez wskazania bierzemy
+ * pierwszy wyceniony wariant. Grupa, w ktorej klient juz kupil wariant, nie
+ * daje nic: jej wybor sie skonczyl.
+ *
+ * Pozycje juz sprzedane odpadaja na wejsciu, wiec wynik to zawsze "co klient
+ * placi TERAZ", a nie "co bylo w ofercie na poczatku".
  *
  * @returns {Array<object>} pozycje w kolejnosci z wyceny
  */
@@ -166,8 +232,14 @@ export function selectedQuoteItems(quote) {
 
   const wybrane = new Set();
   const grupy = new Map();
+  // Pozycja juz sprzedana nie jest czescia tego, co klient placi TERAZ.
+  // To jedno zdanie zalatwia wszystkie cztery bramki naraz: strona oferty
+  // pokazuje kwote za reszte, rabat liczy sie od reszty, a do nowego
+  // zamowienia nie wejdzie rzecz, ktora klient ma juz w realizacji.
+  const zamkniete = zamknieteGrupy(quote);
 
   for (const i of items) {
+    if (!pozycjaWolna(i)) continue;
     const rodzaj = rodzajPozycji(quote, i);
     if (rodzaj === "fixed") { wybrane.add(Number(i.id)); continue; }
     if (rodzaj === "option") {
@@ -176,6 +248,9 @@ export function selectedQuoteItems(quote) {
       continue;
     }
     const klucz = String(i.group_key || DEFAULT_GROUP);
+    // Wybor w tej grupie jest juz przypieczetowany zaplata: pozostale
+    // propozycje byly alternatywami, a nie rzeczami do dokupienia.
+    if (zamkniete.has(klucz)) continue;
     if (!grupy.has(klucz)) grupy.set(klucz, []);
     grupy.get(klucz).push(i);
   }
@@ -227,6 +302,100 @@ export function quoteGroups(quote) {
   return { fixed: rachunek, groups: [...karty.values()] };
 }
 
+/**
+ * Pozycje, ktore klient moze jeszcze kupic.
+ *
+ * Nie to samo, co `selectedQuoteItems`: tam liczy sie ZAZNACZENIE, tu sama
+ * dostepnosc. Odznaczony dodatek nie wchodzi do kwoty, ale dalej stoi
+ * w ofercie i klient moze po niego wrocic, wiec oferta z nim nie jest
+ * jeszcze domknieta.
+ */
+export function quoteOpenItems(quote) {
+  const zamkniete = zamknieteGrupy(quote);
+  return (quote?.items || []).filter((i) => {
+    if (!pozycjaWolna(i)) return false;
+    // Bez kwoty nie ma czego kupic. Taka pozycja czeka na nas, nie na klienta.
+    if (i.unit_grosze == null) return false;
+    if (rodzajPozycji(quote, i) !== "variant") return true;
+    return !zamkniete.has(String(i.group_key || DEFAULT_GROUP));
+  });
+}
+
+/**
+ * Czy w ofercie nie zostalo juz nic do wziecia.
+ *
+ * Oferta swiezo wyceniona, ktorej nikt jeszcze nie tknal, NIE jest domknieta,
+ * choc tez nie ma w niej zamowien. Rozstrzyga wiec jedno i drugie naraz:
+ * cos zostalo wziete ORAZ nic nie zostalo.
+ */
+export function quoteSettled(quote) {
+  const items = quote?.items || [];
+  if (!items.length) return false;
+  if (!items.some((i) => !pozycjaWolna(i))) return false;
+  return quoteOpenItems(quote).length === 0;
+}
+
+/**
+ * Termin realizacji grupy wyboru: NAJDLUZSZY sposrod jej pozycji.
+ *
+ * Decyzja wlasciciela z 2026-08-29. Grupa jest jednym elementem oferty, ale
+ * jej warianty potrafia sie roznic pracochlonnoscia i braniem terminu
+ * pierwszej pozycji zanizalibysmy go dla reszty. Najdluzszy jest tez spojny
+ * z regula calego zamowienia, wiec obie liczby mowia to samo.
+ */
+export function terminGrupy(pozycje) {
+  const dni = (pozycje || [])
+    .map((i) => Number(i.lead_days))
+    .filter((d) => Number.isFinite(d) && d > 0);
+  return dni.length ? Math.max(...dni) : null;
+}
+
+/**
+ * Termin realizacji tego, co klient placi TERAZ: najdluzszy z wybranych.
+ *
+ * Paczka wychodzi jedna, wiec calosc czeka na to, co robi sie najdluzej.
+ * Liczy sie z tych samych pozycji, co kwota (`selectedQuoteItems`), wiec
+ * przestawienie wariantu zmienia termin razem z cena i klient widzi obie
+ * liczby zgodne.
+ *
+ * @returns {number|null} null, gdy zadna wybrana pozycja nie ma terminu
+ */
+export function quoteLeadDays(quote) {
+  return terminGrupy(selectedQuoteItems(quote));
+}
+
+/**
+ * Czy to, co klient placi teraz, wymaga najpierw ustalenia szczegolow.
+ *
+ * Wystarczy JEDNA taka pozycja: zamowienie jest niepodzielne, wiec dopoki
+ * cokolwiek w nim czeka na rozmowe, zegar nie ma czego liczyc.
+ */
+export function quoteRequiresDetails(quote) {
+  return selectedQuoteItems(quote).some((i) => i.requires_details === true);
+}
+
+/** Stan oferty wynikajacy z pozycji: `partial`, `converted` albo nic. */
+function stanZPozycji(quote) {
+  const items = quote?.items || [];
+  if (!items.some((i) => !pozycjaWolna(i))) return null;
+  return quoteOpenItems(quote).length ? "partial" : "converted";
+}
+
+/**
+ * Termin realizacji w postaci, ktora wolno zapisac. Jedna regula dla obu drog.
+ *
+ * Puste znaczy "nie wiem jeszcze" i zostaje puste, a nie zerem: pozycja bez
+ * terminu ma nie podnosic terminu zamowienia, a zero czytaloby sie jak
+ * "od reki" i po cichu skracaloby termin calej paczki.
+ */
+function dniRealizacji(wartosc) {
+  if (wartosc === null || wartosc === "" || wartosc === undefined) return null;
+  const dni = Math.floor(Number(wartosc));
+  if (!Number.isFinite(dni) || dni <= 0) throw new QuoteError("bad_lead", "Termin realizacji podaj w dniach, liczba dodatnia");
+  if (dni > 365) throw new QuoteError("bad_lead", "Termin realizacji ponad rok to nie termin, tylko obietnica bez pokrycia");
+  return dni;
+}
+
 /** Kwota jednostkowa w postaci, ktora wolno zapisac. Jedna regula dla obu drog. */
 function kwotaJednostkowa(wartosc) {
   if (wartosc === null || wartosc === "" || wartosc === undefined) return null;
@@ -244,7 +413,11 @@ function kwotaJednostkowa(wartosc) {
 export async function priceQuote(pool, quoteRef, lines, note = null, validDays = QUOTE_VALIDITY_DAYS) {
   const quote = await getQuoteByRef(pool, quoteRef);
   if (!quote) throw new QuoteError("not_found", "Nie ma takiej wyceny");
-  if (quote.status === "converted") throw new QuoteError("already_converted", "Ta wycena stala sie juz zamowieniem");
+  // Zamknieta jest OFERTA, w ktorej nie zostalo nic do wziecia. Czesciowo
+  // zlecona dalej sie wycenia: to wlasnie wtedy poprawia sie cene rzeczy,
+  // ktorych klient jeszcze nie kupil, a do tej pory zamrazalo ja pierwsze
+  // zamowienie, razem z literowkami.
+  if (quoteSettled(quote)) throw new QuoteError("already_converted", "Cala ta oferta jest juz zlecona");
 
   // Klucze liczbowe po obu stronach. `quote_items.id` to BIGSERIAL, a
   // node-postgres oddaje bigint jako TEKST, wiec mapa po surowym `i.id`
@@ -256,6 +429,10 @@ export async function priceQuote(pool, quoteRef, lines, note = null, validDays =
   for (const line of lines || []) {
     const item = byId.get(Number(line.id));
     if (!item) throw new QuoteError("unknown_item", `Pozycja ${line.id} nie nalezy do wyceny ${quoteRef}`);
+    // Cena rzeczy juz zleconej stoi w zamowieniu i tam jest wiazaca. Zmiana
+    // jej tutaj rozjechalaby oferte z dokumentem, na ktory klient zaplacil,
+    // i to bez zadnego sladu, ze cokolwiek sie rozeszlo.
+    if (!pozycjaWolna(item)) throw new QuoteError("item_taken", `Pozycja ${line.id} jest juz zlecona`);
     const unit = kwotaJednostkowa(line.unitGrosze);
     if (unit == null) throw new QuoteError("bad_amount", "Kwota pozycji musi byc dodatnia");
 
@@ -277,15 +454,19 @@ export async function priceQuote(pool, quoteRef, lines, note = null, validDays =
   // wyklucza pozostale, a niezaznaczony dodatek nie wchodzi do rachunku.
   // Liczymy wiec z tej samej reguly, ktora widzi klient na stronie oferty.
   const doZaplaty = quoteAmountGrosze(quote);
-  if (!doZaplaty) throw new QuoteError("no_amount", "Zadna wybrana pozycja nie ma kwoty");
+  const cosWziete = (quote.items || []).some((i) => !pozycjaWolna(i));
+  if (!doZaplaty && !cosWziete) throw new QuoteError("no_amount", "Zadna wybrana pozycja nie ma kwoty");
 
   const validUntil = new Date(Date.now() + validDays * 86400_000);
   const wariant = selectedQuoteItems(quote).find((i) => rodzajPozycji(quote, i) === "variant") || null;
+  // Oferta czesciowo zlecona nie wraca do stanu "wyceniona": czesc jej pozycji
+  // jest juz w produkcji i stan ma o tym mowic.
+  const stan = stanZPozycji(quote) || "priced";
   await pool.query(
-    `UPDATE quotes SET status = 'priced', total_grosze = $2, price_note = $3, valid_until = $4,
+    `UPDATE quotes SET status = $6, total_grosze = $2, price_note = $3, valid_until = $4,
             chosen_item_id = COALESCE($5, chosen_item_id)
       WHERE id = $1`,
-    [quote.id, doZaplaty, note, validUntil.toISOString().slice(0, 10), wariant ? wariant.id : null]
+    [quote.id, doZaplaty, note, validUntil.toISOString().slice(0, 10), wariant ? wariant.id : null, stan]
   );
 
   return {
@@ -363,7 +544,11 @@ export async function availableDesignCredit(pool, email) {
        FROM orders o
        JOIN order_items i ON i.order_id = o.id AND i.calculator = 'cad_design'
       WHERE o.customer_email = $1
-        AND o.status = 'paid'
+        -- Kazdy stan PO zaplacie, nie sam stan "paid". Od ADR-0027 zaplata
+        -- pcha zamowienie od razu w etap pracy, wiec warunek na sam ten jeden
+        -- stan przestalby znajdowac cokolwiek i odliczenie za projekt po cichu
+        -- znikneloby z kasy.
+        AND o.status IN ('paid','details','in_production','ready','shipped','completed')
         AND o.credit_consumed_by IS NULL
         AND o.paid_at > NOW() - ($2 || ' days')::interval
         -- Doplaty za poprawki wisza przy projekcie i nie tworza wlasnego odliczenia.
@@ -388,10 +573,17 @@ export async function getQuoteByRef(pool, quoteRef) {
   const quote = rows[0];
   if (!quote) return null;
 
+  // Stan pozycji nie jest jej wlasnym polem, tylko stanem zamowienia, ktore
+  // ja wzielo, wiec kazdy odczyt oferty musi je przyniesc razem z pozycja.
+  // Bez tego zlaczenia `stanPozycji` widzialaby sam identyfikator zamowienia
+  // i nie odroznila platnosci porzuconej od doprowadzonej do konca.
   const { rows: items } = await pool.query(
-    `SELECT i.*, u.token AS upload_token, u.drive_url
+    `SELECT i.*, u.token AS upload_token, u.drive_url,
+            o.status AS order_status, o.order_ref AS order_ref, o.paid_at AS order_paid_at,
+            o.access_token AS order_access_token
        FROM quote_items i
        LEFT JOIN uploads u ON u.id = i.upload_id
+       LEFT JOIN orders  o ON o.id = i.order_id
       WHERE i.quote_id = $1
       ORDER BY i.id`,
     [quote.id]
@@ -419,7 +611,11 @@ export function quoteItemsForDiscount(quote) {
 }
 
 /**
- * Przekuwa wycene w zamowienie do zaplaty.
+ * Przekuwa CZESC wyceny w zamowienie do zaplaty.
+ *
+ * Od ADR-0026 jedna oferta rodzi tyle zamowien, ile razy klient cos z niej
+ * wezmie. Zamowienie zabiera pozycje, ktore do niego weszly, a oferta zyje
+ * dalej z tym, co zostalo: klient wraca pod ten sam link i dokupuje reszte.
  *
  * Kwota pochodzi z wyceny, nie z kalkulatora: to jest caly sens tej sciezki.
  * Zamowienie powstaje w stanie `awaiting_payment`, wiec dalej idzie dokladnie
@@ -447,14 +643,19 @@ export async function convertQuoteToOrder(
 ) {
   const quote = await getQuoteByRef(pool, quoteRef);
   if (!quote) throw new QuoteError("not_found", "Nie ma takiej wyceny");
-  if (quote.converted_order_id) throw new QuoteError("already_converted", "Ta wycena ma juz zamowienie");
-  if (!quote.total_grosze) throw new QuoteError("not_priced", "Najpierw wpisz kwoty w wycenie");
+
+  // Kwote liczymy z POZYCJI, a nie z naglowka. Naglowek jest podsumowaniem,
+  // ktore po czesciowej zaplacie mowi o reszcie oferty, a zamowienie ma
+  // opiewac dokladnie na to, co do niego wchodzi. Rozjazd tych dwoch liczb
+  // byloby przelewem na inna kwote niz suma pozycji na fakturze.
+  const kwotaPozycji = quoteAmountGrosze(quote);
+  if (!kwotaPozycji) throw new QuoteError("not_priced", "Najpierw wpisz kwoty w wycenie");
 
   const shipping = Number.isInteger(delivery.shippingGrosze) ? delivery.shippingGrosze : 0;
 
   // Odliczenie nigdy nie schodzi ponizej zera i nie obejmuje dostawy.
   const credit = await availableDesignCredit(pool, quote.customer_email);
-  const creditGrosze = credit ? Math.min(credit.grosze, quote.total_grosze) : 0;
+  const creditGrosze = credit ? Math.min(credit.grosze, kwotaPozycji) : 0;
   const accessToken = generateToken();
   const expiresAt = terminZlecony || new Date(Date.now() + validityDays * 86400_000);
   // Zaplata w euro idzie przelewem, a kwote w euro ZAMRAZAMY przy skladaniu
@@ -474,11 +675,67 @@ export async function convertQuoteToOrder(
   try {
     await client.query("BEGIN");
 
+    // POZYCJE BLOKUJEMY, ZANIM COKOLWIEK ZAPISZEMY.
+    //
+    // Od ADR-0026 jedna oferta rodzi wiele zamowien, wiec dwie karty otwarte
+    // na tej samej ofercie to nie teoria, tylko zwykly poniedzialek: klient
+    // klika "zaplac" w jednej, wraca do drugiej i klika znowu. Bez blokady
+    // obie transakcje czytalyby te sama pozycje jako wolna i sprzedalyby ja
+    // dwa razy. `FOR UPDATE OF i` trzyma wiersze wycen, a nie zamowien;
+    // `ORDER BY i.id` daje obu transakcjom te sama kolejnosc, wiec zamiast
+    // zakleszczenia jedna z nich po prostu czeka.
+    const { rows: teraz } = await client.query(
+      `SELECT i.id, i.order_id, o.status AS order_status
+         FROM quote_items i
+         LEFT JOIN orders o ON o.id = i.order_id
+        WHERE i.quote_id = $1
+        ORDER BY i.id
+          FOR UPDATE OF i`,
+      [quote.id]
+    );
+
+    // Stan wczytany przed transakcja mogl sie w miedzyczasie zestarzec.
+    // Nadpisujemy go zablokowanym i liczymy koszyk OD NOWA, zamiast tylko
+    // sprawdzac wybrane pozycje: sprzedanie wariantu zamyka cala jego grupe,
+    // wiec czyjas zaplata za "klucz 56" odbiera prawo do "klucza 68", choc
+    // sam wiersz klucza 68 dalej wyglada na wolny.
+    // Skladamy NOWY obiekt zamiast poprawiac wczytany. Pozycje przyszly
+    // z zapytania i nie sa nasze do zmieniania; podmiana w miejscu zostawia
+    // slad w kazdym, kto trzyma do nich odnosnik, i wychodzi na jaw dopiero
+    // przy drugim wywolaniu na tej samej wycenie.
+    const wgId = new Map(teraz.map((r) => [Number(r.id), r]));
+    const swiezaOferta = {
+      ...quote,
+      items: (quote.items || [])
+        .filter((i) => wgId.has(Number(i.id)))
+        .map((i) => ({ ...i, order_id: wgId.get(Number(i.id)).order_id, order_status: wgId.get(Number(i.id)).order_status })),
+    };
+
+    const doZamowienia = selectedQuoteItems(swiezaOferta);
+    if (!doZamowienia.length) throw new QuoteError("no_variant", "Nie wybrano wariantu oferty");
+    // Koszyk zmienil sie od chwili, w ktorej klient go widzial. Nie podmieniamy
+    // go po cichu na to, co zostalo: zaplata ma dotyczyc rzeczy, ktore klient
+    // mial przed oczami, wiec odsylamy go po swiezy widok oferty.
+    if (quoteAmountGrosze(swiezaOferta) !== kwotaPozycji) {
+      throw new QuoteError("item_taken", "Czesc tej oferty zostala w miedzyczasie zlecona. Odswiez strone.");
+    }
+
+    // Termin calego zamowienia to NAJDLUZSZY sposrod pozycji, ktore do niego
+    // wchodza: paczka wychodzi jedna, wiec calosc czeka na to, co robi sie
+    // najdluzej. Znacznik szczegolow wystarczy przy jednej pozycji, bo
+    // zamowienia nie da sie zaczac w polowie.
+    //
+    // Obie wartosci liczymy z koszyka JUZ ZABLOKOWANEGO, a nie z oferty
+    // wczytanej przed transakcja: klient placi za ten uklad, wiec i termin ma
+    // byc terminem tego ukladu.
+    const leadDays = terminGrupy(doZamowienia);
+    const wymagaSzczegolow = doZamowienia.some((i) => i.requires_details === true);
+
     // Zamowienie powstaje najpierw bez znizki, bo rezerwacja kodu potrzebuje
     // numeru zamowienia, ktory nadaje dopiero ten INSERT. Suma schodzi o kwote
     // znizki chwile pozniej, w tej samej transakcji, wiec na zewnatrz nie ma
     // momentu, w ktorym zamowienie ma kod bez odliczenia albo odwrotnie.
-    const total = quote.total_grosze - creditGrosze + shipping;
+    const total = kwotaPozycji - creditGrosze + shipping;
 
     const { rows } = await client.query(
       `INSERT INTO orders (order_ref, status, kind, lang, items_total_grosze, shipping_grosze, total_grosze,
@@ -486,13 +743,15 @@ export async function convertQuoteToOrder(
          delivery_method, delivery_point, address_line1, address_line2, postal_code, city, country,
          access_token, ip_hash, expires_at, credit_applied_grosze, payment_method,
          amount_eur_cents, eur_rate, eur_rate_locked_at,
-         accepted_terms_at, waived_withdrawal_at)
+         accepted_terms_at, waived_withdrawal_at,
+         lead_days, requires_details)
        -- 'quoted' jest jedyna dopuszczona przez CHECK w orders.kind obok 'instant'
        VALUES ($1,$25,'quoted',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
          $23,$24, CASE WHEN $23::INTEGER IS NULL THEN NULL ELSE NOW() END,
-         $21,$22)
+         $21,$22,
+         $26,$27)
        RETURNING id`,
-      [orderRef, quote.lang, quote.total_grosze, shipping, total,
+      [orderRef, quote.lang, kwotaPozycji, shipping, total,
        email, name, phone,
        delivery.method || null, delivery.point || null, delivery.addressLine1 || null,
        delivery.addressLine2 || null, delivery.postalCode || null, delivery.city || null,
@@ -510,7 +769,12 @@ export async function convertQuoteToOrder(
        przelew ? eurRate : null,
        // Przelew nie ma bramki, wiec zamowienie czeka na ksiegowanie, a nie
        // na przekierowanie. To ten sam stan, ktorego uzywa sklep.
-       przelew ? "awaiting_transfer" : "awaiting_payment"]
+       przelew ? "awaiting_transfer" : "awaiting_payment",
+       // Termin i znacznik ZAMRAZAMY tutaj, razem z kwota i kursem. Pozycja
+       // oferty zyje dalej i moze jeszcze zmienic termin, a to zamowienie ma
+       // zostac takie, jakie klient kupil. Sam zegar rusza dopiero przy
+       // wejsciu w etap pracy, wiec tu wpisujemy liczbe dni, nie date.
+       leadDays, wymagaSzczegolow]
     );
     const orderId = rows[0].id;
 
@@ -529,7 +793,7 @@ export async function convertQuoteToOrder(
       discountCode = uzyty.code;
       // Znizka nie schodzi ponizej zera i nie dotyka dostawy: kurier kosztuje
       // nas tyle samo niezaleznie od tego, jaki kod wpisal klient.
-      doZaplaty = Math.max(0, quote.total_grosze - creditGrosze - discountGrosze) + shipping;
+      doZaplaty = Math.max(0, kwotaPozycji - creditGrosze - discountGrosze) + shipping;
       // Kwota w euro idzie za kwota w zlotowkach. Bez tego wiersza rabat
       // schodzilby z sumy PLN, a przelew opiewalby na cene sprzed rabatu:
       // klient przelalby za duzo i mielibysmy nadplate do zwrotu.
@@ -541,13 +805,10 @@ export async function convertQuoteToOrder(
       );
     }
 
-    // Do zamowienia idzie WYLACZNIE to, co klient wybral: rachunek, po jednym
-    // wariancie z kazdej grupy i zaznaczone dodatki. Pozostale pozycje byly
-    // propozycjami, a nie czescia tego samego zlecenia, wiec wpisanie ich
-    // wszystkich zrobiloby zamowienie na trzy rzeczy naraz, za kwote jednej.
-    const doZamowienia = selectedQuoteItems(quote);
-    if (!doZamowienia.length) throw new QuoteError("no_variant", "Nie wybrano wariantu oferty");
-
+    // Do zamowienia idzie WYLACZNIE to, co klient wybral i co jest jeszcze
+    // wolne: rachunek, po jednym wariancie z kazdej otwartej grupy i zaznaczone
+    // dodatki. Pozostale pozycje byly propozycjami albo sa juz sprzedane, wiec
+    // wpisanie ich zrobiloby zamowienie na rzeczy, za ktore nikt tu nie placi.
     for (const item of doZamowienia) {
       await client.query(
         `INSERT INTO order_items (order_id, item_type, calculator, title, qty, unit_grosze, line_grosze,
@@ -563,6 +824,14 @@ export async function convertQuoteToOrder(
       }
     }
 
+    // Pozycje przechodza na wlasnosc tego zamowienia. Od tej chwili sa poza
+    // oferta: dopoki zamowienie zyje, nikt nie kupi ich drugi raz, a gdy
+    // wygasnie nieoplacone, wroca do oferty same, bez naszego udzialu.
+    await client.query(
+      `UPDATE quote_items SET order_id = $2 WHERE id = ANY($1::bigint[])`,
+      [doZamowienia.map((i) => i.id), orderId]
+    );
+
     if (creditGrosze) {
       // Zuzyty zostaje STARY projekt: to on wskazuje, ktore zamowienie zjadlo
       // jego kredyt. Zamiana miejscami tych dwoch liczb oznaczalaby, ze ten
@@ -570,14 +839,38 @@ export async function convertQuoteToOrder(
       await client.query(`UPDATE orders SET credit_consumed_by = $2 WHERE id = $1`, [credit.orderId, orderId]);
     }
 
+    // Stan oferty wynika z pozycji, a nie z faktu, ze wlasnie powstalo
+    // zamowienie. `converted` znaczy "nie zostalo nic do kupienia", `partial`
+    // znaczy "czesc zlecona, reszta dalej stoi". Naglowek niesie od teraz
+    // kwote RESZTY, a nie kwote, ktora klient wlasnie zaplacil: ta stoi
+    // w zamowieniu i to ono jest dokumentem.
+    const wziete = new Set(doZamowienia.map((i) => Number(i.id)));
+    const poZaplacie = {
+      ...swiezaOferta,
+      items: swiezaOferta.items.map((i) => (wziete.has(Number(i.id))
+        ? { ...i, order_id: orderId, order_status: przelew ? "awaiting_transfer" : "awaiting_payment" }
+        : i)),
+    };
+    const zostalo = quoteAmountGrosze(poZaplacie);
+    const stanOferty = stanZPozycji(poZaplacie) || "converted";
+    // Pierwsze zamowienie zostaje w naglowku jako slad poczatku. Nadpisywanie
+    // go kolejnym zabieraloby informacje, od czego sie zaczelo, a niczego nie
+    // dodawalo: kto wzial ktora pozycje, mowi `quote_items.order_id`.
     await client.query(
-      `UPDATE quotes SET status = 'converted', converted_order_id = $2, converted_at = NOW() WHERE id = $1`,
-      [quote.id, orderId]
+      `UPDATE quotes SET status = $3, total_grosze = $4,
+              converted_order_id = COALESCE(converted_order_id, $2),
+              converted_at = COALESCE(converted_at, NOW()),
+              updated_at = NOW()
+        WHERE id = $1`,
+      [quote.id, orderId, stanOferty, zostalo]
     );
 
     await client.query("COMMIT");
     return {
       orderRef, accessToken, totalGrosze: doZaplaty, orderId,
+      quoteStatus: stanOferty,
+      settled: stanOferty === "converted",
+      remainingGrosze: zostalo,
       creditGrosze, creditFrom: credit?.orderRef ?? null,
       discountCode, discountGrosze,
       paymentMethod: przelew ? "bank_transfer" : "autopay",
@@ -617,8 +910,8 @@ export async function convertQuoteToOrder(
 export async function updateQuote(pool, quoteRef, patch = {}) {
   const quote = await getQuoteByRef(pool, quoteRef);
   if (!quote) throw new QuoteError("not_found", "Nie ma takiej wyceny");
-  if (quote.status === "converted") {
-    throw new QuoteError("already_converted", "Ta wycena stala sie juz zamowieniem, wiec jej nie edytujemy");
+  if (quoteSettled(quote)) {
+    throw new QuoteError("already_converted", "Cala ta oferta jest juz zlecona, wiec jej nie edytujemy");
   }
 
   const client = await pool.connect();
@@ -716,6 +1009,13 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
       if (id !== null) {
         const item = wgId.get(id);
         if (!item) throw new QuoteError("unknown_item", `Pozycja ${poz.id} nie nalezy do wyceny ${quoteRef}`);
+        // Pozycja zlecona jest nietykalna, cala reszta oferty nie. To jest
+        // odwrotnosc tego, co bylo: pierwsze zamowienie zamrazalo WSZYSTKO,
+        // wiec poprawienie ceny dodatku, ktorego nikt nie kupil, wymagalo
+        // zalozenia oferty od nowa, czyli nowego numeru w watku z klientem.
+        if (!pozycjaWolna(item)) {
+          throw new QuoteError("item_taken", `Pozycja ${poz.id} jest juz zlecona i nie da sie jej zmienic`);
+        }
 
         if (poz.remove) {
           await client.query("DELETE FROM quote_items WHERE id = $1", [item.id]);
@@ -766,6 +1066,17 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
           wart.push(tekst(poz.description, 5000));
           zmiany.push(`description = $${wart.length}`);
         }
+        // Termin realizacji tej pozycji, w dniach kalendarzowych. Puste pole
+        // znaczy "nie wiem jeszcze", a nie "od reki": pozycja bez terminu po
+        // prostu nie podnosi terminu calego zamowienia.
+        if (poz.leadDays !== undefined) {
+          wart.push(dniRealizacji(poz.leadDays));
+          zmiany.push(`lead_days = $${wart.length}`);
+        }
+        if (poz.requiresDetails !== undefined) {
+          wart.push(Boolean(poz.requiresDetails));
+          zmiany.push(`requires_details = $${wart.length}`);
+        }
         if (poz.qty !== undefined) {
           const qty = Math.floor(Number(poz.qty));
           if (!Number.isFinite(qty) || qty < 1) throw new QuoteError("bad_qty", "Ilosc musi byc dodatnia");
@@ -795,10 +1106,12 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
       const rodzaj = poz.kind === undefined ? "fixed" : (ITEM_KINDS.includes(poz.kind) ? poz.kind : null);
       if (!rodzaj) throw new QuoteError("bad_kind", "Rodzaj pozycji to skladnik, wariant albo dodatek");
       await client.query(
-        `INSERT INTO quote_items (quote_id, title, qty, description, unit_grosze, line_grosze, kind, group_key, selected)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        `INSERT INTO quote_items (quote_id, title, qty, description, unit_grosze, line_grosze, kind, group_key, selected,
+           lead_days, requires_details)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
         [quote.id, t, qty, tekst(poz.description, 5000), unit, unit == null ? null : unit * qty,
-         rodzaj, tekst(poz.groupKey, 40), poz.selected === undefined ? true : Boolean(poz.selected)]
+         rodzaj, tekst(poz.groupKey, 40), poz.selected === undefined ? true : Boolean(poz.selected),
+         dniRealizacji(poz.leadDays), Boolean(poz.requiresDetails)]
       );
       dodane++;
     }
@@ -815,9 +1128,14 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
       `SELECT q.id, q.pick_one, q.chosen_item_id, q.total_grosze,
               COALESCE(json_agg(json_build_object(
                 'id', i.id, 'unit_grosze', i.unit_grosze, 'line_grosze', i.line_grosze, 'qty', i.qty,
-                'kind', i.kind, 'group_key', i.group_key, 'selected', i.selected
+                'kind', i.kind, 'group_key', i.group_key, 'selected', i.selected,
+                -- Bez stanu zamowienia regula wyboru wzielaby pozycje juz
+                -- sprzedana za wolna i policzyla ja do kwoty drugi raz.
+                'order_id', i.order_id, 'order_status', o.status
               ) ORDER BY i.id) FILTER (WHERE i.id IS NOT NULL), '[]') AS items
-         FROM quotes q LEFT JOIN quote_items i ON i.quote_id = q.id
+         FROM quotes q
+         LEFT JOIN quote_items i ON i.quote_id = q.id
+         LEFT JOIN orders o ON o.id = i.order_id
         WHERE q.id = $1 GROUP BY q.id`,
       [quote.id]
     );
@@ -829,9 +1147,13 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
     // w tym samym zapisie, a dwa zaznaczenia w jednej grupie znaczylyby kwote
     // za dwie rzeczy, z ktorych realizujemy jedna.
     const grupy = new Map();
+    const juzRozstrzygniete = zamknieteGrupy(poZmianie[0]);
     for (const i of poZmianie[0].items) {
       if (i.kind !== "variant") continue;
       const klucz = String(i.group_key || DEFAULT_GROUP);
+      // Grupa, w ktorej klient juz kupil wariant, nie ma czego normalizowac:
+      // przestawienie zaznaczenia zdjeloby je z rzeczy bedacej w produkcji.
+      if (juzRozstrzygniete.has(klucz)) continue;
       if (!grupy.has(klucz)) grupy.set(klucz, []);
       grupy.get(klucz).push(i);
     }
@@ -857,7 +1179,12 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
     const doZaplaty = quoteAmountGrosze(poZmianie[0]);
     const wariant = selectedQuoteItems(poZmianie[0]).find((i) => i.kind === "variant") || null;
 
-    if (doZaplaty == null) {
+    // Stan wynikajacy z pozycji juz sprzedanych ma pierwszenstwo przed
+    // wszystkim innym: oferta, ktorej czesc jest w produkcji, nie jest ani
+    // "nowa", ani "wyceniona", cokolwiek dzieje sie z reszta pozycji.
+    const stanPozycjami = stanZPozycji(poZmianie[0]);
+
+    if (doZaplaty == null && !stanPozycjami) {
       // Nie ma czym zaplacic: to znowu jest zapytanie, nie oferta.
       await client.query(
         `UPDATE quotes SET total_grosze = NULL, valid_until = NULL, status = 'new', updated_at = NOW() WHERE id = $1`,
@@ -867,7 +1194,7 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
       // Wpisanie kwoty czyni z zapytania oferte, dokladnie tak samo jak dawniej
       // osobne wycenianie. Bez tego kwota wpisana przy pozycji zostawilaby
       // wycene w stanie "nowa", a wiec bez przycisku wysylki.
-      const stan = quote.status === "new" ? "priced" : quote.status;
+      const stan = stanPozycjami || (quote.status === "new" ? "priced" : quote.status);
       // Oferta bez terminu obowiazywalaby bez konca. Domyslny wpisujemy tylko
       // wtedy, gdy kwota pojawia sie przy wycenie, ktora terminu nie ma,
       // i nikt nie podal wlasnego w tym samym zapisie.
@@ -921,7 +1248,6 @@ export async function updateQuote(pool, quoteRef, patch = {}) {
 export async function chooseQuoteOption(pool, quoteRef, itemId, selected = true) {
   const quote = await getQuoteByRef(pool, quoteRef);
   if (!quote) throw new QuoteError("not_found", "Nie ma takiej wyceny");
-  if (quote.converted_order_id) throw new QuoteError("already_converted", "Ta oferta stala sie juz zamowieniem");
 
   const wybrany = (quote.items || []).find((i) => Number(i.id) === Number(itemId));
   if (!wybrany) throw new QuoteError("unknown_item", "Ta pozycja nie nalezy do tej oferty");
@@ -929,6 +1255,13 @@ export async function chooseQuoteOption(pool, quoteRef, itemId, selected = true)
   const rodzaj = rodzajPozycji(quote, wybrany);
   if (rodzaj === "fixed") throw new QuoteError("not_multi", "Ta pozycja jest skladnikiem oferty, nie ma czego wybierac");
   if (wybrany.unit_grosze == null) throw new QuoteError("not_priced", "Ta pozycja nie ma jeszcze kwoty");
+  // Blokuje juz nie cala oferta, tylko ta jedna pozycja: reszty klient dalej
+  // moze dotykac. Odznaczenie rzeczy, ktora jest w realizacji, znaczyloby
+  // "nie chce tego", a na to jest rozmowa i zwrot, a nie pole wyboru.
+  if (!pozycjaWolna(wybrany)) throw new QuoteError("item_taken", "Ta pozycja jest juz zlecona");
+  if (rodzaj === "variant" && zamknieteGrupy(quote).has(String(wybrany.group_key || DEFAULT_GROUP))) {
+    throw new QuoteError("group_settled", "Wybor w tej grupie jest juz zlecony");
+  }
 
   if (rodzaj === "variant") {
     // Wariantu nie da sie odznaczyc: z grupy zawsze wychodzi jedna rzecz.
@@ -952,7 +1285,13 @@ export async function chooseQuoteOption(pool, quoteRef, itemId, selected = true)
   // Kwote liczy serwer z zapisanego stanu, nigdy przegladarka: to ona stoi
   // potem w zamowieniu i w tytule przelewu.
   const kwota = quoteAmountGrosze(quote);
-  if (!kwota) throw new QuoteError("no_amount", "Po tej zmianie oferta nie ma kwoty");
+  // Oferta nietknieta musi miec kwote: pusta byla by strona z przyciskiem
+  // "zaplac" i niczym do zaplacenia. W ofercie CZESCIOWO zleconej zero jest
+  // jednak stanem normalnym: klient kupil jeden dodatek, a pozostale zostawil
+  // odznaczone i wroci po nie pozniej. Wtedy sam przycisk gasnie.
+  if (!kwota && !(quote.items || []).some((i) => !pozycjaWolna(i))) {
+    throw new QuoteError("no_amount", "Po tej zmianie oferta nie ma kwoty");
+  }
   await pool.query(
     `UPDATE quotes SET chosen_item_id = $2, total_grosze = $3, updated_at = NOW() WHERE id = $1`,
     [quote.id, rodzaj === "variant" ? wybrany.id : quote.chosen_item_id, kwota]
@@ -981,12 +1320,16 @@ export async function chooseQuoteOption(pool, quoteRef, itemId, selected = true)
 export async function deleteQuote(pool, quoteRef, { force = false } = {}) {
   const quote = await getQuoteByRef(pool, quoteRef);
   if (!quote) throw new QuoteError("not_found", "Nie ma takiej wyceny");
-  if (quote.status === "converted" && !force) {
+  // Liczy sie kazda sprzedana pozycja, nie tylko oferta zlecona w calosci:
+  // za oferta czesciowo zlecona tez stoja prawdziwe zamowienia i prawdziwe
+  // pieniadze, a to ona jest jedynym sladem, skad sie wziely.
+  const wziete = (quote.items || []).filter((i) => !pozycjaWolna(i)).length;
+  if (wziete && !force) {
     throw new QuoteError(
       "converted",
-      "Ta wycena stala sie zamowieniem. Usuniecie zabierze slad, skad ono pochodzi. Potwierdz, jesli mimo to chcesz ja skasowac."
+      "Z tej oferty powstaly zamowienia. Usuniecie zabierze slad, skad pochodza. Potwierdz, jesli mimo to chcesz ja skasowac."
     );
   }
   await pool.query("DELETE FROM quotes WHERE id = $1", [quote.id]);
-  return { quoteRef, wasConverted: quote.status === "converted", orderId: quote.converted_order_id ?? null };
+  return { quoteRef, wasConverted: wziete > 0, orderId: quote.converted_order_id ?? null };
 }

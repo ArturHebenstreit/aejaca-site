@@ -9,11 +9,15 @@
     { id: "priced",    label: "Wycenione" },
     { id: "sent",      label: "Wysłane" },
     { id: "accepted",  label: "Przyjęte" },
+    { id: "partial",   label: "Częściowo zlecone" },
     { id: "converted", label: "Zamówione" },
     { id: "expired",   label: "Wygasłe" },
     { id: "cancelled", label: "Anulowane" },
   ];
   const BARWA = {
+    // Czesc oferty zlecona, reszta dalej stoi u klienta. To nie jest historia:
+    // taki wiersz jeszcze zyje i moze przyniesc drugie zamowienie.
+    partial: "text-sky-200 border-sky-400/40 bg-sky-400/10",
     new: "text-amber-300 border-amber-400/30 bg-amber-400/10",
     priced: "text-sky-300 border-sky-400/30 bg-sky-400/10",
     sent: "text-indigo-300 border-indigo-400/30 bg-indigo-400/10",
@@ -173,7 +177,10 @@
                       obie potrzebuja pozycji i potwierdzenia, a tabela ich nie pokaze. %>
                   <a href="/quotes/<%= encodeURIComponent(q.quote_ref) %>"
                      class="text-neutral-400 hover:text-white text-xs">Edytuj</a>
-                  <% if (q.status !== "converted") { %>
+                  <%# Za oferta czesciowo zlecona stoja juz prawdziwe zamowienia,
+                      tak samo jak za zlecona w calosci, wiec skrot do usuwania
+                      znika z wiersza w obu przypadkach. %>
+                  <% if (q.status !== "converted" && q.status !== "partial") { %>
                     <span class="text-neutral-700 mx-1">&middot;</span>
                     <a href="/quotes/<%= encodeURIComponent(q.quote_ref) %>#usun"
                        class="text-red-400/70 hover:text-red-300 text-xs">Usuń</a>

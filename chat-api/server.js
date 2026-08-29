@@ -11,7 +11,7 @@ import { createGmailClient, processHistory, setupGmailWatch, pollRecentMessages 
 import { CALCULATORS, PricingError, geometryFromFile, priceItem, checkQuarterlyLimit , generateOrderRef, generateToken, ringGeometryFromParams, RING_CALCULATORS } from "./orders.js";
 import { bindingBasis } from "./pricing/bindingBasis.js";
 import { OUTPUT_AVAILABLE } from "./pricing/ringConfigurator.js";
-import { createQuote, priceQuote, updateQuote, deleteQuote, chooseQuoteOption, selectedQuoteItems, quoteGroups, getQuoteByRef, convertQuoteToOrder, quoteItemsForDiscount, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
+import { createQuote, priceQuote, updateQuote, deleteQuote, chooseQuoteOption, selectedQuoteItems, quoteGroups, quoteAmountGrosze, quoteOpenItems, quoteSettled, stanPozycji, quoteLeadDays, quoteRequiresDetails, getQuoteByRef, convertQuoteToOrder, quoteItemsForDiscount, availableDesignCredit, repriceSavedItem, SAVED_QUOTE_SOURCE, QUOTE_VALIDITY_DAYS, QuoteError } from "./quotes.js";
 import { extraRevisionGrosze, CAD_CONFIG } from "./pricing/cadDesign.js";
 import { GEMSTONES } from "./pricing/jewelryConfig.js";
 import {
@@ -37,6 +37,7 @@ import {
 } from "./discounts.js";
 import {
   sendOrderPaidEmails, sendPaymentReviewAlert, sendTransferInstructions, sendQuoteLink,
+  sendDeadlineReminder, sendDetailsNudge,
 } from "./orderMail.js";
 import { deletionBlockers, CANCELLABLE_STATUSES } from "./orderCleanup.js";
 import {
@@ -46,7 +47,9 @@ import { orderAccessAllowed } from "./orderAccess.js";
 import { findLockers, LockerError } from "./lockers.js";
 import { runRetention } from "./retention.js";
 import { requireAdmin, requireInvalidateToken, requireSecret, secretMatches } from "./auth.js";
-import { ETAPY_PRACY, przejscie, znanyEtap, korekta } from "./productionQueue.js";
+import { ETAPY_PRACY, przejscie, znanyEtap, korekta, etapPoZaplacie, terminRealizacji,
+         dniDoTerminu, ETAP_Z_ZEGAREM } from "./productionQueue.js";
+import { progDoWyslania, szturchnacSzczegoly } from "./deadlineReminders.js";
 import { extractIP, isPrivateIP, TRUSTED_PROXY_HOPS, TRUST_CLOUDFLARE_HEADERS } from "./clientIp.js";
 import { createLimiter, limitBy } from "./rateLimit.js";
 import { issueDownloads, takeDownload, downloadName } from "./digitalDelivery.js";
@@ -159,7 +162,7 @@ if (pool) {
     DO $$ BEGIN
       ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_status_check;
       ALTER TABLE orders ADD CONSTRAINT orders_status_check CHECK (status IN
-        ('draft','awaiting_payment','awaiting_transfer','payment_review','paid','in_production','shipped','completed','cancelled','expired','refunded'));
+        ('draft','awaiting_payment','awaiting_transfer','payment_review','paid','details','in_production','ready','shipped','completed','cancelled','expired','refunded'));
       ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_payment_method_check;
       ALTER TABLE orders ADD CONSTRAINT orders_payment_method_check CHECK (payment_method IN ('autopay','bank_transfer'));
     END $$;
@@ -253,7 +256,7 @@ if (pool) {
   //
   // Te kroki ida PO SOBIE, a nie rownolegle jak reszta migracji: przepisanie
   // starych ofert czyta kolumny zakladane wiersz wyzej.
-  (async () => {
+  const rodzajePozycjiGotowe = (async () => {
     await pool.query(`ALTER TABLE quote_items ADD COLUMN IF NOT EXISTS kind VARCHAR(10) NOT NULL DEFAULT 'fixed'`);
     await pool.query(`ALTER TABLE quote_items ADD COLUMN IF NOT EXISTS group_key VARCHAR(40)`);
     await pool.query(`ALTER TABLE quote_items ADD COLUMN IF NOT EXISTS selected BOOLEAN NOT NULL DEFAULT TRUE`);
@@ -280,7 +283,78 @@ if (pool) {
                WHERE s.quote_id = i.quote_id AND s.kind = 'variant' AND s.selected
                  AND COALESCE(s.group_key, 'wybor') = COALESCE(i.group_key, 'wybor'))
           ORDER BY i.quote_id, COALESCE(i.group_key, 'wybor'), (i.unit_grosze IS NULL), i.id)`);
-  })().catch((e) => console.error("[migracja] warianty oferty:", e.message));
+  })();
+  rodzajePozycjiGotowe.catch((e) => console.error("[migracja] warianty oferty:", e.message));
+
+  // ZAPLATA ZAMYKA POZYCJE, A NIE CALA OFERTE (ADR-0026). Do tej pory pierwsze
+  // zamowienie konczylo oferte: klient, ktory zaplacil za jeden z trzech
+  // dodatkow, wracal pod ten sam link i widzial wszystko wyszarzone, razem
+  // z dwoma dodatkami, ktorych nikt nie kupil. Teraz sprzedana jest POZYCJA,
+  // a oferta zyje dopoki zostalo w niej cokolwiek do wziecia.
+  //
+  // Kolumna nie ma obok siebie flagi "oplacona" i to jest cala sztuczka:
+  // stan pozycji czytamy ze stanu jej zamowienia, wiec porzucona platnosc
+  // oddaje pozycje do oferty sama, gdy zamowienie wygasa. Zamiatarka
+  // przestawiajaca nieoplacone zamowienia na `expired` juz tu stoi.
+  //
+  // Ten krok idzie PO nadaniu pozycjom rodzajow, bo przepisanie ofert juz
+  // rozliczonych czyta `kind` i `selected`. Rownolegle czytaloby kolumny,
+  // ktorych jeszcze nie ma.
+  rodzajePozycjiGotowe.catch(() => {}).then(async () => {
+    await pool.query(`ALTER TABLE quote_items ADD COLUMN IF NOT EXISTS order_id BIGINT`);
+    await pool.query(`
+      DO $$ BEGIN
+        ALTER TABLE quote_items ADD CONSTRAINT quote_items_order_fk
+          FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL;
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+    `);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_quote_items_order
+                        ON quote_items (order_id) WHERE order_id IS NOT NULL`);
+    // Nowy stan posredni. `converted` znaczy od teraz "nie zostalo nic do
+    // kupienia", `partial` znaczy "czesc zlecona, reszta czeka".
+    await pool.query(`
+      DO $$ BEGIN
+        ALTER TABLE quotes DROP CONSTRAINT IF EXISTS quotes_status_check;
+        ALTER TABLE quotes ADD CONSTRAINT quotes_status_check CHECK (status IN
+          ('new','priced','sent','accepted','partial','converted','expired','cancelled'));
+      END $$;
+    `);
+    // Oferta rozliczona przed ta zmiana ma zamowienie w naglowku, a nie przy
+    // pozycjach. Przepisujemy je WYLACZNIE na pozycje, ktore do tamtego
+    // zamowienia weszly, czyli te same, ktore wskazywala regula wyboru:
+    // rachunek, wybrany wariant i zaznaczone dodatki. Oznaczenie wszystkich
+    // postawiloby przy odrzuconym wariancie napis "oplacone", czyli zdanie
+    // nieprawdziwe na stronie, na ktorej klient sprawdza, za co zaplacil.
+    //
+    // Odrzucone propozycje zostaja wiec wolne. Nie otwiera to starych ofert
+    // na osciez: kupic da sie tylko w terminie waznosci, a ten w rozliczonej
+    // ofercie zwykle juz minal.
+    await pool.query(`
+      UPDATE quote_items i
+         SET order_id = q.converted_order_id
+        FROM quotes q
+       WHERE q.id = i.quote_id
+         AND q.converted_order_id IS NOT NULL
+         AND i.order_id IS NULL
+         AND (i.kind = 'fixed'
+              OR (i.kind = 'variant' AND (i.selected OR q.chosen_item_id = i.id))
+              OR (i.kind = 'option' AND i.selected AND i.unit_grosze IS NOT NULL))`);
+  }).catch((e) => console.error("[migracja] pozycje sprzedane osobno:", e.message));
+
+  // TERMIN REALIZACJI I PRZYPOMNIENIA (ADR-0027). Zegar nie startuje przy
+  // zaplacie, tylko przy wejsciu w `in_production`: zlecenie wymagajace
+  // ustalenia szczegolow czeka najpierw na rozmowe, a nie na warsztat.
+  pool.query(`ALTER TABLE quote_items ADD COLUMN IF NOT EXISTS lead_days INTEGER`).catch(() => {});
+  pool.query(`ALTER TABLE quote_items ADD COLUMN IF NOT EXISTS requires_details BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS lead_days INTEGER`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS deadline_at DATE`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS requires_details BOOLEAN NOT NULL DEFAULT FALSE`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS reminders_sent JSONB NOT NULL DEFAULT '[]'::jsonb`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS details_at TIMESTAMPTZ`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS ready_at TIMESTAMPTZ`).catch(() => {});
+  pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS details_nudged_at TIMESTAMPTZ`).catch(() => {});
+  pool.query(`CREATE INDEX IF NOT EXISTS idx_orders_deadline
+              ON orders (deadline_at) WHERE status = 'in_production' AND deadline_at IS NOT NULL`).catch(() => {});
 
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS production_started_at TIMESTAMPTZ`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipped_at TIMESTAMPTZ`).catch(() => {});
@@ -288,8 +362,12 @@ if (pool) {
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(64)`).catch(() => {});
   pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS production_note TEXT`).catch(() => {});
   // Kolejke czyta sie po dacie zaplaty, bo pierwszy placi pierwszy dostaje.
-  pool.query(`CREATE INDEX IF NOT EXISTS idx_orders_kolejka
-              ON orders (paid_at) WHERE status IN ('paid','in_production','shipped')`).catch(() => {});
+  // Indeks przebudowujemy, a nie tworzymy warunkowo: `IF NOT EXISTS` widzi
+  // sama nazwe, wiec po dolozeniu etapow do warunku zostawiloby stary, wezszy.
+  pool.query(`DROP INDEX IF EXISTS idx_orders_kolejka`)
+    .then(() => pool.query(`CREATE INDEX IF NOT EXISTS idx_orders_kolejka
+              ON orders (paid_at) WHERE status IN ('paid','details','in_production','ready','shipped')`))
+    .catch(() => {});
 
   // Wycena zapisana z kalkulatora. Kursy kruszcow z chwili zapisu pozwalaja
   // odroznic ruch ceny zlota od zmiany naszego cennika, skala trzyma to,
@@ -653,7 +731,7 @@ app.get("/health", (_req, res) => res.json({ ok: true }));
 // TRZECIEJ pozycji, zawsze dwucyfrowej: `1.1.01` -> `1.1.02`. Ta sama regula
 // co w `admin/wersja.js`. Numery obu uslug nie musza byc rowne: kazda zmienia
 // sie wtedy, gdy naprawde sie zmienia.
-const WERSJA_API = "1.1.03";
+const WERSJA_API = "1.1.04";
 
 app.get("/api/version", async (req, res) => {
   if (!requireAdmin(req, res)) return;
@@ -1571,6 +1649,13 @@ app.post("/api/quotes/save", express.json({ limit: "1mb" }), async (req, res) =>
 });
 
 /** Podglad wyceny dla klienta. Bez logowania, wiec adres musi znac token. */
+// Stan pozycji na wire: `available` do wziecia, `reserved` ktos wlasnie za nia
+// placi, `settled` zlecona. Strona oferty i panel rysuja z tego trzy rozne
+// wiersze, bo wyszarzone pole zaznaczania znaczy "nie wolno ci zmienic wyboru",
+// a nie "to jest juz zrobione". Jedna mapa dla obu tras, zeby panel i klient
+// nie nazwali tego samego stanu inaczej.
+const NA_WIRE = { wolna: "available", zajeta: "reserved", zamknieta: "settled" };
+
 app.get("/api/quotes/:ref", async (req, res) => {
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
   const quote = await getQuoteByRef(pool, req.params.ref);
@@ -1618,8 +1703,42 @@ app.get("/api/quotes/:ref", async (req, res) => {
       kind: rodzaje.get(Number(i.id)) || "fixed",
       groupKey: i.group_key || null,
       selected: wybraneId.has(Number(i.id)),
+      state: NA_WIRE[stanPozycji(i)] || "available",
+      // Numer zamowienia, ktore te pozycje wzielo. Klient sprawdza po nim
+      // stan realizacji i to jest jedyny powod, dla ktorego tu stoi.
+      orderRef: stanPozycji(i) === "wolna" ? null : (i.order_ref || null),
+      // Termin realizacji tej pozycji, w dniach kalendarzowych, i znacznik
+      // "wymaga ustalenia szczegolow". Klient ma wiedziec, na co czeka,
+      // ZANIM zaplaci, a nie dowiadywac sie tego z maila po fakcie.
+      leadDays: i.lead_days != null ? Number(i.lead_days) : null,
+      requiresDetails: i.requires_details === true,
     };
   });
+
+  // Zamowienia zlozone z tej oferty, po jednym wierszu na numer. Bierzemy je
+  // z pozycji, bo to one wiedza, kto co wzial; naglowek pamieta tylko pierwsze.
+  const zamowienia = [];
+  const wgNumeru = new Map();
+  for (const i of quote.items) {
+    if (stanPozycji(i) === "wolna" || !i.order_ref) continue;
+    if (!wgNumeru.has(i.order_ref)) {
+      // Zeton zamowienia jedzie razem z numerem, bo bez niego odnosnik "przejdz
+      // do zamowienia" prowadzi na strone statusu, ktora nie wie, o ktore
+      // zamowienie chodzi, i pokazuje stan domyslny: "czekamy na potwierdzenie
+      // platnosci". Zdanie nieprawdziwe przy zamowieniu oplaconym miesiac temu.
+      //
+      // Nie jest to poszerzenie dostepu: te trase chroni zeton oferty, ktora
+      // niesie juz nazwisko, telefon i adres tego samego czlowieka, a zamowienie
+      // powstalo wlasnie z niej.
+      const wpis = {
+        orderRef: i.order_ref, token: i.order_access_token || null,
+        status: i.order_status, paid: Boolean(i.order_paid_at), titles: [],
+      };
+      wgNumeru.set(i.order_ref, wpis);
+      zamowienia.push(wpis);
+    }
+    wgNumeru.get(i.order_ref).titles.push(i.title);
+  }
 
   // Suma pozycji nie jest kwota do zaplaty: wariant z jednej grupy wyklucza
   // pozostale, a niezaznaczony dodatek nie wchodzi do rachunku. Bierzemy wiec
@@ -1670,7 +1789,19 @@ app.get("/api/quotes/:ref", async (req, res) => {
       phone: quote.customer_phone || null,
     },
     // Zamowienie zlozone: strona ma pokazac numer, a nie drugi raz przycisk.
-    orderRef: quote.converted_order_id ? await orderRefById(quote.converted_order_id) : null,
+    // `orderRef` zostaje dla zgodnosci i niesie PIERWSZE zamowienie; strona
+    // czyta `orders`, bo od ADR-0026 jedna oferta rodzi ich wiele.
+    orderRef: zamowienia[0]?.orderRef
+      || (quote.converted_order_id ? await orderRefById(quote.converted_order_id) : null),
+    orders: zamowienia,
+    // Nie zostalo nic do wziecia: strona ma powiedziec "oplacona i zlecona",
+    // a nie pokazac formularz platnosci na pusty koszyk.
+    settled: quoteSettled(quote),
+    // Termin tego, co klient ma zaznaczone TERAZ: najdluzszy z wybranych,
+    // bo paczka wychodzi jedna. Liczy serwer, ta sama funkcja co przy
+    // zapisie zamowienia, wiec liczba na ekranie jest ta, ktora zamrozimy.
+    leadDays: quoteLeadDays(quote),
+    requiresDetails: quoteRequiresDetails(quote),
     items,
   });
 });
@@ -1689,7 +1820,7 @@ app.get("/api/quotes", async (req, res) => {
   if (!requireAdmin(req, res)) return;
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
   const stan = String(req.query.status || "").trim();
-  const dozwolone = ["new", "priced", "sent", "accepted", "converted", "expired", "cancelled"];
+  const dozwolone = ["new", "priced", "sent", "accepted", "partial", "converted", "expired", "cancelled"];
   const warunek = dozwolone.includes(stan) ? "WHERE q.status = $1" : "";
   const parametry = dozwolone.includes(stan) ? [stan] : [];
   const { rows } = await pool.query(
@@ -1757,7 +1888,19 @@ app.get("/api/quotes/:ref/admin", async (req, res) => {
       kind: rodzajePozycji.get(Number(i.id)) || "fixed",
       groupKey: i.group_key || null,
       selected: wybrane.has(Number(i.id)),
+      // Pozycja sprzedana jest w panelu nietykalna, bo jej cena stoi juz
+      // w zamowieniu. Reszta oferty zostaje do poprawiania i to jest cala
+      // roznica wobec stanu sprzed ADR-0026, gdzie pierwsza zaplata
+      // zamrazala wszystko, razem z literowkami.
+      state: NA_WIRE[stanPozycji(i)] || "available",
+      orderRef: stanPozycji(i) === "wolna" ? null : (i.order_ref || null),
+      leadDays: i.lead_days != null ? Number(i.lead_days) : null,
+      requiresDetails: i.requires_details === true,
     })),
+    settled: quoteSettled(quote),
+    openCount: quoteOpenItems(quote).length,
+    leadDays: quoteLeadDays(quote),
+    requiresDetails: quoteRequiresDetails(quote),
   });
 });
 
@@ -1809,7 +1952,7 @@ app.post("/api/quotes/:ref/send", express.json({ limit: "8kb" }), async (req, re
 
   const quote = await getQuoteByRef(pool, req.params.ref);
   if (!quote) return res.status(404).json({ error: "Nie ma takiej wyceny" });
-  if (!quote.total_grosze) return res.status(400).json({ error: "Najpierw wpisz kwoty", code: "not_priced" });
+  if (!quoteAmountGrosze(quote)) return res.status(400).json({ error: "Najpierw wpisz kwoty", code: "not_priced" });
 
   const url = `${SITE_URL}/oferta/?ref=${encodeURIComponent(quote.quote_ref)}&token=${encodeURIComponent(quote.access_token)}`;
   const wyslano = quote.customer_email ? await sendQuoteLink(pool, quote.quote_ref, url) : false;
@@ -2016,6 +2159,45 @@ app.post("/api/quotes/:ref/choose", express.json({ limit: "8kb" }), async (req, 
  * Wybor nie jest wiazacy az do zlozenia zamowienia: wtedy kwota w euro zamraza
  * sie razem z kursem.
  */
+/**
+ * Wejscie na strone zamowienia z samego numeru i adresu e-mail.
+ *
+ * Do tej pory zamowienie otwieral WYLACZNIE prywatny link z maila. Klient,
+ * ktory tego maila skasowal, nie mial jak sprawdzic swojego zlecenia i pytanie
+ * "co z moim zamowieniem" wracalo do nas jako praca dla czlowieka.
+ *
+ * Sam numer nie wystarcza i nie ma wystarczac, dokladnie tak jak przy ofercie
+ * (ADR-0012): zamowienie niesie nazwisko, telefon i adres, wiec numer widziany
+ * przez ramie nie moze otwierac czyichs danych.
+ */
+app.post("/api/orders/lookup", express.json({ limit: "8kb" }),
+  limitBy(quoteLookupLimit, extractIP, { error: "Za duzo prob, sprobuj za chwile" }),
+  async (req, res) => {
+  if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
+
+  const ref = String(req.body?.ref || "").trim().toUpperCase();
+  const email = String(req.body?.email || "").trim().toLowerCase();
+
+  // Jedna odpowiedz na obie porazki: zly numer i zly adres. Rozne komunikaty
+  // powiedzialyby zgadujacemu, ktora polowe ma juz dobra.
+  const odmowa = () => res.status(404).json({
+    error: "Nie znalezlismy zamowienia o tym numerze albo dane sie nie zgadzaja",
+    code: "not_found",
+  });
+
+  if (!ref || !email) return odmowa();
+  const { rows } = await pool.query(
+    "SELECT order_ref, access_token, customer_email FROM orders WHERE order_ref = $1",
+    [ref]
+  );
+  const order = rows[0];
+  if (!order || !order.customer_email) return odmowa();
+  if (email !== String(order.customer_email).trim().toLowerCase()) return odmowa();
+
+  console.log(`[zamowienie] ${order.order_ref} otwarte z numeru`);
+  res.json({ ok: true, ref: order.order_ref, token: order.access_token });
+});
+
 app.post("/api/quotes/:ref/currency", express.json({ limit: "8kb" }), async (req, res) => {
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
 
@@ -2023,8 +2205,11 @@ app.post("/api/quotes/:ref/currency", express.json({ limit: "8kb" }), async (req
   if (!quote || !secretMatches(String(req.body?.token || ""), quote.access_token)) {
     return res.status(404).json({ error: "Nie ma takiej oferty" });
   }
-  if (quote.converted_order_id) {
-    return res.status(400).json({ error: "Ta oferta stala sie juz zamowieniem", code: "already_converted" });
+  // Blokuje dopiero oferta, w ktorej nie zostalo nic do wziecia. Czesciowo
+  // zlecona dalej pozwala wybrac walute dla reszty: zamowienie juz zlozone
+  // ma swoja walute zamrozona u siebie i ta zmiana go nie dotyka.
+  if (quoteSettled(quote)) {
+    return res.status(400).json({ error: "Cala ta oferta jest juz zlecona", code: "already_converted" });
   }
 
   const waluta = String(req.body?.currency || "").toUpperCase();
@@ -2045,7 +2230,7 @@ app.post("/api/quotes/:ref/currency", express.json({ limit: "8kb" }), async (req
     quoteRef: quote.quote_ref,
     currency: waluta,
     eurRate: kurs,
-    amountEurCents: waluta === "EUR" ? eurCentsFromGrosze(quote.total_grosze || 0, kurs) : null,
+    amountEurCents: waluta === "EUR" ? eurCentsFromGrosze(quoteAmountGrosze(quote) || 0, kurs) : null,
     paymentMethod: paymentMethodForCurrency(waluta),
   });
 });
@@ -2067,7 +2252,11 @@ app.post("/api/quotes/:ref/discount", express.json({ limit: "8kb" }),
   if (!quote || !secretMatches(String(req.body?.token || ""), quote.access_token)) {
     return res.status(404).json({ error: "Nie ma takiej oferty" });
   }
-  if (!quote.total_grosze) return res.status(400).json({ error: "Ta oferta nie ma jeszcze kwoty", code: "not_priced" });
+  // Kwota z POZYCJI, tak samo jak przy zaplacie. Naglowek jest podsumowaniem
+  // i po czesciowym zleceniu potrafi byc o krok z tylu; rabat policzony z
+  // niego schodzilby od innej sumy niz ta, ktora klient zaraz zaplaci.
+  const doRabatu = quoteAmountGrosze(quote);
+  if (!doRabatu) return res.status(400).json({ error: "Ta oferta nie ma teraz nic do zaplaty", code: "not_priced" });
 
   const ip = extractIP(req);
   if (discountMissLimit.remaining(ip) <= 0) {
@@ -2083,7 +2272,7 @@ app.post("/api/quotes/:ref/discount", express.json({ limit: "8kb" }),
     res.json({
       ok: true,
       ...preview,
-      totalGrosze: Math.max(0, quote.total_grosze - preview.discountGrosze),
+      totalGrosze: Math.max(0, doRabatu - preview.discountGrosze),
     });
   } catch (e) {
     if (e instanceof DiscountError) {
@@ -2112,9 +2301,15 @@ app.post("/api/quotes/:ref/checkout", express.json({ limit: "32kb" }),
   if (!quote || !secretMatches(String(req.body?.token || ""), quote.access_token)) {
     return res.status(404).json({ error: "Nie ma takiej oferty" });
   }
-  if (!quote.total_grosze) return res.status(400).json({ error: "Ta oferta nie ma jeszcze kwoty", code: "not_priced" });
-  if (quote.converted_order_id) {
-    return res.status(409).json({ error: "Ta oferta ma juz zamowienie", code: "already_converted" });
+  // Kwota za to, co klient bierze TERAZ. Po czesciowym zleceniu naglowek mowi
+  // o reszcie oferty, wiec obie liczby zwykle sa rowne, ale zrodlem zostaje
+  // regula wyboru: to ona rozstrzyga przy zapisie zamowienia.
+  const doZaplaty = quoteAmountGrosze(quote);
+  if (!doZaplaty) return res.status(400).json({ error: "Ta oferta nie ma teraz nic do zaplaty", code: "not_priced" });
+  // Zamkniete jest to, w czym nie zostalo nic do wziecia. Oferta czesciowo
+  // zlecona przyjmuje kolejna zaplate za reszte i o to w tym wszystkim chodzi.
+  if (quoteSettled(quote)) {
+    return res.status(409).json({ error: "Cala ta oferta jest juz zlecona", code: "already_converted" });
   }
   // Po terminie waznosci kwota przestaje obowiazywac, wiec przyjecie zaplaty
   // znaczyloby zobowiazanie sie do liczby, ktorej juz nie potwierdzamy.
@@ -2129,7 +2324,7 @@ app.post("/api/quotes/:ref/checkout", express.json({ limit: "32kb" }),
 
   // Koszt dostawy liczy serwer z wlasnego cennika. Gdyby przychodzil z
   // przegladarki, kazdy moglby zamowic kuriera za zero.
-  const shipping = shippingCost(metoda, kraj, quote.total_grosze);
+  const shipping = shippingCost(metoda, kraj, doZaplaty);
   if (shipping == null) return res.status(400).json({ error: "Nie wozimy tak do tego kraju", code: "bad_delivery" });
 
   // Oferta idzie WYLACZNIE przez bramke. Autopay obsluguje i BLIK-a, i przelew
@@ -2146,7 +2341,7 @@ app.post("/api/quotes/:ref/checkout", express.json({ limit: "32kb" }),
   }
 
   try {
-    const limit = await checkQuarterlyLimit(pool, quote.total_grosze + shipping);
+    const limit = await checkQuarterlyLimit(pool, doZaplaty + shipping);
     if (!limit.ok) {
       return res.status(409).json({
         error: "Ta kwota nie zmiesci sie w limicie kwartalnym",
@@ -2218,6 +2413,53 @@ app.post("/api/quotes/:ref/checkout", express.json({ limit: "32kb" }),
   }
 });
 
+/**
+ * Zaplata pcha zlecenie w etap pracy i uruchamia zegar.
+ *
+ * Do ADR-0027 zamowienie zostawalo w `paid` az ktos kliknal w panelu, wiec
+ * termin realizacji nie mial od czego biec i przypomnienia nie mialy czego
+ * pilnowac. Teraz robi to sama zaplata, bo to ona jest chwila, w ktorej praca
+ * sie zaczyna.
+ *
+ * Zlecenie ze znacznikiem "wymaga ustalenia szczegolow" staje w `details`
+ * i zegar CZEKA: to my czekamy wtedy na klienta, a nie on na nas, wiec
+ * liczenie mu terminu byloby liczeniem cudzego czasu.
+ *
+ * Warunek `status = 'paid'` w obu zapisach czyni to bezpiecznym do powtorzenia:
+ * druga ITN, ponowne potwierdzenie przelewu i recznie przestawiony etap nie
+ * cofna niczego ani nie przestemplowluja terminu drugi raz.
+ *
+ * @returns {Promise<string|null>} etap, w ktory weszlo zlecenie, albo null
+ */
+async function ruszZlecenie(pool, orderId) {
+  const { rows } = await pool.query(
+    `SELECT status, requires_details, lead_days FROM orders WHERE id = $1`,
+    [orderId]
+  );
+  const o = rows[0];
+  if (!o || o.status !== "paid") return null;
+
+  if (etapPoZaplacie(o.requires_details) === "details") {
+    const r = await pool.query(
+      `UPDATE orders SET status = 'details', details_at = NOW()
+        WHERE id = $1 AND status = 'paid' RETURNING id`,
+      [orderId]
+    );
+    return r.rowCount ? "details" : null;
+  }
+
+  // Termin zapisujemy jako DATE, a nie liczbe dni: liczba przeliczana przy
+  // kazdym odczycie przesuwalaby sie razem z data odczytu i klient widzialby
+  // termin, ktory nigdy nie nadchodzi.
+  const termin = terminRealizacji(new Date(), o.lead_days);
+  const r = await pool.query(
+    `UPDATE orders SET status = $3, production_started_at = NOW(), deadline_at = $2
+      WHERE id = $1 AND status = 'paid' RETURNING id`,
+    [orderId, termin, ETAP_Z_ZEGAREM]
+  );
+  return r.rowCount ? ETAP_Z_ZEGAREM : null;
+}
+
 /** Zamiana wyceny w zamowienie do zaplaty, z limitem kwartalnym jak w sklepie */
 app.post("/api/quotes/:ref/convert", express.json({ limit: "16kb" }), async (req, res) => {
   if (!requireAdmin(req, res)) return;
@@ -2226,14 +2468,17 @@ app.post("/api/quotes/:ref/convert", express.json({ limit: "16kb" }), async (req
   try {
     const quote = await getQuoteByRef(pool, req.params.ref);
     if (!quote) return res.status(404).json({ error: "Nie ma takiej wyceny" });
-    if (!quote.total_grosze) return res.status(400).json({ error: "Najpierw wpisz kwoty", code: "not_priced" });
+    // Ta sama regula co po stronie klienta: kwota bierze sie z pozycji, ktore
+    // sa jeszcze wolne i zaznaczone, a nie z podsumowania w naglowku.
+    const doZaplaty = quoteAmountGrosze(quote);
+    if (!doZaplaty) return res.status(400).json({ error: "Najpierw wpisz kwoty", code: "not_priced" });
 
     const shipping = Number.isInteger(req.body?.delivery?.shippingGrosze) ? req.body.delivery.shippingGrosze : 0;
     // Limit kwartalny liczy sie od kwoty, ktora realnie wplynie, a wiec
     // po odliczeniu oplaty projektowej.
     const credit = await availableDesignCredit(pool, quote.customer_email);
-    const creditGrosze = credit ? Math.min(credit.grosze, quote.total_grosze) : 0;
-    const limit = await checkQuarterlyLimit(pool, quote.total_grosze - creditGrosze + shipping);
+    const creditGrosze = credit ? Math.min(credit.grosze, doZaplaty) : 0;
+    const limit = await checkQuarterlyLimit(pool, doZaplaty - creditGrosze + shipping);
     if (!limit.ok) {
       return res.status(409).json({
         error: "Ta kwota nie zmiesci sie w limicie kwartalnym",
@@ -2594,6 +2839,65 @@ async function expireStaleOrders() {
   }
 }
 if (pool) cron.schedule("0 * * * *", expireStaleOrders);
+
+/**
+ * Codzienny przeglad terminow realizacji (ADR-0027).
+ *
+ * Rano, raz na dobe: przypomnienie o terminie jest informacja, a nie alarmem,
+ * wiec ma przyjsc razem z reszta poczty, a nie w nocy albo w kolku.
+ *
+ * Zapis "wyslane" idzie DOPIERO po udanej wysylce. Zapisany przed nia
+ * zamknalby prog na zawsze przy pierwszej awarii poczty, i to po cichu:
+ * nikt nie zauwaza maila, ktory nie przyszedl.
+ */
+async function przypomnijOTerminach() {
+  try {
+    const { rows } = await pool.query(
+      `SELECT * FROM orders
+        WHERE status = $1 AND deadline_at IS NOT NULL
+        ORDER BY deadline_at`,
+      [ETAP_Z_ZEGAREM]
+    );
+    for (const order of rows) {
+      const dni = dniDoTerminu(order.deadline_at);
+      if (dni == null) continue;
+      const wyslane = Array.isArray(order.reminders_sent) ? order.reminders_sent : [];
+      const wybor = progDoWyslania(dni, wyslane);
+      if (!wybor) continue;
+
+      if (!await sendDeadlineReminder(pool, order, dni)) {
+        console.error(`[termin] ${order.order_ref}: prog ${wybor.prog} bez wysylki, sprobujemy jutro`);
+        continue;
+      }
+      await pool.query(
+        `UPDATE orders SET reminders_sent = $2::jsonb WHERE id = $1`,
+        [order.id, JSON.stringify([...new Set([...wyslane, ...wybor.domkniete])])]
+      );
+      console.log(`[termin] ${order.order_ref}: przypomnienie na ${dni} dni przed`);
+    }
+  } catch (e) {
+    console.error("[termin] przeglad nie powiodl sie:", e.message);
+  }
+
+  // Ustalanie szczegolow nie ma terminu, bo czekamy w nim na klienta. Bez
+  // wlasnego sprawdzenia zlecenie zaplacone i nieruszone milczaloby w
+  // nieskonczonosc, a to jest najgorszy rodzaj ciszy: klient juz zaplacil.
+  try {
+    const { rows } = await pool.query(
+      `SELECT * FROM orders WHERE status = 'details' AND details_at IS NOT NULL ORDER BY details_at`
+    );
+    for (const order of rows) {
+      if (!szturchnacSzczegoly(order.details_at, order.details_nudged_at)) continue;
+      const dni = Math.floor((Date.now() - new Date(order.details_at).getTime()) / 86400_000);
+      if (!await sendDetailsNudge(pool, order, dni)) continue;
+      await pool.query(`UPDATE orders SET details_nudged_at = NOW() WHERE id = $1`, [order.id]);
+      console.log(`[ustalenia] ${order.order_ref}: stoi ${dni} dni, szturchnieto`);
+    }
+  } catch (e) {
+    console.error("[ustalenia] przeglad nie powiodl sie:", e.message);
+  }
+}
+if (pool) cron.schedule("0 7 * * *", przypomnijOTerminach, { timezone: "Europe/Warsaw" });
 
 // Sprzatanie danych po terminach z polityki prywatnosci. Raz na dobe w nocy,
 // bo to kasowanie, a nie odswiezanie: ma isc wtedy, gdy nikt nie kupuje.
@@ -3723,11 +4027,14 @@ app.get("/api/orders/queue", async (req, res) => {
   // Domyslnie kolejka pokazuje to, co jeszcze czeka na prace. `?status=`
   // pozwala siegnac po zakonczone i anulowane, bo inaczej omylkowe kliknieciecie
   // "zrobione" znika z ekranu i nie ma czego poprawic.
-  const DOZWOLONE_STANY = ["paid", "in_production", "shipped", "completed", "cancelled"];
+  const DOZWOLONE_STANY = ["paid", "details", "in_production", "ready", "shipped", "completed", "cancelled"];
   const zadane = String(req.query.status || "").split(",").map((x) => x.trim()).filter(Boolean);
   const stany = zadane.length
     ? zadane.filter((x) => DOZWOLONE_STANY.includes(x))
-    : ["paid", "in_production", "shipped"];
+    // Ustalanie szczegolow i "zrealizowane" stoja w domyslnym widoku, bo to
+    // wlasnie one czekaja na RUCH Z NASZEJ STRONY. Zlecenie w ustalaniu nie ma
+    // nawet zegara, wiec pominiete tutaj nie odezwaloby sie znikad.
+    : ["paid", "details", "in_production", "ready", "shipped"];
   if (!stany.length) return res.status(400).json({ error: "Nie znamy takiego stanu" });
 
   const { rows } = await pool.query(
@@ -3735,8 +4042,9 @@ app.get("/api/orders/queue", async (req, res) => {
             o.customer_email, o.customer_name, o.customer_phone,
             o.delivery_method, o.delivery_point, o.address_line1, o.address_line2,
             o.postal_code, o.city, o.country,
-            o.paid_at, o.production_started_at, o.shipped_at,
+            o.paid_at, o.production_started_at, o.shipped_at, o.details_at, o.ready_at,
             o.tracking_number, o.production_note,
+            o.lead_days, o.deadline_at, o.requires_details,
             (SELECT q.quote_ref FROM quotes q WHERE q.converted_order_id = o.id) AS quote_ref
        FROM orders o
       WHERE o.status = ANY($1::text[])
@@ -3775,6 +4083,15 @@ app.get("/api/orders/queue", async (req, res) => {
     email: o.customer_email,
     phone: o.customer_phone,
     totalPLN: (o.total_grosze / 100).toFixed(2),
+    // Termin i ile do niego zostalo. Liczy SERWER, tak samo jak dla klienta:
+    // dwa miejsca liczace to samo znaczylyby panel pokazujacy inna liczbe dni
+    // niz strona zamowienia, przy tym samym zleceniu.
+    leadDays: o.lead_days != null ? Number(o.lead_days) : null,
+    deadlineAt: o.deadline_at ? String(o.deadline_at).slice(0, 10) : null,
+    daysLeft: dniDoTerminu(o.deadline_at),
+    requiresDetails: o.requires_details === true,
+    detailsAt: o.details_at,
+    readyAt: o.ready_at,
     paidAt: o.paid_at,
     waitingDays: dni(o.paid_at),
     productionStartedAt: o.production_started_at,
@@ -3822,25 +4139,40 @@ app.post("/api/orders/:ref/production", express.json({ limit: "8kb" }), async (r
 
   const numer = req.body?.trackingNumber ? String(req.body.trackingNumber).trim().slice(0, 64) : null;
   const notatka = req.body?.note ? String(req.body.note).slice(0, 2000) : null;
+  // Data wysylki podana z reki, bo paczka bywa nadana wczoraj, a zaznaczona
+  // dzisiaj. Bez tego termin realizacji wygladalby na przekroczony o dzien.
+  const dzien = String(req.body?.shippedOn || "").trim();
+  if (dzien && !/^\d{4}-\d{2}-\d{2}$/.test(dzien)) {
+    return res.status(400).json({ error: "Date wysylki podaj jako RRRR-MM-DD", code: "bad_date" });
+  }
+
+  // Wejscie w etap z zegarem stempluje termin. Liczymy go OD TERAZ, a nie od
+  // zaplaty: zlecenie stojace tydzien w ustalaniu szczegolow ma pelny termin
+  // od chwili, w ktorej naprawde ruszylo.
+  const rusza = etap === ETAP_Z_ZEGAREM;
 
   // Warunek na statusie powtorzony w samym UPDATE, bo miedzy odczytem a zapisem
   // ktos moze anulowac zamowienie w drugiej zakladce.
   const zmiana = await pool.query(
     `UPDATE orders
         SET status = $2,
-            ${regula.pole} = COALESCE(${regula.pole}, NOW()),
+            ${regula.pole} = COALESCE(${regula.pole}, $6::timestamptz, NOW()),
             tracking_number = COALESCE($3, tracking_number),
             production_note = COALESCE($4, production_note)
+            ${rusza ? ", deadline_at = COALESCE(deadline_at, (COALESCE($6::timestamptz, NOW()) + (lead_days || ' days')::interval)::date)" : ""}
       WHERE id = $1 AND status = ANY($5::text[])
-      RETURNING status, ${regula.pole} AS stempel`,
-    [order.id, etap, numer, notatka, regula.z]
+      RETURNING status, ${regula.pole} AS stempel, deadline_at`,
+    [order.id, etap, numer, notatka, regula.z, dzien || null]
   );
   if (!zmiana.rowCount) {
     return res.status(409).json({ error: "Stan zamowienia zmienil sie w miedzyczasie", code: "state_changed" });
   }
 
   console.log(`[kolejka] ${ref}: ${order.status} -> ${etap}${numer ? `, list przewozowy ${numer}` : ""}`);
-  res.json({ ok: true, orderRef: ref, status: zmiana.rows[0].status, at: zmiana.rows[0].stempel });
+  res.json({
+    ok: true, orderRef: ref, status: zmiana.rows[0].status, at: zmiana.rows[0].stempel,
+    deadlineAt: zmiana.rows[0].deadline_at || null,
+  });
 });
 
 /**
@@ -3890,7 +4222,12 @@ app.post("/api/orders/:ref/queue", express.json({ limit: "8kb" }), async (req, r
     const pole = ETAPY_PRACY[etap]?.pole;
     if (pole) zmiany.push(`${pole} = COALESCE(${pole}, NOW())`);
     czyszczone = regula.doWyczyszczenia;
-    for (const kolumna of czyszczone) zmiany.push(`${kolumna} = NULL`);
+    for (const kolumna of czyszczone) {
+      // `reminders_sent` jest NOT NULL i trzyma liste, wiec czysci sie do
+      // listy pustej, a nie do NULL. Wpisanie NULL wywalilo by cala korekte
+      // na ograniczeniu kolumny, i to dopiero w bazie.
+      zmiany.push(kolumna === "reminders_sent" ? `${kolumna} = '[]'::jsonb` : `${kolumna} = NULL`);
+    }
     // Cofniecie sprzed wysylki zabiera tez list przewozowy, bo nie ma czego
     // sledzic. Jawny numer w tym samym zadaniu i tak wygra, bo idzie nizej.
     if (czyszczone.includes("shipped_at")) zmiany.push("tracking_number = NULL");
@@ -4018,7 +4355,11 @@ app.post("/api/orders/:ref/confirm-transfer", express.json({ limit: "8kb" }), as
   );
   console.log(`[przelew] ${ref} potwierdzony recznie, ${(received / 100).toFixed(2)} EUR`);
 
-  // Dalej dokladnie to samo, co po SUCCESS z bramki.
+  // Dalej dokladnie to samo, co po SUCCESS z bramki, razem ze startem zegara:
+  // przelew jest ta sama zaplata co BLIK, tylko wolniejsza.
+  const etapPrzelewu = await ruszZlecenie(pool, order.id).catch(() => null);
+  if (etapPrzelewu) console.log(`[kolejka] ${ref} wchodzi w etap ${etapPrzelewu}`);
+
   await issueDownloads(pool, order.id).catch((e) =>
     console.error("[pobranie] zalozenie linkow nie powiodlo sie:", e.message)
   );
@@ -4384,6 +4725,13 @@ app.post("/api/autopay/itn", express.urlencoded({ extended: false, limit: "256kb
           } else {
             console.log(`[autopay] zamowienie ${parsed.orderID} oplacone, ${(amountGrosze / 100).toFixed(2)} PLN`);
 
+            // Zegar realizacji rusza tutaj, a nie przy klikaniu w panelu.
+            const etap = await ruszZlecenie(pool, order.id).catch((e) => {
+              console.error("[kolejka] nie udalo sie ruszyc zlecenia:", e.message);
+              return null;
+            });
+            if (etap) console.log(`[kolejka] ${parsed.orderID} wchodzi w etap ${etap}`);
+
             // LINKI PRZED MAILEM, i to jest jedyna kolejnosc, ktora ma sens:
             // to wlasnie mail niesie link do klienta. Odwrotna kolejnosc dawalaby
             // potwierdzenie zaplaty bez tego, za co klient zaplacil.
@@ -4514,7 +4862,10 @@ app.get("/api/orders/:ref", async (req, res) => {
   if (!pool) return res.status(503).json({ error: "Baza niedostepna" });
   res.set("Cache-Control", "no-store, private");
   const { rows } = await pool.query(
-    `SELECT order_ref, access_token, status, total_grosze, lang, paid_at, expires_at, delivery_method,
+    `SELECT id, order_ref, access_token, status, total_grosze, items_total_grosze, shipping_grosze,
+            discount_code, discount_grosze, credit_applied_grosze,
+            lead_days, deadline_at, requires_details, details_at, ready_at,
+            lang, paid_at, expires_at, delivery_method,
             revisions_included, revisions_used,
             payment_method, payment_status, fulfilled_at,
             amount_eur_cents, transfer_confirmed_at,
@@ -4526,13 +4877,48 @@ app.get("/api/orders/:ref", async (req, res) => {
   if (!o || !orderAccessAllowed(req.headers.authorization, o.access_token)) {
     return res.status(404).json({ error: "Zamowienie nie istnieje lub brak dostepu" });
   }
+
+  // Pozycje zamowienia. Do tej pory strona statusu dostawala sam numer i sume,
+  // wiec klient, ktory wracal do niej po tygodniu, nie mial jak sprawdzic, CO
+  // wlasciwie zamowil; podsumowanie mial wylacznie w mailu, ktory bywa
+  // zarchiwizowany albo skasowany. Tu jada te same wiersze, co w mailu.
+  const { rows: pozycje } = await pool.query(
+    `SELECT title, qty, unit_grosze, line_grosze FROM order_items WHERE order_id = $1 ORDER BY id`,
+    [o.id]
+  );
+
   res.json({
     orderRef: o.order_ref,
     status: o.status,
     totalPLN: (o.total_grosze / 100).toFixed(2),
+    // Grosze obok gotowego napisu, bo strona formatuje kwoty sama i musi
+    // umiec pokazac je takze w euro, po kursie zamrozonym przy zamowieniu.
+    totalGrosze: o.total_grosze,
+    itemsTotalGrosze: o.items_total_grosze,
+    shippingGrosze: o.shipping_grosze,
+    discountGrosze: o.discount_grosze || 0,
+    discountCode: o.discount_code || null,
+    creditGrosze: o.credit_applied_grosze || 0,
+    items: pozycje.map((i) => ({
+      title: i.title, qty: i.qty,
+      unitGrosze: i.unit_grosze, lineGrosze: i.line_grosze,
+    })),
     paidAt: o.paid_at,
     expiresAt: o.expires_at,
     deliveryMethod: o.delivery_method,
+
+    // TERMIN REALIZACJI (ADR-0027).
+    //
+    // `daysLeft` liczy SERWER i to nie jest wygoda, tylko koniecznosc: data
+    // policzona w JSX wychodzi inna przy buildzie i inna u klienta, React
+    // uznaje to za rozjazd i wyrzuca cale poddrzewo (ADR-0022). Strona
+    // dostaje wiec gotowa liczbe, a nie material do liczenia.
+    leadDays: o.lead_days != null ? Number(o.lead_days) : null,
+    deadlineAt: o.deadline_at ? String(o.deadline_at).slice(0, 10) : null,
+    daysLeft: dniDoTerminu(o.deadline_at),
+    requiresDetails: o.requires_details === true,
+    detailsAt: o.details_at,
+    readyAt: o.ready_at,
     // Etap pracy widzi takze klient. Bez tego strona zamowienia po przestawieniu
     // go w kolejce wracala do galezi domyslnej i mowila oplaconemu klientowi,
     // ze czekamy na jego platnosc.
