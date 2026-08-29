@@ -108,6 +108,13 @@ const ZESTAWY = {
       { id: 4, calculator: null, title: "Polerowanie", qty: 1, unitGrosze: 3000, lineGrosze: 3000, description: null, fileName: null, params: { szlif: "lustro" }, kind: "option", groupKey: "klucz", selected: true },
     ],
     offerUrl: "https://www.aejaca.com/oferta/?ref=WY20260825-A1B2C3D4&token=token-testowy",
+    // Zamowienia powstale z tej oferty. Widok buduje z nich numer i link do
+    // wklejenia klientowi, wiec puste tez musi sie renderowac: oferta jeszcze
+    // nieoplacona nie ma zadnego.
+    zamowienia: [
+      { orderRef: "AE20260827-1F1AC35C", token: "zeton", status: "in_production", paid: true,
+        url: "https://www.aejaca.com/order/status/?ref=AE20260827-1F1AC35C&token=zeton" },
+    ],
     msg: null, err: null,
   },
   // Zamowienie z oferty, bez pliku i bez listu przewozowego: tak wyglada

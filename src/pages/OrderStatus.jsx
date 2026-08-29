@@ -79,6 +79,7 @@ const UI = {
     notFound: "Nie znaleziono takiego zamówienia",
     lookupTitle: "Sprawdź swoje zamówienie",
     lookupDesc: "Podaj numer zamówienia albo numer oferty i adres e-mail, na który poszło potwierdzenie. Pokażemy stan płatności i realizacji.",
+    lookupNeedEmail: "Mamy numer, brakuje jeszcze potwierdzenia, że to Twoje zamówienie. Podaj adres e-mail, na który wysłaliśmy potwierdzenie.",
     lookupRef: "Numer zamówienia lub oferty",
     lookupEmail: "Adres e-mail z potwierdzenia",
     lookupButton: "Sprawdź",
@@ -154,6 +155,7 @@ const UI = {
     notFound: "Order not found",
     lookupTitle: "Check your order",
     lookupDesc: "Enter the order number or the offer number, and the e-mail address the confirmation went to. We will show the payment and the work.",
+    lookupNeedEmail: "We have the number; we still need to know the order is yours. Enter the e-mail address we sent the confirmation to.",
     lookupRef: "Order or offer number",
     lookupEmail: "E-mail from the confirmation",
     lookupButton: "Check",
@@ -229,6 +231,7 @@ const UI = {
     notFound: "Bestellung nicht gefunden",
     lookupTitle: "Bestellung prüfen",
     lookupDesc: "Geben Sie die Bestell- oder Angebotsnummer an und die E-Mail-Adresse, an die die Bestätigung ging. Wir zeigen Zahlung und Fortschritt.",
+    lookupNeedEmail: "Die Nummer haben wir; es fehlt noch der Nachweis, dass die Bestellung Ihnen gehört. Geben Sie die E-Mail-Adresse an, an die wir die Bestätigung geschickt haben.",
     lookupRef: "Bestell- oder Angebotsnummer",
     lookupEmail: "E-Mail aus der Bestätigung",
     lookupButton: "Prüfen",
@@ -289,19 +292,27 @@ export default function OrderStatus() {
   const signatureError = search.get("error") === "invalid_signature";
   const [token, setToken] = useState(null);
   const [accessResolved, setAccessResolved] = useState(false);
-  const missingAccess = Boolean(accessResolved && ref && !token && !signatureError);
-  // Adres bez numeru zamowienia. Do tej pory strona schodzila wtedy do galezi
-  // domyslnej i oznajmiala "czekamy na potwierdzenie platnosci", czyli podawala
-  // STAN PLATNOSCI ZAMOWIENIA, ktorego nigdy nie zobaczyla. Klientka, ktora
-  // rozliczyla sie miesiac wczesniej, dostawala informacje nieprawdziwa i bez
-  // jednego slowa o tym, czego dotyczy.
-  const bezNumeru = !ref && !signatureError;
+  // BRAK DOSTEPU TO PYTANIE, A NIE ODMOWA.
+  //
+  // Dwa przypadki, jedna odpowiedz: adres bez numeru (ktory do tej pory
+  // schodzil do galezi domyslnej i oznajmial "czekamy na potwierdzenie
+  // platnosci", czyli podawal stan zamowienia, ktorego nigdy nie zobaczyl)
+  // oraz numer BEZ zetonu, czyli dokladnie to, co zostaje po wpisaniu numeru
+  // w koszyku. Ten drugi konczyl sie ekranem "ten link nie daje dostepu",
+  // choc numer byl dobry i brakowalo wylacznie adresu e-mail. Klient
+  // dostawal odmowe zamiast pytania o druga polowe danych.
+  const bezDostepu = !signatureError && (!ref || (accessResolved && !token));
+  // Numer byl podany, wiec pytamy juz tylko o adres.
+  const samNumer = Boolean(ref) && bezDostepu;
 
   // Wejscie z samego numeru i adresu. Do tej pory zamowienie otwieral WYLACZNIE
   // prywatny link z maila, wiec klient, ktory tego maila skasowal, nie mial jak
   // sprawdzic swojego zlecenia. Numer oferty tez tu wolno wpisac: prowadzi na
   // strone oferty, ktora zna droge dalej.
-  const [formRef, setFormRef] = useState("");
+  // Numer z adresu wpisuje sie do formularza sam: klient wlasnie go podal
+  // w koszyku i przepisywanie go drugi raz bylo by kara za nasza wlasna
+  // niedorobke.
+  const [formRef, setFormRef] = useState(ref || "");
   const [formEmail, setFormEmail] = useState("");
   const [looking, setLooking] = useState(false);
   const [lookupError, setLookupError] = useState(null);
@@ -526,11 +537,13 @@ export default function OrderStatus() {
               <Loader2 className="w-8 h-8 animate-spin" />
               <span className="text-sm">{u.checking}</span>
             </div>
-          ) : bezNumeru ? (
+          ) : bezDostepu ? (
             <>
               <HelpCircle className="w-12 h-12 text-neutral-500 mx-auto mb-4" />
               <h1 className="font-serif text-2xl font-bold text-white mb-3">{u.lookupTitle}</h1>
-              <p className="text-neutral-400 text-sm leading-relaxed mb-6">{u.lookupDesc}</p>
+              <p className="text-neutral-400 text-sm leading-relaxed mb-6">
+                {samNumer ? u.lookupNeedEmail : u.lookupDesc}
+              </p>
               <form onSubmit={lookup} className="space-y-3 text-left">
                 <label className="block">
                   <span className="text-neutral-400 text-xs">{u.lookupRef}</span>
@@ -561,12 +574,6 @@ export default function OrderStatus() {
                 </button>
                 <p className="text-neutral-600 text-xs leading-relaxed">{u.noRefDesc}</p>
               </form>
-            </>
-          ) : missingAccess ? (
-            <>
-              <XCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-              <h1 className="font-serif text-2xl font-bold text-white mb-3">{u.accessTitle}</h1>
-              <p className="text-neutral-400 text-sm leading-relaxed mb-6">{u.accessDesc}</p>
             </>
           ) : notFound ? (
             <>

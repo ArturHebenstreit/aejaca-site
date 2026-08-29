@@ -297,16 +297,25 @@ console.log("\n8. Strona zamowienia mowi, o ktore zamowienie chodzi\n");
   nieMa(OFERTA, /<Link to="\/order\/status\/"/, "nie zostal zaden goly odnosnik bez numeru");
   ma(SERWER, /orderRef: i\.order_ref, token: i\.order_access_token/, "trasa oferty oddaje zeton zamowienia");
 
-  ma(STATUS, /const bezNumeru = !ref && !signatureError/, "strona rozpoznaje adres bez numeru");
-  ma(STATUS, /bezNumeru \? \(/, "adres bez numeru ma wlasna galaz widoku");
-  // Sedno: galaz bez numeru musi stac PRZED domyslna, inaczej strona dalej
+  // BRAK DOSTEPU TO PYTANIE, A NIE ODMOWA. Dwa przypadki, jedna odpowiedz:
+  // adres bez numeru oraz numer BEZ zetonu, czyli dokladnie to, co zostaje po
+  // wpisaniu numeru w koszyku. Ten drugi konczyl sie ekranem "ten link nie daje
+  // dostepu", choc numer byl dobry i brakowalo wylacznie adresu e-mail:
+  // wlasciciel trafil na to przy pierwszym prawdziwym uzyciu.
+  ma(STATUS, /const bezDostepu = !signatureError && \(!ref \|\| \(accessResolved && !token\)\)/,
+     "brak zetonu przy dobrym numerze tez prowadzi do formularza");
+  ma(STATUS, /bezDostepu \? \(/, "brak dostepu ma wlasna galaz widoku");
+  ma(STATUS, /useState\(ref \|\| ""\)/, "numer z adresu wpisuje sie do formularza sam");
+  ma(STATUS, /samNumer \? u\.lookupNeedEmail : u\.lookupDesc/, "przy samym numerze prosimy juz tylko o adres");
+  nieMa(STATUS, /missingAccess/, "ekran odmowy zniknal razem z powodem, dla ktorego istnial");
+  // Sedno: galaz braku dostepu musi stac PRZED domyslna, inaczej strona dalej
   // oznajmia stan platnosci zamowienia, o ktorym nic nie wie.
   {
-    const iBez = STATUS.indexOf("bezNumeru ? (");
+    const iBez = STATUS.indexOf("bezDostepu ? (");
     const iDomyslna = STATUS.indexOf("title = u.pendingTitle");
     const iGalaz = STATUS.indexOf("{icon}");
-    if (iBez > 0 && iGalaz > 0 && iBez < iGalaz) ok("galaz bez numeru wyprzedza galaz stanu platnosci");
-    else zle("galaz bez numeru stoi po galezi stanu platnosci albo jej nie ma");
+    if (iBez > 0 && iGalaz > 0 && iBez < iGalaz) ok("galaz braku dostepu wyprzedza galaz stanu platnosci");
+    else zle("galaz braku dostepu stoi po galezi stanu platnosci albo jej nie ma");
     if (iDomyslna > 0) ok("stan domyslny nadal istnieje dla zamowienia wczytanego");
   }
   ma(STATUS, /noRefTitle/, "strona ma wlasny komunikat dla adresu bez numeru");

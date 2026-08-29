@@ -44,6 +44,11 @@ const T = {
     dimsIntro: "Poniższe pozycje wykonamy w wymiarach zmienionych względem przysłanego pliku. Zapisujemy to jako ustalenie.",
     delivery: "Dostawa",
     total: "Zapłacono",
+    leadTitle: "Termin realizacji",
+    leadPlanned: (dni, data) => `${dni} dni. Planowana wysyłka: ${data}.`,
+    leadDetails: (dni) => dni
+      ? `Najpierw ustalimy z Tobą szczegóły, odezwiemy się w tej sprawie. Czas realizacji, ${dni} dni, liczymy dopiero od ustaleń, więc nic Ci przez to nie ucieka.`
+      : "Najpierw ustalimy z Tobą szczegóły, odezwiemy się w tej sprawie. Czas realizacji liczymy dopiero od ustaleń.",
     next: "Co dalej",
     printTitle: "Uwagi do modelu, potwierdzone przy zamówieniu",
     printIntro: "Przed dodaniem pozycji do koszyka pokazaliśmy poniższe uwagi do przesłanego pliku, a Ty potwierdziłeś polecenie wykonania wydruku mimo nich. Powtarzamy je tutaj, żeby zostały udokumentowane po obu stronach.",
@@ -106,6 +111,11 @@ const T = {
     dimsIntro: "The items below will be made in dimensions changed from the file you sent. We record this as agreed.",
     delivery: "Delivery",
     total: "Paid",
+    leadTitle: "Lead time",
+    leadPlanned: (dni, data) => `${dni} days. Planned dispatch: ${data}.`,
+    leadDetails: (dni) => dni
+      ? `We will agree the details with you first and will be in touch about it. The lead time of ${dni} days starts only after that, so nothing is running out for you.`
+      : "We will agree the details with you first and will be in touch about it. The lead time starts only after that.",
     next: "What happens next",
     printTitle: "Notes on the model, confirmed with the order",
     printIntro: "Before this item went into the cart we showed you the notes below on the file you supplied, and you confirmed an instruction to print despite them. We repeat them here so the record exists on both sides.",
@@ -168,6 +178,11 @@ const T = {
     dimsIntro: "Die folgenden Positionen fertigen wir in gegenüber der eingesandten Datei geänderten Maßen. Wir halten das als Vereinbarung fest.",
     delivery: "Lieferung",
     total: "Bezahlt",
+    leadTitle: "Lieferzeit",
+    leadPlanned: (dni, data) => `${dni} Tage. Geplanter Versand: ${data}.`,
+    leadDetails: (dni) => dni
+      ? `Wir stimmen zuerst die Details mit Ihnen ab und melden uns dazu. Die Lieferzeit von ${dni} Tagen beginnt erst danach, es geht Ihnen also nichts verloren.`
+      : "Wir stimmen zuerst die Details mit Ihnen ab und melden uns dazu. Die Lieferzeit beginnt erst danach.",
     next: "Wie es weitergeht",
     printTitle: "Hinweise zum Modell, mit der Bestellung bestätigt",
     printIntro: "Bevor diese Position in den Warenkorb kam, haben wir Ihnen die folgenden Hinweise zur eingereichten Datei angezeigt, und Sie haben den Druckauftrag trotzdem bestätigt. Wir wiederholen sie hier, damit der Vorgang beidseitig dokumentiert ist.",
@@ -349,6 +364,22 @@ function downloadLinks(items) {
   }));
 }
 
+/**
+ * Termin realizacji zdaniem dla KLIENTA.
+ *
+ * Zwraca null, gdy pozycje oferty nie mialy terminu: puste zdanie o terminie
+ * jest gorsze niz jego brak, bo wyglada jak obietnica, ktorej nikt nie zlozyl.
+ * Ta sama tresc idzie do wersji tekstowej i do HTML, wiec obie mowia to samo.
+ */
+function terminKlienta(order, l) {
+  if (order.requires_details) return l.leadDetails(order.lead_days || null);
+  if (order.deadline_at && order.lead_days) {
+    return l.leadPlanned(order.lead_days, String(order.deadline_at).slice(0, 10));
+  }
+  if (order.lead_days) return l.leadPlanned(order.lead_days, "-").replace(/\.[^.]*$/, ".");
+  return null;
+}
+
 function customerHtml(order, items, lang) {
   const l = T[lang] || T.pl;
   const rows = items
@@ -386,6 +417,11 @@ function customerHtml(order, items, lang) {
         <td style="padding:12px 0;text-align:right;font-weight:700;font-size:16px">${paidAmount(order)}</td>
       </tr>
     </table>
+
+    ${terminKlienta(order, l) ? `
+      <p style="margin:18px 0 4px;font-size:12px;color:#777">${l.leadTitle}</p>
+      <p style="margin:0;line-height:1.6;font-size:13px;color:#444">${esc(terminKlienta(order, l))}</p>
+    ` : ""}
 
     ${pliki.length ? `
       <h3 style="font-size:14px;margin:24px 0 6px">${l.filesTitle}</h3>
@@ -463,6 +499,9 @@ function customerText(order, items, lang) {
     ...lines,
     `${l.delivery}: ${l.deliveryNames[order.delivery_method] || order.delivery_method || ""} ${money(order.shipping_grosze)}`,
     `${l.total}: ${paidAmount(order)}`,
+    // Ta sama tresc, co w wersji HTML: dwie rozne odpowiedzi na pytanie "kiedy"
+    // w jednym mailu bylyby gorsze niz jedna, nawet gdyby obie byly prawdziwe.
+    ...(terminKlienta(order, l) ? ["", `${l.leadTitle}: ${terminKlienta(order, l)}`] : []),
     // Link MUSI byc takze tutaj. Wersja tekstowa jest tym, co zostaje przy
     // wylaczonym HTML i w czytniku ekranu, a bez linku klient nie ma jak
     // dojsc do tego, za co zaplacil.
@@ -522,11 +561,34 @@ const SPARE_PL = {
   unique: "PRZEDMIOT NIEPOWTARZALNY, zgoda na probe w miejscu niewidocznym",
 };
 
+/**
+ * Parametry pozycji BEZ tego, co i tak stoi w mailu osobno.
+ *
+ * `fromQuote` ma wlasny wiersz, a `description` wlasny akapit. Zostawione
+ * w zrzucie JSON pokazywaly sie drugi raz, w postaci nieczytelnej dla
+ * czlowieka, i to one robily z tego maila sciane nawiasow: przy zamowieniu
+ * z oferty caly zrzut to bylo dokladnie te dwa pola, z czego jedno puste.
+ */
+function parametryDoPokazania(params) {
+  if (!params || typeof params !== "object") return null;
+  const reszta = { ...params };
+  delete reszta.fromQuote;
+  delete reszta.description;
+  return Object.keys(reszta).length ? JSON.stringify(reszta) : null;
+}
+
 function internalText(order, items, attachments = []) {
   const lines = items.map(
-    (i) => `- ${i.title} x ${i.qty} = ${money(i.line_grosze)}
-  kalkulator: ${i.calculator}
-  parametry: ${JSON.stringify(i.params)}${i.params?.wymiary ? `\n  WYMIARY: ${i.params.wymiary}` : ""}${i.params?.znieksztalcony ? `\n  !! WYROB ZNIEKSZTALCONY: osie zmieniane osobno, ksztalt inny niz w pliku` : ""}${i.params?.description ? `\n  OPIS OD KLIENTA: ${i.params.description}` : ""}${i.params?.podloze ? `\n  PODLOZE: ${PODLOZE_PL[i.params.podloze] || i.params.podloze}${i.params.spare ? `, ${SPARE_PL[i.params.spare] || i.params.spare}` : ""}${i.params.materialNote ? `, material: ${i.params.materialNote}` : ""}` : ""}${i.params?.personalization ? `\n  GRAWER NA WYROBIE: ${i.params.personalization}` : ""}${i.params?.packagingText ? `\n  GRAWER NA WIEKU: ${i.params.packagingText}` : ""}${i.params?.packagingTextBack ? `\n  GRAWER WEWNATRZ WIEKA: ${i.params.packagingTextBack}` : ""}${i.file_name ? `\n  plik: ${i.file_name} (sha256 ${String(i.file_sha256 || "").slice(0, 16)})${i.file_url ? `\n  Dysk: ${i.file_url}` : "\n  Dysk: link jeszcze nie dotarl z n8n"}${i.upload_token && API_BASE ? `\n  Podglad: ${API_BASE}/api/uploads/${i.upload_token}/thumb` : ""}` : ""}${
+    (i) => `- ${i.title} x ${i.qty} = ${money(i.line_grosze)}${
+      // Pozycja z oferty nie ma kalkulatora i nie ma czego o nim mowic.
+      // "kalkulator: null" bylo informacja o tym, ze pole istnieje, a nie
+      // o zamowieniu.
+      i.calculator ? `\n  kalkulator: ${i.calculator}` : ""
+    }${
+      i.params?.fromQuote ? `\n  z oferty: ${i.params.fromQuote}` : ""
+    }${
+      parametryDoPokazania(i.params) ? `\n  parametry: ${parametryDoPokazania(i.params)}` : ""
+    }${i.params?.wymiary ? `\n  WYMIARY: ${i.params.wymiary}` : ""}${i.params?.znieksztalcony ? `\n  !! WYROB ZNIEKSZTALCONY: osie zmieniane osobno, ksztalt inny niz w pliku` : ""}${i.params?.description ? `\n  OPIS OD KLIENTA: ${i.params.description}` : ""}${i.params?.podloze ? `\n  PODLOZE: ${PODLOZE_PL[i.params.podloze] || i.params.podloze}${i.params.spare ? `, ${SPARE_PL[i.params.spare] || i.params.spare}` : ""}${i.params.materialNote ? `, material: ${i.params.materialNote}` : ""}` : ""}${i.params?.personalization ? `\n  GRAWER NA WYROBIE: ${i.params.personalization}` : ""}${i.params?.packagingText ? `\n  GRAWER NA WIEKU: ${i.params.packagingText}` : ""}${i.params?.packagingTextBack ? `\n  GRAWER WEWNATRZ WIEKA: ${i.params.packagingTextBack}` : ""}${i.file_name ? `\n  plik: ${i.file_name} (sha256 ${String(i.file_sha256 || "").slice(0, 16)})${i.file_url ? `\n  Dysk: ${i.file_url}` : "\n  Dysk: link jeszcze nie dotarl z n8n"}${i.upload_token && API_BASE ? `\n  Podglad: ${API_BASE}/api/uploads/${i.upload_token}/thumb` : ""}` : ""}${
       i.geometry ? `\n  geometria: ${Number(i.geometry.volumeCm3).toFixed(2)} cm3, bbox ${i.geometry.bbox?.x}x${i.geometry.bbox?.y}x${i.geometry.bbox?.z} cm` : ""
     }${
       // Wyroznione, bo w warsztacie to jest instrukcja: drukowac mimo wykrytej
@@ -549,6 +611,15 @@ function internalText(order, items, attachments = []) {
     `Kwota: ${money(order.total_grosze)}`,
     `Klient: ${order.customer_name || "(brak nazwiska)"} <${order.customer_email}>${order.customer_phone ? `, tel. ${order.customer_phone}` : ""}`,
     `Jezyk: ${order.lang}`,
+    // TERMIN REALIZACJI. Bez tego wiersza mail o zaplacie milczal o jedynej
+    // rzeczy, ktora po zaplacie ma znaczenie dla pracowni: do kiedy.
+    order.requires_details
+      ? `TERMIN: zegar STOI, zlecenie czeka na ustalenie szczegolow${order.lead_days ? `. Po ustaleniach: ${order.lead_days} dni` : ""}`
+      : order.deadline_at
+      ? `TERMIN: ${order.lead_days} dni, planowana wysylka ${String(order.deadline_at).slice(0, 10)}`
+      : order.lead_days
+      ? `TERMIN: ${order.lead_days} dni`
+      : "TERMIN: nie ustalony przy pozycjach oferty",
     "",
     "Pozycje:",
     ...lines,

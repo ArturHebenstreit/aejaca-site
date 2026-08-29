@@ -1384,12 +1384,21 @@ app.get("/quotes", requireAuth, async (req, res) => {
 
 app.get("/quotes/:ref", requireAuth, async (req, res) => {
   try {
-    const { quote, items } = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/admin`);
+    const { quote, items, orders = [] } = await shopApi(`/api/quotes/${encodeURIComponent(req.params.ref)}/admin`);
     // Link buduje sie tu, a nie w widoku, bo klient przy rozmowie telefonicznej
     // nie dostanie maila i jedynym sposobem przekazania oferty jest skopiowanie
     // tego adresu z ekranu.
     const offerUrl = `${SITE_URL}/oferta/?ref=${encodeURIComponent(quote.quoteRef)}&token=${encodeURIComponent(quote.accessToken)}`;
-    res.render("quote-edit", { user: req.user, quote, items, offerUrl, msg: req.query.msg, err: req.query.err });
+    // Link do KAZDEGO zamowienia z tej oferty. Powstaje tu, a nie w widoku,
+    // z tego samego powodu co link do oferty: to jest adres do wklejenia
+    // klientowi, a nie ozdoba ekranu.
+    const zamowienia = orders.map((o) => ({
+      ...o,
+      url: o.token
+        ? `${SITE_URL}/order/status/?ref=${encodeURIComponent(o.orderRef)}&token=${encodeURIComponent(o.token)}`
+        : null,
+    }));
+    res.render("quote-edit", { user: req.user, quote, items, offerUrl, zamowienia, msg: req.query.msg, err: req.query.err });
   } catch (err) {
     back(res, "/quotes", { err: err.message });
   }

@@ -82,16 +82,18 @@ const UI = {
     optionsHere: "Dodatki, jeśli chcesz",
     perPc: "za sztukę",
     pcs: "szt.",
-    leadItem: "termin",
     leadDaysUnit: "dni",
     leadDayUnit: "dzień",
     leadNeedsDetails: "wymaga ustalenia szczegółów",
     leadGroup: "Termin tej grupy",
-    leadTotalTitle: "Termin realizacji",
-    leadTotalDesc: "Liczymy najdłuższy z zaznaczonych pozycji, bo paczka wychodzi jedna. Czas biegnie od zapłaty.",
-    leadTotalDetails: "Zaznaczyłeś pozycję, która wymaga ustalenia szczegółów. Najpierw się odezwiemy, a czas realizacji ruszy dopiero po ustaleniach, więc nic Ci nie ucieka.",
+    leadTotalTitle: "Termin realizacji wybranego zakresu zlecenia",
+    leadTotalDesc: "Liczymy najdłuższy termin spośród zaznaczonych pozycji, bo paczka wychodzi jedna. Czas biegnie od zapłaty.",
+    leadAfterDetails: "po ustaleniu szczegółów wyniesie {n}",
+    leadItemNote: "termin realizacji tej pozycji - {n}",
+    defaultIncluded: "wybrana domyślnie",
+    leadTotalDetails: "Zaznaczyłeś pozycję, która wymaga ustalenia szczegółów. Najpierw się odezwiemy, a czas realizacji ruszy dopiero po ustaleniach, więc nic Ci nie ucieka. Podana liczba dni to najdłuższy termin spośród zaznaczonych pozycji, bo paczka wychodzi jedna.",
     leadNone: "Termin ustalimy przy potwierdzeniu.",
-    note: "Zakres oferty: co wchodzi w kwotę",
+    note: "Opis oferty",
     validUntil: "Oferta obowiązuje do",
     validUntilPast: "Oferta obowiązywała do",
     expiredTitle: "Ta oferta straciła ważność",
@@ -174,16 +176,18 @@ const UI = {
     optionsHere: "Add-ons, if you want them",
     perPc: "per piece",
     pcs: "pcs",
-    leadItem: "lead time",
     leadDaysUnit: "days",
     leadDayUnit: "day",
     leadNeedsDetails: "details to be agreed first",
     leadGroup: "Lead time for this group",
-    leadTotalTitle: "Lead time",
-    leadTotalDesc: "We take the longest of the ticked items, because the parcel goes out once. The clock starts at payment.",
-    leadTotalDetails: "You ticked an item whose details we need to agree first. We will get in touch, and the lead time starts only after that, so nothing is running out.",
+    leadTotalTitle: "Lead time for the selected scope",
+    leadTotalDesc: "We take the longest lead time among the ticked items, because the parcel goes out once. The clock starts at payment.",
+    leadAfterDetails: "{n} once the details are agreed",
+    leadItemNote: "lead time for this item - {n}",
+    defaultIncluded: "included by default",
+    leadTotalDetails: "You ticked an item whose details we need to agree first. We will get in touch, and the lead time starts only after that, so nothing is running out. The number of days is the longest among the ticked items, because the parcel goes out once.",
     leadNone: "We will agree the lead time when we confirm the order.",
-    note: "What this offer covers",
+    note: "About this offer",
     validUntil: "The offer is valid until",
     validUntilPast: "The offer was valid until",
     expiredTitle: "This offer has expired",
@@ -266,16 +270,18 @@ const UI = {
     optionsHere: "Zusätze, wenn Sie mögen",
     perPc: "pro Stück",
     pcs: "Stk.",
-    leadItem: "Lieferzeit",
     leadDaysUnit: "Tage",
     leadDayUnit: "Tag",
     leadNeedsDetails: "Details sind vorher abzustimmen",
     leadGroup: "Lieferzeit dieser Gruppe",
-    leadTotalTitle: "Lieferzeit",
-    leadTotalDesc: "Wir nehmen die längste der angehakten Positionen, denn das Paket geht einmal raus. Die Zeit läuft ab der Zahlung.",
-    leadTotalDetails: "Sie haben eine Position angehakt, deren Details wir zuerst abstimmen müssen. Wir melden uns, und die Lieferzeit beginnt erst danach, es geht Ihnen also nichts verloren.",
+    leadTotalTitle: "Lieferzeit des gewählten Umfangs",
+    leadTotalDesc: "Wir nehmen die längste Lieferzeit der angehakten Positionen, denn das Paket geht einmal raus. Die Zeit läuft ab der Zahlung.",
+    leadAfterDetails: "{n} nach Abstimmung der Details",
+    leadItemNote: "Lieferzeit dieser Position - {n}",
+    defaultIncluded: "standardmäßig enthalten",
+    leadTotalDetails: "Sie haben eine Position angehakt, deren Details wir zuerst abstimmen müssen. Wir melden uns, und die Lieferzeit beginnt erst danach, es geht Ihnen also nichts verloren. Die Zahl der Tage ist die längste unter den angehakten Positionen, denn das Paket geht einmal raus.",
     leadNone: "Die Lieferzeit stimmen wir bei der Bestätigung ab.",
-    note: "Umfang des Angebots",
+    note: "Zum Angebot",
     validUntil: "Das Angebot gilt bis",
     validUntilPast: "Das Angebot galt bis",
     expiredTitle: "Dieses Angebot ist abgelaufen",
@@ -343,9 +349,6 @@ function Wiersz({ it, money, u, bezIlosci = false }) {
   const drobiazgi = [
     bezIlosci ? null : `${it.qty} ${u.pcs}`,
     !bezIlosci && it.unitGrosze != null && it.qty > 1 ? `${money(it.unitGrosze)} ${u.perPc}` : null,
-    // Termin przy KAZDEJ pozycji, a nie tylko w podsumowaniu: klient wybiera
-    // miedzy wariantami takze czasem, nie samą ceną.
-    it.leadDays ? `${u.leadItem} ${dni(it.leadDays, u)}` : null,
     it.requiresDetails ? u.leadNeedsDetails : null,
     it.fileName || null,
   ].filter(Boolean);
@@ -363,6 +366,16 @@ function Wiersz({ it, money, u, bezIlosci = false }) {
         {/* Pozycja juz sprzedana mowi to wprost, razem z numerem zamowienia:
             klient sprawdza po nim stan realizacji i to jedyny powod, dla
             ktorego numer tu stoi. */}
+        {/* Termin PRZY POZYCJI, na koncu i na szaro: klient wybiera miedzy
+            propozycjami takze czasem, nie sama cena, ale liczba dni przy
+            pozycji nie jest terminem calego zlecenia i nie moze wygladac tak
+            samo jak on. Terminem zlecenia jest najdluzszy z zaznaczonych
+            i stoi osobno, pod pozycjami. */}
+        {it.leadDays ? (
+          <div className="text-neutral-600 text-xs mt-0.5">
+            ({u.leadItemNote.replace("{n}", dni(it.leadDays, u))})
+          </div>
+        ) : null}
         {it.state && it.state !== "available" && (
           <div className={`mt-1.5 flex items-center gap-1.5 text-xs ${it.state === "settled" ? "text-emerald-300" : "text-amber-300"}`}>
             {it.state === "settled" ? <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> : <Clock className="w-3.5 h-3.5 shrink-0" />}
@@ -767,13 +780,35 @@ export default function Offer() {
                   <p className="text-neutral-400 text-sm leading-relaxed mb-4">{u.variantsLead}</p>
                 )}
 
+                {/* Opis oferty stoi NAD pozycjami, bo to on mowi, o czym jest
+                    cala reszta. Pod nimi czytalo sie jak przypis do rachunku,
+                    a jest odwrotnie: rachunek jest szczegolem tego opisu. */}
+                {offer.priceNote && (
+                  <div className="mb-4 pb-4 border-b border-white/10">
+                    <div className="text-neutral-600 text-xs mb-1">{u.note}</div>
+                    <p className="text-neutral-300 text-xs leading-relaxed whitespace-pre-wrap">{offer.priceNote}</p>
+                  </div>
+                )}
+
                 {/* Skladniki rachunku: te sa w kwocie zawsze i nie ma przy nich
                     czego wybierac. */}
+                {/* Skladnik rachunku wchodzi do kwoty ZAWSZE i nie ma przy nim
+                    czego wybierac, ale do tej pory nie mial tez zadnego
+                    oznaczenia: klient widzial nazwe i cene, i nie mial jak
+                    poznac, ze wlasnie za to placi. Ramka jest ta sama, co przy
+                    zaznaczonym dodatku, bo znaczy to samo: to jest w zamowieniu.
+                    Rozni ja podpis, bo tu niczego sie nie klika. */}
                 {uklad.fixed.length > 0 && (
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {uklad.fixed.map((it) => (
-                      <div key={it.id} className="flex items-start justify-between gap-4">
-                        <Wiersz it={it} money={money} u={u} />
+                      <div
+                        key={it.id}
+                        className="rounded-lg border border-amber-400/50 bg-amber-400/[0.06] p-4"
+                      >
+                        <div className="text-amber-300/80 text-xs mb-1.5">{u.defaultIncluded}</div>
+                        <div className="flex items-start justify-between gap-4">
+                          <Wiersz it={it} money={money} u={u} />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -823,14 +858,6 @@ export default function Offer() {
                     {karta.rozstrzygnieta && karta.variants.length > 1 && (
                       <p className="text-neutral-500 text-xs pt-1">{u.groupClosed}</p>
                     )}
-                    {/* Termin grupy to NAJDLUZSZY sposrod jej pozycji, ta sama
-                        regula co dla calego zamowienia. Dwie reguly znaczylyby
-                        dwie rozne liczby przy jednej karcie. */}
-                    {karta.leadDays ? (
-                      <p className="text-neutral-500 text-xs pt-1">
-                        {u.leadGroup}: {dni(karta.leadDays, u)}
-                      </p>
-                    ) : null}
 
                     {karta.options.length > 0 && (
                       <div className="text-neutral-500 text-xs pt-2">{u.optionsHere}</div>
@@ -861,6 +888,16 @@ export default function Offer() {
                         </label>
                       )
                     ))}
+
+                    {/* Termin grupy to NAJDLUZSZY sposrod jej pozycji, ta sama
+                        regula co dla calego zamowienia. Stoi POD pozycjami,
+                        bo jest ich podsumowaniem: nad nimi czytalo sie jak
+                        zapowiedz czegos, czego jeszcze nie widac. */}
+                    {karta.leadDays ? (
+                      <p className="text-neutral-500 text-xs pt-2">
+                        {u.leadGroup}: {dni(karta.leadDays, u)}
+                      </p>
+                    ) : null}
                   </div>
                 ))}
 
@@ -873,12 +910,23 @@ export default function Offer() {
                     i liczy je ten sam serwer. */}
                 {!domkniete && (offer.leadDays || offer.requiresDetails) && (
                   <div className="mt-4 pt-4 border-t border-white/10">
-                    <div className="flex items-center justify-between gap-4">
+                    {/* Na waskim ekranie tytul i liczba dni nie mieszcza sie
+                        obok siebie, wiec schodza pod siebie zamiast sciskac
+                        wartosc do jednego slowa w kolumnie. */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4">
                       <span className="text-white text-sm font-medium">{u.leadTotalTitle}</span>
-                      <span className="text-white text-sm font-semibold shrink-0">
-                        {offer.requiresDetails
-                          ? u.leadNeedsDetails
-                          : offer.leadDays ? dni(offer.leadDays, u) : u.leadNone}
+                      {/* LICZBA DNI STOI TU ZAWSZE, gdy tylko ja znamy.
+                          Pierwsza wersja podmieniala ja na "wymaga ustalenia
+                          szczegolow" i klient, ktory chcial wiedziec, ile to
+                          potrwa, dowiadywal sie wylacznie, ze bedziemy o tym
+                          rozmawiac. Znacznik ustalen zmienia to, OD KIEDY
+                          termin biegnie, a nie to, ile wynosi. */}
+                      <span className="text-white text-sm font-semibold shrink-0 sm:text-right">
+                        {offer.leadDays
+                          ? (offer.requiresDetails
+                              ? u.leadAfterDetails.replace("{n}", dni(offer.leadDays, u))
+                              : dni(offer.leadDays, u))
+                          : offer.requiresDetails ? u.leadNeedsDetails : u.leadNone}
                       </span>
                     </div>
                     <p className="text-neutral-500 text-xs leading-relaxed mt-1">
@@ -887,12 +935,6 @@ export default function Offer() {
                   </div>
                 )}
 
-                {offer.priceNote && (
-                  <div className="mt-4 pt-4 border-t border-white/10">
-                    <div className="text-neutral-600 text-xs mb-1">{u.note}</div>
-                    <p className="text-neutral-300 text-xs leading-relaxed whitespace-pre-wrap">{offer.priceNote}</p>
-                  </div>
-                )}
 
                 {/* Termin w czasie przeszlym, gdy nie ma juz czego brac.
                     "Obowiazuje do" jest informacja dla kogos, kto ma jeszcze

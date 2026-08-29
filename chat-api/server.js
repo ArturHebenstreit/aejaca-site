@@ -1880,6 +1880,23 @@ app.get("/api/quotes/:ref/admin", async (req, res) => {
       pickupCode: quote.customer_email ? null : kodOdbioru(quote.access_token),
       convertedOrderId: quote.converted_order_id,
     },
+    // Zamowienia zlozone z tej oferty, razem z zetonem. Panel buduje z tego
+    // link, ktory mozna wkleic klientowi w odpowiedzi na pytanie "co z moim
+    // zamowieniem": bez tego jedyna droga bylo szukanie starego maila.
+    orders: (() => {
+      const wgNumeru = new Map();
+      for (const i of quote.items) {
+        if (stanPozycji(i) === "wolna" || !i.order_ref) continue;
+        if (wgNumeru.has(i.order_ref)) continue;
+        wgNumeru.set(i.order_ref, {
+          orderRef: i.order_ref,
+          token: i.order_access_token || null,
+          status: i.order_status,
+          paid: Boolean(i.order_paid_at),
+        });
+      }
+      return [...wgNumeru.values()];
+    })(),
     items: quote.items.map((i) => ({
       id: Number(i.id), calculator: i.calculator, title: i.title, qty: i.qty,
       unitGrosze: i.unit_grosze, lineGrosze: i.line_grosze,
